@@ -85,10 +85,15 @@ std::string rtrim(std::string const & str, std::string const & totrim = "\t ");
 std::string trim(std::string const & str, std::string const & totrim = "\t ");
 
 /**
- * @param str the input string
+ * format_percent - smart format a percentage value
+ * @param value - the value
+ * @param width - the maximum width
  *
- * Return the substring at beginning of str which is only whitespace
+ * This formats a percentage into exactly the given width and returns
+ * it. If the integer part is larger than the given width, the
+ * returned string will be wider. The returned string is never
+ * shorter than the given width.
  */
-std::string const ws_prefix(std::string const & str);
+std::string const format_percent(double value, unsigned int width);
 
 #endif /* !STRING_MANIP_H */

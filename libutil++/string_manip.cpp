@@ -151,15 +151,38 @@ string trim(string const & str, string const & totrim)
 }
 
 
-string const ws_prefix(string const & str)
+string const format_percent(double value, unsigned int width)
 {
-	size_t end_pos = str.find_first_not_of(" \t");
+	ostringstream os;
+	os << fixed << value;
+	string const orig = os.str();
+	if (orig.length() < width) {
+		string pad = string(width - (orig.length() + 1), ' ');
+		return pad + orig + '%';
+	}
 
-	// FIXME: surely this should return the entire string ?
-	if (end_pos == string::npos)
-		end_pos = 0;
+	string integer = orig;
+	string const fractional = trim(split(integer, '.'));
 
-	return str.substr(0, end_pos);
+	// we just overflow here
+	if (integer.length() >= width - 2)
+		return integer + '%';
+
+	// take off integer, '.', and '%';
+	string::size_type remaining = width - (integer.length() + 2);
+
+	string frac;
+	string pad;
+
+	if (fractional.length() < remaining) {
+		pad = string(remaining - fractional.length(), ' ');
+		frac = fractional;
+	} else {
+		// FIXME: round
+		frac = fractional.substr(0, remaining);
+	}
+
+	return pad + integer + '.' + frac + '%';
 }
- 
+
 

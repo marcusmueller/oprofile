@@ -94,6 +94,13 @@ bool do_until_more_than_samples;
 op_cpu cpu_type = CPU_NO_GOOD;
 /// hold all info for samples
 scoped_ptr<profile_container_t> samples(0);
+/// field width for the sample count
+unsigned int const count_width = 6;
+/// field width for the sample relative percent
+unsigned int const percent_width = 6;
+/// empty annotation fill string
+string annotation_fill;
+
 
 /**
  * @param image_name the samples owner image name
@@ -221,26 +228,23 @@ bool setup_counter_param(profile_t const & profile);
 void output_per_file_info(ostream & out, string const & filename,
 			     const counter_array_t& count);
 
+/// return the necessary no annotation fill string
+string const get_annotation_fill();
+
 /**
- * @param out output stream
  * @param counter count to output
  * @param total total nr of samples allowing to calculate the ratio
  *
- * output to out count followed by the ration total/count
+ * output count followed by the ratio total/count
  */
-void output_one_counter(ostream & out, size_t counter, size_t total);
+string const counter_str(size_t counter, size_t total);
 
 /**
- * @param out output stream
  * @param counter counter to output
- * @param comment true if we quote the output with begin_comment / end_comment
- * @param prefix a string, optionally empty, to output before counter
  *
- * output to out the number of samples in counter optionally prefixed by
- * the prefix string and quoted by comment
+ * output the number of samples in all the set counters
  */
-void output_counter(ostream & out, const counter_array_t & counter,
-		    bool comment, string const & prefix = string());
+string const output_counter(const counter_array_t & counter);
 
 /**
  * @param str_vma the input string produced by objdump
@@ -277,16 +281,21 @@ void annotate_asm_line(ostream & out, string const & str,
                        string const & blank);
 
 /**
- * @param out output stream
  * @param filename a source filename
  * @param linenr a line number into the source file
- * @param blank a string to indent the output by
  *
  * from filename, linenr find the associated samples numbers belonging
  * to this source file, line nr then output them
  */
-void annotate_line(ostream & out, string const & filename,
-                   size_t linenr, string const & blank);
+string const line_annotation(string const & filename, size_t linenr);
+
+/**
+ * @param filename a source filename
+ *
+ * from filename, return a line for annotating line 0, if any samples
+ * are found there.
+ */
+string const line0_info(string const & filename);
 
 /**
  * from the command line specification retrieve the counter nr used to
@@ -601,8 +610,28 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 }
  
 
+string const get_annotation_fill()
+{
+	string str;
+
+	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i) {
+		if (!counter_info[i].enabled)
+			continue;
+		if (!str.empty())
+			str += ' ';
+		str += string(count_width, ' ') + ' ';
+		str += string(percent_width, ' '); 
+	}
+
+	str += " :";
+	return str;
+}
+
+
 void output_source(filename_match const & fn_match, bool output_separate_file)
 {
+	annotation_fill = get_annotation_fill();
+
 	if (!output_separate_file)
 		output_info(cout);
 
@@ -691,20 +720,20 @@ void do_output_one_file(ostream & out, istream & in, string const & filename, bo
 	counter_array_t count;
 	samples->samples_count(count, filename);
 
-	if (header)
+	if (header) {
 		output_per_file_info(out, filename, count);
+		out << line0_info(filename) << endl;
+	}
 
-	annotate_line(out, filename, 0, string());
 
 	if (in) {
 		string str;
+
 		for (size_t linenr = 1 ; getline(in, str) ; ++linenr) {
-			string const blank = ws_prefix(str);
-
-			annotate_line(out, filename, linenr, blank);
-
-			out << str << '\n';
+			out << line_annotation(filename, linenr)
+			    << str << '\n';
 		}
+
 	} else {
 		// FIXME : we have no input file : for now we just output footer
 		// so on user can known total nr of samples for this source
@@ -716,8 +745,10 @@ void do_output_one_file(ostream & out, istream & in, string const & filename, bo
 		// (necessary functors already exist in symbol_functors.h)
 	}
 
-	if (!header)
+	if (!header) {
 		output_per_file_info(out, filename, count);
+		out << line0_info(filename) << endl;
+	}
 }
 
  
@@ -762,40 +793,35 @@ void output_per_file_info(ostream & out, string const & filename,
 	     << in_comment << "Total samples for file : "
 	     << '"' << filename << '"'
 	     << endl;
-	out << in_comment << endl << in_comment;
-	output_counter(out, total_count_for_file, false, string());
+	out << in_comment << endl << in_comment
+	    << output_counter(total_count_for_file) << endl;
 	out << end_comment << endl << endl;
 }
 
 
-void output_one_counter(ostream & out, size_t counter, size_t total)
+string const counter_str(size_t counter, size_t total)
 {
-	out << " ";
-	out << counter << " ";
-	out << setprecision(4) << (op_ratio(counter, total) * 100.0) << "%";
+	ostringstream os;
+	os << setw(count_width) << tostr(counter) << ' ';
+
+	os << format_percent(op_ratio(counter, total) * 100.0, percent_width);
+	return os.str();
 }
 
 
-void output_counter(ostream & out, counter_array_t const & counter,
-		    bool comment, string const & prefix)
+string const output_counter(counter_array_t const & counter)
 {
-	if (comment)
-		out << begin_comment;
+	string str;
 
-	if (prefix.length())
-		out << " " << prefix;
+	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i) {
+		if (!counter_info[i].enabled)
+			continue;
+		if (!str.empty())
+			str += ' ';
+		str += counter_str(counter[i], counter_info[i].total_samples);
+	}
 
-	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i)
-		if (counter_info[i].enabled)
-			output_one_counter(out, counter[i],
-					   counter_info[i].total_samples);
-
-	out << " ";
-
-	if (comment)
-		out << end_comment;
-
-	out << '\n';
+	return str;
 }
 
 
@@ -818,8 +844,11 @@ void annotate_asm_symbol(ostream & out, string const & str,
 	symbol_entry const * symbol = find_symbol(str);
 
 	if (symbol) {
-		out << blank;
-		output_counter(out, symbol->sample.counter, true, string());
+		string annot = output_counter(symbol->sample.counter);
+		if (!annot.empty()) {
+			out << blank << begin_comment;
+			out << annot << end_comment << '\n';
+		}
 	}
 }
 
@@ -836,29 +865,51 @@ void annotate_asm_line(ostream & out, string const & str,
 
 	sample_entry const * sample = samples->find_sample(vma);
 	if (sample) {
-		out << blank;
-		output_counter(out, sample->counter, true, string());
+		out << blank << begin_comment;
+		out << output_counter(sample->counter);
+		out << end_comment << '\n';
 	}
 }
 
  
-void annotate_line(ostream & out, string const & filename,
-                   size_t linenr, string const & blank)
+string const line_annotation(string const & filename, size_t linenr)
 {
+	string str;
+	counter_array_t counter;
+	unsigned int count = samples->samples_count(counter, filename, linenr);
+
 	symbol_entry const * symbol = samples->find_symbol(filename, linenr);
 	if (symbol) {
-		string const symname =
-			demangle ? demangle_symbol(symbol->name)
-			: symbol->name;
+		string symname = symbol->name;
+		if (demangle)
+		       symname = demangle_symbol(symbol->name);
 
-		output_counter(out, symbol->sample.counter, true, symname);
+		str += symname + " ";
+		str += output_counter(symbol->sample.counter);
+		if (count)
+			str += ", prolog ";
 	}
 
-	counter_array_t counter;
-	if (samples->samples_count(counter, filename, linenr)) {
-		out << blank;
-		output_counter(out, counter, true, string());
-	}
+	if (samples->samples_count(counter, filename, linenr))
+		str += output_counter(counter);
+
+	if (str.empty())
+		return annotation_fill;
+
+	str += " :";
+	return str;
+}
+
+
+string const line0_info(string const & filename)
+{
+	string annotation = line_annotation(filename, 0);
+	if (trim(annotation).empty())
+		return string();
+
+	string str = "<credited to line zero> ";
+	str += annotation;
+	return str;
 }
 
 

@@ -1,5 +1,15 @@
 2003-04-06  John Levon  <levon@movementarian.org>
 
+	* libutil++/string_manip.h:
+	* libutil++/string_manip.cpp: remove ws_prefix(). Add
+	format_percent().
+
+	* pp/op_to_source.cpp: make each line be prefixed with
+	the sample counts, instead of on a line above, to preserve
+	line numbering.
+
+2003-04-06  John Levon  <levon@movementarian.org>
+
 	* pp/op_to_source.cpp: some renamings for clarity
 
 2003-04-06  John Levon  <levon@movementarian.org>
