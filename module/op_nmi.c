@@ -402,8 +402,9 @@ cleanup:
 
 static void pmc_remove_sysctls(ctl_table * next)
 {
-	int i = smp_num_cpus;
-	while (i-- > 0) {
+	int i;
+
+	for (i=0; i < op_nr_counters; i++) {
 		kfree(next->child);
 		next++;
 	}

@@ -1,3 +1,8 @@
+2002-02-02  John Levon  <moz@compsoc.man.ac.uk>
+
+	* module/op_nmi.c: fix stupid bug spotted by Bob
+	  Montgomery
+ 
 2002-02-01  Philippe Elie  <ph_e@club-internet.fr>
 
 	* module/compat.h: define REMAP_PAGE_RANGE
