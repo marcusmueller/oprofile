@@ -1,3 +1,9 @@
+2003-10-06  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: work around 2.6 daemon's signal
+	handling race that could cause it to hang during
+	a --shutdown
+
 2003-10-05  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* events/i386/p4/events:

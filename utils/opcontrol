@@ -711,12 +711,25 @@ do_kill_daemon() {
 	do
 		sleep 1 
 
+		# because oprofiled only sets a variable inside the
+		# signal handler itself, it's possible to miss a
+		# signal just before it goes to sleep waiting for
+		# data from the kernel that never arrives. So we
+		# remind it it needs to die - this works because
+		# the signal will bring oprofiled out of the kernel
+		# back into userspace
+		if test $KERNEL_SUPPORT = "yes"; then
+			kill -TERM `pidof oprofiled` 2>/dev/null
+		fi
+
 		COUNT=`expr $COUNT + 1`
 		if [ "$COUNT" -eq 15 ]; then
 			echo "Daemon stuck shutting down; killing !"
 			kill -9 `pidof oprofiled`
 		fi
 	done
+
+	# already removed unless we forced the kill
 	rm -f /var/lib/oprofile/lock
 }
 
