@@ -18,14 +18,17 @@
  o consider if we can get to the new subsection 1 in 2.4.18+ via a kernel patch to
    insert the start/end (if clean, submit to linux-kernel)
  o remaining little cleanups of output format, module unloaded using of postprof etc.
- 
+ o document gcc 2.95 and linenr info problems especially for inline functions
+ o check the documentation of --output-format
+ o it remains probably minor bug in -c 0,1 -sort (same name for option, validation of options ...)
+
 oprof_report:
 
 - demangling
-- folderview of sample files + sessions in the gui itself
-- disassembly. form "+0x8b" for intra-symbol samples 
-- hotspot ... is this op_time ??
-- source 
+- folderview of sample files + sessions in the gui itself (later ?)
+- disassembly. form "+0x8b" for intra-symbol samples (optionnaly)
+- hotspot
+- source (later ?)
  
 Before 1.0
 ----------

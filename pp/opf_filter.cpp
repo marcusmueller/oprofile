@@ -954,7 +954,7 @@ int main(int argc, char const * argv[])
 	get_options(argc, argv, image_name, sample_file, counter);
 
 	if (counter != -1 && sort_by_counter != -1 &&
-	    counter != sort_by_counter) {
+	    counter != (1 << sort_by_counter)) {
 		cerr << "mismatch between --sort-by-counter and samples filename counter suffix.\n";
 		exit(EXIT_FAILURE);
 	}
@@ -980,7 +980,7 @@ int main(int argc, char const * argv[])
 			      no_output_filter ? no_output_filter : "",
 			      assembly, source_with_assembly);
 
-		if (output.treat_input(image_name, sample_file, counter) == false)
+		if (output.treat_input(image_name, sample_file, -1) == false)
 			return EXIT_FAILURE;
 	}
 

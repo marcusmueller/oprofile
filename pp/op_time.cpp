@@ -18,10 +18,12 @@
 
 #include <popt.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <string>
 #include <list>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <fstream>
 #include <algorithm>
@@ -45,16 +47,25 @@ using std::vector;
 using std::ifstream;
 using std::multimap;
 using std::pair;
+using std::setw;
+
+/* TODO: if we have a quick read samples files format we can handle a great
+ * part of complexity here by using samples_files_t to handle straight
+ * op_time. Just create an artificial symbol that cover the whole samples
+ * files with the name of the application this allow to remove image_name
+ * and sorted_map_t class and all related  stuff and to use OutputSymbol to
+ * make the report
+ */
 
 /// image_name - class to store name for a samples file
 struct image_name
 {
-	image_name(const string& samplefile_name, u32 count = 0);
+	image_name(const string& samplefile_name);
 
 	/// total number of samples for this samples file, this is a place
 	/// holder to avoid separate data struct which associate image_name
 	/// with a sample count.
-	u32 count;
+	counter_array_t count;
 	/// complete name of the samples file (without leading dir)
 	string samplefile_name;
 	/// application name which belong this sample file, == name if the
@@ -69,9 +80,26 @@ struct image_name
 
 typedef multimap<string, image_name> map_t;
 typedef pair<map_t::iterator, map_t::iterator> pair_it_t;
-typedef multimap<u32, map_t::const_iterator> sorted_map_t;
 
-static int counter = -1;
+/// comparator for sorted_map_t
+struct sort_by_counter_t {
+	sort_by_counter_t(size_t index_) : index(index_) {}
+
+	bool operator()(const counter_array_t & lhs,
+			const counter_array_t & rhs) const {
+		return lhs[index] < rhs[index];
+	}
+
+	size_t index;
+};
+
+
+typedef multimap<counter_array_t, map_t::const_iterator, sort_by_counter_t>
+  sorted_map_t;
+
+static const char* counter_str;
+static int counter;
+static int sort_by_counter;
 static int showvers;
 static int reverse_sort;
 static int show_shared_libs;
@@ -84,11 +112,10 @@ static const char * recursive_path;
 
 static OutSymbFlag output_format_flags;
 
-// FIXME: remove demangle/show-image-name since they can be obtained with
-// --output_format ?
 static struct poptOption options[] = {
-	{ "use-counter", 'c', POPT_ARG_INT, &counter, 0,
-	  "use counter", "counter nr", },
+	{ "counter", 'c', POPT_ARG_STRING, &counter_str, 0,
+	  "which counter to use", "counter nr,[counter nr]", },
+	{ "sort", 'C', POPT_ARG_INT, &sort_by_counter, 0, "which counter to use for sampels sort", "counter nr", }, 
 	{ "show-shared-libs", 'k', POPT_ARG_NONE, &show_shared_libs, 0,
 	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
 	{ "demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
@@ -171,11 +198,10 @@ static void get_options(int argc, char const * argv[])
 	if (file)
 		base_dir = file;
 
-	if (counter == -1)
-		counter = 0;
+	if (!counter_str)
+		counter_str = "0";
 
-	if (show_image_name)
-		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_image_name);
+	counter = counter_mask(counter_str);
 
 	if (output_format == 0) {
 		output_format = "vspni";
@@ -193,8 +219,11 @@ static void get_options(int argc, char const * argv[])
 			exit(EXIT_FAILURE);
 		}
 
-		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | fl);
+		output_format_flags = fl;
 	}
+
+	if (show_image_name)
+		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_image_name);
 
 	if (path) {
 		add_to_alternate_filename(path, false);
@@ -204,16 +233,14 @@ static void get_options(int argc, char const * argv[])
 		add_to_alternate_filename(recursive_path, true);
 	}
 
-
 	poptFreeContext(optcon);
 }
 
 /**
  * image_name - ctor from a sample file name
  */
-image_name::image_name(const string& samplefile_name, u32 count_)
+image_name::image_name(const string& samplefile_name)
 	:
-	count(count_),
 	samplefile_name(samplefile_name)
 {
 	app_name = extract_app_name(samplefile_name, lib_name);
@@ -265,34 +292,72 @@ static void sort_file_list_by_name(map_t & result,
 		// the lazilly samples creation it is perfectly correct for one
 		// samples file belonging to counter 0 exist and not exist for
 		// counter 1, so we must filter them.
-		std::ostringstream s;
-		s << string(base_dir) << "/" << *it << '#' << counter;
-		if (file_exist(s.str()) == false)
-			continue;
+		int i;
+		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
+			if ((counter & (1 << i)) != 0) {
+				std::ostringstream s;
+				s << string(base_dir) << "/" << *it 
+				  << '#' << i;
+				if (file_exist(s.str()) == true) {
+					break;
+				}
+			}
+		}
 
-		image_name image(*it);
-
-		result.insert(map_t::value_type(image.app_name, image));
+		if (i < OP_MAX_COUNTERS) {
+			image_name image(*it);
+			map_t::value_type value(image.app_name, image);
+			result.insert(value);
+		}
 	}
 }
 
 /**
  * out_filename - display a filename and it associated ratio of samples
  */
-static void out_filename(const string& app_name, size_t app_count,
-			 u32 count, double total_count)
+static void out_filename(const string& app_name,
+			 const counter_array_t & app_count,
+			 const counter_array_t & count, 
+			 double total_count[OP_MAX_COUNTERS])
 {
-	cout << demangle_filename(app_name) << " " << count  << " ";
+	for (size_t i = 0 ; i < OP_MAX_COUNTERS; ++i) {
+		if ((counter & (1 << i)) != 0) {
+			// feel to rewrite with cout and its formated output
+#if 1
+			printf("%-9d ", count[i]);
+			double ratio = total_count[i] >= 1.0 
+				? count[i] / total_count[i] : 0.0;
 
-	if (total_count > 1) {
-		cout << (count / total_count) * 100 << "%";
-	} else {
-		cout << "0%";
+			if (ratio < 10.00 / 100.0)
+				printf(" ");
+			printf("%2.4f", ratio * 100);
+
+			ratio = app_count[i] >= 1.0
+				? count[i] / app_count[i] : 0.0;
+
+			if (ratio < 10.00 / 100.0)
+				printf(" ");
+			printf("%2.4f", ratio * 100);
+#else
+			cout << count[i] << " ";
+			
+			if (total_count[i] > 1) {
+				double ratio = count[i] / total_count[i];
+				cout << ratio * 100 << "%";
+			} else {
+				cout << "0%";
+			}
+
+			if (app_count[i] != 0) {
+				double ratio = count[i] / double(app_count[i]);
+				cout << " (" << ratio * 100 << "%)";
+			}
+#endif
+			cout << " ";
+		}
 	}
 
-	if (app_count != size_t(-1) && (app_count!=0))
-		cout << " (" << (count / double(app_count)) * 100 << "%)";
-
+	cout << demangle_filename(app_name);
 	cout << endl;
 }
 
@@ -307,7 +372,8 @@ static void out_filename(const string& app_name, size_t app_count,
  */
 template <class Iterator>
 static void output_image_samples_count(Iterator first, Iterator last,
-				       u32 app_count, double total_count)
+				       const counter_array_t & app_count,
+				       double total_count[OP_MAX_COUNTERS])
 {
 	for (Iterator it = first ; it != last ; ++it) {
 		string name = it->second->second.lib_name;
@@ -346,7 +412,7 @@ static void build_sorted_map_by_count(sorted_map_t & sorted_map, pair_it_t p_it)
  */
 static void output_files_count(map_t& files)
 {
-	double total_count = 0;
+	double total_count[OP_MAX_COUNTERS] = { 0.0 };
 
 	/* 1st pass: accumulate for each image_name the samples count and
 	 * update the total_count of samples */
@@ -358,23 +424,35 @@ static void output_files_count(map_t& files)
 		// the range [p_it.first, p_it.second[ belongs to application
 		// it.first->first
 		for ( ; p_it.first != p_it.second ; ++p_it.first) {
-			std::ostringstream s;
-			s << string(base_dir) << "/"
-			  << p_it.first->second.samplefile_name
-			  << "#" << counter;
+			for (int i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
+				std::ostringstream s;
+				s << string(base_dir) << "/"
+				  << p_it.first->second.samplefile_name
+				  << "#" << i;
+				if (file_exist(s.str()) == false)
+					continue;
 
-			samples_file_t samples(s.str());
+				samples_file_t samples(s.str());
 
-			u32 count = samples.count(0, samples.nr_samples);
+				u32 count =
+					samples.count(0, samples.nr_samples);
 
-			p_it.first->second.count = count;
-			total_count += count;
+				p_it.first->second.count[i] = count;
+				total_count[i] += count;
+			}
 		}
 
 		it = p_it.second;
 	}
 
-	if (total_count == 0.0) {
+	bool empty = true;
+	for (int i = 0 ; i < OP_MAX_COUNTERS; ++i) {
+		if (total_count[i] != 0.0) {
+			empty = false;
+		}
+	}
+
+	if (empty) {
 		cerr << "no samples files found\n";
 		return;	// Would exit(EXIT_FAILURE); perhaps
 	}
@@ -383,10 +461,11 @@ static void output_files_count(map_t& files)
 	 * associate with an iterator to a image name e.g. insert one
 	 * item for each application */
 
-	sorted_map_t sorted_map;
+	sort_by_counter_t compare(sort_by_counter);
+	sorted_map_t sorted_map(compare);
 	for (it = files.begin(); it != files.end() ; ) {
 		pair_it_t p_it = files.equal_range(it->first);
-		u32 count = 0;
+		counter_array_t count;
 		for ( ; p_it.first != p_it.second ; ++p_it.first) {
 			count += p_it.first->second.count;
 		}
@@ -408,13 +487,15 @@ static void output_files_count(map_t& files)
 		sorted_map_t::reverse_iterator s_it = sorted_map.rbegin();
 		for ( ; s_it != sorted_map.rend(); ++s_it) {
 			map_t::const_iterator it = s_it->second;
+			counter_array_t temp;
 
-			out_filename(it->first, size_t(-1), s_it->first,
+			out_filename(it->first, temp, s_it->first, 
 				     total_count);
 
 			if (show_shared_libs) {
 				pair_it_t p_it = files.equal_range(it->first);
-				sorted_map_t temp_map;
+				sort_by_counter_t compare(sort_by_counter);
+				sorted_map_t temp_map(compare);
 
 				build_sorted_map_by_count(temp_map, p_it);
 
@@ -429,12 +510,14 @@ static void output_files_count(map_t& files)
 		for ( ; s_it != sorted_map.end() ; ++s_it) {
 			map_t::const_iterator it = s_it->second;
 
-			out_filename(it->first, size_t(-1), s_it->first,
+			counter_array_t temp;
+			out_filename(it->first, temp, s_it->first,
 				     total_count);
 
 			if (show_shared_libs) {
 				pair_it_t p_it = files.equal_range(it->first);
-				sorted_map_t temp_map;
+				sort_by_counter_t compare(sort_by_counter);
+				sorted_map_t temp_map(compare);
 
 				build_sorted_map_by_count(temp_map, p_it);
 
@@ -540,7 +623,7 @@ static void output_symbols_count(map_t& files, int counter)
 	// select the symbols
 	vector<const symbol_entry *> symbols;
 
-	samples.select_symbols(symbols, counter, 0.0, false);
+	samples.select_symbols(symbols, sort_by_counter, 0.0, false);
 
 	OutputSymbol out(samples, counter);
 
@@ -573,7 +656,7 @@ int main(int argc, char const * argv[])
 	 * files rather getting the whole directory. Code in op_merge can
 	 * be probably re-used */
 	list<string> file_list;
-	get_sample_file_list(file_list, base_dir, "*");
+	get_sample_file_list(file_list, base_dir, "*#*");
 
 	map_t file_map;
 	sort_file_list_by_name(file_map, file_list);

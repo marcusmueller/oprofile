@@ -147,6 +147,8 @@ void OutputSymbol::SetFlag(OutSymbFlag flag)
 	flags = static_cast<OutSymbFlag>(flags | flag);
 }
 
+// TODO: (and also in OutputHeader(). Add the blank when outputting
+// the next field not the current to avoid filling with blank the eol.
 void OutputSymbol::OutputField(ostream & out, const string & name,
 			       const sample_entry & sample,
 			       OutSymbFlag fl, int ctr)
@@ -178,8 +180,6 @@ void OutputSymbol::OutputHeaderField(std::ostream & out, OutSymbFlag fl)
 	}
 }
 
-// TODO: (and also in OutputHeader(). Add the blank when outputting
-// the next field not the current to avoid filling with blank the eol.
 void OutputSymbol::Output(ostream & out, const symbol_entry * symb)
 {
 	DoOutput(out, symb->name, symb->sample, flags);
@@ -237,7 +237,7 @@ void OutputSymbol::DoOutput(std::ostream & out, const string & name,
 
 	// now the repeated field.
 	for (int ctr = 0 ; ctr < int(samples_files.get_nr_counters()); ++ctr) {
-		if (ctr == counter || counter == -1) {
+		if ((counter & (1 << ctr)) != 0) {
 			size_t repeated_flag = (flag & osf_repeat_mask);
 			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {
 				if ((repeated_flag & (1 << i)) != 0) {
@@ -284,7 +284,7 @@ void OutputSymbol::OutputHeader(ostream & out)
 
 	// now the repeated field.
 	for (int ctr = 0 ; ctr < int(samples_files.get_nr_counters()); ++ctr) {
-		if (ctr == counter || counter == -1) {
+		if ((counter & (1 << ctr)) != 0) {
 			size_t repeated_flag = (flags & osf_repeat_mask);
 			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {
 				if ((repeated_flag & (1 << i)) != 0) {

@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.36 2002/03/13 21:26:42 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.37 2002/03/14 02:55:29 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -28,6 +28,7 @@
 #include "../util/string_manip.h"
  
 using std::string;
+using std::vector;
 
 int verbose;
 char const *samplefile;
@@ -36,7 +37,7 @@ const char *imagefile;
 int demangle;
 int list_all_symbols_details;
 const char * exclude_symbols_str;
-static std::vector<std::string> exclude_symbols;
+static vector<string> exclude_symbols;
 
 /**
  * verbprintf
@@ -207,28 +208,25 @@ void opp_treat_options(const char* file, poptContext optcon,
 		sscanf(file_ctr_str + 1, "%d", &temp_counter);
 	}
 
-	if (counter != temp_counter) {
-		/* a --counter=x have priority on the # suffixe of filename */
-		if (counter != -1 && temp_counter != -1)
+	if (temp_counter != -1 && counter != -1) {
+		if ((counter & (1 << temp_counter)) == 0)
 			quit_error(optcon, "oprofpp: conflict between given counter and counter of samples file.\n");
 	}
 
-	if (counter == -1)
-		counter = temp_counter;
-
 	if (counter == -1) {
-		/* list_all_symbols_details always output all counter */
-		if (!list_all_symbols_details)
-			counter = 0;
+		if (temp_counter != -1)
+			counter = 1 << temp_counter;
+		else
+			counter = 1 << 0;	// use counter 0
 	}
 
 	/* chop suffixes */
 	if (file_ctr_str)
 		file_ctr_str[0] = '\0';
 
-	/* check we have a valid ctr */
-	if (counter != -1 && (counter < 0 || counter >= OP_MAX_COUNTERS)) {
-		fprintf(stderr, "oprofpp: invalid counter number %u\n", counter);
+	if (counter + 1 >= 1 << OP_MAX_COUNTERS) {
+		fprintf(stderr, "oprofpp: invalid counter number %u\n",
+			counter);
 		exit(EXIT_FAILURE);
 	}
 
@@ -278,6 +276,27 @@ std::string demangle_symbol(const char* name)
 	}
 
 	return name;
+}
+
+/**
+ * counter_mask -  given a --counter=0,1,..., option parameter return a mask
+ * representing each counter. Bit i is oon if counter i was specified.
+ * we allow up to sizeof(uint) * CHAR_BIT different counter
+ */
+uint counter_mask(const std::string & str)
+{
+	vector<string> result;
+	separate_token(result, str, ',');
+
+	uint mask = 0;
+	for (size_t i = 0 ; i < result.size(); ++i) {
+		istringstream stream(result[i]);
+		int counter;
+		stream >> counter;
+		mask |= 1 << counter;
+	}
+
+	return mask;
 }
 
 /**
@@ -821,11 +840,11 @@ opp_samples_files::opp_samples_files(const std::string & sample_file,
 	}
 
 	for (i = 0; i < OP_MAX_COUNTERS ; ++i) {
-		if (counter == -1 || counter == (int)i) {
-			/* if counter == i, this means than we open only one
-			 * samples file so don't allow opening failure to get
-			 * a more precise error message */
-			open_samples_file(i, counter != (int)i);
+		if ((counter &  (1 << i)) != 0) {
+			/* if only the i th bit is set in counter spec we do
+			 * not allow opening failure to get a more precise
+			 * error message */
+			open_samples_file(i, (counter & ~(1 << i)) != 0);
 		}
 	}
 

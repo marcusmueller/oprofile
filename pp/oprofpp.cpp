@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.30 2002/03/07 19:18:21 movement Exp $ */
+/* $Id: oprofpp.cpp,v 1.31 2002/03/14 02:55:29 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -30,8 +30,9 @@ using std::vector;
 using std::cout;
 using std::cerr;
  
-static int ctr = -1;
+static char * ctr_str;
 static int showvers;
+static int sort_by_counter;
 static char *gproffile;
 static char *symbol;
 static int list_symbols;
@@ -48,7 +49,8 @@ static poptOption options[] = {
 	{ "dump-gprof-file", 'g', POPT_ARG_STRING, &gproffile, 0, "dump gprof format file", "file", },
 	{ "list-symbol", 's', POPT_ARG_STRING, &symbol, 0, "give detailed samples for a symbol", "symbol", },
 	{ "demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
-	{ "counter", 'c', POPT_ARG_INT, &ctr, 0, "which counter to use", "counter number", }, 
+	{ "counter", 'c', POPT_ARG_STRING, &ctr_str, 0, "which counter to display", "counter number[,counter nr]", }, 
+	{ "sort", 'C', POPT_ARG_INT, &sort_by_counter, 0, "which counter to use for sampels sort", "counter nr", }, 
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
 	{ "base-dir", 'b', POPT_ARG_STRING, &basedir, 0, "base directory of profile daemon", NULL, }, 
@@ -128,7 +130,11 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | fl);
 	}
 
-	counter = ctr;
+	if (!ctr_str)
+		ctr_str = "0";
+
+	counter = counter_mask(ctr_str);
+
 	opp_treat_options(file, optcon, image_file, sample_file, counter);
 
 	poptFreeContext(optcon);
@@ -176,7 +182,7 @@ void opp_bfd::output_linenr(uint sym_idx, uint offset) const
  * Lists all the symbols in decreasing sample count
  * order, to standard out.
  */
-void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
+void opp_samples_files::do_list_symbols(opp_bfd & abfd, int sort_by_ctr) const
 {
 	samples_files_t samples;
 
@@ -185,11 +191,12 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 
 	vector<const symbol_entry *> symbols;
 
-	samples.select_symbols(symbols, counter, 0.0, false);
+	samples.select_symbols(symbols, sort_by_ctr, 0.0, false);
 
 	OutputSymbol out(samples, counter);
 
 	out.SetFlag(output_format_flags);
+	out.SetFlag(osf_show_all_counters);
 
 	out.Output(cout, symbols, true);
 }
@@ -214,7 +221,7 @@ void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 	samples_files_t samples;
 
 	output_format_flags = 
-	  static_cast<OutSymbFlag>(output_format_flags | osf_details);
+	  static_cast<OutSymbFlag>(output_format_flags | osf_details | osf_show_all_counters);
 
 	samples.add(*this, abfd, true, output_format_flags, false, counter);
 
@@ -252,7 +259,7 @@ struct gmon_hdr {
  *
  * this use the grpof format <= gcc 3.0
  */
-void opp_samples_files::do_dump_gprof(opp_bfd & abfd) const
+void opp_samples_files::do_dump_gprof(opp_bfd & abfd, int sort_by_ctr) const
 {
 	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},}; 
 	FILE *fp; 
@@ -310,7 +317,7 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd) const
 			pos = (abfd.sym_offset(i, j) + abfd.syms[i]->value + abfd.syms[i]->section->vma - low_pc) / MULTIPLIER; 
 
 			/* opp_get_options have set ctr to one value != -1 */
-			count = samples_count(counter, j);
+			count = samples_count(sort_by_ctr, j);
 
 			if (pos >= histsize) {
 				fprintf(stderr, "Bogus histogram bin %u, larger than %u !", pos, histsize);
@@ -335,13 +342,14 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd) const
 }
 
 /**
- * do_list_all_symbols_details - list all samples for all symbols.
+ * do_list_symbols_details - list all samples for all symbols.
  * @abfd: the bfd object from where come the samples
  *
  * Lists all the samples for all the symbols, from the image specified by
  * @abfd, in increasing order of vma, to standard out.
  */
-void opp_samples_files::do_list_all_symbols_details(opp_bfd & abfd) const
+void opp_samples_files::do_list_symbols_details(opp_bfd & abfd,
+						int sort_by_ctr) const
 {
 	samples_files_t samples;
 
@@ -353,9 +361,9 @@ void opp_samples_files::do_list_all_symbols_details(opp_bfd & abfd) const
 
 	vector<const symbol_entry *> symbols;
 
-	samples.select_symbols(symbols, first_file, 0.0, false, true);
+	samples.select_symbols(symbols, sort_by_ctr, 0.0, false, true);
 
-	OutputSymbol out(samples, -1);
+	OutputSymbol out(samples, counter);
 
 	out.SetFlag(output_format_flags);
 
@@ -407,7 +415,7 @@ int main(int argc, char const *argv[])
 {
 	string image_file;
 	string sample_file;
-	int counter = -1;
+	int counter = 0;
 	opp_get_options(argc, argv, image_file, sample_file, counter);
 
 	opp_samples_files samples_files(sample_file, counter);
@@ -417,13 +425,13 @@ int main(int argc, char const *argv[])
 	samples_files.output_header();
 
 	if (list_symbols)
-		samples_files.do_list_symbols(abfd);
+		samples_files.do_list_symbols(abfd, sort_by_counter);
 	else if (symbol)
 		samples_files.do_list_symbol(abfd);
 	else if (gproffile)
-		samples_files.do_dump_gprof(abfd);
+		samples_files.do_dump_gprof(abfd, sort_by_counter);
 	else if (list_all_symbols_details)
-		samples_files.do_list_all_symbols_details(abfd);
+		samples_files.do_list_symbols_details(abfd, sort_by_counter);
 
 	return 0;
 }

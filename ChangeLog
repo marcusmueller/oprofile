@@ -1,3 +1,16 @@
+2002-03-14  Philippe Elie  <ph_e@club-internet.fr>
+
+	* TODO: update
+
+	* pp/op_time.cpp:
+	* pp/opf_filter.cpp:
+	* pp/opp_symbol.cpp:
+	* pp/oprofpp_.cpp:
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp: handle -c0,1 and --sort #nr_ctr
+	  for all post-profile tools allowing a more precise way
+	  to specify on which counters tools must work
+
 2002-03-13  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/oprofpp_util.cpp: get_linenr() better handling

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.41 2002/03/03 01:18:19 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.42 2002/03/14 02:55:29 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -68,6 +68,10 @@ void quit_error(poptContext optcon, char const *err);
 std::string demangle_filename(const std::string & samples_filename);
 bool is_excluded_symbol(const std::string & symbol);
 void check_headers(const opd_header * f1, const opd_header * f2);
+
+// given a --counter=0,1,..., option parameter return a mask representing
+// each counter. Bit i is oon if counter i was specified.
+uint counter_mask(const std::string &);
 
 // defined in oprofpp_util.cpp
 extern int verbose;
@@ -166,11 +170,10 @@ struct opp_samples_files {
 	opp_samples_files(const std::string & sample_file, int counter);
 	~opp_samples_files();
 
-	void do_list_all_symbols_details(opp_bfd & abfd) const;
-	void do_list_symbol_details(opp_bfd & abfd, uint sym_idx) const;
-	void do_dump_gprof(opp_bfd & abfd) const;
-	void do_list_symbols(opp_bfd & abfd) const;
-	void do_list_symbol(opp_bfd & abfd) const;
+	void do_list_symbols_details(opp_bfd & abfd, int sort_by_ctr) const;
+	void do_dump_gprof(opp_bfd & abfd, int sort_by_ctr) const;
+	void do_list_symbols(opp_bfd & abfd, int sort_by_ctr) const;
+	void do_list_symbol(opp_bfd & abfd/*, int sort_by_ctr*/) const;
 
 	/**
 	 * is_open - test if a samples file is open
