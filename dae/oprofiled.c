@@ -72,7 +72,6 @@ static u32 ctr_enabled[OP_MAX_COUNTERS];
 static char const * mount = OP_MOUNT;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
-static pid_t mypid;
 static pid_t pid_filter;
 static pid_t pgrp_filter;
 static sigset_t maskset;
@@ -345,9 +344,8 @@ static void opd_fork(void)
  * opd_go_daemon - become daemon process
  *
  * Become an un-attached daemon in the standard
- * way (fork(),chdir(),setsid(),fork()). Sets
- * the global variable mypid to the pid of the second
- * child. Parents perform _exit().
+ * way (fork(),chdir(),setsid(),fork()).
+ * Parents perform _exit().
  *
  * Any failure is fatal.
  */
@@ -367,7 +365,6 @@ static void opd_go_daemon(void)
 	}
 
 	opd_fork();
-	mypid = getpid();
 }
 
 static void opd_do_samples(struct op_buffer_head const * buf);
