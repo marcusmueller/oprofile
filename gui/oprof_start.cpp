@@ -247,8 +247,10 @@ void oprof_start::read_set_events()
 	ifstream in(name.c_str());
 
 	if (!has_unique_event(cpu_type)) {
-		for (size_t ctr = 0; ctr < op_nr_counters; ++ctr) {
-			current_events[ctr] = &locate_event("No event");
+		current_events_t::iterator it = current_events.begin();
+		current_events_t::iterator end = current_events.end();
+		for (; it != end; ++it) {
+			*it = &locate_event("No event");
 		}
 	}
 
@@ -300,10 +302,13 @@ void oprof_start::read_set_events()
 
 	/* use default event if none set */
 
+	op_event_descr const * noevent = &locate_event("No event");
 	current_events_t::const_iterator cit = current_events.begin();
 	current_events_t::const_iterator end = current_events.end();
+	cerr << "noev" << noevent << endl;
 	for (; cit != end; ++cit) {
-		if (*cit)
+		cerr << "*cit" << *cit << endl;
+		if (*cit != noevent)
 			return;
 	}
 

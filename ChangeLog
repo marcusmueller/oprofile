@@ -1,3 +1,8 @@
+2003-07-21  John Levon  <levon@movementarian.org>
+
+	* gui/oprof_start.cpp: fix default event choosing when
+	daemonrc exists
+
 2003-07-21  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* gui/oprof_start.cpp: thinko in has_unique_event(), don't warn for
