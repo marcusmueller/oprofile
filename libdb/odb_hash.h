@@ -33,7 +33,7 @@ typedef odb_index_t odb_hash_mask_t;
  * want to read the comment in odb_add_hash_node() if you tune this define) */
 #define BUCKET_FACTOR 1
 
-/** a node */
+/** a db hash node */
 typedef struct {
 	odb_key_t key;			/**< eip */
 	odb_value_t value;		/**< samples count */

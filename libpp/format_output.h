@@ -30,6 +30,7 @@ namespace format_output {
 /// class to output in a columned format symbols and associated samples
 class formatter {
 public:
+	/// build a ready to use formatter
 	formatter(profile_container const & profile);
 
 	/// add a given column

@@ -31,10 +31,12 @@ public:
 	/// add all filenames found in the given paths, recursively
 	void populate(std::vector<std::string> const & paths);	
 
+	/// base class for matcher functors object
 	struct matcher {
 		std::string const & value;
 	public:
 		explicit matcher(std::string const & v) : value(v) {}
+		/// default functor allowing trivial match
 		virtual bool operator()(std::string const & str) const {
 			return str == value;
 		}

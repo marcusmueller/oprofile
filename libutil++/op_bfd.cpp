@@ -275,7 +275,7 @@ u32 op_bfd::sym_offset(symbol_index_t sym_index, u32 num) const
 }
 
 
-bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
+bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 			string & filename, unsigned int & linenr) const
 {
 	linenr = 0;

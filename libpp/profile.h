@@ -24,7 +24,7 @@
 class opd_header;
 
 /**
- * Class containing a single sample file contents,
+ * Class containing a single sample file contents.
  * i.e. set of count values for VMA offsets for
  * a particular binary.
  */

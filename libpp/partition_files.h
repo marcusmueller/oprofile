@@ -56,7 +56,7 @@ std::vector<unmergeable_profile> merge_profile(std::list<std::string> const & fi
 std::ostream & operator<<(std::ostream & out, unmergeable_profile const & lhs);
 
 
-/// FIXME: doc
+/// Partition a list of sample filename.
 class partition_files {
 
 public:

@@ -1,5 +1,18 @@
 2003-05-31  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* gui/oprof_start_util.h:
+	* libdb/db_stat.c:
+	* libdb/odb_hash.h:
+	* libpp/format_output.h:
+	* libpp/locate_image.h:
+	* libpp/name_storage.h:
+	* libpp/partition_files.h:
+	* libpp/profile.h:
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: improve doxygen comment
+
+2003-05-31  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* configure.in: use AC_DEFINE_UNQUOTED() to define version string
 	  in config.h not in version-1.h
 	* Makefile.am: distclean-local: is no longer used

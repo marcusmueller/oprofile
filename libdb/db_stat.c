@@ -13,11 +13,12 @@
 
 #include "odb_hash.h"
 
+/// hold various statistics data for a db hash file
 struct odb_hash_stat_t {
-	odb_node_nr_t node_nr;
-	odb_node_nr_t used_node_nr;
-	odb_value_t   total_count;
-	odb_index_t   hash_table_size;
+	odb_node_nr_t node_nr;			/**< allocated node number */
+	odb_node_nr_t used_node_nr;		/**< in use node number */
+	odb_value_t   total_count;		/**< cumulated samples count */
+	odb_index_t   hash_table_size;		/**< hash table entry number */
 	odb_node_nr_t max_list_length;		/**< worst case   */
 	double       average_list_length;	/**< average case */
 	/* do we need variance ? */

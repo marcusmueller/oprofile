@@ -103,8 +103,8 @@ public:
 	 * function can retrieve the filename and return true but fail to
 	 * retrieve the linenr and so can return zero in linenr
 	 */
-	bool get_linenr(symbol_index_t sym_idx, uint offset,
-			std::string & filename, uint & linenr) const;
+	bool get_linenr(symbol_index_t sym_idx, unsigned int offset,
+			std::string & filename, unsigned int & linenr) const;
 
 	/**
 	 * @param sym_idx symbol index

@@ -64,12 +64,17 @@ protected:
 };
 
 
+/// store an image name identifier
 struct image_name_id {
+	/// a default constructed image_name_id holding an invalid uid
 	image_name_id() : id(0) {}
-	size_t id;
+	size_t id;	///< unique identifier associated with an image name
 };
 
 
+/**
+ * class storing a set of shared image name
+ */
 class image_name_storage : public filename_storage {
 public:
 	/// allocate or re-use an ID for this name
@@ -82,12 +87,17 @@ public:
 };
 
 
+/// store a debug name identifier (a source filename)
 struct debug_name_id {
+	/// a default constructed debug_name_id holding an invalid uid
 	debug_name_id() : id(0) {}
-	size_t id;
+	size_t id;	///< unique identifier associated with a filename
 };
 
 
+/**
+ * class storing a set of shared debug name (source filename)
+ */
 class debug_name_storage : public filename_storage {
 public:
 	/// allocate or re-use an ID for this name
@@ -100,12 +110,17 @@ public:
 };
 
 
+/// store a symbol name identifier
 struct symbol_name_id {
+	/// a default constructed symbol_name_id holding an invalid uid
 	symbol_name_id() : id(0) {}
-	size_t id;
+	size_t id;	///< unique identifier associated with a symbol name
 };
 
 
+/**
+ * class storing a set of shared symbol name
+ */
 class symbol_name_storage : public name_storage {
 public:
 	/// allocate or re-use an ID for this name
@@ -120,7 +135,7 @@ public:
 /// for images
 extern image_name_storage image_names;
 
-/// for debug filenames
+/// for debug filenames i.e. source filename
 extern debug_name_storage debug_names;
 
 /// for symbols
