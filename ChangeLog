@@ -1,5 +1,9 @@
 2002-06-07  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/opd_kernel.c: remove some duplicate code
+ 
+2002-06-07  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/opp_symbol.cpp: kill last of the accursed char
 	  arrays
 

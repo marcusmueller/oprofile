@@ -51,7 +51,7 @@ void * xrealloc(void *, size_t);
 void * xcalloc(size_t, size_t) OP_ATTRIB_MALLOC;
 
 /* Copy a string into a memory buffer without fail.  */
-char *xstrdup(char const *) OP_ATTRIB_MALLOC;
+char * xstrdup(char const *) OP_ATTRIB_MALLOC;
 #endif	/* !HAVE_LIBIBERTY_H */
 
 #ifdef __cplusplus

@@ -124,6 +124,27 @@ void opd_clear_module_info(void)
 }
 
 /**
+ * new_module - initialise a module description
+ * @param name module name
+ * @param start start address
+ * @param end end address
+ */
+static struct opd_module * new_module(char * name,
+	unsigned long start, unsigned long end)
+{ 
+	opd_modules[nr_modules].name = name;
+	opd_modules[nr_modules].image = NULL;
+	opd_modules[nr_modules].start = start;
+	opd_modules[nr_modules].end = end;
+	nr_modules++;
+	if (nr_modules == OPD_MAX_MODULES) {
+		fprintf(stderr, "Exceeded %u kernel modules !\n", OPD_MAX_MODULES);
+		exit(EXIT_FAILURE);
+	}
+	return &opd_modules[nr_modules-1];
+}
+	
+/**
  * opd_get_module - get module structure
  * @param name  name of module image
  *
@@ -147,17 +168,7 @@ static struct opd_module * opd_get_module(char * name)
 		}
 	}
 
-	opd_modules[nr_modules].name = name;
-	opd_modules[nr_modules].image = NULL;
-	opd_modules[nr_modules].start = 0;
-	opd_modules[nr_modules].end = 0;
-	nr_modules++;
-	if (nr_modules == OPD_MAX_MODULES) {
-		fprintf(stderr, "Exceeded %u kernel modules !\n", OPD_MAX_MODULES);
-		exit(EXIT_FAILURE);
-	}
-
-	return &opd_modules[nr_modules-1];
+	return new_module(name, 0, 0);
 }
 
 /**
@@ -278,24 +289,6 @@ failure:
 }
 
 /**
- * opd_enter_invalid_module - create a negative module entry
- * @param name  name of module
- * @param info  module info
- */
-static void opd_enter_invalid_module(char const * name, struct module_info * info)
-{
-	opd_modules[nr_modules].name = xstrdup(name);
-	opd_modules[nr_modules].image = NULL;
-	opd_modules[nr_modules].start = info->addr;
-	opd_modules[nr_modules].end = info->addr + info->size;
-	nr_modules++;
-	if (nr_modules == OPD_MAX_MODULES) {
-		fprintf(stderr, "Exceeded %u kernel modules !\n", OPD_MAX_MODULES);
-		exit(EXIT_FAILURE);
-	}
-}
-
-/**
  * opd_drop_module_sample - drop a module sample efficiently
  * @param eip  eip of sample
  */
@@ -326,7 +319,7 @@ static void opd_drop_module_sample(u32 eip)
 		if (!query_module(name, QM_INFO, &info, sizeof(info), &ret)) {
 			if (eip >= info.addr && eip < info.addr + info.size) {
 				verbprintf("Sample from unprofilable module %s\n", name);
-				opd_enter_invalid_module(name, &info);
+				new_module(xstrdup(name), info.addr, info.addr + info.size);
 				goto out;
 			}
 		}
