@@ -20,6 +20,25 @@
 ##    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ##    Boston, MA 02111-1307, USA.       
 
+## ------------------------------------------------------------------------
+## Find a file (or one of more files in a list of dirs)
+## ------------------------------------------------------------------------
+##
+AC_DEFUN(AC_FIND_FILE,
+[
+$3=NO
+for i in $2;
+do
+  for j in $1;
+  do
+    if test -r "$i/$j"; then
+      $3=$i
+      break 2
+    fi
+  done
+done
+])
+ 
 AC_DEFUN(QT2_MOC_ERROR_MESSAGE,
 [
     AC_MSG_ERROR([No Qt meta object compiler (moc) found!
