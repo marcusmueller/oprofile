@@ -1,3 +1,14 @@
+2001-06-21  John Levon  <moz@compsoc.man.ac.uk>
+
+	* oprofile.c: remove stale comments. fix theoretical
+	  memory leaks when setting up the sysctls fails, small tidy
+ 
+2001-06-19  John Levon  <moz@compsoc.man.ac.uk>
+
+	* README: 
+	* doc/oprofile.sgml:
+	* doc/html/: s/sourceforge/sf/
+ 
 2001-06-16  Philippe Elie  <ph_e@club-internet.fr>
 
 	* op_events.c: op_check_events() fix two bad use of 

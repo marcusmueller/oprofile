@@ -91,28 +91,28 @@ necks in real-world systems.
 		<term>Web page</term>
 		<listitem><para>
 			There is a web page (which you may be reading now) at 
-			<ulink url="http://oprofile.sourceforge.net/">http://oprofile.sourceforge.net/</ulink>.
+			<ulink url="http://oprofile.sf.net/">http://oprofile.sf.net/</ulink>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Download</term>
 		<listitem><para>
 			You can download a source tarball or get anonymous CVS at the sourceforge page,
-			<ulink url="http://sourceforge.net/projects/oprofile/">http://sourceforge.net/projects/oprofile/</ulink>.
+			<ulink url="http://sf.net/projects/oprofile/">http://sf.net/projects/oprofile/</ulink>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Mailing list</term>
 		<listitem><para>
 			There is a very low-traffic OProfile-specific mailing list, details at
-			<ulink url="http://sourceforge.net/mail/?group_id=16191">http://sourceforge.net/mail/?group_id=16191</ulink>.
+			<ulink url="http://sf.net/mail/?group_id=16191">http://sf.net/mail/?group_id=16191</ulink>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Bug tracker</term>
 		<listitem><para>
 			There is a bug tracker for OProfile at the sourceforge page,
-			<ulink url="http://sourceforge.net/tracker/?group_id=16191&amp;atid=116191">http://sourceforge.net/tracker/?group_id=16191&amp;atid=116191</ulink>.
+			<ulink url="http://sf.net/tracker/?group_id=16191&amp;atid=116191">http://sf.net/tracker/?group_id=16191&amp;atid=116191</ulink>.
 		</para></listitem>
 	</varlistentry>
 </variablelist>

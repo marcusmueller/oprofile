@@ -3,7 +3,7 @@ low-overhead system-wide profiler.
 
 You can find some documentation in the doc/oprofile/ directory.
 
-Please visit the oprofile website at : http://oprofile.sourceforge.net/ 
+Please visit the oprofile website at : http://oprofile.sf.net/ 
 
 oprofile was written by John Levon <moz@compsoc.man.ac.uk>.
 

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.55 2001/04/06 14:16:46 movement Exp $ */
+/* $Id: oprofile.c,v 1.56 2001/06/21 22:45:53 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -14,11 +14,6 @@
  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
-/* FIXME: data->next rotation ? */
-/* FIXME: with generation numbers we can place mappings in
-   every buffer. we still need one IPI, but we shouldn't need
-   to wait for it (?) and it avoids mapping-in-other-CPU problem */
 
 #include "oprofile.h"
 
@@ -1036,15 +1031,12 @@ static struct ctl_table_header *sysctl_header;
 int __init init_sysctl(void)
 {
 	ctl_table *next = &oprof_table[nr_oprof_static];
-	ctl_table *cpu_table;
-	ctl_table *curr;
-	int i;
-
-	/* FIXME: leaks if kmalloc() fails */
+	ctl_table *cpu_table[smp_num_cpus];
+	ctl_table *tab;
+	ctl_table *tab2;
+	int i,j;
 
 	/* FIXME: no proper numbers, or verifiers (where possible) */
-
-	/* FIXME: events should be a string for convenience */
 
 	/* iterate over each CPU */
 	for (i=0; i < smp_num_cpus; i++) {
@@ -1052,41 +1044,53 @@ int __init init_sysctl(void)
 		next->procname = names[i];
 		next->mode = 0700;
 
-		if (!(cpu_table = kmalloc(sizeof(ctl_table)*3, GFP_KERNEL)))
-			return -EFAULT;
-		memset(cpu_table, 0, sizeof(ctl_table)*3);
-		cpu_table[0] = ((ctl_table){ 1, "0", NULL, 0, 0700, NULL, NULL, NULL, });
-		cpu_table[1] = ((ctl_table){ 1, "1", NULL, 0, 0700, NULL, NULL, NULL, });
-		next->child = cpu_table;
+		if (!(cpu_table[i] = kmalloc(sizeof(ctl_table)*3, GFP_KERNEL)))
+			goto cleanup;
+		memset(cpu_table[i], 0, sizeof(ctl_table)*3);
+		cpu_table[i][0] = ((ctl_table){ 1, "0", NULL, 0, 0700, NULL, NULL, NULL, });
+		cpu_table[i][1] = ((ctl_table){ 1, "1", NULL, 0, 0700, NULL, NULL, NULL, });
+		next->child = cpu_table[i];
 
 		/* counter 0 */
-		if (!(curr = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
-			return -EFAULT;
-		memset(curr, 0, sizeof(ctl_table)*7);
-		curr[0] = ((ctl_table){ 1, "enabled", &op_ctr0_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		curr[1] = ((ctl_table){ 1, "event", &op_ctr0_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
-		curr[2] = ((ctl_table){ 1, "count", &op_ctr0_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		curr[3] = ((ctl_table){ 1, "unit_mask", &op_ctr0_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		curr[4] = ((ctl_table){ 1, "kernel", &op_ctr0_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		curr[5] = ((ctl_table){ 1, "user", &op_ctr0_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		cpu_table[0].child = curr;
+		if (!(tab = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
+			goto cleanup1;
+		memset(tab, 0, sizeof(ctl_table)*7);
+		tab[0] = ((ctl_table){ 1, "enabled", &op_ctr0_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[1] = ((ctl_table){ 1, "event", &op_ctr0_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
+		tab[2] = ((ctl_table){ 1, "count", &op_ctr0_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[3] = ((ctl_table){ 1, "unit_mask", &op_ctr0_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[4] = ((ctl_table){ 1, "kernel", &op_ctr0_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[5] = ((ctl_table){ 1, "user", &op_ctr0_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		cpu_table[i][0].child = tab;
 		
 		/* counter 1 */
-		if (!(curr = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
-			return -EFAULT;
-		memset(curr, 0, sizeof(ctl_table)*7);
-		curr[0] = ((ctl_table){ 1, "enabled", &op_ctr1_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		curr[1] = ((ctl_table){ 1, "event", &op_ctr1_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
-		curr[2] = ((ctl_table){ 1, "count", &op_ctr1_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		curr[3] = ((ctl_table){ 1, "unit_mask", &op_ctr1_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		curr[4] = ((ctl_table){ 1, "kernel", &op_ctr1_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		curr[5] = ((ctl_table){ 1, "user", &op_ctr1_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		cpu_table[1].child = curr;
+		if (!(tab2 = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
+			goto cleanup2;
+		memset(tab2, 0, sizeof(ctl_table)*7);
+		tab2[0] = ((ctl_table){ 1, "enabled", &op_ctr1_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab2[1] = ((ctl_table){ 1, "event", &op_ctr1_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
+		tab2[2] = ((ctl_table){ 1, "count", &op_ctr1_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab2[3] = ((ctl_table){ 1, "unit_mask", &op_ctr1_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab2[4] = ((ctl_table){ 1, "kernel", &op_ctr1_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab2[5] = ((ctl_table){ 1, "user", &op_ctr1_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		cpu_table[i][1].child = tab2;
 		next++;
 	}
 
 	sysctl_header = register_sysctl_table(dev_root, 0);
 	return 0;
+ 
+cleanup2:
+	kfree(cpu_table[i][0].child);
+cleanup1:
+	kfree(cpu_table[i]);
+cleanup:
+	for (j=0; j < i; j++) {
+		kfree(cpu_table[j][1].child);
+		kfree(cpu_table[j][0].child);
+		kfree(cpu_table[j]);
+	}
+	return -EFAULT;
 }
 
 void __exit cleanup_sysctl(void)
@@ -1095,11 +1099,12 @@ void __exit cleanup_sysctl(void)
 	ctl_table *next = &oprof_table[nr_oprof_static];
 	unregister_sysctl_table(sysctl_header);
 	
-	for (i=0; i < smp_num_cpus; i++) {
+	i = smp_num_cpus;
+	while (i-- > 0) {
 		kfree(next->child[0].child);
 		kfree(next->child[1].child);
 		kfree(next->child);
-		next ++;
+		next++;
 	}
 	return;
 }
