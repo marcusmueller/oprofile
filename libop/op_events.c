@@ -565,14 +565,14 @@ char const * get_mapping(u8 nr, FILE * fp)
 	char * value;
 	char const * c;
 	char * map = NULL;
-
-	line_nr = 1;
 	int seen_event = 0, seen_mmcr0 = 0, seen_mmcr1 = 0, seen_mmcra = 0;
 	u32 mmcr0 = 0;
 	u64 mmcr1 = 0;
 	u32 mmcra = 0;
-	line = op_get_line(fp);
 	int event_found = 0;
+
+	line_nr = 1;
+	line = op_get_line(fp);
 	while (line && !event_found) {
 		if (empty_line(line) || comment_line(line))
 			goto next;
@@ -588,10 +588,11 @@ char const * get_mapping(u8 nr, FILE * fp)
 		c = line;
 		while (next_token(&c, &name, &value)) {
 			if (strcmp(name, "event") == 0) {
+				u8 evt;
 				if (seen_event)
 					parse_error("duplicate event tag");
 				seen_event = 1;
-				u8 evt = parse_hex(value);
+				evt = parse_hex(value);
 				if (evt == nr) {
 					event_found = 1;
 				}
@@ -626,12 +627,13 @@ next:
 		++line_nr;
 	}
 	if (event_found) {
+		char * val;
 		if (!seen_mmcr0 || !seen_mmcr1 || !seen_mmcra) {
 			fprintf(stderr, "Error: Missing information in line %d of event mapping file %s\n", line_nr, filename);
 			exit(EXIT_FAILURE);
 		}
 		map = xmalloc(70);
-		char * val = xmalloc(20);
+		val = xmalloc(20);
 		strcpy(map, "mmcr0:");
 		sprintf(val, "%u", mmcr0);
 		strcat(map, val);
