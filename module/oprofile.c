@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.6 2001/11/05 16:10:20 movement Exp $ */
+/* $Id: oprofile.c,v 1.7 2001/11/06 02:05:49 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -24,10 +24,12 @@ MODULE_AUTHOR("John Levon (moz@compsoc.man.ac.uk)");
 MODULE_DESCRIPTION("Continuous Profiling Module");
 MODULE_LICENSE("GPL");
 
-#ifdef CONFIG_SMP
 MODULE_PARM(allow_unload, "i");
-MODULE_PARM_DESC(allow_unload, "Allow module to be unloaded on SMP");
+MODULE_PARM_DESC(allow_unload, "Allow module to be unloaded.");
+#ifdef CONFIG_SMP
 static int allow_unload;
+#else
+static int allow_unload = 1;
 #endif
 
 /* sysctl settables */
@@ -958,7 +960,7 @@ static int can_unload(void)
 	int can = -EBUSY;
 	down(&sysctlsem);
 
-	if (smp_can_unload() && !prof_on && !GET_USE_COUNT(THIS_MODULE))
+	if (allow_unload && !prof_on && !GET_USE_COUNT(THIS_MODULE))
 		can = 0;
 	up(&sysctlsem);
 	return can;

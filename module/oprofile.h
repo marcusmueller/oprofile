@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.4 2001/11/04 12:19:04 phil_e Exp $ */
+/* $Id: oprofile.h,v 1.5 2001/11/06 02:05:49 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -218,13 +218,6 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #else
 #define unlikely(a) (a)
 #endif
-#endif
- 
-/* we can't unload safely on SMP */
-#ifdef CONFIG_SMP
-#define smp_can_unload() (allow_unload)
-#else
-#define smp_can_unload() 1
 #endif
  
 // 2.4.3 introduced rw mmap semaphore 

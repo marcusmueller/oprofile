@@ -1335,6 +1335,8 @@ static void get_options(int argc, char const * argv[])
 	// &v[i] in C.
 	// This imply than all efficient implementation must use a C array
 	// a C array for implementation but this is not strictly required.
+
+	// ... so it can still break if C and C++ do slightly different things. 
 	optcon = opd_poptGetContext(NULL, opf_opt.size(), &opf_opt[0],
 				options, 0);
 
