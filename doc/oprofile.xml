@@ -42,7 +42,7 @@ necks in real-world systems.
 	<varlistentry>
 		<term>Linux kernel 2.2/2.4</term>
 		<listitem>
-			Oprofile uses a kernel module that can be compiled for 2.2.11 or later and 2.4. Support for 2.5 up to 2.5.2 is also provided.
+			OProfile uses a kernel module that can be compiled for 2.2.11 or later and 2.4. Support for 2.5 up to 2.5.2 is also provided.
 			Versions 2.4.10 or above are recommended, and required if you use the
 			boot-time kernel option <option>nosmp</option>.
 <!-- FIXME: do we require always gte 2.4.10 for nosmp ? -->
@@ -182,9 +182,14 @@ is all you need, but note these arguments to <command>./configure</command> :
 	</varlistentry>
 </variablelist>
 <para>
-You'll need to have a configured kernel source for the current kernel to build the module.
-It is also recommended that you if you have a uniprocessor machine, you enable the local APIC / IO_APIC
-support for your kernel (this is automatically enabled for SMP kernels).
+You'll need to have a configured kernel source for the current kernel
+to build the module.  It is also recommended that you if you have a
+uniprocessor machine, you enable the local APIC / IO_APIC support for
+your kernel (this is automatically enabled for SMP kernels).  On
+machines with power management, such as laptops, the power management
+must be turned off when using OProfile. The power management software
+in the BIOS cannot handle the non-maskable interrupts (NMIs) used by
+OProfile for data collection.
 </para>
 
 </sect1>
@@ -260,8 +265,6 @@ This section gives a brief description of the available oprofile utilities and t
 	</para></listitem>
 </varlistentry>
 
-<!-- FIXME: how to get a link only for the word op_merge and so on remove
- the ugly See the section called .... in Chapter X -->
 <varlistentry>
 	<term><filename>op_merge</filename></term>
 	<listitem><para>
@@ -532,7 +535,7 @@ to only get data up to the point you named the session.
 <note>
 <para>
 Your CPU type may not include the requisite support for hardware performance counters, in which case
-you must use Oprofile in RTC mode: see <xref linkend="rtc" />.
+you must use OProfile in RTC mode: see <xref linkend="rtc" />.
 </para>
 </note>
 <para>
@@ -594,11 +597,11 @@ Specifying too small a value can lead to overflow problems discussed previously.
 </sect2>
 
 <sect2 id="rtc">
-<title>Oprofile in RTC mode</title>
+<title>OProfile in RTC mode</title>
 <para>
 Some CPU types do not provide the needed hardware support to use the hardware performance counters. This includes
-some laptops, classic Pentiums, and other CPU types not yet supported by Oprofile (such as Cyrix and Pentium IV). 
-On these machines, Oprofile falls
+some laptops, classic Pentiums, and other CPU types not yet supported by OProfile (such as Cyrix and Pentium IV). 
+On these machines, OProfile falls
 back to using the real-time clock interrupt to collect samples. This interrupt is also used by the <command>rtc</command>
 module: you cannot have both the oprofile and rtc modules loaded.
 </para>

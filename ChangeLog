@@ -1,3 +1,15 @@
+2002-05-04  William Cohen  <wcohen@nc.rr.com>
+
+	* doc/oprofile.xml: add note on power management
+ 
+2002-05-03  John Levon  <moz@compsoc.man.ac.uk>
+
+	* doc/Makefile.in:
+	* doc/xsl/xhtml-common.xsl:
+	* doc/xsl/xhtml.xsl:
+	* doc/xsl/xhtml-chunk.xsl: use some xsl to fix
+	  some of the problems (not all :()
+ 
 2002-05-02  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update
