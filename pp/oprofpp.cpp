@@ -83,15 +83,17 @@ static void do_list_symbols_details(profile_container_t const & samples,
  */
 static void do_list_symbol(profile_container_t const & samples, format_output::formatter & out)
 {
-	symbol_entry const * symb = samples.find_symbol(options::symbol);
-	if (symb == 0) {
+	vector<symbol_entry const *> symbols =
+		samples.find_symbol(options::symbol);
+
+	if (symbols.empty()) {
 		cerr << "oprofpp: symbol \"" << options::symbol
 		     << "\" not found in samples container file.\n";
 		return;
 	}
 
-	bool need_vma64 = vma64_p(&symb, &symb + 1);
-	out.output(cout, symb, need_vma64);
+	bool need_vma64 = vma64_p(symbols.begin(), symbols.end());
+	out.output(cout, symbols, false, need_vma64);
 }
 
 
@@ -149,8 +151,6 @@ bool aligned_samples(op_bfd const & abfd,  profile_t const & samples_files,
 		for (j = start; j < end; j++) {
 			u32 count;
 			u32 pos;
-			// we must offset by multiplier - 1 so rounding during
-			// division don't put samples in the previous chunk
 			pos = (abfd.sym_offset(i, j) + abfd.syms[i].vma() - low_pc);
 
 			/* opp_get_options have set ctr to one value != -1 */

@@ -28,7 +28,7 @@ public:
 
 	symbol_entry const * find(std::string filename, size_t linenr) const;
 
-	symbol_entry const * find(std::string name) const;
+	std::vector<symbol_entry const *> find(std::string name) const;
 
 	symbol_entry const * find_by_vma(bfd_vma vma) const;
 

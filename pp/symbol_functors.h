@@ -44,17 +44,6 @@ struct less_symbol_entry_by_samples_nr {
 	size_t index;
 };
 
-/// compare based on same symbol name
-struct equal_symbol_by_name {
-	equal_symbol_by_name(std::string const & name_) : name(name_) {}
-
-	bool operator()(symbol_entry const & entry) const {
-		return name == entry.name;
-	}
-
-	std::string name;
-};
-
 /// compare based on file location
 struct less_by_file_loc {
 	bool operator()(sample_entry const * lhs,

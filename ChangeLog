@@ -2,6 +2,20 @@
 
 	* TODO: update
 
+	* pp/symbol_container_imp.h:
+	* pp/symbol_container_imp.cpp:
+	* pp/profile_container.h:
+	* pp/profile_container.cpp: find(string symbol_name) return a vector
+	  of symbol rather a a single symbol
+	* pp/oprofpp.cpp: use above change so oprofpp -s will show all
+	  symbol with the same name.
+
+	* pp/symbol_functors.h: remove unused functors equal_symbol_by_name
+
+2003-03-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
 	* libutil/op_fileio.h:
 	* libutil/op_fileio.c: op_write_u64() new
 	* libutil/op_types.h: continue our silly typedef: add u64

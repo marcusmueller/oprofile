@@ -65,8 +65,9 @@ public:
 	/// Find a symbol from its vma, return zero if no symbol at this vma
 	symbol_entry const * find_symbol(bfd_vma vma) const;
 
-	/// Find a symbol from its name, return zero if no symbol found
-	symbol_entry const * find_symbol(std::string const & name) const;
+	/// Find a list of symbol from its name, return an empty vector if no
+	/// symbol found
+	std::vector<symbol_entry const *> find_symbol(std::string const & name) const;
 
 	/// Find a symbol from its filename, linenr, return zero if no symbol
 	/// at this location

@@ -267,7 +267,8 @@ symbol_entry const * profile_container_t::find_symbol(string const & filename,
 	return symbols->find(filename, linenr);
 }
 
-symbol_entry const * profile_container_t::find_symbol(string const & name) const {
+vector<symbol_entry const *> 
+profile_container_t::find_symbol(string const & name) const {
 	return symbols->find(name);
 }
 

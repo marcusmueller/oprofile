@@ -53,17 +53,18 @@ symbol_container_imp_t::find(string filename, size_t linenr) const
 	return 0;
 }
 
-symbol_entry const *
+vector<symbol_entry const *>
 symbol_container_imp_t::find(string name) const
 {
-	vector<symbol_entry>::const_iterator it =
-		find_if(symbols.begin(), symbols.end(),
-			  equal_symbol_by_name(name));
+	vector<symbol_entry const *> v;
 
-	if (it != symbols.end() && it->name == name)
-		return &(*it);
+	vector<symbol_entry>::const_iterator it;
+	for (it = symbols.begin() ; it != symbols.end() ; ++it) {
+		if (it->name == name)
+			v.push_back(&*it);
+	}
 
-	return 0;
+	return v;
 }
 
 void  symbol_container_imp_t::build_by_file_loc() const
