@@ -28,9 +28,9 @@
 class op_exception : public std::exception {
 public:
 	explicit op_exception(std::string const& msg);
-	~op_exception() = 0;
+	~op_exception() throw() = 0;
 
-	char const * what() const;
+	char const * what() const throw();
 private:
 	std::string message;
 };
@@ -53,7 +53,7 @@ struct op_runtime_error : std::runtime_error
 {
 	explicit op_runtime_error(std::string const & err);
 	op_runtime_error(std::string const & err, int cerrno);
-	~op_runtime_error() = 0;
+	~op_runtime_error() throw() = 0;
 };
 
 

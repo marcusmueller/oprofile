@@ -21,11 +21,11 @@ op_exception::op_exception(string const & msg)
 {
 }
 
-op_exception::~op_exception()
+op_exception::~op_exception() throw()
 {
 }
 
-char const * op_exception::what() const
+char const * op_exception::what() const throw()
 {
 	return message.c_str();
 }
@@ -50,6 +50,6 @@ op_runtime_error::op_runtime_error(string const & msg, int cerrno)
 {
 }
 
-op_runtime_error::~op_runtime_error()
+op_runtime_error::~op_runtime_error() throw()
 {
 }

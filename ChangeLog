@@ -1,3 +1,8 @@
+2003-02-20  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_exception.h:
+	* libutil++/op_exception.cpp: throw() where needed
+
 2003-02-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update
