@@ -368,3 +368,33 @@ if test "$QT2DIR" != ""; then
 fi
 QT2_AC_PATH
 ])
+
+# the test are simple for now, QTQIR must point to qt3 this is sufficient to
+# work with kde3 on all sane recent distro.
+AC_DEFUN(QT3_DO_IT_ALL,
+[
+AC_MSG_CHECKING(for qt3)
+AC_FIND_FILE(qmovie.h, $QTDIR/include, qt3_incdir)
+AC_FIND_FILE(uic, $QTDIR/bin, qt3_bindir)
+dnl if this not fail we know we have a valid qt3, other tools are found under
+dnl the same sub-dir and so on must be sane.
+AC_FIND_FILE(libqt-mt.so.3, $QTDIR/lib, qt3_libdir)
+
+if test "$qt3_incdir" != "NO" -a "$qt3_bindir" != "NO" -a "$qt3_libdir" != "NO"; then
+	AC_MSG_RESULT(yes)
+	dnl FIXME horrible hack to avoid modifying gui/Makefile.in 
+	have_qt2="yes"
+	QT2_LDFLAGS=-L"$QTDIR"/lib
+	QT2_LIBS=-lqt-mt
+	MOC="$QTDIR"/bin/moc
+	UIC="$QTDIR"/bin/uic
+	AC_SUBST(have_qt2)
+	AC_SUBST(QT2_INCLUDES)
+	AC_SUBST(QT2_LDFLAGS)
+	AC_SUBST(QT2_LIBS)
+	AC_SUBST(UIC)
+	AC_SUBST(MOC)
+else
+	AC_MSG_RESULT("no")
+fi
+])

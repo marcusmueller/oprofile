@@ -26,8 +26,10 @@ unsigned long virt_apic_base;
  * error to be made w/o a full rebuild of supported kernel version */
 /* how about __attribute__(__unused__) then ? */
 
+/* FIXME is this comment right ? */
 /* all this file is preempt patch safe because we can get problem only
- * on smp machine but on smp this stuff is never called. */
+ * on smp machine but on smp this stuff is never called. For the same
+ * reason we don't need to take care about locking mm->page_table_lock */
 
 /*static*/ void set_pte_phys(ulong vaddr, ulong phys)
 {

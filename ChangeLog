@@ -1,3 +1,15 @@
+2002-06-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* .cvsignore: minor fix
+
+	* configure.in:
+	* acinclude.m4: ugly temporary hack to compile with kde3/qt3
+	* oprof_start.cpp:
+	* oprof_start_config.cpp: gcc-3.1 and qt3 fix (qt3 have an
+	  hex() somewhere ...)
+
+	* module/x86/op_fixmap.c: minor comment fix
+
 2002-06-26  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update

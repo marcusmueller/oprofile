@@ -13,6 +13,7 @@
 
 #include <sstream>
 #include <fstream>
+#include <iomanip>
 
 #include "oprof_start_config.h"
 #include "oprof_start_util.h"
@@ -110,9 +111,9 @@ void config_setting::load(std::istream& in)
 	in >> note_table_size;
 	in >> separate_samples;
 	in >> kernel_range_auto;
-	in >> hex >> kernel_start;
-	in >> hex >> kernel_end;
-	in >> dec;
+	in >> std::hex >> kernel_start;
+	in >> std::hex >> kernel_end;
+	in >> std::dec;
 }
 
 // sanitize needed ?
@@ -138,8 +139,8 @@ void config_setting::save(std::ostream& out) const
 	out << separate_samples << std::endl;
 
 	out << kernel_range_auto << std::endl;
-	out << hex << kernel_start << std::endl;
-	out << hex << kernel_end << std::endl;
+	out << std::hex << kernel_start << std::endl;
+	out << std::hex << kernel_end << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& out, config_setting const & object)

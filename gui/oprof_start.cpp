@@ -836,7 +836,7 @@ void oprof_start::on_start_profiler()
 
 	if (!config.kernel_range_auto) {
 		std::ostringstream range;
-		range << hex << config.kernel_start << "," << config.kernel_end;
+		range << std::hex << config.kernel_start << "," << config.kernel_end;
 		args.push_back("--kernel-range=" + range.str());
 	}
 

@@ -14,3 +14,4 @@ config.status
 config.h.in
 config.h
 tags
+autom4te.cache
