@@ -1,3 +1,9 @@
+2004-01-29  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_events.c:
+	* utils/op_help.c: don't use default in switch (cpu_type) to ensure
+	  adding a cpu type will issue a warning where we forget to handle it.
+
 2004-01-28  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_sfile.c: invert from/to start offset for kernel samples

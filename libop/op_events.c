@@ -594,6 +594,8 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 			descr->name = "CYCLES";
 			break;
 
+		// don't use default, if someone add a cpu he wants a compiler
+		// warning if he forgets to handle it here.
 		case CPU_TIMER_INT:
 		case CPU_NO_GOOD:
 		case MAX_CPU_TYPE:
