@@ -33,36 +33,6 @@ event_setting::event_setting()
 {
 }
 
-void event_setting::save(ostream & out) const
-{
-	out << count << " ";
-	out << umask << " ";
-	out << os_ring_count << " ";
-	out << user_ring_count << " ";
-}
-
-void event_setting::load(istream & in)
-{
-	in >> count;
-	in >> umask;
-	in >> os_ring_count;
-	in >> user_ring_count;
-}
-
-
-ostream & operator<<(ostream & out, const event_setting & object)
-{
-	object.save(out);
-	return out;
-}
-
-
-istream & operator>>(istream & in, event_setting & object)
-{
-	object.load(in);
-	return in;
-}
-
 
 config_setting::config_setting()
 	:
@@ -124,7 +94,7 @@ void config_setting::load(istream & in)
 		} else if (str == "SEPARATE_KERNEL_SAMPLES") {
 			separate_kernel_samples = tobool(val);
 		} else if (str == "KERNEL_ONLY") {
-			kernel_only = tobool(str);
+			kernel_only = tobool(val);
 		}
 	}
 }

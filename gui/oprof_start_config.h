@@ -23,17 +23,11 @@ struct event_setting {
 
 	event_setting();
 
-	void save(std::ostream & out) const;
-	void load(std::istream & in);
-
 	uint count;
 	uint umask;
 	bool os_ring_count;
 	bool user_ring_count;
 };
-
-std::ostream & operator<<(std::ostream & out, event_setting const & object);
-std::istream & operator>>(std::istream & in, event_setting & object);
 
 /**
  * Store the general  configuration of the profiler.
