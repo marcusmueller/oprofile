@@ -207,7 +207,7 @@ static void resolve_events()
 	}
 
 	for (i = 0; i < count; ++i) {
-		printf("%d ", counter_map[i]);
+		printf("%d ", (unsigned int) counter_map[i]);
 	}
 	printf("\n");
 
