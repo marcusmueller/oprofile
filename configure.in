@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.61 2001/12/05 04:31:17 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.62 2001/12/09 21:48:52 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -87,6 +87,7 @@ CFLAGS="-mpreferred-stack-boundary=2 $CFLAGS"
 AC_TRY_COMPILE(,,AC_MSG_RESULT("yes");BKCFLAGS="-mpreferred-stack-boundary=2 $BKCFLAGS",AC_MSG_RESULT("no"))
 CFLAGS=$SAVE_CFLAGS
 
+# FIXME: use config.h for the -D things ... 
 AC_MSG_CHECKING("whether malloc attribute is understood")
 SAVE_CFLAGS=$CFLAGS
 CFLAGS="-Werror $CFLAGS"

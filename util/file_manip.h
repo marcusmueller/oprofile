@@ -19,6 +19,10 @@
 #ifndef FILE_MANIP_H
 #define FILE_MANIP_H
 
+/* FIXME: I really do not like this __cplusplus thing.
+ * either it is a C header or it isn't. C headers shouldn't
+ * be including C++ headers - please split this out.
+ */ 
 #ifdef __cplusplus
 
 #include <string>
@@ -29,7 +33,7 @@ bool create_dir(std::string const & dir);
 bool create_path(std::string const & path);
 std::string opd_read_link(std::string const & name);
 
-/// return false if base_dir is not a valid directory.
+/* return false if base_dir is not a valid directory. */
 bool create_file_list(std::list<std::string>& file_list,
 		      const std::string & base_dir);
 
