@@ -1,0 +1,30 @@
+all: oprofpp
+ 
+.PHONY: all clean srcdoc 
+ 
+clean: 
+	rm -f oprofpp *.o 
+ 
+BINDIR=@bindir@
+MANDIR=@mandir@
+PREFIX=@program_prefix@
+SUFFIX=@program_suffix@
+
+install: oprofpp
+	cp oprofpp $(BINDIR)/$(PREFIX)oprofpp$(SUFFIX)
+	cd $(BINDIR) && chmod 755 $(PREFIX)oprofpp$(SUFFIX)
+ 
+CFLAGS=-Wall -Wstrict-prototypes -W -O2 -pipe -DOP_EVENTS_DESC -L/usr/lib @CFLAGS@
+LIBS=-lpopt -lbfd -liberty -dl
+INCLUDES=@extra_includes@
+HEADERS=oprofpp.h ../dae/opd_util.h
+MY_SOURCES=oprofpp.c
+SOURCES=$(MY_SOURCES) ../dae/opd_util.c ../op_events.c
+ 
+srcdoc: oprofpp-src.html
+
+oprofpp-src.html: $(MY_SOURCES)
+	../scripts/dodoc -html $(MY_SOURCES) >oprofpp-src.html
+ 
+oprofpp: $(SOURCES) $(HEADERS)
+	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $(SOURCES) $(LIBS)
