@@ -98,21 +98,21 @@ necks in real-world systems.
 		<term>Download</term>
 		<listitem><para>
 			You can download a source tarball or get anonymous CVS at the sourceforge page,
-			<ulink url="FIXME">FIXME</ulink>.
+			<ulink url="http://sourceforge.net/projects/oprofile/">http://sourceforge.net/projects/oprofile/</ulink>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Mailing list</term>
 		<listitem><para>
 			There is a very low-traffic OProfile-specific mailing list, details at
-			<ulink url="FIXME">FIXME</ulink>.
+			<ulink url="http://sourceforge.net/mail/?group_id=16191">http://sourceforge.net/mail/?group_id=16191</ulink>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Bug tracker</term>
 		<listitem><para>
-			There is a bug tracker for OProfile at the sourceforge page, 
-			<ulink url="FIXME">FIXME</ulink>.
+			There is a bug tracker for OProfile at the sourceforge page,
+			<ulink url="http://sourceforge.net/tracker/?group_id=16191&atid=116191">http://sourceforge.net/tracker/?group_id=16191&atid=116191</ulink>.
 		</para></listitem>
 	</varlistentry>
 </variablelist>
