@@ -1,5 +1,9 @@
 2003-02-27  John Levon  <levon@movementarian.org>
 
+	* configure.in: bump to 0.5.1
+
+2003-02-27  John Levon  <levon@movementarian.org>
+
 	* doc/oprofile.xml: clarifiy --separate=kernel
 
 2003-02-25  John Levon  <levon@movementarian.org>
