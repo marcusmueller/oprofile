@@ -3,11 +3,6 @@
 /* John Levon (moz@compsoc.man.ac.uk) */
 /* May 2000 */
 
-/* FIXME: when we springboard syscalls, we need to think about
-   security DOS on fork failure, i.e. we should be very careful
-   about not doing work on syscall that will fail */
-/* FIXME: syscall stuff */
-
 /* FIXME: data->next rotation ? */
 /* FIXME: what about rdtsc timestamping ? */
  
@@ -60,7 +55,11 @@ static int cpu_type;
  
 static u32 oprof_opened; 
 DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
-static u32 oprof_ready[NR_CPUS];
+/* this array is scanned by read() so we don't
+ * want it in the oprof_data cacheline. Access
+ * is atomic as its aligned 32 bit
+ */
+static u32 oprof_ready[NR_CPUS] __cacheline_aligned;
 static struct _oprof_data oprof_data[NR_CPUS];
  
 /* ---------------- NMI handler ------------------ */
@@ -74,7 +73,6 @@ static void evict_op_entry(struct _oprof_data *data, struct op_sample *ops)
 
 	data->nextbuf=0;
 	oprof_ready[smp_processor_id()] = 1;
-	wake_up(&oprof_wait);
 }
  
 static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, u8 ctr)
@@ -454,7 +452,7 @@ static void pmc_setup(void *dummy)
 				low |= (1<<16);
 			case 1: /* O/S only */
 				low |= (1<<17);
-				break; 
+				break;
 		} 
 		/* what are we counting ? */
 		low |= op_ctr1_val[cpu]; 
@@ -515,10 +513,74 @@ inline static void pmc_select_stop(unsigned int cpu)
 
 /* ---------------- driver routines ------------------ */ 
  
-static int oprof_open(struct inode *ino, struct file *filp)
+/* we have to have another thread because we can't
+ * do wake_up() from NMI due to no locking
+ * FIXME: how long should we sleep ?
+ */
+int oprof_daemon(void *arg)
 {
+	int i;
+	extern asmlinkage long sys_setsid(void);
+ 
+	/* from md.c */
+	lock_kernel();
+	exit_mm(current);
+	exit_files(current);
+	exit_fs(current);
+	sys_setsid();
+	sprintf(current->comm, "oprofilewud");
+	siginitsetinv(&current->blocked, sigmask(SIGKILL));
+        spin_lock(&current->sigmask_lock);
+        flush_signals(current);
+        spin_unlock(&current->sigmask_lock);
+	current->policy = SCHED_OTHER;
+	current->nice = -20; 
+	unlock_kernel(); 
+ 
+	for (;;) { 
+		for (i=0; i<smp_num_cpus; i++) {
+			if (oprof_ready[i])
+				wake_up(&oprof_wait);
+		}
+		schedule_timeout(HZ/2);
+	}
+}
+ 
+void oprof_start_daemon(void)
+{
+	if (kernel_thread(oprof_daemon, NULL, 0)<0)
+		printk(KERN_ERR "oprofile: couldn't spawn wakeup thread.\n"); 
+}
+
+void oprof_stop_daemon(void)
+{
+	/* FIXME */
+}
+ 
+void oprof_out8(void *buf)
+{
+	struct _oprof_data *data = &oprof_data[0];
+ 
+	pmc_select_stop(0);
+	memcpy(&data->buffer[data->nextbuf],buf,8);
+	pmc_select_start(0); 
+	if (++data->nextbuf==data->buf_size) {
+		data->nextbuf=0;
+		oprof_ready[0] = 1;
+		wake_up(&oprof_wait);
+	}
+	return;
+}
+ 
+static int oprof_open(struct inode *ino, struct file *file)
+{
+	if (MINOR(file->f_dentry->d_inode->i_rdev)==2)
+		return oprof_map_open();
+
 	if (oprof_opened)
 		return -EBUSY;
+ 
+	oprof_start_daemon();
  
 	oprof_opened=1; 
 	smp_call_function(pmc_start,NULL,0,1);
@@ -526,10 +588,15 @@ static int oprof_open(struct inode *ino, struct file *filp)
 	return 0;
 }
  
-static int oprof_release(struct inode *ino, struct file *filp)
+static int oprof_release(struct inode *ino, struct file *file)
 {
+	if (MINOR(file->f_dentry->d_inode->i_rdev)==2)
+		return oprof_map_release();
+
 	if (!oprof_opened)
 		return -EFAULT;
+ 
+	oprof_stop_daemon();
  
 	smp_call_function(pmc_stop,NULL,0,1);
 	pmc_stop(NULL);
@@ -544,6 +611,9 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	unsigned int i; 
 	ssize_t max;
  
+	if (MINOR(file->f_dentry->d_inode->i_rdev==2))
+		return oprof_map_read(buf,count,ppos);
+
 	max = sizeof(struct op_sample)*op_buf_size;
 
 	if (*ppos || count!=max)

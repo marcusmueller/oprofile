@@ -10,12 +10,13 @@
 #include <linux/poll.h> 
 #include <linux/delay.h> 
  
+#include <asm/smplock.h> 
 #include <asm/apic.h>
  
 struct op_sample {
-	u32 eip;
-	u16 pid;
 	u16 count;
+	u16 pid;
+	u32 eip;
 } __attribute__((__packed__,__aligned__(8)));
 
 #define OP_NR_ENTRY (SMP_CACHE_BYTES/sizeof(struct op_sample)) 
@@ -47,10 +48,33 @@ struct _oprof_data {
 #define P6_MSR_EVNTSEL1 0x187 
 #define MSR_APIC_BASE   0x1B
  
-#define OP_BITS 1
+#define OP_BITS 2
+/* 1==mapping info, 0 otherwise */ 
+#define OP_MAPPING (1U<<15) 
 /* 1==PERFCTR1, 0==PERFCTR0 */ 
-#define OP_COUNTER (1U<<15)
+#define OP_COUNTER (1U<<14)
  
+/* fork(),vfork(),clone() */
+#define OP_FORK ((1U<<15)|(1U<<0))
+/* execve() */
+#define OP_DROP ((1U<<15)|(1U<<1))
+/* mapping */
+#define OP_MAP ((1U<<15)|(1U<<2))
+/* init_module() */
+#define OP_DROP_MODULES ((1U<<15)|(1U<<3))
+/* exit() */ 
+#define OP_EXIT ((1U<<15)|(1U<<4))
+
+struct op_map {
+	u32 addr;
+	u32 len;
+	u32 offset;
+	char path[4];
+} __attribute__((__packed__,__aligned__(16)));
+ 
+/* size of map buffer: 8K */
+#define OP_MAX_MAP_BUF 512
+
 /* maximal value before eviction */ 
 #define OP_MAX_COUNT ((1U<<(16U-OP_BITS))-1U)
 
@@ -83,3 +107,6 @@ void my_set_fixmap(void);
 int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc, u8 *ctr0_t, u8 *ctr1_t);
 void op_intercept_syscalls(void);
 void op_replace_syscalls(void);
+int oprof_map_open(void);
+int oprof_map_release(void);
+int oprof_map_read(char *buf, size_t count, loff_t *ppos);
