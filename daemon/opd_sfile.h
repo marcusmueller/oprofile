@@ -53,16 +53,17 @@ struct sfile {
 };
 
 /** clear any sfiles that are for the kernel */
-void sfile_clear_kernel();
+void sfile_clear_kernel(void);
 
 /** sync sample files */
-void sfile_sync_files();
+void sfile_sync_files(void);
 
 /** close sample files */
-void sfile_close_files();
+void sfile_close_files(void);
 
-/** clear out a certain amount of LRU entries */
-void sfile_lru_clear();
+/** clear out a certain amount of LRU entries
+ * return non-zero if the lru is already empty */
+int sfile_lru_clear(void);
 
 /**
  * Find the sfile for the current parameters. Note that is required
@@ -74,6 +75,6 @@ struct sfile * sfile_find(struct transient const * trans);
 void sfile_log_sample(struct sfile * sf, vma_t pc, uint counter);
 
 /** initialise hashes */
-void sfile_init();
+void sfile_init(void);
 
 #endif /* OPD_SFILE_H */

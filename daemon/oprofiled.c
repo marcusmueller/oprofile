@@ -255,17 +255,18 @@ static void opd_options(int argc, char const * argv[])
 
  
 /** Done writing out the samples, indicate with complete_dump file */
-static void complete_dump()
+static void complete_dump(void)
 {
 	FILE * status_file;
-	int tried = 0;
 
 retry:
        	status_file = fopen(OP_DUMP_STATUS, "w");
 
-	if (!status_file && errno == EMFILE && !tried) {
-		tried = 1;
-		sfile_lru_clear();
+	if (!status_file && errno == EMFILE) {
+		if (!sfile_lru_clear()) {
+			printf("LRU cleared but file open fails.\n");
+			abort();
+		}
 		goto retry;
 	}
 
@@ -344,7 +345,6 @@ static void opd_do_read(char * buf, size_t size)
 static void opd_alarm(void)
 {
 	sfile_sync_files();
-	sfile_lru_clear();
 	opd_print_stats();
 	alarm(60*10);
 }

@@ -196,7 +196,7 @@ static void check_event(struct parsed_event * pev,
 }
 
 
-static void resolve_events()
+static void resolve_events(void)
 {
 	int count = parse_events();
 	int i, j;
@@ -249,7 +249,7 @@ static void resolve_events()
 }
 
 
-static void show_unit_mask()
+static void show_unit_mask(void)
 {
 	struct op_event * event;
 	int count = parse_events();
@@ -270,7 +270,7 @@ static void show_unit_mask()
 }
 
 
-static void show_default_event()
+static void show_default_event(void)
 {
 	struct op_default_event_descr descr;
 
@@ -329,7 +329,7 @@ static void get_options(int argc, char const * argv[])
 
 
 /** make valgrind happy */
-static void cleanup()
+static void cleanup(void)
 {
 	int i;
 	for (i = 0; i < op_get_nr_counters(cpu_type); ++i) {

@@ -30,6 +30,6 @@ char const * find_cookie(cookie_t cookie);
 /** give a textual description of the cookie */
 char const * verbose_cookie(cookie_t cookie);
 
-void cookie_init();
+void cookie_init(void);
 
 #endif /* OPD_COOKIE_H */

@@ -138,11 +138,11 @@ char const * verbose_cookie(cookie_t cookie)
 		}
 	}
 
-	return "not looked up";
+	return "not hashed";
 }
 
 
-void cookie_init()
+void cookie_init(void)
 {
 	size_t i;
 

@@ -120,7 +120,6 @@ int opd_open_sample_file(struct sfile * sf, int counter)
 	struct opd_header * header;
 	char const * binary;
 	int err;
-	int tried = 0;
 
 	file = &sf->files[counter];
 
@@ -138,9 +137,11 @@ retry:
 
 	/* This can naturally happen when racing against opcontrol --reset. */
 	if (err) {
-		if (!tried && err == EMFILE) {
-			tried = 1;
-			sfile_lru_clear();
+		if (err == EMFILE) {
+			if (sfile_lru_clear()) {
+				printf("LRU cleared but odb_open() fails.\n");
+				abort();
+			}
 			goto retry;
 		}
 

@@ -1,3 +1,16 @@
+2003-09-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_sfile.c: sfile_lru_clear() return 0 if lru is empty
+	* daemon/opd_mangling.c: abort() if lru was empty (not tested)
+	* daemon/oprofiled.c: likewise; opd_alarm(): don't sfile_lru_clear()
+
+	* utils/op_help.c:
+	* daemon/opd_sfile.h:
+	* daemon/opd_cookie.h: s/()/(void)/ in some function prototype and
+	  definition
+
+	* daemon/opd_cookie.c: s/"not looked up"/"not hashed"/
+
 2003-09-25  John Levon  <levon@movementarian.org>
 
 	* daemon/oprofiled.c: push rlimit down back to 2048.

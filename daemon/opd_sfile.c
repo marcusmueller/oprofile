@@ -244,7 +244,7 @@ void sfile_log_sample(struct sfile * sf, vma_t pc, uint counter)
 }
 
 
-void sfile_clear_kernel()
+void sfile_clear_kernel(void)
 {
 	struct list_head * pos;
 	struct list_head * pos2;
@@ -264,7 +264,7 @@ void sfile_clear_kernel()
 }
 
 
-void sfile_sync_files()
+void sfile_sync_files(void)
 {
 	struct list_head * pos;
 	struct sfile * sf;
@@ -279,7 +279,7 @@ void sfile_sync_files()
 }
 
 
-void sfile_close_files()
+void sfile_close_files(void)
 {
 	struct list_head * pos;
 	struct sfile * sf;
@@ -295,13 +295,16 @@ void sfile_close_files()
 
 /* this value probably doesn't matter too much */
 #define LRU_AMOUNT 1000
-void sfile_lru_clear()
+int sfile_lru_clear(void)
 {
 	struct list_head * pos;
 	struct list_head * pos2;
 	struct sfile * sf;
 	int amount = LRU_AMOUNT;
 	size_t i;
+
+	if (list_empty(&lru_list))
+		return 1;
 
 	list_for_each_safe(pos, pos2, &lru_list) {
 		sf = list_entry(pos, struct sfile, lru);
@@ -313,10 +316,12 @@ void sfile_lru_clear()
 		list_del(&sf->hash);
 		free(sf);
 	}
+
+	return 0;
 }
 
 
-void sfile_init()
+void sfile_init(void)
 {
 	size_t i = 0;
 

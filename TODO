@@ -6,6 +6,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
+ o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
+  try to recover gracefully.
  o test dcookie failure with random injection
  o test reaching EMFILE
  o add separate_thread to opd_header or remove all separate from opd_header
