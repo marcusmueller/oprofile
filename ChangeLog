@@ -1,5 +1,15 @@
 2004-02-16  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* module/compat24.h:
+	* module/x86/cpu_type.c:
+	* module/x86/op_apic.c:
+	* module/x86/op_model_p4.c:
+	* module/x86/op_nmi.c:
+	* module/x86/op_x86_model.h: backport P4 HyperThreading support from
+	   2.6 to 2.4.
+
+2004-02-16  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* events/i386/p4/events:
 	* events/i386/p4/unit_masks:
 	* events/i386/p4-ht/events:

@@ -45,5 +45,8 @@ struct op_x86_model_spec {
 extern struct op_x86_model_spec const op_ppro_spec;
 extern struct op_x86_model_spec const op_athlon_spec;
 extern struct op_x86_model_spec const op_p4_spec;
+#ifdef HT_SUPPORT
+extern struct op_x86_model_spec const op_p4_ht2_spec;
+#endif
 
 #endif /* OP_X86_MODEL_H */

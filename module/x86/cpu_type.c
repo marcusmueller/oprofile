@@ -20,6 +20,7 @@ MODULE_PARM(force_rtc, "i");
 MODULE_PARM_DESC(force_rtc, "force RTC mode.");
 static int force_rtc;
 
+#ifndef HT_SUPPORT
 /**
  * p4_threads - determines the number of logical processor threads in a die
  * 
@@ -107,6 +108,38 @@ static int p4_ht_enabled(void)
 	return enabled;
 #endif /* CONFIG_SMP */
 }
+#endif /* !HT_SUPPORT */
+
+
+op_cpu p4_cpu_type(void)
+{
+	__u8 model = current_cpu_data.x86_model;
+	if (model <= 3) {
+#ifdef HT_SUPPORT
+		if (smp_num_siblings == 1) {
+			return CPU_P4;
+		} else if (smp_num_siblings == 2) {
+			return CPU_P4_HT2;
+		} else {
+			printk(KERN_INFO 
+			       "oprofile: P4 HT unsupported number of siblings"
+			       "processor, reverting to RTC\n");
+			return CPU_RTC;
+		}
+#else
+		/* Cannot handle enabled HT P4 hardware */
+		if ((p4_threads() > 1) && p4_ht_enabled()) {
+			printk(KERN_INFO 
+			       "oprofile: P4 HT enabled, reverting to RTC\n");
+			return CPU_RTC;
+		}
+		else
+			return CPU_P4;
+#endif
+	} else
+		/* Do not know what it is */
+		return CPU_RTC;
+}
 
  
 __init op_cpu get_cpu_type(void)
@@ -116,9 +149,8 @@ __init op_cpu get_cpu_type(void)
 	__u8 model = current_cpu_data.x86_model;
 	__u16 val;
 
-	if (force_rtc) {
+	if (force_rtc)
 		return CPU_RTC;
-	}
 
 	switch (vendor) {
 		case X86_VENDOR_AMD:
@@ -147,18 +179,7 @@ __init op_cpu get_cpu_type(void)
 					return CPU_PII;
 				return CPU_PPRO;
 			case 0xf:
-				if (model <= 3) {
-					/* Cannot handle enabled HT P4 hardware */
-					if ((p4_threads() > 1) && p4_ht_enabled()) {
-						printk(KERN_INFO 
-							"oprofile: P4 HT enabled, reverting to RTC\n");
-						return CPU_RTC;
-					}
-					else
-						return CPU_P4;
-				} else
-					/* Do not know what it is */
-					return CPU_RTC;
+				return p4_cpu_type();
 			}
 			
 		default:

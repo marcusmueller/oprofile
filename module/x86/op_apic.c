@@ -196,7 +196,8 @@ static int __init check_cpu_ok(void)
 		sysctl.cpu_type != CPU_PIII &&
 		sysctl.cpu_type != CPU_ATHLON &&
 		sysctl.cpu_type != CPU_HAMMER &&
-		sysctl.cpu_type != CPU_P4)
+		sysctl.cpu_type != CPU_P4 &&
+		sysctl.cpu_type != CPU_P4_HT2)
 		return 0;
 
 	return 1;

@@ -30,6 +30,11 @@ static struct op_x86_model_spec const * get_model(void)
 		case CPU_P4:
 			model = &op_p4_spec;
 			break;
+#ifdef HT_SUPPORT
+		case CPU_P4_HT2:
+			model = &op_p4_ht2_spec;
+			break;
+#endif
 		default:
 			model = &op_ppro_spec;
 			break;

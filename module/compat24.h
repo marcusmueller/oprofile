@@ -53,4 +53,9 @@ extern uint do_path_hash_2_4(struct dentry * dentry, struct vfsmount * vfsmnt);
 	#define unlock_mmap(mm) up(&mm->mmap_sem)
 #endif
 
+/* 2.4.26 exported the needed stuff for HT support */
+#if V_AT_LEAST(2,4,26) && defined(CONFIG_SMP)
+#define HT_SUPPORT
+#endif
+
 #endif /* COMPAT24_H */
