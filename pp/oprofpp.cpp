@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.37 2002/03/22 21:18:43 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.38 2002/04/02 14:36:11 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -258,25 +258,19 @@ static void do_dump_gprof(opp_bfd & abfd,
 
 	opd_write_u8(fp, GMON_TAG_TIME_HIST);
 
-	for (i = 0; i < abfd.syms.size(); i++) {
-		if (is_excluded_symbol(abfd.syms[i]->name))
-			continue;
-
-		start = abfd.syms[i]->value + abfd.syms[i]->section->vma;
-		if (i == abfd.syms.size() - 1) {
-			abfd.get_symbol_range(i, start, end);
-			end -= start;
-			start = abfd.syms[i]->value + abfd.syms[i]->section->vma;
-			end += start;
-		} else
-			end = abfd.syms[i+1]->value + abfd.syms[i+1]->section->vma;
- 
-		if (start < low_pc)
-			low_pc = start;
-		if (end > high_pc)
-			high_pc = end;
+	// syms are sorted by vma so vma of the first symbol and vma + size
+	// of the last symbol give the vma range for gprof output
+	if (abfd.syms.size()) {
+		const asymbol * last_symb = abfd.syms[abfd.syms.size() - 1];
+		low_pc = abfd.syms[0]->value + abfd.syms[0]->section->vma;
+		high_pc = last_symb->value + last_symb->section->vma + 
+			abfd.symbol_size(abfd.syms.size() - 1);
+	} else {
+		low_pc = 0;
+		high_pc = 0;
 	}
 
+	// FIXME : is this + 1 bogus ?
 	histsize = ((high_pc - low_pc) / MULTIPLIER) + 1; 
  
 	opd_write_u32_he(fp, low_pc);
@@ -360,20 +354,6 @@ static void do_list_symbols_details(opp_bfd & abfd,
 }
 
 /**
- * output_event - output a counter setup
- * \param i counter number
- *
- * output to stdout a description of an event.
- */
-void opp_samples_files::output_event(int i) const
-{
-	op_cpu cpu = static_cast<op_cpu>(header[first_file]->cpu_type);
-
-	op_print_event(cout, i, cpu, header[i]->ctr_event,
-		       header[i]->ctr_um, header[i]->ctr_count);
-}
-
-/**
  * output_header() - output counter setup
  *
  * output to stdout the cpu type, cpu speed
@@ -385,11 +365,15 @@ void opp_samples_files::output_header() const
  
 	printf("Cpu type: %s\n", op_get_cpu_type_str(cpu));
 
-	printf("Cpu speed was (MHz estimation) : %f\n", header[first_file]->cpu_speed);
+	printf("Cpu speed was (MHz estimation) : %f\n",
+	       header[first_file]->cpu_speed);
 
 	for (uint i = 0 ; i < OP_MAX_COUNTERS; ++i) {
-		if (fd[i] != -1)
-			output_event(i);
+		if (fd[i] != -1) {
+			op_print_event(cout, i, cpu, header[i]->ctr_event,
+				       header[i]->ctr_um,
+				       header[i]->ctr_count);
+		}
 	}
 }
 

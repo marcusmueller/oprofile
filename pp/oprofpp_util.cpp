@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.43 2002/03/22 21:18:43 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.44 2002/04/02 14:36:11 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -677,7 +677,7 @@ size_t opp_bfd::symbol_size(uint sym_idx) const
 
 	next = (sym_idx == syms.size() - 1) ? NULL : syms[sym_idx + 1];
 
-	u32 start = sym->section->vma + sym->value;
+	u32 start = sym->section->filepos + sym->value + sect_offset;
 	size_t length;
 
 #ifndef USE_ELF_INTERNAL
@@ -709,7 +709,6 @@ size_t opp_bfd::symbol_size(uint sym_idx) const
 		}
 		length = next_offset - start;
 	}
-	end = start + length;
 #endif /* USE_ELF_INTERNAL */
 
 	return length;
@@ -733,34 +732,7 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 	if (is_excluded_symbol(sym->name)) {
 		end = start;
 	} else {
-#ifndef USE_ELF_INTERNAL
-		if (next) {
-			end = next->value;
-			/* offset of section */
-			end += next->section->filepos;
-			/* adjust for kernel image */
-			end += sect_offset;
-		} else
-			end = nr_samples;
-#else /* !USE_ELF_INTERNAL */
-		size_t length =
-			((elf_symbol_type *)sym)->internal_elf_sym.st_size;
-
-		// some asm symbol can have a zero length such system_call
-		// entry point in vmlinux. Calculate the length from the next
-		// symbol vma
-		if (length == 0) {
-			u32 next_offset = start;
-			if (next) {
-				next_offset = next->value +
-					next->section->filepos + sect_offset;
-			} else {
-				next_offset = nr_samples;
-			}
-			length = next_offset - start;
-		}
-		end = start + length;
-#endif /* USE_ELF_INTERNAL */
+		end = start + symbol_size(sym_idx);
 	}
 	verbprintf("start 0x%x, end 0x%x\n", start, end); 
 
@@ -954,8 +926,7 @@ static void open_samples_file(fd_t fd, size_t & size, opd_fentry * & fentry,
 	}
 	size = sz_file - sizeof(opd_header); 
 
-	header = (opd_header*)mmap(0, sz_file, 
-				   PROT_READ, MAP_PRIVATE, fd, 0);
+	header = (opd_header*)mmap(0, sz_file, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (header == (void *)-1) {
 		fprintf(stderr, "open_samples_file(): mmap of %s failed. %s\n", filename.c_str(), strerror(errno));
 		exit(EXIT_FAILURE);
@@ -1093,14 +1064,15 @@ samples_file_t::samples_file_t(const std::string & filename)
 	:
 	samples(0),
 	header(0),
-	fd(-1),
-	size(0)
+	fd(-1)
 {
 	fd = open(filename.c_str(), O_RDONLY);
 	if (fd == -1) {
 		fprintf(stderr, "samples_files_t(): Opening %s failed. %s\n", filename.c_str(), strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+
+	size_t size;
 
 	open_samples_file(fd, size, samples, header, filename);
 
@@ -1116,7 +1088,7 @@ samples_file_t::samples_file_t(const std::string & filename)
 samples_file_t::~samples_file_t()
 {
 	if (header)
-		munmap(header, size + sizeof(opd_header));
+		munmap(header, (nr_samples * sizeof(opd_fentry)) + sizeof(opd_header));
 	if (fd != -1)
 		close(fd);
 }
@@ -1133,9 +1105,9 @@ bool samples_file_t::check_headers(const samples_file_t & rhs) const
 {
 	::check_headers(header, rhs.header);
 	
-	if (size != rhs.size) {
+	if (nr_samples != rhs.nr_samples) {
 		fprintf(stderr, "check_headers(): mapping file size "
-			"are different (%d, %d)\n", size, rhs.size);
+			"are different (%d, %d)\n", nr_samples, rhs.nr_samples);
 		exit(EXIT_FAILURE);		
 	}
 

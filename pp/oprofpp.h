@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.48 2002/03/22 21:18:43 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.49 2002/04/02 14:36:11 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -319,8 +319,6 @@ struct samples_file_t
 	opd_fentry *samples;		// header + sizeof(header)
 	opd_header *header;		// mapping begin here
 	fd_t fd;
-	// This do not include the header size
-	size_t size;
 	size_t nr_samples;
 
 private:
@@ -407,8 +405,6 @@ struct opp_samples_files {
 	size_t counter_mask;
 
 private:
-	void output_event(int i) const;
-
 	// ctor helper
 	void open_samples_file(u32 counter, bool can_fail);
 	void check_event(int i);

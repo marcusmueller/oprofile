@@ -754,7 +754,7 @@ size_t output::get_sort_counter_nr() const
 
 	// paranoid checking.
 	if (index == samples->get_nr_counters())
-		throw "output::output_source(input &) cannot find a counter enabled";
+		throw "output::get_sort_counter_nr() cannot find a counter enabled";
 
 	return index;
 }
