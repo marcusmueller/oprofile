@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.29 2001/08/16 02:21:19 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.30 2001/09/12 02:54:30 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -113,7 +113,6 @@ test "$x86" = 1 || AC_MSG_ERROR(Unsupported architecture)
 AC_MSG_CHECKING(for SMP)
 AX_COMPILE_OPTION(CONFIG_SMP,smp=1,smp=0)
 AX_MSG_RESULT_YN($smp)
-test "$smp" = 1 && echo "Warning: SMP totally untested !"
 
 AC_MSG_CHECKING(for versioned modules)
 mv=0

@@ -1,5 +1,16 @@
 2001-09-12  John Levon  <moz@compsoc.man.ac.uk>
 
+	* configure.in: remove warning
+ 
+	* op_user.h: 
+	* op_events.c: fix and clean up cpu type detection
+ 
+	* op_init.c: fix email
+ 
+	* oprofile.c: add IRQ stats. Not sure whether to keep...
+ 
+2001-09-12  John Levon  <moz@compsoc.man.ac.uk>
+
 	* oprofile.h:
 	* oprofile.c: use cpu_number_map (pedantry thing)
  

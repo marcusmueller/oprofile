@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.84 2001/09/12 01:22:40 movement Exp $ */
+/* $Id: oprofile.c,v 1.85 2001/09/12 02:54:30 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -66,6 +66,7 @@ static DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
 
 u32 oprof_ready[NR_CPUS] __cacheline_aligned;
 static struct _oprof_data oprof_data[NR_CPUS];
+static uint op_irq_stats[NR_CPUS] __cacheline_aligned;
 
 extern spinlock_t map_lock;
 
@@ -123,8 +124,10 @@ static void op_check_ctr(struct _oprof_data *data, struct pt_regs *regs, int ctr
 {
 	ulong l,h;
 	get_perfctr(l, h, ctr);
-	if (ctr_overflowed(l))
+	if (ctr_overflowed(l)) {
 		op_do_profile(data, regs, ctr);
+		op_irq_stats[op_cpu_id()]++;
+	} 
 }
 
 asmlinkage void op_do_nmi(struct pt_regs *regs)
@@ -594,7 +597,7 @@ inline static void pmc_select_start(uint cpu)
 
 inline static void pmc_select_stop(uint cpu)
 {
-	if (cpu==op_cpu_id())
+	if (cpu == op_cpu_id())
 		pmc_stop(NULL);
 	else
 		smp_call_function(pmc_stop, &cpu, 0, 1);
@@ -1127,26 +1130,30 @@ static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *
 
 	down(&sysctlsem);
 	
-	if (write) {
-		/* clean out the hash table as far as possible */
-		for (cpu=0; cpu < smp_num_cpus; cpu++) {
-			struct _oprof_data * data = &oprof_data[cpu];
-			pmc_select_stop(cpu);
-			for (i=0; i < data->hash_size; i++) {
-				for (j=0; j < OP_NR_ENTRY; j++)
-					dump_one(data, &data->entries[i].samples[j], cpu);
-				if (oprof_ready[cpu])
-					break;
-			}
-			oprof_ready[cpu] = 2;
-			pmc_select_start(cpu);
-		}
-		wake_up(&oprof_wait);
-		err = 0;
+	for (cpu=0; cpu < smp_num_cpus; cpu++)
+		printk("oprofile: CPU%u: %u interrupts\n", cpu, op_irq_stats[cpu]);
+ 
+	if (!write) {
+		err = proc_dointvec(table, write, filp, buffer, lenp);
 		goto out;
 	}
-	
-	err = proc_dointvec(table, write, filp, buffer, lenp);
+ 
+	err = 0;
+ 
+	/* clean out the hash table as far as possible */
+	for (cpu=0; cpu < smp_num_cpus; cpu++) {
+		struct _oprof_data * data = &oprof_data[cpu];
+		pmc_select_stop(cpu);
+		for (i=0; i < data->hash_size; i++) {
+			for (j=0; j < OP_NR_ENTRY; j++)
+				dump_one(data, &data->entries[i].samples[j], cpu);
+			if (oprof_ready[cpu])
+				break;
+		}
+		oprof_ready[cpu] = 2;
+		pmc_select_start(cpu);
+	}
+	wake_up(&oprof_wait);
 	
 out:
 	up(&sysctlsem);
@@ -1165,7 +1172,6 @@ static ctl_table oprof_table[] = {
 	{ 0, }, { 0, }, { 0, }, { 0, }, 
 	{ 0, }, 
 };
-
 
 static ctl_table oprof_root[] = {
 	{1, "oprofile", NULL, 0, 0700, oprof_table},

@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.23 2001/09/08 21:46:03 phil_e Exp $ */
+/* $Id: op_events.c,v 1.24 2001/09/12 02:54:30 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -280,7 +280,7 @@ static int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
 /**
  * op_min_count - get the minimum count value.
  * @ctr_type: event value
- * @cpu_type: 
+ * @cpu_type: cpu type
  *
  * 0 Pentium Pro
  *
@@ -438,71 +438,71 @@ struct op_cpu_type {
 	int cpu_type;
 };
 
-/* string must be in the correct order to not hide a forward string eg.
- * order "Pentium II" "Pentium III" is bad because the first hide the second */
+/* be careful here, later entries will be override earlier ones */
 static struct op_cpu_type op_cpu_types[] = {
-	{ "PentiumPro", CPU_PPRO },
-	{ "Pentium III",CPU_PIII },
-	{ "Pentium II", CPU_PII },
-	{ "Pentium III",CPU_PIII },
-	{ "Athlon",	CPU_ATHLON },
-	{ "Duron",	CPU_ATHLON },
-	{ "K7",		CPU_ATHLON },
-	{ "Celeron",	CPU_PII },
-	{ "Coppermine", CPU_PIII },
+	{ "PentiumPro",  CPU_PPRO },
+	{ "Pentium II",  CPU_PII },
+	{ "Pentium III", CPU_PIII },
+	{ "Celeron",	 CPU_PII },
+	{ "Coppermine",  CPU_PIII },
+	{ "Athlon",	 CPU_ATHLON },
+	{ "Duron",	 CPU_ATHLON },
+	{ "K7",		 CPU_ATHLON },
 };
 
 #define OP_CPU_TYPES_NR (sizeof(op_cpu_types) / sizeof(op_cpu_types[0]))
 
+
+static int op_type_from_name(char const * name)
+{
+	uint i;
+	int cpu_type = CPU_NO_GOOD;
+
+	for (i = 0; i < OP_CPU_TYPES_NR; i++) {
+		if (strstr(name, op_cpu_types[i].cpu_name))
+			cpu_type = op_cpu_types[i].cpu_type;
+	}
+	return cpu_type;
+}
+
+#define MODEL_PREFIX "model name\t: "
+
 /**
  * op_get_cpu_type - get from /proc/cpuinfo the cpu type
  *
- * return DEFAULT_CPU_TYPE if the cpu type is un-recognizable
- * FIXME: return -1
+ * returns CPU_NO_GOOD if the CPU could not be identified
  */
 int op_get_cpu_type(void)
 {
-	int cpu_type;
+	int cpu_type = CPU_NO_GOOD;
+	int cputmp;
 	char line[256];
-	char *model_name;
 	FILE* fp;
-	uint i;
-	int found = 0;
-
-	cpu_type = DEFAULT_CPU_TYPE;
 
 	fp = fopen("/proc/cpuinfo", "r");
 	if (!fp) {
 		fprintf(stderr, "Unable to open /proc/cpuinfo for reading\n");
-
 		return cpu_type;
 	}
 
 	while (fgets(line, sizeof(line) - 1, fp)) {
-		if (strncmp(line, "model name\t: ", strlen("model name\t: ")) == 0) {
-			model_name = line + strlen("model name\t: ");
-
-			for (i = 0; i < OP_CPU_TYPES_NR; i++) {
-				if (strncmp(model_name, op_cpu_types[i].cpu_name, strlen(op_cpu_types[i].cpu_name)) == 0) {
-					cpu_type = op_cpu_types[i].cpu_type;
-
-					found = 1;
-				}
-			}
+		if (strncmp(line, MODEL_PREFIX, strlen(MODEL_PREFIX)) == 0) {
+			cputmp = op_type_from_name(line + strlen(MODEL_PREFIX));
+			if (cputmp != CPU_NO_GOOD)
+				cpu_type = cputmp;
 		}
 	}
 
-	if (!found) {
-		/* FIXME: use oprofile mail list adress here ? */
-		fprintf(stderr, "Unknown CPU type. Please send /proc/cpuinfo to moz@compsoc.man.ac.uk\n");
-	}
+	if (cpu_type == CPU_NO_GOOD)
+		fprintf(stderr, "Unknown CPU type. Please send /proc/cpuinfo to oprofile-list@lists.sf.net\n");
 
+	fclose(fp);
 	return cpu_type;
 }
 
 #undef OP_CPU_TYPES_NR
 
-#endif
+#endif /* !defined(MODULE) */
 
 #ifdef OP_EVENTS_DESC
 struct op_unit_desc {
@@ -756,7 +756,7 @@ void op_get_event_desc(int cpu_type, u8 type, u8 um, char **typenamep, char **ty
 
 #include "version.h"
 
-static int cpu_type = DEFAULT_CPU_TYPE;
+static int cpu_type = CPU_NO_GOOD;
 
 /**
  * help_for_event - output event name and description
@@ -879,17 +879,15 @@ int main(int argc, char *argv[])
 			return 0;
 		} else if (!strcmp(argv[i], "--help")) {
 			printf("op_help [--version|--cpu-type] event_name\n");
-
 			return 0;
 		} else if (!strncmp(argv[i], "--cpu-type=", 11)) {
 			sscanf(argv[i] + 11, "%d", &cpu_type);
 			if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
-				fprintf(stderr, "invalid cpu type %d, default to to %s\n", cpu_type, cpu_type_str[DEFAULT_CPU_TYPE]);
-				cpu_type = DEFAULT_CPU_TYPE;
+				fprintf(stderr, "invalid cpu type %d !\n", cpu_type);
+				exit(EXIT_FAILURE);
 			}
 		} else if (!strncmp(argv[i], "--get-cpu-type", 11)) {
 			printf("%d\n", cpu_type);
-
 			exit(EXIT_SUCCESS);
 		} else if (!strcmp(argv[1], "--gui-description")) {
 			for_gui = 1;

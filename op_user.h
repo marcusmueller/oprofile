@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.6 2001/09/08 21:46:03 phil_e Exp $ */
+/* $Id: op_user.h,v 1.7 2001/09/12 02:54:30 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -54,9 +54,6 @@
 #define CPU_PIII	2
 #define CPU_ATHLON	3
 #define MAX_CPU_TYPE	4
-
-/* default value must be set by configure */
-#define DEFAULT_CPU_TYPE CPU_PII
 
 #ifndef NR_CPUS 
 #define NR_CPUS 32
