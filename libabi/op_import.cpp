@@ -168,6 +168,7 @@ int main(int argc, char const ** argv)
 	}
 
 	abi current_abi, input_abi;
+
 	{
 		ifstream abi_file(abi_filename.c_str());
 		if (!abi_file) {
