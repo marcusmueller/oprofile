@@ -56,7 +56,7 @@ private:
 	bool expand_string(std::string const & input, std::string & result);
 
 	// helper to add_pattern
-	std::string substitute_definition(string const & pattern);
+	std::string substitute_definition(std::string const & pattern);
 
 	// don't increase too, it have direct impact on performance
 	static const size_t max_match = 10;
@@ -64,7 +64,7 @@ private:
 	size_t limit;
 	size_t limit_defs_expansion;
 	std::vector<regex_t> v_regexp;
-	std::vector<string> v_replace;
+	std::vector<std::string> v_replace;
 	/// dictionary of regular definition
 	typedef std::map<std::string, std::string> defs_dict;
 	defs_dict defs;
@@ -77,6 +77,6 @@ private:
  * add to regex pattern and regular definition read from the given file
  */
 void setup_regex(regular_expression_replace& regex,
-		 string const & filename);
+		 std::string const & filename);
 
 #endif /* !OP_REGEX_H */

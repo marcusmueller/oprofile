@@ -15,6 +15,10 @@
 
 #include "op_regex.h"
 
+#include <iostream>
+
+using namespace std;
+
 static void do_test()
 {
 	regular_expression_replace rep;
