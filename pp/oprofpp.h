@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.23 2001/09/30 13:57:05 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.24 2001/10/03 02:47:17 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -91,12 +91,14 @@ struct opp_bfd {
 	~opp_bfd();
 
 	bool get_linenr(uint sym_idx, uint offset, 
-			const char*& filename, unsigned int& linenr) ;
+			const char*& filename, unsigned int& linenr);
 	void output_linenr(uint sym_idx, uint offset);
 	void get_symbol_range(uint sym_idx, u32 & start, u32 & end) const;
 	int symbol_index(const char* symbol) const;
 
 	u32 sym_offset(uint num_symbols, u32 num) const;
+
+	bool have_debug_info() const;
 
 	bfd *ibfd;
 	// sorted vector of interesting symbol.

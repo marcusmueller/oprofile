@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.6 2001/10/02 21:21:46 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.7 2001/10/03 02:47:17 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -541,6 +541,21 @@ u32 opp_bfd::sym_offset(uint sym_index, u32 num) const
 
 	return num;
 }
+
+/**
+ * have_debug_info - check if the ibfd object contains debug info
+ *
+ * Returns true if the underlined bfd object contains debug info
+ */
+bool opp_bfd::have_debug_info() const
+{
+	sec* section;
+	for (section = ibfd->sections; section; section = section->next)
+		if (section->flags & SEC_DEBUGGING)
+			break;
+
+	return section != NULL;
+}
  
 /**
  * get_linenr - lookup linenr info from a vma address
@@ -963,7 +978,6 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 	for (i = 0; i < abfd.syms.size(); i++) {
 		printf_symbol(scounts[i].sym->name);
 
-		// FIXME: why we output also zero samples symbol ?
 		if (scounts[i].count[ctr]) {
 			printf("[0x%.8lx]: %2.4f%% (%u samples)\n", 
 			       scounts[i].sym->value+scounts[i].sym->section->vma,
@@ -987,7 +1001,6 @@ void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 {
 	u32 start, end;
 	u32 j;
-	uint k;
 
 	int i = abfd.symbol_index(symbol);
 	if (i < 0) {
@@ -999,19 +1012,13 @@ void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 
 	abfd.get_symbol_range(i, start, end);
 	for (j = start; j < end; j++) {
-		counter_array_t count;
-		if (accumulate_samples(count, j) == false)
-			// all counters are empty at this address
+		uint sample_count = samples_count(ctr, j);
+		if (!sample_count)
 			continue;
 
 		abfd.output_linenr(i, j);
-		printf("%s+%x/%x:", symbol, abfd.sym_offset(i, j), end-start);
- 
-		for (k = 0 ; k < nr_counters ; ++k) {
-			if (is_open(k))
-				printf("\t%u", count[k]);
-		}
-		printf("\n");
+		printf("%s+%x/%x:\t%u\n", symbol, abfd.sym_offset(i, j), 
+		       end - start, sample_count);
 	}
 }
 
