@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.31 2001/07/21 22:53:38 movement Exp $
+# $Id: op_start,v 1.32 2001/07/25 16:43:30 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -44,40 +44,42 @@ PGRP_FILTER=0
 VERBOSE=0
 
 # FIXME: needs to be generalised for more counters (e.g. athlon) 
- 
-help_string='op_start: usage:$
-Module options$
-  --buffer-size=num            number of samples in kernel buffer$
-  --hash-table-size=num        number of entries in kernel hash table$
-  --kernel-only=[0|1]          profile only the kernel$
-  --ctr0-event=name            symbolic event name for ctr0$
-  --ctr1-event=name            symbolic event name for ctr1$
-  --ctr0-count=val             number of events between samples for ctr0$
-  --ctr1-count=val             number of events between samples for ctr1$
-  --ctr0-unit-mask=val         unit mask for ctr0$
-  --ctr1-unit-mask=val         unit mask for ctr1$
-  --ctr0-kernel=[0|1]          whether to count kernel events for ctr 0$
-  --ctr0-user=[0|1]            whether to count user events for ctr 0$
-  --ctr1-kernel=[0|1]          whether to count kernel events for ctr 1$
-  --ctr1-user=[0|1]            whether to count user events for ctr1$
-  --pid-filter=pid             Only profile process pid (if compiled in)$
-  --pgrp-filter=pgrp           Only profile process group pgrp (if compiled in)$
-$
-Daemon options$
-  --use-cpu=[0|1|2]            0 or PPro, 1 for PII, 2 for PIII$
-  --ignore-myself=[0|1]        ignore samples for oprofiled$
-  --log-file=file              log file$
-  --base-dir=dir               base directory of daemon$
-  --samples-dir=file           output samples directory$
-  --device-file=file           profile device file$
-  --hash-map-device-file=file  profile hash map device file$
-  --map-file=file              System.map for running kernel file$
-  --vmlinux=file               vmlinux kernel image$
-  --verbose                    be verbose in the daemon log$
-$
-General options$
-  --list-events                list event types and unit masks$
-  --help                       this message$'
+
+do_help() { 
+echo 'op_start: usage:
+Module options
+  --buffer-size=num            number of samples in kernel buffer
+  --hash-table-size=num        number of entries in kernel hash table
+  --kernel-only=[0|1]          profile only the kernel
+  --ctr0-event=name            symbolic event name for ctr0
+  --ctr1-event=name            symbolic event name for ctr1
+  --ctr0-count=val             number of events between samples for ctr0
+  --ctr1-count=val             number of events between samples for ctr1
+  --ctr0-unit-mask=val         unit mask for ctr0
+  --ctr1-unit-mask=val         unit mask for ctr1
+  --ctr0-kernel=[0|1]          whether to count kernel events for ctr 0
+  --ctr0-user=[0|1]            whether to count user events for ctr 0
+  --ctr1-kernel=[0|1]          whether to count kernel events for ctr 1
+  --ctr1-user=[0|1]            whether to count user events for ctr1
+  --pid-filter=pid             Only profile process pid (if compiled in)
+  --pgrp-filter=pgrp           Only profile process group pgrp (if compiled in)
+
+Daemon options
+  --use-cpu=[0|1|2]            0 or PPro, 1 for PII, 2 for PIII
+  --ignore-myself=[0|1]        ignore samples for oprofiled
+  --log-file=file              log file
+  --base-dir=dir               base directory of daemon
+  --samples-dir=file           output samples directory
+  --device-file=file           profile device file
+  --hash-map-device-file=file  profile hash map device file
+  --map-file=file              System.map for running kernel file
+  --vmlinux=file               vmlinux kernel image
+  --verbose                    be verbose in the daemon log
+
+General options
+  --list-events                list event types and unit masks
+  --help                       this message'
+}
 
 # utilities functions.
 
@@ -205,7 +207,7 @@ do
 			VERBOSE=1
 			;;
 		--help)
-			echo $help_string | tr \$ '\n'
+			do_help
 			exit 0
 			;;
 

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.26 2001/07/25 02:22:44 movement Exp $ */
+/* $Id: oprofiled.h,v 1.27 2001/07/25 16:43:30 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -116,7 +116,7 @@ struct opd_footer {
 	double cpu_speed;
 	time_t mtime;
 	/* binary compatibility reserve */
-	u32  reserved2[28];
+	u32  reserved2[31];
 };
 
 struct opd_image {

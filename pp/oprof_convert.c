@@ -50,14 +50,14 @@ struct opd_footer_v3 {
 };
 
 struct opd_footer_v4 {
-	struct opd_footer_v3 v3;
+	struct opd_footer_v2 v2;
 	u32 ctr0_count;
 	u32 ctr1_count;
 	/* Set to 0.0 if not available */
 	double cpu_speed;
-	time_t mtime;
 	/* binary compatibility reserve */
-	u32  reserved[28];
+	time_t mtime;
+	u32  reserved[31];
 };
 
 /*
@@ -98,7 +98,7 @@ static char * get_binary_name(void)
 	char *mang;
 	char *c;
 
-	mang = opd_strdup(filename);
+	mang = opd_relative_to_absolute_path(filename, NULL);
 		 
 	c = &mang[strlen(mang)];
 	/* strip leading dirs */
@@ -120,6 +120,7 @@ static char * get_binary_name(void)
 	return file; 
 }
 
+// just reset the md5sum to 0, don't change the size of opd_footer.
 static void v3_to_v4(FILE* fp) {
 	struct opd_footer_v3 footer_v3;
 	struct opd_footer_v4 footer_v4;
@@ -127,13 +128,19 @@ static void v3_to_v4(FILE* fp) {
 
 	fread(&footer_v3, sizeof(footer_v3), 1, fp);
 
-	footer_v4.v3 = footer_v3;
-	footer_v4.v3.v2.version = 4;
+	footer_v4.v2 = footer_v3.v2;
+	footer_v4.v2.version = 4;
+
+	footer_v4.ctr0_count = footer_v3.ctr0_count;
+	footer_v4.ctr1_count = footer_v3.ctr1_count;
+	footer_v4.cpu_speed  = footer_v3.cpu_speed;
 
 	name = get_binary_name();
-	footer_v4.mtime = opd_get_mtime(get_binary_name());
-	opd_free(get_binary_name()); 
- 
+	footer_v4.mtime = opd_get_mtime(name);
+	opd_free(name); 
+
+	memset(&footer_v4.v2.md5sum, '\0', sizeof(footer_v4.v2.md5sum));
+
 	/* binary compatibility reserve */
 	memset(&footer_v4.reserved, '\0', sizeof(footer_v4.reserved));
 
@@ -169,7 +176,7 @@ static struct converter converter_array[] = {
 
 struct opd_footer_vM 
   { 
-  struct opd_footer_vN; 
+  struct opd_footer_v2 v2; 
   // additionnal field
 
   };

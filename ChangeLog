@@ -1,3 +1,13 @@
+2001-07-25  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/op_start: beautify the output of op_start --help
+	* pp/op_to_source: ditto. better argument checking.
+
+	* pp/oprof_convert.c:
+	* pp/oprofpp.h:
+	* dae/oprofiled.h: fix problem with opd_footer, don't bump 
+	  opd_footer version number !
+
 2001-07-25  John Levon  <moz@compsoc.man.ac.uk>
 
 	* pp/Makefile.in:
