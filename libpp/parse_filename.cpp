@@ -54,6 +54,7 @@ parsed_filename parse_event_spec(string const & event_spec)
 	return result;
 }
 
+
 /**
  * @param component  path component
  *
@@ -61,11 +62,13 @@ parsed_filename parse_event_spec(string const & event_spec)
  */
 void remove_base_dir(vector<string> & path)
 {
-	while (!path.empty()) {
-		if (path[0] == "{root}" || path[0] == "{kern}")
+	vector<string>::iterator it;
+	for (it = path.begin(); it != path.end(); ++it) {
+		if (*it == "{root}" || *it == "{kern}")
 			break;
-		path.erase(path.begin());
 	}
+
+	path.erase(path.begin(), it);
 }
 
 }  // anonymous namespace
