@@ -47,6 +47,11 @@ void opd_print_stats(void)
 			(double)opd_stats[OPD_MAP_ARRAY_DEPTH]
 			/ (double)opd_stats[OPD_MAP_ARRAY_ACCESS]);
 	}
+	if (opd_stats[OPD_IMAGE_HASH_ACCESS]) {
+		printf("Average depth of iteration through image hash array: %f\n",
+			(double)opd_stats[OPD_IMAGE_HASH_DEPTH]
+			/ (double)opd_stats[OPD_IMAGE_HASH_ACCESS]);
+	}
 	printf("Nr. sample dumps: %lu\n", opd_stats[OPD_DUMP_COUNT]);
 	printf("Nr. samples total: %lu\n", opd_stats[OPD_SAMPLES]);
 	printf("Nr. notifications: %lu\n", opd_stats[OPD_NOTIFICATIONS]);

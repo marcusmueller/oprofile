@@ -30,6 +30,13 @@
 #define lock_mmap(mm) do {} while (0)
 #define unlock_mmap(mm) do {} while (0)
 
+/* on 2.2 we use pid as tgid, thread seperation is possible but
+ * each thread is in its own thread group */
+static inline pid_t op_get_tgid(void)
+{
+	return current->pid;
+}
+
 /* the wake_up path doesn't disable interrupts for wait queue
  * manipulation. So let's force it to.
  */

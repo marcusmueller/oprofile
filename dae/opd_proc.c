@@ -29,19 +29,23 @@
 /* size of process hash table */
 #define OPD_MAX_PROC_HASH 1024
 
-/* here to avoid warning */
-extern op_cpu cpu_type;
 extern int separate_lib;
 extern int separate_kernel;
+extern int separate_thread;
 extern int no_vmlinux;
+extern int cpu_number;
 
 /* hash of process lists */
 static struct list_head opd_procs[OPD_MAX_PROC_HASH];
 
-static void opd_delete_proc(struct opd_proc * proc);
+/* statistics purpose */
+static int nr_procs;
 
 
-void opd_proc_init(void)
+/**
+ * opd_init_proc() init proc hash table
+ */
+void opd_init_proc(void)
 {
 	int i;
 
@@ -55,73 +59,43 @@ void opd_proc_init(void)
  */
 int opd_get_nr_procs(void)
 {
-	int i, count = 0;
-
-	for (i = 0; i < OPD_MAX_PROC_HASH; i++) {
-		struct list_head * pos;
-		list_for_each(pos, &opd_procs[i]) {
-			++count;
-		}
-	}
-	return count;
-}
-
-
-/**
- * opd_age_procs - age and delete processes
- *
- * Age processes, and delete any we guess are dead
- */
-void opd_age_procs(void)
-{
-	uint i;
-	struct opd_proc * proc;
-
-	for (i = 0; i < OPD_MAX_PROC_HASH; i++) {
-		struct list_head * pos, * pos2;
-		list_for_each_safe(pos, pos2, &opd_procs[i]) {
-			proc = list_entry(pos, struct opd_proc, next);
-			// delay death whilst its still being accessed
-			if (proc->dead) {
-				proc->dead += proc->accessed;
-				proc->accessed = 0;
-				if (--proc->dead == 0)
-					opd_delete_proc(proc);
-			}
-		}
-	}
+	return nr_procs;
 }
 
 
 /**
  * proc_hash - hash pid value
- * @param pid  pid value to hash
+ * @param tid  pid value to hash
  *
  */
-inline static uint proc_hash(u32 pid)
+inline static uint proc_hash(pid_t tid)
 {
-	return ((pid>>4) ^ (pid)) % OPD_MAX_PROC_HASH;
+	/* FIXME: hash tgid too! */
+	return ((tid>>4) ^ (tid)) % OPD_MAX_PROC_HASH;
 }
 
 
 /**
  * opd_new_proc - create a new process structure
- * @param pid  pid for this process
+ * @param tid  tid for this process
+ * @param tgid  tgid for this process
  *
  * Allocate and initialise a process structure and insert
  * it into the procs hash table.
  */
-struct opd_proc * opd_new_proc(u32 pid)
+struct opd_proc * opd_new_proc(pid_t tid, pid_t tgid)
 {
 	struct opd_proc * proc;
 
+	nr_procs++;
 	proc = xmalloc(sizeof(struct opd_proc));
 	list_init(&proc->maps);
 	proc->name = NULL;
-	proc->pid = pid;
+	proc->tid = tid;
+	proc->tgid = tgid;
 	proc->dead = 0;
 	proc->accessed = 0;
-	list_add(&proc->next, &opd_procs[proc_hash(pid)]);
+	list_add(&proc->next, &opd_procs[proc_hash(tid)]);
 	return proc;
 }
 
@@ -135,11 +109,52 @@ struct opd_proc * opd_new_proc(u32 pid)
  */
 static void opd_delete_proc(struct opd_proc * proc)
 {
+	--nr_procs;
 	list_del(&proc->next);
 	opd_kill_maps(proc);
 	if (proc->name)
 		free((char *)proc->name);
 	free(proc);
+}
+
+
+/**
+ * opd_age_proc - age a struct opd_proc
+ * @param  proc proc to age
+ *
+ * age dead proc in such way if a proc doesn't receive any samples
+ * between two age_proc the opd_proc struct is deleted
+ */
+void opd_age_proc(struct opd_proc * proc)
+{
+	// delay death whilst its still being accessed
+	if (proc->dead) {
+		proc->dead += proc->accessed;
+		proc->accessed = 0;
+		if (--proc->dead == 0)
+			opd_delete_proc(proc);
+	}
+}
+
+/**
+ * @param proc_cb callback to apply onto each existing proc struct
+ *
+ * the callback receive a struct opd_proc * (not a const struct) and is
+ * allowed to freeze the proc struct itself.
+ */
+void opd_for_each_proc(opd_proc_cb proc_cb)
+{
+	struct list_head * pos;
+	struct list_head * pos2;
+	int i;
+
+	for (i = 0; i < OPD_MAX_PROC_HASH; ++i) {
+		list_for_each_safe(pos, pos2, &opd_procs[i]) {
+			struct opd_proc * proc =
+				list_entry(pos, struct opd_proc, next);
+			proc_cb(proc);
+		}
+	}
 }
 
 
@@ -151,17 +166,17 @@ static void opd_delete_proc(struct opd_proc * proc)
  * maintaining LRU order. If it is not found, %NULL is returned,
  * otherwise the process structure is returned.
  */
-struct opd_proc * opd_get_proc(u32 pid)
+struct opd_proc * opd_get_proc(pid_t tid, pid_t tgid)
 {
 	struct opd_proc * proc;
-	uint hash = proc_hash(pid);
+	uint hash = proc_hash(tid);
 	struct list_head * pos, *pos2;
 
 	opd_stats[OPD_PROC_QUEUE_ACCESS]++;
 	list_for_each_safe(pos, pos2, &opd_procs[hash]) {
 		opd_stats[OPD_PROC_QUEUE_DEPTH]++;
 		proc = list_entry(pos, struct opd_proc, next);
-		if (pid == proc->pid) {
+		if (tid == proc->tid && tgid == proc->tgid) {
 			/* LRU to head */
 			list_del(&proc->next);
 			list_add(&proc->next, &opd_procs[hash]);
@@ -201,23 +216,26 @@ verb_show_sample(unsigned long offset, struct opd_map * map)
 void opd_put_image_sample(struct opd_image * image, unsigned long offset,
                           u32 counter)
 {
-	samples_odb_t * sample_file;
+	struct opd_sfile * sfile;
 	int err;
 
-	sample_file = &image->sample_files[counter];
+	sfile = image->sfiles[counter][cpu_number];
 
-	if (!sample_file->base_memory) {
-		if (opd_open_sample_file(image, counter)) {
+	if (!sfile || !sfile->sample_file.base_memory) {
+		if (opd_open_sample_file(image, counter, cpu_number)) {
 			/* opd_open_sample_file output an error message */
 			return;
 		}
+		sfile = image->sfiles[counter][cpu_number];
 	}
 
-	err = odb_insert(sample_file, offset, 1);
+	err = odb_insert(&sfile->sample_file, offset, 1);
 	if (err) {
 		fprintf(stderr, "%s\n", strerror(err));
 		abort();
 	}
+
+	opd_sfile_lru(sfile);
 }
 
 
@@ -271,8 +289,8 @@ void opd_put_sample(struct op_sample const * sample)
 
 	opd_stats[OPD_SAMPLES]++;
 
-	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8lx, pid %.6d\n",
-		sample->counter, sample->eip, sample->pid);
+	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8lx, tgid %.6d pid %.6d\n",
+		sample->counter, sample->eip, sample->tgid, sample->pid);
 
 	if (!separate_kernel && in_kernel_eip) {
 		opd_handle_kernel_sample(sample->eip, sample->counter);
@@ -282,7 +300,7 @@ void opd_put_sample(struct op_sample const * sample)
 	if (kernel_only && !in_kernel_eip)
 		return;
 
-	if (!(proc = opd_get_proc(sample->pid))) {
+	if (!(proc = opd_get_proc(sample->pid, sample->tgid))) {
 		if (in_kernel_eip || no_vmlinux) {
 			/* idle task get a 0 pid and is hidden we can never get
 			 * a proc so on we fall back to put sample in vmlinux
@@ -292,7 +310,8 @@ void opd_put_sample(struct op_sample const * sample)
 			 * at daemon startup time */
 			opd_handle_kernel_sample(sample->eip, sample->counter);
 		} else {
-			verbprintf("No proc info for pid %.6d.\n", sample->pid);
+			verbprintf("No proc info for tgid %.6d pid %.6d.\n",
+                                   sample->tgid, sample->pid);
 			opd_stats[OPD_LOST_PROCESS]++;
 		}
 		return;
@@ -338,9 +357,10 @@ void opd_handle_fork(struct op_note const * note)
 	struct opd_proc * proc;
 	struct list_head * pos;
 
-	verbprintf("DO_FORK: from %d to %ld\n", note->pid, note->addr);
+	verbprintf("DO_FORK: from %d, %d to %ld, %ld\n", note->pid, note->tgid,
+	           note->addr, note->len);
 
-	old = opd_get_proc(note->pid);
+	old = opd_get_proc(note->pid, note->tgid);
 
 	/* we can quite easily get a fork() after the execve() because the
 	 * notifications are racy. In particular, the fork notification is
@@ -350,11 +370,11 @@ void opd_handle_fork(struct op_note const * note)
 	 * So we only create a new setup if it doesn't exist already, allowing
 	 * both the clone() and the execve() cases to work.
 	 */
-	if (opd_get_proc(note->addr))
+	if (opd_get_proc(note->addr, note->len))
 		return;
 
-	/* eip is actually pid of new process */
-	proc = opd_new_proc(note->addr);
+	/* eip/len is actually tid/tgid of new process */
+	proc = opd_new_proc(note->addr, note->len);
 
 	if (!old)
 		return;
@@ -362,7 +382,57 @@ void opd_handle_fork(struct op_note const * note)
 	/* copy the maps */
 	list_for_each(pos, &old->maps) {
 		struct opd_map * map = list_entry(pos, struct opd_map, next);
-		opd_add_mapping(proc, map->image, map->start, map->offset, map->end);
+		if (!separate_thread) {
+			opd_add_mapping(proc, map->image, map->start,
+			                map->offset, map->end);
+		} else {
+			/* when separating thread we can't create blindly a new
+			 * image e.g. pid re-use, multiple mapping with the
+			 * same mapping name etc. */
+			struct opd_image * image = 
+			   opd_get_image(map->image->name, old->name,
+			                 map->image->kernel, note->addr,
+			                 note->len);
+			opd_add_mapping(proc, image, map->start, map->offset,
+			                map->end);
+		}
+	}
+}
+
+
+/**
+ * opd_handle_exec - deal with notification of execve()
+ * @param pid  pid of execve()d process
+ *
+ * Drop all mapping information for the process.
+ */
+void opd_handle_exec(pid_t tid, pid_t tgid)
+{
+	struct opd_proc * proc;
+
+	verbprintf("DO_EXEC: pid %u %u\n", tid, tgid);
+
+	/* There is a race for samples received between fork/exec sequence.
+	 * These samples belong to the old mapping but we can not say if
+	 * samples has been received before the exec or after. This explain
+	 * the message "Couldn't find map for ..." in verbose mode.
+	 *
+	 * Unhopefully it is difficult to get an estimation of these misplaced
+	 * samples, the error message can count only out of mapping samples but
+	 * not samples between the race and inside the mapping of the exec'ed
+	 * process :/.
+	 *
+	 * Trying to save old mapping is not correct due the above reason. The
+	 * only manner to handle this is to flush the module samples hash table
+	 * after each fork which is unacceptable for performance reasons */
+	proc = opd_get_proc(tid, tgid);
+	if (proc) {
+		opd_kill_maps(proc);
+		/* proc->name will be set when the next mapping occurs */
+		free((char *)proc->name);
+		proc->name = NULL;
+	} else {
+		opd_new_proc(tid, tgid);
 	}
 }
 
@@ -383,7 +453,7 @@ void opd_handle_exit(struct op_note const * note)
 
 	verbprintf("DO_EXIT: process %d\n", note->pid);
 
-	proc = opd_get_proc(note->pid);
+	proc = opd_get_proc(note->pid, note->tgid);
 	if (proc) {
 		proc->dead = 1;
 		proc->accessed = 1;
@@ -394,54 +464,11 @@ void opd_handle_exit(struct op_note const * note)
 
 
 /**
- * opd_handle_exec - deal with notification of execve()
- * @param pid  pid of execve()d process
- *
- * Drop all mapping information for the process.
- */
-void opd_handle_exec(u32 pid)
-{
-	struct opd_proc * proc;
-
-	verbprintf("DO_EXEC: pid %u\n", pid);
-
-	/* There is a race for samples received between fork/exec sequence.
-	 * These samples belong to the old mapping but we can not say if
-	 * samples has been received before the exec or after. This explain
-	 * the message "Couldn't find map for ..." in verbose mode.
-	 *
-	 * Unhopefully it is difficult to get an estimation of these misplaced
-	 * samples, the error message can count only out of mapping samples but
-	 * not samples between the race and inside the mapping of the exec'ed
-	 * process :/.
-	 *
-	 * Trying to save old mapping is not correct due the above reason. The
-	 * only manner to handle this is to flush the module samples hash table
-	 * after each fork which is unacceptable for performance reasons */
-	proc = opd_get_proc(pid);
-	if (proc)
-		opd_kill_maps(proc);
-	else
-		opd_new_proc(pid);
-}
-
-
-/**
  * opd_proc_cleanup - clean up on exit
  */
 void opd_proc_cleanup(void)
 {
-	uint i;
-
-	for (i = 0; i < OPD_MAX_PROC_HASH; i++) {
-		struct opd_proc * proc;
-		struct list_head * pos, *pos2;
-
-		list_for_each_safe(pos, pos2, &opd_procs[i]) {
-			proc = list_entry(pos, struct opd_proc, next);
-			opd_delete_proc(proc);
-		}
-	}
+	opd_for_each_proc(opd_delete_proc);
 }
 
 
@@ -453,7 +480,7 @@ void opd_proc_cleanup(void)
  * when separate_kernel == 0 because we don't add mapping for kernel
  * sample in proc struct.
  */
-void opd_remove_kernel_mapping(struct opd_proc * proc)
+static void opd_remove_kernel_mapping(struct opd_proc * proc)
 {
 	struct list_head * pos, * pos2;
 
@@ -461,6 +488,8 @@ void opd_remove_kernel_mapping(struct opd_proc * proc)
 		struct opd_map * map = list_entry(pos, struct opd_map, next);
 		if (opd_eip_is_kernel(map->start + map->offset)) {
 			list_del(pos);
+			opd_delete_image(map->image);
+			free(map);
 		}
 	}
 }
@@ -475,15 +504,5 @@ void opd_remove_kernel_mapping(struct opd_proc * proc)
  */
 void opd_clear_kernel_mapping(void)
 {
-	uint i;
-
-	for (i = 0; i < OPD_MAX_PROC_HASH; i++) {
-		struct opd_proc * proc;
-		struct list_head * pos;
-
-		list_for_each(pos, &opd_procs[i]) {
-			proc = list_entry(pos, struct opd_proc, next);
-			opd_remove_kernel_mapping(proc);
-		}
-	}
+	opd_for_each_proc(opd_remove_kernel_mapping);
 }

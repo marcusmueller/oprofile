@@ -1,5 +1,43 @@
 2003-10-11  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* dae/opd_image.c:
+	* dae/opd_image.h: reference count opd_image. Remove modification time
+	  checking. Remove hash field. Tidy
+	* dae/opd_kernel.c: pass tid, tgid to op_get_kernel_image()
+	* dae/opd_mapping.c:
+	* dae/opd_mapping.h: use module hash code for image name to index
+	  a cache of name, this hash code is no longer used elsewhere. When
+	  killing map delete associated image, reference count of image
+	  will check for a real delete.
+	* dae/opd_parse_proc.c: get tgid from /proc/pid/status
+	* dae/opd_proc.c: create an opd_proc by process when
+	  separate_thread == true. Tidy by adding an opd_for_each_proc()
+	* dae/opd_proc.h: add tid/tgid to opd_proc struct
+	* dae/opd_sample_files.c:
+	* dae/opd_sample_files.h: lru all samples files, allowing to cleanup
+	  a part of the lru if we go out of resource. Remove
+	  opd_handle_old_sample_files() since we no longer check for image
+	  modification time.
+	* dae/opd_stats.c:
+	* dae/opd_stats.h: statistics for opd_image struct depth search
+	* dae/oprofiled.c: add --separate-cpu and --separate-thread
+	* libop/op_interface.h: add tgid to samples struct passed from module
+	  to daemon.
+	* module/compat22.h:
+	* module/compat24.h: op_get_tgid() return tgid, fall back to return
+	  tid on 2.2 kernel.
+	* module/oprofile.c:
+	* module/ia64/op_syscalls.c: pass tgid to daemon. NOT TESTED but I
+	  think it's ok. Note than even if it's broken ia64 should work w/o
+	  --separate=thread
+	* module/x86/op_syscalls.c: pass tgid to daemon.
+	* utils/opcontrol: enable 2.4 thread/cpu speration
+
+	* libdb/tests/db_test.c: verbose on when we provide filename of db file
+	  to test on command line.
+
+2003-10-11  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libop/op_cpu_type.h:
 	* libop/op_cpu_type.c: constification
 	* utils/op_help.c: check only if CPU_NO_GOOD not range

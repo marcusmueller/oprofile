@@ -26,23 +26,27 @@ struct opd_proc {
 	 * munmap. First added map must be the primary image */
 	struct list_head maps;
 	char const * name;
-	u32 pid;
+	pid_t tid;
+	pid_t tgid;
 	int accessed;
 	int dead;
 	struct list_head next;
 };
 
-void opd_proc_init(void);
+typedef void (*opd_proc_cb)(struct opd_proc *);
+void opd_for_each_proc(opd_proc_cb proccb);
 
+void opd_init_proc(void);
 void opd_put_sample(struct op_sample const * sample);
 void opd_put_image_sample(struct opd_image * image, unsigned long offset, u32 counter);
 void opd_handle_fork(struct op_note const * note);
 void opd_handle_exit(struct op_note const * note);
-void opd_handle_exec(u32 pid);
-struct opd_proc * opd_get_proc(u32 pid);
-struct opd_proc * opd_new_proc(u32 pid);
+void opd_handle_exec(pid_t pid, pid_t tgid);
+struct opd_proc * opd_get_proc(pid_t tid, pid_t tgid);
+struct opd_proc * opd_new_proc(pid_t tid, pid_t tgid);
+
 int opd_get_nr_procs(void);
-void opd_age_procs(void);
+void opd_age_proc(struct opd_proc * proc);
 void opd_proc_cleanup(void);
 void opd_clear_kernel_mapping(void);
 

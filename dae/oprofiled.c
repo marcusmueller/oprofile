@@ -66,9 +66,12 @@ int verbose;
 op_cpu cpu_type;
 int separate_lib;
 int separate_kernel;
+int separate_thread;
+int separate_cpu;
 int no_vmlinux;
 char * vmlinux;
 int kernel_only;
+int cpu_number;
 
 static char * kernel_range;
 static int showvers;
@@ -93,6 +96,8 @@ static struct poptOption options[] = {
 	{ "no-vmlinux", 0, POPT_ARG_NONE, &no_vmlinux, 0, "vmlinux kernel image file not available", NULL, },
 	{ "separate-lib", 0, POPT_ARG_INT, &separate_lib, 0, "separate library samples for each distinct application", "[0|1]", },
 	{ "separate-kernel", 0, POPT_ARG_INT, &separate_kernel, 0, "separate kernel samples for each distinct application, this option imply --separate-lib=1", "[0|1]", },
+	{ "separate-thread", 0, POPT_ARG_INT, &separate_thread, 0, "thread-profiling mode", "[0|1]" },
+	{ "separate-cpu", 0, POPT_ARG_INT, &separate_cpu, 0, "separate samples for each CPU", "[0|1]" },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
 	POPT_AUTOHELP
@@ -417,7 +422,7 @@ static void opd_do_notes(struct op_note const * opd_buf, size_t count)
 			case OP_MAP:
 			case OP_EXEC:
 				if (note->type == OP_EXEC)
-					opd_handle_exec(note->pid);
+					opd_handle_exec(note->pid, note->tgid);
 				opd_handle_mapping(note);
 				break;
 
@@ -460,9 +465,10 @@ static void opd_do_samples(struct op_buffer_head const * opd_buf)
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
-	verbprintf("Read buffer of %d entries.\n",
-		   (unsigned int)opd_buf->count);
+	verbprintf("Read buffer of %d entries for cpu %d.\n",
+		   (unsigned int)opd_buf->count, opd_buf->cpu_nr);
  
+	cpu_number = opd_buf->cpu_nr;
 	for (i = 0; i < opd_buf->count; i++) {
 		verbprintf("%.6u: EIP: 0x%.8lx pid: %.6d\n",
 			i, buffer[i].eip, buffer[i].pid);
@@ -485,9 +491,9 @@ static void opd_do_samples(struct op_buffer_head const * opd_buf)
  */
 static void opd_alarm(void)
 {
-	opd_for_each_image(opd_sync_image_samples_files);
+	opd_sync_samples_files();
 
-	opd_age_procs();
+	opd_for_each_proc(opd_age_proc);
 
 	opd_print_stats();
 
@@ -509,6 +515,7 @@ static void opd_sighup(void)
 
 static void clean_exit(void)
 {
+	opd_cleanup_hash_name();
 	op_free_events();
 	unlink(OP_LOCK_FILE);
 }
@@ -530,7 +537,7 @@ int main(int argc, char const * argv[])
 	size_t n_buf_bytesize;
 	int i;
 	int err;
-	struct rlimit rlim = { 8192, 8192 };
+	struct rlimit rlim = { 2048, 2048 };
 
 	opd_options(argc, argv);
 
@@ -541,8 +548,8 @@ int main(int argc, char const * argv[])
 	n_buf_bytesize = opd_note_buf_size * sizeof(struct op_note);
 	nbuf = xmalloc(n_buf_bytesize);
 
-	opd_proc_init();
-
+	opd_init_images();
+	opd_init_proc();
 	opd_init_kernel_image();
 
 	opd_write_abi();
@@ -586,7 +593,8 @@ int main(int argc, char const * argv[])
 	free(nbuf);
 	opd_clear_module_info();
 	opd_proc_cleanup();
-	opd_image_cleanup();
+	/* kernel/module image are not owned by a proc, we must cleanup them */
+	opd_for_each_image(opd_delete_image);
 	free(vmlinux);
 
 	return 0;

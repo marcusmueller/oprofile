@@ -14,6 +14,11 @@
 
 #include <linux/version.h>
 
+static inline pid_t op_get_tgid(void)
+{
+	return current->tgid;
+}
+
 #define pte_page_address(a) page_address(pte_page(a))
 #define oprof_wake_up(w) wake_up(w)
 #define lock_rtc(f) spin_lock_irqsave(&rtc_lock, f)

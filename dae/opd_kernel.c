@@ -55,7 +55,8 @@ void opd_init_kernel_image(void)
 	/* for no vmlinux */
 	if (!vmlinux)
 		vmlinux = "no-vmlinux";
-	kernel_image = opd_get_kernel_image(vmlinux, NULL);
+	kernel_image = opd_get_kernel_image(vmlinux, NULL, 0, 0);
+	kernel_image->ref_count++;
 }
 
 
@@ -240,7 +241,8 @@ static void opd_get_module_info(void)
 				strncpy(filename, cp2, (size_t)(cp3 - cp2));
 				filename[cp3-cp2] = '\0';
 
-				mod->image = opd_get_kernel_image(filename, NULL);
+				mod->image = opd_get_kernel_image(filename, NULL, 0, 0);
+				mod->image->ref_count++;
 				free(filename);
 				break;
 
@@ -445,13 +447,13 @@ void opd_add_kernel_map(struct opd_proc * proc, unsigned long eip)
 
 	app_name = proc->name;
 	if (!app_name) {
-		verbprintf("un-named proc for pid %d\n", proc->pid);
+		verbprintf("un-named proc for tid %d\n", proc->tid);
 		return;
 	}
 
 
 	if (eip < kernel_end) {
-		image = opd_get_kernel_image(vmlinux, app_name);
+		image = opd_get_kernel_image(vmlinux, app_name, proc->tid, proc->tgid);
 		if (!image) {
 			verbprintf("Can't create image for %s %s\n", vmlinux, app_name);
 			return;
@@ -480,7 +482,7 @@ void opd_add_kernel_map(struct opd_proc * proc, unsigned long eip)
 			       module->name);
 			module_name = module->name;
 		}
-		image = opd_get_kernel_image(module_name, app_name);
+		image = opd_get_kernel_image(module_name, app_name, proc->tid, proc->tgid);
 		if (!image) {
 			verbprintf("Can't create image for %s %s\n",
 			       module->name, app_name);

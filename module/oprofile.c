@@ -105,10 +105,12 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data, long irq_
 	}
 }
 
-inline static void fill_op_entry(struct op_sample * ops, long eip, pid_t pid, int ctr)
+inline static void
+fill_op_entry(struct op_sample * ops, long eip, pid_t pid, pid_t tgid, int ctr)
 {
 	ops->eip = eip;
 	ops->pid = pid;
+	ops->tgid = tgid;
 	ops->counter = ctr;
 }
 
@@ -116,11 +118,12 @@ void op_do_profile(uint cpu, long eip, long irq_enabled, int ctr)
 {
 	struct _oprof_data * data = &oprof_data[cpu];
 	pid_t const pid = current->pid;
+	pid_t const tgid = op_get_tgid();
 	struct op_sample * samples = &data->buffer[data->nextbuf];
 
 	data->nr_irq++;
 
-	fill_op_entry(samples, eip, pid, ctr);
+	fill_op_entry(samples, eip, pid, tgid, ctr);
 	evict_op_entry(cpu, data, irq_enabled);
 }
 

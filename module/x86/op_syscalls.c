@@ -54,6 +54,7 @@ static void oprof_output_map(ulong addr, ulong len,
 		return;
 
 	note.pid = current->pid;
+	note.tgid = op_get_tgid();
 	note.addr = addr;
 	note.len = len;
 	note.offset = offset;
@@ -68,7 +69,6 @@ static void oprof_output_map(ulong addr, ulong len,
 static int oprof_output_maps(struct task_struct *task)
 {
 	int size=0;
-	int is_execve = 1;
 	struct mm_struct *mm;
 	struct vm_area_struct *map;
 
@@ -82,14 +82,29 @@ static int oprof_output_maps(struct task_struct *task)
 
 	lock_mmap(mm);
 	spin_lock(&note_lock);
+
+	/* We need two pass, daemon assume than the first mmap notification
+	 * is for the executable but some process doesn't follow this model.
+	 * FIXME for now it's more easy to fix here rather in daemon */
 	for (map = mm->mmap; map; map = map->vm_next) {
 		if (!(map->vm_flags & VM_EXEC) || !map->vm_file)
 			continue;
+		if (!(map->vm_flags & VM_EXECUTABLE))
+			continue;
 
 		oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
-			GET_VM_OFFSET(map), map->vm_file, is_execve);
-		is_execve = 0;
+			GET_VM_OFFSET(map), map->vm_file, 1);
 	}
+	for (map = mm->mmap; map; map = map->vm_next) {
+		if (!(map->vm_flags & VM_EXEC) || !map->vm_file)
+			continue;
+		if (map->vm_flags & VM_EXECUTABLE)
+			continue;
+
+		oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
+			GET_VM_OFFSET(map), map->vm_file, 0);
+	}
+
 	spin_unlock(&note_lock);
 	unlock_mmap(mm);
 
@@ -190,26 +205,29 @@ out:
 	return ret;
 }
 
-inline static void oprof_report_fork(u32 old, u32 new)
+inline static void oprof_report_fork(u32 old_pid, u32 new_pid, u32 old_tgid, u32 new_tgid)
 {
 	struct op_note note;
 
 	note.type = OP_FORK;
-	note.pid = old;
-	note.addr = new;
+	note.pid = old_pid;
+	note.tgid = old_tgid;
+	note.addr = new_pid;
+	note.len = new_tgid;
 	oprof_put_note(&note);
 }
 
 asmlinkage static int my_sys_fork(struct pt_regs regs)
 {
 	u32 pid = current->pid;
+	u32 tgid = op_get_tgid();
 	int ret;
 
 	MOD_INC_USE_COUNT;
 
 	ret = old_sys_fork(regs);
 	if (ret)
-		oprof_report_fork(pid,ret);
+		oprof_report_fork(pid, ret, tgid, ret);
 	MOD_DEC_USE_COUNT;
 	return ret;
 }
@@ -217,12 +235,13 @@ asmlinkage static int my_sys_fork(struct pt_regs regs)
 asmlinkage static int my_sys_vfork(struct pt_regs regs)
 {
 	u32 pid = current->pid;
+	u32 tgid = op_get_tgid();
 	int ret;
 
 	MOD_INC_USE_COUNT;
 	ret = old_sys_vfork(regs);
 	if (ret)
-		oprof_report_fork(pid,ret);
+		oprof_report_fork(pid, ret, tgid, ret);
 	MOD_DEC_USE_COUNT;
 	return ret;
 }
@@ -230,12 +249,18 @@ asmlinkage static int my_sys_vfork(struct pt_regs regs)
 asmlinkage static int my_sys_clone(struct pt_regs regs)
 {
 	u32 pid = current->pid;
+	u32 tgid = op_get_tgid();
+	u32 clone_flags = regs.ebx;
 	int ret;
 
 	MOD_INC_USE_COUNT;
 	ret = old_sys_clone(regs);
-	if (ret)
-		oprof_report_fork(pid,ret);
+	if (ret) {
+		if (clone_flags & CLONE_THREAD)
+			oprof_report_fork(pid, ret, tgid, tgid);
+		else
+			oprof_report_fork(pid, ret, tgid, ret);
+	}
 	MOD_DEC_USE_COUNT;
 	return ret;
 }
@@ -267,6 +292,7 @@ asmlinkage long my_sys_exit(int error_code)
 
 	note.type = OP_EXIT;
 	note.pid = current->pid;
+	note.tgid = op_get_tgid();
 	oprof_put_note(&note);
 
 	/* this looks UP-dangerous, as the exit sleeps and we don't

@@ -12,14 +12,21 @@
 #ifndef OPD_SAMPLE_FILES_H
 #define OPD_SAMPLE_FILES_H
 
+#include "op_list.h"
+#include "odb_hash.h"
+
 struct opd_image;
 
-void opd_sync_image_samples_files(struct opd_image *);
+struct opd_sfile {
+	struct list_head lru_next;
+	samples_odb_t sample_file;
+};
+
+void opd_sync_samples_files(void);
 void opd_close_image_samples_files(struct opd_image * image);
+int opd_open_sample_file(struct opd_image * image, int counter, int cpu_nr);
 
-void opd_handle_old_sample_files(struct opd_image const * image);
-int opd_open_sample_file(struct opd_image * image, int counter);
+void opd_sfile_lru(struct opd_sfile * sfile);
 
-char * opd_mangle_filename(struct opd_image const * image, int counter);
 
 #endif /* OPD_SAMPLE_FILES_H */

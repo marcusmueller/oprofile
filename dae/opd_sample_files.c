@@ -30,13 +30,52 @@
 extern uint op_nr_counters;
 extern int separate_lib;
 extern int separate_kernel;
+extern int separate_thread;
+extern int separate_cpu;
 extern u32 ctr_count[OP_MAX_COUNTERS];
 extern u8 ctr_event[OP_MAX_COUNTERS];
 extern u16 ctr_um[OP_MAX_COUNTERS];
 extern double cpu_speed;
 extern op_cpu cpu_type;
 
-char * opd_mangle_filename(struct opd_image const * image, int counter)
+/** All sfiles are on this list. */
+static LIST_HEAD(lru_list);
+
+/* this value probably doesn't matter too much */
+#define LRU_AMOUNT 1000
+static int opd_sfile_lru_clear(void)
+{
+	struct list_head * pos;
+	struct list_head * pos2;
+	struct opd_sfile * sfile;
+	int amount = LRU_AMOUNT;
+
+	verbprintf("image lru clear\n");
+
+	if (list_empty(&lru_list))
+		return 1;
+
+	list_for_each_safe(pos, pos2, &lru_list) {
+		if (!--amount)
+			break;
+		sfile = list_entry(pos, struct opd_sfile, lru_next);
+		odb_close(&sfile->sample_file);
+		list_del_init(&sfile->lru_next);
+	}
+
+	return 0;
+}
+
+
+void opd_sfile_lru(struct opd_sfile * sfile)
+{
+	list_del(&sfile->lru_next);
+	list_add_tail(&sfile->lru_next, &lru_list);
+}
+
+
+static char * opd_mangle_filename(struct opd_image const * image, int counter,
+                                  int cpu_nr)
 {
 	char * mangled;
 	char const * dep_name = separate_lib ? image->app_name : NULL;
@@ -59,6 +98,17 @@ char * opd_mangle_filename(struct opd_image const * image, int counter)
 	if (dep_name && strcmp(dep_name, image->name))
 		values.flags |= MANGLE_DEP_NAME;
 
+	if (separate_thread) {
+		values.flags |= MANGLE_TGID | MANGLE_TID;
+		values.tid = image->tid;
+		values.tgid = image->tgid;
+	}
+
+	if (separate_cpu) {
+		values.flags |= MANGLE_CPU;
+		values.cpu = cpu_nr;
+	}
+
 	if (cpu_type != CPU_TIMER_INT)
 		values.event_name = event->name;
 	else
@@ -76,89 +126,11 @@ char * opd_mangle_filename(struct opd_image const * image, int counter)
 }
 
 
-/**
- * opd_handle_old_sample_file - deal with old sample file
- * @param mangled  the sample file name
- * @param mtime  the new mtime of the binary
- *
- * If an old sample file exists, verify it is usable.
- * If not, move or delete it. Note than at startup the daemon
- * check than the last (session) events settings match the
- * currents
- */
-static void opd_handle_old_sample_file(char const * mangled, time_t mtime)
-{
-	struct opd_header oldheader;
-	FILE * fp;
-
-	fp = fopen(mangled, "r");
-	if (!fp) {
-		/* file might not be there, or it just might not be
-		 * openable for some reason, so try to remove if it exist
-		 */
-		if (errno == ENOENT)
-			goto out;
-		else
-			goto del;
-	}
-
-	if (fread(&oldheader, sizeof(struct opd_header), 1, fp) != 1) {
-		verbprintf("Can't read %s\n", mangled);
-		goto closedel;
-	}
-
-	if (memcmp(&oldheader.magic, OPD_MAGIC, sizeof(oldheader.magic)) || oldheader.version != OPD_VERSION) {
-		verbprintf("Magic id check fail for %s\n", mangled);
-		goto closedel;
-	}
-
-	if (difftime(mtime, oldheader.mtime)) {
-		verbprintf("mtime differs for %s\n", mangled);
-		goto closedel;
-	}
-
-	fclose(fp);
-	verbprintf("Re-using old sample file \"%s\".\n", mangled);
-	return;
-
-closedel:
-	fclose(fp);
-del:
-	verbprintf("Deleting old sample file \"%s\".\n", mangled);
-	remove(mangled);
-out:
-	;
-}
-
-
-/**
- * opd_handle_old_sample_files - deal with old sample files
- * @param image  the image to check files for
- *
- * to simplify admin of sample file we rename or remove sample
- * files for each counter.
- *
- * If an old sample file exists, verify it is usable.
- * If not, delete it.
- */
-void opd_handle_old_sample_files(struct opd_image const * image)
-{
-	uint i;
-
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		if (ctr_event[i]) {
-			char * mangled = opd_mangle_filename(image, i);
-			opd_handle_old_sample_file(mangled,  image->mtime);
-			free(mangled);
-		}
-	}
-}
-
-
 /*
  * opd_open_sample_file - open an image sample file
  * @param image  image to open file for
  * @param counter  counter number
+ * @param cpu_nr  cpu number
  *
  * Open image sample file for the image, counter
  * counter and set up memory mappings for it.
@@ -167,30 +139,50 @@ void opd_handle_old_sample_files(struct opd_image const * image)
  *
  * Returns 0 on success.
  */
-int opd_open_sample_file(struct opd_image * image, int counter)
+int opd_open_sample_file(struct opd_image * image, int counter, int cpu_nr)
 {
 	char * mangled;
-	samples_odb_t * sample_file;
+	struct opd_sfile * sfile;
 	struct opd_header * header;
 	int err;
 
-	sample_file = &image->sample_files[counter];
-
-	mangled = opd_mangle_filename(image, counter);
+	mangled = opd_mangle_filename(image, counter, cpu_nr);
 
 	verbprintf("Opening \"%s\"\n", mangled);
 
 	create_path(mangled);
 
-	err = odb_open(sample_file, mangled, ODB_RDWR, sizeof(struct opd_header));
+	sfile = image->sfiles[counter][cpu_nr];
+	if (!sfile) {
+		sfile = malloc(sizeof(struct opd_sfile));
+		list_init(&sfile->lru_next);
+		odb_init(&sfile->sample_file);
+		image->sfiles[counter][cpu_nr] = sfile;
+	}
+
+	list_del(&sfile->lru_next);
+	list_add_tail(&sfile->lru_next, &lru_list);
+
+retry:
+	err = odb_open(&sfile->sample_file, mangled, ODB_RDWR,
+                       sizeof(struct opd_header));
 
 	/* This can naturally happen when racing against opcontrol --reset. */
 	if (err) {
-		fprintf(stderr, "open of %s failed: %s\n", mangled, strerror(errno));
+		if (err == EMFILE) {
+			if (opd_sfile_lru_clear()) {
+				printf("LRU cleared but odb_open() fails for %s.\n", mangled);
+				abort();
+			}
+			goto retry;
+		}
+
+		fprintf(stderr, "oprofiled: open of %s failed: %s\n",
+		        mangled, strerror(err));
 		goto out;
 	}
 
-	header = sample_file->base_memory;
+	header = sfile->sample_file.base_memory;
 
 	memset(header, '\0', sizeof(struct opd_header));
 	header->version = OPD_VERSION;
@@ -205,6 +197,7 @@ int opd_open_sample_file(struct opd_image * image, int counter)
 	header->mtime = image->mtime;
 	header->separate_lib = separate_lib;
 	header->separate_kernel = separate_kernel;
+	/* FIXME separate_thread, separate_cpu */
 
 out:
 	free(mangled);
@@ -213,15 +206,16 @@ out:
 
 
 /**
- * @param image  the image pointer to work on
- *
- * sync all samples files belonging to this image
+ * sync all samples files
  */
-void opd_sync_image_samples_files(struct opd_image * image)
+void opd_sync_samples_files(void)
 {
-	uint i;
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		odb_sync(&image->sample_files[i]);
+	struct list_head * pos;
+	struct opd_sfile * sfile;
+
+	list_for_each(pos, &lru_list) {
+		sfile = list_entry(pos, struct opd_sfile, lru_next);
+		odb_sync(&sfile->sample_file);
 	}
 }
 
@@ -233,8 +227,15 @@ void opd_sync_image_samples_files(struct opd_image * image)
  */
 void opd_close_image_samples_files(struct opd_image * image)
 {
-	uint i;
+	uint i, j;
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		odb_close(&image->sample_files[i]);
+		for (j = 0; j < NR_CPUS; ++j) {
+			if (image->sfiles[i][j]) {
+				odb_close(&image->sfiles[i][j]->sample_file);
+				list_del(&image->sfiles[i][j]->lru_next);
+				free(image->sfiles[i][j]);
+				image->sfiles[i][j] = 0;
+			}
+		}
 	}
 }

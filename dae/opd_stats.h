@@ -25,6 +25,8 @@ enum {  OPD_KERNEL, /* nr. kernel samples */
 	OPD_DUMP_COUNT, /* nr. of times buffer is read */
 	OPD_MAP_ARRAY_ACCESS, /* nr. accesses of map array */
 	OPD_MAP_ARRAY_DEPTH, /* cumulative depth of map array accesses */
+	OPD_IMAGE_HASH_ACCESS,  /* nr. opd_find_image() */
+	OPD_IMAGE_HASH_DEPTH,  /* cumulative depth of image search */
 	OPD_SAMPLES, /* nr. distinct samples */
 	OPD_NOTIFICATIONS, /* nr. notifications */
 	OPD_MAX_STATS /* end of stats */

@@ -19,6 +19,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o we allow op_help --cpu-type=xx but with 16 it segfault on x86, alpha ev67
   need OP_MAX_COUNTERS > 8 but we compile all tools with OP_MAX_COUNTERS==8
   (see libop/op_hw_config.h). We should remove this #define
+ o dae/opd_image.h: struct opd_sfile * sfiles[OP_MAX_COUNTERS][NR_CPUS]; 
+   this use too many memory.
 
 0.8 release
 -----------

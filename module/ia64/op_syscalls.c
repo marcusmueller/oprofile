@@ -94,6 +94,7 @@ static void oprof_output_map(ulong addr, ulong len,
 		return;
 
 	note.pid = current->pid;
+	note.tgid = op_get_tgid();
 	note.addr = addr;
 	note.len = len;
 	note.offset = offset;
@@ -232,13 +233,15 @@ out:
 }
 
 
-inline static void oprof_report_fork(u32 old, u32 new)
+inline static void oprof_report_fork(u32 old_pid, u32 new_pid, u32 old_tgid, u32 new_tgid)
 {
 	struct op_note note;
 
 	note.type = OP_FORK;
-	note.pid = old;
-	note.addr = new;
+	note.pid = old_pid;
+	note.tgid = old_tgid;
+	note.addr = new_pid;
+	note.len = new_tgid;
 	oprof_put_note(&note);
 }
 
@@ -246,24 +249,34 @@ inline static void oprof_report_fork(u32 old, u32 new)
 asmlinkage void post_sys_clone(long ret, long arg0, long arg1)
 {
 	u32 pid = current->pid;
+	u32 tgid = op_get_tgid();
 
 	/* FIXME: This should be done in the ASM stub. */
 	MOD_INC_USE_COUNT;
 
 	if (ret)
-		oprof_report_fork(pid,ret);
+		/* FIXME: my libc show clone() is not implemented in ia64 
+		 * but used only by fork() with a SIGCHILD first parameter
+		 * so we assume it's a fork */
+		oprof_report_fork(pid, ret, pid, tgid);
 	MOD_DEC_USE_COUNT;
 }
 
 asmlinkage void post_sys_clone2(long ret, long arg0, long arg1, long arg2)
 {
 	u32 pid = current->pid;
+	u32 tgid = op_get_tgid();
+	long clone_flags = arg0;
 
 	/* FIXME: This should be done in the ASM stub. */
 	MOD_INC_USE_COUNT;
 
-	if (ret)
-		oprof_report_fork(pid,ret);
+	if (ret) {
+		if (clone_flags & CLONE_THREAD)
+			oprof_report_fork(pid, ret, tgid, tgid);
+		else
+			oprof_report_fork(pid, ret, tgid, ret);
+	}
 	MOD_DEC_USE_COUNT;
 }
 
@@ -293,9 +306,10 @@ asmlinkage void pre_sys_exit(int error_code)
 	note.offset = current->start_time;
 	note.type = OP_EXIT;
 	note.pid = current->pid;
+	note.tgid = op_get_tgid();
 	oprof_put_note(&note);
 
-        /* this looks UP-dangerous, as the exit sleeps and we don't
+	/* this looks UP-dangerous, as the exit sleeps and we don't
 	 * have a use count, but in fact its ok as sys_exit is noreturn,
 	 * so we can never come back to this non-existent exec page
 	 */

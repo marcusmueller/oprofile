@@ -165,6 +165,7 @@ int main(int argc, char * argv[1])
 	/* if a filename is given take it as: "check this db" */
 	if (argc > 1) {
 		int i;
+		verbose = 1;
 		for (i = 1 ; i < argc ; ++i)
 			sanity_check(argv[i]);
 		return 0;

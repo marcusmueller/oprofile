@@ -14,10 +14,13 @@
 
 #include "op_list.h"
 #include "op_hw_config.h"
+#include "op_config_24.h"
 #include "op_types.h"
 #include "odb_hash.h"
 
 #include <time.h>
+
+struct opd_sfile;
 
 /**
  * A binary (library, application, kernel or module)
@@ -25,17 +28,19 @@
  */
 struct opd_image {
 	/* all image image are linked in a list through this member */
-	struct list_head list_node;
-	/* used to link image with a valid hash, we never destroy image so a
-	 * simple link is necessary */
-	struct opd_image * hash_next;
-	samples_odb_t sample_files[OP_MAX_COUNTERS];
-	int hash;
+	struct list_head hash_next;
+	/* how many time this opd_image is referenced */
+	int ref_count;
+	struct opd_sfile * sfiles[OP_MAX_COUNTERS][NR_CPUS];
 	/* name of this image */
 	char * name;
 	/* the application name where belongs this image, NULL if image has
 	 * no owner (such as vmlinux or module) */
 	char * app_name;
+	/* thread id, on 2.2 kernel always == to tgid */
+	pid_t tid;
+	/* thread group id  */
+	pid_t tgid;
 	/* time of last modification */
 	time_t mtime;
 	/* kernel image or not */
@@ -45,13 +50,12 @@ struct opd_image {
 typedef void (*opd_image_cb)(struct opd_image *);
 void opd_for_each_image(opd_image_cb imagecb);
 
-void opd_image_cleanup(void);
+void opd_init_images(void);
+void opd_delete_image(struct opd_image * image);
 
-struct opd_image * opd_get_kernel_image(char const * name, char const * app_name);
+struct opd_image * opd_get_kernel_image(char const * name, char const * app_name, pid_t tid, pid_t tgid);
 
 void opd_init_images(void);
-struct opd_image * opd_get_image(char const * name, int hash, char const * app_name, int kernel);
-void opd_check_image_mtime(struct opd_image * image);
-struct opd_image * opd_get_image_by_hash(int hash, char const * app_name);
+struct opd_image * opd_get_image(char const * name, char const * app_name, int kernel, pid_t tid, pid_t tgid);
 
 #endif /* OPD_IMAGE_H */
