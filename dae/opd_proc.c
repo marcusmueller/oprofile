@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.33 2000/09/06 12:21:21 moz Exp $ */
+/* $Id: opd_proc.c,v 1.34 2000/09/06 12:57:42 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -873,6 +873,9 @@ void opd_put_sample(const struct op_sample *sample)
 		return;
 	}
 
+	/* here we don't want to add the new process because we don't know if it
+	 * was execve()d or a thread
+	 */
 	if (!(proc=opd_get_proc(sample->pid))) {
 		fprintf(stderr,"Couldn't find process %u\n",sample->pid);
 		opd_stats[OPD_LOST_PROCESS]++;
@@ -957,8 +960,11 @@ void opd_handle_fork(const struct op_sample *sample)
 		return;
 	}
 
-	/* FIXME: doc */
-	if (opd_get_proc(sample->eip))
+	/* we can quite easily get a fork() after the execve() because the notifications
+	 * are racy. So we only create a new setup if it doesn't exist already, allowing
+	 * both the clone() and the execve() cases to work.
+	 */
+	if (opd_get_proc((u16)sample->eip))
 		return;
 
 	/* eip is actually pid of new process */
