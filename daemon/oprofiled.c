@@ -404,7 +404,7 @@ static size_t opd_pointer_size(void)
 	size_t size;
 	char elf_header[EI_NIDENT];
 	FILE * fp;
-	char * kp_file = xmalloc(strlen(mount) + strlen("/pointer_size"));
+	char * kp_file = xmalloc(strlen(mount) + strlen("/pointer_size") + 1);
 
 	strcpy(kp_file, mount);
 	strcat(kp_file, "/pointer_size");
