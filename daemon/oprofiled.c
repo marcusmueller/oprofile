@@ -58,6 +58,7 @@ op_cpu cpu_type;
 int separate_samples;
 char * vmlinux;
 unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
+size_t kernel_pointer_size;
 
 static char * kernel_range;
 static int showvers;
@@ -447,9 +448,9 @@ static void opd_go_daemon(void)
  * If the sample could be processed correctly, it is written
  * to the relevant sample file.
  */
-static void opd_do_samples(unsigned long * opd_buf, ssize_t count)
+static void opd_do_samples(char const * opd_buf, ssize_t count)
 {
-	size_t num = count / sizeof(unsigned long);
+	size_t num = count / kernel_pointer_size;
  
 	/* prevent signals from messing us up */
 	sigprocmask(SIG_BLOCK, &maskset, NULL);
@@ -472,7 +473,7 @@ static void opd_do_samples(unsigned long * opd_buf, ssize_t count)
  * Read some of a buffer from the device and process
  * the contents.
  */
-static void opd_do_read(unsigned long * buf, size_t size)
+static void opd_do_read(char * buf, size_t size)
 {
 	while (1) {
 		ssize_t count = -1;
@@ -580,15 +581,59 @@ static void write_abi(void)
 }
  
 
+#define EI_CLASS 4
+#define ELFCLASS32 1
+#define ELFCLASS64 2
+
+static size_t opd_pointer_size(void)
+{
+	size_t size;
+	char elf_header[16];
+	FILE * fp;
+
+	if (!op_file_readable("/proc/kcore")) {
+		fprintf(stderr, "oprofiled: /proc/kcore not readable.");
+		goto guess;
+	}
+
+	fp = op_open_file("/proc/kcore", "r");
+	op_read_file(fp, &elf_header, 16);
+	op_close_file(fp);
+
+	/* CONFIG_KCORE_AOUT exists alas */
+	if (strncmp(elf_header, "ELF", 3)) {
+		fprintf(stderr, "oprofiled: /proc/kcore not in ELF format.");
+		goto guess;
+	}
+
+	switch (elf_header[EI_CLASS]) {
+		case ELFCLASS32:
+			return 4;
+		case ELFCLASS64:
+			return 8;
+	}
+
+	fprintf(stderr, "oprofiled: /proc/kcore has bad class.\n");
+
+guess:
+	size = sizeof(unsigned long);
+	fprintf(stderr, "oprofiled: assuming pointer size is %u\n",
+		(unsigned int)size);
+	return size;
+}
+
+
 int main(int argc, char const * argv[])
 {
-	unsigned long * sbuf;
+	char * sbuf;
 	size_t s_buf_bytesize;
 	int i;
 
 	opd_options(argc, argv);
 
-	s_buf_bytesize = opd_buf_size * sizeof(unsigned long);
+	kernel_pointer_size = opd_pointer_size();
+
+	s_buf_bytesize = opd_buf_size * kernel_pointer_size;
 
  	sbuf = xmalloc(s_buf_bytesize);
 

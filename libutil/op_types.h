@@ -13,12 +13,22 @@
 #define OP_TYPES_H
 
 #ifndef __KERNEL__
+
+#include <sys/types.h>
+
 /*@{\name miscellaneous types */
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
 typedef int fd_t;
 /*@}*/
+
+/** generic type for holding addresses */
+typedef u_int64_t vma_t;
+
+/** dcookie value */
+typedef u_int64_t cookie_t;
+
 #else
 #include <linux/types.h>
 #endif

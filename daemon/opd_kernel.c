@@ -27,8 +27,8 @@
 struct opd_module {
 	char * name;
 	struct opd_image * image;
-	unsigned long start;
-	unsigned long end;
+	vma_t start;
+	vma_t end;
 };
 
 extern char * vmlinux;
@@ -38,8 +38,8 @@ extern unsigned long opd_stats[];
 static struct opd_image * kernel_image;
 
 /* kernel and module support */
-static unsigned long kernel_start;
-static unsigned long kernel_end;
+static vma_t kernel_start;
+static vma_t kernel_end;
 static struct opd_module opd_modules[OPD_MAX_MODULES];
 static unsigned int nr_modules=0;
 
@@ -56,14 +56,14 @@ void opd_init_kernel_image(void)
  */
 void opd_parse_kernel_range(char const * arg)
 {
-	sscanf(arg, "%lx,%lx", &kernel_start, &kernel_end);
+	sscanf(arg, "%Lx,%Lx", &kernel_start, &kernel_end);
 
-	verbprintf("OPD_PARSE_KERNEL_RANGE: kernel_start = %lx, kernel_end = %lx\n",
+	verbprintf("OPD_PARSE_KERNEL_RANGE: kernel_start = %Lx, kernel_end = %Lx\n",
 		   kernel_start, kernel_end);
 
 	if (kernel_start == 0x0 || kernel_end == 0x0) {
 		fprintf(stderr,
-			"Warning: mis-parsed kernel range: %lx-%lx\n",
+			"Warning: mis-parsed kernel range: %Lx-%Lx\n",
 			kernel_start, kernel_end);
 		fprintf(stderr, "kernel profiles will be wrong.\n");
 	}
@@ -95,7 +95,7 @@ void opd_clear_module_info(void)
  * @param end end address
  */
 static struct opd_module * new_module(char * name,
-	unsigned long start, unsigned long end)
+	vma_t start, vma_t end)
 { 
 	opd_modules[nr_modules].name = name;
 	opd_modules[nr_modules].image = NULL;
@@ -184,14 +184,14 @@ static void opd_get_module_info(void)
 			goto failure;
 		}
 
-		if (strncmp("__insmod_", line+9, 9)) {
+		if (strncmp("__insmod_", line + 9, 9)) {
 			free(line);
 			continue;
 		}
 
 		cp = line + 18;
 		cp2 = cp;
-		while ((*cp2) && !!strncmp("_S", cp2+1, 2) && !!strncmp("_O", cp2+1, 2))
+		while ((*cp2) && !!strncmp("_S", cp2 + 1, 2) && !!strncmp("_O", cp2 + 1, 2))
 			cp2++;
 
 		if (!*cp2) {
@@ -201,8 +201,8 @@ static void opd_get_module_info(void)
 
 		cp2++;
 		/* freed by opd_clear_module_info() or opd_get_module() */
-		modname = xmalloc((size_t)((cp2-cp) + 1));
-		strncpy(modname, cp, (size_t)((cp2-cp)));
+		modname = xmalloc((size_t)((cp2 - cp) + 1));
+		strncpy(modname, cp, (size_t)((cp2 - cp)));
 		modname[cp2-cp] = '\0';
 
 		mod = opd_get_module(modname);
@@ -213,7 +213,7 @@ static void opd_get_module_info(void)
 				cp2++;
 				cp3 = cp2;
 
-				while ((*cp3) && !!strncmp("_M", cp3+1, 2))
+				while ((*cp3) && !!strncmp("_M", cp3 + 1, 2))
 					cp3++;
 
 				if (!*cp3) {
@@ -239,8 +239,8 @@ static void opd_get_module_info(void)
 				}
 
 				cp2 += 7;
-				sscanf(line,"%lx", &mod->start);
-				sscanf(cp2,"%lu", &mod->end);
+				sscanf(line,"%Lx", &mod->start);
+				sscanf(cp2,"%Lu", &mod->end);
 				mod->end += mod->start;
 				break;
 		}
@@ -258,7 +258,7 @@ failure:
  * opd_drop_module_sample - drop a module sample efficiently
  * @param eip  eip of sample
  */
-static void opd_drop_module_sample(unsigned long eip)
+static void opd_drop_module_sample(vma_t eip)
 {
 	char * module_names;
 	char * name;
@@ -306,7 +306,7 @@ out:
  * contain this eip return %NULL if not found.
  * caller must check than the module image is valid
  */
-static struct opd_module * opd_find_module_by_eip(unsigned long eip)
+static struct opd_module * opd_find_module_by_eip(vma_t eip)
 {
 	uint i;
 	for (i = 0; i < nr_modules; i++) {
@@ -335,7 +335,7 @@ static struct opd_module * opd_find_module_by_eip(unsigned long eip)
  * If the sample could not be located in a module, it is treated
  * as a kernel sample.
  */
-static void opd_handle_module_sample(unsigned long eip, u32 counter)
+static void opd_handle_module_sample(vma_t eip, u32 counter)
 {
 	struct opd_module * module;
 
@@ -381,7 +381,7 @@ static void opd_handle_module_sample(unsigned long eip, u32 counter)
  * Handle a sample in kernel address space or in a module. The sample is
  * output to the relevant image file.
  */
-void opd_handle_kernel_sample(unsigned long eip, u32 counter)
+void opd_handle_kernel_sample(vma_t eip, u32 counter)
 {
 	if (eip < kernel_end) {
 		opd_stats[OPD_KERNEL]++;
@@ -400,7 +400,7 @@ void opd_handle_kernel_sample(unsigned long eip, u32 counter)
  * Returns %1 if eip is in the address space starting at
  * kernel_start, %0 otherwise.
  */
-int opd_eip_is_kernel(unsigned long eip)
+int opd_eip_is_kernel(vma_t eip)
 {
 	return (eip >= kernel_start);
 }

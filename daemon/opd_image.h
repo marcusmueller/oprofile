@@ -29,9 +29,9 @@ struct opd_image {
 	/* name of the owning app or "" */
 	char * app_name;
 	/* cookie value for this image if any */
-	unsigned long cookie;
+	cookie_t cookie;
 	/* cookie value of the owning app or 0 */
-	unsigned long app_cookie;
+	cookie_t app_cookie;
 	/* hash table link */
 	struct list_head hash_list;
 	/* opened sample files */
@@ -45,7 +45,7 @@ struct opd_image {
 typedef void (*opd_image_cb)(struct opd_image *);
 void opd_for_each_image(opd_image_cb imagecb);
 
-void opd_put_image_sample(struct opd_image * image, unsigned long offset, int counter);
+void opd_put_image_sample(struct opd_image * image, vma_t offset, int counter);
  
 void opd_image_cleanup(void);
 
@@ -55,6 +55,6 @@ struct opd_image * opd_get_kernel_image(char const * name);
  
 struct op_sample;
  
-void opd_process_samples(unsigned long const * buffer, size_t count);
+void opd_process_samples(char const * buffer, size_t count);
 
 #endif /* OPD_IMAGE_H */

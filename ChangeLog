@@ -1,3 +1,14 @@
+2003-01-10  John Levon  <levon@movementarian.org>
+
+	* libutil/op_types.h: add cookie_t and vma_t
+
+	* daemon/opd_image.c:
+	* daemon/opd_image.h:
+	* daemon/opd_kernel.c:
+	* daemon/opd_kernel.h: use above types, and kernel_pointer_size
+
+	* daemon/oprofiled.c: sniff /proc/kcore for kernel_pointer_size
+
 2003-01-10  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libopt++/popt_options.cpp:

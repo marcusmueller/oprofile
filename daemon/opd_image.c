@@ -30,6 +30,7 @@
 
 extern uint op_nr_counters;
 extern int separate_samples;
+extern size_t kernel_pointer_size;
 
 /* maintained for statistics purpose only */
 unsigned int nr_images=0;
@@ -131,7 +132,7 @@ static struct opd_image * opd_create_image(unsigned long hash)
 	return image;
 }
 
-static int lookup_dcookie(u_int64_t cookie, char * buf, size_t size)
+static int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
 {
 	// FIXME
 	return syscall(253, cookie, buf, size);
@@ -141,15 +142,15 @@ static int lookup_dcookie(u_int64_t cookie, char * buf, size_t size)
 /**
  * opd_init_image - init an image sample file
  */
-static void opd_init_image(struct opd_image * image, unsigned long cookie,
-	unsigned long app_cookie)
+static void opd_init_image(struct opd_image * image, cookie_t cookie,
+	cookie_t app_cookie)
 {
 	char buf[PATH_MAX + 1];
  
 	/* FIXME: if dcookie lookup fail we will re open multiple time the
 	 * same db which doesn't work */
 	if (lookup_dcookie(cookie, buf, PATH_MAX) <= 0) {
-		printf("Lookup of cookie %lu failed, errno=%d\n",
+		printf("Lookup of cookie %Lx failed, errno=%d\n",
 		       cookie, errno); 
 		image->name = xstrdup("");
 	} else {
@@ -157,7 +158,7 @@ static void opd_init_image(struct opd_image * image, unsigned long cookie,
 	}
  
 	if (lookup_dcookie(app_cookie, buf, PATH_MAX) <= 0) {
-		printf("Lookup of cookie %lu failed, errno=%d\n",
+		printf("Lookup of cookie %Lx failed, errno=%d\n",
 			cookie, errno); 
 		image->app_name = xstrdup("");
 	} else {
@@ -245,7 +246,7 @@ void opd_check_image_mtime(struct opd_image * image)
  * count is the raw value passed from the kernel.
  */
 void opd_put_image_sample(struct opd_image * image,
-	unsigned long offset, int counter)
+	vma_t offset, int counter)
 {
 	samples_db_t * sample_file;
 
@@ -259,12 +260,13 @@ void opd_put_image_sample(struct opd_image * image,
 		}
 	}
  
-	db_insert(sample_file, offset, 1);
+	/* Possible narrowing to 32-bit value only. */
+	db_insert(sample_file, (unsigned long)offset, 1);
 }
 
 
 /** return hash value for a cookie */
-static unsigned long opd_hash_cookie(unsigned long cookie)
+static unsigned long opd_hash_cookie(cookie_t cookie)
 {
 	return (cookie >> DCOOKIE_SHIFT) & (IMAGE_HASH_SIZE - 1);
 }
@@ -273,7 +275,7 @@ static unsigned long opd_hash_cookie(unsigned long cookie)
 /**
  * opd_add_image - add an image to the image hashlist
  */
-static struct opd_image * opd_add_image(unsigned long cookie, unsigned long app_cookie)
+static struct opd_image * opd_add_image(cookie_t cookie, cookie_t app_cookie)
 {
 	unsigned long hash = opd_hash_cookie(cookie);
 	struct opd_image * image = opd_create_image(hash);
@@ -288,7 +290,7 @@ static struct opd_image * opd_add_image(unsigned long cookie, unsigned long app_
 /**
  * opd_find_image - find an image
  */
-static struct opd_image * opd_find_image(unsigned long cookie, unsigned long app_cookie)
+static struct opd_image * opd_find_image(cookie_t cookie, cookie_t app_cookie)
 {
 	unsigned long hash = opd_hash_cookie(cookie);
 	struct opd_image * image = 0;
@@ -313,7 +315,7 @@ static struct opd_image * opd_find_image(unsigned long cookie, unsigned long app
 /**
  * opd_get_image - get an image from the image structure
  */
-static struct opd_image * opd_get_image(unsigned long cookie, unsigned long app_cookie)
+static struct opd_image * opd_get_image(cookie_t cookie, cookie_t app_cookie)
 {
 	struct opd_image * image;
 	if ((image = opd_find_image(cookie, app_cookie)) == NULL)
@@ -350,22 +352,36 @@ struct opd_image * opd_get_kernel_image(char const * name)
 }
 
  
-static void opd_put_sample(struct opd_image * image, unsigned long const * data)
+static u_int64_t get_buffer_value(void const * buffer, size_t index)
 {
-	unsigned long eip = data[0];
-	unsigned long event = data[1];
+	if (kernel_pointer_size == 4) {
+		u_int32_t const * lbuf = buffer;
+		return lbuf[index];
+	} else {
+		u_int64_t const * lbuf = buffer;
+		return lbuf[index];
+	}
+}
+
+
+static void opd_put_sample(struct opd_image * image, char const * buffer, size_t index)
+{
+	vma_t eip = get_buffer_value(buffer, index);
+	unsigned long event = get_buffer_value(buffer, index + 1);
  
 	if (opd_eip_is_kernel(eip)) {
-		verbprintf("Kernel sample 0x%lx, counter %lu\n", eip, event);
+		verbprintf("Kernel sample 0x%Lx, counter %Lu\n",
+			(u_int64_t)eip, (u_int64_t)event);
 		opd_handle_kernel_sample(eip, event);
 	} else {
-		verbprintf("Image (%s) offset 0x%lx, counter %lu\n", image->name, eip, event);
+		verbprintf("Image (%s) offset 0x%Lx, counter %Lu\n",
+			image->name, (u_int64_t)eip, (u_int64_t)event);
 		opd_put_image_sample(image, eip, event);
 	}
 }
 
 
-void complete_dump()
+static void complete_dump()
 {
 	FILE *status_file;
 
@@ -381,19 +397,20 @@ void complete_dump()
 
  
 // FIXME: pid/pgrp filter ?
-void opd_process_samples(unsigned long const * buffer, size_t count)
+void opd_process_samples(char const * buffer, size_t count)
 {
 	unsigned long i = 0;
 	unsigned long cpu = 0;
-	unsigned long code, pid, cookie, app_cookie = 0;
+	unsigned long code, pid;
+	cookie_t cookie, app_cookie = 0;
 	struct opd_image * image = NULL;
 
 	while (i < count) {
-		if (buffer[i] != ESCAPE_CODE) {
+		if (get_buffer_value(buffer, i) != ESCAPE_CODE) {
 			if (i + 1 == count)
 				return;
 
-			opd_put_sample(image, &buffer[i]);
+			opd_put_sample(image, buffer, i);
 			i += 2;
 			continue;
 		}
@@ -402,7 +419,7 @@ void opd_process_samples(unsigned long const * buffer, size_t count)
 		if (++i == count)
 			return;
 
-		code = buffer[i];
+		code = get_buffer_value(buffer, i);
 
 		// skip code
 		if (++i == count)
@@ -410,27 +427,29 @@ void opd_process_samples(unsigned long const * buffer, size_t count)
  
 		switch (code) {
 			case CPU_SWITCH_CODE:
-				cpu = buffer[i];
+				cpu = get_buffer_value(buffer, i);
 				verbprintf("CPU_SWITCH to %lu\n", cpu);
 				++i;
 				break;
 
 			case COOKIE_SWITCH_CODE:
-				cookie = buffer[i];
+				cookie = get_buffer_value(buffer, i);
 				image = opd_get_image(cookie, app_cookie);
-				verbprintf("COOKIE_SWITCH to cookie %lu (%s)\n", cookie, image->name); 
+				verbprintf("COOKIE_SWITCH to cookie %Lx (%s)\n", cookie, image->name); 
 				++i;
 				break;
  
 			case CTX_SWITCH_CODE:
-				pid = buffer[i];
+				pid = get_buffer_value(buffer, i);
 				// skip pid
 				if (++i == count)
 					break;
-				app_cookie = buffer[i];
+				app_cookie = get_buffer_value(buffer, i);
 				++i;
 				break;
 		}
 	}
+
+	// FIXME: this should be done by the caller I think
 	complete_dump();
 }
