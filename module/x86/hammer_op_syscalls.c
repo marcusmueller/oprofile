@@ -71,6 +71,7 @@ static void oprof_output_map(ulong addr, ulong len,
 		return;
 
 	note.pid = current->pid;
+	note.tgid = op_get_tgid();
 	note.addr = addr;
 	note.len = len;
 	note.offset = offset;
@@ -85,7 +86,6 @@ static void oprof_output_map(ulong addr, ulong len,
 static int oprof_output_maps(struct task_struct *task)
 {
 	int size=0;
-	int is_execve = 1;
 	struct mm_struct *mm;
 	struct vm_area_struct *map;
 
@@ -99,52 +99,35 @@ static int oprof_output_maps(struct task_struct *task)
 
 	lock_mmap(mm);
 	spin_lock(&note_lock);
+
+	/* We need two pass, daemon assume than the first mmap notification
+	 * is for the executable but some process doesn't follow this model.
+	 * FIXME for now it's more easy to fix here rather in daemon */
 	for (map = mm->mmap; map; map = map->vm_next) {
 		if (!(map->vm_flags & VM_EXEC) || !map->vm_file)
 			continue;
+		if (!(map->vm_flags & VM_EXECUTABLE))
+			continue;
 
 		oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
-			GET_VM_OFFSET(map), map->vm_file, is_execve);
-		is_execve = 0;
+			GET_VM_OFFSET(map), map->vm_file, 1);
 	}
+	for (map = mm->mmap; map; map = map->vm_next) {
+		if (!(map->vm_flags & VM_EXEC) || !map->vm_file)
+			continue;
+		if (map->vm_flags & VM_EXECUTABLE)
+			continue;
+
+		oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
+			GET_VM_OFFSET(map), map->vm_file, 0);
+	}
+
 	spin_unlock(&note_lock);
 	unlock_mmap(mm);
 
 out:
 	return size;
 }
-
-static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
-	ulong fd, ulong offset)
-{
-	struct file *file;
-
-	lock_out_mmap();
-
-	file = fget(fd);
-	if (!file)
-		goto out;
-
-	spin_lock(&note_lock);
-	oprof_output_map(addr, len, offset, file, 0);
-	spin_unlock(&note_lock);
-
-	fput(file);
-
-out:
-	unlock_out_mmap();
-}
-
-inline static void oprof_report_fork(u32 old, u32 new)
-{
-	struct op_note note;
-
-	note.type = OP_FORK;
-	note.pid = old;
-	note.addr = new;
-	oprof_put_note(&note);
-}
-
 
 asmlinkage long my_sys_execve(char *name, char **argv,char **envp, struct pt_regs regs)
 {
@@ -258,6 +241,26 @@ free:
 	return ret; 
 } 
 
+static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
+	ulong fd, ulong offset)
+{
+	struct file *file;
+
+	lock_out_mmap();
+
+	file = fget(fd);
+	if (!file)
+		goto out;
+
+	spin_lock(&note_lock);
+	oprof_output_map(addr, len, offset, file, 0);
+	spin_unlock(&note_lock);
+
+	fput(file);
+
+out:
+	unlock_out_mmap();
+}
 
 static long my_old_mmap(unsigned long addr, unsigned long len,
 			unsigned long prot, unsigned long flags,
@@ -269,10 +272,8 @@ static long my_old_mmap(unsigned long addr, unsigned long len,
 
 	ret = old_old_mmap(addr, len, prot, flags, fd, off);
 
-	if (ret >= 0) {
-		if (prot&PROT_EXEC)
-			out_mmap(ret, len, prot, flags, fd, off);
-	}
+	if ((prot & PROT_EXEC) && ret >= 0)
+		out_mmap(ret, len, prot, flags, fd, off);
 
 	MOD_DEC_USE_COUNT;
 	return ret;
@@ -321,16 +322,29 @@ asmlinkage static int my_sys32_mmap2(ulong addr, ulong len,
 	return ret;
 }
 
+inline static void oprof_report_fork(u32 old_pid, u32 new_pid, u32 old_tgid, u32 new_tgid)
+{
+	struct op_note note;
+
+	note.type = OP_FORK;
+	note.pid = old_pid;
+	note.tgid = old_tgid;
+	note.addr = new_pid;
+	note.len = new_tgid;
+	oprof_put_note(&note);
+}
+
 asmlinkage long my_sys_fork(struct pt_regs regs)
 {
 	u32 pid = current->pid;
+	u32 tgid = op_get_tgid();
 	long ret;
 
 	MOD_INC_USE_COUNT;
 
 	ret = do_fork(SIGCHLD, regs.rsp, &regs, 0);
 	if (ret)
-		oprof_report_fork(pid,ret);
+		oprof_report_fork(pid, ret, tgid, ret);
 	MOD_DEC_USE_COUNT;
 	return ret;
 }
@@ -338,12 +352,13 @@ asmlinkage long my_sys_fork(struct pt_regs regs)
 asmlinkage long my_sys_vfork(struct pt_regs regs)
 {
 	u32 pid = current->pid;
+	u32 tgid = op_get_tgid();
 	long ret;
 
 	MOD_INC_USE_COUNT;
 	ret = do_fork(CLONE_VFORK | CLONE_VM | SIGCHLD, regs.rsp, &regs, 0);
 	if (ret)
-		oprof_report_fork(pid,ret);
+		oprof_report_fork(pid, ret, tgid, ret);
 	MOD_DEC_USE_COUNT;
 	return ret;
 }
@@ -351,12 +366,17 @@ asmlinkage long my_sys_vfork(struct pt_regs regs)
 asmlinkage long my_sys_clone(unsigned long clone_flags, unsigned long newsp, struct pt_regs regs)
 {
 	u32 pid = current->pid;
+	u32 tgid = op_get_tgid();
 	long ret;
 
 	MOD_INC_USE_COUNT;
 	ret = do_fork(clone_flags, newsp, &regs, 0);
-	if (ret)
-		oprof_report_fork(pid,ret);
+	if (ret) {
+		if (clone_flags & CLONE_THREAD)
+			oprof_report_fork(pid, ret, tgid, tgid);
+		else
+			oprof_report_fork(pid, ret, tgid, ret);
+	}
 	MOD_DEC_USE_COUNT;
 	return ret;
 }
@@ -364,6 +384,7 @@ asmlinkage long my_sys_clone(unsigned long clone_flags, unsigned long newsp, str
 asmlinkage int my_sys32_fork(struct pt_regs regs)
 {
 	u32 pid = current->pid;
+	u32 tgid = op_get_tgid();
 	long ret;
 
 	MOD_INC_USE_COUNT;
@@ -371,7 +392,7 @@ asmlinkage int my_sys32_fork(struct pt_regs regs)
 	ret = do_fork(SIGCHLD, regs.rsp, &regs, 0);
 
 	if (ret)
-		oprof_report_fork(pid,ret);
+		oprof_report_fork(pid, ret, tgid, ret);
 	MOD_DEC_USE_COUNT;
 	return ret;
 }
@@ -379,24 +400,30 @@ asmlinkage int my_sys32_fork(struct pt_regs regs)
 asmlinkage int my_sys32_clone(unsigned int clone_flags, unsigned int newsp, struct pt_regs regs)
 {
 	u32 pid = current->pid;
+	u32 tgid = op_get_tgid();
 	long ret;
 
 	MOD_INC_USE_COUNT;
 	ret = do_fork(clone_flags, newsp, &regs, 0);
-	if (ret)
-		oprof_report_fork(pid,ret);
+	if (ret) {
+		if (clone_flags & CLONE_THREAD)
+			oprof_report_fork(pid, ret, tgid, tgid);
+		else
+			oprof_report_fork(pid, ret, tgid, ret);
+	}
 	MOD_DEC_USE_COUNT;
 	return ret;
 }
 asmlinkage int my_sys32_vfork(struct pt_regs regs)
 {
 	u32 pid = current->pid;
+	u32 tgid = op_get_tgid();
 	long ret;
 
 	MOD_INC_USE_COUNT;
 	ret = do_fork(CLONE_VFORK | CLONE_VM | SIGCHLD, regs.rsp, &regs, 0);
 	if (ret)
-		oprof_report_fork(pid,ret);
+		oprof_report_fork(pid, ret, tgid, ret);
 	MOD_DEC_USE_COUNT;
 	return ret;
 }

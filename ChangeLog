@@ -1,3 +1,7 @@
+2003-10-13  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* module/x86/hammer_op_syscalls.c: pass tgid to daemon. Not tested!
+
 2003-10-12  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol: share --separate-cpu/thread code now
