@@ -1,4 +1,4 @@
-INSTALL_LIST=oprofpp oprof_convert op_to_source op_time
+INSTALL_LIST=oprofpp oprof_convert op_to_source op_time op_merge
 
 CFLAGS=@CFLAGS@ -pedantic -Wall -W -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline
 CXXFLAGS=@CXXFLAGS@ @BFD_CXXFLAGS@ -ansi -Wall -W -Wunused -Wmissing-prototypes
@@ -42,12 +42,15 @@ op_to_source: opf_filter.o opf_container.o ../util/child_reader.o $(OBJS) \
 op_time: op_time.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
+op_merge: op_merge.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
+
 %.o: %c
 	$(CC) -c $(CFLAGS) $(INCLUDES) -g $< -o $@
 
 %.o: %cpp
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -g $< -o $@
 
-ALL_SOURCES = oprofpp.cpp oprofpp_util.cpp opf_container.cpp opf_filter.cpp oprof_convert.c op_time.cpp
+ALL_SOURCES = oprofpp.cpp oprofpp_util.cpp opf_container.cpp opf_filter.cpp oprof_convert.c op_time.cpp op_merge.cpp
 
 include ../Rules.make

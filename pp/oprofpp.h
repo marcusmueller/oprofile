@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.34 2002/01/07 08:49:42 movement Exp $ */
+/* $Id: oprofpp.h,v 1.35 2002/01/23 21:16:54 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -69,6 +69,7 @@ std::string demangle_symbol(const char* symbol);
 void quit_error(poptContext optcon, char const *err);
 std::string demangle_filename(const std::string & samples_filename);
 bool is_excluded_symbol(const std::string & symbol);
+void check_headers(const opd_header * f1, const opd_header * f2);
 
 // defined in oprofpp_util.cpp
 extern int verbose;

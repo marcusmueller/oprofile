@@ -1,3 +1,20 @@
+/* COPYRIGHT (C) 2001 Philippe Elie
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * first written by P.Elie, many cleanup by John Levon
+ */
 #ifndef OPF_FILTER_H
 #define OPF_FILTER_H
 
@@ -122,15 +139,15 @@ public:
 	/**
 	 * build() -  record symbols/samples in the underlined container
 	 * @samples_files: the samples files container
-	 * @abf: the associatde bfd object
+	 * @abf: the associated bfd object
 	 * @add_zero_samples_symbols: must we had to the symbol container
 	 *   symbols with zero samples count
 	 * @build_samples_by_vma: must we record also individual samples
 	 *  passing false as this parameter speed up the build time, in this
 	 *  case all functions that acts on samples or return sample_entry
 	 *  will fail.
-	 * @add_shared_libs: add to the set of symbols/samples shared which
-	 *  belongs to this image, only meaningfull if samples come from
+	 * @add_shared_libs: add to the set of symbols/samples shared libs
+	 *  which belongs to this image, only meaningfull if samples come from
 	 *  a --separate-samples session
 	 *
 	 * build() is a delayed ctor and must be called once.

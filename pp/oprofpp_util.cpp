@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.19 2002/01/14 08:38:54 movement Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.20 2002/01/23 21:16:54 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -627,7 +627,7 @@ int opp_bfd::symbol_index(const char* symbol) const
  * verify that header @f1 and @f2 are coherent.
  * all error are fatal
  */
-static void check_headers(const opd_header * f1, const opd_header * f2)
+void check_headers(const opd_header * f1, const opd_header * f2)
 {
 	if (f1->mtime != f2->mtime) {
 		fprintf(stderr, "oprofpp: header timestamps are different (%ld, %ld)\n", f1->mtime, f2->mtime);

@@ -1,3 +1,18 @@
+2002-01-23  Philippe Elie  <ph_e@club-internet.fr>
+
+	* util/shared_ptr.h: a templatized shared pointer.
+
+	* pp/op_merge.c: new to merge samples files
+	* pp/Makefile.in:
+	* pp/opf_filter.cpp:
+	* pp/opf_filter.h:
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp: minor change to add op_merge support
+
+	* doc/Makefile.in:
+	* doc/oprofile.1.in:
+	* doc/oprofle.smgl: document op_merge
+
 2002-01-22  John Levon  <moz@compsoc.man.ac.uk>
 
 	* module/Makefile.in: can only depmod if we run that kernel

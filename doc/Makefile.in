@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.13 2002/01/22 05:10:34 phil_e Exp $
+# $Id: Makefile.in,v 1.14 2002/01/23 21:16:54 phil_e Exp $
 
 RM=rm
 CP=cp
@@ -10,7 +10,7 @@ LN_SF=ln -sf
 MKDIR=mkdir
 MKDIR_P=mkdir -p
 DB2HTML=db2html
-LINK_LIST=oprofiled.1 op_start.1 op_stop.1 op_help.1 oprofpp.1 op_time.1 op_to_source.1
+LINK_LIST=oprofiled.1 op_start.1 op_stop.1 op_help.1 oprofpp.1 op_time.1 op_to_source.1 op_merge.1
 
 .PHONY: all clean install uninstall
 

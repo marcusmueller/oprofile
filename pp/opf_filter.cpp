@@ -389,7 +389,7 @@ bool output::setup_counter_param(const opp_samples_files & samples_files)
 	}
 
 	if (!have_counter_info)
-		cerr << "opf_filter: no counter enabled ?" << endl;
+		cerr << "op_to_source: no counter enabled ?" << endl;
 
 	return have_counter_info;
 }
@@ -652,7 +652,7 @@ void output::output_one_file(istream & in, const string & filename,
 		out_filename.erase(0, source_dir.length());
 	} else if (pos == string::npos) {
 		// filename is outside the source dir: ignore this file
-		cerr << "opf_filter: file "
+		cerr << "op_to_source: file "
 		     << '"' << out_filename << '"' << " ignored" << endl;
 		return;
 	}
@@ -732,8 +732,8 @@ void output::output_source()
 			// if the filename is non empty. The case: no debug
 			// info at all has already been checked.
 			if (filenames[i].length())
-				cerr << "opf_filter (warning): unable to open "
-				     << "for reading: "
+				cerr << "op_to_source (warning): unable to "
+				     << "open for reading: "
 				     << filenames[i] << endl;
 		} else {
 			counter_array_t count;
@@ -754,7 +754,7 @@ size_t output::get_sort_counter_nr() const
 				break;
 		}
 
-		cerr << "opf_filter (warning): sort_by_counter invalid or "
+		cerr << "op_to_source (warning): sort_by_counter invalid or "
 		     << "counter[sort_by_counter] disabled : switch "
 		     << "to the first valid counter " << index << endl;
 	}
@@ -843,7 +843,7 @@ bool output::treat_input(const string & image_name, const string & sample_file)
 	}
 
 	if (!calc_total_samples()) {
-		cerr << "opf_filter: the input contains zero samples" << endl;
+		cerr << "op_to_source: the input contains zero samples" << endl;
 		return false;
 	}
 
@@ -910,12 +910,12 @@ static void get_options(int argc, char const * argv[],
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
-		printf("opf_filter: %s : " VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n", argv[0]);
+		printf("op_to_source: %s : " VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n", argv[0]);
 		exit(EXIT_SUCCESS);
 	}
 
 	if (with_more_than_samples && until_more_than_samples) {
-		fprintf(stderr, "opf_filter: --with-more-than-samples and -until-more-than-samples can not specified together\n");
+		fprintf(stderr, "op_to_source: --with-more-than-samples and -until-more-than-samples can not specified together\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -969,15 +969,15 @@ int main(int argc, char const * argv[])
 	}
 
 	catch (const string & e) {
-		cerr << "opf_filter: Exception : " << e << endl;
+		cerr << "op_to_source: Exception : " << e << endl;
 		return EXIT_FAILURE;
 	}
 	catch (const char * e) {
-		cerr << "opf_filter: Exception : " << e << endl;
+		cerr << "op_to_source: Exception : " << e << endl;
 		return EXIT_FAILURE;
 	}
 	catch (...) {
-		cerr << "opf_filter: Unknown exception : really sorry " << endl;
+		cerr << "op_to_source: Unknown exception : really sorry " << endl;
 		return EXIT_FAILURE;
 	}
 

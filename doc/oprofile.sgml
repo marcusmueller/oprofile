@@ -274,9 +274,20 @@ This section gives a brief description of the available oprofile utilities and t
 	<listitem><para>
 		This utility can be used to produce annotated source, assembly or mixed source/assembly.
 		Source level annotation is available only if the application was compiled with 
-		debugging symbols. See	<xref linkend="op-to-source">.
+		debugging symbols. See <xref linkend="op-to-source">.
 	</para></listitem>
 </varlistentry>
+
+<!-- FIXME: how to get a link only for the word op_merge and so on remove
+ the ugly See the section called .... in Chapter X -->
+<varlistentry>
+	<term><filename>op_merge</filename></term>
+	<listitem><para>
+		This utility is useful to merge samples files which belongs to the same application
+		especially when you profile with separating samples for shared libs. See <xref linkend="op-merge">.
+	</para></listitem>
+</varlistentry>
+
 </variablelist>
 	
 </chapter>
@@ -1057,6 +1068,31 @@ The options allowed are :
 		<listitem><para>
 		Comma-separated list of symbols to ignore. This can be useful to ignore the leading contributors
 		to the sample histogram, as the percentage values are re-calculated.
+		</para></listitem>
+	</varlistentry>
+</variablelist>
+</para>
+</sect1>
+
+<sect1 id="op-merge">
+<title><command>op_merge</command>: merging samples files</title>
+<para>
+<command>op_merge</command> is used to merge samples wich belongs to the same binary image. Its main purpose
+is to merge samples files created by profiling with &mdash;separate-samples. So you can create one samples
+file containing all samples for a shared libs:
+<command>op_merge</command><filename>/usr/lib/ld-2.1.2.so</filename> will create a samples file named
+<filename>}usr}lib}ld-2.1.2.so</filename> ready to use with <command>oprofpp</command> or other post-profiling tools.
+Additionnaly you can merge a subset of samples files inside one sample file by specifying explicitly the samples files name to merge.
+This allows to use post-profile tools on shared libs for a subset of applications.
+</para>
+<para>
+The options allowed are :
+<variablelist>
+	<varlistentry>
+		<term><option>&mdash;use-counter</option> nr</term>
+		<term><option>-c</option></term>
+		<listitem><para>
+		use counter nr to select the appropriate samples files
 		</para></listitem>
 	</varlistentry>
 </variablelist>
