@@ -1,3 +1,7 @@
+2003-10-19  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* gui/oprof_start.cpp: redundant return
+
 2003-10-19  John Levon  <levon@movementarian.org>
 
 	* libop/op_events.c: move to a fixed value for the default
@@ -5,7 +9,7 @@
 
 2003-10-19  Philippe Elie  <phil.el@wanadoo.fr>
 
-	rmove some FIXME:
+	remove some FIXME:
 	* libpp/format_output.h: remove first_output bool member
 	* libpp/format_output.cpp: call output_header from the right place
 	* libpp/op_header.h: remove bogus FIXME
@@ -28,7 +32,7 @@
 	* libpp/profile_container.cpp:
 	* libpp/profile_spec.cpp:
 	* pp/common_option.cpp:
-	* pp/populate.cpp: ';' are not neccessary to end namespace
+	* pp/populate.cpp: ';' are not necessary to end namespace
 
 2003-10-17  Philippe Elie  <phil.el@wanadoo.fr>
 
@@ -247,7 +251,7 @@
 	  think it's ok. Note than even if it's broken ia64 should work w/o
 	  --separate=thread
 	* module/x86/op_syscalls.c: pass tgid to daemon.
-	* utils/opcontrol: enable 2.4 thread/cpu speration
+	* utils/opcontrol: enable 2.4 thread/cpu separation
 
 	* libdb/tests/db_test.c: verbose on when we provide filename of db file
 	  to test on command line.
@@ -379,7 +383,7 @@
 
 	* libop/op_alloc_counter.c: add forward declaration
 	* libop/op_alloc_counter.c: alloc counter in increasing number order,
-	  it's less suprising.
+	  it's less surprising.
 
 2003-10-01  Philippe Elie  <phil.el@wanadoo.fr>
 
@@ -1161,7 +1165,7 @@
 
 2003-09-04  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* utils/opcontrol: tweak "signalling daemon " message as suggested
+	* utils/opcontrol: tweak "signaling daemon " message as suggested
 	  by Carlo Wood
 
 2003-09-04  John Levon  <levon@movementarian.org>
@@ -1333,7 +1337,7 @@
 
 2003-08-12  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* libregex/stl.pat.in: minor fix/improvments
+	* libregex/stl.pat.in: minor fix/improvements
 	* libregex/mangled-name.txt: add tests
 
 2003-08-12  Philippe Elie  <phil.el@wanadoo.fr>
@@ -1425,8 +1429,8 @@
 	Multiple counter support for pp tools.
 
 	* libpp/counter_array.h:
-	* libpp/counter_array.cpp: resurected from pp-interface-branch, for now
-	 memory use is inefficient.
+	* libpp/counter_array.cpp: resurrected from pp-interface-branch, for
+	 now memory use is inefficient.
 	* libpp/Makefile.am: add counter_array.cpp .h
 	* libpp/format_out.h:
 	* libpp/format_out.cpp: handle multiple counter + a general tidy
@@ -1483,7 +1487,7 @@
 2003-08-08  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_alloc_counter.c:
-	* libop/op_events.h: minor doxgen fix
+	* libop/op_events.h: minor doxygen fix
 
 2003-08-08  John Levon  <levon@movementarian.org>
 
@@ -1894,7 +1898,7 @@
 	* daemon/opd_image.h:
 	* daemon/opd_kernel.c:
 	* daemon/opd_kernel.h: import cleanup from branch, mainly don't handle
-	  samples in opd_kernel.c but return (creating if neccessary) an
+	  samples in opd_kernel.c but return (creating if necessary) an
 	  opd_image struct where the sample must go and let opd_image caller
 	  in opd_image.c do sample insertion
 
@@ -2224,7 +2228,7 @@
 
 2003-06-07  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* libpp/profile_container.cpp: fix order of file output with opannoate
+	* libpp/profile_container.cpp: fix order of file output with opannotate
 	--source to be consistent with other tools
 
 2003-06-07  John Levon  <levon@movementarian.org>
@@ -2389,7 +2393,7 @@
 
 	* daemon/opd_stats.h:
 	* daemon/opd_stats.c: count short reads of
-	buffer and unplacable samples
+	buffer and unplaceable samples
 
 	* daemon/opd_image.c: rewrite buffer parsing
 	code, handle window where we can't place a
@@ -2504,7 +2508,7 @@
 	* libpp/format_flags: cf_image_name new column_flags flag
 	* libpp/profile_container.cpp: use above flag. Don't compare app_name
 	  by string but id
-	* pp/opreport.cpp: hide image_name when un-neccessary
+	* pp/opreport.cpp: hide image_name when un-necessary
 
 2003-05-24  Philippe Elie  <phil.el@wanadoo.fr>
 
@@ -2533,7 +2537,7 @@
 
 	* libpp/profile.cpp:
 	* libpp/op_header.h:
-	* libpp/op_header.cpp: when sample file differ ouput the sample
+	* libpp/op_header.cpp: when sample file differ output the sample
 	  filename
 
 	* pp/opannotate.cpp: remove spurious output
@@ -2607,7 +2611,7 @@
 
 2003-05-18  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* libpp/partition_files.cpp: merge partition entry when neccessary
+	* libpp/partition_files.cpp: merge partition entry when necessary
 	  fixing a corner case when a binary can be a dependent or a primary
 	  image and was not merged
 
@@ -2735,7 +2739,7 @@
 	* libpp/op_header.cpp: remove cpu_speed checking
 
 	* libutil++/op_bfd.h:
-	* libutil++/op_bfd.cpp: bailout in get_linenr() if binary doesn't
+	* libutil++/op_bfd.cpp: bail out in get_linenr() if binary doesn't
 	  contain any debug info. Speed up my test case opreport --debug-info
 	  -l by 25
 
@@ -2805,7 +2809,7 @@
 	* libpp/symbol_sort.h:
 	* libpp/symbol_sort.cpp: handle sort order as specified on command line
 
-	* pp/opgprof.cpp: sort symbol is not neccessary for gprof
+	* pp/opgprof.cpp: sort symbol is not necessary for gprof
 	* pp/opreport.cpp:
 	* pp/opreport_options.cpp:
 	* pp/opannotate.cpp: use new sort API
@@ -3108,7 +3112,7 @@
 
 2003-05-09  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* libpp/format_output.cpp: remove redudant map formater
+	* libpp/format_output.cpp: remove redundant map formater
 	* pp/opannotate.cpp: spurious cout
 
 2003-05-08  John Levon  <levon@movementarian.org>
@@ -3294,7 +3298,7 @@
 	* libpp/sample_container.cpp:
 	* libpp/symbol_container.h:
 	* libpp/symbol_container.cpp: extend api to allow selecting symbol
-	  restricted to one appication, ditto for retrieving samples
+	  restricted to one application, ditto for retrieving samples
 
 	* pp/opannotate_options.h:
 	* pp/opannotate_options.cpp:
@@ -3362,7 +3366,7 @@
 	  session after filtering
 
 	* pp/common_option.cpp: catch invalid_argument, return failure on
-	  catched excepton
+	  catched exception
 
 2003-05-01  Philippe Elie  <phil.el@wanadoo.fr>
 
@@ -3379,7 +3383,7 @@
 
 2003-04-30  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* libdb/db_stat.c: minor improvment to stat, usefull to track missed
+	* libdb/db_stat.c: minor improvement to stat, useful to track missed
 	  sample by our tools.
 
 	* pp/op_report.cpp: move matching_sample_filename() to ...
@@ -3576,7 +3580,7 @@
 	* libpp/profile_container.h: comment
 
 	* pp/opreport_options.h: more options export
-	* pp/opreport.cpp: implement -l. Doen't works correctly: --merge=lib
+	* pp/opreport.cpp: implement -l. Doesn't works correctly: --merge=lib
 
 2003-04-25  Philippe Elie  <phil.el@wanadoo.fr>
 
@@ -3588,7 +3592,7 @@
 
 	* libpp/partition_files.cpp: fix a crash when profile spec is empty
 
-	* pp/opreport_options.cpp: bailout if no samples files are found
+	* pp/opreport_options.cpp: bail out if no samples files are found
 
 2003-04-25  John Levon  <levon@movementarian.org>
 
@@ -3620,7 +3624,7 @@
 	  in profile::start_offset
 
 	* pp/opreport_options.h: export options::reverse_sort
-	* pp/opreport_options.cpp: bailout if we get multiple counter
+	* pp/opreport_options.cpp: bail out if we get multiple counter
 
 	* pp/opreport.cpp: raw output result for application (not symbol)
 	  output.
@@ -3772,7 +3776,7 @@
 2003-04-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libopt++/popt_options.cpp: allow "no-" prefix to long option name
-	  implicitely specify the value must be negated
+	  implicitly specify the value must be negated
 	* libopt++/popt_options.cpp: update doxygen documentation
 
 	* libpp/format_output.h: missing #include
@@ -3931,7 +3935,7 @@
 2003-04-15  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* events/i386-ht.events: all events allow only one counter, remove
-	  three events due to ESCR restricton.
+	  three events due to ESCR restriction.
 	* events/i386.events: add some comments.
 
 	* module/x86/op_model_p4.c: synch with linux 2.5 mainline
@@ -3977,7 +3981,7 @@
 2003-04-07  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/op_to_source.cpp: make each line be prefixed with the samples
-	counts. It was too hard to find samples inside prevous format.
+	counts. It was too hard to find samples inside previous format.
 
 2003-04-07  Philippe Elie  <phil.el@wanadoo.fr>
 
@@ -3987,7 +3991,7 @@
 2003-04-07  John Levon  <levon@movementarian.org>
 
 	* pp/op_to_source.cpp: cheat a bit to get
-	better indentatioon on the default setup, by
+	better indentation on the default setup, by
 	widening counter width to 7.
 
 2003-04-07  John Levon  <levon@movementarian.org>
@@ -4055,7 +4059,7 @@
 
 	* libop/op_config_24.h:
 	* module/oprofile.c:
-	* module/oprofile.c: make watermark size proportionnal to buffer size.
+	* module/oprofile.c: make watermark size proportional to buffer size.
 
 2003-04-05  Philippe Elie  <phil.el@wanadoo.fr>
 
@@ -4195,7 +4199,7 @@
 	  for size_t and ptrdiff_t
 
 	* libregex/stl.pat: move to ...
-	* libregex/stl.pat.in: here. Use @SIZE_T_TYPE@ ans @PTRDIFF_T_TYPE@
+	* libregex/stl.pat.in: here. Use @SIZE_T_TYPE@ and @PTRDIFF_T_TYPE@
 	* libregex/Makefile.am: update according
 	* libregex/.cvsignore: ignore stl.pat
 
@@ -4339,7 +4343,7 @@
 	* TODO: update
 
 	* doc/oprofile.1.in:
-	* doc/oprofile.xml: remove documentaton about -P, update doc about -p
+	* doc/oprofile.xml: remove documentation about -P, update doc about -p
 
 	* pp/derive_files.h:
 	* pp/derive_files.cpp: check_image_name(), add_to_alternate_filename()
@@ -4386,7 +4390,7 @@
 
 2003-03-15  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* TODO: upate
+	* TODO: update
 
 	* Makefile.am: add ChangeLog-2002 in dist files
 	* all Makefile.am: put one item by line for most  xxxx = blah
@@ -4522,7 +4526,7 @@
 
 	* daemon/opd_image.c:
 	* daemon/op_stats.c:
-	* daemon/opd_stats.h: add statistics for nil image whilst receiveing
+	* daemon/opd_stats.h: add statistics for nil image whilst receiving
 	  user space samples.
 
 2003-03-06  Philippe Elie  <phil.el@wanadoo.fr>
@@ -4660,7 +4664,7 @@
 2003-03-03  Will Cohen  <wcohen@redhat.com>
 
 	* gui/oprof_start.cpp (oprof_start::on_start_profiler): Limit
-	  check to onlyl utm_bitmask.
+	  check to only utm_bitmask.
 
 2003-03-03  Will Cohen  <wcohen@redhat.com>
 
@@ -4817,7 +4821,7 @@
 
 2003-02-27  John Levon  <levon@movementarian.org>
 
-	* doc/oprofile.xml: clarifiy --separate=kernel
+	* doc/oprofile.xml: clarify --separate=kernel
 
 2003-02-25  John Levon  <levon@movementarian.org>
 
