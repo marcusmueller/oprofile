@@ -11,7 +11,7 @@ MKDIR_P=mkdir -p
 TOPDIR=@topdir@
 prefix=$(DESTDIR)@prefix@
 exec_prefix=@exec_prefix@
-BINDIR=@bindir@
+BINDIR=$(DESTDIR)@bindir@
  
 # config
 INCLUDES=-I$(TOPDIR)/  -I$(TOPDIR)/libutil  -I$(TOPDIR)/libop -I$(TOPDIR)/libdb @extra_includes@

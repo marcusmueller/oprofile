@@ -1,3 +1,12 @@
+2002-08-30  Will Cohen <wcohen@nc.rr.com>
+
+	* Makefile.in:
+	* make.common.in: more DESTDIR change
+
+2002-09-02  Dave Jones <davej@suse.de>
+
+	* module/x64/cpu_type.c: support hammer in ia32 mode
+
 2002-09-02  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: mention Qt 3

@@ -1,7 +1,7 @@
 OPROFILE_DIR=@OPROFILE_DIR@
 KSRC=@KSRC@
 KVERS=@KVERS@
-MODINSTALLDIR=@MODINSTALLDIR@/oprofile
+MODINSTALLDIR=$(DESTDIR)@MODINSTALLDIR@/oprofile
 MKDIR_P=mkdir -p
 
 .PHONY: all install clean distclean maintainerclean uninstall tags
