@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.27 2002/03/01 21:30:02 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.28 2002/03/03 01:18:19 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -30,9 +30,6 @@ using std::vector;
 using std::cout;
 using std::cerr;
  
-// ugly global var for opf_container.cpp
-uint op_nr_counters;
-
 static int ctr = -1;
 static int showvers;
 static char *gproffile;
@@ -410,9 +407,6 @@ int main(int argc, char const *argv[])
 	opp_samples_files samples_files(sample_file, counter);
 	opp_bfd abfd(samples_files.header[samples_files.first_file],
 		     samples_files.nr_samples, image_file);
-
-	// some other module needs this global var.
-	op_nr_counters = samples_files.nr_counters;
 
 	samples_files.output_header();
 

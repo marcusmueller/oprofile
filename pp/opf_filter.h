@@ -77,11 +77,12 @@ public:
 	/// calculate the total number of samples for a file. Return false
 	/// if there is no sample for this file
 	bool accumulate_samples(counter_array_t & counter, 
-				const std::string & filename) const;
+				const std::string & filename,
+				uint max_counters) const;
 	/// calculate the total number of samples for a file/linenr. Return
 	/// false if there is no sample for this file
 	bool accumulate_samples(counter_array_t &, const std::string & filename, 
-				size_t linenr) const;
+				size_t linenr, uint max_counters) const;
 	/// find a sample from a vma. Return NULL if no samples are available
 	/// at this vma.
 	const sample_entry * find_by_vma(bfd_vma vma) const;
@@ -171,6 +172,8 @@ public:
 	bool samples_count(counter_array_t & result,
 			   const std::string & filename,
 			   size_t linenr) const;
+	/// you can call this *after* the first call to add()
+	uint get_nr_counters() const { return nr_counters; }
 private:
 	/// helper for add();
 	void do_add(const opp_samples_files & samples_files,
@@ -208,6 +211,8 @@ private:
 	/// build() must count samples count for each counter so cache it here
 	/// since user of samples_files_t often need it later.
 	counter_array_t counter;
+	/// maximum number of counter available
+	uint nr_counters;
 };
 
 #endif /* !OPF_FILTER_H */

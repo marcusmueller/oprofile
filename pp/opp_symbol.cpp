@@ -14,9 +14,6 @@ using std::ostream;
 using std::ostringstream;
 using std::endl;
 
-extern uint op_nr_counters;
-
-
 struct output_option {
 	char option;
 	OutSymbFlag flag;
@@ -127,7 +124,7 @@ OutputSymbol::OutputSymbol(const samples_files_t & samples_files_,
 	counter(counter_),
 	first_output(true)
 {
-	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
+	for (size_t i = 0 ; i < samples_files.get_nr_counters() ; ++i) {
 		total_count[i] = samples_files.samples_count(i);
 		cumulated_samples[i] = 0;
 		cumulated_percent[i] = 0;
@@ -201,7 +198,7 @@ void OutputSymbol::OutputDetails(ostream & out, const symbol_entry * symb)
 	u32 temp_cumulated_percent[OP_MAX_COUNTERS];
 //	u32 temp_time_cumulated[OP_MAX_COUNTERS];
 
-	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
+	for (size_t i = 0 ; i < samples_files.get_nr_counters() ; ++i) {
 		temp_total_count[i] = total_count[i];
 		temp_cumulated_samples[i] = cumulated_samples[i];
 		temp_cumulated_percent[i] = cumulated_percent[i];
@@ -220,7 +217,7 @@ void OutputSymbol::OutputDetails(ostream & out, const symbol_entry * symb)
 			 static_cast<OutSymbFlag>(flags & osf_details_mask));
 	}
 
-	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
+	for (size_t i = 0 ; i < samples_files.get_nr_counters() ; ++i) {
 		total_count[i] = temp_total_count[i];
 		cumulated_samples[i] = temp_cumulated_samples[i];
 		cumulated_percent[i] = temp_cumulated_percent[i];
@@ -239,7 +236,7 @@ void OutputSymbol::DoOutput(std::ostream & out, const string & name,
 	}
 
 	// now the repeated field.
-	for (int ctr = 0 ; ctr < int(op_nr_counters); ++ctr) {
+	for (int ctr = 0 ; ctr < int(samples_files.get_nr_counters()); ++ctr) {
 		if (ctr == counter || counter == -1) {
 			size_t repeated_flag = (flag & osf_repeat_mask);
 			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {
@@ -286,7 +283,7 @@ void OutputSymbol::OutputHeader(ostream & out)
 	}
 
 	// now the repeated field.
-	for (int ctr = 0 ; ctr < int(op_nr_counters); ++ctr) {
+	for (int ctr = 0 ; ctr < int(samples_files.get_nr_counters()); ++ctr) {
 		if (ctr == counter || counter == -1) {
 			size_t repeated_flag = (flags & osf_repeat_mask);
 			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {

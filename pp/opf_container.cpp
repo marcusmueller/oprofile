@@ -39,8 +39,6 @@ using std::sort;
 
 #include "opf_filter.h"
 
-extern uint op_nr_counters;
-
 namespace {
 
 inline double do_ratio(size_t counter, size_t total)
@@ -142,7 +140,7 @@ symbol_container_impl::symbol_container_impl()
 {
 	// symbol_entry_by_samples_nr has been setup by the default ctr, we
 	// need to rebuild it. do not assume that index 0 is correctly built
-	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
+	for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 		less_symbol_entry_by_samples_nr compare(i);
 		symbol_entry_by_samples_nr[i] =	set_symbol_by_samples_nr(compare);
 	}
@@ -217,10 +215,6 @@ const symbol_entry * symbol_container_impl::find_by_vma(bfd_vma vma) const
 // get a vector of symbols sorted by increased count.
 void symbol_container_impl::get_symbols_by_count(size_t counter, vector<const symbol_entry*> & v) const
 {
-	if (counter >= op_nr_counters) {
-		throw "symbol_container_impl::get_symbols_by_count() : invalid counter number";
-	}
-
 	flush_input_symbol(counter);
 
 	v.clear();
@@ -289,10 +283,13 @@ class sample_container_impl {
 
 	size_t size() const;
 
-	bool accumulate_samples(counter_array_t & counter, const string & filename) const;
+	bool accumulate_samples(counter_array_t & counter,
+				const string & filename,
+				uint max_counters) const;
 
 	const sample_entry * find_by_vma(bfd_vma vma) const;
-	bool accumulate_samples(counter_array_t &, const string & filename, size_t linenr) const;
+	bool accumulate_samples(counter_array_t &, const string & filename,
+				size_t linenr, uint max_counters) const;
 	void push_back(const sample_entry &);
  private:
 	void flush_input_counter() const;
@@ -334,7 +331,8 @@ inline counter_array_t & add_counts(counter_array_t & arr, const sample_entry * 
 } // namespace anon
 
 bool sample_container_impl::accumulate_samples(counter_array_t & counter,
-					       const string & filename) const
+					       const string & filename,
+					       uint max_counters) const
 {
 	flush_input_counter();
 
@@ -351,7 +349,7 @@ bool sample_container_impl::accumulate_samples(counter_array_t & counter,
 
 	counter += accumulate(it1, it2, counter, add_counts);
 
-	for (size_t i = 0 ; i < op_nr_counters ; ++i)
+	for (size_t i = 0 ; i < max_counters ; ++i)
 		if (counter[i] != 0)
 			return true;
 
@@ -374,7 +372,7 @@ const sample_entry * sample_container_impl::find_by_vma(bfd_vma vma) const
 }
 
 bool sample_container_impl::accumulate_samples(counter_array_t & counter,
-	const string & filename, size_t linenr) const
+	const string & filename, size_t linenr, uint max_counters) const
 {
 	flush_input_counter();
 
@@ -390,7 +388,7 @@ bool sample_container_impl::accumulate_samples(counter_array_t & counter,
 
 	counter += accumulate(p_it.first, p_it.second, counter, add_counts);
 
-	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
+	for (size_t i = 0 ; i < max_counters ; ++i) {
 		if (counter[i] != 0)
 			return true;
 	}
@@ -431,9 +429,10 @@ size_t sample_container_t::size() const {
 }
 
 bool sample_container_t::accumulate_samples(counter_array_t & counter,
-					    const string & filename) const
+					    const string & filename,
+					    uint max_counters) const
 {
-	return impl->accumulate_samples(counter, filename);
+	return impl->accumulate_samples(counter, filename, max_counters);
 }
 
 const sample_entry * sample_container_t::find_by_vma(bfd_vma vma) const
@@ -442,9 +441,12 @@ const sample_entry * sample_container_t::find_by_vma(bfd_vma vma) const
 }
 
 bool sample_container_t::accumulate_samples(counter_array_t & counter,
-					    const string & filename, size_t linenr) const
+					    const string & filename,
+					    size_t linenr,
+					    uint max_counters) const
 {
-	return impl->accumulate_samples(counter, filename, linenr);
+	return impl->accumulate_samples(counter, filename,
+					linenr, max_counters);
 }
 
 void sample_container_t::push_back(const sample_entry & sample)
@@ -457,6 +459,8 @@ void sample_container_t::push_back(const sample_entry & sample)
 // implementation of samples_files_t
 
 samples_files_t::samples_files_t()
+	:
+	nr_counters(static_cast<uint>(-1))
 {
 }
 
@@ -473,8 +477,8 @@ add(const opp_samples_files & samples_files, const opp_bfd & abfd,
       bool add_zero_samples_symbols, bool build_samples_by_vma,
       bool add_shared_libs, int counter)
 {
-	do_add(samples_files, abfd, add_zero_samples_symbols,
-		 build_samples_by_vma);
+	do_add(samples_files, abfd, add_zero_samples_symbols, 
+	       build_samples_by_vma);
 
 	if (!add_shared_libs)
 		return;
@@ -508,6 +512,15 @@ void samples_files_t::
 do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 	 bool add_zero_samples_symbols, bool build_samples_by_vma)
 {
+	// paranoiad checking
+	if (nr_counters != static_cast<uint>(-1) && 
+	    nr_counters != samples_files.nr_counters) {
+		cerr << "Fatal: samples_files_t::do_add(): mismatch between"
+		     << "nr_counters and samples_files.nr_counters\n";
+		exit(EXIT_FAILURE);
+	}
+	nr_counters = samples_files.nr_counters;
+
 	string image_name = bfd_get_filename(abfd.ibfd);
 
 	/* kludge to get samples for image w/o symbols */
@@ -730,14 +743,15 @@ void samples_files_t::select_filename(vector<string> & result, size_t ctr,
 bool samples_files_t::samples_count(counter_array_t & result,
 				    const string & filename) const
 {
-	return samples.accumulate_samples(result, filename);
+	return samples.accumulate_samples(result, filename, nr_counters);
 }
 
 bool samples_files_t::samples_count(counter_array_t & result,
 				    const string & filename, 
 				    size_t linenr) const
 {
-	return samples.accumulate_samples(result, filename, linenr);
+	return samples.accumulate_samples(result, filename, linenr,
+					  nr_counters);
 }
 
 const sample_entry & samples_files_t::get_samples(size_t idx) const

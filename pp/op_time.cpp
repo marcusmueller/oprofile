@@ -45,8 +45,6 @@ using std::ifstream;
 using std::multimap;
 using std::pair;
 
-int op_nr_counters = 2;
-
 /// image_name - class to store name for a samples file
 struct image_name
 {
@@ -158,7 +156,7 @@ static void get_options(int argc, char const * argv[])
 /**
  * image_name - ctor from a sample file name
  */
-image_name::image_name(const string& samplefile_name, u32 count_ = 0)
+image_name::image_name(const string& samplefile_name, u32 count_)
 	:
 	count(count_),
 	samplefile_name(samplefile_name)

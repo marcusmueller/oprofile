@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.40 2002/03/01 21:30:02 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.41 2002/03/03 01:18:19 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -59,12 +59,7 @@ char *cplus_demangle (const char *mangled, int options);
 }
 #endif
 
-#define verbprintf(args...) \
-	do { \
-		if (verbose) \
-			printf(args); \
-	} while (0)
-
+void verbprintf(const char* args, ...) __attribute__((format (printf, 1, 2)));
 void opp_treat_options(const char * filename, poptContext optcon,
 		       std::string & image_file, std::string & sample_file,
 		       int & counter);

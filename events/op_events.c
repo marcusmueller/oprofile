@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.5 2002/01/15 22:26:01 phil_e Exp $ */
+/* $Id: op_events.c,v 1.6 2002/03/03 01:18:18 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -31,12 +31,17 @@
 
 #include "../op_user.h"
 
-static const char* cpu_type_str[MAX_CPU_TYPE] = {
-	"Pentium Pro",
-	"PII",
-	"PIII",
-	"Athlon",
-	"CPU with RTC device"
+struct cpu_type_descr {
+	const char * name;
+	uint nr_counters;
+};
+
+static struct cpu_type_descr cpu_type_descrs[MAX_CPU_TYPE] = {
+	{ "Pentium Pro", 2 },
+	{ "PII", 2 },
+	{ "PIII", 2 },
+	{ "Athlon", 4 },
+	{ "CPU with RTC device", 1}
 };
 
 struct op_unit_mask op_unit_masks[] = {
@@ -340,5 +345,21 @@ const char * op_get_cpu_type_str(op_cpu cpu_type)
 		return "invalid cpu type";
 	}
 
-	return cpu_type_str[cpu_type];
+	return cpu_type_descrs[cpu_type].name;
+}
+
+/**
+ * op_get_cpu_nr_counters - get the nr of counter
+ * @cpu_type: the cpu type identifier
+ *
+ * The function return the number of counter available for this
+ * cpu type. return (uint)-1 if the cpu type is nopt recognized
+ */
+uint op_get_cpu_nr_counters(op_cpu cpu_type)
+{
+	if (cpu_type < 0 || cpu_type > MAX_CPU_TYPE) {
+		return (uint)-1;
+	}
+
+	return cpu_type_descrs[cpu_type].nr_counters;
 }

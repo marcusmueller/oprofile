@@ -1,5 +1,24 @@
 2002-03-02  Philippe Elie  <ph_e@club-internet.fr>
 
+	* pp/Makefile.in: add -pedantic to CXXFLAGS
+	* pp/oprofpp.h: replace macro verpbrintf with a function
+	* pp/oprofpp_util.cpp: implement it
+	* pp/opp_symbol.h:
+	* pp/op_time.cpp: fix pedantic warning
+
+	* pp/opevents.cpp:
+	* op_user.h: op_get_cpu_nr_counters() new
+
+	* pp/op_time.cpp:
+	* pp/opf_container.cpp:
+	* pp/opf_filter.cpp:
+	* pp/opf_filter.h:
+	* pp/opp_symbol.cpp:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp_util.cpp: remove global var op_nr_counters
+
+2002-03-02  Philippe Elie  <ph_e@club-internet.fr>
+
 	* module/op_syscalls.c: do not pre-allocate some dname
 	  hash map entry for common pathname but pre alloc entry
 	  zero to reserve it

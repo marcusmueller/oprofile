@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.30 2002/02/28 21:16:29 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.31 2002/03/03 01:18:19 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -16,6 +16,7 @@
  */
 
 // FIXME: printf -> ostream (and elsewhere) 
+#include <cstdarg>
 #include <algorithm>
 #include <sstream>
 
@@ -36,6 +37,21 @@ int demangle;
 int list_all_symbols_details;
 const char * exclude_symbols_str;
 static std::vector<std::string> exclude_symbols;
+
+/**
+ * verbprintf
+ */
+void verbprintf(const char * fmt, ...)
+{
+	if (verbose) {
+		va_list va;
+		va_start(va, fmt);
+
+		vprintf(fmt, va);
+
+		va_end(va);
+	}
+}
 
 /**
  * remangle - convert a filename into the related sample file name
@@ -616,6 +632,8 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 			if (next) {
 				next_offset = next->value +
 					next->section->filepos + sect_offset;
+			} else {
+				next_offset = nr_samples;
 			}
 			length = next_offset - start;
 		}
@@ -748,11 +766,9 @@ opp_samples_files::opp_samples_files(const std::string & sample_file,
 	nr_samples = size[first_file] / sizeof(opd_fentry);
 	mtime = header[first_file]->mtime;
 
-	/* determine how many counters are possible via the sample file.
-	 * allows use on different platform */ 
-	nr_counters = 2;
-	if (header[first_file]->cpu_type == CPU_ATHLON)
-		nr_counters = 4;
+	/* determine how many counters are possible via the sample file */
+	op_cpu cpu = static_cast<op_cpu>(header[first_file]->cpu_type);
+	nr_counters = op_get_cpu_nr_counters(cpu);
 
 	/* check sample files match */
 	for (j = first_file + 1; j < OP_MAX_COUNTERS; ++j) {

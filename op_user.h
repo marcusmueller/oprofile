@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.17 2002/01/17 08:42:56 movement Exp $ */
+/* $Id: op_user.h,v 1.18 2002/03/03 01:18:18 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -187,6 +187,7 @@ extern "C" {
 int op_min_count(u8 ctr_type, op_cpu cpu_type);
 int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type);
 const char* op_get_cpu_type_str(op_cpu cpu_type);
+uint op_get_cpu_nr_counters(op_cpu cpu_type);
 void op_get_event_desc(op_cpu cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
 op_cpu op_get_cpu_type(void);
 int op_check_unit_mask(struct op_unit_mask *allow, u8 um);

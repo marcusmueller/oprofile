@@ -61,9 +61,6 @@ double do_ratio(size_t a, size_t total);
 
 }
 
-// The correct value is known at runtime.
-uint op_nr_counters = 2;
-
 // This have nothing to do here...
 
 /// a class to encapsulate filename matching. The behavior look like
@@ -372,7 +369,7 @@ bool output::setup_counter_param(const opp_samples_files & samples_files)
 {
 	bool have_counter_info = false;
 
-	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
+	for (size_t i = 0 ; i < samples_files.nr_counters ; ++i) {
 		if (samples_files.is_open(i) == false)
 			continue;
 
@@ -395,10 +392,10 @@ bool output::setup_counter_param(const opp_samples_files & samples_files)
 
 bool output::calc_total_samples()
 {
-	for (size_t i = 0 ; i < op_nr_counters ; ++i)
+	for (size_t i = 0 ; i < samples.get_nr_counters() ; ++i)
 		counter_info[i].total_samples = samples.samples_count(i);
 
-	for (size_t i = 0 ; i < op_nr_counters ; ++i)
+	for (size_t i = 0 ; i < samples.get_nr_counters() ; ++i)
 		if (counter_info[i].total_samples != 0)
 			return true;
 
@@ -413,7 +410,7 @@ void output::output_one_counter(ostream & out, size_t counter, size_t total) con
 }
 
 void output::output_counter(ostream & out, const counter_array_t & counter, 
-	bool comment, const string & prefix) const
+			    bool comment, const string & prefix) const
 {
 	if (comment)
 		out << begin_comment;
@@ -421,7 +418,7 @@ void output::output_counter(ostream & out, const counter_array_t & counter,
 	if (prefix.length())
 		out << " " << prefix;
 
-	for (size_t i = 0 ; i < op_nr_counters ; ++i)
+	for (size_t i = 0 ; i < samples.get_nr_counters() ; ++i)
 		if (counter_info[i].enabled)
 			output_one_counter(out, counter[i], counter_info[i].total_samples);
 
@@ -747,8 +744,9 @@ size_t output::get_sort_counter_nr() const
 {
 	size_t index = sort_by_counter;
 
-	if (index >= size_t(op_nr_counters) || !counter_info[index].enabled) {
-		for (index = 0 ; index < op_nr_counters ; ++index) {
+	if (index >= samples.get_nr_counters() ||
+	    !counter_info[index].enabled) {
+		for (index = 0 ; index < samples.get_nr_counters() ; ++index) {
 			if (counter_info[index].enabled)
 				break;
 		}
@@ -761,7 +759,7 @@ size_t output::get_sort_counter_nr() const
 	}
 
 	// paranoid checking.
-	if (index == op_nr_counters)
+	if (index == samples.get_nr_counters())
 		throw "output::output_source(input &) cannot find a counter enabled";
 
 	return index;
@@ -804,7 +802,7 @@ void output::output_header(ostream& out) const
 	out << "Cpu type: " << op_get_cpu_type_str(cpu_type) << endl;
 	out << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
 
-	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
+	for (size_t i = 0 ; i < samples.get_nr_counters() ; ++i) {
 		out << endl << "Counter " << i << " ";
 		counter_info[i].print(out, cpu_type);
 	}
@@ -831,17 +829,14 @@ bool output::treat_input(const string & image_name, const string & sample_file,
 		exit(EXIT_FAILURE);
 	}
 
-	cpu_type = static_cast<op_cpu>(samples_files.header[samples_files.first_file]->cpu_type);
-
-	if (cpu_type == CPU_ATHLON)
-		op_nr_counters = 4;
-
 	cpu_speed = samples_files.header[samples_files.first_file]->cpu_speed;
+	uint tmp = samples_files.header[samples_files.first_file]->cpu_type;
+	cpu_type = static_cast<op_cpu>(tmp);
+
+	samples.add(samples_files, abfd, false, true, false, counter);
 
 	if (!setup_counter_param(samples_files))
 		return false;
-
-	samples.add(samples_files, abfd, false, true, false, counter);
 	}
 
 	if (!calc_total_samples()) {
