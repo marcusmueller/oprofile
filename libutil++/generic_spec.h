@@ -37,7 +37,9 @@ public:
 	void set(std::string const &);
 
 	/// return true if rhs match this spec. Sub part of PP:3.24
-	bool match(T const & rhs) const { return is_all || rhs == data; }
+	bool match(T const & rhs, bool allow_all_match = true) const {
+		return (allow_all_match && is_all) || rhs == data;
+	}
 
 	/// return true if rhs match this spec. Sub part of PP:3.24
 	bool match(generic_spec<T> const & rhs) const {

@@ -75,7 +75,7 @@ void name_classes(profile_classes & classes, int axis)
 	// If we're splitting on event anyway, clear out the
 	// global event name
 	if (axis == 0)
-		classes.event.clear();
+		classes.event.erase();
 
 	vector<profile_class>::iterator it = classes.v.begin();
 	vector<profile_class>::iterator const end = classes.v.end();

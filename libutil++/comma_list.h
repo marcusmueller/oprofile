@@ -128,7 +128,7 @@ bool comma_list<T>::match(generic_spec<T> const & value) const
 	const_iterator const end = items.end();
 
 	for (; cit != end; ++cit) {
-		if (value.match(*cit))
+		if (value.match(*cit, false))
 			return true;
 	}
 
