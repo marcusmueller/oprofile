@@ -1,3 +1,7 @@
+2003-06-11  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_image.c: future-proof the code handlers
+
 2003-06-11  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opannotate.cpp: output_asm() avoid output when the set of selected

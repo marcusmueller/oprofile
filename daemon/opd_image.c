@@ -571,7 +571,8 @@ static handler_t handlers[LAST_CODE + 1] = {
 	&code_cookie_switch,
 	&code_kernel_enter,
 	&code_kernel_exit,
-	&code_module_loaded
+	&code_module_loaded,
+	&code_unknown /* tgid handled differently */
 };
 
 
