@@ -1,5 +1,11 @@
 2003-04-07  John Levon  <levon@movementarian.org>
 
+	* pp/op_to_source.cpp: cheat a bit to get
+	better indentatioon on the default setup, by
+	widening counter width to 7.
+
+2003-04-07  John Levon  <levon@movementarian.org>
+
 	* pp/op_to_source.cpp: append symbol summary
 	annotations separate from the prolog samples on
 	the same line.

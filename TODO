@@ -74,6 +74,7 @@ General checks to make
 Later
 -----
  
+ o i18n. We need a good formatter, and also remember format_percent()
  o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
    will fail because the ~ is not expanded (no space around it) (popt bug I say)
  o remove 1 and 2 magic numbers for oprof_ready

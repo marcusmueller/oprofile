@@ -95,7 +95,7 @@ op_cpu cpu_type = CPU_NO_GOOD;
 /// hold all info for samples
 scoped_ptr<profile_container_t> samples(0);
 /// field width for the sample count
-unsigned int const count_width = 6;
+unsigned int const count_width = 7;
 /// field width for the sample relative percent
 unsigned int const percent_width = 6;
 /// empty annotation fill string
@@ -631,7 +631,6 @@ string const get_annotation_fill()
 		str += string(percent_width, ' '); 
 	}
 
-	str += " :";
 	return str;
 }
 
@@ -911,7 +910,7 @@ string const line_annotation(string const & filename, size_t linenr)
 		str += output_counter(counter);
 
 	if (str.empty())
-		return annotation_fill;
+		str = annotation_fill;
 
 	str += " :";
 	return str;
