@@ -9,15 +9,17 @@ o remove oprofile thread. already exists in CVS branch BRANCH_NO_THREAD. This pr
 o determine where we need ctx_sw_on/off to prevent pre-emption
  
 o modify mapping to queue maps on a separate device. the daemon always
-  applys all maps immediately before doing the samples
+  apply all maps immediately before doing the samples
 
-o incrementalise the daemon processing to smooth load
+o incrementalise the daemon processing to smooth load and reduce mem usage
  
 o make hashmap use string pool method
  
-o implement proc->old_exec 
+o implement proc->old_exec
  
 o post-prof GUI ? (big job)
+
+o fix zero component hash problem 
  
 Later
 -----

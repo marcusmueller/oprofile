@@ -1,3 +1,11 @@
+2001-10-03  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+
+	* Makefile.in: remove generated files on make distclean
+
+	* acinclude.m4: update from source
+ 
 2001-10-02  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/oprofpp.cpp: fix a silly bug in do_list_symbols (oprofpp -l)
@@ -97,7 +105,7 @@
 
 	* gui/oprof_start_util.cpp: fix compile, revert
 	  g++ extension (different on g++ 3.0) 
- 
+
 2001-09-27  John Levon  <moz@compsoc.man.ac.uk>
 
 	* gui/oprof_start_util.cpp: use g++ extension to
@@ -407,7 +415,7 @@
 2001-09-15  John Levon  <moz@compsoc.man.ac.uk>
 
 	* pp/oprofpp.c: some cleanup
- 
+
 2001-09-15  John Levon  <moz@compsoc.man.ac.uk>
 
 	* pp/oprofpp.c: allow non-matching mtimes in order

@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.32 2001/10/02 17:36:23 movement Exp $
+# $Id: Makefile.in,v 1.33 2001/10/02 23:34:06 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -19,7 +19,7 @@ maintainerclean: distclean
 	rm -f configure doc/Makefile aclocal.m4
 
 distclean: clean
-	rm -f Makefile dae/Makefile pp/Makefile gui/Makefile tags config.status config.log config.cache
+	rm -f Makefile doc/oprofile.1 dae/Makefile pp/Makefile gui/Makefile tags config.status config.log config.cache version.h
 
 # broken 
 dist:
