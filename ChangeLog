@@ -1,3 +1,8 @@
+2004-04-04  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: improvements to the call-graph
+	* documentation.
+
 2004-03-28  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/op_bfd.cpp: remove spurious cerr <<; fix a potential memory

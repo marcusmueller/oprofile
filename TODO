@@ -12,8 +12,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o callgraph_container.cpp: the inner loop in add() is very fragile!
  o child sample count for recursive function is not a bug but a feature, it
   needs documentation.
- o review opstack documentation, improve it by giving examples of output and
-  how to interpret it.
+ o need --callgraph in oprof_start
 
 0.9 release
 -----------

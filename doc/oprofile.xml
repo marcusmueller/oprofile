@@ -56,12 +56,13 @@ OProfile is useful in a number of situations. You might want to use OProfile whe
 <listitem><para>want to examine hardware effects such as cache misses</para></listitem>
 <listitem><para>want detailed source annotation</para></listitem>
 <listitem><para>want instruction-level profiles</para></listitem>
+<listitem><para>want call-graph profiles</para></listitem>
 </itemizedlist>
 <para>
 OProfile is not a panacea. OProfile might not be a complete solution when you :
 </para>
 <itemizedlist>
-<listitem><para>require call graph profiles</para></listitem>
+<listitem><para>require call graph profiles on platforms other than 2.6/x86</para></listitem>
 <listitem><para>don't have root permissions</para></listitem>
 <listitem><para>require 100% instruction-accurate profiles</para></listitem>
 <listitem><para>need function call counts or an interstitial profiling API</para></listitem>
@@ -389,9 +390,8 @@ This section gives a brief description of the available OProfile utilities and t
 <varlistentry>
 	<term><filename>opstack</filename></term>
 	<listitem><para>
-		This utility can output callgraph profiles. This require an x86
+		This utility can output call-graph profiles. This require an x86
 		based box and a 2.6 box with the <ulink url="http://oprofile.sf.net/patches/">call-graph patch</ulink>.
-		Note this tools is actively developped, don't report glitch for now please.
 		 See <xref linkend="opstack" />.
 	</para></listitem>
 </varlistentry>
@@ -606,9 +606,8 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 	<varlistentry>
 		<term><option>--callgraph=</option>#depth</term>
 		<listitem><para>
-		Enable callgraph sample collection with a maximum depth. Use 0 to disable
-		callgraph profiling. This option is currently only usable on x86, using a
-		2.6+ kernel with callgraph support enabled.
+		Enable call-graph sample collection with a maximum depth. Use 0 to disable
+		callgraph profiling. Please make sure to read <xref linkend="opstack" />.
 		</para></listitem>
 	</varlistentry>
 	</varlistentry>
@@ -1170,71 +1169,104 @@ You can specify multiple (comma-separated) paths to both options.
 </sect1> <!-- opannotate -->
 
 <sect1 id="opstack">
-<title>Outputting callgraph profile</title>
+<title>Outputting call-graph profile</title>
 <para>
-The <command>opstack</command> utility generates callgraph profile at symbol level.
-It's able to traverse shared library boundary but actually can't traverse the 
-kernel syscall barrier.
-An example:
+The <command>opstack</command> utility generates call-graph profile at symbol level.
+It's able to traverse shared library boundaries, so you can trace calls
+into an application's loaded libraries. You can also get kernel-based
+call-graph profiles; currently OProfile cannot trace across a system call
+boundary.
+For example, consider the following C program:
 </para>
 <screen>
-$ opstack /usr/src/phe/cg_tests/temp/cg_tests
-...
-	_start 0/2683
-__libc_start_main 0/2683
-	main 0/2683
---------------------------------------------------
-	main 0/2683
-entry1_lib_c(void) 0/893
-	fct1_lib_c(void) 893/893
---------------------------------------------------
-	main 0/2683
-entry1_lib_b(void) 0/896
-	fct1_lib_b(void) 896/896
---------------------------------------------------
-	main 0/2683
-entry1_lib_a(void) 0/894
-	fct1_lib_a(void) 894/894
---------------------------------------------------
-	__libc_start_main 0/2683
-main 0/2683
-	entry1_lib_b(void) 0/896
-	entry1_lib_a(void) 0/894
-	entry1_lib_c(void) 0/893
---------------------------------------------------
-_start 0/2683
-	__libc_start_main 0/2683
---------------------------------------------------
-...
-	entry1_lib_c(void) 0/893
-fct1_lib_c(void) 893/893
---------------------------------------------------
-	entry1_lib_a(void) 0/894
-fct1_lib_a(void) 894/894
---------------------------------------------------
-	entry1_lib_b(void) 0/896
-fct1_lib_b(void) 896/896
---------------------------------------------------
+void a() { for (int i = 0; i &lt; 1000000; ++i) ; }
+
+void b() { a(); for (int i = 0; i &lt; 1000000; ++i) ; }
+
+int main() { a(); b(); }
 </screen>
+<para>
+Here we can see the logical structure is that <function>a()</function>
+is called twice, once from <function>main()</function>, and once from
+<function>b()</function>. Let's look at a portion of the output from
+<command>opstack</command> :
+</para>
+<screen>
+$ opstack ./cgtest
+  self     %        child    %        image name               symbol name
+...
+-------------------------------------------------------------------------------
+  0              0  2053     100.000  cgtest                   main
+408      19.4842  715      34.1452  cgtest                   b
+  1645     100.000  0              0  cgtest                   a
+-------------------------------------------------------------------------------
+...
+</screen>
+<para>
+The output is similar to the output of <command> GNU gprof</command>.
+Each section refers to one function; here we have shown only one section
+for clarity, which focuses on the function <function>b()</function>.
+We say that (for example) <function>main()</function> is a <emphasis>caller</emphasis>
+of <function>b()</function>, and conversely <function>b()</function> is a 
+<emphasis>callee</emphasis> of <function>main()</function>. Functions
+listed above the non-indented line in each section are callers of the
+function; functions listed below the non-indented line are direct
+callees.
+Note that functions are only listed if samples were attributed against
+them in the call-graph.
+</para>
+<para>
+Let's go through this section line by line.
+</para>
+<screen>
+  0              0  2053     100.000  cgtest                   main
+</screen>
+<para>
+The function <function>main()</function> is a caller of
+<function>b()</function>. No samples
+were taken inside main itself, but all samples (2053) were taken by
+functions called by <function>main()</function>. Note this number refers to all callees of
+<function>main()</function>, not just the one for this section.
+</para>
+<screen>
+408      19.4842  715      34.1452  cgtest                   b
+</screen>
+<para>
+This is the function that's the focus of this section (it is not
+indented). We can see that there were 408 samples inside
+<function>b()</function>. The
+percentage figure refers to the relative percentage of sample count
+for the entire program: here, we spent 19% of our time in
+<function>b()</function>
+itself.
+Additionally, there were 715 samples inside functions
+that <function>b()</function> called. In this case, there is only one
+such function - <function>a()</function>.
+The percentage has the same meaning - of all the samples taken in the
+program, 34% of them were spent in <function>a()</function> when it was
+called by <function>b()</function>.
+</para>
+<screen>
+  1645     100.000  0              0  cgtest                   a
+</screen>
+<para>
+And here we have <function>a()</function>, which is indented and below
+<function>b()</function>, meaning that <function>b()</function>
+called <function>a()</function>, as you can see in the source code above. The report shows
+that <function>a()</function> received 1645 samples in total (whether called by
+<function>b()</function> or not).
+The percentage shows that of all the callees of <function>b()</function>, 100% of the samples
+were in <function>a()</function>. This is to be expected, since <function>b()</function> only calls one function.
+</para>
 
 <para>
-The output is a bit similar to gprof output, for each separated entry non
-indented line are the function itself, indented line above are caller
-, below callee, number are self sample count/child sample counts. So in this
-entry
-<screen>
-	__libc_start_main 0/2683
-main 0/2683
-	entry1_lib_b(void) 0/896
-	entry1_lib_a(void) 0/894
-	entry1_lib_c(void) 0/893
-</screen>
-
-main is called only by _libc_start_main and call three functions. No samples
-has been received by any of these, meaning than sample occured into callee
-of entry1_lib_xxx functons.
-
-see <xref linkend="opstack-details" />.
+See <xref linkend="opstack-details" />.
+</para>
+<para>
+If you would like to use call-graph profiling, you need to be running on
+an x86 machine with 2.6 kernel. You must also apply <ulink
+url="http://oprofile.sf.net/patches/">a kernel patch</ulink> to generate the
+data.
 </para>
 
 </sect1> <!-- opstack -->
@@ -1938,6 +1970,27 @@ to make sure that these values are correct: 2.6 kernels simply do not provide en
 information for OProfile to get this information.
 </para>
 </sect2>
+</sect1>
+
+<sect1 id="interpreting-callgraph">
+<title>Interpreting call-graph profiles</title>
+<para>
+Sometimes the results from call-graph profiles may be different to what
+you expect to see. The first thing to check is whether the target
+binaries where compiled with frame pointers enabled (if the binary was
+compiled using <command>gcc</command>'s
+<option>-fomit-frame-pointer</option> option, you will not get
+meaningful results). Note that as of this writing, the GCC developers
+plan to disable frame pointers by default. The Linux kernel is built
+without frame pointers by default; there is a configuration option you
+can use to turn it on under the "Kernel Hacking" menu.
+</para>
+<para>
+Like the rest of OProfile, call-graph profiling uses a statistical
+approach; this means that sometimes a backtrace sample is truncated, or
+even partially wrong. Bear this in mind when examining results.
+</para>
+<!--  FIXME: what do we need here ? -->
 </sect1>
 
 <sect1 id="debug-info">
