@@ -35,9 +35,9 @@ struct opd_image {
 	char * name;
 };
 
-// FIXME: the wrong file, conceptually - need a for_each_image possibly
-void opd_sync_sample_files(void);
-void opd_reopen_sample_files(void);
+typedef void (*opd_image_cb)(struct opd_image *);
+void opd_for_each_image(opd_image_cb imagecb);
+
 void opd_image_cleanup(void);
 
 struct opd_image * opd_create_image(char const * name);

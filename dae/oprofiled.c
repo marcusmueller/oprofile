@@ -13,6 +13,7 @@
 #include "opd_mapping.h"
 #include "opd_stats.h"
 #include "opd_sample_files.h"
+#include "opd_image.h"
 #include "opd_parse_proc.h"
 #include "opd_kernel.h"
 #include "opd_printf.h"
@@ -635,7 +636,8 @@ void opd_do_samples(struct op_buffer_head const * opd_buf)
  */
 static void opd_alarm(int val __attribute__((unused)))
 {
-	opd_sync_sample_files();
+	opd_for_each_image(opd_sync_image_samples_files);
+
 	opd_age_procs();
 
 	opd_print_stats();
@@ -649,7 +651,8 @@ static void opd_sighup(int val __attribute__((unused)))
 	close(1);
 	close(2);
 	opd_open_logfile();
-	opd_reopen_sample_files();
+	/* We just close them, and re-open them lazily as usual. */
+	opd_for_each_image(opd_close_image_samples_files);
 }
 
 

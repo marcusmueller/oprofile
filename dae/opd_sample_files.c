@@ -10,6 +10,7 @@
  */
 
 #include "opd_sample_files.h"
+#include "opd_image.h"
 #include "opd_printf.h"
 
 #include "op_sample_file.h"
@@ -163,4 +164,30 @@ void opd_open_sample_file(struct opd_image * image, int counter)
 
 err:
 	free(mangled);
+}
+
+/**
+ * @param image  the image pointer to work on
+ *
+ * sync all samples files belonging to this image
+ */
+void opd_sync_image_samples_files(struct opd_image * image)
+{
+	uint i;
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		db_sync(&image->sample_files[i]);
+	}
+}
+
+/**
+ * @param image  the image pointer to work on
+ *
+ * close all samples files belonging to this image
+ */
+void opd_close_image_samples_files(struct opd_image * image)
+{
+	uint i;
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		db_close(&image->sample_files[i]);
+	}
 }

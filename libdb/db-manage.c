@@ -180,7 +180,7 @@ void db_close(db_tree_t * tree)
 	}
 }
 
-void db_sync(db_tree_t * tree)
+void db_sync(db_tree_t const * tree)
 {
 	size_t size;
 

@@ -39,73 +39,51 @@ static struct list_head opd_images = { &opd_images, &opd_images };
 static struct opd_image * images_with_hash[OP_HASH_MAP_NR];
 
 /**
- * opd_sync_sample_files - sync all sample files to disk
- */
-void opd_sync_sample_files(void)
-{
-	struct opd_image * image;
-	struct list_head * pos;
-	uint i;
-
-	list_for_each(pos, &opd_images) {
-		image = list_entry(pos, struct opd_image, list_node);
-		for (i = 0 ; i < op_nr_counters ; ++i) {
-			db_sync(&image->sample_files[i]);
-		}
-	}
-}
-
-
-/**
- * opd_reopen_sample_files - re-open all sample files
+ * @param image  the image pointer
  *
- * In fact we just close them, and re-open them lazily
- * as usual.
+ * free all memory belonging to this image -  This function does not close
+ * nor flush the samples files
  */
-void opd_reopen_sample_files(void)
+static void opd_delete_image(struct opd_image * image)
 {
-	struct list_head * pos;
-
-	list_for_each(pos, &opd_images) {
-		struct opd_image * image =
-			list_entry(pos, struct opd_image, list_node);
-		unsigned int i;
-
-		for (i = 0 ; i < op_nr_counters ; ++i) {
-			db_close(&image->sample_files[i]);
-		}
-	}
+	if (image->name)
+		free(image->name);
+	free(image);
 }
 
-
 /**
+ * @param image  the image pointer to work on
+ *
  * opd_image_cleanup - clean up structures
  */
 void opd_image_cleanup(void)
 {
+	/* to reuse opd_for_each_image we need to process images in two pass */
+	opd_for_each_image(opd_close_image_samples_files);
+	opd_for_each_image(opd_delete_image);
+}
+
+/**
+ * @param image_cb callback to apply onto each exisitng image struct
+ *
+ * the callback receive a struct opd_image * (not a const struct) and is
+ * allowed to freeze the image struct itself.
+ */
+void opd_for_each_image(opd_image_cb image_cb)
+{
 	struct list_head * pos;
 	struct list_head * pos2;
-	uint i;
 
+	/* image callback is allowed to delete the current pointer so on
+	 * use list_for_each_safe rather list_for_each */
 	list_for_each_safe(pos, pos2, &opd_images) {
 		struct opd_image * image =
 			list_entry(pos, struct opd_image, list_node);
 
-		for (i=0; i < op_nr_counters; i++) {
-			db_tree_t * file = &image->sample_files[i];
-			if (file->base_memory) {
-				db_close(file);
-			}
-		}
-
-		if (image->name)
-			free(image->name);
-		free(image);
+		image_cb(image);
 	}
 
-	/* FIXME */
-	free(kernel_image->name);
-	free(kernel_image);
+	image_cb(kernel_image);
 }
 
 

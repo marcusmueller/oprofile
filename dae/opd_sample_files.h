@@ -9,10 +9,13 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
-#include "opd_image.h"
-
 #ifndef OPD_SAMPLE_FILES_H
 #define OPD_SAMPLE_FILES_H
+
+struct opd_image;
+
+void opd_sync_image_samples_files(struct opd_image *);
+void opd_close_image_samples_files(struct opd_image * image);
 
 void opd_handle_old_sample_files(struct opd_image const * image);
 void opd_open_sample_file(struct opd_image * image, int counter);

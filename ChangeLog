@@ -1,3 +1,11 @@
+2002-06-30  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libdb/db.h:
+	* libdb/db-manage.c: constify db_sync() parameter.
+
+	* dae/opd_image.c: fix #574459 "vmlinux samples file not backed up
+	  by op_session". Small cleanup by adding opd_for_each_image()
+
 2002-06-29  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update

@@ -382,7 +382,6 @@ AC_FIND_FILE(libqt-mt.so.3, $QTDIR/lib, qt3_libdir)
 
 if test "$qt3_incdir" != "NO" -a "$qt3_bindir" != "NO" -a "$qt3_libdir" != "NO"; then
 	AC_MSG_RESULT(yes)
-	dnl FIXME horrible hack to avoid modifying gui/Makefile.in 
 	have_qt="yes"
 	QT_LDFLAGS=-L"$QTDIR"/lib
 	QT_LIBS=-lqt-mt
