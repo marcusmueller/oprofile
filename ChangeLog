@@ -1,5 +1,9 @@
 2001-09-04  John Levon  <moz@compsoc.man.ac.uk>
 
+	* doc/oprofile.sgml: some small tidies
+ 
+2001-09-04  John Levon  <moz@compsoc.man.ac.uk>
+
 	* oprofile.c: change lvtpc_apic_restore to be more careful !
  
 2001-09-02  John Levon  <moz@compsoc.man.ac.uk>
@@ -80,7 +84,7 @@
 	* oprofile.h:
 	* pp/oprofpp.c:
 	* pp/oprofpp.h:	reflects caller/prototype, lot of changes.
- 
+
 2001-08-31  John Levon  <moz@compsoc.man.ac.uk>
   
 	* Makefile.in:
@@ -102,7 +106,7 @@
 2001-08-19  John Levon  <moz@compsoc.man.ac.uk>
 
 	* dae/op_start: handle celeries in cpu type
- 
+
 2001-08-19  John Levon  <moz@compsoc.man.ac.uk>
 
 	* op_init.c:

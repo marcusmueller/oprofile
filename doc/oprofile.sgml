@@ -3,7 +3,7 @@
 <book id="oprofile-guide">
 <bookinfo>
 	<title>OProfile manual</title>
-  
+ 
 	<authorgroup>
 		<author>
 			<firstname>John</firstname>
@@ -56,25 +56,23 @@ necks in real-world systems.
 		<term>Intel P6 processor or AMD Athlon/Duron.</term>
 		<listitem><para>
 			A CPU with a P6 generation core is required. In marketing terms this translates to anything between an Intel
-			Pentium Pro (NOT Pentium Classics) and a Pentium III. Specifically, Pentium IVs are not yet supported due to
-			different hardware.
+			Pentium Pro (NOT Pentium Classics) and a Pentium III, including all Celerons.
+			Pentium IVs are not yet supported due to different hardware.
 			Also note that Mobile P6 processors lack the necessary CPU features and are also not supported.
-			The AMD Athlon & Duron CPUs are also supported, as their <acronym>APIC</acronym> and performance counters
-			are very similar. These CPUs offer 4 seperate counters as opposed to the 2 provided by the Intel P6 family.
-			OProfile currently only supports using 2 of these available counters.
+			The AMD Athlon & Duron CPUs are also supported.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Uniprocessor</term>
 		<listitem><para>
 			<acronym>SMP</acronym> is currently broken as I don't have a machine to test on ... sorry.
-		</para></listitem> 
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Required libraries</term>
 		<listitem><para>
 			These libraries are required : <filename>popt</filename>, <filename>bfd</filename>,
-			<filename>liberty</filename>, <filename>dl</filename> 
+			<filename>liberty</filename>, <filename>dl</filename>
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -97,7 +95,7 @@ necks in real-world systems.
 	</varlistentry>
 </variablelist>
 </para>
- 
+
 </sect1>
 
 <sect1 id="resources">
@@ -107,7 +105,7 @@ necks in real-world systems.
 	<varlistentry>
 		<term>Web page</term>
 		<listitem><para>
-			There is a web page (which you may be reading now) at 
+			There is a web page (which you may be reading now) at
 			<ulink url="http://oprofile.sf.net/">http://oprofile.sf.net/</ulink>.
 		</para></listitem>
 	</varlistentry>
@@ -160,7 +158,7 @@ options in your kernel configuration. Which one is available depends on kernel v
 of writing, the second is only available in the ac series, but is to be preferred).
 </para>
 
-</sect1> 
+</sect1>
 
 <sect1 id="upgrading">
 <title>Upgrading the version of oprofile</title>
@@ -169,10 +167,10 @@ If you upgrade the version of oprofile you must first follow the instructions in
 </para>
 <para>
 Oprofile does not guarantee that the file format of samples is compatible with the format in older versions.
-If you want to keep old sample files you need to use the <command>oprof_convert</command> utility. 
+If you want to keep old sample files you need to use the <command>oprof_convert</command> utility.
 In any case you should backup your old sample files before processing the files in case
 something bad occurs. This processing is not needed for all version changes - for now the only conversion needed
-is between the alpha 0.0.3 version and 0.0.4 or above. If no conversion is needed <command>oprof_convert</command> does 
+is between the alpha 0.0.3 version and 0.0.4 or above. If no conversion is needed <command>oprof_convert</command> does
 nothing (successfully).
 </para>
 <para><command>oprof_convert</command> usage :</para>
@@ -193,43 +191,43 @@ You must have the source tree installed to uninstall oprofile, then a <command>m
 remove all installed file except your configuration file in the directory <filename>~/.oprofile</filename>
 </para>
 </sect1>
- 
+
 </chapter>
 
 <chapter id="usage">
 <title>Usage</title>
- 
+
 <sect1 id="typical">
 <title>A typical session</title>
 <para>
 Before getting into detail about usage, it's probably a good idea to have a quick stroll through an example
-session.
-</para> 
-<para> 
-First we need to start the profiler running in the background. We need to pass the correct <filename>System.map</filename> 
+session (this example is for Intel processors not AMD).
+</para>
+<para>
+First we need to start the profiler running in the background. We need to pass the correct <filename>System.map</filename>
 and <filename>vmlinux</filename> files to the daemon, and we need to specify what event to count and the counter value.
 Here I've started with :
 </para>
 <para><command>op_start --map-file=/boot/2.4.0ac12/System.map --vmlinux=/boot/2.4.0ac12/vmlinux  --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000</command></para>
 <para>
-A quick <command>ps ax</command> confirms that the daemon (<command>oprofiled</command>) has started, 
+A quick <command>ps ax</command> confirms that the daemon (<command>oprofiled</command>) has started,
 along with the kernel thread (<command>oprof-thread</command>). Data is now being collected in the kernel.
-Now we can do whatever we like ... although in this case I'm profiling the C++ application 
+Now we can do whatever we like ... although in this case I'm profiling the C++ application
 <ulink url="http://www.lyx.org/">LyX</ulink>, previously compiled using the <option>-g</option> option to <command>g++</command>.
 Note that unlike <command>gprof</command>, no instrumentation (<option>-pg</option> and <option>-a</option> options to <command>gcc</command>)
-is necessary. This is major factor in achieving the low overhead of OProfile. 
+is necessary. This is major factor in achieving the low overhead of OProfile.
 </para>
 <para>
-Anyway, data will be processed by daemon every ten minutes. I'm too lazy to wait that long, so force the issue with :
+Rather than wait for the buffers to fill up, I now force the profiling data to be processed with :
 </para>
 <para><command>op_dump</command></para>
-<para> 
+<para>
 which will ask the kernel module to dump as much data as it can to the daemon.
 <note>
 <para>Forcing a dump like this can cause the daemon to become very busy, especially the first time it is done. Don't worry,
-that's not normal behaviour; so if you are profiling over a larger period of time, such spikes won't appear. 
+that's not normal behaviour; so if you are profiling over a larger period of time, such spikes won't appear.
 </para>
-</note> 
+</note>
 
 I can now ask for a symbol-based summary of the sample profile :
 </para>
@@ -238,19 +236,19 @@ I can now ask for a symbol-based summary of the sample profile :
 You will have to specify the full path unless you also specify the sample file (see the manpage). This can be quite slow
 on large binaries, so sit tight. As it's a C++ program, I asked for the symbols to be demangled to a readable form. Examining
 the file will give the symbols against which the most hits were registered. In this case I got :
-</para> 
+</para>
 <para>
 <!-- is DocBook really this shit ? Can't be ... literallayout class="Monospaced" just doesn't work for me ... -->
 <computeroutput>
-<literallayout> 
+<literallayout>
 ...
 Row::par(void)[0x0813ab54]: 5.4079% (472 samples)
 LyXText::GetRow(LyXParagraph *, int, int &) const[0x08170a4c]: 5.5683% (486 samples)
 LyXParagraph::GetFontSettings(BufferParams const &, int) const[0x08145420]: 5.7516% (502 samples)
 Row::next(void) const[0x0813ac24]: 15.4904% (1352 samples)
-</literallayout> 
+</literallayout>
 </computeroutput>
-</para> 
+</para>
 <para>
 at the top. Note that over a longer run (or with a lower ctr0-count value) the number of samples will be much more statistically
 reliable. Note that these sample counts do <emphasis>not</emphasis> necessarily reflect the relative amounts of time
@@ -262,17 +260,17 @@ produced by <command>gprof</command>).
 <para>
 If you're more used to <command>gprof</command> style profile output, you can use <command>oprofpp -g gmon.out</command> and then
 <command>gprof -p binary</command> to get flat profiles. OProfile does not (cannot) support the call graph
-feature of <command>gprof</command>. 
+feature of <command>gprof</command>.
 </para>
-</note> 
-</para> 
- 
+</note>
+</para>
+
 </sect1>
- 
+
 <sect1 id="starting-daemon">
-<title>Starting profiling from the <command>op_start</command> script</title> 
+<title>Starting profiling from the <command>op_start</command> script</title>
 <para>
-In this section the configuration and startup of the profiler is discussed in more depth. 
+In this section the configuration and startup of the profiler is discussed in more depth.
 </para>
 <para>
 A shell script <command>op_start</command> is provided to set up the correct environment, insert the kernel module,
@@ -285,8 +283,8 @@ much less actual diskspace as they are created sparsely (<command>stat</command>
 on-disk size). Each filename corresponds to the profiled binary image (with <constant>/</constant> characters
 replaced with <constant>}</constant> characters). The man page for <command>op_start</command> details the
 all the options, only interesting ones are listed here :
-</para> 
-<para> 
+</para>
+<para>
 <variablelist>
 	<varlistentry>
 		<term><option>--list-events</option></term>
@@ -300,7 +298,7 @@ all the options, only interesting ones are listed here :
 		<listitem><para>
 		This is the number of entries in the kernel-side profiling buffer. Generally the default value
 		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
-		Each entry in the buffer takes 8 bytes. 
+		Each entry in the buffer takes 8 bytes.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -339,7 +337,7 @@ all the options, only interesting ones are listed here :
 		<term><option>--use-cpu</option></term>
 		<listitem><para>
 		Specify 0 for Pentium Pros, 1 for Pentium II, 2 for Pentium III and 3 for AMD Athlon/Duron.
-		This is only needed if you use an event not available on the Pentium Pro. 
+		<!-- FIXME: is this option necessary ?? -->
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -361,24 +359,24 @@ all the options, only interesting ones are listed here :
 		<listitem><para>
 		This makes the daemon <emphasis>very</emphasis> verbose in its logfile. Don't use this unless you need it
 		as the overhead of logging the data is significant. It is however useful for determining profiler bugs
-		(believe me ;) 
+		(believe me ;)
 		</para></listitem>
 	</varlistentry>
 </variablelist>
 </para>
-<para> 
+<para>
 As mentioned, the runtime profiler system consists of two components: a kernel module (<filename>oprofile</filename>)
 and a user-space daemon process (<filename>oprofiled</filename>). The kernel module collects sample data into
 the hash table and buffer, and wakes up the daemon process when it is approaching full. The daemon will read this
-data, and process it into a non-volatile form. Any samples are recorded into the sample files at processing time. 
-</para> 
+data, and process it into a non-volatile form. Any samples are recorded into the sample files at processing time.
+</para>
 <para>
 The <command>op_start</command> shell script will insert the kernel module if needed.
 The profiling is activated when the daemon process initialises. Configuration of the kernel module parameters is done
 via <command>sysctl</command>; the available files are detailed in <xref linkend="sysctl">.
 </para>
-  
  
+
 <sect2 id="hardware-counters">
 <title>Intel P6 Performance Counters</title>
 <para>
@@ -386,15 +384,15 @@ The hardware performance counters are detailed in the Intel IA-32 Architecture M
 from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>. The AMD Athlon/Duron
 implementation is detailed in <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/pdf/22007.pdf">
 http://www.amd.com/products/cpg/athlon/techdocs/pdf/22007.pdf</ulink>.
-P6-core processors are capable of delivering an interrupt to the local <acronym>APIC</acronym> <acronym>LVTPC</acronym>
+These processors are capable of delivering an interrupt to the local <acronym>APIC</acronym> <acronym>LVTPC</acronym>
 vector when a counter overflows. This is the basic mechanism on which OProfile is based. The kernel module
 installs an interrupt handler for this vector. The delivery mode is set to <acronym>NMI</acronym> so that
 blocking interrupts in the kernel does not prevent profiling. When the interrupt handler is called,
-the current <acronym>EIP</acronym> <acronym>PC</acronym> value, process id, and counter (there are only
-two counters, 0 and 1) are recorded into the profiling structure. This allows the overflow event to be attached
-to a specific assembly instruction in a binary image. The daemon is necessary to transform these recorded 
+the current <acronym>EIP</acronym> <acronym>PC</acronym> value, process id, and counter
+are recorded into the profiling structure. This allows the overflow event to be attached
+to a specific assembly instruction in a binary image. The daemon is necessary to transform these recorded
 values into a count against a file offset for a given binary image, in order to produce profile data off-line
-at a later time. 
+at a later time.
 </para>
 <para>
 If we use an event such as <constant>CPU_CLK_UNHALTED</constant> or <constant>INST_RETIRED</constant>, we can
@@ -404,8 +402,8 @@ profile interesting data such as the cache behaviour of routines with the other 
 <para>
 However there are several caveats. Firstly there are those issues listed in the Intel manual. There is a delay
 between the counter overflow and the interrupt delivery that can skew results on a small scale - this means
-you cannot rely on the profiles at the instruction level, except as a binary was/wasn't executed indicator. 
-If you are using an "event-mode" counter such as the cache counters, a count registered against it doesn't mean 
+you cannot rely on the profiles at the instruction level, except as a binary was/wasn't executed indicator.
+If you are using an "event-mode" counter such as the cache counters, a count registered against it doesn't mean
 that it is responsible for that event. However, it implies that the counter overflowed in the dynamic
 vicinity of that instruction, to within a few instructions. Further details on this problem can be found in
 the Digital paper "ProfileMe: A Hardware Performance Counter". Also note that a very high number of interrupts
@@ -422,19 +420,22 @@ whilst in kernel or user space. You can configure these separately for each coun
 </para>
 <para>
 So you must specify a counter value with the <option>--ctrX-count</option> option, where <option>X</option>
-is either 0 or 1 for which counter to program. After each overflow event, the counter will be re-initialised
+is the logical counter number in the range 0-3 (0-1 for Intel processors, which only have two counters). 
+Using multiple counters is useful for profiling several aspects of the same running program.
+After each overflow event, the counter will be re-initialised
 such that another overflow will occur after this many events have been counted. Picking a good value for this
 parameter is, unfortunately, somewhat of a grey art (not quite black). It is of course dependent on the event
-you have chosen. For basic time-based profiling, you will probably use <constant>CPU_CLK_UNHALTED</constant>.
+you have chosen. For basic time-based profiling, you will probably use <constant>CPU_CLK_UNHALTED</constant>
+(on Intel). 
 You can estimate how many interrupts this value will generate per second with this event by dividing your CPU
 clock rate by the chosen value. I have a 600MHz Celeron, so specifying an overflow value of 100,000 will generate
 around 600 interrupts per second. Specifying too large a value will mean not enough interrupts are generated
 to give a realistic profile (though this problem can be ameliorated by profiling for <emphasis>longer</emphasis>).
 Specifying too small a value can lead to overflow problems discussed previously.
 </para>
- 
+
 </sect2>
- 
+
 <sect2 id="sysctl">
 <title><command>sysctl</command> tree</title>
 <para>
@@ -450,31 +451,31 @@ The following files will be present :
 	<varlistentry>
 		<term><filename>bufsize</filename></term>
 		<listitem><para>
-		The buffer size, corresponding to the <option>--buffer-size</option> option. 
+		The buffer size, corresponding to the <option>--buffer-size</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>hashsize</filename></term>
 		<listitem><para>
-		The hash table size, corresponding to the <option>--hash-table-size</option> option. 
+		The hash table size, corresponding to the <option>--hash-table-size</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>kernel_only</filename></term>
 		<listitem><para>
-		Corresponding to the <option>--kernel-only</option> option. 
+		Corresponding to the <option>--kernel-only</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>pgrp_filter</filename></term>
 		<listitem><para>
-		Corresponding to the <option>--pgrp-filter</option> option. 
+		Corresponding to the <option>--pgrp-filter</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>pid_filter</filename></term>
 		<listitem><para>
-		Corresponding to the <option>--pid-filter</option> option. 
+		Corresponding to the <option>--pid-filter</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -488,51 +489,51 @@ The following files will be present :
 		<term><filename>0, 1, ...</filename></term>
 		<listitem><para>
 		Each counter will have a directory containing files for that counter's settings.
-		The rest of the files described here are per-counter. 
+		The rest of the files described here are per-counter.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>count</filename></term>
 		<listitem><para>
-		The counter value for this counter. 
+		The counter value for this counter.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>enabled</filename></term>
 		<listitem><para>
-		Whether this counter is active. 
+		Whether this counter is active.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>event</filename></term>
 		<listitem><para>
 		The numeric event value. You can convert from symbolic event names to numeric values like so :
-		</para><para><command>echo `op_help CPU_CLK_UNHALTED` &gt;/proc/sys/dev/oprofile/0/0/event</command> 
+		</para><para><command>echo `op_help CPU_CLK_UNHALTED` &gt;/proc/sys/dev/oprofile/0/0/event</command>
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>kernel</filename></term>
 		<listitem><para>
-		Whether to profile the kernel. 
+		Whether to profile the kernel.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>unit_mask</filename></term>
 		<listitem><para>
-		The unit mask specified. 
+		The unit mask specified.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>user</filename></term>
 		<listitem><para>
-		Whether to profile user-space. 
+		Whether to profile user-space.
 		</para></listitem>
 	</varlistentry>
-</variablelist> 
+</variablelist>
 </para>
- 
+
 </sect2>
- 
+
 </sect1>
 
 <sect1 id="oprofile-gui">
@@ -587,25 +588,25 @@ and restart the interface.
 <title>Misuse of <command>oprofile</command> and stability of system</title>
 <para>
 OProfile is a low-level profiler which allow continuous profiling with a low-overhead cost.
-If not used carefully, this can affect the stability of the system. 
+If not used carefully, this can affect the stability of the system.
 If too low a count reset value is set for a counter, the system can become overloaded with counter
-interrupts, and seem as if the system has frozen. 
+interrupts, and seem as if the system has frozen.
 </para>
 <note><para>
 This can happen as follows: When the profiler count
 reaches zero an NMI handler is called which stores the sample values in an internal buffer, then resets the counter
 to its original value. If the count is very low, a pending NMI can be sent before the NMI handler has
 completed. Due to the priority of the NMI, the local APIC delivers the pending interrupt immediately after
-completion of the previous interrupt handler, and control never returns to other parts of the system. 
+completion of the previous interrupt handler, and control never returns to other parts of the system.
 In this way the system seems to be frozen.
 </para></note>
 <para>If this happens, it will be impossible to bring the system back to a workable state.
 There is no way to provide real security against this happening, other than making sure to use a reasonable value
 for the counter reset. For example, setting CPU_CLK_UNHALTED event type with a ridiculously low reset count (e.g. 500)
 is likely to freeze the system.
-</para> 
+</para>
 <para>
-In short : <command>Don't try a foolish sample count value.</command> Unfortunately the definition of a foolish value 
+In short : <command>Don't try a foolish sample count value.</command> Unfortunately the definition of a foolish value
 is really dependent on the event type - if ever in doubt, e-mail <address><email>oprofile-list@lists.sf.net</email></address>.
 </para>
 <para>Do I hear you shout "but my event value is low, but not stupid !" ? Yes, this can be the case. In these
@@ -616,10 +617,10 @@ each enabled counter. As the NMI handler is in-kernel, this avoids the problem.
 </sect1>
 
 </chapter>
- 
+
 <chapter id="features">
 <title>Other features</title>
- 
+
 <sect1 id="pidpgrpfilter">
 <title>pid/pgrp filter</title>
 <para>There are situations where you are only interested in the profiling results of a particular
@@ -628,7 +629,7 @@ the pid/pgrp values via the <filename>--pid-filter</filename> and <filename>--pg
 options to <command>op_start</command>, or by setting the relevant sysctls as mentioned in <xref linkend="sysctl">.
 </para>
 </sect1>
- 
+
 <sect1 id="unloadable">
 <title>Unloadable kernel module</title>
 <para>
@@ -639,10 +640,10 @@ There is no need to unload the module between profiler runs.
 <command>lsmod</command> and similar utilties will still show the module's use count as <constant>-1</constant>.
 However, this is not to be relied on - the module will become unloadable some short time after stopping profiling.
 </para>
-</sect1> 
+</sect1>
 
 </chapter>
- 
+
 <chapter id="results">
 <title>Obtaining and interpreting results</title>
 <para>
@@ -665,13 +666,13 @@ Note that kernel modules without symbol data (this can happen with some initrd s
 with symbols show up in <filename>/proc/ksyms</filename>).
 </para>
 <sect1 id="post-profiler">
-<title><command>oprofpp</command> usage</title> 
+<title><command>oprofpp</command> usage</title>
 <para>
 Oprofpp can be used in three major modes; list symbol mode, detailed symbol mode, or <command>gprof</command> mode.
 The first gives sorted histogram output of sample counts against functions as shown in the walkthrough. The second
 can show individual sample counts against instructions inside a function, useful for detailed profiling, whilst the
 third mode is handy if you're used to <command>gprof</command> style output. Note that only flat <command>gprof</command>
-profiles are supported, however. 
+profiles are supported, however.
 </para>
 <para>
 Some interesting options of the post-processor :
@@ -680,65 +681,65 @@ Some interesting options of the post-processor :
 		<term><option>--samples-file</option></term>
 		<listitem><para>
 		The samples file to use. This is not necessary, as it can be derived from the filename of the
-		absolute-path-specified binary image. 
-		</para></listitem> 
-	</varlistentry> 
+		absolute-path-specified binary image.
+		</para></listitem>
+	</varlistentry>
 	<varlistentry>
 		<term><option>--image-file</option></term>
 		<listitem><para>
-		The binary image (shared library, kernel vmlinux, or program) to produce data for. 
-		</para></listitem> 
-	</varlistentry> 
+		The binary image (shared library, kernel vmlinux, or program) to produce data for.
+		</para></listitem>
+	</varlistentry>
 	<varlistentry>
 		<term><option>--demangle</option></term>
 		<listitem><para>
 		Demangle C++ symbol names.
-		</para></listitem> 
-	</varlistentry> 
+		</para></listitem>
+	</varlistentry>
 	<varlistentry>
 		<term><option>--counter</option></term>
 		<listitem><para>
-		Which counter (0 or 1) to extract information for. 
-		</para></listitem> 
-	</varlistentry> 
+		Which counter (0 or 1) to extract information for.
+		</para></listitem>
+	</varlistentry>
 	<varlistentry>
 		<term><option>--list-symbols</option></term>
 		<listitem><para>
 		List a histogram of sample counts against symbols.
-		</para></listitem> 
-	</varlistentry> 
+		</para></listitem>
+	</varlistentry>
 	<varlistentry>
 		<term><option>--list-symbol</option></term>
 		<listitem><para>
-		Provide a detailed listing for the specified symbol. A future release should allow a full source annotation facility, but not now, Bernard. 
-		</para></listitem> 
-	</varlistentry> 
+		Provide a detailed listing for the specified symbol. A future release should allow a full source annotation facility, but not now, Bernard.
+		</para></listitem>
+	</varlistentry>
 	<varlistentry>
 		<term><option>--dump-gprof-file</option></term>
 		<listitem><para>
 		Dump output to the specified file in <command>gprof</command> format. If you specify <filename>gmon.out</filename>,
-		you can then call <command>gprof -p &lt;binary&gt;</command>. 
-		</para></listitem> 
-	</varlistentry> 
+		you can then call <command>gprof -p &lt;binary&gt;</command>.
+		</para></listitem>
+	</varlistentry>
 	<varlistentry>
 		<term><option>--list-all-symbols-details</option></term>
 		<listitem><para>
 		Provide a detailed listing for all symbols.
-		</para></listitem> 
-	</varlistentry> 
+		</para></listitem>
+	</varlistentry>
 	<varlistentry>
 		<term><option>--output-linenr-info</option></term>
 		<listitem><para>
 		Add filename::linenr info for all samples, usable only with --list-all-symbols-details.
-		</para></listitem> 
-	</varlistentry> 
-</variablelist> 
-</para> 
- 
-</sect1> 
+		</para></listitem>
+	</varlistentry>
+</variablelist>
+</para>
+
+</sect1>
 
 <sect1 id="op-to-source">
-<title><command>op_to_source</command> usage</title> 
+<title><command>op_to_source</command> usage</title>
 <para>
 <command>op_to_source</command> generates annotated source files or assembly listings optionally mixed
 with source. The op_to_source utility is actually a wrapper script around the opf_filter application.
@@ -753,7 +754,7 @@ and this leads to crediting one line of source for samples not really "owned" by
 <xref linkend="interpreting"> about these problems.
 </para>
 <para>
-The option allowed are :
+The options allowed are :
 <variablelist>
 	<varlistentry>
 		<term><option>--assembly</option></term>
@@ -767,14 +768,14 @@ The option allowed are :
 		<term><option>--source-with-assembly</option></term>
 		<listitem><para>
 		Output assembly code mixed with the source file, imply <option>--assembly</option>.
-		</para></listitem> 
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--sort-by-counter counter_nr</option></term>
 		<listitem><para>
 		Sort by decreasing number of samples on counter_nr. For assembly output this option provide only
 		a filtering and not a sort order.
-		</para></listitem> 
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--with-more-than-samples percent_samples</option></term>
@@ -789,20 +790,20 @@ not be combined with <option>--with-more-samples</option>.
 		<listitem><para>
 		Output source file or assembly symbol until the amount of samples outputted reach percent_samples. See the note
 above. Can not be combined with <option>--with-more-than-samples</option>.
-		</para></listitem> 
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--samples-file</option></term>
 		<listitem><para>
 		Specify the samples file. At least one of the <option>--samples-file</option> or
 <option>--image-file</option> must be specifed.
-		</para></listitem> 
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--image-file</option></term>
 		<listitem><para>
 		Specify the image file.
-		</para></listitem> 
+		</para></listitem>
 	</varlistentry>
 </variablelist>
 </para>
@@ -819,18 +820,18 @@ counters above - you can <emphasis>not</emphasis> rely on totally accurate
 instruction-level profiling.  However, for almost all circumstances the data
 can be useful. Ideally a utility such as Intel's VTUNE would be available to
 allow careful instruction-level analysis; go hassle Intel for this, not me ;)
-</para> 
-</sect1> 
+</para>
+</sect1>
 </chapter>
 
 <chapter id="overhead">
 <title>Profiling overhead</title>
-<para> 
+<para>
 One of the major design criteria for OProfile was low overhead. In many cases
 profiling is hardly noticeable in terms of overhead (I regularly leave it turned on
 all the time). It achieves this by judicious use of kernel-side data structures
 to reduce the analysis overhead to a bare runtime minimum. There are several things
-that unfortunately complicate the issue, so there are cases where the overhead is 
+that unfortunately complicate the issue, so there are cases where the overhead is
 noticeable.
 </para>
 <para>
@@ -841,18 +842,18 @@ can be acceptable for many circumstances (especially compared to gprof): actual 
 data is presented in the source distribution. In fact most situations have much fewer
 numbers of processes, leading to far better performance.
 </para>
-<para>Some graphs of performance characteristics of oprofile are available on the website 
- - see <xref linkend="resources">. 
-</para> 
+<para>Some graphs of performance characteristics of oprofile are available on the website
+ - see <xref linkend="resources">.
+</para>
 </chapter>
 
 <chapter id="ack">
 <title>Acknowledgments</title>
 <para>
 Thanks to (in no particular order) : Arjan van de Ven, Rik van Riel, Juan Quintela, Philippe Elie,
-Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne, Bob Montgomery,
-Dave Jones, Charles Filtness; and finally Pulp, for "Intro". 
+Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne, Bob Montgomery, Ray Bryant,
+Dave Jones, Charles Filtness; and finally Pulp, for "Intro".
 </para>
-</chapter> 
- 
+</chapter>
+
 </book>
