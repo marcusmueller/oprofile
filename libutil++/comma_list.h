@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "string_manip.h"
-#include "op_exception.h"
 
 /**
  * hold a list of item of type T, tracking also if item has been set.
