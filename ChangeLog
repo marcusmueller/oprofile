@@ -1,3 +1,8 @@
+2003-05-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* events/i386.piii.unit_masks: tweak comment, change default unit mask
+	  for kni instruction to 0 and type to exclusive
+
 2003-05-24  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/srcdoc/Doxyfile:

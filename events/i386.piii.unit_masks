@@ -16,8 +16,9 @@ name:kni_prefetch type:exclusive default:0x0
 	0x01 prefetch T1
 	0x02 prefetch T2
 	0x03 weakly-ordered stores
-# FIXME: funny sort of bitmask ??
-name:kni_inst_retired type:bitmask default:0x1
+# this bitmask can seems weirds but is correct, note there is no way to only
+# count scalar SIMD instructions
+name:kni_inst_retired type:exclusive default:0x0
 	0x00 packed and scalar
 	0x01 packed
 name:mmx_uops type:mandatory default:0xf
