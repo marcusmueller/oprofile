@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.8 2001/10/16 23:35:52 movement Exp $
+# $Id: Makefile.in,v 1.9 2001/10/25 02:18:49 movement Exp $
 
 prefix=@prefix@
 MANDIR=@mandir@/man1
@@ -27,7 +27,7 @@ install:
 	cp oprofile.1 $(MANDIR)/oprofile.1
 	@for f in $(LINK_LIST); do				\
 		$(RM) -f $(MANDIR)/$$f;				\
-		$(CP) -f $$f $(MANDIR)/$$f;			\
+ 		echo ".so man1/oprofile.1" > $(MANDIR)/$$f;	\
 	done
 
 uninstall:
