@@ -32,6 +32,7 @@ namespace options {
 	string sample_file;
 	string image_file;
 	bool demangle;
+	bool demangle_and_shrink;
 	vector<string> exclude_symbols;
 	vector<string> include_symbols;
 	vector<string> objdump_params;
@@ -46,6 +47,7 @@ popt::option options_array[] = {
 	popt::option(options::sample_file, "samples-file", 'f', "image sample file", "file"),
 	popt::option(options::image_file, "image-file", 'i', "image file", "file"),
 	popt::option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names"),
+	popt::option(options::demangle_and_shrink, "Demangle", 'D', "demangle GNU C++ symbol names then pass them through regular expression to dhrink them"),
 	popt::option(options::with_more_than_samples, "with-more-than-samples", 'w',
 		"show all source file if the percent of samples in this file is more than argument", "[0-100]"),
 	popt::option(options::until_more_than_samples, "until-more-than-samples", 'm',
@@ -78,6 +80,10 @@ string const get_options(int argc, char const * argv[])
 	popt::parse_options(argc, argv, arg);
 
 	set_verbose(verbose);
+
+	if (options::demangle_and_shrink) {
+		options::demangle = true;
+	}
 
 	if (options::with_more_than_samples
 		&& options::until_more_than_samples) {

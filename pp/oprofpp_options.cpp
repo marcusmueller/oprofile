@@ -37,6 +37,7 @@ namespace options {
 	string sample_file;
 	string image_file;
 	bool demangle;
+	bool demangle_and_shrink;
 	vector<string> exclude_symbols;
 };
 
@@ -50,6 +51,7 @@ popt::option options_array[] = {
 	popt::option(options::sample_file, "samples-file", 'f', "image sample file", "file"),
 	popt::option(options::image_file, "image-file", 'i', "image file", "file"),
 	popt::option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names"),
+	popt::option(options::demangle_and_shrink, "Demangle", 'D', "demangle GNU C++ symbol names then pass them through regular expression to dhrink them"),
 	popt::option(options::exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name"),
 	popt::option(options::sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr"),
 	popt::option(options::gprof_file, "dump-gprof-file", 'g', "dump gprof format file", "file"),
@@ -92,6 +94,10 @@ string const get_options(int argc, char const **argv)
 	counter_mask = parse_counter_mask(counter_str);
 
 	set_verbose(verbose);
+
+	if (demangle_and_shrink) {
+		demangle = true;
+	}
  
 	if (!list_all_symbols_details && !list_symbols &&
 	    gprof_file.empty() && symbol.empty())

@@ -22,6 +22,7 @@
 #include <map>
 #include <vector>
 
+#include "op_exception.h"
 #include "version.h"
 #include "op_libiberty.h"
 #include "op_mangling.h"
@@ -505,7 +506,7 @@ static void output_symbols_count(map_t& files, int counter)
 	out.output(cout, symbols, !options::reverse_sort, need_vma64);
 }
 
-int main(int argc, char const * argv[])
+static int do_it(int argc, char const * argv[])
 {
 	get_options(argc, argv);
 
@@ -536,4 +537,31 @@ int main(int argc, char const * argv[])
 	}
 
 	return 0;
+}
+
+int main(int argc, char const * argv[])
+{
+	// FIXME : same piece of code in all pp tools, we must add
+	// do_it(ptr_to_function_to_exec, argc, argv); and share this code ?
+	try {
+		return do_it(argc, argv);
+	}
+	catch (op_runtime_error const & e) {
+		cerr << "op_runtime_error:" << e.what() << endl;
+		return 1;
+	}
+	catch (op_fatal_error const & e) {
+		cerr << "op_fatal_error:" << e.what() << endl;
+	}
+	catch (op_exception const & e) {
+		cerr << "op_exception:" << e.what() << endl;
+	}
+	catch (exception const & e) {
+		cerr << "exception:" << e.what() << endl;
+	}
+	catch (...) {
+		cerr << "unknown exception" << endl;
+	}
+
+	return EXIT_SUCCESS;
 }

@@ -1,5 +1,24 @@
 2003-02-23  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/demangle_symbol.cpp:
+	* libutil++/demangle_symbol.h: move to
+	* libregex/demangle_symbol.cpp:
+	* libregex/demangle_symbol.h: here to avoid circular reference between
+	  libutil++ and libregex
+	* libregex/Makefile.am:
+	* libutil++/Makefile.am: update according to file move
+
+	* pp/Makefile.am:
+	* pp/op_time.cpp:
+	* pp/op_time_options.cpp:
+	* pp/op_to_source.cpp:
+	* pp/op_to_source_options.cpp:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp_options.cpp: add -D --Demangle options enabling C++
+	  demangled name filtering.
+
+2003-02-23  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/string_manip.h:
 	* libutil++/string_manip.cpp: trim(), ltrim(), rtrim() new functions
 

@@ -28,6 +28,8 @@
 #include "derive_files.h"
 #include "format_output.h"
 
+#include "op_exception.h"
+
 using namespace std;
 
 /**
@@ -181,10 +183,8 @@ static void do_dump_gprof(op_bfd & abfd,
 	free(hist);
 }
 
-/**
- * main
- */
-int main(int argc, char const * argv[])
+
+static int do_it(int argc, char const * argv[])
 {
 	string const arg = get_options(argc, argv);
 
@@ -295,6 +295,34 @@ int main(int argc, char const * argv[])
 		do_list_symbol(samples, out);
 	else if (options::list_all_symbols_details)
 		do_list_symbols_details(samples, out, options::sort_by_counter);
+
+	return 0;
+}
+
+/**
+ * main
+ */
+int main(int argc, char const * argv[])
+{
+	try {
+		return do_it(argc, argv);
+	}
+	catch (op_runtime_error const & e) {
+		cerr << "op_runtime_error:" << e.what() << endl;
+		return 1;
+	}
+	catch (op_fatal_error const & e) {
+		cerr << "op_fatal_error:" << e.what() << endl;
+	}
+	catch (op_exception const & e) {
+		cerr << "op_exception:" << e.what() << endl;
+	}
+	catch (exception const & e) {
+		cerr << "exception:" << e.what() << endl;
+	}
+	catch (...) {
+		cerr << "unknown exception" << endl;
+	}
 
 	return 0;
 }

@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 
+#include "op_exception.h"
 #include "profile_container.h"
 #include "profile.h"
 #include "demangle_symbol.h"
@@ -907,8 +908,7 @@ size_t get_sort_counter_nr()
 
 } // op_to_source namespace
 
-
-int main(int argc, char const * argv[])
+static int do_it(int argc, char const * argv[])
 {
 #if (__GNUC__ >= 3)
 	// this improves performance with gcc 3.x a bit
@@ -959,6 +959,31 @@ int main(int argc, char const * argv[])
 	if (!op_to_source::annotate_source(image_file, sample_file,
 					   fn_match, argc, argv))
 		return EXIT_FAILURE;
+
+	return EXIT_SUCCESS;
+}
+
+int main(int argc, char const * argv[])
+{
+	try {
+		return do_it(argc, argv);
+	}
+	catch (op_runtime_error const & e) {
+		cerr << "op_runtime_error:" << e.what() << endl;
+		return 1;
+	}
+	catch (op_fatal_error const & e) {
+		cerr << "op_fatal_error:" << e.what() << endl;
+	}
+	catch (op_exception const & e) {
+		cerr << "op_exception:" << e.what() << endl;
+	}
+	catch (exception const & e) {
+		cerr << "exception:" << e.what() << endl;
+	}
+	catch (...) {
+		cerr << "unknown exception" << endl;
+	}
 
 	return EXIT_SUCCESS;
 }

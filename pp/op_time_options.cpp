@@ -29,6 +29,7 @@ namespace options {
 	bool list_symbols;
 	bool show_image_name;
 	bool demangle;
+	bool demangle_and_shrink;
 	vector<string> exclude_symbols;
 	bool reverse_sort;
 	bool show_shared_libs;
@@ -63,7 +64,8 @@ popt::option options_array[] = {
 	popt::option(options::show_shared_libs, "show-shared-libs", 'k', "show details for shared libraries."),
 	popt::option(options::sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr"),
 	popt::option(options::exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name"),
-	popt::option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names")
+	popt::option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names"),
+	popt::option(options::demangle_and_shrink, "Demangle", 'D', "demangle GNU C++ symbol names then pass them through regular expression to dhrink them")
 };
 
 /**
@@ -117,8 +119,11 @@ void get_options(int argc, char const * argv[])
 
 	options::samples_dir = handle_session_options();
 
-	output_format_specified = true;
+	if (demangle_and_shrink) {
+		demangle = true;
+	}
 
+	output_format_specified = true;
 	if (output_format.empty()) {
 		output_format = "hvspni";
 		output_format_specified = false;
