@@ -557,7 +557,7 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		<row><entry><option>kernel</option></entry><entry>Create per-application profiles for the kernel and kernel modules</entry></row>
 		<row><entry><option>thread</option></entry><entry>Create profiles for each thread and each task</entry></row>
 		<row><entry><option>cpu</option></entry><entry>Create profiles for each physical CPU</entry></row>
-		<row><entry><option>all</option></entry><entry>Both of the above options</entry></row>
+		<row><entry><option>all</option></entry><entry>All of the above options</entry></row>
 		</tbody>
 		</tgroup>
 		</informaltable>
@@ -572,6 +572,11 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		<para>
 		On 2.2/2.4 only kernel threads already started when profiling begins are correctly profiled;
 		newly started kernel thread samples are credited to the vmlinux (kernel) profile.
+		</para>
+		<para>
+		Using <option>--separate=thread</option> creates a lot
+		of sample files if you leave OProfile running for a while; it's most
+		useful when used for short sessions.
 		</para>
 		</listitem>
 	</varlistentry>
@@ -1313,7 +1318,6 @@ excepting <filename>boring-test</filename> :
 		</para></listitem>
 	</varlistentry>
 
-<!-- FIXME: introduce when it does  something useful
 	<varlistentry>
 		<term><option>cpu:</option><emphasis>cpulist</emphasis></term>
 		<listitem><para>
@@ -1344,7 +1348,6 @@ excepting <filename>boring-test</filename> :
 		This is only useful when using per-process profile separation.
 		</para></listitem>
 	</varlistentry>
--->
 </variablelist>
 
 </sect2>
@@ -1488,7 +1491,7 @@ Only include symbols in the given comma-separated list.
 <varlistentry><term><option>--long-filenames / -l</option></term><listitem><para>
 Output full paths instead of basenames.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--merge / -m [cpu,pid,lib]</option></term><listitem><para>
+<varlistentry><term><option>--merge / -m [lib,cpu,tid,tgid,unitmask,all]</option></term><listitem><para>
 Merge any profiles separated in a --separate session.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--no-demangle</option></term><listitem><para>

@@ -6,6 +6,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
+ o pp/opreport pp/opreport doesn't work !
  o thread separate GUI
 
 0.8 release

@@ -1,5 +1,10 @@
 2003-10-20  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml:
+	* doc/opreport.1.in: fix --merge docs and profile specs
+
+2003-10-20  John Levon  <levon@movementarian.org>
+
 	* dae/opd_sample_files.c:
 	* daemon/opd_mangling.c:
 	* libabi/abi.cpp:
