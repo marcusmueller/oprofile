@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.3 2002/01/10 03:47:13 phil_e Exp $ */
+/* $Id: op_syscalls.c,v 1.4 2002/01/11 02:11:28 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -244,7 +244,7 @@ static uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentr
 		if (d == root && v == rootmnt)
 			break;
 
-#ifdef HAVE_MOUNT_CROSS_POINT
+#ifdef HAVE_CROSS_MOUNT_POINT
 		if (d == v->mnt_root || IS_ROOT(d)) {
 			if (v->mnt_parent == v)
 				break;
@@ -313,7 +313,7 @@ fulltable:
 /* called with map_lock held */
 static uint do_path_hash(struct dentry *dentry, struct vfsmount *vfsmnt)
 {
-#ifdef HAVE_MOUNT_CROSS_POINT
+#ifdef HAVE_CROSS_MOUNT_POINT
 	uint value;
 	struct vfsmount *rootmnt;
 	struct dentry *root;
@@ -361,7 +361,7 @@ static void oprof_output_map(ulong addr, ulong len,
 	note.len = len;
 	note.offset = offset;
 	note.type = is_execve ? OP_EXEC : OP_MAP;
-#ifdef HAVE_MOUNT_CROSS_POINT
+#ifdef HAVE_CROSS_MOUNT_POINT
 	note.hash = do_path_hash(file->f_dentry, file->f_vfsmnt);
 #else
 	note.hash = do_path_hash(file->f_dentry, 0);

@@ -39,7 +39,7 @@ static inline unsigned long uvirt_to_kva(pgd_t *pgd, unsigned long adr)
 			if(pte_present(pte)) {
 				// FIXME: page_address equivalent 
 				ret = (unsigned long) pte_page_address(pte);
-				ret |= (adr & (PAGE_SIZE - 1));
+				ret |= adr & (PAGE_SIZE-1);
 			}
 		}
 	}

@@ -1,112 +1,62 @@
-#ifndef __KCOMPAT24_H__
-#define __KCOMPAT24_H__
-
-#include <linux/version.h>
- 
-/* some linux version have not this file, in this case define in this file
- * come from asm/smp.h, include linux/smp.h is more safe */
-#ifdef HAVE_ASM_MPSPEC_H
-#include <asm/mpspec.h>
-#else
-#include <linux/smp.h>
-#endif
-
-#ifdef HAVE_ASM_APIC_H
-#include <asm/apic.h>
-#else
-#include "apic.h"
-#endif
-
-#ifndef HAVE_CACHE_ALIGNED
-#include "cache.h"
-#endif
-
-/* ugly hack, protoype of pte_page have changed through version of linux.
- * this don't matter except when used as page_address(pte_page(pte)) because
- * the page_address have not changed of prototype, it's difficult to get a
- * reliable work-around so this hack */
-#ifdef HAVE_INVALID_PTE_PAGE_PROTO
-#define pte_page_address(pte) pte_page(pte)
-#else
-#define pte_page_address(pte) page_address(pte_page(pte))
-#endif
-
-#ifndef HAVE_VIRT_TO_PAGE
-#define virt_to_page(va) MAP_NR(va)
-#endif
-
-/* FIXME, vmalloc_32 pass specfic flags to vmalloc, I think than older
- * implementation use by default this flags, but tihs have not been carefully
- * checked */
-#ifndef HAVE_VMALLOC_32
-#define vmalloc_32 vmalloc
-#endif
-
-#ifndef HAVE_CPU_NUMBER_MAP
-#ifdef CONFIG_SMP
-#define cpu_number_map(x) (x)
-#else
-#define cpu_number_map(x)  0
-#endif
-#endif
-
-// 2.2's UP version of this is broken
-#ifndef CONFIG_SMP
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,1)
-#undef smp_call_function
-inline int smp_call_function(void (*f)(void *in), void *i, int n, int w)
-{
-	return 0; 
-}
-#endif
-#endif
-
-/* PHE: TODO, cleanup the following, keep only the necessary things for
- * oprofile or make this file a general backward compatiblity linux file ? */
-/*
-
-	notes:
-
-	2.3.13 adds new resource allocation
-
+/* COPYRIGHT (C) 2002 Philippe Elie, based on discussion with John Levon
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/* This file is intended to be up-to-date with the last linux version and
+ * provide work-around for missing features in previous kernel version */
+
+#ifndef COMPAT_H
+#define COMPAT_H
+
 #include <linux/version.h>
-#include <linux/netdevice.h>
-#include <asm/io.h>
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,0)
+/* You want to keep this sorted by increasing linux version. Prefer checking
+ * against linux version rather existence of macro */
 
-#define init_MUTEX(a)           *(a) = MUTEX
+/* missing header: work around are later in this file */
 
-#define wait_queue_head_t       struct wait_queue *
-#define DECLARE_WAITQUEUE(a, b) struct wait_queue a = {b, NULL};
-#define DECLARE_WAIT_QUEUE_HEAD(q) struct wait_queue *q = NULL 
-#define init_waitqueue_head(a)  init_waitqueue(a)
-#define DECLARE_MUTEX(foo)	struct semaphore foo = MUTEX
-#define DECLARE_MUTEX_LOCKED(foo) struct semaphore foo = MUTEX_LOCKED
-
-#define in_irq in_interrupt
-
-#include <asm/spinlock.h>
-
-#ifdef KCOMPAT_INCLUDED
-  #define KCOMPINC static
-#else
-  #define KCOMPINC
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
+#include <asm/apic.h>
 #endif
 
-#define net_device device
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
+#include <asm/apicdef.h>
+#endif
 
-#define __exit
-#define __exitdata
-#define __devinit
-#define __devinitdata
-#define __devexit
-#define __devexitdata
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
+#include <asm/mpspec.h>
+#endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,8)
+
+/* 2.2.8 introduced rdmsr/wrmsr */
+#define rdmsr(msr,val1,val2)				\
+       __asm__ __volatile__("rdmsr"			\
+			    : "=a" (val1), "=d" (val2)	\
+			    : "c" (msr))
+#define wrmsr(msr,val1,val2)					\
+     __asm__ __volatile__("wrmsr"				\
+			  : /* no outputs */			\
+			  : "c" (msr), "a" (val1), "d" (val2))
+
+#endif /* LINUX_VERSION_CODE > KERNEL_VERSION(2,2,8) */
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,18)
+
+/* 2.2.18 introduced module_init */
 /* Not sure what version aliases were introduced in, but certainly in 2.91.66.  */
-/* phe: FIXME if we keep this autoconf it */
 #ifdef MODULE
   #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 91)
     #define module_init(x)	int init_module(void) __attribute__((alias(#x)));
@@ -120,288 +70,165 @@ inline int smp_call_function(void (*f)(void *in), void *i, int n, int w)
   #define module_exit(x)
 #endif
 
-#define MODULE_DEVICE_TABLE(foo,bar)
+/* 2.2.18 introduced vmalloc_32, FIXME is old vmalloc equivalent */
+#define vmalloc_32 vmalloc
 
+/* 2.2.18 add doubled linked list wait_queue and mutex */
+#define DECLARE_WAIT_QUEUE_HEAD(q) struct wait_queue *q = NULL 
+#define DECLARE_MUTEX(foo)	struct semaphore foo = MUTEX
 
-/*
- * Insert a new entry before the specified head..
- */
-static __inline__ void list_add_tail(struct list_head *new, struct list_head *head)
-{
-	__list_add(new, head->prev, head);
-}
+/* 2.2.18 add THIS_MODULE */
+#define THIS_MODULE (&__this_module)
 
-#define list_for_each(pos, head) \
-        for (pos = (head)->next; pos != (head); pos = pos->next)
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,2,18) */
 
-#define IORESOURCE_IO			0x00000100	/* Resource type */
-#define IORESOURCE_MEM			0x00000200
-
-#define request_region			compat_request_region
-
-/* XXX provide real support for this, even though pre-2.3.x support
- * doesn't exist */
-#define request_mem_region(x,y,z)	(1)
-#define release_mem_region(x,y)		do {} while (0)
-
-
-/* New-style probing supporting hot-pluggable devices */
-
-#define PCI_PM_CTRL		4	/* PM control and status register */
-#define  PCI_PM_CTRL_STATE_MASK	0x0003	/* Current power state (D0 to D3) */
-
-#define PCI_ANY_ID (~0)
-
-#define PCI_GET_DRIVER_DATA pci_compat_get_driver_data
-#define PCI_SET_DRIVER_DATA pci_compat_set_driver_data
-
-#define PCI_SET_DMA_MASK(dev, mask)
-#define pci_dma_supported(dev, mask) 1
-
-#define pci_enable_device pci_compat_enable_device
-#define pci_register_driver pci_compat_register_driver
-#define pci_unregister_driver pci_compat_unregister_driver
-
-#define pci_dev_g(n) list_entry(n, struct pci_dev, global_list)
-#define pci_dev_b(n) list_entry(n, struct pci_dev, bus_list)
-
-#define pci_for_each_dev(dev) \
-	for(dev = pci_devices; dev; dev = dev->next)
-
-#define pci_resource_start(dev,bar) \
-(((dev)->base_address[(bar)] & PCI_BASE_ADDRESS_SPACE) ? \
- ((dev)->base_address[(bar)] & PCI_BASE_ADDRESS_IO_MASK) : \
- ((dev)->base_address[(bar)] & PCI_BASE_ADDRESS_MEM_MASK))
-#define pci_resource_len pci_compat_get_size
-#define pci_resource_end(dev,bar) \
-	(pci_resource_len((dev),(bar)) == 0 ? \
-	pci_resource_start(dev,bar) : \
-	(pci_resource_start(dev,bar) + pci_resource_len((dev),(bar)) - 1)
-
-#define pci_resource_flags(dev,bar) (pci_compat_get_flags((dev),(bar)))
-
-struct pci_device_id {
-	unsigned int vendor, device;		/* Vendor and device ID or PCI_ANY_ID */
-	unsigned int subvendor, subdevice;	/* Subsystem ID's or PCI_ANY_ID */
-	unsigned int class, class_mask;		/* (class,subclass,prog-if) triplet */
-	unsigned long driver_data;		/* Data private to the driver */
-};
-
-struct pci_driver {
-	struct list_head node;
-	struct pci_dev *dev;
-	char *name;
-	const struct pci_device_id *id_table;	/* NULL if wants all devices */
-	int (*probe)(struct pci_dev *dev, const struct pci_device_id *id);	/* New device inserted */
-	void (*remove)(struct pci_dev *dev);	/* Device removed (NULL if not a hot-plug capable driver) */
-	void (*suspend)(struct pci_dev *dev);	/* Device suspended */
-	void (*resume)(struct pci_dev *dev);	/* Device woken up */
-};
-
-
-
-/*
- *
- */
-KCOMPINC const struct pci_device_id * pci_compat_match_device(const struct pci_device_id *ids, struct pci_dev *dev);
-KCOMPINC int pci_compat_register_driver(struct pci_driver *drv);
-KCOMPINC void pci_compat_unregister_driver(struct pci_driver *drv);
-KCOMPINC unsigned long pci_compat_get_size (struct pci_dev *dev, int n_base);
-KCOMPINC int pci_compat_get_flags (struct pci_dev *dev, int n_base);
-KCOMPINC int pci_compat_set_power_state(struct pci_dev *dev, int new_state);
-KCOMPINC int pci_compat_enable_device(struct pci_dev *dev);
-KCOMPINC int pci_compat_find_capability(struct pci_dev *dev, int cap);
-KCOMPINC void *compat_request_region (unsigned long start, unsigned long n, const char *name);
-KCOMPINC void * pci_compat_get_driver_data (struct pci_dev *dev);
-KCOMPINC void pci_compat_set_driver_data (struct pci_dev *dev, void *driver_data);
-
-#else  /* if kernel version >= 2.3.0 */
-
-#include <linux/spinlock.h>
-
-#ifndef pci_resource_start
-  #define pci_resource_start(dev,bar)	((dev)->resource[(bar)].start)
-  #define pci_resource_end(dev,bar)	((dev)->resource[(bar)].end)
-  #define pci_resource_flags(dev,bar)	((dev)->resource[(bar)].flags)
-#endif /* !pci_resource_start */
-
-#ifndef PCI_GET_DRIVER_DATA
-  #define PCI_GET_DRIVER_DATA(pdev)		((pdev)->driver_data)
-  #define PCI_SET_DRIVER_DATA(pdev,data)	(((pdev)->driver_data) = (data))
-#endif /* PCI_GET_DRIVER_DATA */
-
-static inline void netif_init_watchdog(struct net_device *dev, int timeout,
-				      void (*tx_timeout) (struct net_device *dev))
-{
-	dev->watchdog_timeo = timeout;
-	dev->tx_timeout = tx_timeout;
-}
-
-static inline void netif_start_watchdog(struct net_device *dev)
-{
-	/* network layer does it for us */
-}
-
-static inline void netif_stop_watchdog(struct net_device *dev)
-{
-	/* network layer does it for us */
-}
-
-#endif /* kernel version <=> 2.3.0 */
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,47)
-typedef __u32 dma_addr_t;
-
-/* Pure 2^n version of get_order */
-extern __inline__ int __compat_get_order(unsigned long size)
-{
-	int order;
-
-	size = (size-1) >> (PAGE_SHIFT-1);
-	order = -1;
-	do {
-		size >>= 1;
-		order++;
-	} while (size);
-	return order;
-}
-
-extern __inline__ void *
-pci_alloc_consistent(struct pci_dev *hwdev,
-		     size_t size, dma_addr_t *dma_handle) {
-        void *ret;
-        int gfp = GFP_ATOMIC;
-
-        if (hwdev == NULL)
-                gfp |= GFP_DMA;
-        ret = (void *)__get_free_pages(gfp, __compat_get_order(size));
-
-        if (ret != NULL) {
-                memset(ret, 0, size);
-                *dma_handle = virt_to_bus(ret);
-        }
-        return ret;
-}
-
-extern __inline__ void
-pci_free_consistent(struct pci_dev *hwdev, size_t size,
-		    void *vaddr, dma_addr_t dma_handle)
-{
-        free_pages((unsigned long)vaddr, __compat_get_order(size));
-}
-
-#define pci_unmap_single(cookie, address, size, dir)
-#define pci_map_sg(cookie, sg, nents, dir) (nents)
-#define pci_unmap_sg(cookie, sg, nents, dir)
-#define sg_dma_len(slp) ((slp)->length)
-#define pci_map_single(cookie, address, size, dir) virt_to_bus(address)
-#define sg_dma_address(slp) virt_to_bus((slp)->address)
-#define PCI_DMA_BIDIRECTIONAL	0
-#define PCI_DMA_TODEVICE	1
-#define PCI_DMA_FROMDEVICE	2
-#define PCI_DMA_NONE		3
-#define scsi_to_pci_dma_dir(dir) PCI_DMA_BIDIRECTIONAL
-#endif /* version < v2.3.47 */
-
-
-/*
- * SoftNet
- */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,40)
-
-#define dev_kfree_skb_irq(a)    dev_kfree_skb(a)
-#define netif_stop_queue(dev)   set_bit(0, &dev->tbusy)
-#define netif_queue_stopped(dev)        (dev->tbusy)
-#define netif_running(dev)              (dev->start)
- 
-static inline void netif_start_queue(struct net_device *dev)
-{
-        dev->interrupt = 0;
-	clear_bit(0, &dev->tbusy);
-	set_bit(0, &dev->start);
-}
-
-static inline void netif_wake_queue(struct net_device *dev)
-{
-	clear_bit(0, &dev->tbusy);
-	mark_bh(NET_BH);
-}
- 
-static inline void netif_device_attach(struct net_device *dev)
-{
-	if (dev->tbusy && !netif_running(dev)) {
-		netif_start_queue(dev);
-		netif_wake_queue(dev);
-	}
-}
-
-static inline void netif_device_detach(struct net_device *dev)
-{
-	if (netif_running(dev)) {
-		dev->start = 0;
-		netif_stop_queue(dev);
-	}
-}
-
-void netif_init_watchdog(struct net_device *dev, int timeout,
-			 void (*tx_timeout) (struct net_device *dev));
-void netif_stop_watchdog(struct net_device *dev);
-void netif_start_watchdog(struct net_device *dev);
-
-#endif /* softnet compatibility -- version < 2.3.40 */
-
-
-/*
- * pci.module.init (2.3.40 version is just a guess)
- */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,40)
-
-/*
- * a helper function which helps ensure correct pci_driver
- * setup and cleanup for commonly-encountered hotplug/modular cases
- *
- * This MUST stay in a header, as it checks for -DMODULE
- */
-static inline int pci_module_init(struct pci_driver *drv)
-{
-	int rc = pci_register_driver (drv);
-
-	if (rc > 0)
-		return 0;
-
-	/* if we get here, we need to clean up pci driver instance
-	 * and return some sort of error */
-	pci_unregister_driver (drv);
-	
-	return -ENODEV;
-}
-
-#endif /* pci.module.init compatibility -- version < 2.3.40 (a guess) */
-
-
-/*
- * tasklet compat from Rui Sousa (2.3.40 version is just a guess)
- */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,40)
-
-#define tasklet_hi_schedule(t)  queue_task((t), &tq_immediate); \
-                                mark_bh(IMMEDIATE_BH)
-
-#define tasklet_init(t,f,d)     (t)->next = NULL; \
-                                (t)->sync = 0; \
-                                (t)->routine = (void (*)(void *))(f); \
-                                (t)->data = (void *)(d)
-
-#define tasklet_struct          tq_struct 
-
-#define tasklet_unlock_wait(t)  while (test_bit(0, &(t)->sync)) { }
-
-#endif /* tasklet compatibility from Rui Sousa -- version < 2.3.40 (a guess) */
-
-#ifdef KCOMPAT_INCLUDED
-  #include "kcompat24.c"
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
+#define op_cpu_id() cpu_number_map[smp_processor_id()]
+#else
+#define op_cpu_id() cpu_number_map(smp_processor_id())
 #endif
 
-#endif /* __KCOMPAT24_H__ */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
 
+/* 2.4.0 have introduced __cacheline_aligned */
 
+#include <asm/cache.h>
+
+#ifndef L1_CACHE_ALIGN
+#define L1_CACHE_ALIGN(x) (((x)+(L1_CACHE_BYTES-1))&~(L1_CACHE_BYTES-1))
+#endif
+
+#ifndef SMP_CACHE_BYTES
+#define SMP_CACHE_BYTES L1_CACHE_BYTES
+#endif
+
+#ifndef ____cacheline_aligned
+#define ____cacheline_aligned __attribute__((__aligned__(SMP_CACHE_BYTES)))
+#endif
+
+#ifndef __cacheline_aligned
+#ifdef MODULE
+#define __cacheline_aligned ____cacheline_aligned
+#else
+#define __cacheline_aligned					\
+  __attribute__((__aligned__(SMP_CACHE_BYTES),			\
+		 __section__(".data.cacheline_aligned")))
+#endif
+#endif /* __cacheline_aligned */
+
+/* 2.4.0 introduced __exit, __init */
+#define __exit
+#define __init
+
+/* 2.4.0 have added a few aPIC define */
+#define	APIC_LVR		0x30
+#define	APIC_LVTPC		0x340
+#define	APIC_LVTERR		0x370
+#define	GET_APIC_VERSION(x)	((x)&0xFF)
+#define	GET_APIC_MAXLVT(x)	(((x)>>16)&0xFF)
+#define	APIC_INTEGRATED(x)	((x)&0xF0)
+
+/* 2.4.0 introduce virt_to_page */
+#define virt_to_page(va) MAP_NR(va)
+
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0) */
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
+
+/* 2.4.0 introduced vfsmount cross mount point */
+#define HAVE_CROSS_MOUNT_POINT
+
+/* 2.4.0 introduced mmap2 syscall */
+#define HAVE_MMAP2
+
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0) */
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
+/* 2.4.0 change proto of pte_page and make it unusable param to page_address */
+#define pte_page_address(x) page_address(pte_page(x))
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,2,7)
+/* 2.2.0 make pte_page_address and pte_page equivalent */
+#define pte_page_address(x) pte_page(pte)
+#else
+/* < 2.2.20 use MAP_NR(x) as arg of page_address() */
+#define pte_page_address(x) page_address(MAP_NR(x))
+#endif
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
+#define GET_VM_OFFSET(v) ((v)->vm_pgoff << PAGE_SHIFT)
+#define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
+#else
+#define GET_VM_OFFSET(v) ((v)->vm_offset)
+#define PTRACE_OFF(t) ((t)->flags &= ~PF_DTRACE)
+#endif
+
+/* 2.4.3 introduced rw mmap semaphore  */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,3)
+#define take_mmap_sem(mm) down_read(&mm->mmap_sem)
+#define release_mmap_sem(mm) up_read(&mm->mmap_sem)
+#else
+#define take_mmap_sem(mm) down(&mm->mmap_sem)
+#define release_mmap_sem(mm) up(&mm->mmap_sem)
+#endif
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,7)
+#include <linux/completion.h>
+#else
+#define DECLARE_COMPLETION(x)	DECLARE_MUTEX_LOCKED(x)
+#define init_completion(x)
+#define complete_and_exit(x, y) up_and_exit((x), (y))
+#define wait_for_completion(x) down(x)
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,10)
+
+/* 2.4.10 introduced MODULE_LICENSE */
+#define MODULE_LICENSE(x)
+
+/* 2.4.10 introduced APIC setup under normal APIC config */
+#ifndef CONFIG_X86_UP_APIC
+#define NEED_FIXMAP_HACK
+#endif
+
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,4,10) */
+
+/* Things that can not rely on a particular linux version */
+
+/* 2.4/2.5 kernel can be  patched with the preempt patch. We support only
+ * recent version of this patch */
+#ifndef preempt_disable
+#define preempt_disable()    do { } while (0)
+#define preempt_enable_no_resched() do { } while (0)
+#define preempt_enable()     do { } while (0)
+#endif
+
+/* Compiler work-around */
+
+/* work-around compiler bug in gcc 2.91.66, just mark all input register as
+ * magically cloberred by wrmsr */
+#if __GNUC__ == 2 && __GNUC_MINOR__ == 91
+#undef wrmsr
+#define wrmsr(msr,val1,val2)					\
+     __asm__ __volatile__("wrmsr"				\
+			  : /* no outputs */			\
+			  : "c" (msr), "a" (val1), "d" (val2)	\
+			  : "ecx", "eax", "edx")
+#endif
+
+/* branch prediction */
+#ifndef likely
+#ifdef EXPECT_OK
+#define likely(a) __builtin_expect((a), 1)
+#else
+#define likely(a) (a)
+#endif
+#endif
+#ifndef unlikely
+#ifdef EXPECT_OK
+#define unlikely(a) __builtin_expect((a), 0)
+#else
+#define unlikely(a) (a)
+#endif
+#endif
+
+#endif /* COMPAT_H */

@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.14 2002/01/10 17:46:55 movement Exp $ */
+/* $Id: oprofile.h,v 1.15 2002/01/11 02:11:28 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -204,100 +204,6 @@ asmlinkage void op_nmi(void);
 struct _descr { u16 limit; u32 base; } __attribute__((__packed__));
 struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 
-#define op_cpu_id() (cpu_number_map(smp_processor_id()))
-
-#ifndef THIS_MODULE
-#define THIS_MODULE (&__this_module)
-#endif
- 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,1)
-#define GET_VM_OFFSET(v) ((v)->vm_offset)
-#define PTRACE_OFF(t) ((t)->flags &= ~PF_DTRACE)
-#else
-#define GET_VM_OFFSET(v) ((v)->vm_pgoff << PAGE_SHIFT)
-#define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
-#endif
- 
-/* A work-around against a compiler bug in gcc 2.91.66, just mark all input
- * register as magically cloberred by wrmsr */
-#if __GNUC__ == 2 && __GNUC_MINOR__ == 91
-#undef wrmsr
-#define wrmsr(msr,val1,val2)					\
-     __asm__ __volatile__("wrmsr"				\
-			  : /* no outputs */			\
-			  : "c" (msr), "a" (val1), "d" (val2)	\
-			  : "ecx", "eax", "edx")
-#endif
-
-/* if future kernel use function rather macro we need autoconf to detect it */
-#ifndef rdmsr
-#define rdmsr(msr,val1,val2) \
-       __asm__ __volatile__("rdmsr" \
-			    : "=a" (val1), "=d" (val2) \
-			    : "c" (msr))
-#endif
-
-#ifndef wrmsr
-#define wrmsr(msr,val1,val2) \
-     __asm__ __volatile__("wrmsr" \
-			  : /* no outputs */ \
-			  : "c" (msr), "a" (val1), "d" (val2))
-#endif
- 
-/* branch prediction */
-#ifndef likely
-#ifdef EXPECT_OK
-#define likely(a) __builtin_expect((a), 1)
-#else
-#define likely(a) (a)
-#endif
-#endif
-#ifndef unlikely
-#ifdef EXPECT_OK
-#define unlikely(a) __builtin_expect((a), 0)
-#else
-#define unlikely(a) (a)
-#endif
-#endif
- 
-// 2.4.3 introduced rw mmap semaphore 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,3)
-#define take_mmap_sem(mm) down(&mm->mmap_sem)
-#define release_mmap_sem(mm) up(&mm->mmap_sem)
-#else
-#define take_mmap_sem(mm) down_read(&mm->mmap_sem)
-#define release_mmap_sem(mm) up_read(&mm->mmap_sem)
-#endif
-
-#ifndef COMPLETION_H
-#define DECLARE_COMPLETION(x)	DECLARE_MUTEX_LOCKED(x)
-#define init_completion(x)
-#define complete_and_exit(x, y) up_and_exit((x), (y))
-#define wait_for_completion(x) down(x)
-#else
-#include <linux/completion.h>
-#endif
-
-// 2.4.10 introduced APIC setup under normal APIC config
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,10)
-#ifndef CONFIG_X86_UP_APIC
-#define NEED_FIXMAP_HACK
-#endif
-#endif
- 
-// 2.4.10 introduced MODULE_LICENSE
-#ifndef MODULE_LICENSE
-#define MODULE_LICENSE(x)
-#endif
-
-// 2.4/2.5 kernel can be  patched with the preempt patch. We support only
-// recent version of this patch
-#ifndef preempt_disable
-#define preempt_disable()    do { } while (0)
-#define preempt_enable_no_resched() do { } while (0)
-#define preempt_enable()     do { } while (0)
-#endif
- 
 /* These arrays are filled by hw_ok() */
 extern uint perfctr_msr[OP_MAX_COUNTERS];
 extern uint eventsel_msr[OP_MAX_COUNTERS];
