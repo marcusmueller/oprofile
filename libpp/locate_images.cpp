@@ -101,21 +101,22 @@ public:
  * to know full path name of module
  */
 string const find_module_path(string const & module_name,
-                              extra_images const & extra_images)
+                              extra_images const & extra_images, bool & ok)
 {
 	vector<string> result =
 		extra_images.find(module_matcher(module_name));
 
 	if (result.empty()) {
+		ok = false;
 		return string();
 	}
 
 	if (result.size() > 1) {
-		cerr << "The image name " << module_name
-		     << " matches more than one filename." << endl;
-	        cerr << "I have used " << result[0] << endl;
+		ok = false;
+		return string();
 	}
 
+	ok = true;
 	return result[0];
 }
 
@@ -123,16 +124,22 @@ string const find_module_path(string const & module_name,
 
 
 string const find_image_path(string const & image_name,
-                             extra_images const & extra_images)
+                             extra_images const & extra_images,
+			     bool & ok)
 {
 	string const image = relative_to_absolute_path(image_name);
 
 	// simplest case
-	if (op_file_readable(image))
-		return image;
+	if (op_file_readable(image)) {
+		ok = true;
+		return image_name;
+	}
 
-	if (errno == EACCES)
-		return string();
+	if (errno == EACCES) {
+		ok = false;
+		cerr << "warning: " << image_name << " could not be read.\n";
+		return image_name;
+	}
 
 	string const base = basename(image);
 
@@ -140,15 +147,24 @@ string const find_image_path(string const & image_name,
 
 	// not found, try a module search
 	if (result.empty()) {
-		return find_module_path(base + ".ko", extra_images);
+		string filename =
+		        find_module_path(base + ".ko", extra_images, ok);
+		if (!ok) {
+			cerr << "warning: The image " << image_name
+			     << " matches more than one file, using "
+			     << image_name << endl;
+			return image_name;
+		}
 	}
 
 	if (result.size() > 1) {
-		cerr << "The image name " << image_name
-		     << " matches more than one filename, "
-		     << "and will be ignored." << endl;
-		return string();
+		cerr << "warning: The image " << image_name
+		     << " matches more than one file, using " << image_name
+		     << endl;
+		ok = false;
+		return image_name;
 	}
 
+	ok = true;
 	return result[0];
 }

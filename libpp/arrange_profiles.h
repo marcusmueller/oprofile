@@ -161,8 +161,13 @@ typedef std::list<image_set> image_group_set;
  * column.
  */
 struct inverted_profile {
+	inverted_profile() : image_unreadable(true) {}
 	/// the image to open
 	std::string image;
+
+	/// using this filename already generated a warning, subsequent
+	/// error must be handled gracefully
+	bool image_unreadable;
 
 	/// all sample files with data for the above image
 	std::vector<image_group_set> groups;

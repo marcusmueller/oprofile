@@ -456,13 +456,10 @@ verify_and_fill(app_map_t & app_map, list<inverted_profile> & plist,
 
 	for (; it != end; ++it) {
 		string image = it->second.image;
-		it->second.image = find_image_path(image, extra);
-		if (!it->second.image.length()) {
-			cerr << "warning: " << image
-			     << " could not be read.\n";
-		} else {
-			plist.push_back(it->second);
-		}
+		bool ok;
+		it->second.image = find_image_path(image, extra, ok);
+		plist.push_back(it->second);
+		plist.back().image_unreadable = !ok;
 	}
 }
 

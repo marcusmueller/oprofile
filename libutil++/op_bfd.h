@@ -80,13 +80,16 @@ private:
 class op_bfd {
 public:
 	/**
-	 * @param filename the name of the image file
+	 * @param filename  the name of the image file
 	 * @param symbol_filter  filter to apply to symbols
+	 * @param create_fake  Don't try to bfd_openr the file, only create
+	 *  a fake op_bfd
 	 *
 	 * All errors are fatal.
 	 */
 	op_bfd(std::string const & filename,
-	       string_filter const & symbol_filter);
+	       string_filter const & symbol_filter,
+	       bool create_fake);
 
 	/// close an opened bfd image and free all related resources
 	~op_bfd();

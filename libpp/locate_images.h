@@ -63,11 +63,13 @@ private:
 /**
  * @param extra_images container where all extra candidate filenames are stored
  * @param image_name binary image name
+ * @param ok return failure/success, in case of failure the returned string
+ *  is identical to image_name
  *
  * Locate a (number of) matching absolute paths to the given image name.
  * If we fail to find the file or if it is not readable we provide a warning
  * and return an empty string.
  */
 std::string const find_image_path(std::string const & image_name,
-                                  extra_images const & extra_images);
+                            extra_images const & extra_images, bool & ok);
 #endif /* LOCATE_IMAGES_H */

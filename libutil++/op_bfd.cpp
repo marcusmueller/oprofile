@@ -54,7 +54,8 @@ op_bfd_symbol::op_bfd_symbol(bfd_vma vma, size_t size, string const & name)
 }
 
 
-op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter)
+op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
+              bool  create_fake)
 	:
 	filename(fname),
 	file_size(0),
@@ -62,13 +63,17 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter)
 	text_offset(0),
 	debug_info(false)
 {
-	if (filename.empty()) {
-		ostringstream os;
-		os << "op_bfd() empty image filename.\n";
-		throw op_runtime_error(os.str());
-	}
+	// after creating all symbol it's convenient for user code to access
+	// symbols through a vector. We use an intermediate list to avoid a
+	// O(N²) behavior when we will filter vector element below
+	symbols_found_t symbols;
 
 	op_get_fsize(filename.c_str(), &file_size);
+
+	if (create_fake) {
+		add_symbols(symbols, symbol_filter);
+		return;
+	}
 
 	/* bfd keeps its own reference to the filename char *,
 	 * so it must have a lifetime longer than the ibfd */
@@ -102,11 +107,6 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter)
 		}
 	}
 
-	// after creating all symbol it's convenient for user code to access
-	// symbols through a vector. We use an intermediate list to avoid a
-	// O(N²) behavior when we will filter vector element below
-	symbols_found_t symbols;
-
 	get_symbols(symbols);
 	add_symbols(symbols, symbol_filter);
 }
@@ -114,7 +114,8 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter)
 
 op_bfd::~op_bfd()
 {
-	bfd_close(ibfd);
+	if (ibfd)
+		bfd_close(ibfd);
 }
 
 
@@ -504,5 +505,9 @@ string op_bfd::get_filename() const
 
 size_t op_bfd::bfd_arch_bits_per_address() const
 {
-	return ::bfd_arch_bits_per_address(ibfd);
+	if (ibfd)
+		return ::bfd_arch_bits_per_address(ibfd);
+	// FIXME: this function should be called only if the underlined ibfd
+	// is ok, must we throw ?
+	return sizeof(bfd_vma);
 }

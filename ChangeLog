@@ -1,3 +1,22 @@
+2003-09-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/locate_images.h:
+	* libpp/locate_images.cpp: find_module_path() extra bool parameter
+	  to know if we fail to retrieve the image.
+	* libpp/arrange_profiles.h:
+	* libpp/arrange_profiles.cpp: use it and save this bool in
+	  inverted_profile struct
+	* libpp/profile_spec.cpp: update caller according
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: use the above change to create fake op_bfd
+
+	* pp/opgprof_options.cpp:
+	* pp/opgprof.cpp: update caller but never allow fake op_bfd
+
+	* pp/populate.cpp: allow to create fake op_bfd
+	
+
 2003-09-18  John Levon  <levon@movementarian.org>
 
 	* dae/opd_image.c:

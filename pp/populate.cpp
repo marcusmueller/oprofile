@@ -43,7 +43,8 @@ void
 populate_for_image(profile_container & samples, inverted_profile const & ip)
 {
 	try {
-		op_bfd abfd(ip.image, options::symbol_filter);
+		op_bfd abfd(ip.image, options::symbol_filter,
+		            ip.image_unreadable);
 		u32 offset = abfd.get_start_offset();
 
 		opd_header header;
