@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.5 2000/08/04 02:14:47 moz Exp $ */
+/* $Id: oprofpp.c,v 1.6 2000/08/06 20:46:58 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -220,14 +220,18 @@ int symcomp(const void *a, const void *b)
  * @symsp: pointer to array of symbol pointers
  *
  * Parse and sort in ascending order all symbols
- * in the file pointed to by @ibfd. Returns the number
+ * in the file pointed to by @ibfd that reside in
+ * a %SEC_CODE section. Returns the number
  * of symbols found. @symsp will be set to point
  * to the symbol pointer array.
  */
 uint get_symbols(bfd *ibfd, asymbol ***symsp)
 {
-	uint nr_syms;
+	uint nr_all_syms;
+	uint nr_syms=0; 
+	uint i; 
 	size_t size;
+	asymbol **syms; 
 
 	if (!(bfd_get_file_flags(ibfd) & HAS_SYMS))
 		return 0;
@@ -238,13 +242,27 @@ uint get_symbols(bfd *ibfd, asymbol ***symsp)
 	if (size<1)
 		return 0;
 
-	*symsp = opd_malloc(size);
-	nr_syms = bfd_canonicalize_symtab(ibfd, *symsp);
-	if (nr_syms < 1) {
-	        opd_free(*symsp);
+	syms = opd_malloc(size);
+	nr_all_syms = bfd_canonicalize_symtab(ibfd, syms);
+	if (nr_all_syms < 1) {
+	        opd_free(syms);
 	        return 0;
 	}
 
+	for (i=0; i < nr_all_syms; i++) {
+		if (syms[i]->section->flags & SEC_CODE)
+			nr_syms++;
+	}
+ 
+	*symsp = opd_malloc(sizeof(asymbol *)*nr_syms);
+
+	for (nr_syms=0,i=0; i < nr_all_syms; i++) {
+		if (syms[i]->section->flags & SEC_CODE) {
+			*symsp[nr_syms] = syms[i];
+			nr_syms++;
+		}
+	}
+ 
 	qsort(*symsp, nr_syms, sizeof(asymbol *), symcomp);
  
 	return nr_syms;
