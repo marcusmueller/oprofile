@@ -1,3 +1,10 @@
+2003-06-08  John Levon  <levon@movementarian.org>
+
+	* libpp/name_storage.h: don't need to define the tag structs
+
+	* libutil++/unique_storage.h: fix the comments,
+	make get() public
+
 2003-06-08  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/profile_container.cpp:

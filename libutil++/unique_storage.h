@@ -17,14 +17,18 @@
 #include <stdexcept>
 
 /**
- * Store values indexed by I such that only one copy
- * of the value is ever stored.
+ * Store values such that only one copy of the value
+ * is ever stored.
  *
- * The indexer I is an arbitrary class that must be
- * default-constructible. It is a required parameter
- * in order to enforce type-safety for a collection.
+ * I is an arbitrary typename that's never
+ * used.
  *
- * The value type "V" must be default-constructible.
+ * It is a required parameter in order to enforce
+ * type-safety for a collection.
+ *
+ * The value type "V" must be default-constructible,
+ * and this is the value returned by a stored id_value
+ * where .set() is false
  */
 template <typename I, typename V> class unique_storage {
 
@@ -48,8 +52,6 @@ public:
 			return id;
 		}
 
-		typedef typename stored_values::size_type size_type;
-
 		bool operator<(id_value const & rhs) const {
 			return id < rhs.id;
 		}
@@ -64,6 +66,8 @@ public:
 
 	private:
 		friend class unique_storage<I, V>;
+
+		typedef typename stored_values::size_type size_type;
 
 		explicit id_value(size_type s) : id(s) {}
 
@@ -86,7 +90,7 @@ public:
 		return cit->second;
 	}
 
-protected:
+
 	/// return the stored value for the given ID
 	V const & get(id_value const & id) const {
 		// some stl lack at(), so we emulate it

@@ -43,7 +43,7 @@ public:
 };
 
 
-struct debug_name_tag {};
+struct debug_name_tag;
 /// a debug filename
 typedef name_storage<debug_name_tag>::id_value debug_name_id;
 
@@ -55,7 +55,7 @@ public:
 };
 
 
-struct image_name_tag {};
+struct image_name_tag;
 /// an image name
 typedef name_storage<image_name_tag>::id_value image_name_id;
 
@@ -67,7 +67,7 @@ public:
 };
 
 
-struct symbol_name_tag {};
+struct symbol_name_tag;
 /// a (demangled) symbol
 typedef name_storage<symbol_name_tag>::id_value symbol_name_id;
 
