@@ -109,6 +109,9 @@ void config_setting::load(istream& in)
 	in >> buffer_size;
 	if (buffer_size == 0)
 		buffer_size = OP_DEFAULT_BUF_SIZE;
+	// this can occur if we change a default value so on fix the value
+	if (buffer_size < OP_DEFAULT_BUF_SIZE)
+		buffer_size = OP_DEFAULT_BUF_SIZE;
 	string obsolete_hash_table_size;
 	in >> obsolete_hash_table_size;
 	in >> kernel_filename;
@@ -120,6 +123,9 @@ void config_setting::load(istream& in)
 	in >> pgrp_filter;
 	in >> note_table_size;
 	if (note_table_size == 0)
+		note_table_size = OP_DEFAULT_NOTE_SIZE;
+	// this can occur if we change a default value so on fix the value
+	if (note_table_size < OP_DEFAULT_NOTE_SIZE)
 		note_table_size = OP_DEFAULT_NOTE_SIZE;
 	in >> separate_samples;
 	// the 3 following config item was kernel_range which are obsolete

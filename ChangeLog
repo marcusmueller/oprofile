@@ -1,4 +1,9 @@
-2002-12-02  Philippe Elie  <phil.el@wanadoo.fr>
+2002-12-03  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* gui/oprof_start_config.cpp: allow default value change w/o
+	  breaking actual user.
+
+2002-12-03  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update
 
@@ -45,8 +50,6 @@
 
 	* module/oprofile.h:
 	* module/oprofile.c: remove hash table
-	* module/x86/opc,model_ppro.c: break overflowed counter checking loop
-	  sooner
 
 2002-12-02  John Levon  <levon@movementarian.org>
 
