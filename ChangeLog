@@ -1,3 +1,8 @@
+2001-11-15  Philippe Elie  <ph_e@club-internet.fr>
+
+	* module/oprofile.h: work around against a gcc
+	  2.91.66 code generation bug in oprof_exit()
+
 2001-11-14  Philippe Elie  <ph_e@club-internet.fr>
 
 	* dae/op_start: do not pass bufsize, note_bufsize and
@@ -53,7 +58,7 @@
 	* events/op_help.c: new, splitted from op_events.c
 
 	* pp/oprofpp_util.cpp: new, splitted from oprofpp.cpp
-	
+
 	* pp/oprofpp.h:
 	* pp/oprofpp.c:
 	* op_user.h:
