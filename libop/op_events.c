@@ -370,6 +370,46 @@ next:
 }
 
 
+/* usefull for make check */
+static void check_unit_mask(struct op_unit_mask const * um,
+	char const * cpu_name)
+{
+	u16 i;
+
+	if (!um->used) {
+		fprintf(stderr, "um %s is not used\n", um->name);
+		exit(EXIT_FAILURE);
+	}
+
+	if (um->unit_type_mask == utm_mandatory && um->num != 1) {
+		fprintf(stderr, "mandatory um %s doesn't contain exactly one "
+			"entry (%s)\n", um->name, cpu_name);
+		exit(EXIT_FAILURE);
+	} else if (um->unit_type_mask == utm_bitmask) {
+		u16 default_mask = um->default_mask;
+		for (i = 0; i < um->num; ++i) {
+			default_mask &= ~um->um[i].value;
+		}
+		if (default_mask) {
+			fprintf(stderr, "um %s default mask is not valid "
+				"(%s)\n", um->name, cpu_name);
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		for (i = 0; i < um->num; ++i) {
+			if (um->default_mask == um->um[i].value)
+				break;
+		}
+
+		if (i == um->num) {
+			fprintf(stderr, "exclusive um %s default value is not "
+				"valid (%s)\n", um->name, cpu_name);
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+
+
 static void load_events(op_cpu cpu_type)
 {
 	char const * cpu_name = op_get_cpu_name(cpu_type);
@@ -408,9 +448,8 @@ static void load_events(op_cpu cpu_type)
 	/* sanity check: all unit mask must be used */
 	list_for_each(pos, &um_list) {
 		struct op_unit_mask * um = list_entry(pos, struct op_unit_mask, um_next);
-		if (!um->used) {
-			fprintf(stderr, "um %s is not used\n", um->name);
-		}
+
+		check_unit_mask(um, cpu_name);
 	}
 	
 

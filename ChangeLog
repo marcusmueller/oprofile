@@ -1,3 +1,17 @@
+2004-02-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/op_help.c: output the default unit mask. when querying the
+	  default mask output it in decimal not hexadecimal
+	* libpp/op_header.cpp: event number must be output as integer not as
+	  unsigned char type
+	* libop/op_parse_event.c: clarify error message
+
+	* libop/op_events.c: better validation of unit mask
+	* events/ia64/itanium2/unit_masks:
+	* events/x86-64/hammer/unit_masks: fix so make check pass, done through
+	  documentation reading.
+
+
 2004-02-13  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* events/i386/p4-ht/events: multiply all minimum count by two

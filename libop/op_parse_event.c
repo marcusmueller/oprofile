@@ -82,7 +82,7 @@ size_t parse_events(struct parsed_event * parsed_events, size_t max_events,
 		part = next_part(&cp);
 
 		if (!part) {
-			fprintf(stderr, "Invalid event %s\n", events[i]);
+			fprintf(stderr, "Invalid count for event %s\n", events[i]);
 			exit(EXIT_FAILURE);
 		}
 

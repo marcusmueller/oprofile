@@ -1,5 +1,9 @@
 # Athlon possible unit masks
 #
+# See "Bios and Kernel Developer's Guide for the AMD Athlon 64 and AMD Opteron
+# Processors" (publication #26094)
+#
+
 name:zero type:mandatory default:0x0
 	0x0 No unit mask
 name:moesi type:bitmask default:0x1f
@@ -17,7 +21,7 @@ name:fpu_ops type:bitmask default:0x3f
 # FIXME: correct ?
 	0x10 Multiple pipe junk ops
 	0x20 Store pipe junk ops
-name:segregload type:bitmask default:0xff
+name:segregload type:bitmask default:0x7f
 	0x01 ES register
 	0x02 CS register
 	0x04 SS register
@@ -59,8 +63,7 @@ name:saturation type:bitmask default:0x0f
 	0x02 Memory controller low priority bypass
 	0x04 DRAM controller interface bypass
 	0x08 DRAM controller queue bypass
-name:sizecmds type:bitmask default:0xff
-# FIXME: a default that isn't an option ?
+name:sizecmds type:bitmask default:0x7f
 # FIXME: can we get some non-gobbledegook ?
 	0x01 NonPostWrSzByte
 	0x02 NonPostWrSzDWord
@@ -74,8 +77,7 @@ name:probe type:bitmask default:0x0f
 	0x02 Probe hit
 	0x04 Probe hit dirty without memory cancel
 	0x08 Probe hit dirty with memory cancel
-name:ht type:exclusive default:0x7
-# FIXME: a default that isn't an option ? should be bitmask ?
+name:ht type:bitmask default:0x7
 	0x01 Command sent
 	0x02 Data sent
 	0x04 Buffer release sent
@@ -89,7 +91,7 @@ name:l2_internal type:bitmask default:0x1f
 name:l2_req_miss type:bitmask default:0x07
 	0x01 IC fill
 	0x02 DC fill
-	0x03 TLB reload
+	0x04 TLB reload
 name:l2_fill type:bitmask default:0x03
 	0x01 Dirty L2 victim
 	0x02 Victim from L1

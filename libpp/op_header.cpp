@@ -120,7 +120,7 @@ string const op_print_event(op_cpu cpu_type, u8 type, u16 um, u32 count)
 	struct op_event * event = op_find_event(cpu_type, type);
 
 	if (!event) {
-		cerr << "Could not locate event " << type << endl;
+		cerr << "Could not locate event " << int(type) << endl;
 		return str;
 	}
 

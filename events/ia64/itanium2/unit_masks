@@ -64,19 +64,19 @@ name:be_l1d_fpu_bubble type:exclusive default:0x00
 	0xf L1D_NATCONF
 
 # CPU_IA64_2 Table 11-43
-name:be_lost_bw_due_to_fe type:exclusive default:0x00
-	0x0 ALL
-	0x1 FEFLUSH
-	0x4 UNREACHED
-	0x5 IBFULL
-	0x6 IMISS
-	0x7 TLBMISS
-	0x8 FILL_RECIRC
-	0x9 BI
-	0xa BRQ
-	0xb PLP
-	0xc BR_ILOCK
-	0xd BUBBLE
+#name:be_lost_bw_due_to_fe type:exclusive default:0x00
+#	0x0 ALL
+#	0x1 FEFLUSH
+#	0x4 UNREACHED
+#	0x5 IBFULL
+#	0x6 IMISS
+#	0x7 TLBMISS
+#	0x8 FILL_RECIRC
+#	0x9 BI
+#	0xa BRQ
+#	0xb PLP
+#	0xc BR_ILOCK
+#	0xd BUBBLE
 
 # CPU_IA64_2 Table 11-44
 name:be_rse_bubble type:exclusive default:0x00
@@ -270,8 +270,8 @@ name:fe_lost type:exclusive default:0x0
 	0xd BUBBLE
 
 # CPU_IA64_2 Table 11-67, 11-79, 11-86, 11-90, 11-92 b0000 
-name:this type:exclusive default:0x0 
-	0x0 THIS
+#name:this type:exclusive default:0x0 
+#	0x0 THIS
 
 # CPU_IA64_2 Table 11-68
 name:tagged_inst_retired type:exclusive default:0x0 
@@ -297,8 +297,8 @@ name:l1i_prefetch_stall type:exclusive default:0x3
 	0x3 ALL
 
 # CPU_IA64_2 Table 11-76, 11-91 b0000
-name:l2_lines type:exclusive default:0x0
-	0x0 ANY
+#name:l2_lines type:exclusive default:0x0
+#	0x0 ANY
 
 # CPU_IA64_2 Table 11-77
 name:l2_bypass type:exclusive default:0x0
@@ -310,10 +310,10 @@ name:l2_bypass type:exclusive default:0x0
 	0x6 L3_INST1
 
 # CPU_IA64_2 Table 11-78
-name:l2_data_references type:bitmask default:0x3
-	0x1 L2_DATA_READS
-	0x2 L2_DATA_WRITES
-	0x3 L2_ALL
+#name:l2_data_references type:bitmask default:0x3
+#	0x1 L2_DATA_READS
+#	0x2 L2_DATA_WRITES
+#	0x3 L2_ALL
 
 # CPU_IA64_2 Table 11-80
 name:l2_force_recirc type:exclusive default:0x0

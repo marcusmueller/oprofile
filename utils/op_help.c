@@ -83,10 +83,11 @@ static void help_for_event(struct op_event * event)
 
 	if (strcmp(event->unit->name, "zero")) {
 
-		printf("\tUnit masks\n");
+		printf("\tUnit masks (default 0x%x)\n",
+		       event->unit->default_mask);
 		printf("\t----------\n");
 
-		for (j=0; j < event->unit->num; j++) {
+		for (j = 0; j < event->unit->num; j++) {
 			printf("\t0x%.2x: %s\n",
 			       event->unit->um[j].value,
 			       event->unit->um[j].desc);
@@ -196,7 +197,7 @@ static void show_unit_mask(void)
 		exit(EXIT_FAILURE);
 	}
 
-	printf("0x%x\n", event->unit->default_mask);
+	printf("%d\n", event->unit->default_mask);
 }
 
 
