@@ -15,7 +15,7 @@
 #include <iostream>
 #include <utility>
 
-#include <string_manip.h>
+#include "string_manip.h"
 
 using namespace std;
 
@@ -252,5 +252,5 @@ int main()
 	is_prefix_tests();
 	separate_token_tests();
 	format_double_tests();
-	return 0;
+	return EXIT_SUCCESS;
 }

@@ -1,5 +1,12 @@
 2003-10-30  John Levon  <levon@movementarian.org>
 
+	* libutil++/tests/Makefile.am:
+	* libutil++/tests/string_filter_tests.cpp: Add.
+
+	* libutil++/tests/string_manip_tests.cpp: fix header include
+
+2003-10-30  John Levon  <levon@movementarian.org>
+
 	* libutil++/tests/string_manip_tests.cpp: fix tobool test
 	("33" is not castable to boool)
 
