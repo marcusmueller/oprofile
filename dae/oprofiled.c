@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.43 2001/09/19 19:15:54 movement Exp $ */
+/* $Id: oprofiled.c,v 1.44 2001/09/20 03:20:36 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -368,7 +368,7 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 		}
  
 		opd_stats[OPD_NOTIFICATIONS]++;
-		 
+
 		/* is a mapping type notification ? */
 		if (IS_OP_MAP(opd_buf[i].count)) {
 			if (IS_OP_EXEC(opd_buf[i].count))

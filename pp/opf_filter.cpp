@@ -19,6 +19,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <iomanip>
 
 #include <stdio.h>
 
@@ -27,6 +28,7 @@
 using namespace std;
 
 #include "opf_filter.h"
+#include "oprofpp.h"
 
 #include "../version.h"
 
@@ -85,7 +87,7 @@ struct counter_setup {
 	bool   enabled;
 	string event_name;
 	string help_string;
-	string unit_mask;
+	u32 unit_mask;
 	string unit_mask_help;     // The string help for the unit mask
 	size_t event_count_sample;
 	// would be double?
@@ -120,10 +122,9 @@ class output {
 	void accumulate_and_output_counter(const string & filename, size_t linenr, 
 					   const string & blank);
 
-	void read_input(input & in);
-	void treat_line(const string & str);
+	void build_samples_containers();
 
-	void setup_counter_param(input & in);
+	bool setup_counter_param(input & in);
 	bool calc_total_samples();
 
 	void output_counter(const counter_array_t & counter, 
@@ -144,20 +145,24 @@ class output {
 	// The output stream.
 	ostream & out;
 
+	// this order of declaration is required to ensure proper
+	// initialisation of oprofpp
+	opp_samples_files samples_files;
+	opp_bfd abfd;
+
 	// used to output the command line.
 	int argc;
 	char const ** argv;
 
-	// The symbols collected by oprofpp sorted by increased vma, provide also a sort
-	// order on samples count for each counter.
+	// The symbols collected by oprofpp sorted by increased vma, provide
+	// also a sort order on samples count for each counter.
 	symbol_container_t symbols;
 
-	// The samples count collected by oprofpp sorted by increased vma, provide also a sort
-	// order on (filename, linenr)
+	// The samples count collected by oprofpp sorted by increased vma,
+	// provide also a sort order on (filename, linenr)
 	sample_container_t samples;
 
-	// oprofpp give some info on the setting of the counters. These
-	// are stored here.
+	// samples files footer are stored here
 	counter_setup counter_info[OP_MAX_COUNTERS];
 
 	// TODO : begin_comment, end_comment must be based on the current 
@@ -209,7 +214,9 @@ ostream & operator<<(ostream & out, const counter_setup & rhs) {
 		    << " (" << rhs.help_string << ")" << endl;
 
 		out << "unit mask : "
-		    << rhs.unit_mask
+		    << "0x" << hex << setfill('0') << setw(2) 
+		    << rhs.unit_mask 
+		    << dec
 		    << " (" << rhs.unit_mask_help << ")"
 		    << " event_count : " << rhs.event_count_sample 
 		    << " total samples : " << rhs.total_samples;
@@ -250,35 +257,6 @@ void sample_entry::debug_dump(ostream & out) const {
 
 	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		out << counter[i] << " ";
-}
-
-size_t sample_entry::build(const string& str, size_t pos, bool have_linenr_info) {
-
-	int number_of_char_read;
-	if (have_linenr_info) {
-		// must find filename:linenr
-		size_t end_pos = str.find(':', pos);
-		if (end_pos == string::npos)
-			throw "vma_info::build(string, size_t, bool) invalid input line";
-
-		file_loc.filename = str.substr(pos, end_pos - pos);
-
-		sscanf(str.c_str() + end_pos + 1, "%d", &file_loc.linenr);
-
-		pos = str.find(' ', end_pos + 1);
-	}
-
-	sscanf(str.c_str() + pos, "%lx%n", &vma, &number_of_char_read);
-
-	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
-		int temp;
-
-		sscanf(str.c_str() + pos + number_of_char_read, "%u%n", &counter[i], &temp);
-
-		number_of_char_read += temp;
-	}
-
-	return number_of_char_read + pos;
 }
 
 //--------------------------------------------------------------------------
@@ -341,6 +319,8 @@ output::output(ostream & out_, int argc_, char const * argv_[],
 	       size_t sort_by_counter_)
 	: 
 	out(out_),
+	samples_files(),
+	abfd(samples_files.footer[samples_files.first_file]),
 	argc(argc_),
 	argv(argv_),
 	begin_comment("/*"),
@@ -375,72 +355,32 @@ void output::debug_dump_vector() const {
 	}
 }
 
-// Some unnecessary complexity to handle the output format of oprofpp
-// TODO : Perhaps fix oprofpp output to simplify this code? FOR NOW don't touch
-// a this code, see with John if the code of oprofpp can be modified. Or modify
-// the design to use oprofpp function as a libray, this need more work on libbfd
-// because we want in some case the disassembly code.
-void output::setup_counter_param(input & in) {
-	string str;
-	in.read_line(str);
+// With the new oproffp stuff this can be simplified
+bool output::setup_counter_param(input & in)
+{
+	bool have_counter_info = false;
 
-	size_t pos = str.find("Counter ");
-	if (pos == 0) {
-		size_t counter_number;
-		if (sscanf(str.c_str(), "Counter %u", &counter_number) == 1 &&
-		    counter_number < op_nr_counters) {
-			counter_info[counter_number].enabled = true;
+	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
+		if (samples_files.is_open(i) == false)
+			continue;
 
-			size_t pos = str.find("counted ");
-			if (pos == string::npos) {
-				counter_info[counter_number].event_name = "UNKNOWN_EVENT";
-			} else {
-				pos += strlen("counted ");
-				size_t end_pos = str.find(" ", pos);
-				if (end_pos == string::npos) {
-					counter_info[counter_number].event_name = "UNKNOWN_EVENT";
-				} else {
-					counter_info[counter_number].event_name = 
-						str.substr(pos, end_pos - pos);
-				}
+		counter_info[i].enabled = true;
+		counter_info[i].event_name = samples_files.ctr_name[i];
+		counter_info[i].help_string = samples_files.ctr_desc[i];
+		counter_info[i].unit_mask = samples_files.footer[i]->ctr_um;
+		counter_info[i].unit_mask_help = samples_files.ctr_um_desc[i] ? samples_files.ctr_um_desc[i] : "Not set";
+		counter_info[i].event_count_sample = samples_files.footer[i]->ctr_count;
 
-				pos = str.find('(', end_pos);
-				if (pos != string::npos) {
-					end_pos = str.find(')', pos); 
-					if (end_pos != string::npos) {
-						counter_info[counter_number].help_string =
-							str.substr(pos + 1, end_pos - (pos + 1));
-					}
-				}
-			}
-
-			pos = str.find("unit mask of ");
-			if (pos != string::npos) {
-				pos += strlen("unit mask of ");
-				size_t end_pos = str.find(' ', pos);
-				if (end_pos != string::npos) {
-					counter_info[counter_number].unit_mask = 
-						str.substr(pos, end_pos - pos);
-				}
-			}
-
-			pos = str.find('(', pos);
-			if (pos != string::npos) {
-				size_t end_pos = str.find(')', pos);
-				counter_info[counter_number].unit_mask_help =
-					str.substr(pos + 1, (end_pos - pos) - 1);
-			}
-
-			counter_info[counter_number].event_count_sample = 0;
-			pos = str.rfind(") count ");
-			if (pos != string::npos) {
-				sscanf(str.c_str() + pos, ") count %u",
-				       &counter_info[counter_number].event_count_sample);
-				}
-		}
-	} else {
-		in.put_back(str);
+		have_counter_info = true;
 	}
+
+	if (!have_counter_info) {
+		cerr << "opf_filter: malformed input, expect at least one counter description" << endl;
+		
+		return false;
+	}
+
+	return true;
 }
 
 bool output::calc_total_samples() {
@@ -546,7 +486,8 @@ void output::find_and_output_counter(const string & filename, size_t linenr) con
 		output_counter(symbol->sample.counter, true, symbol->name);
 }
 
-void output::output_asm(input & in) {
+void output::output_asm(input & in) 
+{
 	size_t index = get_sort_counter_nr();
 
 	vector<const symbol_entry*> v;
@@ -681,8 +622,8 @@ struct filename_by_samples {
 	counter_array_t counter;
 };
 
-void output::output_source(input & /*in*/) {
-
+void output::output_source(input & /*in*/)
+{
 	set<string> filename_set;
 
 	for (size_t i = 0 ; i < samples.size() ; ++i) {
@@ -715,19 +656,6 @@ void output::output_source(input & /*in*/) {
 	// now sort the file_by_samples entry.
 	sort(file_by_samples.begin(), file_by_samples.end());
 
-	// please do not delete this portion of debug code for now. (phe 2001/06/15)
-#if 0
-	{
-		// At this point file_by_samples is a sorted array of filename sorted
-		// by increasing value of counter number index.
-		out << "sorted order for counter " << index << endl;
-		vector<filename_by_samples>::const_iterator it;
-		for (it = file_by_samples.begin() ; it != file_by_samples.end() ; ++it) {
-			out << it->filename << " " << it->percent << endl;
-		}
-	}
-#endif
-
 	double threshold = threshold_percent / 100.0;
 
 	for (size_t i = 0 ; i < file_by_samples.size() && threshold >= 0 ; ++i) {
@@ -758,8 +686,10 @@ void output::output_source(input & /*in*/) {
 	}
 }
 
-size_t output::get_sort_counter_nr() const {
+size_t output::get_sort_counter_nr() const
+{
 	size_t index = sort_by_counter;
+
 	if (index >= size_t(op_nr_counters) || counter_info[index].enabled == false) {
 		for (index = 0 ; index < op_nr_counters ; ++index) {
 			if (counter_info[index].enabled)
@@ -781,19 +711,29 @@ size_t output::get_sort_counter_nr() const {
 bool output::sanity_check_symbol_entry(size_t index) const
 {
 	if (index == 0) {
-		if (symbols[0].first != 0) 
+		if (symbols[0].first != 0) {
+			cerr << "opf_filter: symbol[0].first != 0" << endl;
 			return false;
+		}
 
-		if (symbols[0].last > samples.size()) 
+		if (symbols[0].last > samples.size()) {
+			cerr << "opf_filter: symbols[0].last > samples.size()" << endl;
 			return false;
+		}
 	} else {
-		if (symbols[index-1].last != symbols[index].first)
+		if (symbols[index-1].last != symbols[index].first) {
+			cerr << "opf_filter: symbole[" << index - 1
+			     << "].last != symbols[" << index
+			     << "].first" << endl;
 			return false;
+		}
 	}
 
 	if (index == symbols.size() - 1) {
-		if (symbols[index].last != samples.size())
+		if (symbols[index].last != samples.size()) {
+			cerr << "opf_filter: symbols[symboles.size() -1].last != symbols.size()" << endl;
 			return false;
+		}
 	}
 
 	return true;
@@ -804,15 +744,79 @@ bool output::sanity_check_symbol_entry(size_t index) const
 //  the range of sample_entry inside each symbol entry are valid, see 
 //    sanity_check_symbol_entry()
 //  the samples_by_file_loc member var is correctly setup.
-void output::read_input(input & in) {
-	string str;
-	while (in.read_line(str) && str != "DISASSEMBLY_MARKER") {
-		treat_line(str);
-	}
+void output::build_samples_containers() 
+{
+	// fill the symbol table.
+	for (size_t i = 0 ; i < abfd.syms.size(); ++i) {
+		u32 start, end;
+		const char* filename;
+		uint linenr;
 
-	// -- tricky : update the last field for the last symbol.
-	if (symbols.size()) {
-		symbols[symbols.size() - 1].last = samples.size();
+		abfd.get_symbol_range(i, &start, &end);
+
+		/* To avoid outputing 0 samples symbols */
+		u32 counter[OP_MAX_COUNTERS];
+
+		for (uint k = 0; k < op_nr_counters; ++k)
+			counter[k] = 0;
+
+		bool found_samples = false;
+		for (uint j = start; j < end; ++j)
+			found_samples |= samples_files.accumulate_samples(counter, j);
+
+		if (found_samples == 0)
+			continue;
+
+		symbol_entry symb_entry;
+
+		for (uint k = 0; k < op_nr_counters; ++k)
+			symb_entry.sample.counter[k] = counter[k];
+		
+		char* temp = demangle_symbol(abfd.syms[i]->name);
+		symb_entry.name = temp;
+		symb_entry.first = samples.size();
+		opd_free(temp);
+
+		if (abfd.get_linenr(i, start, &filename, &linenr)) {
+			symb_entry.sample.file_loc.filename = filename;
+			symb_entry.sample.file_loc.linenr = linenr;
+		} else {
+			symb_entry.sample.file_loc.filename = std::string();
+			symb_entry.sample.file_loc.linenr = 0;
+		}
+
+		bfd_vma base_vma = abfd.syms[i]->value + abfd.syms[i]->section->vma;
+		symb_entry.sample.vma = abfd.sym_offset(i, start) + base_vma;
+
+		for (u32 pos = start; pos < end ; ++pos) {
+			for (uint k = 0; k < op_nr_counters; ++k)
+				counter[k] = 0;
+
+			found_samples = samples_files.accumulate_samples(counter, pos);
+			if (found_samples == false)
+				continue;
+
+			sample_entry sample;
+
+			if (abfd.get_linenr(i, pos, &filename, &linenr)) {
+				sample.file_loc.filename = filename;
+				sample.file_loc.linenr = linenr;
+			} else {
+				sample.file_loc.filename = std::string();
+				sample.file_loc.linenr = 0;
+			}
+
+			for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr)
+				sample.counter[ctr] = samples_files.samples_count(ctr, pos);
+
+			sample.vma = abfd.sym_offset(i, pos) + base_vma;
+
+			samples.push_back(sample);
+		}
+
+		symb_entry.last = samples.size();
+
+		symbols.push_back(symb_entry);
 	}
 
 	// and the set of symbol entry sorted by samples count.
@@ -825,62 +829,15 @@ void output::read_input(input & in) {
 		// All the range in the symbol vector must be valid.
 		for (size_t i = 0 ; i < symbols.size() ; ++i) {
 			if (sanity_check_symbol_entry(i) == false) {
-
-				cerr << "opf_filter: post condition fail : symbols range failure" << endl;
-
 				exit(EXIT_FAILURE);
 			}
-		}
-	}
-
-	if ((str == "DISASSEMBLY_MARKER") == have_linenr_info) {
-		//  Means than op-to-source script fail to pass the correct option.
-		throw "Incoherence between disassembly marker and have_linr_info";
-	}
-}
-
-// Precondition:
-// input are either
-// "[filename::linenr] addr count0 count1 symbol_name"
-// " [filename:linenr] addr count0 count1"
-// filename can be "(null)" or "??" to mark invalid filename 
-// linenr can be 0 to mark invalid line number.
-// Note than a space begins lines which do not contain symbol name
-void output::treat_line(const string & str) {
-
-	if (str.length()) {
-		if (str[0] == ' ') {
-			if (symbols.size() == 0) {
-				throw "found line info before any symbol info";
-			}
-
-			sample_entry sample;
-
-			sample.build(str, 1, have_linenr_info);
-
-			samples.push_back(sample);
-		} else { 
-			if (symbols.size() != 0) {
-				symbols[symbols.size() - 1].last = samples.size();
-			}
-
-			symbol_entry symbol;
-
-			size_t pos = symbol.sample.build(str, 0, have_linenr_info);
-
-			pos = str.find(' ', pos);
-			symbol.name = str.substr(pos + 1, (str.length() - pos) - 1);
-
-			symbol.first = samples.size();
-			symbol.last = symbol.first;  // safety init.
-
-			symbols.push_back(symbol);
 		}
 	}
 }
 
 // It is usefull for the user to see the command line and the interpreted effect of the option
-void output::output_command_line() const {
+void output::output_command_line() const 
+{
 	// It is usefull for the user to see the exact effect of the command line.
 
 	out << "Command line:" << endl;
@@ -908,55 +865,30 @@ void output::output_command_line() const {
 		}
 	} else {
 		out << "output annotated assembly listing with samples" << endl;
-		// TODO : is there any way to check if the objdump output mix source within
-		// assembly ?
+		// TODO : is there any way to check if the objdump output mix
+		// source within assembly ?
 	}
 
-	out << "Cpu type: " << cpu_type << endl;
+	out << "Cpu type: " << op_get_cpu_type_str(cpu_type) << endl;
 
 	out << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
 
 	out << endl;
 }
 
-bool output::treat_input(input & in) {
-
-	string str;
-	in.read_line(str);
-
-	if (sscanf(str.c_str(), "Cpu type: %d", &cpu_type) != 1) {
-		cerr << "opf_filter: unable to read cpu_type\n";
-
-		return false;
-	}
+bool output::treat_input(input & in) 
+{
+	cpu_type = samples_files.footer[samples_files.first_file]->cpu_type;
 
 	if (cpu_type == CPU_ATHLON)
 		op_nr_counters = 4;
 
-	in.read_line(str);
+	cpu_speed = samples_files.footer[samples_files.first_file]->cpu_speed;
 
-	if (sscanf(str.c_str(), "Cpu speed was (MHz estimation) : %lf", &cpu_speed) != 1) {
-		cerr << "opf_filter: unable to read cpu_speed\n";
-
+	if (setup_counter_param(in) == false)
 		return false;
-	}
 
-	setup_counter_param(in);
-	setup_counter_param(in);
-
-	bool have_counter_info = false;
-	for (size_t i = 0 ; i < op_nr_counters && !have_counter_info ; ++i) {
-		if (counter_info[i].enabled)
-			have_counter_info = true;
-	}
-
-	if (!have_counter_info) {
-		cerr << "opf_filter: malformed input, expect at least one counter description" << endl;
-		
-		return false;
-	}
-
-	read_input(in);
+	build_samples_containers();
 
 //	debug_dump_vector(out);
 
@@ -974,18 +906,17 @@ bool output::treat_input(input & in) {
 		if (i != 0)
 			out << endl;
 
-		out << "Counter " << i << " ";
-		out << counter_info[i] << endl;
+		out << "Counter " << i << " " << counter_info[i] << endl;
 	}
+
 	out << end_comment << endl;
 
 //	debug_dump_vector(out);
 
-	if (have_linenr_info == false) {
+	if (have_linenr_info == false)
 		output_asm(in);
-	} else {
+	else
 		output_source(in);
-	}
 
 	return true;
 }
@@ -998,6 +929,7 @@ static int until_more_than_samples;
 static int showvers;
 static int sort_by_counter;
 
+// Do not add option with longname == 0
 static struct poptOption options[] = {
 	{ "use-linenr-info", 'o', POPT_ARG_NONE, &have_linenr_info, 0,
 	  "input contain linenr info", NULL, },
@@ -1013,6 +945,28 @@ static struct poptOption options[] = {
 };
 
 /**
+ * is_opf_filter_option
+ *
+ * return the number of option eated by opf_filter,
+ * return 0 means this option is not for oprofpp
+ */
+int is_opf_filter_option(const char* option)
+{
+	// skip [-]* prefix
+	while (*option == '-')
+		++option;
+
+	const poptOption* opt;
+	for (opt = options ; opt->longName; ++opt) {
+		if (strcmp(opt->longName, option) == 0) {
+			return opt->argInfo == POPT_ARG_NONE ? 1 : 2;
+		}
+	}
+
+	return 0;
+}
+
+/**
  * get_options - process command line
  * @argc: program arg count
  * @argv: program arg array
@@ -1023,29 +977,52 @@ static void get_options(int argc, char const * argv[])
 {
 	poptContext optcon;
 	char c; 
-	
-	optcon = poptGetContext(NULL, argc, argv, options, 0);
 
-	c=poptGetNextOpt(optcon);
+	// FIXME : too tricky: use popt sub-table capacity?
 
-	if (c<-1) {
-		fprintf(stderr, "oprofpp: %s: %s\n",
+	// separate the option into two set, one for opp_get_options
+	// and the other for opf_filter
+	std::vector<char const*> oprofpp_opt;
+	std::vector<char const*> opf_opt;
+
+	oprofpp_opt.push_back(argv[0]);
+	opf_opt.push_back(argv[0]);
+
+	for (int i = 1; i < argc; ) {
+		int nb_opt = is_opf_filter_option(argv[i]);
+		if (nb_opt) {
+			for (int end = i + nb_opt; i < end ; ++i)
+				opf_opt.push_back(argv[i]);
+		}
+		else
+			oprofpp_opt.push_back(argv[i++]);
+	}
+
+	opp_get_options(oprofpp_opt.size(), oprofpp_opt.begin());
+
+	optcon = poptGetContext(NULL, opf_opt.size(), opf_opt.begin(), 
+				options, 0);
+
+	c = poptGetNextOpt(optcon);
+
+	if (c < -1) {
+		fprintf(stderr, "opf_filter: %s: %s\n",
 			poptBadOption(optcon, POPT_BADOPTION_NOALIAS),
 			poptStrerror(c));
 
 		poptPrintHelp(optcon, stderr, 0);
 
-	        exit(1);
+	        exit(EXIT_FAILURE);
 	}
 
 	if (showvers) {
-		printf("%s : " VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n", argv[0]);
-		exit(0);
+		printf("opf_filter: %s : " VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n", argv[0]);
+		exit(EXIT_SUCCESS);
 	}
 
 	if (with_more_than_samples && until_more_than_samples) {
-		fprintf(stderr, "--with-more-than-samples and -until-more-than-samples can not specified together\n");
-		exit(1);
+		fprintf(stderr, "opf_filter: --with-more-than-samples and -until-more-than-samples can not specified together\n");
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -1077,22 +1054,22 @@ int main(int argc, char const * argv[]) {
 			      sort_by_counter);
 
 		if (output.treat_input(in) == false) {
-			return 1;
+			return EXIT_FAILURE;
 		}
 	} 
 
 	catch (const string & e) {
 		cerr << "opf_filter: Exception : " << e << endl;
-		return 1;
+		return EXIT_FAILURE;
 	}
 	catch (const char * e) {
-		cerr << "opf_flter: Exception : " << e << endl;
-		return 1;
+		cerr << "opf_filter: Exception : " << e << endl;
+		return EXIT_FAILURE;
 	}
 	catch (...) {
 		cerr << "opf_filter: Unknown exception : really sorry " << endl;
-		return 1;
+		return EXIT_FAILURE;
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }

@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include "../op_user.h"
+#include "oprofpp.h"
 
 // Add run-time checking if true.
 static const bool sanity_check = true;
@@ -50,8 +50,6 @@ struct sample_entry {
 	unsigned long vma;        // would be bfd_vma but avoid depend on bfd.h
 	counter_array_t counter;
 
-	size_t build(const string& str, size_t pos, bool have_linenr_info);
-
 	void debug_dump(ostream & out) const;
 };
 
@@ -79,7 +77,6 @@ class symbol_container_t {
 	size_t size() const;
 
 	const symbol_entry & operator[](size_t index) const;
-	      symbol_entry & operator[](size_t index);
 
 	void push_back(const symbol_entry &);
 

@@ -3,8 +3,7 @@
 # This script simplify the call to oprofpp / objdump / opf_filter
 
 objdump_option="-d --no-show-raw-insn"
-oprofpp_option="-L"
-op_filter_option=""
+op_filter_option="-L"
 object_file=""
 sample_file=""
 do_to_asm=false
@@ -47,10 +46,7 @@ do
 			op_filter_option="$op_filter_option --sort-by-counter $1"
 			;;
 		-d|--demangle)
-			oprofpp_option="$oprofpp_option -d"
-			# I do not like the output of objdump with --demangle.
-			# FIXME : is someone need it?
-#			objdump_option="$objdump_option --demangle"
+			op_filter_option="$op_filter_option -d"
 			;;
 		-f|--samples-file)
 			shift
@@ -124,19 +120,19 @@ fi
 # get an ugly message error
 
 if [ "$sample_file" != "" ]; then
-	oprofpp_option="$oprofpp_option -f $sample_file"
+	op_filter_option="$op_filter_option -f $sample_file"
 fi
 
 if [ "$object_file" != "" ]; then
-	oprofpp_option="$oprofpp_option -i $object_file"
+	op_filter_option="$op_filter_option -i $object_file"
 fi
 
 #echo "option : $op_filter_option"
 
+# TODO: opf_filter must execute objdump if it need assembly line and pipe
+# objdump onto itself to avoid unreadable error message.
 if [ "$do_to_asm" == "true" ]; then
-	# TODO : how to break the pipe if the first part of a pipeline loss ?
-	(oprofpp $oprofpp_option && echo "DISASSEMBLY_MARKER" && \
-		objdump $object_file $objdump_option) | opf_filter $op_filter_option
+	objdump $object_file $objdump_option | opf_filter $op_filter_option
 else
-	oprofpp $oprofpp_option -o | opf_filter --use-linenr-info $op_filter_option
+	opf_filter --use-linenr-info $op_filter_option
 fi

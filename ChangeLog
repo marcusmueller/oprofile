@@ -1,3 +1,20 @@
+2001-09-20  Philippe Elie  <ph_e@club-internet.fr>
+
+	* Makefile.in: minor change in module building
+	* pp/Makefile.in: link oprofpp with opf_filter
+	* pp/op_to_source: avoid pipe from oprofpp to opf_filter
+	* pp/opf_filter.h: remove a few member function
+	* pp/opf_container.cpp: ditto + minor cleanup
+	* pp/opf_filter.cpp: oprofpp is no longer piped to opf_filter
+	  but linked with it. Many change, needs additional cleanup
+	* pp/oprofpp.c: group all stuff in two class. Rather a
+	  a C with class than a full C++ file for now. Fix a bug
+	  in filename handling.
+	* pp/oprofpp.h: add opp_bfd and opp_samples_files class.
+	
+	* dae/opd_util.c: add a few explicit cast for C++ compile
+	* dae/opd_util.h: wrap function declaratio with extern "C"
+
 2001-09-19  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.c: fix silly read valid bug
@@ -51,10 +68,10 @@
 
 	* acinclude.m4:
 	* autogen.sh:
-	* configure.in: 
+	* configure.in:
 	* gui/Makefile.in:
 	* gui/ui/Makefile.in:
-	* gui/ui/oprof_start.base.ui: 
+	* gui/ui/oprof_start.base.ui:
 	* gui/oprof_start.h: autoconfiscation for Qt2
 
 	* gui/oprof_start_config.cpp: add comments
@@ -546,14 +563,14 @@
 
 2001-07-21  Philippe Elie  <ph_e@club-internet.fr>
  
- 	* doc/oprofile.sgml:
- 	* gui/oprofile:
- 	* oprofile.c: remove edge_detect support.
+	* doc/oprofile.sgml:
+	* gui/oprofile:
+	* oprofile.c: remove edge_detect support.
  
- 	* pp/oprofpp.c: check counter range for each event type.
- 	* oprofile.c: ditto.
- 	* gui/oprofile: ditto and save setup for each event type.
- 	* oprofile.h: op_check_range() : display the allowed range.
+	* pp/oprofpp.c: check counter range for each event type.
+	* oprofile.c: ditto.
+	* gui/oprofile: ditto and save setup for each event type.
+	* oprofile.h: op_check_range() : display the allowed range.
 
 2001-07-18  Philippe Elie  <ph_e@club-internet.fr>
  

@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.14 2001/09/01 02:03:34 movement Exp $ */
+/* $Id: opd_util.h,v 1.15 2001/09/20 03:20:36 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -61,6 +61,10 @@ struct opd_fentry {
 	u32 count;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* utility functions */
 #define opd_calloc(memb, size) opd_malloc(memb*size)
 #define opd_calloc0(memb, size) opd_malloc0(memb*size)
@@ -107,5 +111,9 @@ time_t opd_get_mtime(const char *file);
 
 char *opd_get_time(void);
 char *opd_get_line(FILE *fp);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* OPD_UTIL_H */
