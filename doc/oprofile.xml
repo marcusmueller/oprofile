@@ -1383,6 +1383,61 @@ make sure to save the old binary if you need to do comparative profiles.
 
 </sect2>
 
+<sect2 id="no-results">
+<title>What to do when you don't get any results</title>
+<para>
+When attempting to get output, you may see the error :
+</para>
+<screen>
+error: no sample files found: profile specification too strict ?
+</screen>
+<para>
+What this is saying is that the profile specification you passed in,
+when matched against the available sample files, resulted in no matches.
+There are a number of reasons this might happen:
+</para>
+<variablelist>
+<varlistentry><term>spelling</term><listitem><para>
+You specified a binary name, but spelt it wrongly. Check your spelling !
+</para></listitem></varlistentry>
+<varlistentry><term>profiler wasn't running</term><listitem><para>
+Make very sure that OProfile was actually up and running when you ran
+the binary.
+</para></listitem></varlistentry>
+<varlistentry><term>binary didn't run long enough</term><listitem><para>
+Remember OProfile is a statistical profiler - you're not guaranteed to
+get samples for short-running programs. You can help this by using a
+lower count for the performance counter, so there are a lot more samples
+taken per second.
+</para></listitem></varlistentry>
+<varlistentry><term>binary spent most of its time in libraries</term><listitem><para>
+Similarly, if the binary spends little time in the main binary image
+itself, with most of it spent in shared libraries it uses, you might
+not see any samples for the binary image itself. You can check this
+by using <command>opcontrol --separate=library</command> before the
+profiling session, so <command>opreport</command> and friends show
+the library profiles on a per-application basis.
+</para></listitem></varlistentry>
+<varlistentry><term>specification was really too strict</term><listitem><para>
+For example, you specified something like <option>tgid:3433</option>,
+but no task with that group ID ever ran the code.
+</para></listitem></varlistentry>
+<varlistentry><term>binary didn't generate any events</term><listitem><para>
+If you're using a particular event counter, for example counting MMX
+operations, the code might simply have not generated any events in the
+first place. Verify the code you're profiling does what you expect it
+to.
+</para></listitem></varlistentry>
+<varlistentry><term>you didn't specify kernel module name correctly</term><listitem><para>
+If you're using 2.6 kernels, and trying to get reports for a kernel
+module, make sure to use the <option>-p</option> option, and specify the
+module name <emphasis>with</emphasis> the <filename>.ko</filename>
+extension. Check if the module is one loaded from initrd.
+</para></listitem></varlistentry>
+</variablelist>
+
+</sect2>
+
 </sect1> <!-- profile-spec -->
 
 <sect1 id="opreport-details">
