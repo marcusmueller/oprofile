@@ -1,3 +1,10 @@
+2005-04-03 Maynard Johnson  <maynardj@us.ibm.com>
+
+	* configure.in:
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: synthesis dotted symbols
+	  if necessary
+
 2005-03-31  John Levon  <levon@movementarian.org>
 
 	* HACKING:

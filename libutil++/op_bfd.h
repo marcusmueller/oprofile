@@ -237,6 +237,18 @@ private:
 
 	/// create an artificial symbol for a symbolless binary
 	op_bfd_symbol const create_artificial_symbol();
+
+        /* Generate symbols using bfd functions for
+	 * the image file associated with the ibfd arg.
+	 */
+	uint process_symtab(bfd * ibfd, size_t start);
+
+	/* Since process_symtab may occur twice for a given image file,
+	 * this instance variable may be used as needed to keep track
+	 * of the number of symbols generated in the previous call.
+	 */
+	uint prev_total_symcount;
+
 };
 
 /*

@@ -188,6 +188,31 @@ AC_DEFINE_UNQUOTED(OP_BINDIR, "$OP_BINDIR", [package binary directory])
 OP_DOCDIR=`eval echo "${my_op_prefix}/share/doc/$PACKAGE/"`
 AC_SUBST(OP_DOCDIR)
 
+# Determine if bfd_get_synthetic_symtab macro is available
+OS="`uname`"
+if test "$OS" = "Linux"; then
+	AC_MSG_CHECKING([whether bfd_get_synthetic_symtab() exists in BFD library])
+	rm -f test-for-synth
+	AC_LANG(C)
+	AC_LANG_CONFTEST(
+		[AC_LANG_PROGRAM([[#include <bfd.h>]],
+			[[asymbol * synthsyms;	bfd * ibfd = 0; 
+			long synth_count = bfd_get_synthetic_symtab(ibfd, 0, 0, 0, 0, &synthsyms);]])
+		])
+	gcc conftest.$ac_ext -o  test-for-synth > /dev/null 2>&1
+	if test -f test-for-synth; then
+		echo "yes"
+		SYNTHESIZE_SYMBOLS='1'
+	else
+		echo "no"
+		SYNTHESIZE_SYMBOLS='0'
+	fi
+	AC_DEFINE_UNQUOTED(SYNTHESIZE_SYMBOLS, $SYNTHESIZE_SYMBOLS, [Synthesize special symbols when needed])
+	rm -f test-for-synth*
+
+fi
+
+
 AC_OUTPUT(Makefile \
 	m4/Makefile \
 	libutil/Makefile \

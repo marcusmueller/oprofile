@@ -11,6 +11,7 @@
 
 #include "op_file.h"
 #include "op_config.h"
+#include "config.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -284,7 +285,8 @@ op_bfd::op_bfd(string const & archive_path, string const & fname,
 	ibfd(0),
 	dbfd(0),
 	text_offset(0),
-	debug_info(false)
+	debug_info(false),
+	prev_total_symcount(0)
 {
 	string image_path = archive_path + filename;
 	int fd;
@@ -486,12 +488,92 @@ struct remove_filter {
 
 } // namespace anon
 
+
+#if SYNTHESIZE_SYMBOLS
+
+uint op_bfd::process_symtab(bfd * ibfd, size_t start) 
+{
+	extern const bfd_target bfd_elf64_powerpc_vec;
+	extern const bfd_target bfd_elf64_powerpcle_vec;
+	bool is_elf64_powerpc_target = (ibfd->xvec == &bfd_elf64_powerpc_vec)
+		|| (ibfd->xvec == &bfd_elf64_powerpcle_vec);
+
+	if (!is_elf64_powerpc_target)
+		return bfd_canonicalize_symtab(ibfd, bfd_syms.get() + start);
+
+	void * minisyms;
+	uint minisym_count = 0;
+	uint size;
+
+	minisym_count = bfd_read_minisymbols(ibfd, 0, &minisyms, &size);
+	if (minisym_count < 1)
+		return 0;
+	
+	asymbol ** mysyms;
+	asymbol *synthsyms;
+	long synth_count;
+
+	mysyms = (asymbol **)minisyms;
+	synth_count = bfd_get_synthetic_symtab(ibfd, minisym_count, mysyms,
+	                                       0, NULL, &synthsyms);
+
+	/* synth_count will be zero for binaries that already have
+	 * dot symbols, so that's a valid return value that's handled
+	 * by the code below,  But if synth_count is < 0, this indicates
+	 * an error, so we return immediately.
+	 */
+	if (synth_count < 0)
+		return 0;
+
+	uint cur_symcount = (uint) synth_count + minisym_count;
+
+	asymbol ** symp;
+	asymbol ** new_mini;
+	    
+	new_mini = (asymbol **) malloc((cur_symcount + 1) * sizeof(*symp));
+	symp = new_mini;
+	memcpy(symp, minisyms, minisym_count * sizeof(*symp));
+	symp += minisym_count;
+
+	for (long i = 0; i < synth_count; i++)
+		*symp++ = synthsyms + i;
+	    
+	scoped_array<asymbol *> synth_syms;
+	synth_syms.reset(new asymbol * [cur_symcount + start]);
+
+	for (symbol_index_t i = 0; i < start; i++)
+		synth_syms[i + cur_symcount] = bfd_syms[i];
+	
+	for (symbol_index_t i = start; i < start + cur_symcount; i++)
+		synth_syms[i] = new_mini[i];
+   
+	bfd_syms.swap(synth_syms);
+	free(new_mini);
+
+	free(minisyms);
+
+	prev_total_symcount = cur_symcount;
+
+	return cur_symcount;
+
+}
+
+#else
+uint op_bfd::process_symtab(bfd * ibfd, size_t start) 
+{
+	return bfd_canonicalize_symtab(ibfd, bfd_syms.get() + start);
+}
+#endif
+
+
 void op_bfd::get_symbols_from_file(bfd * ibfd, size_t start,
    op_bfd::symbols_found_t & symbols, bool debug_file)
 {
 	uint nr_all_syms;
 
-	nr_all_syms = bfd_canonicalize_symtab(ibfd, bfd_syms.get()+start);
+	if (prev_total_symcount) 
+		start = prev_total_symcount;
+	nr_all_syms = process_symtab(ibfd, start);
 	if (nr_all_syms < 1)
 		return;
 
