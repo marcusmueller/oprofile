@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.13 2000/08/08 05:09:37 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.14 2000/08/12 21:09:33 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -198,10 +198,19 @@ int oprof_map_release(void)
 	return 0;
 }
 
+spinlock_t map_lock = SPIN_LOCK_UNLOCKED;
+
+/* read from ring buffer. map_lock prevents against corruption
+ * from oprof_output_map(). Code is ugly to prevent sleeping
+ * whilst holding a spinlock.
+ */
 int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 {
 	ssize_t max;
 	char *data = (char *)map_buf;
+	void *mybuf;
+	size_t total=count;
+	size_t firstcount=0;
 
 	max = sizeof(struct op_map)*OP_MAX_MAP_BUF;
 
@@ -211,24 +220,37 @@ int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 	if (*ppos >= max)
 		return -EINVAL;
 
-	if (*ppos + count > max) {
-		size_t firstcount = max - *ppos;
+	mybuf = kmalloc(total, GFP_KERNEL);
+	if (!mybuf)
+		return -EFAULT;
 
-		if (copy_to_user(buf, data+*ppos, firstcount))
-			return -EFAULT;
+	spin_lock(&map_lock);
+
+	if (*ppos + count > max) {
+ 		firstcount = max - *ppos;
+		memcpy(mybuf, data+*ppos, firstcount);
 
 		count -= firstcount;
 		*ppos = 0;
 	}
 	
-	if (count > max)
+	if (count > max) {
+		spin_unlock(&map_lock);
+		kfree(mybuf);
 		return -EINVAL;
+	}
 
-	data += *ppos;
+	memcpy(mybuf+firstcount, data+*ppos, count);
 
-	if (copy_to_user(buf,data,count))
+	spin_unlock(&map_lock);
+
+	if (copy_to_user(buf,mybuf,total)) {
+		kfree(mybuf);
 		return -EFAULT;
+	}
 	
+	kfree(mybuf);
+ 
 	*ppos += count;
 
 	/* wrap around */
@@ -252,8 +274,6 @@ inline static char *oprof_outstr(char *buf, char *str, int bytes)
 }
 
 #define map_round(v) (((v)+(sizeof(struct op_map)/2))/sizeof(struct op_map))
-
-spinlock_t map_lock = SPIN_LOCK_UNLOCKED;
 
 /* buf must be PAGE_SIZE bytes large */
 static int oprof_output_map(ulong addr, ulong len,
