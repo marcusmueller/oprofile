@@ -18,7 +18,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
   opreport "lib-image:*libc*" --merge=lib works but not
   opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
   --separate==none. Must we take care ?
- o document the maening of op_bfd.cpp warning: "some functions compiled without debug information may have incorrect source line attributions"
 
 0.8 release
 -----------
@@ -42,6 +41,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o we're not following symlinks for opreport etc. binary resolving
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
  o create_path API is weird
  o opannotate should error out with a msg if no debug symbols are found at all

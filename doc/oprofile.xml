@@ -1810,7 +1810,13 @@ such samples. In the case above, <function>memset</function> is the most
 likely candidate for this problem. Examining the mixed source/assembly
 output can help identify such results.
 </para>
-
+<para>
+When running <command>opannotate</command>, you may get a warning
+"some functions compiled without debug information may have incorrect source line attributions".
+In some rare cases, OProfile is not able to verify that the derived source line
+is correct (when some parts of the binary image are compiled without debugging
+information). Be wary of results if this warning appears.
+</para>
 <para>
 Furthermore, for some languages the compiler can implicitly generate functions,
 such as default copy constructors. Such functions are labelled by the compiler
