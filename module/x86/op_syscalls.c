@@ -190,7 +190,7 @@ out:
 	return ret;
 }
 
-inline static void oprof_report_fork(u16 old, u32 new)
+inline static void oprof_report_fork(u32 old, u32 new)
 {
 	struct op_note note;
 
@@ -202,7 +202,7 @@ inline static void oprof_report_fork(u16 old, u32 new)
 
 asmlinkage static int my_sys_fork(struct pt_regs regs)
 {
-	u16 pid = (u16)current->pid;
+	u32 pid = current->pid;
 	int ret;
 
 	MOD_INC_USE_COUNT;
@@ -216,7 +216,7 @@ asmlinkage static int my_sys_fork(struct pt_regs regs)
 
 asmlinkage static int my_sys_vfork(struct pt_regs regs)
 {
-	u16 pid = (u16)current->pid;
+	u32 pid = current->pid;
 	int ret;
 
 	MOD_INC_USE_COUNT;
@@ -229,7 +229,7 @@ asmlinkage static int my_sys_vfork(struct pt_regs regs)
 
 asmlinkage static int my_sys_clone(struct pt_regs regs)
 {
-	u16 pid = (u16)current->pid;
+	u32 pid = current->pid;
 	int ret;
 
 	MOD_INC_USE_COUNT;

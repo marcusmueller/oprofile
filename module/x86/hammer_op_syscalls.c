@@ -135,7 +135,7 @@ out:
 	unlock_out_mmap();
 }
 
-inline static void oprof_report_fork(u16 old, u32 new)
+inline static void oprof_report_fork(u32 old, u32 new)
 {
 	struct op_note note;
 
@@ -323,7 +323,7 @@ asmlinkage static int my_sys32_mmap2(ulong addr, ulong len,
 
 asmlinkage long my_sys_fork(struct pt_regs regs)
 {
-	u16 pid = (u16)current->pid;
+	u32 pid = current->pid;
 	long ret;
 
 	MOD_INC_USE_COUNT;
@@ -337,7 +337,7 @@ asmlinkage long my_sys_fork(struct pt_regs regs)
 
 asmlinkage long my_sys_vfork(struct pt_regs regs)
 {
-	u16 pid = (u16)current->pid;
+	u32 pid = current->pid;
 	long ret;
 
 	MOD_INC_USE_COUNT;
@@ -350,7 +350,7 @@ asmlinkage long my_sys_vfork(struct pt_regs regs)
 
 asmlinkage long my_sys_clone(unsigned long clone_flags, unsigned long newsp, struct pt_regs regs)
 {
-	u16 pid = (u16)current->pid;
+	u32 pid = current->pid;
 	long ret;
 
 	MOD_INC_USE_COUNT;
@@ -363,7 +363,7 @@ asmlinkage long my_sys_clone(unsigned long clone_flags, unsigned long newsp, str
 
 asmlinkage int my_sys32_fork(struct pt_regs regs)
 {
-	u16 pid = (u16)current->pid;
+	u32 pid = current->pid;
 	long ret;
 
 	MOD_INC_USE_COUNT;
@@ -378,7 +378,7 @@ asmlinkage int my_sys32_fork(struct pt_regs regs)
 
 asmlinkage int my_sys32_clone(unsigned int clone_flags, unsigned int newsp, struct pt_regs regs)
 {
-	u16 pid = (u16)current->pid;
+	u32 pid = current->pid;
 	long ret;
 
 	MOD_INC_USE_COUNT;
@@ -390,7 +390,7 @@ asmlinkage int my_sys32_clone(unsigned int clone_flags, unsigned int newsp, stru
 }
 asmlinkage int my_sys32_vfork(struct pt_regs regs)
 {
-	u16 pid = (u16)current->pid;
+	u32 pid = current->pid;
 	long ret;
 
 	MOD_INC_USE_COUNT;

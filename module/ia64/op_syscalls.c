@@ -232,7 +232,7 @@ out:
 }
 
 
-inline static void oprof_report_fork(u16 old, u32 new)
+inline static void oprof_report_fork(u32 old, u32 new)
 {
 	struct op_note note;
 
@@ -245,7 +245,7 @@ inline static void oprof_report_fork(u16 old, u32 new)
 
 asmlinkage void post_sys_clone(long ret, long arg0, long arg1)
 {
-	u16 pid = (u16)current->pid;
+	u32 pid = current->pid;
 
 	/* FIXME: This should be done in the ASM stub. */
 	MOD_INC_USE_COUNT;
@@ -257,7 +257,7 @@ asmlinkage void post_sys_clone(long ret, long arg0, long arg1)
 
 asmlinkage void post_sys_clone2(long ret, long arg0, long arg1, long arg2)
 {
-	u16 pid = (u16)current->pid;
+	u32 pid = current->pid;
 
 	/* FIXME: This should be done in the ASM stub. */
 	MOD_INC_USE_COUNT;

@@ -1,3 +1,10 @@
+2002-12-16  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* module/ia64/op_syscalls.c:
+	* module/x86/hammer_op_syscalls.c:
+	* module/x86/op_syscalls.c: u16 pid to u32, tested/compiled only with
+	  32 bits x86
+
 2002-12-15  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/string_manip.cpp: minor fix
