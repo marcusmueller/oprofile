@@ -1,0 +1,29 @@
+# Contains common definitions to all sub-dir of oprofile and the the autodeps
+# rules. Do not add rules here to clarify how the Makefile works.
+
+# common deps
+CC=@CC@
+CXX=@CXX@
+prefix=$(DESTDIR)@prefix@
+exec_prefix=@exec_prefix@
+BINDIR=@bindir@
+MANDIR=@mandir@
+MKDIR_P=mkdir -p
+INCLUDES=@extra_includes@
+# CFLAGS and CXXFLAGS are defined in each Makefile.
+
+# autodeps rules. These are modified from an example in the make info page.
+CPPFLAGS_DEPS = -I@KINC@ @extra_includes@
+
+%.cpp.d: %.cpp
+	@set -e; \
+	$(CXX) $(CPPFLAGS_DEPS) -MM $< | sed 's|\($*\)\.o[ :]*|\1.o $@ : |g' > $@; \
+	[ -s $@ ] || rm -f $@
+
+%.c.d: %.c
+	@set -e; \
+	$(CC) $(CPPFLAGS_DEPS) -MM $< | sed 's|\($*\)\.o[ :]*|\1.o $@ : |g' > $@; \
+	[ -s $@ ] || rm -f $@
+
+# a gnu make extension :/
+-include $(ALL_SOURCES:=.d)

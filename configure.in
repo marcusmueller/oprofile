@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.59 2001/11/30 14:25:42 davej Exp $)
+AC_REVISION($Id: configure.in,v 1.60 2001/11/30 21:42:47 phil_e Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -227,7 +227,7 @@ AC_MSG_RESULT([no]);,
 AC_MSG_RESULT([yes]); BFD_CXXFLAGS="-DTRUE_FALSE_ALREADY_DEFINED")
 AC_SUBST(BFD_CXXFLAGS)
 
-AC_OUTPUT(Makefile events/Makefile util/Makefile module/Makefile dae/Makefile doc/Makefile doc/oprofile.1 pp/Makefile gui/Makefile gui/ui/Makefile version.h)
+AC_OUTPUT(Makefile events/Makefile util/Makefile module/Makefile dae/Makefile doc/Makefile doc/oprofile.1 pp/Makefile gui/Makefile gui/ui/Makefile Rules.make version.h)
 
 if test "$have_qt2" != "yes"; then
 	echo "Warning: Qt2 not found; no GUI will be built"
