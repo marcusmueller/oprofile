@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.20 2002/01/03 21:24:08 phil_e Exp $ */
+/* $Id: oprofile.c,v 1.21 2002/01/04 03:05:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -346,8 +346,11 @@ inline static void up_and_check_note(void)
 	if (likely(note_pos < (sysctl.note_size - OP_PRE_NOTE_WATERMARK) && !is_ready()))
 		return;
  
+	/* if we reach the end of the buffer, just pin
+	 * to the last entry until it is read. This loses
+	 * notes, but we have no choice. */
 	if (unlikely(note_pos == sysctl.note_size)) {
-		note_pos = 0;
+		note_pos = sysctl.note_size - 1;
 	}
  
 	/* we just use cpu 0 as a convenient one to wake up */
