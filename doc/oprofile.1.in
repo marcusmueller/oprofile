@@ -314,7 +314,7 @@ Specify the output format where a single format char is a field intended for: 'v
 .br
 .TP
 .BI "--reverse -r"
-sort output by increasing count of samples rather by decreasing count of samples. Can't be used with --list-symbols
+sort output by increasing count of samples rather by decreasing count of samples
 .br
 .TP
 .BI "--path " path name list ',' separated ", -p " path name list ',' separated

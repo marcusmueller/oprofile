@@ -73,7 +73,8 @@ void OutputSymbol::ShowHelp()
 }
 
 typedef string (OutputSymbol::*fct_format)(const string & symb_name,
-					   const sample_entry & symb, int ctr);
+					   const sample_entry & symb,
+					   size_t ctr);
 
 /// decribe one field of the colummned output.
 struct field_description {
@@ -148,7 +149,7 @@ void OutputSymbol::SetFlag(OutSymbFlag flag)
 
 size_t OutputSymbol::OutputField(ostream & out, const string & name,
 			       const sample_entry & sample,
-			       OutSymbFlag fl, int ctr)
+			       OutSymbFlag fl, size_t ctr)
 {
 	size_t sz = 0;
 	const field_description * field = GetFieldDescr(fl);
@@ -233,7 +234,7 @@ void OutputSymbol::DoOutput(std::ostream & out, const string & name,
 	}
 
 	// now the repeated field.
-	for (int ctr = 0 ; ctr < int(samples_files.get_nr_counters()); ++ctr) {
+	for (size_t ctr = 0 ; ctr < samples_files.get_nr_counters(); ++ctr) {
 		if ((counter & (1 << ctr)) != 0) {
 			size_t repeated_flag = (flag & osf_repeat_mask);
 			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {
@@ -285,7 +286,7 @@ void OutputSymbol::OutputHeader(ostream & out)
 	}
 
 	// now the repeated field.
-	for (int ctr = 0 ; ctr < int(samples_files.get_nr_counters()); ++ctr) {
+	for (size_t ctr = 0 ; ctr < samples_files.get_nr_counters(); ++ctr) {
 		if ((counter & (1 << ctr)) != 0) {
 			size_t repeated_flag = (flags & osf_repeat_mask);
 			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {
@@ -334,7 +335,7 @@ void OutputSymbol::Output(std::ostream & out,
 }
 
 string OutputSymbol::format_vma(const std::string &,
-				const sample_entry & sample, int)
+				const sample_entry & sample, size_t)
 {
 	ostringstream out;
 	
@@ -344,7 +345,7 @@ string OutputSymbol::format_vma(const std::string &,
 }
 
 string OutputSymbol::format_symb_name(const std::string & name,
-				      const sample_entry &, int)
+				      const sample_entry &, size_t)
 {
 	int const is_anon = name[0] == '?';
 
@@ -352,19 +353,20 @@ string OutputSymbol::format_symb_name(const std::string & name,
 }
 
 string OutputSymbol::format_image_name(const std::string &,
-				       const sample_entry & sample, int)
+				       const sample_entry & sample, size_t)
 {
 	return sample.file_loc.image_name;
 }
 
 string OutputSymbol::format_short_image_name(const std::string &,
-					     const sample_entry & sample, int)
+					     const sample_entry & sample,
+					     size_t)
 {
 	return basename(sample.file_loc.image_name);
 }
 
 string OutputSymbol::format_linenr_info(const std::string &,
-					const sample_entry & sample, int)
+					const sample_entry & sample, size_t)
 {
 	ostringstream out;
 
@@ -379,7 +381,8 @@ string OutputSymbol::format_linenr_info(const std::string &,
 }
 
 string OutputSymbol::format_short_linenr_info(const std::string &,
-					      const sample_entry & sample, int)
+					      const sample_entry & sample,
+					      size_t)
 {
 	ostringstream out;
 
@@ -394,7 +397,7 @@ string OutputSymbol::format_short_linenr_info(const std::string &,
 }
 
 string OutputSymbol::format_nr_samples(const std::string &,
-				       const sample_entry & sample, int ctr)
+				       const sample_entry & sample, size_t ctr)
 {
 	ostringstream out;
 
@@ -405,7 +408,7 @@ string OutputSymbol::format_nr_samples(const std::string &,
 
 string OutputSymbol::format_nr_cumulated_samples(const std::string &,
 						 const sample_entry & sample,
-						 int ctr)
+						 size_t ctr)
 {
 	ostringstream out;
 
@@ -417,7 +420,7 @@ string OutputSymbol::format_nr_cumulated_samples(const std::string &,
 }
 
 string OutputSymbol::format_percent(const std::string &,
-				    const sample_entry & sample, int ctr)
+				    const sample_entry & sample, size_t ctr)
 {
 	ostringstream out;
 
@@ -432,7 +435,7 @@ string OutputSymbol::format_percent(const std::string &,
 
 string OutputSymbol::format_cumulated_percent(const std::string &,
 					      const sample_entry & sample,
-					      int ctr)
+					      size_t ctr)
 {
 	ostringstream out;
 

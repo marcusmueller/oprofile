@@ -127,25 +127,28 @@ public:
 	/// the set of formating function, used internally by Output(), exposed
 	/// as public member for the future oprofpp GUI.
 	std::string format_vma(const std::string & name,
-			       const sample_entry & sample, int);
+			       const sample_entry & sample, size_t);
 	std::string format_symb_name(const std::string & name,
-				     const sample_entry & sample, int);
+				     const sample_entry & sample, size_t);
 	std::string format_image_name(const std::string & name,
-				      const sample_entry & sample, int);
+				      const sample_entry & sample, size_t);
 	std::string format_short_image_name(const std::string & name,
-					    const sample_entry & sample, int);
+					    const sample_entry & sample,
+					    size_t);
 	std::string format_linenr_info(const std::string & name,
-				       const sample_entry & sample, int);
+				       const sample_entry & sample, size_t);
 	std::string format_short_linenr_info(const std::string & name,
-					     const sample_entry & sample, int);
+					     const sample_entry & sample,
+					     size_t);
 	std::string format_nr_samples(const std::string & name,
-				      const sample_entry & sample, int ctr);
+				      const sample_entry & sample, size_t ctr);
 	std::string format_nr_cumulated_samples(const std::string & name,
-					const sample_entry & sample, int);
+					const sample_entry & sample, size_t);
 	std::string format_percent(const std::string & name,
-				   const sample_entry & sample, int);
+				   const sample_entry & sample, size_t);
 	std::string format_cumulated_percent(const std::string & name,
-					     const sample_entry & sample, int);
+					     const sample_entry & sample,
+					     size_t);
 private:
 	void DoOutput(std::ostream & out, const std::string & name,
 		      const sample_entry & sample, OutSymbFlag flags);
@@ -154,7 +157,7 @@ private:
 	// return the nr of char needed to padd this field
 	size_t OutputField(std::ostream & out, const std::string & name,
 			   const sample_entry & sample,
-			   OutSymbFlag fl, int ctr);
+			   OutSymbFlag fl, size_t ctr);
 	// return the nr of char needed to padd this field
 	size_t OutputHeaderField(std::ostream & out, OutSymbFlag fl);
 	static const field_description * GetFieldDescr(OutSymbFlag flag);

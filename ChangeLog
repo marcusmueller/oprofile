@@ -1,3 +1,17 @@
+2002-03-18  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/op_time.cpp:
+	* doc/oprofile1.1.in:
+	* doc/oprofile.sgml: allow reverse sort in all case
+
+	* pp/opp_symbol.h:
+	* pp/opp_symbol.cpp: remove unnecessary cast
+
+	* oprof_report/oprof_report.cpp:
+	* oprof_report/oprof_report.h:
+	* oprof_report/*_view.*: revert partially 2002-03-17 patch,
+	  making again data change notification in two step.
+
 2002-03-17  John Levon  <moz@compsoc.man.ac.uk>
 
 	* pp/oprofpp_util.cpp: clarify binutils bug workaround

@@ -111,9 +111,13 @@ class symbol_container_impl {
  private:
 	void build_by_file_loc() const;
 
+	// the main container of symbols. multiple symbols with the same
+	// name are allowed.
 	vector<symbol_entry> symbols;
 
-	typedef set<const symbol_entry *, less_by_file_loc>
+	// different named symbol at same file location are allowed e.g.
+	// template instanciation
+	typedef multiset<const symbol_entry *, less_by_file_loc>
 		set_symbol_by_file_loc;
 
 	// Carefull : this *MUST* be declared after the vector to ensure
@@ -618,8 +622,8 @@ const symbol_entry* samples_files_t::find_symbol(bfd_vma vma) const
 }
 
 const symbol_entry* samples_files_t::find_symbol(const string & filename,
-						size_t linenr) const
-{ 
+						 size_t linenr) const
+{
 	return symbols.find(filename, linenr);
 }
 

@@ -33,9 +33,10 @@ public:
 			notification_sended = true;
 		}
 	}
-	void set_dirty() { notification_sended = false; } 
+	void data_destroy() { do_data_destroy(); notification_sended = false; }
 private:
 	virtual void do_data_change(const samples_files_t *) = 0;
+	virtual void do_data_destroy() = 0;
 	// FUTURE
 	// virtual void do_right_click();
 	bool notification_sended;

@@ -1206,7 +1206,7 @@ Options allowed are :
 		<term><option>&mdash;reverse</option></term>
 		<term><option>-r</option></term>
 		<listitem><para>
-		Sort by decreasing samples count instead of increasing count. Can't be used with <option>&mdash;list-symbols</option>
+		Sort by decreasing samples count instead of increasing count.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

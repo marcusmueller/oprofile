@@ -139,7 +139,7 @@ static struct poptOption options[] = {
 
 /// associate filename with directory name where filename exist. Filled
 /// through the -p/-P option to allow retrieving of image name when samples
-/// file name contains an incorrect location for the image (such ram disk
+/// file name contains an incorrect location for the image such ram disk
 /// module at boot time. We need a multimap to warn against ambiguity between
 /// mutiple time found image name.
 typedef multimap<string, string> alt_filename_t;
@@ -631,7 +631,7 @@ static void output_symbols_count(map_t& files, int counter)
 
 	out.SetFlag(output_format_flags);
 
-	out.Output(cout, symbols, true);
+	out.Output(cout, symbols, reverse_sort == 0);
 }
 
 /**
@@ -643,13 +643,6 @@ int main(int argc, char const * argv[])
 
 	if (list_symbols && show_shared_libs) {
 		cerr << "You can't specifiy --show-shared-libs and "
-		     << "--list-symbols together" << endl;
-		exit(EXIT_FAILURE);
-	}
-
-	/* Disallow this until we fix output format */
-	if (list_symbols && reverse_sort) {
-		cerr << "You can't specifiy --reverse-sort and "
 		     << "--list-symbols together" << endl;
 		exit(EXIT_FAILURE);
 	}

@@ -99,8 +99,8 @@ void oprof_report::load_samples_files(const string & filename)
  */
 void oprof_report::mark_all_view_changed()
 {
-	oprofpp_view->set_dirty();
-	hotspot_view->set_dirty();
+	oprofpp_view->data_destroy();
+	hotspot_view->data_destroy();
 }
 
 /**

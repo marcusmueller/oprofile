@@ -27,6 +27,7 @@ public:
 	OprofppView(QListView * view);
 private:
 	void do_data_change(const samples_files_t * );
+	void do_data_destroy();
 
 	QListView * view;
 };

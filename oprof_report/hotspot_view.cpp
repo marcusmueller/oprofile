@@ -111,11 +111,17 @@ void HotspotView::paintEvent(QPaintEvent *)
  */
 void HotspotView::do_data_change(const samples_files_t * samples_)
 {
-	symbols.clear();
-
 	samples = samples_;
 	samples->select_symbols(symbols, 0, 0.0, false, true);
 
 	update();
+}
+
+/**
+ * do_data_destroy() - handle data destroy
+ */
+void HotspotView::do_data_destroy()
+{
+	symbols.clear();
 }
 
