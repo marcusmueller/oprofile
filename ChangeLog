@@ -1,3 +1,12 @@
+2004-02-28  Zwane Mwaikambo  <zwane@linuxpower.ca>
+
+	* libutil++/op_bfd.cpp:
+	* utils/opcontrol: This patch fixes the listing of symbols within the
+	  kernel image on ARM i was having. The problem was due to the fact
+	  that ARM/Linux kernel text starts with a section called .init unlike
+	  all the currently supported Linux architectures. So the solution is
+	  to start at section 0
+
 2004-02-28  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* module/x86/op_syscalls.c: warning fix

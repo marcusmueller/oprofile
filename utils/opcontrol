@@ -389,8 +389,10 @@ get_kernel_range()
 		return;
 	fi
 
-	range_info=`objdump -h $VMLINUX 2>/dev/null | grep " .text "`
+	# start from section 0 and then continue till end of .text
+	range_info=`objdump -h $VMLINUX 2>/dev/null | grep -w "0 "`
 	tmp1=`echo $range_info | awk '{print $4}'`
+	range_info=`objdump -h $VMLINUX 2>/dev/null | grep " .text "`
 	tmp_length=`echo $range_info | awk  '{print $3}'`
 	tmp2=`objdump -h $VMLINUX --adjust-vma=0x$tmp_length 2>/dev/null | grep " .text " | awk  '{print $4}'`
 

@@ -215,13 +215,17 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	}
 
 	{
+	asection const * sect;
 
-	asection const * sect = bfd_get_section_by_name(ibfd, ".text");
-	if (sect) {
-		text_offset = sect->filepos;
-		io_state state(cverb << vbfd);
-		cverb << vbfd
-		      << ".text filepos " << hex << text_offset << endl;
+	// find the first text section as use that as text_offset
+	for (sect = ibfd->sections; sect; sect = sect->next) {
+		if (sect->flags & SEC_CODE) {
+			text_offset = sect->filepos;
+			io_state state(cverb << vbfd);
+			cverb << vbfd << sect->name << " filepos "
+				<< hex << text_offset << endl;
+			break;
+		}
 	}
 
 	for (sect = ibfd->sections; sect; sect = sect->next) {
