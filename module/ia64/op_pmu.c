@@ -217,9 +217,15 @@ disable_psr(void *dummy)
 	__asm__ __volatile__ ("rsm psr.pp;;"::: "memory");
 
 #if defined(CONFIG_PERFMON) && defined(CONFIG_SMP)
+#if V_AT_LEAST(2, 4, 20)
+	local_cpu_data->pfm_syst_info |=  PFM_CPUINFO_SYST_WIDE;
+	local_cpu_data->pfm_syst_info &= ~PFM_CPUINFO_DCR_PP;
+	/* FIXME: what todo with the 3rd flags PFM_CPUINFO_EXCL_IDLE 0x4 */
+#else
 	/* disable profiling for everyone else */
 	local_cpu_data->pfm_syst_wide = 1;
 	local_cpu_data->pfm_dcr_pp = 0;
+#endif
 #endif
 	ia64_set_pmc(0,0);
 	ia64_srlz_d();
@@ -320,8 +326,14 @@ pmu_start(void *info)
 
 #ifdef CONFIG_PERFMON
 #ifdef CONFIG_SMP
+#if V_AT_LEAST(2, 4, 20)
+	local_cpu_data->pfm_syst_info |= PFM_CPUINFO_SYST_WIDE;
+	local_cpu_data->pfm_syst_info |= PFM_CPUINFO_DCR_PP;
+	/* FIXME: what todo with the 3rd flags PFM_CPUINFO_EXCL_IDLE 0x4 */
+#else
 	local_cpu_data->pfm_syst_wide = 1;
 	local_cpu_data->pfm_dcr_pp = 1;
+#endif
 #else
 	op_tasklist_toggle_pp(1);
 #endif
@@ -353,8 +365,14 @@ pmu_stop(void *info)
 
 #ifdef CONFIG_PERFMON
 #ifdef CONFIG_SMP
+#if V_AT_LEAST(2, 4, 20)
+	local_cpu_data->pfm_syst_info &= ~PFM_CPUINFO_SYST_WIDE;
+	local_cpu_data->pfm_syst_info &= ~PFM_CPUINFO_DCR_PP;
+	/* FIXME: what todo with the 3rd flags PFM_CPUINFO_EXCL_IDLE 0x4 */
+#else
 	local_cpu_data->pfm_syst_wide = 0;
 	local_cpu_data->pfm_dcr_pp = 0;
+#endif
 #else
 	pfm_tasklist_toggle_pp(0);
 #endif
