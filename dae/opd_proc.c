@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.29 2000/09/01 01:21:40 moz Exp $ */
+/* $Id: opd_proc.c,v 1.30 2000/09/04 22:52:00 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -179,7 +179,6 @@ static void opd_open_image(struct opd_image *image)
 	*c = '\0';
 
 	/* for each byte in original, two u32 counters */
-	printf("Getting size of $%s$\n",image->name);
 	image->len = opd_get_fsize(image->name)*sizeof(u32)*2;
 	
 	/* give space for "negative" entries. This is because we
@@ -189,7 +188,6 @@ static void opd_open_image(struct opd_image *image)
 	if (image->kernel)
 		image->len += OPD_KERNEL_OFFSET*2;
 
-	printf("Trying to open %s.\n",mangled);
 	image->fd = open(mangled, O_CREAT|O_EXCL|O_RDWR,0644);
 	if (image->fd==-1) {
 		fprintf(stderr,"oprofiled: open of image sample file \"%s\" failed: %s", mangled,strerror(errno));
@@ -279,7 +277,7 @@ inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16
 		return;
 	}
 
-	fentry = image->start + offset;
+	fentry = image->start + (offset*sizeof(struct opd_fentry));
 
 	if (image->kernel)
 		fentry += OPD_KERNEL_OFFSET;
@@ -451,8 +449,6 @@ static struct opd_proc * opd_new_proc(struct opd_proc *prev, struct opd_proc *ne
  */
 static void opd_delete_proc(struct opd_proc *proc)
 {
-	printf("Deleting pid %u\n",proc->pid);
-
 	if (!proc->prev)
 		opd_procs=proc->next;
 	else
@@ -862,8 +858,6 @@ void opd_put_sample(const struct op_sample *sample)
 	unsigned int i;
 	struct opd_proc *proc;
 
-	printf("OPD_SAMPLE: Pid %u, eip 0x%.8x, count %u\n",sample->pid,sample->eip,sample->count);
-
 	if (opd_eip_is_kernel(sample->eip)) {
 		opd_handle_kernel_sample(sample->eip,sample->count);
 		return;
@@ -881,9 +875,6 @@ void opd_put_sample(const struct op_sample *sample)
 	for (i=0;i<proc->nr_maps;i++) {
 		if (opd_is_in_map(&proc->maps[i],sample->eip)) {
 			u32 offset = opd_map_offset(&proc->maps[i],sample->eip);
-			if (streq("simple",opd_images[proc->maps[i].image].name)) {
-				printf("simple eip 0x%x, start 0x%x offset 0x%x, calc offset 0x%x\n",sample->eip,proc->maps[i].start, proc->maps[i].offset, offset);
-			} 
 			if (proc->maps[i].image!=-1)
 				opd_put_image_sample(&opd_images[proc->maps[i].image],offset,sample->count);
 			opd_stats[OPD_PROCESS]++;
@@ -936,8 +927,6 @@ void opd_handle_fork(const struct op_sample *sample)
 
 	old = opd_get_proc(sample->pid);
 
-	printf("OPD_FORK: Handle fork %u\n",sample->pid);
-
 	if (!old) {
 		printf("Told that non-existent process %u just forked.\n",sample->pid);
 		return;
@@ -968,8 +957,6 @@ void opd_handle_fork(const struct op_sample *sample)
 void opd_handle_exit(const struct op_sample *sample)
 {
 	struct opd_proc *proc;
-
-	printf("OPD_EXIT: proc %u just exited.\n",sample->pid);
 
 	proc = opd_get_proc(sample->pid);
 	if (proc)
@@ -1012,14 +999,10 @@ void opd_handle_mapping(const struct op_sample *sample)
 
 	proc = opd_get_proc(sample->pid);
 
-	printf("OPD_MAP for process %u\n",sample->pid);
-
 	if (!proc) {
 		printf("Told about mapping for non-existent process %u.\n",sample->pid);
 		return;
 	}
-
-	printf("Starting mapping: to read %u bytes, pid %u\n",sample->eip,sample->pid);
 
 	/* eip is actually nr. of bytes to read from map device */
 	size = (ssize_t)sample->eip;
@@ -1034,11 +1017,8 @@ void opd_handle_mapping(const struct op_sample *sample)
 	opd_read_device(mapdevfd,buf,size,0);
 
 	while (pos < size/sizeof(u32)) {
-		printf("size/4 %u, pos %u\n",size/4,pos);
 		mapping = (struct op_mapping *)&buf[pos];
 		pos += 4;
-
-		printf("Number of components: %u\n",mapping->num);
 
 		if (!mapping->num) {
 			fprintf(stderr,"oprofiled: Empty map.\n");
@@ -1064,8 +1044,6 @@ void opd_handle_mapping(const struct op_sample *sample)
 				return;
 			}
 
-			printf("Component hash: %u, string %s\n",hash,hash_access(hash));
-
 			if (strlen(hash_access(hash))+1+strlen(c) >= PATH_MAX) {
 				fprintf(stderr,"String \"%s\" too large.\n",file);
 				exit(1);
@@ -1075,12 +1053,7 @@ void opd_handle_mapping(const struct op_sample *sample)
 			strncpy(c,"/",1);
 			strncpy(c+1,hash_access(hash),strlen(hash_access(hash)));
 		}
-
-		printf("Mapping from 0x%x, size 0x%x, offset 0x%x, of file $%s$\n",
-			mapping->addr, mapping->len, mapping->offset, c);
-
 		opd_put_mapping(proc,opd_get_image(c,0),mapping->addr, mapping->offset, mapping->addr+mapping->len);
-		printf("after: size %u, pos %u\n",size,pos);
 	}
 	opd_free(buf);
 }
@@ -1099,8 +1072,6 @@ void opd_handle_mapping(const struct op_sample *sample)
 void opd_handle_exec(const struct op_sample *sample)
 {
 	struct opd_proc *proc;
-
-	printf("OP_DROP_MAPPING: Told to drop mappings for proc %u.\n",sample->pid);
 
 	proc = opd_get_proc(sample->pid);
 	if (proc)
@@ -1218,7 +1189,6 @@ void opd_get_ascii_procs(void)
 
 	while ((dirent = readdir(dir))) {
 		if (sscanf(dirent->d_name, "%hu", &pid)==1) {
-			printf("ASCII added %u.\n",pid);
 			proc = opd_add_proc(pid);
 			opd_get_ascii_maps(proc);
 		}
