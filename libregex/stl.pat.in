@@ -76,6 +76,10 @@ $typename = "(${typename}[ ]*\**|unsigned short[ ]**\**|unsigned int[ ]*\**|unsi
 # now we can shrink default comparator.
 "\<_Rb_tree<${typename}, pair<\1 const, ${typename}>,  _Select1st<pair<\1 const, \7>>, less<\1>>" = "_Rb_tree<\1, pair<\1 const, \7>,  _Select1st<pair<\1 const, \7>>>"
 # get rid of _Select1st and _Identity
+# FIXME: the presence od _Identity<> and _Select1st<> was allowing to quickly
+# differentiate a set or a map, the rule now to differentiate them is:
+# second parameter to _Rb_tree* is a pair<> ==> map else set<>. Either we need
+# to document this or remove _Identity and _Select1st pattern
 "\<_Identity<${typename}>" = "\1"
 "\<_Select1st<pair<${typename} const, ${typename}>>" = "\1 const"
 
