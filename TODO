@@ -1,6 +1,10 @@
 Before 1.0
 ----------
 
+ o op_session: warn and do not create a session if the samples files dir is empty
+ o op_session: if user don't supply a session name create an unique name (timestamp)
+ o op_session should backup profiled.log
+ 
  o document gcc 2.95 and linenr info problems especially for inline functions
  o document somewhere that oprofpp -s blah will only find the first symbol
    called "blah" (not worth fixing) 
