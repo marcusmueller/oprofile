@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.2 2000/08/03 03:19:06 moz Exp $ */
+/* $Id: oprofpp.c,v 1.3 2000/08/03 21:00:15 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -399,19 +399,12 @@ int main(int argc, char *argv[])
  
 	get_options(argc, argv);
 
-	fd = open(samplefile, O_RDONLY);
-
-	if (fd==-1) {
-		fprintf(stderr, "oprofpp: Opening %s failed. %s",samplefile, strerror(errno));
-		exit(1);
-	}
-
-	fp = fdopen(fd, "r");
+	fp = fopen(samplefile,"r");
 	if (!fp) {
-		fprintf(stderr, "oprofpp: fdopen of %s failed. %s", samplefile, strerror(errno));
+		fprintf(stderr, "oprofpp: fopen of %s failed. %s", samplefile, strerror(errno));
 		exit(1);
 	}
-
+ 
 	if (fseek(fp, -sizeof(struct opd_footer), SEEK_END)==-1) {
 		fprintf(stderr, "oprofpp: fseek of %s failed. %s", samplefile, strerror(errno));
 		exit(1);
@@ -421,8 +414,6 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "oprofpp: fread of %s failed. %s", samplefile, strerror(errno));
 		exit(1);
 	}
-
-	/* FIXME: OK ? */ 
 	fclose(fp);
 
 	if (footer.magic!=OPD_MAGIC) {
@@ -437,6 +428,13 @@ int main(int argc, char *argv[])
  
 	op_get_event_desc(footer.ctr0_type_val, footer.ctr0_um, &ctr0_name, &ctr0_desc, &ctr0_um_desc);
 	op_get_event_desc(footer.ctr1_type_val, footer.ctr1_um, &ctr1_name, &ctr1_desc, &ctr1_um_desc);
+
+	fd = open(samplefile, O_RDONLY);
+
+	if (fd==-1) {
+		fprintf(stderr, "oprofpp: Opening %s failed. %s",samplefile, strerror(errno));
+		exit(1);
+	}
 
 	size = opd_get_fsize(samplefile) - sizeof(struct opd_footer); 
 	samples = (struct opd_fentry *)mmap(0, size, PROT_READ, MAP_PRIVATE, fd, 0);
