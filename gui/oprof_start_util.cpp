@@ -379,7 +379,10 @@ std::string const do_open_file_or_dir(std::string const & base_dir, bool dir_onl
 			   "open_file_or_dir", "Get filename");
 	}
 
-	return result.latin1();
+	if (result.isNull())
+		return std::string();
+	else
+		return result.latin1();
 }
  
 
