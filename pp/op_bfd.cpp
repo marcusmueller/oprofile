@@ -10,14 +10,17 @@
  */
 
 #include <algorithm>
+#include <iostream>
 #include <string>
 
 #include "op_file.h"
 #include "oprofpp.h"
 
 using std::string;
+using std::cout;
+using std::endl;
 
-op_bfd::op_bfd(bool is_kernel, const std::string & filename)
+op_bfd::op_bfd(bool is_kernel, std::string const & filename)
 	:
 	ibfd(0),
 	bfd_syms(0),
@@ -35,8 +38,8 @@ op_bfd::op_bfd(bool is_kernel, const std::string & filename)
 
 op_bfd::~op_bfd()
 {
-	delete [] bfd_syms;
 	bfd_close(ibfd);
+	delete [] bfd_syms;
 }
 
 /**
@@ -50,7 +53,7 @@ op_bfd::~op_bfd()
  * Failure to open the image a fatal
  * gettings zero symbols from the image is not an error
  */
-void op_bfd::open_bfd_image(const std::string & filename, bool is_kernel)
+void op_bfd::open_bfd_image(std::string const & filename, bool is_kernel)
 {
 	char **matching;
 
@@ -159,9 +162,8 @@ bool op_bfd::get_symbols()
 
 	bfd_syms = new asymbol * [size];
 	nr_all_syms = bfd_canonicalize_symtab(ibfd, bfd_syms);
-	if (nr_all_syms < 1) {
+	if (nr_all_syms < 1)
 		return false;
-	}
 
 	for (i = 0; i < nr_all_syms; i++) {
 		if (interesting_symbol(bfd_syms[i])) {
@@ -206,7 +208,7 @@ bool op_bfd::get_symbols()
 	// it's time to remove the excluded symbol.
 	for (i = 0 ; i < syms.size() ; ) {
 		if (is_excluded_symbol(syms[i].name())) {
-			printf("excluding symbold %s\n", syms[i].name());
+			cout << "excluding symbol " << syms[i].name() << endl;
 			syms.erase(syms.begin() + i);
 		} else {
 			++i;
@@ -271,8 +273,8 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 
 	// functioname and symbol name can be different if we query linenr info
 	// if we accept it we can get samples for the wrong symbol (#484660)
-	if (ret == true && functionname && 
-	    strcmp(functionname, syms[sym_idx].name())) {
+	if (ret == true && functionname 
+		&& syms[sym_idx].name() != string(functionname)) {
 		ret = false;
 	}
 
@@ -308,9 +310,8 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 							 &functionname,
 							 &linenr);
 
-			if (ret == true && linenr != 0 &&
-			    strcmp(functionname,
-				   syms[sym_idx].name()) == 0) {
+			if (ret == true && linenr != 0
+				&& syms[sym_idx].name() == string(functionname)) {
 				return ret;	// we win
 			}
 		}
@@ -397,7 +398,7 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 {
 	op_bfd_symbol const & sym = syms[sym_idx];
 
-	verbprintf("Symbol %s, value 0x%x\n", sym.name(), sym.value()); 
+	verbprintf("Symbol %s, value 0x%x\n", sym.name().c_str(), sym.value()); 
 	start = sym.filepos();
 	if (sym.symbol()) {
 		verbprintf("in section %s, filepos 0x%lx\n", sym.symbol()->section->name, sym.symbol()->section->filepos);
@@ -432,7 +433,7 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 symbol_index_t op_bfd::symbol_index(char const * symbol) const
 {
 	for (symbol_index_t i = 0; i < syms.size(); i++) {
-		if (!strcmp(syms[i].name(), symbol))
+		if (syms[i].name() == string(symbol))
 			return i;
 	}
 
@@ -455,14 +456,14 @@ void op_bfd::get_vma_range(u32 & start, u32 & end) const
 
 void op_bfd::create_artificial_symbol(u32 start, u32 end)
 {
-	size_t sz_str = strlen(bfd_get_filename(ibfd) + 1 + 1);
-	/* this is a memory leak for now */
-	char * const name = new char [sz_str];
+	// FIXME: prefer a bool artificial; to this ?? 
+	string symname = "?";
 
-	strcpy(name, "?");
-	strcat(name, bfd_get_filename(ibfd));
-
-	op_bfd_symbol symbol(0, 0, start, 0, end - start, name);
+	char * const name = bfd_get_filename(ibfd);
+	if (name) 
+		symname += name;
+ 
+	op_bfd_symbol symbol(0, 0, start, 0, end - start, symname);
 
 	syms.push_back(symbol);
 }

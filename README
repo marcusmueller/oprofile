@@ -1,7 +1,7 @@
 This is an alpha release version of oprofile, a transparent
 low-overhead system-wide profiler.
 
-You can find some documentation in the doc/oprofile/ directory.
+You can find some documentation in the doc/ directory.
 
 Please visit the oprofile website at : http://oprofile.sf.net/ 
 
@@ -9,8 +9,10 @@ oprofile was written by John Levon <moz@compsoc.man.ac.uk>.
 
 Philippe Elie <ph_e@club-internet.fr> contributed many bug fixes,
 started the Qt2 oprofile interface, wrote the source annotation facility,
-and more.
+and much more.
 
 Dave Jones <davej@suse.de> provided bug fixes and the Athlon support.
 
 Bob Montgomery <bobm@fc.hp.com> provided bug fixes and useful testing.
+
+Other contributors are listed in the ChangeLog. 

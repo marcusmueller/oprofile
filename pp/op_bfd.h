@@ -34,7 +34,7 @@ class op_bfd_symbol {
 public:
 
 	op_bfd_symbol(asymbol const * a, u32 value, u32 filepos, u32 sect_vma,
-		      u32 size, char const * name)
+		      u32 size, std::string name)
 		:
 		bfd_symbol(a),
 		symb_value(value),
@@ -46,7 +46,7 @@ public:
 	u32 vma() const { return symb_value + section_vma; }
 	u32 value() const { return symb_value; }
 	u32 filepos() const { return symb_value + section_filepos; }
-	char const * name() const { return symb_name; }
+	std::string const & name() const { return symb_name; }
 	asymbol const * symbol() const { return bfd_symbol; }
 	size_t size() const { return symb_size; }
 
@@ -64,7 +64,7 @@ private:
 	/// the size of this symbol
 	size_t symb_size;
 	/// the name of the symbol
-	char const * symb_name;
+	std::string symb_name;
 };
 
 /** Encapsulation of a bfd object. Simplify open/close of bfd, enumerating
@@ -78,7 +78,7 @@ public:
 	 * All error are fatal.
 	 *
 	 */
-	op_bfd(bool is_kernel, const std::string & filename);
+	op_bfd(bool is_kernel, std::string const & filename);
 
 	/** close an opended bfd image and free all related resource. */
 	~op_bfd();
@@ -163,7 +163,7 @@ private:
 	// by this value.
 	u32 text_offset;
 	// ctor helper
-	void open_bfd_image(const std::string & file_name, bool is_kernel);
+	void open_bfd_image(std::string const & file_name, bool is_kernel);
 	bool get_symbols();
 
 	/**
