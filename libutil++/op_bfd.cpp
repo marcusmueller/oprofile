@@ -150,11 +150,11 @@ bool interesting_symbol(asymbol * sym)
 	if (sym->name[0] == '.' && sym->name[1] == 'L')
 		return false;
 
-	// This is still necessary because the symbol
-	// sits at the same VMA as a real function,
-	// so we can end up dropping the real function
-	// symbol when we remove duplicate VMAs in our
-	// caller.
+	/* This case cannot be moved to boring_symbol(),
+	 * because that's only used for duplicate VMAs,
+	 * and sometimes this symbol appears at an address
+	 * different from all other symbols.
+	 */
 	if (!strcmp("gcc2_compiled.", sym->name))
 		return false;
 

@@ -1,3 +1,8 @@
+2003-08-21  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_bfd.cpp: update gcc2_compiled. comment
+	to reflect reality
+
 2003-08-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opreport.cpp: really merge when --merge=lib and image name are
