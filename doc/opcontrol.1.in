@@ -75,25 +75,12 @@ Shut down daemon. Unload the oprofile module and oprofilefs.
 Set kernel buffer to num samples.
 .br
 .TP
-.BI "--ctrN-event="[name|none]
-Set counter N to measure symbolic event name, or to the
-string 'none' to disable the counter.
-.br
-.TP
-.BI "--ctrN-count="val
-Number of events between samples for counter N.
-.br
-.TP
-.BI "--ctrN-unit-mask="val
-Set unit mask for counter N (e.g. --ctr0-unit-mask=0xf).
-.br
-.TP
-.BI "--ctrN-kernel="[0|1]
-Count events in kernel mode when 1, do not count when 0 (default 1).
-.br
-.TP
-.BI "--ctrN-user="[0|1]
-Count events in user mode when 1, do not count when 0 (default 1).
+.BI "--event="[event|"default"]
+Add an event to measure for the hardware performance counters,
+or "default" for the default event. The event is of the form
+"CPU_CLK_UNHALTED:30000:0:1:1" where the numeric values are
+count, unit mask, user-space counting, kernel-space counting,
+respectively.
 .br
 .TP
 .BI "--pid-filter="pid

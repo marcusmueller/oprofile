@@ -15,6 +15,10 @@
 
 2003-07-29  John Levon  <levon@movementarian.org>
 
+	* doc/opcontrol.1.in: update for --event
+
+2003-07-29  John Levon  <levon@movementarian.org>
+
 	* configure.in:
 	* doc/srcdoc/Doxyfile.in:
 	* oprof_report/: remove badly out of date oprof_report
