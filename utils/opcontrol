@@ -371,6 +371,8 @@ validate_separate_args() {
 				SEPARATE_LIB_SAMPLES=1
 				;;
 			kernel)
+				# first implied by second
+				SEPARATE_LIB_SAMPLES=1 
 				SEPARATE_KERNEL_SAMPLES=1
 				;;
 			all)
