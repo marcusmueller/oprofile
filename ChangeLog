@@ -1,3 +1,17 @@
+2001-09-16  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/opf_filter.cpp: minor tidy
+
+	* gui/oprof_start.base.ui: new oprof_start gui
+	* gui/oprof_start.cpp: new, derived class of oprof_start_base
+	* gui/oprof_start.h: ditto
+	* gui/oprof_start_impl.cpp: implementation of oprof_start class
+	* gui/oprof_start_config.cpp: utilities function for oprof_start
+	* gui/oprof_start_config.h: ditto
+	* gui/persistent_config.h: utility template
+	* gui/oprof_start_main.cpp: main() for oprof_start
+	* gui/Makefile.in: handle this stuff
+
 2001-09-15  John Levon  <moz@compsoc.man.ac.uk>
 
 	* pp/oprofpp.c: some cleanup
