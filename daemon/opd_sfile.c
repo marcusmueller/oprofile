@@ -207,7 +207,14 @@ static size_t cg_hash(cookie_t from, cookie_t to, size_t counter)
 static samples_odb_t * get_file(struct sfile * sf, struct sfile * last,
                                 uint counter, int cg)
 {
-	samples_odb_t * file = &sf->files[counter];
+	samples_odb_t * file;
+
+	if (counter >= OP_MAX_COUNTERS) {
+		fprintf(stderr, "Invalid counter %u\n", counter);
+		abort();
+	}
+
+	file = &sf->files[counter];
 
 	if (cg) {
 		struct cg_hash_entry * temp;

@@ -1,5 +1,9 @@
 2004-01-20  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* daemon/opd_sfile.c: (getfile()) avoid out of bound sf->files[] access
+
+2004-01-20  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libpp/callgraph_container.cpp: tweak comparator to sort arcs.
 	* pp/common_option.cpp: typo.
 
