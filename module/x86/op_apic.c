@@ -8,6 +8,8 @@
  *
  * @author John Levon
  * @author Philippe Elie
+ * @author Dave Jones
+ * @author Graydon Hoare
  */
 
 #include <linux/mm.h>
@@ -19,8 +21,8 @@
 #include "op_msr.h"
 #include "op_apic.h"
 
-static ulong idt_addr;
-static ulong kernel_nmi;
+/* used to save/restore original kernel nmi */
+static struct gate_struct kernel_nmi;
 static ulong lvtpc_masked;
 
 /* this masking code is unsafe and nasty but might deal with the small
@@ -28,7 +30,7 @@ static ulong lvtpc_masked;
  */
 static void mask_lvtpc(void * e)
 {
-	ulong v = apic_read(APIC_LVTPC);
+	u32 v = apic_read(APIC_LVTPC);
 	lvtpc_masked = v & APIC_LVT_MASKED;
 	apic_write(APIC_LVTPC, v | APIC_LVT_MASKED);
 }
@@ -39,34 +41,39 @@ static void unmask_lvtpc(void * e)
 		apic_write(APIC_LVTPC, apic_read(APIC_LVTPC) & ~APIC_LVT_MASKED);
 }
 
+
 void install_nmi(void)
 {
-	volatile struct _descr descr = { 0, 0,};
-	volatile struct _idt_descr *de;
+	struct _descr descr;
 
-	store_idt(descr);
-	idt_addr = descr.base;
-	de = (struct _idt_descr *)idt_addr;
-	/* NMI handler is at idt_table[2] */
-	de += 2;
-	/* see Intel Vol.3 Figure 5-2, interrupt gate */
-	kernel_nmi = (de->a & 0xffff) | (de->b & 0xffff0000);
+	/* NMI handler is at idt_table[IDT_VECTOR_NUMBER]            */
+	/* see Intel Vol.3 Figure 5-2, interrupt gate                */
 
 	smp_call_function(mask_lvtpc, NULL, 0, 1);
 	mask_lvtpc(NULL);
-	_set_gate(de, 14, 0, &op_nmi);
+
+	store_idt(descr);
+	kernel_nmi = descr.base[NMI_VECTOR_NUM];
+	_set_gate(&descr.base[NMI_VECTOR_NUM], &op_nmi);
+
 	smp_call_function(unmask_lvtpc, NULL, 0, 1);
 	unmask_lvtpc(NULL);
 }
 
 void restore_nmi(void)
 {
+	struct _descr descr;
+
 	smp_call_function(mask_lvtpc, NULL, 0, 1);
 	mask_lvtpc(NULL);
-	_set_gate(((char *)(idt_addr)) + 16, 14, 0, kernel_nmi);
+
+	store_idt(descr);
+	descr.base[NMI_VECTOR_NUM] = kernel_nmi;
+
 	smp_call_function(unmask_lvtpc, NULL, 0, 1);
 	unmask_lvtpc(NULL);
 }
+
 
 /* ---------------- APIC setup ------------------ */
 static uint saved_lvtpc[NR_CPUS];
@@ -119,11 +126,11 @@ static int __init enable_apic(void)
 	/* IA32 V3, 7.4.15 */
 	val = apic_read(APIC_LVR);
 	if (!APIC_INTEGRATED(GET_APIC_VERSION(val)))
-		goto not_local_p6_apic;
+		goto not_local_apic;
 
 	/* LVT0,LVT1,LVTT,LVTPC */
 	if (GET_APIC_MAXLVT(apic_read(APIC_LVR)) < 4)
-		goto not_local_p6_apic;
+		goto not_local_apic;
 
 	/* IA32 V3, 7.4.14.1 */
 	val = apic_read(APIC_SPIV);
@@ -132,13 +139,13 @@ static int __init enable_apic(void)
 
 	return !!(val & APIC_SPIV_APIC_ENABLED);
 
-not_local_p6_apic:
+not_local_apic:
 	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
 	/* disable the apic only if it was disabled */
 	if ((msr_low & (1 << 11)) == 0)
 		wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
 
-	printk(KERN_ERR "oprofile: no local P6 APIC. Falling back to RTC mode.\n");
+	printk(KERN_ERR "oprofile: no suitable local APIC. Falling back to RTC mode.\n");
 	return -ENODEV;
 }
 
@@ -189,6 +196,7 @@ static int __init check_cpu_ok(void)
 		sysctl.cpu_type != CPU_PII &&
 		sysctl.cpu_type != CPU_PIII &&
 		sysctl.cpu_type != CPU_ATHLON &&
+		sysctl.cpu_type != CPU_HAMMER &&
 		sysctl.cpu_type != CPU_P4)
 		return 0;
 
@@ -197,7 +205,7 @@ static int __init check_cpu_ok(void)
 
 int __init apic_setup(void)
 {
-	uint val;
+	u32 val;
 
 	if (!check_cpu_ok())
 		goto nodev;

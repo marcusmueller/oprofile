@@ -18,8 +18,15 @@ endif
 O_TARGET := arch.o
 
 obj-y := cpu_type.o op_apic.o op_fixmap.o op_rtc.o op_nmi.o \
-	op_syscalls.o op_model_ppro.o op_model_athlon.o \
-	op_model_p4.o oprofile_nmi.o
+	op_model_ppro.o op_model_athlon.o op_model_p4.o 
+
+ifeq "@BUILD_HAMMER@" "yes"
+obj-y += hammer_oprofile_nmi.o hammer_op_syscalls.o hammer_entry.o hammer_ia32entry.o
+EXTRA_CFLAGS += -D__KERNEL__ -mcmodel=kernel 
+else
+obj-y += oprofile_nmi.o op_syscalls.o
+endif
+
 obj-m := $(O_TARGET)
 O_OBJS := $(obj-y)
 M_OBJS := $(O_TARGET)

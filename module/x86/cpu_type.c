@@ -9,11 +9,13 @@
  * @author Philippe Elie
  */
 
-#include <asm/smpboot.h>
-#include <linux/smp.h>
-
 #include "oprofile.h"
 #include "op_msr.h"
+
+#ifndef CONFIG_X86_64
+#include <asm/smpboot.h>
+#endif
+#include <linux/smp.h>
 
 EXPORT_NO_SYMBOLS;
 
@@ -121,10 +123,10 @@ __init op_cpu get_cpu_type(void)
 
 	switch (vendor) {
 		case X86_VENDOR_AMD:
-			/* Needs to be at least an Athlon (or hammer in 32bit mode) */
 			if (family < 6)
 				return CPU_RTC;
-			/* FIXME: Test for hammer in longmode and warn. */
+			if (family == 15)
+				return CPU_HAMMER;
 			return CPU_ATHLON;
 
 		case X86_VENDOR_INTEL:

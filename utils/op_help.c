@@ -148,7 +148,9 @@ int main(int argc, char const *argv[])
 
 	printf("oprofile: available events\n");
 	printf("--------------------------\n\n");
-	switch (cpu_type){
+	switch (cpu_type) {
+	case CPU_HAMMER:
+		break;
 	case CPU_ATHLON:
 		printf ("See AMD document x86 optimisation guide (22007.pdf), Appendix D\n\n");
 		break;

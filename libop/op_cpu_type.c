@@ -57,7 +57,8 @@ static char const * cpu_names[MAX_CPU_TYPE] = {
 	"P4 / Xeon",
 	"IA64",
 	"Itanium",
-	"Itanium 2"
+	"Itanium 2",
+	"Hammer"
 };
  
 
@@ -88,7 +89,8 @@ static int cpu_nr_counters[MAX_CPU_TYPE] = {
 	8, /* P4 / Xeon */
 	4, /* IA64 */
 	4, /* IA64 (Merced) */
-	4  /* IA64 (McKinley) */
+	4, /* IA64 (McKinley) */
+	4  /* Hammer */
 };
 
 /**

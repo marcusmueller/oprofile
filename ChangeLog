@@ -1,3 +1,33 @@
+2002-11-13  Graydon Hoare  <graydon@redhat.com>
+
+	( this changeset is mostly Dave Jones' work )
+
+	* README:
+	* TODO:
+	* configure.in:
+	* doc/oprofile.xml:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/op_help.c:
+	* module/compat.h:
+	* module/compat24.h:
+	* module/op_util.c:
+	* module/x86/Makefile.in:
+	* module/x86/apic_compat.h:
+	* module/x86/arch.h:
+	* module/x86/cpu_type.c:
+	* module/x86/op_fixmap.c:
+	* module/x86/op_nmi.c: minor additions for hammer support.
+
+	* module/x86/op_apic.c:
+	* module/x86/op_apic.h: major cleanup; add hammer support.
+	
+	* module/x86/hammer_entry.S:
+	* module/x86/hammer_ia32entry.S:
+	* module/x86/hammer_op_syscalls.c:
+	* module/x86/hammer_oprofile_nmi.S: new hammer support files.
+
 2002-11-14  John Levon  <levon@movementarian.org>
 
 	* configure.in: hack around case where clean checkout

@@ -19,10 +19,12 @@
 #include "oprofile.h"
 #include "apic_compat.h"
 
+#ifndef cpu_has_pge
 #if V_BEFORE(2, 4, 0)
 #define cpu_has_pge (test_bit(X86_FEATURE_PGE, &boot_cpu_data.x86_capability)) 
 #else
 #define cpu_has_pge (test_bit(X86_FEATURE_PGE, boot_cpu_data.x86_capability))
+#endif
 #endif
 
 unsigned long virt_apic_base;

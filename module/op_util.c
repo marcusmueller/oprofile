@@ -59,7 +59,7 @@ void * rvmalloc(signed long size)
 	void * mem;
 	unsigned long adr, page;
 
-	mem = vmalloc_32(size);
+	mem = VMALLOC_32(size);
 	if (!mem)
 		return NULL;
 

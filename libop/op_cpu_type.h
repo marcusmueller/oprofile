@@ -29,6 +29,7 @@ typedef enum {
 	CPU_IA64, /**< Generic IA64 */
 	CPU_IA64_1, /**< IA64 Merced */
 	CPU_IA64_2, /**< IA64 McKinley */
+	CPU_HAMMER, /**< AMD Hammer family */
 	MAX_CPU_TYPE
 } op_cpu;
 

@@ -60,4 +60,10 @@
 	#endif
 #endif
 
+#ifndef CONFIG_X86_64
+#define VMALLOC_32(sz) vmalloc_32(sz)
+#else /* CONFIG_X86_64 */
+#define VMALLOC_32(sz) vmalloc(sz)
+#endif /* CONFIG_X86_64 */
+
 #endif /* COMPAT_H */

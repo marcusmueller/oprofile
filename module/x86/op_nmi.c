@@ -25,6 +25,7 @@ static struct op_x86_model_spec const * get_model(void)
 		/* pick out our per-model function table */
 		switch (sysctl.cpu_type) {
 		case CPU_ATHLON:
+		case CPU_HAMMER:
 			model = &op_athlon_spec;
 			break;
 		case CPU_P4:

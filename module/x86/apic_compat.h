@@ -67,12 +67,12 @@ extern unsigned long virt_apic_base;
 
 static __inline void apic_write(unsigned long reg, unsigned long v)
 {
-	*((volatile unsigned long *)(APIC_BASE+reg)) = v;
+	*((volatile u32 *)(APIC_BASE+reg)) = v;
 }
 
 static __inline unsigned long apic_read(unsigned long reg)
 {
-	return *((volatile unsigned long *)(APIC_BASE+reg));
+	return *((volatile u32 *)(APIC_BASE+reg));
 }
 
 #endif /* !defined(CONFIG_X86_LOCAL_APIC) */

@@ -45,7 +45,9 @@ necks in real-world systems.
 			OProfile uses a kernel module that can be compiled for
 			2.2.11 or later and 2.4. Support for Linux 2.5.45 is also provided but has not been extensively tested.
 			Versions 2.4.10 or above are recommended, and required if you use the
-			boot-time kernel option <option>nosmp</option>.
+			boot-time kernel option <option>nosmp</option>. AMD Hammer support requires a recent (>= 2.4.19) kernel
+			with the line <constant>EXPORT_SYMBOL(do_fork);</constant> present in <filename>kernel/ksyms.c</filename>.
+			Such a kernel is present in the <ulink url="http://www.x86-64.org">x86-64.org</ulink> CVS repository.
 <!-- FIXME: do we require always gte 2.4.10 for nosmp ? -->
 		</listitem>
 	</varlistentry>
@@ -57,19 +59,17 @@ necks in real-world systems.
 		</listitem>
 	</varlistentry>
 	<varlistentry>
-		<term>Intel P6 processor, Pentium 4 / Xeon, AMD Athlon/Duron, or
+		<term>Intel P6 processor, Pentium 4 / Xeon, AMD Athlon/Duron, AMD Hammer, or
 		Intel Itanium 2.</term>
 		<listitem>
-
-			A CPU with either a P6 generation or Pentium 4 core is
+			For Intel IA32, a CPU with either a P6 generation or Pentium 4 core is
 			required. In marketing terms this translates to anything
 			between an Intel Pentium Pro (NOT Pentium Classics) and
 			a Pentium 4 / Xeon, including all Celerons.  The AMD
-			Athlon and Duron CPUs are also supported.  Other IA32
+			Athlon, Duron, and Hammer CPUs are also supported.  Other IA32
 			CPU types only support the RTC mode of oprofile, please
 			see later in this manual for details.  The Itanium 2
 			support uses the performance monitor unit in the processor.
-    
 		</listitem>
 	</varlistentry>
 	<varlistentry>

@@ -12,7 +12,11 @@
 #define ARCH_H
 
 /* How to access the processor's instruction pointer */
+#ifdef CONFIG_X86_64
+#define INST_PTR(regs) ((regs)->rip)
+#else
 #define INST_PTR(regs) ((regs)->eip)
+#endif
 
 /* How to access the processor's status register */
 #define STATUS(regs) ((regs)->eflags)

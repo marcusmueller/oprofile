@@ -11,7 +11,8 @@ Philippe Elie <phil.el@wanadoo.fr> contributed many bug fixes,
 started the Qt2 oprofile interface, wrote the source annotation facility,
 and much more.
 
-Dave Jones <davej@suse.de> provided bug fixes and the Athlon support.
+Dave Jones <davej@suse.de> provided bug fixes and support for
+the AMD Athlon, and AMD Hammer families of CPUs.
 
 Bob Montgomery <bobm@fc.hp.com> provided bug fixes, the initial RTC
 driver and the initial ia64 driver.
