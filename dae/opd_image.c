@@ -284,24 +284,27 @@ static struct opd_image * opd_find_image(char const * name, int hash, char const
 		}
 	}
 
-	if (pos != &opd_images) {
-		/* we can have hashless images from /proc/pid parsing */
-		if (hash != -1) {
-			image->hash = hash;
-			if (image->hash_next) {	/* paranoia check */
-				printf("error: image->hash_next != NULL and image->hash == -1\n");
-				exit(EXIT_FAILURE);
-			}
+	if (pos == &opd_images)
+       		return NULL;
 
-			image->hash_next = images_with_hash[hash];
-			images_with_hash[hash] = image;
-		}
-
-		/* The app_name field is always valid */
+	/* we can be looking up without a hash from /proc/pid parsing
+	 * and kernel. 
+	 */
+	if (hash == -1)
 		return image;
+
+	/* Now we should hash the image. Paranoia check */
+	if (image->hash_next) {
+		printf("error: image is already hashed !\n");
+		exit(EXIT_FAILURE);
 	}
 
-	return NULL;
+	image->hash = hash;
+	image->hash_next = images_with_hash[hash];
+	images_with_hash[hash] = image;
+
+	/* The app_name field is always valid */
+	return image;
 }
 
  
