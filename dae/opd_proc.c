@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.61 2001/08/14 18:02:33 movement Exp $ */
+/* $Id: opd_proc.c,v 1.62 2001/08/15 13:40:23 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1367,6 +1367,8 @@ static void opd_get_ascii_maps(struct opd_proc *proc)
 			opd_free(line);
 		}
 	} while (1);
+
+	opd_close_file(fp);
 }
 
 /**

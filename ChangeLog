@@ -1,3 +1,7 @@
+2001-08-15  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/opd_proc.c: fix a FILE* leak in opd_get_ascii_maps()
+
 2001-08-14  John Levon  <moz@compsoc.man.ac.uk>
 
 	* op_syscalls.c: don't return negative hashes !
@@ -230,7 +234,7 @@
 2001-07-14  John Levon  <moz@compsoc.man.ac.uk>
 
 	* Makefile.in: dist fix
- 
+
 2001-07-14  John Levon  <moz@compsoc.man.ac.uk>
 
 	* doc/oprofile.sgml: make it clear we want vmlinux not vmlinuz
