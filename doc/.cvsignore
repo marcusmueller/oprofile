@@ -8,6 +8,6 @@ labels.pl
 WARNINGS
 Makefile
 Makefile.in
-oprofile.1
+*.1
 oprofile
 oprofile.junk

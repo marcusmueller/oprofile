@@ -1,5 +1,13 @@
 2002-11-09  John Levon  <levon@movementarian.org>
 
+	* configure.in: fix --with-kernel-support
+ 
+	* doc/.cvsignore: add *.1
+
+	* libabi/Makefile.am: don't install abi_test
+ 
+2002-11-09  John Levon  <levon@movementarian.org>
+
 	* all cvsignore: add Makefile.in
  
 	* gui/Makefile.am: move EXTRA_DIST out of qt check
