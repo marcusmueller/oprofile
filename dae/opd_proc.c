@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.16 2000/08/22 13:41:10 moz Exp $ */
+/* $Id: opd_proc.c,v 1.17 2000/08/24 17:46:49 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -1037,12 +1037,12 @@ void opd_handle_mapping(const struct op_sample *sample)
 
 			strcat(file,"/");
 
-			if (strlen(hash_access(hash))+1 >= PATH_MAX) {
+			if (strlen(&hash_access(hash))+1 >= PATH_MAX) {
 				fprintf(stderr,"String \"%s\" too large.\n",file);
 				exit(1);
 			}
 
-			strcat(file,hash_access(hash));
+			strcat(file,&hash_access(hash));
 		}
 
 		printf("Mapping from 0x%x, size 0x%x, offset 0x%x, of file $%s$\n",
