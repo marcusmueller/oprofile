@@ -416,7 +416,6 @@ void sfile_close_files(void)
 	list_for_each(pos, &lru_list) {
 		sf = list_entry(pos, struct sfile, lru);
 		for (i = 0; i < op_nr_counters; ++i) {
-			printf("odb_close normal %d\n", i);
 			odb_close(&sf->files[i]);
 		}
 
@@ -425,7 +424,6 @@ void sfile_close_files(void)
 			list_for_each(pos, &sf->cg_files[i]) {
 				struct cg_hash_entry * temp = list_entry(pos,
 					struct cg_hash_entry, next);
-				printf("odb_close cg\n");
 				odb_close(&temp->file);
 			}
 		}

@@ -30,6 +30,7 @@ libpp_a_SOURCES = \
 	name_storage.h \
 	op_header.cpp \
 	op_header.h \
+	symbol.cpp \
 	symbol.h \
 	parse_filename.cpp \
 	parse_filename.h \

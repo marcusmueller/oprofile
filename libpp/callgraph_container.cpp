@@ -289,6 +289,22 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles,
 }
 
 
+column_flags callgraph_container::output_hint() const
+{
+	column_flags output_hints = cf_none;
+
+	// FIXME: costly must we access directly recorder.caller_callee map ?
+	vector<cg_symbol> arcs = recorder.get_arc();
+
+	vector<cg_symbol>::const_iterator it;
+	vector<cg_symbol>::const_iterator const end = arcs.end();
+	for (it = arcs.begin(); it != end; ++it)
+		output_hints = it->output_hint(output_hints);
+
+	return output_hints;
+}
+
+
 void callgraph_container::
 add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
    op_bfd const & callee, string const & app_name,

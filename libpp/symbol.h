@@ -2,7 +2,7 @@
  * @file symbol.h
  * Symbol containers
  *
- * @remark Copyright 2002 OProfile authors
+ * @remark Copyright 2002, 2004 OProfile authors
  * @remark Read the file COPYING
  *
  * @author Philippe Elie
@@ -14,6 +14,7 @@
 
 #include "name_storage.h"
 #include "count_array.h"
+#include "format_flags.h"
 
 #include <bfd.h>
 
@@ -62,6 +63,15 @@ struct symbol_entry {
 	symbol_name_id name;
 	/// symbol size as calculated by op_bfd, start of symbol is sample.vma
 	size_t size;
+
+	/**
+	 * @param fl  input hint
+	 *
+	 * combine fl with the calculated hint. It's theoretically possible
+	 * that we get a symbol where its samples pass the border line, but
+	 * the start is below it, but the the hint is only used for formatting
+	 */
+	column_flags output_hint(column_flags fl) const;
 };
 
 #endif /* !SYMBOL_H */

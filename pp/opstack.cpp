@@ -27,7 +27,7 @@ callgraph_container cg_container;
 // Debug. Note : no \n at end of output
 ostream & operator<<(ostream & out, symbol_entry const & symbol)
 {
-#if 0
+#if 1
 	out << symbol_names.demangle(symbol.name)
 	    << " " << hex << symbol.sample.vma
 	    << " " << image_names.name(symbol.app_name)
@@ -82,7 +82,11 @@ int opstack(vector<string> const & non_options)
 
 	cg_container.populate(iprofiles, options::extra_found_images);
 
+	column_flags hint = cg_container.output_hint();
+
 	dump(cout, cg_container);
+
+	cout << hint << endl;
 
 	return 0;
 }

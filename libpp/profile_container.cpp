@@ -172,21 +172,7 @@ profile_container::select_symbols(symbol_choice & choice) const
 		if (percent >= threshold) {
 			result.push_back(&*it);
 
-			if (it->app_name != it->image_name) {
-				choice.hints = column_flags(
-					choice.hints | cf_image_name);
-			}
-
-			/**
-			 * It's theoretically possible that we get a
-			 * symbol where its samples pass the border
-			 * line, but the start is below it, but the
-			 * the hint is only used for formatting
-			 */
-			if (it->sample.vma & ~0xffffffffLLU) {
-				choice.hints = column_flags(
-					choice.hints | cf_64bit_vma);
-			}
+			choice.hints = it->output_hint(choice.hints);
 		}
 	}
 

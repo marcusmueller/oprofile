@@ -21,6 +21,7 @@
 #include "profile_container.h"
 #include "symbol.h"
 #include "symbol_functors.h"
+#include "format_flags.h"
 
 class inverted_profile;
 class extra_images;
@@ -87,6 +88,8 @@ public:
 	 */
 	void populate(std::list<inverted_profile> const & iprofiles,
 		      extra_images const & extra);
+
+	column_flags output_hint() const;
 
 	/// These just dispatch to arc_recorder. It's the way client
 	/// code acquires results.
