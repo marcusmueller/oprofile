@@ -14,9 +14,10 @@ dist_sources = \
 	opd_interface.h \
 	opd_mangling.c \
 	opd_mangling.h \
-	opd_perfmon.h
+	opd_perfmon.h \
+	opd_perfmon.c
 
-EXTRA_DIST = $(dist_sources) opd_perfmon.c
+EXTRA_DIST = $(dist_sources)
 
 LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
 

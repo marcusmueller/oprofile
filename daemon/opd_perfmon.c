@@ -10,9 +10,6 @@
 
 #ifdef __ia64__
 
-#error sorry, this code is very broken.
-#error it will not work and may well hang your machine
-
 #include "opd_util.h"
 #include "opd_perfmon.h"
 
@@ -20,6 +17,7 @@
 #include "op_hw_config.h"
 
 #include <sys/syscall.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <limits.h>
 #include <signal.h>
@@ -246,8 +244,13 @@ static void run_child(size_t cpu)
 	for (;;) {
 		ssize_t ret;
 		ret = write(self->up_pipe[1], &cpu, sizeof(size_t));
-		if (ret > 0 || (ret == -1 && errno != EINTR))
+		if (ret == sizeof(size_t))
 			break;
+		if (ret < 0 && errno != EINTR) {
+			fprintf(stderr, "Failed to write child pipe with %s\n",
+			        strerror(errno));
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	for (;;) {
@@ -282,8 +285,13 @@ static void wait_for_child(struct child * child)
 	for (;;) {
 		ssize_t ret;
 		ret = read(child->up_pipe[0], &tmp, sizeof(size_t));
-		if (ret > 0 || (ret == -1 && errno != EINTR))
+		if (ret == sizeof(size_t))
 			break;
+		if (ret < 0 && errno != EINTR) {
+			fprintf(stderr, "Failed to read child pipe with %s\n",
+			        strerror(errno));
+			exit(EXIT_FAILURE);
+		}
 	}
 	printf("Perfmon child up on CPU%d\n", (int)tmp);
 	fflush(stdout);
@@ -337,8 +345,10 @@ void perfmon_exit(void)
 {
 	size_t i;
 
-	for (i = 0; i < nr_cpus; ++i)
+	for (i = 0; i < nr_cpus; ++i) {
 		kill(children[i].pid, SIGKILL);
+		waitpid(children[i].pid, NULL, 0);
+	}
 }
 
 

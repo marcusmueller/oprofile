@@ -187,12 +187,14 @@ static void opd_do_read(char * buf, size_t size)
 
 			if (signal_usr1) {
 				signal_usr1 = 0;
-				perfmon_start();
+				if (cpu_type != CPU_TIMER_INT)
+					perfmon_start();
 			}
 
 			if (signal_usr2) {
 				signal_usr2 = 0;
-				perfmon_stop();
+				if (cpu_type != CPU_TIMER_INT)
+					perfmon_stop();
 			}
 		}
 
@@ -224,7 +226,8 @@ static void opd_sighup(void)
 
 static void clean_exit(void)
 {
-	perfmon_exit();
+	if (cpu_type != CPU_TIMER_INT)
+		perfmon_exit();
 	unlink(OP_LOCK_FILE);
 }
 
@@ -268,7 +271,9 @@ int main(int argc, char const * argv[])
 	for (i = 0; i < OPD_MAX_STATS; i++)
 		opd_stats[i] = 0;
 
-	perfmon_init();
+	if (cpu_type != CPU_TIMER_INT)
+		perfmon_init();
+
 	cookie_init();
 	sfile_init();
 

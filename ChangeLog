@@ -1,3 +1,12 @@
+2003-10-22  John Levon  <levon@movementarian.org>
+
+	* daemon/Makefile.am:
+	* daemon/opd_perfmon.h:
+	* daemon/opd_perfmon.c: re-enable. Wait for children.
+	More safety checking.
+
+	* daemon/oprofiled.c: only use perfmon if !timer
+
 2003-10-20  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/oprofile.xml:
