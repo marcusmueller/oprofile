@@ -169,7 +169,7 @@ char const * verbose_cookie(cookie_t cookie)
 	if (cookie == INVALID_COOKIE)
 		return "invalid";
 
-	list_for_each(pos, &hashes[hash]) {
+	list_for_each (pos, &hashes[hash]) {
 		entry = list_entry(pos, struct cookie_entry, list);
 		if (entry->value == cookie) {
 			if (!entry->name)

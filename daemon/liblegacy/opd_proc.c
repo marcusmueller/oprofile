@@ -61,7 +61,7 @@ int opd_get_nr_procs(void)
 inline static uint proc_hash(pid_t tid)
 {
 	/* FIXME: hash tgid too! */
-	return ((tid>>4) ^ (tid)) % OPD_MAX_PROC_HASH;
+	return ((tid >> 4) ^ (tid)) % OPD_MAX_PROC_HASH;
 }
 
 

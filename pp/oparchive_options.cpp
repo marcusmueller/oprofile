@@ -31,10 +31,10 @@ profile_classes classes;
 std::list<std::string> sample_files;
 
 namespace options {
-	std::string archive_path;
+	string archive_path;
 	bool exclude_dependent;
 	merge_option merge_by;
-	std::string outdirectory;
+	string outdirectory;
 }
 
 

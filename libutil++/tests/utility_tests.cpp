@@ -110,7 +110,7 @@ int main()
 		check_alloc();
 	}
 	catch (...) {
-		cerr <<"unknown exception\n";
+		cerr << "unknown exception\n";
 		return EXIT_FAILURE;
 	}
 

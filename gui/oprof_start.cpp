@@ -832,7 +832,7 @@ void oprof_start::on_start_profiler()
 		    cfg.umask == 0) {
 			ostringstream out;
 
-			out << "event " << descr.name<< " invalid unit mask: "
+			out << "event " << descr.name << " invalid unit mask: "
 			    << cfg.umask << endl;
 
 			QMessageBox::warning(this, 0, out.str().c_str());
