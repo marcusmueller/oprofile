@@ -415,13 +415,20 @@ static void output_symbols_count(map_t& files)
 			       (*it)->sample.file_loc.filename.c_str(),
 			       (*it)->sample.file_loc.linenr);
 */
-		printf("%s", (*it)->name.c_str());
+		int const is_anon = (*it)->name[0] == '?';
+
+		if (!is_anon)
+			printf("%s", (*it)->name.c_str());
 
 		u32 count = (*it)->sample.counter[ctr];
 
 		if (count) {
-			printf("[0x%.8lx]: %2.4f%% (%u samples)\n", 
-			       (*it)->sample.vma,
+			if (!is_anon)
+				printf("[0x%.8lx]: ", (*it)->sample.vma);
+			else
+				printf("(no symbols) "); 
+
+			printf("%2.4f%% (%u samples)\n", 
 			       (((double)count) / total_count)*100.0, 
 			       count);
 		} else {
