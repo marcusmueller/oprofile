@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.5 2000/08/16 20:14:49 moz Exp $ */
+/* $Id: opd_util.c,v 1.6 2000/08/21 19:28:49 moz Exp $ */
 
 /* for hton */ 
 #include <netinet/in.h> 
@@ -599,7 +599,7 @@ fd_t opd_open_device(const char *name, int fatal)
  
 	fd = open(name, O_RDONLY);
 	if (fatal && fd==-1) {
-		fprintf(stderr,"oprofiled:opd_open_device: %s: %s",name,strerror(errno)); 
+		fprintf(stderr,"oprofiled:opd_open_device: %s: %s\n",name,strerror(errno)); 
 		exit(1);
 	}
 
