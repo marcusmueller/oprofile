@@ -7,15 +7,17 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 -----------
 
  o gui: show default event if none selected, fix counter allocation stuff.
-  Test RTC on 2.4 and timer int on 2.5
+  Test RTC on 2.4
 
  o autoconf 2.13 is broken
 
 0.7 release
 -----------
 
+ o separate debug info stuff
+ o debian build stuff
  o side-by-side opreport output (--compare - needs UI spec)
- o thread profiling
+ o thread profiling (Ka is on this)
  o per-cpu profiling
  o we show a header but not column headers for image report
  o lib-image: and image: behavior depend on --separate=, if --separate=library
