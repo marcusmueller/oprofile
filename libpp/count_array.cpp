@@ -52,7 +52,7 @@ count_array_t & count_array_t::operator+=(count_array_t const & rhs)
 	if (rhs.size > size)
 		resize(rhs.size);
 
-	for (size_type i = 0 ; i < size ; ++i)
+	for (size_type i = 0 ; i < min(size, rhs.size) ; ++i)
 		container[i] += rhs.container[i];
 
 	return *this;
@@ -64,7 +64,7 @@ count_array_t & count_array_t::operator-=(count_array_t const & rhs)
 	if (rhs.size > size)
 		resize(rhs.size);
 
-	for (size_type i = 0 ; i < size ; ++i)
+	for (size_type i = 0 ; i < min(size, rhs.size) ; ++i)
 		container[i] -= rhs.container[i];
 
 	return *this;

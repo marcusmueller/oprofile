@@ -1,5 +1,9 @@
 2003-08-25  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/count_array.cpp: avoid to access invalid memory
+
+2003-08-25  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* configure.in:
 	* m4/builtinexpect.m4:
 	* m4/configmodule.m4:
