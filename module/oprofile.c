@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.18 2002/01/02 00:57:34 movement Exp $ */
+/* $Id: oprofile.c,v 1.19 2002/01/03 00:22:45 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -345,6 +345,11 @@ inline static void up_and_check_note(void)
 	note_pos++;
 	if (likely(note_pos < (sysctl.note_size - OP_PRE_NOTE_WATERMARK) && !is_ready()))
 		return;
+ 
+	if (unlikely(note_pos == sysctl.note_size)) {
+		note_pos = 0;
+	}
+ 
 	/* we just use cpu 0 as a convenient one to wake up */
 	oprof_ready[0] = 2;
 	wake_up(&oprof_wait);

@@ -1,5 +1,10 @@
 2002-01-03  John Levon  <moz@compsoc.man.ac.uk>
 
+	* module/oprofile.c: make sure note_pos never goes
+	  past the buffer :P
+ 
+2002-01-03  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/opd_util.c: allow EAGAINs through as well
  
 2002-01-02  Philippe Elie  <ph_e@club-internet.fr>
