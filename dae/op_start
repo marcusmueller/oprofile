@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.9 2000/08/28 17:09:22 moz Exp $
+# $Id: op_start,v 1.10 2000/08/31 23:09:28 moz Exp $
 
 # quick and ugly interface
 # op_start --help and op_start --list-events have info
@@ -68,6 +68,12 @@ then
 	exec op_help
 fi
 
+grep oprof /proc/devices >/dev/null
+if [ "$?" -eq 0 ]
+then
+	echo "Stopping profiling."
+	op_stop
+fi
 
 LOG_FILE=
 SAMPLES_DIR=
