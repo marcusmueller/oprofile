@@ -22,7 +22,7 @@
 
 #define RTC_IO_PORTS 2
 #define OP_RTC_MIN     2
-#define OP_RTC_MAX  4096 
+#define OP_RTC_MAX   4096 
 
 /* not in 2.2 */
 #ifndef RTC_IRQ

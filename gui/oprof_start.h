@@ -103,6 +103,9 @@ private:
 	/// set the unit mask widgets for given event
 	void setup_unit_masks(op_event_descr const & descr);
 
+	/// return the maximum perf counter value for the current cpu type
+	uint max_perf_count() const;
+
 	/// show an event's settings
 	void display_event(struct op_event_descr const * descrp);
  

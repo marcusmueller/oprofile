@@ -455,7 +455,7 @@ void oprof_start::display_event(struct op_event_descr const * descrp)
 	QString count_text;
 	count_text.setNum(cfg[descrp->name].count);
 	event_count_edit->setText(count_text);
-	event_count_validator->setRange(descrp->min_count, OP_MAX_PERF_COUNT);
+	event_count_validator->setRange(descrp->min_count, max_perf_count());
  
 	event_help_label->setText(descrp->help_str.c_str());
  
@@ -703,6 +703,11 @@ void oprof_start::setup_unit_masks(const op_event_descr & descr)
 	setup_config_tab->setMinimumSize(setup_config_tab->sizeHint());
 }
 
+uint oprof_start::max_perf_count() const
+{
+	return cpu_type == CPU_RTC ? OP_MAX_RTC_COUNT : OP_MAX_PERF_COUNT;
+}
+
 void oprof_start::on_flush_profiler_data()
 {
 	if (daemon_status().running)
@@ -745,13 +750,13 @@ void oprof_start::on_start_profiler()
 		}
 
 		if (cfg[descr->name].count < descr->min_count ||
-		    cfg[descr->name].count > OP_MAX_PERF_COUNT) {
+		    cfg[descr->name].count > max_perf_count()) {
 			std::ostringstream out;
 
 			out << "event " << descr->name << " count of range: "
 			    << cfg[descr->name].count << " must be in [ "
 			    << descr->min_count << ", "
-			    << OP_MAX_PERF_COUNT
+			    << max_perf_count()
 			    << "]";
 
 			QMessageBox::warning(this, 0, out.str().c_str());
