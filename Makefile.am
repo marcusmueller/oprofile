@@ -16,8 +16,8 @@ kernel_module:
 	(cd $(KSRC) && $(MAKE) SUBDIRS=$(OPROFILE_DIR)/module modules) || exit 1 ;
 
 install.kernel: kernel_module
-	-mkdir -p $(MODINSTALLDIR)
-	cp module/oprofile-module.o $(MODINSTALLDIR)/oprofile.o
+	-mkdir -p $(MODINSTALLDIR)/oprofile
+	cp module/oprofile-module.o $(MODINSTALLDIR)/oprofile/oprofile.o
 	if test $(KVERS) = "`uname -r`"; then depmod -a ; fi
 endif
 
