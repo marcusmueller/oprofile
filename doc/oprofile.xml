@@ -1733,27 +1733,42 @@ Show version.
 none: no demangling. normal: use default demangler (default) smart: use
 pattern-matching to make C++ symbol demangling more readable.
 </para></listitem></varlistentry>
+<varlistentry><term><option>--accumulated / -c</option></term><listitem><para>
+Accumulate sample and percentage counts in the symbol list.
+</para></listitem></varlistentry>
 <varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
 Do not include application-specific images for libraries, kernel modules
 and the kernel. This option only makes sense if the profile session
 used --separate.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
-Show help message.
-</para></listitem></varlistentry>
 <varlistentry><term><option>--image-path / -p [paths]</option></term><listitem><para>
 Comma-separated list of additional paths to search for binaries.
 This is needed to find modules in kernels 2.6 and upwards.
 </para></listitem></varlistentry>
+<varlistentry><term><option>--long-filenames / -l</option></term><listitem><para>
+Output full paths instead of basenames.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--debug-info / -g</option></term><listitem><para>
+Show source file and line for each symbol.
+</para></listitem></varlistentry>
 <varlistentry><term><option>--threshold / -t [percentage]</option></term><listitem><para>
 Only output data for symbols that have more than the given percentage
 of total samples.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--no-header</option></term><listitem><para>
+Don't output a header detailing profiling parameters.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--show-address / -w</option></term><listitem><para>
+Show the VMA address of each symbol (off by default).
 </para></listitem></varlistentry>
 <varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
 Give verbose debugging output.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--version / -v</option></term><listitem><para>
 Show version.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
+Show help message.
 </para></listitem></varlistentry>
 </variablelist>
 

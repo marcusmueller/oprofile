@@ -26,6 +26,11 @@ namespace options {
 	demangle_type demangle = dmt_normal;
 	bool exclude_dependent;
 	merge_option merge_by;
+	bool long_filenames;
+	bool show_header = true;
+	bool show_address;
+	bool debug_info;
+	bool accumulated;
 }
 
 
@@ -42,6 +47,16 @@ popt::option options_array[] = {
 		     "exclude libs, kernel, and module samples for applications"),
 	popt::option(mergespec, "merge", 'm',
 		     "comma separated list", "cpu,lib,tid,tgid,unitmask,all"),
+	popt::option(options::long_filenames, "long-filenames", 'f',
+		     "show the full path of filenames"),
+	popt::option(options::show_header, "no-header", 'n',
+		     "remove all headers from output"),
+	popt::option(options::show_address, "show-address", 'w',
+	             "show VMA address of each symbol"),
+	popt::option(options::debug_info, "debug-info", 'g',
+		     "add source file and line number to output"),
+	popt::option(options::accumulated, "accumulated", 'c',
+		     "percentage field show accumulated count"),
 };
 
 }  // anonymous namespace

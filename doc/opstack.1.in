@@ -17,9 +17,29 @@ x86-based box and a 2.6 kernel patch; see http://oprofile.sf.net/patches/.
 
 .SH OPTIONS
 .TP
+.BI "--accumulated / -c"
+Accumulate sample and percentage counts in the symbol list.
+.br
+.TP
+.BI "--debug-info / -g"
+Show source file and line for each symbol.
+.br
+.TP
 .BI "--demangle=none|smart|normal"
 none: no demangling. normal: use default demangler (default) smart: use
 pattern-matching to make C++ symbol demangling more readable.
+.br
+.TP
+.BI "--show-address / -w"
+Show each symbol's VMA address.
+.br
+.TP
+.BI "--no-header"
+Don't output a header detailing profiling parameters.
+.br
+.TP
+.BI "--long-filenames / -l"
+Output full paths instead of basenames.
 .br
 .TP
 .BI "--exclude-dependent / -x"

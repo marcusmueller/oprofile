@@ -120,9 +120,9 @@ void arc_recorder::add_arc(cg_symbol const & caller, cg_symbol const * callee)
 }
 
 
-vector<cg_symbol> arc_recorder::get_arc() const
+cg_collection arc_recorder::get_arc() const
 {
-	vector<cg_symbol> result;
+	cg_collection result;
 
 	iterator const end = caller_callee.end();
 	for (iterator it = caller_callee.begin(); it != end; ) {
@@ -137,10 +137,9 @@ vector<cg_symbol> arc_recorder::get_arc() const
 }
 
 
-vector<cg_symbol> arc_recorder::
-get_callee(cg_symbol const & symbol) const
+cg_collection arc_recorder::get_callee(cg_symbol const & symbol) const
 {
-	vector<cg_symbol> result;
+	cg_collection result;
 
 	pair<iterator, iterator> p_it = callee_caller.equal_range(symbol);
 	for (; p_it.first != p_it.second; ++p_it.first) {
@@ -161,9 +160,9 @@ get_callee(cg_symbol const & symbol) const
 }
 
 
-vector<cg_symbol> arc_recorder::get_caller(cg_symbol const & symbol) const
+cg_collection arc_recorder::get_caller(cg_symbol const & symbol) const
 {
-	vector<cg_symbol> result;
+	cg_collection result;
 
 	pair<iterator, iterator> p_it = caller_callee.equal_range(symbol);
 	for (; p_it.first != p_it.second; ++p_it.first) {
@@ -193,11 +192,11 @@ cg_symbol const * arc_recorder::find_caller(cg_symbol const & symbol) const
 
 
 void callgraph_container::populate(list<inverted_profile> const & iprofiles,
-   extra_images const & extra)
+   extra_images const & extra, bool debug_info)
 {
 	/// Normal (i.e non callgraph) samples container, we record sample
 	/// at symbol level, not at vma level.
-	profile_container symbols(false, false);
+	profile_container symbols(debug_info, false);
 
 	list<inverted_profile>::const_iterator it;
 	list<inverted_profile>::const_iterator const end = iprofiles.end();
@@ -279,7 +278,7 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles,
 			// it a zero offset and we will fix that in add()
 			profile.add_sample_file(*cit, 0);
 			add(profile, caller_bfd, bfd_caller_ok, callee_bfd,
-			    app_name, symbols);
+			    app_name, symbols, debug_info);
 		}
 	}
 
@@ -294,10 +293,10 @@ column_flags callgraph_container::output_hint() const
 	column_flags output_hints = cf_none;
 
 	// FIXME: costly must we access directly recorder.caller_callee map ?
-	vector<cg_symbol> arcs = recorder.get_arc();
+	cg_collection arcs = recorder.get_arc();
 
-	vector<cg_symbol>::const_iterator it;
-	vector<cg_symbol>::const_iterator const end = arcs.end();
+	cg_collection::const_iterator it;
+	cg_collection::const_iterator const end = arcs.end();
 	for (it = arcs.begin(); it != end; ++it)
 		output_hints = it->output_hint(output_hints);
 
@@ -305,10 +304,16 @@ column_flags callgraph_container::output_hint() const
 }
 
 
+count_array_t callgraph_container::samples_count() const
+{
+	return total_count;
+}
+
+
 void callgraph_container::
 add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
    op_bfd const & callee, string const & app_name,
-   profile_container const & symbols)
+   profile_container const & symbols, bool debug_info)
 {
 	string const image_name = caller.get_filename();
 
@@ -355,6 +360,15 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 		symbol_entry const * self = symbols.find(symb_caller);
 		if (self)
 			symb_caller.self_counts = self->sample.counts;
+
+		if (debug_info) {
+			string filename;
+			if (caller.get_linenr(i, start, filename,
+			    symb_caller.sample.file_loc.linenr)) {
+				symb_caller.sample.file_loc.filename =
+					debug_names.create(filename);
+			}
+		}
 
 		// Our odb_key_t contain (from_eip << 32 | to_eip), the range
 		// of key we selected above can contain different callee but
@@ -434,6 +448,20 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 			if (self)
 				symb_callee.self_counts = self->sample.counts;
 
+			if (debug_info) {
+				string filename;
+				// FIXME: wrong we need index and offset
+				// of the callee symbols, op_bfd interface
+				// is not nice to retrieve symb index.
+#if 0
+				if (callee.get_linenr(i, start, filename,
+					symb_callee.sample.file_loc.linenr)) {
+					symb_callee.sample.file_loc.filename =
+						debug_names.create(filename);
+				}
+#endif
+			}
+
 			recorder.add_arc(symb_caller, &symb_callee);
 
 			// next callee symbol
@@ -452,22 +480,24 @@ void callgraph_container::add_leaf_arc(profile_container const & symbols)
 		symbol.self_counts = it->sample.counts;
 		recorder.add_arc(symbol, 0);
 	}
+
+	total_count = symbols.samples_count();
 }
 
 
-vector<cg_symbol> callgraph_container::get_arc() const
+cg_collection callgraph_container::get_arc() const
 {
 	return recorder.get_arc();
 }
 
 
-vector<cg_symbol> callgraph_container::get_callee(cg_symbol const & s) const
+cg_collection callgraph_container::get_callee(cg_symbol const & s) const
 {
 	return recorder.get_callee(s);
 }
 
 
-vector<cg_symbol> callgraph_container::get_caller(cg_symbol const & s) const
+cg_collection callgraph_container::get_caller(cg_symbol const & s) const
 {
 	return recorder.get_caller(s);
 }

@@ -373,7 +373,7 @@ void output_symbols(profile_container const & samples, bool multiple_apps)
 	options::sort_by.sort(symbols, options::reverse_sort,
 	                      options::long_filenames);
 
-	format_output::formatter out(samples);
+	format_output::opreport_formatter out(samples);
 
 	out.set_nr_classes(nr_classes);
 

@@ -11,6 +11,7 @@
 
 #include <iostream>
 
+#include "format_output.h"
 #include "string_filter.h"
 #include "opstack_options.h"
 #include "arrange_profiles.h"
@@ -22,52 +23,27 @@ using namespace std;
 
 namespace {
 
-callgraph_container cg_container;
-
-// Debug. Note : no \n at end of output
-ostream & operator<<(ostream & out, symbol_entry const & symbol)
+format_flags const get_format_flags(column_flags const & cf)
 {
-#if 1
-	out << symbol_names.demangle(symbol.name)
-	    << " " << hex << symbol.sample.vma
-	    << " " << image_names.name(symbol.app_name)
-	    << " " << image_names.name(symbol.image_name)
-	    << dec << " (" << symbol.size << ")";
-#else
-	out << symbol_names.demangle(symbol.name);
-#endif
-	return out;
-}
+	format_flags flags(ff_none);
+	flags = format_flags(flags | ff_nr_samples);
+	flags = format_flags(flags | ff_percent | ff_symb_name);
 
-// just to get some sort of output. temporary before we write proper output
-// support
-void dump(ostream & out, callgraph_container const & container)
-{
-	vector<cg_symbol> arcs = container.get_arc();
-	for (size_t i = 0; i < arcs.size(); ++i) {
-		vector<cg_symbol> callee_arcs = container.get_callee(arcs[i]);
-		for (size_t j = 0; j < callee_arcs.size(); ++j) {
-			out << "\t" << callee_arcs[j]
-			    << " " << callee_arcs[j].self_counts[0]
-			    << "/" << callee_arcs[j].callee_counts[0]
-			    << endl;
-		}
+	if (options::show_address)
+		flags = format_flags(flags | ff_vma);
 
-		out << arcs[i]
-		    << " " << arcs[i].self_counts[0]
-		    << "/" << arcs[i].callee_counts[0]
-		    << endl;
+	if (options::debug_info)
+		flags = format_flags(flags | ff_linenr_info);
 
-		vector<cg_symbol> caller_arcs = container.get_caller(arcs[i]);
-		for (size_t j = 0; j < caller_arcs.size(); ++j) {
-			out << "\t" << caller_arcs[j]
-			    << " " << caller_arcs[j].self_counts[0]
-			    << "/" << caller_arcs[j].callee_counts[0]
-			    << endl;
-		}
-
-		out << "--------------------------------------------------\n";
+	if (options::accumulated) {
+		flags = format_flags(flags | ff_nr_samples_cumulated);
+		flags = format_flags(flags | ff_percent_cumulated);
 	}
+
+	if (cf & cf_image_name)
+		flags = format_flags(flags | ff_image_name);
+
+	return flags;
 }
 
 
@@ -75,18 +51,36 @@ int opstack(vector<string> const & non_options)
 {
 	handle_options(non_options);
 
+	bool multiple_apps = false;
+
+	for (size_t i = 0; i < classes.v.size(); ++i) {
+		if (classes.v[i].profiles.size() > 1)
+			multiple_apps = true;
+	}
+
 	list<inverted_profile> iprofiles
 		= invert_profiles(classes, options::extra_found_images);
 
 	report_image_errors(iprofiles);
 
-	cg_container.populate(iprofiles, options::extra_found_images);
+	callgraph_container cg_container;
+	cg_container.populate(iprofiles, options::extra_found_images,
+		options::debug_info);
 
-	column_flags hint = cg_container.output_hint();
+	column_flags output_hints = cg_container.output_hint();
 
-	dump(cout, cg_container);
+	format_output::cg_formatter out(cg_container);
 
-	cout << hint << endl;
+	out.set_nr_classes(classes.v.size());
+	out.show_header(options::show_header);
+	out.vma_format_64bit(output_hints & cf_64bit_vma);
+	out.show_long_filenames(options::long_filenames);
+	format_flags flags = get_format_flags(output_hints);
+	if (multiple_apps)
+		flags = format_flags(flags | ff_app_name);
+	out.add_format(flags);
+
+	out.output(cout);
 
 	return 0;
 }

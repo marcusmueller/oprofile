@@ -6,14 +6,22 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8 release
 -----------
 
- o callgraph_container.cpp: the inner loop in add() is very fragile!
+ o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.
  o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
   outside .text section get a wrong offset
- o op_bfd.cpp:get_linenr() see FIXMe about the use of ibfd/dbfd, needs test.
+
+ o callgraph_container.cpp: the inner loop in add() is very fragile!
+ o opstack -c gives wrong resultat for self symbol cumulated count/percent i.e
+  non indented output line.
+ o See FIXME in callgraph_container::add() about linenr info for callee symbol
+ o opstack  -t is not implemented, can we ?
+ o Test all other opstack options.
+ o improve and put somewhere on the net the opstack application test.
+ o review opstack documentation, improve it by giving examples of output and
+  how to interpret it.
  o finish opstack: proper output, various --separate= --merge= handling,
   later do we need an opreport like opstack (showing caller/callee at binary
   boundary not symbols) ?
- o remember to update doc to opstack when adding feature.
  o first quick test show it works but I got in oprofiled.log (possibly when
   shutdown oprofile)
 	Read buffer of 35253 entries.
@@ -82,6 +90,8 @@ Before 1.0 little stuff
  o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
  o sample-file: / binary: don't work in any useful way - can we fix this
    by peeking at binary: value and faking the split_sample_file somehow ?
+ o increase encapsulation but, at least for now,  not at the cost of
+  getter()/setter(), this can go to Later section too.
 
 Documentation
 -------------

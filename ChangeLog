@@ -1,3 +1,22 @@
+2004-02-01  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/oprofile.xml:
+	* doc/opstack.1.in: document new options
+
+	* libpp/callgraph_container.h:
+	* libpp/callgraph_container.cpp: improve readability, add linenr
+	  debug information recording partially, see TODO
+
+	* libpp/format_output.h: s/formatter/opreport_formatter, define
+	  cg_formatter
+	* libpp/format_output.cpp: implement cg_formatter, factorize some code
+	  in formatter base class
+
+	* pp/opreport.cpp: s/formatter/opreport_formatter
+	* pp/opstack_options.h:
+	* pp/opstack_options.cpp: implement output selection/formatting options
+	* pp/opstack.cpp: use cg_formatter for output.
+
 2004-01-30  Philippe Elie  <phil.el@wanadoo.fr>
 
 	commit not itended but tree is stable so add a ChangeLog ...

@@ -21,6 +21,11 @@ extern profile_classes classes;
 
 namespace options {
 	extern demangle_type demangle;
+	extern bool long_filenames;
+	extern bool show_header;
+	extern bool show_address;
+	extern bool debug_info;
+	extern bool accumulated;
 }
 
 /**
