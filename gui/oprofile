@@ -17,13 +17,43 @@ global counter_0 counter_1
 global usr_count_0 kernel_count_0 usr_count_1 kernel_count 1
 global ctr_edge_detect_0 ctr_edge_detect_1
 global vmlinux map_file
+global buffer_size hash_size
+global kernel_only
+global ignore_myself
+global pid_filter
+global pgrp_filter
+global base_dir
+global samples_dir
+global device_file
+global hash_map_device_file
+global log_file
 
 set bit_mask_option_0 0
 set bit_mask_option_1 0
 set ctr_edge_detect_0 0
 set ctr_edge_detect_1 0
-set vmlinux "/boot/vmlinuz-2.4.3"
-set map_file "/boot/System-2.4.3.map"
+
+# In some situation it is incorrect to get the System.map and kernel
+# filename from here but this provide a correct default value in many case.
+set build_dir [concat /lib/modules/[exec uname -r]/build]
+
+set vmlinux [concat $build_dir/vmlinux]
+set map_file [concat $build_dir/System.map]
+
+# must be coherent with op_start (not strongly required, this is just required
+# to not confuse the user).
+set buffer_size 262144
+set hash_size 65536
+set kernel_only 0
+set ignore_myself 0
+set pid_filter 0
+set pgrp_filter 0
+
+set base_dir "/var/opd"
+set samples_dir "samples"
+set device_file "opdev"
+set hash_map_device_file "ophashmapdev"
+set log_file "oprofiled.log"
 
 # utilities proc
 
@@ -62,7 +92,6 @@ proc create_text { parent_name name height read_only text } {
 
     pack $name
 }
-
 
 # item_list: { name value text [ { command value }* ] }*
 proc create_radiobutton_group { parent_name var_name side item_list } {
@@ -157,6 +186,16 @@ proc onStartProfiling {} {
     global bit_mask_option_0 bit_mask_option_1
     global processor_type
     global vmlinux map_file
+    global buffer_size hash_size
+    global kernel_only
+    global ignore_myself
+    global pid_filter
+    global pgrp_filter
+    global base_dir
+    global samples_dir
+    global device_file
+    global hash_map_device_file
+    global log_file
 
     if { [string compare [set event_type_0] DISABLED] == 0 && 
 	 [string compare [set event_type_1] DISABLED] == 0 } then {
@@ -186,7 +225,16 @@ proc onStartProfiling {} {
 	    --ctr1-edge-detect=$ctr_edge_detect_1 \
 	    --use-cpu=$processor_type \
 	    --map-file=$map_file \
-	    --vmlinux=$vmlinux > /dev/stdout
+	    --vmlinux=$vmlinux \
+	    --ignore-myself=$ignore_myself \
+	    --kernel-only=$kernel_only \
+	    --pid-filter=$pid_filter \
+	    --pgrp-filter=$pgrp_filter \
+	    --base-dir=$base_dir \
+	    --samples-dir=$base_dir/$samples_dir \
+	    --device-file=$base_dir/$device_file \
+	    --hash-map-device-file=$base_dir/$hash_map_device_file \
+	    --log-file=$base_dir/$log_file > /dev/stdout
     } elseif { [string compare [set event_type_0] DISABLED] != 0 } then {
 	# counter 0 only
 	exec op_start --ctr0-event=$event_type_0 \
@@ -197,7 +245,16 @@ proc onStartProfiling {} {
 	    --ctr0-edge-detect=$ctr_edge_detect_0 \
 	    --use-cpu=$processor_type \
 	    --map-file=$map_file \
-	    --vmlinux=$vmlinux > /dev/stdout
+	    --vmlinux=$vmlinux  \
+	    --ignore-myself=$ignore_myself \
+	    --kernel-only=$kernel_only \
+	    --pid-filter=$pid_filter \
+	    --pgrp-filter=$pgrp_filter \
+	    --base-dir=$base_dir \
+	    --samples-dir=$base_dir/$samples_dir \
+	    --device-file=$base_dir/$device_file \
+	    --hash-map-device-file=$base_dir/$hash_map_device_file \
+	    --log-file=$base_dir/$log_file > /dev/stdout
     } else {
 	# counter 1 only
 	exec op_start --ctr1-event=$event_type_1 \
@@ -208,7 +265,16 @@ proc onStartProfiling {} {
 	    --ctr1-edge-detect=$ctr_edge_detect_1 \
 	    --use-cpu=$processor_type \
 	    --map-file=$map_file \
-	    --vmlinux=$vmlinux > /dev/stdout
+	    --vmlinux=$vmlinux  \
+	    --ignore-myself=$ignore_myself \
+	    --kernel-only=$kernel_only \
+	    --pid-filter=$pid_filter \
+	    --pgrp-filter=$pgrp_filter \
+	    --base-dir=$base_dir \
+	    --samples-dir=$base_dir/$samples_dir \
+	    --device-file=$base_dir/$device_file \
+	    --hash-map-device-file=$base_dir/$hash_map_device_file \
+	    --log-file=$base_dir/$log_file > /dev/stdout
     }
 }
 
@@ -216,25 +282,95 @@ proc onStartProfiling {} {
 proc onStopProfiling {} {
     # FIXME : Flushing data is required (or better) ?
 #    onFlushData
-    exec op_stop > /dev/stdout
+    # FIXME this catch is required because op_stop make an 
+    # /sbin/rmmod oprofile >/dev/null 2>&1 this loss due to the ? delayed
+    # unloading driver features
+    catch { exec op_stop > /dev/stdout }
 }
 
 # Flush the profiling data.
 proc onFlushData {} {
 
-    # FIXME : apparently there is no way actually to check if dumping has
-    # been done correctly.
+    # the user can try to flush even if the driver is not loaded so check for
+    # the file existence before attempting to make a flush.
+    if { [file exists /proc/sys/dev/oprofile/dump] } then {
 
-    set fd [open /proc/sys/dev/oprofile/dump w]
-    puts $fd "1"
+	# FIXME : apparently there is no way actually to check if dumping has
+	# been done correctly.
+	set fd [open /proc/sys/dev/oprofile/dump w]
+	puts $fd "1"
 
-    #  Must be enclosed in a catch clause because the driver return a zero
-    # file length write (or an error ?), wish interpret this as a write error.
-    # Take care if you catch { close $fd } instead of catch { flush } / close
-    # the tcl/tk runtime leaks a file descriptor each time this function is 
-    # called.
-    catch { flush $fd }
-    close $fd
+	#  Must be enclosed in a catch clause because the driver return a zero
+	# file length write (or an error ?), wish interpret this as a write
+	# error. Take care it is really needed to catch { flush $fd } instead 
+	# of  catch { close $fd } else the tcl/tk runtime leaks a file 
+	# descriptor each time this function is called.
+	catch { flush $fd }
+	close $fd
+    }
+}
+
+# show the advanced setup form
+proc onAdvancedSetup {} {
+
+    set f ._f_advanced_setup
+    set width 32
+
+    toplevel $f
+
+    wm title $f "Advanced setup"
+
+    entry $f.kernel_filename -textvariable vmlinux -width $width
+    label $f.l1 -text "kernel"
+
+    entry $f.map_filename -textvariable map_file -width $width
+    label $f.l2 -text "System.map"
+
+    entry $f.buffer_size -textvariable buffer_size -width $width
+    label $f.l3 -text "buffer size"
+
+    entry $f.hash_size -textvariable hash_size -width $width
+    label $f.l4 -text "hash size"
+
+    entry $f.pid_filter -textvariable pid_filter -width $width
+    label $f.l5 -text "pid_filter"
+
+    entry $f.pgrp_filter -textvariable pgrp_filter -width $width
+    label $f.l6 -text "pgrp filter"
+
+    entry $f.base_dir -textvariable base_dir -width $width
+    label $f.l7 -text "base directory of daemon"
+
+    entry $f.samples_dir -textvariable samples_dir -width $width
+    label $f.l8 -text "samples dir file"
+
+    entry $f.device_file -textvariable device_file -width $width
+    label $f.l9 -text "device file"
+
+    entry $f.hash_map_device_file -textvariable hash_map_device_file -width $width
+    label $f.l10 -text "hasm map device"
+
+    entry $f.log_file -textvariable log_file -width $width
+    label $f.l11 -text "daemon log file"
+
+    checkbutton $f.kernel_only -text "kernel only" -variable kernel_only
+    checkbutton $f.ignore_myself -text "ignore myself" -variable ignore_myself
+
+    pack $f.l1 $f.kernel_filename -side top
+    pack $f.l2 $f.map_filename -side top
+    pack $f.l3 $f.buffer_size -side top
+    pack $f.l4 $f.hash_size -side top
+    pack $f.l5 $f.pid_filter -side top
+    pack $f.l6 $f.pgrp_filter -side top
+    pack $f.l7 $f.base_dir -side top
+    pack $f.l8 $f.samples_dir -side top
+    pack $f.l9 $f.device_file -side top
+    pack $f.l10 $f.hash_map_device_file -side top
+    pack $f.l11 $f.log_file -side top
+
+    pack $f.kernel_only $f.ignore_myself -side left
+
+    grab $f
 }
 
 #  Called on mouse motion on the main form to handle the setup of the help
@@ -600,9 +736,10 @@ pack .f_start_stop .f_counter .f_unit_mask .f_event_type -anchor w -fill x
 button .f_start_stop.b_start -text "Start profiling" -command onStartProfiling
 button .f_start_stop.b_stop -text "Stop profiling" -command onStopProfiling
 button .f_start_stop.b_flush -text "Flush profile data" -command onFlushData
+button .f_start_stop.b_advanced_setup -text "Advanced setup" -command onAdvancedSetup
 
 pack .f_start_stop.b_start .f_start_stop.b_stop .f_start_stop.b_flush \
-    -side left -expand yes
+    .f_start_stop.b_advanced_setup -side left -expand yes
 
 set processor_type -1
 set title ""

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.31 2001/06/22 03:16:24 movement Exp $ */
+/* $Id: oprofpp.c,v 1.32 2001/06/24 23:52:47 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -112,7 +112,8 @@ static void get_options(int argc, char const *argv[])
 	char c; 
 	const char *file;
 	
-	optcon = poptGetContext(NULL, argc, argv, options, 0);
+	/* Some old version of popt needs the cast to char ** */
+	optcon = poptGetContext(NULL, argc, (char **)argv, options, 0);
 
 	c=poptGetNextOpt(optcon);
 

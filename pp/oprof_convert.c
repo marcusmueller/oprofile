@@ -140,6 +140,7 @@ static int get_converter_index(FILE* fp)
 		fseek(fp, -converter_array[i].sizeof_struct, SEEK_END);
 		fread(&footer_v2, sizeof(footer_v2), 1, fp);
 
+		if (footer_v2.magic != OPD_MAGIC)
 		if (footer_v2.magic == OPD_MAGIC && 
 		    footer_v2.version == converter_array[i].version) {
 
@@ -156,19 +157,35 @@ int main(int argc, char* argv[])
 {
 	FILE* fp;
 	int converter_index;
+	int err = 0;
 	int i;
 
 	if (argc <= 1) {
-		fprintf(stderr, "Syntax: %s filename\n", argv[0]);
+		fprintf(stderr, "Syntax: %s filename [filenames]\n", argv[0]);
 
 		exit(1);
+	}
+
+	/* Should use popt in future if new options are added */
+	if (strcmp(argv[1], "--version") == 0 || strcmp(argv[1], "-v") == 0) {
+		// TODO version string.
+		printf("%s: %s compiled on %s %s\n", argv[0], "0.0.0(alpha)", __DATE__, __TIME__);
+
+		exit(0);
+	}
+
+	if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
+		printf("Syntax : %s filename [filenames]\n", argv[0]);
+
+		exit(0);
 	}
 
 	for (i = 1 ; i < argc ; ++i) {
 		fp = fopen(argv[i], "r+w");
 		if (fp == NULL) {
 			fprintf(stderr, "can not open %s for read/write\n", argv[i]);
-			exit(1);
+			err++;
+			continue;
 		}
 
 		converter_index = get_converter_index(fp);
@@ -176,7 +193,8 @@ int main(int argc, char* argv[])
 			fclose(fp);
 
 			fprintf(stderr, "can not find a converter for %s (perhaps this file is already converted ?)\n", argv[i]);
-			exit(1);
+			err++;
+			continue;
 		}
 
 		for ( ; converter_index < nr_converter ; ++converter_index) {
@@ -186,5 +204,5 @@ int main(int argc, char* argv[])
 		fclose(fp);
 	}
 
-	return 0;
+	return err;
 }

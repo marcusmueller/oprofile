@@ -1,3 +1,23 @@
+2001-06-25  John Levon  <moz@compsoc.man.ac.uk>
+
+	* pp/oprof_convert.c: continue if an error with one file occurs
+ 
+	* dae/op_stop: remove rmmod again - it is user's choice on when/whether
+	  to unload
+ 
+2001-06-23  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/op_start: add missing support for specifying the log filename.
+	  Get correct cpu speed information for smp as suggested by John.
+
+	* dae/oprofiled.c: Correct a warning with some older version of the
+	  popt library.
+	* pp/oprofpp: as above.
+
+	* gui/oprofile: advanced setup form added.
+
+	* pp/oprof_convert.c: version and help option support.
+
 2001-06-23  John Levon  <moz@compsoc.man.ac.uk>
 
 	* pp/.cvsignore: add oprof_convert
