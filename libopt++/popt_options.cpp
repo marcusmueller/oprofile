@@ -182,6 +182,10 @@ private:
 	char const separator;
 };
 
+option::~option()
+{
+	delete the_option;
+}
 
 /** specialization of option ctor for boolean option */
 template <>

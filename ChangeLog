@@ -1,5 +1,10 @@
 2002-06-07  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libopt++/popt_options.cpp:
+	* libopt++/popt_options.h: memory leak fix
+
+2002-06-07  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/Makefile.in: fix bfd compilation problem
 	  with gcc >= 3.0 and old bfd.h
 	* module/Makefile.in:
