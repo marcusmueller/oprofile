@@ -44,6 +44,8 @@ struct config_setting {
 	bool verbose;
 	bool separate_lib;
 	bool separate_kernel;
+	bool separate_cpu;
+	bool separate_thread;
 };
 
 std::istream & operator>>(std::istream & in, config_setting & object);

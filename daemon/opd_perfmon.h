@@ -11,7 +11,8 @@
 #ifndef OPD_PERFMON_H
 #define OPD_PERFMON_H
 
-#ifdef __ia64__
+/* broken code */
+#if 0 && defined(__ia64__)
 
 #include <stdlib.h>
 

@@ -705,7 +705,7 @@
                         <class>QLayoutWidget</class>
                         <property stdset="1">
                             <name>name</name>
-                            <cstring>Layout15</cstring>
+                            <cstring>Layout11</cstring>
                         </property>
                         <hbox>
                             <property stdset="1">
@@ -720,7 +720,7 @@
                                 <class>QLayoutWidget</class>
                                 <property stdset="1">
                                     <name>name</name>
-                                    <cstring>Layout15</cstring>
+                                    <cstring>Layout10</cstring>
                                 </property>
                                 <vbox>
                                     <property stdset="1">
@@ -750,11 +750,26 @@
                                         <class>QCheckBox</class>
                                         <property stdset="1">
                                             <name>name</name>
+                                            <cstring>separate_lib_cb</cstring>
+                                        </property>
+                                        <property stdset="1">
+                                            <name>text</name>
+                                            <string>Per-application profiles</string>
+                                        </property>
+                                        <property>
+                                            <name>toolTip</name>
+                                            <string>Separate samples for each shared library. This increases the time and space overhead of OProfile.</string>
+                                        </property>
+                                    </widget>
+                                    <widget>
+                                        <class>QCheckBox</class>
+                                        <property stdset="1">
+                                            <name>name</name>
                                             <cstring>separate_kernel_cb</cstring>
                                         </property>
                                         <property stdset="1">
                                             <name>text</name>
-                                            <string>Per-application kernel samples files</string>
+                                            <string>Per-application profiles, including kernel</string>
                                         </property>
                                         <property>
                                             <name>toolTip</name>
@@ -765,15 +780,30 @@
                                         <class>QCheckBox</class>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>separate_lib_cb</cstring>
+                                            <cstring>separate_cpu_cb</cstring>
                                         </property>
                                         <property stdset="1">
                                             <name>text</name>
-                                            <string>Per-application shared libs samples files</string>
+                                            <string>Per-CPU profiles</string>
                                         </property>
                                         <property>
                                             <name>toolTip</name>
-                                            <string>Separate samples for each shared library. This increases the time and space overhead of OProfile.</string>
+                                            <string>Separate samples for each shared library and kernel samples. This increases the time and space overhead of OProfile.</string>
+                                        </property>
+                                    </widget>
+                                    <widget>
+                                        <class>QCheckBox</class>
+                                        <property stdset="1">
+                                            <name>name</name>
+                                            <cstring>separate_thread_cb</cstring>
+                                        </property>
+                                        <property stdset="1">
+                                            <name>text</name>
+                                            <string>Per-thread/task profiles</string>
+                                        </property>
+                                        <property>
+                                            <name>toolTip</name>
+                                            <string>Separate samples for each shared library and kernel samples. This increases the time and space overhead of OProfile.</string>
                                         </property>
                                     </widget>
                                 </vbox>

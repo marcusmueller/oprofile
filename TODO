@@ -3,11 +3,6 @@ This is an (incomplete) list of some of the stuff we want to look at doing.
 If you're interested in hacking on any of these, please contact the list first
 for some pointers and/or read HACKING and doc/CodingStyle.
 
-0.7 release
------------
-
- o thread separate GUI
-
 0.8 release
 -----------
 

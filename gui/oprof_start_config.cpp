@@ -41,7 +41,9 @@ config_setting::config_setting()
 	no_kernel(false),
 	verbose(false),
 	separate_lib(false),
-	separate_kernel(false)
+	separate_kernel(false),
+	separate_cpu(false),
+	separate_thread(false)
 {
 	struct utsname info;
 
@@ -82,10 +84,14 @@ void config_setting::load(istream & in)
 				no_kernel = false;
 				kernel_filename = val;
 			}
-		} else if (str == "SEPARATE_LIB_SAMPLES") {
+		} else if (str == "SEPARATE_LIB") {
 			separate_lib = tobool(val);
-		} else if (str == "SEPARATE_KERNEL_SAMPLES") {
+		} else if (str == "SEPARATE_KERNEL") {
 			separate_kernel = tobool(val);
+		} else if (str == "SEPARATE_CPU") {
+			separate_cpu = tobool(val);
+		} else if (str == "SEPARATE_THREAD") {
+			separate_thread = tobool(val);
 		}
 	}
 }

@@ -145,6 +145,8 @@ oprof_start::oprof_start()
 	verbose->setChecked(config.verbose);
 	separate_lib_cb->setChecked(config.separate_lib);
 	separate_kernel_cb->setChecked(config.separate_kernel);
+	separate_cpu_cb->setChecked(config.separate_cpu);
+	separate_thread_cb->setChecked(config.separate_thread);
 
 	// the unit mask check boxes
 	hide_masks();
@@ -623,6 +625,8 @@ bool oprof_start::record_config()
 	config.verbose = verbose->isChecked();
 	config.separate_lib = separate_lib_cb->isChecked();
 	config.separate_kernel = separate_kernel_cb->isChecked();
+	config.separate_cpu = separate_cpu_cb->isChecked();
+	config.separate_thread = separate_thread_cb->isChecked();
 
 	return true;
 }
@@ -914,16 +918,21 @@ bool oprof_start::save_config()
 		args.push_back("--note-table-size=" +
 			       tostr(config.note_table_size));
 	}
-	// opcontrol don't allow multiple setting of --separate option
-	// separate=kernel imply separate=library whilst opcontrol script
-	// reset separate=kernel when separate=library is given so the order
-	// of setting here is meaningfull.
+
+	string sep = "--separate=";
+
+	if (config.separate_lib)
+		sep += "library,";
 	if (config.separate_kernel)
-		args.push_back("--separate=kernel");
-	else if (config.separate_lib)
-		args.push_back("--separate=library");
-	else
-		args.push_back("--separate=none");
+		sep += "kernel,";
+	if (config.separate_cpu)
+		sep += "cpu,";
+	if (config.separate_thread)
+		sep += "thread,";
+
+	if (sep == "--separate=")
+		sep += "none";
+	args.push_back(sep);
 
 	// 2.95 work-around, it didn't like return !do_exec_command() 
 	bool ret = !do_exec_command(OP_BINDIR "/opcontrol", args);
