@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.23 2000/08/25 20:38:12 moz Exp $ */
+/* $Id: oprofile.c,v 1.24 2000/08/26 21:45:25 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 
@@ -52,7 +52,7 @@ static int op_major;
 static int cpu_type;
 
 static uint oprof_opened;
-DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
+static DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
 /* this array is scanned by read() so we don't
  * want it in the oprof_data cacheline. Access
  * is atomic as its aligned 32 bit
@@ -101,6 +101,7 @@ inline static void op_do_profile(struct _oprof_data *data, struct pt_regs *regs,
 	uint h = op_hash(regs->eip,current->pid,ctr);
 	uint i;
 
+	/* FIXME: can we remove new sample check by pretending to be full ? */ 
 	for (i=0; i < OP_NR_ENTRY; i++) {
 		if (!op_miss(data->entries[h].samples[i])) {
 			data->entries[h].samples[i].count++;
@@ -419,7 +420,7 @@ static void __init pmc_setup(void *dummy)
 
 	if (op_ctr0_val[cpu]) {
 		set_perfctr(op_ctr0_count[cpu],0);
-		pmc_fill_in(&low, op_ctr0_osusr[cpu], op_ctr0_val[cpu], op_ctr1_um[cpu]);
+		pmc_fill_in(&low, op_ctr0_osusr[cpu], op_ctr0_val[cpu], op_ctr0_um[cpu]);
 	}
 
 	wrmsr(P6_MSR_EVNTSEL0,low,0);
