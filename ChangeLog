@@ -1,3 +1,7 @@
+2003-03-27  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: several more examples and fixes
+
 2003-03-26  John Levon  <levon@movementarian.org>
 
 	From a patch by Bryan Rittmeyer.

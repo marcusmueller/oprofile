@@ -43,6 +43,32 @@ This information is aggregated into profiles for each binary image.</para>
 Some hardware setups do not allow OProfile to use performance counters: in these cases, no
 events are available, and OProfile operates in timer/RTC mode, as described in later chapters.
 </para>
+<sect1 id="applications">
+<title>Applications of OProfile</title>
+<para>
+OProfile is useful in a number of situations. You might want to use OProfile when you :
+</para>
+<itemizedlist>
+<listitem><para>need low overhead</para></listitem>
+<listitem><para>cannot use highly intrusive profiling methods</para></listitem>
+<listitem><para>need to profile interrupt handlers</para></listitem>
+<listitem><para>need to profile an application and its shared libraries</para></listitem>
+<listitem><para>need to capture the performance behaviour of entire system</para></listitem>
+<listitem><para>want to examine hardware effects such as cache misses</para></listitem>
+<listitem><para>want detailed source annotation</para></listitem>
+<listitem><para>want instruction-level profiles</para></listitem>
+</itemizedlist>
+<para>
+OProfile is not a panacea. OProfile might not be a complete solution when you :
+</para>
+<itemizedlist>
+<listitem><para>require call graph profiles</para></listitem>
+<listitem><para>don't have root permissions</para></listitem>
+<listitem><para>require 100% instruction-accurate profiles</para></listitem>
+<listitem><para>need function call counts or an interstitial profiling API</para></listitem>
+<listitem><para>cannot tolerate any disturbance to the system whatsoever</para></listitem>
+</itemizedlist>
+</sect1>
 
 <sect1 id="requirements">
 <title>System requirements</title>
@@ -190,7 +216,7 @@ is often all you need, but note these arguments to <command>./configure</command
 	<varlistentry>
 		<term><option>--with-kernel-support</option></term>
 		<listitem>
-			Use this option with linux 2.5 kernel to indicate the 
+			Use this option with 2.5 and above kernels to indicate the 
 	    		kernel provides the OProfile device driver.
 		</listitem>
 	</varlistentry>
@@ -260,30 +286,22 @@ Before you can use OProfile, you must set it up. The minimum setup required for 
 is to tell OProfile where the <filename>vmlinux</filename> file corresponding to the
 running kernel is, for example :
 </para>
-<para>
-<command>opcontrol --vmlinux=/boot/vmlinux-`uname -r`</command>
-</para>
+<screen>opcontrol --vmlinux=/boot/vmlinux-`uname -r`</screen>
 <para>
 <!-- FIXME on change ... -->
 If you're running a 2.5 kernel, and you don't want to profile the kernel itself,
 you can tell OProfile you don't have a <filename>vmlinux</filename> file :
 </para>
-<para>
-<command>opcontrol --no-vmlinux</command>
-</para>
+<screen>opcontrol --no-vmlinux</screen>
 <para>
 Now we are ready to start the daemon (<command>oprofiled</command>) which collects
 the profile data :
 </para>
-<para>
-<command>opcontrol --start</command>
-</para>
+<screen>opcontrol --start</screen>
 <para>
 When I want to stop profiling, I can do so with :
 </para>
-<para>
-<command>opcontrol --shutdown</command>
-</para>
+<screen>opcontrol --shutdown</screen>
 <para>
 Note that unlike <command>gprof</command>, no instrumentation (<option>-pg</option>
 and <option>-a</option> options to <command>gcc</command>)
@@ -296,11 +314,11 @@ These profile files cover shared libraries, applications, the kernel (vmlinux), 
 You can get summaries of this data in a number of ways at any time. To get a summary of
 data across the entire system for all of these profiles, you can do :
 </para>
-<para><command>op_time</command></para>
+<screen>op_time</screen>
 <para>
 Or to get a more detailed summary, for a particular image, you can do something like :
 </para>
-<para><command>oprofpp -l /boot/vmlinux-`uname -r`</command></para>
+<screen>oprofpp -l /boot/vmlinux-`uname -r`</screen>
 <para>
 There are also a number of other ways of presenting the data, as described later in this manual.
 Note that OProfile will choose a default profiling setup for you. However, there are a number
@@ -326,7 +344,7 @@ This section gives a brief description of the available OProfile utilities and t
 <varlistentry>
 	<term><filename>opcontrol</filename></term>
 	<listitem><para>
-		Used for controlling the OProfile data collection, discussed in <xref linkend="usage" />.
+		Used for controlling the OProfile data collection, discussed in <xref linkend="controlling" />.
 	</para></listitem>
 </varlistentry>
 
@@ -383,11 +401,11 @@ This section gives a brief description of the available OProfile utilities and t
 	
 </chapter>
  
-<chapter id="usage">
-<title>Usage</title>
+<chapter id="controlling">
+<title>Controlling the profiler</title>
 
 <sect1 id="controlling-daemon">
-<title>Controlling OProfile data collection with the <command>opcontrol</command> script</title>
+<title>Using <command>opcontrol</command></title>
 <para>
 In this section we describe the configuration and control of the profiling system
 with opcontrol in more depth.
@@ -605,14 +623,67 @@ is required. These settings are stored in <filename>~/.oprofile/daemon</filename
 		to profile the kernel. Only available with OProfile on 2.5 kernels.
 		</para></listitem>
 	</varlistentry>
-	<varlistentry>
-		<term><option>--kernel-range=</option>start,end</term>
-		<listitem><para>
-		kernel range vma address in hexadecimal. You should not need to specify this yourself.
-		</para></listitem>
-	</varlistentry>
 </variablelist>
-<sect2 id="sessions">
+
+<sect2 id="opcontrolexamples">
+<title>Examples</title>
+
+<sect3 id="examplesperfctr">
+<title>Intel performance counter setup</title>
+<para>
+Here, we have a Pentium III running at 800MHz, and we want to look at where data memory
+references are happening most, and also get results for CPU time.
+</para>
+<screen>
+# opcontrol --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=400000
+# opcontrol --ctr1-event=DATA_MEM_REFS --ctr1-count=10000
+# opcontrol --vmlinux=/boot/2.5.66/vmlinux
+# opcontrol --start
+</screen>
+</sect3>
+
+<sect3 id="examplesrtc">
+<title>RTC mode</title>
+<para>
+Here, we have an Intel laptop without support for performance counters, running on 2.4 kernels.
+</para>
+<screen>
+# op_help -r
+CPU with RTC device
+# opcontrol --vmlinux=/boot/2.5.66/vmlinux --rtc-value=1024
+# opcontrol --start
+</screen>
+</sect3>
+
+<sect3 id="examplesstartdaemon">
+<title>Starting the daemon separately</title>
+<para>
+If we're running 2.5 kernels, we can use <option>--start-daemon</option> to avoid
+the profiler startup affecting results.
+</para>
+<screen>
+# opcontrol --vmlinux=/boot/2.5.66/vmlinux
+# opcontrol --start-daemon
+# my_favourite_benchmark --init
+# opcontrol --start ; my_favourite_benchmark --run ; opcontrol --stop
+</screen>
+</sect3>
+
+<sect3 id="exampleseparate">
+<title>Separate profiles for libraries and the kernel</title>
+<para>
+Here, we want to see a profile of the OProfile daemon itself, including when
+it was running inside the kernel driver, and its use of shared libraries.
+</para>
+<screen>
+# opcontrol --separate=kernel --vmlinux=/boot/2.5.66/vmlinux
+# opcontrol --start
+# my_favourite_stress_test --run
+# oprofpp -kl -p /lib/modules/2.5.66/kernel /usr/local/bin/oprofiled
+</screen>
+</sect3>
+
+<sect3 id="examplessessions">
 <title>Profiling sessions</title>
 <para>
 It can often be useful to split up profiling data into several different
@@ -621,7 +692,7 @@ startup separately from the normal runtime data. You can use the simple
 command <command>opcontrol --save</command> to do this. For example :
 </para>
 <screen>
-opcontrol --save=blah
+# opcontrol --save=blah
 </screen>
 <para>
 will create a sub-directory in <filename>/var/lib/oprofile/samples</filename> containing the samples
@@ -632,12 +703,12 @@ session. If you do not want to save a session, you can do
 <command>rm -rf /var/lib/oprofile/samples/blah</command> or, for the
 current session, <command>opcontrol --reset</command>.
 </para>
-</sect2>
- 
+</sect3>
+</sect2> 
 </sect1>
  
 <sect1 id="oprofile-gui">
-<title>Starting profiling from the <command>OProfile</command> GUI</title>
+<title>Using <command>oprof_start</command></title>
 <para>
 The <command>oprof_start</command> application provides a convenient way to start the profiler.
 Note that <command>oprof_start</command> is just a wrapper around the <command>opcontrol</command> script,
@@ -656,10 +727,9 @@ number of interrupts received per second and the total, over all processors.
 Note that quitting <command>oprof_start</command> does not stop the profiler.
 </para>
 <para>
-Your configuration is saved when you quit <command>oprof_start</command> in two files in the
-<filename>~/.oprofile</filename> directory :
-<filename>oprof_start_config</filename> and <filename>oprof_start_event</filename>. These
-contain the general configuration, and the event/counter setup, respectively.
+Your configuration is saved in the same file as <command>opcontrol</command> uses; that is,
+<filename>~/.oprofile/daemonrc</filename>. In addition, the per-event parameters are saved in
+<filename>~/.oprofile/oprof_start_event</filename>.
 </para>
 
 </sect1>
@@ -668,7 +738,7 @@ contain the general configuration, and the event/counter setup, respectively.
 <title>Configuration details</title>
 
 <sect2 id="hardware-counters">
-<title>Hardware Performance Counters</title>
+<title>Hardware performance counters</title>
 <note>
 <para>
 Your CPU type may not include the requisite support for hardware performance counters, in which case
@@ -1063,7 +1133,7 @@ Some interesting options of the post-processor :
 </sect1>
 
 <sect1 id="op-time">
-<title><command>op_time</command>: Overall view of all system binaries</title>
+<title><command>op_time</command>: overall view of all system binaries</title>
 <para>
 You can get an overall summary of relative binary profiles using <command>op_time</command>. This utility displays
 the relative amount of samples for each application profiled sorted by decreasing order of samples count. So
@@ -1205,7 +1275,7 @@ If you want to see the source file, the profiled application needs to have debug
 must be available through this debug information. For GCC, you must use the <option>-g</option> when you are
 compiling.
 If the binary doesn't contain sufficient debug information, you can still use <command>op_to_source <option>--assembly</option></command>
-to get annotated assembly. See the FAQ <xref linkend="symbol-and-debug-info" /> about debug information vs symbol information.
+to get annotated assembly.
 </para>
 <para>
 Note that for the reason explained in <xref linkend="hardware-counters" /> the results can be
@@ -1489,7 +1559,7 @@ problem and OProfile can do nothing about it.
 <sect1 id="kernel-profiling">
 <title>Kernel profiling</title>
 <sect2 id="irq-masking">
-<title>Interrupt Masking</title>
+<title>Interrupt masking</title>
 <para>
 OProfile uses non-maskable interrupts (NMI) on the P6 generation, Pentium 4,
 Athlon and Duron processors. These interrupts can occur even in section of the
@@ -1785,31 +1855,6 @@ AMD documentation at <ulink url="http://developer.intel.com/">http://developer.i
 and <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/">http://www.amd.com/products/cpg/athlon/techdocs/</ulink>.
 </para>
 </sect1>
-<!-- 
-
-FIXME: we should document how samples can be lost by the daemon, and why not to worry
- 
-FIXME: more examples, basic and advanced trick. A howto use utilities FAQ ?
-
-The FAQ must use <sect1> and imbricated <sect2> to fit in only one page.
-It is possible through release to put the FAQ (or the whole doc ?) on sourceforge ?
-
-yes, indeed. We can do this bit by bit though, as long as we've done as much
-as we can for release 1.0 - john
- 
-List for how to :
-
-o how to get library samples (separate-samples) 
-o how to get module / kernel post-prof
-o how to use sudo (and risks !)
-o more ...
- 
-<sect2 id="none">
-<title>and more</title>
-<para>
-</para>
-</sect2>
---> 
 </chapter>
 
 <chapter id="overhead">
@@ -1835,10 +1880,13 @@ numbers of processes, leading to far better performance.
 </para>
 </chapter>
 
+<!--
+
+Commented out until we  have some more stuff here, maybe junk it ...
+
 <chapter id="FAQ">
 <title>FAQ</title>
 
-<!--
 
 FIXME: I tried to use <sect1>...<sect2> to ensure sourceforge FAQ will go on
 only one html page but <xref linkend="symbol-and-debug-info" /> are showed as: 
@@ -1847,7 +1895,6 @@ only one html page but <xref linkend="symbol-and-debug-info" /> are showed as:
 And currently I get the same problem <xref linkend="symbol-and-debug-info" />
 is showed as "See section 1" ...
 
--->
 
 <sect1 id="symbol-and-debug-info">
 <title>Why do I see (no symbol) in profiling report ?</title>
@@ -1875,6 +1922,7 @@ information for annotated source, line numbers, is only generated at <option>-g2
 </sect1>
 
 </chapter>
+-->
 
 <chapter id="ack">
 <title>Acknowledgments</title>
