@@ -18,6 +18,7 @@
 #include "cverb.h"
 #include "profile_spec.h"
 #include "arrange_profiles.h"
+#include "locate_images.h"
 
 using namespace std;
 
@@ -74,6 +75,9 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 
 	if (nr_classes == 1 && nr_app_profiles == 1) {
 		profiles = *(classes.v[0].profiles.begin());
+		// find 2.6 kernel module and check readability
+		profiles.image = find_image_path(profiles.image,
+			options::extra_found_images);
 		return true;
 	}
 

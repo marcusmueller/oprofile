@@ -1,5 +1,9 @@
 2003-09-14  John Levon  <levon@movementarian.org>
 
+	* pp/opgprof_options.cpp: use locate_image_path
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
 	* Makefile.am:
 	* populate.h:
 	* populate.cpp: shared code for populating from

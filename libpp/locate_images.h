@@ -65,7 +65,6 @@ private:
  * @param image_name binary image name
  *
  * Locate a (number of) matching absolute paths to the given image name.
- * We return an empty vector if nothing could be found to match.
  * If we fail to find the file or if it is not readable we provide a warning
  * and return an empty string.
  */
