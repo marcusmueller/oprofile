@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.27 2000/09/04 22:54:12 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.28 2000/09/06 12:56:57 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -109,7 +109,7 @@ static uint map_open;
 static uint hash_map_open;
 static char *hash_map;
 
-void oprof_out8(struct op_sample *samp);
+void oprof_put_note(struct op_sample *samp);
 
 /* --------- device routines ------------- */
 
@@ -191,14 +191,6 @@ int oprof_map_release(void)
 	return 0;
 }
 
-// FIXME: remove 
-struct op_mapping {
-        u32 addr;
-        u32 len;
-        u32 offset;
-        u32 num;
-} __attribute__((__packed__));
-
 int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 {
 	ssize_t max;
@@ -265,7 +257,7 @@ asmlinkage static long (*old_sys_exit)(int);
 extern pid_t pid_filter;
 extern pid_t pgrp_filter;
 
-inline static void oprof_report_fork(u16 oldpid, pid_t newpid)
+inline static void oprof_report_fork(u16 old, u32 new)
 {
 	struct op_sample samp;
 
@@ -275,9 +267,10 @@ inline static void oprof_report_fork(u16 oldpid, pid_t newpid)
 #endif
 
 	samp.count = OP_FORK;
-	samp.pid = oldpid;
-	samp.eip = newpid;
-	oprof_out8(&samp);
+	samp.pid = old;
+	samp.eip = new;
+	printk("FORK ");
+	oprof_put_note(&samp);
 }
 
 asmlinkage static int my_sys_fork(struct pt_regs regs)
@@ -364,7 +357,7 @@ inline static u32 *map_out32(u32 val)
 	map_buf[nextmapbuf++] = val;
 	if (nextmapbuf==OP_MAX_MAP_BUF)
 		nextmapbuf=0;
- 
+
 	return pos;
 }
 
@@ -412,7 +405,7 @@ out:
 	return;
 
 global_root:
-	/* FIXME: do we want this ? */
+	/* FIXME: do we want this ? check chroot()ed */
 	printk("Global root: %s\n",dentry->d_name.name);
 	(*count)++;
 	map_out32(output_path_hash(dentry->d_name.name, dentry->d_name.len));
@@ -425,13 +418,11 @@ static int oprof_output_map(ulong addr, ulong len,
 {
 	u32 *tot;
 
-	spin_lock(&map_lock);
 	map_out32(addr);
 	map_out32(len);
 	map_out32(offset);
 	tot = map_out32(0);
 	do_d_path(file->f_dentry, file->f_vfsmnt, buf, tot);
-	spin_unlock(&map_lock);
 
 	return sizeof(u32)*(4+*tot);
 }
@@ -442,6 +433,7 @@ static int oprof_output_maps(struct task_struct *task)
 	char *buffer;
 	struct mm_struct *mm;
 	struct vm_area_struct *map;
+	struct op_sample samp = {0,0,0,};
 
 	buffer = (char *) __get_free_page(GFP_KERNEL);
 	if (!buffer)
@@ -456,17 +448,20 @@ static int oprof_output_maps(struct task_struct *task)
 		goto out;
 
 	down(&mm->mmap_sem);
+	spin_lock(&map_lock);
 	for (map=mm->mmap; map; map=map->vm_next) {
 		if (!(map->vm_flags&VM_EXEC) || !map->vm_file)
 			continue;
 
-		size += oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
+		samp.eip += oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
 				map->vm_pgoff<<PAGE_SHIFT, map->vm_file, buffer);
 	}
+	samp.count = OP_EXEC;
+	samp.pid = current->pid;
+	printk("EXECVE bytes %d ",samp.eip);
+	oprof_put_note(&samp);
+	spin_unlock(&map_lock);
 	up(&mm->mmap_sem);
-	/* FIXME: remove */
-	if (!atomic_read(&mm->mm_users))
-		printk(KERN_ERR "Huh ? mm_users is 0\n");
 
 out:
 	free_page((ulong)buffer);
@@ -483,34 +478,17 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 		return PTR_ERR(filename);
 	ret = do_execve(filename, (char **)regs.ecx, (char **)regs.edx, &regs);
 
+	if (!ret) {
+		current->ptrace &= ~PT_DTRACE;
+
 #ifdef PID_FILTER
-	if (!ret) {
-		struct op_sample samp;
-
-		current->ptrace &= ~PT_DTRACE;
-
 		if ((!pid_filter || pid_filter==current->pid) &&
-		    (!pgrp_filter || pgrp_filter==current->pgrp)) {
-			samp.count = OP_EXEC;
-			samp.pid = current->pid;
-			/* how many bytes to read from map buffer */
-			samp.eip = oprof_output_maps(current);
-			oprof_out8(&samp);
-		}
-	}
+		    (!pgrp_filter || pgrp_filter==current->pgrp))
+			oprof_output_maps(current);
 #else
-	if (!ret) {
-		struct op_sample samp;
-
-		current->ptrace &= ~PT_DTRACE;
-
-		samp.count = OP_EXEC;
-		samp.pid = current->pid;
-		/* how many bytes to read from map buffer */
-		samp.eip = oprof_output_maps(current);
-		oprof_out8(&samp);
+		oprof_output_maps(current);
+#endif 
 	}
-#endif
 	putname(filename);
         return ret;
 }
@@ -535,11 +513,14 @@ static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 	samp.count = OP_MAP;
 	samp.pid = current->pid;
 	/* how many bytes to read from map buffer */
+	spin_lock(&map_lock);
 	samp.eip = oprof_output_map(addr,len,offset,file,buffer);
+	printk("MMAP bytes %d ",samp.eip);
+	oprof_put_note(&samp);
+	spin_unlock(&map_lock);
 
 	fput(file);
 	free_page((ulong)buffer);
-	oprof_out8(&samp);
 }
 
 asmlinkage static int my_sys_mmap2(ulong addr, ulong len,
@@ -596,7 +577,7 @@ asmlinkage static long my_sys_init_module(const char *name_user, struct module *
 		samp.count = OP_DROP_MODULES;
 		samp.pid = 0;
 		samp.eip = 0;
-		oprof_out8(&samp);
+		oprof_put_note(&samp);
 	}
 	return ret;
 }
@@ -614,7 +595,7 @@ asmlinkage static long my_sys_exit(int error_code)
 	samp.count = OP_EXIT;
 	samp.pid = current->pid;
 	samp.eip = 0;
-	oprof_out8(&samp);
+	oprof_put_note(&samp);
 
 	return old_sys_exit(error_code);
 }
@@ -642,6 +623,7 @@ void __init op_intercept_syscalls(void)
 	sys_call_table[__NR_exit] = my_sys_exit;
 }
 
+/* FIXME: er, this can't work, can it ? */
 void __exit op_replace_syscalls(void)
 {
 	sys_call_table[__NR_fork] = old_sys_fork;
