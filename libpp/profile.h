@@ -44,6 +44,16 @@ public:
 	}
 
 	/**
+	 * count samples count w/o recording them
+	 * @param filename sample filename
+	 *
+	 * convenience interface for raw access to sample count w/o recording
+	 * them. It's placed here so all access to samples files go through
+	 * profile_t static or non static member.
+	 */
+	static unsigned int sample_count(string const & filename);
+
+	/**
 	 * cumulate sample file to our container of samples
 	 * @param filename  sample file name
 	 * @param offset the offset for kernel files, \sa start_offset
@@ -70,6 +80,9 @@ public:
 	iterator_pair samples_range() const;
 
 private:
+	/// helper for sample_count() and add_sample_file(). All error launch
+	/// an exception.
+	static void open_sample_file(string const & filename, samples_odb_t &);
 
 	/// copy of the samples file header
 	scoped_ptr<opd_header> file_header;

@@ -216,17 +216,10 @@ group_summary summarize(partition_files::filename_set const & files)
 
 	partition_files::filename_set::const_iterator it;
 	for (it = files.begin(); it != files.end(); ++it) {
-		profile_t samples;
-		// THere's another FIXME on this elsewhere. Note
-		// that the use of profile_t for this means we
-		// pass in an offset of "0" instead of the real
-		// abfd offset. This is perhaps a bit dubious...
-		samples.add_sample_file(it->sample_filename, 0);
-
 		summary dep_summary(it->image, it->lib_image);
 
-		profile_t::iterator_pair p_it = samples.samples_range();
-		dep_summary.count = accumulate(p_it.first, p_it.second, 0);
+		dep_summary.count =
+			profile_t::sample_count(it->sample_filename);
 
 		group.count += dep_summary.count;
 		group.files.push_back(dep_summary);

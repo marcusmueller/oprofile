@@ -38,20 +38,40 @@ profile_t::~profile_t()
 }
 
 
-void profile_t::add_sample_file(string const & filename, u32 offset)
+// static member
+unsigned int profile_t::sample_count(string const & filename)
 {
 	samples_odb_t samples_db;
 
-	int rc = odb_open(&samples_db, filename.c_str(), ODB_RDONLY,
+	open_sample_file(filename, samples_db);
+
+	unsigned int count = 0;
+
+	odb_node_nr_t node_nr, pos;
+	odb_node_t * node = odb_get_iterator(&samples_db, &node_nr);
+	for (pos = 0; pos < node_nr; ++pos) {
+		if (node[pos].key)
+			count += node[pos].value;
+	}
+
+	odb_close(&samples_db);
+
+	return count;
+}
+
+//static member
+void profile_t::open_sample_file(string const & filename, samples_odb_t & db)
+{
+	int rc = odb_open(&db, filename.c_str(), ODB_RDONLY,
 		sizeof(struct opd_header));
 
 	if (rc != EXIT_SUCCESS) {
 		ostringstream os;
-		os << samples_db.err_msg << endl;
+		os << db.err_msg << endl;
 		throw op_fatal_error(os.str());
 	}
 
-	opd_header const & head = *static_cast<opd_header *>(samples_db.base_memory);
+	opd_header const & head = *static_cast<opd_header *>(db.base_memory);
 
 	if (head.version != OPD_VERSION) {
 		ostringstream os;
@@ -60,6 +80,15 @@ void profile_t::add_sample_file(string const & filename, u32 offset)
 		   <<  "mismatch ?\n";
 		throw op_fatal_error(os.str());
 	}
+}
+
+void profile_t::add_sample_file(string const & filename, u32 offset)
+{
+	samples_odb_t samples_db;
+
+	open_sample_file(filename, samples_db);
+
+	opd_header const & head = *static_cast<opd_header *>(samples_db.base_memory);
 
 	// if we already read a sample file header pointer is non null
 	if (file_header.get()) {

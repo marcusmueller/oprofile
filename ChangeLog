@@ -1,5 +1,13 @@
 2003-08-02  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/profile.h:
+	* libpp/profile.cpp: profile::sample_count() new to allow raw access
+	  to samples count
+	* pp/opreport.cpp: use above function to implement opreport (w/o -l
+	  or --details options). opreport is roughly twice faster.
+
+2003-08-02  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/opreport.cpp: clarify multiple counter support
 
 2003-08-01  John Levon  <levon@movementarian.org>
