@@ -12,9 +12,6 @@
 #include "oprofile.h"
 #include "op_msr.h"
 
-#ifndef CONFIG_X86_64
-#include <asm/smpboot.h>
-#endif
 #include <linux/smp.h>
 
 EXPORT_NO_SYMBOLS;
