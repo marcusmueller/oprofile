@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.37 2001/10/30 17:32:13 movement Exp $
+# $Id: Makefile.in,v 1.38 2001/11/10 13:16:15 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MKDIR_P=mkdir -p
@@ -57,8 +57,9 @@ tags:
 # 2. upload to sf
 # 3. untar into webpage
 # 4. add release
-# 5. send release email
-# 6. update freshmeat
+# 5. close fixed bugs
+# 6. send release email
+# 7. update freshmeat
 dist:
 	mkdir tmpdist ; \
 	cd tmpdist ; \

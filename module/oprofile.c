@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.10 2001/11/07 01:35:38 movement Exp $ */
+/* $Id: oprofile.c,v 1.11 2001/11/10 13:16:15 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -153,6 +153,16 @@ static void op_check_ctr(uint cpu, struct pt_regs *regs, int ctr)
 	ulong l,h;
 	get_perfctr(l, h, ctr);
 	if (likely(ctr_overflowed(l))) {
+		if (unlikely(sysctl.pid_filter) && 
+			likely(current->pid != sysctl.pid_filter)) {
+			set_perfctr((&oprof_data[cpu])->ctr_count[ctr], ctr);
+			return;
+		}
+		if (unlikely(sysctl.pgrp_filter) && 
+			likely(current->pgrp != sysctl.pgrp_filter)) {
+			set_perfctr((&oprof_data[cpu])->ctr_count[ctr], ctr);
+			return;
+		}
 		op_do_profile(cpu, regs, ctr);
 	}
 }
@@ -161,11 +171,6 @@ asmlinkage void op_do_nmi(struct pt_regs *regs)
 {
 	uint cpu = op_cpu_id();
 	int i;
-
-	if (unlikely(sysctl.pid_filter) && likely(current->pid != sysctl.pid_filter))
-		return;
-	if (unlikely(sysctl.pgrp_filter) && likely(current->pgrp != sysctl.pgrp_filter))
-		return;
 
 	for (i = 0 ; i < op_nr_counters ; ++i)
 		op_check_ctr(cpu, regs, i);
