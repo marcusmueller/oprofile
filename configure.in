@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.1 2000/08/03 02:39:33 moz Exp $)
+AC_REVISION($Id: configure.in,v 1.2 2000/08/03 03:00:40 moz Exp $)
 dnl
 dnl Process this file with autoconf to produce a configure script.
 dnl
@@ -132,10 +132,6 @@ fi
 
 AC_SUBST(extra_includes)
 AC_SUBST(extra_libraries)
-dnl AC_SUBST(bindir)
-dnl AC_SUBST(mandir)
-dnl AC_SUBST(program_prefix)
-dnl AC_SUBST(program_suffix)
 
 AC_CHECK_LIB(popt, poptGetContext,, AC_MSG_ERROR(popt library not found))
 AC_CHECK_LIB(iberty, cplus_demangle,, AC_MSG_ERROR(liberty library not found))

@@ -5,14 +5,14 @@ all: oprofpp
 clean: 
 	rm -f oprofpp *.o 
  
+prefix=@prefix@
+exec_prefix=@exec_prefix@
 BINDIR=@bindir@
 MANDIR=@mandir@
-PREFIX=@program_prefix@
-SUFFIX=@program_suffix@
 
 install: oprofpp
-	cp oprofpp $(BINDIR)/$(PREFIX)oprofpp$(SUFFIX)
-	cd $(BINDIR) && chmod 755 $(PREFIX)oprofpp$(SUFFIX)
+	cp oprofpp $(BINDIR)/oprofpp
+	cd $(BINDIR) && chmod 755 oprofpp
  
 CFLAGS=-Wall -Wstrict-prototypes -W -O2 -pipe -DOP_EVENTS_DESC -L/usr/lib @CFLAGS@
 LIBS=-lpopt -lbfd -liberty -ldl

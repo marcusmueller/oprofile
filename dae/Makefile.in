@@ -1,20 +1,20 @@
-# $Id: Makefile.in,v 1.1 2000/08/03 02:37:33 moz Exp $
+# $Id: Makefile.in,v 1.2 2000/08/03 03:00:42 moz Exp $
 
 .PHONY: all clean srcdoc install
  
 all: oprofiled op_help
  
+prefix=@prefix@
+exec_prefix=@exec_prefix@
 BINDIR=@bindir@
 MANDIR=@mandir@
-PREFIX=@program_prefix@
-SUFFIX=@program_suffix@
 
 install: oprofiled op_start op_stop op_help
-	cp oprofiled $(BINDIR)/$(PREFIX)oprofiled$(SUFFIX)
-	cp op_start $(BINDIR)/$(PREFIX)op_start$(SUFFIX)
-	cp op_stop $(BINDIR)/$(PREFIX)op_stop$(SUFFIX)
+	cp oprofiled $(BINDIR)/oprofiled
+	cp op_start $(BINDIR)/op_start
+	cp op_stop $(BINDIR)/op_stop
 	cp op_help $(BINDIR)/op_help 
-	cd $(BINDIR) && chmod 755 $(PREFIX)oprofiled$(SUFFIX) $(PREFIX)op_start$(SUFFIX) $(PREFIX)op_stop$(SUFFIX) op_help
+	cd $(BINDIR) && chmod 755 oprofiled op_start op_stop op_help
  
 clean:
 	rm -f oprofiled op_help *.o
