@@ -130,7 +130,7 @@ private:
 	void populate(std::list<image_set> const & lset,
 		      extra_images const & extra, size_t pclass,
 		      profile_container const & symbols, bool debug_info);
-	void populate(std::list<string> const & cg_files,
+	void populate(std::list<std::string> const & cg_files,
 		      extra_images const & extra, size_t pclass,
 		      profile_container const & symbols, bool debug_info);
 

@@ -56,7 +56,7 @@ public:
 
 	/// output table header, implemented by calling the virtual function
 	/// output_header_field()
-	void output_header(ostream & out);
+	void output_header(std::ostream & out);
 protected:
 	/// returns the nr of char needed to pad this field
 	virtual size_t output_header_field(std::ostream & out, format_flags fl,
