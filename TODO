@@ -6,6 +6,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
+ o sample-file: / binary: don't work in any useful way
  o separate debug info stuff
  o debian build stuff
  o side-by-side opreport output (--compare - needs UI spec)
