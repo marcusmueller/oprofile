@@ -173,8 +173,8 @@ pmc_fill_in(ulong *val, u8 kernel, u8 user, u8 event, u8 um)
 		 : (*val &= ~(1<<0));
 
 	/* what are we counting ? */
-	*val &= ~(0x7f << 8);
-	*val |= ((event & 0x7f) << 8);
+	*val &= ~(0xff << 8);
+	*val |= ((event & 0xff) << 8);
 	*val &= ~(0xf << 16);
 	*val |= ((um & 0xf) << 16);
 }

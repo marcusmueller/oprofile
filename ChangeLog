@@ -1,3 +1,8 @@
+2003-10-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_perfmon.c:
+	* module/ia64/op_pmu.c: bit mask for event select field is 8 bits not 7
+
 2003-10-14  John Levon  <levon@movementarian.org>
 
 	* configure.in:
