@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.120 2002/11/10 02:34:26 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.121 2002/11/10 16:25:34 movement Exp $)
 AC_PREREQ(2.13)
 
 AC_INIT(libop/op_config.h)
@@ -260,12 +260,10 @@ AC_MSG_RESULT([takes char **]);,
 AC_MSG_RESULT([takes const char **]); AC_DEFINE(CONST_POPT, 1, [whether popt prototype take a const char **]))
 CXXFLAGS="$SAVE_CXXFLAGS"
 
-# FIXME: update for automake ?
 AC_MSG_CHECKING([whether to use included sstream])
 AC_TRY_COMPILE([#include <sstream>], [], 
 AC_MSG_RESULT([no]);,
-AC_MSG_RESULT([yes]); CXXINCLUDES="$CXXINCLUDES -I../include")
-AC_SUBST(CXXINCLUDES)
+AC_MSG_RESULT([yes]); CXXFLAGS="$CXXFLAGS -I\${top_srcdir}/include")
 
 dnl some distro have a libiberty.a but does not have a libiberty.h
 AC_CHECK_HEADERS(libiberty.h)
