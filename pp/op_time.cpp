@@ -177,18 +177,18 @@ static void out_filename(string const & app_name,
 		if ((options::counter & (1 << i)) != 0) {
 			// feel to rewrite with cout and its formated output
 #if 1
-			printf("%-9d ", count[i]);
+			printf("%-9d", count[i]);
 			double ratio = op_ratio(count[i], total_count[i]);
 
 			if (ratio < 10.00 / 100.0)
 				printf(" ");
-			printf("%2.4f", ratio * 100);
+			printf(" %2.4f", ratio * 100);
 
 			ratio = op_ratio(count[i], app_count[i]);
 
 			if (ratio < 10.00 / 100.0)
 				printf(" ");
-			printf("%2.4f", ratio * 100);
+			printf(" %2.4f", ratio * 100);
 #else
 			cout << count[i] << " ";
 

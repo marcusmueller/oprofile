@@ -225,7 +225,7 @@ int main(int argc, char const *argv[])
 
 	filelist.push_front(options::sample_file);
 
-	bool first_file = true;
+	bool found_file = false;
 
 	list<string>::const_iterator it;
 	for (it = filelist.begin() ; it != filelist.end() ; ++it) {
@@ -265,7 +265,6 @@ int main(int argc, char const *argv[])
 				    options::symbol);
 
 			profile.output_header();
-			first_file = false;
 		} else {
 			string app_name;
 			string lib_name;
@@ -276,9 +275,10 @@ int main(int argc, char const *argv[])
 			  lib_name, app_name, options::exclude_symbols,
 				    options::symbol);
 		}
+		found_file = true;
 	}
 
-	if (first_file) {
+	if (!found_file) {
 		cerr << "oprofpp: Cannot locate any samples file." << endl;
 		exit(EXIT_FAILURE);
 	}
