@@ -3,7 +3,8 @@
 	* daemon/opd_kernel.c:
 	* daemon/liblegacy/opd_kernel.c: be less paranoiad about kernel range,
 	  this a slightly different thant the patch Thomas Spatzier tested but
-	  it can't hurt (last famous word ...)
+	  it can't hurt (last famous word ...). This fix s390x where kernel
+	  start can be zero and was rejected.
 
 2003-11-06  Thomas Spatzier <tspat@de.ibm.com>
 
