@@ -1,6 +1,9 @@
 Correctness
 -----------
 
+o Save counter state and restore on a finish
+o Athlon: values in oprofile.c not op_init.c, bit 22 is per-counter, determine working event types,
+  fix ctr_overflowed(), fix set_perfctr to set high to -1
 o SMP mappings - place in all buffers perhaps ?
 o check chroot() processes and the path hash stuff
 o There is no need for the daemon to run as root as long as every binary image
@@ -22,6 +25,7 @@ o change the path component hash to be pointer-parent pairs, and allocate the st
 WBNI
 ----
 
+o good support for determining changed profiles
 o compile-time interrupt accounting (sysctl-read/writeable) - then re-do results/rates/
 o we don't really need a vmlinux file during profiling ...
 o Other x86 processors

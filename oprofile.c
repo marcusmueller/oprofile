@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.71 2001/08/14 02:38:29 movement Exp $ */
+/* $Id: oprofile.c,v 1.72 2001/08/19 18:50:54 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -176,6 +176,9 @@ static void restore_nmi(void)
 
 /* ---------------- APIC setup ------------------ */
 
+/* PHE : this would be probably an unconditionnaly restore state from a saved
+ *state 
+ */
 static void disable_local_P6_APIC(void *dummy)
 {
 #ifndef CONFIG_X86_UP_APIC
@@ -184,6 +187,11 @@ static void disable_local_P6_APIC(void *dummy)
 	uint h;
 
 	/* FIXME: maybe this should go at end of function ? */
+	/* PHE I think  when the doc says : -if you disable the apic the bits 
+	 * of LVT cannot be reset- it talk about the SW disable through bit 8
+	 * of SPIV see 7.4.14 (7.5.14) not the hardware disable, so it is ok
+	 * but I perhaps we need a software disable of the APIC at the end 
+	 */
 	/* first disable via MSR */
 	/* IA32 V3, 7.4.2 */
 	rdmsr(MSR_IA32_APICBASE, l, h);
@@ -231,11 +239,9 @@ static void __init lvtpc_apic_setup(void *dummy)
 	/* IA32 V3, Figure 7.8 */
 	old_lvtpc[smp_processor_id()] = val = apic_read(APIC_LVTPC);
 	/* allow PC overflow interrupts */
-	val &= ~(1<<16);
+	val &= ~APIC_LVT_MASKED;
 	/* set delivery to NMI */
-	val |= (1<<10);
-	val &= ~(1<<9);
-	val &= ~(1<<8);
+	val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_NMI);
 	apic_write(APIC_LVTPC, val);
 }
 
@@ -244,11 +250,44 @@ static void __exit smp_apic_restore(void *dummy)
 	apic_write(APIC_LVTPC, old_lvtpc[smp_processor_id()]);
 }
 
+/* PHE bit 8 of APIC_BASE_MSR is the BSP flags, it is set by harware at boot
+ * up sequence and would be keeped ok by software to allow #INIT or #ERR, else
+ * all the processor on the next MP sequence fall in shutdown.
+ *
+ * On UP architecture it should always be zero (ok for my PII) 7.4.8 (7.5.8), 
+ * I am unsure  but I have presumption than kernel cannot boot properly if bsp
+ * flags is set on UP machine.
+ *
+ * I think it is ok in all case, perhaps corner case on SMP with only one
+ * processor plugged ?
+ */
+inline static int is_bsp_proc(void)
+{
+	uint l;
+	uint h;
+	rdmsr(MSR_IA32_APICBASE, l, h);
+	wrmsr(MSR_IA32_APICBASE, l & ~(1<<11), h);
+
+	return (h & (1 << 8)) ? 1 : 0;
+}
+
 static int __init apic_needs_setup(void)
 {
 	/* FIXME: we need to detect UP kernel, SMP hardware, and
 	 * return 0 here, to avoid screwing up the APIC
 	 */
+	/* PHE: for UP kernel SMP machine this processor should have the bsp
+	 * flags set, something like:
+
+#ifndef X86_UP_APIC 
+	if (smp_num_cpus == 1) {
+		return !is_bsp_proc();
+	}
+#endif
+	return 0;
+
+	would work
+        */
 	return 
 /* if enabled, the kernel has already set it up */
 #ifdef CONFIG_X86_UP_APIC
@@ -257,6 +296,13 @@ static int __init apic_needs_setup(void)
 	smp_num_cpus == 1;
 }
 
+/* PHE, would : save all state change for later restoration, minimalise the
+ * amount of change. Basically we need to test if apic is HW disable, SW 
+ * disable, and change only the LVTPC setup, all other must be keep as it
+ * (except the LINT1 for bsp ?) We must rely on the kernel to setup all things.
+ * also : do we need  write_apic --> write_apic_around to support
+ * GOOD_APIC/BAD_APIC ?
+ */
 static int __init apic_setup(void)
 {
 	uint msr_low, msr_high;
@@ -268,6 +314,12 @@ static int __init apic_setup(void)
 	}
 
 	/* ugly hack */
+	/* PHE : the memory must be uncachable! this is perhaps more a
+	 * problem for Athlon than for PII.
+	 * Also this stuff probably mishandled SMP ?
+	 * The _PAGE_GLOBAL attribute should be probably avoided but make 
+	 * this later 
+	 */
 	my_set_fixmap();
 
 	/* FIXME: NMI delivery for SMP ? */
@@ -288,6 +340,7 @@ static int __init apic_setup(void)
 	if (GET_APIC_MAXLVT(apic_read(APIC_LVR)) != 4)
 		goto not_local_p6_apic;
 
+	/* __global_cli(); ? an IPI can occur inside this stuff ? */
 	__cli();
 
 	/* enable APIC locally */
@@ -296,35 +349,58 @@ static int __init apic_setup(void)
 	apic_write(APIC_SPIV, val | APIC_SPIV_APIC_ENABLED);
 
 	/* FIXME: examine this stuff */
-	val = 0x00008700;
+	val = APIC_LVT_LEVEL_TRIGGER;
+	val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_EXINT);
 	apic_write(APIC_LVT0, val);
 
-	val = 0x00000400;
+	/* edge triggered, IA 7.4.11 */
+	/* PHE SMP: only the BSP must see the LINT1 IRQ (from kernel source) 
+	 * recheck this later
+	 */
+	val = SET_APIC_DELIVERY_MODE(0, APIC_MODE_NMI);
 	apic_write(APIC_LVT1, val);
 
 	/* clear error register */
 	/* IA32 V3, 7.4.17 */
+	/* PHE must be cleared after unmasking by a back-to-back write,
+	 * but it is probably ok because we mask only, the ESR is not updated
+	 * is this a real problem ?
+	 */
 	apic_write(APIC_ESR, 0);
 
 	/* mask error interrupt */
 	/* IA32 V3, Figure 7.8 */
 	val = apic_read(APIC_LVTERR);
-	val |= 0x00010000;
+	val |= APIC_LVT_MASKED;
 	apic_write(APIC_LVTERR, val);
 
 	/* setup timer vector */
 	/* IA32 V3, 7.4.8 */
-	apic_write(APIC_LVTT, 0x0001031);
+	/* PHE actually it is ok but kernel change can hang up the machine
+	 * after this point.
+	 */
+	apic_write(APIC_LVTT, APIC_SEND_PENDING | 0x31);
 
 	/* Divide configuration register */
+	/* PHE the apic clock is based on the FSB. This should only changed
+	 * with a calibration method.
+	 */
 	val = APIC_TDR_DIV_1;
 	apic_write(APIC_TDCR, val);
 
 
+	/* PHE __global_sti() probably */
 	__sti();
 
 	/* If the local APIC NMI watchdog has been disabled, we'll need
 	 * to set up NMI delivery anyway ...
+	 */
+	/* PHE : ? why not use a FixedMode rather than NMI mode for profiling,
+	 * this avoid all problem with parity error nmi and watchdog, but this
+	 * implies than the actual nmi handler must be hardware interruptible,
+	 * basically this is better at my eyes but there is a few visible
+	 * (and hidden) problem with this issue. This can probably wait unless
+	 * hidden problem occur on SMP, recheck doc about NMI
 	 */
 	lvtpc_apic_setup(NULL);
 
@@ -391,6 +467,7 @@ static void pmc_setup(void *dummy)
 	/* disable ctr1 if the UP oopser might be on, but we can't do anything
 	 * interesting with the NMIs
 	 */
+	/* PHE FIXME Have always a meaning ? */
 #if !defined(CONFIG_X86_UP_APIC) || !defined(OP_EXPORTED_DO_NMI)
 	wrmsr(MSR_IA32_EVNTSEL1, low, high);
 #endif
