@@ -1,5 +1,10 @@
 2004-11-17  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* doc/oprofile.xml: some words about UP kernel > 2.6.9 and the need of
+	  lapic at boot.
+
+2004-11-17  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/common_option.h:
 	* pp/common_option.cpp: move threshold option from here ...
 	* pp/opannotate_options.cpp:

@@ -266,7 +266,7 @@ You'll need to have a configured kernel source for the current kernel
 to build the module for 2.4 kernels.  Since all distributions provide different kernels it's unlikely the running kernel match the configured source
 you installed. The safest way is to recompile your own kernel, run it and compile oprofile. It is also recommended that if you have a
 uniprocessor machine, you enable the local APIC / IO_APIC support for
-your kernel (this is automatically enabled for SMP kernels).  On
+your kernel (this is automatically enabled for SMP kernels). With many BIOS, kernel >= 2.6.9 and UP kernel it's not sufficient to enable the local APIC you must also turn it on explicitely at boot time by providing "lapic" option to the kernel. On
 machines with power management, such as laptops, the power management
 must be turned off when using OProfile with 2.4 kernels. The power management software
 in the BIOS cannot handle the non-maskable interrupts (NMIs) used by
