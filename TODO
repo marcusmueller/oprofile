@@ -6,7 +6,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8 release
 -----------
 
- o "finish" and merge BRANCH_CALLGRAPH
+ o "finish" and merge BRANCH_CALLGRAPH. Phew.
 
 0.9 release
 -----------
@@ -19,12 +19,10 @@ Before 1.0 little stuff
 
  o we should try and resolve each path component for symlinks too
   (/lib/modules/foo/build/vmlinux)
- o daemon: is NR_CPUS broken on smp box with more than 32 cpus ?
  o x86_64 and 2.4 kernel: it's apparently broken
  o Alpha ev67 events are broken
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
   try to recover gracefully.
- o we can add lots more unit tests yet
  o output column shortname headers for opreport -l
  o separate debug info stuff
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
@@ -37,7 +35,6 @@ Before 1.0 little stuff
  o --buffer-size is useless on 2.5 without tuning of watershed
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
  o when we dump stats for oprofiled, dump kernel-side values too (for 2.5)
- o remove 2.2 / gcc 2.91 support ?
  o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
  o sample-file: / binary: don't work in any useful way - can we fix this
    by peeking at binary: value and faking the split_sample_file somehow ?
@@ -68,6 +65,8 @@ General checks to make
 Later
 -----
  
+ o we can add lots more unit tests yet
+ o remove 2.2 / gcc 2.91 support ?
  o Itanium event constraints are not implemented
  o side-by-side opreport output (--compare - needs UI spec) ???
  o can we log samples going to anonymous mapping by using
