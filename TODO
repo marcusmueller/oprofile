@@ -63,7 +63,6 @@ Before 1.0 little stuff
  o implement pp_interface alias
  o look if we must remove help_str support from libopt++
  o move oprofiled.log to OP_SAMPLE_DIR/current ?
- o OPD_MAX_MODULES is stupid, use a list instead
  o lib-image: and image: behavior depend on --separate=, if --separate=library
   opreport "lib-image:*libc*" --merge=lib works but not
   opreport "image:*libc*" --merge=lib whilst the behavior is reversed if

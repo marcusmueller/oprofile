@@ -43,8 +43,8 @@ static struct opd_image * kernel_image;
 /* kernel and module support */
 static vma_t kernel_start;
 static vma_t kernel_end;
-static struct opd_module opd_modules[OPD_MAX_MODULES];
-static unsigned int nr_modules=0;
+/** all module not belonging to an application goes in this list */
+static struct list_head opd_modules = { &opd_modules, &opd_modules };
 
 /**
  * opd_init_kernel_image - initialise the kernel image
@@ -54,7 +54,7 @@ void opd_init_kernel_image(void)
 	/* for no vmlinux */
 	if (!vmlinux)
 		vmlinux = "no-vmlinux";
-	kernel_image = opd_get_kernel_image(vmlinux, 0);
+	kernel_image = opd_get_kernel_image(vmlinux, NULL);
 }
 
 
@@ -74,30 +74,6 @@ void opd_parse_kernel_range(char const * arg)
 			kernel_start, kernel_end);
 		fprintf(stderr, "kernel profiles will be wrong.\n");
 	}
-}
-
-
-/**
- * new_module - initialise a module description
- *
- * @param name module name
- * @param start start address
- * @param end end address
- */
-static struct opd_module * new_module(char * name, vma_t start, vma_t end)
-{ 
-	opd_modules[nr_modules].name = name;
-	opd_modules[nr_modules].image = NULL;
-	opd_modules[nr_modules].start = start;
-	opd_modules[nr_modules].end = end;
-	list_init(&opd_modules[nr_modules].module_list);
-	nr_modules++;
-	if (nr_modules == OPD_MAX_MODULES) {
-		fprintf(stderr, "Exceeded %u kernel modules !\n",
-		        OPD_MAX_MODULES);
-		exit(EXIT_FAILURE);
-	}
-	return &opd_modules[nr_modules-1];
 }
 
 
@@ -123,34 +99,6 @@ opd_create_module(char const * name, vma_t start, vma_t end)
 
 
 /**
- * opd_get_module - get module structure
- * @param name  name of module image
- *
- * Find the module structure for module image name.
- * If it could not be found, add the module to
- * the global module structure.
- *
- * If an existing module is found, name is free()d.
- * Otherwise it must be freed when the module structure
- * is removed (i.e. in opd_clear_module_info()).
- */
-static struct opd_module * opd_get_module(char * name)
-{
-	int i;
-
-	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].name && !strcmp(name, opd_modules[i].name)) {
-			/* free this copy */
-			free(name);
-			return &opd_modules[i];
-		}
-	}
-
-	return new_module(name, 0, 0);
-}
-
-
-/**
  * opd_clear_module_info - clear kernel module information
  *
  * Clear and free all kernel module information and reset
@@ -158,18 +106,18 @@ static struct opd_module * opd_get_module(char * name)
  */
 static void opd_clear_module_info(void)
 {
-	int i;
+	struct list_head * pos;
+	struct list_head * pos2;
+	struct opd_module * module;
 
-	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].name)
-			free(opd_modules[i].name);
-		opd_modules[i].name = NULL;
-		opd_modules[i].start = 0;
-		opd_modules[i].end = 0;
-		list_init(&opd_modules[i].module_list);
+	verbprintf("Removing module list\n");
+	list_for_each_safe(pos, pos2, &opd_modules) {
+		module = list_entry(pos, struct opd_module, module_list);
+		if (module->name)
+			free(module->name);
+		free(module);
+		list_del(pos);
 	}
-
-	nr_modules = 0;
 
 	opd_for_each_image(opd_delete_modules);
 }
@@ -234,8 +182,9 @@ void opd_reread_module_info(void)
 			continue;
 		}
 
-		mod = opd_get_module(xstrdup(module_name));
-		mod->image = opd_get_kernel_image(module_name, 0);
+		mod = opd_create_module(module_name, 0, 0);
+		list_add(&mod->module_list, &opd_modules);
+		mod->image = opd_get_kernel_image(module_name, NULL);
 
 		mod->start = start_address;
 		mod->end = mod->start + module_size;
@@ -278,11 +227,14 @@ void opd_delete_modules(struct opd_image * image)
  */
 static struct opd_module * opd_find_module_by_eip(vma_t eip)
 {
-	uint i;
-	for (i = 0; i < nr_modules; i++) {
-		if (opd_modules[i].start && opd_modules[i].end &&
-		    opd_modules[i].start <= eip && opd_modules[i].end > eip)
-			return &opd_modules[i];
+	struct list_head * pos;
+	struct opd_module * module;
+
+	list_for_each(pos, &opd_modules) {
+		module = list_entry(pos, struct opd_module, module_list);
+		if (module->start && module->end &&
+		    module->start <= eip && module->end > eip)
+			return module;
 	}
 
 	return NULL;

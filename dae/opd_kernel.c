@@ -31,6 +31,7 @@ struct opd_module {
 	struct opd_image * image;
 	unsigned long start;
 	unsigned long end;
+	struct list_head module_list;
 };
 
 extern char * vmlinux;
@@ -43,7 +44,7 @@ static struct opd_image * kernel_image;
 /* kernel and module support */
 static unsigned long kernel_start;
 static unsigned long kernel_end;
-static struct opd_module opd_modules[OPD_MAX_MODULES];
+static struct list_head opd_modules = { &opd_modules, &opd_modules };
 static unsigned int nr_modules=0;
 
 /**
@@ -56,6 +57,7 @@ void opd_init_kernel_image(void)
 		vmlinux = "no-vmlinux";
 	kernel_image = opd_get_kernel_image(vmlinux, NULL);
 }
+
 
 /**
  * opd_parse_kernel_range - parse the kernel range values
@@ -75,6 +77,28 @@ void opd_parse_kernel_range(char const * arg)
 	}
 }
 
+
+/**
+ * opd_create_module - allocate and initialise a module description
+ * @param name module name
+ * @param start start address
+ * @param end end address
+ */
+static struct opd_module *
+opd_create_module(char * name, unsigned long start, unsigned long end)
+{
+	struct opd_module * module = xmalloc(sizeof(struct opd_module));
+
+	module->name = xstrdup(name);
+	module->image = NULL;
+	module->start = start;
+	module->end = end;
+	list_init(&module->module_list);
+
+	return module;
+}
+
+
 /**
  * opd_clear_module_info - clear kernel module information
  *
@@ -83,66 +107,22 @@ void opd_parse_kernel_range(char const * arg)
  */
 void opd_clear_module_info(void)
 {
-	int i;
+	struct list_head * pos;
+	struct list_head * pos2;
+	struct opd_module * module;
 
-	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].name)
-			free(opd_modules[i].name);
-		opd_modules[i].name = NULL;
-		opd_modules[i].start = 0;
-		opd_modules[i].end = 0;
+	verbprintf("Removing module list\n");
+	list_for_each_safe(pos, pos2, &opd_modules) {
+		module = list_entry(pos, struct opd_module, module_list);
+		if (module->name)
+			free(module->name);
+		free(module);
+		list_del(pos);
 	}
 
 	opd_clear_kernel_mapping();
 }
 
-/**
- * new_module - initialise a module description
- * @param name module name
- * @param start start address
- * @param end end address
- */
-static struct opd_module * new_module(char * name,
-	unsigned long start, unsigned long end)
-{ 
-	opd_modules[nr_modules].name = name;
-	opd_modules[nr_modules].image = NULL;
-	opd_modules[nr_modules].start = start;
-	opd_modules[nr_modules].end = end;
-	nr_modules++;
-	if (nr_modules == OPD_MAX_MODULES) {
-		fprintf(stderr, "Exceeded %u kernel modules !\n", OPD_MAX_MODULES);
-		exit(EXIT_FAILURE);
-	}
-	return &opd_modules[nr_modules-1];
-}
-
-/**
- * opd_get_module - get module structure
- * @param name  name of module image
- *
- * Find the module structure for module image name.
- * If it could not be found, add the module to
- * the global module structure.
- *
- * If an existing module is found, name is free()d.
- * Otherwise it must be freed when the module structure
- * is removed (i.e. in opd_clear_module_info()).
- */
-static struct opd_module * opd_get_module(char * name)
-{
-	int i;
-
-	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].name && !strcmp(name, opd_modules[i].name)) {
-			/* free this copy */
-			free(name);
-			return &opd_modules[i];
-		}
-	}
-
-	return new_module(name, 0, 0);
-}
 
 /**
  * opd_get_module_info - parse mapping information for kernel modules
@@ -216,7 +196,7 @@ static void opd_get_module_info(void)
 		strncpy(modname, cp, (size_t)((cp2-cp)));
 		modname[cp2-cp] = '\0';
 
-		mod = opd_get_module(modname);
+		mod = opd_create_module(modname, 0, 0);
 
 		switch (*(++cp2)) {
 			case 'O':
@@ -308,7 +288,7 @@ static void opd_drop_module_sample(unsigned long eip)
 		if (!query_module(name, QM_INFO, &info, sizeof(info), &ret)) {
 			if (eip >= info.addr && eip < info.addr + info.size) {
 				verbprintf("Sample from unprofilable module %s\n", name);
-				new_module(xstrdup(name), info.addr, info.addr + info.size);
+				opd_create_module(name, info.addr, info.addr + info.size);
 				goto out;
 			}
 		}
@@ -331,15 +311,19 @@ out:
  */
 static struct opd_module * opd_find_module_by_eip(unsigned long eip)
 {
-	uint i;
-	for (i = 0; i < nr_modules; i++) {
-		if (opd_modules[i].start && opd_modules[i].end &&
-		    opd_modules[i].start <= eip && opd_modules[i].end > eip)
-			return &opd_modules[i];
+	struct list_head * pos;
+	struct opd_module * module;
+
+	list_for_each(pos, &opd_modules) {
+		module = list_entry(pos, struct opd_module, module_list);
+		if (module->start && module->end &&
+		    module->start <= eip && module->end > eip)
+			return module;
 	}
 
 	return NULL;
 }
+
 
 
 /**

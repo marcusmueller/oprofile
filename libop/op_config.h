@@ -25,7 +25,4 @@
 #define OPD_MAGIC "DAE\n"
 #define OPD_VERSION 0x8
 
-/** maximum number of profilable kernel modules */
-#define OPD_MAX_MODULES 64
-
 #endif /* OP_CONFIG_H */

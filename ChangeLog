@@ -1,3 +1,10 @@
+2003-09-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_config.h: remove OPD_MAX_MODULEs
+	* dae/opd_kernel.c:
+	* daemon/opd_kernel.c: remove fixed array of modules replaced by
+	  a list. Unify the way we create opd_module
+
 2003-09-17 Ka Fai Lu  <kafai0928@yahoo.com>
 
 	I adapted slightly this patch Phil.
@@ -6,7 +13,7 @@
 	* daemon/opd_kernel.c:
 	* daemon/opd_sample_files.c:
 	* daemon/oprofiled.c:
-	* utils/opcontrol: implement per thread profling
+	* utils/opcontrol: implement per thread profiling
 
 2003-09-16  Philippe Elie  <phil.el@wanadoo.fr>
 
@@ -396,7 +403,7 @@
 	* libregex/op_regex.h:
 	* libregex/op_regex.cpp: tidy
 
-	* libfd/op_bfd.cpp: remove obsolete comment
+	* libutil++/op_bfd.cpp: remove obsolete comment
 
 2003-08-23  Philippe Elie  <phil.el@wanadoo.fr>
 
