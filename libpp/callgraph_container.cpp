@@ -50,6 +50,14 @@ compare_cg_filename::operator()(string const & lhs, string const & rhs) const
 	return plhs.lib_image < prhs.lib_image;
 }
 
+
+bool operator==(cg_symbol const & lhs, cg_symbol const & rhs)
+{
+	less_symbol cmp_symb;
+	return !cmp_symb(lhs, rhs) && !cmp_symb(rhs, lhs);
+}
+
+
 /**
  * We need 2 comparators for callgraph, the arcs are sorted by callee_count,
  * the callees too and the callers by callee_counts in reversed order like:
@@ -96,25 +104,53 @@ void arc_recorder::fixup_callee_counts()
 	// FIXME: can be optimized easily
 	iterator end = caller_callee.end();
 	for (iterator it = caller_callee.begin(); it != end; ++it) {
+		cg_symbol & symb = const_cast<cg_symbol &>(it->first);
+
 		pair<iterator, iterator> p_it =
 			caller_callee.equal_range(it->first);
-		count_array_t counts;
 		for (; p_it.first != p_it.second; ++p_it.first) {
-			counts += p_it.first->first.sample.counts;
+			symb.callee_counts += p_it.first->first.sample.counts;
 		}
-		cg_symbol & symbol = const_cast<cg_symbol &>(it->first);
-		symbol.callee_counts = counts;
 	}
 }
 
 
-void arc_recorder::add_arc(cg_symbol const & caller, cg_symbol const * callee)
+arc_recorder::iterator arc_recorder::
+find_arc(cg_symbol const & caller, cg_symbol const & callee)
 {
-	if (callee)
-		callee = new cg_symbol(*callee);
-	caller_callee.insert(map_t::value_type(caller, callee));
-	if (callee) {
-		callee_caller.insert(map_t::value_type(*callee,
+	pair<iterator, iterator> p_it = caller_callee.equal_range(caller);
+	for ( ; p_it.first != p_it.second; ++p_it.first) {
+		if (p_it.first->second && *p_it.first->second == callee)
+			break;
+	}
+
+	return p_it.first == p_it.second ? caller_callee.end() : p_it.first;
+}
+
+
+void arc_recorder::
+add_arc(cg_symbol const & caller, cg_symbol const * cg_callee)
+{
+	if (cg_callee) {
+		iterator it = find_arc(caller, *cg_callee);
+		if (it != caller_callee.end()) {
+			count_array_t & self = const_cast<count_array_t &>(
+				it->first.self_counts);
+			self += caller.self_counts;
+			count_array_t & counts = const_cast<count_array_t &>(
+				it->first.sample.counts);
+			counts += caller.sample.counts;
+			count_array_t & callee = const_cast<count_array_t &>(
+				it->second->self_counts);
+			callee += cg_callee->self_counts;
+			return;
+		}
+		cg_callee = new cg_symbol(*cg_callee);
+	}
+
+	caller_callee.insert(map_t::value_type(caller, cg_callee));
+	if (cg_callee) {
+		callee_caller.insert(map_t::value_type(*cg_callee,
 		       new cg_symbol(caller)));
 	}
 }
@@ -201,40 +237,48 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles,
 	list<inverted_profile>::const_iterator it;
 	list<inverted_profile>::const_iterator const end = iprofiles.end();
 	for (it = iprofiles.begin(); it != end; ++it) {
-		// populate_caller_image is careful about empty sample filename
+		// populate_caller_image take care about empty sample filename
 		populate_for_image(symbols, *it, string_filter());
 	}
 
-	// partition identical lib_image (e.g identical caller) to avoid
-	// some redundant bfd_open but it's difficult to avoid more.
-	// FIXME: must we try harder to avoid bfd open ?
-	typedef multiset<string, compare_cg_filename> cg_fileset;
-	cg_fileset fset;
-
 	for (it = iprofiles.begin(); it != end; ++it) {
 		for (size_t i = 0; i < it->groups.size(); ++i) {
-			list<image_set>::const_iterator lit;
-			list<image_set>::const_iterator const lend
-				= it->groups[i].end();
-			for (lit = it->groups[i].begin(); lit != lend; ++lit) {
-				list<profile_sample_files>::const_iterator pit
-					= lit->files.begin();
-				list<profile_sample_files>::const_iterator pend
-					= lit->files.end();
-				for (; pit != pend; ++pit) {
-					copy(pit->cg_files.begin(),
-					   pit->cg_files.end(),
-					   inserter(fset, fset.begin()));
-				}
-			}
+			populate(it->groups[i], extra, i, symbols, debug_info);
 		}
 	}
 
-	// now iterate over our partition, equivalence class get the same bfd,
-	// the caller.
-	cg_fileset::const_iterator cit;
-	for (cit = fset.begin(); cit != fset.end(); ) {
-		parsed_filename caller_file = parse_filename(*cit);
+	add_leaf_arc(symbols);
+
+	recorder.fixup_callee_counts();
+}
+
+
+void callgraph_container::populate(list<image_set> const & lset,
+	extra_images const & extra, size_t pclass,
+	profile_container const & symbols, bool debug_info)
+{
+	list<image_set>::const_iterator lit;
+	list<image_set>::const_iterator const lend = lset.end();
+	for (lit = lset.begin(); lit != lend; ++lit) {
+		list<profile_sample_files>::const_iterator pit;
+		list<profile_sample_files>::const_iterator pend
+			= lit->files.end();
+		for (pit = lit->files.begin(); pit != pend; ++pit) {
+			populate(pit->cg_files, extra, pclass, symbols,
+				 debug_info);
+		}
+	}
+}
+
+
+void callgraph_container::populate(list<string> const & cg_files,
+	extra_images const & extra, size_t pclass,
+	profile_container const & symbols, bool debug_info)
+{
+	list<string>::const_iterator it;
+	list<string>::const_iterator const end = cg_files.end();
+	for (it = cg_files.begin(); it != end; ++it) {
+		parsed_filename caller_file = parse_filename(*it);
 		string const app_name = caller_file.image;
 
 		image_error error;
@@ -253,67 +297,38 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles,
 			report_image_error(caller_binary,
 					   image_format_failure, false);
 
-		cg_fileset::const_iterator last;
-		for (last = fset.upper_bound(*cit); cit != last; ++cit) {
-			parsed_filename callee_file = parse_filename(*cit);
+		parsed_filename callee_file = parse_filename(*it);
 
-			string callee_binary =
-				find_image_path(callee_file.cg_image,
-		                                       extra, error);
-			if (error != image_ok)
-				report_image_error(callee_binary, error, false);
+		string callee_binary =
+			find_image_path(callee_file.cg_image,
+					extra, error);
+		if (error != image_ok)
+			report_image_error(callee_binary, error, false);
 
-			cverb << vdebug << "cg binary callee name: "
-			      << callee_binary << endl;
+		cverb << vdebug << "cg binary callee name: "
+		      << callee_binary << endl;
 
-			bool bfd_callee_ok = true;
-			op_bfd callee_bfd(callee_binary, string_filter(),
+		bool bfd_callee_ok = true;
+		op_bfd callee_bfd(callee_binary, string_filter(),
 					  bfd_callee_ok);
-			if (!bfd_callee_ok)
-				report_image_error(callee_binary,
-				   image_format_failure, false);
+		if (!bfd_callee_ok)
+			report_image_error(callee_binary,
+					   image_format_failure, false);
 
-			profile_t profile;
-			// We can't use start_offset support in profile_t, give
-			// it a zero offset and we will fix that in add()
-			profile.add_sample_file(*cit, 0);
-			add(profile, caller_bfd, bfd_caller_ok, callee_bfd,
-			    app_name, symbols, debug_info);
-		}
+		profile_t profile;
+		// We can't use start_offset support in profile_t, give
+		// it a zero offset and we will fix that in add()
+		profile.add_sample_file(*it, 0);
+		add(profile, caller_bfd, bfd_caller_ok, callee_bfd,
+		    app_name, symbols, debug_info, pclass);
 	}
-
-	add_leaf_arc(symbols);
-
-	recorder.fixup_callee_counts();
-}
-
-
-column_flags callgraph_container::output_hint() const
-{
-	column_flags output_hints = cf_none;
-
-	// FIXME: costly must we access directly recorder.caller_callee map ?
-	cg_collection arcs = recorder.get_arc();
-
-	cg_collection::const_iterator it;
-	cg_collection::const_iterator const end = arcs.end();
-	for (it = arcs.begin(); it != end; ++it)
-		output_hints = it->output_hint(output_hints);
-
-	return output_hints;
-}
-
-
-count_array_t callgraph_container::samples_count() const
-{
-	return total_count;
 }
 
 
 void callgraph_container::
 add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
    op_bfd const & callee, string const & app_name,
-   profile_container const & symbols, bool debug_info)
+   profile_container const & symbols, bool debug_info, size_t pclass)
 {
 	string const image_name = caller.get_filename();
 
@@ -425,7 +440,7 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 				abort();
 			}
 
-			symb_caller.sample.counts[0] = caller_callee_count;
+			symb_caller.sample.counts[pclass] = caller_callee_count;
 
 			cverb << vdebug
 			      << caller.syms[i].name() << " "
@@ -481,6 +496,28 @@ void callgraph_container::add_leaf_arc(profile_container const & symbols)
 	}
 
 	total_count = symbols.samples_count();
+}
+
+
+column_flags callgraph_container::output_hint() const
+{
+	column_flags output_hints = cf_none;
+
+	// FIXME: costly must we access directly recorder.caller_callee map ?
+	cg_collection arcs = recorder.get_arc();
+
+	cg_collection::const_iterator it;
+	cg_collection::const_iterator const end = arcs.end();
+	for (it = arcs.begin(); it != end; ++it)
+		output_hints = it->output_hint(output_hints);
+
+	return output_hints;
+}
+
+
+count_array_t callgraph_container::samples_count() const
+{
+	return total_count;
 }
 
 

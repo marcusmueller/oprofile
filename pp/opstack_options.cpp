@@ -89,10 +89,4 @@ void handle_options(vector<string> const & non_options)
 		     "too strict ?" << endl;
 		exit(EXIT_FAILURE);
 	}
-
-	if (classes.v.size() > 1) {
-		cerr << "error: too many profiles classes, you must restrict"
-			" samples specification\n";
-		exit(EXIT_FAILURE);
-	}
 }

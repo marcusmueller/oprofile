@@ -25,6 +25,7 @@
 
 class inverted_profile;
 class extra_images;
+class image_set;
 
 /**
  * Yes, this looks like weird since we store callee_counts w/o knowing the
@@ -66,10 +67,14 @@ public:
 	cg_collection get_caller(cg_symbol const &) const;
 
 private:
-	cg_symbol const * find_caller(cg_symbol const &) const;
-
 	typedef std::multimap<cg_symbol, cg_symbol const *, less_symbol> map_t;
 	typedef map_t::const_iterator iterator;
+
+	cg_symbol const * find_caller(cg_symbol const &) const;
+
+	/// returned iterator point into the caller_callee map
+	iterator find_arc(cg_symbol const &, cg_symbol const &);
+
 	map_t caller_callee;
 	map_t callee_caller;
 };
@@ -113,12 +118,21 @@ private:
 	 * @param callee_bfd  the callee bfd
 	 * @param app_name  the owning application
 	 * @param symbols  the profile_container holding all non cg samples.
-	 * @param debug_info  ercord linenr debug information
+	 * @param debug_info  record linenr debug information
+	 * @param pclass  profile class nr
 	 */
 	void add(profile_t const & profile, op_bfd const & caller_bfd,
 	         bool bfd_caller_ok, op_bfd const & callee_bfd,
-		 std::string const & app_name,
-	         profile_container const & symbols, bool debug_info);
+		 std::string const & app_name, 
+		 profile_container const & symbols, bool debug_info,
+		 size_t pclass);
+
+	void populate(std::list<image_set> const & lset,
+		      extra_images const & extra, size_t pclass,
+		      profile_container const & symbols, bool debug_info);
+	void populate(std::list<string> const & cg_files,
+		      extra_images const & extra, size_t pclass,
+		      profile_container const & symbols, bool debug_info);
 
 	/// add fake arc <from, NULL> to record leaf symbols.
 	void add_leaf_arc(profile_container const & symbols);
