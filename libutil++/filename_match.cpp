@@ -18,8 +18,7 @@
 #include "string_manip.h"
 #include "file_manip.h"
 
-using std::vector;
-using std::string;
+using namespace std;
 
 filename_match::filename_match(string const & include_patterns,
 			       string const & exclude_patterns)

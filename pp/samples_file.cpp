@@ -26,10 +26,7 @@
 
 #include <iostream>
 
-using std::string;
-using std::cout;
-using std::cerr;
-using std::endl;
+using namespace std;
 
 opp_samples_files::opp_samples_files(string const & sample_file, int counter_)
 	:

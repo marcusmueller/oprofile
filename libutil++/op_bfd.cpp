@@ -23,16 +23,9 @@
 
 #include "op_bfd.h"
 
-using std::find;
-using std::vector;
-using std::string;
-using std::cout;
-using std::cerr;
-using std::hex;
-using std::dec;
-using std::endl;
+using namespace std;
 
-extern std::ostream cverb;
+extern ostream cverb;
  
 op_bfd::op_bfd(string const & filename, vector<string> const & exclude_symbols)
 	:
@@ -176,7 +169,7 @@ bool op_bfd::get_symbols(vector<string> const & excluded)
 		}
 	}
 
-	std::stable_sort(syms.begin(), syms.end(), symcomp);
+	stable_sort(syms.begin(), syms.end(), symcomp);
 
 	// now we can calculate the symbol size
 	for (i = 0 ; i < syms.size() ; ++i) {

@@ -13,8 +13,7 @@
 
 #include "string_manip.h"
 
-using std::string;
-using std::vector;
+using namespace std;
 
 string erase_from_last_of(string const & str, char ch)
 {
@@ -52,7 +51,7 @@ string rtrim(string const & str, char ch)
 string tostr(unsigned int i)
 {
 	string str;
-	std::ostringstream ss(str);
+	ostringstream ss(str);
 	ss << i;
 	return ss.str();
 }
@@ -86,7 +85,7 @@ void separate_token(vector<string> & result, const string & str, char sep)
 string sample_filename(string const& sample_dir,
 			      string const& sample_filename, int counter)
 {
-	std::ostringstream s;
+	ostringstream s;
 
 	s << sample_dir;
 	if (sample_dir.length() && sample_dir[sample_dir.length() - 1] != '/')

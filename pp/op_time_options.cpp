@@ -21,11 +21,7 @@
 #include <list>
 #include <fstream>
 
-using std::string;
-using std::vector;
-using std::list;
-using std::cerr;
-using std::endl;
+using namespace std;
 
 namespace options {
 	string session;

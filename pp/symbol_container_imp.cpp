@@ -18,11 +18,7 @@
 #include "symbol_container_imp.h"
 #include "samples_container.h"
 
-using std::vector;
-using std::string;
-using std::stable_sort;
-using std::find_if;
-using std::lower_bound;
+using namespace std;
 
 symbol_index_t symbol_container_imp_t::size() const
 {

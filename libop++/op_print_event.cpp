@@ -15,12 +15,7 @@
 #include <iostream>
 #include <iomanip>
 
-using std::ostream;
-using std::endl;
-using std::hex;
-using std::dec;
-using std::setw;
-using std::setfill;
+using namespace std;
 
 void op_print_event(ostream & out, int counter_nr, op_cpu cpu_type,
 		    u8 type, u16 um, u32 count)

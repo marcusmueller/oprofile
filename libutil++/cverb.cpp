@@ -12,8 +12,10 @@
 #include <fstream>
 #include "cverb.h"
 
-std::ofstream fout("/dev/null");
-std::ostream cverb(fout.rdbuf());
+using namespace std;
+
+ofstream fout("/dev/null");
+ostream cverb(fout.rdbuf());
 
 void set_verbose(bool verbose)
 {
@@ -21,7 +23,7 @@ void set_verbose(bool verbose)
 	// but for now the old version will do
  
 	if (verbose)
-		cverb.rdbuf(std::cout.rdbuf());
+		cverb.rdbuf(cout.rdbuf());
 	else
-		cverb.clear(std::ios::badbit);
+		cverb.clear(ios::badbit);
 }

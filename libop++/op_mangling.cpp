@@ -17,10 +17,7 @@
 #include <iostream>
 #include <cerrno>
 
-using std::string;
-using std::list;
-using std::cerr;
-using std::endl;
+using namespace std;
 
 void strip_counter_suffix(string & name)
 {
@@ -32,7 +29,7 @@ string remangle_filename(string const & filename)
 {
 	string result = filename;
 
-	std::replace(result.begin(), result.end(), '/', OPD_MANGLE_CHAR);
+	replace(result.begin(), result.end(), '/', OPD_MANGLE_CHAR);
 
 	return result;
 }
@@ -44,7 +41,7 @@ string demangle_filename(string const & samples_filename)
 	size_t pos = samples_filename.find_first_of(OPD_MANGLE_CHAR);
 	if (pos != string::npos) {
 		result.erase(0, pos);
-		std::replace(result.begin(), result.end(), OPD_MANGLE_CHAR, '/');
+		replace(result.begin(), result.end(), OPD_MANGLE_CHAR, '/');
 	}
 
 	return result;

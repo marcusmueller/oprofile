@@ -38,7 +38,7 @@
 #include "op_config_24.h"
 #include "string_manip.h"
 
-using std::string;
+using namespace std;
 
 op_event_descr::op_event_descr()
 	:
@@ -62,7 +62,7 @@ oprof_start::oprof_start()
 		ctr_enabled[i] = 0;
 	}
 
-	std::vector<std::string> args;
+	vector<string> args;
 	args.push_back("oprofile");
 
 	if (do_exec_command("/sbin/modprobe", args))
@@ -87,7 +87,7 @@ oprof_start::oprof_start()
 	string config_dir = get_user_filename(".oprofile");
 	string config_name = config_dir + "/oprof_start_config";
 
-	std::ifstream in(config_name.c_str());
+	ifstream in(config_name.c_str());
 
 	bool delete_all_config_file = !in;
 
@@ -105,7 +105,7 @@ oprof_start::oprof_start()
 
 	if (delete_all_config_file) {
 		for (uint ctr = 0 ; ctr < OP_MAX_COUNTERS ; ++ctr) {
-			std::ostringstream name;
+			ostringstream name;
 
 			name << config_dir << "/oprof_start_event"
 			     << "#" << ctr;
@@ -228,16 +228,16 @@ oprof_start::oprof_start()
 // save_config_file().
 void oprof_start::load_config_file()
 {
-	std::string name = get_user_filename(".oprofile/oprof_start_config");
+	string name = get_user_filename(".oprofile/oprof_start_config");
 
 	{
-		std::ifstream in(name.c_str());
+		ifstream in(name.c_str());
 		// this creates the config directory if necessary
 		if (!in)
 			save_config_file();
 	}
 
-	std::ifstream in(name.c_str());
+	ifstream in(name.c_str());
 	if (!in) {
 		QMessageBox::warning(this, 0, "Unable to open configuration "
 				     "~/.oprofile/oprof_start_config");
@@ -261,7 +261,7 @@ void oprof_start::load_config_file()
 
 	for (uint i = 0; i < op_nr_counters; ++i) {
 		in >> ctr_enabled[i];
-		std::string ev;
+		string ev;
 		in >> ev;
 		if (ev == "none")
 			current_event[i] = 0;
@@ -279,9 +279,9 @@ bool oprof_start::save_config_file()
 	if (!check_and_create_config_dir())
 		return false;
 
-	std::string name = get_user_filename(".oprofile/oprof_start_config");
+	string name = get_user_filename(".oprofile/oprof_start_config");
 
-	std::ofstream out(name.c_str());
+	ofstream out(name.c_str());
 
 	out << static_cast<int>(cpu_type) << " ";
 
@@ -292,7 +292,7 @@ bool oprof_start::save_config_file()
 		else
 			out << " " << current_event[i]->name + " ";
 	}
-	out << std::endl;
+	out << endl;
 
 	out << config;
 
@@ -302,19 +302,19 @@ bool oprof_start::save_config_file()
 // this work as load_config_file()/save_config_file()
 void oprof_start::load_event_config_file(uint ctr)
 {
-	std::ostringstream name;
+	ostringstream name;
 
 	name << get_user_filename(".oprofile/oprof_start_event");
 	name << "#" << ctr;
 
 	{
-		std::ifstream in(name.str().c_str());
+		ifstream in(name.str().c_str());
 		// this creates the config directory if necessary
 		if (!in)
 			save_event_config_file(ctr);
 	}
 
-	std::ifstream in(name.str().c_str());
+	ifstream in(name.str().c_str());
 	if (!in) {
 		QMessageBox::warning(this, 0, "Unable to open configuration "
 				     "~/.oprofile/oprof_start_event");
@@ -331,12 +331,12 @@ bool oprof_start::save_event_config_file(uint ctr)
 	if (!check_and_create_config_dir())
 		return false;
 
-	std::ostringstream name;
+	ostringstream name;
 
 	name << get_user_filename(".oprofile/oprof_start_event");
 	name << "#" << ctr;
 
-	std::ofstream out(name.str().c_str());
+	ofstream out(name.str().c_str());
 	if (!out)
 		return false;
 
@@ -372,7 +372,7 @@ void oprof_start::closeEvent(QCloseEvent *)
 
 void oprof_start::timerEvent(QTimerEvent *)
 {
-	static time_t last = std::time(0);
+	static time_t last = time(0);
 
 	daemon_status dstat;
 
@@ -385,11 +385,11 @@ void oprof_start::timerEvent(QTimerEvent *)
 		return;
 	}
 
-	std::ostringstream ss;
+	ostringstream ss;
 	ss << "Profiler running ";
 	ss << dstat.runtime;
 
-	time_t curr = std::time(0);
+	time_t curr = time(0);
 	total_nr_interrupts += dstat.nr_interrupts;
 
 	if (curr - last)
@@ -403,10 +403,10 @@ void oprof_start::timerEvent(QTimerEvent *)
 
 void oprof_start::set_counter_combo(uint ctr)
 {
-	std::string ctrstr("Counter ");
+	string ctrstr("Counter ");
 	char c = '0' + ctr;
 	ctrstr += c;
-	ctrstr += std::string(": ");
+	ctrstr += string(": ");
 	if (current_event[ctr])
 		ctrstr += current_event[ctr]->name;
 	else
@@ -430,7 +430,7 @@ void oprof_start::counter_selected(int ctr)
 
 	QListViewItem * theitem = 0;
 
-	for (std::vector<op_event_descr>::reverse_iterator cit = v_events.rbegin();
+	for (vector<op_event_descr>::reverse_iterator cit = v_events.rbegin();
 		cit != v_events.rend(); ++cit) {
 		if (cit->counter_mask & (1 << ctr)) {
 			QListViewItem * item = new QListViewItem(events_list, cit->name.c_str());
@@ -522,8 +522,8 @@ void oprof_start::enabled_toggled(bool en)
 /// select the kernel image filename
 void oprof_start::choose_kernel_filename()
 {
-	std::string name = kernel_filename_edit->text().latin1();
-	std::string result = do_open_file_or_dir(name, false);
+	string name = kernel_filename_edit->text().latin1();
+	string result = do_open_file_or_dir(name, false);
 
 	if (!result.empty())
 		kernel_filename_edit->setText(result.c_str());
@@ -539,7 +539,7 @@ void oprof_start::record_selected_event_config()
 		return;
 
 	persistent_config_t<event_setting>& cfg = event_cfgs[current_ctr];
-	std::string name(curr->name);
+	string name(curr->name);
 
 	cfg[name].count = event_count_edit->text().toUInt();
 	cfg[name].os_ring_count = os_ring_count_cb->isChecked();
@@ -556,7 +556,7 @@ bool oprof_start::record_config()
 	QString const t = buffer_size_edit->text();
 	uint temp = t.toUInt();
 	if (temp < OP_MIN_BUF_SIZE || temp > OP_MAX_BUF_SIZE) {
-		std::ostringstream error;
+		ostringstream error;
 
 		error << "buffer size out of range: " << temp
 		      << " valid range is [" << OP_MIN_BUF_SIZE << ", "
@@ -570,7 +570,7 @@ bool oprof_start::record_config()
 
 	temp = hash_table_size_edit->text().toUInt();
 	if (temp < OP_MIN_HASH_SIZE || temp > OP_MAX_HASH_SIZE) {
-		std::ostringstream error;
+		ostringstream error;
 
 		error << "hash table size out of range: " << temp
 		      << " valid range is [" << OP_MIN_HASH_SIZE << ", "
@@ -584,7 +584,7 @@ bool oprof_start::record_config()
 
 	temp = note_table_size_edit->text().toUInt();
 	if (temp < OP_MIN_NOTE_TABLE_SIZE || temp > OP_MAX_NOTE_TABLE_SIZE) {
-		std::ostringstream error;
+		ostringstream error;
 
 		error << "note table size out of range: " << temp
 		      << " valid range is [" << OP_MIN_NOTE_TABLE_SIZE << ", "
@@ -772,7 +772,7 @@ void oprof_start::on_start_profiler()
 
 		if (cfg[descr->name].count < descr->min_count ||
 		    cfg[descr->name].count > max_perf_count()) {
-			std::ostringstream out;
+			ostringstream out;
 
 			out << "event " << descr->name << " count of range: "
 			    << cfg[descr->name].count << " must be in [ "
@@ -787,10 +787,10 @@ void oprof_start::on_start_profiler()
 		if (descr->unit &&
 		    descr->unit->unit_type_mask != utm_exclusive &&
 		    cfg[descr->name].umask == 0) {
-			std::ostringstream out;
+			ostringstream out;
 
 			out << "event " << descr->name<< " invalid unit mask: "
-			    << cfg[descr->name].umask << std::endl;
+			    << cfg[descr->name].umask << endl;
 
 			QMessageBox::warning(this, 0, out.str().c_str());
 			return;
@@ -815,7 +815,7 @@ void oprof_start::on_start_profiler()
 	if (!record_config())
 		return;
 
-	std::vector<std::string> args;
+	vector<string> args;
 
 	if (cpu_type == CPU_RTC) {
 		persistent_config_t<event_setting> const & cfg = event_cfgs[0];
@@ -872,17 +872,17 @@ void oprof_start::on_stop_profiler()
 
 
 /// function object for matching against name
-class event_name_eq : public std::unary_function<op_event_descr, bool> {
-	std::string name_;
+class event_name_eq : public unary_function<op_event_descr, bool> {
+	string name_;
 public:
-	explicit event_name_eq(std::string const & s) : name_(s) {}
+	explicit event_name_eq(string const & s) : name_(s) {}
 	bool operator()(op_event_descr & d) const {
 		return d.name == name_;
 	}
 };
 
 // helper to retrieve an event descr through its name.
-op_event_descr const & oprof_start::locate_event(std::string const & name)
+op_event_descr const & oprof_start::locate_event(string const & name)
 {
-	return *(std::find_if(v_events.begin(), v_events.end(), event_name_eq(name)));
+	return *(find_if(v_events.begin(), v_events.end(), event_name_eq(name)));
 }

@@ -19,12 +19,7 @@
 #include "op_libiberty.h"
 #include "child_reader.h"
 
-using std::string;
-using std::vector;
-using std::cerr;
-using std::endl;
-using std::ostream;
-using std::max;
+using namespace std;
 
 child_reader::child_reader(string const & cmd, vector<string> const & args)
 	:
@@ -236,9 +231,9 @@ int child_reader::terminate_process()
 	return first_error;
 }
 
-std::string child_reader::error_str() const
+string child_reader::error_str() const
 {
-	std::ostringstream err;
+	ostringstream err;
 	if (!forked) {
 		err << string("unable to fork, error: ")
 		    << strerror(first_error);

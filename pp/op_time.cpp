@@ -34,16 +34,7 @@
 #include "file_manip.h"
 #include "string_manip.h"
 
-using std::string;
-using std::list;
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::vector;
-using std::ifstream;
-using std::multimap;
-using std::pair;
-using std::setw;
+using namespace std;
 
 /* TODO: if we have a quick read samples files format we can handle a great
  * part of complexity here by using samples_container_t to handle straight
@@ -112,7 +103,7 @@ static bool filter_image_name(string const & image_name)
 		return true;
 
 	string temp(image_name);
-	std::replace(temp.begin(), temp.end(), '}', '/');
+	replace(temp.begin(), temp.end(), '}', '/');
 
 	/* FIXME : why this does not work, the intent is to allow 
 	 * op_time "/usr/bin/ *" to work-around a possible "Argument list
@@ -122,9 +113,9 @@ static bool filter_image_name(string const & image_name)
 
 	return fn.match(temp);
 #else
-	return std::find(options::filename_filters.begin(),
-			 options::filename_filters.end(),
-			 temp) != options::filename_filters.end();
+	return find(options::filename_filters.begin(),
+		    options::filename_filters.end(),
+		    temp) != options::filename_filters.end();
 #endif
 }
 
@@ -428,7 +419,7 @@ static string check_image_name(string const & image_name,
 	}
 
 	typedef alt_filename_t::const_iterator it_t;
-	std::pair<it_t, it_t> p_it =
+	pair<it_t, it_t> p_it =
 		options::alternate_filename.equal_range(basename(image_name));
 
 	if (p_it.first == p_it.second) {
@@ -449,7 +440,7 @@ static string check_image_name(string const & image_name,
 		return string();
 	}
 
-	if (std::distance(p_it.first, p_it.second) != 1) {
+	if (distance(p_it.first, p_it.second) != 1) {
 		cerr << "the image name for samples files : "
 		     << samples_filename << " is ambiguous\n"
 		     << "so this file file will be ignored" << endl;

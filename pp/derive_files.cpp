@@ -17,10 +17,7 @@
 #include <sstream>
 #include <cstdlib>
 
-using std::string;
-using std::istringstream;
-using std::cerr;
-using std::endl;
+using namespace std;
 
 namespace {
 

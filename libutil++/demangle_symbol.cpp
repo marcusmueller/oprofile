@@ -21,7 +21,7 @@
 /*@}*/
 extern "C" char * cplus_demangle(char const * mangled, int options);
 
-using std::string;
+using namespace std;
 
 string const demangle_symbol(string const & name)
 {

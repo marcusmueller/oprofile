@@ -27,14 +27,7 @@
 #include "derive_files.h"
 #include "string_manip.h"
 
-using std::string;
-using std::vector;
-using std::list;
-using std::cout;
-using std::endl;
-using std::cerr;
-using std::ifstream;
-using std::ostream;
+using namespace std;
 
 /**
  * do_list_symbols - list symbol samples for an image

@@ -18,11 +18,7 @@
 #include "symbol_functors.h"
 #include "sample_container_imp.h"
 
-using std::string;
-using std::vector;
-using std::accumulate;
-using std::pair;
-using std::lower_bound;
+using namespace std;
 
 namespace {
 

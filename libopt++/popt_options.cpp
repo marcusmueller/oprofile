@@ -17,9 +17,7 @@
 #include "popt_options.h"
 #include "string_manip.h"
 
-using std::vector;
-using std::string;
-using std::cerr;
+using namespace std;
 
 /**
  * option_base - base class for implementation of a command line option

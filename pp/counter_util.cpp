@@ -18,11 +18,7 @@
 #include <sstream>
 #include <iostream>
 
-using std::string;
-using std::vector;
-using std::cerr;
-using std::endl;
-using std::istringstream;
+using namespace std;
 
 /**
  * parse_counter_mask -  given a --counter=0,1,..., option parameter return a mask

@@ -17,10 +17,7 @@
 
 #include "cverb.h"
 
-using std::vector;
-using std::string;
-using std::cerr;
-using std::endl;
+using namespace std;
 
 namespace options {
 	int with_more_than_samples;

@@ -25,11 +25,7 @@
 #include "string_manip.h"
 #include "op_fileio.h"
 
-using std::vector;
-using std::string;
-using std::list;
-using std::cerr;
-using std::endl;
+using namespace std;
 
 /**
  * is_file_identical - check for identical files
@@ -167,8 +163,7 @@ bool create_file_list(list<string> & file_list, string const & base_dir,
 }
 
 
-std::string relative_to_absolute_path(string const & path,
-				      string const & base_dir)
+string relative_to_absolute_path(string const & path, string const & base_dir)
 {
 	char const * dir = 0;
 

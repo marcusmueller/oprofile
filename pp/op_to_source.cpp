@@ -37,20 +37,7 @@
 
 #include "version.h"
 
-using std::vector;
-using std::string;
-using std::ofstream;
-using std::ostream;
-using std::istream;
-using std::ifstream;
-using std::endl;
-using std::cout;
-using std::cerr;
-using std::hex;
-using std::dec;
-using std::ostringstream;
-using std::find;
-
+using namespace std;
 using namespace options;
 
 //---------------------------------------------------------------------------
@@ -760,7 +747,7 @@ void output_one_counter(ostream & out, size_t counter, size_t total)
 {
 	out << " ";
 	out << counter << " ";
-	out << std::setprecision(4) << (do_ratio(counter, total) * 100.0) << "%";
+	out << setprecision(4) << (do_ratio(counter, total) * 100.0) << "%";
 }
 
 void output_counter(ostream & out, counter_array_t const & counter,
@@ -878,7 +865,7 @@ int main(int argc, char const * argv[])
 {
 #if (__GNUC__ >= 3)
 	// this improves performance with gcc 3.x a bit
-	std::ios_base::sync_with_stdio(false);
+	ios_base::sync_with_stdio(false);
 #endif
 
 	/* global var sort_by_counter contains the counter used for sorting

@@ -29,13 +29,7 @@
 
 #include "oprof_start_util.h"
 
-using std::max;
-using std::string;
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::vector;
-using std::ostream;
+using namespace std;
 
 namespace {
 
@@ -108,7 +102,7 @@ daemon_status::daemon_status()
 	if (daemon_pid.empty())
 		return;
 
-	std::ifstream ifs((string("/proc/") + daemon_pid + "/stat").c_str());
+	ifstream ifs((string("/proc/") + daemon_pid + "/stat").c_str());
 	if (!ifs)
 		return;
 
@@ -125,7 +119,7 @@ daemon_status::daemon_status()
 
 	ifs >> starttime;
 
-	std::ifstream ifs2("/proc/uptime");
+	ifstream ifs2("/proc/uptime");
 	if (!ifs2)
 		return;
 
@@ -135,7 +129,7 @@ daemon_status::daemon_status()
 
 	uint diff_mins = (uptime - starttime / HZ) / 60;
 
-	std::ifstream ifs3("/proc/sys/dev/oprofile/nr_interrupts");
+	ifstream ifs3("/proc/sys/dev/oprofile/nr_interrupts");
 	if (!ifs3)
 		return;
 
@@ -154,7 +148,7 @@ unsigned long get_cpu_speed()
 {
 	unsigned long speed = 0;
 
-	std::ifstream ifs("/proc/cpuinfo");
+	ifstream ifs("/proc/cpuinfo");
 	if (!ifs)
 		return speed;
 
@@ -171,7 +165,7 @@ unsigned long get_cpu_speed()
 				++i, ++it;
 			if (it == str.end())
 				break;
-			std::istringstream ss(str.substr(i, string::npos));
+			istringstream ss(str.substr(i, string::npos));
 			ss >> speed;
 			break;
 		}
@@ -202,7 +196,7 @@ bool check_and_create_config_dir()
 	string dir = get_user_filename(".oprofile");
 
 	if (!create_dir(dir)) {
-		std::ostringstream out;
+		ostringstream out;
 		out << "unable to create " << dir << " directory: ";
 		QMessageBox::warning(0, 0, out.str().c_str());
 
@@ -226,7 +220,7 @@ string const format(string const & orig, uint const maxlen)
 {
 	string text(orig);
 
-	std::istringstream ss(text);
+	istringstream ss(text);
 	vector<string> lines;
 
 	string oline;
@@ -241,7 +235,7 @@ string const format(string const & orig, uint const maxlen)
 			line.erase();
 			string s;
 			string word;
-			std::istringstream oss(oline);
+			istringstream oss(oline);
 			while (oss >> word) {
 				if (line.size() + word.size() > maxlen) {
 					lines.push_back(line);
@@ -277,7 +271,7 @@ string const format(string const & orig, uint const maxlen)
  */
 int do_exec_command(string const & cmd, vector<string> const & args)
 {
-	std::ostringstream err;
+	ostringstream err;
 	bool ok = true;
 
 	// verify arguments

@@ -30,15 +30,7 @@
 #include "op_sample_file.h"
 #include "samples_file.h"
 
-using std::string;
-using std::vector;
-using std::list;
-using std::replace;
-using std::ostringstream;
-using std::ofstream;
-using std::cerr;
-using std::endl;
-using std::ifstream;
+using namespace std;
 
 namespace {
 	int counter;

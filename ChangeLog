@@ -1,3 +1,7 @@
+2002-10-02  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* */*.cpp: using std::xxx; --> using namespace std;
+
 2002-10-01  Will Cohen  <wcohen@redhat.com>
  
 	* module/x86/cpu_type.c (p4_threads): New.
@@ -274,7 +278,8 @@
 
 	* libutil++/op_bfd.cpp: fix a bug where we broke
 	  with multiple executable sections due to sorting
-	  the symbols wrongly
+	  the symbols wrongly. Fix #617288 and the duplicated
+	  #617264
 
 	* libutil++/op_bfd.h: fix an outdated comment
 

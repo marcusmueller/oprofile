@@ -18,13 +18,7 @@
 #include "samples_container.h"
 #include "demangle_symbol.h"
 
-using std::string;
-using std::cout;
-using std::cerr;
-using std::vector;
-using std::ostream;
-using std::ostringstream;
-using std::endl;
+using namespace std;
 
 namespace options {
 	extern bool demangle;
@@ -354,7 +348,7 @@ string output_symbol::format_vma(string const &,
 {
 	ostringstream out;
 
-	out << std::hex << std::setw(8) << std::setfill('0') << sample.vma;
+	out << hex << setw(8) << setfill('0') << sample.vma;
 
 	return out.str();
 }

@@ -21,12 +21,7 @@
 #include "sample_container_imp.h"
 #include "symbol_container_imp.h"
 
-using std::vector;
-using std::sort;
-using std::string;
-using std::cerr;
-using std::set;
-using std::endl;
+using namespace std;
 
 namespace {
 
@@ -319,8 +314,8 @@ uint samples_container_t::get_nr_counters() const
 	exit(EXIT_FAILURE);
 }
 
-bool add_samples(samples_container_t& samples, std::string sample_filename,
-		 size_t counter_mask, std::string image_name,
+bool add_samples(samples_container_t& samples, string sample_filename,
+		 size_t counter_mask, string image_name,
 		 vector<string> const& excluded_symbols,
 		 string symbol)
 {
