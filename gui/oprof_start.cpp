@@ -568,7 +568,8 @@ bool oprof_start::record_config()
 	config.kernel_filename = kernel_filename_edit->text().latin1();
 	config.map_filename = map_filename_edit->text().latin1();
 
-	uint temp = buffer_size_edit->text().toUInt();
+	QString const t = buffer_size_edit->text();
+	uint temp = t.toUInt();
 	if (temp < OP_MIN_BUF_SIZE || temp > OP_MAX_BUF_SIZE) {
 		std::ostringstream error;
 

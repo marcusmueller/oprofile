@@ -27,10 +27,8 @@ CXXFLAGS += -pipe @CXXFLAGS@
 
 # enable -Werror for non-release versions except for gcc 2.91
 ifneq (,$(findstring cvs,@VERSION@))
-ifneq (yes,@GCC_2_91@)
 CFLAGS += -Werror
 CXXFLAGS += -Werror
-endif
 endif 
  
 LDFLAGS += -L$(TOPDIR)/libutil++ -L$(TOPDIR)/libutil -L$(TOPDIR)/libop++ -L$(TOPDIR)/libop \

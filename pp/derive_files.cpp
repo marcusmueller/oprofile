@@ -37,8 +37,9 @@ void set_counter_from_filename(string const & name, int & counter)
 	// filename, so let's leave it
 	if (pos == string::npos)
 		return;
-
-	istringstream is(name.substr(pos + 1));
+ 
+	string const sub = name.substr(pos + 1);
+	istringstream is(sub);
 	is >> counter;
 }
 

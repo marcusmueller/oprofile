@@ -97,6 +97,7 @@ class output {
 	bool treat_input(string const & image_name, string const & sample_file);
 
  private:
+	symbol_entry const * find_symbol(string const & str_vma) const;
 	/// this output a comment containaing the counter setup and command
 	/// line.
 	void output_header(ostream & out) const;
@@ -350,12 +351,21 @@ void output::output_counter(ostream & out, counter_array_t const & counter,
 	out << '\n';
 }
 
+symbol_entry const * output::find_symbol(string const & str_vma) const
+{
+	// do not use the bfd equivalent:
+	//  - it does not skip space at begin
+	//  - we does not need cross architecture compile so the native
+	// strtoul must work (assuming unsigned long can contain a vma)
+	bfd_vma vma = strtoul(str_vma.c_str(), NULL, 16);
+
+	return samples->find_symbol(vma);
+}
+
 // Complexity: log(nr symbols)
 void output::find_and_output_symbol(ostream & out, string const & str, string const & blank) const
 {
-	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
-
-	symbol_entry const * symbol = samples->find_symbol(vma);
+	symbol_entry const * symbol = find_symbol(str);
 
 	if (symbol) {
 		out << blank;
@@ -436,9 +446,7 @@ output_objdump_asm_line(string const & str,
 		//  - it does not skip space at begin
 		//  - we does not need cross architecture compile so the native
 		// strtoul must work (assuming unsigned long can contain a vma)
-		bfd_vma vma = strtoul(str.c_str(), NULL, 16);
-
-		symbol_entry const * symbol = samples->find_symbol(vma);
+		symbol_entry const * symbol = find_symbol(str);
 
 		// ! complexity: linear in number of symbol must use sorted
 		// by address vector and lower_bound ?
