@@ -31,6 +31,7 @@ Before 1.0 little stuff
  o use standard C integer type <stdint.h> int32_t int16_t etc.
  o verify if we can remove the ELF-based symbol size code
  o auto-generate the event C files. They're too ugly. 
+ o adapt Anton's patch for handling non-symbolled libraries ?
 
 Documentation
 -------------

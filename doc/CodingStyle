@@ -1,0 +1,76 @@
+
+*** Patches not matching these rules will be rejected ***
+
+First off, read Linus' CodingStyle in the kernel Documentation/ directory.
+Most of it applies directly. There are a number of other points worth making,
+however.
+
+General points
+--------------
+
+Keep files (especially headers) focussed on one small aspect.
+
+	Rationale: reduce false include dependencies
+
+Separate out more general routines and place them in the appropriate
+utility library (e.g. libop/, libutil++).
+
+	Rationale: re-use, clean organisation
+
+Make judicious use of forward declarations.
+
+Avoid ifdefs: prefer configure options / build trickery.
+
+Use Doxygen comments judiciously. Actual source code should generally
+only document the unexpected. Comments should not duplicate what the code
+says (this means variable/function naming is uber-important).
+
+Arbitrary rules
+---------------
+
+Two blank lines between functions.
+
+C++ inline methods in headers. use Java braces :
+
+	void method() {
+	}
+
+Avoid using inline methods at all.
+
+Space types like this :
+
+	void blah(int * x, int * y);
+	void blah(int & x);
+	int & ref = get_ref();
+	int * x = &y;
+	int z = *x;
+	int arr[4];
+
+Rationale: makes application of operators visually different from
+type specifications.
+
+Use "char const *" not "const char *".
+
+Make use of the C++ standard library. That's what it's there for. Bear
+in mind we support gcc 2.91.66
+
+Avoid CamelCase in preference to cpp_std_library.
+
+Use "using namespace std;" in .cpp files. Use std:: qualification in .h files.
+
+Avoid do { } while(). Avoid defines.
+
+Spacing :
+
+	if (blah) {
+	call_method(&param);
+	x = y + z;
+	x = func(a, b, c + SOME_DEFINE);
+
+Use noncopyable, scoped_ptr, and scoped_array.
+
+Use the standard comments + include guards for headers.
+
+Do not inline unless you have good reason.
+
+Use anon namespaces for static variables.

@@ -261,7 +261,7 @@ static void build_sorted_map_by_count(sorted_map_t & sorted_map, pair_it_t p_it)
  * print the whole cumulated count for all selected filename (currently
  * the whole base_dir directory), does not show any details about symbols
  */
-static void output_files_count(map_t& files)
+static void output_files_count(map_t & files)
 {
 	double total_count[OP_MAX_COUNTERS] = { 0.0 };
 

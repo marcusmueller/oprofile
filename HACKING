@@ -1,0 +1,75 @@
+And when you drive for hours, arrive to find you nowhere gone, you've just been
+mouthing "brum, brum", rocking wheel, of course you have, the heap is rusted
+through and off the road since you drove drunk through thirteen school yards,
+laughing like Prescott.
+
+Then welcome, ah, oo costrinzi welcome, in OProfile.
+
+Please talk to the list before starting on something. We're not too scary.
+
+Here's a short list of some stuff you need to know to get started. Don't forget
+to read doc/CodingStyle
+
+Source organisation
+-------------------
+
+module/
+
+	The 2.4 module code. Sub-directories contain architecture-specific code.
+
+dae/
+
+	The 2.4 daemon which writes the kernel data to the sample files.
+
+daemon/
+
+	The 2.5+ daemon
+
+utils/
+
+	Scripts for managing the daemon etc.
+
+doc/
+
+	User and developer documentation
+
+pp/
+
+	The post-profiling tools for showing results
+
+libabi/
+
+	op_import and its ABI support library
+
+libdb/
+
+	The sample file access library
+
+libop/
+
+	C language oprofile-specific helper stuff
+
+libop++/
+
+	C++ oprofile-specific helper stuff
+
+libopt++/
+
+	A simple C++ library for parsing command lines
+
+libutil/
+libutil++/
+
+	Generic helpers
+
+gui/
+
+	The GUI for starting oprofile
+
+Tools
+-----
+
+You'll need autoconf 2.13+ and automake 2.5+ when using CVS. Don't forget to
+autogen.sh first.
+
+We still currently support gcc 2.91.66. Please bear this in mind.

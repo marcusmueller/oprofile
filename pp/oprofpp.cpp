@@ -181,7 +181,7 @@ static void do_dump_gprof(op_bfd & abfd,
 /**
  * main
  */
-int main(int argc, char const *argv[])
+int main(int argc, char const * argv[])
 {
 	string const arg = get_options(argc, argv);
 
@@ -295,4 +295,3 @@ int main(int argc, char const *argv[])
 
 	return 0;
 }
-
