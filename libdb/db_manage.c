@@ -160,6 +160,12 @@ int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw,
 	if (stat_buf.st_size == 0) {
 		size_t file_size;
 
+		if (rw == ODB_RDONLY) {
+			asprintf(err_msg, "odb_open() %s sample file empty\n",
+				 filename);
+			return EXIT_FAILURE;
+		}
+
 		nr_node = DEFAULT_NODE_NR(hash->offset_node);
 
 		file_size = tables_size(hash, nr_node);
