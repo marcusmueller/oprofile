@@ -56,7 +56,6 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
- o "100.00" percentage in output exceeds the space allowed for it in percent width
  o separate debug info stuff
  o opgprof always merges even if we provide a profile spec that's minimal
    enough - you can't get "cpu:0"
