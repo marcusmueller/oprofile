@@ -16,7 +16,7 @@
 	</authorgroup>
 
 	<copyright>
-		<year>2000-2003</year>
+		<year>2000-2004</year>
 		<holder>Victoria University of Manchester, John Levon and others</holder>
 	</copyright>
 </bookinfo>
@@ -603,6 +603,7 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		useful when used for short sessions, or when using image filtering.
 		</para>
 		</listitem>
+	</varlistentry>
 	<varlistentry>
 		<term><option>--callgraph=</option>#depth</term>
 		<listitem><para>
@@ -610,7 +611,7 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		callgraph profiling. Please make sure to read <xref linkend="opstack" />.
 		</para></listitem>
 	</varlistentry>
-	</varlistentry>
+	<varlistentry>
 		<term><option>--image=</option>image,[images]|"all"</term>
 		<listitem><para>
 		Image filtering. If you specify one or more absolute
@@ -624,7 +625,6 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		<emphasis>are</emphasis> included. Specify the value
 		"all" to profile everything (the default).
 		</para></listitem>
-	<varlistentry>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--vmlinux=</option>file</term>
