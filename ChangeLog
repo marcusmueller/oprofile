@@ -1,5 +1,10 @@
 2003-06-11  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* utils/opcontrol: fix rtc option checking, bug added after 0.5.3,
+	no big deal
+
+2003-06-11  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libregex/op_regex.cpp:
 	* libpp/profile.cpp: compile fix, tree was broken by my previous patch
 

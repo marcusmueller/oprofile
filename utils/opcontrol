@@ -506,7 +506,7 @@ do_options() {
 			esac
 		fi
 
-		if test "$CPU_TYPE" != "5" -a "$arg" = "--rtc-value"; then
+		if test "$CPUTYPE" != "5" -a "$arg" = "--rtc-value"; then
 			echo "Cannot use --rtc-value; RTC driver is not being used" >& 2
 			exit 1
 		fi
