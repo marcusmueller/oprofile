@@ -7,7 +7,7 @@ Please visit the oprofile website at : http://oprofile.sourceforge.net/
 
 oprofile was written by John Levon <moz@compsoc.man.ac.uk>.
 
-Philippe Elie <ph_e@club-internet.fr> contributed a fix for unit-mask
+Philippe Elie <ph_e@club-internet.fr> contributed fixes for unit-mask
 testing, verified many of the event types experimentally, wrote
 the tcl/tk oprofile interface, added options to oprofpp, and made various
 other small fixes.

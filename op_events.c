@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.15 2001/06/14 22:39:39 movement Exp $ */
+/* $Id: op_events.c,v 1.16 2001/06/19 00:07:04 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -302,7 +302,7 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
 						break;
 				}
 				if (op_events[i].unit && 
-				    op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr0_um) >= 0)
+				    op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr0_um) < 0)
 					ret |= OP_CTR0_NO_UM;
 				ctr0_e=1;
 				break;
@@ -336,7 +336,7 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
 						break;
 				}
 				if (op_events[i].unit && 
-				    op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr1_um) >= 0)
+				    op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr1_um) < 0)
 					ret |= OP_CTR1_NO_UM;
 				ctr1_e=1;
 			}
@@ -583,7 +583,7 @@ static char *op_get_um_desc(uint op_events_index, u8 um)
 
 	op_um_mask = &op_unit_masks[um_mask_index];
 	um_mask_desc_index = op_check_unit_mask(op_um_mask, um);
- 
+
 	if (um_mask_desc_index == -1)
 		return NULL;
 	else if (um_mask_desc_index == 0) {
@@ -592,8 +592,8 @@ static char *op_get_um_desc(uint op_events_index, u8 um)
 		 */
 		return "set with multiple units, check the documentation";
 	}
- 
-	return op_unit_descs[op_events_index].desc[um_mask_desc_index-1];
+
+	return op_unit_descs[um_mask_index].desc[um_mask_desc_index-1];
 }
 
 /**
