@@ -1,11 +1,9 @@
 #!/bin/sh
-# $Id: op_start,v 1.11 2000/09/08 21:33:29 moz Exp $
+# $Id: op_start,v 1.12 2000/09/28 02:37:00 moz Exp $
 
 # quick and ugly interface
 # op_start --help and op_start --list-events have info
 
-# FIXME: chmod's
- 
 BUF_SIZE=65536
 HASH_SIZE=16384
 CTR0_TYPE=
@@ -86,77 +84,83 @@ while [ "$#" -ne 0 ]
 do
 	arg=`echo $1 | awk -F= '{print $1}'`
 	val=`echo $1 | awk -F= '{print $2}'`
-	if [ "$arg" = "--buffer-size" ]; then
-		BUF_SIZE=$val
-	fi
-	if [ "$arg" = "--hash-table-size" ]; then
-		HASH_SIZE=$val
-	fi
-	if [ "$arg" = "--ctr0-unit-mask" ]; then
-		CTR0_UM=$val
-	fi
-	if [ "$arg" = "--ctr1-unit-mask" ]; then
-		CTR1_UM=$val
-	fi
-	if [ "$arg" = "--ctr0-event" ]; then
-		CTR0_TYPE=$val
-	fi
-	if [ "$arg" = "--ctr1-event" ]; then
-		CTR1_TYPE=$val
-	fi
-	if [ "$arg" = "--ctr0-count" ]; then
-		CTR0_COUNT=$val
-	fi
-	if [ "$arg" = "--ctr1-count" ]; then
-		CTR1_COUNT=$val
-	fi
-	if [ "$arg" = "--ctr0-os-usr" ]; then
-		CTR0_OSUSR=$val
-	fi
-	if [ "$arg" = "--ctr1-os-usr" ]; then
-		CTR1_OSUSR=$val
-	fi
-	if [ "$arg" = "--use-cpu" ]; then
-		if [ "$val" != "" ]; then
-			USE_PII=$val
-		else
-			USE_PII=1
-		fi
-	fi
-	if [ "$arg" = "--ignore-myself" ]; then
-		if [ "$val" != "" ]; then
-			IGNORE_MYSELF=$val
-		else
-			IGNORE_MYSELF=1
-		fi
-	fi
-	if [ "$arg" = "--base-dir" ]; then
-		DIR=$val
-	fi
-	if [ "$arg" = "--samples-dir" ]; then
-		SAMPLES_DIR=$val
-	fi
-	if [ "$arg" = "--device-file" ]; then
-		DEVICE_FILE=$val
-	fi
-	if [ "$arg" = "--map-device-file" ]; then
-		MAP_DEVICE_FILE=$val
-	fi
-	if [ "$arg" = "--hash-map-device-file" ]; then
-		HASH_MAP_DEVICE_FILE=$val
-	fi
-	if [ "$arg" = "--map-file" ]; then
-		MAP_FILE=$val
-	fi
-	if [ "$arg" = "--vmlinux" ]; then
-		VMLINUX=$val
-	fi
-	if [ "$arg" = "--pid-filter" ]; then
-		PID_FILTER=$val
-	fi 
-	if [ "$arg" = "--pgrp-filter" ]; then
-		PGRP_FILTER=$val
-	fi 
+	case "$arg" in
+		--use-cpu)
+			if [ "$val" != "" ]; then
+				USE_PII=$val
+			else
+				USE_PII=1
+			fi
+			;;
+		--ignore-myself)
+			if [ "$val" != "" ]; then
+				IGNORE_MYSELF=$val
+			else
+				IGNORE_MYSELF=1
+			fi
+			;;
+		--buffer-size) 
+			BUF_SIZE=$val
+			;;
+		--hash-table-size)
+			HASH_SIZE=$val
+			;;
+		--ctr0-unit-mask)
+			CTR0_UM=$val
+			;;
+		--ctr1-unit-mask)
+			CTR1_UM=$val
+			;;
+		--ctr0-event)
+			CTR0_TYPE=$val
+			;;
+		--ctr1-event)
+			CTR1_TYPE=$val
+			;;
+		--ctr0-count)
+			CTR0_COUNT=$val
+			;;
+		--ctr1-count)
+			CTR1_COUNT=$val
+			;;
+		--ctr0-os-usr)
+			CTR0_OSUSR=$val
+			;;
+		--ctr1-os-usr)
+			CTR1_OSUSR=$val
+			;;
+		--base-dir)
+			DIR=$val
+			;;
+		--samples-dir)
+			SAMPLES_DIR=$val
+			;;
+		--device-file)
+			DEVICE_FILE=$val
+			;;
+		--map-device-file)
+			MAP_DEVICE_FILE=$val
+			;;
+		--hash-map-device-file)
+			HASH_MAP_DEVICE_FILE=$val
+			;;
+		--map-file)
+			MAP_FILE=$val
+			;;
+		--vmlinux)
+			VMLINUX=$val
+			;;
+		--pid-filter)
+			PID_FILTER=$val
+			;;
+		--pgrp-filter)
+			PGRP_FILTER=$val
+			;;
+		*)
+			echo "Unknown option \"$arg\". See op_start --help"
+			exit 1
+			;; 
+	esac
 	shift
 done
 
@@ -239,6 +243,7 @@ then
 		echo "Couldn't mkdir $SAMPLES_DIR"
 		exit 1
 	fi
+	chmod 700 "$SAMPLES_DIR"
 else
 	cd "$SAMPLES_DIR"
 	rm -rf *
@@ -276,7 +281,8 @@ then
 	echo "Couldn't mknod $DEVICE_FILE"
 	exit 1
 fi
-
+chmod 700 "$DEVICE_FILE"
+ 
 echo "Doing mknod $HASH_MAP_DEVICE_FILE"
 mknod "$HASH_MAP_DEVICE_FILE" c $MAJOR_NR 1
 if [ "$?" != "0" ]
@@ -284,6 +290,7 @@ then
 	echo "Couldn't mknod $HASH_MAP_DEVICE_FILE"
 	exit 1
 fi
+chmod 700 "$HASH_MAP_DEVICE_FILE"
 
 echo "Doing mknod $MAP_DEVICE_FILE"
 mknod "$MAP_DEVICE_FILE" c $MAJOR_NR 2
@@ -292,6 +299,7 @@ then
 	echo "Couldn't mknod $MAP_DEVICE_FILE"
 	exit 1
 fi
+chmod 700 "$MAP_DEVICE_FILE"
 
 OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$USE_PII --ignore-myself=$IGNORE_MYSELF \
 	--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \

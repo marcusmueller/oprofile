@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.40 2000/09/27 23:47:26 moz Exp $ */
+/* $Id: opd_proc.c,v 1.41 2000/09/28 02:37:00 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -75,7 +75,6 @@ void opd_alarm(int val __attribute__((unused)))
 		}
 	}
 
-	/* FIXME: div by zero */
 	printf("%s stats:\n",opd_get_time());
 	printf("Nr. kernel samples: %lu\n",opd_stats[OPD_KERNEL]);
 	printf("Nr. samples lost due to no process information: %lu\n",opd_stats[OPD_LOST_PROCESS]);
