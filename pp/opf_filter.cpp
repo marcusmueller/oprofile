@@ -748,10 +748,8 @@ void output::build_samples_containers()
 		if (found_samples == 0)
 			continue;
 		
-		char* temp = demangle_symbol(abfd.syms[i]->name);
-		symb_entry.name = temp;
+		symb_entry.name = demangle_symbol(abfd.syms[i]->name);
 		symb_entry.first = samples.size();
-		opd_free(temp);
 
 		if (abfd.get_linenr(i, start, &filename, &linenr)) {
 			symb_entry.sample.file_loc.filename = filename;

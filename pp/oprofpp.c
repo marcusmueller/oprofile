@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.55 2001/09/26 02:42:30 phil_e Exp $ */
+/* $Id: oprofpp.c,v 1.56 2001/09/26 23:08:05 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -289,27 +289,30 @@ void opp_get_options(int argc, const char **argv)
  * The demangled name lists the parameters and type
  * qualifiers such as "const".
  *
- * return a pointer to the un-mangled name
+ * return the un-mangled name
  */
-char* demangle_symbol(const char* name)
+std::string demangle_symbol(const char* name)
 {
 	if (demangle) {
 		char *cp = (char *)name;
-		char *unmangled = cp;
 
 		while (*cp && *cp == '_')
 			cp++;
 
 		if (*cp) {
-			unmangled = cplus_demangle(cp, DMGL_PARAMS | DMGL_ANSI);
+			char *unmangled = cplus_demangle(cp, DMGL_PARAMS | DMGL_ANSI);
 			if (unmangled) {
 				/* FIXME: leading underscores ? */
-				return unmangled;
+				std::string result(unmangled);
+
+				opd_free(unmangled);
+
+				return result;
 			}
 		}
 	}
 
-	return opd_strdup(name);
+	return name;
 }
 
 /**
@@ -321,11 +324,9 @@ char* demangle_symbol(const char* name)
  */
 void printf_symbol(const char *name)
 {
-	char* unmangled = demangle_symbol(name);
+	std::string unmangled = demangle_symbol(name);
 
-	printf("%s", unmangled);
-
-	opd_free(unmangled);
+	printf("%s", unmangled.c_str());
 }
 
 /**
@@ -1044,7 +1045,8 @@ void opp_samples_files::do_list_symbol(opp_bfd* abfd) const
 		printf("%s+%x/%x:", symbol, abfd->sym_offset(i, j), end-start);
  
 		for (k = 0 ; k < nr_counters ; ++k) {
-			printf("\t%u", samples_count(k, j));
+			if (is_open(k))
+				printf("\t%u", samples_count(k, j));
 		}
 		printf("\n");
 	}

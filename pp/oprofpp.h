@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.18 2001/09/21 06:33:17 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.19 2001/09/26 23:08:05 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -33,6 +33,7 @@
 #include <sys/mman.h>
 
 #include <vector>
+#include <string>
 
 #include "../dae/opd_util.h"
 #include "../op_user.h"
@@ -63,7 +64,7 @@ char *cplus_demangle (const char *mangled, int options);
 	} while (0)
 
 void opp_get_options(int argc, char const *argv[]);
-char* demangle_symbol(const char* symbol);
+std::string demangle_symbol(const char* symbol);
 
 //---------------------------------------------------------------------------
 // A simple container of counter.

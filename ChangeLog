@@ -1,3 +1,12 @@
+2001-09-26  Philippe Elie  <ph_e@club-internet.fr>
+
+	* configure.in: typo
+
+	* pp/oprofpp.c: fix oprofpp -s.
+	  Use std::string (work not yet finish)
+	* pp/oprofpp.h:	ditto
+	* pp/opf_filter.cpp: ditto
+
 2001-09-26  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.c: add nr_interrupts
