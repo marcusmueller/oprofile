@@ -1,3 +1,7 @@
+2002-11-25  John Levon  <levon@movementarian.org>
+
+	* module/x86/cpu_type.c: disable Pentium IV till it works
+ 
 2002-11-23  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/oprofile.xml: start a FAQ. Clarify debug information vs

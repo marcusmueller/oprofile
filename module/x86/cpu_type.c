@@ -23,6 +23,7 @@ MODULE_PARM(force_rtc, "i");
 MODULE_PARM_DESC(force_rtc, "force RTC mode.");
 static int force_rtc;
 
+#if 0
 /**
  * p4_threads - determines the number of logical processor threads in a die
  * 
@@ -111,6 +112,8 @@ static int p4_ht_enabled(void)
 #endif /* CONFIG_SMP */
 }
 
+#endif /* 0 */
+ 
 __init op_cpu get_cpu_type(void)
 {
 	__u8 vendor = current_cpu_data.x86_vendor;
@@ -141,6 +144,9 @@ __init op_cpu get_cpu_type(void)
 					return CPU_PII;
 				return CPU_PPRO;
 			case 0xf:
+				return CPU_RTC;
+// disabled until it works
+#if 0
 				if (model <= 3) {
 					/* Cannot handle enabled HT P4 hardware */
 					if ((p4_threads() > 1) && p4_ht_enabled()) {
@@ -153,6 +159,7 @@ __init op_cpu get_cpu_type(void)
 				} else
 					/* Do not know what it is */
 					return CPU_RTC;
+#endif
 			}
 			
 		default:
