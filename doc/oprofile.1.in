@@ -3,12 +3,6 @@
 .SH NAME
 oprofile \- a sytem-wide profiler
 .SH SYNOPSIS
-.B op_start
-[
-.I options
-]
-.br
-.B op_stop
 .br
 .B opcontrol
 [
@@ -63,73 +57,6 @@ Show help message
 show version
 .br
 .SH OPTIONS
-.br
-.B op_start options
-.br
-.TP
-.BI "--list-events"
-Show available events for the hardware counters
-.br
-.TP
-.BI "--vmlinux=" filename
-specify vmlinux kernel image
-.br
-.TP
-.BI "--ctrX-event=" event_name
-symbolic event name for counter X
-.br
-.TP
-.BI "--ctrX-count=" count_nr
-number of events between samples for counter X
-.br
-.TP
-.BI "--ctrX-unit-mask=" unit_mask
-unit mask for counter X
-.br
-.TP
-.BI "--ctrX-kernel"
-whether to count kernel events for counter X
-.br
-.TP
-.BI "--ctrX-user"
-whether to count user events for counter X
-.br
-.TP
-.BI "--rtc-value=" value
-RTC interrupts/second value. This is rounded up to a power of two when used.
-.br
-.TP
-.BI "--buffer-size=" nr
-number of samples in kernel buffer
-.br
-.TP
-.BI "--note-table-size=" nr
-number of entries in kernel note table
-.br
-.TP
-.BI "--kernel-only"
-profile only the kernel
-.br
-.TP
-.BI "--pid-filter=" pid
-Only profile process pid
-.br
-.TP
-.BI "--pgrp-filter=" pgrp
-Only profile process tty group pgrp
-.br
-.TP
-.BI "--separate-samples"
-separate samples for each distinct application. With this option, samples
-in shared libraries are stored in a separate sample file specific to the
-primate binary image (e.g. /bin/cp) that the code is mapped into. This feature
-is not supported for process-context kernel samples, and incurs a performance
-penalty.
-.br
-.TP
-.BI "--verbose"
-be verbose in the daemon log
-.PP
 .br
 .B opcontrol options
 .br
@@ -414,23 +341,28 @@ where samples reside or a session name relative to samples files base directory
 which counter to use for selecting filenames purposes
 
 .SH USAGE
-Start the profiler with the provided
-.B op_start
+Setup and start the profiler with the provided
+.B opcontrol
 shell script. You are required to specify vmlinux, as well as specify a counter event and value, e.g. :
 .PP
-.I op_start --vmlinux=/sys/vmlinux --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000
+.I opcontrol --setup --vmlinux=/sys/vmlinux --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000
 .PP
 If you are using a machine that doesn't support the performance counters, you can use the RTC driver instead, e.g. :
 .PP
-.I op_start   --vmlinux=/sys/vmlinux --rtc-value=128
+.I opcontrol --setup --vmlinux=/sys/vmlinux --rtc-value=128
+.PP
+Then actually start profiling with :
+.PP
+.I opcontrol --start
 .PP
 Profiles will be collected every ten minutes. You can force a collection at any time :
 .PP
-.I op_dump
+.I opcontrol --dump
 .PP
 Stopping profiling is done using
 .PP
-.I op_stop
+.I opcontrol --shutdown
+.PP
 which also flush all samples to disk.
 .PP
 As an alternative you can use the
@@ -459,6 +391,9 @@ No environment variables are recognised by oprofile.
 
 .SH FILES
 .TP
+.I $HOME/.oprofile/
+Configuration files
+.TP
 .I /var/lib/oprofile/oprofiled.log
 The user-space daemon logfile.
 .TP
@@ -478,8 +413,10 @@ This man page is current for @PACKAGE@-@VERSION@.
 .BR "Intel IA32 Architecture Developer's Manual, Volume 3"
 
 .SH COPYRIGHT
-oprofile is Copyright (C) 1998-2001 University of Manchester, UK and John Levon.
+oprofile is Copyright (C) 1998-2002 University of Manchester, UK, John Levon,
+and others.
 figurine is released under the GNU General Public License, Version 2,
 or (at your option) any later version.
 .SH AUTHORS
-John Levon <moz@compsoc.man.ac.uk>
+John Levon <levon@movementarian.org> is the primary author. See the documentation
+for other contributors.

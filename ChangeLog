@@ -1,6 +1,12 @@
 2002-12-03  John Levon  <levon@movementarian.org>
 
-	* opcontrol: add --version
+	* doc/oprofile.xml:
+	* doc/oprofile.1.in:
+	* doc/Makefile.am: remove references to deprecated stuff
+ 
+2002-12-03  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: add --version
  
 2002-12-03  John Levon  <levon@movementarian.org>
 

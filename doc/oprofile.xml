@@ -63,7 +63,7 @@ features make it ideal for profiling entire systems to determine bottle necks in
 		<listitem>
 			For Intel IA32, a CPU with either a P6 generation or Pentium 4 core is
 			required. In marketing terms this translates to anything
-			between an Intel Pentium Pro (<em>not</em> Pentium Classics) and
+			between an Intel Pentium Pro (not Pentium Classics) and
 			a Pentium 4 / Xeon, including all Celerons.  The AMD
 			Athlon, Duron, and Hammer CPUs are also supported.  Other IA32
 			CPU types only support the RTC mode of oprofile; please
@@ -87,7 +87,7 @@ features make it ideal for profiling entire systems to determine bottle necks in
 	<varlistentry>
 		<term>Bash version 2</term>
 		<listitem>
-			The <command>op_start</command> script requires bash version 2 at least to be installed
+			The <command>opcontrol</command> script requires bash version 2 at least to be installed
 			as <filename>/bin/bash</filename> or <filename>/bin/bash2</filename>
 		</listitem>
 	</varlistentry>
@@ -246,31 +246,9 @@ This section gives a brief description of the available oprofile utilities and t
 </varlistentry>
 	
 <varlistentry>
-	<term><filename>op_start</filename>, <filename>oprof_start</filename></term>
-	<listitem>
-		Used for starting profiling, discussed in <xref linkend="usage" />.
-	</listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><filename>op_stop</filename></term>
-	<listitem><para>
-		You should stop the profiler using this script. The profiler will flush
-		all the data remaining in the kernel buffers to the sample files, and quit.
-	</para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><filename>op_dump</filename></term>
-	<listitem><para>
-		This causes the profiler to process all pending information.
-	</para></listitem> 
-</varlistentry>
- 
-<varlistentry>
 	<term><filename>opcontrol</filename></term>
 	<listitem>
-		Used for controlling the oprofile data collection.
+		Used for controlling the oprofile data collection, discussed in <xref linkend="usage" />.
 	</listitem>
 </varlistentry>
 
@@ -340,7 +318,11 @@ First we need to start the profiler running in the background. We need to pass t
 <filename>vmlinux</filename> file to the daemon (to allow kernel profiling), and we need to specify what event to count and the counter value.
 Here I've started with :
 </para>
-<para><command>op_start --vmlinux=/boot/2.4.0ac12/vmlinux  --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000</command></para>
+<para>
+<command>opcontrol --setup --vmlinux=/boot/2.4.0ac12/vmlinux  --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000</command>
+</para><para>
+<command>opcontrol --start</command>
+</para>
 <para>
 Here we've enabled counter 0 to count "CPU_CLK_UNHALTED" (number of cycles CPU is not halted) events with a count value of 600,000.
 This event is useful as profiles resulting generally correspond to time-spent profiles for functions etc. 
@@ -357,7 +339,7 @@ information and create annotated source. See the FAQ <xref linkend="symbol-and-d
 <para>
 Rather than wait for the buffers to fill up, I now force the profiling data to be processed with :
 </para>
-<para><command>op_dump</command></para>
+<para><command>opcontrol --dump</command></para>
 <para>
 which will ask the kernel module to dump as much data as it can to the daemon.
 </para>
@@ -387,7 +369,7 @@ at the top. Note that over a longer run (or with a lower <option>ctr0-count</opt
 be much more statistically
 reliable. Note that these sample counts do <emphasis>not</emphasis> necessarily reflect the relative amounts of time
 spent in each function - it depends on the event being counted. In this case we used <constant>CPU_CLK_UNHALTED</constant>
-which the command <command>op_help</command> tells us is "clocks processor is not halted", so in fact is likely to represent
+which the command <command>opcontrol --list-events</command> tells us is "clocks processor is not halted", so in fact is likely to represent
 the relative time spent accurately (in fact, experiments have shown that using this event is far more accurate than the values
 produced by <command>gprof</command>).
 </para>
@@ -401,117 +383,10 @@ feature of <command>gprof</command>.
 
 </sect1>
 
-<sect1 id="starting-daemon">
-<title>Starting profiling from the <command>op_start</command> script</title>
-<para>
-In this section the configuration and startup of the profiler is discussed in more depth.
-</para>
-<para>
-A shell script <command>op_start</command> is provided to set up the correct
-environment, insert the kernel module, and start up the profiler daemon.
-oprofile stores its relevant files in <filename>/var/lib/oprofile</filename>.
-Of most interest are the <filename>oprofiled.log</filename> log file, and the
-<filename>samples/</filename> directory. The <filename>samples</filename>
-directory contains the actual sample profile files created by the daemon.
-Each filename corresponds to the profiled binary image (with
-<constant>/</constant> characters replaced with <constant>}</constant>
-characters). In addition, each filename has a suffix indicating the counter
-number.
-The man page for <command>op_start</command> details the all the
-options, only interesting ones are listed here : 
-</para>
-<variablelist>
-	<varlistentry>
-		<term><option>--list-events</option></term>
-		<listitem><para>
-		This gives a short list of the hardware events that are countable (see <xref linkend="hardware-counters" />).
-		The meaning of options relating to the counters themselves is also detailed in that section.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--buffer-size=</option>nr</term>
-		<listitem><para>
-		This is the number of entries in the kernel-side profiling buffer. Generally the default value
-		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
-		Each entry in the buffer takes 8 bytes.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--note-table-size=</option>nr</term>
-		<listitem><para>
-		This is the number of entries in the kernel note table. Generally the default value
-		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
-		Each entry in the buffer takes 24 bytes.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--kernel-only=</option>nr</term>
-		<listitem><para>
-		Default is to profile both user-space and the kernel. You can profile only the kernel with this option;
-		this does not prevent the occasional user-space sample due to the hardware constraints, but reduces the
-		overhead considerably.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--vmlinux=</option><filename>filename</filename></term>
-		<listitem><para>
-		Specify the <filename>vmlinux</filename> file from the current kernel's compile. This must match
-		the running kernel if you expect meaningful profiles of the kernel. Note that this is a separate file
-		from your kernel image (<filename>vmlinuz</filename>); you must specify the <filename>vmlinux</filename>
-		file created during the kernel build in order to profile the kernel.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--separate-samples</option></term>
-		<listitem><para>
-		separate samples for each distinct application. With this option, samples
-		in shared libraries are stored in a separate sample file specific to the
-		primary binary image (e.g. /bin/cp) that the code is mapped into. This feature
-		is not supported for process-context kernel samples, and incurs a performance
-		penalty.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--pid-filter=</option>pid</term>
-		<listitem><para>
-		Only samples of this process id will be collected (including any kernel-side samples when this process is in
-		the kernel). Note that threaded programs under Linux have a different process id for each thread.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--pgrp-filter=</option>pgpr</term>
-		<listitem><para>
-		Only samples of this process tty group id will be collected (including any kernel-side samples when this process is in
-		the kernel).
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--verbose</option></term>
-		<listitem><para>
-		This makes the daemon <emphasis>very</emphasis> verbose in its logfile. Don't use this unless you need it
-		as the overhead of logging the data is significant. It is however useful for determining profiler bugs
-		(believe me ;)
-		</para></listitem>
-	</varlistentry>
-</variablelist>
-<para>
-The runtime profiler system consists of two components: a kernel module (<filename>oprofile</filename>)
-and a user-space daemon process (<filename>oprofiled</filename>). The kernel module collects sample data into
-per-cpu buffers, and wakes up the daemon process when it is approaching full. The daemon will read this
-data, and process it into a non-volatile form. Any samples are recorded into the sample files at processing time.
-</para>
-<para>
-The <command>op_start</command> shell script will insert the kernel module if needed.
-The profiling is activated when the daemon process initialises. Configuration of the kernel module parameters is done
-via <command>sysctl</command>; the available files are detailed in <xref linkend="sysctl" />.
-</para>
-
-</sect1> 
-
 <sect1 id="controlling-daemon">
-<title>Controlling OProfile data collection with the <command>opcontrol</command> script</title>
+<title>Controlling oprofile data collection with the <command>opcontrol</command> script</title>
 <para>
-In this section the configuration and control of the profiling system with opcontrol in more depth.
+In this section we describe the configuration and control of the profiling system with opcontrol in more depth.
 </para>
 <para>
 The <command>opcontrol</command> script provides the following options :
@@ -520,7 +395,7 @@ The <command>opcontrol</command> script provides the following options :
 	<varlistentry>
 		<term><option>--init</option></term>
 		<listitem><para>
-		Loads the OProfile module if required and makes the OProfile driver
+		Loads the oprofile module if required and makes the oprofile driver
 		interface available.
 		</para></listitem>
 	</varlistentry>
@@ -535,7 +410,9 @@ The <command>opcontrol</command> script provides the following options :
 		<term><option>--start</option></term>
 		<listitem><para>
 		    Start data collection with either arguments provided by <option>--setup</option>
-		of information saved in <filename>/home/root/.oprofile/daemonrc</filename>.
+		of information saved in <filename>/home/root/.oprofile/daemonrc</filename>. Specifying
+		the addition <option>--verbose</option> makes the daemon generate lots of debug data
+		whilst it is running.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -547,7 +424,7 @@ The <command>opcontrol</command> script provides the following options :
 	<varlistentry>
 		<term><option>--stop</option></term>
 		<listitem><para>
-		    Stop data collection.
+		    Stop data collection (this separate step is not possible with 2.2 or 2.4 kernels).
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -648,12 +525,6 @@ The <command>opcontrol</command> script options used with the
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--verbose</option></term>
-		<listitem><para>
-		Be verbose in the daemon log.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
 		<term><option>--kernel-range=</option>start,end</term>
 		<listitem><para>
 		kernel range vma address in hexadecimal.
@@ -664,18 +535,18 @@ The <command>opcontrol</command> script options used with the
 </sect1>
  
 <sect1 id="oprofile-gui">
-<title>Starting profiling from the <command>oprofile</command> gui</title>
+<title>Starting profiling from the <command>oprofile</command> GUI</title>
 <para>
 This section describes the <command>oprofile</command> Qt-based interface.
 </para>
 <para>
 The <command>oprof_start</command> application provides a convenient way to start the profiler.
-Note that <command>oprof_start</command> is just a wrapper around the <command>op_start</command> script,
+Note that <command>oprof_start</command> is just a wrapper around the <command>opcontrol</command> script,
 so it does not provide more services than the script itself.
 </para>
 <para>
 After <command>oprof_start</command> is started you can select the event type for each counter;
-the sampling rate and other related parameters are explained in <xref linkend="starting-daemon" />.
+the sampling rate and other related parameters are explained in <xref linkend="controlling-daemon" />.
 The "Configuration" section allows you to set general parameters such as the buffer size, kernel filename
 etc. The counter setup interface should be self-explanatory; <xref linkend="hardware-counters" /> and related 
 links contain information on using unit masks.
@@ -699,10 +570,10 @@ contain the general configuration, and event/counter setup, respectively.
 It can often be useful to split up profiling data into several different
 time periods. For example, you may want to collect data on an application's
 startup separately from the normal runtime data. You can use the simple
-tool <command>op_session</command> to do this. For example :
+command <command>opcontrol --save</command> to do this. For example :
 </para>
 <screen>
-op_session run1
+opcontrol --save=blah
 </screen>
 <para>
 will create a sub-directory in <filename>/var/lib/oprofile/samples</filename> containing the samples
@@ -803,9 +674,9 @@ two.
 </para>
 <para>
 Setting the value from the GUI should be straightforward. On the command line, you need to specify the
-<option>--rtc-value</option> option to <command>op_start</command>, e.g. :
+<option>--rtc-value</option> option to <command>opcontrol</command>, e.g. :
 </para>
-<para><command>op_start --vmlinux=/boot/2.4.0ac12/vmlinux --rtc-value=256</command></para>
+<para><command>opcontrol --setup --vmlinux=/boot/2.4.0ac12/vmlinux --rtc-value=256</command></para>
 <para>
 Note the sysctl tree described in the next section is different when the RTC is being used.  In particular,
 the file <filename>/proc/sys/dev/oprofile/rtc_value</filename> is used by the tools to set the desired RTC 
@@ -1000,7 +871,7 @@ each enabled counter. As the NMI handler is in-kernel, this avoids the problem.
 <para>There are situations where you are only interested in the profiling results of a particular
 running process, or process tty group. You can set
 the pid/pgrp values via the <filename>--pid-filter</filename> and <filename>--pgrp-filter</filename>
-options to <command>op_start</command>, which will make the daemon ignore samples for processes
+options to <command>opcontrol --setup</command>, which will make the daemon ignore samples for processes
 that don't match the filter.
 </para>
 </sect2>
@@ -1035,7 +906,7 @@ OK, so the profiler has been running, but it's not much use unless we can get so
 oprofile does a little <emphasis>too</emphasis> good a job of keeping overhead low, and no data reaches
 the profiler. This can happen on lightly-loaded machines. Remember you can force a dump at any time with :
 </para>
-<para><command>op_dump</command></para>
+<para><command>opcontrol --dump</command></para>
 <para>Remember to do this before complaining there is no profiling data !
 Now that we've got some data, it has to be processed. That's the job of <command>oprofpp</command> or <command>op_to_source</command>.
 This works on a sample file in the <filename>/var/lib/oprofile/samples/</filename> directory,
