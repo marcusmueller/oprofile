@@ -118,7 +118,7 @@ bool allow_axes(profile_classes const & classes,
 
 
 /// find the first sample file header in the class
-opd_header const get_header(profile_class const & pclass)
+opd_header const get_first_header(profile_class const & pclass)
 {
 	profile_set const & profile = *(pclass.profiles.begin());
 
@@ -136,25 +136,47 @@ opd_header const get_header(profile_class const & pclass)
 	return read_header(file);
 }
 
-
-/// Look up the detailed event info for placing in the header.
-string const get_event_info(profile_class const & pclass)
+/// merge sample file header in the class
+opd_header const get_header(profile_class const & pclass,
+                            merge_option const & merge_by)
 {
-	return describe_header(get_header(pclass));
-}
+	opd_header header = get_first_header(pclass);
 
+	if (!merge_by.unitmask)
+		return header;
 
-string const get_cpu_info(profile_class const & pclass)
-{
-	return describe_cpu(get_header(pclass));
+	profile_set const & profile = *(pclass.profiles.begin());
+
+	list<string>::const_iterator it = profile.files.begin();
+	list<string>::const_iterator const end = profile.files.end();
+	for ( ; it != end; ++it) {
+		opd_header const temp = read_header(*it);
+		header.ctr_um |= temp.ctr_um;
+	}
+
+	list<profile_dep_set>::const_iterator dep_it = profile.deps.begin();
+	list<profile_dep_set>::const_iterator dep_end = profile.deps.end();
+	for ( ; dep_it != dep_end; ++dep_it) {
+		list<string>::const_iterator it = dep_it->files.begin();
+		list<string>::const_iterator const end = dep_it->files.end();
+		for ( ; it != end; ++it) {
+			opd_header const temp = read_header(*it);
+			header.ctr_um |= temp.ctr_um;
+		}
+	}
+
+	return header;
 }
 
 
 /// Give human-readable names to each class.
-void name_classes(profile_classes & classes, axis_types axis)
+void name_classes(profile_classes & classes, axis_types axis,
+                  merge_option const & merge_by)
 {
-	classes.event = get_event_info(classes.v[0]);
-	classes.cpuinfo = get_cpu_info(classes.v[0]);
+	opd_header header = get_header(classes.v[0], merge_by);
+
+	classes.event = describe_header(header);
+	classes.cpuinfo = describe_cpu(header);
 
 	// If we're splitting on event anyway, clear out the
 	// global event name
@@ -170,7 +192,8 @@ void name_classes(profile_classes & classes, axis_types axis)
 		case AXIS_EVENT:
 			it->name = it->ptemplate.event
 				+ ":" + it->ptemplate.count;
-			it->longname = get_event_info(*it);
+			header = get_header(*it, merge_by);
+			it->longname = describe_header(header);
 			break;
 		case AXIS_TGID:
 			it->name += it->ptemplate.tgid;
@@ -242,7 +265,7 @@ void identify_classes(profile_classes & classes,
 			report_error(classes, axis, axis_types(i));
 		axis = axis_types(i);
 		/* do this early for report_error */
-		name_classes(classes, axis);
+		name_classes(classes, axis, merge_by);
 	}
 
 	if (axis == AXIS_MAX) {
