@@ -607,6 +607,10 @@ is likely to freeze the system.
 In short : <command>Don't try a foolish sample count value.</command> Unfortunately the definition of a foolish value 
 is really dependent on the event type - if ever in doubt, e-mail <address><email>oprofile-list@lists.sf.net</email></address>.
 </para>
+<para>Do I hear you shout "but my event value is low, but not stupid !" ? Yes, this can be the case. In these
+circumstances, a simple solution is to disable kernel profiling by turning off the kernel option for
+each enabled counter. As the NMI handler is in-kernel, this avoids the problem.
+</para>
 
 </sect1>
 
