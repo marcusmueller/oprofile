@@ -283,6 +283,20 @@ void odb_close(samples_odb_t * hash)
 }
 
 
+int odb_open_count(samples_odb_t const * hash)
+{
+	if (!hash->data)
+		return 0;
+	return hash->data->ref_count;
+}
+
+
+void * odb_get_data(samples_odb_t * hash)
+{
+	return hash->data->base_memory;
+}
+
+
 void odb_sync(samples_odb_t const * hash)
 {
 	odb_data_t * data = hash->data;

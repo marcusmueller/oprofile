@@ -142,7 +142,7 @@ retry:
 		goto out;
 	}
 
-	fill_header(sfile->sample_file.data->base_memory, counter,
+	fill_header(odb_get_data(&sfile->sample_file), counter,
 	            image->kernel, 0, image->mtime);
 
 out:

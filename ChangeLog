@@ -1,5 +1,18 @@
 2004-05-28  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_mangling.cpp:
+	* daemon/opd_sfile.cpp:
+	* daemon/liblegacy/opd_proc.c:
+	* daemon/liblegacy/opd_sample_files.c:
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp:
+	* libdb/db_manage.cpp:
+	* libdb/odb_hash.h:
+	* libpp/profile.cpp: introduce and use odb_get_data(),
+	odb_open_count()
+
+2004-05-28  John Levon  <levon@movementarian.org>
+
 	* libpp/callgraph_container.cpp:
 	* libpp/arrange_profiles.cpp: trivialities
 

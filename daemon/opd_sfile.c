@@ -243,11 +243,11 @@ static samples_odb_t * get_file(struct sfile * sf, struct sfile * last,
 		file = &temp->file;
 	}
 
-	if (!file->data)
+	if (!odb_open_count(file))
 		opd_open_sample_file(file, last, sf, counter, cg);
 
 	/* Error is logged by opd_open_sample_file */
-	if (!file->data)
+	if (!odb_open_count(file))
 		return NULL;
 
 	return file;

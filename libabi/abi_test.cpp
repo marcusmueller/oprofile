@@ -65,7 +65,7 @@ int main(int argc, char const ** argv)
 		}
 
 		struct opd_header * header;
-		header = static_cast<struct opd_header *>(dest.base_memory);
+		header = static_cast<struct opd_header *>(odb_get_data(&dest));
 		memset(header, '\0', sizeof(struct opd_header));
 		header->version = OPD_VERSION;
 		memcpy(header->magic, OPD_MAGIC, sizeof(header->magic));

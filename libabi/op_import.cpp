@@ -104,7 +104,7 @@ void import_from_abi(abi const & abi, void const * srcv,
                      size_t len, samples_odb_t * dest) throw (abi_exception)
 {
 	struct opd_header * head =
-		static_cast<opd_header *>(dest->base_memory);
+		static_cast<opd_header *>(odb_get_data(dest));
 	unsigned char const * src = static_cast<unsigned char const *>(srcv);
 	unsigned char const * const begin = src;
 	extractor ext(abi, src, len);	

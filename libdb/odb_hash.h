@@ -125,6 +125,12 @@ int odb_open(samples_odb_t * hash, char const * filename,
 /** Close the given ODB hash */
 void odb_close(samples_odb_t * hash);
 
+/** return the number of times this sample file is open */
+int odb_open_count(samples_odb_t const * hash);
+
+/** return the start of the mapped data */
+void * odb_get_data(samples_odb_t * hash);
+
 /** issue a msync on the used size of the mmaped file */
 void odb_sync(samples_odb_t const * hash);
 

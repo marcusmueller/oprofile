@@ -63,7 +63,8 @@ void profile_t::open_sample_file(string const & filename, samples_odb_t & db)
 	if (rc)
 		throw op_fatal_error(filename + ": " + strerror(rc));
 
-	opd_header const & head = *static_cast<opd_header *>(db.data->base_memory);
+	opd_header const & head =
+		*static_cast<opd_header *>(odb_get_data(&db));
 
 	if (head.version != OPD_VERSION) {
 		ostringstream os;
@@ -80,7 +81,8 @@ void profile_t::add_sample_file(string const & filename, u32 offset)
 
 	open_sample_file(filename, samples_db);
 
-	opd_header const & head = *static_cast<opd_header *>(samples_db.data->base_memory);
+	opd_header const & head =
+		*static_cast<opd_header *>(odb_get_data(&samples_db));
 
 	// if we already read a sample file header pointer is non null
 	if (file_header.get()) {

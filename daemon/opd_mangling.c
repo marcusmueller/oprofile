@@ -144,7 +144,7 @@ retry:
 	else
 		binary = sf->kernel->name;
 
-	fill_header(file->data->base_memory, counter, !!sf->kernel,
+	fill_header(odb_get_data(file), counter, !!sf->kernel,
 		    last ? !!last->kernel : 0,
 	            binary ? op_get_mtime(binary) : 0);
 
