@@ -1053,9 +1053,9 @@ Some interesting options of the post-processor :
 		<term><option>--path</option> path list ',' separated</term>
 		<term><option>-p</option> path list ',' separated</term>
 		<listitem><para>
-		Specify an alternate list of pathnames to locate image files. This is useful if your sample filenames
-		does not match the image file name, such as a kernel module loaded at boot time through initrd.
-		The path_list is a comma separated list of directories, each directory and sub-directories are candidate to retrieve the image file.
+		Specify an alternate list of pathnames to locate image files. Use if the sample filenames
+		do not match the image filenames, e.g. modules loaded at boot time through a RAM disk.
+		The path list is a comma-separated list of directories. Each directory is scanned recursively.
 		</para></listitem>
 	</varlistentry>
 </variablelist>
@@ -1143,9 +1143,9 @@ Options allowed are :
 		<term><option>--path</option> path list ',' separated</term>
 		<term><option>-p</option> path list ',' separated</term>
 		<listitem><para>
-		Specify an alternate list of pathnames to locate image files. This is useful if your sample filenames
-		does not match the image file name, such as a kernel module loaded at boot time through initrd.
-		The path_list is a comma separated list of directories, each directory and sub-directories are candidate to retrieve the image file.
+		Specify an alternate list of pathnames to locate image files. Use if the sample filenames
+		do not match the image filenames, e.g. modules loaded at boot time through a RAM disk.
+		The path list is a comma-separated list of directories. Each directory is scanned recursively.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <assert.h>
 
 /* kernel module */
 struct opd_module {
@@ -91,6 +92,7 @@ void opd_clear_module_info(void)
 		opd_modules[i].name = NULL;
 		opd_modules[i].start = 0;
 		opd_modules[i].end = 0;
+		nr_modules = 0;
 		list_init(&opd_modules[i].module_list);
 	}
 
@@ -194,6 +196,8 @@ static void opd_read_module_info(void)
 	if (no_vmlinux)
 		return;
 
+	printf("Reading module info.\n");
+
 	fp = op_try_open_file("/proc/modules", "r");
 
 	if (!fp) {
@@ -238,50 +242,6 @@ static void opd_read_module_info(void)
 	}
 
 	op_close_file(fp);
-}
-
-
-/**
- * opd_drop_module_sample - drop a module sample efficiently
- * @param eip  eip of sample
- */
-static void opd_drop_module_sample(vma_t eip)
-{
-	char * module_names;
-	char * name;
-	size_t size = 1024;
-	size_t ret;
-	uint nr_mods;
-	uint mod = 0;
-
-	module_names = xmalloc(size);
-	while (query_module(NULL, QM_MODULES, module_names, size, &ret)) {
-		if (errno != ENOSPC) {
-			verbprintf("query_module failed: %s\n", strerror(errno));
-			return;
-		}
-		size = ret;
-		module_names = xrealloc(module_names, size);
-	}
-
-	nr_mods = ret;
-	name = module_names;
-
-	while (mod < nr_mods) {
-		struct module_info info;
-		if (!query_module(name, QM_INFO, &info, sizeof(info), &ret)) {
-			if (eip >= info.addr && eip < info.addr + info.size) {
-				verbprintf("Sample from unprofilable module %s\n", name);
-				new_module(xstrdup(name), info.addr, info.addr + info.size);
-				goto out;
-			}
-		}
-		mod++;
-		name += strlen(name) + 1;
-	}
-out:
-	if (module_names)
-		free(module_names);
 }
 
 
@@ -336,28 +296,19 @@ static void opd_handle_module_sample(vma_t eip, u32 counter)
 		module = opd_find_module_by_eip(eip);
 	}
 
-	if (module) {
-		if (module->image != NULL) {
-			opd_stats[OPD_MODULE]++;
-			opd_put_image_sample(module->image,
-					     eip - module->start, counter);
-		} else {
-			opd_stats[OPD_LOST_MODULE]++;
-			verbprintf("No image for sampled module %s\n",
-				   module->name);
-		}
-	} else {
-		/* ok, we failed to place the sample even after re-reading
-		 * /proc/ksyms. It's either a rogue sample, or from a module
-		 * that didn't create symbols (like in some initrd setups).
-		 * So we check with query_module() if we can place it in a
-		 * symbol-less module, and if so create a negative entry for
-		 * it, to quickly ignore future samples.
-		 *
-		 * Problem uncovered by Bob Montgomery <bobm@fc.hp.com>
-		 */
+	if (!module) {
 		opd_stats[OPD_LOST_MODULE]++;
-		opd_drop_module_sample(eip);
+		return;
+	}
+
+	if (module->image != NULL) {
+		opd_stats[OPD_MODULE]++;
+		opd_put_image_sample(module->image,
+				     eip - module->start, counter);
+	} else {
+		opd_stats[OPD_LOST_MODULE]++;
+		verbprintf("No image for sampled module %s\n",
+			   module->name);
 	}
 }
 
@@ -453,38 +404,22 @@ static void opd_put_kernel_sample(vma_t eip, u32 counter,
 		module = opd_find_module_by_eip(eip);
 	}
 
-	if (module) {
-		/* We can get null image for initrd setups:
-		 * opd_drop_module_sample() create a module but can't create
-		 * a proper image */
-		if (!module->image) {
-			opd_stats[OPD_LOST_MODULE]++;
-			verbprintf("module %s : nil image\n", module->name);
-			return;
-		}
-
-		if (!module->image->name) {
-			opd_stats[OPD_LOST_MODULE]++;
-			verbprintf("unable to get path name for module %s\n",
-				   module->name);
-			return;
-		}
-		opd_setup_kernel_sample(eip, counter, app_image,
-					module->image->name,
-					module->start, module->end);
-	} else {
-		/* ok, we failed to place the sample even after re-reading
-		 * /proc/ksyms. It's either a rogue sample, or from a module
-		 * that didn't create symbols (like in some initrd setups).
-		 * So we check with query_module() if we can place it in a
-		 * symbol-less module, and if so create a negative entry for
-		 * it, to quickly ignore future samples.
-		 *
-		 * Problem uncovered by Bob Montgomery <bobm@fc.hp.com>
-		 */
+	if (!module) {
 		opd_stats[OPD_LOST_MODULE]++;
-		opd_drop_module_sample(eip);
+		return;
 	}
+
+	assert(module->image);
+
+	if (!module->image->name) {
+		opd_stats[OPD_LOST_MODULE]++;
+		verbprintf("unable to get path name for module %s\n",
+			   module->name);
+		return;
+	}
+
+	opd_setup_kernel_sample(eip, counter, app_image, module->image->name,
+	                        module->start, module->end);
 }
 
 /**

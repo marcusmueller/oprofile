@@ -242,8 +242,8 @@ where samples reside or a session name relative to samples files base directory.
 .br
 .TP
 .BI "--path " path_list ", -p " path_list
-Specify an alternate list of pathname to locate image file. Use if the samples files name does not match the image file name, e.g. modules loaded at boot time through a RAM disk.
-The path_list is a comma separated list of directories, each directory and sub-directories are candidate to retrieve the image file.
+Specify an alternate list of pathnames to locate image files. Use if the sample filenames do not match the image filenames, e.g. modules loaded at boot time through a RAM disk.
+The path_list is a comma-separated list of directories. Each directory is scanned recursively.
 .TP
 .br
 .B op_to_source options
@@ -371,8 +371,8 @@ Sort output from largest to smallest count.
 .br
 .TP
 .BI "--path " path_list ", -p " path_list
-Specify an alternate list of pathname to locate image file. Use if the samples files name does not match the image file name, e.g. modules loaded at boot time through a RAM disk.
-The path_list is a comma separated list of directories, each directory and sub-directories are candidate to retrieve the image file.
+Specify an alternate list of pathnames to locate image files. Use if the sample filenames do not match the image filenames, e.g. modules loaded at boot time through a RAM disk.
+The path_list is a comma-separated list of directories. Each directory is scanned recursively.
 .br
 .TP
 .BI "--session " session-name
