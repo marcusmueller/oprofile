@@ -882,6 +882,7 @@ void __exit oprof_exit(void)
 	udelay(1000000);
  
 	oprof_free_mem(smp_num_cpus);
+	 
 	return;
 }
  

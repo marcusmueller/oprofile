@@ -3,9 +3,9 @@ all: sprofile.o
 clean:
 	rm -f *.o 
  
-# FIXME: move NMI code into separate and don't use -march ppro on rest 
-CFLAGS=-D__KERNEL__ -Wall -I/usr/src/linux/include -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe -fno-strength-reduce -malign-loops=2 -malign-jumps=2 -malign-functions=2 -DMODULE -Wunused -march=pentiumpro
-
+# FIXME: move NMI code into separate to allow -march=ppro for that
+CFLAGS=-D__KERNEL__ -I/usr/src/linux/include -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe  -mpreferred-stack-boundary=2 -march=i586 -fno-strict-aliasing -DMODULE -Wunused
+ 
 ASMFLAGS=-D__ASSEMBLY__ -D__KERNEL__ -traditional
  
 sprofile.o: sprofile_c.o sprofile_nmi.o sprofile_k.o cp_events.o 

@@ -23,7 +23,7 @@ struct op_sample {
 
 struct op_entry {
 	struct op_sample samples[OP_NR_ENTRY];
-} __cacheline_aligned;
+} __attribute__((__aligned__(SMP_CACHE_BYTES)));
  
 /* per-cpu dynamic data */ 
 struct _oprof_data {

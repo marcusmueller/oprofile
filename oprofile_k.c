@@ -71,7 +71,7 @@ static void io_check_error(unsigned char reason, struct pt_regs * regs)
 
 static void unknown_nmi_error(unsigned char reason, struct pt_regs * regs)
 {
-	/* No MicroChannelA check */
+	/* No MCA check */
  
 	printk("oprofile: Uhhuh. NMI received for unknown reason %02x.\n", reason);
 	printk("Maybe you need to boot with nmi_watchdog=0\n"); 
@@ -125,7 +125,9 @@ void oprof_out8(void *buf);
 asmlinkage static int (*old_sys_fork)(struct pt_regs);
 asmlinkage static int (*old_sys_vfork)(struct pt_regs);
 asmlinkage static int (*old_sys_clone)(struct pt_regs);
+#if 0 
 asmlinkage static int (*old_sys_execve)(struct pt_regs);
+#endif 
 asmlinkage static long (*old_sys_mmap2)(unsigned long, unsigned long, unsigned long,
 	unsigned long, unsigned long, unsigned long);
 asmlinkage static long (*old_sys_init_module)(const char *, struct module *); 
@@ -282,6 +284,7 @@ static int oprof_output_map(unsigned long addr, unsigned long len,
 	return size;
 }
 
+#if 0
 static int oprof_output_maps(struct task_struct *task)
 {
 	int size=0;
@@ -313,7 +316,7 @@ static int oprof_output_maps(struct task_struct *task)
 
 	up(&mm->mmap_sem);
  
-	/* FIXME: we need to lock before so we don't have to GC the mm (not exported) */ 
+	/* FIXME: we need to lock before so we don't have to GC the mm (exit_mmap not exported) */
 	atomic_dec_and_test(&mm->mm_users);
 
 out:
@@ -338,6 +341,7 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 	}
 	return ret;
 }
+#endif 
 
 asmlinkage static int my_sys_mmap2(unsigned long addr, unsigned long len,
 	unsigned long prot, unsigned long flags,
@@ -404,12 +408,26 @@ asmlinkage static long my_sys_exit(int error_code)
  
 extern void *sys_call_table[];
  
+int oprof_binary(struct linux_binprm *binprm, struct pt_regs *regs)
+{
+	struct op_sample samp;
+
+	printk("Called handler for pid %u\n",current->pid); 
+	samp.count = OP_DROP;
+	samp.pid = current->pid;
+	samp.eip = 0;
+	oprof_out8(&samp);
+	return -ENOEXEC;
+}
+ 
+struct linux_binfmt oprof_binfmt = { NULL, THIS_MODULE, oprof_binary, NULL, NULL, 0 };
+ 
 void __init op_intercept_syscalls(void)
 {
 	old_sys_fork = sys_call_table[__NR_fork]; 
 	old_sys_vfork = sys_call_table[__NR_vfork];
 	old_sys_clone = sys_call_table[__NR_clone];
-	old_sys_execve = sys_call_table[__NR_execve];
+	//old_sys_execve = sys_call_table[__NR_execve];
 	old_sys_mmap2 = sys_call_table[__NR_mmap2];
 	old_sys_init_module = sys_call_table[__NR_init_module];
 	old_sys_exit = sys_call_table[__NR_exit]; 
@@ -417,18 +435,22 @@ void __init op_intercept_syscalls(void)
 	sys_call_table[__NR_fork] = my_sys_fork;
 	sys_call_table[__NR_vfork] = my_sys_vfork;
 	sys_call_table[__NR_clone] = my_sys_clone;
-	sys_call_table[__NR_execve] = my_sys_execve;
+	//sys_call_table[__NR_execve] = my_sys_execve;
 	sys_call_table[__NR_mmap2] = my_sys_mmap2; 
 	sys_call_table[__NR_init_module] = my_sys_init_module;
 	sys_call_table[__NR_exit] = my_sys_exit;
+
+	register_binfmt(&oprof_binfmt); 
 }
 
 void __exit op_replace_syscalls(void)
 {
+	unregister_binfmt(&oprof_binfmt);
+
 	sys_call_table[__NR_fork] = old_sys_fork;
 	sys_call_table[__NR_vfork] = old_sys_vfork;
 	sys_call_table[__NR_clone] = old_sys_clone;
-	sys_call_table[__NR_execve] = old_sys_execve;
+	//sys_call_table[__NR_execve] = old_sys_execve;
 	sys_call_table[__NR_mmap2] = old_sys_mmap2; 
 	sys_call_table[__NR_init_module] = old_sys_init_module;
 	sys_call_table[__NR_exit] = old_sys_exit;
