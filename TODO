@@ -14,18 +14,11 @@ Before 1.0 big stuff
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
  o thread profiling
- o per-binary kernel profiling (mostly done)
  o per-cpu profiling
  o implement --no-vmlinux
  
 Before 1.0 little stuff
 -----------------------
- o do something about this :
-
-[root@lambent oprofile]# oprofpp -kDl /usr/local/oprofile/bin/op_time  | tail -30 | grep strlen
-4207a4c0 1629     1.81701     strlen                  /lib/i686/libc-2.2.93.so
-[root@lambent oprofile]# oprofpp -kDs strlen /usr/local/oprofile/bin/op_time | grep strlen
-0000e470 0        0           strlen                  /lib/ld-2.2.93.so
 
  o opcontrol -- need a way to turn OFF a counter now after setting one up
  o opcontrol - scale the default event count
@@ -41,7 +34,6 @@ Before 1.0 little stuff
  o implement module-drop event in 2.5 kernel
  o lockless patch to fix UP 2.5
  o fix /dev/null mappings (see sf)
- o add default event sets to avoid difficult first-time-setup for a user
  o mask SIGTERM over critical daemon operations that could corrupt sample files
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
  o op_session should allow to backup binary, see subject "features to make oprofile easier to use" on mail list
@@ -61,6 +53,10 @@ Documentation
  o document gcc 2.95 and linenr info problems especially for inline functions
  o document somewhere that oprofpp -s blah will only find the first symbol
    called "blah", or fix it
+   [root@lambent oprofile]# oprofpp -kDl /usr/local/oprofile/bin/op_time  | tail -30 | grep strlen
+   4207a4c0 1629     1.81701     strlen                  /lib/i686/libc-2.2.93.so
+   [root@lambent oprofile]# oprofpp -kDs strlen /usr/local/oprofile/bin/op_time | grep strlen
+   0000e470 0        0           strlen                  /lib/ld-2.2.93.so
  o split doc into user's manual and hacking manual, document much more 
  o audit oprof_start for security + then document sudo
 
