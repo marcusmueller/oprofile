@@ -441,16 +441,18 @@ static void opd_go_daemon(void)
  * If the sample could be processed correctly, it is written
  * to the relevant sample file.
  */
-static void opd_do_samples(struct op_buffer_head const * opd_buf)
+static void opd_do_samples(unsigned long * opd_buf, ssize_t count)
 {
+	size_t num = count / sizeof(unsigned long);
+ 
 	/* prevent signals from messing us up */
 	sigprocmask(SIG_BLOCK, &maskset, NULL);
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
-	verbprintf("Read buffer of %d entries.\n", opd_buf->count);
+	verbprintf("Read buffer of %d entries.\n", num);
  
-	opd_process_samples(opd_buf->buffer, opd_buf->count);
+	opd_process_samples(opd_buf, num);
 
 	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
 }
@@ -464,7 +466,7 @@ static void opd_do_samples(struct op_buffer_head const * opd_buf)
  * Read some of a buffer from the device and process
  * the contents.
  */
-static void opd_do_read(struct op_buffer_head * buf, size_t size)
+static void opd_do_read(unsigned long * buf, size_t size)
 {
 	while (1) {
 		ssize_t count = -1;
@@ -472,10 +474,9 @@ static void opd_do_read(struct op_buffer_head * buf, size_t size)
 		/* loop to handle EINTR */
 		while (count < 0) {
 			count = op_read_device(devfd, buf, size);
-
 		}
 
-		opd_do_samples(buf);
+		opd_do_samples(buf, count);
 	}
 }
 
@@ -561,13 +562,13 @@ static void setup_signals(void)
 
 int main(int argc, char const * argv[])
 {
-	struct op_buffer_head * sbuf;
+	unsigned long * sbuf;
 	size_t s_buf_bytesize;
 	int i;
 
 	opd_options(argc, argv);
 
-	s_buf_bytesize = sizeof(struct op_buffer_head) + opd_buf_size * sizeof(unsigned long);
+	s_buf_bytesize = opd_buf_size * sizeof(unsigned long);
 
  	sbuf = xmalloc(s_buf_bytesize);
 

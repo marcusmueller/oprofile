@@ -1,3 +1,10 @@
+2002-10-07  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_image.h:
+	* daemon/opd_image.c:
+	* daemon/oprofiled.c:
+	* libop/op_interface_25.h: update to latest interface
+
 2002-10-06  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* dae/opd_image.c: allow to free(image->app_name)

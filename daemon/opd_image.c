@@ -341,7 +341,7 @@ static void opd_put_sample(struct opd_image * image, unsigned long const * data)
  
  
 // FIXME: pid/pgrp filter ?
-void opd_process_samples(unsigned long const * buffer, unsigned long count)
+void opd_process_samples(unsigned long const * buffer, size_t count)
 {
 	unsigned long i = 0;
 	unsigned long cpu = 0;

@@ -55,6 +55,6 @@ struct opd_image * opd_get_kernel_image(char const * name);
  
 struct op_sample;
  
-void opd_process_samples(unsigned long const * buffer, unsigned long count);
+void opd_process_samples(unsigned long const * buffer, size_t count);
 
 #endif /* OPD_IMAGE_H */

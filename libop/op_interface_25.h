@@ -21,12 +21,4 @@
 #define CPU_SWITCH_CODE		2
 #define COOKIE_SWITCH_CODE	3
  
-/**
- * The head structure of a kernel sample buffer.
- */
-struct op_buffer_head {
-	size_t count; /**< number of samples in this buffer */
-	unsigned long buffer[0]; /**< the sample buffer */
-} __attribute__((__packed__));
-	 
 #endif /* OP_INTERFACE_25_H */
