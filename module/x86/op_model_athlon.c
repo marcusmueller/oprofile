@@ -17,7 +17,7 @@
 #define NUM_CONTROLS 4
 
 #define CTR_READ(l,h,msrs,c) do {rdmsr(msrs->counters.addrs[(c)], (l), (h));} while (0)
-#define CTR_WRITE(l,msrs,c) do {wrmsr(msrs->counters.addrs[(c)], -(u32)(l), -1);} while (0)
+#define CTR_WRITE(l,msrs,c) do {wrmsr(msrs->counters.addrs[(c)], -(u32)(l), 0xffff);} while (0)
 #define CTR_OVERFLOWED(n) (!((n) & (1U<<31)))
 
 #define CTRL_READ(l,h,msrs,c) do {rdmsr(msrs->controls.addrs[(c)], (l), (h));} while (0)
@@ -81,21 +81,22 @@ static void athlon_setup_ctrs(struct op_msrs const * const msrs)
 	}
 }
 
- 
+
 static void athlon_check_ctrs(uint const cpu, 
 			      struct op_msrs const * const msrs, 
 			      struct pt_regs * const regs)
 {
-	ulong low, high;
+	uint low, high;
 	int i;
 	for (i = 0 ; i < NUM_COUNTERS; ++i) {
-		CTR_READ(low, high, msrs, i);
-		if (CTR_OVERFLOWED(low)) {
-			op_do_profile(cpu, regs, i);
-			CTR_WRITE(oprof_data[cpu].ctr_count[i], msrs, i);
+		if (sysctl.ctr[i].event) {
+			CTR_READ(low, high, msrs, i);
+			if (CTR_OVERFLOWED(low)) {
+				op_do_profile(cpu, regs, i);
+				CTR_WRITE(oprof_data[cpu].ctr_count[i], msrs, i);
+			}
 		}
 	}
-	
 }
 
  
