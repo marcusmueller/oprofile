@@ -78,6 +78,71 @@ oprof_start::oprof_start()
 		unit_mask_group->hide();
 	}
 
+	if (cpu_type == CPU_TIMER_INT) {
+		setup_config_tab->removePage(counter_setup_page);
+	} else {
+		fill_events();
+	}
+
+	bool is_25 = op_get_interface() == OP_INTERFACE_25;
+
+	if (is_25) {
+		pid_filter_label->hide();
+		pid_filter_edit->hide();
+		pgrp_filter_label->hide();
+		pgrp_filter_edit->hide();
+		note_table_size_edit->hide();
+		note_table_size_label->hide();
+		kernel_only_cb->hide();
+		// FIXME: can adapt to 2.5 ...
+		buffer_size_edit->hide();
+		buffer_size_label->hide();
+	}
+
+	// setup the configuration page.
+	kernel_filename_edit->setText(config.kernel_filename.c_str());
+
+	no_vmlinux->setChecked(config.no_kernel);
+
+	buffer_size_edit->setText(QString().setNum(config.buffer_size));
+	note_table_size_edit->setText(QString().setNum(config.note_table_size));
+	if (config.pid_filter)
+		pid_filter_edit->setText(QString().setNum(config.pid_filter));
+	else
+		pid_filter_edit->setText("");
+	if (config.pgrp_filter)
+		pgrp_filter_edit->setText(QString().setNum(config.pgrp_filter));
+	else
+		pgrp_filter_edit->setText("");
+	verbose->setChecked(config.verbose);
+	kernel_only_cb->setChecked(config.kernel_only);
+	separate_lib_samples_cb->setChecked(config.separate_lib_samples);
+	separate_kernel_samples_cb->setChecked(config.separate_kernel_samples);
+
+	// the unit mask check boxes
+	hide_masks();
+
+	event_count_edit->setValidator(event_count_validator);
+	QIntValidator * iv;
+	iv = new QIntValidator(OP_MIN_BUF_SIZE, OP_MAX_BUF_SIZE, buffer_size_edit);
+	buffer_size_edit->setValidator(iv);
+	iv = new QIntValidator(OP_MIN_NOTE_TABLE_SIZE, OP_MAX_NOTE_TABLE_SIZE, note_table_size_edit);
+	note_table_size_edit->setValidator(iv);
+	iv = new QIntValidator(pid_filter_edit);
+	pid_filter_edit->setValidator(iv);
+	iv = new QIntValidator(pgrp_filter_edit);
+	pgrp_filter_edit->setValidator(iv);
+
+	// daemon status timer
+	startTimer(5000);
+	timerEvent(0);
+
+	resize(minimumSizeHint());
+}
+
+
+void oprof_start::fill_events()
+{
 	// we need to build the event descr stuff before loading the
 	// configuration because we use locate_event to get an event descr
 	// from its name.
@@ -130,57 +195,6 @@ oprof_start::oprof_start()
 		v_events.push_back(descr);
 	}
 
-	load_config_file();
-
-	bool is_25 = op_get_interface() == OP_INTERFACE_25;
-
-	if (is_25) {
-		pid_filter_label->hide();
-		pid_filter_edit->hide();
-		pgrp_filter_label->hide();
-		pgrp_filter_edit->hide();
-		note_table_size_edit->hide();
-		note_table_size_label->hide();
-		kernel_only_cb->hide();
-		// FIXME: can adapt to 2.5 ...
-		buffer_size_edit->hide();
-		buffer_size_label->hide();
-	}
-
-	// setup the configuration page.
-	kernel_filename_edit->setText(config.kernel_filename.c_str());
-
-	no_vmlinux->setChecked(config.no_kernel);
-
-	buffer_size_edit->setText(QString().setNum(config.buffer_size));
-	note_table_size_edit->setText(QString().setNum(config.note_table_size));
-	if (config.pid_filter)
-		pid_filter_edit->setText(QString().setNum(config.pid_filter));
-	else
-		pid_filter_edit->setText("");
-	if (config.pgrp_filter)
-		pgrp_filter_edit->setText(QString().setNum(config.pgrp_filter));
-	else
-		pgrp_filter_edit->setText("");
-	verbose->setChecked(config.verbose);
-	kernel_only_cb->setChecked(config.kernel_only);
-	separate_lib_samples_cb->setChecked(config.separate_lib_samples);
-	separate_kernel_samples_cb->setChecked(config.separate_kernel_samples);
-
-	// the unit mask check boxes
-	hide_masks();
-
-	event_count_edit->setValidator(event_count_validator);
-	QIntValidator * iv;
-	iv = new QIntValidator(OP_MIN_BUF_SIZE, OP_MAX_BUF_SIZE, buffer_size_edit);
-	buffer_size_edit->setValidator(iv);
-	iv = new QIntValidator(OP_MIN_NOTE_TABLE_SIZE, OP_MAX_NOTE_TABLE_SIZE, note_table_size_edit);
-	note_table_size_edit->setValidator(iv);
-	iv = new QIntValidator(pid_filter_edit);
-	pid_filter_edit->setValidator(iv);
-	iv = new QIntValidator(pgrp_filter_edit);
-	pgrp_filter_edit->setValidator(iv);
-
 	events_list->header()->hide();
 	events_list->setSorting(-1);
 
@@ -198,11 +212,7 @@ oprof_start::oprof_start()
 	if (cpu_type == CPU_RTC)
 		events_list->setCurrentItem(events_list->firstChild());
 
-	// daemon status timer
-	startTimer(5000);
-	timerEvent(0);
-
-	resize(minimumSizeHint());
+	load_config_file();
 }
 
 
@@ -656,7 +666,7 @@ void oprof_start::on_start_profiler()
 		if (current_events[c])
 			break;
 	}
-	if (c == op_nr_counters) {
+	if (c == op_nr_counters && cpu_type != CPU_TIMER_INT) {
 		QMessageBox::warning(this, 0, "No counters enabled.\n");
 		return;
 	}

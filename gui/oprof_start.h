@@ -77,6 +77,9 @@ protected slots:
 	void timerEvent(QTimerEvent * e);
 
 private:
+	/// fill the event details and gui setup
+	void fill_events();
+
 	/// find an event description by name
 	op_event_descr const & locate_event(std::string const & name) const;
 
