@@ -21,6 +21,9 @@ for some pointers and/or read HACKING and doc/CodingStyle.
   (see libop/op_hw_config.h). We should remove this #define
  o dae/opd_image.h: struct opd_sfile * sfiles[OP_MAX_COUNTERS][NR_CPUS]; 
    this use too many memory.
+ o IA64: we free twice time profiling interrupt at shutdown
+ o IA64: fix make check (libregex tests fails) prolly a spacing problem
+  in stl.pat.in
 
 0.8 release
 -----------
