@@ -30,7 +30,8 @@ std::string opd_read_link(std::string const & name);
 /* return false if base_dir is not a valid directory. */
 bool create_file_list(std::list<std::string>& file_list,
 		      const std::string & base_dir,
-		      const std::string & filter = "*");
+		      const std::string & filter = "*",
+		      bool recursive = false);
 
 std::string relative_to_absolute_path(const std::string & path,
 				const std::string & base_dir = std::string());

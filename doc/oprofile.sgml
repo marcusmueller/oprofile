@@ -383,7 +383,9 @@ Of most interest are the <filename>oprofiled.log</filename> log file, and the
 directory contains the actual sample profile files created by the daemon.
 Despite their apparent size they take up much less actual diskspace as they are
 created sparsely (<command>stat</command> or <command>du [-h]</command> should tell you their real on-disk
-size). Each filename corresponds to the profiled binary image (with
+size). Note than this imply we <emphasis>greatyl discourage</emphasis> use of filesystem without a
+proper support for sparse file including vfat fs and many network fs.
+ Each filename corresponds to the profiled binary image (with
 <constant>/</constant> characters replaced with <constant>}</constant>
 characters). In addition, each filename has a suffix indicating the counter
 number.
@@ -1204,6 +1206,21 @@ Options allowed are :
 		<term><option>-r</option></term>
 		<listitem><para>
 		Sort by decreasing samples count instead of increasing count. Can't be used with <option>&mdash;list-symbols</option>
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>&mdash;path</option> path list ',' separated</term>
+		<term><option>-p</option> path list ',' separated</term>
+		<listitem><para>
+		Specify an alternate list of pathname to locate image file. This is usefull if your samples files
+		name does not match the image file name such as module loaded at boot time through a ram disk
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>&mdash;recursive-path</option> path list ',' separated</term>
+		<term><option>-P</option> path list ',' separated</term>
+		<listitem><para>
+		Same as <option>mdash;</option> but retrieve recursively the image file name in the path list
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

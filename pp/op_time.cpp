@@ -32,6 +32,7 @@
 #include "opf_filter.h"
 
 #include "../util/file_manip.h"
+#include "../util/string_manip.h"
 #include "../util/op_popt.h"
 
 using std::string;
@@ -78,6 +79,8 @@ static int list_symbols;
 static int show_image_name;
 static char * output_format;
 static const char * base_dir = "/var/opd/samples";
+static const char * path;
+static const char * recursive_path;
 
 static OutSymbFlag output_format_flags;
 
@@ -96,10 +99,54 @@ static struct poptOption options[] = {
 	// FIXME: clarify this
 	{ "output-format", 't', POPT_ARG_STRING, &output_format, 0,
 	  "choose the output format", "output-format strings", },
+	{ "path", 'p', POPT_ARG_STRING, &path, 0,
+	  "add path for retrieving image", "path_name[,path_name]", },
+	{ "recursive-path", 'P', POPT_ARG_STRING, &recursive_path, 0,
+	  "add path for retrieving image recursively", "path_name[,path_name]", },
+	{ "output-format", 't', POPT_ARG_STRING, &output_format, 0,
+	  "choose the output format", "output-format strings", },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
+
+/// associate filename with directory name where filename exist. Filled
+/// through the -p/-P option to allow retrieving of image name when samples
+/// file name contains an incorrect location for the image (such ram disk
+/// module at boot time. We need a multimap to warn against ambiguity between
+/// mutiple time found image name.
+typedef multimap<string, string> alt_filename_t;
+static alt_filename_t alternate_filename;
+
+/**
+ * add_to_alternate_filename -
+ * add all file name below path_name, optionnaly recursively, to the
+ * the set of alternative filename used to retrieve image name when
+ * a samples image name directory is not accurate
+ */
+void add_to_alternate_filename(const string & path_name, bool recursive)
+{
+	vector<string> path_names;
+
+	separate_token(path_names, path_name, ',');
+
+	vector<string>::iterator path;
+	for (path = path_names.begin() ; path != path_names.end() ; ++path) {
+		list<string> file_list;
+		create_file_list(file_list, path_name, "*", recursive);
+		list<string>::const_iterator it;
+		for (it = file_list.begin() ; it != file_list.end() ; ++it) {
+			typedef alt_filename_t::value_type value_t;
+			if (recursive) {
+				value_t value(basename(*it), dirname(*it));
+				alternate_filename.insert(value);
+			} else {
+				value_t value(*it, *path);
+				alternate_filename.insert(value);
+			}
+		}
+	}
+}
 
 /**
  * get_options - process command line
@@ -149,6 +196,14 @@ static void get_options(int argc, char const * argv[])
 		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | fl);
 	}
 
+	if (path) {
+		add_to_alternate_filename(path, false);
+	}
+
+	if (recursive_path) {
+		add_to_alternate_filename(recursive_path, true);
+	}
+
 
 	poptFreeContext(optcon);
 }
@@ -170,7 +225,7 @@ image_name::image_name(const string& samplefile_name, u32 count_)
  *
  * return true if @filename
  */
-static bool samples_file_exist(const std::string & filename)
+static bool file_exist(const std::string & filename)
 {
 	ifstream in(filename.c_str());
 
@@ -212,7 +267,7 @@ static void sort_file_list_by_name(map_t & result,
 		// counter 1, so we must filter them.
 		std::ostringstream s;
 		s << string(base_dir) << "/" << *it << '#' << counter;
-		if (samples_file_exist(s.str()) == false)
+		if (file_exist(s.str()) == false)
 			continue;
 
 		image_name image(*it);
@@ -342,7 +397,7 @@ static void output_files_count(map_t& files)
 	}
 
 	/* 3rd pass: we can output the result, during the output we optionnaly
-	 * build the set of image_file which belongs to one application and
+	 * build the set of image_name which belongs to one application and
 	 * display these results too */
 
 	/* this if else are only different by the type of iterator used, we
@@ -393,6 +448,49 @@ static void output_files_count(map_t& files)
 }
 
 /**
+ * check_image_name - check than image_name belonging to samples_filename
+ * exist. If not it try to retrieve it through the alternate_filename
+ * location.
+ */
+string check_image_name(const string & image_name,
+			const string & samples_filename)
+{
+	if (file_exist(image_name))
+		return image_name;
+
+	typedef alt_filename_t::const_iterator it_t;
+	std::pair<it_t, it_t> p_it =
+		alternate_filename.equal_range(basename(image_name));
+
+	if (p_it.first == p_it.second) {
+
+		static bool first_warn = true;
+		if (first_warn) {
+			cerr << "I can't locate some binary image file, all\n"
+			     << "of this file(s) will be ignored in statistics"
+			     << endl
+			     << "Have you provided the right -p/-P option ?"
+			     << endl;
+			first_warn = false;
+		}
+
+		cerr << "warning: can't locate image file for samples files : "
+		     << samples_filename << endl;
+
+		return string();
+	}
+
+	if (std::distance(p_it.first, p_it.second) != 1) {
+		cerr << "the image name for samples files : "
+		     << samples_filename << " is ambiguous\n"
+		     << "so this file file will be ignored" << endl;
+		return string();
+	}
+
+	return p_it.first->second + '/' + p_it.first->first;
+}
+
+/**
  * output_symbols_count - open each samples file to cumulate samples count
  * and display a sorted list of symbols and samples ratio
  * @files: the file list to treat.
@@ -412,22 +510,31 @@ static void output_symbols_count(map_t& files, int counter)
 		string samples_filename = string(base_dir) + "/" + filename;
 
 		string lib_name;
-		string image_file = extract_app_name(filename, lib_name);
+		string image_name = extract_app_name(filename, lib_name);
 
 		// if the samples file belongs to a shared lib we need to get
 		// the right binary name
 		if (lib_name.length())
-			image_file = lib_name;
+			image_name = lib_name;
 
-		image_file = demangle_filename(image_file);
+		image_name = demangle_filename(image_name);
 
-		opp_samples_files samples_file(samples_filename, counter);
+		// if the image files does not exist try to retrieve it
+		image_name = check_image_name(image_name, samples_filename);
 
-		opp_bfd abfd(samples_file.header[samples_file.first_file],
-			     samples_file.nr_samples, image_file);
+		// check_image_name have already warned the user if something
+		// feel bad.
+		if (file_exist(image_name)) {
+			opp_samples_files samples_file(samples_filename,
+						       counter);
 
-		samples.add(samples_file, abfd, false, output_format_flags,
-			    false, counter);
+			opp_bfd abfd(samples_file.header[samples_file.first_file],
+				     samples_file.nr_samples, image_name);
+
+			samples.add(samples_file, abfd, false,
+				    output_format_flags,
+				    false, counter);
+		}
 	}
 
 	// select the symbols

@@ -315,6 +315,14 @@ Specify the output format where a single format char is a field intended for: 'v
 .TP
 .BI "--reverse -r"
 sort output by increasing count of samples rather by decreasing count of samples. Can't be used with --list-symbols
+.br
+.TP
+.BI "--path " path name list ',' separated ", -p " path name list ',' separated
+Specify an alternate list of pathname to locate image file. This is usefull if your samples files name does not match the image file name such as module loaded at boot time through a ram disk
+.br
+.TP
+.BI "--recursive-path " path_list ',' separated ", -P " path_list ',' separated
+Same as --path but retrieve recursively the image file name in the path list
 .TP
 .br
 .B op_merge options

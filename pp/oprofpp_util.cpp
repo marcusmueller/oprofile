@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.34 2002/03/05 20:23:56 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.35 2002/03/06 21:52:17 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -859,7 +859,7 @@ static void open_samples_file(fd_t fd, size_t & size, opd_fentry * & fentry,
 {
 	size_t sz_file = opd_get_fsize(filename.c_str(), 1);
 	if (sz_file < sizeof(opd_header)) {
-		fprintf(stderr, "op_merge: sample file %s is not the right "
+		fprintf(stderr, "open_samples_file(): sample file %s is not the right "
 			"size: got %d, expect at least %d\n", 
 			filename.c_str(), sz_file, sizeof(opd_header));
 		exit(EXIT_FAILURE);
@@ -869,7 +869,7 @@ static void open_samples_file(fd_t fd, size_t & size, opd_fentry * & fentry,
 	header = (opd_header*)mmap(0, sz_file, 
 				   PROT_READ, MAP_PRIVATE, fd, 0);
 	if (header == (void *)-1) {
-		fprintf(stderr, "op_merge: mmap of %s failed. %s\n", filename.c_str(), strerror(errno));
+		fprintf(stderr, "open_samples_file(): mmap of %s failed. %s\n", filename.c_str(), strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -877,12 +877,12 @@ static void open_samples_file(fd_t fd, size_t & size, opd_fentry * & fentry,
 
 	if (memcmp(header->magic, OPD_MAGIC, sizeof(header->magic))) {
 		/* FIXME: is 4.4 ok : there is no zero terminator */
-		fprintf(stderr, "op_merge: wrong magic %4.4s, expected %s.\n", header->magic, OPD_MAGIC);
+		fprintf(stderr, "open_samples_file(): wrong magic %4.4s, expected %s.\n", header->magic, OPD_MAGIC);
 		exit(EXIT_FAILURE);
 	}
 
 	if (header->version != OPD_VERSION) {
-		fprintf(stderr, "op_merge: wrong version 0x%x, expected 0x%x.\n", header->version, OPD_VERSION);
+		fprintf(stderr, "open_samples_file(): wrong version 0x%x, expected 0x%x.\n", header->version, OPD_VERSION);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -1007,7 +1007,7 @@ samples_file_t::samples_file_t(const string & filename)
 {
 	fd = open(filename.c_str(), O_RDONLY);
 	if (fd == -1) {
-		fprintf(stderr, "op_merge: Opening %s failed. %s\n", filename.c_str(), strerror(errno));
+		fprintf(stderr, "samples_files_t(): Opening %s failed. %s\n", filename.c_str(), strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -1043,7 +1043,7 @@ bool samples_file_t::check_headers(const samples_file_t & rhs) const
 	::check_headers(header, rhs.header);
 	
 	if (size != rhs.size) {
-		fprintf(stderr, "op_merge: mapping file size "
+		fprintf(stderr, "check_headers(): mapping file size "
 			"are different (%d, %d)\n", size, rhs.size);
 		exit(EXIT_FAILURE);		
 	}

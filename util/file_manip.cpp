@@ -138,7 +138,7 @@ inline static bool is_directory_name(const char * name)
 
 /// return false if base_dir can't be accessed.
 bool create_file_list(list<string>& file_list, const string & base_dir,
-		      const string & filter)
+		      const string & filter, bool recursive)
 {
 	DIR *dir;
 	struct dirent *dirent;
@@ -148,8 +148,26 @@ bool create_file_list(list<string>& file_list, const string & base_dir,
 
 	while ((dirent = readdir(dir)) != 0) {
 		if (!is_directory_name(dirent->d_name) &&
-		    fnmatch(filter.c_str(), dirent->d_name, 0) != FNM_NOMATCH)
-			file_list.push_back(dirent->d_name);
+		    fnmatch(filter.c_str(), dirent->d_name, 0) != FNM_NOMATCH) {
+			if (recursive) {
+				struct stat stat_buffer;
+				string name = base_dir + '/' + dirent->d_name;
+				if (stat(name.c_str(), &stat_buffer) == 0) {
+					if (S_ISDIR(stat_buffer.st_mode) &&
+					    !S_ISLNK(stat_buffer.st_mode)) {
+						// recursive retrieve
+						create_file_list(file_list,
+								 name, filter,
+								 recursive);
+					} else {
+						file_list.push_back(name);
+					}
+				}
+			}
+			else {
+				file_list.push_back(dirent->d_name);
+			}
+		}
 	}
 
 	closedir(dir);

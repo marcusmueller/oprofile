@@ -1,3 +1,18 @@
+2002-03-06  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/opfropp_util.cpp: more specific error messages
+
+	* doc/oprofile.sgml: clarify problem about sparse
+	  samples files and filesystem.
+
+	* util/file_manip.h:
+	* util/file_manip.cpp: create_file_list() allow recursive
+	  file list creation.
+	* pp/op_time.cpp: add option -p/-P to allow specifying
+	  alternate path name where to search for image name
+	* doc/oprofile.1.in:
+	* doc/oprofile.sgml: update option for op_time
+
 2002-03-05  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/oprofpp_util.cpp: remove multiple symbols belonging
