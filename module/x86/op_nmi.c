@@ -37,7 +37,7 @@ static void op_check_ctr(uint cpu, struct pt_regs *regs, int ctr)
 	}
 }
 
-asmlinkage void op_do_nmi(struct pt_regs *regs)
+asmlinkage void op_do_nmi(struct pt_regs * regs)
 {
 	uint cpu = op_cpu_id();
 	int i;
@@ -292,6 +292,8 @@ static int pmc_init(void)
 	int i;
 	int err = 0;
 
+	preempt_disable();
+ 
 	if (sysctl.cpu_type == CPU_ATHLON) {
 		op_nr_counters = 4;
 		separate_running_bit = 1;
@@ -324,12 +326,14 @@ static int pmc_init(void)
 
 	/* setup each counter */
 	if ((err = apic_setup()))
-		return err;
+		goto out;
 
 	if ((err = smp_call_function(lvtpc_apic_setup, NULL, 0, 1))) {
 		lvtpc_apic_restore(NULL);
 	}
 
+out:
+	preempt_enable();
 	return err;
 }
 
@@ -337,6 +341,8 @@ static void pmc_deinit(void)
 {
 	int i;
 
+	preempt_disable();
+ 
 	smp_call_function(lvtpc_apic_restore, NULL, 0, 1);
 	lvtpc_apic_restore(NULL);
 
@@ -346,6 +352,7 @@ static void pmc_deinit(void)
 	}
 
 	apic_restore();
+	preempt_enable();
 }
 
 static char *names[] = { "0", "1", "2", "3", "4", };

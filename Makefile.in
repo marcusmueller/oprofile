@@ -1,9 +1,10 @@
 .PHONY: all install clean distclean maintainerclean uninstall tags
 
-# take care: order of sub-dir build is meaningfull.
-
-USER_SUBDIRS=libutil libutil++ libopt++ libop libop++ libdb dae utils pp gui oprof_report doc
-SUBDIRS=$(USER_SUBDIRS) module/arch module
+# take care: order of sub-dir build is meaningful
+PRE_MODULE_SUBDIRS=libutil libop
+POST_MODULE_SUBDIRS=libutil++ libopt++ libop++ libdb dae utils pp gui doc
+USER_SUBDIRS=$(PRE_MODULE_SUBDIRS) $(POST_MODULE_SUBDIRS)
+SUBDIRS=$(PRE_MODULE_SUBDIRS) module/arch module $(POST_MODULE_SUBDIRS)
 
 all:
 	for i in $(SUBDIRS) ; \

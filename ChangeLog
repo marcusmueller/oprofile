@@ -1,5 +1,19 @@
 2002-06-15  John Levon  <moz@compsoc.man.ac.uk>
 
+	* Makefile.in: compile module early as it's most
+	  likely to fail
+ 
+	* TODO: update
+ 
+	* doc/oprofile.xml:
+	* configure.in: remove unneeded --with-cc
+ 
+	* module/x86/Makefile.in: use USE_STANDARD_AS_RULE
+ 
+	* module/x86/op_nmi.c: add preemption exclusion
+
+2002-06-15  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/opd_parse_proc.c: remove FIXME. We are fine to
 	  assume first entry in maps is the executable, because
 	  this is exactly what the kernel does (see /proc/pid/exe)

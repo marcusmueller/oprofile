@@ -783,7 +783,7 @@ static struct ctl_table_header * sysctl_header;
 static int __init init_sysctl(void)
 {
 	int err = 0;
-	ctl_table *next = &oprof_table[nr_oprof_static];
+	ctl_table * next = &oprof_table[nr_oprof_static];
 
 	/* these sysctl parms need sensible value */
 	sysctl_parms.hash_size = OP_DEFAULT_HASH_SIZE;
@@ -801,7 +801,7 @@ static int __init init_sysctl(void)
 /* not safe to mark as __exit since used from __init code */
 static void cleanup_sysctl(void)
 {
-	ctl_table *next = &oprof_table[nr_oprof_static];
+	ctl_table * next = &oprof_table[nr_oprof_static];
 	unregister_sysctl_table(sysctl_header);
 
 	int_ops->remove_sysctls(next);

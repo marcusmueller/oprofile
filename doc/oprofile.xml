@@ -167,13 +167,6 @@ is all you need, but note these arguments to <command>./configure</command> :
 		</listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--with-cc</option></term>
-		<listitem>
-			Use this to specify a C compiler that you used to compile the kernel if
-			necessary (e.g. <command>kgcc</command>).
-		</listitem>
-	</varlistentry>
-	<varlistentry>
 		<term><option>--with-qt2-dir/includes/libraries</option></term>
 		<listitem>
 			Specify the location of Qt2 headers and libraries. It defaults to searching in
@@ -183,7 +176,7 @@ is all you need, but note these arguments to <command>./configure</command> :
 </variablelist>
 <para>
 You'll need to have a configured kernel source for the current kernel
-to build the module.  It is also recommended that you if you have a
+to build the module.  It is also recommended that if you have a
 uniprocessor machine, you enable the local APIC / IO_APIC support for
 your kernel (this is automatically enabled for SMP kernels).  On
 machines with power management, such as laptops, the power management

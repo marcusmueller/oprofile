@@ -73,7 +73,7 @@ void restore_nmi(void)
 static uint lvtpc_old_mask[NR_CPUS];
 static uint lvtpc_old_mode[NR_CPUS];
 
-void __init lvtpc_apic_setup(void *dummy)
+void __init lvtpc_apic_setup(void * dummy)
 {
 	uint val;
 
@@ -90,7 +90,7 @@ void __init lvtpc_apic_setup(void *dummy)
 }
 
 /* not safe to mark as __exit since used from __init code */
-void lvtpc_apic_restore(void *dummy)
+void lvtpc_apic_restore(void * dummy)
 {
 	uint val = apic_read(APIC_LVTPC);
 	// FIXME: this gives APIC errors on SMP hardware.

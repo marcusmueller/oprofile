@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.91 2002/06/10 20:18:23 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.92 2002/06/15 18:14:39 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -49,12 +49,7 @@ CFLAGS=$SAVE_CFLAGS
 OPROFILE_DIR=`pwd`
 AC_SUBST(OPROFILE_DIR)
  
-# FIXME - fucking autoconf ! how do I override the cached value ??? 
-AC_ARG_WITH(cc,    [  --with-cc=<kgcc>             C compiler used to compiler kernel], CC=$withval)
-AC_SUBST(CC)
-
 AC_PROG_CC
-test "$GCC" || AC_ERROR(You would not have much luck compiling kernel code with non-gcc...)
 AC_PROG_CPP
 AC_PROG_CXX
 AC_CHECK_PROG(LD,ld,ld,)
