@@ -75,6 +75,9 @@ $typename = "(${typename}[ ]*\**|unsigned short[ ]**\**|unsigned int[ ]*\**|unsi
 "\<_Rb_tree<${typename}, pair<\1 const, ${typename}>, _Select1st<pair<\1 const, \7>>, less<\1>, allocator<pair<\1 const, \7>>>" = "_Rb_tree<\1, pair<\1 const, \7>,  _Select1st<pair<\1 const, \7>>, less<\1>>"
 # now we can shrink default comparator.
 "\<_Rb_tree<${typename}, pair<\1 const, ${typename}>,  _Select1st<pair<\1 const, \7>>, less<\1>>" = "_Rb_tree<\1, pair<\1 const, \7>,  _Select1st<pair<\1 const, \7>>>"
+# get rid of _Select1st and _Identity
+"\<_Identity<${typename}>" = "\1"
+"\<_Select1st<pair<${typename} const, ${typename}>>" = "\1 const"
 
 "\<_List_base<${typename}, allocator<\1>>" = "_List_base<\1>"
 

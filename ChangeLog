@@ -1,3 +1,9 @@
+2003-05-19  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libregex/mangled-name.txt:
+	* libregex/stl.pat.in: partial handling of _Identity<> and
+	  _Select1st<>, pattern fail if type are too complex
+
 2003-05-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libregex/stl.pat.in: add list<T>::{const_}+iterator

@@ -95,14 +95,24 @@ _Rb_tree_iterator<pair<string const, image_name>, pair<string const, image_name>
 _Rb_tree<pair<string const, image_name>>::iterator
 
 _Rb_tree<int, int, _Identity<int>, less<int>, allocator<int> >
-_Rb_tree<int, int, _Identity<int>>
+_Rb_tree<int, int, int>
+
+_Select1st<pair<int const, long> >
+int const
+
+_Identity<int>
+int
+
+# this test fail since pair<> is not recognized as a type
+# _Select1st<pair<pair<symbol_entry const *, unsigned long long> const, sample_entry>>
+# pair<symbol_entry const *, unsigned long long> const
 
 # 2.95 map/multimap
 _Rb_tree<int, pair<int const, long>, _Select1st<pair<int const, long> >, less<int>, allocator<long> >
-_Rb_tree<int, pair<int const, long>,  _Select1st<pair<int const, long>>>
+_Rb_tree<int, pair<int const, long>,  int const>
 # 3.2 map/multimap
 _Rb_tree<int, pair<int const, long>, _Select1st<pair<int const, long> >, less<int>, allocator<pair<int const, long> > >
-_Rb_tree<int, pair<int const, long>,  _Select1st<pair<int const, long>>>
+_Rb_tree<int, pair<int const, long>,  int const>
 
 _List_base<string, allocator<string>>
 _List_base<string>
