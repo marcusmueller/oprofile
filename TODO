@@ -32,7 +32,6 @@ Before 1.0 little stuff
  o separate debug info stuff
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
  o create_path API is weird
- o opannotate should error out with a msg if no debug symbols are found at all
  o move oprofiled.log to OP_SAMPLE_DIR/current ?
  o lib-image: and image: behavior depend on --separate=, if --separate=library
   opreport "lib-image:*libc*" --merge=lib works but not

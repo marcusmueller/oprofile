@@ -664,9 +664,16 @@ int opannotate(vector<string> const & non_options)
 	list<inverted_profile>::iterator it = iprofiles.begin();
 	list<inverted_profile>::iterator const end = iprofiles.end();
 
+	bool debug_info = false;
 	for (; it != end; ++it) {
-		populate_for_image(*samples, *it);
+		debug_info |= populate_for_image(*samples, *it);
 		images.push_back(it->image);
+	}
+
+	if (!debug_info && !options::assembly) {
+		cerr << "no debug information available for any binary "
+		     << "selected and --assembly not requested\n";
+		exit(EXIT_FAILURE);
 	}
 
 	annotate_source(images);

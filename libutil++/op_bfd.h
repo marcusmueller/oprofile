@@ -154,6 +154,9 @@ public:
 	/// and do not depend on sizeof(bfd_vma)
 	size_t bfd_arch_bits_per_address() const;
 
+	/// return true if binary contain some debug information
+	bool has_debug_info() const { return debug_info; }
+
 private:
 	/// filename we open
 	std::string filename;

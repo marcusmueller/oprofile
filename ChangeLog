@@ -1,3 +1,11 @@
+2003-11-01  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/op_bfd.h: has_debug_info() new member
+	* pp/populate.h:
+	* pp/populate.cpp: 
+	* pp/opannotate.cpp: use it to error out when --assembly is not
+	  requested and no debug information exists
+
 2003-10-31  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/common_option.cpp: don't exit() if merge_by.lib is set through
