@@ -5,3 +5,4 @@ parse_event_tests
 alloc_counter_tests
 load_events_files_tests
 cpu_type_tests
+mangle_tests
