@@ -21,6 +21,8 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o move macro from configure.in to m4/, most of them one macro by file, more if
+  they are clearly related and not re-usable.
  o improve the *non* verbose daemon log to be a bit more informative
  o daemon: opd_put_kernel_samples vs. setup_kernel_sample vs. handle_. Rename, way too confusing
  o --buffer-size is useless on 2.5 without tuning of watershed

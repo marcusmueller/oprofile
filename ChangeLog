@@ -1,5 +1,19 @@
 2003-03-22  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* TODO: update
+
+	* m4: new directory
+	* m4/.cvsignore: new
+
+	* acinclude.m4: move to
+	* m4/qt.m4: here
+	* m4/Makefile.am: new for EXTRA_DIST = all our .m4
+	* Makefile.am:
+	* configure.in:
+	* autogen.sh: handle m4 subdir, add -I m4 to aclocal flags
+
+2003-03-22  Philippe Elie  <phil.el@wanadoo.fr>
+
 	  Suggested by John
 
 	* libutil/op_cpufreq.c: typo in comment
