@@ -1,6 +1,6 @@
 dnl AX_CXXFLAGS_OPTIONS(var-name, option)
 dnl add option to var-name if $CXX support it.
-AC_DEFUN(AX_CHECK_PRECOMPILED_HEADER, [
+AC_DEFUN([AX_CHECK_PRECOMPILED_HEADER], [
 AC_MSG_CHECKING([whether ${CXX} support precompiled header])
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS

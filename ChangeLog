@@ -1,3 +1,22 @@
+2004-04-04  Will Cohen  <wcohen@redhat.com>
+
+	* m4/builtinexpect.m4:
+	* m4/compileroption.m4:
+	* m4/configmodule.m4:
+	* m4/copyifchange.m4:
+	* m4/docbook.m4:
+	* m4/extradirs.m4:
+	* m4/findkernel.m4:
+	* m4/kerneloption.m4:
+	* m4/kernelversion.m4:
+	* m4/mallocattribute.m4:
+	* m4/poptconst.m4:
+	* m4/precompiledheader.m4:
+	* m4/qt.m4:
+	* m4/resultyn.m4:
+	* m4/sstream.m4:
+	* m4/typedef.m4: Add quotes as required for automake 1.8. 
+
 2004-04-04  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: improvements to the call-graph

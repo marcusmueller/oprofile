@@ -1,5 +1,5 @@
 dnl Find the kernel and handle 2.6 settings
-AC_DEFUN(AX_FIND_KERNEL,
+AC_DEFUN([AX_FIND_KERNEL],
 [
 AC_MSG_CHECKING([for kernel OProfile support])
 AC_ARG_WITH(kernel-support, [  --with-kernel-support        Use 2.6 kernel (no kernel source tree required)],

@@ -1,5 +1,5 @@
 dnl AX_MALLOC_ATTRIBUTE - see if gcc will take __attribute__((malloc))
-AC_DEFUN(AX_MALLOC_ATTRIBUTE,
+AC_DEFUN([AX_MALLOC_ATTRIBUTE],
 [
 AC_MSG_CHECKING([whether malloc attribute is understood])
 SAVE_CFLAGS=$CFLAGS

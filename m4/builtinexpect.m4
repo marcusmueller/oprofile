@@ -1,5 +1,5 @@
 dnl builtin_expect is used in module we can't add that in config.h
-AC_DEFUN(AX_BUILTIN_EXPECT,
+AC_DEFUN([AX_BUILTIN_EXPECT],
 [
 AC_MSG_CHECKING([whether __builtin_expect is understood])
 SAVE_CFLAGS=$CFLAGS

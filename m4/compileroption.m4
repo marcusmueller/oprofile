@@ -1,6 +1,6 @@
 dnl AX_CFLAGS_OPTIONS(var-name, option)
 dnl add option to var-name if $CC support it.
-AC_DEFUN(AX_CFLAGS_OPTION, [
+AC_DEFUN([AX_CFLAGS_OPTION], [
 AC_MSG_CHECKING([whether ${CC} $2 is understood])
 AC_LANG_SAVE
 AC_LANG_C
@@ -14,7 +14,7 @@ AC_LANG_RESTORE
 
 dnl AX_CXXFLAGS_OPTIONS(var-name, option)
 dnl add option to var-name if $CXX support it.
-AC_DEFUN(AX_CXXFLAGS_OPTION, [
+AC_DEFUN([AX_CXXFLAGS_OPTION], [
 AC_MSG_CHECKING([whether ${CXX} $2 is understood])
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS

@@ -1,5 +1,5 @@
 dnl AX_EXTRA_DIRS - Let user specify extra dirs for include/libs
-AC_DEFUN(AX_EXTRA_DIRS,
+AC_DEFUN([AX_EXTRA_DIRS],
 [
 AC_ARG_WITH(extra-includes,
 [  --with-extra-includes=DIR    add extra include paths],

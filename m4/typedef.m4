@@ -2,7 +2,7 @@ dnl AX_CHECK_TYPEDEF(typedef_name, type, action-if-true, action-if-false)
 dnl exec action-if-true if typedef_name is a typedef to type else exec 
 dnl action-if-false
 dnl currently work only with type typedef'ed in stddef.h
-AC_DEFUN(AX_CHECK_TYPEDEF, [
+AC_DEFUN([AX_CHECK_TYPEDEF], [
 dnl AC_LANG_PUSH(C) not in autoconf 2.13
 AC_LANG_SAVE
 AC_LANG_C
@@ -30,7 +30,7 @@ AC_LANG_RESTORE
 dnl AX_TYPEDEFED_NAME(typedef_name, candidate_list, var_name)
 dnl set var_name to the typedef name of $1 which must be in canditate_list
 dnl else produce a fatal error
-AC_DEFUN(AX_TYPEDEFED_NAME, [
+AC_DEFUN([AX_TYPEDEFED_NAME], [
 	AC_MSG_CHECKING([type of $1])
 	for f in $2; do
 		AX_CHECK_TYPEDEF($1, $f, $3="$f", $3="")

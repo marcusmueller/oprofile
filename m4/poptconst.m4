@@ -1,5 +1,5 @@
 dnl AX_POPT_CONST - check popt prototype
-AC_DEFUN(AX_POPT_CONST,
+AC_DEFUN([AX_POPT_CONST],
 [
 AC_MSG_CHECKING([popt prototype])
 SAVE_CXXFLAGS=$CXXFLAGS

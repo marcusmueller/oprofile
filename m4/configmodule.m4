@@ -1,5 +1,5 @@
 dnl Handle the 2.4 module inside module/
-AC_DEFUN(AX_CONFIG_MODULE,
+AC_DEFUN([AX_CONFIG_MODULE],
 [
 if test ! -f $KINC/linux/autoconf.h; then
 	AC_MSG_ERROR([no suitably configured kernel include tree found])
