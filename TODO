@@ -6,6 +6,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
+ o test dcookie failure with random injection
  o why rel_to_abs_path in locate_images ??
  o add separate_thread to opd_header or remove all separate from opd_header
  o thread separate GUI + docs
@@ -13,25 +14,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
    (several processes w/o using threads)
  o per-cpu profiling
  o output column shortname headers for opreport -l
-
- o 2.6 daemon redesign.
-   this is only a suggested way to implement it with some test between each
-   test, 1) 2) and 3) are orthogonal, if 4) can't be implemented we will get
-   a good cleanup
-
-   1) remove the module list in app_image, retrieve module through an hash
-     table indexed by { app_cookie, eip }, remove the app_image from
-     opd_image (performance can we cache the last hit ?)
-   2) index opd_image through { cpu nr/tid/cookie/app_cookie/tgid} in a hash
-     table, at startup depending on separate=xx select the right hash function
-     and compare function
-   3) cookie->filename database/cache would be entirely private to
-     generate_filename.c
-   4) merge the kernel module hash table and opd_image hash table, this
-     lost a bit of memory, depending on in_kernel select the right hash
-     function and compare function (so in 2nd step we will now select two
-     hash/compare function)
-
 
 0.8 release
 -----------

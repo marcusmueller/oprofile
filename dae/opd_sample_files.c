@@ -185,7 +185,7 @@ int opd_open_sample_file(struct opd_image * image, int counter)
 	err = odb_open(sample_file, mangled, ODB_RDWR, sizeof(struct opd_header));
 
 	/* This can naturally happen when racing against opcontrol --reset. */
-	if (err != EXIT_SUCCESS) {
+	if (err) {
 		fprintf(stderr, "%s", sample_file->err_msg);
 		odb_clear_error(sample_file);
 		goto out;

@@ -12,8 +12,9 @@
 #include <config.h>
  
 #include "opd_stats.h"
-#include "opd_sample_files.h"
-#include "opd_image.h"
+#include "opd_cookie.h"
+#include "opd_sfile.h"
+#include "opd_trans.h"
 #include "opd_kernel.h"
 #include "opd_printf.h"
 #include "opd_util.h"
@@ -235,9 +236,9 @@ static void opd_options(int argc, char const * argv[])
 			poptPrintHelp(optcon, stderr, 0);
 			exit(EXIT_FAILURE);
 		}
-
-		opd_parse_kernel_range(kernel_range);
 	}
+
+	opd_create_vmlinux(vmlinux, kernel_range);
 
 	opd_buf_size = opd_read_fs_int("buffer_size");
 
@@ -254,8 +255,17 @@ static void opd_options(int argc, char const * argv[])
 /** Done writing out the samples, indicate with complete_dump file */
 static void complete_dump()
 {
-	// FIXME: handle -EMFILE
-	FILE * status_file = fopen(OP_DUMP_STATUS, "w");
+	FILE * status_file;
+	int tried = 0;
+
+retry:
+       	status_file = fopen(OP_DUMP_STATUS, "w");
+
+	if (!status_file && errno == EMFILE && !tried) {
+		tried = 1;
+		sfile_lru_clear();
+		goto retry;
+	}
 
 	if (!status_file) {
 		perror("warning: couldn't set complete_dump: ");
@@ -328,26 +338,25 @@ static void opd_do_read(char * buf, size_t size)
 }
 
 
-/**
- * opd_alarm - sync files and report stats
- */
+/** opd_alarm - sync files and report stats */
 static void opd_alarm(void)
 {
-	opd_for_each_image(opd_sync_image_samples_files);
+	sfile_sync_files();
+	sfile_lru_clear();
 	opd_print_stats();
 	alarm(60*10);
 }
  
 
-/* re-open logfile for logrotate */
+/** re-open files for logrotate/opcontrol --reset */
 static void opd_sighup(void)
 {
 	printf("Received SIGHUP.\n");
+	/* We just close them, and re-open them lazily as usual. */
+	sfile_close_files();
 	close(1);
 	close(2);
 	opd_open_logfile();
-	/* We just close them, and re-open them lazily as usual. */
-	opd_for_each_image(opd_close_image_samples_files);
 }
 
 
@@ -411,8 +420,6 @@ int main(int argc, char const * argv[])
 
  	sbuf = xmalloc(s_buf_bytesize);
 
-	opd_init_images();
-	opd_init_kernel_image();
 	opd_reread_module_info();
 
 	opd_write_abi();
@@ -443,6 +450,9 @@ int main(int argc, char const * argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	cookie_init();
+	sfile_init();
+
 	/* simple sleep-then-process loop */
 	opd_do_read(sbuf, s_buf_bytesize);
 
@@ -450,8 +460,8 @@ int main(int argc, char const * argv[])
 	printf("oprofiled stopped %s", op_get_time());
 
 	free(sbuf);
-	opd_image_cleanup();
 	free(vmlinux);
+	/* FIXME: free kernel images, sfiles etc. */
 
 	return 0;
 }

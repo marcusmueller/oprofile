@@ -1,0 +1,151 @@
+/**
+ * @file opd_cookie.c
+ * cookie -> name cache
+ *
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author John Levon
+ */
+
+#include "opd_cookie.h"
+#include "opd_printf.h"
+
+#include "op_list.h"
+#include "op_libiberty.h"
+
+#include <sys/syscall.h>
+#include <unistd.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+
+#ifndef __NR_lookup_dcookie
+#if defined(__i386__)
+#define __NR_lookup_dcookie 253
+#elif defined(__x86_64__)
+#define __NR_lookup_dcookie 212
+#elif defined(__powerpc__)
+#define __NR_lookup_dcookie 235
+#elif defined(__alpha__)
+#define __NR_lookup_dcookie 406
+#elif defined(__hppa__)
+#define __NR_lookup_dcookie 223
+#elif defined(__ia64__)
+#define __NR_lookup_dcookie 1237
+#elif defined(__sparc__)
+/* untested */
+#define __NR_lookup_dcookie 208
+#elif defined(__s390__) || defined (__s390x__)
+#define __NR_lookup_dcookie 110
+#else
+#error Please define __NR_lookup_dcookie for your architecture
+#endif
+#endif /* __NR_lookup_dcookie */
+
+#if (defined(__powerpc__) && !defined(__powerpc64__)) || defined(__hppa__)\
+	|| defined(__s390__) || defined(__s390x__)
+static inline int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
+{
+	return syscall(__NR_lookup_dcookie, (unsigned long)(cookie >> 32),
+		       (unsigned long)(cookie & 0xffffffff), buf, size);
+}
+#else
+static inline int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
+{
+	return syscall(__NR_lookup_dcookie, cookie, buf, size);
+}
+#endif
+
+
+struct cookie_entry {
+	cookie_t value;
+	char * name;
+	struct list_head list;
+};
+
+
+#define HASH_SIZE 2048
+#define HASH_BITS (HASH_SIZE - 1)
+
+static struct list_head hashes[HASH_SIZE];
+
+static struct cookie_entry * create_cookie(cookie_t cookie)
+{
+	int err;
+	struct cookie_entry * entry = xmalloc(sizeof(struct cookie_entry));
+
+	entry->value = cookie;
+	entry->name = xmalloc(PATH_MAX + 1);
+
+	err = lookup_dcookie(cookie, entry->name, PATH_MAX);
+	if (err < 0) {
+		fprintf(stderr, "Lookup of cookie %llx failed, errno=%d\n",
+		       cookie, errno); 
+		free(entry->name);
+		entry->name = NULL;
+	}
+
+	return entry;
+}
+
+
+/* Cookie monster want cookie! */
+static unsigned long hash_cookie(cookie_t cookie)
+{
+	return (cookie >> DCOOKIE_SHIFT) & (HASH_SIZE - 1);
+}
+ 
+
+char const * find_cookie(cookie_t cookie)
+{
+	unsigned long hash = hash_cookie(cookie);
+	struct list_head * pos;
+	struct cookie_entry * entry;
+
+	if (cookie == INVALID_COOKIE)
+		return NULL;
+
+	list_for_each(pos, &hashes[hash]) {
+		entry = list_entry(pos, struct cookie_entry, list);
+		if (entry->value == cookie)
+			goto out;
+	}
+
+	entry = create_cookie(cookie);
+	list_add(&entry->list, &hashes[hash]);
+out:
+	return entry->name;
+}
+
+
+char const * verbose_cookie(cookie_t cookie)
+{
+	unsigned long hash = hash_cookie(cookie);
+	struct list_head * pos;
+	struct cookie_entry * entry;
+
+	if (cookie == INVALID_COOKIE)
+		return "invalid";
+
+	list_for_each(pos, &hashes[hash]) {
+		entry = list_entry(pos, struct cookie_entry, list);
+		if (entry->value == cookie) {
+			if (!entry->name)
+				return "failed lookup";
+			return entry->name;
+		}
+	}
+
+	return "not looked up";
+}
+
+
+void cookie_init()
+{
+	size_t i;
+
+	for (i = 0; i < HASH_SIZE; ++i)
+		list_init(&hashes[i]);
+}

@@ -42,7 +42,7 @@ static void speed_test(int nr_item, int nr_unique_item)
 	int rc;
 
 	rc = odb_open(&hash, TEST_FILENAME, ODB_RDWR, sizeof(struct opd_header));
-	if (rc != EXIT_SUCCESS) {
+	if (rc) {
 		fprintf(stderr, "%s", hash.err_msg);
 		exit(EXIT_FAILURE);
 	}
@@ -82,7 +82,7 @@ static int test(int nr_item, int nr_unique_item)
 	int rc;
 
 	rc = odb_open(&hash, TEST_FILENAME, ODB_RDWR, sizeof(struct opd_header));
-	if (rc != EXIT_SUCCESS) {
+	if (rc) {
 		fprintf(stderr, "%s", hash.err_msg);
 		exit(EXIT_FAILURE);
 	}
@@ -144,7 +144,7 @@ static int callback_test(int nr_item, int nr_unique_item)
 	int rc;
 
 	rc = odb_open(&tree, TEST_FILENAME, ODB_RDWR, sizeof(struct opd_header));
-	if (EXIT_SUCCESS != rc) {
+	if (rc) {
 		fprintf(stderr, "%s", tree.err_msg);
 	        exit(EXIT_FAILURE);
 	}
@@ -198,7 +198,7 @@ static void sanity_check(char const * filename)
 	int rc;
 
 	rc = odb_open(&hash, filename, ODB_RDONLY, sizeof(struct opd_header));
-	if (EXIT_SUCCESS != rc) {
+	if (rc) {
 		fprintf(stderr, "%s", hash.err_msg);
 	        exit(EXIT_FAILURE);
 	}

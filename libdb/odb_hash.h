@@ -112,9 +112,9 @@ void odb_init(samples_odb_t * hash);
  * The sizeof_header parameter allows the data file to have a header
  * at the start of the file which is skipped.
  * odb_open() always preallocate a few number of pages.
- * returns EXIT_SUCCESS on success, EXIT_FAILURE on failure
+ * returns 0 on success, errno on failure
  * on failure hash->err_msg contains a pointer to a malloced string
- * containing an error message.
+ * containing an error message. FIXME: remove this in favour of using errno
  */
 int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw, size_t sizeof_header);
 

@@ -22,10 +22,4 @@
 #define CTX_TGID_CODE			7
 #define LAST_CODE			8
  
-/**
- * Shift value to remove trailing zero on a dcookie value, 7 is sufficient
- * for most architecture
- */
-#define DCOOKIE_SHIFT	7
-
 #endif /* OPD_INTERFACE_H */

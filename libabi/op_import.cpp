@@ -198,7 +198,7 @@ int main(int argc, char const ** argv)
 
 		rc = odb_open(&dest, output_filename.c_str(), ODB_RDWR,
 			      sizeof(struct opd_header));
-		if (rc != EXIT_SUCCESS) {
+		if (rc) {
 			cerr << "odb_open() fail:\n"
 			     << dest.err_msg << endl;
 			exit(EXIT_FAILURE);

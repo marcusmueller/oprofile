@@ -1,5 +1,27 @@
 2003-09-24  John Levon  <levon@movementarian.org>
 
+	* dae/opd_sample_files.c:
+	* daemon/opd_sample_files.c:
+	* libpp/op_header.cpp:
+	* libpp/profile.cpp:
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp:
+	* libdb/db_test.c:
+	* libdb/odb_hash.h:
+	* libdb/odb_manage.c: make odb_open return errno
+	instead of EXIT_FAILURE/SUCCESS to allow EMFILE
+	handling. Also do not leak fd's on failure.
+
+	* libutil/op_types.h: cookie_t moved into daemon/
+
+	* daemon/: major rewrite: move to a hash on all
+	parameters of struct transient. Lots of readability
+	cleanups, plus resistance to cookie lookup failures,
+	and hitting open file limits. Additionally thread
+	profiling for kernel threads is enabled now.
+
+2003-09-24  John Levon  <levon@movementarian.org>
+
 	* daemon/opd_image.c: remove support for missing
 	CTX_TGID
 

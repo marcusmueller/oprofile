@@ -1,16 +1,19 @@
 dist_sources = \
 	oprofiled.c \
 	opd_stats.c \
+	opd_sfile.c \
+	opd_sfile.h \
 	opd_kernel.c \
-	opd_image.c \
-	opd_image.h \
+	opd_kernel.h \
+	opd_trans.c \
+	opd_trans.h \
 	opd_printf.h \
 	opd_stats.h \
-	opd_kernel.h \
+	opd_cookie.c \
 	opd_cookie.h \
 	opd_interface.h \
-	opd_sample_files.c \
-	opd_sample_files.h
+	opd_mangling.c \
+	opd_mangling.h
 
 EXTRA_DIST = $(dist_sources)
 

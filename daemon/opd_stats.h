@@ -14,15 +14,12 @@
 
 extern unsigned long opd_stats[];
 
-enum {  OPD_KERNEL, /* nr. kernel samples */
-	OPD_MODULE, /* nr. module samples */
-	OPD_LOST_MODULE, /* nr. samples in module for which modules can not be located */
-	OPD_NO_CTX, /* nr. samples lost due to not knowing if in the kernel or not */
-	OPD_NO_MM, /* nr. userspace samples for which no mm/cookie was given */
+enum {	OPD_SAMPLES, /* nr. samples */
+	OPD_KERNEL, /* nr. kernel samples */
 	OPD_PROCESS, /* nr. userspace samples */
+	OPD_NO_CTX, /* nr. samples lost due to not knowing if in the kernel or not */
+	OPD_LOST_KERNEL,  /* nr. kernel samples lost */
 	OPD_DUMP_COUNT, /* nr. of times buffer is read */
-	OPD_SAMPLES, /* nr. samples */
-	OPD_NIL_IMAGE, /* nr. samples lost due to nil image and sample in user space */
 	OPD_DANGLING_CODE, /* nr. partial code notifications (buffer overflow */
 	OPD_MAX_STATS /* end of stats */
 	};

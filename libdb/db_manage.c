@@ -156,6 +156,7 @@ int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw,
 	struct stat stat_buf;
 	odb_node_nr_t nr_node;
 	char * err_msg;
+	int err = 0;
 
 	int flags = (rw == ODB_RDWR) ? (O_CREAT | O_RDWR) : O_RDONLY;
 	int mmflags = (rw == ODB_RDWR) ? (PROT_READ | PROT_WRITE) : PROT_READ;
@@ -170,14 +171,16 @@ int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw,
 		asprintf(&err_msg, "odb_open(): fail to open %s cause: %s\n",
 			filename, strerror(errno));
 		odb_set_error(hash, err_msg);
-		return EXIT_FAILURE;
+		err = errno;
+		goto out;
 	}
 
 	if (fstat(hash->fd, &stat_buf)) {
 		asprintf(&err_msg, "odb_open(): unable to stat %s cause %s\n",
 			filename, strerror(errno));
 		odb_set_error(hash, err_msg);
-		return EXIT_FAILURE;
+		err = errno;
+		goto fail;
 	}
 
 	if (stat_buf.st_size == 0) {
@@ -187,7 +190,8 @@ int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw,
 			asprintf(&err_msg, "odb_open() %s sample file empty\n",
 				 filename);
 			odb_set_error(hash, err_msg);
-			return EXIT_FAILURE;
+			err = errno;
+			goto fail;
 		}
 
 		nr_node = DEFAULT_NODE_NR(hash->offset_node);
@@ -199,7 +203,8 @@ int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw,
 				filename, (unsigned long)file_size,
 				strerror(errno));
 			odb_set_error(hash, err_msg);
-			return EXIT_FAILURE;
+			err = errno;
+			goto fail;
 		}
 	} else {
 		/* Calculate nr node allowing a sanity check later */
@@ -214,7 +219,8 @@ int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw,
 		asprintf(&err_msg, "odb_open() mmap failure cause: %s\n",
 			strerror(errno));
 		odb_set_error(hash, err_msg);
-		return EXIT_FAILURE;
+		err = errno;
+		goto fail;
 	}
 
 	hash->descr = odb_to_descr(hash);
@@ -229,7 +235,8 @@ int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw,
 			asprintf(&err_msg, "odb_open(): nr_node != "
 				"hash->descr->size\n");
 			odb_set_error(hash, err_msg);
-			return EXIT_FAILURE;
+			err = -EINVAL;
+			goto fail_unmap;
 		}
 	}
 
@@ -237,7 +244,13 @@ int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw,
 	hash->node_base = odb_to_node_base(hash);
 	hash->hash_mask = (hash->descr->size * BUCKET_FACTOR) - 1;
 
-	return EXIT_SUCCESS;
+out:
+	return err;
+fail_unmap:
+	munmap(hash->base_memory, tables_size(hash, nr_node));
+fail:
+	close(hash->fd);
+	goto out;
 }
 
 

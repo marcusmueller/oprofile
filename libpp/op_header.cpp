@@ -114,7 +114,7 @@ opd_header const read_header(string const & sample_filename)
 	int rc = odb_open(&samples_db, sample_filename.c_str(), ODB_RDONLY,
 		sizeof(struct opd_header));
 
-	if (rc != EXIT_SUCCESS) {
+	if (rc) {
 		ostringstream os;
 		os << samples_db.err_msg << endl;
 		throw op_fatal_error(os.str());

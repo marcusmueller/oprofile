@@ -1,6 +1,6 @@
 /**
  * @file opd_cookie.h
- * sys_lookup_dcookie support (not in glibc)
+ * cookie -> name cache
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -11,45 +11,25 @@
 #ifndef OPD_COOKIE_H
 #define OPD_COOKIE_H
 
-#include <sys/syscall.h>
-#include <unistd.h>
-#include "op_types.h"
+typedef unsigned long long cookie_t;
 
-#ifndef __NR_lookup_dcookie
-#if defined(__i386__)
-#define __NR_lookup_dcookie 253
-#elif defined(__x86_64__)
-#define __NR_lookup_dcookie 212
-#elif defined(__powerpc__)
-#define __NR_lookup_dcookie 235
-#elif defined(__alpha__)
-#define __NR_lookup_dcookie 406
-#elif defined(__hppa__)
-#define __NR_lookup_dcookie 223
-#elif defined(__ia64__)
-#define __NR_lookup_dcookie 1237
-#elif defined(__sparc__)
-/* untested */
-#define __NR_lookup_dcookie 208
-#elif defined(__s390__) || defined (__s390x__)
-#define __NR_lookup_dcookie 110
-#else
-#error Please define __NR_lookup_dcookie for your architecture
-#endif
-#endif /* __NR_lookup_dcookie */
+#define INVALID_COOKIE ~0LLU
 
-#if (defined(__powerpc__) && !defined(__powerpc64__)) || defined(__hppa__)\
-	|| defined(__s390__) || defined(__s390x__)
-static inline int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
-{
-	return syscall(__NR_lookup_dcookie, (unsigned long)(cookie >> 32),
-		       (unsigned long)(cookie & 0xffffffff), buf, size);
-}
-#else
-static inline int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
-{
-	return syscall(__NR_lookup_dcookie, cookie, buf, size);
-}
-#endif
+/**
+ * Shift value to remove trailing zero on a dcookie value, 7 is sufficient
+ * for most architecture
+ */
+#define DCOOKIE_SHIFT	7
+
+/**
+ * Return the name of the given dcookie. May return
+ * NULL on failure.
+ */
+char const * find_cookie(cookie_t cookie);
+
+/** give a textual description of the cookie */
+char const * verbose_cookie(cookie_t cookie);
+
+void cookie_init();
 
 #endif /* OPD_COOKIE_H */

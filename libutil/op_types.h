@@ -27,9 +27,6 @@ typedef int fd_t;
 /** generic type for holding addresses */
 typedef unsigned long long vma_t;
 
-/** dcookie value */
-typedef unsigned long long cookie_t;
-
 #else
 #include <linux/types.h>
 #endif

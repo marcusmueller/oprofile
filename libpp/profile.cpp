@@ -65,7 +65,7 @@ void profile_t::open_sample_file(string const & filename, samples_odb_t & db)
 	int rc = odb_open(&db, filename.c_str(), ODB_RDONLY,
 		sizeof(struct opd_header));
 
-	if (rc != EXIT_SUCCESS) {
+	if (rc) {
 		ostringstream os;
 		os << db.err_msg << endl;
 		throw op_fatal_error(os.str());
