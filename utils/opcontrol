@@ -725,17 +725,37 @@ do_start() {
 }
 
 do_dump() {
-	if test "$KERNEL_SUPPORT" = "yes"; then
-		# FIXME the 2.5 version really should be able to dump data
-		echo "No dumps for 2.5 version." >& 2
-		# exit 1
-	else
-		if [ ! -w $MOUNT/dump ]; then
-			echo "Cannot initiate dump." >&2
+	#make sure that the daemon is running
+	if test -e "$DIR/lock"; then
+		OPROFILED_PID=`cat $DIR/lock`
+		ps -p $OPROFILED_PID | grep $OPROFILED_PID > /dev/null
+		if [ "$?" -ne 0 ]; then
+			echo "No daemon running" >& 2
 			exit 1
 		fi
- 
-		echo 1 >/proc/sys/dev/oprofile/dump
+	else
+		echo "No daemon running" >& 2
+		exit 1
+	fi
+
+	if test "$KERNEL_SUPPORT" = "yes"; then
+		# find current time
+		TMPFILE=`mktemp /tmp/$0.XXXXXX` || exit 1
+		echo 1 > $MOUNT/dump
+		# loop until there is a file to check
+		while [ ! -e "$DIR/complete_dump" ]
+		do
+			sleep 1;
+		done
+		# loop until modification data of $MOUNT/dump after TMPFILE
+		while [ "$TMPFILE" -nt "$DIR/complete_dump" ]
+		do
+			sleep 1;
+		done
+		rm $TMPFILE
+	else
+
+		echo 1 > $MOUNT/dump
 	fi
 }
 

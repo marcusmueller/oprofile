@@ -19,6 +19,7 @@
 #define OP_SAMPLES_DIR OP_BASE_DIR "samples/"
 #define OP_LOCK_FILE OP_BASE_DIR "lock"
 #define OP_LOG_FILE OP_BASE_DIR "oprofiled.log"
+#define OP_DUMP_STATUS OP_BASE_DIR "complete_dump"
 
 #define OPD_MAGIC "DAE\n"
 #define OPD_VERSION 0x8
