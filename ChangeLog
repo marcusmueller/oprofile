@@ -1,5 +1,10 @@
 2003-07-21  John Levon  <levon@movementarian.org>
 
+	* gui/oprof_start.cpp: select "No event" when switching counter
+	if needed
+
+2003-07-21  John Levon  <levon@movementarian.org>
+
 	* gui/oprof_start.cpp: fix default event choosing when
 	daemonrc exists
 
