@@ -1,3 +1,7 @@
+2003-09-22  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_parse_proc.c: bot op_file.h and op_fileio.h are needed
+
 2003-09-22  John Levon  <levon@movementarian.org>
 
 	* doc/CodingStyle: document doxygen placing rule
