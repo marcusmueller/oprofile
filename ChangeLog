@@ -1,15 +1,19 @@
+2003-03-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/derive_files.cpp: fix handling of 2.5 module name
+
 2003-03-18  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_image.c:
 	* libop/op_interface_25.h: rename to MODULE_LOADED_CODE
 
-2003-03-17  Philippe Elie  <phil.el@wanadoo.fr>
+2003-03-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TOODO: update
 
 	* pp/derive_files.cpp: special to retrieve 2.5 module
 
-2003-03-17  Philippe Elie  <phil.el@wanadoo.fr>
+2003-03-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update
 
