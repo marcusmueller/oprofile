@@ -68,6 +68,7 @@ config_setting::config_setting()
 	:
 	buffer_size(OP_DEFAULT_BUF_SIZE),
 	note_table_size(OP_DEFAULT_NOTE_SIZE),
+	no_kernel(false),
 	kernel_only(false),
 	verbose(false),
 	pgrp_filter(0),
@@ -111,8 +112,13 @@ void config_setting::load(istream & in)
 		} else if (str == "PGRP_FILTER") {
 			pgrp_filter = touint(val);
 		} else if (str == "VMLINUX") {
-			if (!val.empty())
+			if (val == "none") {
+				kernel_filename = "";
+				no_kernel = true;
+			} else if (!val.empty()) {
+				no_kernel = false;
 				kernel_filename = val;
+			}
 		} else if (str == "SEPARATE_LIB_SAMPLES") {
 			separate_lib_samples = tobool(val);
 		} else if (str == "SEPARATE_KERNEL_SAMPLES") {

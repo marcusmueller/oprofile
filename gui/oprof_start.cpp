@@ -147,10 +147,14 @@ oprof_start::oprof_start()
 		// FIXME: can adapt to 2.5 ...
 		buffer_size_edit->hide();
 		buffer_size_label->hide();
+	} else {
+		no_vmlinux->hide();
 	}
 
 	// setup the configuration page.
 	kernel_filename_edit->setText(config.kernel_filename.c_str());
+
+	no_vmlinux->setChecked(config.no_kernel);
 
 	buffer_size_edit->setText(QString().setNum(config.buffer_size));
 	note_table_size_edit->setText(QString().setNum(config.note_table_size));
@@ -553,6 +557,7 @@ void oprof_start::record_selected_event_config()
 bool oprof_start::record_config()
 {
 	config.kernel_filename = kernel_filename_edit->text().latin1();
+	config.no_kernel = no_vmlinux->isChecked();
 
 	QString const t = buffer_size_edit->text();
 	uint temp = t.toUInt();
@@ -864,7 +869,12 @@ bool oprof_start::save_config()
 			args = tmpargs;
 	}
 
-	args.push_back("--vmlinux=" + config.kernel_filename);
+	if (config.no_kernel) {
+		args.push_back("--no-vmlinux");
+	} else {
+		args.push_back("--vmlinux=" + config.kernel_filename);
+	}
+
 	if (op_get_interface() == OP_INTERFACE_24) {
 		args.push_back("--kernel-only=" + tostr(config.kernel_only));
 		args.push_back("--pid-filter=" + tostr(config.pid_filter));

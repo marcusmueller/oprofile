@@ -48,6 +48,7 @@ struct config_setting {
 	uint buffer_size;
 	uint note_table_size;
 	std::string kernel_filename;
+	bool no_kernel;
 	bool kernel_only;
 	bool verbose;
 	pid_t pgrp_filter;

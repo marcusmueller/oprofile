@@ -155,6 +155,11 @@ above options and 'none' turns off separation.
 vmlinux kernel image.
 .br
 .TP
+.BI "--no-vmlinux"
+No vmlinux file is available. This prevents kernel profiling, and is
+only available on 2.5 kernels.
+.br
+.TP
 .BI "--verbose"
 Be verbose in the daemon log.
 .br

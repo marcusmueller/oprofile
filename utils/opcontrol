@@ -96,6 +96,7 @@ do_help() {
 	  --note-table-size	       number of notes in kernel notes buffer (2.4 version)
 	  --separate=[none,library,kernel,all]         separate samples as given
 	  --vmlinux=file               vmlinux kernel image
+	  --no-vmlinux                 no vmlinux image available (no kernel profiling, 2.5 only)
 	  --verbose                    be verbose in the daemon log
 	  --kernel-range=start,end     kernel range vma address in hexadecimal
 
@@ -368,14 +369,26 @@ check_valid_args() {
 	if [ -z "$VMLINUX" ]; then
 		echo "No vmlinux file specified. You must specify the correct vmlinux file, e.g." >&2
 		echo "opcontrol --setup --vmlinux=/path/to/vmlinux" >&2
+		echo "If you do not have a vmlinux file, use " >&2
+		echo "opcontrol --setup --no-vmlinux" >&2
 		echo "Enter opcontrol --help for full options" >&2
 		exit 1
 	fi
 
-	if [ ! -f "$VMLINUX" ]; then
-		echo "The specified vmlinux file \"$VMLINUX\" doesn't exist." >&2
-		exit 1
+	if test -f "$VMLINUX"; then
+		return
 	fi
+
+	if test "$VMLINUX" = "none"; then
+		if test "$KERNEL_SUPPORT" != "yes"; then
+			echo "--no-vmlinux unsupported in 2.4." >&2
+			exit 1
+		fi
+		return
+	fi
+
+	echo "The specified vmlinux file \"$VMLINUX\" doesn't exist." >&2
+	exit 1
 }
 
 
@@ -384,6 +397,11 @@ get_kernel_range() {
 	if test ! -z "$KERNEL_RANGE"; then
 		return;
 	fi
+
+	if test "$VMLINUX" = "none"; then
+		return;
+	fi
+
 	range_info=`objdump -h $VMLINUX | grep " .text "`
 	tmp1=`echo $range_info | awk '{print $4}'`
 	tmp_length=`echo $range_info | awk  '{print $3}'`
@@ -634,6 +652,14 @@ do_options() {
 			--vmlinux)
 				error_if_empty $arg $val
 				VMLINUX=$val
+				NEED_SETUP=yes
+				;;
+			--no-vmlinux)
+				if test "$KERNEL_SUPPORT" != "yes"; then
+					echo "$arg unsupported. " >& 2
+					exit 1
+				fi
+				VMLINUX=none
 				NEED_SETUP=yes
 				;;
 			--kernel-range)
@@ -946,10 +972,16 @@ do_start_daemon() {
 	get_kernel_range
 	do_sysctl_setup
 
-	OPD_ARGS="--vmlinux=$VMLINUX --kernel-range=$KERNEL_RANGE \
+	OPD_ARGS=" \
 		--separate-lib-samples=$SEPARATE_LIB_SAMPLES \
 		--separate-kernel-samples=$SEPARATE_KERNEL_SAMPLES \
 		--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
+
+	if [ "$VMLINUX" = "none" ]; then
+		OPD_ARGS="$OPD_ARGS --no-vmlinux"
+	else
+		OPD_ARGS="$OPD_ARGS --vmlinux=$VMLINUX --kernel-range=$KERNEL_RANGE"
+	fi
 
 	if [ "$VERBOSE" = "1" ]; then
 		OPD_ARGS="$OPD_ARGS --verbose"

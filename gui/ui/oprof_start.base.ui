@@ -11,7 +11,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>693</width>
+            <width>712</width>
             <height>500</height>
         </rect>
     </property>
@@ -593,7 +593,7 @@
                         <class>QLayoutWidget</class>
                         <property stdset="1">
                             <name>name</name>
-                            <cstring>Layout15</cstring>
+                            <cstring>Layout11</cstring>
                         </property>
                         <hbox>
                             <property stdset="1">
@@ -639,6 +639,21 @@
                                 <property stdset="1">
                                     <name>text</name>
                                     <string>...</string>
+                                </property>
+                            </widget>
+                            <widget>
+                                <class>QCheckBox</class>
+                                <property stdset="1">
+                                    <name>name</name>
+                                    <cstring>no_vmlinux</cstring>
+                                </property>
+                                <property stdset="1">
+                                    <name>text</name>
+                                    <string>No kernel image</string>
+                                </property>
+                                <property>
+                                    <name>toolTip</name>
+                                    <string>No kernel image available. Disables kernel profiling.</string>
                                 </property>
                             </widget>
                         </hbox>
@@ -1098,6 +1113,24 @@
         <signal>clicked()</signal>
         <receiver>oprof_start_base</receiver>
         <slot>choose_kernel_filename()</slot>
+    </connection>
+    <connection>
+        <sender>no_vmlinux</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>kernel_filename_tb</receiver>
+        <slot>setDisabled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>no_vmlinux</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>kernel_filename_edit</receiver>
+        <slot>setDisabled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>no_vmlinux</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>TextLabel1</receiver>
+        <slot>setDisabled(bool)</slot>
     </connection>
     <slot access="protected">choose_kernel_filename()</slot>
     <slot access="protected">choose_opd_dir()</slot>

@@ -234,7 +234,8 @@ power management.
 </para>
 <para>
 Please note that you must save or have available the <filename>vmlinux</filename> file
-generated during a kernel compile, as OProfile needs it.
+generated during a kernel compile, as OProfile needs it (on 2.5 kernels you can use
+<option>--no-vmlinux</option>, but this will prevent kernel profiling).
 </para>
 
 </sect1>
@@ -261,6 +262,14 @@ running kernel is, for example :
 </para>
 <para>
 <command>opcontrol --setup --vmlinux=/boot/vmlinux-`uname -r`</command>
+</para>
+<para>
+<!-- FIXME on change ... -->
+If you're running a 2.5 kernel, and you don't want to profile the kernel itself,
+you can tell OProfile you don't have a <filename>vmlinux</filename> file :
+</para>
+<para>
+<command>opcontrol --setup --no-vmlinux</command>
 </para>
 <para>
 Now we are ready to start the daemon (<command>oprofiled</command>) which collects
@@ -489,8 +498,8 @@ The <command>opcontrol</command> script provides the following actions :
 
 <para>
 There are a number of possible settings, of which, only
-<option>--vmlinux</option> is required. These settings are
-stored in <filename>~/.oprofile/daemon</filename>.
+<option>--vmlinux</option> (or <option>--no-vmlinux</option>)
+is required. These settings are stored in <filename>~/.oprofile/daemon</filename>.
 </para>
 <variablelist>
 	<varlistentry>
@@ -585,6 +594,13 @@ stored in <filename>~/.oprofile/daemon</filename>.
 		<term><option>--vmlinux=</option>file</term>
 		<listitem><para>
 		vmlinux kernel image.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--no-vmlinux</option></term>
+		<listitem><para>
+		Use this when you don't have a kernel vmlinux file, and you don't want
+		to profile the kernel. Only available with OProfile on 2.5 kernels.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -732,7 +748,7 @@ two.
 Setting the value from the GUI should be straightforward. On the command line, you need to specify the
 <option>--rtc-value</option> option to <command>opcontrol</command>, e.g. :
 </para>
-<para><command>opcontrol --setup --vmlinux=/boot/2.4.0ac12/vmlinux --rtc-value=256</command></para>
+<para><command>opcontrol --setup --rtc-value=256</command></para>
 </sect2>
 
 <sect2 id="timer">

@@ -1,5 +1,22 @@
 2003-03-04  John Levon  <levon@movementarian.org>
 
+	* utils/opcontrol:
+	* daemon/opd_kernel.h:
+	* daemon/opd_image.c:
+	* daemon/opd_kernel.c:
+	* daemon/oprofiled.c: implement --no-vmlinux.
+ 	  Remove back compat for is_kernel.
+
+	* gui/uioprof_start.base.ui:
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_config.h:
+	* gui/oprof_start_config.cpp: support the above
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: doc the above
+
+2003-03-04  John Levon  <levon@movementarian.org>
+
 	* utils/opcontrol: allow --version, --help early on
 
 2003-03-04  John Levon  <levon@movementarian.org>

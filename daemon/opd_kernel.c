@@ -35,6 +35,7 @@ struct opd_module {
 
 extern char * vmlinux;
 extern int verbose;
+extern int no_vmlinux;
 extern unsigned long opd_stats[];
 
 static struct opd_image * kernel_image;
@@ -50,6 +51,9 @@ static unsigned int nr_modules=0;
  */
 void opd_init_kernel_image(void)
 {
+	/* for no vmlinux */
+	if (!vmlinux)
+		vmlinux = "/no/vmlinux";
 	kernel_image = opd_get_kernel_image(vmlinux, 0);
 }
 
@@ -186,6 +190,9 @@ static void opd_read_module_info(void)
 	char live_info[32];
 	char dependencies[4096];
 	unsigned long long start_address;
+
+	if (no_vmlinux)
+		return;
 
 	fp = op_try_open_file("/proc/modules", "r");
 
@@ -493,6 +500,12 @@ static void opd_put_kernel_sample(vma_t eip, u32 counter,
 void opd_handle_kernel_sample(vma_t eip, u32 counter, 
 			      struct opd_image * app_image)
 {
+	if (no_vmlinux) {
+		opd_stats[OPD_KERNEL]++;
+		opd_put_image_sample(kernel_image, eip, counter);
+		return;
+	}
+
 	if (!app_image) {
 		if (eip >= kernel_start && eip < kernel_end) {
 			opd_stats[OPD_KERNEL]++;
@@ -507,17 +520,6 @@ void opd_handle_kernel_sample(vma_t eip, u32 counter,
 	}
 }
  
-/**
- * opd_eip_is_kernel - is the sample from kernel/module space
- * @param eip  EIP value
- *
- * Returns %1 if eip is in the address space starting at
- * kernel_start, %0 otherwise.
- */
-int opd_eip_is_kernel(vma_t eip)
-{
-	return (eip >= kernel_start);
-}
 
 void opd_delete_modules(struct opd_image * image)
 {

@@ -398,11 +398,6 @@ static void opd_put_sample(struct opd_image * image, int in_kernel,
 
 	opd_stats[OPD_SAMPLES]++;
 
-	/* backward compatiblity, FIXME remove it later */
-	if (in_kernel == -1) {
-		in_kernel = opd_eip_is_kernel(eip);
-	}
- 
 	if (in_kernel > 0) {
 		struct opd_image * app_image = 0;
 

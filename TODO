@@ -16,7 +16,7 @@ Before 1.0 big stuff
 	   dump the trace in the logs + new sample file format
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
- o implement --no-vmlinux
+ o implement --no-vmlinux for 2.4
  
 Before 1.0 little stuff
 -----------------------
