@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.29 2001/06/03 19:06:03 movement Exp $ */
+/* $Id: oprofiled.c,v 1.30 2001/06/04 00:46:11 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -87,8 +87,6 @@ static void opd_open_logfile(void)
 		exit(1);
 	}
 
-	printf("Using log file \"%s\"\n", logfilename);
- 
 	if (dup2(1,2) == -1) {
 		perror("oprofiled: couldn't dup stdout to stderr: ");
 		exit(1);
@@ -129,6 +127,9 @@ static void opd_open_files(void)
 		exit(1);
 	}
 
+	/* give output before re-opening stdout as the logfile */
+	printf("Using log file \"%s\"\n", logfilename);
+ 
 	/* set up logfile */
 	close(0);
 	close(1);
