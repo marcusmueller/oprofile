@@ -18,17 +18,28 @@
 
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <vector>
 #include <set>
 #include <algorithm>
-#include <iomanip>
 
 #include <stdio.h>
 #include <fnmatch.h>
 #include <popt.h>
 
-// FIXME: this is wrong. using std::string etc. instead 
-using namespace std;
+using std::vector;
+using std::set;
+using std::string;
+using std::ostream;
+using std::ofstream;
+using std::istream;
+using std::ifstream;
+using std::endl;
+using std::cin;
+using std::cout;
+using std::cerr;
+using std::hex;
+using std::dec;
 
 #include "opf_filter.h"
 #include "oprofpp.h"
@@ -50,11 +61,11 @@ ostream & operator<<(ostream & out, const counter_setup &);
 
 double do_ratio(size_t a, size_t total);
 
-bool create_dir(const std::string & dir);
-bool create_path_name(const std::string& path);
+bool create_dir(const string & dir);
+bool create_path_name(const string & path);
 
-	std::string dirname(std::string const & file_name);
-std::string basename(std::string const & path_name);
+string dirname(string const & file_name);
+string basename(string const & path_name);
 
 }
 
@@ -70,24 +81,24 @@ class filename_match {
  public:
 	// multiple pattern must be separate by ','. each pattern can contain
 	// leading and trailing blank which are strip from pattern.
-	filename_match(const std::string & include_patterns,
-		       const std::string & exclude_patterns);
+	filename_match(const string & include_patterns,
+		       const string & exclude_patterns);
 
 
 	/// return filename match include_pattern and not match exclude_pattern
-	bool match(const std::string & filename);
+	bool match(const string & filename);
 
  private:
 	/// ctor helper.
-	static void build_pattern(std::vector<std::string>& result, 
-				  const std::string & patterns);
+	static void build_pattern(vector<string> & result,
+				  const string & patterns);
 
 	/// match helper
-	static bool match(const std::vector<std::string>& patterns,
-			  const std::string & filename);
+	static bool match(const vector<string> & patterns,
+			  const string & filename);
 
-	std::vector<std::string> include_pattern;
-	std::vector<std::string> exclude_pattern;
+	std::vector<string> include_pattern;
+	std::vector<string> exclude_pattern;
 };
 
 //---------------------------------------------------------------------------
@@ -102,7 +113,7 @@ struct source_file {
 //---------------------------------------------------------------------------
 /// Store the configuration of one counter. Construct from an opd_header
 struct counter_setup {
-	counter_setup() : 
+	counter_setup() :
 		enabled(false), event_count_sample(0) {}
 
 	// if false other field are not meaningful.
@@ -125,11 +136,10 @@ class output {
 	       size_t threshold_percent,
 	       bool until_more_than_samples,
 	       size_t sort_by_counter,
-// FIXME: std::string please !!!
-	       const char * output_dir,
-	       const char * source_dir,
-	       const char * output_filter,
-	       const char * no_output_filter);
+	       string const & output_dir,
+	       string const & source_dir,
+	       string const & output_filter,
+	       string const & no_output_filter);
 
 	bool treat_input();
 
@@ -138,37 +148,39 @@ class output {
  private:
 	/// this output a comment containaing the counter setup and command
 	/// the line.
-	void output_header(ostream& out) const;
+	void output_header(ostream & out) const;
 
 	void output_asm();
 	void output_source();
 
 	// output one file unconditionally.
-	void output_one_file(istream & in, const string & filename, 
-			     const counter_array_t & total_samples_for_file);
-	void do_output_one_file(ostream& out, istream & in, const string & filename, 
-				const counter_array_t & total_samples_for_file);
+	void output_one_file(istream & in, const string & filename,
+		const counter_array_t & total_samples_for_file);
+	void do_output_one_file(ostream & out, istream & in, const string & filename,
+		const counter_array_t & total_samples_for_file);
 
 	// accumulate counter for a given (filename, linenr).
-	void accumulate_and_output_counter(ostream& out, const string & filename, size_t linenr, 
-					   const string & blank);
+	void accumulate_and_output_counter(ostream& out, const string & filename,
+		size_t linenr, const string & blank);
 
 	void build_samples_containers();
 
 	bool setup_counter_param();
 	bool calc_total_samples();
 
-	void output_counter_for_file(ostream& out, const string & filename, 
-				     const counter_array_t& count);
-	void output_counter(ostream& out, const counter_array_t & counter, 
-			    bool comment, const string & prefix) const;
-	void output_one_counter(ostream& out, size_t counter, size_t total) const;
+	void output_counter_for_file(ostream & out, const string & filename,
+		const counter_array_t& count);
+	void output_counter(ostream & out, const counter_array_t & counter,
+		bool comment, const string & prefix = string()) const;
+	void output_one_counter(ostream & out, size_t counter, size_t total) const;
 
-	void find_and_output_symbol(ostream& out, const string& str, const char * blank) const;
-	void find_and_output_counter(ostream& out, const string& str, const char * blank) const;
+	void find_and_output_symbol(ostream & out, const string & str,
+		const string & blank) const;
+	void find_and_output_counter(ostream & out, const string & str,
+		const string & blank) const;
 
-	void find_and_output_counter(ostream& out, const string & filename,
-				     size_t linenr) const;
+	void find_and_output_counter(ostream & out, const string & filename,
+		size_t linenr) const;
 
 	size_t get_sort_counter_nr() const;
 
@@ -195,13 +207,13 @@ class output {
 	// samples files header are stored here
 	counter_setup counter_info[OP_MAX_COUNTERS];
 
-	// FIXME : begin_comment, end_comment must be based on the current 
+	// FIXME : begin_comment, end_comment must be based on the current
 	// extension and must be properties of source_file.
 	string begin_comment;
 	string end_comment;
 
 	// This is usable only if one of the counter has been setup as: count
-	// some sort of cycles events. In the other case trying to use it to 
+	// some sort of cycles events. In the other case trying to use it to
 	// translate samples count to time is a non-sense.
 	double cpu_speed;
 
@@ -217,8 +229,8 @@ class output {
 
 	bool have_linenr_info;
 
-	std::string output_dir;
-	std::string source_dir;
+	string output_dir;
+	string source_dir;
 	bool output_separate_file;
 
 	filename_match fn_match;
@@ -246,18 +258,17 @@ ostream & operator<<(ostream & out, const counter_setup & rhs)
 	if (rhs.enabled) {
 		out << " ";
 
-		out << rhs.event_name 
+		out << rhs.event_name
 		    << " (" << rhs.help_string << ")" << endl;
 
 		out << "unit mask : "
-		    << "0x" << hex << setfill('0') << setw(2) 
-		    << rhs.unit_mask 
+		    << "0x" << hex << std::setfill('0') << std::setw(2)
+		    << rhs.unit_mask
 		    << dec
 		    << " (" << rhs.unit_mask_help << ")"
-		    << " event_count : " << rhs.event_count_sample 
+		    << " event_count : " << rhs.event_count_sample
 		    << " total samples : " << rhs.total_samples;
 	}
-
 	return out;
 }
 
@@ -266,40 +277,35 @@ inline double do_ratio(size_t counter, size_t total)
 	return total == 0 ? 1.0 : ((double)counter / total);
 }
 
-bool create_dir(const std::string & dir)
+bool create_dir(const string & dir)
 {
 	if (access(dir.c_str(), F_OK)) {
-		if (mkdir(dir.c_str(), 0700)) {
+		if (mkdir(dir.c_str(), 0700))
 			return false;
-		}
 	}
-
 	return true;
 }
 
-bool create_path_name(const std::string& path)
+bool create_path_name(const string & path)
 {
-	std::vector<std::string> path_component;
+	vector<string> path_component;
 
 	size_t slash = 0;
 	while (slash < path.length()) {
 		size_t new_pos = path.find_first_of('/', slash);
-		if (new_pos == std::string::npos) {
+		if (new_pos == string::npos)
 			new_pos = path.length();
-		}
 
 		path_component.push_back(path.substr(slash, (new_pos - slash) + 1));
 		slash = new_pos + 1;
-
 	}
 
-	std::string dir_name;
+	string dir_name;
 	for (size_t i = 0 ; i < path_component.size() ; ++i) {
 		dir_name += '/' + path_component[i];
-		if (create_dir(dir_name) == false)
+		if (!create_dir(dir_name))
 			return false;
 	}
-
 	return true;
 }
 
@@ -309,12 +315,12 @@ bool create_path_name(const std::string& path)
  *
  * Returns the path name of a filename with trailing '/' removed.
  */
-std::string dirname(std::string const & file_name)
+string dirname(string const & file_name)
 {
-	std::string result = file_name;
+	string result = file_name;
 
-	std::string::size_type slash = result.find_last_of('/');
-	if (slash != std::string::npos)
+	string::size_type slash = result.find_last_of('/');
+	if (slash != string::npos)
 		result.erase(slash, result.length() - slash);
 
 	return result;
@@ -326,15 +332,15 @@ std::string dirname(std::string const & file_name)
  *
  * Returns the basename of a path with trailing '/' removed.
  */
-std::string basename(std::string const & path_name)
+string basename(string const & path_name)
 {
-	std::string result = path_name;
+	string result = path_name;
 
 	while (result.size() && result[result.size() - 1] == '/')
 		result = result.substr(0, result.size() - 1);
 
-	std::string::size_type slash = result.find_last_of('/');
-	if (slash != std::string::npos)
+	string::size_type slash = result.find_last_of('/');
+	if (slash != string::npos)
 		result.erase(0, slash + 1);
 
 	return result;
@@ -343,19 +349,19 @@ std::string basename(std::string const & path_name)
 } // anonymous namespace
 
 //---------------------------------------------------------------------------
-filename_match::filename_match(const std::string & include_patterns,
-			       const std::string & exclude_patterns)
+filename_match::filename_match(const string & include_patterns,
+			       const string & exclude_patterns)
 {
 	build_pattern(include_pattern, include_patterns);
 	build_pattern(exclude_pattern, exclude_patterns);
 }
 
-bool filename_match::match(const std::string & filename)
+bool filename_match::match(const string & filename)
 {
-	std::string const & base = basename(filename);
+	string const & base = basename(filename);
 
 	// first, if any component of the dir is listed in exclude -> no
-	std::string comp = dirname(filename);
+	string comp = dirname(filename);
 	while (!comp.empty() && comp != "/") {
 		if (match(exclude_pattern, basename(comp)))
 			return false;
@@ -363,7 +369,7 @@ bool filename_match::match(const std::string & filename)
 			break;
 		comp = dirname(comp);
 	}
- 
+
 	// now if the file name is specifically excluded -> no
 	if (match(exclude_pattern, base))
 		return false;
@@ -373,8 +379,8 @@ bool filename_match::match(const std::string & filename)
 		return true;
 
 	// now if any component of the path is included -> yes
-	// note that the include pattern defaults to '*' 
-	std::string compi = dirname(filename);
+	// note that the include pattern defaults to '*'
+	string compi = dirname(filename);
 	while (!compi.empty() && compi != "/") {
 		if (match(include_pattern, basename(compi)))
 			return true;
@@ -382,12 +388,12 @@ bool filename_match::match(const std::string & filename)
 			break;
 		compi = dirname(compi);
 	}
- 
-	return false; 
+
+	return false;
 }
 
-bool filename_match::match(const std::vector<std::string>& patterns,
-			   const std::string & filename)
+bool filename_match::match(const vector<string> & patterns,
+			   const string & filename)
 {
 	bool ok = false;
 	for (size_t i = 0 ; i < patterns.size() && ok == false ; ++i) {
@@ -398,10 +404,10 @@ bool filename_match::match(const std::vector<std::string>& patterns,
 	return ok;
 }
 
-void filename_match::build_pattern(std::vector<std::string>& result, 
-				   const std::string & patterns)
+void filename_match::build_pattern(vector<string> & result,
+				   const string & patterns)
 {
-	std::string temp = patterns;
+	string temp = patterns;
 
 	// unquote the pattern if necessary. TODO: work around against
 	// op_to_source this block of code must go out later.
@@ -410,14 +416,14 @@ void filename_match::build_pattern(std::vector<std::string>& result,
 		temp =  temp.substr(1, temp.length() - 2);
 	}
 
-	// separate the patterns 
+	// separate the patterns
 	size_t last_pos = 0;
 	for (size_t pos = 0 ; pos != temp.length() ; ) {
 		pos = temp.find_first_of(',', last_pos);
-		if (pos == std::string::npos)
+		if (pos == string::npos)
 			pos = temp.length();
 
-		std::string pat = temp.substr(last_pos, pos - last_pos);
+		string pat = temp.substr(last_pos, pos - last_pos);
 
 		// Do we need to strip leading/trailing blank in pat ?
 		result.push_back(pat);
@@ -429,7 +435,7 @@ void filename_match::build_pattern(std::vector<std::string>& result,
 
 //--------------------------------------------------------------------------
 
-void sample_entry::debug_dump(ostream & out) const 
+void sample_entry::debug_dump(ostream & out) const
 {
 	if (file_loc.filename.length())
 		out << file_loc.filename << ":" << file_loc.linenr << " ";
@@ -444,11 +450,8 @@ void sample_entry::debug_dump(ostream & out) const
 
 void symbol_entry::debug_dump(ostream & out) const
 {
-
 	out << "[" << name << "]" << endl;
-
 	out << "counters number range [" << first << ", " << last << "[" << endl;
-
 	sample.debug_dump(out);
 }
 
@@ -457,7 +460,7 @@ void symbol_entry::debug_dump(ostream & out) const
 source_file::source_file()
 {
 }
- 
+
 source_file::source_file(istream & in)
 {
 	string str;
@@ -472,11 +475,11 @@ output::output(int argc_, char const * argv_[],
 	       size_t threshold_percent_,
 	       bool until_more_than_samples_,
 	       size_t sort_by_counter_,
-	       const char * output_dir_,
-	       const char * source_dir_,
-	       const char * output_filter_,
-	       const char * no_output_filter_)
-	: 
+	       string const & output_dir_,
+	       string const & source_dir_,
+	       string const & output_filter_,
+	       string const & no_output_filter_)
+	:
 	samples_files(),
 	abfd(samples_files.header[samples_files.first_file]),
 	argc(argc_),
@@ -489,17 +492,15 @@ output::output(int argc_, char const * argv_[],
 	cpu_type(-1),
 	until_more_than_samples(until_more_than_samples_),
 	have_linenr_info(have_linenr_info_),
-	output_dir(output_dir_ ? output_dir_ : ""),
-	source_dir(source_dir_ ? source_dir_ : ""),
+	output_dir(output_dir_),
+	source_dir(source_dir_),
 	output_separate_file(false),
-	fn_match(output_filter_ ? output_filter_ : "*", 
-		 no_output_filter_ ? no_output_filter_ : "")
+	fn_match(output_filter_, no_output_filter_)
 {
 	if (have_linenr_info && !abfd.have_debug_info()) {
-		std:: cerr << "Request for source file annotated "
-			   << "with sample but no debug info available"
-			   << std::endl;
-
+		cerr << "Request for source file annotated "
+			<< "with sample but no debug info available"
+			<< endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -508,6 +509,7 @@ output::output(int argc_, char const * argv_[],
 
 		output_separate_file = true;
 
+		// FIXME: provide C++ std::string version of this.
 		temp = opd_relative_to_absolute_path(source_dir.c_str(), NULL);
 		source_dir = temp;
 		opd_free(temp);
@@ -543,7 +545,6 @@ output::output(int argc_, char const * argv_[],
 		if (output_dir == source_dir) {
 			cerr << "You can not specify the same directory for "
 			     << "--output-dir and --source-dir" << endl;
-
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -583,7 +584,8 @@ bool output::setup_counter_param()
 		counter_info[i].event_name = samples_files.ctr_name[i];
 		counter_info[i].help_string = samples_files.ctr_desc[i];
 		counter_info[i].unit_mask = samples_files.header[i]->ctr_um;
-		counter_info[i].unit_mask_help = samples_files.ctr_um_desc[i] ? samples_files.ctr_um_desc[i] : "Not set";
+		counter_info[i].unit_mask_help = 
+			samples_files.ctr_um_desc[i] ? samples_files.ctr_um_desc[i] : "Not set";
 		counter_info[i].event_count_sample = samples_files.header[i]->ctr_count;
 
 		have_counter_info = true;
@@ -591,7 +593,6 @@ bool output::setup_counter_param()
 
 	if (!have_counter_info) {
 		cerr << "opf_filter: no counter enabled ?" << endl;
-		
 		return false;
 	}
 
@@ -618,7 +619,7 @@ bool output::calc_total_samples()
 		for (size_t i = 0 ; i < op_nr_counters ; ++i) {
 			if (total_counter[i] != counter_info[i].total_samples) {
 				cerr << "opf_filter: output::calc_total_samples() : bad counter accumulation"
-				     << " " << total_counter[i] 
+				     << " " << total_counter[i]
 				     << " " << counter_info[i].total_samples
 				     << endl;
 				exit(EXIT_FAILURE);
@@ -633,19 +634,15 @@ bool output::calc_total_samples()
 	return false;
 }
 
-void output::output_one_counter(ostream& out, size_t counter, size_t total) const
+void output::output_one_counter(ostream & out, size_t counter, size_t total) const
 {
-
 	out << " ";
-
 	out << counter << " ";
-
-	out << setprecision(4) << (do_ratio(counter, total) * 100.0) << "%";
+	out << std::setprecision(4) << (do_ratio(counter, total) * 100.0) << "%";
 }
 
-void output::
-output_counter(ostream& out, const counter_array_t & counter, bool comment, 
-	       const string & prefix) const
+void output::output_counter(ostream & out, const counter_array_t & counter, 
+	bool comment, const string & prefix) const
 {
 	if (comment)
 		out << begin_comment;
@@ -658,7 +655,7 @@ output_counter(ostream& out, const counter_array_t & counter, bool comment,
 			output_one_counter(out, counter[i], counter_info[i].total_samples);
 
 	out << " ";
-      
+     
 	if (comment)
 		out << end_comment;
 
@@ -666,49 +663,47 @@ output_counter(ostream& out, const counter_array_t & counter, bool comment,
 }
 
 // Complexity: log(container.size())
-void output::find_and_output_symbol(ostream& out, const string& str, const char * blank) const
+void output::find_and_output_symbol(ostream & out, const string & str, const string & blank) const
 {
 	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
 	const symbol_entry* symbol = symbols.find_by_vma(vma);
 
 	if (symbol) {
-		out <<  blank;
-
+		out << blank;
 		output_counter(out, symbol->sample.counter, true, string());
 	}
 }
 
 // Complexity: log(samples.size())
-void output::find_and_output_counter(ostream& out, const string& str, const char * blank) const
+void output::find_and_output_counter(ostream & out, const string & str, const string & blank) const
 {
 	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
 	const sample_entry * sample = samples.find_by_vma(vma);
 	if (sample) {
-		out <<  blank;
-
+		out << blank;
 		output_counter(out, sample->counter, true, string());
 	}
 }
 
 // Complexity: log(symbols.size())
-void output::find_and_output_counter(ostream& out, const string & filename, size_t linenr) const
+void output::find_and_output_counter(ostream & out, const string & filename, size_t linenr) const
 {
 	const symbol_entry * symbol = symbols.find(filename, linenr);
 	if (symbol)
 		output_counter(out, symbol->sample.counter, true, symbol->name);
 }
 
-void output::output_asm() 
+void output::output_asm()
 {
 	// select the subset of symbols which statisfy the user requests
 	size_t index = get_sort_counter_nr();
 
-	vector<const symbol_entry*> v;
+	vector<const symbol_entry *> v;
 	symbols.get_symbols_by_count(index , v);
 
-	vector<const symbol_entry*> output_symbols;
+	vector<const symbol_entry *> output_symbols;
 
 	double threshold = threshold_percent / 100.0;
 
@@ -716,13 +711,11 @@ void output::output_asm()
 		double const percent = do_ratio(v[i]->sample.counter[index],
 					  counter_info[index].total_samples);
 
-		if (until_more_than_samples || percent >= threshold) {
+		if (until_more_than_samples || percent >= threshold)
 			output_symbols.push_back(v[i]);
-		}
 
-		if (until_more_than_samples) {
+		if (until_more_than_samples)
 			threshold -=  percent;
-		}
 	}
 
 	output_header(cout);
@@ -732,9 +725,10 @@ void output::output_asm()
 	// case and turn off outputting.
 	bool do_output = true;
 
+	// FIXME: can this be simplified ?
 	string str;
 	while (std::getline(cin, str)) {
-		if (str.length())  {
+		if (str.length()) {
 			// Yeps, output of objdump is a human read-able form
 			// and contain a few ambiguity so this code is fragile
 
@@ -757,7 +751,7 @@ void output::output_asm()
 			while (pos < str.length() && isxdigit(str[pos]))
 			       ++pos;
 
-			if (pos == str.length() || 
+			if (pos == str.length() ||
 			    (!isspace(str[pos]) && str[pos] != ':')) {
 				if (do_output)
 					cout << str << '\n';
@@ -774,7 +768,7 @@ void output::output_asm()
 				// lower_bound ?
 				// Note this use a pointer comparison. It work
 				// because symbols pointer are unique
-				if (find(output_symbols.begin(), 
+				if (find(output_symbols.begin(),
 					 output_symbols.end(), symbol) != output_symbols.end()) {
 					// probably an error due to ambiguity
 					// in the input: source file mixed with
@@ -805,26 +799,23 @@ void output::output_asm()
 	}
 }
 
-void output::accumulate_and_output_counter(ostream& out, const string & filename, size_t linenr,
-					   const string & blank)
+void output::accumulate_and_output_counter(ostream & out, const string & filename, 
+	size_t linenr, const string & blank)
 {
 	counter_array_t counter;
 	if (samples.accumulate_samples(counter, filename, linenr)) {
 		out << blank;
-
 		output_counter(out, counter, true, string());
 	}
 }
 
 void output::output_counter_for_file(ostream& out, const string & filename,
-				     const counter_array_t & total_count_for_file)
+	const counter_array_t & total_count_for_file)
 {
 	out << begin_comment << endl
-	    << " Total samples for file : " << '"' << filename << '"'
-	    << endl;
-
+		<< " Total samples for file : " << '"' << filename << '"'
+		<< endl;
 	output_counter(out, total_count_for_file, false, string());
-
 	out << end_comment << endl << endl;
 }
 
@@ -835,64 +826,66 @@ void output::output_counter_for_file(ostream& out, const string & filename,
 //  the entire file source and the associated samples has been output to
 //  the standard output.
 void output::output_one_file(istream & in, const string & filename,
-			     const counter_array_t & total_count_for_file)
+	const counter_array_t & total_count_for_file)
 {
-	if (output_separate_file == true) {
-		std::string out_filename = filename;
-
-		size_t pos = out_filename.find(source_dir);
-		if (pos == 0) {
-			out_filename.erase(0, source_dir.length());
-		} else if (pos == string::npos) {
-			// filename is outside the source dir: ignore this file
-			cerr << "opf_filter: file " 
-			     << '"' << out_filename << '"' << " ignored" << endl;
-			return;
-		}
-
-		// filter
-		if (!fn_match.match(filename))
-			return;
-
-		out_filename = output_dir + out_filename;
-
-		std::string path = dirname(out_filename);
-		if (create_path_name(path) == false) {
-			cerr << "unable to create directory: " 
-			     << '"' << path << '"' << endl;
-			return;
-		}
-
-		// paranoid checking: out_filename and filename must be
-		// distinct file. FIXME: is this the correct way to check
-		// against identical file?
-		struct stat stat1;
-		struct stat stat2;
-		if (stat(filename.c_str(), &stat1) == 0 &&
-		    stat(out_filename.c_str(), &stat2) == 0) {
-			if (stat1.st_dev == stat2.st_dev &&
-			    stat1.st_ino == stat2.st_ino) {
-				cerr << "input and output_filename are" 
-				     << "identical ("
-				     << '"' << filename << '"'
-				     << ','
-				     << '"' << out_filename << '"'
-				     << endl;
-
-				return;
-			}
-		}
-
-		ofstream out(out_filename.c_str());
-		if (!out){
-		  cerr << "unable to open output file "
-		       << '"' << out_filename << '"' << endl;
-		}
-
-		do_output_one_file(out, in, filename, total_count_for_file);
-	} else {
+	if (!output_separate_file) {
 		do_output_one_file(cout, in, filename, total_count_for_file);
+		return;
 	}
+ 
+	string out_filename = filename;
+
+	size_t pos = out_filename.find(source_dir);
+	if (pos == 0) {
+		out_filename.erase(0, source_dir.length());
+	} else if (pos == string::npos) {
+		// filename is outside the source dir: ignore this file
+		cerr << "opf_filter: file "
+		     << '"' << out_filename << '"' << " ignored" << endl;
+		return;
+	}
+
+	// filter
+	if (!fn_match.match(filename))
+		return;
+
+	out_filename = output_dir + out_filename;
+
+	string path = dirname(out_filename);
+	if (create_path_name(path) == false) {
+		cerr << "unable to create directory: "
+		     << '"' << path << '"' << endl;
+		return;
+	}
+
+	// paranoid checking: out_filename and filename must be
+	// distinct file. FIXME: is this the correct way to check
+	// against identical file?
+	// FIXME: if it is, it should become a utility function with a good
+	// name
+	struct stat stat1;
+	struct stat stat2;
+	if (stat(filename.c_str(), &stat1) == 0 &&
+		stat(out_filename.c_str(), &stat2) == 0) {
+		if (stat1.st_dev == stat2.st_dev &&
+			stat1.st_ino == stat2.st_ino) {
+			cerr << "input and output_filename are"
+				<< "identical ("
+				// FIXME: consider helper quote(filename) to add "
+				<< '"' << filename << '"'
+				<< ','
+				<< '"' << out_filename << '"'
+				<< endl;
+			return;
+		}
+	}
+
+	ofstream out(out_filename.c_str());
+	if (!out) {
+		cerr << "unable to open output file "
+			<< '"' << out_filename << '"' << endl;
+	} else
+		do_output_one_file(out, in, filename, total_count_for_file);
 }
 
 // Pre condition:
@@ -901,7 +894,7 @@ void output::output_one_file(istream & in, const string & filename,
 // Post condition:
 //  the entire file source and the associated samples has been output to
 //  the standard output.
-void output::do_output_one_file(ostream& out, istream & in, 
+void output::do_output_one_file(ostream& out, istream & in,
 				const string & filename,
 				const counter_array_t & total_count_for_file)
 {
@@ -909,14 +902,13 @@ void output::do_output_one_file(ostream& out, istream & in,
 
 	source_file source(in);
 
-	//  This is a simple heuristic, we probably need another output format
+	// This is a simple heuristic, we probably need another output format
 	for (size_t linenr = 0; linenr <= source.file_line.size(); ++linenr) {
 		string blank;
 		string str;
 
 		if (linenr != 0) {
 			str = source.file_line[linenr-1];
-
 			blank = extract_blank_at_begin(str);
 		}
 
@@ -931,16 +923,18 @@ void output::do_output_one_file(ostream& out, istream & in,
 
 struct filename_by_samples {
 	filename_by_samples(string filename_, double percent_,
-			    const counter_array_t & counter_)
-		: filename(filename_), percent(percent_), counter(counter_) {}
+		const counter_array_t & counter_)
+		: filename(filename_), percent(percent_), counter(counter_) 
+		{}
 
 	bool operator<(const filename_by_samples & lhs) const {
 		return percent > lhs.percent;
 	}
 
 	string filename;
-	// -- tricky: this info is valid only for one of the counter. The information: from wich
-	// counter this percentage is valid is not self contained in this structure.
+	// -- tricky: this info is valid only for one of the counter. The 
+	// information: from which counter this percentage is valid is not 
+	// self contained in this structure.
 	double percent;
 	counter_array_t counter;
 };
@@ -949,9 +943,8 @@ void output::output_source()
 {
 	set<string> filename_set;
 
-	for (size_t i = 0 ; i < samples.size() ; ++i) {
+	for (size_t i = 0 ; i < samples.size() ; ++i)
 		filename_set.insert(samples[i].file_loc.filename);
-	}
 
 	size_t index = get_sort_counter_nr();
 
@@ -993,7 +986,7 @@ void output::output_source()
 			// info at all has already been checked.
 			if (s.filename.length())
 				cerr << "opf_filter (warning): unable to open "
-				     << "for reading: " 
+				     << "for reading: "
 				     << file_by_samples[i].filename << endl;
 		} else {
 			if (until_more_than_samples ||
@@ -1031,7 +1024,6 @@ size_t output::get_sort_counter_nr() const
 	return index;
 }
 
-// FIXME: is this going to be removed when you're sure it's stable ???
 bool output::sanity_check_symbol_entry(size_t index) const
 {
 	if (index == 0) {
@@ -1063,12 +1055,12 @@ bool output::sanity_check_symbol_entry(size_t index) const
 	return true;
 }
 
-// Post condition: 
+// Post condition:
 //  the symbols/samples are sorted by increasing vma.
-//  the range of sample_entry inside each symbol entry are valid, see 
+//  the range of sample_entry inside each symbol entry are valid, see
 //    sanity_check_symbol_entry()
 //  the samples_by_file_loc member var is correctly setup.
-void output::build_samples_containers() 
+void output::build_samples_containers()
 {
 	// fill the symbol table.
 	for (size_t i = 0 ; i < abfd.syms.size(); ++i) {
@@ -1093,7 +1085,7 @@ void output::build_samples_containers()
 			symb_entry.sample.file_loc.filename = filename;
 			symb_entry.sample.file_loc.linenr = linenr;
 		} else {
-			symb_entry.sample.file_loc.filename = std::string();
+			symb_entry.sample.file_loc.filename = string();
 			symb_entry.sample.file_loc.linenr = 0;
 		}
 
@@ -1110,7 +1102,7 @@ void output::build_samples_containers()
 				sample.file_loc.filename = filename;
 				sample.file_loc.linenr = linenr;
 			} else {
-				sample.file_loc.filename = std::string();
+				sample.file_loc.filename = string();
 				sample.file_loc.linenr = 0;
 			}
 
@@ -1135,7 +1127,7 @@ void output::build_samples_containers()
 }
 
 // this output a comment containaing the counter setup and command the line.
-void output::output_header(ostream& out) const 
+void output::output_header(ostream& out) const
 {
 	out << begin_comment << endl;
 
@@ -1155,7 +1147,7 @@ void output::output_header(ostream& out) const
 				    << threshold_percent << "% of the samples"
 				    << endl;
 			} else {
-				out << "output files until " << threshold_percent 
+				out << "output files until " << threshold_percent
 				    << "% of the samples is reached on the selected counter"
 				    << endl;
 			}
@@ -1169,17 +1161,13 @@ void output::output_header(ostream& out) const
 	}
 
 	out << endl;
-
 	out << "Cpu type: " << op_get_cpu_type_str(cpu_type) << endl;
-
 	out << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
-
 	out << endl;
 
 	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
 		if (i != 0)
 			out << endl;
-
 		out << "Counter " << i << " " << counter_info[i] << endl;
 	}
 
@@ -1187,7 +1175,7 @@ void output::output_header(ostream& out) const
 	out << endl;
 }
 
-bool output::treat_input() 
+bool output::treat_input()
 {
 	cpu_type = samples_files.header[samples_files.first_file]->cpu_type;
 
@@ -1196,18 +1184,17 @@ bool output::treat_input()
 
 	cpu_speed = samples_files.header[samples_files.first_file]->cpu_speed;
 
-	if (setup_counter_param() == false)
+	if (!setup_counter_param())
 		return false;
 
 	build_samples_containers();
 
-	if (calc_total_samples() == false) {
+	if (!calc_total_samples()) {
 		cerr << "opf_filter: the input contains zero samples" << endl;
-
 		return false;
 	}
 
-	if (have_linenr_info == false)
+	if (!have_linenr_info)
 		output_asm();
 	else
 		output_source();
@@ -1258,11 +1245,10 @@ int is_opf_filter_option(const char* option)
 	while (*option == '-')
 		++option;
 
-	const poptOption* opt;
+	const poptOption * opt;
 	for (opt = options ; opt->longName; ++opt) {
-		if (strcmp(opt->longName, option) == 0) {
+		if (strcmp(opt->longName, option) == 0)
 			return opt->argInfo == POPT_ARG_NONE ? 1 : 2;
-		}
 	}
 
 	return 0;
@@ -1278,14 +1264,14 @@ int is_opf_filter_option(const char* option)
 static void get_options(int argc, char const * argv[])
 {
 	poptContext optcon;
-	char c; 
+	char c;
 
 	// FIXME : too tricky: use popt sub-table capacity?
 
 	// separate the option into two set, one for opp_get_options
 	// and the other for opf_filter
-	std::vector<char const*> oprofpp_opt;
-	std::vector<char const*> opf_opt;
+	vector<char const*> oprofpp_opt;
+	vector<char const*> opf_opt;
 
 	oprofpp_opt.push_back(argv[0]);
 	opf_opt.push_back(argv[0]);
@@ -1302,9 +1288,11 @@ static void get_options(int argc, char const * argv[])
 
 	opp_get_options(oprofpp_opt.size(), &oprofpp_opt[0]);
 
-	// FIXME: std::vector<char const*> is not necessarily a const char * array !
-	// why did you not change this ? 
-	// I guess you need a vector_to_c_array template or something
+	// FIXME: I'm still unconvinced this vector->const array thing
+	// is guaranteed by that defect report. Given that this is a C
+	// function, philippe's interpretation of the report implies
+	// that std::vector MUST implement a standard C array "under
+	// the bonnet"
 	optcon = opd_poptGetContext(NULL, opf_opt.size(), &opf_opt[0],
 				options, 0);
 
@@ -1316,7 +1304,6 @@ static void get_options(int argc, char const * argv[])
 			poptStrerror(c));
 
 		poptPrintHelp(optcon, stderr, 0);
-
 	        exit(EXIT_FAILURE);
 	}
 
@@ -1351,19 +1338,18 @@ int main(int argc, char const * argv[])
 		}
 
 		output output(argc, argv,
-			      have_linenr_info, 
+			      have_linenr_info,
 			      threshold_percent,
 			      do_until_more_than_samples,
 			      sort_by_counter,
-			      output_dir,
-			      source_dir,
-			      output_filter,
-			      no_output_filter);
+			      output_dir ? output_dir : "",
+			      source_dir ? source_dir : "",
+			      output_filter ? output_filter : "*",
+			      no_output_filter ? no_output_filter : "");
 
-		if (output.treat_input() == false) {
+		if (output.treat_input() == false)
 			return EXIT_FAILURE;
-		}
-	} 
+	}
 
 	catch (const string & e) {
 		cerr << "opf_filter: Exception : " << e << endl;

@@ -34,17 +34,22 @@
 
 typedef int fd_t;
  
+using std::max;
+using std::string;
+using std::cout;
+using std::cerr;
+ 
 namespace {
  
 // return the ~ expansion suffixed with a '/'
-std::string const get_user_dir()
+string const get_user_dir()
 {
-	static std::string user_dir;
+	static string user_dir;
 
 	if (user_dir.empty()) {
 		char * dir = getenv("HOME");
 		if (!dir) {
-			std::cerr << "Can't determine home directory !\n" << std::endl;
+			cerr << "Can't determine home directory !\n" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 
@@ -100,8 +105,8 @@ static void pipe_read(std::ostream & out, fd_t fd_out,
 }
 
  
-static int exec_command(std::string const & cmd, std::ostream & out, 
-			std::ostream & err, std::vector<std::string> args)
+static int exec_command(string const & cmd, std::ostream & out, 
+			std::ostream & err, std::vector<string> args)
 {
 	int pstdout[2];
 	int pstderr[2];
@@ -121,7 +126,7 @@ static int exec_command(std::string const & cmd, std::ostream & out,
 			char const * argv[args.size() + 2];
 			uint i = 0;
 			argv[i++] = cmd.c_str();
-			for (std::vector<std::string>::const_iterator cit = args.begin();
+			for (std::vector<string>::const_iterator cit = args.begin();
 				cit != args.end(); ++cit) {
 				argv[i++] = cit->c_str();
 			}
@@ -161,7 +166,7 @@ static int exec_command(std::string const & cmd, std::ostream & out,
 	return WEXITSTATUS(ret);
 }
 
-std::string const opd_read_link(std::string const & name)
+string const opd_read_link(string const & name)
 {
 	static char linkbuf[FILENAME_MAX]="";
 	int c;
@@ -169,7 +174,7 @@ std::string const opd_read_link(std::string const & name)
 	c = readlink(name.c_str(), linkbuf, FILENAME_MAX);
  
 	if (c == -1)
-		return std::string();
+		return string();
  
 	if (c == FILENAME_MAX)
 		linkbuf[FILENAME_MAX-1] = '\0';
@@ -178,7 +183,7 @@ std::string const opd_read_link(std::string const & name)
 	return linkbuf;
 }
 
-std::string daemon_pid;
+string daemon_pid;
 
 // hurrah ! Stupid interface
 const int HZ = 100;
@@ -189,7 +194,7 @@ daemon_status::daemon_status()
 	: running(false)
 {
 	if (!daemon_pid.empty()) { 
-		std::string exec = opd_read_link(std::string("/proc/") + daemon_pid + "/exe");
+		string exec = opd_read_link(string("/proc/") + daemon_pid + "/exe");
 		if (exec.empty())
 			daemon_pid.erase();
 		else
@@ -206,8 +211,8 @@ daemon_status::daemon_status()
 		}
 
 		while ((dirent = readdir(dir))) {
-			std::string const exec = opd_read_link(std::string("/proc/") + dirent->d_name + "/exe");
-			std::string const name = basename(exec); 
+			string const exec = opd_read_link(string("/proc/") + dirent->d_name + "/exe");
+			string const name = basename(exec); 
 			if (name != "oprofiled")
 				continue;
  
@@ -220,7 +225,7 @@ daemon_status::daemon_status()
 	if (daemon_pid.empty())
 		return;
  
-	std::ifstream ifs((std::string("/proc/") + daemon_pid + "/stat").c_str());
+	std::ifstream ifs((string("/proc/") + daemon_pid + "/stat").c_str());
 	if (!ifs)
 		return;
 
@@ -270,20 +275,20 @@ unsigned long get_cpu_speed()
 	if (!ifs)
 		return speed;
  
-	std::string str;
+	string str;
 	 
 	while (std::getline(ifs, str)) {
 		if (str.size() < 7)
 			continue;
 
 		if (str.substr(0, 7) == "cpu MHz") {
-			std::string::const_iterator it = str.begin();
+			string::const_iterator it = str.begin();
 			uint i = 0;
 			while (it != str.end() && !(isdigit(*it)))
 				++i, ++it;
 			if (it == str.end())
 				break;
-			std::istringstream ss(str.substr(i, std::string::npos));
+			std::istringstream ss(str.substr(i, string::npos));
 			ss >> speed;
 			break; 
 		}
@@ -298,7 +303,7 @@ unsigned long get_cpu_speed()
  *
  * Get the absolute path of a file in a user's home directory.
  */
-std::string const get_user_filename(std::string const & filename)
+string const get_user_filename(string const & filename)
 {
 	return get_user_dir() + "/" + filename;
 }
@@ -312,7 +317,7 @@ std::string const get_user_filename(std::string const & filename)
 bool check_and_create_config_dir()
 {
 	// create the directory if necessary.
-	std::string dir = get_user_filename(".oprofile");
+	string dir = get_user_filename(".oprofile");
 
 	if (access(dir.c_str(), F_OK)) {
 		if (mkdir(dir.c_str(), 0700)) {
@@ -337,15 +342,15 @@ bool check_and_create_config_dir()
  *
  * Returns the formatted string
  */
-std::string const format(std::string const & orig, uint const maxlen)
+string const format(string const & orig, uint const maxlen)
 {
-	std::string text(orig);
+	string text(orig);
 
 	std::istringstream ss(text);
-	std::vector<std::string> lines;
+	std::vector<string> lines;
 
-	std::string oline;
-	std::string line;
+	string oline;
+	string line;
 
 	while (getline(ss, oline)) {
 		if (line.size() + oline.size() < maxlen) {
@@ -354,8 +359,8 @@ std::string const format(std::string const & orig, uint const maxlen)
 		} else {
 			lines.push_back(line);
 			line.erase();
-			std::string s;
-			std::string word;
+			string s;
+			string word;
 			std::istringstream oss(oline);
 			while (oss >> word) {
 				if (line.size() + word.size() > maxlen) {
@@ -370,9 +375,9 @@ std::string const format(std::string const & orig, uint const maxlen)
 	if (line.size())
 		lines.push_back(line);
 
-	std::string ret;
+	string ret;
 
-	for(std::vector<std::string>::const_iterator it = lines.begin(); it != lines.end(); ++it)
+	for(std::vector<string>::const_iterator it = lines.begin(); it != lines.end(); ++it)
 		ret += *it + "\n";
 
 	return ret;
@@ -387,7 +392,7 @@ std::string const format(std::string const & orig, uint const maxlen)
  * Execute a command synchronously. An error message is shown
  * if the command returns a non-zero status, which is also returned.
  */
-int do_exec_command(std::string const & cmd, std::vector<std::string> args)
+int do_exec_command(string const & cmd, std::vector<string> args)
 {
 	std::ostringstream err;
 
@@ -396,9 +401,9 @@ int do_exec_command(std::string const & cmd, std::vector<std::string> args)
 	int ret = exec_command(cmd, cout, err, args);
 
 	if (ret) {
-		std::string error = "Failed: \n" + err.str() + "\n";
-		std::string cmdline = cmd;
-		for (std::vector<std::string>::const_iterator cit = args.begin();
+		string error = "Failed: \n" + err.str() + "\n";
+		string cmdline = cmd;
+		for (std::vector<string>::const_iterator cit = args.begin();
 			cit != args.end(); ++cit)
 			cmdline += " " + *cit + " ";
 		error += "\n\nCommand was :\n\n" + cmdline + "\n";
@@ -418,7 +423,7 @@ int do_exec_command(std::string const & cmd, std::vector<std::string> args)
  * Select a file or directory. The selection is returned;
  * an empty string if the selection was cancelled.
  */
-std::string const do_open_file_or_dir(std::string const & base_dir, bool dir_only)
+string const do_open_file_or_dir(string const & base_dir, bool dir_only)
 {
 	QString result;
 
@@ -431,7 +436,7 @@ std::string const do_open_file_or_dir(std::string const & base_dir, bool dir_onl
 	}
 
 	if (result.isNull())
-		return std::string();
+		return string();
 	else
 		return result.latin1();
 }
@@ -443,15 +448,15 @@ std::string const do_open_file_or_dir(std::string const & base_dir, bool dir_onl
  *
  * Returns the basename of a path with trailing '/' removed.
  */
-std::string const basename(std::string const & path_name)
+string const basename(string const & path_name)
 {
-	std::string result = path_name;
+	string result = path_name;
 
 	while (result[result.size() - 1] == '/')
 		result = result.substr(0, result.size() - 1);
 
-	std::string::size_type slash = result.find_last_of('/');
-	if (slash != std::string::npos)
+	string::size_type slash = result.find_last_of('/');
+	if (slash != string::npos)
 		result.erase(0, slash + 1);
 
 	return result;
@@ -464,9 +469,9 @@ std::string const basename(std::string const & path_name)
  *
  * Returns the converted string
  */ 
-std::string const tostr(unsigned int i)
+string const tostr(unsigned int i)
 {
-	std::string str;
+	string str;
 	std::ostringstream ss(str);
 	ss << i;
 	return ss.str(); 

@@ -75,6 +75,7 @@ struct config_setting {
 	std::string base_opd_dir;
 	std::string samples_files_dir;
 	std::string device_file;
+	std::string note_device_file;
 	std::string hash_map_device;
 	std::string daemon_log_file;
 	std::string kernel_filename;

@@ -775,6 +775,7 @@ void oprof_start::on_start_profiler()
 	args.push_back("--base-dir=" + config.base_opd_dir);
 	args.push_back("--samples-dir=" + config.base_opd_dir + config.samples_files_dir);
 	args.push_back("--device-file=" + config.base_opd_dir + config.device_file);
+	args.push_back("--note-device-file=" + config.base_opd_dir + config.note_device_file);
 	args.push_back("--hash-map-device-file=" + config.base_opd_dir + config.hash_map_device);
 	args.push_back("--log-file=" + config.base_opd_dir + config.daemon_log_file);
 	args.push_back("--ignore-myself=" + tostr(config.ignore_daemon_samples));

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.77 2001/10/14 19:35:14 movement Exp $ */
+/* $Id: opd_proc.c,v 1.78 2001/10/16 21:18:32 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -392,16 +392,14 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 		goto err1;
 	}
 
-	/* truncate to grow the file is ok on linux, and probably ok in POSIX.
-	 * I am unsure than don't touch the last page and un-sparse a little
-	 * what the samples file */
+	/* truncate to grow the file is ok on linux */
 	if (ftruncate(sample_file->fd, image->len + sizeof(struct opd_header)) == -1) {
 		fprintf(stderr, "oprofiled: ftruncate failed for \"%s\". %s\n", mangled, strerror(errno));
 		goto err2;
 	}
 
 	sample_file->header = mmap(0, image->len + sizeof(struct opd_header),
-			PROT_READ|PROT_WRITE, MAP_SHARED, sample_file->fd, 0);
+		PROT_READ|PROT_WRITE, MAP_SHARED, sample_file->fd, 0);
 
 	if (sample_file->header == (void *)-1) {
 		fprintf(stderr,"oprofiled: mmap of image sample file \"%s\" failed: %s\n", mangled, strerror(errno));

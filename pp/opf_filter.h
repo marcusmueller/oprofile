@@ -33,7 +33,7 @@ struct sample_entry {
 	/// the samples count
 	counter_array_t counter;
 
-	void debug_dump(ostream & out) const;
+	void debug_dump(std::ostream & out) const;
 };
 
 //---------------------------------------------------------------------------
@@ -47,7 +47,7 @@ struct symbol_entry {
 	size_t first;
 	size_t last;
 
-	void debug_dump(ostream & out) const;
+	void debug_dump(std::ostream & out) const;
 };
 
 //---------------------------------------------------------------------------

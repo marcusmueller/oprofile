@@ -1,5 +1,18 @@
 2001-10-16  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/opd_proc.c:
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_config.h:
+	* gui/oprof_start_util.cpp:
+	* pp/opf_container.cpp:
+	* pp/opf_filter.h:
+	* pp/opf_filter.cpp:
+	* pp/oprof_convert.cpp: add note device to gui,
+	  general cleanup
+	 
+2001-10-16  John Levon  <moz@compsoc.man.ac.uk>
+
 	* oprofile.h: fix likely() macro
  
 2001-10-14  John Levon  <moz@compsoc.man.ac.uk>

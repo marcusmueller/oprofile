@@ -19,16 +19,23 @@
 #include <algorithm>
 #include <numeric>
 #include <string>
+#include <iostream>
 
 #include <limits.h>
 
-// FIXME: prefer using std::endl; etc. 
-using namespace std;
+using std::string;
+using std::cerr;
+using std::endl;
+using std::multiset;
+using std::set;
+using std::accumulate;
+using std::vector;
+using std::pair;
 
 #include "opf_filter.h"
 
 extern uint op_nr_counters;
- 
+
 //---------------------------------------------------------------------------
 // Functors used as predicate for vma comparison.
 struct less_sample_entry_by_vma {
@@ -160,7 +167,7 @@ inline void symbol_container_impl::push_back(const symbol_entry & symbol)
 	v.push_back(symbol);
 }
 
-const symbol_entry * 
+const symbol_entry *
 symbol_container_impl::find(string filename, size_t linenr) const
 {
 	build_by_file_loc();
@@ -191,7 +198,7 @@ void symbol_container_impl::flush_input_symbol(size_t counter) const
 void  symbol_container_impl::build_by_file_loc() const
 {
 	if (v.size() && symbol_entry_by_file_loc.empty()) {
-		if (range_iterator_sorted_p(v.begin(), v.end(), 
+		if (range_iterator_sorted_p(v.begin(), v.end(),
 				    less_sample_entry_by_vma()) == false) {
 			cerr << "opf_filter: post condition fail : "
 			     << "symbol_vector not sorted by increased vma"
@@ -221,7 +228,7 @@ const symbol_entry * symbol_container_impl::find_by_vma(bfd_vma vma) const
 }
 
 // get a vector of symbols sorted by increased count.
-void symbol_container_impl::get_symbols_by_count(size_t counter, vector<const symbol_entry*>& v) const
+void symbol_container_impl::get_symbols_by_count(size_t counter, vector<const symbol_entry*> & v) const
 {
 	if (counter >= op_nr_counters) {
 		throw "symbol_container_impl::get_symbols_by_count() : invalid counter number";
@@ -231,7 +238,7 @@ void symbol_container_impl::get_symbols_by_count(size_t counter, vector<const sy
 
 	v.clear();
 
-	const set_symbol_by_samples_nr& temp = symbol_entry_by_samples_nr[counter];
+	const set_symbol_by_samples_nr & temp = symbol_entry_by_samples_nr[counter];
 
 	set_symbol_by_samples_nr::const_iterator it;
 	for (it = temp.begin() ; it != temp.end(); ++it) {
@@ -242,9 +249,9 @@ void symbol_container_impl::get_symbols_by_count(size_t counter, vector<const sy
 //---------------------------------------------------------------------------
 // Visible user interface implementation, just dispatch to the implementation.
 
-symbol_container_t::symbol_container_t() 
-	: 
-	impl(new symbol_container_impl()) 
+symbol_container_t::symbol_container_t()
+	:
+	impl(new symbol_container_impl())
 {
 }
 
@@ -269,7 +276,7 @@ void symbol_container_t::push_back(const symbol_entry & symbol)
 	impl->push_back(symbol);
 }
 
-const symbol_entry * 
+const symbol_entry *
 symbol_container_t::find(string filename, size_t linenr) const
 {
 	return impl->find(filename, linenr);
@@ -309,7 +316,7 @@ class sample_container_impl {
 
 	// Carefull : these *MUST* be declared after the vector to ensure
 	// a correct life-time.
-	// sample_entry sorted by increasing (filename, linenr). 
+	// sample_entry sorted by increasing (filename, linenr).
 	// lazily build when necessary from const function so mutable
 	mutable set_sample_entry_t samples_by_file_loc;
 };
@@ -331,7 +338,7 @@ inline void sample_container_impl::push_back(const sample_entry & sample)
 }
 
 namespace {
- 
+
 counter_array_t & add_counts(counter_array_t & arr, const sample_entry * s)
 {
 	return arr += s->counter;
@@ -339,8 +346,8 @@ counter_array_t & add_counts(counter_array_t & arr, const sample_entry * s)
 
 } // namespace anon
 
-bool sample_container_impl::accumulate_samples_for_file(counter_array_t & counter, 
-							const string & filename) const
+bool sample_container_impl::accumulate_samples_for_file(counter_array_t & counter,
+	const string & filename) const
 {
 	flush_input_counter();
 
@@ -355,7 +362,7 @@ bool sample_container_impl::accumulate_samples_for_file(counter_array_t & counte
 	iterator it1 = samples_by_file_loc.lower_bound(&lower);
 	iterator it2 = samples_by_file_loc.upper_bound(&upper);
 
-	counter += std::accumulate(it1, it2, counter, add_counts);
+	counter += accumulate(it1, it2, counter, add_counts);
 
 	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		if (counter[i] != 0)
@@ -380,7 +387,7 @@ const sample_entry * sample_container_impl::find_by_vma(bfd_vma vma) const
 }
 
 bool sample_container_impl::accumulate_samples(counter_array_t & counter,
-					       const string & filename, size_t linenr) const
+	const string & filename, size_t linenr) const
 {
 	flush_input_counter();
 
@@ -409,7 +416,7 @@ void sample_container_impl::flush_input_counter() const
 		for (size_t i = 0 ; i < v.size() ; ++i)
 			samples_by_file_loc.insert(&v[i]);
 
-		if (range_iterator_sorted_p(v.begin(), v.end(), 
+		if (range_iterator_sorted_p(v.begin(), v.end(),
 					less_sample_entry_by_vma()) == false) {
 			cerr << "opf_filter: post condition fail : "
 			     << "counter_vector not sorted by increased vma"
@@ -442,7 +449,7 @@ size_t sample_container_t::size() const {
 	return impl->size();
 }
 
-bool sample_container_t::accumulate_samples_for_file(counter_array_t & counter, 
+bool sample_container_t::accumulate_samples_for_file(counter_array_t & counter,
 						     const string & filename) const
 {
 	return impl->accumulate_samples_for_file(counter, filename);

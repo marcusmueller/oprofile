@@ -87,6 +87,7 @@ config_setting::config_setting()
 	base_opd_dir("/var/opd/"),
 	samples_files_dir("samples"),
 	device_file("opdev"),
+	note_device_file("opnotedev"),
 	hash_map_device("ophashmapdev"),
 	daemon_log_file("oprofiled.log"),
 	kernel_filename(BUILD_DIR "vmlinux"),
@@ -107,6 +108,7 @@ void config_setting::load(std::istream& in)
 	in >> base_opd_dir;
 	in >> samples_files_dir;
 	in >> device_file;
+	in >> note_device_file;
 	in >> hash_map_device;
 	in >> daemon_log_file;
 	in >> kernel_filename;
@@ -132,6 +134,8 @@ void config_setting::save(std::ostream& out) const
 	save_value(out, samples_files_dir, def_val.samples_files_dir);
 	out << std::endl;
 	save_value(out, device_file, def_val.device_file);
+	out << std::endl;
+	save_value(out, note_device_file, def_val.note_device_file);
 	out << std::endl;
 	save_value(out, hash_map_device, def_val.hash_map_device);
 	out << std::endl;

@@ -238,9 +238,7 @@ static void do_mapping_transfer(uint nr_samples, int counter,
 			goto err1;
 		}
 
-		/* truncate to grow the file is ok on linux, and probably ok
-		 * in POSIX. I am unsure than don't touch the last page
-		 * and unsparse a little what the samples file */
+		/* truncate to grow the file is ok on linux */
 		if (ftruncate(out_fd, size) == -1) {
 			fprintf(stderr, "oprof_convert: ftruncate failed for \"%s\". %s\n", out_filename, strerror(errno));
 			goto err2;
