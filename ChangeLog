@@ -1,5 +1,10 @@
 2003-04-06  John Levon  <levon@movementarian.org>
 
+	* pp/op_to_source.cpp: construct a file-scope
+	cmdline string, instead of passing it around.
+
+2003-04-06  John Levon  <levon@movementarian.org>
+
 	* libregex/op_regexp.cpp: re-arrange a bit
 
 2003-04-06  John Levon  <levon@movementarian.org>

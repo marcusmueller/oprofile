@@ -62,6 +62,12 @@ struct counter_setup {
 	size_t total_samples;
 };
 
+namespace {
+
+/// how op_to_source was invoked
+string cmdline;
+
+};
 
 // This named namespace help doxygen to hierarchies documentation
 namespace op_to_source {
@@ -97,20 +103,15 @@ string extract_blank_at_begin(string const & str);
  * @param image_name the samples owner image name
  * @param sample_file the sample file base name (w/o counter nr suffix)
  * @param fn_match only source filename which match this filter will be output
- * @param argc command line number of argument
- * @param argv command line argument array
  *
  * This is the entry point of the source annotation utility called after
- * parsing and checking commnd line argument
+ * parsing and checking command line argument
  */
 bool annotate_source(string const & image_name, string const & sample_file,
-		     filename_match const & fn_match,
-		     int argc, char const * argv[]);
+		     filename_match const & fn_match);
 
 /**
  * @param out output stream
- * @param argc the command line number of argument
- * @param argv the command line number of argument
  *
  * Ouput an 'header comment'
  *
@@ -118,18 +119,16 @@ bool annotate_source(string const & image_name, string const & sample_file,
  * things such as counter setup, command line used to produce the annotated
  * file and interpretation of command line
  */
-void output_header(ostream & out, int argc, char const * argv[]);
+void output_header(ostream & out);
 
 /**
- * @param argc the command line number of argument
- * @param argv the command line number of argument
  * @param image_name the binary image name
  *
  * output annotated disassembly optionally mixed with source file.
  * Disassembly itself is provided by forking an objdump child process
  * which is filtered through op_to_source process
  */
-void output_asm(int argc, char const * argv[], string const & image_name);
+void output_asm(string const & image_name);
 
 /**
  * @param str one assembly line coming from objdump -d
@@ -171,17 +170,13 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 			string const & app_name);
 
 /**
- * @param argc the command line number of argument
- * @param argv the command line number of argument
  * @param fn_match only source filename which match this filter will be output
  * @param output_separate_file true if user request for creating on file for
  * each annotated source else op_to_source output only one report on cout
  *
  * output all annotated source matching the fn_match parameters
  */
-void output_source(int argc, char const * argv[],
-		   filename_match const & fn_match,
-		   bool output_separate_file);
+void output_source(filename_match const & fn_match, bool output_separate_file);
 
 /**
  * @param in input stream, in is not necessary valid if input source file is
@@ -333,8 +328,7 @@ string extract_blank_at_begin(string const & str)
  
 
 bool annotate_source(string const & image_name, string const & sample_file,
-		     filename_match const & fn_match,
-		     int argc, char const * argv[])
+		     filename_match const & fn_match)
 {
 	bool output_separate_file = false;
 	if (!source_dir.empty()) {
@@ -363,7 +357,7 @@ bool annotate_source(string const & image_name, string const & sample_file,
 	}
 
 	if (output_separate_file && output_dir == source_dir) {
-		cerr << "You can not specify the same directory for "
+		cerr << "You cannot specify the same directory for "
 		     << "--output-dir and --source-dir" << endl;
 		return false;
 	}
@@ -402,22 +396,19 @@ bool annotate_source(string const & image_name, string const & sample_file,
 	}
 
 	if (assembly)
-		output_asm(argc, argv, image_name);
+		output_asm(image_name);
 	else
-		output_source(argc, argv, fn_match, output_separate_file);
+		output_source(fn_match, output_separate_file);
 
 	return true;
 }
  
 
-void output_header(ostream & out, int argc, char const * argv[])
+void output_header(ostream & out)
 {
 	out << begin_comment << endl;
 
-	out << "Command line:" << endl;
-	for (int i = 0 ; i < argc ; ++i)
-		out << argv[i] << " ";
-	out << endl << endl;
+	out << "Command line:" << cmdline << endl << endl;
 
 	out << "interpretation of command line:" << endl;
 
@@ -461,7 +452,7 @@ void output_header(ostream & out, int argc, char const * argv[])
 }
  
 
-void output_asm(int argc, char const * argv[], string const & image_name)
+void output_asm(string const & image_name)
 {
 	// select the subset of symbols which statisfy the user requests
 	size_t index = get_sort_counter_nr();
@@ -473,7 +464,7 @@ void output_asm(int argc, char const * argv[], string const & image_name)
 	output_symbols =
 	 samples->select_symbols(index, threshold, do_until_more_than_samples);
 
-	output_header(cout, argc, argv);
+	output_header(cout);
 
 	output_objdump_asm(output_symbols, image_name);
 }
@@ -622,9 +613,7 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 }
  
 
-void output_source(int argc, char const * argv[],
-		   filename_match const & fn_match,
-		   bool output_separate_file)
+void output_source(filename_match const & fn_match, bool output_separate_file)
 {
 	size_t index = get_sort_counter_nr();
 
@@ -633,7 +622,7 @@ void output_source(int argc, char const * argv[],
 			do_until_more_than_samples);
 
 	if (!output_separate_file)
-		output_header(cout, argc, argv);
+		output_header(cout);
 
 	for (size_t i = 0 ; i < filenames.size() ; ++i) {
 		if (!fn_match.match(filenames[i]))
@@ -653,7 +642,7 @@ void output_source(int argc, char const * argv[],
 		} 
 
 		if (filenames[i].length()) {
-			output_one_file(in, filenames[i],output_separate_file);
+			output_one_file(in, filenames[i], output_separate_file);
 		}
 	}
 }
@@ -931,7 +920,7 @@ static int do_op_to_source(int argc, char const * argv[])
 
 	if (ctr_mask != -1 && sort_by_counter != -1 &&
 	    ctr_mask != (1 << sort_by_counter)) {
-		cerr << "mismatch between --sort-by-counter and samples filename counter suffix.\n";
+		cerr << "Mismatch between --sort-by-counter and samples filename counter suffix.\n";
 		exit(EXIT_FAILURE);
 	}
 
@@ -946,7 +935,7 @@ static int do_op_to_source(int argc, char const * argv[])
 		assembly = true;
 
 	if (!objdump_params.empty() && !assembly) {
-		cerr << "You can't specificy --objdump-params without assembly output" << endl;
+		cerr << "You can't specify --objdump-params without assembly output" << endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -955,8 +944,11 @@ static int do_op_to_source(int argc, char const * argv[])
 
 	filename_match fn_match(output_filter, no_output_filter);
 
-	if (!op_to_source::annotate_source(image_file, sample_file,
-					   fn_match, argc, argv))
+	// set the invocation, for the file headers later
+	for (int i = 0 ; i < argc ; ++i)
+		cmdline += string(argv[i]) + " ";
+
+	if (!op_to_source::annotate_source(image_file, sample_file, fn_match))
 		return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;
