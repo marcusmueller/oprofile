@@ -287,7 +287,9 @@ all the options, only interesting ones are listed here :
 		<term><option>--vmlinux</option></term>
 		<listitem><para>
 		Specify the <filename>vmlinux</filename> file from the current kernel's compile. This must match
-		the running kernel if you expect meaningful profiles of the kernel.
+		the running kernel if you expect meaningful profiles of the kernel. Note that this is separate file
+		from your kernel image (<filename>vmlinuz</filename>); you must specify the <filename>vmlinux</filename>
+		file created during the kernel build in order to profile the kernel.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
