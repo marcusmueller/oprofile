@@ -1,3 +1,8 @@
+2003-09-05  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_image.c: After a context switch ensure we update correctly
+	  the current image.
+
 2003-09-04  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opreport.cpp:
