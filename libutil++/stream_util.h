@@ -5,8 +5,8 @@
  * @remark Copyright 2003 OProfile authors
  * @remark Read the file COPYING
  *
- * @author Philippe Elie <phil_el@wanadoo.fr>
- * @author John Levon <moz@compsoc.man.ac.uk>
+ * @author Philippe Elie
+ * @author John Levon
  */
 
 #ifndef STREAM_UTIL_H
@@ -25,11 +25,11 @@ public:
 	 *
 	 * error state shouldn't be saved.
 	 */
-	io_state(std::ios& stream);
+	io_state(std::ios & stream);
 	/// restore the stream state
 	~io_state();
 private:
-	std::ios& stream;
+	std::ios & stream;
 
 	std::ios::fmtflags format;
 	std::streamsize precision;

@@ -5,10 +5,10 @@
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
  *
- * @author Bob Montgomery <bob_montgomery@hp.com>
- * @author Will Cohen <wcohen@redhat.com>
- * @author John Levon <moz@compsoc.man.ac.uk>
- * @author Philippe Elie <phil_el@wanadoo.fr>
+ * @author Bob Montgomery
+ * @author Will Cohen
+ * @author John Levon
+ * @author Philippe Elie
  */
 
 

@@ -15,7 +15,7 @@
 
 EXPORT_NO_SYMBOLS;
  
-MODULE_AUTHOR("John Levon (moz@compsoc.man.ac.uk)");
+MODULE_AUTHOR("John Levon (levon@movementarian.org)");
 MODULE_DESCRIPTION("Continuous Profiling Module");
 MODULE_LICENSE("GPL");
 
