@@ -267,11 +267,7 @@ void output_summaries(summary_container const & summaries)
 				     app.counts[j]);
 		}
 
-		string image = app.image;
-		if (options::merge_by.lib && !app.lib_image.empty())
-			image = app.lib_image;
-
-		cout << get_filename(image) << '\n';
+		cout << get_filename(app.image) << '\n';
 
 		if (!app.should_hide_deps())
 			output_deps(summaries, app);
