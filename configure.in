@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.109 2002/10/19 21:23:39 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.110 2002/10/26 02:53:24 phil_e Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -73,7 +73,7 @@ AC_PROG_CXX
 AC_CHECK_PROG(LD,ld,ld,)
 test "$LD" || AC_ERROR(ld not found)
 
-AC_MSG_CHECKING(for kernel OProfile support)
+AC_MSG_CHECKING([for kernel OProfile support])
 AC_ARG_WITH(kernel-support, [  --with-kernel-support        Select if using CONFIG_OPROFILE],
 if test "$withval" = "yes"; then
 	OPROFILE_25=yes
@@ -97,52 +97,51 @@ AC_MSG_RESULT($OPROFILE_25)
  
 if test "$OPROFILE_25" = "no"; then
 	if test ! -f $KINC/linux/autoconf.h; then
-	  AC_MSG_ERROR(no suitably configured kernel include tree found)
+	  AC_MSG_ERROR([no suitably configured kernel include tree found])
 	fi
 
 	dnl  --- Get Linux kernel version and compile parameters ---
 
 	AC_SUBST(KVERS)
-	AC_MSG_CHECKING(for kernel version)
+	AC_MSG_CHECKING([for kernel version])
 	dnl it's like this to handle mandrake's fubar version.h - bug #471448
 	eval KVERS=`gcc -I$KINC -E -dM $KINC/linux/version.h | grep -w UTS_RELEASE | awk '{print $3}'`
-	AC_MSG_RESULT($KVERS)
+	AC_MSG_RESULT([$KVERS])
 	case "$KVERS" in
 	2.2.*|2.4.*|2.5.*) ;;
-	*) AC_MSG_ERROR(Unsupported kernel version)
+	*) AC_MSG_ERROR([Unsupported kernel version])
 	esac
 
 	dnl Check for the minimal kernel version supported
-	AC_MSG_CHECKING(kernel version)
-	AX_KERNEL_VERSION(2, 2, 10, <=, AC_MSG_RESULT("ok"), AC_MSG_ERROR("check html documentation install section"))
+	AC_MSG_CHECKING([kernel version])
+	AX_KERNEL_VERSION(2, 2, 10, <=, AC_MSG_RESULT([ok]), AC_MSG_ERROR([check html documentation install section]))
 
 	dnl Check if we need to build the module with extra flags
 	dnl FIXME this fix 2.5.19 and 2.5.20 build but perhaps its not the right way
 	AC_MSG_CHECKING([whether module compilation need -DMODULE])
-	AX_KERNEL_VERSION(2, 5, 19, >=, AC_MSG_RESULT("no"), AC_MSG_RESULT("yes"); EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DMODULE")
+	AX_KERNEL_VERSION(2, 5, 19, >=, AC_MSG_RESULT([no]), AC_MSG_RESULT([yes]); EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DMODULE")
 
 	dnl linux/spinlock.h added at some point in past
-	AC_MSG_CHECKING([for "$KINC"/linux/spinlock.h])
+	AC_MSG_CHECKING([for $KINC/linux/spinlock.h])
 	if test -f $KINC/linux/spinlock.h; then
 	  EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DHAVE_LINUX_SPINLOCK_HEADER"
 	  AC_MSG_RESULT([yes])
 	else
 	  AC_MSG_RESULT([no])
 	fi
-	dnl AC_CHECK_FILE("$KINC"/linux/spinlock.h, EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DHAVE_LINUX_SPINLOCK_HEADER")
 
 	AC_SUBST(EXTRA_CFLAGS_MODULE)
 
-	AC_MSG_CHECKING(for rtc_lock)
+	AC_MSG_CHECKING([for rtc_lock])
 	gcc -I$KINC -E $KINC/linux/mc146818rtc.h | grep rtc_lock >/dev/null
 	if test "$?" -eq 0; then
-	  AC_MSG_RESULT(yes); EXTRA_CFLAGS="$EXTRA_CFLAGS -DRTC_LOCK";
+	  AC_MSG_RESULT([yes]); EXTRA_CFLAGS="$EXTRA_CFLAGS -DRTC_LOCK";
 	else
-	  AC_MSG_RESULT(no);
+	  AC_MSG_RESULT([no]);
 	fi
 	 
 	arch="unknown"
-	AC_MSG_CHECKING(for x86 architecture)
+	AC_MSG_CHECKING([for x86 architecture])
 	AX_COMPILE_OPTION(CONFIG_X86, x86=1, x86=0)
 	AX_COMPILE_OPTION(CONFIG_X86_WP_WORKS_OK, x86=1, x86=$x86)
 	AX_MSG_RESULT_YN($x86)
@@ -152,10 +151,10 @@ if test "$OPROFILE_25" = "no"; then
 	ARCH_MAKEFILE=module/arch/Makefile
 
 	dnl for now we do not support PREEMPT patch
-	AC_MSG_CHECKING(for preempt patch)
+	AC_MSG_CHECKING([for preempt patch])
 	AX_COMPILE_OPTION(CONFIG_PREEMPT,preempt=1,preempt=0)
-	AX_MSG_RESULT_YN($preempt)
-	test "$preempt" = 0 || AC_MSG_ERROR(unsupported kernel configuration : CONFIG_PREEMPT)
+	AX_MSG_RESULT_YN([$preempt])
+	test "$preempt" = 0 || AC_MSG_ERROR([unsupported kernel configuration : CONFIG_PREEMPT])
 
 	AC_SUBST(KINC)
 
@@ -166,22 +165,22 @@ AC_ARG_WITH(module-dir,
 [  --with-module-dir=dir        Path to module installation directory], MODINSTALLDIR=$withval)
 AC_SUBST(MODINSTALLDIR)
 
-# FIXME: use config.h for the -D things ... 
-AC_MSG_CHECKING("whether malloc attribute is understood")
+AC_MSG_CHECKING([whether malloc attribute is understood])
 SAVE_CFLAGS=$CFLAGS
 CFLAGS="-Werror $CFLAGS"
 AC_TRY_COMPILE(,[
 void monkey() __attribute__((malloc));
-],AC_MSG_RESULT("yes"); CFLAGS="$SAVE_CFLAGS -DMALLOC_OK", AC_MSG_RESULT("no"); CFLAGS="$SAVE_CFLAGS")
+],AC_MSG_RESULT([yes]); AC_DEFINE(MALLOC_ATTRIBUTE_OK, 1, [whether malloc attribute is understood]), AC_MSG_RESULT([no]))
 CFLAGS=$SAVE_CFLAGS 
 
-AC_MSG_CHECKING("whether __builtin_expect is understood")
+dnl builtin_expect is used in module we can't add that in config.h
+AC_MSG_CHECKING([whether __builtin_expect is understood])
 SAVE_CFLAGS=$CFLAGS
 CFLAGS="-Werror $CFLAGS"
 AC_TRY_LINK(,[
 int i;
 if (__builtin_expect(i, 0)) { }
-],AC_MSG_RESULT("yes"); EXTRA_CFLAGS="$EXTRA_CFLAGS -DEXPECT_OK", AC_MSG_RESULT("no");)
+],AC_MSG_RESULT([yes]); EXTRA_CFLAGS="$EXTRA_CFLAGS -DEXPECT_OK", AC_MSG_RESULT([no]);)
 CFLAGS=$SAVE_CFLAGS 
  
 AC_SUBST(EXTRA_CFLAGS)
@@ -227,16 +226,16 @@ fi
 AC_SUBST(extra_includes)
 AC_SUBST(extra_libraries)
 
-AC_CHECK_LIB(popt, poptGetContext,, AC_MSG_ERROR(popt library not found))
-AC_CHECK_LIB(dl, dlopen,, AC_MSG_ERROR(dl library not found))
-AC_CHECK_LIB(iberty, cplus_demangle,, AC_MSG_ERROR(liberty library not found))
-AC_CHECK_LIB(bfd, bfd_openr,, AC_MSG_ERROR(bfd library not found))
+AC_CHECK_LIB(popt, poptGetContext,, AC_MSG_ERROR([popt library not found]))
+AC_CHECK_LIB(dl, dlopen,, AC_MSG_ERROR([dl library not found]))
+AC_CHECK_LIB(iberty, cplus_demangle,, AC_MSG_ERROR([liberty library not found]))
+AC_CHECK_LIB(bfd, bfd_openr,, AC_MSG_ERROR([bfd library not found]))
 
 # C++ tests
  
 AC_LANG_CPLUSPLUS
 
-AC_MSG_CHECKING("popt prototype")
+AC_MSG_CHECKING([popt prototype])
 SAVE_CXXFLAGS=$CXXFLAGS
 CXXFLAGS="-Werror $CXXFLAGS"
 AC_TRY_COMPILE([#include <popt.h>],
@@ -244,10 +243,11 @@ AC_TRY_COMPILE([#include <popt.h>],
 int c; char **v;
 poptGetContext(0, c, v, 0, 0);
 ],
-AC_MSG_RESULT([takes char **]); CXXFLAGS="$SAVE_CXXFLAGS";,
-AC_MSG_RESULT([takes const char **]); CFLAGS="$CFLAGS -DCONST_POPT"; CXXFLAGS="$SAVE_CXXFLAGS -DCONST_POPT")
+AC_MSG_RESULT([takes char **]);,
+AC_MSG_RESULT([takes const char **]); AC_DEFINE(CONST_POPT, 1, [whether popt prototype take a const char **]))
+CXXFLAGS="$SAVE_CXXFLAGS"
 
-AC_MSG_CHECKING("whether to use included sstream")
+AC_MSG_CHECKING([whether to use included sstream])
 AC_TRY_COMPILE([#include <sstream>], [], 
 AC_MSG_RESULT([no]);,
 AC_MSG_RESULT([yes]); CXXINCLUDES="$CXXINCLUDES -I../include")
@@ -258,11 +258,10 @@ AC_CHECK_HEADERS(libiberty.h)
 AC_CHECK_FUNCS(xcalloc)
 
 dnl bfd.h pre 1998 check only for gnu 2.xx series, so gcc 3.0 can't compile it
-AC_MSG_CHECKING("whether bfd defines bool")
+AC_MSG_CHECKING([whether bfd defines bool])
 AC_TRY_COMPILE([#include <bfd.h>], [], 
 AC_MSG_RESULT([no]);,
-AC_MSG_RESULT([yes]); BFD_CXXFLAGS="-DTRUE_FALSE_ALREADY_DEFINED")
-AC_SUBST(BFD_CXXFLAGS)
+AC_MSG_RESULT([yes]); AC_DEFINE(TRUE_FALSE_ALREADY_DEFINED, 1, [whether bfd.h define bool value]))
 
 AC_PATH_XTRA 
 LIBS="$X_PRE_LIBS $LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"

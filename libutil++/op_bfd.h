@@ -12,6 +12,8 @@
 #ifndef OP_BFD_H
 #define OP_BFD_H
 
+#include "config.h"
+
 #include <bfd.h>
 
 #include <vector>

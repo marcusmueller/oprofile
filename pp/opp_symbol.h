@@ -12,6 +12,8 @@
 #ifndef OPP_SYMBOL_H
 #define OPP_SYMBOL_H
 
+#include "config.h"
+
 #include <string>
 #include <vector>
 #include <iostream>

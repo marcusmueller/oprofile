@@ -17,7 +17,7 @@
 
 #include "config.h"
 
-#ifdef MALLOC_OK
+#ifdef MALLOC_ATTRIBUTE_OK
 #define OP_ATTRIB_MALLOC	__attribute__((malloc))
 #else
 #define OP_ATTRIB_MALLOC
