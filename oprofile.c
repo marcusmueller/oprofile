@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.29 2000/08/28 17:09:21 moz Exp $ */
+/* $Id: oprofile.c,v 1.30 2000/08/31 23:06:03 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -574,9 +574,7 @@ void oprof_out8(struct op_sample *ops)
 	if (++data->nextbuf==(data->buf_size-OP_PRE_WATERMARK)) {
 		oprof_ready[0] = 1;
 		wake_up(&oprof_wait);
-	}
-
-	if (data->nextbuf==data->buf_size)
+	} else if (data->nextbuf==data->buf_size)
 		data->nextbuf=0;
 
 	pmc_select_start(0);
