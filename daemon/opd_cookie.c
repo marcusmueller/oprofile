@@ -39,7 +39,7 @@
 #elif defined(__s390__) || defined (__s390x__)
 #define __NR_lookup_dcookie 110
 #elif defined(__arm__)
-#define __NR_lookup_dcookie 249
+#define __NR_lookup_dcookie (__NR_SYSCALL_BASE+249)
 #else
 #error Please define __NR_lookup_dcookie for your architecture
 #endif

@@ -1,5 +1,9 @@
 2004-02-08  Zwane Mwaikambo  <zwane@arm.linux.org.uk>
 
+	* daemon/opd_cookie.c: Fix syscall base number.
+
+2004-02-08  Zwane Mwaikambo  <zwane@arm.linux.org.uk>
+
 	* daemon/opd_cookie.c: arm support for timer interrupt
 
 2004-02-08  Philippe Elie  <phil.el@wanadoo.fr>
