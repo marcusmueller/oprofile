@@ -253,6 +253,16 @@ static samples_odb_t * get_file(struct sfile * sf, struct sfile * last,
 }
 
 
+static void verbose_sample(struct sfile * sf, vma_t pc, uint counter)
+{
+	char const * name = verbose_cookie(sf->cookie);
+	char const * app = verbose_cookie(sf->app_cookie);
+	verbprintf("Sample at 0x%llx(%u): %s(%llx), app %s(%llx), kernel %s\n",
+	           pc, counter, name, sf->cookie, app, sf->app_cookie,
+		   sf->kernel ? sf->kernel->name : "no");
+}
+
+
 static void sfile_log_arc(struct transient const * trans)
 {
 	int err;
@@ -265,14 +275,14 @@ static void sfile_log_arc(struct transient const * trans)
 
 	/* absolute value -> offset */
 	if (trans->current->kernel)
-		to -= trans->current->kernel->start;
+		from -= trans->current->kernel->start;
 
 	if (trans->last->kernel)
-		from -= trans->last->kernel->start;
+		to -= trans->last->kernel->start;
 
 #if 0
 	if (verbose)
-		verbose_sample(sf, pc, counter);
+		verbose_sample(trans->current, to, 0);
 #endif
 
 	if (!file) {
@@ -294,16 +304,6 @@ static void sfile_log_arc(struct transient const * trans)
 		fprintf(stderr, "%s\n", strerror(err));
 		abort();
 	}
-}
-
-
-static void verbose_sample(struct sfile * sf, vma_t pc, uint counter)
-{
-	char const * name = verbose_cookie(sf->cookie);
-	char const * app = verbose_cookie(sf->app_cookie);
-	verbprintf("Sample at 0x%llx(%u): %s(%llx), app %s(%llx), kernel %s\n",
-	           pc, counter, name, sf->cookie, app, sf->app_cookie,
-		   sf->kernel ? sf->kernel->name : "no");
 }
 
 

@@ -80,7 +80,7 @@ int opstack(vector<string> const & non_options)
 
 	report_image_errors(iprofiles);
 
-	cg_container.populate(iprofiles);
+	cg_container.populate(iprofiles, options::extra_found_images);
 
 	dump(cout, cg_container);
 

@@ -1,5 +1,15 @@
 2004-01-28  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* daemon/opd_sfile.c: invert from/to start offset for kernel samples
+
+	* pp/opstack.cpp:
+	* libpp/callgraph_container.h:
+	* libpp/callgraph_container.cpp: if we can't bfd_open a binary and
+	  the sample file show it's a kernel sample file we must ignore
+	  completely the it. (Added to TODO, there is something fragile here)
+
+2004-01-28  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libpp/image_errors.cpp: typo, warn at first error not from second
 
 2004-01-28  Philippe Elie  <phil.el@wanadoo.fr>

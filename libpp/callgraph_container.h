@@ -23,6 +23,7 @@
 #include "symbol_functors.h"
 
 class inverted_profile;
+class extra_images;
 
 /**
  * Yes, this looks like weird since we store callee_counts w/o knowing the
@@ -79,11 +80,13 @@ public:
 	/**
 	 * Populate the container, must be called once only.
 	 * @param iprofiles  sample file list including callgraph files.
+	 * @param extra  extra image list to fixup binary name.
 	 *
 	 * Currently all errors core dump.
 	 * FIXME: consider if this should be a ctor
 	 */
-	void populate(std::list<inverted_profile> const & iprofiles);
+	void populate(std::list<inverted_profile> const & iprofiles,
+		      extra_images const & extra);
 
 	/// These just dispatch to arc_recorder. It's the way client
 	/// code acquires results.
@@ -96,12 +99,14 @@ private:
 	 * Record caller/callee for one cg file
 	 * @param profile  one callgraph file stored in a profile_t
 	 * @param caller_bfd  the caller bfd
+	 * @param bfd_caller_ok  true if we succefully open the binary
 	 * @param callee_bfd  the callee bfd
 	 * @param app_name  the owning application
 	 * @param symbols  the profile_container holding all non cg samples.
 	 */
 	void add(profile_t const & profile, op_bfd const & caller_bfd,
-	         op_bfd const & callee_bfd, std::string const & app_name,
+	         bool bfd_caller_ok, op_bfd const & callee_bfd,
+		 std::string const & app_name,
 	         profile_container const & symbols);
 
 	/// add fake arc <from, NULL> to record leaf symbols.
