@@ -63,6 +63,8 @@ General checks to make
 Later
 -----
  
+ o we should notice an opcontrol config change (--separate etc.) and
+   auto-restart the daemon if necessary (Run)
  o we can add lots more unit tests yet
  o remove 2.2 / gcc 2.91 support ?
  o Itanium event constraints are not implemented
