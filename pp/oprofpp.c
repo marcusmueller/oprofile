@@ -1,6 +1,8 @@
-/* $Id: oprofpp.c,v 1.1 2000/08/03 02:38:29 moz Exp $ */
+/* $Id: oprofpp.c,v 1.2 2000/08/03 03:19:06 moz Exp $ */
 
 #include "oprofpp.h"
+ 
+static char *version = VERSION_STRING; 
  
 static char *samplefile;
 static char *gproffile;

@@ -1,10 +1,10 @@
-/* $Id: oprofiled.c,v 1.4 2000/08/01 21:10:20 moz Exp $ */
+/* $Id: oprofiled.c,v 1.5 2000/08/03 03:19:05 moz Exp $ */
 
 #include "oprofiled.h"
 
 extern struct opd_footer footer;
  
-static char *version="oprofiled 0.0.1";
+static char *version=VERSION_STRING;
  
 static u8 ctr0_type_val;
 static u8 ctr1_type_val;

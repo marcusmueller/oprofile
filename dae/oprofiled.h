@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.5 2000/08/01 23:00:17 moz Exp $ */
+/* $Id: oprofiled.h,v 1.6 2000/08/03 03:19:05 moz Exp $ */
 
 #ifndef OPROFILED_H
 #define OPROFILED_H
@@ -24,6 +24,7 @@
 #include <sys/mman.h> 
 
 #include "opd_util.h"
+#include "../version.h" 
  
 /* various defines */
  

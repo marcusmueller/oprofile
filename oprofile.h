@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.6 2000/08/03 02:39:52 moz Exp $ */
+/* $Id: oprofile.h,v 1.7 2000/08/03 03:19:03 moz Exp $ */
 
 #include <linux/config.h> 
 #include <linux/kernel.h>
@@ -10,6 +10,8 @@
  
 #include <asm/smplock.h> 
 #include <asm/apic.h>
+ 
+#include "version.h"
  
 #define uint uint 
 #define ulong ulong

@@ -1,10 +1,10 @@
-/* $Id: oprofile.c,v 1.10 2000/08/02 21:40:11 moz Exp $ */
+/* $Id: oprofile.c,v 1.11 2000/08/03 03:19:03 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
  
 #include "oprofile.h" 
  
-static char *op_version = "oprofile 0.0.1";
+static char *op_version = VERSION_STRING;
 MODULE_AUTHOR("John Levon (moz@compsoc.man.ac.uk)");
 MODULE_DESCRIPTION("Continuous Profiling Module");
 MODULE_PARM(op_hash_size,"i");
