@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.5 2000/08/04 02:14:46 moz Exp $ */ 
+/* $Id: op_events.c,v 1.6 2000/11/13 01:13:35 moz Exp $ */ 
 
 /* Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren */
 
@@ -353,10 +353,10 @@ struct op_unit_desc {
  
 static struct op_unit_desc op_unit_descs[] = {
 	{ { NULL, NULL, NULL, NULL, NULL, NULL, }, },
-	{ { "I cache state",
-	  "S cache state",
-	  "E cache state",
-	  "M cache state",
+	{ { "(I)nvalid cache state",
+	  "(S)hared cache state",
+	  "(E)xclusive cache state",
+	  "(M)odified cache state",
 	  "MESI cache state", NULL, }, },
 	{ { "self-generated transactions", 
 	  "any transactions", NULL, NULL, NULL, NULL, }, },
