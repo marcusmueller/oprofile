@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.3 2000/08/03 21:00:15 moz Exp $ */
+/* $Id: oprofpp.c,v 1.4 2000/08/03 21:25:01 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -33,6 +33,15 @@ static struct poptOption options[] = {
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
 
+/**
+ * get_options - process command line
+ * @argc: program arg count
+ * @argv: program arg array
+ *
+ * Process the arguments, fatally complaining on
+ * error. samplefile is guaranteed to have some
+ * non-NULL value after this function.
+ */
 static void get_options(int argc, char *argv[])
 {
 	poptContext optcon;
@@ -99,6 +108,21 @@ void printf_symbol(const char *name)
 	printf("%s",name);
 }
 
+/**
+ * open_image_file - open associated binary image
+ * @mangled: name of samples file
+ *
+ * This function will open and process the binary
+ * image associated with the samples file @mangled.
+ * @mangled may be a relative or absolute pathname.
+ *
+ * Failure to open the image is fatal. This function
+ * returns a pointer to the bfd descriptor for the
+ * image.
+ *
+ * The global struct footer must be valid. sect_offset
+ * will be set as appropriate.
+ */
 bfd *open_image_file(char *mangled)
 {
 	char *c = &mangled[strlen(mangled)];
@@ -149,6 +173,14 @@ bfd *open_image_file(char *mangled)
 	return ibfd; 
 }
 
+/**
+ * sym_offset - return offset from a symbol's start
+ * @sym: symbol
+ * @num: number of fentry
+ *
+ * Returns the offset of a sample at position @num
+ * in the samples file from the start of symbol @sym.
+ */
 u32 sym_offset(asymbol *sym, u32 num)
 {
 	if (num - sect_offset > num) {
@@ -176,6 +208,16 @@ int symcomp(const void *a, const void *b)
 	return ((*sa)->value>(*sb)->value);
 }
  
+/**
+ * get_symbols - get symbols from bfd
+ * @ibfd: bfd to read from
+ * @symsp: pointer to array of symbol pointers
+ *
+ * Parse and sort in ascending order all symbols
+ * in the file pointed to by @ibfd. Returns the number
+ * of symbols found. @symsp will be set to point
+ * to the symbol pointer array.
+ */
 uint get_symbols(bfd *ibfd, asymbol ***symsp)
 {
 	uint nr_syms;
@@ -202,6 +244,18 @@ uint get_symbols(bfd *ibfd, asymbol ***symsp)
 	return nr_syms;
 }
  
+/**
+ * get_symbol_range - get range of symbol
+ * @sym: symbol
+ * @next: next symbol
+ * @start: pointer to start var
+ * @end: pointer to end var
+ *
+ * Calculates the range of sample file entries covered
+ * by @sym. @start and @end will be filled in appropriately.
+ * If @next is %NULL, all entries up to the end of the sample
+ * file will be used.
+ */
 void get_symbol_range(asymbol *sym, asymbol *next, u32 *start, u32 *end)
 {
 	/* offset from section */ 
@@ -243,6 +297,12 @@ int countcomp(const void *a, const void *b)
 	} 
 }
  
+/**
+ * do_list_symbols - list symbol samples for an image
+ *
+ * Lists all the symbols from the image specified by samplefile,
+ * in decreasing sample count order, to standard out.
+ */
 void do_list_symbols(void)
 {	
 	bfd *ibfd; 
@@ -291,6 +351,12 @@ void do_list_symbols(void)
 	bfd_close(ibfd);
 }
  
+/**
+ * do_list_symbol - list detailed samples for a symbol
+ *
+ * Lists all the samples for the symbol specified by symbol, from the image 
+ * specified by @samplefile, in decreasing sample count order, to standard out.
+ */
 void do_list_symbol(void)
 {
 	bfd *ibfd;
@@ -336,6 +402,12 @@ struct gmon_hdr {
 	u32 spare[3];
 };
  
+/**
+ * do_dump_gprof - produce gprof sample output
+ *
+ * Dump gprof-format samples for the image specified by samplefile to
+ * the file specified by gproffile.
+ */
 void do_dump_gprof(void)
 {
 	static struct gmon_hdr hdr = { "gmon", GMON_VERSION, {0,0,0,},}; 
