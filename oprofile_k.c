@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.23 2000/08/28 17:09:21 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.24 2000/08/30 20:22:53 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -314,7 +314,7 @@ inline static uint name_hash(const char *name, uint len)
 	return hash % OP_HASH_MAP_NR;
 }
 
-#define hash_access(hash) (hash_map[hash*OP_HASH_LINE])
+#define hash_access(hash) (&hash_map[hash*OP_HASH_LINE])
 
 /* called with map_lock, VFS locks as below */
 static int output_path_hash(const char *name, uint len)
@@ -330,12 +330,12 @@ static int output_path_hash(const char *name, uint len)
 
 	hash = firsthash = name_hash(name,len);
 	do {
-		if (!hash_access(hash)) {
-			strncpy(&hash_access(hash), name, len);
+		if (!*hash_access(hash)) {
+			strncpy(hash_access(hash), name, len);
 			return hash;
 		}
 
-		if (!strcmp(&hash_access(hash),name))
+		if (!strcmp(hash_access(hash),name))
 			return hash;
 
 		hash = (hash+probe) % OP_HASH_MAP_NR;

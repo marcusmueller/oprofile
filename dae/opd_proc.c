@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.24 2000/08/30 20:21:41 moz Exp $ */
+/* $Id: opd_proc.c,v 1.25 2000/08/30 20:22:54 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -972,7 +972,7 @@ struct op_mapping {
 	u32 num;
 } __attribute__((__packed__));
 
-#define hash_access(hash) (hashmap[hash*OP_HASH_LINE])
+#define hash_access(hash) (&hashmap[hash*OP_HASH_LINE])
 
 /**
  * opd_handle_mapping - deal with mapping notification
@@ -1041,14 +1041,14 @@ void opd_handle_mapping(const struct op_sample *sample)
 				return;
 			}
 
-			if (strlen(&hash_access(hash))+1+strlen(c) >= PATH_MAX) {
+			if (strlen(hash_access(hash))+1+strlen(c) >= PATH_MAX) {
 				fprintf(stderr,"String \"%s\" too large.\n",file);
 				exit(1);
 			}
 
-			c -= strlen(&hash_access(hash))+1;
+			c -= strlen(hash_access(hash))+1;
 			strncpy(c,"/",1);
-			strncpy(c+1,&hash_access(hash),strlen(&hash_access(hash)));
+			strncpy(c+1,hash_access(hash),strlen(hash_access(hash)));
 		}
 
 		printf("Mapping from 0x%x, size 0x%x, offset 0x%x, of file $%s$\n",
