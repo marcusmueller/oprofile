@@ -611,7 +611,11 @@ void opd_process_samples(char const * buffer, size_t count)
 		.tgid = -1
 	};
 
-	uint64_t code;
+	/* FIXME: was uint64_t but it can't compile on alpha where uint64_t
+	 * is an unsigned long and below the printf("..." %llu\n", code)
+	 * generate a warning, this look like a stopper to use c98 types :/
+	 */
+	unsigned long long code;
 
 	printf("Reading sample buffer.\n");
 

@@ -1,3 +1,9 @@
+2003-07-05  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_image.c:
+	* libdb/db_insert.c: 64 bits arch compile fix, thanks to Falk Hueffner
+	 <falk@debian.org>
+
 2003-07-02  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opreport.cpp: honor options::show_header

@@ -18,7 +18,7 @@
 
 int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value)
 {
-	size_t index;
+	odb_index_t index;
 	odb_index_t new_node;
 	odb_node_t * node;
 
