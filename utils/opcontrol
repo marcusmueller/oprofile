@@ -182,12 +182,6 @@ do_init() {
 	SEPARATE_KERNEL_SAMPLES=0
 	KERNEL_ONLY=0 # 2.2/2.4 kernel
 
-	# binaries called
-	OP_HELP=`dirname $0`/op_help
-	if test ! -f "$OP_HELP"; then
-		OP_HELP=op_help
-	fi
-
 	OPROFILED=`dirname $0`/oprofiled
 	if test ! -f "$OPROFILED"; then
 		OPROFILED=oprofiled
@@ -449,6 +443,31 @@ validate_separate_args() {
 }
 
 
+# early check for --version, --help
+check_version_help() {
+
+	OP_HELP=`dirname $0`/op_help
+	if test ! -f "$OP_HELP"; then
+		OP_HELP=op_help
+	fi
+
+	for i in $@; do
+		case "$i" in
+			--help)
+				do_help
+				exit 0
+				;;
+
+			--version)
+				$OP_HELP --version | cut -d' ' -f2-
+				exit 0
+				;;
+ 
+		esac
+	done
+}
+
+
 # get and check specified options
 do_options() {
 
@@ -668,16 +687,7 @@ do_options() {
 			--verbose)
 				VERBOSE=1
 				;;
-			--help)
-				do_help
-				exit 0
-				;;
 
-			--version)
-				$OP_HELP --version | awk -F: '{print $2}'
-				exit 0
-				;;
- 
 			--list-events)
 				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
 				EXCLUSIVE_ARGV="$arg"
@@ -1132,6 +1142,8 @@ do_operations() {
 }
  
 # main
+
+check_version_help $@
 
 if [ "$UID" != "0" ]; then
 	echo "Must be root to use oprofile." >&2

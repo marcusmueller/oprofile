@@ -1,5 +1,9 @@
 2003-03-04  John Levon  <levon@movementarian.org>
 
+	* utils/opcontrol: allow --version, --help early on
+
+2003-03-04  John Levon  <levon@movementarian.org>
+
 	* libop/op_events.c: alter the parser to give file/linenr on
 	  error, and handle more whitespace.
 
