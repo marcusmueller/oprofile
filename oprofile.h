@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.8 2000/08/07 03:57:44 moz Exp $ */
+/* $Id: oprofile.h,v 1.9 2000/08/18 00:31:39 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -64,15 +64,17 @@ struct _oprof_data {
 /* exit() */
 #define OP_EXIT ((1U<<15)|(1U<<4))
 
-struct op_map {
-	u32 addr;
-	u32 len;
-	u32 offset;
-	char path[4];
-} __attribute__((__packed__,__aligned__(16)));
+/* size of map buffer in u32 */
+#define OP_MAX_MAP_BUF 32768
 
-/* size of map buffer: 8K */
-#define OP_MAX_MAP_BUF 512
+/* nr. entries in hash map, prime */
+#define OP_HASH_MAP_NR 1023
+
+/* size of hash map entries */
+#define OP_HASH_LINE 128
+
+/* size of hash map in bytes */
+#define OP_HASH_MAP_SIZE OP_HASH_LINE*OP_HASH_MAP_NR
 
 /* maximal value before eviction */
 #define OP_MAX_COUNT ((1U<<(16U-OP_BITS))-1U)
@@ -106,6 +108,9 @@ void my_set_fixmap(void);
 int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc, u8 *ctr0_t, u8 *ctr1_t);
 void op_intercept_syscalls(void);
 void op_replace_syscalls(void);
+int oprof_hash_map_open(void);
+int oprof_hash_map_release(void);
+int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma);
 int oprof_map_open(void);
 int oprof_map_release(void);
 int oprof_map_read(char *buf, size_t count, loff_t *ppos);
