@@ -47,6 +47,7 @@ double op_cpu_frequency(void)
 		/* sparc64 if CONFIG_SMP only */
 		if (sscanf(line, "Cpu0ClkTck : %lx", &uval) == 1)
 			return uval / 1E6;
+		/* s390 doesn't provide cpu freq, checked up to 2.6-test4 */
 
 		free(line);
 	}

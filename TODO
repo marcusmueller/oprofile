@@ -69,8 +69,6 @@ Before 1.0 little stuff
    complete_dump !) by closing sample files
  o remove 2.2 / gcc 2.91 support ?
  o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
- o gcc-cvs -include stdc++ doesn't use precompiled header, when it'll work
-  we can remove pch-c++.h from cvs
  o sample-file: / binary: don't work in any useful way - can we fix this
    by peeking at binary: value and faking the split_sample_file somehow ?
 

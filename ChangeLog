@@ -1,3 +1,15 @@
+2003-10-02  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_events.c: revert last commit (allowed to find events files
+	  description directory in alternate directory)
+
+	* libop/tests/Makefile.am:
+	* libop/tests/load_events_files_tests.c: new files. Validate events
+	  description file by loading them.
+
+	* libutil/op_cpufreq.c: comment why we don't have any code handling
+	  s390
+
 2003-10-01  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* configure.in:

@@ -375,19 +375,12 @@ static void load_events(op_cpu cpu_type)
 	char * event_dir;
 	char * event_file;
 	char * um_file;
-	char * dir;
 
 	if (!list_empty(&events_list))
 		return;
 
-	dir = getenv("OPROFILE_EVENTS_FILE_DIR");
-	if (dir == NULL)
-		dir = OP_DATADIR;
-
-	event_dir = xmalloc(strlen(dir) + strlen("/") + strlen(cpu_name) +
-                            strlen("/") + 1);
-	strcpy(event_dir, dir);
-	strcat(event_dir, "/");
+	event_dir = xmalloc(strlen(OP_DATADIR) + strlen(cpu_name) + strlen("/") + 1);
+	strcpy(event_dir, OP_DATADIR);
 	strcat(event_dir, cpu_name);
 	strcat(event_dir, "/");
 
