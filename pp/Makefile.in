@@ -2,14 +2,14 @@ include ../make.common
 
 CXXFLAGS += @BFD_CXXFLAGS@
 
-OPROFPP_SOURCES=samples_container.cpp sample_container_imp.cpp symbol_container_imp.cpp \
+OPROFPP_SOURCES=counter_array.cpp samples_container.cpp sample_container_imp.cpp symbol_container_imp.cpp \
 	oprofpp.cpp oprofpp_options.cpp oprofpp_util.cpp opp_symbol.cpp op_bfd.cpp samples_file.cpp
 OP_TO_SOURCE_SOURCES=op_to_source_options.cpp op_to_source.cpp op_bfd.cpp samples_file.cpp
 OP_TIME_SOURCES=op_time_options.cpp op_time.cpp op_bfd.cpp samples_file.cpp
 OP_MERGE_SOURCES=op_merge.cpp op_bfd.cpp samples_file.cpp
 SOURCES=$(OPROFPP_SOURCES) $(OP_TO_SOURCE_SOURCES) $(OP_TIME_SOURCES) $(OP_MERGE_SOURCES)
 
-COMMON_OBJECTS=samples_container.o sample_container_imp.o symbol_container_imp.o \
+COMMON_OBJECTS=counter_array.o samples_container.o sample_container_imp.o symbol_container_imp.o \
 	oprofpp_util.o op_bfd.o samples_file.o
 OPROFPP_OBJECTS=oprofpp_options.o oprofpp.o opp_symbol.o $(COMMON_OBJECTS)
 OP_TO_SOURCE_OBJECTS=op_to_source_options.o op_to_source.o $(COMMON_OBJECTS)

@@ -17,6 +17,8 @@
  
 using std::ostream;
 using std::endl;
+using std::hex;
+using std::dec;
 using std::setw;
 using std::setfill;
 

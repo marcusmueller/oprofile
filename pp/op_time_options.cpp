@@ -22,6 +22,7 @@
 using std::string;
 using std::vector;
 using std::list;
+using std::cerr;
  
 namespace options {
 	bool verbose;

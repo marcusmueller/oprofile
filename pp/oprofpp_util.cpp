@@ -242,20 +242,6 @@ uint counter_mask(string const & str)
 	return mask;
 }
 
-counter_array_t::counter_array_t()
-{
-	for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i)
-		value[i] = 0;
-}
-
-counter_array_t & counter_array_t::operator+=(counter_array_t const & rhs)
-{
-	for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i)
-		value[i] += rhs.value[i];
-
-	return *this;
-}
-
 
 void check_mtime(opp_samples_files const & samples, string image_name)
 {

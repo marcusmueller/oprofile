@@ -102,7 +102,7 @@ string const get_options(int argc, char const **argv)
 			OutputSymbol::ParseOutputOption(output_format);
 
 		if (fl == osf_none) {
-			cerr << "oprofpp: invalid --output-format flags.\n";
+			std::cerr << "oprofpp: invalid --output-format flags.\n";
 			OutputSymbol::ShowHelp();
 			exit(EXIT_FAILURE);
 		}

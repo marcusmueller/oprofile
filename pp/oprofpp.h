@@ -120,30 +120,4 @@ uint counter_mask(std::string const &);
  */
 void check_mtime(opp_samples_files const & samples, std::string image_name);
 
-//---------------------------------------------------------------------------
-/** A simple container of counter. Can hold OP_MAX_COUNTERS counters */
-class counter_array_t {
-public:
-	/** counter_array_t ctor, all counter are initialized to zero */
-	counter_array_t();
-
-	/** subscript operator indexed by a counter_nr, no bound check
-	 * is performed. */
-	u32 operator[](size_t counter_nr) const {
-		return value[counter_nr];
-	}
-
-	/** subscript operator indexed by a counter_nr, no bound check
-	 * is performed. */
-	u32 & operator[](size_t counter_nr) {
-		return value[counter_nr];
-	}
-
-	/** vectorised += operator */
-	counter_array_t & operator+=(counter_array_t const & rhs);
-
-private:
-	u32 value[OP_MAX_COUNTERS];
-};
-
 #endif /* OPROFPP_H */

@@ -20,6 +20,8 @@
 #include "op_events_desc.h"
 #include "op_print_event.h"
 
+#include "counter_array.h"
+ 
 using std::string;
 using std::cout;
 using std::endl;

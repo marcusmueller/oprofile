@@ -12,6 +12,8 @@
 #include "op_to_source_options.h"
 #include "popt_options.h"
 
+#include <iostream>
+ 
 using std::vector;
 using std::string;
 using std::cerr;

@@ -1,5 +1,21 @@
 2002-06-04  John Levon  <moz@compsoc.man.ac.uk>
 
+	* libop++/op_print_event.cpp:
+	* pp/op_bfd.h: 
+	* pp/op_time_options.cpp: 
+	* pp/op_to_source_options.cpp: 
+	* pp/oprofpp_options.cpp: fixes for std
+ 
+	* pp/Makefile.in:
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp:
+	* pp/samples_file.cpp:
+	* pp/opp_symbol.h:
+	* pp/counter_array.h:
+	* pp/counter_array.cpp: factor out counter_array
+ 
+2002-06-04  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/oprofpp.h:
 	* pp/samples_file.cpp:
 	* pp/oprofpp_util.cpp: remove a sanity check
