@@ -1,3 +1,9 @@
+2003-11-03  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/tests/Makefile.am:
+	* libutil++/tests/utility_tests.cpp: new test files convering most of
+	  utility.h and op_exception.h
+
 2003-11-02  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/parse_filename.cpp: avoid repetitive vector::erase(v.begin())

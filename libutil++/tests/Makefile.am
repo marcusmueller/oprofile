@@ -11,7 +11,8 @@ check_PROGRAMS = \
 	comma_list_tests \
 	file_manip_tests \
 	glob_filter_tests \
-	path_filter_tests
+	path_filter_tests \
+	utility_tests
 
 string_manip_tests_SOURCES = string_manip_tests.cpp
 string_manip_tests_LDADD = ${COMMON_LIBS}
@@ -30,5 +31,8 @@ comma_list_tests_LDADD = ${COMMON_LIBS}
 
 file_manip_tests_SOURCES = file_manip_tests.cpp
 file_manip_tests_LDADD = ${COMMON_LIBS}
+
+utility_tests_SOURCES = utility_tests.cpp
+utility_tests_LDADD = ${COMMON_LIBS}
 
 TESTS = ${check_PROGRAMS}
