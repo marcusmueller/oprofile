@@ -1,5 +1,17 @@
 2003-07-26  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* gui/oprof_start.cpp: fix for 2.91.66
+
+	* libpp/profile.cpp: typo invoking an undefined behavior revealed
+	  by gcc stl debug mode
+	* libpp/profile.h: ensure we provide the right typedef to std::
+	  for profile::const_iterator revealed by gcc stl debug mode at compile
+	  time. The implementation is a bit tricky to work with old compiler
+	* libpp/symbol_sort.cpp: compare must define a weak ordered relation
+	  order, revealed by gcc stl debug mode.
+
+2003-07-26  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* gui/ui/oprof_start.base.ui:
 	* gui/oprof_start.h:
 	* gui/oprof_start.cpp: change UI to use the new counter allocation

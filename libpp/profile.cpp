@@ -108,7 +108,7 @@ profile_t::samples_range(unsigned int start, unsigned int end) const
 	ordered_samples_t::const_iterator first = 
 		ordered_samples.lower_bound(start);
 	ordered_samples_t::const_iterator last =
-		last = ordered_samples.lower_bound(end);
+		ordered_samples.lower_bound(end);
 
 	return make_pair(const_iterator(first, start_offset),
 		const_iterator(last, start_offset));

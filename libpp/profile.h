@@ -15,6 +15,7 @@
 
 #include <string>
 #include <map>
+#include <iterator>
 
 #include "odb_hash.h"
 #include "op_types.h"
@@ -97,7 +98,25 @@ private:
 	u32 start_offset;
 };
 
-class profile_t::const_iterator {
+
+// It will be easier to derive profile_t::const_iterator from
+// std::iterator<std::input_iterator_tag, unsigned int> but this doesn't
+// work for gcc <= 2.95 so we provide the neccessary typedef in the hard way.
+// See ISO C++ 17.4.3.1 § 1 and 14.7.3 § 9.
+namespace std {
+	template <>
+		struct iterator_traits<profile_t::const_iterator> {
+			typedef ptrdiff_t difference_type;
+			typedef unsigned int value_type;
+			typedef unsigned int* pointer;
+			typedef unsigned int& reference;
+			typedef input_iterator_tag iterator_category;
+		};
+}
+
+
+class profile_t::const_iterator
+{
 	typedef ordered_samples_t::const_iterator iterator_t;
 public:
 	const_iterator() : start_offset(0) {}

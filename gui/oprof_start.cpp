@@ -804,10 +804,12 @@ void oprof_start::on_start_profiler()
 		if (!cur->isSelected())
 			continue;
 
-		event_setting & cfg = event_cfgs[cur->text(0).latin1()];
-
-		op_event_descr const & descr =
+		// the missing reference is intended: gcc 2.91.66 can compile
+		// "op_event_descr const & descr = ..." w/o a warning
+		op_event_descr const descr =
 			locate_event(cur->text(0).latin1());
+
+		event_setting & cfg = event_cfgs[cur->text(0).latin1()];
 
 		one_enable = true;
 

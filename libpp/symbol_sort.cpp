@@ -113,7 +113,7 @@ bool symbol_compare::operator()(symbol_entry const * lhs,
 		if (ret != 0)
 			return ret < 0;
 	}
-	return true;
+	return false;
 }
 
 } // anonymous namespace
