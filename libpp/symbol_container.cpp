@@ -14,8 +14,6 @@
 #include <set>
 #include <vector>
 
-#include "symbol_functors.h"
-#include "profile_container.h"
 #include "symbol_container.h"
 
 using namespace std;

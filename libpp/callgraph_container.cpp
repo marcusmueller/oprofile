@@ -19,9 +19,10 @@
 #include <iostream>
 #include <numeric>
 
+#include "callgraph_container.h"
 #include "cverb.h"
 #include "parse_filename.h"
-#include "callgraph_container.h"
+#include "profile_container.h"
 #include "arrange_profiles.h" 
 #include "populate.h"
 #include "string_filter.h"

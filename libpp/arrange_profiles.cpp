@@ -395,8 +395,8 @@ profile_class & find_class(set<profile_class> & classes,
 
 /**
  * Sanity check : we can't overwrite sample_filename, if we abort here it means
- * we fail to detect than parsed sample filename for two distinct samples
- * filename must go in two disctinct profile_sample_files. This assumption is
+ * we fail to detect that parsed sample filename for two distinct samples
+ * filename must go in two distinct profile_sample_files. This assumption is
  * false for callgraph samples files so this function is only called for non cg
  * files.
  */

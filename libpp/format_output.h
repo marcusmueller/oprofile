@@ -20,16 +20,16 @@
 
 #include "format_flags.h"
 #include "symbol.h"
-#include "profile_container.h"
 
 class symbol_entry;
 class sample_entry;
 class callgraph_container;
+class profile_container;
 class cg_symbol;
 
 namespace format_output {
 
-/// base class for formater, handle common options to formater
+/// base class for formatter, handle common options to formatter
 class formatter {
 public:
 	formatter();
@@ -71,7 +71,7 @@ protected:
 	bool vma_64;
 	/// false if we use basename(filename) in output rather filename
 	bool long_filenames;
-	/// true if we need to show header before the before the first output
+	/// true if we need to show header before the first output
 	bool need_header;
 };
  

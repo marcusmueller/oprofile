@@ -1,3 +1,17 @@
+2005-03-29  John Levon  <levon@movementarian.org>
+
+	* libpp/callgraph_container.h:
+	* libpp/callgraph_container.cpp:
+	* libpp/format_output.h:
+	* libpp/format_output.cpp:
+	* libpp/profile_container.h:
+	* libpp/symbol.h:
+	* libpp/symbol_sort.h:
+	* libpp/symbol_sort.cpp:
+	* libpp/symbol_container.h:
+	* libpp/symbol_container.cpp:
+	* pp/opreport_options.h: header file cleanup
+
 2005-03-26  John Levon  <levon@movementarian.org>
 
 	* Makefile.am:

@@ -12,12 +12,10 @@
 #ifndef SYMBOL_SORT_H
 #define SYMBOL_SORT_H
 
-#include "profile_container.h"
+#include "symbol.h"
 
 #include <vector>
 #include <string>
-
-class symbol_entry;
 
 struct sort_options {
 	enum sort_order {

@@ -15,7 +15,8 @@
 #include <string>
 #include <set>
 
-#include "profile_container.h"
+#include "symbol.h"
+#include "symbol_functors.h"
 
 /**
  * An arbitrary container of symbols. Supports lookup

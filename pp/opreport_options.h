@@ -17,6 +17,7 @@
 #include <iosfwd>
 
 #include "common_option.h"
+#include "string_filter.h"
 #include "symbol_sort.h"
 
 class profile_classes;

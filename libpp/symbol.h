@@ -74,4 +74,7 @@ struct symbol_entry {
 	column_flags output_hint(column_flags fl) const;
 };
 
+/// a collection of sorted symbols
+typedef std::vector<symbol_entry const *> symbol_collection;
+
 #endif /* !SYMBOL_H */

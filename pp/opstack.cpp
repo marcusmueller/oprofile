@@ -71,7 +71,7 @@ int opstack(vector<string> const & non_options)
 	cg_container.populate(options::archive_path, iprofiles,
 		options::extra_found_images,
 		options::debug_info, options::threshold,
-			      options::merge_by.lib);
+		options::merge_by.lib);
 
 	column_flags output_hints = cg_container.output_hint();
 

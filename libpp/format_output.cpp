@@ -15,9 +15,8 @@
 #include "string_manip.h"
 
 #include "format_output.h"
+#include "profile_container.h"
 #include "callgraph_container.h"
-#include "sample_container.h"
-#include "symbol.h"
 
 using namespace std;
 

@@ -26,10 +26,6 @@ class string_filter;
 class symbol_entry;
 class sample_entry;
 
-/// a collection of sorted symbols
-typedef std::vector<symbol_entry const *> symbol_collection;
-
-
 /**
  * Store multiple samples files belonging to the same profiling session.
  * This is the main container capable of holding the profiles for arbitrary
@@ -156,10 +152,10 @@ private:
 	std::string create_artificial_symbol(op_bfd const & abfd, u32 start,
 	                                     u32 & end, size_t & order);
 
-	/// The symbols collected by oprofpp sorted by increased vma, provide
+	/// The symbols collected by pp tools sorted by increased vma, provide
 	/// also a sort order on samples count for each profile class
 	scoped_ptr<symbol_container> symbols;
-	/// The samples count collected by oprofpp sorted by increased vma,
+	/// The samples count collected by pp tools sorted by increased vma,
 	/// provide also a sort order on (filename, linenr)
 	scoped_ptr<sample_container> samples;
 	/// build() must count samples count for each profile class so cache it

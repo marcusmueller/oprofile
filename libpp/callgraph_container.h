@@ -17,15 +17,15 @@
 #include <list>
 #include <string>
 
-#include "bfd.h"
-#include "profile_container.h"
 #include "symbol.h"
 #include "symbol_functors.h"
-#include "format_flags.h"
 
+class profile_container;
 class inverted_profile;
+class profile_t;
 class extra_images;
 class image_set;
+class op_bfd;
 
 /**
  * Yes, this looks like weird since we store callee_counts w/o knowing the
@@ -60,7 +60,7 @@ public:
 	 * @param totals  cumulated counts of leaf node
 	 *
 	 * Finalize the recording after all arcs have been added to propagate
-	 * callee counts then remove all leaf node not statisfying threshold
+	 * callee counts, then remove all leaf nodes not satisfying threshold
 	 * and propagate the removed node to parent arc.
 	 */
 	void fixup_callee_counts(double threshold, count_array_t & totals);
@@ -81,7 +81,7 @@ private:
 	 * @param totals  cumulated counts of leaf node..
 	 *
 	 * return a vector of iterator to the caller_callee object leaf node
-	 * *not* statisfying the give threshold, totals counts is updated
+	 * *not* satisfying the give threshold, totals counts is updated
 	 * in prevision of the removal of these nodes
 	 */
 	std::vector<map_t::iterator> select_leaf(double percent,

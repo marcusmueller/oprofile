@@ -116,7 +116,6 @@ Later
   cg on it) and  used to emulate the call count field in gprof. I think this is
   a after 1.0 thing but event aliases must be specified in a way allowing such
   extension
- o oparchive could do with an --exclude-dependent option
  o do we need an opreport like opstack (showing caller/callee at binary
   boundary not symbols) ?
  o we should notice an opcontrol config change (--separate etc.) and
