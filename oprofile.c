@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.26 2000/08/26 23:42:03 moz Exp $ */
+/* $Id: oprofile.c,v 1.27 2000/08/27 04:12:06 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -104,7 +104,7 @@ inline static void op_do_profile(struct _oprof_data *data, struct pt_regs *regs,
 	uint h = op_hash(regs->eip,current->pid,ctr);
 	uint i;
 
-	/* FIXME: can we remove new sample check by pretending to be full ? */ 
+	/* FIXME: can we remove new sample check by pretending to be full ? */
 	for (i=0; i < OP_NR_ENTRY; i++) {
 		if (!op_miss(data->entries[h].samples[i])) {
 			data->entries[h].samples[i].count++;
@@ -567,6 +567,9 @@ void oprof_out8(struct op_sample *ops)
 
 static int oprof_open(struct inode *ino, struct file *file)
 {
+	if (!capable(CAP_SYS_PTRACE))
+		return -EPERM;
+
 	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
 		case 2: return oprof_map_open();
 		case 1: return oprof_hash_map_open();
