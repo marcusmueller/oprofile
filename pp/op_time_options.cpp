@@ -9,7 +9,6 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
-#include "oprofpp.h"
 #include "opp_symbol.h"
 #include "op_time_options.h"
 #include "op_config.h"
@@ -24,6 +23,7 @@ using std::string;
 using std::vector;
 using std::list;
 using std::cerr;
+using std::endl;
  
 namespace options {
 	string session;
@@ -151,12 +151,14 @@ void get_options(int argc, char const * argv[])
 		output_format = "hvspni";
 	} else {
 		if (!list_symbols) {
-			quit_error("op_time: --output-format can be used only with --list-symbols.\n");
+			cerr << "op_time: --output-format can be used only with --list-symbols." << endl;
+			exit(EXIT_FAILURE);
 		}
 	}
 
 	if (exclude_symbols.size() && !list_symbols) {
-		quit_error("op_time: --exclude-symbol can be used only with --list-symbols.\n");
+		cerr << "op_time: --exclude-symbol can be used only with --list-symbols." << endl;
+		exit(EXIT_FAILURE);
 	}
 
 	if (list_symbols) {

@@ -8,20 +8,24 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
  
-#include "oprofpp_options.h"
 #include "popt_options.h"
-#include "oprofpp.h"
-#include "opp_symbol.h"
- 
 #include "verbose_ostream.h"
+ 
+#include "oprofpp_options.h"
+#include "opp_symbol.h"
+#include "counter_util.h"
+ 
+#include <sstream>
  
 using std::string;
 using std::vector;
+using std::cerr;
+using std::endl;
 using std::ostream;
 using namespace options;
  
 namespace options {
-	string ctr_str;
+	int counter_mask;
 	int sort_by_counter = -1;
 	string gprof_file;
 	string symbol;
@@ -40,15 +44,14 @@ namespace options {
 namespace {
  
 bool verbose;
-
 string output_format;
+string counter_str;
  
 option options_array[] = {
 	option(options::sample_file, "samples-file", 'f', "image sample file", "file"),
 	option(options::image_file, "image-file", 'i', "image file", "file"),
 	option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names"),
 	option(options::exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name"),
-	option(options::ctr_str, "counter", 'c', "which counter to display", "counter number[,counter nr]"),
 	option(options::sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr"),
 	option(options::gprof_file, "dump-gprof-file", 'g', "dump gprof format file", "file"),
 	option(options::symbol, "list-symbol", 's', "give detailed samples for a symbol", "symbol"),
@@ -57,9 +60,20 @@ option options_array[] = {
 	option(options::reverse_sort, "reverse", 'r', "reverse sort order"),
 	option(options::show_shared_libs, "show-shared-libs", 'k', "show details for shared libraries"),
 	option(options::list_all_symbols_details, "list-all-symbols-details", 'L', "list samples for all symbols"),
+	option(counter_str, "counter", 'c', "which counter to display", "counter number[,counter nr]"),
 	option(output_format, "output-format", 't', "choose the output format", "output-format strings"),
 	option(verbose, "verbose", 'V', "verbose output"),
 };
+ 
+/**
+ * quit_error - quit with error
+ * @param err error to show
+ */
+void quit_error(string const & err)
+{
+	cerr << err; 
+	exit(EXIT_FAILURE);
+}
  
 } // namespace anon
  
@@ -72,6 +86,8 @@ string const get_options(int argc, char const **argv)
 	
 	parse_options(argc, argv, arg);
 
+	counter_mask = parse_counter_mask(counter_str);
+ 
 	if (!verbose)
 		cverb.go_silent();
  

@@ -33,17 +33,19 @@ using std::dec;
 using std::ostringstream;
 
 #include "samples_container.h"
-#include "oprofpp.h"
+#include "samples_file.h"
 #include "demangle_symbol.h"
 #include "derive_files.h"
+#include "counter_util.h"
+#include "op_sample_file.h"
+#include "op_print_event.h"
+#include "op_events_desc.h"
+#include "op_to_source_options.h"
 
 #include "child_reader.h"
 #include "string_manip.h"
 #include "file_manip.h"
 #include "filename_match.h"
-#include "op_print_event.h"
-#include "op_events_desc.h"
-#include "op_to_source_options.h"
 
 #include "version.h"
 
@@ -742,8 +744,7 @@ bool output::treat_input(string const & image_name, string const & sample_file)
 	// this order of declaration is required to ensure proper
 	// initialisation of oprofpp
 	opp_samples_files samples_files(sample_file, counter_mask);
-
-	check_mtime(samples_files, image_name);
+	samples_files.check_mtime(image_name);
 
 	op_bfd abfd(image_name, options::exclude_symbols);
 

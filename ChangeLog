@@ -1,5 +1,26 @@
 2002-06-05  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/Makefile.in:
+	* pp/counter_util.h:
+	* pp/counter_util.cpp: move from ...
+
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp: ... here (removed)
+
+	* pp/op_time.cpp:
+	* pp/op_time_options.cpp: 
+	* pp/op_to_source.cpp: 
+	* pp/opp_symbol.h: 
+	* pp/oprofpp.cpp:
+	* pp/oprofpp_options.h: 
+	* pp/oprofpp_options.cpp: 
+	* pp/samples_container.h: 
+	* pp/samples_container.cpp: 
+	* pp/samples_file.h:
+	* pp/samples_file.cpp: changes from above
+
+2002-06-05  John Levon  <moz@compsoc.man.ac.uk>
+
 	* libutil++/file_manip.h:
 	* libutil++/file_manip.cpp: move oprofile specific stuff
 	  to ...

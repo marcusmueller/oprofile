@@ -16,9 +16,11 @@
 
 #include "opp_symbol.h"
 #include "utility.h"
+#include "op_bfd.h"
 
 class sample_container_imp_t;
 class symbol_container_imp_t;
+class opp_samples_files;
 
 /// A container to store symbol/sample from samples files/image file
 class samples_container_t /*:*/ noncopyable {

@@ -18,7 +18,6 @@
 
 #include <bfd.h>	/* for bfd_vma */
 
-#include "oprofpp.h"
 #include "counter_array.h"
 #include "outsymbflag.h"
 

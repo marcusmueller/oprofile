@@ -117,6 +117,11 @@ struct opp_samples_files /*:*/  noncopyable {
 	opp_samples_files(std::string const & sample_file, int counter);
 
 	/**
+	 * check_mtime - check mtime of samples file against file
+	 */
+	void check_mtime(std::string const & file) const;
+ 
+	/**
 	 * ~opp_samples_files - destroy an object opp_samples
 	 *
 	 * close and free all related resource to the samples file(s)

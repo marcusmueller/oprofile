@@ -27,7 +27,9 @@
 #include "op_mangling.h"
 #include "op_time_options.h"
  
+#include "counter_util.h"
 #include "samples_container.h"
+#include "samples_file.h"
 
 #include "file_manip.h"
 #include "string_manip.h"
@@ -469,7 +471,7 @@ static void output_symbols_count(map_t& files, int counter)
 		if (file_exist(image_name)) {
 			opp_samples_files samples_file(samples_filename,
 						       counter);
-			check_mtime(samples_file, image_name);
+			samples_file.check_mtime(image_name);
 
 			op_bfd abfd(image_name, options::exclude_symbols);
 
@@ -494,13 +496,14 @@ int main(int argc, char const * argv[])
 {
 	get_options(argc, argv);
 
-	counter = counter_mask(options::counter_str);
+	counter = parse_counter_mask(options::counter_str);
 
 	validate_counter(counter, options::sort_by_counter);
 
 	if (options::list_symbols && options::show_shared_libs) {
-		quit_error("You can't specifiy --show-shared-libs and "
-			   "--list-symbols together.\n");
+		cerr << "You can't specifiy --show-shared-libs and "
+			"--list-symbols together." << endl;
+		exit(EXIT_FAILURE);
 	}
 
 	/* TODO: allow as op_merge to specify explicitly name of samples

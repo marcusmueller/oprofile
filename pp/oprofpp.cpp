@@ -15,19 +15,23 @@
 #include <fstream>
 
 #include "version.h"
-#include "oprofpp.h"
 #include "oprofpp_options.h"
 #include "op_libiberty.h"
 #include "op_fileio.h"
-#include "op_mangling.h"
 #include "file_manip.h"
+ 
+#include "op_config.h"
+#include "op_mangling.h"
 #include "samples_container.h"
+#include "samples_file.h"
+#include "counter_util.h"
 #include "derive_files.h"
 
 using std::string;
 using std::vector;
 using std::list;
 using std::cout;
+using std::endl;
 using std::cerr;
 using std::ifstream;
 using std::ostream;
@@ -201,19 +205,17 @@ int main(int argc, char const *argv[])
 {
 	string const arg = get_options(argc, argv);
 
-	int ctr_mask = counter_mask(options::ctr_str);
-
 	derive_files(arg, options::image_file,
-		options::sample_file, ctr_mask);
+		options::sample_file, options::counter_mask);
 
-	validate_counter(ctr_mask, options::sort_by_counter);
+	validate_counter(options::counter_mask, options::sort_by_counter);
 
 	options::sample_file =
 		relative_to_absolute_path(options::sample_file, OP_SAMPLES_DIR);
 
 	if (!options::gprof_file.empty()) {
-		opp_samples_files samples_files(options::sample_file, ctr_mask);
-		check_mtime(samples_files, options::image_file);
+		opp_samples_files samples_files(options::sample_file, options::counter_mask);
+		samples_files.check_mtime(options::image_file);
 
 		op_bfd abfd(options::image_file, options::exclude_symbols);
 		samples_files.set_start_offset(abfd.get_start_offset());
@@ -240,7 +242,7 @@ int main(int argc, char const *argv[])
 	bool const add_zero_sample_symbols = options::list_all_symbols_details == false;
  
 	samples_container_t samples(add_zero_sample_symbols,
-				    options::output_format_flags, ctr_mask);
+				    options::output_format_flags, options::counter_mask);
 
 	filelist.push_front(options::sample_file);
 
@@ -256,7 +258,7 @@ int main(int argc, char const *argv[])
 		 
 		int i;
 		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
-			if ((ctr_mask & (1 << i)) != 0) {
+			if ((options::counter_mask & (1 << i)) != 0) {
 				ostringstream s;
 				s << file << "#" << i;
 				if (file_exist(s.str()) == true)
@@ -268,15 +270,14 @@ int main(int argc, char const *argv[])
 		if (i == OP_MAX_COUNTERS)
 			continue;
 
-		opp_samples_files samples_files(file, ctr_mask);
+		opp_samples_files samples_files(file, options::counter_mask);
+		samples_files.check_mtime(options::image_file);
 
 		// the first opened file is treated specially because
 		// user can specify the image name for this sample
 		// file on command line else must deduce the image
 		// name from the samples file name
 		if (it == filelist.begin()) {
-			check_mtime(samples_files, options::image_file);
-
 			op_bfd abfd(options::image_file, options::exclude_symbols);
 
 			samples_files.set_start_offset(abfd.get_start_offset());
@@ -286,8 +287,6 @@ int main(int argc, char const *argv[])
 			string app_name;
 			string lib_name;
 			app_name = extract_app_name(file, lib_name);
-
-			check_mtime(samples_files, options::image_file);
 
 			op_bfd abfd(demangle_filename(lib_name), options::exclude_symbols);
 			samples_files.set_start_offset(abfd.get_start_offset());
@@ -302,10 +301,11 @@ int main(int argc, char const *argv[])
 	}
 
 	if (first_file == true) {
-		quit_error("oprofpp: Cannot locate any samples file.\n");
+		cerr << "oprofpp: Cannot locate any samples file." << endl;
+		exit(EXIT_FAILURE);
 	}
 
-	OutputSymbol out(samples, ctr_mask);
+	OutputSymbol out(samples, options::counter_mask);
 	out.SetFlag(options::output_format_flags);
 
 	if (options::list_symbols)

@@ -19,7 +19,7 @@
 
 /// command line option values
 namespace options {
-	extern std::string ctr_str;
+	extern int counter_mask;
 	extern int sort_by_counter;
 	extern std::string gprof_file;
 	extern std::string symbol;

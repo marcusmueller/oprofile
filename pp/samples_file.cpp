@@ -9,21 +9,27 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
-#include <stdio.h>
-#include <errno.h>
-
-#include <sstream>
-#include <iostream>
-
-#include "oprofpp.h"
+#include "op_file.h"
+ 
 #include "op_events.h"
 #include "op_events_desc.h"
 #include "op_print_event.h"
+#include "op_sample_file.h"
 
 #include "counter_array.h"
  
+#include "samples_file.h"
+ 
+#include <stdio.h>
+#include <errno.h>
+#include <unistd.h>
+
+#include <sstream>
+#include <iostream>
+ 
 using std::string;
 using std::cout;
+using std::cerr;
 using std::endl;
  
 opp_samples_files::opp_samples_files(string const & sample_file, int counter_)
@@ -84,6 +90,18 @@ opp_samples_files::~opp_samples_files()
 		delete samples[i];
 	}
 }
+
+void opp_samples_files::check_mtime(string const & file) const
+{
+	time_t const newmtime = op_get_mtime(file.c_str());
+	if (newmtime != first_header().mtime) {
+		cerr << "oprofpp: WARNING: the last modified time of the binary file "
+			<< file << " does not match\n"
+			<< "that of the sample file. Either this is the wrong binary or the binary\n"
+			<< "has been modified since the sample file was created.\n";
+	}
+}
+
 
 void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 {

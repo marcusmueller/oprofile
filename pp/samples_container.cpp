@@ -18,6 +18,7 @@
 #include "opp_symbol.h"
 #include "symbol_functors.h"
 #include "samples_container.h"
+#include "samples_file.h"
 #include "sample_container_imp.h"
 #include "symbol_container_imp.h"
 
