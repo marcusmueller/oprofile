@@ -1,10 +1,10 @@
-/* $Id: oprofiled.c,v 1.5 2000/08/03 03:19:05 moz Exp $ */
+/* $Id: oprofiled.c,v 1.6 2000/08/04 02:14:45 moz Exp $ */
 
 #include "oprofiled.h"
 
 extern struct opd_footer footer;
  
-static char *version=VERSION_STRING;
+static int showvers;
  
 static u8 ctr0_type_val;
 static u8 ctr1_type_val;
@@ -36,7 +36,7 @@ unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 static struct poptOption options[] = {
 	{ "buffer-size", 'b', POPT_ARG_INT, &opd_buf_size, 0, "nr. of entries in kernel buffer", "num", },
 	{ "ctr0-unit-mask", 'u', POPT_ARG_INT, &ctr0_um, 0, "unit mask for ctr0", "val", },
-	{ "ctr1-unit-mask", 'v', POPT_ARG_INT, &ctr1_um, 0, "unit mask for ctr1", "val", },
+	{ "ctr1-unit-mask", 't', POPT_ARG_INT, &ctr1_um, 0, "unit mask for ctr1", "val", },
 	{ "ctr0-event", '0', POPT_ARG_STRING, &ctr0_type, 0, "symbolic event name for ctr0", "name", }, 
 	{ "ctr1-event", '1', POPT_ARG_STRING, &ctr1_type, 0, "symbolic event name for ctr1", "name", }, 
 	{ "use-cpu", 'p', POPT_ARG_INT, &cpu_type, 0, "0 for PPro, 1 for PII, 2 for PIII", "[0|1|2]" }, 
@@ -48,6 +48,7 @@ static struct poptOption options[] = {
 	{ "map-device-file", 'd', POPT_ARG_STRING, &devmapfilename, 0, "profile mapping device file", "file", },
 	{ "map-file", 'f', POPT_ARG_STRING, &systemmapfilename, 0, "System.map for running kernel file", "file", }, 
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", }, 
+	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, }, 
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
@@ -136,6 +137,11 @@ static void opd_options(int argc, char *argv[])
 		exit(1);
 	}
 
+	if (showvers) {
+		printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
+		exit(0);
+	}
+ 
 	if (!vmlinux || streq("",vmlinux)) {
 		fprintf(stderr, "oprofiled: no vmlinux specified.\n");
 		poptPrintHelp(optcon, stderr, 0);
@@ -304,7 +310,7 @@ void opd_do_samples(const struct op_sample *opd_buf)
 }
 
 /* re-open logfile for logrotate */
-static void opd_sighup(int val)
+static void opd_sighup(int val __attribute__((unused)))
 {
 	close(1);
 	close(2);
@@ -318,7 +324,6 @@ int main(int argc, char *argv[])
 	struct sigaction act; 
 	int i; 
  
-	printf("%s\n",version); 
 	opd_options(argc, argv);
 
 	footer.ctr0_type_val = ctr0_type_val;

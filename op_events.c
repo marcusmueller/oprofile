@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.4 2000/08/01 20:36:01 moz Exp $ */ 
+/* $Id: op_events.c,v 1.5 2000/08/04 02:14:46 moz Exp $ */ 
 
 /* Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren */
 
@@ -532,11 +532,19 @@ void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char 
 #endif /* OP_EVENTS_DESC */
  
 #ifdef OP_EVENTS_MAIN
+
+#include "version.h"
+ 
 int main (int argc, char *argv[])
 {
 	uint i;
-	uint j; 
+	uint j;
 
+	if (argc>1 && (!strcmp(argv[1],"--version") || !strcmp(argv[1],"-v"))) {
+		printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
+		exit(0);
+	}
+ 
 	printf("oprofile: available events\n");
 	printf("--------------------------\n\n");
 	printf("See Intel Architecture Developer's Manual\nVol. 3, Appendix A\n\n"); 

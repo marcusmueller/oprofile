@@ -1,8 +1,8 @@
-/* $Id: oprofpp.c,v 1.4 2000/08/03 21:25:01 moz Exp $ */
+/* $Id: oprofpp.c,v 1.5 2000/08/04 02:14:47 moz Exp $ */
 
 #include "oprofpp.h"
  
-static char *version = VERSION_STRING; 
+static int showvers;
  
 static char *samplefile;
 static char *gproffile;
@@ -29,6 +29,7 @@ static struct poptOption options[] = {
 	{ "list-symbol", 's', POPT_ARG_STRING, &symbol, 0, "give detailed samples for a symbol", "symbol", },
 	{ "gcc-demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
 	{ "counter", 'c', POPT_ARG_INT, &ctr, 0, "which counter to use", "0|1", }, 
+	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
@@ -59,6 +60,11 @@ static void get_options(int argc, char *argv[])
 	        exit(1);
 	}
 
+	if (showvers) {
+		printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
+		exit(0);
+	}
+ 
 	if (!list_symbols && !gproffile && !symbol) {
 		fprintf(stderr, "oprofpp: no mode specified. What do you want from me ?\n");
 		poptPrintHelp(optcon, stderr, 0);
