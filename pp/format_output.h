@@ -28,7 +28,7 @@ class symbol_entry;
 namespace format_output {
  
 /// output to out the formatting options available
-void show_help(ostream & out);
+void show_help(std::ostream & out);
 
 /** return osf_none if the option string is ill formed, so you can call
  * output_symbol::show_help() to notify user on available options */
