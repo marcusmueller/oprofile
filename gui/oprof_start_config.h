@@ -16,8 +16,6 @@
 #include <string>
 #include <iostream>
 
-//#include "persistent_config.h"
-
 /// Store the setup of one event
 struct event_setting {
 
