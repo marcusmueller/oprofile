@@ -42,7 +42,8 @@ necks in real-world systems.
 	<varlistentry>
 		<term>Linux kernel 2.2/2.4</term>
 		<listitem>
-			OProfile uses a kernel module that can be compiled for 2.2.11 or later and 2.4. Support for 2.5 up to 2.5.38 is also provided but has not been extensively tested.
+			OProfile uses a kernel module that can be compiled for
+			2.2.11 or later and 2.4. Support for Linux 2.5.45 is also provided but has not been extensively tested.
 			Versions 2.4.10 or above are recommended, and required if you use the
 			boot-time kernel option <option>nosmp</option>.
 <!-- FIXME: do we require always gte 2.4.10 for nosmp ? -->
@@ -170,9 +171,16 @@ is all you need, but note these arguments to <command>./configure</command> :
 		</listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--with-qt2-dir/includes/libraries</option></term>
+		<term><option>--with-kernel-support</option></term>
 		<listitem>
-			Specify the location of Qt2 headers and libraries. It defaults to searching in
+			Use this option with linux 2.5 kernel to indicate the 
+	    		kernel provides the oprofile device driver.
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--with-qt-dir/includes/libraries</option></term>
+		<listitem>
+			Specify the location of Qt headers and libraries. It defaults to searching in
 			<constant>$QTDIR</constant> if these are not specified.
 		</listitem>
 	</varlistentry>
@@ -241,8 +249,8 @@ This section gives a brief description of the available oprofile utilities and t
 <varlistentry>
 	<term><filename>op_stop</filename></term>
 	<listitem><para>
-		You should stop the profiler using this script. The profiler will collect
-		all the data remaining to be processed, and quit.
+		You should stop the profiler using this script. The profiler will flush
+		all the data remaining in the kernel buffers to the sample files, and quit.
 	</para></listitem>
 </varlistentry>
 
@@ -312,7 +320,7 @@ This section gives a brief description of the available oprofile utilities and t
 <title>A typical session</title>
 <para>
 Before getting into detail about usage, it's probably a good idea to have a quick stroll through an example
-session (this example is for Intel processors not AMD, but the process is the same).
+session (this example is for Intel P6 generation processors not AMD, but the process is the same).
 </para>
 <para>
 First we need to start the profiler running in the background. We need to pass the correct
@@ -392,11 +400,7 @@ OProfile stores its relevant files in <filename>/var/lib/oprofile</filename>.
 Of most interest are the <filename>oprofiled.log</filename> log file, and the
 <filename>samples/</filename> directory. The <filename>samples</filename>
 directory contains the actual sample profile files created by the daemon.
-Despite their apparent size they take up much less actual diskspace as they are
-created sparsely (<command>stat</command> or <command>du [-h]</command> should tell you their real on-disk
-size). Note than this imply we <emphasis>greatyl discourage</emphasis> use of filesystem without a
-proper support for sparse file including vfat fs and many network fs.
- Each filename corresponds to the profiled binary image (with
+Each filename corresponds to the profiled binary image (with
 <constant>/</constant> characters replaced with <constant>}</constant>
 characters). In addition, each filename has a suffix indicating the counter
 number.
@@ -432,7 +436,7 @@ options, only interesting ones are listed here :
 		<listitem><para>
 		This is the number of entries in the kernel note table. Generally the default value
 		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
-		Each entry in the buffer takes 20 bytes.
+		Each entry in the buffer takes 24 bytes.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -541,10 +545,11 @@ tool <command>op_session</command> to do this. For example :
 op_session run1
 </screen>
 <para>
-will create a sub-directory containing the samples up to that point (the current
-session's sample files are moved into this directory). You can
-then pass this name as, for example, a parameter to <command>op_time</command>
-to only get data up to the point you named the session.
+will create a sub-directory in <filename>/var/lib/oprofile/samples</filename> containing the samples
+up to that point (the current session's sample files are moved into this
+directory). You can then pass this name as, for example, a parameter to
+<command>op_time</command> to only get data up to the point you named the
+session.
 </para>
 </sect1>
  
@@ -602,13 +607,14 @@ whilst in kernel or user space. You can configure these separately for each coun
 </para>
 <para>
 So you must specify a counter value with the <option>--ctrX-count</option> option, where <option>X</option>
-is the logical counter number in the range 0-3 (0-1 for Intel processors, which only have two counters). 
+is the logical counter number in the range 0 to 3 fro AMD Athlon processors, 0 to 1 for
+Intel P6 generation procecessors, and 0 to 7 for Intel Pentium 4 processors.
 Using multiple counters is useful for profiling several aspects of the same running program.
 After each overflow event, the counter will be re-initialized
 such that another overflow will occur after this many events have been counted. Picking a good value for this
 parameter is, unfortunately, somewhat of a grey art (not quite black). It is of course dependent on the event
 you have chosen. For basic time-based profiling, you will probably use <constant>CPU_CLK_UNHALTED</constant>
-(on Intel). 
+(on Intel P6 generation processors). 
 You can estimate how many interrupts this value will generate per second with this event by dividing your CPU
 clock rate by the chosen value. I have a 600MHz Celeron, so specifying an overflow value of 100,000 will generate
 around 600 interrupts per second. Specifying too large a value will mean not enough interrupts are generated

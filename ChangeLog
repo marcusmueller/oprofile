@@ -1,3 +1,7 @@
+2002-11-05  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: manual fixes from Will Cohen
+ 
 2002-11-01  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_image.c: fix lookup_dcookie usage
