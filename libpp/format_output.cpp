@@ -449,6 +449,7 @@ cg_formatter::cg_formatter(callgraph_container const & profile_)
 	profile(profile_)
 {
 	total_count_self = profile.samples_count();
+	total_count_callee = profile.samples_count();
 
 	format_map[ff_vma] = field_description(9, "vma", &cg_formatter::format_vma);
 	format_map[ff_nr_samples] = field_description(16, "samples", &cg_formatter::format_nr_samples);
@@ -561,14 +562,20 @@ void cg_formatter::output(std::ostream & out)
 		count_array_t temp_total_count_callee;
 		count_array_t temp_cumulated_samples_self;
 		count_array_t temp_cumulated_percent_self;
+		count_array_t temp_cumulated_samples_callee;
+		count_array_t temp_cumulated_percent_callee;
 
 		temp_total_count_self = total_count_self;
 		temp_total_count_callee = total_count_callee;
 		temp_cumulated_samples_self = cumulated_samples_self;
 		temp_cumulated_percent_self = cumulated_percent_self;
+		temp_cumulated_samples_callee = cumulated_samples_callee;
+		temp_cumulated_percent_callee = cumulated_percent_callee;
 
 		total_count_self = count_array_t();
 		total_count_callee = count_array_t();
+		cumulated_samples_self = count_array_t();
+		cumulated_percent_self = count_array_t();
 		cumulated_samples_callee = count_array_t();
 		cumulated_percent_callee = count_array_t();
 
@@ -586,8 +593,10 @@ void cg_formatter::output(std::ostream & out)
 
 		total_count_self = temp_total_count_self;
 		total_count_callee = temp_total_count_callee;
-		cumulated_samples_self = temp_cumulated_samples_self;
-		cumulated_percent_self = temp_cumulated_percent_self;
+		cumulated_samples_self = count_array_t();
+		cumulated_percent_self = count_array_t();
+		cumulated_samples_callee = count_array_t();
+		cumulated_percent_callee = count_array_t();
 
 		do_output(out, arcs[i]);
 
@@ -595,9 +604,13 @@ void cg_formatter::output(std::ostream & out)
 		temp_total_count_callee = total_count_callee;
 		temp_cumulated_samples_self = cumulated_samples_self;
 		temp_cumulated_percent_self = cumulated_percent_self;
+		temp_cumulated_samples_callee = cumulated_samples_callee;
+		temp_cumulated_percent_callee = cumulated_percent_callee;
 
 		total_count_self = count_array_t();
 		total_count_callee = count_array_t();
+		cumulated_samples_self = count_array_t();
+		cumulated_percent_self = count_array_t();
 		cumulated_samples_callee = count_array_t();
 		cumulated_percent_callee = count_array_t();
 
@@ -617,6 +630,8 @@ void cg_formatter::output(std::ostream & out)
 		total_count_callee = temp_total_count_callee;
 		cumulated_samples_self = temp_cumulated_samples_self;
 		cumulated_percent_self = temp_cumulated_percent_self;
+		cumulated_samples_callee = temp_cumulated_samples_callee;
+		cumulated_percent_callee = temp_cumulated_percent_callee;
 
 		out << string(79, '-') << endl;
 	}
@@ -678,7 +693,7 @@ string cg_formatter::format_percent(field_datum const & f)
 	return get_percent(f.symbol.self_counts[f.pclass],
 			total_count_self[f.pclass]) + "/" +
 		get_percent(f.symbol.callee_counts[f.pclass],
-			total_count_self[f.pclass]);
+			total_count_callee[f.pclass]);
 }
 
 

@@ -11,16 +11,12 @@ for some pointers and/or read HACKING and doc/CodingStyle.
   outside .text section get a wrong offset
 
  o callgraph_container.cpp: the inner loop in add() is very fragile!
- o opstack -c gives wrong resultat for self symbol cumulated count/percent i.e
-  non indented output line.
+ o recursive call count are wrong
  o opstack  -t is not implemented, can we ?
  o Test all other opstack options.
- o improve and put somewhere on the net the opstack application test.
  o review opstack documentation, improve it by giving examples of output and
   how to interpret it.
- o finish opstack: proper output, various --separate= --merge= handling,
-  later do we need an opreport like opstack (showing caller/callee at binary
-  boundary not symbols) ?
+ o finish opstack: various --separate= --merge= handling,
  o first quick test show it works but I got in oprofiled.log (possibly when
   shutdown oprofile)
 	Read buffer of 35253 entries.
@@ -61,6 +57,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 Before 1.0 little stuff
 -----------------------
 
+ o do we need an opreport like opstack (showing caller/callee at binary
+  boundary not symbols) ?
  o libop/op_string.c is dumb (skip_ws, skip_nonws) we can't use them
   to parse a file and report correct line number error because skip_ws skip
   \n (so op_events.c report correct line number only if there is no empty
