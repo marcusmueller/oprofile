@@ -63,10 +63,17 @@ void counter_profile_t::check_headers(counter_profile_t const & rhs) const
 		exit(EXIT_FAILURE);
 	}
 
-	if (f1.separate_samples != f2.separate_samples) {
-		cerr << "oprofpp: header separate_samples are different ("
-		     << f1.separate_samples << ", " 
-		     << f2.separate_samples << ")\n";
+	if (f1.separate_lib_samples != f2.separate_lib_samples) {
+		cerr << "oprofpp: header separate_lib_samples are different ("
+		     << f1.separate_lib_samples << ", " 
+		     << f2.separate_lib_samples << ")\n";
+		exit(EXIT_FAILURE);
+	}
+
+	if (f1.separate_kernel_samples != f2.separate_kernel_samples) {
+		cerr << "oprofpp: header separate_kernel_samples are different ("
+		     << f1.separate_kernel_samples << ", " 
+		     << f2.separate_kernel_samples << ")\n";
 		exit(EXIT_FAILURE);
 	}
 }

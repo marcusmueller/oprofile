@@ -44,5 +44,6 @@ char const * opd_app_name(struct opd_proc const * proc);
 int opd_get_nr_procs(void);
 void opd_age_procs(void);
 void opd_proc_cleanup(void);
+void opd_clear_kernel_mapping(void);
 
 #endif /* OPD_PROC_H */

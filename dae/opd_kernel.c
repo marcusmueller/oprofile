@@ -12,6 +12,7 @@
 #include "opd_kernel.h"
 #include "opd_proc.h"
 #include "opd_image.h"
+#include "opd_mapping.h"
 #include "opd_printf.h"
 #include "opd_stats.h"
 
@@ -87,6 +88,8 @@ void opd_clear_module_info(void)
 		opd_modules[i].start = 0;
 		opd_modules[i].end = 0;
 	}
+
+	opd_clear_kernel_mapping();
 }
 
 /**
@@ -405,3 +408,79 @@ int opd_eip_is_kernel(unsigned long eip)
 {
 	return (eip >= kernel_start);
 }
+
+/**
+ * opd_add_kernel_map - add a module or kernel maps to a proc struct
+ *
+ * @param proc owning proc of the new mapping
+ * @param eip eip inside the new mapping
+ *
+ * We assume than eip >= kernel_start
+ *
+ */
+void opd_add_kernel_map(struct opd_proc * proc, unsigned long eip)
+{
+	struct opd_module * module;
+	struct opd_image * image;
+	char const * app_name;
+
+	app_name = opd_app_name(proc);
+	if (!app_name) {
+		verbprintf("un-named proc for pid %d\n", proc->pid);
+		return;
+	}
+
+
+	if (eip < kernel_end) {
+		image = opd_get_image(vmlinux, -1, app_name, 1);
+		if (!image) {
+			verbprintf("Can't create image for %s %s\n", vmlinux, app_name);
+			return;
+		}
+
+		opd_add_mapping(proc, image, kernel_start, 0, kernel_end);
+		return;
+	}
+
+	module = opd_find_module_by_eip(eip);
+	if (!module) {
+		/* not found in known modules, re-read our info and retry */
+		opd_clear_module_info();
+		opd_get_module_info();
+
+		module = opd_find_module_by_eip(eip);
+	}
+
+	if (module) {
+		/* module->name is only the module name not the full path */
+		char const * module_name = 0;
+		if (module->image)
+			module_name = module->image->name;
+		if (!module_name) {
+			verbprintf("unable to get path name for module %s\n",
+			       module->name);
+			module_name = module->name;
+		}
+		image = opd_get_image(module_name, -1, app_name, 1);
+		if (!image) {
+			verbprintf("Can't create image for %s %s\n",
+			       module->name, app_name);
+			return;
+		}
+		opd_add_mapping(proc, image, module->start, 0, module->end);
+	} else {
+		/* ok, we failed to place the sample even after re-reading
+		 * /proc/ksyms. It's either a rogue sample, or from a module
+		 * that didn't create symbols (like in some initrd setups).
+		 * So we check with query_module() if we can place it in a
+		 * symbol-less module, and if so create a negative entry for
+		 * it, to quickly ignore future samples.
+		 *
+		 * Problem uncovered by Bob Montgomery <bobm@fc.hp.com>
+		 */
+		opd_stats[OPD_LOST_MODULE]++;
+		opd_drop_module_sample(eip);
+	}
+}
+
+

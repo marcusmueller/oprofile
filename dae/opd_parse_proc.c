@@ -145,6 +145,20 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 		}
 	}
 
+	if (proc->nr_maps == 0) {
+		/* we always need a valid proc->maps[0], we artificially give
+		 * a map of length zero so on no samples will never go to this
+		 * map. This is used only with --separate-samples and kernel
+		 * thread when adding vmlinux and module maps to proc->maps[]
+		 */
+		/* FIXME: use the first field of /proc/pid/status as proc name
+		 * for now we use /proc/%pid/exe as name */
+		struct opd_image * image = opd_get_image(image_name, -1, image_name, 0);
+		if (image) {
+			opd_add_mapping(proc, image, 0, 0, 0);
+		}
+	}
+
 	if (image_name)
 		free(image_name);
 

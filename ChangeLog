@@ -1,3 +1,40 @@
+2003-02-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_image.c:
+	* dae/opd_kernel.c:
+	* dae/opd_kernel.h:
+	* dae/opd_parse_proc.c:
+	* dae/opd_proc.c:
+	* dae/opd_proc.h:
+	* dae/opd_sample_files.c:
+	* dae/oprofiled.c:
+	* daemon/opd_image.c:
+	* daemon/opd_image.h:
+	* daemon/opd_kernel.c:
+	* daemon/opd_kernel.h:
+	* daemon/opd_sample_files.c:
+	* daemon/oprofiled.c: per application kernel samples files
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: document opcontrol --separate=kernel
+
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_config.h:
+	* gui/ui/oprof_start.base.ui: remove ignore_daemon checkbox, handle
+	  --separate=[library|kernel]
+
+	* libop/op_sample_file.h: add separate_kernel_samples field, file
+	  format is backward compatible
+
+	* libabi/abi.cpp:
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp: handle new samples file header field
+
+	* pp/counter_profile.cpp: dump new sample files header field.
+
+	* utils/opcontrol: handle --separate=kernel
+
 2003-02-09  Will Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol: Add rtc-value option.

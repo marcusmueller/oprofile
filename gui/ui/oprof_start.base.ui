@@ -11,7 +11,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>565</width>
+            <width>561</width>
             <height>593</height>
         </rect>
     </property>
@@ -843,21 +843,6 @@
                                         <class>QCheckBox</class>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>ignore_daemon_samples_cb</cstring>
-                                        </property>
-                                        <property stdset="1">
-                                            <name>text</name>
-                                            <string>&amp;Do not profile daemon</string>
-                                        </property>
-                                        <property>
-                                            <name>toolTip</name>
-                                            <string>Don't profile profiler daemon</string>
-                                        </property>
-                                    </widget>
-                                    <widget>
-                                        <class>QCheckBox</class>
-                                        <property stdset="1">
-                                            <name>name</name>
                                             <cstring>verbose</cstring>
                                         </property>
                                         <property stdset="1">
@@ -873,11 +858,26 @@
                                         <class>QCheckBox</class>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>separate_samples_cb</cstring>
+                                            <cstring>separate_kernel_samples_cb</cstring>
                                         </property>
                                         <property stdset="1">
                                             <name>text</name>
-                                            <string>Separate samples</string>
+                                            <string>Per-application kernel samples files</string>
+                                        </property>
+                                        <property>
+                                            <name>toolTip</name>
+                                            <string>Separate samples for each shared library and kernel samples. This increases the time and space overhead of OProfile.</string>
+                                        </property>
+                                    </widget>
+                                    <widget>
+                                        <class>QCheckBox</class>
+                                        <property stdset="1">
+                                            <name>name</name>
+                                            <cstring>separate_lib_samples_cb</cstring>
+                                        </property>
+                                        <property stdset="1">
+                                            <name>text</name>
+                                            <string>Per-application shared libs samples files</string>
                                         </property>
                                         <property>
                                             <name>toolTip</name>
@@ -1123,6 +1123,6 @@
     <tabstop>pid_filter_edit</tabstop>
     <tabstop>pgrp_filter_edit</tabstop>
     <tabstop>kernel_only_cb</tabstop>
-    <tabstop>ignore_daemon_samples_cb</tabstop>
+    <tabstop>verbose</tabstop>
 </tabstops>
 </UI>

@@ -30,7 +30,8 @@
 #include <stdint.h>
 
 extern uint op_nr_counters;
-extern int separate_samples;
+extern int separate_lib_samples;
+extern int separate_kernel_samples;
 extern size_t kernel_pointer_size;
 
 /* maintained for statistics purpose only */
@@ -67,6 +68,7 @@ static void opd_delete_image(struct opd_image * image)
 		free(image->name);
 	if (image->app_name)
 		free(image->app_name);
+	opd_delete_modules(image);
 	free(image);
 }
 
@@ -119,6 +121,7 @@ static struct opd_image * opd_create_image(unsigned long hash)
 
 	image->name = image->app_name = NULL;
 	image->cookie = image->app_cookie = 0;
+	image->app_image = 0;
 	image->mtime = 0;
 	image->kernel = 0;
 
@@ -127,6 +130,7 @@ static struct opd_image * opd_create_image(unsigned long hash)
 	}
 
 	list_add(&image->hash_list, &opd_images[hash]);
+	list_init(&image->module_list);
 
 	nr_images++;
 
@@ -207,7 +211,7 @@ void opd_check_image_mtime(struct opd_image * image)
 	verbprintf("Current mtime %lu differs from stored "
 		"mtime %lu for %s\n", newmtime, image->mtime, image->name);
 
-	app_name = separate_samples ? image->app_name : NULL;
+	app_name = separate_lib_samples ? image->app_name : NULL;
 	mangled = op_mangle_filename(image->name, app_name);
 
 	len = strlen(mangled);
@@ -268,21 +272,6 @@ static unsigned long opd_hash_cookie(cookie_t cookie)
  
 
 /**
- * opd_add_image - add an image to the image hashlist
- */
-static struct opd_image * opd_add_image(cookie_t cookie, cookie_t app_cookie)
-{
-	unsigned long hash = opd_hash_cookie(cookie);
-	struct opd_image * image = opd_create_image(hash);
-
-	opd_init_image(image, cookie, app_cookie);
-	opd_open_image(image);
-
-	return image;
-}
-
-
-/**
  * opd_find_image - find an image
  */
 static struct opd_image * opd_find_image(cookie_t cookie, cookie_t app_cookie)
@@ -294,16 +283,40 @@ static struct opd_image * opd_find_image(cookie_t cookie, cookie_t app_cookie)
 	list_for_each(pos, &opd_images[hash]) {
 		image = list_entry(pos, struct opd_image, hash_list);
 
-		/* without this check !separate_samples will open the
+		/* without this check !separate_lib_samples will open the
 		 * same sample file multiple times
 		 */
-		if (separate_samples && image->app_cookie != app_cookie)
+		if (separate_lib_samples && image->app_cookie != app_cookie)
 			continue;
  
 		if (image->cookie == cookie)
 			return image;
 	}
 	return NULL;
+}
+
+
+/**
+ * opd_add_image - add an image to the image hashlist
+ */
+static struct opd_image * opd_add_image(unsigned long cookie, unsigned long app_cookie)
+{
+	unsigned long hash = opd_hash_cookie(cookie);
+	struct opd_image * image = opd_create_image(hash);
+
+	opd_init_image(image, cookie, app_cookie);
+
+	if (separate_lib_samples) {
+		image->app_image = opd_find_image(app_cookie, app_cookie);
+		if (!image->app_image) {
+			verbprintf("image->app_image %p for cookie %lu\n",
+				   image->app_image, app_cookie);
+		}
+	}
+
+	opd_open_image(image);
+
+	return image;
 }
 
  
@@ -320,11 +333,12 @@ static struct opd_image * opd_get_image(cookie_t cookie, cookie_t app_cookie)
 }
 
 
-static struct opd_image * opd_add_kernel_image(char const * name)
+struct opd_image * opd_add_kernel_image(char const * name, char const * app_name)
 {
 	struct opd_image * image = opd_create_image(HASH_KERNEL);
 
 	image->name = xstrdup(name);
+	image->app_name = app_name ? xstrdup(app_name) : NULL;
 	image->kernel = 1;
 	opd_open_image(image);
 
@@ -343,7 +357,7 @@ struct opd_image * opd_get_kernel_image(char const * name)
 			return image;
 	}
 
-	return opd_add_kernel_image(name);
+	return opd_add_kernel_image(name, 0);
 }
 
 
@@ -377,9 +391,14 @@ static void opd_put_sample(struct opd_image * image, int in_kernel,
 	}
  
 	if (in_kernel > 0) {
+		struct opd_image * app_image = 0;
 		verbprintf("Kernel sample 0x%llx, counter %lu\n",
 			eip, event);
-		opd_handle_kernel_sample(eip, event);
+
+		/* FIXME: in what case can we get nil image ? */
+		if (separate_kernel_samples && image)
+			app_image = image->app_image;
+		opd_handle_kernel_sample(eip, event, app_image);
 	} else if (in_kernel == 0) {
 		if (image != NULL) {
 			verbprintf("Image (%s) offset 0x%llx, counter %lu\n",

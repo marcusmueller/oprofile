@@ -40,6 +40,11 @@ struct opd_image {
 	time_t mtime;
 	/* kernel image or not */
 	int kernel;
+	/* non-zero only if image is an application, used to provide access
+	 * to the head of module list */
+	struct opd_image * app_image;
+	/* used when separate_kernel_samples != 0, a linked list of module */
+	struct list_head module_list;
 };
 
 typedef void (*opd_image_cb)(struct opd_image *);
@@ -50,7 +55,7 @@ void opd_put_image_sample(struct opd_image * image, vma_t offset, int counter);
 void opd_image_cleanup(void);
 
 void opd_init_images(void);
- 
+struct opd_image * opd_add_kernel_image(char const * name, char const * app_name);
 struct opd_image * opd_get_kernel_image(char const * name);
  
 struct op_sample;

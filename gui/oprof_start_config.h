@@ -53,12 +53,12 @@ struct config_setting {
 	std::string kernel_filename;
 	// FIXME: unsuported for 2.5
 	int kernel_only;
-	int ignore_daemon_samples;
 	int verbose;
 	pid_t pgrp_filter;
 	// not persistent, no interest to save from one session to another
 	pid_t pid_filter;
-	int separate_samples;
+	int separate_lib_samples;
+	int separate_kernel_samples;
 };
 
 std::ostream& operator<<(std::ostream& out, const config_setting& object);

@@ -141,10 +141,11 @@ Only profile process pid  (only available for 2.4 version).
 Only profile process tty group pgrp (only available for 2.4 version).
 .br
 .TP
-.BI "--separate="[library]
-Separate samples based on the given separator. Currently only
-"library" is supported, which gives sample files for libraries
-on a per-application basis.
+.BI "--separate="[library][,][kernel][,][all]
+Separate samples based on the given separator. 'library' per-application
+dynamically linked libraries samples files. 'kernel' per-application modules
+and kernel samples files, 'kernel' imply 'library' samples separation. 'all'
+imply all above options.
 .br
 .TP
 .BI "--vmlinux=" file
@@ -335,7 +336,7 @@ Show the image name when specifying --list-symbols.
 .br
 .TP
 .BI "--output-format " vsSpPnlLiIeEh ", -t " vsSpPnlLiIeEh
-Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'e' application name, 'E' basename of application name 'e' and 'E' are useless unless you profile with --separate=library, 'd' details for each samples for the selected symbols and 'h' for the header itself. This option is available only with --list-symbols
+Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'e' application name, 'E' basename of application name 'e' and 'E' are useless unless you profile with --separate=[library|kernel], 'd' details for each samples for the selected symbols and 'h' for the header itself. This option is available only with --list-symbols
 .br
 .TP
 .BI "--reverse -r"

@@ -68,14 +68,12 @@ void event_setting::load(istream& in)
 ostream& operator<<(ostream& out, const event_setting& object)
 {
 	object.save(out);
-
 	return out;
 }
 
 istream& operator>>(istream& in, event_setting& object)
 {
 	object.load(in);
-
 	return in;
 }
 
@@ -84,11 +82,11 @@ config_setting::config_setting()
 	buffer_size(OP_DEFAULT_BUF_SIZE),
 	note_table_size(OP_DEFAULT_NOTE_SIZE),
 	kernel_only(0),
-	ignore_daemon_samples(0),
 	verbose(0),
 	pgrp_filter(0),
 	pid_filter(0),
-	separate_samples(0)
+	separate_lib_samples(0),
+	separate_kernel_samples(0)
 {
 	struct utsname info;
 
@@ -118,7 +116,8 @@ void config_setting::load(istream& in)
 	string obsolete_map_filename;
 	in >> obsolete_map_filename;
 	in >> kernel_only;
-	in >> ignore_daemon_samples;
+	string obsolete_ignore_daemon_samples;
+	in >> obsolete_ignore_daemon_samples;
 	in >> verbose;
 	in >> pgrp_filter;
 	in >> note_table_size;
@@ -127,12 +126,15 @@ void config_setting::load(istream& in)
 	// this can occur if we change a default value so on fix the value
 	if (note_table_size < OP_DEFAULT_NOTE_SIZE)
 		note_table_size = OP_DEFAULT_NOTE_SIZE;
-	in >> separate_samples;
+	string obsolete_separate_samples;
+	in >> obsolete_separate_samples;
 	// the 3 following config item was kernel_range which are obsolete
 	string garbage;
 	in >> garbage;
 	in >> garbage;
 	in >> garbage;
+	in >> separate_lib_samples;
+	in >> separate_kernel_samples;
 	in >> dec;
 }
 
@@ -151,16 +153,19 @@ void config_setting::save(ostream& out) const
 	out << "map_filename_obsolete_placeholder" << endl;
 
 	out << kernel_only << endl;
-	out << ignore_daemon_samples << endl;
+	out << "obsolete_ignore_daemon_samples_place_holder" << endl;
 	out << verbose << endl;
 	out << pgrp_filter << endl;
 	out << (note_table_size == OP_DEFAULT_NOTE_SIZE ? 0 : note_table_size ) << endl;
-	out << separate_samples << endl;
+	out << "obsolete_separate_samples_placeholder" << endl;
 
 	// the 3 following config item was kernel_range which are obsolete
 	out << "kernel_range_auto_obsolete_placeholder" << endl;
 	out << "kernel_range_start_obsolete_placeholder" << endl;
 	out << "kernel_range_end_obsolete_placeholder" << endl;
+
+	out << separate_lib_samples << endl;
+	out << separate_kernel_samples << endl;
 }
 
 ostream& operator<<(ostream& out, config_setting const & object)

@@ -179,10 +179,10 @@ oprof_start::oprof_start()
 		pgrp_filter_edit->setText(QString().setNum(config.pgrp_filter));
 	else
 		pgrp_filter_edit->setText("");
-	ignore_daemon_samples_cb->setChecked(config.ignore_daemon_samples);
 	verbose->setChecked(config.verbose);
 	kernel_only_cb->setChecked(config.kernel_only);
-	separate_samples_cb->setChecked(config.separate_samples);
+	separate_lib_samples_cb->setChecked(config.separate_lib_samples);
+	separate_kernel_samples_cb->setChecked(config.separate_kernel_samples);
 
 	// the unit mask check boxes
 	hide_masks();
@@ -583,10 +583,10 @@ bool oprof_start::record_config()
 
 	config.pid_filter = pid_filter_edit->text().toUInt();
 	config.pgrp_filter = pgrp_filter_edit->text().toUInt();
-	config.ignore_daemon_samples = ignore_daemon_samples_cb->isChecked();
 	config.kernel_only = kernel_only_cb->isChecked();
 	config.verbose = verbose->isChecked();
-	config.separate_samples = separate_samples_cb->isChecked();
+	config.separate_lib_samples = separate_lib_samples_cb->isChecked();
+	config.separate_kernel_samples = separate_kernel_samples_cb->isChecked();
 
 	return true;
 }
@@ -833,8 +833,10 @@ void oprof_start::on_start_profiler()
 	args.push_back("--pgrp-filter=" + tostr(config.pgrp_filter));
 	args.push_back("--buffer-size=" + tostr(config.buffer_size));
 	args.push_back("--note-table-size=" + tostr(config.note_table_size));
-	if (config.separate_samples)
-		args.push_back("--separate-samples");
+	if (config.separate_lib_samples)
+		args.push_back("--separate-lib-samples=1");
+	if (config.separate_kernel_samples)
+		args.push_back("--separate-kernel-samples=1");
 	if (config.verbose)
 		args.push_back("--verbose");
 

@@ -14,10 +14,14 @@
 
 #include "op_types.h"
 
+struct opd_image;
+
 void opd_init_kernel_image(void);
 void opd_parse_kernel_range(char const * arg);
 void opd_clear_module_info(void);
-void opd_handle_kernel_sample(vma_t eip, u32 counter);
+void opd_handle_kernel_sample(vma_t eip, u32 counter,
+			      struct opd_image * app_image);
 int opd_eip_is_kernel(vma_t eip);
+void opd_delete_modules(struct opd_image * image);
 
 #endif /* OPD_KERNEL_H */

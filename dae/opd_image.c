@@ -23,7 +23,7 @@
 #include <stdio.h>
 
 extern uint op_nr_counters;
-extern int separate_samples;
+extern int separate_lib_samples;
 
 /* maintained for statistics purpose only */
 unsigned int nr_images=0;
@@ -33,9 +33,12 @@ unsigned int nr_images=0;
 
 /* list of images */
 static struct list_head opd_images = { &opd_images, &opd_images };
-/* Images which belong to the same hash, more than one only if separate_samples
- *  == 1, are accessed by hash code and linked through the hash_next member
- * of opd_image. Hash-less image must be searched through opd_images list */
+
+/* Images which belong to the same hash, more than one only if
+ * separate_lib_samples == 1, are accessed by hash code and linked through the
+ * hash_next member of opd_image. Hash-less image must be searched through
+ * opd_images list
+ */
 static struct opd_image * images_with_hash[OP_HASH_MAP_NR];
 
 /**
@@ -162,7 +165,7 @@ void opd_check_image_mtime(struct opd_image * image)
 	verbprintf("Current mtime %lu differs from stored "
 		"mtime %lu for %s\n", newmtime, image->mtime, image->name);
 
-	app_name = separate_samples ? image->app_name : NULL;
+	app_name = separate_lib_samples ? image->app_name : NULL;
 	mangled = op_mangle_filename(image->name, app_name);
 
 	len = strlen(mangled);
@@ -232,8 +235,8 @@ static int is_same_image(struct opd_image const * image, char const * app_name)
 	 * files which is not supported by the kernel, strange assertion
 	 * failure in libfd is a typical symptom of that */
 
-	/* if separate_samples, the comparison made by caller is sufficient */
-	if (!separate_samples)
+	/* if !separate_lib_samples, the comparison made by caller is enough */
+	if (!separate_lib_samples)
 		return 0;
 
 	if (image->app_name == NULL && app_name == NULL)

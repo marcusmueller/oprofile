@@ -31,6 +31,8 @@
 
 /* here to avoid warning */
 extern op_cpu cpu_type;
+extern int separate_lib_samples;
+extern int separate_kernel_samples;
 
 /* hash of process lists */
 static struct opd_proc * opd_procs[OPD_MAX_PROC_HASH];
@@ -265,8 +267,6 @@ inline static void verb_show_sample(unsigned long offset, struct opd_map * map,
  * Add to the count stored at position offset in the
  * image file. Overflow pins the count at the maximum
  * value.
- *
- * count is the raw value passed from the kernel.
  */
 void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 			  u32 counter)
@@ -288,43 +288,22 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 
 
 /**
- * opd_put_sample - process a sample
- * @param sample  sample to process
+ * opd_lookup_maps - lookup a proc mappings for a sample
+ * @param proc proc to lookup
+ * @param sample sample to lookup
  *
- * Write out the sample to the appropriate sample file. This
- * routine handles kernel and module samples as well as ordinary ones.
+ * iterate through the proc maps searching the mapping which owns sample
+ * if sucessful sample count will be updated and we return non-zero
  */
-void opd_put_sample(struct op_sample const * sample)
+static int opd_lookup_maps(struct opd_proc * proc,
+			struct op_sample const * sample)
 {
-	extern int kernel_only;
-
 	unsigned int i;
-	struct opd_proc * proc;
-
-	opd_stats[OPD_SAMPLES]++;
-	opd_stats[OPD_SAMPLE_COUNTS]++;
-
-	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8lx, pid %.6d\n",
-		sample->counter, sample->eip, sample->pid);
-
-	if (opd_eip_is_kernel(sample->eip)) {
-		opd_handle_kernel_sample(sample->eip, sample->counter);
-		return;
-	}
-
-	if (kernel_only)
-		return;
-
-	if (!(proc = opd_get_proc(sample->pid))) {
-		verbprintf("No proc info for pid %.6d.\n", sample->pid);
-		opd_stats[OPD_LOST_PROCESS]++;
-		return;
-	}
 
 	proc->accessed = 1;
 
 	if (!proc->nr_maps)
-		goto out;
+		return 0;
 
 	/* proc->last_map is always safe as mappings are never deleted except by
 	 * things which reset last_map. If last map is the primary image, we use it
@@ -341,7 +320,7 @@ void opd_put_sample(struct op_sample const * sample)
 		}
 
 		opd_stats[OPD_PROCESS]++;
-		return;
+		return 1;
 	}
 
 	/* look for which map and find offset. We search backwards in order to prefer
@@ -357,12 +336,70 @@ void opd_put_sample(struct op_sample const * sample)
 			}
 			proc->last_map = map;
 			opd_stats[OPD_PROCESS]++;
-			return;
+			return 1;
 		}
 		opd_stats[OPD_MAP_ARRAY_DEPTH]++;
 	}
 
-out:
+	return 0;
+}
+
+/**
+ * opd_put_sample - process a sample
+ * @param sample  sample to process
+ *
+ * Write out the sample to the appropriate sample file. This
+ * routine handles kernel and module samples as well as ordinary ones.
+ */
+void opd_put_sample(struct op_sample const * sample)
+{
+	extern int kernel_only;
+
+	struct opd_proc * proc;
+	int in_kernel_eip = opd_eip_is_kernel(sample->eip);
+
+	opd_stats[OPD_SAMPLES]++;
+	opd_stats[OPD_SAMPLE_COUNTS]++;
+
+	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8lx, pid %.6d\n",
+		sample->counter, sample->eip, sample->pid);
+
+	if (!separate_kernel_samples && in_kernel_eip) {
+		opd_handle_kernel_sample(sample->eip, sample->counter);
+		return;
+	}
+
+	if (kernel_only && !in_kernel_eip)
+		return;
+
+	if (!(proc = opd_get_proc(sample->pid))) {
+		if (in_kernel_eip) {
+			/* idle task get a 0 pid and is hidden we can never get
+			 * a proc so on we fall back to put sample in vmlinux
+			 * or module samples files. Here we will catch also
+			 * sample for newly created kernel thread, currently 
+			 * we can handle properly only kenel thread created
+			 * at daemon startup time */
+			opd_handle_kernel_sample(sample->eip, sample->counter);
+		} else {
+			verbprintf("No proc info for pid %.6d.\n", sample->pid);
+			opd_stats[OPD_LOST_PROCESS]++;
+		}
+		return;
+	}
+
+	if (opd_lookup_maps(proc, sample)) {
+		return;
+	}
+
+	if (in_kernel_eip) {
+		/* assert: separate_kernel_samples is true */
+		opd_add_kernel_map(proc, sample->eip);
+		if (opd_lookup_maps(proc, sample)) {
+			return;
+		}
+	}
+
 	/* couldn't locate it */
 	verbprintf("Couldn't find map for pid %.6d, EIP 0x%.8lx.\n",
 		   sample->pid, sample->eip);
@@ -491,6 +528,47 @@ void opd_proc_cleanup(void)
 			proc=next;
 		}
 	}
+}
 
-	opd_clear_module_info();
+/**
+ * opd_remove_kernel_mapping - remove all kernel mapping for an opd_proc
+ * @param proc  proc where mappings must be updated.
+ *
+ * invalidate (by removing them) all kernel mapping. This function do nothing
+ * when separate_kernel_samples == 0 because we don't add mapping for kernel
+ * sample in proc struct.
+ */
+void opd_remove_kernel_mapping(struct opd_proc * proc)
+{
+	size_t i;
+	size_t dest;
+
+	for (dest = 0, i = 0 ; i < proc->nr_maps ; ++i) {
+		if (!opd_eip_is_kernel(proc->maps[i].start + proc->maps[i].offset)) {
+			proc->maps[dest] = proc->maps[i];
+			++dest;
+		}
+	}
+
+	proc->nr_maps = dest;
+	proc->last_map = 0;
+}
+
+/**
+ * opd_clear_kernel_mapping - remove all kernel mapping for all opd_proc
+ *
+ * invalidate (by removing them) all kernel mapping. This function do nothing
+ * when separate_kernel_samples == 0 because we don't add mapping for kernel
+ * sample in proc struct.
+ */
+void opd_clear_kernel_mapping(void)
+{
+	uint i;
+
+	for (i = 0; i < OPD_MAX_PROC_HASH; i++) {
+		struct opd_proc * proc = opd_procs[i];
+		for ( ; proc ; proc = proc->next) {
+			opd_remove_kernel_mapping(proc);
+		}
+	}
 }

@@ -92,7 +92,7 @@ do_help() {
 	  --pid-filter=pid             Only profile process pid  (2.4 version)
 	  --pgrp-filter=pgrp           Only profile process tty group pgrp (2.4 version)
 	  --rtc-value=val	       Set sample rate to val per second (2.4 version)
-	  --separate=[library]         separate samples as given
+	  --separate=[library][,][kernel][,][all]         separate samples as given
 	  --vmlinux=file               vmlinux kernel image
 	  --verbose                    be verbose in the daemon log
 	  --kernel-range=start,end     kernel range vma address in hexadecimal
@@ -179,6 +179,7 @@ do_init() {
 	PGRP_FILTER=0
 	VERBOSE=0
 	SEPARATE_LIB_SAMPLES=0
+	SEPARATE_KERNEL_SAMPLES=0
 
 	# binaries called
 	OP_HELP=`dirname $0`/op_help
@@ -276,6 +277,7 @@ do_save_setup() {
  
 	echo "IGNORE_MYSELF=$IGNORE_MYSELF" >> $SETUP_FILE
 	echo "SEPARATE_LIB_SAMPLES=$SEPARATE_LIB_SAMPLES" >> $SETUP_FILE
+	echo "SEPARATE_KERNEL_SAMPLES=$SEPARATE_KERNEL_SAMPLES" >> $SETUP_FILE
 	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
 	echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
 	if test "$KERNEL_SUPPORT" != "yes"; then
@@ -353,6 +355,32 @@ error_if_empty() {
 		do_help 
 		exit 1
 	fi
+}
+
+
+# validate --separate= parameters. This function is called with IFS=,
+# so on each argument is splitted
+validate_separate_args() {
+	error_if_empty $1 $2	# we need at least one argument
+	local i=1
+	while (($i < $#)); do
+		shift
+		case "$1" in
+			library)
+				SEPARATE_LIB_SAMPLES=1
+				;;
+			kernel)
+				SEPARATE_KERNEL_SAMPLES=1
+				;;
+			all)
+				SEPARATE_LIB_SAMPLES=1
+				SEPARATE_KERNEL_SAMPLES=1
+				;;
+			*)
+				echo "invalid --separate= argument: $1"
+				exit 1
+		esac
+	done
 }
 
 
@@ -470,13 +498,10 @@ do_options() {
 				RTC_VALUE=$val
 				;;
 			--separate)
-				error_if_empty $arg $val
-				if test "$val" != "library"; then
-					echo "Unrecognised value for --separate" >&2
-					echo "Use --separate=library" >&2
-					exit 1;
-				fi
-				SEPARATE_LIB_SAMPLES=1
+				OLD_IFS=$IFS
+				IFS=,
+				validate_separate_args $arg $val
+				IFS=$OLD_IFS
 				;;
 			--vmlinux)
 				error_if_empty $arg $val
@@ -571,6 +596,7 @@ do_options() {
  
 	vecho "IGNORE_MYSELF $IGNORE_MYSELF"
 	vecho "SEPARATE_LIB_SAMPLES $SEPARATE_LIB_SAMPLES"
+	vecho "SEPARATE_KERNEL_SAMPLES $SEPARATE_KERNEL_SAMPLES"
 	vecho "VMLINUX $VMLINUX"
 }
 
@@ -778,7 +804,8 @@ do_start_daemon() {
 	do_sysctl_setup
 
 	OPD_ARGS="--vmlinux=$VMLINUX --kernel-range=$KERNEL_RANGE \
-		--separate-samples=$SEPARATE_LIB_SAMPLES \
+		--separate-lib-samples=$SEPARATE_LIB_SAMPLES \
+		--separate-kernel-samples=$SEPARATE_KERNEL_SAMPLES \
 		--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
 
 	if [ "$VERBOSE" = "1" ]; then

@@ -32,13 +32,10 @@ struct opd_header {
 	u32 ctr_count;
 	double cpu_speed;
 	time_t mtime;
-	int separate_samples;
+	int separate_lib_samples;
+	int separate_kernel_samples;
 	/* binary compatibility reserve */
-	u32 reserved1[20];
-};
-
-struct opd_fentry {
-	u32 count;
+	u32 reserved1[19];
 };
 
 #endif /* OP_SAMPLE_FILE_H */

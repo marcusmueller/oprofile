@@ -26,7 +26,8 @@
 #include <errno.h>
 
 extern uint op_nr_counters;
-extern int separate_samples;
+extern int separate_lib_samples;
+extern int separate_kernel_samples;
 extern u32 ctr_count[OP_MAX_COUNTERS];
 extern u8 ctr_event[OP_MAX_COUNTERS];
 extern u16 ctr_um[OP_MAX_COUNTERS];
@@ -98,7 +99,7 @@ void opd_handle_old_sample_files(struct opd_image const * image)
 	uint i;
 	char * mangled;
 	uint len;
-	char const * app_name = separate_samples ? image->app_name : NULL;
+	char const * app_name = separate_lib_samples ? image->app_name : NULL;
 
 	mangled = op_mangle_filename(image->name, app_name);
 
@@ -132,7 +133,7 @@ void opd_open_sample_file(struct opd_image * image, int counter)
 
 	sample_file = &image->sample_files[counter];
 
-	app_name = separate_samples ? image->app_name : NULL;
+	app_name = separate_lib_samples ? image->app_name : NULL;
 	mangled = op_mangle_filename(image->name, app_name);
 
 	sprintf(mangled + strlen(mangled), "#%d", counter);
@@ -160,7 +161,8 @@ void opd_open_sample_file(struct opd_image * image, int counter)
 	header->ctr_count = ctr_count[counter];
 	header->cpu_speed = cpu_speed;
 	header->mtime = image->mtime;
-	header->separate_samples = separate_samples;
+	header->separate_lib_samples = separate_lib_samples;
+	header->separate_kernel_samples = separate_kernel_samples;
 
 err:
 	free(mangled);

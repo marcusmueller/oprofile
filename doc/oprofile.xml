@@ -528,12 +528,20 @@ The <command>opcontrol</command> script options used with the
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--separate=</option>[library]</term>
+		<term><option>--separate=</option>[library][,][kernel][,][all]</term>
 		<listitem><para>
-		Separate samples using the separator given. Currently, only
-		<option>--separate=library</option> is supported, which provides
-		per-application sample files for dynamically linked libraries.
-		</para></listitem>
+		Separate samples using the separator given.
+		</para>
+		<informaltable frame="all">
+		<tgroup cols='2'> 
+		<tbody>
+		<row><entry><option>library</option></entry><entry>per-application dynamically linked libraries samples files</entry></row>
+		<row><entry><option>kernel</option></entry><entry>per-application modules and kernel samples files, kernel imply library samples separation</entry></row>
+		<row><entry><option>all</option></entry><entry>imply all above options</entry></row>
+		</tbody>
+		</tgroup>
+		</informaltable>
+		</listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--vmlinux=</option>file</term>
@@ -988,7 +996,7 @@ Some interesting options of the post-processor :
 		<term><option>-k</option></term>
 		<listitem><para>
 		Show the details for each shared lib which belongs to the given application. This option is useful only
-		if you have profiled with the <option>--separate=library</option> option and you specify on the
+		if you have profiled with the <option>--separate</option> option and you specify on the
 		oprofpp command line either <option>--list-symbols</option> or 
 		<option>--list-all-symbols-details</option>.
 		</para></listitem>

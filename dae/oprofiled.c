@@ -59,7 +59,8 @@ fd_t hashmapdevfd;
 uint op_nr_counters;
 int verbose;
 op_cpu cpu_type;
-int separate_samples;
+int separate_lib_samples;
+int separate_kernel_samples;
 char * vmlinux;
 int kernel_only;
 unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
@@ -89,7 +90,8 @@ static struct poptOption options[] = {
 	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "cpu-speed", 0, POPT_ARG_STRING, &cpu_speed_str, 0, "cpu speed (MHz)", "cpu_mhz", },
-	{ "separate-samples", 0, POPT_ARG_INT, &separate_samples, 0, "separate samples for each distinct application", "[0|1]", },
+	{ "separate-lib-samples", 0, POPT_ARG_INT, &separate_lib_samples, 0, "separate library samples for each distinct application", "[0|1]", },
+	{ "separate-kernel-samples", 0, POPT_ARG_INT, &separate_kernel_samples, 0, "separate kernel samples for each distinct application, this option imply --separate-lib-samples=1", "[0|1]", },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
 	POPT_AUTOHELP
@@ -270,7 +272,8 @@ static int opd_need_backup_samples_files(void)
 			    header.ctr_um != ctr_um[header.ctr] ||
 			    header.ctr_count != ctr_count[header.ctr] ||
 			    header.cpu_type != (u32)cpu_type ||
-			    header.separate_samples != separate_samples) {
+			    header.separate_lib_samples != separate_lib_samples ||
+			    header.separate_kernel_samples != separate_kernel_samples) {
 				verbprintf("Samples files header differ from last session\n");
 				need_backup = 1;
 			}
@@ -392,6 +395,10 @@ static void opd_options(int argc, char const * argv[])
 
 	if (showvers) {
 		show_version(argv[0]);
+	}
+
+	if (separate_kernel_samples) {
+		separate_lib_samples = 1;
 	}
 
 	cpu_type = op_get_cpu_type();
@@ -815,6 +822,7 @@ int main(int argc, char const * argv[])
 
 	free(sbuf);
 	free(nbuf);
+	opd_clear_module_info();
 	opd_proc_cleanup();
 	opd_image_cleanup();
 	free(vmlinux);

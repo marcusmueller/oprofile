@@ -66,7 +66,8 @@ int main(int argc, char const ** argv)
 		header->ctr_count = 0xdeadbeef;
 		header->cpu_speed = 0;
 		header->mtime = 1034790063;
-		header->separate_samples = 0;
+		header->separate_lib_samples = 0;
+		header->separate_kernel_samples = 0;
 
     
 		for(int i = 0; i < 3793; ++i) {

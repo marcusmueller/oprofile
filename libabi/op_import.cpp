@@ -121,7 +121,8 @@ void import_from_abi(Abi const & abi,
 	ext.extract(head->ctr_count, src, "sizeof_u32", "offsetof_header_ctr_count");
 	head->cpu_speed = 0.; // "double" extraction is unlikely to work
 	ext.extract(head->mtime, src, "sizeof_time_t", "offsetof_header_mtime");
-	ext.extract(head->separate_samples, src, "sizeof_int", "offsetof_header_separate_samples");
+	ext.extract(head->separate_lib_samples, src, "sizeof_int", "offsetof_header_separate_lib_samples");
+	ext.extract(head->separate_kernel_samples, src, "sizeof_int", "offsetof_header_separate_kernel_samples");
 	src += abi.need("sizeof_struct_opd_header");
 	// done extracting opd header
 
