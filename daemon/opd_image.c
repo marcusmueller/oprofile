@@ -454,9 +454,13 @@ void opd_process_samples(char const * buffer, size_t count)
 				in_kernel = 0;
 				break;
 
+			case KERNEL_DROP_MODULES_CODE:
+				/* FIXME: add support */
+				break;
+
 			default:
 				verbprintf("Unknown code %lx\n", code);
-				++i;
+				exit(EXIT_FAILURE);
 				break;
 		}
 	}

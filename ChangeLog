@@ -1,3 +1,9 @@
+2003-01-23  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_interface_25.h:
+	* daemon/opd_image.c: prepare drop modules support. exit() when
+	  receiving unknown escape code.
+
 2003-01-23   Randolph Chung  <tausq@debian.org>
 
 	Added minor change: backward compatibility, u_int to uint, fix
