@@ -55,7 +55,7 @@ clean:
 	rm -f module/*.o module/arch/*.o module/.*.o.cmd module/.*.o.flags module/arch/.*.o.cmd module/arch/.*.o.flags
 
 maintainerclean: distclean
-	rm -f configure aclocal.m4 config.h.in
+	rm -f configure aclocal.m4 config.h.in doc/oprofile.html doc/oprofile.1
 
 distclean: clean
 	for i in $(SUBDIRS) ; \

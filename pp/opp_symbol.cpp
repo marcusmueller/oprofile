@@ -253,27 +253,26 @@ void output_symbol::DoOutput(ostream & out, string const & name,
 	for (size_t ctr = 0 ; ctr < samples_container.get_nr_counters(); ++ctr) {
 		if ((counter & (1 << ctr)) != 0) {
 			size_t repeated_flag = (flag & osf_repeat_mask);
-			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {
-				if ((repeated_flag & (1 << i)) != 0) {
+			for (size_t i = 1 ; repeated_flag != 0 ; i <<= 1) {
+				if ((repeated_flag & i) != 0) {
 					outsymbflag fl =
-					  static_cast<outsymbflag>(1 << i);
+					  static_cast<outsymbflag>(i);
 					padding = OutputField(out, name,
 						sample, fl, ctr, padding);
-					repeated_flag &= ~(1 << i);
+					repeated_flag &= ~i;
 				}
 			}
 		}
-
 	}
 
 	// now the remaining field
 	size_t temp_flag = flag & ~(osf_vma|osf_repeat_mask|osf_details|osf_header);
 	size_t true_flags = flags & ~(osf_vma|osf_repeat_mask|osf_header);
-	for (size_t i = 0 ; temp_flag != 0 ; ++i) {
-		outsymbflag fl = static_cast<outsymbflag>(1 << i);
+	for (size_t i = 1 ; temp_flag != 0 ; i <<= 1) {
+		outsymbflag fl = static_cast<outsymbflag>(i);
 		if ((temp_flag & fl) != 0) {
 			padding = OutputField(out, name, sample, fl, 0, padding);
-			temp_flag &= ~(1 << i);
+			temp_flag &= ~i;
 		} else if ((true_flags & fl) != 0) {
 			field_description const * field = GetFieldDescr(fl);
 			if (field) {
@@ -308,26 +307,25 @@ void output_symbol::OutputHeader(ostream & out)
 	for (size_t ctr = 0 ; ctr < samples_container.get_nr_counters(); ++ctr) {
 		if ((counter & (1 << ctr)) != 0) {
 			size_t repeated_flag = (flags & osf_repeat_mask);
-			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {
-				if ((repeated_flag & (1 << i)) != 0) {
+			for (size_t i = 1 ; repeated_flag != 0 ; i <<= 1) {
+				if ((repeated_flag & i) != 0) {
 					outsymbflag fl =
-					  static_cast<outsymbflag>(1 << i);
+					  static_cast<outsymbflag>(i);
 					padding =
 					  OutputHeaderField(out, fl, padding);
-					repeated_flag &= ~(1 << i);
+					repeated_flag &= ~i;
 				}
 			}
 		}
-
 	}
 
 	// now the remaining field
 	size_t temp_flag = flags & ~(osf_vma|osf_repeat_mask|osf_details|osf_header);
-	for (size_t i = 0 ; temp_flag != 0 ; ++i) {
-		if ((temp_flag & (1 << i)) != 0) {
-			outsymbflag fl = static_cast<outsymbflag>(1 << i);
+	for (size_t i = 1 ; temp_flag != 0 ; i <<= 1) {
+		if ((temp_flag & i) != 0) {
+			outsymbflag fl = static_cast<outsymbflag>(i);
 			padding = OutputHeaderField(out, fl, padding);
-			temp_flag &= ~(1 << i);
+			temp_flag &= ~i;
 		}
 	}
 
