@@ -417,6 +417,7 @@ static int oprof_release(struct inode * ino, struct file * file)
 
 	clear_bit(0, &oprof_opened);
 
+	// FIXME: is this safe when I kill -9 the daemon ? 
 	return oprof_stop();
 }
 
@@ -577,6 +578,7 @@ static void oprof_partial_stop(void)
 static int oprof_stop(void)
 {
 	uint i;
+	// FIXME: err not needed 
 	int err = -EINVAL;
 
 	down(&sysctlsem);
