@@ -784,7 +784,7 @@ void output::build_samples_containers()
 		uint linenr;
 		symbol_entry symb_entry;
 
-		abfd.get_symbol_range(i, &start, &end);
+		abfd.get_symbol_range(i, start, end);
 
 		bool found_samples = false;
 		for (uint j = start; j < end; ++j)
@@ -796,7 +796,7 @@ void output::build_samples_containers()
 		symb_entry.name = demangle_symbol(abfd.syms[i]->name);
 		symb_entry.first = samples.size();
 
-		if (abfd.get_linenr(i, start, &filename, &linenr)) {
+		if (abfd.get_linenr(i, start, filename, linenr)) {
 			symb_entry.sample.file_loc.filename = filename;
 			symb_entry.sample.file_loc.linenr = linenr;
 		} else {
@@ -813,7 +813,7 @@ void output::build_samples_containers()
 			if (samples_files.accumulate_samples(sample.counter, pos) == false)
 				continue;
 
-			if (abfd.get_linenr(i, pos, &filename, &linenr)) {
+			if (abfd.get_linenr(i, pos, filename, linenr)) {
 				sample.file_loc.filename = filename;
 				sample.file_loc.linenr = linenr;
 			} else {

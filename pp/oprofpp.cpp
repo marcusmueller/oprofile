@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.3 2001/09/29 14:59:30 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.4 2001/09/30 13:57:05 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -15,8 +15,6 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-// FIXME: rename to oprofpp.cpp
- 
 // FIXME: sprintf -> sstream (and elsewhere) 
 #include <algorithm>
 
@@ -557,13 +555,13 @@ u32 opp_bfd::sym_offset(uint sym_index, u32 num) const
  * is never set to NULL.
  */
 bool opp_bfd::get_linenr(uint sym_idx, uint offset, 
-			const char** filename, unsigned int* linenr)
+			const char*& filename, unsigned int& linenr)
 {
 	const char *functionname;
 	bfd_vma pc;
 
-	*filename = 0;
-	*linenr = 0;
+	filename = 0;
+	linenr = 0;
 
 	asection* section = syms[sym_idx]->section;
 
@@ -576,11 +574,11 @@ bool opp_bfd::get_linenr(uint sym_idx, uint offset,
 		return false;
 
 	bool ret = bfd_find_nearest_line(ibfd, section, bfd_syms, pc,
-					 filename, &functionname, linenr);
+					 &filename, &functionname, &linenr);
 
-	if (*filename == NULL || ret == false) {
-		*filename = "";
-		*linenr = 0;
+	if (filename == NULL || ret == false) {
+		filename = "";
+		linenr = 0;
 	}
 
 	return ret;
@@ -601,7 +599,7 @@ void opp_bfd::output_linenr(uint sym_idx, uint offset)
 	if (!output_linenr_info)
 		return;
 
-	if (get_linenr(sym_idx, offset, &filename, &line))
+	if (get_linenr(sym_idx, offset, filename, line))
 		printf ("%s:%u ", filename, line);
 	else
 		printf ("??:0 ");
@@ -621,8 +619,7 @@ void opp_bfd::output_linenr(uint sym_idx, uint offset)
  *
  * All error are fatal.
  */
-// FIXME: references not pointers ! 
-void opp_bfd::get_symbol_range(uint sym_idx, u32 *start, u32 *end) const
+void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 {
 	asymbol *sym, *next;
 
@@ -630,34 +627,34 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 *start, u32 *end) const
 	next = (sym_idx == syms.size() - 1) ? NULL : syms[sym_idx + 1];
 
 	verbprintf("Symbol %s, value 0x%lx\n", sym->name, sym->value); 
-	*start = sym->value;
+	start = sym->value;
 	/* offset of section */
-	*start += sym->section->filepos;
+	start += sym->section->filepos;
 	verbprintf("in section %s, filepos 0x%lx\n", sym->section->name, sym->section->filepos);
 	/* adjust for kernel image */
-	*start += sect_offset;
+	start += sect_offset;
 	if (next) {
-		*end = next->value;
+		end = next->value;
 		/* offset of section */
-		*end += next->section->filepos;
+		end += next->section->filepos;
 		/* adjust for kernel image */
-		*end += sect_offset;
+		end += sect_offset;
 	} else
-		*end = nr_samples;
-	verbprintf("start 0x%x, end 0x%x\n", *start, *end); 
+		end = nr_samples;
+	verbprintf("start 0x%x, end 0x%x\n", start, end); 
 
-	if (*start >= nr_samples) {
-		fprintf(stderr,"oprofpp: start 0x%x out of range (max 0x%x)\n", *start, nr_samples);
+	if (start >= nr_samples) {
+		fprintf(stderr,"oprofpp: start 0x%x out of range (max 0x%x)\n", start, nr_samples);
 		exit(EXIT_FAILURE);
 	}
 
-	if (*end > nr_samples) {
-		fprintf(stderr,"oprofpp: end 0x%x out of range (max 0x%x)\n", *end, nr_samples);
+	if (end > nr_samples) {
+		fprintf(stderr,"oprofpp: end 0x%x out of range (max 0x%x)\n", end, nr_samples);
 		exit(EXIT_FAILURE);
 	}
 
-	if (*start > *end) {
-		fprintf(stderr,"oprofpp: start 0x%x overflow or end 0x%x underflow\n", *start, *end);
+	if (start > end) {
+		fprintf(stderr,"oprofpp: start 0x%x overflow or end 0x%x underflow\n", start, end);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -943,19 +940,19 @@ static bool countcomp(const opp_count& a, const opp_count& b)
  * Lists all the symbols in decreasing sample count
  * order, to standard out.
  */
-void opp_samples_files::do_list_symbols(opp_bfd* abfd) const
+void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 {
-	std::vector<opp_count> scounts(abfd->syms.size());
+	std::vector<opp_count> scounts(abfd.syms.size());
 	u32 start, end;
 	counter_array_t tot;
 	uint i,j;
 	bool found_samples;
 	uint k;
 
-	for (i = 0; i < abfd->syms.size(); i++) {
-		scounts[i].sym = abfd->syms[i];
+	for (i = 0; i < abfd.syms.size(); i++) {
+		scounts[i].sym = abfd.syms[i];
 
-		abfd->get_symbol_range(i, &start, &end); 
+		abfd.get_symbol_range(i, start, end); 
 		for (j = start; j < end; j++)
 			accumulate_samples(scounts[i].count, j);
 
@@ -964,7 +961,7 @@ void opp_samples_files::do_list_symbols(opp_bfd* abfd) const
 
 	std::sort(scounts.begin(), scounts.end(), countcomp);
 
-	for (i = 0; i < abfd->syms.size(); i++) {
+	for (i = 0; i < abfd.syms.size(); i++) {
 		printf_symbol(scounts[i].sym->name);
 
 		found_samples = false;
@@ -992,37 +989,33 @@ void opp_samples_files::do_list_symbols(opp_bfd* abfd) const
  * the samples for this symbol from the image 
  * specified by @abfd.
  */
-void opp_samples_files::do_list_symbol(opp_bfd* abfd) const
+void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 {
 	u32 start, end;
 	u32 j;
 	uint k;
 
-	int i = abfd->symbol_index(symbol);
+	int i = abfd.symbol_index(symbol);
 	if (i < 0) {
 		fprintf(stderr, "oprofpp: symbol \"%s\" not found in image file.\n", symbol);
 		return;
 	}
 
-	printf("Samples for symbol \"%s\" in image %s\n", symbol, abfd->ibfd->filename);
+	printf("Samples for symbol \"%s\" in image %s\n", symbol, abfd.ibfd->filename);
 
-	abfd->get_symbol_range(i, &start, &end);
+	abfd.get_symbol_range(i, start, end);
 	for (j = start; j < end; j++) {
-		for (k = 0 ; k < nr_counters ; ++k) {
-			if (samples_count(k, j))
-				break;
-		}
-
-		/* all counters are empty at this address */ 
-		if (k == nr_counters)
+		counter_array_t count;
+		if (accumulate_samples(count, j) == false)
+			// all counters are empty at this address
 			continue;
- 
-		abfd->output_linenr(i, j);
-		printf("%s+%x/%x:", symbol, abfd->sym_offset(i, j), end-start);
+
+		abfd.output_linenr(i, j);
+		printf("%s+%x/%x:", symbol, abfd.sym_offset(i, j), end-start);
  
 		for (k = 0 ; k < nr_counters ; ++k) {
 			if (is_open(k))
-				printf("\t%u", samples_count(k, j));
+				printf("\t%u", count[k]);
 		}
 		printf("\n");
 	}
@@ -1044,8 +1037,10 @@ struct gmon_hdr {
  *
  * Dump gprof-format samples for the image specified by samplefile to
  * the file specified by gproffile.
+ *
+ * this use the grpof format <= gcc 3.0
  */
-void opp_samples_files::do_dump_gprof(struct opp_bfd* abfd) const
+void opp_samples_files::do_dump_gprof(opp_bfd & abfd) const
 {
 	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},}; 
 	FILE *fp; 
@@ -1062,15 +1057,15 @@ void opp_samples_files::do_dump_gprof(struct opp_bfd* abfd) const
 
 	opd_write_u8(fp, GMON_TAG_TIME_HIST);
 
-	for (i = 0; i < abfd->syms.size(); i++) {
-		start = abfd->syms[i]->value + abfd->syms[i]->section->vma;
-		if (i == abfd->syms.size() - 1) {
-			abfd->get_symbol_range(i, &start, &end);
+	for (i = 0; i < abfd.syms.size(); i++) {
+		start = abfd.syms[i]->value + abfd.syms[i]->section->vma;
+		if (i == abfd.syms.size() - 1) {
+			abfd.get_symbol_range(i, start, end);
 			end -= start;
-			start = abfd->syms[i]->value + abfd->syms[i]->section->vma;
+			start = abfd.syms[i]->value + abfd.syms[i]->section->vma;
 			end += start;
 		} else
-			end = abfd->syms[i+1]->value + abfd->syms[i+1]->section->vma;
+			end = abfd.syms[i+1]->value + abfd.syms[i+1]->section->vma;
  
 		if (start < low_pc)
 			low_pc = start;
@@ -1092,12 +1087,12 @@ void opp_samples_files::do_dump_gprof(struct opp_bfd* abfd) const
 
 	hist = (u16*)opd_calloc0(histsize, sizeof(u16)); 
  
-	for (i = 0; i < abfd->syms.size(); i++) {
-		abfd->get_symbol_range(i, &start, &end); 
-		for (j=start; j < end; j++) {
+	for (i = 0; i < abfd.syms.size(); i++) {
+		abfd.get_symbol_range(i, start, end); 
+		for (j = start; j < end; j++) {
 			u32 count;
 			u32 pos;
-			pos = (abfd->sym_offset(i, j) + abfd->syms[i]->value + abfd->syms[i]->section->vma - low_pc) / MULTIPLIER; 
+			pos = (abfd.sym_offset(i, j) + abfd.syms[i]->value + abfd.syms[i]->section->vma - low_pc) / MULTIPLIER; 
 
 			/* opp_get_options have set ctr to one value != -1 */
 			count = samples_count(ctr, j);
@@ -1110,7 +1105,7 @@ void opp_samples_files::do_dump_gprof(struct opp_bfd* abfd) const
 			if (hist[pos] + count > (u16)-1) {
 				printf("Warning: capping sample count by %u samples for "
 					"symbol \"%s\"\n", hist[pos] + count - ((u16)-1),
-					abfd->syms[i]->name);
+					abfd.syms[i]->name);
 				hist[pos] = (u16)-1;
 			} else {
 				hist[pos] += (u16)count;
@@ -1131,7 +1126,7 @@ void opp_samples_files::do_dump_gprof(struct opp_bfd* abfd) const
  * increasing order of vma. Nothing occur if the the symbol
  * do not have any sample associated with it.
  */
-void opp_samples_files::do_list_symbol_details(opp_bfd* abfd, uint sym_idx) const
+void opp_samples_files::do_list_symbol_details(opp_bfd & abfd, uint sym_idx) const
 {
 	counter_array_t counter;
 	uint j, k;
@@ -1140,9 +1135,9 @@ void opp_samples_files::do_list_symbol_details(opp_bfd* abfd, uint sym_idx) cons
 	u32 start, end;
 	asymbol * sym;
 
-	sym = abfd->syms[sym_idx];
+	sym = abfd.syms[sym_idx];
 
-	abfd->get_symbol_range(sym_idx, &start, &end);
+	abfd.get_symbol_range(sym_idx, start, end);
 
 	/* To avoid outputing 0 samples symbols */
 	found_samples = false;
@@ -1153,9 +1148,9 @@ void opp_samples_files::do_list_symbol_details(opp_bfd* abfd, uint sym_idx) cons
 		return;
 
 	base_vma = sym->value + sym->section->vma;
-	vma = abfd->sym_offset(sym_idx, start) + base_vma;
+	vma = abfd.sym_offset(sym_idx, start) + base_vma;
 
-	abfd->output_linenr(sym_idx, start);
+	abfd.output_linenr(sym_idx, start);
 	printf("%.8lx ", vma);
 	for (k = 0 ; k < nr_counters ; ++k)
 		printf("%u ", counter[k]);
@@ -1163,17 +1158,16 @@ void opp_samples_files::do_list_symbol_details(opp_bfd* abfd, uint sym_idx) cons
 	printf("\n");
 
 	for (j = start; j < end; j++) {
-		for (k = 0; k < nr_counters; ++k)
-			counter[k] = 0;
+		counter_array_t counter;
 
 		found_samples = accumulate_samples(counter, j);
 		if (found_samples == false)
 			continue;
 
-		vma = abfd->sym_offset(sym_idx, j) + base_vma;
+		vma = abfd.sym_offset(sym_idx, j) + base_vma;
 
 		printf(" ");
-		abfd->output_linenr(sym_idx, j);
+		abfd.output_linenr(sym_idx, j);
 		printf("%.8lx", vma);
 
 		for (k = 0; k < nr_counters; ++k)
@@ -1189,13 +1183,10 @@ void opp_samples_files::do_list_symbol_details(opp_bfd* abfd, uint sym_idx) cons
  * Lists all the samples for all the symbols, from the image specified by
  * @abfd, in increasing order of vma, to standard out.
  */
-void opp_samples_files::do_list_all_symbols_details(opp_bfd* abfd) const
+void opp_samples_files::do_list_all_symbols_details(opp_bfd & abfd) const
 {
-	size_t i;
-
-	for (i = 0 ; i < abfd->syms.size(); ++i) {
+	for (size_t i = 0 ; i < abfd.syms.size(); ++i)
 		do_list_symbol_details(abfd, i);
-	} 
 }
 
 #ifndef OPROFPP_NO_MAIN
@@ -1236,7 +1227,7 @@ void opp_samples_files::output_header() const
 }
 
 /**
- * main - output "hello, world" to stdout
+ * main
  */
 int main(int argc, char const *argv[])
 {
@@ -1247,15 +1238,14 @@ int main(int argc, char const *argv[])
 
 	samples_files.output_header();
 
-	if (list_symbols) {
-		samples_files.do_list_symbols(&abfd);
-	} else if (symbol) {
-		samples_files.do_list_symbol(&abfd);
-	} else if (gproffile) {
-		samples_files.do_dump_gprof(&abfd);
-	} else if (list_all_symbols_details) {
-		samples_files.do_list_all_symbols_details(&abfd);
-	}
+	if (list_symbols)
+		samples_files.do_list_symbols(abfd);
+	else if (symbol)
+		samples_files.do_list_symbol(abfd);
+	else if (gproffile)
+		samples_files.do_dump_gprof(abfd);
+	else if (list_all_symbols_details)
+		samples_files.do_list_all_symbols_details(abfd);
 
 	return 0;
 }

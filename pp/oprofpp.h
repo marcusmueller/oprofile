@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.22 2001/09/29 14:59:31 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.23 2001/09/30 13:57:05 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -91,9 +91,9 @@ struct opp_bfd {
 	~opp_bfd();
 
 	bool get_linenr(uint sym_idx, uint offset, 
-			const char** filename, unsigned int* linenr) ;
+			const char*& filename, unsigned int& linenr) ;
 	void output_linenr(uint sym_idx, uint offset);
-	void get_symbol_range(uint sym_idx, u32 *start, u32 *end) const;
+	void get_symbol_range(uint sym_idx, u32 & start, u32 & end) const;
 	int symbol_index(const char* symbol) const;
 
 	u32 sym_offset(uint num_symbols, u32 num) const;
@@ -119,11 +119,11 @@ struct opp_samples_files {
 	opp_samples_files();
 	~opp_samples_files();
 
-	void do_list_all_symbols_details(opp_bfd* abfd) const;
-	void do_list_symbol_details(opp_bfd* abfd, uint sym_idx) const;
-	void do_dump_gprof(opp_bfd* abfd) const;
-	void do_list_symbols(opp_bfd* abfd) const;
-	void do_list_symbol(opp_bfd* abfd) const;
+	void do_list_all_symbols_details(opp_bfd & abfd) const;
+	void do_list_symbol_details(opp_bfd & abfd, uint sym_idx) const;
+	void do_dump_gprof(opp_bfd & abfd) const;
+	void do_list_symbols(opp_bfd & abfd) const;
+	void do_list_symbol(opp_bfd & abfd) const;
 
 	/**
 	 * is_open - test if a samples file is open
