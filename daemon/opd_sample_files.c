@@ -20,7 +20,6 @@
 #include "op_cpu_type.h"
 #include "op_mangle.h"
 
-#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -124,7 +123,6 @@ void opd_handle_old_sample_files(struct opd_image const * image)
  * image->kernel and image->name must have meaningful
  * values.
  */
-// FIXME: take db_tree_t * instead
 void opd_open_sample_file(struct opd_image * image, int counter)
 {
 	char * mangled;

@@ -1,3 +1,20 @@
+2002-10-31  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/.cvsignore:
+	* dae/opd_image.c:
+	* dae/opd_kernel.c:
+	* dae/opd_sample_files.c:
+	* dae/opd_stats.c:
+	* dae/oprofiled.c:
+	* daemon/opd_image.c:
+	* daemon/opd_sample_files.c:
+	* libop/op_config_24.h: cleanup, including some little merging
+	  from daemon to dae
+
+	* daemon/opd_image.c: change dcookie hashing function
+	
+	* doc/oprofile.xml: typo
+
 2002-10-26  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/file_manip.cpp:

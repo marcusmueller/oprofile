@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <linux/cache.h>
+
 extern uint op_nr_counters;
 extern int separate_samples;
 
@@ -117,6 +119,8 @@ static void opd_init_image(struct opd_image * image, unsigned long cookie,
 {
 	char buf[PATH_MAX + 1];
  
+	/* FIXME: if dcookie lookup fail we will re open multiple time the
+	 * same db which doesn't work */
 	if (opd_get_dcookie(cookie, buf, PATH_MAX))
 		image->name = xstrdup("");
 	else
@@ -236,7 +240,7 @@ void opd_put_image_sample(struct opd_image * image,
 /** return hash value for a cookie */
 static unsigned long opd_hash_cookie(unsigned long cookie)
 {
-	return (cookie >> 2) & (IMAGE_HASH_SIZE - 1);
+	return (cookie >> L1_CACHE_SHIFT) & (IMAGE_HASH_SIZE - 1);
 }
  
 

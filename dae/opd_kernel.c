@@ -295,7 +295,8 @@ static void opd_drop_module_sample(unsigned long eip)
 		name += strlen(name) + 1;
 	}
 out:
-	if (module_names) free(module_names);
+	if (module_names)
+		free(module_names);
 }
 
 
@@ -406,4 +407,3 @@ int opd_eip_is_kernel(unsigned long eip)
 {
 	return (eip >= kernel_start);
 }
-

@@ -534,7 +534,7 @@ contain the general configuration, and event/counter setup, respectively.
 <para>
 It can often be useful to split up profiling data into several different
 time periods. For example, you may want to collect data on an application's
-startup separately from the normal runtime data. You can use the simple to
+startup separately from the normal runtime data. You can use the simple
 tool <command>op_session</command> to do this. For example :
 </para>
 <screen>

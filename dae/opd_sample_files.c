@@ -9,6 +9,8 @@
  * @author Philippe Elie
  */
 
+#include <sys/types.h>
+ 
 #include "opd_sample_files.h"
 #include "opd_image.h"
 #include "opd_printf.h"
@@ -18,7 +20,6 @@
 #include "op_cpu_type.h"
 #include "op_mangle.h"
 
-#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

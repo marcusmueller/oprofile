@@ -68,6 +68,7 @@ static u32 ctr_enabled[OP_MAX_COUNTERS];
 /* Unfortunately popt does not have, on many versions, the POPT_ARG_DOUBLE type
  * so I must first store it as a string. */
 static char const * cpu_speed_str;
+static char const * mount = OP_MOUNT;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
 static pid_t mypid;
@@ -298,6 +299,25 @@ static int opd_need_backup_samples_files(void)
 	return need_backup;
 }
 
+
+/** return the int in the given counter's oprofilefs file */
+static int opd_read_fs_int_pmc(int ctr, char const * name)
+{
+	char filename[PATH_MAX + 1];
+	snprintf(filename, PATH_MAX, "%s/%d/%s", mount, ctr, name);
+	return op_read_int_from_file(filename);
+}
+
+ 
+/** return the int in the given oprofilefs file */
+static int opd_read_fs_int(char const * name)
+{
+	char filename[PATH_MAX + 1];
+	snprintf(filename, PATH_MAX, "%s/%s", mount, name);
+	return op_read_int_from_file(filename);
+}
+
+
 /**
  * opd_pmc_options - read sysctls for pmc options
  */
@@ -305,21 +325,12 @@ static void opd_pmc_options(void)
 {
 	int ret;
 	uint i;
-	/* should be sufficient to hold /proc/sys/dev/oprofile/%d/yyyy */
-	char filename[PATH_MAX + 1];
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		sprintf(filename, "/proc/sys/dev/oprofile/%d/event", i);
-		ctr_event[i]= op_read_int_from_file(filename);
-
-		sprintf(filename, "/proc/sys/dev/oprofile/%d/count", i);
-		ctr_count[i]= op_read_int_from_file(filename);
-
-		sprintf(filename, "/proc/sys/dev/oprofile/%d/unit_mask", i);
-		ctr_um[i]= op_read_int_from_file(filename);
-
-		sprintf(filename, "/proc/sys/dev/oprofile/%d/enabled", i);
-		ctr_enabled[i]= op_read_int_from_file(filename);
+		ctr_event[i] = opd_read_fs_int_pmc(i, "event");
+		ctr_count[i] = opd_read_fs_int_pmc(i, "count");
+		ctr_um[i] = opd_read_fs_int_pmc(i, "unit_mask");
+		ctr_enabled[i] = opd_read_fs_int_pmc(i, "enabled");
 
 		if (!ctr_enabled[i])
 			continue;
@@ -396,9 +407,9 @@ static void opd_options(int argc, char const * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	opd_buf_size = op_read_int_from_file("/proc/sys/dev/oprofile/bufsize");
-	opd_note_buf_size = op_read_int_from_file("/proc/sys/dev/oprofile/notesize");
-	kernel_only = op_read_int_from_file("/proc/sys/dev/oprofile/kernel_only");
+	opd_buf_size = opd_read_fs_int("bufsize");
+	opd_note_buf_size = opd_read_fs_int("notesize");
+	kernel_only = opd_read_fs_int("kernel_only");
 
 	if (cpu_type != CPU_RTC) {
 		opd_pmc_options();
@@ -511,6 +522,7 @@ static void opd_shutdown(struct op_buffer_head * buf, size_t size, struct op_not
 		opd_do_samples(buf);
 	}
 }
+ 
 
 /**
  * opd_do_read - enter processing loop
@@ -521,8 +533,6 @@ static void opd_shutdown(struct op_buffer_head * buf, size_t size, struct op_not
  *
  * Read some of a buffer from the device and process
  * the contents.
- *
- * Never returns.
  */
 static void opd_do_read(struct op_buffer_head * buf, size_t size, struct op_note * nbuf, size_t nsize)
 {
@@ -678,6 +688,8 @@ static void clean_exit(void)
 
 static void opd_sigterm(int val __attribute__((unused)))
 {
+	opd_print_stats();
+	printf("oprofiled stopped %s", op_get_time());
 	clean_exit();
 	exit(EXIT_FAILURE);
 }

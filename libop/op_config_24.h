@@ -14,6 +14,8 @@
 #define OP_CONFIG_24_H
 
 #include "op_config.h"
+
+#define OP_MOUNT "/proc/sys/dev/oprofile/"
  
 #define OP_DEVICE OP_BASE_DIR "opdev"
 #define OP_NOTE_DEVICE OP_BASE_DIR "opnotedev"

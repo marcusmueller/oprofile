@@ -31,8 +31,7 @@ void opd_print_stats(void)
 	printf("Nr. image struct: %d\n", nr_images);
 	printf("Nr. kernel samples: %lu\n", opd_stats[OPD_KERNEL]);
 	printf("Nr. modules samples: %lu\n", opd_stats[OPD_MODULE]);
-	printf("Nr. modules samples lost: %lu\n",
-		opd_stats[OPD_LOST_MODULE]);
+	printf("Nr. modules samples lost: %lu\n", opd_stats[OPD_LOST_MODULE]);
 	printf("Nr. samples lost due to no process information: %lu\n",
 		opd_stats[OPD_LOST_PROCESS]);
 	printf("Nr. process samples in user-space: %lu\n", opd_stats[OPD_PROCESS]);

@@ -86,7 +86,7 @@ void opd_for_each_image(opd_image_cb image_cb)
 
 	image_cb(kernel_image);
 }
-
+ 
 
 /**
  * opd_init_image - init an image sample file
@@ -114,6 +114,7 @@ static void opd_init_image(struct opd_image * image, char const * name,
 	image->hash = hash;
 	image->app_name = app_name ? xstrdup(app_name) : NULL;
 }
+
 
 /**
  * opd_open_image - open an image sample file
@@ -227,11 +228,10 @@ static struct opd_image * opd_add_image(char const * name, int hash, char const 
 	}
 
 	nr_images++;
-
 	opd_open_image(image);
-
 	return image;
 }
+
 
 /**
  * is_same_image - check for identical image
