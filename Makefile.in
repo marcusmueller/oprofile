@@ -1,18 +1,21 @@
-# $Id: Makefile.in,v 1.5 2000/08/03 21:43:06 moz Exp $
+# $Id: Makefile.in,v 1.6 2000/08/07 04:19:34 moz Exp $
  
 KCPPFLAGS=@KCPPFLAGS@
 MODINSTALLDIR=@MODINSTALLDIR@
 CC=@CC@ 
 LD=@LD@ 
  
-.PHONY: all install clean distclean
+.PHONY: all install clean distclean tags
  
 all: oprofile.o
 	$(MAKE) -C dae
 	$(MAKE) -C pp
 
 distclean: clean
-	rm -f Makefile dae/Makefile pp/Makefile
+	rm -f Makefile dae/Makefile pp/Makefile tags
+ 
+tags:
+	ctags -R
  
 install: oprofile.o
 	cp oprofile.o $(MODINSTALLDIR)
