@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.12 2002/01/04 04:26:34 movement Exp $ */
+/* $Id: oprofile.h,v 1.13 2002/01/10 03:47:13 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -24,11 +24,12 @@
 #include <linux/vmalloc.h>
 #include <linux/sched.h>
 #include <linux/sysctl.h>
+#include <linux/smp_lock.h>
 
 #include <asm/uaccess.h>
-#include <asm/smplock.h>
-#include <asm/apic.h>
 
+#include "compat.h"
+ 
 /* userspace/module interface */
 #include "../op_user.h"
 
@@ -204,6 +205,18 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 
 #define op_cpu_id() (cpu_number_map(smp_processor_id()))
 
+#ifndef THIS_MODULE
+#define THIS_MODULE (&__this_module)
+#endif
+ 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,1)
+#define GET_VM_OFFSET(v) ((v)->vm_offset)
+#define PTRACE_OFF(t) ((t)->flags &= ~PF_DTRACE)
+#else
+#define GET_VM_OFFSET(v) ((v)->vm_pgoff << PAGE_SHIFT)
+#define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
+#endif
+ 
 /* A work-around against a compiler bug in gcc 2.91.66, just mark all input
  * register as magically cloberred by wrmsr */
 #if __GNUC__ == 2 && __GNUC_MINOR__ == 91
@@ -213,6 +226,21 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 			  : /* no outputs */			\
 			  : "c" (msr), "a" (val1), "d" (val2)	\
 			  : "ecx", "eax", "edx")
+#endif
+
+/* if future kernel use function rather macro we need autoconf to detect it */
+#ifndef rdmsr
+#define rdmsr(msr,val1,val2) \
+       __asm__ __volatile__("rdmsr" \
+			    : "=a" (val1), "=d" (val2) \
+			    : "c" (msr))
+#endif
+
+#ifndef wrmsr
+#define wrmsr(msr,val1,val2) \
+     __asm__ __volatile__("wrmsr" \
+			  : /* no outputs */ \
+			  : "c" (msr), "a" (val1), "d" (val2))
 #endif
  
 /* branch prediction */

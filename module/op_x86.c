@@ -9,9 +9,6 @@
 #include <linux/mm.h>
 #include <linux/init.h>
 #include <linux/config.h>
-
-#include <asm/smp.h>
-#include <asm/mpspec.h>
 #include <asm/io.h>
 
 #include "oprofile.h"

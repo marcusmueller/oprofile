@@ -827,7 +827,10 @@ out:
 }
 
 static struct file_operations oprof_fops = {
+// FIXME: no locking at all for 2.2  ?
+#ifdef HAVE_FILE_OPERATIONS_OWNER
 	owner: THIS_MODULE,
+#endif 
 	open: oprof_open,
 	release: oprof_release,
 	read: oprof_read,

@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.64 2002/01/09 18:34:22 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.65 2002/01/10 03:47:12 phil_e Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -77,7 +77,7 @@ dnl it's like this to handle mandrake's fubar version.h - bug #471448
 eval KVERS=`gcc -I$KINC -E -dM $KINC/linux/version.h | grep -w UTS_RELEASE | awk '{print $3}'`
 AC_MSG_RESULT($KVERS)
 case "$KVERS" in
-2.4.*|2.5.*) ;;
+2.2.*|2.4.*|2.5.*) ;;
 *) AC_MSG_ERROR(Unsupported kernel version)
 esac
 
@@ -125,6 +125,8 @@ fi
 
 AC_MSG_CHECKING(for x86 architecture)
 AX_COMPILE_OPTION(CONFIG_X86,x86=1,x86=0)
+# FIXME, recheck later needed for 2.2
+AX_COMPILE_OPTION(CONFIG_X86_WP_WORKS_OK,x86=1,x86=x86)
 AX_MSG_RESULT_YN($x86)
 test "$x86" = 1 || AC_MSG_ERROR(Unsupported architecture)
 
@@ -132,6 +134,7 @@ AC_MSG_CHECKING(for SMP)
 AX_COMPILE_OPTION(CONFIG_SMP,smp=1,smp=0)
 AX_MSG_RESULT_YN($smp)
 
+# FIXME 2.2 not already tested with modules version
 AC_MSG_CHECKING(for versioned modules)
 mv=0
 AX_COMPILE_OPTION(CONFIG_MODVERSIONS,mv=1,mv=0)
@@ -144,8 +147,152 @@ if test "$smp" = 0; then
   AC_MSG_CHECKING(for local APIC)
   AX_COMPILE_OPTION(CONFIG_X86_LOCAL_APIC,apic=1,apic=0)
   AX_MSG_RESULT_YN($apic)
-  test "$apic" = 0 && AC_MSG_ERROR(local APIC not configured)
+  dnl try to figure out if some 2.2 cannot configure LOCAL_APIC w/o SMP
+  test "$apic" = 0 && AC_MSG_ERROR(local APIC not configured: for 2.2 series you need to conigure a SMP kernel)
 fi
+
+dnl Rather to rely on linux version check the presence of specific features
+dnl because it is no clear when some features has been introduced.
+
+AC_MSG_CHECKING(for asm/mpspec.h)
+if test -e "$KINC"/asm/mpspec.h; then
+  AC_MSG_RESULT("yes")
+  BKCFLAGS="-DHAVE_ASM_MPSPEC_H $BKCFLAGS"
+else
+  AC_MSG_RESULT("no")
+fi
+
+AC_MSG_CHECKING(for asm/apic.h)
+if test -e "$KINC"/asm/apic.h; then
+  AC_MSG_RESULT("yes")
+  BKCFLAGS="-DHAVE_ASM_APIC_H $BKCFLAGS"
+else
+  AC_MSG_RESULT("no")
+fi
+
+dnl We rely on pte_page returning a struct * not an ulong
+AC_MSG_CHECKING(for invalid pte_page prototype)
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
+AC_TRY_COMPILE( 
+[
+#include <linux/mm.h>
+#include <linux/pagemap.h>
+#include <asm/pgtable.h>
+],
+[ if (page_address(pte_page(*(pte_t*)0))) {} ],
+  AC_MSG_RESULT("no"),
+  AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_INVALID_PTE_PAGE_PROTO $BKCFLAGS")
+CFLAGS=$SAVE_CFLAGS
+
+dnl virt_to_page is not always present
+AC_MSG_CHECKING(for virt_to_page)
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
+AC_TRY_COMPILE( 
+  [
+  #include <linux/mm.h>
+  #include <asm/page.h>
+  ],
+  [ if (virt_to_page(0)) {} ],
+  AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_VIRT_TO_PAGE $BKCFLAGS",
+  AC_MSG_RESULT("no"))
+CFLAGS=$SAVE_CFLAGS
+
+dnl linux 2.2 have no vmalloc_32
+AC_MSG_CHECKING(for vmalloc_32)
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
+AC_TRY_COMPILE( 
+  [ #include <linux/vmalloc.h> ],
+  [ if (vmalloc_32(0)) {} ],
+  AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_VMALLOC_32 $BKCFLAGS",
+  AC_MSG_RESULT("no"))
+CFLAGS=$SAVE_CFLAGS
+
+dnl linux 2.2 have no cpu_number_map on UP kernel
+AC_MSG_CHECKING(for cpu_number_map)
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
+AC_TRY_COMPILE( 
+  [ #include <linux/smp.h> ],
+  [ if (cpu_number_map(0)) {} ],
+  AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_CPU_NUMBER_MAP $BKCFLAGS",
+  AC_MSG_RESULT("no"))
+CFLAGS=$SAVE_CFLAGS
+
+dnl linux 2.2 need -D__SMP__
+if test "$smp" = 1; then
+  AC_MSG_CHECKING(for -D__SMP__)
+  SAVE_CFLAGS=$CFLAGS
+  CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
+  AC_TRY_COMPILE( 
+    [ #include <linux/smp.h> ],
+    [ if (smp_call_function(0, 0, 0, 0)) {} ],
+    AC_MSG_RESULT("no"),
+    AC_MSG_RESULT("yes");BKCFLAGS="-D__SMP__ $BKCFLAGS")
+  CFLAGS=$SAVE_CFLAGS
+fi
+
+dnl check for the new mmap syscall
+AC_MSG_CHECKING(for new mmap)
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
+AC_TRY_COMPILE( 
+  [ #include <linux/unistd.h> ],
+  [ if (__NR_mmap2) {} ],
+  AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_MMAP2 $BKCFLAGS",
+  AC_MSG_RESULT("no"))
+CFLAGS=$SAVE_CFLAGS
+
+dnl in 2.2 only one object file must be compiled w/o __NO_VERSION__ look at
+dnl further comment in module/Makefile.in
+AC_MSG_CHECKING(for __NO_VERSION__)
+if grep __NO_VERSION__ $KSRC/include/linux/module.h; then
+  AC_MSG_RESULT("yes")
+  NO_MODULE_VERSION="-D__NO_VERSION__"
+else
+  AC_MSG_RESULT("no")
+fi
+AC_SUBST(NO_MODULE_VERSION)
+
+dnl this is probably not enough precise and must broken in several little test
+dnl grep for the use HAVE_MOUNT_CROSS_POINT in source
+AC_MSG_CHECKING(for vfs support of cross mount point)
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
+AC_TRY_COMPILE( 
+  [ #include <linux/fs.h> ],
+  [ if (((struct vfsmount *)0)->mnt_root) {} ],
+  AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_CROSS_MOUNT_POINT $BKCFLAGS",
+  AC_MSG_RESULT("no"))
+CFLAGS=$SAVE_CFLAGS
+
+AC_MSG_CHECKING(for file_operations->owner)
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
+AC_TRY_COMPILE( 
+  [ #include <linux/fs.h> ],
+  [ if (((struct file_operations *)0)->owner) {} ],
+  AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_FILE_OPERATIONS_OWNER $BKCFLAGS",
+  AC_MSG_RESULT("no"))
+CFLAGS=$SAVE_CFLAGS
+
+dnl this do not check for a valid attribute aligned, I think it is always
+dnl by the kernel than compiler support this attribute
+AC_MSG_CHECKING(for a working cache_aligned macro)
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
+AC_TRY_COMPILE( 
+  [ #include <linux/cache.h> ],
+  [ static int a __cacheline_aligned = 0; if (a) {} ],
+  AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_CACHE_LINE_ALIGNED",
+  AC_MSG_RESULT("no"))
+CFLAGS=$SAVE_CFLAGS
+
+dnl if some 2.2 can be supported w/o CONFIG_SMP we need to take care about 
+dnl smp_call_function expanded to empty, workaround is
+dnl #ifdef CONFIG_SMP #undef smp_call_function #define smp_call_function 0
 
 AC_SUBST(KINC)
 BKCFLAGS="-I$KINC $BKCFLAGS"

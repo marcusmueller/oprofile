@@ -16,7 +16,12 @@
 
 #include <linux/vmalloc.h>
 #include <linux/wrapper.h>
+#include <linux/pagemap.h>
 
+#include "kcompat24.h"
+
+// FIXME: check this code works in 2.2
+ 
 /* Given PGD from the address space's page table, return the kernel
  * virtual mapping of the physical memory mapped at ADR.
  */
@@ -32,7 +37,8 @@ static inline unsigned long uvirt_to_kva(pgd_t *pgd, unsigned long adr)
 			ptep = pte_offset(pmd, adr);
 			pte = *ptep;
 			if(pte_present(pte)) {
-				ret = (unsigned long) page_address(pte_page(pte));
+				// FIXME: page_address equivalent 
+				ret = (unsigned long) pte_page_address(pte);
 				ret |= (adr & (PAGE_SIZE - 1));
 			}
 		}
@@ -59,6 +65,7 @@ void * rvmalloc(signed long size)
 	void * mem;
 	unsigned long adr, page;
 
+	// FIXME: no vmalloc_32 on 2.2 
 	mem=vmalloc_32(size);
 	if (!mem)
 		return NULL;
@@ -68,6 +75,7 @@ void * rvmalloc(signed long size)
 	adr=(unsigned long) mem;
 	while (size > 0) {
 		page = kvirt_to_pa(adr);
+		// FIXME: no virt_to_page 
 		mem_map_reserve(virt_to_page(__va(page)));
 		adr += PAGE_SIZE;
 		size -= PAGE_SIZE;

@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.2 2001/11/04 12:19:04 phil_e Exp $ */
+/* $Id: op_syscalls.c,v 1.3 2002/01/10 03:47:13 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,6 +22,8 @@
 
 #include "oprofile.h"
 
+// FIXME: check these syscalls are same code as 2.2 where necessary
+ 
 extern u32 prof_on;
 
 static uint dname_top;
@@ -127,7 +129,7 @@ int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma)
 	ulong page, pos;
 	ulong size = (ulong)(vma->vm_end-vma->vm_start);
 
-	if (size > PAGE_ALIGN(OP_HASH_MAP_SIZE) || (vma->vm_flags & VM_WRITE) || vma->vm_pgoff)
+	if (size > PAGE_ALIGN(OP_HASH_MAP_SIZE) || (vma->vm_flags & VM_WRITE) || GET_VM_OFFSET(vma))
 		return -EINVAL;
 
 	pos = (ulong)hash_map;
@@ -158,7 +160,9 @@ asmlinkage static int (*old_sys_vfork)(struct pt_regs);
 asmlinkage static int (*old_sys_clone)(struct pt_regs);
 asmlinkage static int (*old_sys_execve)(struct pt_regs);
 asmlinkage static int (*old_old_mmap)(struct mmap_arg_struct *);
+#ifdef HAVE_MMAP2
 asmlinkage static long (*old_sys_mmap2)(ulong, ulong, ulong, ulong, ulong, ulong);
+#endif
 asmlinkage static long (*old_sys_init_module)(const char *, struct module *);
 asmlinkage static long (*old_sys_exit)(int);
 
@@ -216,8 +220,9 @@ inline static int add_hash_entry(struct op_hash_index * entry, uint parent, char
 	entry->parent = parent;
 	return 0;
 } 
- 
+
 /* called with map_lock held */
+/* for 2.2, use simpler d_path code ! */ 
 static uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt)
 {
 	struct dentry *d = dentry;
@@ -239,6 +244,7 @@ static uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentr
 		if (d == root && v == rootmnt)
 			break;
 
+#ifdef HAVE_MOUNT_CROSS_POINT
 		if (d == v->mnt_root || IS_ROOT(d)) {
 			if (v->mnt_parent == v)
 				break;
@@ -246,6 +252,10 @@ static uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentr
 			d = v->mnt_mountpoint;
 			v = v->mnt_parent;
 		}
+#else
+		if (IS_ROOT(d))
+			break;
+#endif
 
 		push_dname(&d->d_name);
 
@@ -303,6 +313,7 @@ fulltable:
 /* called with map_lock held */
 static uint do_path_hash(struct dentry *dentry, struct vfsmount *vfsmnt)
 {
+#ifdef HAVE_MOUNT_CROSS_POINT
 	uint value;
 	struct vfsmount *rootmnt;
 	struct dentry *root;
@@ -319,6 +330,16 @@ static uint do_path_hash(struct dentry *dentry, struct vfsmount *vfsmnt)
 	spin_unlock(&dcache_lock);
 	dput(root);
 	mntput(rootmnt);
+#else
+	uint value;
+	struct dentry *root;
+
+	lock_kernel();
+	root = dget(current->fs->root);
+	value = do_hash(dentry, vfsmnt, root, 0);
+	dput(root);
+	unlock_kernel();
+#endif
 	return value;
 }
 
@@ -340,7 +361,11 @@ static void oprof_output_map(ulong addr, ulong len,
 	note.len = len;
 	note.offset = offset;
 	note.type = is_execve ? OP_EXEC : OP_MAP;
+#ifdef HAVE_MOUNT_CROSS_POINT
 	note.hash = do_path_hash(file->f_dentry, file->f_vfsmnt);
+#else
+	note.hash = do_path_hash(file->f_dentry, 0);
+#endif
 	if (note.hash == -1)
 		return;
 	oprof_put_note(&note);
@@ -369,7 +394,7 @@ static int oprof_output_maps(struct task_struct *task)
 			continue;
 
 		oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
-			map->vm_pgoff << PAGE_SHIFT, map->vm_file, is_execve);
+			GET_VM_OFFSET(map), map->vm_file, is_execve);
 		is_execve = 0;
 	}
 	spin_unlock(&map_lock);
@@ -393,8 +418,9 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 	}
 	ret = do_execve(filename, (char **)regs.ecx, (char **)regs.edx, &regs);
 
+	// FIXME: check sys_execve 
 	if (!ret) {
-		current->ptrace &= ~PT_DTRACE;
+		PTRACE_OFF(current);
 
 		if ((!sysctl.pid_filter || sysctl.pid_filter == current->pid) &&
 		    (!sysctl.pgrp_filter || sysctl.pgrp_filter == current->pgrp))
@@ -421,6 +447,7 @@ static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 	fput(file);
 }
 
+#ifdef HAVE_MMAP2
 asmlinkage static int my_sys_mmap2(ulong addr, ulong len,
 	ulong prot, ulong flags, ulong fd, ulong pgoff)
 {
@@ -441,6 +468,7 @@ out:
 	MOD_DEC_USE_COUNT;
 	return ret;
 }
+#endif
 
 asmlinkage static int my_old_mmap(struct mmap_arg_struct *arg)
 {
@@ -572,7 +600,9 @@ void op_save_syscalls(void)
 	old_sys_clone = sys_call_table[__NR_clone];
 	old_sys_execve = sys_call_table[__NR_execve];
 	old_old_mmap = sys_call_table[__NR_mmap];
+#ifdef HAVE_MMAP2
 	old_sys_mmap2 = sys_call_table[__NR_mmap2];
+#endif
 	old_sys_init_module = sys_call_table[__NR_init_module];
 	old_sys_exit = sys_call_table[__NR_exit];
 }
@@ -584,7 +614,9 @@ void op_intercept_syscalls(void)
 	sys_call_table[__NR_clone] = my_sys_clone;
 	sys_call_table[__NR_execve] = my_sys_execve;
 	sys_call_table[__NR_mmap] = my_old_mmap;
+#ifdef HAVE_MMAP2
 	sys_call_table[__NR_mmap2] = my_sys_mmap2;
+#endif
 	sys_call_table[__NR_init_module] = my_sys_init_module;
 	sys_call_table[__NR_exit] = my_sys_exit;
 }
@@ -596,7 +628,9 @@ void op_replace_syscalls(void)
 	sys_call_table[__NR_clone] = old_sys_clone;
 	sys_call_table[__NR_execve] = old_sys_execve;
 	sys_call_table[__NR_mmap] = old_old_mmap;
+#ifdef HAVE_MMAP2
 	sys_call_table[__NR_mmap2] = old_sys_mmap2;
+#endif
 	sys_call_table[__NR_init_module] = old_sys_init_module;
 	sys_call_table[__NR_exit] = old_sys_exit;
 }
