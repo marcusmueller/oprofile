@@ -47,6 +47,7 @@ Abi::Abi()
 	slots["sizeof_db_value_t"] = sizeof(db_value_t);
 	slots["sizeof_db_node_nr_t"] = sizeof(db_node_nr_t);
 	slots["sizeof_db_descr_t"] = sizeof(db_descr_t);
+	slots["sizeof_db_node_t"] = sizeof(db_node_t);
 	slots["sizeof_struct_opd_header"] = sizeof(struct opd_header);		
 	
 	slots["offsetof_node_key"] = field_offset(node, key);

@@ -111,22 +111,22 @@ void import_from_abi(Abi const & abi,
 
 	// begin extracting necessary parts of descr
 	db_node_nr_t node_nr;
-	ext.extract(&node_nr, src, "sizeof_db_page_count_t", "offsetof_descr_current_size");
+	ext.extract(&node_nr, src, "sizeof_db_node_nr_t", "offsetof_descr_current_size");
 	src += abi.need("sizeof_db_descr_t");
 	// done extracting descr
 
 	// skip node zero, it is reserved and contains nothing usefull
-	src += abi.need("sizeof_db_node_nr_t");
+	src += abi.need("sizeof_db_node_t");
 
 	// begin extracting nodes
 	for (db_node_nr_t i = 1 ; i < node_nr ; ++i) {
 		db_key_t key;
 		db_value_t val;
 		ext.extract(&key, src, "sizeof_db_key_t", "offsetof_node_key");
-		ext.extract(&val, src, "sizeof_db_value_t", "offsetof_node_info");
+		ext.extract(&val, src, "sizeof_db_value_t", "offsetof_node_value");
 		db_insert(dest, key, val);
 
-		src += abi.need("sizeof_db_node_nr_t");
+		src += abi.need("sizeof_db_node_t");
 	}
 	// done extracting nodes
 }
