@@ -109,6 +109,12 @@ $typename = "(${typename}[ ]*\**|unsigned short[ ]**\**|unsigned int[ ]*\**|unsi
 "\<__gnu_cxx::__normal_iterator<${typename} const\*, vector<\1>>" = "vector<\1>::const_iterator"
 "\<__gnu_cxx::__normal_iterator<${typename}\*, vector<\1>>" = "vector<\1>::iterator"
 
+# 2.95 use only _List_iterator, 3.2 use also _List_iterator_base but since
+# list::iterator is a typedef to _List_iterator we don't need to deal with
+# _List_iterator_base
+"\<_List_iterator<${typename}, \1[ ]* &, \1[ ]*\*>" = "list<\1>::iterator"
+"\<_List_iterator<${typename}, \1 const[ ]*&, \1 const[ ]*\*>" = "list<\1>::const_iterator"
+
 # iosfwd, std::string and std::wstring
 # first translate from "basic_xxx<T, char_traits<T>>" to "basic_xxx<T>"
 "\<([io]streambuf_iterator|basic_(ios|streambuf|([io]|io)stream|filebuf|[io]?fstream))<${typename}, char_traits<\4>>" = "\1<\4>"
