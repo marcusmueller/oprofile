@@ -33,6 +33,7 @@
 extern op_cpu cpu_type;
 extern int separate_lib_samples;
 extern int separate_kernel_samples;
+extern int no_vmlinux;
 
 /* hash of process lists */
 static struct opd_proc * opd_procs[OPD_MAX_PROC_HASH];
@@ -377,7 +378,7 @@ void opd_put_sample(struct op_sample const * sample)
 		return;
 
 	if (!(proc = opd_get_proc(sample->pid))) {
-		if (in_kernel_eip) {
+		if (in_kernel_eip || no_vmlinux) {
 			/* idle task get a 0 pid and is hidden we can never get
 			 * a proc so on we fall back to put sample in vmlinux
 			 * or module samples files. Here we will catch also
@@ -397,11 +398,18 @@ void opd_put_sample(struct op_sample const * sample)
 	}
 
 	if (in_kernel_eip) {
-		/* assert: separate_kernel_samples is true */
+		/* assert: separate_kernel_samples || no_vmlinux == 0 */
 		opd_add_kernel_map(proc, sample->eip);
 		if (opd_lookup_maps(proc, sample)) {
 			return;
 		}
+	}
+
+	if (no_vmlinux) {
+		/* in_kernel_eip can't be true when no_vmlinux != 0, we handle
+		 * now all unknown samples and they go blindly to no-vmlinux */
+		opd_handle_kernel_sample(sample->eip, sample->counter);
+		return;
 	}
 
 	/* couldn't locate it */

@@ -62,6 +62,7 @@ int verbose;
 op_cpu cpu_type;
 int separate_lib_samples;
 int separate_kernel_samples;
+int no_vmlinux;
 char * vmlinux;
 int kernel_only;
 unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
@@ -87,6 +88,7 @@ static struct poptOption options[] = {
 	{ "pgrp-filter", 0, POPT_ARG_INT, &pgrp_filter, 0, "only profile the given process tty group", "pgrp" },
 	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
+	{ "no-vmlinux", 0, POPT_ARG_NONE, &no_vmlinux, 0, "vmlinux kernel image file not available", NULL, },
 	{ "separate-lib-samples", 0, POPT_ARG_INT, &separate_lib_samples, 0, "separate library samples for each distinct application", "[0|1]", },
 	{ "separate-kernel-samples", 0, POPT_ARG_INT, &separate_kernel_samples, 0, "separate kernel samples for each distinct application, this option imply --separate-lib-samples=1", "[0|1]", },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
@@ -411,19 +413,23 @@ static void opd_options(int argc, char const * argv[])
 	cpu_type = op_get_cpu_type();
 	op_nr_counters = op_get_nr_counters(cpu_type);
 
-	if (!vmlinux || !strcmp("", vmlinux)) {
-		fprintf(stderr, "oprofiled: no vmlinux specified.\n");
-		poptPrintHelp(optcon, stderr, 0);
-		exit(EXIT_FAILURE);
-	}
+	if (!no_vmlinux) {
+		if (!no_vmlinux && (!vmlinux || !strcmp("", vmlinux))) {
+			fprintf(stderr, "oprofiled: no vmlinux specified.\n");
+			poptPrintHelp(optcon, stderr, 0);
+			exit(EXIT_FAILURE);
+		}
 
-	/* canonicalise vmlinux filename. fix #637805 */
-	vmlinux = op_relative_to_absolute_path(vmlinux, NULL);
+		/* canonicalise vmlinux filename. fix #637805 */
+		vmlinux = op_relative_to_absolute_path(vmlinux, NULL);
 
-	if (!kernel_range || !strcmp("", kernel_range)) {
-		fprintf(stderr, "oprofiled: no kernel VMA range specified.\n");
-		poptPrintHelp(optcon, stderr, 0);
-		exit(EXIT_FAILURE);
+		if (!kernel_range || !strcmp("", kernel_range)) {
+			fprintf(stderr, "oprofiled: no kernel VMA range specified.\n");
+			poptPrintHelp(optcon, stderr, 0);
+			exit(EXIT_FAILURE);
+		}
+
+		opd_parse_kernel_range(kernel_range);
 	}
 
 	opd_buf_size = opd_read_fs_int("bufsize");
@@ -438,7 +444,6 @@ static void opd_options(int argc, char const * argv[])
 
 	cpu_speed = op_cpu_frequency();
 
-	opd_parse_kernel_range(kernel_range);
 	poptFreeContext(optcon);
 }
 

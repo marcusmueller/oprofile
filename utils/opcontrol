@@ -96,7 +96,7 @@ do_help() {
 	  --note-table-size	       number of notes in kernel notes buffer (2.4 version)
 	  --separate=[none,library,kernel,all]         separate samples as given
 	  --vmlinux=file               vmlinux kernel image
-	  --no-vmlinux                 no vmlinux image available (no kernel profiling, 2.5 only)
+	  --no-vmlinux                 no vmlinux image available (no kernel vmlinux image available)
 	  --verbose                    be verbose in the daemon log
 	  --kernel-range=start,end     kernel range vma address in hexadecimal
 
@@ -380,10 +380,6 @@ check_valid_args() {
 	fi
 
 	if test "$VMLINUX" = "none"; then
-		if test "$KERNEL_SUPPORT" != "yes"; then
-			echo "--no-vmlinux unsupported in 2.4." >&2
-			exit 1
-		fi
 		return
 	fi
 
@@ -657,10 +653,6 @@ do_options() {
 				DO_SETUP=yes
 				;;
 			--no-vmlinux)
-				if test "$KERNEL_SUPPORT" != "yes"; then
-					echo "$arg unsupported. " >& 2
-					exit 1
-				fi
 				VMLINUX=none
 				DO_SETUP=yes
 				;;

@@ -35,6 +35,7 @@ struct opd_module {
 
 extern char * vmlinux;
 extern int verbose;
+extern int no_vmlinux;
 extern unsigned long opd_stats[];
 
 static struct opd_image * kernel_image;
@@ -50,6 +51,9 @@ static unsigned int nr_modules=0;
  */
 void opd_init_kernel_image(void)
 {
+	/* for no vmlinux */
+	if (!vmlinux)
+		vmlinux = "/no-vmlinux";
 	kernel_image = opd_get_kernel_image(vmlinux, NULL);
 }
 
@@ -392,7 +396,7 @@ static void opd_handle_module_sample(unsigned long eip, u32 counter)
  */
 void opd_handle_kernel_sample(unsigned long eip, u32 counter)
 {
-	if (eip < kernel_end) {
+	if (no_vmlinux || eip < kernel_end) {
 		opd_stats[OPD_KERNEL]++;
 		opd_put_image_sample(kernel_image, eip - kernel_start, counter);
 		return;
@@ -411,7 +415,8 @@ void opd_handle_kernel_sample(unsigned long eip, u32 counter)
  */
 int opd_eip_is_kernel(unsigned long eip)
 {
-	return (eip >= kernel_start);
+	/* kernel_start == 0 when vm_nolinux != 0 */
+	return kernel_start && eip >= kernel_start;
 }
 
 /**

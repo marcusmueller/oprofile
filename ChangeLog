@@ -1,3 +1,15 @@
+2003-04-14  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_kernel.c:
+	* dae/opd_proc.c:
+	* dae/oprofiled.c:
+	* utils/opcontrol:
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: handle --vm-nolinux
+
+	* daemon/opd_kernel.c: use /no-vmlinux not /no-vmlinux when user
+	  specify --no-vmlinux
+
 2003-04-08  John Levon  <levon@movementarian.org>
 
 	* HACKING: describe what happens with oprofile-www
