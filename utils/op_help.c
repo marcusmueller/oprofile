@@ -29,6 +29,8 @@ struct parsed_event {
 	char * name;
 	int count;
 	int unit_mask;
+	int kernel;
+	int user;
 } parsed_events[OP_MAX_COUNTERS];
 
 
@@ -142,6 +144,22 @@ static int parse_events(void)
 			parsed_events[i].unit_mask = strtoul(part, NULL, 0);
 			free(part);
 		}
+
+		parsed_events[i].kernel = 1;
+		part = next_part(&cp);
+
+		if (part) {
+			parsed_events[i].kernel = strtoul(part, NULL, 0);
+			free(part);
+		}
+
+		parsed_events[i].user = 1;
+		part = next_part(&cp);
+
+		if (part) {
+			parsed_events[i].user = strtoul(part, NULL, 0);
+			free(part);
+		}
 	
 		++i;
 	}
@@ -181,7 +199,7 @@ static void check_event(struct parsed_event * pev,
 static void resolve_events()
 {
 	int count = parse_events();
-	int i;
+	int i, j;
 	size_t * counter_map;
 	int nr_counters = op_get_nr_counters(cpu_type);
 	struct op_event const * selected_events[OP_MAX_COUNTERS];
@@ -189,6 +207,22 @@ static void resolve_events()
 	if (count > nr_counters) {
 		fprintf(stderr, "Not enough hardware counters.\n");
 		exit(EXIT_FAILURE);
+	}
+
+	for (i = 0; i < count; ++i) {
+		for (j = i + 1; j < count; ++j) {
+			struct parsed_event * pev1 = &parsed_events[i];
+			struct parsed_event * pev2 = &parsed_events[j];
+
+			if (!strcmp(pev1->name, pev2->name) &&
+			    pev1->count == pev2->count &&
+			    pev1->unit_mask == pev2->unit_mask &&
+			    pev1->kernel == pev2->kernel &&
+			    pev1->user == pev2->user) {
+				fprintf(stderr, "All events must be distinct.\n");
+				exit(EXIT_FAILURE);
+			}
+		}
 	}
 
 	for (i = 0; i < count; ++i) {
