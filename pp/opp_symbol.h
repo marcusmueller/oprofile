@@ -65,6 +65,8 @@ struct symbol_entry {
 	sample_index_t last;
 };
 
+// FIXME: I am rather dubious this should be a class..
+ 
 /**
  * class to output in a columned format symbols and associated samples
  */

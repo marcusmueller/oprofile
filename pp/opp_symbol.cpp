@@ -33,7 +33,7 @@ namespace options {
 struct output_option {
 	char option;
 	outsymbflag flag;
-	char const * help_string;
+	string help_string;
 };
 
 static output_option const output_options[] = {
@@ -96,7 +96,7 @@ typedef string (output_symbol::*fct_format)(string const & symb_name,
 struct field_description {
 	outsymbflag flag;
 	size_t width;
-	char const * header_name;
+	string header_name;
 	fct_format formater;
 };
 
@@ -189,8 +189,8 @@ size_t output_symbol::OutputHeaderField(ostream & out, outsymbflag fl)
 		out << field->header_name;
 
 		sz = 1;	// at least one separator char
-		if (strlen(field->header_name) < field->width)
-			sz = field->width - strlen(field->header_name);
+		if (field->header_name.length() < field->width)
+			sz = field->width - field->header_name.length();
 	}
 
 	return sz;

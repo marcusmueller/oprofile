@@ -213,6 +213,8 @@ void counter_setup::print(ostream & out, op_cpu cpu_type, int counter) const
 }
 //---------------------------------------------------------------------------
 
+// FIXME: why is this a class ? 
+ 
 output::output(int argc_, char const * argv_[],
 	       size_t threshold_percent_,
 	       bool until_more_than_samples_,
