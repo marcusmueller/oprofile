@@ -551,10 +551,6 @@ types of event, the circumstances for which an event is counted. <xref linkend="
 information on using unit masks.
 </para>
 <para>
-<!-- FIXME: if this ever makes a difference, update this --> 
-The edge detect button can be selected but seems to do nothing for now.
-</para>
-<para>
 If you try to start profiling with parameters which seems incorrect you will be warned but you can bypass
 this. Passing incorrect parameters to the script can be painful, particulary if you try for example to
 sample with a very high rate. Despite oprofile's low overhead in most cases, profiling at a very high

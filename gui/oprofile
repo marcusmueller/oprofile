@@ -6,11 +6,6 @@ exec wish "$0" "$@"
 # This is my first tcl/tk app so in many case I have write dirty thing to work around my
 # poor knowledge of tcl/tk. I need feed back from a tcl/tk wizard on many thing in this file.
 
-# BAD thing : the unit mask is not saved properly. There is also some tricky
-# code about managing the unit mask. The correct solution is probably to put the
-# um option button directly on the main form so user will get meaningful info about
-# this problem. This must be made when finishing the port to multiple (P IV) counter
-
 # The only place where I make some supposition on the number of counter is
 # inside the gui creation ( proc setup_event_frame )
 
@@ -21,7 +16,319 @@ exec wish "$0" "$@"
 set max_counter_number 2
 
 # To manipulate the global var needed by each counter.
-set counter_setup_var { event_type counter unit_mask usr_count kernel_count ctr_edge_detect }
+set counter_setup_var { event_type counter unit_mask usr_count kernel_count }
+
+#  This list is here to avoid maintaining separate list for each processor
+# type / counter number. It is the main data structure which describe all
+# counter event. When adding new processor/event/counter only this data
+# structure need update (adding counter require also work in the code).
+
+# TODO : this must be shared in some way with op_events.c
+
+# list entry item :
+# 1 event type/name
+# 2 bit mask 
+#  1 : avail for PPro
+#  2 : avail for P2
+#  4 : avail for P3
+#  8 : avail for P4  currently not supported.
+# 3 bit mask
+#  1 : available for counter 0
+#  2 : available for counter 1
+#  4 : and so on...
+# 4 help string displayed in the status bar.
+# 5 minimum counter value.
+# optional args follow :
+# 6 a string in { mandatory bit_mask exclusive }
+#  mandatory entry are event that need this particular value for this event
+#  bit_mask means the different value can be or'ed
+#  exclusive means than only one of the value can be passed to the profiler.
+# 7 the default value
+# 8 a list of  : { unit_bit_mask_or_value string }+
+set event_type_list {
+    { DISABLED -1 -1 "Select it to disable this counter" 0 }
+    { CPU_CLK_UNHALTED 7 3 "Clock processor not halted" 6000 }
+    { DATA_MEM_REFS 7 3 "All memory reference, cachable and non" 500 }
+    { DCU_LINES_IN  7 3 "Total line allocated in DCU" 500 }
+    { DCU_M_LINES_IN  7 3 "Number of M state lines allocated in DCU" 500 }
+    { DCU_M_LINES_OUT  7 3 "Number of M lines evicted from the DCU" 500 }
+    { DCU_MISS_OUTSTANDING 7 3 "Number of cycles while DCU miss outstanding" 500 }
+    { IFU_IFETCH 7 3 "Number of non/cachable instruction fetches" 500 }
+    { IFU_IFETCH_MISS 7 3 "Number of instruction fetch misses" 500 }
+    { ITLB_MISS 7 3 "Number of ITLB misses" 500 }
+    { IFU_MEM_STALL 7 3 "Cycles instruction fetch pipe is stalled" 500 }
+    { ILD_STALL 7 3 "Cycles instruction length decoder is stalled" 500 }
+    { L2_IFETCH 7 3 "Number of L2 instruction fetches" 500
+	bit_mask 15
+	{ 
+	    { 1 "(I)nvalid cache state" }
+	    { 2 "(S)hared cache state" }
+	    { 4 "(E)xclusive cache state" }
+	    { 8 "(M)odified cache state" }
+	    { 15 "MESI cache state" }
+	} 
+    }
+    { L2_LD 7 3 "Number of L2 data load" 500
+	bit_mask 15
+	{ 
+	    { 1 "(I)nvalid cache state" }
+	    { 2 "(S)hared cache state" }
+	    { 4 "(E)xclusive cache state" }
+	    { 8 "(M)odified cache state" }
+	    { 15 "MESI cache state" }
+	} 
+    }
+    { L2_ST 7 3 "Number of L2 data stores" 500
+	bit_mask 15
+	{ 
+	    { 1 "(I)nvalid cache state" }
+	    { 2 "(S)hared cache state" }
+	    { 4 "(E)xclusive cache state" }
+	    { 8 "(M)odified cache state" }
+	    { 15 "MESI cache state" }
+	}
+    }
+    { L2_LINES_IN 7 3 "Number of allocated lines in L2" 500 }
+    { L2_LINES_OUT 7 3 "Number of recovered lines from L2" 500 }
+    { L2_M_LINES_INM 7 3 "Number of modified lines allocated in L2" 500 }
+    { L2_M_LINES_OUTM 7 3 "Number of modified lines removed from L2" 500 }
+    { L2_RQSTS 7 3 "Number of L2 requests" 500
+	bit_mask 15
+	{ 
+	    { 1 "(I)nvalid cache state" }
+	    { 2 "(S)hared cache state" }
+	    { 4 "(E)xclusive cache state" }
+	    { 8 "(M)odified cache state" }
+	    { 15 "MESI cache state" }
+	}
+    }
+    { L2_ADS 7 3 "Number of L2 address strobes" 500 }
+    { L2_DBUS_BUSY 7 3 "Number of cycles data bus was busy" 500 }
+    { L2_DMUS_BUSY_RD 7 3 "Cycles data bus was busy in xfer from L2 to cpu" 500 }
+    { BUS_DRDY_CLOCKS 7 3 "Number of clocks DRDY is asserted" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_LOCK_CLOCKS 7 3 "Number of clocks LOCK is asserted" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_REQ_OUTSTANDING 7 3 "Number of outstanding bus request" 500 }
+    { BUS_TRAN_BRD 7 3 "Number of burst read transactions" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_TRAN_RFO 7 3 "Number of read for ownership transactions" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_TRANS_WB 7 3 "Number of write back transactions" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_TRAN_IFETCH 7 3 "Number of instruction fetch transactions" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_TRAN_INVAL 7 3 "Number of invalid transactions" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_TRAN_PWR 7 3 "Number of partial write transactions" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_TRANS_P 7 3 "Number of partial transactions" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_TRANS_IO 7 3 "Number of I/O transactions" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_TRANS_DEF 7 3 "Number of deferred transactions" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}    
+    }
+    { BUS_TRAN_BURST 7 3 "Number of burst transactions" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_TRAN_ANY 7 3 "Number of all transactions" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_TRAN_MEM 7 3 "Number of memory transactions" 500
+	exclusive 32
+	{
+	    { 0 "self-generated transactions" }
+	    { 32 "any transitions" }
+	}
+    }
+    { BUS_DATA_RCV 7 3 "Bus cycles this processor is receiving data" 500 }
+    { BUS_BNR_DRV 7 3 "bus cycles this processor is driving BNR pin" 500 }
+    { BUS_HIT_DRV 7 3 "bus cycles this processor is driving HIT pin" 500 }
+    { BUS_HITM_DRV 7 3 "bus cycles this processor is driving HITM pin" 500 }
+    { BUS_SNOOP_STALL 7 3 "cycles during bus snoop stall" 500 }
+    { COMP_FLOP_RET 7 1
+	  "Number of computational FP operations retired - Counter 0 only" 3000 }
+    { FLOPS 7 1
+	  "Number of computational FP operations executed - Counter 0 only" 3000 }
+    { FP_ASSIST 7 2
+	"Number of exceptions handled by microcode - Counter 1 only" 500 }
+    { MUL 7 2 "Number of multiplies - Counter 1 only" 1000 }
+    { DIV 7 2 "Number of divides - Counter 1 only" 500 }
+    { CYCLES_DIV_BUSY 7 1 "Cycles divider is busy - Counter 0 only" 1000 }
+    { LD_BLOCKS 7 3 "Number of store blocks" 500 }
+    { SB_DRAINS 7 3 "Number of store buffer drain cycles" 500 }
+    { MISALIGN_MEM_REF 7 3 "Number of misaligned data memory references" 500 }
+    { EMON_KNI_PREF_DISPATCHED 4 3
+	  "Number KNI pre-fetch/weakly ordered insns dispatch - P3 only" 500
+	exclusive 0
+	{ 
+	    { 0 "Prefecth NTA" }
+	    { 1 "Prefetch T1" }
+	    { 2 "Prefetch T2" }
+	    { 3 "weakly ordered stores" }
+	} 
+    }
+    { EMON_KNI_PREF_MISS 4 3
+      "Number KNI pre-fetch/weakly ordered insns that miss all cache - P3 only" 500
+	exclusive 0
+	{
+	    { 0 "Prefecth NTA" }
+	    { 1 "Prefetch T1" }
+	    { 2 "Prefetch T2" }
+	    { 3 "weakly ordered stores" }
+	}
+    }
+    { INST_RETIRED 7 3 "Number of instructions retired" 6000 }
+    { UOPS_RETIRED 7 3 "Number of UOPs retired" 6000 }
+    { INST_DECODED 7 3 "Number of instructions decoded" 6000 }
+    { EMON_KNI_INST_RETIRED 4 3 "Number of KNI instructions retired - P3 only" 3000
+	exclusive 0
+	{
+	    { 0 "Packed and scalar" }
+	    { 1 "Packed" }
+	}
+    }
+    { EMON_KNI_COMP_INST_RET 4 3 
+	"Number of KNI instructions computation retired - P3 only" 3000
+	exclusive 0
+	{ 
+	    { 0 "Packed and scalar" }
+	    { 1 "Packed" }
+	} 
+    }
+    { HW_INT_RX 7 3 "Number of hardware interrupts received" 500 }
+    { CYCLES_INT_MASKED 7 3 "Cycles interrupt are disabled" 500 }
+    { CYCLES_INT_PENDING_AND_MASKED 7 3 
+	"Cycles interrupts are disabled with pending interrupts" 500 }
+    { BR_INST_RETIRED 7 3 "Number of branch instructions retired" 500 }
+    { BR_MISS_PRED_RETIRED 7 3 "Number of mispredicted branches retired" 500 }
+    { BR_TAKEN_RETIRED 7 3 "Number of taken branches retired" 500 }
+    { BR_MISS_PRED_TAKEN_RET 7 3 
+	"Number of taken mispredictions branches retired" 500 }
+    { BR_INST_DECODED 7 3 "Number of branches instructions decoded" 500 }
+    { BTB_MISSES 7 3 "Number of branches that miss the BTB" 500 }
+    { BR_BOGUS 7 3 "Number of bogus branches" 500 }
+    { BACLEARS 7 3 "Number of times BACLEAR is asserted" 500 }
+    { RESOURCE_STALLS 7 3 "Cycles during resource related stalls" 500 }
+    { PARTIAL_RAT_STALLS 7 3 "cycles or event for partial stalls" 500 }
+    { SEGMENT_REG_LOADS 7 3 "Number of segment register loads" 500 }
+    { MMX_INSTR_EXEC 2 3 "Number of MMX instructions executed - P2 only" 3000 }
+    { MMX_SAT_INSTR_EXEC 6 3 
+	"Number of MMX saturating instructions executed - P2/P3 only" 3000 }
+    { MMX_UOPS_EXEC 6 3 "Number of MMX UOPs executed - P2/P3 only" 3000
+	mandatory 15
+	{
+	    { 15 "Mandatory" }
+	}
+    }
+    { MMX_INSTR_TYPE_EXEC 6 3 "Number of MMX packing instructions - P2/P3 only" 3000
+	bit_mask 63
+	{
+	    { 1 "MMX packed multiplies" }
+	    { 2 "MMX packed shifts" }
+	    { 4 "MMX pack operations" }
+	    { 8 "MMX unpack operations" }
+	    { 16 "MMX packed logical" }
+	    { 32 "MMX packed arithmetic" }
+	    { 63 "MMX pack/unpack and all operations" }
+	}
+    }
+    { FP_MMX_TRANS 6 3 "MMX-floating point transitions - P2/P3 only" 3000
+	exclusive 0
+	{
+	    { 0 "Transitions from MMX to floating point" }
+	    { 1 "Transitions from floating point to MMX" }
+	}
+    }
+    { MMX_ASSIST 6 3 "Number of EMMS instructions executed - P2/P3 only" 500 }
+    { MMX_INSTR_RET 2 3 "Number of MMX instructions retired - P2 only" 3000 }
+    { SEG_RENAME_STALLS 6 3
+	  "Number of segment register renaming stalls - P2/P3 only" 3000
+	bit_mask 15
+	{
+	    { 1 "ES register" }
+	    { 2 "DS register" }
+	    { 4 "FS register" }
+	    { 8 "GS register" }
+	    { 15 "ES, DS, FS, GS register" }
+	}
+    }
+    { SEG_REG_RENAMES 6 3  "Number of segment register renames - P2/P3 only" 3000
+	bit_mask 15
+	{
+	    { 1 "ES register" }
+	    { 2 "DS register" }
+	    { 4 "FS register" }
+	    { 8 "GS register" }
+	    { 15 "ES, DS, FS, GS register" }
+	}
+    }
+    { RET_SEG_RENAMES 6 3
+	  "Number of segment register rename events retired - P2/P3 only" 3000 }
+}
 
 # This is defined in oprofile.h
 set OP_MAX_PERF_COUNT 2147483647
@@ -29,18 +336,26 @@ set OP_MAX_PERF_COUNT 2147483647
 #  This section contains the setting of default hard-coded value. They are
 # use only if the ~./oprofile/gui_advanced_setup.defaults do not exist else
 # this value are override by loading the configuration file.
-# Must be coherent with op_start and the documentation (not strongly required, 
-# this is just required to not confuse the user).
+# Must be coherent with op_start.
 
 for { set i 0 } { $i < $max_counter_number } { incr i } {
     set event_type_$i "DISABLED"
-    set counter_$i 600000
+    set counter_$i 0
     set unit_mask_$i -1
-    set ctr_edge_detect_$i 0
     set usr_count_$i 1
     set kernel_count_$i 1
 
     set old_event_type_$i ""
+}
+
+for { set i 0 } { $i < $max_counter_number } { incr i } {
+    foreach j $event_type_list {
+	# put min value * 100 as default value.
+	set new_counter_[set i]([lindex $j 0]) [expr [lindex $j 4] * 100]
+	set new_unit_mask_[set i]([lindex $j 0]) -1
+	set new_usr_count_[set i]([lindex $j 0]) 1
+	set new_kernel_count_[set i]([lindex $j 0]) 1
+    }
 }
 
 set event_type_0 "CPU_CLK_UNHALTED"
@@ -67,6 +382,60 @@ set log_filename "oprofiled.log"
 # end of hard-coded defaults value section
 
 # utilities proc
+
+proc get_counter { counter } {
+    global event_type_$counter
+    return new_counter_[set counter]([set event_type_$counter])
+}
+
+proc get_unit_mask { counter } {
+    global event_type_$counter
+    return new_unit_mask_[set counter]([set event_type_$counter])
+}
+
+proc get_usr_count { counter } {
+    global event_type_$counter
+    return new_usr_count_[set counter]([set event_type_$counter])
+}
+
+proc get_kernel_count { counter } {
+    global event_type_$counter
+    return new_kernel_count_[set counter]([set event_type_$counter])
+}
+
+# save the global counter setup to the global array(event_type) counter setup.
+proc save_to_array { counter } {
+    global new_counter_$counter
+    global new_unit_mask_$counter
+    global new_usr_count_$counter
+    global new_kernel_count_$counter
+    global counter_$counter
+    global unit_mask_$counter
+    global usr_count_$counter
+    global kernel_count_$counter
+
+    set [get_counter $counter] [set counter_$counter]
+    set [get_unit_mask $counter] [set unit_mask_$counter]
+    set [get_usr_count $counter] [set usr_count_$counter]
+    set [get_kernel_count $counter] [set kernel_count_$counter]
+}
+
+# save the global array(event_type) counter setup to the global counter setup.
+proc save_to_global { counter } {
+    global new_counter_$counter
+    global new_unit_mask_$counter
+    global new_usr_count_$counter
+    global new_kernel_count_$counter
+    global counter_$counter
+    global unit_mask_$counter
+    global usr_count_$counter
+    global kernel_count_$counter
+
+    set counter_$counter [set [get_counter $counter]]
+    set unit_mask_$counter [set [get_unit_mask $counter]]
+    set usr_count_$counter [set [get_usr_count $counter]]
+    set kernel_count_$counter [set [get_kernel_count $counter]]
+}
 
 proc str_eq { a b } {
     if { $a == $b } then {
@@ -147,7 +516,7 @@ proc search_event { hint } {
 proc need_unit_mask { hint } {
     set i [search_event $hint]
 
-    if { [expr [ llength $i ] > 4] && [str_eq [lindex $i 4] mandatory] == 0 } then {
+    if { [expr [ llength $i ] > 5] && [str_eq [lindex $i 5] mandatory] == 0 } then {
 	return 1
     } else {
 	return 0
@@ -173,7 +542,7 @@ proc create_event_list { counter } {
 	    lappend entry "-state disabled"
 	}
 
-	lappend entry "-command \"onRadiobuttonChange $counter 1\""
+	lappend entry "-command \"onRadiobuttonChange $counter\""
 
 	lappend temp_list $entry
 	incr j
@@ -195,10 +564,9 @@ proc is_profiler_started {} {
 
 # pre-condition : the counter is not disabled.
 # return 1 if setup is ok or if user bypass the warning else return 0.
-proc validate_counter_setup { counter } {
+proc validate_counter_setup { counter event_type } {
 
     global usr_count_$counter kernel_count_$counter
-    global counter_$counter
     global OP_MAX_PERF_COUNT
 
     if { [set usr_count_$counter] == 0 && [set kernel_count_$counter] == 0 } then {
@@ -206,7 +574,9 @@ proc validate_counter_setup { counter } {
 	return 0
     }
 
-    set message [op_check_range counter_$counter 500 $OP_MAX_PERF_COUNT]
+    set list [search_event $event_type]
+
+    set message [op_check_range counter_$counter [lindex $list 4] $OP_MAX_PERF_COUNT]
     if { [string length $message] != 0 } then {
 	set answer [tk_messageBox -type yesno -message \
 			"invalid parameter apply anyway ? :$message"]
@@ -255,9 +625,7 @@ proc onStartProfiling {} {
 
 	if { [str_eq [set event_type_$i] DISABLED] == 0 } {
 
-	    global counter_$i
-
-	    if { [validate_counter_setup $i] == 0 } then {
+	    if { [validate_counter_setup $i [set event_type_$i]] == 0 } then {
 		return
 	    }
 	}
@@ -280,15 +648,21 @@ proc onStartProfiling {} {
 	    append args " --ctr$i-kernel=[set kernel_count_$i]"
 	    append args " --ctr$i-user=[set usr_count_$i]"
 
-	    # A value of -1 is used to mark than unit mask has not been set but
-	    # op_start needs a 0 value in this case.
-	    if { [set unit_mask_$i] == -1 } then {
-		append args " --ctr$i-unit-mask=0"
-	    } else {
-		append args " --ctr$i-unit-mask=[set unit_mask_$i]"
+	    # A value of -1 is used to mark than unit mask has not been set.
+	    if { [need_unit_mask [set event_type_$i]] } then {
+
+		set event [search_event [set event_type_$i]]
+
+		set default_value [lindex $event 6]
+
+		if { [set unit_mask_$i] == -1 } then {
+		    set unit_mask_$i $default_value
+		}
 	    }
 
-	    append args " --ctr$i-edge-detect=[set ctr_edge_detect_$i]"
+	    if { [set unit_mask_$i] != -1 } then {
+		append args " --ctr$i-unit-mask=[set unit_mask_$i]"
+	    }
 	}
     }
 
@@ -431,6 +805,12 @@ proc save_setup { filename destroy_old_file } {
 	file delete ~/.oprofile/$filename
     }
 
+    global max_counter_number
+
+    for { set i 0 } { $i < $max_counter_number } { incr i } {
+	save_to_array $i
+    }
+
     if { [file exists ~/.oprofile/$filename] == 0 } then {
 	set fd [open ~/.oprofile/$filename w]
 
@@ -447,6 +827,30 @@ proc save_setup { filename destroy_old_file } {
 		puts $fd "[set item]_$i=[set [set item]_$i]"
 	    }
 	}
+
+	for { set i 0 } { $i < $max_counter_number } { incr i } {
+
+	    global event_type_list
+
+	    foreach j $event_type_list {
+		global new_counter_$i
+		set temp new_counter_[set i]([lindex $j 0])
+		puts $fd "$temp=[set $temp]"
+
+		global new_unit_mask_$i
+		set temp new_unit_mask_[set i]([lindex $j 0])
+		puts $fd "$temp=[set $temp]"
+
+		global new_usr_count_$i
+		set temp new_usr_count_[set i]([lindex $j 0])
+		puts $fd "$temp=[set $temp]"
+
+		global new_kernel_count_$i
+		set temp new_kernel_count_[set i]([lindex $j 0])
+		puts $fd "$temp=[set $temp]"
+	    }
+	}
+
 
 	close $fd
     }
@@ -474,7 +878,9 @@ proc load_setup { filename force_advanced_setup_load } {
 	    set key [lindex $list 0]
 	    set value [lindex $list 1]
 
-	    global $key
+	    # $key can be an array(index), so globalise only the array name
+	    global [lindex [split $key "("] 0]
+
 	    set $key $value
 	}
     }
@@ -496,18 +902,17 @@ proc load_setup { filename force_advanced_setup_load } {
 	}
     }
 
-    # this is needed to enable/disable the unit_mask option and to
-    # ensure than the unit_mask is correctly setup.
-    onRadiobuttonChange 0 0
-    onRadiobuttonChange 1 0
+    # this is needed to setup the gui from the new loaded value
+    onRadiobuttonChange 0
+    onRadiobuttonChange 1
 }
 
 # return an empty string if the range is ok.
 # Note than allowed range is (min, max) and not (min, max( to be coherent with
 # the op_check_range() macro in oprofile.h
 proc op_check_range { value min max } {
-
-    global $value
+    # $value can be an array(index), so globalise only the array name
+    global [lindex [split $value "("] 0]
 
     # this is coherent with op_check_range() macro in oprofile.h
     if { [set $value] < $min || [set $value] > $max } then {
@@ -777,12 +1182,12 @@ proc onOptionMaskOk { counter } {
 
 	set i [search_event [set event_type_$counter]]
 
-	set type_u_mask [lindex $i 4]
+	set type_u_mask [lindex $i 5]
 
 	# for exclusive mode, the variable is setup directly by tcl/tk
 	if { [str_eq $type_u_mask exclusive]  == 0 } then  {
 	    # assert type_u_mask == bit_mask
-	    set list [lindex $i 6]
+	    set list [lindex $i 7]
 
 	    set button_order 1
 	    set temp 0
@@ -839,9 +1244,9 @@ proc onUnitMaskClick { counter } {
 
 	wm title .f_unit_mask_option "unit mask option ([lindex $i 0]-Counter $counter)"
 
-	set type_u_mask [lindex $i 4]
-	set default_value [lindex $i 5]
-	set list [lindex $i 6]
+	set type_u_mask [lindex $i 5]
+	set default_value [lindex $i 6]
+	set list [lindex $i 7]
 
 	# if radiobutton are created this setup the default checked radiobutton
 	# here we try to keep the old value of the unit mask as restored from
@@ -931,47 +1336,36 @@ proc onUnitMaskClick { counter } {
 
 # An event_type radio_button has been clicked. The main purpose of this proc
 # is to enabled/disabled the f_unit_mask.f_unit_mask_$counter.btn_unit_mask
-proc onRadiobuttonChange { counter reset_unit_mask } {
+proc onRadiobuttonChange { counter } {
     global event_type_$counter
     global old_event_type_$counter
-    global unit_mask_$counter
 
     set button_path .f_unit_mask.f_unit_mask_$counter.btn_unit_mask
 
     set i [search_event [set event_type_$counter]]
 
-    # Note than unit_mask is saved in the config file only once and not for
-    # each event type so, changing the event and reputing the old event lose
-    # the mask. TODO : fix this ?
-
-    # This test is needed to avoid unnecessary reset of the unit_mask
-    if { [str_eq [set old_event_type_$counter] [set event_type_$counter]] == 0 } then {
-	if { [expr [ llength $i ] > 4] } {
-	    if { [str_eq [lindex $i 4] mandatory] == 0 } then {
-		$button_path configure -state normal
-	    } else {
-		$button_path configure -state disabled
-	    }
-
-	    set default_value [lindex $i 5]
-
-	    if { $reset_unit_mask } then {
-		# For exclusive mode we need to set the unit_mask to -1 to really
-		# mark than the unit mask has been not set. See also onUnitMaskClick
-		if { [str_eq [lindex $i 4] exclusive] == 1 } then {
-		    set unit_mask_$counter -1
-		} else {
-		    set unit_mask_$counter $default_value
-		}
-	    }
+    if { [expr [ llength $i ] > 5] } {
+	if { [str_eq [lindex $i 5] mandatory] == 0 } then {
+	    $button_path configure -state normal
 	} else {
 	    $button_path configure -state disabled
-
- 	    set unit_mask_$counter 0
 	}
-
-	set old_event_type_$counter [set event_type_$counter]
+    } else {
+	$button_path configure -state disabled
     }
+
+    # tricky : need to save the old setup in the array, before restoring it from the
+    # current setting...
+    set temp_event_type [set event_type_$counter]
+    set event_type_$counter [set old_event_type_$counter]
+
+    save_to_array $counter
+
+    set event_type_$counter $temp_event_type
+
+    save_to_global $counter
+
+    set old_event_type_$counter [set event_type_$counter]
 }
 
 # Setup all the stuff needed by one counter
@@ -1004,12 +1398,6 @@ proc create_event_frame { parent counter } {
 	place $f_counter -relx 0.5
     }
 
-    # this creation order is required to have a correct layout of the button.
-
-    create_checkbutton_group  $f_counter. bottom 0 {
-	{ edge_detect "Edge detect" }
-    }
-
     create_checkbutton_group  $f_counter. left 0 {
 	{ kernel_count "OS ring count"  }
 	{ usr_count "USR ring count" }
@@ -1017,7 +1405,6 @@ proc create_event_frame { parent counter } {
 
     $f_counter.kernel_count configure -variable kernel_count_$counter
     $f_counter.usr_count configure -variable usr_count_$counter
-    $f_counter.edge_detect configure -variable ctr_edge_detect_$counter
 
     set f_unit_mask .f_unit_mask.f_unit_mask_$counter
     frame $f_unit_mask
@@ -1064,14 +1451,18 @@ proc setup_event_frame { } {
 	}
     }
 
-    # see comment on wm withdraw  and update idletasks
+    # see comment on wm withdraw and update idletasks
     wm deiconify .
+}
+
+# setup global for the current event type.
+for { set i 0 } { $i < $max_counter_number } { incr i } {
+    save_to_global $i
 }
 
 # create and layout the frame container.
 
 # TODO : put all this code in setup_event_frame
-#load_setup gui_setup 1
 
 # TODO : how to get dynamically the correct width ?
 wm geometry . 576x600
@@ -1144,317 +1535,6 @@ if { [expr $processor_type == -1] } then {
 }
 
 wm title . "Profiling option for $title processor"
-
-#  This list is here to avoid maintaining separate list for each processor
-# type / counter number. It is the main data structure which describe all
-# counter event. When adding new processor/event/counter only this data
-# structure need update (adding counter require also work in the code).
-
-# TODO : this must be shared in some way with op_events.c
-
-# list entry item :
-# 1 event type/name
-# 2 bit mask 
-#  1 : avail for PPro
-#  2 : avail for P2
-#  4 : avail for P3
-#  8 : avail for P4  currently not supported.
-# 3 bit mask
-#  1 : available for counter 0
-#  2 : available for counter 1
-#  4 : and so on...
-# 4 help string displayed in the status bar.
-# optional args follow :
-# 5 a string in { mandatory bit_mask exclusive }
-#  mandatory entry are event that need this particular value for this event
-#  bit_mask means the different value can be or'ed
-#  exclusive means than only one of the value can be passed to the profiler.
-# 6 the default value
-# 7 a list of  : { unit_bit_mask_or_value string }+
-set event_type_list {
-    { DISABLED -1 -1 "Select it to disable this counter" }
-    { CPU_CLK_UNHALTED 7 3 "Clock processor not halted" }
-    { DATA_MEM_REFS 7 3 "All memory reference, cachable and non" }
-    { DCU_LINES_IN  7 3 "Total line allocated in DCU" }
-    { DCU_M_LINES_IN  7 3 "Number of M state lines allocated in DCU" }
-    { DCU_M_LINES_OUT  7 3 "Number of M lines evicted from the DCU" }
-    { DCU_MISS_OUTSTANDING 7 3 "Number of cycles while DCU miss outstanding" }
-    { IFU_IFETCH 7 3 "Number of non/cachable instruction fetches" }
-    { IFU_IFETCH_MISS 7 3 "Number of instruction fetch misses" }
-    { ITLB_MISS 7 3 "Number of ITLB misses" }
-    { IFU_MEM_STALL 7 3 "Cycles instruction fetch pipe is stalled" }
-    { ILD_STALL 7 3 "Cycles instruction length decoder is stalled" }
-    { L2_IFETCH 7 3 "Number of L2 instruction fetches"
-	bit_mask 15
-	{ 
-	    { 1 "(I)nvalid cache state" }
-	    { 2 "(S)hared cache state" }
-	    { 4 "(E)xclusive cache state" }
-	    { 8 "(M)odified cache state" }
-	    { 15 "MESI cache state" }
-	} 
-    }
-    { L2_LD 7 3 "Number of L2 data load"
-	bit_mask 15
-	{ 
-	    { 1 "(I)nvalid cache state" }
-	    { 2 "(S)hared cache state" }
-	    { 4 "(E)xclusive cache state" }
-	    { 8 "(M)odified cache state" }
-	    { 15 "MESI cache state" }
-	} 
-    }
-    { L2_ST 7 3 "Number of L2 data stores"
-	bit_mask 15
-	{ 
-	    { 1 "(I)nvalid cache state" }
-	    { 2 "(S)hared cache state" }
-	    { 4 "(E)xclusive cache state" }
-	    { 8 "(M)odified cache state" }
-	    { 15 "MESI cache state" }
-	}
-    }
-    { L2_LINES_IN 7 3 "Number of allocated lines in L2" }
-    { L2_LINES_OUT 7 3 "Number of recovered lines from L2" }
-    { L2_M_LINES_INM 7 3 "Number of modified lines allocated in L2" }
-    { L2_M_LINES_OUTM 7 3 "Number of modified lines removed from L2" }
-    { L2_RQSTS 7 3 "Number of L2 requests"
-	bit_mask 15
-	{ 
-	    { 1 "(I)nvalid cache state" }
-	    { 2 "(S)hared cache state" }
-	    { 4 "(E)xclusive cache state" }
-	    { 8 "(M)odified cache state" }
-	    { 15 "MESI cache state" }
-	}
-    }
-    { L2_ADS 7 3 "Number of L2 address strobes" }
-    { L2_DBUS_BUSY 7 3 "Number of cycles data bus was busy" }
-    { L2_DMUS_BUSY_RD 7 3 "Cycles data bus was busy in xfer from L2 to cpu" }
-    { BUS_DRDY_CLOCKS 7 3 "Number of clocks DRDY is asserted" 
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_LOCK_CLOCKS 7 3 "Number of clocks LOCK is asserted" 
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_REQ_OUTSTANDING 7 3 "Number of outstanding bus request" }
-    { BUS_TRAN_BRD 7 3 "Number of burst read transactions" 
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRAN_RFO 7 3 "Number of read for ownership transactions"
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRANS_WB 7 3 "Number of write back transactions"
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRAN_IFETCH 7 3 "Number of instruction fetch transactions"
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRAN_INVAL 7 3 "Number of invalid transactions"
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRAN_PWR 7 3 "umber of partial write transactions"
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRANS_P 7 3 "Number of partial transactions"
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRANS_IO 7 3 "Number of I/O transactions"
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRANS_DEF 7 3 "Number of deferred transactions"
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}    
-    }
-    { BUS_TRAN_BURST 7 3 "Number of burst transactions"
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRAN_ANY 7 3 "Number of all transactions"
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRAN_MEM 7 3 "Number of memory transactions"
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_DATA_RCV 7 3 "Bus cycles this processor is receiving data" }
-    { BUS_BNR_DRV 7 3 "bus cycles this processor is driving BNR pin" }
-    { BUS_HIT_DRV 7 3 "bus cycles this processor is driving HIT pin" }
-    { BUS_HITM_DRV 7 3 "bus cycles this processor is driving HITM pin" }
-    { BUS_SNOOP_STALL 7 3 "cycles during bus snoop stall" }
-    { COMP_FLOP_RET 7 1
-	  "Number of computational FP operations retired - Counter 0 only" }
-    { FLOPS 7 1
-	  "Number of computational FP operations executed - Counter 0 only" }
-    { FP_ASSIST 7 2
-	"Number of exceptions handled by microcode - Counter 1 only" }
-    { MUL 7 2 "Number of multiplies - Counter 1 only" }
-    { DIV 7 2 "Number of divides - Counter 1 only" }
-    { CYCLES_DIV_BUSY 7 1 "Cycles divider is busy - Counter 0 only" }
-    { LD_BLOCKS 7 3 "Number of store blocks" }
-    { SB_DRAINS 7 3 "Number of store buffer drain cycles" }
-    { MISALIGN_MEM_REF 7 3 "Number of misaligned data memory references" }
-    { EMON_KNI_PREF_DISPATCHED 4 3
-	  "Number KNU pre-fetch/weakly ordered insns dispatch - P3 only"
-	exclusive 0
-	{ 
-	    { 0 "Prefecth NTA" }
-	    { 1 "Prefetch T1" }
-	    { 2 "Prefetch T2" }
-	    { 3 "weakly ordered stores" }
-	} 
-    }
-    { EMON_KNI_PREF_MISS 4 3
-      "Number KNU pre-fetch/weakly ordered insns that miss all cache - P3 only"
-	exclusive 0
-	{
-	    { 0 "Prefecth NTA" }
-	    { 1 "Prefetch T1" }
-	    { 2 "Prefetch T2" }
-	    { 3 "weakly ordered stores" }
-	}
-    }
-    { INST_RETIRED 7 3 "Number of instructions retired" }
-    { UOPS_RETIRED 7 3 "Number of UOPs retired" }
-    { INST_DECODED 7 3 "Number of instructions decoded" }
-    { EMON_KNI_INST_RETIRED 4 3 "Number of KNI instructions retired - P3 only"
-	exclusive 0
-	{
-	    { 0 "Packed and scalar" }
-	    { 1 "Packed" }
-	}
-    }
-    { EMON_KNI_COMP_INST_RET 4 3 
-	"Number of KNI instructions computation retired - P3 only"
-	exclusive 0
-	{ 
-	    { 0 "Packed and scalar" }
-	    { 1 "Packed" }
-	} 
-    }
-    { HW_INT_RX 7 3 "Number of hardware interrupts received" }
-    { CYCLES_INT_MASKED 7 3 "Cycles interrupt are disabled" }
-    { CYCLES_INT_PENDING_AND_MASKED 7 3 
-	"Cycles interrupts are disabled with pending interrupts" }
-    { BR_INST_RETIRED 7 3 "Number of branch instructions retired" }
-    { BR_MISS_PRED_RETIRED 7 3 "Number of mispredicted branches retired" }
-    { BR_TAKEN_RETIRED 7 3 "Number of taken branches retired" }
-    { BR_MISS_PRED_TAKEN_RET 7 3 
-	"Number of taken mispredictions branches retired" }
-    { BR_INST_DECODED 7 3 "Number of branches instructions decoded" }
-    { BTB_MISSES 7 3 "Number of branches that miss the BTB" }
-    { BR_BOGUS 7 3 "Number of bogus branches" }
-    { BACLEARS 7 3 "Number of times BACLEAR is asserted" }
-    { RESOURCE_STALLS 7 3 "Cycles during resource related stalls" }
-    { PARTIAL_RAT_STALLS 7 3 "cycles or event for partial stalls" }
-    { SEGMENT_REG_LOADS 7 3 "Number of segment register loads" }
-    { MMX_INSTR_EXEC 2 3 "Number of MMX instructions executed - P2 only" }
-    { MMX_SAT_INSTR_EXEC 6 3 
-	"Number of MMX saturating instructions executed - P2/P3 only" }
-    { MMX_UOPS_EXEC 6 3 "Number of MMX UOPs executed - P2/P3 only"
-	mandatory 15
-	{
-	    { 15 "Mandatory" }
-	}
-    }
-    { MMX_INSTR_TYPE_EXEC 6 3 "Number of MMX packing instructions - P2/P3 only"
-	bit_mask 63
-	{
-	    { 1 "MMX packed multiplies" }
-	    { 2 "MMX packed shifts" }
-	    { 4 "MMX pack operations" }
-	    { 8 "MMX unpack operations" }
-	    { 16 "MMX packed logical" }
-	    { 32 "MMX packed arithmetic" }
-	    { 63 "MMX pack/unpack and all operations" }
-	}
-    }
-    { FP_MMX_TRANS 6 3 "MMX-floating point transitions - P2/P3 only"
-	exclusive 0
-	{
-	    { 0 "Transitions from MMX to floating point" }
-	    { 1 "Transitions from floating point to MMX" }
-	}
-    }
-    { MMX_ASSIST 6 3 "Number of EMMS instructions executed - P2/P3 only" }
-    { MMX_INSTR_RET 2 3 "Number of MMX instructions retired - P2 only" }
-    { SEG_RENAME_STALLS 6 3
-	  "Number of segment register renaming stalls - P2/P3 only" 
-	bit_mask 15
-	{
-	    { 1 "ES register" }
-	    { 2 "DS register" }
-	    { 4 "FS register" }
-	    { 8 "GS register" }
-	    { 15 "ES, DS, FS, GS register" }
-	}
-    }
-    { SEG_REG_RENAMES 6 3  "Number of segment register renames - P2/P3 only"
-	bit_mask 15
-	{
-	    { 1 "ES register" }
-	    { 2 "DS register" }
-	    { 4 "FS register" }
-	    { 8 "GS register" }
-	    { 15 "ES, DS, FS, GS register" }
-	}
-    }
-    { RET_SEG_RENAMES 6 3
-	  "Number of segment register rename events retired - P2/P3 only" }
-}
 
 setup_event_frame
 

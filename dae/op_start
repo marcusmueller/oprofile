@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.30 2001/07/15 16:25:06 movement Exp $
+# $Id: op_start,v 1.31 2001/07/21 22:53:38 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -32,10 +32,8 @@ CTR0_COUNT=600000
 CTR1_COUNT=600000
 CTR0_USER=1
 CTR0_KERNEL=1
-CTR0_EDGE_DETECT=0
 CTR1_USER=1
 CTR1_KERNEL=1
-CTR1_EDGE_DETECT=0
 USE_PII=0
 IGNORE_MYSELF=0
 DIR="/var/opd"
@@ -62,8 +60,6 @@ Module options$
   --ctr0-user=[0|1]            whether to count user events for ctr 0$
   --ctr1-kernel=[0|1]          whether to count kernel events for ctr 1$
   --ctr1-user=[0|1]            whether to count user events for ctr1$
-  --ctr0-edge-detect=[0|1]     count number of events rather duration for ctr0$
-  --ctr1-edge-detect=[0|1]     count number of events rather duration for ctr1$
   --pid-filter=pid             Only profile process pid (if compiled in)$
   --pgrp-filter=pgrp           Only profile process group pgrp (if compiled in)$
 $
@@ -172,17 +168,11 @@ do
 		--ctr0-kernel)
 			CTR0_KERNEL=$val
 			;;
-		--ctr0-edge-detect)
-			CTR0_EDGE_DETECT=$val
-			;;
 		--ctr1-user)
 			CTR1_USER=$val
 			;;
 		--ctr1-kernel)
 			CTR1_KERNEL=$val
-			;;
-		--ctr1-edge-detect)
-			CTR1_EDGE_DETECT=$val
 			;;
 		--base-dir)
 			DIR=$val
@@ -397,6 +387,14 @@ then
 fi
 chmod 700 "$HASH_MAP_DEVICE_FILE"
 
+# Necessary in this case :
+# op_start ctr0-on ctr1-on
+# op_start ctr0-on
+$SYSCTL -w dev.oprofile.0.enabled=0 >/dev/null
+$SYSCTL -w dev.oprofile.1.enabled=0 >/dev/null
+$SYSCTL -w dev.oprofile.0.event=0 >/dev/null
+$SYSCTL -w dev.oprofile.1.event=0 >/dev/null
+
 $SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE >/dev/null
 $SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE >/dev/null
 $SYSCTL -w dev.oprofile.kernel_only=$KERNEL_ONLY >/dev/null
@@ -409,7 +407,6 @@ if [ "$CTR0_EVENT" != "" ]; then
 	$SYSCTL -w dev.oprofile.0.count=$CTR0_COUNT >/dev/null
 	$SYSCTL -w dev.oprofile.0.kernel=$CTR0_KERNEL >/dev/null
 	$SYSCTL -w dev.oprofile.0.user=$CTR0_USER >/dev/null
-	$SYSCTL -w dev.oprofile.0.edge_detect=$CTR0_EDGE_DETECT >/dev/null
 	$SYSCTL -w dev.oprofile.0.unit_mask=$CTR0_UM >/dev/null
 	$SYSCTL -w dev.oprofile.0.event=$CTR0_EVENT_VAL >/dev/null
 fi
@@ -418,7 +415,6 @@ if [ "$CTR1_EVENT" != "" ]; then
 	$SYSCTL -w dev.oprofile.1.count=$CTR1_COUNT >/dev/null
 	$SYSCTL -w dev.oprofile.1.kernel=$CTR1_KERNEL >/dev/null
 	$SYSCTL -w dev.oprofile.1.user=$CTR1_USER >/dev/null
-	$SYSCTL -w dev.oprofile.1.edge_detect=$CTR1_EDGE_DETECT >/dev/null
 	$SYSCTL -w dev.oprofile.1.unit_mask=$CTR1_UM >/dev/null
 	$SYSCTL -w dev.oprofile.1.event=$CTR1_EVENT_VAL >/dev/null
 fi

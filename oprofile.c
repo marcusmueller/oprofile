@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.61 2001/07/15 16:25:06 movement Exp $ */
+/* $Id: oprofile.c,v 1.62 2001/07/21 22:53:38 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -34,7 +34,6 @@ static int op_ctr_count[OP_MAX_COUNTERS];
 static int op_ctr_val[OP_MAX_COUNTERS];
 static int op_ctr_kernel[OP_MAX_COUNTERS];
 static int op_ctr_user[OP_MAX_COUNTERS];
-static int op_ctr_edge_detect[OP_MAX_COUNTERS];
 pid_t pid_filter;
 pid_t pgrp_filter;
 
@@ -348,7 +347,7 @@ not_local_p6_apic:
 
 /* ---------------- PMC setup ------------------ */
 
-static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um, u8 edge_detect)
+static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um)
 {
 	/* enable interrupt generation */
 	*val |= (1<<20);
@@ -358,10 +357,6 @@ static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um, u8 edge_
 
 	(kernel) ? (*val |= (1<<17))
 		 : (*val &= ~(1<<17));
-
-	/* enable/disable counting number of events rather duration of events */
-	(edge_detect) ? (*val |= (1<<18))
-		      : (*val &= ~(1<<18));
 
 	/* what are we counting ? */
 	*val |= event;
@@ -383,7 +378,7 @@ static void pmc_setup(void *dummy)
 
 	if (op_ctr_val[0]) {
 		set_perfctr(op_ctr_count[0], 0);
-		pmc_fill_in(&low, op_ctr_kernel[0], op_ctr_user[0], op_ctr_val[0], op_ctr_um[0], op_ctr_edge_detect[0]);
+		pmc_fill_in(&low, op_ctr_kernel[0], op_ctr_user[0], op_ctr_val[0], op_ctr_um[0]);
 	}
 
 	wrmsr(MSR_IA32_EVNTSEL0, low, 0);
@@ -394,7 +389,7 @@ static void pmc_setup(void *dummy)
 
 	if (op_ctr_val[1]) {
 		set_perfctr(op_ctr_count[1], 1);
-		pmc_fill_in(&low, op_ctr_kernel[1], op_ctr_user[1], op_ctr_val[1], op_ctr_um[1], op_ctr_edge_detect[1]);
+		pmc_fill_in(&low, op_ctr_kernel[1], op_ctr_user[1], op_ctr_val[1], op_ctr_um[1]);
 		wrmsr(MSR_IA32_EVNTSEL1, low, high);
 	}
 
@@ -742,17 +737,19 @@ static int parms_ok(void)
 	uint cpu;
 	struct _oprof_data *data;
 
-	op_check_range(op_hash_size, 256, 262144, "op_hash_size value %d not in range\n");
-	op_check_range(op_buf_size, 1024, 1048576, "op_buf_size value %d not in range\n");
+	op_check_range(op_hash_size, 256, 262144, "op_hash_size value %d not in range (%d %d)\n");
+	op_check_range(op_buf_size, 1024, 1048576, "op_buf_size value %d not in range (%d %d)\n");
 
 	/* FIXME: hardcoded 2 counters */
 	for (i = 0; i < 2; i++) {
 		if (op_ctr_on[i]) {
+			int min_count = op_min_count(op_ctr_val[i]);
+
 			if (!op_ctr_user[i] && !op_ctr_kernel[i]) {
 				printk(KERN_ERR "oprofile: neither kernel nor user set for counter %d\n", i);
 				return 0;
 			}
-			op_check_range(op_ctr_count[i], 500, OP_MAX_PERF_COUNT, "ctr count value %d not in range\n");
+			op_check_range(op_ctr_count[i], min_count, OP_MAX_PERF_COUNT, "ctr count value %d not in range (%d %ld)\n");
 		}
 	}
  
@@ -909,7 +906,6 @@ static struct file_operations oprof_fops = {
  *                      unit_mask
  *                      kernel
  *                      user
- *                      edge_detect
  *                    1/
  *                      event
  *                      enabled
@@ -917,7 +913,6 @@ static struct file_operations oprof_fops = {
  *                      unit_mask
  *                      kernel
  *                      user
- *                      edge_detect
  */
 
 static int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
@@ -1030,20 +1025,19 @@ int __init init_sysctl(void)
 		next->procname = names[i];
 		next->mode = 0700;
 
-		if (!(counter_table[i] = kmalloc(sizeof(ctl_table)*8, GFP_KERNEL)))
+		if (!(counter_table[i] = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
 			goto cleanup;
 		next->child = counter_table[i];
 
 		tab = counter_table[i];
  
-		memset(tab, 0, sizeof(ctl_table)*8);
+		memset(tab, 0, sizeof(ctl_table)*7);
 		tab[0] = ((ctl_table){ 1, "enabled", &op_ctr_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[1] = ((ctl_table){ 1, "event", &op_ctr_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
 		tab[2] = ((ctl_table){ 1, "count", &op_ctr_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[3] = ((ctl_table){ 1, "unit_mask", &op_ctr_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[4] = ((ctl_table){ 1, "kernel", &op_ctr_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[5] = ((ctl_table){ 1, "user", &op_ctr_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[6] = ((ctl_table){ 1, "edge_detect", &op_ctr_edge_detect[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, }); 
 		next++;
 	}
 

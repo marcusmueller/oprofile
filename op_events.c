@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.18 2001/06/25 20:32:56 movement Exp $ */
+/* $Id: op_events.c,v 1.19 2001/07/21 22:53:38 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -53,6 +53,7 @@ struct op_event {
 	u8 val; /* event number */
 	u8 unit; /* which unit mask if any allowed */
 	const char *name;
+	int min_count; /* minimum counter value allowed */
 };
 
 struct op_unit_mask {
@@ -64,6 +65,7 @@ struct op_unit_mask {
 
 int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um, int p2, u8 *ctr0_t, u8 *ctr1_t);
 int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc);
+int op_min_count(u8 ctr_type);
 #ifdef OP_EVENTS_DESC
 void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
 #endif
@@ -87,103 +89,103 @@ static struct op_unit_mask op_unit_masks[] = {
 
 static struct op_event op_events[] = {
   /* Data Cache Unit (DCU) */
-  {OP_ANY,0x43,0,"DATA_MEM_REFS",},
-  {OP_ANY,0x45,0,"DCU_LINES_IN",},
-  {OP_ANY,0x46,0,"DCU_M_LINES_IN",},
-  {OP_ANY,0x47,0,"DCU_M_LINES_OUT",},
-  {OP_ANY,0x48,0,"DCU_MISS_OUTSTANDING",},
+  {OP_ANY,0x43,0,"DATA_MEM_REFS", 500 },
+  {OP_ANY,0x45,0,"DCU_LINES_IN", 500 },
+  {OP_ANY,0x46,0,"DCU_M_LINES_IN", 500 },
+  {OP_ANY,0x47,0,"DCU_M_LINES_OUT", 500},
+  {OP_ANY,0x48,0,"DCU_MISS_OUTSTANDING", 500 },
   /* Intruction Fetch Unit (IFU) */
-  {OP_ANY,0x80,0,"IFU_IFETCH",},
-  {OP_ANY,0x81,0,"IFU_IFETCH_MISS",},
-  {OP_ANY,0x85,0,"ITLB_MISS",},
-  {OP_ANY,0x86,0,"IFU_MEM_STALL",},
-  {OP_ANY,0x87,0,"ILD_STALL",},
+  {OP_ANY,0x80,0,"IFU_IFETCH", 500 },
+  {OP_ANY,0x81,0,"IFU_IFETCH_MISS", 500 },
+  {OP_ANY,0x85,0,"ITLB_MISS", 500},
+  {OP_ANY,0x86,0,"IFU_MEM_STALL", 500 },
+  {OP_ANY,0x87,0,"ILD_STALL", 500 },
   /* L2 Cache */
-  {OP_ANY,0x28,1,"L2_IFETCH",},
-  {OP_ANY,0x29,1,"L2_LD",},
-  {OP_ANY,0x2a,1,"L2_ST",},
-  {OP_ANY,0x24,0,"L2_LINES_IN",},
-  {OP_ANY,0x26,0,"L2_LINES_OUT",},
-  {OP_ANY,0x25,0,"L2_M_LINES_INM",},
-  {OP_ANY,0x27,0,"L2_M_LINES_OUTM",},
-  {OP_ANY,0x2e,1,"L2_RQSTS",},
-  {OP_ANY,0x21,0,"L2_ADS",},
-  {OP_ANY,0x22,0,"L2_DBUS_BUSY",},
-  {OP_ANY,0x23,0,"L2_DMUS_BUSY_RD",},
+  {OP_ANY,0x28,1,"L2_IFETCH", 500 },
+  {OP_ANY,0x29,1,"L2_LD", 500 },
+  {OP_ANY,0x2a,1,"L2_ST", 500 },
+  {OP_ANY,0x24,0,"L2_LINES_IN", 500 },
+  {OP_ANY,0x26,0,"L2_LINES_OUT", 500 },
+  {OP_ANY,0x25,0,"L2_M_LINES_INM", 500 },
+  {OP_ANY,0x27,0,"L2_M_LINES_OUTM", 500 },
+  {OP_ANY,0x2e,1,"L2_RQSTS", 500 },
+  {OP_ANY,0x21,0,"L2_ADS", 500 },
+  {OP_ANY,0x22,0,"L2_DBUS_BUSY", 500 },
+  {OP_ANY,0x23,0,"L2_DMUS_BUSY_RD", 500 },
   /* External Bus Logic (EBL) */
-  {OP_ANY,0x62,2,"BUS_DRDY_CLOCKS",},
-  {OP_ANY,0x63,2,"BUS_LOCK_CLOCKS",},
-  {OP_ANY,0x60,0,"BUS_REQ_OUTSTANDING",},
-  {OP_ANY,0x65,2,"BUS_TRAN_BRD",},
-  {OP_ANY,0x66,2,"BUS_TRAN_RFO",},
-  {OP_ANY,0x67,2,"BUS_TRANS_WB",},
-  {OP_ANY,0x68,2,"BUS_TRAN_IFETCH",},
-  {OP_ANY,0x69,2,"BUS_TRAN_INVAL",},
-  {OP_ANY,0x6a,2,"BUS_TRAN_PWR",},
-  {OP_ANY,0x6b,2,"BUS_TRANS_P",},
-  {OP_ANY,0x6c,2,"BUS_TRANS_IO",},
-  {OP_ANY,0x6d,2,"BUS_TRANS_DEF",},
-  {OP_ANY,0x6e,2,"BUS_TRAN_BURST",},
-  {OP_ANY,0x70,2,"BUS_TRAN_ANY",},
-  {OP_ANY,0x6f,2,"BUS_TRAN_MEM",},
-  {OP_ANY,0x64,0,"BUS_DATA_RCV",},
-  {OP_ANY,0x61,0,"BUS_BNR_DRV",},
-  {OP_ANY,0x7a,0,"BUS_HIT_DRV",},
-  {OP_ANY,0x7b,0,"BUS_HITM_DRV",},
-  {OP_ANY,0x7e,0,"BUS_SNOOP_STALL",},
+  {OP_ANY,0x62,2,"BUS_DRDY_CLOCKS", 500 },
+  {OP_ANY,0x63,2,"BUS_LOCK_CLOCKS", 500 },
+  {OP_ANY,0x60,0,"BUS_REQ_OUTSTANDING", 500 },
+  {OP_ANY,0x65,2,"BUS_TRAN_BRD", 500 },
+  {OP_ANY,0x66,2,"BUS_TRAN_RFO", 500 },
+  {OP_ANY,0x67,2,"BUS_TRANS_WB", 500 },
+  {OP_ANY,0x68,2,"BUS_TRAN_IFETCH", 500 },
+  {OP_ANY,0x69,2,"BUS_TRAN_INVAL", 500 },
+  {OP_ANY,0x6a,2,"BUS_TRAN_PWR", 500 },
+  {OP_ANY,0x6b,2,"BUS_TRANS_P", 500 },
+  {OP_ANY,0x6c,2,"BUS_TRANS_IO", 500 },
+  {OP_ANY,0x6d,2,"BUS_TRANS_DEF", 500 },
+  {OP_ANY,0x6e,2,"BUS_TRAN_BURST", 500 },
+  {OP_ANY,0x70,2,"BUS_TRAN_ANY", 500 },
+  {OP_ANY,0x6f,2,"BUS_TRAN_MEM", 500 },
+  {OP_ANY,0x64,0,"BUS_DATA_RCV", 500 },
+  {OP_ANY,0x61,0,"BUS_BNR_DRV", 500 },
+  {OP_ANY,0x7a,0,"BUS_HIT_DRV", 500 },
+  {OP_ANY,0x7b,0,"BUS_HITM_DRV", 500 },
+  {OP_ANY,0x7e,0,"BUS_SNOOP_STALL", 500 },
   /* Floating Point Unit (FPU) */
-  {OP_0_ONLY,0xc1,0,"COMP_FLOP_RET",},
-  {OP_0_ONLY,0x10,0,"FLOPS",},
-  {OP_1_ONLY,0x11,0,"FP_ASSIST",},
-  {OP_1_ONLY,0x12,0,"MUL",},
-  {OP_1_ONLY,0x13,0,"DIV",},
-  {OP_0_ONLY,0x14,0,"CYCLES_DIV_BUSY",},
+  {OP_0_ONLY,0xc1,0,"COMP_FLOP_RET", 3000 },
+  {OP_0_ONLY,0x10,0,"FLOPS", 3000 },
+  {OP_1_ONLY,0x11,0,"FP_ASSIST", 500 },
+  {OP_1_ONLY,0x12,0,"MUL", 1000 },
+  {OP_1_ONLY,0x13,0,"DIV", 500 },
+  {OP_0_ONLY,0x14,0,"CYCLES_DIV_BUSY", 1000 },
   /* Memory Ordering */
-  {OP_ANY,0x03,0,"LD_BLOCKS",},
-  {OP_ANY,0x04,0,"SB_DRAINS",},
-  {OP_ANY,0x05,0,"MISALIGN_MEM_REF",},
+  {OP_ANY,0x03,0,"LD_BLOCKS", 500 },
+  {OP_ANY,0x04,0,"SB_DRAINS", 500 },
+  {OP_ANY,0x05,0,"MISALIGN_MEM_REF", 500 },
   /* PIII KNI */
-  {OP_PIII_ONLY,0x07,7,"EMON_KNI_PREF_DISPATCHED",},
-  {OP_PIII_ONLY,0x4b,7,"EMON_KNI_PREF_MISS",},
+  {OP_PIII_ONLY,0x07,7,"EMON_KNI_PREF_DISPATCHED", 500 },
+  {OP_PIII_ONLY,0x4b,7,"EMON_KNI_PREF_MISS", 500 },
   /* Instruction Decoding and Retirement */
-  {OP_ANY,0xc0,0,"INST_RETIRED",},
-  {OP_ANY,0xc2,0,"UOPS_RETIRED",},
-  {OP_ANY,0xd0,0,"INST_DECODED",},
+  {OP_ANY,0xc0,0,"INST_RETIRED", 6000 },
+  {OP_ANY,0xc2,0,"UOPS_RETIRED", 6000 },
+  {OP_ANY,0xd0,0,"INST_DECODED", 6000 },
   /* PIII KNI */
-  {OP_PIII_ONLY,0xd8,8,"EMON_KNI_INST_RETIRED",},
-  {OP_PIII_ONLY,0xd9,8,"EMON_KNI_COMP_INST_RET",},
+  {OP_PIII_ONLY,0xd8,8,"EMON_KNI_INST_RETIRED", 3000 },
+  {OP_PIII_ONLY,0xd9,8,"EMON_KNI_COMP_INST_RET", 3000 },
   /* Interrupts */
-  {OP_ANY,0xc8,0,"HW_INT_RX",},
-  {OP_ANY,0xc6,0,"CYCLES_INT_MASKED",},
-  {OP_ANY,0xc7,0,"CYCLES_INT_PENDING_AND_MASKED",},
+  {OP_ANY,0xc8,0,"HW_INT_RX", 500 },
+  {OP_ANY,0xc6,0,"CYCLES_INT_MASKED", 500 },
+  {OP_ANY,0xc7,0,"CYCLES_INT_PENDING_AND_MASKED", 500 },
   /* Branches */
-  {OP_ANY,0xc4,0,"BR_INST_RETIRED",},
-  {OP_ANY,0xc5,0,"BR_MISS_PRED_RETIRED",},
-  {OP_ANY,0xc9,0,"BR_TAKEN_RETIRED",},
-  {OP_ANY,0xca,0,"BR_MISS_PRED_TAKEN_RET",},
-  {OP_ANY,0xe0,0,"BR_INST_DECODED",},
-  {OP_ANY,0xe2,0,"BTB_MISSES",},
-  {OP_ANY,0xe4,0,"BR_BOGUS",},
-  {OP_ANY,0xe6,0,"BACLEARS",},
+  {OP_ANY,0xc4,0,"BR_INST_RETIRED", 500 },
+  {OP_ANY,0xc5,0,"BR_MISS_PRED_RETIRED", 500 },
+  {OP_ANY,0xc9,0,"BR_TAKEN_RETIRED", 500 },
+  {OP_ANY,0xca,0,"BR_MISS_PRED_TAKEN_RET", 500 },
+  {OP_ANY,0xe0,0,"BR_INST_DECODED", 500 },
+  {OP_ANY,0xe2,0,"BTB_MISSES", 500 },
+  {OP_ANY,0xe4,0,"BR_BOGUS", 500 },
+  {OP_ANY,0xe6,0,"BACLEARS", 500 },
   /* Stalls */
-  {OP_ANY,0xa2,0,"RESOURCE_STALLS",},
-  {OP_ANY,0xd2,0,"PARTIAL_RAT_STALLS",},
+  {OP_ANY,0xa2,0,"RESOURCE_STALLS", 500 },
+  {OP_ANY,0xd2,0,"PARTIAL_RAT_STALLS", 500 },
   /* Segment Register Loads */
-  {OP_ANY,0x06,0,"SEGMENT_REG_LOADS",},
+  {OP_ANY,0x06,0,"SEGMENT_REG_LOADS", 500 },
   /* Clocks */
-  {OP_ANY,0x79,0,"CPU_CLK_UNHALTED",},
+  {OP_ANY,0x79,0,"CPU_CLK_UNHALTED", 6000 },
   /* MMX (Pentium II only) */
-  {OP_PII_ONLY,0xb0,0,"MMX_INSTR_EXEC",},
-  {OP_PII_PIII,0xb1,0,"MMX_SAT_INSTR_EXEC",},
-  {OP_PII_PIII,0xb2,3,"MMX_UOPS_EXEC",},
-  {OP_PII_PIII,0xb3,4,"MMX_INSTR_TYPE_EXEC",},
-  {OP_PII_PIII,0xcc,5,"FP_MMX_TRANS",},
-  {OP_PII_PIII,0xcd,0,"MMX_ASSIST",},
-  {OP_PII_ONLY,0xce,0,"MMX_INSTR_RET",},
+  {OP_PII_ONLY,0xb0,0,"MMX_INSTR_EXEC", 3000 },
+  {OP_PII_PIII,0xb1,0,"MMX_SAT_INSTR_EXEC", 3000 },
+  {OP_PII_PIII,0xb2,3,"MMX_UOPS_EXEC", 3000 },
+  {OP_PII_PIII,0xb3,4,"MMX_INSTR_TYPE_EXEC", 3000 },
+  {OP_PII_PIII,0xcc,5,"FP_MMX_TRANS", 3000 },
+  {OP_PII_PIII,0xcd,0,"MMX_ASSIST", 500 },
+  {OP_PII_ONLY,0xce,0,"MMX_INSTR_RET", 3000 },
   /* segment renaming (Pentium II only) */
-  {OP_PII_PIII,0xd4,6,"SEG_RENAME_STALLS",},
-  {OP_PII_PIII,0xd5,6,"SEG_REG_RENAMES",},
-  {OP_PII_PIII,0xd6,0,"RET_SEG_RENAMES",},
+  {OP_PII_PIII,0xd4,6,"SEG_RENAME_STALLS", 500 },
+  {OP_PII_PIII,0xd5,6,"SEG_REG_RENAMES", 500 },
+  {OP_PII_PIII,0xd6,0,"RET_SEG_RENAMES", 500 },
 };
 
 uint op_nr_events = sizeof(op_events)/sizeof(struct op_event);
@@ -246,6 +248,30 @@ static int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
 	}
 
 	return -1;
+}
+
+
+
+/**
+ * op_min_count - get the minimum count value.
+ * @ctr_type: event value
+ *
+ * The function returns > 0 if the event is found
+ * 0 otherwise
+ */
+int op_min_count(u8 ctr_type) {
+	int ret = 0;
+	int ctr_e = 0;
+	uint i;
+
+	for (i = 0; i < op_nr_events && !ctr_e; i++) {
+		if (op_events[i].val == ctr_type) {
+			ret = op_events[i].min_count;
+			ctr_e = 1;
+		}
+	}
+
+	return ret;
 }
 
 /**
