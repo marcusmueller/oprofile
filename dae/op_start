@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.35 2001/08/19 20:09:17 movement Exp $
+# $Id: op_start,v 1.36 2001/08/19 20:23:02 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -57,7 +57,15 @@ if test -f /proc/cpuinfo; then
 		*Athlon* | *Duron* | *K7*)
 			CPUTYPE=3
 		;;
+		# FIXME: I'm not sure this is right ...
+		*Coppermine*)
+			CPUTYPE=2
+		;;
+		*Celeron*)
+			CPUTYPE=1
+		;;
 		*)
+			echo "Unknown CPU type. Please send /proc/cpuinfo to moz@compsoc.man.ac.uk"
 			CPUTYPE=0
 		;;
 	esac

@@ -1,5 +1,9 @@
 2001-08-19  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/op_start: handle celeries in cpu type
+ 
+2001-08-19  John Levon  <moz@compsoc.man.ac.uk>
+
 	* op_init.c:
 	* oprofile.h:
 	* oprofile.c: small tidies of the Athlon support
