@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.45 2001/09/15 22:03:57 movement Exp $ */
+/* $Id: oprofpp.c,v 1.46 2001/09/16 02:21:22 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -18,9 +18,9 @@
 #include "oprofpp.h"
  
 static int showvers;
-static int verbose; 
+static int verbose;
+/* set to 4 later for the athlon case */
 static uint op_nr_counters = 2;
- 
 static char const *samplefile;
 static char *basedir="/var/opd";
 static const char *imagefile;
@@ -31,7 +31,6 @@ static int demangle;
 static int list_all_symbols_details;
 static int output_linenr_info;
 
-/* PHE FIXME would be an array of struct ? */
 /* indexed by samples[counter_nr][offset] */
 static struct opd_fentry *samples[OP_MAX_COUNTERS];
 static struct opd_footer *footer[OP_MAX_COUNTERS];
@@ -696,7 +695,6 @@ struct gmon_hdr {
  * Dump gprof-format samples for the image specified by samplefile to
  * the file specified by gproffile.
  */
-/* PHE: FIXME: this fun has not been tested */
 void do_dump_gprof(asymbol **syms, uint num)
 {
 	static struct gmon_hdr hdr = { "gmon", GMON_VERSION, {0,0,0,},}; 

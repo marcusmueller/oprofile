@@ -1,0 +1,987 @@
+<!DOCTYPE UI><UI>
+<class>oprof_start_base</class>
+<widget>
+    <class>QDialog</class>
+    <property stdset="1">
+        <name>name</name>
+        <cstring>oprof_start_base</cstring>
+    </property>
+    <property stdset="1">
+        <name>geometry</name>
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>669</width>
+            <height>547</height>
+        </rect>
+    </property>
+    <property stdset="1">
+        <name>caption</name>
+        <string>Start profiler</string>
+    </property>
+    <property stdset="1">
+        <name>sizeGripEnabled</name>
+        <bool>true</bool>
+    </property>
+    <widget>
+        <class>QPushButton</class>
+        <property stdset="1">
+            <name>name</name>
+            <cstring>buttonHelp</cstring>
+        </property>
+        <property stdset="1">
+            <name>geometry</name>
+            <rect>
+                <x>10</x>
+                <y>480</y>
+                <width>80</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property stdset="1">
+            <name>text</name>
+            <string>&amp;Help</string>
+        </property>
+        <property stdset="1">
+            <name>autoDefault</name>
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget>
+        <class>QPushButton</class>
+        <property stdset="1">
+            <name>name</name>
+            <cstring>quit_and_save_btn</cstring>
+        </property>
+        <property stdset="1">
+            <name>geometry</name>
+            <rect>
+                <x>560</x>
+                <y>480</y>
+                <width>100</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <property stdset="1">
+            <name>text</name>
+            <string>&amp;Quit and save</string>
+        </property>
+        <property stdset="1">
+            <name>autoDefault</name>
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget>
+        <class>QLayoutWidget</class>
+        <property stdset="1">
+            <name>name</name>
+            <cstring>start_stop_layout</cstring>
+        </property>
+        <property stdset="1">
+            <name>geometry</name>
+            <rect>
+                <x>150</x>
+                <y>480</y>
+                <width>350</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <hbox>
+            <property stdset="1">
+                <name>margin</name>
+                <number>0</number>
+            </property>
+            <property stdset="1">
+                <name>spacing</name>
+                <number>6</number>
+            </property>
+            <widget>
+                <class>QPushButton</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>start_profiler_btn</cstring>
+                </property>
+                <property stdset="1">
+                    <name>text</name>
+                    <string>Start profiler</string>
+                </property>
+            </widget>
+            <widget>
+                <class>QPushButton</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>flush_profiler_data_btn</cstring>
+                </property>
+                <property stdset="1">
+                    <name>text</name>
+                    <string>Flush profiler data</string>
+                </property>
+            </widget>
+            <widget>
+                <class>QPushButton</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>stop_profiler_btn</cstring>
+                </property>
+                <property stdset="1">
+                    <name>text</name>
+                    <string>Stop profiler</string>
+                </property>
+            </widget>
+        </hbox>
+    </widget>
+    <widget>
+        <class>QLabel</class>
+        <property stdset="1">
+            <name>name</name>
+            <cstring>event_help_label</cstring>
+        </property>
+        <property stdset="1">
+            <name>enabled</name>
+            <bool>true</bool>
+        </property>
+        <property stdset="1">
+            <name>geometry</name>
+            <rect>
+                <x>0</x>
+                <y>520</y>
+                <width>650</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property stdset="1">
+            <name>frameShape</name>
+            <enum>WinPanel</enum>
+        </property>
+        <property stdset="1">
+            <name>frameShadow</name>
+            <enum>Sunken</enum>
+        </property>
+        <property stdset="1">
+            <name>text</name>
+            <string>event help label, should be redim if main form redim</string>
+        </property>
+    </widget>
+    <widget>
+        <class>QTabWidget</class>
+        <property stdset="1">
+            <name>name</name>
+            <cstring>setup_config_tab</cstring>
+        </property>
+        <property stdset="1">
+            <name>geometry</name>
+            <rect>
+                <x>290</x>
+                <y>10</y>
+                <width>380</width>
+                <height>460</height>
+            </rect>
+        </property>
+        <widget>
+            <class>QWidget</class>
+            <property stdset="1">
+                <name>name</name>
+                <cstring>counter_setup_page</cstring>
+            </property>
+            <attribute>
+                <name>title</name>
+                <string>Counter setup</string>
+            </attribute>
+            <widget>
+                <class>QPushButton</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>all_events_to_default_btn</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>40</x>
+                        <y>400</y>
+                        <width>130</width>
+                        <height>28</height>
+                    </rect>
+                </property>
+                <property stdset="1">
+                    <name>text</name>
+                    <string>All events to default</string>
+                </property>
+            </widget>
+            <widget>
+                <class>QPushButton</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>selected_event_to_default</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>200</x>
+                        <y>400</y>
+                        <width>150</width>
+                        <height>28</height>
+                    </rect>
+                </property>
+                <property stdset="1">
+                    <name>text</name>
+                    <string>Selected event to default</string>
+                </property>
+            </widget>
+            <widget>
+                <class>QFrame</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>unit_mask_frame</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>8</x>
+                        <y>105</y>
+                        <width>360</width>
+                        <height>280</height>
+                    </rect>
+                </property>
+                <property stdset="1">
+                    <name>frameShape</name>
+                    <enum>StyledPanel</enum>
+                </property>
+                <property stdset="1">
+                    <name>frameShadow</name>
+                    <enum>Raised</enum>
+                </property>
+                <widget>
+                    <class>QButtonGroup</class>
+                    <property stdset="1">
+                        <name>name</name>
+                        <cstring>unit_mask_group</cstring>
+                    </property>
+                    <property stdset="1">
+                        <name>geometry</name>
+                        <rect>
+                            <x>0</x>
+                            <y>0</y>
+                            <width>360</width>
+                            <height>280</height>
+                        </rect>
+                    </property>
+                    <property stdset="1">
+                        <name>title</name>
+                        <string>unit mask</string>
+                    </property>
+                </widget>
+            </widget>
+            <widget>
+                <class>QLabel</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>TextLabel1_2</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>20</x>
+                        <y>70</y>
+                        <width>50</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property stdset="1">
+                    <name>text</name>
+                    <string>Count</string>
+                </property>
+            </widget>
+            <widget>
+                <class>QCheckBox</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>user_ring_count_cb</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>30</x>
+                        <y>40</y>
+                        <width>151</width>
+                        <height>19</height>
+                    </rect>
+                </property>
+                <property stdset="1">
+                    <name>text</name>
+                    <string>User ring count</string>
+                </property>
+            </widget>
+            <widget>
+                <class>QCheckBox</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>os_ring_count_cb</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>30</x>
+                        <y>10</y>
+                        <width>151</width>
+                        <height>19</height>
+                    </rect>
+                </property>
+                <property stdset="1">
+                    <name>text</name>
+                    <string>OS ring count</string>
+                </property>
+            </widget>
+            <widget>
+                <class>QLineEdit</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>event_count_edit</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>80</x>
+                        <y>70</y>
+                        <width>110</width>
+                        <height>22</height>
+                    </rect>
+                </property>
+            </widget>
+        </widget>
+        <widget>
+            <class>QWidget</class>
+            <property stdset="1">
+                <name>name</name>
+                <cstring>configuration_page</cstring>
+            </property>
+            <attribute>
+                <name>title</name>
+                <string>Configuration</string>
+            </attribute>
+            <widget>
+                <class>QLayoutWidget</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>label_configuration_layout</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>10</x>
+                        <y>10</y>
+                        <width>98</width>
+                        <height>330</height>
+                    </rect>
+                </property>
+                <vbox>
+                    <property stdset="1">
+                        <name>margin</name>
+                        <number>0</number>
+                    </property>
+                    <property stdset="1">
+                        <name>spacing</name>
+                        <number>6</number>
+                    </property>
+                    <widget>
+                        <class>QLabel</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>TextLabel1</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>kernel filename</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLabel</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>TextLabel6</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>System.map</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLabel</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>TextLabel2</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>buffer size</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLabel</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>TextLabel7</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>hash table size</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLabel</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>TextLabel3</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>pid filter</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLabel</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>TextLabel8</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>pgrp filter</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLabel</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>TextLabel4</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>base dir</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLabel</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>TextLabel9</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>samples files dir</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLabel</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>TextLabel5</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>device file</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLabel</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>TextLabel10</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>hash map device</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLabel</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>TextLabel11</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>daemon log file</string>
+                        </property>
+                    </widget>
+                </vbox>
+            </widget>
+            <widget>
+                <class>QPushButton</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>save_config_btn</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>50</x>
+                        <y>390</y>
+                        <width>120</width>
+                        <height>28</height>
+                    </rect>
+                </property>
+                <property stdset="1">
+                    <name>text</name>
+                    <string>Save configuration</string>
+                </property>
+            </widget>
+            <widget>
+                <class>QPushButton</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>default_config_btn</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>220</x>
+                        <y>390</y>
+                        <width>111</width>
+                        <height>28</height>
+                    </rect>
+                </property>
+                <property stdset="1">
+                    <name>text</name>
+                    <string>Restore default</string>
+                </property>
+            </widget>
+            <widget>
+                <class>QLayoutWidget</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>Layout4</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>350</x>
+                        <y>200</y>
+                        <width>20</width>
+                        <height>140</height>
+                    </rect>
+                </property>
+                <vbox>
+                    <property stdset="1">
+                        <name>margin</name>
+                        <number>0</number>
+                    </property>
+                    <property stdset="1">
+                        <name>spacing</name>
+                        <number>6</number>
+                    </property>
+                    <widget>
+                        <class>QToolButton</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>base_opd_dir_tb</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>°°°</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QToolButton</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>samples_files_dir_tb</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>°°°</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QToolButton</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>device_file_tb</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>enabled</name>
+                            <bool>false</bool>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>°°°</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QToolButton</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>hash_map_device_tb</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>enabled</name>
+                            <bool>false</bool>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>°°°</string>
+                        </property>
+                        <property>
+                            <name>toolTip</name>
+                            <string></string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QToolButton</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>daemon_log_file_tb</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>enabled</name>
+                            <bool>true</bool>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>°°°</string>
+                        </property>
+                    </widget>
+                </vbox>
+            </widget>
+            <widget>
+                <class>QCheckBox</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>kernel_only_cb</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>60</x>
+                        <y>350</y>
+                        <width>87</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property stdset="1">
+                    <name>text</name>
+                    <string>Kernel only</string>
+                </property>
+            </widget>
+            <widget>
+                <class>QCheckBox</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>ignore_daemon_samples_cb</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>200</x>
+                        <y>350</y>
+                        <width>150</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property stdset="1">
+                    <name>text</name>
+                    <string>Do not profile daemon</string>
+                </property>
+            </widget>
+            <widget>
+                <class>QLayoutWidget</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>configuration_edit_layout</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>120</x>
+                        <y>10</y>
+                        <width>220</width>
+                        <height>330</height>
+                    </rect>
+                </property>
+                <vbox>
+                    <property stdset="1">
+                        <name>margin</name>
+                        <number>0</number>
+                    </property>
+                    <property stdset="1">
+                        <name>spacing</name>
+                        <number>6</number>
+                    </property>
+                    <widget>
+                        <class>QLineEdit</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>kernel_filename_edit</cstring>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLineEdit</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>map_filename_edit</cstring>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLineEdit</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>buffer_size_edit</cstring>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLineEdit</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>hash_table_size_edit</cstring>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLineEdit</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>pid_filter_edit</cstring>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLineEdit</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>pgrp_filter_edit</cstring>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLineEdit</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>base_opd_dir_edit</cstring>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLineEdit</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>samples_files_dir_edit</cstring>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLineEdit</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>device_file_edit</cstring>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLineEdit</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>hash_map_device_edit</cstring>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QLineEdit</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>daemon_log_file_edit</cstring>
+                        </property>
+                    </widget>
+                </vbox>
+            </widget>
+            <widget>
+                <class>QLayoutWidget</class>
+                <property stdset="1">
+                    <name>name</name>
+                    <cstring>Layout5</cstring>
+                </property>
+                <property stdset="1">
+                    <name>geometry</name>
+                    <rect>
+                        <x>350</x>
+                        <y>20</y>
+                        <width>20</width>
+                        <height>50</height>
+                    </rect>
+                </property>
+                <vbox>
+                    <property stdset="1">
+                        <name>margin</name>
+                        <number>0</number>
+                    </property>
+                    <property stdset="1">
+                        <name>spacing</name>
+                        <number>6</number>
+                    </property>
+                    <widget>
+                        <class>QToolButton</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>kernel_filename_tb</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>°°°</string>
+                        </property>
+                    </widget>
+                    <widget>
+                        <class>QToolButton</class>
+                        <property stdset="1">
+                            <name>name</name>
+                            <cstring>map_filename_tb</cstring>
+                        </property>
+                        <property stdset="1">
+                            <name>text</name>
+                            <string>°°°</string>
+                        </property>
+                    </widget>
+                </vbox>
+            </widget>
+        </widget>
+        <widget>
+            <class>QWidget</class>
+            <property stdset="1">
+                <name>name</name>
+                <cstring>debug_tab</cstring>
+            </property>
+            <attribute>
+                <name>title</name>
+                <string>Debug</string>
+            </attribute>
+        </widget>
+    </widget>
+    <widget>
+        <class>QFrame</class>
+        <property stdset="1">
+            <name>name</name>
+            <cstring>events_frame</cstring>
+        </property>
+        <property stdset="1">
+            <name>geometry</name>
+            <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>270</width>
+                <height>460</height>
+            </rect>
+        </property>
+        <property stdset="1">
+            <name>frameShape</name>
+            <enum>StyledPanel</enum>
+        </property>
+        <property stdset="1">
+            <name>frameShadow</name>
+            <enum>Raised</enum>
+        </property>
+        <property stdset="1">
+            <name>lineWidth</name>
+            <number>1</number>
+        </property>
+        <property stdset="1">
+            <name>margin</name>
+            <number>0</number>
+        </property>
+        <property stdset="1">
+            <name>midLineWidth</name>
+            <number>0</number>
+        </property>
+    </widget>
+</widget>
+<connections>
+    <connection>
+        <sender>kernel_filename_tb</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>on_choose_file_or_dir()</slot>
+    </connection>
+    <connection>
+        <sender>map_filename_tb</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>on_choose_file_or_dir()</slot>
+    </connection>
+    <connection>
+        <sender>base_opd_dir_tb</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>on_choose_file_or_dir()</slot>
+    </connection>
+    <connection>
+        <sender>samples_files_dir_tb</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>on_choose_file_or_dir()</slot>
+    </connection>
+    <connection>
+        <sender>device_file_tb</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>on_choose_file_or_dir()</slot>
+    </connection>
+    <connection>
+        <sender>hash_map_device_tb</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>on_choose_file_or_dir()</slot>
+    </connection>
+    <connection>
+        <sender>daemon_log_file_tb</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>on_choose_file_or_dir()</slot>
+    </connection>
+    <connection>
+        <sender>start_profiler_btn</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>on_start_profiler()</slot>
+    </connection>
+    <connection>
+        <sender>stop_profiler_btn</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>on_stop_profiler()</slot>
+    </connection>
+    <connection>
+        <sender>flush_profiler_data_btn</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>on_flush_profiler_data()</slot>
+    </connection>
+    <connection>
+        <sender>quit_and_save_btn</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>accept()</slot>
+    </connection>
+    <slot access="protected">on_choose_file_or_dir()</slot>
+    <slot access="protected">on_event_clicked()</slot>
+    <slot access="protected">on_flush_profiler_data()</slot>
+    <slot access="protected">on_start_profiler()</slot>
+    <slot access="protected">on_stop_profiler()</slot>
+</connections>
+<tabstops>
+    <tabstop>setup_config_tab</tabstop>
+    <tabstop>os_ring_count_cb</tabstop>
+    <tabstop>user_ring_count_cb</tabstop>
+    <tabstop>event_count_edit</tabstop>
+    <tabstop>all_events_to_default_btn</tabstop>
+    <tabstop>selected_event_to_default</tabstop>
+    <tabstop>buttonHelp</tabstop>
+    <tabstop>start_profiler_btn</tabstop>
+    <tabstop>flush_profiler_data_btn</tabstop>
+    <tabstop>stop_profiler_btn</tabstop>
+    <tabstop>quit_and_save_btn</tabstop>
+    <tabstop>kernel_filename_edit</tabstop>
+    <tabstop>map_filename_edit</tabstop>
+    <tabstop>buffer_size_edit</tabstop>
+    <tabstop>hash_table_size_edit</tabstop>
+    <tabstop>pid_filter_edit</tabstop>
+    <tabstop>pgrp_filter_edit</tabstop>
+    <tabstop>base_opd_dir_edit</tabstop>
+    <tabstop>samples_files_dir_edit</tabstop>
+    <tabstop>device_file_edit</tabstop>
+    <tabstop>hash_map_device_edit</tabstop>
+    <tabstop>daemon_log_file_edit</tabstop>
+    <tabstop>kernel_only_cb</tabstop>
+    <tabstop>ignore_daemon_samples_cb</tabstop>
+    <tabstop>save_config_btn</tabstop>
+    <tabstop>default_config_btn</tabstop>
+</tabstops>
+</UI>
