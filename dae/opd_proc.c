@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.108 2002/03/20 21:19:42 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.109 2002/04/09 02:58:28 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -105,17 +105,13 @@ void opd_alarm(int val __attribute__((unused)))
 	struct opd_proc *proc;
 	struct opd_proc *next;
 	uint i;
-	uint j;
-	struct opd_image * image;
+	struct opd_sample_file * sample_file;
 	struct list_head * pos;
 
-	list_for_each(pos, &opd_images) {
-		image = list_entry(pos, struct opd_image, list_node);
-		for (j = 0 ; j < op_nr_counters ; ++j) {
-			if (image->sample_files[j].fd > 1)
-				msync(image->sample_files[j].header, 
-					image->len + sizeof(struct opd_header), MS_ASYNC);
-		}
+	list_for_each(pos, &opd_samples_files) {
+		sample_file = list_entry(pos, struct opd_sample_file, lru_node);
+		msync(sample_file->header, 
+		      sample_file->len + sizeof(struct opd_header), MS_ASYNC);
 	}
 
 	for (i=0; i < OPD_MAX_PROC_HASH; i++) {

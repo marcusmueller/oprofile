@@ -1,3 +1,8 @@
+2002-04-09  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_proc.c: iterate on opened sample file
+	  rather on image list to sync mmap'ed file
+
 2002-04-07  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/oprofpp.h:
