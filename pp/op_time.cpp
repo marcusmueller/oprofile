@@ -76,7 +76,6 @@ static int reverse_sort;
 static int show_shared_libs;
 static const char * base_dir = "/var/opd/samples";
 
-/* FIXME: -h means help not shared libs !!!! */ 
 static struct poptOption options[] = {
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
 	{ "use-counter", 'c', POPT_ARG_INT, &ctr, 0,
@@ -168,7 +167,7 @@ static bool samples_file_exist(const std::string & filename)
  * @file_list: a list of string which must be insert in @result
  *
  * for each filename try to extract if possible the app name and
- * use it as a key of the }result mp to insert the filename
+ * use it as a key to insert the filename in @result
  *  filename are on the form
  *   }usr}sbin}syslogd}}}lib}libc-2.1.2.so (shared lib
  *     which belong to app /usr/sbin/syslogd)
@@ -216,7 +215,6 @@ static void out_filename(const string& app_name, size_t app_count,
  *
  * iterator parameters are intended to be of type @map_t::iterator or
  * @map_t::reverse_iterator
- * FIXME: how to reference the global map_t typedef with doxygen ?
  */
 template <class Iterator>
 static void output_image_details(Iterator first, Iterator last, u32 app_count,
@@ -258,7 +256,7 @@ static void treat_file_list(map_t& files)
 {
 	double total_count = 0;
 
-	/* 1st pass: accumalte for each image_name the samples count, also
+	/* 1st pass: accumulate for each image_name the samples count and
 	 * update the total_count of samples */
 
 	map_t::const_iterator it;
@@ -299,8 +297,8 @@ static void treat_file_list(map_t& files)
 	}
 
 	/* 2nd pass: insert the count of samples for each application and
-	 * associate with an iterator to a image name (e.g. insert one
-	 * item for each applciation */
+	 * associate with an iterator to a image name e.g. insert one
+	 * item for each application */
 
 	sorted_map_t sorted_map;
 	for (it = files.begin(); it != files.end() ; ) {
@@ -322,7 +320,7 @@ static void treat_file_list(map_t& files)
 	/* this if else are only different by the type of iterator used, we
 	 * can't easily templatize the block on iterator type because we use
 	 * in one case begin()/end() and in another rbegin()/rend(), it's
-	 * worthwhile to try to factorize this two piece of code */
+	 * worthwhile to try to factorize these two piece of code */
 	if (reverse_sort) {
 		sorted_map_t::reverse_iterator s_it = sorted_map.rbegin();
 		for ( ; s_it != sorted_map.rend(); ++s_it) {

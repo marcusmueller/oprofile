@@ -41,13 +41,19 @@ In the following description, options that begin with ctrX- define a logical cou
 number in the range 0-3 (0-1 for Intel processors, which only have two counters).
 See the HTML documentation for further details.
 
+.SH COMMONS OPTIONS
+All utilities share the following options
+.TP
+.BI "--help -? --usage"
+Show help message
+.br
+.TP
+.BI "--version -v"
+show version
+.br
 .SH OPTIONS
 .br
 .B op_start options
-.br
-.TP
-.BI "--help"
-List help
 .br
 .TP
 .BI "--list-events"
@@ -149,10 +155,6 @@ be verbose in the daemon log
 .B oprofpp options
 .br
 .TP
-.BI "--help -? --usage"
-Show help message
-.br
-.TP
 .BI "--samples-file " filename ", -f "filename
 image sample file
 .br
@@ -192,10 +194,6 @@ demangle GNU C++ symbol names
 which counter to use
 .br
 .TP
-.BI "--version -v"
-show version
-.br
-.TP
 .BI "--verbose -V"
 verbose output
 .br
@@ -213,10 +211,6 @@ Show the details for each shared lib which belongs to one application. This opti
 .TP
 .br
 .B op_to_source options
-.br
-.TP
-.BI "--help -? --usage"
-Show help message
 .br
 .TP
 .BI "--samples-file " filename ", -f "filename
@@ -270,10 +264,6 @@ output source files which contains more than percent_nr samples
 which counter to use for sorting purposes
 .br
 .TP
-.BI "--version -v"
-show version
-.br
-.TP
 .BI "--verbose -V"
 verbose output
 .br
@@ -289,10 +279,6 @@ base directory of profile daemon
 .B op_time options
 .br
 .TP
-.BI "--help -? --usage"
-Show help message
-.TP
-.br
 .BI "--use-counter " counter_nr ", -c "counter_nr
 which counter to use for sorting purposes
 .TP

@@ -19,10 +19,8 @@
 
  o add option like opf_filer -u -m to oprofpp -l|-L on a symbol basis.
 
- o handle --help --version in op_popt.c
-
- o doc say than all utility handle --help --version and remove it
-    same thing for all common options between oprofpp/opf_filter ?
+ o --help --version in a common options section in .sgml ?
+   same thing for all common options between oprofpp/opf_filter ?
  
 Before 1.0
 ----------

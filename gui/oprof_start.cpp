@@ -92,7 +92,6 @@ oprof_start::oprof_start()
 	string config_name = config_dir + "/oprof_start_config";
 
 	std::ifstream in(config_name.c_str());
-	cout << string("rm " + config_name) << endl ;
 
 	bool delete_all_config_file = !in;
 
@@ -102,8 +101,7 @@ oprof_start::oprof_start()
 		op_cpu tmp_cpu_type = static_cast<op_cpu>(tmp);
  
 		if (tmp_cpu_type != cpu_type) {
-			cout << string("rm " + config_name) << endl ;
-			system(std::string("rm " + config_name).c_str());
+			remove(config_name.c_str());
 
 			delete_all_config_file = true;
 		}
@@ -116,7 +114,7 @@ oprof_start::oprof_start()
 			name << config_dir << "/oprof_start_event"
 			     << "#" << ctr;
 
-			system(string("rm " + name.str()).c_str());
+			remove(name.str().c_str());
 		}
 	}
 

@@ -1,3 +1,13 @@
+2002-01-22  Philippe Elie  <ph_e@club-internet.fr>
+
+	* TODO: update
+
+	* dae/opd_proc.c: use remove not unlink
+	* gui/oprof_start.cpp: use remove not system("rm xxx")
+
+	* doc/Makefile.in: slightly improvment
+	* doc/oprofile.1.in: move --help --version to a common section
+
 2002-01-21  John Levon  <moz@compsoc.man.ac.uk>
 
 	* module/compat22.h: fix missing cli()
