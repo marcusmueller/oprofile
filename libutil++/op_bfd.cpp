@@ -442,8 +442,6 @@ bool interesting_symbol(asymbol * sym)
  */
 bool boring_symbol(op_bfd_symbol const & first, op_bfd_symbol const & second)
 {
-	// FIXME: check if we can't do a better job, this heuristic fix all
-	// case I'm aware
 	if (first.name() == "Letext")
 		return true;
 	else if (second.name() == "Letext")
@@ -454,13 +452,20 @@ bool boring_symbol(op_bfd_symbol const & first, op_bfd_symbol const & second)
 	else if (second.name().substr(0, 2) == "??")
 		return false;
 
-	// checking to see if first symbol for the vma
-	// is less interesting than second symbol
-	if ((first.hidden() && !second.hidden())
-	    || (first.name()[0] == '_' && second.name()[0] != '_')
-	    || (first.name()[0] != '_' && second.name()[0] != '_'
-	    && (first.weak() && !second.weak())))
-	return true;
+	if (first.hidden() && !second.hidden())
+		return true;
+	else if (!first.hidden() && second.hidden())
+		return false;
+
+	if (first.name()[0] == '_' && second.name()[0] != '_')
+		return true;
+	else if (first.name()[0] != '_' && second.name()[0] == '_')
+		return false;
+
+	if (first.weak() && !second.weak())
+		return true;
+	else if (!first.weak() && second.weak())
+		return false;
 
 	return false;
 }
