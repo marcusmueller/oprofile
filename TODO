@@ -6,7 +6,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
- o UGH - we're building the tests on "make" !
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
   try to recover gracefully.
  o test dcookie failure with random injection

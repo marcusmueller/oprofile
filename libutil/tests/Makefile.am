@@ -3,7 +3,7 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = @OP_CFLAGS@
 
-noinst_PROGRAMS = file_tests string_tests
+check_PROGRAMS = file_tests string_tests
 
 file_tests_SOURCES = file_tests.c
 file_tests_LDADD = ../libutil.a

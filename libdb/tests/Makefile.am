@@ -5,7 +5,7 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = @OP_CFLAGS@
 
-noinst_PROGRAMS = db_test
+check_PROGRAMS = db_test
 
 db_test_SOURCES = db_test.c
 db_test_LDADD = ../libodb.a

@@ -4,7 +4,7 @@ AM_CPPFLAGS = \
 
 AM_CXXFLAGS = @OP_CXXFLAGS@
 
-noinst_PROGRAMS = regex_test
+check_PROGRAMS = regex_test
 
 regex_test_SOURCES = regex_test.cpp
 regex_test_LDADD = \
