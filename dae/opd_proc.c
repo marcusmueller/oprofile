@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.83 2001/12/07 22:13:54 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.84 2001/12/09 21:16:10 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -203,17 +203,25 @@ static void opd_handle_old_sample_file(const char * mangled, time_t mtime)
 	FILE * fp;
 
 	fp = fopen(mangled, "r"); 
-	if (!fp)
+	if (!fp) {
+		verbprintf("Can't open %s\n", mangled);
 		goto del;
+	}
 
-	if (fread(&oldheader, sizeof(struct opd_header), 1, fp) != 1)
+	if (fread(&oldheader, sizeof(struct opd_header), 1, fp) != 1) {
+		verbprintf("Can't read %s\n", mangled);
 		goto closedel;
+	}
 
-	if (memcmp(&oldheader.magic, OPD_MAGIC, sizeof(oldheader.magic)) || oldheader.version != OPD_VERSION)
+	if (memcmp(&oldheader.magic, OPD_MAGIC, sizeof(oldheader.magic)) || oldheader.version != OPD_VERSION) {
+		verbprintf("Magic id check fail for %s\n", mangled);
 		goto closedel;
+	}
 
-	if (difftime(mtime, oldheader.mtime))
+	if (difftime(mtime, oldheader.mtime)) {
+		verbprintf("mtime differ for %s\n", mangled);
 		goto closedel;
+	}
 
 	fclose(fp);
 	verbprintf("Re-using old sample file \"%s\".\n", mangled);
@@ -1368,27 +1376,29 @@ inline static char * get_from_pool(uint ind)
  *
  * Finds an image from a hashmap hash value
  */
-static int opd_handle_hashmap(int hash, char **c)
+static int opd_handle_hashmap(int hash)
 {
+	char file[PATH_MAX];
+	char *c=&file[PATH_MAX-1];
 	int orighash = hash;
-	char * name;
- 
+
+	*c = '\0'; 
 	while (hash) {
-		name = get_from_pool(hashmap[hash].name);
+		char * name = get_from_pool(hashmap[hash].name);
  
-		if (strlen(name) + 1 + strlen(*c) >= PATH_MAX) {
-			fprintf(stderr,"String \"%s\" too large.\n", *c);
+		if (strlen(name) + 1 + strlen(c) >= PATH_MAX) {
+			fprintf(stderr,"String \"%s\" too large.\n", c);
 			exit(1);
 		}
 
-		*c -= strlen(name) + 1;
-		**c = '/';
-		strncpy(*c + 1, name, strlen(name));
+		c -= strlen(name) + 1;
+		*c = '/';
+		strncpy(c + 1, name, strlen(name));
 		
 		/* move onto parent */
 		hash = hashmap[hash].parent;
 	}
-	return opd_get_image(*c, orighash, 0);
+	return opd_get_image(c, orighash, 0);
 }
  
 
@@ -1402,8 +1412,6 @@ static int opd_handle_hashmap(int hash, char **c)
  */
 void opd_handle_mapping(const struct op_note *note)
 {
-	static char file[PATH_MAX];
-	char *c=&file[PATH_MAX-1];
 	struct opd_proc *proc;
 	int hash;
 	int im_nr;
@@ -1414,8 +1422,6 @@ void opd_handle_mapping(const struct op_note *note)
 		verbprintf("Told about mapping for non-existent process %u.\n", note->pid);
 		proc = opd_add_proc(note->pid);
 	}
-
-	*c = '\0';
 
 	hash = note->hash;
 
@@ -1431,7 +1437,7 @@ void opd_handle_mapping(const struct op_note *note)
 
 	im_nr = opd_get_image_by_hash(hash); 
 	if (im_nr == -1)
-		im_nr = opd_handle_hashmap(hash, &c);
+		im_nr = opd_handle_hashmap(hash);
 
 	opd_put_mapping(proc, im_nr, note->addr, note->offset, note->addr + note->len);
 }
@@ -1448,9 +1454,19 @@ void opd_handle_exec(u16 pid)
 
 	verbprintf("DO_EXEC: pid %u\n", pid);
 
-	/* FIXME: we should save old maps into ->old_exec()
-	 * to reduce loss of samples in fork()/exec() window
-	 */
+	/* There is a race for sample received between fork/exec sequence.
+	 * These samples belong to the old mapping but we can not say if
+	 * samples has been received before the exec or after. This explain
+	 * the message "Couln't find map for ..." in verbose mode.
+	 *
+	 * Unhopefully it is difficult to get an estimation of these misplaced
+	 * samples, the error message can count only out of mapping samples but
+	 * not samples between the race and inside the mapping of the exec'ed
+	 * process :/.
+	 *
+	 * Trying to save old mapping is not correct due the above reason. The
+	 * only manner to handle this is to flush the module samples hash table
+	 * after each fork which is unacceptable for perfomance issue */
 	proc = opd_get_proc(pid);
 	if (proc)
 		opd_kill_maps(proc);

@@ -293,11 +293,11 @@ Of most interest are the <filename>oprofiled.log</filename> log file, and the
 <filename>samples/</filename> directory. The <filename>samples</filename>
 directory contains the actual sample profile files created by the daemon.
 Despite their apparent size they take up much less actual diskspace as they are
-created sparsely (<command>stat</command> should tell you their real on-disk
+created sparsely (<command>stat</command> or <command>du [-h]</command> should tell you their real on-disk
 size). Each filename corresponds to the profiled binary image (with
 <constant>/</constant> characters replaced with <constant>}</constant>
 characters). In addition, each filename has a suffix indicating the counter
-number, and an optional "session" suffix for backed-up sample files.
+number.
 The man page for <command>op_start</command> details the all the
 options, only interesting ones are listed here : 
 </para>
@@ -680,14 +680,18 @@ the profiler. This can happen on lightly-loaded machines. Remember you can force
 </para>
 <para><command>op_dump</command></para>
 <para>Remember to do this before complaining there is no profiling data !
-Now that we've got some data, it has to be processed. That's the job of
-<command>oprofpp</command>. This works on a sample file in the <filename>/var/opd/samples/</filename> directory,
+Now that we've got some data, it has to be processed. That's the job of <command>oprofpp</command> or <command>op_to_source</command>.
+This works on a sample file in the <filename>/var/opd/samples/</filename> directory,
 along with the binary file being profiled, to produce human-readable data. Note that if the binary file changes
 after the sample file was created, you won't be able to get useful data out. This situation is detected for you.
-A similar scenario can happen when re-starting profiling, as the old sample files from previous sessions don't
+</para>
+<para>
+A different scenario happen when re-starting profiling with different parameters, as the old sample files from previous sessions don't
 get deleted (allowing you to build profiles over many distinct profiling sessions).
-If the sample file is determined to be out of date, it is backed up with a different backup number (appended to
-the name of the sample file), or deleted, as appropriate. 
+If the last session is determined to be out of date due to the use of different profiling parameters, all the samples files are
+backed up in a sub-directory name session-#nr.
+If during profiling the daemon detect a change to a binary image and a  samples file belonging to this binary exist, the samples file is silently deleted.
+So if during profiling you change a binary he is your responsability to save the binary image <emphasis>and</emphasis> the samples files.
 </para>
 <para>
 Note that kernel modules without symbol data (this can happen with some initrd setups) cannot be profiled (modules

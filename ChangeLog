@@ -1,3 +1,9 @@
+2001-12-09  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/opd_proc.c: verbprintf() what cause the
+	  deletion of a sample file + minor cleanup
+	* doc/oprofile.sgml: document samples files backup
+
 2001-12-07  Philippe Elie  <ph_e@club-internet.fr>
 
 	* dae/oprofiled.h:
