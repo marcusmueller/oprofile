@@ -1,5 +1,12 @@
 2001-08-10  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/oprofiled.h: fix header include (from Dave Jones)
+
+	* op_syscalls.c:
+	* oprofile.c: fix undefined symbol (from Dave Jones)
+
+2001-08-10  John Levon  <moz@compsoc.man.ac.uk>
+
 	* oprofile.c: small tidy in apic setup
  
 2001-08-02  John Levon  <moz@compsoc.man.ac.uk>

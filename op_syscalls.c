@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.13 2001/08/02 17:55:22 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.14 2001/08/10 13:36:37 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -62,7 +62,11 @@ void my_set_fixmap(void)
 
 	set_pte_phys (address, APIC_DEFAULT_PHYS_BASE);
 }
-#endif /* CONFIG_X86_UP_APIC */
+#else /* !CONFIG_X86_UP_APIC */
+void my_set_fixmap(void)
+{
+}
+#endif /* !CONFIG_X86_UP_APIC */
 
 /* Given PGD from the address space's page table, return the kernel
  * virtual mapping of the physical memory mapped at ADR.
