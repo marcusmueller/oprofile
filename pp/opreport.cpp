@@ -30,6 +30,18 @@ using namespace std;
 
 namespace {
 
+
+/**
+ * Used to sort parellel vector of data upon one of the vector. Sorting
+ * is done by first building a bijection map[i] = i then sort this array.
+ * Later all array access are done using the sorted indexer. After sorting
+ * the bijection ensure than:
+ *  for i in [1, size) 
+ *    compare(data[index_mapper[i]], data[index_mapper[i-1]]) == true
+ */
+typedef vector<size_t> index_mapper_t;
+
+
 /// storage for a merged file summary
 struct summary {
 	summary(string const & image_name_, string const & lib_image_)
@@ -59,6 +71,11 @@ struct group_summary {
 	string image_name;
 	string lib_image;
 	vector<summary> files;
+	index_mapper_t index_mapper;
+
+	summary const & file(size_t index) const {
+		return files[index_mapper[index]];
+	}
 
 	bool operator<(group_summary const & rhs) const {
 		return options::reverse_sort 
@@ -74,21 +91,16 @@ struct group_summary {
 struct event_group_summary {
 	event_group_summary() : total_count(0.0) {}
 
+	group_summary const & group(size_t index) const {
+		return groups[index_mapper[index]];
+	}
+
 	vector<group_summary> groups;
 	/// total count of samples for this counter
 	double total_count;
+
+	index_mapper_t index_mapper;
 };
-
-
-/**
- * Used to sort parellel vector of data upon one of the vector. Sorting
- * is done by first building a bijection map[i] = i then sort this array.
- * Later all array access are done using the sorted indexer. After sorting
- * the bijection ensure than:
- *  for i in [1, size) 
- *    compare(data[map_index[i]], data[map_index[i-1]]) == true
- */
-typedef vector<size_t> map_index_t;
 
 
 void output_header()
@@ -161,7 +173,7 @@ bool group_summary::should_hide_deps() const
 
 void
 output_deps(vector<event_group_summary> const & summaries,
-	    vector<group_summary> event_group, map_index_t const & map_index)
+	    vector<group_summary> event_group)
 {
 	bool should_hide_deps = true;
 	for (size_t i = 0 ; i < event_group.size(); ++i) {
@@ -176,7 +188,7 @@ output_deps(vector<event_group_summary> const & summaries,
 		cout << "\t";
 		for (size_t i = 0; i < event_group.size(); ++i) {
 			group_summary const & group = event_group[i];
-			summary const & file = group.files[map_index[j]];
+			summary const & file = group.file(j);
 
 			double tot_count = options::global_percent
 				? summaries[i].total_count : group.count;
@@ -184,7 +196,7 @@ output_deps(vector<event_group_summary> const & summaries,
 			output_counter(tot_count, file.count);
 		}
 
-		summary const & file = event_group[0].files[map_index[j]];
+		summary const & file = event_group[0].file(j);
 		if (file.lib_image.empty())
 			cout << " " << get_filename(file.image_name);
 		else
@@ -221,6 +233,39 @@ group_summary summarize(partition_files::filename_set const & files)
 	}
 
 	return group;
+}
+
+
+/// comparator used to sort a vector<summary> through a mapping index
+class build_summary_index {
+public:
+	build_summary_index(vector<summary> const & files_)
+		: files(files_) {}
+	bool operator()(size_t lhs, size_t rhs) const {
+		return files[lhs] < files[rhs];
+	}
+private:
+	vector<summary> const & files;
+};
+
+
+/**
+ * create the index to sorted group_summary, summaries[0] is used to create
+ * the sort order. Data themself remains at fixed address, we just fill an
+ * index mapper.
+ */
+index_mapper_t create_index_mapper(vector<group_summary> const & summaries)
+{
+	index_mapper_t result(summaries[0].files.size());
+
+	for (size_t i = 0; i < result.size(); ++i) {
+		result[i] = i;
+	}
+
+	sort(result.begin(), result.end(), 
+	     build_summary_index(summaries[0].files));
+
+	return result;
 }
 
 
@@ -261,7 +306,7 @@ populate_summaries(vector<event_group_summary> const & unfilled, size_t index)
 
 	// Partition the files set at index.
 	for (size_t i = 0; i < unfilled.size(); ++i) {
-		vector<summary> const & groups = unfilled[i].groups[index].files;
+		vector<summary> const & groups = unfilled[i].group(index).files;
 		for (size_t j = 0; j < groups.size(); ++j) {
 			string image = groups[j].image_name;
 			if (!groups[j].lib_image.empty())
@@ -274,9 +319,10 @@ populate_summaries(vector<event_group_summary> const & unfilled, size_t index)
 	vector<group_summary> result(unfilled.size());
 
 	for (size_t i = 0; i < unfilled.size(); ++i) {
-		result[i].count = unfilled[i].groups[index].count;
-		result[i].image_name = unfilled[i].groups[index].image_name;
-		result[i].lib_image = unfilled[i].groups[index].lib_image;
+		group_summary const & group = unfilled[i].group(index);
+		result[i].count = group.count;
+		result[i].image_name = group.image_name;
+		result[i].lib_image = group.lib_image;
 	}
 
 	// for each equivalance class.
@@ -300,37 +346,9 @@ populate_summaries(vector<event_group_summary> const & unfilled, size_t index)
 		}
 	}
 
-	return result;
-}
-
-
-/// comparator used to sort a vector<summary> through a mapping index
-class build_summary_index {
-public:
-	build_summary_index(vector<summary> const & files_)
-		: files(files_) {}
-	bool operator()(size_t lhs, size_t rhs) const {
-		return files[lhs] < files[rhs];
-	}
-private:
-	vector<summary> const & files;
-};
-
-/**
- * create the index to sorted group_summary, summaries[0] is used to create
- * the sort order. Data themself remains at fixed address, we just fill an
- * index mapper.
- */
-map_index_t create_sorted_index(vector<group_summary> const & summaries)
-{
-	map_index_t result(summaries[0].files.size());
-
-	for (size_t i = 0; i < result.size(); ++i) {
-		result[i] = i;
-	}
-
-	sort(result.begin(), result.end(), 
-	     build_summary_index(summaries[0].files));
+	index_mapper_t index_mapper = create_index_mapper(result);
+	for (size_t i = 0; i < result.size(); ++i)
+		result[i].index_mapper = index_mapper;
 
 	return result;
 }
@@ -339,13 +357,10 @@ map_index_t create_sorted_index(vector<group_summary> const & summaries)
 /**
  * Display all the given summary information
  */
-void
-output_summaries(vector<size_t> const & map_index,
-		 vector<event_group_summary> const & summaries)
+void output_summaries(vector<event_group_summary> const & summaries)
 {
 	for (size_t i = 0 ; i < summaries[0].groups.size(); ++i) {
-		group_summary const & group =
-				summaries[0].groups[map_index[i]];
+		group_summary const & group = summaries[0].group(i);
 
 		if ((group.count * 100.0) / summaries[0].total_count <
 		    options::threshold) {
@@ -353,8 +368,7 @@ output_summaries(vector<size_t> const & map_index,
 		}
 
 		for (size_t j = 0; j < summaries.size(); ++j) {
-			group_summary const & group =
-				summaries[j].groups[map_index[i]];
+			group_summary const & group = summaries[j].group(i);
 			output_counter(summaries[j].total_count, group.count);
 		}
 
@@ -365,10 +379,9 @@ output_summaries(vector<size_t> const & map_index,
 		cout << get_filename(image) << '\n';
 
 		vector<group_summary> filled_summaries =
-			populate_summaries(summaries, map_index[i]);
-		map_index_t map_index = create_sorted_index(filled_summaries);
+			populate_summaries(summaries, i);
 
-		output_deps(summaries, filled_summaries, map_index);
+		output_deps(summaries, filled_summaries);
 	}
 }
 
@@ -471,6 +484,40 @@ void output_symbols(profile_container const & samples)
 }
 
 
+/// comparator used to sort a vector<group_summary> through a mapping index
+class build_group_summary_index {
+public:
+	build_group_summary_index(vector<group_summary> const & group_)
+		: group(group_) {}
+	bool operator()(size_t lhs, size_t rhs) const {
+		return group[lhs] < group[rhs];
+	}
+private:
+	vector<group_summary> const & group;
+};
+
+
+/**
+ * create the index to sorted group_summary, summaries[0] is used to create
+ * the sort order. Data remains at fixed address, we just fill an index mapper
+ */
+index_mapper_t
+create_index_mapper(vector<event_group_summary> const & summaries)
+{
+	index_mapper_t result(summaries[0].groups.size());
+
+	// no stl-ish way to generate [0 - size()) range
+	for (size_t i = 0; i < result.size(); ++i) {
+		result[i] = i;
+	}
+
+	sort(result.begin(), result.end(),
+	     build_group_summary_index(summaries[0].groups));
+
+	return result;
+}
+
+
 /**
  * build each event_group_summary::vector<group_summary> in synched way
  * populating a vector<event_group_summary> w/o any gap between each entry
@@ -551,38 +598,10 @@ vector<event_group_summary> populate_group_summaries()
 		}
 	}
 
-	return result;
-}
-
-
-/// comparator used to sort a vector<group_summary> through a mapping index
-class build_group_summary_index {
-public:
-	build_group_summary_index(vector<group_summary> const & group_)
-		: group(group_) {}
-	bool operator()(size_t lhs, size_t rhs) const {
-		return group[lhs] < group[rhs];
+	index_mapper_t index_mapper = create_index_mapper(result);
+	for (size_t i = 0; i < nr_events; ++i) {
+		result[i].index_mapper = index_mapper;
 	}
-private:
-	vector<group_summary> const & group;
-};
-
-
-/**
- * create the index to sorted group_summary, summaries[0] is used to create
- * the sort order. Data remains at fixed address, we just fill an index mapper
- */
-map_index_t create_sorted_index(vector<event_group_summary> const & summaries)
-{
-	map_index_t result(summaries[0].groups.size());
-
-	// no stl-ish way to generate [0 - size()) range
-	for (size_t i = 0; i < result.size(); ++i) {
-		result[i] = i;
-	}
-
-	sort(result.begin(), result.end(),
-	     build_group_summary_index(summaries[0].groups));
 
 	return result;
 }
@@ -598,9 +617,7 @@ int opreport(vector<string> const & non_options)
 		vector<event_group_summary> filled_summaries =
 			populate_group_summaries();
 
-		map_index_t map_index = create_sorted_index(filled_summaries);
-
-		output_summaries(map_index, filled_summaries);
+		output_summaries(filled_summaries);
 		return 0;
 	}
 
