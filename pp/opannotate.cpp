@@ -124,20 +124,12 @@ void output_info(ostream & out)
 
 	out << in_comment << '\n';
 
-	stringstream ss;
-
-	ss << classes.cpuinfo << endl;
+	out << in_comment << classes.cpuinfo << endl;
 	if (!classes.event.empty())
-		ss << classes.event << endl;
+		out << in_comment << classes.event << endl;
 
 	for (size_t i = 0; i < classes.v.size(); ++i)
-		ss << classes.v[i].longname << endl;
-	ss.seekp(0);
-
-	string line;
-	while (getline(ss, line)) {
-		out << in_comment << line << '\n';
-	}
+		out << in_comment << classes.v[i].longname << endl;
 
 	out << end_comment << '\n';
 }
