@@ -43,6 +43,8 @@ public:
 	void vma_format_64bit(bool);
 	/// show long (full path) filenames
 	void show_long_filenames(bool);
+	/// use global count rather symbol count for details percent
+	void show_global_percent(bool);
 
 	/**
 	 * Set the number of collected profile classes. Each class
@@ -145,6 +147,9 @@ protected:
 	bool long_filenames;
 	/// true if we need to show header before the first output
 	bool need_header;
+	/// bool if details percentage are relative to total count rather to
+	/// symbol count
+	bool global_percent;
 };
  
 
@@ -161,9 +166,6 @@ public:
 	/// set the output_details boolean
 	void show_details(bool);
 
-	/// use global count rather symbol count for details percent
-	void show_global_percent(bool);
-
 private:
  
 	/** output one symbol symb to out according to the output format
@@ -178,9 +180,6 @@ private:
  
 	/// true if we need to show details for each symbols
 	bool need_details;
-	/// bool if details percentage are relative to total count rather to
-	/// symbol count
-	bool global_percent;
 };
 
 

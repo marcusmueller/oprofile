@@ -126,6 +126,13 @@ void formatter::show_long_filenames(bool on_off)
 	long_filenames = on_off;
 }
 
+
+void formatter::show_global_percent(bool on_off)
+{
+	global_percent = on_off;
+}
+
+
 void formatter::output_header(ostream & out)
 {
 	if (!need_header)
@@ -381,12 +388,6 @@ void opreport_formatter::show_details(bool on_off)
 }
 
 
-void opreport_formatter::show_global_percent(bool on_off)
-{
-	global_percent = on_off;
-}
-
-
 void opreport_formatter::output(ostream & out, symbol_entry const * symb)
 {
 	do_output(out, *symb, symb->sample, counts);
@@ -452,7 +453,10 @@ void cg_formatter::output(ostream & out, cg_collection const & syms)
 		cg_symbol::children::const_iterator cend = sym.callers.end();
 
 		counts_t c;
-		c.total = sym.total_caller_count;
+		if (global_percent)
+			c.total = counts.total;
+		else
+			c.total = sym.total_caller_count;
 
 		for (cit = sym.callers.begin(); cit != cend; ++cit) {
 			out << child_parent_prefix;
@@ -462,7 +466,10 @@ void cg_formatter::output(ostream & out, cg_collection const & syms)
 		do_output(out, sym, sym.sample, counts);
 
 		c = counts_t();
-		c.total = sym.total_callee_count;
+		if (global_percent)
+			c.total = counts.total;
+		else
+			c.total = sym.total_callee_count;
 
 		cend = sym.callees.end();
 

@@ -194,9 +194,9 @@ void check_options()
 		}
 	}
 
-	if (global_percent && symbols && !details) {
-		cerr << "--global-percent is meaningless "
-		     << "with --symbols and without --details" << endl;
+	if (global_percent && symbols && !(details || callgraph)) {
+		cerr << "--global-percent is meaningless with --symbols "
+		        "and without --details or --callgraph" << endl;
 		do_exit = true;
 	}
 

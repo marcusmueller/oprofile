@@ -1,3 +1,11 @@
+2005-04-05  John Levon  <levon@movementarian.org>
+
+	* libpp/format_output.h:
+	* libpp/format_output.cpp:
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp: implement --global-percent
+	  for opreport -c
+
 2005-04-04  John Levon  <levon@movementarian.org>
 
 	* configure.in:

@@ -407,7 +407,7 @@ void output_cg_symbols(callgraph_container const & cg, bool multiple_apps)
 	out.show_long_filenames(options::long_filenames);
 	out.show_header(options::show_header);
 	out.vma_format_64bit(output_hints & cf_64bit_vma);
-	// FIXME: global percent
+	out.show_global_percent(options::global_percent);
 
 	format_flags flags = get_format_flags(output_hints);
 	if (multiple_apps)
