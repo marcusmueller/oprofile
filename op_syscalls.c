@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.10 2001/06/22 03:16:24 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.11 2001/07/25 02:54:49 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -422,11 +422,11 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 	char *filename;
 	int ret;
 
-	LOCK_UNLOAD;
+	MOD_INC_USE_COUNT;
  
 	filename = getname((char *)regs.ebx);
 	if (IS_ERR(filename)) {
-		UNLOCK_UNLOAD;
+		MOD_DEC_USE_COUNT;
 		return PTR_ERR(filename);
 	}
 	ret = do_execve(filename, (char **)regs.ecx, (char **)regs.edx, &regs);
@@ -434,16 +434,12 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 	if (!ret) {
 		current->ptrace &= ~PT_DTRACE;
 
-#ifdef PID_FILTER
 		if ((!pid_filter || pid_filter == current->pid) &&
 		    (!pgrp_filter || pgrp_filter == current->pgrp))
 			oprof_output_maps(current);
-#else
-		oprof_output_maps(current);
-#endif
 	}
 	putname(filename);
-	UNLOCK_UNLOAD;
+	MOD_DEC_USE_COUNT;
         return ret;
 }
 
@@ -452,7 +448,7 @@ static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 {
 	struct file *file;
 
-	LOCK_UNLOAD;
+	MOD_INC_USE_COUNT;
  
 	file = fget(fd);
 	if (!file)
@@ -470,21 +466,19 @@ asmlinkage static int my_sys_mmap2(ulong addr, ulong len,
 {
 	int ret;
 
-	LOCK_UNLOAD;
+	MOD_INC_USE_COUNT;
 
 	ret = old_sys_mmap2(addr, len, prot, flags, fd, pgoff);
 
-#ifdef PID_FILTER
 	if ((pid_filter && current->pid != pid_filter) ||
 	    (pgrp_filter && current->pgrp != pgrp_filter))
 		goto out;
-#endif
 
 	if ((prot&PROT_EXEC) && ret >= 0)
 		out_mmap(ret, len, prot, flags, fd, pgoff << PAGE_SHIFT);
 	goto out;
 out:
-	UNLOCK_UNLOAD;
+	MOD_DEC_USE_COUNT;
 	return ret;
 }
 
@@ -492,15 +486,13 @@ asmlinkage static int my_old_mmap(struct mmap_arg_struct *arg)
 {
 	int ret;
 
-	LOCK_UNLOAD;
+	MOD_INC_USE_COUNT;
  
 	ret = old_old_mmap(arg);
 
-#ifdef PID_FILTER
 	if ((pid_filter && current->pid != pid_filter) ||
 	    (pgrp_filter && current->pgrp != pgrp_filter))
 		goto out;
-#endif
 
 	if (ret>=0) {
 		struct mmap_arg_struct a;
@@ -512,7 +504,7 @@ asmlinkage static int my_old_mmap(struct mmap_arg_struct *arg)
 			out_mmap(ret, a.len, a.prot, a.flags, a.fd, a.offset);
 	}
 out:
-	UNLOCK_UNLOAD;
+	MOD_DEC_USE_COUNT;
 	return ret;
 }
 
@@ -520,10 +512,8 @@ inline static void oprof_report_fork(u16 old, u32 new)
 {
 	struct op_sample samp;
 
-#ifdef PID_FILTER
 	if (pgrp_filter && pgrp_filter != current->pgrp)
 		return;
-#endif
 
 	samp.count = OP_FORK;
 	samp.pid = old;
@@ -536,12 +526,12 @@ asmlinkage static int my_sys_fork(struct pt_regs regs)
 	u16 pid = (u16)current->pid;
 	int ret;
 
-	LOCK_UNLOAD;
+	MOD_INC_USE_COUNT;
  
 	ret = old_sys_fork(regs);
 	if (ret)
 		oprof_report_fork(pid,ret);
-	UNLOCK_UNLOAD;
+	MOD_DEC_USE_COUNT;
 	return ret;
 }
 
@@ -550,11 +540,11 @@ asmlinkage static int my_sys_vfork(struct pt_regs regs)
 	u16 pid = (u16)current->pid;
 	int ret;
 
-	LOCK_UNLOAD;
+	MOD_INC_USE_COUNT;
 	ret = old_sys_vfork(regs);
 	if (ret)
 		oprof_report_fork(pid,ret);
-	UNLOCK_UNLOAD;
+	MOD_DEC_USE_COUNT;
 	return ret;
 }
 
@@ -563,11 +553,11 @@ asmlinkage static int my_sys_clone(struct pt_regs regs)
 	u16 pid = (u16)current->pid;
 	int ret;
 
-	LOCK_UNLOAD;
+	MOD_INC_USE_COUNT;
 	ret = old_sys_clone(regs);
 	if (ret)
 		oprof_report_fork(pid,ret);
-	UNLOCK_UNLOAD;
+	MOD_DEC_USE_COUNT;
 	return ret;
 }
 
@@ -575,7 +565,7 @@ asmlinkage static long my_sys_init_module(const char *name_user, struct module *
 {
 	long ret;
 
-	LOCK_UNLOAD;
+	MOD_INC_USE_COUNT;
  
 	ret = old_sys_init_module(name_user, mod_user);
 
@@ -587,7 +577,7 @@ asmlinkage static long my_sys_init_module(const char *name_user, struct module *
 		samp.eip = 0;
 		oprof_put_note(&samp);
 	}
-	UNLOCK_UNLOAD;
+	MOD_DEC_USE_COUNT;
 	return ret;
 }
 
@@ -595,13 +585,11 @@ asmlinkage static long my_sys_exit(int error_code)
 {
 	struct op_sample samp;
 
-	LOCK_UNLOAD;
+	MOD_INC_USE_COUNT;
  
-#ifdef PID_FILTER
 	if ((pid_filter && current->pid != pid_filter) ||
 	    (pgrp_filter && current->pgrp != pgrp_filter))
 		goto out;
-#endif
 
 	samp.count = OP_EXIT;
 	samp.pid = current->pid;
@@ -610,7 +598,7 @@ asmlinkage static long my_sys_exit(int error_code)
 
 	goto out;
 out:
-	UNLOCK_UNLOAD;
+	MOD_DEC_USE_COUNT;
 	return old_sys_exit(error_code);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.62 2001/07/21 22:53:38 movement Exp $ */
+/* $Id: oprofile.c,v 1.63 2001/07/25 02:54:49 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -114,12 +114,10 @@ asmlinkage void op_do_nmi(struct pt_regs *regs)
 {
 	struct _oprof_data *data = &oprof_data[smp_processor_id()];
 
-#ifdef PID_FILTER
 	if (pid_filter && current->pid != pid_filter)
 		return;
 	if (pgrp_filter && current->pgrp != pgrp_filter)
 		return;
-#endif
 
 	if (data->ctrs & OP_CTR_0)
 		op_check_ctr(data, regs, 0);
@@ -1070,12 +1068,10 @@ void __exit cleanup_sysctl(void)
 static int can_unload(void)
 {
 	int can = -EBUSY;
-#ifdef ALLOW_UNLOAD
 	down(&sysctlsem);
 	if (!prof_on)
 		can = 0;
 	up(&sysctlsem);
-#endif
 	return can;
 }
 

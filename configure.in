@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.27 2001/06/29 20:19:28 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.28 2001/07/25 02:54:49 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -142,12 +142,6 @@ MODINSTALLDIR=/lib/modules/$KVERS
 AC_ARG_WITH(module-dir,
 [  --with-module-dir=dir        Path to module installation directory], MODINSTALLDIR=$withval)
 AC_SUBST(MODINSTALLDIR)
-
-AC_ARG_ENABLE(filter,
-[  --enable-filter              Enable filtering on pid or pgrp value feature (warning - slower !)], BKCFLAGS="$BKCFLAGS -DPID_FILTER")
-
-AC_ARG_ENABLE(unload,
-[  --enable-unload              Enable module to be unloaded (warning - slower !)], BKCFLAGS="$BKCFLAGS -DALLOW_UNLOAD")
 
 dnl --- user space configuration ---
 

@@ -140,18 +140,6 @@ is all you need, but note these arguments to <command>./configure</command> :
 			necessary (e.g. <command>kgcc</command>).
 		</para></listitem>
 	</varlistentry>
-	<varlistentry>
-		<term><option>--enable-filter</option></term>
-		<listitem><para>
-			Enable process id and process group filtering, as discussed in <xref linkend="pidpgrpfilter">
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--enable-unload</option></term>
-		<listitem><para>
-			Allow the kernel module to be unloaded, see <xref linkend="unloadable">
-		</para></listitem>
-	</varlistentry>
 </variablelist>
 </para>
 <para>
@@ -338,16 +326,14 @@ all the options, only interesting ones are listed here :
 	<varlistentry>
 		<term><option>--pid-filter</option></term>
 		<listitem><para>
-		If you compiled with the <option>--enable-filter</option> option, you can specify a process id here. Only
-		samples of this process id will be collected (including any kernel-side samples when this process is in
+		Only samples of this process id will be collected (including any kernel-side samples when this process is in
 		the kernel). Note that threaded programs under Linux have a different process id for each thread.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--pgrp-filter</option></term>
 		<listitem><para>
-		If you compiled with the <option>--enable-filter</option> option, you can specify a process group id here. Only
-		samples of this process group id will be collected (including any kernel-side samples when this process is in
+		Only samples of this process group id will be collected (including any kernel-side samples when this process is in
 		the kernel).
 		</para></listitem>
 	</varlistentry>
@@ -368,10 +354,8 @@ the hash table and buffer, and wakes up the daemon process when it is approachin
 data, and process it into a non-volatile form. Any samples are recorded into the sample files at processing time. 
 </para> 
 <para>
-The <command>op_start</command> shell script will insert the kernel module if needed. Once inserted, the module can be removed only
-if this support has been compiled in; see <xref linkend="unloadable"> for further details.
-In any case it can be de-activated, freeing almost all memory used during profiling. The profiling
-is activated when the daemon process initialises. Configuration of the kernel module parameters is done
+The <command>op_start</command> shell script will insert the kernel module if needed.
+The profiling is activated when the daemon process initialises. Configuration of the kernel module parameters is done
 via <command>sysctl</command>; the available files are detailed in <xref linkend="sysctl">.
 </para>
   
@@ -618,28 +602,22 @@ each enabled counter. As the NMI handler is in-kernel, this avoids the problem.
 <sect1 id="pidpgrpfilter">
 <title>pid/pgrp filter</title>
 <para>There are situations where you are only interested in the profiling results of a particular
-running process, or process group. You can enable the optional filter at build time, and set
+running process, or process group. You can set
 the pid/pgrp values via the <filename>--pid-filter</filename> and <filename>--pgrp-filter</filename>
 options to <command>op_start</command>, or by setting the relevant sysctls as mentioned in <xref linkend="sysctl">.
 </para>
-<note><para>Enabling filtering can have an impact on the performance of the profiler even when a filter
-is not set (numbers not yet available).</para></note> 
 </sect1>
  
 <sect1 id="unloadable">
 <title>Unloadable kernel module</title>
 <para>
-By default, the kernel module is not unloadable. This is due to its internal behaviour with respect
-to tracing system calls of processes. However you can optionally compile the ability for the module
-to unload itself, in which case it will do so when you run op_stop. This can be useful if you need
-to upgrade to a new version of oprofile without rebooting, or you are hacking on oprofile itself ;)
+The kernel module can be unloaded, but is designed to take very little memory when profiling is not underway.
+There is no need to unload the module between profiler runs.
 </para>
 <para>
 <command>lsmod</command> and similar utilties will still show the module's use count as <constant>-1</constant>.
 However, this is not to be relied on - the module will become unloadable some short time after stopping profiling.
 </para>
-<note><para>Enabling the ability to unload can have an impact on the performance of the profiler (numbers
-not yet available).</para></note>
 </sect1> 
 
 </chapter>
