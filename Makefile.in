@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.16 2001/04/06 14:16:46 movement Exp $
+# $Id: Makefile.in,v 1.17 2001/06/03 19:20:28 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -10,6 +10,7 @@ LD=@LD@
 all: oprofile.o
 	$(MAKE) -C dae
 	$(MAKE) -C pp
+	$(MAKE) -C gui
 
 maintainerclean: distclean
 	rm -f configure
@@ -42,11 +43,14 @@ install: oprofile.o
 	$(MAKE) -C dae install
 	$(MAKE) -C pp install
 	$(MAKE) -C doc install 
+	$(MAKE) -C gui install
 
 clean:
 	rm -f *.o config.status config.log config.cache
 	$(MAKE) -C dae clean
 	$(MAKE) -C pp clean
+	$(MAKE) -C doc clean
+	$(MAKE) -C gui clean
 
 # FIXME: move NMI code into separate to allow -march=ppro for that
 BKCFLAGS += -pipe -D__KERNEL__ -DMODULE -Wall -Wstrict-prototypes -Wunused -O2 -fomit-frame-pointer -fno-strict-aliasing

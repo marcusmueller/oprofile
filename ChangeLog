@@ -1,5 +1,16 @@
 2001-06-03  John Levon  <moz@compsoc.man.ac.uk>
 
+	* gui/: new directory
+
+	* Makefile.in:
+	* configure.in:
+	* gui/.cvsignore:
+	* gui/Makefile.in:
+	* gui/oprofile: Philippe's prototype tcl/tk startup
+	  script. Requires more work.
+ 
+2001-06-03  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/oprofpp.h: remove libiberty header that was
 	  apparently breaking install on slackware
  
