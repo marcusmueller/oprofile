@@ -78,7 +78,7 @@ void handle_options(vector<string> const & non_options)
 	profile_spec const spec =
 		profile_spec::create(non_options, extra_found_images);
 
-	sample_files = spec.generate_file_list(exclude_dependent, true);
+	sample_files = spec.generate_file_list(exclude_dependent, false);
 
 	archive_path = spec.get_archive_path();
 	cverb << vsfile << "Archive: " << archive_path << endl;

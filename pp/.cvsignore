@@ -1,10 +1,9 @@
 .deps
-op_merge
 Makefile
 Makefile.in
 opannotate
+oparchive
 opdiff
 opgprof
 opreport
-opsummary
 opstack

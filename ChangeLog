@@ -1,3 +1,8 @@
+2004-07-09  John Levon  <levon@movementarian.org>
+
+	* pp/opstack_options.cpp: include call-graph
+	  files in archive.
+
 2004-07-06  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.1.in:
