@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.9 2001/04/06 14:16:46 movement Exp $ */
+/* $Id: oprofpp.h,v 1.10 2001/06/03 19:06:03 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -15,7 +15,6 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <libiberty.h>
 #include <bfd.h>
 #include <popt.h>
  
