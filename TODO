@@ -12,6 +12,10 @@ o can we provide a small setuid helper for starting/stopping/flushing the profil
   is it a good idea ?
  
 o move from racy sysctl to procfs, if it can be done nicely
+
+o code factorisation between opf_filter / gui, more opf_filter/opf_container cleanup
+
+o ac kernel series allow to configure for 32 bits pid, we must check against that
  
 Later
 -----
@@ -21,6 +25,10 @@ o Bob's rtc patch ?
 o pentium 4 patches ?
  
 o post-prof GUI ? (big job)
+
+o difference between two profile session. Difference must be made at source level. How to save the old binary files if needed ? (This is a part of post-prof)
+
+o integrate dasm, probably the best way is to allow to fall back to objdump.
 
 Correctness
 -----------

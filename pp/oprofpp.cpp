@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.7 2001/10/03 02:47:17 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.8 2001/11/06 21:38:16 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -21,15 +21,15 @@
 #include "oprofpp.h"
  
 static int showvers;
-static int verbose;
-static char const *samplefile;
-static char *basedir="/var/opd";
-static const char *imagefile;
+int verbose;
+char const *samplefile;
+char *basedir="/var/opd";
+const char *imagefile;
 static char *gproffile;
 static char *symbol;
 static int list_symbols;
-static int demangle;
-static int list_all_symbols_details;
+int demangle;
+int list_all_symbols_details;
 static int output_linenr_info;
 
 static uint nr_samples; 
@@ -53,8 +53,6 @@ static poptOption options[] = {
 	{ "base-dir", 'b', POPT_ARG_STRING, &basedir, 0, "base directory of profile daemon", NULL, }, 
 	{ "list-all-symbols-details", 'L', POPT_ARG_NONE, &list_all_symbols_details, 0, "list samples for all symbols", NULL, },
 	{ "output-linenr-info", 'o', POPT_ARG_NONE, &output_linenr_info, 0, "output filename:linenr info", NULL },
-	/* PHE FIXME document later */
-	{ "session-number", 'S', POPT_ARG_INT, &session_number, 0, "which session use", "session number" },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
@@ -91,7 +89,6 @@ char *remangle(const char *image)
 
 /**
  * quit_error - quit with error
- * @optcon: popt context
  * @err: error to show
  *
  * err may be NULL
@@ -110,33 +107,16 @@ static void quit_error(poptContext * optcon, char const *err)
  * @argv: program arg array
  *
  * Process the arguments, fatally complaining on
- * error. 
+ * error. Only a part of arguments analysing is
+ * made here. The filename checking is deferred to
+ * opp_treat_options().
  *
- * Most of the complexity here is to process
- * filename. argument precedeed with an option -f
- * (-i) is considered as a sample filename (image 
- * filename). filename without preceding option -i or
- * -f is considered as a sample file if it contains
- * at least one OPD_MANGLE_CHAR else it is an image
- * file. If no image file is given on command line the
- * sample file name is un-mangled -after- stripping
- * the optionnal "#d-d" suffixe. This give some
- * limitations on the image filename.
- *
- * all filename checking is made here only with a
- * syntactical approch. (ie existence of filename is
- * not tested)
- *
- * post-condition: samplefile and imagefile are setup
  */
-void opp_get_options(int argc, const char **argv)
+static void opp_get_options(int argc, const char **argv)
 {
 	poptContext optcon;
 	char c; 
 	const char *file;
-	const char *file_session_str;
-	char *file_ctr_str;
-	int counter;
 	
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
 
@@ -168,6 +148,37 @@ void opp_get_options(int argc, const char **argv)
 	/* non-option file, either a sample or binary image file */
 	file = poptGetArg(optcon);
 
+	opp_treat_options(file, &optcon);
+}
+
+/**
+ * opp_treat_options - process command line options
+ * @file: a filename passed on the command line, can be %NULL
+ * @optcon: poptContext to allow better message handling
+ *
+ * Process the arguments, fatally complaining on
+ * error. 
+ *
+ * Most of the complexity here is to process
+ * filename. @file is considered as a sample file
+ * if it contains at least one OPD_MANGLE_CHAR else
+ * it is an image file. If no image file is given
+ * on command line the sample file name is un-mangled
+ * -after- stripping the optionnal "#d-d" suffixe. This
+ * give some limitations on the image filename.
+ *
+ * all filename checking is made here only with a
+ * syntactical approch. (ie existence of filename is
+ * not tested)
+ *
+ * post-condition: samplefile and imagefile are setup
+ */
+void opp_treat_options(const char* file, poptContext * optcon)
+{
+	const char *file_session_str;
+	char *file_ctr_str;
+	int counter;
+
 	/* some minor memory leak from the next calls */
 	if (imagefile)
 		imagefile = opd_relative_to_absolute_path(imagefile, NULL);
@@ -177,7 +188,7 @@ void opp_get_options(int argc, const char **argv)
 
 	if (file) {
 		if (imagefile && samplefile) {
-			quit_error(&optcon, "oprofpp: too many filenames given on command line:" 
+			quit_error(optcon, "oprofpp: too many filenames given on command line:" 
 				"you can specify at most one sample filename"
 				" and one image filename.\n");
 		}
@@ -191,7 +202,7 @@ void opp_get_options(int argc, const char **argv)
 
 	if (!samplefile) { 
 		if (!imagefile) { 
-			quit_error(&optcon, "oprofpp: no samples file specified.\n");
+			quit_error(optcon, "oprofpp: no samples file specified.\n");
 		} else {
 			/* we'll "leak" this memory */
 			samplefile = remangle(imagefile);
@@ -212,7 +223,7 @@ void opp_get_options(int argc, const char **argv)
 	if (ctr != counter) {
 		/* a --counter=x have priority on the # suffixe of filename */
 		if (ctr != -1 && counter != -1)
-			quit_error(&optcon, "oprofpp: conflict between given counter and counter of samples file.\n");
+			quit_error(optcon, "oprofpp: conflict between given counter and counter of samples file.\n");
 	}
 
 	if (ctr == -1)

@@ -1245,12 +1245,24 @@ static const char * output_dir;
 static const char * output_filter;
 static const char * no_output_filter;
 
-// Do not add option with longname == 0
+// defined in oprofpp.cpp
+extern int verbose;
+extern int demangle;
+extern char const *samplefile;
+extern char *basedir;
+extern const char *imagefile;
+extern int list_all_symbols_details;
+
 static struct poptOption options[] = {
+	{ "samples-file", 'f', POPT_ARG_STRING, &samplefile, 0, "image sample file", "file", },
+	{ "image-file", 'i', POPT_ARG_STRING, &imagefile, 0, "image file", "file", },
+	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
+	{ "base-dir", 'b', POPT_ARG_STRING, &basedir, 0, "base directory of profile daemon", NULL, },
+	{ "demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
 	{ "with-more-than-samples", 'w', POPT_ARG_INT, &with_more_than_samples, 0,
-	  "show all source file if the percent of samples in this file is more than argument", "percent in 0-100" },
+	  "show all source file if the percent of samples in this file is more than argument", "[0-100]" },
 	{ "until-more-than-samples", 'm', POPT_ARG_INT, &until_more_than_samples, 0,
-	  "show all source files until the percent of samples specified is reached", NULL },
+	  "show all source files until the percent of samples specified is reached", "[0-100]" },
 	{ "sort-by-counter", 'c', POPT_ARG_INT, &sort_by_counter, 0,
 	  "sort by counter", "counter nr", },
 	{ "source-dir", 0, POPT_ARG_STRING, &source_dir, 0, "source directory", "directory name" },
@@ -1265,28 +1277,6 @@ static struct poptOption options[] = {
 };
 
 /**
- * is_opf_filter_option
- *
- * return the number of option eated by opf_filter,
- * return 0 means this option is not for oprofpp
- */
-int is_opf_filter_option(const char* option)
-{
-	// skip [-]* prefix
-	while (*option == '-')
-		++option;
-
-	const poptOption * opt;
-	for (opt = options ; opt->longName; ++opt) {
-		if (strcmp(opt->longName, option) == 0 || 
-		    (opt->shortName == option[0] && option[0] && option[1] == '\0'))
-			return opt->argInfo == POPT_ARG_NONE ? 1 : 2;
-	}
-
-	return 0;
-}
-
-/**
  * get_options - process command line
  * @argc: program arg count
  * @argv: program arg array
@@ -1298,47 +1288,7 @@ static void get_options(int argc, char const * argv[])
 	poptContext optcon;
 	char c;
 
-	// FIXME : too tricky: use popt sub-table capacity?
-
-	// separate the option into two set, one for opp_get_options
-	// and the other for opf_filter
-	vector<char const*> oprofpp_opt;
-	vector<char const*> opf_opt;
-
-	oprofpp_opt.push_back(argv[0]);
-	opf_opt.push_back(argv[0]);
-
-	for (int i = 1; i < argc; ) {
-		int nb_opt = is_opf_filter_option(argv[i]);
-		if (nb_opt) {
-			for (int end = i + nb_opt; i < end ; ++i)
-				opf_opt.push_back(argv[i]);
-		}
-		else
-			oprofpp_opt.push_back(argv[i++]);
-	}
-
-	oprofpp_opt.push_back("-L");
-
-	opp_get_options(oprofpp_opt.size(), &oprofpp_opt[0]);
-
-	// FIXME: I'm still unconvinced this vector->const array thing
-	// is guaranteed by that defect report. Given that this is a C
-	// function, philippe's interpretation of the report implies
-	// that std::vector MUST implement a standard C array "under
-	// the bonnet"
-	// answer: DR 69 says: "&v[n] == &v[0] + n for all 0 <= n < v.size()"
-	// it does not mean than the underlined implementation use a C array
-	// but use something that acts as a C array which is sufficient here.
-	// If someone have the C ISO check it because I suspect the C ISO array
-	// is described in the same (or equivalent) terms because v + i <==>
-	// &v[i] in C.
-	// This imply than all efficient implementation must use a C array
-	// a C array for implementation but this is not strictly required.
-
-	// ... so it can still break if C and C++ do slightly different things. 
-	optcon = opd_poptGetContext(NULL, opf_opt.size(), &opf_opt[0],
-				options, 0);
+	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
 
 	c = poptGetNextOpt(optcon);
 
@@ -1360,6 +1310,13 @@ static void get_options(int argc, char const * argv[])
 		fprintf(stderr, "opf_filter: --with-more-than-samples and -until-more-than-samples can not specified together\n");
 		exit(EXIT_FAILURE);
 	}
+
+	/* non-option file, either a sample or binary image file */
+	const char * file = poptGetArg(optcon);
+
+	list_all_symbols_details = 1;
+
+	opp_treat_options(file, &optcon);
 }
 
 //---------------------------------------------------------------------------

@@ -454,7 +454,7 @@ string const basename(string const & path_name)
 {
 	string result = path_name;
 
-	while (result[result.size() - 1] == '/')
+	while (result.size() && result[result.size() - 1] == '/')
 		result = result.substr(0, result.size() - 1);
 
 	string::size_type slash = result.find_last_of('/');

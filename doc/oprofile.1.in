@@ -39,208 +39,220 @@ See the HTML documentation for further details.
 .B op_start options
 .br
 .TP
-.I "--help"
+.BI "--help"
 List help
 .br
 .TP
-.I "--list-events"
+.BI "--list-events"
 Show available events for the hardware counters
 .br
 .TP
-.I "--map-file"
+.BI "--map-file " filename
 specify System.map for running kernel
 .br
 .TP
-.I "--vmlinux"
+.BI "--vmlinux " filename
 specify vmlinux kernel image
 .br
 .TP
-.I "--ctrX-event"
+.BI "--ctrX-event " event_name
 symbolic event name for counter X
 .br
 .TP
-.I "--ctrX-count"
+.BI "--ctrX-count " count_nr
 number of events between samples for counter X
 .br
 .TP
-.I "--ctrX-unit-mask"
+.BI "--ctrX-unit-mask " unit_mask
 unit mask for counter X
 .br
 .TP
-.I "--ctrX-kernel"
+.BI "--ctrX-kernel"
 whether to count kernel events for counter X
 .br
 .TP
-.I "--ctrX-user"
+.BI "--ctrX-user"
 whether to count user events for counter X
 .br
 .TP
-.I "--buffer-size"
+.BI "--buffer-size " nr
 number of samples in kernel buffer
 .br
 .TP
-.I "--hash-table-size"
+.BI "--hash-table-size " nr
 number of entries in kernel hash table
 .br
 .TP
-.I "--kernel-only"
+.BI "--note-table-size " nr
+number of entries in kernel note table
+.br
+.TP
+.BI "--kernel-only "
 profile only the kernel
 .br
 .TP
-.I "--pid-filter"
-Only profile process pid (if compiled in)
+.BI "--pid-filter " pid
+Only profile process pid
 .br
 .TP
-.I "--pgrp-filter"
-Only profile process group pgrp (if compiled in)
+.BI "--pgrp-filter " pgrp
+Only profile process group pgrp
 .br
 .TP
-.I "--ignore-myself"
+.BI "--ignore-myself "
 ignore samples for oprofiled
 .br
 .TP
-.I "--log-file"
+.BI "--log-file " filename
 specify log file
 .br
 .TP
-.I "--base-dir"
+.BI "--base-dir " dirname
 base directory of daemon
 .br
 .TP
-.I "--samples-dir"
+.BI "--samples-dir " dirname
 output samples directory
 .br
 .TP
-.I "--device-file"
+.BI "--device-file " filename
 profile device file
 .br
 .TP
-.I "--hash-map-device-file"
+.BI "--hash-map-device-file " filename
 profile hash map device file
 .br
 .TP
-.I "--verbose"
+.BI "--verbose"
 be verbose in the daemon log
 .PP
 .br
 .B oprofpp options
 .br
 .TP
-.I "--help"
+.BI "--help -? --usage"
 Show help message
 .br
 .TP
-.I "--samples-file"
+.BI "--samples-file " filename ", -f "filename
 image sample file
 .br
 .TP
-.I "--image-file"
+.BI "--image-file " filename ", -i "filename
 image file
 .br
 .TP
-.I "--list-symbols"
+.BI "--list-symbols -l"
 list samples by symbol
 .br
 .TP
-.I "--dump-gprof-file"
+.BI "--dump-gprof-file " filename ", -g "filename
 dump gprof format file
 .br
 .TP
-.I "--list-symbol"
-give detailed samples for a symbol
+.BI "--list-symbol " name ", -s "name
+give detailed samples for the symbol name
 .br
 .TP
-.I "--base-dir"
+.BI "--base-dir " directory_name ", -b "directory_name
 .br
 .TP
-.I "--list-all-symbols-details"
+.BI "--list-all-symbols-details -L"
 give detailed samples for all symbols
 .br
 .TP
-.I "--output-linenr-info"
+.BI "--output-linenr-info -o"
 output filename:linenr info for all samples, usable only with --list-all-symbols-details
 .br
 .TP
-.I "--demangle"
+.BI "--demangle -d"
 demangle GNU C++ symbol names
 .br
 .TP
-.I "--counter"
+.BI "--counter " counter_nr ", -c "counter_nr
 which counter to use
 .br
 .TP
-.I "--version"
+.BI "--version -v"
 show version
 .br
 .TP
-.I "--verbose"
+.BI "--verbose -V"
 verbose output
 .br
 .TP
-.I "--base-dir"
+.BI "--base-dir " dir_name ", -b "dirname
 base directory of profile daemon
 .PP
 .br
 .B op_to_source options
 .br
 .TP
-.I "--help"
+.BI "--help -? --usage"
 Show help message
 .br
 .TP
-.I "--samples-file"
+.BI "--samples-file " filename ", -f "filename
 image sample file
 .br
 .TP
-.I "--image-file"
+.BI "--image-file " filename ", -i "filename
 image file
 .br
 .TP
-.I "--demangle"
+.BI "--demangle -d"
 demangle GNU C++ symbol names
 .br
 .TP
-.I "--assembly"
+.BI "--assembly -a"
 output assembly code
 .br
 .TP
-.I "--source-dir base_directory"
+.BI "--source-dir " base_directory
 if you request for annotated source this option give the base directory where
 come the source file. All source file outside this base directory are ignored
 .br
 .TP
-.I "--output-dir base_directory"
+.BI "--output-dir " base_directory
 output base directory where annotated source file are generated. If you do not
 specify --source-dir neither --output-dir annotated source file go to stdout
 .br
 .TP
-.I "--output patterns"
+.BI "--output " patterns
 if you request for annotated source this option give a list of patterns separated by "," so only source filename that match one of this pattern are output.
 This option have no effect if --source-dir or --output-dir have not been set.
 .br
 .TP
-.I "--no-output patterns"
+.BI "--no-output " patterns
 filename matched by the --output option can be filtered by one of the patterns given with this option.
 .br
 .TP
-.I "--source-with-assembly"
+.BI "--source-with-assembly -s"
 output assembly mixed with source file
 .br
 .TP
-.I "--until-more-than-samples percent_samples"
-output source or assembly symbol until percent_samples are reached
+.BI "--until-more-than-samples " percent_nr ", -m "percent_nr
+output source files until the amount of samples in these files reach percent_nr samples
 .br
 .TP
-.I "--with-more-than-samples percent_samples"
-output source or assembly symbol with more than percent_samples
+.BI "--with-more-than-samples " percent_nr ", -w "percent_nr
+output source files which contains more than percent_nr samples
 .br
 .TP
-.I "--sort-by-counter"
+.BI "--sort-by-counter " counter_nr ", -c "counter_nr
 which counter to use for sorting purposes
 .br
 .TP
-.I "--version"
+.BI "--version -v"
 show version
+.br
+.TP
+.BI "--verbose -V"
+verbose output
+.br
+.TP
+.BI "--base-dir " dirname ", -b "dirname
+base directory of profile daemon
 .br
 .TP
 .B oprof_convert filename [filenames]
@@ -281,7 +293,7 @@ No environment variables are recognised by oprofile.
 .I /var/opd/oprofiled.log
 The user-space daemon logfile.
 .TP
-.I /var/opd/opdev, /var/opd/ophashmapdev
+.I /var/opd/opdev, /var/opd/ophashmapdev, /var/opd/opnotedev
 The device files for communication with the kernel module.
 .TP
 .I /var/opd/samples/

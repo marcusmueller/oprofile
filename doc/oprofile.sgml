@@ -311,7 +311,7 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;buffer-size</option></term>
+		<term><option>&mdash;buffer-size</option> nr</term>
 		<listitem><para>
 		This is the number of entries in the kernel-side profiling buffer. Generally the default value
 		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
@@ -319,7 +319,7 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;hash-table-size</option></term>
+		<term><option>&mdash;hash-table-size</option> nr</term>
 		<listitem><para>
 		This is the number of entries in the kernel-side profiling hash table. Generally the default value
 		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
@@ -327,7 +327,15 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;kernel-only</option></term>
+		<term><option>&mdash;note-table-size</option> nr</term>
+		<listitem><para>
+		This is the number of entries in the kernel note table. Generally the default value
+		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
+		Each entry in the buffer takes 20 bytes.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>&mdash;kernel-only</option> nr</term>
 		<listitem><para>
 		Default is to profile both user-space and the kernel. You can profile only the kernel with this option;
 		this does not prevent the occasional user-space sample due to the hardware constraints, but reduces the
@@ -335,14 +343,14 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;map-file</option></term>
+		<term><option>&mdash;map-file</option> <filename>filename</filename</term>
 		<listitem><para>
 		Specify the <filename>System.map</filename> file from the current kernel's compile. This must match
 		the running kernel if you expect meaningful profiles of the kernel.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;vmlinux</option></term>
+		<term><option>&mdash;vmlinux</option> <filename>filename</filename></term>
 		<listitem><para>
 		Specify the <filename>vmlinux</filename> file from the current kernel's compile. This must match
 		the running kernel if you expect meaningful profiles of the kernel. Note that this is separate file
@@ -351,14 +359,14 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;pid-filter</option></term>
+		<term><option>&mdash;pid-filter</option> pid</term>
 		<listitem><para>
 		Only samples of this process id will be collected (including any kernel-side samples when this process is in
 		the kernel). Note that threaded programs under Linux have a different process id for each thread.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;pgrp-filter</option></term>
+		<term><option>&mdash;pgrp-filter</option> pgpr</term>
 		<listitem><para>
 		Only samples of this process group id will be collected (including any kernel-side samples when this process is in
 		the kernel).
@@ -502,6 +510,12 @@ The following files will be present :
 		<term><filename>hashsize</filename></term>
 		<listitem><para>
 		The hash table size, corresponding to the <option>&mdash;hash-table-size</option> option.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><filename>notesize</filename></term>
+		<listitem><para>
+		The note table size, corresponding to the <option>&mdash;note-table-size</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -692,14 +706,16 @@ profiles are supported, however.
 Some interesting options of the post-processor :
 <variablelist>
 	<varlistentry>
-		<term><option>&mdash;samples-file</option></term>
+		<term><option>&mdash;samples-file</option> <filename>filename</filename></term>
+		<term><option>-f</option> <filename>filename</filename></term>
 		<listitem><para>
 		The samples file to use. This is not necessary, as it can be derived from the filename of the
 		absolute-path-specified binary image.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;image-file</option></term>
+		<term><option>&mdash;image-file</option> <filename>filename</filename></term>
+		<term><option>-i</option> <filename>filename</filename></term>
 		<listitem><para>
 		The binary image (shared library, kernel vmlinux, or program) to produce data for.
 		</para></listitem>
@@ -711,25 +727,28 @@ Some interesting options of the post-processor :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;counter</option></term>
+		<term><option>&mdash;counter</option> nr</term>
 		<listitem><para>
-		Which counter (0 - 3) to extract information for.
+		Which counter (0 - N) to extract information for. N is dependant of your cpu type 1 for Intel P2 core based cpu, 3 for Athlon based cpu.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;list-symbols</option></term>
+		<term><option>-l</option></term>
 		<listitem><para>
 		List a histogram of sample counts against symbols.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;list-symbol</option></term>
+		<term><option>&mdash;list-symbol</option> name</term>
+		<term><option>-s</option> name</term>
 		<listitem><para>
-		Provide a detailed listing for the specified symbol.
+		Provide a detailed listing for the specified symbol name.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;dump-gprof-file filename</option></term>
+		<term><option>-g filename</option></term>
 		<listitem><para>
 		Dump output to the specified file in <command>gprof</command> format. If you specify <filename>gmon.out</filename>,
 		you can then call <command>gprof -p &lt;binary&gt;</command>.
@@ -773,6 +792,7 @@ The options allowed are :
 <variablelist>
 	<varlistentry>
 		<term><option>&mdash;assembly</option></term>
+		<term><option>-a</option></term>
 		<listitem><para>
 		<!-- FIXME: update if this changes -->
 		Output assembly code. Currently the assembly code is sorted in increasing order on the vma
@@ -781,7 +801,7 @@ The options allowed are :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;source-dir</option></term>
+		<term><option>&mdash;source-dir</option> <filename>dirname</filename></term>
 		<listitem><para>
 		This option is used in conjunction with <option>&mdash;output-dir</option>. You
 		can use it to specify the base directory of the source which you wish to produce
@@ -790,7 +810,7 @@ The options allowed are :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;output-dir</option></term>
+		<term><option>&mdash;output-dir</option> <filename>dirname</filename></term>
 		<listitem><para>
 		Specify that you want to produce an annotated source tree, rather than getting all output to stdout. This
 		creates a hierarchy of annotated source files, and is affected by the <option>&mdash;source-dir</option>,
@@ -825,41 +845,48 @@ The options allowed are :
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;source-with-assembly</option></term>
+		<term><option>-s</option></term>
 		<listitem><para>
 		Output assembly code mixed with the source file, implies <option>&mdash;assembly</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;sort-by-counter counter_nr</option></term>
+		<term><option>-c counter_nr</option></term>
 		<listitem><para>
 		Sort by decreasing number of samples on counter_nr. For assembly output this option provides only
 		a filtering and not a sort order.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;with-more-than-samples percent_samples</option></term>
+		<term><option>&mdash;with-more-than-samples percent_nr</option></term>
+		<term><option>-w percent_nr</option></term>
 		<listitem><para>
-		Output source file or assembly symbol which contains at least <option>percent_samples</option>.
+		Output source file which contains at least <option>percent_nr</option> samples.
 		Can not be combined with <option>&mdash;until-more-than-samples</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;until-more-than-samples percent_samples</option></term>
+		<term><option>&mdash;until-more-than-samples percent_nr</option></term>
+		<term><option>-m percent_nr</option></term>
 		<listitem><para>
 		<!-- FIXME: it's unclear what this means exactly ? -->
-		Output source file or assembly symbol until the amount of samples outputted reach percent_samples.
+		<!-- FIXME: John is it enough clear now ? -->
+		Output source files until the amount of samples in these files reach percent_nr samples.
 		Can not be combined with <option>&mdash;with-more-than-samples</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;samples-file</option></term>
+		<term><option>&mdash;samples-file</option> <filename>filename</filename></term>
+		<term><option>-f</option> <filename>filename</filename></term>
 		<listitem><para>
 		Specify the samples file. At least one of the <option>&mdash;samples-file</option> or
 <option>&mdash;image-file</option> must be specifed.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;image-file</option></term>
+		<term><option>&mdash;image-file</option>  <filename>filename</filename></term>
+		<term><option>-i </option>  <filename>filename</filename></term>
 		<listitem><para>
 		Specify the image file.
 		</para></listitem>

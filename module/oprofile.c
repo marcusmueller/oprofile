@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.8 2001/11/06 18:02:56 movement Exp $ */
+/* $Id: oprofile.c,v 1.9 2001/11/06 21:38:16 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -761,25 +761,22 @@ static struct file_operations oprof_fops = {
  * /proc/sys/dev/oprofile/
  *                        bufsize
  *                        hashsize
+ *                        notesize
  *                        dump
  *                        kernel_only
  *                        pid_filter
  *                        pgrp_filter
  *                        nr_interrupts
- *                        0/
+ *                        #ctr/
  *                          event
  *                          enabled
  *                          count
  *                          unit_mask
  *                          kernel
  *                          user
- *                        1/
- *                          event
- *                          enabled
- *                          count
- *                          unit_mask
- *                          kernel
- *                          user
+ *
+ * #ctr is in [0-1] for PPro core, [0-3] for Athlon core
+ *
  */
 
 /* These access routines are basically not safe on SMP for module unload.
