@@ -5,7 +5,7 @@
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
  *
- * @author Graydon Hoare 
+ * @author Graydon Hoare
  */
 
 #include "abi.h"
@@ -32,47 +32,49 @@ namespace {
 	bool force;
 };
 
+
 popt::option options_array[] = {
 	popt::option(verbose, "verbose", 'V', "verbose output"),
 	popt::option(output_filename, "output", 'o', "output to file", "filename"),
 	popt::option(abi_filename, "abi", 'a', "abi description", "filename"),
 	popt::option(force, "force", 'f', "force conversion, even if identical")
 };
- 
-struct Extractor 
-{
-	Abi const & abi;
+
+
+struct extractor {
+
+	abi const & theabi;
 
 	unsigned char const * begin;
 	unsigned char const * end;
 	bool little_endian;
 
-	explicit Extractor(Abi const & a, unsigned char const * src, size_t len) : 
-		abi(a), 
-		begin(src),
-		end(src + len) 
-	{
-		little_endian = abi.need(string("little_endian")) == 1;
+	explicit
+	extractor(abi const & a, unsigned char const * src, size_t len) :
+		theabi(a), begin(src), end(src + len) {
+		little_endian = theabi.need(string("little_endian")) == 1;
 		if (verbose) {
-			cerr << "source byte order is: " 
+			cerr << "source byte order is: "
 			     << string(little_endian ? "little" : "big")
 			     << " endian" << endl;
 		}
 	}
 
 	template <typename T>
-	void extract(T & targ, void const * src_, const char * sz, const char * off);
+	void extract(T & targ, void const * src_,
+	             const char * sz, const char * off);
 };
 
 
-
 template <typename T>
-void Extractor::extract(T & targ, void const * src_, const char * sz, const char * off)
+void extractor::extract(T & targ, void const * src_,
+                        const char * sz, const char * off)
 {
-	unsigned char const * src = static_cast<unsigned char const *>(src_) + abi.need(off);
-	size_t nbytes = abi.need(sz);
+	unsigned char const * src = static_cast<unsigned char const *>(src_)
+		+ theabi.need(off);
+	size_t nbytes = theabi.need(sz);
 	
-	if (nbytes == 0) 
+	if (nbytes == 0)
 		return;
 	
 	assert(nbytes <= sizeof(T));
@@ -80,7 +82,7 @@ void Extractor::extract(T & targ, void const * src_, const char * sz, const char
 	assert(src + nbytes <= end);
 	
 	if (verbose)
-		cerr << hex << "get " << sz << " = " << nbytes 
+		cerr << hex << "get " << sz << " = " << nbytes
 		     << " bytes @ " << off << " = " << (src - begin)
 		     << " : ";
 
@@ -97,17 +99,14 @@ void Extractor::extract(T & targ, void const * src_, const char * sz, const char
 }
 
 
-
-void import_from_abi(Abi const & abi, 
-		     void const * srcv, 
-		     size_t len, 
-		     samples_odb_t * dest) throw (Abi_exception)
+void import_from_abi(abi const & abi, void const * srcv,
+                     size_t len, samples_odb_t * dest) throw (abi_exception)
 {
-	struct opd_header * head;
-	head = static_cast<opd_header *>(dest->base_memory);	
+	struct opd_header * head =
+		static_cast<opd_header *>(dest->base_memory);
 	unsigned char const * src = static_cast<unsigned char const *>(srcv);
 	unsigned char const * const begin = src;
-	Extractor ext(abi, src, len);	
+	extractor ext(abi, src, len);	
 
 	memcpy(head->magic, src + abi.need("offsetof_header_magic"), 4);
 
@@ -159,9 +158,7 @@ void import_from_abi(Abi const & abi,
 }
 
 
-
-int 
-main(int argc, char const ** argv) 
+int main(int argc, char const ** argv)
 {
 
 	vector<string> inputs;
@@ -172,11 +169,11 @@ main(int argc, char const ** argv)
 		exit(1);
 	}
 
-	Abi current_abi, input_abi;
+	abi current_abi, input_abi;
 	{
 		ifstream abi_file(abi_filename.c_str());
 		if (!abi_file) {
-			cerr << "error: cannot open abi file " 
+			cerr << "error: cannot open abi file "
 			     << abi_filename << endl;
 			exit(1);
 		}
@@ -196,12 +193,12 @@ main(int argc, char const ** argv)
 		int rc;
 
 		assert((in_fd = open(inputs[0].c_str(), O_RDONLY)) > 0);		
-		assert(fstat(in_fd, &statb)==0);
-		assert((in = mmap(0, statb.st_size, PROT_READ, 
+		assert(fstat(in_fd, &statb) == 0);
+		assert((in = mmap(0, statb.st_size, PROT_READ,
 				  MAP_PRIVATE, in_fd, 0)) != (void *)-1);
 
-		rc = odb_open(&dest, output_filename.c_str(), ODB_RDWR, 
-			     sizeof(struct opd_header), &err_msg);
+		rc = odb_open(&dest, output_filename.c_str(), ODB_RDWR,
+			      sizeof(struct opd_header), &err_msg);
 		if (rc != EXIT_SUCCESS) {
 			cerr << "odb_open() fail:\n"
 			     << err_msg << endl;
@@ -211,12 +208,12 @@ main(int argc, char const ** argv)
 
 		try {
 			import_from_abi(input_abi, in, statb.st_size, &dest);
-		} catch (Abi_exception &e) {
+		} catch (abi_exception & e) {
 			cerr << "caught abi exception: " << e.desc << endl;
 		}
 
 		odb_close(&dest);
 
-		assert(munmap(in, statb.st_size)==0);		
+		assert(munmap(in, statb.st_size) == 0);
 	}
 }

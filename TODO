@@ -52,7 +52,7 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
  o improve the *non* verbose daemon log to be a bit more informative
  o daemon: opd_put_kernel_samples vs. setup_kernel_sample vs. handle_. Rename, way too confusing
  o --buffer-size is useless on 2.5 without tuning of watershed
- o is --reset racy ?
+ o is --reset racy ? it's certainly too slow ...
  o should we make the sighup handler re-read counter config and re-start profiling too ?
  o improve --smart-demangle
 	o allow user to add it's own pattern in user.pat, document it.
@@ -72,12 +72,11 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
  o allow --ctr0-event to take event numbers. (is it worth ?)
  o when we dump stats for oprofiled, dump kernel-side values too (for 2.5)
  o lookup_dcookie can return ENAMETOOLONG but we can't hack it
+ o remove 2.2 / gcc 2.91 support ?
 
 Documentation
 -------------
 
- o make distcheck is broken (doc subdir)
- o remove dependencies in doc for xmlt.xsl and xhtml-chunk.xls ?
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o document gcc 2.95 and linenr info problems especially for inline functions
  o split doc into user's manual and hacking manual, document much more 

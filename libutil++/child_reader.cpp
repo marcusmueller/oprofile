@@ -23,16 +23,12 @@ using namespace std;
 
 child_reader::child_reader(string const & cmd, vector<string> const & args)
 	:
-	fd1(-1),
-	fd2(-1),
-	pos1(0),
-	end1(0),
-	pos2(0),
-	end2(0),
+	fd1(-1), fd2(-1),
+	pos1(0), end1(0),
+	pos2(0), end2(0),
 	pid(0),
 	first_error(0),
-	buf2(0),
-	sz_buf2(0),
+	buf2(0), sz_buf2(0),
 	buf1(new char [PIPE_BUF]),
 	process_name(cmd),
 	is_terminated(true),
@@ -41,6 +37,7 @@ child_reader::child_reader(string const & cmd, vector<string> const & args)
 {
 	exec_command(cmd, args);
 }
+
 
 child_reader::~child_reader()
 {
@@ -51,6 +48,7 @@ child_reader::~child_reader()
 		free(buf2);
 	}
 }
+
 
 void child_reader::exec_command(string const & cmd, vector<string> const & args)
 {
@@ -117,6 +115,7 @@ void child_reader::exec_command(string const & cmd, vector<string> const & args)
 	return;
 }
 
+
 bool child_reader::block_read()
 {
 	fd_set read_fs;
@@ -155,6 +154,7 @@ bool child_reader::block_read()
 
 	return ret;
 }
+
 
 bool child_reader::getline(string & result)
 {
@@ -198,6 +198,7 @@ bool child_reader::getline(string & result)
 	return end1 != 0 || result.length() != 0;
 }
 
+
 bool child_reader::get_data(ostream & out, ostream & err)
 {
 	bool ret = true;
@@ -213,9 +214,11 @@ bool child_reader::get_data(ostream & out, ostream & err)
 	return first_error == 0;
 }
 
-// can be called explicitely or by dtor, we must protect against multiple call
+
 int child_reader::terminate_process()
 {
+	// can be called explicitely or by dtor,
+	// we must protect against multiple call
 	if (!is_terminated) {
 		int ret;
 		waitpid(pid, &ret, 0);
@@ -246,6 +249,7 @@ int child_reader::terminate_process()
 
 	return first_error;
 }
+
 
 string child_reader::error_str() const
 {

@@ -17,14 +17,11 @@
 extern "C" {
 #endif
 
-/** write current abi to file.
-    return 1 on success, 0 on failure */
+/**
+ * Write current abi to file.
+ * return 1 on success, 0 on failure
+ */
 int op_write_abi_to_file(char const * abi_file);
-
-
-/** check current abi against abi described in file.
-    return 1 on compatibility, 0 on incompatibility */
-int op_abi_compatible_p(char const * abi_file);
 
 #ifdef __cplusplus
 }

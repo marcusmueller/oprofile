@@ -7,7 +7,7 @@
  * @author Graydon Hoare
  * @author John Levon
  */
- 
+
 #include "abi.h"
 #include "odb_hash.h"
 #include "op_sample_file.h"
@@ -22,12 +22,11 @@ typedef map<string,int>::const_iterator abi_iter;
 #define byte_addr(x) (reinterpret_cast<unsigned char *>(&(x)))
 #define field_offset(s,f) (byte_addr(s.f) - byte_addr(s))
 
-Abi_exception::Abi_exception(string const d) : desc(d) {}
+abi_exception::abi_exception(string const d) : desc(d) {}
 
 
-Abi::Abi() 
+abi::abi()
 {
-	
 	odb_node_t node;
 	odb_descr_t descr;
 	struct opd_header header;
@@ -67,10 +66,13 @@ Abi::Abi()
 	slots["offsetof_header_separate_kernel_samples"] = field_offset(header, separate_kernel_samples);
 
 	// determine endianness
+
 	unsigned int probe = 0xff;
 	size_t sz = sizeof(unsigned int);
 	unsigned char * probe_byte = reinterpret_cast<unsigned char *>(&probe);
+
 	assert(probe_byte[0] == 0xff || probe_byte[sz - 1] == 0xff);
+
 	if (probe_byte[0] == 0xff)
 		slots["little_endian"] = 1;
 	else
@@ -78,23 +80,23 @@ Abi::Abi()
 }
 
 
-Abi::Abi(Abi const & other) 
+abi::abi(abi const & other)
 {
 	slots.clear();
 	slots.insert(other.slots.begin(), other.slots.end());
 }
 
 
-int Abi::need(string const key) const throw (Abi_exception)
+int abi::need(string const key) const throw (abi_exception)
 {
 	if (slots.find(key) != slots.end())
 		return slots.find(key)->second;
 	else
-		throw Abi_exception(string("missing ABI key: ") + key);
+		throw abi_exception(string("missing ABI key: ") + key);
 }
 
 
-bool Abi::operator==(Abi const & other) const
+bool abi::operator==(abi const & other) const
 {
 	abi_iter i = slots.begin();
 	abi_iter e = slots.end();
@@ -105,11 +107,12 @@ bool Abi::operator==(Abi const & other) const
 		    theirs.find(i->first)->second != i->second)
 			return false;
 	}
+
 	return true;		
 }
 
 
-ostream & operator<<(ostream & o, Abi const & abi)
+ostream & operator<<(ostream & o, abi const & abi)
 {
 	abi_iter i = abi.slots.begin();
 	abi_iter e = abi.slots.end();
@@ -117,17 +120,20 @@ ostream & operator<<(ostream & o, Abi const & abi)
 	for (; i != e; ++i) {
 		o << i->first << " " << i->second << endl;
 	}
+
 	return o;
 }
 
 
-istream & operator>>(istream & i, Abi & abi)
+istream & operator>>(istream & i, abi & abi)
 {
 	string key;
 	int val;
 	abi.slots.clear();
+
 	while(i >> key >> val) {
 		abi.slots[key] = val;
 	}
+
 	return i;
 }

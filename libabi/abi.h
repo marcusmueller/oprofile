@@ -16,25 +16,28 @@
 #include <map>
 #include <iosfwd>
 
-struct Abi_exception : std::exception
-{
+struct abi_exception : std::exception {
 	std::string const desc;
  
-	explicit Abi_exception(std::string const d);
+	explicit abi_exception(std::string const d);
  
-	~Abi_exception() throw() {}
+	~abi_exception() throw() {}
 };
 
-class Abi 
-{
-	std::map<std::string,int> slots;
+
+class abi {
 public:
-	Abi();
-	Abi(Abi const & other);
-	int need(std::string const key) const throw (Abi_exception);
-	bool operator==(Abi const & other) const;
-	friend std::ostream & operator<<(std::ostream & o, Abi const & abi);
-	friend std::istream & operator>>(std::istream & i, Abi & abi);
+	abi();
+	abi(abi const & other);
+
+	int need(std::string const key) const throw (abi_exception);
+
+	bool operator==(abi const & other) const;
+	friend std::ostream & operator<<(std::ostream & o, abi const & abi);
+	friend std::istream & operator>>(std::istream & i, abi & abi);
+
+private:
+	std::map<std::string,int> slots;
 };
 
 #endif // OPROF_ABI_H

@@ -38,11 +38,12 @@ int main(int argc, char const ** argv)
 	popt::parse_options(argc, argv, rest);
 	bool file_processed = false;
 
-	Abi curr;
+	abi curr;
 	if (abi_filename.size() > 0) {
 		ofstream file(abi_filename.c_str());
 		if (!file) {
-			cerr << "error: cannot open " << abi_filename << " for writing" << endl;
+			cerr << "error: cannot open " << abi_filename
+			     << " for writing" << endl;
 			exit(1);
 		}
 		file << curr;
@@ -52,8 +53,9 @@ int main(int argc, char const ** argv)
 	if (db_filename.size() > 0) {
 		samples_odb_t dest;
 		char * err_msg;
-		int rc;
-		rc = odb_open(&dest, db_filename.c_str(), ODB_RDWR, sizeof(struct opd_header), &err_msg);
+		int rc = odb_open(&dest, db_filename.c_str(), ODB_RDWR,
+		                  sizeof(struct opd_header), &err_msg);
+
 		if (rc != EXIT_SUCCESS) {
 			cerr << "odb_open() fail:\n"
 			     << err_msg << endl;
