@@ -558,7 +558,7 @@ static FILE * open_event_mapping_file(const char * cpu_name)
 /**
  *  This function is PPC64-specific.
  */
-char const * get_mapping(u8 nr, FILE * fp) 
+static char const * get_mapping(u8 nr, FILE * fp) 
 {
 	char * line;
 	char * name;
@@ -627,32 +627,15 @@ next:
 		++line_nr;
 	}
 	if (event_found) {
-		char * val;
 		if (!seen_mmcr0 || !seen_mmcr1 || !seen_mmcra) {
 			fprintf(stderr, "Error: Missing information in line %d of event mapping file %s\n", line_nr, filename);
 			exit(EXIT_FAILURE);
 		}
 		map = xmalloc(70);
-		val = xmalloc(20);
-		strcpy(map, "mmcr0:");
-		sprintf(val, "%u", mmcr0);
-		strcat(map, val);
-		free(val);
-
-		val = xmalloc(20);
-		sprintf(val, "%Lu", mmcr1);
-		strcat(map, " mmcr1:");		
-		strcat(map, val);
-		free(val);
-		
-		val = xmalloc(20);
-		sprintf(val, "%u", mmcra);
-		strcat(map, " mmcra:");		
-		strcat(map, val);
-		free(val);
+		snprintf(map, 70, "mmcr0:%u mmcr1:%Lu mmcra:%u",
+		         mmcr0, mmcr1, mmcra);
 	}
 
-	fclose(fp);
 	return map;
 }
 
@@ -676,6 +659,10 @@ char const * find_mapping_for_event(u8 nr, op_cpu cpu_type)
 		default:
 			break;
 	}
+
+	if (fp)
+		fclose(fp);
+
 	return map;
 }
 
