@@ -1,5 +1,12 @@
 2002-01-27  John Levon  <moz@compsoc.man.ac.uk>
 
+	* gui/oprof_start.cpp:
+	* pp/op_merge.cpp:
+	* pp/op_time.cpp:
+	* pp/opf_container.cpp: std namespace fixes.
+ 
+2002-01-27  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/op_time.cpp: small hacky output cleanup
  
 2002-01-27  Philippe Elie  <ph_e@club-internet.fr>

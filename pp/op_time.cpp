@@ -26,6 +26,7 @@
 #include <fstream>
 #include <algorithm>
 #include <map>
+#include <vector>
 
 #include "oprofpp.h"
 #include "opf_filter.h"
@@ -39,6 +40,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::ostringstream;
+using std::vector;
 using std::ifstream;
 using std::multimap;
 using std::pair;

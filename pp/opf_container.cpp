@@ -26,6 +26,7 @@
 #include "../util/file_manip.h"
 
 using std::string;
+using std::cout;
 using std::cerr;
 using std::endl;
 using std::list;

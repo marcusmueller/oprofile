@@ -21,6 +21,7 @@
 #include <vector>
 #include <list>
 #include <string>
+#include <iostream>
 #include <sstream>
 #include <fstream>
 #include <algorithm>
@@ -37,6 +38,7 @@ using std::vector;
 using std::list;
 using std::replace;
 using std::ostringstream;
+using std::ofstream;
 using std::cerr;
 using std::endl;
 
@@ -201,7 +203,8 @@ static void output_files(const std::string & filename,
 	// TODO: bad approch, we don't create a sparsed file here :/
 	ofstream out(filename.c_str());
 
-	out.write(samples_files[0]->header, sizeof(opd_header));
+	/* FIXME: these reinterpret's required by gcc 3, why ? */ 
+	out.write(reinterpret_cast<char*>(samples_files[0]->header), sizeof(opd_header));
 
 	// All size of samples has been checked and must be identical
 	size_t nr_samples = samples_files[0]->nr_samples;
@@ -209,7 +212,7 @@ static void output_files(const std::string & filename,
 		u32 count = 0;
 		for (size_t j = 0 ; j < samples_files.size() ; ++j)
 			count += samples_files[j]->samples[i].count;
-		out.write(&count, sizeof(count));
+		out.write(reinterpret_cast<char*>(&count), sizeof(count));
 	}
 }
 

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.37 2002/01/25 03:29:11 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.38 2002/01/27 20:52:48 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -137,7 +137,7 @@ private:
  */
 struct samples_file_t
 {
-	samples_file_t(const string & filename);
+	samples_file_t(const std::string & filename);
 	~samples_file_t();
 
 	bool check_headers(const samples_file_t & headers) const;

@@ -40,6 +40,8 @@
 #include "oprof_start.h"
 #include "../util/string_manip.h"
 
+using std::string;
+ 
 op_event_descr::op_event_descr()
 	: 
 	counter_mask(0),

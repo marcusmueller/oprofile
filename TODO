@@ -35,6 +35,7 @@ Before 1.0
  o check chroot() processes and the path hash stuff
  o use nm and a little script to track unused function
  o audit to track unnecessary include <>
+ o gcc 3.0 compile.
 
 Later
 -----
