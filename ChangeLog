@@ -1,9 +1,14 @@
+2002-12-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/string_manip.cpp: minor fix
+	* pp/derive_files.cpp: comment
+
 2002-12-14  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/format_output.cpp:
 	* pp/format_output.h:
 	* pp/outsymbflag.h:
-	* pp/opp_symbol.h: : add an app_name field in file_location and
+	* pp/opp_symbol.h: add an app_name field in file_location and
 	  formater options for this field.
 
 	* pp/profile_container.cpp:

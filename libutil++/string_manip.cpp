@@ -38,8 +38,7 @@ string erase_to_last_of(string const & str, char ch)
 
 string tostr(unsigned int i)
 {
-	string str;
-	ostringstream ss(str);
+	ostringstream ss;
 	ss << i;
 	return ss.str();
 }
@@ -71,7 +70,7 @@ void separate_token(vector<string> & result, const string & str, char sep)
 }
 
 string sample_filename(string const& sample_dir,
-			      string const& sample_filename, int counter)
+			string const& sample_filename, int counter)
 {
 	ostringstream s;
 
