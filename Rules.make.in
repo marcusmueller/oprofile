@@ -14,8 +14,7 @@ INCLUDES=@extra_includes@
 # CFLAGS and CXXFLAGS are defined in each Makefile.
 
 # autodeps rules. These are modified from an example in the make info page.
-# FIXME: kernel headers in userspace, don't do it :) 
-CPPFLAGS_DEPS = -I@KINC@ @extra_includes@
+CPPFLAGS_DEPS = @extra_includes@
 
 .deps/%.cpp.d: %.cpp
 	@$(MKDIR_P) .deps

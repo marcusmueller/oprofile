@@ -17,8 +17,6 @@
 #ifndef OPROF_START_CONFIG_H
 #define OPROF_START_CONFIG_H
 
-#include <linux/version.h>
-
 #include <string>
 #include <iostream>
 

@@ -1,7 +1,7 @@
 MOC=@MOC@
 UIC=@UIC@
 
-CXXFLAGS=-ansi -Wall -pedantic -W @CXXFLAGS@ -I@KINC@ @QT2_INCLUDES@
+CXXFLAGS=-ansi -Wall -pedantic -W @CXXFLAGS@ @QT2_INCLUDES@
 
 .PHONY: all clean install uninstall
 .SUFFIXES:
@@ -44,7 +44,7 @@ oprof_start.moc.o: oprof_start.moc.cpp
 oprof_start.o: oprof_start.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 oprof_start_config.o: oprof_start_config.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -DKVERSION=\"@KVERS@\" -c $< -o $@
 oprof_start_util.o: oprof_start_util.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 oprof_start_main.o: oprof_start_main.cpp
