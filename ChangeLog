@@ -1,5 +1,10 @@
 2001-09-27  John Levon  <moz@compsoc.man.ac.uk>
 
+	* gui/oprof_start_util.cpp: use g++ extension to
+	  avoid using temporary files
+ 
+2001-09-27  John Levon  <moz@compsoc.man.ac.uk>
+
 	* gui/oprof_start_util.cpp: fix crasher bug
  
 2001-09-27  John Levon  <moz@compsoc.man.ac.uk>

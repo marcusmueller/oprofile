@@ -42,7 +42,8 @@ necks in real-world systems.
 		<term>Linux kernel 2.4</term>
 		<listitem><para>
 			OProfile uses a kernel module which can only work on kernel 2.4.0 or above. Actually, some subset
-			of the 2.3 series will work as well.
+			of the 2.3 series will work as well. Note that version 2.4.10 or above is required if you use the
+			boot-time kernel option <option>nosmp</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
