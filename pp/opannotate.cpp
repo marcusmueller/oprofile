@@ -412,7 +412,7 @@ void output_objdump_asm(symbol_collection const & symbols,
 }
 
 
-void output_asm(string const & app_name)
+bool output_asm(string const & app_name)
 {
 	profile_container::symbol_choice choice;
 	choice.threshold = options::threshold;
@@ -420,13 +420,19 @@ void output_asm(string const & app_name)
 	choice.match_image = true;
 	symbol_collection symbols = samples->select_symbols(choice);
 
-	sort_options options;
-	options.add_sort_option(sort_options::sample);
-	options.sort(symbols, false, false);
+	if (!symbols.empty()) {
+		sort_options options;
+		options.add_sort_option(sort_options::sample);
+		options.sort(symbols, false, false);
 
-	output_info(cout);
+		output_info(cout);
 
-	output_objdump_asm(symbols, app_name);
+		output_objdump_asm(symbols, app_name);
+
+		return true;
+	}
+
+	return false;
 }
 
 
@@ -638,11 +644,21 @@ bool annotate_source(image_set const & images)
 	}
 
 	if (assembly) {
+		bool some_output = false;
 		image_set::const_iterator it;
 		for (it = images.begin(); it != images.end(); ) {
-			output_asm(it->first);
+			if (output_asm(it->first)) {
+				some_output = true;
+			}
 
 			it = images.upper_bound(it->first);
+		}
+
+		if (!some_output) {
+			// It's the only case we must care since we know the
+			// selected image set is not empty
+			cerr << "selected image set doesn't contain any of "
+			     << "the selected symbol\n";
 		}
 	} else {
 		output_source(file_filter, output_separate_file);
