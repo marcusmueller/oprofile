@@ -20,17 +20,7 @@
 
 #include "split_sample_filename.h"
 #include "locate_images.h"
-
-/**
- * store merging options options used to partition samples filename
- */
-struct merge_option {
-	bool cpu;
-	bool lib;
-	bool tid;
-	bool tgid;
-	bool unitmask;
-};
+#include "arrange_profiles.h"
 
 /**
  * unmergeable profile specification are those with distinct event/count

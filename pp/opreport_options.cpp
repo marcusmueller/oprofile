@@ -17,15 +17,15 @@
 #include <fstream>
 
 #include "profile_spec.h"
+#include "arrange_profiles.h"
 #include "opreport_options.h"
 #include "popt_options.h"
 #include "file_manip.h"
-#include "partition_files.h"
 #include "cverb.h"
 
 using namespace std;
 
-vector<partition_files> sample_file_partition;
+vector<profile_class> profile_classes;
 
 namespace options {
 	bool demangle = true;
@@ -228,28 +228,11 @@ void handle_options(vector<string> const & non_options)
 	copy(sample_files.begin(), sample_files.end(),
 	     ostream_iterator<string>(cverb, "\n"));
 
-	vector<unmergeable_profile>
-		unmerged_profile = merge_profile(sample_files);
+	profile_classes = arrange_profiles(sample_files, merge_by);
 
-	cverb << "Unmergeable profile specification:\n";
-	copy(unmerged_profile.begin(), unmerged_profile.end(),
-	     ostream_iterator<unmergeable_profile>(cverb, "\n"));
-
-	if (unmerged_profile.empty()) {
+	if (profile_classes.empty()) {
 		cerr << "No samples files found: profile specification too "
 		     << "strict ?" << endl;
 		exit(EXIT_FAILURE);
-	}
-
-	unmergeable_samplefile unmerged_samplefile =
-		unmerge_samplefile(sample_files, unmerged_profile);
-
-	unmergeable_samplefile::const_iterator const cend =
-		unmerged_samplefile.end();
-	unmergeable_samplefile::const_iterator cit =
-		unmerged_samplefile.begin();
-	for ( ; cit != cend ; ++cit) {
-		sample_file_partition.push_back(
-			partition_files(*cit, merge_by));
 	}
 }

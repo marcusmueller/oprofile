@@ -1,6 +1,31 @@
 2003-09-14  John Levon  <levon@movementarian.org>
 
+	* libpp/Makefile.am:
+	* libpp/arrange_profiles.cpp:
+	* libpp/arrange_profiles.h: introduce new
+	code for partitioning profiles and handling
+	merging
+
+	* libpp/partition_files.h:
+	* pp/opreport_options.cpp:
+	* pp/opreport_options.h:
+	* pp/opreport.cpp: use the above code
+
+	* libpp/format_flags.h:
+	* libpp/profile_container.cpp: remove unneeded
+	multiple apps hint
+
+	* libpp/count_array.cpp:
+	* libpp/count_array.h: remove unnecessary code
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
 	* configure.in: back to 0.7cvs
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
+	* pp/opannotate.cpp: gcc 2.91 workaround
+	(in 0.6.1 release)
 
 2003-09-14  John Levon  <levon@movementarian.org>
 

@@ -157,7 +157,6 @@ symbol_collection const
 profile_container::select_symbols(symbol_choice & choice) const
 {
 	symbol_collection result;
-	image_name_id app_name_id;
 
 	double const threshold = choice.threshold / 100.0;
 
@@ -174,13 +173,6 @@ profile_container::select_symbols(symbol_choice & choice) const
 
 		if (percent >= threshold) {
 			result.push_back(&*it);
-
-			if (!app_name_id.set()) {
-				app_name_id = it->app_name;
-			} else if (app_name_id != it->app_name) {
-				choice.hints = column_flags(
-					choice.hints | cf_multiple_apps);
-			}
 
 			if (it->app_name != it->image_name) {
 				choice.hints = column_flags(

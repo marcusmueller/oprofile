@@ -56,9 +56,8 @@ enum format_flags {
  */
 enum column_flags {
 	cf_none = 0,
-	cf_multiple_apps = 1 << 0,
-	cf_64bit_vma = 1 << 1,
-	cf_image_name = 1 << 2
+	cf_64bit_vma = 1 << 0,
+	cf_image_name = 1 << 1
 };
 
 #endif // FORMAT_FLAGS_H

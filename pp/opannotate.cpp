@@ -232,7 +232,9 @@ string asm_line_annotation(symbol_entry const * last_symbol,
 	//  - we does not need cross architecture compile so the native
 	// strtoull must work, assuming unsigned long long can contain a vma
 	// and on 32/64 bits box bfd_vma is 64 bits
-	bfd_vma vma = strtoull(value.c_str(), NULL, 16);
+	// gcc 2.91.66 workaround
+	bfd_vma vma = 0;
+	vma = strtoull(value.c_str(), NULL, 16);
 
 	string str;
 

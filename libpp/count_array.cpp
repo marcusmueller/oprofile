@@ -17,23 +17,13 @@
 using namespace std;
  
 count_array_t::count_array_t()
-	: size(0)
 {
-}
-
-
-void count_array_t::resize(size_type newsize)
-{
-	container.resize(newsize);
-	for (size_type i = size; i < newsize; ++i)
-		container[i] = 0;
-	size = newsize;
 }
 
 
 u32 count_array_t::operator[](size_type index) const
 {
-	if (index >= size)
+	if (index >= container.size())
 		return 0;
 	return container[index];
 }
@@ -41,18 +31,18 @@ u32 count_array_t::operator[](size_type index) const
 
 u32 & count_array_t::operator[](size_type index)
 {
-	if (index >= size)
-		resize(index + 1);
+	if (index >= container.size())
+		container.resize(index + 1);
 	return container[index];
 }
 
 
 count_array_t & count_array_t::operator+=(count_array_t const & rhs)
 {
-	if (rhs.size > size)
-		resize(rhs.size);
+	if (rhs.container.size() > container.size())
+		container.resize(rhs.container.size());
 
-	for (size_type i = 0 ; i < min(size, rhs.size) ; ++i)
+	for (size_type i = 0 ; i < min(container.size(), rhs.container.size()); ++i)
 		container[i] += rhs.container[i];
 
 	return *this;
@@ -61,10 +51,10 @@ count_array_t & count_array_t::operator+=(count_array_t const & rhs)
 
 count_array_t & count_array_t::operator-=(count_array_t const & rhs)
 {
-	if (rhs.size > size)
-		resize(rhs.size);
+	if (rhs.container.size() > container.size())
+		container.resize(rhs.container.size());
 
-	for (size_type i = 0 ; i < min(size, rhs.size) ; ++i)
+	for (size_type i = 0 ; i < min(container.size(), rhs.container.size()); ++i)
 		container[i] -= rhs.container[i];
 
 	return *this;

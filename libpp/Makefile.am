@@ -11,6 +11,8 @@ AM_CXXFLAGS = @OP_CXXFLAGS@
 
 noinst_LIBRARIES = libpp.a
 libpp_a_SOURCES = \
+	arrange_profiles.cpp \
+	arrange_profiles.h \
 	count_array.cpp \
 	count_array.h \
 	filename_spec.cpp \

@@ -58,11 +58,6 @@ public:
 	count_array_t & operator-=(count_array_t const & rhs);
 
 private:
-	/// resize and zero fill any new entries
-	void resize(size_type);
-
-	size_type size;
-
 	container_type container;
 };
 
