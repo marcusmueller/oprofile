@@ -1,3 +1,7 @@
+2003-10-12  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: share --separate-cpu/thread code now
+
 2003-10-12  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* configure.in: add libregex/tests/mangled-name.in

@@ -943,16 +943,13 @@ do_start_daemon() {
 
 	OPD_ARGS=" \
 		--separate-lib=$SEPARATE_LIB \
-		--separate-kernel=$SEPARATE_KERNEL"
+		--separate-kernel=$SEPARATE_KERNEL \
+		--separate-thread=$SEPARATE_THREAD \
+		--separate-cpu=$SEPARATE_CPU"
 
 	if [ "$KERNEL_SUPPORT" != "yes" ]; then
 		OPD_ARGS="$OPD_ARGS \
-			--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER \
-			--separate-thread=$SEPARATE_THREAD \
-			--separate-cpu=$SEPARATE_CPU"
-	else
-		OPD_ARGS="$OPD_ARGS --separate-thread=$SEPARATE_THREAD \
-			--separate-cpu=$SEPARATE_CPU"
+			--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
 	fi
 
 	if [ "$VMLINUX" = "none" ]; then
