@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.11 2001/01/21 01:11:56 moz Exp $ */
+/* $Id: opd_util.c,v 1.12 2001/06/22 01:17:38 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -514,6 +514,36 @@ void opd_write_u32_ne(FILE *fp, u32 val)
 	opd_write_file(fp,&val,sizeof(val));
 }
  
+/**
+ * opd_read_int_from_file - parse an ASCII value from a file into an integer
+ * @filename: name of file to parse integer value from
+ *
+ * Reads an ASCII integer from the given file. All errors are fatal.
+ * The value read in is returned.
+ */
+u32 opd_read_int_from_file(const char *filename) 
+{
+
+	FILE *fp;
+	u32 value;
+
+	fp = fopen(filename, "r");
+	if (fp == NULL) {
+		fprintf(stderr, "opd_read_int_from_file: Failed to open %s, reason %s\n", filename, strerror(errno));
+		exit(1);
+	}
+
+	if (fscanf(fp, "%u", &value) != 1) {
+		fclose(fp);
+		fprintf(stderr, "opd_read_int_from_file: Failed to convert contents of file %s to integer\n", filename);
+		exit(1);
+	}
+
+	fclose(fp);
+
+	return value;
+}
+
 /**
  * opd_get_fsize - get size of file
  * @file: file name

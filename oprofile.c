@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.57 2001/06/22 00:19:31 movement Exp $ */
+/* $Id: oprofile.c,v 1.58 2001/06/22 01:17:38 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -40,6 +40,8 @@ static int op_ctr0_kernel[NR_CPUS];
 static int op_ctr0_user[NR_CPUS];
 static int op_ctr1_kernel[NR_CPUS];
 static int op_ctr1_user[NR_CPUS];
+static int op_ctr0_edge_detect[NR_CPUS];
+static int op_ctr1_edge_detect[NR_CPUS];
 pid_t pid_filter;
 pid_t pgrp_filter;
 
@@ -372,7 +374,7 @@ not_local_p6_apic:
 
 /* ---------------- PMC setup ------------------ */
 
-static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um)
+static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um, u8 edge_detect)
 {
 	/* enable interrupt generation */
 	*val |= (1<<20);
@@ -382,6 +384,10 @@ static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um)
 
 	(kernel) ? (*val |= (1<<17))
 		 : (*val &= ~(1<<17));
+
+	/* enable/disable counting number of events rather duration of events */
+	(edge_detect) ? (*val |= (1<<18))
+		      : (*val &= ~(1<<18));
 
 	/* what are we counting ? */
 	*val |= event;
@@ -396,7 +402,7 @@ static void pmc_setup(void *dummy)
 	rdmsr(MSR_IA32_EVNTSEL0, low, high);
 	wrmsr(MSR_IA32_EVNTSEL0,low & ~(1<<22), high);
 
-	/* IA Vol. 3 Figure 14-3 */
+	/* IA Vol. 3 Figure 15-3 */
 
 	rdmsr(MSR_IA32_EVNTSEL0, low, high);
 	/* clear */
@@ -404,7 +410,7 @@ static void pmc_setup(void *dummy)
 
 	if (op_ctr0_val[cpu]) {
 		set_perfctr(op_ctr0_count[cpu],0);
-		pmc_fill_in(&low, op_ctr0_kernel[cpu], op_ctr0_user[cpu], op_ctr0_val[cpu], op_ctr0_um[cpu]);
+		pmc_fill_in(&low, op_ctr0_kernel[cpu], op_ctr0_user[cpu], op_ctr0_val[cpu], op_ctr0_um[cpu], op_ctr0_edge_detect[cpu]);
 	}
 
 	wrmsr(MSR_IA32_EVNTSEL0,low,0);
@@ -415,7 +421,7 @@ static void pmc_setup(void *dummy)
 
 	if (op_ctr1_val[cpu]) {
 		set_perfctr(op_ctr1_count[cpu],1);
-		pmc_fill_in(&low, op_ctr1_kernel[cpu], op_ctr1_user[cpu], op_ctr1_val[cpu], op_ctr1_um[cpu]);
+		pmc_fill_in(&low, op_ctr1_kernel[cpu], op_ctr1_user[cpu], op_ctr1_val[cpu], op_ctr1_um[cpu], op_ctr1_edge_detect[cpu]);
 		wrmsr(MSR_IA32_EVNTSEL1, low, high);
 	}
 
@@ -930,6 +936,7 @@ static struct file_operations oprof_fops = {
  *                        unit_mask
  *                        kernel
  *                        user
+ *                        edge_detect
  *                      1/
  *                        event
  *                        enabled
@@ -937,6 +944,7 @@ static struct file_operations oprof_fops = {
  *                        unit_mask
  *                        kernel
  *                        user
+ *                        edge_detect
  *                    1/
  *                    ...
  */
@@ -1061,27 +1069,29 @@ int __init init_sysctl(void)
 		next->child = cpu_table[i];
 
 		/* counter 0 */
-		if (!(tab = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
+		if (!(tab = kmalloc(sizeof(ctl_table)*8, GFP_KERNEL)))
 			goto cleanup1;
-		memset(tab, 0, sizeof(ctl_table)*7);
+		memset(tab, 0, sizeof(ctl_table)*8);
 		tab[0] = ((ctl_table){ 1, "enabled", &op_ctr0_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[1] = ((ctl_table){ 1, "event", &op_ctr0_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
 		tab[2] = ((ctl_table){ 1, "count", &op_ctr0_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[3] = ((ctl_table){ 1, "unit_mask", &op_ctr0_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[4] = ((ctl_table){ 1, "kernel", &op_ctr0_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[5] = ((ctl_table){ 1, "user", &op_ctr0_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[6] = ((ctl_table){ 1, "edge_detect", &op_ctr0_edge_detect[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, }); 
 		cpu_table[i][0].child = tab;
 		
 		/* counter 1 */
-		if (!(tab2 = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
+		if (!(tab2 = kmalloc(sizeof(ctl_table)*8, GFP_KERNEL)))
 			goto cleanup2;
-		memset(tab2, 0, sizeof(ctl_table)*7);
+		memset(tab2, 0, sizeof(ctl_table)*8);
 		tab2[0] = ((ctl_table){ 1, "enabled", &op_ctr1_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab2[1] = ((ctl_table){ 1, "event", &op_ctr1_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
 		tab2[2] = ((ctl_table){ 1, "count", &op_ctr1_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab2[3] = ((ctl_table){ 1, "unit_mask", &op_ctr1_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab2[4] = ((ctl_table){ 1, "kernel", &op_ctr1_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab2[5] = ((ctl_table){ 1, "user", &op_ctr1_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab2[6] = ((ctl_table){ 1, "edge_detect", &op_ctr1_edge_detect[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, }); 
 		cpu_table[i][1].child = tab2;
 		next++;
 	}
@@ -1175,6 +1185,8 @@ void __exit oprof_exit(void)
 	oprof_free_hashmap();
 	unregister_chrdev(op_major, "oprof");
 	smp_call_function(smp_apic_restore, NULL, 0, 1);
+	smp_apic_restore(NULL);
+ 
 	cleanup_sysctl();
 	// currently no need to reset APIC state
 }

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.27 2001/06/09 02:27:59 movement Exp $
+# $Id: op_start,v 1.28 2001/06/22 01:17:38 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -32,8 +32,10 @@ CTR0_COUNT=600000
 CTR1_COUNT=600000
 CTR0_USER=1
 CTR0_KERNEL=1
+CTR0_EDGE_DETECT=0
 CTR1_USER=1
 CTR1_KERNEL=1
+CTR1_EDGE_DETECT=0
 USE_PII=0
 IGNORE_MYSELF=0
 DIR="/var/opd"
@@ -60,6 +62,8 @@ Module per-cpu options. Specify comma-separated values for each CPU$
   --ctr0-user=[0|1]            whether to count user events for ctr 0$
   --ctr1-kernel=[0|1]          whether to count kernel events for ctr 1$
   --ctr1-user=[0|1]            whether to count user events for ctr1$
+  --ctr0-edge-detect=[0|1]     count number of events rather duration for ctr0$
+  --ctr1-edge-detect=[0|1]     count number of events rather duration for ctr1$
   --pid-filter=pid             Only profile process pid (if compiled in)$
   --pgrp-filter=pgrp           Only profile process group pgrp (if compiled in)$
 $
@@ -168,11 +172,17 @@ do
 		--ctr0-kernel)
 			CTR0_KERNEL=$val
 			;;
+		--ctr0-edge-detect)
+			CTR0_EDGE_DETECT=$val
+			;;
 		--ctr1-user)
 			CTR1_USER=$val
 			;;
 		--ctr1-kernel)
 			CTR1_KERNEL=$val
+			;;
+		--ctr1-edge-detect)
+			CTR1_EDGE_DETECT=$val
 			;;
 		--base-dir)
 			DIR=$val
@@ -205,6 +215,7 @@ do
 			echo $help_string | tr \$ '\n'
 			exit 0
 			;;
+
 		--list-events)
 			exec op_help
 			;;
@@ -244,9 +255,19 @@ if [ -z "$CTR1_EVENT_VAL" -a ! -z "$CTR1_EVENT" ]; then
 	exit 1
 fi
 
+# stop any existing daemon
+
+op_stop >/dev/null
+
 grep oprof /proc/devices >/dev/null
 if [ "$?" -ne 0 ]; then
 	modprobe oprofile
+	if [ "$?" != "0" ]
+	then
+		echo "Couldn't load oprofile.o module"
+		exit 1
+	fi
+	grep oprofile /proc/modules >/dev/null
 	if [ "$?" != "0" ]
 	then
 		echo "Couldn't load oprofile.o module"
@@ -364,7 +385,7 @@ chmod 700 "$DEVICE_FILE"
  
 if [ "$VERBOSE" = "1" ]; then 
 echo "Doing mknod $HASH_MAP_DEVICE_FILE"
-fi 
+fi
 mknod "$HASH_MAP_DEVICE_FILE" c $MAJOR_NR 1
 if [ "$?" != "0" ]
 then
@@ -372,10 +393,6 @@ then
 	exit 1
 fi
 chmod 700 "$HASH_MAP_DEVICE_FILE"
-
-# stop any existing daemon
-
-op_stop >/dev/null
 
 $SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE >/dev/null
 $SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE >/dev/null
@@ -389,6 +406,7 @@ if [ "$CTR0_EVENT" != "" ]; then
 	$SYSCTL -w dev.oprofile.0.0.count=$CTR0_COUNT >/dev/null
 	$SYSCTL -w dev.oprofile.0.0.kernel=$CTR0_KERNEL >/dev/null
 	$SYSCTL -w dev.oprofile.0.0.user=$CTR0_USER >/dev/null
+	$SYSCTL -w dev.oprofile.0.0.edge_detect=$CTR0_EDGE_DETECT >/dev/null
 	$SYSCTL -w dev.oprofile.0.0.unit_mask=$CTR0_UM >/dev/null
 	$SYSCTL -w dev.oprofile.0.0.event=$CTR0_EVENT_VAL >/dev/null
 fi
@@ -397,6 +415,7 @@ if [ "$CTR1_EVENT" != "" ]; then
 	$SYSCTL -w dev.oprofile.0.1.count=$CTR1_COUNT >/dev/null
 	$SYSCTL -w dev.oprofile.0.1.kernel=$CTR1_KERNEL >/dev/null
 	$SYSCTL -w dev.oprofile.0.1.user=$CTR1_USER >/dev/null
+	$SYSCTL -w dev.oprofile.0.1.edge_detect=$CTR1_EDGE_DETECT >/dev/null
 	$SYSCTL -w dev.oprofile.0.1.unit_mask=$CTR1_UM >/dev/null
 	$SYSCTL -w dev.oprofile.0.1.event=$CTR1_EVENT_VAL >/dev/null
 fi
@@ -406,19 +425,19 @@ OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$USE_PII --ignore-myself=$IGNORE_MYS
 	--device-file=$DEVICE_FILE --kernel-only=$KERNEL_ONLY \
 	--hash-map-device-file=$HASH_MAP_DEVICE_FILE --vmlinux=$VMLINUX"
 
-if [ "$CTR0_EVENT" != "" ]; then
-	OPD_ARGS="$OPD_ARGS --ctr0-event=$CTR0_EVENT --ctr0-unit-mask=$CTR0_UM"
-fi
-
-if [ "$CTR1_EVENT" != "" ]; then
-	OPD_ARGS="$OPD_ARGS --ctr1-event=$CTR1_EVENT --ctr1-unit-mask=$CTR1_UM"
-fi
 if [ "$MAP_FILE" != "" ]; then
 	OPD_ARGS="$OPD_ARGS --map-file=$MAP_FILE"
 fi
 
 if [ "$VERBOSE" = "1" ]; then
 	OPD_ARGS="$OPD_ARGS --verbose"
+fi
+
+cpu_speed=`grep "cpu MHz" /proc/cpuinfo | awk -F": " '{print $2}'`
+OPD_ARGS="$OPD_ARGS --cpu-speed=$cpu_speed"
+
+if [ "$VERBOSE" = "1" ]; then
+	echo "cpu speed (estimation) : $cpu_speed"
 fi
 
 oprofiled $OPD_ARGS

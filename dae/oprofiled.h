@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.23 2001/04/06 14:16:46 movement Exp $ */
+/* $Id: oprofiled.h,v 1.24 2001/06/22 01:17:39 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -96,8 +96,9 @@ enum {  OPD_KERNEL, /* nr. kernel samples */
 #define OP_CTR0_PIII_EVENT     0x100
 #define OP_CTR1_PIII_EVENT     0x200
 
+/* FIXME : Carefull these are also present in pp/oprofpp.h */
 #define OPD_MAGIC 0xdeb6
-#define OPD_VERSION 0x2
+#define OPD_VERSION 0x3
 
 /* at the end of the sample files */
 struct opd_footer {
@@ -109,6 +110,12 @@ struct opd_footer {
 	u8 ctr0_um;
 	u8 ctr1_um;
 	char md5sum[16];
+	u32 ctr0_count;
+	u32 ctr1_count;
+	/* Set to 0.0 if not available */
+	double cpu_speed;
+	/* binary compatibility reserve */
+	u32  reserved[32];
 };
 
 struct opd_image {
@@ -145,7 +152,7 @@ struct opd_proc {
 	struct opd_proc *next;
 };
 
-int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um, int p2, u8 *ctr0_t, u8 *ctr1_t);
+int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc);
 
 void opd_get_ascii_procs(void);
 void opd_init_images(void);

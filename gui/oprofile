@@ -15,10 +15,13 @@ global event_type_list
 global bit_mask_option_0 bit_mask_option_1
 global counter_0 counter_1
 global usr_count_0 kernel_count_0 usr_count_1 kernel_count 1
+global ctr_edge_detect_0 ctr_edge_detect_1
 global vmlinux map_file
 
 set bit_mask_option_0 0
 set bit_mask_option_1 0
+set ctr_edge_detect_0 0
+set ctr_edge_detect_1 0
 set vmlinux "/boot/vmlinuz-2.4.3"
 set map_file "/boot/System-2.4.3.map"
 
@@ -26,7 +29,7 @@ set map_file "/boot/System-2.4.3.map"
 
 # item_list: { name text }*
 proc create_checkbutton_group { parent_name side width item_list } {
-    foreach i $item_list {
+foreach i $item_list {
 	set button_name $parent_name[lindex $i 0]
 	set button_text [lindex $i 1]
 	checkbutton $button_name -text $button_text -width $width
@@ -150,6 +153,7 @@ proc onStartProfiling {} {
     global event_type_0 event_type_1
     global counter_0 counter_1
     global kernel_count_0 usr_count_0 kernel_count_1 usr_count_1
+    global ctr_edge_detect_0 ctr_edge_detect_1
     global bit_mask_option_0 bit_mask_option_1
     global processor_type
     global vmlinux map_file
@@ -173,11 +177,13 @@ proc onStartProfiling {} {
 	    --ctr0-kernel=$kernel_count_0 \
 	    --ctr0-user=$usr_count_0 \
 	    --ctr0-unit-mask=$bit_mask_option_0 \
+	    --ctr0-edge-detect=$ctr_edge_detect_0 \
 	    --ctr1-event=$event_type_1 \
 	    --ctr1-count=$counter_1 \
 	    --ctr1-kernel=$kernel_count_1 \
 	    --ctr1-user=$usr_count_1 \
 	    --ctr1-unit-mask=$bit_mask_option_1 \
+	    --ctr1-edge-detect=$ctr_edge_detect_1 \
 	    --use-cpu=$processor_type \
 	    --map-file=$map_file \
 	    --vmlinux=$vmlinux > /dev/stdout
@@ -188,6 +194,7 @@ proc onStartProfiling {} {
 	    --ctr0-kernel=$kernel_count_0 \
 	    --ctr0-user=$usr_count_0 \
 	    --ctr0-unit-mask=$bit_mask_option_0 \
+	    --ctr0-edge-detect=$ctr_edge_detect_0 \
 	    --use-cpu=$processor_type \
 	    --map-file=$map_file \
 	    --vmlinux=$vmlinux > /dev/stdout
@@ -198,6 +205,7 @@ proc onStartProfiling {} {
 	    --ctr1-kernel=$kernel_count_1 \
 	    --ctr1-user=$usr_count_1 \
 	    --ctr1-unit-mask=$bit_mask_option_1 \
+	    --ctr1-edge-detect=$ctr_edge_detect_1 \
 	    --use-cpu=$processor_type \
 	    --map-file=$map_file \
 	    --vmlinux=$vmlinux > /dev/stdout
@@ -499,17 +507,25 @@ proc create_event_frame { parent counter processor_type } {
     set event_type_$counter DISABLED
     set old_event_type_$counter ""
 
+    # this creation order is required to have a correct layout of the button.
+
+    create_checkbutton_group  $f_counter. bottom 0 {
+	{ edge_detect "Edge detect" }
+    }
+
     create_checkbutton_group  $f_counter. left 0 {
 	{ kernel_count "OS ring count"  }
 	{ usr_count "USR ring count" }
     }
 
-    global usr_count_$counter kernel_count_$counter
+    global usr_count_$counter kernel_count_$counter ctr_edge_detect_$counter
     set usr_count_$counter 1
     set kernel_count_$counter 0
+    set ctr_edge_detect_$counter 0
 
     $f_counter.kernel_count configure -variable kernel_count_$counter
     $f_counter.usr_count configure -variable usr_count_$counter
+    $f_counter.edge_detect configure -variable ctr_edge_detect_$counter
 
     set f_unit_mask .f_unit_mask.f_unit_mask_$counter
     frame $f_unit_mask
@@ -706,7 +722,7 @@ set event_type_list {
     { L2_ADS 7 3 "Number of L2 address strobes" }
     { L2_DBUS_BUSY 7 3 "Number of cycles data bus was busy" }
     { L2_DMUS_BUSY_RD 7 3 "Cycles data bus was busy in xfer from L2 to cpu" }
-    { BUS_DRDY_CLOCKS 7 3 "Number of clocs DRDY is asserted" 
+    { BUS_DRDY_CLOCKS 7 3 "Number of clocks DRDY is asserted" 
 	exclusive 32
 	{
 	    { 0 "self-generated transactions" }

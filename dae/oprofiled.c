@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.30 2001/06/04 00:46:11 movement Exp $ */
+/* $Id: oprofiled.c,v 1.31 2001/06/22 01:17:39 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -20,18 +20,15 @@
 extern struct opd_footer footer;
 
 static int showvers;
-int verbose; 
+int verbose;
 
 int kernel_only;
-static u8 ctr0_type_val;
-static u8 ctr1_type_val;
-/* unit masks used for the samples file output */
-static int ctr0_um;
-static int ctr1_um;
+/* Unfortunately popt does not have, on many versions, the POPT_ARG_DOUBLE type
+ * so I must first store it as a string. */
+static const char *cpu_speed_str;
+static double cpu_speed;
 static int cpu_type;
 static int ignore_myself;
-static char *ctr0_type="INST_RETIRED";
-static char *ctr1_type="";
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static char *opd_dir="/var/opd/";
 static char *logfilename="oprofiled.log";
@@ -52,10 +49,6 @@ unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 
 static struct poptOption options[] = {
 	{ "buffer-size", 'b', POPT_ARG_INT, &opd_buf_size, 0, "nr. of entries in kernel buffer", "num", },
-	{ "ctr0-unit-mask", 'u', POPT_ARG_INT, &ctr0_um, 0, "unit mask for ctr0", "val", },
-	{ "ctr1-unit-mask", 't', POPT_ARG_INT, &ctr1_um, 0, "unit mask for ctr1", "val", },
-	{ "ctr0-event", '0', POPT_ARG_STRING, &ctr0_type, 0, "symbolic event name for ctr0", "name", },
-	{ "ctr1-event", '1', POPT_ARG_STRING, &ctr1_type, 0, "symbolic event name for ctr1", "name", },
 	{ "use-cpu", 'p', POPT_ARG_INT, &cpu_type, 0, "0 for PPro, 1 for PII, 2 for PIII", "[0|1|2]" },
 	{ "ignore-myself", 'm', POPT_ARG_INT, &ignore_myself, 0, "ignore samples of oprofile driver", "[0|1]"},
 	{ "log-file", 'l', POPT_ARG_STRING, &logfilename, 0, "log file", "file", },
@@ -66,6 +59,7 @@ static struct poptOption options[] = {
 	{ "map-file", 'f', POPT_ARG_STRING, &systemmapfilename, 0, "System.map for running kernel file", "file", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "kernel-only", 'o', POPT_ARG_INT, &kernel_only, 0, "profile only kernel", "file", },
+	{ "cpu-speed", 0, POPT_ARG_STRING, &cpu_speed_str, 0, "cpu speed (MHz)", "cpu_mhz", },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
 	POPT_AUTOHELP
@@ -190,24 +184,27 @@ static void opd_options(int argc, char const *argv[])
 		exit(1);
 	}
 
-	ret = op_check_events_str(ctr0_type, ctr1_type, (u8)ctr0_um, (u8)ctr1_um, cpu_type, &ctr0_type_val, &ctr1_type_val);
+	ret = op_check_events(footer.ctr0_type_val, footer.ctr1_type_val, footer.ctr0_um, footer.ctr1_um, cpu_type);
 
-        if (ret&OP_CTR0_NOT_FOUND) fprintf(stderr, "oprofiled: ctr0: %s: no such event\n", ctr0_type);
-        if (ret&OP_CTR1_NOT_FOUND) fprintf(stderr, "oprofiled: ctr1: %s: no such event\n", ctr1_type);
-        if (ret&OP_CTR0_NO_UM) fprintf(stderr, "oprofiled: ctr0: 0x%.2x: invalid unit mask\n", ctr0_um);
-        if (ret&OP_CTR1_NO_UM) fprintf(stderr, "oprofiled: ctr1: 0x%.2x: invalid unit mask\n", ctr1_um);
-        if (ret&OP_CTR0_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr0: %s: can't count event\n", ctr0_type);
-        if (ret&OP_CTR1_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr1: %s: can't count event\n", ctr1_type);
-        if (ret&OP_CTR0_PII_EVENT) fprintf(stderr, "oprofiled: ctr0: %s: event only available on PII\n", ctr0_type);
-        if (ret&OP_CTR1_PII_EVENT) fprintf(stderr, "oprofiled: ctr1: %s: event only available on PII\n", ctr1_type);
-        if (ret&OP_CTR0_PIII_EVENT) fprintf(stderr, "oprofiled: ctr0: %s: event only available on PIII\n", ctr0_type);
-        if (ret&OP_CTR1_PIII_EVENT) fprintf(stderr, "oprofiled: ctr1: %s: event only available on PIII\n", ctr1_type);
+        if (ret&OP_CTR0_NOT_FOUND) fprintf(stderr, "oprofiled: ctr0: %d: no such event\n",footer. ctr0_type_val);
+        if (ret&OP_CTR1_NOT_FOUND) fprintf(stderr, "oprofiled: ctr1: %d: no such event\n", footer.ctr1_type_val);
+        if (ret&OP_CTR0_NO_UM) fprintf(stderr, "oprofiled: ctr0: 0x%.2x: invalid unit mask\n", footer.ctr0_um);
+        if (ret&OP_CTR1_NO_UM) fprintf(stderr, "oprofiled: ctr1: 0x%.2x: invalid unit mask\n", footer.ctr1_um);
+        if (ret&OP_CTR0_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr0: %d: can't count event\n", footer.ctr0_type_val);
+        if (ret&OP_CTR1_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr1: %d: can't count event\n", footer.ctr1_type_val);
+        if (ret&OP_CTR0_PII_EVENT) fprintf(stderr, "oprofiled: ctr0: %d: event only available on PII\n", footer.ctr0_type_val);
+        if (ret&OP_CTR1_PII_EVENT) fprintf(stderr, "oprofiled: ctr1: %d: event only available on PII\n", footer.ctr1_type_val);
+        if (ret&OP_CTR0_PIII_EVENT) fprintf(stderr, "oprofiled: ctr0: %d: event only available on PIII\n", footer.ctr0_type_val);
+        if (ret&OP_CTR1_PIII_EVENT) fprintf(stderr, "oprofiled: ctr1: %d: event only available on PIII\n", footer.ctr1_type_val);
 
 	if (ret!=OP_EVENTS_OK) {
 		poptPrintHelp(optcon, stderr, 0);
 		exit(1);
 	}
 
+	if (cpu_speed_str && strlen(cpu_speed_str)) {
+		sscanf(cpu_speed_str, "%lf", &cpu_speed);
+	}
 }
 
 /**
@@ -397,12 +394,17 @@ int main(int argc, char const *argv[])
 	struct sigaction act;
 	int i;
 
-	opd_options(argc, argv);
+	footer.ctr0_type_val = opd_read_int_from_file("/proc/sys/dev/oprofile/0/0/event");
+	footer.ctr0_um = (u8) opd_read_int_from_file("/proc/sys/dev/oprofile/0/0/unit_mask");
+	footer.ctr1_type_val = opd_read_int_from_file("/proc/sys/dev/oprofile/0/1/event");
+	footer.ctr1_um = (u8) opd_read_int_from_file("/proc/sys/dev/oprofile/0/1/unit_mask");
+	
+	footer.cpu_speed = cpu_speed;
 
-	footer.ctr0_type_val = ctr0_type_val;
-	footer.ctr0_um = (u8)ctr0_um;
-	footer.ctr1_type_val = ctr1_type_val;
-	footer.ctr1_um = (u8)ctr1_um;
+	footer.ctr0_count = opd_read_int_from_file("/proc/sys/dev/oprofile/0/0/count");
+	footer.ctr1_count = opd_read_int_from_file("/proc/sys/dev/oprofile/0/1/count");
+
+	opd_options(argc, argv);
 
 	/* one extra for the "how many" header */
 	opd_buf_bytesize=(opd_buf_size+1)*sizeof(struct op_sample);

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.53 2001/06/01 22:57:07 movement Exp $ */
+/* $Id: opd_proc.c,v 1.54 2001/06/22 01:17:38 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -33,17 +33,13 @@ extern int verbose;
 extern unsigned long opd_stats[];
 extern char *vmlinux;
 extern char *smpdir;
-extern u8 ctr0_type_val;
-extern u8 ctr1_type_val;
-extern int ctr0_um;
-extern int ctr1_um;
 extern struct op_hash *hashmap;
 
 /* hash of process lists */
 static struct opd_proc *opd_procs[OPD_MAX_PROC_HASH];
 
 struct opd_footer footer = { OPD_MAGIC, OPD_VERSION, 
-	0, 0, 0, 0, 0, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0} };
+	0, 0, 0, 0, 0, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, 0, 0, 0.0, { 0 } };
 
 /* image structure */
 static struct opd_image *opd_images;

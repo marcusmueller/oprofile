@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.6 2001/01/21 01:11:56 moz Exp $ */
+/* $Id: opd_util.h,v 1.7 2001/06/22 01:17:39 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -53,6 +53,7 @@ u16 opd_read_u16_he(FILE *fp);
 u32 opd_read_u32_he(FILE *fp);
 u16 opd_read_u16_ne(FILE *fp);
 u32 opd_read_u32_ne(FILE *fp);
+u32 opd_read_int_from_file(const char *filename);
 #ifdef OPD_GZIP
 #define opd_try_open_file_z(n,m) opd_do_open_file_z((n),(m),0)
 #define opd_open_file_z(n,m) opd_do_open_file_z((n),(m),1)

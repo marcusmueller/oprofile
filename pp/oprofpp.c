@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.29 2001/06/09 02:27:59 movement Exp $ */
+/* $Id: oprofpp.c,v 1.30 2001/06/22 01:17:39 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -824,15 +824,17 @@ int main(int argc, char const *argv[])
  
 	if (footer.ctr0_type_val) {
 		op_get_event_desc(footer.ctr0_type_val, footer.ctr0_um, &ctr0_name, &ctr0_desc, &ctr0_um_desc);
-		printf("Counter 0 counted %s events (%s) with a unit mask of 0x%.2x (%s)\n",ctr0_name, ctr0_desc, 
-			 footer.ctr0_um, ctr0_um_desc ? ctr0_um_desc : "Not set");
+		printf("Counter 0 counted %s events (%s) with a unit mask of 0x%.2x (%s) count %u\n",ctr0_name, ctr0_desc, 
+			 footer.ctr0_um, ctr0_um_desc ? ctr0_um_desc : "Not set", footer.ctr0_count);
 	}
 
 	if (footer.ctr1_type_val) {
 		op_get_event_desc(footer.ctr1_type_val, footer.ctr1_um, &ctr1_name, &ctr1_desc, &ctr1_um_desc);
-		printf("Counter 1 counted %s events (%s) with a unit mask of 0x%.2x (%s)\n",ctr1_name, ctr1_desc, 
-			 footer.ctr1_um, ctr1_um_desc ? ctr1_um_desc : "Not set");
+		printf("Counter 1 counted %s events (%s) with a unit mask of 0x%.2x (%s) count %u\n",ctr1_name, ctr1_desc, 
+			 footer.ctr1_um, ctr1_um_desc ? ctr1_um_desc : "Not set", footer.ctr1_count);
 	}
+
+	printf("Cpu speed was (MHz estimation) : %f\n", footer.cpu_speed);
  
 	fd = open(samplefile, O_RDONLY);
 

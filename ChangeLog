@@ -1,5 +1,31 @@
 2001-06-22  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprofile.c: actually call smp_apic_restore() on UP
+
+	* dae/op_start: don't remove the module immediately after
+	  inserting it !
+ 
+2001-06-22  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/oprofiled.h, pp/oprofpp.h: change the opd_footer struct.
+	  Bump OPD_VERSION to reflect the file format change.
+	* pp/oprofpp.c: reflect the above change
+	* dae/oprofiled.c: reflect the above change, many options supressed
+	  because setup is read from the /proc/sys/dev/oprofile files.
+	* dae/opd_proc: suppress some "extern variable" which no longer exist.
+	* dae/op_start: reflect the above change
+
+2001-06-22  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/op_start: add --ctr[0|1]-edge-detect
+	* gui/oprofile: add edge detect stuff
+	* oprofile.c: add edge-detect stuff, the edge-detect is an
+	  experimental feature which do not work actually (no effect for now).
+	  Because this is experimental no documentation are provided on this
+	  option.
+
+2001-06-22  John Levon  <moz@compsoc.man.ac.uk>
+
 	* configure.in:
 	* dae/op_stop:
 	* doc/oprofile.sgml:
