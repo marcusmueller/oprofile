@@ -597,7 +597,7 @@ static void p4_check_ctrs(unsigned int const cpu,
 
 	for (i = 0; i < num_counters; ++i) {
 		
-		if (!sysctl.ctr[i].event) 
+		if (!sysctl.ctr[i].enabled) 
 			continue;
 
 		/* 

@@ -188,7 +188,7 @@ pmu_setup(void *dummy)
 
 	/* setup each counter */
 	for (ii = 0 ; ii < op_nr_counters ; ++ii) {
-		if (sysctl.ctr[ii].event) {
+		if (sysctl.ctr[ii].enabled) {
 			pmc_val = 0;
 
 			set_pmd_neg(sysctl.ctr[ii].count, ii);

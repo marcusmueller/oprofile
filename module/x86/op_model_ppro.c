@@ -62,7 +62,7 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
 
 	/* enable active counters */
 	for (i = 0; i < NUM_COUNTERS; ++i) {
-		if (sysctl.ctr[i].event) {
+		if (sysctl.ctr[i].enabled) {
 
 			CTR_WRITE(sysctl.ctr[i].count, msrs, i);
 

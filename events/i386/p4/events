@@ -1,5 +1,8 @@
 # Pentium IV events
 #
+# NOTE: events cannot currently be 0x00 due to event binding checks in
+# driver
+#
 event:0x1d counters:0,4 um:global_power_events minimum:3000 name:GLOBAL_POWER_EVENTS : time during which processor is not stopped
 event:0x01 counters:3,7 um:branch_retired minimum:3000 name:BRANCH_RETIRED : retired branches
 event:0x02 counters:3,7 um:mispred_branch_retired minimum:3000 name:MISPRED_BRANCH_RETIRED : retired mispredicted branches

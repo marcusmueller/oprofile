@@ -66,7 +66,7 @@ static void athlon_setup_ctrs(struct op_msrs const * const msrs)
 
 	/* enable active counters */
 	for (i = 0; i < NUM_COUNTERS; ++i) {
-		if (sysctl.ctr[i].event) {
+		if (sysctl.ctr[i].enabled) {
 
 			CTR_WRITE(sysctl.ctr[i].count, msrs, i);
 
@@ -90,7 +90,7 @@ static void athlon_check_ctrs(uint const cpu,
 	uint low, high;
 	int i;
 	for (i = 0 ; i < NUM_COUNTERS; ++i) {
-		if (sysctl.ctr[i].event) {
+		if (sysctl.ctr[i].enabled) {
 			CTR_READ(low, high, msrs, i);
 			if (CTR_OVERFLOWED(low)) {
 				op_do_profile(cpu, instruction_pointer(regs), IRQ_ENABLED(regs), i);
@@ -106,7 +106,7 @@ static void athlon_start(struct op_msrs const * const msrs)
 	uint low, high;
 	int i;
 	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
-		if (sysctl.ctr[i].count) {
+		if (sysctl.ctr[i].enabled) {
 			CTRL_READ(low, high, msrs, i);
 			CTRL_SET_ACTIVE(low);
 			CTRL_WRITE(low, high, msrs, i);
@@ -120,7 +120,7 @@ static void athlon_stop(struct op_msrs const * const msrs)
 	uint low,high;
 	int i;
 	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
-		if (sysctl.ctr[i].count) {
+		if (sysctl.ctr[i].enabled) {
 			CTRL_READ(low, high, msrs, i);
 			CTRL_SET_INACTIVE(low);
 			CTRL_WRITE(low, high, msrs, i);

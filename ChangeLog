@@ -1,3 +1,14 @@
+2004-06-21  John Levon  <levon@movementarian.org>
+
+	* events/i386/p4/events:
+	* events/i386/p4-ht/events:
+	* module/x86/op_model_athlon.c:
+	* module/x86/op_model_p4.c:
+	* module/x86/op_model_ppro.c:
+	* module/ia64/op_pmu.c: fix bug 964097 (event
+	code of 0x00 doesn't work) by relying consistently
+	on "enabled" not "event"
+
 2004-05-29  John Levon  <levon@movementarian.org>
 
 	* libdb/tests/Makefile.am: fix build
