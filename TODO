@@ -31,7 +31,10 @@ Before 1.0 little stuff
  o restore stream state when using persistant formating flag like:
      s/ostream os; os << hex << foo/os << hex << foo << dec/
  o implement pp_interface alias
- o lib-image: is broken $ opreport /usr/local/bin/oprofiled "lib-image:*libc*"
+ o lib-image: and image: behavior depend on --separate=, if --separate=library
+  opreport "lib-image:*libc*" --merge=lib works but not
+  opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
+  --separate==none. Must we take care ?
  o look if we must remove help_str support from libopt++
  o we show a header but not column headers for image report
  o option xxx and negated option --no-xxx: we can hide them in --help and
