@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.96 2001/10/14 19:35:13 movement Exp $ */
+/* $Id: oprofile.c,v 1.97 2001/10/16 23:13:22 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -29,11 +29,11 @@ MODULE_PARM(allow_unload, "i");
 MODULE_PARM_DESC(allow_unload, "Allow module to be unloaded on SMP");
 static int allow_unload;
 #endif
- 
+
 /* sysctl settables */
 static int op_hash_size=OP_DEFAULT_HASH_SIZE;
 static int op_buf_size=OP_DEFAULT_BUF_SIZE;
-// FIXME: make sysctl settable !! 
+// FIXME: make sysctl settable !!
 static int op_note_size=OP_DEFAULT_NOTE_SIZE;
 static int sysctl_dump;
 static int kernel_only;
@@ -56,7 +56,7 @@ uint op_nr_counters = 2;
 
 /* whether we enable for each counter (athlon) or globally (intel) */
 int separate_running_bit;
- 
+
 static u32 prof_on __cacheline_aligned;
 
 static int op_major;
@@ -81,25 +81,25 @@ inline static int need_wakeup(uint cpu, struct _oprof_data * data)
 {
 	return data->nextbuf >= (data->buf_size - OP_PRE_WATERMARK) && !oprof_ready[cpu];
 }
- 
+
 inline static void next_sample(struct _oprof_data * data)
 {
 	if (unlikely(++data->nextbuf == data->buf_size))
 		data->nextbuf = 0;
 }
- 
+
 inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const struct op_sample *ops, const struct pt_regs *regs)
 {
 	memcpy(&data->buffer[data->nextbuf], ops, sizeof(struct op_sample));
 	next_sample(data);
 	if (likely(!need_wakeup(cpu, data)))
 		return;
- 
+
 	/* locking rationale :
 	 *
 	 * other CPUs are not a race concern since we synch on oprof_wait->lock.
 	 *
-	 * for the current CPU, we might have interrupted another user of e.g. 
+	 * for the current CPU, we might have interrupted another user of e.g.
 	 * runqueue_lock, deadlocking on SMP and racing on UP. So we check that IRQs
 	 * were not disabled (corresponding to the irqsave/restores in __wake_up()
 	 *
@@ -127,7 +127,7 @@ inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, in
 
 inline static void op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
 {
-	struct _oprof_data * data = &oprof_data[cpu]; 
+	struct _oprof_data * data = &oprof_data[cpu];
 	uint h = op_hash(regs->eip, current->pid, ctr);
 	uint i;
 
@@ -162,7 +162,7 @@ static void op_check_ctr(uint cpu, struct pt_regs *regs, int ctr)
 	if (likely(ctr_overflowed(l))) {
 		op_do_profile(cpu, regs, ctr);
 		op_irq_stats[cpu]++;
-	} 
+	}
 }
 
 asmlinkage void op_do_nmi(struct pt_regs *regs)
@@ -202,26 +202,6 @@ static void pmc_setup(void *dummy)
 	uint low, high;
 	int i;
 
-	// first, let's use the right MSRs
-	switch (cpu_type) {
-		case CPU_ATHLON:
-			eventsel_msr[0] = MSR_K7_PERFCTL0;
-			eventsel_msr[1] = MSR_K7_PERFCTL1;
-			eventsel_msr[2] = MSR_K7_PERFCTL2;
-			eventsel_msr[3] = MSR_K7_PERFCTL3;
-			perfctr_msr[0] = MSR_K7_PERFCTR0;
-			perfctr_msr[1] = MSR_K7_PERFCTR1;
-			perfctr_msr[2] = MSR_K7_PERFCTR2;
-			perfctr_msr[3] = MSR_K7_PERFCTR3;
-			break;
-		default:
-			eventsel_msr[0] = MSR_IA32_EVNTSEL0;
-			eventsel_msr[1] = MSR_IA32_EVNTSEL1;
-			perfctr_msr[0] = MSR_IA32_PERFCTR0;
-			perfctr_msr[1] = MSR_IA32_PERFCTR1;
-			break;
-	}
-
 	/* IA Vol. 3 Figure 15-3 */
 
 	/* Stop and clear all counter: IA32 use bit 22 of eventsel_msr0 to
@@ -243,7 +223,7 @@ static void pmc_setup(void *dummy)
 			low &= 1 << 21;  /* do not touch the reserved bit */
 			set_perfctr(op_ctr_count[i], i);
 
-			pmc_fill_in(&low, op_ctr_kernel[i], op_ctr_user[i], 
+			pmc_fill_in(&low, op_ctr_kernel[i], op_ctr_user[i],
 				op_ctr_val[i], op_ctr_um[i]);
 
 			wrmsr(eventsel_msr[i], low, high);
@@ -394,14 +374,14 @@ static int oprof_note_read(char *buf, size_t count, loff_t *ppos)
 	spin_lock(&note_lock);
 
 	num = note_pos;
- 
+
 	count = note_pos * sizeof(struct op_note);
 
 	if (count)
 		memcpy(mybuf, note_buffer, count);
 
 	note_pos = 0;
- 
+
 	spin_unlock(&note_lock);
 
 	if (count && copy_to_user(buf, mybuf, count))
@@ -426,10 +406,10 @@ static int oprof_note_release(void)
 	clear_bit(0, &oprof_note_opened);
 	return 0;
 }
- 
+
 static int check_buffer_amount(struct _oprof_data * data)
 {
-	int size = data->buf_size; 
+	int size = data->buf_size;
 	int num = data->nextbuf;
 	if (num < size - OP_PRE_WATERMARK && oprof_ready[cpu_num] != 2) {
 		printk(KERN_ERR "oprofile: Detected overflow of size %d. You must increase the "
@@ -478,7 +458,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 
 	/* buffer might have overflowed */
 	num = check_buffer_amount(&oprof_data[cpu_num]);
- 
+
 	oprof_ready[cpu_num] = 0;
 
 	count = num * sizeof(struct op_sample);
@@ -614,9 +594,9 @@ static int parms_ok(void)
 	struct _oprof_data *data;
 	int enabled = 0;
 
-	op_check_range(op_hash_size, 256, 262144, 
+	op_check_range(op_hash_size, 256, 262144,
 		"op_hash_size value %d not in range (%d %d)\n");
-	op_check_range(op_buf_size, OP_PRE_WATERMARK + 1024, 1048576, 
+	op_check_range(op_buf_size, OP_PRE_WATERMARK + 1024, 1048576,
 		"op_buf_size value %d not in range (%d %d)\n");
 	op_check_range(op_note_size, OP_PRE_NOTE_WATERMARK + 1024, 1048576,
 		"op_note_size value %d not in range (%d %d)\n");
@@ -630,10 +610,10 @@ static int parms_ok(void)
 					"set for counter %d\n", i);
 				return 0;
 			}
-			op_check_range(op_ctr_count[i], min_count, 
-				OP_MAX_PERF_COUNT, 
+			op_check_range(op_ctr_count[i], min_count,
+				OP_MAX_PERF_COUNT,
 				"ctr count value %d not in range (%d %ld)\n");
- 
+
 			enabled = 1;
 		}
 	}
@@ -717,7 +697,7 @@ static int oprof_start(void)
 
 	smp_call_function(pmc_start, NULL, 0, 1);
 	pmc_start(NULL);
- 
+
 	prof_on = 1;
 
 out:
@@ -765,7 +745,7 @@ static int oprof_stop(void)
 
 	spin_unlock(&note_lock);
 	spin_unlock(&map_lock);
-	err = 0; 
+	err = 0;
 
 out:
 	up(&sysctlsem);
@@ -864,7 +844,7 @@ static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *
 		err = proc_dointvec(table, write, filp, buffer, lenp);
 		goto out;
 	}
- 
+
 	/* clean out the hash table as far as possible */
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		struct _oprof_data * data = &oprof_data[cpu];
@@ -897,8 +877,8 @@ static ctl_table oprof_table[] = {
 	{ 1, "pid_filter", &pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pgrp_filter", &pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "nr_interrupts", &nr_interrupts, sizeof(int), 0400, NULL, &get_nr_interrupts, NULL, },
-	{ 0, }, { 0, }, { 0, }, { 0, }, 
-	{ 0, }, 
+	{ 0, }, { 0, }, { 0, }, { 0, },
+	{ 0, },
 };
 
 static ctl_table oprof_root[] = {
@@ -981,17 +961,46 @@ static int can_unload(void)
 	return can;
 }
 
+static uint saved_perfctr_low[OP_MAX_COUNTERS];
+static uint saved_perfctr_high[OP_MAX_COUNTERS];
+static uint saved_eventsel_low[OP_MAX_COUNTERS];
+static uint saved_eventsel_high[OP_MAX_COUNTERS];
+ 
 int __init oprof_init(void)
 {
 	int err;
+	int i;
 
 	printk(KERN_INFO "%s\n", op_version);
 
-	/* FIXME: we should save out the old values for the pmcs, then put them back
-	 * upon exit. This way the NMI oopser can work after unloading oprofile */ 
- 
 	find_intel_smp();
 
+	/* first, let's use the right MSRs */
+	switch (cpu_type) {
+		case CPU_ATHLON:
+			eventsel_msr[0] = MSR_K7_PERFCTL0;
+			eventsel_msr[1] = MSR_K7_PERFCTL1;
+			eventsel_msr[2] = MSR_K7_PERFCTL2;
+			eventsel_msr[3] = MSR_K7_PERFCTL3;
+			perfctr_msr[0] = MSR_K7_PERFCTR0;
+			perfctr_msr[1] = MSR_K7_PERFCTR1;
+			perfctr_msr[2] = MSR_K7_PERFCTR2;
+			perfctr_msr[3] = MSR_K7_PERFCTR3;
+			break;
+		default:
+			eventsel_msr[0] = MSR_IA32_EVNTSEL0;
+			eventsel_msr[1] = MSR_IA32_EVNTSEL1;
+			perfctr_msr[0] = MSR_IA32_PERFCTR0;
+			perfctr_msr[1] = MSR_IA32_PERFCTR1;
+			break;
+	}
+
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		rdmsr(eventsel_msr[i], saved_eventsel_low[i], saved_eventsel_high[i]);
+		rdmsr(perfctr_msr[i], saved_perfctr_low[i], saved_perfctr_high[i]);
+	}
+
+	/* setup each counter */
 	if ((err = apic_setup()))
 		return err;
 
@@ -1007,7 +1016,7 @@ int __init oprof_init(void)
 
 	err = oprof_init_hashmap();
 	if (err < 0) {
-		printk("oprofile: couldn't allocate hash map !\n"); 
+		printk("oprofile: couldn't allocate hash map !\n");
 		unregister_chrdev(op_major, "oprof");
 		goto out_err2;
 	}
@@ -1017,7 +1026,7 @@ int __init oprof_init(void)
 
 	/* do this now so we don't have to track save/restores later */
 	op_save_syscalls();
- 
+
 	printk("oprofile: oprofile loaded, major %u\n", op_major);
 	return 0;
 
@@ -1031,12 +1040,22 @@ out_err:
 
 void __exit oprof_exit(void)
 {
+	int i;
+
 	oprof_free_hashmap();
 	unregister_chrdev(op_major, "oprof");
 	smp_call_function(lvtpc_apic_restore, NULL, 0, 1);
 	lvtpc_apic_restore(NULL);
 	cleanup_sysctl();
-	// currently no need to reset APIC state
+
+	/* currently no need to reset APIC state */
+
+	/* bit 21 is reserved */
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		wrmsr(eventsel_msr[i], saved_eventsel_low[i] & ~(1<<21), saved_eventsel_high[i]);
+		wrmsr(perfctr_msr[i], saved_perfctr_low[i], saved_perfctr_high[i]);
+	}
+
 }
 
 /*
