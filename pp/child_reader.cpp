@@ -24,6 +24,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <iostream>
 
 #include <stdio.h>
 
@@ -135,7 +136,7 @@ bool ChildReader::block_read()
 	FD_SET(fd1, &read_fs);
 	FD_SET(fd2, &read_fs);
 
-	if (select(max(fd1, fd2) + 1, &read_fs, 0, 0, 0) >= 0) {
+	if (select(std::max(fd1, fd2) + 1, &read_fs, 0, 0, 0) >= 0) {
 		if (FD_ISSET(fd1, &read_fs))
 			end1 = read(fd1, buf1, sizeof(buf1));
 
@@ -194,7 +195,7 @@ bool ChildReader::getline(string & result)
 	return end1 != 0 || result.length() != 0;
 }
 
-bool ChildReader::get_data(ostream & out, ostream & err)
+bool ChildReader::get_data(std::ostream & out, std::ostream & err)
 {
 	bool ret = true;
 	while (ret) {

@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.52 2001/11/07 01:40:28 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.53 2001/11/07 19:43:46 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -200,6 +200,8 @@ LIBS="$X_PRE_LIBS $LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"
  
 # C++ tests
  
+AC_LANG_CPLUSPLUS
+
 QT2_DO_IT_ALL
  
 AC_MSG_CHECKING("popt prototype")

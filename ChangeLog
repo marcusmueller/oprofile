@@ -1,5 +1,13 @@
 2001-11-07  John Levon  <moz@compsoc.man.ac.uk>
 
+	* acinclude.m4:
+	* configure.in: fixes for configuration when Qt2 not found
+
+	* child_reader.h:
+	* child_reader.cpp: compile with gcc 3.0
+ 
+2001-11-07  John Levon  <moz@compsoc.man.ac.uk>
+
 	* configure.in: bump to 0.0.7
  
 2001-11-07  John Levon  <moz@compsoc.man.ac.uk>

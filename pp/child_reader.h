@@ -56,7 +56,7 @@ public:
 	bool getline(std::string & result);
 
 	/// fill out / err with the stdout / stderr of the child process.
-	bool get_data(ostream & out, ostream & err);
+	bool get_data(std::ostream & out, std::ostream & err);
 
 	/// rather to rely on dtor to wait for the termination of the child you
 	/// can use terminate_process() to get the return code of the child
