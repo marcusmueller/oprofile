@@ -1,3 +1,8 @@
+2002-11-11  John Levon  <levon@movementarian.org>
+
+	* dae/Makefile.am:
+	* daemon/Makefile.am: hack to fix --enable-abi
+ 
 2002-11-10  John Levon  <levon@movementarian.org>
 
 	* configure.in:
