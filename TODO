@@ -20,6 +20,8 @@ o can we provide a small setuid helper for starting/stopping/flushing the profil
  
 o remove oprofile thread. already exists in CVS branch BRANCH_NO_THREAD
 
+o determine where we need ctx_sw_on/off to prevent pre-emption
+ 
 o modify mapping to queue maps on a separate device. the daemon always
   applys all maps immediately before doing the samples
 

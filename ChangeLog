@@ -1,3 +1,7 @@
+2001-09-25  John Levon  <moz@compsoc.man.ac.uk>
+
+	* gui/oprof_start.cpp: fix silly bug
+ 
 2001-09-24  John Levon  <moz@compsoc.man.ac.uk>
 
 	* pp/opf_filter.cpp: "fix" compile error

@@ -98,7 +98,7 @@ oprof_start::oprof_start()
  
 	// build from stuff in op_events.c the description of events.
 	for (uint i = 0 ; i < op_nr_events ; ++i) {
-		if (!op_events[i].cpu_mask & cpu_mask)
+		if (!(op_events[i].cpu_mask & cpu_mask))
 			continue;
 	 
 		op_event_descr descr;
