@@ -199,6 +199,12 @@ void check_options()
 		}
 	}
 
+	if (global_percent && symbols && !details) {
+		cerr << "--global-percent is meaningless "
+		     << "with --symbols and without --details" << endl;
+		do_exit = true;
+	}
+
 	if (exclude_dependent) {
 		if (merge_by.lib) {
 			cerr << "--merge=lib is meaningless "
