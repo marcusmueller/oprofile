@@ -639,6 +639,10 @@ A similar scenario can happen when re-starting profiling, as the old sample file
 get deleted (allowing you to build profiles over many distinct profiling sessions). However in this case, if the
 binary has changed, the old sample file is automatically deleted for you.
 </para>
+<para>
+Note that kernel modules without symbol data (this can happen with some initrd setups) cannot be profiled (modules
+with symbols show up in <filename>/proc/ksyms</filename>).
+</para>
 <sect1 id="post-profiler">
 <title><command>oprofpp</command> usage</title> 
 <para>
@@ -825,7 +829,7 @@ numbers of processes, leading to far better performance.
 <title>Acknowledgments</title>
 <para>
 Thanks to (in no particular order) : Arjan van de Ven, Rik van Riel, Juan Quintela, Philippe Elie,
-Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne,
+Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne, Bob Montgomery,
 Dave Jones, Charles Filtness; and finally Pulp, for "Intro". 
 </para>
 </chapter> 

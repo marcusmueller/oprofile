@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.63 2001/07/25 02:54:49 movement Exp $ */
+/* $Id: oprofile.c,v 1.64 2001/07/26 01:39:15 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -252,8 +252,9 @@ static void __exit smp_apic_restore(void *dummy)
 
 static int __init apic_setup(void)
 {
-	/* FIXME: davej says it might be possible to use PCI to find
-	   SMP systems with one CPU */
+	/* FIXME: we need to detect UP kernel, SMP hardware, and
+	 * not go past smp_apic_setup, to avoid screwing up the APIC
+	 */
 	if (smp_num_cpus > 1) {
 		smp_apic_setup(NULL);
 		return 0;

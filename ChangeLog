@@ -1,3 +1,14 @@
+2001-07-26  John Levon  <moz@compsoc.man.ac.uk>
+
+	* oprofile.c: fix comment
+ 
+	* doc/oprofile.sgml: document symbolless modules not working
+
+	* dae/Makefile.in:
+	* dae/opd_proc.c:
+	* dae/oprofiled.h: catch modules with no symbols via query_module()
+	  and ignore samples for them quickly
+ 
 2001-07-25  Philippe Elie  <ph_e@club-internet.fr>
 
 	* dae/op_start: beautify the output of op_start --help

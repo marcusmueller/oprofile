@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.27 2001/07/25 16:43:30 movement Exp $ */
+/* $Id: oprofiled.h,v 1.28 2001/07/26 01:39:16 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <dirent.h>
+#include <p_module.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/poll.h>

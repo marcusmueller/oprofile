@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.58 2001/07/25 02:22:44 movement Exp $ */
+/* $Id: opd_proc.c,v 1.59 2001/07/26 01:39:16 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -894,6 +894,64 @@ failure:
 }
 
 /**
+ * opd_enter_invalid_module - create a negative module entry
+ * @name: name of module
+ * @info: module info
+ */
+static void opd_enter_invalid_module(char const * name, struct module_info * info)
+{
+	opd_modules[nr_modules].name = opd_strdup(name);
+	opd_modules[nr_modules].image = -1;
+	opd_modules[nr_modules].start = info->addr;
+	opd_modules[nr_modules].end = info->addr + info->size;
+	nr_modules++;
+	if (nr_modules == OPD_MAX_MODULES) {
+		fprintf(stderr, "Exceeded %u kernel modules !\n", OPD_MAX_MODULES);
+		exit(1);
+	}
+}
+
+/**
+ * opd_drop_module_sample - drop a module sample efficiently
+ * @eip: eip of sample
+ */
+static void opd_drop_module_sample(u32 eip)
+{
+	char * module_names;
+	char * name;
+	size_t size = 1024;
+	size_t ret;
+	uint nr_mods;
+	uint mod = 0;
+	
+	module_names = opd_malloc(size);
+	while (query_module(NULL, QM_MODULES, module_names, size, &ret)) {
+		if (errno != ENOSPC) {
+			verbprintf("query_module failed: %s\n", strerror(errno)); 
+			return;
+		}
+		size = ret;
+		module_names = opd_realloc(module_names, size);
+	}
+
+	nr_mods = ret;
+	name = module_names;
+
+	while (mod < nr_mods) {
+		struct module_info info;
+		if (!query_module(name, QM_INFO, &info, sizeof(info), &ret)) {
+			if (eip >= info.addr && eip < info.addr + info.size) {
+				verbprintf("Sample from unprofilable module %s\n", name);
+				opd_enter_invalid_module(name, &info);
+				return;
+			} 
+		}
+		mod++;
+		name += strlen(name) + 1;
+	}
+}
+
+/**
  * opd_handle_module_sample - process a module sample
  * @eip: EIP value
  * @count: count value of sample
@@ -916,16 +974,28 @@ static void opd_handle_module_sample(u32 eip, u16 count)
 
 retry:
 	for (i=0; i < nr_modules; i++) {
-		if (opd_modules[i].image != -1 && opd_modules[i].start && opd_modules[i].end &&
+		if (opd_modules[i].start && opd_modules[i].end &&
 			opd_modules[i].start <= eip &&
 			opd_modules[i].end > eip) {
-			opd_put_image_sample(&opd_images[opd_modules[i].image], eip - opd_modules[i].start, count);
+			if (opd_modules[i].image != -1)
+				opd_put_image_sample(&opd_images[opd_modules[i].image], eip - opd_modules[i].start, count);
+			else
+				verbprintf("No image for sampled module %s\n", opd_modules[i].name);
 			return;
 		}
 	}
 
-	if (pass)
+	if (pass) {
+		/* ok, we failed to place the sample even after re-reading /proc/ksyms. It's either a rogue
+		 * sample, or from a module that didn't create symbols (like in some initrd setups).
+		 * So we check with query_module() if we can place it in a symbol-less module, and if so
+		 * create a negative entry for it, to quickly ignore future samples.
+		 *
+		 * Problem uncovered by Bob Montgomery <bobm@fc.hp.com>
+		 */
+		opd_drop_module_sample(eip);
 		return;
+	}
 
 	pass++;
 
