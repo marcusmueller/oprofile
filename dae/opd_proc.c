@@ -17,7 +17,6 @@
 #include "opd_stats.h"
 #include "opd_printf.h"
 
-#include "op_types.h"
 #include "op_interface.h"
 #include "op_cpu_type.h"
 #include "op_libiberty.h"

@@ -15,7 +15,6 @@
 #include <iosfwd>
 #include <cstddef>
 
-#include "op_types.h"
 #include "op_interface.h"
 #include "op_cpu_type.h"
 

@@ -10,8 +10,6 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
-#include "config.h"
-
 #include <stdlib.h>
 #include "op_libiberty.h"
 #include "op_popt.h"

@@ -1,3 +1,18 @@
+2002-07-01  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: minor upadte
+
+	* configure.in: support 2.5.20
+
+	* dae/opd_image.c:
+	* dae/opd_proc.c:
+	* libop++/op_print_event.h:
+	* libutil/op_popt.c:
+	* pp/op_merge.cpp:
+	* pp/samples_container.cpp:
+	* pp/symbol_container_imp.cpp:
+	* pp/symbol_functors.h: minor #include tweak
+
 2002-06-30  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libdb/db.h:

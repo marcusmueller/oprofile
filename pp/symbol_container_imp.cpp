@@ -14,7 +14,6 @@
 #include <set>
 #include <vector>
 
-#include "opp_symbol.h"
 #include "symbol_functors.h"
 #include "symbol_container_imp.h"
 #include "samples_container.h"

@@ -17,7 +17,6 @@
 #include "op_config.h"
 #include "op_mangle.h"
 #include "op_libiberty.h"
-#include "db.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -52,9 +51,7 @@ static void opd_delete_image(struct opd_image * image)
 }
 
 /**
- * @param image  the image pointer to work on
- *
- * opd_image_cleanup - clean up structures
+ * opd_image_cleanup - clean up images structures
  */
 void opd_image_cleanup(void)
 {

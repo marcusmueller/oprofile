@@ -12,6 +12,8 @@
 #ifndef SYMBOL_FUNCTORS_H
 #define SYMBOL_FUNCTORS_H
 
+#include "opp_symbol.h"
+
 /// compare based on vma value (address)
 struct less_sample_entry_by_vma {
 	bool operator()(sample_entry const & lhs, sample_entry const & rhs) const {

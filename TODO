@@ -1,7 +1,7 @@
 0.3 Release
 -----------
 
- o fix some compile problem but with kernel >= 2.5.20, an infinite recursion occur between our make and the kernel make (kernel make call our make w/o enough argument to avoid the all target to be reached)
+ o fix some compile problem but with kernel > 2.5.20, an infinite recursion occur between our make and the kernel make (kernel make call our make w/o enough argument to avoid the all target to be reached)
  o fix GUI for --kernel-range. Done, can you look it John ?
  o verify 2.2/modversions etc. module build ... it's done but let me recheck later (phil)
  o can we get pre-emption up and running ?? I started it (phe), mainly it

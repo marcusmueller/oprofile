@@ -24,7 +24,6 @@
 #include "file_manip.h"
 #include "cverb.h"
 
-#include "db.h"
 #include "op_config.h"
 #include "op_mangling.h"
 #include "op_sample_file.h"
