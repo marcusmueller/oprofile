@@ -1,4 +1,4 @@
-all: string_manip.o
+all: string_manip.o child_reader.o file_manip.o
 
 clean: 
 	rm -f *.o
@@ -8,8 +8,13 @@ install: all
 .PHONY: all clean install
 
 CXX=@CXX@
-CXXFLAGS=@CXXFLAGS@ -Wall -pedantic -ansi -W -Wunused -Wmissing-prototypes
+CXXFLAGS=@CXXFLAGS@ -Wall -pedantic -W -Wunused -Wmissing-prototypes
 
 string_manip.o: string_manip.cpp string_manip.h
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
+file_manip.o: file_manip.cpp file_manip.h
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+
+child_reader.o: child_reader.cpp child_reader.h ../op_user.h
+	$(CXX) -c $(CXXFLAGS) $< -o $@

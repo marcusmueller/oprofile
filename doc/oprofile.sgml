@@ -774,8 +774,7 @@ Some interesting options of the post-processor :
 <sect1 id="op-to-source">
 <title>Outputting annotated source</title>
 <para>
-<command>op_to_source</command> generates annotated source files or assembly listings optionally mixed
-with source. The op_to_source utility is actually a wrapper script around the opf_filter application.
+<command>op_to_source</command> generates annotated source files or assembly listings optionally mixed with source.
 If you want to see the source file the profiled application needs to have debug information and the source
 must be available through this debug information e.g. compile the application with <option>-g</option> for 
 <command>gcc</command>.
@@ -796,8 +795,9 @@ The options allowed are :
 		<listitem><para>
 		<!-- FIXME: update if this changes -->
 		Output assembly code. Currently the assembly code is sorted in increasing order on the vma
-		address but the <option>&mdash;sort-by-counter</option> provides a filtering option for assembly 
-		output.
+		address. The <option>&mdash;sort-by-counter</option>, <option>&mdash;with-more-than-samples percent_nr</option> and
+		<option>&mdash;until-more-than-samples percent_nr</option> options can also be used with this
+		option to provide filtering capabilities.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

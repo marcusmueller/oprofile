@@ -16,8 +16,6 @@
  * first written by P.Elie, many cleanup by John Levon
  */
 
-#include <sys/stat.h>
-
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -47,9 +45,10 @@ using std::ostringstream;
 
 #include "opf_filter.h"
 #include "oprofpp.h"
-#include "child_reader.h"
 
+#include "../util/child_reader.h"
 #include "../util/string_manip.h"
+#include "../util/file_manip.h"
 
 #include "../version.h"
 
@@ -67,9 +66,6 @@ string extract_blank_at_begin(const string & str);
 ostream & operator<<(ostream & out, const counter_setup &);
 
 double do_ratio(size_t a, size_t total);
-
-bool create_dir(const string & dir);
-bool create_path_name(const string & path);
 
 }
 
@@ -278,39 +274,6 @@ inline double do_ratio(size_t counter, size_t total)
 	return total == 0 ? 1.0 : ((double)counter / total);
 }
 
-// perhaps put the two next function in util/file_namnip.cpp ?
-bool create_dir(const string & dir)
-{
-	if (access(dir.c_str(), F_OK)) {
-		if (mkdir(dir.c_str(), 0700))
-			return false;
-	}
-	return true;
-}
-
-bool create_path_name(const string & path)
-{
-	vector<string> path_component;
-
-	size_t slash = 0;
-	while (slash < path.length()) {
-		size_t new_pos = path.find_first_of('/', slash);
-		if (new_pos == string::npos)
-			new_pos = path.length();
-
-		path_component.push_back(path.substr(slash, (new_pos - slash) + 1));
-		slash = new_pos + 1;
-	}
-
-	string dir_name;
-	for (size_t i = 0 ; i < path_component.size() ; ++i) {
-		dir_name += '/' + path_component[i];
-		if (!create_dir(dir_name))
-			return false;
-	}
-	return true;
-}
-
 } // anonymous namespace
 
 //---------------------------------------------------------------------------
@@ -437,7 +400,7 @@ output::output(int argc_, char const * argv_[],
 {
 	if (!assembly && !abfd.have_debug_info()) {
 		cerr << "Request for source file annotated "
-		     << "with sample but no debug info available" << endl;
+		     << "with samples but no debug info available" << endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -473,17 +436,14 @@ output::output(int argc_, char const * argv_[],
 		if (create_dir(output_dir) == false) {
 			cerr << "unable to create " << output_dir
 			     << " directory: " << endl;
-
 			exit(EXIT_FAILURE);
 		}
 	}
 
-	if (output_separate_file == true) {
-		if (output_dir == source_dir) {
-			cerr << "You can not specify the same directory for "
-			     << "--output-dir and --source-dir" << endl;
-			exit(EXIT_FAILURE);
-		}
+	if (output_separate_file == true && output_dir == source_dir) {
+		cerr << "You can not specify the same directory for "
+		     << "--output-dir and --source-dir" << endl;
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -507,12 +467,10 @@ bool output::setup_counter_param()
 		have_counter_info = true;
 	}
 
-	if (!have_counter_info) {
+	if (!have_counter_info)
 		cerr << "opf_filter: no counter enabled ?" << endl;
-		return false;
-	}
 
-	return true;
+	return have_counter_info;
 }
 
 bool output::calc_total_samples()
@@ -777,32 +735,20 @@ void output::output_one_file(istream & in, const string & filename,
 	out_filename = output_dir + out_filename;
 
 	string path = dirname(out_filename);
-	if (create_path_name(path) == false) {
+	if (create_path(path) == false) {
 		cerr << "unable to create directory: "
 		     << '"' << path << '"' << endl;
 		return;
 	}
 
-	// paranoid checking: out_filename and filename must be
-	// distinct file. FIXME: is this the correct way to check
-	// against identical file?
-	// FIXME: if it is, it should become a utility function with a good
-	// name
-	struct stat stat1;
-	struct stat stat2;
-	if (stat(filename.c_str(), &stat1) == 0 &&
-		stat(out_filename.c_str(), &stat2) == 0) {
-		if (stat1.st_dev == stat2.st_dev &&
-			stat1.st_ino == stat2.st_ino) {
-			cerr << "input and output_filename are"
-				<< "identical ("
-				// FIXME: consider helper quote(filename) to add "
-				<< '"' << filename << '"'
-				<< ','
-				<< '"' << out_filename << '"'
-				<< endl;
-			return;
-		}
+	// paranoid checking: out_filename and filename must be distinct file.
+	if (is_files_identical(filename, out_filename)) {
+		cerr << "input and output_filename are identical: "
+		     << '"' << filename << '"'
+		     << ','
+		     << '"' << out_filename << '"'
+		     << endl;
+		return;
 	}
 
 	ofstream out(out_filename.c_str());

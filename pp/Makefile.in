@@ -53,13 +53,10 @@ oprofpp.o: oprofpp.cpp $(HEADERS)
 opf_container.o: opf_container.cpp opf_filter.h ../op_user.h ../util/string_manip.h
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-opf_filter.o : opf_filter.cpp opf_filter.h ../op_user.h oprofpp.h child_reader.h
+opf_filter.o : opf_filter.cpp opf_filter.h ../op_user.h oprofpp.h ../util/child_reader.h ../util/file_manip.h
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-child_reader.o: child_reader.cpp child_reader.h ../op_user.h
-	$(CXX) -c $(CXXFLAGS) $< -o $@
-
-op_to_source: opf_filter.o opf_container.o child_reader.o $(OBJS) \
- ../util/string_manip.o $(LIBS)
+op_to_source: opf_filter.o opf_container.o ../util/child_reader.o $(OBJS) \
+ ../util/string_manip.o ../util/file_manip.o $(LIBS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 

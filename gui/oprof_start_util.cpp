@@ -16,12 +16,8 @@
  * first written by P.Elie, mostly rewritten by John Levon
  */
 
-#include <sys/types.h>
-#include <sys/stat.h> 
-#include <sys/wait.h> 
 #include <dirent.h> 
 #include <unistd.h> 
-#include <fcntl.h> 
  
 #include <vector> 
 #include <cmath>
@@ -33,14 +29,18 @@
 #include <qmessagebox.h>
 
 #include "../util/string_manip.h"
+#include "../util/file_manip.h"
+#include "../util/child_reader.h"
+
 #include "oprof_start_util.h"
 
-typedef int fd_t;
- 
 using std::max;
 using std::string;
 using std::cout;
 using std::cerr;
+using std::endl;
+using std::vector;
+using std::ostream;
  
 namespace {
  
@@ -52,7 +52,7 @@ string const get_user_dir()
 	if (user_dir.empty()) {
 		char * dir = getenv("HOME");
 		if (!dir) {
-			cerr << "Can't determine home directory !\n" << std::endl;
+			cerr << "Can't determine home directory !\n" << endl;
 			exit(EXIT_FAILURE);
 		}
 
@@ -63,127 +63,6 @@ string const get_user_dir()
 	}
 
 	return user_dir;
-}
-
-/**
- * pipe_read - output fd to a stream
- * @out: the stream to output from the stdout child
- * @fd_out: the fd to read from
- * @err: the stream to output from the stderr child
- * @fd_err: the fd to read from
- *
- * Read from @fd until a read would block and write
- * the output to @stream.
- */
-static void pipe_read(std::ostream & out, fd_t fd_out, 
-		      std::ostream & err, fd_t fd_err)
-{
-	ssize_t out_read, err_read;
-
-	fd_set read_fs;
-
-	FD_ZERO(&read_fs);
-	FD_SET(fd_out, &read_fs);
-	FD_SET(fd_err, &read_fs);
-
-	do {
-		err_read = out_read = 0;
-
-		if (select(max(fd_out, fd_err) + 1, &read_fs, 0, 0, 0) >= 0) {
-			char buf[4096];
-
-			if (FD_ISSET(fd_out, &read_fs)) {
-				out_read = read(fd_out, buf, sizeof(buf));
-				if (out_read > 0)
-					out.write(buf, out_read);
-			}
-
-			if (FD_ISSET(fd_err, &read_fs)) {
-				err_read = read(fd_err, buf, sizeof(buf));
-				if (err_read > 0)
-					err.write(buf, err_read);
-			}
-		}
-	} while (err_read || out_read);
-}
-
- 
-static int exec_command(string const & cmd, std::ostream & out, 
-			std::ostream & err, std::vector<string> args)
-{
-	int pstdout[2];
-	int pstderr[2];
-
-	if (pipe(pstdout) == -1 || pipe(pstderr) == -1) {
-		err << "Couldn't create pipes !" << std::endl;
-		return -1;
-	}
-
-	pid_t pid = fork();
-	switch (pid) {
-		case -1:
-			err << "Couldn't fork !" << std::endl;
-			return -1;
-		 
-		case 0: {
-			char const * argv[args.size() + 2];
-			uint i = 0;
-			argv[i++] = cmd.c_str();
-			for (std::vector<string>::const_iterator cit = args.begin();
-				cit != args.end(); ++cit) {
-				argv[i++] = cit->c_str();
-			}
-			argv[i] = 0;
-
-			// child: we can cleanup a few fd
-			close(pstdout[0]);
-			dup2(pstdout[1], STDOUT_FILENO);
-			close(pstdout[1]);
-			close(pstderr[0]);
-			dup2(pstderr[1], STDERR_FILENO);
-			close(pstderr[1]);
- 
-			execvp(cmd.c_str(), (char * const *)argv);
-
-			// parent have redirect this, we must use cerr ?
-			cerr << "Couldn't exec !" << std::endl;
-			return -1;
-		}
-
-		default:;
-			close(pstdout[1]);
-			close(pstderr[1]);
-		  break;
-	}
-
-	// parent
-
-	pipe_read(out, pstdout[0], err, pstderr[0]);
-
-	int ret;
-	waitpid(pid, &ret, 0);
-
-	close(pstdout[0]);
-	close(pstderr[0]);
-
-	return WEXITSTATUS(ret);
-}
-
-string const opd_read_link(string const & name)
-{
-	static char linkbuf[FILENAME_MAX]="";
-	int c;
- 
-	c = readlink(name.c_str(), linkbuf, FILENAME_MAX);
- 
-	if (c == -1)
-		return string();
- 
-	if (c == FILENAME_MAX)
-		linkbuf[FILENAME_MAX-1] = '\0';
-	else
-		linkbuf[c] = '\0';
-	return linkbuf;
 }
 
 string daemon_pid;
@@ -280,7 +159,7 @@ unsigned long get_cpu_speed()
  
 	string str;
 	 
-	while (std::getline(ifs, str)) {
+	while (getline(ifs, str)) {
 		if (str.size() < 7)
 			continue;
 
@@ -319,17 +198,14 @@ string const get_user_filename(string const & filename)
  */
 bool check_and_create_config_dir()
 {
-	// create the directory if necessary.
 	string dir = get_user_filename(".oprofile");
 
-	if (access(dir.c_str(), F_OK)) {
-		if (mkdir(dir.c_str(), 0700)) {
-			std::ostringstream out;
-			out << "unable to create " << dir << " directory: ";
-			QMessageBox::warning(0, 0, out.str().c_str());
+	if (create_dir(dir) == false) {
+		std::ostringstream out;
+		out << "unable to create " << dir << " directory: ";
+		QMessageBox::warning(0, 0, out.str().c_str());
 
-			return false;
-		}
+		return false;
 	}
 	return true;
 }
@@ -350,7 +226,7 @@ string const format(string const & orig, uint const maxlen)
 	string text(orig);
 
 	std::istringstream ss(text);
-	std::vector<string> lines;
+	vector<string> lines;
 
 	string oline;
 	string line;
@@ -380,7 +256,7 @@ string const format(string const & orig, uint const maxlen)
 
 	string ret;
 
-	for(std::vector<string>::const_iterator it = lines.begin(); it != lines.end(); ++it)
+	for(vector<string>::const_iterator it = lines.begin(); it != lines.end(); ++it)
 		ret += *it + "\n";
 
 	return ret;
@@ -395,18 +271,23 @@ string const format(string const & orig, uint const maxlen)
  * Execute a command synchronously. An error message is shown
  * if the command returns a non-zero status, which is also returned.
  */
-int do_exec_command(string const & cmd, std::vector<string> args)
+int do_exec_command(string const & cmd, vector<string> const & args)
 {
 	std::ostringstream err;
+	bool ok = true;
 
-	// For now I pass cout to see output if oprof_start is launched from
-	// a console. FIXME later we need a log windows?
-	int ret = exec_command(cmd, cout, err, args);
+	ChildReader reader(cmd, args);
+	if (reader.error())
+		ok = false;
 
+	if (ok)
+		reader.get_data(cout, err);
+
+	int ret = reader.terminate_process();
 	if (ret) {
 		string error = "Failed: \n" + err.str() + "\n";
 		string cmdline = cmd;
-		for (std::vector<string>::const_iterator cit = args.begin();
+		for (vector<string>::const_iterator cit = args.begin();
 			cit != args.end(); ++cit)
 			cmdline += " " + *cit + " ";
 		error += "\n\nCommand was :\n\n" + cmdline + "\n";

@@ -80,7 +80,7 @@ void ChildReader::exec_command(string const & cmd, vector<string> const & args)
 			return;
 		 
 		case 0: {
-			char const * argv[args.size() + 2];
+			const char ** argv = new const char* [args.size() + 2];
 			size_t i;
 			argv[0] = cmd.c_str();
 

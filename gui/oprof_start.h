@@ -40,7 +40,7 @@ struct op_event_descr {
 	/// unit mask values if applicable 
 	const op_unit_mask * unit;
 	/// unit mask descriptions if applicable
-	const op_unit_desc * um_descr;
+	const op_unit_desc * um_desc;
 	/// name of event 
 	std::string name;
 	/// description of event

@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.1 2001/11/12 14:05:35 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.2 2001/11/13 21:21:01 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -233,7 +233,7 @@ void opp_treat_options(const char* file, poptContext * optcon)
 std::string demangle_symbol(const char* name)
 {
 	if (demangle) {
-		char *cp = (char *)name;
+		const char * cp = name;
 
 		while (*cp && *cp == '_')
 			cp++;
@@ -290,24 +290,24 @@ counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
  *
  */
 opp_bfd::opp_bfd(const opd_header* header)
+	:
+	ibfd(0),
+	bfd_syms(0),
+	sect_offset(0)
 {
-	time_t newmtime;
-
-	sect_offset = 0;
-
 	if (!imagefile) {
 		fprintf(stderr,"oprofpp: oppp_bfd() imagefile is NULL.\n");
 		exit(EXIT_FAILURE);
 	} 
 
-	newmtime = opd_get_mtime(imagefile);
+	open_bfd_image(imagefile, header->is_kernel);
+
+	time_t newmtime = opd_get_mtime(imagefile);
 	if (newmtime != header->mtime) {
 		fprintf(stderr, "oprofpp: WARNING: the last modified time of the binary file %s does not match\n"
 			"that of the sample file. Either this is the wrong binary or the binary\n"
 			"has been modified since the sample file was created.\n", imagefile);
 	}
-
-	open_bfd_image(imagefile, header->is_kernel);
 }
 
 /**

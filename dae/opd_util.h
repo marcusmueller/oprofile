@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.17 2001/09/28 13:34:22 movement Exp $ */
+/* $Id: opd_util.h,v 1.18 2001/11/13 21:21:01 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -71,20 +71,22 @@ poptContext opd_poptGetContext(const char * name,
                 int argc, const char ** argv,
                 const struct poptOption * options, int flags);
 
+#ifdef MALLOC_OK
+#define OP_ATTRIB_MALLOC	__attribute__((malloc))
+#else
+#define OP_ATTRIB_MALLOC
+#endif
+
 /* utility functions */
 #define opd_calloc(memb, size) opd_malloc(memb*size)
 #define opd_calloc0(memb, size) opd_malloc0(memb*size)
 #define opd_crealloc(memb, buf, size) opd_realloc((buf), memb*size)
-#ifdef MALLOC_OK
-void *opd_malloc(size_t size) __attribute__((malloc));
-void *opd_malloc0(size_t size) __attribute__((malloc));
-#else
-void *opd_malloc(size_t size);
-void *opd_malloc0(size_t size);
-#endif
+
+void *opd_malloc(size_t size) OP_ATTRIB_MALLOC;
+void *opd_malloc0(size_t size) OP_ATTRIB_MALLOC;
+char *opd_strdup(const char* str) OP_ATTRIB_MALLOC;
 void *opd_realloc(void *buf, size_t size);
 void opd_free(void *p);
-char *opd_strdup(const char* str);
 char* opd_mangle_filename(const char *smpdir, const char* filename);
 
 char *opd_simplify_pathname(char *path);

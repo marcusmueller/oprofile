@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.12 2001/11/11 22:57:29 davej Exp $ */
+/* $Id: oprofile.c,v 1.13 2001/11/13 21:21:01 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -127,7 +127,6 @@ inline static void op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
 	for (i=0; i < OP_NR_ENTRY; i++) {
 		if (likely(!op_miss(data->entries[h].samples[i]))) {
 			data->entries[h].samples[i].count++;
-			set_perfctr(data->ctr_count[ctr], ctr);
 			return;
 		} else if (unlikely(op_full_count(data->entries[h].samples[i].count))) {
 			goto full_entry;
@@ -138,14 +137,25 @@ inline static void op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
 	evict_op_entry(cpu, data, &data->entries[h].samples[data->next], regs);
 	fill_op_entry(&data->entries[h].samples[data->next], regs, ctr);
 	data->next = (data->next + 1) % OP_NR_ENTRY;
-out:
-	set_perfctr(data->ctr_count[ctr], ctr);
 	return;
 full_entry:
 	evict_op_entry(cpu, data, &data->entries[h].samples[i], regs);
 new_entry:
 	fill_op_entry(&data->entries[h].samples[i],regs,ctr);
-	goto out;
+	return;
+}
+
+inline static int op_check_pid(void)
+{
+	if (unlikely(sysctl.pid_filter) && 
+	    likely(current->pid != sysctl.pid_filter))
+		return 1;
+
+	if (unlikely(sysctl.pgrp_filter) && 
+	    likely(current->pgrp != sysctl.pgrp_filter))
+		return 1;
+		
+	return 0;
 }
 
 static void op_check_ctr(uint cpu, struct pt_regs *regs, int ctr)
@@ -153,17 +163,10 @@ static void op_check_ctr(uint cpu, struct pt_regs *regs, int ctr)
 	ulong l,h;
 	get_perfctr(l, h, ctr);
 	if (likely(ctr_overflowed(l))) {
-		if (unlikely(sysctl.pid_filter) && 
-			likely(current->pid != sysctl.pid_filter)) {
-			set_perfctr((&oprof_data[cpu])->ctr_count[ctr], ctr);
-			return;
-		}
-		if (unlikely(sysctl.pgrp_filter) && 
-			likely(current->pgrp != sysctl.pgrp_filter)) {
-			set_perfctr((&oprof_data[cpu])->ctr_count[ctr], ctr);
-			return;
-		}
-		op_do_profile(cpu, regs, ctr);
+		if (!op_check_pid())
+			op_do_profile(cpu, regs, ctr);
+
+		set_perfctr(oprof_data[cpu].ctr_count[ctr], ctr);
 	}
 }
 

@@ -1,3 +1,32 @@
+2001-11-13  Philippe Elie  <ph_e@club-internet.fr>
+
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp:
+	* dae/opd_util.h:
+	* dae/opd_util.cpp: small cleanup
+
+	* module/oprofile.c: simplify a little what the
+	  nmi handler
+
+	* doc/oprofile.sgml: clarify op_to_source options
+
+	* pp/child_reader.cpp:
+	* pp/child_reader.h: move these ...
+	* util/child_reader.cpp:
+	* util/child_reader.h: here
+	* util/file_manip.h:
+	* util/file_manip.cpp: new
+	* gui/Makefile.in:
+	* gui/oprof_start_util.h:
+	* gui/oprof_start_util.cpp:
+	* pp/Makefile.in:
+	* pp/opf_filter.cpp: use child_reader and file_manip
+
+	* pp/oprofpp_util.cpp: change ordering of opening in
+	  opp_bfd ctr to avoid cryptic error message
+
+	* TODO: update
+
 2001-11-12  Philippe Elie  <ph_e@club-internet.fr>
 
 	* events: new directory

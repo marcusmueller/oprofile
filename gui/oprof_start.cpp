@@ -45,7 +45,7 @@ op_event_descr::op_event_descr()
 	counter_mask(0),
 	val(0),
 	unit(0),
-	um_descr(0),
+	um_desc(0),
 	min_count(0)
 {
 }
@@ -82,10 +82,10 @@ oprof_start::oprof_start()
 		descr.val = op_events[i].val;
 		if (op_events[i].unit) {
 			descr.unit = &op_unit_masks[op_events[i].unit];
-			descr.um_descr = &op_unit_descs[op_events[i].unit];
+			descr.um_desc = &op_unit_descs[op_events[i].unit];
 		} else {
 			descr.unit = 0;
-			descr.um_descr = 0;
+			descr.um_desc = 0;
 		}
 
 		descr.name = op_events[i].name;
@@ -626,10 +626,8 @@ void oprof_start::hide_masks()
  
 void oprof_start::setup_unit_masks(const op_event_descr & descr)
 {
-	// FIXME: the stuff needs rationalising between calling things "desc"
-	// and "descr" 
 	const op_unit_mask* um = descr.unit;
-	const op_unit_desc* um_desc = descr.um_descr;
+	const op_unit_desc* um_desc = descr.um_desc;
 
 	hide_masks();
  
@@ -773,7 +771,7 @@ void oprof_start::on_start_profiler()
 		args.push_back("--ctr" + tostr(ctr) + "-kernel=" + tostr(cfg[descr->name].os_ring_count));
 		args.push_back("--ctr" + tostr(ctr) + "-user=" + tostr(cfg[descr->name].user_ring_count));
 
-		if (descr->um_descr)
+		if (descr->um_desc)
 			args.push_back("--ctr" + tostr(ctr) + "-unit-mask=" + tostr(cfg[descr->name].umask));
 	}
 
