@@ -54,19 +54,6 @@ void verbprintf(char const * args, ...) OP_VERBPRINTF_FORMAT;
 
  
 /**
- * @param out output to this ostream
- * @param counter_nr counter number
- * @param cpu_type the cpu_type
- * @param type event type
- * @param um the unit mask
- * @param count events count before overflow
- *
- * output a human readable form of an event setting
- */
-void op_print_event(std::ostream & out, int counter_nr, op_cpu cpu_type,
-		    u8 type, u8 um, u32 count);
-
-/**
  * process command line options
  * @param filename a filename passed on the command line, can be NULL
  * @param image_file where to store the image file name

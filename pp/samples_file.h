@@ -78,7 +78,6 @@ struct samples_file_t /*:*/ noncopyable
 	// function (not simple getter), make private and compile to see
 	// what operation we need later. I've currently not a clear view
 	// of what we need
-//private:
 	db_tree_t db_tree;
 
 	/**
@@ -177,12 +176,10 @@ struct opp_samples_files /*:*/  noncopyable {
 		return samples[first_file]->header();
 	}
 
-	/// return true if the samples file comes from the kernel or a module
-	bool is_kernel() const { return first_header().is_kernel; }
-
-	/** set the start offset ofthe underlined samples files. Depending
-	 * if the samples file is the kernel [module] or an user space
-	 * application the start_offset is the text section filepos or zero
+	/**
+	 * Set the start offset of the underlying samples files
+	 * to non-zero (derived from the BFD) iff this contains
+	 * the kernel or kernel module sample files.
 	 */
 	void set_start_offset(u32 start_offset);
 

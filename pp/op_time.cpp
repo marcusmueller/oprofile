@@ -471,7 +471,7 @@ static void output_symbols_count(map_t& files, int counter)
 						       counter);
 			check_mtime(samples_file, image_name);
 
-			op_bfd abfd(samples_file.is_kernel(), image_name);
+			op_bfd abfd(image_name);
 
 			samples_file.set_start_offset(abfd.get_start_offset());
 

@@ -1,0 +1,20 @@
+include ../make.common
+
+HEADERS=op_print_event.h
+ 
+SOURCES=op_print_event.cpp
+
+OBJECTS=op_print_event.o
+
+TARGET=libop++.a
+
+all: $(TARGET)
+install:
+uninstall:
+clean:
+	rm -rf .deps $(OBJECTS) $(TARGET) 
+
+$(TARGET): $(OBJECTS)
+	$(AR) cr $@ $^
+ 
+include ../make.deps

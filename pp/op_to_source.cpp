@@ -40,6 +40,7 @@ using std::ostringstream;
 #include "string_manip.h"
 #include "file_manip.h"
 #include "filename_match.h"
+#include "op_print_event.h"
 #include "op_events_desc.h"
 #include "op_to_source_options.h"
 
@@ -739,7 +740,7 @@ bool output::treat_input(string const & image_name, string const & sample_file)
 
 	check_mtime(samples_files, image_name);
 
-	op_bfd abfd(samples_files.is_kernel(), image_name);
+	op_bfd abfd(image_name);
 
 	samples_files.set_start_offset(abfd.get_start_offset());
 

@@ -26,6 +26,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
  
+ o make sure we behave sensibly in all places following symlinks etc. 
  o debian - libiberty is in "binutils-dev" package 
  o oprof_report/Makefile.in etc. 
  o document somewhere that oprofpp -s blah will only find the first symbol

@@ -216,7 +216,7 @@ int main(int argc, char const *argv[])
 		opp_samples_files samples_files(sample_file, counter);
 		check_mtime(samples_files, image_file);
 
-		op_bfd abfd(samples_files.is_kernel(), image_file);
+		op_bfd abfd(image_file);
 		samples_files.set_start_offset(abfd.get_start_offset());
 		do_dump_gprof(abfd, samples_files, options::sort_by_counter);
 		return 0;
@@ -277,7 +277,7 @@ int main(int argc, char const *argv[])
 		if (it == filelist.begin()) {
 			check_mtime(samples_files, image_file);
 
-			op_bfd abfd(samples_files.is_kernel(), image_file);
+			op_bfd abfd(image_file);
 
 			samples_files.set_start_offset(abfd.get_start_offset());
 
@@ -289,7 +289,7 @@ int main(int argc, char const *argv[])
 
 			check_mtime(samples_files, image_file);
 
-			op_bfd abfd(samples_files.is_kernel(), demangle_filename(lib_name));
+			op_bfd abfd(demangle_filename(lib_name));
 			samples_files.set_start_offset(abfd.get_start_offset());
 
 			samples.add(samples_files, abfd);

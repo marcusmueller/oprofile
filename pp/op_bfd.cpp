@@ -20,7 +20,7 @@ using std::string;
 using std::cout;
 using std::endl;
 
-op_bfd::op_bfd(bool is_kernel, string const & filename)
+op_bfd::op_bfd(string const & filename)
 	:
 	ibfd(0),
 	bfd_syms(0),
@@ -33,30 +33,6 @@ op_bfd::op_bfd(bool is_kernel, string const & filename)
 
 	nr_samples = op_get_fsize(filename.c_str(), 0);
 
-	open_bfd_image(filename, is_kernel);
-}
-
-op_bfd::~op_bfd()
-{
-	bfd_close(ibfd);
-	delete [] bfd_syms;
-}
-
-/**
- * open_bfd_image - op_bfd ctor helper
- * @param file name of a valid image file
- * @param is_kernel true if the image is the kernel or a module
- *
- * This function will open a bfd image and process symbols
- * within this image file
- *
- * Failure to open the image a fatal
- * gettings zero symbols from the image is not an error
- */
-void op_bfd::open_bfd_image(string const & filename, bool is_kernel)
-{
-	char **matching;
-
 	ibfd = bfd_openr(filename.c_str(), NULL);
  
 	if (!ibfd) {
@@ -64,6 +40,8 @@ void op_bfd::open_bfd_image(string const & filename, bool is_kernel)
 		exit(EXIT_FAILURE);
 	}
 	 
+	char ** matching;
+
 	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) { 
 		fprintf(stderr,"oprofpp: BFD format failure for %s.\n", filename.c_str());
 		exit(EXIT_FAILURE);
@@ -72,12 +50,10 @@ void op_bfd::open_bfd_image(string const & filename, bool is_kernel)
 	/* Kernel / kernel modules are calculated as offsets against 
 	 * the .text section, so they need special handling
 	 */
-	if (is_kernel) {
-		asection *sect;
-		sect = bfd_get_section_by_name(ibfd, ".text");
+	asection * sect = bfd_get_section_by_name(ibfd, ".text");
+	if (sect) {
 		text_offset = sect->filepos;
-		verbprintf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n", 
-			text_offset, sect->filepos); 
+		verbprintf(".text filepos 0x%lx\n", text_offset); 
 	}
 
 	get_symbols();
@@ -88,6 +64,14 @@ void op_bfd::open_bfd_image(string const & filename, bool is_kernel)
 		create_artificial_symbol(start, end);
 	}
 }
+
+ 
+op_bfd::~op_bfd()
+{
+	bfd_close(ibfd);
+	delete [] bfd_syms;
+}
+
 
 /**
  * symcomp - comparator
@@ -185,7 +169,7 @@ bool op_bfd::get_symbols()
 
 	// now we can calculate the symbol size
 	for (i = 0 ; i < syms.size() ; ++i) {
-		syms[i].symb_size = symbol_size(i);
+		syms[i].size(symbol_size(i));
 	}
 
 	// we need to ensure than for a given vma only one symbol exist else
@@ -424,23 +408,6 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 	}
 }
 
-/**
- * symbol_index - find a symbol
- * @param name the symbol name
- *
- * find and return the index of a symbol.
- * if the name is not found -1 is returned
- */
-symbol_index_t op_bfd::symbol_index(char const * symbol) const
-{
-	for (symbol_index_t i = 0; i < syms.size(); i++) {
-		if (syms[i].name() == string(symbol))
-			return i;
-	}
-
-	return nil_symbol_index;
-}
-
 void op_bfd::get_vma_range(u32 & start, u32 & end) const
 {
 	if (syms.size()) {
@@ -460,9 +427,7 @@ void op_bfd::create_artificial_symbol(u32 start, u32 end)
 	// FIXME: prefer a bool artificial; to this ?? 
 	string symname = "?";
 
-	char * const name = bfd_get_filename(ibfd);
-	if (name) 
-		symname += name;
+	symname += get_filename();
  
 	op_bfd_symbol symbol(0, 0, start, 0, end - start, symname);
 
@@ -471,5 +436,5 @@ void op_bfd::create_artificial_symbol(u32 start, u32 end)
 
 string op_bfd::get_filename() const
 {
-	return bfd_get_filename(ibfd);;
+	return bfd_get_filename(ibfd);
 }

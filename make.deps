@@ -1,7 +1,7 @@
 # autodeps rules. These are modified from an example in the make info page.
 # has to be separate from make.common due to fucked up dependencies in gui/
  
-CPPFLAGS_DEPS = $(INCLUDES)
+CPPFLAGS_DEPS = $(INCLUDES) $(CXXINCLUDES)
 
 .deps/%.cpp.d: %.cpp
 	@$(MKDIR_P) .deps

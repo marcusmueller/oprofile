@@ -31,7 +31,6 @@ symbol_index_t const nil_symbol_index = symbol_index_t(-1);
  * the symbol is an artificial symbol
  */
 class op_bfd_symbol {
-	friend class op_bfd;
 public:
 
 	op_bfd_symbol(asymbol const * a, u32 value, u32 filepos, u32 sect_vma,
@@ -50,6 +49,7 @@ public:
 	std::string const & name() const { return symb_name; }
 	asymbol const * symbol() const { return bfd_symbol; }
 	size_t size() const { return symb_size; }
+	void size(size_t s) { symb_size = s; }
 
 private:
 	/// the original bfd symbol, this can be null if the symbol is an
@@ -75,13 +75,11 @@ private:
 class op_bfd {
 public:
 	/**
-	 * @param is_kernel true if the image is a kernel module or a
-	 * vmlinux file
 	 * @param filename the name of the image file
 	 *
 	 * All errors are fatal.
 	 */
-	op_bfd(bool is_kernel, std::string const & filename);
+	op_bfd(std::string const & filename);
 
 	/// close an opened bfd image and free all related resources
 	~op_bfd();
@@ -114,13 +112,6 @@ public:
 	 */
 	void get_symbol_range(symbol_index_t sym_idx,
 			      u32 & start, u32 & end) const;
-
-	/** 
-	 * @param symbol the symbol name
-	 *
-	 * find and return the index of a symbol else return -1
-	 */
-	symbol_index_t symbol_index(char const * symbol) const;
 
 	/**
 	 * sym_offset - return offset from a symbol's start
@@ -158,15 +149,14 @@ public:
 	uint nr_samples;
 private:
 	// the bfd object.
-	bfd *ibfd;
+	bfd * ibfd;
 
 	// vector of symbol filled by the bfd lib.
 	asymbol **bfd_syms;
 	// image file such the linux kernel need than all vma are offset
 	// by this value.
 	u32 text_offset;
-	// ctor helper
-	void open_bfd_image(std::string const & file_name, bool is_kernel);
+ 
 	bool get_symbols();
 
 	/**

@@ -1,5 +1,30 @@
 2002-06-04  John Levon  <moz@compsoc.man.ac.uk>
 
+	* make.common.in: 
+	* make.deps: split out CXXINCLUDES
+ 
+	* Makefile.in:
+	* configure.in:	
+	* libop++/Makefile.in:
+	* libop++/op_print_event.h:
+	* libop++/op_print_event.cpp:
+	* pp/Makefile.in:
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp:
+	* pp/samples_file.cpp: start libop++ library,
+	  move op_print_event there
+
+	* pp/op_bfd.h:
+	* pp/op_bfd.cpp: 
+	* pp/op_time.cpp: 
+	* pp/op_to_source.cpp: 
+	* pp/oprofpp.cpp: 
+	* pp/samples_file.h:
+	* pp/samples_file.cpp: remove all knowledge of
+	  is_kernel from op_bfd, some minor cleanups
+ 
+2002-06-04  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/op_bfd.h:
 	* pp/op_bfd.cpp:
 	* pp/samples_container.cpp: kill another char*

@@ -40,26 +40,6 @@ using std::cerr;
 using std::endl;
 
 
-void op_print_event(ostream & out, int counter_nr, op_cpu cpu_type,
-		    u8 type, u8 um, u32 count)
-{
-	char * typenamep;
-	char * typedescp;
-	char * umdescp;
-
-	op_get_event_desc(cpu_type, type, um, 
-			  &typenamep, &typedescp, &umdescp);
-
-	out << "Counter " << counter_nr << " counted "
-	    << typenamep << " events (" << typedescp << ")";
-	if (cpu_type != CPU_RTC) {
-		out << " with a unit mask of 0x"
-		    << hex << setw(2) << setfill('0') << unsigned(um) << " ("
-		    << (umdescp ? umdescp : "Not set") << ")";
-	}
-	out << " count " << dec << count << endl;
-}
-
 /**
  * verbprintf
  */

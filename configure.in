@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.85 2002/05/21 23:49:16 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.86 2002/06/04 16:47:08 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -305,6 +305,7 @@ AC_OUTPUT(make.common \
 	libutil/Makefile \
 	libutil++/Makefile \
 	libop/Makefile \
+	libop++/Makefile \
 	libopt++/Makefile \
 	libdb/Makefile \
 	module/Makefile \

@@ -18,6 +18,7 @@
 #include "oprofpp.h"
 #include "op_events.h"
 #include "op_events_desc.h"
+#include "op_print_event.h"
 
 using std::string;
 using std::cout;
@@ -138,10 +139,12 @@ bool opp_samples_files::accumulate_samples(counter_array_t & counter,
 
 void opp_samples_files::set_start_offset(u32 start_offset)
 {
+	if (!first_header().is_kernel)
+		return;
+ 
 	for (uint k = 0; k < nr_counters; ++k) {
-		if (is_open(k)) {
+		if (is_open(k))
 			samples[k]->start_offset = start_offset;
-		}
 	}
 }
 
