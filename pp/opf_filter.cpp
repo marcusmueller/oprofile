@@ -475,6 +475,7 @@ void output::find_and_output_counter(const string & filename, size_t linenr) con
 
 void output::output_asm(input & in) 
 {
+	// select the subset of symbols which statisfy the user requests
 	size_t index = get_sort_counter_nr();
 
 	vector<const symbol_entry*> v;
@@ -482,7 +483,6 @@ void output::output_asm(input & in)
 
 	vector<const symbol_entry*> output_symbols;
 
-	// select the subset of symbols which statisfy the threshold condition.
 	double threshold = threshold_percent / 100.0;
 
 	for (size_t i = 0 ; i < v.size() && threshold >= 0 ; ++i) {
@@ -498,28 +498,69 @@ void output::output_asm(input & in)
 		}
 	}
 
+	// now output_symbols contains the symbol of interest
+
+	// we want to avoid output of function that contain zero sample,
+	// these symbol are not in our set of symbol so we can detect this
+	// case and turn off outputting.
 	bool do_output = true;
 
 	string str;
 	while (in.read_line(str)) {
-		if (str.length()) {
-			// line of interest begins with a space (disam line) 
-			// or a '0' (symbol line)
-			if (str[0] == '0') {
+		if (str.length())  {
+			// Yeps, output of objdump is a human read-able form
+			// and contain a few ambiguity so this code is fragile
+
+			// line of interest are: "[:space:]*[:xdigit:]?[ :]"
+			// the last char of this regexp dis-ambiguate between
+			// a symbol line and an asm line. If source contain
+			// line of this form an ambiguity occur and we must
+			// rely on the robustness of this code.
+
+			size_t pos = 0;
+			while (pos < str.length() && isspace(str[pos]))
+			       ++pos;
+
+			if (pos == str.length() || !isxdigit(str[pos])) {
+				if (do_output)
+					out << str << '\n';
+				continue;				
+			}
+
+			while (pos < str.length() && isxdigit(str[pos]))
+			       ++pos;
+
+			if (pos == str.length() || 
+			    (!isspace(str[pos]) && str[pos] != ':')) {
+				if (do_output)
+					out << str << '\n';
+				continue;				
+			}
+
+			if (str[pos] != ':') { // is the line contain a symbol
 				unsigned long vma;
 
 				sscanf(str.c_str(), "%lx",  &vma);
 
+				// ! complexity: linear in number of symbol
+				// must use sorted by address vector and
+				// lower_bound ?
 				const symbol_entry* symbol = symbols.find_by_vma(vma);
 
-				// Note this use a pointer comparison. It work because symbols 
-				// container warranty than symbol pointer are unique.
-				if (find(output_symbols.begin(), output_symbols.end(), symbol) !=
-				    output_symbols.end()) {
+				// Note this use a pointer comparison. It work
+				// because symbols symbol pointer are unique
+				if (find(output_symbols.begin(), 
+					 output_symbols.end(), symbol) != output_symbols.end()) {
+					// probably an error due to ambiguity
+					// in the input: source file mixed with
+					// asm contain a line which is taken as
+					// a valid symbol, in doubt it is
+					// probably better to turn output on.
 					do_output = true;
 				} else if (threshold_percent == 0) {
-					// if the user have not requested threshold we must output
-					// all symbols even if it contains no samples.
+					// if the user have not requested
+					// threshold we must output all symbols
+					// even if it contains no samples.
 					do_output = true;
 				} else {
 					do_output = false;
@@ -528,17 +569,14 @@ void output::output_asm(input & in)
 				if (do_output) {
 					find_and_output_symbol(str, "");
 				}
-				
-			// Fix this test : first non blank is a digit
-			} else if (str[0] == ' ' && str.length() > 1 && 
-				   isdigit(str[1]) && do_output) {
-				find_and_output_counter(str, " ");
+			} else { // not a symbol, probably an asm line.
+				if (do_output)
+					find_and_output_counter(str, " ");
 			}
 		}
 
-		if (do_output) {
+		if (do_output)
 			out << str << '\n';
-		}
 	}
 }
 
