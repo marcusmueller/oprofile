@@ -237,8 +237,6 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 
 	// we need to ensure than for a given vma only one symbol exist else
 	// we read more than one time some samples. Fix #526098
-	// ELF symbols size : potential bogosity here because when using
-	// elf symbol size we need to check than two symbols does not overlap.
 	for (; it != symbols.end();) {
 		symbols_found_t::iterator temp = it;
 		++temp;

@@ -49,10 +49,10 @@ void op_regcomp(regex_t & regexp, string const & pattern)
 }
 
 
-bool op_regexec(regex_t const & regex, char const * str, regmatch_t * match,
+bool op_regexec(regex_t const & regex, string const & str, regmatch_t * match,
 	       size_t nmatch)
 {
-	return regexec(&regex, str, nmatch, match, 0) != REG_NOMATCH;
+	return regexec(&regex, str.c_str(), nmatch, match, 0) != REG_NOMATCH;
 }
 
 
@@ -87,8 +87,8 @@ regular_expression_replace::regular_expression_replace(size_t limit_,
 
 regular_expression_replace::~regular_expression_replace()
 {
-	for (size_t i = 0 ; i < v_regexp.size() ; ++i)
-		op_regfree(v_regexp[i]);
+	for (size_t i = 0 ; i < regex_replace.size() ; ++i)
+		op_regfree(regex_replace[i].regexp);
 }
 
 
@@ -110,8 +110,8 @@ void regular_expression_replace::add_pattern(string const & pattern,
 
 	regex_t regexp;
 	op_regcomp(regexp, expanded_pattern);
-	v_regexp.push_back(regexp);
-	v_replace.push_back(replace);
+	replace_t regex = { regexp, replace };
+	regex_replace.push_back(regex);
 }
 
 
@@ -178,8 +178,8 @@ bool regular_expression_replace::execute(string & str) const
 	bool changed = true;
 	for (size_t nr_iter = 0; changed && nr_iter < limit ; ++nr_iter) {
 		changed = false;
-		for (size_t i = 0 ; i < v_regexp.size() ; ++i) {
-			if (do_execute(str, v_regexp[i], v_replace[i])) {
+		for (size_t i = 0 ; i < regex_replace.size() ; ++i) {
+			if (do_execute(str, regex_replace[i])) {
 				changed = true;
 			}
 		}
@@ -192,26 +192,32 @@ bool regular_expression_replace::execute(string & str) const
 
 
 bool regular_expression_replace::do_execute(string & str,
-					    regex_t const & regexp,
-					    string const & replace) const
+                                            replace_t const & regexp) const
 {
 	bool changed = false;
 
 	regmatch_t match[max_match];
-	size_t last_pos = 0;
-	for (size_t nr_iter = 0;
-	     op_regexec(regexp, str.c_str() + last_pos, match, max_match) &&
-	       nr_iter < limit;
-	     nr_iter++) {
+	for (size_t iter = 0;
+	     op_regexec(regexp.regexp, str, match, max_match) && iter < limit;
+	     iter++) {
 		changed = true;
-		do_replace(str, last_pos, replace, match);
+		do_replace(str, regexp.replace, match);
 	}
 
 	return changed;
 }
 
 
-void regular_expression_replace::do_replace(string & str, size_t start_pos,
+regmatch_t const &
+regular_expression_replace::get_match(regmatch_t const * match, char idx) const
+{
+	size_t sub_expr = subexpr_index(idx);
+	if (sub_expr >= max_match)
+		throw bad_regex("illegal group index :" + idx);
+	return match[sub_expr];
+}
+
+void regular_expression_replace::do_replace(string & str,
 					    string const & replace,
 					    regmatch_t const * match) const
 {
@@ -219,33 +225,36 @@ void regular_expression_replace::do_replace(string & str, size_t start_pos,
 	for (size_t i = 0 ; i < replace.length() ; ++i) {
 		if (replace[i] == '\\') {
 			if (i == replace.length() - 1) {
-				throw bad_regex("illegal \\ trailer: " + replace);
+				throw bad_regex("illegal \\ trailer: " +
+				                replace);
 			}
 			++i;
 			if (replace[i] == '\\') {
 				inserted += '\\';
 			}  else if (subexpr_index(replace[i]) != size_t(-1)) {
-				size_t sub_expr = subexpr_index(replace[i]);
-				if (sub_expr >= max_match) {
-					throw bad_regex("illegal group index :" + replace);
-				} else if (match[sub_expr].rm_so == -1 &&
-					   match[sub_expr].rm_eo == -1) {
+				regmatch_t const & matched = get_match(match,
+					replace[i]);
+				if (matched.rm_so == -1 && 
+				    matched.rm_eo == -1) {
 					// empty match: nothing todo
-				} else if (match[sub_expr].rm_so == -1 ||
-					   match[sub_expr].rm_eo == -1) {
-					throw bad_regex("illegal match: " + replace);
+				} else if (matched.rm_so == -1 ||
+					   matched.rm_eo == -1) {
+					throw bad_regex("illegal match: " +
+						replace);
 				} else {
-					inserted += str.substr(match[sub_expr].rm_so, match[sub_expr].rm_eo - match[sub_expr].rm_so);
+					inserted += str.substr(matched.rm_so,
+					    matched.rm_eo - matched.rm_so);
 				}
 			} else {
-				throw bad_regex("expect group index :" + replace);
+				throw bad_regex("expect group index: " +
+					replace);
 			}
 		} else {
 			inserted += replace[i];
 		}
 	}
 
-	size_t first = match[0].rm_so + start_pos;
+	size_t first = match[0].rm_so;
 	size_t count = match[0].rm_eo - match[0].rm_so;
 
 	str.replace(first, count, inserted);

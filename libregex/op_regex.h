@@ -81,11 +81,16 @@ public:
 	 */
 	bool execute(std::string & str) const;
 private:
+	struct replace_t {
+		// when this regexp is matched
+		regex_t regexp;
+		// replace the matched part with this string
+		std::string replace;
+	};
+
 	// helper to execute
-	bool do_execute(std::string & str, regex_t const & regexp,
-			std::string const& replace) const;
-	void do_replace(std::string & str, size_t start_pos,
-			std::string const & replace,
+	bool do_execute(std::string & str, replace_t const & regexp) const;
+	void do_replace(std::string & str, std::string const & replace,
 			regmatch_t const * match) const;
 
 	// helper to add_definition() and add_pattern()
@@ -93,6 +98,9 @@ private:
 
 	// helper to add_pattern
 	std::string substitute_definition(std::string const & pattern);
+
+	// return the match of throw if idx is invalid
+	regmatch_t const & get_match(regmatch_t const * match, char idx) const;
 
 	// don't increase too, it have direct impact on performance. This limit
 	// the number of grouping expression allowed in a regular expression
@@ -103,8 +111,7 @@ private:
 
 	size_t limit;
 	size_t limit_defs_expansion;
-	std::vector<regex_t> v_regexp;
-	std::vector<std::string> v_replace;
+	std::vector<replace_t> regex_replace;
 	/// dictionary of regular definition
 	typedef std::map<std::string, std::string> defs_dict;
 	defs_dict defs;

@@ -1,5 +1,12 @@
 2003-08-23  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libregex/op_regex.h:
+	* libregex/op_regex.cpp: tidy
+
+	* libfd/op_bfd.cpp: remove obsolete comment
+
+2003-08-23  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/file_manip.h:
 	* libutil++/file_manip.cpp: is_directory(dirname): return true if
 	  dirname exists
