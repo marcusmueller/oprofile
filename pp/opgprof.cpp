@@ -110,9 +110,7 @@ void output_gprof(profile_container const & samples,
 	bfd_vma low_pc;
 	bfd_vma high_pc;
 
-	/* FIXME worth to try more multiplier ? is ia64 with its chunk of
-	 * instructions can get sample inside a chunck or always at chunk
-	 * boundary ? */
+	/* FIXME worth to try more multiplier ?	*/
 	int multiplier = 2;
 	if (aligned_samples(samples, 4))
 		multiplier = 8;

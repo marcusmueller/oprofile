@@ -1,3 +1,11 @@
+2003-10-20  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/oprofiled.c: correct an error message
+	* libop/op_alloc_counter.h: remove bogus FIXME
+	* libutil++/child_reader.cpp: avoid quadratic behaviour if child does a
+	  lot of output in stderr
+	* libpp/opgprof.cpp: fix comment
+
 2003-10-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* gui/oprof_start.cpp: redundant return

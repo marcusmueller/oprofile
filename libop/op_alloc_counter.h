@@ -27,10 +27,7 @@ extern "C" {
 /**
  * @param pev  array of selected event we want to bind to counter
  * @param nr_events  size of pev array
- * @param cpu_type  cpu type: FIXME passing this parameter is a non sense
- *  load_events(); automatically determine the cpu type so it look like only
- *  a way to get a mismatch between detected cpu type and this parameter. btw
- *  op_events.c API is weird.
+ * @param cpu_type  cpu type
  *
  * Try to calculate a binding between passed event in pev and counter number.
  * The binding is returned in a size_t * where returned ptr[i] is the counter

@@ -397,7 +397,7 @@ int main(int argc, char const * argv[])
  
 	err = setrlimit(RLIMIT_NOFILE, &rlim);
 	if (err) {
-		perror("warning: could not set RLIMIT_NOFILE to 8192: ");
+		perror("warning: could not set RLIMIT_NOFILE to 2048: ");
 	}
 
 	if (op_write_lock_file(OP_LOCK_FILE)) {

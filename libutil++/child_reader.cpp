@@ -135,7 +135,7 @@ bool child_reader::block_read()
 
 		if (FD_ISSET(fd2, &read_fs)) {
 			if (end2 >= sz_buf2) {
-				sz_buf2 += PIPE_BUF;
+				sz_buf2 = sz_buf2 ? sz_buf2 * 2 : PIPE_BUF;
 				buf2 = (char *)xrealloc(buf2, sz_buf2);
 			}
 
