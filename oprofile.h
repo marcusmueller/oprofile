@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.16 2000/09/06 12:18:53 moz Exp $ */
+/* $Id: oprofile.h,v 1.17 2000/09/06 13:19:33 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -58,6 +58,11 @@ struct _oprof_data {
 #define OP_MAPPING (1U<<15)
 /* 1==PERFCTR1, 0==PERFCTR0 */
 #define OP_COUNTER (1U<<14)
+/* FIXME: for things like TUX, where the value of PAGE_OFFSET
+ * means that kernel/user addresses cannot be distinguished
+ * by value, we need to add another bit for kernel/user,
+ * maybe by testing for KERNEL_DS
+ */
 
 /* fork(),vfork(),clone() */
 #define OP_FORK ((1U<<15)|(1U<<0))
