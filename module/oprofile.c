@@ -57,7 +57,7 @@ static char const * op_version = VERSION_STRING;
 
 inline static int need_wakeup(uint cpu, struct _oprof_data * data)
 {
-	return data->nextbuf >= (data->buf_size - OP_PRE_WATERMARK) && !oprof_ready[cpu];
+	return data->nextbuf >= (data->buf_size - data->buf_watermark) && !oprof_ready[cpu];
 }
 
 inline static void next_sample(struct _oprof_data * data)
@@ -160,7 +160,7 @@ static int is_ready(void)
 inline static void up_and_check_note(void)
 {
 	note_pos++;
-	if (likely(note_pos < (sysctl.note_size - OP_PRE_NOTE_WATERMARK) && !is_ready()))
+	if (likely(note_pos < (sysctl.note_size - OP_PRE_NOTE_WATERMARK(sysctl.note_size)) && !is_ready()))
 		return;
 
 	/* if we reach the end of the buffer, just pin
@@ -255,9 +255,11 @@ static int check_buffer_amount(int cpu_nr)
 	struct _oprof_data * data = &oprof_data[cpu_nr]; 
 	int size = data->buf_size;
 	int num = data->nextbuf;
-	if (num < size - OP_PRE_WATERMARK && oprof_ready[cpu_nr] != 2) {
-		printk(KERN_WARNING "oprofile: Detected overflow of size %d. You must increase "
-			"the hash table size or reduce the interrupt frequency\n", num);
+	if (num < size - data->buf_watermark && oprof_ready[cpu_nr] != 2) {
+		printk(KERN_WARNING "oprofile: Detected overflow of size %d. "
+		       "You must increase the module buffer size with\n"
+		       "opcontrol --setup --bufer-size= or reduce the "
+		       "interrupt frequency\n", num);
 		num = size;
 	} else
 		data->nextbuf = 0;
@@ -441,6 +443,7 @@ static int oprof_init_data(void)
 		data = &oprof_data[i];
 		data->buf_size = 0;
 		data->buffer = 0;
+		data->buf_watermark = 0;
 	}
  
 	buf_size = (sizeof(struct op_sample) * sysctl.buf_size);
@@ -458,6 +461,7 @@ static int oprof_init_data(void)
 		memset(data->buffer, 0, buf_size);
 
 		data->buf_size = sysctl.buf_size;
+		data->buf_watermark = OP_PRE_WATERMARK(data->buf_size);
 		data->nextbuf = 0;
 	}
 
@@ -468,10 +472,10 @@ static int parms_check(void)
 {
 	int err;
 
-	if ((err = check_range(sysctl.buf_size, OP_PRE_WATERMARK + 1024, 1048576,
+	if ((err = check_range(sysctl.buf_size, OP_MIN_BUF_SIZE, OP_MAX_BUF_SIZE,
 		"sysctl.buf_size value %d not in range (%d %d)\n")))
 		return err;
-	if ((err = check_range(sysctl.note_size, OP_PRE_NOTE_WATERMARK + 1024, 1048576,
+	if ((err = check_range(sysctl.note_size, OP_MIN_NOTE_TABLE_SIZE, OP_MAX_NOTE_TABLE_SIZE,
 		"sysctl.note_size value %d not in range (%d %d)\n")))
 		return err;
 

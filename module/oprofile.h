@@ -44,6 +44,8 @@ struct _oprof_data {
 	struct op_sample * buffer;
 	/* nr. in buffer */
 	uint buf_size;
+	/* we try to wakeup when nextbuf >= buf_watermark */
+	uint buf_watermark;
 	/* next in buffer (atomic) */
 	uint nextbuf;
 	/* number of IRQs for this CPU */

@@ -1,5 +1,11 @@
 2003-04-05  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libop/op_config_24.h:
+	* module/oprofile.c:
+	* module/oprofile.c: make watermark size proportionnal to buffer size.
+
+2003-04-05  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libop/op_events.h:
 	* libop/op_events.c: re-add op_min_count();
 
