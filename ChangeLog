@@ -1,3 +1,9 @@
+2002-03-08  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in: bump to 0.2cvs
+
+	* TODO: update
+ 
 2002-03-07  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/opf_container.cpp: handle osf_short_linr_info

@@ -1,41 +1,53 @@
-Before 1.0
-----------
+0.2
+---
 
+ o split documentation into tutorial + ref. Include /everything/ in the ref: sample format,
+   logfile meanings etc. 
+ o audit oprof_start for security + document sudo
  o get symbol size via elf instead of bfd
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
    these two todo are perhaps worthwhile to implement now. The new filtering
    of symbols make them less interesting. - let's wait - john
  o should we pin rather than loop sample buffer overflow too ?
+ o fix NGPT bug
+ o difference between two profile session. Difference must be made at source level. 
+   (This is a part of post-prof). Difference can be made also at symbols level.
+ o determine where we need preempt_disable/enable to prevent pre-emption + test (ugh)
+ o include lock metering stuff
+ o consider if we can get to the new subsection 1 in 2.4.18+ via a kernel patch to
+   insert the start/end (if clean, submit to linux-kernel)
+ o remaining little cleanups of output format, module unloaded using of postprof etc.
+ 
+Before 1.0
+----------
+
  o coherent naming class conventions
  o use standard C integer type <stdint.h> int32_t int16_t etc.
 	- but they are so ugly ...
  o add option to op_to_source like oprofpp -u -m on a symbol basis.
- o audit oprof_start for security...
  o review the exception table of the nmi handler (at least stop oprofile)
  o take oprof_convert out the back and do the cruel to be kind thing
  o more discussion of problematic code needs to go in the "interpreting" section. 
- o test it to hell and back
- o compile all C++ programs with STL_port and test them
- o difference between two profile session. Difference must be made at source level. 
-   (This is a part of post-prof). Difference can be made also at symbols level.
- o verify builds (modversions, kernel versions, athlon etc.). I have the
-  necessary stuff to check kernel versions/configurations on PPro core (Phil)
  o use a filelock rather a sleep to synchronize op_start and daemon.
  o check chroot() processes and the path hash stuff
- o use nm and a little script to track unused function
  o audit to track unnecessary include <>
  o check if we can use our own RTC irq handler rather to pass through the
   the kernel service. The overhead for RTC is very big actually. Take care
   first from where come the overhead (read/write RTC CMOS is costly)
- o gcc 3.0/3.1 compile. (3.1 is not stable currently but I follow it, Phil)
- o determine where we need preempt_disable/enable to prevent pre-emption + test
  o thread profiling in the old and new flavour (2.5 introduce a new thread handling) (also
    see NGPT bug on sf)
- o split documentation into tutorial + ref. Include /everything/ in the ref: sample format,
-   logfile meanings etc. 
- o make oprofpp -t d not be allowed without -s symbol_name 
 
+Checks to make
+--------------
+ 
+ o gcc 3.0/3.1 compile. (3.1 is not stable currently but I follow it, Phil)
+ o verify builds (modversions, kernel versions, athlon etc.). I have the
+  necessary stuff to check kernel versions/configurations on PPro core (Phil)
+ o use nm and a little script to track unused function
+ o test it to hell and back
+ o compile all C++ programs with STL_port and test them
+ 
 Later
 -----
 
