@@ -48,7 +48,7 @@ static volatile ulong oprof_note_opened __cacheline_aligned_in_smp;
 static DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
 
 static u32 oprof_ready[NR_CPUS] __cacheline_aligned_in_smp;
-struct _oprof_data oprof_data[NR_CPUS];
+struct _oprof_data oprof_data[NR_CPUS] __cacheline_aligned;
 
 struct op_note * note_buffer __cacheline_aligned_in_smp;
 u32 note_pos __cacheline_aligned_in_smp;

@@ -1,3 +1,4 @@
 .deps
+.*.flags
 Makefile
 oprofile.s

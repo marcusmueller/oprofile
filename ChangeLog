@@ -1,3 +1,26 @@
+2002-06-10  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+ 
+	* configure.in: remove old checks we don't need.
+	  Add to EXTRA_CFLAGS not KCFLAGS 
+
+	* module/Makefile.in: update to use Rules.make and
+	  kernel rules.
+ 
+	* module/op_init.c: make this one include kernel modversion
+	  stuff for 2.2
+ 
+	* module/oprofile.h: remove __cacheline_aligned in wrong place
+
+	* module/x86/Makefile.in: use Rules.make (hacky)
+
+	* module/x86/arch.mak: remove
+ 
+	* module/x86/op_fixmap.c: add missing header
+ 
+	* module/x86/op_syscalls.c: my_sys_exit is not static
+ 
 2002-06-09  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/cverb.h:

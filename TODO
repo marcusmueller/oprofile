@@ -23,6 +23,9 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
  
+ o 2.2 compile requires you to be root to compile the module 
+ o should auto-detect kgcc from the Makefile rather than insist on it being specified
+ o man-page/op_start needs --blah=fefef not --blah fewfef 
  o make sure we behave sensibly in all places following symlinks etc. 
  o debian - libiberty is in "binutils-dev" package 
  o oprof_report/Makefile.in etc. 

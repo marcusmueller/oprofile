@@ -12,6 +12,8 @@
 // FIXME: any point in this file now we don't fiddle
 // with -march options ??
  
+#undef __NO_VERSION__
+ 
 #include "oprofile.h"
 
 EXPORT_NO_SYMBOLS;

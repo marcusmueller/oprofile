@@ -1,1 +1,0 @@
-ARCH_CFLAGS = -mcpu=i686 -fomit-frame-pointer

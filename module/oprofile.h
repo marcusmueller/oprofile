@@ -44,7 +44,7 @@
 
 struct op_entry {
 	struct op_sample samples[OP_NR_ENTRY];
-} __cacheline_aligned;
+};
 
 /* per-cpu dynamic data */
 struct _oprof_data {
@@ -64,7 +64,7 @@ struct _oprof_data {
 	uint nr_irq;
 	/* reset counter values */
 	uint ctr_count[OP_MAX_COUNTERS];
-} __cacheline_aligned;
+};
 
 /* reflect /proc/sys/dev/oprofile/#counter files */
 struct oprof_counter {

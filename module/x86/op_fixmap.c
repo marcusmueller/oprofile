@@ -17,6 +17,7 @@
 #include <asm/io.h>
 
 #include "oprofile.h"
+#include "apic_compat.h"
 
 unsigned long virt_apic_base;
 

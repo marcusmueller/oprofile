@@ -263,7 +263,8 @@ asmlinkage static long my_sys_init_module(char const * name_user, struct module 
 	return ret;
 }
 
-asmlinkage static long my_sys_exit(int error_code)
+/* used from do_nmi */
+asmlinkage long my_sys_exit(int error_code)
 {
 	struct op_note note;
 

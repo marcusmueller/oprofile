@@ -1,42 +1,37 @@
-LD=ld
-CC=@CC@
+OPROFILE_DIR=@OPROFILE_DIR@
+VERSION=@VERSION@
+KVERS=@KVERS@
+KSRC=@KSRC@
 
-INCLUDES = -I@KINC@/ -I@topdir@/ -I@topdir@/libutil/ -I@topdir@/libop/ -I..
-BASIC_KCFLAGS = -mcpu=i686 -pipe -O2 -fomit-frame-pointer -fno-strict-aliasing -Wall -Wstrict-prototypes -Wunused 
-KCFLAGS += $(INCLUDES) -D__KERNEL__ -DMODULE @BKCFLAGS@ @MODVERSIONS@ @NO_MODULE_VERSION@
-KCFLAGS += $(BASIC_KCFLAGS)
-ASMFLAGS = -D__ASSEMBLY__ -DMODULE -D__KERNEL__ -traditional -I@KINC@
-
-# enable -Werror for non-release versions except for on 2.5 kernels
-ifneq (,$(findstring cvs,@VERSION@))
-ifeq (,$(findstring 2.5,@KVERS@))
-KCFLAGS += -Werror
-endif
-endif
+EXTRA_CFLAGS=@EXTRA_CFLAGS@ -D__NO_VERSION__ \
+	-I$(OPROFILE_DIR)/ -I$(OPROFILE_DIR)/libutil -I$(OPROFILE_DIR)/libop -I$(OPROFILE_DIR)/module
  
-HEADERS=op_apic.h arch_compat.h apic_compat.h
-SOURCES=cpu_type.c op_apic.c op_nmi.c op_fixmap.c op_syscalls.c
-ASMSOURCES=oprofile_nmi.S
-OBJECTS=cpu_type.o op_apic.o op_nmi.o op_fixmap.o op_syscalls.o oprofile_nmi.o
-TARGET=oprofile_arch.o
+# enable -Werror for non-release versions except for on 2.5 kernels
+ifneq (,$(findstring cvs,$(VERSION)))
+ifeq (,$(findstring 2.5,$(KVERS)))
+EXTRA_CFLAGS += -Werror
+endif
+endif
 
-.PHONY: all install clean uninstall
+O_TARGET := arch.o
+ 
+obj-y := cpu_type.o op_apic.o op_fixmap.o op_nmi.o op_syscalls.o oprofile_nmi.o
+obj-m := $(O_TARGET)
+O_OBJS := $(obj-y)
+M_OBJS := $(O_TARGET)
 
-all: $(TARGET)
-install:
-uninstall:
+all:
+	(cd $(KSRC) && $(MAKE) SUBDIRS=$(OPROFILE_DIR)/module/x86 modules)
+
 clean:
-	rm -rf $(TARGET) $(OBJECTS) .deps
+	rm -rf $(O_TARGET) $(obj-y) .deps .*.flags
+	 
+# FIXME: why do we need an explicit rule ??? 
+oprofile_nmi.o: oprofile_nmi.S
+	$(CC) -D__ASSEMBLY__ -D__KERNEL__ -traditional -c -o $@ $<
 
-$(TARGET): $(OBJECTS)
-	$(LD) -r -o $@ $(OBJECTS)
+TOPDIR := $(KSRC)
+CONFIG_SHELL := TOPDIR=$(KSRC) /bin/bash
+include $(KSRC)/Rules.make
 
-%.o: %.c
-	$(CC) $(KCFLAGS) -c -o $@ $<
-
-%.o: %.S
-	$(CC) $(ASMFLAGS) -c -o $@ $<
-
-MKDIR_P=mkdir -p
-
-include ../../make.deps
+# FIXME: dependencies 

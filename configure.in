@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.90 2002/06/06 18:59:26 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.91 2002/06/10 20:18:23 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -36,7 +36,7 @@ dnl AX_COMPILE_OPTION(option, action-if-found, action-if-not-found)
 dnl see if autoconf.h defines the option
 AC_DEFUN(AX_COMPILE_OPTION, [
 SAVE_CFLAGS=$CFLAGS
-CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__"
+CFLAGS="-I$KINC -O2 -D__KERNEL__"
 AC_TRY_COMPILE( [#include <linux/config.h>],
 [
 #ifndef $1
@@ -46,6 +46,9 @@ break_me_hard(\\\);
 CFLAGS=$SAVE_CFLAGS
 ])
 
+OPROFILE_DIR=`pwd`
+AC_SUBST(OPROFILE_DIR)
+ 
 # FIXME - fucking autoconf ! how do I override the cached value ??? 
 AC_ARG_WITH(cc,    [  --with-cc=<kgcc>             C compiler used to compiler kernel], CC=$withval)
 AC_SUBST(CC)
@@ -84,7 +87,7 @@ esac
 dnl Check for the minimal kernel version supported
 AC_MSG_CHECKING(kernel version)
 SAVE_CFLAGS=$CFLAGS
-CFLAGS="$BKCFLAGS -I$KINC -D__KERNEL__ -Werror"
+CFLAGS="-I$KINC -D__KERNEL__ -Werror"
 AC_TRY_COMPILE( 
   [
   #include <linux/version.h>
@@ -95,12 +98,6 @@ AC_TRY_COMPILE(
   break_me_hard(\\\);
   #endif
   ], AC_MSG_RESULT("ok"), AC_MSG_ERROR("check html documentation install section"))
-CFLAGS=$SAVE_CFLAGS
-
-AC_MSG_CHECKING("whether $CC accepts -mpreferred-stack-boundary=2")
-SAVE_CFLAGS=$CFLAGS
-CFLAGS="-mpreferred-stack-boundary=2 $CFLAGS"
-AC_TRY_COMPILE(,,AC_MSG_RESULT("yes");BKCFLAGS="-mpreferred-stack-boundary=2 $BKCFLAGS",AC_MSG_RESULT("no"))
 CFLAGS=$SAVE_CFLAGS
 
 # FIXME: use config.h for the -D things ... 
@@ -118,41 +115,17 @@ CFLAGS="-Werror $CFLAGS"
 AC_TRY_LINK(,[
 int i;
 if (__builtin_expect(i, 0)) { }
-],AC_MSG_RESULT("yes"); BKCFLAGS="$BKCFLAGS -DEXPECT_OK", AC_MSG_RESULT("no");)
+],AC_MSG_RESULT("yes"); EXTRA_CFLAGS="$EXTRA_CFLAGS -DEXPECT_OK", AC_MSG_RESULT("no");)
 CFLAGS=$SAVE_CFLAGS 
  
 AC_MSG_CHECKING(for rtc_lock)
 gcc -I$KINC -E $KINC/linux/mc146818rtc.h | grep rtc_lock >/dev/null
 if test "$?" -eq 0; then
-  AC_MSG_RESULT(yes); BKCFLAGS="$BKCFLAGS -DRTC_LOCK";
+  AC_MSG_RESULT(yes); EXTRA_CFLAGS="$EXTRA_CFLAGS -DRTC_LOCK";
 else
   AC_MSG_RESULT(no);
 fi
  
-dnl Check for tgid
-AC_MSG_CHECKING(task_struct.tgid)
-SAVE_CFLAGS=$CFLAGS
-CFLAGS="$BKCFLAGS -I$KINC -D__KERNEL__ -Werror"
-AC_TRY_COMPILE(
-  [
-  #include <linux/config.h>
-  #include <linux/sched.h>
-  ],
-  [
-  int main() { task_struct t; t->tgid = 4; return 0; }
-  ], AC_MSG_RESULT("yes") BKCFLAGS="-DTGID $BKCFLAGS", AC_MSG_RESULT("no"))
-CFLAGS=$SAVE_CFLAGS
-
-AC_MSG_CHECKING(for hard_get_current())
-HARD_GET_CURRENT=`gcc -I$KINC -E $KINC/asm/current.h | grep hard_get_current`
-if test -z "$HARD_GET_CURRENT"; then
-  AC_MSG_RESULT(no)
-else
-  AC_MSG_RESULT(yes)
-  # hard_get_current() can't work for us...
-  AC_MSG_ERROR(This kernel version is unsupported. Check oprofile bug tracker for more information.)
-fi
-
 arch="unknown"
 AC_MSG_CHECKING(for x86 architecture)
 AX_COMPILE_OPTION(CONFIG_X86, x86=1, x86=0)
@@ -162,58 +135,14 @@ test "$x86" = 1 && arch="x86"
 test "$arch" = "unknown" && AC_MSG_ERROR(Unsupported architecture)
 rm -f module/arch && ln -s "$arch" module/arch
 
-AC_MSG_CHECKING(for SMP)
-AX_COMPILE_OPTION(CONFIG_SMP,smp=1,smp=0)
-AX_MSG_RESULT_YN($smp)
-
-AC_MSG_CHECKING(for versioned modules)
-mv=0
-AX_COMPILE_OPTION(CONFIG_MODVERSIONS,mv=1,mv=0)
-AX_MSG_RESULT_YN($mv)
-MODVERSIONS=""
-test "$mv" = 1 && MODVERSIONS="-DMODVERSIONS -include $KINC/linux/modversions.h"
-AC_SUBST(MODVERSIONS)
-
 dnl for now we do not support PREEMPT patch
 AC_MSG_CHECKING(for preempt patch)
 AX_COMPILE_OPTION(CONFIG_PREEMPT,preempt=1,preempt=0)
 AX_MSG_RESULT_YN($preempt)
 test "$preempt" = 0 || AC_MSG_ERROR(unsupported kernel configuration : CONFIG_PREEMPT)
 
-dnl linux 2.2 need -D__SMP__, preferable to pass as compile option, so we
-dnl include <linux/smp.h> without worrying to include the compat file first
-if test "$smp" = 1; then
-  AC_MSG_CHECKING(for -D__SMP__)
-  dnl look like a AX_CHECK_LINUX_VERSION(x,y,z);
-  SAVE_CFLAGS=$CFLAGS
-  CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
-  AC_TRY_COMPILE( 
-    [ #include <linux/version.h> ],
-    [ 
-      #if LINUX_VERSION_CODE < LINUX_VERSION(2,4,0)
-	break_me_hard(\\\);
-      #endif
-    ],
-    AC_MSG_RESULT("no"),
-    AC_MSG_RESULT("yes");BKCFLAGS="-D__SMP__ $BKCFLAGS")
-  CFLAGS=$SAVE_CFLAGS
-fi
-
-dnl in 2.2 only one object file must be compiled w/o __NO_VERSION__ look at
-dnl further comment in module/Makefile.in. Note than treating this in compat.h
-dnl means than compat.h must be include before any #include <>, for now treat
-dnl on cmd line FIXME
-AC_MSG_CHECKING(for __NO_VERSION__)
-if grep __NO_VERSION__ $KSRC/include/linux/module.h >/dev/null; then
-  AC_MSG_RESULT("yes")
-  NO_MODULE_VERSION="-D__NO_VERSION__"
-else
-  AC_MSG_RESULT("no")
-fi
-AC_SUBST(NO_MODULE_VERSION)
-
 AC_SUBST(KINC)
-AC_SUBST(BKCFLAGS)
+AC_SUBST(EXTRA_CFLAGS)
 
 MODINSTALLDIR=/lib/modules/$KVERS
  
