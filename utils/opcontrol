@@ -215,7 +215,7 @@ do_init() {
 	DEFAULT_EVENT=`$OP_HELP --get-default-event`
  
 	IS_TIMER=0
-	if test "$CPU_TYPE" = "timer"; then
+	if test "$CPUTYPE" = "timer"; then
 		IS_TIMER=1
 	fi
 }
