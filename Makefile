@@ -3,7 +3,7 @@ all: sprofile.o
 clean:
 	rm -f *.o 
  
-CFLAGS=-D__KERNEL__ -Wall -I/usr/src/linux/include -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe -fno-strength-reduce -malign-loops=2 -malign-jumps=2 -malign-functions=2 -DMODULE -Wunused
+CFLAGS=-D__KERNEL__ -Wall -I/usr/src/linux/include -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe -fno-strength-reduce -malign-loops=2 -malign-jumps=2 -malign-functions=2 -DMODULE -Wunused -march=pentiumpro
 
 ASMFLAGS=-D__ASSEMBLY__ -D__KERNEL__ -traditional
  
