@@ -15,6 +15,7 @@
 #include <asm/ptrace.h>
 
 #include "oprofile.h"
+#include "op_util.h"
 
 #define RTC_IO_PORTS 2
 
@@ -25,7 +26,7 @@
 
 /* ---------------- RTC handler ------------------ */
 
-static void do_rtc_interrupt(int irq, void *dev_id, struct pt_regs *regs)
+static void do_rtc_interrupt(int irq, void * dev_id, struct pt_regs * regs)
 {
 	uint cpu = op_cpu_id();
 	unsigned char intr_flags;
@@ -136,11 +137,9 @@ static int rtc_check_params(void)
 {
 	int target = sysctl.ctr[0].count;
 
-	if (target < OP_MIN_RTC_COUNT || target > OP_MAX_RTC_COUNT) {
-		printk(KERN_ERR "RTC value %d is out of range (%d-%d)\n",
-			target, OP_MIN_RTC_COUNT, OP_MAX_RTC_COUNT);
+	if (check_range(target, OP_MIN_RTC_COUNT, OP_MAX_RTC_COUNT,
+		"RTC value %d is out of range (%d-%d)\n"))
 		return -EINVAL;
-	}
 
 	return 0;
 }

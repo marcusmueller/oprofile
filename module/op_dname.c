@@ -22,13 +22,13 @@
 
 static uint dname_top;
 
-static struct qstr **dname_stack;
+static struct qstr ** dname_stack;
 static char * pool_pos;
 static char * pool_start;
 static char * pool_end;
 
 static ulong hash_map_open;
-static struct op_hash_index *hash_map;
+static struct op_hash_index * hash_map;
 
 unsigned long is_map_ready(void)
 {
@@ -89,7 +89,7 @@ int oprof_hash_map_release(void)
 	return 0;
 }
 
-int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma)
+int oprof_hash_map_mmap(struct file * file, struct vm_area_struct * vma)
 {
 	ulong start = (ulong)vma->vm_start;
 	ulong page, pos;
@@ -112,10 +112,10 @@ int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma)
 
 
 #ifndef NEED_2_2_DENTRIES
-int wind_dentries_2_4(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt)
+int wind_dentries_2_4(struct dentry * dentry, struct vfsmount * vfsmnt, struct dentry * root, struct vfsmount * rootmnt)
 {
-	struct dentry *d = dentry;
-	struct vfsmount *v = vfsmnt;
+	struct dentry * d = dentry;
+	struct vfsmount * v = vfsmnt;
 
 	/* wind the dentries onto the stack pages */
 	for (;;) {
@@ -147,8 +147,8 @@ int wind_dentries_2_4(struct dentry *dentry, struct vfsmount *vfsmnt, struct den
 uint do_path_hash_2_4(struct dentry *dentry, struct vfsmount *vfsmnt)
 {
 	uint value;
-	struct vfsmount *rootmnt;
-	struct dentry *root;
+	struct vfsmount * rootmnt;
+	struct dentry * root;
 
 	read_lock(&current->fs->lock);
 	rootmnt = mntget(current->fs->rootmnt);
@@ -167,9 +167,9 @@ uint do_path_hash_2_4(struct dentry *dentry, struct vfsmount *vfsmnt)
 #endif /* NEED_2_2_DENTRIES */
 
 /* called with note_lock held */
-uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt)
+uint do_hash(struct dentry * dentry, struct vfsmount * vfsmnt, struct dentry * root, struct vfsmount * rootmnt)
 {
-	struct qstr *dname;
+	struct qstr * dname;
 	uint value = -1;
 	uint firsthash;
 	uint incr;

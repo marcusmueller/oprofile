@@ -17,7 +17,7 @@
 
 /* note - assumes you only test for NULL, and not
  * actually care about the return value */
-void *compat_request_region (unsigned long start, unsigned long n, char const * name)
+void * compat_request_region (unsigned long start, unsigned long n, char const * name)
 {
         if (check_region (start, n) != 0)
                 return NULL;
@@ -25,7 +25,7 @@ void *compat_request_region (unsigned long start, unsigned long n, char const * 
         return (void *) 1;
 }
 
-int wind_dentries_2_2(struct dentry *dentry)
+int wind_dentries_2_2(struct dentry * dentry)
 {
 	struct dentry * root = current->fs->root;
 
@@ -53,7 +53,7 @@ int wind_dentries_2_2(struct dentry *dentry)
 }
 
 /* called with note_lock held */
-uint do_path_hash_2_2(struct dentry *dentry)
+uint do_path_hash_2_2(struct dentry * dentry)
 {
 	/* BKL is already taken */
 

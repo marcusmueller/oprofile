@@ -15,7 +15,7 @@
 unsigned long kvirt_to_pa(unsigned long adr);
 void * rvmalloc(signed long size);
 void rvfree(void * mem, signed long size);
-// returns non-zero on failure
+// returns non-zero on failure, inclusive
 int check_range(int val, int l, int h, char const * msg);
 
 #endif /* OP_UTIL_H */

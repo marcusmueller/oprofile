@@ -71,7 +71,8 @@ inline static void next_sample(struct _oprof_data * data)
 		data->nextbuf = 0;
 }
 
-inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const struct op_sample *ops, const struct pt_regs *regs)
+inline static void evict_op_entry(uint cpu, struct _oprof_data * data,
+	struct op_sample const * ops, struct pt_regs const * regs)
 {
 	memcpy(&data->buffer[data->nextbuf], ops, sizeof(struct op_sample));
 	next_sample(data);
@@ -112,14 +113,14 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const str
 	}
 }
 
-inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, int ctr)
+inline static void fill_op_entry(struct op_sample * ops, struct pt_regs * regs, int ctr)
 {
 	ops->eip = regs->eip;
 	ops->pid = current->pid;
-	ops->count = (1U << OP_BITS_COUNT)*ctr + 1;
+	ops->count = (1U << OP_BITS_COUNT) * ctr + 1;
 }
 
-void regparm3 op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
+void regparm3 op_do_profile(uint cpu, struct pt_regs * regs, int ctr)
 {
 	struct _oprof_data * data = &oprof_data[cpu];
 	uint h, i;
@@ -181,8 +182,8 @@ inline static void up_and_check_note(void)
 	oprof_wake_up(&oprof_wait);
 }
 
-// if holding note_lock
-void __oprof_put_note(struct op_note *onote)
+/* if holding note_lock */
+void __oprof_put_note(struct op_note * onote)
 {
 	if (!prof_on)
 		return;
@@ -191,16 +192,16 @@ void __oprof_put_note(struct op_note *onote)
 	up_and_check_note();
 }
 
-void oprof_put_note(struct op_note *onote)
+void oprof_put_note(struct op_note * onote)
 {
 	spin_lock(&note_lock);
 	__oprof_put_note(onote);
 	spin_unlock(&note_lock);
 }
 
-static int oprof_note_read(char *buf, size_t count, loff_t *ppos)
+static int oprof_note_read(char * buf, size_t count, loff_t * ppos)
 {
-	struct op_note *mybuf;
+	struct op_note * mybuf;
 	uint num;
 	ssize_t max;
 
@@ -264,7 +265,7 @@ static int check_buffer_amount(struct _oprof_data * data)
 	return num;
 }
 
-static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
+static int oprof_read(struct file * file, char * buf, size_t count, loff_t * ppos)
 {
 	uint num;
 	ssize_t max;
@@ -344,7 +345,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 static int oprof_start(void);
 static int oprof_stop(void);
 
-static int oprof_open(struct inode *ino, struct file *file)
+static int oprof_open(struct inode * ino, struct file * file)
 {
 	int err;
 
@@ -371,7 +372,7 @@ static int oprof_open(struct inode *ino, struct file *file)
 	return err;
 }
 
-static int oprof_release(struct inode *ino, struct file *file)
+static int oprof_release(struct inode * ino, struct file * file)
 {
 	switch (minor(file->f_dentry->d_inode->i_rdev)) {
 		case 1: return oprof_hash_map_release();
@@ -393,7 +394,7 @@ static int oprof_release(struct inode *ino, struct file *file)
 	return oprof_stop();
 }
 
-static int oprof_mmap(struct file *file, struct vm_area_struct *vma)
+static int oprof_mmap(struct file * file, struct vm_area_struct * vma)
 {
 	if (minor(file->f_dentry->d_inode->i_rdev) == 1)
 		return oprof_hash_map_mmap(file, vma);
@@ -420,7 +421,7 @@ static int oprof_init_data(void)
 {
 	uint i;
 	ulong hash_size,buf_size;
-	struct _oprof_data *data;
+	struct _oprof_data * data;
 
 	note_buffer = vmalloc(sizeof(struct op_note) * sysctl.note_size);
  	if (!note_buffer) {
@@ -637,7 +638,7 @@ static void unlock_sysctl(void)
 	MOD_DEC_USE_COUNT;
 }
 
-static int get_nr_interrupts(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
+static int get_nr_interrupts(ctl_table * table, int write, struct file * filp, void * buffer, size_t * lenp)
 {
 	uint cpu;
 	int ret = -EINVAL;
@@ -660,7 +661,7 @@ out:
 	return ret;
 }
 
-int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
+int lproc_dointvec(ctl_table * table, int write, struct file * filp, void * buffer, size_t * lenp)
 {
 	int err;
 
@@ -671,7 +672,7 @@ int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer,
 	return err;
 }
 
-static void dump_one(struct _oprof_data *data, struct op_sample *ops, uint cpu)
+static void dump_one(struct _oprof_data * data, struct op_sample * ops, uint cpu)
 {
 	if (!ops->count)
 		return;
@@ -709,7 +710,7 @@ static void do_actual_dump(void)
 	oprof_wake_up(&oprof_wait);
 }
 
-static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
+static int sysctl_do_dump(ctl_table * table, int write, struct file * filp, void * buffer, size_t * lenp)
 {
 	int err = -EINVAL;
 
@@ -731,7 +732,7 @@ out:
 	return err;
 }
 
-static int sysctl_do_dump_stop(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
+static int sysctl_do_dump_stop(ctl_table * table, int write, struct file * filp, void * buffer, size_t * lenp)
 {
 	int err = -EINVAL;
 
@@ -786,7 +787,7 @@ static ctl_table dev_root[] = {
 	{0,},
 };
 
-static struct ctl_table_header *sysctl_header;
+static struct ctl_table_header * sysctl_header;
 
 /* NOTE: we do *not* support sysctl() syscall */
 

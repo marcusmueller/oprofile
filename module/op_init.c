@@ -9,6 +9,9 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
+// FIXME: any point in this file now we don't fiddle
+// with -march options ??
+ 
 #include "oprofile.h"
 
 EXPORT_NO_SYMBOLS;

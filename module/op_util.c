@@ -20,7 +20,7 @@
 /* Given PGD from the address space's page table, return the kernel
  * virtual mapping of the physical memory mapped at ADR.
  */
-static inline unsigned long uvirt_to_kva(pgd_t *pgd, unsigned long adr)
+static inline unsigned long uvirt_to_kva(pgd_t * pgd, unsigned long adr)
 {
 	unsigned long ret = 0UL;
 	pmd_t *pmd;
@@ -33,7 +33,7 @@ static inline unsigned long uvirt_to_kva(pgd_t *pgd, unsigned long adr)
 			pte = *ptep;
 			if (pte_present(pte)) {
 				ret = (unsigned long) pte_page_address(pte);
-				ret |= adr & (PAGE_SIZE-1);
+				ret |= adr & (PAGE_SIZE - 1);
 			}
 		}
 	}
