@@ -153,7 +153,7 @@ is all you need, but note these arguments to <command>./configure</command> :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;with-qt-dir/includes/libraries</option></term>
+		<term><option>&mdash;with-qt2-dir/includes/libraries</option></term>
 		<listitem><para>
 			Specify the location of Qt2 headers and libraries. It defaults to searching in
 			<constant>$QTDIR</constant> if these are not specified.

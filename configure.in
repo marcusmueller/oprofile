@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.57 2001/11/26 21:44:34 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.58 2001/11/27 21:18:41 phil_e Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -219,6 +219,13 @@ AC_MSG_CHECKING("whether to use included sstream")
 AC_TRY_COMPILE([#include <sstream>], [], 
 AC_MSG_RESULT([no]);,
 AC_MSG_RESULT([yes]); CXXFLAGS="$CXXFLAGS -I../include")
+
+dnl bfd.h pre 1998 check only for gnu 2.xx series, so gcc 3.0 can't compile it
+AC_MSG_CHECKING("whether bfd define bool")
+AC_TRY_COMPILE([#include <bfd.h>], [], 
+AC_MSG_RESULT([no]);,
+AC_MSG_RESULT([yes]); BFD_CXXFLAGS="-DTRUE_FALSE_ALREADY_DEFINED")
+AC_SUBST(BFD_CXXFLAGS)
 
 AC_OUTPUT(Makefile events/Makefile util/Makefile module/Makefile dae/Makefile doc/Makefile doc/oprofile.1 pp/Makefile gui/Makefile gui/ui/Makefile version.h Rules.make)
 
