@@ -1,3 +1,7 @@
+2002-11-12  Graydon Hoare  <graydon@redhat.com>
+
+	* autogen.sh: support overriding autotool binary names.
+
 2002-11-11  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* configure.in: honor --with-extra-libs
