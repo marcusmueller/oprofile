@@ -1,5 +1,17 @@
 2003-08-11  John Levon  <levon@movementarian.org>
 
+	* libpp/format_output.cpp:
+	* libpp/format_output.h: add set_nr_groups(), remove
+	pp_nr_counters.
+
+	* libpp/profile_container.cpp:
+	* libpp/profile_container.h:
+	* pp/opannotate.cpp:
+	* pp/opgprof.cpp:
+	* pp/opreport.cpp: count_group not counter
+
+2003-08-11  John Levon  <levon@movementarian.org>
+
 	* libpp/Makefile.am:
 	* libpp/counter_array.cpp:
 	* libpp/counter_array.h: rename to ...

@@ -241,6 +241,7 @@ void handle_options(vector<string> const & non_options)
 		exit(EXIT_FAILURE);
 	}
 
+/* This should probably be removed now ? */
 #if 0
 	if (unmerged_profile.size() > 1) {
 		// quick and dirty check for now

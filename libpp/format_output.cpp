@@ -21,14 +21,12 @@
 
 using namespace std;
 
-extern size_t pp_nr_counters;
-
-
 namespace format_output {
 
 formatter::formatter(profile_container const & profile_)
 	:
 	flags(ff_none),
+	nr_groups(1),
 	profile(profile_),
 	first_output(true),
 	vma_64(false),
@@ -74,6 +72,12 @@ void formatter::show_long_filenames()
 void formatter::vma_format_64bit()
 {
 	vma_64 = true;
+}
+
+
+void formatter::set_nr_groups(size_t nr)
+{
+	nr_groups = nr;
 }
 
 
@@ -192,10 +196,9 @@ void formatter::do_output(ostream & out, symbol_entry const & symb,
 	if (flags & ff_vma)
 		padding = output_field(out, datum, ff_vma, padding, false);
 
-	// the field repeated for each counter
-	// FIXME: replace pp_nr_counters with count_group notion
-	for (size_t ctr = 0 ; ctr < pp_nr_counters; ++ctr) {
-		field_datum datum(symb, sample, ctr);
+	// repeated fields for each count group
+	for (size_t group = 0 ; group < nr_groups; ++group) {
+		field_datum datum(symb, sample, group);
 
 		if (flags & ff_nr_samples)
 			padding = output_field(out, datum,
@@ -259,8 +262,8 @@ void formatter::output_header(ostream & out)
 	if (flags & ff_vma)
 		padding = output_header_field(out, ff_vma, padding);
 
-	// the field repeated for each counter
-	for (size_t ctr = 0 ; ctr < pp_nr_counters; ++ctr) {
+	// the field repeated for each count group
+	for (size_t group = 0 ; group < nr_groups; ++group) {
 		if (flags & ff_nr_samples)
 			padding = output_header_field(out,
 			      ff_nr_samples, padding);

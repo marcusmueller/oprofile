@@ -33,9 +33,6 @@
 using namespace std;
 using namespace options;
 
-// FIXME: TODO
-size_t pp_nr_counters = 1;
-
 namespace {
 
 scoped_ptr<profile_container> samples;
@@ -58,11 +55,10 @@ string const end_comment(" */");
 unsigned int const count_width = 6;
 
 
-// FIXME share with opgprof.cpp and opreport.cpp, get rid of
-// "counter" reliance in favour of count groups
+// FIXME share with opgprof.cpp and opreport.cpp
 image_set populate_samples(profile_container & samples,
 			   partition_files const & files,
-			   bool merge_lib, size_t counter)
+			   bool merge_lib, size_t count_group)
 {
 	image_set images = sort_by_image(files, extra_found_images);
 
@@ -86,7 +82,7 @@ image_set populate_samples(profile_container & samples,
 
 		check_mtime(abfd.get_filename(), profile.get_header());
 	
-		samples.add(profile, abfd, app_name, counter);
+		samples.add(profile, abfd, app_name, count_group);
 	}
 
 	return images;

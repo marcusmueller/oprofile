@@ -26,9 +26,6 @@
 #include "sample_container.h"
 #include "symbol_container.h"
 
-/* FIXME: counters -> count_group everywhere and related */
-extern size_t pp_nr_counters;
-
 using namespace std;
 
 namespace {
@@ -76,10 +73,13 @@ profile_container::~profile_container()
 //  the samples_by_file_loc member var is correctly setup.
 void profile_container::add(profile_t const & profile,
                             op_bfd const & abfd, string const & app_name,
-			    size_t counter)
+                            size_t count_group)
 {
-	if (counter > pp_nr_counters)
-		throw runtime_error("profile_container::add(): invalid counter");
+	/* FIXME: temporary */
+	if (count_group > OP_MAX_COUNTERS)
+		throw runtime_error("profile_container::add(): "
+			"invalid count group");
+
 	string const image_name = abfd.get_filename();
 
 	for (symbol_index_t i = 0; i < abfd.syms.size(); ++i) {
@@ -96,8 +96,8 @@ void profile_container::add(profile_t const & profile,
 		if (count == 0 && !add_zero_samples_symbols)
 			continue;
 
-		symb_entry.sample.counts[counter] = count;
-		total_count[counter] += count;
+		symb_entry.sample.counts[count_group] = count;
+		total_count[count_group] += count;
 
 		symb_entry.size = end - start;
 
@@ -123,7 +123,7 @@ void profile_container::add(profile_t const & profile,
 		symbol_entry const * symbol = symbols->insert(symb_entry);
 
 		if (need_details) {
-			add_samples(abfd, i, p_it, base_vma, symbol, counter);
+			add_samples(abfd, i, p_it, base_vma, symbol, count_group);
 		}
 	}
 }
@@ -133,13 +133,13 @@ void
 profile_container::add_samples(op_bfd const & abfd, symbol_index_t sym_index,
                                profile_t::iterator_pair const & p_it,
 			       bfd_vma base_vma, symbol_entry const * symbol,
-			       size_t counter)
+			       size_t count_group)
 {
 	profile_t::const_iterator it;
 	for (it = p_it.first; it != p_it.second ; ++it) {
 		sample_entry sample;
 
-		sample.counts[counter] = it.count();
+		sample.counts[count_group] = it.count();
 
 		sample.file_loc.linenr = 0;
 		if (debug_info && sym_index != nil_symbol_index) {
@@ -232,7 +232,7 @@ profile_container::select_filename(double threshold) const
 		}
 	}
 
-	// Give a sort order on filename for the selected counter.
+	// Give a sort order on filename for the selected count_group.
 	vector<filename_by_samples> file_by_samples;
 
 	set<debug_name_id>::const_iterator it = filename_set.begin();

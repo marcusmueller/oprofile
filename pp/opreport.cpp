@@ -28,9 +28,6 @@
 
 using namespace std;
 
-/* FIXME */
-size_t pp_nr_counters;
-
 namespace {
 
 
@@ -508,11 +505,9 @@ vector<event_group_summary> populate_group_summaries()
 /**
  * Load the given samples container with the profile data from
  * the files container, merging as appropriate.
- *
- * FIXME: these references to "counter" need to be about "count groups"
- * for proper generality (beyond just comparing events)
  */
-void populate_profiles(partition_files const & files, profile_container & samples, size_t counter)
+void populate_profiles(partition_files const & files,
+                       profile_container & samples, size_t count_group)
 {
 	image_set images = sort_by_image(files, options::extra_found_images);
 
@@ -539,7 +534,7 @@ void populate_profiles(partition_files const & files, profile_container & sample
 
 			check_mtime(abfd.get_filename(), profile.get_header());
 	
-			samples.add(profile, abfd, app_name, counter);
+			samples.add(profile, abfd, app_name, count_group);
 		} else {
 			for (; it != p_it.second; ++it) {
 				string app_name = it->second.image;
@@ -552,7 +547,8 @@ void populate_profiles(partition_files const & files, profile_container & sample
 				check_mtime(abfd.get_filename(),
 					    profile.get_header());
 	
-				samples.add(profile, abfd, app_name, counter);
+				samples.add(profile, abfd,
+				            app_name, count_group);
 			}
 		}
 	}
@@ -582,7 +578,7 @@ format_flags const get_format_flags(column_flags const & cf)
 }
 
 
-void output_symbols(profile_container const & samples)
+void output_symbols(profile_container const & samples, size_t nr_groups)
 {
 	profile_container::symbol_choice choice;
 	choice.threshold = options::threshold;
@@ -591,6 +587,8 @@ void output_symbols(profile_container const & samples)
 	                      options::long_filenames);
 
 	format_output::formatter out(samples);
+
+	out.set_nr_groups(nr_groups);
 
 	if (options::details)
 		out.show_details();
@@ -610,10 +608,6 @@ int opreport(vector<string> const & non_options)
 {
 	handle_options(non_options);
 
-	/* FIXME: this belongs as a parameter given to
-	 * formatter, not this ugly global */
-	pp_nr_counters = sample_file_partition.size();
-
 	output_header();
 
 	if (!options::symbols) {
@@ -628,7 +622,7 @@ int opreport(vector<string> const & non_options)
 		options::debug_info, options::details);
 	for (size_t i = 0; i < sample_file_partition.size(); ++i)
 		populate_profiles(sample_file_partition[i], samples, i);
-	output_symbols(samples);
+	output_symbols(samples, sample_file_partition.size());
 	return 0;
 }
 

@@ -30,8 +30,11 @@ class sample_entry;
 typedef std::vector<symbol_entry const *> symbol_collection;
 
 
-/** store multiple samples files belonging to the same profiling session.
- * So on can hold samples files for arbitrary counter and binary image */
+/**
+ * Store multiple samples files belonging to the same profiling session.
+ * This is the main container capable of holding the profiles for arbitrary
+ * binary images and arbitrary count groups.
+ */
 class profile_container : noncopyable {
 public:
 	/**
@@ -61,6 +64,7 @@ public:
 	 * @param profile the samples files container
 	 * @param abfd the associated bfd object
 	 * @param app_name the owning application name of sample
+	 * @param count_group the group to add results for
 	 *
 	 * add() is an helper for delayed ctor. Take care you can't safely
 	 * make any call to add after any other member function call.
@@ -68,7 +72,7 @@ public:
 	 * sampling rate, same events etc.)
 	 */
 	void add(profile_t const & profile, op_bfd const & abfd,
-		 std::string const & app_name, size_t counter);
+		 std::string const & app_name, size_t count_group);
 
 	/// Find a symbol from its image_name, vma, return zero if no symbol
 	/// for this image at this vma
@@ -135,7 +139,7 @@ private:
 	void add_samples(op_bfd const & abfd, symbol_index_t sym_index,
 	                 profile_t::iterator_pair const &,
 			 bfd_vma base_vma, symbol_entry const * symbol,
-			 size_t counter);
+			 size_t count_group);
 
 	/**
 	 * create an unique artificial symbol for an offset range. The range
@@ -153,13 +157,13 @@ private:
 	                                     u32 & end, size_t & order);
 
 	/// The symbols collected by oprofpp sorted by increased vma, provide
-	/// also a sort order on samples count for each counter.
+	/// also a sort order on samples count for each count group.
 	scoped_ptr<symbol_container> symbols;
 	/// The samples count collected by oprofpp sorted by increased vma,
 	/// provide also a sort order on (filename, linenr)
 	scoped_ptr<sample_container> samples;
-	/// build() must count samples count for each counter so cache it here
-	/// since user of profile_container often need it later.
+	/// build() must count samples count for each count group so cache it
+	/// here since user of profile_container often need it later.
 	count_array_t total_count;
 
 	/**

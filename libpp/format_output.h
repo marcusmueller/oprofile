@@ -36,6 +36,15 @@ public:
 	/// add a given column
 	void add_format(format_flags flag);
 
+	/**
+	 * Set the number of collected count groups. Each group
+	 * will output sample count and percentage in extra columns.
+	 *
+	 * This class assumes that the profile information has been
+	 * populated with the right number of groups.
+	 */
+	void set_nr_groups(size_t nr_count_groups);
+
 	/** output a vector of symbols to out according to the output format
 	 * specifier previously set by call(s) to add_format() */
 	void output(std::ostream & out, symbol_collection const & v);
@@ -124,6 +133,9 @@ private:
 	/// formatting flags set
 	format_flags flags;
  
+	/// count groups
+	size_t nr_groups;
+
 	/// container we work from
 	profile_container const & profile;
  
