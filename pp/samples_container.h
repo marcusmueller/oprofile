@@ -165,15 +165,16 @@ private:
  * @param sample_filename samples filename
  * @param counter_mask the counter nr mask each bit at pos i on mean open
  *  this samples files nr i
+ * @param binary_name the name of the binary image
  * @param excluded_symbols a vector of symbol name to ignore
  * @param symbol if non empty record only samples for this symbol
  *
  * open a bfd object getting symbols name, then populate samples with the
  * relevant samples
  */
-bool add_samples(samples_container_t& samples, std::string sample_filename,
+bool add_samples(samples_container_t & samples, std::string sample_filename,
 		 size_t counter_mask, std::string binary_name,
-		 std::vector<std::string> const& excluded_symbols =
+		 std::vector<std::string> const & excluded_symbols =
 		 	std::vector<std::string>(),
 		 std::string symbol = std::string());
 

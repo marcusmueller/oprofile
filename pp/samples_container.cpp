@@ -309,9 +309,9 @@ uint samples_container_t::get_nr_counters() const
 	exit(EXIT_FAILURE);
 }
 
-bool add_samples(samples_container_t& samples, string sample_filename,
+bool add_samples(samples_container_t & samples, string sample_filename,
 		 size_t counter_mask, string image_name,
-		 vector<string> const& excluded_symbols,
+		 vector<string> const & excluded_symbols,
 		 string symbol)
 {
 	opp_samples_files samples_files(sample_filename, counter_mask);

@@ -1,5 +1,5 @@
 /**
- * @file opd_printf.h
+ * @file daemon/opd_printf.h
  * Output routines
  *
  * @remark Copyright 2002 OProfile authors

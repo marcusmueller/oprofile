@@ -1,5 +1,5 @@
 /**
- * @file oprofiled.c
+ * @file dae/oprofiled.c
  * Daemon set up and main loop
  *
  * @remark Copyright 2002 OProfile authors

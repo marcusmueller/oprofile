@@ -1,5 +1,5 @@
 /**
- * @file opd_kernel.h
+ * @file dae/opd_kernel.h
  * Dealing with the kernel and kernel module samples
  *
  * @remark Copyright 2002 OProfile authors

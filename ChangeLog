@@ -1,5 +1,13 @@
 2002-11-14  John Levon  <levon@movementarian.org>
 
+	* dae/*:
+	* daemon/*:
+	* libutil++/op_bfd.h:
+	* pp/samples_container.cpp:
+	* pp/samples_container.h: doxygen anality
+ 
+2002-11-14  John Levon  <levon@movementarian.org>
+
 	* libopt++/popt_options.h:
 	* libopt++/popt_options.cpp: place in popt
 	namespace to avoid clash with getopt.h

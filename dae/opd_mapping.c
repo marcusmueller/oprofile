@@ -1,5 +1,5 @@
 /**
- * @file opd_mapping.c
+ * @file dae/opd_mapping.c
  * Management of process mappings
  *
  * @remark Copyright 2002 OProfile authors

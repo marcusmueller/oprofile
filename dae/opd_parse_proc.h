@@ -1,5 +1,5 @@
 /**
- * @file opd_parse_proc.h
+ * @file dae/opd_parse_proc.h
  * Parsing of /proc/#pid
  *
  * @remark Copyright 2002 OProfile authors

@@ -1,5 +1,5 @@
 /**
- * @file opd_image.h
+ * @file daemon/opd_image.h
  * Management of binary images
  *
  * @remark Copyright 2002 OProfile authors

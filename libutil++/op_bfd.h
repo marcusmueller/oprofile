@@ -82,6 +82,7 @@ public:
 	/**
 	 * @param filename the name of the image file
 	 * @param excluded symbol names to exclude
+	 * @param included symbol names to include
 	 *
 	 * All errors are fatal.
 	 */
