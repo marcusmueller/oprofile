@@ -1,4 +1,4 @@
-/* $Id: op_init.c,v 1.8 2002/02/09 21:17:56 movement Exp $ */
+/* $Id: op_init.c,v 1.9 2002/02/28 03:33:49 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -23,17 +23,22 @@ EXPORT_NO_SYMBOLS;
 
 static void __init set_cpu_type(void)
 {
-	/* we want to include all P6 processors (i.e. > Pentium Classic,
-	 * < Pentium IV
-	 */
-	if ((current_cpu_data.x86_vendor != X86_VENDOR_INTEL &&
-	    current_cpu_data.x86 != 6) ||
-		(current_cpu_data.x86_vendor != X86_VENDOR_AMD &&
-		 current_cpu_data.x86 != 6)) {
+	__u8 vendor = current_cpu_data.x86_vendor;
+	__u8 family = current_cpu_data.x86;
+	__u8 model = current_cpu_data.x86_model;
+
+	/* unknown vendor */
+	if (vendor != X86_VENDOR_INTEL && vendor != X86_VENDOR_AMD) {
 		sysctl.cpu_type = CPU_RTC;
 		return;
 	}
 
+	/* not a P6-class processor */
+	if (family != 6) {
+		sysctl.cpu_type = CPU_RTC;
+		return;
+	}
+	 
 	/* 0 if PPro, 1 if PII, 2 if PIII, 3 if Athlon */
 	if (current_cpu_data.x86_vendor == X86_VENDOR_AMD) {
 		sysctl.cpu_type = CPU_ATHLON;
