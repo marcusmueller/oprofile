@@ -758,14 +758,15 @@ Some interesting options of the post-processor :
 <command>op_to_source</command> generates annotated source files or assembly listings optionally mixed
 with source. The op_to_source utility is actually a wrapper script around the opf_filter application.
 If you want to see the source file the profiled application needs to have debug information and the source
-must be available through this debug information e.g. compile the application with -g for gcc.
+must be available through this debug information e.g. compile the application with <option>-g</option> for 
+<command>gcc</command>.
 </para>
 <para>
 Note that for the reason explained in <xref linkend="hardware-counters"> the results can show some
-inaccuracy. The debug info itself can add other problems, for example, the line number for a symbol can be
-incorrect. The compiler can freely intermix some assembly instructions to make better scheduling
-and this leads to crediting one line of source for samples not really "owned" by this line etc. See also
-<xref linkend="interpreting"> about these problems.
+inaccuracy. The debug info itself can add other problems; for example, the line number for a symbol can be
+incorrect. Assembly instructions can be re-ordered and moved by the compiler, and this can lead to
+crediting source lines with samples not really "owned" by this line. Also see
+<xref linkend="interpreting">.
 </para>
 <para>
 The options allowed are :
@@ -774,41 +775,53 @@ The options allowed are :
 		<term><option>&mdash;assembly</option></term>
 		<listitem><para>
 		<!-- FIXME: update if this changes -->
-		Output assembly code. Currently the assembly code is sorted by increasing order on the vma
-		address but the <option>&mdash;sort-by-counter</option> provides a filtering option for assembly output.
+		Output assembly code. Currently the assembly code is sorted in increasing order on the vma
+		address but the <option>&mdash;sort-by-counter</option> provides a filtering option for assembly 
+		output.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;source-dir</option></term>
 		<listitem><para>
-		if you request for annotated source this option give the base directory where
-		come the source file. All source file outside this base directory are ignored
+		This option is used in conjunction with <option>&mdash;output-dir</option>. You
+		can use it to specify the base directory of the source which you wish to produce
+		annotated output for. With this option, any source files outside the directory
+		(for example, system header files) are ignored.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;output-dir</option></term>
 		<listitem><para>
-		output base directory where annotated source file are generated. If you do not
-		specify <option>&mdash;source-dir</option> neither <option>&mdash;output-dir</option> annotated source file go to stdout.
-		The output filename is created as it: the common part path of the source filename and the path
-		specified by <option>&mdash;source-dir</option> is stripped from the source filename, then the path specified
-		by &mdash;output-dir is prepended 
-		to the source filename
+		Specify that you want to produce an annotated source tree, rather than one big file. This
+		creates a heirarchy of annotated source files, and is affected by the <option>&mdash;source-dir</option>,
+		<option>&mdash;output</option>, and <option>&mdash;no-output</option> options.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;output patterns</option></term>
 		<listitem><para>
-		if you request for annotated source this option give a list of patterns saparated by "," so only
-		source filename that match one of this pattern are output. This option have no
-		effect if <option>--source-dir</option> neither <option>--output-dir</option> have not been set.
-		</para></listitem>
+		Specify a set of comma-separated patterns for matching annotated source output filenames.
+		If this option is present, a file is only output if it matches one of the given
+		patterns (which applies to both the filename and the containing directory names).
+		For example :
+		</para>
+		<para>
+		<command>&mdash;output '*.c,user.h'</command>
+		</para>
+		</listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;no-output patterns</option></term>
 		<listitem><para>
-		filename matched by <option>&mdash;output</option> can be filtered by one of the patterns given with this option.
-		</para></listitem>
+		Specify a set of comma-separated patterns for filtering annotated source output filenames.
+		If this option is present, a file is only output if it does not match one of the given
+		patterns (which applies to both the filename and the containing directory names).
+		For example :
+		</para>
+		<para>
+		<command>&mdash;no-output 'boring.c,boring*.h'</command>
+		</para>
+		</listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;source-with-assembly</option></term>
@@ -826,18 +839,16 @@ The options allowed are :
 	<varlistentry>
 		<term><option>&mdash;with-more-than-samples percent_samples</option></term>
 		<listitem><para>
-		<!-- FIXME: update when we can do better -->
-		Output source file or assembly symbol which contains at least <option>percent_samples</option>. Note that you can only
-output one complete file containing all the sources; there is currently no way to select only certain symbols or files in the source file. Can
-not be combined with <option>&mdash;until-more-than-samples</option>.
+		Output source file or assembly symbol which contains at least <option>percent_samples</option>.
+		Can not be combined with <option>&mdash;until-more-than-samples</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;until-more-than-samples percent_samples</option></term>
 		<listitem><para>
 		<!-- FIXME: it's unclear what this means exactly ? -->
-		Output source file or assembly symbol until the amount of samples outputted reach percent_samples. See the note
-above. Can not be combined with <option>&mdash;with-more-than-samples</option>.
+		Output source file or assembly symbol until the amount of samples outputted reach percent_samples.
+		Can not be combined with <option>&mdash;with-more-than-samples</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

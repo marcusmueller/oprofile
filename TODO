@@ -1,4 +1,4 @@
-0.0.6 task list
+0.0.7 task list
 ---------------
 
 o Bob's rtc patch
@@ -24,9 +24,7 @@ o fix zero component hash problem
  
 o make/get rid of op_to_source to have similar interface to other utils
 
-o add --files=dae/,a.c,b.c option to annotated source for only certain files/dirs
- 
-0.0.7 task list
+0.0.8 task list
 ---------------
  
 o implement proc->old_exec
