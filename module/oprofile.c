@@ -155,7 +155,7 @@ int cpu_buffer_waiting;
 static int is_ready(void)
 {
 	uint cpu_nr;
-	for (cpu_nr=0; cpu_nr < smp_num_cpus; cpu_nr++) {
+	for (cpu_nr = 0 ; cpu_nr < OP_MAX_CPUS; cpu_nr++) {
 		if (oprof_ready[cpu_nr]) {
 			cpu_buffer_waiting = cpu_nr;
 			return 1;
@@ -326,14 +326,14 @@ static int oprof_read(struct file * file, char * buf, size_t count, loff_t * ppo
 
 	if (file->f_flags & O_NONBLOCK) {
 		uint cpu;
-		for (cpu = 0; cpu < smp_num_cpus; ++cpu) {
+		for (cpu = 0 ; cpu < OP_MAX_CPUS; cpu++) {
 			if (oprof_data[cpu].nextbuf) {
 				cpu_buffer_waiting = cpu;
 				oprof_ready[cpu] = 2;
 				break;
 			}
 		}
-		if (cpu == smp_num_cpus)
+		if (cpu == OP_MAX_CPUS)
 			return -EAGAIN;
 	} else if (quitting) {
 		/* we might have done dump_stop just before the daemon
@@ -449,7 +449,7 @@ static int oprof_init_data(void)
 	}
 	note_pos = 0;
 
-	for (i=0; i < smp_num_cpus; i++) {
+	for_each_online_cpu(i) {
 		data = &oprof_data[i];
 		hash_size = (sizeof(struct op_entry) * sysctl.hash_size);
 		buf_size = (sizeof(struct op_sample) * sysctl.buf_size);
@@ -518,12 +518,12 @@ static int oprof_start(void)
 		goto out;
 
 	if ((err = parms_check())) {
-		oprof_free_mem(smp_num_cpus);
+		oprof_free_mem(OP_MAX_CPUS);
 		goto out;
 	}
 
 	if ((err = int_ops->setup())) {
-		oprof_free_mem(smp_num_cpus);
+		oprof_free_mem(OP_MAX_CPUS);
 		goto out;
 	}
 
@@ -581,13 +581,13 @@ static int oprof_stop(void)
 
 	spin_lock(&note_lock);
 
-	for (i=0; i < smp_num_cpus; i++) {
+	for (i = 0 ; i < OP_MAX_CPUS; i++) {
 		struct _oprof_data *data = &oprof_data[i];
 		oprof_ready[i] = 0;
 		data->nextbuf = data->next = 0;
 	}
 
-	oprof_free_mem(smp_num_cpus);
+	oprof_free_mem(OP_MAX_CPUS);
 
 	spin_unlock(&note_lock);
 	err = 0;
@@ -658,7 +658,7 @@ static int get_nr_interrupts(ctl_table * table, int write, struct file * filp, v
 
 	sysctl.nr_interrupts = 0;
 
-	for (cpu=0; cpu < smp_num_cpus; cpu++) {
+	for (cpu = 0 ; cpu < OP_MAX_CPUS; cpu++) {
 		sysctl.nr_interrupts += oprof_data[cpu].nr_irq;
 		oprof_data[cpu].nr_irq = 0;
 	}
@@ -701,7 +701,7 @@ static void do_actual_dump(void)
 	int i,j;
 
 	/* clean out the hash table as far as possible */
-	for (cpu=0; cpu < smp_num_cpus; cpu++) {
+	for (cpu = 0 ; cpu < OP_MAX_CPUS; cpu++) {
 		struct _oprof_data * data = &oprof_data[cpu];
 		spin_lock(&note_lock);
 		int_ops->stop_cpu(cpu);

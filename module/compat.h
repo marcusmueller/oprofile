@@ -37,6 +37,21 @@
 #define preempt_enable()		do { } while (0)
 #endif
 
+#if V_BEFORE(2, 5, 23)
+#define OP_MAX_CPUS	smp_num_cpus
+#define for_each_online_cpu(i) for (i = 0 ; i < smp_num_cpus ; ++i)
+#else
+#define OP_MAX_CPUS	NR_CPUS
+static inline int next_cpu(int i)
+{ 
+	while (i < NR_CPUS && !cpu_online(i))
+		++i;
+	return i;
+}
+#define for_each_online_cpu(i) \
+		for (i = next_cpu(0) ; i < NR_CPUS ; i = next_cpu(++i))
+#endif
+
 #if V_BEFORE(2, 5, 14)
 #define op_pfn_pte(x, y) mk_pte_phys((x), (y))
 #else

@@ -51,7 +51,7 @@ clean:
 	do \
 		(cd $$i && $(MAKE) clean) || exit 1 ; \
 	done
-	rm -f module/*.o module/arch/*.o module/*.o.cmd module/*.o.flags module/arch/*.o.cmd module/arch/*.o.flags
+	rm -f module/*.o module/arch/*.o module/.*.o.cmd module/.*.o.flags module/arch/.*.o.cmd module/arch/.*.o.flags
 
 maintainerclean: distclean
 	rm -f configure aclocal.m4 config.h.in

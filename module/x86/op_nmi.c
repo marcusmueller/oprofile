@@ -212,7 +212,7 @@ static void pmc_start_all(void)
 {
 	int cpu, i;
 
-	for (cpu=0; cpu < smp_num_cpus; cpu++) {
+	for (cpu = 0 ; cpu < OP_MAX_CPUS; cpu++) {
 		struct _oprof_data * data = &oprof_data[cpu];
 
 		for (i = 0 ; i < op_nr_counters ; ++i) {
