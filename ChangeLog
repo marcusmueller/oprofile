@@ -1,3 +1,15 @@
+2002-10-01  John Levon  <levon@movementarian.org>
+
+	* daemon/.cvsignore: add
+ 
+	* libop/op_interface_25.h: 
+	* daemon/opd_image.h:
+	* daemon/opd_image.c:
+	* daemon/oprofiled.c: fixups for new encoded interface. Fix
+	  --separate-samples
+
+	* utils/op_start_25: startup fixes
+ 
 2002-09-26  Will Cohen  <wcohen@redhat.com>
 
 	* module/x86/op_model_p4.c: Correct TC_DELIVER_MODE cccr select.

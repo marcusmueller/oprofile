@@ -443,9 +443,6 @@ static void opd_go_daemon(void)
  */
 static void opd_do_samples(struct op_buffer_head const * opd_buf)
 {
-	uint i;
-	struct op_sample const * buffer = opd_buf->buffer; 
-
 	/* prevent signals from messing us up */
 	sigprocmask(SIG_BLOCK, &maskset, NULL);
 
@@ -453,17 +450,7 @@ static void opd_do_samples(struct op_buffer_head const * opd_buf)
 
 	verbprintf("Read buffer of %d entries.\n", opd_buf->count);
  
-	for (i = 0; i < opd_buf->count; i++) {
-
-#if 0
-		if (pid_filter && (u32)pid_filter != buffer[i].pid)
-			continue;
-		if (pgrp_filter && pgrp_filter != getpgid(buffer[i].pid))
-			continue;
-#endif
-
-		opd_put_sample(&buffer[i]);
-	}
+	opd_process_samples(opd_buf->buffer, opd_buf->count);
 
 	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
 }
@@ -580,7 +567,7 @@ int main(int argc, char const * argv[])
 
 	opd_options(argc, argv);
 
-	s_buf_bytesize = sizeof(struct op_buffer_head) + opd_buf_size * sizeof(struct op_sample);
+	s_buf_bytesize = sizeof(struct op_buffer_head) + opd_buf_size * sizeof(unsigned long);
 
  	sbuf = xmalloc(s_buf_bytesize);
 

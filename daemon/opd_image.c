@@ -114,7 +114,7 @@ static int opd_get_dcookie(unsigned long cookie, char * buf, size_t size)
  * opd_init_image - init an image sample file
  */
 static void opd_init_image(struct opd_image * image, unsigned long cookie,
-	char const * app_name)
+	unsigned long app_cookie)
 {
 	char buf[PATH_MAX + 1];
  
@@ -122,10 +122,15 @@ static void opd_init_image(struct opd_image * image, unsigned long cookie,
 		image->name = xstrdup("");
 	else
 		image->name = xstrdup(buf);
+ 
+	if (opd_get_dcookie(app_cookie, buf, PATH_MAX))
+		image->app_name = xstrdup("");
+	else
+		image->app_name = xstrdup(buf);
 
 	image->cookie = cookie;
+	image->app_cookie = app_cookie;
 	image->kernel = 0;
-	image->app_name = xstrdup(app_name);
 }
 
 
@@ -239,12 +244,12 @@ static unsigned long opd_hash_cookie(unsigned long cookie)
 /**
  * opd_add_image - add an image to the image hashlist
  */
-static struct opd_image * opd_add_image(unsigned long cookie, char const * app_name)
+static struct opd_image * opd_add_image(unsigned long cookie, unsigned long app_cookie)
 {
 	struct opd_image * image = xmalloc(sizeof(struct opd_image));
 	unsigned long hash = opd_hash_cookie(cookie);
 
-	opd_init_image(image, cookie, app_name);
+	opd_init_image(image, cookie, app_cookie);
 	list_add(&image->hash_list, &opd_images[hash]);
 	nr_images++;
 	opd_open_image(image);
@@ -255,7 +260,7 @@ static struct opd_image * opd_add_image(unsigned long cookie, char const * app_n
 /**
  * opd_find_image - find an image
  */
-static struct opd_image * opd_find_image(unsigned long cookie)
+static struct opd_image * opd_find_image(unsigned long cookie, unsigned long app_cookie)
 {
 	unsigned long hash = opd_hash_cookie(cookie);
 	struct opd_image * image = 0;
@@ -263,7 +268,7 @@ static struct opd_image * opd_find_image(unsigned long cookie)
 
 	list_for_each(pos, &opd_images[hash]) {
 		image = list_entry(pos, struct opd_image, hash_list);
-		if (image->cookie == cookie)
+		if (image->cookie == cookie && image->app_cookie == app_cookie)
 			return image;
 	}
 	return NULL;
@@ -273,11 +278,11 @@ static struct opd_image * opd_find_image(unsigned long cookie)
 /**
  * opd_get_image - get an image from the image structure
  */
-static struct opd_image * opd_get_image(unsigned long cookie, char const * app_name)
+static struct opd_image * opd_get_image(unsigned long cookie, unsigned long app_cookie)
 {
 	struct opd_image * image;
-	if ((image = opd_find_image(cookie)) == NULL)
-		image = opd_add_image(cookie, app_name);
+	if ((image = opd_find_image(cookie, app_cookie)) == NULL)
+		image = opd_add_image(cookie, app_cookie);
 
 	return image;
 }
@@ -287,6 +292,7 @@ static struct opd_image * opd_add_kernel_image(char const * name)
 {
 	struct opd_image * image = xmalloc(sizeof(struct opd_image));
 	image->cookie = 0;
+	image->app_cookie = 0;
 	image->name = xstrdup(name);
 	image->app_name = NULL;
 	image->kernel = 1;
@@ -312,53 +318,71 @@ struct opd_image * opd_get_kernel_image(char const * name)
 }
 
  
-// FIXME
-static int opd_get_counter(unsigned long val)
+static void opd_put_sample(struct opd_image * image, unsigned long const * data)
 {
-	return val & (0x3);
+	unsigned long eip = data[0];
+	unsigned long event = data[1];
+ 
+	if (opd_eip_is_kernel(eip)) {
+		verbprintf("Kernel sample 0x%lx, counter %lu\n", eip, event);
+		opd_handle_kernel_sample(eip, event);
+	} else {
+		verbprintf("Image (%s) offset 0x%lx, counter %lu\n", image->name, eip, event);
+		opd_put_image_sample(image, eip, event);
+	}
 }
  
-
-#if 0 /* not used (yet) */
-static int opd_get_cpu(unsigned long val)
+ 
+// FIXME: pid/pgrp filter ?
+void opd_process_samples(unsigned long const * buffer, unsigned long count)
 {
-	return val >> 2;
-}
-#endif
+	unsigned long i = 0;
+	unsigned long cpu = 0;
+	unsigned long code, pid, cookie, app_cookie = 0;
+	struct opd_image * image = NULL;
 
+	while (i < count) {
+		if (buffer[i] != ESCAPE_CODE) {
+			if (i + 1 == count)
+				return;
 
-void opd_put_sample(struct op_sample const * sample)
-{
-	static char const * app_name = NULL;
- 
-	struct opd_image * image;
-	int counter = opd_get_counter(sample->event);
- 
-	/* ctx switch pre-amble */
-	if (sample->cookie == ~0UL) {
-		struct opd_image * app_image = opd_find_image(sample->event);
-		if (app_image) {
-			app_name = app_image->name;
-		} else {
-			char buf[PATH_MAX + 1];
-			if (opd_get_dcookie(sample->event, buf, PATH_MAX))
-				app_name = NULL;
-			else
-				app_name = buf;
+			opd_put_sample(image, &buffer[i]);
+			i += 2;
+			continue;
 		}
-		return;
-	}
 
-	/* kernel sample or no-mm */
-	if (!sample->cookie) {
-		if (opd_eip_is_kernel(sample->offset)) {
-			opd_handle_kernel_sample(sample->offset, counter);
-		} else {
-			opd_stats[OPD_NO_MM]++;
-		}
-		return;
-	}
+		// skip ESCAPE_CODE
+		if (++i == count)
+			return;
+
+		code = buffer[i];
+
+		// skip code
+		if (++i == count)
+			return;
  
-	image =  opd_get_image(sample->cookie, app_name);
-	opd_put_image_sample(image, sample->offset, counter);
+		switch (code) {
+			case CPU_SWITCH_CODE:
+				cpu = buffer[i];
+				verbprintf("CPU_SWITCH to %lu\n", cpu);
+				++i;
+				break;
+				 
+			case COOKIE_SWITCH_CODE:
+				cookie = buffer[i];
+				image = opd_get_image(cookie, app_cookie);
+				verbprintf("COOKIE_SWITCH to cookie %lu (%s)\n", cookie, image->name); 
+				++i;
+				break;
+ 
+			case CTX_SWITCH_CODE:
+				pid = buffer[i];
+				// skip pid
+				if (++i == count)
+					break;
+				app_cookie = buffer[i];
+				++i;
+				break;
+		}
+	}
 }

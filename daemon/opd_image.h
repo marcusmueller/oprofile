@@ -26,11 +26,12 @@
 struct opd_image {
 	/* name of this image */
 	char * name;
-	/* the application name where belongs this image, NULL if image has
-	 * no owner (such as vmlinux or module) */
+	/* name of the owning app or "" */
 	char * app_name;
 	/* cookie value for this image if any */
 	unsigned long cookie;
+	/* cookie value of the owning app or 0 */
+	unsigned long app_cookie;
 	/* hash table link */
 	struct list_head hash_list;
 	/* opened sample files */
@@ -54,6 +55,6 @@ struct opd_image * opd_get_kernel_image(char const * name);
  
 struct op_sample;
  
-void opd_put_sample(struct op_sample const * sample);
+void opd_process_samples(unsigned long const * buffer, unsigned long count);
 
 #endif /* OPD_IMAGE_H */
