@@ -51,7 +51,7 @@ opd_header read_header(std::string const & sample_filename);
 std::ostream & operator<<(std::ostream & out, opd_header const & header);
 
 /**
- * output a readable form of cpu type and speed extracted from the gien header
+ * output a readable form of cpu type and speed extracted from the given header
  */
 void output_cpu_info(std::ostream & out, opd_header const & header);
 
