@@ -1,13 +1,13 @@
 #!/bin/sh
-# $Id: op_start,v 1.10 2000/08/31 23:09:28 moz Exp $
+# $Id: op_start,v 1.11 2000/09/08 21:33:29 moz Exp $
 
 # quick and ugly interface
 # op_start --help and op_start --list-events have info
 
 # FIXME: chmod's
  
-BUF_SIZE=8192
-HASH_SIZE=4096
+BUF_SIZE=65536
+HASH_SIZE=16384
 CTR0_TYPE=
 CTR1_TYPE=
 CTR0_UM=0
