@@ -33,6 +33,12 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o can we log samples going to anonymous mapping by using
+  - 2.6 one fake sample for all anonymous sample, cookie == 0 mean use this
+  special sample file. (cookie == -1 or -2 as magic value ?)
+  - 2.4 we must pass to daemon note about exec anon mapping and create one
+  fake samples file by anon mapping specially named like 
+  /{root}/path/to/appli/anon_mapping-0B8000-0BA0000/...
  o why rel_to_abs_path in locate_images ??
  o we can add lots more unit tests yet
  o output column shortname headers for opreport -l

@@ -169,6 +169,9 @@ int main(int argc, char * argv[1])
 			sanity_check(argv[i]);
 		return 0;
 	}
+
+	remove(TEST_FILENAME);
+
 	do_test();
 
 	do_speed_test();
