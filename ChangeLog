@@ -1,3 +1,7 @@
+2003-03-15  Dave Jones <davej@codemonkey.org.uk>
+
+	* module/x86/op_nmi.c: Remove stale debug code from yesterdays commit.
+
 2003-03-15  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* configure.in: add checking for existence of xmemdup()
@@ -24,7 +28,7 @@
 
 2003-03-14  Andi Kleen <ak@suse.de>
 
-	* oprofile/module/x86/op_nmi.c: Fix another possible race condition.
+	* module/x86/op_nmi.c: Fix another possible race condition.
 
 2003-03-14  Philippe Elie  <phil.el@wanadoo.fr>
 

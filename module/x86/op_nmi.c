@@ -41,7 +41,6 @@ static struct op_x86_model_spec const * get_model(void)
 #ifdef CONFIG_X86_64
 
 static struct tss_struct *per_cpu_tss[NR_CPUS];
-unsigned long orig_ist[NR_CPUS];
 
 static void find_tss(int cpu)
 { 
@@ -54,7 +53,6 @@ static void find_tss(int cpu)
 	per_cpu_tss[cpu] = (void *)(ld->base0 | ((u64)ld->base1 << 16) |
 			   ((u64)ld->base2 << 24) | 
 			   ((u64)ld->base3 << 32)); 		
-	orig_ist[cpu] = per_cpu_tss[cpu]->ist[NMI_STACK];
 } 
 
 asmlinkage void op_do_nmi(struct pt_regs * regs)
