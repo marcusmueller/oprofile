@@ -157,12 +157,12 @@ static void read_unit_masks(char const * filename)
 			um = xmalloc(sizeof(struct op_unit_mask));
 			parse_um(um, line);
 		} else {
-			parse_um_entry(&um->um[nr_entries], line);
-			++nr_entries;
-			if (nr_entries == 16) {
+			if (nr_entries >= MAX_UNIT_MASK) {
 				fprintf(stderr, "oprofile: maximum unit mask entries exceeded\n");
 				exit(EXIT_FAILURE);
 			}
+			parse_um_entry(&um->um[nr_entries], line);
+			++nr_entries;
 		}
 
 next:

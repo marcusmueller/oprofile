@@ -1,3 +1,9 @@
+2003-03-03  Will Cohen  <wcohen@redhat.com>
+
+    * libop/op_events.h:
+    * libop/op_events.c: Correct checking for the number of unit
+      masks.
+
 2003-03-03  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.1.in:

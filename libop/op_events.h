@@ -28,6 +28,9 @@ enum unit_mask_type {
 	utm_bitmask		/**< bitmask */
 };
 
+/** up to sixteen allowed unit masks */
+#define MAX_UNIT_MASK 16
+
 
 /** Describe an unit mask. */
 struct op_unit_mask {
@@ -35,11 +38,10 @@ struct op_unit_mask {
 	u32 num;		/**< number of possible unit masks */
 	enum unit_mask_type unit_type_mask;
 	u16 default_mask;	/**< only the gui use it */
-	/** up to sixteen allowed unit masks */
 	struct op_described_um {
 		u16 value;
 		char * desc;
-	} um[16];
+	} um[MAX_UNIT_MASK];
 	struct list_head um_next; /**< next um in list */
 };
 
