@@ -1,4 +1,4 @@
-AM_CPPFLAGS=-I ../libop -I ../libutil
+AM_CPPFLAGS=-I ${top_srcdir}/libop -I ${top_srcdir}/libutil
 
 bin_PROGRAMS = op_session op_help
 bin_SCRIPTS = $(OP_START) $(OP_STOP) $(OP_DUMP)

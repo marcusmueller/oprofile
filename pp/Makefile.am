@@ -1,4 +1,4 @@
-AM_CPPFLAGS=-I ../libop -I ../libutil -I ../libdb -I ../libopt++ -I ../libutil++ -I ../libop++
+AM_CPPFLAGS=-I ${top_srcdir}/libop -I ${top_srcdir}/libutil -I ${top_srcdir}/libdb -I ${top_srcdir}/libopt++ -I ${top_srcdir}/libutil++ -I ${top_srcdir}/libop++
 
 noinst_LIBRARIES = libpp.a
 libpp_a_SOURCES = opp_symbol.cpp samples_container.cpp \

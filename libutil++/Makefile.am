@@ -1,4 +1,4 @@
-AM_CPPFLAGS=-I../libutil
+AM_CPPFLAGS=-I ${top_srcdir}/libutil
 
 noinst_LIBRARIES = libutil++.a
 libutil___a_SOURCES = op_bfd.cpp child_reader.cpp file_manip.cpp string_manip.cpp filename_match.cpp demangle_symbol.cpp cverb.cpp

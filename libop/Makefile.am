@@ -1,4 +1,4 @@
-AM_CPPFLAGS=-I../libutil
+AM_CPPFLAGS=-I${top_srcdir}/libutil
 
 noinst_LIBRARIES = libop.a
 libop_a_SOURCES = op_events.c op_events_desc.c op_cpu_type.c op_mangle.c

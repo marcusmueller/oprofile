@@ -1,4 +1,4 @@
-AM_CPPFLAGS=-I ../libop -I ../libutil -I ../libdb -I ../libopt++
+AM_CPPFLAGS=-I ${top_srcdir}/libop -I ${top_srcdir}/libutil -I ${top_srcdir}/libdb -I ${top_srcdir}/libopt++
 
 noinst_LIBRARIES = libabi.a
 libabi_a_SOURCES = abi.cpp op_abi.cpp

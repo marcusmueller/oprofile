@@ -1,13 +1,6 @@
-0.3 release
------------
-
 Before 1.0 big stuff
 --------------------
 
- o can we get pre-emption up and running ?? After a first try I think it should
- be fixed by calling preempt_enable/disable before/after each op_int_operations
- allowing arch depedant stuff to not worry about preemption or at least to minmize
- things needed in arch dependant file
  o implement new pp spec
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level. Important.
@@ -61,14 +54,8 @@ General checks to make
 Later
 -----
  
- o The halting problem: get two make cleans in a row to not compile anything
- 
  o multiplexing for real
  
- o check if we can use our own RTC irq handler rather to pass through the
-  the kernel service. The overhead for RTC is very big actually. Take care
-  first from where come the overhead (read/write RTC CMOS is costly)
-
 oprof_report:
 
 IMHO this app isn't near what we really want. There's no point doing this
@@ -83,14 +70,8 @@ o profile the NMI handler code
  
 o merge sample files into one big report (like vtune can do repeated runs)
  
-o move from racy sysctl to procfs, if it can be done nicely. Back compatibility
-  probably prevents us from making a mini-filesystem.
-
 o turn (or only compile) daemon in C++ to allow more code sharing with pp/gui
   is it a good idea ?
-
-o negative process entries in the daemon - a fork() into the pid would always succeed,
-  in the meantime count the missed samples, possibly try to get info via /proc again ...
 
 o maybe we should support a CPU mask for enabling counters (useful with
   processor pinning ?) 

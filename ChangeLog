@@ -1,5 +1,13 @@
 2002-11-09  John Levon  <levon@movementarian.org>
 
+	* TODO: update
+ 
+	* configure.in:
+	* most Makefile.am: make separate objdir work,
+	  except for module (impossible I suppose)
+
+2002-11-09  John Levon  <levon@movementarian.org>
+
 	* autogen.sh: use --foreign
  
 2002-11-09  John Levon  <levon@movementarian.org>

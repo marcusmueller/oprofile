@@ -7,7 +7,7 @@ distributed_sources = oprof_report.cpp hotspot_view.cpp oprof_report_main.cpp op
 
 MOC=@MOC@
 
-AM_CPPFLAGS = @QT_INCLUDES@ -I ../libop -I ../libutil++ -I ../libutil -DBINDIR=\"$(BINDIR)\" -DKVERSION=\"@KVERS@\"
+AM_CPPFLAGS = @QT_INCLUDES@ -I ${top_srcdir}/libop -I ${top_srcdir}/libutil++ -I ${top_srcdir}/libutil -DBINDIR=\"$(BINDIR)\" -DKVERSION=\"@KVERS@\"
 
 bin_PROGRAMS = oprof_report
 

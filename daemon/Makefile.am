@@ -1,7 +1,7 @@
 distributed_sources = oprofiled.c opd_stats.c opd_kernel.c opd_image.c opd_sample_files.c
 
 if WITH_KERNEL_SUPPORT
-AM_CPPFLAGS=-I ../libutil -I ../libop -I ../libdb
+AM_CPPFLAGS=-I ${top_srcdir}/libutil -I ${top_srcdir}/libop -I ${top_srcdir}/libdb
 
 bin_PROGRAMS = oprofiled
 
