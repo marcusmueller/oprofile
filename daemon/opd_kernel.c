@@ -143,7 +143,7 @@ static struct opd_module * opd_get_module(char * name)
  * Parse the file /proc/module to read start address and size of module
  * each line is in the format:
  *
- * module_name 16480 1 - Live [optionnal field]* 0xe091e000
+ * module_name 16480 1 - Live dependencies 0xe091e000
  *
  */
 static void opd_read_module_info(void)
@@ -151,9 +151,11 @@ static void opd_read_module_info(void)
 	FILE * fp;
 	char * line;
 	char * cp;
+	char * filename_end;
 	char * filename;
 	struct opd_module * mod;
 	int module_size;
+	int j;
 
 	fp = op_try_open_file("/proc/modules", "r");
 
@@ -173,31 +175,47 @@ static void opd_read_module_info(void)
 			continue;
 		}
 
-		cp = line;
-		while (*cp && *cp != ' ')
-			++cp;
+		for (filename_end = line ;
+		     *filename_end && *filename_end != ' ' ; ++filename_end) {
+		}
 
-		filename = xmalloc(cp - line + 2);
+		if (!*filename_end) {
+			printf("bad /proc/modules entry: %s\n", line);
+			free(line);
+			continue;
+		}
+
+		cp = filename_end;
+
+		sscanf(cp,"%u", &module_size);
+
+		/* skip module_size, ref_count, deps and live */
+		for (j = 0 ; j < 4 ; ++j) {
+			for (++cp; *cp && *cp != ' ' ; ++cp) {
+			}
+			if (!*cp) {
+				printf("bad /proc/modules entry: %s\n", line);
+				free(line);
+				continue;
+			}
+		}
+
+		filename = xmalloc(filename_end - line + 2);
 		/* Hacky: pp tools rely on at least one '}' in samples filename
-		 * so I force module filename as it reside in / directory */
+		 * so I force module filename as if it reside in / directory */
 		filename[0] = '/';
-		memcpy(filename + 1, line, cp - line);
-		filename[(cp - line) + 1] = '\0';
+		memcpy(filename + 1, line, filename_end - line);
+		filename[(filename_end - line) + 1] = '\0';
 
 		mod = opd_get_module(xstrdup(filename));
 		mod->image = opd_get_kernel_image(filename);
 		free(filename);
 
-		sscanf(cp,"%d", &module_size);
-
-		cp = line + strlen(line);
-		while (cp > line && *cp != ' ')
-			--cp;
 		sscanf(cp, "%llx", &mod->start);
 		mod->end = mod->start + module_size;
 
-		printf("module %s start %llx end %llx\n",
-		       mod->name, mod->start, mod->end);
+		verbprintf("module %s start %llx end %llx\n",
+			   mod->name, mod->start, mod->end);
 
 		free(line);
 	}
