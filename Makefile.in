@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.45 2001/12/18 14:03:15 davej Exp $
+# $Id: Makefile.in,v 1.46 2001/12/31 06:03:11 movement Exp $
 
 .PHONY: all install clean distclean maintainerclean uninstall tags
 
@@ -48,10 +48,10 @@ clean:
 # doc/Makefile is deleted here but should be deleted in distclean.
 # When the dist target works move it as action of distclean.
 maintainerclean: distclean
-	rm -f configure doc/Makefile aclocal.m4
+	rm -f configure doc/Makefile aclocal.m4 config.h.in
 
 distclean: clean
-	rm -f Makefile module/Makefile events/Makefile util/Makefile doc/oprofile.1 dae/Makefile pp/Makefile gui/Makefile gui/ui/Makefile tags config.status config.log config.cache version.h Rules.make config.h config.h.in
+	rm -f Makefile module/Makefile events/Makefile util/Makefile doc/oprofile.1 dae/Makefile pp/Makefile gui/Makefile gui/ui/Makefile tags config.status config.log config.cache version.h Rules.make config.h
 
 tags:
 	ctags -R

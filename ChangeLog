@@ -1,5 +1,10 @@
 2001-12-31  John Levon  <moz@compsoc.man.ac.uk>
 
+	* Makefile.in: move config.h.in to maintainerclean - it is included
+	in a tarball so a distclean shouldn't remove it
+ 
+2001-12-31  John Levon  <moz@compsoc.man.ac.uk>
+
 	* TODO: update
  
 	* gui/ui/oprof_start.base.ui:
