@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.38 2000/09/08 22:09:57 moz Exp $ */
+/* $Id: opd_proc.c,v 1.39 2000/09/23 02:41:02 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -85,9 +85,9 @@ void opd_alarm(int val __attribute__((unused)))
 	printf("Average depth of search of proc queue: %f\n",
 		(double)opd_stats[OPD_PROC_QUEUE_DEPTH]/(double)opd_stats[OPD_PROC_QUEUE_ACCESS]);
 	}
-	if (opd_stats[OPD_MAP_ARRAY_DEPTH]) {
+	if (opd_stats[OPD_MAP_ARRAY_ACCESS]) {
 	printf("Average depth of iteration through mapping array: %f\n",
-		(double)opd_stats[OPD_MAP_ARRAY_DEPTH]/(double)opd_stats[OPD_MAP_ARRAY_DEPTH]);
+		(double)opd_stats[OPD_MAP_ARRAY_DEPTH]/(double)opd_stats[OPD_MAP_ARRAY_ACCESS]);
 	}
 	printf("Nr. sample dumps: %lu\n",opd_stats[OPD_DUMP_COUNT]);
 	fflush(stdout);
