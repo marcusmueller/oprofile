@@ -63,6 +63,8 @@ ChildReader::~ChildReader()
 	if (buf2) free(buf2);	// allocated through C alloc
 }
 
+// FIXME: why duplicate the comments in .h ... you should be able
+// to read the doxygen output ...
 // ctor helper: fork the child process cmd passing it the vector of arguments
 // args. first_error is set to errno if something feel bad
 void ChildReader::exec_command(string const & cmd, vector<string> const & args)
@@ -181,7 +183,7 @@ bool ChildReader::getline(string & result)
 			ret = block_read();
 		}
 
-		// for efficiency try to copy as we can of data
+		// for efficiency try to copy as much as we can of data
 		ssize_t temp_pos = pos1;
 		while (temp_pos < end1 && ok) {
 			char ch = buf1[temp_pos++];
@@ -230,4 +232,3 @@ int ChildReader::terminate_process()
 
 	return first_error;
 }
-

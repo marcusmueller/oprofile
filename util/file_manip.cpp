@@ -294,9 +294,10 @@ char *opd_simplify_pathname (char *path)
  *
  * Returns the translated path.
  */
-/* from libibery: a hack until we need a C version of this or opd_malloc and
- * related are put in the util dir */
+/* FIXME: from libiberty: a hack until we need a C version of this or opd_malloc 
+ * and related are put in the util dir */
 extern "C" char * xstrdup(const char *);
+ 
 char *opd_relative_to_absolute_path(const char *path, const char *base_dir)
 {
 	char dir[PATH_MAX + 1];

@@ -14,6 +14,9 @@ o determine where we need ctx_sw_on/off to prevent pre-emption + test
  
 o move .oprofile to name=value pairs to avoid conflicts on change.
  
+o support for ignore list for all symbol post-prof stuff. This is especially
+  useful for oprofpp -l vmlinux, where we want to ignore default_idle and cpu_idle
+ 
 Later
 -----
 
@@ -60,7 +63,5 @@ o can we fold in the "untouched sample entry" case in hash table to another case
 WBNI
 ----
 
-o feature request: show percent of total samples on an image e.g. glibc took 43% of all samples
-  taken 
 o we don't really need a vmlinux file during profiling ...
 o Other x86 processors

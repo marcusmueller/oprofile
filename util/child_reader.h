@@ -24,17 +24,19 @@
 
 #include "../op_user.h"
 
-/// a class to read stdout / stderr from a child process.
-// code review is needed:
-//  - check the getline()/get_block()/read_block() interface.
-//  the expected behavior is:
-//  caller can call getline until nothing is available from the stdout of the
-// child. in this case child stderr is acumulated in buf2 and can be read
-// through get_block(). get_block() is blocking until the child close stderr /
-// stdout (even if the child die by a signal ?). The following corner case must
-// work but I'm unsure if the code reflect this behavior: the last line of the
-// child stdout have not necessarilly a LF terminator. the child can output any
-// size of data in stderr.
+/**
+ * a class to read stdout / stderr from a child process.
+ * FIXME: code review is needed:
+ *  - check the getline()/get_block()/read_block() interface.
+ *  the expected behavior is:
+ *  caller can call getline until nothing is available from the stdout of the
+ * child. in this case child stderr is acumulated in buf2 and can be read
+ * through get_block(). get_block() is blocking until the child close stderr /
+ * stdout (even if the child die by a signal ?). The following corner case must
+ * work but I'm unsure if the code reflect this behavior: the last line of the
+ * child stdout have not necessarilly a LF terminator. the child can output any
+ * size of data in stderr.
+ */
 class ChildReader {
 public:
 	/// fork a process. use error() to get error code. Do not try to
@@ -69,6 +71,7 @@ public:
 	/// < 0 : the child process can not be child
 	/// > 0 : the child process have return a non zero value
 	int error() const { return first_error; }
+ 
 private:
 	/// ctor helper: create the child process.
 	void exec_command(std::string const & cmd,

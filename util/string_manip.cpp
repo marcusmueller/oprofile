@@ -1,4 +1,4 @@
-/* COPYRIGHT (C) 2001 by ?
+/* COPYRIGHT (C) 2001 by various authors
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -13,7 +13,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * first written by John Levon and P. Elie
+ * Part written by John Levon and P. Elie
  */
 
 #include <sstream>
@@ -23,6 +23,8 @@
 using std::string;
 
 
+// FIXME: ick no, dirname has bugger all to do with "string_manip"
+// please move ;)
 /**
  * dirname - get the path component of a filename
  * @file_name: filename

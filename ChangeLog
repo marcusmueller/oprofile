@@ -1,5 +1,14 @@
 2001-12-09  John Levon  <moz@compsoc.man.ac.uk>
 
+	* TODO: update again
+ 
+	* util/child_reader.h:
+	* util/child_reader.cpp: 
+	* util/file_manip.cpp:
+	* util/string_manip.cpp: pedantic cleanup + FIXMEs
+ 
+2001-12-09  John Levon  <moz@compsoc.man.ac.uk>
+
 	* configure.in: add FIXME comment
 
 	* util/file_manip.h: add FIXME comment, 
