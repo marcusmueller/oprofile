@@ -163,7 +163,6 @@ extern struct op_int_operations op_rtc_ops;
 
 void regparm3 op_do_profile(uint cpu, struct pt_regs *regs, int ctr);
 extern struct _oprof_data oprof_data[NR_CPUS];
-extern int partial_stop;
 extern struct oprof_sysctl sysctl_parms;
 extern int nr_oprof_static;
 extern int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp);

@@ -1,3 +1,17 @@
+2002-07-12  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+ 
+	* dae/oprofiled.c:
+	* libop/op_interface.h: 
+	* module/oprofile.c: 
+	* module/oprofile.h:
+	* module/x86/op_nmi.c: 
+	* module/x86/op_syscalls.c: replace partial_stop,quitting,prof_on
+	  with single state variable, and clean up how shutdown is triggered.
+ 
+	* module/oprofile.c: always init data->entries etc. for every CPU
+ 
 2002-07-12  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* Makefile.in: typo in clean target
@@ -91,7 +105,7 @@
 
 2002-07-03  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* libutil/op_fileio.c: remove a FIXME, it's worthwhile to try to
+	* libutil/op_fileio.c: remove a FIXME, it's not worthwhile to try to
 	  use GNU getline() instead of op_get_line()
 
 	* pp/op_time.cpp:

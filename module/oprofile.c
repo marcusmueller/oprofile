@@ -34,13 +34,8 @@ struct oprof_sysctl sysctl_parms;
  * parameters during profiling */
 struct oprof_sysctl sysctl;
 
-static u32 prof_on __cacheline_aligned_in_smp;
-
-/* in the process of quitting ? */
-static int quitting;
-/* is partial_stop made ?  Re-using quitting for this purpose is obfuscated */
-int partial_stop;
-
+enum oprof_state state __cacheline_aligned_in_smp = STOPPED;
+	 
 static int op_major;
 
 static volatile ulong oprof_opened __cacheline_aligned_in_smp;
@@ -95,8 +90,7 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data,
 	 *
 	 * This will mean that approaching the end of the buffer, a number of the
 	 * evictions may fail to wake up the daemon. We simply hope this doesn't
-	 * take long; a pathological case could cause buffer overflow (which will
-	 * be less of an issue when we have a separate map device anyway).
+	 * take long; a pathological case could cause buffer overflow.
 	 *
 	 * Note that we use oprof_ready as our flag for whether we have initiated a
 	 * wake-up. Once the wake-up is received, the flag is reset as well as
@@ -148,6 +142,21 @@ void regparm3 op_do_profile(uint cpu, struct pt_regs * regs, int ctr)
 
 /* ---------------- driver routines ------------------ */
 
+/* only stop and start profiling interrupt when we are
+ * fully running !
+ */
+static void stop_cpu_perfctr(int cpu)
+{
+	if (state == RUNNING)
+		int_ops->stop_cpu(cpu);
+}
+
+static void start_cpu_perfctr(int cpu)
+{
+	if (state == RUNNING)
+		int_ops->start_cpu(cpu);
+}
+ 
 spinlock_t note_lock __cacheline_aligned_in_smp = SPIN_LOCK_UNLOCKED;
 /* which buffer nr. is waiting to be read ? */
 int cpu_buffer_waiting;
@@ -191,7 +200,8 @@ inline static void up_and_check_note(void)
 /* if holding note_lock */
 void __oprof_put_note(struct op_note * onote)
 {
-	if (!prof_on)
+	/* ignore note if we're not up and running fully */
+	if (state != RUNNING)
 		return;
 
 	memcpy(&note_buffer[note_pos], onote, sizeof(struct op_note));
@@ -275,10 +285,11 @@ static int copy_buffer(char * buf, int cpu_nr)
 	struct op_buffer_head head;
 	int ret = -EFAULT;
 
-	int_ops->stop_cpu(cpu_nr);
+	stop_cpu_perfctr(cpu_nr);
  
 	head.cpu_nr = cpu_nr;
 	head.count = check_buffer_amount(cpu_nr);
+	head.state = state;
 
 	oprof_ready[cpu_nr] = 0;
 
@@ -296,10 +307,9 @@ static int copy_buffer(char * buf, int cpu_nr)
 	}
  
 out:
-	int_ops->start_cpu(cpu_nr);
+	start_cpu_perfctr(cpu_nr);
 	return ret;
 }
- 
  
 static int oprof_read(struct file * file, char * buf, size_t count, loff_t * ppos)
 {
@@ -307,11 +317,6 @@ static int oprof_read(struct file * file, char * buf, size_t count, loff_t * ppo
 
 	if (!capable(CAP_SYS_PTRACE))
 		return -EPERM;
-
-	if (!prof_on) {
-		kill_proc(SIGKILL, current->pid, 1);
-		return -EINTR;
-	}
 
 	switch (minor(file->f_dentry->d_inode->i_rdev)) {
 		case 2: return oprof_note_read(buf, count, ppos);
@@ -324,37 +329,41 @@ static int oprof_read(struct file * file, char * buf, size_t count, loff_t * ppo
 	if (*ppos || count != max)
 		return -EINVAL;
 
-	if (file->f_flags & O_NONBLOCK) {
-		uint cpu;
-		for (cpu = 0 ; cpu < OP_MAX_CPUS; cpu++) {
-			if (oprof_data[cpu].nextbuf) {
-				cpu_buffer_waiting = cpu;
-				oprof_ready[cpu] = 2;
+	switch (state) {
+		case RUNNING:
+			wait_event_interruptible(oprof_wait, is_ready());
+			if (signal_pending(current))
+				return -EINTR;
+			break;
+
+		/* Non-obvious. If O_NONBLOCK is set, that means
+		 * the daemon knows it has to quit and is asking
+		 * for final buffer data. If it's not set, then we
+		 * have just transitioned to STOPPING, and we must
+		 * inform the daemon (which we can do just by a normal
+		 * operation).
+		 */
+		case STOPPING: {
+			int cpu;
+
+			if (!(file->f_flags & O_NONBLOCK))
 				break;
+
+			for (cpu = 0; cpu < OP_MAX_CPUS; ++cpu) {
+				if (oprof_data[cpu].nextbuf) {
+					cpu_buffer_waiting = cpu;
+					oprof_ready[cpu] = 2;
+					break;
+				}
 			}
+ 
+			if (cpu == OP_MAX_CPUS)
+				return -EAGAIN;
+ 
 		}
-		if (cpu == OP_MAX_CPUS)
-			return -EAGAIN;
-	} else if (quitting) {
-		/* we might have done dump_stop just before the daemon
-		 * is about to sleep */
-		quitting = 0;
-		return 0;
-	} else {
-		wait_event_interruptible(oprof_wait, is_ready());
-	}
+			break;
 
-	/* on SMP, we may have already dealt with the signal between the wake
-	 * up from the signal and this point, so we might go on to copy
-	 * some data. But that's OK.
-	 */
-	if (signal_pending(current))
-		return -EINTR;
-
-	/* if we are quitting, return 0 read to tell daemon */
-	if (quitting) {
-		quitting = 0;
-		return 0;
+		case STOPPED: BUG();
 	}
 
 	return copy_buffer(buf, cpu_buffer_waiting);
@@ -402,11 +411,6 @@ static int oprof_release(struct inode * ino, struct file * file)
 
 	BUG_ON(!oprof_opened);
 
-	/* finished quitting */
-	quitting = 0;
-	/* the block on re-starting is over */
-	partial_stop = 0;
-
 	clear_bit(0, &oprof_opened);
 
 	return oprof_stop();
@@ -438,7 +442,7 @@ static void oprof_free_mem(uint num)
 static int oprof_init_data(void)
 {
 	uint i;
-	ulong hash_size,buf_size;
+	ulong hash_size, buf_size;
 	struct _oprof_data * data;
 
 	note_buffer = vmalloc(sizeof(struct op_note) * sysctl.note_size);
@@ -449,10 +453,21 @@ static int oprof_init_data(void)
 	}
 	note_pos = 0;
 
+	// safe init
+	for (i = 0; i < OP_MAX_CPUS; ++i) {
+		data = &oprof_data[i];
+		data->hash_size = data->buf_size = 0;
+		data->entries = 0;
+		data->buffer = 0;
+	}
+ 
+	hash_size = (sizeof(struct op_entry) * sysctl.hash_size);
+	buf_size = (sizeof(struct op_sample) * sysctl.buf_size);
+
+	// There might be a race here, if we end up enabling perfctr's via smp_call_function,
+	// but we didn't allocate the hashtable or buffer ?
 	for_each_online_cpu(i) {
 		data = &oprof_data[i];
-		hash_size = (sizeof(struct op_entry) * sysctl.hash_size);
-		buf_size = (sizeof(struct op_sample) * sysctl.buf_size);
 
 		data->entries = vmalloc(hash_size);
 		if (!data->entries) {
@@ -532,7 +547,7 @@ static int oprof_start(void)
 
 	int_ops->start();
 
-	prof_on = 1;
+	state = RUNNING;
 
 out:
 	up(&sysctlsem);
@@ -545,14 +560,13 @@ out:
  */
 static void oprof_partial_stop(void)
 {
-	if (partial_stop)
-		return;
+	BUG_ON(state == STOPPED);
 
 	op_restore_syscalls();
 
 	int_ops->stop();
 
-	partial_stop = 1;
+	state = STOPPING;
 }
 
 static int oprof_stop(void)
@@ -562,8 +576,7 @@ static int oprof_stop(void)
 
 	down(&sysctlsem);
 
-	if (!prof_on)
-		goto out;
+	BUG_ON(state == STOPPED);
 
 	/* here we need to :
 	 * bring back the old system calls
@@ -572,17 +585,15 @@ static int oprof_stop(void)
 	 * reset the map buffer stuff and ready values
 	 *
 	 * Nothing will be able to write into the map buffer because
-	 * we check explicitly for prof_on and synchronise via the spinlocks
+	 * we synchronise via the spinlocks
 	 */
-
-	prof_on = 0;
 
 	oprof_partial_stop();
 
 	spin_lock(&note_lock);
 
 	for (i = 0 ; i < OP_MAX_CPUS; i++) {
-		struct _oprof_data *data = &oprof_data[i];
+		struct _oprof_data * data = &oprof_data[i];
 		oprof_ready[i] = 0;
 		data->nextbuf = data->next = 0;
 	}
@@ -592,7 +603,8 @@ static int oprof_stop(void)
 	spin_unlock(&note_lock);
 	err = 0;
 
-out:
+	/* FIXME: can we really say this ? */
+	state = STOPPED;
 	up(&sysctlsem);
 	return err;
 }
@@ -704,7 +716,7 @@ static void do_actual_dump(void)
 	for (cpu = 0 ; cpu < OP_MAX_CPUS; cpu++) {
 		struct _oprof_data * data = &oprof_data[cpu];
 		spin_lock(&note_lock);
-		int_ops->stop_cpu(cpu);
+		stop_cpu_perfctr(cpu);
 		for (i=0; i < data->hash_size; i++) {
 			for (j=0; j < OP_NR_ENTRY; j++)
 				dump_one(data, &data->entries[i].samples[j], cpu);
@@ -713,7 +725,7 @@ static void do_actual_dump(void)
 		}
 		spin_unlock(&note_lock);
 		oprof_ready[cpu] = 2;
-		int_ops->start_cpu(cpu);
+		start_cpu_perfctr(cpu);
 	}
 	oprof_wake_up(&oprof_wait);
 }
@@ -724,9 +736,9 @@ static int sysctl_do_dump(ctl_table * table, int write, struct file * filp, void
 
 	lock_sysctl();
 
-	if (!prof_on)
+	if (state != RUNNING)
 		goto out;
-
+ 
 	if (!write) {
 		err = proc_dointvec(table, write, filp, buffer, lenp);
 		goto out;
@@ -746,18 +758,13 @@ static int sysctl_do_dump_stop(ctl_table * table, int write, struct file * filp,
 
 	lock_sysctl();
 
-	if (!prof_on)
+	if (state != RUNNING)
 		goto out;
-
+ 
 	if (!write) {
 		err = proc_dointvec(table, write, filp, buffer, lenp);
 		goto out;
 	}
-
-	/* this is unfortunate, but we have to make sure we don't enable
-	 * interrupts again, and the daemon knows to quit
-	 */
-	quitting = 1;
 
 	oprof_partial_stop();
 
@@ -833,7 +840,7 @@ static int can_unload(void)
 	int can = -EBUSY;
 	down(&sysctlsem);
 
-	if (allow_unload && !prof_on && !GET_USE_COUNT(THIS_MODULE))
+	if (allow_unload && state == STOPPED && !GET_USE_COUNT(THIS_MODULE))
 		can = 0;
 	up(&sysctlsem);
 	return can;

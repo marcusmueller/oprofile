@@ -1,17 +1,17 @@
-0.3 Release
+0.3 release
 -----------
 
- o fix some compile problem but with kernel > 2.5.20, an infinite recursion occur between our make and the kernel make (kernel make call our make w/o enough argument to avoid the all target to be reached)
- o fix GUI for --kernel-range. Done, can you look it John ?
- o verify 2.2/modversions etc. module build ... it's done but let me recheck later (phil)
+Fix autodeps with Qt include path
+Remove user setting of kernel range - only do it automatically based on
+the given vmlinux
+
+Before 1.0 big stuff
+--------------------
+
  o can we get pre-emption up and running ?? After a first try I think it should
  be fixed by calling preempt_enable/disable before/after each op_int_operations
  allowing arch depedant stuff to not worry about preemption or at least to minmize
  things needed in arch dependant file
- 
-Before 1.0 big stuff
---------------------
-
  o implement new pp spec
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level. Important.
@@ -26,6 +26,8 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
  
+ o op_start --ctr-count somehow succeeds 
+ o remove 1 and 2 magic numbers for oprof_ready
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o document gcc 2.95 and linenr info problems especially for inline functions
  o 2.2 compile requires you to be root to compile the module 

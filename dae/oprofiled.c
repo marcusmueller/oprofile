@@ -487,17 +487,14 @@ static void opd_shutdown(struct op_buffer_head * buf, size_t size, struct op_not
 	 * (EAGAIN is returned).
 	 *
 	 * This will not livelock as the profiler has been partially
-	 * shut down by now. Multiple stops from user-space can cause
-	 * more reads of 0 size, so we cater for that. Technically this
-	 * would be a livelock, but it requires root to send stops constantly
-	 * and never lose the race. */
+	 * shut down by now.
+	 */
 	while (1) {
 		count = op_read_device(devfd, buf, size);
-		if (count < 0 && errno == EAGAIN) {
+		if (count < 0 && errno == EAGAIN)
 			break;
-		} else if (count > 0) {
-			opd_do_samples(buf);
-		}
+		verbprintf("Shutting down, state %d\n", buf->state);
+		opd_do_samples(buf);
 	}
 }
 
@@ -523,8 +520,9 @@ static void opd_do_read(struct op_buffer_head * buf, size_t size, struct op_note
 		while (count < 0) {
 			count = op_read_device(devfd, buf, size);
 
-			/* if count == 0, that means we need to stop ! */
-			if (count == 0) {
+			/* request to stop arrived */
+			if (buf->state == STOPPING) {
+				verbprintf("Shutting down by request.\n");
 				opd_shutdown(buf, size, nbuf, nsize);
 				return;
 			}
@@ -610,7 +608,7 @@ void opd_do_samples(struct op_buffer_head const * opd_buf)
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
-	for (i=0; i < opd_buf->count; i++) {
+	for (i = 0; i < opd_buf->count; i++) {
 		verbprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n",
 			i, buffer[i].eip, buffer[i].pid, buffer[i].count);
 

@@ -16,8 +16,6 @@
 
 #include "oprofile.h"
 
-extern u32 prof_on;
-
 void oprof_put_note(struct op_note *samp);
 void __oprof_put_note(struct op_note *samp);
 
@@ -50,9 +48,6 @@ static void oprof_output_map(ulong addr, ulong len,
 	ulong offset, struct file *file, int is_execve)
 {
 	struct op_note note;
-
-	if (!prof_on)
-		return;
 
 	/* don't bother with /dev/zero mappings etc. */
 	if (!len)

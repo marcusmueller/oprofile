@@ -185,12 +185,6 @@ static void pmc_stop(void *info)
 
 static void pmc_select_start(uint cpu)
 {
-	/* we must make sure not to re-enable the counters
-	 * after a dump_stop
-	 */
-	if (partial_stop)
-		return;
-
 	if (cpu == op_cpu_id())
 		pmc_start(NULL);
 	else
@@ -199,9 +193,6 @@ static void pmc_select_start(uint cpu)
 
 static void pmc_select_stop(uint cpu)
 {
-	if (partial_stop)
-		return;
-
 	if (cpu == op_cpu_id())
 		pmc_stop(NULL);
 	else

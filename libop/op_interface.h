@@ -36,14 +36,22 @@ struct op_sample {
 	u32 eip; /**< eip value where occur interrupt */
 } __attribute__((__packed__, __aligned__(8)));
 
+/** the current kernel-side profiler state */
+enum oprof_state {
+	STOPPED = 0,
+	STOPPING = 1,
+	RUNNING = 2
+};
+ 
 /**
  * The head structure of a kernel sample buffer.
  */
 struct op_buffer_head {
 	int cpu_nr; /**< the CPU number of this buffer */
 	size_t count; /**< number of samples in this buffer */
+	enum oprof_state state; /**< current profiler state */
 	struct op_sample buffer[0]; /**< the sample buffer */
-};
+} __attribute__((__packed__));
 	 
 /**
  * Data type used by the module to notify daemon of fork/exit/mapping etc.

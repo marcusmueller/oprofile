@@ -326,7 +326,7 @@ static void output_files_count(map_t& files)
 	}
 
 	if (empty) {
-		cerr << "no samples files found\n";
+		cerr << "no samples files found (try running op_dump ?)\n";
 		return;	// Would exit(EXIT_FAILURE); perhaps
 	}
 

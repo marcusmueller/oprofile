@@ -550,6 +550,8 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 {
 	vector<string> args;
 	args.push_back("-d");
+	// FIXME: we shouldn't hard code this one unless
+	// objdump_params is empty
 	args.push_back("--no-show-raw-insn");
 	if (source_with_assembly)
 		args.push_back("-S");
@@ -573,7 +575,7 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 			cout << str << '\n';
 	}
 
-	// objdump always return SUCESS so we must rely on the stderr state
+	// objdump always returns SUCCESS so we must rely on the stderr state
 	// of objdump. If objdump error message is cryptic our own error
 	// message will be probably also cryptic
 	ostringstream std_err;
