@@ -179,14 +179,14 @@ profile_container::select_symbols(symbol_choice & choice) const
 		if (percent >= threshold) {
 			result.push_back(&*it);
 
-			if (app_name_id.id == 0) {
+			if (!app_name_id.set()) {
 				app_name_id = it->app_name;
-			} else if (app_name_id.id != it->app_name.id) {
+			} else if (app_name_id != it->app_name) {
 				choice.hints = column_flags(
 					choice.hints | cf_multiple_apps);
 			}
 
-			if (it->app_name.id != it->image_name.id) {
+			if (it->app_name != it->image_name) {
 				choice.hints = column_flags(
 					choice.hints | cf_image_name);
 			}
@@ -224,7 +224,7 @@ profile_container::select_filename(double threshold) const
 
 	for (; sit != send; ++sit) {
 		debug_name_id name_id = sit->second.file_loc.filename;
-		if (name_id.id) {
+		if (name_id.set()) {
 			filename_set.insert(name_id);
 		}
 	}

@@ -63,14 +63,3 @@ string const & symbol_name_storage::demangle(symbol_name_id id) const
 	n.name_processed += ltrim(n.name, "?");
 	return n.name_processed;
 }
-
-
-bool operator<(debug_name_id const & lhs, debug_name_id const & rhs)
-{
-	// we compare by name rather by id since what user will see are
-	// filename and when the criteria "samples count" give identical
-	// result it's better to obtain result sorted by the user visible
-	// property filename rather than by an obscure, invisible from user
-	// point of view, file identifier property
-	return debug_names.name(lhs) < debug_names.name(rhs);
-}

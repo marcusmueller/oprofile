@@ -47,9 +47,6 @@ struct debug_name_tag {};
 /// a debug filename
 typedef name_storage<debug_name_tag>::id_value debug_name_id;
 
-/// comparator for debug names is different
-bool operator<(debug_name_id const & lhs, debug_name_id const & rhs);
-
 /// class storing a set of shared debug name (source filename)
 class debug_name_storage : public name_storage<debug_name_tag> {
 public:
@@ -90,5 +87,21 @@ extern debug_name_storage debug_names;
 
 /// for symbols
 extern symbol_name_storage symbol_names;
+
+
+/**
+ * debug name specialisation for comparison.
+ *
+ * We compare by name rather by id since what user will see are
+ * filename and when the criteria "samples count" give identical
+ * result it's better to obtain result sorted by the user visible
+ * property filename rather than by an obscure, invisible from user
+ * point of view, file identifier property
+ */
+template<> inline bool
+debug_name_id::operator<(debug_name_id const & rhs) const
+{
+	return debug_names.name(*this) < debug_names.name(rhs);
+}
 
 #endif /* !NAME_STORAGE_H */

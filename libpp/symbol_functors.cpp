@@ -14,17 +14,17 @@
 bool less_symbol::operator()(symbol_entry const & lhs,
 			     symbol_entry const & rhs) const
 {
-	if (lhs.image_name.id != rhs.image_name.id)
-		return lhs.image_name.id < rhs.image_name.id;
+	if (lhs.image_name != rhs.image_name)
+		return lhs.image_name < rhs.image_name;
 
-	if (lhs.app_name.id != rhs.app_name.id)
-		return lhs.app_name.id < rhs.app_name.id;
+	if (lhs.app_name != rhs.app_name)
+		return lhs.app_name < rhs.app_name;
 
 	if (lhs.sample.vma != rhs.sample.vma)
 		return lhs.sample.vma < rhs.sample.vma;
 
-	if (lhs.name.id != rhs.name.id)
-		return lhs.name.id < rhs.name.id;
+	if (lhs.name != rhs.name)
+		return lhs.name < rhs.name;
 
 	return lhs.size < rhs.size;
 }

@@ -30,8 +30,8 @@ struct file_location {
 
 	bool operator<(file_location const & rhs) const {
 		// Note we sort on filename id not on string
-		return filename.id < rhs.filename.id ||
-		  (filename.id == rhs.filename.id && linenr < rhs.linenr);
+		return filename < rhs.filename ||
+		  (filename == rhs.filename && linenr < rhs.linenr);
 	}
 };
 

@@ -1,5 +1,17 @@
 2003-06-08  John Levon  <levon@movementarian.org>
 
+	* libpp/name_storage.h:
+	* libpp/name_storage.cpp:
+	* libpp/opp_symbol.h:
+	* libpp/profile_container.cpp:
+	* libpp/symbol_functors.cpp:
+	* libutil++/unique_storage.h: don't derive from I()
+	at all for id_value, it's not needed. Hide .id and
+	provide operator<(), operator==(), operator!=(), and
+	set()
+
+2003-06-08  John Levon  <levon@movementarian.org>
+
 	* libutil++/unique_storage.h: make some of
 	id_value only visible to unique_storage.
 

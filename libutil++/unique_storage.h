@@ -39,19 +39,36 @@ public:
 	typedef std::vector<V> stored_values;
 
 	/// the actual ID type
-	struct id_value : public I {
-		/// default constructor
-		id_value() : I(), id(0) {}
+	struct id_value {
+		/// id == 0 means "empty" / "undefined"
+		id_value() : id(0) {}
+
+		/// does this ID map to a non-default value ?
+		bool set() const {
+			return id;
+		}
 
 		typedef typename stored_values::size_type size_type;
 
-		/// actual ID value
-		size_type id;
+		bool operator<(id_value const & rhs) const {
+			return id < rhs.id;
+		}
+
+		bool operator==(id_value const & rhs) const {
+			return id == rhs.id;
+		}
+
+		bool operator!=(id_value const & rhs) const {
+			return !(id == rhs.id);
+		}
 
 	private:
 		friend class unique_storage<I, V>;
 
-		explicit id_value(size_type s) : I(), id(s) {}
+		explicit id_value(size_type s) : id(s) {}
+
+		/// actual ID value
+		size_type id;
 	};
 
 
