@@ -216,7 +216,7 @@ static void output_files(const std::string & filename,
 
 	db_tree_t dest;
 
-	db_open(&dest, filename.c_str(), sizeof(struct opd_header));
+	db_open(&dest, filename.c_str(), DB_RDWR, sizeof(struct opd_header));
 
 	list<string>::const_iterator it(filenames.begin());
 
@@ -230,7 +230,7 @@ static void output_files(const std::string & filename,
 	for (++it ; it != filenames.end() ; ++it) {
 		db_tree_t src;
 
-		db_open(&src, it->c_str(), sizeof(struct opd_header));
+		db_open(&src, it->c_str(), DB_RDONLY, sizeof(struct opd_header));
 
 		db_travel(&src, 0, ~0, copy_callback, &dest);
 

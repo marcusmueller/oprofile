@@ -82,17 +82,19 @@ db_page_idx_t db_add_page(db_tree_t * tree)
 	(4096 - offset_page) / sizeof(db_page_t) ?		\
 	(4096 - offset_page) / sizeof(db_page_t) : 1 
 
-void db_open(db_tree_t * tree, const char * filename, size_t sizeof_header)
+void db_open(db_tree_t * tree, const char * filename, enum db_rw rw, size_t sizeof_header)
 {
 	struct stat stat_buf;
 	size_t nr_page;
+	int flags = (rw == DB_RDWR) ? (O_CREAT | O_RDWR) : O_RDONLY; 
+	int mmflags = (rw == DB_RDWR) ? (PROT_READ | PROT_WRITE) : PROT_READ;
 
 	memset(tree, '\0', sizeof(db_tree_t));
 
 	tree->offset_page = sizeof_header + sizeof(db_descr_t);
 	tree->sizeof_header = sizeof_header;
 
-	tree->fd = open(filename, O_RDWR | O_CREAT, 0644);
+	tree->fd = open(filename, flags, 0644);
 	if (tree->fd < 0) {
 		fprintf(stderr, "db_open() fail to open %s cause: %s\n",
 			filename, strerror(errno));
@@ -126,7 +128,7 @@ void db_open(db_tree_t * tree, const char * filename, size_t sizeof_header)
 
 	tree->base_memory = 
 		mmap(0, (nr_page * sizeof(db_page_t)) + tree->offset_page,
-		     PROT_READ | PROT_WRITE, MAP_SHARED, tree->fd, 0);
+			mmflags, MAP_SHARED, tree->fd, 0);
 
 	if (tree->base_memory == MAP_FAILED) {
 		fprintf(stderr, "db_add_page() mmap failure "

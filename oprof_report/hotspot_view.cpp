@@ -100,8 +100,8 @@ void HotspotView::paintEvent(QPaintEvent *)
 
 	for (size_t i = 0 ; i < samples_nr.size() ; ++i) {
 		paint.drawLine(i, height(), 
-			       i, height() - 
-					(samples_nr[i] * nr_sample_per_pel));
+			       i, int(height() - 
+					(samples_nr[i] * nr_sample_per_pel)));
 	}
 	paint.end();
 }

@@ -65,10 +65,10 @@ typedef struct {
  *
  * We allow to manage a database inside a mapped file with an "header" of 
  * unknown so db_open get a parameter to specify the size of this header.
- * A typical is use is:
+ * A typical use is:
  *
  * struct header { int etc; ... };
- * db_open(&tree, filename, sizeof(header));
+ * db_open(&tree, filename, DB_RW, sizeof(header));
  * so on this library have no dependency on the header type.
  */
 typedef struct {
@@ -86,10 +86,17 @@ extern "C" {
 #endif
 
 /* db-manage.c */
+
+enum db_rw {
+	DB_RDONLY = 0,
+	DB_RDWR = 1
+};
+ 
 /** 
  * \param tree the data base object to setup 
  * \param root_idx_ptr an external pointer to put the root index, can be null
  * \param filename the filename where go the maped memory
+ * \param write %DB_RW if opening for writing, else %DB_RDONLY
  * \param offset_page offset between the mapped memory and the data base page
  * area.
  *
@@ -97,7 +104,7 @@ extern "C" {
  * a file containing an header such as opd_header. db_open always preallocate
  * a few number of page
  */
-void db_open(db_tree_t * tree, const char * filename, size_t sizeof_header);
+void db_open(db_tree_t * tree, const char * filename, enum db_rw rw, size_t sizeof_header);
 
 /**
  * \param tree the data base to close

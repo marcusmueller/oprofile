@@ -542,6 +542,7 @@ static void output_files_count(map_t& files)
 string check_image_name(const string & image_name,
 			const string & samples_filename)
 {
+	// FIXME: this isn't polite enough for a permissions problem. 
 	if (file_exist(image_name))
 		return image_name;
 

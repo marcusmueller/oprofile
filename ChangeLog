@@ -1,5 +1,18 @@
 2002-05-01  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/opd_proc.c:
+	* libdb/db-manage.c:
+	* libdb/db-test.c:
+	* libdb/db.h:
+	* pp/op_merge.cpp:
+	* pp/op_time.cpp:
+	* pp/oprofpp_util.cpp: allow read-only sample
+	  file reading
+	
+	* oprof_report/hotspot_view.cpp: fix warning
+ 
+2002-05-01  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/op_start:
 	* dae/oprofiled.c:
 	* doc/oprofile.1.in: 

@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.48 2002/04/30 20:42:15 movement Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.49 2002/05/01 19:56:18 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -949,7 +949,7 @@ bool opp_samples_files::accumulate_samples(counter_array_t& counter,
  */
 samples_file_t::samples_file_t(const std::string & filename)
 {
-	db_open(&db_tree, filename.c_str(), sizeof(struct opd_header));
+	db_open(&db_tree, filename.c_str(), DB_RDONLY, sizeof(struct opd_header));
 }
 
 /**

@@ -1,6 +1,8 @@
 0.2
 ---
  
+ o fix kernel/module problem 
+ o - disable oprof_report for now by default
  o test post-profile -c0,1 --sort
  o check post profile for multiple symbols with same name
 

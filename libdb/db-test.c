@@ -1,6 +1,7 @@
 #include <sys/resource.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <fcntl.h>
 
 #include "db.h"
 
@@ -24,7 +25,7 @@ static void speed_test(size_t nr_item, size_t nr_unique_item)
 	double begin, end;
 	db_tree_t tree;
 
-	db_open(&tree, TEST_FILENAME, 128);
+	db_open(&tree, TEST_FILENAME, DB_RDWR, 128);
 	begin = user_time();
 	for (i = 0 ; i < nr_item ; ++i) {
 		db_insert(&tree, (random() % nr_unique_item) + 1, 1);
@@ -55,7 +56,7 @@ static int test(size_t nr_item, size_t nr_unique_item)
 	db_tree_t tree;
 	int ret;
 
-	db_open(&tree, TEST_FILENAME, 128);
+	db_open(&tree, TEST_FILENAME, DB_RDWR, 128);
 
 
 	for (i = 0 ; i < nr_item ; ++i) {
@@ -115,7 +116,7 @@ static int callback_test(size_t nr_item, size_t nr_unique_item)
 	db_key_t first_key, last_key;
 	int old_nr_error = nr_error;
 
-	db_open(&tree, TEST_FILENAME, 128);
+	db_open(&tree, TEST_FILENAME, DB_RDWR, 128);
 
 	for (i = 0 ; i < nr_item ; ++i) {
 		db_insert(&tree, (random() % nr_unique_item) + 1, 1);
