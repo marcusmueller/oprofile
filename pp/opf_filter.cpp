@@ -923,10 +923,8 @@ static void get_options(int argc, char const * argv[],
 	/* non-option file, either a sample or binary image file */
 	const char * file = poptGetArg(optcon);
 
-	/* ugly hack to make opp_treat_options working */
-	list_all_symbols_details = 1;
-
-	opp_treat_options(file, optcon, image_name, sample_file, counter);
+	opp_treat_options(file, optcon, image_name, sample_file,
+			  counter, sort_by_counter);
 
 	poptFreeContext(optcon);
 }

@@ -34,7 +34,7 @@ static const output_option output_options[] = {
 	{ 'L', osf_short_linenr_info, "base name of source file and line nr" },
 	{ 'i', osf_image_name, "image name" },
 	{ 'I', osf_short_image_name, "base name of image name" },
-	{ 'h', osf_no_header, "header" },
+	{ 'h', osf_header, "header" },
 	{ 'd', osf_details, "detailed samples for each selected symbol" }
 };
 
@@ -128,7 +128,6 @@ OutputSymbol::OutputSymbol(const samples_files_t & samples_files_,
 		total_count[i] = samples_files.samples_count(i);
 		cumulated_samples[i] = 0;
 		cumulated_percent[i] = 0;
-//		time_cumulated[i] = 0;
 	}
 }
 
@@ -147,37 +146,37 @@ void OutputSymbol::SetFlag(OutSymbFlag flag)
 	flags = static_cast<OutSymbFlag>(flags | flag);
 }
 
-// TODO: (and also in OutputHeader(). Add the blank when outputting
-// the next field not the current to avoid filling with blank the eol.
-void OutputSymbol::OutputField(ostream & out, const string & name,
+size_t OutputSymbol::OutputField(ostream & out, const string & name,
 			       const sample_entry & sample,
 			       OutSymbFlag fl, int ctr)
 {
+	size_t sz = 0;
 	const field_description * field = GetFieldDescr(fl);
 	if (field) {
 		string str = (this->*field->formater)(name, sample, ctr);
 		out << str;
 
-		size_t sz = 1;	// at least one separator char
-		if (str.length() < field->width) {
+		sz = 1;	// at least one separator char
+		if (str.length() < field->width)
 			sz = field->width - str.length();
-		}
-		out << string(sz, ' ');
 	}
+
+	return sz;
 }
 
-void OutputSymbol::OutputHeaderField(std::ostream & out, OutSymbFlag fl)
+size_t OutputSymbol::OutputHeaderField(std::ostream & out, OutSymbFlag fl)
 {
+	size_t sz = 0;
 	const field_description * field = GetFieldDescr(fl);
 	if (field) {
 		out << field->header_name;
 
-		size_t sz = 1;	// at least one separator char
+		sz = 1;	// at least one separator char
 		if (strlen(field->header_name) < field->width)
 			sz = field->width - strlen(field->header_name);
-
-		out << string(sz, ' ');
 	}
+
+	return sz;
 }
 
 void OutputSymbol::Output(ostream & out, const symbol_entry * symb)
@@ -196,18 +195,15 @@ void OutputSymbol::OutputDetails(ostream & out, const symbol_entry * symb)
 	u32 temp_total_count[OP_MAX_COUNTERS];
 	u32 temp_cumulated_samples[OP_MAX_COUNTERS];
 	u32 temp_cumulated_percent[OP_MAX_COUNTERS];
-//	u32 temp_time_cumulated[OP_MAX_COUNTERS];
 
 	for (size_t i = 0 ; i < samples_files.get_nr_counters() ; ++i) {
 		temp_total_count[i] = total_count[i];
 		temp_cumulated_samples[i] = cumulated_samples[i];
 		temp_cumulated_percent[i] = cumulated_percent[i];
-//		temp_time_cumulated[i] = time_cumulated[i];
 
 		total_count[i] = symb->sample.counter[i];
 		cumulated_samples[i] = 0;
 		cumulated_percent[i] = 0;
-//		time_cumulated[i] = 0;
 	}
 
 	for (size_t cur = symb->first ; cur != symb->last ; ++cur) {
@@ -221,7 +217,6 @@ void OutputSymbol::OutputDetails(ostream & out, const symbol_entry * symb)
 		total_count[i] = temp_total_count[i];
 		cumulated_samples[i] = temp_cumulated_samples[i];
 		cumulated_percent[i] = temp_cumulated_percent[i];
-//		time_cumulated[i] = temp_time_cumulated[i];
 	}
 }
 
@@ -230,9 +225,11 @@ void OutputSymbol::DoOutput(std::ostream & out, const string & name,
 {
 	OutputHeader(out);
 
+	size_t last_field_pad = 0;
+
 	// first output the vma field
 	if (flag & osf_vma) {
-		OutputField(out, name, sample, osf_vma, 0);
+		last_field_pad = OutputField(out, name, sample, osf_vma, 0);
 	}
 
 	// now the repeated field.
@@ -241,10 +238,12 @@ void OutputSymbol::DoOutput(std::ostream & out, const string & name,
 			size_t repeated_flag = (flag & osf_repeat_mask);
 			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {
 				if ((repeated_flag & (1 << i)) != 0) {
+					out << string(last_field_pad, ' ');
 					OutSymbFlag fl =
 					  static_cast<OutSymbFlag>(1 << i);
-					OutputField(out, name,
-						    sample, fl, ctr);
+					last_field_pad = OutputField(out, name,
+								     sample,
+								     fl, ctr);
 					repeated_flag &= ~(1 << i);
 				}
 			}
@@ -253,11 +252,12 @@ void OutputSymbol::DoOutput(std::ostream & out, const string & name,
 	}
 
 	// now the remaining field
-	size_t temp_flag = flag & ~(osf_vma|osf_repeat_mask);
+	size_t temp_flag = flag & ~(osf_vma|osf_repeat_mask|osf_details|osf_show_all_counters|osf_header);
 	for (size_t i = 0 ; temp_flag != 0 ; ++i) {
 		if ((temp_flag & (1 << i)) != 0) {
+			out << string(last_field_pad, ' ');
 			OutSymbFlag fl = static_cast<OutSymbFlag>(1 << i);
-			OutputField(out, name, sample, fl, 0);
+			last_field_pad = OutputField(out, name, sample, fl, 0);
 			temp_flag &= ~(1 << i);
 		}
 	}
@@ -273,13 +273,15 @@ void OutputSymbol::OutputHeader(ostream & out)
 
 	first_output = false;
 
-	if ((flags & osf_no_header) != 0) {
+	if ((flags & osf_header) == 0) {
 		return;
 	}
 
+	size_t last_field_pad = 0;
+
 	// first output the vma field
 	if (flags & osf_vma) {
-		OutputHeaderField(out, osf_vma);
+		last_field_pad = OutputHeaderField(out, osf_vma);
 	}
 
 	// now the repeated field.
@@ -288,9 +290,11 @@ void OutputSymbol::OutputHeader(ostream & out)
 			size_t repeated_flag = (flags & osf_repeat_mask);
 			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {
 				if ((repeated_flag & (1 << i)) != 0) {
+					out << string(last_field_pad, ' ');
 					OutSymbFlag fl =
 					  static_cast<OutSymbFlag>(1 << i);
-					OutputHeaderField(out, fl);
+					last_field_pad = 
+						OutputHeaderField(out, fl);
 					repeated_flag &= ~(1 << i);
 				}
 			}
@@ -299,11 +303,12 @@ void OutputSymbol::OutputHeader(ostream & out)
 	}
 
 	// now the remaining field
-	size_t temp_flag = flags & ~(osf_vma|osf_repeat_mask);
+	size_t temp_flag = flags & ~(osf_vma|osf_repeat_mask|osf_details|osf_show_all_counters|osf_header);
 	for (size_t i = 0 ; temp_flag != 0 ; ++i) {
 		if ((temp_flag & (1 << i)) != 0) {
+			out << string(last_field_pad, ' ');
 			OutSymbFlag fl = static_cast<OutSymbFlag>(1 << i);
-			OutputHeaderField(out, fl);
+			last_field_pad = OutputHeaderField(out, fl);
 			temp_flag &= ~(1 << i);
 		}
 	}

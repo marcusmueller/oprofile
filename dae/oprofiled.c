@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.69 2002/03/01 21:30:02 phil_e Exp $ */
+/* $Id: oprofiled.c,v 1.70 2002/03/15 04:22:20 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -357,6 +357,10 @@ static void opd_options(int argc, char const *argv[])
 		show_version(argv[0]);
 	}
 
+	cpu_type = op_get_cpu_type();
+	if (cpu_type == CPU_ATHLON)
+		op_nr_counters = 4;
+
 	if (!vmlinux || streq("", vmlinux)) {
 		fprintf(stderr, "oprofiled: no vmlinux specified.\n");
 		poptPrintHelp(optcon, stderr, 0);
@@ -624,10 +628,6 @@ int main(int argc, char const *argv[])
 	size_t n_buf_bytesize;
 	struct sigaction act;
 	int i;
-
-	cpu_type = op_get_cpu_type();
-	if (cpu_type == CPU_ATHLON)
-		op_nr_counters = 4;
 
 	opd_options(argc, argv);
 

@@ -106,7 +106,7 @@ enum OutSymbFlag {
 	// single space. This is intended to run post profile tools as
 	// front-end of other tools which treat samples information.
 //	osf_raw_format = 1 << 15,	// future
-	osf_no_header = 1 << 16
+	osf_header = 1 << 16
 };
 
 class OutputSymbol {
@@ -151,10 +151,12 @@ private:
 		      const sample_entry & sample, OutSymbFlag flags);
 	void OutputDetails(std::ostream & out, const symbol_entry * symb);
 	void OutputHeader(std::ostream & out);
-	void OutputField(std::ostream & out, const std::string & name,
-			 const sample_entry & sample,
-			 OutSymbFlag fl, int ctr);
-	void OutputHeaderField(std::ostream & out, OutSymbFlag fl);
+	// return the nr of char needed to padd this field
+	size_t OutputField(std::ostream & out, const std::string & name,
+			   const sample_entry & sample,
+			   OutSymbFlag fl, int ctr);
+	// return the nr of char needed to padd this field
+	size_t OutputHeaderField(std::ostream & out, OutSymbFlag fl);
 	static const field_description * GetFieldDescr(OutSymbFlag flag);
 
 	OutSymbFlag flags;

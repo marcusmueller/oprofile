@@ -1,3 +1,19 @@
+2002-03-15  Philippe Elie  <ph_e@club-internet.fr>
+
+	* TODO: update
+
+	* dae/oprofiled.c: fix --version when module is not loaded
+
+	* pp/opp_symbol.cpp:
+	* pp/opp_symbol.h: avoid to padd the last field, use a positive
+	  form for osf_header
+
+	* pp/oprofpp.h:
+	* pp/oprofpp.cpp:
+	* pp/opf_filter.cpp:
+	* pp/opprofpp_util.cpp:
+	* pp/op_time.cpp: fix --sort option
+
 2002-03-14  Philippe Elie  <ph_e@club-internet.fr>
 
 	* TODO: update

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.31 2002/03/14 02:55:29 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.32 2002/03/15 04:22:20 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -32,7 +32,7 @@ using std::cerr;
  
 static char * ctr_str;
 static int showvers;
-static int sort_by_counter;
+static int sort_by_counter = -1;
 static char *gproffile;
 static char *symbol;
 static int list_symbols;
@@ -112,7 +112,7 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_linenr_info);
 
 	if (output_format == 0) {
-		output_format = "vspn";
+		output_format = "hvspn";
 	} else {
 		if (!list_symbols && !list_all_symbols_details && !symbol) {
 			quit_error(optcon, "oprofpp: --output-format can be used only without --list-symbols or --list-all-symbols-details.\n");
@@ -135,7 +135,8 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 
 	counter = counter_mask(ctr_str);
 
-	opp_treat_options(file, optcon, image_file, sample_file, counter);
+	opp_treat_options(file, optcon, image_file, sample_file,
+			  counter, sort_by_counter);
 
 	poptFreeContext(optcon);
 }

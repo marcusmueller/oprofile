@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.37 2002/03/14 02:55:29 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.38 2002/03/15 04:22:20 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -129,6 +129,34 @@ void quit_error(poptContext optcon, char const *err)
 	poptPrintHelp(optcon, stderr, 0);
 	exit(EXIT_FAILURE);
 }
+
+/**
+ * validate_counter - validate the counter nr
+ * @counter_mask: bit mask specifying the counter nr to use
+ * @sort_by: the counter nr from which we sort
+ *
+ * all error are fatal
+ */
+void validate_counter(int counter_mask, int & sort_by_counter)
+{
+	if (counter_mask + 1 > 1 << OP_MAX_COUNTERS) {
+		cerr << "invalid counter mask " << counter_mask << "\n";
+		exit(EXIT_FAILURE);
+	}
+
+	if (sort_by_counter == -1) {
+		// get the first counter selected and use it as sort order
+		for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
+			if ((counter_mask & (1 << i)) != 0)
+				sort_by_counter = i;
+		}
+	}
+
+	if ((counter_mask & (1 << sort_by_counter)) == 0) {
+		cerr << "invalid sort counter nr " << sort_by_counter << "\n";
+		exit(EXIT_FAILURE);
+	}
+}
  
 /**
  * opp_treat_options - process command line options
@@ -157,7 +185,7 @@ void quit_error(poptContext optcon, char const *err)
  */
 void opp_treat_options(const char* file, poptContext optcon,
 		       string & image_file, string & sample_file,
-		       int & counter)
+		       int & counter, int & sort_by_counter)
 {
 	char *file_ctr_str;
 	int temp_counter;
@@ -224,12 +252,6 @@ void opp_treat_options(const char* file, poptContext optcon,
 	if (file_ctr_str)
 		file_ctr_str[0] = '\0';
 
-	if (counter + 1 >= 1 << OP_MAX_COUNTERS) {
-		fprintf(stderr, "oprofpp: invalid counter number %u\n",
-			counter);
-		exit(EXIT_FAILURE);
-	}
-
 	sample_file = samplefile;
 
 	if (!imagefile) {
@@ -244,6 +266,8 @@ void opp_treat_options(const char* file, poptContext optcon,
 	}
 	else
 		image_file = imagefile;
+
+	validate_counter(counter, sort_by_counter);
 }
 
 // FIXME: only use char arrays and pointers if you MUST. Otherwise std::string
