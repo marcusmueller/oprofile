@@ -1,3 +1,11 @@
+2003-09-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pch-c++.h:
+	* m4/precompiledheader.m4: new file to handle precompiled header
+	* m4/Makefile.am:
+	* configure.in:
+	* Makefile.am: handle precompiled header
+
 2003-09-05  John Levon  <levon@movementarian.org>
 
 	* opd_image.c: cleanup of ctx_switch_set_image()

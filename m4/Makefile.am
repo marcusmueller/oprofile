@@ -13,6 +13,7 @@ EXTRA_DIST = \
 	kernelversion.m4 \
 	mallocattribute.m4 \
 	poptconst.m4 \
+	precompiledheader.m4 \
 	qt.m4 \
 	resultyn.m4 \
 	sstream.m4 \

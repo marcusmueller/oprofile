@@ -98,6 +98,15 @@ if test "$enable_abi" = yes; then
 fi
 AM_CONDITIONAL(enable_abi, test "$enable_abi" = yes)
 
+dnl enable pch for c++
+AC_ARG_ENABLE(pch,
+	[  --enable-pch                 enable precompiled header (default is disabled)],
+	enable_pch=$enableval, enable_pch=no)
+if test "$enable_pch" = yes; then
+	AX_CHECK_PRECOMPILED_HEADER(OP_CXXFLAGS, enable_pch)
+fi
+AM_CONDITIONAL(enable_pch, test "$enable_pch" = yes)
+
 AX_CHECK_DOCBOOK
 
 dnl finally restore the original libs setting

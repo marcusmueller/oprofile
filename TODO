@@ -93,6 +93,8 @@ General checks to make
  o test it to hell and back
  o compile all C++ programs with STL_port and test them
  o There is probably place of post profile tools where looking at errno will give better error messages.
+ o gcc-cvs -include stdc++ doesn't use precompiled header, when it'll work
+  we can remove pch-c++.h from cvs
 
 Later
 -----
