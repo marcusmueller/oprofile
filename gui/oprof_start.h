@@ -60,14 +60,16 @@ protected slots:
 	void on_start_profiler();
 	/// stop profiler
 	void on_stop_profiler();
+	/// add a new event
+	void on_add_event();
+	/// remove the current event
+	void on_remove_event();
 	/// the counter combo has been activated
 	void counter_selected(int);
 	/// an event has been selected
 	void event_selected(QListViewItem *);
 	/// the mouse is over an event
 	void event_over(QListViewItem *);
-	/// enabled has been changed
-	void enabled_toggled(bool);
 
 	/// close the dialog
 	void accept();
@@ -123,14 +125,13 @@ private:
 	/// all available events for this hardware
 	std::vector<op_event_descr> v_events;
 
-	/// the current counter in the GUI
-	uint current_ctr;
-	/// current event selections for each counter
-	op_event_descr const * current_event[OP_MAX_COUNTERS];
+	/// the current event in the GUI
+	uint current_event;
+	/// current event selections
+	std::vector<op_event_descr const *> current_events;
+
 	/// current event configs for each counter
 	persistent_config_t<event_setting> event_cfgs[OP_MAX_COUNTERS];
-	/// enabled status for each counter
-	bool ctr_enabled[OP_MAX_COUNTERS];
 
 	/// current config
 	config_setting config;

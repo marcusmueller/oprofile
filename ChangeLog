@@ -1,5 +1,12 @@
 2003-07-15  John Levon  <levon@movementarian.org>
 
+	* gui/ui/oprof_start_base.ui:
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp: some steps towards fixing gui for
+	the new events stuff
+
+2003-07-15  John Levon  <levon@movementarian.org>
+
 	* libop/op_events.h:
 	* libop/op_events.c: add op_default_event
 
