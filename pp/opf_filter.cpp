@@ -128,7 +128,7 @@ class output {
 
  private:
 	/// this output a comment containaing the counter setup and command
-	/// the line.
+	/// line.
 	void output_header(ostream & out) const;
 
 	void output_asm(const string & image_name);
@@ -753,9 +753,11 @@ size_t output::get_sort_counter_nr() const
 				break;
 		}
 
-		cerr << "op_to_source (warning): sort_by_counter invalid or "
-		     << "counter[sort_by_counter] disabled : switch "
-		     << "to the first valid counter " << index << endl;
+		if (sort_by_counter != size_t(-1))
+			cerr << "op_to_source (warning): sort_by_counter "
+			     << "invalid or counter[sort_by_counter] disabled "
+			     << ": switch to the first valid counter "
+			     << index << endl;
 	}
 
 	// paranoid checking.
@@ -860,7 +862,7 @@ bool output::treat_input(const string & image_name, const string & sample_file,
 static int with_more_than_samples;
 static int until_more_than_samples;
 static int showvers;
-static int sort_by_counter;
+static int sort_by_counter = -1;
 static int assembly;
 static int source_with_assembly;
 static const char * source_dir;
@@ -924,6 +926,7 @@ static void get_options(int argc, char const * argv[],
 	/* non-option file, either a sample or binary image file */
 	const char * file = poptGetArg(optcon);
 
+	/* ugly hack to make opp_treat_options working */
 	list_all_symbols_details = 1;
 
 	opp_treat_options(file, optcon, image_name, sample_file, counter);
@@ -942,9 +945,22 @@ int main(int argc, char const * argv[])
 
 	string image_name;
 	string sample_file;
+	/* global var sort_by_counter contains the counter used for sorting
+	 * purpose (-1 for sorting on first available counter). This contains
+	 * the counter to open (-1 for all). sort_by_counter is specified
+	 * through the -c option while counter is specified through the
+	 * samples filename suffix #xx. The point here is to allow to see
+	 * all counter and specify explicitly which counter to use as sort
+	 * order */
 	int counter = -1;
 
 	get_options(argc, argv, image_name, sample_file, counter);
+
+	if (counter != -1 && sort_by_counter != -1 &&
+	    counter != sort_by_counter) {
+		cerr << "mismatch between --sort-by-counter and samples filename counter suffix.\n";
+		exit(EXIT_FAILURE);
+	}
 
 	try {
 		bool do_until_more_than_samples = false;

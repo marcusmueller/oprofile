@@ -12,6 +12,9 @@ using std::cerr;
 using std::vector;
 using std::ostream;
 using std::ostringstream;
+using std::endl;
+
+extern uint op_nr_counters;
 
 
 #include <stdio.h>
@@ -60,8 +63,8 @@ static const output_option output_options[] = {
 	{ 'v', osf_vma, "vma offset" },
 	{ 's', osf_nr_samples, "nr samples" },
 	{ 'S', osf_nr_samples_cumulated, "nr cumulated samples" },
-	{ 'p', osf_percent_samples, "nr percent samples" },
-	{ 'P', osf_percent_samples_cumulated, "nr cumulated percent samples" },
+	{ 'p', osf_percent, "nr percent samples" },
+	{ 'P', osf_percent_cumulated, "nr cumulated percent samples" },
 //	{ 't', osf_time, "time" },
 //	{ 'T', ofs_time_cumulated, "cumulated time" },
 	{ 'n', osf_symb_name, "symbol name" },
@@ -71,7 +74,7 @@ static const output_option output_options[] = {
 	{ 'i', osf_image_name, "image name" },
 	{ 'I', osf_short_image_name, "base name of image name" },
 	{ 'h', osf_header, "header" },
-//	{ 'd', osf_details, "detailed samples for aech selected symbol" }
+	{ 'd', osf_details, "detailed samples for each selected symbol" }
 };
 
 const size_t nr_output_option = sizeof(output_options) / sizeof(output_options[0]);
@@ -108,7 +111,8 @@ void OutputSymbol::ShowHelp()
 	}
 }
 
-typedef string (OutputSymbol::*fct_format)(const symbol_entry * symb);
+typedef string (OutputSymbol::*fct_format)(const string & symb_name,
+					   const sample_entry & symb, int ctr);
 
 /// decribe one field of the colummned output.
 struct field_description {
@@ -125,15 +129,15 @@ struct field_description {
 // lib[n?]curses to get the console width (look info source) (so on add a fixed
 // field flags)
 static const field_description field_descr[] = {
-	{ osf_vma, 9, 
+	{ osf_vma, 9,
 	  "vma", &OutputSymbol::format_vma },
 	{ osf_nr_samples, 9,
 	  "samples", &OutputSymbol::format_nr_samples },
 	{ osf_nr_samples_cumulated, 9,
 	  "cum. samples", &OutputSymbol::format_nr_cumulated_samples },
-	{ osf_percent_samples, 12,
+	{ osf_percent, 12,
 	  "%-age", &OutputSymbol::format_percent },
-	{ osf_percent_samples_cumulated, 10,
+	{ osf_percent_cumulated, 10,
 	  "cum %-age", &OutputSymbol::format_cumulated_percent },
 // future	{ osf_time, 12, "time", 0 },
 // future	{ osf_time_cumulated, 12, "cumul time", 0 },
@@ -156,58 +160,15 @@ OutputSymbol::OutputSymbol(const samples_files_t & samples_files_,
 	:
 	flags(osf_none),
 	samples_files(samples_files_),
-	cumulated_samples(0),
-	cumulated_percent_samples(0),
-	time_cumulated(0),
 	counter(counter_),
 	first_output(true)
 {
-	total_count = samples_files.samples_count(counter);
-}
-
-void OutputSymbol::SetFlag(OutSymbFlag flag)
-{
-	flags = static_cast<OutSymbFlag>(flags | flag);
-}
-
-// TODO: (and also in OutputHeader(). Add the blank when outputting
-// the next field not the current to avoid filling with blank the eol.
-void OutputSymbol::Output(std::ostream & out, const symbol_entry * symb)
-{
-#if 0
-	// the old behavior.
-	output_symbol(symb, flags & osf_image_name, flags & osf_linenr_info,
-		      counter, total_count);
-#else
-	OutputHeader(out);
-
-	// avoid to clobber the screen if user are required to output nothing
-	bool have_output_something = false;
-
-	size_t temp_flag = flags;
-	for (size_t i = 0 ; temp_flag != 0 ; ++i) {
-		if ((flags & (1 << i)) != 0) {
-			OutSymbFlag fl = static_cast<OutSymbFlag>(1 << i);
-			const field_description * field = GetFieldDescr(fl);
-			if (field) {
-				string str = (this->*field->formater)(symb);
-				out << str;
-
-				size_t sz = 1;	// at least one separator char
-				if (str.length() < field->width) {
-					sz = field->width - str.length();
-				}
-				out << string(sz, ' ');
-
-				have_output_something = true;
-			}
-			temp_flag &= ~(1 << i);
-		}
+	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
+		total_count[i] = samples_files.samples_count(i);
+		cumulated_samples[i] = 0;
+		cumulated_percent[i] = 0;
+//		time_cumulated[i] = 0;
 	}
-
-	if (have_output_something)
-		out << "\n";
-#endif
 }
 
 const field_description * OutputSymbol::GetFieldDescr(OutSymbFlag flag)
@@ -218,6 +179,139 @@ const field_description * OutputSymbol::GetFieldDescr(OutSymbFlag flag)
 	}
 
 	return 0;
+}
+
+void OutputSymbol::SetFlag(OutSymbFlag flag)
+{
+	flags = static_cast<OutSymbFlag>(flags | flag);
+}
+
+void OutputSymbol::OutputField(ostream & out, const string & name,
+			       const sample_entry & sample,
+			       OutSymbFlag fl, int ctr)
+{
+	const field_description * field = GetFieldDescr(fl);
+	if (field) {
+		string str = (this->*field->formater)(name, sample, ctr);
+		out << str;
+
+		size_t sz = 1;	// at least one separator char
+		if (str.length() < field->width) {
+			sz = field->width - str.length();
+		}
+		out << string(sz, ' ');
+	}
+}
+
+void OutputSymbol::OutputHeaderField(std::ostream & out, OutSymbFlag fl)
+{
+	const field_description * field = GetFieldDescr(fl);
+	if (field) {
+		// TODO: center the field header_name ?
+		out << field->header_name;
+
+		size_t sz = 1;	// at least one separator char
+		if (strlen(field->header_name) < field->width)
+			sz = field->width - strlen(field->header_name);
+
+		out << string(sz, ' ');
+	}
+}
+
+// TODO: (and also in OutputHeader(). Add the blank when outputting
+// the next field not the current to avoid filling with blank the eol.
+void OutputSymbol::Output(ostream & out, const symbol_entry * symb)
+{
+#if 0
+	// the old behavior.
+	output_symbol(symb, flags & osf_image_name, flags & osf_linenr_info,
+		      counter, total_count);
+#else
+	DoOutput(out, symb->name, symb->sample, flags);
+
+	if (flags & osf_details) {
+		OutputDetails(out, symb);
+	}
+#endif
+}
+
+void OutputSymbol::OutputDetails(ostream & out, const symbol_entry * symb)
+{
+	// FIXME: obviously we must shrink some field ie do not repeat
+	// the symb name etc. but must we output a sub header here ?
+
+	// We need to save the accumulated count and to restore it on
+	// exit so global cumulation and detailed cumulation are separate
+	u32 temp_total_count[OP_MAX_COUNTERS];
+	u32 temp_cumulated_samples[OP_MAX_COUNTERS];
+	u32 temp_cumulated_percent[OP_MAX_COUNTERS];
+//	u32 temp_time_cumulated[OP_MAX_COUNTERS];
+
+	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
+		temp_total_count[i] = total_count[i];
+		temp_cumulated_samples[i] = cumulated_samples[i];
+		temp_cumulated_percent[i] = cumulated_percent[i];
+//		temp_time_cumulated[i] = time_cumulated[i];
+
+		total_count[i] = symb->sample.counter[i];
+		cumulated_samples[i] = 0;
+		cumulated_percent[i] = 0;
+//		time_cumulated[i] = 0;
+	}
+
+	for (size_t cur = symb->first ; cur != symb->last ; ++cur) {
+		out << ' ';
+
+		DoOutput(out, symb->name, samples_files.get_samples(cur),
+			 static_cast<OutSymbFlag>(flags & osf_details_mask));
+	}
+
+	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
+		total_count[i] = temp_total_count[i];
+		cumulated_samples[i] = temp_cumulated_samples[i];
+		cumulated_percent[i] = temp_cumulated_percent[i];
+//		time_cumulated[i] = temp_time_cumulated[i];
+	}
+}
+
+void OutputSymbol::DoOutput(std::ostream & out, const string & name,
+			    const sample_entry & sample, OutSymbFlag flag)
+{
+	OutputHeader(out);
+
+	// first output the vma field
+	if (flag & osf_vma) {
+		OutputField(out, name, sample, osf_vma, 0);
+	}
+
+	// now the repeated field.
+	for (int ctr = 0 ; ctr < int(op_nr_counters); ++ctr) {
+		if (ctr == counter || counter == -1) {
+			size_t repeated_flag = (flag & osf_repeat_mask);
+			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {
+				if ((repeated_flag & (1 << i)) != 0) {
+					OutSymbFlag fl =
+					  static_cast<OutSymbFlag>(1 << i);
+					OutputField(out, name,
+						    sample, fl, ctr);
+					repeated_flag &= ~(1 << i);
+				}
+			}
+		}
+		
+	}
+
+	// now the remaining field
+	size_t temp_flag = flag & ~(osf_vma|osf_repeat_mask);
+	for (size_t i = 0 ; temp_flag != 0 ; ++i) {
+		if ((temp_flag & (1 << i)) != 0) {
+			OutSymbFlag fl = static_cast<OutSymbFlag>(1 << i);
+			OutputField(out, name, sample, fl, 0);
+			temp_flag &= ~(1 << i);
+		}
+	}
+
+	out << "\n";
 }
 
 void OutputSymbol::OutputHeader(ostream & out)
@@ -232,33 +326,38 @@ void OutputSymbol::OutputHeader(ostream & out)
 		return;
 	}
 
-	// avoid to clobber the screen if user are required to output nothing
-	bool have_output_something = false;
+	// first output the vma field
+	if (flags & osf_vma) {
+		OutputHeaderField(out, osf_vma);
+	}
 
-	size_t temp_flag = flags;
-	for (size_t i = 0 ; temp_flag != 0 ; ++i) {
-		if ((flags & (1 << i)) != 0) {
-			OutSymbFlag fl = static_cast<OutSymbFlag>(1 << i);
-			const field_description * field = GetFieldDescr(fl);
-			if (field) {
-				// TODO: center the field header_name ?
-				out << field->header_name;
-
-				size_t sz = 1;	// at least one separator char
-				if (strlen(field->header_name) < field->width)
-					sz = field->width -
-						strlen(field->header_name);
-
-				out << string(sz, ' ');
-
-				have_output_something = true;
+	// now the repeated field.
+	for (int ctr = 0 ; ctr < int(op_nr_counters); ++ctr) {
+		if (ctr == counter || counter == -1) {
+			size_t repeated_flag = (flags & osf_repeat_mask);
+			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {
+				if ((repeated_flag & (1 << i)) != 0) {
+					OutSymbFlag fl =
+					  static_cast<OutSymbFlag>(1 << i);
+					OutputHeaderField(out, fl);
+					repeated_flag &= ~(1 << i);
+				}
 			}
+		}
+		
+	}
+
+	// now the remaining field
+	size_t temp_flag = flags & ~(osf_vma|osf_repeat_mask);
+	for (size_t i = 0 ; temp_flag != 0 ; ++i) {
+		if ((temp_flag & (1 << i)) != 0) {
+			OutSymbFlag fl = static_cast<OutSymbFlag>(1 << i);
+			OutputHeaderField(out, fl);
 			temp_flag &= ~(1 << i);
 		}
 	}
 
-	if (have_output_something)
-		out << "\n";
+	out << "\n";
 }
 
 void OutputSymbol::Output(std::ostream & out,
@@ -278,103 +377,122 @@ void OutputSymbol::Output(std::ostream & out,
 	}
 }
 
-string OutputSymbol::format_vma(const symbol_entry * symb)
+string OutputSymbol::format_vma(const std::string &,
+				const sample_entry & sample, int)
 {
 	ostringstream out;
 	
-	out << hex << setw(8) << setfill('0') << symb->sample.vma;
+	out << std::hex << std::setw(8) << std::setfill('0') << sample.vma;
 
 	return out.str();
 }
 
-string OutputSymbol::format_symb_name(const symbol_entry * symb)
+string OutputSymbol::format_symb_name(const std::string & name,
+				      const sample_entry &, int)
 {
 	ostringstream out;
 
-	int const is_anon = symb->name[0] == '?';
+	int const is_anon = name[0] == '?';
 
 	if (!is_anon)
-		out << symb->name;
+		out << name;
 	else
 		out << "(no symbols)";
 
 	return out.str();
 }
 
-string OutputSymbol::format_image_name(const symbol_entry * symb)
+string OutputSymbol::format_image_name(const std::string &,
+				       const sample_entry & sample, int)
 {
 	ostringstream out;
 	
-	out << symb->sample.file_loc.image_name;
+	out << sample.file_loc.image_name;
 
 	return out.str();
 }
 
-string OutputSymbol::format_short_image_name(const symbol_entry * symb)
+string OutputSymbol::format_short_image_name(const std::string &,
+					     const sample_entry & sample, int)
 {
 	ostringstream out;
 
-	out << basename(symb->sample.file_loc.image_name);
+	out << basename(sample.file_loc.image_name);
 
 	return out.str();
 }
 
-string OutputSymbol::format_linenr_info(const symbol_entry * symb)
+string OutputSymbol::format_linenr_info(const std::string &,
+					const sample_entry & sample, int)
 {
 	ostringstream out;
 	
-	out << symb->sample.file_loc.filename
-	    << ":" << symb->sample.file_loc.linenr;
+	out << sample.file_loc.filename << ":" << sample.file_loc.linenr;
 
 	return out.str();
 }
 
-string OutputSymbol::format_short_linenr_info(const symbol_entry * symb)
+string OutputSymbol::format_short_linenr_info(const std::string &,
+					      const sample_entry & sample, int)
 {
 	ostringstream out;
 
-	out << basename(symb->sample.file_loc.filename)
-	    << ":" << symb->sample.file_loc.linenr;
+	out << basename(sample.file_loc.filename) 
+	    << ":" << sample.file_loc.linenr;
 
 	return out.str();
 }
 
-string OutputSymbol::format_nr_samples(const symbol_entry * symb)
+string OutputSymbol::format_nr_samples(const std::string &,
+				       const sample_entry & sample, int ctr)
 {
 	ostringstream out;
 
-	out << symb->sample.counter[counter];
+	out << sample.counter[ctr];
 
 	return out.str();
 }
 
-string OutputSymbol::format_nr_cumulated_samples(const symbol_entry * symb)
+string OutputSymbol::format_nr_cumulated_samples(const std::string &,
+						 const sample_entry & sample,
+						 int ctr)
 {
 	ostringstream out;
 
-	cumulated_samples += symb->sample.counter[counter];
+	cumulated_samples[ctr] += sample.counter[ctr];
 
-	out << cumulated_samples;
+	out << cumulated_samples[ctr];
 
 	return out.str();
 }
 
-string OutputSymbol::format_percent(const symbol_entry * symb)
+string OutputSymbol::format_percent(const std::string &,
+				    const sample_entry & sample, int ctr)
 {
 	ostringstream out;
 
-	out << (double(symb->sample.counter[counter]) / total_count) * 100;
+	double ratio = total_count[ctr]
+		? double(sample.counter[ctr]) / total_count[ctr]
+		: 0.0;
+
+	out << ratio * 100.0;
 
 	return out.str();
 }
 
-string OutputSymbol::format_cumulated_percent(const symbol_entry * symb)
+string OutputSymbol::format_cumulated_percent(const std::string &,
+					      const sample_entry & sample,
+					      int ctr)
 {
 	ostringstream out;
 
-	cumulated_percent_samples += symb->sample.counter[counter];
+	cumulated_percent[ctr] += sample.counter[ctr];
 
-	out << (double(cumulated_percent_samples) / total_count) * 100;
+	double ratio = total_count[ctr] 
+		? double(cumulated_percent[ctr]) / total_count[ctr]
+		: 0.0;
+
+	out << ratio * 100.0;
 
 	return out.str();
 }

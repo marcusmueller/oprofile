@@ -216,8 +216,8 @@ base directory of profile daemon
 Show the details for each shared lib which belongs to one application. This option is useful only if you have profiled with --separate-samples option and you specify on the oprofpp command line either --list-symbols or --list-all-symbols-details.
 .br
 .TP
-.BI "--output-format " vsSpPnlLiIh ", -t " vsSpPnlLiIh
-Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name and 'h' for the header itself. This option is available only with --list-symbols
+.BI "--output-format " vsSpPnlLiIh ", -t " vsSpPnlLiIdh
+Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'd' details for each samples for the selected symbols and 'h' for the header itself. This option is not available with --dump-gprof-file.
 .br
 .TP
 .B op_to_source options
@@ -310,7 +310,7 @@ show the image name when specifying --list-symbols
 .br
 .TP
 .BI "--output-format " vsSpPnlLiIh ", -t " vsSpPnlLiIh
-Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name and 'h' for the header itself. This option is available only with --list-symbols
+Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'd' details for each samples for the selected symbols and 'h' for the header itself. This option is available only with --list-symbols
 .br
 .TP
 .BI "--reverse -r"

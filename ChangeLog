@@ -1,3 +1,17 @@
+2002-02-27  Philippe Elie  <ph_e@club-internet.fr>
+
+	* TODO: upadte:
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.sgml:
+	* pp/opp_symbol.h:
+	* pp/opp_symbol.cpp:
+	* pp/oprofpp.cpp: use columned output for oprofpp -L, -s
+
+	* pp/oprofpp.cpp: command-line counter specification
+	  was broken by my last patch
+	* pp/opf_filter.cpp: ditto but bug comes from the far past
+
 2002-02-26  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/op_merge.cpp: small tidy
@@ -16,7 +30,7 @@
 	* pp/opp_symbol.h
 	* pp/opp_symbol.cpp: new, mainly for implementing --output-format
 	* pp/op_time.cpp:
-	* pp/oprofpp/cpp: use output format stuff
+	* pp/oprofpp.cpp: use output format stuff
 	* pp/Makefile.in: reflect above change
 	* doc/oprofile.1.in:
 	* doc/oprofile.sgml: document --output-format

@@ -438,7 +438,7 @@ static void output_symbols_count(map_t& files, int counter)
 
 	out.SetFlag(output_format_flags);
 
-	out.Output(cout,  symbols, true);
+	out.Output(cout, symbols, true);
 }
 
 /**

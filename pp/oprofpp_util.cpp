@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.29 2002/02/26 21:18:31 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.30 2002/02/28 21:16:29 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -201,9 +201,7 @@ void opp_treat_options(const char* file, poptContext optcon,
 		counter = temp_counter;
 
 	if (counter == -1) {
-		/* list_all_symbols_details always output all counter and do
-		 * not made any sort, it is the responsability of the backend
-		 * (op_to_source) to treat this */
+		/* list_all_symbols_details always output all counter */
 		if (!list_all_symbols_details)
 			counter = 0;
 	}

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.25 2002/02/26 21:18:30 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.26 2002/02/28 21:16:29 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -27,11 +27,13 @@
 
 using std::string;
 using std::vector;
+using std::cout;
+using std::cerr;
  
 // ugly global var for opf_container.cpp
 uint op_nr_counters;
 
-static int ctr; 
+static int ctr = -1;
 static int showvers;
 static char *gproffile;
 static char *symbol;
@@ -108,7 +110,6 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 	/* non-option file, either a sample or binary image file */
 	file = poptGetArg(optcon);
 
-	/* TODO: tidy this */
 	if (show_shared_libs)
 		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_image_name);
 	if (output_linenr_info)
@@ -117,12 +118,12 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 	if (output_format == 0) {
 		output_format = "vspnh";
 	} else {
-		if (!list_symbols) {
-			quit_error(optcon, "oprofpp: --output-format can be used only with --list-symbols.\n");
+		if (!list_symbols && !list_all_symbols_details && !symbol) {
+			quit_error(optcon, "oprofpp: --output-format can be used only without --list-symbols or --list-all-symbols-details.\n");
 		}
 	}
 
-	if (list_symbols) {
+	if (list_symbols || list_all_symbols_details || symbol) {
 		OutSymbFlag fl = ParseOutputOption(output_format);
 		if (fl == osf_none) {
 			cerr << "oprofpp: illegal --output-format flags.\n";
@@ -133,6 +134,7 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | fl);
 	}
 
+	counter = ctr;
 	opp_treat_options(file, optcon, image_file, sample_file, counter);
 
 	poptFreeContext(optcon);
@@ -182,8 +184,6 @@ void opp_bfd::output_linenr(uint sym_idx, uint offset) const
  */
 void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 {
-	// TODO avoid that: set the ugly global var for opf_container.cpp
-	op_nr_counters = nr_counters;
 	samples_files_t samples;
 
 	samples.add(*this, abfd, true, false, show_shared_libs, counter);
@@ -196,7 +196,7 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 
 	out.SetFlag(output_format_flags);
 
-	out.Output(cout,  symbols, true);
+	out.Output(cout, symbols, true);
 }
  
 /**
@@ -209,6 +209,7 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
  */
 void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 {
+#if 0
 	u32 start, end;
 	u32 j;
 
@@ -231,6 +232,34 @@ void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 		printf("%s+%x/%x:\t%u\n", symbol, abfd.sym_offset(i, j), 
 		       end - start, sample_count);
 	}
+#else
+	int i = abfd.symbol_index(symbol);
+	if (i < 0) {
+		cerr << "oprofpp: symbol \"" << symbol
+		     << "\" not found in image file.\n";
+		return;
+	}
+
+	samples_files_t samples;
+
+	samples.add(*this, abfd, true, true, false, counter);
+
+	const symbol_entry * symb = samples.find_symbol(abfd.syms[i]->value +
+						abfd.syms[i]->section->vma);
+	if (symb == 0) {
+		cerr << "oprofpp: symbol \"" << symbol
+		     << "\" not found in samples container file.\n";
+		return;
+	}
+
+	OutputSymbol out(samples, counter);
+
+	out.SetFlag(output_format_flags);
+//	out.SetFlag(osf_show_all_counters);
+	out.SetFlag(osf_details);
+
+	out.Output(cout, symb);
+#endif
 }
 
 #define GMON_VERSION 1
@@ -343,9 +372,6 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd) const
  */
 void opp_samples_files::do_list_all_symbols_details(opp_bfd & abfd) const
 {
-	// TODO avoid that: set the ugly global var for opf_container.cpp
-	op_nr_counters = nr_counters;
-
 	samples_files_t samples;
 
 	samples.add(*this, abfd, false, true, show_shared_libs, counter);
@@ -354,40 +380,15 @@ void opp_samples_files::do_list_all_symbols_details(opp_bfd & abfd) const
 
 	samples.select_symbols(symbols, first_file, 0.0, false, true);
 
-	// TODO: use OutputSymbol here by implementing show details.
-	vector<const symbol_entry*>::const_iterator it;
-	for (it = symbols.begin(); it != symbols.end(); ++it) {
+	OutputSymbol out(samples, -1);
 
-		if (show_shared_libs)
-			printf("%s ", (*it)->sample.file_loc.image_name.c_str());
+	out.SetFlag(output_format_flags);
 
-		if (output_linenr_info)
-			printf("%s:%u ",
-			       (*it)->sample.file_loc.filename.c_str(),
-			       (*it)->sample.file_loc.linenr);
+	// this flag are implicit for oprofpp -L
+	out.SetFlag(osf_show_all_counters);
+	out.SetFlag(osf_details);
 
-		printf("%.8lx ", (*it)->sample.vma);
-		for (uint k = 0 ; k < nr_counters ; ++k)
-			printf("%u ", (*it)->sample.counter[k]);
-
-		printf("%s\n", (*it)->name.c_str());
-
-		for (size_t cur = (*it)->first ; cur != (*it)->last ; ++cur) {
-			const sample_entry & sample = samples.get_samples(cur);
-
-			printf(" ");
-
-			if (output_linenr_info)
-				printf("%s:%u ",
-				       sample.file_loc.filename.c_str(),
-				       sample.file_loc.linenr);
-			printf("%.8lx", sample.vma);
-
-			for (uint k = 0; k < nr_counters; ++k)
-				printf(" %u", sample.counter[k]);
-			printf("\n");
-		}
-	}
+	out.Output(cout, symbols, false);
 }
 
 /**
@@ -438,6 +439,9 @@ int main(int argc, char const *argv[])
 	opp_samples_files samples_files(sample_file, counter);
 	opp_bfd abfd(samples_files.header[samples_files.first_file],
 		     samples_files.nr_samples, image_file);
+
+	// some other module needs this global var.
+	op_nr_counters = samples_files.nr_counters;
 
 	samples_files.output_header();
 

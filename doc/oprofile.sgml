@@ -613,7 +613,7 @@ two.
 Setting the value from the GUI should be straightforward. On the command line, you need to specify the
 <option>--rtc-value</option> option to <command>op_start</command>, e.g. :
 </para>
-<para><command>op_start &mdash;map-file=/boot/2.4.0ac12/System.map &mdash;vmlinux=/boot/2.4.0ac12/vmlinux --rtc-value=256</command></para>
+<para><command>op_start &mdash;map-file=/boot/2.4.0ac12/System.map &mdash;vmlinux=/boot/2.4.0ac12/vmlinux &mdash;rtc-value=256</command></para>
 <para>
 Note the sysctl tree described in the next section is different when the RTC is being used.  In particular,
 the file <filename>/proc/sys/dev/oprofile/rtc_value</filename> is used by the tools to set the desired RTC 
@@ -977,8 +977,9 @@ Some interesting options of the post-processor :
 		Specify the output format where a single format char is a field intended for: 'v' vma, 's'
 		nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples,
 		'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source
-		file name, 'i' image name, 'I' ditto as 'i' but with base name of image name and 'h' for the header itself.
-		This option is available only with --list-symbols
+		file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'd' details for each samples for
+		the selected symbols and 'h' for the header itself.
+		This option is not available with &mdash;dump-gprof-file.
 		</para></listitem>
 	</varlistentry>
 </variablelist>
@@ -1210,8 +1211,9 @@ Options allowed are :
 		Specify the output format where a single format char is a field intended for: 'v' vma, 's'
 		nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples,
 		'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source
-		file name, 'i' image name, 'I' ditto as 'i' but with base name of image name and h for the header itself.
-		This option is available only with --list-symbols
+		file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'd' details for each samples for
+		the selected symbols and 'h' for the header itself.
+		This option is available only with &mdash;list-symbols
 		</para></listitem>
 	</varlistentry>
 </variablelist>

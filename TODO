@@ -11,7 +11,7 @@
  o should we pin rather than loop sample buffer overflow too ?
  o cleanup cache things in compat22.h, add and use cache_line_aligned_in_smp
  o improve format of oprofpp output etc. The necessary stuff is in cvs now. It
-  need to be tuned and used for oprofpp -L -s
+  need perhaps to be tuned.
  o check than all post-profiles tools show version nr in the same way and document it
  
  
