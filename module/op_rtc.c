@@ -162,7 +162,7 @@ static int rtc_check_params(void)
 static int rtc_init(void)
 {
 	 /* request_region returns 0 on **failure** */
-	if (!request_region(RTC_PORT(0), RTC_IO_PORTS, "oprofile")) {
+	if (!request_region_check(RTC_PORT(0), RTC_IO_PORTS, "oprofile")) {
 		printk(KERN_ERR "oprofile: can't get RTC I/O Ports\n");
 		return -EBUSY;
 	}

@@ -142,7 +142,7 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
 
 /* different request_region */
-#define request_region compat_request_region
+#define request_region_check compat_request_region
 void *compat_request_region (unsigned long start, unsigned long n, const char *name);
  
 /* no rtc lock on 2.2 */
@@ -162,6 +162,8 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 
 #else
 
+#define request_region_check request_region
+ 
 #define lock_rtc(f) spin_lock_irqsave(&rtc_lock, f)
 #define unlock_rtc(f) spin_unlock_irqrestore(&rtc_lock, f)
  

@@ -1,4 +1,4 @@
-/* $Id: compat.c,v 1.2 2002/01/15 19:24:31 movement Exp $ */
+/* $Id: compat.c,v 1.3 2002/01/15 20:26:17 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -16,8 +16,6 @@
  */
 
 #include "op_dcache.h"
-/* get the real request_region */
-#undef request_region
 #include <linux/ioport.h>
 
 #ifdef NEED_2_2_DENTRIES
