@@ -45,7 +45,8 @@ using namespace std;
 
 static bool has_unique_event(op_cpu cpu_type)
 {
-	return op_get_interface() == OP_INTERFACE_25 || cpu_type == CPU_RTC;
+	return cpu_type == CPU_TIMER_INT == OP_INTERFACE_25
+		|| cpu_type == CPU_RTC;
 }
 
 op_event_descr::op_event_descr()
@@ -755,7 +756,7 @@ void oprof_start::on_start_profiler()
 		}
 	}
 
-	if (one_enable == false) {
+	if (one_enable == false && cpu_type != CPU_TIMER_INT) {
 		QMessageBox::warning(this, 0, "No counters enabled.\n");
 		return;
 	}
