@@ -24,7 +24,7 @@ class sample_container_imp_t;
 class symbol_container_imp_t;
 class profile_t;
 
-/** store multiple samples files belonging to the same profling session.
+/** store multiple samples files belonging to the same profiling session.
  * So on can hold samples files for arbitrary counter and binary image */
 class profile_container_t /*:*/ noncopyable {
 public:

@@ -327,7 +327,7 @@ static void output_files_count(map_t& files)
 		it = p_it.second;
 	}
 
-	/* 3rd pass: we can output the result, during the output we optionnaly
+	/* 3rd pass: we can output the result, during the output we optionally
 	 * build the set of image_name which belongs to one application and
 	 * display these results too */
 

@@ -11,6 +11,7 @@
 
 #include <string>
 
+// FIXME: doc 
 void derive_files(std::string const & argument,
 	std::string & image_file, std::string & sample_file,
 	int & counter);

@@ -1,3 +1,14 @@
+2002-12-11  John Levon  <levon@movementarian.org>
+
+	* pp/derive_files.h:
+	* pp/op_time.cpp:
+	* pp/op_time_options.cpp:
+	* pp/op_to_source.cpp:
+	* pp/opp_symbol.h:
+	* pp/profile.h:
+	* pp/profile_container.h:
+	* utils/Makefile.am: small pedantries
+ 
 2002-12-10  Will Cohen  <wcohen@redhat.com>
 
 	* utils/op_dump_25: 

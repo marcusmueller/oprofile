@@ -40,7 +40,6 @@
 using namespace std;
 using namespace options;
 
-//---------------------------------------------------------------------------
 /// Store the configuration of one counter. Construct from an opd_header
 struct counter_setup {
 	counter_setup() :
@@ -63,13 +62,13 @@ struct counter_setup {
 	size_t total_samples;
 };
 
-//---------------------------------------------------------------------------
+
 // This named namespace help doxygen to hierarchies documentation
 namespace op_to_source {
 
 /// string used as start / end comment to annotate source
-string begin_comment("/*");
-string end_comment("*/");
+string const begin_comment("/*");
+string const end_comment("*/");
 /// This is usable only if one of the counter has been setup as: count
 /// some sort of cycles events. In the other case trying to use it to
 /// translate samples count to time is a non-sense.
@@ -126,7 +125,7 @@ void output_header(ostream & out, int argc, char const * argv[]);
  * @param argv the command line number of argument
  * @param image_name the binary image name
  *
- * output annotated disassembly optionnaly mixed with source file.
+ * output annotated disassembly optionally mixed with source file.
  * Disassembly itself is provided by forking an objdump child process
  * which is filtered through op_to_source process
  */
@@ -243,7 +242,7 @@ void output_one_counter(ostream & out, size_t counter, size_t total);
  * @param comment true if we quote the output with begin_comment / end_comment
  * @param prefix a string, optionally empty, to output before counter
  *
- * output to out the number of samples in counter optionnaly prefixed by
+ * output to out the number of samples in counter optionally prefixed by
  * the prefix string and quoted by comment
  */
 void output_counter(ostream & out, const counter_array_t & counter,
@@ -306,7 +305,6 @@ size_t get_sort_counter_nr();
 
 } // op_to_source namespace
 
-//---------------------------------------------------------------------------
 
 void counter_setup::print(ostream & out, op_cpu cpu_type, int counter) const
 {
@@ -321,7 +319,6 @@ void counter_setup::print(ostream & out, op_cpu cpu_type, int counter) const
 	out << endl;
 }
 
-//---------------------------------------------------------------------------
 
 namespace op_to_source {
 
@@ -333,6 +330,7 @@ string extract_blank_at_begin(string const & str)
 
 	return str.substr(0, end_pos);
 }
+ 
 
 bool annotate_source(string const & image_name, string const & sample_file,
 		     filename_match const & fn_match,
@@ -410,6 +408,7 @@ bool annotate_source(string const & image_name, string const & sample_file,
 
 	return true;
 }
+ 
 
 void output_header(ostream & out, int argc, char const * argv[])
 {
@@ -460,9 +459,9 @@ void output_header(ostream & out, int argc, char const * argv[])
 	out << end_comment << endl;
 	out << endl;
 }
+ 
 
-void output_asm(int argc, char const * argv[], 
-		string const & image_name)
+void output_asm(int argc, char const * argv[], string const & image_name)
 {
 	// select the subset of symbols which statisfy the user requests
 	size_t index = get_sort_counter_nr();
@@ -478,6 +477,7 @@ void output_asm(int argc, char const * argv[],
 
 	output_objdump_asm(output_symbols, image_name);
 }
+
 
 void output_objdump_asm_line(string const & str,
 		     vector<symbol_entry const *> const & output_symbols,
@@ -531,6 +531,7 @@ void output_objdump_asm_line(string const & str,
 			find_and_output_counter(cout, str, " ");
 	}
 }
+ 
 
 void do_one_output_objdump(vector<symbol_entry const *> const & output_symbols,
 			   string const & app_name, bfd_vma start, bfd_vma end)
@@ -596,6 +597,7 @@ void do_one_output_objdump(vector<symbol_entry const *> const & output_symbols,
 	}
 }
 
+ 
 void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 			string const & app_name)
 {
@@ -618,6 +620,7 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 				      0, ~(bfd_vma)0);
 	}
 }
+ 
 
 void output_source(int argc, char const * argv[],
 		   filename_match const & fn_match,
@@ -655,6 +658,7 @@ void output_source(int argc, char const * argv[],
 	}
 }
 
+ 
 void output_one_file(istream & in, string const & filename,
 		     bool output_separate_file)
 {
@@ -702,6 +706,7 @@ void output_one_file(istream & in, string const & filename,
 		do_output_one_file(out, in, filename);
 }
 
+ 
 void do_output_one_file(ostream & out, istream & in, string const & filename)
 {
 	counter_array_t count;
@@ -732,6 +737,7 @@ void do_output_one_file(ostream & out, istream & in, string const & filename)
 	}
 }
 
+ 
 bool setup_counter_param(profile_t const & profile)
 {
 	bool have_counter_info = false;
@@ -764,6 +770,7 @@ bool setup_counter_param(profile_t const & profile)
 	cerr << "op_to_source: the input contains zero samples" << endl;
 	return false;
 }
+ 
 
 void output_counter_for_file(ostream & out, string const & filename,
 			     counter_array_t const & total_count_for_file)
@@ -775,12 +782,14 @@ void output_counter_for_file(ostream & out, string const & filename,
 	out << end_comment << endl << endl;
 }
 
+
 void output_one_counter(ostream & out, size_t counter, size_t total)
 {
 	out << " ";
 	out << counter << " ";
 	out << setprecision(4) << (op_ratio(counter, total) * 100.0) << "%";
 }
+
 
 void output_counter(ostream & out, counter_array_t const & counter,
 		    bool comment, string const & prefix)
@@ -804,6 +813,7 @@ void output_counter(ostream & out, counter_array_t const & counter,
 	out << '\n';
 }
 
+
 symbol_entry const * find_symbol(string const & str_vma)
 {
 	// do not use the bfd equivalent:
@@ -814,6 +824,7 @@ symbol_entry const * find_symbol(string const & str_vma)
 
 	return samples->find_symbol(vma);
 }
+
 
 void find_and_output_symbol(ostream & out, string const & str,
 			    string const & blank)
@@ -826,6 +837,7 @@ void find_and_output_symbol(ostream & out, string const & str,
 	}
 }
 
+ 
 void find_and_output_counter(ostream & out, string const & str,
 			     string const & blank)
 {
@@ -842,6 +854,7 @@ void find_and_output_counter(ostream & out, string const & str,
 	}
 }
 
+ 
 void find_and_output_counter(ostream & out, string const & filename,
 			     size_t linenr, string const & blank)
 {
@@ -860,6 +873,7 @@ void find_and_output_counter(ostream & out, string const & filename,
 		output_counter(out, counter, true, string());
 	}
 }
+
 
 size_t get_sort_counter_nr()
 {
@@ -891,7 +905,6 @@ size_t get_sort_counter_nr()
 
 } // op_to_source namespace
 
-//---------------------------------------------------------------------------
 
 int main(int argc, char const * argv[])
 {

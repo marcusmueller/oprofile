@@ -66,7 +66,7 @@ popt::option options_array[] = {
 
 /**
  * add_to_alternate_filename -
- * add all file name below path_name, optionnaly recursively, to the
+ * add all file name below path_name, optionally recursively, to the
  * the set of alternative filename used to retrieve image name when
  * a samples image name directory is not accurate
  */

@@ -20,4 +20,4 @@ OP_DUMP=op_dump
 endif
 
 # make sure everything gets distributed...
-EXTRA_DIST = op_dump op_dump_25 op_start_25 op_stop_25 op_start op_stop opcontrol
+EXTRA_DIST = op_dump op_dump_25 op_start_25 op_stop op_stop_25 op_start opcontrol

@@ -21,7 +21,6 @@
 #include <bfd.h>
 
 #include "counter_array.h"
-//#include "outsymbflag.h"
 
 typedef size_t sample_index_t;
 

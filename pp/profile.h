@@ -1,5 +1,5 @@
 /**
- * @file opp_samples_files.h
+ * @file profile.h
  * Encapsulation for samples files over all counter belonging to the
  * same binary image
  *
@@ -10,8 +10,8 @@
  * @author John Levon
  */
 
-#ifndef OPP_SAMPLES_FILES_H
-#define OPP_SAMPLES_FILES_H
+#ifndef PROFILE_H
+#define PROFILE_H
 
 #include <string>
 
@@ -136,4 +136,4 @@ private:
 	void open_samples_file(u32 counter, bool can_fail);
 };
 
-#endif /* !OPP_SAMPLES_FILES_H */
+#endif /* !PROFILE_H */
