@@ -2,8 +2,13 @@
 
 # useful for dumping ...
 
-if [ ! -f /proc/sys/dev/oprofile/dump ]; then
+if [ ! -d /proc/sys/dev/oprofile ]; then
 	echo "You must have the oprofile module loaded to dump data."
+	exit 1
+fi
+ 
+if [ ! -w /proc/sys/dev/oprofile/dump ]; then
+	echo "Must be root."
 	exit 1
 fi
  

@@ -1,5 +1,9 @@
 2001-09-02  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/op_dump: complain if not root more clearly.
+ 
+2001-09-02  John Levon  <moz@compsoc.man.ac.uk>
+
 	* oprofile.c: remove bogus setting for NMI oopser.
 	  smp_apic_restore() -> lvtpc_apic_restore()
 
