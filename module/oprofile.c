@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.2 2001/10/31 02:39:44 movement Exp $ */
+/* $Id: oprofile.c,v 1.3 2001/11/03 06:43:14 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -66,9 +66,8 @@ static volatile uint oprof_opened __cacheline_aligned;
 static volatile uint oprof_note_opened __cacheline_aligned;
 static DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
 
-u32 oprof_ready[NR_CPUS] __cacheline_aligned;
+static u32 oprof_ready[NR_CPUS] __cacheline_aligned;
 static struct _oprof_data oprof_data[NR_CPUS];
-static uint op_irq_stats[NR_CPUS] __cacheline_aligned;
 
 struct op_note * note_buffer __cacheline_aligned;
 u32 note_pos __cacheline_aligned;
@@ -131,6 +130,8 @@ inline static void op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
 	uint h = op_hash(regs->eip, current->pid, ctr);
 	uint i;
 
+	data->nr_irq++;
+
 	for (i=0; i < OP_NR_ENTRY; i++) {
 		if (likely(!op_miss(data->entries[h].samples[i]))) {
 			data->entries[h].samples[i].count++;
@@ -161,7 +162,6 @@ static void op_check_ctr(uint cpu, struct pt_regs *regs, int ctr)
 	get_perfctr(l, h, ctr);
 	if (likely(ctr_overflowed(l))) {
 		op_do_profile(cpu, regs, ctr);
-		op_irq_stats[cpu]++;
 	}
 }
 
@@ -801,8 +801,8 @@ static int get_nr_interrupts(ctl_table *table, int write, struct file *filp, voi
 	nr_interrupts = 0;
 
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
-		nr_interrupts += op_irq_stats[cpu];
-		op_irq_stats[cpu] = 0;
+		nr_interrupts += oprof_data[cpu].nr_irq;
+		oprof_data[cpu].nr_irq = 0;
 	}
 
 	return proc_dointvec(table, write, filp, buffer, lenp);

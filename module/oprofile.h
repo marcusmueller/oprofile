@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.1 2001/10/30 17:32:14 movement Exp $ */
+/* $Id: oprofile.h,v 1.2 2001/11/03 06:43:14 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -39,7 +39,7 @@
 
 struct op_entry {
 	struct op_sample samples[OP_NR_ENTRY];
-} __attribute__((__aligned__(SMP_CACHE_BYTES)));
+} __cacheline_aligned;
 
 /* per-cpu dynamic data */
 struct _oprof_data {
@@ -49,8 +49,9 @@ struct _oprof_data {
 	uint buf_size; /* nr. in buffer */
 	uint nextbuf; /* next in buffer (atomic) */
 	uint next; /* next sample in entry */
+	uint nr_irq;
 	uint ctr_count[OP_MAX_COUNTERS]; /* reset counter values */
-} __attribute__((__aligned__(SMP_CACHE_BYTES)));
+} __cacheline_aligned;
 
 /* MSRs */
 #ifndef MSR_IA32_PERFCTR0
