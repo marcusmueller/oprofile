@@ -42,7 +42,7 @@ ui/oprof_start.base.moc.cpp: ui/oprof_start.base.h
 oprof_start.moc.o: oprof_start.moc.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 oprof_start.o: oprof_start.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -DBINDIR=\"$(BINDIR)\" -c $< -o $@
 oprof_start_config.o: oprof_start_config.cpp
 	$(CXX) $(CXXFLAGS) -DKVERSION=\"@KVERS@\" -c $< -o $@
 oprof_start_util.o: oprof_start_util.cpp

@@ -1,5 +1,10 @@
 2002-01-11  John Levon  <moz@compsoc.man.ac.uk>
 
+	* gui/Makefile.in:
+	* gui/oprof_start.cpp: use absolute paths
+ 
+2002-01-11  John Levon  <moz@compsoc.man.ac.uk>
+
 	* doc/oprofile.sgml: add note about --with-linux
  
 2002-01-11  John Levon  <moz@compsoc.man.ac.uk>

@@ -682,7 +682,7 @@ void oprof_start::setup_unit_masks(const op_event_descr & descr)
 void oprof_start::on_flush_profiler_data()
 {
 	if (daemon_status().running)
-		do_exec_command("op_dump");
+		do_exec_command(BINDIR "/op_dump");
 	else
 		QMessageBox::warning(this, 0, "The profiler is not started.");
 }
@@ -806,7 +806,7 @@ void oprof_start::on_start_profiler()
 	if (config.verbose)
 		args.push_back("--verbose");
 
-	do_exec_command("op_start", args);
+	do_exec_command(BINDIR "/op_start", args);
 	total_nr_interrupts = 0;
 	timerEvent(0);
 }
@@ -814,10 +814,8 @@ void oprof_start::on_start_profiler()
 // flush and stop the profiler if it was started.
 void oprof_start::on_stop_profiler()
 {
-	// FIXME: security problem with these - they need
-	// to be /usr/bin/op_stop or whatever, everywhere... 
 	if (daemon_status().running)
-		do_exec_command("op_stop");
+		do_exec_command(BINDIR "/op_stop");
 	else
 		QMessageBox::warning(this, 0, "The profiler is already stopped.");
 

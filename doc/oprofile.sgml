@@ -227,7 +227,7 @@ This section gives a brief description of the available oprofile utilities and t
 <varlistentry>
 	<term><filename>op_help</filename></term>
 	<listitem><para>
-		This utility lists the availabe events and short descriptions.
+		This utility lists the available events and short descriptions.
 	</para></listitem>
 </varlistentry>
 	
