@@ -25,8 +25,9 @@
 class glob_filter : public string_filter {
 public:
 	/**
-	 * Initialise the filter with the include and exclude list, comma-separated.
-	 * Whitespace in each pattern is stripped.
+	 * Initialise the filter with the include and exclude list, 
+	 * comma-separated. Trailing and heading whitespace in each pattern are
+	 * stripped.
 	 */
 	glob_filter(std::string const & include_patterns,
 	            std::string const & exclude_patterns)
@@ -38,7 +39,6 @@ public:
 	glob_filter(std::vector<std::string> const & include_patterns,
 	            std::vector<std::string> const & exclude_patterns)
 		: string_filter(include_patterns, exclude_patterns) {}
-
 
 	/// Returns true if the given string matches
 	virtual bool match(std::string const & str) const;

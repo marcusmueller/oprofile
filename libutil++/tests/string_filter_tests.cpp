@@ -26,7 +26,6 @@ using namespace std;
 int main()
 {
 	string_filter f1;
-
 	check(f1, "", true);
 	check(f1, "ok", true);
 

@@ -3,5 +3,6 @@ Makefile.in
 Makefile
 string_manip_tests
 string_filter_tests
+glob_filter_tests
 comma_list_tests
 file_manip_tests
