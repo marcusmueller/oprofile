@@ -6,6 +6,11 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8 release
 -----------
 
+ o zwane problem with wrong text offset showed an interesting problem: if
+  op_bfd.cpp get any symbol above text offset for vmlinux or a module
+  kernel profile_t::sample_range() return a pair of iterator with first >
+  second then we enter an infinite loop when iterating through first to second.
+
  o print "0" not "0.0e+00". should we consider reworking opstack output
 format? make the headers more explanative
  o with callgraph the min count are too low. opcontrol must check callgraph is
