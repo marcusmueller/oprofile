@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.27 2001/04/06 14:16:46 movement Exp $ */
+/* $Id: oprofpp.c,v 1.28 2001/06/01 22:57:07 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -451,7 +451,7 @@ int countcomp(const void *a, const void *b)
 		if (ca->count0 < cb->count0)
 			return -1;
 		return (ca->count0 > cb->count0);
-	} 
+	}
 }
  
 /**
@@ -492,7 +492,9 @@ void do_list_symbols(bfd * ibfd)
 
 		for (j=start; j < end; j++) {
 			if (samples[j].count0)
-				verbprintf("Adding %u samples for symbol $%s$ at pos j 0x%x\n",samples[j].count0,syms[i]->name,j);
+				verbprintf("Adding %u 0-samples for symbol $%s$ at pos j 0x%x\n",samples[j].count0,syms[i]->name,j);
+			else if (samples[j].count1)
+				verbprintf("Adding %u 1-samples for symbol $%s$ at pos j 0x%x\n",samples[j].count1,syms[i]->name,j);
 			scounts[i].count0 += samples[j].count0;
 			scounts[i].count1 += samples[j].count1;
 			tot0 += samples[j].count0;
@@ -507,7 +509,7 @@ void do_list_symbols(bfd * ibfd)
 		if (ctr && scounts[i].count1) { 
 			printf("[0x%.8lx]: %2.4f%% (%u samples)\n",scounts[i].sym->value+scounts[i].sym->section->vma,
 				(((double)scounts[i].count1)/tot1)*100.0, scounts[i].count1);
-		} else if (scounts[i].count0) {
+		} else if (!ctr && scounts[i].count0) {
 			printf("[0x%.8lx]: %2.4f%% (%u samples)\n",scounts[i].sym->value+scounts[i].sym->section->vma,
 				(((double)scounts[i].count0)/tot0)*100.0, scounts[i].count0);
 		} else if (!streq("",scounts[i].sym->name))

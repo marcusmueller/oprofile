@@ -1,3 +1,12 @@
+2001-06-01  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/opd_proc.c: actually use opd_get_count -
+	  fix bug with counter 1 reported results
+
+	* dae/op_start: fix broken shell scripting
+
+	* dae/oprofpp.c: fix list-symbols output
+
 2001-04-30  John Levon  <moz@compsoc.man.ac.uk>
 
 	* dae/op_start: better error reporting

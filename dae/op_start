@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.25 2001/04/29 23:01:56 movement Exp $
+# $Id: op_start,v 1.26 2001/06/01 22:57:07 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -189,15 +189,30 @@ do
 	shift
 done
 
-CTR0_EVENT_VAL=`op_help $CTR0_EVENT`
-CTR1_EVENT_VAL=`op_help $CTR1_EVENT`
+if [ -z "$CTR0_EVENT" -a -z "$CTR1_EVENT" ]; then
+	echo "You haven't specified what events you would like to count, e.g."
+	echo "op_start ... --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000"
+	echo "Enter op_start --help for full options"
+	exit 1
+fi
+ 
+ 
+CTR0_EVENT_VAL=
+if [ ! -z "$CTR0_EVENT" ]; then
+	CTR0_EVENT_VAL=`op_help $CTR0_EVENT`
+fi
+ 
+CTR1_EVENT_VAL=
+if [ ! -z "$CTR1_EVENT" ]; then
+	CTR1_EVENT_VAL=`op_help $CTR1_EVENT`
+fi
 
-if [ -z "$CTR0_EVENT_VAL" && ! -z "$CTR0_EVENT" ]; then
+if [ -z "$CTR0_EVENT_VAL" -a ! -z "$CTR0_EVENT" ]; then
 	echo "Unknown event \"$CTR0_EVENT\""
 	exit 1
 fi
 
-if [ -z "$CTR1_EVENT_VAL" && ! -z "$CTR1_EVENT" ]; then
+if [ -z "$CTR1_EVENT_VAL" -a ! -z "$CTR1_EVENT" ]; then
 	echo "Unknown event \"$CTR1_EVENT\""
 	exit 1
 fi
@@ -283,13 +298,6 @@ if [ ! -f "$MAP_FILE" ]; then
 	exit 1
 fi
 
-if [ -z "$CTR0_EVENT" -a -z "$CTR1_EVENT" ]; then
-	echo "You haven't specified what events you would like to count, e.g."
-	echo "op_start ... --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000"
-	echo "Enter op_start --help for full options"
-	exit 1
-fi
- 
 if [ -c "$DEVICE_FILE" ]; then
 	if [ "$VERBOSE" = "1" ]; then 
 	echo "Removing $DEVICE_FILE"

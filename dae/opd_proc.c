@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.52 2001/04/29 23:01:56 movement Exp $ */
+/* $Id: opd_proc.c,v 1.53 2001/06/01 22:57:07 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -372,15 +372,15 @@ inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16
 	}
 
 	if (opd_get_counter(count)) {
-		if (fentry->count1 + count < fentry->count1)
+		if (fentry->count1 + opd_get_count(count) < fentry->count1)
 			fentry->count1 = (u32)-1;
 		else
-			fentry->count1 += count;
+			fentry->count1 += opd_get_count(count);
 	} else {
-		if (fentry->count0 + count < fentry->count0)
+		if (fentry->count0 + opd_get_count(count) < fentry->count0)
 			fentry->count0 = (u32)-1;
 		else
-			fentry->count0 += count;
+			fentry->count0 += opd_get_count(count);
 	}
 }
 
