@@ -3,20 +3,14 @@ This is an (incomplete) list of some of the stuff we want to look at doing.
 If you're interested in hacking on any of these, please contact the list first
 for some pointers and/or read HACKING and doc/CodingStyle.
 
-0.8 release
------------
-
- o stress test opstack: compile a Big Application w/o frame pointer and look
-  how driver and opstack react.
- o TRACE_END is no longer sent by the driver, keep it a bit for compatibility
- o callgraph_container.cpp: the inner loop in add() is very fragile!
- o child sample count for recursive function is not a bug but a feature, it
-  needs documentation.
- o need --callgraph in oprof_start
-
 0.9 release
 -----------
 
+ o anton's bug on the list about dcache aliasing
+ o callgraph_container.cpp: the inner loop in add() is very fragile!
+ o need --callgraph in oprof_start
+ o stress test opstack: compile a Big Application w/o frame pointer and look
+  how driver and opstack react.
  o opdiff
  o add event aliases for common things like icache misses, we must start to 
   think about metrics including simple like event alias mapped to two or more
@@ -32,7 +26,10 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 Before 1.0 little stuff
 -----------------------
 
+ o TRACE_END is no longer sent by the driver, keep it a bit for compatibility
  o callgraph patch: better way to skip ignored backtrace ?
+ o child sample count for recursive function is not a bug but a feature, it
+  needs documentation.
  o opcontrol --reset should avoid to reload the module if it's unloaded
  o zwane problem with wrong text offset showed an interesting problem: if
   op_bfd.cpp get any symbol below text offset for vmlinux or a module then
@@ -65,7 +62,6 @@ Before 1.0 little stuff
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
   try to recover gracefully.
  o output column shortname headers for opreport -l
- o separate debug info stuff
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
  o create_path API is weird
  o move oprofiled.log to OP_SAMPLE_DIR/current ?
@@ -78,8 +74,6 @@ Before 1.0 little stuff
  o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
  o sample-file: / binary: don't work in any useful way - can we fix this
    by peeking at binary: value and faking the split_sample_file somehow ?
- o increase encapsulation but, at least for now,  not at the cost of
-  getter()/setter(), this can go to Later section too.
 
 Documentation
 -------------
@@ -107,6 +101,8 @@ General checks to make
 Later
 -----
  
+ o increase encapsulation but, at least for now,  not at the cost of
+  getter()/setter(), this can go to Later section too.
  o we should notice an opcontrol config change (--separate etc.) and
    auto-restart the daemon if necessary (Run)
  o we can add lots more unit tests yet
