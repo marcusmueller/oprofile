@@ -1,3 +1,9 @@
+2003-03-05  John Levon  <levon@movementarian.org>
+
+	* libutil++/string_manip.h:
+	* libutil++/string_manip.cpp: cleanup, use s.find
+	  because older gcc's don't have the right s.compare
+
 2003-03-04  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol: only sleep 2 after dump on 2.4

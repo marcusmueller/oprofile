@@ -74,9 +74,11 @@ string split(string & s, char c)
 }
 
 
-bool is_prefix(std::string const & s1, std::string const &  s2)
+bool is_prefix(string const & s, string const & prefix)
 {
-	return s1.compare(0, s2.length(), s2) == 0;
+	// gcc 2.95 and below don't have this
+	// return s.compare(0, prefix.length(), prefix) == 0;
+	return s.find(prefix) == 0;
 }
 
 

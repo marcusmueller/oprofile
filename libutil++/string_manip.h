@@ -47,8 +47,8 @@ bool tobool(std::string const & s);
 /// s is set to the first part. Neither include the split character
 std::string split(std::string & s, char c);
 
-/// return true if s2 is a prefix of s1
-bool is_prefix(std::string const & s1, std::string const &  s2);
+/// return true if "prefix" is a prefix of "s"
+bool is_prefix(std::string const & s, std::string const & prefix);
 
 /**
  * @param result where to put results
