@@ -24,6 +24,8 @@
 #include "apic_up_compat.h"
  
 #include <linux/smp_lock.h>
+
+#define pte_page_address(a) pte_page(a)
  
 #define GET_VM_OFFSET(v) ((v)->vm_offset) 
 #define MODULE_LICENSE(l)
@@ -84,7 +86,7 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 #endif /* CONFIG_SMP */
 
 /* TODO: add __cache_line_aligned_in_smp and put this stuff in its own file */
-/* 2.4.0 have introduced __cacheline_aligned */
+/* 2.4.0 introduced __cacheline_aligned */
 
 #include <asm/cache.h>
 

@@ -514,8 +514,6 @@ do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 	if (abfd.syms.size() == 0) {
 		u32 start, end;
 
-		cout << "adding artificial symbols for " << image_name << endl;
-
 		start = 0;
 		end = start + samples_files.nr_samples;
 

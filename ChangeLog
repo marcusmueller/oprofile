@@ -1,3 +1,15 @@
+2002-01-27  Philippe Elie  <ph_e@club-internet.fr>
+
+	* doc/oprofile.1.in: a few words about op_stop
+
+	* module/compat.h:
+	* module/compat22.h:
+	* module/compat24.h: change pte_page_address definition
+	  for 2.2.20
+
+	* pp/opf_container.cpp: no warning when creating artificial symbols
+	* pp/oprofpp_tuil.cpp: no warning for image without symbols
+
 2002-01-27  John Levon  <moz@compsoc.man.ac.uk>
 
 	* gui/oprof_start.cpp:

@@ -339,6 +339,11 @@ Profiles will be collected every ten minutes. You can force a collection at any 
 .PP
 .I op_dump
 .PP
+Stopping profiling is done using
+.PP
+.I op_stop
+which also flush all samples to disk.
+.PP
 As an alternative you can use the
 .B oprof_start
 gui to start the profiler. See the HTML documentation for further details

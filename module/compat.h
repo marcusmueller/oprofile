@@ -38,12 +38,6 @@
 #define minor(dev)	MINOR(dev)
 #endif
  
-#if V_BEFORE(2,2,20)
-#define pte_page_address(a) pte_page(a)
-#else
-#define pte_page_address(a) page_address(pte_page(a))
-#endif /* BEFORE 2.2.20 */
- 
 /* Things that cannot rely on a particular linux version or are needed between
  * major release */
 

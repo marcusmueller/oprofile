@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.24 2002/01/27 00:37:05 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.25 2002/01/27 21:28:24 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -364,13 +364,6 @@ void opp_bfd::open_bfd_image(const string & filename, bool is_kernel)
 	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) { 
 		fprintf(stderr,"oprofpp: BFD format failure for %s.\n", filename.c_str());
 		exit(EXIT_FAILURE);
-	}
-
-	/* FIXME: I let this as warning until we check than caller code is
-	 * enough robust and treatment of samples outside any symbols is
-	 * implemented */
-	if (get_symbols() == false) {
-		fprintf(stderr, "oprofpp: warning couldn't get any symbols from image file \"%s\".\n", filename.c_str());
 	}
 
 	if (is_kernel) {
