@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.27 2000/08/31 23:44:18 moz Exp $ */
+/* $Id: opd_proc.c,v 1.28 2000/09/01 00:31:02 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -879,6 +879,9 @@ void opd_put_sample(const struct op_sample *sample)
 	for (i=0;i<proc->nr_maps;i++) {
 		if (opd_is_in_map(&proc->maps[i],sample->eip)) {
 			u32 offset = opd_map_offset(&proc->maps[i],sample->eip);
+			if (streq("simple",opd_images[proc->maps[i].image].name)) {
+				printf("simple eip 0x%x, start 0x%x offset 0x%x, calc offset 0x%x\n",sample->eip,proc->maps[i].start, proc->maps[i].offset, offset);
+			} 
 			if (proc->maps[i].image!=-1)
 				opd_put_image_sample(&opd_images[proc->maps[i].image],offset,sample->count);
 			opd_stats[OPD_PROCESS]++;
