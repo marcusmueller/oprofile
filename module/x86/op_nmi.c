@@ -12,7 +12,6 @@
 #include "oprofile.h"
 #include "op_msr.h"
 #include "op_apic.h"
-#include "op_events.h"
 #include "op_util.h"
 #include "op_x86_model.h"
 
@@ -144,9 +143,6 @@ static int pmc_check_params(void)
 	int enabled = 0;
 
 	for (i = 0; i < get_model()->num_counters; i++) {
-		int min_count;
-		int ret;
-	
 		if (!sysctl.ctr[i].enabled)
 			continue;
 

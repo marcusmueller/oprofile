@@ -13,7 +13,6 @@
 
 
 #include "oprofile.h"
-#include "op_events.h"
 #include "op_util.h"
 #include <asm/perfmon.h>
 #include "arch.h"
