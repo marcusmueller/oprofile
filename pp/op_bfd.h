@@ -20,16 +20,51 @@
 #include "op_types.h"
 
 class opp_samples_files;
+class op_bfd;
 
 /** all symbol vector indexation use this type */
 typedef size_t symbol_index_t;
 const symbol_index_t nil_symbol_index = symbol_index_t(-1);
 
-/** a symbol description from a bfd point of view */
-struct op_bfd_symbol {
-	asymbol* symbol;
-	bfd_vma vma;
-	size_t size;
+/** a symbol description from a bfd point of view. This duplicate
+ * information pointed by an asymbol, we need this duplication in case
+ * the symbol is an artificial symbol */
+class op_bfd_symbol {
+	friend op_bfd;
+public:
+
+	op_bfd_symbol(asymbol const * a, u32 value, u32 filepos, u32 sect_vma,
+		      u32 size, char const * name)
+		:
+		bfd_symbol(a),
+		symb_value(value),
+		section_filepos(filepos),
+		section_vma(sect_vma),
+		symb_size(size),
+		symb_name(name)
+		{}
+	u32 vma() const { return symb_value + section_vma; }
+	u32 value() const { return symb_value; }
+	u32 filepos() const { return symb_value + section_filepos; }
+	char const * name() const { return symb_name; }
+	asymbol const * symbol() const { return bfd_symbol; }
+	size_t size() const { return symb_size; }
+
+private:
+	/// the original bfd symbol, this can be null if the symbol is an
+	/// artificial symbol
+	asymbol const * bfd_symbol;
+	/// the offset of this symbol relative to the begin of the section's
+	/// symbol
+	u32 symb_value;
+	/// the section filepos for this symbol
+	u32 section_filepos;
+	/// the section vma for this symbol
+	u32 section_vma;
+	/// the size of this symbol
+	size_t symb_size;
+	/// the name of the symbol
+	char const * symb_name;
 };
 
 /** Encapsulation of a bfd object. Simplify open/close of bfd, enumerating
@@ -98,8 +133,7 @@ public:
 	 * @param start reference to the start vma
 	 * @param end reference to the end vma
 	 *
-	 * return in @param start, @param end the vma range for
-	 * this binary object.
+	 * return in start, end the vma range for this binary object.
 	 */
 	void get_vma_range(u32 & start, u32 & end) const;
 
@@ -128,6 +162,11 @@ private:
 	 * @param sym_idx symbol index
 	 */
 	size_t symbol_size(symbol_index_t sym_idx) const;
+
+	/**
+	 * create an artificial symbol which cover the vma range start, end
+	 */
+	void create_artificial_symbol(u32 start, u32 end);
 };
 
 #endif /* !OP_BFD_H*/

@@ -84,6 +84,12 @@ void op_bfd::open_bfd_image(const std::string & filename, bool is_kernel)
 	}
 
 	get_symbols();
+
+	if (syms.size() == 0) {
+		u32 start, end;
+		get_vma_range(start, end);
+		create_artificial_symbol(start, end);
+	}
 }
 
 /**
@@ -92,7 +98,7 @@ void op_bfd::open_bfd_image(const std::string & filename, bool is_kernel)
  */
 static bool symcomp(const op_bfd_symbol & a, const op_bfd_symbol & b)
 {
-	return a.vma < b.vma;
+	return a.vma() < b.vma();
 }
 
 namespace { 
@@ -168,8 +174,14 @@ bool op_bfd::get_symbols()
 			// we can't fill the size member for now, because in
 			// some case it is calculated from the vma of the
 			// next symbol
-			struct op_bfd_symbol symb = { bfd_syms[i], 
-			  bfd_syms[i]->value + bfd_syms[i]->section->vma, 0 };
+			const asymbol * symbol = bfd_syms[i];
+			struct op_bfd_symbol symb(op_bfd_symbol(
+				symbol, 
+				symbol->value,
+				symbol->section->filepos,
+				symbol->section->vma,
+				0,
+				symbol->name));
 			syms.push_back(symb);
 		}
 	}
@@ -178,7 +190,7 @@ bool op_bfd::get_symbols()
 
 	// now we can calculate the symbol size
 	for (i = 0 ; i < syms.size() ; ++i) {
-		syms[i].size = symbol_size(i);
+		syms[i].symb_size = symbol_size(i);
 	}
 
 	// we need to ensure than for a given vma only one symbol exist else
@@ -186,7 +198,7 @@ bool op_bfd::get_symbols()
 	// ELF symbols size : potential bogosity here because when using
 	// elf symbol size we need to check than two symbols does not overlap.
 	for (i =  1 ; i < syms.size() ; ++i) {
-		if (syms[i].vma == syms[i-1].vma) {
+		if (syms[i].vma() == syms[i-1].vma()) {
 			// TODO: choose more carefully the symbol we drop.
 			// If once have FUNCTION flag and not the other keep
 			// it etc.
@@ -199,8 +211,8 @@ bool op_bfd::get_symbols()
 
 	// it's time to remove the excluded symbol.
 	for (i = 0 ; i < syms.size() ; ) {
-		if (is_excluded_symbol(syms[i].symbol->name)) {
-			printf("excluding symbold %s\n", syms[i].symbol->name);
+		if (is_excluded_symbol(syms[i].name())) {
+			printf("excluding symbold %s\n", syms[i].name());
 			syms.erase(syms.begin() + i);
 		} else {
 			++i;
@@ -217,12 +229,8 @@ bool op_bfd::get_symbols()
 
 u32 op_bfd::sym_offset(symbol_index_t sym_index, u32 num) const
 {
-	/* take off section offset */
-	num -= syms[sym_index].symbol->section->filepos;
-	/* and take off symbol offset from section */
-	num -= syms[sym_index].symbol->value;
-
-	return num;
+	/* take off section offset and symb value */
+	return num - syms[sym_index].filepos();
 }
 
 bool op_bfd::have_debug_info() const
@@ -244,12 +252,16 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 	filename = 0;
 	linenr = 0;
 
-	asection* section = syms[sym_idx].symbol->section;
+	// take care about artificial symbol
+	if (syms[sym_idx].symbol() == 0)
+		return false;
+
+	asection* section = syms[sym_idx].symbol()->section;
 
 	if ((bfd_get_section_flags (ibfd, section) & SEC_ALLOC) == 0)
 		return false;
 
-	pc = sym_offset(sym_idx, offset) + syms[sym_idx].symbol->value;
+	pc = sym_offset(sym_idx, offset) + syms[sym_idx].value();
 
 	if (pc >= bfd_section_size(ibfd, section))
 		return false;
@@ -266,7 +278,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 	// functioname and symbol name can be different if we query linenr info
 	// if we accept it we can get samples for the wrong symbol (#484660)
 	if (ret == true && functionname && 
-	    strcmp(functionname, syms[sym_idx].symbol->name)) {
+	    strcmp(functionname, syms[sym_idx].name())) {
 		ret = false;
 	}
 
@@ -304,7 +316,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 
 			if (ret == true && linenr != 0 &&
 			    strcmp(functionname,
-				   syms[sym_idx].symbol->name) == 0) {
+				   syms[sym_idx].name()) == 0) {
 				return ret;	// we win
 			}
 		}
@@ -349,20 +361,18 @@ typedef struct
 
 size_t op_bfd::symbol_size(symbol_index_t sym_idx) const
 {
-	asymbol * next, *sym;
+	op_bfd_symbol const * next;
+	op_bfd_symbol const & sym = syms[sym_idx];
 
-	sym = syms[sym_idx].symbol;
-	next = (sym_idx == syms.size() - 1) ? NULL : syms[sym_idx + 1].symbol;
+	next = (sym_idx == syms.size() - 1) ? NULL : &syms[sym_idx + 1];
 
-	u32 start = sym->section->filepos + sym->value;
+	u32 start = sym.filepos();
 	size_t length;
 
 #ifndef USE_ELF_INTERNAL
 	u32 end;
 	if (next) {
-		end = next->value;
-		/* offset of section */
-		end += next->section->filepos;
+		end = next->filepos();
 	} else
 		end = nr_samples;
 
@@ -377,7 +387,7 @@ size_t op_bfd::symbol_size(symbol_index_t sym_idx) const
 	if (length == 0) {
 		u32 next_offset = start;
 		if (next) {
-			next_offset = next->value + next->section->filepos;
+			next_offset = next->filepos();
 		} else {
 			next_offset = nr_samples;
 		}
@@ -391,15 +401,15 @@ size_t op_bfd::symbol_size(symbol_index_t sym_idx) const
 void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 			      u32 & start, u32 & end) const
 {
-	asymbol *sym = syms[sym_idx].symbol;
+	op_bfd_symbol const & sym = syms[sym_idx];
 
-	verbprintf("Symbol %s, value 0x%lx\n", sym->name, sym->value); 
-	start = sym->value;
-	/* offset of section */
-	start += sym->section->filepos;
-	verbprintf("in section %s, filepos 0x%lx\n", sym->section->name, sym->section->filepos);
+	verbprintf("Symbol %s, value 0x%x\n", sym.name(), sym.value()); 
+	start = sym.filepos();
+	if (sym.symbol()) {
+		verbprintf("in section %s, filepos 0x%lx\n", sym.symbol()->section->name, sym.symbol()->section->filepos);
+	}
 
-	end = start + syms[sym_idx].size;
+	end = start + syms[sym_idx].size();
 	verbprintf("start 0x%x, end 0x%x\n", start, end); 
 
 	if (start >= nr_samples + sect_offset) {
@@ -428,7 +438,7 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 symbol_index_t op_bfd::symbol_index(char const * symbol) const
 {
 	for (symbol_index_t i = 0; i < syms.size(); i++) {
-		if (!strcmp(syms[i].symbol->name, symbol))
+		if (!strcmp(syms[i].name(), symbol))
 			return i;
 	}
 
@@ -440,10 +450,25 @@ void op_bfd::get_vma_range(u32 & start, u32 & end) const
 	if (syms.size()) {
 		// syms are sorted by vma so vma of the first symbol and vma +
 		// size of the last symbol give the vma range for gprof output
-		start = syms[0].vma;
-		end = syms[syms.size() - 1].vma + syms[syms.size() - 1].size;
+		const op_bfd_symbol & last_symb = syms[syms.size() - 1];
+		start = syms[0].vma();
+		end = last_symb.vma() + last_symb.size();
 	} else {
 		start = 0;
-		end = 0;
+		end = nr_samples;
 	}
+}
+
+void op_bfd::create_artificial_symbol(u32 start, u32 end)
+{
+	size_t sz_str = strlen(bfd_get_filename(ibfd) + 1 + 1);
+	/* this is a memory leak for now */
+	char * const name = new char [sz_str];
+
+	strcpy(name, "?");
+	strcat(name, bfd_get_filename(ibfd));
+
+	op_bfd_symbol symbol(0, 0, start, 0, end - start, name);
+
+	syms.push_back(symbol);
 }

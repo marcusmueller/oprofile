@@ -45,8 +45,16 @@ struct samples_file_t
 //private:
 	db_tree_t db_tree;
 
-	// this offset is zero for user space application and the file pos
-	// of text section for kernel and module.
+	/**
+	 * For the kernel and kernel modules, this value is non-zero and
+         * equal to the offset of the .text section. This is done because
+	 * we use the information provided in /proc/ksyms, which only gives
+	 * the mapped position of .text, and the symbol kernel_start from
+         * System.map. This value is used to fix up the sample offsets
+         * for kernel code as a result of this difference (in user-space
+         * samples, the sample offset is from the start of the mapped
+	 * file, as seen in /proc/pid/maps).
+         */
 	u32 sect_offset;
 
 private:

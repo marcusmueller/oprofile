@@ -1,6 +1,16 @@
 2002-05-11  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/op_bfd.cpp:
+	* pp/op_bfd.h: ehance op_bfd_symbol ...
+	* pp/oprofpp.cpp:
+	* pp/samples_container.cpp: move handling of image w/o symbol
+	  in op_bfd
+
+	* pp/samples_file.h: ehance comment (John's work)
+
+2002-05-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/op_bfd.cpp:
 	* pp/op_bfd.h:
 	* pp/oprofpp.cpp:
 	* pp/oprofpp.h:

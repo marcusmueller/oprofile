@@ -402,35 +402,6 @@ void samples_container_t::do_add(const opp_samples_files & samples_files,
 
 	string image_name = bfd_get_filename(abfd.ibfd);
 
-	/* kludge to get samples for image w/o symbols */
-	if (abfd.syms.size() == 0) {
-		u32 start, end;
-
-		start = 0;
-		end = start + abfd.nr_samples;
-
-		symbol_entry symb_entry;
-		symb_entry.first = 0;
-		symb_entry.name = "?" + image_name;
-		// FIXME: get the base vma load adress of the image
-		symb_entry.sample.vma = start;  // wrong fix this later
-		symb_entry.sample.file_loc.linenr = 0;
-		symb_entry.sample.file_loc.image_name = image_name;
-
-		samples_files.accumulate_samples(symb_entry.sample.counter,
-						 start, end);
-		counter += symb_entry.sample.counter;
-
-		if (flags & osf_details) {
-			// 6th parameters is wrong must be translated to a vma
-			add_samples(samples_files, abfd, nil_symbol_index,
-				    start, end, start, image_name);
-		}
-
-		symb_entry.last = samples->size();
-		symbols->push_back(symb_entry);
-	} /* kludgy block */
-
 	for (symbol_index_t i = 0 ; i < abfd.syms.size(); ++i) {
 		u32 start, end;
 		char const * filename;
@@ -449,7 +420,7 @@ void samples_container_t::do_add(const opp_samples_files & samples_files,
 		counter += symb_entry.sample.counter;
 
 		// FIXME - kill char * !!!
-		char const * symname = abfd.syms[i].symbol->name;
+		char const * symname = abfd.syms[i].name();
 		symb_entry.name = symname ? demangle_symbol(symname) : "";
 
 		if ((flags & (osf_linenr_info | osf_short_linenr_info)) != 0 &&
@@ -462,7 +433,7 @@ void samples_container_t::do_add(const opp_samples_files & samples_files,
 
 		symb_entry.sample.file_loc.image_name = image_name;
 
-		bfd_vma base_vma = abfd.syms[i].vma;
+		bfd_vma base_vma = abfd.syms[i].vma();
 
 		symb_entry.sample.vma = abfd.sym_offset(i, start) + base_vma;
 

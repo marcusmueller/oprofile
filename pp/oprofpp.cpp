@@ -200,7 +200,7 @@ static void do_list_symbol(op_bfd & abfd,
 
 	samples.add(samples_files, abfd);
 
-	const symbol_entry * symb = samples.find_symbol(abfd.syms[i].vma);
+	const symbol_entry * symb = samples.find_symbol(abfd.syms[i].vma());
 	if (symb == 0) {
 		cerr << "oprofpp: symbol \"" << symbol
 		     << "\" not found in samples container file.\n";
@@ -276,7 +276,7 @@ static void do_dump_gprof(op_bfd & abfd,
 		for (j = start; j < end; j++) {
 			u32 count;
 			u32 pos;
-			pos = (abfd.sym_offset(i, j) + abfd.syms[i].vma - low_pc) / MULTIPLIER; 
+			pos = (abfd.sym_offset(i, j) + abfd.syms[i].vma() - low_pc) / MULTIPLIER; 
 
 			/* opp_get_options have set ctr to one value != -1 */
 			count = samples_files.samples_count(sort_by_ctr, j);
@@ -289,7 +289,7 @@ static void do_dump_gprof(op_bfd & abfd,
 			if (hist[pos] + count > (u16)-1) {
 				printf("Warning: capping sample count by %u samples for "
 					"symbol \"%s\"\n", hist[pos] + count - ((u16)-1),
-					abfd.syms[i].symbol->name);
+					abfd.syms[i].name());
 				hist[pos] = (u16)-1;
 			} else {
 				hist[pos] += (u16)count;
