@@ -43,31 +43,13 @@ Before 1.0 little stuff
  o test opannotate -s -a on an application containing relative path debug
   info and profiled in another directory than the application build once.
   can objdump retrieve the source file and if no can we work-around ?
- o restore stream state when using persistant formating flag like:
-     s/ostream os; os << hex << foo/os << hex << foo << dec/
  o implement pp_interface alias
  o look if we must remove help_str support from libopt++
- o option xxx and negated option --no-xxx: we can hide them in --help and
-  mention in the xxx option help string than the --no-xxx is allowed. Not
-  really usefull if we have a little number of --no.
  o move oprofiled.log to OP_SAMPLE_DIR/current ?
- o I think we should have the ability to have *fixed* width headers, e.g. :
-
-vma      samples  cum. samples  %           cum. %     symbol name             image name              app name
-0804c350 64582    64582         35.0757     35.0757    odb_insert              /usr/loc...in/oprofiled /usr/local/oprofile-pp/bin/oprofiled
-
-  Note the ellipsis
-
  o OPD_MAX_MODULES is stupid, use a list instead
  o improve the *non* verbose daemon log to be a bit more informative
- o daemon: opd_put_kernel_samples vs. setup_kernel_sample vs. handle_. Rename, way too confusing
-   (fixed in BRANCH_CALLGRAPH)
  o --buffer-size is useless on 2.5 without tuning of watershed
  o is --reset racy ? it's certainly too slow ...
- o should we make the sighup handler re-read counter config and re-start profiling too ?
- o improve --smart-demangle
-	o allow user to add it's own pattern in user.pat, document it.
-	o hard code ${typename} regular definition to remove all current limitations (difficult, perhaps after 1.0 ?).
  o oprof_start: check lib samples when kernel samples checkbox is checked
  o fix /dev/null mappings (see sf) (I've seen this once - john)
  o mask SIGTERM over critical daemon operations that could corrupt sample files
@@ -110,6 +92,19 @@ General checks to make
 Later
 -----
  
+ o I think we should have the ability to have *fixed* width headers, e.g. :
+
+vma      samples  cum. samples  %           cum. %     symbol name             image name              app name
+0804c350 64582    64582         35.0757     35.0757    odb_insert              /usr/loc...in/oprofiled /usr/local/oprofile-pp/bin/oprofiled
+
+  Note the ellipsis
+ o option xxx and negated option --no-xxx: we can hide them in --help and
+  mention in the xxx option help string than the --no-xxx is allowed. Not
+  really usefull if we have a little number of --no.
+ o should we make the sighup handler re-read counter config and re-start profiling too ?
+ o improve --smart-demangle
+	o allow user to add it's own pattern in user.pat, document it.
+	o hard code ${typename} regular definition to remove all current limitations (difficult, perhaps after 1.0 ?).
  o allow --event to take event numbers. (is it worth ?)
  o i18n. We need a good formatter, and also remember format_percent()
  o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
