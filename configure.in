@@ -142,10 +142,23 @@ if test "$enable_gcov" = yes; then
 	AX_CXXFLAGS_OPTION(OP_CXXFLAGS,[-ftest-coverage])
 fi
 
-# enable -Werror for non-release versions.
-if echo "$VERSION" | grep cvs >/dev/null; then
-	AX_CFLAGS_OPTION(OP_CFLAGS,[-Werror])
-	AX_CXXFLAGS_OPTION(OP_CXXFLAGS,[-Werror])
+AC_ARG_ENABLE(werror,
+	[  --disable-werror            disable -Werror flag (default is enabled for non-release)],
+        enable_werror=$enableval, enable_werror=yes)
+if test "$enable_werror" = yes; then
+	# enable -Werror for non-release versions.
+	if echo "$VERSION" | grep cvs >/dev/null; then
+		AX_CFLAGS_OPTION(OP_CFLAGS,[-Werror])
+		AX_CXXFLAGS_OPTION(OP_CXXFLAGS,[-Werror])
+	fi
+fi
+
+AC_ARG_ENABLE(optimization,
+	[  --disable-optimization      disable optimization flags (default is enabled)],
+	enable_optimization=$enableval, enable_optimisation=yes)
+if test "$enable_optimization" = "no"; then
+	CFLAGS=`echo $CFLAGS | sed 's/-O2//g'`
+	CXXFLAGS=`echo $CXXFLAGS | sed 's/-O2//g'`
 fi
 
 AC_SUBST(OP_CFLAGS)

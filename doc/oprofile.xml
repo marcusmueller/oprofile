@@ -243,14 +243,20 @@ is often all you need, but note these arguments to <command>./configure</command
 			it is safe to omit this option.
 		</para></listitem>
 	</varlistentry>
-	<varlistentry id="enable-gcov">
-		<term><option>--enable-gcov</option></term>
+	<varlistentry id="disable-werror">
+		<term><option>--disable-werror</option></term>
 		<listitem><para>
-			Activate GCC compile-time options if available to
-			record information in the build directory to determine
-			which sections of the C and C++ code are executed.
-			This option is for developers and it is safe to omit
-			this option from normal builds.
+			Development versions of OProfile build by
+			default with <option>-Werror</option>. This option turns
+			<option>-Werror</option> off.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry id="disable-optimization">
+		<term><option>--disable-optimization</option></term>
+		<listitem><para>
+			Disable the <option>-O2</option> compiler flag
+			(useful if you discover an OProfile bug and want to give a useful
+			back-trace etc.)
 		</para></listitem>
 	</varlistentry>
 </variablelist>

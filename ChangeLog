@@ -1,12 +1,19 @@
+2003-11-06  John Levon  <levon@movementarian.org>
+
+	* configure.in: add --disable-werror and --disable-optimization
+
+	* doc/oprofile.xml: document above. Remove docs for
+	* --enable-gcov (only useful to developers)
+
 2003-11-06  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_kernel.c:
-	* daemon/liblegacy/opd_kernel.c: be less paranoiad about kernel range,
-	  this a slightly different thant the patch Thomas Spatzier tested but
-	  it can't hurt (last famous word ...). This fix s390x where kernel
+	* daemon/liblegacy/opd_kernel.c: be less paranoid about kernel range,
+	  this is slightly different than the patch Thomas Spatzier tested but
+	  it can't hurt (famous last words ...). This fixes s390x where kernel
 	  start can be zero and was rejected.
 
-2003-11-06  Thomas Spatzier <tspat@de.ibm.com>
+2003-11-06  Thomas Spatzier  <tspat@de.ibm.com>
 
 	* daemon/opd_cookie.c: changed an #if defined for selecting right
 	  system call for IBM s390 or s390x, respectively
