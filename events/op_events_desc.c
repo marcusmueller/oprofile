@@ -1,4 +1,4 @@
-/* $Id: op_events_desc.c,v 1.1 2001/11/12 14:05:34 phil_e Exp $ */
+/* $Id: op_events_desc.c,v 1.2 2001/12/04 22:09:20 davej Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -36,6 +36,7 @@ static struct op_cpu_type op_cpu_types[] = {
 	{ "PentiumPro",  CPU_PPRO },
 	{ "Pentium II",  CPU_PII },
 	{ "Pentium III", CPU_PIII },
+	{ "Pentium(R) III", CPU_PIII },
 	{ "Celeron",	 CPU_PII },
 	{ "Coppermine",  CPU_PIII },
 	{ "Athlon",	 CPU_ATHLON },

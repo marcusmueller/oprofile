@@ -1,3 +1,9 @@
+2001-12-04  Dave Jones <davej@suse.de>
+
+	* events/op_events_desc.c:
+	  Add recognition for alternative PIII string.
+	  Reported by Lev Iserovich <lev@ciprico.com>
+	
 2001-12-04  Philippe Elie  <ph_e@club-internet.fr>
 
 	* dae/opd_util.c:
