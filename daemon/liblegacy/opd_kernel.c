@@ -179,7 +179,7 @@ static void opd_get_module_info(void)
 
 		if (strlen(line) < 9) {
 			printf("oprofiled: corrupt /proc/ksyms line \"%s\"\n", line);
-			goto failure;
+			break;
 		}
 
 		if (strncmp("__insmod_", line + 9, 9)) {
@@ -194,7 +194,7 @@ static void opd_get_module_info(void)
 
 		if (!*cp2) {
 			printf("oprofiled: corrupt /proc/ksyms line \"%s\"\n", line);
-			goto failure;
+			break;
 		}
 
 		cp2++;
@@ -249,7 +249,6 @@ static void opd_get_module_info(void)
 		free(line);
 	}
 
-failure:
 	if (line)
 		free(line);
 	op_close_file(fp);
@@ -299,13 +298,13 @@ static void opd_drop_module_sample(unsigned long eip)
 			if (eip >= info.addr && eip < info.addr + info.size) {
 				verbprintf("Sample from unprofilable module %s\n", name);
 				opd_create_module(name, info.addr, info.addr + info.size);
-				goto out;
+				break;
 			}
 		}
 		mod++;
 		name += strlen(name) + 1;
 	}
-out:
+
 	if (module_names)
 		free(module_names);
 }

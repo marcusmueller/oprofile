@@ -37,26 +37,25 @@ double op_cpu_frequency(void)
 
 		/* x86/parisc/ia64/x86_64 */
 		if (sscanf(line, "cpu MHz : %lf", &fval) == 1)
-			goto out;
+			break;
 		/* ppc/ppc64 */
 		if (sscanf(line, "clock : %lfMHz", &fval) == 1)
-			goto out;
+			break;
 		/* alpha */
 		if (sscanf(line, "cycle frequency [Hz] : %lu", &uval) == 1) {
 			fval = uval / 1E6;
-			goto out;
+			break;
 		}
 		/* sparc64 if CONFIG_SMP only */
 		if (sscanf(line, "Cpu0ClkTck : %lx", &uval) == 1) {
 			fval = uval / 1E6;
-			goto out;
+			break;
 		}
 		/* s390 doesn't provide cpu freq, checked up to 2.6-test4 */
 
 		free(line);
 	}
 
-out:;
 	if (line)
 		free(line);
 	op_close_file(fp);

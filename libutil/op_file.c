@@ -246,12 +246,10 @@ int create_path(char const * path)
 		*pos = '\0';
 		ret = create_dir(str);
 		*pos = '/';
-		if (ret) {
-			goto out;
-		}
+		if (ret)
+			break;
 	}
 
-out:
 	free(str);
 	return ret;
 }

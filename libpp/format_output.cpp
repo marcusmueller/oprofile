@@ -123,7 +123,6 @@ size_t formatter::output_field(ostream & out, field_datum const & datum,
 {
 	if (!hide_immutable) {
 		out << string(padding, ' ');
-		padding = 0;
 
 		field_description const & field(format_map[fl]);
 		string str = (this->*field.formatter)(datum);
@@ -145,7 +144,6 @@ size_t formatter::output_header_field(ostream & out, format_flags fl,
 					size_t padding)
 {
 	out << string(padding, ' ');
-	padding = 0;
 
 	field_description const & field(format_map[fl]);
 	out << field.header_name;
