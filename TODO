@@ -6,7 +6,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.6 release
 -----------
 
- o gui: show default event if none selected
+ o gui: show default event if none selected, fix counter allocation stuff
 
 0.7 release
 -----------
@@ -35,6 +35,8 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o GUI still has a physical-counter interface, should have a general one
+   like opcontrol --event
  o test opannotate -s -a on an application containing relative path debug
   info and profiled in another directory than the application build once.
   can objdump retrieve the source file and if no can we work-around ?
