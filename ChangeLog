@@ -1,3 +1,8 @@
+2001-09-28  Philippe Elie  <ph_e@club-internet.fr>
+
+	* doc/oprofile.sgml: oops, correct bad merging with
+ 	  John's last update.
+
 2001-09-27  Philippe Elie  <ph_e@club-internet.fr>
 
 	* doc/oprofile.1.in: minor change
