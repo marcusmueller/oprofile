@@ -87,7 +87,7 @@ private:
 	void build_ordered_samples(string const & filename);
 
 	/// copy of the samples file header
-	opd_header * file_header;
+	scoped_ptr<opd_header> file_header;
 
 	/**
 	 * Samples are stored in hash table, iterating over hash table don't

@@ -1,5 +1,10 @@
 2002-12-08  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/counter_profile.cpp:
+	* pp/counter_profile.h: use scoped_ptr
+
+2002-12-08  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/counter_profile.h:
 	* pp/counter_profile.cpp: relax samples_db_t sooner
 

@@ -31,15 +31,16 @@ using namespace std;
 
 counter_profile_t::counter_profile_t(string const & filename)
 	:
-	file_header(0),
 	start_offset(0)
 {
 	build_ordered_samples(filename);
 }
 
+// empty dtor but needed due to the use of scoped_ptr<opd_header>, if we don't
+// provide once compiler generate the dtor and all source file declaring
+// counter_profile_t will need the complete type of opd_header
 counter_profile_t::~counter_profile_t()
 {
-	delete file_header;
 }
 
 void counter_profile_t::check_headers(counter_profile_t const & rhs) const
@@ -86,7 +87,7 @@ void counter_profile_t::build_ordered_samples(string const & filename)
 		exit(EXIT_FAILURE);
 	}
 
-	file_header = new opd_header(head);
+	file_header.reset(new opd_header(head));
 
 	db_node_nr_t node_nr, pos;
 	db_node_t * node = db_get_iterator(&samples_db, &node_nr);
