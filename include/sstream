@@ -168,7 +168,7 @@ inline int std::stringbuf::sync()
   if(n)
     {
       buf.replace(rpos, std::string::npos, pbase(), n);
-      if(buf.size() - rpos != n)
+      if(buf.size() - rpos != (unsigned int)n)
 	return EOF;
       rpos += n;
       pbump(-n);

@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.86 2002/06/04 16:47:08 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.87 2002/06/06 02:02:52 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -281,7 +281,8 @@ AC_MSG_RESULT([takes const char **]); CFLAGS="$CFLAGS -DCONST_POPT"; CXXFLAGS="$
 AC_MSG_CHECKING("whether to use included sstream")
 AC_TRY_COMPILE([#include <sstream>], [], 
 AC_MSG_RESULT([no]);,
-AC_MSG_RESULT([yes]); CXXFLAGS="$CXXFLAGS -I../include")
+AC_MSG_RESULT([yes]); CXXINCLUDES="$CXXINCLUDES -I../include")
+AC_SUBST(CXXINCLUDES)
 
 dnl some distro have a libiberty.a but does not have a libiberty.h
 AC_CHECK_HEADERS(libiberty.h)

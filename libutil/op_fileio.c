@@ -17,16 +17,7 @@
 #include <string.h>
 #include <stdlib.h>
  
-/**
- * op_do_open_file - open a file
- * @param name  file name
- * @param mode  mode string
- * @param fatal  is failure fatal or not
- *
- * Open a file name.
- * Returns file handle or %NULL on failure.
- */
-FILE * op_do_open_file(char const * name, char const * mode, int fatal)
+static FILE * op_do_open_file(char const * name, char const * mode, int fatal)
 {
 	FILE * fp;
 
@@ -44,6 +35,32 @@ FILE * op_do_open_file(char const * name, char const * mode, int fatal)
 }
 
 /**
+ * op_try_open_file - open a file
+ * @param name  file name
+ * @param mode  mode string
+ *
+ * Open a file name.
+ * Returns file handle or %NULL on failure.
+ */
+FILE * op_try_open_file(char const * name, char const * mode)
+{
+	return op_do_open_file(name, mode, 0);
+}
+
+/**
+ * op_open_file - open a file
+ * @param name  file name
+ * @param mode  mode string
+ *
+ * Open a file name.
+ * Failure to open is fatal.
+ */
+FILE * op_open_file(char const * name, char const * mode)
+{
+	return op_do_open_file(name, mode, 1);
+}
+
+/**
  * op_close_file - close a file
  * @param fp  file pointer
  *
@@ -58,22 +75,22 @@ void op_close_file(FILE * fp)
 }
 
 /**
- * op_do_read_file - read a file
+ * op_read_file - read a file
  * @param fp  file pointer
  * @param buf  buffer
  * @param size  size in bytes to read
- * @param fatal  is failure fatal or not
  *
  * Read from a file. It is considered an error
  * if anything less than @size bytes is read.
+ * Failure is fatal.
  */
-void op_do_read_file(FILE * fp, void * buf, size_t size, int fatal)
+void op_read_file(FILE * fp, void * buf, size_t size)
 {
 	size_t count;
 
 	count = fread(buf, size, 1, fp);
 
-	if (fatal && count != 1) {
+	if (count != 1) {
 		if (feof(fp)) {
 			fprintf(stderr,
 				"oprofiled:op_read_file: read less than expected %d bytes\n",

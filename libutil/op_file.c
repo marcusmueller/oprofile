@@ -84,11 +84,11 @@ time_t op_get_mtime(char const * file)
  * return > 0 if the file is not a regular file, == 0 if the
  * file is successfully moved and < 0 on error 
  */ 
-int op_move_regular_file(char const *new_dir, 
-	char const *old_dir, char const *name)
+int op_move_regular_file(char const * new_dir, 
+	char const * old_dir, char const * name)
 {
 	int ret = 1;
-	struct stat stat_buf;
+	struct stat st;
 
 	char * src = xmalloc(strlen(old_dir) + strlen(name) + 2);
 	char * dest = xmalloc(strlen(new_dir) + strlen(name) + 2);
@@ -101,7 +101,8 @@ int op_move_regular_file(char const *new_dir,
 	strcat(dest, "/");
 	strcat(dest, name);
 
-	if (!stat(src, &stat_buf) && S_ISREG(stat_buf.st_mode))
+	// FIXME: rename is not cross-mount robust
+	if (!stat(src, &st) && S_ISREG(st.st_mode))
 		ret = rename(src, dest);
 
 	free(src);

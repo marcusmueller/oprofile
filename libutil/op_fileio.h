@@ -20,14 +20,11 @@ extern "C" {
  
 #include <stdio.h>
  
-#define op_try_open_file(n,m) op_do_open_file((n), (m), 0)
-#define op_open_file(n,m) op_do_open_file((n), (m), 1)
-FILE * op_do_open_file(char const * name, char const * mode, int fatal);
+FILE * op_try_open_file(char const * name, char const * mode);
+FILE * op_open_file(char const * name, char const * mode);
 void op_close_file(FILE * fp);
  
-#define op_try_read_file(f,b,s) op_do_read_file((f), (b), (s), 0);
-#define op_read_file(f,b,s) op_do_read_file((f), (b), (s), 1);
-void op_do_read_file(FILE * fp, void * buf, size_t size, int fatal);
+void op_read_file(FILE * fp, void * buf, size_t size);
 u32 op_read_int_from_file(char const * filename);
 char * op_get_line(FILE * fp);
  

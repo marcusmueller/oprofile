@@ -12,9 +12,10 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <errno.h>
 #include <fnmatch.h>
  
+#include <cstdio>
+#include <cerrno>
 #include <iostream>
 #include <vector>
  

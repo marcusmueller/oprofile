@@ -18,12 +18,12 @@ INCLUDES=-I$(TOPDIR)/  -I$(TOPDIR)/libutil  -I$(TOPDIR)/libop -I$(TOPDIR)/libdb 
  
 CFLAGS += $(INCLUDES)
 CFLAGS += -W -Wall -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline 
-CFLAGS += -pipe -g -O2 @CFLAGS@
+CFLAGS += -pipe @CFLAGS@
  
-CXXINCLUDES=-I$(TOPDIR)/libopt++ -I$(TOPDIR)/libutil++ -I$(TOPDIR)/libop++ @QT2_INCLUDES@
+CXXINCLUDES=@CXXINCLUDES@ -I$(TOPDIR)/libopt++ -I$(TOPDIR)/libutil++ -I$(TOPDIR)/libop++ @QT2_INCLUDES@
 CXXFLAGS += $(INCLUDES) $(CXXINCLUDES)
 CXXFLAGS += -W -Wall -Wunused -Wmissing-prototypes
-CXXFLAGS += -pipe -g -O2 @CXXFLAGS@
+CXXFLAGS += -pipe @CXXFLAGS@
 
 # enable -Werror for non-release versions
 ifneq (,$(findstring cvs,@VERSION@))
