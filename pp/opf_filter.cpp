@@ -74,7 +74,7 @@ string basename(string const & path_name);
 
 }
 
-// The correct value is passed by oprofpp on standard input.
+// The correct value is known at runtime.
 uint op_nr_counters = 2;
 
 // This have nothing to do here...
@@ -971,6 +971,10 @@ void output::output_source()
 {
 	set<string> filename_set;
 
+	// Trying to iterate on symbols to create the set of filename which
+	// contain sample do not work: a symbol can contain samples and this
+	// symbol is in a source file that contain zero sample because only
+	// inline function in this source file contains samples.
 	for (size_t i = 0 ; i < samples.size() ; ++i)
 		filename_set.insert(samples[i].file_loc.filename);
 
@@ -1184,8 +1188,6 @@ void output::output_header(ostream& out) const
 		}
 	} else {
 		out << "output annotated assembly listing with samples" << endl;
-		// FIXME : is there any way to check if the objdump output mix
-		// source within assembly ?
 	}
 
 	out << endl;
@@ -1276,7 +1278,8 @@ int is_opf_filter_option(const char* option)
 
 	const poptOption * opt;
 	for (opt = options ; opt->longName; ++opt) {
-		if (strcmp(opt->longName, option) == 0)
+		if (strcmp(opt->longName, option) == 0 || 
+		    (opt->shortName == option[0] && option[0] && option[1] == '\0'))
 			return opt->argInfo == POPT_ARG_NONE ? 1 : 2;
 	}
 

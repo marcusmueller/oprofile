@@ -1,3 +1,8 @@
+2001-10-25  Philippe Elie  <ph_e@club-internet.fr>
+
+	* doc/oprofile.sgml: minor change.
+	* pp/opf_filter.cpp: repair short option -a and -s
+
 2001-10-24  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/op_to_source: remove from cvs

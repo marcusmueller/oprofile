@@ -729,7 +729,7 @@ Some interesting options of the post-processor :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>&mdash;dump-gprof-file</option></term>
+		<term><option>&mdash;dump-gprof-file filename</option></term>
 		<listitem><para>
 		Dump output to the specified file in <command>gprof</command> format. If you specify <filename>gmon.out</filename>,
 		you can then call <command>gprof -p &lt;binary&gt;</command>.

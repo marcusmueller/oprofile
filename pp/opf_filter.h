@@ -13,10 +13,6 @@ static const bool sanity_check = true;
 //---------------------------------------------------------------------------
 /// A simple container for a fileno:linr location
 struct file_location {
-	// This rely on a ref counted string implementation for efficiency.
-	// TODO: after 0.0.5 release check this (comment is currently
-	// false) need to test if memory sharing is really a win
-
 	/// empty if not valid.
 	string filename;
 	/// 0 means invalid or code is generated internally by the compiler
