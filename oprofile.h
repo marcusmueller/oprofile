@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.59 2001/10/16 15:56:46 movement Exp $ */
+/* $Id: oprofile.h,v 1.60 2001/10/16 15:57:49 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -187,11 +187,13 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #else
 #define likely(a) (a)
 #endif
+#endif
 #ifndef unlikely
 #ifdef EXPECT_OK
 #define unlikely(a) __builtin_expect((a), 0)
 #else
 #define unlikely(a) (a)
+#endif
 #endif
  
 /* we can't unload safely on SMP */
