@@ -263,7 +263,7 @@ retry:
        	status_file = fopen(OP_DUMP_STATUS, "w");
 
 	if (!status_file && errno == EMFILE) {
-		if (!sfile_lru_clear()) {
+		if (sfile_lru_clear()) {
 			printf("LRU cleared but file open fails for %s.\n",
 			       OP_DUMP_STATUS);
 			abort();
