@@ -1,3 +1,12 @@
+2003-09-16  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: don't pass pid/pgrp filter
+	to 2.6 daemon
+
+	* dae/oprofiled.c:
+	* daemon/oprofiled.c: setrlimit to 8192 (lame
+	workaround for now), minor cleanups
+
 2003-09-15  John Levon  <levon@movementarian.org>
 
 	* common_option.cpp: rename the array to

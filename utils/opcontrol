@@ -911,8 +911,12 @@ do_start_daemon() {
 
 	OPD_ARGS=" \
 		--separate-lib-samples=$SEPARATE_LIB_SAMPLES \
-		--separate-kernel-samples=$SEPARATE_KERNEL_SAMPLES \
-		--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
+		--separate-kernel-samples=$SEPARATE_KERNEL_SAMPLES"
+
+	if [ "$KERNEL_SUPPORT" != "yes" ]; then
+		OPD_ARGS="$OPD_ARGS \
+			--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
+	fi
 
 	if [ "$VMLINUX" = "none" ]; then
 		OPD_ARGS="$OPD_ARGS --no-vmlinux"

@@ -39,10 +39,12 @@
 #endif
 #include "op_cpufreq.h"
 
-#include <unistd.h>
-#include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <unistd.h>
+#include <signal.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -565,6 +567,8 @@ int main(int argc, char const * argv[])
 	struct op_note * nbuf;
 	size_t n_buf_bytesize;
 	int i;
+	int err;
+	struct rlimit rlim = { 8192, 8192 };
 
 	opd_options(argc, argv);
 
@@ -580,7 +584,7 @@ int main(int argc, char const * argv[])
 	opd_write_abi();
 
 	if (atexit(clean_exit)) {
-		fprintf(stderr, "Couldn't set exit cleanup !\n");
+		perror("oprofiled: couldn't set exit cleanup: ");
 		exit(EXIT_FAILURE);
 	}
 
@@ -597,6 +601,11 @@ int main(int argc, char const * argv[])
 
 	setup_signals();
  
+	err = setrlimit(RLIMIT_NOFILE, &rlim);
+	if (err) {
+		perror("warning: could not set RLIMIT_NOFILE to 8192: ");
+	}
+
 	if (op_write_lock_file(OP_LOCK_FILE)) {
 		fprintf(stderr, "oprofiled: could not create lock file "
 			OP_LOCK_FILE "\n");
