@@ -26,7 +26,7 @@ namespace format_output {
 formatter::formatter(profile_container const & profile_)
 	:
 	flags(ff_none),
-	nr_groups(1),
+	nr_classes(1),
 	profile(profile_),
 	first_output(true),
 	vma_64(false),
@@ -75,9 +75,9 @@ void formatter::vma_format_64bit()
 }
 
 
-void formatter::set_nr_groups(size_t nr)
+void formatter::set_nr_classes(size_t nr)
 {
-	nr_groups = nr;
+	nr_classes = nr;
 }
 
 
@@ -196,9 +196,9 @@ void formatter::do_output(ostream & out, symbol_entry const & symb,
 	if (flags & ff_vma)
 		padding = output_field(out, datum, ff_vma, padding, false);
 
-	// repeated fields for each count group
-	for (size_t group = 0 ; group < nr_groups; ++group) {
-		field_datum datum(symb, sample, group);
+	// repeated fields for each profile class
+	for (size_t pclass = 0 ; pclass < nr_classes; ++pclass) {
+		field_datum datum(symb, sample, pclass);
 
 		if (flags & ff_nr_samples)
 			padding = output_field(out, datum,
@@ -262,8 +262,8 @@ void formatter::output_header(ostream & out)
 	if (flags & ff_vma)
 		padding = output_header_field(out, ff_vma, padding);
 
-	// the field repeated for each count group
-	for (size_t group = 0 ; group < nr_groups; ++group) {
+	// the field repeated for each profile class
+	for (size_t pclass = 0 ; pclass < nr_classes; ++pclass) {
 		if (flags & ff_nr_samples)
 			padding = output_header_field(out,
 			      ff_nr_samples, padding);
@@ -366,7 +366,7 @@ string formatter::format_linenr_info(field_datum const & f)
 string formatter::format_nr_samples(field_datum const & f)
 {
 	ostringstream out;
-	out << f.sample.counts[f.count_group];
+	out << f.sample.counts[f.pclass];
 	return out.str();
 }
 
@@ -374,8 +374,8 @@ string formatter::format_nr_samples(field_datum const & f)
 string formatter::format_nr_cumulated_samples(field_datum const & f)
 {
 	ostringstream out;
-	cumulated_samples[f.count_group] += f.sample.counts[f.count_group];
-	out << cumulated_samples[f.count_group];
+	cumulated_samples[f.pclass] += f.sample.counts[f.pclass];
+	out << cumulated_samples[f.pclass];
 	return out.str();
 }
 
@@ -383,8 +383,8 @@ string formatter::format_nr_cumulated_samples(field_datum const & f)
 string formatter::format_percent(field_datum const & f)
 {
 	ostringstream out;
-	double ratio = op_ratio(f.sample.counts[f.count_group],
-	                        total_count[f.count_group]);
+	double ratio = op_ratio(f.sample.counts[f.pclass],
+	                        total_count[f.pclass]);
 
 	return format_double(ratio * 100, percent_int_width,
 	                     percent_fract_width);
@@ -394,9 +394,9 @@ string formatter::format_percent(field_datum const & f)
 string formatter::format_cumulated_percent(field_datum const & f)
 {
 	ostringstream out;
-	cumulated_percent[f.count_group] += f.sample.counts[f.count_group];
-	double ratio = op_ratio(cumulated_percent[f.count_group],
-	                        total_count[f.count_group]);
+	cumulated_percent[f.pclass] += f.sample.counts[f.pclass];
+	double ratio = op_ratio(cumulated_percent[f.pclass],
+	                        total_count[f.pclass]);
 
 	return format_double(ratio * 100, percent_int_width,
 	                     percent_fract_width);
@@ -406,8 +406,8 @@ string formatter::format_cumulated_percent(field_datum const & f)
 string formatter::format_percent_details(field_datum const & f)
 {
 	ostringstream out;
-	double ratio = op_ratio(f.sample.counts[f.count_group],
-	                        total_count_details[f.count_group]);
+	double ratio = op_ratio(f.sample.counts[f.pclass],
+	                        total_count_details[f.pclass]);
 
 	return format_double(ratio * 100, percent_int_width,
 	                     percent_fract_width);
@@ -417,11 +417,11 @@ string formatter::format_percent_details(field_datum const & f)
 string formatter::format_cumulated_percent_details(field_datum const & f)
 {
 	ostringstream out;
-	cumulated_percent_details[f.count_group]
-		+= f.sample.counts[f.count_group];
+	cumulated_percent_details[f.pclass]
+		+= f.sample.counts[f.pclass];
 
-	double ratio = op_ratio(cumulated_percent_details[f.count_group],
-	                        total_count_details[f.count_group]);
+	double ratio = op_ratio(cumulated_percent_details[f.pclass],
+	                        total_count_details[f.pclass]);
 
 	return format_double(ratio * 100, percent_int_width,
 			     percent_fract_width);

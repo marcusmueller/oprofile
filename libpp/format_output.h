@@ -37,13 +37,13 @@ public:
 	void add_format(format_flags flag);
 
 	/**
-	 * Set the number of collected count groups. Each group
+	 * Set the number of collected profile classes. Each class
 	 * will output sample count and percentage in extra columns.
 	 *
 	 * This class assumes that the profile information has been
-	 * populated with the right number of groups.
+	 * populated with the right number of classes.
 	 */
-	void set_nr_groups(size_t nr_count_groups);
+	void set_nr_classes(size_t nr_classes);
 
 	/** output a vector of symbols to out according to the output format
 	 * specifier previously set by call(s) to add_format() */
@@ -64,11 +64,11 @@ private:
 	struct field_datum {
 		field_datum(symbol_entry const & sym,
 		            sample_entry const & s,
-			    size_t group)
-			: symbol(sym), sample(s), count_group(group) {}
+			    size_t pc)
+			: symbol(sym), sample(s), pclass(pc) {}
 		symbol_entry const & symbol;
 		sample_entry const & sample;
-		size_t count_group;
+		size_t pclass;
 	};
  
 	/// format callback type
@@ -133,8 +133,8 @@ private:
 	/// formatting flags set
 	format_flags flags;
  
-	/// count groups
-	size_t nr_groups;
+	/// number of profile classes
+	size_t nr_classes;
 
 	/// container we work from
 	profile_container const & profile;

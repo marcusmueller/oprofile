@@ -1,5 +1,20 @@
 2003-09-21  John Levon  <levon@movementarian.org>
 
+	* doc/internals.xml: provide a short overview
+	and start a glossary
+
+	* libpp/count_array.h:
+	* libpp/format_output.cpp:
+	* libpp/format_output.h:
+	* libpp/profile.cpp:
+	* libpp/profile.h:
+	* libpp/profile_container.cpp:
+	* libpp/profile_container.h:
+	* pp/opreport.cpp: replace residual references to
+	count groups with profile class concept
+
+2003-09-21  John Levon  <levon@movementarian.org>
+
 	* doc/Makefile.am:
 	* doc/internals.xml: start an internals manual ...
 

@@ -70,7 +70,7 @@ profile_container::~profile_container()
 //  the samples_by_file_loc member var is correctly setup.
 void profile_container::add(profile_t const & profile,
                             op_bfd const & abfd, string const & app_name,
-                            size_t count_group)
+                            size_t pclass)
 {
 	string const image_name = abfd.get_filename();
 
@@ -90,8 +90,8 @@ void profile_container::add(profile_t const & profile,
 		if (count == 0)
 			continue;
 
-		symb_entry.sample.counts[count_group] = count;
-		total_count[count_group] += count;
+		symb_entry.sample.counts[pclass] = count;
+		total_count[pclass] += count;
 
 		symb_entry.size = end - start;
 
@@ -117,7 +117,7 @@ void profile_container::add(profile_t const & profile,
 		symbol_entry const * symbol = symbols->insert(symb_entry);
 
 		if (need_details) {
-			add_samples(abfd, i, p_it, symbol, count_group);
+			add_samples(abfd, i, p_it, symbol, pclass);
 		}
 	}
 }
@@ -126,7 +126,7 @@ void profile_container::add(profile_t const & profile,
 void
 profile_container::add_samples(op_bfd const & abfd, symbol_index_t sym_index,
                                profile_t::iterator_pair const & p_it,
-                               symbol_entry const * symbol, size_t count_group)
+                               symbol_entry const * symbol, size_t pclass)
 {
 	bfd_vma base_vma = abfd.syms[sym_index].vma();
 
@@ -134,7 +134,7 @@ profile_container::add_samples(op_bfd const & abfd, symbol_index_t sym_index,
 	for (it = p_it.first; it != p_it.second ; ++it) {
 		sample_entry sample;
 
-		sample.counts[count_group] = it.count();
+		sample.counts[pclass] = it.count();
 
 		sample.file_loc.linenr = 0;
 		if (debug_info) {
@@ -217,7 +217,7 @@ profile_container::select_filename(double threshold) const
 		}
 	}
 
-	// Give a sort order on filename for the selected count_group.
+	// Give a sort order on filename for the selected pclass.
 	vector<filename_by_samples> file_by_samples;
 
 	set<debug_name_id>::const_iterator it = filename_set.begin();

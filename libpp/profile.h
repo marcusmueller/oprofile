@@ -1,6 +1,6 @@
 /**
  * @file profile.h
- * Encapsulation for samples files over all count groups
+ * Encapsulation for samples files over all profile classes
  * belonging to the same binary image
  *
  * @remark Copyright 2002 OProfile authors

@@ -16,10 +16,10 @@
 #include <vector>
 
 /**
- * A simple container of sample counts for a set of count groups.
+ * A simple container of sample counts for a set of profile classes.
  * This is used by opreport for side-by-side, describing the sample
  * counts for a row of output. For example a report with two events
- * would use two count groups, one for each event.
+ * would use two profile classes, one for each event.
  */
 class count_array_t {
 public:
@@ -30,14 +30,13 @@ public:
 	typedef container_type::size_type size_type;
 
 	/**
-	 * Index into the count groups for a count value. An out of
+	 * Index into the classes for a count value. An out of
 	 * bounds index will return a value of zero.
-	 * style checking
 	 */
 	u32 operator[](size_type index) const;
 
 	/**
-	 * Index into the count groups for a count value. If the index
+	 * Index into the classes for a count value. If the index
 	 * is larger than the current max index, the array is expanded,
 	 * zero-filling any intermediary gaps.
 	 */
