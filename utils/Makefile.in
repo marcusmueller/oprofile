@@ -24,14 +24,19 @@ all: $(TARGET)
 
 ifeq "@OPROFILE_25@" "no"
 OP_START=op_start
+OP_STOP=op_stop
+OP_DUMP=op_dump
 else
 OP_START=op_start_25
+OP_STOP=op_stop_25
+OP_DUMP=
 endif
  
-INSTALL_LIST=op_help op_dump op_session op_stop
+INSTALL_LIST=op_help $(OP_DUMP) op_session op_stop
 install:
 	$(INSTALL) $(INSTALL_LIST) $(BINDIR)
 	$(INSTALL) $(OP_START) $(BINDIR)/op_start
+	$(INSTALL) $(OP_STOP) $(BINDIR)/op_stop
 
 uninstall:
 	for f in $(INSTALL_LIST); do rm -f $(BINDIR)/$$f; done

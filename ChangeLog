@@ -1,3 +1,14 @@
+2002-09-27  John Levon  <levon@movementarian.org>
+
+	* configure.in: add --with-kernel-support for 2.5
+ 
+	* daemon/oprofiled.c: fix comment, give exit message on sig
+
+	* utils/Makefile.in:
+	* utils/op_stop_25: add 2.5 op_stop, no 2.5 op_dump
+
+	* utils/op_start_25: use enable
+ 
 2002-09-25  Bob Montgomery  <bobm@fc.hp.com>
 
 	* module/oprofile.c: avoid to dump zero samples count, fix #615087

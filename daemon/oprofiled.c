@@ -439,8 +439,7 @@ static void opd_go_daemon(void)
  * masked.
  *
  * If the sample could be processed correctly, it is written
- * to the relevant sample file. Additionally mapping and
- * process notifications are handled here.
+ * to the relevant sample file.
  */
 static void opd_do_samples(struct op_buffer_head const * opd_buf)
 {
@@ -524,6 +523,8 @@ static void clean_exit(void)
 
 static void opd_sigterm(int val __attribute__((unused)))
 {
+	opd_print_stats();
+	printf("oprofiled stopped %s", op_get_time());
 	clean_exit();
 	exit(EXIT_FAILURE);
 }
