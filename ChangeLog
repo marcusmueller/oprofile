@@ -1,3 +1,12 @@
+2002-02-10  John Levon  <moz@compsoc.man.ac.uk>
+
+	* events/op_events_desc.c: remove dead code
+ 
+	* module/compat.h: RedHat backported MODULE_LICENSE()
+ 
+	* module/op_syscalls.c:
+	* module/op_util.c: remove FIXMEs
+ 
 2002-02-09  Bob Montgomery  <bobm@fc.hp.com>
 
 	* module/op_rtc.c: right actual RTC value back

@@ -22,6 +22,7 @@
 #define COMPAT_H
 
 #include <linux/version.h>
+#include <linux/module.h>
 
 #define V_BEFORE(a,b,c) (LINUX_VERSION_CODE < KERNEL_VERSION(a,b,c))
 #define V_EQUAL(a,b,c) (LINUX_VERSION_CODE == KERNEL_VERSION(a,b,c))
@@ -51,10 +52,9 @@
 /* Things that cannot rely on a particular linux version or are needed between
  * major release */
 
-#if V_BEFORE(2,4,10)
-	/* 2.4.10 introduced MODULE_LICENSE */
-	#define MODULE_LICENSE(x)
-#endif /* V_BEFORE(2,4,10) */
+#ifndef MODULE_LICENSE
+#define MODULE_LICENSE(x)
+#endif
 
 /* 2.4/2.5 kernel can be  patched with the preempt patch. We support only
  * recent version of this patch */

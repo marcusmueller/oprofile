@@ -1,4 +1,4 @@
-/* $Id: op_events_desc.c,v 1.6 2002/01/14 08:38:54 movement Exp $ */
+/* $Id: op_events_desc.c,v 1.7 2002/02/10 20:22:56 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -26,41 +26,6 @@
 
 #include "../op_user.h"
 
-struct op_cpu_type {
-	const char *cpu_name;
-	op_cpu cpu_type;
-};
-
-/* be careful here, later entries will be override earlier ones */
-static struct op_cpu_type op_cpu_types[] = {
-	{ "Pentium Pro",  CPU_PPRO },
-	{ "Pentium II",  CPU_PII },
-	{ "Pentium III", CPU_PIII },
-	{ "Pentium(R) III", CPU_PIII },
-	{ "Celeron",	 CPU_PII },
-	{ "Coppermine",  CPU_PIII },
-	{ "Athlon",	 CPU_ATHLON },
-	{ "Duron",	 CPU_ATHLON },
-	{ "K7",		 CPU_ATHLON },
-};
-
-#define OP_CPU_TYPES_NR (sizeof(op_cpu_types) / sizeof(op_cpu_types[0]))
-
-
-static op_cpu op_type_from_name(char const * name)
-{
-	uint i;
-	op_cpu cpu_type = CPU_NO_GOOD;
-
-	for (i = 0; i < OP_CPU_TYPES_NR; i++) {
-		if (strstr(name, op_cpu_types[i].cpu_name))
-			cpu_type = op_cpu_types[i].cpu_type;
-	}
-	return cpu_type;
-}
-
-#define MODEL_PREFIX "model name\t: "
-
 /**
  * op_get_cpu_type - get from /proc/cpuinfo the cpu type
  *
@@ -87,8 +52,6 @@ op_cpu op_get_cpu_type(void)
 
 	return cpu_type;
 }
-
-#undef OP_CPU_TYPES_NR
 
 struct op_unit_desc op_unit_descs[] = {
 	{ { NULL, NULL, NULL, NULL, NULL, NULL, NULL, }, },

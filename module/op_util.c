@@ -20,8 +20,6 @@
 
 #include "compat.h"
 
-// FIXME: check this code works in 2.2
- 
 /* Given PGD from the address space's page table, return the kernel
  * virtual mapping of the physical memory mapped at ADR.
  */
@@ -36,8 +34,7 @@ static inline unsigned long uvirt_to_kva(pgd_t *pgd, unsigned long adr)
 		if (!pmd_none(*pmd)) {
 			ptep = pte_offset(pmd, adr);
 			pte = *ptep;
-			if(pte_present(pte)) {
-				// FIXME: page_address equivalent 
+			if (pte_present(pte)) {
 				ret = (unsigned long) pte_page_address(pte);
 				ret |= adr & (PAGE_SIZE-1);
 			}
@@ -74,7 +71,6 @@ void * rvmalloc(signed long size)
 	adr=(unsigned long) mem;
 	while (size > 0) {
 		page = kvirt_to_pa(adr);
-		// FIXME: no virt_to_page 
 		mem_map_reserve(virt_to_page(__va(page)));
 		adr += PAGE_SIZE;
 		size -= PAGE_SIZE;

@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.10 2002/02/01 21:15:42 phil_e Exp $ */
+/* $Id: op_syscalls.c,v 1.11 2002/02/10 20:22:56 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,8 +22,6 @@
 
 #include "oprofile.h"
 #include "op_dcache.h"
-
-// FIXME: check these syscalls are same code as 2.2 where necessary
 
 extern u32 prof_on;
 
