@@ -65,7 +65,7 @@ popt::option options_array[] = {
 		     "exclude these comma separated filename", "filenames"),
 	popt::option(include_symbols, "include-symbols", 'i',
 		     "include these comma separated symbols", "symbols"),
-	popt::option(exclude_symbols, "exclude-symbol", 'e',
+	popt::option(exclude_symbols, "exclude-symbols", 'e',
 		     "exclude these comma separated symbols", "symbols"),
 	popt::option(options::objdump_params, "objdump-params", '\0',
 		     "additionnal params to pass to objdump", "parameters"),

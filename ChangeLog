@@ -1,5 +1,9 @@
 2003-06-11  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/opannotate_options.cpp: typo in option name
+
+2003-06-11  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/op_bfd.cpp: boring_symbol() new to get a better choice
 	when eliminatiing symbol at identical vma
 
