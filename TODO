@@ -79,7 +79,7 @@ Later
  o remove 1 and 2 magic numbers for oprof_ready
  o adapt Anton's patch for handling non-symbolled libraries ?
  o use standard C integer type <stdint.h> int32_t int16_t etc.
- o op_session should allow to backup binary, see subject "features to make oprofile easier to use" on mail list
+ o opcontrol --save should allow to backup binary, see subject "features to make oprofile easier to use" on mail list
  o event multiplexing for real
  
 o profile the NMI handler code

@@ -1,5 +1,22 @@
 2003-03-30  John Levon  <levon@movementarian.org>
 
+	* configure.in: bump to 0.6cvs
+
+	* doc/oprofile.xml: fix id. Add java etc. mention
+
+	* utils/Makefile.am:
+	* utils/op_start:
+	* utils/op_start_25:
+	* utils/op_stop:
+	* utils/op_stop_25:
+	* utils/op_dump:
+	* utils/op_dump_25:
+	* utils/op_session: finally remove the back compat crap
+
+	* HACKING: add release-notes policy
+
+2003-03-30  John Levon  <levon@movementarian.org>
+
 	* configure.in: bump to 0.5.2
 
 2003-03-30  John Levon  <levon@movementarian.org>

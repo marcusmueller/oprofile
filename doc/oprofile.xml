@@ -67,6 +67,7 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 <listitem><para>require 100% instruction-accurate profiles</para></listitem>
 <listitem><para>need function call counts or an interstitial profiling API</para></listitem>
 <listitem><para>cannot tolerate any disturbance to the system whatsoever</para></listitem>
+<listitem><para>need to profile interpreted or dynamically compiled code such as Java or Python</para></listitem>
 </itemizedlist>
 </sect1>
 
@@ -1581,7 +1582,7 @@ the <option>idle=poll</option> option, which uses a different idle routine. This
 will appear as <function>poll_idle()</function> in your kernel profile.
 </para>
 </sect2>
-<sect2 id="Exiting tasks">
+<sect2 id="exiting-tasks">
 <title>Exiting tasks</title>
 <para>
 The internal implementation of the 2.5 OProfile code means that tasks that

@@ -96,5 +96,9 @@ should have the detailed description. Any non-trivial change needs approval
 from either John or Phil, unless stated otherwise. The CVS tree will freeze
 occassionally for release, in which case no commits are allowed at all without
 agreement of John and Phil. CVS admin changes (-kb, .cvsignore etc.) do not
-need a change log, and neither does changes to TODO.
+need a change log, and neither does changes to TODO. If you make a change
+that affects the user (feature improvement, new feature, bug fix, UI change)
+you should enter a short description in the file release-notes/release-<nextversion>
+in the oprofile-www CVS module and commit it. Do not document bug fixes that
+were not in the last released version.
 
