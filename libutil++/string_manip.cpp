@@ -186,5 +186,3 @@ string const format_percent(double value, unsigned int width)
 
 	return pad + integer + '.' + frac + '%';
 }
-
-
