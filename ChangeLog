@@ -1,3 +1,7 @@
+2003-03-30  John Levon  <levon@movementarian.org>
+
+	* Makefile.am: remove op_arch.h for ia64
+
 2003-03-27  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: several more examples and fixes

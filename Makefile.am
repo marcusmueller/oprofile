@@ -75,7 +75,6 @@ EXTRA_DIST = \
 	module/ia64/IA64entry.h \
 	module/ia64/IA64minstate.h \
 	module/ia64/IA64syscallstub.h \
-	module/ia64/op_arch.h \
 	module/ia64/op_ia64_model.h \
 	module/x86/Makefile.in \
 	module/x86/hammer_entry.S \
