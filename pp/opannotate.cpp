@@ -26,7 +26,7 @@
 #include "child_reader.h"
 #include "op_file.h"
 #include "file_manip.h"
-#include "partition_files.h"
+#include "arrange_profiles.h"
 #include "opannotate_options.h"
 #include "profile_container.h"
 #include "symbol_sort.h"
@@ -57,29 +57,25 @@ string const end_comment(" */");
 /// field width for the sample count
 unsigned int const count_width = 6;
 
-/// record samples for one binary
-void populate_samples(profile_container & samples, bool merge_lib,
-                      size_t count_group, image_set::const_iterator first,
-                      image_set::const_iterator last)
+/// record samples for one profile set
+void populate_samples(profile_container & samples, size_t count_group,
+                      string const & image, list<string> const & files)
 {
-	image_set::const_iterator it = first;
 	try {
-		op_bfd abfd(it->first, symbol_filter);
+		op_bfd abfd(image, symbol_filter);
+
 		profile_t profile;
 
-		string app_name = it->second.image;
-		if (merge_lib) {
-			app_name = it->first;
-		}
+		list<string>::const_iterator it = files.begin();
+		list<string>::const_iterator const end = files.end();
 
-		for (; it != last; ++it) {
-			profile.add_sample_file(it->second.sample_filename,
-						abfd.get_start_offset());
+		for (; it != end; ++it) {
+			profile.add_sample_file(*it, abfd.get_start_offset());
 		}
 
 		check_mtime(abfd.get_filename(), profile.get_header());
 	
-		samples.add(profile, abfd, app_name, count_group);
+		samples.add(profile, abfd, image, count_group);
 	}
 	catch (op_runtime_error const & e) {
 		static bool first_error = true;
@@ -93,34 +89,38 @@ void populate_samples(profile_container & samples, bool merge_lib,
 }
 
 
-// FIXME share with opgprof.cpp and opreport.cpp
-image_set populate_samples(profile_container & samples,
-			   partition_files const & files,
-			   bool merge_lib, size_t count_group)
+/// go through each profile set and populate
+void populate_samples(profile_container & samples,
+                      profile_class const & pclass,
+                      size_t count_group)
 {
-	image_set images = sort_by_image(files, extra_found_images);
+	list<profile_set>::const_iterator it = pclass.profiles.begin();
+	list<profile_set>::const_iterator const end = pclass.profiles.end();
 
-	image_set::const_iterator it;
-	for (it = images.begin(); it != images.end(); ) {
-		pair<image_set::const_iterator, image_set::const_iterator>
-			p_it = images.equal_range(it->first);
-
-		populate_samples(samples, merge_lib, count_group,
-		                 p_it.first, p_it.second);
-		it = p_it.second;
+	for (; it != end; ++it) {
+		populate_samples(samples, count_group, it->image, it->files);
 	}
-
-	return images;
 }
 
 
-void save_sample_file_header(vector<partition_files> const & files)
+void save_sample_file_header()
 {
-	for (size_t i = 0; i < files.size(); ++i) {
-		partition_files::filename_set const & file_set =
-		    files[i].set(0);
-		opd_header temp =
-		    read_header(file_set.begin()->sample_filename);
+	for (vector<profile_class>::size_type i = 0;
+	     i < profile_classes.size(); ++i) {
+
+		// FIXME: should really be using profile_class.longname
+		profile_set const & profile
+			= *(profile_classes[i].profiles.begin());
+		string file;
+		if (profile.files.empty()) {
+			profile_dep_set const & dep = *(profile.deps.begin());
+			list<string> const & files = dep.files;
+			file = *(files.begin());
+		} else {
+			file = *(profile.files.begin());
+		}
+		opd_header temp = read_header(file);
+
 		header.push_back(temp);
 	}
 }
@@ -714,20 +714,25 @@ int opannotate(vector<string> const & non_options)
 {
 	handle_options(non_options);
 
-	nr_events = sample_file_partition.size();
+	nr_events = profile_classes.size();
 
 	samples.reset(new profile_container(true, true));
 
-	save_sample_file_header(sample_file_partition);
+	save_sample_file_header();
 
 	set<string> images;
 
-	for (size_t i = 0; i < sample_file_partition.size(); ++i) {
-		image_set images_set = populate_samples(*samples,
-				sample_file_partition[i], false, i);
-		image_set::const_iterator it;
-		for (it = images_set.begin(); it != images_set.end(); ++it)
-			images.insert(it->first);
+	for (size_t i = 0; i < profile_classes.size(); ++i) {
+
+		populate_samples(*samples, profile_classes[i], i);
+
+		list<profile_set>::const_iterator it
+			= profile_classes[i].profiles.begin();
+		list<profile_set>::const_iterator const end
+			= profile_classes[i].profiles.end();
+		
+		for (; it != end; ++it)
+			images.insert(it->image);
 	}
 
 	annotate_source(images);

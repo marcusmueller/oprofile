@@ -20,7 +20,7 @@
 #include "string_filter.h"
 #include "path_filter.h"
 
-class partition_files;
+class profile_class;
 
 namespace options {
 	extern bool demangle;
@@ -36,11 +36,8 @@ namespace options {
 	extern double threshold;
 }
 
-/**
- * a partition of sample filename to treat, each sub-list is a list of
- * sample to merge. filled by handle_options()
- */
-extern std::vector<partition_files> sample_file_partition;
+/// classes of sample filenames to handle
+extern std::vector<profile_class> profile_classes;
 
 /**
  * handle_options - process command line

@@ -1,5 +1,11 @@
 2003-09-14  John Levon  <levon@movementarian.org>
 
+	* opannotate.cpp:
+	* opannotate_options.cpp:
+	* opannotate_options.h: use arrange_profiles API
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
 	* pp/opgprof_options.h:
 	* pp/opgprof_options.cpp:
 	* pp/opgprof.cpp: use arrange_profiles API
