@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.10 2001/12/12 02:27:27 phil_e Exp $ */
+/* $Id: oprofile.h,v 1.11 2001/12/31 22:56:40 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -71,6 +71,7 @@ struct oprof_sysctl {
 	int kernel_only; /* is profiling kernel only */
 	int note_size; /* nr. in note buffer */
 	int nr_interrupts; /* nr. interrupts occured */
+	int cpu_type; /* the cpu core type: CPU_PPRO, CPU_PII ... */
 	pid_t pid_filter;
 	pid_t pgrp_filter;
 	struct oprof_counter ctr[OP_MAX_COUNTERS];
@@ -257,6 +258,14 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 // 2.4.10 introduced MODULE_LICENSE
 #ifndef MODULE_LICENSE
 #define MODULE_LICENSE(x)
+#endif
+
+// 2.4/2.5 kernel can be  patched with the preempt patch. We support only
+// recent version of this patch
+#ifndef preempt_disable
+#define preempt_disable()    do { } while (0)
+#define preempt_enable_no_resched() do { } while (0)
+#define preempt_enable()     do { } while (0)
 #endif
  
 /* These arrays are filled by hw_ok() */

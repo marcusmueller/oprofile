@@ -1,9 +1,22 @@
+2001-12-31  Philippe Elie  <ph_e@club-internet.fr>
+
+	* module/op_init.c:
+	* module/oprofile.c: export cpu type preparing for user space
+	  cpu detection change
+	* module/oprofile.h: preparatory work to add support for
+	  preempt patch
+
+	* pp/oprofpp.cpp: cleanup #if 0 ... #else ... #endif
+	* pp/orofpp_util.cpp: allow to deduce image name from
+	  shared lib samples files name produced with
+	  --separate-samples
+
+	* gui/oprof_start.cpp: minor fix
+
 2001-12-31  John Levon  <moz@compsoc.man.ac.uk>
 
 	* various files: use op_cpu enum for cpu type
  
-2001-12-31  John Levon  <moz@compsoc.man.ac.uk>
-
 	* all .cvsignore:
 	* Rules.make.in:
 	* all Makefile.in: hide .d files in .deps directories

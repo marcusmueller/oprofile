@@ -239,7 +239,7 @@ bool oprof_start::save_config_file()
 
 	std::ofstream out(name.c_str());
 
-	out << cpu_type << " ";
+	out << static_cast<int>(cpu_type) << " ";
  
 	for (uint i = 0; i < op_nr_counters; ++i) {
 		out << ctr_enabled[i];

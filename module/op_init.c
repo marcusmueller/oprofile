@@ -1,4 +1,4 @@
-/* $Id: op_init.c,v 1.2 2001/12/31 14:45:33 movement Exp $ */
+/* $Id: op_init.c,v 1.3 2001/12/31 22:56:39 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -25,7 +25,6 @@ MODULE_PARM(expected_cpu_type, "i");
 MODULE_PARM_DESC(expected_cpu_type, "Allow checking of detected hardware from the user space");
 static op_cpu expected_cpu_type = CPU_NO_GOOD;
 
-extern op_cpu cpu_type;
 extern uint op_nr_counters;
 extern int separate_running_bit;
 
@@ -44,29 +43,29 @@ static int __init hw_ok(void)
 
 	/* 0 if PPro, 1 if PII, 2 if PIII, 3 if Athlon */
 	if (current_cpu_data.x86_vendor == X86_VENDOR_AMD) {
-		cpu_type = CPU_ATHLON;
+		sysctl.cpu_type = CPU_ATHLON;
 	} else {
-		cpu_type = (current_cpu_data.x86_model > 5) ? CPU_PIII :
+		sysctl.cpu_type = (current_cpu_data.x86_model > 5) ? CPU_PIII :
 			(current_cpu_data.x86_model > 2);
 	}
  
-	if (cpu_type == CPU_ATHLON) {
+	if (sysctl.cpu_type == CPU_ATHLON) {
 		op_nr_counters = 4;
 		separate_running_bit = 1;
 	}
 
-	if (expected_cpu_type != -1 && expected_cpu_type != cpu_type) {
+	if (expected_cpu_type != -1 && expected_cpu_type != sysctl.cpu_type) {
 
 		printk("oprofile: user space/module cpu detection mismatch\n");
 		printk("please send the next line and your /proc/cpuinfo to oprofile-list@lists.sf.net\n");
 		printk("vendor %d step %d model %d, expected_cpu_type %d, cpu_type %d\n",
 		       current_cpu_data.x86_vendor, current_cpu_data.x86,
 		       current_cpu_data.x86_model, expected_cpu_type,
-		       cpu_type);
+		       sysctl.cpu_type);
 
 		return CPU_NO_GOOD;
 	}
-	return cpu_type;
+	return sysctl.cpu_type;
 }
 
 int __init stub_init(void)

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.16 2001/12/31 14:45:33 movement Exp $ */
+/* $Id: oprofile.c,v 1.17 2001/12/31 22:56:40 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -52,7 +52,6 @@ int separate_running_bit;
 static u32 prof_on __cacheline_aligned;
 
 static int op_major;
-op_cpu cpu_type;
 
 static volatile uint oprof_opened __cacheline_aligned;
 static volatile uint oprof_note_opened __cacheline_aligned;
@@ -610,7 +609,7 @@ static int parms_ok(void)
 	for (i = 0; i < op_nr_counters ; i++) {
 
 		if (sysctl.ctr[i].enabled) {
-			int min_count = op_min_count(sysctl.ctr[i].event, cpu_type);
+			int min_count = op_min_count(sysctl.ctr[i].event, sysctl.cpu_type);
 
 			if (!sysctl.ctr[i].user && !sysctl.ctr[i].kernel) {
 				printk(KERN_ERR "oprofile: neither kernel nor user "
@@ -630,16 +629,16 @@ static int parms_ok(void)
 		return 0;
 	}
 
-	/* hw_ok() has set cpu_type */
+	/* hw_ok() has set sysctl.cpu_type */
 	ok = 1;
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		ret = op_check_events(i, sysctl.ctr[i].event, sysctl.ctr[i].unit_mask, cpu_type);
+		ret = op_check_events(i, sysctl.ctr[i].event, sysctl.ctr[i].unit_mask, sysctl.cpu_type);
 
 		if (ret & OP_EVT_NOT_FOUND)
-			printk(KERN_ERR "oprofile: ctr%d: %d: no such event for cpu %d\n", i, sysctl.ctr[i].event, cpu_type);
+			printk(KERN_ERR "oprofile: ctr%d: %d: no such event for cpu %d\n", i, sysctl.ctr[i].event, sysctl.cpu_type);
 
 		if (ret & OP_EVT_NO_UM)
-			printk(KERN_ERR "oprofile: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n", i, sysctl.ctr[i].unit_mask, cpu_type);
+			printk(KERN_ERR "oprofile: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n", i, sysctl.ctr[i].unit_mask, sysctl.cpu_type);
 
 		if (ret & OP_EVT_CTR_NOT_ALLOWED)
 			printk(KERN_ERR "oprofile: ctr%d: %d: can't count event for this counter\n", i, sysctl.ctr[i].event);
@@ -877,7 +876,7 @@ out:
 	return err;
 }
 
-static int nr_oprof_static = 8;
+static int nr_oprof_static = 9;
 
 static ctl_table oprof_table[] = {
 	{ 1, "bufsize", &sysctl_parms.buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
@@ -888,6 +887,7 @@ static ctl_table oprof_table[] = {
 	{ 1, "pgrp_filter", &sysctl_parms.pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "nr_interrupts", &sysctl.nr_interrupts, sizeof(int), 0400, NULL, &get_nr_interrupts, NULL, },
 	{ 1, "notesize", &sysctl_parms.note_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
+	{ 1, "cpu_type", &sysctl.cpu_type, sizeof(int), 0400, NULL, &lproc_dointvec, NULL, },
 	{ 0, }, { 0, }, { 0, }, { 0, },
 	{ 0, },
 };
@@ -952,7 +952,8 @@ cleanup:
 	return -EFAULT;
 }
 
-static void __exit cleanup_sysctl(void)
+/* not safe to mark as __exit since used from __init code */
+static void cleanup_sysctl(void)
 {
 	int i;
 	ctl_table *next = &oprof_table[nr_oprof_static];
@@ -992,7 +993,7 @@ int __init oprof_init(void)
 	find_intel_smp();
 
 	/* first, let's use the right MSRs */
-	switch (cpu_type) {
+	switch (sysctl.cpu_type) {
 		case CPU_ATHLON:
 			eventsel_msr[0] = MSR_K7_PERFCTL0;
 			eventsel_msr[1] = MSR_K7_PERFCTL1;

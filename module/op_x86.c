@@ -16,8 +16,6 @@
 
 #include "oprofile.h"
  
-extern op_cpu cpu_type;
- 
 /* ---------------- NMI handler setup ------------ */
 
 static ulong idt_addr;
@@ -92,7 +90,8 @@ void __init lvtpc_apic_setup(void *dummy)
 	apic_write(APIC_LVTPC, val);
 }
 
-void __exit lvtpc_apic_restore(void *dummy)
+/* not safe to mark as __exit since used from __init code */
+void lvtpc_apic_restore(void *dummy)
 {
 	uint val = apic_read(APIC_LVTPC);
 	// FIXME: this gives APIC errors on SMP hardware.
@@ -159,9 +158,9 @@ not_local_p6_apic:
 /* does the CPU have a local APIC ? */
 static int __init check_p6_ok(void)
 {
-	if (cpu_type != CPU_PPRO &&
-		cpu_type != CPU_PII &&
-		cpu_type != CPU_PIII)
+	if (sysctl.cpu_type != CPU_PPRO &&
+		sysctl.cpu_type != CPU_PII &&
+		sysctl.cpu_type != CPU_PIII)
 		return 1; 
 
 	return enable_apic();

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.19 2001/12/31 14:45:33 movement Exp $ */
+/* $Id: oprofpp.cpp,v 1.20 2001/12/31 22:56:40 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -135,73 +135,6 @@ void opp_bfd::output_linenr(uint sym_idx, uint offset) const
 		printf ("??:0 ");
 }
 
-#if 0
-struct opp_count {
-	asymbol *sym;
-	counter_array_t count;
-	u32 start;	// vma of sym
-	uint sym_idx;
-};
-
-/**
- * countcomp - comparator
- *
- * predicate to sort samples by samples count
- */
-static bool countcomp(const opp_count& a, const opp_count& b)
-{
-	/* note than ctr must be sanitized before calling qsort */
-	return a.count[ctr] < b.count[ctr];
-}
- 
-/**
- * do_list_symbols - list symbol samples for an image
- * @abfd: the bfd object from where come the samples
- *
- * Lists all the symbols in decreasing sample count
- * order, to standard out.
- */
-void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
-{
-	u32 start, end;
-	counter_array_t tot;
-	uint i;
-
-	std::vector<opp_count> scounts(abfd.syms.size());
-
-	for (i = 0; i < abfd.syms.size(); i++) {
-		scounts[i].sym = abfd.syms[i];
-
-		abfd.get_symbol_range(i, start, end); 
-
- 		accumulate_samples(scounts[i].count, start, end);
-
-		scounts[i].start = start;
-		scounts[i].sym_idx = i;
-
-		tot += scounts[i].count;
-	}
-
-	std::sort(scounts.begin(), scounts.end(), countcomp);
-
-	for (i = 0; i < abfd.syms.size(); i++) {
-
-		abfd.output_linenr(scounts[i].sym_idx, scounts[i].start);
-
-		printf_symbol(scounts[i].sym->name);
-
-		if (scounts[i].count[ctr]) {
-			printf("[0x%.8lx]: %2.4f%% (%u samples)\n", 
-			       scounts[i].sym->value+scounts[i].sym->section->vma,
-			       (((double)scounts[i].count[ctr]) / tot[ctr])*100.0, 
-			       scounts[i].count[ctr]);
-		} else {
-			// FIXME: necessary to output zero samples ?
-			printf(" (0 samples)\n");
-		}
-	}
-}
-#else
 /**
  * do_list_symbols - list symbol samples for an image
  * @abfd: the bfd object from where come the samples
@@ -247,7 +180,6 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 		}
 	}
 }
-#endif
  
 /**
  * do_list_symbol - list detailed samples for a symbol
@@ -383,73 +315,6 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd) const
 	free(hist);
 }
 
-#if 0
-/**
- * do_list_symbol_details - list all samples for a given symbol
- * @abfd: the bfd object from where come the samples
- * @sym_idx: the symbol index
- *
- * detail samples for the symbol @sym_idx to stdout in
- * increasing order of vma. Nothing occur if the the symbol
- * do not have any sample associated with it.
- */
-void opp_samples_files::do_list_symbol_details(opp_bfd & abfd, uint sym_idx) const
-{
-	counter_array_t counter;
-	uint j, k;
-	bfd_vma vma, base_vma;
-	u32 start, end;
-	asymbol * sym;
-
-	sym = abfd.syms[sym_idx];
-
-	abfd.get_symbol_range(sym_idx, start, end);
-
-	if (accumulate_samples(counter, start, end) == false)
-		return;
-
-	base_vma = sym->value + sym->section->vma;
-	vma = abfd.sym_offset(sym_idx, start) + base_vma;
-
-	abfd.output_linenr(sym_idx, start);
-	printf("%.8lx ", vma);
-	for (k = 0 ; k < nr_counters ; ++k)
-		printf("%u ", counter[k]);
-	printf_symbol(sym->name);
-	printf("\n");
-
-	for (j = start; j < end; j++) {
-		counter_array_t counter;
-
-		bool found_samples = accumulate_samples(counter, j);
-		if (found_samples == false)
-			continue;
-
-		vma = abfd.sym_offset(sym_idx, j) + base_vma;
-
-		printf(" ");
-		abfd.output_linenr(sym_idx, j);
-		printf("%.8lx", vma);
-
-		for (k = 0; k < nr_counters; ++k)
-			printf(" %u", counter[k]);
-		printf("\n");
-	}
-}
-
-/**
- * do_list_all_symbols_details - list all samples for all symbols.
- * @abfd: the bfd object from where come the samples
- *
- * Lists all the samples for all the symbols, from the image specified by
- * @abfd, in increasing order of vma, to standard out.
- */
-void opp_samples_files::do_list_all_symbols_details(opp_bfd & abfd) const
-{
-	for (size_t i = 0 ; i < abfd.syms.size(); ++i)
-		do_list_symbol_details(abfd, i);
-}
-#else
 /**
  * do_list_all_symbols_details - list all samples for all symbols.
  * @abfd: the bfd object from where come the samples
@@ -504,7 +369,6 @@ void opp_samples_files::do_list_all_symbols_details(opp_bfd & abfd) const
 		}
 	}
 }
-#endif
 
 /**
  * output_event - output a counter setup
