@@ -1,3 +1,7 @@
+2004-09-16  John Levon  <levon@movementarian.org>
+
+	* m4/configmodule.m4: disable x86-64 on 2.4
+
 2004-09-15  Maynard P. Johnson  <maynardj@us.ibm.com>
 
 	* events/Makefile.am:

@@ -40,6 +40,7 @@ else
 fi
 	 
 arch="unknown"
+x86-64 disabled - currently broken, to be removed
 AC_MSG_CHECKING(for x86-64 architecture)
 AX_KERNEL_OPTION(CONFIG_X86_64, x8664=1, x8664=0)
 AX_MSG_RESULT_YN($x8664)
@@ -47,6 +48,7 @@ BUILD_HAMMER=no
 if test "$x8664" -eq 1; then
 	arch="x86"
 	BUILD_HAMMER=yes
+	AC_MSG_ERROR([x86_64 not currently working on 2.4])
 else
 	AC_MSG_CHECKING(for x86 architecture)
 	AX_KERNEL_OPTION(CONFIG_X86, x86=1, x86=0)
