@@ -1,5 +1,9 @@
 2003-10-14  John Levon  <levon@movementarian.org>
 
+	* utils/opcontrol: merge some 2.4/5 code
+
+2003-10-14  John Levon  <levon@movementarian.org>
+
 	* dae/opd_image.c:
 	* dae/opd_sample_files.c:
 	* dae/oprofiled.c:
