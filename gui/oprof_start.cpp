@@ -52,11 +52,7 @@ op_event_descr::op_event_descr()
 oprof_start::oprof_start()
 	:
 	oprof_start_base(0, 0, false, 0),
-	validate_buffer_size(new QIntValidator(buffer_size_edit)),
-	validate_hash_table_size(new QIntValidator(hash_table_size_edit)),
-	validate_event_count(new QIntValidator(event_count_edit)),
-	validate_pid_filter(new QIntValidator(pid_filter_edit)),
-	validate_pgrp_filter(new QIntValidator(pgrp_filter_edit)),
+	event_count_validator(new QIntValidator(event_count_edit)),
 	current_ctr(0),
 	cpu_type(op_get_cpu_type()),
 	op_nr_counters(2)
@@ -69,14 +65,6 @@ oprof_start::oprof_start()
 	if (cpu_type == CPU_ATHLON)
 		op_nr_counters = 4;
 
-	// validator range/value are set only when we have build the
-	// description of events.
-	buffer_size_edit->setValidator(validate_buffer_size);
-	hash_table_size_edit->setValidator(validate_hash_table_size);
-	event_count_edit->setValidator(validate_event_count);
-	pid_filter_edit->setValidator(validate_pid_filter);
-	pgrp_filter_edit->setValidator(validate_pgrp_filter);
-
 	int cpu_mask = 1 << cpu_type;
 
 	load_config_file();
@@ -85,14 +73,16 @@ oprof_start::oprof_start()
 	kernel_filename_edit->setText(config.kernel_filename.c_str());
 	map_filename_edit->setText(config.map_filename.c_str());
 
-	// this do not work perhaps we need to derivate QIntValidator to get a
-	// better handling if the validation?
-//	validate_buffer_size->setValue(config.buffer_size);
-
 	buffer_size_edit->setText(QString().setNum(config.buffer_size));
 	hash_table_size_edit->setText(QString().setNum(config.hash_table_size));
-	pid_filter_edit->setText(QString().setNum(config.pid_filter));
-	pgrp_filter_edit->setText(QString().setNum(config.pgrp_filter));
+	if (config.pid_filter)
+		pid_filter_edit->setText(QString().setNum(config.pid_filter));
+	else
+		pid_filter_edit->setText("");
+	if (config.pgrp_filter) 
+		pgrp_filter_edit->setText(QString().setNum(config.pgrp_filter));
+	else
+		pgrp_filter_edit->setText("");
 	base_opd_dir_edit->setText(config.base_opd_dir.c_str());
 	ignore_daemon_samples_cb->setChecked(config.ignore_daemon_samples);
 	kernel_only_cb->setChecked(config.kernel_only);
@@ -108,45 +98,50 @@ oprof_start::oprof_start()
  
 	// build from stuff in op_events.c the description of events.
 	for (uint i = 0 ; i < op_nr_events ; ++i) {
-		if (op_events[i].cpu_mask & cpu_mask) {
-			op_event_descr descr;
+		if (!op_events[i].cpu_mask & cpu_mask)
+			continue;
+	 
+		op_event_descr descr;
 
-			descr.counter_mask = op_events[i].counter_mask;
-			descr.val = op_events[i].val;
-			if (op_events[i].unit) {
-				descr.unit = &op_unit_masks[op_events[i].unit];
-				descr.um_descr = &op_unit_descs[op_events[i].unit];
-			} else {
-				descr.unit = 0;
-				descr.um_descr = 0;
-			}
-
-			descr.name = op_events[i].name;
-			descr.help_str = op_event_descs[i];
-			descr.min_count = op_events[i].min_count;
-
-			for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
-				if (!(descr.counter_mask & (1 << ctr)))
-					continue;
- 
-				event_cfgs[ctr][descr.name].count = descr.min_count * 100;
-				event_cfgs[ctr][descr.name].umask = 0;
-				if (descr.unit)
-					event_cfgs[ctr][descr.name].umask = descr.unit->default_mask;
-				event_cfgs[ctr][descr.name].os_ring_count = 1;
-				event_cfgs[ctr][descr.name].user_ring_count = 1;
-			}
-
-			v_events.push_back(descr);
+		descr.counter_mask = op_events[i].counter_mask;
+		descr.val = op_events[i].val;
+		if (op_events[i].unit) {
+			descr.unit = &op_unit_masks[op_events[i].unit];
+			descr.um_descr = &op_unit_descs[op_events[i].unit];
+		} else {
+			descr.unit = 0;
+			descr.um_descr = 0;
 		}
+
+		descr.name = op_events[i].name;
+		descr.help_str = op_event_descs[i];
+		descr.min_count = op_events[i].min_count;
+
+		for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
+			if (!(descr.counter_mask & (1 << ctr)))
+				continue;
+
+			event_cfgs[ctr][descr.name].count = descr.min_count * 100;
+			event_cfgs[ctr][descr.name].umask = 0;
+			if (descr.unit)
+				event_cfgs[ctr][descr.name].umask = descr.unit->default_mask;
+			event_cfgs[ctr][descr.name].os_ring_count = 1;
+			event_cfgs[ctr][descr.name].user_ring_count = 1;
+		}
+
+		v_events.push_back(descr);
 	}
 
-	validate_buffer_size->setRange(OP_MIN_BUFFER_SIZE, OP_MAX_BUFFER_SIZE);
-	validate_hash_table_size->setRange(OP_MIN_HASH_TABLE_SIZE, 
-					   OP_MAX_HASH_TABLE_SIZE);
-
-	validate_pid_filter->setRange(OP_MIN_PID, OP_MAX_PID);
-	validate_pgrp_filter->setRange(OP_MIN_PID, OP_MAX_PID);
+	event_count_edit->setValidator(event_count_validator); 
+	QIntValidator * iv;
+	iv = new QIntValidator(OP_MIN_BUFFER_SIZE, OP_MAX_BUFFER_SIZE, buffer_size_edit);
+	buffer_size_edit->setValidator(iv); 
+	iv = new QIntValidator(OP_MIN_HASH_TABLE_SIZE, OP_MAX_HASH_TABLE_SIZE, hash_table_size_edit);
+	hash_table_size_edit->setValidator(iv); 
+	iv = new QIntValidator(OP_MIN_PID, OP_MAX_PID, pid_filter_edit);
+	pid_filter_edit->setValidator(iv); 
+	iv = new QIntValidator(OP_MIN_PGRP, OP_MAX_PGRP, pgrp_filter_edit);
+	pgrp_filter_edit->setValidator(iv); 
 
 	events_list->setSorting(-1);
  
@@ -320,7 +315,7 @@ void oprof_start::event_selected(QListViewItem * item)
 	event_help_label->setText(descr.help_str.c_str());
 	setup_unit_masks(descr);
  
-	validate_event_count->setRange(descr.min_count, OP_MAX_PERF_COUNT);
+	event_count_validator->setRange(descr.min_count, OP_MAX_PERF_COUNT);
  
 	const persistent_config_t<event_setting> & cfg = event_cfgs[current_ctr];
  

@@ -104,13 +104,8 @@ private:
 	/// save the extra config file
 	bool save_config_file();
 
-	//@ validators
-	QIntValidator* validate_buffer_size;
-	QIntValidator* validate_hash_table_size;
-	QIntValidator* validate_event_count;
-	QIntValidator* validate_pid_filter;
-	QIntValidator* validate_pgrp_filter;
-	//@
+	/// validator for event count
+	QIntValidator* event_count_validator;
 
 	/// all available events for this hardware
 	std::vector<op_event_descr> v_events;

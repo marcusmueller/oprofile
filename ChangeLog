@@ -1,5 +1,10 @@
 2001-09-23  John Levon  <moz@compsoc.man.ac.uk>
 
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp: rework validator stuff a bit
+ 
+2001-09-23  John Levon  <moz@compsoc.man.ac.uk>
+
 	* gui/oprof_start.cpp: use std::find_if
  
 	* gui/oprof_start_config.cpp:
