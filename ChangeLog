@@ -1,3 +1,7 @@
+2003-10-13  Will Cohen  <wcohen@redhat.com>
+
+	* libop/op_parse_event.c(parse_events): Correct fprintf.
+
 2003-10-13  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* module/x86/hammer_op_syscalls.c: pass tgid to daemon. Not tested!
