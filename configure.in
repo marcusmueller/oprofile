@@ -160,6 +160,7 @@ if test "$OPROFILE_25" = "no"; then
 	AC_SUBST(BUILD_HAMMER)
 
 	test "$arch" = "unknown" && AC_MSG_ERROR(Unsupported architecture)
+	test "$BUILD_HAMMER" = "yes" && AC_MSG_ERROR(Unsupported architecture)
 
 	dnl check to see if kernel verion appropriate for arch
 	AC_MSG_CHECKING(arch/kernel version combination)
