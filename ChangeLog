@@ -1,3 +1,11 @@
+2001-07-27  John Levon  <moz@compsoc.man.ac.uk>
+
+	* doc/Makefile.in: ln -s -> ln -sf
+
+	* dae/opd_util.c: actually include the right header
+ 
+	* dae/opd_util.h: compile freestanding from oprofiled.h
+
 2001-07-26  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.c: fix comment

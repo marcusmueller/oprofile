@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.17 2001/07/25 03:51:33 movement Exp $ */
+/* $Id: opd_util.c,v 1.18 2001/07/27 00:28:44 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -19,7 +19,7 @@
 #include <netinet/in.h> 
 #include <stdlib.h> 
  
-#include "oprofiled.h"
+#include "opd_util.h"
 
 static int remove_component_p(const char *);
 

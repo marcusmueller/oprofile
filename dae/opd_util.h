@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.12 2001/07/25 02:35:33 movement Exp $ */
+/* $Id: opd_util.h,v 1.13 2001/07/27 00:28:44 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -18,7 +18,14 @@
 #ifndef OPD_UTIL_H
 #define OPD_UTIL_H
 
+#include <stdio.h>
+#include <string.h> 
+#include <sys/stat.h>
+#include <unistd.h> 
 #include <sys/types.h>
+#include <errno.h> 
+#include <time.h> 
+#include <fcntl.h> 
 
 #define FALSE 0
 #define TRUE 1
