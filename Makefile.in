@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.44 2001/12/12 02:27:27 phil_e Exp $
+# $Id: Makefile.in,v 1.45 2001/12/18 14:03:15 davej Exp $
 
 .PHONY: all install clean distclean maintainerclean uninstall tags
 
@@ -11,6 +11,7 @@ all:
 	$(MAKE) -C dae
 	$(MAKE) -C pp
 	$(MAKE) -C gui
+	$(MAKE) -C doc
 
 install: install.kernel install.user
 
