@@ -1154,7 +1154,6 @@ Options allowed are :
 	</varlistentry>
 </variablelist>
 </sect1>
-</chapter>
 
 <sect1 id="op-to-source">
 <title><command>op_to_source</command>: outputting annotated source</title>
@@ -1339,6 +1338,7 @@ The options allowed are :
 	</varlistentry>
 </variablelist>
 </sect1>
+</chapter>
 
 <chapter id="interpreting">
 <title>Interpreting profiling results</title>
