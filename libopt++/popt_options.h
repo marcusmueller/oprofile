@@ -11,17 +11,17 @@
  * \code
  * bool allow_frob;
  * string frob;
- * static option allow_frob_opt(allow_frob, "allow-frob", 'a', "allow frobs");
- * static option frob_opt(frob, "frob", 'f', "what to frob", "name");
+ * static popt::option allow_frob_opt(allow_frob, "allow-frob", 'a', "allow frobs");
+ * static popt::option frob_opt(frob, "frob", 'f', "what to frob", "name");
  *
  * ...
- * parse_options(argc, argv, add_params);
+ * popt::parse_options(argc, argv, add_params);
  * \endcode
  *
  * Note than if you try to implement an option for an unsupported type  like :
  * \code
  * static unsigned int i;
- * static option i_opt(i, ....);
+ * static popt::option i_opt(i, ....);
  * \endcode
  * you don't get a compile time error but a link time error.
  *
