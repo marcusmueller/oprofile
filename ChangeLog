@@ -1,3 +1,17 @@
+2003-10-29  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/tests: new directory
+	* libutil++/tests/string_manip_tests.cpp: new tests file
+	* configure.in:
+	* libutil++/Makefile.am:
+	* libutil++/tests/.cvsignore:
+	* libutil++/tests/Makefile.am: handle new test
+
+	* libutil++/string_manip.h:
+	* libutil++/string_manip.cpp: correct implementation of separate_token
+	  to match the documentation
+	* daemon/liblegacy/opd_image.c: fix comment
+
 2003-10-28  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/count_array.cpp:

@@ -26,7 +26,6 @@
  */
 std::string erase_to_last_of(std::string const & str, char ch);
 
-
 /// conversion to std::string
 std::string tostr(unsigned int i);
 

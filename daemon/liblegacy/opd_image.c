@@ -124,7 +124,7 @@ static size_t opd_hash_image(char const * name, pid_t tid, pid_t tgid)
  *
  * Initialise an opd_image struct for the image image
  * without opening the associated samples files. At return
- * the image is partially initialized.
+ * the image is fully initialized.
  */
 static struct opd_image *
 opd_new_image(char const * name, char const * app_name, int kernel,

@@ -9,6 +9,15 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o image filtering needs to resolve symlinks
  o opgprof/opannotate always merges even if we provide a profile spec that's
    minimal enough - you can't get "cpu:0"
+ o pp_interface: 3.4 multiple tag:value are documented as overwriting previous
+  value but this is false, actually the implementation is even not coherent
+  tag:value overwrite, tags accepting comma separated list are cumulative
+  if there are implemented through separate_token() but not if they are
+  implemented through comma_list.h ... 1st fix pp_interface (I'm for always
+  overwrite now)
+ o libutil++/string_manip.cpp: lexical_cast_ws<> is silly, we should trust
+  sample filename format, tobool() tostr() and possibly touint() are redudant
+  too.
 
 0.8 release
 -----------

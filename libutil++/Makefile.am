@@ -1,3 +1,5 @@
+SUBDIRS = . tests
+
 AM_CPPFLAGS=-I ${top_srcdir}/libutil
 AM_CXXFLAGS = @OP_CXXFLAGS@
 

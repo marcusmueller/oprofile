@@ -75,16 +75,17 @@ bool is_prefix(string const & s, string const & prefix)
 
 void separate_token(vector<string> & result, const string & str, char sep)
 {
-	char last_ch = '\0';
 	string next;
 
 	for (size_t pos = 0 ; pos != str.length() ; ++pos) {
 		char ch = str[pos];
-		if (last_ch == '\\') {
-			if (ch != sep)
-				// '\' not followed by ',' are taken as it
-				next += last_ch;
-			next += ch;
+		if (ch == '\\') {
+			if (pos < str.length() - 1 && str[pos + 1] == sep) {
+				++pos;
+				next += sep;
+			} else {
+				next += '\\';
+			}
 		} else if (ch == sep) {
 			result.push_back(next);
 			// some stl lacks string::clear()
@@ -92,7 +93,6 @@ void separate_token(vector<string> & result, const string & str, char sep)
 		} else {
 			next += ch;
 		}
-		last_ch = ch;
 	}
 
 	if (!next.empty())
@@ -141,7 +141,7 @@ string const format_double(double value, size_t int_width, size_t fract_width)
 
 	string formatted = os.str();
 	if (is_prefix(formatted, "100."))
-		formatted.erase(formatted.size() -1);
+		formatted.erase(formatted.size() - 1);
 	return formatted;
 }
 
