@@ -239,7 +239,7 @@ shell script. You are required to specify vmlinux and System.map, as well as spe
 .PP
 Profiles will be collected every ten minutes. You can force a collection at any time :
 .PP
-.I echo 1 >/proc/sys/dev/oprofile/dump
+.I op_dump
 .PP
 As an alternative you can use the
 .B oprofile

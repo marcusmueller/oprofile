@@ -706,19 +706,7 @@ proc onFlushData {} {
     # the user can try to flush even if the driver is not loaded so check for
     # the file existence before attempting to make a flush.
     if { [file exists /proc/sys/dev/oprofile/dump] } then {
-
-	# FIXME : apparently there is no way actually to check if dumping has
-	# been done correctly.
-	set fd [open /proc/sys/dev/oprofile/dump w]
-	puts $fd "1"
-
-	#  Must be enclosed in a catch clause because the driver return a zero
-	# file length write (or an error ?), wish interpret this as a write
-	# error. Take care it is really needed to catch { flush $fd } instead 
-	# of  catch { close $fd } else the tcl/tk runtime leaks a file 
-	# descriptor each time this function is called.
-	catch { flush $fd }
-	close $fd
+	exec op_dump
     }
 }
 
