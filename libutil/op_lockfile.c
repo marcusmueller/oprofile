@@ -14,10 +14,10 @@
 
 #include <errno.h>
 
-#include <sys/unistd.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <signal.h>
+#include <unistd.h>
 
 /**
  * op_read_lock_file - read a lock file
