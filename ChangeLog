@@ -1,3 +1,7 @@
+2002-12-19  Will Cohen  <wcohen@redhat.com>
+
+	* utils/opcontrol: Revise kernel range computation.
+	
 2002-12-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/op_time.cpp: minor formating fix

@@ -303,15 +303,17 @@ get_kernel_range() {
 	if test ! -z "$KERNEL_RANGE"; then
 		return;
 	fi
-	tmp1=`nm $VMLINUX | grep ' A _text'`
-	tmp2=`nm $VMLINUX | grep ' A _end'`
+	range_info=`objdump -h $VMLINUX | grep ".text "`
+	tmp1=`perl -le '($a, $b, $c, $d) = @ARGV; printf "%x\n", (hex($d))' $range_info`
+	tmp2=`perl -le '($a, $b, $c, $d) = @ARGV; printf "%x\n", (hex($c) + hex($d))' $range_info`
+
 	if test -z "$tmp1" -o -z "$tmp2"; then
 		echo "Couldn't determine kernel start/end" >&2
 		echo "Perhaps $VMLINUX is not a proper vmlinux file ?" >&2
 		echo "found start as \"$tmp1\", end as \"$tmp2\"" >&2
 		exit 1
 	fi
-	KERNEL_RANGE="`echo $tmp1 | cut -d" " -f 1`,`echo $tmp2 | cut -d" " -f 1`"
+	KERNEL_RANGE="`echo $tmp1`,`echo $tmp2`"
 	vecho "KERNEL_RANGE $KERNEL_RANGE"
 }
  
