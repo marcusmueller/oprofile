@@ -1,3 +1,10 @@
+2001-08-14  John Levon  <moz@compsoc.man.ac.uk>
+
+	* op_syscalls.c: some small fixes
+
+	* oprofile.c: add back unmasking code during set_gate, but only
+	  LVTPC
+ 
 2001-08-11  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.h: 2.4.8 doesn't either. *sigh*. looks like we need

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.70 2001/08/11 01:38:29 movement Exp $ */
+/* $Id: oprofile.c,v 1.71 2001/08/14 02:38:29 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -127,13 +127,29 @@ asmlinkage void op_do_nmi(struct pt_regs *regs)
 
 static ulong idt_addr;
 static ulong kernel_nmi;
+static ulong lvtpc_masked;
 
+/* this masking code is unsafe and nasty but might deal with the small
+ * race when installing the NMI entry into the IDT
+ */
+void mask_lvtpc(void * e)
+{
+	ulong v = apic_read(APIC_LVTPC);
+	lvtpc_masked = v & APIC_LVT_MASKED;
+        apic_write(APIC_LVTPC, v | APIC_LVT_MASKED);
+}
+
+void unmask_lvtpc(void * e)
+{
+	if (!lvtpc_masked)
+		apic_write(APIC_LVTPC, apic_read(APIC_LVTPC) & ~APIC_LVT_MASKED);
+}
+ 
 static void install_nmi(void)
 {
 	volatile struct _descr descr = { 0, 0,};
 	volatile struct _idt_descr *de;
 
-	__cli();
 	store_idt(descr);
 	idt_addr = descr.base;
 	de = (struct _idt_descr *)idt_addr;
@@ -142,15 +158,20 @@ static void install_nmi(void)
 	/* see Intel Vol.3 Figure 5-2, interrupt gate */
 	kernel_nmi = (de->a & 0xffff) | (de->b & 0xffff0000);
 
+	smp_call_function(mask_lvtpc, NULL, 0, 1);
+	mask_lvtpc(NULL);
 	_set_gate(de, 14, 0, &op_nmi);
-	__sti();
+	smp_call_function(unmask_lvtpc, NULL, 0, 1);
+	unmask_lvtpc(NULL);
 }
 
 static void restore_nmi(void)
 {
-	__cli();
+	smp_call_function(mask_lvtpc, NULL, 0, 1);
+	mask_lvtpc(NULL);
 	_set_gate(((char *)(idt_addr)) + 16, 14, 0, kernel_nmi);
-	__sti();
+	smp_call_function(unmask_lvtpc, NULL, 0, 1);
+	unmask_lvtpc(NULL);
 }
 
 /* ---------------- APIC setup ------------------ */

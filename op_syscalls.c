@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.14 2001/08/10 13:36:37 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.15 2001/08/14 02:38:29 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -164,6 +164,7 @@ int oprof_init_hashmap(void)
 	if (!dname_stack)
 		return -EFAULT;
 	dname_top = 0;
+	memset(dname_stack, 0, DNAME_STACK_MAX * sizeof(struct qstr *));
 
 	hash_map = rvmalloc(PAGE_ALIGN(OP_HASH_MAP_SIZE));
 	if (!hash_map)
@@ -253,6 +254,8 @@ inline static void push_dname(struct qstr *dname)
 	dname_stack[dname_top] = dname;
 	if (dname_top != DNAME_STACK_MAX)
 		dname_top++;
+	else
+		printk("oprofile: overflowed dname stack !\n");
 }
 
 inline static struct qstr *pop_dname(void)
@@ -276,7 +279,7 @@ static short do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dent
 
 	/* wind the dentries onto the stack pages */
 	for (;;) {
-		if (d->d_name.len > OP_HASH_LINE)
+		if (d->d_name.len >= OP_HASH_LINE)
 			goto too_large;
 
 		/* deleted ? */
