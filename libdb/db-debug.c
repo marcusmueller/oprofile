@@ -133,6 +133,9 @@ static int do_check_tree(db_tree_t const * tree,
 
 	page = page_nr_to_page_ptr(tree, page_nr);
 
+	if (page->count == 0)
+		return 1;
+
 	if (page->p0 != db_nil_page)
 		do_check_tree(tree, page->p0, last);
 
@@ -153,8 +156,10 @@ static int do_check_tree(db_tree_t const * tree,
 int db_check_tree(db_tree_t const * tree)
 {
 	int ret = db_check_page_pointer(tree);
-	if (!ret)
-		ret = do_check_tree(tree, tree->descr->root_idx, 0u);
+	if (!ret) {
+		if (tree->descr->root_idx != db_nil_page)
+			ret = do_check_tree(tree, tree->descr->root_idx, 0u);
+	}
 
 	return ret;
 }

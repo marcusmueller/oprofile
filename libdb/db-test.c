@@ -169,8 +169,29 @@ static void do_callback_test(void)
 	}
 }
 
-int main(void)
+static void sanity_check(char const * filename)
 {
+	db_tree_t tree;
+
+	db_open(&tree, filename, DB_RDONLY, 128);
+
+	if (db_check_tree(&tree)) {
+		printf("checking file %s FAIL\n", filename);
+		++nr_error;
+	}
+
+	db_close(&tree);
+}
+
+int main(int argc, char * argv[1])
+{
+	/* if a filename is given take it as a checking of this db */
+	if (argc > 1) {
+		int i;
+		for (i = 1 ; i < argc ; ++i)
+			sanity_check(argv[i]);
+		return 0;
+	}
 	do_test();
 
 	do_callback_test();

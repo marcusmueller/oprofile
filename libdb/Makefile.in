@@ -1,7 +1,5 @@
 include ../make.common
 
-# disabled db-test etc. for now
- 
 HEADERS=db.h
  
 SOURCES=db-manage.c db-insert.c db-travel.c db-debug.c
@@ -18,5 +16,8 @@ clean:
 
 $(TARGET): $(OBJECTS)
 	$(AR) cr $@ $^
+
+db-test: db-test.c $(TARGET)
+	$(CC) -o $@ db-test.c $(TARGET)
  
 include ../make.deps
