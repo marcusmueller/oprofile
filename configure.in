@@ -34,7 +34,7 @@ fi
 ])
  
  
-AC_REVISION($Id: configure.in,v 1.7 2000/08/07 04:18:27 moz Exp $)
+AC_REVISION($Id: configure.in,v 1.8 2000/08/08 00:12:33 moz Exp $)
 dnl
 dnl Process this file with autoconf to produce a configure script.
 dnl
@@ -80,13 +80,11 @@ case "$KVERS" in
 *) AC_MSG_ERROR(Unsupported kernel version)
 esac
 
-AC_MSG_CHECKING(for architecture)
-ARCH=`uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/`
-AC_MSG_RESULT($ARCH)
-case "$ARCH" in
-i386) ;;
-*) AC_MSG_ERROR(Unsupported architecture)
-esac
+AC_MSG_CHECKING(for x86 architecture)
+x86=0 
+AX_EGREP([^ *\#define  *CONFIG_X86 ], $KINC/linux/autoconf.h, x86=1) 
+AX_MSG_RESULT_YN($x86)
+test "$x86" = 1 || AC_MSG_ERROR(Unsupported architecture)
 
 AC_MSG_CHECKING(for SMP)
 smp=0
