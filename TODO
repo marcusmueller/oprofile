@@ -21,6 +21,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o fix the numerous bizarre problems with --separate=kernel
  o fix the 2.5 module-finding problem as best as Rusty will let us
  o implement module-drop event in 2.5 kernel
  o lockless patch to fix UP 2.5
