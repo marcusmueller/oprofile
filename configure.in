@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.76 2002/03/08 20:44:13 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.77 2002/03/09 00:48:44 phil_e Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -283,7 +283,7 @@ QT2_DO_IT_ALL
  
 # do NOT put tests here, they will fail in the case X is not installed !
  
-AC_OUTPUT(Makefile events/Makefile util/Makefile module/Makefile dae/Makefile doc/Makefile doc/oprofile.1 pp/Makefile gui/Makefile gui/ui/Makefile Rules.make version.h)
+AC_OUTPUT(Makefile events/Makefile util/Makefile module/Makefile dae/Makefile doc/Makefile doc/oprofile.1 pp/Makefile gui/Makefile gui/ui/Makefile oprof_report/Makefile oprof_report/ui/Makefile Rules.make version.h)
 
 if test "$have_qt2" != "yes"; then
 	echo "Warning: Qt2 not found; no GUI will be built"

@@ -13,7 +13,7 @@ clean:
 	$(MAKE) -C ui clean
 	rm -rf *.o .deps *.moc.* oprof_start
 
-install: all oprof_start
+install: all
 	-$(MKDIR_P) $(BINDIR)
 	cp oprof_start $(BINDIR)/oprof_start && chmod 755 $(BINDIR)/oprof_start
 
@@ -23,17 +23,24 @@ uninstall:
 	@echo "The uninstall target does not remove your ~/.oprofile directory"
 	@echo "---------------------------------------------------------------"
 
-UISOURCES=ui/oprof_start.base.o ui/oprof_start.base.moc.o
-SOURCES=oprof_start.o oprof_start.moc.o ../events/op_events.o \
+# application oprof_start
+OP_START_UI_OBJS=ui/oprof_start.base.o ui/oprof_start.base.moc.o
+OP_START_OBJS=oprof_start.o oprof_start.moc.o ../events/op_events.o \
  ../events/op_events_desc.o oprof_start_config.o oprof_start_main.o \
- oprof_start_util.o ../util/string_manip.o ../util/child_reader.o ../util/file_manip.o
+ oprof_start_util.o ../util/string_manip.o ../util/child_reader.o \
+ ../util/file_manip.o
 
-oprof_start: $(SOURCES)
+# We do not put $(OP_START_UI_OBJS) as dependency of oprof_start (make don't
+# know how to rebuild it at this point) but it works due to side effect between
+# Makefile, dependency file and ui/oprof_start.base.h
+oprof_start: $(OP_START_OBJS)
 	$(MAKE) -C ui
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(UISOURCES) @QT2_LDFLAGS@ @QT2_LIBS@ -liberty
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(OP_START_UI_OBJS) @QT2_LDFLAGS@ @QT2_LIBS@ -liberty
 
 # we need explicit dependencies and build rules here else after a make clean
-# dependencies can not be regenerated
+# dependencies can not be regenerated. This also have the side effect to
+# implicitly put dependencies to oprof_start on *all* ui files because if one
+# ui is modified all ui files are modified.
 ui/oprof_start.base.h: ui/oprof_start.base.ui
 	$(MAKE) -C ui oprof_start.base.h
 ui/oprof_start.base.moc.cpp: ui/oprof_start.base.h
@@ -51,15 +58,12 @@ oprof_start_main.o: oprof_start_main.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # generate qt moc code for subclass
-oprof_start.moc.cpp: oprof_start.h  ui/oprof_start.base.h
+oprof_start.moc.cpp: oprof_start.h ui/oprof_start.base.h
 	$(MOC) -o oprof_start.moc.cpp oprof_start.h
 
-ALL_SOURCES = oprof_start_util.cpp oprof_start_config.cpp oprof_start_main.cpp oprof_start.cpp oprof_start.moc.cpp
-
-# FIXME kludge
-# Makefile depends on included .d file which needs ui/oprof_start.base.h to be
-# created so add an explicit rules to create it, I see no way to avoid it.
-oprof_start.cpp.d: ui/oprof_start.base.h
+# dependencies
+ALL_SOURCES = oprof_start_util.cpp oprof_start_config.cpp \
+ oprof_start_main.cpp oprof_start.cpp oprof_start.moc.cpp
 
 include ../Rules.make
 

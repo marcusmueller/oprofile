@@ -1,0 +1,4 @@
+.deps
+oprof_report
+oprof_report.moc.cpp
+Makefile

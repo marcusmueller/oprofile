@@ -1,3 +1,21 @@
+2002-03-09  Philippe Elie  <ph_e@club-internet.fr>
+
+	* oprof_report: new directory, oprofpp/op_time like GUI
+	* oprof_report/op_view.h: base class for view
+	* oprof_report/oprof_report_main.cpp:
+	* oprof_report/oprof_report.h:
+	* oprof_report/oprof_report.cpp: main class
+	* oprof_report/oprofpp_view.h:
+	* oprof_report/oprofpp_view.cpp: oproffp like view
+	* oprof_report/Makefile.in:
+	* oprof_report/ui/oprof_report.base.ui: oprof_report UI
+	* oprof_report/ui/Makefile.in:
+
+	* Makefile.in:
+	* configure.in: handle oprof_report
+
+	* ui/Makefile.in: clarify how dependencies work
+
 2002-03-08  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: bump to 0.2cvs
