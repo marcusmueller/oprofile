@@ -3,7 +3,7 @@
 
 <book id="oprofile-guide">
 <bookinfo>
-	<title>OProfile manual</title>
+	<title>oprofile manual</title>
  
 	<authorgroup>
 		<author>
@@ -28,11 +28,10 @@
 <title>Introduction</title>
 
 <para>
-OProfile is a profiling system for Linux 2.2/2.4 systems on most x86 processors. It is capable of profiling
+oprofile is a profiling system for Linux 2.2/2.4/2.6 systems on a number of architectures. It is capable of profiling
 all parts of a running system, from the kernel (including modules and interrupt handlers) to shared libraries
 to binaries. It runs transparently in the background collecting information at a low overhead. These
-features make it ideal for profiling entire systems in production environments to determine bottle
-necks in real-world systems.
+features make it ideal for profiling entire systems to determine bottle necks in real-world systems.
 </para>
 
 <sect1 id="requirements">
@@ -42,12 +41,12 @@ necks in real-world systems.
 	<varlistentry>
 		<term>Linux kernel 2.2/2.4</term>
 		<listitem>
-			OProfile uses a kernel module that can be compiled for
-			2.2.11 or later and 2.4. Support for Linux 2.5.45 is also provided but has not been extensively tested.
-			Versions 2.4.10 or above are recommended, and required if you use the
-			boot-time kernel option <option>nosmp</option>. AMD Hammer support requires a recent (>= 2.4.19) kernel
+			oprofile uses a kernel module that can be compiled for
+			2.2.11 or later and 2.4. Versions 2.4.10 or above are recommended, and required if you use the
+			boot-time kernel option <option>nosmp</option>. AMD Hammer support requires a recent (&ge; 2.4.19) kernel
 			with the line <constant>EXPORT_SYMBOL(do_fork);</constant> present in <filename>kernel/ksyms.c</filename>.
 			Such a kernel is present in the <ulink url="http://www.x86-64.org">x86-64.org</ulink> CVS repository.
+			2.5 kernels are supported with the in-kernel oprofile driver.
 <!-- FIXME: do we require always gte 2.4.10 for nosmp ? -->
 		</listitem>
 	</varlistentry>
@@ -64,10 +63,10 @@ necks in real-world systems.
 		<listitem>
 			For Intel IA32, a CPU with either a P6 generation or Pentium 4 core is
 			required. In marketing terms this translates to anything
-			between an Intel Pentium Pro (NOT Pentium Classics) and
+			between an Intel Pentium Pro (<em>not</em> Pentium Classics) and
 			a Pentium 4 / Xeon, including all Celerons.  The AMD
 			Athlon, Duron, and Hammer CPUs are also supported.  Other IA32
-			CPU types only support the RTC mode of oprofile, please
+			CPU types only support the RTC mode of oprofile; please
 			see later in this manual for details.  The Itanium 2
 			support uses the performance monitor unit in the processor.
 		</listitem>
@@ -82,7 +81,7 @@ necks in real-world systems.
 		<term>Required libraries</term>
 		<listitem>
 			These libraries are required : <filename>popt</filename>, <filename>bfd</filename>,
-			<filename>liberty</filename> (debian user: libiberty is provided in binutils-dev package), <filename>dl</filename>
+			<filename>liberty</filename> (debian users: libiberty is provided in binutils-dev package), <filename>dl</filename>
 		</listitem>
 	</varlistentry>
 	<varlistentry>
@@ -93,7 +92,7 @@ necks in real-world systems.
 		</listitem>
 	</varlistentry>
 	<varlistentry>
-		<term>OProfile GUI</term>
+		<term>oprofile GUI</term>
 		<listitem>
 			The use of the GUI to start the profiler requires the <filename>Qt 2</filename> library. Qt 3 should
 			also work.
@@ -137,14 +136,14 @@ necks in real-world systems.
 	<varlistentry>
 		<term>Mailing list</term>
 		<listitem>
-			There is a very low-traffic OProfile-specific mailing list, details at
+			There is a very low-traffic oprofile-specific mailing list, details at
 			<ulink url="http://sf.net/mail/?group_id=16191">http://sf.net/mail/?group_id=16191</ulink>.
 		</listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Bug tracker</term>
 		<listitem>
-			There is a bug tracker for OProfile at the sourceforge page,
+			There is a bug tracker for oprofile at SourceForge,
 			<ulink url="http://sf.net/tracker/?group_id=16191&amp;atid=116191">http://sf.net/tracker/?group_id=16191&amp;atid=116191</ulink>.
 		</listitem>
 	</varlistentry>
@@ -152,7 +151,7 @@ necks in real-world systems.
 		<term>IRC channel</term>
 		<listitem>
 			Several oprofile developers and users sometimes hang out on channel <command>#oprofile</command>
-			at <ulink url="http://www.openprojects.net/">openprojects.net</ulink>. 
+			on the <ulink url="http://freenode.info">freenode</ulink> network. 
 		</listitem>
 	</varlistentry>
 </variablelist>
@@ -162,7 +161,7 @@ necks in real-world systems.
 <sect1 id="install">
 <title>Installation</title>
 
-First you need to build <filename>oprofile</filename> and install it. <command>./configure</command>, <command>make</command>, <command>make install</command>
+First you need to build oprofile and install it. <command>./configure</command>, <command>make</command>, <command>make install</command>
 is all you need, but note these arguments to <command>./configure</command> :
 <variablelist>
 	<varlistentry>
@@ -210,13 +209,15 @@ to build the module.  It is also recommended that if you have a
 uniprocessor machine, you enable the local APIC / IO_APIC support for
 your kernel (this is automatically enabled for SMP kernels).  On
 machines with power management, such as laptops, the power management
-must be turned off when using OProfile. The power management software
+must be turned off when using oprofile. The power management software
 in the BIOS cannot handle the non-maskable interrupts (NMIs) used by
-OProfile for data collection. If you use the nmi watchdog be warned than
-watchdog is disable when profiling start and not re-enabled until the
-oprofile module is removed. So on op_stop does not re-enable the watchdog
-nmi because op_stop doesn't remove the module. If you compile oprofile for
-a 2.2 kernel you must be root to compile the module.
+oprofile for data collection. If you use the nmi watchdog be warned than
+watchdog is disabled when profiling starts, and not re-enabled until the
+oprofile module is removed. If you compile oprofile for
+a 2.2 kernel you must be root to compile the module. If you are using
+2.5 kernels or higher, you do not need kernel source, as long as the
+oprofile driver is enabled; additionally, you should not need to disable
+power management.
 </para>
 
 </sect1>
@@ -325,7 +326,7 @@ This section gives a brief description of the available oprofile utilities and t
 <title>A typical session</title>
 <para>
 Before getting into detail about usage, it's probably a good idea to have a quick stroll through an example
-session (this example is for Intel P6 generation processors not AMD, but the process is the same).
+session (this example is for Intel P6 generation processors, but the process is the same).
 </para>
 <para>
 First we need to start the profiler running in the background. We need to pass the correct
@@ -342,7 +343,7 @@ A quick <command>ps ax</command> confirms that the daemon (<command>oprofiled</c
 Data is now being collected in the kernel. Now we can do whatever we like ... although in this case I'm profiling the C++ application
 <ulink url="http://www.lyx.org/">LyX</ulink>.
 Note that unlike <command>gprof</command>, no instrumentation (<option>-pg</option> and <option>-a</option> options to <command>gcc</command>)
-is necessary. This is major factor in achieving the low overhead of OProfile. Compiling with debug symbols (the <option>-g</option>
+is necessary. This is major factor in achieving the low overhead of oprofile. Compiling with debug symbols (the <option>-g</option>
 option) is not necessary to get a basic function-based profile listing, but it must be used in order to retrieve line number
 information and create annotated source. See the FAQ <xref linkend="symbol-and-debug-info" /> about debug information vs symbol information.
 </para>
@@ -386,7 +387,7 @@ produced by <command>gprof</command>).
 <note>
 <para>
 If you're more used to <command>gprof</command> style profile output, you can use <command>oprofpp -g gmon.out</command> and then
-<command>gprof -p binary</command> to get flat profiles. OProfile does not (cannot) support the call graph
+<command>gprof -p binary</command> to get flat profiles. oprofile does not (cannot) support the call graph
 feature of <command>gprof</command>.
 </para>
 </note>
@@ -401,7 +402,7 @@ In this section the configuration and startup of the profiler is discussed in mo
 <para>
 A shell script <command>op_start</command> is provided to set up the correct
 environment, insert the kernel module, and start up the profiler daemon.
-OProfile stores its relevant files in <filename>/var/lib/oprofile</filename>.
+oprofile stores its relevant files in <filename>/var/lib/oprofile</filename>.
 Of most interest are the <filename>oprofiled.log</filename> log file, and the
 <filename>samples/</filename> directory. The <filename>samples</filename>
 directory contains the actual sample profile files created by the daemon.
@@ -566,7 +567,7 @@ session.
 <note>
 <para>
 Your CPU type may not include the requisite support for hardware performance counters, in which case
-you must use OProfile in RTC mode: see <xref linkend="rtc" />.
+you must use oprofile in RTC mode: see <xref linkend="rtc" />.
 </para>
 </note>
 <para>
@@ -575,7 +576,7 @@ from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink
 implementation is detailed in <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/pdf/22007.pdf">
 http://www.amd.com/products/cpg/athlon/techdocs/pdf/22007.pdf</ulink>.
 These processors are capable of delivering an interrupt to the local <acronym>APIC</acronym> <acronym>LVTPC</acronym>
-vector when a counter overflows. This is the basic mechanism on which OProfile is based. The kernel module
+vector when a counter overflows. This is the basic mechanism on which oprofile is based. The kernel module
 installs an interrupt handler for this vector. The delivery mode is set to <acronym>NMI</acronym> so that
 blocking interrupts in the kernel does not prevent profiling. When the interrupt handler is called,
 the current <acronym>EIP</acronym> <acronym>PC</acronym> value, process id, and counter
@@ -630,11 +631,11 @@ Specifying too small a value can lead to overflow problems discussed previously.
 </sect2>
 
 <sect2 id="rtc">
-<title>OProfile in RTC mode</title>
+<title>oprofile in RTC mode</title>
 <para>
 Some CPU types do not provide the needed hardware support to use the hardware performance counters. This includes
-some laptops, classic Pentiums, and other CPU types not yet supported by OProfile (such as Cyrix). 
-On these machines, OProfile falls
+some laptops, classic Pentiums, and other CPU types not yet supported by oprofile (such as Cyrix). 
+On these machines, oprofile falls
 back to using the real-time clock interrupt to collect samples. This interrupt is also used by the <command>rtc</command>
 module: you cannot have both the oprofile and rtc modules loaded nor the rtc support compiled in the kernel.
 </para>
@@ -691,7 +692,7 @@ in sections of the IA64 kernel where interrupts are disabled.
 <para>
 None of the advance features of the Itanium 2 performance monitoring unit
 such as opcode matching, address range matching, or precise event sampling are
-supported by this version of OProfile.  The Itanium 2 support only maps OProfile's
+supported by this version of oprofile.  The Itanium 2 support only maps oprofile's
 existing interrupt-based model to the PMU hardware.
 </para>
 </sect2>
@@ -812,7 +813,7 @@ The following files will be present :
 <sect2 id="misuse">
 <title>Misuse of <command>oprofile</command> and stability of system</title>
 <para>
-OProfile is a low-level profiler which allow continuous profiling with a low-overhead cost.
+oprofile is a low-level profiler which allow continuous profiling with a low-overhead cost.
 If not used carefully, this can affect the stability of the system.
 If too low a count reset value is set for a counter, the system can become overloaded with counter
 interrupts, and seem as if the system has frozen.
@@ -883,7 +884,7 @@ re-enable the module unload by specifying the "allow_unload" parameter to the mo
 <title>Obtaining results</title>
 <para>
 OK, so the profiler has been running, but it's not much use unless we can get some data out. Fairly often,
-OProfile does a little <emphasis>too</emphasis> good a job of keeping overhead low, and no data reaches
+oprofile does a little <emphasis>too</emphasis> good a job of keeping overhead low, and no data reaches
 the profiler. This can happen on lightly-loaded machines. Remember you can force a dump at any time with :
 </para>
 <para><command>op_dump</command></para>
@@ -1448,7 +1449,7 @@ problem and oprofile can do nothing about it.
 <sect1 id="irq-masking">
 <title>Interrupt Masking</title>
 <para>
-OProfile uses non-maskable interrupts (NMI) on the P6 generation, Pentium 4,
+oprofile uses non-maskable interrupts (NMI) on the P6 generation, Pentium 4,
 Athlon and Duron processors. These interrupts can occur even in section of the
 Linux where interrupts are disabled, allowing collection of samples in virtually
 all executable code.  The RTC and Itanium 2 collection mechanisms use maskable
@@ -1661,7 +1662,7 @@ o more ...
 <chapter id="overhead">
 <title>Profiling overhead</title>
 <para>
-One of the major design criterion for OProfile was low overhead. In many cases
+One of the major design criterion for oprofile was low overhead. In many cases
 profiling is hardly noticeable in terms of overhead (I regularly leave it turned on
 all the time). It achieves this by judicious use of kernel-side data structures
 to reduce the analysis overhead to a bare runtime minimum. There are several things

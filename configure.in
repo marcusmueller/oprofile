@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.126 2002/11/14 04:12:33 graydon Exp $)
+AC_REVISION($Id: configure.in,v 1.127 2002/12/01 03:53:10 movement Exp $)
 AC_PREREQ(2.13)
 
 AC_INIT(libop/op_config.h)
@@ -266,7 +266,7 @@ int c; char **v;
 poptGetContext(0, c, v, 0, 0);
 ],
 AC_MSG_RESULT([takes char **]);,
-AC_MSG_RESULT([takes const char **]); AC_DEFINE(CONST_POPT, 1, [whether popt prototype take a const char **]))
+AC_MSG_RESULT([takes const char **]); AC_DEFINE(CONST_POPT, 1, [whether popt prototype takes a const char **]))
 CXXFLAGS="$SAVE_CXXFLAGS"
 
 AC_MSG_CHECKING([whether to use included sstream])
@@ -282,7 +282,7 @@ dnl bfd.h pre 1998 check only for gnu 2.xx series, so gcc 3.0 can't compile it
 AC_MSG_CHECKING([whether bfd defines bool])
 AC_TRY_COMPILE([#include <bfd.h>], [], 
 AC_MSG_RESULT([no]);,
-AC_MSG_RESULT([yes]); AC_DEFINE(TRUE_FALSE_ALREADY_DEFINED, 1, [whether bfd.h define bool value]))
+AC_MSG_RESULT([yes]); AC_DEFINE(TRUE_FALSE_ALREADY_DEFINED, 1, [whether bfd.h defines bool values]))
 
 AC_PATH_XTRA
 SAVE_LIBS="$LIBS"
