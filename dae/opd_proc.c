@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.23 2000/08/28 16:08:36 moz Exp $ */
+/* $Id: opd_proc.c,v 1.24 2000/08/30 20:21:41 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -1046,7 +1046,7 @@ void opd_handle_mapping(const struct op_sample *sample)
 				exit(1);
 			}
 
-			c -= strlen(&hash_access(hash)+1);
+			c -= strlen(&hash_access(hash))+1;
 			strncpy(c,"/",1);
 			strncpy(c+1,&hash_access(hash),strlen(&hash_access(hash)));
 		}
