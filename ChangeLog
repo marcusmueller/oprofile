@@ -1,5 +1,9 @@
 2003-03-04  John Levon  <levon@movementarian.org>
 
+	* configure.in: tweak the xsltproc test
+
+2003-03-04  John Levon  <levon@movementarian.org>
+
 	* configure.in:
 	* doc/Makefile.am: don't try to build the docs
 	  if it will fail.
