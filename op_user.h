@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.8 2001/09/12 05:21:57 movement Exp $ */
+/* $Id: op_user.h,v 1.9 2001/09/15 01:51:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -156,6 +156,10 @@ struct op_mapping {
 /* size of hash map in bytes */
 #define OP_HASH_MAP_SIZE (OP_HASH_MAP_NR * sizeof(struct op_hash))
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* op_events.c */
 int op_min_count(u8 ctr_type, int cpu_type);
 int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, int cpu_type);
@@ -164,5 +168,49 @@ const char* op_get_cpu_type_str(int cpu_type);
 int op_check_events_str(int ctr, char *ctr_type, u8 ctr_um, int cpu_type, u8 *ctr_t);
 void op_get_event_desc(int cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
 int op_get_cpu_type(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+/* op_events.c: stuff needed by oprof_start and opf_filter.cpp */
+
+enum unit_mask_type {
+	/* useless but required by the hardware */
+	utm_mandatory,
+	/* only one of the values is allowed */
+	utm_exclusive,
+	/* bitmask */
+	utm_bitmask
+};
+
+struct op_event {
+	uint counter_mask; /* bitmask of allowed counter  */
+	u16  cpu_mask;     /* bitmask of allowed cpu_type */
+	u8 val;            /* event number */
+	u8 unit;           /* which unit mask if any allowed */
+	const char *name;
+	int min_count;     /* minimum counter value allowed */
+};
+
+struct op_unit_mask {
+	uint num; /* number of possible unit masks */
+	enum unit_mask_type unit_type_mask;
+	/* only the gui use it */
+	u8 default_mask;
+	/* up to seven allowed unit masks */
+	u8 um[7];
+};
+
+struct op_unit_desc {
+	char *desc[7];
+};
+
+extern struct op_unit_mask op_unit_masks[];
+extern struct op_unit_desc op_unit_descs[];
+extern char *op_event_descs[];
+extern struct op_event op_events[];
+/* the total number of events for all processor type */
+extern uint op_nr_events;
 
 #endif /* OP_USER_H */

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.87 2001/09/12 14:30:20 movement Exp $ */
+/* $Id: oprofile.c,v 1.88 2001/09/15 01:51:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -215,7 +215,7 @@ static void pmc_setup(void *dummy)
 		}
 	}
 	
-	/* Here all setup is made except the start/stop bit 21), counter
+	/* Here all setup is made except the start/stop bit 22, counter
 	 * disabled contains zeros in the eventsel msr except the reserved bit
 	 * 21 */
 }

@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.24 2001/09/12 02:54:30 movement Exp $ */
+/* $Id: op_events.c,v 1.25 2001/09/15 01:51:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -31,33 +31,6 @@
 
 #include "op_user.h"
 
-enum unit_mask_type {
-	/* useless but required by the hardware */
-	utm_mandatory,
-	/* only one of the values is allowed */
-	utm_exclusive,
-	/* bitmask */
-	utm_bitmask
-};
-
-struct op_event {
-	uint counter_mask; /* bitmask of allowed counter  */
-	u16  cpu_mask;     /* bitmask of allowed cpu_type */
-	u8 val;            /* event number */
-	u8 unit;           /* which unit mask if any allowed */
-	const char *name;
-	int min_count;     /* minimum counter value allowed */
-};
-
-struct op_unit_mask {
-	uint num; /* number of possible unit masks */
-	enum unit_mask_type unit_type_mask;
-	/* only the gui use it */
-	u8 default_mask;
-	/* up to seven allowed unit masks */
-	u8 um[7];
-};
-
 static const char* cpu_type_str[MAX_CPU_TYPE] = {
 	"Pentium Pro",
 	"PII",
@@ -65,9 +38,9 @@ static const char* cpu_type_str[MAX_CPU_TYPE] = {
 	"Athlon"
 };
 
-static struct op_unit_mask op_unit_masks[] = {
-	/* use by the gui */
-	{ 1, utm_mandatory, 0x0f, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
+struct op_unit_mask op_unit_masks[] = {
+	/* reserved empty entry */
+	{ 0, utm_mandatory, 0x00, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
 	/* MESI counters */
 	{ 5, utm_bitmask, 0x0f, { 0x8, 0x4, 0x2, 0x1, 0xf, 0x0, 0x0 }, },
 	/* EBL self/any default to any transitions */
@@ -96,8 +69,8 @@ static struct op_unit_mask op_unit_masks[] = {
 #define CTR_0		(1 << 0)
 #define CTR_1		(1 << 1)
 
-/* Allowed, Event #, unit mask, name, minimum event value */
-static struct op_event op_events[] = {
+/* ctr allowed, Event #, unit mask, name, minimum event value */
+struct op_event op_events[] = {
   /* Clocks */
   { CTR_ALL, OP_IA_ALL, 0x79, 0, "CPU_CLK_UNHALTED", 6000 },
   /* Data Cache Unit (DCU) */
@@ -227,7 +200,8 @@ static struct op_event op_events[] = {
   { CTR_ALL, OP_ATHLON, 0xcf, 0, "HARDWARE_INTERRUPTS", 500,},
 };
 
-#define op_nr_events (sizeof(op_events)/sizeof(op_events[0]))
+/* the total number of events for all processor type */
+uint op_nr_events = (sizeof(op_events)/sizeof(op_events[0]));
 
 /**
  * op_check_unit_mask - sanity check unit mask value
@@ -505,11 +479,8 @@ int op_get_cpu_type(void)
 #endif /* !defined(MODULE) */
 
 #ifdef OP_EVENTS_DESC
-struct op_unit_desc {
-	char *desc[7];
-};
 
-static struct op_unit_desc op_unit_descs[] = {
+struct op_unit_desc op_unit_descs[] = {
 	{ { NULL, NULL, NULL, NULL, NULL, NULL, NULL, }, },
 	{ { "(M)odified cache state",
 	  "(E)xclusive cache state",
@@ -549,7 +520,7 @@ static struct op_unit_desc op_unit_descs[] = {
 	  "all MOESI cache state", NULL, }, },
 };
 
-static char *op_event_descs[] = {
+char *op_event_descs[] = {
   "clocks processor is not halted",
   /* Data Cache Unit (DCU) */
   "all memory references, cachable and non",

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.70 2001/09/12 01:22:41 movement Exp $ */
+/* $Id: opd_proc.c,v 1.71 2001/09/15 01:51:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -390,7 +390,7 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 	/* truncate to grow the file is ok on linux, and probably ok in POSIX.
 	 * I am unsure than don't touch the last page and un-sparse a little
 	 * what the samples file */
-	if (ftruncate(sample_file->fd, image->len + sizeof(struct opd_footer) - 1) == -1) {
+	if (ftruncate(sample_file->fd, image->len + sizeof(struct opd_footer)) == -1) {
 		fprintf(stderr, "oprofiled: ftruncate failed for \"%s\". %s\n", mangled, strerror(errno));
 		goto err2;
 	}
