@@ -126,8 +126,13 @@ bool child_reader::block_read()
 	FD_SET(fd2, &read_fs);
 
 	if (select(max(fd1, fd2) + 1, &read_fs, 0, 0, 0) >= 0) {
-		if (FD_ISSET(fd1, &read_fs))
-			end1 = read(fd1, buf1, PIPE_BUF);
+		if (FD_ISSET(fd1, &read_fs)) {
+			ssize_t temp = read(fd1, buf1, PIPE_BUF);
+			if (temp >= 0)
+				end1 = temp;
+			else
+				end1 = 0;
+		}
 
 		if (FD_ISSET(fd2, &read_fs)) {
 			if (end2 >= sz_buf2) {
@@ -158,7 +163,9 @@ bool child_reader::getline(string & result)
 
 	bool ok = true;
 	bool ret = true;
+	bool can_stop = false;
 	do {
+		int temp = end2;
 		if (pos1 >= end1) {
 			pos1 = 0;
 			ret = block_read();
@@ -175,8 +182,17 @@ bool child_reader::getline(string & result)
 		// !ok ==> endl has been read so do not copy it.
 		result.append(&buf1[pos1], (temp_pos - pos1) - !ok);
 
+		if (!ok || !end1)
+			can_stop = true;
+
+		// reading zero byte from stdout don't mean than we exhausted
+		// all stdout output, we must continue to try until reading
+		// stdout and stderr return zero byte.
+		if (ok && temp != end2)
+			can_stop = false;
+
 		pos1 = temp_pos;
-	} while (ok && end1);
+	} while (!can_stop);
 
 	// Is this correct ?
 	return end1 != 0 || result.length() != 0;

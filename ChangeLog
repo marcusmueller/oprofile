@@ -1,3 +1,8 @@
+2002-10-19  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/child_reader.cpp: In some pathological case getline()
+	  finished too early when child process write on stderr.
+
 2002-10-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutill++/child_reader.cpp: read_block() : cumulate stderr
