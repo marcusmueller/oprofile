@@ -1,3 +1,12 @@
+2003-01-12  John Levon  <levon@movementarian.org>
+
+	From Graydon Hoare
+
+	* libop/op_cpu_type.h:
+	* libop/op_cpu_type.c: add P4 HT
+
+	* libop/op_events.c: tag P4 HT events
+
 2003-01-11   Randolph Chung  <tausq@debian.org>
 
 	* daemon/oprofiled.c: fix ELF sniff

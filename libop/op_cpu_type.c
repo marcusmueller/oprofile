@@ -32,6 +32,7 @@ struct cpu_descr {
 	{ "Itanium", "ia64/itanium", CPU_IA64_1, 4 },
 	{ "Itanium 2", "ia64/itanium2", CPU_IA64_2, 4 },
 	{ "Hammer", "x86-64/hammer", CPU_HAMMER, 4 },
+	{ "P4 / Xeon with 2 hyper-threads", "i386/p4-ht", CPU_P4_HT2, 4 },
 };
  
 static size_t nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
