@@ -1037,7 +1037,14 @@ do_save_session () {
 		echo "session $SAVE_DIR already exists" >&2
 		exit 1
 	fi
-		
+
+	if ! test -e $CURRENT_SAMPLES_DIR; then
+		echo "$CURRENT_SAMPLES_DIR doesn't exist: nothing to save"
+		exit 0
+	fi
+
+	# FIXME: I don't think it's worth checking for empty current directory
+
 	mv $CURRENT_SAMPLES_DIR $SAVE_DIR
 	if [ "$?" != "0" ]; then
 		echo "Couldn't move $CURRENT_SAMPLES_DIR to $SAVE_DIR" >&2

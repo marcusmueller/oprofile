@@ -1,5 +1,10 @@
 2003-07-11  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* utils/opcontrol: don't try to save current if the directory doesn't
+	  exist
+
+2003-07-11  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/stream_util.h:
 	* libutil++/stream_util.cpp: new file, io_state() save object
 	* libutil++/Makefile.am: handle new file
