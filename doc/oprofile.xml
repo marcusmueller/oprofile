@@ -501,6 +501,12 @@ The <command>opcontrol</command> script options used with the
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>--rtc-value=</option>val</term>
+		<listitem><para>
+		Set RTC counter value (see <xref linkend="rtc" />).
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>--pid-filter=</option>pid</term>
 		<listitem><para>
 		Only profile process pid  (only available for 2.4 version).
@@ -531,6 +537,14 @@ The <command>opcontrol</command> script options used with the
 		</para></listitem>
 	</varlistentry>
 </variablelist>
+<note>
+<para>
+If you are using a 2.5 kernel in timer interrupt mode (i.e. no hardware
+performance counters are supported for your CPU type), you do not need
+to specify any counter parameters, because there aren't any (see
+<xref linkend="timer" />).
+</para>
+</note>
 
 </sect1>
  
@@ -592,7 +606,7 @@ session.
 <note>
 <para>
 Your CPU type may not include the requisite support for hardware performance counters, in which case
-you must use oprofile in RTC mode: see <xref linkend="rtc" />.
+you must use oprofile in RTC mode in 2.4 (see <xref linkend="rtc" />), or timer mode in 2.5 (see <xref linkend="timer" />). 
 </para>
 </note>
 <para>
@@ -657,6 +671,9 @@ Specifying too small a value can lead to overflow problems discussed previously.
 
 <sect2 id="rtc">
 <title>oprofile in RTC mode</title>
+<note><para>
+This section applies to 2.4 kernels only.
+</para></note>
 <para>
 Some CPU types do not provide the needed hardware support to use the hardware performance counters. This includes
 some laptops, classic Pentiums, and other CPU types not yet supported by oprofile (such as Cyrix). 
@@ -681,6 +698,19 @@ Setting the value from the GUI should be straightforward. On the command line, y
 Note the sysctl tree described in the next section is different when the RTC is being used.  In particular,
 the file <filename>/proc/sys/dev/oprofile/rtc_value</filename> is used by the tools to set the desired RTC 
 sampling rate, and will reflect the actual sampling rate after profiling has started.
+</para>
+</sect2>
+
+<sect2 id="timer">
+<title>oprofile in timer interrupt mode</title>
+<note><para>
+This section applies to 2.4 kernels only.
+</para></note>
+<para>
+In 2.5 kernels on CPUs without oprofile support for the hardware performance counters, the driver
+falls back to using the timer interrupt for profiling. Like the RTC mode in 2.4 kernels, this is not able to
+profile code that has interrupts disabled. Note that there are no configuration parameters for
+setting this, unlike RTC and hardware performance counter setup.
 </para>
 </sect2>
 
