@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.17 2002/01/14 06:01:45 movement Exp $ */
+/* $Id: oprofile.h,v 1.18 2002/01/17 02:33:05 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -48,14 +48,22 @@ struct op_entry {
 
 /* per-cpu dynamic data */
 struct _oprof_data {
-	struct op_entry *entries; /* hash table */
-	struct op_sample *buffer; /* eviction buffer */
-	uint hash_size; /* nr. in hash table */
-	uint buf_size; /* nr. in buffer */
-	uint nextbuf; /* next in buffer (atomic) */
-	uint next; /* next sample in entry */
+	/* hash table */
+	struct op_entry *entries; 
+	/* eviction buffer */
+	struct op_sample *buffer; 
+	/* nr. in hash table */
+	uint hash_size; 
+	/* nr. in buffer */
+	uint buf_size; 
+	/* next in buffer (atomic) */
+	uint nextbuf; 
+	/* next sample in entry */
+	uint next; 
+	/* number of IRQs for this CPU */
 	uint nr_irq;
-	uint ctr_count[OP_MAX_COUNTERS]; /* reset counter values */
+	/* reset counter values */
+	uint ctr_count[OP_MAX_COUNTERS]; 
 } __cacheline_aligned;
 
 /* reflect /proc/sys/dev/oprofile/#counter files */
@@ -70,79 +78,58 @@ struct oprof_counter {
 
 /* reflect /proc/sys/dev/oprofile files */
 struct oprof_sysctl {
-	int buf_size; /* nr. in eviction buffser */
-	int hash_size; /* nr. in hash table */
-	int dump; /* sysctl dump */
-	int dump_stop; /* dump and stop */
-	int kernel_only; /* is profiling kernel only */
-	int note_size; /* nr. in note buffer */
-	int nr_interrupts; /* nr. interrupts occured */
-	int cpu_type; /* the cpu core type: CPU_PPRO, CPU_PII ... */
+	/* nr. in eviction buffser */
+	int buf_size; 
+	/* nr. in hash table */
+	int hash_size; 
+	/* sysctl dump */
+	int dump; 
+	/* dump and stop */
+	int dump_stop; 
+	/* is profiling kernel only */
+	int kernel_only; 
+	/* nr. in note buffer */
+	int note_size; 
+	/* nr. interrupts occured */
+	int nr_interrupts; 
+	/* the cpu core type: CPU_PPRO, CPU_PII ... */
+	int cpu_type; 
+	/* pid filter value */
 	pid_t pid_filter;
+	/* pgrp filter value */
 	pid_t pgrp_filter;
+	/* counter setup */
 	struct oprof_counter ctr[OP_MAX_COUNTERS];
 };
 
-/* interrupt abstraction */
+/**
+ * A interrupt handler must implement these routines.
+ * When an interrupt arrives, it must eventually call
+ * op_do_profile().
+ */
 struct op_int_operations {
-	// FIXME doc
+	/* initialise the handler on module load. */
 	int (*init)(void);
+	/* deinitialise on module unload */
 	void (*deinit)(void);
-	int (*add_sysctls)(ctl_table *);
-	void (*remove_sysctls)(ctl_table *);
+	/* add any handler-specific sysctls at the position given by @next */
+	int (*add_sysctls)(ctl_table *next);
+	/* remove handler-specific sysctls */
+	void (*remove_sysctls)(ctl_table *next);
+	/* check given profiling parameters are correct */
 	int (*check_params)(void);
+	/* setup the handler from profiling parameters */
 	int (*setup)(void);
+	/* start profiling on all CPUs */
 	void (*start)(void);
+	/* stop profiling on all CPUs */
 	void (*stop)(void);
+	/* start profiling on the given CPU */
 	void (*start_cpu)(uint);
+	/* stop profiling on the given CPU */
 	void (*stop_cpu)(uint);
 };
  
-/* MSRs */
-#ifndef MSR_P6_PERFCTR0
-#define MSR_P6_PERFCTR0 0xc1
-#endif
-#ifndef MSR_P6_PERFCTR1
-#define MSR_P6_PERFCTR1 0xc2
-#endif
-#ifndef MSR_P6_EVNTSEL0
-#define MSR_P6_EVNTSEL0 0x186
-#endif
-#ifndef MSR_P6_EVNTSEL1
-#define MSR_P6_EVNTSEL1 0x187
-#endif
-#ifndef MSR_IA32_APICBASE
-#define MSR_IA32_APICBASE 0x1B
-#endif
-#ifndef MSR_K7_PERFCTL0
-#define MSR_K7_PERFCTL0 0xc0010000
-#endif
-#ifndef MSR_K7_PERFCTL1
-#define MSR_K7_PERFCTL1 0xc0010001
-#endif
-#ifndef MSR_K7_PERFCTL2
-#define MSR_K7_PERFCTL2 0xc0010002
-#endif
-#ifndef MSR_K7_PERFCTL3
-#define MSR_K7_PERFCTL3 0xc0010003
-#endif
-#ifndef MSR_K7_PERFCTR0
-#define MSR_K7_PERFCTR0 0xc0010004
-#endif
-#ifndef MSR_K7_PERFCTR1
-#define MSR_K7_PERFCTR1 0xc0010005
-#endif
-#ifndef MSR_K7_PERFCTR2
-#define MSR_K7_PERFCTR2 0xc0010006
-#endif
-#ifndef MSR_K7_PERFCTR3
-#define MSR_K7_PERFCTR3 0xc0010007
-#endif
-
-#ifndef APIC_SPIV_APIC_ENABLED
-#define APIC_SPIV_APIC_ENABLED (1<<8)
-#endif
-
 #define streq(a, b) (!strcmp((a), (b)))
 #define streqn(a, b, len) (!strncmp((a), (b), (len)))
 

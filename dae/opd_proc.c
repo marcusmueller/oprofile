@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.94 2002/01/11 14:41:32 movement Exp $ */
+/* $Id: opd_proc.c,v 1.95 2002/01/17 02:33:04 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1091,6 +1091,7 @@ void opd_put_sample(const struct op_sample *sample)
  *
  * Add the mapping specified to the process @proc.
  */
+/* FIXME: what if we are remapping over an old mapping - we want to find this one first ! */ 
 static void opd_put_mapping(struct opd_proc *proc, struct opd_image * image, u32 start, u32 offset, u32 end)
 {
 	verbprintf("Placing mapping for process %d: 0x%.8x-0x%.8x, off 0x%.8x, \"%s\" at maps pos %d\n",

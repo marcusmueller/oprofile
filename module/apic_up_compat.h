@@ -1,8 +1,7 @@
 #ifndef APIC_UP_COMPAT_H
 #define APIC_UP_COMPAT_H
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
-
+#if VBEFORE(2,4,0)
 /* even on SMP, some defines are missing in 2.2 */
 #define APIC_LVR		0x30
 #define APIC_LVTPC		0x340
@@ -10,7 +9,6 @@
 #define GET_APIC_VERSION(x)	((x)&0xFF)
 #define GET_APIC_MAXLVT(x)	(((x)>>16)&0xFF)
 #define APIC_INTEGRATED(x)	((x)&0xF0)
-
 #endif
 
 #if !defined(CONFIG_X86_LOCAL_APIC)
@@ -50,6 +48,6 @@ static __inline unsigned long apic_read(unsigned long reg)
 	return *((volatile unsigned long *)(APIC_BASE+reg));
 }
 
-#endif
+#endif /* !defined(CONFIG_X86_LOCAL_APIC) */
 
 #endif /* APIC_UP_COMPAT_H */
