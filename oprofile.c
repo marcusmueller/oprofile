@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.77 2001/09/02 00:32:28 movement Exp $ */
+/* $Id: oprofile.c,v 1.78 2001/09/02 00:38:04 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -251,7 +251,7 @@ static void __init lvtpc_apic_setup(void *dummy)
 	apic_write(APIC_LVTPC, val);
 }
 
-static void __exit smp_apic_restore(void *dummy)
+static void __exit lvtpc_apic_restore(void *dummy)
 {
 	apic_write(APIC_LVTPC, old_lvtpc[smp_processor_id()]);
 }
@@ -494,18 +494,6 @@ static void pmc_setup(void *dummy)
 
 		wrmsr(eventsel_msr[1], low, high);
 	}
-#endif
-
-	/* disable ctr1 if the UP oopser might be on, but we can't do anything
-	 * interesting with the NMIs
-	 */
-	/* PHE FIXME ATHLON bugged if running 3/4 counters ?, I really don't
-	 * understand when and why this is executed */
-	/* this is pretty bogus really. especially as we don't re-enable it.
-	 * Instead, save state set up, and restore with pmc_unsetup or similar */
-#if !defined(CONFIG_X86_UP_APIC) || !defined(OP_EXPORTED_DO_NMI)
-	/* PHE FIXME: on my config this start counter 1 with the new code */
-//	wrmsr(eventsel_msr[1], low, high);
 #endif
 }
 
@@ -1235,6 +1223,9 @@ int __init oprof_init(void)
 
 	printk(KERN_INFO "%s\n", op_version);
 
+	/* FIXME: we should save out the old values for the pmcs, then put them back
+	 * upon exit. This way the NMI oopser can work after unloading oprofile */ 
+
 	smp_hardware = find_intel_smp();
 
 	if ((err = apic_setup()))
@@ -1262,6 +1253,7 @@ int __init oprof_init(void)
 
 	/* do this now so we don't have to track save/restores later */
 	op_save_syscalls();
+ 
 	printk("oprofile: oprofile loaded, major %u\n", op_major);
 	return 0;
 
@@ -1275,8 +1267,8 @@ void __exit oprof_exit(void)
 {
 	oprof_free_hashmap();
 	unregister_chrdev(op_major, "oprof");
-	smp_call_function(smp_apic_restore, NULL, 0, 1);
-	smp_apic_restore(NULL);
+	smp_call_function(lvtpc_apic_restore, NULL, 0, 1);
+	lvtpc_apic_restore(NULL);
 	cleanup_sysctl();
 	// currently no need to reset APIC state
 }
