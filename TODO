@@ -15,7 +15,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o make opgprof use inverted_profile API, then:
    o hide separate class/inverted stuff inside libpp
    o return if multiple apps in the single API call used by all frontends
- o opcontrol --separate= must overwrite any previous settings
  o thread separate GUI + docs
  o we need to handle thread separate without needing a useless -m tid
    (several processes w/o using threads)

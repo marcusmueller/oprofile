@@ -353,12 +353,14 @@ error_if_empty() {
 validate_separate_args() {
 	error_if_empty $1 $2	# we need at least one argument
 	local i=1
+	SEPARATE_LIB=0
+	SEPARATE_KERNEL=0
+	SEPARATE_THREAD=0
 	while (($i < $#)); do
 		shift
 		case "$1" in
 			library)
 				SEPARATE_LIB=1
-				SEPARATE_KERNEL=0
 				;;
 			kernel)
 				# first implied by second

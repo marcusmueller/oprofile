@@ -1,3 +1,9 @@
+2003-09-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/opcontrol: overwrite all current settings with --separate,
+	  this change behavior of --separate=kernel,library now we really setup
+	  both in this case.
+
 2003-09-18  John Levon  <levon@movementarian.org>
 
 	* libpp/locate_images.cpp: rewrite a little
