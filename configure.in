@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.94 2002/06/28 19:31:26 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.95 2002/06/28 23:53:59 phil_e Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -237,7 +237,7 @@ AC_SUBST(BFD_CXXFLAGS)
 AC_PATH_XTRA 
 LIBS="$X_PRE_LIBS $LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"
 QT2_DO_IT_ALL
-if test "$have_qt2" == "no"; then
+if test "$have_qt" == "no"; then
 	QT3_DO_IT_ALL
 fi
  
@@ -264,6 +264,6 @@ AC_OUTPUT(make.common \
 	module/arch/Makefile \
 	version.h)
 
-if test "$have_qt2" != "yes"; then
-	echo "Warning: Qt2 not found; no GUI will be built"
+if test "$have_qt" != "yes"; then
+	echo "Warning: Qt2 nor Qt3 not found; no GUI will be built"
 fi

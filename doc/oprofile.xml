@@ -377,7 +377,7 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--buffer-size</option> nr</term>
+		<term><option>--buffer-size=</option>nr</term>
 		<listitem><para>
 		This is the number of entries in the kernel-side profiling buffer. Generally the default value
 		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
@@ -385,7 +385,7 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--hash-table-size</option> nr</term>
+		<term><option>--hash-table-size=</option>nr</term>
 		<listitem><para>
 		This is the number of entries in the kernel-side profiling hash table. Generally the default value
 		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
@@ -393,7 +393,7 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--note-table-size</option> nr</term>
+		<term><option>--note-table-size=</option>nr</term>
 		<listitem><para>
 		This is the number of entries in the kernel note table. Generally the default value
 		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
@@ -401,7 +401,7 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--kernel-only</option> nr</term>
+		<term><option>--kernel-only=</option>nr</term>
 		<listitem><para>
 		Default is to profile both user-space and the kernel. You can profile only the kernel with this option;
 		this does not prevent the occasional user-space sample due to the hardware constraints, but reduces the
@@ -409,7 +409,7 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--vmlinux</option> <filename>filename</filename></term>
+		<term><option>--vmlinux=</option><filename>filename</filename></term>
 		<listitem><para>
 		Specify the <filename>vmlinux</filename> file from the current kernel's compile. This must match
 		the running kernel if you expect meaningful profiles of the kernel. Note that this is a separate file
@@ -418,7 +418,7 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--kernel-range</option>=start,end</term>
+		<term><option>--kernel-range=</option>start,end</term>
 		<listitem><para>
 		kernel range vma address in hexadecimal
 		</para></listitem>
@@ -434,14 +434,14 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--pid-filter</option> pid</term>
+		<term><option>--pid-filter=</option>pid</term>
 		<listitem><para>
 		Only samples of this process id will be collected (including any kernel-side samples when this process is in
 		the kernel). Note that threaded programs under Linux have a different process id for each thread.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--pgrp-filter</option> pgpr</term>
+		<term><option>--pgrp-filter=</option>pgpr</term>
 		<listitem><para>
 		Only samples of this process group id will be collected (including any kernel-side samples when this process is in
 		the kernel).

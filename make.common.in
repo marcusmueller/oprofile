@@ -20,7 +20,7 @@ CFLAGS += $(INCLUDES)
 CFLAGS += -W -Wall -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline 
 CFLAGS += -pipe @CFLAGS@
  
-CXXINCLUDES=@CXXINCLUDES@ -I$(TOPDIR)/libopt++ -I$(TOPDIR)/libutil++ -I$(TOPDIR)/libop++ @QT2_INCLUDES@
+CXXINCLUDES=@CXXINCLUDES@ -I$(TOPDIR)/libopt++ -I$(TOPDIR)/libutil++ -I$(TOPDIR)/libop++
 CXXFLAGS += $(INCLUDES) $(CXXINCLUDES)
 CXXFLAGS += -W -Wall -Wunused -Wmissing-prototypes
 CXXFLAGS += -pipe @CXXFLAGS@

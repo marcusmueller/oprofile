@@ -1,4 +1,4 @@
-ifneq "@have_qt2@" "yes"
+ifneq "@have_qt@" "yes"
 all:
 install:
 uninstall:
@@ -16,9 +16,9 @@ OBJECTS=ui/oprof_start.base.o ui/oprof_start.base.moc.o \
 	oprof_start.moc.o
 TARGET=oprof_start
 
-CXXFLAGS += -DBINDIR=\"$(BINDIR)\" -DKVERSION=\"@KVERS@\"
-LDFLAGS += @QT2_LDFLAGS@
-LIBS=-lutil++ -lutil -lop -lpopt -liberty @QT2_LIBS@
+CXXFLAGS += -DBINDIR=\"$(BINDIR)\" -DKVERSION=\"@KVERS@\" @QT_INCLUDES@
+LDFLAGS += @QT_LDFLAGS@
+LIBS=-lutil++ -lutil -lop -lpopt -liberty @QT_LIBS@
 LIB_DEPS=../libutil++/libutil++.a ../libutil/libutil.a ../libop/libop.a
 
 all: $(TARGET)

@@ -170,8 +170,8 @@ LIBS="$ac_libs_safe"
 
 ## ------------------------------------------------------------------------
 ## Try to find the Qt2 headers and libraries.
-## $(QT2_LDFLAGS) will be -Lqt2liblocation (if needed)
-## and $(QT2_INCLUDES) will be -Iqt2hdrlocation (if needed)
+## $(QT_LDFLAGS) will be -Lqt2liblocation (if needed)
+## and $(QT_INCLUDES) will be -Iqt2hdrlocation (if needed)
 ## ------------------------------------------------------------------------
 ##
 AC_DEFUN(QT2_AC_PATH,
@@ -261,7 +261,7 @@ if test "$ac_qt2_name" = "-lqt"; then
 fi
 
 if test "$ac_qt2_includes" = NO || test "$ac_qt2_libraries" = NO; then
-  ac_cv_have_qt2="have_qt2=no"
+  ac_cv_have_qt2="have_qt=no"
   ac_qt2_notfound=""
   if test "$ac_qt2_includes" = NO; then
     if test "$ac_qt2_libraries" = NO; then
@@ -273,7 +273,7 @@ if test "$ac_qt2_includes" = NO || test "$ac_qt2_libraries" = NO; then
     ac_qt2_notfound="(libraries)";
   fi
 else
-  have_qt2="yes"
+  have_qt="yes"
 fi
 ])
 else
@@ -282,13 +282,13 @@ else
   qt2_libdir="$ac_qt2_libraries" 
   ac_qt2_name="-lqt"
   QT2_CHECK_LIB_NAME
-  have_qt2="yes"
+  have_qt="yes"
 fi
 
 eval "$ac_cv_have_qt2"
 
-if test "$have_qt2" != yes; then
-  AC_MSG_RESULT([$have_qt2]);
+if test "$have_qt" != yes; then
+  AC_MSG_RESULT([$have_qt]);
 else
   AC_MSG_RESULT([libraries $ac_qt2_libraries, headers $ac_qt2_includes])
  
@@ -328,35 +328,35 @@ else
  
   CXXFLAGS="$SAVE_CXXFLAGS"
 
-  have_qt2=$ac_qt2_ok
+  have_qt=$ac_qt2_ok
 fi
 
-ac_cv_have_qt2="have_qt2=$have_qt2 ac_qt2_name=$ac_qt2_name \
+ac_cv_have_qt2="have_qt=$have_qt ac_qt2_name=$ac_qt2_name \
   ac_qt2_includes=$ac_qt2_includes ac_qt2_libraries=$ac_qt2_libraries"
  
 AC_SUBST(qt2_libraries)
 AC_SUBST(qt2_includes)
 
 if test "$qt2_includes" = "$x_includes" || test -z "$qt2_includes"; then
- QT2_INCLUDES="";
+ QT_INCLUDES="";
 else
- QT2_INCLUDES="-I$qt2_includes"
- all_includes="$QT2_INCLUDES $all_includes"
+ QT_INCLUDES="-I$qt2_includes"
+ all_includes="$QT_INCLUDES $all_includes"
 fi
 
 if test "$qt2_libraries" = "$x_libraries" || test -z "$qt2_libraries"; then
- QT2_LDFLAGS=""
+ QT_LDFLAGS=""
 else
- QT2_LDFLAGS="-L$qt2_libraries"
- all_libraries="$QT2_LDFLAGS $all_libraries"
+ QT_LDFLAGS="-L$qt2_libraries"
+ all_libraries="$QT_LDFLAGS $all_libraries"
 fi
 
-QT2_LIBS="$ac_qt2_name"
+QT_LIBS="$ac_qt2_name"
  
-AC_SUBST(have_qt2)
-AC_SUBST(QT2_INCLUDES)
-AC_SUBST(QT2_LDFLAGS)
-AC_SUBST(QT2_LIBS)
+AC_SUBST(have_qt)
+AC_SUBST(QT_INCLUDES)
+AC_SUBST(QT_LDFLAGS)
+AC_SUBST(QT_LIBS)
 QT2_AC_PATH_MOC
 QT2_AC_PATH_UIC
 ])
@@ -383,15 +383,16 @@ AC_FIND_FILE(libqt-mt.so.3, $QTDIR/lib, qt3_libdir)
 if test "$qt3_incdir" != "NO" -a "$qt3_bindir" != "NO" -a "$qt3_libdir" != "NO"; then
 	AC_MSG_RESULT(yes)
 	dnl FIXME horrible hack to avoid modifying gui/Makefile.in 
-	have_qt2="yes"
-	QT2_LDFLAGS=-L"$QTDIR"/lib
-	QT2_LIBS=-lqt-mt
+	have_qt="yes"
+	QT_LDFLAGS=-L"$QTDIR"/lib
+	QT_LIBS=-lqt-mt
+	QT_INCLUDES=-I"$qt3_incdir"
 	MOC="$QTDIR"/bin/moc
 	UIC="$QTDIR"/bin/uic
-	AC_SUBST(have_qt2)
-	AC_SUBST(QT2_INCLUDES)
-	AC_SUBST(QT2_LDFLAGS)
-	AC_SUBST(QT2_LIBS)
+	AC_SUBST(have_qt)
+	AC_SUBST(QT_INCLUDES)
+	AC_SUBST(QT_LDFLAGS)
+	AC_SUBST(QT_LIBS)
 	AC_SUBST(UIC)
 	AC_SUBST(MOC)
 else

@@ -2,7 +2,7 @@ include ../../make.common
 
 MOC=@MOC@
 UIC=@UIC@
-CXXFLAGS += @QT2_INCLUDES@
+CXXFLAGS += @QT_INCLUDES@
 
 HEADERS=oprof_start.base.h
 SOURCES=oprof_start.base.cpp oprof_start.base.moc.cpp

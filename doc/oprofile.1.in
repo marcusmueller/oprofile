@@ -66,23 +66,23 @@ show version
 Show available events for the hardware counters
 .br
 .TP
-.BI "--vmlinux " filename
+.BI "--vmlinux=" filename
 specify vmlinux kernel image
 .br
 .TP
-.BI "--kernel-range " start,end
+.BI "--kernel-range=" start,end
 kernel range vma address in hexadecimal
 .br
 .TP
-.BI "--ctrX-event " event_name
+.BI "--ctrX-event=" event_name
 symbolic event name for counter X
 .br
 .TP
-.BI "--ctrX-count " count_nr
+.BI "--ctrX-count=" count_nr
 number of events between samples for counter X
 .br
 .TP
-.BI "--ctrX-unit-mask " unit_mask
+.BI "--ctrX-unit-mask=" unit_mask
 unit mask for counter X
 .br
 .TP
@@ -94,35 +94,35 @@ whether to count kernel events for counter X
 whether to count user events for counter X
 .br
 .TP
-.BI "--rtc-value"
+.BI "--rtc-value=" value
 RTC interrupts/second value. This is rounded up to a power of two when used.
 .br
 .TP
-.BI "--buffer-size " nr
+.BI "--buffer-size=" nr
 number of samples in kernel buffer
 .br
 .TP
-.BI "--hash-table-size " nr
+.BI "--hash-table-size=" nr
 number of entries in kernel hash table
 .br
 .TP
-.BI "--note-table-size " nr
+.BI "--note-table-size=" nr
 number of entries in kernel note table
 .br
 .TP
-.BI "--kernel-only "
+.BI "--kernel-only"
 profile only the kernel
 .br
 .TP
-.BI "--pid-filter " pid
+.BI "--pid-filter=" pid
 Only profile process pid
 .br
 .TP
-.BI "--pgrp-filter " pgrp
+.BI "--pgrp-filter=" pgrp
 Only profile process group pgrp
 .br
 .TP
-.BI "--separate-samples "
+.BI "--separate-samples"
 separate samples for each distinct application. With this option, samples
 in shared libraries are stored in a separate sample file specific to the
 primate binary image (e.g. /bin/cp) that the code is mapped into. This feature
