@@ -7,7 +7,9 @@ CFLAGS="-Werror $CFLAGS"
 AC_TRY_LINK(,[
 int i;
 if (__builtin_expect(i, 0)) { }
-],AC_MSG_RESULT([yes]); EXTRA_CFLAGS="$EXTRA_CFLAGS -DEXPECT_OK", AC_MSG_RESULT([no]);)
+],
+AC_MSG_RESULT([yes]); EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DEXPECT_OK",
+AC_MSG_RESULT([no]);)
 CFLAGS=$SAVE_CFLAGS 
 ]
 ) 

@@ -1,3 +1,13 @@
+2003-08-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* configure.in:
+	* m4/builtinexpect.m4:
+	* m4/configmodule.m4:
+	* module/Makefile.in:
+	* module/ia64/Makefile.in:
+	* module/x86/makefile.in: always use EXTRA_CFLAGS_MODULE not
+	EXTRA_CFLAGS for module build flags
+
 2003-08-23  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libregex/op_regex.h:

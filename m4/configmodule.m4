@@ -30,14 +30,13 @@ else
 	AC_MSG_RESULT([no])
 fi
 
-AC_SUBST(EXTRA_CFLAGS_MODULE)
-
 AC_MSG_CHECKING([for rtc_lock])
 gcc -I$KINC -E $KINC/linux/mc146818rtc.h | grep rtc_lock >/dev/null
 if test "$?" -eq 0; then
-	AC_MSG_RESULT([yes]); EXTRA_CFLAGS="$EXTRA_CFLAGS -DRTC_LOCK";
+	EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DRTC_LOCK"
+	AC_MSG_RESULT([yes])
 else
-	AC_MSG_RESULT([no]);
+	AC_MSG_RESULT([no])
 fi
 	 
 arch="unknown"
