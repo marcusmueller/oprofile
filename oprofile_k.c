@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.32 2000/11/14 00:46:28 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.33 2000/11/17 00:39:50 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -364,6 +364,7 @@ inline static u32 *map_out32(u32 val)
 	map_buf[nextmapbuf++] = val;
 	if (!(++count % OP_MAP_BUF_WATERMARK)) {
 		oprof_ready[0] = 2;
+		// FIXME: ok under spinlock ? 
 		wake_up(&oprof_wait);
 	}
 	if (nextmapbuf==OP_MAX_MAP_BUF)
@@ -425,6 +426,7 @@ global_root:
 }
 
 /* buf must be PAGE_SIZE bytes large */
+/* called with map_lock held */
 static int oprof_output_map(ulong addr, ulong len,
 	ulong offset, struct file *file, char *buf)
 {

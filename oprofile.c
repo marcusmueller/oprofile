@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.40 2000/11/14 00:46:28 moz Exp $ */
+/* $Id: oprofile.c,v 1.41 2000/11/17 00:39:49 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -538,6 +538,7 @@ void oprof_put_note(struct op_sample *samp)
 	memcpy(&data->buffer[data->nextbuf],samp,sizeof(struct op_sample));
 	if (++data->nextbuf==(data->buf_size-OP_PRE_WATERMARK)) {
 		oprof_ready[0] = 1;
+		// FIXME: this ok under a spinlock ? 
 		wake_up(&oprof_wait);
 	} else if (data->nextbuf==data->buf_size)
 		data->nextbuf=0;
@@ -664,6 +665,7 @@ static int oprof_mmap(struct file *file, struct vm_area_struct *vma)
 	return -EINVAL;
 }
 
+/* called under spinlock, cannot sleep */
 static void oprof_free_mem(uint num)
 {
 	uint i;
