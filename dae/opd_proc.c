@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.63 2001/08/17 16:47:10 movement Exp $ */
+/* $Id: opd_proc.c,v 1.64 2001/08/18 15:58:31 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1040,6 +1040,21 @@ static void opd_handle_kernel_sample(u32 eip, u16 count)
 }
 
 /**
+ * verb_show_sample - print the sample out to the log
+ * @offset: the offset value
+ * @map: map to print
+ */
+inline static void verb_show_sample(u32 offset, struct opd_map *map)
+{
+	if (!verbose) 
+		return;
+
+	printf("DO_PUT_SAMPLE (LAST_MAP): calc offset 0x%.8x, map start 0x%.8x,"
+		" end 0x%.8x, offset 0x%.8x, name $%s$\n",
+		offset, map->start, map->end, map->offset, opd_images[map->image].name);
+}
+
+/**
  * opd_map_offset - return offset of sample against map
  * @map: map to use
  * @eip: EIP value to use
@@ -1090,8 +1105,7 @@ void opd_put_sample(const struct op_sample *sample)
 	if (opd_is_in_map(&proc->maps[proc->last_map], sample->eip)) {
 		i = proc->last_map;
 		if (proc->maps[i].image != -1) {
-		verbprintf("DO_PUT_SAMPLE (LAST_MAP): calc offset 0x%.8x, map start 0x%.8x, end 0x%.8x, offset 0x%.8x, name $%s$\n",
-			opd_map_offset(&proc->maps[i], sample->eip), proc->maps[i].start, proc->maps[i].end, proc->maps[i].offset, opd_images[proc->maps[i].image].name);
+			verb_show_sample(opd_map_offset(&proc->maps[i], sample->eip), &proc->maps[i]); 
 			opd_put_image_sample(&opd_images[proc->maps[i].image], opd_map_offset(&proc->maps[i], sample->eip), sample->count);
 		}
 		opd_stats[OPD_PROCESS]++;
@@ -1103,8 +1117,7 @@ void opd_put_sample(const struct op_sample *sample)
 		if (opd_is_in_map(&proc->maps[i], sample->eip)) {
 			u32 offset = opd_map_offset(&proc->maps[i], sample->eip);
 			if (proc->maps[i].image != -1) {
-			verbprintf("DO_PUT_SAMPLE: calc offset 0x%.8x, map start 0x%.8x, end 0x%.8x, offset 0x%.8x, name $%s$\n",
-				offset, proc->maps[i].start, proc->maps[i].end, proc->maps[i].offset, opd_images[proc->maps[i].image].name);
+				verb_show_sample(offset, &proc->maps[i]); 
 				opd_put_image_sample(&opd_images[proc->maps[i].image], offset, sample->count);
 			}
 			proc->last_map = i;
