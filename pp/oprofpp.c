@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.20 2000/12/12 02:55:37 moz Exp $ */
+/* $Id: oprofpp.c,v 1.21 2000/12/15 02:52:13 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -15,11 +15,22 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/*
+ * You can start this program in various ways, e.g.
+ *
+ * oprofpp <options> /var/opd/samples/}bin}mv
+ * oprofpp <options> /bin/mv
+ * oprofpp <options> -f /var/opd/samples/}bin}mv -i /bin/mv
+ * oprofpp <options> -i /path/to/the/same/bin/mv /var/opd/samples/}bin}mv
+ *
+ */
+
 #include "oprofpp.h"
  
 static int showvers;
  
 static char const *samplefile;
+static char *basedir="/var/opd";
 static char *imagefile;
 static char *gproffile;
 static char *symbol;
@@ -40,16 +51,43 @@ static u32 sect_offset;
 
 static struct poptOption options[] = {
 	{ "samples-file", 'f', POPT_ARG_STRING, &samplefile, 0, "image sample file", "file", },
-	{ "image-file", 'i', POPT_ARG_STRING, &imagefile, 0, "image file other than default", "file", },
+	{ "image-file", 'i', POPT_ARG_STRING, &imagefile, 0, "image file", "file", },
 	{ "list-symbols", 'l', POPT_ARG_NONE, &list_symbols, 0, "list samples by symbol", NULL, },
 	{ "dump-gprof-file", 'g', POPT_ARG_STRING, &gproffile, 0, "dump gprof format file", "file", },
 	{ "list-symbol", 's', POPT_ARG_STRING, &symbol, 0, "give detailed samples for a symbol", "symbol", },
 	{ "gcc-demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
 	{ "counter", 'c', POPT_ARG_INT, &ctr, 0, "which counter to use", "0|1", }, 
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
+	{ "base-dir", 'b', POPT_ARG_STRING, &basedir, 0, "base directory of profile daemon", NULL, }, 
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
+
+char *remangle(char *image)
+{
+	char *file;
+	char *c; 
+
+	if (!basedir || !*basedir)
+		basedir = "/var/opd";
+	else if (basedir[strlen(basedir)-1] == '/')
+		basedir[strlen(basedir)-1] = '\0';
+
+	file = opd_malloc(strlen(basedir) + strlen("/samples/") + strlen(image) + 1);
+	
+	strcpy(file, basedir);
+	strcat(file, "/samples/");
+	c = &file[strlen(file)];
+	strcat(file, image);
+
+	while (*c) {
+		if (*c == '/')
+			*c = OPD_MANGLE_CHAR;
+		c++;
+	}
+	
+	return file;
+}
 
 /**
  * get_options - process command line
@@ -64,6 +102,7 @@ static void get_options(int argc, char const *argv[])
 {
 	poptContext optcon;
 	char c; 
+	char *file;
 	
 	optcon = poptGetContext(NULL, argc, argv, options, 0);
 
@@ -88,15 +127,26 @@ static void get_options(int argc, char const *argv[])
 		exit(1);
 	}
 
-	if (!samplefile) {
-		samplefile = poptGetArg(optcon);
+	/* non-option file, either a sample or binary image file */
+	file = poptGetArg(optcon);
 
-		if (!samplefile) {
+	if (file) {
+		if (strchr(file, OPD_MANGLE_CHAR))
+			samplefile = file;
+		else
+			imagefile = file;
+	}
+
+	if (!samplefile) { 
+		if (!imagefile) { 
 			fprintf(stderr, "oprofpp: no samples file specified.\n");
 			poptPrintHelp(optcon, stderr, 0);
 			exit(1);
+		} else {
+			/* we'll "leak" this memory */
+			samplefile = remangle(imagefile);
 		}
-	}
+	} 
 }
 
 /**
@@ -142,6 +192,9 @@ void printf_symbol(const char *name)
  *
  * @mangled may be a relative or absolute pathname.
  *
+ * @mangled may be %NULL if imagefile is the filename
+ * of the image to open.
+ *
  * Failure to open the image is fatal. This function
  * returns a pointer to the bfd descriptor for the
  * image.
@@ -151,17 +204,24 @@ void printf_symbol(const char *name)
  */
 bfd *open_image_file(char const *mangled)
 {
-	char *mang = strdup(mangled); 
-	char *c;
 	char *file;
 	char **matching;
-	bfd *ibfd; 
+	bfd *ibfd;
 	 
-	if (!mang)
-		return NULL;
+	file = imagefile;
 
-	c = &mang[strlen(mang)];
-	if (!imagefile) { 
+	if (!mangled) {
+		if (!file)
+			return NULL;
+	} else if (!imagefile) {
+		char *mang;
+		char *c;
+
+		mang = strdup(mangled); 
+		if (!mang)
+			return NULL;
+		 
+		c = &mang[strlen(mang)];
 		/* strip leading dirs */
 		while (c!=mang && *c!='/')
 			c--;
@@ -181,8 +241,9 @@ bfd *open_image_file(char const *mangled)
 			if (*c==OPD_MANGLE_CHAR)
 				*c='/';
 		} while (*c++);
-	} else
-		file = imagefile;
+
+		free(mang);
+	}
 
 	ibfd = bfd_openr(file, NULL);
  
@@ -197,6 +258,9 @@ bfd *open_image_file(char const *mangled)
 		exit(1);
 	}
  
+ 	if (!imagefile)
+		free(file);
+
 	if (footer.is_kernel) { 
 		asection *sect; 
  
@@ -205,8 +269,6 @@ bfd *open_image_file(char const *mangled)
 		printf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n",sect_offset,sect->filepos); 
 	}
  
- 	free(mang);
-
 	return ibfd; 
 }
 
@@ -565,17 +627,17 @@ int main(int argc, char const *argv[])
 
 	fp = fopen(samplefile,"r");
 	if (!fp) {
-		fprintf(stderr, "oprofpp: fopen of %s failed. %s", samplefile, strerror(errno));
+		fprintf(stderr, "oprofpp: fopen of %s failed. %s\n", samplefile, strerror(errno));
 		exit(1);
 	}
  
 	if (fseek(fp, -sizeof(struct opd_footer), SEEK_END)==-1) {
-		fprintf(stderr, "oprofpp: fseek of %s failed. %s", samplefile, strerror(errno));
+		fprintf(stderr, "oprofpp: fseek of %s failed. %s\n", samplefile, strerror(errno));
 		exit(1);
 	}
 	 
 	if (fread(&footer, sizeof(struct opd_footer), 1, fp)!=1) {
-		fprintf(stderr, "oprofpp: fread of %s failed. %s", samplefile, strerror(errno));
+		fprintf(stderr, "oprofpp: fread of %s failed. %s\n", samplefile, strerror(errno));
 		exit(1);
 	}
 	fclose(fp);
@@ -605,7 +667,7 @@ int main(int argc, char const *argv[])
 	fd = open(samplefile, O_RDONLY);
 
 	if (fd==-1) {
-		fprintf(stderr, "oprofpp: Opening %s failed. %s",samplefile, strerror(errno));
+		fprintf(stderr, "oprofpp: Opening %s failed. %s\n",samplefile, strerror(errno));
 		exit(1);
 	}
 
@@ -613,7 +675,7 @@ int main(int argc, char const *argv[])
 	samples = (struct opd_fentry *)mmap(0, size, PROT_READ, MAP_PRIVATE, fd, 0);
 
 	if (samples==(void *)-1) {
-		fprintf(stderr, "oprofpp: mmap of %s failed. %s", samplefile, strerror(errno));
+		fprintf(stderr, "oprofpp: mmap of %s failed. %s\n", samplefile, strerror(errno));
 		exit(1);
 	}
 

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.45 2000/12/12 02:55:32 moz Exp $ */
+/* $Id: oprofile.c,v 1.46 2000/12/15 02:52:11 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -684,14 +684,14 @@ static int oprof_init_data(void)
 
 		data->entries = vmalloc(hash_size);
 		if (!data->entries) {
-			printk("oprofile: failed to allocate hash table of %lu bytes\n",hash_size);
+			printk(KERN_ERR "oprofile: failed to allocate hash table of %lu bytes\n",hash_size);
 			oprof_free_mem(i);
 			return -EFAULT;
 		}
 
 		data->buffer = vmalloc(buf_size);
 		if (!data->buffer) {
-			printk("oprofile: failed to allocate eviction buffer of %lu bytes\n",buf_size);
+			printk(KERN_ERR "oprofile: failed to allocate eviction buffer of %lu bytes\n",buf_size);
 			vfree(data->entries);
 			oprof_free_mem(i);
 			return -EFAULT;
@@ -723,7 +723,7 @@ static int parms_ok(void)
 
 		/* FIXME: maybe we should allow no set on a CPU ? */
 		if (!data->ctrs) {
-			printk("oprofile: neither counter enabled for CPU%d\n",cpu);
+			printk(KERN_ERR "oprofile: neither counter enabled for CPU%d\n",cpu);
 			return 0;
 		}
 
@@ -733,7 +733,7 @@ static int parms_ok(void)
 
 		if (data->ctrs&OP_CTR_0) {
 			if (!op_ctr0_user[cpu] && !op_ctr0_kernel[cpu]) {
-				printk("oprofile: neither kernel nor user set for enabled counter 0 on CPU %d\n", cpu);
+				printk(KERN_ERR "oprofile: neither kernel nor user set for enabled counter 0 on CPU %d\n", cpu);
 				return 0;
 			}
 			op_check_range(op_ctr0_count[cpu],500,OP_MAX_PERF_COUNT,"ctr0 count value %d not in range\n");
@@ -741,7 +741,7 @@ static int parms_ok(void)
 		}
 		if (data->ctrs&OP_CTR_1) {
 			if (!op_ctr1_user[cpu] && !op_ctr1_kernel[cpu]) {
-				printk("oprofile: neither kernel nor user set for enabled counter 1 on CPU %d\n", cpu);
+				printk(KERN_ERR "oprofile: neither kernel nor user set for enabled counter 1 on CPU %d\n", cpu);
 				return 0;
 			}
 			op_check_range(op_ctr1_count[cpu],500,OP_MAX_PERF_COUNT,"ctr1 count value %d not in range\n");
@@ -751,16 +751,16 @@ static int parms_ok(void)
 		/* hw_ok() has set cpu_type */
 		ret = op_check_events(op_ctr0_val[cpu], op_ctr1_val[cpu], op_ctr0_um[cpu], op_ctr1_um[cpu], cpu_type);
 
-		if (ret&OP_CTR0_NOT_FOUND) printk("oprofile: ctr0: no such event\n");
-		if (ret&OP_CTR1_NOT_FOUND) printk("oprofile: ctr1: no such event\n");
-		if (ret&OP_CTR0_NO_UM) printk("oprofile: ctr0: invalid unit mask\n");
-		if (ret&OP_CTR1_NO_UM) printk("oprofile: ctr1: invalid unit mask\n");
-		if (ret&OP_CTR0_NOT_ALLOWED) printk("oprofile: ctr0 can't count this event\n");
-		if (ret&OP_CTR1_NOT_ALLOWED) printk("oprofile: ctr1 can't count this event\n");
-		if (ret&OP_CTR0_PII_EVENT) printk("oprofile: ctr0: event only available on PII\n");
-		if (ret&OP_CTR1_PII_EVENT) printk("oprofile: ctr1: event only available on PII\n");
-		if (ret&OP_CTR0_PIII_EVENT) printk("oprofile: ctr0: event only available on PIII\n");
-		if (ret&OP_CTR1_PIII_EVENT) printk("oprofile: ctr1: event only available on PIII\n");
+		if (ret&OP_CTR0_NOT_FOUND) printk(KERN_ERR "oprofile: ctr0: no such event\n");
+		if (ret&OP_CTR1_NOT_FOUND) printk(KERN_ERR "oprofile: ctr1: no such event\n");
+		if (ret&OP_CTR0_NO_UM) printk(KERN_ERR "oprofile: ctr0: invalid unit mask\n");
+		if (ret&OP_CTR1_NO_UM) printk(KERN_ERR "oprofile: ctr1: invalid unit mask\n");
+		if (ret&OP_CTR0_NOT_ALLOWED) printk(KERN_ERR "oprofile: ctr0 can't count this event\n");
+		if (ret&OP_CTR1_NOT_ALLOWED) printk(KERN_ERR "oprofile: ctr1 can't count this event\n");
+		if (ret&OP_CTR0_PII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PII\n");
+		if (ret&OP_CTR1_PII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PII\n");
+		if (ret&OP_CTR0_PIII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PIII\n");
+		if (ret&OP_CTR1_PIII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PIII\n");
 
 		if (ret)
 			return 0;
@@ -873,9 +873,12 @@ static int can_unload(void)
 
 static int __init hw_ok(void)
 {
+	/* we want to include all P6 processors (i.e. > Pentium Classic,
+	 * < Pentium IV 
+	 */
 	if (current_cpu_data.x86_vendor != X86_VENDOR_INTEL ||
-	    current_cpu_data.x86 < 6) {
-		printk("oprofile: not an Intel P6 processor. Sorry.\n");
+	    current_cpu_data.x86 != 6) {
+		printk(KERN_ERR "oprofile: not an Intel P6 processor. Sorry.\n");
 		return 0;
 	}
 

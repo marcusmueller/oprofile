@@ -1,3 +1,13 @@
+2000-12-13  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in: bump minor version
+
+	* oprofile.c: added KERN_<whatever> where needed,
+		exclude the Pentium IV	
+
+	* pp/oprofpp.c: allow "oprofpp -l /bin/mv" and friends,
+		some minor fixes
+
 2000-12-12  John Levon  <moz@compsoc.man.ac.uk>
 
 	* Makefile.in:
