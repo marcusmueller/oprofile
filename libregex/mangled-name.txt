@@ -97,8 +97,17 @@ _Rb_tree<pair<string const, image_name>>::iterator
 _Rb_tree<int, int, _Identity<int>, less<int>, allocator<int> >
 _Rb_tree<int, int, int>
 
+_Rb_tree<string, pair<string const, int const>, _Select1st<pair<string const, int const>>, less<string>, allocator<int const>>
+_Rb_tree<string, pair<string const, int const>, string const>
+
 _Select1st<pair<int const, long> >
 int const
+
+_Select1st<pair<int const, long const> >
+int const
+
+_Select1st<pair<string const, split_sample_filename const>>
+string const
 
 _Identity<int>
 int
@@ -109,10 +118,10 @@ int
 
 # 2.95 map/multimap
 _Rb_tree<int, pair<int const, long>, _Select1st<pair<int const, long> >, less<int>, allocator<long> >
-_Rb_tree<int, pair<int const, long>,  int const>
+_Rb_tree<int, pair<int const, long>, int const>
 # 3.2 map/multimap
 _Rb_tree<int, pair<int const, long>, _Select1st<pair<int const, long> >, less<int>, allocator<pair<int const, long> > >
-_Rb_tree<int, pair<int const, long>,  int const>
+_Rb_tree<int, pair<int const, long>, int const>
 
 _List_base<string, allocator<string>>
 _List_base<string>
