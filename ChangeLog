@@ -1,3 +1,7 @@
+2002-09-18  John Levon  <levon@movementarian.org>
+
+	* utils/op_start: give an example for unit mask.
+ 
 2002-09-18  Will Cohen  <wcohen@redhat.com>
 
 	* libop/op_mangle.c: (op_mangle_filename): Correct logic for
