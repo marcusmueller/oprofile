@@ -1,5 +1,9 @@
 2003-09-15  John Levon  <levon@movementarian.org>
 
+	* doc/opreport.1.in: document --show-address
+
+2003-09-15  John Levon  <levon@movementarian.org>
+
 	* libpp/arrange_profiles.cpp:
 	* libpp/arrange_profiles.h:
 	* pp/populate.cpp: more commentary

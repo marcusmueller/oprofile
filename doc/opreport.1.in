@@ -81,6 +81,10 @@ Output to the given file instead of stdout.
 Reverse the sort from the default.
 .br
 .TP
+.BI "--show-address / -w"
+Show each symbol's VMA address.
+.br
+.TP
 .BI "--smart-demangle / -D"
 Use pattern-matching to make C++ symbol demangling more readable.
 .br
