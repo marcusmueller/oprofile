@@ -6,7 +6,7 @@
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
  *
- * @author Philippe Elie <phil.el@wanadoo.fr>
+ * @author Philippe Elie
  */
 
 #ifndef DB_H

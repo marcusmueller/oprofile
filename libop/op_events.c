@@ -5,8 +5,8 @@
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
  *
- * @author John Levon <moz@compsoc.man.ac.uk>
- * @author Philippe Elie <phil_el@wanadoo.fr>
+ * @author John Levon
+ * @author Philippe Elie
  */
 
 /* Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren */

@@ -5,7 +5,7 @@
  * @remark Copyright 2002
  * @remark Read the file COPYING
  *
- * @author John Levon <moz@compsoc.man.ac.uk>
+ * @author John Levon
  */
 
 #include <sys/types.h>

@@ -33,8 +33,8 @@
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
  *
- * @author Philippe Elie <phil_el@wanadoo.fr>
- * @author John Levon <moz@compsoc.man.ac.uk>
+ * @author Philippe Elie
+ * @author John Levon
  */
 
 #ifndef POPT_OPTIONS_H

@@ -5,9 +5,9 @@
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
  *
- * @author Bob Montgomery <bobm@fc.hp.com>
- * @author Philippe Elie <phil_el@wanadoo.fr>
- * @author John Levon <moz@compsoc.man.ac.uk>
+ * @author Bob Montgomery
+ * @author Philippe Elie
+ * @author John Levon
  */
 
 #include <linux/ioport.h>

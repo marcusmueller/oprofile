@@ -4,7 +4,7 @@
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
  *
- * @author Philippe Elie <phil_el@wanadoo.fr>
+ * @author Philippe Elie
  */
 
 #ifndef OP_VIEW_H

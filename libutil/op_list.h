@@ -6,7 +6,7 @@
  * @remark Read the file COPYING
  *
  * @author Linux kernel authors
- * @author Philippe Elie <phil_el@wanadoo.fr>
+ * @author Philippe Elie
  */
 
 #ifndef OP_LIST_H
