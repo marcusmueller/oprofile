@@ -126,6 +126,7 @@ static void v3_to_v4(FILE* fp) {
 	struct opd_footer_v4 footer_v4;
 	char * name;
 
+	printf("v4\n"); 
 	fread(&footer_v3, sizeof(footer_v3), 1, fp);
 
 	footer_v4.v2 = footer_v3.v2;
@@ -231,6 +232,7 @@ int main(int argc, char* argv[])
 	int converter_index;
 	int err = 0;
 	int i;
+	int converted;
 
 	if (argc <= 1) {
 		fprintf(stderr, "Syntax: %s filename [filenames]\n", argv[0]);
@@ -262,17 +264,15 @@ int main(int argc, char* argv[])
 			continue;
 		}
 
-		converter_index = get_converter_index(fp);
-		if (converter_index == -1) {
-			fclose(fp);
-
-			fprintf(stderr, "can not find a converter for %s (perhaps this file is already converted ?)\n", argv[i]);
-			err++;
-			continue;
+		converted = 0;
+		while ((converter_index = get_converter_index(fp)) != -1) {
+			converter_array[converter_index].convert(fp);
+			converted = 1;
 		}
 
-		for ( ; converter_index < nr_converter ; ++converter_index) {
-			converter_array[converter_index].convert(fp);
+		if (converted == 0) {
+			fprintf(stderr, "no converter found for %s (file already converted ?)\n", argv[i]);
+			err++;
 		}
 
 		fclose(fp);
