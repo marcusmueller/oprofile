@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.46 2001/08/19 20:09:17 movement Exp $ */
+/* $Id: oprofile.h,v 1.47 2001/08/31 17:16:35 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -32,6 +32,9 @@
 /* userspace/module interface */
 #include "op_user.h"
 
+#undef min
+#undef max
+ 
 #define OP_NR_ENTRY (SMP_CACHE_BYTES/sizeof(struct op_sample))
 
 struct op_entry {
@@ -226,6 +229,7 @@ extern uint ctrreg2;
 extern uint ctrreg3;
 
 int oprof_init(void);
+int find_intel_smp(void);
 void oprof_exit(void);
 void my_set_fixmap(void);
 int op_min_count(u8 ctr_type);

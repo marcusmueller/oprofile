@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.74 2001/08/20 19:46:13 davej Exp $ */
+/* $Id: oprofile.c,v 1.75 2001/08/31 17:16:35 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -50,6 +50,7 @@ static u32 ctrreg3  = MSR_K7_PERFCTR3;
 
 static u32 prof_on __cacheline_aligned;
 
+static int smp_hardware;
 static int op_major;
 int cpu_type;
 
@@ -261,48 +262,15 @@ static void __exit smp_apic_restore(void *dummy)
 	apic_write(APIC_LVTPC, old_lvtpc[smp_processor_id()]);
 }
 
-/* PHE bit 8 of APIC_BASE_MSR is the BSP flags, it is set by harware at boot
- * up sequence and would be keeped ok by software to allow #INIT or #ERR, else
- * all the processor on the next MP sequence fall in shutdown.
- *
- * On UP architecture it should always be zero (ok for my PII) 7.4.8 (7.5.8), 
- * I am unsure  but I have presumption than kernel cannot boot properly if bsp
- * flags is set on UP machine.
- *
- * I think it is ok in all case, perhaps corner case on SMP with only one
- * processor plugged ?
- */
-inline static int is_bsp_proc(void)
-{
-	uint l;
-	uint h;
-	rdmsr(MSR_IA32_APICBASE, l, h);
-	wrmsr(MSR_IA32_APICBASE, l & ~(1<<11), h);
-
-	return (h & (1 << 8)) ? 1 : 0;
-}
-
 static int __init apic_needs_setup(void)
 {
-	/* FIXME: we need to detect UP kernel, SMP hardware, and
-	 * return 0 here, to avoid screwing up the APIC
-	 */
-	/* PHE: for UP kernel SMP machine this processor should have the bsp
-	 * flags set, something like:
-
-#ifndef X86_UP_APIC 
-	if (smp_num_cpus == 1) {
-		return !is_bsp_proc();
-	}
-#endif
-	return 0;
-
-	would work
-        */
 	return 
 /* if enabled, the kernel has already set it up */
 #ifdef CONFIG_X86_UP_APIC
 	0 &&
+#else
+/* otherwise, we detect SMP hardware via the MP table */
+	!smp_hardware &&
 #endif
 	smp_num_cpus == 1;
 }
@@ -320,10 +288,12 @@ static int __init apic_setup(void)
 	uint val;
 
 	if (!apic_needs_setup()) {
+		printk(KERN_INFO "oprofile: no APIC setup needed.\n");
 		lvtpc_apic_setup(NULL);
 		return 0;
 	}
 
+	printk(KERN_INFO "oprofile: setting up APIC.\n");
 
 	/* ugly hack */
 	/* PHE : the memory must be uncachable! this is perhaps more a
@@ -555,8 +525,7 @@ static int oprof_thread(void *arg)
 {
 	int i;
 
-	threadpid = current->pid;
-
+	// FIXME: kernel lock ? 
 	daemonize();
 	sprintf(current->comm, "oprof-thread");
 	siginitsetinv(&current->blocked, sigmask(SIGKILL));
@@ -575,6 +544,7 @@ static int oprof_thread(void *arg)
 		/* FIXME: determine best value here */
 		schedule_timeout(HZ/10);
 
+		// FIXME: signal pending 
 		if (diethreaddie)
 			break;
 	}
@@ -587,7 +557,7 @@ static void oprof_start_thread(void)
 {
 	init_completion(&threadstop);
 	diethreaddie = 0;
-	if (kernel_thread(oprof_thread, NULL, CLONE_FS|CLONE_FILES|CLONE_SIGHAND)<0)
+	if ((threadpid = kernel_thread(oprof_thread, NULL, CLONE_FS|CLONE_FILES|CLONE_SIGHAND)) < 0)
 		printk(KERN_ERR "oprofile: couldn't spawn wakeup thread.\n");
 }
 
@@ -1186,7 +1156,9 @@ int __init oprof_init(void)
 {
 	int err;
 
-	printk(KERN_INFO "%s\n",op_version);
+	printk(KERN_INFO "%s\n", op_version);
+
+	smp_hardware = find_intel_smp();
 
 	if ((err = apic_setup()))
 		return err;
