@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-size_t * map_event_to_counter(struct op_event * pev[], int nr_events,
+size_t * map_event_to_counter(struct op_event const * pev[], int nr_events,
                               op_cpu cpu_type);
 
 #ifdef __cplusplus

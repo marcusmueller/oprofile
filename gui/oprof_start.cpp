@@ -40,13 +40,74 @@
 #include "op_config_24.h"
 #include "string_manip.h"
 #include "op_cpufreq.h"
+#include "op_alloc_counter.h"
 
 using namespace std;
 
-static bool has_unique_event(op_cpu cpu_type)
-{
-	return cpu_type == CPU_TIMER_INT || cpu_type == CPU_RTC;
-}
+
+// FIXME: we need something other than that. 16x16 ok/not ok will be fine
+// (green ok/red stop or something like that)
+static const char* folder_closed_xpm[]={
+    "16 16 9 1",
+    "g c #808080",
+    "b c #c0c000",
+    "e c #c0c0c0",
+    "# c #000000",
+    "c c #ffff00",
+    ". c None",
+    "a c #585858",
+    "f c #a0a0a4",
+    "d c #ffffff",
+    "..###...........",
+    ".#abc##.........",
+    ".#daabc#####....",
+    ".#ddeaabbccc#...",
+    ".#dedeeabbbba...",
+    ".#edeeeeaaaab#..",
+    ".#deeeeeeefe#ba.",
+    ".#eeeeeeefef#ba.",
+    ".#eeeeeefeff#ba.",
+    ".#eeeeefefff#ba.",
+    ".##geefeffff#ba.",
+    "...##gefffff#ba.",
+    ".....##fffff#ba.",
+    ".......##fff#b##",
+    ".........##f#b##",
+    "...........####."};
+
+static const char* folder_open_xpm[]={
+    "16 16 11 1",
+    "# c #000000",
+    "g c #c0c0c0",
+    "e c #303030",
+    "a c #ffa858",
+    "b c #808080",
+    "d c #a0a0a4",
+    "f c #585858",
+    "c c #ffdca8",
+    "h c #dcdcdc",
+    "i c #ffffff",
+    ". c None",
+    "....###.........",
+    "....#ab##.......",
+    "....#acab####...",
+    "###.#acccccca#..",
+    "#ddefaaaccccca#.",
+    "#bdddbaaaacccab#",
+    ".eddddbbaaaacab#",
+    ".#bddggdbbaaaab#",
+    "..edgdggggbbaab#",
+    "..#bgggghghdaab#",
+    "...ebhggghicfab#",
+    "....#edhhiiidab#",
+    "......#egiiicfb#",
+    "........#egiibb#",
+    "..........#egib#",
+    "............#ee#"};
+
+QPixmap *folderClosed = 0;
+QPixmap *folderOpen = 0;
+
 
 op_event_descr::op_event_descr()
 	:
@@ -63,10 +124,11 @@ oprof_start::oprof_start()
 	oprof_start_base(0, 0, false, 0),
 	event_count_validator(new QIntValidator(event_count_edit)),
 	current_event(0),
-	current_events(OP_MAX_COUNTERS),
 	cpu_speed(op_cpu_frequency()),
 	total_nr_interrupts(0)
 {
+	folderOpen = new QPixmap(folder_open_xpm);
+	folderClosed = new QPixmap(folder_closed_xpm);
 	vector<string> args;
 	args.push_back("--init");
 
@@ -75,11 +137,6 @@ oprof_start::oprof_start()
 
 	cpu_type = op_get_cpu_type();
 	op_nr_counters = op_get_nr_counters(cpu_type);
-
-	if (cpu_type == CPU_RTC) {
-		counter_combo->hide();
-		unit_mask_group->hide();
-	}
 
 	if (cpu_type == CPU_TIMER_INT) {
 		setup_config_tab->removePage(counter_setup_page);
@@ -141,6 +198,9 @@ oprof_start::oprof_start()
 	timerEvent(0);
 
 	resize(minimumSizeHint());
+
+	// force the pixmap re-draw
+	event_selected();
 }
 
 
@@ -187,37 +247,23 @@ void oprof_start::fill_events()
 					count = descr.min_count * 100;
 			}
 
-			event_cfgs[ctr][descr.name].count = count;
-			event_cfgs[ctr][descr.name].umask = 0;
+			event_cfgs[descr.name].count = count;
+			event_cfgs[descr.name].umask = 0;
 			if (descr.unit)
-				event_cfgs[ctr][descr.name].umask = descr.unit->default_mask;
-			event_cfgs[ctr][descr.name].os_ring_count = 1;
-			event_cfgs[ctr][descr.name].user_ring_count = 1;
+				event_cfgs[descr.name].umask = descr.unit->default_mask;
+			event_cfgs[descr.name].os_ring_count = 1;
+			event_cfgs[descr.name].user_ring_count = 1;
 		}
 
 		v_events.push_back(descr);
 	}
 
-	if (!has_unique_event(cpu_type)) {
-		op_event_descr no_event;
-		no_event.name = "No event";
-		no_event.help_str = "Deselect event";
-		v_events.push_back(no_event);
-	}
-
 	events_list->header()->hide();
 	events_list->setSorting(-1);
 
+	fill_events_listbox();
+
 	read_set_events();
-
-	display_event(current_events[current_event]);
-
-	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr) {
-		counter_combo->insertItem("");
-		set_counter_combo(ctr);
-	}
-
-	counter_selected(current_event);
 
 	// FIXME: why this ?
 	if (cpu_type == CPU_RTC)
@@ -232,11 +278,10 @@ void oprof_start::setup_default_event()
 	struct op_default_event_descr descr;
 	op_default_event(cpu_type, &descr);
 
-	current_events[0] = &locate_event(descr.name);
-	event_cfgs[0][descr.name].umask = descr.um;
-	event_cfgs[0][descr.name].count = descr.count;
-	event_cfgs[0][descr.name].user_ring_count = 1;
-	event_cfgs[0][descr.name].os_ring_count = 1;
+	event_cfgs[descr.name].umask = descr.um;
+	event_cfgs[descr.name].count = descr.count;
+	event_cfgs[descr.name].user_ring_count = 1;
+	event_cfgs[descr.name].os_ring_count = 1;
 }
 
 
@@ -246,14 +291,6 @@ void oprof_start::read_set_events()
 
 	ifstream in(name.c_str());
 
-	if (!has_unique_event(cpu_type)) {
-		current_events_t::iterator it = current_events.begin();
-		current_events_t::iterator end = current_events.end();
-		for (; it != end; ++it) {
-			*it = &locate_event("No event");
-		}
-	}
-
 	if (!in) {
 		setup_default_event();
 		return;
@@ -261,12 +298,16 @@ void oprof_start::read_set_events()
 
 	string str;
 
+	bool one_enabled = false;
+
 	while (getline(in, str)) {
 		string const val = split(str, '=');
 		string const name = str;
 
 		if (!is_prefix(name, "CHOSEN_EVENTS["))
 			continue;
+
+		one_enabled = true;
 
 		// CHOSEN_EVENTS[0]=CPU_CLK_UNHALTED:10000:0:1:1
 		vector<string> parts;
@@ -278,39 +319,29 @@ void oprof_start::read_set_events()
 			exit(EXIT_FAILURE);
 		}
 
-		/* fill in */
-		int ctr = touint(name.substr(strlen("CHOSEN_EVENTS[")));
-
 		string ev_name = parts[0];
-		event_cfgs[ctr][ev_name].count = touint(parts[1]);
+		event_cfgs[ev_name].count = touint(parts[1]);
 
 		// CPU_CLK_UNHALTED:10000 is also valid
 		if (parts.size() == 5) {
-			event_cfgs[ctr][ev_name].umask = touint(parts[2]);
-			event_cfgs[ctr][ev_name].user_ring_count = touint(parts[3]);
-			event_cfgs[ctr][ev_name].os_ring_count = touint(parts[4]);
+			event_cfgs[ev_name].umask = touint(parts[2]);
+			event_cfgs[ev_name].user_ring_count = touint(parts[3]);
+			event_cfgs[ev_name].os_ring_count = touint(parts[4]);
 		} else {
-			event_cfgs[ctr][ev_name].umask = 0;
-			event_cfgs[ctr][ev_name].user_ring_count = 1;
-			event_cfgs[ctr][ev_name].os_ring_count = 1;
+			event_cfgs[ev_name].umask = 0;
+			event_cfgs[ev_name].user_ring_count = 1;
+			event_cfgs[ev_name].os_ring_count = 1;
 		}
 
-		current_events[ctr] = &locate_event(ev_name);
+		QListViewItem * item =
+			events_list->findItem(ev_name.c_str(), 0);
+		if (item)
+			item->setSelected(true);
 	}
 
-	current_event = 0;
-
-	/* use default event if none set */
-
-	op_event_descr const * noevent = &locate_event("No event");
-	current_events_t::const_iterator cit = current_events.begin();
-	current_events_t::const_iterator end = current_events.end();
-	for (; cit != end; ++cit) {
-		if (*cit != noevent)
-			return;
-	}
-
-	setup_default_event();
+	// use default event if none set
+	if (!one_enabled)
+		setup_default_event();
 }
 
 
@@ -384,49 +415,13 @@ void oprof_start::timerEvent(QTimerEvent *)
 }
 
 
-void oprof_start::set_counter_combo(uint ctr)
-{
-	if (current_events[ctr]) {
-		string ctrstr = current_events[ctr]->name;
-		counter_combo->changeItem(ctrstr.c_str(), ctr);
-		counter_combo->setMinimumSize(counter_combo->sizeHint());
-	}
-}
-
-
-void oprof_start::counter_selected(int ctr)
+void oprof_start::fill_events_listbox()
 {
 	setUpdatesEnabled(false);
-	events_list->clear();
-
-	record_selected_event_config();
-
-	current_event = ctr;
-
-	display_event(current_events[current_event]);
-
-	QListViewItem * theitem = 0;
 
 	for (vector<op_event_descr>::reverse_iterator cit = v_events.rbegin();
 		cit != v_events.rend(); ++cit) {
-		if (cit->counter_mask & (1 << ctr)) {
-			QListViewItem * item = new QListViewItem(events_list, cit->name.c_str());
-			if (current_events[ctr] != 0 && cit->name == current_events[ctr]->name)
-				theitem = item;
-		}
-	}
-
-	if (theitem) {
-		events_list->setCurrentItem(theitem);
-		events_list->ensureItemVisible(theitem);
-	}
-
-	if (!has_unique_event(cpu_type)) {
-		QListViewItem * i = new QListViewItem(events_list, "No event");
-		if (current_events[ctr]->name == "No event") {
-			events_list->setCurrentItem(i);
-			events_list->ensureItemVisible(i);
-		}
+		new QListViewItem(events_list, cit->name.c_str());
 	}
 
 	setUpdatesEnabled(true);
@@ -434,59 +429,147 @@ void oprof_start::counter_selected(int ctr)
 }
 
 
-void oprof_start::display_event(op_event_descr const * descrp)
+void oprof_start::display_event(op_event_descr const & descr)
 {
 	setUpdatesEnabled(false);
 
-	if (!descrp) {
-		os_ring_count_cb->setChecked(false);
-		os_ring_count_cb->setEnabled(false);
-		user_ring_count_cb->setChecked(false);
-		user_ring_count_cb->setEnabled(false);
-		event_count_edit->setText("");
-		event_count_edit->setEnabled(false);
-		hide_masks();
-		return;
-	}
-	setup_unit_masks(*descrp);
+	setup_unit_masks(descr);
 	os_ring_count_cb->setEnabled(true);
 	user_ring_count_cb->setEnabled(true);
 	event_count_edit->setEnabled(true);
 
-	event_setting_map & cfg = event_cfgs[current_event];
+	event_setting & cfg = event_cfgs[descr.name];
 
-	os_ring_count_cb->setChecked(cfg[descrp->name].os_ring_count);
-	user_ring_count_cb->setChecked(cfg[descrp->name].user_ring_count);
+	os_ring_count_cb->setChecked(cfg.os_ring_count);
+	user_ring_count_cb->setChecked(cfg.user_ring_count);
 	QString count_text;
-	count_text.setNum(cfg[descrp->name].count);
+	count_text.setNum(cfg.count);
 	event_count_edit->setText(count_text);
-	event_count_validator->setRange(descrp->min_count, max_perf_count());
+	event_count_validator->setRange(descr.min_count, max_perf_count());
 
-	event_help_label->setText(descrp->help_str.c_str());
+	event_help_label->setText(descr.help_str.c_str());
 
 	setUpdatesEnabled(true);
 	update();
 }
 
 
-void oprof_start::event_selected(QListViewItem * item)
+bool oprof_start::is_selectable_event(QListViewItem * item)
 {
-	op_event_descr const & descr = locate_event(item->text(0).latin1());
+	if (item->isSelected())
+		return true;
 
-	record_selected_event_config();
+	selected_events.insert(item);
 
-	display_event(&descr);
+	bool ret = false;
+	if (alloc_selected_events())
+		ret = true;
 
-	current_events[current_event] = &descr;
+	selected_events.erase(item);
 
-	set_counter_combo(current_event);
+	return ret;
+}
+
+
+void oprof_start::draw_event_list()
+{
+	QListViewItem * cur;
+	for (cur = events_list->firstChild(); cur; cur = cur->nextSibling()) {
+		if (is_selectable_event(cur))
+			cur->setPixmap(0, *folderOpen);
+		else
+			cur->setPixmap(0, *folderClosed);
+	}
+}
+
+
+bool oprof_start::alloc_selected_events() const
+{
+	vector<op_event const *> events;
+
+	set<QListViewItem *>::const_iterator it;
+	for (it = selected_events.begin(); it != selected_events.end(); ++it) {
+		events.push_back(find_event_by_name((*it)->text(0).latin1()));
+	}
+
+	size_t * map =
+		map_event_to_counter(&events[0], events.size(), cpu_type);
+
+	if (!map)
+		return false;
+
+	free(map);
+	return true;
+}
+
+void oprof_start::event_selected()
+{
+	// The deal is simple: QT lack of a way to know what item was the last
+	// (de)selected item so we record a set of selected items and diff
+	// it in the appropriate way with the previous list of selected items.
+
+	set<QListViewItem *> current_selection;
+	QListViewItem * cur;
+	for (cur = events_list->firstChild(); cur; cur = cur->nextSibling()) {
+		if (cur->isSelected()) {
+			current_selection.insert(cur);
+		}
+	}
+
+	// First remove the deselected item.
+	vector<QListViewItem *> new_deselected;
+	set_difference(selected_events.begin(), selected_events.end(),
+		       current_selection.begin(), current_selection.end(),
+		       back_inserter(new_deselected));
+	vector<QListViewItem *>::const_iterator it;
+	for (it = new_deselected.begin(); it != new_deselected.end(); ++it) {
+		selected_events.erase(*it);
+	}
+
+	// Now try to add the newly selected item if enough HW resource exists
+	vector<QListViewItem *> new_selected;
+	set_difference(current_selection.begin(), current_selection.end(),
+		       selected_events.begin(), selected_events.end(),
+		       back_inserter(new_selected));
+	for (it = new_selected.begin(); it != new_selected.end(); ++it) {
+		selected_events.insert(*it);
+		if (!alloc_selected_events()) {
+			(*it)->setSelected(false);
+			selected_events.erase(*it);
+		} else {
+			current_event = *it;
+		}
+	}
+
+	draw_event_list();
+
+	if (current_event)
+		display_event(locate_event(current_event->text(0).latin1()));
 }
 
 
 void oprof_start::event_over(QListViewItem * item)
 {
 	op_event_descr const & descr = locate_event(item->text(0).latin1());
-	event_help_label->setText(descr.help_str.c_str());
+
+	string help_str = descr.help_str.c_str();
+	if (!is_selectable_event(item)) {
+		help_str += " Conflict with:";
+
+		set<QListViewItem *>::const_iterator it;
+		for (it = selected_events.begin();
+		     it != selected_events.end(); ++it) {
+			QListViewItem * temp = *it;
+			selected_events.erase(it);
+			if (is_selectable_event(item)) {
+				help_str += " ";
+				help_str += temp->text(0).latin1();
+			}
+			selected_events.insert(temp);
+		}
+	}
+
+	event_help_label->setText(help_str.c_str());
 }
 
 
@@ -505,18 +588,18 @@ void oprof_start::choose_kernel_filename()
 // FIXME: need validation?
 void oprof_start::record_selected_event_config()
 {
-	op_event_descr const * curr = current_events[current_event];
-
-	if (!curr)
+	if (!current_event)
 		return;
 
-	event_setting_map & cfg = event_cfgs[current_event];
-	string name(curr->name);
+	string name(current_event->text(0).latin1());
 
-	cfg[name].count = event_count_edit->text().toUInt();
-	cfg[name].os_ring_count = os_ring_count_cb->isChecked();
-	cfg[name].user_ring_count = user_ring_count_cb->isChecked();
-	cfg[name].umask = get_unit_mask(*curr);
+	event_setting & cfg = event_cfgs[name];
+	op_event_descr const & curr = locate_event(name);
+
+	cfg.count = event_count_edit->text().toUInt();
+	cfg.os_ring_count = os_ring_count_cb->isChecked();
+	cfg.user_ring_count = user_ring_count_cb->isChecked();
+	cfg.umask = get_unit_mask(curr);
 }
 
 
@@ -646,7 +729,7 @@ void oprof_start::setup_unit_masks(op_event_descr const & descr)
 	if (!um || um->unit_type_mask == utm_mandatory)
 		return;
 
-	event_setting_map & cfg = event_cfgs[current_event];
+	event_setting & cfg = event_cfgs[descr.name];
 
 	unit_mask_group->setExclusive(um->unit_type_mask == utm_exclusive);
 
@@ -672,15 +755,15 @@ void oprof_start::setup_unit_masks(op_event_descr const & descr)
 		}
 		check->setText(um->um[i].desc);
 		if (um->unit_type_mask == utm_exclusive) {
-			check->setChecked(cfg[descr.name].umask == um->um[i].value);
+			check->setChecked(cfg.umask == um->um[i].value);
 		} else {
 			// The last descriptor contains a mask that enable all
 			// value so we must enable the last check box only if
 			// all bits are on.
 			if (i == um->num - 1) {
-				check->setChecked(cfg[descr.name].umask == um->um[i].value);
+				check->setChecked(cfg.umask == um->um[i].value);
 			} else {
-				check->setChecked(cfg[descr.name].umask & um->um[i].value);
+				check->setChecked(cfg.umask & um->um[i].value);
 			}
 		}
 		check->show();
@@ -716,33 +799,31 @@ void oprof_start::on_start_profiler()
 
 	bool one_enable = false;
 
-	for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
-		if (!current_events[ctr])
+	QListViewItem * cur;
+	for (cur = events_list->firstChild(); cur; cur = cur->nextSibling()) {
+		if (!cur->isSelected())
 			continue;
 
-		event_setting_map & cfg = event_cfgs[ctr];
+		event_setting & cfg = event_cfgs[cur->text(0).latin1()];
 
-		op_event_descr const * descr = current_events[ctr];
-
-		if (descr->name == "No event")
-			continue;
+		op_event_descr const & descr =
+			locate_event(cur->text(0).latin1());
 
 		one_enable = true;
 
-		if (!cfg[descr->name].os_ring_count &&
-		    !cfg[descr->name].user_ring_count) {
+		if (!cfg.os_ring_count && !cfg.user_ring_count) {
 			QMessageBox::warning(this, 0, "You must select to "
 					 "profile at least one of user binaries/kernel");
 			return;
 		}
 
-		if (cfg[descr->name].count < descr->min_count ||
-		    cfg[descr->name].count > max_perf_count()) {
+		if (cfg.count < descr.min_count || 
+		    cfg.count > max_perf_count()) {
 			ostringstream out;
 
-			out << "event " << descr->name << " count of range: "
-			    << cfg[descr->name].count << " must be in [ "
-			    << descr->min_count << ", "
+			out << "event " << descr.name << " count of range: "
+			    << cfg.count << " must be in [ "
+			    << descr.min_count << ", "
 			    << max_perf_count()
 			    << "]";
 
@@ -750,13 +831,13 @@ void oprof_start::on_start_profiler()
 			return;
 		}
 
-		if (descr->unit &&
-		    descr->unit->unit_type_mask == utm_bitmask &&
-		    cfg[descr->name].umask == 0) {
+		if (descr.unit &&
+		    descr.unit->unit_type_mask == utm_bitmask &&
+		    cfg.umask == 0) {
 			ostringstream out;
 
-			out << "event " << descr->name<< " invalid unit mask: "
-			    << cfg[descr->name].umask << endl;
+			out << "event " << descr.name<< " invalid unit mask: "
+			    << cfg.umask << endl;
 
 			QMessageBox::warning(this, 0, out.str().c_str());
 			return;
@@ -786,16 +867,14 @@ void oprof_start::on_start_profiler()
 	vector<string> args;
 
 	// save_config validate and setup the config
-	if (!save_config())
-		goto out;
+	if (save_config()) {
+		// now actually start
+		args.push_back("--start");
+		if (config.verbose)
+			args.push_back("--verbose");
+		do_exec_command(OP_BINDIR "/opcontrol", args);
+	}
 
-	// now actually start
-	args.push_back("--start");
-	if (config.verbose)
-		args.push_back("--verbose");
-	do_exec_command(OP_BINDIR "/opcontrol", args);
-
-out:
 	total_nr_interrupts = 0;
 	timerEvent(0);
 }
@@ -819,24 +898,23 @@ bool oprof_start::save_config()
 	vector<string> tmpargs;
 	tmpargs.push_back("--setup");
 
-	for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
-		if (!current_events[ctr])
+	QListViewItem * cur;
+	for (cur = events_list->firstChild(); cur; cur = cur->nextSibling()) {
+		if (!cur->isSelected())
 			continue;
 
-		event_setting_map & cfg = event_cfgs[ctr];
+		event_setting & cfg = event_cfgs[cur->text(0).latin1()];
 
-		op_event_descr const * descr = current_events[ctr];
-
-		if (descr->name == "No event")
-			continue;
+		op_event_descr const & descr =
+			locate_event(cur->text(0).latin1());
 
 		one_enabled = true;
 
-		string arg = "--event=" + descr->name;
-		arg += ":" + tostr(cfg[descr->name].count);
-		arg += ":" + tostr(cfg[descr->name].umask);
-		arg += ":" + tostr(cfg[descr->name].os_ring_count);
-		arg += ":" + tostr(cfg[descr->name].user_ring_count);
+		string arg = "--event=" + descr.name;
+		arg += ":" + tostr(cfg.count);
+		arg += ":" + tostr(cfg.umask);
+		arg += ":" + tostr(cfg.os_ring_count);
+		arg += ":" + tostr(cfg.user_ring_count);
 
 		tmpargs.push_back(arg);
 	}

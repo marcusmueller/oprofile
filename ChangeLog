@@ -1,3 +1,14 @@
+2003-07-26  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* gui/ui/oprof_start.base.ui:
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp: change UI to use the new counter allocation
+	  API
+
+	* libop/op_alloc_counter.h:
+	* libop/op_alloc_counter.c:
+	* utils/op_help.c: minor const-ness api change
+
 2003-07-25  Will Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol: Restrict the search path.

@@ -150,7 +150,8 @@ static int parse_events(void)
 }
 
 
-static void check_event(struct parsed_event * pev, struct op_event * event)
+static void check_event(struct parsed_event * pev,
+			struct op_event const * event)
 {
 	int ret;
 
@@ -183,7 +184,7 @@ static void resolve_events()
 	int i;
 	size_t * counter_map;
 	int nr_counters = op_get_nr_counters(cpu_type);
-	struct op_event * selected_events[OP_MAX_COUNTERS];
+	struct op_event const * selected_events[OP_MAX_COUNTERS];
 
 	if (count > nr_counters) {
 		fprintf(stderr, "Not enough hardware counters.\n");

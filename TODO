@@ -6,7 +6,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.6 release
 -----------
 
- o gui: fix counter allocation stuff.
+ o gui: need testing, some remaining glitch. Dialog box is not the right size,
+  bitmap used to mark selectable events are bad etc...
 
 0.7 release
 -----------

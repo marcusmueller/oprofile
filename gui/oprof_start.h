@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 
 #include "ui/oprof_start.base.h"
 #include "oprof_start_config.h"
@@ -60,10 +61,8 @@ protected slots:
 	void on_start_profiler();
 	/// stop profiler
 	void on_stop_profiler();
-	/// the counter combo has been activated
-	void counter_selected(int);
-	/// an event has been selected
-	void event_selected(QListViewItem *);
+	/// events selection change
+	void event_selected();
 	/// the mouse is over an event
 	void event_over(QListViewItem *);
 
@@ -77,6 +76,9 @@ protected slots:
 	void timerEvent(QTimerEvent * e);
 
 private:
+	/// the counter combo has been activated
+	void fill_events_listbox();
+
 	/// fill the event details and gui setup
 	void fill_events();
 
@@ -99,13 +101,10 @@ private:
 	uint max_perf_count() const;
 
 	/// show an event's settings
-	void display_event(op_event_descr const * descrp);
+	void display_event(op_event_descr const & descrp);
 
 	/// hide unit mask widgets
 	void hide_masks(void);
-
-	/// update the counter combo at given position
-	void set_counter_combo(uint);
 
 	/// read the events set in daemonrc
 	void read_set_events();
@@ -116,22 +115,30 @@ private:
 	/// save the config
 	bool save_config();
 
+	/// redraw the event list by changing icon status
+	void draw_event_list();
+
+	/// return true if item is selectable or already selected
+	bool is_selectable_event(QListViewItem * item);
+
+	/// try to alloc counters for the selected_events
+	bool alloc_selected_events() const;
+
 	/// validator for event count
 	QIntValidator* event_count_validator;
 
 	/// all available events for this hardware
 	std::vector<op_event_descr> v_events;
 
-	/// the current event in the GUI
-	uint current_event;
-
-	typedef std::vector<op_event_descr const *> current_events_t;
-	/// current event selections
-	current_events_t current_events;
-
 	/// current event configs for each counter
 	typedef std::map<std::string, event_setting> event_setting_map;
-	event_setting_map event_cfgs[OP_MAX_COUNTERS];
+	event_setting_map event_cfgs;
+
+	/// The currently selected events. We must track this because
+	/// with multiple selection listbox QT doesn't allow to know
+	/// what is the last selected item. events_selected() update it
+	std::set<QListViewItem *> selected_events;
+	QListViewItem * current_event;
 
 	/// current config
 	config_setting config;

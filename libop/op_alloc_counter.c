@@ -67,7 +67,7 @@ static int next_permutation(size_t * first, size_t * last)
 }
 
 static int allocate_counter(size_t const * counter_map,
-                            struct op_event * pev[], int nr_events)
+                            struct op_event const * pev[], int nr_events)
 {
 	int c = 0;
 
@@ -82,7 +82,7 @@ static int allocate_counter(size_t const * counter_map,
 }
 
 
-size_t * map_event_to_counter(struct op_event * pev[], int nr_events,
+size_t * map_event_to_counter(struct op_event const * pev[], int nr_events,
                               op_cpu cpu_type)
 {
 	int nr_counters;
@@ -91,6 +91,9 @@ size_t * map_event_to_counter(struct op_event * pev[], int nr_events,
 	int i;
 
 	nr_counters = op_get_nr_counters(cpu_type);
+	if (nr_counters < nr_events)
+		return 0;
+
 	counter_map = xmalloc(nr_counters * sizeof(size_t));
 
 	for (i = 0; i < nr_counters; ++i)
