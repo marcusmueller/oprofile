@@ -535,6 +535,7 @@ The following files will be present :
 		Read only; the number of total interrupts received on all processors since this file was last
 		read. Used by the GUI.
 		</para></listitem>
+	</varlistentry>
 	<varlistentry>
 		<term><filename>0, 1, ...</filename></term>
 		<listitem><para>

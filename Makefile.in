@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.31 2001/09/24 02:18:28 movement Exp $
+# $Id: Makefile.in,v 1.32 2001/10/02 17:36:23 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -28,7 +28,7 @@ dist:
 	cvs checkout oprofile ; \
 	cd oprofile ; \
 	(find -type d -name CVS | xargs rm -rf) ; \
-	autoconf ; \
+	./autogen.sh ; \
 	./configure ; \
 	cp doc/Makefile doc/Makefile.tmp ; \
 	make distclean ; \
