@@ -1,3 +1,12 @@
+2004-11-19  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_sfile.h:
+	* daemon/opd_sfile.c: fix #971487, daemon was unable to retrieve
+	  correctly callgraph sample file for kernel space samples. Fixed by
+	  adding relevant information to cg_hash_entry.
+
+	* libpp/callgraph_container.cpp: more verbosity
+
 2004-11-19  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: Fix AMD link (noticed by Emmanuel Araman).

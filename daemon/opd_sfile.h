@@ -26,10 +26,19 @@ struct transient;
 
 #define CG_HASH_TABLE_SIZE 16
 
+typedef struct {
+	/* cookie or INVALID_COOKIE */
+	cookie_t cookie;
+	/* 0 if cookie is valid or module start address */
+	vma_t start;
+	/* (vma_t)-1 if cookie is valid or module end address */
+	vma_t end;
+} cg_id;
+
 struct cg_hash_entry {
 	/** cg are indexable by { from, to, counter } */
-	cookie_t from;
-	cookie_t to;
+	cg_id from;
+	cg_id to;
 	unsigned int counter;
 	/** next in the hash slot */
 	struct list_head next;
@@ -65,7 +74,7 @@ struct sfile {
 	/** opened sample files */
 	odb_t files[OP_MAX_COUNTERS];
 	/** hash table of opened cg sample files, this table is hashed
-	 * on counter nr, from cookie and to cookie */
+	 * on counter nr, from and to */
 	struct list_head cg_files[CG_HASH_TABLE_SIZE];
 };
 

@@ -196,6 +196,17 @@ lru:
 	return sf;
 }
 
+static void init_cg_id(cg_id * id, struct sfile const * sf)
+{
+	id->cookie = sf->cookie;
+	id->start = 0;
+	id->end = (vma_t)-1;
+	if (sf->kernel) {
+		id->start = sf->kernel->start;
+		id->end = sf->kernel->end;
+	}
+}
+
 
 static size_t cg_hash(cookie_t from, cookie_t to, size_t counter)
 {
@@ -205,7 +216,8 @@ static size_t cg_hash(cookie_t from, cookie_t to, size_t counter)
 
 
 static odb_t *
-get_file(struct sfile * sf, struct sfile * last, uint counter, int cg)
+get_file(struct sfile * sf, struct sfile * last, uint counter, int cg,
+   vma_t from, vma_t to)
 {
 	odb_t * file;
 
@@ -223,8 +235,10 @@ get_file(struct sfile * sf, struct sfile * last, uint counter, int cg)
 		struct list_head * pos;
 		list_for_each(pos, &sf->cg_files[hash]) {
 			temp = list_entry(pos, struct cg_hash_entry, next);
-			if (temp->from == last->cookie &&
-			    temp->to == sf->cookie &&
+			if (temp->from.cookie == sf->cookie &&
+			    temp->to.cookie == last->cookie &&
+			    from >= temp->from.start && from < temp->from.end &&
+			    to >= temp->to.start && to < temp->to.end &&
 			    temp->counter == counter)
 				break;
 		}
@@ -232,8 +246,11 @@ get_file(struct sfile * sf, struct sfile * last, uint counter, int cg)
 		if (pos == &sf->cg_files[hash]) {
 			temp = xmalloc(sizeof(struct cg_hash_entry));
 			odb_init(&temp->file);
-			temp->from = last->cookie;
-			temp->to = sf->cookie;
+			init_cg_id(&temp->from, sf);
+			init_cg_id(&temp->to, last);
+			verbprintf(vsamples, "new cg : (%llx, %llx) --> (%llx, %llx) %llx --> %llx, (%llx %llx)\n",
+			       temp->from.start, temp->from.end, temp->to.start, temp->to.end,
+			       from, to, temp->from.cookie, temp->to.cookie);
 			temp->counter = counter;
 			list_add(&temp->next, &sf->cg_files[hash]);
 		} else {
@@ -273,7 +290,7 @@ static void sfile_log_arc(struct transient const * trans)
 	uint64_t key;
 	odb_t * file;
 
-	file = get_file(trans->current, trans->last, trans->event, 1);
+	file = get_file(trans->current, trans->last, trans->event, 1, from, to);
 
 	/* absolute value -> offset */
 	if (trans->current->kernel)
@@ -321,7 +338,7 @@ void sfile_log_sample(struct transient const * trans)
 		return;
 	}
 
-	file = get_file(trans->current, trans->last, trans->event, 0);
+	file = get_file(trans->current, trans->last, trans->event, 0, 0, 0);
 
 	/* absolute value -> offset */
 	if (trans->current->kernel)

@@ -327,6 +327,8 @@ void callgraph_container::populate(string const & archive_path,
 	list<string>::const_iterator it;
 	list<string>::const_iterator const end = cg_files.end();
 	for (it = cg_files.begin(); it != end; ++it) {
+		cverb << vdebug << "samples file : " << *it << endl;
+
 		parsed_filename caller_file = parse_filename(*it);
 		string const app_name = caller_file.image;
 
