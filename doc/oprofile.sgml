@@ -150,6 +150,16 @@ First you need to build <filename>oprofile</filename> and install it. <command>.
 is all you need, but note these arguments to <command>./configure</command> :
 <variablelist>
 	<varlistentry>
+		<term><option>&mdash;with-linux</option></term>
+		<listitem><para>
+			Use this option to specify the location of the kernel source tree you wish
+			to compile against. The kernel module is built against this source and
+			will only work with a running kernel built from the same source with
+			similar options, so it is important you specify this option if you need
+			to.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>&mdash;with-cc</option></term>
 		<listitem><para>
 			Use this to specify a C compiler that you used to compile the kernel if
