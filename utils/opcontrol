@@ -1010,7 +1010,8 @@ do_reset() {
 
 do_deinit() {
 	#unmount /dev/oprofile if it is mounted
-	if grep /dev/oprofile /etc/mtab /dev/oprofile; then
+	OPROF_FS=`grep /dev/oprofile /etc/mtab`
+	if test -n "$OPROF_FS"; then
 		umount /dev/oprofile
 	fi
 	#unload the oprofile module if it is around
