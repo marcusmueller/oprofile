@@ -60,7 +60,7 @@ private:
 };
 
 /**
- * @param oparchive prefix path
+ * @param archive_path archive prefix path
  * @param extra_images container where all extra candidate filenames are stored
  * @param image_name binary image name
  * @param error errors are flagged in this passed enum ref

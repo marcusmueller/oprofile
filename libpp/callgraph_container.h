@@ -107,6 +107,7 @@ class callgraph_container {
 public:
 	/**
 	 * Populate the container, must be called once only.
+	 * @param archive_path  oparchive prefix path
 	 * @param iprofiles  sample file list including callgraph files.
 	 * @param extra  extra image list to fixup binary name.
 	 * @param debug_info  true if we must record linenr information

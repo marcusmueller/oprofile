@@ -80,6 +80,7 @@ private:
 class op_bfd {
 public:
 	/**
+	 * @param archive_path oparchive prefix path
 	 * @param filename  the name of the image file
 	 * @param symbol_filter  filter to apply to symbols
 	 * @param ok in-out parameter: on in, if not set, don't
