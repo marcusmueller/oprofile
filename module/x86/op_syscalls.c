@@ -250,7 +250,9 @@ asmlinkage static int my_sys_clone(struct pt_regs regs)
 {
 	u32 pid = current->pid;
 	u32 tgid = op_get_tgid();
+#if V_AT_LEAST(2, 4, 0)
 	u32 clone_flags = regs.ebx;
+#endif
 	int ret;
 
 	MOD_INC_USE_COUNT;
