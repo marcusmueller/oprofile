@@ -25,7 +25,7 @@
 #include <stdio.h>
 
 /* maintained for statistics purpose only */
-unsigned int nr_images=0;
+static int nr_images;
 
 /* list of images */
 #define OPD_IMAGE_HASH_SIZE 2048
@@ -41,6 +41,15 @@ void opd_init_images(void)
 	for (i = 0; i < OPD_IMAGE_HASH_SIZE; ++i) {
 		list_init(&opd_images[i]);
 	}
+}
+
+
+/**
+ * opd_get_nr_images - return number of images
+ */
+int opd_get_nr_images(void)
+{
+	return nr_images;
 }
 
 

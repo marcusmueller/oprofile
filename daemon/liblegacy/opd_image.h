@@ -59,5 +59,6 @@ struct opd_image * opd_get_kernel_image(char const * name, char const * app_name
 
 void opd_init_images(void);
 struct opd_image * opd_get_image(char const * name, char const * app_name, int kernel, pid_t tid, pid_t tgid);
+int opd_get_nr_images(void);
 
 #endif /* OPD_IMAGE_H */

@@ -11,13 +11,12 @@
 
 #include "opd_24_stats.h"
 #include "opd_proc.h"
+#include "opd_image.h"
 
 #include "op_get_time.h"
 
 #include <stdlib.h>
 #include <stdio.h>
-
-extern int nr_images;
 
 unsigned long opd_24_stats[OPD_MAX_STATS];
 
@@ -28,7 +27,7 @@ void opd_print_24_stats(void)
 {
 	printf("\n%s\n", op_get_time());
 	printf("Nr. proc struct: %d\n", opd_get_nr_procs());
-	printf("Nr. image struct: %d\n", nr_images);
+	printf("Nr. image struct: %d\n", opd_get_nr_images());
 	printf("Nr. kernel samples: %lu\n", opd_24_stats[OPD_KERNEL]);
 	printf("Nr. modules samples: %lu\n", opd_24_stats[OPD_MODULE]);
 	printf("Nr. modules samples lost: %lu\n", opd_24_stats[OPD_LOST_MODULE]);
