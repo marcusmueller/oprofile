@@ -1,3 +1,7 @@
+2003-07-08  Will Cohen  <wcohen@redhat.com>
+
+	* utils/opcontrol: Correct P4 default event.
+
 2003-06-03  John Levon  <levon@movementarian.org>
 
 	* from BRANCH_CALLGRAPH
