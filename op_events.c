@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.13 2001/04/06 14:16:46 movement Exp $ */
+/* $Id: op_events.c,v 1.14 2001/06/03 19:01:40 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -38,6 +38,15 @@
 #define u8 unsigned char
 #define uint unsigned int
 
+enum unit_mask_type {
+	/* useless but required by the hardware */
+	utm_mandatory,
+	/* only one of the values is allowed */
+	utm_exclusive,
+	/* bitmask */
+	utm_bitmask
+};
+
 struct op_event {
 	uint allowed;
 	u8 val; /* event number */
@@ -47,6 +56,7 @@ struct op_event {
 
 struct op_unit_mask {
 	uint num; /* number of possible unit masks */
+	enum unit_mask_type unit_type_mask;
 	/* up to six allowed unit masks */
 	u8 um[6];
 };
@@ -59,19 +69,19 @@ void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char 
 
 static struct op_unit_mask op_unit_masks[] = {
 	/* not used */
-	{ 1, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 1, utm_mandatory, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
 	/* MESI counters */
-	{ 5, { 0x1, 0x2, 0x4, 0x8, 0xf, 0x0 }, },
+	{ 5, utm_bitmask, { 0x1, 0x2, 0x4, 0x8, 0xf, 0x0 }, },
 	/* EBL self/any */
-	{ 2, { 0x0, 0x20, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 2, utm_exclusive, { 0x0, 0x20, 0x0, 0x0, 0x0, 0x0 }, },
 	/* MMX PII events */
-	{ 1, { 0xf, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
-	{ 6, { 0x1, 0x2, 0x4, 0x8, 0x10, 0x20 }, },
-	{ 2, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0 }, },
-	{ 5, { 0x1, 0x2, 0x4, 0x8, 0xf, 0x0 }, },
+	{ 1, utm_mandatory, { 0xf, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 6, utm_bitmask, { 0x1, 0x2, 0x4, 0x8, 0x10, 0x20 }, },
+	{ 2, utm_exclusive, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 5, utm_bitmask, { 0x1, 0x2, 0x4, 0x8, 0xf, 0x0 }, },
 	/* KNI PIII events */
-	{ 4, { 0x0, 0x1, 0x2, 0x3, 0x0, 0x0 }, },
-	{ 2, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 4, utm_exclusive, { 0x0, 0x1, 0x2, 0x3, 0x0, 0x0 }, },
+	{ 2, utm_bitmask, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0 }, },
 };
 
 static struct op_event op_events[] = {
@@ -198,11 +208,29 @@ uint op_nr_events = sizeof(op_events)/sizeof(struct op_event);
  */
 static int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
 {
-	u8 i;
+	uint i, mask;
 
-	for (i=0; i < allow->num; i++) {
-		if (allow->um[i]==um)
-			return 0;
+	switch (allow->unit_type_mask) {
+		case utm_exclusive:
+		case utm_mandatory:
+			for (i=0; i < allow->num; i++) {
+				if (allow->um[i] == um)
+					return 0;
+			}
+			break;
+
+		case utm_bitmask:
+			/* Must reject 0 bit mask because it can count nothing */
+			if (um == 0)
+				break;
+ 
+			mask = 0;
+			for (i=0; i < allow->num; i++)
+				mask |= allow->um[i];
+
+			if ((mask & um) == um)
+				return 0;
+			break;
 	}
 
 	return 1;
@@ -407,7 +435,8 @@ static struct op_unit_desc op_unit_descs[] = {
 	  "DS register",
 	  "FS register",
 	/* IA manual says this is actually FS again - no mention in errata */
-	  "FS register",
+	/* but test show that is really a typo error from IA manual */
+	  "GS register",
 	  "ES,DS,FS,GS registers", NULL, }, },
 	{ { "prefetch NTA",
 	  "prefetch T1",
