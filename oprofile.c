@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.16 2000/08/18 00:34:50 moz Exp $ */
+/* $Id: oprofile.c,v 1.17 2000/08/21 19:23:01 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 
@@ -51,7 +51,7 @@ static u8 op_ctr1_osusr[NR_CPUS];
 static int op_major;
 static int cpu_type;
 
-static u32 oprof_opened __cacheline_aligned;
+static uint oprof_opened;
 DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
 /* this array is scanned by read() so we don't
  * want it in the oprof_data cacheline. Access
@@ -561,10 +561,8 @@ static int oprof_open(struct inode *ino, struct file *file)
 		default:
 	}
 
-	if (oprof_opened)
+	if (test_and_set_bit(0,&oprof_opened))
 		return -EBUSY;
-
-	oprof_opened=1;
 
 	oprof_start_thread();
 	smp_call_function(pmc_start,NULL,0,1);
@@ -587,7 +585,7 @@ static int oprof_release(struct inode *ino, struct file *file)
 
 	smp_call_function(pmc_stop,NULL,0,1);
 	pmc_stop(NULL);
-	oprof_opened=0;
+	clear_bit(0,&oprof_opened);
 	return 0;
 }
 
