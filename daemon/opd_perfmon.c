@@ -10,6 +10,9 @@
 
 #ifdef __ia64__
 
+#error sorry, this code is very broken.
+#error it will not work and may well hang your machine
+
 #include "opd_util.h"
 #include "opd_perfmon.h"
 
