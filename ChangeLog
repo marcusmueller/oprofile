@@ -1,3 +1,11 @@
+2004-09-11  John Levon  <levon@movementarian.org>
+
+	* configure.in: bump to 0.8.1
+
+2004-09-11  John Levon  <levon@movementarian.org>
+
+	* libpp/locate_images.h: doxygen for archive_path
+
 2004-08-18  Will Cohen  <wcohen@redhat.com>
 
 	* doc/oprofile.xml: List default events in documentation.

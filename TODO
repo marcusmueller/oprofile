@@ -3,14 +3,11 @@ This is an (incomplete) list of some of the stuff we want to look at doing.
 If you're interested in hacking on any of these, please contact the list first
 for some pointers and/or read HACKING and doc/CodingStyle.
 
-0.8.1 release
+0.8.2 release
 -------------
 
  o amd64 32 bit build needs a sys32_lookup_dcookie() translator in the
    kernel
- o IA64 and maybe others do not properly disable a counter if it's been
-   used previously. Needs audit! (see bug 964097 report on sf). Needs
-   2.6 patch at least.
  o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
   outside .text section get a wrong offset
  o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.
