@@ -343,8 +343,8 @@ profile_spec profile_spec::create(vector<string> const & args,
 	for (size_t i = 0 ; i < args.size() ; ++i) {
 		if (spec.is_valid_tag(args[i])) {
 			if (tag_seen.find(args[i]) != tag_seen.end()) {
-				throw op_runtime_error("you can't specifiy a "
-				       "tag more than once: " + args[i]);
+				throw op_runtime_error("tag specified "
+				       "more than once: " + args[i]);
 			}
 			tag_seen.insert(args[i]);
 			spec.parse(args[i]);
