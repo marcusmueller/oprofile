@@ -4,6 +4,7 @@
 	* dae/opd_kernel.c:
 	* daemon/opd_kernel.c: remove fixed array of modules replaced by
 	  a list. Unify the way we create opd_module
+	* utils/opcontrol: don't use --thread-profiling for 2.4
 
 2003-09-17 Ka Fai Lu  <kafai0928@yahoo.com>
 
