@@ -25,10 +25,7 @@ using namespace std;
 
 #include "opf_filter.h"
 
-namespace {
-	// FIXME ! 
-	uint op_nr_counters = 2;
-}
+extern uint op_nr_counters;
  
 //---------------------------------------------------------------------------
 // Functors used as predicate for vma comparison.
@@ -185,10 +182,10 @@ void symbol_container_impl::flush_input_symbol() {
 
 	if (range_iterator_sorted_p(v.begin(), v.end(), 
 				    less_sample_entry_by_vma()) == false) {
-		cerr << "post condition fail : symbol_vector not "
+		cerr << "opf_filter: post condition fail : symbol_vector not "
 		     << "sorted by increased vma" << endl;
 
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -383,10 +380,10 @@ void sample_container_impl::flush_input_counter() {
 
 	if (range_iterator_sorted_p(v.begin(), v.end(), 
 				    less_sample_entry_by_vma()) == false) {
-		cerr << "post condition fail : counter_vector not "
+		cerr << "opf_filter: post condition fail : counter_vector not "
 		     << "sorted by increased vma" << endl;
 
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 

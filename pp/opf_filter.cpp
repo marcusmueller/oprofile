@@ -45,9 +45,10 @@ ostream & operator<<(ostream & out, const counter_setup &);
 
 double do_ratio(size_t a, size_t total);
 
+}
+
 // The correct value is passed by oprofpp on standard input.
 uint op_nr_counters = 2;
-}
 
 //---------------------------------------------------------------------------
 // Just allow to read one line in advance and to put_back this line.
@@ -103,7 +104,7 @@ class output {
 
 	bool treat_input(input &);
 
-	void debug_dump_vector(ostream & out) const;
+	void debug_dump_vector() const;
 
  private:
 	void output_command_line() const;
@@ -353,23 +354,23 @@ output::output(ostream & out_, int argc_, char const * argv_[],
 {
 }
 
-void output::debug_dump_vector(ostream & out) const {
+void output::debug_dump_vector() const {
 
-	out << "total samples :";
+	cerr << "total samples :";
 
 	for (size_t i = 0 ; i < op_nr_counters ; ++i)
-		cout << " " << counter_info[i].total_samples;
+		cerr << " " << counter_info[i].total_samples;
 	
-	cout << endl;
+	cerr << endl;
 
 	for (size_t i = 0 ; i < symbols.size() ; ++i) {
 
-		symbols[i].debug_dump(cout);
-		cout << endl;
+		symbols[i].debug_dump(cerr);
+		cerr << endl;
 
 		for (size_t j = symbols[i].first ; j < symbols[i].last; ++j) {
-			samples[j].debug_dump(cout);
-			cout << endl;
+			samples[j].debug_dump(cerr);
+			cerr << endl;
 		}
 	}
 }
@@ -461,12 +462,11 @@ bool output::calc_total_samples() {
 
 		for (size_t i = 0 ; i < op_nr_counters ; ++i) {
 			if (total_counter[i] != counter_info[i].total_samples) {
-				cerr << "output::calc_total_samples() : "
-				     << "bad counter accumulation"
+				cerr << "opf_filter: output::calc_total_samples() : bad counter accumulation"
 				     << " " << total_counter[i] 
 				     << " " << counter_info[i].total_samples
 				     << endl;
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 		}
 	}
@@ -734,7 +734,7 @@ void output::output_source(input & /*in*/) {
 		ifstream in(file_by_samples[i].filename.c_str());
 
 		if (!in) {
-			cerr << "unable to open for reading: " << file_by_samples[i].filename << endl;
+			cerr << "opf_filter (warning): unable to open for reading: " << file_by_samples[i].filename << endl;
 		} else {
 			if (until_more_than_samples) {
 				do_output_one_file(in, file_by_samples[i].filename, 
@@ -766,7 +766,8 @@ size_t output::get_sort_counter_nr() const {
 				break;
 		}
 
-		cerr << "sort_by_counter invalid or counter[sort_by_counter] disabled : switch "
+		cerr << "opf_filter (warning): sort_by_counter invalid or "
+		     << "counter[sort_by_counter] disabled : switch "
 		     << "to the first valid counter " << index << endl;
 	}
 
@@ -825,9 +826,9 @@ void output::read_input(input & in) {
 		for (size_t i = 0 ; i < symbols.size() ; ++i) {
 			if (sanity_check_symbol_entry(i) == false) {
 
-				cerr << "post condition fail : symbols range failure" << endl;
+				cerr << "opf_filter: post condition fail : symbols range failure" << endl;
 
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 		}
 	}
@@ -927,7 +928,7 @@ bool output::treat_input(input & in) {
 	in.read_line(str);
 
 	if (sscanf(str.c_str(), "Cpu type: %d", &cpu_type) != 1) {
-		cerr << "unable to read cpu_type\n";
+		cerr << "opf_filter: unable to read cpu_type\n";
 
 		return false;
 	}
@@ -938,7 +939,7 @@ bool output::treat_input(input & in) {
 	in.read_line(str);
 
 	if (sscanf(str.c_str(), "Cpu speed was (MHz estimation) : %lf", &cpu_speed) != 1) {
-		cerr << "unable to read cpu_speed\n";
+		cerr << "opf_filter: unable to read cpu_speed\n";
 
 		return false;
 	}
@@ -950,7 +951,7 @@ bool output::treat_input(input & in) {
 	}
 
 	if (!have_counter_info) {
-		cerr << "Malformed input, expect at least one counter description" << endl;
+		cerr << "opf_filter: malformed input, expect at least one counter description" << endl;
 		
 		return false;
 	}
@@ -960,7 +961,7 @@ bool output::treat_input(input & in) {
 //	debug_dump_vector(out);
 
 	if (calc_total_samples() == false) {
-		cerr << "The input contains zero samples" << endl;
+		cerr << "opf_filter: the input contains zero samples" << endl;
 
 		return false;
 	}
@@ -1081,15 +1082,15 @@ int main(int argc, char const * argv[]) {
 	} 
 
 	catch (const string & e) {
-		cerr << "Exception : " << e << endl;
+		cerr << "opf_filter: Exception : " << e << endl;
 		return 1;
 	}
 	catch (const char * e) {
-		cerr << "Exception : " << e << endl;
+		cerr << "opf_flter: Exception : " << e << endl;
 		return 1;
 	}
 	catch (...) {
-		cerr << "Unknown exception : really sorry " << endl;
+		cerr << "opf_filter: Unknown exception : really sorry " << endl;
 		return 1;
 	}
 
