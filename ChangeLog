@@ -1,3 +1,10 @@
+2002-01-13  Philippe Elie  <ph_e@club-internet.fr>
+
+	* module/compat.h:
+	* module/apic_up_compat.h:
+	* module/op_x86.c: allow to run oprofile when
+	  !CONFIG_X86_LOCAL_APIC on 2.2.x kernel
+
 2002-01-12  Philippe Elie  <ph_e@club-internet.fr>
 
 	* module/compat.h: fix some FIXME

@@ -195,9 +195,8 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 #define __exit
 #define __init
 
-#ifndef CONFIG_SMP
-#include "apic_up_compat.h"
-#else
+/* APIC Stuff, TODO put all of them in apic_up_compat.h */
+
 /* even on SMP, some defines are missing in 2.2 */
 #define	APIC_LVR		0x30
 #define	APIC_LVTPC		0x340
@@ -205,6 +204,11 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 #define	GET_APIC_VERSION(x)	((x)&0xFF)
 #define	GET_APIC_MAXLVT(x)	(((x)>>16)&0xFF)
 #define	APIC_INTEGRATED(x)	((x)&0xF0)
+
+/* TODO: misplaced, for now we don't allow for
+ * !CONFIG_X86_LOCAL_APIC on 2.4 PHE I fix that later */
+#ifndef CONFIG_SMP
+#include "apic_up_compat.h"
 #endif /* !CONFIG_SMP */
 
 /* 2.4.0 introduce virt_to_page */
@@ -214,11 +218,7 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
 
-/* FIXME: consider apic_up_compat ... */
-/* John 2.4.0 #ifndef CONFIG_X86_LOCAL_APIC #include "apic_up_compat.h" #endif
- * do not work because we get redefinition about APIC_BASE. I let this left for
- * now, currently I get no prototype for apic_read/apic_write when
- * !CONFIG_X86_LOCAL_APIC */
+/* FIXME: consider apic_up_compat ... ok I take this later (phe) */
  
 /* 2.4.0 introduced vfsmount cross mount point */
 #define HAVE_CROSS_MOUNT_POINT

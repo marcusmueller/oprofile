@@ -19,6 +19,10 @@ static ulong idt_addr;
 static ulong kernel_nmi;
 static ulong lvtpc_masked;
 
+#ifdef NEED_VIRT_APIC_BASE
+unsigned long virt_apic_base;
+#endif
+
 /* this masking code is unsafe and nasty but might deal with the small
  * race when installing the NMI entry into the IDT
  */
@@ -255,7 +259,8 @@ not_local_p6_apic:
 /* ---------------- fixmap hack ------------------ */
  
 #ifdef NEED_FIXMAP_HACK
- 
+
+/* TODO: this must be ruled in compat.h */
 #ifndef APIC_DEFAULT_PHYS_BASE
 #define APIC_DEFAULT_PHYS_BASE 0xfee00000
 #endif
@@ -278,9 +283,16 @@ static void set_pte_phys(ulong vaddr, ulong phys)
 
 void my_set_fixmap(void)
 {
+#ifndef NEED_VIRT_APIC_BASE
 	ulong address = __fix_to_virt(FIX_APIC_BASE);
 
 	set_pte_phys (address, APIC_DEFAULT_PHYS_BASE);
+#else
+	/* dirty hack :/ */
+	virt_apic_base = (unsigned long)vmalloc(4096);
+
+	set_pte_phys (virt_apic_base, APIC_DEFAULT_PHYS_BASE);
+#endif
 }
 #else /* NEED_FIXMAP_HACK */
 void my_set_fixmap(void)
