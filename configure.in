@@ -12,7 +12,7 @@
 AC_PREREQ(2.13)
 
 AC_INIT(libop/op_config.h)
-AM_INIT_AUTOMAKE(oprofile, 0.6.1)
+AM_INIT_AUTOMAKE(oprofile, 0.7cvs)
 AM_CONFIG_HEADER(config.h)
 
 AC_PROG_RANLIB

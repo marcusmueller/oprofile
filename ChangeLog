@@ -1,5 +1,9 @@
 2003-09-14  John Levon  <levon@movementarian.org>
 
+	* configure.in: back to 0.7cvs
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
 	* configure.in: bump to 0.6.1
 
 2003-09-13  John Levon  <levon@movementarian.org>
