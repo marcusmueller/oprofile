@@ -1,3 +1,7 @@
+2004-11-07  Kristis Makris  <kristis.makris@asu.edu>
+
+	* doc/internals.xml: fix typo
+
 2004-11-01  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* events/ppc64/970/events: Make min count 10000 for all PM_INST_CMPL;

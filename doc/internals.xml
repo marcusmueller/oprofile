@@ -563,7 +563,7 @@ a notification is placed in the OProfile buffer, and this triggers a
 re-read. We store the module name, and the loading address and size.
 This is also done for the main kernel image, as specified by the user.
 The absolute PC value is matched against each address range, and
-modified into an offset hwne the matching module is found. See 
+modified into an offset when the matching module is found. See 
 <filename>daemon/opd_kernel.c</filename> for the details.
 </para>
 
