@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.26 2002/01/04 21:18:39 phil_e Exp $ */
+/* $Id: oprofile.c,v 1.27 2002/01/04 21:35:18 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -53,8 +53,6 @@ static u32 prof_on __cacheline_aligned;
 
 /* in the process of quitting ? */
 static int quitting;
-/* is partial_stop made ?  Re-using quitting for this purpose is obfuscated */
-static int partial_stop;
  
 static int op_major;
 
@@ -317,9 +315,6 @@ static void pmc_stop(void *info)
 
 inline static void pmc_select_start(uint cpu)
 {
-	if (partial_stop)
-		return;
-
 	if (cpu == op_cpu_id())
 		pmc_start(NULL);
 	else
@@ -328,9 +323,6 @@ inline static void pmc_select_start(uint cpu)
 
 inline static void pmc_select_stop(uint cpu)
 {
-	if (partial_stop)
-		return;
-
 	if (cpu == op_cpu_id())
 		pmc_stop(NULL);
 	else
@@ -768,14 +760,10 @@ out:
  */
 static void oprof_partial_stop(void)
 {
-	if (partial_stop)
-		return;
-
 	op_replace_syscalls();
 	smp_call_function(pmc_stop, NULL, 0, 1);
 	pmc_stop(NULL);
 	restore_nmi();
-	partial_stop = 1;
 }
  
 static int oprof_stop(void)
@@ -918,7 +906,9 @@ static void do_actual_dump(void)
 		}
 		spin_unlock(&note_lock);
 		oprof_ready[cpu] = 2;
-		pmc_select_start(cpu);
+		if (!quitting) {
+			pmc_select_start(cpu);
+		}
 	}
 	wake_up(&oprof_wait);
 }
