@@ -180,6 +180,17 @@ do_init() {
 	VERBOSE=0
 	SEPARATE_SAMPLES=0
 
+	# binaries called
+	OP_HELP=`dirname $0`/op_help
+	if test ! -f "$OP_HELP"; then
+		OP_HELP=op_help
+	fi
+
+	OPROFILED=`dirname $0`/oprofiled
+	if test ! -f "$OPROFILED"; then
+		OPROFILED=oprofiled
+	fi
+
 	# location for daemon setup information
 	SETUP_DIR="/root/.oprofile"
 	SETUP_FILE="$SETUP_DIR/daemonrc"
@@ -479,12 +490,12 @@ do_options() {
 				;;
 
 			--version)
-				op_help --version | awk -F: '{print $2}'
+				$OP_HELP --version | awk -F: '{print $2}'
 				exit 0
 				;;
  
 			--list-events)
-				exec op_help
+				exec $OP_HELP
 				;;
 			*)
 				echo "Unknown option \"$arg\". See opcontrol --help" >&2
@@ -737,7 +748,7 @@ do_start_daemon() {
 	vecho "cpu speed (estimation) : $cpu_speed"
 	vecho "executing oprofiled $OPD_ARGS"
 
-	oprofiled $OPD_ARGS
+	$OPROFILED $OPD_ARGS
  
 	COUNT=0
 	while ! test -f "$DIR/lock"

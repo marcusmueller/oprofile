@@ -1,3 +1,8 @@
+2003-01-15  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: prefer oprofiled/op_help binaries in the same
+	  dir as opcontrol
+
 2003-01-12  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_events.c: rename OP_P4_HT2 to OP_P4_ALL
