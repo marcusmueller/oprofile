@@ -147,7 +147,7 @@ string const op_print_event(op_cpu cpu_type, u8 type, u16 um, u32 count)
 		str += ")";
 	}
 
-	str += " count " + tostr(count);
+	str += " count " + op_lexical_cast<string>(count);
 	return str;
 }
 

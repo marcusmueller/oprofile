@@ -30,29 +30,6 @@ string erase_to_last_of(string const & str, char ch)
 }
 
 
-string tostr(unsigned int i)
-{
-	ostringstream ss;
-	ss << i;
-	return ss.str();
-}
-
-
-unsigned int touint(string const & s)
-{
-	unsigned int i = 0;
-	istringstream ss(s);
-	ss >> i;
-	return i;
-}
-
-
-bool tobool(string const & s)
-{
-	return touint(s);
-}
-
-
 string split(string & s, char c)
 {
 	string::size_type i = s.find_first_of(c);
@@ -145,8 +122,9 @@ string const format_double(double value, size_t int_width, size_t fract_width)
 	return formatted;
 }
 
+
 template <>
-unsigned int lexical_cast_no_ws<unsigned int>(std::string const & str)
+unsigned int op_lexical_cast<unsigned int, string>(string const & str)
 {
 	char* endptr;
 
@@ -154,7 +132,7 @@ unsigned int lexical_cast_no_ws<unsigned int>(std::string const & str)
 	unsigned long ret = 0;
 	ret = strtoul(str.c_str(), &endptr, 0);
 	if (*endptr) {
-		throw std::invalid_argument("lexical_cast_no_ws<T>(\""+ str +"\")");
+		throw std::invalid_argument("op_lexical_cast(\""+ str +"\")");
 	}
 	return ret;
 }

@@ -70,7 +70,7 @@ void generic_spec<T>::set(std::string const & str)
 	}
 
 	is_all = false;
-	data = lexical_cast_no_ws<T>(str);
+	data = op_lexical_cast<T>(str);
 }
 
 

@@ -71,7 +71,7 @@ void report_error(profile_classes const & classes,
 
 	if (!i) {
 		str += " and ";
-		str += tostr(classes.v.size() - 5);
+		str += op_lexical_cast<string>(classes.v.size() - 5);
 		str += " more,";
 	}
 
@@ -353,9 +353,15 @@ void add_profile(profile_class & pclass, parsed_filename const & parsed)
 
 int numeric_compare(string const & lhs, string const & rhs)
 {
-	// FIXME: do we need to handle "all" ??
-	unsigned int lhsval = touint(lhs);
-	unsigned int rhsval = touint(rhs);
+	if (lhs == "all" && rhs == "all")
+		return 0;
+	// we choose arbitrally an order.
+	if (lhs == "all")
+		return 1;
+	if (rhs == "all")
+		return -1;
+	unsigned int lhsval = op_lexical_cast<unsigned int>(lhs);
+	unsigned int rhsval = op_lexical_cast<unsigned int>(rhs);
 	if (lhsval == rhsval)
 		return 0;
 	if (lhsval < rhsval)

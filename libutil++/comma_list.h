@@ -95,7 +95,7 @@ void comma_list<T>::set(std::string const & str, bool cumulative)
 			items.clear();
 			break;
 		}
-		items.push_back(lexical_cast_no_ws<T>(result[i]));
+		items.push_back(op_lexical_cast<T>(result[i]));
 	}
 }
 

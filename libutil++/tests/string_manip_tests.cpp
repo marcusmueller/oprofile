@@ -61,51 +61,6 @@ static void erase_to_last_of_tests()
 }
 
 
-static input_output<unsigned int, char const *> expect_tostr[] =
-{
-	{ 123, "123" },
-	{ 33, "33" },
-	{ 0, "0" },
-	{ 0, 0 }
-};
-
-static void tostr_tests()
-{
-	input_output<unsigned int, char const *> const * cur;
-	for (cur = expect_tostr; cur->output; ++cur) {
-		string result = tostr(cur->input);
-		check_result("tostr()", cur->input, cur->output, result);
-	}
-}
-
-static void touint_tests()
-{
-	// reversed input/output of the previous tests
-	input_output<unsigned int, char const *> const * cur;
-	for (cur = expect_tostr; cur->output; ++cur) {
-		unsigned int result = touint(cur->output);
-		check_result("tostr()", cur->output, cur->input, result);
-	}
-}
-
-
-static input_output<char const*, bool> expect_tobool[] =
-{
-	{ "0", false },
-	{ "33", true },
-	{ "1", true },
-	{ 0, 0 }
-};
-
-static void tobool_tests()
-{
-	input_output<char const *, bool> const * cur;
-	for (cur = expect_tobool; cur->input; ++cur) {
-		bool result = tobool(cur->input);
-		check_result("tostr()", cur->input, cur->output, result);
-	}
-}
-
 static input_output<char const *, pair<string, string> > expect_split[] =
 {
 #define MAKE_PAIR(a, b)  make_pair(string(a), string(b))
@@ -138,7 +93,10 @@ static input_output<char const *, pair<string, bool> > expect_is_prefix[] =
 	{ "abcd", MAKE_PAIR("abc", true) },
 	{ "abcd", MAKE_PAIR("ac", false) },
 	{ "babcd", MAKE_PAIR("abc", false) },
-	{ "", MAKE_PAIR("", false) },
+	// these invoke undefined behavior from is_prefix, we keep them
+	// for the record.
+//	{ "babcd", MAKE_PAIR("", false) },
+//	{ "", MAKE_PAIR("", false) },
 	{ 0, MAKE_PAIR("", true) }
 #undef MAKE_PAIR
 };
@@ -234,8 +192,56 @@ static void format_double_tests()
 }
 
 
-// FIXME: lexical_cast_no_ws<> see TODO first
+static input_output<unsigned int, char const *> expect_from_str_to_uint[] =
+{
+	{ 123, "123" },
+	{ 33, "33" },
+	{ 0, "0" },
+	{ 0, 0 }
+};
 
+static void tostr_tests()
+{
+	input_output<unsigned int, char const *> const * cur;
+	for (cur = expect_from_str_to_uint; cur->output; ++cur) {
+		string result = op_lexical_cast<string>(cur->input);
+		check_result("op_lexical_cast()", cur->input,
+		     cur->output, result);
+	}
+}
+
+static void touint_tests()
+{
+	// reversed input/output of the previous tests
+	input_output<unsigned int, char const *> const * cur;
+	for (cur = expect_from_str_to_uint; cur->output; ++cur) {
+		unsigned int result =
+		        op_lexical_cast<unsigned int>(cur->output);
+		check_result("op_lexical_casr()", cur->output, cur->input,
+		     result);
+	}
+}
+
+
+static input_output<char const*, bool> expect_from_str_to_bool[] =
+{
+	{ "0", false },
+	{ "33", true },
+	{ "1", true },
+	{ 0, 0 }
+};
+
+static void tobool_tests()
+{
+	input_output<char const *, bool> const * cur;
+	for (cur = expect_from_str_to_bool; cur->input; ++cur) {
+		bool result = op_lexical_cast<bool>(cur->input);
+		check_result("op_lexical_cast()", cur->input, cur->output,
+		     result);
+	}
+}
+
+// FIXME: more op_lexical_cast<> tests
 
 int main()
 {

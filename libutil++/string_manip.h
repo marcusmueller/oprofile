@@ -26,20 +26,12 @@
  */
 std::string erase_to_last_of(std::string const & str, char ch);
 
-/// conversion to std::string
-std::string tostr(unsigned int i);
-
-/// conversion to uint
-unsigned int touint(std::string const & s);
-
-/// conversion to bool
-bool tobool(std::string const & s);
-
 /// split string s by first occurence of char c, returning the second part.
 /// s is set to the first part. Neither include the split character
 std::string split(std::string & s, char c);
 
-/// return true if "prefix" is a prefix of "s"
+/// return true if "prefix" is a prefix of "s", behavior is undefined
+/// if prefix is an empty string
 bool is_prefix(std::string const & s, std::string const & prefix);
 
 /**
@@ -84,44 +76,33 @@ static unsigned int const percent_width = percent_int_width + percent_fract_widt
 
 
 /**
- * convert str to a T through an istringstream.
- * No leading or trailing whitespace is allowed.
+ * @param src  input parameter
+ * convert From src to a T through an istringstream.
  *
  * Throws invalid_argument if conversion fail.
  *
  * Note that this is not as foolproof as boost's lexical_cast
  */
-template <class T>
-T lexical_cast_no_ws(std::string const & str)
+template <typename To, typename From>
+To op_lexical_cast(From const & src)
 {
-	T value;
-
-	std::istringstream in(str);
-	// this doesn't work properly for 2.95/2.91 so with these
-	// compiler " 33" is accepted as valid input, no big deal.
-	in.unsetf(std::ios::skipws);
-
-	in >> value;
-
-	if (in.fail()) {
-		throw std::invalid_argument("lexical_cast_no_ws<T>(\""+ str +"\")");
+	std::ostringstream in;
+	if (!(in << src)) {
+		throw std::invalid_argument("op_lexical_cast<T>()");
 	}
-
-	// we can't check eof here, eof is reached at next read.
-	char ch;
-	in >> ch;
-	if (!in.eof()) {
-		throw std::invalid_argument("lexical_cast_no_ws<T>(\""+ str +"\")");
+	std::istringstream out(in.str());
+	To value;
+	if (!(out >> value)) {
+		throw std::invalid_argument("op_lexical_cast<T>(\"" +
+		    in.str() +"\")");
 	}
-
 	return value;
 }
 
-// FIXME: a hack to accept hexadecimal for unsigned int. We must fix it in a
-// better way (removing touint(), tobool(), tostr()). Do we really need
-// a strict checking against WS ? (this strict conversion was to help
-// validating sample filename)
+// specialization accepting hexadecimal and octal number in input. Note than
+// op_lexical_cast<unsigned int>("0x23"); will fail because it call the
+// non specialized template.
 template <>
-unsigned int lexical_cast_no_ws<unsigned int>(std::string const & str);
+unsigned int op_lexical_cast<unsigned int>(std::string const & str);
 
 #endif /* !STRING_MANIP_H */

@@ -62,8 +62,8 @@ void filename_spec::set_sample_filename(string const & filename)
 	image = parsed.image;
 	lib_image = parsed.lib_image;
 	event = parsed.event;
-	count = lexical_cast_no_ws<int>(parsed.count);
-	unitmask = lexical_cast_no_ws<unsigned int>(parsed.unitmask);
+	count = op_lexical_cast<int>(parsed.count);
+	unitmask = op_lexical_cast<unsigned int>(parsed.unitmask);
 	tgid.set(parsed.tgid);
 	tid.set(parsed.tid);
 	cpu.set(parsed.cpu);
