@@ -351,7 +351,7 @@ fi
 if test "$datadir" = "NONE"; then
 	datadir="$prefix/share"
 fi
-OP_DATADIR=`eval echo "$datadir/$PACKAGE"`
+OP_DATADIR=`eval echo "$datadir/$PACKAGE/"`
 OP_BINDIR=`eval echo "$bindir/"`
 AC_SUBST(OP_BINDIR)
 AC_SUBST(OP_DATADIR)
@@ -377,9 +377,9 @@ AC_OUTPUT(Makefile \
 	module/Makefile \
 	module/x86/Makefile \
 	module/ia64/Makefile \
-	version.h.in)
+	version-1.h)
 
-AX_COPY_IF_CHANGE(version.h.in, version.h)
+AX_COPY_IF_CHANGE(version-1.h, version.h)
 
 if test -z "$QT_LIB"; then
 	echo "Warning: a working Qt not found; no GUI will be built"

@@ -14,7 +14,7 @@ make.common
 cvs.log
 Makefile
 version.h
-version.h.in
+version-1.h
 a.diff
 aclocal.m4
 oprofile.s

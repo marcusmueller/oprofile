@@ -1,5 +1,9 @@
 2003-02-23  John Levon  <levon@movementarian.org>
 
+	* version-1.h.in: another rename
+
+2003-02-23  John Levon  <levon@movementarian.org>
+
 	* configure.in: set up OP_DATADIR and OP_BINDIR
 
 	* gui/oprof_start.cpp:
