@@ -9,14 +9,14 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.51 2001/11/07 01:35:38 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.52 2001/11/07 01:40:28 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 PACKAGE=oprofile
-VERSION=0.0.7cvs
+VERSION=0.0.7
 
 dnl for the man page
 DATE="`date '+%a %d %B %Y'`"
@@ -116,7 +116,7 @@ if test -z "$HARD_GET_CURRENT"; then
   AC_MSG_RESULT(no)
 else
   AC_MSG_RESULT(yes)
-  # hard_get_current() can't work for us... 
+  # hard_get_current() can't work for us...
   AC_MSG_ERROR(This kernel version is unsupported. Check oprofile bug tracker for more information.)
 fi
 
