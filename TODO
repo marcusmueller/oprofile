@@ -63,8 +63,6 @@ Before 1.0 little stuff
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
  o when we dump stats for oprofiled, dump kernel-side values too (for 2.5)
  o lookup_dcookie can return ENAMETOOLONG but we can't hack it
- o daemon needs to handle -EMFILE failures in all files opened (including
-   complete_dump !) by closing sample files
  o remove 2.2 / gcc 2.91 support ?
  o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
  o sample-file: / binary: don't work in any useful way - can we fix this
