@@ -130,7 +130,7 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 		}
 	}
 
-	/* dae assume than map_nr is the primary image name, this is always
+	/* dae assume than maps[0] is the primary image name, this is always
 	 * true at exec time but not for /proc/pid so reorder maps if necessary
 	 */
 	for (map_nr = 0 ; map_nr < proc->nr_maps ; ++map_nr) {

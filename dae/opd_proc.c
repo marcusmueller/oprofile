@@ -92,13 +92,15 @@ void opd_age_procs(void)
  *
  * Returns the app_name for the given @proc or %NULL if
  * it does not exist any mapping for this proc (which is
- * true for the first mapping at exec time and also true
- * for process parsed through /proc/pid at startup because
- * we reorder maps)
+ * true for the first mapping at exec time)
  */
 char const * opd_app_name(struct opd_proc const * proc)
 {
 	char const * app_name = NULL;
+	/* at exec time the first maps is always the map for primary image.
+	 * At startup proc/pid/maps don't provide this property but we
+	 * we reorder maps to ensure than maps[0] is the primary image
+	 */
 	if (proc->nr_maps)
 		app_name = proc->maps[0].image->name;
 
