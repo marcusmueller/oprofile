@@ -23,15 +23,14 @@ o audit oprof_start for security...
 Before 1.0
 ----------
 
+ o test it to hell and back
+ o check documentation
  o difference between two profile session. Difference must be made at source level. 
   (This is a part of post-prof)
  o improve format of oprofpp output etc.
- o implement a shadow interrupt handler so we can profile the NMI handler code
+ o profile the NMI handler code
  o verify builds (modversions, kernel versions, athlon etc.)
  o merging utility for sample files (useful)
- o - test it to hell and back
- o - check documentation
- o user request:  kernel 2.2 support 
  o post-prof GUI ? (big job)
  o use a filelock rather a sleep to synchronize op_start and daemon.
  o check chroot() processes and the path hash stuff
@@ -46,9 +45,6 @@ o merge sample files into one big report (like vtune can do repeated runs)
 o determine where we need ctx_sw_on/off to prevent pre-emption + test
  
 o move from racy sysctl to procfs, if it can be done nicely
-
-o can we add some code for linux kernel spinlock contention in .text.lock, i.e.
-  process the code in this section specially in the post-profile ?
 
 o pentium 4 patches ?
  

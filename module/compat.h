@@ -141,6 +141,14 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
 
+/* different request_region */
+#define request_region compat_request_region
+void *compat_request_region (unsigned long start, unsigned long n, const char *name);
+ 
+/* no rtc lock on 2.2 */
+#define lock_rtc(f) save_flags(f)
+#define unlock_rtc(f) restore_flags(f)
+ 
 /* on 2.2, the APIC is never enabled on UP */
 /* FIXME: what about smp running on an UP kernel */
 #define NO_MPTABLE_CHECK_NEEDED
@@ -154,6 +162,9 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 
 #else
 
+#define lock_rtc(f) spin_lock_irqsave(&rtc_lock, f)
+#define unlock_rtc(f) spin_unlock_irqrestore(&rtc_lock, f)
+ 
 #define op_cpu_id() cpu_number_map(smp_processor_id())
 
 #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0) */

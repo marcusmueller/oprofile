@@ -23,6 +23,13 @@
 #define OP_RTC_MIN     2
 #define OP_RTC_MAX  4096 
 
+/* not in 2.2 */
+#ifndef RTC_IRQ
+#define RTC_IRQ 8
+#endif
+ 
+// FIXME: are we safe on 2.2 ?
+ 
 /* ---------------- RTC handler ------------------ */
  
 // FIXME: share 
@@ -43,8 +50,10 @@ static void do_rtc_interrupt(int irq, void *dev_id, struct pt_regs *regs)
 {
 	uint cpu = op_cpu_id();
 	unsigned char intr_flags;
+	unsigned long flags; 
 
-	spin_lock(&rtc_lock);
+	lock_rtc(flags);
+ 
 	/* read and ack the interrupt */
 	intr_flags = CMOS_READ(RTC_INTR_FLAGS);
 	/* Is this my type of interrupt? */
@@ -52,7 +61,9 @@ static void do_rtc_interrupt(int irq, void *dev_id, struct pt_regs *regs)
 		if (likely(!op_check_pid()))
 			op_do_profile(cpu, regs, 0);
 	}
-	spin_unlock(&rtc_lock);
+ 
+	unlock_rtc(flags);
+ 
 	return;
 }
 
@@ -64,7 +75,7 @@ static int rtc_setup(void)
 	unsigned long target;
 	unsigned int exp, freq;
 
- 	spin_lock_irqsave(&rtc_lock, flags);
+ 	lock_rtc(flags);
 
 	/* disable periodic interrupts */
 	tmp_control = CMOS_READ(RTC_CONTROL);
@@ -87,7 +98,7 @@ static int rtc_setup(void)
 	tmp_freq_select = (tmp_freq_select & 0xf0) | freq;
 	CMOS_WRITE(tmp_freq_select, RTC_FREQ_SELECT);
 
-	spin_unlock_irqrestore(&rtc_lock, flags);
+	unlock_rtc(flags);
 	return 0; 
 }
 
@@ -96,7 +107,7 @@ static void rtc_start(void)
 	unsigned char tmp_control;
 	unsigned long flags;
 
-	spin_lock_irqsave(&rtc_lock, flags);
+	lock_rtc(flags);
  
 	/* Enable periodic interrupts */
 	tmp_control = CMOS_READ(RTC_CONTROL);
@@ -106,7 +117,7 @@ static void rtc_start(void)
 	/* read the flags register to start interrupts */
 	CMOS_READ(RTC_INTR_FLAGS);
 
-	spin_unlock_irqrestore(&rtc_lock, flags);
+	unlock_rtc(flags);
 }
 
 static void rtc_stop(void)
@@ -114,7 +125,7 @@ static void rtc_stop(void)
 	unsigned char tmp_control;
 	unsigned long flags;
 
- 	spin_lock_irqsave(&rtc_lock, flags);
+	lock_rtc(flags);
 
 	/* disable periodic interrupts */
 	tmp_control = CMOS_READ(RTC_CONTROL);
@@ -122,7 +133,7 @@ static void rtc_stop(void)
 	CMOS_WRITE(tmp_control, RTC_CONTROL);
 	CMOS_READ(RTC_INTR_FLAGS);
 
-	spin_unlock_irqrestore(&rtc_lock, flags);
+	unlock_rtc(flags);
 }
 
 static void rtc_start_cpu(uint cpu)

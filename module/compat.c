@@ -1,4 +1,4 @@
-/* $Id: compat.c,v 1.1 2002/01/11 05:24:07 movement Exp $ */
+/* $Id: compat.c,v 1.2 2002/01/15 19:24:31 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -16,8 +16,21 @@
  */
 
 #include "op_dcache.h"
+/* get the real request_region */
+#undef request_region
+#include <linux/ioport.h>
 
 #ifdef NEED_2_2_DENTRIES
+ 
+/* note - assumes you only test for NULL, and not
+ * actually care about the return value */
+void *compat_request_region (unsigned long start, unsigned long n, const char *name)
+{
+        if (check_region (start, n) != 0)
+                return NULL;
+        request_region (start, n, name);
+        return (void *) 1;
+}
  
 int wind_dentries_2_2(struct dentry *dentry)
 {
