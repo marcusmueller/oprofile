@@ -372,9 +372,9 @@ static void opd_options(int argc, char const * argv[])
 	}
 
 	opd_buf_size = opd_read_fs_int("buffer_size");
-	kernel_only = opd_read_fs_int("kernel_only");
 
 	if (cpu_type != CPU_TIMER_INT) {
+		kernel_only = opd_read_fs_int("kernel_only");
 		opd_pmc_options();
 	}
 

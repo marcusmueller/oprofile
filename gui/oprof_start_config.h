@@ -52,6 +52,7 @@ struct config_setting {
 	uint hash_table_size;
 	uint note_table_size;
 	std::string kernel_filename;
+	// FIXME: unsuported for 2.5
 	int kernel_only;
 	int ignore_daemon_samples;
 	int verbose;

@@ -1,3 +1,8 @@
+2002-11-19  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/oprofiled.c: /dev/oprofile/kernel_only doesn't exists
+	  in timer int mode (second pass to fix #637804 ...)
+
 2002-11-17  Graydon Hoare  <graydon@redhat.com>
 
 	* module/x86/op_apic.h:
