@@ -98,8 +98,8 @@ static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, u8 ctr)
  
 inline static void op_do_profile(struct _oprof_data *data, struct pt_regs *regs, u8 ctr)
 {
-	unsigned int h = op_hash(regs->eip,current->pid,ctr);
-	unsigned int i; 
+	uint h = op_hash(regs->eip,current->pid,ctr);
+	uint i; 
 
 	for (i=0; i < OP_NR_ENTRY; i++) {
 		if (!op_miss(data->entries[h].samples[i])) {
@@ -129,7 +129,7 @@ new_entry:
  
 static u8 op_check_ctr(struct _oprof_data *data, struct pt_regs *regs, u8 ctr) 
 { 
-	unsigned long l,h;
+	ulong l,h;
 	get_perfctr(l,h,ctr);
 	/* FIXME: is using ? : better assem ? */
 	if (ctr_overflowed(l)) {
@@ -142,7 +142,7 @@ static u8 op_check_ctr(struct _oprof_data *data, struct pt_regs *regs, u8 ctr)
 asmlinkage void op_do_nmi(struct pt_regs * regs)
 {
 	struct _oprof_data *data = &oprof_data[smp_processor_id()]; 
-	unsigned int low,high;
+	uint low,high;
 	u8 overflowed=0;
 
 	/* disable counters */ 
@@ -166,7 +166,7 @@ asmlinkage void op_do_nmi(struct pt_regs * regs)
 
 void mask_LVT_NMIs(void)
 {
-	unsigned long v;
+	ulong v;
  
 	/* LVT0,1,PC can generate NMIs on APIC */
 	v = apic_read(APIC_LVT0);
@@ -179,7 +179,7 @@ void mask_LVT_NMIs(void)
 
 void unmask_LVT_NMIs(void)
 {
-	unsigned long v;
+	ulong v;
 
 	v = apic_read(APIC_LVT0);
 	apic_write(APIC_LVT0, v & ~APIC_LVT_MASKED);
@@ -240,8 +240,8 @@ static void restore_nmi(void)
  
 static void disable_local_P6_APIC(void *dummy)
 {
-	unsigned long v;
-	unsigned int l,h;
+	ulong v;
+	uint l,h;
  
 	/* FIXME: maybe this should go at end of function ? */ 
 	/* first disable via MSR */
@@ -282,7 +282,7 @@ static void disable_local_P6_APIC(void *dummy)
  
 static void smp_apic_setup(void *dummy)
 {
-	unsigned int val;
+	uint val;
  
 	/* set up LVTPC as we need it */
 	/* IA32 V3, Figure 7.8 */ 
@@ -315,8 +315,8 @@ static void smp_apic_setup(void *dummy)
  */
 static int apic_setup(void)
 {
-	unsigned int msr_low, msr_high;
-	unsigned int val;
+	uint msr_low, msr_high;
+	uint val;
   
 	/* FIXME: davej says it might be possible to use PCI to find
 	   SMP systems with one CPU */
@@ -395,8 +395,8 @@ not_local_p6_apic:
  
 static void pmc_setup(void *dummy)
 {
-	unsigned int low,high;
-	unsigned int cpu = smp_processor_id(); 
+	uint low,high;
+	uint cpu = smp_processor_id(); 
 	u8 ctr0_um,ctr1_um; 
  
 	/* being careful to skirt round reserved bits */
@@ -472,9 +472,9 @@ static void pmc_setup(void *dummy)
 
 static void pmc_start(void *info)
 {
-	unsigned int low,high; 
+	uint low,high; 
 
-	if (info && (*((unsigned int *)info)!=smp_processor_id()))
+	if (info && (*((uint *)info)!=smp_processor_id()))
 		return; 
 
  	/* enable counters */
@@ -484,9 +484,9 @@ static void pmc_start(void *info)
  
 static void pmc_stop(void *info)
 {
-	unsigned int low,high; 
+	uint low,high; 
 
-	if (info && (*((unsigned int *)info)!=smp_processor_id()))
+	if (info && (*((uint *)info)!=smp_processor_id()))
 		return; 
 
 	/* disable counters */ 
@@ -494,7 +494,7 @@ static void pmc_stop(void *info)
 	wrmsr(P6_MSR_EVNTSEL0,low&~(1<<22),high); 
 } 
  
-inline static void pmc_select_start(unsigned int cpu) 
+inline static void pmc_select_start(uint cpu) 
 {
 	if (cpu==smp_processor_id())
 		pmc_start(NULL);
@@ -502,7 +502,7 @@ inline static void pmc_select_start(unsigned int cpu)
 		smp_call_function(pmc_start,&cpu,0,1);
 }
 
-inline static void pmc_select_stop(unsigned int cpu) 
+inline static void pmc_select_stop(uint cpu) 
 {
 	if (cpu==smp_processor_id())
 		pmc_stop(NULL);
@@ -570,18 +570,25 @@ void oprof_stop_thread(void)
 	down(&threadstopsem);
 }
  
+spinlock_t note_lock __cacheline_aligned = SPIN_LOCK_UNLOCKED;
+
 void oprof_out8(void *buf)
 {
 	struct _oprof_data *data = &oprof_data[0];
  
+	spin_lock(&note_lock);
 	pmc_select_stop(0);
+ 
 	memcpy(&data->buffer[data->nextbuf],buf,8);
-	pmc_select_start(0); 
 	if (++data->nextbuf==data->buf_size) {
 		data->nextbuf=0;
 		oprof_ready[0] = 1;
 		wake_up(&oprof_wait);
 	}
+ 
+	pmc_select_start(0);
+	spin_unlock(&note_lock);
+ 
 	return;
 }
  
@@ -620,7 +627,7 @@ static int oprof_release(struct inode *ino, struct file *file)
 static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 {
 	struct op_sample *mybuf;
-	unsigned int i; 
+	uint i; 
 	ssize_t max;
  
 	if (MINOR(file->f_dentry->d_inode->i_rdev==2))
@@ -698,7 +705,7 @@ static struct file_operations oprof_fops = {
 static __init int parms_ok(void)
 {
 	int ret;
-	unsigned int cpu; 
+	uint cpu; 
 	struct _oprof_data *data; 
 	u8 ctr0_um, ctr1_um; 
  
@@ -757,9 +764,9 @@ static __init int parms_ok(void)
 	return 1; 
 }
 
-static void oprof_free_mem(unsigned int num)
+static void oprof_free_mem(uint num)
 {
-	unsigned int i;
+	uint i;
 	for (i=0; i < num; i++) {
 		kfree(oprof_data[i].entries);
 		kfree(oprof_data[i].buffer);
@@ -768,8 +775,8 @@ static void oprof_free_mem(unsigned int num)
  
 static int __init oprof_init_data(void)
 {
-	unsigned int i;
-	unsigned long hash_size,buf_size; 
+	uint i;
+	ulong hash_size,buf_size; 
 	struct _oprof_data *data; 
 
 	init_waitqueue_head(&oprof_wait); 
