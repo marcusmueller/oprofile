@@ -1,3 +1,17 @@
+2002-01-30  Philippe Elie  <ph_e@club-internet.fr>
+
+	* configure.in:
+	* doc/oprofile.sgml:
+	* module/compat22.h: remove support for kernel version
+	  prior to 2.2.11
+
+	* module/op_fixmap.c:
+	* module/compat.h: small cleanup
+
+	* module/oprofile.c: avoid multi-line literal string
+
+	* pp/oprofpp_util.cpp: better to get_symbols() ;)
+
 2002-01-29  John Levon  <moz@compsoc.man.ac.uk>
 
 	* module/op_fixmap.c: remap fake mapping on 2.2 as well

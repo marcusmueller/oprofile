@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.25 2002/01/27 21:28:24 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.26 2002/01/30 04:07:10 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -372,6 +372,8 @@ void opp_bfd::open_bfd_image(const string & filename, bool is_kernel)
 		sect_offset = OPD_KERNEL_OFFSET - sect->filepos;
 		verbprintf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n", sect_offset, sect->filepos); 
 	}
+
+	get_symbols();
 }
 
 /**

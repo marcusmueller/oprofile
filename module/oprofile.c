@@ -178,8 +178,7 @@ inline static void up_and_check_note(void)
 	if (unlikely(note_pos == sysctl.note_size)) {
 		static int warned;
 		if (!warned) {
-			printk(KERN_WARNING "note buffer overflow: restart oprofile 
-				with a larger note buffer.\n");
+			printk(KERN_WARNING "note buffer overflow: restart oprofile with a larger note buffer.\n");
 			warned = 1;
 		}
 		note_pos = sysctl.note_size - 1;

@@ -82,7 +82,6 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 	#define op_cpu_id() cpu_number_map[smp_processor_id()]
 #else
 	#define op_cpu_id() smp_processor_id()
-	/* on 2.2, the APIC is never enabled on UP */
 #endif /* CONFIG_SMP */
 
 /* TODO: add __cache_line_aligned_in_smp and put this stuff in its own file */
@@ -113,10 +112,8 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 #endif /* __cacheline_aligned */
 
  
-/* provide a working smp_call_function when: < 2.2.8 || (!SMP && <= 2.2.20),
- * this means than we support all UP kernel from 2.2.0 and all SMP kernel from
- * 2.2.8 */
-#if V_BEFORE(2,2,8) || (!defined(CONFIG_SMP) && V_BEFORE(2,2,21))
+/* provide a working smp_call_function */
+#if !defined(CONFIG_SMP)
 
 	#undef smp_call_function
 	static int inline smp_call_function (void (*func) (void *info), void *info,
@@ -125,56 +122,7 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 		return 0;
 	}
 
-#endif /* < 2.2.8 || (!SMP && <= 2.2.20) */
-
-
-#if V_BEFORE(2,2,3)
-
-	/* 2.2.3 introduced wait_event_interruptible */
-	#define __wait_event_interruptible(wq, condition, ret)	\
-	do {							\
-		struct wait_queue __wait;			\
-								\
-		__wait.task = current;				\
-		add_wait_queue(&wq, &__wait);			\
-		for (;;) {					\
-			current->state = TASK_INTERRUPTIBLE;	\
-			if (condition)				\
-				break;				\
-			if (!signal_pending(current)) {		\
-				schedule();			\
-				continue;			\
-			}					\
-			ret = -ERESTARTSYS;			\
-			break;					\
-		}						\
-		current->state = TASK_RUNNING;			\
-		remove_wait_queue(&wq, &__wait);		\
-	} while (0)
-
-	#define wait_event_interruptible(wq, condition)				\
-	({									\
-		int __ret = 0;							\
-		if (!(condition))						\
-			__wait_event_interruptible(wq, condition, __ret);	\
-		__ret;								\
-	})
-
-#endif /* V_BEFORE(2,2,3) */
-
-#if V_BEFORE(2,2,8)
-
-	/* 2.2.8 introduced rdmsr/wrmsr */
-	#define rdmsr(msr,val1,val2)				\
-	       __asm__ __volatile__("rdmsr"			\
-				    : "=a" (val1), "=d" (val2)	\
-				    : "c" (msr))
-	#define wrmsr(msr,val1,val2)					\
-	     __asm__ __volatile__("wrmsr"				\
-				  : /* no outputs */			\
-				  : "c" (msr), "a" (val1), "d" (val2))
-
-#endif /* V_BEFORE(2,2,8) */
+#endif /* !CONFIG_SMP */
 
 #if V_BEFORE(2,2,18)
 

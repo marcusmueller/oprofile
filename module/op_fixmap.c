@@ -129,4 +129,4 @@ int __init find_intel_smp(void)
 	return smp_scan_config(address, 0x1000);
 }
 
-#endif /* V_AT_LEAST(2,4,0) || defined(CONFIG_X86_LOCAL_APIC) */
+#endif /* defined(CONFIG_X86_LOCAL_APIC) */

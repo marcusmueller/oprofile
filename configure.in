@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.70 2002/01/16 05:04:34 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.71 2002/01/30 04:07:10 phil_e Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -81,8 +81,7 @@ case "$KVERS" in
 *) AC_MSG_ERROR(Unsupported kernel version)
 esac
 
-dnl FIXME can we use this to also reject ac with get_hard_current() ?
-dnl but how to cleanly add rejected version or range of rejected version ?
+dnl Check for the minimal kernel version supported
 AC_MSG_CHECKING(kernel version)
 SAVE_CFLAGS=$CFLAGS
 CFLAGS="$BKCFLAGS -I$KINC -D__KERNEL__ -Werror"
@@ -92,7 +91,7 @@ AC_TRY_COMPILE(
   #include <linux/config.h>
   ],
   [
-  #if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,8) && defined(CONFIG_SMP)
+  #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,2,10)
   break_me_hard(\\\);
   #endif
   ], AC_MSG_RESULT("ok"), AC_MSG_ERROR("check html documentation install section"))

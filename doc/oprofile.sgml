@@ -41,9 +41,10 @@ necks in real-world systems.
 	<varlistentry>
 		<term>Linux kernel 2.2/2.4</term>
 		<listitem><para>
-			Oprofile uses a kernel module that can be compiled for 2.2 or 2.4. 
+			Oprofile uses a kernel module that can be compiled for 2.2.11 or later and 2.4. Support for 2.5 up to 2.5.2 is also provided.
 			Versions 2.4.10 or above are recommended, and required if you use the
 			boot-time kernel option <option>nosmp</option>.
+<!-- FIXME: do we require always gte 2.4.10 for nosmp ? -->
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
