@@ -1,8 +1,10 @@
-/* $Id: oprofile.c,v 1.13 2000/08/07 03:57:10 moz Exp $ */
+/* $Id: oprofile.c,v 1.14 2000/08/08 01:58:15 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 
 #include "oprofile.h"
+
+EXPORT_NO_SYMBOLS;
 
 static char *op_version = VERSION_STRING;
 MODULE_AUTHOR("John Levon (moz@compsoc.man.ac.uk)");
