@@ -11,7 +11,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>567</width>
+            <width>563</width>
             <height>536</height>
         </rect>
     </property>
@@ -310,15 +310,15 @@
                                                     <cstring>unit_mask_group</cstring>
                                                 </property>
                                                 <property stdset="1">
-                                                    <name>title</name>
-                                                    <string>Unit mask</string>
-                                                </property>
-                                                <property stdset="1">
                                                     <name>sizePolicy</name>
                                                     <sizepolicy>
                                                         <hsizetype>1</hsizetype>
                                                         <vsizetype>5</vsizetype>
                                                     </sizepolicy>
+                                                </property>
+                                                <property stdset="1">
+                                                    <name>title</name>
+                                                    <string>Unit mask</string>
                                                 </property>
                                                 <property>
                                                     <name>toolTip</name>
@@ -1234,24 +1234,6 @@
 </widget>
 <connections>
     <connection>
-        <sender>kernel_filename_tb</sender>
-        <signal>clicked()</signal>
-        <receiver>oprof_start_base</receiver>
-        <slot>on_choose_file_or_dir()</slot>
-    </connection>
-    <connection>
-        <sender>map_filename_tb</sender>
-        <signal>clicked()</signal>
-        <receiver>oprof_start_base</receiver>
-        <slot>on_choose_file_or_dir()</slot>
-    </connection>
-    <connection>
-        <sender>base_opd_dir_tb</sender>
-        <signal>clicked()</signal>
-        <receiver>oprof_start_base</receiver>
-        <slot>on_choose_file_or_dir()</slot>
-    </connection>
-    <connection>
         <sender>start_profiler_btn</sender>
         <signal>clicked()</signal>
         <receiver>oprof_start_base</receiver>
@@ -1299,11 +1281,31 @@
         <receiver>oprof_start_base</receiver>
         <slot>event_selected(QListViewItem *)</slot>
     </connection>
+    <connection>
+        <sender>kernel_filename_tb</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>choose_kernel_filename()</slot>
+    </connection>
+    <connection>
+        <sender>map_filename_tb</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>choose_system_map_filename()</slot>
+    </connection>
+    <connection>
+        <sender>base_opd_dir_tb</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>choose_opd_dir()</slot>
+    </connection>
+    <slot access="protected">choose_opd_dir()</slot>
+    <slot access="protected">choose_kernel_filename()</slot>
+    <slot access="protected">choose_system_map_filename()</slot>
     <slot access="public">counter_selected(int)</slot>
     <slot access="public">enabled_toggled(bool)</slot>
-    <slot access="public">event_selected(QListViewItem *)</slot>
     <slot access="public">event_over(QListViewItem *)</slot>
-    <slot access="protected">on_choose_file_or_dir()</slot>
+    <slot access="public">event_selected(QListViewItem *)</slot>
     <slot access="protected">on_flush_profiler_data()</slot>
     <slot access="protected">on_start_profiler()</slot>
     <slot access="protected">on_stop_profiler()</slot>

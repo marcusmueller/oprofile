@@ -190,7 +190,6 @@ retry:;
 
 	int tmp_cpu_type;
 
-	// FIXME: handle this CPU type being different from the saved CPU type 
 	in >> tmp_cpu_type;
 	if (tmp_cpu_type != cpu_type) {
 		int user_choice = 
@@ -459,59 +458,34 @@ void oprof_start::enabled_toggled(bool en)
 }
 
 
-// user need to select a file or directory, distinction about what the user
-// needs to select is made through the source of the qt event.
-void oprof_start::on_choose_file_or_dir()
+/// select the kernel image filename
+void oprof_start::choose_kernel_filename()
 {
-	const QObject* source = sender();
+	std::string name = kernel_filename_edit->text().latin1();
+	std::string result = do_open_file_or_dir(name, false);
 
-	/* FIXME: yuck. let's just have separate slots for each event */
- 
-	if (source) {
-		bool dir_only = false;
-		QString base_dir;
+	if (!result.empty())
+		kernel_filename_edit->setText(result.c_str());
+}
 
-		if (source->name() == QString("base_opd_dir_tb") ||
-		    source->name() == QString("samples_files_dir_tb")) {
-			dir_only = true;
-			base_dir = base_opd_dir_edit->text();
-		} else if (source->name() == QString("kernel_filename_tb")) {
-			// need a stl to qt adapter?
-			std::string result;
-			std::string name=kernel_filename_edit->text().latin1();
-			result = basename(name);
-			base_dir = name.c_str();
-		} else if (source->name() == QString("map_filename_tb")) {
-			// need a stl to qt adapter?
-			std::string result;
-			std::string name = map_filename_edit->text().latin1();
-			result = basename(name);
-			base_dir = name.c_str();
-		} else {
-			base_dir = base_opd_dir_edit->text();
-		}
-		
-		// the association between a file open tool button and the
-		// edit widget is made through its name base on the naming
-		// convention: object_name_tb --> object_name_edit
-		std::string const result = do_open_file_or_dir(base_dir.latin1(), dir_only);
-		if (!result.empty()) {
-			std::string src_name(source->name());
-			// we support only '_tb' suffix, the right way is to
-			// remove the '_' suffix and append the '_edit' suffix
-			src_name = src_name.substr(0, src_name.length() - 3);
-			src_name += "_edit";
+/// select the System.map filename
+void oprof_start::choose_system_map_filename()
+{
+	std::string name = map_filename_edit->text().latin1();
+	std::string result = do_open_file_or_dir(name, false);
 
-			QObject* edit = child(src_name.c_str(), "QLineEdit");
-			if (edit)
-				reinterpret_cast<QLineEdit*>(edit)->setText(result.c_str());
-		}
-	} else {
-		// Impossible if the dialog is well designed, if you see this
-		// message you must make something sensible if source == 0
-		fprintf(stderr, "oprof_start::on_choose_file_or_dir() slot is"
-			"not directly call-able\n");
-	}
+	if (!result.empty())
+		map_filename_edit->setText(result.c_str());
+}
+
+/// select the base directory of the deamon
+void oprof_start::choose_opd_dir()
+{
+	QString base_dir = base_opd_dir_edit->text();
+	std::string result = do_open_file_or_dir(base_dir.latin1(), true);
+
+	if (!result.empty())
+		base_opd_dir_edit->setText(result.c_str());
 }
 
 // this record the current selected event setting in the event_cfg[] stuff.
@@ -716,7 +690,6 @@ void oprof_start::on_start_profiler()
 		if (!ctr_enabled[ctr])
 			continue;
 
-		// we need const access. see record_selected_event_config()
 		const persistent_config_t<event_setting>& cfg = event_cfgs[ctr];
 
 		const op_event_descr * descr = current_event[ctr];
@@ -781,7 +754,6 @@ void oprof_start::on_start_profiler()
 		if (!ctr_enabled[ctr])
 			continue;
 
-		// we need const access. see record_selected_event_config()
 		const persistent_config_t<event_setting>& cfg = event_cfgs[ctr];
 
 		const op_event_descr * descr = current_event[ctr];
