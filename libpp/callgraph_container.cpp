@@ -50,25 +50,15 @@ compare_cg_filename::operator()(string const & lhs, string const & rhs) const
 }
 
 /**
- * We need 3 comparators for callgraph, the arcs are sorted by self_count,
- * the callers are sorted by callee_counts in reverse order, the callees
- * by callee_counts in "direct" order, these comparators are used by
- * arc_recorder::get_arc(), get_caller(), get_callee(); giving ordering
- * like:
+ * We need 2 comparators for callgraph, the arcs are sorted by callee_count,
+ * the callees too and the callers by callee_counts in reversed order like:
  *
  *	caller_with_few_callee_samples
  *	caller_with_many_callee_samples
  * function_with_many_samples
  *	callee_with_many_callee_samples
  *	callee_with_few_callee_samples
- *
- * FIXME: not obvious if a mixed comparator will give more readable output.
  */
-bool
-compare_cg_symbol_by_self_count(cg_symbol const & lhs, cg_symbol const & rhs)
-{
-	return lhs.self_counts[0] < rhs.self_counts[0];
-}
 
 bool
 compare_cg_symbol_by_callee_count(cg_symbol const & lhs, cg_symbol const & rhs)
@@ -76,10 +66,9 @@ compare_cg_symbol_by_callee_count(cg_symbol const & lhs, cg_symbol const & rhs)
 	return lhs.callee_counts[0] < rhs.callee_counts[0];
 }
 
-// FIXME: better name ?
 bool
-compare_cg_symbol_by_callee_count2(cg_symbol const & lhs,
-                                   cg_symbol const & rhs)
+compare_cg_symbol_by_callee_count_reverse(cg_symbol const & lhs,
+                                          cg_symbol const & rhs)
 {
 	return rhs.callee_counts[0] < lhs.callee_counts[0];
 }
@@ -140,7 +129,8 @@ vector<cg_symbol> arc_recorder::get_arc() const
 		it = caller_callee.upper_bound(it->first);
 	}
 
-	sort(result.begin(), result.end(), compare_cg_symbol_by_self_count);
+	sort(result.begin(), result.end(),
+	     compare_cg_symbol_by_callee_count_reverse);
 
 	return result;
 }
@@ -187,7 +177,8 @@ vector<cg_symbol> arc_recorder::get_caller(cg_symbol const & symbol) const
 		}
 	}
 
-	sort(result.begin(), result.end(), compare_cg_symbol_by_callee_count2);
+	sort(result.begin(), result.end(),
+	     compare_cg_symbol_by_callee_count_reverse);
 
 	return result;
 }

@@ -1,5 +1,10 @@
 2004-01-20  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/callgraph_container.cpp: tweak comparator to sort arcs.
+	* pp/common_option.cpp: typo.
+
+2004-01-20  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* doc/opannotate.1.in:
 	* doc/opgprof.1.in:
 	* doc/opreport.1.in:
@@ -7,7 +12,7 @@
 	* doc/opstack.1.in: document --verbose options a bit
 	* libutil++/cverb.cpp:
 	* libutil++/cverb.h:
-	* pp/common_option.cpp: remove vstats and vlevel2 verbose objects
+	* pp/common_option.cpp: remove vlevel2 verbose object
 
 2004-01-20  Philippe Elie  <phil.el@wanadoo.fr>
 
