@@ -125,7 +125,13 @@ oprof_start::oprof_start()
 		fill_events();
 	}
 
-	bool is_26 = op_get_interface() == OP_INTERFACE_26;
+	op_interface interface = op_get_interface();
+	if (interface == OP_INTERFACE_NO_GOOD) {
+		QMessageBox::warning(this, 0, "Couldn't determine kernel"
+		                     " interface version");
+		exit(EXIT_FAILURE);
+	}
+	bool is_26 = interface == OP_INTERFACE_26;
 
 	if (is_26) {
 		note_table_size_edit->hide();
