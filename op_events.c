@@ -23,15 +23,17 @@
 #endif 
  
 #define u8 unsigned char 
+#define uint unsigned int
+ 
 struct op_event {
-	unsigned int allowed;
+	uint allowed;
 	u8 val; /* event number */ 
 	u8 unit; /* which unit mask if any allowed */
 	const char *name;
 }; 
 
 struct op_unit_mask {
-	unsigned int num; /* number of possible unit masks */ 
+	uint num; /* number of possible unit masks */ 
 	/* up to six allowed unit masks */
 	u8 um[6]; 
 };
@@ -160,7 +162,7 @@ static struct op_event op_events[] = {
   {OP_PII_PIII,0xd6,0,"RET_SEG_RENAMES",},
 }; 
 
-unsigned int op_nr_events = sizeof(op_events)/sizeof(struct op_event); 
+uint op_nr_events = sizeof(op_events)/sizeof(struct op_event); 
  
 #define OP_EVENTS_OK 		0x0
 #define OP_CTR0_NOT_FOUND 	0x1
@@ -219,7 +221,7 @@ static int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
 int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc)
 {
 	int ret = 0x0; 
-	unsigned int i;
+	uint i;
 	int ctr0_e=0,ctr1_e=0;
 
 	for (i=0; i<op_nr_events && !ctr0_e && !ctr1_e; i++) {
@@ -317,7 +319,7 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
  */
 int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um, int p2, u8 *ctr0_t, u8 *ctr1_t)
 {
-	unsigned int i;
+	uint i;
 	int ctr0_e=0;
 	int ctr1_e=0;
 
@@ -504,8 +506,8 @@ static char *op_event_descs[] = {
  */ 
 void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp) 
 {
-	unsigned int i;
-	unsigned int j;
+	uint i;
+	uint j;
 	
 	*typenamep = *typedescp = *umdescp = NULL;
 
@@ -534,8 +536,8 @@ void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char 
 #ifdef OP_EVENTS_MAIN
 int main (int argc, char *argv[])
 {
-	unsigned int i;
-	unsigned int j; 
+	uint i;
+	uint j; 
 
 	printf("oprofile: available events\n");
 	printf("--------------------------\n\n");
