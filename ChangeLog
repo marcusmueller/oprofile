@@ -1,5 +1,10 @@
 2002-12-10  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/profile.cpp : oprofpp reported incorrectly counter setting when
+	  using multiple counter. Fix #651183
+
+2002-12-10  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/op_time.cpp: honor --excude-symbols. Fix #651165
 
 2002-12-09  Philippe Elie  <phil.el@wanadoo.fr>

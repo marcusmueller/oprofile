@@ -165,6 +165,7 @@ void profile_t::output_header() const
 
 	for (uint i = 0 ; i < OP_MAX_COUNTERS; ++i) {
 		if (samples[i].get() != 0) {
+			opd_header const & header = samples[i]->header();
 			op_print_event(cout, i, cpu, header.ctr_event,
 				       header.ctr_um, header.ctr_count);
 		}
