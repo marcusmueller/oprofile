@@ -1,3 +1,8 @@
+2003-10-28  Jason Lunz  <lunz@falooley.org>
+
+	* doc/oprofile.1.in: document cpu,tid,tgid in profile
+	spec
+
 2003-10-29  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/profile_spec.cpp: error out for all tag:value specified

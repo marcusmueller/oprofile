@@ -99,6 +99,26 @@ The event count to match on, e.g. event:DATA_MEM_REFS count:30000.
 The unit mask value of the event to match on, e.g. unit-mask:1.
 .br
 .TP
+.BI "cpu:"cpulist
+Only consider profiles for the given numbered CPU (starting from zero).
+This is only useful when using CPU profile separation.
+.br
+.TP
+.BI "tgid:"pidlist
+Only consider profiles for the given task groups. Unless some program is
+using threads, the task group ID of a process is the same as its process
+ID. This option corresponds to the POSIX notion of a thread group. This
+is only useful when using per-process profile separation.
+.br
+.TP
+.BI "tid:"tidlist
+Only consider profiles for the given threads. When using recent thread
+libraries, all threads in a process share the same task group ID, but
+have different thread IDs. You can use this option in combination with
+tgid: to restrict the results to particular threads within a process.
+This is only useful when using per-process profile separation.
+.br
+.TP
 .BI "binary:"file
 Give results only for the given file. This can only be used with
 sample-file:.
@@ -107,8 +127,6 @@ sample-file:.
 .BI "sample-file:"sample file
 Give results only for the given sample file. This can only be used with
 binary:.
-
-.\" FIXME: cpu: etc.
 
 .SH ENVIRONMENT
 No special environment variables are recognised by oprofile.
