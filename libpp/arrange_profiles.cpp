@@ -393,6 +393,27 @@ profile_class & find_class(set<profile_class> & classes,
 	return const_cast<profile_class &>(*ret.first);
 }
 
+/**
+ * Sanity check : we can't overwrite sample_filename, if we abort here it means
+ * we fail to detect than parsed sample filename for two distinct samples
+ * filename must go in two disctinct profile_sample_files. This assumption is
+ * false for callgraph samples files so this function is only called for non cg
+ * files.
+ */
+void sanitize_profile_sample_files(profile_sample_files const & sample_files,
+    parsed_filename const & parsed)
+{
+	// We can't allow to overwrite sample_filename.
+	if (!sample_files.sample_filename.empty()) {
+		ostringstream out;
+		out << "sanitize_profile_sample_files(): sample file "
+		    << "parsed twice ?\nsample_filename:\n"
+		    << sample_files.sample_filename << endl
+		    << parsed << endl;
+		throw op_fatal_error(out.str());
+	}
+}
+
 
 /**
  * Add a sample filename (either cg or non cg files) to this profile.
@@ -403,14 +424,8 @@ add_to_profile_sample_files(profile_sample_files & sample_files,
 {
 	if (parsed.cg_image.empty()) {
 		// We can't allow to overwrite sample_filename.
-		if (!sample_files.sample_filename.empty()) {
-			ostringstream out;
-			out << "add_to_profile_sample_files(): sample file "
-			    << "parsed twice ?\nsample_filename:\n"
-			    << sample_files.sample_filename << endl
-			    << parsed << endl;
-			throw op_fatal_error(out.str());
-		}
+		sanitize_profile_sample_files(sample_files, parsed);
+
 		sample_files.sample_filename = parsed.filename;
 	} else {
 		sample_files.cg_files.push_back(parsed.filename);
@@ -461,9 +476,9 @@ find_profile_sample_files(list<profile_sample_files> & files,
  * on the normal list of profiles otherwise.
  */
 void
-add_to_profile_set(profile_set & set, parsed_filename const & parsed)
+add_to_profile_set(profile_set & set, parsed_filename const & parsed, bool merge_by_lib)
 {
-	if (parsed.image == parsed.lib_image) {
+	if (parsed.image == parsed.lib_image && !merge_by_lib) {
 		profile_sample_files & sample_files =
 			find_profile_sample_files(set.files, parsed);
 		add_to_profile_sample_files(sample_files, parsed);
@@ -474,7 +489,7 @@ add_to_profile_set(profile_set & set, parsed_filename const & parsed)
 	list<profile_dep_set>::iterator const end = set.deps.end();
 
 	for (; it != end; ++it) {
-		if (it->lib_image == parsed.lib_image) {
+		if (it->lib_image == parsed.lib_image && !merge_by_lib) {
 			profile_sample_files & sample_files =
 				find_profile_sample_files(it->files, parsed);
 			add_to_profile_sample_files(sample_files, parsed);
@@ -496,21 +511,21 @@ add_to_profile_set(profile_set & set, parsed_filename const & parsed)
  * will have ensured the profile "fits", so now it's just a matter of
  * finding which sample file list it needs to go on.
  */
-void add_profile(profile_class & pclass, parsed_filename const & parsed)
+void add_profile(profile_class & pclass, parsed_filename const & parsed, bool merge_by_lib)
 {
 	list<profile_set>::iterator it = pclass.profiles.begin();
 	list<profile_set>::iterator const end = pclass.profiles.end();
 
 	for (; it != end; ++it) {
 		if (it->image == parsed.image) {
-			add_to_profile_set(*it, parsed);
+			add_to_profile_set(*it, parsed, merge_by_lib);
 			return;
 		}
 	}
 
 	profile_set set;
 	set.image = parsed.image;
-	add_to_profile_set(set, parsed);
+	add_to_profile_set(set, parsed, merge_by_lib);
 	pclass.profiles.push_back(set);
 }
 
@@ -540,7 +555,7 @@ arrange_profiles(list<string> const & files, merge_option const & merge_by)
 
 		profile_class & pclass =
 			find_class(temp_classes, parsed, merge_by);
-		add_profile(pclass, parsed);
+		add_profile(pclass, parsed, merge_by.lib);
 	}
 
 	profile_classes classes;

@@ -1,3 +1,9 @@
+2004-07-21  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/arrange_profiles.cpp: fix opreport -m lib, broken in 0.8
+	  when using opcontrol --separate=kernel with message
+	  "add_to_profile_sample_files(): sample file parsed twice"
+
 2004-07-18  John Levon  <levon@movementarian.org>
 
 	* libop/op_mangling.c: dep image always used
