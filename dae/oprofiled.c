@@ -50,7 +50,7 @@ u8 ctr_um[OP_MAX_COUNTERS];
 double cpu_speed;
 fd_t hashmapdevfd;
 
-uint op_nr_counters = 2;
+uint op_nr_counters;
 int verbose;
 op_cpu cpu_type;
 int separate_samples;
@@ -369,8 +369,7 @@ static void opd_options(int argc, char const * argv[])
 	}
 
 	cpu_type = op_get_cpu_type();
-	if (cpu_type == CPU_ATHLON)
-		op_nr_counters = 4;
+	op_nr_counters = op_get_nr_counters(cpu_type);
 
 	if (!vmlinux || !strcmp("", vmlinux)) {
 		fprintf(stderr, "oprofiled: no vmlinux specified.\n");

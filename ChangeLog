@@ -1,3 +1,17 @@
+2002-07-27  John Levon  <levon@movementarian.org>
+
+	* dae/opd_stats.h:
+	* dae/opd_stats.c: 
+	* dae/opd_proc.c: log unique samples vs. sample entries
+ 
+2002-07-27  Will Cohen  <wcohen@nc.rr.com>
+ 
+	* dae/oprofiled.c:
+	* gui/oprof_start.cpp:
+	* libop/op_cpu_type.h:
+	* libop/op_cpu_type.c: op_get_nr_counter() new, localize
+	  op_nr_counter computations.
+
 2002-07-26  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update

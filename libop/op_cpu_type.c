@@ -42,6 +42,7 @@ op_cpu op_get_cpu_type(void)
 	return cpu_type;
 }
 
+ 
 static char const * cpu_names[MAX_CPU_TYPE] = {
 	"Pentium Pro",
 	"PII",
@@ -49,6 +50,7 @@ static char const * cpu_names[MAX_CPU_TYPE] = {
 	"Athlon",
 	"CPU with RTC device"
 };
+ 
 
 /**
  * op_get_cpu_type_str - get the cpu string.
@@ -65,4 +67,34 @@ char const * op_get_cpu_type_str(op_cpu cpu_type)
 	}
 
 	return cpu_names[cpu_type];
+}
+
+ 
+/**
+ * op_get_nr_counters - compute the number of counters available
+ * @param cpu_type numeric processor type
+ *
+ * returns 0 if the CPU could not be identified
+ */
+int op_get_nr_counters(op_cpu cpu_type)
+{
+	uint nr_counters;
+
+	switch (cpu_type) {
+	case CPU_PPRO:
+	case CPU_PII:
+	case CPU_PIII:
+		nr_counters = 2;
+		break;
+	case CPU_ATHLON:
+		nr_counters = 4;
+		break;
+	case CPU_RTC:
+		nr_counters = 1;
+		break;
+	default:
+		nr_counters = 0;
+		break;
+	}
+	return cpu_type;
 }

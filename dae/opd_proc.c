@@ -321,6 +321,7 @@ void opd_put_sample(struct op_sample const * sample)
 	struct opd_proc * proc;
 
 	opd_stats[OPD_SAMPLES]++;
+	opd_stats[OPD_SAMPLE_COUNTS] += opd_get_count(sample->count);
 
 	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8x, pid %.6d, count %.6d\n",
 		opd_get_counter(sample->count), sample->eip, sample->pid, sample->count);
