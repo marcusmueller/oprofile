@@ -1,3 +1,16 @@
+2002-02-08  Philippe Elie  <ph_e@club-internet.fr>
+
+	* TODO: update
+
+	* module/oprofile_nmi.S: cut and copy from oprofile_nmi24.s
+	* module/oprofile_nmi22.S: remove
+	* module/oprofile_nmi22.S: remove
+	* module/Makefile.in: reflect them
+
+	* pp/opf_filter.cpp: do not print unit mask for RTC cpu type
+
+	* doc/oprofile.sgml: document post-profile tools commons options
+
 2002-02-05  Philippe Elie  <ph_e@club-internet.fr>
 
 	* TODO: update mainly by moving things to 0.1

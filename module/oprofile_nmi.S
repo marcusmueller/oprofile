@@ -1,5 +1,3 @@
-/* $Id: oprofile_nmi24.S,v 1.1 2002/01/18 08:52:45 movement Exp $ */
-
 #include <linux/sys.h>
 #include <linux/linkage.h>
 #include <asm/segment.h>

@@ -840,6 +840,32 @@ you need it.
 Note that kernel modules without symbol data (this can happen with some initrd setups) cannot be profiled (modules
 with symbols show up in <filename>/proc/ksyms</filename>).
 </para>
+
+<sect1 id="post-profile-tools-common-options">
+<title>common options to post-profile tools</title>
+<para>
+All post profile tools accept the following options
+</para>
+<variablelist>
+	<varlistentry>
+		<term><option>&mdash;help</option></term>
+		<term><option>&mdash;usage</option></term>
+		<term><option>-?</option></term>
+		<listitem><para>
+		Show the command line options.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>&mdash;version</option></term>
+		<term><option>-v</option></term>
+		<listitem><para>
+<!-- FIXME: check than all utilities show version nr in the same way and document it -->
+		Show the version number of oprofile
+		</para></listitem>
+	</varlistentry>
+</variablelist>
+</sect1>
+
 <sect1 id="post-profiler">
 <title><command>oprofpp</command> usage</title>
 <para>

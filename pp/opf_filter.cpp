@@ -52,17 +52,10 @@ using std::ostringstream;
 #include "../version.h"
 
 //---------------------------------------------------------------------------
-// Forward declaration.
-
-class counter_setup;
-
-//---------------------------------------------------------------------------
 // Free function.
 namespace {
 
 string extract_blank_at_begin(const string & str);
-
-ostream & operator<<(ostream & out, const counter_setup &);
 
 double do_ratio(size_t a, size_t total);
 
@@ -101,6 +94,8 @@ class filename_match {
 struct counter_setup {
 	counter_setup() :
 		enabled(false), event_count_sample(0) {}
+
+	void print(ostream& out, op_cpu cpu_type) const;
 
 	// if false other field are not meaningful.
 	bool   enabled;
@@ -222,34 +217,37 @@ string extract_blank_at_begin(const string & str)
 	return str.substr(0, end_pos);
 }
 
-// Convenience function : just output the setup of one counter.
-ostream & operator<<(ostream & out, const counter_setup & rhs)
-{
-	out << (rhs.enabled ? "enabled :" : "disabled");
-
-	if (rhs.enabled) {
-		out << " ";
-
-		out << rhs.event_name
-		    << " (" << rhs.help_string << ")" << endl;
-
-		out << "unit mask : "
-		    << "0x" << hex << std::setfill('0') << std::setw(2)
-		    << rhs.unit_mask
-		    << dec
-		    << " (" << rhs.unit_mask_help << ")"
-		    << " event_count : " << rhs.event_count_sample
-		    << " total samples : " << rhs.total_samples;
-	}
-	return out;
-}
-
 inline double do_ratio(size_t counter, size_t total)
 {
 	return total == 0 ? 1.0 : ((double)counter / total);
 }
 
 } // anonymous namespace
+
+// Convenience function : just output the setup of one counter.
+void counter_setup::print(ostream & out, op_cpu cpu_type) const
+{
+	out << (enabled ? "enabled :" : "disabled");
+
+	if (enabled) {
+		out << " ";
+
+		out << event_name << " (" << help_string << ")" << endl;
+
+		if (cpu_type != CPU_RTC) {
+			out << "unit mask : "
+			    << "0x" << hex << std::setfill('0') << std::setw(2)
+			    << unit_mask
+			    << dec
+			    << " (" << unit_mask_help << ")";
+		}
+
+		out << " event_count : " << event_count_sample
+		    << " total samples : " << total_samples;
+	}
+	
+	out << endl;
+}
 
 //---------------------------------------------------------------------------
 filename_match::filename_match(const string & include_patterns,
@@ -804,8 +802,9 @@ void output::output_header(ostream& out) const
 	out << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
 
 	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
-		out << endl << "Counter " << i << " " 
-		    << counter_info[i] << endl;
+		out << endl << "Counter " << i << " ";
+		counter_info[i].print(out, cpu_type);
+		out << endl;
 	}
 
 	out << end_comment << endl;

@@ -6,14 +6,13 @@
    artificially created symbols
    these two todo are perhaps worthwhile to implement now. The new filtering
    of symbols make them less interesting.
- o little output things (e.g. don't print unit mask) RTC
  o --help --version in a common options section in .sgml ?
    same thing for all common options between oprofpp/op_to_source ?
  o remove note lock (and rename map lock) ... I think
  o should we pin rather than loop sample buffer overflow too ?
  o cleanup cache things in compat22.h, add and use cache_line_aligned_in_smp
  o improve format of oprofpp output etc.
- o oprofile_nmi22.S and oprofile24.S can use the same code.
+ o check than all post-profiles tools show version nr in the same way and document it
  
 Before 1.0
 ----------
