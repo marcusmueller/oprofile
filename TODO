@@ -1,10 +1,15 @@
 0.0.6 task list
 ---------------
 
-o can we provide a small setuid helper for starting/stopping/flushing the profiler ?
+o Bob's rtc patch
+ 
+o Save counter state and restore on a finish
+ 
+o I'm sick of these crappy makefiles. Let's see if we can use automake as well
+  as autoconf.
  
 o remove oprofile thread. already exists in CVS branch BRANCH_NO_THREAD. This provides
-  no performance advantage but removes code. 
+  little performance advantage (even a pessimization on SMP) but removes code. 
 
 o determine where we need ctx_sw_on/off to prevent pre-emption
  
@@ -15,22 +20,27 @@ o incrementalise the daemon processing to smooth load and reduce mem usage
  
 o make hashmap use string pool method
  
+o fix zero component hash problem 
+ 
+o make/get rid of op_to_source to have similar interface to other utils
+
+o add --files=dae/,a.c,b.c option to annotated source for only certain files/dirs
+ 
+0.0.7 task list
+---------------
+ 
 o implement proc->old_exec
  
-o post-prof GUI ? (big job)
-
-o fix zero component hash problem 
+o can we provide a small setuid helper for starting/stopping/flushing the profiler ?
  
 Later
 -----
 
-I'm sick of these crappy makefiles. Let's see if we can use automake as well
-as autoconf.
- 
+o post-prof GUI ? (big job)
+
 Correctness
 -----------
 
-o Save counter state and restore on a finish
 o check chroot() processes and the path hash stuff
 o There is no need for the daemon to run as root as long as every binary image
   is readable ...
