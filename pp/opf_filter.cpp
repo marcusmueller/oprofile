@@ -921,9 +921,6 @@ void output::output_command_line() const {
 
 bool output::treat_input(input & in) {
 
-	setup_counter_param(in);
-	setup_counter_param(in);
-
 	string str;
 	in.read_line(str);
 
@@ -943,6 +940,9 @@ bool output::treat_input(input & in) {
 
 		return false;
 	}
+
+	setup_counter_param(in);
+	setup_counter_param(in);
 
 	bool have_counter_info = false;
 	for (size_t i = 0 ; i < op_nr_counters && !have_counter_info ; ++i) {

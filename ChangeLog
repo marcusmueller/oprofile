@@ -1,6 +1,6 @@
 2001-09-16  Philippe Elie  <ph_e@club-internet.fr>
 
-	* pp/opf_filter.cpp:
+	* pp/opf_filter.cpp: fix unrecognized input
 	* pp/opf_container.cpp: better error messages. put
 	  op_nr_counters in the global namespace (gcc 2.91
 	  work around)
