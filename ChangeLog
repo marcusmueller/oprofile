@@ -1,5 +1,9 @@
 2003-01-20  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* daemon/opd_kernel.c: more robust /proc/modules parsing.
+
+2003-01-20  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* daemon/opd_kernel.c: 2.5 modules support, for now I keep
 	  the code for /proc/ksyms parsing in daemon. Let's it living a few
 	  weeks please.
