@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.32 2002/03/04 18:56:22 movement Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.33 2002/03/04 21:24:34 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -407,7 +407,7 @@ static const char *boring_symbols[] = {
 	"gcc2_compiled.",
 };
 
-static const size_t nr_boring_symbols = (sizeof(boring_symbols) / sizeof(char *));
+static const size_t nr_boring_symbols = sizeof(boring_symbols) / sizeof(char *);
  
 /**
  * Return true if the symbol is worth looking at
@@ -417,7 +417,14 @@ static bool interesting_symbol(asymbol *sym)
 	if (!(sym->section->flags & SEC_CODE))
 		return 0;
 
-	if (streq("", sym->name))
+	if (!(sym->flags & (BSF_FUNCTION | BSF_GLOBAL | BSF_LOCAL)))
+		return 0;
+
+	if (!sym->name || sym->name[0] == '\0')
+		return 0;
+
+	// C++ exception stuff
+	if (sym->name[0] == '.' && sym->name[1] == 'L')
 		return 0;
 
 	if (streq("_init", sym->name))

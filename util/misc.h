@@ -27,8 +27,6 @@
 #include <libiberty.h>
 #endif
 
-#include "../op_user.h"
-
 #ifdef MALLOC_OK
 #define OP_ATTRIB_MALLOC	__attribute__((malloc))
 #else
@@ -42,8 +40,8 @@ extern "C" {
 char *opd_simplify_pathname(char *path);
 char *opd_relative_to_absolute_path(const char *path, const char *base_dir);
 
-/* FIXME: why these protos ? we are not allowed to build w/o libiberty.h,
-   we just have to cope with missing xcalloc  ... ? */ 
+/* some system have a libiberty.a but no libiberty.h so we must provide
+ * ourself the missing proto */
 #ifndef HAVE_LIBIBERTY_H
 /* Set the program name used by xmalloc.  */
 void xmalloc_set_program_name(const char *);
@@ -63,7 +61,7 @@ void * xcalloc(size_t, size_t) OP_ATTRIB_MALLOC;
 
 /* Copy a string into a memory buffer without fail.  */
 char *xstrdup(const char *) OP_ATTRIB_MALLOC;
-#endif	/* !LIBIBERTY_H */
+#endif	/* !HAVE_LIBIBERTY_H */
 
 char *opd_simplify_pathname(char *path);
 char *opd_relative_to_absolute_path(const char *path, const char *base_dir);
