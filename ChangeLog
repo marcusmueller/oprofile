@@ -1,3 +1,29 @@
+2004-05-28  John Levon  <levon@movementarian.org>
+
+	* libpp/callgraph_container.cpp:
+	* libpp/arrange_profiles.cpp: trivialities
+
+2004-05-28  Bin Ren  <bin.ren@cl.cam.ac.uk>
+
+	* daemon/opd_mangling.c:
+	* daemon/opd_sfile.c:
+	* daemon/oprofiled.c:
+	* daemon/liblegacy/opd_image.c:
+	* daemon/liblegacy/opd_proc.c:
+	* daemon/liblegacy/opd_sample_files.c:
+	* libdb/db_debug.c:
+	* libdb/db_insert.c:
+	* libdb/db_manage.c:
+	* libdb/db_stat.c:
+	* libdb/odb_hash.h:
+	* libdb/db_travel.c:
+	* libpp/op_header.cpp:
+	* libpp/profile.cpp:
+	* libutil/op_string.c:
+	* libutil/op_string.h: fix dcookie alias bug by
+	  introducing one level of indirection and hash
+	  sample files by path names (bug #931871)
+
 2004-05-11  John Levon  <levon@movementarian.org>
 
 	* libutil++/file_manip.h: clarify behaviour of

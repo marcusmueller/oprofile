@@ -13,6 +13,6 @@
 odb_node_t * odb_get_iterator(samples_odb_t const * hash, odb_node_nr_t * nr)
 {
 	/* node zero is unused */
-	*nr = hash->descr->current_size - 1;
-	return hash->node_base + 1;
+	*nr = hash->data->descr->current_size - 1;
+	return hash->data->node_base + 1;
 }

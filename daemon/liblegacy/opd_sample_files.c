@@ -142,7 +142,7 @@ retry:
 		goto out;
 	}
 
-	fill_header(sfile->sample_file.base_memory, counter,
+	fill_header(sfile->sample_file.data->base_memory, counter,
 	            image->kernel, 0, image->mtime);
 
 out:

@@ -449,7 +449,7 @@ find_profile_sample_files(list<profile_sample_files> & files,
 		}
 	}
 
-	// not found create a new once.
+	// not found, create a new one
 	files.push_back(profile_sample_files());
 	return files.back();
 }

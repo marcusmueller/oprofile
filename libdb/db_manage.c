@@ -21,38 +21,40 @@
 #include <stdio.h>
 
 #include "odb_hash.h"
+#include "op_string.h"
+#include "op_libiberty.h"
 
  
-static __inline odb_descr_t * odb_to_descr(samples_odb_t * hash)
+static __inline odb_descr_t * odb_to_descr(odb_data_t * data)
 {
-	return (odb_descr_t *)(((char*)hash->base_memory) + hash->sizeof_header);
+	return (odb_descr_t *)(((char*)data->base_memory) + data->sizeof_header);
 }
 
  
-static __inline odb_node_t * odb_to_node_base(samples_odb_t * hash)
+static __inline odb_node_t * odb_to_node_base(odb_data_t * data)
 {
-	return (odb_node_t *)(((char *)hash->base_memory) + hash->offset_node);
+	return (odb_node_t *)(((char *)data->base_memory) + data->offset_node);
 }
 
  
-static __inline odb_index_t * odb_to_hash_base(samples_odb_t * hash)
+static __inline odb_index_t * odb_to_hash_base(odb_data_t * data)
 {
-	return (odb_index_t *)(((char *)hash->base_memory) + 
-				hash->offset_node +
-				(hash->descr->size * sizeof(odb_node_t)));
+	return (odb_index_t *)(((char *)data->base_memory) + 
+				data->offset_node +
+				(data->descr->size * sizeof(odb_node_t)));
 }
 
  
 /**
  * return the number of bytes used by hash table, node table and header.
  */
-static unsigned int tables_size(samples_odb_t const * hash, odb_node_nr_t node_nr)
+static unsigned int tables_size(odb_data_t const * data, odb_node_nr_t node_nr)
 {
 	size_t size;
 
 	size = node_nr * (sizeof(odb_index_t) * BUCKET_FACTOR);
 	size += node_nr * sizeof(odb_node_t);
-	size += hash->offset_node;
+	size += data->offset_node;
 
 	return size;
 }
@@ -60,30 +62,32 @@ static unsigned int tables_size(samples_odb_t const * hash, odb_node_nr_t node_n
 
 odb_index_t odb_hash_add_node(samples_odb_t * hash)
 {
-	if (hash->descr->current_size >= hash->descr->size) {
+	odb_data_t * data = hash->data;
+
+	if (data->descr->current_size >= data->descr->size) {
 		unsigned int old_file_size;
 		unsigned int new_file_size;
 		unsigned int pos;
 		void * new_map;
 
-		old_file_size = tables_size(hash, hash->descr->size);
-		new_file_size = tables_size(hash, hash->descr->size * 2);
+		old_file_size = tables_size(data, data->descr->size);
+		new_file_size = tables_size(data, data->descr->size * 2);
 
-		if (ftruncate(hash->fd, new_file_size))
+		if (ftruncate(data->fd, new_file_size))
 			return ODB_NODE_NR_INVALID;
 
-		new_map = mremap(hash->base_memory,
+		new_map = mremap(data->base_memory,
 				old_file_size, new_file_size, MREMAP_MAYMOVE);
 
 		if (new_map == MAP_FAILED)
 			return ODB_NODE_NR_INVALID;
 
-		hash->base_memory = new_map;
-		hash->descr = odb_to_descr(hash);
-		hash->descr->size *= 2;
-		hash->node_base = odb_to_node_base(hash);
-		hash->hash_base = odb_to_hash_base(hash);
-		hash->hash_mask = (hash->descr->size * BUCKET_FACTOR) - 1;
+		data->base_memory = new_map;
+		data->descr = odb_to_descr(data);
+		data->descr->size *= 2;
+		data->node_base = odb_to_node_base(data);
+		data->hash_base = odb_to_hash_base(data);
+		data->hash_mask = (data->descr->size * BUCKET_FACTOR) - 1;
 
 		/* rebuild the hash table, node zero is never used. This works
 		 * because layout of file is node table then hash table,
@@ -101,53 +105,98 @@ odb_index_t odb_hash_add_node(samples_odb_t * hash)
 		 * useful.
 		 */
 #if 0
-		for (pos = 0 ; pos < hash->descr->size*BUCKET_FACTOR ; ++pos) {
-			hash->hash_base[pos] = 0;
+		for (pos = 0 ; pos < data->descr->size*BUCKET_FACTOR ; ++pos) {
+			data->hash_base[pos] = 0;
 		}
 #endif
 
-		for (pos = 1; pos < hash->descr->current_size; ++pos) {
-			odb_node_t * node = &hash->node_base[pos];
-			size_t index = odb_do_hash(hash, node->key);
-			node->next = hash->hash_base[index];
-			hash->hash_base[index] = pos;
+		for (pos = 1; pos < data->descr->current_size; ++pos) {
+			odb_node_t * node = &data->node_base[pos];
+			size_t index = odb_do_hash(data, node->key);
+			node->next = data->hash_base[index];
+			data->hash_base[index] = pos;
 		}
 	}
 
-	return (odb_index_t)hash->descr->current_size++;
+	return (odb_index_t)data->descr->current_size++;
 }
 
 void odb_init(samples_odb_t * hash)
 {
-	memset(hash, '\0', sizeof(samples_odb_t));
-	hash->fd = -1;
+	hash->data = NULL;
 }
+
 
 /* the default number of page, calculated to fit in 4096 bytes */
 #define DEFAULT_NODE_NR(offset_node)	128
+#define FILES_HASH_SIZE                 512
+
+static struct list_head files_hash[FILES_HASH_SIZE];
+
+
+static void init_hash()
+{
+	size_t i;
+	for (i = 0; i < FILES_HASH_SIZE; ++i)
+		list_init(&files_hash[i]);
+}
+
+
+static odb_data_t *
+find_samples_data(size_t hash, char const * filename)
+{
+	struct list_head * pos;
+
+	/* FIXME: maybe an initial init routine ? */
+	if (files_hash[0].next == NULL) {
+		init_hash();
+		return NULL;
+	}
+
+	list_for_each(pos, &files_hash[hash]) {
+		odb_data_t * entry = list_entry(pos, odb_data_t, list);
+		if (strcmp(entry->filename, filename) == 0)
+			return entry;
+	}
+
+	return NULL;
+}
+
 
 int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw,
-	size_t sizeof_header)
+	     size_t sizeof_header)
 {
 	struct stat stat_buf;
 	odb_node_nr_t nr_node;
+	odb_data_t *data;
+	size_t hash_code;
 	int err = 0;
 
 	int flags = (rw == ODB_RDWR) ? (O_CREAT | O_RDWR) : O_RDONLY;
 	int mmflags = (rw == ODB_RDWR) ? (PROT_READ | PROT_WRITE) : PROT_READ;
 
-	memset(hash, '\0', sizeof(samples_odb_t));
+	hash_code = op_hash_string(filename) % FILES_HASH_SIZE;
+	data = find_samples_data(hash_code, filename);
+	if (data) {
+		data->ref_count++;
+		return 0;
+	}
 
-	hash->offset_node = sizeof_header + sizeof(odb_descr_t);
-	hash->sizeof_header = sizeof_header;
+	data = xmalloc(sizeof(odb_data_t));
+	memset(data, '\0', sizeof(odb_data_t));
+	list_init(&data->list);
+	data->offset_node = sizeof_header + sizeof(odb_descr_t);
+	data->sizeof_header = sizeof_header;
+	data->ref_count = 1;
+	data->filename = xstrdup(filename);
 
-	hash->fd = open(filename, flags, 0644);
-	if (hash->fd < 0) {
+	data->fd = open(filename, flags, 0644);
+	if (data->fd < 0) {
 		err = errno;
 		goto out;
 	}
 
-	if (fstat(hash->fd, &stat_buf)) {
+	if (fstat(data->fd, &stat_buf)) {
 		err = errno;
 		goto fail;
 	}
@@ -160,78 +209,88 @@ int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw,
 			goto fail;
 		}
 
-		nr_node = DEFAULT_NODE_NR(hash->offset_node);
+		nr_node = DEFAULT_NODE_NR(data->offset_node);
 
-		file_size = tables_size(hash, nr_node);
-		if (ftruncate(hash->fd, file_size)) {
+		file_size = tables_size(data, nr_node);
+		if (ftruncate(data->fd, file_size)) {
 			err = errno;
 			goto fail;
 		}
 	} else {
 		/* Calculate nr node allowing a sanity check later */
-		nr_node = (stat_buf.st_size - hash->offset_node) /
+		nr_node = (stat_buf.st_size - data->offset_node) /
 			((sizeof(odb_index_t) * BUCKET_FACTOR) + sizeof(odb_node_t));
 	}
 
-	hash->base_memory = mmap(0, tables_size(hash, nr_node), mmflags,
-				MAP_SHARED, hash->fd, 0);
+	data->base_memory = mmap(0, tables_size(data, nr_node), mmflags,
+				MAP_SHARED, data->fd, 0);
 
-	if (hash->base_memory == MAP_FAILED) {
+	if (data->base_memory == MAP_FAILED) {
 		err = errno;
 		goto fail;
 	}
 
-	hash->descr = odb_to_descr(hash);
+	data->descr = odb_to_descr(data);
 
 	if (stat_buf.st_size == 0) {
-		hash->descr->size = nr_node;
+		data->descr->size = nr_node;
 		/* page zero is not used */
-		hash->descr->current_size = 1;
+		data->descr->current_size = 1;
 	} else {
 		/* file already exist, sanity check nr node */
-		if (nr_node != hash->descr->size) {
+		if (nr_node != data->descr->size) {
 			err = EINVAL;
 			goto fail_unmap;
 		}
 	}
 
-	hash->hash_base = odb_to_hash_base(hash);
-	hash->node_base = odb_to_node_base(hash);
-	hash->hash_mask = (hash->descr->size * BUCKET_FACTOR) - 1;
+	data->hash_base = odb_to_hash_base(data);
+	data->node_base = odb_to_node_base(data);
+	data->hash_mask = (data->descr->size * BUCKET_FACTOR) - 1;
 
+	list_add(&data->list, &files_hash[hash_code]);
+	hash->data = data;
 out:
 	return err;
 fail_unmap:
-	munmap(hash->base_memory, tables_size(hash, nr_node));
+	munmap(data->base_memory, tables_size(data, nr_node));
 fail:
-	close(hash->fd);
+	close(data->fd);
+	free(data->filename);
+	free(data);
+	hash->data = NULL;
 	goto out;
 }
 
 
 void odb_close(samples_odb_t * hash)
 {
-	if (hash->base_memory) {
-		size_t size = tables_size(hash, hash->descr->size);
+	odb_data_t * data = hash->data;
 
-		munmap(hash->base_memory, size);
-		hash->base_memory = 0;
-	}
-
-	if (hash->fd != -1) {
-		close(hash->fd);
-		hash->fd = -1;
+	if (data) {
+		data->ref_count--;
+		if (data->ref_count == 0) {
+			size_t size = tables_size(data, data->descr->size);
+			list_del(&data->list);
+			munmap(data->base_memory, size);
+			if (data->fd >= 0)
+				close(data->fd);
+			free(data->filename);
+			free(data);
+			hash->data = NULL;
+		}
 	}
 }
 
 
 void odb_sync(samples_odb_t const * hash)
 {
+	odb_data_t * data = hash->data;
 	size_t size;
 
-	if (!hash->base_memory)
+	if (!data)
 		return;
 
-	size = tables_size(hash, hash->descr->size);
-	msync(hash->base_memory, size, MS_ASYNC);
+	size = tables_size(data, data->descr->size);
+	msync(data->base_memory, size, MS_ASYNC);
 }

@@ -15,6 +15,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "op_list.h"
+
 /** the type of key. 64-bit because CG needs 32-bit pair {from,to} */
 typedef uint64_t odb_key_t;
 /** the type of an information in the database */
@@ -69,7 +71,7 @@ typedef struct {
  *  the hash table: array of odb_index_t indexing the node array 
  *    (descr->size * BUCKET_FACTOR) entries
  */
-typedef struct {
+typedef struct odb_data {
 	odb_node_t * node_base;		/**< base memory area of the page */
 	odb_index_t * hash_base;	/**< base memory of hash table */
 	odb_descr_t * descr;		/**< the current state of database */
@@ -78,6 +80,13 @@ typedef struct {
 	unsigned int offset_node;	/**< from base_memory to node array */
 	void * base_memory;		/**< base memory of the maped memory */
 	int fd;				/**< mmaped memory file descriptor */
+	char * filename;                /**< full path name of sample file */
+	int ref_count;                  /**< reference count */
+	struct list_head list;          /**< hash bucket list */
+} odb_data_t;
+
+typedef struct {
+	odb_data_t * data;
 } samples_odb_t;
 
 #ifdef __cplusplus
@@ -165,7 +174,8 @@ int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value);
  */
 odb_node_t * odb_get_iterator(samples_odb_t const * hash, odb_node_nr_t * nr);
 
-static __inline unsigned int odb_do_hash(samples_odb_t const * hash, odb_key_t value)
+static __inline unsigned int
+odb_do_hash(odb_data_t const * data, odb_key_t value)
 {
 	/* FIXME: better hash for eip value, needs to instrument code
 	 * and do a lot of tests ... */
@@ -176,7 +186,7 @@ static __inline unsigned int odb_do_hash(samples_odb_t const * hash, odb_key_t v
 	 * on changing do_hash() change the file format!
 	 */
 	uint32_t temp = (value >> 32) ^ value;
-	return ((temp << 0) ^ (temp >> 8)) & hash->hash_mask;
+	return ((temp << 0) ^ (temp >> 8)) & data->hash_mask;
 }
 
 #ifdef __cplusplus

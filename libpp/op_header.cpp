@@ -98,7 +98,7 @@ opd_header const read_header(string const & sample_filename)
 	if (rc)
 		throw op_fatal_error(sample_filename + ": " + strerror(rc));
 
-	opd_header head = *static_cast<opd_header *>(samples_db.base_memory);
+	opd_header head = *static_cast<opd_header *>(samples_db.data->base_memory);
 
 	odb_close(&samples_db);
 

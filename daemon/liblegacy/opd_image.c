@@ -18,6 +18,7 @@
 #include "op_file.h"
 #include "op_config_24.h"
 #include "op_libiberty.h"
+#include "op_string.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -102,7 +103,7 @@ void opd_for_each_image(opd_image_cb image_cb)
  */
 static size_t opd_hash_image(char const * name, pid_t tid, pid_t tgid)
 {
-	size_t hash = opd_hash_name(name);
+	size_t hash = op_hash_string(name);
 	if (separate_thread)
 		hash += tid + tgid;
 	return  hash % OPD_IMAGE_HASH_SIZE;

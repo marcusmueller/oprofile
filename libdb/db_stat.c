@@ -30,6 +30,7 @@ odb_hash_stat_t * odb_hash_stat(samples_odb_t const * hash)
 	double total_length = 0.0;
 	size_t nr_non_empty_list = 0;
 	size_t pos;
+	odb_data_t * data = hash->data;
 
 	odb_hash_stat_t * result = calloc(1, sizeof(odb_hash_stat_t));
 	if (!result) {
@@ -37,19 +38,19 @@ odb_hash_stat_t * odb_hash_stat(samples_odb_t const * hash)
 		exit(EXIT_FAILURE);
 	}
 
-	result->node_nr = hash->descr->size;
-	result->used_node_nr = hash->descr->current_size;
-	result->hash_table_size = hash->descr->size * BUCKET_FACTOR;
+	result->node_nr = data->descr->size;
+	result->used_node_nr = data->descr->current_size;
+	result->hash_table_size = data->descr->size * BUCKET_FACTOR;
 
 	/* FIXME: I'm dubious if this do right statistics for hash table
 	 * efficiency check */
 
 	for (pos = 0 ; pos < result->hash_table_size ; ++pos) {
 		size_t cur_length = 0;
-		size_t index = hash->hash_base[pos];
+		size_t index = data->hash_base[pos];
 		while (index) {
-			result->total_count += hash->node_base[index].value;
-			index = hash->node_base[index].next;
+			result->total_count += data->node_base[index].value;
+			index = data->node_base[index].next;
 			++cur_length;
 		}
 

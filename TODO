@@ -6,8 +6,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8.1 release
 -------------
 
+ o our option to -m is called "lib", but opcontrol --separate only accepts "library"
  o oparchive (and remove binary:/sample-file:)
- o anton's bug on the list about dcache aliasing
  o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
   outside .text section get a wrong offset
  o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.

@@ -247,19 +247,11 @@ static void opd_setup_signals(void)
 }
 
 
-size_t opd_hash_name(char const * name)
-{
-	size_t hash = 0;
-	for (; *name; ++name)
-		hash ^= (hash << 16) ^ (hash >> 8) ^ *name;
-	return hash;
-}
-
-
 struct opd_hashed_name {
 	char * name;
 	struct list_head next;
 };
+
 
 static void add_image_filter(char const * name)
 {
@@ -271,10 +263,11 @@ static void add_image_filter(char const * name)
 		free(elt);
 		return;
 	}
-	hash = opd_hash_name(elt->name);
+	hash = op_hash_string(elt->name);
 	verbprintf(vmisc, "Adding to image filter: \"%s\"\n", elt->name);
 	list_add(&elt->next,&images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]);
 }
+
 
 static void opd_parse_image_filter(void)
 {
@@ -306,7 +299,7 @@ int is_image_ignored(char const * name)
 	if (!binary_name_filter)
 		return 0;
 	
-	hash = opd_hash_name(name);
+	hash = op_hash_string(name);
 
 	list_for_each(pos, &images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]) {
 		struct opd_hashed_name * hashed_name =

@@ -28,6 +28,13 @@ extern "C" {
 char * op_xstrndup(char const * s, size_t len);
 
 /**
+ * @param  s: string to hash
+ *
+ * Generate a hash code from a string
+ */
+size_t op_hash_string(char const * s);
+
+/**
  * @param str: string to test
  * @param prefix: prefix string
  *

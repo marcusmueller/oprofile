@@ -19,6 +19,15 @@ char * op_xstrndup(char const * s, size_t len)
 }
 
 
+size_t op_hash_string(char const * str)
+{
+	size_t hash = 0;
+	for (; *str; ++str)
+		hash ^= (hash << 16) ^ (hash >> 8) ^ *str;
+	return hash;
+}
+
+
 int strisprefix(char const * str, char const * prefix)
 {
 	return strstr(str, prefix) == str;

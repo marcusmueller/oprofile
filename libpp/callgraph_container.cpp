@@ -41,7 +41,7 @@ bool operator==(cg_symbol const & lhs, cg_symbol const & rhs)
 
 
 bool compare_by_callee_vma(pair<odb_key_t, odb_value_t> const & lhs,
-			   pair<odb_key_t, odb_value_t> const & rhs)
+                           pair<odb_key_t, odb_value_t> const & rhs)
 {
 	return (lhs.first & 0xffffffff) < (rhs.first & 0xffffffff);
 }
@@ -77,14 +77,12 @@ compare_cg_symbol_by_callee_count_reverse(cg_symbol const & lhs,
 arc_recorder::~arc_recorder()
 {
 	map_t::iterator end = caller_callee.end();
-	for (map_t::iterator it = caller_callee.begin(); it != end; ++it) {
+	for (map_t::iterator it = caller_callee.begin(); it != end; ++it)
 		delete it->second;
-	}
 
 	end = callee_caller.end();
-	for (iterator it = callee_caller.begin(); it != end; ++it) {
+	for (iterator it = callee_caller.begin(); it != end; ++it)
 		delete it->second;
-	}
 }
 
 
@@ -113,14 +111,13 @@ fixup_callee_counts(double threshold, count_array_t & totals)
 
 	// loop iteration number is bounded by biggest callgraph depth.
 	while (true) {
-		vector<map_t::iterator> leafs = select_leaf(percent, totals);
-		if (leafs.empty())
+		vector<map_t::iterator> leaves = select_leaf(percent, totals);
+		if (leaves.empty())
 			break;
 
-		for (size_t i = 0; i < leafs.size(); ++i) {
-			remove(leafs[i]->first);
-
-			caller_callee.erase(leafs[i]);
+		for (size_t i = 0; i < leaves.size(); ++i) {
+			remove(leaves[i]->first);
+			caller_callee.erase(leaves[i]);
 		}
 	}
 
@@ -129,9 +126,9 @@ fixup_callee_counts(double threshold, count_array_t & totals)
 		pair<iterator, iterator> p_it =
 			caller_callee.equal_range(it->first);
 		count_array_t counts;
-		for (iterator tit = p_it.first; tit != p_it.second; ++tit) {
+
+		for (iterator tit = p_it.first; tit != p_it.second; ++tit)
 			counts += tit->first.callee_counts;
-		}
 
 		for (iterator tit = p_it.first; tit != p_it.second; ++tit) {
 			cg_symbol & symb = const_cast<cg_symbol &>(tit->first);
@@ -276,8 +273,8 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles,
    extra_images const & extra, bool debug_info, double threshold,
    bool merge_lib)
 {
-	/// non callgraph samples container, we record sample at symbol level
-	/// not at vma level.
+	// non callgraph samples container, we record sample at symbol level
+	// not at vma level.
 	profile_container symbols(debug_info, false);
 
 	list<inverted_profile>::const_iterator it;
@@ -329,8 +326,9 @@ void callgraph_container::populate(list<string> const & cg_files,
 		string const app_name = caller_file.image;
 
 		image_error error;
-		string caller_binary = find_image_path(caller_file.lib_image,
-		                                       extra, error);
+		string caller_binary =
+			find_image_path(caller_file.lib_image, extra, error);
+
 		if (error != image_ok)
 			report_image_error(caller_file.lib_image, error, false);
 
@@ -339,16 +337,16 @@ void callgraph_container::populate(list<string> const & cg_files,
 
 		bool bfd_caller_ok = true;
 		op_bfd caller_bfd(caller_binary, string_filter(),
-				  bfd_caller_ok);
+		                  bfd_caller_ok);
 		if (!bfd_caller_ok)
 			report_image_error(caller_binary,
-					   image_format_failure, false);
+			                   image_format_failure, false);
 
 		parsed_filename callee_file = parse_filename(*it);
 
 		string callee_binary =
 			find_image_path(callee_file.cg_image,
-					extra, error);
+			                extra, error);
 		if (error != image_ok)
 			report_image_error(callee_file.cg_image, error, false);
 
@@ -357,10 +355,10 @@ void callgraph_container::populate(list<string> const & cg_files,
 
 		bool bfd_callee_ok = true;
 		op_bfd callee_bfd(callee_binary, string_filter(),
-					  bfd_callee_ok);
+		                  bfd_callee_ok);
 		if (!bfd_callee_ok)
 			report_image_error(callee_binary,
-					   image_format_failure, false);
+		                           image_format_failure, false);
 
 		profile_t profile;
 		// We can't use start_offset support in profile_t, give
@@ -388,9 +386,10 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 		// use it with a zero offset, the code below will abort because
 		// we will get incorrect callee sub-range and out of range
 		// callee vma. FIXME
-		if (!bfd_caller_ok)
+		if (!bfd_caller_ok) {
 			// We already warned.
 			return;
+		}
 		caller_start_offset = caller.get_start_offset();
 	}
 
@@ -494,7 +493,7 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 				      << dec << endl;
 				caller_callee_count += it->second;
 			}
-			// FIXME: very fragile, any innacuracy in caller offset
+			// FIXME: very fragile, any inaccuracy in caller offset
 			// can lead to an abort!
 			if (it == dcur) {
 				// This is impossible, we need a core dump else
