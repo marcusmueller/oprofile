@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.11 2002/01/17 05:54:48 movement Exp $
+# $Id: Makefile.in,v 1.12 2002/01/20 23:08:30 phil_e Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -9,8 +9,7 @@ MODINSTALLDIR=@MODINSTALLDIR@/oprofile
 # than one module with BKCFLAGS you break 2.2 compatibility. FIXME another way?
 BKCFLAGS += -pipe -D__KERNEL__ -DMODULE -Wall -Wstrict-prototypes -Wunused -O2 -fomit-frame-pointer -fno-strict-aliasing
 KCFLAGS := $(BKCFLAGS) -march=i686 @NO_MODULE_VERSION@
-# FIXME, we lacked to pass kernel include dir, it is safe to pass BKCLAGS to get it
-ASMFLAGS := -D__ASSEMBLY__ -DMODULE -D__KERNEL__ -traditional $(BKCFLAGS)
+ASMFLAGS := -D__ASSEMBLY__ -DMODULE -D__KERNEL__ -traditional -I@KINC@
 
 .PHONY: all install clean uninstall
 
@@ -19,12 +18,12 @@ all: oprofile.o
 install: all
 	-$(MKDIR_P) $(MODINSTALLDIR)
 	cp oprofile.o $(MODINSTALLDIR)
-	depmod -a
+	depmod -a @KVERS@
 
 uninstall:
 	-rm -f $(MODINSTALLDIR)/oprofile.o
 	-rmdir --ignore-fail-on-non-empty  $(MODINSTALLDIR)
-	depmod -a
+	depmod -a @KVERS@
 
 clean:
 	rm -rf *.o .deps
@@ -58,7 +57,7 @@ op_syscalls.o: op_syscalls.c
 
 compat.o: compat.c
 	$(CC) $(KCFLAGS) -c -o $@ $<
- 
+
 oprofile.s: oprofile.c
 	$(CC) $(KCFLAGS) -S $<
 

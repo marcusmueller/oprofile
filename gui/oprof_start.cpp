@@ -85,6 +85,41 @@ oprof_start::oprof_start()
 
 	int cpu_mask = 1 << cpu_type;
 
+	// check if our cpu type match with the cpu type in config file, if we
+	// mismatch just delete all the oprof_start config file else we
+	// confuse later code.
+	string config_dir = get_user_filename(".oprofile");
+	string config_name = config_dir + "/oprof_start_config";
+
+	std::ifstream in(config_name.c_str());
+	cout << string("rm " + config_name) << endl ;
+
+	bool delete_all_config_file = !in;
+
+	if (in) {
+		int tmp;
+		in >> tmp;
+		op_cpu tmp_cpu_type = static_cast<op_cpu>(tmp);
+ 
+		if (tmp_cpu_type != cpu_type) {
+			cout << string("rm " + config_name) << endl ;
+			system(std::string("rm " + config_name).c_str());
+
+			delete_all_config_file = true;
+		}
+	}
+
+	if (delete_all_config_file) {
+		for (uint ctr = 0 ; ctr < OP_MAX_COUNTERS ; ++ctr) {
+			std::ostringstream name;
+
+			name << config_dir << "/oprof_start_event"
+			     << "#" << ctr;
+
+			system(string("rm " + name.str()).c_str());
+		}
+	}
+
 	// we need to build the event descr stuff before loading the
 	// configuration because we use locate_events to get an event descr
 	// from its name.
@@ -203,7 +238,6 @@ oprof_start::oprof_start()
 // save_config_file().
 void oprof_start::load_config_file()
 {
-retry:;
 	std::string name = get_user_filename(".oprofile/oprof_start_config");
 
 	{
@@ -225,18 +259,14 @@ retry:;
 	op_cpu tmp_cpu_type = static_cast<op_cpu>(tmp);
  
 	if (tmp_cpu_type != cpu_type) {
-		int user_choice = 
-			QMessageBox::warning(this, 0, 
-				"The cpu type in your configuration mismatch the current cpu core:\n\n"
-				"Delete the configuration or abort oprof_start?", 
-				"&Delete", "&Quit", 0, 0, 1);
+		/* can never happen, if cpu type mismatch the file should be
+		 * already deleted */
+		QMessageBox::warning(this, 0, 
+				     "The cpu type in your configuration "
+				     "mismatch the current cpu core:\n\n"
+				     "Delete manually the configuration file");
 
-		if (user_choice == 1)
-			exit(1);
-
-		save_config_file();
-
-		goto retry;
+		exit(1);
 	}
  
 	for (uint i = 0; i < op_nr_counters; ++i) {

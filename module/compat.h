@@ -32,6 +32,11 @@
 #else
 	#include "compat24.h"
 #endif
+
+/* 2.5.2 change the dev_t definition */
+#if VBEFORE(2,5,2)
+#define minor(dev)	MINOR(dev)
+#endif
  
 /* Things that cannot rely on a particular linux version or are needed between
  * major release */

@@ -1,4 +1,4 @@
-/* $Id: compat.c,v 1.5 2002/01/20 12:33:47 movement Exp $ */
+/* $Id: compat.c,v 1.6 2002/01/20 23:08:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -60,11 +60,9 @@ int wind_dentries_2_2(struct dentry *dentry)
 /* called with map_lock held */
 uint do_path_hash_2_2(struct dentry *dentry)
 {
-	uint value;
-
 	/* BKL is already taken */
-	value = do_hash(dentry, 0, 0, 0);
-	return value;
+
+	return do_hash(dentry, 0, 0, 0);
 }
 
 #endif /* NEED_2_2_DENTRIES */

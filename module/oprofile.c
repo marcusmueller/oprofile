@@ -278,7 +278,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 		return -EINTR;
 	}
 
-	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
+	switch (minor(file->f_dentry->d_inode->i_rdev)) {
 		case 2: return oprof_note_read(buf, count, ppos);
 		case 0: break;
 		default: return -EINVAL;
@@ -352,7 +352,7 @@ static int oprof_open(struct inode *ino, struct file *file)
 	if (!capable(CAP_SYS_PTRACE))
 		return -EPERM;
 
-	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
+	switch (minor(file->f_dentry->d_inode->i_rdev)) {
 		case 1: return oprof_hash_map_open();
 		case 2: return oprof_note_open();
 		case 0:
@@ -374,7 +374,7 @@ static int oprof_open(struct inode *ino, struct file *file)
 
 static int oprof_release(struct inode *ino, struct file *file)
 {
-	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
+	switch (minor(file->f_dentry->d_inode->i_rdev)) {
 		case 1: return oprof_hash_map_release();
 		case 2: return oprof_note_release();
 		case 0: break;
@@ -396,7 +396,7 @@ static int oprof_release(struct inode *ino, struct file *file)
 
 static int oprof_mmap(struct file *file, struct vm_area_struct *vma)
 {
-	if (MINOR(file->f_dentry->d_inode->i_rdev) == 1)
+	if (minor(file->f_dentry->d_inode->i_rdev) == 1)
 		return oprof_hash_map_mmap(file, vma);
 	return -EINVAL;
 }

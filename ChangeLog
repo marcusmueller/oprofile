@@ -1,3 +1,16 @@
+2002-01-20  Philippe Elie  <ph_e@club-internet.fr>
+
+	* gui/oprof_start.cpp: fix configuration saving when
+	  switching of cpu_type.
+
+	* module/Makefile.in:
+	* module/compat.c: minor change
+
+	* compat.h: add minor macro
+	* oprofile.c: use minor instead MINOR (2.5.2 support)
+
+	* op_x86.c: check SPIV (missing from a previous patch)
+
 2002-01-20  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: punt some things to next release

@@ -197,53 +197,49 @@ int __init apic_setup(void)
 	val = apic_read(APIC_SPIV);
 	apic_was_enabled = val & APIC_SPIV_APIC_ENABLED;
 
-	if (apic_was_enabled) {
-		printk(KERN_INFO "oprofile: APIC was already enabled\n");
-		lvtpc_apic_setup(NULL);
-		return 0;
-	}
- 
 	/* we blindly assume than if apic is up is state is ok */
- 
-	__cli();
- 
-	apic_write(APIC_SPIV, val | APIC_SPIV_APIC_ENABLED);
+	if (!apic_was_enabled) {
+		__cli();
+		apic_write(APIC_SPIV, val | APIC_SPIV_APIC_ENABLED);
 
-	val = APIC_LVT_LEVEL_TRIGGER;
-	val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_EXINT);
-	apic_write(APIC_LVT0, val);
+		val = APIC_LVT_LEVEL_TRIGGER;
+		val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_EXINT);
+		apic_write(APIC_LVT0, val);
 
-	/* edge triggered, IA 7.4.11 */
-	val = SET_APIC_DELIVERY_MODE(0, APIC_MODE_NMI);
-	apic_write(APIC_LVT1, val);
+		/* edge triggered, IA 7.4.11 */
+		val = SET_APIC_DELIVERY_MODE(0, APIC_MODE_NMI);
+		apic_write(APIC_LVT1, val);
 
-	/* clear error register */
-	/* IA32 V3, 7.4.17 */
-	/* PHE must be cleared after unmasking by a back-to-back write,
-	 * but it is probably ok because we mask only, the ESR is not
-	 * updated is this a real problem ? */
-	apic_write(APIC_ESR, 0);
+		/* clear error register */
+		/* IA32 V3, 7.4.17 */
+		/* PHE must be cleared after unmasking by a back-to-back write,
+		 * but it is probably ok because we mask only, the ESR is not
+		 * updated is this a real problem ? */
+		apic_write(APIC_ESR, 0);
 
-	/* mask error interrupt */
-	/* IA32 V3, Figure 7.8 */
-	val = apic_read(APIC_LVTERR);
-	val |= APIC_LVT_MASKED;
-	apic_write(APIC_LVTERR, val);
+		/* mask error interrupt */
+		/* IA32 V3, Figure 7.8 */
+		val = apic_read(APIC_LVTERR);
+		val |= APIC_LVT_MASKED;
+		apic_write(APIC_LVTERR, val);
 
-	/* setup timer vector */
-	/* IA32 V3, 7.4.8 */
-	apic_write(APIC_LVTT, APIC_SEND_PENDING | 0x31);
+		/* setup timer vector */
+		/* IA32 V3, 7.4.8 */
+		apic_write(APIC_LVTT, APIC_SEND_PENDING | 0x31);
 
-	/* Divide configuration register */
-	/* PHE the apic clock is based on the FSB. This should only
-	 * changed with a calibration method.  */
-	val = APIC_TDR_DIV_1;
-	apic_write(APIC_TDCR, val);
+		/* Divide configuration register */
+		/* PHE the apic clock is based on the FSB. This should only
+		 * changed with a calibration method.  */
+		val = APIC_TDR_DIV_1;
+		apic_write(APIC_TDCR, val);
 
-	__sti();
+		__sti();
 
-	val = apic_read(APIC_ESR);
-	printk(KERN_INFO "oprofile: enabled local APIC err code %.08x\n", val);
+		val = apic_read(APIC_ESR);
+		printk(KERN_INFO "oprofile: enabled local APIC err code %.08x\n", val);
+	} else {
+		printk(KERN_INFO "oprofile: APIC was already ebabled\n");
+	}
 
 	lvtpc_apic_setup(NULL);
 
