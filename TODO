@@ -7,6 +7,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 -----------
 
 Timer is buggered - event file reading in opd_sample_files.c
+If the user sets --ctr1 on the first setup, he still has to turn
+off --ctr0 default settings. Bad UI
 
 Before 1.0 big stuff
 --------------------
