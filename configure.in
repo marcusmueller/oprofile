@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.123 2002/11/11 08:42:04 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.124 2002/11/11 10:55:42 phil_e Exp $)
 AC_PREREQ(2.13)
 
 AC_INIT(libop/op_config.h)
@@ -157,9 +157,9 @@ if test "$OPROFILE_25" = "no"; then
 	AC_MSG_CHECKING(arch/kernel version combination)
 	case "$arch" in
 	ia64)
-		AX_KERNEL_VERSION(2, 4, 18, <, AC_MSG_RESULT("ok"),
-			AC_MSG_ERROR("unsupported arch/kernel")) ;;
-	*) AC_MSG_RESULT("ok")
+		AX_KERNEL_VERSION(2, 4, 18, <, AC_MSG_RESULT([ok]),
+			AC_MSG_ERROR([unsupported arch/kernel])) ;;
+	*) AC_MSG_RESULT([ok])
 	esac
 
 	dnl for now we do not support PREEMPT patch
@@ -232,11 +232,8 @@ if test -n "$use_extra_libs" && \
      extra_libraries="$extra_libraries -L$dir"
    done
    IFS=$ac_save_ifs
+   LDFLAGS="$LDFLAGS $extra_libraries"
 fi
-
-# FIXME: automake ??? 
-AC_SUBST(extra_includes)
-AC_SUBST(extra_libraries)
 
 AC_CHECK_LIB(popt, poptGetContext,, AC_MSG_ERROR([popt library not found]))
 AC_CHECK_LIB(dl, dlopen,, AC_MSG_ERROR([dl library not found]))
@@ -310,7 +307,7 @@ CFLAGS="$CFLAGS -W -Wall"
 CXXFLAGS="$CXXFLAGS -W -Wall"
 
 # enable -Werror for non-release versions.
-if echo "$VERSION" | grep cvs; then
+if echo "$VERSION" | grep cvs >/dev/null; then
     CFLAGS="$CFLAGS -Werror"
     CXXFLAGS="$CXXFLAGS -Werror"
 fi
