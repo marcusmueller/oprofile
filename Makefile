@@ -13,9 +13,6 @@ sprofile.o: sprofile_c.o sprofile_nmi.o sprofile_k.o cp_events.o
 sprofile_c.o: sprofile.c sprofile.h
 	gcc $(CFLAGS) $(G) -c -o $@ $< 
 
-sprofile.s: sprofile.c sprofile.h
-	gcc $(CFLAGS) $(G) -S $@ $<
- 
 sprofile_k.o: sprofile_k.c sprofile.h
 	gcc $(CFLAGS) $(G) -c -o $@ $< 
 
