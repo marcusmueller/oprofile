@@ -85,11 +85,15 @@ static int do_check_page_pointer(db_tree_t const * tree,
 	page = page_nr_to_page_ptr(tree, page_idx);
 
 	ret = do_check_page_pointer(tree, page->p0, viewed_page);
+	if (ret)
+		return 1;
 
 	for (i = 0 ; i < page->count ; ++i) {
 		ret |= do_check_page_pointer(tree,
 					     page->page_table[i].child_page,
 					     viewed_page);
+		if (ret)
+			return 1;
 	}
 
 	/* this is not a bug, item at pos >= page->count are in an undefined
@@ -133,14 +137,19 @@ static int do_check_tree(db_tree_t const * tree,
 
 	page = page_nr_to_page_ptr(tree, page_nr);
 
-	if (page->count == 0)
+	if (page->count == 0) {
+		printf("%s:%d page->count == 0 at page %d\n", __FILE__, __LINE__, page_nr);
 		return 1;
+	}
 
-	if (page->p0 != db_nil_page)
-		do_check_tree(tree, page->p0, last);
+	if (page->p0 != db_nil_page) {
+		if (do_check_tree(tree, page->p0, last) != 0)
+			return 1;
+	}
 
 	for (i = 0 ; i < page->count ; ++i) {
 		if (page->page_table[i].key <= last) {
+			printf("%s:%d page ordering wrong at index %d page %d\n", __FILE__, __LINE__, i, page_nr);
 			return 1;
 		}
 		last = page->page_table[i].key;

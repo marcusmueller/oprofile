@@ -121,6 +121,7 @@ static int do_reorg(db_tree_t * tree, db_page_idx_t page_idx, size_t pos,
 
 	page = page_nr_to_page_ptr(tree, page_idx);
 
+	assert(pos <= DB_MAX_PAGE);
 	assert(page->count <= DB_MAX_PAGE);
 
 	/* the insertion pos can be at the end of the page so <= */
@@ -232,7 +233,7 @@ static int do_insert(db_tree_t * tree, db_page_idx_t page_idx,
 
 	page = page_nr_to_page_ptr(tree, page_idx);
 
-	assert(page->count != 0);
+	assert(page->count != 0 && page->count <= DB_MAX_PAGE);
 
 	for (pos = 0 ; pos < page->count ; ++pos) {
 		if (page->page_table[pos].key >= value->key)

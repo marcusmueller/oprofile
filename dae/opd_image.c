@@ -233,6 +233,41 @@ static struct opd_image * opd_add_image(char const * name, int hash, char const 
 	return image;
 }
 
+/**
+ * is_same_image - check for identical image
+ * @param image  image to compare
+ * @param name  name of image
+ * @param app_name image must belong to this application name
+ *
+ * on entry caller have checked than strcmp(image->name, name) == 0
+ * return 0 if the couple @name, @app_name refers to same image as @image
+ */
+static int is_same_image(struct opd_image const * image, char const * app_name)
+{
+	/* correctness is really important here, if we fail to recognize
+	 * identical image we will open/mmap multiple time the same samples
+	 * files which is not supported by the kernel, strange assertion
+	 * failure in libfd is a typical symptom of that */
+
+	/* if separate_samples, the comparison made by caller is sufficient */
+	if (!separate_samples)
+		return 0;
+
+	if (image->app_name == NULL && app_name == NULL)
+		return 0;
+
+	if (image->app_name != NULL && app_name != NULL &&
+	    !strcmp(image->app_name, app_name))
+		return 0;
+
+	/* /proc parsed image come with a non null app_name but notification
+	 * for application itself come with a null app_name, in this case
+	 * the test above fail so check for this case. */
+	if (image->app_name && !app_name && !strcmp(image->app_name, image->name))
+		return 0;
+
+	return 1;
+}
 
 /**
  * opd_find_image - find an image
@@ -257,14 +292,7 @@ static struct opd_image * opd_find_image(char const * name, int hash, char const
 		image = list_entry(pos, struct opd_image, list_node);
 
 		if (!strcmp(image->name, name)) {
-			if (!separate_samples)
-				break;
-
-			if (image->app_name == NULL && app_name == NULL)
-				break;
-
-			if (image->app_name != NULL && app_name != NULL &&
-			    !strcmp(image->app_name, app_name))
+			if (!is_same_image(image, app_name))
 				break;
 		}
 	}
@@ -303,14 +331,7 @@ struct opd_image * opd_get_image_by_hash(int hash, char const * app_name)
 {
 	struct opd_image * image;
 	for (image = images_with_hash[hash]; image != NULL; image = image->hash_next) {
-		if (!separate_samples)
-			break;
-
-		if (image->app_name == NULL && app_name == NULL)
-			break;
-
-		if (image->app_name != NULL && app_name != NULL &&
-		    !strcmp(image->app_name, app_name))
+		if (!is_same_image(image, app_name))
 			break;
 	}
 
