@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.28 2000/09/06 12:56:57 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.29 2000/09/07 00:12:33 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -191,6 +191,8 @@ int oprof_map_release(void)
 	return 0;
 }
 
+static u32 saved_ppos;
+
 int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 {
 	ssize_t max;
@@ -205,6 +207,8 @@ int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 	if (*ppos >= max)
 		return -EINVAL;
 
+	saved_ppos = (u32)((*ppos) ? (*ppos/sizeof(u32)) : (OP_MAX_MAP_BUF)); 
+ 
 	if (*ppos + count > max) {
 		size_t firstcount = max - *ppos;
 
@@ -269,7 +273,7 @@ inline static void oprof_report_fork(u16 old, u32 new)
 	samp.count = OP_FORK;
 	samp.pid = old;
 	samp.eip = new;
-	printk("FORK ");
+	//printk("FORK ");
 	oprof_put_note(&samp);
 }
 
@@ -350,13 +354,24 @@ static int output_path_hash(const char *name, uint len)
 	return -1;
 }
 
+extern u32 oprof_ready[NR_CPUS];
+int mapbufwakeup;
+
 /* called with map_lock held */
 inline static u32 *map_out32(u32 val)
 {
 	u32 * pos=&map_buf[nextmapbuf];
+	ulong diff;
+ 
 	map_buf[nextmapbuf++] = val;
-	if (nextmapbuf==OP_MAX_MAP_BUF)
+	diff = abs(saved_ppos-nextmapbuf);
+	if (diff==OP_MAP_BUF_WATERMARK) {
+		mapbufwakeup=1;
+		oprof_ready[0] = 1;
+	} else if (nextmapbuf==OP_MAX_MAP_BUF) {
+		printk("oprofile: Overflowed, ppos %u\n",saved_ppos);
 		nextmapbuf=0;
+	}
 
 	return pos;
 }
@@ -424,6 +439,7 @@ static int oprof_output_map(ulong addr, ulong len,
 	tot = map_out32(0);
 	do_d_path(file->f_dentry, file->f_vfsmnt, buf, tot);
 
+	//printk("Map proc %d, 0x%.8x-0x%.8x,off0x%x\n",current->pid,addr,addr+len,offset);
 	return sizeof(u32)*(4+*tot);
 }
 
@@ -458,7 +474,7 @@ static int oprof_output_maps(struct task_struct *task)
 	}
 	samp.count = OP_EXEC;
 	samp.pid = current->pid;
-	printk("EXECVE bytes %d ",samp.eip);
+	//printk("EXECVE bytes %d ",samp.eip);
 	oprof_put_note(&samp);
 	spin_unlock(&map_lock);
 	up(&mm->mmap_sem);
@@ -515,7 +531,7 @@ static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 	/* how many bytes to read from map buffer */
 	spin_lock(&map_lock);
 	samp.eip = oprof_output_map(addr,len,offset,file,buffer);
-	printk("MMAP bytes %d ",samp.eip);
+	//printk("MMAP bytes %d ",samp.eip);
 	oprof_put_note(&samp);
 	spin_unlock(&map_lock);
 
@@ -577,6 +593,7 @@ asmlinkage static long my_sys_init_module(const char *name_user, struct module *
 		samp.count = OP_DROP_MODULES;
 		samp.pid = 0;
 		samp.eip = 0;
+		//printk("INIT_MODULE ");
 		oprof_put_note(&samp);
 	}
 	return ret;
@@ -595,6 +612,7 @@ asmlinkage static long my_sys_exit(int error_code)
 	samp.count = OP_EXIT;
 	samp.pid = current->pid;
 	samp.eip = 0;
+	//printk("EXIT ");
 	oprof_put_note(&samp);
 
 	return old_sys_exit(error_code);

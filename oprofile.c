@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.34 2000/09/06 12:56:57 moz Exp $ */
+/* $Id: oprofile.c,v 1.35 2000/09/07 00:12:33 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -70,7 +70,7 @@ static DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
  * want it in the oprof_data cacheline. Access
  * is atomic as its aligned 32 bit
  */
-static u32 oprof_ready[NR_CPUS] __cacheline_aligned;
+u32 oprof_ready[NR_CPUS] __cacheline_aligned;
 static struct _oprof_data oprof_data[NR_CPUS];
 
 /* ---------------- NMI handler ------------------ */
@@ -566,7 +566,7 @@ void oprof_put_note(struct op_sample *samp)
 {
 	struct _oprof_data *data = &oprof_data[0];
 
-	printk("in pos %d\n",data->nextbuf); 
+	//printk("in pos %d\n",data->nextbuf); 
 	/* FIXME: IPIs are expensive */
 	spin_lock(&note_lock);
 	pmc_select_stop(0);
@@ -621,6 +621,8 @@ static int oprof_release(struct inode *ino, struct file *file)
 	return 0;
 }
 
+extern int mapbufwakeup;
+
 static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 {
 	struct op_sample *mybuf;
@@ -666,13 +668,15 @@ doit:
 	spin_lock(&note_lock);
 
 	num = oprof_data[i].nextbuf;
-	/* might have overflowed */
-	if (num < oprof_data[i].buf_size-OP_PRE_WATERMARK) {
+	/* might have overflowed from map buffer or ejection buffer */
+	if (num < oprof_data[i].buf_size-OP_PRE_WATERMARK && !mapbufwakeup) {
 		printk(KERN_ERR "oprofile: Detected overflow of size %d. You must increase the "
 				"hash table or buffer size, or reduce the interrupt frequency\n", num);
 		num = oprof_data[i].buf_size;
-	} else
+	} else {
 		oprof_data[i].nextbuf=0;
+		mapbufwakeup=0;
+	}
 
 	mybuf->count = mybuf->pid = 0;
 	mybuf->eip = num;
@@ -898,6 +902,10 @@ void __exit oprof_exit(void)
 	oprof_free_hashmap();
 
 	op_replace_syscalls();
+
+	/* this is an ugly broken hack. It must be removed FIXME */
+	set_current_state(TASK_UNINTERRUPTIBLE);
+	schedule_timeout(HZ*40);
 
 	unregister_chrdev(op_major,"oprof");
 
