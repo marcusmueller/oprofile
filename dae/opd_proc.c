@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.68 2001/09/06 18:13:28 movement Exp $ */
+/* $Id: opd_proc.c,v 1.69 2001/09/06 20:41:48 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -81,7 +81,7 @@ void opd_alarm(int val __attribute__((unused)))
 		struct opd_image* image = &opd_images[i];
 		for (j = 0 ; j < op_nr_counters ; ++j) {
 			if (image->sample_files[j].fd > 1)
-				msync(image->sample_files[i].start, image->len + sizeof(struct opd_footer), MS_ASYNC);
+				msync(image->sample_files[j].start, image->len + sizeof(struct opd_footer), MS_ASYNC);
 		}
 	}
 
