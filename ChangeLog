@@ -1,3 +1,8 @@
+2003-08-01  John Levon  <levon@movementarian.org>
+
+	* libregex/stl.pat.in: fix _List_iterator regex
+	(from Phil)
+
 2003-07-31  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opannotate.cpp: output cpu type and cpu speed.
