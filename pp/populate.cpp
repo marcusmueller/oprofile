@@ -46,8 +46,8 @@ populate_for_image(profile_container & samples, inverted_profile & ip)
 {
 	op_bfd abfd(ip.image, options::symbol_filter, ip.flags);
 
-	// maybe a bfd open failure
-	report_image_error(ip, false);
+	if (ip.flags & image_format_failure)
+		report_image_error(ip, false);
 
 	u32 offset = abfd.get_start_offset();
 
