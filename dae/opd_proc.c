@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.32 2000/09/05 07:18:11 moz Exp $ */
+/* $Id: opd_proc.c,v 1.33 2000/09/06 12:21:21 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -178,6 +178,9 @@ static void opd_open_image(struct opd_image *image)
 	} while (*++c2);
 	*c = '\0';
 
+#ifdef OPD_DEBUG
+	printf("Statting $%s$\n",image->name);
+#endif
 	/* for each byte in original, two u32 counters */
 	image->len = opd_get_fsize(image->name)*sizeof(u32)*2;
 	
@@ -914,6 +917,11 @@ void opd_put_sample(const struct op_sample *sample)
  */
 void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset, u32 end)
 {
+#ifdef OPD_DEBUG
+	printf("Placing mapping for process %d: 0x%.8x-0x%.8x, off 0x%.8x, $%s$\n",
+		proc->pid, start, end, offset, opd_images[image_nr].name);
+#endif
+
 	proc->maps[proc->nr_maps].image = image_nr;
 	proc->maps[proc->nr_maps].start = start;
 	proc->maps[proc->nr_maps].offset = offset;
@@ -938,12 +946,20 @@ void opd_handle_fork(const struct op_sample *sample)
 	struct opd_proc *old;
 	struct opd_proc *proc;
 
+#ifdef OPD_DEBUG
+	printf("DO_FORK: from %d to %d\n", sample->pid, sample->eip);
+#endif
+
 	old = opd_get_proc(sample->pid);
 
 	if (!old) {
 		printf("Told that non-existent process %u just forked.\n",sample->pid);
 		return;
 	}
+
+	/* FIXME: doc */
+	if (opd_get_proc(sample->eip))
+		return;
 
 	/* eip is actually pid of new process */
 	proc = opd_add_proc((u16)sample->eip);
@@ -971,27 +987,15 @@ void opd_handle_exit(const struct op_sample *sample)
 {
 	struct opd_proc *proc;
 
+#ifdef OPD_DEBUG
+	printf("DO_EXIT: process %d\n",sample->pid);
+#endif
+
 	proc = opd_get_proc(sample->pid);
 	if (proc)
 		proc->dead = 1;
 	else
 		printf("unknown proc %u just exited.\n",sample->pid);
-}
-
-/**
- * read_map_bad_proc - read from map device and forget
- *
- * FIXME
- */
-static void read_map_bad_proc(ssize_t size)
-{
-	u32 *buf;
-
-	buf = opd_malloc(size);
-
-	opd_read_device(mapdevfd,buf,size,0);
-
-	opd_free(buf);
 }
 
 struct op_mapping {
@@ -1026,12 +1030,16 @@ void opd_handle_mapping(const struct op_sample *sample)
 	int hash;
 	ssize_t size;
 
+
+#ifdef OPD_DEBUG
+	printf("DO_MAPPING: pid %u, bytes %d\n",sample->pid,sample->eip);
+#endif
+
 	proc = opd_get_proc(sample->pid);
 
 	if (!proc) {
 		printf("Told about mapping for non-existent process %u.\n",sample->pid);
-		read_map_bad_proc((ssize_t)sample->eip);
-		return;
+		proc = opd_add_proc(sample->pid);
 	}
 
 	/* eip is actually nr. of bytes to read from map device */
@@ -1103,11 +1111,17 @@ void opd_handle_exec(const struct op_sample *sample)
 {
 	struct opd_proc *proc;
 
+#ifdef OPD_DEBUG
+	printf("DO_EXEC: pid %u\n",sample->pid);
+#endif
+
 	proc = opd_get_proc(sample->pid);
 	if (proc)
 		opd_kill_maps(proc);
-	else
+	else {
 		printf("Told to drop mappings for a non-existent process %u.\n",sample->pid);
+		opd_add_proc(sample->pid);
+	}
 
 	/* now deal with execve'd new mapping */
 	opd_handle_mapping(sample);
