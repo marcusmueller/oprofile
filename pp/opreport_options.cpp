@@ -209,19 +209,18 @@ void handle_options(vector<string> const & non_options)
 {
 	using namespace options;
 
-	if (options::details)
-		options::symbols = true;
+	if (details)
+		symbols = true;
 
 	handle_sort_option();
 	handle_merge_option();
 	handle_output_file();
 	check_options();
 
-	options::symbol_filter =
-		string_filter(include_symbols, exclude_symbols);
+	symbol_filter = string_filter(include_symbols, exclude_symbols);
 
 	profile_spec const spec =
-		profile_spec::create(non_options, options::extra_found_images);
+		profile_spec::create(non_options, extra_found_images);
 
 	list<string> sample_files = spec.generate_file_list(exclude_dependent);
 
@@ -251,5 +250,5 @@ void handle_options(vector<string> const & non_options)
 	}
 
 	sample_file_partition.reset(
-		new partition_files(sample_files, options::merge_by));
+		new partition_files(sample_files, merge_by));
 }

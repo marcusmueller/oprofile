@@ -1,5 +1,13 @@
 2003-07-19  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* gui/oprof_start.cpp:
+	* libpp/format_output.cpp:
+	* libpp/format_output.h:
+	* pp/opannotate.cpp:
+	* pp/opreport_options.cpp: minor tidy
+
+2003-07-19  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* gui/oprof_start.cpp: RTC mode was not working
 
 2003-07-16  Philippe Elie  <phil.el@wanadoo.fr>

@@ -342,4 +342,4 @@ string formatter::format_cumulated_percent_details(field_datum const & f)
 			     percent_fract_width);
 }
 
-}; // namespace format_output
+} // namespace format_output

@@ -52,18 +52,16 @@ op_event_descr::op_event_descr()
 {
 }
 
+
 oprof_start::oprof_start()
 	:
 	oprof_start_base(0, 0, false, 0),
 	event_count_validator(new QIntValidator(event_count_edit)),
 	current_event(0),
+	current_events(OP_MAX_COUNTERS),
 	cpu_speed(op_cpu_frequency()),
 	total_nr_interrupts(0)
 {
-	for (uint i = 0; i < OP_MAX_COUNTERS; ++i) {
-		current_events.push_back(0);
-	}
-
 	vector<string> args;
 	args.push_back("--init");
 
@@ -381,6 +379,7 @@ void oprof_start::counter_selected(int ctr)
 	setUpdatesEnabled(true);
 	update();
 }
+
 
 void oprof_start::display_event(op_event_descr const * descrp)
 {

@@ -148,6 +148,6 @@ private:
 	bool long_filenames;
 };
 
-}; // namespace format_output 
+} // namespace format_output 
  
 #endif /* !FORMAT_OUTPUT_H */

@@ -241,8 +241,6 @@ string symbol_annotation(symbol_entry const * symbol)
 }
 
 
-namespace {
-
 /// return true if  this line contains a symbol name in objdump formatting
 /// symbol are on the form 08030434 <symbol_name>:  we need to be strict
 /// here to avoid any interpretation of a source line as a symbol line
@@ -252,8 +250,6 @@ bool is_symbol_line(string const & str, string::size_type pos)
 		return false;
 
 	return str[str.length() - 1] == ':';
-}
-
 }
 
 
