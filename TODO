@@ -6,6 +6,10 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8 release
 -----------
 
+ o when using callgraph and a counter number != 0 is used we receive *non
+  callgraph sample* with counter == 0 so daemon abort in opd_events.c
+  find_counter_event();
+
  o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.
  o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
   outside .text section get a wrong offset
