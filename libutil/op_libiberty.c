@@ -10,6 +10,8 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
+#include <string.h>
+
 #include "op_libiberty.h"
 
 #ifndef HAVE_XCALLOC

@@ -1,3 +1,9 @@
+2002-07-09  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* gui/oprof_start.cpp: use <ctime> not <time.h>
+	* libutil/op_libiberty.c: don't assume than string.h is included
+	   by libiberty.h as in old gcc release
+
 2002-07-08  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/op_bfd.h:

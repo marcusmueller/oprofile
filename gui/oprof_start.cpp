@@ -11,8 +11,8 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
-#include <time.h>
 
+#include <ctime>
 #include <cstdio>
 #include <cmath>
 #include <sstream>
@@ -386,7 +386,7 @@ void oprof_start::closeEvent(QCloseEvent *)
 
 void oprof_start::timerEvent(QTimerEvent *)
 {
-	static time_t last = time(0);
+	static time_t last = std::time(0);
 
 	daemon_status dstat;
 
@@ -403,7 +403,7 @@ void oprof_start::timerEvent(QTimerEvent *)
 	ss << "Profiler running ";
 	ss << dstat.runtime;
 
-	time_t curr = time(0);
+	time_t curr = std::time(0);
 	total_nr_interrupts += dstat.nr_interrupts;
 
 	if (curr - last)
