@@ -679,10 +679,7 @@ void oprof_start::on_start_profiler()
 	if (record_config() == false)
 		return;
 
-	// build the cmd line.
-	std::ostringstream cmd_line;
-
-	cmd_line << "op_start";
+	std::vector<std::string> args;
 
 	for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
 		if (!current_event[ctr])
@@ -695,30 +692,30 @@ void oprof_start::on_start_profiler()
 
 		const op_event_descr * descr = current_event[ctr];
 
-		cmd_line << " --ctr" << ctr << "-event=" << descr->name;
-		cmd_line << " --ctr" << ctr << "-count=" << cfg[descr->name].count;
-		cmd_line << " --ctr" << ctr << "-kernel=" << cfg[descr->name].os_ring_count;
-		cmd_line << " --ctr" << ctr << "-user=" << cfg[descr->name].user_ring_count;
+		args.push_back("--ctr" + tostr(ctr) + "-event=" + descr->name);
+		args.push_back("--ctr" + tostr(ctr) + "-count=" + tostr(cfg[descr->name].count));
+		args.push_back("--ctr" + tostr(ctr) + "-kernel=" + tostr(cfg[descr->name].os_ring_count));
+		args.push_back("--ctr" + tostr(ctr) + "-user=" + tostr(cfg[descr->name].user_ring_count));
 
 		if (descr->um_descr)
-			cmd_line << " --ctr" << ctr << "-unit-mask=" << cfg[descr->name].umask;
+			args.push_back("--ctr" + tostr(ctr) + "-unit-mask=" + tostr(cfg[descr->name].umask));
 	}
 
-	cmd_line << " --map-file=" << config.map_filename;
-	cmd_line << " --vmlinux=" << config.kernel_filename;
-	cmd_line << " --kernel-only=" << config.kernel_only;
-	cmd_line << " --pid-filter=" << config.pid_filter;
-	cmd_line << " --pgrp-filter=" << config.pgrp_filter;
-	cmd_line << " --base-dir=" << config.base_opd_dir;
-	cmd_line << " --samples-dir=" << config.base_opd_dir << config.samples_files_dir;
-	cmd_line << " --device-file=" << config.base_opd_dir << config.device_file;
-	cmd_line << " --hash-map-device-file=" << config.base_opd_dir << config.hash_map_device;
-	cmd_line << " --log-file=" << config.base_opd_dir << config.daemon_log_file;
-	cmd_line << " --ignore-myself=" << config.ignore_daemon_samples;
-	cmd_line << " --buffer-size=" << config.buffer_size;
-	cmd_line << " --hash-table-size=" << config.hash_table_size;
+	args.push_back("--map-file=" + config.map_filename);
+	args.push_back("--vmlinux=" + config.kernel_filename);
+	args.push_back("--kernel-only=" + tostr(config.kernel_only));
+	args.push_back("--pid-filter=" + tostr(config.pid_filter));
+	args.push_back("--pgrp-filter=" + tostr(config.pgrp_filter));
+	args.push_back("--base-dir=" + config.base_opd_dir);
+	args.push_back("--samples-dir=" + config.base_opd_dir + config.samples_files_dir);
+	args.push_back("--device-file=" + config.base_opd_dir + config.device_file);
+	args.push_back("--hash-map-device-file=" + config.base_opd_dir + config.hash_map_device);
+	args.push_back("--log-file=" + config.base_opd_dir + config.daemon_log_file);
+	args.push_back("--ignore-myself=" + tostr(config.ignore_daemon_samples));
+	args.push_back("--buffer-size=" + tostr(config.buffer_size));
+	args.push_back("--hash-table-size=" + tostr(config.hash_table_size));
 
-	do_exec_command(cmd_line.str());
+	do_exec_command("op_start", args);
 }
 
 // flush and stop the profiler if it was started.

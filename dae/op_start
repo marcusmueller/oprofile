@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.45 2001/09/13 17:14:43 davej Exp $
+# $Id: op_start,v 1.46 2001/09/23 02:36:03 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -27,7 +27,7 @@ SYSCTL=do_sysctl
 do_sysctl()
 {
 	if [ x$1 != x"-w" ]; then
-		echo "$0 unknown option"
+		echo "$0 unknown option" >&2
 		exit 1
 	fi
 
@@ -51,7 +51,7 @@ extract_int()
 	local val=`echo $1 | sed 's,--ctr\([0-9]*\)[-A-Za-z]*,\1,'`
 
 	if (($val >= $OP_MAX_COUNTERS || $val < 0)); then
-		echo "invalid argument $1: bad counter number"
+		echo "invalid argument $1: bad counter number" >&2
 		exit 1
 	fi
 	echo $val
@@ -94,7 +94,7 @@ do_help() {
 
 	General options
 	  --list-events                list event types and unit masks
-	  --help                       this message"
+	  --help                       this message" >&2
 }
 
 # initialise parameters
@@ -125,7 +125,7 @@ do_init() {
 			MAX_COUNTER=3
 			;;
 		*)
-			echo "Unknown cpu type \"$CPUTYPE\""
+			echo "Unknown cpu type \"$CPUTYPE\"" >&2
 			exit 1
 			;;
 	esac
@@ -221,7 +221,7 @@ do_options() {
 				exec op_help
 				;;
 			*)
-				echo "Unknown option \"$arg\". See op_start --help"
+				echo "Unknown option \"$arg\". See op_start --help" >&2
 				exit 1
 				;; 
 		esac
@@ -234,17 +234,17 @@ do_options() {
 		if [[ ${#CTR_EVENT[$f]} != 0 ]]; then
 			CTR_EVENT_VAL[$f]=`op_help ${CTR_EVENT[$f]}`
 			if [ -z "${CTR_EVENT_VAL[$f]}" -a ! -z "${CTR_EVENT[$f]}" ]; then
-				echo "Unknown event \"${CTR_EVENT[$f]}\""
+				echo "Unknown event \"${CTR_EVENT[$f]}\"" >&2
 				exit 1
 			fi
 			if [ -z "${CTR_COUNT[$f]}" ]; then
-				echo "Event but no count specified for counter $f"
+				echo "Event but no count specified for counter $f" >&2
 				exit 1
 			fi
 			one_enabled=1
 		else 
 			if [ ! -z "${CTR_COUNT[$f]}" ]; then
-				echo "Count but no event specified for counter $f"
+				echo "Count but no event specified for counter $f" >&2
 				exit 1
 			fi
 		fi
@@ -252,9 +252,9 @@ do_options() {
 	done
  
 	if [ "$one_enabled" == "0" ]; then
-		echo "You haven't specified what events you would like to count, e.g."
-		echo "op_start ... --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000"
-		echo "Enter op_start --help for full options"
+		echo "You haven't specified what events you would like to count, e.g." >&2
+		echo "op_start ... --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000" >&2
+		echo "Enter op_start --help for full options" >&2
 		exit 1
 	fi
 
@@ -293,26 +293,26 @@ do_options() {
 	vecho "VMLINUX $VMLINUX"
 
 	if [ -z "$MAP_FILE" ]; then
-		echo "No map file specified. You must specify the correct System.map and vmlinux files, e.g."
-		echo "op_start --map-file=/path/to/System.map --vmlinux=/path/to/vmlinux"
-		echo "Enter op_start --help for full options"
+		echo "No map file specified. You must specify the correct System.map and vmlinux files, e.g." >&2
+		echo "op_start --map-file=/path/to/System.map --vmlinux=/path/to/vmlinux" >&2
+		echo "Enter op_start --help for full options" >&2
 		exit 1
 	fi
 
 	if [ -z "$VMLINUX" ]; then
-		echo "No vmlinux file specified. You must specify the correct System.map and vmlinux files, e.g."
-		echo "op_start --map-file=/path/to/System.map --vmlinux=/path/to/vmlinux"
-		echo "Enter op_start --help for full options"
+		echo "No vmlinux file specified. You must specify the correct System.map and vmlinux files, e.g." >&2
+		echo "op_start --map-file=/path/to/System.map --vmlinux=/path/to/vmlinux" >&2
+		echo "Enter op_start --help for full options" >&2
 		exit 1
 	fi
 
 	if [ ! -f "$MAP_FILE" ]; then
-		echo "The specified map file \"$MAP_FILE\" doesn't exist."
+		echo "The specified map file \"$MAP_FILE\" doesn't exist." >&2
 		exit 1
 	fi
 
 	if [ ! -f "$VMLINUX" ]; then
-		echo "The specified vmlinux file \"$VMLINUX\" doesn't exist."
+		echo "The specified vmlinux file \"$VMLINUX\" doesn't exist." >&2
 		exit 1
 	fi
 }
@@ -328,12 +328,12 @@ do_setup() {
 	if [ "$?" -ne 0 ]; then
 		modprobe oprofile expected_cpu_type=$CPUTYPE
 		if [ "$?" != "0" ]; then
-			echo "Couldn't load oprofile.o module"
+			echo "Couldn't load oprofile.o module" >&2
 			exit 1
 		fi
 		grep oprofile /proc/modules >/dev/null
 		if [ "$?" != "0" ]; then
-			echo "Couldn't load oprofile.o module"
+			echo "Couldn't load oprofile.o module" >&2
 			exit 1
 		fi
 	fi
@@ -341,7 +341,7 @@ do_setup() {
 	if [ ! -d "$DIR" ]; then
 	       mkdir -p "$DIR"
 	       if [ "$?" != "0" ]; then
-		       echo "Couldn't mkdir -p $DIR"
+		       echo "Couldn't mkdir -p $DIR" >&2
 		       exit 1
 	       fi
 	       chmod 755 "$DIR"
@@ -362,7 +362,7 @@ do_setup() {
 	if [ ! -d "$SAMPLES_DIR" ]; then
 		mkdir -p "$SAMPLES_DIR"
 		if [ "$?" != "0" ]; then
-			echo "Couldn't mkdir -p $SAMPLES_DIR"
+			echo "Couldn't mkdir -p $SAMPLES_DIR" >&2
 			exit 1
 		fi
 		chmod 755 "$SAMPLES_DIR"
@@ -373,7 +373,7 @@ do_setup() {
 	vecho "Doing mknod $DEVICE_FILE"
 	mknod "$DEVICE_FILE" c $MAJOR_NR 0
 	if [ "$?" != "0" ]; then
-		echo "Couldn't mknod $DEVICE_FILE"
+		echo "Couldn't mknod $DEVICE_FILE" >&2
 		exit 1
 	fi
 	chmod 700 "$DEVICE_FILE"
@@ -381,7 +381,7 @@ do_setup() {
 	vecho "Doing mknod $HASH_MAP_DEVICE_FILE"
 	mknod "$HASH_MAP_DEVICE_FILE" c $MAJOR_NR 1
 	if [ "$?" != "0" ]; then
-		echo "Couldn't mknod $HASH_MAP_DEVICE_FILE"
+		echo "Couldn't mknod $HASH_MAP_DEVICE_FILE" >&2
 		exit 1
 	fi
 	chmod 700 "$HASH_MAP_DEVICE_FILE"
@@ -439,8 +439,8 @@ do_start() {
 	sleep 4
 	PID=`ps x | grep oprofiled | grep -v grep | awk '{print $1}'`
 	if [ "$PID" = "" ]; then
-		echo "Couldn't start oprofiled."
-		echo "Check the log file \"$LOG_FILE\" and /var/log/messages"
+		echo "Couldn't start oprofiled." >&2
+		echo "Check the log file \"$LOG_FILE\" and /var/log/messages" >&2
 		exit 1
 	fi
 
@@ -451,7 +451,7 @@ do_start() {
 # main
 
 if [ "$UID" != "0" ]; then
-	echo "Must be root to start oprofile."
+	echo "Must be root to start oprofile." >&2
 	exit 1
 fi
  

@@ -18,7 +18,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h> 
+#include <sys/wait.h> 
 #include <unistd.h> 
+#include <fcntl.h> 
  
 #include <vector> 
 #include <cmath>
@@ -29,17 +31,24 @@
 #include <qfiledialog.h>
 #include <qmessagebox.h>
 
+typedef int fd_t;
+ 
+static int exec_command(std::string const & cmd, std::ostream & out, 
+		 std::ostream & err, std::vector<std::string> args);
+ 
 // return the ~ expansion suffixed with a '/'
 static std::string const get_user_dir()
 {
 	static std::string user_dir;
 
 	if (user_dir.empty()) {
-		std::ostringstream out;
+		char * dir = getenv("HOME");
+		if (!dir) {
+			cerr << "Can't determine home directory !\n" << endl;
+			exit(EXIT_FAILURE);
+		}
 
-		exec_command("echo -n ~", out);
-
-		user_dir = out.str();
+		user_dir = dir;
 
 		if (user_dir.length() && user_dir[user_dir.length() -1] != '/')
 			user_dir += '/';
@@ -54,81 +63,85 @@ std::string const get_user_filename(std::string const & filename)
 	return get_user_dir() + "/" + filename;
 }
 
-// FIXME: let's use a proper fork/exec with pipes
-// too tricky perhaps: exec a command and redirect stdout / stderr to the
-// corresponding ostream.
-int exec_command(std::string const & cmd_line, std::ostream& out, 
-		 std::ostream& err)
+ 
+static void fill_from_fd(std::ostream & stream, fd_t fd)
 {
-	char name_stdout[L_tmpnam];
-	char name_stderr[L_tmpnam];
-
-	// FIXME: using tmpnam is not recommanded...
-	tmpnam(name_stdout);
-	tmpnam(name_stderr);
-
-	std::string cmd = cmd_line ;
-	cmd += std::string(" 2> ") + name_stderr;
-	cmd += std::string(" > ")  + name_stdout;
-
-	int ret = system(cmd.c_str());
-
-	std::ifstream in_stdout(name_stdout);
-	if (!in_stdout) {
-		std::cerr << "fail to open stdout " << name_stdout << std::endl;
-	}
-	std::ifstream in_stderr(name_stderr);
-	if (!in_stderr) {
-		std::cerr << "fail to open stderr " << name_stderr << std::endl;
+	fd_t fd_out; 
+	char templ[] = "/tmp/op_XXXXXX";
+	char buf[4096]; 
+	
+	if ((fd_out = mkstemp(templ) == -1)) {
+		stream.set(ios::failbit); 
+		return;
 	}
 
-	// this order is preferable in case we pass the same stream as out and
-	// err, the stdout things come first in the output generally
-	out << in_stdout.rdbuf();
-	err << in_stderr.rdbuf();
+	ssize_t count;
+	fcntl(fd, F_SETFL, O_NONBLOCK);
+	while ((count = read(fd, buf, 4096)) != -1)
+		write(fd_out, buf, count);
 
-	remove(name_stdout);
-	remove(name_stderr);
+	close(fd_out);
 
-	return ret;
+	std::ifstream in(templ);
+	std::string str;
+
+	while (getline(in, str))
+		stream << str;
+ 
+	unlink(templ);
 }
 
-#if 0
-// FIXME: better but do not work, see bad comment.
-int exec_command(const std::string& cmd_line, std::ostream& output)
+ 
+static int exec_command(std::string const & cmd, std::ostream & out, 
+		 std::ostream & err, std::vector<std::string> args)
 {
-	char name_output[L_tmpnam];
+	int pstdout[2];
+	int pstderr[2];
 
-	tmpnam(name_output);
+	if (pipe(pstdout) == -1 || pipe(pstderr) == -1) {
+		err << "Couldn't create pipes !" << std::endl;
+		return -1;
+	}
+ 
+	pid_t pid = fork();
+	switch (pid) {
+		case -1:
+			err << "Couldn't fork !" << std::endl;
+			return -1;
+		 
+		case 0: {
+			char const * argv[args.size() + 2];
+			uint i = 0;
+			argv[i++] = cmd.c_str();
+			for (std::vector<std::string>::const_iterator cit = args.begin();
+				cit != args.end(); ++cit) {
+				argv[i++] = cit->c_str();
+			}
+			argv[i] = 0;
+		 
+			// child
+			dup2(pstdout[1], STDOUT_FILENO);
+			dup2(pstderr[1], STDERR_FILENO);
+ 
+			execvp(cmd.c_str(), (char * const *)argv);
+ 
+			err << "Couldn't exec !" << std::endl;
+			return -1;
+		}
 
-	std::string cmd = cmd_line ;
-	// bad: return the exit code of cat so there is never error.
-//	cmd += std::string(" 2>&1 | cat > ") + name_output;
-	// bad: command receive the temp filename as command line option. Why?
-//	cmd += std::string(" 2>&1 ") + name_output;
-
-	int ret = system(cmd.c_str());
-
-	std::ifstream in_output(name_output);
-	if (!in_output) {
-		std::cerr << "fail to open output " << name_output
-			  << std::endl;
+		default:;
 	}
 
-	output << in_output.rdbuf();
-
-	remove(name_output);
-
-	return ret;
+	// parent
+ 
+	int ret;
+	waitpid(pid, &ret, 0);
+ 
+	fill_from_fd(out, pstdout[0]);
+	fill_from_fd(err, pstderr[0]);
+ 
+	return WEXITSTATUS(ret);
 }
-#else
-// this work but assume than a command which make an error exit without
-// any output to stdout after the first output to stderr...
-int exec_command(std::string const & cmd_line, std::ostream& out)
-{
-	return exec_command(cmd_line, out, out);
-}
-#endif
 
  
 bool check_and_create_config_dir()
@@ -191,18 +204,20 @@ std::string const format(std::string const & orig, uint const maxlen)
 }
 
 
-int do_exec_command(std::string const & cmd)
+int do_exec_command(std::string const & cmd, std::vector<std::string> args)
 {
 	std::ostringstream out;
 	std::ostringstream err;
 
-	int ret = exec_command(cmd, out, err);
+	int ret = exec_command(cmd, out, err, args);
 
-	// FIXME: err is empty e.g. if you are not root !!
- 
 	if (ret) {
-		std::string error = "Failed: with error \"" + err.str() + "\"\n";
-		error += "Command was :\n\n" + cmd + "\n";
+		std::string error = "Failed: \n" + err.str() + "\n";
+		std::string cmdline = cmd;
+		for (std::vector<std::string>::const_iterator cit = args.begin();
+			cit != args.end(); ++cit)
+			cmdline += " " + *cit + " ";
+		error += "\n\nCommand was :\n\n" + cmdline + "\n";
 
 		QMessageBox::warning(0, 0, format(error, 50).c_str());
 	}
@@ -247,3 +262,14 @@ std::string const basename(std::string const & path_name)
 
 	return result;
 }
+
+ 
+std::string const tostr(unsigned int i)
+{
+        string str;
+	std::ostringstream ss(str);
+	ss << i;
+	return ss.str(); 
+}
+
+

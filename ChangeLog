@@ -1,5 +1,14 @@
 2001-09-23  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/op_dump:
+	* dae/op_start: echo errors to stderr
+ 
+	* gui/oprof_start_util.h:
+	* gui/oprof_start_util.cpp:
+	* gui/oprof_start.cpp: use fork/exec to spawn children
+
+2001-09-23  John Levon  <moz@compsoc.man.ac.uk>
+
 	* TODO: update
 
 	* gui/Makefile.in:
