@@ -1,5 +1,30 @@
 2002-01-11  John Levon  <moz@compsoc.man.ac.uk>
 
+	* configure.in: remove dead checks. comment out APIC check,
+	  hide grep output
+
+	* module/Makefile.in: add compat.c
+
+	* apic_up_compat.h: UP 2.2 missing defines. Need to investigate
+	  fixmap situation. 
+
+	* compat.c: move 2.2 dcache code here
+
+	* compat.h: dcache compat support. check for whether we
+	  should check for mptable. Don't do fixmap hack on 2.2 
+
+	* op_dcache.h: shared dcache inline functions
+
+	* op_syscalls.c: clean up dcache code for 2.2/2.4 
+
+	* op_x86.c: update apic_need_setup for 2.2 and the possibility
+	  of not enabling APIC support on 2.4 too. Needs checking ! Also
+	  don't do mptable check on 2.2
+
+	* oprofile.h: add missing include guard ;)
+ 
+2002-01-11  John Levon  <moz@compsoc.man.ac.uk>
+
 	* module/compat.h: minor fixes
  
 2002-01-11  Philippe Elie  <ph_e@club-internet.fr>

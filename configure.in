@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.67 2002/01/11 02:11:27 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.68 2002/01/11 05:24:07 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -105,14 +105,6 @@ if (__builtin_expect(i, 0)) { }
 ],AC_MSG_RESULT("yes"); BKCFLAGS="$BKCFLAGS -DEXPECT_OK", AC_MSG_RESULT("no");)
 CFLAGS=$SAVE_CFLAGS 
  
-dnl AC_MSG_CHECKING("whether completion.h exists")
-dnl if test -f $KINC/linux/completion.h; then
-dnl   BKCFLAGS="$BKCFLAGS -DCOMPLETION_H"
-dnl   AC_MSG_RESULT("yes")
-dnl else
-dnl   AC_MSG_RESULT("no")
-dnl fi
- 
 AC_MSG_CHECKING(for hard_get_current())
 HARD_GET_CURRENT=`gcc -I$KINC -E $KINC/asm/current.h | grep hard_get_current`
 if test -z "$HARD_GET_CURRENT"; then
@@ -147,83 +139,13 @@ dnl when CONFIG_X86_LOCAL_APIC undef we miss many apic prototype. Unhopefully
 dnl apic_read/write implementation have changed through kernel version. We must
 dnl check before removing this stuff than taking impl from one kernel work
 dnl also for the other
-if test "$smp" = 0; then 
-  AC_MSG_CHECKING(for local APIC)
-  AX_COMPILE_OPTION(CONFIG_X86_LOCAL_APIC,apic=1,apic=0)
-  AX_MSG_RESULT_YN($apic)
-  dnl try to figure out when we really need that
-  test "$apic" = 0 && AC_MSG_ERROR(local APIC not configured)
-fi
-
-dnl Rather to rely on linux version check the presence of specific features
-dnl because it is no clear when some features has been introduced.
-
-dnl AC_MSG_CHECKING(for asm/mpspec.h)
-dnl if test -e "$KINC"/asm/mpspec.h; then
-dnl   AC_MSG_RESULT("yes")
-dnl   BKCFLAGS="-DHAVE_ASM_MPSPEC_H $BKCFLAGS"
-dnl else
-dnl   AC_MSG_RESULT("no")
+dnl if test "$smp" = 0; then 
+dnl   AC_MSG_CHECKING(for local APIC)
+dnl   AX_COMPILE_OPTION(CONFIG_X86_LOCAL_APIC,apic=1,apic=0)
+dnl   AX_MSG_RESULT_YN($apic)
+dnl   dnl try to figure out when we really need that, if ever
+dnl   #test "$apic" = 0 && AC_MSG_ERROR(local APIC not configured)
 dnl fi
-
-dnl AC_MSG_CHECKING(for asm/apic.h)
-dnl if test -e "$KINC"/asm/apic.h; then
-dnl   AC_MSG_RESULT("yes")
-dnl   BKCFLAGS="-DHAVE_ASM_APIC_H $BKCFLAGS"
-dnl else
-dnl   AC_MSG_RESULT("no")
-dnl fi
-
-dnl We rely on pte_page returning a struct * not an ulong
-dnl AC_MSG_CHECKING(for invalid pte_page prototype)
-dnl SAVE_CFLAGS=$CFLAGS
-dnl CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
-dnl AC_TRY_COMPILE( 
-dnl [
-dnl #include <linux/mm.h>
-dnl #include <linux/pagemap.h>
-dnl #include <asm/pgtable.h>
-dnl ],
-dnl [ if (page_address(pte_page(*(pte_t*)0))) {} ],
-dnl   AC_MSG_RESULT("no"),
-dnl   AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_INVALID_PTE_PAGE_PROTO $BKCFLAGS")
-dnl CFLAGS=$SAVE_CFLAGS
-
-dnl virt_to_page is not always present
-dnl AC_MSG_CHECKING(for virt_to_page)
-dnl SAVE_CFLAGS=$CFLAGS
-dnl CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
-dnl AC_TRY_COMPILE( 
-dnl   [
-dnl   #include <linux/mm.h>
-dnl   #include <asm/page.h>
-dnl   ],
-dnl   [ if (virt_to_page(0)) {} ],
-dnl   AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_VIRT_TO_PAGE $BKCFLAGS",
-dnl   AC_MSG_RESULT("no"))
-dnl CFLAGS=$SAVE_CFLAGS
-
-dnl linux 2.2 have no vmalloc_32
-dnl AC_MSG_CHECKING(for vmalloc_32)
-dnl SAVE_CFLAGS=$CFLAGS
-dnl CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
-dnl AC_TRY_COMPILE( 
-dnl   [ #include <linux/vmalloc.h> ],
-dnl   [ if (vmalloc_32(0)) {} ],
-dnl   AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_VMALLOC_32 $BKCFLAGS",
-dnl   AC_MSG_RESULT("no"))
-dnl CFLAGS=$SAVE_CFLAGS
-
-dnl linux 2.2 have no cpu_number_map on UP kernel
-dnl AC_MSG_CHECKING(for cpu_number_map)
-dnl SAVE_CFLAGS=$CFLAGS
-dnl CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
-dnl AC_TRY_COMPILE( 
-dnl   [ #include <linux/smp.h> ],
-dnl   [ if (cpu_number_map(0)) {} ],
-dnl   AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_CPU_NUMBER_MAP $BKCFLAGS",
-dnl   AC_MSG_RESULT("no"))
-dnl CFLAGS=$SAVE_CFLAGS
 
 dnl linux 2.2 need -D__SMP__, preferable to pass as compile option, so we
 dnl include <linux/smp.h> without worrying to include the compat file first
@@ -244,63 +166,18 @@ if test "$smp" = 1; then
   CFLAGS=$SAVE_CFLAGS
 fi
 
-dnl check for the new mmap syscall
-dnl AC_MSG_CHECKING(for new mmap)
-dnl SAVE_CFLAGS=$CFLAGS
-dnl CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
-dnl AC_TRY_COMPILE( 
-dnl   [ #include <linux/unistd.h> ],
-dnl   [ if (__NR_mmap2) {} ],
-dnl   AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_MMAP2 $BKCFLAGS",
-dnl   AC_MSG_RESULT("no"))
-dnl CFLAGS=$SAVE_CFLAGS
-
 dnl in 2.2 only one object file must be compiled w/o __NO_VERSION__ look at
 dnl further comment in module/Makefile.in. Note than treating this in compat.h
 dnl means than compat.h must be include before any #include <>, for now treat
 dnl on cmd line FIXME
 AC_MSG_CHECKING(for __NO_VERSION__)
-if grep __NO_VERSION__ $KSRC/include/linux/module.h; then
+if grep __NO_VERSION__ $KSRC/include/linux/module.h >/dev/null; then
   AC_MSG_RESULT("yes")
   NO_MODULE_VERSION="-D__NO_VERSION__"
 else
   AC_MSG_RESULT("no")
 fi
 AC_SUBST(NO_MODULE_VERSION)
-
-dnl this is probably not enough precise and must broken in several little test
-dnl grep for the use HAVE_MOUNT_CROSS_POINT in source
-dnl AC_MSG_CHECKING(for vfs support of cross mount point)
-dnl SAVE_CFLAGS=$CFLAGS
-dnl CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
-dnl AC_TRY_COMPILE( 
-dnl   [ #include <linux/fs.h> ],
-dnl  [ if (((struct vfsmount *)0)->mnt_root) {} ],
-dnl   AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_CROSS_MOUNT_POINT $BKCFLAGS",
-dnl   AC_MSG_RESULT("no"))
-dnl CFLAGS=$SAVE_CFLAGS
-
-dnl AC_MSG_CHECKING(for file_operations->owner)
-dnl SAVE_CFLAGS=$CFLAGS
-dnl CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
-dnl AC_TRY_COMPILE( 
-dnl   [ #include <linux/fs.h> ],
-dnl   [ if (((struct file_operations *)0)->owner) {} ],
-dnl   AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_FILE_OPERATIONS_OWNER $BKCFLAGS",
-dnl   AC_MSG_RESULT("no"))
-dnl CFLAGS=$SAVE_CFLAGS
-
-dnl this do not check for a valid attribute aligned, I think it is always
-dnl by the kernel than compiler support this attribute
-dnl AC_MSG_CHECKING(for a working cache_aligned macro)
-dnl SAVE_CFLAGS=$CFLAGS
-dnl CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
-dnl AC_TRY_COMPILE( 
-dnl   [ #include <linux/cache.h> ],
-dnl   [ static int a __cacheline_aligned = 0; if (a) {} ],
-dnl   AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_CACHE_LINE_ALIGNED $BKCFLAGS",
-dnl   AC_MSG_RESULT("no"))
-dnl CFLAGS=$SAVE_CFLAGS
 
 dnl if some 2.2 can be supported w/o CONFIG_SMP we need to take care about 
 dnl smp_call_function expanded to empty, workaround is

@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.4 2002/01/11 02:11:28 phil_e Exp $ */
+/* $Id: op_syscalls.c,v 1.5 2002/01/11 05:24:07 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -21,23 +21,22 @@
 #include <linux/file.h>
 
 #include "oprofile.h"
+#include "op_dcache.h"
 
 // FIXME: check these syscalls are same code as 2.2 where necessary
- 
+
 extern u32 prof_on;
 
-static uint dname_top;
-static struct qstr **dname_stack;
-static uint hash_map_open;
-static struct op_hash_index *hash_map;
+uint dname_top;
+struct qstr **dname_stack;
 char * pool_pos;
 char * pool_start;
 char * pool_end;
+ 
+static uint hash_map_open;
+static struct op_hash_index *hash_map;
 
 void oprof_put_note(struct op_note *samp);
-inline static uint alloc_in_pool(char const * str, uint len);
-inline static int add_hash_entry(struct op_hash_index * entry, uint parent, char const * name, uint len);
-inline static uint name_hash(const char *name, uint len, uint parent);
 
 /* --------- device routines ------------- */
 
@@ -50,7 +49,7 @@ int oprof_init_hashmap(void)
 {
 	uint i;
 	uint usrhash;
- 
+
 	dname_stack = kmalloc(DNAME_STACK_MAX * sizeof(struct qstr *), GFP_KERNEL);
 	if (!dname_stack)
 		return -EFAULT;
@@ -65,7 +64,7 @@ int oprof_init_hashmap(void)
 		hash_map[i].name = 0;
 		hash_map[i].parent = -1;
 	}
- 
+
 	pool_start = (char *)(hash_map + OP_HASH_MAP_NR);
 	pool_end = pool_start + POOL_SIZE;
 	pool_pos = pool_start;
@@ -74,7 +73,7 @@ int oprof_init_hashmap(void)
 
 	/* set up some common entries */
 	/* feel free to add sensible ones ! */
- 
+
 	/* /lib */
 	i = name_hash("lib", strlen("lib"), 0);
 	add_hash_entry(&hash_map[i], 0, "lib", strlen("lib"));
@@ -168,83 +167,22 @@ asmlinkage static long (*old_sys_exit)(int);
 
 spinlock_t map_lock = SPIN_LOCK_UNLOCKED;
 
-inline static uint name_hash(const char *name, uint len, uint parent)
-{
-	uint hash=0;
-
-	while (len--)
-		hash = (hash + (name[len] << 4) + (name[len] >> 4)) * 11;
-
-	return (hash ^ parent) % OP_HASH_MAP_NR;
-}
-
-/* empty ascending dname stack */
-inline static void push_dname(struct qstr *dname)
-{
-	dname_stack[dname_top] = dname;
-	if (dname_top != DNAME_STACK_MAX)
-		dname_top++;
-	else
-		printk("oprofile: overflowed dname stack !\n");
-}
-
-inline static struct qstr *pop_dname(void)
-{
-	if (dname_top == 0)
-		return NULL;
-
-	return dname_stack[--dname_top];
-}
-
-inline static uint alloc_in_pool(char const * str, uint len)
-{
-	char * place = pool_pos;
-	if (pool_pos + len + 1 >= pool_end)
-		return 0;
-
-	strcpy(place, str);
-	pool_pos += len + 1;
-	return place - pool_start;
-}
- 
-inline static char * get_from_pool(uint index)
-{
-	return pool_start + index;
-}
-
-inline static int add_hash_entry(struct op_hash_index * entry, uint parent, char const * name, uint len)
-{
-  	entry->name = alloc_in_pool(name, len);
-	if (!entry->name)
-		return -1;
-	entry->parent = parent;
-	return 0;
-} 
-
-/* called with map_lock held */
-/* for 2.2, use simpler d_path code ! */ 
-static uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt)
+#ifndef NEED_2_2_DENTRIES
+int wind_dentries_2_4(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt)
 {
 	struct dentry *d = dentry;
 	struct vfsmount *v = vfsmnt;
-	struct qstr *dname;
-	uint value = -1;
-	uint firsthash;
-	uint incr;
-	uint parent = 0;
-	struct op_hash_index *entry;
 
 	/* wind the dentries onto the stack pages */
 	for (;;) {
 		/* deleted ? */
 		if (!IS_ROOT(d) && list_empty(&d->d_hash))
-			goto out;
+			return 0;
 
 		/* the root */
 		if (d == root && v == rootmnt)
 			break;
 
-#ifdef HAVE_CROSS_MOUNT_POINT
 		if (d == v->mnt_root || IS_ROOT(d)) {
 			if (v->mnt_parent == v)
 				break;
@@ -252,17 +190,52 @@ static uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentr
 			d = v->mnt_mountpoint;
 			v = v->mnt_parent;
 		}
-#else
-		if (IS_ROOT(d))
-			break;
-#endif
 
 		push_dname(&d->d_name);
 
 		d = d->d_parent;
 	}
 
-	/* here we are at the bottom, unwind and hash */
+	return 1;
+}
+
+/* called with map_lock held */
+static uint do_path_hash_2_4(struct dentry *dentry, struct vfsmount *vfsmnt)
+{
+	uint value;
+	struct vfsmount *rootmnt;
+	struct dentry *root;
+
+	read_lock(&current->fs->lock);
+	rootmnt = mntget(current->fs->rootmnt);
+	root = dget(current->fs->root);
+	read_unlock(&current->fs->lock);
+
+	spin_lock(&dcache_lock);
+
+	value = do_hash(dentry, vfsmnt, root, rootmnt);
+
+	spin_unlock(&dcache_lock);
+	dput(root);
+	mntput(rootmnt);
+	return value;
+}
+#endif /* NEED_2_2_DENTRIES */
+
+/* called with map_lock held */
+uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt)
+{
+	struct qstr *dname;
+	uint value = -1;
+	uint firsthash;
+	uint incr;
+	uint parent = 0;
+	struct op_hash_index *entry;
+
+	if (!wind_dentries(dentry, vfsmnt, root, rootmnt))
+		goto out;
+
+	/* unwind and hash */
 
 	while ((dname = pop_dname())) {
 		/* if N is prime, value in [0-N[ and incr = max(1, value) then
@@ -278,7 +251,7 @@ static uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentr
 		if (streq(get_from_pool(entry->name), dname->name)
 			&& entry->parent == parent)
 			goto next;
- 
+
 		/* new entry ? */
 		if (entry->parent == -1) {
 			if (add_hash_entry(entry, parent, dname->name, dname->len))
@@ -311,39 +284,6 @@ fulltable:
 }
 
 /* called with map_lock held */
-static uint do_path_hash(struct dentry *dentry, struct vfsmount *vfsmnt)
-{
-#ifdef HAVE_CROSS_MOUNT_POINT
-	uint value;
-	struct vfsmount *rootmnt;
-	struct dentry *root;
-
-	read_lock(&current->fs->lock);
-	rootmnt = mntget(current->fs->rootmnt);
-	root = dget(current->fs->root);
-	read_unlock(&current->fs->lock);
-
-	spin_lock(&dcache_lock);
-
-	value = do_hash(dentry, vfsmnt, root, rootmnt);
-
-	spin_unlock(&dcache_lock);
-	dput(root);
-	mntput(rootmnt);
-#else
-	uint value;
-	struct dentry *root;
-
-	lock_kernel();
-	root = dget(current->fs->root);
-	value = do_hash(dentry, vfsmnt, root, 0);
-	dput(root);
-	unlock_kernel();
-#endif
-	return value;
-}
-
-/* called with map_lock held */
 static void oprof_output_map(ulong addr, ulong len,
 	ulong offset, struct file *file, int is_execve)
 {
@@ -361,11 +301,7 @@ static void oprof_output_map(ulong addr, ulong len,
 	note.len = len;
 	note.offset = offset;
 	note.type = is_execve ? OP_EXEC : OP_MAP;
-#ifdef HAVE_CROSS_MOUNT_POINT
-	note.hash = do_path_hash(file->f_dentry, file->f_vfsmnt);
-#else
-	note.hash = do_path_hash(file->f_dentry, 0);
-#endif
+	note.hash = hash_path(file);
 	if (note.hash == -1)
 		return;
 	oprof_put_note(&note);
@@ -418,7 +354,7 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 	}
 	ret = do_execve(filename, (char **)regs.ecx, (char **)regs.edx, &regs);
 
-	// FIXME: check sys_execve 
+	// FIXME: check sys_execve
 	if (!ret) {
 		PTRACE_OFF(current);
 

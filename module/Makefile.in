@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.7 2002/01/11 02:11:28 phil_e Exp $
+# $Id: Makefile.in,v 1.8 2002/01/11 05:24:07 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -29,7 +29,7 @@ uninstall:
 clean:
 	rm -rf *.o .deps
 
-oprofile.o: op_init.o op_util.o oprofile_c.o oprofile_nmi.o op_syscalls.o op_events_module.o op_x86.o
+oprofile.o: op_init.o op_util.o oprofile_c.o oprofile_nmi.o op_syscalls.o op_events_module.o op_x86.o compat.o
 	$(LD) -r -o $@ $^
 
 # we can't use implicit rules for this directory
@@ -50,6 +50,9 @@ op_x86.o: op_x86.c
 op_syscalls.o: op_syscalls.c
 	$(CC) $(KCFLAGS) -c -o $@ $<
 
+compat.o: compat.c
+	$(CC) $(KCFLAGS) -c -o $@ $<
+ 
 oprofile.s: oprofile.c
 	$(CC) $(KCFLAGS) -S $<
 

@@ -100,22 +100,37 @@ void lvtpc_apic_restore(void *dummy)
 	apic_write(APIC_LVTPC, val);
 }
 
+/*
+ * This logic is unfortunately horrendous. We are trying to
+ * determine if the kernel has set up the APIC or not.
+ *
+ * It doesn't even work if there are BIOS problems or the like :(
+ */
 static int __init apic_needs_setup(void)
 {
-	return 
-/* if enabled, the kernel has already set it up */
-#ifdef CONFIG_X86_UP_APIC
-	0 &&
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
+#ifdef __SMP__
+	return 0;
 #else
-/* 2.4.10 and above do the necessary setup */
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,4,9)
-	0 &&
+	return 1;
+#endif /* __SMP__ */
 #else
-/* otherwise, we detect SMP hardware via the MP table */
-	!smp_hardware &&
-#endif /* 2.4.10 */
-#endif /* CONFIG_X86_UP_APIC */
-	smp_num_cpus == 1;
+	#ifdef CONFIG_X86_UP_APIC
+		return 0;
+	#else
+		#ifdef CONFIG_X86_LOCAL_APIC
+			/* 2.4.10 has UP APIC setup code too, but no extra
+			 * config option */
+			#if LINUX_VERSION_CODE == KERNEL_VERSION(2,4,10)
+				return 0;
+			#else
+				return !smp_hardware;
+			#endif /* LINUX_VERSION_CODE == KERNEL_VERSION(2,4,10) */
+		#else
+			return 1;
+		#endif /* CONFIG_X86_LOCAL_APIC */
+	#endif /* CONFIG_X86_UP_APIC */
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0) */
 }
 
 static int __init enable_apic(void)
@@ -283,6 +298,8 @@ void my_set_fixmap(void)
 
 /* ---------------- MP table code ------------------ */
  
+#ifndef NO_MPTABLE_CHECK_NEEDED
+
 static int __init mpf_checksum(unsigned char *mp, int len)
 {
 	int sum = 0;
@@ -319,6 +336,12 @@ static int __init smp_scan_config (unsigned long base, unsigned long length)
 	}
 	return 0;
 }
+#else
+static int __init smp_scan_config (unsigned long base, unsigned long length)
+{
+	return 0;
+}
+#endif /* !NO_MPTABLE_CHECK_NEEDED */
 
 void __init find_intel_smp (void)
 {

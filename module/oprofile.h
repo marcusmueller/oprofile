@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.15 2002/01/11 02:11:28 phil_e Exp $ */
+/* $Id: oprofile.h,v 1.16 2002/01/11 05:24:07 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -15,6 +15,9 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#ifndef OPROFILE_H
+#define OPROFILE_H
+ 
 #include <linux/version.h>
 #include <linux/module.h>
 #include <linux/config.h>
@@ -234,3 +237,5 @@ void lvtpc_apic_restore(void *dummy);
 void install_nmi(void);
 void restore_nmi(void);
 int apic_setup(void);
+
+#endif /* OPROFILE_H */

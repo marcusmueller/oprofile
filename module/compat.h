@@ -76,11 +76,43 @@
 
 #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,2,18) */
 
+/* replacement of d_covers: version is a guess */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,21)
+#define NEED_2_2_DENTRIES
+extern int wind_dentries_2_2(struct dentry *dentry);
+extern uint do_path_hash_2_2(struct dentry *dentry);
+#define wind_dentries(d, v, r, m) wind_dentries_2_2(d)
+#define hash_path(f) do_path_hash_2_2((f)->f_dentry)
+#else
+#define wind_dentries(d, v, r, m) wind_dentries_2_4(d, v, r, m)
+#define hash_path(f) do_path_hash_2_4((f)->f_dentry, (f)->f_vfsmnt)
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,3,21) */
+
+// 2.2's UP version of this is broken
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,1)
+#ifndef __SMP__
+#undef smp_call_function
+inline static int smp_call_function(void (*f)(void *in), void *i, int n, int w)
+{
+	return 0;
+}
+#endif /* __SMP__ */
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,3,1) */
+ 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
+
+/* on 2.2, the APIC is never enabled on UP */
+#define NO_MPTABLE_CHECK_NEEDED
+ 
+/* 2.2 has no cpu_number_map on UP */
+#ifdef __SMP__
 #define op_cpu_id() cpu_number_map[smp_processor_id()]
 #else
+#define op_cpu_id() smp_processor_id()
+#endif /* __SMP__ */
+#else
 #define op_cpu_id() cpu_number_map(smp_processor_id())
-#endif
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0) */
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
 
@@ -114,13 +146,17 @@
 #define __exit
 #define __init
 
-/* 2.4.0 have added a few aPIC define */
+#ifndef __SMP__
+#include "apic_up_compat.h"
+#else
+/* even on SMP, some defines are missing in 2.2 */
 #define	APIC_LVR		0x30
 #define	APIC_LVTPC		0x340
 #define	APIC_LVTERR		0x370
 #define	GET_APIC_VERSION(x)	((x)&0xFF)
 #define	GET_APIC_MAXLVT(x)	(((x)>>16)&0xFF)
 #define	APIC_INTEGRATED(x)	((x)&0xF0)
+#endif /* !__SMP__ */
 
 /* 2.4.0 introduce virt_to_page */
 #define virt_to_page(va) MAP_NR(va)
@@ -129,6 +165,8 @@
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
 
+/* FIXME: consider apic_up_compat ... */
+ 
 /* 2.4.0 introduced vfsmount cross mount point */
 #define HAVE_CROSS_MOUNT_POINT
 
@@ -182,7 +220,10 @@
 
 /* 2.4.10 introduced APIC setup under normal APIC config */
 #ifndef CONFIG_X86_UP_APIC
+/* no fixmapping is done in UP 2.2 */
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,4,0)
 #define NEED_FIXMAP_HACK
+#endif
 #endif
 
 #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,4,10) */
