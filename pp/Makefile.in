@@ -45,10 +45,10 @@ oprof_convert: oprof_convert.c
 OPF_CXXFLAGS=-Wall -pedantic -O2 -g $(CXXFLAGS_DEBUG_STL)
 
 opf_container.o: opf_container.cpp opf_filter.h
-	g++ -c $(OPF_CFLAGS) $< -o $@
+	g++ -c $(OPF_CXXFLAGS) $< -o $@
 
 opf_filter.o : opf_filter.cpp opf_filter.h
-	g++ -c $(OPF_CFLAGS) $< -o $@
+	g++ -c $(OPF_CXXFLAGS) $< -o $@
 
 opf_filter: opf_filter.o opf_container.o
 	g++ $(CXX_DEBUG_LIBS) $^ -o $@ -lpopt

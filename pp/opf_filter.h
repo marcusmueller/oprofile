@@ -1,5 +1,5 @@
-#ifndef OP_FILTER_H
-#define OP_FILTER_H
+#ifndef OPF_FILTER_H
+#define OPF_FILTER_H
 
 #include <stddef.h>
 #include <iostream>
@@ -20,7 +20,7 @@ static const bool sanity_check = true;
 // Forward declaration.
 
 //---------------------------------------------------------------------------
-// A simple container of counter to give independancy on the number of hardware counter.
+// A simple container of counter to give independency on the number of hardware counters.
 class counter_array_t {
  public:
 	counter_array_t();
@@ -126,4 +126,4 @@ class sample_container_t {
 	sample_container_impl * impl;
 };
 
-#endif /* !OP_FILTER_H */
+#endif /* !OPF_FILTER_H */
