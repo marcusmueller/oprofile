@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "odb_hash.h"
 
@@ -25,11 +26,7 @@ int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value)
 	index = hash->hash_base[odb_do_hash(hash, key)];
 	while (index) {
 		if (index <= 0 || index >= hash->descr->current_size) {
-			char * err_msg;
-			asprintf(&err_msg, "odb_insert() invalid index %u\n",
-				 index);
-			odb_set_error(hash, err_msg);
-			return EXIT_FAILURE;
+			return EINVAL;
 		}
 		node = &hash->node_base[index];
 		if (node->key == key) {
@@ -39,7 +36,7 @@ int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value)
 				/* post profile tools must handle overflow */
 				node->value = ~(odb_value_t)0;
 			}
-			return EXIT_SUCCESS;
+			return 0;
 		}
 
 		index = node->next;
@@ -51,7 +48,7 @@ int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value)
 	 * atomically update the node */
 	new_node = odb_hash_add_node(hash);
 	if (new_node == ODB_NODE_NR_INVALID) {
-		return EXIT_FAILURE;
+		return EINVAL;
 	}
 
 	node = &hash->node_base[new_node];
@@ -63,5 +60,5 @@ int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value)
 	node->next = hash->hash_base[index];
 	hash->hash_base[index] = new_node;
 	
-	return EXIT_SUCCESS;
+	return 0;
 }

@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 extern int separate_lib;
 extern int separate_kernel;
@@ -210,6 +211,7 @@ static void verbose_sample(struct sfile * sf, vma_t pc, uint counter)
 
 void sfile_log_sample(struct sfile * sf, vma_t pc, uint counter)
 {
+	int err;
 	samples_odb_t * file = get_file(sf, counter);
 
 	/* absolute value -> offset */
@@ -226,8 +228,9 @@ void sfile_log_sample(struct sfile * sf, vma_t pc, uint counter)
 	opd_stats[sf->kernel ? OPD_KERNEL : OPD_PROCESS]++;
 
 	/* Possible narrowing to 32-bit value only. */
-	if (odb_insert(file, (unsigned long)pc, 1) != EXIT_SUCCESS) {
-		fprintf(stderr, "%s\n", file->err_msg);
+	err = odb_insert(file, (unsigned long)pc, 1);
+	if (err) {
+		fprintf(stderr, "%s\n", strerror(err));
 		abort();
 	}
 }

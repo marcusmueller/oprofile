@@ -140,16 +140,8 @@ retry:
 			goto retry;
 		}
 
-		fprintf(stderr, "%s", file->err_msg);
-		odb_clear_error(file);
-		goto out;
-	}
-
-	if (!file->base_memory) {
-		err = errno;
-		fprintf(stderr,
-			"oprofiled: odb_open() of image sample file \"%s\" failed: %s\n",
-			mangled, strerror(errno));
+		fprintf(stderr, "oprofiled: open of %s failed: %s\n",
+		        mangled, strerror(err));
 		goto out;
 	}
 

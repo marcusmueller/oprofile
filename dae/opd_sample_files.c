@@ -186,16 +186,7 @@ int opd_open_sample_file(struct opd_image * image, int counter)
 
 	/* This can naturally happen when racing against opcontrol --reset. */
 	if (err) {
-		fprintf(stderr, "%s", sample_file->err_msg);
-		odb_clear_error(sample_file);
-		goto out;
-	}
-
-	if (!sample_file->base_memory) {
-		err = errno;
-		fprintf(stderr,
-			"oprofiled: odb_open() of image sample file \"%s\" failed: %s\n",
-			mangled, strerror(errno));
+		fprintf(stderr, "open of %s failed: %s\n", mangled, strerror(errno));
 		goto out;
 	}
 

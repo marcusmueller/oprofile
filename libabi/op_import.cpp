@@ -149,7 +149,7 @@ void import_from_abi(abi const & abi, void const * srcv,
 		ext.extract(val, src, "sizeof_odb_value_t", "offsetof_node_value");
 		int rc = odb_insert(dest, key, val);
 		if (rc != EXIT_SUCCESS) {
-			cerr << dest->err_msg << endl;
+			cerr << strerror(rc) << endl;
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -200,7 +200,7 @@ int main(int argc, char const ** argv)
 			      sizeof(struct opd_header));
 		if (rc) {
 			cerr << "odb_open() fail:\n"
-			     << dest.err_msg << endl;
+			     << strerror(rc) << endl;
 			exit(EXIT_FAILURE);
 		}
 

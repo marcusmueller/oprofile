@@ -57,7 +57,7 @@ int main(int argc, char const ** argv)
 
 		if (rc) {
 			cerr << "odb_open() fail:\n"
-			     << dest.err_msg << endl;
+			     << strerror(rc) << endl;
 			exit(EXIT_FAILURE);
 		}
 
@@ -81,7 +81,7 @@ int main(int argc, char const ** argv)
 		for (int i = 0; i < 3793; ++i) {
 			int rc = odb_insert(&dest, ((i*i) ^ (i+i)), ((i*i) ^ i));
 			if (rc != EXIT_SUCCESS) {
-				cerr << dest.err_msg << endl;
+				cerr << strerror(rc) << endl;
 				exit(EXIT_FAILURE);
 			}
 		}

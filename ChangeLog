@@ -1,5 +1,22 @@
 2003-09-24  John Levon  <levon@movementarian.org>
 
+	* dae/opd_proc.c:
+	* dae/opd_sample_files.c:
+	* daemon/opd_mangling.c:
+	* daemon/opd_sfile.c:
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp:
+	* libdb/db_insert.c:
+	* libdb/db_manage.c:
+	* libdb/db_test.c:
+	* libdb/odb_hash.h:
+	* libpp/op_header.cpp:
+	* libpp/profile.cpp: remove samples_odb_t.err_msg
+	entirely - prefer UNIX-style errno returns. Modify
+	error messages to match
+
+2003-09-24  John Levon  <levon@movementarian.org>
+
 	* dae/opd_sample_files.c:
 	* daemon/opd_sample_files.c:
 	* libpp/op_header.cpp:
