@@ -155,7 +155,7 @@ void get_options(int argc, char const * argv[])
 		outsymbflag fl =
 			output_symbol::ParseOutputOption(output_format);
 
-		if (fl == osf_none) {
+		if (fl == osf_none || (fl & ~(osf_header|osf_details)) == 0) {
 			cerr << "op_time: invalid --output-format flags.\n";
 			output_symbol::ShowHelp();
 			exit(EXIT_FAILURE);

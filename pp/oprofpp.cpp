@@ -210,8 +210,6 @@ int main(int argc, char const *argv[])
 		return 0;
 	}
 
-	options::output_format_flags =
-		static_cast<outsymbflag>(options::output_format_flags | osf_show_all_counters);
 	if (!options::symbol.empty() || options::list_all_symbols_details)
 		options::output_format_flags =
 			static_cast<outsymbflag>(options::output_format_flags | osf_details);

@@ -43,11 +43,10 @@ enum outsymbflag {
 	osf_details_mask = osf_nr_samples + osf_nr_samples_cumulated +
 			osf_percent + osf_percent_cumulated +
 			osf_vma + osf_linenr_info + osf_short_linenr_info,
-	osf_show_all_counters = 1 << 11,// for oprofpp -L
 	// special format modifier: output all field selected separated by a
 	// single space. This is intended to run post profile tools as
 	// front-end of other tools which treat samples information.
-	osf_header = 1 << 12
+	osf_header = 1 << 11
 };
 
 #endif // OUTSYMBFLAG_H

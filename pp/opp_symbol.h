@@ -132,9 +132,10 @@ private:
 	// return the nr of char needed to padd this field
 	size_t OutputField(std::ostream & out, std::string const & name,
 			   sample_entry const & sample,
-			   outsymbflag fl, size_t ctr);
+			   outsymbflag fl, size_t ctr, size_t padding);
 	// return the nr of char needed to padd this field
-	size_t OutputHeaderField(std::ostream & out, outsymbflag fl);
+	size_t OutputHeaderField(std::ostream & out, outsymbflag fl,
+				 size_t padding);
 	static field_description const * GetFieldDescr(outsymbflag flag);
 
 	outsymbflag flags;
