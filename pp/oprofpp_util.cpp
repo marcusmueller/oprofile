@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.46 2002/04/15 23:19:57 movement Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.47 2002/04/24 17:59:31 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -257,12 +257,12 @@ void opp_treat_options(const char* file, poptContext optcon,
 		sscanf(file_ctr_str + 1, "%d", &temp_counter);
 	}
 
-	if (temp_counter != -1 && counter != -1) {
+	if (temp_counter != -1 && counter != -1 && counter != 0) {
 		if ((counter & (1 << temp_counter)) == 0)
 			quit_error(optcon, "oprofpp: conflict between given counter and counter of samples file.\n");
 	}
 
-	if (counter == -1) {
+	if (counter == -1 || counter == 0) {
 		if (temp_counter != -1)
 			counter = 1 << temp_counter;
 		else
@@ -329,18 +329,20 @@ counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
 	return *this;
 }
 
-opp_bfd::opp_bfd(const opd_header* header, uint nr_samples_,
-		 const std::string & filename)
+opp_bfd::opp_bfd(const opd_header* header, const std::string & filename)
 	:
 	ibfd(0),
 	bfd_syms(0),
-	sect_offset(0),
-	nr_samples(nr_samples_)
+	sect_offset(0)
 {
 	if (filename.length() == 0) {
 		fprintf(stderr,"oprofpp: oppp_bfd() empty image filename.\n");
 		exit(EXIT_FAILURE);
-	} 
+	}
+
+	nr_samples = opd_get_fsize(filename.c_str(), 0);
+	if (header->is_kernel)
+		nr_samples += OPD_KERNEL_OFFSET;
 
 	open_bfd_image(filename, header->is_kernel);
 
@@ -509,7 +511,7 @@ u32 opp_bfd::sym_offset(uint sym_index, u32 num) const
 		fprintf(stderr,"oprofpp: less than zero offset ? \n");
 		exit(EXIT_FAILURE); 
 	}
-	 
+
 	/* adjust for kernel images */
 	num -= sect_offset;
 	/* take off section offset */
@@ -801,9 +803,9 @@ opp_samples_files::opp_samples_files(const std::string & sample_file,
 				     int counter_)
 	:
 	nr_counters(2),
-	first_file(-1),
 	sample_filename(sample_file),
-	counter_mask(counter_)
+	counter_mask(counter_),
+	first_file(-1)
 {
 	uint i, j;
 	time_t mtime = 0;
@@ -833,8 +835,7 @@ opp_samples_files::opp_samples_files(const std::string & sample_file,
 		exit(EXIT_FAILURE);
 	}
 
-	const struct opd_header * header = samples[first_file]->header;
-	nr_samples = samples[first_file]->nr_samples;
+	const struct opd_header * header = samples[first_file]->header();
 	mtime = header->mtime;
 
 	/* determine how many counters are possible via the sample file */
@@ -851,10 +852,8 @@ opp_samples_files::opp_samples_files(const std::string & sample_file,
 	/* sanity check on ctr_um, ctr_event and cpu_type */
 	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
 		if (samples[i] != 0)
-			check_event(samples[i]->header);
+			check_event(samples[i]->header());
 	}
-
-	verbprintf("nr_samples %d\n", nr_samples); 
 }
 
 /**
@@ -868,51 +867,6 @@ opp_samples_files::~opp_samples_files()
 
 	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
 		delete samples[i];
-	}
-}
-
-/**
- * open_samples_file - helper function to open a samples files
- * \param fd the file descriptor of file to mmap
- * \param size where to store the samples files size not counting the header
- * \param fentry where to store the opd_fentry pointer
- * \param header where to store the opd_header pointer
- * \param filename the filename of fd used for error message only
- *
- * open and mmap the given samples files,
- * the param samples, header[counter]
- * etc. are updated.
- * all error are fatal
- */
-static void open_samples_file(fd_t fd, size_t & size, opd_fentry * & fentry,
-			      opd_header * & header, const std::string & filename)
-{
-	size_t sz_file = opd_get_fsize(filename.c_str(), 1);
-	if (sz_file < sizeof(opd_header)) {
-		fprintf(stderr, "open_samples_file(): sample file %s is not the right "
-			"size: got %d, expect at least %d\n", 
-			filename.c_str(), sz_file, sizeof(opd_header));
-		exit(EXIT_FAILURE);
-	}
-	size = sz_file - sizeof(opd_header); 
-
-	header = (opd_header*)mmap(0, sz_file, PROT_READ, MAP_PRIVATE, fd, 0);
-	if (header == (void *)-1) {
-		fprintf(stderr, "open_samples_file(): mmap of %s failed. %s\n", filename.c_str(), strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	fentry = (opd_fentry *)(header + 1);
-
-	if (memcmp(header->magic, OPD_MAGIC, sizeof(header->magic))) {
-		/* FIXME: is 4.4 ok : there is no zero terminator */
-		fprintf(stderr, "open_samples_file(): wrong magic %4.4s, expected %s.\n", header->magic, OPD_MAGIC);
-		exit(EXIT_FAILURE);
-	}
-
-	if (header->version != OPD_VERSION) {
-		fprintf(stderr, "open_samples_file(): wrong version 0x%x, expected 0x%x.\n", header->version, OPD_VERSION);
-		exit(EXIT_FAILURE);
 	}
 }
 
@@ -1003,22 +957,8 @@ bool opp_samples_files::accumulate_samples(counter_array_t& counter,
  *
  */
 samples_file_t::samples_file_t(const std::string & filename)
-	:
-	samples(0),
-	header(0),
-	fd(-1)
 {
-	fd = open(filename.c_str(), O_RDONLY);
-	if (fd == -1) {
-		fprintf(stderr, "samples_files_t(): Opening %s failed. %s\n", filename.c_str(), strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	size_t size;
-
-	open_samples_file(fd, size, samples, header, filename);
-
-	nr_samples = size / sizeof(opd_fentry);
+	db_open(&db_tree, filename.c_str(), sizeof(struct opd_header));
 }
 
 /**
@@ -1029,10 +969,8 @@ samples_file_t::samples_file_t(const std::string & filename)
  */
 samples_file_t::~samples_file_t()
 {
-	if (header)
-		munmap(header, (nr_samples * sizeof(opd_fentry)) + sizeof(opd_header));
-	if (fd != -1)
-		close(fd);
+	if (db_tree.base_memory)
+		db_close(&db_tree);
 }
 
 /**
@@ -1045,15 +983,16 @@ samples_file_t::~samples_file_t()
  */
 bool samples_file_t::check_headers(const samples_file_t & rhs) const
 {
-	::check_headers(header, rhs.header);
-	
-	if (nr_samples != rhs.nr_samples) {
-		fprintf(stderr, "check_headers(): mapping file size "
-			"are different (%d, %d)\n", nr_samples, rhs.nr_samples);
-		exit(EXIT_FAILURE);		
-	}
+	::check_headers(header(), rhs.header());
 
 	return true;
+}
+
+void db_tree_callback(db_key_t, db_value_t value, void * data)
+{
+	u32 * count = (u32 *)data;
+
+	*count += value;
 }
 
 /**
@@ -1071,8 +1010,8 @@ bool samples_file_t::check_headers(const samples_file_t & rhs) const
 u32 samples_file_t::count(uint start, uint end) const
 {
 	u32 count = 0;
-	for ( ; start < end ; ++start)
-		count += samples[start].count;
+
+	db_travel(&db_tree, start, end, db_tree_callback, &count);
 
 	return count;
 }

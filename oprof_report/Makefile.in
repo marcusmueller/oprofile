@@ -42,7 +42,7 @@ OP_REPORT_OBJS=oprof_report.o oprof_report.moc.o oprof_report_main.o \
 # Makefile, dependency file and ui/oprof_report.base.h
 oprof_report: $(OP_REPORT_OBJS)
 	$(MAKE) -C ui
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(OP_REPORT_UI_OBJS) @QT2_LDFLAGS@ @QT2_LIBS@ -lbfd -lpopt -liberty -ldl
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(OP_REPORT_UI_OBJS) @QT2_LDFLAGS@ @QT2_LIBS@ ../libdb/libdb.a -lbfd -lpopt -liberty -ldl
 
 # we need explicit dependencies and build rules here else after a make clean
 # dependencies can not be regenerated. This also have the side effect to

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.109 2002/04/09 02:58:28 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.110 2002/04/24 17:59:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -43,9 +43,6 @@ struct opd_image * kernel_image;
 /* maintained for statistics purpose only */
 static unsigned int nr_images=0;
 
-/* reversed LRU of mapped samples files, unmapped samples are not lru'ed  */
-static struct list_head opd_samples_files = { &opd_samples_files, &opd_samples_files };
- 
 /**
  * opd_print_stats - print out latest statistics
  */
@@ -85,10 +82,6 @@ void opd_print_stats(void)
 			(double)opd_stats[OPD_MAP_ARRAY_DEPTH] 
 			/ (double)opd_stats[OPD_MAP_ARRAY_ACCESS]);
 	}
-	printf("Nr. mapping: %lu\n", opd_stats[OPD_MAPPING]);
-	printf("Nr. mapping tried: %lu\n", opd_stats[OPD_TRY_MAPPING]);
-	printf("Nr. unmapping due to mapping failure: %lu\n",
-	       opd_stats[OPD_TRY_MAPPING] - opd_stats[OPD_MAPPING]);
 	printf("Nr. sample dumps: %lu\n", opd_stats[OPD_DUMP_COUNT]);
 	printf("Nr. samples total: %lu\n", opd_stats[OPD_SAMPLES]);
 	printf("Nr. notifications: %lu\n", opd_stats[OPD_NOTIFICATIONS]);
@@ -105,13 +98,18 @@ void opd_alarm(int val __attribute__((unused)))
 	struct opd_proc *proc;
 	struct opd_proc *next;
 	uint i;
-	struct opd_sample_file * sample_file;
+	struct opd_image * image;
 	struct list_head * pos;
 
-	list_for_each(pos, &opd_samples_files) {
-		sample_file = list_entry(pos, struct opd_sample_file, lru_node);
-		msync(sample_file->header, 
-		      sample_file->len + sizeof(struct opd_header), MS_ASYNC);
+	list_for_each(pos, &opd_images) {
+		image = list_entry(pos, struct opd_image, list_node);
+		for (i = 0 ; i < op_nr_counters ; ++i) {
+			struct opd_sample_file * samples = 
+				&image->sample_files[i];
+
+			db_sync(&samples->tree);
+		  
+		}
 	}
 
 	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
@@ -240,7 +238,6 @@ static void opd_init_image(struct opd_image * image, const char * name,
 	image->hash = hash;
 	/* we do not duplicate this string! */
 	image->app_name = app_name;
-	image->len = 0;
 }
  
 /**
@@ -265,31 +262,12 @@ static void opd_open_image(struct opd_image *image)
 		   image->name, image->app_name ? image->app_name : "none");
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		image->sample_files[i].fd = -1;
-		image->sample_files[i].start = (void *)-1;
-		image->sample_files[i].header = (void *)-1;
-		image->sample_files[i].opened = 0;
-	}
-
-	verbprintf("Getting size of \"%s\"\n", image->name);
-
-	/* for each byte in original one counter */
-	image->len = opd_get_fsize(image->name, 0) * sizeof(struct opd_fentry);
-
-	if (!image->len) {
-		verbprintf("Size check failed for %s\n", image->name);
-		return;
+		memset(&image->sample_files[i], '\0',
+		       sizeof(struct opd_sample_file));
 	}
 
 	image->mtime = opd_get_mtime(image->name);
  
-	/* give space for "negative" entries. This is because we
-	 * don't know about kernel/module sections other than .text so
-	 * a sample could be before our nominal start of image, or
-	 * after the start */
-	if (image->kernel)
-		image->len += OPD_KERNEL_OFFSET * sizeof(struct opd_fentry);
-
 	opd_handle_old_sample_files(image);
 
 	/* samples files are lazily openeded */
@@ -318,36 +296,6 @@ inline static u16 opd_get_counter(const u16 count)
 }
 
 /*
- * opd_try_mmap - try to mmap a sample file
- * @sample_file: the sample file to mmap
- *
- * try to mmap a sample file, return non-zero on failure
- */
-static int opd_try_mmap(struct opd_sample_file * sample_file,
-			u32 len, const char * name)
-{
-	opd_stats[OPD_TRY_MAPPING]++;
-
-	sample_file->header = mmap(0, len + sizeof(struct opd_header),
-		PROT_READ|PROT_WRITE, MAP_SHARED, sample_file->fd, 0);
-
-	if (sample_file->header == (void *)-1) {
-		verbprintf("oprofiled: mmap of image sample file \"%s\" failed: %s\n", 
-			name, strerror(errno));
-		return 1;
-	}
-
-	opd_stats[OPD_MAPPING]++;
-
-	sample_file->start = sample_file->header + 1;
-	sample_file->len = len;
-
-	list_add_tail(&sample_file->lru_node, &opd_samples_files);
-
-	return 0;
-}
-
-/*
  * opd_open_sample_file - open an image sample file
  * @image: image to open file for
  * @counter: counter number
@@ -361,14 +309,10 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 {
 	char* mangled;
 	struct opd_sample_file *sample_file;
+	struct opd_header * header;
 	const char * app_name;
-	int open_flags;
 
 	sample_file = &image->sample_files[counter];
-
-	/* avoid flood of error messages */
-	if (sample_file->fd == -2)
-		return;
 
 	app_name = separate_samples ? image->app_name : NULL;
 	mangled = opd_mangle_filename(smpdir, image->name, app_name);
@@ -377,95 +321,31 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 
 	verbprintf("Opening \"%s\"\n", mangled);
 
-	open_flags = sample_file->opened ? O_RDWR : O_CREAT|O_RDWR;
-	sample_file->fd = open(mangled, open_flags, 0644);
-	if (sample_file->fd == -1) {
+	db_open(&sample_file->tree, mangled, sizeof(struct opd_header));
+	if (!sample_file->tree.base_memory) {
 		fprintf(stderr, 
-			"oprofiled: open of image sample file \"%s\" (opened %d) failed: %s\n", 
-			mangled, sample_file->opened, strerror(errno));
-		goto err1;
+			"oprofiled: db_open() of image sample file \"%s\" failed: %s\n", 
+			mangled, strerror(errno));
+		goto err;
 	}
 
-	if ( sample_file->opened == 0) {
-		/* truncate to grow the file is ok on linux */
-		int err = ftruncate(sample_file->fd, image->len + sizeof(struct opd_header));
-		if (err == -1) {
-			fprintf(stderr, 
-				"oprofiled: ftruncate failed for \"%s\". %s\n",
-				mangled, strerror(errno));
-			goto err2;
-		}
-	}
+	header = sample_file->tree.base_memory;
 
-	if (opd_try_mmap(sample_file, image->len, image->name)) {
-		struct opd_sample_file * temp;
-		struct list_head * tmp_pos, * pos;
+	memset(header, '\0', sizeof(struct opd_header));
+	header->version = OPD_VERSION;
+	memcpy(header->magic, OPD_MAGIC, sizeof(header->magic));
+	header->is_kernel = image->kernel;
+	header->ctr_event = ctr_event[counter];
+	header->ctr_um = ctr_um[counter];
+	header->ctr = counter;
+	header->cpu_type = cpu_type;
+	header->ctr_count = ctr_count[counter];
+	header->cpu_speed = cpu_speed;
+	header->mtime = image->mtime;
+	header->separate_samples = separate_samples;
 
-		verbprintf("try mmap loose, for %s on len %lu must unmap things\n", 
-			image->name, image->len);
-
-		list_for_each_safe(pos, tmp_pos, &opd_samples_files) {
-			temp = list_entry(pos, struct opd_sample_file, lru_node);
-
-			if (temp == sample_file) {
-				/* something feel very bad in the lru list */
-				fprintf(stderr, "ARGH: temp == sample_file\n");
-				exit(EXIT_FAILURE);
-			}
-
-			list_del_init(pos);
-
-			verbprintf("unmamp at %p for %lu byte\n", temp->header, temp->len);
-
-			close(temp->fd);
-			munmap(temp->header, temp->len + sizeof(struct opd_header));
-
-			temp->fd = -1;
-			temp->start = (void *)-1;
-			temp->header = (void *)-1;
-
-			if (!opd_try_mmap(sample_file, image->len, image->name))
-				break;
-		}
-
-		if (pos == &opd_samples_files) {
-			fprintf(stderr, "oprofiled: unable to map image \"%s\" even after whole unmaping/\n", mangled);
-			/* not an exit just in case of failure due trying a
-			 * very big mapping */
-			goto err2;
-		}
-
-		verbprintf("mapping ok for %s at %p for len %lu (%lu)\n",
-			   image->name, sample_file->start, sample_file->len,
-			   image->len);
-	}
-
-	if (sample_file->opened == 0) {
-		memset(sample_file->header, '\0', sizeof(struct opd_header));
-		sample_file->header->version = OPD_VERSION;
-		memcpy(&sample_file->header->magic, OPD_MAGIC, sizeof(sample_file->header->magic));
-		sample_file->header->is_kernel = image->kernel;
-		sample_file->header->ctr_event = ctr_event[counter];
-		sample_file->header->ctr_um = ctr_um[counter];
-		sample_file->header->ctr = counter;
-		sample_file->header->cpu_type = cpu_type;
-		sample_file->header->ctr_count = ctr_count[counter];
-		sample_file->header->cpu_speed = cpu_speed;
-		sample_file->header->mtime = image->mtime;
-		sample_file->header->separate_samples = separate_samples;
-	}
-
-	sample_file->opened = 1;
-
-out:
+err:
 	free(mangled);
-	return;
-err2:
-	close(sample_file->fd);
-err1:
-	/* avoid flood of error messages */
-	sample_file->fd = -2;
-	goto out;
 }
 
  
@@ -494,10 +374,8 @@ static void opd_check_image_mtime(struct opd_image * image)
 
 	for (i=0; i < op_nr_counters; i++) {
 		struct opd_sample_file * file = &image->sample_files[i]; 
-		if (file->fd > 0) {
-			list_del_init(&file->lru_node);
-			close(file->fd);
-			munmap(file->header, image->len + sizeof(struct opd_header));
+		if (file->tree.base_memory) {
+			db_close(&file->tree);
 		}
 		sprintf(mangled + len, "#%d", i);
 		verbprintf("Deleting out of date \"%s\"\n", mangled);
@@ -526,40 +404,25 @@ static void opd_check_image_mtime(struct opd_image * image)
  */
 void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count)
 {
-	struct opd_fentry *fentry;
 	struct opd_sample_file* sample_file;
 	int counter;
 
 	counter = opd_get_counter(count);
 	sample_file = &image->sample_files[counter];
 
-	if (sample_file->fd < 1) {
+	if (!sample_file->tree.base_memory) {
 		opd_open_sample_file(image, counter);
-		if (sample_file->fd < 1) {
+		if (sample_file->tree.base_memory) {
 			/* opd_open_sample_file output an error message */
 			return;
 		}
 	}
 
-	fentry = sample_file->start + (offset*sizeof(struct opd_fentry));
-
+	/* FIXME: this is no longer required ? */
 	if (image->kernel)
-		fentry += OPD_KERNEL_OFFSET;
+		offset += OPD_KERNEL_OFFSET;
 
-	list_del_init(&sample_file->lru_node);
-	list_add_tail(&sample_file->lru_node, &opd_samples_files);
-
-	if (((u32)fentry) > ((u32)(sample_file->start + image->len))) {
-		fprintf(stderr, "fentry %p out of bounds for \"%s\" (start %p, len 0x%.8lx, "
-			"end %p, orig offset 0x%.8x, kernel %d)\n", fentry, image->name, sample_file->start,
-			image->len, sample_file->start + image->len, offset, image->kernel);
-		return;
-	}
-
-	if (fentry->count + opd_get_count(count) < fentry->count)
-		fentry->count = (u32)-1;
-	else
-		fentry->count += opd_get_count(count);
+	db_insert(&sample_file->tree, offset, opd_get_count(count));
 }
 
 

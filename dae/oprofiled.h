@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.43 2002/04/09 14:42:37 phil_e Exp $ */
+/* $Id: oprofiled.h,v 1.44 2002/04/24 17:59:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -42,6 +42,7 @@
 #include "opd_util.h"
 #include "opd_list.h"
 #include "../op_user.h"
+#include "../libdb/db.h"
 
 /* 1 if we separate samples for shared lib */
 extern int separate_samples;
@@ -93,26 +94,12 @@ enum {  OPD_KERNEL, /* nr. kernel samples */
 	OPD_MAP_ARRAY_DEPTH, /* cumulative depth of map array accesses */
 	OPD_SAMPLES, /* nr. samples */
 	OPD_NOTIFICATIONS, /* nr. notifications */
-	OPD_MAPPING, /* nr. mappings occured */
-	OPD_TRY_MAPPING, /* nr. mappings attempted */
 	OPD_MAX_STATS /* end of stats */
 	};
 
 struct opd_sample_file {
-	fd_t fd;
-	/* mapped memory begin here */
-	struct opd_header *header;
-	/* start + sizeof(header) ie. begin of map of samples */
-	void *start;
-	/* allow to differenciate a first open from a reopen */
-	int opened;
-	/* the lru of all sample file */
-	struct list_head lru_node;
-	/* NOT counted the size of header, to allow quick access check  */
-	/* This field is also present in opd_image and duplicated here
-	 * to allow umapping without knowing what is the image of this samples
-	 * files (see opd_open_sample_file) */
-	off_t len;
+	/** data are stored here */
+	db_tree_t tree;
 };
 
 struct opd_image {
@@ -126,8 +113,6 @@ struct opd_image {
 	/* the application name where belongs this image, NULL if image has
 	 * no owner (such as wmlinux or module) */
 	const char * app_name;
-	/* NOT counted the size of header, to allow quick access check  */
-	off_t len;
 	time_t mtime;	/* image file mtime */
 	u8 kernel;
 	char *name;

@@ -439,7 +439,7 @@ static void output_files_count(map_t& files)
 				samples_file_t samples(s.str());
 
 				u32 count =
-					samples.count(0, samples.nr_samples);
+					samples.count(0, ~0);
 
 				p_it.first->second.count[i] = count;
 				total_count[i] += count;
@@ -615,8 +615,7 @@ static void output_symbols_count(map_t& files, int counter)
 			opp_samples_files samples_file(samples_filename,
 						       counter);
 
-			opp_bfd abfd(samples_file.first_header(),
-				     samples_file.nr_samples, image_name);
+			opp_bfd abfd(samples_file.first_header(), image_name);
 
 			samples.add(samples_file, abfd);
 		}

@@ -380,7 +380,7 @@ bool output::setup_counter_param(const opp_samples_files & samples_files)
 		counter_info[i].enabled = true;
 
 		const struct opd_header * header =
-			samples_files.samples[i]->header;
+			samples_files.samples[i]->header();
 		counter_info[i].ctr_event = header->ctr_event;
 		counter_info[i].unit_mask = header->ctr_um;
 		counter_info[i].event_count_sample = header->ctr_count;
@@ -824,8 +824,7 @@ bool output::treat_input(const string & image_name, const string & sample_file)
 	// this order of declaration is required to ensure proper
 	// initialisation of oprofpp
 	opp_samples_files samples_files(sample_file, counter_mask);
-	opp_bfd abfd(samples_files.first_header(),
-		     samples_files.nr_samples, image_name);
+	opp_bfd abfd(samples_files.first_header(), image_name);
 
 	if (!assembly && !abfd.have_debug_info()) {
 		cerr << "Request for source file annotated "

@@ -30,7 +30,7 @@
 #include "../version.h"
 #include "../util/op_popt.h"
 #include "../util/file_manip.h"
-#include "../util/shared_ptr.h"
+#include "../libdb/db.h"
 #include "oprofpp.h"
 
 using std::string;
@@ -152,7 +152,8 @@ static void create_file_list(list<string> & result,
 		 * provide more than one time the same filename on command
 		 * file, just silently remove duplicate */
 		for (size_t i = 0 ; i < images_filename.size(); ++i) {
-			if (find(result.begin(), result.end(), images_filename[i]) == result.end())
+			if (find(result.begin(), result.end(),
+				 images_filename[i]) == result.end())
 				result.push_back(images_filename[i]);
 		}
 	}
@@ -164,55 +165,79 @@ static void create_file_list(list<string> & result,
 }
 
 /**
- * create_samples_files_list - create a collection of opened samples files
- * \param filenames: the filenames list from which we open samples files
- *
- * from a collection of filenameswe create a collection of opened
- * samples files
+ * check_samples_files_list - chack than all samples have coherent header
+ * \param filenames: the filenames list from which we check sample file
  *
  * all error are fatal
  */ 
 static void
-create_samples_files_list(vector< SharedPtr<samples_file_t> > & samples_files,
-			  const list<string> & filenames)
+check_samples_files_list(const list<string> & filenames)
 {
-	list<string>::const_iterator it;
-	for (it = filenames.begin(); it != filenames.end(); ++it) {
-		SharedPtr<samples_file_t> p(new samples_file_t(*it));
-		samples_files.push_back(p);
-	}
+	if (filenames.empty())
+		return;
 
-	/* check than header are coherent */
-	for (size_t i = 1 ; i < samples_files.size() ; ++i) {
-		samples_files[0]->check_headers(*samples_files[i]);
+	samples_file_t first(*filenames.begin());
+
+	list<string>::const_iterator it;
+	for (it = filenames.begin(); ++it != filenames.end(); ) {
+		samples_file_t next(*it);
+
+		first.check_headers(next);
 	}
+}
+
+/**
+ * callback used to merge a database to another database.
+ *
+ * \param key
+ * \param value
+ * \param data is a pointer to the destination db_tree_t object
+ */
+static void copy_callback(db_key_t key, db_value_t value, void * data)
+{
+	db_tree_t * dest = (db_tree_t *)data;
+
+	db_insert(dest, key, value);
 }
 
 /**
  * output_files - create a samples file by merging (cumulating samples count)
  *  from a collection of samples files
  * \param filename the output filename
- * \param samples_files a collection of opened samples files
+ * \param filenames a collection of samples files name
  *
  * all error are fatal
  */
 static void output_files(const std::string & filename,
-			 const vector< SharedPtr<samples_file_t> > & samples_files)
+			 const list<string>& filenames)
 {
-	// TODO: bad approch, we don't create a sparsed file here :/
-	ofstream out(filename.c_str());
+	if (filenames.empty())
+		return;
 
-	// reinterpret's required by gcc 3, that's the standard :/
-	out.write(reinterpret_cast<char*>(samples_files[0]->header), sizeof(opd_header));
+	db_tree_t dest;
 
-	// All size of samples has been checked and must be identical
-	size_t nr_samples = samples_files[0]->nr_samples;
-	for (size_t i = 0 ; i < nr_samples ; ++i) {
-		u32 count = 0;
-		for (size_t j = 0 ; j < samples_files.size() ; ++j)
-			count += samples_files[j]->samples[i].count;
-		out.write(reinterpret_cast<char*>(&count), sizeof(count));
+	db_open(&dest, filename.c_str(), sizeof(struct opd_header));
+
+	list<string>::const_iterator it(filenames.begin());
+
+	{
+		ofstream out(filename.c_str());
+		ifstream in(it->c_str());
+
+		out << in.rdbuf();
 	}
+
+	for (++it ; it != filenames.end() ; ++it) {
+		db_tree_t src;
+
+		db_open(&src, it->c_str(), sizeof(struct opd_header));
+
+		db_travel(&src, 0, ~0, copy_callback, &dest);
+
+		db_close(&src);
+	}
+
+	db_close(&dest);
 }
 
 //---------------------------------------------------------------------------
@@ -226,13 +251,12 @@ int main(int argc, char const * argv[])
 
 	create_file_list(samples_filenames, images_filename);
 
-	vector< SharedPtr<samples_file_t> > samples_files;
-	create_samples_files_list(samples_files, samples_filenames);
+	check_samples_files_list(samples_filenames);
 
 	string libname;
 	extract_app_name(*samples_filenames.begin(), libname);
 
-	output_files(libname, samples_files);
+	output_files(libname, samples_filenames);
 
 	return EXIT_SUCCESS;
 }

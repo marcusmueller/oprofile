@@ -4,7 +4,7 @@ CFLAGS=@CFLAGS@ -pedantic -Wall -W -Wstrict-prototypes -Wunused -Wshadow -Wmissi
 CXXFLAGS=@CXXFLAGS@ @BFD_CXXFLAGS@ -ansi -Wall -W -Wunused -Wmissing-prototypes
 LIBS=-lpopt -lbfd -liberty -ldl
 MY_SOURCES=oprofpp.cpp oprofpp_util.cpp
-OBJS=../events/op_events.o ../events/op_events_desc.o ../dae/opd_util.o oprofpp_util.o ../util/op_popt.o ../util/file_manip.o  ../util/string_manip.o ../util/misc.o
+OBJS=../events/op_events.o ../events/op_events_desc.o ../dae/opd_util.o oprofpp_util.o ../util/op_popt.o ../util/file_manip.o  ../util/string_manip.o ../util/misc.o ../libdb/libdb.a
 
 all: $(INSTALL_LIST)
 

@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.25 2002/01/02 00:57:34 movement Exp $ */
+/* $Id: opd_util.h,v 1.26 2002/04/24 17:59:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -40,7 +40,7 @@
 #define streq(a,b) (!strcmp((a), (b)))
 
 #define OPD_MAGIC "DAE\n"
-#define OPD_VERSION 0x5
+#define OPD_VERSION 0x6
 
 /* header of the sample files */
 struct opd_header {

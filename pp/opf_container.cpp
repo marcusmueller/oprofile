@@ -381,8 +381,7 @@ add(const opp_samples_files & samples_files, const opp_bfd & abfd)
 		extract_app_name(*it, lib_name);
 
 		opp_samples_files samples_files(dir + "/" + *it, counter_mask);
-		opp_bfd abfd(samples_files.first_header(),
-			     samples_files.nr_samples,
+		opp_bfd abfd(samples_files.first_header(), 
 			     demangle_filename(lib_name));
 
 		// TODO: check if third params must be add_zero_samples_symbols
@@ -414,7 +413,7 @@ void samples_files_t::do_add(const opp_samples_files & samples_files,
 		u32 start, end;
 
 		start = 0;
-		end = start + samples_files.nr_samples;
+		end = start + abfd.nr_samples;
 
 		symbol_entry symb_entry;
 		symb_entry.first = 0;
@@ -457,7 +456,7 @@ void samples_files_t::do_add(const opp_samples_files & samples_files,
 
 		// FIXME - kill char * !!!
 		char const * symname = abfd.syms[i]->name;
-		symb_entry.name = (symname) ? demangle_symbol(abfd.syms[i]->name) : "";
+		symb_entry.name = symname ? demangle_symbol(symname) : "";
 
 		if ((flags & (osf_linenr_info | osf_short_linenr_info)) != 0 &&
 		    abfd.get_linenr(i, start, filename, linenr)) {

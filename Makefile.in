@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.48 2002/03/09 00:48:44 phil_e Exp $
+# $Id: Makefile.in,v 1.49 2002/04/24 17:59:30 phil_e Exp $
 
 .PHONY: all install clean distclean maintainerclean uninstall tags
 
@@ -7,6 +7,7 @@
 all:
 	$(MAKE) -C util
 	$(MAKE) -C events
+	$(MAKE) -C libdb
 	$(MAKE) -C module
 	$(MAKE) -C dae
 	$(MAKE) -C pp
@@ -42,6 +43,7 @@ clean:
 	rm -f *.o
 	$(MAKE) -C util clean
 	$(MAKE) -C events clean
+	$(MAKE) -C libdb clean
 	$(MAKE) -C module clean
 	$(MAKE) -C dae clean
 	$(MAKE) -C pp clean
@@ -55,7 +57,7 @@ maintainerclean: distclean
 	rm -f configure doc/Makefile aclocal.m4 config.h.in
 
 distclean: clean
-	rm -f Makefile module/Makefile events/Makefile util/Makefile doc/oprofile.1 dae/Makefile pp/Makefile oprof_report/Makefile oprof_report/ui/Makefile gui/Makefile gui/ui/Makefile tags config.status config.log config.cache version.h Rules.make config.h
+	rm -f Makefile module/Makefile events/Makefile libdb/Makefile util/Makefile doc/oprofile.1 dae/Makefile pp/Makefile oprof_report/Makefile oprof_report/ui/Makefile gui/Makefile gui/ui/Makefile tags config.status config.log config.cache version.h Rules.make config.h
 
 tags:
 	ctags -R

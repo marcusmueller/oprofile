@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.51 2002/04/15 23:19:57 movement Exp $ */
+/* $Id: oprofpp.h,v 1.52 2002/04/24 17:59:31 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -37,6 +37,7 @@
 #include <string>
 
 #include "../dae/opd_util.h"
+#include "../libdb/db.h"
 #include "../op_user.h"
 #include "../version.h"
 
@@ -203,15 +204,12 @@ class opp_bfd {
 public:
 	/**
 	 * \param header a valid samples file opd_header
-	 * \param nr_samples the number of samples location for this image ie
-	 * the number of bytes memory mapped for this image with EXEC right
 	 * \param image_file the name of the image file
 	 *
 	 * All error are fatal.
 	 *
 	 */
-	opp_bfd(const opd_header * header, uint nr_samples,
-		const std::string & filename);
+	opp_bfd(const opd_header * header, const std::string & filename);
 
 	/** close an opended bfd image and free all related resource. */
 	~opp_bfd();
@@ -273,6 +271,8 @@ public:
 	bfd *ibfd;
 	// sorted vector of interesting symbol.
 	std::vector<asymbol*> syms;
+	// nr of samples.
+	uint nr_samples;
 private:
 	// vector of symbol filled by the bfd lib. Call to bfd lib must use
 	// this instead of the syms vector.
@@ -280,8 +280,6 @@ private:
 	// image file such the linux kernel need than all vma are offset
 	// by this value.
 	u32 sect_offset;
-	// nr of samples.
-	uint nr_samples;
 	// ctor helper
 	void open_bfd_image(const std::string & file_name, bool is_kernel);
 	bool get_symbols();
@@ -297,20 +295,21 @@ struct samples_file_t
 	bool check_headers(const samples_file_t & headers) const;
 
 	u32 count(uint start) const { 
-		return  samples[start].count;
+		return  count(start, start + 1);
 	}
 
 	u32 count(uint start, uint end) const;
+
+	const struct opd_header * header() const {
+		return (struct opd_header *)db_tree.base_memory;
+	}
 
 	// probably needs to be private and create the neccessary member
 	// function (not simple getter), make private and compile to see
 	// what operation we need later. I've currently not a clear view
 	// of what we need
 //private:
-	opd_fentry *samples;		// header + sizeof(header)
-	opd_header *header;		// mapping begin here
-	fd_t fd;
-	size_t nr_samples;
+	db_tree_t db_tree;
 
 private:
 	// neither copy-able or copy constructible
@@ -378,13 +377,12 @@ struct opp_samples_files {
 
 	/// return a struct opd_header * of the first openened samples file
 	const struct opd_header * first_header() const {
-		return samples[first_file]->header;
+		return samples[first_file]->header();
 	}
 
 	// TODO privatisze as we can.
 	samples_file_t * samples[OP_MAX_COUNTERS];
 	uint nr_counters;
-	uint nr_samples;
 	std::string sample_filename;
 
 	// used in do_list_xxxx/do_dump_gprof.

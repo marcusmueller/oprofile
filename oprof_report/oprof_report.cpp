@@ -59,6 +59,8 @@ void oprof_report::load_samples_files(const string & filename)
 
 	string temp_filename = strip_filename_suffix(filename);
 	string app_name = extract_app_name(basename(temp_filename), lib_name);
+	if (lib_name.length())
+		app_name = lib_name;
 
 	/* TODO: on which counter we want to work must be user selectable.
 	 * for now let's as it but do not worry me about zero samples
@@ -71,7 +73,6 @@ void oprof_report::load_samples_files(const string & filename)
 		opp_samples_files samples_file(temp_filename, counter);
 
 		opp_bfd abfd(samples_file.first_header(), 
-			     samples_file.nr_samples, 
 			     demangle_filename(app_name));
 
 		// we defer clearing the view after ensuring than nothing

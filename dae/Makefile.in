@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.27 2002/01/04 19:54:06 phil_e Exp $
+# $Id: Makefile.in,v 1.28 2002/04/24 17:59:30 phil_e Exp $
 
 INSTALL_LIST=oprofiled op_start op_dump op_stop
 
@@ -31,7 +31,7 @@ srcdoc: oprofiled-src.html
 oprofiled-src.html: $(SOURCES)
 	../scripts/dodoc -html $(SOURCES) >oprofiled-src.html
 
-oprofiled: $(OBJS)
+oprofiled: $(OBJS) ../libdb/libdb.a
 	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $^ $(LIBS)
 
 %.o: %c

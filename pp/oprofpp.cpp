@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.39 2002/04/07 16:14:18 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.40 2002/04/24 17:59:31 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -134,7 +134,7 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 	}
 
 	if (!ctr_str)
-		ctr_str = "0";
+		ctr_str = "";
 
 	counter = counter_mask(ctr_str);
 
@@ -388,8 +388,7 @@ int main(int argc, char const *argv[])
 	opp_get_options(argc, argv, image_file, sample_file, counter);
 
 	opp_samples_files samples_files(sample_file, counter);
-	opp_bfd abfd(samples_files.first_header(),
-		     samples_files.nr_samples, image_file);
+	opp_bfd abfd(samples_files.first_header(), image_file);
 
 	if (!gproffile)
 		samples_files.output_header();
