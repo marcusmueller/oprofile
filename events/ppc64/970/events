@@ -45,7 +45,7 @@ event:0x0a counters:2 um:zero minimum:1000 name:PM_FPU_FEST_GRP4 : (GRP4 pm_fpul
 event:0x0b counters:3 um:zero minimum:1000 name:PM_FPU_FIN_GRP4 : (GRP4 pm_fpul) FPU finished, produced a result. This only indicates finish, not completion.
 event:0x0c counters:4 um:zero minimum:10000 name:PM_CYC_GRP4 : (GRP4 pm_fpul) Processor cycles
 event:0x0d counters:5 um:zero minimum:1000 name:PM_FPU_FSQRT_GRP4 : (GRP4 pm_fpul) Active for one cycle at end of microcode executed when FPU is executing a square root instruction; e.g. fsqrt*.
-event:0x0e counters:6 um:zero minimum:2000 name:PM_INST_CMPL_GRP4 : (GRP4 pm_fpul) Number of Eligible Instructions that completed. 
+event:0x0e counters:6 um:zero minimum:10000 name:PM_INST_CMPL_GRP4 : (GRP4 pm_fpul) Number of Eligible Instructions that completed. 
 event:0x0f counters:7 um:zero minimum:1000 name:PM_FPU_FMOV_FEST_GRP4 : (GRP4 pm_fpul) Active for one cycle when executing a move kind of instruction or one of the estimate instructions; e.g. fmr* or fres*.
 
 #Group 15 LSU Load Events
@@ -163,7 +163,7 @@ event:0xa0 counters:0 um:zero minimum:1000 name:PM_LSU_SRQ_S0_ALLOC_GRP30 : (GRP
 event:0xa1 counters:1 um:zero minimum:1000 name:PM_LSU_SRQ_S0_VALID_GRP30 : (GRP30 Sync and SRQ) Asserted every cycle that the Store Request Queue slot zero is valid. SRQ is 32 entries long and is allocated round-robin.
 event:0xa2 counters:2 um:zero minimum:1000 name:PM_LD_MISS_L1_GRP30 : (GRP30 Sync and SRQ) Total DL1 load references that miss the DL1
 event:0xa3 counters:3 um:zero minimum:1000 name:PM_LSU_SRQ_SYNC_CYC_GRP30 : (GRP30 Sync and SRQ) Asserted every cycle when a sync is in the SRQ.
-event:0xa4 counters:4 um:zero minimum:2000 name:PM_INST_CMPL_GRP30 : (GRP30 Sync and SRQ) Instructions completed
+event:0xa4 counters:4 um:zero minimum:10000 name:PM_INST_CMPL_GRP30 : (GRP30 Sync and SRQ) Instructions completed
 event:0xa5 counters:6 um:zero minimum:10000 name:PM_CYC_GRP30 : (GRP30 Sync and SRQ) Processor cycles
 event:0xa6 counters:7 um:zero minimum:1000 name:PM_LD_REF_L1_GRP30 : (GRP30 Sync and SRQ) Total DL1 Load references
 

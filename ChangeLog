@@ -1,4 +1,13 @@
-2004-10-31  Greg Banks  <gnb@melbourne.sgi.com>
+2004-11-01  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* events/ppc64/970/events: Make min count 10000 for all PM_INST_CMPL;
+	  and remove redundant event in group 2
+	* events/ppc64/power4/event_mappings: Set LSB of MMCRA so kernel kludge
+	  can be removed at some later date
+	* events/ppc64/power4/events: Make min counts consistent with ppc970
+	* events/ppc64/power5/events: Make min counts consistent with ppc970	  
+ 	
+2004-11-01  Greg Banks  <gnb@melbourne.sgi.com>
 
 	* libop/op_events.c: Make the default sample rate for
 	  IA64 sensible (i.e. 10 times smaller).
@@ -10,9 +19,9 @@
 2004-10-15  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* events/Makefile.am:
-	* oprofile/events/ppc64/970/event_mappings:
-	* oprofile/events/ppc64/970/events:
-	* oprofile/events/ppc64/970/unit_masks:
+	* events/ppc64/970/event_mappings:
+	* events/ppc64/970/events:
+	* events/ppc64/970/unit_masks:
 	* libop/op_cpu_type.c:
 	* libop/op_cpu_type.h:
 	* libop/op_events.c:
