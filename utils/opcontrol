@@ -211,7 +211,7 @@ do_init() {
 	CPUTYPE=`cat $MOUNT/cpu_type`
 	OP_COUNTERS=`ls $MOUNT/ | grep "^[0-9]\+\$" | tr "\n" " "`
 
-	CPU_SPEED=`op_help --get-cpu-frequency`
+	CPU_SPEED=`$OP_HELP --get-cpu-frequency`
 	vecho "cpu speed (estimation) : $CPU_SPEED"
 
 	IS_TIMER=0

@@ -77,7 +77,7 @@ static struct poptOption options[] = {
 	  "use the given numerical CPU type", "cpu type", },
 	{ "get-cpu-type", 'r', POPT_ARG_NONE, &get_cpu_type, 0,
 	  "show the auto-detected CPU type", NULL, },
-	{ "get-cpu-frequency", 'm', POPT_ARG_NONE|POPT_ARGFLAG_DOC_HIDDEN,
+	{ "get-cpu-frequency", '\0', POPT_ARG_NONE|POPT_ARGFLAG_DOC_HIDDEN,
 	  &get_cpu_frequency, 0, "show the cpu frequency in MHz", NULL, },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	POPT_AUTOHELP

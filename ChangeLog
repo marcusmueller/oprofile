@@ -1,5 +1,10 @@
 2003-03-22  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* utils/opcontrol: use $OP_HELP not op_help
+	* utils/op_help.c: remove short option for --get-cpu-frequency
+
+2003-03-22  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* TODO: update
 
 	* m4: new directory
