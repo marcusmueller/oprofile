@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_stop,v 1.7 2001/06/24 23:52:47 movement Exp $ 
+# $Id: op_stop,v 1.8 2001/09/12 17:10:50 movement Exp $ 
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -16,9 +16,9 @@
 # Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-echo "Stopping profiling and killing daemon"
 PID=`ps x | grep oprofiled | grep -v grep | awk '{print $1}'`
 if [ "$PID" != "" ]
 then
+	echo "Stopping profiling and killing daemon"
 	kill $PID
 fi

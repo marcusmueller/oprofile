@@ -1,5 +1,12 @@
 2001-09-12  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/oprofpp.c: print name of cpu type
+ 
+	* dae/op_stop:
+	* dae/op_start: re-organise, tidy
+ 
+2001-09-12  John Levon  <moz@compsoc.man.ac.uk>
+
 	* oprofile.c: fix small but triggerable
 	  SMP dump race
  

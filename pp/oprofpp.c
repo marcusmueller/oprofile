@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.39 2001/09/08 21:46:04 phil_e Exp $ */
+/* $Id: oprofpp.c,v 1.40 2001/09/12 17:10:51 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1133,7 +1133,7 @@ int main(int argc, char const *argv[])
 	if (footer[i]->cpu_type == CPU_ATHLON)
 		op_nr_counters = 4;
 
-	printf("Cpu type: %d\n", footer[i]->cpu_type);
+	printf("Cpu type: %s\n", op_get_cpu_type_str(footer[i]->cpu_type));
 
 	printf("Cpu speed was (MHz estimation) : %f\n", footer[i]->cpu_speed);
 

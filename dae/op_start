@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.41 2001/09/08 21:46:04 phil_e Exp $
+# $Id: op_start,v 1.42 2001/09/12 17:10:50 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -20,69 +20,6 @@
 # op_start --help and op_start --list-events have info
 
 SYSCTL=do_sysctl
-
-BUF_SIZE=262144
-HASH_SIZE=65536
-KERNEL_ONLY=0
-IGNORE_MYSELF=0
-DIR="/var/opd"
-MAP_FILE=
-VMLINUX=
-PID_FILTER=0
-PGRP_FILTER=0
-VERBOSE=0
-
-CPUTYPE=`op_help --get-cpu-type`
-
-case $CPUTYPE in
-	0|1|2)
-		OP_MAX_COUNTERS=2
-		;;
-	3)
-		OP_MAX_COUNTERS=4
-		;;
-esac
-
-# we can now default define individual counter setup variable.
-f=0
-while (( $f < $OP_MAX_COUNTERS )); do
-	CTR_USER[$f]=1
-	CTR_KERNEL[$f]=1
-	f=$(($f+1))
-done
-
-do_help() { 
-echo "op_start: usage:
-Module options
-  --buffer-size=num            number of samples in kernel buffer
-  --hash-table-size=num        number of entries in kernel hash table
-  --kernel-only=[0|1]          profile only the kernel
-  --ctrN-event=name            symbolic event name for ctr N
-  --ctrN-count=val             number of events between samples for ctr N
-  --ctrN-unit-mask=val         unit mask for ctr N
-  --ctrN-kernel=[0|1]          whether to count kernel events for ctr N
-  --ctrN-user=[0|1]            whether to count user events for ctr N
-Allowed range for N is [0-$OP_MAX_COUNTERS[
-  --pid-filter=pid             Only profile process pid 
-  --pgrp-filter=pgrp           Only profile process group pgrp
-
-Daemon options
-  --ignore-myself=[0|1]        ignore samples for oprofiled
-  --log-file=file              log file
-  --base-dir=dir               base directory of daemon
-  --samples-dir=file           output samples directory
-  --device-file=file           profile device file
-  --hash-map-device-file=file  profile hash map device file
-  --map-file=file              System.map for running kernel file
-  --vmlinux=file               vmlinux kernel image
-  --verbose                    be verbose in the daemon log
-
-General options
-  --list-events                list event types and unit masks
-  --help                       this message"
-}
-
-# utilities functions.
 
 #  A replacement function for the sysctl (procps package) utility which is
 # missing on some distribution (e.g. slack 7.0). 
@@ -115,329 +52,410 @@ extract_int()
 
 	if (($val >= $OP_MAX_COUNTERS || $val < 0)); then
 		echo "invalid argument $1: bad counter number"
+		exit 1
 	fi
 	echo $val
 }
 
-LOG_FILE=
-SAMPLES_DIR=
-DEVICE_FILE=
+# verbose echo
+vecho() {
+	if [ "$VERBOSE" == "0" ]; then 
+		return;
+	fi
+	echo $@
+}
+ 
+# print help message
+do_help() { 
+	echo "op_start: usage:
+	Module options
+	  --buffer-size=num            number of samples in kernel buffer
+	  --hash-table-size=num        number of entries in kernel hash table
+	  --kernel-only=[0|1]          profile only the kernel
+	  --ctrN-event=name            symbolic event name for ctr N
+	  --ctrN-count=val             number of events between samples for ctr N
+	  --ctrN-unit-mask=val         unit mask for ctr N
+	  --ctrN-kernel=[0|1]          whether to count kernel events for ctr N
+	  --ctrN-user=[0|1]            whether to count user events for ctr N
+	Allowed range for N is [0-$OP_MAX_COUNTERS[
+	  --pid-filter=pid             Only profile process pid 
+	  --pgrp-filter=pgrp           Only profile process group pgrp
 
-# get specified options
+	Daemon options
+	  --ignore-myself=[0|1]        ignore samples for oprofiled
+	  --log-file=file              log file
+	  --base-dir=dir               base directory of daemon
+	  --samples-dir=file           output samples directory
+	  --device-file=file           profile device file
+	  --hash-map-device-file=file  profile hash map device file
+	  --map-file=file              System.map for running kernel file
+	  --vmlinux=file               vmlinux kernel image
+	  --verbose                    be verbose in the daemon log
 
-while [ "$#" -ne 0 ]
-do
-	arg=`echo $1 | awk -F= '{print $1}'`
-	val=`echo $1 | awk -F= '{print $2}'`
-	case "$arg" in
-		--ignore-myself)
-			if [ "$val" != "" ]; then
-				IGNORE_MYSELF=$val
-			else
-				IGNORE_MYSELF=1
-			fi
-			;;
-		--buffer-size)
-			BUF_SIZE=$val
-			;;
-		--hash-table-size)
-			HASH_SIZE=$val
-			;;
-		--kernel-only)
-			if [ "$val" != "" ]; then
-				KERNEL_ONLY=$val
-			else
-				KERNEL_ONLY=1
-			fi
-			;;
-		--ctr*-unit-mask)
-			CTR_UM[`extract_int $arg`]=$val
-			;;
-		--ctr*-event)
-			CTR_EVENT[`extract_int $arg`]=$val
-			;;
-		--ctr*-count)
-			CTR_COUNT[`extract_int $arg`]=$val
-			;;
-		--ctr*-user)
-			CTR_USER[`extract_int $arg`]=$val
-			;;
-		--ctr*-kernel)
-			CTR_KERNEL[`extract_int $arg`]=$val
-			;;
-		--base-dir)
-			DIR=$val
-			;;
-		--samples-dir)
-			SAMPLES_DIR=$val
-			;;
-		--log-file)
-			LOG_FILE=$val
-			;;
-		--device-file)
-			DEVICE_FILE=$val
-			;;
-		--hash-map-device-file)
-			HASH_MAP_DEVICE_FILE=$val
-			;;
-		--map-file)
-			MAP_FILE=$val
-			;;
-		--vmlinux)
-			VMLINUX=$val
-			;;
-		--pid-filter)
-			PID_FILTER=$val
-			;;
-		--pgrp-filter)
-			PGRP_FILTER=$val
-			;;
-		--verbose)
-			VERBOSE=1
-			;;
-		--help)
-			do_help
-			exit 0
-			;;
+	General options
+	  --list-events                list event types and unit masks
+	  --help                       this message"
+}
 
-		--list-events)
-			exec op_help
+# initialise parameters
+do_init() {
+	LOG_FILE=
+	SAMPLES_DIR=
+	DEVICE_FILE=
+	BUF_SIZE=262144
+	HASH_SIZE=65536
+	KERNEL_ONLY=0
+	IGNORE_MYSELF=0
+	DIR="/var/opd"
+	MAP_FILE=
+	VMLINUX=
+	PID_FILTER=0
+	PGRP_FILTER=0
+	VERBOSE=0
+
+	CPUTYPE=`op_help --get-cpu-type`
+
+	case "$CPUTYPE" in
+		0|1|2)
+			OP_MAX_COUNTERS=2
+			;;
+		3)
+			OP_MAX_COUNTERS=4
 			;;
 		*)
-			echo "Unknown option \"$arg\". See op_start --help"
+			echo "Unknown cpu type \"$CPUTYPE\""
 			exit 1
-			;; 
+			;;
 	esac
-	shift
-done
 
-if [[ ${#CTR_EVENT[*]} == 0 ]]; then
-	echo "You haven't specified what events you would like to count, e.g."
-	echo "op_start ... --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000"
-	echo "Enter op_start --help for full options"
-	exit 1
-fi
+	# we can now default define individual counter setup variable.
+	f=0
+	while (( $f < $OP_MAX_COUNTERS )); do
+		CTR_USER[$f]=1
+		CTR_KERNEL[$f]=1
+		f=$(($f+1))
+	done
+} 
 
-f=0
-while (( $f < $OP_MAX_COUNTERS )); do
-	if [[ ${#CTR_EVENT[$f]} != 0 ]]; then
-		if [ -z "${CTR_COUNT[$f]}" ]; then
-			echo "Event but no count specified for counter $f"
-			exit 1
+
+# get and check specified options
+do_options() {
+	while [ "$#" -ne 0 ]
+	do
+		arg=`echo $1 | awk -F= '{print $1}'`
+		val=`echo $1 | awk -F= '{print $2}'`
+		case "$arg" in
+			--ignore-myself)
+				if [ "$val" != "" ]; then
+					IGNORE_MYSELF=$val
+				else
+					IGNORE_MYSELF=1
+				fi
+				;;
+			--buffer-size)
+				BUF_SIZE=$val
+				;;
+			--hash-table-size)
+				HASH_SIZE=$val
+				;;
+			--kernel-only)
+				if [ "$val" != "" ]; then
+					KERNEL_ONLY=$val
+				else
+					KERNEL_ONLY=1
+				fi
+				;;
+			--ctr*-unit-mask)
+				CTR_UM[`extract_int $arg`]=$val
+				;;
+			--ctr*-event)
+				CTR_EVENT[`extract_int $arg`]=$val
+				;;
+			--ctr*-count)
+				CTR_COUNT[`extract_int $arg`]=$val
+				;;
+			--ctr*-user)
+				CTR_USER[`extract_int $arg`]=$val
+				;;
+			--ctr*-kernel)
+				CTR_KERNEL[`extract_int $arg`]=$val
+				;;
+			--base-dir)
+				DIR=$val
+				;;
+			--samples-dir)
+				SAMPLES_DIR=$val
+				;;
+			--log-file)
+				LOG_FILE=$val
+				;;
+			--device-file)
+				DEVICE_FILE=$val
+				;;
+			--hash-map-device-file)
+				HASH_MAP_DEVICE_FILE=$val
+				;;
+			--map-file)
+				MAP_FILE=$val
+				;;
+			--vmlinux)
+				VMLINUX=$val
+				;;
+			--pid-filter)
+				PID_FILTER=$val
+				;;
+			--pgrp-filter)
+				PGRP_FILTER=$val
+				;;
+			--verbose)
+				VERBOSE=1
+				;;
+			--help)
+				do_help
+				exit 0
+				;;
+
+			--list-events)
+				exec op_help
+				;;
+			*)
+				echo "Unknown option \"$arg\". See op_start --help"
+				exit 1
+				;; 
+		esac
+		shift
+	done
+ 
+	one_enabled=0
+	f=0
+	while (( $f < $OP_MAX_COUNTERS )); do
+		if [[ ${#CTR_EVENT[$f]} != 0 ]]; then
+			CTR_EVENT_VAL[$f]=`op_help ${CTR_EVENT[$f]}`
+			if [ -z "${CTR_EVENT_VAL[$f]}" -a ! -z "${CTR_EVENT[$f]}" ]; then
+				echo "Unknown event \"${CTR_EVENT[$f]}\""
+				exit 1
+			fi
+			if [ -z "${CTR_COUNT[$f]}" ]; then
+				echo "Event but no count specified for counter $f"
+				exit 1
+			fi
+			one_enabled=1
+		else 
+			if [ ! -z "${CTR_COUNT[$f]}" ]; then
+				echo "Count but no event specified for counter $f"
+				exit 1
+			fi
 		fi
-		CTR_EVENT_VAL[$f]=`op_help ${CTR_EVENT[$f]}`
-		if [ -z "${CTR_EVENT_VAL[$f]}" -a ! -z "${CTR_EVENT[$f]}" ]; then
-			echo "Unknown event \"${CTR_EVENT[$f]}\""
-			exit 1
-		fi
-	else 
-		if [ ! -z "${CTR_COUNT[$f]}" ]; then
-			echo "Count but no event specified for counter $f"
-			exit 1
-		fi
+		f=$(($f+1))
+	done
+ 
+	if [ "$one_enabled" == "0" ]; then
+		echo "You haven't specified what events you would like to count, e.g."
+		echo "op_start ... --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000"
+		echo "Enter op_start --help for full options"
+		exit 1
 	fi
 
-	f=$(($f+1))
-done
+	if [ "$LOG_FILE" = "" ]; then
+		LOG_FILE="$DIR/oprofiled.log"
+	fi
+	if [ "$SAMPLES_DIR" = "" ]; then
+		SAMPLES_DIR="$DIR/samples/"
+	fi
+	if [ "$DEVICE_FILE" = "" ]; then
+		DEVICE_FILE="$DIR/opdev"
+	fi
+	if [ "$HASH_MAP_DEVICE_FILE" = "" ]; then
+		HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
+	fi
+
+	vecho "Parameters used:"
+	vecho "BUF_SIZE $BUF_SIZE"
+	vecho "HASH_SIZE $HASH_SIZE"
+	f=0
+	while (( $f < $OP_MAX_COUNTERS )); do
+		vecho "CTR${f}_EVENT ${CTR_EVENT[$f]}"
+		vecho "CTR${f}_COUNT ${CTR_COUNT[$f]}"
+		vecho "CTR${f}_UM ${CTR_UM[$f]}"
+		vecho "CTR${f}_USER ${CTR_USER[$f]}"
+		vecho "CTR${f}_KERNEL ${CTR_KERNEL[$f]}"
+		f=$(($f+1))
+	done
+	vecho "CPUTYPE $CPUTYPE"
+	vecho "IGNORE_MYSELF $IGNORE_MYSELF"
+	vecho "DIR $DIR"
+	vecho "LOG_FILE $LOG_FILE"
+	vecho "SAMPLES_DIR $SAMPLES_DIR"
+	vecho "DEVICE_FILE $DEVICE_FILE"
+	vecho "MAP_FILE $MAP_FILE"
+	vecho "VMLINUX $VMLINUX"
+
+	if [ -z "$MAP_FILE" ]; then
+		echo "No map file specified. You must specify the correct System.map and vmlinux files, e.g."
+		echo "op_start --map-file=/path/to/System.map --vmlinux=/path/to/vmlinux"
+		echo "Enter op_start --help for full options"
+		exit 1
+	fi
+
+	if [ -z "$VMLINUX" ]; then
+		echo "No vmlinux file specified. You must specify the correct System.map and vmlinux files, e.g."
+		echo "op_start --map-file=/path/to/System.map --vmlinux=/path/to/vmlinux"
+		echo "Enter op_start --help for full options"
+		exit 1
+	fi
+
+	if [ ! -f "$MAP_FILE" ]; then
+		echo "The specified map file \"$MAP_FILE\" doesn't exist."
+		exit 1
+	fi
+
+	if [ ! -f "$VMLINUX" ]; then
+		echo "The specified vmlinux file \"$VMLINUX\" doesn't exist."
+		exit 1
+	fi
+}
 
 # stop any existing daemon
+do_stop() {
+	op_stop
+}
 
-op_stop >/dev/null
+# setup and start module
+do_setup() {
+	grep oprof /proc/devices >/dev/null
+	if [ "$?" -ne 0 ]; then
+		modprobe oprofile expected_cpu_type=$CPUTYPE
+		if [ "$?" != "0" ]; then
+			echo "Couldn't load oprofile.o module"
+			exit 1
+		fi
+		grep oprofile /proc/modules >/dev/null
+		if [ "$?" != "0" ]; then
+			echo "Couldn't load oprofile.o module"
+			exit 1
+		fi
+	fi
 
-grep oprof /proc/devices >/dev/null
-if [ "$?" -ne 0 ]; then
-	modprobe oprofile expected_cpu_type=$CPUTYPE
-	if [ "$?" != "0" ]
-	then
-		echo "Couldn't load oprofile.o module"
+	if [ ! -d "$DIR" ]; then
+	       mkdir -p "$DIR"
+	       if [ "$?" != "0" ]; then
+		       echo "Couldn't mkdir -p $DIR"
+		       exit 1
+	       fi
+	       chmod 755 "$DIR"
+	fi
+
+	>$LOG_FILE
+
+	if [ -c "$DEVICE_FILE" ]; then
+		vecho "Removing $DEVICE_FILE"
+		rm "$DEVICE_FILE"
+	fi
+
+	if [ -c "$HASH_MAP_DEVICE_FILE" ]; then
+		vecho "Removing $HASH_MAP_DEVICE_FILE"
+		rm "$HASH_MAP_DEVICE_FILE"
+	fi
+
+	if [ ! -d "$SAMPLES_DIR" ]; then
+		mkdir -p "$SAMPLES_DIR"
+		if [ "$?" != "0" ]; then
+			echo "Couldn't mkdir -p $SAMPLES_DIR"
+			exit 1
+		fi
+		chmod 755 "$SAMPLES_DIR"
+	fi
+
+	MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
+
+	vecho "Doing mknod $DEVICE_FILE"
+	mknod "$DEVICE_FILE" c $MAJOR_NR 0
+	if [ "$?" != "0" ]; then
+		echo "Couldn't mknod $DEVICE_FILE"
 		exit 1
 	fi
-	grep oprofile /proc/modules >/dev/null
-	if [ "$?" != "0" ]
-	then
-		echo "Couldn't load oprofile.o module"
+	chmod 700 "$DEVICE_FILE"
+	 
+	vecho "Doing mknod $HASH_MAP_DEVICE_FILE"
+	mknod "$HASH_MAP_DEVICE_FILE" c $MAJOR_NR 1
+	if [ "$?" != "0" ]; then
+		echo "Couldn't mknod $HASH_MAP_DEVICE_FILE"
 		exit 1
 	fi
-fi
-
-if [ ! -d "$DIR" ]; then
-       mkdir -p "$DIR"
-       if [ "$?" != "0" ]
-       then
-               echo "Couldn't mkdir -p $DIR"
-               exit 1
-       fi
-       chmod 755 "$DIR"
-fi
-
-if [ "$LOG_FILE" = "" ]; then
-	LOG_FILE="$DIR/oprofiled.log"
-fi
-if [ "$SAMPLES_DIR" = "" ]; then
-	SAMPLES_DIR="$DIR/samples/"
-fi
-if [ "$DEVICE_FILE" = "" ]; then
-	DEVICE_FILE="$DIR/opdev"
-fi
-if [ "$HASH_MAP_DEVICE_FILE" = "" ]; then
-	HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
-fi
-
-if [ "$VERBOSE" = "1" ]; then 
-  echo "Parameters used:"
-  echo "BUF_SIZE $BUF_SIZE"
-  echo "HASH_SIZE $HASH_SIZE"
-  f=0
-  while (( $f < $OP_MAX_COUNTERS )); do
-	echo "CTR${f}_EVENT ${CTR_EVENT[$f]}"
-	echo "CTR${f}_COUNT ${CTR_COUNT[$f]}"
-	echo "CTR${f}_UM ${CTR_UM[$f]}"
-	echo "CTR${f}_USER ${CTR_USER[$f]}"
-	echo "CTR${f}_KERNEL ${CTR_KERNEL[$f]}"
-	f=$(($f+1))
-  done
-  echo "CPUTYPE $CPUTYPE"
-  echo "IGNORE_MYSELF $IGNORE_MYSELF"
-  echo "DIR $DIR"
-  echo "LOG_FILE $LOG_FILE"
-  echo "SAMPLES_DIR $SAMPLES_DIR"
-  echo "DEVICE_FILE $DEVICE_FILE"
-  echo "MAP_FILE $MAP_FILE"
-  echo "VMLINUX $VMLINUX"
-fi
-
->$LOG_FILE
-
-if [ -z "$MAP_FILE" ]; then
-	echo "No map file specified. You must specify the correct System.map and vmlinux files, e.g."
-	echo "op_start --map-file=/path/to/System.map --vmlinux=/path/to/vmlinux"
-	echo "Enter op_start --help for full options"
-	exit 1
-fi
-
-if [ -z "$VMLINUX" ]; then
-	echo "No vmlinux file specified. You must specify the correct System.map and vmlinux files, e.g."
-	echo "op_start --map-file=/path/to/System.map --vmlinux=/path/to/vmlinux"
-	echo "Enter op_start --help for full options"
-	exit 1
-fi
-
-if [ ! -f "$MAP_FILE" ]; then
-	echo "The specified map file \"$MAP_FILE\" doesn't exist."
-	exit 1
-fi
-
-if [ ! -f "$VMLINUX" ]; then
-	echo "The specified vmlinux file \"$VMLINUX\" doesn't exist."
-	exit 1
-fi
-
-if [ -c "$DEVICE_FILE" ]; then
-	if [ "$VERBOSE" = "1" ]; then 
-	echo "Removing $DEVICE_FILE"
-	fi 
-	rm "$DEVICE_FILE"
-fi
-
-if [ -c "$HASH_MAP_DEVICE_FILE" ]; then
-	if [ "$VERBOSE" = "1" ]; then 
-	echo "Removing $HASH_MAP_DEVICE_FILE"
-	fi 
-	rm "$HASH_MAP_DEVICE_FILE"
-fi
-
-if [ ! -d "$SAMPLES_DIR" ]; then
-	mkdir -p "$SAMPLES_DIR"
-	if [ "$?" != "0" ]
-	then
-		echo "Couldn't mkdir -p $SAMPLES_DIR"
-		exit 1
-	fi
-	chmod 755 "$SAMPLES_DIR"
-fi
-
-MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
-
-if [ "$VERBOSE" = "1" ]; then 
-echo "Doing mknod $DEVICE_FILE"
-fi 
-mknod "$DEVICE_FILE" c $MAJOR_NR 0
-if [ "$?" != "0" ]
-then
-	echo "Couldn't mknod $DEVICE_FILE"
-	exit 1
-fi
-chmod 700 "$DEVICE_FILE"
+	chmod 700 "$HASH_MAP_DEVICE_FILE"
+}
  
-if [ "$VERBOSE" = "1" ]; then 
-echo "Doing mknod $HASH_MAP_DEVICE_FILE"
-fi
-mknod "$HASH_MAP_DEVICE_FILE" c $MAJOR_NR 1
-if [ "$?" != "0" ]
-then
-	echo "Couldn't mknod $HASH_MAP_DEVICE_FILE"
-	exit 1
-fi
-chmod 700 "$HASH_MAP_DEVICE_FILE"
+# initialise sysctl parameters
+do_sysctl_setup() {
+	# Necessary in this case :
+	# op_start ctr0-on ctr1-on then op_start ctr0-on
+	f=0
+	while (( $f < $OP_MAX_COUNTERS )); do
+		$SYSCTL -w dev.oprofile.$f.enabled=0 >/dev/null
+		$SYSCTL -w dev.oprofile.$f.event=0 >/dev/null
+		f=$(($f+1))
+	done
 
-# Necessary in this case :
-# op_start ctr0-on ctr1-on then op_start ctr0-on
-f=0
-while (( $f < $OP_MAX_COUNTERS )); do
-	$SYSCTL -w dev.oprofile.$f.enabled=0 >/dev/null
-	$SYSCTL -w dev.oprofile.$f.event=0 >/dev/null
-	f=$(($f+1))
-done
+	$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE
+	$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE
+	$SYSCTL -w dev.oprofile.kernel_only=$KERNEL_ONLY
+	$SYSCTL -w dev.oprofile.pid_filter=$PID_FILTER
+	$SYSCTL -w dev.oprofile.pgrp_filter=$PGRP_FILTER
 
-$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE
-$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE
-$SYSCTL -w dev.oprofile.kernel_only=$KERNEL_ONLY
-$SYSCTL -w dev.oprofile.pid_filter=$PID_FILTER
-$SYSCTL -w dev.oprofile.pgrp_filter=$PGRP_FILTER
-
-f=0
-while (( $f < $OP_MAX_COUNTERS )); do
-	if [ "${CTR_EVENT[$f]}" != "" ]; then
-		$SYSCTL -w dev.oprofile.$f.enabled=1
-		$SYSCTL -w dev.oprofile.$f.count=${CTR_COUNT[$f]}
-		$SYSCTL -w dev.oprofile.$f.kernel=${CTR_KERNEL[$f]}
-		$SYSCTL -w dev.oprofile.$f.user=${CTR_USER[$f]} 
-		$SYSCTL -w dev.oprofile.$f.unit_mask=${CTR_UM[$f]} 
-		$SYSCTL -w dev.oprofile.$f.event=${CTR_EVENT_VAL[$f]}
-	fi
-	f=$(($f+1))
-done
+	f=0
+	while (( $f < $OP_MAX_COUNTERS )); do
+		if [ "${CTR_EVENT[$f]}" != "" ]; then
+			$SYSCTL -w dev.oprofile.$f.enabled=1
+			$SYSCTL -w dev.oprofile.$f.count=${CTR_COUNT[$f]}
+			$SYSCTL -w dev.oprofile.$f.kernel=${CTR_KERNEL[$f]}
+			$SYSCTL -w dev.oprofile.$f.user=${CTR_USER[$f]} 
+			$SYSCTL -w dev.oprofile.$f.unit_mask=${CTR_UM[$f]} 
+			$SYSCTL -w dev.oprofile.$f.event=${CTR_EVENT_VAL[$f]}
+		fi
+		f=$(($f+1))
+	done
+}
  
-OPD_ARGS="--buffer-size=$BUF_SIZE --ignore-myself=$IGNORE_MYSELF \
-	--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
-	--device-file=$DEVICE_FILE --kernel-only=$KERNEL_ONLY \
-	--hash-map-device-file=$HASH_MAP_DEVICE_FILE --vmlinux=$VMLINUX"
+# start the daemon
+do_start() {
+	OPD_ARGS="--buffer-size=$BUF_SIZE --ignore-myself=$IGNORE_MYSELF \
+		--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
+		--device-file=$DEVICE_FILE --kernel-only=$KERNEL_ONLY \
+		--hash-map-device-file=$HASH_MAP_DEVICE_FILE --vmlinux=$VMLINUX \
+		--map-file=$MAP_FILE"
 
-if [ "$MAP_FILE" != "" ]; then
-	OPD_ARGS="$OPD_ARGS --map-file=$MAP_FILE"
-fi
+	if [ "$VERBOSE" = "1" ]; then
+		OPD_ARGS="$OPD_ARGS --verbose"
+	fi
 
-if [ "$VERBOSE" = "1" ]; then
-	OPD_ARGS="$OPD_ARGS --verbose"
-fi
+	cpu_speed=`grep "cpu MHz" /proc/cpuinfo | tail -1 | awk -F": " '{print $2}'`
+	OPD_ARGS="$OPD_ARGS --cpu-speed=$cpu_speed"
 
-cpu_speed=`grep "cpu MHz" /proc/cpuinfo | tail -1 | awk -F": " '{print $2}'`
-OPD_ARGS="$OPD_ARGS --cpu-speed=$cpu_speed"
+	vecho "cpu speed (estimation) : $cpu_speed"
 
-if [ "$VERBOSE" = "1" ]; then
-	echo "cpu speed (estimation) : $cpu_speed"
-fi
+	oprofiled $OPD_ARGS
+	sleep 4
+	PID=`ps x | grep oprofiled | grep -v grep | awk '{print $1}'`
+	if [ "$PID" = "" ]; then
+		echo "Couldn't start oprofiled."
+		echo "Check the log file \"$LOG_FILE\" and /var/log/messages"
+		exit 1
+	fi
 
-oprofiled $OPD_ARGS
-sleep 4
-PID=`ps x | grep oprofiled | grep -v grep | awk '{print $1}'`
-if [ "$PID" = "" ]
-then
-	echo "Couldn't start oprofiled."
-	echo "Check the log file \"$LOG_FILE\" and /var/log/messages"
+	echo "Daemon started. Remember you may need to use op_dump"
+	echo "to retrieve profile data"
+}
+ 
+# main
+
+if [ "$UID" != "0" ]; then
+	echo "Must be root to start oprofile."
 	exit 1
 fi
-
-echo "Daemon started. Remember you may need to use"
-echo "op_dump"
-echo "to get or flush profiling data ..."
+ 
+do_init
+do_options $@
+do_stop
+do_setup
+do_sysctl_setup
+do_start

@@ -2,8 +2,6 @@ Correctness
 -----------
 
 o Save counter state and restore on a finish
-o Athlon: bit 22 is per-counter, determine working event types, support 4 counters, documentation
-o SMP mappings - place in all buffers perhaps ?
 o check chroot() processes and the path hash stuff
 o There is no need for the daemon to run as root as long as every binary image
   is readable ...
@@ -14,17 +12,18 @@ o why the overflow message at 12k ints/sec on do_dump() ?
 Performance
 -----------
 
-o The note spinlock and stop/start should be grouped into one for multiple map adding.
+o SMP algo can be totally re-worked to use a separate map device
+o I think we can drop the thread if we are careful about locking/ints in the NMI handler
 o investigate eviction strategy
 o the interrupt handler code could probably be improved by moving into asm
 o can we fold in the "untouched sample entry" case in hash table to another case ?
 o change the path component hash to be pointer-parent pairs, and allocate the strings in
   a pool - prolly saving locality for the hash map
+o daemon should not compose the path each time. use head component as lookup value
 
 WBNI
 ----
 
 o good support for determining changed profiles
-o compile-time interrupt accounting (sysctl-read/writeable) - then re-do results/rates/
 o we don't really need a vmlinux file during profiling ...
 o Other x86 processors
