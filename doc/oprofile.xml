@@ -576,9 +576,23 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		<para>
 		Using <option>--separate=thread</option> creates a lot
 		of sample files if you leave OProfile running for a while; it's most
-		useful when used for short sessions.
+		useful when used for short sessions, or when using image filtering.
 		</para>
 		</listitem>
+	</varlistentry>
+		<term><option>--image=</option>image,[images]</term>
+		<listitem><para>
+		Image filtering. If you specify one or more absolute
+		paths to binaries, OProfile will only produce profile results for those
+		binary images. This is useful for restricting the sometimes voluminous
+		output you may get otherwise, especially with
+		<option>--separate=thread</option>. Note that if you are using
+		<option>--separate=library</option> or
+		<option>--separate=kernel</option>, then if you specification an
+		application binary, the shared libraries and kernel code
+		<emphasis>are</emphasis> included.
+		</para></listitem>
+	<varlistentry>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--vmlinux=</option>file</term>
