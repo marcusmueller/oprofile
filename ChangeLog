@@ -2,6 +2,8 @@
 
 	* events/ia64/itanium/events: counter 0,1 not 2,3 for IA64_INST_RETIRED
 
+	* daemon/opd_util.c: opd_parse_events() fix use after free.
+
 2003-10-16  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_perfmon.c: disable the code

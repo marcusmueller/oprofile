@@ -317,13 +317,14 @@ static void opd_parse_events(char const * events)
 		++cur;
 	}
 
-	free(ev);
-
-	/* FIXME: validation ? */
 	if (*c) {
 		fprintf(stderr, "oprofiled: too many events passed.\n");
 		exit(EXIT_FAILURE);
 	}
+
+	free(ev);
+
+	/* FIXME: validation ? */
 }
 
 
