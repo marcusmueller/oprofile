@@ -34,7 +34,7 @@ string_filter::string_filter(vector<string> const & include_patterns,
 
 
 // FIXME: PP reference
-bool string_filter::match(std::string const & str) const
+bool string_filter::match(string const & str) const
 {
 	vector<string>::const_iterator cit;
 	cit = find(exclude.begin(), exclude.end(), str);

@@ -28,7 +28,7 @@
 using namespace std;
 
 profile_classes classes;
-std::list<std::string> sample_files;
+list<string> sample_files;
 
 namespace options {
 	string archive_path;
