@@ -1,3 +1,7 @@
+2003-04-08  John Levon  <levon@movementarian.org>
+
+	* HACKING: describe what happens with oprofile-www
+
 2003-04-08  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/op_bfd.cpp: check for #717720 and direct user to
