@@ -39,11 +39,6 @@ static void save_value(std::ostream& out, const std::string& value,
 
 } // namespace anon 
 
-bool is_profiler_started()
-{
-	return !system("test `pidof oprofiled`");
-}
-
 event_setting::event_setting() 
 	:
 	count(0),

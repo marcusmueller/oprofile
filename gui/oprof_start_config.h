@@ -44,9 +44,6 @@
 
 #define BUILD_DIR		"/lib/modules/" UTS_RELEASE "/build/"
 
-// FIXME: goes elsewhere
-bool is_profiler_started();
-
 // Store the setup of one events.
 struct event_setting {
 

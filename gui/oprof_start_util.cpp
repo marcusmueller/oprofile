@@ -19,6 +19,7 @@
 #include <sys/types.h>
 #include <sys/stat.h> 
 #include <sys/wait.h> 
+#include <dirent.h> 
 #include <unistd.h> 
 #include <fcntl.h> 
  
@@ -144,9 +145,103 @@ static int exec_command(std::string const & cmd, std::ostream & out,
 	return WEXITSTATUS(ret);
 }
 
+std::string const opd_read_link(std::string const & name)
+{
+	static char linkbuf[FILENAME_MAX]="";
+	int c;
+ 
+	c = readlink(name.c_str(), linkbuf, FILENAME_MAX);
+ 
+	if (c == -1)
+		return std::string();
+ 
+	if (c == FILENAME_MAX)
+		linkbuf[FILENAME_MAX-1] = '\0';
+	else
+		linkbuf[c] = '\0';
+	return linkbuf;
+}
+
+std::string daemon_pid;
+
+// hurrah ! Stupid interface
+const int HZ = 100;
+ 
 } // namespace anon 
  
+daemon_status::daemon_status()
+	: running(false)
+{
+	if (!daemon_pid.empty()) { 
+		std::string exec = opd_read_link(std::string("/proc/") + daemon_pid + "/exe");
+		if (exec.empty())
+			daemon_pid.erase();
+		else
+			running = true;
+	}
  
+	if (daemon_pid.empty()) {
+		DIR * dir;
+		struct dirent * dirent;
+
+		if (!(dir = opendir("/proc"))) {
+			perror("oprofiled: /proc directory could not be opened. ");
+			exit(1);
+		}
+
+		while ((dirent = readdir(dir))) {
+			std::string const exec = opd_read_link(std::string("/proc/") + dirent->d_name + "/exe");
+			std::string const name = basename(exec); 
+			if (name != "oprofiled")
+				continue;
+ 
+			daemon_pid = dirent->d_name;
+			running = true;
+		}
+	}
+ 
+	runtime.erase();
+	if (daemon_pid.empty())
+		return;
+ 
+	std::ifstream ifs((std::string("/proc/") + daemon_pid + "/stat").c_str());
+	if (!ifs)
+		return;
+
+	long dummy;
+
+	ifs >> dummy; // pid
+	while (!isdigit(ifs.get()))
+		;
+	ifs.ignore(); // state
+	for (uint i = 0; i < 17; ++i)
+		ifs >> dummy;
+ 
+	ulong starttime;
+
+	ifs >> starttime;
+
+	std::ifstream ifs2("/proc/uptime");
+	if (!ifs2)
+		return;
+ 
+	double uptimef;
+	ifs2 >> uptimef;
+	int uptime = int(uptimef);
+	 
+	uint diff_mins = (uptime - starttime / HZ) / 60;
+ 
+	std::ifstream ifs3("/proc/sys/dev/oprofile/nr_interrupts");
+	if (!ifs3)
+		return;
+ 
+	ifs3 >> nr_interrupts;
+
+	runtime = tostr(diff_mins / 60) + " hours, " +
+		tostr(diff_mins % 60) + " mins";
+}
+
+
 /**
  * get_user_filename - get absoluate filename of file in user $HOME
  * @filename: the relative filename
@@ -298,18 +393,12 @@ std::string const basename(std::string const & path_name)
 {
 	std::string result = path_name;
 
-	// remove all trailing '/'
-	size_t last_delimiter = result.find_last_of('/');
-	if (last_delimiter != std::string::npos) {
-		while (last_delimiter && result[last_delimiter] == '/')
-			--last_delimiter;
+	while (result[result.size() - 1] == '/')
+		result = result.substr(0, result.size() - 1);
 
-		result.erase(last_delimiter);
-	}
-
-	last_delimiter = result.find_last_of('/');
-	if (last_delimiter != std::string::npos)
-		result.erase(last_delimiter);
+	std::string::size_type slash = result.find_last_of('/');
+	if (slash != std::string::npos)
+		result.erase(0, slash + 1);
 
 	return result;
 }

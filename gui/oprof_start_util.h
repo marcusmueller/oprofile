@@ -6,6 +6,13 @@
 #include <iostream>
 #include <vector> 
  
+struct daemon_status {
+	daemon_status();
+	bool running;
+	std::string runtime;
+	unsigned int nr_interrupts;
+};
+ 
 inline double ratio(double x1, double x2)
 {
 	return fabs(((x1 - x2) / x2)) * 100;

@@ -1,5 +1,18 @@
 2001-09-26  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprofile.c: add nr_interrupts
+ 
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_util.h:
+	* gui/oprof_start_util.cpp:
+	* gui/oprof_start_config.h:
+	* gui/oprof_start_config.cpp:
+	* gui/ui/oprof_start_base.ui: add daemon status
+	  display, fix basename()
+	 
+2001-09-26  John Levon  <moz@compsoc.man.ac.uk>
+
 	* configure.in: remove broken bit
 
 	* pp/Makefile.in: fix options

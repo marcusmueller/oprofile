@@ -33,6 +33,7 @@
 #include <qmessagebox.h>
 #include <qvalidator.h>
 #include <qlabel.h>
+#include <qpushbutton.h> 
 
 #include "oprof_start.h"
 
@@ -150,6 +151,10 @@ oprof_start::oprof_start()
 	counter_selected(0);
 	enabled_toggled(false);
  
+	// daemon status timer 
+	startTimer(5000);
+	timerEvent(0);
+ 
 	load_event_config_file();
 }
 
@@ -255,6 +260,36 @@ void oprof_start::accept()
 	save_config_file();
 
 	QDialog::accept();
+}
+
+ 
+void oprof_start::timerEvent(QTimerEvent *)
+{
+	static time_t last = time(0);
+ 
+	daemon_status dstat;
+ 
+	flush_profiler_data_btn->setEnabled(dstat.running); 
+	stop_profiler_btn->setEnabled(dstat.running);
+	start_profiler_btn->setEnabled(!dstat.running);
+ 
+	if (!dstat.running) {
+		daemon_label->setText("Profiler is not running.");
+		return;
+	}
+
+	std::ostringstream ss;
+	ss << "Profiler running ";
+	ss << dstat.runtime;
+
+	time_t curr = time(0);
+ 
+	if (curr - last)
+		ss << " (" << dstat.nr_interrupts / (curr - last) << " interrupts / second)";
+
+	daemon_label->setText(ss.str().c_str());
+
+	last = curr;
 }
 
  
@@ -587,7 +622,7 @@ void oprof_start::setup_unit_masks(const op_event_descr & descr)
 
 void oprof_start::on_flush_profiler_data()
 {
-	if (is_profiler_started())
+	if (daemon_status().running)
 		do_exec_command("op_dump");
 	else
 		QMessageBox::warning(this, 0, "The profiler is not started.");
@@ -654,7 +689,7 @@ void oprof_start::on_start_profiler()
 		}
 	}
 
-	if (is_profiler_started()) {
+	if (daemon_status().running) {
 		int user_choice = 
 			QMessageBox::warning(this, 0, 
 					     "Profiler already started:\n\n"
@@ -709,18 +744,20 @@ void oprof_start::on_start_profiler()
 	args.push_back("--hash-table-size=" + tostr(config.hash_table_size));
 
 	do_exec_command("op_start", args);
+	timerEvent(0);
 }
 
 // flush and stop the profiler if it was started.
 void oprof_start::on_stop_profiler()
 {
-	if (is_profiler_started()) {
+	if (daemon_status().running) {
 		if (do_exec_command("op_dump") == 0) {
 			do_exec_command("op_stop");
 		}
 	} else {
 		QMessageBox::warning(this, 0, "The profiler is already stopped.");
 	}
+	timerEvent(0);
 }
 
  

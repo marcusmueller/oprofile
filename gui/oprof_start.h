@@ -27,6 +27,7 @@
 
 class QIntValidator;
 class QListViewItem;
+class QTimerEvent; 
 
 /// a struct describing a particular event type
 struct op_event_descr {
@@ -75,6 +76,9 @@ protected slots:
 
 	/// close the dialog
 	void accept();
+
+	/// timer event 
+	void timerEvent(QTimerEvent * e);
 
 private:
 	/// find an event description by name

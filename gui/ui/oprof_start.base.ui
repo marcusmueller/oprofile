@@ -11,8 +11,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>579</width>
-            <height>520</height>
+            <width>571</width>
+            <height>536</height>
         </rect>
     </property>
     <property stdset="1">
@@ -1084,6 +1084,29 @@
                     </spacer>
                 </vbox>
             </widget>
+        </widget>
+        <widget>
+            <class>QLabel</class>
+            <property stdset="1">
+                <name>name</name>
+                <cstring>daemon_label</cstring>
+            </property>
+            <property stdset="1">
+                <name>frameShape</name>
+                <enum>Panel</enum>
+            </property>
+            <property stdset="1">
+                <name>frameShadow</name>
+                <enum>Sunken</enum>
+            </property>
+            <property stdset="1">
+                <name>text</name>
+                <string></string>
+            </property>
+            <property>
+                <name>toolTip</name>
+                <string>Current daemon status</string>
+            </property>
         </widget>
         <widget>
             <class>QLayoutWidget</class>

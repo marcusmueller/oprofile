@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.93 2001/09/24 02:18:28 movement Exp $ */
+/* $Id: oprofile.c,v 1.94 2001/09/26 22:05:18 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -794,6 +794,7 @@ static struct file_operations oprof_fops = {
  *                        kernel_only
  *                        pid_filter
  *                        pgrp_filter
+ *                        nr_interrupts
  *                        0/
  *                          event
  *                          enabled
@@ -809,6 +810,25 @@ static struct file_operations oprof_fops = {
  *                          kernel
  *                          user
  */
+
+static int nr_interrupts;
+
+static int get_nr_interrupts(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
+{
+	uint cpu;
+
+	if (write)
+		return -EINVAL;
+
+	nr_interrupts = 0;
+
+	for (cpu=0; cpu < smp_num_cpus; cpu++) {
+		nr_interrupts += op_irq_stats[cpu];
+		op_irq_stats[cpu] = 0;
+	}
+
+	return proc_dointvec(table, write, filp, buffer, lenp);
+}
 
 static int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
 {
@@ -848,9 +868,6 @@ static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *
 	if (!prof_on)
 		goto out;
 
-	for (cpu=0; cpu < smp_num_cpus; cpu++)
-		printk("oprofile: CPU%u: %u interrupts\n", cpu, op_irq_stats[cpu]);
- 
 	if (!write) {
 		err = proc_dointvec(table, write, filp, buffer, lenp);
 		goto out;
@@ -878,7 +895,7 @@ out:
 	return err;
 }
 
-static int nr_oprof_static = 6;
+static int nr_oprof_static = 7;
 
 static ctl_table oprof_table[] = {
 	{ 1, "bufsize", &op_buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
@@ -887,6 +904,7 @@ static ctl_table oprof_table[] = {
 	{ 1, "kernel_only", &kernel_only, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pid_filter", &pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pgrp_filter", &pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
+	{ 1, "nr_interrupts", &nr_interrupts, sizeof(int), 0400, NULL, &get_nr_interrupts, NULL, },
 	{ 0, }, { 0, }, { 0, }, { 0, }, 
 	{ 0, }, 
 };
