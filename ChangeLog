@@ -1,5 +1,14 @@
 2003-03-14  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* TODO: update
+
+	* libregex/stl.pat: support for rb tree, set/map, anonymous namespace.
+	  Fix incorrect pattern for gcc 3.2. Handle 2.95 vector/string
+	  iterator and a few stl free function handling. add all C++ base type.
+	* libregex/mangled-name.txt: test for the above change
+
+2003-03-14  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* gui/oprof_start.cpp: gcc 2.91 warning work around
 
 2003-03-14  Philippe Elie  <phil.el@wanadoo.fr>

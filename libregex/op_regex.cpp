@@ -216,8 +216,11 @@ void regular_expression_replace::do_replace(string & str, size_t start_pos,
 			++i;
 			if (replace[i] == '\\') {
 				inserted += '\\';
-			}  else if (isdigit(replace[i])) {
-				size_t sub_expr = replace[i] - '0';
+			}  else if (isdigit(replace[i]) ||
+				    (replace[i] >='a' && replace[i] <= 'z')) {
+				size_t sub_expr = replace[i] >= 'a'
+				  ? replace[i] - 'a' + 10 
+				  : replace[i] - '0';
 				if (sub_expr >= max_match) {
 					throw bad_regex("illegal group index :" + replace);
 				} else if (match[sub_expr].rm_so == -1 &&

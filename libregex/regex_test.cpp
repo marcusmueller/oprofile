@@ -42,7 +42,7 @@ static void do_test()
 			rep.execute(str);
 			if (str != expect) {
 				cerr << "mistmatch: test, expect, returned\n"
-				     << test << endl
+				     << '"' << test << '"' << endl
 				     << '"' << expect << '"' << endl
 				     << '"' << str << '"' << endl;
 			}

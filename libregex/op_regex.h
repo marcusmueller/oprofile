@@ -59,7 +59,7 @@ private:
 	std::string substitute_definition(std::string const & pattern);
 
 	// don't increase too, it have direct impact on performance
-	static const size_t max_match = 10;
+	static const size_t max_match = 16;
 
 	size_t limit;
 	size_t limit_defs_expansion;
