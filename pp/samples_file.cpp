@@ -153,7 +153,7 @@ void opp_samples_files::set_start_offset(u32 start_offset)
 
 	for (uint k = 0; k < nr_counters; ++k) {
 		if (is_open(k))
-			samples[k]->start_offset = start_offset;
+			samples[k]->set_start_offset(start_offset);
 	}
 }
 

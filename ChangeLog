@@ -1,5 +1,17 @@
 2002-10-12  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* dae/opd_sample_files.c: fixme remove
+	* dae/oprofiled.c:
+	* daemon/oprofiled.c: minor error message improvement
+
+	* pp/op_time.cpp:
+	* pp/symbol_container.cpp: fixme remove
+	
+	* pp/samples_file.cpp:
+	* pp/sample_file.h: privatize more data members
+
+2002-10-12  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/utility.h: op_ratio() new
 	* pp/op_time.cpp:
 	* pp/op_to_source.cpp:

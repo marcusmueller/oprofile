@@ -30,7 +30,6 @@
 #include "samples_container.h"
 #include "samples_file.h"
 
-#include "filename_match.h"
 #include "file_manip.h"
 #include "string_manip.h"
 
@@ -105,18 +104,9 @@ static bool filter_image_name(string const & image_name)
 	string temp(image_name);
 	replace(temp.begin(), temp.end(), '}', '/');
 
-	/* FIXME : why this does not work, the intent is to allow 
-	 * op_time "/usr/bin/ *" to work-around a possible "Argument list
-	 * too long" when starting op_time */
-#if 0
-	filename_match fn(options::filename_filters, vector<string>());
-
-	return fn.match(temp);
-#else
 	return find(options::filename_filters.begin(),
 		    options::filename_filters.end(),
 		    temp) != options::filename_filters.end();
-#endif
 }
 
 /**

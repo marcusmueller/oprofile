@@ -169,13 +169,13 @@ static void opd_backup_samples_files(void)
 
 	if (mkdir(dir_name, 0755)) {
 		/* That's a severe problem: if we continue we can overwrite
-		 * samples files and produce wrong result. FIXME */
-		printf("unable to create directory %s\n", dir_name);
+		 * samples files and produce wrong result. */
+		printf("unable to create directory %s: %s\n", dir_name, strerrno(errno));
 		exit(EXIT_FAILURE);
 	}
 
 	if (!(dir = opendir(OP_SAMPLES_DIR))) {
-		printf("unable to open directory " OP_SAMPLES_DIR "\n");
+		printf("unable to open directory " OP_SAMPLES_DIR ": %s\n", strerrno(errno));
 		exit(EXIT_FAILURE);
 	}
 

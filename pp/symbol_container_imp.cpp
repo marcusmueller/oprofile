@@ -96,8 +96,6 @@ void symbol_container_imp_t::get_symbols_by_count(size_t counter,
 	for (symbol_index_t i = 0 ; i < symbols.size() ; ++i)
 		v.push_back(&symbols[i]);
 
-	// FIXME: check if this is necessary, already sanitized by caller ?
-	counter = counter == size_t(-1) ? 0 : counter;
 	less_symbol_entry_by_samples_nr compare(counter);
 
 	stable_sort(v.begin(), v.end(), compare);

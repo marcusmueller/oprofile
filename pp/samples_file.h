@@ -76,10 +76,12 @@ struct samples_file_t /*:*/ noncopyable
 		return *static_cast<opd_header *>(db_tree.base_memory);
 	}
 
-	// probably needs to be private and create the neccessary member
-	// function (not simple getter), make private and compile to see
-	// what operation we need later. I've currently not a clear view
-	// of what we need
+	/// see member variable start_offset
+	void set_start_offset(u32 start_offset_) {
+		start_offset = start_offset_;
+	}
+private:
+	/// the underlined db object
 	db_tree_t db_tree;
 
 	/**
@@ -188,12 +190,12 @@ struct opp_samples_files /*:*/  noncopyable {
 	// TODO privatize when we can
 	samples_file_t * samples[OP_MAX_COUNTERS];
 	uint nr_counters;
+private:
 	std::string sample_filename;
 
 	// used in do_list_xxxx/do_dump_gprof.
 	size_t counter_mask;
 
-private:
 	// cached value: index to the first opened file, setup as nearly as we
 	// can in ctor.
 	int first_file;
