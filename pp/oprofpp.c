@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.10 2000/09/01 01:19:37 moz Exp $ */
+/* $Id: oprofpp.c,v 1.11 2000/09/04 22:54:30 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -213,7 +213,27 @@ int symcomp(const void *a, const void *b)
 		return -1;
 	return ((*sa)->value>(*sb)->value);
 }
- 
+
+/* need a better filter, but only this gets rid of _start
+ * and other crud easily. 
+ */
+static int interesting_symbol(asymbol *sym)
+{
+	if (!(sym->section->flags & SEC_CODE))
+		return 0;
+
+	if (streq("",sym->name))
+		return 0;
+
+	if (streq("_init",sym->name))
+		return 0;
+
+	if (!(sym->flags & BSF_FUNCTION))
+		return 0;
+
+	return 1;
+}
+
 /**
  * get_symbols - get symbols from bfd
  * @ibfd: bfd to read from
@@ -251,14 +271,14 @@ uint get_symbols(bfd *ibfd, asymbol ***symsp)
 	}
 
 	for (i=0; i < nr_all_syms; i++) {
-		if (syms[i]->section->flags & SEC_CODE)
+		if (interesting_symbol(syms[i]))
 			nr_syms++;
 	}
  
 	filt_syms = opd_malloc(sizeof(asymbol *)*nr_syms);
 
 	for (nr_syms=0,i=0; i < nr_all_syms; i++) {
-		if (syms[i]->section->flags & SEC_CODE) {
+		if (interesting_symbol(syms[i])) {
 			filt_syms[nr_syms] = syms[i];
 			nr_syms++;
 		}
@@ -298,7 +318,7 @@ void get_symbol_range(asymbol *sym, asymbol *next, u32 *start, u32 *end)
 	} else
 		*end = nr_samples;
 
-	printf("Start %u, end %u\n",*start,*end);
+	printf("Symbol $%s$, value 0x%x, Start 0x%x, end 0x%x\n",sym->name,sym->value,*start,*end);
 }
  
 struct opp_count {
@@ -340,9 +360,11 @@ void do_list_symbols(void)
 	ibfd = open_image_file(samplefile);
 	num = get_symbols(ibfd,&syms);
 
+/*
 	for (i=0; i < nr_samples; i++) {
 		printf("0x%x: %d %d\n",i,samples[i].count0,samples[i].count1);
 	}
+*/
 
 	if (!num) {
 		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
@@ -356,6 +378,8 @@ void do_list_symbols(void)
 		scounts[i].sym = syms[i];
 		get_symbol_range(syms[i], (i==num-1) ? NULL : syms[i+1], &start, &end); 
 		for (j=start; j < end; j++) {
+			if (samples[j].count0)
+				printf("Adding %d samples for symbol $%s$ at pos j %d\n",samples[j].count0,syms[i]->name,j);
 			scounts[i].count0 += samples[j].count0;
 			scounts[i].count1 += samples[j].count1;
 			tot0 += samples[j].count0;
@@ -368,11 +392,10 @@ void do_list_symbols(void)
 	for (i=0; i < num; i++) {
 		printf_symbol(scounts[i].sym->name);
 		if (ctr && scounts[i].count1) { 
-			printf("[0x%.8lx]: %2.4f%% (%d samples)\n",scounts[i].sym->value,
+			printf("[0x%.8lx]: %2.4f%% (%d samples)\n",scounts[i].sym->value+scounts[i].sym->section->vma,
 				((double)scounts[i].count1)/tot1, scounts[i].count1);
 		} else if (scounts[i].count0) {
-			printf_symbol(scounts[i].sym->name);
-			printf("[0x%.8lx]: %2.4f%% (%d samples)\n",scounts[i].sym->value,
+			printf("[0x%.8lx]: %2.4f%% (%d samples)\n",scounts[i].sym->value+scounts[i].sym->section->vma,
 				((double)scounts[i].count0)/tot0, scounts[i].count0);
 		} else if (!streq("",scounts[i].sym->name))
 			printf(" (0 samples)\n");
