@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.35 2001/12/05 21:25:26 phil_e Exp $ */
+/* $Id: oprofiled.h,v 1.36 2001/12/06 21:17:51 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -68,6 +68,8 @@
 #define OPD_MAX_PROC_HASH 1024
 
 enum {  OPD_KERNEL, /* nr. kernel samples */
+	OPD_MODULE, /* nr. module samples */
+	OPD_LOST_MODULE, /* nr. samples in module for which modules can not be located */
 	OPD_LOST_PROCESS, /* nr. samples for which process info couldn't be accessed */
 	OPD_PROCESS, /* nr. userspace samples */
 	OPD_LOST_MAP_PROCESS, /* nr. samples for which map info couldn't be accessed */

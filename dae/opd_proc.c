@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.81 2001/12/05 04:31:17 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.82 2001/12/06 21:17:51 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -99,6 +99,8 @@ void opd_alarm(int val __attribute__((unused)))
 
 	printf("%s\n", opd_get_time());
 	printf("Nr. kernel samples: %lu\n", opd_stats[OPD_KERNEL]);
+	printf("Nr. modules samples: %lu\n", opd_stats[OPD_MODULE]);
+	printf("Nr. modules samples lost: %lu\n", opd_stats[OPD_LOST_MODULE]);
 	printf("Nr. samples lost due to no process information: %lu\n", opd_stats[OPD_LOST_PROCESS]);
 	printf("Nr. process samples in user-space: %lu\n", opd_stats[OPD_PROCESS]);
 	printf("Nr. samples lost due to no map information: %lu\n", opd_stats[OPD_LOST_MAP_PROCESS]);
@@ -823,7 +825,8 @@ void opd_clear_module_info(void)
 	int i;
 
 	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].name) free(opd_modules[i].name);
+		if (opd_modules[i].name)
+			free(opd_modules[i].name);
 		opd_modules[i].name = NULL;
 		opd_modules[i].start = 0;
 		opd_modules[i].end = 0;
@@ -1045,6 +1048,26 @@ out:
 }
 
 /**
+ * opd_find_module_by_eip - find a module by its eip
+ * @eip: EIP value
+ *
+ * find in the modules container the module which
+ * contain this @eip return %NULL if not found.
+ * caller must check than the module image is valid
+ */
+static struct opd_module * opd_find_module_by_eip(u32 eip)
+{
+	uint i;
+	for (i = 0; i < nr_modules; i++) {
+		if (opd_modules[i].start && opd_modules[i].end &&
+		    opd_modules[i].start <= eip && opd_modules[i].end > eip)
+			return &opd_modules[i];
+	}
+
+	return NULL;
+}
+
+/**
  * opd_handle_module_sample - process a module sample
  * @eip: EIP value
  * @count: count value of sample
@@ -1062,40 +1085,41 @@ out:
  */
 static void opd_handle_module_sample(u32 eip, u16 count)
 {
-	unsigned int i;
-	unsigned int pass = 0;
+	struct opd_module * module;
 
-retry:
-	for (i=0; i < nr_modules; i++) {
-		if (opd_modules[i].start && opd_modules[i].end &&
-			opd_modules[i].start <= eip &&
-			opd_modules[i].end > eip) {
-			if (opd_modules[i].image != -1)
-				opd_put_image_sample(&opd_images[opd_modules[i].image], eip - opd_modules[i].start, count);
-			else
-				verbprintf("No image for sampled module %s\n", opd_modules[i].name);
-			return;
-		}
+	module = opd_find_module_by_eip(eip);
+	if (!module) {
+		/* not found in known modules, re-read our info and retry */
+		opd_clear_module_info();
+		opd_get_module_info();
+
+		module = opd_find_module_by_eip(eip);
 	}
 
-	if (pass) {
-		/* ok, we failed to place the sample even after re-reading /proc/ksyms. It's either a rogue
-		 * sample, or from a module that didn't create symbols (like in some initrd setups).
-		 * So we check with query_module() if we can place it in a symbol-less module, and if so
-		 * create a negative entry for it, to quickly ignore future samples.
+	if (module) {
+		if (module->image != -1) {
+			opd_stats[OPD_MODULE]++;
+			opd_put_image_sample(&opd_images[module->image],
+					     eip - module->start, count);
+		}
+		else {
+			opd_stats[OPD_LOST_MODULE]++;
+			verbprintf("No image for sampled module %s\n",
+				   module->name);
+		}
+	} else {
+		/* ok, we failed to place the sample even after re-reading
+		 * /proc/ksyms. It's either a rogue sample, or from a module
+		 * that didn't create symbols (like in some initrd setups).
+		 * So we check with query_module() if we can place it in a
+		 * symbol-less module, and if so create a negative entry for
+		 * it, to quickly ignore future samples.
 		 *
 		 * Problem uncovered by Bob Montgomery <bobm@fc.hp.com>
 		 */
+		opd_stats[OPD_LOST_MODULE]++;
 		opd_drop_module_sample(eip);
-		return;
 	}
-
-	pass++;
-
-	/* not found in known modules, re-read our info */
-	opd_clear_module_info();
-	opd_get_module_info();
-	goto retry;
 }
 
 /**
@@ -1111,20 +1135,19 @@ retry:
  */
 static void opd_handle_kernel_sample(u32 eip, u16 count)
 {
-	opd_stats[OPD_KERNEL]++;
-
 	if (got_system_map) {
 		if (eip < kernel_end) {
+			opd_stats[OPD_KERNEL]++;
 			opd_put_image_sample(&opd_images[0], eip - kernel_start, count);
 			return;
 		}
 
 		/* in a module */
-
 		opd_handle_module_sample(eip, count);
 		return;
 	}
 
+	opd_stats[OPD_KERNEL]++;
 	opd_put_image_sample(&opd_images[0], eip - KERNEL_VMA_OFFSET, count);
 	return;
 }
