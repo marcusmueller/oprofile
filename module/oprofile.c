@@ -38,10 +38,6 @@ struct oprof_sysctl sysctl_parms;
  * parameters during profiling */
 struct oprof_sysctl sysctl;
 
-/* number of counters physically present */
-// FIXME: remove 
-extern uint op_nr_counters;
-
 static u32 prof_on __cacheline_aligned;
 
 /* in the process of quitting ? */

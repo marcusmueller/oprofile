@@ -1,3 +1,11 @@
+2002-01-18  John Levon  <moz@compsoc.man.ac.uk>
+
+	* module/compat.h:
+	* module/compat22.h: 
+	* module/compat24.h: s/VATLEAST/V_AT_LEAST/
+ 
+	* module/oprofile.c: remove dead code
+ 
 2002-01-17  John Levon  <moz@compsoc.man.ac.uk>
 
 	* module/compat.c: don't need to re-take BKL for

@@ -24,7 +24,7 @@
 #include <linux/version.h>
 
 #define VBEFORE(a,b,c) (LINUX_VERSION_CODE < KERNEL_VERSION(a,b,c))
-#define VATLEAST(a,b,c) (LINUX_VERSION_CODE >= KERNEL_VERSION(a,b,c))
+#define V_AT_LEAST(a,b,c) (LINUX_VERSION_CODE >= KERNEL_VERSION(a,b,c))
  
 #if VBEFORE(2,4,0)
 	#include "compat22.h"

@@ -49,7 +49,7 @@
 #define wq_is_lockable() (1)
  
 /* 2.4.3 introduced rw mmap semaphore  */
-#if VATLEAST(2,4,3)
+#if V_AT_LEAST(2,4,3)
 	#define lock_mmap(mm) down_read(&mm->mmap_sem)
 	#define unlock_mmap(mm) up_read(&mm->mmap_sem)
 #else

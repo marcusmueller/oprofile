@@ -202,7 +202,7 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 	#define unlock_rtc(f) restore_flags(f)
 #endif /* RTC_LOCK */
  
-#if VATLEAST(2,2,20)
+#if V_AT_LEAST(2,2,20)
 	#define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
 #else
 	#define PTRACE_OFF(t) ((t)->flags &= ~PF_DTRACE)
