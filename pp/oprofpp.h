@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.50 2002/04/07 16:14:18 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.51 2002/04/15 23:19:57 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -42,31 +42,19 @@
 
 class symbol_entry;
 
-/* missing from libiberty.h */
-/*@{\name demangle option parameter */
-#ifndef DMGL_PARAMS
-# define DMGL_PARAMS     (1 << 0)        /**< Include function args */
-#endif 
-#ifndef DMGL_ANSI 
-# define DMGL_ANSI       (1 << 1)        /**< Include const, volatile, etc */
-#endif
-/*@}*/
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/** return a dynamically allocated string containing the demangled name */
-char *cplus_demangle (const char *mangled, int options);
-
-#ifdef __cplusplus
-}
-#endif
-
 // To avoid doxygen warning
 #define OP_VERBPRINTF_FORMAT __attribute__((format (printf, 1, 2)))
 
 /* oprofpp_util.cpp */
+
+/** FIXME: we should be using a proper C++ debug system (and we should
+ *  can then be waaay more verbose. Think :
+
+    oper[debug::assembly] << asmtext;
+
+    etc.
+
+ */
 
 /** like printf but only output the message if the global variable vebose
  * is non-zero */
@@ -109,15 +97,6 @@ void op_print_event(ostream & out, int i, op_cpu cpu_type,
 void opp_treat_options(const char * filename, poptContext optcon,
 		       std::string & image_file, std::string & sample_file,
 		       int & counter, int & sort_by_counter);
-
-/**
- * \param symbol: the symbol name to demangle
- *
- * demangle the symbol name if the global global variable demangle is true.
- * else return the name w/o demangling. The demangled name lists the parameters
- * and type qualifiers such as "const". Return the un-mangled name
- */
-std::string demangle_symbol(const char* symbol);
 
 /**
  * quit with error

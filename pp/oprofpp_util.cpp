@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.45 2002/04/07 16:14:18 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.46 2002/04/15 23:19:57 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -293,35 +293,6 @@ void opp_treat_options(const char* file, poptContext optcon,
 
 // FIXME: only use char arrays and pointers if you MUST. Otherwise std::string
 // and references everywhere please.
-
-/**
- * demangle_symbol - demangle a symbol
- * \param symbol: the symbol name
- *
- * demangle the symbol name. if the global
- * global variable demangle is true. No error can
- * occur.
- *
- * The demangled name lists the parameters and type
- * qualifiers such as "const".
- *
- * return the un-mangled name
- */
-std::string demangle_symbol(const char* name)
-{
-	if (demangle && *name) {
-		// Do not try to strip leading underscore, this leads to many
-		// C++ demangling failure.
-		char *unmangled = cplus_demangle(name, DMGL_PARAMS | DMGL_ANSI);
-		if (unmangled) {
-			std::string result(unmangled);
-			free(unmangled);
-			return result;
-		}
-	}
-
-	return name;
-}
 
 /**
  * counter_mask -  given a --counter=0,1,..., option parameter return a mask
