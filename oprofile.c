@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.76 2001/09/01 02:03:34 movement Exp $ */
+/* $Id: oprofile.c,v 1.77 2001/09/02 00:32:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -441,10 +441,13 @@ static void pmc_setup(void *dummy)
 
 	/* Stop and clear all counter: IA32 use bit 22 of eventsel_msr0 to
 	 * enable/disable all counter, AMD use separate bit 22 in each msr,
-	 * all other bits are cleared except the reserved bits 21 */
+	 * all bits are cleared except the reserved bits 21 */
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		rdmsr(eventsel_msr[i], low, high);
-		wrmsr(eventsel_msr[i], low & ~(3 << 22), high);
+		wrmsr(eventsel_msr[i], low & (1 << 22), high);
+
+		/* avoid a false detection of ctr overflow in NMI handler */
+		wrmsr(perfctr_msr[i], -1, -1);
 	}
 
 	/* setup each counter */
@@ -501,7 +504,8 @@ static void pmc_setup(void *dummy)
 	/* this is pretty bogus really. especially as we don't re-enable it.
 	 * Instead, save state set up, and restore with pmc_unsetup or similar */
 #if !defined(CONFIG_X86_UP_APIC) || !defined(OP_EXPORTED_DO_NMI)
-	wrmsr(eventsel_msr[1], low, high);
+	/* PHE FIXME: on my config this start counter 1 with the new code */
+//	wrmsr(eventsel_msr[1], low, high);
 #endif
 }
 

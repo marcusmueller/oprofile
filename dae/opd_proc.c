@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.65 2001/09/01 02:03:34 movement Exp $ */
+/* $Id: opd_proc.c,v 1.66 2001/09/02 00:32:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -472,6 +472,7 @@ inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16
 	counter = opd_get_counter(count);
 	sample_file = &image->sample_files[counter];
 
+	printf("counter %d\n", counter); 
 	if (sample_file->fd < 1) {
 		opd_open_sample_file(image, counter);
 		if (sample_file->fd < 1) {

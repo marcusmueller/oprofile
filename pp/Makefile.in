@@ -21,7 +21,7 @@ install: $(INSTALL_LIST)
 
 uninstall:
 	for f in $(INSTALL_LIST); do \
-		-rm -f $(BINDIR)/$$f; \
+		rm -f $(BINDIR)/$$f; \
 	done
 
 CFLAGS=-Wall -Wstrict-prototypes -W -pipe -DOP_EVENTS_DESC -L/usr/lib @CFLAGS@

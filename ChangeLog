@@ -1,3 +1,10 @@
+2001-09-01  Philippe Elie  <ph_e@club-internet.fr>
+
+	* oprofile.c: fix pmc_setup()
+
+	* pp/Makefile.in:
+	* dae/Makefile.in: fix uninstall problem
+
 2001-08-31  Philippe Elie  <ph_e@club-internet.fr>
 
 	* oprofile.h:

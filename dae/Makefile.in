@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.15 2001/09/01 02:03:34 movement Exp $
+# $Id: Makefile.in,v 1.16 2001/09/02 00:32:28 movement Exp $
 
 .PHONY: all clean srcdoc install uninstall
 
@@ -20,7 +20,7 @@ install: $(INSTALL_LIST)
 
 uninstall:
 	for f in $(INSTALL_LIST); do \
-		-rm -f $(BINDIR)/$$f; \
+		rm -f $(BINDIR)/$$f; \
 	done
 
 clean:
