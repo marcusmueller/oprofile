@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.62 2001/08/15 13:40:23 movement Exp $ */
+/* $Id: opd_proc.c,v 1.63 2001/08/17 16:47:10 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -791,7 +791,8 @@ static struct opd_module *opd_get_module(char *name)
  * Currently the image file "objectfile" is stored, and details of
  * ".text" sections.
  *
- * FIXME: use query_module instead ?
+ * There is no query_module API that allow to get directly the pathname
+ * of a module so we need to parse all the /proc/ksyms.
  */
 static void opd_get_module_info(void)
 {
@@ -842,7 +843,7 @@ static void opd_get_module_info(void)
 		cp2++;
 		/* freed by opd_clear_module_info() or opd_get_module() */
 		modname = opd_malloc((size_t)((cp2-cp) + 1));
-		strncpy(modname, cp, (size_t)((cp2-cp) + 1));
+		strncpy(modname, cp, (size_t)((cp2-cp)));
 		modname[cp2-cp] = '\0';
 
 		mod = opd_get_module(modname);

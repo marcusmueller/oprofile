@@ -16,7 +16,6 @@ o The note spinlock and stop/start should be grouped into one for multiple map a
 o investigate eviction strategy
 o the interrupt handler code could probably be improved by moving into asm
 o can we fold in the "untouched sample entry" case in hash table to another case ?
-o would query_module() be faster ? do we care ?
 o change the path component hash to be pointer-parent pairs, and allocate the strings in
   a pool - prolly saving locality for the hash map
 

@@ -1,3 +1,8 @@
+2001-08-17  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/opd_proc.c:
+	* TODO: minor cleanup.
+
 2001-08-16  Philippe Elie  <ph_e@club-internet.fr>
 
 	* gui/oprofile:
