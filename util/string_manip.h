@@ -22,8 +22,8 @@
 #include <string>
 #include <vector>
 
-string erase_from_last_of(string const & str, char ch);
-string erase_to_last_of(string const & str, char ch);
+std::string erase_from_last_of(std::string const & str, char ch);
+std::string erase_to_last_of(std::string const & str, char ch);
 
 std::string rtrim(std::string const & str, char ch);
 
@@ -31,7 +31,7 @@ std::string rtrim(std::string const & str, char ch);
 std::string tostr(unsigned int i);
 
 /// separate_token - separate a list of token
-void separate_token(std::vector<std::string> & result, const string & str,
+void separate_token(std::vector<std::string> & result, const std::string & str,
 		    char sep);
 
 #endif /* !STRING_MANIP_H */

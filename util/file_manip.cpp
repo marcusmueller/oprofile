@@ -24,6 +24,7 @@
 #include <fnmatch.h>
 
 #include <vector>
+#include <iostream>
 #include <string>
 #include <algorithm>
 
@@ -36,6 +37,8 @@ using std::vector;
 using std::string;
 using std::list;
 using std::find;
+using std::cerr;
+using std::endl;
 
 /**
  * is_file_identical - check for identical files

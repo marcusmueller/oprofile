@@ -1,5 +1,16 @@
 2002-01-07  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/opf_container.cpp:
+	* pp/opf_filter.h:
+	* pp/oprofpp.cpp: 
+	* pp/oprofpp.h: 
+	* pp/oprofpp_util.cpp: 
+	* util/file_manip.h:
+	* util/file_manip.cpp: 
+	* util/string_manip.h: fix most g++ 3.0 problems
+
+2002-01-07  John Levon  <moz@compsoc.man.ac.uk>
+
 	* TODO: update
  
 2002-01-05  Philippe Elie  <ph_e@club-internet.fr>
@@ -252,7 +263,7 @@
 	  too soon. (was bugged from 2001-12-05)
 
 	* doc/oprofile.sgml: remove mention about oprof-thread
-	  
+
 2001-12-23  Philippe Elie  <ph_e@club-internet.fr>
 
 	* util/string_manip.h:
@@ -329,7 +340,7 @@
 	* util/child_reader.cpp: 
 	* util/file_manip.cpp:
 	* util/string_manip.cpp: pedantic cleanup + FIXMEs
- 
+
 2001-12-09  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: add FIXME comment
@@ -340,7 +351,7 @@
 2001-12-09  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update
- 
+
 2001-12-09  Philippe Elie  <ph_e@club-internet.fr>
 
 	* dae/opd_proc.c: verbprintf() what cause the

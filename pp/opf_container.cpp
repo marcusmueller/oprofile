@@ -28,6 +28,7 @@
 using std::string;
 using std::cerr;
 using std::endl;
+using std::list;
 using std::multiset;
 using std::set;
 using std::accumulate;

@@ -39,14 +39,14 @@ std::string relative_to_absolute_path(const std::string & path,
 std::string dirname(std::string const & file_name);
 std::string basename(std::string const & path_name);
 // extract the mangled name of an application and the shared lib name
-std::string extract_app_name(const string & name, string & lib_name);
+std::string extract_app_name(const std::string & name, std::string & lib_name);
 // get a file list of valid sample filename from base_dir filtered by
 // by filter. The #counter_nr suffix are stripepd before creating the
 // list
-void get_sample_file_list(list<string> & file_list,
+void get_sample_file_list(std::list<std::string> & file_list,
 			  const std::string & base_dir,
 			  const std::string & filter);
 // return filename stripped of the #counter_nr suffix
-string strip_filename_suffix(const std::string & filename);
+std::string strip_filename_suffix(const std::string & filename);
 
 #endif /* !FILE_MANIP_H */

@@ -11,9 +11,9 @@
 /// A simple container for a fileno:linr location
 struct file_location {
 	/// From where image come this file location
-	string image_name;
+	std::string image_name;
 	/// empty if not valid.
-	string filename;
+	std::string filename;
 	/// 0 means invalid or code is generated internally by the compiler
 	int linenr;
 
@@ -40,7 +40,7 @@ struct symbol_entry {
 	/// file location, vma and cumulated samples count for this symbol
 	sample_entry sample;
 	/// name of symbol
-	string name;
+	std::string name;
 	/// [first, last[ gives the range of sample_entry.
 	size_t first;
 	size_t last;
@@ -64,13 +64,13 @@ public:
 	/// return the symbol at index. Index range checking is not performed
 	const symbol_entry & operator[](size_t index) const;
 	/// find the symbol at filename / linenr location
-	const symbol_entry * find(string filename, size_t linenr) const;
+	const symbol_entry * find(std::string filename, size_t linenr) const;
 	/// find the symbol at vma
 	const symbol_entry * find_by_vma(bfd_vma vma) const;
 
 	/// get a vector of symbol_entry sorted by increased count of samples
 	void get_symbols_by_count(size_t counter, 
-				  vector<const symbol_entry*>& v) const;
+				  std::vector<const symbol_entry*>& v) const;
 
 private:
 	/// member function of this class are delegated to this implementation
@@ -98,10 +98,10 @@ public:
 	/// calculate the total number of samples for a file. Return false
 	/// if there is no sample for this file
 	bool accumulate_samples(counter_array_t & counter, 
-				const string & filename) const;
+				const std::string & filename) const;
 	/// calculate the total number of samples for a file/linenr. Return
 	/// false if there is no sample for this file
-	bool accumulate_samples(counter_array_t &, const string & filename, 
+	bool accumulate_samples(counter_array_t &, const std::string & filename, 
 				size_t linenr) const;
 	/// find a sample from a vma. Return NULL if no samples are available
 	/// at this vma.
@@ -144,7 +144,7 @@ public:
 	const symbol_entry* find_symbol(bfd_vma vma) const;
 	/// Find a symbol from its filename, linenr, return zero if no symbol
 	/// at this location
-	const symbol_entry* find_symbol(const string & filename,
+	const symbol_entry* find_symbol(const std::string & filename,
 					size_t linenr) const;
 
 	/// Find a sample by its vma, return zero if no sample at this vma
@@ -168,11 +168,11 @@ public:
 	 * if you need to get all symbols call it with @threshold == 0.0
 	 * and @until_threshold == false
 	 */
-	void select_symbols(vector<const symbol_entry*> & result, size_t ctr,
+	void select_symbols(std::vector<const symbol_entry*> & result, size_t ctr,
 			    double threshold,
 			    bool until_threshold, bool sort_by_vma = false) const;
 	/// Like select_symbols for filename without allowing sort by vma.
-	void select_filename(vector<string> & result, size_t ctr,
+	void select_filename(std::vector<std::string> & result, size_t ctr,
 			     double threshold,
 			     bool until_threshold) const;
 
@@ -182,22 +182,22 @@ public:
 	/// Get the samples count which belongs to filename. Return false if
 	/// no samples found.
 	bool samples_count(counter_array_t & result,
-			   const string & filename) const;
+			   const std::string & filename) const;
 	/// Get the samples count which belongs to filename, linenr. Return
 	/// false if no samples found.
-	bool samples_count(counter_array_t & result, const string & filename,
+	bool samples_count(counter_array_t & result, const std::string & filename,
 			   size_t linenr) const;
 private:
 	/// helper for build();
-	void do_build(const opp_samples_files& samples_files,
-		      const opp_bfd& abfd,
+	void do_build(const opp_samples_files & samples_files,
+		      const opp_bfd & abfd,
 		      bool add_zero_samples_symbols = false,
 		      bool build_samples_by_vma = true);
 	/// helper for do_build()
 	void add_samples(const opp_samples_files& samples_files, 
-			 const opp_bfd& abfd, size_t sym_index,
+			 const opp_bfd & abfd, size_t sym_index,
 			 u32 start, u32 end, bfd_vma base_vma,
-			 const string& image_name);
+			 const std::string & image_name);
 
 	/// The symbols collected by oprofpp sorted by increased vma, provide
 	/// also a sort order on samples count for each counter.

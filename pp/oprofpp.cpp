@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.21 2002/01/02 01:57:16 movement Exp $ */
+/* $Id: oprofpp.cpp,v 1.22 2002/01/07 08:49:42 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -25,6 +25,9 @@
 #include "../util/file_manip.h"
 #include "opf_filter.h"
 
+using std::string;
+using std::vector;
+ 
 // ugly global var for opf_container.cpp
 uint op_nr_counters;
  

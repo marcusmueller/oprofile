@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.33 2001/12/29 23:51:25 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.34 2002/01/07 08:49:42 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -64,7 +64,7 @@ char *cplus_demangle (const char *mangled, int options);
 	} while (0)
 
 void opp_treat_options(const char * filename, poptContext optcon,
-		       string & image_file, string & sample_file);
+		       std::string & image_file, std::string & sample_file);
 std::string demangle_symbol(const char* symbol);
 void quit_error(poptContext optcon, char const *err);
 std::string demangle_filename(const std::string & samples_filename);
@@ -101,7 +101,7 @@ class counter_array_t {
 };
 
 struct opp_bfd {
-	opp_bfd(const opd_header * header, uint nr_samples, const string & filename);
+	opp_bfd(const opd_header * header, uint nr_samples, const std::string & filename);
 	~opp_bfd();
 
 	bool get_linenr(uint sym_idx, uint offset, 
@@ -127,7 +127,7 @@ struct opp_bfd {
 private:
 	uint nr_samples;
 	// ctor helper
-	void open_bfd_image(const string & file_name, bool is_kernel);
+	void open_bfd_image(const std::string & file_name, bool is_kernel);
 	bool get_symbols();
 };
 
@@ -184,7 +184,7 @@ struct opp_samples_files {
 	// can in ctor.
 	int first_file;
 	uint nr_samples;
-	string sample_filename;
+	std::string sample_filename;
 
 private:
 	void output_event(int i) const;
