@@ -6,11 +6,13 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
- o opcontrol --separate= must we ovewrite all settings ?
+ o opcontrol --separate= must overwrite any previous settings
+ o thread separate GUI + docs
+ o we need to handle thread separate without needing a useless -m tid
+   (several processes w/o using threads)
  o sample-file: / binary: don't work in any useful way - can we fix this
    by peeking at binary: value and faking the split_sample_file somehow ?
  o side-by-side opreport output (--compare - needs UI spec)
- o thread profiling (Ka is on this)
  o per-cpu profiling
  o output column shortname headers for opreport -l
 

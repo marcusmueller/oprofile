@@ -45,8 +45,8 @@ struct config_setting {
 	bool verbose;
 	pid_t pgrp_filter;
 	pid_t pid_filter;
-	bool separate_lib_samples;
-	bool separate_kernel_samples;
+	bool separate_lib;
+	bool separate_kernel;
 };
 
 std::istream & operator>>(std::istream & in, config_setting & object);

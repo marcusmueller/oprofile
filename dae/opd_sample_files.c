@@ -28,8 +28,8 @@
 #include <errno.h>
 
 extern uint op_nr_counters;
-extern int separate_lib_samples;
-extern int separate_kernel_samples;
+extern int separate_lib;
+extern int separate_kernel;
 extern u32 ctr_count[OP_MAX_COUNTERS];
 extern u8 ctr_event[OP_MAX_COUNTERS];
 extern u16 ctr_um[OP_MAX_COUNTERS];
@@ -39,7 +39,7 @@ extern op_cpu cpu_type;
 char * opd_mangle_filename(struct opd_image const * image, int counter)
 {
 	char * mangled;
-	char const * dep_name = separate_lib_samples ? image->app_name : NULL;
+	char const * dep_name = separate_lib ? image->app_name : NULL;
 	struct op_event * event = NULL;
 	struct mangle_values values;
 
@@ -212,8 +212,8 @@ int opd_open_sample_file(struct opd_image * image, int counter)
 	header->ctr_count = ctr_count[counter];
 	header->cpu_speed = cpu_speed;
 	header->mtime = image->mtime;
-	header->separate_lib_samples = separate_lib_samples;
-	header->separate_kernel_samples = separate_kernel_samples;
+	header->separate_lib = separate_lib;
+	header->separate_kernel = separate_kernel;
 
 out:
 	free(mangled);

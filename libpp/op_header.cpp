@@ -44,20 +44,20 @@ void op_check_header(opd_header const & h1, opd_header const & h2,
 		throw op_fatal_error(os.str());
 	}
 
-	if (h1.separate_lib_samples != h2.separate_lib_samples) {
+	if (h1.separate_lib != h2.separate_lib) {
 		ostringstream os;
-		os << "header separate_lib_samples are different ("
-		   << h1.separate_lib_samples << ", " 
-		   << h2.separate_lib_samples << ") for "
+		os << "header separate_lib are different ("
+		   << h1.separate_lib << ", " 
+		   << h2.separate_lib << ") for "
 		   << filename << "\n";
 		throw op_fatal_error(os.str());
 	}
 
-	if (h1.separate_kernel_samples != h2.separate_kernel_samples) {
+	if (h1.separate_kernel != h2.separate_kernel) {
 		ostringstream os;
-		os << "header separate_kernel_samples are different ("
-		   << h1.separate_kernel_samples << ", " 
-		   << h2.separate_kernel_samples << ") for"
+		os << "header separate_kernel are different ("
+		   << h1.separate_kernel << ", " 
+		   << h2.separate_kernel << ") for"
 		   << filename << "\n";
 		throw op_fatal_error(os.str());
 	}

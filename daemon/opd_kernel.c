@@ -29,7 +29,7 @@ struct opd_module {
 	struct opd_image * image;
 	vma_t start;
 	vma_t end;
-	/* used when separate_kernel_samples != 0 */
+	/* used when separate_kernel != 0 */
 	struct list_head module_list;
 };
 

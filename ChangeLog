@@ -1,3 +1,25 @@
+2003-09-18  John Levon  <levon@movementarian.org>
+
+	* dae/opd_image.c:
+	* dae/opd_proc.c:
+	* dae/opd_sample_files.c:
+	* dae/oprofiled.c:
+	* daemon/opd_image.c:
+	* daemon/opd_image.h:
+	* daemon/opd_kernel.c:
+	* daemon/opd_sample_files.c:
+	* daemon/oprofiled.c:
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_config.h:
+	* gui/ui/oprof_start.base.ui:
+	* libabi/abi.cpp:
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp:
+	* libop/op_sample_file.h:
+	* libpp/op_header.cpp:
+	* utils/opcontrol: renamings of separate stuff
+
 2003-09-17  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* dae/opd_kernel.c: thinko in opd_get_module_info(): we must take

@@ -31,8 +31,8 @@
 
 /* here to avoid warning */
 extern op_cpu cpu_type;
-extern int separate_lib_samples;
-extern int separate_kernel_samples;
+extern int separate_lib;
+extern int separate_kernel;
 extern int no_vmlinux;
 
 /* hash of process lists */
@@ -374,7 +374,7 @@ void opd_put_sample(struct op_sample const * sample)
 	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8lx, pid %.6d\n",
 		sample->counter, sample->eip, sample->pid);
 
-	if (!separate_kernel_samples && in_kernel_eip) {
+	if (!separate_kernel && in_kernel_eip) {
 		opd_handle_kernel_sample(sample->eip, sample->counter);
 		return;
 	}
@@ -403,7 +403,7 @@ void opd_put_sample(struct op_sample const * sample)
 	}
 
 	if (in_kernel_eip) {
-		/* assert: separate_kernel_samples || no_vmlinux == 0 */
+		/* assert: separate_kernel || no_vmlinux == 0 */
 		opd_add_kernel_map(proc, sample->eip);
 		if (opd_lookup_maps(proc, sample)) {
 			return;
@@ -553,7 +553,7 @@ void opd_proc_cleanup(void)
  * @param proc  proc where mappings must be updated.
  *
  * invalidate (by removing them) all kernel mapping. This function do nothing
- * when separate_kernel_samples == 0 because we don't add mapping for kernel
+ * when separate_kernel == 0 because we don't add mapping for kernel
  * sample in proc struct.
  */
 void opd_remove_kernel_mapping(struct opd_proc * proc)
@@ -577,7 +577,7 @@ void opd_remove_kernel_mapping(struct opd_proc * proc)
  * opd_clear_kernel_mapping - remove all kernel mapping for all opd_proc
  *
  * invalidate (by removing them) all kernel mapping. This function do nothing
- * when separate_kernel_samples == 0 because we don't add mapping for kernel
+ * when separate_kernel == 0 because we don't add mapping for kernel
  * sample in proc struct.
  */
 void opd_clear_kernel_mapping(void)

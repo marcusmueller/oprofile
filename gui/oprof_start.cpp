@@ -157,8 +157,8 @@ oprof_start::oprof_start()
 		pgrp_filter_edit->setText("");
 	verbose->setChecked(config.verbose);
 	kernel_only_cb->setChecked(config.kernel_only);
-	separate_lib_samples_cb->setChecked(config.separate_lib_samples);
-	separate_kernel_samples_cb->setChecked(config.separate_kernel_samples);
+	separate_lib_cb->setChecked(config.separate_lib);
+	separate_kernel_cb->setChecked(config.separate_kernel);
 
 	// the unit mask check boxes
 	hide_masks();
@@ -626,8 +626,8 @@ bool oprof_start::record_config()
 	config.pgrp_filter = pgrp_filter_edit->text().toUInt();
 	config.kernel_only = kernel_only_cb->isChecked();
 	config.verbose = verbose->isChecked();
-	config.separate_lib_samples = separate_lib_samples_cb->isChecked();
-	config.separate_kernel_samples = separate_kernel_samples_cb->isChecked();
+	config.separate_lib = separate_lib_cb->isChecked();
+	config.separate_kernel = separate_kernel_cb->isChecked();
 
 	return true;
 }
@@ -926,9 +926,9 @@ bool oprof_start::save_config()
 	// separate=kernel imply separate=library whilst opcontrol script
 	// reset separate=kernel when separate=library is given so the order
 	// of setting here is meaningfull.
-	if (config.separate_kernel_samples)
+	if (config.separate_kernel)
 		args.push_back("--separate=kernel");
-	else if (config.separate_lib_samples)
+	else if (config.separate_lib)
 		args.push_back("--separate=library");
 	else
 		args.push_back("--separate=none");

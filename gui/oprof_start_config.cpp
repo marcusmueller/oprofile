@@ -43,8 +43,8 @@ config_setting::config_setting()
 	verbose(false),
 	pgrp_filter(0),
 	pid_filter(0),
-	separate_lib_samples(false),
-	separate_kernel_samples(false)
+	separate_lib(false),
+	separate_kernel(false)
 {
 	struct utsname info;
 
@@ -90,9 +90,9 @@ void config_setting::load(istream & in)
 				kernel_filename = val;
 			}
 		} else if (str == "SEPARATE_LIB_SAMPLES") {
-			separate_lib_samples = tobool(val);
+			separate_lib = tobool(val);
 		} else if (str == "SEPARATE_KERNEL_SAMPLES") {
-			separate_kernel_samples = tobool(val);
+			separate_kernel = tobool(val);
 		} else if (str == "KERNEL_ONLY") {
 			kernel_only = tobool(val);
 		}

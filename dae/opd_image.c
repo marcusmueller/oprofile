@@ -23,7 +23,7 @@
 #include <stdio.h>
 
 extern uint op_nr_counters;
-extern int separate_lib_samples;
+extern int separate_lib;
 extern u8 ctr_event[OP_MAX_COUNTERS];
 
 /* maintained for statistics purpose only */
@@ -33,7 +33,7 @@ unsigned int nr_images=0;
 static struct list_head opd_images = { &opd_images, &opd_images };
 
 /* Images which belong to the same hash, more than one only if
- * separate_lib_samples == 1, are accessed by hash code and linked through the
+ * separate_lib == 1, are accessed by hash code and linked through the
  * hash_next member of opd_image. Hash-less image must be searched through
  * opd_images list
  */
@@ -230,8 +230,8 @@ static int is_same_image(struct opd_image const * image, char const * app_name)
 	 * files which is not supported by the kernel, strange assertion
 	 * failure in libfd is a typical symptom of that */
 
-	/* if !separate_lib_samples, the comparison made by caller is enough */
-	if (!separate_lib_samples)
+	/* if !separate_lib, the comparison made by caller is enough */
+	if (!separate_lib)
 		return 0;
 
 	if (image->app_name == NULL && app_name == NULL)

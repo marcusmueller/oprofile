@@ -60,9 +60,9 @@ double cpu_speed;
 uint op_nr_counters;
 int verbose;
 op_cpu cpu_type;
-int separate_lib_samples;
-int separate_kernel_samples;
-int thread_profiling;
+int separate_lib;
+int separate_kernel;
+int separate_thread;
 int no_vmlinux;
 char * vmlinux;
 size_t kernel_pointer_size;
@@ -80,9 +80,9 @@ static struct poptOption options[] = {
 	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "no-vmlinux", 0, POPT_ARG_NONE, &no_vmlinux, 0, "vmlinux kernel image file not available", NULL, },
-	{ "separate-lib-samples", 0, POPT_ARG_INT, &separate_lib_samples, 0, "separate library samples for each distinct application", "[0|1]", },
-	{ "separate-kernel-samples", 0, POPT_ARG_INT, &separate_kernel_samples, 0, "separate kernel samples for each distinct application", "[0|1]", },
-	{ "thread-profiling", 0, POPT_ARG_INT, &thread_profiling,0, "thread-profiling mode", "[0|1]"},
+	{ "separate-lib", 0, POPT_ARG_INT, &separate_lib, 0, "separate library samples for each distinct application", "[0|1]", },
+	{ "separate-kernel", 0, POPT_ARG_INT, &separate_kernel, 0, "separate kernel samples for each distinct application", "[0|1]", },
+	{ "separate-thread", 0, POPT_ARG_INT, &separate_thread,0, "thread-profiling mode", "[0|1]"},
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
 	POPT_AUTOHELP
@@ -213,8 +213,8 @@ static void opd_options(int argc, char const * argv[])
 		show_version(argv[0]);
 	}
 
-	if (separate_kernel_samples) {
-		separate_lib_samples = 1;
+	if (separate_kernel) {
+		separate_lib = 1;
 	}
 
 	cpu_type = op_get_cpu_type();

@@ -29,8 +29,8 @@ struct opd_header {
 	u32 ctr_count;
 	double cpu_speed;
 	time_t mtime;
-	int separate_lib_samples;
-	int separate_kernel_samples;
+	int separate_lib;
+	int separate_kernel;
 	/* binary compatibility reserve */
 	u32 reserved1[19];
 };

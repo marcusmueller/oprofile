@@ -47,7 +47,7 @@ struct opd_image {
 	/* non-zero only if image is an application, used to provide access
 	 * to the head of module list */
 	struct opd_image * app_image;
-	/* used when separate_kernel_samples != 0, a linked list of module */
+	/* used when separate_kernel != 0, a linked list of module */
 	struct list_head module_list;
 };
 

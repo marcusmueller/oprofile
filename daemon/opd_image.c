@@ -49,9 +49,9 @@ struct transient {
 };
 
 extern uint op_nr_counters;
-extern int separate_lib_samples;
-extern int separate_kernel_samples;
-extern int thread_profiling;
+extern int separate_lib;
+extern int separate_kernel;
+extern int separate_thread;
 extern size_t kernel_pointer_size;
 
 /* maintained for statistics purpose only */
@@ -296,14 +296,14 @@ static struct opd_image * opd_find_image(cookie_t cookie,
 	list_for_each(pos, &opd_images[hash]) {
 		image = list_entry(pos, struct opd_image, hash_list);
 
-		/* without this check !separate_lib_samples will open the
+		/* without this check !separate_lib will open the
 		 * same sample file multiple times
 		 */
-		if (separate_lib_samples &&
+		if (separate_lib &&
 		    image->app_cookie != trans->app_cookie)
 			continue;
  
-		if (thread_profiling) {
+		if (separate_thread) {
 			if (image->tgid != trans->tgid ||
 			    image->tid != trans->tid)
 				continue;
@@ -327,7 +327,7 @@ static struct opd_image * opd_add_image(cookie_t cookie,
 
 	opd_init_image(image, cookie, trans);
 
-	if (separate_lib_samples) {
+	if (separate_lib) {
 		image->app_image = opd_find_image(trans->app_cookie, trans);
 		if (!image->app_image) {
 			verbprintf("NULL image->app_image for cookie %llx\n",
@@ -401,7 +401,7 @@ opd_get_kernel_image(char const * name, struct opd_image const * app_image)
 		image = list_entry(pos, struct opd_image, hash_list);
 		if (strcmp(image->name, name))
 			continue;
-		if (!separate_kernel_samples)
+		if (!separate_kernel)
 			return image;
 		if (!app_name && !image->app_name)
 			return image;
@@ -487,7 +487,7 @@ static void opd_put_sample(struct transient * trans, vma_t eip)
 		struct opd_image * kernel_image;
 
 		/* We can get a NULL image if it's a kernel thread */
-		if (separate_kernel_samples && trans->image)
+		if (separate_kernel && trans->image)
 			/* FIXME: can we use trans->app_image ? */
 			app_image = trans->image->app_image;
 

@@ -179,9 +179,9 @@ do_init() {
 	PID_FILTER=0
 	PGRP_FILTER=0
 	VERBOSE=0
-	SEPARATE_LIB_SAMPLES=0
-	SEPARATE_KERNEL_SAMPLES=0
-	THREAD_PROFILING=0
+	SEPARATE_LIB=0
+	SEPARATE_KERNEL=0
+	SEPARATE_THREAD=0
 	KERNEL_ONLY=0 # 2.2/2.4 kernel
 
 	OPROFILED="$OPDIR/oprofiled"
@@ -247,9 +247,9 @@ do_save_setup() {
  
 	echo "NR_CHOSEN=$NR_CHOSEN" >>$SETUP_FILE
 
-	echo "SEPARATE_LIB_SAMPLES=$SEPARATE_LIB_SAMPLES" >> $SETUP_FILE
-	echo "SEPARATE_KERNEL_SAMPLES=$SEPARATE_KERNEL_SAMPLES" >> $SETUP_FILE
-	echo "THREAD_PROFILING=$THREAD_PROFILING" >> $SETUP_FILE
+	echo "SEPARATE_LIB=$SEPARATE_LIB" >> $SETUP_FILE
+	echo "SEPARATE_KERNEL=$SEPARATE_KERNEL" >> $SETUP_FILE
+	echo "SEPARATE_THREAD=$SEPARATE_THREAD" >> $SETUP_FILE
 	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
 	#write the actual information to file
 	if [ "$BUF_SIZE" != 0 ]; then
@@ -282,8 +282,9 @@ do_load_setup() {
 	fi;
 
 	vecho "KERNEL_ONLY $KERNEL_ONLY"
-	vecho "SEPARATE_LIB_SAMPLES $SEPARATE_LIB_SAMPLES"
-	vecho "SEPARATE_KERNEL_SAMPLES $SEPARATE_KERNEL_SAMPLES"
+	vecho "SEPARATE_LIB $SEPARATE_LIB"
+	vecho "SEPARATE_KERNEL $SEPARATE_KERNEL"
+	vecho "SEPARATE_THREAD $SEPARATE_THREAD"
 	vecho "VMLINUX $VMLINUX"
 }
 
@@ -356,26 +357,26 @@ validate_separate_args() {
 		shift
 		case "$1" in
 			library)
-				SEPARATE_LIB_SAMPLES=1
-				SEPARATE_KERNEL_SAMPLES=0
+				SEPARATE_LIB=1
+				SEPARATE_KERNEL=0
 				;;
 			kernel)
 				# first implied by second
-				SEPARATE_LIB_SAMPLES=1 
-				SEPARATE_KERNEL_SAMPLES=1
+				SEPARATE_LIB=1 
+				SEPARATE_KERNEL=1
 				;;
 			thread)
-				THREAD_PROFILING=1
+				SEPARATE_THREAD=1
 				;;
 			all)
-				SEPARATE_LIB_SAMPLES=1
-				SEPARATE_KERNEL_SAMPLES=1
-				THREAD_PROFILING=1
+				SEPARATE_LIB=1
+				SEPARATE_KERNEL=1
+				SEPARATE_THREAD=1
 				;;
 			none)
-				SEPARATE_LIB_SAMPLES=0
-				SEPARATE_KERNEL_SAMPLES=0
-				THREAD_PROFILING=0
+				SEPARATE_LIB=0
+				SEPARATE_KERNEL=0
+				SEPARATE_THREAD=0
 				;;
 			*)
 				echo "invalid --separate= argument: $1"
@@ -917,15 +918,15 @@ do_start_daemon() {
 	do_sysctl_setup
 
 	OPD_ARGS=" \
-		--separate-lib-samples=$SEPARATE_LIB_SAMPLES \
-		--separate-kernel-samples=$SEPARATE_KERNEL_SAMPLES"
+		--separate-lib=$SEPARATE_LIB \
+		--separate-kernel=$SEPARATE_KERNEL"
 
 	if [ "$KERNEL_SUPPORT" != "yes" ]; then
 		OPD_ARGS="$OPD_ARGS \
 			--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
 	else
 		OPD_ARGS="$OPD_ARGS \
-			--thread-profiling=$THREAD_PROFILING"
+			--separate-thread=$SEPARATE_THREAD"
 	fi
 
 	if [ "$VMLINUX" = "none" ]; then

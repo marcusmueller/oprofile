@@ -813,7 +813,7 @@
                                         <class>QCheckBox</class>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>separate_kernel_samples_cb</cstring>
+                                            <cstring>separate_kernel_cb</cstring>
                                         </property>
                                         <property stdset="1">
                                             <name>text</name>
@@ -828,7 +828,7 @@
                                         <class>QCheckBox</class>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>separate_lib_samples_cb</cstring>
+                                            <cstring>separate_lib_cb</cstring>
                                         </property>
                                         <property stdset="1">
                                             <name>text</name>
@@ -1101,7 +1101,7 @@
     <tabstop>note_table_size_edit</tabstop>
     <tabstop>kernel_only_cb</tabstop>
     <tabstop>verbose</tabstop>
-    <tabstop>separate_kernel_samples_cb</tabstop>
-    <tabstop>separate_lib_samples_cb</tabstop>
+    <tabstop>separate_kernel_cb</tabstop>
+    <tabstop>separate_lib_cb</tabstop>
 </tabstops>
 </UI>
