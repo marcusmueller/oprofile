@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.20 2000/08/24 17:49:33 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.21 2000/08/25 20:23:27 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -109,7 +109,7 @@ static uint map_open;
 static uint hash_map_open;
 static char *hash_map;
 
-void oprof_out8(void *buf);
+void oprof_out8(struct op_sample *samp);
 
 /* --------- device routines ------------- */
 
@@ -309,7 +309,6 @@ static int output_path_hash(const char *name, uint len)
 	uint firsthash;
 	uint hash;
 	uint probe=1;
-	uint cnt=10;
 
 	if (len>=OP_HASH_LINE) {
 		printk(KERN_ERR "Hash component \"%s\" is too long.\n",name);
@@ -318,24 +317,19 @@ static int output_path_hash(const char *name, uint len)
 
 	hash = firsthash = name_hash(name,len);
 	do {
-		cnt--;
 		if (!hash_access(hash)) {
-			printk(KERN_INFO "oprofile: Adding %s at hash %u\n",name,hash);
 			strncpy(&hash_access(hash), name, len);
 			return hash;
 		}
 
-		if (!strcmp(&hash_access(hash),name)) {
-			printk("Found %s for %s\n",&hash_access(hash),name);
+		if (!strcmp(&hash_access(hash),name))
 			return hash;
-		}
 
-		/* FIXME: FIXME: this can recurse forever ! 26,677 */
 		hash = (hash+probe) % OP_HASH_MAP_NR;
 		probe *= probe;
-	} while (cnt && hash!=firsthash);
+	} while (hash!=firsthash);
 
-	printk(KERN_ERR "oprofile: hash map is full ! cnt = %u\n",cnt);
+	printk(KERN_ERR "oprofile: hash map is full !\n");
 	return -1;
 }
 
