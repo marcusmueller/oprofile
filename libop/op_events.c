@@ -466,13 +466,22 @@ int op_check_events(int ctr, u8 nr, u16 um, op_cpu cpu_type)
 	if ((event->counter_mask & ctr_mask) == 0)
 		ret |= OP_INVALID_COUNTER;
 
-	for (i = 0; i < event->unit->num; ++i) {
-		if (event->unit->um[i].value == um)
-			break;
-	}
+	if (event->unit->unit_type_mask == utm_bitmask) {
+		for (i = 0; i < event->unit->num; ++i)
+			um &= ~(event->unit->um[i].value);			
+		
+		if (um)
+			ret |= OP_INVALID_UM;
 
-	if (i == event->unit->num)
-		ret |= OP_INVALID_UM;
+	} else {
+		for (i = 0; i < event->unit->num; ++i) {
+			if (event->unit->um[i].value == um)
+				break;
+		}
+		
+		if (i == event->unit->num)
+			ret |= OP_INVALID_UM;
+	}
 
 	return ret;
 }

@@ -1,3 +1,8 @@
+2003-06-12  Graydon Hoare  <graydon@redhat.com>
+
+	* libop/op_events.c (op_check_events): Check bitmasks as well as 
+	exclusive values, for unit masks.
+
 2003-06-12  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_image.c: we were not handling a truncated
