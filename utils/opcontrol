@@ -99,47 +99,32 @@ do_help() {
 	  --version                    show version" >&2
 }
 
-determine_version(){
-	# figure out which version of the kernel is being used
-	# FIXME this isn't really right there are version of
-	# 2.5 kernel that do not have oprofile support
-
-	kern_release=`uname -r`
-	case "$kern_release" in
-		2.5.*)
-			KERNEL_SUPPORT=yes
-			;;
-		2.6.*)
-			KERNEL_SUPPORT=yes
-			;;
-		2.4.*)
-			KERNEL_SUPPORT=no
-			;;
-		2.3.*)
-			KERNEL_SUPPORT=no
-			;;
-	esac
-}
-
 load_module_25() {
 	grep oprofilefs /proc/filesystems >/dev/null
 	if [ "$?" -ne 0 ]; then
 		modprobe oprofile
 		if [ "$?" != "0" ]; then
-			echo "Couldn't load oprofile.o module" >&2
-			exit 1
+			# couldn't load a module
+			return
 		fi
 		grep oprofile /proc/modules >/dev/null
 		if [ "$?" != "0" ]; then
-			echo "Couldn't load oprofile.o module" >&2
-			exit 1
+			# didn't find module
+			return
 		fi
+	fi
+	grep oprofilefs /proc/filesystems >/dev/null
+	if [ "$?" -ne 0 ]; then
+		# filesystem still not around
+		return
 	fi
 	mkdir /dev/oprofile >/dev/null 2>&1
 	grep oprofilefs /etc/mtab >/dev/null
 	if test "$?" -ne 0; then
 		mount -t oprofilefs nodev /dev/oprofile >/dev/null
 	fi
+	KERNEL_SUPPORT=yes
+	OPROFILE_AVAILABLE=yes
 }
 
 load_module_24() {
@@ -147,24 +132,30 @@ load_module_24() {
 	if [ "$?" -ne 0 ]; then
 		modprobe oprofile
 		if [ "$?" != "0" ]; then
-			echo "Couldn't load oprofile.o module" >&2
-			exit 1
+			# couldn't load a module
+			return
 		fi
 		grep oprofile /proc/modules >/dev/null
 		if [ "$?" != "0" ]; then
-			echo "Couldn't load oprofile.o module" >&2
-			exit 1
+			# didn't find module
+			return
 		fi
 	fi
+	KERNEL_SUPPORT=no
+	OPROFILE_AVAILABLE=yes
 } 
 
 
 load_module()
 {
-	if test "$KERNEL_SUPPORT" = "yes"; then
-		load_module_25
-	else
+	OPROFILE_AVAILABLE=no
+	load_module_25
+	if test "$OPROFILE_AVAILABLE" != "yes"; then
 		load_module_24
+	fi
+	if test "$OPROFILE_AVAILABLE" != "yes"; then
+		echo "Kernel doesn't support oprofile" >&2
+		exit 1
 	fi
 }
 
@@ -869,7 +860,6 @@ if [ "$UID" != "0" ]; then
 	exit 1
 fi
 
-determine_version 
 load_module
 do_init
 do_options $@
