@@ -26,11 +26,11 @@
 #include "op_libiberty.h"
 
 static char const ** chosen_events;
-
 struct parsed_event * parsed_events;
-
 static op_cpu cpu_type = CPU_NO_GOOD;
 static char * cpu_string;
+static int callgraph_depth;
+
 static poptContext optcon;
 
 
@@ -100,6 +100,7 @@ static void check_event(struct parsed_event * pev,
 			struct op_event const * event)
 {
 	int ret;
+	int min_count;
 
 	if (!event) {
 		fprintf(stderr, "No event named %s is available.\n",
@@ -115,10 +116,10 @@ static void check_event(struct parsed_event * pev,
 		exit(EXIT_FAILURE);
 	}
 
-	if (pev->count < event->min_count) {
+	min_count = event->min_count * (callgraph_depth ? 15 : 1);
+	if (pev->count < min_count) {
 		fprintf(stderr, "Count %d for event %s is below the "
-		        "minimum %d\n", pev->count, pev->name,
-		        event->min_count);
+		        "minimum %d\n", pev->count, pev->name, min_count);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -231,6 +232,8 @@ static struct poptOption options[] = {
 	  "show the auto-detected CPU type", NULL, },
 	{ "get-default-event", 'd', POPT_ARG_NONE, &get_default_event, 0,
 	  "get the default event", NULL, },
+	{ "callgraph", '\0', POPT_ARG_INT, &callgraph_depth, 0,
+	  "use this callgraph depth", "callgraph depth", },
 	{ "version", 'v', POPT_ARG_NONE, &show_vers, 0,
 	   "show version", NULL, },
 	POPT_AUTOHELP

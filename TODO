@@ -13,13 +13,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 
  o print "0" not "0.0e+00". should we consider reworking opstack output
 format? make the headers more explanative
- o with callgraph the min count are too low. opcontrol must check callgraph is
-  on (/dev/oprofile/callgraph_depth) and pass it to op_help etc. so we scale
-  min count by ten (at least).
  o TRACE_END is no longer sent by the driver, keep it a bit for compatibility
- o when using callgraph and a counter number != 0 is used we receive *non
-  callgraph sample* with counter == 0 so daemon abort in opd_events.c
-  find_counter_event();
 
  o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.
  o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
@@ -33,30 +27,6 @@ format? make the headers more explanative
  o review opstack documentation, improve it by giving examples of output and
   how to interpret it.
  o finish opstack: various --separate= --merge= handling,
- o first quick test show it works but I got in oprofiled.log (possibly when
-  shutdown oprofile)
-	Read buffer of 35253 entries.
-	Read buffer of 35220 entries.
-	Unknown code !
-  phe: look like to occur when sampling rate is a bit too high.
-  (added later: the ring buffer patch to kernel driver fixed a lot of heisenbug
-  in daemon, I no longer see that: we need stress test now)
- o when samples rate is too high (< 100000) a lot of cpu buffer overflow occur
-  then daemon get many problems. I dunno exactly what is wrong but in this case
-  a lot of samples file creation fails, many samples are lost due to no mm etc.
-  we can prolly make the daemon more robust in this case.
-  (added later: the ring buffer patch to kernel driver fixed a lot of heisenbug
-  in daemon, I no longer see that: we need stress test now)
- o oprofiled.log now contains various statistics about lost sample etc. from
-  the driver. Post profile tools must parse that and warn eventually, warning
-  must include a proposed work around. User need this: if nothing seems wrong
-  people are unlikely to get a look in oprofiled.log (I ran oprofile on 2.6.1
-  2 weeks before noticing at 30000 I lost a lot of samples, the profile seemed
-  ok du to the randomization of lost samples). As developper we need that too,
-  actually we have no clear idea of the behavior on different arch, NUMA etc.
-  Not perfect because if the profiler is running the oprofiled.log will show
-  those warning only after the first  alarm signal, I think we must dump the
-  statistics information after each opcontrol --dump to avoid that.
 
 0.9 release
 -----------
@@ -73,6 +43,18 @@ format? make the headers more explanative
 Before 1.0 little stuff
 -----------------------
 
+ o opcontrol --reset do a dump even if the module is not loaded, we should
+  avoid to load the module.
+ o oprofiled.log now contains various statistics about lost sample etc. from
+  the driver. Post profile tools must parse that and warn eventually, warning
+  must include a proposed work around. User need this: if nothing seems wrong
+  people are unlikely to get a look in oprofiled.log (I ran oprofile on 2.6.1
+  2 weeks before noticing at 30000 I lost a lot of samples, the profile seemed
+  ok du to the randomization of lost samples). As developper we need that too,
+  actually we have no clear idea of the behavior on different arch, NUMA etc.
+  Not perfect because if the profiler is running the oprofiled.log will show
+  those warning only after the first  alarm signal, I think we must dump the
+  statistics information after each opcontrol --dump to avoid that.
  o do we need an opreport like opstack (showing caller/callee at binary
   boundary not symbols) ?
  o libop/op_string.c is dumb (skip_ws, skip_nonws) we can't use them

@@ -473,7 +473,7 @@ verify_counters()
 			fi
 		done
 
-		HW_CTRS=`$OP_HELP --check-events $OP_HELP_ARGS`
+		HW_CTRS=`$OP_HELP --check-events $OP_HELP_ARGS --callgraph=$CALLGRAPH`
 		if test "$?" != 0; then
 			exit 1
 		fi
@@ -937,7 +937,7 @@ do_param_setup()
 	if test "$NR_CHOSEN" = 0; then
 		CHOSEN_EVENTS[0]=$DEFAULT_EVENT
 		NR_CHOSEN=1
-		HW_CTRS=`$OP_HELP --check-events $DEFAULT_EVENT`
+		HW_CTRS=`$OP_HELP --check-events $DEFAULT_EVENT --callgraph=$CALLGRAPH`
 		echo "Using default event: ${CHOSEN_EVENTS[0]}"
 	fi
 
