@@ -48,6 +48,14 @@ typedef enum {
 op_cpu op_get_cpu_type(void);
 
 /**
+ * get the cpu number based on string
+ * @param cpu_string the cpu type identifier
+ *
+ * The function returns CPU_NO_GOOD if no matching string was found.
+ */
+op_cpu op_get_cpu_number(char *cpu_string);
+
+/**
  * get the cpu string.
  * @param cpu_type the cpu type identifier
  *

@@ -48,7 +48,6 @@ op_cpu op_get_cpu_type(void)
 {
 	int cpu_type = CPU_NO_GOOD;
 	char str[100];
-	size_t i;
 	FILE * fp;
 
 	fp = fopen("/proc/sys/dev/oprofile/cpu_type", "r");
@@ -67,21 +66,31 @@ op_cpu op_get_cpu_type(void)
 		return CPU_NO_GOOD;
 	}
 
-	for (i = 0; i < nr_cpu_descrs; ++i) {
-		if (!strcmp(cpu_descrs[i].name, str)) {
-			cpu_type = cpu_descrs[i].cpu;
-			break;
-		}
-	}
-
-	if (i == nr_cpu_descrs)
-		sscanf(str, "%d\n", &cpu_type);
+	cpu_type = op_get_cpu_number(str);
 
 	fclose(fp);
 
 	return cpu_type;
 }
 
+op_cpu op_get_cpu_number(char *cpu_string)
+{
+	int cpu_type = CPU_NO_GOOD;
+	size_t i;
+	
+	for (i = 0; i < nr_cpu_descrs; ++i) {
+		if (!strcmp(cpu_descrs[i].name, cpu_string)) {
+			cpu_type = cpu_descrs[i].cpu;
+			break;
+		}
+	}
+
+	/* Attempt to convert into a number */
+	if (cpu_type == CPU_NO_GOOD)
+		sscanf(cpu_string, "%d\n", &cpu_type);
+
+	return cpu_type;
+}
  
 char const * op_get_cpu_type_str(op_cpu cpu_type)
 {

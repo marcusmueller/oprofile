@@ -29,7 +29,7 @@ static char const ** chosen_events;
 struct parsed_event parsed_events[OP_MAX_COUNTERS];
 
 static op_cpu cpu_type = CPU_NO_GOOD;
-
+static char * cpu_string;
 static poptContext optcon;
 
 
@@ -218,8 +218,8 @@ static int unit_mask;
 static int get_default_event;
 
 static struct poptOption options[] = {
-	{ "cpu-type", 'c', POPT_ARG_INT, &cpu_type, 0,
-	  "use the given numerical CPU type", "cpu type", },
+	{ "cpu-type", 'c', POPT_ARG_STRING, &cpu_string, 0,
+	  "use the given CPU type", "cpu type", },
 	{ "check-events", 'e', POPT_ARG_NONE, &check_events, 0,
 	  "check the given event descriptions for validity", NULL, },
 	{ "unit-mask", 'u', POPT_ARG_NONE, &unit_mask, 0,
@@ -282,11 +282,14 @@ int main(int argc, char const *argv[])
 
 	/* usefull for testing purpose to allow to force the cpu type
 	 * with --cpu-type */
-	if (cpu_type == CPU_NO_GOOD)
+	if (cpu_string){
+		cpu_type = op_get_cpu_number(cpu_string);
+	} else {
 		cpu_type = op_get_cpu_type();
+	}
 
 	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
-		fprintf(stderr, "cpu_type '%d' is not valid\n", cpu_type);
+		fprintf(stderr, "cpu_type '%s' is not valid\n", cpu_string);
 		exit(EXIT_FAILURE);
 	}
 
