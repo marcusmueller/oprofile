@@ -35,10 +35,12 @@ using namespace options;
 
 namespace {
 
+size_t nr_events;
+
 scoped_ptr<profile_container> samples;
 
 // needed to display samples file information
-scoped_ptr<opd_header> header;
+vector<opd_header> header;
 
 /// how opannotate was invoked
 string cmdline;
@@ -89,12 +91,14 @@ image_set populate_samples(profile_container & samples,
 }
 
 
-void save_sample_file_header(partition_files const & files)
+void save_sample_file_header(vector<partition_files> const & files)
 {
-	if (files.nr_set()) {
-		partition_files::filename_set const & file_set = files.set(0);
-		opd_header temp = read_header(file_set.begin()->sample_filename);
-		header.reset(new opd_header(temp));
+	for (size_t i = 0; i < files.size(); ++i) {
+		partition_files::filename_set const & file_set =
+		    files[i].set(0);
+		opd_header temp =
+		    read_header(file_set.begin()->sample_filename);
+		header.push_back(temp);
 	}
 }
 
@@ -103,9 +107,16 @@ string get_annotation_fill()
 {
 	string str;
 
-	str += string(count_width, ' ') + ' ';
-	str += string(percent_width, ' '); 
+	for (size_t i = 0; i < nr_events; ++i) {
+		str += string(count_width, ' ') + ' ';
+		str += string(percent_width, ' ');
+	}
 
+	for (size_t i = 1; i < nr_events; ++i) {
+		str += "  ";
+	}
+
+	str += " :";
 	return str;
 }
 
@@ -162,8 +173,9 @@ void output_info(ostream & out)
 
 	stringstream stream;
 
-	output_cpu_info(stream, *header);
-	stream << *header;
+	output_cpu_info(stream, header[0]);
+	for (size_t i = 0; i < header.size(); ++i)
+		stream << header[i];
 	stream.seekp(0);
 
 	string line;
@@ -179,11 +191,12 @@ string count_str(count_array_t const & count,
 		   count_array_t const & total)
 {
 	ostringstream os;
-	os << setw(count_width) << count[0] << ' ';
+	for (size_t i = 0; i < nr_events; ++i) {
+		os << setw(count_width) << count[i] << ' ';
 
-	// FIXME: multiple counts
-	os << format_double(op_ratio(count[0], total[0]) * 100.0,
-			    percent_int_width, percent_fract_width);
+		os << format_double(op_ratio(count[i], total[i]) * 100.0,
+				    percent_int_width, percent_fract_width);
+	}
 	return os.str();
 }
 
@@ -201,13 +214,15 @@ string asm_line_annotation(symbol_entry const * last_symbol,
 	string str;
 
 	sample_entry const * sample = samples->find_sample(last_symbol, vma);
-	if (sample)
+	if (sample) {
 		str += count_str(sample->counts, samples->samples_count());
-
-	if (str.empty())
+		for (size_t i = 1; i < nr_events; ++i)
+			str += "  ";
+		str += " :";
+	} else {
 		str = annotation_fill;
+	}
 
-	str += " :";
 	return str;
 }
 
@@ -264,7 +279,7 @@ symbol_entry const * output_objdump_asm_line(symbol_entry const * last_symbol,
 
 	if (pos == str.length() || !isxdigit(str[pos])) {
 		if (do_output) {
-			cout << annotation_fill << " :" << str << '\n';
+			cout << annotation_fill << str << '\n';
 			return last_symbol;
 		}
 	}
@@ -274,7 +289,7 @@ symbol_entry const * output_objdump_asm_line(symbol_entry const * last_symbol,
 
 	if (pos == str.length() || (!isspace(str[pos]) && str[pos] != ':')) {
 		if (do_output) {
-			cout << annotation_fill << " :" << str << '\n';
+			cout << annotation_fill << str << '\n';
 			return last_symbol;
 		}
 	}
@@ -425,13 +440,15 @@ string const source_line_annotation(debug_name_id filename, size_t linenr)
 	string str;
 
 	count_array_t counts = samples->samples_count(filename, linenr);
-	if (!counts.zero())
+	if (!counts.zero()) {
 		str += count_str(counts, samples->samples_count());
-
-	if (str.empty())
+		for (size_t i = 1; i < nr_events; ++i)
+			str += "  ";
+		str += " :";
+	} else {
 		str = annotation_fill;
+	}
 
-	str += " :";
 	return str;
 }
 
@@ -620,7 +637,7 @@ void output_source(path_filter const & filter)
 }
 
 
-bool annotate_source(image_set const & images)
+bool annotate_source(set<string> const & images)
 {
 	annotation_fill = get_annotation_fill();
 
@@ -647,13 +664,11 @@ bool annotate_source(image_set const & images)
 
 	if (assembly) {
 		bool some_output = false;
-		image_set::const_iterator it;
-		for (it = images.begin(); it != images.end(); ) {
-			if (output_asm(it->first)) {
+		set<string>::const_iterator it;
+		for (it = images.begin(); it != images.end(); ++it) {
+			if (output_asm(*it)) {
 				some_output = true;
 			}
-
-			it = images.upper_bound(it->first);
 		}
 
 		if (!some_output) {
@@ -674,12 +689,22 @@ int opannotate(vector<string> const & non_options)
 {
 	handle_options(non_options);
 
+	nr_events = sample_file_partition.size();
+
 	samples.reset(new profile_container(true, true));
 
-	save_sample_file_header(*sample_file_partition);
+	save_sample_file_header(sample_file_partition);
 
-	image_set images = populate_samples(*samples, *sample_file_partition,
-					    false, 0);
+	set<string> images;
+
+	for (size_t i = 0; i < sample_file_partition.size(); ++i) {
+		image_set images_set = populate_samples(*samples,
+				sample_file_partition[i], false, i);
+		image_set::const_iterator it;
+		for (it = images_set.begin(); it != images_set.end(); ++it)
+			images.insert(it->first);
+	}
+
 	annotate_source(images);
 
 	return 0;

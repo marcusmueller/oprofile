@@ -1,5 +1,13 @@
 2003-08-25  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/opannotate_options.cpp:
+	* pp/opannotate_options.h:
+	* pp/opannotate.cpp: enable multiple events
+
+	* pp/opreport_options.cpp: remove #if 0 .... #endif
+
+2003-08-25  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libpp/count_array.cpp: avoid to access invalid memory
 
 2003-08-25  Philippe Elie  <phil.el@wanadoo.fr>

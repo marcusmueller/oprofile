@@ -241,17 +241,6 @@ void handle_options(vector<string> const & non_options)
 		exit(EXIT_FAILURE);
 	}
 
-/* This should probably be removed now ? */
-#if 0
-	if (unmerged_profile.size() > 1) {
-		// quick and dirty check for now
-		cerr << "Can't handle multiple counters." << endl;
-		cerr << "use event:xxxx and/or count:yyyyy to restrict "
-		     << "samples files set considered\n" << endl;
-		exit(EXIT_FAILURE);
-	}
-#endif
-
 	unmergeable_samplefile unmerged_samplefile =
 		unmerge_samplefile(sample_files, unmerged_profile);
 
