@@ -1286,8 +1286,8 @@ Options allowed are :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--output-format</option> vsSpPnlLiIh</term>
-		<term><option>-t</option> vsSpPnlLiIh</term>
+		<term><option>--output-format</option> vsSpPnlLiIeEh</term>
+		<term><option>-t</option> vsSpPnlLiIeEh</term>
 		<listitem><para>Specify the output and formatting, as given in this table :</para>
 		<informaltable frame="all">
 		<tgroup cols='2'> 
@@ -1302,12 +1302,17 @@ Options allowed are :
 		<row><entry><option>L</option></entry><entry>Short source filename and line number</entry></row>
 		<row><entry><option>i</option></entry><entry>Image name</entry></row>
 		<row><entry><option>I</option></entry><entry>Short image name</entry></row>
+		<row><entry><option>e</option></entry><entry>Application name</entry></row>
+		<row><entry><option>E</option></entry><entry>Basename of application</entry></row>
 		<row><entry><option>d</option></entry><entry>Detailed sample results</entry></row>
 		<row><entry><option>h</option></entry><entry>Print a columns header</entry></row>
 		</tbody></tgroup>
 		</informaltable>
 		<para>
-		This can only be used in conjunction with <option>--list-symbols</option>. 
+		<option>e</option> and <option>E</option> are useless unless you profile with --separate-samples.
+		</para>
+		<para>
+		These options can only be used in conjunction with <option>--list-symbols</option>. 
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

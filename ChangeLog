@@ -16,6 +16,9 @@
 	* pp/op_time_options.h: honor app_name parameter. No user visible
 	  change except for op_time -l when profiling with --separate-samples
 
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: update doc
+
 2002-12-13  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: lots of fixes. Remove sysctl documentation
