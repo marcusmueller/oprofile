@@ -643,12 +643,149 @@ to actually log the write against the sample file can be found in
 <chapter id="output">
 <title>Generating useful output</title>
 
+<para>
+All of the tools used to generate human-readable output have to take
+roughly the same steps to collect the data for processing. First, the
+profile specification given by the user has to be parsed. Next, a list
+of sample files matching the specification has to obtained. Using this
+list, we need to locate the binary file for each sample file, and then
+use them to extract meaningful data, before a final collation and
+presentation to the user.
+</para>
+
 <sect1 id="profile-specification">
 <title>Handling the profile specification</title>
+
+<para>
+The profile specification presented by the user is parsed in
+the function <function>profile_spec::create()O</function>. This
+creates an object representing the specification. Then we
+use <function>profile_spec::generate_file_list()</function>
+to search for all sample files and match them against the
+<varname>profile_spec</varname>.
+</para>
+
+<para>
+To enable this matching process to work, the attributes of
+each sample file is encoded in its filename. This is a low-tech
+approach to matching specifications against candidate sample
+files, but it works reasonably well. A typical sample file
+might look like these:
+</para>
+<screen>
+/var/lib/oprofile/samples/current/{root}/bin/ls/{dep}/{root}/bin/ls/{cg}/{root}/bin/ls/CPU_CLK_UNHALTED.100000.0.all.all.all
+/var/lib/oprofile/samples/current/{root}/bin/ls/{dep}/{root}/bin/ls/CPU_CLK_UNHALTED.100000.0.all.all.all
+/var/lib/oprofile/samples/current/{root}/bin/ls/{dep}/{root}/bin/ls/CPU_CLK_UNHALTED.100000.0.7423.7424.0
+/var/lib/oprofile/samples/current/{kern}/r128/{dep}/{kern}/r128/CPU_CLK_UNHALTED.100000.0.all.all.all
+</screen>
+<para>
+This looks unnecessarily complex, but it's actually fairly simple. First
+we have the session of the sample, here
+<filename>/var/lib/oprofile/samples/current</filename>. This could
+equally well be inside an archive from <command>oparchive</command>.
+Next we have one of the tokens <filename>{root}</filename> or
+<filename>{kern}</filename>. <filename>{root}</filename> indicates
+that the binary is found on a file system, and we will encode its path
+in the next section (e.g. <filename>/bin/ls</filename>).
+<filename>{kern}</filename> indicates a kernel module - on 2.6 kernels
+the path information is not available from the kernel, so we have to
+special-case kernel modules like this; we encode merely the name of the
+module as loaded.
+</para>
+<para>
+Next there is a <filename>{dep}</filename> token, indicating another
+token/path which identifies the dependent binary image. This is used even for
+the "primary" binary (i.e. the one that was
+<function>execve()</function>d), as it simplifies processing. Finally,
+if this sample file is a normal flat profile, the actual file is next in
+the path. If it's a call-graph sample file, we need one further
+specification, to allow us to identify cross-binary arcs in the call
+graph.
+</para>
+<para>
+The actual sample file name is dot-separated, where the fields are, in
+order: event name, event count, unit mask, task group ID, task ID, and
+CPU number.
+</para>
+<para>
+This sample file can be reliably parsed (with
+<function>parse_filename()</function>) into a
+<varname>filename_spec</varname>. Finally, we can check whether to
+include the sample file in the final results by comparing this
+<varname>filename_spec</varname> against the
+<varname>profile_spec</varname> the user specified (for the interested,
+see <function>valid_candidate()</function> and
+<function>profile_spec::match</function>). Then comes the really
+complicated bit...
+</para>
+
 </sect1>
 
 <sect1 id="sample-file-collating">
 <title>Collating the candidate sample files</title>
+
+<para>
+At this point we have a duplicate-free list of sample files we need
+to process. But first we need to do some further arrangement: we
+need to classify each sample file, and we may also need to "invert"
+the profiles.
+</para>
+
+<sect2 id="sample-file-classifying">
+<title>Classifying sample files</title>
+
+<para>
+It's possible for utilities like <command>opreport</command> to show 
+data in columnar format: for example, we might want to show the results
+of two threads within a process side-by-side. To do this, we need
+to classify each sample file into classes - the classes correspond
+with each <command>opreport</command> column. The function that handles
+this is <function>arrange_profiles()</function>. Each sample file
+is added to a particular class. If the sample file is the first in
+its class, a template is generated from the sample file. Each template
+describes a particular class (thus, in our example above, each template
+will have a different thread ID, and this uniquely identifies each
+class).
+</para>
+
+<para>
+Each class has a list of "profile sets" matching that class's template.
+A profile set is either a profile of the primary binary image, or any of
+its dependent images. After all sample files have been listed in one of
+the profile sets belonging to the classes, we have to name each class and
+perform error-checking. This is done by
+<function>identify_classes()</function>; each class is checked to ensure
+that its "axis" is the same as all the others. This is needed because
+<command>opreport</command> can't produce results in 3D format: we can
+only differ in one aspect, such as thread ID or event name.
+</para>
+
+</sect2>
+
+<sect2 id="sample-file-inverting">
+<title>Creating inverted profile lists</title>
+
+<para>
+Remember that if we're using certain profile separation options, such as
+"--separate=lib", a single binary could be a dependent image to many
+different binaries. For example, the C library image would be a
+dependent image for most programs that have been profiled. As it
+happens, this can cause severe performance problems: without some
+re-arrangement, these dependent binary images would be opened each
+time we need to process sample files for each program.
+</para>
+
+<para>
+The solution is to "invert" the profiles via
+<function>invert_profiles()</function>. We create a new data structure
+where the dependent binary is first, and the primary binary images using
+that dependent binary are listed as sub-images. This helps our
+performance problem, as now we only need to open each dependent image
+once, when we process the list of inverted profiles.
+</para>
+
+</sect2>
+
 </sect1>
 
 <sect1 id="generating-profile-data">

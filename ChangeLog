@@ -1,3 +1,7 @@
+2004-07-15  John Levon  <levon@movementarian.org>
+
+	* doc/internals.xml: document some more
+
 2004-07-09  John Levon  <levon@movementarian.org>
 
 	* libpp/populate.cpp: quash timestamp warnings
