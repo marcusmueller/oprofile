@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.12 2000/09/04 23:04:35 moz Exp $ */
+/* $Id: oprofpp.c,v 1.13 2000/09/27 21:32:40 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -158,13 +158,6 @@ bfd *open_image_file(char *mangled)
 
 	ibfd = bfd_openr(file, NULL);
 
-	if (footer.is_kernel) { 
-		asection *sect; 
- 
-		sect = bfd_get_section_by_name(ibfd, ".text");
-		sect_offset = OPD_KERNEL_OFFSET - sect->filepos;
-	}
- 
 	if (!ibfd) {
 		fprintf(stderr,"oprofpp: bfd_openr of %s failed.\n",file);
 		exit(1);
@@ -174,6 +167,13 @@ bfd *open_image_file(char *mangled)
 		free(matching); 
 		fprintf(stderr,"oprofpp: BFD format failure for %s.\n",file);
 		exit(1);
+	}
+ 
+	if (footer.is_kernel) { 
+		asection *sect; 
+ 
+		sect = bfd_get_section_by_name(ibfd, ".text");
+		sect_offset = OPD_KERNEL_OFFSET - sect->filepos;
 	}
  
 	return ibfd; 
