@@ -65,8 +65,7 @@ OProfile operates in timer/RTC mode, as described in later chapters.
 		</listitem>
 	</varlistentry>
 	<varlistentry>
-		<term>Intel P6 processor, Pentium 4 / Xeon, AMD Athlon/Duron, AMD Hammer, or
-		Intel Itanium 2.</term>
+		<term>Supported architecture</term>
 		<listitem>
 			For Intel IA32, a CPU with either a P6 generation or Pentium 4 core is
 			required. In marketing terms this translates to anything
@@ -74,21 +73,25 @@ OProfile operates in timer/RTC mode, as described in later chapters.
 			a Pentium 4 / Xeon, including all Celerons.  The AMD
 			Athlon, Duron, and Hammer CPUs are also supported.  Other IA32
 			CPU types only support the RTC mode of OProfile; please
-			see later in this manual for details.  The Itanium 2
-			support uses the performance monitor unit in the processor.
+			see later in this manual for details.  Hyper-threaded Pentium IVs
+			are not supported in 2.4. For 2.4 kernels, the Intel
+			IA-64 CPUs are also supported. For 2.5 kernels, there is additionally
+			support for Alpha processors, and sparc64, ppc64, and PA-RISC in
+			timer mode.
 		</listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Uniprocessor or SMP</term>
 		<listitem>
-			SMP machines are also supported in both Intel and AMD variants.
+			SMP machines are fully supported.
 		</listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Required libraries</term>
 		<listitem>
 			These libraries are required : <filename>popt</filename>, <filename>bfd</filename>,
-			<filename>liberty</filename> (debian users: libiberty is provided in binutils-dev package), <filename>dl</filename>
+			<filename>liberty</filename> (debian users: libiberty is provided in binutils-dev package), <filename>dl</filename>,
+			plus the standard C++ libraries.
 		</listitem>
 	</varlistentry>
 	<varlistentry>
@@ -101,7 +104,7 @@ OProfile operates in timer/RTC mode, as described in later chapters.
 	<varlistentry>
 		<term>OProfile GUI</term>
 		<listitem>
-			The use of the GUI to start the profiler requires the <filename>Qt 2</filename> library. Qt 3 should
+			The use of the GUI to start the profiler requires the <filename>Qt 2</filename> library. <filename>Qt 3</filename> should
 			also work.
 		</listitem>
 	</varlistentry>

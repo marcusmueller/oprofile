@@ -24,4 +24,20 @@ install-data-local:
 		$(INSTALL_DATA) $(top_srcdir)/events/$$i $(DESTDIR)$(pkgdatadir)/$$dest ; \
 	done
 
+uninstall-local:
+	for i in ${event_files} ; do \
+		dest=`echo $$i | sed 's+\.+/+g'` ; \
+		dir=`echo $$dest | cut -d/ -f 1-2` ; \
+		archdir=`echo $$dest | cut -d/ -f 1` ; \
+		if test -f $(DESTDIR)$(pkgdatadir)/$$dest ; then \
+			rm $(DESTDIR)$(pkgdatadir)/$$dest ; \
+		fi ; \
+		if test -d $(DESTDIR)$(pkgdatadir)/$$dir ; then \
+			rmdir --ignore-fail-on-non-empty $(DESTDIR)$(pkgdatadir)/$$dir ; \
+		fi ; \
+		if test -d $(DESTDIR)$(pkgdatadir)/$$archdir ; then \
+			rmdir --ignore-fail-on-non-empty $(DESTDIR)$(pkgdatadir)/$$archdir ; \
+		fi \
+	done
+
 EXTRA_DIST=$(event_files)
