@@ -614,6 +614,7 @@ do_options() {
 					CTR_UNIT_MASK[`extract_int $arg`]=0
 					CTR_EVENT_VAL[`extract_int $arg`]=
 					# one_enabled is fixed up below
+					DO_SETUP=yes
 				else
 					CTR_EVENT[`extract_int $arg`]=$val
 					if (($? != 0)); then exit 1; fi
