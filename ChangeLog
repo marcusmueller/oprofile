@@ -1,3 +1,8 @@
+2003-06-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libregex/op_regex.cpp:
+	* libpp/profile.cpp: compile fix, tree was broken by my previous patch
+
 2003-06-11  Jason Yeh  <levon@movementarian.org>
 
 	* events/i386.athlon.events: add CPU_CLK_UNHALTED

@@ -18,7 +18,7 @@
 
 #include <cerrno>
 
-#include "op_excepton.h"
+#include "op_exception.h"
 #include "op_header.h"
 #include "op_config.h"
 #include "op_sample_file.h"

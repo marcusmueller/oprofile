@@ -257,8 +257,8 @@ void setup_regex(regular_expression_replace & regex,
 {
 	ifstream in(filename.c_str());
 	if (!in) {
-		throw op_fatal_error("Can't open file " + filename +
-				     " for reading", errno);
+		throw op_runtime_error("Can't open file " + filename +
+				" for reading", errno);
 	}
 
 	regular_expression_replace var_name_rule;
