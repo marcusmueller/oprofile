@@ -35,6 +35,7 @@
 #define pte_page_address(x) page_address(pte_page(x))
 #define GET_VM_OFFSET(v) ((v)->vm_pgoff << PAGE_SHIFT)
 #define HAVE_MMAP2
+#define HAVE_FILE_OPERATIONS_OWNER
 #define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
 
 /* ->owner field in 2.4 */
