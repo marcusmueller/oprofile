@@ -1,5 +1,9 @@
 2003-10-25  John Levon  <levon@movementarian.org>
 
+	* doc/internals.xml: more docs
+
+2003-10-25  John Levon  <levon@movementarian.org>
+
 	* daemon/opd_perfmon.c: cleanups
 
 2003-10-24  John Levon  <levon@movementarian.org>

@@ -406,18 +406,99 @@ reset when the CPU buffer is read.
 <sect1 id="synchronising-buffers">
 <title>Synchronising the CPU buffers to the event buffer</title>
 <!-- FIXME: update when percpu patch goes in -->
+<para>
+At some point, we have to process the data in each CPU buffer and enter
+it into the main (event) buffer. The file
+<filename>buffer_sync.c</filename> contains the relevant code. We
+periodically (currently every <constant>HZ</constant>/4 jiffies) start
+the synchronisation process. In addition, we process the buffers on
+certain events, such as an application calling
+<function>munmap()</function>. This is particularly important for
+<function>exit()</function> - because the CPU buffers contain pointers
+to the task structure, if we don't process all the buffers before the
+task is actually destroyed and the task structure freed, then we could
+end up trying to dereference a bogus pointer in one of the CPU buffers.
+</para>
+<para>
+We also add a notification when a kernel module is loaded; this is so
+that user-space can re-read <filename>/proc/modules</filename> to
+determine the load addresses of kernel module text sections. Without
+this notification, samples for a newly-loaded module could get lost or
+be attributed to the wrong module.
+</para>
+<para>
+The synchronisation itself works in the following manner: first, mutual
+exclusion on the event buffer is taken. Remember, we do not need to do
+that for each CPU buffer, as we only read from the tail iterator (whilst
+interrupts might be arriving at the same buffer, but they will write to
+the position of the head iterator, leaving previously written entries
+intact). Then, we process each CPU buffer in turn. A CPU switch
+notification is added to the buffer first (for
+<option>--separate=cpu</option> support). Then the processing of the
+actual data starts.
+</para>
+<para>
+As mentioned, the CPU buffer consists of task switch entries and the
+actual samples. When the routine <function>sync_buffer()</function> sees
+a task switch, the process ID and process group ID are recorded into the
+event buffer, along with a dcookie (see below) identifying the
+application binary (e.g. <filename>/bin/bash</filename>). The
+<varname>mmap_sem</varname> for the task is then taken, to allow safe
+iteration across the tasks' list of mapped areas. Each sample is then
+processed as described in the next section.
+</para>
+<para>
+After a buffer has been read, the tail iterator is updated to reflect
+how much of the buffer was processed. Note that when we determined how
+much data there was to read in the CPU buffer, we also called
+<function>cpu_buffer_reset()</function> to reset
+<varname>last_task</varname> and <varname>last_is_kernel</varname>, as
+we've already mentioned. During the processing, more samples may have
+been arriving in the CPU buffer; this is OK because we are careful to
+only update the tail iterator to how much we actually read - on the next
+buffer synchronisation, we will start again from that point.
+</para>
+</sect1>
+
+<sect1 id="dentry-cookies">
+<title>Identifying binary images</title>
+<para>
+In order to produce useful profiles, we need to be able to associate a
+particular PC value sample with an actual ELF binary on the disk. This
+leaves us with the problem of how to export this information to
+user-space. We create unique IDs that identify a particular directory
+entry (dentry), and write those IDs into the event buffer. Later on,
+the user-space daemon can call the <function>lookup_dcookie</function>
+system call, which looks up the ID and fills in the full path of
+the binary image in the buffer user-space passes in. These IDs are
+maintained by the code in <filename>fs/dcookies.c</filename>; the
+cache lasts for as long as the daemon has the event buffer open.
+</para>
 </sect1>
 
 <sect1 id="finding-dentry">
 <title>Finding a sample's binary image and offset</title>
-</sect1>
-
-<sect1 id="managing-buffer">
-<title>Managing the profile buffer</title>
-</sect1>
-
-<sect1 id="managing-maps">
-<title>Managing tasks and their mappings</title>
+<para>
+We haven't yet described how we process the absolute PC value into
+something usable by the user-space daemon. When we find a sample entered
+into the CPU buffer, we traverse the list of mappings for the task
+(remember, we will have seen a task switch earlier, so we know which
+task's lists to look at). When a mapping is found that contains the PC
+value, we look up the mapped file's dentry in the dcookie cache. This
+gives the dcookie ID that will uniquely identify the mapped file. Then
+we alter the absolute value such that it is an offset from the start of
+the mapping (the mapping need not start at the start of the actual file,
+so we have to consider the offset value of the mapping). These two
+values are then entered into the event buffer. In this manner, we have
+converted a PC value, which has transitory meaning only, into a static
+dcookie/offset tuple for later processing by the daemon.
+</para>
+<para>
+We also attempt to avoid the relatively expensive lookup of the dentry
+cookie value by storing the cookie value directly into the dentry
+itself; then we can simply derive the cookie value immediately when we
+find the correct mapping.
+</para>
 </sect1>
 
 </chapter>
