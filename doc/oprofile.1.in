@@ -66,10 +66,6 @@ show version
 Show available events for the hardware counters
 .br
 .TP
-.BI "--map-file " filename
-specify System.map for running kernel
-.br
-.TP
 .BI "--vmlinux " filename
 specify vmlinux kernel image
 .br
@@ -303,13 +299,13 @@ which counter to use for selecting filenames purposes
 .SH USAGE
 Start the profiler with the provided
 .B op_start
-shell script. You are required to specify vmlinux and System.map, as well as specify a counter event and value, e.g. :
+shell script. You are required to specify vmlinux, as well as specify a counter event and value, e.g. :
 .PP
-.I op_start --vmlinux=/sys/vmlinux --map-file=/sys/System.map --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000
+.I op_start --vmlinux=/sys/vmlinux --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000
 .PP
 If you are using a machine that doesn't support the performance counters, you can use the RTC driver instead, e.g. :
 .PP
-.I op_start   --vmlinux=/sys/vmlinux --map-file=/sys/System.map --rtc-value=128
+.I op_start   --vmlinux=/sys/vmlinux --rtc-value=128
 .PP
 Profiles will be collected every ten minutes. You can force a collection at any time :
 .PP

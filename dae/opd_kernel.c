@@ -39,7 +39,7 @@ extern unsigned long opd_stats[];
 extern struct opd_image * kernel_image;
 
 /* kernel and module support */
-u32 kernel_start;
+static u32 kernel_start;
 static u32 kernel_end;
 static struct opd_module opd_modules[OPD_MAX_MODULES];
 static unsigned int nr_modules=0;
@@ -53,55 +53,19 @@ void opd_init_kernel_image(void)
 	kernel_image = opd_create_image(vmlinux);
 }
 
-
 /**
- * opd_read_system_map - parse System.map file
- * @param filename  file name of System.map
- *
- * Parse the kernel's System.map file. If the filename is
- * passed as "", a warning is produced and the function returns.
- *
- * If the file is parsed correctly, the global variables
- * kernel_start and kernel_end are set to the correct values for the
- * text section of the mainline kernel else kernel_start is set to
- * KERNEL_VMA_OFFSET and kernel_end to infinite
- *
- * Note that kernel modules will have EIP values above the value of
- * kernel_end.
+ * opd_parse_kernel_range - parse the kernel range values
  */
-void opd_read_system_map(char const * filename)
+void opd_parse_kernel_range(char const * arg)
 {
-	FILE * fp;
-	char * line;
-	char * cp;
+	sscanf(arg, "%x,%x", &kernel_start, &kernel_end);
 
-	fp = op_open_file(filename, "r");
-
-	while (1) {
-		line = op_get_line(fp);
-		if (!strcmp(line, "")) {
-			free(line);
-			break;
-		} else {
-			if (strlen(line) < 11) {
-				free(line);
-				continue;
-			}
-			cp = line+11;
-			if (!strcmp("_text", cp))
-				sscanf(line, "%x", &kernel_start);
-			else if (!strcmp("_end", cp))
-				sscanf(line, "%x", &kernel_end);
-			free(line);
-		}
+	if (kernel_start == 0x0 || kernel_end == 0x0) {
+		fprintf(stderr,
+			"Warning: mis-parsed kernel range: %x-%x\n",
+			kernel_start, kernel_end);
+		fprintf(stderr, "kernel profiles will be wrong.\n");
 	}
-
-	if (!kernel_start)
-		kernel_start = KERNEL_VMA_OFFSET;
-	if (!kernel_end)
-		kernel_end = (u32)-1;
-
-	op_close_file(fp);
 }
 
 /**
@@ -411,9 +375,6 @@ static void opd_handle_module_sample(u32 eip, u16 count)
  *
  * Handle a sample in kernel address space or in a module. The sample is
  * output to the relevant image file.
- *
- * This function requires the global variable kernel_end to be known
- * through the System.map to handle module samples.
  */
 void opd_handle_kernel_sample(u32 eip, u16 count)
 {
@@ -426,3 +387,16 @@ void opd_handle_kernel_sample(u32 eip, u16 count)
 	/* in a module */
 	opd_handle_module_sample(eip, count);
 }
+ 
+/**
+ * opd_eip_is_kernel - is the sample from kernel/module space
+ * @param eip  EIP value
+ *
+ * Returns %1 if @eip is in the address space starting at
+ * kernel_start, %0 otherwise.
+ */
+int opd_eip_is_kernel(u32 eip)
+{
+	return (eip >= kernel_start);
+}
+

@@ -308,19 +308,6 @@ void opd_put_image_sample(struct opd_image * image, u32 offset, u16 count)
 
 
 /**
- * opd_eip_is_kernel - is the sample from kernel/module space
- * @param eip  EIP value
- *
- * Returns %1 if @eip is in the address space starting at
- * kernel_start, %0 otherwise.
- */
-inline static int opd_eip_is_kernel(u32 eip)
-{
-	extern u32 kernel_start;
-	return (eip >= kernel_start);
-}
-
-/**
  * opd_put_sample - process a sample
  * @param sample  sample to process
  *

@@ -58,7 +58,7 @@ char * vmlinux;
 int kernel_only;
 unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 
-
+static char * kernel_range;
 static int showvers;
 static u32 ctr_enabled[OP_MAX_COUNTERS];
 /* Unfortunately popt does not have, on many versions, the POPT_ARG_DOUBLE type
@@ -66,7 +66,6 @@ static u32 ctr_enabled[OP_MAX_COUNTERS];
 static char const * cpu_speed_str;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
-static char * systemmapfilename;
 static pid_t mypid;
 static pid_t pid_filter;
 static pid_t pgrp_filter;
@@ -80,7 +79,7 @@ static void opd_open_logfile(void);
 static struct poptOption options[] = {
 	{ "pid-filter", 0, POPT_ARG_INT, &pid_filter, 0, "only profile the given process ID", "pid" },
 	{ "pgrp-filter", 0, POPT_ARG_INT, &pgrp_filter, 0, "only profile the given process group", "pgrp" },
-	{ "map-file", 'f', POPT_ARG_STRING, &systemmapfilename, 0, "System.map for running kernel file", "file", },
+	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "cpu-speed", 0, POPT_ARG_STRING, &cpu_speed_str, 0, "cpu speed (MHz)", "cpu_mhz", },
 	{ "separate-samples", 0, POPT_ARG_INT, &separate_samples, 0, "separate samples for each distinct application", "[0|1]", },
@@ -115,8 +114,7 @@ static void opd_open_logfile(void)
  * op_open_files - open necessary files
  *
  * Open the device files and the log file,
- * and mmap() the hash map. Also read the System.map
- * file.
+ * and mmap() the hash map.
  */
 static void op_open_files(void)
 {
@@ -162,7 +160,6 @@ static void op_open_files(void)
 
 	opd_open_logfile();
 
-	opd_read_system_map(systemmapfilename);
 	printf("oprofiled started %s", op_get_time());
 	fflush(stdout);
 }
@@ -380,8 +377,8 @@ static void opd_options(int argc, char const * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (!systemmapfilename || !strcmp("", systemmapfilename)) {
-		fprintf(stderr, "oprofiled: no System.map specified.\n");
+	if (!kernel_range || !strcmp("", kernel_range)) {
+		fprintf(stderr, "oprofiled: no kernel VMA range specified.\n");
 		poptPrintHelp(optcon, stderr, 0);
 		exit(EXIT_FAILURE);
 	}
@@ -399,6 +396,7 @@ static void opd_options(int argc, char const * argv[])
 	if (cpu_speed_str && strlen(cpu_speed_str))
 		sscanf(cpu_speed_str, "%lf", &cpu_speed);
 
+	opd_parse_kernel_range(kernel_range);
 	poptFreeContext(optcon);
 }
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.3 2002/05/17 02:40:15 movement Exp $
+# $Id: op_start,v 1.4 2002/06/18 03:24:46 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -95,7 +95,6 @@ do_help() {
 
 	Daemon options
 	  --separate-samples           separate samples for each distinct application
-	  --map-file=file              System.map for running kernel file
 	  --vmlinux=file               vmlinux kernel image
 	  --verbose                    be verbose in the daemon log
 
@@ -129,7 +128,6 @@ do_init() {
 	NOTE_SIZE=0
 	KERNEL_ONLY=0
 	IGNORE_MYSELF=0
-	MAP_FILE=
 	VMLINUX=
 	PID_FILTER=0
 	PGRP_FILTER=0
@@ -178,6 +176,19 @@ do_init() {
 } 
 
 
+# get start and end points of the kernel
+get_kernel_range() {
+	tmp1=`nm $VMLINUX | grep ' A _text'`
+	tmp2=`nm $VMLINUX | grep ' A _end'`
+	if test -z "$tmp1" -o -z "$tmp2"; then
+		echo "Couldn't determine kernel start/end" >&2
+		echo "Perhaps $VMLINUX is not a proper vmlinux file ?" >&2
+		echo "found start as \"$tmp1\", end as \"$tmp2\"" >&2
+		exit 1
+	fi
+	KERNEL_RANGE="`echo $tmp1 | cut -d" " -f 1`,`echo $tmp2 | cut -d" " -f 1`"
+}
+ 
 # get and check specified options
 do_options() {
 	while [ "$#" -ne 0 ]
@@ -228,9 +239,6 @@ do_options() {
 				;;
 			--separate-samples)
 				SEPARATE_SAMPLES=1
-				;;
-			--map-file)
-				MAP_FILE=$val
 				;;
 			--note-table-size)
 				NOTE_SIZE=$val
@@ -300,7 +308,20 @@ do_options() {
 		fi
 	fi
 
+	if [ -z "$VMLINUX" ]; then
+		echo "No vmlinux file specified. You must specify the correct vmlinux file, e.g." >&2
+		echo "op_start --vmlinux=/path/to/vmlinux" >&2
+		echo "Enter op_start --help for full options" >&2
+		exit 1
+	fi
 
+	if [ ! -f "$VMLINUX" ]; then
+		echo "The specified vmlinux file \"$VMLINUX\" doesn't exist." >&2
+		exit 1
+	fi
+
+	get_kernel_range
+ 
 	vecho "Parameters used:"
 	vecho "CPUTYPE $CPUTYPE"
 	if [ $HASH_SIZE != 0 ]; then
@@ -331,34 +352,11 @@ do_options() {
 	else
 		vecho "RTC_VALUE $RTC_VALUE"
 	fi
+ 
 	vecho "IGNORE_MYSELF $IGNORE_MYSELF"
 	vecho "SEPARATE_SAMPLES $SEPARATE_SAMPLES"
-	vecho "MAP_FILE $MAP_FILE"
 	vecho "VMLINUX $VMLINUX"
-
-	if [ -z "$MAP_FILE" ]; then
-		echo "No map file specified. You must specify the correct System.map and vmlinux files, e.g." >&2
-		echo "op_start --map-file=/path/to/System.map --vmlinux=/path/to/vmlinux" >&2
-		echo "Enter op_start --help for full options" >&2
-		exit 1
-	fi
-
-	if [ -z "$VMLINUX" ]; then
-		echo "No vmlinux file specified. You must specify the correct System.map and vmlinux files, e.g." >&2
-		echo "op_start --map-file=/path/to/System.map --vmlinux=/path/to/vmlinux" >&2
-		echo "Enter op_start --help for full options" >&2
-		exit 1
-	fi
-
-	if [ ! -f "$MAP_FILE" ]; then
-		echo "The specified map file \"$MAP_FILE\" doesn't exist." >&2
-		exit 1
-	fi
-
-	if [ ! -f "$VMLINUX" ]; then
-		echo "The specified vmlinux file \"$VMLINUX\" doesn't exist." >&2
-		exit 1
-	fi
+	vecho "KERNEL_RANGE $KERNEL_RANGE"
 }
 
 # stop any existing daemon
@@ -482,7 +480,7 @@ do_start() {
 		fi
 	fi
  
-	OPD_ARGS="--vmlinux=$VMLINUX --map-file=$MAP_FILE \
+	OPD_ARGS="--vmlinux=$VMLINUX --kernel-range=$KERNEL_RANGE \
 		--separate-samples=$SEPARATE_SAMPLES \
 		--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
 

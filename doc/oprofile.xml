@@ -280,11 +280,11 @@ Before getting into detail about usage, it's probably a good idea to have a quic
 session (this example is for Intel processors not AMD, but the process is the same).
 </para>
 <para>
-First we need to start the profiler running in the background. We need to pass the correct <filename>System.map</filename>
-and <filename>vmlinux</filename> files to the daemon, and we need to specify what event to count and the counter value.
+First we need to start the profiler running in the background. We need to pass the correct
+<filename>vmlinux</filename> file to the daemon (to allow kernel profiling), and we need to specify what event to count and the counter value.
 Here I've started with :
 </para>
-<para><command>op_start --map-file=/boot/2.4.0ac12/System.map --vmlinux=/boot/2.4.0ac12/vmlinux  --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000</command></para>
+<para><command>op_start --vmlinux=/boot/2.4.0ac12/vmlinux  --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000</command></para>
 <para>
 Here we've enabled counter 0 to count "CPU_CLK_UNHALTED" (number of cycles CPU is not halted) events with a count value of 600,000.
 This event is useful as profiles resulting generally correspond to time-spent profiles for functions etc. 
@@ -409,17 +409,10 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--map-file</option> <filename>filename</filename></term>
-		<listitem><para>
-		Specify the <filename>System.map</filename> file from the current kernel's compile. This must match
-		the running kernel if you expect meaningful profiles of the kernel.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
 		<term><option>--vmlinux</option> <filename>filename</filename></term>
 		<listitem><para>
 		Specify the <filename>vmlinux</filename> file from the current kernel's compile. This must match
-		the running kernel if you expect meaningful profiles of the kernel. Note that this is separate file
+		the running kernel if you expect meaningful profiles of the kernel. Note that this is a separate file
 		from your kernel image (<filename>vmlinuz</filename>); you must specify the <filename>vmlinux</filename>
 		file created during the kernel build in order to profile the kernel.
 		</para></listitem>
@@ -610,7 +603,7 @@ two.
 Setting the value from the GUI should be straightforward. On the command line, you need to specify the
 <option>--rtc-value</option> option to <command>op_start</command>, e.g. :
 </para>
-<para><command>op_start --map-file=/boot/2.4.0ac12/System.map --vmlinux=/boot/2.4.0ac12/vmlinux --rtc-value=256</command></para>
+<para><command>op_start --vmlinux=/boot/2.4.0ac12/vmlinux --rtc-value=256</command></para>
 <para>
 Note the sysctl tree described in the next section is different when the RTC is being used.  In particular,
 the file <filename>/proc/sys/dev/oprofile/rtc_value</filename> is used by the tools to set the desired RTC 
@@ -1453,7 +1446,7 @@ numbers of processes, leading to far better performance.
 <para>
 Thanks to (in no particular order) : Arjan van de Ven, Rik van Riel, Juan Quintela, Philippe Elie,
 Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne, Bob Montgomery, Ray Bryant, H.J. Lu,
-Jeff Esper, Will Cohen, Cliff Woolley,
+Jeff Esper, Will Cohen, Cliff Woolley, Alex Tsariounov, Al Stone,
 Richard Reich (rreich@rdrtech.com), Dave Jones, Charles Filtness; and finally Pulp, for "Intro".
 </para>
 </chapter>

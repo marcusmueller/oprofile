@@ -15,8 +15,9 @@
 #include "op_types.h"
 
 void opd_init_kernel_image(void);
-void opd_read_system_map(char const * filename);
+void opd_parse_kernel_range(char const * arg);
 void opd_clear_module_info(void);
 void opd_handle_kernel_sample(u32 eip, u16 count);
+int opd_eip_is_kernel(u32 eip);
 
 #endif /* OPD_KERNEL_H */

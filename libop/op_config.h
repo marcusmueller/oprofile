@@ -30,12 +30,6 @@
 #define NR_CPUS 32
 #endif
 
-/* See objdump --section-headers /usr/src/linux/vmlinux
- * used to catch out kernel samples (and also compute
- * text offset if no System.map or module info is available
- */
-#define KERNEL_VMA_OFFSET           0xc0100000
-
 /** maximum number of profilable kernel modules */
 #define OPD_MAX_MODULES 64
 

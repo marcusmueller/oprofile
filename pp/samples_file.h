@@ -86,8 +86,8 @@ struct samples_file_t /*:*/ noncopyable
 	 * For the kernel and kernel modules, this value is non-zero and
 	 * equal to the offset of the .text section. This is done because
 	 * we use the information provided in /proc/ksyms, which only gives
-	 * the mapped position of .text, and the symbol kernel_start from
-	 * System.map. This value is used to fix up the sample offsets
+	 * the mapped position of .text, and the symbol _text from
+	 * vmlinux. This value is used to fix up the sample offsets
 	 * for kernel code as a result of this difference (in user-space
 	 * samples, the sample offset is from the start of the mapped
 	 * file, as seen in /proc/pid/maps).

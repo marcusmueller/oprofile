@@ -1,6 +1,7 @@
 0.3 Release
 -----------
 
+ o fix GUI for --kernel-range
  o verify 2.2/modversions etc. module build
  o can we get pre-emption up and running ??
  

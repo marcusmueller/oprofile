@@ -1,5 +1,19 @@
 2002-06-18  John Levon  <moz@compsoc.man.ac.uk>
 
+	* utils/op_start:
+	* pp/samples_file.h:
+	* libop/op_config.h:
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml:
+	* dae/oprofiled.c:
+	* dae/opd_kernel.h:
+	* dae/opd_kernel.c: don't parse System.map any more,
+	  now we work based off vmlinux alone
+	 
+	* dae/opd_proc.c: move eip_is_kernel() into opd_kernel.c
+ 
+2002-06-18  John Levon  <moz@compsoc.man.ac.uk>
+
 	* README:
 	* doc/oprofile.xml: update credits
  
