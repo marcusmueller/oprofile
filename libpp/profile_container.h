@@ -52,7 +52,7 @@ public:
 	~profile_container();
  
 	/**
-	 * add() -  record symbols/samples in the underlying container
+	 * add() - record symbols/samples in the underlying container
 	 *
 	 * @param profile the samples files container
 	 * @param abfd the associated bfd object
@@ -131,8 +131,7 @@ private:
 	/// helper for add()
 	void add_samples(op_bfd const & abfd, symbol_index_t sym_index,
 	                 profile_t::iterator_pair const &,
-			 bfd_vma base_vma, symbol_entry const * symbol,
-			 size_t count_group);
+	                 symbol_entry const * symbol, size_t count_group);
 
 	/**
 	 * create an unique artificial symbol for an offset range. The range

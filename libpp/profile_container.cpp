@@ -117,7 +117,7 @@ void profile_container::add(profile_t const & profile,
 		symbol_entry const * symbol = symbols->insert(symb_entry);
 
 		if (need_details) {
-			add_samples(abfd, i, p_it, base_vma, symbol, count_group);
+			add_samples(abfd, i, p_it, symbol, count_group);
 		}
 	}
 }
@@ -126,9 +126,10 @@ void profile_container::add(profile_t const & profile,
 void
 profile_container::add_samples(op_bfd const & abfd, symbol_index_t sym_index,
                                profile_t::iterator_pair const & p_it,
-			       bfd_vma base_vma, symbol_entry const * symbol,
-			       size_t count_group)
+                               symbol_entry const * symbol, size_t count_group)
 {
+	bfd_vma base_vma = abfd.syms[sym_index].vma();
+
 	profile_t::const_iterator it;
 	for (it = p_it.first; it != p_it.second ; ++it) {
 		sample_entry sample;

@@ -1,6 +1,13 @@
 2003-08-13  John Levon  <levon@movementarian.org>
 
 	* libpp/profile_container.cpp:
+	* libpp/profile_container.h: remove "base_vma" parameter
+	to add_samples(), we can just re-grab it straight from
+	the abfd
+
+2003-08-13  John Levon  <levon@movementarian.org>
+
+	* libpp/profile_container.cpp:
 	* libpp/profile_container.h: remove unused "zero samples"
 	optimization hint: it's always false
 
