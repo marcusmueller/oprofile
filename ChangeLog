@@ -1,3 +1,22 @@
+2003-09-26  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libdb/db_debug.c: remove useless display interface
+	* libdb/db_db_travel.c: remove callback interface
+	* libdb/odb_hash.h: remove display/callback interface
+	* libdb/db_test.cpp: move to tests subdir
+	* libdb/Makefile.am: update according
+	* libdb/tests: new dir
+	* libdb/tests/.cvsignore:
+	* libdb/tests/Makefile.am: new files
+	* libdb/tests/db_test.cpp: shorter tests
+
+	* libregex/mangled-name.txt:
+	* libregex/regex_testc.cpp: move to ...
+	* libregex/tests: new directory
+	* libdb/Makefile.am: update according
+	* libregex/tests/.cvsignore:
+	* libregex/tests/Makefile.am: new files
+
 2003-09-26  John Levon  <levon@movementarian.org>
 
 	* libabi/abi_test.cpp:

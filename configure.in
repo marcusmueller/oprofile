@@ -178,8 +178,10 @@ AC_OUTPUT(Makefile \
 	libop/Makefile \
 	libopt++/Makefile \
 	libdb/Makefile \
+	libdb/tests/Makefile \
 	libabi/Makefile \
 	libregex/Makefile \
+	libregex/tests/Makefile \
 	libregex/stl.pat \
 	dae/Makefile \
 	daemon/Makefile \

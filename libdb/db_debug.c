@@ -14,28 +14,6 @@
 
 #include "odb_hash.h"
 
-static void display_callback(odb_key_t key, odb_value_t value, void * data)
-{
-	printf("%x %d\n", key, value);
-	data = data;
-}
-
-void odb_display_hash(samples_odb_t const * hash)
-{
-	if (!odb_check_hash(hash)) {
-		samples_odb_travel(hash, 0, ~0, display_callback, 0);
-	}
-}
-
-void odb_raw_display_hash(samples_odb_t const * hash)
-{
-	odb_node_nr_t pos;
-	for (pos = 1 ; pos < hash->descr->current_size ; ++pos) {
-		odb_node_t const * node = &hash->node_base[pos];
-		printf("%x %d %d\n", node->key, node->value, node->next);
-	}
-}
-
 static int check_circular_list(samples_odb_t const * hash)
 {
 	odb_node_nr_t pos;
@@ -149,13 +127,6 @@ int odb_check_hash(samples_odb_t const * hash)
 
 	if (ret == 0) {
 		ret = check_redundant_key(hash, max);
-	}
-
-	if (ret == 0) {
-		odb_hash_stat_t * stats;
-		stats = odb_hash_stat(hash);
-		odb_hash_display_stat(stats);
-		odb_hash_free_stat(stats);
 	}
 
 	return ret;

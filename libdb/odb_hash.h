@@ -128,36 +128,24 @@ odb_node_nr_t odb_hash_add_node(samples_odb_t * hash);
 /** "immpossible" node number to indicate an error from odb_hash_add_node() */
 #define ODB_NODE_NR_INVALID ((odb_node_nr_t)-1)
 
-/* odb_debug.c */
+/* db_debug.c */
 /** check than the hash is well build */
 int odb_check_hash(const samples_odb_t * hash);
-/** display the item in hash table */
-void odb_display_hash(samples_odb_t const * hash);
-/** same as above, do not travel through the hash table but display raw node */
-void odb_raw_display_hash(samples_odb_t const * hash);
 
-/* odb_stat.c */
+/* db_stat.c */
 typedef struct odb_hash_stat_t odb_hash_stat_t;
 odb_hash_stat_t * odb_hash_stat(samples_odb_t const * hash);
 void odb_hash_display_stat(odb_hash_stat_t const * stats);
 void odb_hash_free_stat(odb_hash_stat_t * stats);
 
-/* odb_insert.c */
+/* db_insert.c */
 /** insert info at key, if key already exist the info is added to the
  * existing samples
  * returns EXIT_SUCCESS on success, EXIT_FAILURE on failure
  */
 int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value);
 
-/* odb_travel.c */
-/** the call back type to pass to travel() */
-typedef void (*samples_odb_travel_callback)(odb_key_t key, odb_value_t value, void * data);
-/** iterate through key in range [first, last[ passing it to callback,
- * data is optional user data to pass to the callback */
-/* caller would use the more efficient odb_get_iterator() interface. This
- * interface is for debug purpose and is likely to be removed in future */
-void samples_odb_travel(samples_odb_t const * hash, odb_key_t first, odb_key_t last,
-	       samples_odb_travel_callback callback, void * data);
+/* db_travel.c */
 /**
  * return a base pointer to the node array and number of node in this array
  * caller then will iterate through:

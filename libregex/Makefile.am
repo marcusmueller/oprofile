@@ -1,3 +1,5 @@
+SUBDIRS = . tests
+
 AM_CPPFLAGS = -I ${top_srcdir}/libutil++
 AM_CXXFLAGS = @OP_CXXFLAGS@
 
@@ -9,14 +11,5 @@ libop_regex_a_SOURCES = \
 	demangle_symbol.h \
 	demangle_symbol.cpp
 
-noinst_PROGRAMS = regex_test
-
-regex_test_SOURCES = regex_test.cpp
-regex_test_LDADD = \
-	libop_regex.a \
-	../libutil++/libutil++.a
-
 datadir = $(prefix)/share/oprofile
 nodist_data_DATA = stl.pat
-
-EXTRA_DIST = mangled-name.txt

@@ -1,9 +1,12 @@
 /**
  * @file regex_test.cpp
+ *
  * A simple test for libregex. Run it through:
- * $ regex_test < mangled-name.txt
- * or by specifying your own data file test. See mangled-name.txt for
- * for the input file format
+ * $ regex_test
+ * or
+ * $ regex_test filename(s)
+ * when no argument is provided mangled-name.txt is used,
+ * see it for the input file format
  *
  * @remark Copyright 2003 OProfile authors
  * @remark Read the file COPYING
@@ -16,18 +19,21 @@
 #include "op_regex.h"
 
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
-static void do_test()
+static int nr_error = 0;
+
+static void do_test(istream& fin)
 {
 	regular_expression_replace rep;
 
-	setup_regex(rep, "stl.pat");
+	setup_regex(rep, "../stl.pat");
 
 	string test, expect, last;
 	bool first = true;
-	while (getline(cin, last)) {
+	while (getline(fin, last)) {
 		last = trim(last);
 		if (last.length() == 0 || last[0] == '#')
 			continue;
@@ -45,6 +51,7 @@ static void do_test()
 				     << '"' << test << '"' << endl
 				     << '"' << expect << '"' << endl
 				     << '"' << str << '"' << endl;
+				++nr_error;
 			}
 		}
 	}
@@ -54,10 +61,18 @@ static void do_test()
 	}
 }
 
-int main()
+int main(int argc, char * argv[])
 {
 	try {
-		do_test();
+		if (argc > 1) {
+			for (int i = 1; i < argc; ++i) {
+				ifstream fin(argv[i]);
+				do_test(fin);
+			}
+		} else {
+			ifstream fin("mangled-name.txt");
+			do_test(fin);
+		}
 	}
 	catch (bad_regex const & e) {
 		cerr << "bad_regex " << e.what() << endl;
@@ -65,5 +80,7 @@ int main()
 	catch (exception const & e) {
 		cerr << "exception: " << e.what() << endl;
 	}
+
+	return nr_error ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
