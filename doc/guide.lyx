@@ -1,0 +1,735 @@
+#LyX 1.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 2.17
+\textclass book
+\language english
+\inputencoding latin1
+\fontscheme default
+\graphics default
+\paperfontsize default
+\spacing single 
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\paperorientation portrait
+\secnumdepth 2
+\tocdepth 2
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 2
+\paperpagestyle default
+
+\layout Title
+
+
+\family typewriter 
+oprofile
+\family default 
+: Continuous Statistical Profiler
+\layout Author
+
+John Levon
+\layout Date
+
+
+\latex latex 
+{
+\backslash 
+today}
+\layout Chapter
+
+Overview
+\layout Section
+
+Introduction
+\layout Standard
+
+
+\family typewriter 
+oprofile
+\family default 
+ is a statistical profiler that is intended for use on production systems,
+ for the profiling of the entire dynamic system, including the kernel, kernel
+ modules, interrupt handlers, shared libraries, and user-space binaries.
+ It makes use of the facilities provided by Intel P6 core processors such
+ as the Pentium Pro to generate statistical execution profiles transparently.
+ The profiler requires no instrumentation of either source of binaries at
+ all, and commonly has a very low overhead.
+ The design is similar to that of DCPI
+\begin_inset LatexCommand \cite{DCPI}
+
+\end_inset 
+
+, with some differences.
+ However the typical developer need not concern themselves with the internal
+ operation of the compiler, only with the output.
+ An interface to the more specialised event monitoring facilities provided
+ by the hardware performance counters is also provided.
+\layout Section
+
+Requirements
+\layout Standard
+
+Currently 
+\family typewriter 
+oprofile
+\family default 
+ requires a Linux 2.4 kernel running on Intel hardware with a P6 core processor.
+ This translates to the Pentium Pro, Pentium II, Pentium III or any of their
+ brethren such as Celerons
+\begin_float footnote 
+\layout Standard
+
+The module will refuse to load if the correct processor type is not found.
+\end_float 
+.
+ Older A.OUT based systems are not supported (it is probably trivial to add
+ this facility if needed).
+ SMP systems are theoretically supported, but have not been tested at all.
+\layout Standard
+
+You must have the following libraries installed : 
+\family typewriter 
+popt
+\family default 
+, 
+\family typewriter 
+bfd
+\family default 
+, 
+\family typewriter 
+liberty
+\family default 
+, 
+\family typewriter 
+dl
+\family default 
+.
+\layout Standard
+
+At least version 2.3.17 of 
+\family typewriter 
+modutils
+\family default 
+ is required (if you upgrade, you might need to play with any 
+\family typewriter 
+path=
+\family default 
+ directives you have in 
+\family typewriter 
+/etc/modules.conf
+\family default 
+).
+\layout Chapter
+
+Build & Install
+\layout Section
+
+Download
+\layout Standard
+
+etc.
+\layout Section
+
+Configuration
+\layout Standard
+
+An 
+\family typewriter 
+autoconf
+\family default 
+ configure script is provided, and normally configuration is simply a matter
+ of running 
+\family typewriter 
+./configure
+\family default 
+.
+ The configure script will attempt to find your kernel source tree which
+ must be configured and built (specifically enabling 
+\family typewriter 
+CONFIG_MODULES
+\family default 
+, obviously).
+ As with the kernel, you must compile using 
+\family typewriter 
+gcc
+\family default 
+.
+ As usual you can get a summary of options with 
+\family typewriter 
+./configure ---help
+\family default 
+.
+ The ones of note are :
+\layout Description
+
+
+\family typewriter 
+---with-linux 
+\family default 
+specify the path to the kernel source tree.
+\layout Description
+
+
+\family typewriter 
+---with-module-dir
+\family default 
+ specify the path to install the module to
+\layout Description
+
+
+\family typewriter 
+---with-extra-libs
+\family default 
+ extra directories to look for the required userspace libraries in
+\layout Description
+
+
+\family typewriter 
+---with-extra-includes
+\family default 
+ extra directories to look for the required userspace headers in
+\layout Description
+
+
+\family typewriter 
+---enable-filter
+\family default 
+ compile in the facility to only profile a particular process or process
+ group
+\layout Standard
+
+Don't enable 
+\family typewriter 
+---enable-filter
+\family default 
+ unless you only want to profile a selected set of processes.
+ This option includes code that can harm performance in the general case.
+\layout Standard
+
+The configure script will check if a small patch has been applied to 
+\newline 
+
+\family typewriter 
+linux/arch/i386/kernel/i386_ksyms.c
+\family default 
+ 
+\family typewriter 
+
+\newline 
+
+\family default 
+to export the 
+\family typewriter 
+do_nmi
+\family default 
+ symbol.
+ If it has been patched then the SMP NMI oopser can still provide useful
+ stack traces if a fatal error happens during a profiling run.
+ This is not useful for stable systems so it is OK for it to be left unpatched.
+ This will probably change if the uniprocessor NMI oopser makes it into
+ the mainline kernel.
+ 
+\layout Standard
+
+If the 
+\family typewriter 
+configure
+\family default 
+ script can locate everything successfully, then the package is ready to
+ build.
+\layout Section
+
+Build
+\layout Standard
+
+Type 
+\family typewriter 
+make
+\family default 
+.
+\layout Section
+
+Install
+\layout Standard
+
+Type 
+\family typewriter 
+make install
+\family default 
+.
+ The module should install itself in the modules directory and run 
+\family typewriter 
+depmod
+\family default 
+, and the user space utilities will be installed in (by default) 
+\family typewriter 
+/usr/local/bin
+\family default 
+.
+ You will need to be root to do this of course (currently the daemon also
+ runs as root, but this is not necessary, and will be fixed).
+\layout Chapter
+
+Usage
+\layout Section
+
+Starting profiling
+\layout Standard
+
+A shell script 
+\family typewriter 
+op_start
+\family default 
+ is provided for the simple startup of a profiling run.
+ It has several different options controlling the configuration of the kernel
+ module and the daemon; a summary can be found by doing 
+\family typewriter 
+op_start ---help
+\family default 
+.
+ Some of the interesting options are :
+\layout Description
+
+
+\family typewriter 
+---list-events 
+\family default 
+Print out a short list of the available events for the event counters.
+ Some events are only available on the PII or PIII processor, and some require
+ a specific counter to be used.
+ The available unit masks are also listed here.
+ Note that you should read the relevant Appendix of the Intel manual
+\begin_inset LatexCommand \cite{IAMan}
+
+\end_inset 
+
+, as there are further descriptions and several important caveats there.
+ For general statistical profiling use, there is no need to consider events
+ other than 
+\family typewriter 
+CPU_CLK_UNHALTED
+\family default 
+ or 
+\family typewriter 
+INST_RETIRED
+\family default 
+.
+\layout Description
+
+
+\family typewriter 
+---buffer-size
+\family default 
+ The size of the eviction buffer in number of samples.
+ Each sample takes up 8 bytes, and the size should be a power of two.
+ The best value depends on available memory, but a typically good value
+ is 131072 (one megabyte of memory).
+\layout Description
+
+
+\family typewriter 
+---hash-table-size 
+\family default 
+The size of the hash table in entries.
+ Each entry contains 4 samples (so is 32 bytes in size).
+ The size must be a power of two.
+ Once again, the best value depends on the machine configuration and the
+ expected workload, but aim as high as possible.
+ An example value would be 65536, giving a hash table size of two megabytes.
+\layout Description
+
+
+\family typewriter 
+---ctr0-event 
+\family default 
+A list of the symbol event names for counter 0 on each CPU.
+ For example on a two CPU box, we might call 
+\family typewriter 
+./op_start --ctr0-event=INST_RETIRED,INST_RETIRED ...
+\layout Description
+
+
+\family typewriter 
+---ctr0-count 
+\family default 
+The number of events between interrupt delivery.
+ For the 
+\begin_inset Quotes eld
+\end_inset 
+
+statistical
+\begin_inset Quotes erd
+\end_inset 
+
+ counters 
+\family typewriter 
+CPU_CLK_UNHALTED
+\family default 
+ and 
+\family typewriter 
+INST_RETIRED
+\family default 
+ this will partly define the granularity of the profiling (i.e.
+ how often the profiling interrupt is generated).
+\layout Description
+
+
+\family typewriter 
+---ctr0-unit-mask 
+\family default 
+The unit mask for the counter
+\layout Description
+
+
+\family typewriter 
+---ctr0-os-usr 
+\family default 
+Whether the counter should count both userspace and kernel execution (0),
+ just kernel (1), or just userspace (2).
+\layout Description
+
+
+\family typewriter 
+---ctr1-event,---ctr1-count,---ctr1-unit-mask,---ctr1-os-usr 
+\family default 
+The same options for the second counter
+\layout Description
+
+
+\family typewriter 
+---use-cpu 
+\family default 
+specify CPU type
+\layout Description
+
+
+\family typewriter 
+---map-file 
+\family default 
+The location of the 
+\family typewriter 
+System.map
+\family default 
+ file for the running kernel
+\layout Description
+
+
+\family typewriter 
+---vmlinux 
+\family default 
+The location of the 
+\family typewriter 
+vmlinux
+\family default 
+ file for the running kernel
+\layout Description
+
+
+\family typewriter 
+---ignore-myself 
+\family default 
+don't collect profile information for the daemon itself
+\layout Description
+
+
+\family typewriter 
+---pid-filter 
+\family default 
+collect profile data for the specified process id only
+\layout Description
+
+
+\family typewriter 
+---pgrp-filter 
+\family default 
+collect profile data for the specified process group only
+\layout Standard
+
+The script will insert the kernel module and start the kernel daemon and
+ profiling will begin.
+ The files used by the daemon are (by default) stored under the 
+\family typewriter 
+/var/opd
+\family default 
+ directory.
+ Of particular interest is the daemon log file 
+\family typewriter 
+/var/opd/oprofiled.log
+\family default 
+, and the directory containing the actual samples, 
+\family typewriter 
+/var/opd/samples
+\family default 
+.
+\layout Section
+
+Stopping profiling
+\layout Standard
+
+The shell script 
+\family typewriter 
+op_stop
+\family default 
+ will stop the daemon, and remove the kernel module.
+\layout Section
+
+Retrieving profile data
+\layout Standard
+
+After profiling, there will be execution profiles for each binary image
+ available in the directory 
+\family typewriter 
+/var/opd/samples
+\family default 
+.
+ The file name encodes the full path to the binary image profiled, so for
+ example the sample file 
+\family typewriter 
+/var/opd/samples/}bin}ps
+\family default 
+ contains profile data against the 
+\family typewriter 
+/bin/ps
+\family default 
+ binary image.
+ Any shared libraries used are to be found in their own sample files; any
+ process using that shared library writes to that sample file.
+ Additionally the kernel samples are in a separate file specified by the
+ path to the 
+\family typewriter 
+vmlinux
+\family default 
+ file specified.
+ Kernel module sample files are also found in this directory.
+\layout Standard
+
+A simplistic program called 
+\family typewriter 
+oprofpp
+\family default 
+ is provided to extract information from these sample files.
+ It requires that the binary image has been compiled with (and still contains)
+ symbol information (e.g.
+ 
+\family typewriter 
+-g
+\family default 
+ option in 
+\family typewriter 
+gcc
+\family default 
+).
+ You can request a summary of sample counts registered against different
+ symbols like so : 
+\layout Standard
+
+
+\family typewriter 
+oprofpp -l <samplefile>
+\layout Standard
+
+This will give a list of symbols, ordered by the number of samples registered
+ against them.
+ If the profiler is being used in a statistical execution profile manner,
+ this list is the statistical representation of the execution frequencies
+ of each function, and can be expected to bear some resemblance to the relevant
+ amount of time spent in each function (the characteristics can be slightly
+ different for the two main statistical profiling events, 
+\family typewriter 
+CPU_CLK_UNHALTED
+\family default 
+ and 
+\family typewriter 
+INST_RETIRED
+\family default 
+).
+\layout Standard
+
+It is possible to retrieve a more detailed histogram for a single symbol
+ with an invocation such as :
+\layout Standard
+
+
+\family typewriter 
+oprofpp -s main <samplefile>
+\layout Standard
+
+This will show each sample on a byte-by-byte level.
+ Bear in mind this is a statistical method only, and for short runs will
+ not accurately represent the execution profile of a routine.
+ Artefacts of the hardware provisions can also affect the interpretation
+ of these results (FIXME: should expand on this).
+\layout Standard
+
+If you are examining the data on another machine, perhaps, you can specify
+ the binary image file to read with the 
+\family typewriter 
+-i
+\family default 
+ option.
+ If there is no image file specified, then 
+\family typewriter 
+oprofpp
+\family default 
+ uses the image encoded into the sample file's filename.
+\layout Standard
+
+The 
+\family typewriter 
+-g
+\family default 
+ option, to dump a 
+\family typewriter 
+gprof
+\family default 
+ format sample file, is not currently working ...
+\layout Section
+
+Statistical profiling
+\layout Standard
+
+You can use the profiler in the usual statistical 
+\family typewriter 
+gprof
+\family default 
+-style way by using one of the events 
+\family typewriter 
+CPU_CLK_UNHALTED
+\family default 
+ or 
+\family typewriter 
+INST_RETIRED
+\family default 
+.
+ 
+\family typewriter 
+CPU_CLK_UNHALTED
+\family default 
+ is a counter that increments every clock cycle the processor is not in
+ a halted state.
+ The kernel idle loop by default calls the 
+\family typewriter 
+hlt
+\family default 
+ instruction when there is nothing else to do.
+ If you want interrupts to be generated at a more constant rate, you should
+ boot the machine with the 
+\family typewriter 
+nohlt
+\family default 
+ option.
+ This way you can have a good idea of how many interrupts are generated
+ per second (each interrupt corresponds to one sample).
+ For example an a Pentium II 350MHz, there are 350,000,000 cycles per second.
+ If we specify an interval count of 35,000 (
+\family typewriter 
+--ctr0-count=35000
+\family default 
+), there will be 10,000 samples per second.
+\layout Standard
+
+The 
+\family typewriter 
+INST_RETIRED
+\family default 
+ counter provides a more randomised statistical interval which can prove
+ more suitable.
+ This counter is the number of instructions that reach the retire stage
+ of the processor's pipeline, namely the instructions which are executed.
+ Instructions are obviously not consumed at a constant rate, so this randomises
+ the interval reasonably well, which is good for avoiding lock-step problems
+ with subsystems such as the kernel timer interrupt.
+ Once again the value chosen for the interval defines the resolution of
+ the sampling (and as a result, the overhead).
+ Currently only experimentation with your expected workload can decide a
+ good value for this interval.
+\layout Standard
+
+The resolution of the profiling is an important factor.
+ Ideally it would be good to have as many interrupts per second as is possible,
+ but this can increase the overhead.
+ The actual characteristics of the overhead/resolution curve is workload-depende
+nt.
+ A rate of 10,000 samples per second can cause an overhead of less than
+ 2% in some workloads; in contrast a worst-case situation such as a kernel
+ compile (described later) can lead to 8% overhead with only 5,000 samples
+ per second.
+ A lower sampling rate reduces the accuracy of any profiles, unless the
+ profiling run is extended.
+ It is important that the run lasts long enough to form a statistically
+ meaningful execution profile of the binaries.
+ There is thus a trade-off between these elements of profiling.
+\layout Section
+
+Event-specific profiling
+\layout Standard
+
+The hardware counters also provide facilities for measuring several different
+ aspects of the hardware system, such as cache behaviour.
+ However, care must be taken with the generated profiles in these cases.
+ It is not as simple as setting the interval count to 1, and then expecting
+ each profiled event to be associated with the 
+\begin_inset Quotes eld
+\end_inset 
+
+guilty
+\begin_inset Quotes erd
+\end_inset 
+
+ instruction.
+ This is partly due to the interrupt delivery delay, but the real killer
+ is the out-of-order nature of the processor - as P6 cores have instruction
+ level parallelism facilities, the PC value at the time of the delivery
+ of the interrupt after an event can be as much as tens of instructions
+ away from the 
+\begin_inset Quotes eld
+\end_inset 
+
+guilty
+\begin_inset Quotes erd
+\end_inset 
+
+ instruction.
+\layout Standard
+
+This problem limits the use of the profiler in this way.
+ However, it can still be used at a larger granularity, and often results
+ can be trusted at the basic block or at least the function level.
+ Care must be taken, however, to consider the dynamic behaviour of the code,
+ and not to take the results at face value.
+\layout Chapter
+
+Features & Misfeatures
+\layout Standard
+
+etc.
+\layout Chapter
+
+Under the hood
+\layout Standard
+
+etc.
+\layout Chapter
+
+Credits
+\layout Standard
+
+etc.
+\layout Bibliography
+\bibitem {DCPI}
+
+FIXME: DCPI
+\layout Bibliography
+\bibitem {IAMan}
+
+Intel Architecture Developer's Manual Volume 3 (
+\begin_inset LatexCommand \htmlurl[Developer's Centre]{http://developer.intel.com/}
+
+\end_inset 
+
+).
+\the_end

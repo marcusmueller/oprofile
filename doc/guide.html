@@ -1,0 +1,509 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 99.2beta6 (1.42)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>oprofile: Continuous Statistical Profiler</TITLE>
+<META NAME="description" CONTENT="oprofile: Continuous Statistical Profiler">
+<META NAME="keywords" CONTENT="guide">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="LaTeX2HTML v99.2beta6">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="guide.css">
+
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<IMG WIDTH="81" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next_inactive"
+ SRC="file:/usr/lib/latex2html/icons/nx_grp_g.png"> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/lib/latex2html/icons/up_g.png"> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/lib/latex2html/icons/prev_g.png">   
+<BR>
+<BR><BR>
+<!--End of Navigation Panel-->
+
+<P>
+
+<P>
+
+<P>
+
+<P>
+<H1 ALIGN="CENTER"><TT>oprofile</TT>: Continuous Statistical Profiler</H1>
+<P ALIGN="CENTER"><STRONG>John Levon</STRONG></P>
+<P ALIGN="CENTER"><STRONG>24 October 2000</STRONG></P>
+
+<P>
+
+<H1><A NAME="SECTION00100000000000000000">
+1. Overview</A>
+</H1>
+
+<P>
+
+<H1><A NAME="SECTION00110000000000000000">
+1.1 Introduction</A>
+</H1>
+
+<P>
+<TT>oprofile</TT> is a statistical profiler that is intended for use
+on production systems, for the profiling of the entire dynamic system,
+including the kernel, kernel modules, interrupt handlers, shared libraries,
+and user-space binaries. It makes use of the facilities provided by
+Intel P6 core processors such as the Pentium Pro to generate statistical
+execution profiles transparently. The profiler requires no instrumentation
+of either source of binaries at all, and commonly has a very low overhead.
+The design is similar to that of DCPI[<A
+ HREF="guide.html#DCPI">1</A>], with some differences.
+However the typical developer need not concern themselves with the
+internal operation of the compiler, only with the output. An interface
+to the more specialised event monitoring facilities provided by the
+hardware performance counters is also provided.
+
+<P>
+
+<H1><A NAME="SECTION00120000000000000000">
+1.2 Requirements</A>
+</H1>
+
+<P>
+Currently <TT>oprofile</TT> requires a Linux 2.4 kernel running on
+Intel hardware with a P6 core processor. This translates to the Pentium
+Pro, Pentium II, Pentium III or any of their brethren such as Celerons<A NAME="tex2html1"
+  HREF="#foot22"><SUP>1.1</SUP></A>. Older A.OUT based systems are not supported (it is probably trivial
+to add this facility if needed). SMP systems are theoretically supported,
+but have not been tested at all.
+
+<P>
+You must have the following libraries installed : <TT>popt</TT>, <TT>bfd</TT>,
+<TT>liberty</TT>, <TT>dl</TT>.
+
+<P>
+At least version 2.3.17 of <TT>modutils</TT> is required (if you upgrade,
+you might need to play with any <TT>path=</TT> directives you have
+in <TT>/etc/modules.conf</TT>).
+
+<P>
+
+<H1><A NAME="SECTION00200000000000000000">
+2. Build &amp; Install</A>
+</H1>
+
+<P>
+
+<H1><A NAME="SECTION00210000000000000000">
+2.1 Download</A>
+</H1>
+
+<P>
+etc.
+
+<P>
+
+<H1><A NAME="SECTION00220000000000000000">
+2.2 Configuration</A>
+</H1>
+
+<P>
+An <TT>autoconf</TT> configure script is provided, and normally configuration
+is simply a matter of running <TT>./configure</TT>. The configure
+script will attempt to find your kernel source tree which must be
+configured and built (specifically enabling <TT>CONFIG_MODULES</TT>,
+obviously). As with the kernel, you must compile using <TT>gcc</TT>.
+As usual you can get a summary of options with <TT>./configure
+--help</TT>. The ones of note are :
+
+<P>
+<DL>
+<DT><STRONG><TT>--with-linux</TT></STRONG></DT>
+<DD>specify the path to the kernel source
+tree.
+</DD>
+<DT><STRONG><TT>--with-module-dir</TT></STRONG></DT>
+<DD>specify the path to install the module
+to
+</DD>
+<DT><STRONG><TT>--with-extra-libs</TT></STRONG></DT>
+<DD>extra directories to look for the
+required userspace libraries in
+</DD>
+<DT><STRONG><TT>--with-extra-includes</TT></STRONG></DT>
+<DD>extra directories to look for
+the required userspace headers in
+</DD>
+<DT><STRONG><TT>--enable-filter</TT></STRONG></DT>
+<DD>compile in the facility to only profile
+a particular process or process group
+</DD>
+</DL>
+Don't enable <TT>--enable-filter</TT> unless you only want to
+profile a selected set of processes. This option includes code that
+can harm performance in the general case.
+
+<P>
+The configure script will check if a small patch has been applied
+to 
+<BR><TT>linux/arch/i386/kernel/i386_ksyms.c</TT> &nbsp;
+<BR>to export the <TT>do_nmi</TT> symbol. If it has been patched then
+the SMP NMI oopser can still provide useful stack traces if a fatal
+error happens during a profiling run. This is not useful for stable
+systems so it is OK for it to be left unpatched. This will probably
+change if the uniprocessor NMI oopser makes it into the mainline kernel. 
+
+<P>
+If the <TT>configure</TT> script can locate everything successfully,
+then the package is ready to build.
+
+<P>
+
+<H1><A NAME="SECTION00230000000000000000">
+2.3 Build</A>
+</H1>
+
+<P>
+Type <TT>make</TT>.
+
+<P>
+
+<H1><A NAME="SECTION00240000000000000000">
+2.4 Install</A>
+</H1>
+
+<P>
+Type <TT>make install</TT>. The module should install itself in the
+modules directory and run <TT>depmod</TT>, and the user space utilities
+will be installed in (by default) <TT>/usr/local/bin</TT>. You will
+need to be root to do this of course (currently the daemon also runs
+as root, but this is not necessary, and will be fixed).
+
+<P>
+
+<H1><A NAME="SECTION00300000000000000000">
+3. Usage</A>
+</H1>
+
+<P>
+
+<H1><A NAME="SECTION00310000000000000000">
+3.1 Starting profiling</A>
+</H1>
+
+<P>
+A shell script <TT>op_start</TT> is provided for the simple startup
+of a profiling run. It has several different options controlling the
+configuration of the kernel module and the daemon; a summary can be
+found by doing <TT>op_start --help</TT>. Some of the interesting
+options are :
+
+<P>
+<DL>
+<DT><STRONG><TT>--list-events</TT></STRONG></DT>
+<DD>Print out a short list of the available
+events for the event counters. Some events are only available on the
+PII or PIII processor, and some require a specific counter to be used.
+The available unit masks are also listed here. Note that you should
+read the relevant Appendix of the Intel manual[<A
+ HREF="guide.html#IAMan">2</A>], as there
+are further descriptions and several important caveats there. For
+general statistical profiling use, there is no need to consider events
+other than <TT>CPU_CLK_UNHALTED</TT> or <TT>INST_RETIRED</TT>.
+</DD>
+<DT><STRONG><TT>--buffer-size</TT></STRONG></DT>
+<DD>The size of the eviction buffer in number
+of samples. Each sample takes up 8 bytes, and the size should be a
+power of two. The best value depends on available memory, but a typically
+good value is 131072 (one megabyte of memory).
+</DD>
+<DT><STRONG><TT>--hash-table-size</TT></STRONG></DT>
+<DD>The size of the hash table in entries.
+Each entry contains 4 samples (so is 32 bytes in size). The size must
+be a power of two. Once again, the best value depends on the machine
+configuration and the expected workload, but aim as high as possible.
+An example value would be 65536, giving a hash table size of two megabytes.
+</DD>
+<DT><STRONG><TT>--ctr0-event</TT></STRONG></DT>
+<DD>A list of the symbol event names for counter
+0 on each CPU. For example on a two CPU box, we might call <TT>./op_start
+-ctr0-event=INST_RETIRED,INST_RETIRED ...</TT>
+</DD>
+<DT><STRONG><TT>--ctr0-count</TT></STRONG></DT>
+<DD>The number of events between interrupt
+delivery. For the ``statistical'' counters <TT>CPU_CLK_UNHALTED</TT>
+and <TT>INST_RETIRED</TT> this will partly define the granularity
+of the profiling (i.e. how often the profiling interrupt is generated).
+</DD>
+<DT><STRONG><TT>--ctr0-unit-mask</TT></STRONG></DT>
+<DD>The unit mask for the counter
+</DD>
+<DT><STRONG><TT>--ctr0-os-usr</TT></STRONG></DT>
+<DD>Whether the counter should count both
+userspace and kernel execution (0), just kernel (1), or just userspace
+(2).
+</DD>
+<DT><STRONG><TT>--ctr1-event,--ctr1-count,--ctr1-unit-mask,--ctr1-os-usr</TT></STRONG></DT>
+<DD>The
+same options for the second counter
+</DD>
+<DT><STRONG><TT>--use-cpu</TT></STRONG></DT>
+<DD>specify CPU type
+</DD>
+<DT><STRONG><TT>--map-file</TT></STRONG></DT>
+<DD>The location of the <TT>System.map</TT>
+file for the running kernel
+</DD>
+<DT><STRONG><TT>--vmlinux</TT></STRONG></DT>
+<DD>The location of the <TT>vmlinux</TT> file
+for the running kernel
+</DD>
+<DT><STRONG><TT>--ignore-myself</TT></STRONG></DT>
+<DD>don't collect profile information for
+the daemon itself
+</DD>
+<DT><STRONG><TT>--pid-filter</TT></STRONG></DT>
+<DD>collect profile data for the specified
+process id only
+</DD>
+<DT><STRONG><TT>--pgrp-filter</TT></STRONG></DT>
+<DD>collect profile data for the specified
+process group only
+</DD>
+</DL>
+The script will insert the kernel module and start the kernel daemon
+and profiling will begin. The files used by the daemon are (by default)
+stored under the <TT>/var/opd</TT> directory. Of particular interest
+is the daemon log file <TT>/var/opd/oprofiled.log</TT>, and the directory
+containing the actual samples, <TT>/var/opd/samples</TT>.
+
+<P>
+
+<H1><A NAME="SECTION00320000000000000000">
+3.2 Stopping profiling</A>
+</H1>
+
+<P>
+The shell script <TT>op_stop</TT> will stop the daemon, and remove
+the kernel module.
+
+<P>
+
+<H1><A NAME="SECTION00330000000000000000">
+3.3 Retrieving profile data</A>
+</H1>
+
+<P>
+After profiling, there will be execution profiles for each binary
+image available in the directory <TT>/var/opd/samples</TT>. The file
+name encodes the full path to the binary image profiled, so for example
+the sample file <TT>/var/opd/samples/}bin}ps</TT> contains profile
+data against the <TT>/bin/ps</TT> binary image. Any shared libraries
+used are to be found in their own sample files; any process using
+that shared library writes to that sample file. Additionally the kernel
+samples are in a separate file specified by the path to the <TT>vmlinux</TT>
+file specified. Kernel module sample files are also found in this
+directory.
+
+<P>
+A simplistic program called <TT>oprofpp</TT> is provided to extract
+information from these sample files. It requires that the binary image
+has been compiled with (and still contains) symbol information (e.g.
+<TT>-g</TT> option in <TT>gcc</TT>). You can request a summary of
+sample counts registered against different symbols like so : 
+
+<P>
+<TT>oprofpp -l &lt;samplefile&gt;</TT>
+
+<P>
+This will give a list of symbols, ordered by the number of samples
+registered against them. If the profiler is being used in a statistical
+execution profile manner, this list is the statistical representation
+of the execution frequencies of each function, and can be expected
+to bear some resemblance to the relevant amount of time spent in each
+function (the characteristics can be slightly different for the two
+main statistical profiling events, <TT>CPU_CLK_UNHALTED</TT> and
+<TT>INST_RETIRED</TT>).
+
+<P>
+It is possible to retrieve a more detailed histogram for a single
+symbol with an invocation such as :
+
+<P>
+<TT>oprofpp -s main &lt;samplefile&gt;</TT>
+
+<P>
+This will show each sample on a byte-by-byte level. Bear in mind this
+is a statistical method only, and for short runs will not accurately
+represent the execution profile of a routine. Artefacts of the hardware
+provisions can also affect the interpretation of these results (FIXME:
+should expand on this).
+
+<P>
+If you are examining the data on another machine, perhaps, you can
+specify the binary image file to read with the <TT>-i</TT> option.
+If there is no image file specified, then <TT>oprofpp</TT> uses the
+image encoded into the sample file's filename.
+
+<P>
+The <TT>-g</TT> option, to dump a <TT>gprof</TT> format sample file,
+is not currently working ...
+
+<P>
+
+<H1><A NAME="SECTION00340000000000000000">
+3.4 Statistical profiling</A>
+</H1>
+
+<P>
+You can use the profiler in the usual statistical <TT>gprof</TT>-style
+way by using one of the events <TT>CPU_CLK_UNHALTED</TT> or <TT>INST_RETIRED</TT>.
+<TT>CPU_CLK_UNHALTED</TT> is a counter that increments every clock
+cycle the processor is not in a halted state. The kernel idle loop
+by default calls the <TT>hlt</TT> instruction when there is nothing
+else to do. If you want interrupts to be generated at a more constant
+rate, you should boot the machine with the <TT>nohlt</TT> option.
+This way you can have a good idea of how many interrupts are generated
+per second (each interrupt corresponds to one sample). For example
+an a Pentium II 350MHz, there are 350,000,000 cycles per second. If
+we specify an interval count of 35,000 (<TT>-ctr0-count=35000</TT>),
+there will be 10,000 samples per second.
+
+<P>
+The <TT>INST_RETIRED</TT> counter provides a more randomised statistical
+interval which can prove more suitable. This counter is the number
+of instructions that reach the retire stage of the processor's pipeline,
+namely the instructions which are executed. Instructions are obviously
+not consumed at a constant rate, so this randomises the interval reasonably
+well, which is good for avoiding lock-step problems with subsystems
+such as the kernel timer interrupt. Once again the value chosen for
+the interval defines the resolution of the sampling (and as a result,
+the overhead). Currently only experimentation with your expected workload
+can decide a good value for this interval.
+
+<P>
+The resolution of the profiling is an important factor. Ideally it
+would be good to have as many interrupts per second as is possible,
+but this can increase the overhead. The actual characteristics of
+the overhead/resolution curve is workload-dependent. A rate of 10,000
+samples per second can cause an overhead of less than 2% in some
+workloads; in contrast a worst-case situation such as a kernel compile
+(described later) can lead to 8% overhead with only 5,000 samples
+per second. A lower sampling rate reduces the accuracy of any profiles,
+unless the profiling run is extended. It is important that the run
+lasts long enough to form a statistically meaningful execution profile
+of the binaries. There is thus a trade-off between these elements
+of profiling.
+
+<P>
+
+<H1><A NAME="SECTION00350000000000000000">
+3.5 Event-specific profiling</A>
+</H1>
+
+<P>
+The hardware counters also provide facilities for measuring several
+different aspects of the hardware system, such as cache behaviour.
+However, care must be taken with the generated profiles in these cases.
+It is not as simple as setting the interval count to 1, and then expecting
+each profiled event to be associated with the ``guilty'' instruction.
+This is partly due to the interrupt delivery delay, but the real killer
+is the out-of-order nature of the processor - as P6 cores have instruction
+level parallelism facilities, the PC value at the time of the delivery
+of the interrupt after an event can be as much as tens of instructions
+away from the ``guilty'' instruction.
+
+<P>
+This problem limits the use of the profiler in this way. However,
+it can still be used at a larger granularity, and often results can
+be trusted at the basic block or at least the function level. Care
+must be taken, however, to consider the dynamic behaviour of the code,
+and not to take the results at face value.
+
+<P>
+
+<H1><A NAME="SECTION00400000000000000000">
+4. Features &amp; Misfeatures</A>
+</H1>
+
+<P>
+etc.
+
+<P>
+
+<H1><A NAME="SECTION00500000000000000000">
+5. Under the hood</A>
+</H1>
+
+<P>
+etc.
+
+<P>
+
+<H1><A NAME="SECTION00600000000000000000">
+6. Credits</A>
+</H1>
+
+<P>
+etc.
+
+<P>
+ 
+<H2><A NAME="SECTION00700000000000000000">
+Bibliography</A>
+</H2><DL COMPACT><DD><P></P><DT><A NAME="DCPI">1</A>
+<DD>FIXME: DCPI
+<P></P><DT><A NAME="IAMan">2</A>
+<DD>Intel Architecture Developer's Manual Volume 3 (Developer's Centre http://developer.intel.com/).</DL>
+
+<P>
+
+<H1><A NAME="SECTION00800000000000000000">
+About this document ...</A>
+</H1>
+ <STRONG><TT>oprofile</TT>: Continuous Statistical Profiler</STRONG><P>
+This document was generated using the
+<A HREF="http://www-dsed.llnl.gov/files/programs/unix/latex2html/manual/"><STRONG>LaTeX</STRONG>2<tt>HTML</tt></A> translator Version 99.2beta6 (1.42)
+<P>
+Copyright &#169; 1993, 1994, 1995, 1996,
+<A HREF="http://cbl.leeds.ac.uk/nikos/personal.html">Nikos Drakos</A>, 
+Computer Based Learning Unit, University of Leeds.
+<BR>Copyright &#169; 1997, 1998, 1999,
+<A HREF="http://www.maths.mq.edu.au/~ross/">Ross Moore</A>, 
+Mathematics Department, Macquarie University, Sydney.
+<P>
+The command line arguments were: <BR>
+ <STRONG>latex2html</STRONG> <TT>-no_subdir -split 0 -show_section_numbers /tmp/lyx_tmp1594aaa/lyx_bufrtmp1594aaa/guide.tex</TT>
+<P>
+The translation was initiated by John Levon on 2000-10-24<BR><HR><H4>Footnotes</H4>
+<DL>
+<DT><A NAME="foot22">... Celerons</A><A NAME="foot22"
+ HREF="guide.html#tex2html1"><SUP>1.1</SUP></A>
+<DD>The module will refuse to load if the correct processor type is not
+found.
+
+
+</DL><HR>
+<!--Navigation Panel-->
+<IMG WIDTH="81" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next_inactive"
+ SRC="file:/usr/lib/latex2html/icons/nx_grp_g.png"> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/lib/latex2html/icons/up_g.png"> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/lib/latex2html/icons/prev_g.png">   
+<BR>
+<!--End of Navigation Panel-->
+<ADDRESS>
+John Levon
+2000-10-24
+</ADDRESS>
+</BODY>
+</HTML>
