@@ -103,6 +103,20 @@ unsigned int op_min_count(u8 ctr_type, op_cpu cpu_type);
  */
 void op_free_events(void);
 
+struct op_default_event_descr {
+	char * name;
+	unsigned long count;
+	unsigned long um;
+};
+
+/**
+ * op_default_event - return the details of the default event
+ * @param cpu_type  cpu type
+ *
+ * Fills in the event description if applicable
+ */
+void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr);
+
 #ifdef __cplusplus
 }
 #endif

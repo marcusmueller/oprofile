@@ -15,6 +15,7 @@
 #include "op_libiberty.h"
 #include "op_fileio.h"
 #include "op_string.h"
+#include "op_cpufreq.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -496,4 +497,53 @@ unsigned int op_min_count(u8 ctr_type, op_cpu cpu_type)
 	event = find_event(ctr_type);
 	
 	return event ? event->min_count : 0;
+}
+
+
+void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
+{
+	descr->name = "";
+	descr->um = 0x0;
+	/* around 2000 ints/sec on a 100% busy CPU */
+	descr->count = (unsigned long)(op_cpu_frequency() * 500.0);
+
+	switch (cpu_type) {
+		case CPU_PPRO:
+		case CPU_PII:
+		case CPU_PIII:
+		case CPU_ATHLON:
+		case CPU_HAMMER:
+			descr->name = "CPU_CLK_UNHALTED";
+			break;
+
+		case CPU_RTC:
+			descr->name = "RTC_INTERRUPTS";
+			descr->count = 1024;
+			break;
+
+		case CPU_P4:
+		case CPU_P4_HT2:
+			descr->name = "GLOBAL_POWER_EVENTS";
+			descr->um = 0x1;
+			break;
+
+		case CPU_IA64:
+		case CPU_IA64_1:
+		case CPU_IA64_2:
+			descr->name = "CPU_CYCLES";
+			break;
+
+		case CPU_AXP_EV4:
+		case CPU_AXP_EV5:
+		case CPU_AXP_PCA56:
+		case CPU_AXP_EV6:
+		case CPU_AXP_EV67:
+			descr->name = "CYCLES";
+			break;
+
+		case CPU_TIMER_INT:
+		case CPU_NO_GOOD:
+		case MAX_CPU_TYPE:
+			break;
+	}
 }

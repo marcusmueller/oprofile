@@ -236,51 +236,20 @@ static void resolve_events(struct list_head * events)
 }
 
 
-static void show_default_event(void)
+static void show_default_event()
 {
-	double freq = op_cpu_frequency();
-	/* around 2000 ints/sec on a 100% busy CPU */
-	unsigned long count = (unsigned long)(freq * 500.0);
+	struct op_default_event_descr descr;
 
-	switch (cpu_type) {
-		case CPU_PPRO:
-		case CPU_PII:
-		case CPU_PIII:
-		case CPU_ATHLON:
-		case CPU_HAMMER:
-			printf("CPU_CLK_UNHALTED:%lu:0:1:1\n", count);
-			break;
+	op_default_event(cpu_type, &descr);
 
-		case CPU_RTC:
-			printf("RTC_INTERRUPTS:1024:0:1:1\n");
-			break;
+	if (descr.name[0] == '\0')
+		return;
 
-		case CPU_P4:
-		case CPU_P4_HT2:
-			printf("GLOBAL_POWER_EVENTS:%lu:0x1:1:1\n", count);
-			break;
-
-		case CPU_IA64:
-		case CPU_IA64_1:
-		case CPU_IA64_2:
-			printf("CPU_CYCLES:%lu:0:1:1\n", count);
-			break;
-
-		case CPU_AXP_EV4:
-		case CPU_AXP_EV5:
-		case CPU_AXP_PCA56:
-		case CPU_AXP_EV6:
-		case CPU_AXP_EV67:
-			printf("CYCLES:%lu:0:1:1\n", count);
-			break;
-
-		default:
-			break;
-	}
+	printf("%s:%lu:%lu:1:1\n", descr.name, descr.count, descr.um);
 }
 
 
-static int showvers;
+static int show_vers;
 static int get_cpu_type;
 static int check_events;
 static int get_default_event;
@@ -294,7 +263,8 @@ static struct poptOption options[] = {
 	  "show the auto-detected CPU type", NULL, },
 	{ "get-default-event", 'd', POPT_ARG_NONE, &get_default_event, 0,
 	  "get the default event", NULL, },
-	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
+	{ "version", 'v', POPT_ARG_NONE, &show_vers, 0,
+	   "show version", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
@@ -312,7 +282,7 @@ static void get_options(int argc, char const * argv[])
 
 	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
 
-	if (showvers) {
+	if (show_vers) {
 		show_version(argv[0]);
 	}
 
@@ -329,9 +299,9 @@ int main(int argc, char const *argv[])
 	struct list_head * pos;
 	char const * pretty;
 
-	get_options(argc, argv);
-
 	cpu_type = op_get_cpu_type();
+
+	get_options(argc, argv);
 
 	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
 		fprintf(stderr, "cpu_type '%d' is not valid\n", cpu_type);
