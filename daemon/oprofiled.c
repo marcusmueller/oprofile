@@ -264,7 +264,8 @@ retry:
 
 	if (!status_file && errno == EMFILE) {
 		if (!sfile_lru_clear()) {
-			printf("LRU cleared but file open fails.\n");
+			printf("LRU cleared but file open fails for %s.\n",
+			       OP_DUMP_STATUS);
 			abort();
 		}
 		goto retry;

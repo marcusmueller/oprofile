@@ -139,7 +139,7 @@ retry:
 	if (err) {
 		if (err == EMFILE) {
 			if (sfile_lru_clear()) {
-				printf("LRU cleared but odb_open() fails.\n");
+				printf("LRU cleared but odb_open() fails for %s.\n", mangled);
 				abort();
 			}
 			goto retry;
