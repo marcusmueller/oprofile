@@ -34,6 +34,7 @@ Before 1.0 little stuff
 -----------------------
 
  o why rel_to_abs_path in locate_images ??
+ o we can add lots more unit tests yet
  o output column shortname headers for opreport -l
  o better sharing of dae daemon: share dae /daemon need to create a libdaemon/
    subdir and this lib must be self contained (not include anything in dae/*.h

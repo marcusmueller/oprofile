@@ -242,22 +242,28 @@ void sfile_log_sample(struct sfile * sf, vma_t pc, uint counter)
 }
 
 
+static void kill_sfile(struct sfile * sf)
+{
+	size_t i;
+	/* it's OK to close a non-open odb file */
+	for (i = 0; i < op_nr_counters; ++i)
+		odb_close(&sf->files[i]);
+	list_del(&sf->lru);
+	list_del(&sf->hash);
+	free(sf);
+}
+
+
 void sfile_clear_kernel(void)
 {
 	struct list_head * pos;
 	struct list_head * pos2;
 	struct sfile * sf;
-	size_t i;
 
 	list_for_each_safe(pos, pos2, &lru_list) {
 		sf = list_entry(pos, struct sfile, lru);
-		if (sf->kernel) {
-			for (i = 0; i < op_nr_counters; ++i)
-				odb_close(&sf->files[i]);
-			list_del(&sf->lru);
-			list_del(&sf->hash);
-			free(sf);
-		}
+		if (sf->kernel)
+			kill_sfile(sf);
 	}
 }
 
@@ -270,9 +276,8 @@ void sfile_sync_files(void)
 
 	list_for_each(pos, &lru_list) {
 		sf = list_entry(pos, struct sfile, lru);
-		for (i = 0; i < op_nr_counters; ++i) {
+		for (i = 0; i < op_nr_counters; ++i)
 			odb_sync(&sf->files[i]);
-		}
 	}
 }
 
@@ -299,20 +304,15 @@ int sfile_lru_clear(void)
 	struct list_head * pos2;
 	struct sfile * sf;
 	int amount = LRU_AMOUNT;
-	size_t i;
 
 	if (list_empty(&lru_list))
 		return 1;
 
 	list_for_each_safe(pos, pos2, &lru_list) {
-		sf = list_entry(pos, struct sfile, lru);
 		if (!--amount)
 			break;
-		for (i = 0; i < op_nr_counters; ++i)
-			odb_close(&sf->files[i]);
-		list_del(&sf->lru);
-		list_del(&sf->hash);
-		free(sf);
+		sf = list_entry(pos, struct sfile, lru);
+		kill_sfile(sf);
 	}
 
 	return 0;

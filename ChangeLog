@@ -1,3 +1,13 @@
+2003-10-01  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_sfile.c:
+	* libabi/op_import.cpp:
+	* libop/op_interface.h:
+	* libpp/locate_images.h: small cleanups
+
+	* pp/opreport_options.cpp: don't complain about
+	"-x -m all"
+
 2003-09-28  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil/op_file.c:

@@ -1,7 +1,7 @@
 /**
  * @file op_interface.h
  *
- * Module / user space interface
+ * Module / user space interface for 2.4
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

@@ -67,8 +67,7 @@ private:
  * @param error errors are flagged in this passed enum ref
  *
  * Locate a (number of) matching absolute paths to the given image name.
- * If we fail to find the file or if it is not readable we provide a warning
- * and return an empty string.
+ * If we fail to find the file we fill in error and return the original string.
  */
 std::string const
 find_image_path(std::string const & image_name,
