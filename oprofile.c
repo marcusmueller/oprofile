@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.11 2000/08/03 03:19:03 moz Exp $ */
+/* $Id: oprofile.c,v 1.12 2000/08/03 21:47:56 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
  
@@ -71,7 +71,7 @@ static void evict_op_entry(struct _oprof_data *data, struct op_sample *ops)
 	oprof_ready[smp_processor_id()] = 1;
 }
  
-static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, u8 ctr)
+static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, int ctr)
 {
 	ops->eip = regs->eip;
 	ops->pid = current->pid;
@@ -93,7 +93,7 @@ static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, u8 ctr)
 	((((((eip&0xff000)>>3)^eip)^(pid&0xff))^(eip<<9)) \
 	^ (ctr<<8)) & (data->hash_size-1)
  
-inline static void op_do_profile(struct _oprof_data *data, struct pt_regs *regs, u8 ctr)
+inline static void op_do_profile(struct _oprof_data *data, struct pt_regs *regs, int ctr)
 {
 	uint h = op_hash(regs->eip,current->pid,ctr);
 	uint i; 
@@ -124,7 +124,7 @@ new_entry:
 	goto out;
 }
  
-static u8 op_check_ctr(struct _oprof_data *data, struct pt_regs *regs, u8 ctr) 
+static int op_check_ctr(struct _oprof_data *data, struct pt_regs *regs, int ctr) 
 { 
 	ulong l,h;
 	get_perfctr(l,h,ctr);
@@ -140,7 +140,7 @@ asmlinkage void op_do_nmi(struct pt_regs * regs)
 {
 	struct _oprof_data *data = &oprof_data[smp_processor_id()]; 
 	uint low,high;
-	u8 overflowed=0;
+	int overflowed=0;
 
 	/* disable counters */ 
 	rdmsr(P6_MSR_EVNTSEL0,low,high);
