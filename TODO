@@ -33,6 +33,9 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o oprofile-www/website: all unitmask are described in decimal, prefix them
+   with 0x. Generate the doc for events/ia64, x86-64, hammer and alpha. These
+   change can be reflected on website before 0.7 release.
  o can we log samples going to anonymous mapping by using
   - 2.6 one fake sample for all anonymous sample, cookie == 0 mean use this
   special sample file. (cookie == -1 or -2 as magic value ?)
