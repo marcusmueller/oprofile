@@ -39,6 +39,7 @@ doc/internals/index.html: ${top_srcdir}/doc/internals.xml
 	$(XSLTPROC) -o doc/internals/ $(XSLTPROC_FLAGS) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
 
 chunk: doc/index.html doc/internals/index.html
+	cp ${top_srcdir}/doc/buffers.png doc/internals/
 
 else
 

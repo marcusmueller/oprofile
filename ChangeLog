@@ -1,3 +1,13 @@
+2004-01-25  John Levon  <levon@movementarian.org>
+
+	* doc/Makefile.am: fix make chunk
+
+	* doc/buffers.dia: add editable source
+
+	* doc/buffers.png: fix stupid typos
+
+	* doc/internals.xml: add some more text
+
 2004-01-25  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/parse_filename.h:

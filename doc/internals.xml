@@ -375,7 +375,7 @@ point from which the CPU may be read, up to the position of the "head"
 iterator. This provides an entirely lock-free method for extracting data
 from the CPU buffers. This process is described in detail later in this chapter.
 </para>
-<figure title="The OProfile buffers">
+<figure><title>The OProfile buffers</title>
 <graphic fileref="buffers.png" />
 </figure>
 </sect1>
@@ -491,10 +491,11 @@ value, we look up the mapped file's dentry in the dcookie cache. This
 gives the dcookie ID that will uniquely identify the mapped file. Then
 we alter the absolute value such that it is an offset from the start of
 the mapping (the mapping need not start at the start of the actual file,
-so we have to consider the offset value of the mapping). These two
-values are then entered into the event buffer. In this manner, we have
-converted a PC value, which has transitory meaning only, into a static
-dcookie/offset tuple for later processing by the daemon.
+so we have to consider the offset value of the mapping). We store this
+dcookie ID into the event buffer; this identifies which binary the
+samples following it are against.
+In this manner, we have converted a PC value, which has transitory meaning
+only, into a static offset value for later processing by the daemon.
 </para>
 <para>
 We also attempt to avoid the relatively expensive lookup of the dentry
@@ -511,10 +512,130 @@ find the correct mapping.
 
 <sect1 id="processing-buffer">
 <title>Processing the buffer</title>
+
+<para>
+Now we can move onto user-space in our description of how raw interrupt
+samples are processed into useful information. As we described in
+previous sections, the kernel OProfile driver creates a large buffer of
+sample data consisting of offset values, interspersed with
+notification of changes in context. These context changes indicate how
+following samples should be attributed, and include task switches, CPU
+changes, and which dcookie the sample value is against. By processing
+this buffer entry-by-entry, we can determine where the samples should
+be accredited to. This is particularly important when using the 
+<option>--separate</option>.
+</para>
+<para>
+The file <filename>daemon/opd_trans.c</filename> contains the basic routine
+for the buffer processing. The <varname>struct transient</varname>
+structure is used to hold changes in context. Its members are modified
+as we process each entry; it is passed into the routines in
+<filename>daemon/opd_sfile.c</filename> for actually logging the sample
+to a particular sample file (which will be held in
+<filename>/var/lib/oprofile/samples/current</filename>).
+</para>
+<para>
+The buffer format is designed for conciseness, as high sampling rates
+can easily generate a lot of data. Thus, context changes are prefixed
+by an escape code, identified by <function>is_escape_code()</function>.
+If an escape code is found, the next entry in the buffer identifies
+what type of context change is being read. These are handed off to
+various handlers (see the <varname>handlers</varname> array), which
+modify the transient structure as appropriate. If it's not an escape
+code, then it must be a PC offset value, and the very next entry will
+be the numeric hardware counter. These values are read and recorded
+in the transient structure; we then do a lookup to find the correct
+sample file, and log the sample, as described in the next section.
+</para>
+
+<sect2 id="handling-kernel-samples">
+<title>Handling kernel samples</title>
+
+<para>
+Samples from kernel code require a little special handling. Because
+the binary text which the sample is against does not correspond to
+any file that the kernel directly knows about, the OProfile driver
+stores the absolute PC value in the buffer, instead of the file offset.
+Of course, we need an offset against some particular binary. To handle
+this, we keep a list of loaded modules by parsing
+<filename>/proc/modules</filename> as needed. When a module is loaded,
+a notification is placed in the OProfile buffer, and this triggers a
+re-read. We store the module name, and the loading address and size.
+This is also done for the main kernel image, as specified by the user.
+The absolute PC value is matched against each address range, and
+modified into an offset hwne the matching module is found. See 
+<filename>daemon/opd_kernel.c</filename> for the details.
+</para>
+
+</sect2>
+
+
 </sect1>
 
 <sect1 id="sample-file-generation">
-<title>Locating and writing sample files</title>
+<title>Locating and creating sample files</title>
+
+<para>
+We have a sample value and its satellite data stored in a
+<varname>struct transient</varname>, and we must locate an
+actual sample file to store the sample in, using the context
+information in the transient structure as a key. The transient data to
+sample file lookup is handled in
+<filename>daemon/opd_sfile.c</filename>. A hash is taken of the
+transient values that are relevant (depending upon the setting of
+<option>--separate</option>, some values might be irrelevant), and the
+hash value is used to lookup the list of currently open sample files.
+Of course, the sample file might not be found, in which case we need
+to create and open it.
+</para>
+<para>
+OProfile uses a rather complex scheme for naming sample files, in order
+to make selecting relevant sample files easier for the post-profiling
+utilities. The exact details of the scheme are given in
+<filename>oprofile-tests/pp_interface</filename>, but for now it will
+suffice to remember that the filename will include only relevant
+information for the current settings, taken from the transient data. A
+fully-specified filename looks something like :
+</para>
+<computeroutput>
+/var/lib/oprofile/samples/current/{root}/usr/bin/xmms/{dep}/{root}/lib/tls/libc-2.3.2.so/CPU_CLK_UNHALTED.100000.0.28082.28089.0
+</computeroutput>
+<para>
+It should be clear that this identifies such information as the
+application binary, the dependent (library) binary, the hardware event,
+and the process and thread ID. Typically, not all this information is
+needed, in which cases some values may be replaced with the token
+<filename>all</filename>.
+</para>
+<para>
+The code that generates this filename and opens the file is found in
+<filename>daemon/opd_mangling.c</filename>. You may have realised that
+at this point, we do not have the binary image file names, only the
+dcookie values. In order to determine a file name, a dcookie value is
+looked up in the dcookie cache. This is to be found in
+<filename>daemon/opd_cookie.c</filename>. Since dcookies are both
+persistent and unique during a sampling session, we can cache the
+values. If the value is not found in the cache, then we ask the kernel
+to do the lookup from value to file name for us by calling
+<function>lookup_dcookie()</function>. This looks up the value in a
+kernel-side cache (see <filename>fs/dcookies.c</filename>) and returns
+the fully-qualified file name to userspace.
+</para>
+
+</sect1>
+
+<sect1 id="sample-file-writing">
+<title>Writing data to a sample file</title>
+
+<para>
+Each specific sample file is a hashed collection, where the key is
+the PC offset from the transient data, and the value is the number of
+samples recorded against that offset. The files are
+<function>mmap()</function>ed into the daemon's memory space. The code
+to actually log the write against the sample file can be found in
+<filename>libdb/</filename>.
+</para>
+
 </sect1>
 
 </chapter>
