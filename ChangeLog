@@ -1,5 +1,12 @@
 2002-12-21  John Levon  <levon@movementarian.org>
 
+	* Makefile.am: list module files explicitly, needed
+	  for make dist from separate objdir
+
+	* configure.in: make both x86/ and ia64/ changelogs
+
+2002-12-21  John Levon  <levon@movementarian.org>
+
 	* module/Makefile.am:
 	* configure.in: remove the ln -s arch in favour of
 	  using -I and AC_SUBST

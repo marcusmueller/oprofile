@@ -341,7 +341,8 @@ AC_OUTPUT(Makefile \
 	gui/Makefile \
 	gui/ui/Makefile \
 	module/Makefile \
-	module/arch/Makefile \
+	module/x86/Makefile \
+	module/ia64/Makefile \
 	version.h)
 
 if test -z "$QT_LIB"; then

@@ -15,6 +15,8 @@ EXTRA_CFLAGS += -Werror
 endif
 endif
 
+# NB: do not add a file here without adding it to EXTRA_DIST in ../Makefile.am
+
 O_TARGET := arch.o
 
 obj-y := cpu_type.o op_apic.o op_fixmap.o op_rtc.o op_nmi.o \

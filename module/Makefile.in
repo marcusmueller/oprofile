@@ -13,6 +13,8 @@ EXTRA_CFLAGS += -Werror
 endif
 endif
  
+# NB: do not add a file here without adding it to EXTRA_DIST in ../Makefile.am
+
 O_TARGET := oprofile-module.o
  
 obj-y := compat.o op_init.o op_util.o op_dname.o oprofile.o @OPROFILE_MODULE_ARCH@/arch.o $(OPROFILE_DIR)/libop/libop.a

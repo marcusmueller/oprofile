@@ -21,6 +21,8 @@ EXTRA_CFLAGS += -Werror
 endif
 endif
 
+# NB: do not add a file here without adding it to EXTRA_DIST in ../Makefile.am
+
 O_TARGET := arch.o
  
 obj-y := cpu_type.o op_pmu.o op_syscalls.o oprofile_stubs.o
