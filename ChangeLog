@@ -1,3 +1,7 @@
+2003-01-27  Dave Jones <davej@codemonkey.org.uk>
+
+	* libop/op_events.c: K8 HT events are utm_exclusive, not utm_bitmask
+
 2003-01-23  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_interface_25.h:

@@ -95,7 +95,7 @@ static struct op_unit_mask const um_moesi =
 
 /* Hammer HT events */
 static struct op_unit_mask const um_ht =
-	{ 4, utm_bitmask, 0x7,
+	{ 4, utm_exclusive, 0x7,
 	  { {0x0, "Command sent"},
 	    {0x1, "Data sent"},
 	    {0x2, "Buffer release sent"},
