@@ -135,7 +135,7 @@ oprof_start::oprof_start()
 		note_table_size_edit->hide();
 		note_table_size_label->hide();
 		kernel_only_cb->hide();
-		// FIXME: can adapt to 2.5 ...
+		// FIXME: can adapt to 2.6 ...
 		buffer_size_edit->hide();
 		buffer_size_label->hide();
 	}

@@ -1,6 +1,6 @@
 /**
  * @file daemon/opd_util.h
- * Code shared between 2.4 and 2.5 daemons
+ * Code shared between 2.4 and 2.6 daemons
  *
  * @remark Copyright 2002, 2003 OProfile authors
  * @remark Read the file COPYING

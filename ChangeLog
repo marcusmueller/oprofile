@@ -1,5 +1,22 @@
 2003-09-15  John Levon  <levon@movementarian.org>
 
+	* configure.in: use -Wdeclaration-after-statement
+	if available
+
+	* daemon/opd_util.c:
+	* daemon/opd_util.h:
+	* doc/opannotate.1.in:
+	* doc/opgprof.1.in:
+	* doc/opreport.1.in:
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml:
+	* gui/oprof_start.cpp:
+	* libop/op_cpu_type.c:
+	* libpp/locate_images.cpp: remove references to
+	2.5, replaced with 2.6
+
+2003-09-15  John Levon  <levon@movementarian.org>
+
 	* doc/opreport.1.in: document --show-address
 
 2003-09-15  John Levon  <levon@movementarian.org>

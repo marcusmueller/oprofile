@@ -50,7 +50,7 @@ Show help message.
 .TP
 .BI "--image-path / -p [paths]"
 Comma-separated list of additional paths to search for binaries.
-This is needed to find modules in kernels 2.5 and upwards.
+This is needed to find modules in kernels 2.6 and upwards.
 .br
 .TP
 .BI "--include-symbols / -i [symbols]"

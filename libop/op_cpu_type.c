@@ -53,7 +53,7 @@ op_cpu op_get_cpu_type(void)
 
 	fp = fopen("/proc/sys/dev/oprofile/cpu_type", "r");
 	if (!fp) {
-		/* Hmm. Not there. Try 2.5's oprofilefs one instead. */
+		/* Try 2.6's oprofilefs one instead. */
 		fp = fopen("/dev/oprofile/cpu_type", "r");
 		if (!fp) {
 			fprintf(stderr, "Unable to open cpu_type file for reading\n");

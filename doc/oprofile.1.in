@@ -29,7 +29,7 @@ oprofile \- a sytem-wide profiler
 .br
 .SH DESCRIPTION
 OProfile is a profiling system for systems running Linux
-2.2, 2.4, and 2.5. Profiling runs transparently in the background and profile
+2.2, 2.4, and 2.6. Profiling runs transparently in the background and profile
 data can be collected at any time. OProfile makes use of the hardware
 performance counters provided on Intel, AMD, and other processors,
 and uses a timer-interrupt based mechanism on CPUs without counters.
@@ -131,7 +131,7 @@ The user-space daemon logfile.
 The device files for communication with the Linux 2.4 kernel module. 
 .TP
 .I /dev/oprofile
-The device filesystem for communication with the Linux 2.5 kernel module. 
+The device filesystem for communication with the Linux 2.6 kernel module. 
 .TP
 .I /var/lib/oprofile/samples/
 The location of the generated sample files.
