@@ -1,3 +1,9 @@
+2001-06-14  Philippe Elie  <ph_e@club-internet.fr>
+
+	* op_events.c: struct op_unit_mask, struct op_unit_desc allow up to
+	  seven unit masks. Reflect this change in data, op_check_unit_mask()
+	  and callers of op_check_unit_mask().
+
 2001-06-12  John Levon  <moz@compsoc.man.ac.uk>
 
 	* results/intro: tidy up

@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.14 2001/06/03 19:01:40 movement Exp $ */
+/* $Id: op_events.c,v 1.15 2001/06/14 22:39:39 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -57,8 +57,8 @@ struct op_event {
 struct op_unit_mask {
 	uint num; /* number of possible unit masks */
 	enum unit_mask_type unit_type_mask;
-	/* up to six allowed unit masks */
-	u8 um[6];
+	/* up to seven allowed unit masks */
+	u8 um[7];
 };
 
 int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um, int p2, u8 *ctr0_t, u8 *ctr1_t);
@@ -69,19 +69,19 @@ void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char 
 
 static struct op_unit_mask op_unit_masks[] = {
 	/* not used */
-	{ 1, utm_mandatory, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 1, utm_mandatory, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
 	/* MESI counters */
-	{ 5, utm_bitmask, { 0x1, 0x2, 0x4, 0x8, 0xf, 0x0 }, },
+	{ 5, utm_bitmask, { 0x1, 0x2, 0x4, 0x8, 0xf, 0x0, 0x0 }, },
 	/* EBL self/any */
-	{ 2, utm_exclusive, { 0x0, 0x20, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 2, utm_exclusive, { 0x0, 0x20, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
 	/* MMX PII events */
-	{ 1, utm_mandatory, { 0xf, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
-	{ 6, utm_bitmask, { 0x1, 0x2, 0x4, 0x8, 0x10, 0x20 }, },
-	{ 2, utm_exclusive, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0 }, },
-	{ 5, utm_bitmask, { 0x1, 0x2, 0x4, 0x8, 0xf, 0x0 }, },
+	{ 1, utm_mandatory, { 0xf, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 7, utm_bitmask, { 0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x3f }, },
+	{ 2, utm_exclusive, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 5, utm_bitmask, { 0x1, 0x2, 0x4, 0x8, 0xf, 0x0, 0x0 }, },
 	/* KNI PIII events */
-	{ 4, utm_exclusive, { 0x0, 0x1, 0x2, 0x3, 0x0, 0x0 }, },
-	{ 2, utm_bitmask, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 4, utm_exclusive, { 0x0, 0x1, 0x2, 0x3, 0x0, 0x0, 0x0 }, },
+	{ 2, utm_bitmask, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
 };
 
 static struct op_event op_events[] = {
@@ -205,6 +205,12 @@ uint op_nr_events = sizeof(op_events)/sizeof(struct op_event);
  * @um: unit mask value to check
  *
  * Verify that a unit mask value is within the allowed array.
+ *
+ * The function returns:
+ * -1  if the value is not allowed,
+ * 0   if the value is allowed and represent multiple units,
+ * > 0 otherwise, in this case allow->um[return value - 1] == um so the
+ * caller can access to the description of the unit_mask.
  */
 static int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
 {
@@ -215,7 +221,7 @@ static int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
 		case utm_mandatory:
 			for (i=0; i < allow->num; i++) {
 				if (allow->um[i] == um)
-					return 0;
+					return i + 1;
 			}
 			break;
 
@@ -225,15 +231,20 @@ static int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
 				break;
  
 			mask = 0;
-			for (i=0; i < allow->num; i++)
+			for (i=0; i < allow->num; i++) {
+				if (allow->um[i] == um)
+					/* it is an exact match so return the index + 1 */
+					return i + 1;
+
 				mask |= allow->um[i];
+			}
 
 			if ((mask & um) == um)
 				return 0;
 			break;
 	}
 
-	return 1;
+	return -1;
 }
 
 /**
@@ -290,8 +301,9 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
 					default:
 						break;
 				}
-				if (op_events[i].unit)
-					ret |= OP_CTR0_NO_UM*op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr0_um);
+				if (op_events[i].unit && 
+				    op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr0_um) >= 0)
+					ret |= OP_CTR0_NO_UM;
 				ctr0_e=1;
 				break;
 			}
@@ -323,8 +335,9 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
 					default:
 						break;
 				}
-				if (op_events[i].unit)
-					ret |= OP_CTR1_NO_UM*op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr1_um);
+				if (op_events[i].unit && 
+				    op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr1_um) >= 0)
+					ret |= OP_CTR1_NO_UM;
 				ctr1_e=1;
 			}
 		}
@@ -409,40 +422,41 @@ int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um
 
 #ifdef OP_EVENTS_DESC
 struct op_unit_desc {
-	char *desc[6];
+	char *desc[7];
 };
 
 static struct op_unit_desc op_unit_descs[] = {
-	{ { NULL, NULL, NULL, NULL, NULL, NULL, }, },
+	{ { NULL, NULL, NULL, NULL, NULL, NULL, NULL, }, },
 	{ { "(I)nvalid cache state",
 	  "(S)hared cache state",
 	  "(E)xclusive cache state",
 	  "(M)odified cache state",
-	  "MESI cache state", NULL, }, },
+	  "MESI cache state", NULL, NULL, }, },
 	{ { "self-generated transactions",
-	  "any transactions", NULL, NULL, NULL, NULL, }, },
-	{ { "mandatory", NULL, NULL, NULL, NULL, NULL, }, },
+	  "any transactions", NULL, NULL, NULL, NULL, NULL, }, },
+	{ { "mandatory", NULL, NULL, NULL, NULL, NULL, NULL, }, },
 	{ { "MMX packed multiplies",
 	  "MMX packed shifts",
 	  "MMX pack operations",
 	  "MMX unpack operations",
 	  "MMX packed logical",
-	  "MMX packed arithmetic", }, },
+	  "MMX packed arithmetic",
+	  "MMX pack/unpack operations, packed multiplies/shifts/logical/arithmetic" }, },
 	{ { "transitions from MMX to floating point",
 	  "transitions from floating point to MMX",
-	  NULL, NULL, NULL, NULL, }, },
+	  NULL, NULL, NULL, NULL, NULL, }, },
 	{ { "ES register",
 	  "DS register",
 	  "FS register",
 	/* IA manual says this is actually FS again - no mention in errata */
 	/* but test show that is really a typo error from IA manual */
 	  "GS register",
-	  "ES,DS,FS,GS registers", NULL, }, },
+	  "ES,DS,FS,GS registers", NULL, NULL }, },
 	{ { "prefetch NTA",
 	  "prefetch T1",
 	  "prefetch T2",
-	  "weakly ordered stores", NULL, NULL, }, },
-	{ { "packed and scalar", "packed", NULL, NULL, NULL, NULL, }, },
+	  "weakly ordered stores", NULL, NULL, NULL, }, },
+	{ { "packed and scalar", "packed", NULL, NULL, NULL, NULL, NULL, }, },
 
 };
 
@@ -547,6 +561,42 @@ static char *op_event_descs[] = {
 };
 
 /**
+ * op_get_um_desc - verify and get unit mask description
+ * @op_events_index: the index of the events in op_events array
+ * @um: unit mask
+ *
+ * Try to get the associated unit mask given the event index and unit
+ * mask value. No error can occur.
+ *
+ * The function return the associated help string about this um or
+ * NULL if um is invalid.
+ * This string is in text section so should not be freed.
+ */
+static char *op_get_um_desc(uint op_events_index, u8 um)
+{
+	struct op_unit_mask *op_um_mask;
+	int um_mask_desc_index;
+	uint um_mask_index = op_events[op_events_index].unit;
+
+	if (!um_mask_index)
+		return NULL;
+
+	op_um_mask = &op_unit_masks[um_mask_index];
+	um_mask_desc_index = op_check_unit_mask(op_um_mask, um);
+ 
+	if (um_mask_desc_index == -1)
+		return NULL;
+	else if (um_mask_desc_index == 0) {
+		/* FIXME: Perhaps needs to combine the different string? (this
+		 * needs dynamic alloc and updating the code/comment of callers)
+		 */
+		return "set with multiple units, check the documentation";
+	}
+ 
+	return op_unit_descs[op_events_index].desc[um_mask_desc_index-1];
+}
+
+/**
  * op_get_event_desc - get event name and description
  * @type: event value
  * @um: unit mask
@@ -567,7 +617,6 @@ static char *op_event_descs[] = {
 void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp)
 {
 	uint i;
-	uint j;
 
 	*typenamep = *typedescp = *umdescp = NULL;
 
@@ -575,12 +624,8 @@ void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char 
 		if (op_events[i].val == type) {
 			*typenamep = (char *)op_events[i].name;
 			*typedescp = op_event_descs[i];
-			if (op_events[i].unit) {
-				for (j=0; j < op_unit_masks[op_events[i].unit].num; j++) {
-					if (op_unit_masks[op_events[i].unit].um[j]==um)
-						*umdescp = op_unit_descs[op_events[i].unit].desc[j];
-				}
-			}
+			
+			*umdescp = op_get_um_desc(i, um);
 			break;
 		}
 	}
@@ -597,7 +642,7 @@ void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char 
 
 #include "version.h"
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	uint i;
 	uint j;
