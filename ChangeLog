@@ -1,5 +1,16 @@
 2003-10-02  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* events/*.events *.unit_masks: move these files to subdir named
+	  arch/processor_name/events and arch/processor_name/unit_masks
+	* events/Makefile.am: update according
+	
+	* libop/op_events.c: now it's safe to allow loading events file from a
+	  directory provided through environment var OPROFILE_EVENTS_FILE_DIR
+	* libop/tests/alloc_counter_tests.c: use it
+	* libop/tests/load_events_files_tests.c: use it
+
+2003-10-02  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libop/op_events.c: revert last commit (allowed to find events files
 	  description directory in alternate directory)
 

@@ -195,6 +195,9 @@ free_events:
 int main(void)
 {
 	struct allocated_counter const * it;
+
+	setenv("OPROFILE_EVENTS_FILE_DIR", "../../events", 1);
+
 	for (it = tests; it->cpu_type != CPU_NO_GOOD; ++it) {
 		do_test(it);
 	}
