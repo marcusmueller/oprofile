@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.64 2001/07/26 01:39:15 movement Exp $ */
+/* $Id: oprofile.c,v 1.65 2001/07/27 00:47:16 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -604,7 +604,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	/* might have overflowed from map buffer or ejection buffer */
 	if (num < oprof_data[cpu_num].buf_size-OP_PRE_WATERMARK && oprof_ready[cpu_num] != 2) {
 		printk(KERN_ERR "oprofile: Detected overflow of size %d. You must increase the "
-				"hash table size or reduce the interrupt frequency (%d)\n", 
+				"hash table size or reduce the interrupt frequency (%d)\n",
 				num, oprof_ready[cpu_num]);
 		num = oprof_data[cpu_num].buf_size;
 	} else
@@ -751,14 +751,14 @@ static int parms_ok(void)
 			op_check_range(op_ctr_count[i], min_count, OP_MAX_PERF_COUNT, "ctr count value %d not in range (%d %ld)\n");
 		}
 	}
- 
+
 	/* FIXME: below needs generalising for multiple counters */
- 
+
 	if (!op_ctr_on[0] && !op_ctr_on[1]) {
 		printk(KERN_ERR "oprofile: neither counter enabled.\n");
 		return 0;
 	}
- 
+
 	/* hw_ok() has set cpu_type */
 	ret = op_check_events(op_ctr_val[0], op_ctr_val[1], op_ctr_um[0], op_ctr_um[1], cpu_type);
 
@@ -775,7 +775,7 @@ static int parms_ok(void)
 
 	if (ret)
 		return 0;
- 
+
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		data = &oprof_data[cpu];
 		data->ctrs |= OP_CTR_0 * (!!op_ctr_on[0]);
@@ -792,7 +792,7 @@ static int parms_ok(void)
 	return 1;
 }
 
- 
+
 DECLARE_MUTEX(sysctlsem);
 
 
@@ -980,7 +980,7 @@ out:
 }
 
 static int nr_oprof_static = 6;
- 
+
 static ctl_table oprof_table[] = {
 	{ 1, "bufsize", &op_buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "hashsize", &op_hash_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
@@ -1013,7 +1013,7 @@ int __init init_sysctl(void)
 {
 	ctl_table *next = &oprof_table[nr_oprof_static];
 	ctl_table *counter_table[OP_MAX_COUNTERS];
-	ctl_table *tab; 
+	ctl_table *tab;
 	int i,j;
 
 	/* FIXME: no proper numbers, or verifiers (where possible) */
@@ -1029,7 +1029,7 @@ int __init init_sysctl(void)
 		next->child = counter_table[i];
 
 		tab = counter_table[i];
- 
+
 		memset(tab, 0, sizeof(ctl_table)*7);
 		tab[0] = ((ctl_table){ 1, "enabled", &op_ctr_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[1] = ((ctl_table){ 1, "event", &op_ctr_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
@@ -1042,7 +1042,7 @@ int __init init_sysctl(void)
 
 	sysctl_header = register_sysctl_table(dev_root, 0);
 	return 0;
- 
+
 cleanup:
 	next = &oprof_table[nr_oprof_static];
 	for (j = 0; j < i; j++) {
@@ -1122,11 +1122,11 @@ void __exit oprof_exit(void)
 	unregister_chrdev(op_major, "oprof");
 	smp_call_function(smp_apic_restore, NULL, 0, 1);
 	smp_apic_restore(NULL);
- 
+
 	cleanup_sysctl();
 	// currently no need to reset APIC state
 }
- 
+
 /*
  * "The most valuable commodity I know of is information."
  *      - Gordon Gekko
