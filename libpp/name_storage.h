@@ -33,71 +33,49 @@ struct stored_name {
 /// partial specialization for unique storage of names
 template<typename I> class name_storage
 	: public unique_storage<I, stored_name> {
-	
 public:
-	std::string const & name(I const & id) const {
+
+	typedef typename unique_storage<I, stored_name>::id_value id_value;
+
+	std::string const & name(id_value const & id) const {
 		return unique_storage<I, stored_name>::get(id).name;
 	};
 };
 
 
-/**
- * template class of storage IDs. The only reason for the
- * templatization is so different containers are typesafe (you cannot look
- * up with the wrong ID type).
- */
-template<typename T> struct name_id {
-public:
-	typedef std::vector<stored_name>::size_type size_type;
-
-	explicit name_id(size_type s) : id(s) {}
-
-	name_id() : id(0) {}
-
-	operator size_type() const { return id; }
-
-	size_type id;
-
-};
-
-
-/// store an image name identifier
-struct image_name_tag;
-typedef name_id<image_name_tag> image_name_id;
-
-
-/// store a debug name identifier (a source filename)
-struct debug_name_tag;
-typedef name_id<debug_name_tag> debug_name_id;
-
-
-/// store a symbol name identifier
-struct symbol_name_tag;
-typedef name_id<symbol_name_tag> symbol_name_id;
-
+struct debug_name_tag {};
+/// a debug filename
+typedef name_storage<debug_name_tag>::id_value debug_name_id;
 
 /// comparator for debug names is different
 bool operator<(debug_name_id const & lhs, debug_name_id const & rhs);
 
-
 /// class storing a set of shared debug name (source filename)
-class debug_name_storage : public name_storage<debug_name_id> {
+class debug_name_storage : public name_storage<debug_name_tag> {
 public:
 	/// return the basename for the given ID
 	std::string const & basename(debug_name_id id) const;
 };
 
 
+struct image_name_tag {};
+/// an image name
+typedef name_storage<image_name_tag>::id_value image_name_id;
+
 /// class storing a set of shared image name
-class image_name_storage : public name_storage<image_name_id> {
+class image_name_storage : public name_storage<image_name_tag> {
 public:
 	/// return the basename name for the given ID
 	std::string const & basename(image_name_id) const;
 };
 
 
+struct symbol_name_tag {};
+/// a (demangled) symbol
+typedef name_storage<symbol_name_tag>::id_value symbol_name_id;
+
 /// class storing a set of shared symbol name
-class symbol_name_storage : public name_storage<symbol_name_id> {
+class symbol_name_storage : public name_storage<symbol_name_tag> {
 public:
 	/// return the demangled name for the given ID
 	std::string const & demangle(symbol_name_id id) const;

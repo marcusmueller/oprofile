@@ -20,7 +20,9 @@
  * Store values indexed by I such that only one copy
  * of the value is ever stored.
  *
- * The indexer "I" must be integer-compatible.
+ * The indexer I is an arbitrary class that must be
+ * default-constructible. It is a required parameter
+ * in order to enforce type-safety for a collection.
  *
  * The value type "V" must be default-constructible.
  */
@@ -34,14 +36,28 @@ public:
 
 	virtual ~unique_storage() {}
 
+	typedef std::vector<V> stored_values;
+
+	/// the actual ID type
+	struct id_value : public I {
+		typedef typename stored_values::size_type size_type;
+
+		explicit id_value(size_type s) : I(), id(s) {}
+
+		id_value() : I(), id(0) {}
+
+		operator size_type() const { return id; }
+
+		size_type id;
+	};
+
+
 	/// ensure this value is available
-	I const create(V const & value) {
+	id_value const create(V const & value) {
 		typename id_map::const_iterator cit = ids.find(value);
 
 		if (cit == ids.end()) {
-			// ID must be constructible from
-			// std::vector::size_type
-			I const id(values.size());
+			id_value const id(values.size());
 			values.push_back(value);
 			ids[value] = id;
 			return id;
@@ -52,7 +68,7 @@ public:
 
 protected:
 	/// return the stored value for the given ID
-	V const & get(I const & id) const {
+	V const & get(id_value const & id) const {
 		// some stl lack at(), so we emulate it
 		if (id < values.size())
 			return values[id];
@@ -61,8 +77,7 @@ protected:
 	}
 
 private:
-	typedef std::vector<V> stored_values;
-	typedef std::map<V, I> id_map;
+	typedef std::map<V, id_value> id_map;
 
 	/// the contained values
 	stored_values values;
