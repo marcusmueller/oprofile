@@ -1,5 +1,9 @@
 2003-06-15  John Levon  <levon@movementarian.org>
 
+	* utils/op_help.c: c89 fix
+
+2003-06-15  John Levon  <levon@movementarian.org>
+
 	* daemon/opd_image.c: c89 fix
 
 2003-06-15  John Levon  <levon@movementarian.org>
