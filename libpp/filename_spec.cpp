@@ -71,7 +71,7 @@ void filename_spec::set_sample_filename(string const & filename)
 }
 
 
-bool filename_spec::is_dependant() const
+bool filename_spec::is_dependent() const
 {
 	if (cg_image.empty())
 		return image != lib_image;

@@ -1,3 +1,9 @@
+2004-05-07  John Levon  <levon@movementarian.org>
+
+	* libpp/filename_spec.h:
+	* libpp/filename_spec.cpp:
+	* libpp/profile_spec.cpp: "dependant" not "dependent"
+
 2004-04-19  Will Cohen  <wcohen@redhat.com>
 
 	* events/i386/p4/unit_masks:

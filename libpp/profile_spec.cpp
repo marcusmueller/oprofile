@@ -398,7 +398,7 @@ bool valid_candidate(string const & filename, profile_spec const & spec,
 		return false;
 	filename_spec file_spec(filename);
 	if (spec.match(file_spec)) {
-		if (exclude_dependent && file_spec.is_dependant())
+		if (exclude_dependent && file_spec.is_dependent())
 			return false;
 		return true;
 	}
