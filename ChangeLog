@@ -1,3 +1,22 @@
+2003-09-14  John Levon  <levon@movementarian.org>
+
+	* libpp/op_header.h:
+	* libpp/op_header.cpp: output header info to
+	a string not a stream
+
+	* libpp/arrange_profiles.h:
+	* libpp/arrange_profiles.cpp: give classes a long
+	name, and fill in global event/cpu info
+
+	* pp/opannotate.cpp:
+	* pp/opannotate_options.cpp:
+	* pp/opannotate_options.h:
+	* pp/opgprof_options.cpp:
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp:
+	* pp/opreport_options.h: use the class long names
+	and info
+
 2003-09-14  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/profile_spec.cpp: handle symlink

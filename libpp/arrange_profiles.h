@@ -78,8 +78,11 @@ struct profile_set {
 struct profile_class {
 	std::list<profile_set> profiles;
 
-	/// human-readable name
+	/// human-readable column name
 	std::string name;
+
+	/// human-readable long name
+	std::string longname;
 
 	/// merging matches against this
 	profile_template ptemplate;
@@ -89,12 +92,24 @@ bool operator<(profile_class const & lhs,
                profile_class const & rhs);
 
 
+struct profile_classes {
+	/// this is only set if we're not classifying on event/count anyway
+	std::string event;
+
+	/// CPU info
+	std::string cpuinfo;
+
+	/// the actual classes
+	std::vector<profile_class> v;
+};
+
+
 /**
  * Take a list of sample filenames, and process them into a set of
  * classes containing profile_sets. Merging is done at this stage
  * as well as attaching dependent profiles to the main image.
  */
-std::vector<profile_class> const
+profile_classes const
 arrange_profiles(std::list<std::string> const & files,
                  merge_option const & merge_by);
 

@@ -20,7 +20,7 @@
 #include "string_filter.h"
 #include "path_filter.h"
 
-class profile_class;
+class profile_classes;
 
 namespace options {
 	extern bool demangle;
@@ -37,7 +37,7 @@ namespace options {
 }
 
 /// classes of sample filenames to handle
-extern std::vector<profile_class> profile_classes;
+extern profile_classes classes;
 
 /**
  * handle_options - process command line

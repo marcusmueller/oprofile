@@ -42,17 +42,15 @@ void check_mtime(std::string const & file, opd_header const & header);
  * Return the header of this sample file. Only the magic number is checked
  * the version number is not checked. All error are fatal
  */
-opd_header read_header(std::string const & sample_filename);
+opd_header const read_header(std::string const & sample_filename);
 
 /**
- * output a readable form of header to out, this don't include the cpu type
+ * output a readable form of header, this don't include the cpu type
  * and speed
  */
-std::ostream & operator<<(std::ostream & out, opd_header const & header);
+std::string const describe_header(opd_header const & header);
 
-/**
- * output a readable form of cpu type and speed extracted from the given header
- */
-void output_cpu_info(std::ostream & out, opd_header const & header);
+/// output a readable form of cpu type and speed
+std::string const describe_cpu(opd_header const & header);
 
 #endif // OP_HEADER_H

@@ -21,7 +21,8 @@
 #include "op_file.h"
 #include "op_header.h"
 #include "op_events.h"
-#include "stream_util.h"
+//#include "stream_util.h"
+#include "string_manip.h"
 
 using namespace std;
 
@@ -106,7 +107,7 @@ void check_mtime(string const & file, opd_header const & header)
 }
 
 
-opd_header read_header(string const & sample_filename)
+opd_header const read_header(string const & sample_filename)
 {
 	samples_odb_t samples_db;
 
@@ -129,18 +130,20 @@ opd_header read_header(string const & sample_filename)
 
 namespace {
 
-void op_print_event(ostream & out, op_cpu cpu_type, u8 type, u16 um, u32 count)
+string const op_print_event(op_cpu cpu_type, u8 type, u16 um, u32 count)
 {
+	string str;
+
 	if (cpu_type == CPU_TIMER_INT) {
-		out << "Profiling through timer interrupt\n";
-		return;
+		str += "Profiling through timer interrupt";
+		return str;
 	}
 
 	struct op_event * event = op_find_event(cpu_type, type);
 
 	if (!event) {
 		cerr << "Could not locate event " << type << endl;
-		return;
+		return str;
 	}
 
 	char const * um_desc = 0;
@@ -150,36 +153,47 @@ void op_print_event(ostream & out, op_cpu cpu_type, u8 type, u16 um, u32 count)
 			um_desc = event->unit->um[i].desc;
 	}
 
-	out << "Counted " << event->name << " events (" << event->desc << ")";
-	if (cpu_type != CPU_RTC) {
-		io_state state(out);
+	str += string("Counted ") + event->name;
+	str += string(" events (") + event->desc + ")";
 
-		out << " with a unit mask of 0x"
-		    << hex << setw(2) << setfill('0') << unsigned(um) << " ("
-		    << (um_desc ? um_desc : "multiple flags") << ")";
+	if (cpu_type != CPU_RTC) {
+		str += " with a unit mask of 0x";
+
+		ostringstream ss;
+		ss << hex << setw(2) << setfill('0') << unsigned(um);
+		str += ss.str();
+
+		str += " (";
+		str += um_desc ? um_desc : "multiple flags";
+		str += ")";
 	}
 
-	out << " count " << count << endl;
+	str += " count " + tostr(count);
+	return str;
 }
 
 }
 
 
-ostream & operator<<(ostream & out, opd_header const & header)
+string const describe_header(opd_header const & header)
 {
 	op_cpu cpu = static_cast<op_cpu>(header.cpu_type);
 
-	op_print_event(out, cpu, header.ctr_event,
-	               header.ctr_um, header.ctr_count);
-
-	return out;
+	return op_print_event(cpu, header.ctr_event,
+	                      header.ctr_um, header.ctr_count);
 }
 
 
-void output_cpu_info(std::ostream & out, opd_header const & header)
+string const describe_cpu(opd_header const & header)
 {
 	op_cpu cpu = static_cast<op_cpu>(header.cpu_type);
 
-	out << "CPU: " << op_get_cpu_type_str(cpu);
-	out << ", speed " << header.cpu_speed << " MHz (estimated)" << endl;
+	string str;
+	str += string("CPU: ") + op_get_cpu_type_str(cpu);
+	str += ", speed ";
+
+	ostringstream ss;
+	ss << header.cpu_speed;
+	str += ss.str() + " MHz (estimated)";
+	return str;
 }

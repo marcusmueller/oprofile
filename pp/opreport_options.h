@@ -21,7 +21,7 @@
 #include "string_filter.h"
 #include "symbol_sort.h"
 
-class profile_class;
+class profile_classes;
 class merge_option;
 
 namespace options {
@@ -43,7 +43,7 @@ namespace options {
 }
 
 /// All the chosen sample files.
-extern std::vector<profile_class> profile_classes;
+extern profile_classes classes;
 
 /**
  * get_options - process command line

@@ -17,10 +17,10 @@
 #include <numeric>
 
 #include "op_exception.h"
-#include "op_header.h"
 #include "string_manip.h"
 #include "file_manip.h"
 #include "opreport_options.h"
+#include "op_header.h"
 #include "profile.h"
 #include "arrange_profiles.h"
 #include "profile_container.h"
@@ -136,7 +136,7 @@ size_t app_summary::add_profile(profile_set const & profile,
 
 /// all the summaries
 struct summary_container {
-	summary_container(vector<profile_class> const & profile_classes);
+	summary_container(vector<profile_class> const & pclasses);
 
 	/// all map summaries
 	vector<app_summary> apps;
@@ -146,16 +146,16 @@ struct summary_container {
 
 
 summary_container::
-summary_container(vector<profile_class> const & profile_classes)
+summary_container(vector<profile_class> const & pclasses)
 {
 	typedef map<string, app_summary> app_map_t;
 	app_map_t app_map;
 
-	for (size_t i = 0; i < profile_classes.size(); ++i) {
+	for (size_t i = 0; i < pclasses.size(); ++i) {
 		list<profile_set>::const_iterator it
-			= profile_classes[i].profiles.begin();
+			= pclasses[i].profiles.begin();
 		list<profile_set>::const_iterator const end
-			= profile_classes[i].profiles.end();
+			= pclasses[i].profiles.end();
 
 		for (; it != end; ++it) {
 			app_map_t::iterator ait = app_map.find(it->image);
@@ -193,30 +193,13 @@ void output_header()
 	if (!options::show_header)
 		return;
 
-	bool first_output = true;
+	cout << classes.cpuinfo << endl;
+	if (!classes.event.empty())
+		cout << classes.event;
 
 	for (vector<profile_class>::size_type i = 0;
-	     i < profile_classes.size(); ++i) {
-
-		// FIXME: should really be using profile_class.longname
-		profile_set const & profile
-			= *(profile_classes[i].profiles.begin());
-		string file;
-		if (profile.files.empty()) {
-			profile_dep_set const & dep = *(profile.deps.begin());
-			list<string> const & files = dep.files;
-			file = *(files.begin());
-		} else {
-			file = *(profile.files.begin());
-		}
-		opd_header const & header = read_header(file);
-
-		if (first_output) {
-			output_cpu_info(cout, header);
-			first_output = false;
-		}
-
-		cout << header;
+	     i < classes.v.size(); ++i) {
+		cout << classes.v[i].longname << endl;
 	}
 }
 
@@ -420,10 +403,10 @@ int opreport(vector<string> const & non_options)
 
 	output_header();
 
-	nr_groups = profile_classes.size();
+	nr_groups = classes.v.size();
 
 	if (!options::symbols) {
-		summary_container summaries(profile_classes);
+		summary_container summaries(classes.v);
 		output_summaries(summaries);
 		return 0;
 	}
@@ -432,9 +415,9 @@ int opreport(vector<string> const & non_options)
 
 	bool multiple_apps = false;
 
-	for (size_t i = 0; i < profile_classes.size(); ++i) {
-		populate_profiles(profile_classes[i], samples, i);
-		if (profile_classes[i].profiles.size() > 1)
+	for (size_t i = 0; i < classes.v.size(); ++i) {
+		populate_profiles(classes.v[i], samples, i);
+		if (classes.v[i].profiles.size() > 1)
 			multiple_apps = true;
 	}
 

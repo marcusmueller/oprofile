@@ -40,9 +40,6 @@ size_t nr_events;
 
 scoped_ptr<profile_container> samples;
 
-// needed to display samples file information
-vector<opd_header> header;
-
 /// how opannotate was invoked
 string cmdline;
 
@@ -99,29 +96,6 @@ void populate_samples(profile_container & samples,
 
 	for (; it != end; ++it) {
 		populate_samples(samples, count_group, it->image, it->files);
-	}
-}
-
-
-void save_sample_file_header()
-{
-	for (vector<profile_class>::size_type i = 0;
-	     i < profile_classes.size(); ++i) {
-
-		// FIXME: should really be using profile_class.longname
-		profile_set const & profile
-			= *(profile_classes[i].profiles.begin());
-		string file;
-		if (profile.files.empty()) {
-			profile_dep_set const & dep = *(profile.deps.begin());
-			list<string> const & files = dep.files;
-			file = *(files.begin());
-		} else {
-			file = *(profile.files.begin());
-		}
-		opd_header temp = read_header(file);
-
-		header.push_back(temp);
 	}
 }
 
@@ -194,15 +168,18 @@ void output_info(ostream & out)
 
 	out << in_comment << '\n';
 
-	stringstream stream;
+	stringstream ss;
 
-	output_cpu_info(stream, header[0]);
-	for (size_t i = 0; i < header.size(); ++i)
-		stream << header[i];
-	stream.seekp(0);
+	ss << classes.cpuinfo << endl;
+	if (!classes.event.empty())
+		ss << classes.event << endl;
+
+	for (size_t i = 0; i < classes.v.size(); ++i)
+		ss << classes.v[i].longname << endl;
+	ss.seekp(0);
 
 	string line;
-	while (getline(stream, line)) {
+	while (getline(ss, line)) {
 		out << in_comment << line << '\n';
 	}
 
@@ -714,22 +691,20 @@ int opannotate(vector<string> const & non_options)
 {
 	handle_options(non_options);
 
-	nr_events = profile_classes.size();
+	nr_events = classes.v.size();
 
 	samples.reset(new profile_container(true, true));
 
-	save_sample_file_header();
-
 	set<string> images;
 
-	for (size_t i = 0; i < profile_classes.size(); ++i) {
+	for (size_t i = 0; i < classes.v.size(); ++i) {
 
-		populate_samples(*samples, profile_classes[i], i);
+		populate_samples(*samples, classes.v[i], i);
 
 		list<profile_set>::const_iterator it
-			= profile_classes[i].profiles.begin();
+			= classes.v[i].profiles.begin();
 		list<profile_set>::const_iterator const end
-			= profile_classes[i].profiles.end();
+			= classes.v[i].profiles.end();
 		
 		for (; it != end; ++it)
 			images.insert(it->image);

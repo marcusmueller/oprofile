@@ -14,6 +14,7 @@
 #include <iostream>
 
 #include "string_manip.h"
+#include "op_header.h"
 
 #include "arrange_profiles.h"
 #include "parse_filename.h"
@@ -32,13 +33,52 @@ void verify_one_dimension(vector<profile_class> const &, bool const *)
 }
 
 
-/**
- * Give human-readable names to each class.
- */
-void name_classes(vector<profile_class> & classes, int axis)
+/// find the first sample file header in the class
+opd_header const get_header(profile_class const & pclass)
 {
-	vector<profile_class>::iterator it = classes.begin();
-	vector<profile_class>::iterator const end = classes.end();
+	profile_set const & profile = *(pclass.profiles.begin());
+
+	string file;
+
+	// could be only one main app, with no samples for the main image
+	if (profile.files.empty()) {
+		profile_dep_set const & dep = *(profile.deps.begin());
+		list<string> const & files = dep.files;
+		file = *(files.begin());
+	} else {
+		file = *(profile.files.begin());
+	}
+
+	return read_header(file);
+}
+
+
+/// Look up the detailed event info for placing in the header.
+string const get_event_info(profile_class const & pclass)
+{
+	return describe_header(get_header(pclass));
+}
+
+
+string const get_cpu_info(profile_class const & pclass)
+{
+	return describe_cpu(get_header(pclass));
+}
+
+
+/// Give human-readable names to each class.
+void name_classes(profile_classes & classes, int axis)
+{
+	classes.event = get_event_info(classes.v[0]);
+	classes.cpuinfo = get_cpu_info(classes.v[0]);
+
+	// If we're splitting on event anyway, clear out the
+	// global event name
+	if (axis == 0)
+		classes.event.clear();
+
+	vector<profile_class>::iterator it = classes.v.begin();
+	vector<profile_class>::iterator const end = classes.v.end();
 
 	// FIXME: add long name, lookup event etc.
 
@@ -47,25 +87,34 @@ void name_classes(vector<profile_class> & classes, int axis)
 		case 0:
 			it->name = it->ptemplate.event
 				+ ":" + it->ptemplate.count;
+			it->longname = get_event_info(*it);
 			break;
 		case 1:
 			it->name = "unitmask:";
 			it->name += it->ptemplate.unitmask;
+			it->longname = "Samples matching a unit mask of ";
+			it->longname += it->ptemplate.unitmask;
 			break;
 		case 2:
 			it->name = "tgid:";
 			it->name += it->ptemplate.tgid;
+			it->longname = "Processes with a thread group ID of ";
+			it->longname += it->ptemplate.tgid;
 			break;
 		case 3:
 			it->name = "tid:";
 			it->name += it->ptemplate.tid;
+			it->longname = "Processes with a thread ID of ";
+			it->longname += it->ptemplate.tid;
 			break;
 		case 4:
 			it->name = "cpu:";
 			it->name += it->ptemplate.cpu;
+			it->longname = "Samples on CPU " + it->ptemplate.cpu;
 			break;
 		}
 		cerr << "Class name: " <<  it->name << endl;
+		cerr << "Long class name: " <<  it->longname << endl;
 	}
 }
 
@@ -73,15 +122,15 @@ void name_classes(vector<profile_class> & classes, int axis)
 /**
  * Name and verify classes.
  */
-void identify_classes(vector<profile_class> & classes,
+void identify_classes(profile_classes & classes,
                       merge_option const & merge_by)
 {
-	profile_template & ptemplate = classes[0].ptemplate;
+	profile_template & ptemplate = classes.v[0].ptemplate;
 	bool changed[5] = { false, };
 
-	vector<profile_class>::iterator it = classes.begin();
+	vector<profile_class>::iterator it = classes.v.begin();
 	++it;
-	vector<profile_class>::iterator end = classes.end();
+	vector<profile_class>::iterator end = classes.v.end();
 
 	// only one class, name it after the event
 	if (it == end) {
@@ -112,7 +161,7 @@ void identify_classes(vector<profile_class> & classes,
 			changed[4] = true;
 	}
 
-	verify_one_dimension(classes, changed);
+	verify_one_dimension(classes.v, changed);
 
 	int axis = -1;
 
@@ -300,10 +349,10 @@ bool operator<(profile_class const & lhs,
 }
 
 
-vector<profile_class> const
+profile_classes const
 arrange_profiles(list<string> const & files, merge_option const & merge_by)
 {
-	vector<profile_class> classes;
+	profile_classes classes;
 
 	list<string>::const_iterator it = files.begin();
 	list<string>::const_iterator const end = files.end();
@@ -322,12 +371,15 @@ arrange_profiles(list<string> const & files, merge_option const & merge_by)
 			parsed.image = parsed.lib_image;
 
 		profile_class & pclass =
-			find_class(classes, parsed, merge_by);
+			find_class(classes.v, parsed, merge_by);
 		add_profile(pclass, parsed);
 	}
 
+	if (classes.v.empty())
+		return classes;
+
 	// sort by template for nicely ordered columns
-	stable_sort(classes.begin(), classes.end());
+	stable_sort(classes.v.begin(), classes.v.end());
 
 	// name and check
 	identify_classes(classes, merge_by);

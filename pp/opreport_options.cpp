@@ -25,7 +25,7 @@
 
 using namespace std;
 
-vector<profile_class> profile_classes;
+profile_classes classes;
 
 namespace options {
 	bool demangle = true;
@@ -228,9 +228,9 @@ void handle_options(vector<string> const & non_options)
 	copy(sample_files.begin(), sample_files.end(),
 	     ostream_iterator<string>(cverb, "\n"));
 
-	profile_classes = arrange_profiles(sample_files, merge_by);
+	classes = arrange_profiles(sample_files, merge_by);
 
-	if (profile_classes.empty()) {
+	if (classes.v.empty()) {
 		cerr << "No samples files found: profile specification too "
 		     << "strict ?" << endl;
 		exit(EXIT_FAILURE);

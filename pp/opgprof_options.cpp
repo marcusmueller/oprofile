@@ -57,10 +57,10 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 	merge_by.tgid = true;
 	merge_by.unitmask = true;
 
-	vector<profile_class> profile_classes
+	profile_classes classes
 		= arrange_profiles(sample_files, merge_by);
 
-	size_t nr_classes = profile_classes.size();
+	size_t nr_classes = classes.v.size();
 
 	if (nr_classes == 0 && !exclude_dependent) {
 		cerr << "No samples files found: profile specification too "
@@ -70,10 +70,10 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 
 	size_t nr_app_profiles = 0;
 	if (nr_classes)
-		nr_app_profiles = profile_classes[0].profiles.size();
+		nr_app_profiles = classes.v[0].profiles.size();
 
 	if (nr_classes == 1 && nr_app_profiles == 1) {
-		profiles = *(profile_classes[0].profiles.begin());
+		profiles = *(classes.v[0].profiles.begin());
 		return true;
 	}
 

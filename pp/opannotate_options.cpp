@@ -22,7 +22,7 @@
 
 using namespace std;
 
-vector<profile_class> profile_classes;
+profile_classes classes;
 
 namespace options {
 	bool demangle = true;
@@ -121,9 +121,9 @@ void handle_options(vector<string> const & non_options)
 	merge_by.tgid = true;
 	merge_by.unitmask = true;
 
-	profile_classes = arrange_profiles(sample_files, merge_by);
+	classes = arrange_profiles(sample_files, merge_by);
 
-	if (profile_classes.empty()) {
+	if (classes.v.empty()) {
 		cerr << "No samples files found: profile specification too "
 		     << "strict ?" << endl;
 		exit(EXIT_FAILURE);
