@@ -1,3 +1,10 @@
+2003-07-23  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: error out at --setup time if vmlinux is not
+	valid. Cleanup the error message if so
+
+	* daemon/opd_kernel.c: small cleanup
+
 2003-07-21  John Levon  <levon@movementarian.org>
 
 	* gui/oprof_start.cpp: select "No event" when switching counter

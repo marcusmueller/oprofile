@@ -322,15 +322,15 @@ get_kernel_range() {
 		return;
 	fi
 
-	range_info=`objdump -h $VMLINUX | grep " .text "`
+	range_info=`objdump -h $VMLINUX 2>/dev/null | grep " .text "`
 	tmp1=`echo $range_info | awk '{print $4}'`
 	tmp_length=`echo $range_info | awk  '{print $3}'`
-	tmp2=`objdump -h $VMLINUX --adjust-vma=0x$tmp_length | grep " .text " | awk  '{print $4}'`
+	tmp2=`objdump -h $VMLINUX --adjust-vma=0x$tmp_length 2>/dev/null | grep " .text " | awk  '{print $4}'`
 
 	if test -z "$tmp1" -o -z "$tmp2"; then
-		echo "Couldn't determine kernel start/end" >&2
-		echo "Perhaps $VMLINUX is not a proper vmlinux file ?" >&2
-		echo "found start as \"$tmp1\", end as \"$tmp2\"" >&2
+		echo "The specified file $VMLINUX does not seem to be valid" >&2
+		echo "Make sure you are using vmlinux not vmlinuz" >&2
+		vecho "found start as \"$tmp1\", end as \"$tmp2\"" >&2
 		exit 1
 	fi
 	KERNEL_RANGE="`echo $tmp1`,`echo $tmp2`"
@@ -549,6 +549,8 @@ do_options() {
 				error_if_empty $arg $val
 				VMLINUX=$val
 				DO_SETUP=yes
+				# check validity
+				get_kernel_range
 				;;
 			--no-vmlinux)
 				VMLINUX=none
