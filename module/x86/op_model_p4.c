@@ -11,6 +11,7 @@
 #include "op_x86_model.h"
 #include "op_msr.h"
 #include "op_apic.h"
+#include "op_arch.h"
 
 #define NUM_EVENTS 39
 #define NUM_COUNTERS 8
@@ -488,7 +489,7 @@ static void p4_check_ctrs(uint const cpu,
 		CCCR_READ(low, high, i);
  		CTR_READ(ctr, high, i);
 		if (CCCR_OVF_P(low) || CTR_OVERFLOW_P(ctr)) {
-			op_do_profile(cpu, regs, i);
+			op_do_profile(cpu, instruction_pointer(regs), IRQ_ENABLED(regs), i);
  			CTR_WRITE(oprof_data[cpu].ctr_count[i], i);
 			CCCR_CLEAR_OVF(low);
 			CCCR_WRITE(low, high, i);

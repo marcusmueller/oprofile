@@ -12,7 +12,6 @@
 #include "oprofile.h"
 #include "op_util.h"
 #include "version.h"
-#include "op_arch.h"
 
 EXPORT_NO_SYMBOLS;
  
@@ -67,7 +66,7 @@ inline static void next_sample(struct _oprof_data * data)
 		data->nextbuf = 0;
 }
 
-inline static void evict_op_entry(uint cpu, struct _oprof_data * data, long eflags)
+inline static void evict_op_entry(uint cpu, struct _oprof_data * data, long irq_enabled)
 {
 	next_sample(data);
 	if (likely(!need_wakeup(cpu, data)))
@@ -100,7 +99,7 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data, long efla
 	 * us and the code for wait_event_interruptible()) disable interrupts so it's
 	 * still safe to check IF_MASK.
 	 */
-	if (likely(IRQ_ENABLED(eflags))) {
+	if (likely(irq_enabled)) {
 		oprof_ready[cpu] = 1;
 		wake_up(&oprof_wait);
 	}
@@ -113,17 +112,16 @@ inline static void fill_op_entry(struct op_sample * ops, long eip, pid_t pid, in
 	ops->counter = ctr;
 }
 
-void op_do_profile(uint cpu, struct pt_regs * regs, int ctr)
+void op_do_profile(uint cpu, long eip, long irq_enabled, int ctr)
 {
 	struct _oprof_data * data = &oprof_data[cpu];
 	pid_t const pid = current->pid;
-	long const eip = INST_PTR(regs);
 	struct op_sample * samples = &data->buffer[data->nextbuf];
 
 	data->nr_irq++;
 
 	fill_op_entry(samples, eip, pid, ctr);
-	evict_op_entry(cpu, data, STATUS(regs));
+	evict_op_entry(cpu, data, irq_enabled);
 }
 
 /* ---------------- driver routines ------------------ */

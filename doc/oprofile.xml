@@ -1570,18 +1570,84 @@ accumulated at the position of the right brace of the expression. Using
 samples at an assembly level.
 </para>
 </sect2>
-<!--
- FIXME This is not sufficient find examples
-<sect2 id="inlined-function">
-<title>inlined functions</title>
+<sect2 id="prologues">
+<title>Prologues and epilogues</title>
 <para>
-In some language the compiler can generate implicitely functions such as copy
-constructor or copy operator in C++. Such function are credited by the compiler
-of a zero line number which give weirds annotation.
-</sect2>
+The compiler generally needs to generate "glue" code across function calls, dependent
+on the particular function call conventions used. Additionally other things
+need to happen, like stack pointer adjustment for the local variables; this
+code is known as the function prologue. Similar code is needed at function return,
+and is known as the function epilogue. This will show up in annotations as
+samples at the very start and end of a function, where there is no apparent
+executable code in the source.
 </para>
 </sect2>
--->
+<sect2 id="inlined-function">
+<title>Inlined functions</title>
+<para>
+You may see that a function is credited with a certain number of samples, but
+the listing does not add up to the correct total. To pick a real example :
+</para>
+<screen>
+internal_sk_buff_alloc_security(struct sk_buff *skb)
+/* internal_sk_buff_alloc_security 1882 12.48% */
+/* 353 2.342% */
+{
+
+        sk_buff_security_t *sksec;
+        /* 15 0.0995% */
+        int rc = 0;
+
+        /* 10 0.06633% */
+        sksec = skb-&gt;lsm_security;
+        /* 468 3.104% */
+        if (sksec &amp;&amp; sksec-&gt;magic == DSI_MAGIC) {
+                goto out;
+        }
+
+        sksec = (sk_buff_security_t *) get_sk_buff_memory(skb);
+        /* 3 0.0199% */
+        if (!sksec) {
+                /* 38 0.2521% */
+                rc = -ENOMEM;
+                goto out;
+        /* 10 0.06633% */
+        }
+        memset(sksec, 0, sizeof (sk_buff_security_t));
+        /* 44 0.2919% */
+        sksec-&gt;magic = DSI_MAGIC;
+        /* 32 0.2123% */
+        sksec-&gt;skb = skb;
+        /* 45 0.2985% */
+        sksec-&gt;sid = DSI_SID_NORMAL;
+        /* 31 0.2056% */
+        skb-&gt;lsm_security = sksec;
+
+      out:
+
+        /* 146 0.9685% */
+        return rc;
+
+/* 98 0.6501% */
+}
+</screen>
+<para>
+Here, the function is credited with 1,882 samples, but the annotations
+below do not account for this. This is usually because of inline functions -
+the compiler marks such code with debug entries for the inline function
+definition, and this is where <command>op_to_source</command> annotates
+such samples. In the case above, <function>memset</function> is the most
+likely candidate for this problem. Examining the mixed source/assembly
+output can help identify such results.
+</para>
+
+<para>
+Furthermore, for some languages the compiler can implicitly generate functions,
+such as default copy constructors. Such functions are labelled by the compiler
+as having a line number of 0, which means the source annotation can be confusing.
+</para>
+<!-- FIXME so what *actually* happens to those samples ? ignored ? -->
+</sect2>
 <sect2 id="wrong-linenr-info">
 <title>Inaccuracy in line number information</title>
 <para>
@@ -1816,7 +1882,7 @@ information for annotated source, line numbers, is only generated at <option>-g2
 Thanks to (in no particular order) : Arjan van de Ven, Rik van Riel, Juan Quintela, Philippe Elie,
 Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne, Bob Montgomery, Ray Bryant, H.J. Lu,
 Jeff Esper, Will Cohen, Graydon Hoare, Cliff Woolley, Alex Tsariounov, Al Stone,
-Randolph Chung, Anton Blanchard, Richard Henderson, Andries Brouwer,
+Randolph Chung, Anton Blanchard, Richard Henderson, Andries Brouwer, Bryan Rittmeyer,
 Richard Reich (rreich@rdrtech.com), Dave Jones, Charles Filtness; and finally Pulp, for "Intro".
 </para>
 </chapter>

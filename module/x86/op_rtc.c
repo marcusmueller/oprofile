@@ -15,6 +15,7 @@
 #include <asm/ptrace.h>
 
 #include "oprofile.h"
+#include "op_arch.h"
 #include "op_util.h"
 
 #define RTC_IO_PORTS 2
@@ -43,7 +44,7 @@ static void do_rtc_interrupt(int irq, void * dev_id, struct pt_regs * regs)
 	intr_flags = CMOS_READ(RTC_INTR_FLAGS);
 	/* Is this my type of interrupt? */
 	if (intr_flags & RTC_PF) {
-		op_do_profile(cpu, regs, 0);
+		op_do_profile(cpu, instruction_pointer(regs), IRQ_ENABLED(regs), 0);
 	}
 
 	unlock_rtc(flags);

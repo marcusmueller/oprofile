@@ -1,3 +1,25 @@
+2003-03-26  John Levon  <levon@movementarian.org>
+
+	From a patch by Bryan Rittmeyer.
+
+	* module/oprofile.c:
+	* module/oprofile.h: push "irq_enabled" test
+	into arch code, don't pass struct pt_regs.
+
+	* module/x86/op_arch.h: cleanups
+
+	* module/x86/op_model_athlon.c:
+	* module/x86/op_model_ppro.c:
+	* module/x86/op_model_p4.c:
+	* module/x86/op_rtc.c: changes from above
+
+	* module/ia64/op_arch.h: remove
+	* module/ia64/op_pmu.c: change from above
+
+2003-03-24  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: document prologues, and inline functions
+
 2003-03-24  Will Cohen  <wcohen@redhat.com>
 
 	* libutil/op_fileio.c (op_get_line): Use lower cost getc().

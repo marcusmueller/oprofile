@@ -15,7 +15,6 @@
 #include "oprofile.h"
 #include "op_util.h"
 #include <asm/perfmon.h>
-#include "op_arch.h"
 #include "op_ia64_model.h"
 
 /* number of counters physically present */
@@ -27,6 +26,9 @@ static uint op_nr_counters = 4;
 
 /* The appropriate value is selected in pmu_init() */
 unsigned long pmd_mask = IA64_2_PMD_MASK_VAL;
+
+#define IA64_1_PMD_MASK_VAL	((1UL << 32) - 1)
+#define IA64_2_PMD_MASK_VAL	((1UL << 47) - 1)
 
 #define pmd_overflowed(r,c) ((r) & (1 << perf_reg(c)))
 #define set_pmd_neg(v,c) do { \
@@ -56,7 +58,9 @@ op_do_pmu_interrupt(u64 pmc0, struct pt_regs *regs)
 
 	for (ctr = 0 ; ctr < op_nr_counters ; ++ctr) {
 		if (pmd_overflowed(pmc0, ctr)) {
-			op_do_profile(cpu, regs, ctr);
+			/* FIXME: We're saying it's always OK to evict here.
+			 * Looks buggy to me. */
+			op_do_profile(cpu, regs->cr_iip, 1, ctr);
 			set_pmd_neg(oprof_data[cpu].ctr_count[ctr], ctr);
 		}
 	}

@@ -11,6 +11,7 @@
  */
 
 #include "op_x86_model.h"
+#include "op_arch.h"
 #include "op_msr.h"
 
 #define NUM_COUNTERS 2
@@ -87,7 +88,7 @@ static void ppro_check_ctrs(uint const cpu,
 	for (i = 0 ; i < NUM_COUNTERS; ++i) {
 		CTR_READ(low, high, msrs, i);
 		if (CTR_OVERFLOWED(low)) {
-			op_do_profile(cpu, regs, i);
+			op_do_profile(cpu, instruction_pointer(regs), IRQ_ENABLED(regs), i);
 			CTR_WRITE(oprof_data[cpu].ctr_count[i], msrs, i);
 		}
 	}

@@ -11,17 +11,15 @@
 #ifndef OP_ARCH_H
 #define OP_ARCH_H
 
+#include <asm/ptrace.h>
+
 /* How to access the processor's instruction pointer */
-#ifdef CONFIG_X86_64
-#define INST_PTR(regs) ((regs)->rip)
-#else
-#define INST_PTR(regs) ((regs)->eip)
+#ifndef instruction_pointer
+/* x86-64 doesn't exist in 2.2 ... */
+#define instruction_pointer(regs) ((regs)->eip)
 #endif
 
-/* How to access the processor's status register */
-#define STATUS(regs) ((regs)->eflags)
-
 /* Bit in processor's status register for interrupt masking */
-#define IRQ_ENABLED(eflags)	(eflags & IF_MASK)
+#define IRQ_ENABLED(regs)	((regs)->eflags & IF_MASK)
 
 #endif /* OP_ARCH_H */
