@@ -1,3 +1,10 @@
+2003-02-24  Dave Jones <davej@codemonkey.org.uk>
+
+	* module/x86/op_apic.[c|h]: move NMI gate setup to architecture
+	  specific SET_NMI_GATE macro. x86=no change.
+	  Make x86-64 use the kernels _set_gate instead of its own open
+	  coded variant.
+
 2003-02-23  John Levon  <levon@movementarian.org>
 
 	* version-1.h.in: another rename

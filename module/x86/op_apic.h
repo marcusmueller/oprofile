@@ -18,11 +18,10 @@
 
 #define NMI_GATE_TYPE 14
 #define NMI_VECTOR_NUM 2
+#define NMI_DPL_LEVEL 0
 
 
 #ifndef CONFIG_X86_64
-
-#define NMI_DPL_LEVEL 0
 
 /* copied from kernel 2.4.19 : arch/i386/traps.c */
 
@@ -44,45 +43,14 @@ do { \
 	 "3" ((char *) (addr)),"2" (__KERNEL_CS << 16)); \
 } while (0)
 
+#define SET_NMI_GATE	\
+	_set_gate(&descr.base[NMI_VECTOR_NUM], NMI_GATE_TYPE, NMI_DPL_LEVEL, &op_nmi);
+
 #else /* CONFIG_X86_64 */
+#include <asm/desc.h>
 
-/* 
- * copied + modified slightly from x86-64.org kernel 
- * 2.1.19 : include/asm-x86_64/desc.h 
-*/
-
-#define NMI_DPL_LEVEL 3
-
-struct gate_struct {          
-	u16 offset_low;
-	u16 segment; 
-	unsigned ist : 3, zero0 : 5, type : 5, dpl : 2, p : 1;
-	u16 offset_middle;
-	u32 offset_high;
-	u32 zero1; 
-} __attribute__((packed));
-
-#define PTR_LOW(x) ((unsigned long)(x) & 0xFFFF) 
-#define PTR_MIDDLE(x) (((unsigned long)(x) >> 16) & 0xFFFF)
-#define PTR_HIGH(x) ((unsigned long)(x) >> 32)
-
-static inline void _set_gate(void * adr, unsigned type, unsigned dpl, void * fn)
-{
-	struct gate_struct s;
-	unsigned long func = (unsigned long)fn;
-	s.offset_low = PTR_LOW(func);
-	s.segment = __KERNEL_CS;
-	s.ist = 0;
-	s.p = 1;
-	s.dpl = dpl;
-	s.zero0 = 0;
-	s.zero1 = 0;
-	s.type = type;
-	s.offset_middle = PTR_MIDDLE(func);
-	s.offset_high = PTR_HIGH(func);
-	/* does not need to be atomic because it is only done once at setup time */ 
-	memcpy(adr, &s, 16); 
-} 
+#define SET_NMI_GATE	\
+	_set_gate(&descr.base[NMI_VECTOR_NUM], NMI_GATE_TYPE, (unsigned long) &op_nmi, NMI_DPL_LEVEL, 0);
 
 #endif /* CONFIG_X86_64 */
 	
