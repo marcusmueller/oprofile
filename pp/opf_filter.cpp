@@ -12,6 +12,8 @@
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * first written by P.Elie, many cleanup by John Levon
  */
 
 #include <sys/stat.h>
@@ -22,6 +24,8 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <string>
+#include <sstream>
 
 #include <stdio.h>
 #include <fnmatch.h>
@@ -35,14 +39,15 @@ using std::ofstream;
 using std::istream;
 using std::ifstream;
 using std::endl;
-using std::cin;
 using std::cout;
 using std::cerr;
 using std::hex;
 using std::dec;
+using std::ostringstream;
 
 #include "opf_filter.h"
 #include "oprofpp.h"
+#include "child_reader.h"
 
 #include "../version.h"
 
@@ -132,14 +137,15 @@ struct counter_setup {
 class output {
  public:
 	output(int argc, char const * argv[],
-	       bool have_linenr_info_,
 	       size_t threshold_percent,
 	       bool until_more_than_samples,
 	       size_t sort_by_counter,
 	       string const & output_dir,
 	       string const & source_dir,
 	       string const & output_filter,
-	       string const & no_output_filter);
+	       string const & no_output_filter,
+	       bool assembly,
+	       bool source_with_assembly);
 
 	bool treat_input();
 
@@ -227,13 +233,14 @@ class output {
 
 	bool until_more_than_samples;
 
-	bool have_linenr_info;
-
 	string output_dir;
 	string source_dir;
 	bool output_separate_file;
 
 	filename_match fn_match;
+
+	bool assembly;
+	bool source_with_assembly;
 };
 
 //---------------------------------------------------------------------------
@@ -409,13 +416,6 @@ void filename_match::build_pattern(vector<string> & result,
 {
 	string temp = patterns;
 
-	// unquote the pattern if necessary. TODO: work around against
-	// op_to_source this block of code must go out later.
-	if (temp.find_first_of('\'') == 0 &&
-	    temp.find_last_of('\'')  == temp.length() - 1) {
-		temp =  temp.substr(1, temp.length() - 2);
-	}
-
 	// separate the patterns
 	size_t last_pos = 0;
 	for (size_t pos = 0 ; pos != temp.length() ; ) {
@@ -471,14 +471,15 @@ source_file::source_file(istream & in)
 //---------------------------------------------------------------------------
 
 output::output(int argc_, char const * argv_[],
-	       bool have_linenr_info_,
 	       size_t threshold_percent_,
 	       bool until_more_than_samples_,
 	       size_t sort_by_counter_,
 	       string const & output_dir_,
 	       string const & source_dir_,
 	       string const & output_filter_,
-	       string const & no_output_filter_)
+	       string const & no_output_filter_,
+	       bool assembly_,
+	       bool source_with_assembly_)
 	:
 	samples_files(),
 	abfd(samples_files.header[samples_files.first_file]),
@@ -491,16 +492,16 @@ output::output(int argc_, char const * argv_[],
 	sort_by_counter(sort_by_counter_),
 	cpu_type(-1),
 	until_more_than_samples(until_more_than_samples_),
-	have_linenr_info(have_linenr_info_),
 	output_dir(output_dir_),
 	source_dir(source_dir_),
 	output_separate_file(false),
-	fn_match(output_filter_, no_output_filter_)
+	fn_match(output_filter_, no_output_filter_),
+	assembly(assembly_),
+	source_with_assembly(source_with_assembly_)
 {
-	if (have_linenr_info && !abfd.have_debug_info()) {
+	if (!assembly && !abfd.have_debug_info()) {
 		cerr << "Request for source file annotated "
-			<< "with sample but no debug info available"
-			<< endl;
+		     << "with sample but no debug info available" << endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -726,8 +727,24 @@ void output::output_asm()
 	bool do_output = true;
 
 	// FIXME: can this be simplified ?
+
+	// Future: use your own disassembler, work is in progress (slowly ...).
+	// This will issue all complexity here and improve performance.
+	vector<string> args;
+	args.push_back("-d");
+	args.push_back("--no-show-raw-insn");
+	if (source_with_assembly)
+		args.push_back("-S");
+
+	args.push_back(bfd_get_filename(abfd.ibfd));
+	ChildReader reader("objdump", args);
+	if (reader.error())
+		// ChildReader output an error message, the only way than i see
+		// to go here is a failure to exec objdump.
+		return;
+
 	string str;
-	while (std::getline(cin, str)) {
+	while (reader.getline(str)) {
 		if (str.length()) {
 			// Yeps, output of objdump is a human read-able form
 			// and contain a few ambiguity so this code is fragile
@@ -796,6 +813,17 @@ void output::output_asm()
 
 		if (do_output)
 			cout << str << '\n';
+	}
+
+	// yet another cryptic error message: objdump always return SUCESS
+	// so we must rely on the stderr state of objdump. If the error message
+	// is cryptic our own error message will be probably also cryptic
+	ostringstream std_err;
+	ostringstream std_out;
+	reader.get_data(std_out, std_err);
+	if (std_err.str().length()) {
+		cerr << "An error occur during the execution of objdump:\n\n";
+		cerr << std_err.str() << endl;
 	}
 }
 
@@ -1138,7 +1166,7 @@ void output::output_header(ostream& out) const
 
 	out << "interpretation of command line:" << endl;
 
-	if (have_linenr_info) {
+	if (!assembly) {
 		out << "output annotated source file with samples" << endl;
 
 		if (threshold_percent != 0) {
@@ -1194,7 +1222,7 @@ bool output::treat_input()
 		return false;
 	}
 
-	if (!have_linenr_info)
+	if (assembly)
 		output_asm();
 	else
 		output_source();
@@ -1204,11 +1232,12 @@ bool output::treat_input()
 
 //---------------------------------------------------------------------------
 
-static int have_linenr_info;
 static int with_more_than_samples;
 static int until_more_than_samples;
 static int showvers;
 static int sort_by_counter;
+static int assembly;
+static int source_with_assembly;
 static const char * source_dir;
 static const char * output_dir;
 static const char * output_filter;
@@ -1216,8 +1245,6 @@ static const char * no_output_filter;
 
 // Do not add option with longname == 0
 static struct poptOption options[] = {
-	{ "use-linenr-info", 'o', POPT_ARG_NONE, &have_linenr_info, 0,
-	  "input contain linenr info", NULL, },
 	{ "with-more-than-samples", 'w', POPT_ARG_INT, &with_more_than_samples, 0,
 	  "show all source file if the percent of samples in this file is more than argument", "percent in 0-100" },
 	{ "until-more-than-samples", 'm', POPT_ARG_INT, &until_more_than_samples, 0,
@@ -1228,6 +1255,8 @@ static struct poptOption options[] = {
 	{ "output-dir", 0, POPT_ARG_STRING, &output_dir, 0, "output directory", "directory name" },
         { "output", 0, POPT_ARG_STRING, &output_filter, 0, "output filename filter", "filter string" },
         { "no-output", 0, POPT_ARG_STRING, &no_output_filter, 0, "no output filename filter", "filter string" },
+	{ "assembly", 'a', POPT_ARG_NONE, &assembly, 0, "output assembly code", NULL },
+	{ "source-with-assembly", 's', POPT_ARG_NONE, &source_with_assembly, 0, "output assembly code mixed with source", NULL },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
@@ -1286,6 +1315,8 @@ static void get_options(int argc, char const * argv[])
 			oprofpp_opt.push_back(argv[i++]);
 	}
 
+	oprofpp_opt.push_back("-L");
+
 	opp_get_options(oprofpp_opt.size(), &oprofpp_opt[0]);
 
 	// FIXME: I'm still unconvinced this vector->const array thing
@@ -1293,6 +1324,14 @@ static void get_options(int argc, char const * argv[])
 	// function, philippe's interpretation of the report implies
 	// that std::vector MUST implement a standard C array "under
 	// the bonnet"
+	// answer: DR 69 says: "&v[n] == &v[0] + n for all 0 <= n < v.size()"
+	// it does not mean than the underlined implementation use a C array
+	// but use something that acts as a C array which is sufficient here.
+	// If someone have the C ISO check it because I suspect the C ISO array
+	// is described in the same (or equivalent) terms because v + i <==>
+	// &v[i] in C.
+	// This imply than all efficient implementation must use a C array
+	// a C array for implementation but this is not strictly required.
 	optcon = opd_poptGetContext(NULL, opf_opt.size(), &opf_opt[0],
 				options, 0);
 
@@ -1337,15 +1376,18 @@ int main(int argc, char const * argv[])
 			do_until_more_than_samples = true;
 		}
 
+		if (source_with_assembly)
+			assembly = 1;
+
 		output output(argc, argv,
-			      have_linenr_info,
 			      threshold_percent,
 			      do_until_more_than_samples,
 			      sort_by_counter,
 			      output_dir ? output_dir : "",
 			      source_dir ? source_dir : "",
 			      output_filter ? output_filter : "*",
-			      no_output_filter ? no_output_filter : "");
+			      no_output_filter ? no_output_filter : "",
+			      assembly, source_with_assembly);
 
 		if (output.treat_input() == false)
 			return EXIT_FAILURE;

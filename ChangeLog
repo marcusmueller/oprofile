@@ -1,3 +1,16 @@
+2001-10-24  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/op_to_source: remove from cvs
+	* pp/Makefile.in: opf_filter application renamed to op_to_source
+	* pp/child_reader.h: new
+	* pp/child_reader.cpp: new, allow to fork a child and read
+	  its stdout/stderr
+	* pp/opf_filter.h:
+	* pp/opf_filter.cpp: use ChildReader to launch objdump.
+	  op_to_source -a and -s must be specified with long
+	  form --assembly and --source-with-assembly. This also
+	  speed-up assembly output. Doc not updated.
+
 2001-10-18  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: workaround #2, hopefully fixing
