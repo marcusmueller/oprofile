@@ -130,7 +130,7 @@ static void show_counter_map(size_t const * counter_map, size_t nr_events)
 {
 	size_t i;
 	for (i = 0; i < nr_events; ++i)
-		printf("%d ", counter_map[i]);
+		printf("%lu ", (unsigned long)counter_map[i]);
 	printf("\n");
 }
 

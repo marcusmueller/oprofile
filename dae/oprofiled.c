@@ -468,7 +468,8 @@ static void opd_do_samples(struct op_buffer_head const * opd_buf)
 	verbprintf("Read buffer of %d entries for cpu %d.\n",
 		   (unsigned int)opd_buf->count, opd_buf->cpu_nr);
  
-	cpu_number = opd_buf->cpu_nr;
+	if (separate_cpu)
+		cpu_number = opd_buf->cpu_nr;
 	for (i = 0; i < opd_buf->count; i++) {
 		verbprintf("%.6u: EIP: 0x%.8lx pid: %.6d\n",
 			i, buffer[i].eip, buffer[i].pid);
