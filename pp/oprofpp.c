@@ -1,10 +1,11 @@
-/* $Id: oprofpp.c,v 1.13 2000/09/27 21:32:40 moz Exp $ */
+/* $Id: oprofpp.c,v 1.14 2000/09/27 21:45:30 moz Exp $ */
 
 #include "oprofpp.h"
  
 static int showvers;
  
 static char *samplefile;
+static char *imagefile;
 static char *gproffile;
 static char *symbol;
 static int list_symbols;
@@ -24,6 +25,7 @@ static u32 sect_offset;
 
 static struct poptOption options[] = {
 	{ "samples-file", 'f', POPT_ARG_STRING, &samplefile, 0, "image sample file", "file", },
+	{ "image-file", 'i', POPT_ARG_STRING, &imagefile, 0, "image file other than default", "file", },
 	{ "list-symbols", 'l', POPT_ARG_NONE, &list_symbols, 0, "list samples by symbol", NULL, },
 	{ "dump-gprof-file", 'g', POPT_ARG_STRING, &gproffile, 0, "dump gprof format file", "file", },
 	{ "list-symbol", 's', POPT_ARG_STRING, &symbol, 0, "give detailed samples for a symbol", "symbol", },
@@ -119,7 +121,10 @@ void printf_symbol(const char *name)
  * @mangled: name of samples file
  *
  * This function will open and process the binary
- * image associated with the samples file @mangled.
+ * image associated with the samples file @mangled,
+ * unless imagefile is non-%NULL, in which case
+ * that will be opened instead.
+ *
  * @mangled may be a relative or absolute pathname.
  *
  * Failure to open the image is fatal. This function
@@ -136,28 +141,31 @@ bfd *open_image_file(char *mangled)
 	char **matching;
 	bfd *ibfd; 
 
-	/* strip leading dirs */
-	while (c!=mangled && *c!='/')
-		c--;
+	if (!imagefile) { 
+		/* strip leading dirs */
+		while (c!=mangled && *c!='/')
+			c--;
 
-	c++;
+		c++;
 
-	file = strdup(c);
+		file = strdup(c);
 
-	if (!file) {
-		fprintf(stderr, "oprofpp: strdup() failed.\n");
-		exit(1);
-	}
+		if (!file) {
+			fprintf(stderr, "oprofpp: strdup() failed.\n");
+			exit(1);
+		}
 
-	c=file;
+		c=file;
 
-	do {
-		if (*c==OPD_MANGLE_CHAR)
-			*c='/';
-	} while (*c++);
+		do {
+			if (*c==OPD_MANGLE_CHAR)
+				*c='/';
+		} while (*c++);
+	} else
+		file = imagefile;
 
 	ibfd = bfd_openr(file, NULL);
-
+ 
 	if (!ibfd) {
 		fprintf(stderr,"oprofpp: bfd_openr of %s failed.\n",file);
 		exit(1);
@@ -375,9 +383,18 @@ void do_list_symbols(void)
 	for (i=0; i < num; i++) {
 		scounts[i].sym = syms[i];
 		get_symbol_range(syms[i], (i==num-1) ? NULL : syms[i+1], &start, &end); 
+		if (start >= nr_samples) {
+			fprintf(stderr,"oprofpp: start %u out of range (max %u)\n",start,nr_samples);
+			exit(1);
+		}
+		if (end > nr_samples) {
+			fprintf(stderr,"oprofpp: end %u out of range (max %u)\n",end,nr_samples);
+			exit(1);
+		}
+
 		for (j=start; j < end; j++) {
 			if (samples[j].count0)
-				printf("Adding %d samples for symbol $%s$ at pos j %d\n",samples[j].count0,syms[i]->name,j);
+				printf("Adding %u samples for symbol $%s$ at pos j %d\n",samples[j].count0,syms[i]->name,j);
 			scounts[i].count0 += samples[j].count0;
 			scounts[i].count1 += samples[j].count1;
 			tot0 += samples[j].count0;
@@ -390,10 +407,10 @@ void do_list_symbols(void)
 	for (i=0; i < num; i++) {
 		printf_symbol(scounts[i].sym->name);
 		if (ctr && scounts[i].count1) { 
-			printf("[0x%.8lx]: %2.4f%% (%d samples)\n",scounts[i].sym->value+scounts[i].sym->section->vma,
+			printf("[0x%.8lx]: %2.4f%% (%u samples)\n",scounts[i].sym->value+scounts[i].sym->section->vma,
 				((double)scounts[i].count1)/tot1, scounts[i].count1);
 		} else if (scounts[i].count0) {
-			printf("[0x%.8lx]: %2.4f%% (%d samples)\n",scounts[i].sym->value+scounts[i].sym->section->vma,
+			printf("[0x%.8lx]: %2.4f%% (%u samples)\n",scounts[i].sym->value+scounts[i].sym->section->vma,
 				((double)scounts[i].count0)/tot0, scounts[i].count0);
 		} else if (!streq("",scounts[i].sym->name))
 			printf(" (0 samples)\n");
