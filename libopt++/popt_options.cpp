@@ -199,8 +199,7 @@ option::~option()
 	delete the_option;
 }
 
-/** specialization of option ctor for boolean option */
-template <>
+/** non templatized ctor for boolean option */
 option::option(bool & value, char const * option_name, char short_name,
 	       char const * help_str)
 	: the_option(new option_imp<void>(value, option_name, short_name,

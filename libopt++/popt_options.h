@@ -87,15 +87,26 @@ public:
 	 */
 	template <class T> option(T &, char const * option_name,
 				  char short_name, char const * help_str,
-				  char const * arg_help_str = 0);
+				  char const * arg_help_str);
+
+	/**
+	 * boolen operation don't get the same set of parameters as other
+	 * option. Due to a bug in gcc 2.95 we can't use a defaut parameter
+	 * in the templatized ctor above because 2.95 is unable to match
+	 * the right ctor. So on we add a non templatized ctor with an exact
+	 * match for boolean option.
+	 */
+	option::option(bool&, char const * option_name,
+		       char short_name, char const * help_str);
 	~option();
 private:
 	option_base * the_option;
 };
 
-/** The supported option type */
-template <> option::option(bool &, char const * option_name, char short_name,
-			   char const * help_str);
+/**
+ *  The supported option type, boolean option are matched by a non templatized
+ * ctor.
+ */
 template <> option::option(int &, char const * option_name, char short_name,
 			   char const * help_str, char const * arg_help_str);
 template <> option::option(std::string &, char const * option_name,
