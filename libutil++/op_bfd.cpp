@@ -171,11 +171,6 @@ bool op_bfd::get_symbols(vector<string> const & excluded)
 
 	stable_sort(syms.begin(), syms.end(), symcomp);
 
-	// now we can calculate the symbol size
-	for (i = 0 ; i < syms.size() ; ++i) {
-		syms[i].size(symbol_size(i));
-	}
-
 	// we need to ensure than for a given vma only one symbol exist else
 	// we read more than one time some samples. Fix #526098
 	// ELF symbols size : potential bogosity here because when using
@@ -188,6 +183,11 @@ bool op_bfd::get_symbols(vector<string> const & excluded)
 			syms.erase(syms.begin() + i);
 			i--;
 		}
+	}
+
+	// now we can calculate the symbol size
+	for (i = 0 ; i < syms.size() ; ++i) {
+		syms[i].size(symbol_size(i));
 	}
 
 	cverb << "number of symbols before excluding " << dec << syms.size() << endl;

@@ -1,5 +1,10 @@
 2002-10-19  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/op_bfd.cpp: calculate symbol size after removing duplicate
+	  symbol. Fix #625678
+
+2002-10-19  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/op_to_source.cpp:
 	* pp/op_to_source_options.cpp:
 	* pp/op_to_source_options.h:
