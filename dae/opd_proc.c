@@ -1,5 +1,6 @@
 /**
  * @file opd_proc.c
+ * Management of process samples
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -145,7 +146,7 @@ void opd_alarm(int val __attribute__((unused)))
  * check than the last (session) events settings match the
  * currents
  */
-static void opd_handle_old_sample_file(const char * mangled, time_t mtime)
+static void opd_handle_old_sample_file(char const * mangled, time_t mtime)
 {
 	struct opd_header oldheader; 
 	FILE * fp;
@@ -200,7 +201,7 @@ static void opd_handle_old_sample_files(const struct opd_image * image)
 	uint i;
 	char *mangled;
 	uint len;
-	const char * app_name = separate_samples ? image->app_name : NULL;
+	char const * app_name = separate_samples ? image->app_name : NULL;
 
 	mangled = op_mangle_filename(image->name, app_name);
 
@@ -230,8 +231,8 @@ static void opd_handle_old_sample_files(const struct opd_image * image)
  * without opening the associated samples files. At return
  * the @image is partially initialized.
  */
-static void opd_init_image(struct opd_image * image, const char * name,
-			   int hash, const char * app_name, int kernel)
+static void opd_init_image(struct opd_image * image, char const * name,
+			   int hash, char const * app_name, int kernel)
 {
 	list_init(&image->list_node);
 	image->hash_next = NULL;
@@ -312,7 +313,7 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 	char * mangled;
 	struct opd_sample_file *sample_file;
 	struct opd_header * header;
-	const char * app_name;
+	char const * app_name;
 
 	sample_file = &image->sample_files[counter];
 
@@ -386,7 +387,7 @@ static void opd_check_image_mtime(struct opd_image * image)
 	char *mangled;
 	uint len;
 	time_t newmtime = op_get_mtime(image->name);
-	const char * app_name;
+	char const * app_name;
  
 	if (image->mtime == newmtime)
 		return;
@@ -476,7 +477,7 @@ void opd_init_images(void)
  *
  * The new image pointer is returned.
  */
-static struct opd_image * opd_add_image(const char * name, int hash, const char * app_name, int kernel)
+static struct opd_image * opd_add_image(char const * name, int hash, char const * app_name, int kernel)
 {
 	struct opd_image * image = xmalloc(sizeof(struct opd_image));
 
@@ -505,7 +506,7 @@ static struct opd_image * opd_add_image(const char * name, int hash, const char 
  * Compares two strings, starting at the end.
  * Returns %1 if they match, %0 otherwise.
  */
-int bstreq(const char *str1, const char *str2)
+int bstreq(char const * str1, char const * str2)
 {
 	char *a = (char *)str1;
 	char *b = (char *)str2;
@@ -531,9 +532,9 @@ int bstreq(const char *str1, const char *str2)
  * it does not exist any mapping for this proc (which is
  * true for the first mapping at exec time)
  */
-static inline const char * opd_app_name(const struct opd_proc * proc)
+static inline char const * opd_app_name(const struct opd_proc * proc)
 {
-	const char * app_name = NULL;
+	char const * app_name = NULL;
 	if (proc->nr_maps) 
 		app_name = proc->maps[0].image->name;
 
@@ -552,7 +553,7 @@ static inline const char * opd_app_name(const struct opd_proc * proc)
  * We make here a linear search through the whole image list. There is no need
  * to improve performance, only /proc parsed app are hashless and when they
  * are found one time by this function they receive a valid hash code. */
-static struct opd_image * opd_find_image(const char * name, int hash, const char * app_name)
+static struct opd_image * opd_find_image(char const * name, int hash, char const * app_name)
 {
 	struct opd_image * image = 0; /* supress warn non initialized use */
 	struct list_head * pos;
@@ -604,7 +605,7 @@ static struct opd_image * opd_find_image(const char * name, int hash, const char
  * Get the image specified by @hash and @app_name
  * if present, else return %NULL
  */
-static struct opd_image * opd_get_image_by_hash(int hash, const char * app_name)
+static struct opd_image * opd_get_image_by_hash(int hash, char const * app_name)
 {
 	struct opd_image * image;
 	for (image = images_with_hash[hash]; image != NULL; image = image->hash_next) {
@@ -635,7 +636,7 @@ static struct opd_image * opd_get_image_by_hash(int hash, const char * app_name)
  * added to the structure. In either case, the image number
  * is returned.
  */
-struct opd_image * opd_get_image(const char * name, int hash, const char * app_name, int kernel)
+struct opd_image * opd_get_image(char const * name, int hash, char const * app_name, int kernel)
 {
 	struct opd_image * image;
 	if ((image = opd_find_image(name, hash, app_name)) == NULL)
@@ -835,7 +836,7 @@ inline static int opd_is_in_map(struct opd_map *map, u32 eip)
  * @param map  map to print
  * @param last_map  previous map used 
  */
-inline static void verb_show_sample(u32 offset, struct opd_map *map, const char * last_map)
+inline static void verb_show_sample(u32 offset, struct opd_map *map, char const * last_map)
 {
 	verbprintf("DO_PUT_SAMPLE %s: calc offset 0x%.8x, map start 0x%.8x,"
 		" end 0x%.8x, offset 0x%.8x, name \"%s\"\n",
@@ -1064,7 +1065,7 @@ inline static char * get_from_pool(uint ind)
  *
  * Finds an image from its name.
  */
-static struct opd_image * opd_handle_hashmap(int hash, const char * app_name)
+static struct opd_image * opd_handle_hashmap(int hash, char const * app_name)
 {
 	char file[PATH_MAX];
 	char *c = &file[PATH_MAX-1];
@@ -1103,7 +1104,7 @@ void opd_handle_mapping(const struct op_note *note)
 	struct opd_proc *proc;
 	struct opd_image * image;
 	int hash;
-	const char * app_name;
+	char const * app_name;
 
 	proc = opd_get_proc(note->pid);
 
@@ -1179,10 +1180,10 @@ void opd_handle_exec(u16 pid)
  * 4001e000-400fc000 r-xp 00000000 03:04 31011      /lib/libc-2.1.2.so
  */
 /* FIXME: handle (deleted) */
-static int opd_add_ascii_map(struct opd_proc *proc, const char *line)
+static int opd_add_ascii_map(struct opd_proc *proc, char const * line)
 {
 	struct opd_map *map = &proc->maps[proc->nr_maps];
-	const char *cp = line;
+	char const * cp = line;
 
 	/* skip to protection field */
 	while (*cp && *cp != ' ')

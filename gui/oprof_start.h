@@ -1,5 +1,6 @@
 /**
  * @file oprof_start.h
+ * The GUI start main class
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

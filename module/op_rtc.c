@@ -1,5 +1,6 @@
 /**
  * @file op_rtc.c
+ * Setup and handling of RTC interrupts
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

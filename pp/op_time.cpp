@@ -1,5 +1,6 @@
 /**
  * @file op_time.cpp
+ * Give system summaries
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -101,9 +102,9 @@ static int list_symbols;
 static int show_image_name;
 static char * output_format;
 static char * samples_dir;
-static const char * session;
-static const char * path;
-static const char * recursive_path;
+static char const * session;
+static char const * path;
+static char const * recursive_path;
 
 static OutSymbFlag output_format_flags;
 

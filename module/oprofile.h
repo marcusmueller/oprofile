@@ -1,5 +1,6 @@
 /**
  * @file oprofile.h
+ * Main driver code
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

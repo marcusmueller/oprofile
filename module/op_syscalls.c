@@ -1,5 +1,6 @@
 /**
  * @file op_syscalls.c
+ * Tracing of system calls
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -452,7 +453,7 @@ asmlinkage static int my_sys_clone(struct pt_regs regs)
 	return ret;
 }
 
-asmlinkage static long my_sys_init_module(const char *name_user, struct module *mod_user)
+asmlinkage static long my_sys_init_module(char const * name_user, struct module * mod_user)
 {
 	long ret;
 

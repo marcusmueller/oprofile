@@ -1,5 +1,6 @@
 /**
  * @file oprofiled.h
+ * Daemon data structures
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -103,7 +104,7 @@ struct opd_image {
 	int hash;
 	/* the application name where belongs this image, NULL if image has
 	 * no owner (such as wmlinux or module) */
-	const char * app_name;
+	char const * app_name;
 	time_t mtime;	/* image file mtime */
 	u8 kernel;
 	char *name;
@@ -139,7 +140,7 @@ struct opd_proc {
 void opd_get_ascii_procs(void);
 void opd_init_images(void);
 void opd_put_sample(const struct op_sample *sample);
-void opd_read_system_map(const char *filename);
+void opd_read_system_map(char const * filename);
 void opd_alarm(int val);
 void opd_print_stats(void);
 void opd_proc_cleanup(void);

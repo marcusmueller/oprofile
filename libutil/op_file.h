@@ -1,5 +1,6 @@
 /**
  * @file op_file.h
+ * Useful file management helpers
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -21,9 +22,9 @@ extern "C" {
 #include <stdlib.h>
  
 off_t op_get_fsize(char const * file, int fatal);
-time_t op_get_mtime(const char * file);
-int op_move_regular_file(const char * new_dir, 
-	const char * old_dir, const char * name);
+time_t op_get_mtime(char const * file);
+int op_move_regular_file(char const * new_dir, 
+	char const * old_dir, char const * name);
 char * op_relative_to_absolute_path(
 	char const * path, char const * base_dir);
 

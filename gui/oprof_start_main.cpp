@@ -1,5 +1,6 @@
 /**
  * @file oprof_start_main.cpp
+ * main routine for GUI start
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

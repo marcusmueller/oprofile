@@ -1,5 +1,6 @@
 /**
  * @file opf_filter.h
+ * Annotated source output
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -44,14 +45,14 @@ public:
 	/**
 	 * add() -  record symbols/samples in the underlined container
 	 * @param samples_files the samples files container
-	 * @param abf the associated bfd object
+	 * @param abfd the associated bfd object
 	 *
 	 * add() is an helper for delayed ctor. Take care you can't safely
 	 * make any call to add after any other member function call.
 	 * Obviously you can add only samples files which are coherent (same
 	 * sampling rate, same events etc.)
 	 */
-	void add(const opp_samples_files& samples_files, const opp_bfd& abfd);
+	void add(const opp_samples_files & samples_files, const opp_bfd & abfd);
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
 	const symbol_entry* find_symbol(bfd_vma vma) const;

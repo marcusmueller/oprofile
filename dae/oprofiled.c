@@ -1,5 +1,6 @@
 /**
  * @file oprofiled.c
+ * Daemon set up and main loop
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -37,7 +38,7 @@ static int showvers;
 static u32 ctr_enabled[OP_MAX_COUNTERS];
 /* Unfortunately popt does not have, on many versions, the POPT_ARG_DOUBLE type
  * so I must first store it as a string. */
-static const char *cpu_speed_str;
+static char const * cpu_speed_str;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
 static char *systemmapfilename;

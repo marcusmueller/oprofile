@@ -22,7 +22,7 @@
 #ifndef MODUTILS_MODULE_H
 #define MODUTILS_MODULE_H 1
 
-#ident "$Id: p_module.h,v 1.2 2002/02/04 02:10:49 movement Exp $"
+#ident "$Id: p_module.h,v 1.3 2002/05/07 01:34:04 movement Exp $"
 
 /* This file contains the structures used by the 2.0 and 2.1 kernels.
    We do not use the kernel headers directly because we do not wish
@@ -82,7 +82,7 @@ struct old_module
 #define OLD_MOD_AUTOCLEAN 0x40000000 /* big enough, but no sign problems... */
 
 int get_kernel_syms(struct old_kernel_sym *);
-int old_sys_init_module(const char *name, char *code, unsigned codesize,
+int old_sys_init_module(char const * name, char *code, unsigned codesize,
 			struct old_mod_routines *, struct old_symbol_table *);
 
 /*======================================================================*/
@@ -183,8 +183,8 @@ struct module_info
 #define NEW_MOD_USED_ONCE	16
 #define NEW_MOD_INITIALIZING	64
 
-int sys_init_module(const char *name, const struct module *);
-int query_module(const char *name, int which, void *buf, size_t bufsize,
+int sys_init_module(char const * name, const struct module *);
+int query_module(char const * name, int which, void *buf, size_t bufsize,
 		 size_t *ret);
 
 /* Values for query_module's which.  */

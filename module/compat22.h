@@ -1,5 +1,6 @@
 /**
  * @file compat22.h
+ * Compatability functions for 2.2 kernels
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -60,7 +61,7 @@ static inline void unlock_out_mmap(void)
  
 /* different request_region */
 #define request_region_check compat_request_region
-void *compat_request_region (unsigned long start, unsigned long n, const char *name);
+void *compat_request_region (unsigned long start, unsigned long n, char const * name);
  
 #define __exit
 #define __init

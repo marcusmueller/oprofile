@@ -1,5 +1,6 @@
 /**
  * @file op_lockfile.c
+ * PID-based lockfile management
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -21,7 +22,7 @@
  * Return the pid written in the given lock file,
  * or 0 if it doesn't exist.
  */
-pid_t op_read_lock_file(const char * file)
+pid_t op_read_lock_file(char const * file)
 {
 	FILE * fp;
 	pid_t value;
@@ -47,7 +48,7 @@ pid_t op_read_lock_file(const char * file)
  * 
  * Write the pid into the given lock file.
  */ 
-int op_write_lock_file(const char * file)
+int op_write_lock_file(char const * file)
 {
 	FILE * fp;
 

@@ -1,5 +1,6 @@
 /**
  * @file db-insert.c
+ * Inserting a key-value pair into a DB tree
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

@@ -1,5 +1,6 @@
 /**
  * @file opp_symbol.cpp
+ * Symbol and sample management
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -27,7 +28,7 @@ using std::endl;
 struct output_option {
 	char option;
 	OutSymbFlag flag;
-	const char * help_string;
+	char const * help_string;
 };
 
 static const output_option output_options[] = {
@@ -90,7 +91,7 @@ typedef string (OutputSymbol::*fct_format)(const string & symb_name,
 struct field_description {
 	OutSymbFlag flag;
 	size_t width;
-	const char * header_name;
+	char const * header_name;
 	fct_format formater;
 };
 

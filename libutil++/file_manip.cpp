@@ -1,5 +1,6 @@
 /**
  * @file file_manip.cpp
+ * Useful file management helpers
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -76,7 +77,7 @@ bool create_dir(string const & dir)
 
 /**
  * create_path - create a path
- * @param dir  the path to create
+ * @param path  the path to create
  *
  * create directory for each dir components in @path
  * return false if one of the path cannot be created.
@@ -127,7 +128,7 @@ string op_read_link(string const & name)
 	return linkbuf;
 }
 
-inline static bool is_directory_name(const char * name)
+inline static bool is_directory_name(char const * name)
 {
 	return name[0] == '.' && 
 		(name[1] == '\0' || 
@@ -177,7 +178,7 @@ bool create_file_list(list<string>& file_list, const string & base_dir,
 std::string relative_to_absolute_path(const std::string & path,
 				      const std::string & base_dir)
 {
-	const char * dir = base_dir.length() ? base_dir.c_str() : NULL;
+	char const * dir = base_dir.length() ? base_dir.c_str() : NULL;
 
 	char * result = op_relative_to_absolute_path(path.c_str(), dir);
 
@@ -259,7 +260,7 @@ string strip_filename_suffix(const std::string & filename)
  * @param base_dir  base directory
  * @param filter  a file filter name.
  *
- * fill @file_list with a list of base samples
+ * fill file_list with a list of base samples
  * filename where a base sample filename is a
  * samples filename without #nr suffix. Even if the call
  * pass "*" as filter only valid samples filename are

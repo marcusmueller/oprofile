@@ -1,5 +1,6 @@
 /**
  * @file op_merge.cpp
+ * Merge sample files
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -62,7 +63,7 @@ static void get_options(int argc, char const * argv[], vector<string> & images)
 		show_version(argv[0]);
 	}
 
-	const char * file;
+	char const * file;
 	while ((file = poptGetArg(optcon)) != 0) {
 		images.push_back(file);
 	}

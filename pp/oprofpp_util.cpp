@@ -1,5 +1,6 @@
 /**
  * @file oprofpp_util.cpp
+ * Helpers for post-profiling analysis
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -31,9 +32,9 @@ using std::ostream;
 
 int verbose;
 char const *samplefile;
-const char *imagefile;
+char const * imagefile;
 int demangle;
-const char * exclude_symbols_str;
+char const * exclude_symbols_str;
 static vector<string> exclude_symbols;
 
 void op_print_event(ostream & out, int i, op_cpu cpu_type,
@@ -59,7 +60,7 @@ void op_print_event(ostream & out, int i, op_cpu cpu_type,
 /**
  * verbprintf
  */
-void verbprintf(const char * fmt, ...)
+void verbprintf(char const * fmt, ...)
 {
 	if (verbose) {
 		va_list va;
@@ -75,7 +76,7 @@ void verbprintf(const char * fmt, ...)
  * remangle - convert a filename into the related sample file name
  * @param image the image filename
  */
-static char *remangle(const char *image)
+static char *remangle(char const * image)
 {
 	char *file;
 	char *c; 
@@ -98,7 +99,7 @@ static char *remangle(const char *image)
 /**
  * demangle_filename - convert a sample filenames into the related
  * image file name
- * @param sample_filename the samples image filename
+ * @param samples_filename the samples image filename
  *
  * if samples_filename does not contain any %OPD_MANGLE_CHAR
  * the string samples_filename itself is returned.
@@ -130,6 +131,7 @@ bool is_excluded_symbol(const std::string & symbol)
 /**
  * quit_error - quit with error
  * @param err error to show
+ * @param optcon the popt context
  *
  * err may be NULL
  */
@@ -144,7 +146,7 @@ void quit_error(poptContext optcon, char const *err)
 /**
  * validate_counter - validate the counter nr
  * @param counter_mask bit mask specifying the counter nr to use
- * @param sort_by the counter nr from which we sort
+ * @param sort_by_counter the counter nr from which we sort
  *
  * all error are fatal
  */
@@ -176,6 +178,7 @@ void validate_counter(int counter_mask, int & sort_by_counter)
  * @param image_file where to store the image file name
  * @param sample_file ditto for sample filename
  * @param counter where to put the counter command line argument
+ * @param sort_by_counter FIXME
  *
  * Process the arguments, fatally complaining on
  * error. 
@@ -194,7 +197,7 @@ void validate_counter(int counter_mask, int & sort_by_counter)
  *
  * post-condition: sample_file and image_file are setup
  */
-void opp_treat_options(const char* file, poptContext optcon,
+void opp_treat_options(char const * file, poptContext optcon,
 		       string & image_file, string & sample_file,
 		       int & counter, int & sort_by_counter)
 {
@@ -404,7 +407,7 @@ namespace {
  
 // only add symbols that would /never/ be
 // worth examining
-static const char *boring_symbols[] = {
+static char const * boring_symbols[] = {
 	"gcc2_compiled.",
 	"_init"
 };
@@ -522,7 +525,7 @@ bool opp_bfd::have_debug_info() const
 bool opp_bfd::get_linenr(uint sym_idx, uint offset, 
 			const char*& filename, unsigned int& linenr) const
 {
-	const char *functionname;
+	char const * functionname;
 	bfd_vma pc;
 
 	filename = 0;

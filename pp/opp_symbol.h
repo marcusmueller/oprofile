@@ -1,5 +1,6 @@
 /**
  * @file opp_symbol.h
+ * Symbol and sample management
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

@@ -1,5 +1,6 @@
 /**
  * @file string_manip.h
+ * std::string helpers
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -47,7 +48,7 @@ std::string tostr(unsigned int i);
 /**
  * @param result where to put results
  * @param str the string to tokenize
- * @param ch the separator_char
+ * @param sep the separator_char
  *
  * separate fild in a string in a list of token; field are
  * separated by the sep character

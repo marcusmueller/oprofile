@@ -1,5 +1,6 @@
 /**
  * @file db-test.c
+ * Tests for DB tree
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

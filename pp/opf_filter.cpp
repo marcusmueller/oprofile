@@ -1,5 +1,6 @@
 /**
  * @file opf_filter.cpp
+ * Annotated source output
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -855,10 +856,10 @@ static int showvers;
 static int sort_by_counter = -1;
 static int assembly;
 static int source_with_assembly;
-static const char * source_dir;
-static const char * output_dir;
-static const char * output_filter;
-static const char * no_output_filter;
+static char const * source_dir;
+static char const * output_dir;
+static char const * output_filter;
+static char const * no_output_filter;
 
 /* -k is reserved for --show-shared-libs */
 static struct poptOption options[] = {
@@ -912,7 +913,7 @@ static void get_options(int argc, char const * argv[],
 	}
 
 	/* non-option file, either a sample or binary image file */
-	const char * file = poptGetArg(optcon);
+	char const * file = poptGetArg(optcon);
 
 	opp_treat_options(file, optcon, image_name, sample_file,
 			  counter, sort_by_counter);
@@ -977,7 +978,7 @@ int main(int argc, char const * argv[])
 		cerr << "op_to_source: Exception : " << e << endl;
 		return EXIT_FAILURE;
 	}
-	catch (const char * e) {
+	catch (char const * e) {
 		cerr << "op_to_source: Exception : " << e << endl;
 		return EXIT_FAILURE;
 	}

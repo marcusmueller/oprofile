@@ -1,5 +1,7 @@
 /**
  * @file op_libiberty.h
+ * Wrapper for libiberty - always use this instead of
+ * libiberty.h
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

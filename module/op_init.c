@@ -1,5 +1,6 @@
 /**
  * @file op_init.c
+ * Initialisation stubs and CPU determination
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

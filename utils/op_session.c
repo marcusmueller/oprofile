@@ -1,5 +1,6 @@
 /**
  * @file op_session.c
+ * Manage named profiling sessions
  *
  * @remark Copyright 2002
  * @remark Read the file COPYING

@@ -1,5 +1,6 @@
 /**
  * @file op_help.c
+ * Print out PMC event information
  *
  * Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren
  *
@@ -83,7 +84,7 @@ static void help_for_event(int i)
 
 static int showvers;
 static int get_cpu_type;
-static const char * event_name;
+static char const * event_name;
 
 static struct poptOption options[] = {
 	{ "cpu-type", 'c', POPT_ARG_INT, &cpu_type, 0,

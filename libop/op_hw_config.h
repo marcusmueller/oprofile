@@ -1,5 +1,6 @@
 /**
  * @file op_hw_config.h
+ * Configuration parameters that are dependent on CPU/architecture
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

@@ -1,5 +1,6 @@
 /**
  * @file apic_up_compat.h
+ * Definitions and functions for APIC interaction
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

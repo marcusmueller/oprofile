@@ -1,5 +1,6 @@
 /**
  * @file op_dcache.h
+ * Compatibility functions for dcache lookups
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -28,9 +29,9 @@ uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root
 
 inline static uint alloc_in_pool(char const * str, uint len);
 inline static int add_hash_entry(struct op_hash_index * entry, uint parent, char const * name, uint len);
-inline static uint name_hash(const char *name, uint len, uint parent);
+inline static uint name_hash(char const * name, uint len, uint parent);
 
-inline static uint name_hash(const char *name, uint len, uint parent)
+inline static uint name_hash(char const * name, uint len, uint parent)
 {
 	uint hash=0;
 

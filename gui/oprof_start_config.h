@@ -1,5 +1,6 @@
 /**
  * @file oprof_start_config.h
+ * GUI startup config management
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

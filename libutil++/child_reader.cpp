@@ -1,5 +1,6 @@
 /**
  * @file child_reader.cpp
+ * Facility for reading from child processes
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

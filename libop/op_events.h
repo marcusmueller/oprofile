@@ -1,5 +1,6 @@
 /**
  * @file op_events.h
+ * Details of PMC profiling events
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

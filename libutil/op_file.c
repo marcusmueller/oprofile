@@ -1,5 +1,6 @@
 /**
  * @file op_file.c
+ * Useful file management helpers
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

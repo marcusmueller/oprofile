@@ -1,5 +1,6 @@
 /**
  * @file demangle_symbol.h
+ * Demangle a C++ symbol
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -14,7 +15,7 @@
  
 /**
  * demangle_symbol - demangle a symbol
- * @param symbol the mangled symbol name
+ * @param name the mangled symbol name
  * @return the demangled name
  *
  * Demangle the symbol name, if the global

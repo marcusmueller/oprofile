@@ -1,5 +1,6 @@
 /**
  * @file oprof_start_util.h
+ * Miscellaneous helpers for the GUI start
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

@@ -1,5 +1,6 @@
 /**
  * @file op_util.c
+ * Various utility functions
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

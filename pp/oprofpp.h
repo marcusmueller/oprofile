@@ -1,5 +1,6 @@
 /**
  * @file oprofpp.h
+ * Main post-profiling tool
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -57,6 +58,7 @@ void verbprintf(const char* args, ...) OP_VERBPRINTF_FORMAT;
 
 /**
  * @param out output to this ostream
+ * @param i FIXME
  * @param cpu_type the cpu_type
  * @param type event type
  * @param um the unit mask
@@ -69,12 +71,12 @@ void op_print_event(std::ostream & out, int i, op_cpu cpu_type,
 
 /**
  * process command line options
- * @param file a filename passed on the command line, can be NULL
- * @param i counter number
+ * @param filename a filename passed on the command line, can be NULL
  * @param optcon poptContext to allow better message handling
  * @param image_file where to store the image file name
  * @param sample_file ditto for sample filename
  * @param counter where to put the counter command line argument
+ * @param sort_by_counter FIXME
  *
  * Process the arguments, fatally complaining on error. 
  *
@@ -95,6 +97,7 @@ void opp_treat_options(char const * filename, poptContext optcon,
 
 /**
  * quit with error
+ * @param optcon the popt context
  * @param err error to show
  *
  * err may be NULL
@@ -196,12 +199,12 @@ class opp_bfd {
 public:
 	/**
 	 * @param samples a valid samples file associated with this image
-	 * @param image_file the name of the image file
+	 * @param filename the name of the image file
 	 *
 	 * All error are fatal.
 	 *
 	 */
-	opp_bfd(opp_samples_files& samples, const std::string & filename);
+	opp_bfd(opp_samples_files & samples, const std::string & filename);
 
 	/** close an opended bfd image and free all related resource. */
 	~opp_bfd();
@@ -218,7 +221,7 @@ public:
 	 * retrieve the linenr and so can return zero in linenr
 	 */
 	bool get_linenr(uint sym_idx, uint offset, 
-			const char*& filename, unsigned int& linenr) const;
+			char const * & filename, unsigned int & linenr) const;
 
 	/**
 	 * @param sym_idx symbol index
@@ -234,15 +237,16 @@ public:
 	 */
 	void get_symbol_range(uint sym_idx, u32 & start, u32 & end) const;
 
-	/** @param name the symbol name
+	/** 
+	 * @param symbol the symbol name
 	 *
 	 * find and return the index of a symbol else return -1
 	 */
-	int symbol_index(const char* symbol) const;
+	int symbol_index(char const * symbol) const;
 
 	/**
 	 * sym_offset - return offset from a symbol's start
-	 * @param sym_index symbol number
+	 * @param num_symbols symbol number
 	 * @param num number of fentry
 	 *
 	 * Returns the offset of a sample at position num
@@ -252,7 +256,7 @@ public:
 
 	/**
 	 * symbol_size - return the size of a symbol
-	 * @param index symbol index
+	 * @param sym_idx symbol index
 	 */
 	size_t symbol_size(uint sym_idx) const;
 
@@ -330,7 +334,7 @@ struct opp_samples_files {
 
 	/**
 	 * is_open - test if a samples file is open
-	 * @param index index of the samples file to check.
+	 * @param i index of the samples file to check.
 	 *
 	 * return true if the samples file index is open
 	 */ 
@@ -339,7 +343,7 @@ struct opp_samples_files {
 	}
  
 	/**
-	 * @param index index of the samples files
+	 * @param i index of the samples files
 	 * @param sample_nr number of the samples to test.
 	 *
 	 * return the number of samples for samples file index at position
@@ -352,12 +356,12 @@ struct opp_samples_files {
 
 	/**
 	 * @param counter where to accumulate the samples
-	 * @param index index of the samples.
+	 * @param vma FIXME
 	 *
 	 * return false if no samples has been found
 	 */
 
-	bool accumulate_samples(counter_array_t& counter, uint vma) const;
+	bool accumulate_samples(counter_array_t & counter, uint vma) const;
 	/**
 	 * @param counter where to accumulate the samples
 	 * @param start start index of the samples.

@@ -1,5 +1,6 @@
 /**
  * @file op_fileio.c
+ * Reading from / writing to files
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

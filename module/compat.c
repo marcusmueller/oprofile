@@ -1,5 +1,7 @@
 /**
  * @file compat.c
+ * This file is intended to be up-to-date with the last linux version and
+ * provide work-arounds for missing features in previous kernel version
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -15,7 +17,7 @@
  
 /* note - assumes you only test for NULL, and not
  * actually care about the return value */
-void *compat_request_region (unsigned long start, unsigned long n, const char *name)
+void *compat_request_region (unsigned long start, unsigned long n, char const * name)
 {
         if (check_region (start, n) != 0)
                 return NULL;

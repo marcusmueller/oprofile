@@ -1,5 +1,7 @@
 /**
  * @file op_popt.c
+ * Wrapper for libpopt - always use this rather
+ * than popt.h
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

@@ -1,6 +1,5 @@
 /**
  * @file compat.h
- *
  * This file is intended to be up-to-date with the last linux version and
  * provide work-arounds for missing features in previous kernel version
  *

@@ -1,5 +1,6 @@
 /**
  * @file opd_proc.h
+ * Management of process samples
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -21,8 +22,8 @@ extern struct op_hash_index *hashmap;
  
 extern struct opd_image * kernel_image;
 
-struct opd_image * opd_get_image(const char *name, int hash, const char * app_name, int kernel);
-int bstreq(const char *str1, const char *str2);
+struct opd_image * opd_get_image(char const * name, int hash, char const * app_name, int kernel);
+int bstreq(char const * str1, char const * str2);
 void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count);
 void opd_handle_kernel_sample(u32 eip, u16 count);
 void opd_reopen_sample_files(void);

@@ -1,5 +1,6 @@
 /**
  * @file op_mangle.c
+ * Mangling of sample file names
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

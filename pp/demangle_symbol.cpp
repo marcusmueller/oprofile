@@ -1,5 +1,6 @@
 /**
  * @file demangle_symbol.cpp
+ * Demangle a C++ symbol
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -18,7 +19,7 @@
 # define DMGL_ANSI       (1 << 1)        /**< Include const, volatile, etc */
 #endif
 /*@}*/
-extern "C" char * cplus_demangle(const char * mangled, int options);
+extern "C" char * cplus_demangle(char const * mangled, int options);
 
 // FIXME: all options should be in a public singleton
 // FIXME: this options should die IMO (then move this into libutil++)

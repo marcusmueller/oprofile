@@ -1,5 +1,6 @@
 /**
  * @file op_get_time.c
+ * Get current time as a string
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

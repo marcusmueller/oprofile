@@ -1,5 +1,6 @@
 /**
  * @file op_sample_file.h
+ * Sample file format
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

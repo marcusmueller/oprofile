@@ -1,5 +1,6 @@
 /**
  * @file op_list.h
+ * Kernel-style lists
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

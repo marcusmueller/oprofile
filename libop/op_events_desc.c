@@ -1,5 +1,6 @@
 /**
  * @file op_events_desc.c
+ * Human-readable descriptions of PMC events
  *
  * Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren
  *

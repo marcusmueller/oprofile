@@ -1,5 +1,6 @@
 /**
  * @file compat24.h
+ * Compatability functions for 2.4 kernels
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

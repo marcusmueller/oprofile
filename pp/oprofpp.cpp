@@ -1,5 +1,6 @@
 /**
  * @file oprofpp.cpp
+ * Main post-profiling tool
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -81,7 +82,7 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 			    string & sample_file, int & counter)
 {
 	poptContext optcon;
-	const char *file;
+	char const * file;
 	
 	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
 

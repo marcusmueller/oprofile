@@ -1,5 +1,6 @@
 /**
  * @file opf_container.cpp
+ * Sample file container
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -483,7 +484,7 @@ void samples_files_t::add_samples(const opp_samples_files& samples_files,
 				  const std::string & image_name)
 {
 	for (u32 pos = start; pos < end ; ++pos) {
-		const char * filename;
+		char const * filename;
 		sample_entry sample;
 		uint linenr;
 

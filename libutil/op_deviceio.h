@@ -1,5 +1,6 @@
 /**
  * @file op_deviceio.h
+ * Reading from a special device
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

@@ -1,5 +1,6 @@
 /**
  * @file opd_kernel.c
+ * Dealing with the kernel and kernel module samples
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -38,7 +39,7 @@ static unsigned int nr_modules=0;
  * Note that kernel modules will have EIP values above the value of
  * kernel_end.
  */
-void opd_read_system_map(const char *filename)
+void opd_read_system_map(char const * filename)
 {
 	FILE *fp;
 	char *line;

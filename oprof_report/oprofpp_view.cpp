@@ -63,7 +63,7 @@ private:
 
 // the column description of an oprofpp_view
 struct ColumnDescr {
-	const char * column_name;
+	char const * column_name;
 	// is by default this column showed
 	bool default_column;
 };

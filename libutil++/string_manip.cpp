@@ -1,5 +1,6 @@
 /**
  * @file string_manip.cpp
+ * std::string helpers
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -15,16 +16,6 @@
 using std::string;
 using std::vector;
 
-
-/**
- * erase_from_last_of - erase a sequence from the last occurence
- * of a given char to the end of string
- * @param str  string
- * @param ch  the char from where we erase character
- *
- * erase char from the last occurence of @ch to the
- * end of @str and return the string
- */
 string erase_from_last_of(string const & str, char ch)
 {
 	string result = str;
@@ -36,15 +27,6 @@ string erase_from_last_of(string const & str, char ch)
 	return result;
 }
 
-/**
- * erase to_last_of - erase a sequence of character from
- * the begining of string to the last occurence of a given char
- * @param str  string
- * @param ch  the characterto search
- *
- * erase char from the begin of @str to the last
- * occurence of @ch from and return the string
- */
 string erase_to_last_of(string const & str, char ch)
 {
 	string result = str;
@@ -56,13 +38,6 @@ string erase_to_last_of(string const & str, char ch)
 }
 
 
-/**
- * rtrim - remove last trailing character
- * @param str  the string
- * @param ch  the character to remove
- *
- * Returns the @str removed of its trailing @ch
- */
 string rtrim(string const & str, char ch)
 {
 	string result = str;
@@ -75,12 +50,6 @@ string rtrim(string const & str, char ch)
 	return result;
 }
 
-/**
- * tostr - convert integer to str
- * i: the integer
- *
- * Returns the converted string
- */ 
 string tostr(unsigned int i)
 {
 	string str;
@@ -89,13 +58,6 @@ string tostr(unsigned int i)
 	return ss.str(); 
 }
 
-/**
- * separate_token - separate a list of tokens
- * @param result  where to put results
- * @param str  the string to tokenize
- * @param ch  the separator_char
- *
- */
 void separate_token(vector<string> & result, const string & str, char sep)
 {
 	string const temp = str;

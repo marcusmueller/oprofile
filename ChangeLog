@@ -1,5 +1,12 @@
 2002-05-07  John Levon  <moz@compsoc.man.ac.uk>
 
+	* <various>: OK I lied. Fix some doxygen warnings,
+	  and some char const *a -> const char * a
+ 
+	* doc/srcdoc/Makefile: add
+ 
+2002-05-07  John Levon  <moz@compsoc.man.ac.uk>
+
 	* <all>: ok, fix the headers properly. Last tedious
 	  patch, I promise.
  

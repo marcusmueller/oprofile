@@ -1,5 +1,6 @@
 /**
  * @file op_lockfile.h
+ * PID-based lockfile management
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -17,8 +18,8 @@ extern "C" {
 
 #include <sys/types.h>
  
-pid_t op_read_lock_file(const char * file);
-int op_write_lock_file(const char * file);
+pid_t op_read_lock_file(char const * file);
+int op_write_lock_file(char const * file);
 
 #ifdef __cplusplus
 }

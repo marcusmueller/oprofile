@@ -1,5 +1,6 @@
 /**
  * @file db-manage.c
+ * Management of a DB tree
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -91,7 +92,7 @@ db_page_idx_t db_add_page(db_tree_t * tree)
 	(4096 - offset_page) / sizeof(db_page_t) ?		\
 	(4096 - offset_page) / sizeof(db_page_t) : 1 
 
-void db_open(db_tree_t * tree, const char * filename, enum db_rw rw, size_t sizeof_header)
+void db_open(db_tree_t * tree, char const * filename, enum db_rw rw, size_t sizeof_header)
 {
 	struct stat stat_buf;
 	size_t nr_page;
