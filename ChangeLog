@@ -1,5 +1,11 @@
 2002-05-17  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* module/op_fixmap.c: fix a long time outstanding bug,
+	  we tested bit in the address of x86_capability
+	  rather the capability itself.
+
+2002-05-17  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* dae/opd_proc.c: from a typo in opd_put_image_samples first
 	  incoming samples for each image was always ignored. As
 	  a side effect if opd_open_sample_file() fail the daemon
