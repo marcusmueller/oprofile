@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.1 2001/10/30 17:32:14 movement Exp $ */
+/* $Id: oprofile.c,v 1.2 2001/10/31 02:39:44 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -787,6 +787,10 @@ static struct file_operations oprof_fops = {
 
 static int nr_interrupts;
 
+/* These access routines are basically not safe on SMP for module unload.
+ * And there is nothing we can do about it - the API is broken.
+ */
+ 
 static int get_nr_interrupts(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
 {
 	uint cpu;
