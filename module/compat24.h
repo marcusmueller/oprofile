@@ -57,13 +57,4 @@
 	#define unlock_mmap(mm) up(&mm->mmap_sem)
 #endif
 
-#if VBEFORE(2,4,10)
-	/* 2.4.10 introduced MODULE_LICENSE */
-	#define MODULE_LICENSE(x)
-	/* 2.4.10 introduced APIC setup under normal APIC config */
-	#ifndef CONFIG_X86_UP_APIC
-		#define NEED_FIXMAP_HACK
-	#endif
-#endif /* VBEFORE(2,4,10) */
-
 #endif /* COMPAT24_H */

@@ -15,6 +15,10 @@ o 	./pp/op_time.cpp:79:/* FIXME: -h means help not shared libs !!!! */
 	./dae/opd_proc.c:1094:/* FIXME: what if we are remapping over an old mapping - we want to find this one first ! */ 
  
 o NEED_MPTABLE check should die - replace with MSR read ?
+
+o oprofile_nmi22.S and oprofile24.S can use the same code.
+
+o review the exception table of the nmi handler (at least stop oprofile)
  
 o stress test, finish clean of 2.2 backport
 

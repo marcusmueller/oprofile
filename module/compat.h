@@ -32,7 +32,17 @@
 	#include "compat24.h"
 #endif
  
-/* Things that cannot rely on a particular linux version */
+/* Things that cannot rely on a particular linux version or are needed between
+ * major release */
+
+#if VBEFORE(2,4,10)
+	/* 2.4.10 introduced MODULE_LICENSE */
+	#define MODULE_LICENSE(x)
+	/* 2.4.10 introduced APIC setup under normal APIC config */
+	#ifndef CONFIG_X86_UP_APIC
+		#define NEED_FIXMAP_HACK
+	#endif
+#endif /* VBEFORE(2,4,10) */
 
 /* 2.4/2.5 kernel can be  patched with the preempt patch. We support only
  * recent version of this patch */

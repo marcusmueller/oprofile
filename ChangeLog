@@ -1,3 +1,10 @@
+2002-01-18  Philippe Elie  <ph_e@club-internet.fr>
+
+	* TODO: update
+
+	* module/compat.h:
+	* module/compat24.h: move things needed for 2.2/2.4 in compat.h
+
 2002-01-18  John Levon  <moz@compsoc.man.ac.uk>
 
 	* module/compat22.h: never wake up from NMI
