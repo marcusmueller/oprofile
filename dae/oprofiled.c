@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.66 2002/01/14 08:38:53 movement Exp $ */
+/* $Id: oprofiled.c,v 1.67 2002/01/17 09:15:05 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -327,7 +327,7 @@ static void opd_pmc_options(void)
  */
 static void opd_rtc_options(void)
 {
-	int i;
+	uint i;
  
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		ctr_event[i] = ctr_count[i] =  ctr_um[i] = ctr_enabled[i] = 0;

@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.6 2002/01/17 03:21:40 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.7 2002/01/17 09:15:06 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -347,10 +347,12 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 
 	MOD_INC_USE_COUNT;
 
+	lock_execve();
+
 	filename = getname((char *)regs.ebx);
 	if (IS_ERR(filename)) {
-		MOD_DEC_USE_COUNT;
-		return PTR_ERR(filename);
+		ret = PTR_ERR(filename);
+		goto out;
 	}
 	ret = do_execve(filename, (char **)regs.ecx, (char **)regs.edx, &regs);
 
@@ -361,7 +363,11 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 		    (!sysctl.pgrp_filter || sysctl.pgrp_filter == current->pgrp))
 			oprof_output_maps(current);
 	}
+ 
 	putname(filename);
+
+out:
+	unlock_execve();
 	MOD_DEC_USE_COUNT;
         return ret;
 }
