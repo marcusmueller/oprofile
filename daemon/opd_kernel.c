@@ -110,14 +110,15 @@ static void opd_clear_module_info(void)
 	struct list_head * pos2;
 	struct opd_module * module;
 
-	verbprintf("Removing module list\n");
+	printf("Removing module list\n");
 	list_for_each_safe(pos, pos2, &opd_modules) {
 		module = list_entry(pos, struct opd_module, module_list);
 		if (module->name)
 			free(module->name);
 		free(module);
-		list_del(pos);
 	}
+
+	list_init(&opd_modules);
 
 	opd_for_each_image(opd_delete_modules);
 }

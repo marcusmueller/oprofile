@@ -116,8 +116,9 @@ void opd_clear_module_info(void)
 		module = list_entry(pos, struct opd_module, module_list);
 		free(module->name);
 		free(module);
-		list_del(pos);
 	}
+
+	list_init(&opd_modules);
 
 	opd_clear_kernel_mapping();
 }
