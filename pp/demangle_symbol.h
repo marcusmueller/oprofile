@@ -1,9 +1,10 @@
 /**
- * \file demangle_symbol.h
- * Copyright 2002 OProfile authors
- * Read the file COPYING
+ * @file demangle_symbol.h
  *
- * \author John Levon <moz@compsoc.man.ac.uk>
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ * 
+ * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
 #ifndef DEMANGLE_SYMBOL_H

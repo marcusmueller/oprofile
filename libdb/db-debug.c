@@ -1,3 +1,12 @@
+/**
+ * @file db-debug.c
+ *
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author Philippe Elie <phil_el@wanadoo.fr>
+ */
+ 
 #include <stdio.h>
 #include <stdlib.h>
 

@@ -1,10 +1,11 @@
 /**
- * \file op_dcache.h
- * Copyright 2002 OProfile authors
- * Read the file COPYING
+ * @file op_dcache.h
  *
- * \author John Levon <moz@compsoc.man.ac.uk>
- * \author Philippe Elie <phil_el@wanadoo.fr>
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ * 
+ * @author Philippe Elie <phil_el@wanadoo.fr>
+ * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
 #ifndef OP_DCACHE_H

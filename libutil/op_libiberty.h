@@ -1,10 +1,11 @@
 /**
- * \file op_libiberty.h
- * Copyright 2002 OProfile authors
- * Read the file COPYING
+ * @file op_libiberty.h
  *
- * \author John Levon <moz@compsoc.man.ac.uk>
- * \author Philippe Elie <phil_el@wanadoo.fr>
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ * 
+ * @author John Levon <moz@compsoc.man.ac.uk>
+ * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #ifndef OP_LIBIBERTY_H

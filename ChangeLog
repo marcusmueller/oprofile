@@ -1,3 +1,10 @@
+2002-05-07  John Levon  <moz@compsoc.man.ac.uk>
+
+	* <all>: ok, fix the headers properly. Last tedious
+	  patch, I promise.
+ 
+	* dae/opd_util.h: finally remove !
+ 
 2002-05-06  John Levon  <moz@compsoc.man.ac.uk>
 
 	* <various>: move to new header style, doxygen

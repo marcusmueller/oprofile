@@ -1,7 +1,13 @@
-/*
- * op_apic.c
+/**
+ * @file op_apic.c
  *
  * APIC setup etc. routines
+ *
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author John Levon <moz@compsoc.man.ac.uk>
+ * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #include <linux/mm.h>

@@ -1,11 +1,11 @@
 /**
- * \file op_list.h
- * Copyright 2002 OProfile authors
- * Read the file COPYING
+ * @file op_list.h
  *
- * \author Linux kernel authors
- * \author John Levon <moz@compsoc.man.ac.uk>
- * \author Philippe Elie <phil_el@wanadoo.fr>
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ * 
+ * @author Linux kernel authors
+ * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #ifndef OP_LIST_H

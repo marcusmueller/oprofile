@@ -1,3 +1,13 @@
+/**
+ * @file apic_up_compat.h
+ *
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author Philippe Elie <phil_el@wanadoo.fr>
+ * @author John Levon <moz@compsoc.man.ac.uk>
+ */
+ 
 #ifndef APIC_UP_COMPAT_H
 #define APIC_UP_COMPAT_H
 

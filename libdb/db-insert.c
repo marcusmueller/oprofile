@@ -1,3 +1,12 @@
+/**
+ * @file db-insert.c
+ *
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author Philippe Elie <phil_el@wanadoo.fr>
+ */
+ 
 #include <sys/file.h>
 #include <assert.h>
 

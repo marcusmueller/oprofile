@@ -1,9 +1,15 @@
-/*
- * op_fixmap.c
+/**
+ * @file op_fixmap.c
  *
  * Horrible hacks for compatibility's sake
  *
  * Based in part on arch/i386/kernel/mpparse.c
+ *
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author John Levon <moz@compsoc.man.ac.uk>
+ * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #include <linux/mm.h>

@@ -1,9 +1,10 @@
 /**
- * \file demangle_symbol.cpp
- * Copyright 2002 OProfile authors
- * Read the file COPYING
+ * @file demangle_symbol.cpp
  *
- * \author John Levon <moz@compsoc.man.ac.uk>
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ * 
+ * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
 #include "demangle_symbol.h"

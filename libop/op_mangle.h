@@ -1,10 +1,11 @@
 /**
- * \file op_mangle.h
- * Copyright 2002 OProfile authors
- * Read the file COPYING
+ * @file op_mangle.h
  *
- * \author John Levon <moz@compsoc.man.ac.uk>
- * \author Philippe Elie <phil_el@wanadoo.fr>
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ * 
+ * @author John Levon <moz@compsoc.man.ac.uk>
+ * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #ifndef OP_MANGLE_H

@@ -1,11 +1,12 @@
 /**
- * \file db.h
- * Copyright 2002 OProfile authors
- * Read the file COPYING
- * this file contains various definitions and iterface for management
+ * @file db.h
+ * This file contains various definitions and interface for management
  * of in-memory Btree.
  *
- * \author Philippe Elie <phil.el@wanadoo.fr>
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ * 
+ * @author Philippe Elie <phil.el@wanadoo.fr>
  */
 
 #ifndef DB_H

@@ -1,9 +1,10 @@
 /**
- * \file op_session.c
- * Copyright 2002
- * Read the file COPYING
+ * @file op_session.c
  *
- * \author John Levon <moz@compsoc.man.ac.uk>
+ * @remark Copyright 2002
+ * @remark Read the file COPYING
+ * 
+ * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
 #include <sys/types.h>

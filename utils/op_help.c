@@ -1,14 +1,14 @@
 /**
- * \file op_help.c
- * Copyright 2002 OProfile authors
- * Read the file COPYING
+ * @file op_help.c
  *
  * Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren
  *
- * \author John Levon <moz@compsoc.man.ac.uk>
- * \author Philippe Elie <phil_el@wanadoo.fr>
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ * 
+ * @author John Levon <moz@compsoc.man.ac.uk>
+ * @author Philippe Elie <phil_el@wanadoo.fr>
  */
-
 
 /* See IA32 Vol. 3 Appendix A */
 

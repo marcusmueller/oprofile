@@ -1,3 +1,13 @@
+/**
+ * @file oprof_start_util.h
+ *
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author Philippe Elie <phil_el@wanadoo.fr>
+ * @author John Levon <moz@compsoc.man.ac.uk>
+ */
+ 
 #ifndef OPROF_START_UTIL_H
 #define OPROF_START_UTIL_H
 

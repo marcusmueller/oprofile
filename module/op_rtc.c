@@ -1,11 +1,12 @@
 /**
- * \file op_rtc.c
- * Copyright 2002 OProfile authors
- * Read the file COPYING
+ * @file op_rtc.c
  *
- * \author Bob Montgomery <bobm@fc.hp.com>
- * \author John Levon <moz@compsoc.man.ac.uk>
- * \author Philippe Elie <phil_el@wanadoo.fr>
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ * 
+ * @author Bob Montgomery <bobm@fc.hp.com>
+ * @author Philippe Elie <phil_el@wanadoo.fr>
+ * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
 #include <linux/ioport.h>

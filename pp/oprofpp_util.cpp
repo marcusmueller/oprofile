@@ -1,10 +1,11 @@
 /**
- * \file oprofpp_util.cpp
- * Copyright 2002 OProfile authors
- * Read the file COPYING
+ * @file oprofpp_util.cpp
  *
- * \author Philippe Elie <phil_el@wanadoo.fr>
- * \author John Levon <moz@compsoc.man.ac.uk>
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ * 
+ * @author Philippe Elie <phil_el@wanadoo.fr>
+ * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
 // FIXME: printf -> ostream (and elsewhere) 

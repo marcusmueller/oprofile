@@ -1,22 +1,16 @@
-/* COPYRIGHT (C) 2002 Philippe Elie, based on discussion with John Levon
- * stuff here come from various source, linux kernel header, John's trick etc.
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+/**
+ * @file compat.h
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
+ * This file is intended to be up-to-date with the last linux version and
+ * provide work-arounds for missing features in previous kernel version
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place - Suite 330, Boston, MA 02111-1307, USA.
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author John Levon <moz@compsoc.man.ac.uk>
+ * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
-/* This file is intended to be up-to-date with the last linux version and
- * provide work-around for missing features in previous kernel version */
 
 #ifndef COMPAT_H
 #define COMPAT_H

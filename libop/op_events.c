@@ -1,10 +1,11 @@
 /**
- * \file op_events.c
- * Copyright 2002 OProfile authors
- * Read the file COPYING
+ * @file op_events.c
  *
- * \author John Levon <moz@compsoc.man.ac.uk>
- * \author Philippe Elie <phil_el@wanadoo.fr>
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ * 
+ * @author John Levon <moz@compsoc.man.ac.uk>
+ * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 /* Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren */

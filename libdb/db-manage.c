@@ -1,3 +1,12 @@
+/**
+ * @file db-manage.c
+ *
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author Philippe Elie <phil_el@wanadoo.fr>
+ */
+ 
 #define _GNU_SOURCE
 
 #include <stdlib.h>
