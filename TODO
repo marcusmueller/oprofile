@@ -79,6 +79,7 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
      and opening when necessary etc.
  o remove 2.2 / gcc 2.91 support ?
  o opannotate unhandled option: --base-dir
+ o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
 
 Documentation
 -------------

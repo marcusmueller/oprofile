@@ -52,5 +52,5 @@ EXTRA_DIST = \
 	xsl/xhtml.xsl \
 	xsl/xhtml-common.xsl \
 	xsl/xhtml-chunk.xsl \
-	srcdoc/Doxyfile \
+	srcdoc/Doxyfile.in \
 	srcdoc/Makefile

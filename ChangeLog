@@ -1,3 +1,7 @@
+2003-06-19  John Levon  <levon@movementarian.org>
+
+	* doc/Makefile.am: fix make distcheck
+
 2003-06-18  John Levon  <levon@movementarian.org>
 
 	* pp/opannotate_options.c: hide the unhandled
