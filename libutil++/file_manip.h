@@ -30,7 +30,9 @@ bool is_files_identical(std::string const & file1, std::string const & file2);
 
 /**
  * op_realpath - resolve symlinks etc.
- * @param name the file name
+ * Resolve a path as much as possible. Accounts for relative
+ * paths (from cwd), ".." and ".". For success, the target
+ * file must exist !
  *
  * Resolve a symbolic link as far as possible.
  * Returns the original string on failure.

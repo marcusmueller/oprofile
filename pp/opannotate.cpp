@@ -495,7 +495,24 @@ void output_one_file(istream & in, debug_name_id filename,
 	string const out_file = op_realpath(output_dir + source);
 
 	/* Just because you're paranoid doesn't mean they're not out to
-	 * get you ... */
+	 * get you ...
+	 *
+	 * This is just a lame final safety check. If we found the
+	 * source, then "source" should be canonical already, and
+	 * can't escape from the output dir. We can't use op_realpath()
+	 * alone as that needs the file to exist already.
+	 */
+	if (out_file.find("/..") != string::npos) {
+		cerr << "refusing to create non-canonical filename "
+			<< out_file  << endl;
+		return;
+	} else if (!is_prefix(out_file, output_dir)) {
+		cerr << "refusing to create file " << out_file
+		     << " outside of output directory " << output_dir
+		     << endl;
+		return;
+	}
+
 	if (is_files_identical(out_file, source)) {
 		cerr << "input and output files are identical: "
 		     << out_file << endl;
@@ -503,7 +520,7 @@ void output_one_file(istream & in, debug_name_id filename,
 	}
 
 	if (create_path(out_file.c_str())) {
-		cerr << "unable to create directory: "
+		cerr << "unable to create file: "
 		     << '"' << op_dirname(out_file) << '"' << endl;
 		return;
 	}
@@ -554,8 +571,10 @@ string const locate_source_file(debug_name_id filename_id)
 	}
 
 	/* We didn't find a relocated absolute file, or a relative file,
-	 * assume the original is correct */
-	return origfile;
+	 * assume the original is correct, accounting for the
+	 * possibility it's relative the cwd
+	 */
+	return op_realpath(origfile);
 }
 
 
@@ -601,6 +620,13 @@ bool annotate_source(list<string> const & images)
 
 	if (!output_dir.empty()) {
 
+		if (create_path(output_dir.c_str())) {
+			cerr << "unable to create " << output_dir
+			     << " directory: " << endl;
+			return false;
+		}
+
+		// Make sure we have an absolute path.
 		output_dir = op_realpath(output_dir);
 		if (output_dir.length() &&
 		    output_dir[output_dir.length() - 1] != '/')
@@ -610,12 +636,6 @@ bool annotate_source(list<string> const & images)
 		if (output_dir == "/") {
 			cerr << "Output path of / would over-write the "
 				"source files" << endl;
-			return false;
-		}
-
-		if (create_path(output_dir.c_str())) {
-			cerr << "unable to create " << output_dir
-			     << " directory: " << endl;
 			return false;
 		}
 	}

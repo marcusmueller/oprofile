@@ -1,3 +1,11 @@
+2004-05-11  John Levon  <levon@movementarian.org>
+
+	* libutil++/file_manip.h: clarify behaviour of
+	  op_realpath()
+
+	* libpp/opannotate.cpp: add some checks to avoid
+	  creating files outside of the output directory
+
 2004-05-11  Andi Kleen  <ak@suse.de>
 
 	* libpp/callgraph_container.cpp:
