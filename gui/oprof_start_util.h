@@ -25,5 +25,6 @@ int do_exec_command(std::string const & cmd, std::vector<std::string> args = std
 std::string const do_open_file_or_dir(std::string const & base_dir, bool dir_only);
 std::string const basename(std::string const & path_name);
 std::string const tostr(unsigned int i);
+unsigned long get_cpu_speed(); 
  
 #endif // OPROF_START_UTIL_H 

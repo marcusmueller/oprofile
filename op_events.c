@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.31 2001/09/28 02:51:39 phil_e Exp $ */
+/* $Id: op_events.c,v 1.32 2001/09/28 13:34:22 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -171,7 +171,7 @@ struct op_event op_events[] = {
   { CTR_ALL, OP_PII, 0xd6, 0, "RET_SEG_RENAMES", 500 },
 
   /* athlon events */
-  { CTR_ALL, OP_ATHLON, 0xc0, 0, "RETIRED_INSNS", 500,},
+  { CTR_ALL, OP_ATHLON, 0xc0, 0, "RETIRED_INSNS", 3000,},
   { CTR_ALL, OP_ATHLON, 0xc1, 0, "RETIRED_OPS", 500,},
   { CTR_ALL, OP_ATHLON, 0x80, 0, "ICACHE_FETCHES", 500,},
   { CTR_ALL, OP_ATHLON, 0x81, 0, "ICACHE_MISSES", 500,},

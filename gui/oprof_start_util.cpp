@@ -244,6 +244,40 @@ daemon_status::daemon_status()
 
 
 /**
+ * get_cpu_speed - return CPU speed in MHz
+ *
+ */
+unsigned long get_cpu_speed()
+{
+	unsigned long speed = 0;
+ 
+	std::ifstream ifs("/proc/cpuinfo");
+	if (!ifs)
+		return speed;
+ 
+	std::string str;
+	 
+	while (std::getline(ifs, str)) {
+		if (str.size() < 7)
+			continue;
+
+		if (str.substr(0, 7) == "cpu MHz") {
+			std::string::const_iterator it = str.begin();
+			uint i = 0;
+			while (it != str.end() && !(isdigit(*it)))
+				++i, ++it;
+			if (it == str.end())
+				break;
+			std::istringstream ss(str.substr(i, std::string::npos));
+			ss >> speed;
+			break; 
+		}
+	}
+	return speed;
+}
+ 
+ 
+/**
  * get_user_filename - get absoluate filename of file in user $HOME
  * @filename: the relative filename
  *

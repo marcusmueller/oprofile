@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.74 2001/09/21 08:29:10 movement Exp $ */
+/* $Id: opd_proc.c,v 1.75 2001/09/28 13:34:22 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -82,7 +82,7 @@ void opd_alarm(int val __attribute__((unused)))
 		struct opd_image* image = &opd_images[i];
 		for (j = 0 ; j < op_nr_counters ; ++j) {
 			if (image->sample_files[j].fd > 1)
-				msync(image->sample_files[j].start, image->len + sizeof(struct opd_footer), MS_ASYNC);
+				msync(image->sample_files[j].header, image->len + sizeof(struct opd_header), MS_ASYNC);
 		}
 	}
 
@@ -213,7 +213,7 @@ static void opd_save_old_sample_file(const char *file)
  */
 static void opd_handle_old_sample_file(int counter, const char * mangled, time_t mtime)
 {
-	struct opd_footer oldfooter; 
+	struct opd_header oldheader; 
 	FILE * fp;
 
 	if (!opd_get_fsize(mangled, 0))
@@ -223,20 +223,20 @@ static void opd_handle_old_sample_file(int counter, const char * mangled, time_t
 	if (!fp)
 		goto del;
 
-	if (fread(&oldfooter, sizeof(struct opd_footer), 1, fp) != 1)
+	if (fread(&oldheader, sizeof(struct opd_header), 1, fp) != 1)
 		goto closedel;
 
-	if (memcmp(&oldfooter.magic, OPD_MAGIC, sizeof(oldfooter.magic)) || oldfooter.version != OPD_VERSION)
+	if (memcmp(&oldheader.magic, OPD_MAGIC, sizeof(oldheader.magic)) || oldheader.version != OPD_VERSION)
 		goto closedel;
 
-	if (difftime(mtime, oldfooter.mtime))
+	if (difftime(mtime, oldheader.mtime))
 		goto closedel;
 
 	/* versions match, but we might be using different values */
-	if (oldfooter.ctr_event != ctr_event[counter] ||
-	    oldfooter.ctr_um != ctr_um[counter] ||
-	    oldfooter.ctr_count != ctr_count[counter] ||
-	    oldfooter.cpu_type != cpu_type) {
+	if (oldheader.ctr_event != ctr_event[counter] ||
+	    oldheader.ctr_um != ctr_um[counter] ||
+	    oldheader.ctr_count != ctr_count[counter] ||
+	    oldheader.cpu_type != cpu_type) {
 		fclose(fp);
 		opd_save_old_sample_file(mangled);
 		return;
@@ -310,7 +310,7 @@ static void opd_open_image(struct opd_image *image, int hash, const char *name, 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		image->sample_files[i].fd = -1;
 		image->sample_files[i].start = (void *)-1;
-		image->sample_files[i].footer = (void *)-1;
+		image->sample_files[i].header = (void *)-1;
 	}
 
 	verbprintf("Getting size of \"%s\"\n", name);
@@ -395,32 +395,32 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 	/* truncate to grow the file is ok on linux, and probably ok in POSIX.
 	 * I am unsure than don't touch the last page and un-sparse a little
 	 * what the samples file */
-	if (ftruncate(sample_file->fd, image->len + sizeof(struct opd_footer)) == -1) {
+	if (ftruncate(sample_file->fd, image->len + sizeof(struct opd_header)) == -1) {
 		fprintf(stderr, "oprofiled: ftruncate failed for \"%s\". %s\n", mangled, strerror(errno));
 		goto err2;
 	}
 
-	sample_file->footer = mmap(0, image->len + sizeof(struct opd_footer),
+	sample_file->header = mmap(0, image->len + sizeof(struct opd_header),
 			PROT_READ|PROT_WRITE, MAP_SHARED, sample_file->fd, 0);
 
-	if (sample_file->footer == (void *)-1) {
+	if (sample_file->header == (void *)-1) {
 		fprintf(stderr,"oprofiled: mmap of image sample file \"%s\" failed: %s\n", mangled, strerror(errno));
 		goto err2;
 	}
 
-	sample_file->start = sample_file->footer + 1;
+	sample_file->start = sample_file->header + 1;
 
-	memset(sample_file->footer, '\0', sizeof(struct opd_footer));
-	sample_file->footer->version = OPD_VERSION;
-	memcpy(&sample_file->footer->magic, OPD_MAGIC, sizeof(sample_file->footer->magic));
-	sample_file->footer->is_kernel = image->kernel;
-	sample_file->footer->ctr_event = ctr_event[counter];
-	sample_file->footer->ctr_um = ctr_um[counter];
-	sample_file->footer->ctr = counter;
-	sample_file->footer->cpu_type = cpu_type;
-	sample_file->footer->ctr_count = ctr_count[counter];
-	sample_file->footer->cpu_speed = cpu_speed;
-	sample_file->footer->mtime = image->mtime;
+	memset(sample_file->header, '\0', sizeof(struct opd_header));
+	sample_file->header->version = OPD_VERSION;
+	memcpy(&sample_file->header->magic, OPD_MAGIC, sizeof(sample_file->header->magic));
+	sample_file->header->is_kernel = image->kernel;
+	sample_file->header->ctr_event = ctr_event[counter];
+	sample_file->header->ctr_um = ctr_um[counter];
+	sample_file->header->ctr = counter;
+	sample_file->header->cpu_type = cpu_type;
+	sample_file->header->ctr_count = ctr_count[counter];
+	sample_file->header->cpu_speed = cpu_speed;
+	sample_file->header->mtime = image->mtime;
 out:
 	opd_free(mangled);
 	return;
@@ -458,7 +458,7 @@ static void opd_check_image_mtime(struct opd_image * image)
 		struct opd_sample_file * file = &image->sample_files[i]; 
 		if (file->fd > 0) {
 			close(file->fd);
-			munmap(file->footer, image->len + sizeof(struct opd_footer));
+			munmap(file->header, image->len + sizeof(struct opd_header));
 		}
 		sprintf(mangled + len, "#%d", i);
 		verbprintf("Deleting out of date \"%s\"\n", mangled);

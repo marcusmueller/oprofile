@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.32 2001/09/18 02:16:55 movement Exp $ */
+/* $Id: oprofiled.h,v 1.33 2001/09/28 13:34:22 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -84,8 +84,8 @@ enum {  OPD_KERNEL, /* nr. kernel samples */
 struct opd_sample_file {
 	fd_t fd;
 	/* mapped memory begin here */
-	struct opd_footer *footer;
-	/* start + sizeof(footer) ie. begin of map of samples */
+	struct opd_header *header;
+	/* start + sizeof(header) ie. begin of map of samples */
 	void *start;
 	/* the size of mapped memory comes from the opd_image */
 };
@@ -93,7 +93,7 @@ struct opd_sample_file {
 struct opd_image {
 	struct opd_sample_file sample_files[OP_MAX_COUNTERS];
 	int hash;
-	/* NOT counted the size of footer, to allow quick access check  */
+	/* NOT counted the size of header, to allow quick access check  */
 	off_t len;
 	time_t mtime;	/* image file mtime */
 	u8 kernel;

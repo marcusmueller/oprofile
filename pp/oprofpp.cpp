@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.1 2001/09/27 01:16:45 movement Exp $ */
+/* $Id: oprofpp.cpp,v 1.2 2001/09/28 13:34:23 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -357,7 +357,7 @@ counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
 
 /**
  * opp_bfd - construct an opp_bfd object
- * @footer: a valid samples file opd_footer
+ * @header: a valid samples file opd_header
  *
  * The global variable imagefile is used to
  * open the binary file. After construction
@@ -366,7 +366,7 @@ counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
  * All error are fatal.
  *
  */
-opp_bfd::opp_bfd(const opd_footer* footer)
+opp_bfd::opp_bfd(const opd_header* header)
 {
 	time_t newmtime;
 
@@ -378,13 +378,13 @@ opp_bfd::opp_bfd(const opd_footer* footer)
 	} 
 
 	newmtime = opd_get_mtime(imagefile);
-	if (newmtime != footer->mtime) {
+	if (newmtime != header->mtime) {
 		fprintf(stderr, "oprofpp: WARNING: the last modified time of the binary file %s does not match\n"
 			"that of the sample file. Either this is the wrong binary or the binary\n"
 			"has been modified since the sample file was created.\n", imagefile);
 	}
 
-	open_bfd_image(imagefile, footer->is_kernel);
+	open_bfd_image(imagefile, header->is_kernel);
 }
 
 /**
@@ -682,27 +682,27 @@ int opp_bfd::symbol_index(const char* symbol) const
 }
 
 /**
- * check_footers - check coherence between two footers.
- * @f1: first footer
- * @f2: second footer
+ * check_headers - check coherence between two headers.
+ * @f1: first header
+ * @f2: second header
  *
- * verify that footer @f1 and @f2 are coherent.
+ * verify that header @f1 and @f2 are coherent.
  * all error are fatal
  */
-static void check_footers(opd_footer* f1, opd_footer* f2)
+static void check_headers(opd_header* f1, opd_header* f2)
 {
 	if (f1->mtime != f2->mtime) {
-		fprintf(stderr, "oprofpp: footer timestamps are different (%ld, %ld)\n", f1->mtime, f2->mtime);
+		fprintf(stderr, "oprofpp: header timestamps are different (%ld, %ld)\n", f1->mtime, f2->mtime);
 		exit(EXIT_FAILURE);
 	}
 
 	if (f1->is_kernel != f2->is_kernel) {
-		fprintf(stderr, "oprofpp: footer is_kernel flags are different\n");
+		fprintf(stderr, "oprofpp: header is_kernel flags are different\n");
 		exit(EXIT_FAILURE);
 	}
 
 	if (f1->cpu_speed != f2->cpu_speed) {
-		fprintf(stderr, "oprofpp: footer cpu speeds are different (%f, %f)",
+		fprintf(stderr, "oprofpp: header cpu speeds are different (%f, %f)",
 			f2->cpu_speed, f2->cpu_speed);
 		exit(EXIT_FAILURE);
 	}
@@ -716,7 +716,7 @@ static void check_footers(opd_footer* f1, opd_footer* f2)
  *
  * at least one sample file (based on @samplefile name)
  * must be opened. If more than one sample file is open
- * their footer must be coherent. Each footer is also
+ * their header must be coherent. Each header is also
  * sanitized.
  *
  * all error are fatal
@@ -732,7 +732,7 @@ opp_samples_files::opp_samples_files()
 	/* no samplefiles open initially */
 	for (i = 0; i < OP_MAX_COUNTERS; ++i) {
 		samples[i] = 0;
-		footer[i] = 0;
+		header[i] = 0;
 		ctr_name[i] = 0;
 		ctr_desc[i] = 0;
 		ctr_um_desc[i] = 0;
@@ -761,12 +761,12 @@ opp_samples_files::opp_samples_files()
 	}
 
 	nr_samples = size[first_file] / sizeof(opd_fentry);
-	mtime = footer[first_file]->mtime;
+	mtime = header[first_file]->mtime;
 
 	/* determine how many counters are possible via the sample file.
 	 * allows use on different platform */ 
 	nr_counters = 2;
-	if (footer[first_file]->cpu_type == CPU_ATHLON)
+	if (header[first_file]->cpu_type == CPU_ATHLON)
 		nr_counters = 4;
 
 	/* check sample files match */
@@ -780,7 +780,7 @@ opp_samples_files::opp_samples_files()
 
 			exit(EXIT_FAILURE);
 		}
-		check_footers(footer[first_file], footer[j]);
+		check_headers(header[first_file], header[j]);
 	}
 
 	/* sanity check on ctr_um, ctr_event and cpu_type */
@@ -802,8 +802,8 @@ opp_samples_files::~opp_samples_files()
 	uint i;
 
 	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
-		if (footer[i]) {
-			munmap(footer[i], size[i] + sizeof(opd_footer));
+		if (header[i]) {
+			munmap(header[i], size[i] + sizeof(opd_header));
 			close(fd[i]);
 		}
 	}
@@ -815,10 +815,10 @@ opp_samples_files::~opp_samples_files()
  * @can_fail: allow to fail gracefully
  *
  * open and mmap the given samples files,
- * the member var samples[@counter], footer[@counter]
+ * the member var samples[@counter], header[@counter]
  * etc. are updated in case of success.
- * The footer is checked but coherence between
- * footer can not be sanitized at this point.
+ * The header is checked but coherence between
+ * header can not be sanitized at this point.
  *
  * if @can_fail == false all error are fatal.
  */
@@ -840,43 +840,43 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 			fprintf(stderr, "oprofpp: Opening %s failed. %s\n", temp, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
-		footer[counter] = NULL;
+		header[counter] = NULL;
 		samples[counter] = NULL;
 		size[counter] = 0;
 		return;
 	}
 
-	size[counter] = opd_get_fsize(temp, 1) - sizeof(opd_footer); 
-	if (size[counter] < sizeof(opd_footer)) {
+	size[counter] = opd_get_fsize(temp, 1) - sizeof(opd_header); 
+	if (size[counter] < sizeof(opd_header)) {
 		fprintf(stderr, "oprofpp: sample file %s is not the right "
 			"size: got %d, expected %d\n", 
-			temp, size[counter], sizeof(opd_footer));
+			temp, size[counter], sizeof(opd_header));
 		exit(EXIT_FAILURE);
 	}
 
-	footer[counter] = (opd_footer*)mmap(0, size[counter] + sizeof(opd_footer), 
+	header[counter] = (opd_header*)mmap(0, size[counter] + sizeof(opd_header), 
 				      PROT_READ, MAP_PRIVATE, fd[counter], 0);
-	if (footer[counter] == (void *)-1) {
+	if (header[counter] == (void *)-1) {
 		fprintf(stderr, "oprofpp: mmap of %s failed. %s\n", temp, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	samples[counter] = (opd_fentry *)(footer[counter] + 1);
+	samples[counter] = (opd_fentry *)(header[counter] + 1);
 
-	if (memcmp(footer[counter]->magic, OPD_MAGIC, sizeof(footer[0]->magic))) {
+	if (memcmp(header[counter]->magic, OPD_MAGIC, sizeof(header[0]->magic))) {
 		/* FIXME: is 4.4 ok : there is no zero terminator */
-		fprintf(stderr, "oprofpp: wrong magic %4.4s, expected %s.\n", footer[counter]->magic, OPD_MAGIC);
+		fprintf(stderr, "oprofpp: wrong magic %4.4s, expected %s.\n", header[counter]->magic, OPD_MAGIC);
 		exit(EXIT_FAILURE);
 	}
 
-	if (footer[counter]->version != OPD_VERSION) {
-		fprintf(stderr, "oprofpp: wrong version 0x%x, expected 0x%x.\n", footer[counter]->version, OPD_VERSION);
+	if (header[counter]->version != OPD_VERSION) {
+		fprintf(stderr, "oprofpp: wrong version 0x%x, expected 0x%x.\n", header[counter]->version, OPD_VERSION);
 		exit(EXIT_FAILURE);
 	}
 
 	/* This should be guaranteed by the daemon */
-	if (footer[counter]->ctr != counter) {
-		fprintf(stderr, "oprofpp: sanity check counter number fail %d, expect %d.\n", footer[counter]->ctr, counter);
+	if (header[counter]->ctr != counter) {
+		fprintf(stderr, "oprofpp: sanity check counter number fail %d, expect %d.\n", header[counter]->ctr, counter);
 		exit(EXIT_FAILURE);
 	}
 
@@ -894,8 +894,8 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
  */
 void opp_samples_files::check_event(int i)
 {
-	op_get_event_desc(footer[i]->cpu_type, footer[i]->ctr_event,
-			  footer[i]->ctr_um, &ctr_name[i],
+	op_get_event_desc(header[i]->cpu_type, header[i]->ctr_event,
+			  header[i]->ctr_um, &ctr_name[i],
 			  &ctr_desc[i], &ctr_um_desc[i]);
 }
 
@@ -1211,9 +1211,9 @@ void opp_samples_files::output_event(int i) const
 {
 	printf("Counter %d counted %s events (%s) with a unit mask of "
 	       "0x%.2x (%s) count %u\n", 
-	       i, ctr_name[i], ctr_desc[i], footer[i]->ctr_um,
+	       i, ctr_name[i], ctr_desc[i], header[i]->ctr_um,
 	       ctr_um_desc[i] ? ctr_um_desc[i] : "Not set", 
-	       footer[i]->ctr_count);
+	       header[i]->ctr_count);
 }
 
 /**
@@ -1226,9 +1226,9 @@ void opp_samples_files::output_header() const
 {
 	uint i;
 
-	printf("Cpu type: %s\n", op_get_cpu_type_str(footer[first_file]->cpu_type));
+	printf("Cpu type: %s\n", op_get_cpu_type_str(header[first_file]->cpu_type));
 
-	printf("Cpu speed was (MHz estimation) : %f\n", footer[first_file]->cpu_speed);
+	printf("Cpu speed was (MHz estimation) : %f\n", header[first_file]->cpu_speed);
 
 	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
 		if (fd[i] != -1)
@@ -1244,7 +1244,7 @@ int main(int argc, char const *argv[])
 	opp_get_options(argc, argv);
 
 	opp_samples_files samples_files;
-	opp_bfd abfd(samples_files.footer[samples_files.first_file]);
+	opp_bfd abfd(samples_files.header[samples_files.first_file]);
 
 	samples_files.output_header();
 

@@ -138,6 +138,9 @@ private:
 	/// CPU type
 	int cpu_type;
 
+	/// CPU speed in MHz
+	unsigned long cpu_speed;
+ 
 	/// total number of available HW counters
 	uint op_nr_counters;
 };

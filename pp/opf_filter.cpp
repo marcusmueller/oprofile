@@ -161,7 +161,7 @@ class output {
 	// provide also a sort order on (filename, linenr)
 	sample_container_t samples;
 
-	// samples files footer are stored here
+	// samples files header are stored here
 	counter_setup counter_info[OP_MAX_COUNTERS];
 
 	// FIXME : begin_comment, end_comment must be based on the current 
@@ -305,7 +305,7 @@ output::output(ostream & out_, int argc_, char const * argv_[],
 	: 
 	out(out_),
 	samples_files(),
-	abfd(samples_files.footer[samples_files.first_file]),
+	abfd(samples_files.header[samples_files.first_file]),
 	argc(argc_),
 	argv(argv_),
 	begin_comment("/*"),
@@ -340,7 +340,7 @@ void output::debug_dump_vector() const
 	}
 }
 
-// build a counter_setup from a footer.
+// build a counter_setup from a header.
 bool output::setup_counter_param()
 {
 	bool have_counter_info = false;
@@ -352,9 +352,9 @@ bool output::setup_counter_param()
 		counter_info[i].enabled = true;
 		counter_info[i].event_name = samples_files.ctr_name[i];
 		counter_info[i].help_string = samples_files.ctr_desc[i];
-		counter_info[i].unit_mask = samples_files.footer[i]->ctr_um;
+		counter_info[i].unit_mask = samples_files.header[i]->ctr_um;
 		counter_info[i].unit_mask_help = samples_files.ctr_um_desc[i] ? samples_files.ctr_um_desc[i] : "Not set";
-		counter_info[i].event_count_sample = samples_files.footer[i]->ctr_count;
+		counter_info[i].event_count_sample = samples_files.header[i]->ctr_count;
 
 		have_counter_info = true;
 	}
@@ -839,12 +839,12 @@ void output::output_command_line() const
 
 bool output::treat_input(input & in) 
 {
-	cpu_type = samples_files.footer[samples_files.first_file]->cpu_type;
+	cpu_type = samples_files.header[samples_files.first_file]->cpu_type;
 
 	if (cpu_type == CPU_ATHLON)
 		op_nr_counters = 4;
 
-	cpu_speed = samples_files.footer[samples_files.first_file]->cpu_speed;
+	cpu_speed = samples_files.header[samples_files.first_file]->cpu_speed;
 
 	if (setup_counter_param() == false)
 		return false;

@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.16 2001/09/22 23:05:11 movement Exp $ */
+/* $Id: opd_util.h,v 1.17 2001/09/28 13:34:22 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -42,7 +42,7 @@
 #define OPD_VERSION 0x5
 
 /* header of the sample files */
-struct opd_footer {
+struct opd_header {
 	u8  magic[4];
 	u32 version;
 	u8 is_kernel;

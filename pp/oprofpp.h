@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.20 2001/09/27 00:46:52 movement Exp $ */
+/* $Id: oprofpp.h,v 1.21 2001/09/28 13:34:23 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -87,7 +87,7 @@ class counter_array_t {
 };
 
 struct opp_bfd {
-	opp_bfd(const opd_footer * footer);
+	opp_bfd(const opd_header * header);
 	~opp_bfd();
 
 	bool get_linenr(uint sym_idx, uint offset, 
@@ -148,13 +148,13 @@ struct opp_samples_files {
 
 	void output_header() const;
 
-	opd_fentry *samples[OP_MAX_COUNTERS];	// footer + sizeof(footer)
-	opd_footer *footer[OP_MAX_COUNTERS];	// mapping begin here
+	opd_fentry *samples[OP_MAX_COUNTERS];	// header + sizeof(header)
+	opd_header *header[OP_MAX_COUNTERS];	// mapping begin here
 	char *ctr_name[OP_MAX_COUNTERS];
 	char *ctr_desc[OP_MAX_COUNTERS];
 	char *ctr_um_desc[OP_MAX_COUNTERS];
 	fd_t fd[OP_MAX_COUNTERS];
-	// This do not include the footer size
+	// This do not include the header size
 	size_t size[OP_MAX_COUNTERS];
 	uint nr_counters;
 	// cached value: index to the first opened file, setup as nearly as we

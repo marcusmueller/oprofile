@@ -53,6 +53,7 @@ oprof_start::oprof_start()
 	event_count_validator(new QIntValidator(event_count_edit)),
 	current_ctr(0),
 	cpu_type(op_get_cpu_type()),
+	cpu_speed(get_cpu_speed()), 
 	op_nr_counters(2)
 {
 	for (uint i = 0; i < OP_MAX_COUNTERS; ++i) {
@@ -119,7 +120,15 @@ oprof_start::oprof_start()
 			if (!(descr.counter_mask & (1 << ctr)))
 				continue;
 
-			event_cfgs[ctr][descr.name].count = descr.min_count * 100;
+			/* setting to cpu Hz / 2000 gives a safe value for
+			 * all events, and a good one for most.
+			 */
+			uint count;
+			if (cpu_speed)
+				count = cpu_speed * 500;
+			else
+				count = descr.min_count * 100; 
+			event_cfgs[ctr][descr.name].count = count;
 			event_cfgs[ctr][descr.name].umask = 0;
 			if (descr.unit)
 				event_cfgs[ctr][descr.name].umask = descr.unit->default_mask;
@@ -216,6 +225,11 @@ void oprof_start::load_event_config_file()
 		return;
 	}
 
+	int tmp_cpu_type;
+
+	// FIXME: handle this CPU type being different from the saved CPU type 
+	in >> tmp_cpu_type;
+ 
 	for (uint i = 0; i < op_nr_counters; ++i) {
 		in >> ctr_enabled[i];
 		std::string ev;
@@ -247,7 +261,11 @@ bool oprof_start::save_event_config_file()
 	std::string name = get_user_filename(".oprofile/oprof_start_event");
 
 	std::ofstream out(name.c_str());
+	if (!out)
+		return false;
 
+	out << cpu_type << " ";
+ 
 	for (uint i = 0; i < op_nr_counters; ++i) {
 		out << ctr_enabled[i];
 		if (current_event[i] == 0)

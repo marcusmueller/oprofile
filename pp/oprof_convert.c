@@ -34,7 +34,7 @@ static char * filename;
 #define OPD_MAGIC_V5 "DAE\n"
 
 /* at the end of the sample files */
-struct opd_footer_v2 {
+struct opd_header_v2 {
 	u16 magic;
 	u16 version;
 	u8 is_kernel;
@@ -45,8 +45,8 @@ struct opd_footer_v2 {
 	char md5sum[16];
 };
 
-struct opd_footer_v3 {
-	struct opd_footer_v2 v2;
+struct opd_header_v3 {
+	struct opd_header_v2 v2;
 	u32 ctr0_count;
 	u32 ctr1_count;
 	/* Set to 0.0 if not available */
@@ -55,8 +55,8 @@ struct opd_footer_v3 {
 	u32  reserved[32];
 };
 
-struct opd_footer_v4 {
-	struct opd_footer_v2 v2;
+struct opd_header_v4 {
+	struct opd_header_v2 v2;
 	u32 ctr0_count;
 	u32 ctr1_count;
 	/* Set to 0.0 if not available */
@@ -67,7 +67,7 @@ struct opd_footer_v4 {
 };
 
 /* At the begin of samples files */
-struct opd_footer_v5 {
+struct opd_header_v5 {
 	u8  magic[4];
 	u32 version;
 	u8 is_kernel;
@@ -84,8 +84,8 @@ struct opd_footer_v5 {
 };
 
 /*
- * Precondition : fp is seeked on the begin of an opd_footer_vn, it is always ok to
- * read an opd_footer_v2 at the begin of function but the version number field is not
+ * Precondition : fp is seeked on the begin of an opd_header_vn, it is always ok to
+ * read an opd_header_v2 at the begin of function but the version number field is not
  * necessarilly 2
  */
 typedef void (*fct_convert)(FILE* fp);
@@ -97,22 +97,22 @@ struct converter {
 };
 
 static void v2_to_v3(FILE* fp) {
-	struct opd_footer_v2 footer_v2;
-	struct opd_footer_v3 footer_v3;
+	struct opd_header_v2 header_v2;
+	struct opd_header_v3 header_v3;
 
-	fread(&footer_v2, sizeof(footer_v2), 1, fp);
+	fread(&header_v2, sizeof(header_v2), 1, fp);
 
-	footer_v3.v2 = footer_v2;
-	footer_v3.v2.version = 3;
+	header_v3.v2 = header_v2;
+	header_v3.v2.version = 3;
 
-	footer_v3.ctr0_count = 0;
-	footer_v3.ctr1_count = 0;
-	footer_v3.cpu_speed = 0.0;
+	header_v3.ctr0_count = 0;
+	header_v3.ctr1_count = 0;
+	header_v3.cpu_speed = 0.0;
 	/* binary compatibility reserve */
-	memset(&footer_v3.reserved, '\0', sizeof(footer_v3.reserved));
+	memset(&header_v3.reserved, '\0', sizeof(header_v3.reserved));
 
-	fseek(fp, -sizeof(footer_v2), SEEK_END);
-	fwrite(&footer_v3, sizeof(footer_v3), 1, fp);
+	fseek(fp, -sizeof(header_v2), SEEK_END);
+	fwrite(&header_v3, sizeof(header_v3), 1, fp);
 }
 
 /* this function is used only between conversion from v3 to v4, (ChangeLog
@@ -152,33 +152,33 @@ static char * get_binary_name(void)
 	return file; 
 }
 
-// just reset the md5sum to 0, don't change the size of opd_footer.
+// just reset the md5sum to 0, don't change the size of opd_header.
 static void v3_to_v4(FILE* fp) {
-	struct opd_footer_v3 footer_v3;
-	struct opd_footer_v4 footer_v4;
+	struct opd_header_v3 header_v3;
+	struct opd_header_v4 header_v4;
 	char * name;
 
 	printf("v4\n"); 
-	fread(&footer_v3, sizeof(footer_v3), 1, fp);
+	fread(&header_v3, sizeof(header_v3), 1, fp);
 
-	footer_v4.v2 = footer_v3.v2;
-	footer_v4.v2.version = 4;
+	header_v4.v2 = header_v3.v2;
+	header_v4.v2.version = 4;
 
-	footer_v4.ctr0_count = footer_v3.ctr0_count;
-	footer_v4.ctr1_count = footer_v3.ctr1_count;
-	footer_v4.cpu_speed  = footer_v3.cpu_speed;
+	header_v4.ctr0_count = header_v3.ctr0_count;
+	header_v4.ctr1_count = header_v3.ctr1_count;
+	header_v4.cpu_speed  = header_v3.cpu_speed;
 
 	name = get_binary_name();
-	footer_v4.mtime = opd_get_mtime(name);
+	header_v4.mtime = opd_get_mtime(name);
 	opd_free(name); 
 
-	memset(&footer_v4.v2.md5sum, '\0', sizeof(footer_v4.v2.md5sum));
+	memset(&header_v4.v2.md5sum, '\0', sizeof(header_v4.v2.md5sum));
 
 	/* binary compatibility reserve */
-	memset(&footer_v4.reserved, '\0', sizeof(footer_v4.reserved));
+	memset(&header_v4.reserved, '\0', sizeof(header_v4.reserved));
 
-	fseek(fp, -sizeof(footer_v3), SEEK_END);
-	fwrite(&footer_v4, sizeof(footer_v4), 1, fp);
+	fseek(fp, -sizeof(header_v3), SEEK_END);
+	fwrite(&header_v4, sizeof(header_v4), 1, fp);
 }
  
 /* the "old" samples file format */
@@ -193,13 +193,13 @@ static int cpu_type = -1;
  * me at <phe@club-internet.fr> */
 /* create one row file during translate from colum to row format v4 --> v5 */
 static void do_mapping_transfer(uint nr_samples, int counter, 
-				const struct opd_footer_v4* footer_v4, 
+				const struct opd_header_v4* header_v4, 
 				const struct old_opd_fentry* old_samples,
 				int session_number)
 {
 	char* out_filename;
 	int out_fd;
-	struct opd_footer_v5* footer;
+	struct opd_header_v5* header;
 	u32* samples;
 	uint k;
 	u32 size;
@@ -218,14 +218,14 @@ static void do_mapping_transfer(uint nr_samples, int counter,
 	strcpy(out_filename, filename);
 	sprintf(out_filename + strlen(out_filename), "#%d", counter);
 
-	size = (nr_samples * sizeof(u32)) + sizeof(struct opd_footer_v5);
+	size = (nr_samples * sizeof(u32)) + sizeof(struct opd_header_v5);
 
 	/* New samples files are lazilly created, respect this behavior
 	 * by not creating file with no valid ctr_type_val */
 	dirty = 0;
 
-	if ((counter == 0 && footer_v4->v2.ctr0_type_val) ||
-	    (counter == 1 && footer_v4->v2.ctr1_type_val)) {
+	if ((counter == 0 && header_v4->v2.ctr0_type_val) ||
+	    (counter == 1 && header_v4->v2.ctr1_type_val)) {
 		if (session_number != -1)
 			sprintf(out_filename + strlen(filename), "-%d",
 				session_number);
@@ -246,36 +246,36 @@ static void do_mapping_transfer(uint nr_samples, int counter,
 			goto err2;
 		}
 
-		footer = mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, out_fd, 0);
+		header = mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, out_fd, 0);
 
-		if (footer == (void *)-1) {
+		if (header == (void *)-1) {
 			fprintf(stderr,"oprof_convert: mmap of output sample file \"%s\" failed: %s\n", out_filename, strerror(errno));
 			goto err2;
 		}
 
-		samples = (void *)(footer + 1);
+		samples = (void *)(header + 1);
 
-		memset(footer, '\0', sizeof(struct opd_footer_v5));
-		memcpy(footer->magic, OPD_MAGIC_V5, sizeof(footer->magic));
-		footer->version = 5;
-		footer->is_kernel = footer_v4->v2.is_kernel;
-		footer->ctr_event = (counter == 0)
-			? footer_v4->v2.ctr0_type_val 
-			: footer_v4->v2.ctr1_type_val;
+		memset(header, '\0', sizeof(struct opd_header_v5));
+		memcpy(header->magic, OPD_MAGIC_V5, sizeof(header->magic));
+		header->version = 5;
+		header->is_kernel = header_v4->v2.is_kernel;
+		header->ctr_event = (counter == 0)
+			? header_v4->v2.ctr0_type_val 
+			: header_v4->v2.ctr1_type_val;
 		
-		footer->ctr_um =  (counter == 0)
-			? footer_v4->v2.ctr0_um 
-			: footer_v4->v2.ctr1_um;
+		header->ctr_um =  (counter == 0)
+			? header_v4->v2.ctr0_um 
+			: header_v4->v2.ctr1_um;
 
-		footer->ctr_count = (counter == 0)
-			? footer_v4->ctr0_count 
-			: footer_v4->ctr1_count;
+		header->ctr_count = (counter == 0)
+			? header_v4->ctr0_count 
+			: header_v4->ctr1_count;
 
-		footer->ctr = counter;
+		header->ctr = counter;
 
-		footer->cpu_type = cpu_type;
-		footer->cpu_speed = footer_v4->cpu_speed;
-		footer->mtime = footer_v4->mtime;
+		header->cpu_type = cpu_type;
+		header->cpu_speed = header_v4->cpu_speed;
+		header->mtime = header_v4->mtime;
 
 		for (k = 0 ; k < nr_samples ; ++k) {
 			u32 sample = counter
@@ -289,7 +289,7 @@ static void do_mapping_transfer(uint nr_samples, int counter,
 			}
 		}
 
-		munmap(footer, size);
+		munmap(header, size);
 
 err2:
 		close(out_fd);
@@ -308,7 +308,7 @@ err1:;
  * me at <phe@club-internet.fr> */
 static void v4_to_v5(FILE* fp)
 {
-	struct opd_footer_v4 footer_v4;
+	struct opd_header_v4 header_v4;
 	char *session_str;
 	int session_number;
 	int ok;
@@ -317,7 +317,7 @@ static void v4_to_v5(FILE* fp)
 	size_t len_filename;
 	struct old_opd_fentry *old_samples;
 
-	fread(&footer_v4, sizeof(footer_v4), 1, fp);
+	fread(&header_v4, sizeof(header_v4), 1, fp);
 
 	ok = 1;
 	session_number = -1;
@@ -346,9 +346,9 @@ static void v4_to_v5(FILE* fp)
 	}
 
 	old_size = opd_get_fsize(filename, 1);
-	if (old_size < (off_t)sizeof(struct opd_footer_v4)) {
+	if (old_size < (off_t)sizeof(struct opd_header_v4)) {
 		fprintf(stderr, "oprof_convert: sample file %s not big enough big %d, expected %d\n", 
-			filename, old_size, sizeof(struct opd_footer_v4));
+			filename, old_size, sizeof(struct opd_header_v4));
 		goto err1;
 	}
 
@@ -358,7 +358,7 @@ static void v4_to_v5(FILE* fp)
 		goto err1;
 	}
 
-	nr_samples = (old_size - sizeof(struct opd_footer_v4)) / sizeof(struct old_opd_fentry);
+	nr_samples = (old_size - sizeof(struct opd_header_v4)) / sizeof(struct old_opd_fentry);
 
 	len_filename = strlen(filename);
 	//out_filename = opd_malloc(len_filename + 32);
@@ -366,7 +366,7 @@ static void v4_to_v5(FILE* fp)
 
 	for (counter = 0; counter < 2 ; ++counter) {
 		do_mapping_transfer(nr_samples, counter,
-				    &footer_v4, old_samples,
+				    &header_v4, old_samples,
 				    session_number);
 	}
 
@@ -377,9 +377,9 @@ err1:
 }
 
 static struct converter converter_array[] = {
-	{ v2_to_v3, sizeof(struct opd_footer_v2), 2 },
-	{ v3_to_v4, sizeof(struct opd_footer_v3), 3 }, 
-	{ v4_to_v5, sizeof(struct opd_footer_v4), 4 }, 
+	{ v2_to_v3, sizeof(struct opd_header_v2), 2 },
+	{ v3_to_v4, sizeof(struct opd_header_v3), 3 }, 
+	{ v4_to_v5, sizeof(struct opd_header_v4), 4 }, 
 };
 
 #define nr_converter (signed int)((sizeof(converter_array) / sizeof(converter_array[0])))
@@ -388,16 +388,16 @@ static struct converter converter_array[] = {
  * converter  */
 static int get_converter_index(FILE* fp, int last_index) 
 {
-	struct opd_footer_v2 footer_v2;
+	struct opd_header_v2 header_v2;
 	int i;
 
 	for (i = last_index ; i < nr_converter ; ++i) {
 
 		fseek(fp, -converter_array[i].sizeof_struct, SEEK_END);
-		fread(&footer_v2, sizeof(footer_v2), 1, fp);
+		fread(&header_v2, sizeof(header_v2), 1, fp);
 
-		if (footer_v2.magic == OPD_MAGIC_V4 && 
-		    footer_v2.version == converter_array[i].version) {
+		if (header_v2.magic == OPD_MAGIC_V4 && 
+		    header_v2.version == converter_array[i].version) {
 
 			fseek(fp, -converter_array[i].sizeof_struct, SEEK_END);
 
