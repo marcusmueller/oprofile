@@ -203,7 +203,7 @@ int opd_open_sample_file(struct opd_image * image, int counter)
 	header->separate_lib_samples = separate_lib_samples;
 	header->separate_kernel_samples = separate_kernel_samples;
 
-out;
+out:;
 	free(mangled);
 	return err;
 }
