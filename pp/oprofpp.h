@@ -54,31 +54,6 @@ void verbprintf(char const * args, ...) OP_VERBPRINTF_FORMAT;
 
  
 /**
- * process command line options
- * @param filename a filename passed on the command line, can be NULL
- * @param image_file where to store the image file name
- * @param sample_file ditto for sample filename
- * @param counter where to put the counter command line argument
- * @param sort_by_counter counter nr used for sort purpose
- *
- * Process the arguments, fatally complaining on error. 
- *
- * file is considered as a sample file if it contains at least one
- * OPD_MANGLE_CHAR else it is an image file. If no image file is given
- * on command line the sample file name is un-mangled -after- stripping
- * the optionnal "\#nr" suffixe. This give some limitations on the image
- * filename.
- *
- * all filename checking is made here only with a syntactical approch. (ie
- * existence of filename is not tested)
- *
- * post-condition: sample_file and image_file are setup
- */
-void opp_treat_options(std::string const & filename, 
-		       std::string & image_file, std::string & sample_file,
-		       int & counter, int & sort_by_counter);
-
-/**
  * quit with error
  * @param err error to show
  *

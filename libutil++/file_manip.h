@@ -44,7 +44,8 @@ bool create_file_list(std::list<std::string>& file_list,
  * @param base_dir base directory from where the path name is relative
  * if abse_dir is empty $PWD is used as base directory
  *
- * translate a relative path to an absolute path.
+ * translate a relative path to an absolute path. If the path is
+ * already absolute, no change is made.
  */
 std::string relative_to_absolute_path(std::string const & path,
 				std::string const & base_dir = std::string());

@@ -21,7 +21,7 @@
 namespace options {
 	extern std::string ctr_str;
 	extern int sort_by_counter;
-	extern std::string gproffile;
+	extern std::string gprof_file;
 	extern std::string symbol;
 	extern bool list_symbols;
 	extern bool output_linenr_info;
@@ -33,9 +33,9 @@ namespace options {
 	extern bool demangle;
 	extern bool verbose;
 	/** a sample filename */
-	extern std::string samplefile;
+	extern std::string sample_file;
 	/** an image filename */
-	extern std::string imagefile;
+	extern std::string image_file;
 	/** the set of symbols to ignore */
 	extern std::vector<std::string> exclude_symbols;
 };

@@ -29,8 +29,8 @@ namespace options {
 	string no_output_filter;
 	bool assembly;
 	bool source_with_assembly;
-	string samplefile;
-	string imagefile;
+	string sample_file;
+	string image_file;
 	bool verbose;
 	bool demangle;
 	vector<string> exclude_symbols;
@@ -39,8 +39,8 @@ namespace options {
 namespace {
  
 option options_array[] = {
-	option(options::samplefile, "samples-file", 'f', "image sample file", "file"),
-	option(options::imagefile, "image-file", 'i', "image file", "file"),
+	option(options::sample_file, "samples-file", 'f', "image sample file", "file"),
+	option(options::image_file, "image-file", 'i', "image file", "file"),
 	option(options::verbose, "verbose", 'V', "verbose output"),
 	option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names"),
 	option(options::with_more_than_samples, "with-more-than-samples", 'w',

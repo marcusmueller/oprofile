@@ -1,3 +1,27 @@
+2002-06-05  John Levon  <moz@compsoc.man.ac.uk>
+
+	* libutil++/file_manip.h:
+	* libutil++/file_manip.cpp: simplify but don't
+	  break already absolute paths, remove dead code
+ 
+	* pp/op_time_options.h:
+	* pp/op_time_options.cpp:
+	* pp/op_time.cpp: remove dead code
+ 
+	* pp/op_to_source_options.h: 
+	* pp/op_to_source_options.cpp:
+	* pp/oprofpp_options.h:
+	* pp/oprofpp_options.cpp: variable name tweaks
+
+	* pp/Makefile.in:
+	* pp/op_to_source.cpp: 
+	* pp/oprofpp.cpp:
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp:
+	* pp/derive_files.h:
+	* pp/derive_files.cpp: factor command-line file
+	  derivation guessing out
+ 
 2002-06-04  John Levon  <moz@compsoc.man.ac.uk>
 
 	* libop++/op_print_event.cpp:

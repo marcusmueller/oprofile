@@ -178,8 +178,12 @@ bool create_file_list(list<string>& file_list, const string & base_dir,
 std::string relative_to_absolute_path(string const & path,
 				      string const & base_dir)
 {
-	char const * dir = base_dir.length() ? base_dir.c_str() : NULL;
+	char const * dir = 0;
 
+	// don't screw up on already absolute paths
+	if ((path.empty() || path[0] != '/') && !base_dir.empty())
+		dir = base_dir.c_str();
+ 
 	char * result = op_relative_to_absolute_path(path.c_str(), dir);
 
 	string res(result);
@@ -238,19 +242,6 @@ string extract_app_name(const string & name, string & lib_name)
 	return result;
 }
 
-/**
- * strip_filename_suffix - strip the #nr suffix of a samples filename
- */
-string strip_filename_suffix(string const & filename)
-{
-	string result(filename);
-
-	size_t pos = result.find_last_of('#');
-	if (pos != string::npos)
-		result.erase(pos, result.length() - pos);
-
-	return result;
-}
 
 // FIXME: a libop++ kind of thing
 void get_sample_file_list(list<string> & file_list,

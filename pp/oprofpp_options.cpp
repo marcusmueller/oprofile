@@ -20,7 +20,7 @@ using namespace options;
 namespace options {
 	string ctr_str;
 	int sort_by_counter = -1;
-	string gproffile;
+	string gprof_file;
 	string symbol;
 	bool list_symbols;
 	bool output_linenr_info;
@@ -28,8 +28,8 @@ namespace options {
 	bool show_shared_libs;
 	OutSymbFlag output_format_flags;
 	bool list_all_symbols_details;
-	string samplefile;
-	string imagefile;
+	string sample_file;
+	string image_file;
 	bool demangle;
 	bool verbose;
 	vector<string> exclude_symbols;
@@ -40,13 +40,13 @@ namespace {
 string output_format;
  
 option options_array[] = {
-	option(options::samplefile, "samples-file", 'f', "image sample file", "file"),
-	option(options::imagefile, "image-file", 'i', "image file", "file"),
+	option(options::sample_file, "samples-file", 'f', "image sample file", "file"),
+	option(options::image_file, "image-file", 'i', "image file", "file"),
 	option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names"),
 	option(options::exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name"),
 	option(options::ctr_str, "counter", 'c', "which counter to display", "counter number[,counter nr]"),
 	option(options::sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr"),
-	option(options::gproffile, "dump-gprof-file", 'g', "dump gprof format file", "file"),
+	option(options::gprof_file, "dump-gprof-file", 'g', "dump gprof format file", "file"),
 	option(options::symbol, "list-symbol", 's', "give detailed samples for a symbol", "symbol"),
 	option(options::list_symbols, "list-symbols", 'l', "list samples by symbol"),
 	option(options::output_linenr_info, "output-linenr-info", 'o', "output filename:linenr info"),
@@ -67,17 +67,17 @@ string const get_options(int argc, char const **argv)
 	parse_options(argc, argv, arg);
 
 	if (!list_all_symbols_details && !list_symbols && 
-	    gproffile.empty() && symbol.empty())
+	    gprof_file.empty() && symbol.empty())
 		quit_error("oprofpp: no mode specified. What do you want from me ?\n");
 
 	/* check only one major mode specified */
-	if ((list_all_symbols_details + list_symbols + !gproffile.empty() + !symbol.empty()) > 1)
+	if ((list_all_symbols_details + list_symbols + !gprof_file.empty() + !symbol.empty()) > 1)
 		quit_error("oprofpp: must specify only one output type.\n");
 
 	if (output_linenr_info && !list_all_symbols_details && symbol.empty() && !list_symbols)
 		quit_error("oprofpp: cannot list debug info without -L, -l or -s option.\n");
 
-	if (show_shared_libs && (!symbol.empty() || !gproffile.empty())) {
+	if (show_shared_libs && (!symbol.empty() || !gprof_file.empty())) {
 		quit_error("oprofpp: you cannot specify --show-shared-libs with --dump-gprof-file or --list-symbol output type.\n");
 	}
  

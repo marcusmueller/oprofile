@@ -21,10 +21,6 @@
 typedef std::multimap<std::string, std::string> alt_filename_t;
  
 namespace options {
-	// FIXME: totally fscking bogus !! not used 
-	extern std::string imagefile;
-	extern std::string samplefile;
- 
 	extern bool verbose;
 	extern std::string session;
 	extern std::string counter_str;

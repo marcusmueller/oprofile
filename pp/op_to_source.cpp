@@ -35,6 +35,7 @@ using std::ostringstream;
 #include "samples_container.h"
 #include "oprofpp.h"
 #include "demangle_symbol.h"
+#include "derive_files.h"
 
 #include "child_reader.h"
 #include "string_manip.h"
@@ -795,15 +796,17 @@ int main(int argc, char const * argv[])
 	 * samples filename suffix #xx. The point here is to allow to see
 	 * all counter and specify explicitly which counter to use as sort
 	 * order */
-	int counter = -1;
+	int ctr_mask = -1;
 
 	string const arg = get_options(argc, argv);
 
-	opp_treat_options(arg, image_name, sample_file,
-			  counter, options::sort_by_counter);
- 
-	if (counter != -1 && options::sort_by_counter != -1 &&
-	    counter != (1 << options::sort_by_counter)) {
+	derive_files(arg, options::image_file, options::sample_file,
+		ctr_mask);
+
+	validate_counter(ctr_mask, options::sort_by_counter);
+
+	if (ctr_mask != -1 && options::sort_by_counter != -1 &&
+	    ctr_mask != (1 << options::sort_by_counter)) {
 		cerr << "mismatch between --sort-by-counter and samples filename counter suffix.\n";
 		exit(EXIT_FAILURE);
 	}

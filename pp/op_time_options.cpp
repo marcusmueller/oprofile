@@ -26,10 +26,6 @@ using std::cerr;
  
 namespace options {
 	bool verbose;
-	// FIXME 
-	string samplefile;
-	string imagefile;
- 
 	string session;
 	string counter_str("0");
 	string output_format;

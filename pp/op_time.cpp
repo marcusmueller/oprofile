@@ -27,7 +27,6 @@
 #include "op_mangling.h"
 #include "op_time_options.h"
  
-#include "oprofpp.h"
 #include "samples_container.h"
 
 #include "file_manip.h"
