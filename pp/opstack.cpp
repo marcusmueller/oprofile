@@ -26,9 +26,9 @@ namespace {
 format_flags const get_format_flags(column_flags const & cf)
 {
 	format_flags flags(ff_none);
-	flags = format_flags(flags | ff_nr_samples_self | ff_percent_self);
-	flags = format_flags(flags | ff_nr_samples_child | ff_percent_child);
 	flags = format_flags(flags | ff_symb_name);
+	flags = format_flags(flags | ff_nr_samples);
+	flags = format_flags(flags | ff_percent);
 
 	if (options::show_address)
 		flags = format_flags(flags | ff_vma);
@@ -37,10 +37,8 @@ format_flags const get_format_flags(column_flags const & cf)
 		flags = format_flags(flags | ff_linenr_info);
 
 	if (options::accumulated) {
-		flags = format_flags(flags | ff_nr_samples_self_cumulated);
-		flags = format_flags(flags | ff_percent_self_cumulated);
-		flags = format_flags(flags | ff_nr_samples_child_cumulated);
-		flags = format_flags(flags | ff_percent_child_cumulated);
+		flags = format_flags(flags | ff_nr_samples_cumulated);
+		flags = format_flags(flags | ff_percent_cumulated);
 	}
 
 	if (cf & cf_image_name)
@@ -75,6 +73,10 @@ int opstack(vector<string> const & non_options)
 
 	column_flags output_hints = cg_container.output_hint();
 
+	cg_collection symbols = cg_container.get_symbols();
+	options::sort_by.sort(symbols, options::reverse_sort,
+	                      options::long_filenames);
+
 	format_output::cg_formatter out(cg_container);
 
 	out.set_nr_classes(classes.v.size());
@@ -86,7 +88,7 @@ int opstack(vector<string> const & non_options)
 		flags = format_flags(flags | ff_app_name);
 	out.add_format(flags);
 
-	out.output(cout);
+	out.output(cout, symbols);
 
 	return 0;
 }

@@ -14,7 +14,6 @@
 
 #include <set>
 #include <vector>
-#include <list>
 #include <string>
 
 #include "symbol.h"
@@ -27,20 +26,6 @@ class extra_images;
 class image_set;
 class op_bfd;
 
-/**
- * Yes, this looks like weird since we store callee_counts w/o knowing the
- * callee. It's designed in this way because it allows symmetric map in
- * arc_recorder. Mis-use is protected by the arc_recorder interface.
- */
-struct cg_symbol : public symbol_entry {
-	cg_symbol(symbol_entry const & symb) : symbol_entry(symb) {}
-	cg_symbol() {}
-	count_array_t self_counts;
-	count_array_t callee_counts;
-};
-
-typedef std::vector<cg_symbol> cg_collection;
-
 
 /**
  * During building a callgraph_container we store all caller/callee
@@ -51,52 +36,60 @@ typedef std::vector<cg_symbol> cg_collection;
  */
 class arc_recorder {
 public:
-	~arc_recorder();
-
-	void add_arc(cg_symbol const & caller, cg_symbol const * callee);
+	~arc_recorder() {}
 
 	/**
-	 * @param threshold  ignore arc below this threshold
-	 * @param totals  cumulated counts of leaf node
+	 * Add a symbol arc.
+	 * @param caller  The calling symbol
+	 * @param callee  The called symbol
+	 * @param arc_count  profile data for the arcs
 	 *
-	 * Finalize the recording after all arcs have been added to propagate
-	 * callee counts, then remove all leaf nodes not satisfying threshold
-	 * and propagate the removed node to parent arc.
+	 * If the callee is NULL, only the caller is added to the main
+	 * list. This is used to initially populate the recorder with
+	 * the symbols.
 	 */
-	void fixup_callee_counts(double threshold, count_array_t & totals);
+	void add(symbol_entry const & caller, symbol_entry const * callee,
+	         count_array_t const & arc_count);
 
-	// sorted sequence of cg_symbol.
-	cg_collection get_arc() const;
-	cg_collection get_callee(cg_symbol const &) const;
-	cg_collection get_caller(cg_symbol const &) const;
+	/// return all the cg symbols
+	cg_collection get_symbols() const;
+
+	/**
+	 * After population, build the final output, and do
+	 * thresholding.
+	 */
+	void process(count_array_t total, double threshold);
 
 private:
-	typedef std::multimap<cg_symbol, cg_symbol const *, less_symbol> map_t;
-	typedef map_t::const_iterator iterator;
+	/**
+	 * Internal structure used during collation. We use a map to
+	 * allow quick lookup of children (we'll do this several times
+	 * if we have more than one profile class). Each child maps from
+	 * the symbol to the relevant arc data.
+	 */
+	struct cg_data {
+		cg_data() {}
 
-	cg_symbol const * find_caller(cg_symbol const &) const;
+		typedef std::map<symbol_entry, count_array_t, less_symbol> children;
+
+		/// callers of this symbol
+		children callers;
+		/// callees of this symbol
+		children callees;
+	};
 
 	/**
-	 * @param percent  threshold criteria in percent
-	 * @param totals  cumulated counts of leaf node..
-	 *
-	 * return a vector of iterator to the caller_callee object leaf node
-	 * *not* satisfying the give threshold, totals counts is updated
-	 * in prevision of the removal of these nodes
+	 * Sort and threshold callers and callees.
 	 */
-	std::vector<map_t::iterator> select_leaf(double percent,
-		count_array_t & totals);
+	void process_children(cg_symbol & sym, double threshold);
 
-	/// remove this cg_symbol from caller_callee map .second member and
-	/// from the callee_caller map, used to update the removal of a leaf
-	/// node from the caller_callee map.
-	void remove(cg_symbol const & caller);
+	typedef std::map<symbol_entry, cg_data, less_symbol> map_t;
 
-	/// returned iterator point into the caller_callee map
-	iterator find_arc(cg_symbol const &, cg_symbol const &);
+	/// all the symbols (used during processing)
+	map_t sym_map;
 
-	map_t caller_callee;
-	map_t callee_caller;
+	/// final output data
+	cg_collection cg_syms;
 };
 
 
@@ -128,11 +121,8 @@ public:
 	/// return the total number of samples.
 	count_array_t samples_count() const;
 
-	/// These just dispatch to arc_recorder. It's the way client
-	/// code acquires results.
-	cg_collection get_arc() const;
-	cg_collection get_callee(cg_symbol const &) const;
-	cg_collection get_caller(cg_symbol const &) const;
+	// return all the cg symbols
+	cg_collection get_symbols() const;
 
 private:
 	/**
@@ -142,33 +132,33 @@ private:
 	 * @param bfd_caller_ok  true if we succefully open the binary
 	 * @param callee_bfd  the callee bfd
 	 * @param app_name  the owning application
-	 * @param symbols  the profile_container holding all non cg samples.
+	 * @param pc  the profile_container holding all non cg samples.
 	 * @param debug_info  record linenr debug information
 	 * @param pclass  profile class nr
 	 */
 	void add(profile_t const & profile, op_bfd const & caller_bfd,
 	         bool bfd_caller_ok, op_bfd const & callee_bfd,
 		 std::string const & app_name, 
-		 profile_container const & symbols, bool debug_info,
+		 profile_container const & pc, bool debug_info,
 		 size_t pclass);
 
 	void populate(std::string const & archive_path,
 		      std::list<image_set> const & lset,
 		      std::string const & app_image,
 		      extra_images const & extra, size_t pclass,
-		      profile_container const & symbols, bool debug_info,
+		      profile_container const & pc, bool debug_info,
 		      bool merge_lib);
 	void populate(std::string const & archive_path,
 		      std::list<std::string> const & cg_files,
 		      std::string const & app_image,
 		      extra_images const & extra, size_t pclass,
-		      profile_container const & symbols, bool debug_info,
+		      profile_container const & pc, bool debug_info,
 		      bool merge_lib);
 
-	/// add fake arc <from, NULL> to record leaf symbols.
-	void add_leaf_arc(profile_container const & symbols);
+	/// record all main symbols
+	void add_symbols(profile_container const & pc);
 
-	/// Chached value of samples count.
+	/// Cached value of samples count.
 	count_array_t total_count;
 
 	/// A structured representation of the callgraph.

@@ -510,7 +510,7 @@ uint op_bfd::process_symtab(bfd * ibfd, size_t start)
 		return 0;
 	
 	asymbol ** mysyms;
-	asymbol *synthsyms;
+	asymbol * synthsyms;
 	long synth_count;
 
 	mysyms = (asymbol **)minisyms;

@@ -36,10 +36,16 @@ struct sort_options {
 	void add_sort_option(sort_order order);
 
 	/**
-	 * Sort the vector by the given criteria.
+	 * Sort the given container by the given criteria.
 	 */
 	void sort(symbol_collection & syms, bool reverse_sort,
-		  bool long_filenames) const;
+	          bool long_filenames) const;
+
+	/**
+	 * Sort the given container by the given criteria.
+	 */
+	void sort(cg_collection & syms, bool reverse_sort,
+	          bool long_filenames) const;
 
 	std::vector<sort_order> options;
 };

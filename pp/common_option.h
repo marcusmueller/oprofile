@@ -52,7 +52,7 @@ demangle_type handle_demangle_option(std::string const & option);
 /**
  * @param mergespec  merge option
  * @param allow_lib  is merge)lib allowed in mergespec
- * @param exclude_dependent user specified --exclude_dependent
+ * @param exclude_dependent user specified --exclude-dependent
  *
  * parse merge option and return a merge_option filled from it.
  * 

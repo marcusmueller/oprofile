@@ -141,6 +141,7 @@ demangle_type handle_demangle_option(string const & option)
 	throw op_runtime_error("invalid option --demangle=" + option);
 }
 
+
 merge_option handle_merge_option(vector<string> const & mergespec,
     bool allow_lib, bool exclude_dependent)
 {

@@ -11,6 +11,10 @@
 
 
 #include "symbol.h"
+#include <iostream>
+
+using std::cerr;
+using std::endl;
 
 column_flags symbol_entry::output_hint(column_flags fl) const
 {

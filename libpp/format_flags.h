@@ -53,26 +53,6 @@ enum format_flags {
 	 */
 	ff_percent_cumulated_details = 1 << 11,
 	//@}
-
-	/** @name subset of flags used by opstack_formater */
-	//@{
-	/// number of self samples
-	ff_nr_samples_self = 1 << 12,
-	/// relative percentage of self samples
-	ff_percent_self = 1 << 13,
-	/// number of child samples
-	ff_nr_samples_child = 1 << 14,
-	/// relative percentage of child samples
-	ff_percent_child = 1 << 15,
-	/// number of self samples cumulated
-	ff_nr_samples_self_cumulated = 1 << 16,
-	/// relative percentage of self samples cumulated
-	ff_percent_self_cumulated = 1 << 17,
-	/// number of child samples cumulated
-	ff_nr_samples_child_cumulated = 1 << 18,
-	/// relative percentage of child samples cumulated
-	ff_percent_child_cumulated = 1 << 19,
-	//@}
 };
 
 

@@ -11,6 +11,7 @@
 
 #include "symbol_sort.h"
 #include "symbol_functors.h"
+
 #include "name_storage.h"
 #include "op_exception.h"
 
@@ -97,7 +98,8 @@ struct symbol_compare {
 
 	bool operator()(symbol_entry const * lhs,
 			symbol_entry const * rhs) const;
-private:
+
+protected:
 	vector<sort_options::sort_order> const & compare_order;
 	bool reverse_sort;
 };
@@ -117,11 +119,38 @@ bool symbol_compare::operator()(symbol_entry const * lhs,
 	return false;
 }
 
+
+struct cg_symbol_compare : public symbol_compare {
+	cg_symbol_compare(vector<sort_options::sort_order> const & order,
+	                  bool reverse)
+		: symbol_compare(order, reverse) {}
+
+	bool operator()(symbol_entry const & lhs,
+			symbol_entry const & rhs) const;
+};
+
+
+// FIXME: why do we need this
+bool cg_symbol_compare::operator()(symbol_entry const & lhs,
+				   symbol_entry const & rhs) const
+{
+	for (size_t i = 0; i < compare_order.size(); ++i) {
+		int ret = compare_by(compare_order[i], &lhs, &rhs);
+
+		if (reverse_sort)
+			ret = -ret;
+		if (ret != 0)
+			return ret < 0;
+	}
+	return false;
+}
+
+
 } // anonymous namespace
 
 
-void sort_options::sort(symbol_collection & syms,
-                        bool reverse_sort, bool lf) const
+void sort_options::
+sort(symbol_collection & syms, bool reverse_sort, bool lf) const
 {
 	long_filenames = lf;
 
@@ -134,6 +163,23 @@ void sort_options::sort(symbol_collection & syms,
 
 	stable_sort(syms.begin(), syms.end(),
 	            symbol_compare(sort_option, reverse_sort));
+}
+
+
+void sort_options::
+sort(cg_collection & syms, bool reverse_sort, bool lf) const
+{
+	long_filenames = lf;
+
+	vector<sort_order> sort_option(options);
+	for (sort_order cur = first; cur != last; cur = sort_order(cur + 1)) {
+		if (find(sort_option.begin(), sort_option.end(), cur) ==
+		    sort_option.end())
+			sort_option.push_back(cur);
+	}
+
+	stable_sort(syms.begin(), syms.end(),
+	            cg_symbol_compare(sort_option, reverse_sort));
 }
 
 

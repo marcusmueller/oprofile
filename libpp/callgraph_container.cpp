@@ -47,226 +47,129 @@ bool compare_by_callee_vma(pair<odb_key_t, odb_value_t> const & lhs,
 	return (lhs.first & 0xffffffff) < (rhs.first & 0xffffffff);
 }
 
-
-/**
- * We need 2 comparators for callgraph, the arcs are sorted by callee_count,
- * the callees too and the callers by callee_counts in reversed order like:
+/*
+ * We need 2 comparators for callgraph to get the desired output:
  *
- *	caller_with_few_callee_samples
- *	caller_with_many_callee_samples
+ *	caller_with_few_samples
+ *	caller_with_many_samples
  * function_with_many_samples
- *	callee_with_many_callee_samples
- *	callee_with_few_callee_samples
+ *	callee_with_many_samples
+ *	callee_with_few_samples
  */
 
 bool
-compare_cg_symbol_by_callee_count(cg_symbol const & lhs, cg_symbol const & rhs)
+compare_arc_count(symbol_entry const & lhs, symbol_entry const & rhs)
 {
-	return lhs.callee_counts[0] < rhs.callee_counts[0];
+	return lhs.sample.counts[0] < rhs.sample.counts[0];
 }
 
+
 bool
-compare_cg_symbol_by_callee_count_reverse(cg_symbol const & lhs,
-                                          cg_symbol const & rhs)
+compare_arc_count_reverse(symbol_entry const & lhs, symbol_entry const & rhs)
 {
-	return rhs.callee_counts[0] < lhs.callee_counts[0];
+	return rhs.sample.counts[0] < lhs.sample.counts[0];
 }
+
 
 } // anonymous namespace
 
 
-arc_recorder::~arc_recorder()
+void arc_recorder::
+add(symbol_entry const & caller, symbol_entry const * callee,
+    count_array_t const & arc_count)
 {
-	map_t::iterator end = caller_callee.end();
-	for (map_t::iterator it = caller_callee.begin(); it != end; ++it)
-		delete it->second;
+	cg_data & data = sym_map[caller];
 
-	end = callee_caller.end();
-	for (iterator it = callee_caller.begin(); it != end; ++it)
-		delete it->second;
+	// If we have a callee, add it to the caller's list, then
+	// add the caller to the callee's list.
+	if (callee) {
+		data.callees[*callee] += arc_count;
+
+		cg_data & callee_data = sym_map[*callee];
+
+		callee_data.callers[caller] += arc_count;
+	}
 }
 
 
-vector<arc_recorder::map_t::iterator>
-arc_recorder::select_leaf(double threshold, count_array_t & totals)
+void arc_recorder::process_children(cg_symbol & sym, double threshold)
 {
-	vector<map_t::iterator> result;
-	map_t::iterator end = caller_callee.end();
-	for (map_t::iterator it = caller_callee.begin(); it != end; ++it) {
-		if (it->second)
+	// generate the synthetic self entry for the symbol
+	sym.name = symbol_names.create(symbol_names.demangle(sym.name)
+	                                + " [self]");
+
+	sym.total_callee_count += sym.sample.counts;
+	sym.callees.push_back(sym);
+
+	sort(sym.callers.begin(), sym.callers.end(), compare_arc_count);
+	sort(sym.callees.begin(), sym.callees.end(), compare_arc_count_reverse);
+
+	// FIXME: this relies on sort always being sample count
+
+	cg_symbol::children::iterator cit = sym.callers.begin();
+	cg_symbol::children::iterator cend = sym.callers.end();
+
+	while (cit != cend && op_ratio(cit->sample.counts[0],
+	       sym.total_caller_count[0]) < threshold)
+		++cit;
+
+	if (cit != cend)
+		sym.callers.erase(sym.callers.begin(), cit);
+
+	cit = sym.callees.begin();
+	cend = sym.callees.end();
+
+	while (cit != cend && op_ratio(cit->sample.counts[0],
+	       sym.total_callee_count[0]) >= threshold)
+		++cit;
+
+	if (cit != cend)
+		sym.callees.erase(cit, sym.callees.end());
+}
+
+
+void arc_recorder::process(count_array_t total, double threshold)
+{
+	map_t::const_iterator it;
+	map_t::const_iterator end = sym_map.end();
+
+	for (it = sym_map.begin(); it != end; ++it) {
+		cg_symbol sym((*it).first);
+		cg_data const & data = (*it).second;
+
+		// threshold out the main symbol if needed
+		if (op_ratio(sym.sample.counts[0], total[0]) < threshold)
 			continue;
-		double percent = op_ratio(it->first.self_counts[0], totals[0]);
-		if (percent < threshold) {
-			totals -= it->first.self_counts;
-			result.push_back(it);
+
+		cg_data::children::const_iterator cit;
+		cg_data::children::const_iterator cend = data.callers.end();
+
+		for (cit = data.callers.begin(); cit != cend; ++cit) {
+			symbol_entry csym = cit->first;
+			csym.sample.counts = cit->second;
+			sym.callers.push_back(csym);
+			sym.total_caller_count += cit->second;
 		}
-	}
-	return result;
-}
 
+		cend = data.callees.end();
 
-void arc_recorder::
-fixup_callee_counts(double threshold, count_array_t & totals)
-{
-	double percent = threshold / 100.0;
-
-	// loop iteration number is bounded by biggest callgraph depth.
-	while (true) {
-		vector<map_t::iterator> leaves = select_leaf(percent, totals);
-		if (leaves.empty())
-			break;
-
-		for (size_t i = 0; i < leaves.size(); ++i) {
-			remove(leaves[i]->first);
-			caller_callee.erase(leaves[i]);
+		for (cit = data.callees.begin(); cit != cend; ++cit) {
+			symbol_entry csym = cit->first;
+			csym.sample.counts = cit->second;
+			sym.callees.push_back(csym);
+			sym.total_callee_count += cit->second;
 		}
-	}
 
-	iterator end = caller_callee.end();
-	for (iterator it = caller_callee.begin(); it != end; ) {
-		pair<iterator, iterator> p_it =
-			caller_callee.equal_range(it->first);
-		count_array_t counts;
+		process_children(sym, threshold);
 
-		for (iterator tit = p_it.first; tit != p_it.second; ++tit)
-			counts += tit->first.callee_counts;
-
-		for (iterator tit = p_it.first; tit != p_it.second; ++tit) {
-			cg_symbol & symb = const_cast<cg_symbol &>(tit->first);
-			symb.callee_counts = counts;
-		}
-		it = p_it.second;
+		cg_syms.push_back(sym);
 	}
 }
 
 
-void arc_recorder::remove(cg_symbol const & caller)
+cg_collection arc_recorder::get_symbols() const
 {
-	map_t::iterator it = caller_callee.begin();
-	map_t::iterator end = caller_callee.end();
-	for (; it != end; ++it) {
-		if (it->second && caller == *it->second) {
-			delete it->second;
-			it->second = 0;
-			pair<map_t::iterator, map_t::iterator>
-				p_it = callee_caller.equal_range(caller);
-			callee_caller.erase(p_it.first, p_it.second);
-		}
-	}
-}
-
-
-arc_recorder::iterator arc_recorder::
-find_arc(cg_symbol const & caller, cg_symbol const & callee)
-{
-	pair<iterator, iterator> p_it = caller_callee.equal_range(caller);
-	for ( ; p_it.first != p_it.second; ++p_it.first) {
-		if (p_it.first->second && *p_it.first->second == callee)
-			break;
-	}
-
-	if (p_it.first == p_it.second)
-		return caller_callee.end();
-	return p_it.first;
-}
-
-
-void arc_recorder::
-add_arc(cg_symbol const & caller, cg_symbol const * cg_callee)
-{
-	if (cg_callee) {
-		iterator it = find_arc(caller, *cg_callee);
-		if (it != caller_callee.end()) {
-			count_array_t & self = const_cast<count_array_t &>(
-				it->first.self_counts);
-			self += caller.self_counts;
-			count_array_t & counts = const_cast<count_array_t &>(
-				it->first.callee_counts);
-			counts += caller.callee_counts;
-			count_array_t & callee = const_cast<count_array_t &>(
-				it->second->self_counts);
-			callee += cg_callee->self_counts;
-			return;
-		}
-		cg_callee = new cg_symbol(*cg_callee);
-	}
-
-	caller_callee.insert(map_t::value_type(caller, cg_callee));
-	if (cg_callee) {
-		callee_caller.insert(map_t::value_type(*cg_callee,
-		       new cg_symbol(caller)));
-	}
-}
-
-
-cg_collection arc_recorder::get_arc() const
-{
-	cg_collection result;
-
-	iterator const end = caller_callee.end();
-	for (iterator it = caller_callee.begin(); it != end; ) {
-		result.push_back(it->first);
-		it = caller_callee.upper_bound(it->first);
-	}
-
-	sort(result.begin(), result.end(),
-	     compare_cg_symbol_by_callee_count_reverse);
-
-	return result;
-}
-
-
-cg_collection arc_recorder::get_caller(cg_symbol const & symbol) const
-{
-	cg_collection result;
-
-	pair<iterator, iterator> p_it = callee_caller.equal_range(symbol);
-	for (; p_it.first != p_it.second; ++p_it.first) {
-		if (p_it.first->second) {
-			// the reverse map doesn't contain correct information
-			// about callee_counts, retrieve them.
-			cg_symbol symbol = *p_it.first->second;
-			cg_symbol const * symb = find_caller(symbol);
-			if (symb)
-				symbol.callee_counts = symb->callee_counts;
-			result.push_back(symbol);
-		}
-	}
-
-	sort(result.begin(), result.end(), compare_cg_symbol_by_callee_count);
-
-	return result;
-}
-
-
-cg_collection arc_recorder::get_callee(cg_symbol const & symbol) const
-{
-	cg_collection result;
-
-	pair<iterator, iterator> p_it = caller_callee.equal_range(symbol);
-	for (; p_it.first != p_it.second; ++p_it.first) {
-		if (p_it.first->second) {
-			// the direct map second member doesn't contain correct
-			// information about callee_counts, retrieve them.
-			cg_symbol symbol = *p_it.first->second;
-			cg_symbol const * symb = find_caller(symbol);
-			if (symb)
-				symbol.callee_counts = symb->callee_counts;
-			result.push_back(symbol);
-		}
-	}
-
-	sort(result.begin(), result.end(),
-	     compare_cg_symbol_by_callee_count_reverse);
-
-	return result;
-}
-
-
-cg_symbol const * arc_recorder::find_caller(cg_symbol const & symbol) const
-{
-	map_t::const_iterator it = caller_callee.find(symbol);
-	return it == caller_callee.end() ? 0 : &it->first;
+	return cg_syms;
 }
 
 
@@ -277,33 +180,35 @@ void callgraph_container::populate(string const & archive_path,
 {
 	// non callgraph samples container, we record sample at symbol level
 	// not at vma level.
-	profile_container symbols(debug_info, false);
+	profile_container pc(debug_info, false);
 
 	list<inverted_profile>::const_iterator it;
 	list<inverted_profile>::const_iterator const end = iprofiles.end();
 	for (it = iprofiles.begin(); it != end; ++it) {
 		// populate_caller_image take care about empty sample filename
-		populate_for_image(archive_path, symbols, *it,
+		populate_for_image(archive_path, pc, *it,
 			string_filter());
 	}
+
+	add_symbols(pc);
+
+	total_count = pc.samples_count();
 
 	for (it = iprofiles.begin(); it != end; ++it) {
 		for (size_t i = 0; i < it->groups.size(); ++i) {
 			populate(archive_path, it->groups[i], it->image, extra,
-				i, symbols, debug_info, merge_lib);
+				i, pc, debug_info, merge_lib);
 		}
 	}
 
-	add_leaf_arc(symbols);
-
-	recorder.fixup_callee_counts(threshold, total_count);
+	recorder.process(total_count, threshold / 100.0);
 }
 
 
 void callgraph_container::populate(string const & archive_path,
 	list<image_set> const & lset,
 	string const & app_image, extra_images const & extra, size_t pclass,
-	profile_container const & symbols, bool debug_info, bool merge_lib)
+	profile_container const & pc, bool debug_info, bool merge_lib)
 {
 	list<image_set>::const_iterator lit;
 	list<image_set>::const_iterator const lend = lset.end();
@@ -313,8 +218,7 @@ void callgraph_container::populate(string const & archive_path,
 			= lit->files.end();
 		for (pit = lit->files.begin(); pit != pend; ++pit) {
 			populate(archive_path, pit->cg_files, app_image,
-				 extra, pclass,
-				 symbols, debug_info, merge_lib);
+				 extra, pclass, pc, debug_info, merge_lib);
 		}
 	}
 }
@@ -323,7 +227,7 @@ void callgraph_container::populate(string const & archive_path,
 void callgraph_container::populate(string const & archive_path,
 	list<string> const & cg_files,
 	string const & app_image, extra_images const & extra, size_t pclass,
-	profile_container const & symbols, bool debug_info, bool merge_lib)
+	profile_container const & pc, bool debug_info, bool merge_lib)
 {
 	list<string>::const_iterator it;
 	list<string>::const_iterator const end = cg_files.end();
@@ -345,10 +249,10 @@ void callgraph_container::populate(string const & archive_path,
 		cverb << vdebug << "caller binary name: "
 		      << caller_binary  << "\n";
 
-		bool bfd_caller_ok = true;
+		bool caller_bfd_ok = true;
 		op_bfd caller_bfd(archive_path, caller_binary,
-				  string_filter(), bfd_caller_ok);
-		if (!bfd_caller_ok)
+				  string_filter(), caller_bfd_ok);
+		if (!caller_bfd_ok)
 			report_image_error(caller_binary,
 			                   image_format_failure, false);
 
@@ -363,10 +267,10 @@ void callgraph_container::populate(string const & archive_path,
 		cverb << vdebug << "cg binary callee name: "
 		      << callee_binary << endl;
 
-		bool bfd_callee_ok = true;
+		bool callee_bfd_ok = true;
 		op_bfd callee_bfd(archive_path, callee_binary,
-				  string_filter(), bfd_callee_ok);
-		if (!bfd_callee_ok)
+				  string_filter(), callee_bfd_ok);
+		if (!callee_bfd_ok)
 			report_image_error(callee_binary,
 		                           image_format_failure, false);
 
@@ -374,19 +278,19 @@ void callgraph_container::populate(string const & archive_path,
 		// We can't use start_offset support in profile_t, give
 		// it a zero offset and we will fix that in add()
 		profile.add_sample_file(*it, 0);
-		add(profile, caller_bfd, bfd_caller_ok, callee_bfd,
-		    merge_lib ? app_image : app_name, symbols,
+		add(profile, caller_bfd, caller_bfd_ok, callee_bfd,
+		    merge_lib ? app_image : app_name, pc,
 		    debug_info, pclass);
 	}
 }
 
 
 void callgraph_container::
-add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
-   op_bfd const & callee, string const & app_name,
-   profile_container const & symbols, bool debug_info, size_t pclass)
+add(profile_t const & profile, op_bfd const & caller_bfd, bool caller_bfd_ok,
+   op_bfd const & callee_bfd, string const & app_name,
+   profile_container const & pc, bool debug_info, size_t pclass)
 {
-	string const image_name = caller.get_filename();
+	string const image_name = caller_bfd.get_filename();
 
 	// We must handle start_offset, this offset can be different for the
 	// caller and the callee: kernel sample traversing the syscall barrier.
@@ -396,47 +300,47 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 		// use it with a zero offset, the code below will abort because
 		// we will get incorrect callee sub-range and out of range
 		// callee vma. FIXME
-		if (!bfd_caller_ok) {
+		if (!caller_bfd_ok) {
 			// We already warned.
 			return;
 		}
-		caller_start_offset = caller.get_start_offset();
+		caller_start_offset = caller_bfd.get_start_offset();
 	}
 
 	u32 callee_offset = 0;
 	if (profile.get_header().cg_to_is_kernel)
-		callee_offset = callee.get_start_offset();
+		callee_offset = callee_bfd.get_start_offset();
 
 	cverb << vdebug << hex
-	      << "bfd_caller_start_offset: " << caller_start_offset << endl
-	      << "bfd_callee_start_offset: " << callee_offset << dec << endl;
+	      << "caller_bfd_start_offset: " << caller_start_offset << endl
+	      << "callee_bfd_start_offset: " << callee_offset << dec << endl;
 
-	for (symbol_index_t i = 0; i < caller.syms.size(); ++i) {
+	for (symbol_index_t i = 0; i < caller_bfd.syms.size(); ++i) {
 		unsigned long start, end;
-		caller.get_symbol_range(i, start, end);
+		caller_bfd.get_symbol_range(i, start, end);
 
 		profile_t::iterator_pair p_it = profile.samples_range(
 			odb_key_t(start - caller_start_offset) << 32,
 			odb_key_t(end - caller_start_offset) << 32);
 
-		cg_symbol symb_caller;
+		symbol_entry caller;
 
-		symb_caller.size = end - start;
-		symb_caller.name = symbol_names.create(caller.syms[i].name());
-		symb_caller.image_name = image_names.create(image_name);
-		symb_caller.app_name = image_names.create(app_name);
-		symb_caller.sample.vma = caller.sym_offset(i, start) +
-			caller.syms[i].vma();
+		caller.size = end - start;
+		caller.name = symbol_names.create(caller_bfd.syms[i].name());
+		caller.image_name = image_names.create(image_name);
+		caller.app_name = image_names.create(app_name);
+		caller.sample.vma = caller_bfd.sym_offset(i, start) +
+			caller_bfd.syms[i].vma();
 
-		symbol_entry const * self = symbols.find(symb_caller);
+		symbol_entry const * self = pc.find(caller);
 		if (self)
-			symb_caller.self_counts = self->sample.counts;
+			caller.sample.counts = self->sample.counts;
 
 		if (debug_info) {
 			string filename;
-			if (caller.get_linenr(i, start, filename,
-			    symb_caller.sample.file_loc.linenr)) {
-				symb_caller.sample.file_loc.filename =
+			if (caller_bfd.get_linenr(i, start, filename,
+			    caller.sample.file_loc.linenr)) {
+				caller.sample.file_loc.filename =
 					debug_names.create(filename);
 			}
 		}
@@ -470,21 +374,37 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 			      << callee_vma << dec << endl;
 
 			op_bfd_symbol symb(callee_vma, 0, string());
+
 			vector<op_bfd_symbol>::const_iterator bfd_symb_callee =
-				upper_bound(callee.syms.begin(),
-					callee.syms.end(), symb);
-			if (bfd_symb_callee == callee.syms.end())
+				upper_bound(callee_bfd.syms.begin(),
+					callee_bfd.syms.end(), symb);
+
+			if (bfd_symb_callee == callee_bfd.syms.end())
 				cverb << vdebug << "reaching end of symbol\n";
 			// ugly but upper_bound() work in this way.
-			if (bfd_symb_callee != callee.syms.begin())
+			if (bfd_symb_callee != callee_bfd.syms.begin())
 				--bfd_symb_callee;
-			if (bfd_symb_callee == callee.syms.end()) {
+			if (bfd_symb_callee == callee_bfd.syms.end()) {
 				// FIXME: not clear if we need to abort,
 				// recover or an exception, for now I need a
 				// a core dump
 				cerr << "Unable to retrieve callee symbol\n";
 				abort();
 			}
+
+			symbol_entry callee;
+
+			callee.size = bfd_symb_callee->size();
+			callee.name =
+				symbol_names.create(bfd_symb_callee->name());
+			callee.image_name =
+				image_names.create(callee_bfd.get_filename());
+			callee.app_name = image_names.create(app_name);
+			callee.sample.vma = bfd_symb_callee->vma();
+
+			self = pc.find(callee);
+			if (self)
+				callee.sample.counts = self->sample.counts;
 
 			u32 upper_bound = bfd_symb_callee->size() +
 				bfd_symb_callee->filepos() - callee_offset;
@@ -493,15 +413,18 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 			      << dec << endl;
 
 			data_t::const_iterator dcur = it;
+
 			// Process all arc from this caller to this callee
-			u32 caller_callee_count = 0;
+
+			count_array_t arc_count;
+
 			for (; it != dend &&
 			     (it->first & 0xffffffff) < upper_bound;
 			     ++it) {
-				cverb << (vdebug&vlevel1) << hex
+				cverb << (vdebug & vlevel1) << hex
 				      << "offset: " << (it->first & 0xffffffff)
 				      << dec << endl;
-				caller_callee_count += it->second;
+				arc_count[pclass] += it->second;
 			}
 			// FIXME: very fragile, any inaccuracy in caller offset
 			// can lead to an abort!
@@ -512,43 +435,27 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 				abort();
 			}
 
-			symb_caller.callee_counts[pclass] = caller_callee_count;
-
 			cverb << vdebug
-			      << caller.syms[i].name() << " "
+			      << caller_bfd.syms[i].name() << " "
 			      << bfd_symb_callee->name() << " "
-			      << caller_callee_count << endl;
-
-			cg_symbol symb_callee;
-
-			symb_callee.size = bfd_symb_callee->size();
-			symb_callee.name =
-				symbol_names.create(bfd_symb_callee->name());
-			symb_callee.image_name =
-				image_names.create(callee.get_filename());
-			symb_callee.app_name = image_names.create(app_name);
-			symb_callee.sample.vma = bfd_symb_callee->vma();
-
-			symbol_entry const * self = symbols.find(symb_callee);
-			if (self)
-				symb_callee.self_counts = self->sample.counts;
+			      << arc_count[pclass] << endl;
 
 			if (debug_info) {
 				symbol_index_t index =
-					distance(callee.syms.begin(),
+					distance(callee_bfd.syms.begin(),
 						 bfd_symb_callee);
 				unsigned long start, end;
-				callee.get_symbol_range(index, start, end);
+				callee_bfd.get_symbol_range(index, start, end);
 
 				string filename;
-				if (callee.get_linenr(index, start, filename,
-					symb_callee.sample.file_loc.linenr)) {
-					symb_callee.sample.file_loc.filename =
+				if (callee_bfd.get_linenr(index, start, filename,
+					callee.sample.file_loc.linenr)) {
+					callee.sample.file_loc.filename =
 						debug_names.create(filename);
 				}
 			}
 
-			recorder.add_arc(symb_caller, &symb_callee);
+			recorder.add(caller, &callee, arc_count);
 
 			// next callee symbol
 			dit = it;
@@ -557,17 +464,13 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 }
 
 
-void callgraph_container::add_leaf_arc(profile_container const & symbols)
+void callgraph_container::add_symbols(profile_container const & pc)
 {
 	symbol_container::symbols_t::iterator it;
-	symbol_container::symbols_t::iterator const end = symbols.end_symbol();
-	for (it = symbols.begin_symbol(); it != end; ++it) {
-		cg_symbol symbol(*it);
-		symbol.self_counts = it->sample.counts;
-		recorder.add_arc(symbol, 0);
-	}
+	symbol_container::symbols_t::iterator const end = pc.end_symbol();
 
-	total_count = symbols.samples_count();
+	for (it = pc.begin_symbol(); it != end; ++it)
+		recorder.add(*it, 0, count_array_t());
 }
 
 
@@ -575,12 +478,12 @@ column_flags callgraph_container::output_hint() const
 {
 	column_flags output_hints = cf_none;
 
-	// FIXME: costly must we access directly recorder.caller_callee map ?
-	cg_collection arcs = recorder.get_arc();
+	// FIXME: costly: must we access directly recorder map ?
+	cg_collection syms = recorder.get_symbols();
 
 	cg_collection::const_iterator it;
-	cg_collection::const_iterator const end = arcs.end();
-	for (it = arcs.begin(); it != end; ++it)
+	cg_collection::const_iterator const end = syms.end();
+	for (it = syms.begin(); it != end; ++it)
 		output_hints = it->output_hint(output_hints);
 
 	return output_hints;
@@ -593,19 +496,7 @@ count_array_t callgraph_container::samples_count() const
 }
 
 
-cg_collection callgraph_container::get_arc() const
+cg_collection callgraph_container::get_symbols() const
 {
-	return recorder.get_arc();
-}
-
-
-cg_collection callgraph_container::get_callee(cg_symbol const & s) const
-{
-	return recorder.get_callee(s);
-}
-
-
-cg_collection callgraph_container::get_caller(cg_symbol const & s) const
-{
-	return recorder.get_caller(s);
+	return recorder.get_symbols();
 }

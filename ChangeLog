@@ -1,3 +1,22 @@
+2005-04-04  John Levon  <levon@movementarian.org>
+
+	* libpp/callgraph_container.cpp:
+	* libpp/callgraph_container.h:
+	* libpp/format_flags.h:
+	* libpp/format_output.cpp:
+	* libpp/format_output.h:
+	* libpp/symbol.cpp:
+	* libpp/symbol.h:
+	* libpp/symbol_sort.cpp:
+	* libpp/symbol_sort.h:
+	* libutil++/op_bfd.cpp:
+	* pp/common_option.cpp:
+	* pp/common_option.h:
+	* pp/opstack.cpp:
+	* pp/opstack_options.cpp:
+	* pp/opstack_options.h: re-whack call-graph collection
+	  and output format
+
 2005-04-03 Maynard Johnson  <maynardj@us.ibm.com>
 
 	* configure.in:

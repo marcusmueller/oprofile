@@ -18,15 +18,17 @@ for some pointers and/or read HACKING and doc/CodingStyle.
    Should be smarter ?
  o opstack gives weird output for an image with no symbols:
 
-  690      100.000  27697    100.000  libkdecore.so.4.1.0      (no symbols)
-690       0.9446  27697    37.9188  libkdecore.so.4.1.0      (no symbols)
-  4830     100.000  27697    100.000  libkdecore.so.4.1.0      (no symbols)
-  0              0  0              0  libkdecore.so.4.1.0      memcpy
-  0              0  0              0  libkdecore.so.4.1.0 __i686.get_pc_thunk.bx
-  0              0  0              0  libkdecore.so.4.1.0 __errno_location
-  0              0  0              0  libkdecore.so.4.1.0      (no symbols)
-  0              0  0              0  libkdecore.so.4.1.0      (no symbols)
+    samples  %        symbol name
+  15965    100.000  (no symbols)
+253      100.000  (no symbols)
+  15965    98.4400  (no symbols)
+  253       1.5600  (no symbols) [self]
+-------------------------------------------------------------------------------
 
+ o consider tagging opstack entries with a number like gprof
+ o optimise opstack
+ o merge opstack into opreport via -c option
+ o should [self] entries be ommitted if 0 ??
  o stress test opstack: compile a Big Application w/o frame pointer and look
    how driver and opstack react.
  o consider generic anon mapping support

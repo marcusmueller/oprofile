@@ -13,6 +13,7 @@
 #define OPSTACK_OPTIONS_H
 
 #include "common_option.h"
+#include "symbol_sort.h"
 
 class profile_classes;
 
@@ -23,6 +24,8 @@ namespace options {
 	extern std::string archive_path;
 	extern demangle_type demangle;
 	extern merge_option merge_by;
+	extern sort_options sort_by;
+	extern bool reverse_sort;
 	extern bool long_filenames;
 	extern bool show_header;
 	extern bool show_address;

@@ -27,6 +27,8 @@ namespace options {
 	demangle_type demangle = dmt_normal;
 	bool exclude_dependent;
 	merge_option merge_by;
+	sort_options sort_by;
+	bool reverse_sort;
 	bool long_filenames;
 	bool show_header = true;
 	bool show_address;
@@ -38,6 +40,7 @@ namespace options {
 namespace {
 
 vector<string> mergespec;
+vector<string> sort;
 string demangle_option = "normal";
 
 popt::option options_array[] = {
@@ -46,8 +49,12 @@ popt::option options_array[] = {
 	             "none|normal|smart"),
 	popt::option(options::exclude_dependent, "exclude-dependent", 'x',
 		     "exclude libs, kernel, and module samples for applications"),
+	popt::option(sort, "sort", 's',
+		     "sort by", "sample,image,app-name,symbol,debug,vma"),
 	popt::option(mergespec, "merge", 'm',
 		     "comma separated list", "cpu,lib,tid,tgid,unitmask,all"),
+	popt::option(options::reverse_sort, "reverse-sort", 'r',
+		     "use reverse sort"),
 	popt::option(options::long_filenames, "long-filenames", 'f',
 		     "show the full path of filenames"),
 	popt::option(options::show_header, "no-header", 'n',
@@ -63,6 +70,24 @@ popt::option options_array[] = {
 		     "percent"),
 };
 
+
+// FIXME: separate file if reused
+void handle_sort_option()
+{
+	if (sort.empty()) {
+		// PP:5.14 sort default to sample
+		sort.push_back("sample");
+	}
+
+	vector<string>::const_iterator cit = sort.begin();
+	vector<string>::const_iterator end = sort.end();
+
+	for (; cit != end; ++cit) {
+		options::sort_by.add_sort_option(*cit);
+	}
+}
+
+
 }  // anonymous namespace
 
 
@@ -70,6 +95,7 @@ void handle_options(vector<string> const & non_options)
 {
 	using namespace options;
 
+	handle_sort_option();
 	merge_by = handle_merge_option(mergespec, true, exclude_dependent);
 	demangle = handle_demangle_option(demangle_option);
 

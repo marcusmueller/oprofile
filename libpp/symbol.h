@@ -74,7 +74,35 @@ struct symbol_entry {
 	column_flags output_hint(column_flags fl) const;
 };
 
+
 /// a collection of sorted symbols
 typedef std::vector<symbol_entry const *> symbol_collection;
+
+
+/**
+ * The public data for call-graph symbols. Each caller/callee has
+ * the sample counts replaced with the relevant arc counts, whilst
+ * the cg_symbol retains its self count.
+ */
+struct cg_symbol : public symbol_entry {
+	cg_symbol(symbol_entry const & sym) : symbol_entry(sym) {}
+
+	typedef std::vector<symbol_entry> children;
+
+	/// all callers of this symbol
+	children callers;
+	/// total count of callers
+	count_array_t total_caller_count;
+
+	/// all symbols called by this symbol
+	children callees;
+	/// total count of callees
+	count_array_t total_callee_count;
+};
+
+
+/// a collection of sorted callgraph symbols
+typedef std::vector<cg_symbol> cg_collection;
+
 
 #endif /* !SYMBOL_H */
