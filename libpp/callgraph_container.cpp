@@ -167,7 +167,9 @@ find_arc(cg_symbol const & caller, cg_symbol const & callee)
 			break;
 	}
 
-	return p_it.first == p_it.second ? caller_callee.end() : p_it.first;
+	if (p_it.first == p_it.second)
+		return caller_callee.end();
+	return p_it.first;
 }
 
 

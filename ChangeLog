@@ -1,3 +1,12 @@
+2004-02-29  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/callgraph_container.cpp: make g++ -D_GLIBCXX_DEBUG happy, see
+	  http://gcc.gnu.org/PR14340
+
+	* module/op_dcache.h:
+	* module/op_dname.c: some gcc version are confused by extern
+	  declaration followed by later static.
+
 2004-02-28  Zwane Mwaikambo  <zwane@linuxpower.ca>
 
 	* libutil++/op_bfd.cpp:

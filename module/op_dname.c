@@ -20,12 +20,11 @@
 
 /* --------- device routines ------------- */
 
-static uint dname_top;
-
-static struct qstr ** dname_stack;
-static char * pool_pos;
-static char * pool_start;
-static char * pool_end;
+uint op_dname_top;
+struct qstr ** op_dname_stack;
+char * op_pool_pos;
+char * op_pool_start;
+char * op_pool_end;
 
 static ulong hash_map_open;
 static struct op_hash_index * hash_map;
@@ -39,11 +38,11 @@ int oprof_init_hashmap(void)
 {
 	uint i;
 
-	dname_stack = kmalloc(DNAME_STACK_MAX * sizeof(struct qstr *), GFP_KERNEL);
-	if (!dname_stack)
+	op_dname_stack = kmalloc(DNAME_STACK_MAX * sizeof(struct qstr *), GFP_KERNEL);
+	if (!op_dname_stack)
 		return -EFAULT;
-	dname_top = 0;
-	memset(dname_stack, 0, DNAME_STACK_MAX * sizeof(struct qstr *));
+	op_dname_top = 0;
+	memset(op_dname_stack, 0, DNAME_STACK_MAX * sizeof(struct qstr *));
 
 	hash_map = rvmalloc(PAGE_ALIGN(OP_HASH_MAP_SIZE));
 	if (!hash_map)
@@ -54,9 +53,9 @@ int oprof_init_hashmap(void)
 		hash_map[i].parent = -1;
 	}
 
-	pool_start = (char *)(hash_map + OP_HASH_MAP_NR);
-	pool_end = pool_start + POOL_SIZE;
-	pool_pos = pool_start;
+	op_pool_start = (char *)(hash_map + OP_HASH_MAP_NR);
+	op_pool_end = op_pool_start + POOL_SIZE;
+	op_pool_pos = op_pool_start;
 
 	/* Ensure that the zero hash map entry is never used, we use this
 	 * value as end of path terminator */
@@ -68,7 +67,7 @@ int oprof_init_hashmap(void)
 
 void oprof_free_hashmap(void)
 {
-	kfree(dname_stack);
+	kfree(op_dname_stack);
 	rvfree(hash_map, PAGE_ALIGN(OP_HASH_MAP_SIZE));
 }
 
@@ -215,7 +214,7 @@ uint do_hash(struct dentry * dentry, struct vfsmount * vfsmnt, struct dentry * r
 	}
 
 out:
-	dname_top = 0;
+	op_dname_top = 0;
 	return value;
 fullpool:
 	printk(KERN_ERR "oprofile: string pool exhausted.\n");
