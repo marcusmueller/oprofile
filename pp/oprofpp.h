@@ -282,7 +282,6 @@ private:
 };
 
 /** A class to store one samples file */
-/* TODO: misnamed, it exist a samples_files_t class which is very confusing */
 struct samples_file_t
 {
 	samples_file_t(const std::string & filename);

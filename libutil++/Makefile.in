@@ -1,10 +1,10 @@
 include ../make.common
 
-HEADERS=child_reader.h file_manip.h string_manip.h
- 
-SOURCES=child_reader.cpp file_manip.cpp string_manip.cpp
+HEADERS=child_reader.h file_manip.h string_manip.h filename_match.h
 
-OBJECTS=child_reader.o file_manip.o string_manip.o
+SOURCES=child_reader.cpp file_manip.cpp string_manip.cpp filename_match.cpp
+
+OBJECTS=child_reader.o file_manip.o string_manip.o filename_match.o
 
 TARGET=libutil++.a
 
@@ -16,5 +16,5 @@ clean:
 
 $(TARGET): $(OBJECTS)
 	$(AR) cr $@ $^
- 
+
 include ../make.deps

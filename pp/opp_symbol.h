@@ -20,7 +20,7 @@
 
 #include "oprofpp.h"
 
-class samples_files_t;
+class samples_container_t;
 class field_description;
 
 //---------------------------------------------------------------------------
@@ -83,7 +83,7 @@ enum OutSymbFlag {
 //	osf_time_cumulated = 1 << 6,	// for now. FIXME is this usefull ?
 	osf_symb_name = 1 << 7,
 	// TODO: actually demangling is made when storing symb name in
-	// samples_files_t. We need perhaps to store raw name in symbol and
+	// samples_container_t. We need perhaps to store raw name in symbol and
 	// defer demangling at output time.
 //	osf_demangle = 1 << 8,		// provide demangle param name etc ?
 	osf_linenr_info = 1 << 9,
@@ -108,9 +108,9 @@ enum OutSymbFlag {
  */
 class OutputSymbol {
 public:
-	/// build an OutputSymbol object, the samples_files_t life time object
-	/// must be > of the life time of the OutputSymbol object.
-	OutputSymbol(const samples_files_t & samples_files, int counter);
+	/// build an OutputSymbol object, the samples_container_t life time
+	/// object must be > of the life time of the OutputSymbol object.
+	OutputSymbol(const samples_container_t & samples_container, int counter);
 
 	/// convenience to set output options flags w/o worrying about cast
 	void SetFlag(OutSymbFlag flag);
@@ -173,7 +173,7 @@ private:
 	static const field_description * GetFieldDescr(OutSymbFlag flag);
 
 	OutSymbFlag flags;
-	const samples_files_t & samples_files;
+	const samples_container_t & samples_container;
 	u32 total_count[OP_MAX_COUNTERS];
 	u32 cumulated_samples[OP_MAX_COUNTERS];
 	u32 cumulated_percent[OP_MAX_COUNTERS];

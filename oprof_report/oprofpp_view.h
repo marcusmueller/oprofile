@@ -13,13 +13,13 @@
 #include "op_view.h"
 
 class QListView;
-class samples_files_t;
+class samples_container_t;
 
 class OprofppView : public OpView {
 public:
 	OprofppView(QListView * view);
 private:
-	void do_data_change(const samples_files_t * );
+	void do_data_change(const samples_conainer_t * );
 	void do_data_destroy();
 
 	QListView * view;

@@ -1,3 +1,40 @@
+2002-05-08  Philippe Elie  <phil.el@wanadoo.fr>
+	
+	* pp/opf_filter.cpp: move to ...
+	* pp/op_to_source.cpp:
+	* pp/opf_container.cpp: move to ..
+	* pp/samples_container.cpp:
+	* pp/opf_filter.h: move to ...
+	* pp/samples_container.h:
+	* pp/Makefile.in:
+	* pp/.cvsignore: update
+
+	* oprof_report/hotspotview.cpp:
+	* oprof_report/hotspotview.h:
+	* oprof_report/op_view.h:
+	* oprof_report/oprof_report.cpp:
+	* oprof_report/oprof_report.h:
+	* oprof_report/oprof_view.cpp:
+	* oprof_report/oprof_view.h:
+	* pp/op_time.cpp:
+	* pp/opf_container.cpp:
+	* pp/opf_filter.cpp:
+	* pp/opf_filter.h:
+	* pp/opp_symbol.cpp:
+	* pp/opp_symbol.h:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp.h: samples_files_t -> samples_container_t
+
+	* ui/.cvsignore: update
+
+	* pp/opf_filter.cpp: move filename_match ...
+	* libutil++/filename_match.cpp: here
+	* libutil++/filename_match.cpp:
+	* libutil++/Makefile.in:
+
+	* pp/Makefile.in: fix typo that prevent op_to_source
+	  to be recompiled
+
 2002-05-08  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update
@@ -158,7 +195,7 @@
 	* doc/oprofile.xml: 
 	* gui/oprof_start.h:
 	* gui/oprof_start.cpp:
- 	* gui/oprof_start_config.h:
+	* gui/oprof_start_config.h:
 	* gui/oprof_start_config.cpp:
 	* gui/ui/oprof_start_base.ui: 
 	* oprof_report/oprof_report.cpp: 
@@ -406,7 +443,7 @@
 
 2002-03-21  Philippe Elie  <ph_e@club-internet.fr>
 
-	* pp/opf_filter.cpp;
+	* pp/opf_filter.cpp:
 	* pp/oprofpp.cpp:
 	* pp/oprofpp_util.cpp: factorize event settings output
 	* pp/oprofpp.h: ditto + do_list_xxx/do_dump_gprof : static

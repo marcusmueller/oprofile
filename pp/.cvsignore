@@ -4,5 +4,4 @@ Makefile
 op_time
 oprofpp
 oprof_convert
-opf_filter
 op_to_source

@@ -1,5 +1,5 @@
 /**
- * @file opf_filter.h
+ * @file samples_container.h
  * Annotated source output
  *
  * @remark Copyright 2002 OProfile authors
@@ -16,12 +16,12 @@
 
 #include "opp_symbol.h"
 
-class sample_container_t;
-class symbol_container_t;
+class sample_container_imp_t;
+class symbol_container_imp_t;
 
 //---------------------------------------------------------------------------
 /// A container to store symbol/sample from samples files/image file
-class samples_files_t {
+class samples_container_t {
 public:
 	/**
 	 * Build an object to store information on samples. All parameters
@@ -38,9 +38,9 @@ public:
 	 * come from a --separate-samples session
 	 * @param counter_mask which counter we must record
 	 */
-	 samples_files_t(bool add_zero_samples_symbols, OutSymbFlag flags,
-			 bool add_shared_libs, int counter_mask);
-	~samples_files_t();
+	 samples_container_t(bool add_zero_samples_symbols, OutSymbFlag flags,
+			     bool add_shared_libs, int counter_mask);
+	~samples_container_t();
 
 	/**
 	 * add() -  record symbols/samples in the underlined container
@@ -134,18 +134,18 @@ private:
 					     u32 & end, size_t & order);
 
 	/// not copy-constructible
-	samples_files_t(const samples_files_t&);
+	samples_container_t(const samples_container_t&);
 	/// not copy-able
-	samples_files_t& operator=(const samples_files_t&);
+	samples_container_t& operator=(const samples_container_t&);
 
 	/// The symbols collected by oprofpp sorted by increased vma, provide
 	/// also a sort order on samples count for each counter.
-	symbol_container_t * symbols;
+	symbol_container_imp_t * symbols;
 	/// The samples count collected by oprofpp sorted by increased vma,
 	/// provide also a sort order on (filename, linenr)
-	sample_container_t * samples;
+	sample_container_imp_t * samples;
 	/// build() must count samples count for each counter so cache it here
-	/// since user of samples_files_t often need it later.
+	/// since user of samples_container_t often need it later.
 	counter_array_t counter;
 	/// maximum number of counter available
 	uint nr_counters;

@@ -18,7 +18,7 @@
 #include "op_view.h"
 
 class QListView;
-class samples_files_t;
+class samples_container_t;
 class symbol_entry;
 
 class HotspotView : public QWidget, public OpView {
@@ -27,11 +27,11 @@ public:
 
 	/// reimplemented
 	void paintEvent(QPaintEvent *);
-	void do_data_change(const samples_files_t *);
+	void do_data_change(const samples_container_t *);
 	void do_data_destroy();
 private:
 	std::vector <const symbol_entry *> symbols;
-	const samples_files_t * samples;
+	const samples_container_t * samples;
 };
 
 #endif /* !HOTSPOT_VIEW_H */

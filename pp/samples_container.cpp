@@ -34,7 +34,7 @@ using std::vector;
 using std::pair;
 using std::sort;
 
-#include "opf_filter.h"
+#include "samples_container.h"
 
 namespace {
 
@@ -92,8 +92,8 @@ struct less_by_file_loc {
 };
 
 //---------------------------------------------------------------------------
-/// implementation of symbol_container_t
-class symbol_container_t {
+/// implementation of symbol_container_imp_t
+class symbol_container_imp_t {
  public:
 	size_t size() const;
 	const symbol_entry & operator[](size_t index) const;
@@ -124,23 +124,23 @@ class symbol_container_t {
 
 //---------------------------------------------------------------------------
 
-inline size_t symbol_container_t::size() const
+inline size_t symbol_container_imp_t::size() const
 {
 	return symbols.size();
 }
 
-inline const symbol_entry & symbol_container_t::operator[](size_t index) const
+inline const symbol_entry & symbol_container_imp_t::operator[](size_t index) const
 {
 	return symbols[index];
 }
 
-inline void symbol_container_t::push_back(const symbol_entry & symbol)
+inline void symbol_container_imp_t::push_back(const symbol_entry & symbol)
 {
 	symbols.push_back(symbol);
 }
 
 const symbol_entry *
-symbol_container_t::find(string filename, size_t linenr) const
+symbol_container_imp_t::find(string filename, size_t linenr) const
 {
 	build_by_file_loc();
 
@@ -157,7 +157,7 @@ symbol_container_t::find(string filename, size_t linenr) const
 	return 0;
 }
 
-void  symbol_container_t::build_by_file_loc() const
+void  symbol_container_imp_t::build_by_file_loc() const
 {
 	if (symbols.size() && symbol_entry_by_file_loc.empty()) {
 		for (size_t i = 0 ; i < symbols.size() ; ++i)
@@ -165,7 +165,7 @@ void  symbol_container_t::build_by_file_loc() const
 	}
 }
 
-const symbol_entry * symbol_container_t::find_by_vma(bfd_vma vma) const
+const symbol_entry * symbol_container_imp_t::find_by_vma(bfd_vma vma) const
 {
 	symbol_entry value;
 
@@ -182,7 +182,7 @@ const symbol_entry * symbol_container_t::find_by_vma(bfd_vma vma) const
 }
 
 // get a vector of symbols sorted by increased count.
-void symbol_container_t::get_symbols_by_count(size_t counter, vector<const symbol_entry*> & v) const
+void symbol_container_imp_t::get_symbols_by_count(size_t counter, vector<const symbol_entry*> & v) const
 {
 	for (size_t i = 0 ; i < symbols.size() ; ++i)
 		v.push_back(&symbols[i]);
@@ -195,8 +195,8 @@ void symbol_container_t::get_symbols_by_count(size_t counter, vector<const symbo
 }
 
 //---------------------------------------------------------------------------
-/// implementation of sample_container_t
-class sample_container_t {
+/// implementation of sample_container_imp_t
+class sample_container_imp_t {
  public:
 
 	const sample_entry & operator[](size_t index) const;
@@ -226,17 +226,17 @@ class sample_container_t {
 
 //---------------------------------------------------------------------------
 
-inline const sample_entry & sample_container_t::operator[](size_t index) const
+inline const sample_entry & sample_container_imp_t::operator[](size_t index) const
 {
 	return samples[index];
 }
 
-inline size_t sample_container_t::size() const
+inline size_t sample_container_imp_t::size() const
 {
 	return samples.size();
 }
 
-inline void sample_container_t::push_back(const sample_entry & sample)
+inline void sample_container_imp_t::push_back(const sample_entry & sample)
 {
 	samples.push_back(sample);
 }
@@ -250,9 +250,9 @@ inline counter_array_t & add_counts(counter_array_t & arr, const sample_entry * 
 
 } // namespace anon
 
-bool sample_container_t::accumulate_samples(counter_array_t & counter,
-					    const string & filename,
-					    uint max_counters) const
+bool sample_container_imp_t::accumulate_samples(counter_array_t & counter,
+						const string & filename,
+						uint max_counters) const
 {
 	flush_input_counter();
 
@@ -276,7 +276,7 @@ bool sample_container_t::accumulate_samples(counter_array_t & counter,
 	return false;
 }
 
-const sample_entry * sample_container_t::find_by_vma(bfd_vma vma) const
+const sample_entry * sample_container_imp_t::find_by_vma(bfd_vma vma) const
 {
 	sample_entry value;
 
@@ -292,7 +292,7 @@ const sample_entry * sample_container_t::find_by_vma(bfd_vma vma) const
 	return 0;
 }
 
-bool sample_container_t::accumulate_samples(counter_array_t & counter,
+bool sample_container_imp_t::accumulate_samples(counter_array_t & counter,
 	const string & filename, size_t linenr, uint max_counters) const
 {
 	flush_input_counter();
@@ -317,7 +317,7 @@ bool sample_container_t::accumulate_samples(counter_array_t & counter,
 	return false;
 }
 
-void sample_container_t::flush_input_counter() const
+void sample_container_imp_t::flush_input_counter() const
 {
 	if (!samples.size() || !samples_by_file_loc.empty())
 		return;
@@ -328,15 +328,15 @@ void sample_container_t::flush_input_counter() const
 }
 
 //---------------------------------------------------------------------------
-// implementation of samples_files_t
+// implementation of samples_container_t
 
-samples_files_t::samples_files_t(bool add_zero_samples_symbols_,
-				 OutSymbFlag flags_,
-				 bool add_shared_libs_, 
-				 int counter_mask_)
+samples_container_t::samples_container_t(bool add_zero_samples_symbols_,
+					 OutSymbFlag flags_,
+					 bool add_shared_libs_, 
+					 int counter_mask_)
 	:
-	symbols(new symbol_container_t),
-	samples(new sample_container_t),
+	symbols(new symbol_container_imp_t),
+	samples(new sample_container_imp_t),
 	nr_counters(static_cast<uint>(-1)),
 	add_zero_samples_symbols(add_zero_samples_symbols_),
 	flags(flags_),
@@ -345,7 +345,7 @@ samples_files_t::samples_files_t(bool add_zero_samples_symbols_,
 {
 }
 
-samples_files_t::~samples_files_t()
+samples_container_t::~samples_container_t()
 {
 	delete symbols;
 	delete samples;
@@ -355,7 +355,7 @@ samples_files_t::~samples_files_t()
 //  the symbols/samples are sorted by increasing vma.
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
-void samples_files_t::
+void samples_container_t::
 add(const opp_samples_files & samples_files, const opp_bfd & abfd)
 {
 	do_add(samples_files, abfd, add_zero_samples_symbols);
@@ -387,15 +387,15 @@ add(const opp_samples_files & samples_files, const opp_bfd & abfd)
 //  the symbols/samples are sorted by increasing vma.
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
-void samples_files_t::do_add(const opp_samples_files & samples_files,
-			     const opp_bfd & abfd, 
-			     bool add_zero_samples_symbols)
+void samples_container_t::do_add(const opp_samples_files & samples_files,
+				 const opp_bfd & abfd, 
+				 bool add_zero_samples_symbols)
 {
 	// paranoiad checking
 	if (nr_counters != static_cast<uint>(-1) && 
 	    nr_counters != samples_files.nr_counters) {
-		cerr << "Fatal: samples_files_t::do_add(): mismatch between"
-		     << "nr_counters and samples_files.nr_counters\n";
+		cerr << "Fatal: samples_container_t::do_add(): mismatch"
+		     << "between nr_counters and samples_files.nr_counters\n";
 		exit(EXIT_FAILURE);
 	}
 	nr_counters = samples_files.nr_counters;
@@ -478,10 +478,10 @@ void samples_files_t::do_add(const opp_samples_files & samples_files,
 	}
 }
 
-void samples_files_t::add_samples(const opp_samples_files& samples_files,
-				  const opp_bfd& abfd, size_t sym_index,
-				  u32 start, u32 end, bfd_vma base_vma,
-				  const std::string & image_name)
+void samples_container_t::add_samples(const opp_samples_files& samples_files,
+				      const opp_bfd& abfd, size_t sym_index,
+				      u32 start, u32 end, bfd_vma base_vma,
+				      const std::string & image_name)
 {
 	for (u32 pos = start; pos < end ; ++pos) {
 		char const * filename;
@@ -510,28 +510,28 @@ void samples_files_t::add_samples(const opp_samples_files& samples_files,
 	}
 }
 
-const symbol_entry* samples_files_t::find_symbol(bfd_vma vma) const
+const symbol_entry* samples_container_t::find_symbol(bfd_vma vma) const
 {
 	return symbols->find_by_vma(vma);
 }
 
-const symbol_entry* samples_files_t::find_symbol(const std::string & filename,
-						 size_t linenr) const
+const symbol_entry* samples_container_t::find_symbol(const std::string & filename,
+						     size_t linenr) const
 {
 	return symbols->find(filename, linenr);
 }
 
-const sample_entry * samples_files_t::find_sample(bfd_vma vma) const
+const sample_entry * samples_container_t::find_sample(bfd_vma vma) const
 { 
 	return samples->find_by_vma(vma);
 }
 
-u32 samples_files_t::samples_count(size_t counter_nr) const
+u32 samples_container_t::samples_count(size_t counter_nr) const
 {
 	return counter[counter_nr];
 }
 
-void samples_files_t::select_symbols(std::vector<const symbol_entry*> & result,
+void samples_container_t::select_symbols(std::vector<const symbol_entry*> & result,
 				     size_t ctr, double threshold,
 				     bool until_threshold,
 				     bool sort_by_vma) const
@@ -578,7 +578,7 @@ struct filename_by_samples {
 
 }
 
-void samples_files_t::select_filename(std::vector<std::string> & result,
+void samples_container_t::select_filename(std::vector<std::string> & result,
 				      size_t ctr, double threshold,
 				      bool until_threshold) const
 {
@@ -624,13 +624,13 @@ void samples_files_t::select_filename(std::vector<std::string> & result,
 	}
 }
 
-bool samples_files_t::samples_count(counter_array_t & result,
+bool samples_container_t::samples_count(counter_array_t & result,
 				    const std::string & filename) const
 {
 	return samples->accumulate_samples(result, filename, nr_counters);
 }
 
-bool samples_files_t::samples_count(counter_array_t & result,
+bool samples_container_t::samples_count(counter_array_t & result,
 				    const std::string & filename, 
 				    size_t linenr) const
 {
@@ -638,7 +638,7 @@ bool samples_files_t::samples_count(counter_array_t & result,
 					  nr_counters);
 }
 
-const sample_entry & samples_files_t::get_samples(size_t idx) const
+const sample_entry & samples_container_t::get_samples(size_t idx) const
 {
 	return (*samples)[idx];
 

@@ -15,7 +15,7 @@
 #include "file_manip.h"
 
 #include "opp_symbol.h"
-#include "opf_filter.h"
+#include "samples_container.h"
 
 using std::string;
 using std::cout;
@@ -128,16 +128,16 @@ static const field_description field_descr[] = {
 
 const size_t nr_field_descr = sizeof(field_descr) / sizeof(field_descr[0]);
 
-OutputSymbol::OutputSymbol(const samples_files_t & samples_files_,
+OutputSymbol::OutputSymbol(const samples_container_t & samples_container_,
 			   int counter_)
 	:
 	flags(osf_none),
-	samples_files(samples_files_),
+	samples_container(samples_container_),
 	counter(counter_),
 	first_output(true)
 {
-	for (size_t i = 0 ; i < samples_files.get_nr_counters() ; ++i) {
-		total_count[i] = samples_files.samples_count(i);
+	for (size_t i = 0 ; i < samples_container.get_nr_counters() ; ++i) {
+		total_count[i] = samples_container.samples_count(i);
 		cumulated_samples[i] = 0;
 		cumulated_percent[i] = 0;
 	}
@@ -208,7 +208,7 @@ void OutputSymbol::OutputDetails(std::ostream & out, const symbol_entry * symb)
 	u32 temp_cumulated_samples[OP_MAX_COUNTERS];
 	u32 temp_cumulated_percent[OP_MAX_COUNTERS];
 
-	for (size_t i = 0 ; i < samples_files.get_nr_counters() ; ++i) {
+	for (size_t i = 0 ; i < samples_container.get_nr_counters() ; ++i) {
 		temp_total_count[i] = total_count[i];
 		temp_cumulated_samples[i] = cumulated_samples[i];
 		temp_cumulated_percent[i] = cumulated_percent[i];
@@ -221,11 +221,11 @@ void OutputSymbol::OutputDetails(std::ostream & out, const symbol_entry * symb)
 	for (size_t cur = symb->first ; cur != symb->last ; ++cur) {
 		out << ' ';
 
-		DoOutput(out, symb->name, samples_files.get_samples(cur),
+		DoOutput(out, symb->name, samples_container.get_samples(cur),
 			 static_cast<OutSymbFlag>(flags & osf_details_mask));
 	}
 
-	for (size_t i = 0 ; i < samples_files.get_nr_counters() ; ++i) {
+	for (size_t i = 0 ; i < samples_container.get_nr_counters() ; ++i) {
 		total_count[i] = temp_total_count[i];
 		cumulated_samples[i] = temp_cumulated_samples[i];
 		cumulated_percent[i] = temp_cumulated_percent[i];
@@ -245,7 +245,7 @@ void OutputSymbol::DoOutput(std::ostream & out, const std::string & name,
 	}
 
 	// now the repeated field.
-	for (size_t ctr = 0 ; ctr < samples_files.get_nr_counters(); ++ctr) {
+	for (size_t ctr = 0 ; ctr < samples_container.get_nr_counters(); ++ctr) {
 		if ((counter & (1 << ctr)) != 0) {
 			size_t repeated_flag = (flag & osf_repeat_mask);
 			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {
@@ -297,7 +297,7 @@ void OutputSymbol::OutputHeader(std::ostream & out)
 	}
 
 	// now the repeated field.
-	for (size_t ctr = 0 ; ctr < samples_files.get_nr_counters(); ++ctr) {
+	for (size_t ctr = 0 ; ctr < samples_container.get_nr_counters(); ++ctr) {
 		if ((counter & (1 << ctr)) != 0) {
 			size_t repeated_flag = (flags & osf_repeat_mask);
 			for (size_t i = 0 ; repeated_flag != 0 ; ++i) {

@@ -102,7 +102,7 @@ void HotspotView::paintEvent(QPaintEvent *)
 /**
  * do_data_change() - handle data change
  */
-void HotspotView::do_data_change(const samples_files_t * samples_)
+void HotspotView::do_data_change(const samples_container_t * samples_)
 {
 	samples = samples_;
 	samples->select_symbols(symbols, 0, 0.0, false, true);

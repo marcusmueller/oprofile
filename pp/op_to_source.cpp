@@ -1,5 +1,5 @@
 /**
- * @file opf_filter.cpp
+ * @file op_to_source.cpp
  * Annotated source output
  *
  * @remark Copyright 2002 OProfile authors
@@ -18,7 +18,6 @@
 #include <sstream>
 
 #include <stdio.h>
-#include <fnmatch.h>
 
 #include "op_popt.h"
 
@@ -35,12 +34,14 @@ using std::hex;
 using std::dec;
 using std::ostringstream;
 
-#include "opf_filter.h"
+#include "samples_container.h"
 #include "oprofpp.h"
 
 #include "child_reader.h"
 #include "string_manip.h"
 #include "file_manip.h"
+#include "filename_match.h"
+#include "op_events_desc.h"
 
 #include "version.h"
 
@@ -53,31 +54,6 @@ string extract_blank_at_begin(const string & str);
 double do_ratio(size_t a, size_t total);
 
 }
-
-// This have nothing to do here...
-
-/// a class to encapsulate filename matching. The behavior look like
-/// fnmatch(pattern, filename, 0); eg * match '/' character. See the man page
-/// of fnmatch for further details.
-class filename_match {
- public:
-	// multiple pattern must be separate by ','. each pattern can contain
-	// leading and trailing blank which are strip from pattern.
-	filename_match(const string & include_patterns,
-		       const string & exclude_patterns);
-
-
-	/// return filename match include_pattern and not match exclude_pattern
-	bool match(const string & filename);
-
- private:
-	/// match helper
-	static bool match(const vector<string> & patterns,
-			  const string & filename);
-
-	std::vector<string> include_pattern;
-	std::vector<string> exclude_pattern;
-};
 
 //---------------------------------------------------------------------------
 /// Store the configuration of one counter. Construct from an opd_header
@@ -159,7 +135,7 @@ class output {
 	char const ** argv;
 
 	// hold all info for samples
-	samples_files_t * samples;
+	samples_container_t * samples;
 
 	// samples files header are stored here
 	counter_setup counter_info[OP_MAX_COUNTERS];
@@ -230,63 +206,6 @@ void counter_setup::print(ostream & out, op_cpu cpu_type, int counter) const
 
 	out << endl;
 }
-
-//---------------------------------------------------------------------------
-filename_match::filename_match(const string & include_patterns,
-			       const string & exclude_patterns)
-{
-	separate_token(include_pattern, include_patterns, ',');
-	separate_token(exclude_pattern, exclude_patterns, ',');
-}
-
-bool filename_match::match(const string & filename)
-{
-	string const & base = basename(filename);
-
-	// first, if any component of the dir is listed in exclude -> no
-	string comp = dirname(filename);
-	while (!comp.empty() && comp != "/") {
-		if (match(exclude_pattern, basename(comp)))
-			return false;
-		if (comp == dirname(comp))
-			break;
-		comp = dirname(comp);
-	}
-
-	// now if the file name is specifically excluded -> no
-	if (match(exclude_pattern, base))
-		return false;
-
-	// now if the file name is specifically included -> yes
-	if (match(include_pattern, base))
-		return true;
-
-	// now if any component of the path is included -> yes
-	// note that the include pattern defaults to '*'
-	string compi = dirname(filename);
-	while (!compi.empty() && compi != "/") {
-		if (match(include_pattern, basename(compi)))
-			return true;
-		if (compi == dirname(compi))
-			break;
-		compi = dirname(compi);
-	}
-
-	return false;
-}
-
-bool filename_match::match(const vector<string> & patterns,
-			   const string & filename)
-{
-	bool ok = false;
-	for (size_t i = 0 ; i < patterns.size() && ok == false ; ++i) {
-		if (fnmatch(patterns[i].c_str(), filename.c_str(), 0) != FNM_NOMATCH)
-			ok = true;
-	}
-
-	return ok;
-}
-
 //---------------------------------------------------------------------------
 
 output::output(int argc_, char const * argv_[],
@@ -353,7 +272,7 @@ output::output(int argc_, char const * argv_[],
 	OutSymbFlag flag = osf_details;
 	if (!assembly)
 		flag = static_cast<OutSymbFlag>(flag | osf_linenr_info);
-	samples = new samples_files_t(false, flag, false, counter_mask);
+	samples = new samples_container_t(false, flag, false, counter_mask);
 }
 
 output::~output()

@@ -14,7 +14,7 @@
 
 #include "ui/oprof_report.base.h"
 
-class samples_files_t;
+class samples_container_t;
 class OprofppView;
 class HotspotView;
 
@@ -59,7 +59,7 @@ private:
 
 	/// the data container, notification function received it when the
 	/// the data changed when the view is showed for the first time.
-	samples_files_t * samples_files;
+	samples_container_t * samples_container;
 };
 
 #endif // OPROF_REPORT_H

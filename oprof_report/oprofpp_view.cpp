@@ -14,7 +14,7 @@
 #include <qvariant.h>
 #include <qlistview.h>
 
-#include "../pp/opf_filter.h"
+#include "../pp/samples_container.h"
 
 #include "oprofpp_view.h"
 
@@ -32,7 +32,7 @@ using std::string;
 class SymbolItem : public QListViewItem {
 public:
 	SymbolItem(QListView* parent, const symbol_entry * symbol_,
-		   const samples_files_t & samples_files_);
+		   const samples_container_t & samples_container_);
 
 	/// reimplemented
 	QString text(int column) const;
@@ -43,14 +43,14 @@ public:
 private:
 	const symbol_entry * symbol;
 	/// needed mainly for statistics purpose
-	const samples_files_t & samples_files;
+	const samples_container_t & samples_container;
 };
 
 /// the class decribing a detailed item in view
 class SampleItem : public QListViewItem {
 public:
 	SampleItem(QListViewItem * parent, const sample_entry & sample_,
-		   const samples_files_t & samples_files_);
+		   const samples_container_t & samples_container_);
 
 	/// reimplemented
 	QString text(int column) const;
@@ -58,7 +58,7 @@ public:
 	QString key(int column, bool ascending) const;
 private:
 	const sample_entry & sample;
-	const samples_files_t & samples_files;
+	const samples_container_t & samples_container;
 };
 
 // the column description of an oprofpp_view
@@ -95,7 +95,7 @@ const size_t nr_column_descr = sizeof(column_descr) / sizeof(column_descr[0]);
  */
 static QString get_text(const sample_entry & sample,
 			const string & name,
-			const samples_files_t & samples_files,
+			const samples_container_t & samples_container,
 			int column)
 {
 	char buffer[256];
@@ -108,7 +108,7 @@ static QString get_text(const sample_entry & sample,
 			return QString().setNum(sample.counter[0]);
 		case cid_percent:
 			ratio = double(sample.counter[0])
-					/ samples_files.samples_count(0);
+					/ samples_container.samples_count(0);
 			sprintf(buffer, "%2.4f",  ratio * 100);
 			return QString(buffer);
 		case cid_symbol_name:
@@ -124,14 +124,15 @@ static QString get_text(const sample_entry & sample,
  */
 static QString get_key(const sample_entry & sample, 
 		       const string & name,
-		       const samples_files_t & samples_files,
+		       const samples_container_t & samples_container,
 		       int column)
 {
 	char buffer[32];
 	switch (column) {
 		case cid_vma:
 		case cid_symbol_name:
-			return get_text(sample, name, samples_files, column);
+		  return get_text(sample, name,
+				  samples_container, column);
 		// lexical sort does not work with floating point but the
 		// percent sort is identical to the samples nr sort so use it
 		case cid_percent:
@@ -147,11 +148,11 @@ static QString get_key(const sample_entry & sample,
  * SymbolItem - ctor
  */
 SymbolItem::SymbolItem(QListView* parent, const symbol_entry * symbol_,
-		       const samples_files_t & samples_files_)
+		       const samples_container_t & samples_container_)
 	:
 	QListViewItem(parent),
 	symbol(symbol_),
-	samples_files(samples_files_)
+	samples_container(samples_container_)
 {
 	if (symbol->first != symbol->last)
 		setExpandable(true);
@@ -162,7 +163,8 @@ SymbolItem::SymbolItem(QListView* parent, const symbol_entry * symbol_,
  */
 QString SymbolItem::text(int column) const
 {
-	return get_text(symbol->sample, symbol->name, samples_files, column);
+	return get_text(symbol->sample, symbol->name,
+			samples_container, column);
 }
 
 /**
@@ -170,7 +172,8 @@ QString SymbolItem::text(int column) const
  */
 QString SymbolItem::key(int column, bool) const
 {
-	return get_key(symbol->sample, symbol->name, samples_files, column);
+	return get_key(symbol->sample, symbol->name,
+		       samples_container, column);
 }
 
 /**
@@ -184,9 +187,9 @@ void SymbolItem::setOpen(bool open)
 	if (open && !childCount()) {
 		for (size_t i = symbol->first ; i != symbol->last ; ++i) {
 			const sample_entry & sample =
-				samples_files.get_samples(i);
+				samples_container.get_samples(i);
 
-			new SampleItem(this, sample, samples_files);
+			new SampleItem(this, sample, samples_container);
 		}
 	}
 
@@ -198,11 +201,11 @@ void SymbolItem::setOpen(bool open)
  * (details for a symbol)
  */
 SampleItem::SampleItem(QListViewItem * parent, const sample_entry & sample_,
-		       const samples_files_t & samples_files_)
+		       const samples_container_t & samples_container_)
 	:
 	QListViewItem(parent),
 	sample(sample_),
-	samples_files(samples_files_)
+	samples_container(samples_container_)
 {
 }
 
@@ -211,7 +214,7 @@ SampleItem::SampleItem(QListViewItem * parent, const sample_entry & sample_,
  */
 QString SampleItem::text(int column) const
 {
-	return get_text(sample, string(), samples_files, column);
+	return get_text(sample, string(), samples_container, column);
 }
 
 /**
@@ -219,7 +222,7 @@ QString SampleItem::text(int column) const
  */
 QString SampleItem::key(int column, bool) const
 {
-	return get_text(sample, string(), samples_files, column);
+	return get_text(sample, string(), samples_container, column);
 }
 
 /**
@@ -239,7 +242,7 @@ OprofppView::OprofppView(QListView * view_)
 /**
  * do_data_change - create and insert items in the view
  */
-void OprofppView::do_data_change(const samples_files_t * samples)
+void OprofppView::do_data_change(const samples_container_t * samples)
 {
 	vector<const symbol_entry *> symbs;
 	samples->select_symbols(symbs, 0, 0.0, false, true);

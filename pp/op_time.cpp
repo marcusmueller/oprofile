@@ -27,7 +27,7 @@
 #include "op_popt.h"
  
 #include "oprofpp.h"
-#include "opf_filter.h"
+#include "samples_container.h"
 
 #include "file_manip.h"
 #include "string_manip.h"
@@ -45,7 +45,7 @@ using std::pair;
 using std::setw;
 
 /* TODO: if we have a quick read samples files format we can handle a great
- * part of complexity here by using samples_files_t to handle straight
+ * part of complexity here by using samples_container_t to handle straight
  * op_time. Just create an artificial symbol that cover the whole samples
  * files with the name of the application this allow to remove image_name
  * and sorted_map_t class and all related  stuff and to use OutputSymbol to
@@ -614,7 +614,7 @@ string check_image_name(const string & image_name,
  */
 static void output_symbols_count(map_t& files, int counter)
 {
-	samples_files_t samples(false, output_format_flags, false, counter);
+	samples_container_t samples(false, output_format_flags, false, counter);
 
 	map_t::iterator it_f;
 	for (it_f = files.begin() ; it_f != files.end() ; ++it_f) {

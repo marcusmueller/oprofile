@@ -13,7 +13,7 @@
 #include <qtabwidget.h>
 #include <qlayout.h>
 
-#include "../pp/opf_filter.h"
+#include "../pp/samples_container.h"
 #include "../util/file_manip.h"
 #include "oprof_report.h"
 #include "oprofpp_view.h"
@@ -30,7 +30,7 @@ oprof_report::oprof_report()
 	oprof_report_base(0, 0, false, 0),
 	oprofpp_view(new OprofppView(oprofpp_view_widget)),
 	hotspot_view(new HotspotView(hotspot_tab)),
-	samples_files(0)
+	samples_container(0)
 {
 	hotspot_tabLayout->addWidget(hotspot_view, 0, 0, 0);
 }
@@ -40,7 +40,7 @@ oprof_report::oprof_report()
  */
 oprof_report::~oprof_report()
 {
-	delete samples_files;
+	delete samples_container;
 }
 
 /**
@@ -71,13 +71,13 @@ void oprof_report::load_samples_files(const string & filename)
 		// bad occur (through exception) in file loading.
 		mark_all_view_changed();
 
-		delete samples_files;
-		samples_files =
-			new samples_files_t(true, osf_details, true, counter);
+		delete samples_container;
+		samples_container = new samples_container_t(true, osf_details,
+							    true, counter);
 
 		// we filter nothing here to allow changing filtering later
 		// w/o reloading the whole samples files (TODO)
-		samples_files->add(samples_file, abfd);
+		samples_container->add(samples_file, abfd);
 	}
 
 	/* ... TODO and handle the relevant exception here ... */
@@ -148,14 +148,14 @@ void oprof_report::on_open()
  */
 void oprof_report::on_tab_change(QWidget* new_tab)
 {
-	if (samples_files) {
+	if (samples_container) {
 		// for now I handle this through string compare, if nr of view
 		// becomes a little what to great handle it through a
 		// std::map<QWidget*, OpView*> associative array filled in ctor
 		if (new_tab->name() == QString("oprofpp_tab")) {
-			oprofpp_view->data_change(samples_files);
+			oprofpp_view->data_change(samples_container);
 		} else if (new_tab->name() == QString("hotspot_tab")) {
-			hotspot_view->data_change(samples_files);
+			hotspot_view->data_change(samples_container);
 		}
 	}
 }

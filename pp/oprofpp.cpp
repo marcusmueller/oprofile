@@ -21,7 +21,7 @@
 #include "op_events_desc.h"
 #include "op_fileio.h"
 #include "file_manip.h"
-#include "opf_filter.h"
+#include "samples_container.h"
 
 using std::string;
 using std::vector;
@@ -154,8 +154,8 @@ static void do_list_symbols(opp_bfd & abfd,
 			    const opp_samples_files & samples_files,
 			    size_t cmask, int sort_by_ctr)
 {
-	samples_files_t samples(true, output_format_flags,
-				show_shared_libs, cmask);
+	samples_container_t samples(true, output_format_flags,
+				    show_shared_libs, cmask);
 
 	samples.add(samples_files, abfd);
 
@@ -195,8 +195,8 @@ static void do_list_symbol(opp_bfd & abfd,
 	output_format_flags = 
 	  static_cast<OutSymbFlag>(output_format_flags | osf_details | osf_show_all_counters);
 
-	samples_files_t samples(true, output_format_flags,
-				false, cmask);
+	samples_container_t samples(true, output_format_flags,
+				    false, cmask);
 
 	samples.add(samples_files, abfd);
 
@@ -331,8 +331,8 @@ static void do_list_symbols_details(opp_bfd & abfd,
 	output_format_flags =
 	  static_cast<OutSymbFlag>(output_format_flags | osf_details);
 
-	samples_files_t samples(false, output_format_flags,
-				show_shared_libs, cmask);
+	samples_container_t samples(false, output_format_flags,
+				    show_shared_libs, cmask);
 
 	samples.add(samples_files, abfd);
 
