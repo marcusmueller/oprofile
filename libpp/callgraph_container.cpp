@@ -98,9 +98,45 @@ arc_recorder::~arc_recorder()
 	}
 }
 
-
-void arc_recorder::fixup_callee_counts()
+vector<arc_recorder::map_t::iterator>
+arc_recorder::select_leaf(double threshold, count_array_t & totals)
 {
+	vector<map_t::iterator> result;
+	map_t::iterator end = caller_callee.end();
+	for (map_t::iterator it = caller_callee.begin(); it != end; ++it) {
+		if (it->second)
+			continue;
+		double percent = op_ratio(it->first.self_counts[0], totals[0]);
+		if (percent < threshold) {
+			totals -= it->first.self_counts;
+			result.push_back(it);
+		}
+	}
+	return result;
+}
+
+void arc_recorder::
+fixup_callee_counts(double threshold, count_array_t & totals)
+{
+	double percent = threshold / 100.0;
+	// while (list of leafs not statisfying the threshold is not empty)
+	//     remove and propagate the removal to both map
+
+	// iterate biggest callgraph depth at most.
+	while (true) {
+		vector<map_t::iterator> leafs = select_leaf(percent, totals);
+		if (leafs.empty())
+			break;
+
+		for (size_t i = 0; i < leafs.size(); ++i) {
+			cg_symbol const & caller = leafs[i]->first;
+
+			remove(caller);
+
+			caller_callee.erase(leafs[i]);
+		}
+	}
+
 	// FIXME: can be optimized easily
 	iterator end = caller_callee.end();
 	for (iterator it = caller_callee.begin(); it != end; ++it) {
@@ -110,6 +146,22 @@ void arc_recorder::fixup_callee_counts()
 			caller_callee.equal_range(it->first);
 		for (; p_it.first != p_it.second; ++p_it.first) {
 			symb.callee_counts += p_it.first->first.sample.counts;
+		}
+	}
+}
+
+
+void arc_recorder::remove(cg_symbol const & caller)
+{
+	map_t::iterator it = caller_callee.begin();
+	map_t::iterator end = caller_callee.end();
+	for (; it != end; ++it) {
+		if (it->second && caller == *it->second) {
+			delete it->second;
+			it->second = 0;
+			pair<map_t::iterator, map_t::iterator>
+				p_it = callee_caller.equal_range(caller);
+			callee_caller.erase(p_it.first, p_it.second);
 		}
 	}
 }
@@ -228,7 +280,7 @@ cg_symbol const * arc_recorder::find_caller(cg_symbol const & symbol) const
 
 
 void callgraph_container::populate(list<inverted_profile> const & iprofiles,
-   extra_images const & extra, bool debug_info)
+   extra_images const & extra, bool debug_info, double threshold)
 {
 	/// Normal (i.e non callgraph) samples container, we record sample
 	/// at symbol level, not at vma level.
@@ -249,7 +301,7 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles,
 
 	add_leaf_arc(symbols);
 
-	recorder.fixup_callee_counts();
+	recorder.fixup_callee_counts(threshold, total_count);
 }
 
 

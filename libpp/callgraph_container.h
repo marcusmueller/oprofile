@@ -56,10 +56,14 @@ public:
 	void add_arc(cg_symbol const & caller, cg_symbol const * callee);
 
 	/**
-	 * Finalize the recording after all arcs have been added
-	 * to propagate callee counts.
+	 * @param threshold  ignore arc below this threshold
+	 * @param totals  cumulated counts of leaf node
+	 *
+	 * Finalize the recording after all arcs have been added to propagate
+	 * callee counts then remove all leaf node not statisfying threshold
+	 * and propagate the removed node to parent arc.
 	 */
-	void fixup_callee_counts();
+	void fixup_callee_counts(double threshold, count_array_t & totals);
 
 	// sorted sequence of cg_symbol.
 	cg_collection get_arc() const;
@@ -71,6 +75,22 @@ private:
 	typedef map_t::const_iterator iterator;
 
 	cg_symbol const * find_caller(cg_symbol const &) const;
+
+	/**
+	 * @param percent  threshold criteria in percent
+	 * @param totals  cumulated counts of leaf node..
+	 *
+	 * return a vector of iterator to the caller_callee object leaf node
+	 * *not* statisfying the give threshold, totals counts is updated
+	 * in prevision of the removal of these nodes
+	 */
+	std::vector<map_t::iterator> select_leaf(double percent,
+		count_array_t & totals);
+
+	/// remove this cg_symbol from caller_callee map .second member and
+	/// from the callee_caller map, used to update the removal of a leaf
+	/// node from the caller_callee map.
+	void remove(cg_symbol const & caller);
 
 	/// returned iterator point into the caller_callee map
 	iterator find_arc(cg_symbol const &, cg_symbol const &);
@@ -90,12 +110,14 @@ public:
 	 * @param iprofiles  sample file list including callgraph files.
 	 * @param extra  extra image list to fixup binary name.
 	 * @param debug_info  true if we must record linenr information
+	 * @param threshold  ignore sample percent below this threshold
 	 *
 	 * Currently all errors core dump.
 	 * FIXME: consider if this should be a ctor
 	 */
 	void populate(std::list<inverted_profile> const & iprofiles,
-		      extra_images const & extra, bool debug_info);
+		      extra_images const & extra, bool debug_info,
+		      double threshold);
 
 	/// return hint on how data must be displayed.
 	column_flags output_hint() const;

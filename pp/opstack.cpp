@@ -65,7 +65,7 @@ int opstack(vector<string> const & non_options)
 
 	callgraph_container cg_container;
 	cg_container.populate(iprofiles, options::extra_found_images,
-		options::debug_info);
+		options::debug_info, options::threshold);
 
 	column_flags output_hints = cg_container.output_hint();
 
