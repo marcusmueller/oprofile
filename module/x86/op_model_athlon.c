@@ -39,10 +39,10 @@ static void athlon_fill_in_addresses(struct op_msrs * const msrs)
 	msrs->counters.addrs[2] = MSR_K7_PERFCTR2;
 	msrs->counters.addrs[3] = MSR_K7_PERFCTR3;
 
-	msrs->controls.addrs[0] = MSR_K7_PERFCTL0;
-	msrs->controls.addrs[1] = MSR_K7_PERFCTL1;
-	msrs->controls.addrs[2] = MSR_K7_PERFCTL2;
-	msrs->controls.addrs[3] = MSR_K7_PERFCTL3;
+	msrs->controls.addrs[0] = MSR_K7_EVNTSEL0;
+	msrs->controls.addrs[1] = MSR_K7_EVNTSEL1;
+	msrs->controls.addrs[2] = MSR_K7_EVNTSEL2;
+	msrs->controls.addrs[3] = MSR_K7_EVNTSEL3;
 }
 
  

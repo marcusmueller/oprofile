@@ -1,3 +1,9 @@
+2002-09-23  John Levon  <levon@movementarian.org>
+
+	* module/x86/op_msr.h: match kernel naming
+
+	* module/x86/op_model_athlon.c: from above
+ 
 2002-09-22  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libdb/db-insert.c: handle samples count overflow.
