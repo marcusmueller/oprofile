@@ -54,8 +54,9 @@ op_bfd_symbol::op_bfd_symbol(bfd_vma vma, size_t size, string const & name)
 }
 
 
-op_bfd::op_bfd(string const & filename, string_filter const & symbol_filter)
+op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter)
 	:
+	filename(fname),
 	file_size(0),
 	ibfd(0),
 	text_offset(0),
@@ -69,6 +70,8 @@ op_bfd::op_bfd(string const & filename, string_filter const & symbol_filter)
 
 	op_get_fsize(filename.c_str(), &file_size);
 
+	/* bfd keeps its own reference to the filename char *,
+	 * so it must have a lifetime longer than the ibfd */
 	ibfd = bfd_openr(filename.c_str(), NULL);
 
 	if (!ibfd) {
@@ -532,7 +535,7 @@ op_bfd_symbol const op_bfd::create_artificial_symbol()
 
 string op_bfd::get_filename() const
 {
-	return bfd_get_filename(ibfd);
+	return filename;
 }
 
 

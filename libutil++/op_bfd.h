@@ -154,6 +154,9 @@ public:
 	size_t bfd_arch_bits_per_address() const;
 
 private:
+	/// filename we open
+	std::string filename;
+
 	/// file size in bytes
 	off_t file_size;
 
