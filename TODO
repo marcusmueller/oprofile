@@ -55,16 +55,7 @@ Before 1.0 little stuff
  o separate debug info stuff
  o opgprof always merges even if we provide a profile spec that's minimal
    enough - you can't get "cpu:0"
- o we're not following symlinks for opreport etc. binary resolving. FIXED 
- in pp/profile_spec.cpp, I'm unsure if it remains some other place to fix
-
-   - this isn't fixed AFAICS - we only follow one level of symbolic link ?
-
-  movement: man 2 readlink : ELOOP  Too many symbolic links were encountered
-  in translating the pathname.
-  I read it as kernel iterate on symlink and didn't check in kernel code ?
-
-
+ o symlink following only follows one level of symlink
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
  o create_path API is weird
  o opannotate should error out with a msg if no debug symbols are found at all
