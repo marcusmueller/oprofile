@@ -1,19 +1,23 @@
 2003-08-12  John Levon  <levon@movementarian.org>
 
+	* pp/opreport.cpp: s/count_groups_summary/summary_container/g
+
+2003-08-12  John Levon  <levon@movementarian.org>
+
 	* doc/oprofile.xml: document opreport's side-by-side a little
 	bit
 
 2003-08-12  John Levon  <levon@movementarian.org>
 
-	* opreport.cpp: s/group_summary/app_summary/, and
+	* pp/opreport.cpp: s/group_summary/app_summary/, and
 	a lot of other renamings to clarify the count groups
 	usage.
 
 2003-08-12  John Levon  <levon@movementarian.org>
 
-	* op_help.c: add --unit-mask
+	* utils/op_help.c: add --unit-mask
 
-	* opcontrol: use --unit-mask
+	* utils/opcontrol: use --unit-mask
 
 2003-08-12  Philippe Elie  <phil.el@wanadoo.fr>
 

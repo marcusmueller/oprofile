@@ -69,15 +69,12 @@ struct app_summary {
 };
 
 
-/**
- * Summaries across all the count groups (multiple events, separated-out
- * tgid/cpu, etc.)
- */
-struct count_groups_summary {
-	count_groups_summary(vector<partition_files> const & sample_files);
-	/// all app summaries for a profiles set
+/// All image summaries to be output are contained here.
+struct summary_container {
+	summary_container(vector<partition_files> const & sample_files);
+	/// all app summaries
 	vector<app_summary> apps;
-	/// total count of samples for all groups
+	/// total count of samples for all summaries
 	count_array_t total_counts;
 };
 
@@ -165,8 +162,8 @@ bool app_summary::should_hide_deps() const
 }
 
 
-count_groups_summary::
-count_groups_summary(vector<partition_files> const & sample_files)
+summary_container::
+summary_container(vector<partition_files> const & sample_files)
 {
 	// second member is the partition file index i.e. the events/counts
 	// identifier
@@ -230,7 +227,7 @@ void output_count(double total_count, size_t count)
 
 
 void
-output_deps(count_groups_summary const & summaries,
+output_deps(summary_container const & summaries,
 	    app_summary const & app)
 {
 	for (size_t j = 0 ; j < app.files.size(); ++j) {
@@ -255,7 +252,7 @@ output_deps(count_groups_summary const & summaries,
 /**
  * Display all the given summary information
  */
-void output_summaries(count_groups_summary const & summaries)
+void output_summaries(summary_container const & summaries)
 {
 	for (size_t i = 0; i < summaries.apps.size(); ++i) {
 		app_summary const & app = summaries.apps[i];
@@ -393,7 +390,7 @@ int opreport(vector<string> const & non_options)
 	nr_groups = sample_file_partition.size();
 
 	if (!options::symbols) {
-		count_groups_summary summaries(sample_file_partition);
+		summary_container summaries(sample_file_partition);
 		output_summaries(summaries);
 		return 0;
 	}
