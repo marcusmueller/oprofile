@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.87 2002/06/06 02:02:52 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.88 2002/06/06 04:17:01 phil_e Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -56,6 +56,17 @@ AC_PROG_CPP
 AC_PROG_CXX
 AC_CHECK_PROG(LD,ld,ld,)
 test "$LD" || AC_ERROR(ld not found)
+
+dnl checking for gcc 2.91
+AC_MSG_CHECKING(for gcc 2.91)
+AC_SUBST(GCC_2_91)
+AC_TRY_COMPILE( 
+  [],
+  [
+  #if __GNUC__ == 2 || __GNUC_MINOR__ == 91
+  break_me_hard(\\\);
+  #endif
+  ], AC_MSG_RESULT("no"); GCC_2_91=no, AC_MSG_RESULT("yes"); GCC_2_91=yes)
 
 dnl  --- Find the Linux kernel, at least the headers ---
  
@@ -153,11 +164,14 @@ else
   AC_MSG_ERROR(This kernel version is unsupported. Check oprofile bug tracker for more information.)
 fi
 
+arch="unknown"
 AC_MSG_CHECKING(for x86 architecture)
 AX_COMPILE_OPTION(CONFIG_X86, x86=1, x86=0)
 AX_COMPILE_OPTION(CONFIG_X86_WP_WORKS_OK, x86=1, x86=$x86)
 AX_MSG_RESULT_YN($x86)
-test "$x86" = 1 || AC_MSG_ERROR(Unsupported architecture)
+test "$x86" = 1 && arch="x86"
+test "$arch" = "unknown" && AC_MSG_ERROR(Unsupported architecture)
+rm -f module/arch && ln -s "$arch" module/arch
 
 AC_MSG_CHECKING(for SMP)
 AX_COMPILE_OPTION(CONFIG_SMP,smp=1,smp=0)
@@ -319,6 +333,7 @@ AC_OUTPUT(make.common \
 	gui/ui/Makefile \
 	oprof_report/Makefile \
 	oprof_report/ui/Makefile \
+	module/arch/Makefile \
 	version.h)
 
 if test "$have_qt2" != "yes"; then

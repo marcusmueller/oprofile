@@ -1,0 +1,34 @@
+LD=ld
+CC=gcc
+
+INCLUDES = -I@KINC@/ -I@topdir@/ -I@topdir@/libutil/ -I@topdir@/libop/ -I..
+BASIC_KCFLAGS = -mcpu=i686 -pipe -O2 -fomit-frame-pointer -fno-strict-aliasing -Wall -Wstrict-prototypes -Wunused 
+KCFLAGS += $(INCLUDES) -D__KERNEL__ -DMODULE @BKCFLAGS@ @MODVERSIONS@ @NO_MODULE_VERSION@
+ASMFLAGS = -D__ASSEMBLY__ -DMODULE -D__KERNEL__ -traditional -I@KINC@
+
+HEADERS= op_apic.h
+SOURCES=cpu_type.c op_apic.c op_nmi.c op_fixmap.c op_syscalls.c
+ASMSOURCES=oprofile_nmi.S
+OBJECTS=cpu_type.o op_apic.o op_nmi.o op_fixmap.o op_syscalls.o oprofile_nmi.o
+TARGET=oprofile_arch.o
+
+.PHONY: all install clean uninstall
+
+all: $(TARGET)
+install:
+uninstall:
+clean:
+	rm -rf $(TARGET) $(OBJECTS) .deps
+
+$(TARGET): $(OBJECTS)
+	$(LD) -r -o $@ $(OBJECTS)
+
+%.o: %.c
+	$(CC) $(KCFLAGS) -c -o $@ $<
+
+%.o: %.S
+	$(CC) $(ASMFLAGS) -c -o $@ $<
+
+MKDIR_P=mkdir -p
+
+include ../../make.deps

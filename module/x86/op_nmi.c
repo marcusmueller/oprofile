@@ -10,6 +10,7 @@
  */
 
 #include "oprofile.h"
+#include "op_apic.h"
 #include "op_events.h"
 
 /* the MSRs we need */
@@ -393,7 +394,7 @@ static void pmc_remove_sysctls(ctl_table * next)
 	}
 }
  
-struct op_int_operations op_nmi_ops = {
+static struct op_int_operations op_nmi_ops = {
 	init: pmc_init,
 	deinit: pmc_deinit,
 	add_sysctls: pmc_add_sysctls,
@@ -405,3 +406,8 @@ struct op_int_operations op_nmi_ops = {
 	start_cpu: pmc_select_start,
 	stop_cpu: pmc_select_stop, 
 };
+
+struct op_int_operations const * op_int_interface()
+{
+	return &op_nmi_ops;
+}

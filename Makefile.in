@@ -3,7 +3,7 @@
 # take care: order of sub-dir build is meaningfull.
 
 USER_SUBDIRS=libutil libutil++ libopt++ libop libop++ libdb dae utils pp gui oprof_report doc
-SUBDIRS=$(USER_SUBDIRS) module
+SUBDIRS=$(USER_SUBDIRS) module/arch module
 
 all:
 	for i in $(SUBDIRS) ; \
@@ -39,11 +39,11 @@ maintainerclean: distclean
 	rm -f configure aclocal.m4 config.h.in
 
 distclean: clean
-	rm -f Makefile tags config.status config.log config.cache make.common version.h config.h
 	for i in $(SUBDIRS) ; \
 	do \
 		rm -f $$i/Makefile ; \
 	done
+	rm -f Makefile tags config.status config.log config.cache make.common version.h config.h module/arch
 
 tags:
 	ctags -R

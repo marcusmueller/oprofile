@@ -1,12 +1,13 @@
 # autodeps rules. These are modified from an example in the make info page.
 # has to be separate from make.common due to fucked up dependencies in gui/
  
-CPPFLAGS_DEPS = $(INCLUDES) $(CXXINCLUDES)
+CPPFLAGS_DEPS = $(INCLUDES)
+CXX_CPPFLAGS_DEPS = $(INCLUDES) $(CXXINCLUDES)
 
 .deps/%.cpp.d: %.cpp
 	@$(MKDIR_P) .deps
 	@set -e; \
-	$(CXX) $(CPPFLAGS_DEPS) -MM $< | sed 's|\($*\)\.o[ :]*|\1.o $@ : |g' > $@; \
+	$(CXX) $(CXX_CPPFLAGS_DEPS) -MM $< | sed 's|\($*\)\.o[ :]*|\1.o $@ : |g' > $@; \
 	[ -s $@ ] || rm -f $@ ;
 
 .deps/%.c.d: %.c

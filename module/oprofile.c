@@ -534,7 +534,7 @@ static void oprof_partial_stop(void)
 	if (partial_stop)
 		return;
 
-	op_replace_syscalls();
+	op_restore_syscalls();
 
 	int_ops->stop();
 
@@ -830,7 +830,7 @@ int __init oprof_init(void)
 	int err = 0;
 
 	if (sysctl.cpu_type != CPU_RTC) {
-		int_ops = &op_nmi_ops;
+		int_ops = op_int_interface();
 
 		// try to init, fall back to rtc if not
 		if ((err = int_ops->init())) {

@@ -1,3 +1,34 @@
+2002-06-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* module/x86: new directory, for now some small portion
+	  of x86 dependant code remains in module/* mainly in
+	  oprofile.[ch]. This patch also don't take care about
+	  libop/* which are architecture dependant
+
+	* module/op_apic.c:
+	* module/op_nmi.c:
+	* module/op_syscalls.c:
+	* module/oprofile_nmi.S:
+	* module/op_fixmap.c: move this file to ...
+	* module/x86/op_apic.c:
+	* module/x86/op_nmi.c:
+	* module/x86/op_syscalls.c:
+	* module/x86/oprofile_nmi.S:
+	* module/x86/op_fixmap.c: these new files
+	* module/x86/op_apic.c: x86 stuff
+	* module/x86/arch.mak: specific arch makefile fragment
+	* module/op_init.c: move cpu detection code ...
+	* module/x86/cpu_type.c: here
+	* module/Makefile: handle arch sub-dir
+	* module/x86/.cvsignore: new
+	* module/oprofile.h: declare the interface to the
+	  architecture dependant code
+
+	* Makefile.in:
+	* configure.in: handle module/arch
+	* make.common.in: avoid -Werror with gcc 2.91
+	* make.deps: small tweak allowing to use it in module
+
 2002-06-06  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: use CXXINCLUDES not CXXFLAGS

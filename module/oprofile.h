@@ -104,7 +104,10 @@ struct oprof_sysctl {
  * op_do_profile().
  */
 struct op_int_operations {
-	/* initialise the handler on module load. */
+	/* initialise the handler on module load, if this function fail
+	 * oprofile try to fall back to RTC mode, on failure deinit handler is
+	 * not called so all resource allocated by init() must be freed
+	 * before returning an error code */
 	int (*init)(void);
 	/* deinitialise on module unload */
 	void (*deinit)(void);
@@ -144,48 +147,12 @@ struct op_int_operations {
 #define op_hash(eip, pid, ctr) \
 	(((eip ) + (pid << 5) + (ctr)) & (data->hash_size - 1))
 
-/* read/write of perf counters */
-#define get_perfctr(l,h,c) do { rdmsr(perfctr_msr[(c)], (l), (h)); } while (0)
-#define set_perfctr(l,c) do { wrmsr(perfctr_msr[(c)], -(u32)(l), -1); } while (0)
-#define ctr_overflowed(n) (!((n) & (1U<<31)))
-
 #define op_check_range(val,l,h,str) do { \
         if ((val) < (l) || (val) > (h)) { \
                 printk(str, (val), (l), (h)); \
                 return 0; \
         } } while (0);
 
-asmlinkage void op_nmi(void);
-
-/* for installing and restoring the NMI handler */
-
-#define store_idt(addr) \
-	do { \
-		__asm__ __volatile__ ( "sidt %0" \
-			: "=m" (addr) \
-			: : "memory" ); \
-	} while (0)
-
-#define _set_gate(gate_addr,type,dpl,addr) \
-	do { \
-		int __d0, __d1; \
-		__asm__ __volatile__ ( \
-			"movw %%dx,%%ax\n\t" \
-			"movw %4,%%dx\n\t" \
-			"movl %%eax,%0\n\t" \
-			"movl %%edx,%1" \
-			:"=m" (*((long *) (gate_addr))), \
-			"=m" (*(1+(long *) (gate_addr))), "=&a" (__d0), "=&d" (__d1) \
-			:"i" ((short) (0x8000 + (dpl<<13) + (type<<8))), \
-			"3" ((char *) (addr)),"2" (__KERNEL_CS << 16)); \
-	} while (0)
-
-struct _descr { u16 limit; u32 base; } __attribute__((__packed__));
-struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
-
-/* These arrays are filled by hw_ok() */
-extern uint perfctr_msr[OP_MAX_COUNTERS];
-extern uint eventsel_msr[OP_MAX_COUNTERS];
 /* oprof_start() copy here the sysctl settable parameters */
 extern struct oprof_sysctl sysctl;
 
@@ -194,10 +161,6 @@ void rvfree(void * mem, signed long size);
 unsigned long kvirt_to_pa(unsigned long adr); 
 int oprof_init(void);
 void oprof_exit(void);
-void my_set_fixmap(void);
-void op_intercept_syscalls(void);
-void op_replace_syscalls(void);
-void op_save_syscalls(void);
 unsigned long is_map_ready(void);
 int oprof_hash_map_open(void);
 int oprof_hash_map_release(void);
@@ -207,17 +170,9 @@ int oprof_map_release(void);
 int oprof_map_read(char *buf, size_t count, loff_t *ppos);
 int oprof_init_hashmap(void);
 void oprof_free_hashmap(void);
-void lvtpc_apic_setup(void *dummy);
-void lvtpc_apic_restore(void *dummy);
-void apic_restore(void);
-void install_nmi(void);
-void restore_nmi(void);
-int apic_setup(void);
-void fixmap_setup(void);
-void fixmap_restore(void);
 
-/* used by interrupt handlers */
-extern struct op_int_operations op_nmi_ops;
+/* used by interrupt handlers if the underlined harware doesn't support
+ * performance counter */
 extern struct op_int_operations op_rtc_ops;
  
 void regparm3 op_do_profile(uint cpu, struct pt_regs *regs, int ctr);
@@ -226,5 +181,17 @@ extern int partial_stop;
 extern struct oprof_sysctl sysctl_parms;
 extern int nr_oprof_static;
 extern int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp);
+
+/* functionnality provided by the architecture dependant file */
+/* must return OP_RTC if the hardware doesn't support something like
+ * perf counter */
+op_cpu get_cpu_type(void);
+/* return an interface pointer, this function is called only if get_cpu_type
+ * doesn't return OP_RTC */
+struct op_int_operations const * op_int_interface(void);
+/* intercept the needed syscall */
+void op_intercept_syscalls(void);
+void op_restore_syscalls(void);
+void op_save_syscalls(void);
 
 #endif /* OPROFILE_H */

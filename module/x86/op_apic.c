@@ -16,6 +16,7 @@
 #include <asm/io.h>
 
 #include "oprofile.h"
+#include "op_apic.h"
  
 static ulong idt_addr;
 static ulong kernel_nmi;
@@ -142,7 +143,7 @@ not_local_p6_apic:
 	return -ENODEV;
 }
 
-void __init do_apic_setup(void)
+static void __init do_apic_setup(void)
 {
 	uint val;
  
