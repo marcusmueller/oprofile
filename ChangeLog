@@ -1,3 +1,9 @@
+2003-02-19  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/op_exception.h:
+	* libutil++/op_exception.cpp: new files, base class for exception.
+	  Not used for now.
+
 2003-02-19  John Levon  <levon@movementarian.org>
 
 	* acinclude.m4: update from upstream
