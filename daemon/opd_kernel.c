@@ -136,6 +136,75 @@ static struct opd_module * opd_get_module(char * name)
 	return new_module(name, 0, 0);
 }
 
+
+/**
+ * opd_read_module_info - parse /proc/modules for kernel modules
+ *
+ * Parse the file /proc/module to read start address and size of module
+ * each line is in the format:
+ *
+ * module_name 16480 1 - Live [optionnal field]* 0xe091e000
+ *
+ */
+static void opd_read_module_info(void)
+{
+	FILE * fp;
+	char * line;
+	char * cp;
+	char * filename;
+	struct opd_module * mod;
+	int module_size;
+
+	fp = op_try_open_file("/proc/modules", "r");
+
+	if (!fp) {
+		printf("oprofiled: /proc/modules not readable, can't process module samples.\n");
+		return;
+	}
+
+	while (1) {
+		line = op_get_line(fp);
+
+		if (feof(fp)) {
+			break;
+		} else if (line[0] == '\0') {
+			free(line);
+			continue;
+		}
+
+		cp = line;
+		while (*cp && *cp != ' ')
+			++cp;
+
+		filename = xmalloc(cp - line + 2);
+		/* Hacky: pp tools rely on at least one '}' in samples filename
+		 * so I force module filename as it reside in / directory */
+		filename[0] = '/';
+		memcpy(filename + 1, line, cp - line);
+		filename[(cp - line) + 1] = '\0';
+
+		mod = opd_get_module(xstrdup(filename));
+		mod->image = opd_get_kernel_image(filename);
+		free(filename);
+
+		sscanf(cp,"%d", &module_size);
+
+		cp = line + strlen(line);
+		while (cp > line && *cp != ' ')
+			--cp;
+		sscanf(cp, "%llx", &mod->start);
+		mod->end = mod->start + module_size;
+
+		printf("module %s start %llx end %llx\n",
+		       mod->name, mod->start, mod->end);
+
+		free(line);
+	}
+
+	op_close_file(fp);
+}
+
+
 /**
  * opd_get_module_info - parse mapping information for kernel modules
  *
@@ -152,6 +221,8 @@ static struct opd_module * opd_get_module(char * name)
  *
  * There is no query_module API that allow to get directly the pathname
  * of a module so we need to parse all the /proc/ksyms.
+ *
+ * FIXME remove this function when we drop old modules compatibility
  */
 static void opd_get_module_info(void)
 {
@@ -167,7 +238,8 @@ static void opd_get_module_info(void)
 	fp = op_try_open_file("/proc/ksyms", "r");
 
 	if (!fp) {
-		printf("oprofiled: /proc/ksyms not readable, can't process module samples.\n");
+		printf("oprofiled: /proc/ksyms not readable, fallback to /proc/modules.\n");
+		opd_read_module_info();
 		return;
 	}
 
