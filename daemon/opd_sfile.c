@@ -293,7 +293,8 @@ void sfile_close_files()
 }
 
 
-#define LRU_AMOUNT 200
+/* this value probably doesn't matter too much */
+#define LRU_AMOUNT 1000
 void sfile_lru_clear()
 {
 	struct list_head * pos;

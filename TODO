@@ -7,13 +7,14 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 -----------
 
  o test dcookie failure with random injection
- o why rel_to_abs_path in locate_images ??
+ o test reaching EMFILE
  o add separate_thread to opd_header or remove all separate from opd_header
  o thread separate GUI + docs
  o we need to handle thread separate without needing a useless -m tid
    (several processes w/o using threads)
- o per-cpu profiling
- o output column shortname headers for opreport -l
+ o when --separate=thread, we really need to show the list of current
+   classes on a merge failure so user can get help specifying tgid where
+   relevant
 
 0.8 release
 -----------
@@ -31,6 +32,8 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o why rel_to_abs_path in locate_images ??
+ o output column shortname headers for opreport -l
  o better sharing of dae daemon: share dae /daemon need to create a libdaemon/
    subdir and this lib must be self contained (not include anything in dae/*.h
    daemon/*.h) (<movewent> not really worth a whole new lib dir imho)

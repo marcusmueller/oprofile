@@ -1,3 +1,7 @@
+2003-09-25  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_sfile.c: bump LRU_AMOUNT to 1000
+
 2003-09-24  John Levon  <levon@movementarian.org>
 
 	* doc/opcontrol.1.in:
