@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.20 2002/01/23 21:16:54 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.21 2002/01/24 00:15:17 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -24,7 +24,7 @@
 #include "../util/string_manip.h"
  
 using std::string;
- 
+
 int verbose;
 char const *samplefile;
 char *basedir="/var/opd";
@@ -608,7 +608,6 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
  * find and return the index of a symbol.
  * if the @name is not found -1 is returned
  */
-
 int opp_bfd::symbol_index(const char* symbol) const
 {
 	for (size_t i = 0; i < syms.size(); i++) {
@@ -753,6 +752,52 @@ opp_samples_files::~opp_samples_files()
 }
 
 /**
+ * open_samples_file - helper function to open a samples files
+ * @fd: the file descriptor of file to mmap
+ * @size: where to store the samples files size not counting the header
+ * @fentry: where to store the opd_fentry pointer
+ * @header: where to store the opd_header pointer
+ * @filename: the filename of fd used for error message only
+ *
+ * open and mmap the given samples files,
+ * the param @samples, @header[@counter]
+ * etc. are updated.
+ * all error are fatal
+ */
+static void open_samples_file(fd_t fd, size_t & size, opd_fentry * & fentry,
+			      opd_header * & header, const std::string & filename)
+{
+	size_t sz_file = opd_get_fsize(filename.c_str(), 1);
+	if (sz_file < sizeof(opd_header)) {
+		fprintf(stderr, "op_merge: sample file %s is not the right "
+			"size: got %d, expect at least %d\n", 
+			filename.c_str(), sz_file, sizeof(opd_header));
+		exit(EXIT_FAILURE);
+	}
+	size = sz_file - sizeof(opd_header); 
+
+	header = (opd_header*)mmap(0, sz_file, 
+				   PROT_READ, MAP_PRIVATE, fd, 0);
+	if (header == (void *)-1) {
+		fprintf(stderr, "op_merge: mmap of %s failed. %s\n", filename.c_str(), strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	fentry = (opd_fentry *)(header + 1);
+
+	if (memcmp(header->magic, OPD_MAGIC, sizeof(header->magic))) {
+		/* FIXME: is 4.4 ok : there is no zero terminator */
+		fprintf(stderr, "op_merge: wrong magic %4.4s, expected %s.\n", header->magic, OPD_MAGIC);
+		exit(EXIT_FAILURE);
+	}
+
+	if (header->version != OPD_VERSION) {
+		fprintf(stderr, "op_merge: wrong version 0x%x, expected 0x%x.\n", header->version, OPD_VERSION);
+		exit(EXIT_FAILURE);
+	}
+}
+
+/**
  * open_samples_file - ctor helper
  * @counter: the counter number
  * @can_fail: allow to fail gracefully
@@ -784,40 +829,8 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 		return;
 	}
 
-	size_t sz_file = opd_get_fsize(temp.c_str(), 1);
-	if (sz_file < sizeof(opd_header)) {
-		fprintf(stderr, "oprofpp: sample file %s is not the right "
-			"size: got %d, expect at least %d\n", 
-			temp.c_str(), sz_file, sizeof(opd_header));
-		exit(EXIT_FAILURE);
-	}
-	size[counter] = sz_file - sizeof(opd_header); 
-
-	header[counter] = (opd_header*)mmap(0, sz_file, 
-				      PROT_READ, MAP_PRIVATE, fd[counter], 0);
-	if (header[counter] == (void *)-1) {
-		fprintf(stderr, "oprofpp: mmap of %s failed. %s\n", temp.c_str(), strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	samples[counter] = (opd_fentry *)(header[counter] + 1);
-
-	if (memcmp(header[counter]->magic, OPD_MAGIC, sizeof(header[0]->magic))) {
-		/* FIXME: is 4.4 ok : there is no zero terminator */
-		fprintf(stderr, "oprofpp: wrong magic %4.4s, expected %s.\n", header[counter]->magic, OPD_MAGIC);
-		exit(EXIT_FAILURE);
-	}
-
-	if (header[counter]->version != OPD_VERSION) {
-		fprintf(stderr, "oprofpp: wrong version 0x%x, expected 0x%x.\n", header[counter]->version, OPD_VERSION);
-		exit(EXIT_FAILURE);
-	}
-
-	/* This should be guaranteed by the daemon */
-	if (header[counter]->ctr != counter) {
-		fprintf(stderr, "oprofpp: sanity check counter number fail %d, expect %d.\n", header[counter]->ctr, counter);
-		exit(EXIT_FAILURE);
-	}
+	::open_samples_file(fd[counter], size[counter],
+			    samples[counter], header[counter], temp);
 }
 
 /**
@@ -883,4 +896,65 @@ bool opp_samples_files::accumulate_samples(counter_array_t& counter,
 	}
 
 	return found_samples;
+}
+
+/**
+ * samples_file_t - construct a samples_file_t object
+ * @filename: the full path of sample file
+ *
+ * open and mmap the samples file specified by @filename
+ * samples file header is checked
+ *
+ * all error are fatal
+ *
+ */
+samples_file_t::samples_file_t(const string & filename)
+	:
+	samples(0),
+	header(0),
+	fd(-1),
+	size(0)
+{
+	fd = open(filename.c_str(), O_RDONLY);
+	if (fd == -1) {
+		fprintf(stderr, "op_merge: Opening %s failed. %s\n", filename.c_str(), strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	open_samples_file(fd, size, samples, header, filename);
+}
+
+/**
+ * ~samples_file_t - destroy a samples_file_t object
+ *
+ * close and unmap the samples file
+ *
+ */
+samples_file_t::~samples_file_t()
+{
+	if (header)
+		munmap(header, size + sizeof(opd_header));
+	if (fd != -1)
+		close(fd);
+}
+
+/**
+ * check_headers - check than the lhs and rhs headers are
+ * coherent (same size, same mtime etc.)
+ * @rhs: the other samples_file_t
+ *
+ * all error are fatal
+ *
+ */
+bool samples_file_t::check_headers(const samples_file_t & rhs) const
+{
+	::check_headers(header, rhs.header);
+	
+	if (size != rhs.size) {
+		fprintf(stderr, "op_merge: mapping file size "
+			"are different (%d, %d)\n", size, rhs.size);
+		exit(EXIT_FAILURE);		
+	}
+
+	return true;
 }

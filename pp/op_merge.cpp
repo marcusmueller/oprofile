@@ -32,114 +32,13 @@
 #include "../util/shared_ptr.h"
 #include "oprofpp.h"
 
-// TODO: this is likely to become the new representation of opp_samples_files
-// as: SharedPtr<samples_file> samples[OP_MAX_COUNTERS]; see later comment
-struct samples_file
-{
-	samples_file(const string & filename, bool can_fail);
-	~samples_file();
-
-	bool check_headers(const samples_file & headers) const;
-
-	// probably needs to be private and create the neccessary member
-	// function (not simple getter), make private and compile to see
-	// what operation we need later. I've currently not a clear view
-	// of what we need
-//private:
-	opd_fentry *samples;		// header + sizeof(header)
-	opd_header *header;		// mapping begin here
-	fd_t fd;
-	// This do not include the header size
-	size_t size;
-
-private:
-	// neither copy-able or copy constructible
-	samples_file(const samples_file &);
-	samples_file& operator=(const samples_file &);
-};
-
-/* that's near opp_samples_files::open_samples_file() but the class
- * opp_samples_files needs to be redesigned before using it TODO:
- * clean up this etc... phe, I take care of that flame me if I forget to
- * update oprofpp in a few weeks (2002/02/25) */
-samples_file::samples_file(const string & filename, bool can_fail)
-	:
-	samples(0),
-	header(0),
-	fd(-1),
-	size(0)
-{
-	fd = open(filename.c_str(), O_RDONLY);
-	if (fd == -1) {
-		if (can_fail)
-			return;
-
-		fprintf(stderr, "op_merge: Opening %s failed. %s\n", filename.c_str(), strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	size_t sz_file = opd_get_fsize(filename.c_str(), 1);
-	if (sz_file < sizeof(opd_header)) {
-		fprintf(stderr, "op_merge: sample file %s is not the right "
-			"size: got %d, expect at least %d\n", 
-			filename.c_str(), sz_file, sizeof(opd_header));
-		exit(EXIT_FAILURE);
-	}
-	size = sz_file - sizeof(opd_header); 
-
-	header = (opd_header*)mmap(0, sz_file, 
-				   PROT_READ, MAP_PRIVATE, fd, 0);
-	if (header == (void *)-1) {
-		fprintf(stderr, "op_merge: mmap of %s failed. %s\n", filename.c_str(), strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	samples = (opd_fentry *)(header + 1);
-
-	if (memcmp(header->magic, OPD_MAGIC, sizeof(header->magic))) {
-		/* FIXME: is 4.4 ok : there is no zero terminator */
-		fprintf(stderr, "op_merge: wrong magic %4.4s, expected %s.\n", header->magic, OPD_MAGIC);
-		exit(EXIT_FAILURE);
-	}
-
-	if (header->version != OPD_VERSION) {
-		fprintf(stderr, "op_merge: wrong version 0x%x, expected 0x%x.\n", header->version, OPD_VERSION);
-		exit(EXIT_FAILURE);
-	}
-}
-
-samples_file::~samples_file()
-{
-	if (header)
-		munmap(header, size + sizeof(opd_header));
-	if (fd != -1)
-		close(fd);
-}
-
-/* probably needs a can fail parameters */
-bool samples_file::check_headers(const samples_file & rhs) const
-{
-	// the oprofpp free fun check_headers needs to be implemented here
-	// when this class will use for opp_samples_files for his
-	// implementation
-	::check_headers(header, rhs.header);
-	
-	if (size != rhs.size) {
-		fprintf(stderr, "op_merge: mapping file size "
-			"are different (%d, %d)\n", size, rhs.size);
-		exit(EXIT_FAILURE);		
-	}
-
-	return true;
-}
-
-/* That the real start of op_merge.cpp, garbage below must be put elsewhere */
-
 using std::string;
 using std::vector;
 using std::list;
 using std::replace;
 using std::ostringstream;
+using std::cerr;
+using std::endl;
 
 static int showvers;
 static int counter;
@@ -223,18 +122,23 @@ static void create_file_list(list<string> & result,
 			*it = os.str();
 		}
 	} else {
-		/* no templatized insert ? */
-		result = list<string>(images_name.begin(), images_name.end());
+		/* FIXME: Note than I don't check against filename i.e. all
+		 * filename must not necessarilly belongs to the same
+		 * application. We check later only for coherent opd_header. If
+		 * we check against filename string we disallow the user to
+		 * merge already merged samples file */
+		result.insert(result.begin(),
+			      images_name.begin(), images_name.end());
 	}
 }
 
 static void
-create_samples_files_list(vector< SharedPtr<samples_file> > & samples_files,
+create_samples_files_list(vector< SharedPtr<samples_file_t> > & samples_files,
 			  const list<string> & filenames)
 {
 	list<string>::const_iterator it;
 	for (it = filenames.begin(); it != filenames.end(); ++it) {
-		SharedPtr<samples_file> p(new samples_file(*it, false));
+		SharedPtr<samples_file_t> p(new samples_file_t(*it));
 		samples_files.push_back(p);
 	}
 
@@ -245,7 +149,7 @@ create_samples_files_list(vector< SharedPtr<samples_file> > & samples_files,
 }
 
 static void output_files(const std::string & filename,
-			 const vector< SharedPtr<samples_file> > & samples_files)
+			 const vector< SharedPtr<samples_file_t> > & samples_files)
 {
 	// TODO: bad approch, we don't create a sparsed file here :/
 	ofstream out(filename.c_str());
@@ -259,8 +163,6 @@ static void output_files(const std::string & filename,
 			count += samples_files[j]->samples[i].count;
 		out.write(&count, sizeof(count));
 	}
-
-	cout << filename << endl;
 }
 
 //---------------------------------------------------------------------------
@@ -274,7 +176,12 @@ int main(int argc, char const * argv[])
 
 	create_file_list(samples_filenames, images_name);
 
-	vector< SharedPtr<samples_file> > samples_files;
+	if (samples_filenames.size() == 0) {
+		cerr << "No samples files found" << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	vector< SharedPtr<samples_file_t> > samples_files;
 	create_samples_files_list(samples_files, samples_filenames);
 
 	string libname;

@@ -1,3 +1,9 @@
+2002-01-24  Philippe Elie  <ph_e@club-internet.fr>
+
+	* op_merge.cpp:
+	* oprofpp.h:
+	* oprofpp_util.cpp: code move + cleanup
+
 2002-01-23  Philippe Elie  <ph_e@club-internet.fr>
 
 	* util/shared_ptr.h: a templatized shared pointer.
