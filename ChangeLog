@@ -1,5 +1,13 @@
 2003-11-01  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/arrange_profiles.cpp: typo
+	* libutil++/generic_spec.cpp: removed file
+	* libutil++/Makefile.am: update according
+	* libutil++/generic_spec.h: ensure generic_spec<string> will not link
+	* libutil++/path_filter.cpp: minor tidy
+
+2003-11-01  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/tests/string_manip_tests.cpp: ehance output on failure
 	* module/oprofile.h:
 	* module/oprofile.c: two new read-only sysctl: nr_buffer_overflow and

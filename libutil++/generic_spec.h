@@ -5,6 +5,7 @@
  * @remark Copyright 2003 OProfile authors
  * @remark Read the file COPYING
  *
+ * @author John Levon
  * @author Philippe Elie
  */
 
@@ -86,8 +87,10 @@ void generic_spec<T>::set(std::string const & str)
 }
 
 
-/// An explicit specialization because generic_spec<string> doesn't want
-/// a strict conversion but a simple copy
+/// We don't use generic_spec<string>, since it's probably an error to try
+/// to use generic_spec<string> we specialize but don't define it to get a
+/// link error (using generic_spec<string> is problematic because g.set("all")
+/// is ambiguous)
 template <>
 void generic_spec<std::string>::set(std::string const & str);
 

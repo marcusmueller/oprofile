@@ -21,7 +21,6 @@ libutil___a_SOURCES = \
 	string_manip.h \
 	cverb.cpp \
 	cverb.h \
-	generic_spec.cpp \
 	generic_spec.h \
 	op_exception.cpp \
 	op_exception.h \

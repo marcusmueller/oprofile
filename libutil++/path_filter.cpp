@@ -23,8 +23,6 @@ bool path_filter::match(std::string const & str) const
 {
 	vector<string>::const_iterator cit;
 
-	string const & base = op_basename(str);
-
 	// first, if any component of the dir is listed in exclude -> no
 	string comp = op_dirname(str);
 	while (!comp.empty() && comp != "/") {
@@ -39,6 +37,8 @@ bool path_filter::match(std::string const & str) const
 			break;
 		comp = op_dirname(comp);
 	}
+
+	string const base = op_basename(str);
 
 	// now if the file name is specifically excluded -> no
 	cit = find_if(exclude.begin(), exclude.end(), fnmatcher(base));
