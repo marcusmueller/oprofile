@@ -26,8 +26,9 @@ namespace {
 format_flags const get_format_flags(column_flags const & cf)
 {
 	format_flags flags(ff_none);
-	flags = format_flags(flags | ff_nr_samples);
-	flags = format_flags(flags | ff_percent | ff_symb_name);
+	flags = format_flags(flags | ff_nr_samples_self | ff_percent_self);
+	flags = format_flags(flags | ff_nr_samples_child | ff_percent_child);
+	flags = format_flags(flags | ff_symb_name);
 
 	if (options::show_address)
 		flags = format_flags(flags | ff_vma);
@@ -36,8 +37,10 @@ format_flags const get_format_flags(column_flags const & cf)
 		flags = format_flags(flags | ff_linenr_info);
 
 	if (options::accumulated) {
-		flags = format_flags(flags | ff_nr_samples_cumulated);
-		flags = format_flags(flags | ff_percent_cumulated);
+		flags = format_flags(flags | ff_nr_samples_self_cumulated);
+		flags = format_flags(flags | ff_percent_self_cumulated);
+		flags = format_flags(flags | ff_nr_samples_child_cumulated);
+		flags = format_flags(flags | ff_percent_child_cumulated);
 	}
 
 	if (cf & cf_image_name)

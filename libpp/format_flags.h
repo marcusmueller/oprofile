@@ -15,39 +15,64 @@
 /**
  * flags passed to the ctor of an output_symbol object.
  *
- * \sa formatter
+ * \sa format_output::formatter
  */
 enum format_flags {
 	ff_none = 0,
 	/// a formatted memory address
 	ff_vma = 1 << 0,
-	/// number of samples
-	ff_nr_samples = 1 << 1,
-	/// number of samples accumulated
-	ff_nr_samples_cumulated = 1 << 2,
-	/// relative percentage of samples
-	ff_percent = 1 << 3,
-	/// relative percentage of samples accumulated
-	ff_percent_cumulated = 1 << 4,
 	/// output debug filename and line nr.
-	ff_linenr_info = 1 << 5,
+	ff_linenr_info = 1 << 1,
 	/// output the image name for this line
-	ff_image_name = 1 << 6,
+	ff_image_name = 1 << 3,
 	/// output owning application name
-	ff_app_name = 1 << 7,
+	ff_app_name = 1 << 4,
 	/// output the (demangled) symbol name
-	ff_symb_name = 1 << 8,
+	ff_symb_name = 1 << 5,
+
+	/** @name subset of flags used by opreport_formater */
+	//@{
+	/// number of samples
+	ff_nr_samples = 1 << 6,
+	/// number of samples accumulated
+	ff_nr_samples_cumulated = 1 << 7,
+	/// relative percentage of samples
+	ff_percent = 1 << 8,
+	/// relative percentage of samples accumulated
+	ff_percent_cumulated = 1 << 9,
+	/// output debug filename and line nr.
 	/**
 	 * Output percentage for details, not relative
 	 * to symbol but relative to the total nr of samples
 	 */
-	ff_percent_details = 1 << 9,
+	ff_percent_details = 1 << 10,
 	/**
 	 * Output percentage for details, not relative
 	 * to symbol but relative to the total nr of samples,
 	 * accumulated
 	 */
-	ff_percent_cumulated_details = 1 << 10
+	ff_percent_cumulated_details = 1 << 11,
+	//@}
+
+	/** @name subset of flags used by opstack_formater */
+	//@{
+	/// number of self samples
+	ff_nr_samples_self = 1 << 12,
+	/// relative percentage of self samples
+	ff_percent_self = 1 << 13,
+	/// number of child samples
+	ff_nr_samples_child = 1 << 14,
+	/// relative percentage of child samples
+	ff_percent_child = 1 << 15,
+	/// number of self samples cumulated
+	ff_nr_samples_self_cumulated = 1 << 16,
+	/// relative percentage of self samples cumulated
+	ff_percent_self_cumulated = 1 << 17,
+	/// number of child samples cumulated
+	ff_nr_samples_child_cumulated = 1 << 18,
+	/// relative percentage of child samples cumulated
+	ff_percent_child_cumulated = 1 << 19,
+	//@}
 };
 
 

@@ -216,10 +216,14 @@ private:
 	std::string format_image_name(field_datum const &);
 	std::string format_app_name(field_datum const &);
 	std::string format_linenr_info(field_datum const &);
-	std::string format_nr_samples(field_datum const &);
-	std::string format_percent(field_datum const &);
-	std::string format_nr_cumulated_samples(field_datum const &);
-	std::string format_cumulated_percent(field_datum const &);
+	std::string format_nr_samples_self(field_datum const &);
+	std::string format_percent_self(field_datum const &);
+	std::string format_nr_samples_child(field_datum const &);
+	std::string format_percent_child(field_datum const &);
+	std::string format_nr_samples_self_cumulated(field_datum const &);
+	std::string format_percent_self_cumulated(field_datum const &);
+	std::string format_nr_samples_child_cumulated(field_datum const &);
+	std::string format_percent_child_cumulated(field_datum const &);
 	//@}
  
 	/// decribe one field of the colummned output.

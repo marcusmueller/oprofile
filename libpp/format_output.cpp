@@ -151,6 +151,38 @@ void formatter::output_header(ostream & out)
 		if (flags & ff_percent_cumulated_details)
 			padding = output_header_field(out,
 			       ff_percent_cumulated_details, padding);
+
+		if (flags & ff_nr_samples_self)
+			padding = output_header_field(out,
+			       ff_nr_samples_self, padding);
+
+		if (flags & ff_percent_self)
+			padding = output_header_field(out,
+			       ff_percent_self, padding);
+
+		if (flags & ff_nr_samples_self_cumulated)
+			padding = output_header_field(out,
+			       ff_nr_samples_self_cumulated, padding);
+
+		if (flags & ff_percent_self_cumulated)
+			padding = output_header_field(out,
+			       ff_percent_self_cumulated, padding);
+
+		if (flags & ff_nr_samples_child)
+			padding = output_header_field(out,
+			       ff_nr_samples_child, padding);
+
+		if (flags & ff_percent_child)
+			padding = output_header_field(out,
+			       ff_percent_child, padding);
+
+		if (flags & ff_nr_samples_child_cumulated)
+			padding = output_header_field(out,
+			       ff_nr_samples_child_cumulated, padding);
+
+		if (flags & ff_percent_child_cumulated)
+			padding = output_header_field(out,
+			       ff_percent_child_cumulated, padding);
 	}
 
 	// now the remaining field
@@ -452,10 +484,14 @@ cg_formatter::cg_formatter(callgraph_container const & profile_)
 	total_count_callee = profile.samples_count();
 
 	format_map[ff_vma] = field_description(9, "vma", &cg_formatter::format_vma);
-	format_map[ff_nr_samples] = field_description(17, "self/child", &cg_formatter::format_nr_samples);
-	format_map[ff_nr_samples_cumulated] = field_description(17, "cum. samples", &cg_formatter::format_nr_cumulated_samples);
-	format_map[ff_percent] = field_description(18, "self/child %", &cg_formatter::format_percent);
-	format_map[ff_percent_cumulated] = field_description(18, "cum. %", &cg_formatter::format_cumulated_percent);
+	format_map[ff_nr_samples_self] = field_description(9, "self", &cg_formatter::format_nr_samples_self);
+	format_map[ff_percent_self] = field_description(9, "%", &cg_formatter::format_percent_self);
+	format_map[ff_nr_samples_child] = field_description(9, "child", &cg_formatter::format_nr_samples_child);
+	format_map[ff_percent_child] = field_description(9, "%", &cg_formatter::format_percent_child);
+	format_map[ff_nr_samples_self_cumulated] = field_description(9, "cum.", &cg_formatter::format_nr_samples_self_cumulated);
+	format_map[ff_percent_self_cumulated] = field_description(9, "%", &cg_formatter::format_percent_self_cumulated);
+	format_map[ff_nr_samples_child_cumulated] = field_description(9, "cum.", &cg_formatter::format_nr_samples_child_cumulated);
+	format_map[ff_percent_child_cumulated] = field_description(9, "%", &cg_formatter::format_percent_child_cumulated);
 	format_map[ff_linenr_info] = field_description(28, "linenr info", &cg_formatter::format_linenr_info);
 	format_map[ff_image_name] = field_description(25, "image name", &cg_formatter::format_image_name);
 	format_map[ff_app_name] = field_description(25, "app name", &cg_formatter::format_app_name);
@@ -500,21 +536,37 @@ void cg_formatter::do_output(std::ostream & out, cg_symbol const & symb)
 	for (size_t pclass = 0 ; pclass < nr_classes; ++pclass) {
 		field_datum datum(symb, pclass);
 
-		if (flags & ff_nr_samples)
+		if (flags & ff_nr_samples_self)
 			padding = output_field(out, datum,
-			       ff_nr_samples, padding);
+			       ff_nr_samples_self, padding);
 
-		if (flags & ff_nr_samples_cumulated)
-			padding = output_field(out, datum, 
-			       ff_nr_samples_cumulated, padding);
-
-		if (flags & ff_percent)
+		if (flags & ff_percent_self)
 			padding = output_field(out, datum,
-			       ff_percent, padding);
+			       ff_percent_self, padding);
 
-		if (flags & ff_percent_cumulated)
+		if (flags & ff_nr_samples_self_cumulated)
 			padding = output_field(out, datum,
-			       ff_percent_cumulated, padding);
+			       ff_nr_samples_self, padding);
+
+		if (flags & ff_percent_self_cumulated)
+			padding = output_field(out, datum,
+			       ff_percent_self_cumulated, padding);
+
+		if (flags & ff_nr_samples_child)
+			padding = output_field(out, datum,
+			       ff_nr_samples_child, padding);
+
+		if (flags & ff_percent_child)
+			padding = output_field(out, datum,
+			       ff_percent_child, padding);
+
+		if (flags & ff_nr_samples_child_cumulated)
+			padding = output_field(out, datum,
+			       ff_nr_samples_child_cumulated, padding);
+
+		if (flags & ff_percent_child_cumulated)
+			padding = output_field(out, datum,
+			       ff_percent_child_cumulated, padding);
 	}
 
 	// now the remaining field
@@ -672,45 +724,69 @@ string cg_formatter::format_linenr_info(field_datum const & f)
 }
 
 
-string cg_formatter::format_nr_samples(field_datum const & f)
+std::string cg_formatter::format_nr_samples_self(field_datum const & f)
 {
 	ostringstream out;
-	out << f.symbol.self_counts[f.pclass] << "/"
-	    << f.symbol.callee_counts[f.pclass];
+	out << f.symbol.self_counts[f.pclass];
 	return out.str();
 }
 
 
-string cg_formatter::format_nr_cumulated_samples(field_datum const & f)
+std::string cg_formatter::format_percent_self(field_datum const & f)
+{
+	return get_percent(f.symbol.self_counts[f.pclass],
+		total_count_self[f.pclass]);
+}
+
+
+std::string cg_formatter::format_nr_samples_child(field_datum const & f)
+{
+	ostringstream out;
+	out << f.symbol.callee_counts[f.pclass];
+	return out.str();
+}
+
+
+std::string cg_formatter::format_percent_child(field_datum const & f)
+{
+	return get_percent(f.symbol.callee_counts[f.pclass],
+		total_count_callee[f.pclass]);
+}
+
+
+std::string cg_formatter::format_nr_samples_self_cumulated(field_datum const & f)
 {
 	ostringstream out;
 	cumulated_samples_self[f.pclass] += f.symbol.self_counts[f.pclass];
+	out << cumulated_samples_self[f.pclass];
+	return out.str();
+}
+	
+
+std::string cg_formatter::format_percent_self_cumulated(field_datum const & f)
+{
+	cumulated_percent_self[f.pclass] += f.symbol.self_counts[f.pclass];
+
+	return get_percent(cumulated_percent_self[f.pclass],
+		total_count_self[f.pclass]);
+}
+
+
+std::string cg_formatter::format_nr_samples_child_cumulated(field_datum const &f)
+{
+	ostringstream out;
 	cumulated_samples_callee[f.pclass] += f.symbol.callee_counts[f.pclass];
-	out << cumulated_samples_self[f.pclass] << "/"
-	    << cumulated_samples_callee[f.pclass];
+	out << cumulated_samples_callee[f.pclass];
 	return out.str();
 }
 
- 
-string cg_formatter::format_percent(field_datum const & f)
-{
-	return get_percent(f.symbol.self_counts[f.pclass],
-			total_count_self[f.pclass]) + "/" +
-		get_percent(f.symbol.callee_counts[f.pclass],
-			total_count_callee[f.pclass]);
-}
 
-
-string cg_formatter::format_cumulated_percent(field_datum const & f)
+std::string cg_formatter::format_percent_child_cumulated(field_datum const & f)
 {
-	cumulated_percent_self[f.pclass] += f.symbol.self_counts[f.pclass];
 	cumulated_percent_callee[f.pclass] += f.symbol.callee_counts[f.pclass];
 
-	return get_percent(cumulated_percent_self[f.pclass],
-			total_count_self[f.pclass]) + "/" +
-		get_percent(cumulated_percent_callee[f.pclass],
-			total_count_callee[f.pclass]);
+	return get_percent(cumulated_percent_callee[f.pclass],
+		total_count_callee[f.pclass]);
 }
-
 
 } // namespace format_output
