@@ -185,22 +185,70 @@ static void check_event(struct parsed_event * pev)
 }
 
 
-static void allocate_counter(struct parsed_event * pev, int * alloced)
+static void iter_swap(size_t * a, size_t * b)
+{
+  size_t tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
+
+void reverse(size_t * first, size_t * last)
+{
+	while (1) {
+		if (first == last || first == --last)
+			return;
+		else
+			iter_swap(first++, last);
+	}
+}
+
+
+int next_permutation(size_t * first, size_t * last)
+{
+	size_t * i;
+	if (first == last)
+		return 0;
+	i = first;
+	++i;
+	if (i == last)
+		return 0;
+	i = last;
+	--i;
+
+	for(;;) {
+		size_t * ii = i;
+		--i;
+		if (*i < *ii) {
+			size_t * j = last;
+			while (!(*i < *--j)) {
+			}
+			iter_swap(i, j);
+			reverse(ii, last);
+			return 1;
+		}
+		if (i == first) {
+			reverse(first, last);
+			return 0;
+		}
+	}
+}
+
+static int allocate_counter(size_t const * counter_map,
+                            struct parsed_event * pev, int nr_events)
 {
 	int c = 0;
 
-	for (; c < op_get_nr_counters(cpu_type); ++c) {
-		int mask = 1 << c;
-		if (!(*alloced & mask) && (pev->event->counter_mask & mask)) {
-			pev->counter = c;
-			*alloced |= mask;
-			return;
-		}
+	for (; c < nr_events; ++c) {
+		/* assert(c < nr_counters) */
+		int mask = 1 << counter_map[c];
+		if (!(pev[c].event->counter_mask & mask))
+			return EXIT_FAILURE;
+
+		pev[c].counter = counter_map[c];
 	}
 
-	fprintf(stderr, "Couldn't allocate a hardware counter for "
-	        "event %s: check op_help output\n", pev->name);
-	exit(EXIT_FAILURE);
+	return EXIT_SUCCESS;
 }
 
 
@@ -208,7 +256,14 @@ static void resolve_events(struct list_head * events)
 {
 	int count = parse_events();
 	int i;
-	int alloced = 0;
+	int success = EXIT_FAILURE;
+	size_t counter_map[OP_MAX_COUNTERS];
+	int nr_counters = op_get_nr_counters(cpu_type);
+
+	if (count > nr_counters) {
+		fprintf(stderr, "Not enough hardware counter\n");
+		exit(EXIT_FAILURE);
+	}
 
 	for (i = 0; i < count; ++i) {
 		struct list_head * pos;
@@ -221,12 +276,24 @@ static void resolve_events(struct list_head * events)
 			if (strcmp(ev->name, pev->name) == 0) {
 				pev->event = ev;
 			}
-
 		}
 
 		check_event(pev);
+	}
 
-		allocate_counter(pev, &alloced);
+	for (i = 0; i < nr_counters; ++i)
+		counter_map[i] = i;
+
+	do {
+		success = allocate_counter(counter_map, parsed_events, count);
+
+		if (success == EXIT_SUCCESS)
+			break;
+	} while (next_permutation(counter_map, counter_map + nr_counters));
+
+	if (success == EXIT_FAILURE) {
+		fprintf(stderr, "Couldn't allocate a hardware counter\n");
+		exit(EXIT_FAILURE);
 	}
 
 	for (i = 0; i < count; ++i) {
@@ -286,10 +353,10 @@ static void get_options(int argc, char const * argv[])
 		show_version(argv[0]);
 	}
 
-	/* non-option, must be a valid event name or event specs*/
+	/* non-option, must be a valid event name or event specs */
 	chosen_events = poptGetArgs(optcon);
 
-	// don't free the context, we need chosen_events
+	/* don't free the context, we need chosen_events */
 }
 
 
@@ -299,9 +366,12 @@ int main(int argc, char const *argv[])
 	struct list_head * pos;
 	char const * pretty;
 
-	cpu_type = op_get_cpu_type();
-
 	get_options(argc, argv);
+
+	/* usefull for testing purpose to allow to force the cpu type
+	 * with --cpu-type */
+	if (cpu_type == CPU_NO_GOOD)
+		cpu_type = op_get_cpu_type();
 
 	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
 		fprintf(stderr, "cpu_type '%d' is not valid\n", cpu_type);

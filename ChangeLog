@@ -1,3 +1,7 @@
+2003-07-24  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/op_help.c: fix hardware counter allocation order
+
 2003-07-23  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: comment out --base-dir mention
