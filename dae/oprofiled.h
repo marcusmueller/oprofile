@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.8 2000/08/18 01:13:51 moz Exp $ */
+/* $Id: oprofiled.h,v 1.9 2000/08/25 20:38:44 moz Exp $ */
 
 #ifndef OPROFILED_H
 #define OPROFILED_H
@@ -129,7 +129,7 @@ struct op_sample {
         u16 count;
         u16 pid;
         u32 eip;
-} __attribute__((__packed__,__aligned__(8)));
+} __attribute__((__packed__));
 
 struct opd_image {
 	fd_t fd;
