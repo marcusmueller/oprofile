@@ -32,6 +32,7 @@
 #define NEED_2_2_DENTRIES
 #define INC_USE_COUNT_MAYBE MOD_INC_USE_COUNT
 #define DEC_USE_COUNT_MAYBE MOD_DEC_USE_COUNT
+#define op_nmi op_nmi22
  
 // FIXME: untested
 static inline int wq_is_lockable(void)
@@ -197,7 +198,7 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 	#define unlock_rtc(f) restore_flags(f)
 #endif /* RTC_LOCK */
  
-#if VAFTER(2,2,20)
+#if VATLEAST(2,2,20)
 	#define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
 #else
 	#define PTRACE_OFF(t) ((t)->flags &= ~PF_DTRACE)

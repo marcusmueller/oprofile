@@ -34,9 +34,10 @@
 #define op_cpu_id() cpu_number_map(smp_processor_id())
 #define pte_page_address(x) page_address(pte_page(x))
 #define GET_VM_OFFSET(v) ((v)->vm_pgoff << PAGE_SHIFT)
+#define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
+#define op_nmi op_nmi24
 #define HAVE_MMAP2
 #define HAVE_FILE_OPERATIONS_OWNER
-#define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
 
 /* ->owner field in 2.4 */
 #define INC_USE_COUNT_MAYBE
@@ -46,7 +47,7 @@
 #define wq_is_lockable() (1)
  
 /* 2.4.3 introduced rw mmap semaphore  */
-#if VAFTER(2,4,3)
+#if VATLEAST(2,4,3)
 	#define take_mmap_sem(mm) down_read(&mm->mmap_sem)
 	#define release_mmap_sem(mm) up_read(&mm->mmap_sem)
 #else

@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.10 2002/01/17 02:33:05 movement Exp $
+# $Id: Makefile.in,v 1.11 2002/01/17 05:54:48 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -29,7 +29,7 @@ uninstall:
 clean:
 	rm -rf *.o .deps
 
-oprofile.o: op_init.o op_util.o oprofile_c.o op_nmi.o op_rtc.o oprofile_nmi.o op_syscalls.o op_events_module.o op_x86.o compat.o
+oprofile.o: op_init.o op_util.o oprofile_c.o op_nmi.o op_rtc.o oprofile_nmi22.o oprofile_nmi24.o op_syscalls.o op_events_module.o op_x86.o compat.o
 	$(LD) -r -o $@ $^
 
 # we can't use implicit rules for this directory
@@ -66,7 +66,10 @@ oprofile.s: oprofile.c
 op_events_module.o: ../events/op_events.c ../op_user.h
 	$(CC) $(KCFLAGS) -c -o $@ $<
 
-oprofile_nmi.o: oprofile_nmi.S
+oprofile_nmi22.o: oprofile_nmi22.S
+	$(CC) $(ASMFLAGS) -c -o $@ $<
+
+oprofile_nmi24.o: oprofile_nmi24.S
 	$(CC) $(ASMFLAGS) -c -o $@ $<
 
 # not all object files can use auto deps in this directory
