@@ -399,24 +399,31 @@ struct transient {
 };
 
 
+static inline uint64_t get_buffer_value(void const * buffer, size_t pos)
+{
+	if (kernel_pointer_size == 4) {
+		uint32_t const * lbuf = buffer;
+		return lbuf[pos];
+	} else {
+		uint64_t const * lbuf = buffer;
+		return lbuf[pos];
+	}
+}
+
+
 static uint64_t pop_buffer_value(struct transient * trans)
 {
+	uint64_t val;
+
 	if (!trans->remaining) {
 		fprintf(stderr, "BUG: popping empty buffer !\n");
 		exit(EXIT_FAILURE);
 	}
 
+	val = get_buffer_value(trans->buffer, 0);
 	trans->remaining--;
-
-	if (kernel_pointer_size == 4) {
-		uint32_t const * lbuf = (uint32_t const *)trans->buffer;
-		trans->buffer += 4;
-		return *lbuf;
-	} else {
-		uint64_t const * lbuf = (uint64_t const *)trans->buffer;
-		trans->buffer += 8;
-		return *lbuf;
-	}
+	trans->buffer += kernel_pointer_size;
+	return val;
 }
 
 
@@ -426,15 +433,18 @@ static int enough_remaining(struct transient * trans, size_t size)
 		return 1;
 
 	opd_stats[OPD_DANGLING_CODE]++;
-	trans->remaining = 0;
 	return 0;
 }
 
 
 static void opd_put_sample(struct transient * trans, vma_t eip)
 {
-	if (!enough_remaining(trans, 1))
+	unsigned long event;
+
+	if (!enough_remaining(trans, 1)) {
+		trans->remaining = 0;
 		return;
+	}
 
 	/* There is a small race where this *can* happen, see
 	 * caller of cpu_buffer_reset() in the kernel
@@ -447,7 +457,7 @@ static void opd_put_sample(struct transient * trans, vma_t eip)
 		return;
 	}
 
-	unsigned long event = pop_buffer_value(trans);
+	event = pop_buffer_value(trans);
 
 	opd_stats[OPD_SAMPLES]++;
 
@@ -486,8 +496,10 @@ static void code_unknown(struct transient * trans __attribute__((unused)))
 
 static void code_ctx_switch(struct transient * trans)
 {
-	if (!enough_remaining(trans, 2))
+	if (!enough_remaining(trans, 2)) {
+		trans->remaining = 0;
 		return;
+	}
 
 	trans->pid = pop_buffer_value(trans);
 	trans->app_cookie = pop_buffer_value(trans);
@@ -501,18 +513,29 @@ static void code_ctx_switch(struct transient * trans)
 	else
 		trans->image = 0;
 
-	// FIXME: handle tgid addition here
+	/* Look for a possible tgid postscript */
+	if (enough_remaining(trans, 3) &&
+	    is_escape_code(get_buffer_value(trans->buffer, 0)) &&
+	    get_buffer_value(trans->buffer, 1) == CTX_TGID_CODE) {
+		verbprintf("CTX_TGID_CODE\n");
+		pop_buffer_value(trans);
+		pop_buffer_value(trans);
+		trans->tgid = pop_buffer_value(trans);
+	}
 
-	verbprintf("CTX_SWITCH to pid %lu, cookie %llx, app %s\n",
-		(unsigned long)trans->pid, trans->app_cookie,
+	verbprintf("CTX_SWITCH to pid %lu, tgid %lu, cookie %llx, app %s\n",
+		(unsigned long)trans->pid, (unsigned long)trans->tgid,
+		trans->app_cookie,
 		trans->image ? trans->image->name : "kernel");
 }
 
 
 static void code_cpu_switch(struct transient * trans)
 {
-	if (!enough_remaining(trans, 1))
+	if (!enough_remaining(trans, 1)) {
+		trans->remaining = 0;
 		return;
+	}
 
 	trans->cpu = pop_buffer_value(trans);
 	verbprintf("CPU_SWITCH to %lu\n", trans->cpu);
@@ -521,8 +544,10 @@ static void code_cpu_switch(struct transient * trans)
 
 static void code_cookie_switch(struct transient * trans)
 {
-	if (!enough_remaining(trans, 1))
+	if (!enough_remaining(trans, 1)) {
+		trans->remaining = 0;
 		return;
+	}
 
 	trans->cookie = pop_buffer_value(trans);
 	trans->image = opd_get_image(trans->cookie, trans->app_cookie);
@@ -570,6 +595,9 @@ void opd_process_samples(char const * buffer, size_t count)
 	struct transient trans = {
 		.buffer = buffer,
 		.remaining = count,
+		.cookie = 0,
+		.app_cookie = 0,
+		.image = NULL,
 		.in_kernel = -1,
 		.cpu = -1,
 		.pid = -1,

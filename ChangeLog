@@ -1,5 +1,11 @@
 2003-05-26  John Levon  <levon@movementarian.org>
 
+	* libop/op_interface_25.h:
+	* daemon/opd_image.c: handle tgid for future
+	compatibility, fix compile on older gccs
+
+2003-05-26  John Levon  <levon@movementarian.org>
+
 	* libop/op_interface_25.h: add LAST_CODE
 
 	* daemon/opd_stats.h:

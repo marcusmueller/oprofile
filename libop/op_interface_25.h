@@ -22,6 +22,7 @@
 #define KERNEL_ENTER_SWITCH_CODE	4
 #define KERNEL_EXIT_SWITCH_CODE		5
 #define MODULE_LOADED_CODE              6
-#define LAST_CODE			7
+#define CTX_TGID_CODE			7
+#define LAST_CODE			8
  
 #endif /* OP_INTERFACE_25_H */
