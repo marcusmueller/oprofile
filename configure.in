@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.25 2001/06/22 00:19:31 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.26 2001/06/29 15:27:05 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -57,6 +57,7 @@ break_me_hard(\\\);
 CFLAGS=$SAVE_CFLAGS
 ])
 
+# FIXME - fucking autoconf ! how do I override the cached value ??? 
 AC_ARG_WITH(cc,    [  --with-cc=<kgcc>             C compiler used to compiler kernel], CC=$withval)
 AC_SUBST(CC)
 
@@ -95,6 +96,14 @@ CFLAGS="-mpreferred-stack-boundary=2 $CFLAGS"
 AC_TRY_COMPILE(,,AC_MSG_RESULT("yes");BKCFLAGS="-mpreferred-stack-boundary=2 $BKCFLAGS",AC_MSG_RESULT("no"))
 CFLAGS=$SAVE_CFLAGS
 
+AC_MSG_CHECKING("whether malloc attribute is understood")
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="-Werror $CFLAGS"
+AC_TRY_COMPILE(,[
+void monkey() __attribute__((malloc));
+],AC_MSG_RESULT("yes"); CFLAGS="$SAVE_CFLAGS -DMALLOC_OK", AC_MSG_RESULT("no"); CFLAGS="$SAVE_CFLAGS")
+
+ 
 AC_MSG_CHECKING(for x86 architecture)
 AX_COMPILE_OPTION(CONFIG_X86,x86=1,x86=0)
 AX_MSG_RESULT_YN($x86)

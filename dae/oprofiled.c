@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.34 2001/06/27 20:55:53 movement Exp $ */
+/* $Id: oprofiled.c,v 1.35 2001/06/29 15:27:05 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -110,7 +110,7 @@ static void opd_open_files(void)
 			fprintf(stderr, "Failed to open device. Possibly you have passed incorrect\n"
 				"parameters. Check /var/log/messages.");
 		else
-			perror("Failed to open hash map device: ");
+			perror("Failed to open profile device: ");
 		exit(1);
 	} 
  

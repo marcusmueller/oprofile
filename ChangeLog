@@ -1,3 +1,13 @@
+2001-06-29  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in:
+	* dae/opd_util.h: hide __attribute__((malloc)) warnings
+	  when necessary. Document --with-cc bug.
+ 
+2001-06-29  Philippe Elie  <ph_e@club-internet.fr>
+
+	* gui/oprofile: more saving of the user setup.
+
 2001-06-27  John Levon  <moz@compsoc.man.ac.uk>
 
 	* dae/opd_util.c: document get_line() restriction
@@ -6,7 +16,7 @@
 
 	* dae/oprofiled.c: fix cpu_speed_str/cpu_speed variable setup logic.
 
-	* gui/oprofile: save setup of advanced setup form to persistent storage.
+	* gui/oprofile: save advanced setup form to persistent storage.
 	  Add many validation.
 
 2001-06-25  John Levon  <moz@compsoc.man.ac.uk>
