@@ -1,3 +1,8 @@
+2003-09-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_kernel.c: thinko in opd_get_module_info(): we must take
+	  care to re-use a previously created module not to create a new
+
 2003-09-17  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_kernel.c: logging improvements

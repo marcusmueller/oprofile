@@ -100,6 +100,25 @@ opd_create_module(char * name, unsigned long start, unsigned long end)
 
 
 /**
+ * opd_find_module_by_name - find a module by name, ccreating a new once if
+ * search fail
+ * @param name module name
+ */
+static struct opd_module * opd_find_module_by_name(char * name)
+{
+	struct list_head * pos;
+	struct opd_module * module;
+
+	list_for_each(pos, &opd_modules) {
+		module = list_entry(pos, struct opd_module, module_list);
+		if (!strcmp(name, module->name))
+			return module;
+	}
+
+	return opd_create_module(name, 0, 0);
+}
+
+/**
  * opd_clear_module_info - clear kernel module information
  *
  * Clear and free all kernel module information and reset
@@ -198,7 +217,7 @@ static void opd_get_module_info(void)
 		strncpy(modname, cp, (size_t)((cp2-cp)));
 		modname[cp2-cp] = '\0';
 
-		mod = opd_create_module(modname, 0, 0);
+		mod = opd_find_module_by_name(modname);
 
 		switch (*(++cp2)) {
 			case 'O':
