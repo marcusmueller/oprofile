@@ -25,10 +25,11 @@
 extern uint op_nr_counters;
 extern int separate_samples;
 
-/* The kernel image is treated separately */
-struct opd_image * kernel_image;
 /* maintained for statistics purpose only */
 unsigned int nr_images=0;
+
+/* module never return a 0 hash name, we use it for kernel and module name */
+#define HASH_KERNEL 0
 
 /* list of images */
 static struct list_head opd_images = { &opd_images, &opd_images };
@@ -83,8 +84,6 @@ void opd_for_each_image(opd_image_cb image_cb)
 
 		image_cb(image);
 	}
-
-	image_cb(kernel_image);
 }
  
 
@@ -184,22 +183,6 @@ void opd_check_image_mtime(struct opd_image * image)
 
 
 /**
- * opd_create_image - create an image
- * @param name of image
- *
- * Create and initialise an image without adding it
- * to the image lists.
- */
-struct opd_image * opd_create_image(char const * name)
-{
-	struct opd_image * image = xmalloc(sizeof(struct opd_image));
-	opd_init_image(image, name, -1, NULL, 1);
-	opd_open_image(image);
-	return image;
-}
-
-
-/**
  * opd_add_image - add an image to the image structure
  * @param name  name of the image to add
  * @param hash  hash of image
@@ -269,6 +252,7 @@ static int is_same_image(struct opd_image const * image, char const * app_name)
 	return 1;
 }
 
+
 /**
  * opd_find_image - find an image
  * @param name  name of image to find
@@ -298,8 +282,7 @@ static struct opd_image * opd_find_image(char const * name, int hash, char const
 	}
 
 	if (pos != &opd_images) {
-		/* we can have hashless images from /proc/pid parsing, modules
-		 * are handled in a separate list */
+		/* we can have hashless images from /proc/pid parsing */
 		if (hash != -1) {
 			image->hash = hash;
 			if (image->hash_next) {	/* paranoia check */
@@ -318,6 +301,7 @@ static struct opd_image * opd_find_image(char const * name, int hash, char const
 	return NULL;
 }
 
+ 
 /**
  * opd_get_image_by_hash - get an image from the image
  * structure by hash value
@@ -358,4 +342,18 @@ struct opd_image * opd_get_image(char const * name, int hash, char const * app_n
 		image = opd_add_image(name, hash, app_name, kernel);
 
 	return image;
+}
+
+
+/**
+ * opd_get_kernel_image - get a kernel image
+ * @param name of image
+ *
+ * Create and initialise an image adding it
+ * to the image lists and to image hash list
+ * entry HASH_KERNEL
+ */
+struct opd_image * opd_get_kernel_image(char const * name)
+{
+	return opd_get_image(name, HASH_KERNEL, NULL, 1);
 }

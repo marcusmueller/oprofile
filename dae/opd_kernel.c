@@ -36,7 +36,7 @@ extern char * vmlinux;
 extern int verbose;
 extern unsigned long opd_stats[];
 
-extern struct opd_image * kernel_image;
+static struct opd_image * kernel_image;
 
 /* kernel and module support */
 static unsigned long kernel_start;
@@ -49,8 +49,7 @@ static unsigned int nr_modules=0;
  */
 void opd_init_kernel_image(void)
 {
-	/* the kernel image is treated apart from the list of images */
-	kernel_image = opd_create_image(vmlinux);
+	kernel_image = opd_get_kernel_image(vmlinux);
 }
 
 /**
@@ -228,7 +227,7 @@ static void opd_get_module_info(void)
 				strncpy(filename, cp2, (size_t)(cp3 - cp2));
 				filename[cp3-cp2] = '\0';
 
-				mod->image = opd_get_image(filename, -1, NULL, 1);
+				mod->image = opd_get_kernel_image(filename);
 				free(filename);
 				break;
 

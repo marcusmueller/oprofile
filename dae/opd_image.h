@@ -47,7 +47,8 @@ void opd_for_each_image(opd_image_cb imagecb);
 
 void opd_image_cleanup(void);
 
-struct opd_image * opd_create_image(char const * name);
+struct opd_image * opd_get_kernel_image(char const * name);
+
 void opd_init_images(void);
 struct opd_image * opd_get_image(char const * name, int hash, char const * app_name, int kernel);
 void opd_check_image_mtime(struct opd_image * image);

@@ -1,3 +1,9 @@
+2002-12-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_image.c:
+	* dae/opd_image.h:
+	* dae/opd_kernel.c: use hash table entry 0 for kernel and module image
+
 2002-12-04  John Levon  <levon@movementarian.org>
 
 	* pp/opp_symbol.h:
