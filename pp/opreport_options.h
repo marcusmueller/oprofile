@@ -27,6 +27,7 @@ namespace options {
 	extern std::string archive_path;
 	extern demangle_type demangle;
 	extern bool symbols;
+	extern bool callgraph;
 	extern bool debug_info;
 	extern bool details;
 	extern bool reverse_sort;

@@ -26,6 +26,7 @@
 #include "populate.h"
 #include "arrange_profiles.h"
 #include "profile_container.h"
+#include "callgraph_container.h"
 #include "symbol_sort.h"
 #include "format_output.h"
 #include "image_errors.h"
@@ -365,18 +366,17 @@ format_flags const get_format_flags(column_flags const & cf)
 }
 
 
-void output_symbols(profile_container const & samples, bool multiple_apps)
+void output_symbols(profile_container const & pc, bool multiple_apps)
 {
 	profile_container::symbol_choice choice;
 	choice.threshold = options::threshold;
-	symbol_collection symbols = samples.select_symbols(choice);
+	symbol_collection symbols = pc.select_symbols(choice);
 	options::sort_by.sort(symbols, options::reverse_sort,
 	                      options::long_filenames);
 
-	format_output::opreport_formatter out(samples);
+	format_output::opreport_formatter out(pc);
 
 	out.set_nr_classes(nr_classes);
-
 	out.show_details(options::details);
 	out.show_long_filenames(options::long_filenames);
 	out.show_header(options::show_header);
@@ -388,6 +388,33 @@ void output_symbols(profile_container const & samples, bool multiple_apps)
 		flags = format_flags(flags | ff_app_name);
 
 	out.add_format(flags);
+	out.output(cout, symbols);
+}
+
+
+void output_cg_symbols(callgraph_container const & cg, bool multiple_apps)
+{
+	column_flags output_hints = cg.output_hint();
+
+	// FIXME: -i, -e
+	cg_collection symbols = cg.get_symbols();
+	options::sort_by.sort(symbols, options::reverse_sort,
+	                      options::long_filenames);
+
+	format_output::cg_formatter out(cg);
+
+	out.set_nr_classes(nr_classes);
+	out.show_long_filenames(options::long_filenames);
+	out.show_header(options::show_header);
+	out.vma_format_64bit(output_hints & cf_64bit_vma);
+	// FIXME: global percent
+
+	format_flags flags = get_format_flags(output_hints);
+	if (multiple_apps)
+		flags = format_flags(flags | ff_app_name);
+
+	out.add_format(flags);
+
 	out.output(cout, symbols);
 }
 
@@ -405,8 +432,6 @@ int opreport(vector<string> const & non_options)
 		return 0;
 	}
 
-	profile_container samples(options::debug_info, options::details);
-
 	bool multiple_apps = false;
 
 	for (size_t i = 0; i < classes.v.size(); ++i) {
@@ -420,16 +445,29 @@ int opreport(vector<string> const & non_options)
 
 	report_image_errors(iprofiles);
 
-	list<inverted_profile>::iterator it = iprofiles.begin();
-	list<inverted_profile>::iterator const end = iprofiles.end();
-
-	for (; it != end; ++it)
-		populate_for_image(options::archive_path, samples,
-			*it, options::symbol_filter);
-
 	output_header();
 
-	output_symbols(samples, multiple_apps);
+	if (options::callgraph) {
+		callgraph_container cg_container;
+		cg_container.populate(options::archive_path, iprofiles,
+			options::extra_found_images,
+			options::debug_info, options::threshold,
+			options::merge_by.lib);
+
+		output_cg_symbols(cg_container, multiple_apps);
+	} else {
+		profile_container samples(options::debug_info, options::details);
+
+		list<inverted_profile>::iterator it = iprofiles.begin();
+		list<inverted_profile>::iterator const end = iprofiles.end();
+
+		for (; it != end; ++it)
+			populate_for_image(options::archive_path, samples,
+				*it, options::symbol_filter);
+
+		output_symbols(samples, multiple_apps);
+	}
+
 	return 0;
 }
 

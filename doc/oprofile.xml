@@ -391,15 +391,6 @@ This section gives a brief description of the available OProfile utilities and t
 </varlistentry>
 
 <varlistentry>
-	<term><filename>opstack</filename></term>
-	<listitem><para>
-		This utility can output call-graph profiles. This require an x86
-		based box and a recent 2.6 kernel.
-		 See <xref linkend="opstack" />.
-	</para></listitem>
-</varlistentry>
-
-<varlistentry>
 	<term><filename>opgprof</filename></term>
 	<listitem><para>
 		This utility can output gprof-style data files for a binary, for use with
@@ -622,7 +613,8 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		<term><option>--callgraph=</option>#depth</term>
 		<listitem><para>
 		Enable call-graph sample collection with a maximum depth. Use 0 to disable
-		callgraph profiling. Please make sure to read <xref linkend="opstack" />.
+		callgraph profiling. Currently this requires a recent
+		2.6 kernel, and x86.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1081,313 +1073,8 @@ the profiler. This can happen on lightly-loaded machines. Remember you can force
 <para><command>opcontrol --dump</command></para>
 <para>Remember to do this before complaining there is no profiling data !
 Now that we've got some data, it has to be processed. That's the job of <command>opreport</command>,
-<command>opannotate</command>, <command>opstack</command> or <command>opgprof</command>.
+<command>opannotate</command>, or <command>opgprof</command>.
 </para>
-
-<sect1 id="opreport">
-<title>Image summaries and symbol summaries</title>
-<para>
-The <command>opreport</command> utility is the primary utility you will use for 
-getting formatted data out of OProfile. It produces two types of data: image summaries
-and symbol summaries. An image summary lists the number of samples for individual
-binary images such as libraries or applications. Symbol summaries provide per-symbol
-profile data. In the following example, we're getting an image summary for the whole
-system:
-</para>
-<screen>
-$ opreport --long-filenames
-CPU: PIII, speed 863.195 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (clocks processor is not halted) with a unit mask of 0x00 (No unit mask) count 23150
-   905898 59.7415 /usr/lib/gcc-lib/i386-redhat-linux/3.2/cc1plus
-   214320 14.1338 /boot/2.6.0/vmlinux
-   103450  6.8222 /lib/i686/libc-2.3.2.so
-    60160  3.9674 /usr/local/bin/madplay
-    31769  2.0951 /usr/local/oprofile-pp/bin/oprofiled
-    26550  1.7509 /usr/lib/libartsflow.so.1.0.0
-    23906  1.5765 /usr/bin/as
-    18770  1.2378 /oprofile
-    15528  1.0240 /usr/lib/qt-3.0.5/lib/libqt-mt.so.3.0.5
-    11979  0.7900 /usr/X11R6/bin/XFree86
-    11328  0.7471 /bin/bash
-    ...
-</screen>
-<para>
-If we had specified <option>--symbols</option> in the previous command, we would have
-gotten a symbol summary of all the images across the entire system. We can restrict this to only
-part of the system profile; for example,
-below is a symbol summary of the OProfile daemon. Note that as we used
-<command>opcontrol --separate=kernel</command>, symbols from images that <command>oprofiled</command>
-has used are also shown.
-</para>
-<screen>
-$ opreport -l `which oprofiled` 2>/dev/null | more
-CPU: PIII, speed 863.195 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (clocks processor is not halted) with a unit mask of 0x00 (No unit mask) count 23150
-vma      samples  %           image name               symbol name
-0804be10 14971    28.1993     oprofiled                odb_insert
-0804afdc 7144     13.4564     oprofiled                pop_buffer_value
-c01daea0 6113     11.5144     vmlinux                  __copy_to_user_ll
-0804b060 2816      5.3042     oprofiled                opd_put_sample
-0804b4a0 2147      4.0441     oprofiled                opd_process_samples
-0804acf4 1855      3.4941     oprofiled                opd_put_image_sample
-0804ad84 1766      3.3264     oprofiled                opd_find_image
-0804a5ec 1084      2.0418     oprofiled                opd_find_module
-0804ba5c 741       1.3957     oprofiled                odb_hash_add_node
-...
-</screen>
-
-<para>
-These are the two basic ways you are most likely to use regularly, but <command>opreport</command>
-can do a lot more than that. For more details, see <xref linkend="opreport-details" />.
-</para>
-
-</sect1> <!-- opreport -->
-
-<sect1 id="opannotate">
-<title>Outputting annotated source</title>
-<para>
-The <command>opannotate</command> utility generates annotated source files or assembly listings, optionally
-mixed with source.
-If you want to see the source file, the profiled application needs to have debug information, and the source
-must be available through this debug information. For GCC, you must use the <option>-g</option> option
-when you are compiling.
-If the binary doesn't contain sufficient debug information, you can still
-use <command>opannotate <option>--assembly</option></command> to get annotated assembly.
-</para>
-<para>
-Note that for the reason explained in <xref linkend="hardware-counters" /> the results can be
-inaccurate. The debug information itself can add other problems; for example, the line number for a symbol can be
-incorrect. Assembly instructions can be re-ordered and moved by the compiler, and this can lead to
-crediting source lines with samples not really "owned" by this line. Also see
-<xref linkend="interpreting" />.
-</para>
-<para>
-You can output the annotation to one single file, containing all the source found using the
-<option>--source</option>. You can use this in conjunction with <option>--assembly</option>
-to get combined source/assembly output.
-</para>
-<para>
-You can also output a directory of annotated source files that maintains the structure of
-the original sources. Each line in the annotated source is prepended with the samples
-for that line. Additionally, each symbol is annotated giving details for the symbol
-as a whole. An example:
-</para>
-<screen>
-$ opannotate --source --output-dir=annotated /usr/local/oprofile-pp/bin/oprofiled
-$ ls annotated/home/moz/src/oprofile-pp/daemon/
-opd_cookie.h  opd_image.c  opd_kernel.c  opd_sample_files.c  oprofiled.c
-</screen>
-<para>
-Line numbers are maintained in the source files, but each file has
-a footer appended describing the profiling details. The actual annotation
-looks something like this :
-</para>
-<screen>
-...
-               :static uint64_t pop_buffer_value(struct transient * trans)
- 11510  1.9661 :{ /* pop_buffer_value total:  89901 15.3566 */
-               :        uint64_t val;
-               :
- 10227  1.7469 :        if (!trans->remaining) {
-               :                fprintf(stderr, "BUG: popping empty buffer !\n");
-               :                exit(EXIT_FAILURE);
-               :        }
-               :
-               :        val = get_buffer_value(trans->buffer, 0);
-  2281  0.3896 :        trans->remaining--;
-  2296  0.3922 :        trans->buffer += kernel_pointer_size;
-               :        return val;
- 10454  1.7857 :}
-...
-</screen>
-
-<para>
-The first number on each line is the number of samples, whilst the second is
-the relative percentage of total samples.
-There are a number of options for specifying the output;  for more details,
-see <xref linkend="opannotate-details" />.
-</para>
-
-<sect2 id="opannotate-finding-source">
-<title>Locating source files</title>
-<para>
-Of course, <command>opannotate</command> needs to be able to locate the source files
-for the binary image(s) in order to produce output. Some binary images have debug
-information where the given source file paths are relative, not absolute. You can
-specify search paths to look for these files (similar to <command>gdb</command>'s
-<option>dir</option> command) with the <option>--search-dirs</option> option.
-</para>
-<para>
-Sometimes you may have a binary image which gives absolute paths for the source files,
-but you have the actual sources elsewhere (commonly, you've installed an SRPM for
-a binary on your system and you want annotation from an existing profile). You can
-use the <option>--base-dirs</option> option to redirect OProfile to look somewhere
-else for source files. For example, imagine we have a binary generated from a source
-file that is given in the debug information as <filename>/tmp/build/libfoo/foo.c</filename>,
-and you have the source tree matching that binary installed in <filename>/home/user/libfoo/</filename>.
-You can redirect OProfile to find <filename>foo.c</filename> correctly like this :
-</para>
-<screen>
-$ opannotate --source --base-dirs=/tmp/build/libfoo/ --search-dirs=/home/user/libfoo/ --output-dir=annotated/ /lib/libfoo.so
-</screen>
-<para>
-You can specify multiple (comma-separated) paths to both options.
-</para>
-</sect2>
-
-</sect1> <!-- opannotate -->
-
-<sect1 id="opstack">
-<title>Outputting call-graph profile</title>
-<para>
-The <command>opstack</command> utility generates call-graph profile at symbol level.
-It's able to traverse shared library boundaries, so you can trace calls
-into an application's loaded libraries. You can also get kernel-based
-call-graph profiles; currently OProfile cannot trace across a system call
-boundary.
-For example, consider the following C program:
-</para>
-<screen>
-void a() { for (int i = 0; i &lt; 1000000; ++i) ; }
-
-void b() { a(); for (int i = 0; i &lt; 1000000; ++i) ; }
-
-int main() { a(); b(); }
-</screen>
-<para>
-Here we can see the logical structure is that <function>a()</function>
-is called twice, once from <function>main()</function>, and once from
-<function>b()</function>. Let's look at a portion of the output from
-<command>opstack</command> :
-</para>
-<screen>
-$ opstack ./cgtest
-  self     %        child    %        image name               symbol name
-...
--------------------------------------------------------------------------------
-  0              0  2053     100.000  cgtest                   main
-408      19.4842  715      34.1452  cgtest                   b
-  1645     100.000  0              0  cgtest                   a
--------------------------------------------------------------------------------
-...
-</screen>
-<para>
-The output is similar to the output of <command> GNU gprof</command>.
-Each section refers to one function; here we have shown only one section
-for clarity, which focuses on the function <function>b()</function>.
-We say that (for example) <function>main()</function> is a <emphasis>caller</emphasis>
-of <function>b()</function>, and conversely <function>b()</function> is a 
-<emphasis>callee</emphasis> of <function>main()</function>. Functions
-listed above the non-indented line in each section are callers of the
-function; functions listed below the non-indented line are direct
-callees.
-Note that functions are only listed if samples were attributed against
-them in the call-graph.
-</para>
-<para>
-Let's go through this section line by line.
-</para>
-<screen>
-  0              0  2053     100.000  cgtest                   main
-</screen>
-<para>
-The function <function>main()</function> is a caller of
-<function>b()</function>. No samples
-were taken inside main itself, but all samples (2053) were taken by
-functions called by <function>main()</function>. Note this number refers to all callees of
-<function>main()</function>, not just the one for this section.
-</para>
-<screen>
-408      19.4842  715      34.1452  cgtest                   b
-</screen>
-<para>
-This is the function that's the focus of this section (it is not
-indented). We can see that there were 408 samples inside
-<function>b()</function>. The
-percentage figure refers to the relative percentage of sample count
-for the entire program: here, we spent 19% of our time in
-<function>b()</function>
-itself.
-Additionally, there were 715 samples inside functions
-that <function>b()</function> called. In this case, there is only one
-such function - <function>a()</function>.
-The percentage has the same meaning - of all the samples taken in the
-program, 34% of them were spent in <function>a()</function> when it was
-called by <function>b()</function>.
-</para>
-<screen>
-  1645     100.000  0              0  cgtest                   a
-</screen>
-<para>
-And here we have <function>a()</function>, which is indented and below
-<function>b()</function>, meaning that <function>b()</function>
-called <function>a()</function>, as you can see in the source code above. The report shows
-that <function>a()</function> received 1645 samples in total (whether called by
-<function>b()</function> or not).
-The percentage shows that of all the callees of <function>b()</function>, 100% of the samples
-were in <function>a()</function>. This is to be expected, since <function>b()</function> only calls one function.
-</para>
-
-<para>
-See <xref linkend="opstack-details" />.
-</para>
-<para>
-If you would like to use call-graph profiling, you need to be running on
-an x86 machine with a recent 2.6 kernel.
-</para>
-
-</sect1> <!-- opstack -->
-
-<sect1 id="opgprof">
-<title><command>gprof</command>-compatible output</title>
-<para>
-If you're familiar with the output produced by <command>GNU gprof</command>,
-you may find <command>opgprof</command> useful. It takes a single binary
-as an argument, and produces a <filename>gmon.out</filename> file for use
-with <command>gprof -p</command>. Note that only a flat profile is included;
-OProfile cannot produce call graphs. For example:
-</para>
-<screen>
-$ opgprof `which oprofiled` # generates gmon.out file
-$ gprof -p `which oprofiled` | head
-Flat profile:
-
-Each sample counts as 1 samples.
-  %   cumulative   self              self     total
- time   samples   samples    calls  T1/call  T1/call  name
- 33.13 206237.00 206237.00                             odb_insert
- 22.67 347386.00 141149.00                             pop_buffer_value
-  9.56 406881.00 59495.00                             opd_put_sample
-  7.34 452599.00 45718.00                             opd_find_image
-  7.19 497327.00 44728.00                             opd_process_samples
-</screen>
-<para>
-A few options to <command>opgprof</command> are available, see
-<xref linkend="opgprof-details" />.
-</para>
-</sect1> <!-- opgprof -->
-
-<sect1 id="oparchive">
-<title>Archiving measurements</title>
-<para>
-	The <command>oparchive</command> utility generates a directory populated
-	with executable, debug, and oprofile sample files. This directory can be
-	move to another machine via tar and analyzed without further use of the
-	data collection machine.
-</para>
-
-<para>
-	The following command would collect the sample files, the executables
-	associated with the sample files, and the debuginfo files associated
-	with the executables and copy them into
-	<filename>/tmp/current_data</filename>:
-</para>
-
-<screen>
-# oparchive -o /tmp/current_data
-</screen>
-
-</sect1> <!-- oparchive -->
 
 <sect1 id="profile-spec">
 <title>Profile specifications</title>
@@ -1649,10 +1336,67 @@ extension. Check if the module is one loaded from initrd.
 
 </sect1> <!-- profile-spec -->
 
-<sect1 id="opreport-details">
+<sect1 id="opreport">
+<title>Image summaries and symbol summaries (<command>opreport</command>)</title>
+<para>
+The <command>opreport</command> utility is the primary utility you will use for 
+getting formatted data out of OProfile. It produces two types of data: image summaries
+and symbol summaries. An image summary lists the number of samples for individual
+binary images such as libraries or applications. Symbol summaries provide per-symbol
+profile data. In the following example, we're getting an image summary for the whole
+system:
+</para>
+<screen>
+$ opreport --long-filenames
+CPU: PIII, speed 863.195 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (clocks processor is not halted) with a unit mask of 0x00 (No unit mask) count 23150
+   905898 59.7415 /usr/lib/gcc-lib/i386-redhat-linux/3.2/cc1plus
+   214320 14.1338 /boot/2.6.0/vmlinux
+   103450  6.8222 /lib/i686/libc-2.3.2.so
+    60160  3.9674 /usr/local/bin/madplay
+    31769  2.0951 /usr/local/oprofile-pp/bin/oprofiled
+    26550  1.7509 /usr/lib/libartsflow.so.1.0.0
+    23906  1.5765 /usr/bin/as
+    18770  1.2378 /oprofile
+    15528  1.0240 /usr/lib/qt-3.0.5/lib/libqt-mt.so.3.0.5
+    11979  0.7900 /usr/X11R6/bin/XFree86
+    11328  0.7471 /bin/bash
+    ...
+</screen>
+<para>
+If we had specified <option>--symbols</option> in the previous command, we would have
+gotten a symbol summary of all the images across the entire system. We can restrict this to only
+part of the system profile; for example,
+below is a symbol summary of the OProfile daemon. Note that as we used
+<command>opcontrol --separate=kernel</command>, symbols from images that <command>oprofiled</command>
+has used are also shown.
+</para>
+<screen>
+$ opreport -l `which oprofiled` 2>/dev/null | more
+CPU: PIII, speed 863.195 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (clocks processor is not halted) with a unit mask of 0x00 (No unit mask) count 23150
+vma      samples  %           image name               symbol name
+0804be10 14971    28.1993     oprofiled                odb_insert
+0804afdc 7144     13.4564     oprofiled                pop_buffer_value
+c01daea0 6113     11.5144     vmlinux                  __copy_to_user_ll
+0804b060 2816      5.3042     oprofiled                opd_put_sample
+0804b4a0 2147      4.0441     oprofiled                opd_process_samples
+0804acf4 1855      3.4941     oprofiled                opd_put_image_sample
+0804ad84 1766      3.3264     oprofiled                opd_find_image
+0804a5ec 1084      2.0418     oprofiled                opd_find_module
+0804ba5c 741       1.3957     oprofiled                odb_hash_add_node
+...
+</screen>
+
+<para>
+These are the two basic ways you are most likely to use regularly, but <command>opreport</command>
+can do a lot more than that. For more details, see <xref linkend="opreport-details" />.
+</para>
+
+<sect2 id="opreport-details">
 <title>Usage of <command>opreport</command></title>
 
-<sect2 id="opreport-merging">
+<sect3 id="opreport-merging">
 <title>Merging separate profiles</title>
 
 If you have used one of the <option>--separate=</option> options
@@ -1664,21 +1408,111 @@ when using <option>--separate=lib</option>).
 Sometimes it can be useful to merge these results back together
 before getting results. The <option>--merge</option> option allows
 you to do that.
-</sect2>
+</sect3>
 
-<sect2 id="opreport-comparison">
+<sect3 id="opreport-comparison">
 <title>Side-by-side multiple results</title>
 If you have used multiple events when profiling, by default you get
 side-by-side results of each event's sample values from <command>opreport</command>.
 You can restrict which events to list by appropriate use of the
 <option>event:</option> profile specifications, etc.
-</sect2>
+</sect3>
 
-<sect2 id="opreport-options">
+<sect3 id="opreport-callgraph">
+<title>Callgraph output</title>
+<para>
+When using the <option>opcontrol --callgraph</option>, you can see what
+functions are calling other functions in the output. Consider the
+following program:
+</para>
+<screen>
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+
+#define SIZE 500000
+
+static int compare(const void *s1, const void *s2)
+{
+        return strcmp(s1, s2);
+}
+
+static void repeat(void)
+{
+        int i;
+        char *strings[SIZE];
+        char str[] = "abcdefghijklmnopqrstuvwxyz";
+
+        for (i = 0; i &lt; SIZE; ++i) {
+                strings[i] = strdup(str);
+                strfry(strings[i]);
+        }
+
+        qsort(strings, SIZE, sizeof(char *), compare);
+}
+
+int main()
+{
+        while (1)
+                repeat();
+}
+</screen>
+<para>
+When running with the call-graph option, OProfile will
+record the function stack every time it takes a sample.
+<command>opreport --callgraph</command> outputs an entry for each
+function, where each entry looks similar to:
+</para>
+<screen>
+samples  %        image name               symbol name
+  197       0.1548  cg                       main
+  127036   99.8452  cg                       repeat
+84590    42.5084  libc-2.3.2.so            strfry
+  84590    66.4838  libc-2.3.2.so            strfry [self]
+  39169    30.7850  libc-2.3.2.so            random_r
+  3475      2.7312  libc-2.3.2.so            __i686.get_pc_thunk.bx
+-------------------------------------------------------------------------------
+</screen>
+<para>
+Here the non-indented line is the function we're focussing upon
+(<function>strfry()</function>). This
+line is the same as you'd get from a normal <command>opreport</command>
+output.
+</para>
+<para>
+Above the non-indented line we find the functions that called this
+function (for example, <function>repeat()</function> calls
+<function>strfry()</function>. The samples and percentage values here
+refer to the number of times we took a sample where this call was found
+in the stack; the percentage is relative to all other callers of the
+function we're focussing on.
+</para>
+<para>
+Below the line are functions that are called by
+<function>random_r()</function> (called <emphasis>callees</emphasis>).
+It's clear here that <function>strfry()</function> calls
+<function>random_r()</function>. We also see a special entry with a
+"[self]" marker. This records the normal samples for the function, but
+the percentage becomes relative to all callees. This allows you to
+compare time spent in the function itself compared to functions it
+calls. Note that if a function calls itself, then it will appear in the
+list of callees of itself, but without the "[self]" marker; so recursive
+calls are still clearly separable.
+</para>
+<para>
+You may have noticed that the output lists <function>main()</function>
+as calling <function>strfry()</function>, but it's clear from the source
+that this doesn't actually happen. See <xref
+linkend="interpreting-callgraph" /> for an explanation.
+</para>
+
+</sect3>
+
+<sect3 id="opreport-options">
 <title>Options for <command>opreport</command></title>
 
 <variablelist>
-<varlistentry><term><option>--accumulated / -c</option></term><listitem><para>
+<varlistentry><term><option>--accumulated / -a</option></term><listitem><para>
 Accumulate sample and percentage counts in the symbol list.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--debug-info / -g</option></term><listitem><para>
@@ -1692,6 +1526,9 @@ pattern-matching to make C++ symbol demangling more readable.
 Show per-instruction details for all selected symbols. Note that, for
 binaries without symbol information, the VMA values shown are raw file
 offsets for the image binary.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--callgraph / -c</option></term><listitem><para>
+Show callgraph information.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
 Do not include application-specific images for libraries, kernel modules
@@ -1752,11 +1589,103 @@ Show version.
 </para></listitem></varlistentry>
 </variablelist>
 
+</sect3>
+
+</sect2> <!-- opreport-details -->
+
+</sect1> <!-- opreport -->
+
+<sect1 id="opannotate">
+<title>Outputting annotated source (<command>opannotate</command>)</title>
+<para>
+The <command>opannotate</command> utility generates annotated source files or assembly listings, optionally
+mixed with source.
+If you want to see the source file, the profiled application needs to have debug information, and the source
+must be available through this debug information. For GCC, you must use the <option>-g</option> option
+when you are compiling.
+If the binary doesn't contain sufficient debug information, you can still
+use <command>opannotate <option>--assembly</option></command> to get annotated assembly.
+</para>
+<para>
+Note that for the reason explained in <xref linkend="hardware-counters" /> the results can be
+inaccurate. The debug information itself can add other problems; for example, the line number for a symbol can be
+incorrect. Assembly instructions can be re-ordered and moved by the compiler, and this can lead to
+crediting source lines with samples not really "owned" by this line. Also see
+<xref linkend="interpreting" />.
+</para>
+<para>
+You can output the annotation to one single file, containing all the source found using the
+<option>--source</option>. You can use this in conjunction with <option>--assembly</option>
+to get combined source/assembly output.
+</para>
+<para>
+You can also output a directory of annotated source files that maintains the structure of
+the original sources. Each line in the annotated source is prepended with the samples
+for that line. Additionally, each symbol is annotated giving details for the symbol
+as a whole. An example:
+</para>
+<screen>
+$ opannotate --source --output-dir=annotated /usr/local/oprofile-pp/bin/oprofiled
+$ ls annotated/home/moz/src/oprofile-pp/daemon/
+opd_cookie.h  opd_image.c  opd_kernel.c  opd_sample_files.c  oprofiled.c
+</screen>
+<para>
+Line numbers are maintained in the source files, but each file has
+a footer appended describing the profiling details. The actual annotation
+looks something like this :
+</para>
+<screen>
+...
+               :static uint64_t pop_buffer_value(struct transient * trans)
+ 11510  1.9661 :{ /* pop_buffer_value total:  89901 15.3566 */
+               :        uint64_t val;
+               :
+ 10227  1.7469 :        if (!trans->remaining) {
+               :                fprintf(stderr, "BUG: popping empty buffer !\n");
+               :                exit(EXIT_FAILURE);
+               :        }
+               :
+               :        val = get_buffer_value(trans->buffer, 0);
+  2281  0.3896 :        trans->remaining--;
+  2296  0.3922 :        trans->buffer += kernel_pointer_size;
+               :        return val;
+ 10454  1.7857 :}
+...
+</screen>
+
+<para>
+The first number on each line is the number of samples, whilst the second is
+the relative percentage of total samples.
+</para>
+
+<sect2 id="opannotate-finding-source">
+<title>Locating source files</title>
+<para>
+Of course, <command>opannotate</command> needs to be able to locate the source files
+for the binary image(s) in order to produce output. Some binary images have debug
+information where the given source file paths are relative, not absolute. You can
+specify search paths to look for these files (similar to <command>gdb</command>'s
+<option>dir</option> command) with the <option>--search-dirs</option> option.
+</para>
+<para>
+Sometimes you may have a binary image which gives absolute paths for the source files,
+but you have the actual sources elsewhere (commonly, you've installed an SRPM for
+a binary on your system and you want annotation from an existing profile). You can
+use the <option>--base-dirs</option> option to redirect OProfile to look somewhere
+else for source files. For example, imagine we have a binary generated from a source
+file that is given in the debug information as <filename>/tmp/build/libfoo/foo.c</filename>,
+and you have the source tree matching that binary installed in <filename>/home/user/libfoo/</filename>.
+You can redirect OProfile to find <filename>foo.c</filename> correctly like this :
+</para>
+<screen>
+$ opannotate --source --base-dirs=/tmp/build/libfoo/ --search-dirs=/home/user/libfoo/ --output-dir=annotated/ /lib/libfoo.so
+</screen>
+<para>
+You can specify multiple (comma-separated) paths to both options.
+</para>
 </sect2>
 
-</sect1> <!-- opreport-details -->
-
-<sect1 id="opannotate-details">
+<sect2 id="opannotate-details">
 <title>Usage of <command>opannotate</command></title>
 
 <variablelist>
@@ -1827,60 +1756,35 @@ Show version.
 </variablelist>
 
 
-</sect1> <!-- opannotate-details -->
+</sect2> <!-- opannotate-details -->
 
+</sect1> <!-- opannotate -->
 
-<sect1 id="opstack-details">
-<title>Usage of <command>opstack</command></title>
+<sect1 id="opgprof">
+<title><command>gprof</command>-compatible output (<command>opgprof</command>)</title>
+<para>
+If you're familiar with the output produced by <command>GNU gprof</command>,
+you may find <command>opgprof</command> useful. It takes a single binary
+as an argument, and produces a <filename>gmon.out</filename> file for use
+with <command>gprof -p</command>. If call-graph profiling is enabled,
+then this is also included.
+</para>
+<screen>
+$ opgprof `which oprofiled` # generates gmon.out file
+$ gprof -p `which oprofiled` | head
+Flat profile:
 
-<variablelist>
-<varlistentry><term><option>--demangle none|normal|smart</option></term><listitem><para>
-none: no demangling. normal: use default demangler (default) smart: use
-pattern-matching to make C++ symbol demangling more readable.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--accumulated / -c</option></term><listitem><para>
-Accumulate sample and percentage counts in the symbol list.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
-Do not include application-specific images for libraries, kernel modules
-and the kernel. This option only makes sense if the profile session
-used --separate.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--image-path / -p [paths]</option></term><listitem><para>
-Comma-separated list of additional paths to search for binaries.
-This is needed to find modules in kernels 2.6 and upwards.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--long-filenames / -l</option></term><listitem><para>
-Output full paths instead of basenames.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--debug-info / -g</option></term><listitem><para>
-Show source file and line for each symbol.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--threshold / -t [percentage]</option></term><listitem><para>
-Only output data for symbols that have more than the given percentage
-of total samples.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--no-header</option></term><listitem><para>
-Don't output a header detailing profiling parameters.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--show-address / -w</option></term><listitem><para>
-Show the VMA address of each symbol (off by default).
-</para></listitem></varlistentry>
-<varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
-Give verbose debugging output.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--version / -v</option></term><listitem><para>
-Show version.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
-Show help message.
-</para></listitem></varlistentry>
-</variablelist>
+Each sample counts as 1 samples.
+  %   cumulative   self              self     total
+ time   samples   samples    calls  T1/call  T1/call  name
+ 33.13 206237.00 206237.00                             odb_insert
+ 22.67 347386.00 141149.00                             pop_buffer_value
+  9.56 406881.00 59495.00                             opd_put_sample
+  7.34 452599.00 45718.00                             opd_find_image
+  7.19 497327.00 44728.00                             opd_process_samples
+</screen>
 
-
-</sect1> <!-- opstack-details -->
-
-<sect1 id="opgprof-details">
+<sect2 id="opgprof-details">
 <title>Usage of <command>opgprof</command></title>
 
 <variablelist>
@@ -1906,9 +1810,31 @@ Output to the given file instead of the default, gmon.out
 </para></listitem></varlistentry>
 </variablelist>
 
-</sect1> <!-- opgprof-details -->
+</sect2> <!-- opgprof-details -->
 
-<sect1 id="oparchive-details">
+</sect1> <!-- opgprof -->
+
+<sect1 id="oparchive">
+<title>Archiving measurements</title>
+<para>
+	The <command>oparchive</command> utility generates a directory populated
+	with executable, debug, and oprofile sample files. This directory can be
+	move to another machine via tar and analyzed without further use of the
+	data collection machine.
+</para>
+
+<para>
+	The following command would collect the sample files, the executables
+	associated with the sample files, and the debuginfo files associated
+	with the executables and copy them into
+	<filename>/tmp/current_data</filename>:
+</para>
+
+<screen>
+# oparchive -o /tmp/current_data
+</screen>
+
+<sect2 id="oparchive-details">
 <title>Usage of <command>oparchive</command></title>
 
 <variablelist>
@@ -1928,9 +1854,16 @@ This is needed to find modules in kernels 2.6 and upwards.
 <varlistentry><term><option>--output-directory / -o [directory]</option></term><listitem><para>
 Output to the given directory. There is no default. This must be specified.
 </para></listitem></varlistentry>
+<varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
+Do not include application-specific images for libraries, kernel modules
+and the kernel. This option only makes sense if the profile session
+used --separate.
+</para></listitem></varlistentry>
 </variablelist>
 
-</sect1> <!-- oparchive-details -->
+</sect2> <!-- oparchive-details -->
+
+</sect1> <!-- oparchive -->
 
 </chapter>
 
@@ -2034,13 +1967,6 @@ the <option>idle=poll</option> option, which uses a different idle routine. This
 will appear as <function>poll_idle()</function> in your kernel profile.
 </para>
 </sect2>
-<sect2 id="exiting-tasks">
-<title>Exiting tasks</title>
-<para>
-The internal implementation of the 2.6 OProfile code means that tasks that
-within the kernel <function>do_exit()</function> routine cannot be profiled.
-</para>
-</sect2>
 <sect2 id="kernel-modules">
 <title>Profiling kernel modules</title>
 <para>
@@ -2081,6 +2007,19 @@ meaningful results). Note that as of this writing, the GCC developers
 plan to disable frame pointers by default. The Linux kernel is built
 without frame pointers by default; there is a configuration option you
 can use to turn it on under the "Kernel Hacking" menu.
+</para>
+<para>
+Often you may see a caller of a function that does not actually directly
+call the function you're looking at (e.g. if <function>a()</function>
+calls <function>b()</function>, which in turn calls
+<function>c()</function>, you may see an entry for
+<function>a()->c()</function>).  What's actually occurring is that we
+are taking samples at the very start (or the very end) of
+<function>c()</function>; at these few instructions, we haven't yet
+created the new function's frame, so it appears as if
+<function>a()</function> is calling directly into
+<function>c()</function>. Be careful not to be misled by these
+entries.
 </para>
 <para>
 Like the rest of OProfile, call-graph profiling uses a statistical

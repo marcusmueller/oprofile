@@ -12,11 +12,9 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
   outside .text section get a wrong offset
  o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.
- o opstack output needs to be reworked to be more readable (see
-   "callgraph support comments" on mailing list with Eric Sharkey)
- o with opstack I can get "warning: /no-vmlinux could not be found.".
+ o with opreport -c I can get "warning: /no-vmlinux could not be found.".
    Should be smarter ?
- o opstack gives weird output for an image with no symbols:
+ o opreport -c gives weird output for an image with no symbols:
 
     samples  %        symbol name
   15965    100.000  (no symbols)
@@ -25,12 +23,12 @@ for some pointers and/or read HACKING and doc/CodingStyle.
   253       1.5600  (no symbols) [self]
 -------------------------------------------------------------------------------
 
- o consider tagging opstack entries with a number like gprof
- o optimise opstack
- o merge opstack into opreport via -c option
+ o consider tagging opreport -c entries with a number like gprof
+ o optimise opreport -c
+ o global percent, -i, -e, for opreport -c
  o should [self] entries be ommitted if 0 ??
- o stress test opstack: compile a Big Application w/o frame pointer and look
-   how driver and opstack react.
+ o stress test opreport -c: compile a Big Application w/o frame pointer and look
+   how driver and opreport -c react.
  o consider generic anon mapping support
 
 Before 1.0 little stuff
@@ -115,7 +113,7 @@ Later
   cg on it) and  used to emulate the call count field in gprof. I think this is
   a after 1.0 thing but event aliases must be specified in a way allowing such
   extension
- o do we need an opreport like opstack (showing caller/callee at binary
+ o do we need an opreport like opreport -c (showing caller/callee at binary
   boundary not symbols) ?
  o we should notice an opcontrol config change (--separate etc.) and
    auto-restart the daemon if necessary (Run)

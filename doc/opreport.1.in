@@ -17,7 +17,7 @@ sessions.
 
 .SH OPTIONS
 .TP
-.BI "--accumulated / -c"
+.BI "--accumulated / -a"
 Accumulate sample and percentage counts in the symbol list.
 .br
 .TP
@@ -28,6 +28,10 @@ Show source file and line for each symbol.
 .BI "--demangle=none|smart|normal"
 none: no demangling. normal: use default demangler (default) smart: use
 pattern-matching to make C++ symbol demangling more readable.
+.br
+.TP
+.BI "--callgraph / -c"
+Show call graph information if available.
 .br
 .TP
 .BI "--details / -d"

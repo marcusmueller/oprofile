@@ -1,3 +1,25 @@
+2005-04-04  John Levon  <levon@movementarian.org>
+
+	* configure.in:
+	* doc/Makefile.am:
+	* doc/oprofile.xml:
+	* doc/opstack.1.in:
+	* doc/opreport.1.in:
+	* doc/oprofile.1.in:
+	* pp/.cvsignore:
+	* pp/Makefile.am:
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp:
+	* pp/opreport_options.h:
+	* pp/opstack.cpp:
+	* pp/opstack_options.cpp:
+	* pp/opstack_options.h: remove opstack in favour of opreport -c
+
+	* libpp/callgraph_container.cpp: fix for new call-graph code
+
+	* doc/oprofile.xml:
+	* doc/oparchive.1.in: document -x, re-organise manual
+
 2005-04-04 Maynard Johnson  <maynardj@us.ibm.com>
 
 	* configure.in: further check for bfd synthesised

@@ -95,11 +95,13 @@ add(symbol_entry const & caller, symbol_entry const * callee,
 void arc_recorder::process_children(cg_symbol & sym, double threshold)
 {
 	// generate the synthetic self entry for the symbol
-	sym.name = symbol_names.create(symbol_names.demangle(sym.name)
+	symbol_entry self = sym;
+
+	self.name = symbol_names.create(symbol_names.demangle(self.name)
 	                                + " [self]");
 
-	sym.total_callee_count += sym.sample.counts;
-	sym.callees.push_back(sym);
+	sym.total_callee_count += self.sample.counts;
+	sym.callees.push_back(self);
 
 	sort(sym.callers.begin(), sym.callers.end(), compare_arc_count);
 	sort(sym.callees.begin(), sym.callees.end(), compare_arc_count_reverse);

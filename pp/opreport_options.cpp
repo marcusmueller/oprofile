@@ -32,6 +32,7 @@ namespace options {
 	string archive_path;
 	demangle_type demangle = dmt_normal;
 	bool symbols;
+	bool callgraph;
 	bool debug_info;
 	bool details;
 	bool exclude_dependent;
@@ -57,44 +58,49 @@ vector<string> include_symbols;
 string demangle_option = "normal";
 
 popt::option options_array[] = {
-	popt::option(demangle_option, "demangle", '\0',
-		     "demangle GNU C++ symbol names (default normal)",
-	             "none|normal|smart"),
-	popt::option(outfile, "output-file", 'o',
-	             "output to the given filename", "file"),
-	// PP:5
-	popt::option(options::symbols, "symbols", 'l',
-		     "list all symbols"),
-	popt::option(options::debug_info, "debug-info", 'g',
-		     "add source file and line number to output"),
+	popt::option(options::callgraph, "callgraph", 'c',
+	             "show call graph"),
 	popt::option(options::details, "details", 'd',
 		     "output detailed samples for each symbol"),
-	popt::option(options::exclude_dependent, "exclude-dependent", 'x',
-		     "exclude libs, kernel, and module samples for applications"),
+	popt::option(options::symbols, "symbols", 'l',
+		     "list all symbols"),
+
+	popt::option(outfile, "output-file", 'o',
+	             "output to the given filename", "file"),
+
 	popt::option(sort, "sort", 's',
 		     "sort by", "sample,image,app-name,symbol,debug,vma"),
+	popt::option(options::reverse_sort, "reverse-sort", 'r',
+		     "use reverse sort"),
+	popt::option(mergespec, "merge", 'm',
+		     "comma separated list", "cpu,lib,tid,tgid,unitmask,all"),
+	popt::option(options::exclude_dependent, "exclude-dependent", 'x',
+		     "exclude libs, kernel, and module samples for applications"),
 	popt::option(exclude_symbols, "exclude-symbols", 'e',
 		     "exclude these comma separated symbols", "symbols"),
 	popt::option(include_symbols, "include-symbols", 'i',
 		     "include these comma separated symbols", "symbols"),
-	popt::option(mergespec, "merge", 'm',
-		     "comma separated list", "cpu,lib,tid,tgid,unitmask,all"),
+	popt::option(options::threshold_opt, "threshold", 't',
+		     "minimum percentage needed to produce output",
+		     "percent"),
+
+	popt::option(demangle_option, "demangle", '\0',
+		     "demangle GNU C++ symbol names (default normal)",
+	             "none|normal|smart"),
+	// PP:5
+	popt::option(options::debug_info, "debug-info", 'g',
+		     "add source file and line number to output"),
 	popt::option(options::show_header, "no-header", 'n',
 		     "remove all headers from output"),
 	popt::option(options::show_address, "show-address", 'w',
 	             "show VMA address of each symbol"),
 	popt::option(options::long_filenames, "long-filenames", 'f',
 		     "show the full path of filenames"),
-	popt::option(options::accumulated, "accumulated", 'c',
+	popt::option(options::accumulated, "accumulated", 'a',
 		     "percentage field show accumulated count"),
-	popt::option(options::reverse_sort, "reverse-sort", 'r',
-		     "use reverse sort"),
 	popt::option(options::global_percent, "global-percent", '\0',
 		     "percentage are not relative to symbol count or image "
 		     "count but total sample count"),
-	popt::option(options::threshold_opt, "threshold", 't',
-		     "minimum percentage needed to produce output",
-		     "percent"),
 };
 
 
@@ -140,6 +146,26 @@ void check_options()
 	using namespace options;
 
 	bool do_exit = false;
+
+	if (callgraph) {
+		symbols = true;
+		if (details) {
+			cerr << "--callgraph is incompatible with --details" << endl;
+			do_exit = true;
+		}
+
+		if (!include_symbols.empty()) {
+			cerr << "--include-symbols is incompatible with "
+ 			        "--callgraph" << endl;
+			do_exit = true;
+		}
+
+		if (!exclude_symbols.empty()) {
+			cerr << "--exclude-symbols is incompatible with "
+ 			        "--callgraph" << endl;
+			do_exit = true;
+		}
+	}
 
 	if (!symbols) {
 		if (show_address) {
@@ -201,7 +227,8 @@ void handle_options(vector<string> const & non_options)
 	profile_spec const spec =
 		profile_spec::create(non_options, extra_found_images);
 
-	list<string> sample_files = spec.generate_file_list(exclude_dependent, true);
+	list<string> sample_files = spec.generate_file_list(exclude_dependent,
+	                                                    !options::callgraph);
 
 	archive_path = spec.get_archive_path();
 	cverb << vsfile << "Archive: " << archive_path << endl;
