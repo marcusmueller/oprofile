@@ -22,7 +22,8 @@ Before 1.0 big stuff
  
 Before 1.0 little stuff
 -----------------------
- 
+
+ o op_session should allow to backup binary, see subject "features to make oprofile easier to use" on mail list
  o remove 1 and 2 magic numbers for oprof_ready
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o document gcc 2.95 and linenr info problems especially for inline functions

@@ -1181,9 +1181,6 @@ with <command>op_time [<option>--option</option>] [<filename>image_name[,image_n
 If you don't specify any image_name on command line op_time report information about all profiled binary image.
 You can use shell wildcards like :
 <command>op_time <filename>/usr/bin/*</filename></command>
-<!-- FIXME: remove this if implementation is fixed see op_time.cpp filter_image_name() -->
-Currently you cannot use :
-<command>op_time <filename>"/usr/bin/*"</filename></command>
 </para>
 <para>
 Options allowed are :
@@ -1361,6 +1358,8 @@ problem and oprofile can do nothing about it.
 </sect1>
 <sect1 id="debug-info">
 <title>Inaccuracies in annotated source</title>
+<sect2 id="effect-of-optimizations">
+<title>side effects of optimizations</title>
 <para>
 The compiler can introduce some pitfalls in the annotated source output.
 The optimizer can move pieces of code in such manner that two line of codes
@@ -1380,6 +1379,100 @@ accumulated at the position of the right brace of the expression. Using
 <command>op_to_source <option>-a</option></command> can help to show the real
 samples at an assembly level.
 </para>
+</sect2>
+<!--
+ FIXME This is not sufficient find examples
+<sect2 id="inlined-function">
+<title>inlined functions</title>
+<para>
+In some language the compiler can generate implicitely functions such as copy
+constructor or copy operator in C++. Such function are credited by the compiler
+of a zero line number which give weirds annotation.
+</sect2>
+</para>
+</sect2>
+-->
+<sect2 id="wrong-linenr-info">
+<title>inaccuracy in line number information</title>
+<para>
+Depending on your compiler you can fall into the following problem:
+</para>
+<screen>
+struct big_object { int a[500]; };
+
+int main()
+{
+	big_object a, b;
+	for (int i = 0 ; i != 1000 * 1000; ++i)
+		b = a;
+	return 0;
+}
+
+</screen>
+<para>
+Compiled with <command>gcc</command> 3.0.4 the annotated source is clearly inaccurate:
+</para>
+<screen>
+int main()
+{
+        big_object a, b;
+/* main 7871 100% */
+        for (int i = 0 ; i != 1000 * 1000; ++i)
+                b = a;
+        /* 7871 100% */
+        return 0;
+}
+</screen>
+<para>
+The problem here is distinct from the irq latency problem, the debug line number
+info are not enough precise, again looking at output of <command>op_to_source -as</command> can help.
+</para>
+<screen>
+/* 7871 100% */
+int main()
+{
+        big_object a, b;
+        for (int i = 0 ; i != 1000 * 1000; ++i)
+ 80484c0:       push   %ebp
+ 80484c1:       mov    %esp,%ebp
+ 80484c3:       sub    $0xfac,%esp
+ 80484c9:       push   %edi
+ 80484ca:       push   %esi
+ 80484cb:       push   %ebx
+                b = a;
+ 80484cc:       lea    0xfffff060(%ebp),%edx
+ 80484d2:       lea    0xfffff830(%ebp),%eax
+ 80484d8:       mov    $0xf423f,%ebx
+ 80484dd:       lea    0x0(%esi),%esi
+        return 0;
+ /* 3 0.03811% */
+ 80484e0:       mov    %edx,%edi
+ 80484e2:       mov    %eax,%esi
+ /* 1 0.0127% */
+ 80484e4:       cld
+ /* 8 0.1016% */
+ 80484e5:       mov    $0x1f4,%ecx
+ /* 7850 99.73% */
+ 80484ea:       repz movsl %ds:(%esi),%es:(%edi)
+ /* 9 0.1143% */
+ 80484ec:       dec    %ebx
+ 80484ed:       jns    80484e0
+ 80484ef:       xor    %eax,%eax
+ 80484f1:       pop    %ebx
+ 80484f2:       pop    %esi
+ 80484f3:       pop    %edi
+ 80484f4:       leave
+ 80484f5:       ret
+</screen>
+<para>
+So here it's clear than copying is correctly credited of all samples but the
+line number info are misplaced. <command>objdump -dS</command> expose also the
+same problem. Note than maintaining accurate debug info for compilers when optimizing is difficult so this problem is not suprising. The problem of debug info
+accuracy is also dependant of the binutils used, some bfd libraries version
+contains work-around against known problem of gcc, some other not. This is unfortunate but we must live with that.
+Obviously the generally used advise: do not optimize when using debug info is here inapplicable because you want to profile optimized code.
+</para>
+</sect2>
 </sect1>
 <!-- FIXME: the wording is perhaps awkward for this section -->
 <!-- FIXME: an entry of the FAQ must point here ? -->
@@ -1493,7 +1586,7 @@ numbers of processes, leading to far better performance.
 <para>
 Thanks to (in no particular order) : Arjan van de Ven, Rik van Riel, Juan Quintela, Philippe Elie,
 Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne, Bob Montgomery, Ray Bryant, H.J. Lu,
-Jeff Esper, Will Cohen, Cliff Woolley, Alex Tsariounov, Al Stone,
+Jeff Esper, Will Cohen, Graydon Hoare, Cliff Woolley, Alex Tsariounov, Al Stone,
 Richard Reich (rreich@rdrtech.com), Dave Jones, Charles Filtness; and finally Pulp, for "Intro".
 </para>
 </chapter>
