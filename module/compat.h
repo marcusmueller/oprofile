@@ -46,6 +46,7 @@
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,8) || \
       (!defined(CONFIG_SMP) && LINUX_VERSION_CODE <= KERNEL_VERSION(2,2,20))
 
+#undef smp_call_function
 static int inline smp_call_function (void (*func) (void *info), void *info,
 				     int retry, int wait)
 {
