@@ -337,6 +337,25 @@ if echo "$VERSION" | grep cvs >/dev/null; then
     CXXFLAGS="$CXXFLAGS -Werror"
 fi
  
+
+# fixups for version.h
+if test "$prefix" = "NONE"; then
+	prefix="$ac_default_prefix"
+fi
+if test "$exec_prefix" = "NONE"; then
+	exec_prefix="$prefix"
+fi
+if test "$bindir" = "NONE"; then
+	bindir="$prefix/bin"
+fi
+if test "$datadir" = "NONE"; then
+	datadir="$prefix/share"
+fi
+OP_DATADIR=`eval echo "$datadir/$PACKAGE"`
+OP_BINDIR=`eval echo "$bindir/"`
+AC_SUBST(OP_BINDIR)
+AC_SUBST(OP_DATADIR)
+
 AC_OUTPUT(Makefile \
 	libutil/Makefile \
 	libutil++/Makefile \
@@ -358,9 +377,9 @@ AC_OUTPUT(Makefile \
 	module/Makefile \
 	module/x86/Makefile \
 	module/ia64/Makefile \
-	version_tpl.h)
+	version.h.in)
 
-AX_COPY_IF_CHANGE(version_tpl.h, version.h)
+AX_COPY_IF_CHANGE(version.h.in, version.h)
 
 if test -z "$QT_LIB"; then
 	echo "Warning: a working Qt not found; no GUI will be built"

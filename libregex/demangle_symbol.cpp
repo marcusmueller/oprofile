@@ -45,7 +45,7 @@ string const demangle_symbol(string const & name)
 		static bool init = false;
 		static regular_expression_replace regex;
 		if (init == false) {
-			setup_regex(regex, OP_INSTALL_PATH "/share/oprofile/stl.pat");
+			setup_regex(regex, OP_DATADIR "/stl.pat");
 			init = true;
 		}
 		// we don't protect against exception here, pattern must be

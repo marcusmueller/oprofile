@@ -1,8 +1,6 @@
-#define OP_INSTALL_PATH "@prefix@"
-#define OP_BINDIR "@OP_BINDIR@"
-#define OP_PKGDATADIR "@OP_PKGDATADIR@"
-
 #define VERSION_STRING "@PACKAGE@ @VERSION@"
+#define OP_BINDIR "@OP_BINDIR@"
+#define OP_DATADIR "@OP_DATADIR@"
 
 /* Do not change the version format: it is documented in html doc */
 #define show_version(app_name) do {				\

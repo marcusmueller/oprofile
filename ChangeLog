@@ -1,3 +1,14 @@
+2003-02-23  John Levon  <levon@movementarian.org>
+
+	* configure.in: set up OP_DATADIR and OP_BINDIR
+
+	* gui/oprof_start.cpp:
+	* libregex/demangle_symbol.cpp: use the above
+
+	* version_tpl.h.in: move to ...
+
+	* version.h.in.in: ... here
+
 2003-02-23  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update
@@ -10,7 +21,6 @@
 	* libregex/Makefile.am:
 	* libregex/demangle_symbol.cpp: don't use -DBINDIR, rather include
 	  version.h to get install path
-
 
 2003-02-23  John Levon  <levon@movementarian.org>
 

@@ -66,7 +66,7 @@ oprof_start::oprof_start()
 	vector<string> args;
 	args.push_back("--init");
 
-	if (do_exec_command(OP_INSTALL_PATH "/bin/opcontrol", args))
+	if (do_exec_command(OP_BINDIR "/opcontrol", args))
 		exit(EXIT_FAILURE);
 
 	cpu_type = op_get_cpu_type();
@@ -739,7 +739,7 @@ void oprof_start::on_flush_profiler_data()
 	args.push_back("--dump");
 
 	if (daemon_status().running)
-		do_exec_command(OP_INSTALL_PATH "/bin/opcontrol", args);
+		do_exec_command(OP_BINDIR "/opcontrol", args);
 	else
 		QMessageBox::warning(this, 0, "The profiler is not started.");
 }
@@ -865,7 +865,7 @@ void oprof_start::on_start_profiler()
 	if (config.separate_kernel_samples)
 		args.push_back("--separate=kernel");
 
-	if (do_exec_command(OP_INSTALL_PATH "/bin/opcontrol", args))
+	if (do_exec_command(OP_BINDIR "/opcontrol", args))
 		goto out;
 
 	// now actually start
@@ -873,7 +873,7 @@ void oprof_start::on_start_profiler()
 	args.push_back("--start");
 	if (config.verbose)
 		args.push_back("--verbose");
-	do_exec_command(OP_INSTALL_PATH "/bin/opcontrol", args);
+	do_exec_command(OP_BINDIR "/opcontrol", args);
 
 out:
 	total_nr_interrupts = 0;
@@ -887,7 +887,7 @@ void oprof_start::on_stop_profiler()
 	args.push_back("--shutdown");
 
 	if (daemon_status().running)
-		do_exec_command(OP_INSTALL_PATH "/bin/opcontrol", args);
+		do_exec_command(OP_BINDIR "/opcontrol", args);
 	else
 		QMessageBox::warning(this, 0, "The profiler is already stopped.");
 
