@@ -9,6 +9,7 @@
  * @author Philippe Elie
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,6 +19,18 @@
 #include "op_events.h"
 #include "op_popt.h"
 #include "op_cpufreq.h"
+#include "op_hw_config.h"
+
+static char const ** chosen_events;
+
+struct parsed_event {
+	char * name;
+	int count;
+	int unit_mask;
+	int counter;
+	struct op_event * event;
+} parsed_events[OP_MAX_COUNTERS];
+
 
 static op_cpu cpu_type = CPU_NO_GOOD;
 
@@ -67,14 +80,180 @@ static void help_for_event(struct op_event * event)
 	}
 }
 
+
+static char * next_part(char const ** str)
+{
+	char const * c;
+	char * ret;
+
+	if ((*str)[0] == '\0')
+		return NULL;
+
+	if ((*str)[0] == ':')
+		++(*str);
+
+	c = *str;
+
+	while (*c != '\0' && *c != ':')
+		++c;
+
+	if (c == *str)
+		return NULL;
+
+	ret = strndup(*str, c - *str);
+	*str += c - *str;
+	return ret;
+}
+
+
+static int parse_events(void)
+{
+	int i = 0;
+
+	while (chosen_events[i]) {
+		char const * cp = chosen_events[i];
+		char * part = next_part(&cp);
+
+		if (!part) {
+			fprintf(stderr, "Invalid event %s\n", cp);
+			exit(EXIT_FAILURE);
+		}
+
+		/* initial guess */
+		parsed_events[i].counter = i;
+
+		parsed_events[i].name = part;
+
+		part = next_part(&cp);
+
+		if (!part) {
+			fprintf(stderr, "Invalid event %s\n",
+			        chosen_events[i]);
+			exit(EXIT_FAILURE);
+		}
+
+		parsed_events[i].count = strtoul(part, NULL, 0);
+		free(part);
+
+		part = next_part(&cp);
+
+		if (!part) {
+			fprintf(stderr, "Invalid event %s\n",
+			        chosen_events[i]);
+			exit(EXIT_FAILURE);
+		}
+
+		parsed_events[i].unit_mask = strtoul(part, NULL, 0);
+		free(part);
+
+		/* check kernel:user are present */
+		part = next_part(&cp);
+		if (part) {
+			free(part);
+			part = next_part(&cp);
+		}
+		if (!part) {
+			fprintf(stderr, "Invalid event %s\n",
+			        chosen_events[i]);
+			exit(EXIT_FAILURE);
+		}
+	
+		++i;
+	}
+
+	return i;
+}
+
+
+static void check_event(struct parsed_event * pev)
+{
+	struct op_event * event = pev->event;
+	int ret;
+
+	if (!event) {
+		fprintf(stderr, "No event named %s is available.\n",
+		        pev->name);
+		exit(EXIT_FAILURE);
+	}
+
+	ret = op_check_events(0, event->val, pev->unit_mask, cpu_type);
+
+	if (ret & OP_INVALID_UM) {
+		fprintf(stderr, "Invalid unit mask 0x%x for event %s\n",
+		        pev->unit_mask, pev->name);
+		exit(EXIT_FAILURE);
+	}
+
+	if (pev->count < event->min_count) {
+		fprintf(stderr, "Count %d for event %s is below the "
+		        "minimum %d\n", pev->count, pev->name,
+		        event->min_count);
+		exit(EXIT_FAILURE);
+	}
+}
+
+
+static void allocate_counter(struct parsed_event * pev, int * alloced)
+{
+	int c = 0;
+
+	for (; c < op_get_nr_counters(cpu_type); ++c) {
+		int mask = 1 << c;
+		if (!(*alloced & mask) && (pev->event->counter_mask & mask)) {
+			pev->counter = c;
+			*alloced |= mask;
+			return;
+		}
+	}
+
+	fprintf(stderr, "Couldn't allocate a hardware counter for "
+	        "event %s: check op_help output\n", pev->name);
+	exit(EXIT_FAILURE);
+}
+
+
+static void resolve_events(struct list_head * events)
+{
+	int count = parse_events();
+	int i;
+	int alloced = 0;
+
+	for (i = 0; i < count; ++i) {
+		struct list_head * pos;
+		struct parsed_event * pev = &parsed_events[i];
+
+		list_for_each(pos, events) {
+			struct op_event * ev =
+				list_entry(pos, struct op_event, event_next);
+
+			if (strcmp(ev->name, pev->name) == 0) {
+				pev->event = ev;
+			}
+
+		}
+
+		check_event(pev);
+
+		allocate_counter(pev, &alloced);
+	}
+
+	for (i = 0; i < count; ++i) {
+		printf("%d ", parsed_events[i].counter);
+	}
+	printf("\n");
+}
+
+
 static int showvers;
 static int get_cpu_type;
+static int check_events;
 static int get_cpu_frequency;
-static char const * event_name;
 
 static struct poptOption options[] = {
 	{ "cpu-type", 'c', POPT_ARG_INT, &cpu_type, 0,
 	  "use the given numerical CPU type", "cpu type", },
+	{ "check-events", 'e', POPT_ARG_NONE, &check_events, 0,
+	  "check the given event descriptions for validity", NULL, },
 	{ "get-cpu-type", 'r', POPT_ARG_NONE, &get_cpu_type, 0,
 	  "show the auto-detected CPU type", NULL, },
 	{ "get-cpu-frequency", '\0', POPT_ARG_NONE|POPT_ARGFLAG_DOC_HIDDEN,
@@ -101,11 +280,12 @@ static void get_options(int argc, char const * argv[])
 		show_version(argv[0]);
 	}
 
-	/* non-option, must be a valid event name */
-	event_name = poptGetArg(optcon);
+	/* non-option, must be a valid event name or event specs*/
+	chosen_events = poptGetArgs(optcon);
 
-	poptFreeContext(optcon);
+	// don't free the context, we need chosen_events
 }
+
 
 int main(int argc, char const *argv[])
 {
@@ -120,8 +300,7 @@ int main(int argc, char const *argv[])
 		exit(EXIT_SUCCESS);
 	}
 
-	if (cpu_type == CPU_NO_GOOD)
-		cpu_type = op_get_cpu_type();
+	cpu_type = op_get_cpu_type();
 
 	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
 		fprintf(stderr, "cpu_type '%d' is not valid\n", cpu_type);
@@ -137,23 +316,40 @@ int main(int argc, char const *argv[])
 
 	if (cpu_type == CPU_TIMER_INT) {
 		printf("using timer interrupt\n");
-		exit(event_name ? EXIT_FAILURE : EXIT_SUCCESS);
+		exit(chosen_events[0] ? EXIT_FAILURE : EXIT_SUCCESS);
 	}
 
 	events = op_events(cpu_type);
 
-	if (event_name) {
+	if (check_events) {
+		if (!chosen_events) {
+			fprintf(stderr, "No events given.\n");
+			exit(EXIT_FAILURE);
+		}
+		resolve_events(events);
+		exit(EXIT_SUCCESS);
+	}
+
+	/* without --check-events, the only argument must be an event name */
+	if (chosen_events && chosen_events[0]) {
+		if (chosen_events[1]) {
+			fprintf(stderr, "Too many arguments.\n");
+			exit(EXIT_FAILURE);
+		}
+
 		list_for_each(pos, events) {
 			struct op_event * event = list_entry(pos, struct op_event, event_next);
 
-			if (strcmp(event->name, event_name) == 0) {
+			if (strcmp(event->name, chosen_events[0]) == 0) {
 				printf("%d\n", event->val);
 				exit(EXIT_SUCCESS);
 			}
 		}
-		fprintf(stderr, "No such event \"%s\"\n", event_name);
+		fprintf(stderr, "No such event \"%s\"\n", chosen_events[0]);
 		exit(EXIT_FAILURE);
 	}
+
+	/* default: list all events */
 
 	printf("oprofile: available events for CPU type \"%s\"\n\n", pretty);
 	switch (cpu_type) {

@@ -105,7 +105,7 @@ char const * op_get_cpu_name(op_cpu cpu_type)
 
 int op_get_nr_counters(op_cpu cpu_type)
 {
-	if (cpu_type < 0 || cpu_type > MAX_CPU_TYPE)
+	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE)
 		return 0;
 
 	return cpu_descrs[cpu_type].nr_counters;

@@ -7,9 +7,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 -----------
 
  o Timer/rtc is buggered - event file reading in opd_sample_files.c
- o If the user sets --ctr1 on the first setup, he still has to turn
-   off --ctr0 default settings. Bad UI
-  (opcontrol should sort out the counter numbers for the user)
+ o update opcontrol --events stuff: docs, rtc, gui
  o opannotate unhandled option (probably not exhaustive) 
    --base-dir - possibly remove this at least temporarily
  o I'm seeing dazed and confuseds
@@ -17,6 +15,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
+ o opcontrol should take "--blah foo" too
  o side-by-side opreport output (--compare - needs UI spec)
  o thread profiling
  o per-cpu profiling

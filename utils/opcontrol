@@ -76,22 +76,22 @@ do_help() {
 	--start			start data collection
 	--dump			flush the collected profiling data
 	--stop			stop data collection
-	--shutdown		stop data collection and remove daemon
+	--shutdown		stop data collection and kill daemon
 	--reset			clears out data from current session
 	--save=session_name	save data from current session to session_name
 	--deinit		unload the oprofile module and oprofilefs
 
 	--setup options
 	  --buffer-size=num            number of samples in kernel buffer
-	  --ctrN-event=[name|none]     symbolic event name for ctr N, or none to disable
-	  --ctrN-count=val             number of events between samples for ctr N
-	  --ctrN-unit-mask=val         unit mask for ctr N (e.g. --ctr0-unit-mask=0xf)
-	  --ctrN-kernel=[0|1]          whether to count kernel events for ctr N
-	  --ctrN-user=[0|1]            whether to count user events for ctr N
-	Allowed counters for N are [$OP_COUNTERS]
+	  --event=[eventspec]          choose an event and values or "default". Of the form
+	                               name:count:unitmask:kernel:user
+                name:                  symbolic event name, e.g. CPU_CLK_UNHALTED or RTC
+	        count:                 reset counter value e.g. 100000
+	        unitmask:              hardware unit mask e.g. 0x0f
+	        kernel:                whether to profile kernel: 0 or 1
+	        user:                  whether to profile userspace: 0 or 1
 	  --pid-filter=[pid|none]      Only profile process pid  (2.4 version)
 	  --pgrp-filter=[pgrp|none]    Only profile process tty group pgrp (2.4 version)
-	  --rtc-value=val	       Set sample rate to val per second (2.4 version)
 	  --kernel-only=[0|1]	       profile only the kernel (2.4 version)
 	  --note-table-size	       number of notes in kernel notes buffer (2.4 version)
 	  --separate=[none,library,kernel,all]         separate samples as given
@@ -210,51 +210,44 @@ do_init() {
 
 	CPUTYPE=`cat $MOUNT/cpu_type`
 	OP_COUNTERS=`ls $MOUNT/ | grep "^[0-9]\+\$" | tr "\n" " "`
+	NR_CHOSEN=0
 
 	CPU_SPEED=`$OP_HELP --get-cpu-frequency`
 	vecho "cpu speed (estimation) : $CPU_SPEED"
 
 	IS_TIMER=0
 	DEFAULT_EVENT=
-	DEFAULT_UNIT_MASK=
 	INT_CPU_SPEED=`echo $CPU_SPEED | awk -F. '{print $1}'`
 	# ~ 2000 ints/second when CPU is busy (hopefully)
 	DEFAULT_COUNT=`expr $INT_CPU_SPEED \* 500`
  
 	case "$CPUTYPE" in
 		0|1|2|i386/ppro|i386/pii|i386/piii)
-			DEFAULT_EVENT=CPU_CLK_UNHALTED
+			DEFAULT_EVENT=CPU_CLK_UNHALTED:$DEFAULT_COUNT:0:1:1
 			;;
-		timer|4|5)
+		timer)
 			IS_TIMER=1
 			;;
+		4|5)
+			DEFAULT_EVENT=RTC:1024:0:1:1
+			;;
 		3|10|i386/athlon|x86-64*)
-			DEFAULT_EVENT=CPU_CLK_UNHALTED
+			DEFAULT_EVENT=CPU_CLK_UNHALTED:$DEFAULT_COUNT:0:1:1
 			;;
 		6|11|i386/p4*)
-			DEFAULT_EVENT=GLOBAL_POWER_EVENTS
-			DEFAULT_UNIT_MASK=1
+			DEFAULT_EVENT=CPU_CLK_UNHALTED:$DEFAULT_COUNT:0x1:1:1
 			;;
 		7|8|9|ia64*)
-			DEFAULT_EVENT=CPU_CYCLES
+			DEFAULT_EVENT=CPU_CYCLES:$DEFAULT_COUNT:0:1:1
 			;;
 		12|13|14|15|16|alpha/*)
-			DEFAULT_EVENT=CYCLES
+			DEFAULT_EVENT=CYCLES:$DEFAULT_COUNT:0:1:1
 			;;
 		*)
 			echo "Unknown CPU type $CPUTYPE, please fix me !" >&2
 			exit 1
 			;;
 	esac
-
-	if test "$IS_TIMER" -ne 1; then
-		# we can now default define individual counter setup variable.
-		for f in $OP_COUNTERS ; do
-			CTR_USER[$f]=1
-			CTR_KERNEL[$f]=1
-			CTR_UM[$f]=0
-		done
-	fi
 }
 
 
@@ -278,22 +271,14 @@ do_save_setup() {
 	chmod 644 $SETUP_FILE
 	>$SETUP_FILE
 
-	if test "$IS_TIMER" -ne 1; then
-		for f in $OP_COUNTERS ; do
-			echo "CTR_EVENT[${f}]=${CTR_EVENT[$f]}"  >> $SETUP_FILE
-			echo "CTR_COUNT[${f}]=${CTR_COUNT[$f]}" >> $SETUP_FILE
-			echo "CTR_KERNEL[${f}]=${CTR_KERNEL[$f]}" >> $SETUP_FILE
-			echo "CTR_USER[${f}]=${CTR_USER[$f]}" >> $SETUP_FILE
-			echo "CTR_UM[${f}]=${CTR_UM[$f]}" >> $SETUP_FILE
-			echo "CTR_EVENT_VAL[${f}]=${CTR_EVENT_VAL[$f]}"  >> $SETUP_FILE
+	if test "$NR_CHOSEN" != 0; then
+		for f in `seq 0 $((NR_CHOSEN - 1))`; do
+			echo "CHOSEN_EVENTS[${f}]=${CHOSEN_EVENTS[$f]}" >>$SETUP_FILE
 		done
-	else
-		if test "$KERNEL_SUPPORT" != "yes"; then
-			echo "RTC_VALUE=$RTC_VALUE" >> $SETUP_FILE
-		fi
 	fi
  
-	echo "one_enabled=$one_enabled" >> $SETUP_FILE
+	echo "NR_CHOSEN=$NR_CHOSEN" >>$SETUP_FILE
+
 	echo "SEPARATE_LIB_SAMPLES=$SEPARATE_LIB_SAMPLES" >> $SETUP_FILE
 	echo "SEPARATE_KERNEL_SAMPLES=$SEPARATE_KERNEL_SAMPLES" >> $SETUP_FILE
 	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
@@ -319,21 +304,6 @@ do_load_setup() {
 		source $SETUP_FILE
 	fi
 
-	if test "$one_enabled" != "1"; then
-		if test -n "$DEFAULT_EVENT"; then
-			one_enabled=1
-			CTR_EVENT[0]=$DEFAULT_EVENT
-			CTR_EVENT_VAL[0]=`op_help $DEFAULT_EVENT`
-		fi
-		if test -n "$DEFAULT_UNIT_MASK"; then
-			CTR_UM[0]=$DEFAULT_UNIT_MASK
-		fi
-		if test -n "$DEFAULT_COUNT"; then
-			CTR_COUNT[0]=$DEFAULT_COUNT
-		fi
-		do_save_setup
-	fi
-
 	vecho "Parameters used:"
 	vecho "CPUTYPE $CPUTYPE"
 	if [ $BUF_SIZE != 0 ]; then
@@ -341,17 +311,6 @@ do_load_setup() {
 	else
 		vecho "BUF_SIZE default value"
 	fi;
-	if test "$IS_TIMER" -ne 1; then
-		for f in $OP_COUNTERS ; do
-			vecho "CTR_EVENT[${f}] ${CTR_EVENT[$f]}"
-			vecho "CTR_COUNT[${f}] ${CTR_COUNT[$f]}"
-			vecho "CTR_UM[${f}] ${CTR_UM[$f]}"
-			vecho "CTR_USER[${f}] ${CTR_USER[$f]}"
-			vecho "CTR_KERNEL[${f}] ${CTR_KERNEL[$f]}"
-		done
-	else
-		vecho "RTC_VALUE $RTC_VALUE"
-	fi
 
 	vecho "KERNEL_ONLY $KERNEL_ONLY"
 	vecho "SEPARATE_LIB_SAMPLES $SEPARATE_LIB_SAMPLES"
@@ -361,16 +320,11 @@ do_load_setup() {
 
 
 check_valid_args() {
-	if [ "$one_enabled" = "0" ]; then
-		echo "You must enable at least one event with --setup" >&2
-		exit 1
-	fi
-
 	if [ -z "$VMLINUX" ]; then
 		echo "No vmlinux file specified. You must specify the correct vmlinux file, e.g." >&2
-		echo "opcontrol --setup --vmlinux=/path/to/vmlinux" >&2
+		echo "opcontrol --vmlinux=/path/to/vmlinux" >&2
 		echo "If you do not have a vmlinux file, use " >&2
-		echo "opcontrol --setup --no-vmlinux" >&2
+		echo "opcontrol --no-vmlinux" >&2
 		echo "Enter opcontrol --help for full options" >&2
 		exit 1
 	fi
@@ -457,28 +411,32 @@ validate_separate_args() {
 }
 
 
-# early check for --version, --help
-check_version_help() {
+# check the counters make sense, and resolve the hardware allocation
+verify_counters() {
 
-	OP_HELP=`dirname $0`/op_help
-	if test ! -f "$OP_HELP"; then
-		OP_HELP=op_help
+	if test "$IS_TIMER" = 1; then
+		if test "$NR_CHOSEN" != 0; then
+	 		echo "You cannot specify any performance counter events" >&2
+			echo "because OProfile is in timer mode." >&2
+			exit 1
+		fi
+		return
 	fi
 
-	for i in $@; do
-		case "$i" in
-			--help)
-				do_help
-				exit 0
-				;;
+	OP_HELP_ARGS=
 
-			--version)
-				$OP_HELP --version | cut -d' ' -f2-
-				exit 0
-				;;
- 
-		esac
-	done
+	if test "$NR_CHOSEN" != 0; then
+		for f in `seq 0 $((NR_CHOSEN - 1))`; do
+			if test "${CHOSEN_EVENTS[$f]}" != ""; then
+				OP_HELP_ARGS="$OP_HELP_ARGS ${CHOSEN_EVENTS[$f]}"
+			fi
+		done
+
+		HW_CTRS=`$OP_HELP --check-events $OP_HELP_ARGS`
+		if test "$?" != 0; then
+			exit 1
+		fi
+	fi
 }
 
 
@@ -488,6 +446,7 @@ do_options() {
 	EXCLUSIVE_ARGC=0
 	SETUP=no
 	NEED_SETUP=no
+	SEEN_EVENT=0
 
 	# load any default settings
 	do_load_setup
@@ -496,20 +455,6 @@ do_options() {
 	do
 		arg=`echo $1 | awk -F= '{print $1}'`
 		val=`echo $1 | awk -F= '{print $2}'`
- 
-		if test "$IS_TIMER" -eq 1; then
-			case "$arg" in
-				--ctr*-unit-mask|--ctr*-event|--ctr*-count|--ctr*-user|--ctr*-kernel)
-					echo "Cannot use option $arg in timer mode."
-					exit 1;
-					;;
-			esac
-		fi
-
-		if test "$CPUTYPE" != "5" -a "$arg" = "--rtc-value"; then
-			echo "Cannot use --rtc-value; RTC driver is not being used" >& 2
-			exit 1
-		fi
  
 		case "$arg" in
 
@@ -600,49 +545,17 @@ do_options() {
 				BUF_SIZE=$val
 				DO_SETUP=yes
 				;;
-			--ctr*-unit-mask)
-				CTR_UM[`extract_int $arg`]=$val
-				if (($? != 0)); then exit 1; fi
-				DO_SETUP=yes
-				;;
-			--ctr*-event)
-				if test "$val" = "none"; then
-					CTR_EVENT[`extract_int $arg`]=
-					if (($? != 0)); then exit 1; fi
-					CTR_COUNT[`extract_int $arg`]=
-					CTR_USER[`extract_int $arg`]=1
-					CTR_KERNEL[`extract_int $arg`]=1
-					CTR_UNIT_MASK[`extract_int $arg`]=0
-					CTR_EVENT_VAL[`extract_int $arg`]=
-					# one_enabled is fixed up below
-					DO_SETUP=yes
-				else
-					CTR_EVENT[`extract_int $arg`]=$val
-					if (($? != 0)); then exit 1; fi
-					DO_SETUP=yes
+			--event)
+				# reset any read-in defaults from daemonrc
+				if test "$SEEN_EVENT" = "0"; then
+					NR_CHOSEN=0
+					SEEN_EVENT=1
 				fi
-				;;
-			--ctr*-count)
-				CTR_COUNT[`extract_int $arg`]=$val
-				if (($? != 0)); then exit 1; fi
-				DO_SETUP=yes
-				;;
-			--ctr*-user)
-				CTR_USER[`extract_int $arg`]=$val
-				if (($? != 0)); then exit 1; fi
-				DO_SETUP=yes
-				;;
-			--ctr*-kernel)
-				CTR_KERNEL[`extract_int $arg`]=$val
-				if (($? != 0)); then exit 1; fi
-				DO_SETUP=yes
-				;;
-			--rtc-value)
-				if test "$KERNEL_SUPPORT" = "yes"; then
-					echo "$arg unsupported. " >& 2
-					exit 1
+				if test "$val" = "default"; then
+					val=$DEFAULT_EVENT	
 				fi
-				RTC_VALUE=$val
+				CHOSEN_EVENTS[$NR_CHOSEN]=$val
+				NR_CHOSEN=`expr $NR_CHOSEN + 1`
 				DO_SETUP=yes
 				;;
 			--separate)
@@ -727,32 +640,9 @@ do_options() {
 		shift
 	done
 
-	if test "$IS_TIMER" -ne 1; then
-		one_enabled=0
-		for f in $OP_COUNTERS ; do
-			if [[ ${#CTR_EVENT[$f]} != 0 ]]; then
-				CTR_EVENT_VAL[$f]=`op_help ${CTR_EVENT[$f]}`
-				if [ "$?" != 0 ] || [ -z "${CTR_EVENT_VAL[$f]}" -a ! -z "${CTR_EVENT[$f]}" ]; then
-					echo "Unknown event \"${CTR_EVENT[$f]}\"" >&2
-					exit 1
-				fi
-				if [ -z "${CTR_COUNT[$f]}" ]; then
-					echo "Event but no count specified for counter $f" >&2
-					exit 1
-				fi
-				one_enabled=1
-			else 
-				if [ ! -z "${CTR_COUNT[$f]}" ]; then
-					echo "Count but no event specified for counter $f" >&2
-					exit 1
-				fi
-			fi
-		done
-	else
-		one_enabled=1
-	fi
+	verify_counters
 
-	#error checking to make sure options make sense
+	# error checking to make sure options make sense
 	if test "$EXCLUSIVE_ARGC" -gt 1; then
 		echo "Option \"$EXCLUSIVE_ARGV\" not valid with other options." >&2
 		exit 1
@@ -773,7 +663,6 @@ do_options() {
 			exit 1
 		fi
 	fi
- 
 }
 
 
@@ -897,27 +786,49 @@ do_sysctl_setup_24() {
 	fi
 	$SYSCTL -w dev.oprofile.kernel_only=$KERNEL_ONLY
 
-	if test "$IS_TIMER" -ne 1; then
-		# Necessary in this case :
-		# op_start ctr0-on ctr1-on then op_start ctr0-on
-		for f in $OP_COUNTERS ; do
-			$SYSCTL -w dev.oprofile.$f.enabled=0 >/dev/null
-			$SYSCTL -w dev.oprofile.$f.event=0 >/dev/null
-		done
-
-		for f in $OP_COUNTERS ; do
-			if [ "${CTR_EVENT[$f]}" != "" ]; then
-				$SYSCTL -w dev.oprofile.$f.enabled=1
-				$SYSCTL -w dev.oprofile.$f.count=${CTR_COUNT[$f]}
-				$SYSCTL -w dev.oprofile.$f.kernel=${CTR_KERNEL[$f]}
-				$SYSCTL -w dev.oprofile.$f.user=${CTR_USER[$f]} 
-				$SYSCTL -w dev.oprofile.$f.unit_mask=${CTR_UM[$f]} 
-				$SYSCTL -w dev.oprofile.$f.event=${CTR_EVENT_VAL[$f]}
-			fi
-		done
-	else
-		$SYSCTL -w dev.oprofile.rtc_value=$RTC_VALUE
+	if test "$IS_TIMER" = 1; then
+		return
 	fi
+
+	# use the default setup if none set
+	if test "$NR_CHOSEN" = 0; then
+		CHOSEN_EVENTS[0]=$DEFAULT_EVENT
+		NR_CHOSEN=1
+		HW_CTRS=`$OP_HELP --check-events $DEFAULT_EVENT`
+		echo "Using default event: ${CHOSEN_EVENTS[0]}"
+	fi
+
+	# Necessary in this case :
+	# opcontrol ctr0-on ctr1-on then opcontrol ctr0-on
+	for f in $OP_COUNTERS ; do
+		$SYSCTL -w dev.oprofile.$f.enabled=0
+		$SYSCTL -w dev.oprofile.$f.event=0
+		$SYSCTL -w dev.oprofile.$f.count=0
+	done
+
+	verify_counters
+
+	for f in `seq 0 $((NR_CHOSEN - 1))`; do
+		if test "${CHOSEN_EVENTS[$f]}" != ""; then
+			EVENT=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $1}'`
+			EVENT_VAL=`op_help $EVENT`
+			COUNT=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $2}'`
+			UNIT_MASK=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $3}'`
+			KERNEL=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $4}'`
+			USER=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $5}'`
+			CTR=`echo $HW_CTRS | awk "{print \\$$((f + 1))}"`
+			if test "$EVENT" = "RTC"; then
+				$SYSCTL -w dev.oprofile.rtc_value=$COUNT
+			else
+				$SYSCTL -w dev.oprofile.$CTR.enabled=1
+				$SYSCTL -w dev.oprofile.$CTR.event=$EVENT_VAL
+				$SYSCTL -w dev.oprofile.$CTR.count=$COUNT
+				$SYSCTL -w dev.oprofile.$CTR.kernel=$KERNEL
+				$SYSCTL -w dev.oprofile.$CTR.user=$USER
+				$SYSCTL -w dev.oprofile.$CTR.unit_mask=$UNIT_MASK
+			fi
+		fi
+	done
 }
 
 
@@ -927,26 +838,52 @@ do_sysctl_setup_25() {
 		echo $BUF_SIZE >$MOUNT/buffer_size
 	fi
 
-	if test "$IS_TIMER" -ne 1; then
-		# Necessary in this case :
-		# opcontrol ctr0-on ctr1-on then opcontrol ctr0-on
-		for f in $OP_COUNTERS ; do
-			echo 0 >$MOUNT/$f/enabled
-			echo 0 >$MOUNT/$f/event
-			echo 0 >$MOUNT/$f/count
-		done
-
-		for f in $OP_COUNTERS ; do
-			if test "${CTR_EVENT[$f]}" != ""; then
-				echo 1 >$MOUNT/$f/enabled
-				echo ${CTR_COUNT[$f]} >$MOUNT/$f/count
-				echo ${CTR_KERNEL[$f]} >$MOUNT/$f/kernel
-				echo ${CTR_USER[$f]} >$MOUNT/$f/user
-				echo ${CTR_UM[$f]} >$MOUNT/$f/unit_mask
-				echo ${CTR_EVENT_VAL[$f]} >$MOUNT/$f/event
-			fi
-		done
+	if test "$IS_TIMER" = 1; then
+		return
 	fi
+
+	# use the default setup if none set
+	if test "$NR_CHOSEN" = 0; then
+		CHOSEN_EVENTS[0]=$DEFAULT_EVENT
+		NR_CHOSEN=1
+		HW_CTRS=`$OP_HELP --check-events $DEFAULT_EVENT`
+		echo "Using default event: ${CHOSEN_EVENTS[0]}"
+	fi
+
+	# Necessary in this case :
+	# opcontrol ctr0-on ctr1-on then opcontrol ctr0-on
+	for f in $OP_COUNTERS ; do
+		echo 0 >$MOUNT/$f/enabled
+		echo 0 >$MOUNT/$f/event
+		echo 0 >$MOUNT/$f/count
+	done
+
+	verify_counters
+	echo "hw is $HW_CTRS"
+
+	for f in `seq 0 $((NR_CHOSEN - 1))`; do
+		if test "${CHOSEN_EVENTS[$f]}" != ""; then
+			echo "f is $f"
+			EVENT=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $1}'`
+			EVENT_VAL=`op_help $EVENT`
+			COUNT=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $2}'`
+			UNIT_MASK=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $3}'`
+			KERNEL=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $4}'`
+			USER=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $5}'`
+			CTR=`echo $HW_CTRS | awk "{print \\$$((f + 1))}"`
+			echo "CTR is $CTR"
+			if test "$EVENT" = "RTC"; then
+				echo $COUNT >$MOUNT/rtc_value
+			else
+				echo 1 >$MOUNT/$CTR/enabled
+				echo $EVENT_VAL >$MOUNT/$CTR/event
+				echo $COUNT >$MOUNT/$CTR/count
+				echo $KERNEL >$MOUNT/$CTR/kernel
+				echo $USER >$MOUNT/$CTR/user
+				echo $UNIT_MASK >$MOUNT/$CTR/unit_mask
+			fi
+		fi
+	done
 }
 
 
@@ -1164,6 +1101,31 @@ do_operations() {
 	fi
 }
  
+# early check for --version, --help
+check_version_help() {
+
+	OP_HELP=`dirname $0`/op_help
+	if test ! -f "$OP_HELP"; then
+		OP_HELP=op_help
+	fi
+
+	for i in $@; do
+		case "$i" in
+			--help)
+				do_help
+				exit 0
+				;;
+
+			--version)
+				$OP_HELP --version | cut -d' ' -f2-
+				exit 0
+				;;
+ 
+		esac
+	done
+}
+
+
 # main
 
 check_version_help $@

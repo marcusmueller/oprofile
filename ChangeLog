@@ -1,3 +1,12 @@
+2003-06-15  John Levon  <levon@movementarian.org>
+
+	* libop/op_cpu_type.c: fix nr_counters cpu type check
+
+	* utils/op_help: implement --check_events, event validation
+	and counter allocation
+
+	* utils/opcontrol: use the above, implement --default=event
+
 2003-06-14  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_image.c: fix a stupid error in my previous TGID patch
