@@ -1,3 +1,9 @@
+2002-01-25  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO:
+	* dae/opd_proc.c: search maps in reverse order so we prefer
+	  newer mappings.
+ 
 2002-01-25  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/op_merge.cpp: minor fix + comment

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.98 2002/01/24 17:35:48 movement Exp $ */
+/* $Id: opd_proc.c,v 1.99 2002/01/25 13:29:00 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1037,12 +1037,15 @@ void opd_put_sample(const struct op_sample *sample)
 
 	proc->accessed = 1;
 
+	if (!proc->nr_maps)
+		goto out;
+ 
 	/* proc->last_map is always safe as mappings are never deleted except by
-	 * opd_kill_maps, which resets last_map. But we need to check we have
-	 * at least one map
+	 * things which reset last_map. If last map is the primary image, we use it
+	 * anyway (last_map == 0).
 	 */
 	opd_stats[OPD_MAP_ARRAY_ACCESS]++;
-	if (proc->nr_maps && opd_is_in_map(&proc->maps[proc->last_map], sample->eip)) {
+	if (opd_is_in_map(&proc->maps[proc->last_map], sample->eip)) {
 		i = proc->last_map;
 		if (proc->maps[i].image != NULL) {
 			verb_show_sample(opd_map_offset(&proc->maps[i], sample->eip), 
@@ -1055,8 +1058,10 @@ void opd_put_sample(const struct op_sample *sample)
 		return;
 	}
 
-	/* look for which map and find offset */
-	for (i=0; i < proc->nr_maps; i++) {
+	/* look for which map and find offset. We search backwards in order to prefer
+	 * more recent mappings (which means we don't need to intercept munmap)
+	 */
+	for (i=proc->nr_maps-1; i < proc->nr_maps; i--) {
 		if (opd_is_in_map(&proc->maps[i], sample->eip)) {
 			u32 offset = opd_map_offset(&proc->maps[i], sample->eip);
 			if (proc->maps[i].image != NULL) {
@@ -1070,6 +1075,7 @@ void opd_put_sample(const struct op_sample *sample)
 		opd_stats[OPD_MAP_ARRAY_DEPTH]++;
 	}
 
+out:
 	/* couldn't locate it */
 	verbprintf("Couldn't find map for pid %.6d, EIP 0x%.8x.\n", sample->pid, sample->eip);
 	opd_stats[OPD_LOST_MAP_PROCESS]++;
@@ -1086,7 +1092,6 @@ void opd_put_sample(const struct op_sample *sample)
  *
  * Add the mapping specified to the process @proc.
  */
-/* FIXME: what if we are remapping over an old mapping - we want to find this one first ! */ 
 static void opd_put_mapping(struct opd_proc *proc, struct opd_image * image, u32 start, u32 offset, u32 end)
 {
 	verbprintf("Placing mapping for process %d: 0x%.8x-0x%.8x, off 0x%.8x, \"%s\" at maps pos %d\n",
@@ -1101,6 +1106,9 @@ static void opd_put_mapping(struct opd_proc *proc, struct opd_image * image, u32
 	
 	if (++proc->nr_maps == proc->max_nr_maps)
 		opd_grow_maps(proc);
+
+	/* we reset last map here to force searching backwards */
+	proc->last_map = 0;
 }
 
 /**

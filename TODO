@@ -1,9 +1,6 @@
 0.0.9 task list
 ---------------
 
- o ./dae/opd_proc.c:1094:/* FIXME: what if we are remapping over an old mapping - we want to find this one first ! */ 
-	- I suppose we need to trace munmap too. And the mappings must become a linked list.
- 
  o stress test
 
  o user request: op_time that shows /all/ available symbols (with correct %age).
