@@ -259,6 +259,9 @@ op_bfd_symbol::op_bfd_symbol(asymbol const * a)
 	// we name the symbol after the section.
 	if (a->name && a->name[0] != '\0') {
 		symb_name = a->name;
+		symb_weak = a->flags & BSF_WEAK;
+		symb_hidden = (a->flags & BSF_LOCAL)
+ 			&& !(a->flags & BSF_GLOBAL);
 	} else {
 		symb_name = string("??") + a->section->name;
 	}
@@ -434,18 +437,26 @@ bool interesting_symbol(asymbol * sym)
 }
 
 /**
- * return true if the symbol is boring, boring symbol are eliminated
- * when multiple symbol exist at the same vma
+ * return true if the first symbol is less interesting than the second symbol
+ * boring symbol are eliminated when multiple symbol exist at the same vma
  */
-bool boring_symbol(string const & name)
+bool boring_symbol(op_bfd_symbol const & first, op_bfd_symbol const & second)
 {
 	// FIXME: check if we can't do a better job, this heuristic fix all
 	// case I'm aware
-	if (name == "Letext")
+	if (first.name() == "Letext")
 		return true;
 
-	if (name.substr(0, 2) == "??")
+	if (first.name().substr(0, 2) == "??")
 		return true;
+
+	// checking to see if first symbol for the vma
+	// is less interesting than second symbol
+	if ((first.hidden() && !second.hidden())
+	    || (first.name()[0] == '_' && second.name()[0] != '_')
+	    || (first.name()[0] != '_' && second.name()[0] != '_'
+	    && (first.weak() && !second.weak())))
+	return true;
 
 	return false;
 }
@@ -527,7 +538,7 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 		symbols_found_t::iterator temp = it;
 		++temp;
 		if (temp != symbols.end() && (it->vma() == temp->vma())) {
-			if (boring_symbol(it->name())) {
+			if (boring_symbol(*it, *temp)) {
 				it = symbols.erase(it);
 			} else {
 				symbols.erase(temp);

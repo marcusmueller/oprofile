@@ -50,6 +50,8 @@ public:
 	asymbol const * symbol() const { return bfd_symbol; }
 	size_t size() const { return symb_size; }
 	void size(size_t s) { symb_size = s; }
+	bool hidden() const { return symb_hidden; }
+	bool weak() const { return symb_weak; }
 
 	/// compare two symbols by their filepos()
 	bool operator<(op_bfd_symbol const & lhs) const;
@@ -69,6 +71,10 @@ private:
 	size_t symb_size;
 	/// the name of the symbol
 	std::string symb_name;
+	/// normally not externally visible symbol
+	bool symb_hidden;
+	/// whether other symbols can override it
+	bool symb_weak;
 };
 
 /**

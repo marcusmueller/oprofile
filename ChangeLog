@@ -1,3 +1,8 @@
+2004-09-21  Will Cohen  <wcohen@redhat.com>
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: Add logic to use the preferred symbol name.
+
 2004-09-17  John Levon  <levon@movementarian.org>
 
 	* utils/op_help.c: don't deref a NULL pointer
