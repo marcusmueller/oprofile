@@ -1,3 +1,7 @@
+2003-02-06  Will cohen  <wcohen@redhat.com>
+
+	* doc/oprofile.1.in: Update man page information.
+
 2003-02-03  John Levon  <levon@movementarian.org>
 
 	* configure.in: 0.6cvs
