@@ -1,5 +1,11 @@
 2003-03-03  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml:
+	* doc/oprofile.1.in:
+	* utils/opcontrol: add --separate=none, --pid/pgrp-filter=non
+
+2003-03-03  John Levon  <levon@movementarian.org>
+
 	* configure.in:
 	* doc/Makefile.am:
 	* doc/oprofile.xml:
