@@ -34,8 +34,6 @@ oprof_start::oprof_start( QWidget* parent,  const char* name, bool modal, WFlags
 	validate_event_count(new QIntValidator(event_count_edit)),
 	validate_pid_filter(new QIntValidator(pid_filter_edit)),
 	validate_pgrp_filter(new QIntValidator(pgrp_filter_edit)),
-	scroll_view_events(0),
-	event_selected(0),
 	last_mouse_motion_cb_index((uint)-1),
 	cpu_type(op_get_cpu_type()),
 	op_nr_counters(2)
@@ -61,5 +59,3 @@ oprof_start::~oprof_start()
 {
     // no need to delete child widgets, Qt does it all for us
 }
-
-

@@ -23,8 +23,9 @@
 #include <iostream>
 #include <fstream>
 
+#include <qcombobox.h> 
+#include <qlistbox.h>
 #include <qfiledialog.h>
-#include <qscrollview.h>
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
 #include <qobjectlist.h>
@@ -87,11 +88,6 @@ int do_exec_command(const std::string& cmd)
 	return ret;
 }
 
-// There is a pitfall here: Qt open dialog box does not show device file :(
-// Actually the device filename selection can not use this dialog box to get
-// the devices filename. This also resolve sym link to the name of the sym
-// linked file. This is a little what confusing for user but I see no issue
-// about that.
 QString do_open_file_or_dir(QString base_dir, bool dir_only)
 {
 	QString result;
@@ -106,39 +102,6 @@ QString do_open_file_or_dir(QString base_dir, bool dir_only)
 
 	return result;
 }
-
-#if 0 
-void display_qt_hierarchy(QObject* root, int level = 0)
-{
-	for (int i = 0 ; i < level * 2 ; ++i) {
-		fputc(' ', stderr);
-	}
-
-	fprintf(stderr, "%p %s \"%s\"", 
-		root, root->className(), root->name());
-
-	if (root->isWidgetType()) {
-		QWidget* widget = (QWidget*)root;
-
-		const QRect& rect = widget->geometry();
-
-		fprintf(stderr, " (%d, %d, %d, %d)", 
-			rect.x(), rect.y(), rect.width(), rect.height());
-	}
-
-	fprintf(stderr, "\n");
-
-	QObjectList* l = const_cast<QObjectList*>(root->children());
-	if (l) {
-		for (QObject* cur = l->first() ; cur != 0 ; cur = l->next()) {
-			display_qt_hierarchy(cur, level + 1);
-		}
-		
-		// FIXME docs says: do it but this segfault
-		// delete l;
-	}
-}
-#endif 
 
 // like posix shell utils basename, do not append trailing '/' to result.
 std::string basename(const std::string& path_name)
@@ -195,16 +158,18 @@ void oprof_start::init()
 	pid_filter_edit->setText(QString().setNum(config.pid_filter));
 	pgrp_filter_edit->setText(QString().setNum(config.pgrp_filter));
 	base_opd_dir_edit->setText(config.base_opd_dir.c_str());
-	samples_files_dir_edit->setText(config.samples_files_dir.c_str());
-	device_file_edit->setText(config.device_file.c_str());
-	hash_map_device_edit->setText(config.hash_map_device.c_str());
-	daemon_log_file_edit->setText(config.daemon_log_file.c_str());
 	ignore_daemon_samples_cb->setChecked(config.ignore_daemon_samples);
 	kernel_only_cb->setChecked(config.kernel_only);
 
+	// the unit mask check boxes
+	check1->hide();
+	check2->hide();
+	check3->hide();
+	check4->hide();
+	check5->hide();
+	check6->hide();
+ 
 	// build from stuff in op_events.c the description of events.
-	// the checkbox associated with each events is created later in a 
-	// separate pass.
 	for (uint i = 0 ; i < op_nr_events ; ++i) {
 		if (op_events[i].cpu_mask & cpu_mask) {
 			op_event_descr descr;
@@ -238,130 +203,6 @@ void oprof_start::init()
 		}
 	}
 
-	delete scroll_view_events;
-	scroll_view_events = new QScrollView(events_frame);
-	scroll_view_events->setFixedSize(events_frame->size());
-
-	// acts as the frame container of all events check box.
-	QWidget* widget = new QWidget(scroll_view_events);
-
-	scroll_view_events->addChild(widget, 0, 0);
-
-	// to track the size of the needed scrolling region.
-	int max_size_x = 0;
-	int max_size_y = 0;
-
-	for (size_t i = 0 ; i < v_events.size() ; ++i) {
-		QCheckBox* check_box = new QCheckBox(widget, v_events[i].name);
-
-		connect(check_box, SIGNAL(clicked()),SLOT(on_event_clicked()));
-
-		check_box->setText(v_events[i].name);
-
-		QSize size = check_box->sizeHint();
-
-		check_box->setFixedSize(size);
-
-		check_box->move(0, max_size_y);
-
-		max_size_y += size.height();
-
-		if (max_size_x < size.width())
-		  max_size_x = size.width();
-
-		// qt lacks of events mouse capture relayed to main form
-		// so we need to install an event filter. These event filter
-		// is used to get mouse motion over the event check box.
-		check_box->installEventFilter(this);
-		check_box->setMouseTracking(true);
-
-		v_events[i].cb = check_box;
-	}
-
-	// better to set vertical scroll step to size of an event check box
-	// to ensure scrolling show always full part of events check box
-	QSize sz = v_events[0].cb->size();
-	scroll_view_events->verticalScrollBar()->setLineStep(sz.height());
-
-	// each checkbox should be select-able in the entire width of the 
-	// scrolled view so grow them to the full width of the scroll_view
-	for (size_t i = 0 ; i < v_events.size() ; ++i) {
-		QSize size = v_events[i].cb->sizeHint();
-
-		v_events[i].cb->setFixedSize(max_size_x, size.height());
-	}
-
-	// the geometry is not completly fixed but now we must grow the widget
-	// to it's full size (eventually bigger than the scroll itself)
-	widget->resize(max_size_x, max_size_y);
-
-	// get account the scroll view frame margin
-	QRect rect1 = scroll_view_events->frameRect();
-	QRect rect2 = scroll_view_events->contentsRect();
-
-	int margin_x = rect1.width() - rect2.width();
-	max_size_x  += margin_x;
-	int margin_y = rect1.height() - rect2.height();
-	max_size_y  += margin_y;
-
-	// FIXME: this is must be 
-	// scroll_view_events->verticalScrollBar()->width() but it return 100 
-	// and not 16.
-	const int scroll_bar_width = 16;
-
-	// try to adapt the size of the scroll view but only if it horiz
-	// (vertical) size do not change more than 20% (10%). This is intended
-	// to try to make the scroll bar hidden if only a slight size change
-	// can make that. Can also reduce the size of the scroll view if needed
-
-	const double ratio_size_max_x = 20.0;
-	int scroll_view_height = scroll_view_events->height();
-	double ratio_y = ratio(scroll_view_events->height(), max_size_y);
-	if (ratio_y < ratio_size_max_x) {
-		scroll_view_height = max_size_y;
-	}
-
-	const double ratio_size_max_y = 10.0;
-	int scroll_view_width = scroll_view_events->width();
-	double ratio_x = ratio(scroll_view_events->width(), max_size_x);
-	if (ratio_x < ratio_size_max_y) {
-		scroll_view_width = max_size_x;
-	}
-
-	// if we need a scroll bar we must adjust the scroll view but take
-	// than one adjustement (vert) do not imply an another adjustement. In
-	// this case we need to not adjust twice time the width
-	bool width_adjusted = false;
-
-	if (max_size_x > scroll_view_width) {
-		scroll_view_height += scroll_bar_width;
-		width_adjusted = true;
-	}
-
-	if (max_size_y > scroll_view_height) {
-		scroll_view_width += scroll_bar_width;
-		if (max_size_x > scroll_view_width && !width_adjusted) {
-			scroll_view_height += scroll_bar_width;
-		}
-	}
-
-	// now resize the necessary thing and move the others
-	size_t delta_x = scroll_view_width - scroll_view_events->width();
-
-	scroll_view_events->setFixedSize(scroll_view_width, 
-					 scroll_view_height);
-
-	resize(width() + delta_x, height());
-
-	setup_config_tab->move(setup_config_tab->x() + delta_x,
-			       setup_config_tab->y());
-
-	// TODO: need to move the help button and the start/stop layout?
-	// and resize the help edit widget.
-
-	// ensure the events_frame is hidden by the scroll view.
-	events_frame->resize(scroll_view_events->size());
-
 	validate_buffer_size->setRange(OP_MIN_BUFFER_SIZE, OP_MAX_BUFFER_SIZE);
 	validate_hash_table_size->setRange(OP_MIN_HASH_TABLE_SIZE, 
 					   OP_MAX_HASH_TABLE_SIZE);
@@ -369,13 +210,12 @@ void oprof_start::init()
 	validate_pid_filter->setRange(OP_MIN_PID, OP_MAX_PID);
 	validate_pgrp_filter->setRange(OP_MIN_PID, OP_MAX_PID);
 
+	for (uint i = 0; i < op_nr_counters; ++i) {
+		std::string str("Counter ");
+		char c = '1' + i;
+		counter_combo->insertItem((str + c).c_str());
+	}
 	load_event_config_file();
-
-	// events 0 is the default selected event.
-	event_background_mode = v_events[0].cb->backgroundMode();
-	do_selected_event_change(&v_events[0]);
-	v_events[0].cb->setChecked(true);
-	v_events_selected.push_back(&v_events[0]);
 }
 
 // load the configuration, if the configuration file does not exist create it.
@@ -394,7 +234,7 @@ void oprof_start::load_config_file()
 
 	std::ifstream in(name.c_str());
 	if (!in) {
-		QMessageBox::warning(this, 0, "unable to open configuration "
+		QMessageBox::warning(this, 0, "Unable to open configuration "
 				     "~/.oprofile/oprof_start_config");
 		return;
 	}
@@ -432,7 +272,7 @@ void oprof_start::load_event_config_file()
 
 	std::ifstream in(name.c_str());
 	if (!in) {
-		QMessageBox::warning(this, 0, "unable to open configuration "
+		QMessageBox::warning(this, 0, "Unable to open configuration "
 				     "~/.oprofile/oprof_start_event");
 		return;
 	}
@@ -480,75 +320,43 @@ void oprof_start::accept()
 	QDialog::accept();
 }
 
-// Filtering the mouse event do not work because we can not redispatch it to
-// the main form without using a derivation from the imbeded object which
-// need to notify to parent the mouse event: Qt have not notify to parent event
-// stuff. So we need to handle filter all event. A first filtering is already
-// made by selecting explicitely which widget need to dispatch to a parent
-// all events. Actually only check box events use this stuff.
-bool oprof_start::eventFilter(QObject* o, QEvent* e)
+// counter combo box selected
+void oprof_start::counter_selected(int ctr)
 {
-	if (e->type() == QEvent::MouseMove) {
-		QMouseEvent* ev_mouse =  reinterpret_cast<QMouseEvent*>(e);
+	events_list->clear();
+ 
+	for (std::vector<op_event_descr>::const_iterator cit = v_events.begin();
+		cit != v_events.end(); ++cit) {
+ 
+		// FIXME: counter_mask check
 
-		QPoint event_pos = ev_mouse->globalPos();
-
-		QPoint abs_pos = scroll_view_events->mapToGlobal(QPoint(0, 0));
-
-		QScrollBar* sc = scroll_view_events->verticalScrollBar();
-
-		int abs_y = (event_pos.y() - abs_pos.y()) + sc->value();
-
-		// TODO: 2 is not a constant but probably the 
-		// frameWidth() - width of the scroll view ?
-		size_t index = ((abs_y - 2) / v_events[0].cb->height());
-
-		if (last_mouse_motion_cb_index != index &&
-		    index >= 0 && index < v_events.size()) {
-
-			// avoid wasting cpu time
-			last_mouse_motion_cb_index = index;
-
-			std::ostringstream help_str;
-			help_str << v_events[index].help_str;
-			help_str << " ";
-
-			// help the user to see why he can not select an event
-			// even counters are available (eg P6 core case)
-			uint ctr_mask = v_events[index].counter_mask;
-
-			if (ctr_mask == ~0u)
-				help_str << "(can use all counter";
-			else {
-				help_str << "(must use counter: ";
-				uint mask = 1;
-				for (int i = 0; ctr_mask ; ++i) {
-					if (ctr_mask & mask) {
-						help_str << i;
-						ctr_mask &= ~mask;
-						if (ctr_mask)
-							help_str << ", ";
-					}
-
-					mask <<= 1;
-				}
-			}
-
-			help_str << ")";
-
-			event_help_label->setText(help_str.str().c_str());
-		}
+		new QListViewItem(events_list, cit->name, cit->help_str); 
 	}
-
-	return QObject::eventFilter(o, e);
 }
 
+ 
+// event selected
+void oprof_start::event_selected(QListViewItem * item)
+{
+	op_event_descr const * descr = locate_event(item->text(0).latin1());
+
+	std::string str(descr->help_str);
+	str += " (min count: FIXME)";
+
+	event_help_label->setText(str.c_str());
+ 
+	// FIXME: here we make visible the right checkboxes and set their
+	// tooltips and text.
+}
+ 
+ 
 // user need to select a file or directory, distinction about what the user
 // needs to select is made through the source of the qt event.
 void oprof_start::on_choose_file_or_dir()
 {
 	const QObject* source = sender();
 
+	/* FIXME: yuck. let's just have separate slots for each event */
 	if (source) {
 		bool dir_only = false;
 		QString base_dir;
@@ -602,6 +410,7 @@ void oprof_start::on_choose_file_or_dir()
 // TODO: need validation?
 void oprof_start::record_selected_event_config()
 {
+#if 0 
 	// saving must be made only if a change occur to avoid setting the
 	// dirty flag in event_cfg. For the same reason we can not use a
 	// temporay to an 'event_setting&' to clarify the code.
@@ -632,6 +441,7 @@ void oprof_start::record_selected_event_config()
 			event_cfg[event_selected->name].umask = 
 				get_unit_mask();
 	}
+#endif
 }
 
 // same design as record_selected_event_config without trying to not dirties
@@ -676,10 +486,6 @@ bool oprof_start::record_config()
 	config.pid_filter = pid_filter_edit->text().toUInt();
 	config.pgrp_filter = pgrp_filter_edit->text().toUInt();
 	config.base_opd_dir = base_opd_dir_edit->text().latin1();
-	config.samples_files_dir = samples_files_dir_edit->text().latin1();
-	config.device_file = device_file_edit->text().latin1();
-	config.hash_map_device = hash_map_device_edit->text().latin1();
-	config.daemon_log_file = daemon_log_file_edit->text().latin1();
 	config.ignore_daemon_samples = ignore_daemon_samples_cb->isChecked();
 	config.kernel_only = kernel_only_cb->isChecked();
 
@@ -693,6 +499,7 @@ bool oprof_start::record_config()
 // helper to get_unit_mask. assert cb != 0
 uint oprof_start::get_unit_mask_part(const QCheckBox* cb, uint mask)
 {
+#if 0 
 	// trick: the name of cb is an integer which can index the unit_mask
 	// stuff
 	QString name = cb->name();
@@ -712,11 +519,13 @@ uint oprof_start::get_unit_mask_part(const QCheckBox* cb, uint mask)
 	}
 
 	return mask;
+#endif 
 }
 
 // return the unit mask selected through the unit mask check box
 uint oprof_start::get_unit_mask()
 {
+#if 0 
 	uint mask = 0;
 
 	if (event_selected && event_selected->unit) {
@@ -736,12 +545,14 @@ uint oprof_start::get_unit_mask()
 	}
 
 	return mask;
+#endif 
 }
 
 // create and setup the unit mask btn stuff. assert descr->unit != 0 &&
 // descr->um_descr != 0
 void oprof_start::create_unit_mask_btn(const op_event_descr* descr)
 {
+#if 0 
 	const op_unit_mask* um = descr->unit;
 	const op_unit_desc* um_desc = descr->um_descr;
 
@@ -790,12 +601,14 @@ void oprof_start::create_unit_mask_btn(const op_event_descr* descr)
 			}
 		}
 	}
+#endif 
 }
 
 // the event selected has been perhaps changed, descr is the new event selected
 // event_selected the old.
 void oprof_start::do_selected_event_change(const op_event_descr* descr)
 {
+#if 0 
 	if (!descr || descr == event_selected)
 		return;
 
@@ -843,6 +656,7 @@ void oprof_start::do_selected_event_change(const op_event_descr* descr)
 	event_count_edit->setText(count_text);
 
 	event_selected = descr;
+#endif 
 }
 
 // helper for on_event_clicked(). This function is complicated by assymetric
@@ -851,6 +665,7 @@ void oprof_start::do_selected_event_change(const op_event_descr* descr)
 // so we handle it in an ugly but simple way.
 void oprof_start::event_checked(const op_event_descr* descr)
 {
+#if 0
 	// sanity checking.
 	size_t i;
 	for (i = 0 ; i < v_events_selected.size() ; ++i) {
@@ -895,11 +710,13 @@ void oprof_start::event_checked(const op_event_descr* descr)
 	if (swap_counter)
 		// ugly: work only for the P6 asymetric counter
 		std::swap(v_events_selected[0], v_events_selected[1]);
+#endif 
 }
 
 // helper for on_event_clicked()
 void oprof_start::event_unchecked(const op_event_descr* descr)
 {
+#if 0 
 	// sanity checking.
 	size_t i;
 	for (i = 0; i < v_events_selected.size(); ++i) {
@@ -915,12 +732,14 @@ void oprof_start::event_unchecked(const op_event_descr* descr)
 	} 
 
 	v_events_selected.erase(v_events_selected.begin() + i);
+#endif 
 }
 
 // Handle event check box click. The current state of the check box is set by
 // Qt before calling this slot.
 void oprof_start::on_event_clicked()
 {
+#if 0 
 	QObject* source = const_cast<QObject*>(sender());
 
 	// we don't disable the counter setup page to allow user to change
@@ -963,6 +782,7 @@ void oprof_start::on_event_clicked()
 			event_unchecked(descr);
 		}
 	}
+#endif 
 }
 
 // called on explict user request through btn "flush profiler data" and also
@@ -980,6 +800,7 @@ void oprof_start::on_flush_profiler_data()
 // user is happy of its setting.
 void oprof_start::on_start_profiler()
 {
+#if 0 
 	if (v_events_selected.empty()) {
 		QMessageBox::warning(this, 0, 
 				     "You must select at least one event");
@@ -1007,10 +828,6 @@ void oprof_start::on_start_profiler()
 					 "least one ring count: user or os");
 
 			do_selected_event_change(descr);
-
-			scroll_view_events->ensureVisible(descr->cb->x(), 
-							  descr->cb->y());
-
 			user_ring_count_cb->setFocus();
 
 			return;
@@ -1029,10 +846,6 @@ void oprof_start::on_start_profiler()
 			QMessageBox::warning(this, 0, out.str().c_str());
 
 			do_selected_event_change(descr);
-
-			scroll_view_events->ensureVisible(descr->cb->x(), 
-							  descr->cb->y());
-
 			event_count_edit->setFocus();
 
 			return;
@@ -1049,9 +862,6 @@ void oprof_start::on_start_profiler()
 			QMessageBox::warning(this, 0, out.str().c_str());
 
 			do_selected_event_change(descr);
-
-			scroll_view_events->ensureVisible(descr->cb->x(), 
-							  descr->cb->y());
 
 			// difficult to put the focus, don't take care?
 
@@ -1120,6 +930,7 @@ void oprof_start::on_start_profiler()
 //	std::cout << cmd_line.str() << std::endl;
 
 	do_exec_command(cmd_line.str());
+#endif 
 }
 
 // flush and stop the profiler if it was started.

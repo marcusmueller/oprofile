@@ -25,7 +25,7 @@
 #include "../op_user.h"
 
 class QIntValidator;
-class QScrollView;
+class QListViewItem;
 
 struct op_event_descr {
 	op_event_descr();
@@ -34,6 +34,7 @@ struct op_event_descr {
 	u8 val;				// event number
 	const op_unit_mask* unit;	// != 0 if unit mask allowed
 	const op_unit_desc* um_descr;	// ditto
+	// FIXME: char arrays ... NOOOO ! ;) 
 	const char* name;		// never nil
 	const char* help_str;		// ditto
 	uint min_count;			// minimum counter value allowed
@@ -54,12 +55,13 @@ protected:
 	void on_flush_profiler_data();
 	void on_start_profiler();
 	void on_stop_profiler();
+	void counter_selected(int);
+	void event_selected(QListViewItem *); 
 
 	void accept();
 
 private:
 	void init();
-	bool eventFilter(QObject* o, QEvent* e);
 
 	// return 0 if not found
 	const op_event_descr* locate_event(const char* name);
@@ -68,7 +70,7 @@ private:
 	void event_checked(const op_event_descr*);
 	void event_unchecked(const op_event_descr*);
 
-	// recorded in memory, noy to persistent storage
+	// recorded in memory, not to persistent storage
 	void record_selected_event_config();
 	bool record_config();
 
@@ -88,22 +90,12 @@ private:
 	QIntValidator* validate_pid_filter;
 	QIntValidator* validate_pgrp_filter;
 
-	QScrollView* scroll_view_events;
-
 	std::vector<op_event_descr> v_events;
 
 	// to avoid wasting cpu time when re-selecting the same event.
-	const op_event_descr* event_selected;
+	//const op_event_descr* event_selected;
 	// same: used to optimize mouse move event
 	uint last_mouse_motion_cb_index;
-
-	// We give a visual feedback to user by changing the background of the
-	// selected event. event_background_mode is used to restore the
-	// background mode when selection of events is changing.
-	BackgroundMode event_background_mode;
-
-	// selected events set. Must be coherent with the events check state
-	std::vector<const op_event_descr*> v_events_selected;
 
 	persistent_config_t<event_setting> event_cfg;
 	config_setting config;

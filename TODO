@@ -1,3 +1,34 @@
+0.0.5 task list
+---------------
+
+o get opf_filter and friends working OK
+ 
+o fix showing all counters for oprofpp -s
+ 
+o clean up starting GUI
+
+o check documentation
+
+o re-do performance tests
+ 
+0.0.6 task list
+---------------
+
+o remove oprofile thread. instead we check against irq counts and
+  global_irq_lock and only precede if we can lock against other CPUs
+  and we are not interrupting an interrupt
+
+o modify mapping to queue maps on a separate device. the daemon always
+  applys all maps immediately before doing the samples
+
+o incrementalise the daemon processing to smooth load
+ 
+o make hashmap use string pool method
+ 
+o implement proc->old_exec 
+ 
+o post-prof GUI ? (big job)
+ 
 Correctness
 -----------
 
@@ -12,18 +43,12 @@ o why the overflow message at 12k ints/sec on do_dump() ?
 Performance
 -----------
 
-o SMP algo can be totally re-worked to use a separate map device
-o I think we can drop the thread if we are careful about locking/ints in the NMI handler
 o investigate eviction strategy
 o the interrupt handler code could probably be improved by moving into asm
 o can we fold in the "untouched sample entry" case in hash table to another case ?
-o change the path component hash to be pointer-parent pairs, and allocate the strings in
-  a pool - prolly saving locality for the hash map
-o daemon should not compose the path each time. use head component as lookup value
 
 WBNI
 ----
 
-o good support for determining changed profiles
 o we don't really need a vmlinux file during profiling ...
 o Other x86 processors
