@@ -19,8 +19,6 @@
 
 #include <stdio.h>
 
-#include "popt_options.h"
-
 using std::vector;
 using std::string;
 using std::ostream;
@@ -43,6 +41,7 @@ using std::ostringstream;
 #include "file_manip.h"
 #include "filename_match.h"
 #include "op_events_desc.h"
+#include "op_to_source_options.h"
 
 #include "version.h"
 
@@ -775,65 +774,6 @@ bool output::treat_input(string const & image_name, string const & sample_file)
 
 //---------------------------------------------------------------------------
 
-static int with_more_than_samples;
-static int until_more_than_samples;
-static int sort_by_counter = -1;
-static bool assembly;
-static bool source_with_assembly;
-static string source_dir;
-static string output_dir;
-static string output_filter;
-static string no_output_filter;
-
-/* -k is reserved for --show-shared-libs */
-static option samplefile_opt(samplefile, "samples-file", 'f', "image sample file", "file");
-static option imagefile_opt(imagefile, "image-file", 'i', "image file", "file");
-static option verbose_opt(verbose, "verbose", 'V', "verbose output");
-static option demangle_opt(demangle, "demangle", 'd', "demangle GNU C++ symbol names");
-static option with_more_than_samples_opt(with_more_than_samples, "with-more-than-samples", 'w', "show all source file if the percent of samples in this file is more than argument", "[0-100]");
-static option until_more_than_sampels_opt(until_more_than_samples, "until-more-than-samples", 'm', "show all source files until the percent of samples specified is reached", "[0-100]");
-static option sort_by_counter_opt(sort_by_counter, "sort-by-counter", 'c', "sort by counter", "counter nr");
-static option source_dir_opt(source_dir, "source-dir", '\0', "source directory", "directory name");
-static option output_dir_opt(output_dir, "output-dir", '\0', "output directory", "directory name");
-static option output_filter_opt(output_filter, "output", '\0', "output filename filter", "filter string");
-static option no_output_filter_opt(no_output_filter, "no-output", '\0', "no output filename filter", "filter string");
-static option assembly_opt(assembly, "assembly", 'a', "output assembly code");
-static option source_with_asssembly_opt(source_with_assembly, "source-with-assembly", 's', "output assembly code mixed with source");
-static option exclude_symbols_opt(exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name");
-
-/**
- * get_options - process command line
- * @param argc program arg count
- * @param argv program arg array
- * @param image_name where to store the image filename
- * @param sample_file ditto for sample filename
- * @param counter where to put the counter command line argument
- *
- * Process the arguments, fatally complaining on error.
- */
-static void get_options(int argc, char const * argv[],
-			string & image_name, string & sample_file,
-			int & counter)
-{
-	/* non-option file, either a sample or binary image file */
-	string file;
-
-	parse_options(argc, argv, file);
-
-	if (with_more_than_samples && until_more_than_samples) {
-		fprintf(stderr, "op_to_source: --with-more-than-samples and -until-more-than-samples can not specified together\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if (output_filter.empty())
-		output_filter = "*";
-
-	opp_treat_options(file, image_name, sample_file,
-			  counter, sort_by_counter);
-}
-
-//---------------------------------------------------------------------------
-
 int main(int argc, char const * argv[])
 {
 #if (__GNUC__ >= 3)
@@ -852,34 +792,37 @@ int main(int argc, char const * argv[])
 	 * order */
 	int counter = -1;
 
-	get_options(argc, argv, image_name, sample_file, counter);
+	string const arg = get_options(argc, argv);
 
-	if (counter != -1 && sort_by_counter != -1 &&
-	    counter != (1 << sort_by_counter)) {
+	opp_treat_options(arg, image_name, sample_file,
+			  counter, options::sort_by_counter);
+ 
+	if (counter != -1 && options::sort_by_counter != -1 &&
+	    counter != (1 << options::sort_by_counter)) {
 		cerr << "mismatch between --sort-by-counter and samples filename counter suffix.\n";
 		exit(EXIT_FAILURE);
 	}
 
 	try {
 		bool do_until_more_than_samples = false;
-		int threshold_percent = with_more_than_samples;
-		if (until_more_than_samples) {
-			threshold_percent = until_more_than_samples;
+		int threshold_percent = options::with_more_than_samples;
+		if (options::until_more_than_samples) {
+			threshold_percent = options::until_more_than_samples;
 			do_until_more_than_samples = true;
 		}
 
-		if (source_with_assembly)
-			assembly = 1;
+		if (options::source_with_assembly)
+			options::assembly = true;
 
 		output output(argc, argv,
 			      threshold_percent,
 			      do_until_more_than_samples,
-			      sort_by_counter,
-			      output_dir,
-			      source_dir,
-			      output_filter,
-			      no_output_filter,
-			      assembly, source_with_assembly, -1);
+			      options::sort_by_counter,
+			      options::output_dir,
+			      options::source_dir,
+			      options::output_filter,
+			      options::no_output_filter,
+			      options::assembly, options::source_with_assembly, -1);
 
 		if (output.treat_input(image_name, sample_file) == false)
 			return EXIT_FAILURE;

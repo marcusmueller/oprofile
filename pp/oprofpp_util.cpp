@@ -9,6 +9,8 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
+// FIXME: this entire file is screwed !
+ 
 // FIXME: printf -> ostream (and elsewhere) 
 #include <cstdarg>
 #include <algorithm>
@@ -18,6 +20,7 @@
 #include <elf.h>
 
 #include "oprofpp.h"
+#include "oprofpp_options.h"
 #include "op_libiberty.h"
 #include "op_file.h"
 #include "file_manip.h"
@@ -36,11 +39,6 @@ using std::ostream;
 using std::cerr;
 using std::endl;
 
-bool verbose;
-string samplefile;
-string imagefile;
-bool demangle;
-vector<string> exclude_symbols;
 
 void op_print_event(ostream & out, int counter_nr, op_cpu cpu_type,
 		    u8 type, u8 um, u32 count)
@@ -67,7 +65,7 @@ void op_print_event(ostream & out, int counter_nr, op_cpu cpu_type,
  */
 void verbprintf(char const * fmt, ...)
 {
-	if (verbose) {
+	if (options::verbose) {
 		va_list va;
 		va_start(va, fmt);
 
@@ -114,8 +112,8 @@ string demangle_filename(string const & samples_filename)
  */
 bool is_excluded_symbol(string const & symbol)
 {
-	return std::find(exclude_symbols.begin(), exclude_symbols.end(),
-			 symbol) != exclude_symbols.end();
+	return std::find(options::exclude_symbols.begin(), options::exclude_symbols.end(),
+			 symbol) != options::exclude_symbols.end();
 }
 
 /**
@@ -159,6 +157,7 @@ void validate_counter(int counter_mask, int & sort_by_counter)
 	}
 }
 
+ 
 /**
  * opp_treat_options - process command line options
  * @param file a filename passed on the command line, can be %NULL
@@ -185,9 +184,11 @@ void validate_counter(int counter_mask, int & sort_by_counter)
  * post-condition: sample_file and image_file are setup
  */
 void opp_treat_options(string const & file,
-		       string & image_file, string & sample_file,
-		       int & counter, int & sort_by_counter)
+	string & image_file, string & sample_file,
+	int & counter, int & sort_by_counter)
 {
+	using namespace options;
+ 
 	char * file_ctr_str;
 	int temp_counter;
 
@@ -263,6 +264,7 @@ void opp_treat_options(string const & file,
 	validate_counter(counter, sort_by_counter);
 }
 
+ 
 // FIXME: only use char arrays and pointers if you MUST. Otherwise std::string
 // and references everywhere please.
 

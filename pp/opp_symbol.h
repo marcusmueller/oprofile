@@ -19,6 +19,7 @@
 #include <bfd.h>	/* for bfd_vma */
 
 #include "oprofpp.h"
+#include "outsymbflag.h"
 
 class samples_container_t;
 class field_description;
@@ -62,47 +63,6 @@ struct symbol_entry {
 	/// [first, last[ gives the range of sample_entry.
 	sample_index_t first;
 	sample_index_t last;
-};
-
-//---------------------------------------------------------------------------
-/** flags passed to the ctr of an OutputSymbol object. This also specify the
- * order of field output: lower enum tag ==> comes first in output order
- * Note than changing value of enum is not safe. See OutputSymbol and
- * the osf_repeat_mask use. So you can't reorder easily the output order
- * of field */
-enum OutSymbFlag {
-	osf_none = 0,
-	osf_vma = 1 << 0,
-	/// this four field can be repeated on output for each counter.
-	osf_nr_samples = 1 << 1,
-	osf_nr_samples_cumulated = 1 << 2,
-	osf_percent = 1 << 3,
-	osf_percent_cumulated = 1 << 4,
-	/// used internally
-	osf_repeat_mask = osf_nr_samples + osf_nr_samples_cumulated +
-			  osf_percent + osf_percent_cumulated,
-//	osf_time = 1 << 5,		// can be usefull, future. Do not use
-//	osf_time_cumulated = 1 << 6,	// for now. FIXME is this usefull ?
-	osf_symb_name = 1 << 7,
-	// TODO: actually demangling is made when storing symb name in
-	// samples_container_t. We need perhaps to store raw name in symbol and
-	// defer demangling at output time.
-//	osf_demangle = 1 << 8,		// provide demangle param name etc ?
-	osf_linenr_info = 1 << 9,
-	osf_short_linenr_info = 1 << 10,// w/o path name
-	osf_image_name = 1 << 11,
-	osf_short_image_name = 1 << 12,	// w/o path name
-	osf_details = 1 << 13,		// for oprofpp -L / -s
-	/// only this field are showed in symbols samples details.
-	osf_details_mask = osf_nr_samples + osf_nr_samples_cumulated +
-			osf_percent + osf_percent_cumulated +
-			osf_vma + osf_linenr_info + osf_short_linenr_info,
-	osf_show_all_counters = 1 << 14,// for oprofpp -L
-	// special format modifier: output all field selected separated by a
-	// single space. This is intended to run post profile tools as
-	// front-end of other tools which treat samples information.
-//	osf_raw_format = 1 << 15,	// future
-	osf_header = 1 << 16
 };
 
 /**

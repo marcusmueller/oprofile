@@ -1,3 +1,29 @@
+2002-06-04  John Levon  <moz@compsoc.man.ac.uk>
+
+	* pp/op_bfd.h:
+	* pp/op_bfd.cpp:
+	* pp/samples_container.cpp: kill another char*
+ 
+	* pp/outsymbflag.h: reduce fake dependencies with
+	  new file, little cleanup
+
+	* pp/Makefile.in:
+	* pp/demangle_symbol.cpp:
+	* pp/op_merge.cpp:
+	* pp/op_time.cpp:
+	* pp/op_time_options.h:
+	* pp/op_time_options.cpp:
+	* pp/op_to_source.cpp:
+	* pp/op_to_source_options.h:
+	* pp/op_to_source_options.cpp:
+	* pp/opp_symbol.h:
+	* pp/oprofpp.h:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp_options.h:
+	* pp/oprofpp_options.cpp:
+	* pp/oprofpp_util.cpp: Some more refactoring. More work
+	  needed...
+ 
 2002-06-01  John Levon  <moz@compsoc.man.ac.uk>
 
 	* doc/Makefile.in: fix DOCDIR (from Al Stone)

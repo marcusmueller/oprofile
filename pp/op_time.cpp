@@ -24,7 +24,7 @@
 
 #include "version.h"
 #include "op_libiberty.h"
-#include "popt_options.h"
+#include "op_time_options.h"
  
 #include "oprofpp.h"
 #include "samples_container.h"
@@ -44,6 +44,9 @@ using std::multimap;
 using std::pair;
 using std::setw;
 
+// FIXME 
+static int counter;
+ 
 /* TODO: if we have a quick read samples files format we can handle a great
  * part of complexity here by using samples_container_t to handle straight
  * op_time. Just create an artificial symbol that cover the whole samples
@@ -73,9 +76,7 @@ struct image_name
 	string lib_name;
 };
 
-typedef multimap<string, image_name> map_t;
-typedef pair<map_t::iterator, map_t::iterator> pair_it_t;
-
+ 
 /// comparator for sorted_map_t
 struct sort_by_counter_t {
 	sort_by_counter_t(size_t index_) : index(index_) {}
@@ -88,148 +89,10 @@ struct sort_by_counter_t {
 	size_t index;
 };
 
+typedef multimap<string, image_name> map_t;
+typedef pair<map_t::iterator, map_t::iterator> pair_it_t;
+typedef multimap<counter_array_t, map_t::const_iterator, sort_by_counter_t> sorted_map_t;
 
-typedef multimap<counter_array_t, map_t::const_iterator, sort_by_counter_t>
-  sorted_map_t;
-
-static string session;
-static string counter_str("0");
-static string output_format;
-static bool list_symbols;
-static bool show_image_name;
-static vector<string> path;
-static vector<string> recursive_path;
-static bool reverse_sort;
-static bool show_shared_libs;
-static int sort_by_counter = -1;
-static string samples_dir;
-static int counter;
-static OutSymbFlag output_format_flags;
-
-static option session_opt(session, "session", 's', "session to use", "name");
-static option counter_str_opt(counter_str, "counter", 'c', "which counter to use", "counter_nr[,counter_nr]");
-static option output_format_opt(output_format, "output-format", 't', "choose the output format", "output-format strings");
-static option list_symbols_opt(list_symbols, "list-symbols", 'l', "list samples by symbol");
-static option show_image_name_opt(show_image_name, "show-image-name", 'n', "show the image name from where come symbols");
-static option path_opt(path, "path", 'p', "add path for retrieving image", "path_name[,path_name]");
-static option recursive_path_opt(recursive_path, "recursive-path", 'P', "add path for retrieving image recursively", "path_name[,path_name]");
-static option reverse_sort_opt(reverse_sort, "reverse", 'r', "reverse sort order");
-static option show_shared_libs_opt(show_shared_libs, "show-shared-libs", 'k', "show details for shared libs. Only meaningfull if you have profiled with --separate-samples");
-static option sort_by_counter_opt(sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr");
-static option exclude_symbols_opt(exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name");
-static option demangle_opt(demangle, "demangle", 'd', "demangle GNU C++ symbol names");
-
-/// associate filename with directory name where filename exist. Filled
-/// through the -p/-P option to allow retrieving of image name when samples
-/// file name contains an incorrect location for the image such ram disk
-/// module at boot time. We need a multimap to warn against ambiguity between
-/// mutiple time found image name.
-typedef multimap<string, string> alt_filename_t;
-static alt_filename_t alternate_filename;
-
-/**
- * add_to_alternate_filename -
- * add all file name below path_name, optionnaly recursively, to the
- * the set of alternative filename used to retrieve image name when
- * a samples image name directory is not accurate
- */
-void add_to_alternate_filename(vector<string> const & path_names,
-			       bool recursive)
-{
-	vector<string>::const_iterator path;
-	for (path = path_names.begin() ; path != path_names.end() ; ++path) {
-		list<string> file_list;
-		create_file_list(file_list, *path, "*", recursive);
-		list<string>::const_iterator it;
-		for (it = file_list.begin() ; it != file_list.end() ; ++it) {
-			typedef alt_filename_t::value_type value_t;
-			if (recursive) {
-				value_t value(basename(*it), dirname(*it));
-				alternate_filename.insert(value);
-			} else {
-				value_t value(*it, *path);
-				alternate_filename.insert(value);
-			}
-		}
-	}
-}
-
-/**
- * handle_session_options - derive samples directory
- */
-static void handle_session_options(void)
-{
-/*
- * This should eventually be shared amongst all programs
- * to take session names.
- */
-	if (session.empty()) {
-		samples_dir = OP_SAMPLES_DIR;
-		return;
-	}
-
-	if (session[0] == '/') {
-		samples_dir = session;
-		return;
-	}
-
-	samples_dir = OP_SAMPLES_DIR + session;
-}
-
- 
-/**
- * get_options - process command line
- * @param argc program arg count
- * @param argv program arg array
- *
- * Process the arguments, fatally complaining on error.
- */
-static void get_options(int argc, char const * argv[])
-{
-	string file;
-	parse_options(argc, argv, file);
-
-	if (file.length())
-		session = file;
-
-	handle_session_options();
- 
-	counter = counter_mask(counter_str);
-
-	validate_counter(counter, sort_by_counter);
-
-	if (output_format.empty()) {
-		output_format = "hvspni";
-	} else {
-		if (!list_symbols) {
-			quit_error("op_time: --output-format can be used only with --list-symbols.\n");
-		}
-	}
-
-	if (exclude_symbols.size() && !list_symbols) {
-		quit_error("op_time: --exclude-symbol can be used only with --list-symbols.\n");
-	}
-
-	if (list_symbols) {
-		OutSymbFlag fl =
-			OutputSymbol::ParseOutputOption(output_format);
-
-		if (fl == osf_none) {
-			cerr << "op_time: invalid --output-format flags.\n";
-			OutputSymbol::ShowHelp();
-			exit(EXIT_FAILURE);
-		}
-
-		output_format_flags = fl;
-	}
-
-	if (show_image_name)
-		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_image_name);
-
-	add_to_alternate_filename(path, false);
-
-	add_to_alternate_filename(recursive_path, true);
-}
 
 /**
  * image_name - ctor from a sample file name
@@ -291,7 +154,7 @@ static void sort_file_list_by_name(map_t & result,
 		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 			if ((counter & (1 << i)) != 0) {
 				ostringstream s;
-				s << string(samples_dir) << "/" << *it 
+				s << string(options::samples_dir) << "/" << *it 
 				  << '#' << i;
 				if (file_exist(s.str()) == true) {
 					break;
@@ -421,7 +284,7 @@ static void output_files_count(map_t& files)
 		for ( ; p_it.first != p_it.second ; ++p_it.first) {
 			for (int i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 				ostringstream s;
-				s << string(samples_dir) << "/"
+				s << string(options::samples_dir) << "/"
 				  << p_it.first->second.samplefile_name
 				  << "#" << i;
 				if (file_exist(s.str()) == false)
@@ -456,7 +319,7 @@ static void output_files_count(map_t& files)
 	 * associate with an iterator to a image name e.g. insert one
 	 * item for each application */
 
-	sort_by_counter_t compare(sort_by_counter);
+	sort_by_counter_t compare(options::sort_by_counter);
 	sorted_map_t sorted_map(compare);
 	for (it = files.begin(); it != files.end() ; ) {
 		pair_it_t p_it = files.equal_range(it->first);
@@ -478,7 +341,7 @@ static void output_files_count(map_t& files)
 	 * can't easily templatize the block on iterator type because we use
 	 * in one case begin()/end() and in another rbegin()/rend(), it's
 	 * worthwhile to try to factorize these two piece of code */
-	if (reverse_sort) {
+	if (options::reverse_sort) {
 		sorted_map_t::reverse_iterator s_it = sorted_map.rbegin();
 		for ( ; s_it != sorted_map.rend(); ++s_it) {
 			map_t::const_iterator it = s_it->second;
@@ -487,9 +350,9 @@ static void output_files_count(map_t& files)
 			out_filename(it->first, temp, s_it->first, 
 				     total_count);
 
-			if (show_shared_libs) {
+			if (options::show_shared_libs) {
 				pair_it_t p_it = files.equal_range(it->first);
-				sort_by_counter_t compare(sort_by_counter);
+				sort_by_counter_t compare(options::sort_by_counter);
 				sorted_map_t temp_map(compare);
 
 				build_sorted_map_by_count(temp_map, p_it);
@@ -509,9 +372,9 @@ static void output_files_count(map_t& files)
 			out_filename(it->first, temp, s_it->first,
 				     total_count);
 
-			if (show_shared_libs) {
+			if (options::show_shared_libs) {
 				pair_it_t p_it = files.equal_range(it->first);
-				sort_by_counter_t compare(sort_by_counter);
+				sort_by_counter_t compare(options::sort_by_counter);
 				sorted_map_t temp_map(compare);
 
 				build_sorted_map_by_count(temp_map, p_it);
@@ -539,7 +402,7 @@ string check_image_name(string const & image_name,
 
 	typedef alt_filename_t::const_iterator it_t;
 	std::pair<it_t, it_t> p_it =
-		alternate_filename.equal_range(basename(image_name));
+		options::alternate_filename.equal_range(basename(image_name));
 
 	if (p_it.first == p_it.second) {
 
@@ -580,13 +443,13 @@ string check_image_name(string const & image_name,
  */
 static void output_symbols_count(map_t& files, int counter)
 {
-	samples_container_t samples(false, output_format_flags, counter);
+	samples_container_t samples(false, options::output_format_flags, counter);
 
 	map_t::iterator it_f;
 	for (it_f = files.begin() ; it_f != files.end() ; ++it_f) {
 
 		string filename = it_f->second.samplefile_name;
-		string samples_filename = string(samples_dir) + "/" + filename;
+		string samples_filename = string(options::samples_dir) + "/" + filename;
 
 		string lib_name;
 		string image_name = extract_app_name(filename, lib_name);
@@ -618,23 +481,24 @@ static void output_symbols_count(map_t& files, int counter)
 
 	// select the symbols
 	vector<symbol_entry const *> symbols =
-		samples.select_symbols(sort_by_counter, 0.0, false);
+		samples.select_symbols(options::sort_by_counter, 0.0, false);
 
 	OutputSymbol out(samples, counter);
 
-	out.SetFlag(output_format_flags);
+	out.SetFlag(options::output_format_flags);
 
-	out.Output(cout, symbols, reverse_sort == false);
+	out.Output(cout, symbols, options::reverse_sort == false);
 }
 
-/**
- * yet another main ...
- */
 int main(int argc, char const * argv[])
 {
 	get_options(argc, argv);
 
-	if (list_symbols && show_shared_libs) {
+	counter = counter_mask(options::counter_str);
+
+	validate_counter(counter, options::sort_by_counter);
+
+	if (options::list_symbols && options::show_shared_libs) {
 		quit_error("You can't specifiy --show-shared-libs and "
 			   "--list-symbols together.\n");
 	}
@@ -643,12 +507,12 @@ int main(int argc, char const * argv[])
 	 * files rather getting the whole directory. Code in op_merge can
 	 * be probably re-used */
 	list<string> file_list;
-	get_sample_file_list(file_list, samples_dir, "*#*");
+	get_sample_file_list(file_list, options::samples_dir, "*#*");
 
 	map_t file_map;
 	sort_file_list_by_name(file_map, file_list);
 
-	if (list_symbols) {
+	if (options::list_symbols) {
 		output_symbols_count(file_map, counter);
 	} else {
 		output_files_count(file_map);

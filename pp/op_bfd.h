@@ -19,16 +19,17 @@
 
 #include "op_types.h"
 
-class opp_samples_files;
 class op_bfd;
 
-/** all symbol vector indexation use this type */
+/// all symbol vector indexing uses this type
 typedef size_t symbol_index_t;
 symbol_index_t const nil_symbol_index = symbol_index_t(-1);
 
-/** a symbol description from a bfd point of view. This duplicate
+/** 
+ * A symbol description from a bfd point of view. This duplicate
  * information pointed by an asymbol, we need this duplication in case
- * the symbol is an artificial symbol */
+ * the symbol is an artificial symbol
+ */
 class op_bfd_symbol {
 	friend class op_bfd;
 public:
@@ -67,8 +68,10 @@ private:
 	std::string symb_name;
 };
 
-/** Encapsulation of a bfd object. Simplify open/close of bfd, enumerating
- * symbols and retrieving informations for symbols or vma. */
+/**
+ * Encapsulation of a bfd object. Simplifies open/close of bfd, enumerating
+ * symbols and retrieving informations for symbols or vma.
+ */
 class op_bfd {
 public:
 	/**
@@ -76,12 +79,11 @@ public:
 	 * vmlinux file
 	 * @param filename the name of the image file
 	 *
-	 * All error are fatal.
-	 *
+	 * All errors are fatal.
 	 */
 	op_bfd(bool is_kernel, std::string const & filename);
 
-	/** close an opended bfd image and free all related resource. */
+	/// close an opened bfd image and free all related resources
 	~op_bfd();
 
 	/**
@@ -90,13 +92,13 @@ public:
 	 * @param filename output parameter to store filename
 	 * @param linenr output parameter to store linenr.
 	 *
-	 * retrieve the relevant finename:linenr information for the sym_idx
-	 * at offset. If the lookup fail return false. In some case this
+	 * Retrieve the relevant finename:linenr information for the sym_idx
+	 * at offset. If the lookup fails, return false. In some cases this
 	 * function can retrieve the filename and return true but fail to
 	 * retrieve the linenr and so can return zero in linenr
 	 */
 	bool get_linenr(symbol_index_t sym_idx, uint offset, 
-			char const * & filename, unsigned int & linenr) const;
+			string & filename, unsigned int & linenr) const;
 
 	/**
 	 * @param sym_idx symbol index

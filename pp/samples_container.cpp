@@ -95,7 +95,7 @@ add(opp_samples_files const & samples_files, op_bfd const & abfd)
 
 	for (symbol_index_t i = 0 ; i < abfd.syms.size(); ++i) {
 		u32 start, end;
-		char const * filename;
+		string filename;
 		uint linenr;
 		symbol_entry symb_entry;
 
@@ -147,7 +147,7 @@ void samples_container_t::add_samples(opp_samples_files const & samples_files,
 	bool const need_linenr = (flags & (osf_linenr_info | osf_short_linenr_info));
  
 	for (u32 pos = start; pos < end ; ++pos) {
-		char const * filename;
+		string filename;
 		sample_entry sample;
 		uint linenr;
 

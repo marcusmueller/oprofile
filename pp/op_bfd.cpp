@@ -239,12 +239,12 @@ bool op_bfd::have_debug_info() const
 }
  
 bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset, 
-			char const * & filename, unsigned int & linenr) const
+			string & filename, unsigned int & linenr) const
 {
 	char const * functionname;
 	bfd_vma pc;
 
-	filename = 0;
+	char const * cfilename = "";
 	linenr = 0;
 
 	// take care about artificial symbol
@@ -262,10 +262,10 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 		return false;
 
 	bool ret = bfd_find_nearest_line(ibfd, section, bfd_syms, pc,
-					 &filename, &functionname, &linenr);
+					 &cfilename, &functionname, &linenr);
 
-	if (filename == NULL || ret == false) {
-		filename = "";
+	if (cfilename == 0 || ret == false) {
+		cfilename = "";
 		linenr = 0;
 		ret = false;
 	}
@@ -289,7 +289,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 	 * info from 835 to 173. Most of the remaining are c++ inline functions
 	 * mainly from the STL library. Fix #529622
 	 */
-	if (/*ret == false || */linenr == 0) {
+	if (linenr == 0) {
 		// FIXME: looking at debug info for all gcc version shows
 		// than the same problems can -perhaps- occur for epilog code:
 		// find a samples files with samples in epilog and try oprofpp
@@ -305,7 +305,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 		for (size_t i = 1 ; i < max_search ; ++i) {
 			bool ret = bfd_find_nearest_line(ibfd, section,
 							 bfd_syms, pc+i,
-							 &filename,
+							 &cfilename,
 							 &functionname,
 							 &linenr);
 
@@ -323,9 +323,11 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 		// the first call, we don't need to recheck return value, we
 		// know that the call will succeed.
 		bfd_find_nearest_line(ibfd, section, bfd_syms, pc,
-				      &filename, &functionname, &linenr);
+				      &cfilename, &functionname, &linenr);
 	}
 
+	filename = (cfilename) ? cfilename : "";
+ 
 	return ret;
 }
 

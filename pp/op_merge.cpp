@@ -36,6 +36,14 @@ using std::cerr;
 using std::endl;
 using std::ifstream;
 
+/// FIXME: gross hack for now. not used
+namespace options {
+	bool verbose;
+	string samplefile;
+	string imagefile;
+	vector<string> exclude_symbols;
+}
+ 
 static int counter;
 static option counter_opt(counter, "use-counter", 'c', "use counter", "counter nr");
 

@@ -52,6 +52,7 @@
  * is non-zero */
 void verbprintf(char const * args, ...) OP_VERBPRINTF_FORMAT;
 
+ 
 /**
  * @param out output to this ostream
  * @param counter_nr counter number
@@ -153,18 +154,6 @@ uint counter_mask(std::string const &);
  * in the samples file header
  */
 void check_mtime(opp_samples_files const & samples, std::string image_name);
-
-/** control the behavior of verbprintf() */
-extern bool verbose;
-/** control the behavior of demangle_symbol() */
-extern bool demangle;
-
-/** command line option specifying a sample filename */
-extern std::string samplefile;
-/** command line option specifying an image filename */
-extern std::string imagefile;
-/** command line option specifying the set of symbols to ignore */
-extern std::vector<std::string> exclude_symbols;
 
 //---------------------------------------------------------------------------
 /** A simple container of counter. Can hold OP_MAX_COUNTERS counters */
