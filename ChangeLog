@@ -1,5 +1,10 @@
 2003-04-07  John Levon  <levon@movementarian.org>
 
+	* pp/op_to_source.cpp: only output line 0 annotation
+	if samples found there.
+
+2003-04-07  John Levon  <levon@movementarian.org>
+
 	* utils/opcontrol: make sure --ctrX-event=none gets noticed
 
 2003-04-06  John Levon  <levon@movementarian.org>

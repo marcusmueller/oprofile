@@ -904,7 +904,7 @@ string const line_annotation(string const & filename, size_t linenr)
 string const line0_info(string const & filename)
 {
 	string annotation = line_annotation(filename, 0);
-	if (trim(annotation).empty())
+	if (trim(annotation, " \t:").empty())
 		return string();
 
 	string str = "<credited to line zero> ";
