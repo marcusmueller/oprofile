@@ -446,9 +446,13 @@ bool boring_symbol(op_bfd_symbol const & first, op_bfd_symbol const & second)
 	// case I'm aware
 	if (first.name() == "Letext")
 		return true;
+	else if (second.name() == "Letext")
+		return false;
 
 	if (first.name().substr(0, 2) == "??")
 		return true;
+	else if (second.name().substr(0, 2) == "??")
+		return false;
 
 	// checking to see if first symbol for the vma
 	// is less interesting than second symbol
