@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.4 2001/09/30 13:57:05 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.5 2001/10/02 20:39:14 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -942,12 +942,11 @@ static bool countcomp(const opp_count& a, const opp_count& b)
  */
 void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 {
-	std::vector<opp_count> scounts(abfd.syms.size());
 	u32 start, end;
 	counter_array_t tot;
 	uint i,j;
-	bool found_samples;
-	uint k;
+
+	std::vector<opp_count> scounts(abfd.syms.size());
 
 	for (i = 0; i < abfd.syms.size(); i++) {
 		scounts[i].sym = abfd.syms[i];
@@ -964,20 +963,11 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 	for (i = 0; i < abfd.syms.size(); i++) {
 		printf_symbol(scounts[i].sym->name);
 
-		found_samples = false;
-		for (k = 0; k < nr_counters ; ++k) {
-			if (scounts[i].count[k]) {
-				printf("[0x%.8lx]: %2.4f%% (%u samples)\n", 
-					scounts[i].sym->value+scounts[i].sym->section->vma,
-					(((double)scounts[i].count[k]) / tot[k])*100.0, 
-					scounts[i].count[k]);
-				found_samples = true;
-			}
-			
-		}
-		if (found_samples == 0 && !streq("", scounts[i].sym->name)) {
-			printf(" (0 samples)\n");
-		}
+		// FIXME: why we output also zero samples symbol ?
+		printf("[0x%.8lx]: %2.4f%% (%u samples)\n", 
+		       scounts[i].sym->value+scounts[i].sym->section->vma,
+		       (((double)scounts[i].count[ctr]) / tot[ctr])*100.0, 
+		       scounts[i].count[ctr]);
 	}
 }
  

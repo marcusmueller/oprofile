@@ -1,3 +1,7 @@
+2001-10-02  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/oprofpp.cpp: fix a silly bug in do_list_symbols (oprofpp -l)
+
 2001-10-02  John Levon  <moz@compsoc.man.ac.uk>
 
 	* doc/oprofile.sgml: fix
