@@ -1,3 +1,12 @@
+2003-09-22  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/makefile.am: missing AM_CFLAGS setting
+
+	* dae/oprofiled.c:
+	* daemon/oprofiled.c: handle signal in read loop
+	* daemon/opd_util.h:
+	* daemon/opd_util.c: move opd_setup_signal() from dae/ daemon/
+
 2003-09-22  John Levon  <levon@movementarian.org>
 
 	* dae/oprofiled.c:

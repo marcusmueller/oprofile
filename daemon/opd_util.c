@@ -24,6 +24,12 @@
 #include <unistd.h>
 #include <errno.h>
 
+
+sig_atomic_t signal_alarm;
+sig_atomic_t signal_hup;
+sig_atomic_t signal_term;
+
+
 void opd_open_logfile(void)
 {
 	if (open(OP_LOG_FILE, O_WRONLY|O_CREAT|O_NOCTTY|O_APPEND, 0755) == -1) {
@@ -91,4 +97,64 @@ void opd_write_abi(void)
 	op_write_abi_to_file(cbuf);
 	free(cbuf);
 #endif
+}
+
+
+/**
+ * opd_alarm - sync files and report stats
+ */
+static void opd_alarm(int val __attribute__((unused)))
+{
+	signal_alarm = 1;
+}
+ 
+
+/* re-open logfile for logrotate */
+static void opd_sighup(int val __attribute__((unused)))
+{
+	signal_hup = 1;
+}
+
+
+static void opd_sigterm(int val __attribute__((unused)))
+{
+	signal_term = 1;
+}
+ 
+
+void opd_setup_signals(void)
+{
+	struct sigaction act;
+ 
+	act.sa_handler = opd_alarm;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+
+	if (sigaction(SIGALRM, &act, NULL)) {
+		perror("oprofiled: install of SIGALRM handler failed: ");
+		exit(EXIT_FAILURE);
+	}
+
+	act.sa_handler = opd_sighup;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SIGALRM);
+
+	if (sigaction(SIGHUP, &act, NULL)) {
+		perror("oprofiled: install of SIGHUP handler failed: ");
+		exit(EXIT_FAILURE);
+	}
+
+	act.sa_handler = opd_sigterm;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SIGTERM);
+
+	if (sigaction(SIGTERM, &act, NULL)) {
+		perror("oprofiled: install of SIGTERM handler failed: ");
+		exit(EXIT_FAILURE);
+	}
+
+	/* clean up every 10 minutes */
+	alarm(60*10);
 }

@@ -71,10 +71,11 @@ static char * kernel_range;
 static int showvers;
 static u32 ctr_enabled[OP_MAX_COUNTERS];
 static int opd_buf_size;
-static sigset_t maskset;
 static fd_t devfd;
 
-static void opd_sighup(int val);
+static void opd_sighup(void);
+static void opd_alarm(void);
+static void opd_sigterm(void);
 
 static struct poptOption options[] = {
 	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
@@ -272,8 +273,6 @@ static void complete_dump()
  * @param opd_buf  buffer to process
  *
  * Process a buffer of samples.
- * The signals specified by the global variable maskset are
- * masked.
  *
  * If the sample could be processed correctly, it is written
  * to the relevant sample file.
@@ -282,9 +281,6 @@ static void opd_do_samples(char const * opd_buf, ssize_t count)
 {
 	size_t num = count / kernel_pointer_size;
  
-	/* prevent signals from messing us up */
-	sigprocmask(SIG_BLOCK, &maskset, NULL);
-
 	opd_stats[OPD_DUMP_COUNT]++;
 
 	printf("Read buffer of %d entries.\n", (unsigned int)num);
@@ -292,8 +288,6 @@ static void opd_do_samples(char const * opd_buf, ssize_t count)
 	opd_process_samples(opd_buf, num);
 
 	complete_dump();
-
-	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
 }
  
 
@@ -313,6 +307,21 @@ static void opd_do_read(char * buf, size_t size)
 		/* loop to handle EINTR */
 		while (count < 0) {
 			count = op_read_device(devfd, buf, size);
+
+			// we can lost a signal alarm or a signal hup but we
+			// don't take care.
+			if (signal_alarm) {
+				signal_alarm = 0;
+				opd_alarm();
+			}
+
+			if (signal_hup) {
+				signal_hup = 0;
+				opd_sighup();
+			}
+
+			if (signal_term)
+				opd_sigterm();
 		}
 
 		opd_do_samples(buf, count);
@@ -323,7 +332,7 @@ static void opd_do_read(char * buf, size_t size)
 /**
  * opd_alarm - sync files and report stats
  */
-static void opd_alarm(int val __attribute__((unused)))
+static void opd_alarm(void)
 {
 	opd_for_each_image(opd_sync_image_samples_files);
 	opd_print_stats();
@@ -332,7 +341,7 @@ static void opd_alarm(int val __attribute__((unused)))
  
 
 /* re-open logfile for logrotate */
-static void opd_sighup(int val __attribute__((unused)))
+static void opd_sighup(void)
 {
 	printf("Received SIGHUP.\n");
 	close(1);
@@ -349,57 +358,13 @@ static void clean_exit(void)
 }
 
 
-static void opd_sigterm(int val __attribute__((unused)))
+static void opd_sigterm(void)
 {
 	opd_print_stats();
 	printf("oprofiled stopped %s", op_get_time());
-	clean_exit();
 	exit(EXIT_FAILURE);
 }
  
-
-static void setup_signals(void)
-{
-	struct sigaction act;
- 
-	act.sa_handler = opd_alarm;
-	act.sa_flags = 0;
-	sigemptyset(&act.sa_mask);
-
-	if (sigaction(SIGALRM, &act, NULL)) {
-		perror("oprofiled: install of SIGALRM handler failed: ");
-		exit(EXIT_FAILURE);
-	}
-
-	act.sa_handler = opd_sighup;
-	act.sa_flags = 0;
-	sigemptyset(&act.sa_mask);
-	sigaddset(&act.sa_mask, SIGALRM);
-
-	if (sigaction(SIGHUP, &act, NULL)) {
-		perror("oprofiled: install of SIGHUP handler failed: ");
-		exit(EXIT_FAILURE);
-	}
-
-	act.sa_handler = opd_sigterm;
-	act.sa_flags = 0;
-	sigemptyset(&act.sa_mask);
-	sigaddset(&act.sa_mask, SIGTERM);
-
-	if (sigaction(SIGTERM, &act, NULL)) {
-		perror("oprofiled: install of SIGTERM handler failed: ");
-		exit(EXIT_FAILURE);
-	}
-
-	sigemptyset(&maskset);
-	sigaddset(&maskset, SIGALRM);
-	sigaddset(&maskset, SIGHUP);
-	sigaddset(&maskset, SIGTERM);
-
-	/* clean up every 10 minutes */
-	alarm(60*10);
-}
-
 
 static size_t opd_pointer_size(void)
 {
@@ -496,7 +461,7 @@ int main(int argc, char const * argv[])
 		opd_stats[i] = 0;
 	}
 
-	setup_signals();
+	opd_setup_signals();
  
 	err = setrlimit(RLIMIT_NOFILE, &rlim);
 	if (err) {

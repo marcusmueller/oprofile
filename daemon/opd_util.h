@@ -11,6 +11,8 @@
 
 #ifndef OPD_UTIL_H
 
+#include <signal.h>
+
 /**
  * opd_open_logfile - open the log file
  *
@@ -38,5 +40,16 @@ void opd_go_daemon(void);
  * opd_write_abi - write out the ABI description if needed
  */
 void opd_write_abi(void);
+
+
+/**
+ * opd_setup_signals - setup signal handler
+ */
+void opd_setup_signals(void);
+
+/** global variable positionned by signal handler */
+extern sig_atomic_t signal_alarm;
+extern sig_atomic_t signal_hup;
+extern sig_atomic_t signal_term;
 
 #endif /* OPD_UTIL_H */

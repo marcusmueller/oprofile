@@ -78,11 +78,12 @@ static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
 static pid_t pid_filter;
 static pid_t pgrp_filter;
-static sigset_t maskset;
 static fd_t devfd;
 static fd_t notedevfd;
 
-static void opd_sighup(int val);
+static void opd_sighup(void);
+static void opd_alarm(void);
+static void opd_sigterm(void);
 
 static struct poptOption options[] = {
 	{ "pid-filter", 0, POPT_ARG_INT, &pid_filter, 0, "only profile the given process ID", "pid" },
@@ -373,6 +374,21 @@ static void opd_do_read(struct op_buffer_head * buf, size_t size, struct op_note
 
 		opd_do_notes(nbuf, ncount);
 		opd_do_samples(buf);
+
+		// we can lost a signal alarm or a signal hup but we don't
+		// take care.
+		if (signal_alarm) {
+			signal_alarm = 0;
+			opd_alarm();
+		}
+
+		if (signal_hup) {
+			signal_hup = 0;
+			opd_sighup();
+		}
+
+		if (signal_term)
+			opd_sigterm();
  
 		/* request to stop arrived */
 		if (buf->state == STOPPING) {
@@ -394,9 +410,6 @@ static void opd_do_notes(struct op_note const * opd_buf, size_t count)
 {
 	uint i;
 	struct op_note const * note;
-
-	/* prevent signals from messing us up */
-	sigprocmask(SIG_BLOCK, &maskset, NULL);
 
 	for (i = 0; i < count/sizeof(struct op_note); i++) {
 		note = &opd_buf[i];
@@ -429,7 +442,6 @@ static void opd_do_notes(struct op_note const * opd_buf, size_t count)
 				break;
 		}
 	}
-	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
 }
 
 /**
@@ -448,9 +460,6 @@ static void opd_do_samples(struct op_buffer_head const * opd_buf)
 {
 	uint i;
 	struct op_sample const * buffer = opd_buf->buffer; 
-
-	/* prevent signals from messing us up */
-	sigprocmask(SIG_BLOCK, &maskset, NULL);
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
@@ -471,15 +480,13 @@ static void opd_do_samples(struct op_buffer_head const * opd_buf)
 
 		opd_put_sample(&buffer[i]);
 	}
-
-	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
 }
 
 
 /**
  * opd_alarm - clean up old procs, msync, and report stats
  */
-static void opd_alarm(int val __attribute__((unused)))
+static void opd_alarm(void)
 {
 	opd_for_each_image(opd_sync_image_samples_files);
 
@@ -492,7 +499,7 @@ static void opd_alarm(int val __attribute__((unused)))
  
 
 /* re-open logfile for logrotate */
-static void opd_sighup(int val __attribute__((unused)))
+static void opd_sighup(void)
 {
 	printf("Received SIGHUP.\n");
 	close(1);
@@ -509,57 +516,13 @@ static void clean_exit(void)
 }
 
 
-static void opd_sigterm(int val __attribute__((unused)))
+static void opd_sigterm(void)
 {
 	opd_print_stats();
 	printf("oprofiled stopped %s", op_get_time());
-	clean_exit();
 	exit(EXIT_FAILURE);
 }
  
-
-static void setup_signals(void)
-{
-	struct sigaction act;
- 
-	act.sa_handler = opd_alarm;
-	act.sa_flags = 0;
-	sigemptyset(&act.sa_mask);
-
-	if (sigaction(SIGALRM, &act, NULL)) {
-		perror("oprofiled: install of SIGALRM handler failed: ");
-		exit(EXIT_FAILURE);
-	}
-
-	act.sa_handler = opd_sighup;
-	act.sa_flags = 0;
-	sigemptyset(&act.sa_mask);
-	sigaddset(&act.sa_mask, SIGALRM);
-
-	if (sigaction(SIGHUP, &act, NULL)) {
-		perror("oprofiled: install of SIGHUP handler failed: ");
-		exit(EXIT_FAILURE);
-	}
-
-	act.sa_handler = opd_sigterm;
-	act.sa_flags = 0;
-	sigemptyset(&act.sa_mask);
-	sigaddset(&act.sa_mask, SIGTERM);
-
-	if (sigaction(SIGTERM, &act, NULL)) {
-		perror("oprofiled: install of SIGTERM handler failed: ");
-		exit(EXIT_FAILURE);
-	}
-
-	sigemptyset(&maskset);
-	sigaddset(&maskset, SIGALRM);
-	sigaddset(&maskset, SIGHUP);
-	sigaddset(&maskset, SIGTERM);
-
-	/* clean up every 10 minutes */
-	alarm(60*10);
-}
-
 
 int main(int argc, char const * argv[])
 {
@@ -600,7 +563,7 @@ int main(int argc, char const * argv[])
 		opd_stats[i] = 0;
 	}
 
-	setup_signals();
+	opd_setup_signals();
  
 	err = setrlimit(RLIMIT_NOFILE, &rlim);
 	if (err) {
