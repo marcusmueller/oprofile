@@ -62,9 +62,9 @@ static inline void unlock_out_mmap(void)
 /* different request_region */
 #define request_region_check compat_request_region
 void *compat_request_region (unsigned long start, unsigned long n, char const * name);
- 
+
 #define __exit
-#define __init
+
 #define virt_to_page(va) MAP_NR(va)
 
 /* 2.2 has no cpu_number_map on UP */

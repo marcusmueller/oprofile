@@ -29,6 +29,16 @@
 
 #include "op_cache.h"
 
+#if V_BEFORE(2, 5, 14)
+#define op_pfn_pte(x, y) mk_pte_phys((x), (y))
+#else
+#define op_pfn_pte(x, y) pfn_pte((x) >> PAGE_SHIFT, (y))
+#endif
+
+#if V_AT_LEAST(2, 5, 8)
+#include <asm/tlbflush.h>
+#endif
+
 /* 2.5.5 change pte_offset */
 #if V_AT_LEAST(2, 5, 5)
 #define pte_offset pte_offset_kernel

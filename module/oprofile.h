@@ -198,7 +198,7 @@ void my_set_fixmap(void);
 void op_intercept_syscalls(void);
 void op_replace_syscalls(void);
 void op_save_syscalls(void);
-int is_map_ready(void);
+unsigned long is_map_ready(void);
 int oprof_hash_map_open(void);
 int oprof_hash_map_release(void);
 int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma);

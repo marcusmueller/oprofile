@@ -55,6 +55,6 @@ ENTRY(op_nmi)
         SAVE_ALL
         movl %esp,%edx
         pushl %edx
-        call SYMBOL_NAME(op_do_nmi)
+        call op_do_nmi
         addl $4,%esp
         RESTORE_ALL

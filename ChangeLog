@@ -1,3 +1,14 @@
+2002-05-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* module/compat.h:
+	* module/op_fixmap.c:
+	* module/op_syscalls.c:
+	* module/oprofile.c:
+	* module/oprofile.h:
+	* module/oprofile_nmi.S: fix module up to kernel 2.5.15
+
+	* module/compat22.h: small fix for 2.2
+
 2002-05-17  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* module/op_fixmap.c: revert my last change :/. Something is

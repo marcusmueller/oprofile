@@ -40,7 +40,7 @@ unsigned long virt_apic_base;
 	pgprot_val(prot) |= _PAGE_PCD;
 	if (test_bit(X86_FEATURE_PGE, &boot_cpu_data.x86_capability))
 		pgprot_val(prot) |= _PAGE_GLOBAL;
-	set_pte(pte, mk_pte_phys(phys, prot));
+	set_pte(pte, op_pfn_pte(phys, prot));
 	__flush_tlb_one(vaddr);
 }
 

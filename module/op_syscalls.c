@@ -25,7 +25,7 @@ char * pool_pos;
 char * pool_start;
 char * pool_end;
  
-static uint hash_map_open;
+static ulong hash_map_open;
 static struct op_hash_index *hash_map;
 
 void oprof_put_note(struct op_note *samp);
@@ -35,7 +35,7 @@ extern spinlock_t note_lock;
  
 /* --------- device routines ------------- */
 
-int is_map_ready(void)
+unsigned long is_map_ready(void)
 {
 	return hash_map_open;
 }

@@ -43,8 +43,8 @@ int partial_stop;
 
 static int op_major;
 
-static volatile uint oprof_opened __cacheline_aligned_in_smp;
-static volatile uint oprof_note_opened __cacheline_aligned_in_smp;
+static volatile ulong oprof_opened __cacheline_aligned_in_smp;
+static volatile ulong oprof_note_opened __cacheline_aligned_in_smp;
 static DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
 
 static u32 oprof_ready[NR_CPUS] __cacheline_aligned_in_smp;
