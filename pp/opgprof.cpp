@@ -212,8 +212,6 @@ int opgprof(vector<string> const & non_options)
 
 	profile_container samples(false, true);
 
-	// FIXME: need image_set as before
-
 	// FIXME: symbol_filter would be allowed through option
 	op_bfd abfd(profiles.image, string_filter());
 

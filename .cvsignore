@@ -17,6 +17,8 @@ a.diff
 aclocal.m4
 oprofile.s
 confdefs.h
+config.guess
+config.sub
 config.log
 config.cache
 config.status

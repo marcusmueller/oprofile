@@ -19,6 +19,7 @@
 #include "op_exception.h"
 #include "op_header.h"
 #include "profile.h"
+#include "populate.h"
 #include "op_sample_file.h"
 #include "cverb.h"
 #include "string_manip.h"
@@ -53,52 +54,6 @@ string const end_comment(" */");
 
 /// field width for the sample count
 unsigned int const count_width = 6;
-
-/// record samples for one profile set
-void populate_samples(profile_container & samples, size_t count_group,
-                      string const & image, list<string> const & files)
-{
-	try {
-		op_bfd abfd(image, symbol_filter);
-
-		profile_t profile;
-
-		list<string>::const_iterator it = files.begin();
-		list<string>::const_iterator const end = files.end();
-
-		for (; it != end; ++it) {
-			profile.add_sample_file(*it, abfd.get_start_offset());
-		}
-
-		check_mtime(abfd.get_filename(), profile.get_header());
-	
-		samples.add(profile, abfd, image, count_group);
-	}
-	catch (op_runtime_error const & e) {
-		static bool first_error = true;
-		if (first_error) {
-			cerr << "warning: some binary images could not be "
-			     << "read, and will be ignored in the results"
-			     << endl;
-		}
-		cerr << "op_bfd: " << e.what() << endl;
-	}
-}
-
-
-/// go through each profile set and populate
-void populate_samples(profile_container & samples,
-                      profile_class const & pclass,
-                      size_t count_group)
-{
-	list<profile_set>::const_iterator it = pclass.profiles.begin();
-	list<profile_set>::const_iterator const end = pclass.profiles.end();
-
-	for (; it != end; ++it) {
-		populate_samples(samples, count_group, it->image, it->files);
-	}
-}
-
 
 string get_annotation_fill()
 {
@@ -639,7 +594,7 @@ void output_source(path_filter const & filter)
 }
 
 
-bool annotate_source(set<string> const & images)
+bool annotate_source(list<string> const & images)
 {
 	annotation_fill = get_annotation_fill();
 
@@ -666,8 +621,11 @@ bool annotate_source(set<string> const & images)
 
 	if (assembly) {
 		bool some_output = false;
-		set<string>::const_iterator it;
-		for (it = images.begin(); it != images.end(); ++it) {
+
+		list<string>::const_iterator it = images.begin();
+		list<string>::const_iterator const end = images.end();
+
+		for (; it != end; ++it) {
 			if (output_asm(*it)) {
 				some_output = true;
 			}
@@ -695,19 +653,16 @@ int opannotate(vector<string> const & non_options)
 
 	samples.reset(new profile_container(true, true));
 
-	set<string> images;
+	list<string> images;
 
-	for (size_t i = 0; i < classes.v.size(); ++i) {
+	list<inverted_profile> iprofiles = invert_profiles(classes);
 
-		populate_samples(*samples, classes.v[i], i);
+	list<inverted_profile>::const_iterator it = iprofiles.begin();
+	list<inverted_profile>::const_iterator const end = iprofiles.end();
 
-		list<profile_set>::const_iterator it
-			= classes.v[i].profiles.begin();
-		list<profile_set>::const_iterator const end
-			= classes.v[i].profiles.end();
-		
-		for (; it != end; ++it)
-			images.insert(it->image);
+	for (; it != end; ++it) {
+		populate_for_image(*samples, *it);
+		images.push_back(it->image);
 	}
 
 	annotate_source(images);

@@ -1,5 +1,15 @@
 2003-09-14  John Levon  <levon@movementarian.org>
 
+	* Makefile.am:
+	* populate.h:
+	* populate.cpp: shared code for populating from
+	inverted profiles
+
+	* opreport.cpp:
+	* opannotate.cpp: use above
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
 	* libpp/arrange_profiles.h:
 	* libpp/arrange_profiles.cpp: add invert_profiles
 
