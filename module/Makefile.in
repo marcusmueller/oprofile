@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.14 2002/01/22 20:36:09 movement Exp $
+# $Id: Makefile.in,v 1.15 2002/01/22 20:52:56 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -18,7 +18,7 @@ all: oprofile.o
 install: all
 	-$(MKDIR_P) $(MODINSTALLDIR)
 	cp oprofile.o $(MODINSTALLDIR)
-	depmod -a @KVERS@
+	if test "@KVERS@" = "`uname -r`"; then depmod -a ; fi
 
 uninstall:
 	-rm -f $(MODINSTALLDIR)/oprofile.o
