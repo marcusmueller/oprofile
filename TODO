@@ -6,6 +6,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8 release
 -----------
 
+ o print "0" not "0.0e+00". should we consider reworking opstack output
+format? make the headers more explanative
  o with callgraph the min count are too low. opcontrol must check callgraph is
   on (/dev/oprofile/callgraph_depth) and pass it to op_help etc. so we scale
   min count by ten (at least).
