@@ -1,5 +1,11 @@
 2001-01-22  John Levon  <moz@compsoc.man.ac.uk>
 
+	* op_syscalls.c:do_hash(): use strcpy not strncpy. 
+		It's probably faster, and if d_name.len is corrupted
+		the kernel has bigger things to worry about.
+
+2001-01-22  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/guide.lyx:
 	* dae/guide.html: update docs a little
 

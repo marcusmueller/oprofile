@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.2 2001/01/22 00:11:45 moz Exp $ */
+/* $Id: op_syscalls.c,v 1.3 2001/01/22 02:11:06 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -397,7 +397,7 @@ retry:
 	goto retry;
 
 new_entry:
-	strncpy(hash_map[value].name, dentry->d_name.name, dentry->d_name.len);
+	strcpy(hash_map[value].name, dentry->d_name.name);
 	hash_map[value].parent = parent;
 	return value;
 
