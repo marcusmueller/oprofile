@@ -30,6 +30,8 @@ oprofile \- a sytem-wide profiler
 oprofile is a profiling system for x86 systems running Linux 2.4. Profiling runs
 transparently during the background, and profile data can be collected at any time. oprofile
 makes use of the hardware performance counters provided on Intel P6, and AMD Athlon family processors.
+In the following description, options that begin with ctrX- define a logical counter
+number in the range 0-3 (0-1 for Intel processors, which only have two counters).
 See the HTML documentation for further details.
 
 .SH OPTIONS
@@ -53,24 +55,24 @@ specify System.map for running kernel
 specify vmlinux kernel image
 .br
 .TP
-.I "--ctr0-event --ctr1-event"
-symbolic event name for ctr0/1
+.I "--ctrX-event"
+symbolic event name for counter X
 .br
 .TP
-.I "--ctr0-count --ctr1-count"
-number of events between samples for ctr0/1
+.I "--ctrX-count"
+number of events between samples for counter X
 .br
 .TP
-.I "--ctr0-unit-mask --ctr1-unit-mask"
-unit mask for ctr0/1
+.I "--ctrX-unit-mask"
+unit mask for counter X
 .br
 .TP
-.I "--ctr0-kernel --ctr1-kernel"
-whether to count kernel events for ctr 0/1
+.I "--ctrX-kernel"
+whether to count kernel events for counter X
 .br
 .TP
-.I "--ctr0-user --ctr1-user"
-whether to count user events for ctr 0/1
+.I "--ctrX-user"
+whether to count user events for counter X
 .br
 .TP
 .I "--buffer-size"
@@ -238,7 +240,7 @@ Profiles will be collected every ten minutes. You can force a collection at any 
 .I op_dump
 .PP
 As an alternative you can use the
-.B oprofile
+.B oprof_start
 gui to start the profiler. See the HTML documentation for further details
 .PP
 You can then collect profiles for any binary or shared library by using

@@ -245,12 +245,11 @@ that's not normal behaviour; so if you are profiling over a larger period of tim
 
 I can now ask for a symbol-based summary of the sample profile :
 </para>
-<para><command>oprofpp &mdash;demangle -l ./lyx &gt;oprof.out</command></para>
+<para><command>oprofpp &mdash;demangle -l /home/moz/lyx/lyx-devel/src/lyx &gt;oprof.out</command></para>
 <para>
-You can also pass the full absoluate path of the binary to example. 
-This can be quite slow on large binaries, so sit tight. 
-As it's a C++ program, I asked for the symbols to be demangled to a readable form. Examining
-the output will give the symbols against which the most hits were registered. In this case I got :
+You will have to specify the full path unless you also specify the sample file (see the manpage). This can be quite slow
+on large binaries, so sit tight. As it's a C++ program, I asked for the symbols to be demangled to a readable form. Examining
+the file will give the symbols against which the most hits were registered. In this case I got :
 </para>
 <para>
 <screen>
@@ -586,7 +585,7 @@ The following files will be present :
 
 </sect2>
 
-<sect2 id="misuse">
+<sect1 id="misuse">
 <title>Misuse of <command>oprofile</command> and stability of system</title>
 <para>
 OProfile is a low-level profiler which allow continuous profiling with a low-overhead cost.
@@ -616,23 +615,23 @@ circumstances, a simple solution is to disable kernel profiling by turning off t
 each enabled counter. As the NMI handler is in-kernel, this avoids the problem.
 </para>
 
-</sect2>
+</sect1>
 
 </sect1>
  
 <sect1 id="other-features">
 <title>Other features</title>
 
-<sect2 id="pidpgrpfilter">
+<sect1 id="pidpgrpfilter">
 <title>pid/pgrp filter</title>
 <para>There are situations where you are only interested in the profiling results of a particular
 running process, or process group. You can set
 the pid/pgrp values via the <filename>&mdash;pid-filter</filename> and <filename>&mdash;pgrp-filter</filename>
 options to <command>op_start</command>, or by setting the relevant sysctls as mentioned in <xref linkend="sysctl">.
 </para>
-</sect2>
+</sect1>
 
-<sect2 id="unloadable">
+<sect1 id="unloadable">
 <title>Unloadable kernel module</title>
 <para>
 The kernel module can be unloaded, but is designed to take very little memory when profiling is not underway.
@@ -649,7 +648,7 @@ re-enable the module unload by specifying the "allow_unload" parameter to the mo
 </para>
 <para><command>modprobe oprofile allow_unload=1</command></para>
 <para>This option can be <emphasis>DANGEROUS</emphasis> and should only be used on non-production systems.</para> 
-</sect2>
+</sect1>
 
 </sect1>
  

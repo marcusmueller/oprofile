@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.30 2001/09/25 15:57:27 movement Exp $ */
+/* $Id: op_events.c,v 1.31 2001/09/28 02:51:39 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -780,55 +780,6 @@ static void help_for_event(int i)
 	}
 }
 
-/**
- * help_event_for_gui - output event name and description
- * @i: event number
- *
- * output an help string for the event @i, in
- * a manner adapted for use by the oprofile gui
- */
-static void help_event_for_gui(int i)
-{
-	uint j;
-
-	printf("{ %s", op_events[i].name);
-
-	printf(" %d %d", op_events[i].cpu_mask, op_events[i].counter_mask);
-
-	printf(" \"%s\" %d", op_event_descs[i], op_events[i].min_count);
-
-	if (op_events[i].unit) {
-		int unit_idx = op_events[i].unit;
-
-		printf("\n");
-
-		switch (op_unit_masks[unit_idx].unit_type_mask) {
-			case utm_mandatory:
-				printf("\tmandatory ");
-				break;
-			case utm_exclusive:
-				printf("\texclusive ");
-				break;
-			case utm_bitmask:
-				printf("\tbitmask ");
-				break;
-		}
-
-		printf("%d\n", op_unit_masks[unit_idx].default_mask);
-		printf("\t{\n");
-
-		for (j=0; j < op_unit_masks[unit_idx].num; j++) {
-			printf("\t    { %d \"%s\" }\n",
-			       op_unit_masks[unit_idx].um[j],
-			       op_unit_descs[unit_idx].desc[j]);
-			}
-
-		printf("\t}\n");
-	}
-
-	printf(" }\n");
-}
-
 int main(int argc, char *argv[])
 {
 	int i;
@@ -855,8 +806,6 @@ int main(int argc, char *argv[])
 		} else if (!strncmp(argv[i], "--get-cpu-type", 11)) {
 			printf("%d\n", cpu_type);
 			exit(EXIT_SUCCESS);
-		} else if (!strcmp(argv[1], "--gui-description")) {
-			for_gui = 1;
 		} else {
 			cpu_type_mask = 1 << cpu_type;
 			for (j=0; j < op_nr_events; j++) {
@@ -872,22 +821,14 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (for_gui == 0) {
-		printf("oprofile: available events\n");
-		printf("--------------------------\n\n");
-		printf("See Intel Architecture Developer's Manual\nVol. 3, Appendix A\n\n");
-	} else {
-		printf("{ DISABLED -1 -1 \"Select it to disable this counter\" 0 }\n");
-	}
+	printf("oprofile: available events\n");
+	printf("--------------------------\n\n");
+	printf("See Intel Architecture Developer's Manual\nVol. 3, Appendix A\n\n");
 
 	cpu_type_mask = 1 << cpu_type;
 	for (j=0; j < op_nr_events; j++) {
 		if ((op_events[j].cpu_mask & cpu_type_mask) != 0) {
-			if (for_gui) {
-				help_event_for_gui(j);
-			} else {
-				help_for_event(j);
-			}
+			help_for_event(j);
 		}
 	}
 

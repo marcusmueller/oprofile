@@ -1,3 +1,10 @@
+2001-09-27  Philippe Elie  <ph_e@club-internet.fr>
+
+	* doc/oprofile.1.in: minor change
+	* op_events.c: remove --gui-description stuff
+	* pp/opf_filter.cpp: remove use of temporary array to
+	  pass argument to the popt library
+
 2001-09-27  John Levon  <moz@compsoc.man.ac.uk>
 
 	* doc/oprofile.sgml: updates

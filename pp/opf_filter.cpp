@@ -961,15 +961,9 @@ static void get_options(int argc, char const * argv[])
 			oprofpp_opt.push_back(argv[i++]);
 	}
 
-	char const *argv2[oprofpp_opt.size()];
-	for (uint i = 0; i < oprofpp_opt.size(); ++i)
-		argv2[i] = oprofpp_opt[i];
-	opp_get_options(oprofpp_opt.size(), argv2);
+	opp_get_options(oprofpp_opt.size(), &oprofpp_opt[0]);
 
-	char const *argv3[opf_opt.size()];
-	for (uint i = 0; i < opf_opt.size(); ++i)
-		argv3[i] = opf_opt[i];
-	optcon = opd_poptGetContext(NULL, opf_opt.size(), argv3,
+	optcon = opd_poptGetContext(NULL, opf_opt.size(), &opf_opt[0],
 				options, 0);
 
 	c = poptGetNextOpt(optcon);
