@@ -213,9 +213,10 @@ int opgprof(vector<string> const & non_options)
 	profile_container samples(false, true);
 
 	// FIXME: symbol_filter would be allowed through option
-	op_bfd abfd(profiles.image, string_filter(), false);
+	op_bfd abfd(image_profile.image, string_filter(), false);
 
-	load_samples(abfd, profiles.files, profiles.image, samples);
+	load_samples(abfd, image_profile.groups[0].begin()->files,
+	             image_profile.image, samples);
 
 	output_gprof(samples, options::gmon_filename, abfd);
 

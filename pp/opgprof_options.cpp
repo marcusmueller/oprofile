@@ -22,7 +22,7 @@
 
 using namespace std;
 
-profile_set profiles;
+inverted_profile image_profile;
 
 namespace options {
 	string gmon_filename = "gmon.out";
@@ -63,22 +63,12 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 
 	size_t nr_classes = classes.v.size();
 
-	if (nr_classes == 0 && !exclude_dependent) {
-		cerr << "No samples files found: profile specification too "
-		     << "strict ?" << endl;
-		exit(EXIT_FAILURE);
-	}
+	list<inverted_profile> iprofiles
+		= invert_profiles(classes, options::extra_found_images);
 
-	size_t nr_app_profiles = 0;
-	if (nr_classes)
-		nr_app_profiles = classes.v[0].profiles.size();
-
-	if (nr_classes == 1 && nr_app_profiles == 1) {
-		profiles = *(classes.v[0].profiles.begin());
-		// find 2.6 kernel module and check readability
-		bool ok;
-		profiles.image = find_image_path(profiles.image,
-			options::extra_found_images, ok);
+	if (nr_classes == 1 && iprofiles.size() == 1
+	    && !iprofiles.begin()->image_unreadable) {
+		image_profile = *(iprofiles.begin());
 		return true;
 	}
 
@@ -86,9 +76,21 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 	if (exclude_dependent)
 		return false;
 
-	if (nr_app_profiles > 1) {
+	if (iprofiles.empty()) {
+		cerr << "error: no sample files found: profile specification "
+		     "too strict ?" << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	if (nr_classes > 1 || iprofiles.size() > 1) {
 		cerr << "error: specify exactly one binary to process "
 		     "and give an event: or count: specification if necessary"
+		     << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	if (iprofiles.begin()->image_unreadable) {
+		cerr << "error: no readable binary image to process"
 		     << endl;
 		exit(EXIT_FAILURE);
 	}

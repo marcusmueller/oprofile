@@ -1,3 +1,12 @@
+2003-09-18  John Levon  <levon@movementarian.org>
+
+	* pp/opannotate_options.cpp:
+	* pp/opreport_options.cpp: clean up error messages
+
+	* pp/opgprof_options.h:
+	* pp/opgprof_options.cpp:
+	* pp/opgprof.cpp: use inverted_profile API
+
 2003-09-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* utils/opcontrol: overwrite all current settings with --separate,

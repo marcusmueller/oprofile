@@ -17,14 +17,14 @@
 #include "utility.h"
 #include "common_option.h"
 
-class profile_set;
-
 namespace options {
 	extern std::string gmon_filename;
 }
 
+class inverted_profile;
+
 /// a set of sample filenames to handle.
-extern profile_set profiles;
+extern inverted_profile image_profile;
 
 /**
  * handle_options - process command line

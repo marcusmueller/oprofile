@@ -124,8 +124,8 @@ void handle_options(vector<string> const & non_options)
 	classes = arrange_profiles(sample_files, merge_by);
 
 	if (classes.v.empty()) {
-		cerr << "No samples files found: profile specification too "
-		     << "strict ?" << endl;
+		cerr << "error: no sample files found: profile specification "
+		     "too strict ?" << endl;
 		exit(EXIT_FAILURE);
 	}
 }
