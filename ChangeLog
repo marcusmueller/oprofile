@@ -1,5 +1,11 @@
 2001-10-16  John Levon  <moz@compsoc.man.ac.uk>
 
+	* configure.in:
+	* oprofile.h: workaround for Mandrake randomly
+	  back-porting things.
+ 
+2001-10-16  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/opd_proc.c:
 	* gui/oprof_start.cpp:
 	* gui/oprof_start_config.cpp:

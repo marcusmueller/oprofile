@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.44 2001/10/13 02:17:33 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.45 2001/10/16 21:31:03 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -101,6 +101,13 @@ if (__builtin_expect(i, 0)) { }
 ],AC_MSG_RESULT("yes"); BKCFLAGS="$BKCFLAGS -DEXPECT_OK", AC_MSG_RESULT("no");)
 CFLAGS=$SAVE_CFLAGS 
  
+AC_MSG_CHECKING("whether completion.h exists")
+if test -f $KINC/linux/completion.h; then
+  BKCFLAGS="$BKCFLAGS -DCOMPLETION_H"
+  AC_MSG_RESULT("yes")
+else
+  AC_MSG_RESULT("no")
+fi
  
 AC_MSG_CHECKING(for x86 architecture)
 AX_COMPILE_OPTION(CONFIG_X86,x86=1,x86=0)
