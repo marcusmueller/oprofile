@@ -814,6 +814,8 @@ void oprof_start::on_start_profiler()
 // flush and stop the profiler if it was started.
 void oprof_start::on_stop_profiler()
 {
+	// FIXME: security problem with these - they need
+	// to be /usr/bin/op_stop or whatever, everywhere... 
 	if (daemon_status().running)
 		do_exec_command("op_stop");
 	else
