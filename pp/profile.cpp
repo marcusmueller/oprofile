@@ -74,18 +74,29 @@ profile_t::profile_t(string const & sample_file, int counter_)
 	}
 }
 
+
 profile_t::~profile_t()
 {
 }
 
+
 void profile_t::check_mtime(string const & file) const
 {
 	time_t const newmtime = op_get_mtime(file.c_str());
-	if (newmtime != first_header().mtime) {
-		cerr << "oprofpp: WARNING: the last modified time of the binary file "
-			<< file << " does not match\n"
-			<< "that of the sample file. Either this is the wrong binary or the binary\n"
-			<< "has been modified since the sample file was created.\n";
+
+	if (newmtime == first_header().mtime)
+	       return;
+
+	// Files we couldn't get mtime of have zero mtime
+	if (!first_header().mtime) {
+		cerr << "oprofpp: warning: could not check that the binary file "
+		     << file << "\nhas not been modified since "
+			"the profile was taken. Results may be inaccurate.\n";
+	} else {
+		cerr << "oprofpp: warning: the last modified time of the binary file\n"
+			<< file << "\ndoes not match that of the sample file.\n"
+		        "Either this is the wrong binary or the binary "
+			"has been modified since the sample file was created.\n";
 	}
 }
 
