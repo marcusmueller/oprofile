@@ -21,6 +21,6 @@
 #define COOKIE_SWITCH_CODE		3
 #define KERNEL_ENTER_SWITCH_CODE	4
 #define KERNEL_EXIT_SWITCH_CODE		5
-#define DROP_MODULES_CODE               6
+#define MODULE_LOADED_CODE              6
  
 #endif /* OP_INTERFACE_25_H */

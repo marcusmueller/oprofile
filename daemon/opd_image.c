@@ -499,8 +499,8 @@ void opd_process_samples(char const * buffer, size_t count)
 				in_kernel = 0;
 				break;
 
-			case DROP_MODULES_CODE:
-				verbprintf("DROP_MODULES\n");
+			case MODULE_LOADED_CODE:
+				verbprintf("MODULE_LOADED_CODE\n");
 				opd_reread_module_info();
 				break;
 
