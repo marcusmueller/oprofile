@@ -261,7 +261,7 @@ static void resolve_events(struct list_head * events)
 	int nr_counters = op_get_nr_counters(cpu_type);
 
 	if (count > nr_counters) {
-		fprintf(stderr, "Not enough hardware counter\n");
+		fprintf(stderr, "Not enough hardware counters.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -292,7 +292,7 @@ static void resolve_events(struct list_head * events)
 	} while (next_permutation(counter_map, counter_map + nr_counters));
 
 	if (success == EXIT_FAILURE) {
-		fprintf(stderr, "Couldn't allocate a hardware counter\n");
+		fprintf(stderr, "Couldn't allocate hardware counters for the selected events.\n");
 		exit(EXIT_FAILURE);
 	}
 
