@@ -291,7 +291,7 @@ static struct opd_image * opd_find_image(char const * name, int hash, char const
 	/* Now we should hash the image. Paranoia check */
 	if (image->hash_next) {
 		printf("error: image is already hashed !\n");
-		exit(EXIT_FAILURE);
+		abort();
 	}
 
 	image->hash = hash;

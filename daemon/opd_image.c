@@ -145,7 +145,7 @@ static void opd_init_image(struct opd_image * image, cookie_t cookie,
 	if (lookup_dcookie(cookie, buf, PATH_MAX) <= 0) {
 		fprintf(stderr, "Lookup of cookie %llx failed, errno=%d\n",
 		       cookie, errno); 
-		exit(EXIT_FAILURE);
+		abort();
 	}
 
 	image->name = xstrdup(buf);
@@ -153,7 +153,7 @@ static void opd_init_image(struct opd_image * image, cookie_t cookie,
 	if (lookup_dcookie(app_cookie, buf, PATH_MAX) <= 0) {
 		fprintf(stderr, "Lookup of cookie %llx failed, errno=%d\n",
 			cookie, errno); 
-		exit(EXIT_FAILURE);
+		abort();
 	}
 
 	image->app_name = xstrdup(buf);
@@ -249,7 +249,7 @@ void opd_put_image_sample(struct opd_image * image, vma_t offset, int counter)
 	/* Possible narrowing to 32-bit value only. */
 	if (odb_insert(sample_file, (unsigned long)offset, 1) != EXIT_SUCCESS) {
 		fprintf(stderr, "%s\n", sample_file->err_msg);
-		exit(EXIT_FAILURE);
+		abort();
 	}
 }
 
@@ -401,7 +401,7 @@ static uint64_t pop_buffer_value(struct transient * trans)
 
 	if (!trans->remaining) {
 		fprintf(stderr, "BUG: popping empty buffer !\n");
-		exit(EXIT_FAILURE);
+		abort();
 	}
 
 	val = get_buffer_value(trans->buffer, 0);
@@ -481,7 +481,7 @@ static void opd_put_sample(struct transient * trans, vma_t eip)
 static void code_unknown(struct transient * trans __attribute__((unused)))
 {
 	fprintf(stderr, "Unknown code !\n");
-	exit(EXIT_FAILURE);
+	abort();
 }
 
 
@@ -643,7 +643,7 @@ void opd_process_samples(char const * buffer, size_t count)
 	
 		if (code >= LAST_CODE) {
 			fprintf(stderr, "Unknown code %llu\n", code);
-			exit(EXIT_FAILURE);
+			abort();
 		}
 
 		handlers[code](&trans);

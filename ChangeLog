@@ -1,5 +1,13 @@
 2003-09-02  John Levon  <levon@movementarian.org>
 
+	* dae/opd_image.c:
+	* dae/opd_proc.c:
+	* dae/oprofiled.c:
+	* daemon/opd_image.c: use abort() not exit()
+	on "can't happen" errors
+
+2003-09-02  John Levon  <levon@movementarian.org>
+
 	* dae/opd_proc.c:
 	* daemon/opd_image.c: fix error message
 

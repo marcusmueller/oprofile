@@ -422,7 +422,7 @@ static void opd_do_notes(struct op_note const * opd_buf, size_t count)
 
 			default:
 				fprintf(stderr, "Received unknown notification type %u\n", note->type);
-				exit(EXIT_FAILURE);
+				abort();
 				break;
 		}
 	}

@@ -292,7 +292,7 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 
 	if (odb_insert(sample_file, offset, 1) != EXIT_SUCCESS) {
 		fprintf(stderr, "%s\n", sample_file->err_msg);
-		exit(EXIT_FAILURE);
+		abort();
 	}
 }
 
