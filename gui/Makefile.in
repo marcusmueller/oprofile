@@ -17,6 +17,7 @@ OBJECTS=ui/oprof_start.base.o ui/oprof_start.base.moc.o \
 TARGET=oprof_start
 
 CXXFLAGS += -DBINDIR=\"$(BINDIR)\" -DKVERSION=\"@KVERS@\" @QT_INCLUDES@
+CXX_CPPFLAGS_DEPS =  @QT_INCLUDES@
 LDFLAGS += @QT_LDFLAGS@
 LIBS=-lutil++ -lutil -lop -lpopt -liberty @QT_LIBS@
 LIB_DEPS=../libutil++/libutil++.a ../libutil/libutil.a ../libop/libop.a

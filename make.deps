@@ -2,7 +2,7 @@
 # has to be separate from make.common due to fucked up dependencies in gui/
  
 CPPFLAGS_DEPS = $(INCLUDES)
-CXX_CPPFLAGS_DEPS = $(INCLUDES) $(CXXINCLUDES)
+CXX_CPPFLAGS_DEPS += $(INCLUDES) $(CXXINCLUDES)
 
 .deps/%.cpp.d: %.cpp
 	@$(MKDIR_P) .deps
