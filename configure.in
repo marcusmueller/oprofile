@@ -82,7 +82,6 @@ fi
 dnl AX_CHECK_DOCBOOK
 AC_DEFUN(AX_CHECK_DOCBOOK, [
 # This may not exist
-XML_CATALOG=/etc/xml/catalog
 # It's just rude to go over the net to build
 XSLTPROC_FLAGS=--nonet
 DOCBOOK_ROOT=
@@ -99,6 +98,7 @@ if test ! -f /etc/xml/catalog; then
 		XSLTPROC_FLAGS=
 	fi
 else
+	XML_CATALOG=/etc/xml/catalog
 	CAT_ENTRY_START='<!--'
 	CAT_ENTRY_END='-->'
 fi
@@ -107,23 +107,23 @@ AC_CHECK_PROG(XSLTPROC,xsltproc,xsltproc,)
 XSLTPROC_WORKS=no
 if test -n "$XSLTPROC"; then
 	AC_MSG_CHECKING([whether xsltproc works])
-	# We can't easily test this case !
+
 	if test -n "$XML_CATALOG"; then
-		XSLTPROC_WORKS=yes
+		DB_FILE="http://docbook.sourceforge.net/release/xsl/current/xhtml/docbook.xsl"
 	else
-		if test -n "$XSLTPROC" -a test -n $DOCBOOK_ROOT; then
-			$XSLTPROC $XSLTPROC_FLAGS $DOCBOOK_ROOT/docbook.xsl >/dev/null 2>&1 << END
+		DB_FILE="$DOCBOOK_ROOT/doocbook.xsl"
+	fi
+
+	$XSLTPROC $XSLTPROC_FLAGS $DB_FILE >/dev/null 2>&1 << END
 <?xml version="1.0" encoding='ISO-8859-1'?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 <book id="test">
 </book>
 END
-			if test "$?" = 0; then
-				XSLTPROC_WORKS=yes
-			fi
-		fi
+	if test "$?" = 0; then
+		XSLTPROC_WORKS=yes
 	fi
-AC_MSG_RESULT($XSLTPROC_WORKS)
+	AC_MSG_RESULT($XSLTPROC_WORKS)
 fi
 AM_CONDITIONAL(have_xsltproc, test "$XSLTPROC_WORKS" = "yes")
 
