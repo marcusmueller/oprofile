@@ -1,6 +1,6 @@
 /**
  * @file format_output.h
- * Outputting format for symbol lists
+ * outputting format for symbol lists
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -48,14 +48,14 @@ public:
 
 	/** output one symbol symb to out according to the output format
 	 * specifier previously set by call(s) to set_format() */
-	void Output(std::ostream & out, symbol_entry const * symb);
+	void output(std::ostream & out, symbol_entry const * symb);
 	/** output a vector of symbols to out according to the output format
 	 * specifier previously set by call(s) to set_format() */
-	void Output(std::ostream & out,
+	void output(std::ostream & out,
 		    std::vector<symbol_entry const *> const & v, bool reverse);
 
 	/** @name format functions.
-	 * The set of formatting functions, used internally by Output().
+	 * The set of formatting functions, used internally by output().
 	 * Exposed as public because we need to use them in an array of
 	 * pointer to member function
 	 */
@@ -90,16 +90,16 @@ public:
 					     size_t);
 	//@}
 private:
-	void DoOutput(std::ostream & out, std::string const & name,
+	void do_output(std::ostream & out, std::string const & name,
 		      sample_entry const & sample, outsymbflag flags);
-	void OutputDetails(std::ostream & out, symbol_entry const * symb);
-	void OutputHeader(std::ostream & out);
-	// return the nr of char needed to padd this field
-	size_t OutputField(std::ostream & out, std::string const & name,
+	void output_details(std::ostream & out, symbol_entry const * symb);
+	void output_header(std::ostream & out);
+	// returns the nr of char needed to pad this field
+	size_t output_field(std::ostream & out, std::string const & name,
 			   sample_entry const & sample,
 			   outsymbflag fl, size_t ctr, size_t padding);
-	// return the nr of char needed to padd this field
-	size_t OutputHeaderField(std::ostream & out, outsymbflag fl,
+	// returns the nr of char needed to pad this field
+	size_t output_header_field(std::ostream & out, outsymbflag fl,
 				 size_t padding);
 
 	outsymbflag flags;

@@ -1,6 +1,6 @@
 /**
  * @file format_output.cpp
- * Outputting format for symbol lists
+ * outputting format for symbol lists
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -174,7 +174,7 @@ void formatter::set_format(outsymbflag flag)
 }
  
 
-size_t formatter::OutputField(ostream & out, string const & name,
+size_t formatter::output_field(ostream & out, string const & name,
 				 sample_entry const & sample,
 				 outsymbflag fl, size_t ctr, size_t padding)
 {
@@ -195,7 +195,7 @@ size_t formatter::OutputField(ostream & out, string const & name,
 }
 
  
-size_t formatter::OutputHeaderField(ostream & out, outsymbflag fl,
+size_t formatter::output_header_field(ostream & out, outsymbflag fl,
 					size_t padding)
 {
 	out << string(padding, ' ');
@@ -214,17 +214,17 @@ size_t formatter::OutputHeaderField(ostream & out, outsymbflag fl,
 }
  
 
-void formatter::Output(ostream & out, symbol_entry const * symb)
+void formatter::output(ostream & out, symbol_entry const * symb)
 {
-	DoOutput(out, symb->name, symb->sample, flags);
+	do_output(out, symb->name, symb->sample, flags);
 
 	if (flags & osf_details) {
-		OutputDetails(out, symb);
+		output_details(out, symb);
 	}
 }
  
 
-void formatter::OutputDetails(ostream & out, symbol_entry const * symb)
+void formatter::output_details(ostream & out, symbol_entry const * symb)
 {
 	// We need to save the accumulated count and to restore it on
 	// exit so global cumulation and detailed cumulation are separate
@@ -246,7 +246,7 @@ void formatter::OutputDetails(ostream & out, symbol_entry const * symb)
 	for (sample_index_t cur = symb->first ; cur != symb->last ; ++cur) {
 		out << ' ';
 
-		DoOutput(out, symb->name, samples_container.get_samples(cur),
+		do_output(out, symb->name, samples_container.get_samples(cur),
 			 static_cast<outsymbflag>(flags & osf_details_mask));
 	}
 
@@ -258,16 +258,16 @@ void formatter::OutputDetails(ostream & out, symbol_entry const * symb)
 }
 
  
-void formatter::DoOutput(ostream & out, string const & name,
+void formatter::do_output(ostream & out, string const & name,
 			    sample_entry const & sample, outsymbflag flag)
 {
-	OutputHeader(out);
+	output_header(out);
 
 	size_t padding = 0;
 
 	// first output the vma field
 	if (flag & osf_vma) {
-		padding = OutputField(out, name, sample, osf_vma, 0, padding);
+		padding = output_field(out, name, sample, osf_vma, 0, padding);
 	}
 
 	// now the repeated field.
@@ -278,7 +278,7 @@ void formatter::DoOutput(ostream & out, string const & name,
 				if ((repeated_flag & i) != 0) {
 					outsymbflag fl =
 					  static_cast<outsymbflag>(i);
-					padding = OutputField(out, name,
+					padding = output_field(out, name,
 						sample, fl, ctr, padding);
 					repeated_flag &= ~i;
 				}
@@ -292,7 +292,7 @@ void formatter::DoOutput(ostream & out, string const & name,
 	for (size_t i = 1 ; temp_flag != 0 ; i <<= 1) {
 		outsymbflag fl = static_cast<outsymbflag>(i);
 		if ((temp_flag & fl) != 0) {
-			padding = OutputField(out, name, sample, fl, 0, padding);
+			padding = output_field(out, name, sample, fl, 0, padding);
 			temp_flag &= ~i;
 		} else if ((true_flags & fl) != 0) {
 			field_description const * field = get_field_descr(fl);
@@ -306,7 +306,7 @@ void formatter::DoOutput(ostream & out, string const & name,
 }
  
 
-void formatter::OutputHeader(ostream & out)
+void formatter::output_header(ostream & out)
 {
 	if (!first_output) {
 		return;
@@ -322,7 +322,7 @@ void formatter::OutputHeader(ostream & out)
 
 	// first output the vma field
 	if (flags & osf_vma) {
-		padding = OutputHeaderField(out, osf_vma, padding);
+		padding = output_header_field(out, osf_vma, padding);
 	}
 
 	// now the repeated field.
@@ -334,7 +334,7 @@ void formatter::OutputHeader(ostream & out)
 					outsymbflag fl =
 					  static_cast<outsymbflag>(i);
 					padding =
-					  OutputHeaderField(out, fl, padding);
+					  output_header_field(out, fl, padding);
 					repeated_flag &= ~i;
 				}
 			}
@@ -346,7 +346,7 @@ void formatter::OutputHeader(ostream & out)
 	for (size_t i = 1 ; temp_flag != 0 ; i <<= 1) {
 		if ((temp_flag & i) != 0) {
 			outsymbflag fl = static_cast<outsymbflag>(i);
-			padding = OutputHeaderField(out, fl, padding);
+			padding = output_header_field(out, fl, padding);
 			temp_flag &= ~i;
 		}
 	}
@@ -355,19 +355,19 @@ void formatter::OutputHeader(ostream & out)
 }
 
  
-void formatter::Output(ostream & out,
+void formatter::output(ostream & out,
 			  vector<symbol_entry const *> const & symbols,
 			  bool reverse)
 {
 	if (reverse) {
 		vector<symbol_entry const *>::const_reverse_iterator it;
 		for (it = symbols.rbegin(); it != symbols.rend(); ++it) {
-			Output(out, *it);
+			output(out, *it);
 		}
 	} else {
 		vector<symbol_entry const *>::const_iterator it;
 		for (it = symbols.begin(); it != symbols.end(); ++it) {
-			Output(out, *it);
+			output(out, *it);
 		}
 	}
 }

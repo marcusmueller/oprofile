@@ -485,7 +485,7 @@ static void output_symbols_count(map_t& files, int counter)
 
 	format_output::formatter out(samples, counter);
 	out.set_format(options::output_format_flags);
-	out.Output(cout, symbols, !options::reverse_sort);
+	out.output(cout, symbols, !options::reverse_sort);
 }
 
 int main(int argc, char const * argv[])

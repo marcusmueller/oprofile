@@ -45,7 +45,7 @@ static void do_list_symbols(samples_container_t & samples,
 	vector<symbol_entry const *> symbols =
 		samples.select_symbols(sort_by_ctr, 0.0, false);
 
-	out.Output(cout, symbols, !options::reverse_sort);
+	out.output(cout, symbols, !options::reverse_sort);
 }
 
 /**
@@ -64,7 +64,7 @@ static void do_list_symbols_details(samples_container_t & samples,
 	vector<symbol_entry const *> symbols =
 		samples.select_symbols(sort_by_ctr, 0.0, false, true);
 
-	out.Output(cout, symbols, false);
+	out.output(cout, symbols, false);
 }
 
 /**
@@ -86,7 +86,7 @@ static void do_list_symbol(samples_container_t & samples, format_output::formatt
 		return;
 	}
 
-	out.Output(cout, symb);
+	out.output(cout, symb);
 }
 
 #define GMON_VERSION 1
