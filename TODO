@@ -48,7 +48,6 @@ Before 1.0 little stuff
  o OPD_MAX_MODULES is stupid, use a list instead
  o improve the *non* verbose daemon log to be a bit more informative
  o --buffer-size is useless on 2.5 without tuning of watershed
- o is --reset racy ? it's certainly too slow ...
  o oprof_start: check lib samples when kernel samples checkbox is checked
  o fix /dev/null mappings (see sf) (I've seen this once - john)
  o mask SIGTERM over critical daemon operations that could corrupt sample files
