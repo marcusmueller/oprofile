@@ -9,14 +9,14 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.14 2000/12/17 02:46:04 moz Exp $)
+AC_REVISION($Id: configure.in,v 1.15 2001/01/12 21:28:43 moz Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 PACKAGE=oprofile
-VERSION=0.0.2
+VERSION=0.0.3
 
 dnl -- local macros -- 
  

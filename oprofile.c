@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.46 2000/12/15 02:52:11 moz Exp $ */
+/* $Id: oprofile.c,v 1.47 2001/01/12 21:28:43 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -154,8 +154,8 @@ asmlinkage void op_do_nmi(struct pt_regs * regs)
 #endif
 
 	/* disable counters */
-	rdmsr(P6_MSR_EVNTSEL0,low,high);
-	wrmsr(P6_MSR_EVNTSEL0,low&~(1<<22),high);
+	rdmsr(MSR_IA32_EVNTSEL0,low,high);
+	wrmsr(MSR_IA32_EVNTSEL0,low&~(1<<22),high);
 
 	if (data->ctrs&OP_CTR_0)
 		overflowed = op_check_ctr(data,regs,0);
@@ -163,8 +163,8 @@ asmlinkage void op_do_nmi(struct pt_regs * regs)
 		overflowed |= op_check_ctr(data,regs,1);
 		
 	/* enable counters */
-	rdmsr(P6_MSR_EVNTSEL0,low,high);
-	wrmsr(P6_MSR_EVNTSEL0,low|(1<<22),high);
+	rdmsr(MSR_IA32_EVNTSEL0,low,high);
+	wrmsr(MSR_IA32_EVNTSEL0,low|(1<<22),high);
 
 	if (!overflowed)
 		DO_NMI(regs, 0);
@@ -235,8 +235,8 @@ static void disable_local_P6_APIC(void *dummy)
 	/* FIXME: maybe this should go at end of function ? */
 	/* first disable via MSR */
 	/* IA32 V3, 7.4.2 */
-	rdmsr(MSR_APIC_BASE, l, h);
-	wrmsr(MSR_APIC_BASE, l&~(1<<11), h);
+	rdmsr(MSR_IA32_APICBASE, l, h);
+	wrmsr(MSR_IA32_APICBASE, l&~(1<<11), h);
 
 	/*
 	 * Careful: we have to set masks only first to deassert
@@ -263,7 +263,7 @@ static void disable_local_P6_APIC(void *dummy)
         apic_write(APIC_LVTPC, APIC_LVT_MASKED);
 
 	v = apic_read(APIC_SPIV);
-	v &= ~(1<<8);
+	v &= ~APIC_SPIV_APIC_ENABLED;
 	apic_write(APIC_SPIV, v);
 
 	printk(KERN_INFO "oprofile: disabled local APIC.\n");
@@ -299,15 +299,17 @@ static int __init apic_setup(void)
 
 	/* map the real local APIC back in */
 	/* current kernels fake this on boot setup for UP */
+#ifndef CONFIG_X86_UP_APIC
 	my_set_fixmap();
+#endif
 
 	/* FIXME: NMI delivery for SMP ? */
 
 	/* enable local APIC via MSR. Forgetting this is a fun way to
 	   lock the box */
 	/* IA32 V3, 7.4.2 */
-	rdmsr(MSR_APIC_BASE, msr_low, msr_high);
-	wrmsr(MSR_APIC_BASE, msr_low|(1<<11), msr_high);
+	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
+	wrmsr(MSR_IA32_APICBASE, msr_low|(1<<11), msr_high);
 
 	/* check for a good APIC */
 	/* IA32 V3, 7.4.15 */
@@ -324,7 +326,7 @@ static int __init apic_setup(void)
 	/* enable APIC locally */
 	/* IA32 V3, 7.4.14.1 */
 	val = apic_read(APIC_SPIV);
-	apic_write(APIC_SPIV, val|(1<<8));
+	apic_write(APIC_SPIV, val|APIC_SPIV_APIC_ENABLED);
 
 	/* FIXME: examine this stuff */
 	val = 0x00008700;
@@ -361,8 +363,8 @@ static int __init apic_setup(void)
 not_local_p6_apic:
 	printk(KERN_ERR "oprofile: no local P6 APIC\n");
 	/* IA32 V3, 7.4.2 */
-	rdmsr(MSR_APIC_BASE, msr_low, msr_high);
-	wrmsr(MSR_APIC_BASE, msr_low&~(1<<11), msr_high);
+	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
+	wrmsr(MSR_IA32_APICBASE, msr_low&~(1<<11), msr_high);
 	return -ENODEV;
 }
 
@@ -373,9 +375,9 @@ static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um)
 	/* enable interrupt generation */
 	*val |= (1<<20);
 	/* enable chosen OS and USR counting */
-	if (user) 
+	if (user)
 		*val |= (1<<16);
-	if (kernel) 
+	if (kernel)
 		*val |= (1<<17);
 	/* what are we counting ? */
 	*val |= event;
@@ -387,9 +389,12 @@ static void pmc_setup(void *dummy)
 	uint low,high;
 	uint cpu = smp_processor_id();
 
+	rdmsr(MSR_IA32_EVNTSEL0, low, high);
+	wrmsr(MSR_IA32_EVNTSEL0,low & ~(1<<22), high);
+
 	/* IA Vol. 3 Figure 14-3 */
 
-	rdmsr(P6_MSR_EVNTSEL0,low,high);
+	rdmsr(MSR_IA32_EVNTSEL0, low, high);
 	/* clear */
 	low &= (1<<21);
 
@@ -398,18 +403,24 @@ static void pmc_setup(void *dummy)
 		pmc_fill_in(&low, op_ctr0_kernel[cpu], op_ctr0_user[cpu], op_ctr0_val[cpu], op_ctr0_um[cpu]);
 	}
 
-	wrmsr(P6_MSR_EVNTSEL0,low,0);
+	wrmsr(MSR_IA32_EVNTSEL0,low,0);
 
-	rdmsr(P6_MSR_EVNTSEL1,low,high);
+	rdmsr(MSR_IA32_EVNTSEL1,low,high);
 	/* clear */
 	low &= (3<<21);
 
 	if (op_ctr1_val[cpu]) {
 		set_perfctr(op_ctr1_count[cpu],1);
 		pmc_fill_in(&low, op_ctr1_kernel[cpu], op_ctr1_user[cpu], op_ctr1_val[cpu], op_ctr1_um[cpu]);
+		wrmsr(MSR_IA32_EVNTSEL1, low, high);
 	}
 
-	wrmsr(P6_MSR_EVNTSEL1,low,high);
+	/* disable ctr1 if the UP oopser might be on, but we can't do anything 
+	 * interesting with the NMIs
+	 */
+#if !defined(CONFIG_X86_UP_APIC) || !defined(OP_EXPORTED_DO_NMI)
+	wrmsr(MSR_IA32_EVNTSEL1, low, high);
+#endif
 }
 
 static void pmc_start(void *info)
@@ -420,8 +431,8 @@ static void pmc_start(void *info)
 		return;
 
  	/* enable counters */
-	rdmsr(P6_MSR_EVNTSEL0,low,high);
-	wrmsr(P6_MSR_EVNTSEL0,low|(1<<22),high);
+	rdmsr(MSR_IA32_EVNTSEL0,low,high);
+	wrmsr(MSR_IA32_EVNTSEL0,low|(1<<22),high);
 }
 
 static void pmc_stop(void *info)
@@ -432,8 +443,8 @@ static void pmc_stop(void *info)
 		return;
 
 	/* disable counters */
-	rdmsr(P6_MSR_EVNTSEL0,low,high);
-	wrmsr(P6_MSR_EVNTSEL0,low&~(1<<22),high);
+	rdmsr(MSR_IA32_EVNTSEL0,low,high);
+	wrmsr(MSR_IA32_EVNTSEL0,low&~(1<<22),high);
 }
 
 inline static void pmc_select_start(uint cpu)
@@ -468,7 +479,7 @@ int oprof_thread(void *arg)
 	threadpid = current->pid;
 
 	lock_kernel();
-	daemonize(); 
+	daemonize();
 	sprintf(current->comm, "oprof-thread");
 	siginitsetinv(&current->blocked, sigmask(SIGKILL));
         spin_lock(&current->sigmask_lock);
@@ -623,7 +634,7 @@ static int oprof_open(struct inode *ino, struct file *file)
 		case 2: return oprof_map_open();
 		case 1: return oprof_hash_map_open();
 		default:
-			/* make sure the other devices are open */ 
+			/* make sure the other devices are open */
 			if (!is_map_ready())
 				return -EINVAL;
 	}
@@ -874,7 +885,7 @@ static int can_unload(void)
 static int __init hw_ok(void)
 {
 	/* we want to include all P6 processors (i.e. > Pentium Classic,
-	 * < Pentium IV 
+	 * < Pentium IV
 	 */
 	if (current_cpu_data.x86_vendor != X86_VENDOR_INTEL ||
 	    current_cpu_data.x86 != 6) {
@@ -963,7 +974,7 @@ module_exit(oprof_exit);
  *                    0/
  *                      0/
  *                        event
- *                        enabled 
+ *                        enabled
  *                        count
  *                        unit_mask
  *                        kernel
@@ -992,7 +1003,7 @@ static int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *
 
 static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
 {
-	uint cpu; 
+	uint cpu;
 	int err = -EINVAL;
 
 	down(&sysctlsem);

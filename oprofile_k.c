@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.35 2000/12/12 02:55:32 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.36 2001/01/12 21:28:44 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -27,15 +27,20 @@
 
 /* stuff we have to do ourselves */
 
-#define APIC_DEFAULT_PHYS_BASE 0xfee00000
-
 extern u32 oprof_ready[NR_CPUS];
 extern wait_queue_head_t oprof_wait;
 extern pid_t pid_filter;
 extern pid_t pgrp_filter;
 extern u32 prof_on;
 
-/* FIXME: this needs removing if UP oopser gets into mainline */
+/* FIXME: can remove this code altogether if UP oopser makes mainline, and insist on
+ * CONFIG_X86_UP_APIC
+ */
+#ifndef CONFIG_X86_UP_APIC
+ 
+#ifndef APIC_DEFAULT_PHYS_BASE 
+#define APIC_DEFAULT_PHYS_BASE 0xfee00000
+#endif 
 static void set_pte_phys(ulong vaddr, ulong phys)
 {
 	pgprot_t prot;
@@ -59,6 +64,7 @@ void my_set_fixmap(void)
 
 	set_pte_phys (address,APIC_DEFAULT_PHYS_BASE);
 }
+#endif /* CONFIG_X86_UP_APIC */
 
 /* poor man's do_nmi() */
 

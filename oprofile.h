@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.27 2000/12/12 02:55:32 moz Exp $ */
+/* $Id: oprofile.h,v 1.28 2001/01/12 21:28:44 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -59,11 +59,25 @@ struct _oprof_data {
 #define OP_CTR_1 0x2
 
 /* MSRs */
-#define P6_MSR_PERFCTR0 0xc1
-#define P6_MSR_PERFCTR1 0xc2
-#define P6_MSR_EVNTSEL0 0x186
-#define P6_MSR_EVNTSEL1 0x187
-#define MSR_APIC_BASE   0x1B
+#ifndef MSR_IA32_PERFCTR0
+#define MSR_IA32_PERFCTR0 0xc1
+#endif
+#ifndef MSR_IA32_PERFCTR1
+#define MSR_IA32_PERFCTR1 0xc2
+#endif
+#ifndef MSR_IA32_EVNTSEL0
+#define MSR_IA32_EVNTSEL0 0x186
+#endif
+#ifndef MSR_IA32_EVNTSEL1
+#define MSR_IA32_EVNTSEL1 0x187
+#endif
+#ifndef MSR_IA32_APICBASE
+#define MSR_IA32_APICBASE 0x1B
+#endif
+
+#ifndef APIC_SPIV_APIC_ENABLED
+#define APIC_SPIV_APIC_ENABLED (1<<8)
+#endif
 
 /* oprof_data->ready will be set this many samples
  * before the end of the eviction buffer
@@ -119,8 +133,8 @@ struct _oprof_data {
 #define OP_MAX_PERF_COUNT 2147483647UL
 
 /* relying on MSR numbers being neighbours */
-#define get_perfctr(l,h,c) do { rdmsr(P6_MSR_PERFCTR0+c, (l),(h)); } while (0)
-#define set_perfctr(l,c) do { wrmsr(P6_MSR_PERFCTR0+c, -(u32)(l), 0); } while (0)
+#define get_perfctr(l,h,c) do { rdmsr(MSR_IA32_PERFCTR0+c, (l),(h)); } while (0)
+#define set_perfctr(l,c) do { wrmsr(MSR_IA32_PERFCTR0+c, -(u32)(l), 0); } while (0)
 #define ctr_overflowed(n) (!((n) & (1U<<31)))
 
 #define OP_EVENTS_OK            0x0

@@ -1,3 +1,16 @@
+2000-01-12  John Levon  <moz@compsoc.man.ac.uk>
+
+	* oprofile.c: use standard kernel names for MSRs.
+		Don't re-do fixmap if UP oopser patch is installed.
+		Allow UP oopser to work if patches enabled, disable
+		otherwise
+
+	* oprofile.h: use standard kernel names for MSRs.
+
+	* oprofile_k.c: only include fixmap code if necessary
+
+	* configure.in: bump minor version
+
 2000-12-15  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: default to /lib/modules/`uname -r`/build
