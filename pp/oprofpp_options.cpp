@@ -15,6 +15,7 @@
 #include "oprofpp_options.h"
 #include "opp_symbol.h"
 #include "counter_util.h"
+#include "cverb.h"
 
 #include <sstream>
 
@@ -78,9 +79,6 @@ void quit_error(string const & err)
 
 } // namespace anon
 
-static std::ofstream fout("/dev/null");
-std::ostream cverb(fout.rdbuf());
-
 string const get_options(int argc, char const **argv)
 {
 	/* non-option file, either a sample or binary image file */
@@ -90,10 +88,7 @@ string const get_options(int argc, char const **argv)
 
 	counter_mask = parse_counter_mask(counter_str);
 
-	if (verbose)
-		cverb.rdbuf(std::cout.rdbuf());
-	else
-		cverb.clear(std::ios::badbit);
+	set_verbose(verbose);
  
 	if (!list_all_symbols_details && !list_symbols &&
 	    gprof_file.empty() && symbol.empty())

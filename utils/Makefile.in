@@ -17,7 +17,7 @@ TARGET=$(OP_SESSION_TARGET) $(OP_HELP_TARGET)
 OP_SESSION_LIBS=-lutil -lpopt -liberty
 OP_HELP_LIBS=-lutil -lop -lpopt -liberty
 
-OP_SESION_LIBDEPS=../libutil/libutil.a
+OP_SESSION_LIBDEPS=../libutil/libutil.a
 OP_HELP_LIBDEPS=../libutil/libutil.a ../libop/libop.a
 
 all: $(TARGET)
@@ -32,7 +32,7 @@ uninstall:
 clean:
 	rm -rf .deps $(OBJECTS) $(TARGET) 
 
-$(OP_SESSION_TARGET): $(OP_SESSION_OBJECTS) $(OP_SESION_LIBDEPS)
+$(OP_SESSION_TARGET): $(OP_SESSION_OBJECTS) $(OP_SESSION_LIBDEPS)
 	$(CC) -o $@ $(OP_SESSION_OBJECTS) $(LDFLAGS) $(OP_SESSION_LIBS)
 
 $(OP_HELP_TARGET): $(OP_HELP_OBJECTS) $(OP_HELP_LIBDEPS)

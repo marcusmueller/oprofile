@@ -1,3 +1,14 @@
+2002-06-09  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/cverb.h:
+	* libutil++/cverb.cpp: cverb ostream initializations
+	* pp/op_merge.cpp:
+	* pp/op_time_options.cpp:
+	* pp/op_to_source_options.cpp:
+	* pp/oprofpp_options.cpp: use it
+
+	* utils/Makefile.in: fix a typo in lib dependencies
+
 2002-06-07  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update

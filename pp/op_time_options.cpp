@@ -15,6 +15,7 @@
 
 #include "popt_options.h"
 #include "file_manip.h"
+#include "cverb.h"
 
 #include <list>
 #include <fstream>
@@ -123,9 +124,6 @@ void handle_session_options(void)
 
 } // namespace anon
 
-static std::ofstream fout("/dev/null");
-std::ostream cverb(fout.rdbuf());
-
 /**
  * get_options - process command line
  * @param argc program arg count
@@ -140,10 +138,8 @@ void get_options(int argc, char const * argv[])
 	string file;
 	parse_options(argc, argv, file);
 
-	if (verbose)
-		cverb.rdbuf(std::cout.rdbuf());
-	else
-		cverb.clear(std::ios::badbit);
+
+	set_verbose(verbose);
 
 	if (file.length())
 		session = file;

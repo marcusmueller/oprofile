@@ -2,11 +2,11 @@ include ../make.common
 
 CXXFLAGS += @BFD_CXXFLAGS@
 
-HEADERS=op_bfd.h child_reader.h file_manip.h string_manip.h filename_match.h demangle_symbol.h
+HEADERS=op_bfd.h child_reader.h file_manip.h string_manip.h filename_match.h demangle_symbol.h cverb.h
 
-SOURCES=op_bfd.cpp child_reader.cpp file_manip.cpp string_manip.cpp filename_match.cpp demangle_symbol.cpp
+SOURCES=op_bfd.cpp child_reader.cpp file_manip.cpp string_manip.cpp filename_match.cpp demangle_symbol.cpp cverb.cpp
 
-OBJECTS=op_bfd.o child_reader.o file_manip.o string_manip.o filename_match.o demangle_symbol.o
+OBJECTS=op_bfd.o child_reader.o file_manip.o string_manip.o filename_match.o demangle_symbol.o cverb.o
 
 TARGET=libutil++.a
 

@@ -15,6 +15,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "cverb.h"
+
 using std::vector;
 using std::string;
 using std::cerr;
@@ -61,9 +63,6 @@ option options_array[] = {
 
 }
 
-static std::ofstream fout("/dev/null");
-std::ostream cverb(fout.rdbuf());
-
 /**
  * get_options - process command line
  * @param argc program arg count
@@ -77,10 +76,7 @@ string const get_options(int argc, char const * argv[])
 
 	parse_options(argc, argv, arg);
 
-	if (verbose)
-		cverb.rdbuf(std::cout.rdbuf());
-	else
-		cverb.clear(std::ios::badbit);
+	set_verbose(verbose);
 
 	if (options::with_more_than_samples
 		&& options::until_more_than_samples) {
