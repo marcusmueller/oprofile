@@ -1,5 +1,15 @@
 2003-02-20  John Levon  <levon@movementarian.org>
 
+	* dae/opd_stats.h:
+	* dae/opd_stats.c:
+	* daemon/opd_stats.h:
+	* daemon/opd_stats.c:
+	* dae/opd_proc.c:
+	* daemon/opd_image.c: remove unused OPD_SAMPLE_COUNTS. Actually
+	  count samples for 2.5
+
+2003-02-20  John Levon  <levon@movementarian.org>
+
 	* libop/op_interface_25.h:
 	* daemon/opd_kernel.c: implement module dropping
 

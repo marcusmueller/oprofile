@@ -26,7 +26,6 @@ enum {  OPD_KERNEL, /* nr. kernel samples */
 	OPD_MAP_ARRAY_ACCESS, /* nr. accesses of map array */
 	OPD_MAP_ARRAY_DEPTH, /* cumulative depth of map array accesses */
 	OPD_SAMPLES, /* nr. distinct samples */
-	OPD_SAMPLE_COUNTS, /* nr. total individual samples */
 	OPD_NOTIFICATIONS, /* nr. notifications */
 	OPD_MAX_STATS /* end of stats */
 	};

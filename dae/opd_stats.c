@@ -49,7 +49,6 @@ void opd_print_stats(void)
 	}
 	printf("Nr. sample dumps: %lu\n", opd_stats[OPD_DUMP_COUNT]);
 	printf("Nr. samples total: %lu\n", opd_stats[OPD_SAMPLES]);
-	printf("Nr. individual samples total: %lu\n", opd_stats[OPD_SAMPLE_COUNTS]); 
 	printf("Nr. notifications: %lu\n", opd_stats[OPD_NOTIFICATIONS]);
 	fflush(stdout);
 }

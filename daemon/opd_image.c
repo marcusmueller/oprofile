@@ -393,6 +393,8 @@ static void opd_put_sample(struct opd_image * image, int in_kernel,
 	vma_t eip = get_buffer_value(buffer, index);
 	unsigned long event = get_buffer_value(buffer, index + 1);
 
+	opd_stats[OPD_SAMPLES]++;
+
 	/* backward compatiblity, FIXME remove it later */
 	if (in_kernel == -1) {
 		in_kernel = opd_eip_is_kernel(eip);
@@ -475,15 +477,17 @@ void opd_process_samples(char const * buffer, size_t count)
 				break;
 
 			case KERNEL_ENTER_SWITCH_CODE:
+				verbprintf("KERNEL_ENTER_SWITCH to kernel\n");
 				in_kernel = 1;
 				break;
 
 			case KERNEL_EXIT_SWITCH_CODE:
+				verbprintf("KERNEL_EXIT_SWITCH to user-space\n");
 				in_kernel = 0;
 				break;
 
 			case DROP_MODULES_CODE:
-				verbprintf("dropping modules\n");
+				verbprintf("DROP_MODULES\n");
 				opd_clear_module_info();
 				break;
 

@@ -359,7 +359,6 @@ void opd_put_sample(struct op_sample const * sample)
 	int in_kernel_eip = opd_eip_is_kernel(sample->eip);
 
 	opd_stats[OPD_SAMPLES]++;
-	opd_stats[OPD_SAMPLE_COUNTS]++;
 
 	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8lx, pid %.6d\n",
 		sample->counter, sample->eip, sample->pid);

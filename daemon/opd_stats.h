@@ -20,8 +20,7 @@ enum {  OPD_KERNEL, /* nr. kernel samples */
 	OPD_NO_MM, /* nr. userspace samples for which no mm/cookie was given */
 	OPD_PROCESS, /* nr. userspace samples */
 	OPD_DUMP_COUNT, /* nr. of times buffer is read */
-	OPD_SAMPLES, /* nr. distinct samples */
-	OPD_SAMPLE_COUNTS, /* nr. total individual samples */
+	OPD_SAMPLES, /* nr. samples */
 	OPD_MAX_STATS /* end of stats */
 	};
 
