@@ -106,12 +106,15 @@ static int show_shared_libs;
 static int list_symbols;
 static int show_image_name;
 static char * output_format;
+static char * samples_dir;
+static const char * session;
 static const char * path;
 static const char * recursive_path;
 
 static OutSymbFlag output_format_flags;
 
 static struct poptOption options[] = {
+	{ "session", 's', POPT_ARG_STRING, &session, 0, "session to use", "name", }, 
 	{ "counter", 'c', POPT_ARG_STRING, &counter_str, 0,
 	  "which counter to use", "counter nr,[counter nr]", },
 	{ "sort", 'C', POPT_ARG_INT, &sort_by_counter, 0, "which counter to use for sampels sort", "counter nr", }, 
@@ -175,6 +178,31 @@ void add_to_alternate_filename(const string & path_name, bool recursive)
 }
 
 /**
+ * handle_session_options - derive samples directory
+ */
+static void handle_session_options(void)
+{
+/*
+ * This should eventually be shared amongst all programs
+ * to take session names.
+ */
+	if (!session) {
+		samples_dir = OP_SAMPLES_DIR;
+		return;
+	}
+
+	if (session[0] == '/') {
+		samples_dir = (char*)session;
+		return;
+	}
+
+	samples_dir = (char*)xmalloc(strlen(OP_SAMPLES_DIR) + strlen(session) + 1);
+	strcpy(samples_dir, OP_SAMPLES_DIR);
+	strcat(samples_dir, session);
+}
+
+ 
+/**
  * get_options - process command line
  * \param argc program arg count
  * \param argv program arg array
@@ -192,12 +220,14 @@ static void get_options(int argc, char const * argv[])
 		show_version(argv[0]);
 	}
 
-	// non-option file, must be valid directory name
+	// non-option file, must be a session name
 	file = poptGetArg(optcon);
 	if (file) {
-		quit_error(optcon, "op_time: command line error.\n");
+		session = file;
 	}
 
+	handle_session_options();
+ 
 	if (!counter_str)
 		counter_str = "0";
 
@@ -300,7 +330,7 @@ static void sort_file_list_by_name(map_t & result,
 		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 			if ((counter & (1 << i)) != 0) {
 				std::ostringstream s;
-				s << string(OP_SAMPLES_DIR) << "/" << *it 
+				s << string(samples_dir) << "/" << *it 
 				  << '#' << i;
 				if (file_exist(s.str()) == true) {
 					break;
@@ -430,7 +460,7 @@ static void output_files_count(map_t& files)
 		for ( ; p_it.first != p_it.second ; ++p_it.first) {
 			for (int i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 				std::ostringstream s;
-				s << string(OP_SAMPLES_DIR) << "/"
+				s << string(samples_dir) << "/"
 				  << p_it.first->second.samplefile_name
 				  << "#" << i;
 				if (file_exist(s.str()) == false)
@@ -595,7 +625,7 @@ static void output_symbols_count(map_t& files, int counter)
 	for (it_f = files.begin() ; it_f != files.end() ; ++it_f) {
 
 		string filename = it_f->second.samplefile_name;
-		string samples_filename = string(OP_SAMPLES_DIR) + "/" + filename;
+		string samples_filename = string(samples_dir) + "/" + filename;
 
 		string lib_name;
 		string image_name = extract_app_name(filename, lib_name);
@@ -651,7 +681,7 @@ int main(int argc, char const * argv[])
 	 * files rather getting the whole directory. Code in op_merge can
 	 * be probably re-used */
 	list<string> file_list;
-	get_sample_file_list(file_list, OP_SAMPLES_DIR, "*#*");
+	get_sample_file_list(file_list, samples_dir, "*#*");
 
 	map_t file_map;
 	sort_file_list_by_name(file_map, file_list);

@@ -15,7 +15,7 @@
 #include "opd_util.h"
 #include "../util/op_popt.h"
  
-char * sessionname;
+char const * sessionname;
 int showvers; 
 
 static struct poptOption options[] = {
@@ -36,11 +36,17 @@ static struct poptOption options[] = {
 static void opd_options(int argc, char const *argv[])
 {
 	poptContext optcon;
+	char const * file;
 
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
 		show_version(argv[0]);
+	}
+
+	file = poptGetArg(optcon);
+	if (file) {
+		sessionname = file;
 	}
 
 	if (!sessionname) {
@@ -68,6 +74,7 @@ static void opd_move_files(char const * sname)
 	strcpy(dir_name, OP_SAMPLES_DIR);
 	strcat(dir_name, sname);
 
+	/* FIXME: graceful handling of EEXIST */
 	if (mkdir(dir_name, 0755)) {
 		fprintf(stderr, "unable to create directory %s\n", dir_name);
 		exit(EXIT_FAILURE);
@@ -108,6 +115,15 @@ static void opd_signal_daemon(void)
 int main(int argc, char const *argv[])
 {
 	opd_options(argc, argv);
+	
+	/* not ideal, but OK for now. The sleep hopefully
+	 * means the daemon starts reading before the signal
+	 * is delivered, so it will finish reading, *then*
+	 * handle the SIGHUP. Hack !
+	 */
+	system("op_dump");
+	sleep(2);
+ 
 	opd_move_files(sessionname);
 	opd_signal_daemon();
 	return 0;

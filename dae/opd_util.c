@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.37 2002/05/02 02:19:08 movement Exp $ */
+/* $Id: opd_util.c,v 1.38 2002/05/02 03:21:22 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -507,7 +507,7 @@ pid_t opd_read_lock_file(const char * file)
 	if (fp == NULL)
 		return 0;
  
-	if (fscanf(fp, "%u", &value) != 1) {
+	if (fscanf(fp, "%d", &value) != 1) {
 	        fclose(fp);
 		return 0;
         }

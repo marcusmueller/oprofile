@@ -505,6 +505,25 @@ contain the general configuration, and event/counter setup, respectively.
 
 </sect1>
 
+<sect1 id="sessions">
+<title>Profiling sessions</title>
+<para>
+It can often be useful to split up profiling data into several different
+time periods. For example, you may want to collect data on an application's
+startup separately from the normal runtime data. You can use the simple to
+tool <command>op_session</command> to do this. For example :
+</para>
+<screen>
+op_session run1
+</screen>
+<para>
+will create a sub-directory containing the samples up to that point (the current
+session's sample files are moved into this directory). You can
+then pass this name as, for example, a parameter to <command>op_time</command>
+to only get data up to the point you named the session.
+</para>
+</sect1>
+ 
 <sect1 id="detailed-parameters">
 <title>Configuration details</title>
 
@@ -1121,7 +1140,7 @@ The options allowed are :
 <para>
 You can get a quick look at an overall summary of relative binary profiles using <command>op_time</command>. This utility displays
 the relative amount of samples for each application profiled sorted by decreasing order of samples count. So
-with <command>op_time [<option>--option</option>] [<filename>samples_dir</filename>]</command> you can get :
+with <command>op_time [<option>--option</option>] [<filename>session</filename>]</command> you can get :
 </para>
 <screen>
 /lib/libc-2.1.2.so 19 32.7586%
