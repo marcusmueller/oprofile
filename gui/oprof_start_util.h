@@ -34,7 +34,6 @@ bool check_and_create_config_dir();
 std::string const format(std::string const & orig, uint const maxlen);
 int do_exec_command(std::string const & cmd, std::vector<std::string> const & args = std::vector<std::string>());
 std::string const do_open_file_or_dir(std::string const & base_dir, bool dir_only);
-unsigned long get_cpu_speed();
 bool verify_argument(std::string const & str);
 
 #endif // OPROF_START_UTIL_H

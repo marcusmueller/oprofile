@@ -37,6 +37,7 @@
 #include "op_config.h"
 #include "op_config_24.h"
 #include "string_manip.h"
+#include "op_cpufreq.h"
 #include "version.h"
 
 using namespace std;
@@ -55,7 +56,7 @@ oprof_start::oprof_start()
 	oprof_start_base(0, 0, false, 0),
 	event_count_validator(new QIntValidator(event_count_edit)),
 	current_ctr(0),
-	cpu_speed(get_cpu_speed()),
+	cpu_speed(op_cpu_frequency()),
 	total_nr_interrupts(0)
 {
 	for (uint i = 0; i < OP_MAX_COUNTERS; ++i) {
@@ -116,7 +117,7 @@ oprof_start::oprof_start()
 				 * all events, and a good one for most.
 				 */
 				if (cpu_speed)
-					count = cpu_speed * 500;
+					count = int(cpu_speed * 500);
 				else
 					count = descr.min_count * 100;
 			}

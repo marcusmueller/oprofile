@@ -1,3 +1,20 @@
+2003-03-22  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil/op_cpufreq.h:
+	* libutil/op_cpufreq.c: new file exporting op_cpu_frequency()
+	* libutil/Makefile.am: update according
+
+	* utils/opcontrol: handle other arch
+
+	* gui/oprof_start_util.h:
+	* gui/oprof_start_util.cpp: remove get_cpu_speed()
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp: and use instead op_cpu_frequency()
+
+	* daemon/oprofiled.c:
+	* dae/oprofiled.c: replace --cpu-speed option by a call to
+	  op_cpu_frequencey()
+
 2003-03-20  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: doc some 2.5 module stuff

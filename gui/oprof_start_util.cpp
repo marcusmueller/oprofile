@@ -174,40 +174,6 @@ daemon_status::daemon_status()
 
 
 /**
- * get_cpu_speed - return CPU speed in MHz
- *
- */
-unsigned long get_cpu_speed()
-{
-	unsigned long speed = 0;
-
-	ifstream ifs("/proc/cpuinfo");
-	if (!ifs)
-		return speed;
-
-	string str;
-
-	while (getline(ifs, str)) {
-		if (str.size() < 7)
-			continue;
-
-		if (str.substr(0, 7) == "cpu MHz") {
-			string::const_iterator it = str.begin();
-			uint i = 0;
-			while (it != str.end() && !(isdigit(*it)))
-				++i, ++it;
-			if (it == str.end())
-				break;
-			istringstream ss(str.substr(i, string::npos));
-			ss >> speed;
-			break;
-		}
-	}
-	return speed;
-}
-
-
-/**
  * get_user_filename - get absoluate filename of file in user $HOME
  * @param filename  the relative filename
  *

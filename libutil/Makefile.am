@@ -8,6 +8,7 @@ libutil_a_SOURCES = \
 	op_libiberty.c \
 	op_popt.c \
 	op_string.c \
+	op_cpufreq.c \
 	op_deviceio.h \
 	op_fileio.h \
 	op_libiberty.h \
@@ -17,4 +18,5 @@ libutil_a_SOURCES = \
 	op_get_time.h \
 	op_list.h \
 	op_popt.h \
-	op_string.h
+	op_string.h \
+	op_cpufreq.h

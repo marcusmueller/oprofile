@@ -33,6 +33,7 @@
 #ifdef OPROF_ABI
 #include "op_abi.h"
 #endif
+#include "op_cpufreq.h"
 
 #include <unistd.h>
 #include <signal.h>
@@ -66,9 +67,6 @@ size_t kernel_pointer_size;
 static char * kernel_range;
 static int showvers;
 static u32 ctr_enabled[OP_MAX_COUNTERS];
-/* Unfortunately popt does not have, on many versions, the POPT_ARG_DOUBLE type
- * so I must first store it as a string. */
-static char const * cpu_speed_str;
 static char const * mount = OP_MOUNT;
 static int opd_buf_size;
 static pid_t mypid;
@@ -87,7 +85,6 @@ static struct poptOption options[] = {
 	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "no-vmlinux", 0, POPT_ARG_NONE, &no_vmlinux, 0, "vmlinux kernel image file not available", NULL, },
-	{ "cpu-speed", 0, POPT_ARG_STRING, &cpu_speed_str, 0, "cpu speed (MHz)", "cpu_mhz", },
 	{ "separate-lib-samples", 0, POPT_ARG_INT, &separate_lib_samples, 0, "separate library samples for each distinct application", "[0|1]", },
 	{ "separate-kernel-samples", 0, POPT_ARG_INT, &separate_kernel_samples, 0, "separate kernel samples for each distinct application", "[0|1]", },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
@@ -393,8 +390,7 @@ static void opd_options(int argc, char const * argv[])
 		opd_pmc_options();
 	}
 
-	if (cpu_speed_str && strlen(cpu_speed_str))
-		sscanf(cpu_speed_str, "%lf", &cpu_speed);
+	cpu_speed = op_cpu_frequency();
 
 	poptFreeContext(optcon);
 }

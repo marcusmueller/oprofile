@@ -168,6 +168,33 @@ load_module()
 	fi
 }
 
+# extract from cpuinfo the second part of a line matched by $1
+cpu_info() {
+    grep "$1" /proc/cpuinfo | tail -1 | awk -F": " '{print $2}'
+}
+
+# return in $CPU_SPEED the cpu frequency in MHz
+cpu_frequency() {
+	# getting cpu Mhz is not normallized through different arch.
+	CPU_SPEED=`cpu_info "cpu MHz"`
+	if test -n "$CPU_SPEED"; then
+		return;
+	fi
+	CPU_SPEED=`cpu_info "cycle frequency"`
+	if test -n "$CPU_SPEED"; then
+		CPU_SPEED=`echo "$CPU_SPEED" | awk '{printf("%d", $0 / 1E6)}'`
+		return;
+	fi
+	CPU_SPEED=`cpu_info "Cpu0ClkTck"`
+	if test -n $CPU_SPEED; then
+		# we really need gawk here to accept hexa input
+		CPU_SPEED=`echo "0x$CPU_SPEED" | \
+			    gawk --non-decimal-data '{printf("%d", $0 / 1E6)}'`
+		return;
+	fi
+	# let this once last since it's easy to match clock in a /proc/cpuinfo
+	CPU_SPEED=`cpu_info "clock"`
+}
 
 # initialise parameters
 do_init() {
@@ -211,7 +238,7 @@ do_init() {
 	CPUTYPE=`cat $MOUNT/cpu_type`
 	OP_COUNTERS=`ls $MOUNT/ | grep "^[0-9]\+\$" | tr "\n" " "`
 
-	CPU_SPEED=`grep "cpu MHz" /proc/cpuinfo | tail -1 | awk -F": " '{print $2}'`
+	cpu_frequency
 	vecho "cpu speed (estimation) : $CPU_SPEED"
 
 	IS_TIMER=0
@@ -993,8 +1020,6 @@ do_start_daemon() {
 	if [ "$VERBOSE" = "1" ]; then
 		OPD_ARGS="$OPD_ARGS --verbose"
 	fi
-
-	OPD_ARGS="$OPD_ARGS --cpu-speed=$CPU_SPEED"
 
 	vecho "executing oprofiled $OPD_ARGS"
 
