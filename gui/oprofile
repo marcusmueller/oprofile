@@ -24,6 +24,10 @@ global pid_filter pgrp_filter
 global base_dir samples_dir
 global device_filename hashmap_device_file log_filename
 
+# This is defined in oprofile.h
+global OP_MAX_PERF_COUNT
+set OP_MAX_PERF_COUNT 2147483647
+
 set old_event_type_0 ""
 set old_event_type_1 ""
 
@@ -218,17 +222,37 @@ proc onStartProfiling {} {
 	return
     }
 
+    global OP_MAX_PERF_COUNT
+
     if { [string compare [set event_type_0] DISABLED] != 0 } then {
 	if { $usr_count_0 == 0 && $kernel_count_0 == 0 } then {
-	    tk_messageBox -message "counter 0 enable but you must enable at least one of the USR ring count/OS ring count"
+	    tk_messageBox -message "You must enable at least one of the USR ring count/OS ring count for counter 0"
 	    return
+	}
+
+	set message [op_check_range counter_0 500 $OP_MAX_PERF_COUNT]
+	if { [string length $message] != 0 } then {
+	    set answer [tk_messageBox -type yesno -message \
+			    "invalid parameter apply anyway ? :$message"]
+	    case $answer {
+		no { return }
+	    }
 	}
     }
 
     if { [string compare [set event_type_1] DISABLED] != 0 } then {
 	if { $usr_count_1 == 0 && $kernel_count_1 == 0 } then {
-	    tk_messageBox -message "counter 1 enable but you must enable at least one of the USR ring count/OS ring count"
+	    tk_messageBox -message "You must enable at least one of the USR ring count/OS ring count for counter 1"
 	    return
+	}
+
+	set message [op_check_range counter_1 500 $OP_MAX_PERF_COUNT]
+	if { [string length $message] != 0 } then {
+	    set answer [tk_messageBox -type yesno -message \
+			    "invalid parameter apply anyway ? :$message"]
+	    case $answer {
+		no { return }
+	    }
 	}
     }
 
@@ -313,8 +337,8 @@ proc onStartProfiling {} {
 
 # Stop the profiling.
 proc onStopProfiling {} {
-    # FIXME : Flushing data is required (or better) ?
-#    onFlushData
+    onFlushData
+
     tk_messageBox -message [exec op_stop]
 }
 

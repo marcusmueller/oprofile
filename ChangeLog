@@ -1,5 +1,18 @@
 2001-07-14  John Levon  <moz@compsoc.man.ac.uk>
 
+	* doc/oprofile.sgml: small tidies
+ 
+2001-07-01  Philippe Elie  <ph_e@club-internet.fr>
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.sgml: document op_to_source, oprof_convert and the
+	  oprofile gui
+
+	* gui/oprofile: onStartProfiling() check that count is in the allowed
+	  range. onStopProfiling() flush the samples
+ 
+2001-07-14  John Levon  <moz@compsoc.man.ac.uk>
+
 	* Makefile.in: dist fix
  
 2001-07-14  John Levon  <moz@compsoc.man.ac.uk>

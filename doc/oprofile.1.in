@@ -16,8 +16,15 @@ oprofile \- a sytem-wide profiler
 ]
 [ sample-file ] [ binary ]
 .br
+.B op_to_source
+[
+.I options
+]
+.br
 .B op_help
 [ event-name ]
+.br
+.B oprof_convert
 .br
 .SH DESCRIPTION
 oprofile is a profiling system for Intel x86 systems running Linux 2.4. Profiling runs
@@ -174,6 +181,54 @@ verbose output
 .TP
 .I "--base-dir"
 base directory of profile daemon
+.PP
+.br
+.B op_to_source options
+.br
+.TP
+.I "--help"
+Show help message
+.br
+.TP
+.I "--samples-file"
+image sample file
+.br
+.TP
+.I "--image-file"
+image file
+.br
+.TP
+.I "--demangle"
+demangle GNU C++ symbol names
+.br
+.TP
+.I "--assembly"
+output assembly code
+.br
+.TP
+.I "--source-with-assembly"
+output assembly mixed with source file
+.br
+.TP
+.I "--until-more-than-samples percent_nr"
+output source with more than percent_nr samples
+.br
+.TP
+.I "--with-more-than-samples percent_nr"
+output source until percent_nr samples are reached
+.br
+.TP
+.I "--sort-by-counter"
+which counter to use for sorting purposes
+.br
+.TP
+.I "--version"
+show version
+.br
+.TP
+.B oprof_convert filename [filenames]
+The oprof_convert utility is only needed when upgrading the profiler version. Further details
+can be found in the HTML documentation.
 
 .SH USAGE
 Start the profiler with the provided
@@ -186,11 +241,20 @@ Profiles will be collected every ten minutes. You can force a collection at any 
 .PP
 .I echo 1 >/proc/sys/dev/oprofile/dump
 .PP
+As an alternative you can use the
+.B oprofile
+gui to start the profiler. See the HTML documentation for further details
+.PP
 You can then collect profiles for any binary or shared library by using
 .B oprofpp
 to read the sample file :
 .PP
 .I oprofpp -l /lib/libc-2.1.92.so
+.PP
+or by using :
+.B op_to_source
+.PP
+.I op_to_source -I /lib/libc-2.1.92.so
 .PP
 .SH ENVIRONMENT
 No environment variables are recognised by oprofile.

@@ -137,7 +137,7 @@ is all you need, but note these arguments to <command>./configure</command> :
 	<varlistentry>
 		<term><option>--enable-filter</option></term>
 		<listitem><para>
-			Enable process id and process group filtering, as discussed in FIXME.
+			Enable process id and process group filtering, as discussed in <xref linkend="pidpgrpfilter">
 		</para></listitem>
 	</varlistentry>
 </variablelist>
@@ -150,6 +150,30 @@ of writing, the second is only available in the ac series, but is to be preferre
 </para>
 
 </sect1> 
+
+<sect1 id="upgrading">
+<title>Upgrading the version of oprofile</title>
+<para>
+If you upgrade the version of oprofile you must first follow the instructions in <xref linkend="install">.
+</para>
+<para>
+Oprofile does not guarantee that the file format of samples is compatible with the format in older versions.
+If you want to keep old sample files you need to use the <command>oprof_convert</command> utility. 
+In any case you should backup your old sample files before processing the files in case
+something bad occurs. This processing is not needed for all version changes - for now the only conversion needed
+is between the alpha 0.0.3 version and 0.0.4 or above. If no conversion is needed <command>oprof_convert</command> does 
+nothing (successfully).
+</para>
+<para><command>oprof_convert</command> usage :</para>
+<para>
+<command>oprof_convert</command> [<option>--help</option>] [<option>--version</option>] <filename>filename</filename> [<filename>filenames</filename>]
+</para>
+<para>
+Will convert from your version to the current version.
+</para>
+<para>Be warned than you cannot convert from new version to old version. If you convert to new version
+you cannot reverse the conversion.
+</sect1>
  
 </chapter>
 
@@ -227,7 +251,7 @@ feature of <command>gprof</command>.
 </sect1>
  
 <sect1 id="starting-daemon">
-<title>Starting profiling</title> 
+<title>Starting profiling from the <command>op_start</command> script</title> 
 <para>
 In this section the configuration and startup of the profiler is discussed in more depth. 
 </para>
@@ -332,8 +356,9 @@ the hash table and buffer, and wakes up the daemon process when it is approachin
 data, and process it into a non-volatile form. Any samples are recorded into the sample files at processing time. 
 </para> 
 <para>
-The <command>op_start</command> shell script will insert the kernel module if needed. Once inserted, it cannot
-be removed (although it can be de-activated, freeing almost all memory used during profiling). The profiling
+The <command>op_start</command> shell script will insert the kernel module if needed. Once inserted, the module can be removed only
+if this support has been compiled in; see <xref linkend="unloadable"> for further details.
+In any case it can be de-activated, freeing almost all memory used during profiling. The profiling
 is activated when the daemon process initialises. Configuration of the kernel module parameters is done
 via <command>sysctl</command>; the available files are detailed in <xref linkend="sysctl">.
 </para>
@@ -438,7 +463,8 @@ The following files will be present :
 	<varlistentry>
 		<term><filename>dump</filename></term>
 		<listitem><para>
-		Writing <acronym>ASCII</acronym> "1" to the file will initiate a sample data dump. 
+		Writing <acronym>ASCII</acronym> "1" to the file will initiate a sample data dump. Note: ignore
+		the value "0" you get when reading the file - it is meaningless.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -490,6 +516,58 @@ The following files will be present :
  
 </sect2>
  
+</sect1>
+
+<sect1 id="oprofile-gui">
+<title>Starting profiling from the <command>oprofile</command> gui</title>
+<para>
+This section describe the <command>oprofile</command> gui.
+</para>
+<para>
+The <command>oprofile</command> gui provides a convenient way to start the profiler.
+Advanced users might prefer to use the script interface because it is a more powerful, automated way
+to profile a system. Note than this gui is just a wrapper around the <command>op_start</command> script,
+so it does not provide more services than the script itself.
+</para>
+<para>
+After <command>oprofile</command> is started you can select the event type for each counter,
+the sampling rate and other related parameters as explained in <xref linkend="starting-daemon">.
+The "advanced setup" form provide more parameters such as the buffer size, log filename, kernel filename
+etc. The status bar contains a short help string which changes when the mouse is moved on an event type
+radio button. The unit mask option form can be invoked from the main form to allow filtering, for certain
+types of event, the circumstances for which an event is counted. <xref linkend="hardware-counters"> and related links contain
+information on using unit masks.
+</para>
+<para>
+<!-- FIXME: if this ever makes a difference, update this --> 
+The edge detect button can be selected but seems to do nothing for now.
+</para>
+<para>
+If you try to start profiling with parameters which seems incorrect you will be warned but you can bypass
+this. Passing incorrect parameters to the script can be painful, particulary if you try for example to
+sample with a very high rate. Despite oprofile's low overhead in most cases, profiling at a very high
+rate can slow down your system noticably.
+</para>
+<para>
+Stopping the profiler flushes also the data from the kernel module to the sample files. Be warned
+than the sysctl which provide this feature does not block, so after flushing a few seconds can be
+necessary for the data to be flushed to disk. You can quit the gui without stopping the profiler. Read
+<xref linkend="typical"> for further information.
+</para>
+<para>
+The first time you start the gui you can get a warning about a problem with the vmlinux and System.map
+filenames; follow the instructions to correct the situation. You can ignore it but you will unable to profile
+the linux kernel itself if you do.
+</para>
+<para>
+Your configuration is saved when you quit the gui in two files in ~/.oprofile directory :
+<filename>gui_setup</filename> and <filename>gui_advanced_setup</filename>. A default button allows you to
+reload the default configuration from the .defaults files in the same directory. It is safe to edit
+manually the .defaults file and to modify it if you are not satisfied with the default values. If you make
+a mistake and want to retrieve the original default values just quit the gui, delete the .defaults file
+and restart the interface.
+</para>
+
 </sect1>
 
 </chapter>
@@ -616,6 +694,76 @@ Some interesting options of the post-processor :
  
 </sect1> 
 
+<sect1 id="op-to-source">
+<title><command>op_to_source</command> usage</title> 
+<para>
+<command>op_to_source</command> generates annotated source files or assembly listings optionally mixed
+with source. The op_to_source utility is actually a wrapper script around the opf_filter application.
+If you want to see the source file the profiled application needs to have debug information and the source
+must be available through this debug information e.g. compile the application with -g for gcc.
+</para>
+<para>
+Note that for the reason explained in <xref linkend="hardware-counters"> the results can show some
+inaccuracy. The debug info itself can add other problems, for example, the line number for a symbol can be
+incorrect. The compiler can freely intermix some assembly instructions to make better scheduling
+and this leads to crediting one line of source for samples not really "owned" by this line etc. See also
+<xref linkend="interpreting"> about these problems.
+</para>
+<para>
+The option allowed are :
+<variablelist>
+	<varlistentry>
+		<term><option>--assembly</option></term>
+		<listitem><para>
+		<!-- FIXME: update if this changes -->
+		Output assembly code. Currently the assembly code is sorted by increasing order on the vma
+address of code and no sort order option is provided.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--source-with-assembly</option></term>
+		<listitem><para>
+		Output assembly code mixed with the source file.
+		</para></listitem> 
+	</varlistentry>
+	<varlistentry>
+		<term><option>--sort-by-counter counter_nr</option></term>
+		<listitem><para>
+		Sort by decreasing number of samples on counter_nr.
+		</para></listitem> 
+	</varlistentry>
+	<varlistentry>
+		<term><option>--with-more-samples percent_nr</option></term>
+		<listitem><para>
+		Output source file which contains at least percent_nr of samples. Note that you can only
+output one complete source file, there is no way to select only certain symbols in the source file. Can
+not be combined with <option>--with-more-samples</option>.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--until-more-samples percent_nr</option></term>
+		<listitem><para>
+		Output source file until the amount of samples outputted reach percent_nr. See the note
+above. Can not be combined with <option>--with-more-samples</option>.
+		</para></listitem> 
+	</varlistentry>
+	<varlistentry>
+		<term><option>--samples-file</option></term>
+		<listitem><para>
+		Specify the samples file. At least one of the <option>--samples-file</option> or
+<option>--image-file</option> must be specifed.
+		</para></listitem> 
+	</varlistentry>
+	<varlistentry>
+		<term><option>--image-file</option></term>
+		<listitem><para>
+		Specify the image file.
+		</para></listitem> 
+	</varlistentry>
+</variablelist>
+</para>
+</sect1>
+
 <sect1 id="interpreting">
 <title>Interpreting profiling results</title>
 <para>
@@ -649,6 +797,9 @@ can be acceptable for many circumstances (especially compared to gprof): actual 
 data is presented in the source distribution. In fact most situations have much fewer
 numbers of processes, leading to far better performance.
 </para>
+<para>Some graphs of performance characteristics of oprofile are available on the website 
+ - see <xref linkend="resources">. 
+</para> 
 </chapter>
 
 <chapter id="ack">
