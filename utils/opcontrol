@@ -960,7 +960,6 @@ do_dump() {
 	if test -e "$DIR/lock"; then
 		OPROFILED_PID=`cat $DIR/lock`
 		if test ! -d "/proc/$OPROFILED_PID"; then
-			echo "Don't exist"
 			return 1;
 		fi
 	else
