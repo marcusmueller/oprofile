@@ -1,3 +1,7 @@
+2002-01-11  John Levon  <moz@compsoc.man.ac.uk>
+
+	* module/compat.h: minor fixes
+ 
 2002-01-11  Philippe Elie  <ph_e@club-internet.fr>
 
 	* module/compat.h: many change, can be used down to 2.2.8

@@ -29,13 +29,7 @@
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
 #include <asm/apic.h>
-#endif
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
 #include <asm/apicdef.h>
-#endif
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
 #include <asm/mpspec.h>
 #endif
 
@@ -51,7 +45,7 @@
 			  : /* no outputs */			\
 			  : "c" (msr), "a" (val1), "d" (val2))
 
-#endif /* LINUX_VERSION_CODE > KERNEL_VERSION(2,2,8) */
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,2,8) */
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,18)
 
@@ -171,6 +165,7 @@
 #define release_mmap_sem(mm) up(&mm->mmap_sem)
 #endif
 
+/* 2.4.7 introduced the completion API */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,7)
 #include <linux/completion.h>
 #else
