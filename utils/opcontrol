@@ -564,23 +564,44 @@ do_options() {
 
 # stop any existing daemon
 do_stop() {
+	if test ! -f "$LOCK_FILE"; then
+		echo "Daemon not running" >&2
+		exit 1
+	fi
+
+	kill -s 0 `cat $LOCK_FILE` 2>/dev/null
+	if test "$?" -ne 0; then
+		echo "Detected stale lock file. Removing." >&2
+		rm -f "$LOCK_FILE"
+		return
+	fi
+
 	if test $KERNEL_SUPPORT = "yes"; then
-		if test -f /var/lib/oprofile/lock; then
-			echo "Stopping profiling."
-			echo 0 >/dev/oprofile/enable
-		fi
+		echo "Stopping profiling."
+		echo 0 >/dev/oprofile/enable
 	fi
 }
 
 
 do_kill_daemon() {
-	if test -f "$LOCK_FILE"; then
-		echo "Killing daemon."
-		if test $KERNEL_SUPPORT = "yes"; then
-			kill -TERM `cat $LOCK_FILE`
-		else
-			echo 1 >/proc/sys/dev/oprofile/dump_stop
-		fi
+	if test ! -f "$LOCK_FILE"; then
+		echo "Daemon not running" >&2
+		exit 1
+	fi
+
+	kill -s 0 `cat $LOCK_FILE` 2>/dev/null
+	if test "$?" -ne 0; then
+		echo "Detected stale lock file. Removing." >&2
+		rm -f "$LOCK_FILE"
+		return
+	fi
+
+	echo "Killing daemon."
+
+	if test $KERNEL_SUPPORT = "yes"; then
+		kill -TERM `cat $LOCK_FILE`
+	else
+		echo 1 >/proc/sys/dev/oprofile/dump_stop
 	fi
 
 	COUNT=0
@@ -727,21 +748,22 @@ do_sysctl_setup() {
  
 do_start_daemon() {
  
+	if test -f "$LOCK_FILE"; then
+		kill -s 0 `cat $LOCK_FILE` 2>/dev/null
+		if test "$?" -eq 0; then
+			return;
+		else
+			echo "Detected stale lock file. Removing." >&2
+			rm -f "$LOCK_FILE"
+		fi
+	fi
+ 
 	do_setup
 	do_load_setup
 	check_valid_args
 	get_kernel_range
 	do_sysctl_setup
 
-	if test -f "$LOCK_FILE"; then
-		kill -s 0 `cat $LOCK_FILE` 2>/dev/null
-		if test "$?" -eq 0; then
-			echo "oprofiled appears to be running already." >&2
-			echo "delete $LOCK_FILE if this is not the case." >&2
-		fi
-		exit 1
-	fi
- 
 	OPD_ARGS="--vmlinux=$VMLINUX --kernel-range=$KERNEL_RANGE \
 		--separate-samples=$SEPARATE_LIB_SAMPLES \
 		--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
@@ -899,9 +921,7 @@ do_operations() {
 	fi
 
 	if test "$START" = "yes"; then
-		if ! test -f "$LOCK_FILE"; then
-			do_start_daemon
-		fi
+		do_start_daemon
 		do_start
 	fi
 
