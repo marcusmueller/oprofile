@@ -349,8 +349,7 @@ void oprof_start::timerEvent(QTimerEvent *)
 	}
 
 	ostringstream ss;
-	ss << "Profiler running ";
-	ss << dstat.runtime;
+	ss << "Profiler running:";
 
 	time_t curr = time(0);
 	total_nr_interrupts += dstat.nr_interrupts;

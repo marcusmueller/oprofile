@@ -101,36 +101,8 @@ daemon_status::daemon_status()
 		exit(EXIT_FAILURE);
 	}
 
-	runtime.erase();
 	if (daemon_pid.empty())
 		return;
-
-	ifstream ifs((string("/proc/") + daemon_pid + "/stat").c_str());
-	if (!ifs)
-		return;
-
-	long dummy;
-
-	ifs >> dummy; // pid
-	while (!isdigit(ifs.get()))
-		;
-	ifs.ignore(); // state
-	for (uint i = 0; i < 17; ++i)
-		ifs >> dummy;
-
-	ulong starttime;
-
-	ifs >> starttime;
-
-	ifstream ifs2("/proc/uptime");
-	if (!ifs2)
-		return;
-
-	double uptimef;
-	ifs2 >> uptimef;
-	int uptime = int(uptimef);
-
-	uint diff_mins = (uptime - starttime / HZ) / 60;
 
 	nr_interrupts = 0;
 
@@ -168,9 +140,6 @@ daemon_status::daemon_status()
 	default:
 		break;
 	}
-
-	runtime = tostr(diff_mins / 60) + " hours, " +
-		tostr(diff_mins % 60) + " mins";
 }
 
 

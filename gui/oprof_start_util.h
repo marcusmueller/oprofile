@@ -22,7 +22,6 @@ struct daemon_status {
 	/// fill various data member according to the current daemon status
 	daemon_status();
 	bool running;			///< true if daemon is running
-	std::string runtime;		///< running time of daemon
 	unsigned int nr_interrupts;	///< nr_interrupts from profiling start
 };
 

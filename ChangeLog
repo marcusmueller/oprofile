@@ -1,5 +1,12 @@
 2003-07-21  John Levon  <levon@movementarian.org>
 
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_util.h:
+	* gui/oprof_start_util.cpp: remove uptime pretty printing.
+	It's broken for 2.5 and ugly code
+
+2003-07-21  John Levon  <levon@movementarian.org>
+
 	* gui/oprof_start.h:
 	* gui/oprof_start.cpp: use a default event if no
 	events are set yet
