@@ -1,5 +1,10 @@
 2001-10-12  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/opf_filter.cpp: make output filters more like diff (needs doc),
+	  briefer info message
+ 
+2001-10-12  John Levon  <moz@compsoc.man.ac.uk>
+
 	* doc/Makefile.in: add FIXME
 
 	* gui/oprof_start.cpp: fix std::
@@ -13,8 +18,8 @@
 
 2001-10-11  Philippe Elie  <ph_e@club-internet.fr>
 
-	* doc/oprofile.sgml
-	* doc/oprofile.1.in
+	* doc/oprofile.sgml:
+	* doc/oprofile.1.in:
 	* pp/opf_filter: make --output and --no-output more intuitive
 
 2001-10-09  Philippe Elie  <ph_e@club-internet.fr>

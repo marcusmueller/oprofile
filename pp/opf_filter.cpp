@@ -27,6 +27,7 @@
 #include <fnmatch.h>
 #include <popt.h>
 
+// FIXME: this is wrong. using std::string etc. instead 
 using namespace std;
 
 #include "opf_filter.h"
@@ -124,6 +125,7 @@ class output {
 	       size_t threshold_percent,
 	       bool until_more_than_samples,
 	       size_t sort_by_counter,
+// FIXME: std::string please !!!
 	       const char * output_dir,
 	       const char * source_dir,
 	       const char * output_filter,
@@ -350,11 +352,39 @@ filename_match::filename_match(const std::string & include_patterns,
 
 bool filename_match::match(const std::string & filename)
 {
-	bool ok = match(include_pattern, filename);
-	if (ok == true)
-		ok = !match(exclude_pattern, filename);
+	std::string const & base = basename(filename);
 
-	return ok;
+	// first, if any component of the dir is listed in exclude -> no
+	std::string comp = dirname(filename);
+	while (!comp.empty() && comp != "/") {
+		if (match(exclude_pattern, basename(comp)))
+			return false;
+		if (comp == dirname(comp))
+			break;
+		comp = dirname(comp);
+	}
+ 
+	// now if the file name is specifically excluded -> no
+	if (match(exclude_pattern, base))
+		return false;
+
+	// now if the file name is specifically included -> yes
+	if (match(include_pattern, base))
+		return true;
+
+	// now if any component of the path is included -> yes
+	// note that the include pattern defaults to '*' 
+	std::string compi = dirname(filename);
+	while (!compi.empty() && compi != "/") {
+		std::cerr << "Looking at \"" << compi << "\"" << std::endl; 
+		if (match(include_pattern, basename(compi)))
+			return true;
+		if (compi == dirname(compi))
+			break;
+		compi = dirname(compi);
+	}
+ 
+	return false; 
 }
 
 bool filename_match::match(const std::vector<std::string>& patterns,
@@ -818,22 +848,13 @@ void output::output_one_file(istream & in, const string & filename,
 			out_filename.erase(0, source_dir.length());
 		} else if (pos == string::npos) {
 			// filename is outside the source dir: ignore this file
-			cerr << "opf_filter: source file " 
-			     << '"' << out_filename << '"' 
-			     << " is outside the source directory "
-			     << '"' << source_dir << '"'
-			     << " specified through --source-dir" << endl
-			     << "file is ignored"
-			     << endl;
-
+			cerr << "opf_filter: file " 
+			     << '"' << out_filename << '"' << " ignored" << endl;
 			return;
 		}
 
-		// out_filename is now relative to source_dir.
-		std::string base_name = basename(filename);
-		std::string dir_name  = dirname(filename);
-
-		if (!fn_match.match(base_name) && !fn_match.match(dir_name))
+		// filter
+		if (!fn_match.match(filename))
 			return;
 
 		out_filename = output_dir + out_filename;
