@@ -109,7 +109,7 @@ AC_DEFUN(QT_CHECK_COMPILE,
 
 	AC_MSG_CHECKING([for Qt library name])
  
-	for libname in -lqt3 -lqt2 -lqt -lqt_mt;
+	for libname in -lqt3 -lqt2 -lqt -lqt-mt;
 	do
 		QT_TRY_LINK($libname)
 		if test -n "$ac_qt_libname"; then
