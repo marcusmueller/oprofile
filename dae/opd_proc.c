@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.55 2001/06/22 03:16:24 movement Exp $ */
+/* $Id: opd_proc.c,v 1.56 2001/07/15 15:27:08 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -177,13 +177,40 @@ struct opd_fentry {
 	u32 count1;
 };
 
+ 
+/**
+ * opd_save_old_sample_file - back up the sample file
+ * @file: the file name of the sample
+ *
+ * Back up a sample file.
+ */
+static void opd_save_old_sample_file(char * file)
+{
+	char * savename;
+	int gen = 0;
+
+	savename = opd_malloc(strlen(file) + 1 + 10);
+	strcpy(savename, file);
+	do { 
+		sprintf(savename + strlen(file), "-%d", gen++);
+	} while (opd_get_fsize(savename, 0));
+
+	printf("Renaming old sample file as \"%s\"\n", savename);
+
+	if (rename(file, savename))
+		perror("Couldn't rename : ");
+
+	opd_free(savename);
+}
+  
+ 
 /**
  * opd_handle_old_sample_file - deal with old sample file
  * @mangled: the sample file name
  * @sum: the new md5sum
  *
- * If an old sample file exists, verify it has the correct md5sum.
- * If not, remove it.
+ * If an old sample file exists, verify it is usable.
+ * If not, move or delete it.
  */
 static void opd_handle_old_sample_file(char * mangled, char * sum)
 {
@@ -208,6 +235,18 @@ static void opd_handle_old_sample_file(char * mangled, char * sum)
 
 	if (memcmp(sum, oldfooter.md5sum, 16))
 		goto closedel;
+
+	/* versions match, but we might be using different values */
+	if (oldfooter.ctr0_type_val != footer.ctr0_type_val ||
+		oldfooter.ctr1_type_val != footer.ctr1_type_val ||
+		oldfooter.ctr0_um != footer.ctr0_um ||
+		oldfooter.ctr1_um != footer.ctr1_um ||
+		oldfooter.ctr0_count != footer.ctr0_count ||
+		oldfooter.ctr1_count != footer.ctr1_count) {
+		fclose(fp);
+		opd_save_old_sample_file(mangled);
+		return;
+	}
 
 	fclose(fp);
 	verbprintf("Re-using old sample file \"%s\".\n", mangled);

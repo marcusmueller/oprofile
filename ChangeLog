@@ -1,3 +1,8 @@
+2001-07-15  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/opd_proc.c: backup old sample files if the profiling
+	  details (count, unit mask etc.) disagree. Fixes #435245
+ 
 2001-07-15  Philippe Elie  <ph_e@club-internet.fr>
 
 	* dae/oprofiled.c: fix oprofiled --version to work even if the
