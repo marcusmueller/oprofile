@@ -819,8 +819,9 @@ symbol_entry const * find_symbol(string const & str_vma)
 	// do not use the bfd equivalent:
 	//  - it does not skip space at begin
 	//  - we does not need cross architecture compile so the native
-	// strtoul must work (assuming unsigned long can contain a vma)
-	bfd_vma vma = strtoul(str_vma.c_str(), NULL, 16);
+	// strtoull must work, assuming unsigned long long can contain a vma
+	// and on 32/64 bits box bfd_vma is 64 bits
+	bfd_vma vma = strtoull(str_vma.c_str(), NULL, 16);
 
 	return samples->find_symbol(vma);
 }
@@ -844,8 +845,9 @@ void find_and_output_counter(ostream & out, string const & str,
 	// do not use the bfd equivalent:
 	//  - it does not skip space at begin
 	//  - we does not need cross architecture compile so the native
-	// strtoul must work (assuming unsigned long can contain a vma)
-	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
+	// strtoull must work, assuming unsigned long long can contain a vma
+	// and on 32/64 bits box bfd_vma is 64 bits
+	bfd_vma vma = strtoull(str.c_str(), NULL, 16);
 
 	sample_entry const * sample = samples->find_sample(vma);
 	if (sample) {
