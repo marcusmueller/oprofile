@@ -1,3 +1,8 @@
+2003-10-19  John Levon  <levon@movementarian.org>
+
+	* libop/op_events.c: move to a fixed value for the default
+	event count value
+
 2003-10-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	rmove some FIXME:

@@ -554,8 +554,11 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 {
 	descr->name = "";
 	descr->um = 0x0;
-	/* around 2000 ints/sec on a 100% busy CPU */
-	descr->count = (unsigned long)(op_cpu_frequency() * 500.0);
+	/* A fixed value of CPU cycles; this should ensure good
+	 * granulity even on faster CPUs, though it will generate more
+	 * interrupts.
+	 */
+	descr->count = 100000;
 
 	switch (cpu_type) {
 		case CPU_PPRO:
