@@ -1,3 +1,7 @@
+2001-06-23  John Levon  <moz@compsoc.man.ac.uk>
+
+	* pp/.cvsignore: add oprof_convert
+ 
 2001-06-23  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/oprof_convert.c: new utility to convert samples files when the opd_footer
