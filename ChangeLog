@@ -1,3 +1,8 @@
+2001-10-13  Philippe Elie  <ph_e@club-internet.fr>
+
+	* doc/oprofile.sgml: minor change
+	* pp/opf_filter.cpp: better warning
+
 2001-10-13  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: 0.0.6 has been released -> 0.0.7cvs

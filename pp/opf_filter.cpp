@@ -837,10 +837,8 @@ void output::output_counter_for_file(ostream& out, const string & filename,
 void output::output_one_file(istream & in, const string & filename,
 			     const counter_array_t & total_count_for_file)
 {
-	std::string out_filename;
-
 	if (output_separate_file == true) {
-		out_filename = filename;
+		std::string out_filename = filename;
 
 		size_t pos = out_filename.find(source_dir);
 		if (pos == 0) {
@@ -887,9 +885,8 @@ void output::output_one_file(istream & in, const string & filename,
 
 		ofstream out(out_filename.c_str());
 		if (!out){
-			cerr << "unable to open output file "
-			     << '"' << out_filename << '"'
-			     << endl;
+		  cerr << "unable to open output file "
+		       << '"' << out_filename << '"' << endl;
 		}
 
 		do_output_one_file(out, in, filename, total_count_for_file);
@@ -990,7 +987,14 @@ void output::output_source()
 		ifstream in(s.filename.c_str());
 
 		if (!in) {
-			cerr << "opf_filter (warning): unable to open for reading: " << file_by_samples[i].filename << endl;
+			// it is common to have empty filename due to the lack
+			// of debug info (eg _init function) so warn only
+			// if the filename is non empty. The case: no debug
+			// info at all has already been checked.
+			if (s.filename.length())
+				cerr << "opf_filter (warning): unable to open "
+				     << "for reading: " 
+				     << file_by_samples[i].filename << endl;
 		} else {
 			if (until_more_than_samples ||
 				(do_ratio(s.counter[index], counter_info[index].total_samples) >= threshold))

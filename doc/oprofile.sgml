@@ -792,8 +792,8 @@ The options allowed are :
 	<varlistentry>
 		<term><option>&mdash;output-dir</option></term>
 		<listitem><para>
-		Specify that you want to produce an annotated source tree, rather than one big file. This
-		creates a heirarchy of annotated source files, and is affected by the <option>&mdash;source-dir</option>,
+		Specify that you want to produce an annotated source tree, rather than getting all output to stdout. This
+		creates a hierarchy of annotated source files, and is affected by the <option>&mdash;source-dir</option>,
 		<option>&mdash;output</option>, and <option>&mdash;no-output</option> options.
 		</para></listitem>
 	</varlistentry>
@@ -802,7 +802,7 @@ The options allowed are :
 		<listitem><para>
 		Specify a set of comma-separated patterns for matching annotated source output filenames.
 		If this option is present, a file is only output if it matches one of the given
-		patterns (which applies to both the filename and the containing directory names).
+		patterns (which applies to the filename and each components of the containing directory names).
 		For example :
 		</para>
 		<para>
@@ -815,7 +815,7 @@ The options allowed are :
 		<listitem><para>
 		Specify a set of comma-separated patterns for filtering annotated source output filenames.
 		If this option is present, a file is only output if it does not match one of the given
-		patterns (which applies to both the filename and the containing directory names).
+		patterns (which applies to the filename and each components of the containing directory names).
 		For example :
 		</para>
 		<para>
