@@ -93,7 +93,7 @@ static struct op_unit_mask const um_moesi =
 	    {0x1, "(I)nvalid cache state"},
 	    {0x1f, "all MOESI cache state"} } };
 
-/* Hammer HT cache events */
+/* Hammer HT events */
 static struct op_unit_mask const um_ht =
 	{ 4, utm_bitmask, 0x7,
 	  { {0x0, "Command sent"},
