@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.17 2000/08/21 19:28:13 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.18 2000/08/22 13:41:21 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -107,7 +107,7 @@ static u32 map_buf[OP_MAX_MAP_BUF];
 static ulong nextmapbuf;
 static uint map_open;
 static uint hash_map_open;
-static char **hash_map;
+static char *hash_map;
 
 void oprof_out8(void *buf);
 
@@ -124,7 +124,7 @@ int oprof_hash_map_open(void)
 
 	hash_map = kmalloc(PAGE_ALIGN(OP_HASH_MAP_SIZE), GFP_KERNEL);
 	if (!hash_map) {
-		hash_map_open=0;
+		clear_bit(0,&hash_map_open);
 		return -EFAULT;
 	}
 
