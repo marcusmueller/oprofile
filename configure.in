@@ -9,16 +9,14 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.114 2002/11/07 04:31:43 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.115 2002/11/09 19:16:15 movement Exp $)
 AC_PREREQ(2.13)
+
 AC_INIT(libop/op_config.h)
+AM_INIT_AUTOMAKE(oprofile, 0.5cvs)
+AM_CONFIG_HEADER(config.h)
 
-AC_CONFIG_HEADER(config.h)
-
-AC_SUBST(PACKAGE)
-AC_SUBST(VERSION)
-PACKAGE=oprofile
-VERSION=0.5cvs
+AC_PROG_RANLIB
 
 dnl for the man page
 DATE="`date '+%a %d %B %Y'`"
@@ -94,6 +92,8 @@ if test "$OPROFILE_25" != "yes"; then
 fi
 AC_SUBST(OPROFILE_25)
 AC_MSG_RESULT($OPROFILE_25)
+
+AM_CONDITIONAL(WITH_KERNEL_SUPPORT, test $OPROFILE_25 = true)
  
 if test "$OPROFILE_25" = "no"; then
 	if test ! -f $KINC/linux/autoconf.h; then
@@ -295,13 +295,12 @@ AC_SUBST(db_xsl)
  
 # do NOT put tests here, they will fail in the case X is not installed !
  
-if test -n "$QT_LIB"; then
-	have_qt=yes
-	AC_SUBST(have_qt)
-fi
+AM_CONDITIONAL(have_qt, test -n "$QT_LIB")
+
+# inihibited for now
+AM_CONDITIONAL(build_oprof_report, false)
  
-AC_OUTPUT(make.common \
-	Makefile \
+AC_OUTPUT(Makefile \
 	libutil/Makefile \
 	libutil++/Makefile \
 	libop/Makefile \
@@ -309,7 +308,6 @@ AC_OUTPUT(make.common \
 	libopt++/Makefile \
 	libdb/Makefile \
 	libabi/Makefile \
-	module/Makefile \
 	dae/Makefile \
 	daemon/Makefile \
 	utils/Makefile \
@@ -321,7 +319,8 @@ AC_OUTPUT(make.common \
 	gui/ui/Makefile \
 	oprof_report/Makefile \
 	oprof_report/ui/Makefile \
-	$ARCH_MAKEFILE \
+	module/Makefile \
+	module/arch/Makefile \
 	version.h)
 
 if test -z "$QT_LIB"; then

@@ -1,3 +1,7 @@
+2002-11-09  John Levon  <levon@movementarian.org>
+
+	* all build files: use automake, written by Phil
+ 
 2002-11-09  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/samples_file.cpp: check than samples files version
