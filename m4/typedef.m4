@@ -31,7 +31,7 @@ dnl AX_TYPEDEFED_NAME(typedef_name, candidate_list, var_name)
 dnl set var_name to the typedef name of $1 which must be in canditate_list
 dnl else produce a fatal error
 AC_DEFUN(AX_TYPEDEFED_NAME, [
-	AC_MSG_CHECKING([whether $1 is in $2])
+	AC_MSG_CHECKING([type of $1])
 	for f in $2; do
 		AX_CHECK_TYPEDEF($1, $f, $3="$f", $3="")
 		if test -n "${$3}"; then

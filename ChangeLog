@@ -1,6 +1,13 @@
 2003-03-23  John Levon  <levon@movementarian.org>
 
 	* configure.in:
+	* m4/: move lots of stuff into separate .m4 files
+
+	* m4/typedef.m4: improve configure message
+
+2003-03-23  John Levon  <levon@movementarian.org>
+
+	* configure.in:
 	* m4/Makefile.am:
 	* m4/copyifchange.m4:
 	* m4/docbook.m4:

@@ -31,180 +31,25 @@ AC_PROG_CXX
 AC_CHECK_PROG(LD,ld,ld,)
 test "$LD" || AC_ERROR(ld not found)
 
-AC_MSG_CHECKING([for kernel OProfile support])
-AC_ARG_WITH(kernel-support, [  --with-kernel-support        Use 2.5 kernel (no kernel source tree required)],
-if test "$withval" = "yes"; then
-	OPROFILE_25=yes
-fi
-) 
+AX_FIND_KERNEL
 
-if test "$OPROFILE_25" != "yes"; then
-	dnl  --- Find the Linux kernel, at least the headers ---
- 
-	AC_SUBST(KSRC)
-	KSRC=/lib/modules/`uname -r`/build
-	AC_ARG_WITH(linux, [  --with-linux=dir             Path to Linux source tree], KSRC=$withval) 
-	KINC=$KSRC/include
-	AC_SUBST(KINC)
-
-	AX_KERNEL_OPTION(CONFIG_OPROFILE, OPROFILE_25=yes, OPROFILE_25=no)
-	AX_KERNEL_OPTION(CONFIG_OPROFILE_MODULE, OPROFILE_25=yes, OPROFILE_25=$OPROFILE_25)
-fi
-AC_MSG_RESULT($OPROFILE_25)
-
-AM_CONDITIONAL(kernel_support, test $OPROFILE_25 = yes)
- 
 if test "$OPROFILE_25" = "no"; then
-	if test ! -f $KINC/linux/autoconf.h; then
-	  AC_MSG_ERROR([no suitably configured kernel include tree found])
-	fi
-
-	dnl  --- Get Linux kernel version and compile parameters ---
-
-	AC_SUBST(KVERS)
-	AC_MSG_CHECKING([for kernel version])
-	dnl it's like this to handle mandrake's fubar version.h - bug #471448
-	eval KVERS=`gcc -I$KINC -E -dM $KINC/linux/version.h | grep -w UTS_RELEASE | awk '{print $3}'`
-	AC_MSG_RESULT([$KVERS])
-	case "$KVERS" in
-	2.2.*|2.4.*) ;;
-	*) AC_MSG_ERROR([Unsupported kernel version])
-	esac
-
-	dnl Check for the minimal kernel version supported
-	AC_MSG_CHECKING([kernel version])
-	AX_KERNEL_VERSION(2, 2, 10, <=, AC_MSG_RESULT([ok]), AC_MSG_ERROR([check html documentation install section]))
-
-	dnl linux/spinlock.h added at some point in past
-	AC_MSG_CHECKING([for $KINC/linux/spinlock.h])
-	if test -f $KINC/linux/spinlock.h; then
-	  EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DHAVE_LINUX_SPINLOCK_HEADER"
-	  AC_MSG_RESULT([yes])
-	else
-	  AC_MSG_RESULT([no])
-	fi
-
-	AC_SUBST(EXTRA_CFLAGS_MODULE)
-
-	AC_MSG_CHECKING([for rtc_lock])
-	gcc -I$KINC -E $KINC/linux/mc146818rtc.h | grep rtc_lock >/dev/null
-	if test "$?" -eq 0; then
-	  AC_MSG_RESULT([yes]); EXTRA_CFLAGS="$EXTRA_CFLAGS -DRTC_LOCK";
-	else
-	  AC_MSG_RESULT([no]);
-	fi
-	 
-	arch="unknown"
-	AC_MSG_CHECKING(for x86-64 architecture)
-	AX_KERNEL_OPTION(CONFIG_X86_64, x8664=1, x8664=0)
-	AX_MSG_RESULT_YN($x8664)
-	BUILD_HAMMER=no
-	if test "$x8664" -eq 1; then
-		arch="x86"
-		BUILD_HAMMER=yes
-	else
-		AC_MSG_CHECKING(for x86 architecture)
-		AX_KERNEL_OPTION(CONFIG_X86, x86=1, x86=0)
-		AX_KERNEL_OPTION(CONFIG_X86_WP_WORKS_OK, x86=1, x86=$x86)
-		AX_MSG_RESULT_YN($x86)
-		test "$x86" = 1 && arch="x86"
-		
-		if test "$arch" = "unknown"; then
-	  		AC_MSG_CHECKING(for ia64 architecture)
-	  		AX_KERNEL_OPTION(CONFIG_IA64, ia64=1, ia64=0)
-	  		AX_MSG_RESULT_YN($ia64)
-	  		test "$ia64" = 1 && arch="ia64"
-		fi
-	
-	fi
-	AC_SUBST(BUILD_HAMMER)
-
-	test "$arch" = "unknown" && AC_MSG_ERROR(Unsupported architecture)
-
-	dnl check to see if kernel verion appropriate for arch
-	AC_MSG_CHECKING(arch/kernel version combination)
-	case "$arch" in
-	ia64)
-		AX_KERNEL_VERSION(2, 4, 18, <, AC_MSG_RESULT([ok]),
-			AC_MSG_ERROR([unsupported arch/kernel])) ;;
-	*) AC_MSG_RESULT([ok])
-	esac
-
-	dnl for now we do not support PREEMPT patch
-	AC_MSG_CHECKING([for preempt patch])
-	AX_KERNEL_OPTION(CONFIG_PREEMPT,preempt=1,preempt=0)
-	AX_MSG_RESULT_YN([$preempt])
-	test "$preempt" = 0 || AC_MSG_ERROR([unsupported kernel configuration : CONFIG_PREEMPT])
-
-	AC_SUBST(KINC)
-
-	MODINSTALLDIR=/lib/modules/$KVERS
+	AX_CONFIG_MODULE
 fi
- 
-OPROFILE_MODULE_ARCH=$arch
-AC_SUBST(OPROFILE_MODULE_ARCH)
 
 AC_ARG_WITH(module-dir,
 [  --with-module-dir=dir        Path to module installation directory], MODINSTALLDIR=$withval)
 AC_SUBST(MODINSTALLDIR)
 
-AC_MSG_CHECKING([whether malloc attribute is understood])
-SAVE_CFLAGS=$CFLAGS
-CFLAGS="-Werror $CFLAGS"
-AC_TRY_COMPILE(,[
-void monkey() __attribute__((malloc));
-],AC_MSG_RESULT([yes]); AC_DEFINE(MALLOC_ATTRIBUTE_OK, 1, [whether malloc attribute is understood]), AC_MSG_RESULT([no]))
-CFLAGS=$SAVE_CFLAGS 
+AX_MALLOC_ATTRIBUTE
+AX_BUILTIN_EXPECT
 
-dnl builtin_expect is used in module we can't add that in config.h
-AC_MSG_CHECKING([whether __builtin_expect is understood])
-SAVE_CFLAGS=$CFLAGS
-CFLAGS="-Werror $CFLAGS"
-AC_TRY_LINK(,[
-int i;
-if (__builtin_expect(i, 0)) { }
-],AC_MSG_RESULT([yes]); EXTRA_CFLAGS="$EXTRA_CFLAGS -DEXPECT_OK", AC_MSG_RESULT([no]);)
-CFLAGS=$SAVE_CFLAGS 
- 
 AC_SUBST(EXTRA_CFLAGS)
 
-dnl --- user space configuration ---
-
-# we are weak, so do not support separate build dir
 topdir=`pwd`
 AC_SUBST(topdir)
  
-AC_ARG_WITH(extra-includes,
-[  --with-extra-includes=DIR    add extra include paths],
-  use_extra_includes="$withval",
-  use_extra_includes=NO
-)
-if test -n "$use_extra_includes" && \
-        test "$use_extra_includes" != "NO"; then
-  ac_save_ifs=$IFS
-  IFS=':'
-  for dir in $use_extra_includes; do
-    extra_includes="$extra_includes -I$dir"
-  done
-  IFS=$ac_save_ifs
-  CPPFLAGS="$CPPFLAGS $extra_includes"
-fi
-
-AC_ARG_WITH(extra-libs,
-[  --with-extra-libs=DIR        add extra library paths],
-  use_extra_libs=$withval,
-  use_extra_libs=NO
-)
-if test -n "$use_extra_libs" && \
-        test "$use_extra_libs" != "NO"; then
-   ac_save_ifs=$IFS
-   IFS=':'
-   for dir in $use_extra_libs; do
-     extra_libraries="$extra_libraries -L$dir"
-   done
-   IFS=$ac_save_ifs
-   LDFLAGS="$LDFLAGS $extra_libraries"
-fi
+AX_EXTRA_DIRS
 
 AC_CHECK_LIB(popt, poptGetContext,, AC_MSG_ERROR([popt library not found]))
 AC_CHECK_LIB(dl, dlopen,, AC_MSG_ERROR([dl library not found]))
@@ -215,22 +60,8 @@ AC_CHECK_LIB(bfd, bfd_openr,, AC_MSG_ERROR([bfd library not found]))
  
 AC_LANG_CPLUSPLUS
 
-AC_MSG_CHECKING([popt prototype])
-SAVE_CXXFLAGS=$CXXFLAGS
-CXXFLAGS="-Werror $CXXFLAGS"
-AC_TRY_COMPILE([#include <popt.h>],
-[
-int c; char **v;
-poptGetContext(0, c, v, 0, 0);
-],
-AC_MSG_RESULT([takes char **]);,
-AC_MSG_RESULT([takes const char **]); AC_DEFINE(CONST_POPT, 1, [whether popt prototype takes a const char **]))
-CXXFLAGS="$SAVE_CXXFLAGS"
-
-AC_MSG_CHECKING([whether to use included sstream])
-AC_TRY_COMPILE([#include <sstream>], [], 
-AC_MSG_RESULT([no]);,
-AC_MSG_RESULT([yes]); CXXFLAGS="$CXXFLAGS -I\${top_srcdir}/include")
+AX_POPT_CONST
+AX_CHECK_SSTREAM
 
 dnl some distro have a libiberty.a but does not have a libiberty.h
 AC_CHECK_HEADERS(libiberty.h)
