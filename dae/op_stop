@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_stop,v 1.16 2002/01/05 17:54:54 movement Exp $ 
+# $Id: op_stop,v 1.17 2002/01/15 00:57:21 movement Exp $ 
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -19,11 +19,14 @@
 if test `pidof oprofiled`
 then
 	echo "Stopping profiling and killing daemon"
-	echo 1 >/proc/sys/dev/oprofile/dump_stop
 	COUNT=0
 	while test `pidof oprofiled`
 	do
 		sleep 1
+		# we need this in here because we can send a dump_stop that gets missed
+		# when the daemon is just starting up - a better fix is a lockfile for
+		# "fully started up"
+		echo 1 >/proc/sys/dev/oprofile/dump_stop
 		COUNT=`expr $COUNT + 1`
 		if [ "$COUNT" -eq 30 ]; then
 			echo "Daemon stuck shutting down; killing !"
