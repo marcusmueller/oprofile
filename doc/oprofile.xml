@@ -84,6 +84,10 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 			with the line <constant>EXPORT_SYMBOL(do_fork);</constant> present in <filename>kernel/ksyms.c</filename>.
 			Such a kernel is present in the <ulink url="http://www.x86-64.org">x86-64.org</ulink> CVS repository.
 			2.6 kernels are supported with the in-kernel OProfile driver.
+			</para>
+			<para>
+			PPC64 processors (Power4/Power5/PPC970) require a recent (&gt; 2.6.5) kernel with the line 
+			<constant>#define PV_970</constant> present in <filename>include/asm-ppc64/processor.h</filename>.
 <!-- FIXME: do we require always gte 2.4.10 for nosmp ? -->
 		</para></listitem>
 	</varlistentry>
@@ -748,6 +752,10 @@ hardware counters as necessary. Note that some combinations are not
 allowed by the CPU; running <command>opcontrol --list-events</command> gives the details
 of each event. The event specification is a colon-separated string
 of the form <option><emphasis>name</emphasis>:<emphasis>count</emphasis>:<emphasis>unitmask</emphasis>:<emphasis>kernel</emphasis>:<emphasis>user</emphasis></option> as described in this table:
+<note><para>
+For the PowerPC platforms, all events specified must be in the same group; i.e., the group number
+appended to the event name (e.g. <constant>&lt;<emphasis>some-event-name</emphasis>&gt;_GRP9</constant>) must be the same.
+</para></note>
 </para>
 <informaltable frame="all">
 <tgroup cols='2'> 
@@ -797,8 +805,8 @@ The table below lists the events selected by default
 <row><entry>Itanium</entry><entry>ia64/itanium</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>Itanium 2</entry><entry>ia64/itanium2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>TIMER_INT</entry><entry>timer</entry><entry>None selectable</entry></row>
-<row><entry>IBM iseries</entry><entry>timer</entry><entry>None selectable</entry></row>
-<row><entry>IBM pseries</entry><entry>timer</entry><entry>None selectable</entry></row>
+<row><entry>IBM iseries</entry><entry>PowerPC 4/5/970</entry><entry>CYCLES:10000:0:1:1</entry></row>
+<row><entry>IBM pseries</entry><entry>PowerPC 4/5/970</entry><entry>CYCLES:10000:0:1:1</entry></row>
 <row><entry>IBM s390</entry><entry>timer</entry><entry>None selectable</entry></row>
 <row><entry>IBM s390x</entry><entry>timer</entry><entry>None selectable</entry></row>
 </tbody>
@@ -849,11 +857,11 @@ events other than the default event chosen by OProfile.
 </para>
 </note>
 <para>
-The hardware performance counters are detailed in the Intel IA-32 Architecture Manual, Volume 3, available
+The Intel hardware performance counters are detailed in the Intel IA-32 Architecture Manual, Volume 3, available
 from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>. The AMD Athlon/Duron
 implementation is detailed in <ulink
 url="http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf">
-http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf</ulink>.
+http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf</ulink>. For PowerPC64 processors in IBM iSeries and pSeries systems, contact IBM for more information.
 These processors are capable of delivering an interrupt when a counter overflows.
 This is the basic mechanism on which OProfile is based. The delivery mode is <acronym>NMI</acronym>,
 so blocking interrupts in the kernel does not prevent profiling. When the interrupt handler is called,
@@ -977,6 +985,17 @@ None of the advance features of the Itanium 2 performance monitoring unit
 such as opcode matching, address range matching, or precise event sampling are
 supported by this version of OProfile.  The Itanium 2 support only maps OProfile's
 existing interrupt-based model to the PMU hardware.
+</para>
+</sect2>
+
+<sect2 id="ppc64">
+<title>PowerPC64 support</title>
+<para>
+The performance monitoring unit (PMU) for the PowerPC 64-bit processors 
+consists of between 6 and 8 counters (depending on the model), plus three
+special purpose registers used for programming the counters -- MMCR0, MMCR1,
+and MMCRA.  Advanced features such as instruction matching and thresholding are
+not supported by this version of OProfile.
 </para>
 </sect2>
 
