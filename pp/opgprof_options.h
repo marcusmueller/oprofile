@@ -17,17 +17,14 @@
 #include "utility.h"
 #include "common_option.h"
 
-class partition_files;
+class profile_set;
 
 namespace options {
 	extern std::string gmon_filename;
 }
 
-/**
- * a partition of sample filename to treat, each sub-list is a list of
- * sample to merge. filled by handle_options()
- */
-extern scoped_ptr<partition_files> sample_file_partition;
+/// a set of sample filenames to handle.
+extern profile_set profiles;
 
 /**
  * handle_options - process command line

@@ -22,7 +22,6 @@
 #include "file_manip.h"
 #include "opreport_options.h"
 #include "profile.h"
-#include "partition_files.h"
 #include "arrange_profiles.h"
 #include "profile_container.h"
 #include "symbol_sort.h"
