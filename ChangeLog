@@ -1,6 +1,25 @@
+2003-10-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/liblegacy/init.c:
+	* daemon/liblegacy/opd_24_stats.c:
+	* daemon/liblegacy/opd_24_stats.h:
+	* daemon/liblegacy/opd_image.c:
+	* daemon/liblegacy/opd_image.h:
+	* daemon/liblegacy/opd_kernel.c:
+	* daemon/liblegacy/opd_kernel.h:
+	* daemon/liblegacy/opd_mapping.c:
+	* daemon/liblegacy/opd_mapping.h:
+	* daemon/liblegacy/opd_parse_proc.c:
+	* daemon/liblegacy/opd_parse_proc.h:
+	* daemon/liblegacy/opd_proc.c:
+	* daemon/liblegacy/opd_proc.h:
+	* daemon/liblegacy/opd_sample_files.c:
+	* daemon/liblegacy/opd_sample_files.h: move doygen comment from *.c to
+	  *.h. Add some doxygen comment.
+
 2003-10-27  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* daemon/liblegacy/opd_24_stst.c:
+	* daemon/liblegacy/opd_24_stats.c:
 	* daemon/liblegacy/opd_image.h:
 	* daemon/liblegacy/opd_image.h: nr_images static
 

@@ -32,9 +32,6 @@ static int nr_images;
 static struct list_head opd_images[OPD_IMAGE_HASH_SIZE];
 
 
-/**
- * initialize hashed image lists
- */
 void opd_init_images(void)
 {
 	int i;
@@ -44,21 +41,12 @@ void opd_init_images(void)
 }
 
 
-/**
- * opd_get_nr_images - return number of images
- */
 int opd_get_nr_images(void)
 {
 	return nr_images;
 }
 
 
-/**
- * @param image  the image pointer
- *
- * free all memory belonging to this image -  This function does not close
- * nor flush the samples files
- */
 void opd_delete_image(struct opd_image * image)
 {
 	verbprintf("Deleting image: name %s app_name %s, kernel %d, "
@@ -89,12 +77,6 @@ void opd_delete_image(struct opd_image * image)
 }
 
 
-/**
- * @param image_cb callback to apply onto each existing image struct
- *
- * the callback receive a struct opd_image * (not a const struct) and is
- * allowed to freeze the image struct itself.
- */
 void opd_for_each_image(opd_image_cb image_cb)
 {
 	struct list_head * pos;
@@ -265,19 +247,6 @@ static struct opd_image * opd_find_image(char const * name,
 }
 
  
-/**
- * opd_get_image - get an image from the image structure
- * @param name  name of image
- * @param app_name  the application name where belongs this image
- * @param kernel  is the image a kernel/module image
- * @param tid  thread id
- * @param tgid  thread group id
- *
- * Get the image specified by the file name name from the
- * image structure. If it is not present, the image is
- * added to the structure. In either case, the image number
- * is returned.
- */
 struct opd_image * opd_get_image(char const * name, char const * app_name,
                                  int kernel, pid_t tid, pid_t tgid)
 {
@@ -289,18 +258,6 @@ struct opd_image * opd_get_image(char const * name, char const * app_name,
 }
 
 
-/**
- * opd_get_kernel_image - get a kernel image
- * @param name of image
- * @param app_name application owner of this kernel image. non-null only
- *  when separate_kernel_sample != 0
- * @param tid  thread id
- * @param tgid  thread group id
- *
- * Create and initialise an image adding it
- * to the image lists and to image hash list
- * entry HASH_KERNEL
- */
 struct opd_image * opd_get_kernel_image(char const * name,
                                char const * app_name, pid_t tid, pid_t tgid)
 {

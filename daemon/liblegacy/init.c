@@ -355,7 +355,7 @@ static void opd_24_init(void)
 	nbuf = xmalloc(n_buf_bytesize);
 
 	opd_init_images();
-	opd_init_proc();
+	opd_init_procs();
 	opd_init_kernel_image();
 
 	for (i = 0; i < OPD_MAX_STATS; i++)

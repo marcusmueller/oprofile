@@ -33,11 +33,6 @@ static struct op_hash_index * hashmap;
 static char const * hash_name[OP_HASH_MAP_NR];
 
 
-/**
- * op_cleanup_hash_name
- *
- * release resource owned by hash_name array
- */
 void opd_cleanup_hash_name(void)
 {
 	int i;
@@ -47,9 +42,6 @@ void opd_cleanup_hash_name(void)
 }
 
 
-/**
- * opd_init_hash_map - initialise the hashmap
- */
 void opd_init_hash_map(void)
 {
 	extern fd_t hashmapdevfd;
@@ -63,12 +55,6 @@ void opd_init_hash_map(void)
 }
 
 
-/**
- * opd_kill_maps - delete mapping information for a process
- * @param proc  process to work on
- *
- * Frees structures holding mapping information
- */
 void opd_kill_maps(struct opd_proc * proc)
 {
 	struct list_head * pos, * pos2;
@@ -82,17 +68,6 @@ void opd_kill_maps(struct opd_proc * proc)
 }
 
 
-/**
- * opd_put_mapping - add a mapping to a process
- * @param proc  process to add map to
- * @param image  mapped image pointer
- * @param start  start of mapping
- * @param offset  file offset of mapping
- * @param end  end of mapping
- *
- * Add the mapping specified to the process proc growing the maps array
- * if necessary.
- */
 void opd_add_mapping(struct opd_proc * proc, struct opd_image * image,
 		unsigned long start, unsigned long offset, unsigned long end)
 {
@@ -164,14 +139,6 @@ static char const * opd_get_hash_name(int hash)
 }
 
 
-/**
- * opd_handle_mapping - deal with mapping notification
- * @param note  mapping notification
- *
- * Deal with one notification that a process has mapped
- * in a new executable file. The mapping information is
- * added to the process structure.
- */
 void opd_handle_mapping(struct op_note const * note)
 {
 	struct opd_proc * proc;
@@ -194,7 +161,7 @@ void opd_handle_mapping(struct op_note const * note)
 	}
 
 	if (hash < 0 || hash >= OP_HASH_MAP_NR) {
-		fprintf(stderr,"hash value %u out of range.\n",hash);
+		fprintf(stderr, "hash value %u out of range.\n",hash);
 		return;
 	}
 

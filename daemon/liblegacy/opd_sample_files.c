@@ -102,19 +102,6 @@ static char * opd_mangle_filename(struct opd_image const * image, int counter,
 }
 
 
-/*
- * opd_open_24_sample_file - open an image sample file
- * @param image  image to open file for
- * @param counter  counter number
- * @param cpu_nr  cpu number
- *
- * Open image sample file for the image, counter
- * counter and set up memory mappings for it.
- * image->kernel and image->name must have meaningful
- * values.
- *
- * Returns 0 on success.
- */
 int opd_open_24_sample_file(struct opd_image * image, int counter, int cpu_nr)
 {
 	char * mangled;
@@ -166,9 +153,6 @@ out:
 }
 
 
-/**
- * sync all samples files
- */
 void opd_sync_samples_files(void)
 {
 	struct list_head * pos;
@@ -181,11 +165,6 @@ void opd_sync_samples_files(void)
 }
 
 
-/**
- * @param image  the image pointer to work on
- *
- * close all samples files belonging to this image
- */
 void opd_close_image_samples_files(struct opd_image * image)
 {
 	uint i, j;

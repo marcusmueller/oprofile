@@ -38,21 +38,14 @@ static struct list_head opd_procs[OPD_MAX_PROC_HASH];
 static int nr_procs;
 
 
-/**
- * opd_init_proc() init proc hash table
- */
-void opd_init_proc(void)
+void opd_init_procs(void)
 {
 	int i;
-
 	for (i = 0; i < OPD_MAX_PROC_HASH; i++)
 		list_init(&opd_procs[i]);
 }
 
 
-/**
- * opd_get_nr_procs - return number of processes tracked
- */
 int opd_get_nr_procs(void)
 {
 	return nr_procs;
@@ -71,14 +64,6 @@ inline static uint proc_hash(pid_t tid)
 }
 
 
-/**
- * opd_new_proc - create a new process structure
- * @param tid  tid for this process
- * @param tgid  tgid for this process
- *
- * Allocate and initialise a process structure and insert
- * it into the procs hash table.
- */
 struct opd_proc * opd_new_proc(pid_t tid, pid_t tgid)
 {
 	struct opd_proc * proc;
@@ -96,15 +81,6 @@ struct opd_proc * opd_new_proc(pid_t tid, pid_t tgid)
 }
 
 
-/**
- * opd_get_proc - get process from process list
- * @param tid  tid for this process
- * @param tgid  tgid for this process
- *
- * A process with pid pid is searched on the process list,
- * maintaining LRU order. If it is not found, %NULL is returned,
- * otherwise the process structure is returned.
- */
 struct opd_proc * opd_get_proc(pid_t tid, pid_t tgid)
 {
 	struct opd_proc * proc;
@@ -142,16 +118,6 @@ verb_show_sample(unsigned long offset, struct opd_map * map)
 }
 
 
-/**
- * opd_put_image_sample - write sample to file
- * @param image  image for sample
- * @param offset  (file) offset to write to
- * @param counter  counter number
- *
- * Add to the count stored at position offset in the
- * image file. Overflow pins the count at the maximum
- * value.
- */
 void opd_put_image_sample(struct opd_image * image, unsigned long offset,
                           u32 counter)
 {
@@ -215,13 +181,6 @@ static int opd_lookup_maps(struct opd_proc * proc,
 }
 
 
-/**
- * opd_put_sample - process a sample
- * @param sample  sample to process
- *
- * Write out the sample to the appropriate sample file. This
- * routine handles kernel and module samples as well as ordinary ones.
- */
 void opd_put_sample(struct op_sample const * sample)
 {
 	struct opd_proc * proc;
@@ -278,16 +237,6 @@ void opd_put_sample(struct op_sample const * sample)
 }
 
 
-/**
- * opd_handle_fork - deal with fork notification
- * @param note  note to handle
- *
- * Deal with a fork() notification by creating a new process
- * structure, and copying mapping information from the old process.
- *
- * sample->pid contains the process id of the old process.
- * sample->eip contains the process id of the new process.
- */
 void opd_handle_fork(struct op_note const * note)
 {
 	struct opd_proc * old;
@@ -337,13 +286,6 @@ void opd_handle_fork(struct op_note const * note)
 }
 
 
-/**
- * opd_handle_exec - deal with notification of execve()
- * @param tid  tid for this process
- * @param tgid  tgid for this process
- *
- * Drop all mapping information for the process.
- */
 void opd_handle_exec(pid_t tid, pid_t tgid)
 {
 	struct opd_proc * proc;
@@ -375,16 +317,6 @@ void opd_handle_exec(pid_t tid, pid_t tgid)
 }
 
 
-/**
- * opd_handle_exit - deal with exit notification
- * @param note  note to handle
- *
- * Deal with an exit() notification by setting the flag "dead"
- * on a process. These will be later cleaned up by the %SIGALRM
- * handler.
- *
- * sample->pid contains the process id of the exited process.
- */
 void opd_handle_exit(struct op_note const * note)
 {
 	struct opd_proc * proc;
@@ -497,13 +429,6 @@ static void opd_remove_kernel_mapping(struct opd_proc * proc)
 }
 
 
-/**
- * opd_clear_kernel_mapping - remove all kernel mapping for all opd_proc
- *
- * invalidate (by removing them) all kernel mapping. This function do nothing
- * when separate_kernel == 0 because we don't add mapping for kernel
- * sample in proc struct.
- */
 void opd_clear_kernel_mapping(void)
 {
 	opd_for_each_proc(opd_remove_kernel_mapping);

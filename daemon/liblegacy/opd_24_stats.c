@@ -20,9 +20,6 @@
 
 unsigned long opd_24_stats[OPD_MAX_STATS];
 
-/**
- * opd_print_24_stats - print out latest statistics
- */
 void opd_print_24_stats(void)
 {
 	printf("\n%s\n", op_get_time());

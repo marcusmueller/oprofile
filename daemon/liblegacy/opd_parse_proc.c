@@ -199,12 +199,6 @@ static u32 read_tgid(u32 tid)
 }
 
 
-/**
- * opd_get_ascii_procs - read process and mapping information from /proc
- *
- * Read information on each process and its mappings from the /proc
- * filesystem.
- */
 void opd_get_ascii_procs(void)
 {
 	DIR * dir;
