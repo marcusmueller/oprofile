@@ -414,17 +414,33 @@ int main(int argc, char const *argv[])
 	case CPU_PPC64_POWER4:
 	case CPU_PPC64_POWER5:
 	case CPU_PPC64_970:
-	case CPU_MIPS_R10000:
-	case CPU_MIPS_R12000:
-	case CPU_MIPS_RM7000:
-	case CPU_MIPS_RM9000:
-	case CPU_MIPS_SB1:
-	case CPU_MIPS_VR5432:
-	case CPU_MIPS_VR5500:
 		/*
 		 * I have discovered a truly remarkable URL
 		 * which this editor is too small to contain.
 		 */
+		break;
+
+	case CPU_MIPS_R10000:
+	case CPU_MIPS_R12000:
+		printf("See NEC R10000 / R12000 User's Manual\n"
+		       "http://www.necelam.com/docs/files/U10278EJ3V0UM00.pdf\n");
+		break;
+	case CPU_MIPS_RM7000:
+		printf("See RM7000 Family User Manual "
+		       "available from www.pmc-sierra.com\n");
+		break;
+	case CPU_MIPS_RM9000:
+		printf("See RM9000x2 Family User Manual "
+		       "available from www.pmc-sierra.com\n");
+		break;
+	case CPU_MIPS_SB1:
+	case CPU_MIPS_VR5432:
+		printf("See NEC VR5443 User's Manual, Volume 1\n"
+		       "http://www.necelam.com/docs/files/1375_V1.pdf\n");
+		break;
+	case CPU_MIPS_VR5500:
+		printf("See NEC R10000 / R12000 User's Manual\n"
+		     "http://www.necel.com/nesdis/image/U16677EJ3V0UM00.pdf\n");
 		break;
 
 	case CPU_RTC:

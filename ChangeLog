@@ -22,6 +22,8 @@
 	* events/mips/sb1/events:
 	* events/mips/sb1/unit_masks:
 	* events/Makefile.am:
+	* libop/op_events.c:
+	* utils/op_help.c:
 	* libop/op_cpu_type.h:
 	* libop/op_cpu_type.c: Add support for the MIPS R10000 and R12000,
 	  QED RM7000 and PMC-Sierra RM9000, NEC VR5432 and VR5500 and Sibyte SB1
