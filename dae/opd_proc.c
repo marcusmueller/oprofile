@@ -94,28 +94,6 @@ void opd_age_procs(void)
 
 
 /**
- * opd_app_name - get the application name or %NULL if irrelevant
- * @param proc  the process to examine
- *
- * Returns the app_name for the given proc or %NULL if
- * it does not exist any mapping for this proc (which is
- * true for the first mapping at exec time)
- */
-char const * opd_app_name(struct opd_proc const * proc)
-{
-	char const * app_name = NULL;
-	/* at exec time the first maps is always the map for primary image.
-	 * At startup proc/pid/maps don't provide this property but we
-	 * we reorder maps to ensure than maps[0] is the primary image
-	 */
-	if (proc->nr_maps)
-		app_name = proc->maps[0].image->name;
-
-	return app_name;
-}
-
-
-/**
  * proc_hash - hash pid value
  * @param pid  pid value to hash
  *
@@ -133,16 +111,14 @@ inline static uint proc_hash(u32 pid)
  * Allocate and initialise a process structure and insert
  * it into the procs hash table.
  */
-static struct opd_proc * opd_new_proc(u32 pid)
+struct opd_proc * opd_new_proc(u32 pid)
 {
 	struct opd_proc * proc;
 
 	proc = xmalloc(sizeof(struct opd_proc));
-	proc->maps = NULL;
+	list_init(&proc->maps);
+	proc->name = NULL;
 	proc->pid = pid;
-	proc->nr_maps = 0;
-	proc->max_nr_maps = 0;
-	proc->last_map = 0;
 	proc->dead = 0;
 	proc->accessed = 0;
 	list_add(&proc->next, &opd_procs[proc_hash(pid)]);
@@ -160,30 +136,10 @@ static struct opd_proc * opd_new_proc(u32 pid)
 static void opd_delete_proc(struct opd_proc * proc)
 {
 	list_del(&proc->next);
-
-	if (proc->maps) free(proc->maps);
+	opd_kill_maps(proc);
+	if (proc->name)
+		free((char *)proc->name);
 	free(proc);
-}
-
-
-/**
- * opd_add_proc - add a process
- * @param pid  process id
- *
- * Create a new process structure and add it
- * to the head of the process list. The process structure
- * is filled in as appropriate.
- *
- */
-struct opd_proc * opd_add_proc(u32 pid)
-{
-	struct opd_proc * proc;
-
-	proc = opd_new_proc(pid);
-
-	opd_init_maps(proc);
-
-	return proc;
 }
 
 
@@ -221,15 +177,13 @@ struct opd_proc * opd_get_proc(u32 pid)
  * verb_show_sample - print the sample out to the log
  * @param offset  the offset value
  * @param map  map to print
- * @param last_map  previous map used
  */
 inline static void
-verb_show_sample(unsigned long offset, struct opd_map * map,
-                 char const * last_map)
+verb_show_sample(unsigned long offset, struct opd_map * map)
 {
-	verbprintf("DO_PUT_SAMPLE %s: calc offset 0x%.8lx, map start 0x%.8lx,"
+	verbprintf("DO_PUT_SAMPLE : calc offset 0x%.8lx, map start 0x%.8lx,"
 		" end 0x%.8lx, offset 0x%.8lx, name \"%s\"\n",
-		   last_map, offset, map->start, map->end, map->offset,
+		   offset, map->start, map->end, map->offset, 
 		   map->image->name);
 }
 
@@ -278,44 +232,19 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 static int opd_lookup_maps(struct opd_proc * proc,
 			struct op_sample const * sample)
 {
-	unsigned int i;
+	struct list_head * pos;
 
 	proc->accessed = 1;
 
-	if (!proc->nr_maps)
-		return 0;
-
-	/* proc->last_map is always safe as mappings are never deleted except
-	 * by things which reset last_map. If last map is the primary image,
-	 * we use it anyway (last_map == 0).
-	 */
 	opd_stats[OPD_MAP_ARRAY_ACCESS]++;
-	if (opd_is_in_map(&proc->maps[proc->last_map], sample->eip)) {
-		i = proc->last_map;
-		if (proc->maps[i].image != NULL) {
-			verb_show_sample(opd_map_offset(&proc->maps[i], sample->eip),
-				&proc->maps[i], "(LAST MAP)");
-			opd_put_image_sample(proc->maps[i].image,
-				opd_map_offset(&proc->maps[i], sample->eip), sample->counter);
-		}
-
-		opd_stats[OPD_PROCESS]++;
-		return 1;
-	}
-
-	/* look for which map and find offset. We search backwards in order to
-	 * prefer more recent mappings (which means we don't need to intercept
-	 * munmap)
-	 */
-	for (i=proc->nr_maps; i > 0; i--) {
-		int const map = i - 1;
-		if (opd_is_in_map(&proc->maps[map], sample->eip)) {
-			unsigned long offset = opd_map_offset(&proc->maps[map], sample->eip);
-			if (proc->maps[map].image != NULL) {
-				verb_show_sample(offset, &proc->maps[map], "");
-				opd_put_image_sample(proc->maps[map].image, offset, sample->counter);
+	list_for_each(pos, &proc->maps) {
+		struct opd_map * map = list_entry(pos, struct opd_map, next);
+		if (opd_is_in_map(map, sample->eip)) {
+			unsigned long offset = opd_map_offset(map, sample->eip);
+			if (map->image != NULL) {
+				verb_show_sample(offset, map);
+				opd_put_image_sample(map->image, offset, sample->counter);
 			}
-			proc->last_map = map;
 			opd_stats[OPD_PROCESS]++;
 			return 1;
 		}
@@ -369,16 +298,14 @@ void opd_put_sample(struct op_sample const * sample)
 		return;
 	}
 
-	if (opd_lookup_maps(proc, sample)) {
+	if (opd_lookup_maps(proc, sample))
 		return;
-	}
 
 	if (in_kernel_eip) {
 		/* assert: separate_kernel || no_vmlinux == 0 */
 		opd_add_kernel_map(proc, sample->eip);
-		if (opd_lookup_maps(proc, sample)) {
+		if (opd_lookup_maps(proc, sample))
 			return;
-		}
 	}
 
 	if (no_vmlinux) {
@@ -409,6 +336,7 @@ void opd_handle_fork(struct op_note const * note)
 {
 	struct opd_proc * old;
 	struct opd_proc * proc;
+	struct list_head * pos;
 
 	verbprintf("DO_FORK: from %d to %ld\n", note->pid, note->addr);
 
@@ -426,18 +354,16 @@ void opd_handle_fork(struct op_note const * note)
 		return;
 
 	/* eip is actually pid of new process */
-	proc = opd_add_proc(note->addr);
+	proc = opd_new_proc(note->addr);
 
 	if (!old)
 		return;
 
-	/* remove the kernel map and copy over */
-
-	if (proc->maps) free(proc->maps);
-	proc->maps = xmalloc(sizeof(struct opd_map) * old->max_nr_maps);
-	memcpy(proc->maps,old->maps,sizeof(struct opd_map) * old->nr_maps);
-	proc->nr_maps = old->nr_maps;
-	proc->max_nr_maps = old->max_nr_maps;
+	/* copy the maps */
+	list_for_each(pos, &old->maps) {
+		struct opd_map * map = list_entry(pos, struct opd_map, next);
+		opd_add_mapping(proc, map->image, map->start, map->offset, map->end);
+	}
 }
 
 
@@ -496,7 +422,7 @@ void opd_handle_exec(u32 pid)
 	if (proc)
 		opd_kill_maps(proc);
 	else
-		opd_add_proc(pid);
+		opd_new_proc(pid);
 }
 
 
@@ -529,18 +455,14 @@ void opd_proc_cleanup(void)
  */
 void opd_remove_kernel_mapping(struct opd_proc * proc)
 {
-	size_t i;
-	size_t dest;
+	struct list_head * pos, * pos2;
 
-	for (dest = 0, i = 0 ; i < proc->nr_maps ; ++i) {
-		if (!opd_eip_is_kernel(proc->maps[i].start + proc->maps[i].offset)) {
-			proc->maps[dest] = proc->maps[i];
-			++dest;
+	list_for_each_safe(pos, pos2, &proc->maps) {
+		struct opd_map * map = list_entry(pos, struct opd_map, next);
+		if (opd_eip_is_kernel(map->start + map->offset)) {
+			list_del(pos);
 		}
 	}
-
-	proc->nr_maps = dest;
-	proc->last_map = 0;
 }
 
 

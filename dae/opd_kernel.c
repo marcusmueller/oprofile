@@ -212,12 +212,14 @@ static void opd_get_module_info(void)
 		}
 
 		cp2++;
-		/* freed by opd_clear_module_info() or opd_get_module() */
+
 		modname = xmalloc((size_t)((cp2-cp) + 1));
 		strncpy(modname, cp, (size_t)((cp2-cp)));
 		modname[cp2-cp] = '\0';
 
 		mod = opd_find_module_by_name(modname);
+
+		free(modname);
 
 		switch (*(++cp2)) {
 			case 'O':
@@ -346,7 +348,6 @@ static struct opd_module * opd_find_module_by_eip(unsigned long eip)
 }
 
 
-
 /**
  * opd_handle_module_sample - process a module sample
  * @param eip  EIP value
@@ -391,6 +392,7 @@ static void opd_handle_module_sample(unsigned long eip, u32 counter)
 	}
 }
 
+
 /**
  * opd_handle_kernel_sample - process a kernel sample
  * @param eip  EIP value of sample
@@ -411,6 +413,7 @@ void opd_handle_kernel_sample(unsigned long eip, u32 counter)
 	opd_handle_module_sample(eip, counter);
 }
  
+
 /**
  * opd_eip_is_kernel - is the sample from kernel/module space
  * @param eip  EIP value
@@ -423,6 +426,7 @@ int opd_eip_is_kernel(unsigned long eip)
 	/* kernel_start == 0 when vm_nolinux != 0 */
 	return kernel_start && eip >= kernel_start;
 }
+
 
 /**
  * opd_add_kernel_map - add a module or kernel maps to a proc struct
@@ -439,7 +443,7 @@ void opd_add_kernel_map(struct opd_proc * proc, unsigned long eip)
 	struct opd_image * image;
 	char const * app_name;
 
-	app_name = opd_app_name(proc);
+	app_name = proc->name;
 	if (!app_name) {
 		verbprintf("un-named proc for pid %d\n", proc->pid);
 		return;

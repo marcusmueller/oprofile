@@ -1,3 +1,19 @@
+2003-10-07  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_kernel.c: memory leak
+
+	* dae/opd_mapping.c:
+	* dae/opd_mapping.h:
+	* dae/opd_parse_proc.c:
+	* dae/opd_proc.c: 
+	* dae/opd_proc.h: use a list of struct opd_map instead of an array,
+	  remove last_map optimization.
+
+	* dae/oprofiled.c: memory leak
+	
+	* libutil/op_cpufreq.c: memory leak, FILE* leak
+	* libutil/op_list.h: fix @author
+
 2003-10-06  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* dae/oprofiled.c:

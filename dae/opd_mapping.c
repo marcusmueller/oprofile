@@ -51,21 +51,6 @@ void opd_init_hash_map(void)
 
 
 /**
- * opd_init_maps - initialise map structure for a process
- * @param proc  process to work on
- *
- * Initialise the mapping info structure for process proc.
- */
-void opd_init_maps(struct opd_proc * proc)
-{
-	proc->maps = xcalloc(sizeof(struct opd_map), OPD_DEFAULT_MAPS);
-	proc->max_nr_maps = OPD_DEFAULT_MAPS;
-	proc->nr_maps = 0;
-	proc->last_map = 0;
-}
-
-
-/**
  * opd_kill_maps - delete mapping information for a process
  * @param proc  process to work on
  *
@@ -74,9 +59,13 @@ void opd_init_maps(struct opd_proc * proc)
  */
 void opd_kill_maps(struct opd_proc * proc)
 {
-	if (proc->maps)
-		free(proc->maps);
-	opd_init_maps(proc);
+	struct list_head * pos, * pos2;
+
+	list_for_each_safe(pos, pos2, &proc->maps) {
+		struct opd_map * map = list_entry(pos, struct opd_map, next);
+		list_del(pos);
+		free(map);
+	}
 }
 
 
@@ -94,25 +83,27 @@ void opd_kill_maps(struct opd_proc * proc)
 void opd_add_mapping(struct opd_proc * proc, struct opd_image * image,
 		unsigned long start, unsigned long offset, unsigned long end)
 {
-	struct opd_map * map = &proc->maps[proc->nr_maps];
+	struct opd_map * map;
 
-	verbprintf("Adding mapping for process %d: 0x%.8lx-0x%.8lx, off 0x%.8lx, \"%s\" at maps pos %d\n",
-		proc->pid, start, end, offset, image->name, proc->nr_maps);
+	verbprintf("Adding mapping for process %d: 0x%.8lx-0x%.8lx, off 0x%.8lx, \"%s\"\n",
+		proc->pid, start, end, offset, image->name);
 
 	opd_check_image_mtime(image);
+
+	map = malloc(sizeof(struct opd_map));
+
+	/* first map is the primary image */
+	if (list_empty(&proc->maps)) {
+		if (proc->name)
+			free((char *)proc->name);
+		proc->name = xstrdup(image->name);
+	}
 
 	map->image = image;
 	map->start = start;
 	map->offset = offset;
 	map->end = end;
-
-	if (++proc->nr_maps == proc->max_nr_maps) {
-		proc->max_nr_maps += OPD_MAP_INC;
-		proc->maps = xrealloc(proc->maps, sizeof(struct opd_map)*(proc->max_nr_maps));
-	}
-
-	/* we reset last map here to force searching backwards */
-	proc->last_map = 0;
+	list_add_tail(&map->next, &proc->maps);
 }
 
 
@@ -178,7 +169,7 @@ void opd_handle_mapping(struct op_note const * note)
 
 	if (!proc) {
 		verbprintf("Told about mapping for non-existent process %u.\n", note->pid);
-		proc = opd_add_proc(note->pid);
+		proc = opd_new_proc(note->pid);
 	}
 
 	hash = note->hash;
@@ -193,7 +184,7 @@ void opd_handle_mapping(struct op_note const * note)
 		return;
 	}
 
-	app_name = opd_app_name(proc);
+	app_name = proc->name;
 
 	image = opd_get_image_by_hash(hash, app_name);
 	if (image == NULL)

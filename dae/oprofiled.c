@@ -253,13 +253,11 @@ static void opd_options(int argc, char const * argv[])
 
 	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
 
-	if (showvers) {
+	if (showvers)
 		show_version(argv[0]);
-	}
 
-	if (separate_kernel) {
+	if (separate_kernel)
 		separate_lib = 1;
-	}
 
 	cpu_type = op_get_cpu_type();
 	op_nr_counters = op_get_nr_counters(cpu_type);
@@ -287,11 +285,10 @@ static void opd_options(int argc, char const * argv[])
 	opd_note_buf_size = opd_read_fs_int("notesize");
 	kernel_only = opd_read_fs_int("kernel_only");
 
-	if (cpu_type != CPU_RTC) {
+	if (cpu_type != CPU_RTC)
 		opd_pmc_options();
-	} else {
+	else
 		opd_rtc_options();
-	}
 
 	cpu_speed = op_cpu_frequency();
 
@@ -512,6 +509,7 @@ static void opd_sighup(void)
 
 static void clean_exit(void)
 {
+	op_free_events();
 	unlink(OP_LOCK_FILE);
 }
 

@@ -21,12 +21,11 @@ struct op_note;
 struct op_sample;
 
 struct opd_proc {
-	/* maps are stored in such order than maps[0] is the mapping
-	 * for the primary image (so on maps are not ordered by vma) */
-	struct opd_map * maps;
-	unsigned int nr_maps;
-	unsigned int max_nr_maps;
-	unsigned int last_map;
+	/* maps are always added to the end of head, so search will be done
+	 * from the newest map to the oldest which mean we don't care about
+	 * munmap. First added map must be the primary image */
+	struct list_head maps;
+	char const * name;
 	u32 pid;
 	int accessed;
 	int dead;
@@ -41,8 +40,7 @@ void opd_handle_fork(struct op_note const * note);
 void opd_handle_exit(struct op_note const * note);
 void opd_handle_exec(u32 pid);
 struct opd_proc * opd_get_proc(u32 pid);
-struct opd_proc * opd_add_proc(u32 pid);
-char const * opd_app_name(struct opd_proc const * proc);
+struct opd_proc * opd_new_proc(u32 pid);
 int opd_get_nr_procs(void);
 void opd_age_procs(void);
 void opd_proc_cleanup(void);

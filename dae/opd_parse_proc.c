@@ -96,7 +96,7 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 	char * line;
 	char exe_name[20];
 	char * image_name;
-	unsigned int map_nr;
+	struct list_head * pos;
 
 	snprintf(mapsfile + 6, 6, "%hu", proc->pid);
 
@@ -127,15 +127,16 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 		free(line);
 	}
 
-	/* dae assume than maps[0] is the primary image name, this is always
-	 * true at exec time but not for /proc/pid so reorder maps if necessary
+	/* dae assume than the first map added is the primary image name, this
+	 * is always true at exec time but not for /proc/pid so restore
+	 * the primary image name
 	 */
-	for (map_nr = 0 ; map_nr < proc->nr_maps ; ++map_nr) {
-		if (!strcmp(proc->maps[map_nr].image->name, image_name)) {
-			if (map_nr != 0) {
-				struct opd_map temp = proc->maps[0];
-				proc->maps[0] = proc->maps[map_nr];
-				proc->maps[map_nr] = temp;
+	list_for_each(pos, &proc->maps) {
+		struct opd_map * map = list_entry(pos, struct opd_map, next);
+		if (!strcmp(map->image->name, image_name)) {
+			if (pos != proc->maps.next) {
+				free((char *)proc->name);
+				proc->name = xstrdup(map->image->name);
 
 				fprintf(stderr, "swap map for image %s\n", image_name);
 			}
@@ -143,7 +144,7 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 		}
 	}
 
-	if (proc->nr_maps == 0) {
+	if (list_empty(&proc->maps)) {
 		/* we always need a valid proc->maps[0], we artificially give
 		 * a map of length zero so on no samples will never go to this
 		 * map. This is used only with --separate-samples and kernel
@@ -184,7 +185,7 @@ void opd_get_ascii_procs(void)
 	while ((dirent = readdir(dir))) {
 		if (sscanf(dirent->d_name, "%u", &pid) == 1) {
 			verbprintf("ASCII added %u\n", pid);
-			proc = opd_add_proc(pid);
+			proc = opd_new_proc(pid);
 			opd_get_ascii_maps(proc);
 		}
 	}
