@@ -85,6 +85,7 @@ del:
 	verbprintf("Deleting old sample file \"%s\".\n", mangled);
 	remove(mangled);
 out:
+	;
 }
 
 
