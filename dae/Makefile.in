@@ -1,16 +1,16 @@
-# $Id: Makefile.in,v 1.18 2001/10/25 18:37:09 movement Exp $
+# $Id: Makefile.in,v 1.19 2001/11/12 14:05:34 phil_e Exp $
 
 .PHONY: all clean srcdoc install uninstall
 
-all: oprofiled op_help
- 
+all: oprofiled
+
 prefix=$(DESTDIR)@prefix@
 exec_prefix=@exec_prefix@
 BINDIR=@bindir@
 MANDIR=@mandir@
 CC=@CC@
 MKDIR_P=mkdir -p
-INSTALL_LIST=oprofiled op_start op_dump op_stop op_help
+INSTALL_LIST=oprofiled op_start op_dump op_stop
 
 install: all $(INSTALL_LIST)
 	-$(MKDIR_P) $(BINDIR)
@@ -24,23 +24,19 @@ uninstall:
 	done
 
 clean:
-	rm -f oprofiled  op_help *.o oprofiled-src.html 
+	rm -f oprofiled *.o oprofiled-src.html 
 
 CFLAGS=-Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
 LIBS=@extra_libraries@ -lpopt
 INCLUDES=-I. @extra_includes@
 HEADERS=oprofiled.h opd_util.h ../op_user.h ../version.h
-SOURCES=oprofiled.c opd_util.c opd_proc.c ../op_events.c
- 
+SOURCES=oprofiled.c opd_util.c opd_proc.c
+EVENTS_OBJS=../events/op_events.o ../events/op_events_desc.o
+
 srcdoc: oprofiled-src.html
 
 oprofiled-src.html: $(SOURCES)
 	../scripts/dodoc -html $(SOURCES) >oprofiled-src.html
- 
-oprofiled: $(SOURCES) $(HEADERS) 
-	rm -f ../op_events.o 
-	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $(SOURCES) $(LIBS)
 
-op_help: ../op_events.c
-	rm -f ../op_events.o
-	$(CC) $(CFLAGS) -DOP_EVENTS_DESC -DOP_EVENTS_MAIN $(INCLUDES) -g -o op_help ../op_events.c
+oprofiled: $(SOURCES) $(EVENTS_OBJS) $(HEADERS)
+	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $(SOURCES) $(EVENTS_OBJS) $(LIBS)

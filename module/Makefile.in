@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.1 2001/10/30 17:32:14 movement Exp $
+# $Id: Makefile.in,v 1.2 2001/11/12 14:05:35 phil_e Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -6,7 +6,7 @@ MKDIR_P=mkdir -p
 CC=@CC@
 LD=@LD@
 
-.PHONY: all install clean distclean maintainerclean uninstall
+.PHONY: all install clean distclean uninstall
 
 all: oprofile.o
 
@@ -50,11 +50,12 @@ op_x86.o: op_x86.c
 op_syscalls.o: op_syscalls.c oprofile.h
 	$(CC) $(KCFLAGS) -c -o $@ $<
 
+# FIXME: what is this ?
 oprofile.s: oprofile.c oprofile.h
 	$(CC) $(KCFLAGS) -S $<
 
-op_events_module.o: ../op_events.c ../op_user.h
-	$(CC) $(KCFLAGS) -c -o op_events_module.o $<
+op_events_module.o: ../events/op_events.c ../op_user.h
+	$(CC) $(KCFLAGS) -c -o $@ $<
 
 oprofile_nmi.o: oprofile_nmi.S
 	$(CC) $(ASMFLAGS) -c -o $@ $<

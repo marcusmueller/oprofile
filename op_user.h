@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.13 2001/11/11 23:51:37 phil_e Exp $ */
+/* $Id: op_user.h,v 1.14 2001/11/12 14:05:34 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -140,20 +140,6 @@ struct op_hash_index {
 /* size of hash map in bytes */
 #define OP_HASH_MAP_SIZE (OP_HASH_MAP_NR * sizeof(struct op_hash_index) + POOL_SIZE)
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* op_events.c */
-int op_min_count(u8 ctr_type, int cpu_type);
-int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, int cpu_type);
-const char* op_get_cpu_type_str(int cpu_type);
-void op_get_event_desc(int cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
-int op_get_cpu_type(void);
-
-#ifdef __cplusplus
-}
-#endif
 
 /* op_events.c: stuff needed by oprof_start and opf_filter.cpp */
 
@@ -188,11 +174,29 @@ struct op_unit_desc {
 	char *desc[7];
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* op_events.c */
+int op_min_count(u8 ctr_type, int cpu_type);
+int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, int cpu_type);
+const char* op_get_cpu_type_str(int cpu_type);
+void op_get_event_desc(int cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
+int op_get_cpu_type(void);
+int op_check_unit_mask(struct op_unit_mask *allow, u8 um);
+
+#ifdef __cplusplus
+}
+#endif
+
 extern struct op_unit_mask op_unit_masks[];
 extern struct op_unit_desc op_unit_descs[];
 extern char *op_event_descs[];
 extern struct op_event op_events[];
 /* the total number of events for all processor type */
 extern uint op_nr_events;
+
+#define CTR_ALL		(~0u)
 
 #endif /* OP_USER_H */

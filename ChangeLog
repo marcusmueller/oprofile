@@ -1,5 +1,22 @@
 2001-11-12  Philippe Elie  <ph_e@club-internet.fr>
 
+	* events: new directory
+
+	* events/Makefile.in:
+	* events/op_events.c:
+	* events/op_events_desc.c:
+	* events/op_help.c: new, splitted from op_events.c
+
+	* pp/oprofpp_util.cpp: new, splitted from oprofpp.cpp
+	
+	* pp/oprofpp.h:
+	* pp/oprofpp.c:
+	* op_user.h:
+	* all Makefile.in: update
+	* op_events.c: remove
+
+2001-11-12  Philippe Elie  <ph_e@club-internet.fr>
+
 	* op_events.c: last commit was bad
 	
 	* pp/oprofpp.c: use sstream

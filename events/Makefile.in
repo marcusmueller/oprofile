@@ -1,0 +1,40 @@
+.PHONY: all clean install uninstall
+
+all: op_help
+
+prefix=$(DESTDIR)@prefix@
+exec_prefix=@exec_prefix@
+BINDIR=@bindir@
+MANDIR=@mandir@
+CC=@CC@
+MKDIR_P=mkdir -p
+INSTALL_LIST=op_help
+CFLAGS=-pedantic -Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
+LIBS=@extra_libraries@ -lpopt
+INCLUDES=-I. @extra_includes@
+
+install: all $(INSTALL_LIST)
+	-$(MKDIR_P) $(BINDIR)
+	for f in $(INSTALL_LIST); do \
+		cp $$f $(BINDIR)/$$f && chmod 755 $(BINDIR)/$$f; \
+	done
+
+uninstall:
+	for f in $(INSTALL_LIST); do \
+		rm -f $(BINDIR)/$$f; \
+	done
+
+clean:
+	rm -f *.o op_help
+
+op_help: op_events.o op_events_desc.o op_help.o
+	$(CC) $(CFLAGS) $(INCLUDES) -g $^ -o $@
+
+op_events.o: op_events.c ../op_user.h
+	$(CC) -c $(CFLAGS) $(INCLUDES) -g $< -o $@
+
+op_events_desc.o: op_events_desc.c ../op_user.h
+	$(CC) -c $(CFLAGS) $(INCLUDES) -g $< -o $@
+
+op_help.o: op_help.c ../op_user.h
+	$(CC) -c $(CFLAGS) $(INCLUDES) -g $< -o $@

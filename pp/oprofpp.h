@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.25 2001/11/06 21:38:16 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.26 2001/11/12 14:05:35 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -65,6 +65,16 @@ char *cplus_demangle (const char *mangled, int options);
 
 void opp_treat_options(const char * filename, poptContext * optcon);
 std::string demangle_symbol(const char* symbol);
+void quit_error(poptContext * optcon, char const *err);
+
+// defined in oprofpp_util.cpp
+extern int verbose;
+extern int demangle;
+extern char const *samplefile;
+extern char *basedir;
+extern const char *imagefile;
+extern int list_all_symbols_details;
+extern int ctr;
 
 //---------------------------------------------------------------------------
 // A simple container of counter.

@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.39 2001/11/11 23:51:36 phil_e Exp $
+# $Id: Makefile.in,v 1.40 2001/11/12 14:05:34 phil_e Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MKDIR_P=mkdir -p
@@ -7,7 +7,10 @@ LD=@LD@
 
 .PHONY: all install clean distclean maintainerclean uninstall tags
 
+# take care: order of sub-dir build is meaningfull.
+
 all:
+	$(MAKE) -C events
 	$(MAKE) -C util
 	$(MAKE) -C module
 	$(MAKE) -C dae
@@ -20,12 +23,15 @@ install.kernel: all
 	$(MAKE) -C module install DESTDIR=$(DESTDIR)
 
 install.user: all
+	$(MAKE) -C events install DESTDIR=$(DESTDIR)
+	$(MAKE) -C util install DESTDIR=$(DESTDIR)
 	$(MAKE) -C dae install DESTDIR=$(DESTDIR)
 	$(MAKE) -C pp install DESTDIR=$(DESTDIR)
 	$(MAKE) -C doc install DESTDIR=$(DESTDIR)
 	$(MAKE) -C gui install DESTDIR=$(DESTDIR)
 
 uninstall:
+	$(MAKE) -C events uninstall
 	$(MAKE) -C module uninstall
 	$(MAKE) -C dae uninstall
 	$(MAKE) -C pp uninstall
@@ -35,6 +41,7 @@ uninstall:
 
 clean:
 	rm -f *.o
+	$(MAKE) -C events clean
 	$(MAKE) -C util clean
 	$(MAKE) -C module clean
 	$(MAKE) -C dae clean
@@ -48,7 +55,7 @@ maintainerclean: distclean
 	rm -f configure doc/Makefile aclocal.m4
 
 distclean: clean
-	rm -f Makefile util/Makefile doc/oprofile.1 dae/Makefile pp/Makefile gui/Makefile tags config.status config.log config.cache version.h
+	rm -f Makefile module/Makefile events/Makefile util/Makefile doc/oprofile.1 dae/Makefile pp/Makefile gui/Makefile tags config.status config.log config.cache version.h
 
 tags:
 	ctags -R

@@ -3,7 +3,9 @@ all: string_manip.o
 clean: 
 	rm -f *.o
 
-.PHONY: all clean
+install: all
+
+.PHONY: all clean install
 
 CXX=@CXX@
 CXXFLAGS=@CXXFLAGS@ -Wall -pedantic -ansi -W -Wunused -Wmissing-prototypes

@@ -1101,14 +1101,6 @@ static const char * output_dir;
 static const char * output_filter;
 static const char * no_output_filter;
 
-// defined in oprofpp.cpp
-extern int verbose;
-extern int demangle;
-extern char const *samplefile;
-extern char *basedir;
-extern const char *imagefile;
-extern int list_all_symbols_details;
-
 static struct poptOption options[] = {
 	{ "samples-file", 'f', POPT_ARG_STRING, &samplefile, 0, "image sample file", "file", },
 	{ "image-file", 'i', POPT_ARG_STRING, &imagefile, 0, "image file", "file", },
