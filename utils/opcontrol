@@ -95,7 +95,8 @@ do_help() {
 
 	General options
 	  --list-events                list event types and unit masks
-	  --help                       this message" >&2
+	  --help                       this message
+	  --version                    show version" >&2
 }
 
 determine_version(){
@@ -464,6 +465,11 @@ do_options() {
 				exit 0
 				;;
 
+			--version)
+				op_help --version | awk -F: '{print $2}'
+				exit 0
+				;;
+ 
 			--list-events)
 				exec op_help
 				;;

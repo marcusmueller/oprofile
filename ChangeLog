@@ -1,5 +1,9 @@
 2002-12-03  John Levon  <levon@movementarian.org>
 
+	* opcontrol: add --version
+ 
+2002-12-03  John Levon  <levon@movementarian.org>
+
 	* utils/op_start:
 	* utils/op_start_25:
 	* utils/op_stop_25:
