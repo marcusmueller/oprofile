@@ -521,6 +521,9 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 
 	pmc_select_start(cpu_num);
 
+	/* 0 is a special case for us, prefer -EINTR instead. Ugly. */
+	if (!count)
+		return -EINTR;
 	return count;
 }
 
