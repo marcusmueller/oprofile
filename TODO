@@ -21,7 +21,6 @@ Before 1.0 little stuff
 -----------------------
 
  o opcontrol -- need a way to turn OFF a counter now after setting one up
- o opcontrol - scale the default event count
  o oprofpp needs -P too
  o "op_time" doesn't have a header !
  o decide on -d vs. -D by default for demangle etc.

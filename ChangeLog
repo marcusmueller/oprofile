@@ -1,5 +1,12 @@
 2003-03-01  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml: tweaks
+
+	* utils/opcontrol: scale the default event count. Please
+	  test ...
+
+2003-03-01  John Levon  <levon@movementarian.org>
+
 	* utils/opcontrol: setup default events. Allow part-setting
 	  using --setup. Fix a help text.
 

@@ -333,6 +333,7 @@ First we need to start the profiler running in the background. We need to specif
 </para><para>
 <command>opcontrol --start</command>
 </para>
+<para>
 Note that OProfile will pick a default event for you, if OProfile is using the hardware performance counters.
 The event chosen roughly corresponds to measuring CPU time spent in code.
 </para>
@@ -374,21 +375,10 @@ LyXParagraph::GetFontSettings(BufferParams const &amp;, int) const[0x08145420]: 
 Row::next(void) const[0x0813ac24]: 15.4904% (1352 samples)
 </screen> 
 <para>
-at the top. Note that over a longer run (or with a lower <option>ctr0-count</option> value) the number of samples will 
-be much more statistically
-reliable. Note that these sample counts do <emphasis>not</emphasis> necessarily reflect the relative amounts of time
-spent in each function - it depends on the event being counted. In my case (on my CPU) OProfile used <constant>CPU_CLK_UNHALTED</constant>
-which the command <command>opcontrol --list-events</command> tells us is "clocks processor is not halted", so in fact is likely to represent
-the relative time spent accurately (in fact, experiments have shown that using this event is far more accurate than the values
-produced by <command>gprof</command>).
+at the top. I could also  have used <command>op_time</command> or <command>op_time -dnl</command> to
+get a summary of the entire system profile (try it !). When I'm done, I can shut down the 
+profile with <command>opcontrol --shutdown</command>.
 </para>
-<note>
-<para>
-If you're more used to <command>gprof</command> style profile output, you can use <command>oprofpp -g gmon.out</command> and then
-<command>gprof -p binary</command> to get flat profiles. OProfile does not (cannot) support the call graph
-feature of <command>gprof</command>.
-</para>
-</note>
 
 </sect1>
 

@@ -222,8 +222,9 @@ do_init() {
 	IS_TIMER=0
 	DEFAULT_EVENT=
 	DEFAULT_UNIT_MASK=
-	# FIXME: scale
-	DEFAULT_COUNT=100000
+	INT_CPU_SPEED=`echo $CPU_SPEED | awk -F. '{print $1}'`
+	# ~ 2000 ints/second when CPU is busy (hopefully)
+	DEFAULT_COUNT=`expr $INT_CPU_SPEED \* 500`
  
 	case "$CPUTYPE" in
 		0|1|2|i386/ppro|i386/pii|i386/piii)
