@@ -1,3 +1,21 @@
+2002-03-22  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/op_start: default buffer size to zero and let module
+	  override the default.
+
+	* module/op_rtc.c:
+	* module/oprofile.h:
+	* op_user.h:
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_config.h: an another coherency fix, unhopefully
+	  this bug fix does not fix the configuration file (see # )
+
+	* pp/oprofpp.cpp: for gprof dump do not print events settings
+
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp: prepare using symbol size
+
 2002-03-21  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/opf_filter.cpp;

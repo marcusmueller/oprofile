@@ -23,23 +23,6 @@
 #include "persistent_config.h"
 #include "../op_user.h"
 
-// FIXME: must be shared.
-#define OP_MAX_PERF_COUNT	2147483647UL
-#define OP_MAX_RTC_COUNT	4096
-
-#define OP_DEFAULT_BUFFER_SIZE	262144
-#define OP_MAX_BUFFER_SIZE	1048576
-#define OP_MIN_BUFFER_SIZE	1024
-
-#define OP_DEFAULT_HASH_SIZE	65536
-#define OP_MAX_HASH_TABLE_SIZE	262144
-#define OP_MIN_HASH_TABLE_SIZE	256
-
-#define OP_DEFAULT_NOTE_SIZE	16384
-#define OP_PRE_NOTE_WATERMARK	64
-#define OP_MIN_NOTE_TABLE_SIZE	(1024 + OP_PRE_NOTE_WATERMARK)
-#define OP_MAX_NOTE_TABLE_SIZE	1048576
-
 // This is a standard non-portable assumption we make. 
 #define OP_MIN_PID		0
 #define OP_MAX_PID		32767

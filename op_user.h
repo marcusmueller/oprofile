@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.20 2002/03/20 21:19:42 phil_e Exp $ */
+/* $Id: op_user.h,v 1.21 2002/03/22 21:18:43 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -69,15 +69,46 @@ typedef enum {
 #define NR_CPUS 32
 #endif 
 
-/* change these, you change them in op_start as well,
- * you hear ?
- */
+/*@{\name module default/min/max settings */
+
 /** 65536 * 32 = 2097152 bytes default */
 #define OP_DEFAULT_HASH_SIZE 65536
-/** 16384 * 8 = 131072 bytes default */
-#define OP_DEFAULT_BUF_SIZE 16384
-/** note buffer size */
+/** maximum number of entry in module samples hash table */
+#define OP_MAX_HASH_SIZE 262144
+/** minimum number of entry in module samples hash table */
+#define OP_MIN_HASH_SIZE 256
+
+/** 32768 * 8 = 262144 bytes default */
+#define OP_DEFAULT_BUF_SIZE 32768
+/** we don't try to wake-up daemon until it remains more than this free entry
+ * in eviction buffer */
+#define OP_PRE_WATERMARK 2048
+/** maximum number of entry in samples eviction buffer */
+#define OP_MAX_BUF_SIZE	1048576
+/** minimum number of entry in samples eviction buffer */
+#define OP_MIN_BUF_SIZE	(1024 + OP_PRE_WATERMARK)
+
+/** 16384 * sizeof(op_note) = 273680 bytes default */
 #define OP_DEFAULT_NOTE_SIZE 16384
+/** we don't try to wake-up daemon until it remains more than this free entry
+ * in note buffer */
+#define OP_PRE_NOTE_WATERMARK	512
+/** maximum number of entry in note buffer */
+#define OP_MAX_NOTE_TABLE_SIZE	1048576
+/** minimum number of entry in note buffer */
+#define OP_MIN_NOTE_TABLE_SIZE	(1024 + OP_PRE_NOTE_WATERMARK)
+
+/** maximum number of events between interrupts. Counters are 40 bits, but
+ * for convenience we only use 32 bits. The top bit is used for overflow
+ * detection, so user can set up to (2^31)-1 */
+#define OP_MAX_PERF_COUNT	2147483647UL
+
+/** maximum sampling rate when using RTC */
+#define OP_MAX_RTC_COUNT	4096
+/** minimum sampling rate when using RTC */
+#define OP_MIN_RTC_COUNT	2
+
+/*@}*/
 
 /** kernel image entries are offset by this many entries */
 #define OPD_KERNEL_OFFSET 524288

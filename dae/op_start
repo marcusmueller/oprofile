@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.60 2002/01/17 08:42:56 movement Exp $
+# $Id: op_start,v 1.61 2002/03/22 21:18:43 phil_e Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -129,9 +129,11 @@ do_init() {
 	DEVICE_FILE=
 	NOTE_DEVICE_FILE=
 	HASH_MAP_DEVICE_FILE=
-	BUF_SIZE=262144
-	HASH_SIZE=65536
-	NOTE_SIZE=16384
+	# for these three buffer size == 0 means use the default value
+	# hard-coded in op_user.h
+	BUF_SIZE=0
+	HASH_SIZE=0
+	NOTE_SIZE=0
 	KERNEL_ONLY=0
 	IGNORE_MYSELF=0
 	DIR="/var/opd"
@@ -339,9 +341,21 @@ do_options() {
 
 	vecho "Parameters used:"
 	vecho "CPUTYPE $CPUTYPE"
-	vecho "BUF_SIZE $BUF_SIZE"
-	vecho "HASH_SIZE $HASH_SIZE"
-	vecho "NOTE_SIZE $NOTE_SIZE"
+	if [ $HASH_SIZE != 0 ]; then
+		vecho "HASH_SIZE $HASH_SIZE"
+	else
+		vecho "HASH_SIZE default value"
+	fi;
+	if [ $BUF_SIZE != 0 ]; then
+		vecho "BUF_SIZE $BUF_SIZE"
+	else
+		vecho "BUF_SIZE default value"
+	fi;
+	if [ $NOTE_SIZE != 0 ]; then
+		vecho "NOTE_SIZE $NOTE_SIZE"
+	else
+		vecho "NOTE_SIZE default value"
+	fi;
 	if test "$IS_RTC" -ne 1; then
 		f=0
 		while (( $f < $OP_MAX_COUNTERS )); do
@@ -462,9 +476,15 @@ do_setup() {
  
 # initialise sysctl parameters
 do_sysctl_setup() {
-	$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE
-	$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE
-	$SYSCTL -w dev.oprofile.notesize=$NOTE_SIZE
+	if [ $HASH_SIZE != 0 ]; then
+		$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE
+	fi
+	if [ $BUF_SIZE != 0 ]; then
+		$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE
+	fi
+	if [ $NOTE_SIZE != 0 ]; then
+		$SYSCTL -w dev.oprofile.notesize=$NOTE_SIZE
+	fi
 	$SYSCTL -w dev.oprofile.kernel_only=$KERNEL_ONLY
 	$SYSCTL -w dev.oprofile.pid_filter=$PID_FILTER
 	$SYSCTL -w dev.oprofile.pgrp_filter=$PGRP_FILTER

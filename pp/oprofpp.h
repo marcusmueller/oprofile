@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.47 2002/03/22 15:19:46 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.48 2002/03/22 21:18:43 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -272,6 +272,12 @@ public:
 	 * in the samples file from the start of symbol sym_idx.
 	 */
 	u32 sym_offset(uint num_symbols, u32 num) const;
+
+	/**
+	 * symbol_size - return the size of a symbol
+	 * \param index symbol index
+	 */
+	size_t symbol_size(uint sym_idx) const;
 
 	/** Returns true if the underlined bfd object contains debug info */
 	bool have_debug_info() const;

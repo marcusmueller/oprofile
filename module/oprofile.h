@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.21 2002/02/13 21:37:14 phil_e Exp $ */
+/* $Id: oprofile.h,v 1.22 2002/03/22 21:18:43 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -133,28 +133,8 @@ struct op_int_operations {
 #define streq(a, b) (!strcmp((a), (b)))
 #define streqn(a, b, len) (!strncmp((a), (b), (len)))
 
-/* ready will be set this many samples before the end of the 
- * eviction buffer.
- * The purpose of this is to avoid overflowing the sample
- * buffer - though if we do overflow, nothing too bad will
- * happen.
- */
-#define OP_PRE_WATERMARK 2048
-
-/* ready will be set this many notes before the end of the 
- * note buffer.
- */
-#define OP_PRE_NOTE_WATERMARK 512
-
 /* maximum depth of dname trees - this is just a page */
 #define DNAME_STACK_MAX 1024
-
-/* maximum number of events between
- * interrupts. Counters are 40 bits, but
- * for convenience we only use 32 bits.
- * The top bit is used for overflow detection,
- * so user can set up to (2^31)-1 */
-#define OP_MAX_PERF_COUNT 2147483647UL
 
 /* is the count at maximal value ? */
 #define op_full_count(c) (((c) & OP_COUNT_MASK) == OP_COUNT_MASK)

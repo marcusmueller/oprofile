@@ -200,9 +200,9 @@ oprof_start::oprof_start()
  
 	event_count_edit->setValidator(event_count_validator); 
 	QIntValidator * iv;
-	iv = new QIntValidator(OP_MIN_BUFFER_SIZE, OP_MAX_BUFFER_SIZE, buffer_size_edit);
+	iv = new QIntValidator(OP_MIN_BUF_SIZE, OP_MAX_BUF_SIZE, buffer_size_edit);
 	buffer_size_edit->setValidator(iv); 
-	iv = new QIntValidator(OP_MIN_HASH_TABLE_SIZE, OP_MAX_HASH_TABLE_SIZE, hash_table_size_edit);
+	iv = new QIntValidator(OP_MIN_HASH_SIZE, OP_MAX_HASH_SIZE, hash_table_size_edit);
 	hash_table_size_edit->setValidator(iv); 
 	iv = new QIntValidator(OP_MIN_NOTE_TABLE_SIZE, OP_MAX_NOTE_TABLE_SIZE, note_table_size_edit);
 	note_table_size_edit->setValidator(iv); 
@@ -585,12 +585,12 @@ bool oprof_start::record_config()
 	config.map_filename = map_filename_edit->text().latin1();
 
 	uint temp = buffer_size_edit->text().toUInt();
-	if (temp < OP_MIN_BUFFER_SIZE || temp > OP_MAX_BUFFER_SIZE) {
+	if (temp < OP_MIN_BUF_SIZE || temp > OP_MAX_BUF_SIZE) {
 		std::ostringstream error;
 
 		error << "buffer size out of range: " << temp
-		      << " valid range is [" << OP_MIN_BUFFER_SIZE << ", "
-		      << OP_MAX_BUFFER_SIZE << "]";
+		      << " valid range is [" << OP_MIN_BUF_SIZE << ", "
+		      << OP_MAX_BUF_SIZE << "]";
 
 		QMessageBox::warning(this, 0, error.str().c_str());
 
@@ -599,12 +599,12 @@ bool oprof_start::record_config()
 	config.buffer_size = temp;
 
 	temp = hash_table_size_edit->text().toUInt();
-	if (temp < OP_MIN_HASH_TABLE_SIZE || temp > OP_MAX_HASH_TABLE_SIZE) {
+	if (temp < OP_MIN_HASH_SIZE || temp > OP_MAX_HASH_SIZE) {
 		std::ostringstream error;
 
 		error << "hash table size out of range: " << temp
-		      << " valid range is [" << OP_MIN_HASH_TABLE_SIZE << ", "
-		      << OP_MAX_HASH_TABLE_SIZE << "]";
+		      << " valid range is [" << OP_MIN_HASH_SIZE << ", "
+		      << OP_MAX_HASH_SIZE << "]";
 
 		QMessageBox::warning(this, 0, error.str().c_str());
 

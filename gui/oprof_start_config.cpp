@@ -80,7 +80,7 @@ std::istream& operator>>(std::istream& in, event_setting& object)
 
 config_setting::config_setting()
 	:
-	buffer_size(OP_DEFAULT_BUFFER_SIZE),
+	buffer_size(OP_DEFAULT_BUF_SIZE),
 	hash_table_size(OP_DEFAULT_HASH_SIZE),
 	note_table_size(OP_DEFAULT_NOTE_SIZE),
 	// FIXME: member of config, hardcoded value probably come from ? 
