@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.13 2002/01/10 03:47:13 phil_e Exp $ */
+/* $Id: oprofile.h,v 1.14 2002/01/10 17:46:55 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -15,6 +15,7 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <linux/version.h>
 #include <linux/module.h>
 #include <linux/config.h>
 #include <linux/kernel.h>

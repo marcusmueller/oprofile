@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.46 2001/12/31 06:03:11 movement Exp $
+# $Id: Makefile.in,v 1.47 2002/01/10 17:46:55 movement Exp $
 
 .PHONY: all install clean distclean maintainerclean uninstall tags
 
@@ -58,13 +58,15 @@ tags:
 
 # broken 
 # dist check list:
-# 1. make dist (with doopr) 
-# 2. upload to sf
-# 3. untar into webpage
-# 4. add release
-# 5. close fixed bugs
-# 6. send release email
-# 7. update freshmeat
+# 1. change version to non-cvs and commit
+# 2. make dist (with doopr) 
+# 3. upload to sf
+# 4. untar into webpage
+# 5. add release
+# 6. close fixed bugs
+# 7. send release email
+# 8. update freshmeat
+# 9. cvs tag RELEASE_0_0_8
 dist:
 	mkdir tmpdist ; \
 	cd tmpdist ; \

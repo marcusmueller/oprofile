@@ -1,5 +1,11 @@
 2002-01-10  John Levon  <moz@compsoc.man.ac.uk>
 
+	* Makefile.in: update checklist for dist
+
+	* module/oprofile.h: add apparently needed version.h
+ 
+2002-01-10  John Levon  <moz@compsoc.man.ac.uk>
+
 	* configure.in: fix accidental trashing of BKCFLAGS
 
 	* module/op_util.c: include right header

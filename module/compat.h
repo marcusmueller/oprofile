@@ -1,6 +1,8 @@
 #ifndef __KCOMPAT24_H__
 #define __KCOMPAT24_H__
 
+#include <linux/version.h>
+ 
 /* some linux version have not this file, in this case define in this file
  * come from asm/smp.h, include linux/smp.h is more safe */
 #ifdef HAVE_ASM_MPSPEC_H
