@@ -1,3 +1,7 @@
+2003-09-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/oprofile.xml: clarify what means a configured kernel.
+
 2003-09-25  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_sfile.c: bump LRU_AMOUNT to 1000

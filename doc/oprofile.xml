@@ -211,7 +211,7 @@ is often all you need, but note these arguments to <command>./configure</command
 			Use this option to specify the location of the kernel source tree you wish
 			to compile against. The kernel module is built against this source and
 			will only work with a running kernel built from the same source with
-			similar options, so it is important you specify this option if you need
+			exact same options, so it is important you specify this option if you need
 			to.
 		</para></listitem>
 	</varlistentry>
@@ -256,7 +256,8 @@ is often all you need, but note these arguments to <command>./configure</command
 </variablelist>
 <para>
 You'll need to have a configured kernel source for the current kernel
-to build the module for 2.4 kernels.  It is also recommended that if you have a
+to build the module for 2.4 kernels.  Since all distributions provide different kernels it's unlikely the running kernel match the configured source
+you installed. The safest way is to recompile your own kernel, run it and compile oprofile. It is also recommended that if you have a
 uniprocessor machine, you enable the local APIC / IO_APIC support for
 your kernel (this is automatically enabled for SMP kernels).  On
 machines with power management, such as laptops, the power management
