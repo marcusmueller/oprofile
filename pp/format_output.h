@@ -12,15 +12,14 @@
 #ifndef FORMAT_OUTPUT_H
 #define FORMAT_OUTPUT_H
 
-//#include "config.h"
+#include "config.h"
 
 #include <string>
-//#include <vector>
-//#include <iostream>
+#include <map>
+#include <vector>
+#include <iosfwd>
 
-//#include <bfd.h>	/* for bfd_vma */
-
-//#include "counter_array.h"
+#include "counter_array.h"
 #include "outsymbflag.h"
 
 class samples_container_t;
@@ -54,62 +53,94 @@ public:
 	void output(std::ostream & out,
 		    std::vector<symbol_entry const *> const & v, bool reverse);
 
+private:
+
+	/// data passed for output
+	struct field_datum {
+		field_datum(std::string const & n, sample_entry const & s, size_t c)
+			: name(n), sample(s), ctr(c) {}
+		std::string const & name;
+		sample_entry const & sample;
+		size_t ctr;
+	};
+ 
+	/// format callback type
+	typedef std::string (formatter::*fct_format)(field_datum const &);
+ 
 	/** @name format functions.
 	 * The set of formatting functions, used internally by output().
 	 * Exposed as public because we need to use them in an array of
 	 * pointer to member function
 	 */
 	//@{
-	std::string format_vma(std::string const & name,
-			       sample_entry const & sample, size_t);
-	std::string format_symb_name(std::string const & name,
-				     sample_entry const & sample, size_t);
-	std::string format_image_name(std::string const & name,
-				      sample_entry const & sample, size_t);
-	std::string format_short_image_name(std::string const & name,
-					    sample_entry const & sample,
-					    size_t);
-	std::string format_linenr_info(std::string const & name,
-				       sample_entry const & sample, size_t);
-	std::string format_short_linenr_info(std::string const & name,
-					     sample_entry const & sample,
-					     size_t);
-	std::string format_nr_samples(std::string const & name,
-				      sample_entry const & sample, size_t ctr);
-	std::string format_nr_cumulated_samples(std::string const & name,
-					sample_entry const & sample, size_t);
-	std::string format_percent(std::string const & name,
-				   sample_entry const & sample, size_t);
-	std::string format_cumulated_percent(std::string const & name,
-					     sample_entry const & sample,
-					     size_t);
-	std::string format_percent_details(std::string const & name,
-				   sample_entry const & sample, size_t);
-	std::string format_cumulated_percent_details(std::string const & name,
-					     sample_entry const & sample,
-					     size_t);
+	std::string format_vma(field_datum const &);
+	std::string format_symb_name(field_datum const &);
+	std::string format_image_name(field_datum const &);
+	std::string format_short_image_name(field_datum const &);
+	std::string format_linenr_info(field_datum const &);
+	std::string format_short_linenr_info(field_datum const &);
+	std::string format_nr_samples(field_datum const &);
+	std::string format_nr_cumulated_samples(field_datum const &);
+	std::string format_percent(field_datum const &);
+	std::string format_cumulated_percent(field_datum const &);
+	std::string format_percent_details(field_datum const &);
+	std::string format_cumulated_percent_details(field_datum const &);
 	//@}
-private:
+ 
+	/// decribe one field of the colummned output.
+	struct field_description {
+		field_description() {}
+		field_description(std::size_t w, std::string h, fct_format f)
+			: width(w), header_name(h), formatter(f) {}
+ 
+		std::size_t width;
+		std::string header_name;
+		fct_format formatter;
+	};
+ 
+	typedef std::map<outsymbflag, field_description> format_map_t;
+
+	/// stores functors for doing actual formatting
+	format_map_t format_map;
+ 
+	/// actually do output
 	void do_output(std::ostream & out, std::string const & name,
 		      sample_entry const & sample, outsymbflag flags);
+ 
+	/// output details for the symbol
 	void output_details(std::ostream & out, symbol_entry const * symb);
+ 
+	/// output table header
 	void output_header(std::ostream & out);
-	// returns the nr of char needed to pad this field
+ 
+	/// returns the nr of char needed to pad this field
 	size_t output_field(std::ostream & out, std::string const & name,
 			   sample_entry const & sample,
 			   outsymbflag fl, size_t ctr, size_t padding);
-	// returns the nr of char needed to pad this field
+ 
+	/// returns the nr of char needed to pad this field
 	size_t output_header_field(std::ostream & out, outsymbflag fl,
 				 size_t padding);
 
+	/// formatting flags set
 	outsymbflag flags;
+ 
+	/// container we work from
 	samples_container_t const & samples_container;
+ 
+	/// total sample count
 	u32 total_count[OP_MAX_COUNTERS];
+	/// samples so far
 	u32 cumulated_samples[OP_MAX_COUNTERS];
+	/// percentage so far
 	u32 cumulated_percent[OP_MAX_COUNTERS];
+	/// detailed total count
 	u32 total_count_details[OP_MAX_COUNTERS];
+	/// detailed percentage so far
 	u32 cumulated_percent_details[OP_MAX_COUNTERS];
+	/// counter to use
 	int counter;
+	/// used for outputting header
 	bool first_output;
 };
 

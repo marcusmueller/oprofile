@@ -89,70 +89,6 @@ void show_help()
 	}
 }
 
-typedef string (formatter::*fct_format)(string const & symb_name,
-					   sample_entry const & symb,
-					   size_t ctr);
-
-/// decribe one field of the colummned output.
-struct field_description {
-	outsymbflag flag;
-	size_t width;
-	string header_name;
-	fct_format formater;
-};
-
-// FIXME: can't we make this a private std::map member, avoiding need
-// for public members ? 
- 
-/// describe each possible field of colummned output.
-// FIXME: some field have header_name too long (> field_description::width)
-// TODO: use % of the screen width here. sum of % equal to 100, then calculate
-// ratio between 100 and the selected % to grow non fixed field use also
-// lib[n?]curses to get the console width (look info source) (so on add a fixed
-// field flags)
-field_description const field_descr[] = {
-	{ osf_vma, 9,
-	  "vma", &formatter::format_vma },
-	{ osf_nr_samples, 9,
-	  "samples", &formatter::format_nr_samples },
-	{ osf_nr_samples_cumulated, 9,
-	  "cum. samples", &formatter::format_nr_cumulated_samples },
-	{ osf_percent, 12,
-	  "%-age", &formatter::format_percent },
-	{ osf_percent_cumulated, 10,
-	  "cum %-age", &formatter::format_cumulated_percent },
-	{ osf_symb_name, 24,
-	  "symbol name", &formatter::format_symb_name },
-	{ osf_linenr_info, 28, "linenr info",
-	  &formatter::format_linenr_info },
-	{ osf_short_linenr_info, 20, "linenr info",
-	  &formatter::format_short_linenr_info },
-	{ osf_image_name, 24, "image name",
-	  &formatter::format_image_name },
-	{ osf_short_image_name, 16, "image name",
-	  &formatter::format_short_image_name },
-	{ osf_percent, 12,
-	  "%-age", &formatter::format_percent },
-	{ osf_percent_cumulated, 10,
-	  "cum %-age", &formatter::format_cumulated_percent },
-	{ osf_percent_details, 12,
-	  "%-age", &formatter::format_percent_details },
-	{ osf_percent_cumulated_details, 10,
-	  "cum %-age", &formatter::format_cumulated_percent_details },
-};
-
-size_t const nr_field_descr = sizeof(field_descr) / sizeof(field_descr[0]);
-
-field_description const * get_field_descr(outsymbflag flag)
-{
-	for (size_t i = 0 ; i < nr_field_descr ; ++i) {
-		if (flag == field_descr[i].flag)
-			return &field_descr[i];
-	}
-
-	return 0;
-}
- 
 
 formatter::formatter(samples_container_t const & samples_container_, int counter_)
 	: flags(osf_none), samples_container(samples_container_),
@@ -165,6 +101,21 @@ formatter::formatter(samples_container_t const & samples_container_, int counter
 		cumulated_percent[i] = 0;
 		cumulated_percent_details[i] = 0;
 	}
+
+	format_map[osf_vma] = field_description(9, "vma", &formatter::format_vma);
+	format_map[osf_nr_samples] = field_description(9, "samples", &formatter::format_nr_samples);
+	format_map[osf_nr_samples_cumulated] = field_description(9, "cum. samples", &formatter::format_nr_cumulated_samples);
+	format_map[osf_percent] = field_description(12, "%-age", &formatter::format_percent);
+	format_map[osf_percent_cumulated] = field_description(10, "cum %-age", &formatter::format_cumulated_percent);
+	format_map[osf_symb_name] = field_description(24, "symbol name", &formatter::format_symb_name);
+	format_map[osf_linenr_info] = field_description(28, "linenr info", &formatter::format_linenr_info);
+	format_map[osf_short_linenr_info] = field_description(20, "linenr info", &formatter::format_short_linenr_info);
+	format_map[osf_image_name] = field_description(24, "image name", &formatter::format_image_name);
+	format_map[osf_short_image_name] = field_description(16, "image name", &formatter::format_short_image_name);
+	format_map[osf_percent] = field_description(12, "%-age", &formatter::format_percent);
+	format_map[osf_percent_cumulated] = field_description(10, "cum %-age", &formatter::format_cumulated_percent);
+	format_map[osf_percent_details] = field_description(12, "%-age", &formatter::format_percent_details);
+	format_map[osf_percent_cumulated_details] =field_description(10, "cum %-age", &formatter::format_cumulated_percent_details);
 }
 
  
@@ -174,6 +125,12 @@ void formatter::set_format(outsymbflag flag)
 }
  
 
+/// describe each possible field of colummned output.
+// FIXME: some field have header_name too long (> field_description::width)
+// TODO: use % of the screen width here. sum of % equal to 100, then calculate
+// ratio between 100 and the selected % to grow non fixed field use also
+// lib[n?]curses to get the console width (look info source) (so on add a fixed
+// field flags)
 size_t formatter::output_field(ostream & out, string const & name,
 				 sample_entry const & sample,
 				 outsymbflag fl, size_t ctr, size_t padding)
@@ -181,15 +138,13 @@ size_t formatter::output_field(ostream & out, string const & name,
 	out << string(padding, ' ');
 	padding = 0;
 
-	field_description const * field = get_field_descr(fl);
-	if (field) {
-		string str = (this->*field->formater)(name, sample, ctr);
-		out << str;
+	field_description const & field(format_map[fl]);
+	string str = (this->*field.formatter)(field_datum(name, sample, ctr));
+	out << str;
 
-		padding = 1;	// at least one separator char
-		if (str.length() < field->width)
-			padding = field->width - str.length();
-	}
+	padding = 1;	// at least one separator char
+	if (str.length() < field.width)
+		padding = field.width - str.length();
 
 	return padding;
 }
@@ -201,14 +156,12 @@ size_t formatter::output_header_field(ostream & out, outsymbflag fl,
 	out << string(padding, ' ');
 	padding = 0;
 
-	field_description const * field = get_field_descr(fl);
-	if (field) {
-		out << field->header_name;
+	field_description const & field(format_map[fl]);
+	out << field.header_name;
 
-		padding = 1;	// at least one separator char
-		if (field->header_name.length() < field->width)
-			padding = field->width - field->header_name.length();
-	}
+	padding = 1;	// at least one separator char
+	if (field.header_name.length() < field.width)
+		padding = field.width - field.header_name.length();
 
 	return padding;
 }
@@ -295,10 +248,8 @@ void formatter::do_output(ostream & out, string const & name,
 			padding = output_field(out, name, sample, fl, 0, padding);
 			temp_flag &= ~i;
 		} else if ((true_flags & fl) != 0) {
-			field_description const * field = get_field_descr(fl);
-			if (field) {
-				padding += field->width;
-			}
+			field_description const & field(format_map[fl]);
+			padding += field.width;
 		}
 	}
 
@@ -373,49 +324,43 @@ void formatter::output(ostream & out,
 }
 
  
-string formatter::format_vma(string const &,
-				sample_entry const & sample, size_t)
+string formatter::format_vma(field_datum const & f)
 {
 	ostringstream out;
 
-	out << hex << setw(8) << setfill('0') << sample.vma;
+	out << hex << setw(8) << setfill('0') << f.sample.vma;
 
 	return out.str();
 }
 
  
-string formatter::format_symb_name(string const & name,
-				      sample_entry const &, size_t)
+string formatter::format_symb_name(field_datum const & f)
 {
-	if (name[0] == '?')
+	if (f.name[0] == '?')
 		return "(no symbol)";
-	return options::demangle ? demangle_symbol(name) : name;
+	return options::demangle ? demangle_symbol(f.name) : f.name;
 }
 
  
-string formatter::format_image_name(string const &,
-				       sample_entry const & sample, size_t)
+string formatter::format_image_name(field_datum const & f)
 {
-	return sample.file_loc.image_name;
+	return f.sample.file_loc.image_name;
 }
 
  
-string formatter::format_short_image_name(string const &,
-					     sample_entry const & sample,
-					     size_t)
+string formatter::format_short_image_name(field_datum const & f)
 {
-	return basename(sample.file_loc.image_name);
+	return basename(f.sample.file_loc.image_name);
 }
 
  
-string formatter::format_linenr_info(string const &,
-					sample_entry const & sample, size_t)
+string formatter::format_linenr_info(field_datum const & f)
 {
 	ostringstream out;
 
-	if (sample.file_loc.filename.length()) {
-		out << sample.file_loc.filename << ":"
-		    << sample.file_loc.linenr;
+	if (f.sample.file_loc.filename.length()) {
+		out << f.sample.file_loc.filename << ":"
+		    << f.sample.file_loc.linenr;
 	} else {
 		out << "(no location information)";
 	}
@@ -424,15 +369,13 @@ string formatter::format_linenr_info(string const &,
 }
 
  
-string formatter::format_short_linenr_info(string const &,
-					      sample_entry const & sample,
-					      size_t)
+string formatter::format_short_linenr_info(field_datum const & f)
 {
 	ostringstream out;
 
-	if (sample.file_loc.filename.length()) {
-		out << basename(sample.file_loc.filename)
-		    << ":" << sample.file_loc.linenr;
+	if (f.sample.file_loc.filename.length()) {
+		out << basename(f.sample.file_loc.filename)
+		    << ":" << f.sample.file_loc.linenr;
 	} else {
 		out << "(no location information)";
 	}
@@ -441,86 +384,58 @@ string formatter::format_short_linenr_info(string const &,
 }
 
  
-string formatter::format_nr_samples(string const &,
-				       sample_entry const & sample, size_t ctr)
+string formatter::format_nr_samples(field_datum const & f)
 {
 	ostringstream out;
-
-	out << sample.counter[ctr];
-
+	out << f.sample.counter[f.ctr];
 	return out.str();
 }
 
  
-string formatter::format_nr_cumulated_samples(string const &,
-						 sample_entry const & sample,
-						 size_t ctr)
+string formatter::format_nr_cumulated_samples(field_datum const & f)
 {
 	ostringstream out;
-
-	cumulated_samples[ctr] += sample.counter[ctr];
-
-	out << cumulated_samples[ctr];
-
+	cumulated_samples[f.ctr] += f.sample.counter[f.ctr];
+	out << cumulated_samples[f.ctr];
 	return out.str();
 }
 
  
-string formatter::format_percent(string const &,
-				    sample_entry const & sample, size_t ctr)
+string formatter::format_percent(field_datum const & f)
 {
 	ostringstream out;
-
-	double ratio = op_ratio(sample.counter[ctr], total_count[ctr]);
-
+	double ratio = op_ratio(f.sample.counter[f.ctr], total_count[f.ctr]);
 	out << ratio * 100.0;
-
 	return out.str();
 }
 
  
-string formatter::format_cumulated_percent(string const &,
-					      sample_entry const & sample,
-					      size_t ctr)
+string formatter::format_cumulated_percent(field_datum const & f)
 {
 	ostringstream out;
-
-	cumulated_percent[ctr] += sample.counter[ctr];
-
-	double ratio = op_ratio(cumulated_percent[ctr], total_count[ctr]);
-
+	cumulated_percent[f.ctr] += f.sample.counter[f.ctr];
+	double ratio = op_ratio(cumulated_percent[f.ctr], total_count[f.ctr]);
 	out << ratio * 100.0;
-
 	return out.str();
 }
 
  
-string formatter::format_percent_details(string const &,
-				    sample_entry const & sample, size_t ctr)
+string formatter::format_percent_details(field_datum const & f)
 {
 	ostringstream out;
-
-	double ratio = op_ratio(sample.counter[ctr], total_count_details[ctr]);
-
+	double ratio = op_ratio(f.sample.counter[f.ctr], total_count_details[f.ctr]);
 	out << ratio * 100.0;
-
 	return out.str();
 }
 
  
-string formatter::format_cumulated_percent_details(string const &,
-					      sample_entry const & sample,
-					      size_t ctr)
+string formatter::format_cumulated_percent_details(field_datum const & f)
 {
 	ostringstream out;
-
-	cumulated_percent_details[ctr] += sample.counter[ctr];
-
-	double ratio = op_ratio(cumulated_percent_details[ctr],
-				total_count_details[ctr]);
-
+	cumulated_percent_details[f.ctr] += f.sample.counter[f.ctr];
+	double ratio = op_ratio(cumulated_percent_details[f.ctr],
+				total_count_details[f.ctr]);
 	out << ratio * 100.0;
-
 	return out.str();
 }
 
