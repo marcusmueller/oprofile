@@ -24,7 +24,7 @@
 #include <iomanip>
 
 #include <stdio.h>
-
+#include <fnmatch.h>
 #include <popt.h>
 
 using namespace std;
@@ -56,6 +56,35 @@ bool create_path_name(const std::string& path);
 
 // The correct value is passed by oprofpp on standard input.
 uint op_nr_counters = 2;
+
+// This have nothing to do here...
+
+/// a class to encapsulate filename matching. The behavior look like
+/// fnmatch(pattern, filename, 0); eg * match '/' character. See the man page
+/// of fnmatch for further details.
+class filename_match {
+ public:
+	// multiple pattern must be separate by ','. each pattern can contain
+	// leading and trailing blank which are strip from pattern.
+	filename_match(const std::string & include_patterns,
+		       const std::string & exclude_patterns);
+
+
+	/// return filename match include_pattern and not match exclude_pattern
+	bool match(const std::string & filename);
+
+ private:
+	/// ctor helper.
+	static void build_pattern(std::vector<std::string>& result, 
+				  const std::string & patterns);
+
+	/// match helper
+	static bool match(const std::vector<std::string>& patterns,
+			  const std::string & filename);
+
+	std::vector<std::string> include_pattern;
+	std::vector<std::string> exclude_pattern;
+};
 
 //---------------------------------------------------------------------------
 // Just allow to read one line in advance and to put_back this line.
@@ -108,7 +137,9 @@ class output {
 	       bool until_more_than_samples,
 	       size_t sort_by_counter,
 	       const char * output_dir,
-	       const char * source_dir);
+	       const char * source_dir,
+	       const char * output_filter,
+	       const char * no_output_filter);
 
 	bool treat_input(input &);
 
@@ -199,6 +230,8 @@ class output {
 	std::string output_dir;
 	std::string source_dir;
 	bool output_separate_file;
+
+	filename_match fn_match;
 };
 
 //---------------------------------------------------------------------------
@@ -299,6 +332,61 @@ std::string const pathname(std::string const & file_name)
 
 } // anonymous namespace
 
+//---------------------------------------------------------------------------
+filename_match::filename_match(const std::string & include_patterns,
+			       const std::string & exclude_patterns)
+{
+	build_pattern(include_pattern, include_patterns);
+	build_pattern(exclude_pattern, exclude_patterns);
+}
+
+bool filename_match::match(const std::string & filename)
+{
+	bool ok = match(include_pattern, filename);
+	if (ok == true)
+		ok = !match(exclude_pattern, filename);
+
+	return ok;
+}
+
+bool filename_match::match(const std::vector<std::string>& patterns,
+			   const std::string & filename)
+{
+	bool ok = false;
+	for (size_t i = 0 ; i < patterns.size() && ok == false ; ++i) {
+		if (fnmatch(patterns[i].c_str(), filename.c_str(), 0) != FNM_NOMATCH)
+			ok = true;
+	}
+
+	return ok;
+}
+
+void filename_match::build_pattern(std::vector<std::string>& result, 
+				   const std::string & patterns)
+{
+	std::string temp = patterns;
+
+	// unquote the pattern if necessary
+	if (temp.find_first_of('\'') == 0 &&
+	    temp.find_last_of('\'')  == temp.length() - 1) {
+		temp =  temp.substr(1, temp.length() - 2);
+	}
+
+	// separate the patterns 
+	size_t last_pos = 0;
+	for (size_t pos = 0 ; pos != temp.length() ; ) {
+		pos = temp.find_first_of(',', last_pos);
+		if (pos == std::string::npos)
+			pos = temp.length();
+
+		std::string pat = temp.substr(last_pos, pos - last_pos);
+		result.push_back(pat);
+
+		if (pos != temp.length())
+			last_pos = pos + 1;
+	}
+}
+
 //--------------------------------------------------------------------------
 
 void sample_entry::debug_dump(ostream & out) const 
@@ -371,7 +459,9 @@ output::output(int argc_, char const * argv_[],
 	       bool until_more_than_samples_,
 	       size_t sort_by_counter_,
 	       const char * output_dir_,
-	       const char * source_dir_)
+	       const char * source_dir_,
+	       const char * output_filter_,
+	       const char * no_output_filter_)
 	: 
 	samples_files(),
 	abfd(samples_files.header[samples_files.first_file]),
@@ -387,7 +477,9 @@ output::output(int argc_, char const * argv_[],
 	have_linenr_info(have_linenr_info_),
 	output_dir(output_dir_ ? output_dir_ : ""),
 	source_dir(source_dir_ ? source_dir_ : ""),
-	output_separate_file(false)
+	output_separate_file(false),
+	fn_match(output_filter_ ? output_filter_ : "*", 
+		 no_output_filter_ ? no_output_filter_ : "")
 {
 	if (have_linenr_info && !abfd.have_debug_info()) {
 		std:: cerr << "Request for source file annotated "
@@ -412,7 +504,7 @@ output::output(int argc_, char const * argv_[],
 
 		if (output_dir == source_dir) {
 			cerr << "You can not specify the same directory for "
-			     << "--output-dir and --src-dir" << endl;
+			     << "--output-dir and --source-dir" << endl;
 
 			exit(EXIT_FAILURE);
 		}
@@ -716,6 +808,9 @@ void output::output_one_file(istream & in, const string & filename,
 	std::string out_filename;
 
 	if (output_separate_file == true) {
+		if (fn_match.match(filename) == false)
+			return;
+
 		out_filename = filename;
 
 		size_t pos = out_filename.find(source_dir);
@@ -1100,6 +1195,8 @@ static int showvers;
 static int sort_by_counter;
 static const char * source_dir;
 static const char * output_dir;
+static const char * output_filter;
+static const char * no_output_filter;
 
 // Do not add option with longname == 0
 static struct poptOption options[] = {
@@ -1113,6 +1210,8 @@ static struct poptOption options[] = {
 	  "sort by counter", "counter nr", },
 	{ "source-dir", 0, POPT_ARG_STRING, &source_dir, 0, "source directory", "directory name" },
 	{ "output-dir", 0, POPT_ARG_STRING, &output_dir, 0, "output directory", "directory name" },
+        { "output", 0, POPT_ARG_STRING, &output_filter, 0, "output filename filter", "filter string" },
+        { "no-output", 0, POPT_ARG_STRING, &no_output_filter, 0, "no output filename filter", "filter string" },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
@@ -1230,7 +1329,9 @@ int main(int argc, char const * argv[]) {
 			      do_until_more_than_samples,
 			      sort_by_counter,
 			      output_dir,
-			      source_dir);
+			      source_dir,
+			      output_filter,
+			      no_output_filter);
 
 		if (output.treat_input(in) == false) {
 			return EXIT_FAILURE;

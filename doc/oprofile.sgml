@@ -797,6 +797,23 @@ The options allowed are :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>&mdash;output</option></term>
+		<listitem><para>
+		if you request for annotated source this option give a list of patterns saparated by "," so only
+		source filename that match one of this pattern are output. The patterns given in
+		<option>&mdash;output</option> and <option>&mdash;no-output</option> follow the shell
+		convention eg if you want to include a file named "foo" you must specify "*foo*" as pattern
+		to match the path part of the full filename. the only difference with shell
+		filename match is that * match also the "/" characters in path name
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>&mdash;no-output</option></term>
+		<listitem><para>
+		filename matched by <option>&mdash;output</option> can be filtered by one of the patterns given with this option.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>&mdash;source-with-assembly</option></term>
 		<listitem><para>
 		Output assembly code mixed with the source file, implies <option>&mdash;assembly</option>.

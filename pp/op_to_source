@@ -16,6 +16,8 @@ echo 'op_to_source usage: op_to_source [option]
 				   counter_nr
   --source-dir			   base name of the source directory
   --output-dir			   base name of the output directory
+  --output			   pattern of file to output
+  --no-output			   pattern of file to not output
   -w --with-more-than-samples      show all source files if it contains more
 				   than percent samples (0-100 allowed)
   -u --until-more-than-samples     show all source files until the threshold
@@ -79,6 +81,14 @@ do
 		--output-dir)
 			shift
 			op_filter_option="$op_filter_option --output-dir $1"
+			;;
+		--output)
+			shift
+			op_filter_option="$op_filter_option --output '$1'"
+			;;
+		--no-output)
+			shift
+			op_filter_option="$op_filter_option --no-output '$1'"
 			;;
 		-w|--with-more-than-samples)
 			shift
@@ -144,5 +154,6 @@ fi
 if [ "$do_to_asm" == "true" ]; then
 	objdump $object_file $objdump_option | opf_filter $op_filter_option
 else
+	echo "$opf_filter_option"
 	opf_filter --use-linenr-info $op_filter_option
 fi
