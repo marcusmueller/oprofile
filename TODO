@@ -1,6 +1,8 @@
 0.0.9 task list
 ---------------
 
+o get the 2.2 backport working if we can
+ 
 o user request: op_time that shows /all/ available symbols (with correct %age).
   This must handle images with no symbols, so container must contain either a symbol + values,
 or a file.
@@ -19,6 +21,8 @@ o Bob's rtc patch ?
 o difference between two profile session. Difference must be made at source level. 
   (This is a part of post-prof)
 
+o whitelist op_start parameters so at least sudo oprof_start should be safe ...
+ 
 Before 1.0
 ----------
 
