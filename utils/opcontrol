@@ -22,7 +22,7 @@ SYSCTL=do_sysctl
 do_sysctl()
 {
 	if [ x$1 != x"-w" ]; then
-		echo "$0 unknown option" >&2
+		echo "$0 unknown sysctl option" >&2
 		exit 1
 	fi
 
@@ -455,6 +455,15 @@ do_options() {
 	do
 		arg=`echo $1 | awk -F= '{print $1}'`
 		val=`echo $1 | awk -F= '{print $2}'`
+		shift
+		if test -z "$val"; then
+			local possibleval=$1
+			echo "$possibleval" | grep ^-- >/dev/null 2>&1
+			if test "$?" != "0"; then
+				val=$possibleval
+				shift
+			fi
+		fi
  
 		case "$arg" in
 
@@ -546,13 +555,14 @@ do_options() {
 				DO_SETUP=yes
 				;;
 			--event)
+				error_if_empty $arg $val
 				# reset any read-in defaults from daemonrc
 				if test "$SEEN_EVENT" = "0"; then
 					NR_CHOSEN=0
 					SEEN_EVENT=1
 				fi
 				if test "$val" = "default"; then
-					val=$DEFAULT_EVENT	
+					val=$DEFAULT_EVENT
 				fi
 				CHOSEN_EVENTS[$NR_CHOSEN]=$val
 				NR_CHOSEN=`expr $NR_CHOSEN + 1`
@@ -637,7 +647,6 @@ do_options() {
 				exit 1
 				;; 
 		esac
-		shift
 	done
 
 	verify_counters

@@ -14,7 +14,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
- o opcontrol should take "--blah foo" too
  o side-by-side opreport output (--compare - needs UI spec)
  o thread profiling
  o per-cpu profiling
