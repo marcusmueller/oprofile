@@ -1,5 +1,12 @@
 2003-09-25  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pch-c++.h: remove
+	* Makefile.am: update according
+	* configure.in: no longer need for conditional enable_pch
+	* m4/precompiledheader.m4: don't use -Winvalid-pch
+
+2003-09-25  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* daemon/opd_sfile.c: sfile_lru_clear() return 0 if lru is empty
 	* daemon/opd_mangling.c: abort() if lru was empty (not tested)
 	* daemon/oprofiled.c: likewise; opd_alarm(): don't sfile_lru_clear()

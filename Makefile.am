@@ -22,15 +22,7 @@ ACLOCAL_AMFLAGS = -I m4
 # The module will not build under distcheck
 DISTCHECK_CONFIGURE_FLAGS = --with-kernel-support
 
-if enable_pch
-CXXFLAGS=-O2 -g
-pch-c++.h.gch: pch-c++.h
-	$(CXX) $(CXXFLAGS) pch-c++.h
-else
-pch-c++.h.gch:
-endif
-
-all-local: kernel_module pch-c++.h.gch
+all-local: kernel_module
 install-exec-local: install.kernel
 
 if kernel_support
@@ -51,7 +43,7 @@ install.kernel: kernel_module
 endif
 
 clean-local:
-	rm -f pch-c++.h.gch module/*.o module/@OPROFILE_MODULE_ARCH@/*.o \
+	rm -f module/*.o module/@OPROFILE_MODULE_ARCH@/*.o \
 	module/.*.o.cmd module/.*.o.flags \
 	module/@OPROFILE_MODULE_ARCH@/.*.o.cmd module/@OPROFILE_MODULE_ARCH@/.*.o.flags
 
@@ -59,7 +51,6 @@ EXTRA_DIST = \
 	ChangeLog-2001 \
 	ChangeLog-2002 \
 	autogen.sh \
-	pch-c++.h \
 	include/sstream \
 	module/Makefile.in \
 	module/compat.c \

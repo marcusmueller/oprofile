@@ -104,9 +104,8 @@ AC_ARG_ENABLE(pch,
 	[  --enable-pch                 enable precompiled header (default is disabled)],
 	enable_pch=$enableval, enable_pch=no)
 if test "$enable_pch" = yes; then
-	AX_CHECK_PRECOMPILED_HEADER(OP_CXXFLAGS, enable_pch)
+	AX_CHECK_PRECOMPILED_HEADER(OP_CXXFLAGS)
 fi
-AM_CONDITIONAL(enable_pch, test "$enable_pch" = yes)
 
 AX_CHECK_DOCBOOK
 
