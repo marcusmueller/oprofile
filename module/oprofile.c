@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.11 2001/11/10 13:16:15 movement Exp $ */
+/* $Id: oprofile.c,v 1.12 2001/11/11 22:57:29 davej Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -995,10 +995,10 @@ int __init oprof_init(void)
 			perfctr_msr[3] = MSR_K7_PERFCTR3;
 			break;
 		default:
-			eventsel_msr[0] = MSR_IA32_EVNTSEL0;
-			eventsel_msr[1] = MSR_IA32_EVNTSEL1;
-			perfctr_msr[0] = MSR_IA32_PERFCTR0;
-			perfctr_msr[1] = MSR_IA32_PERFCTR1;
+			eventsel_msr[0] = MSR_P6_EVNTSEL0;
+			eventsel_msr[1] = MSR_P6_EVNTSEL1;
+			perfctr_msr[0] = MSR_P6_PERFCTR0;
+			perfctr_msr[1] = MSR_P6_PERFCTR1;
 			break;
 	}
 

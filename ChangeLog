@@ -1,3 +1,10 @@
+2001-11-11  Dave Jones <davej@suse.de>
+
+	* module/oprofile.[c|h]: Change MSR defines from
+	  MSR_IA32_xxx from MSR_P6_xxx, based on info on
+	  Linux kernel from Mikael Pettersson that these MSRs
+	  don't exist on Pentium 4.
+
 2001-11-11  Philippe Elie  <ph_e@club-internet.fr>
 
 	* gui/oprof_start.cpp: fix record_config()

@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.7 2001/11/07 01:35:38 movement Exp $ */
+/* $Id: oprofile.h,v 1.8 2001/11/11 22:57:29 davej Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -77,17 +77,17 @@ struct oprof_sysctl {
 };
 
 /* MSRs */
-#ifndef MSR_IA32_PERFCTR0
-#define MSR_IA32_PERFCTR0 0xc1
+#ifndef MSR_P6_PERFCTR0
+#define MSR_P6_PERFCTR0 0xc1
 #endif
-#ifndef MSR_IA32_PERFCTR1
-#define MSR_IA32_PERFCTR1 0xc2
+#ifndef MSR_P6_PERFCTR1
+#define MSR_P6_PERFCTR1 0xc2
 #endif
-#ifndef MSR_IA32_EVNTSEL0
-#define MSR_IA32_EVNTSEL0 0x186
+#ifndef MSR_P6_EVNTSEL0
+#define MSR_P6_EVNTSEL0 0x186
 #endif
-#ifndef MSR_IA32_EVNTSEL1
-#define MSR_IA32_EVNTSEL1 0x187
+#ifndef MSR_P6_EVNTSEL1
+#define MSR_P6_EVNTSEL1 0x187
 #endif
 #ifndef MSR_IA32_APICBASE
 #define MSR_IA32_APICBASE 0x1B
