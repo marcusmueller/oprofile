@@ -183,7 +183,7 @@ OP_DATADIR=`eval echo "$my_op_datadir/$PACKAGE/"`
 AC_DEFINE_UNQUOTED(OP_DATADIR, "$OP_DATADIR", [package data directory])
 OP_BINDIR=`eval echo "$my_op_bindir/"`
 AC_DEFINE_UNQUOTED(OP_BINDIR, "$OP_BINDIR", [package binary directory])
-OP_DOCDIR=`eval echo "${my_op_prefix}share/doc/$PACKAGE/"`
+OP_DOCDIR=`eval echo "${my_op_prefix}/share/doc/$PACKAGE/"`
 AC_SUBST(OP_DOCDIR)
 
 AC_OUTPUT(Makefile \

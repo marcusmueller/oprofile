@@ -1,3 +1,7 @@
+2003-12-29  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* configure.in: my_op_prefix is not necessarily suffixed by a '/'
+
 2003-12-29  John Levon  <levon@movementarian.org>
 
 	* configure.in:
