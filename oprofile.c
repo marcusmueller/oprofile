@@ -1,6 +1,9 @@
-/* $Id: oprofile.c,v 1.25 2000/08/26 22:09:47 moz Exp $ */
+/* $Id: oprofile.c,v 1.26 2000/08/26 23:42:03 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
+/* FIXME: with generation numbers we can place mappings in
+   every buffer. we still need one IPI, but we shouldn't need
+   to wait for it (?) and it avoids mapping-in-other-CPU problem */
 
 #include "oprofile.h"
 
