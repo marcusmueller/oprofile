@@ -1,3 +1,8 @@
+2004-04-19  Will Cohen  <wcohen@redhat.com>
+
+	* events/i386/p4/unit_masks:
+	* events/i386/p4-ht/unit_masks: Correct machine_clear unit mask.
+
 2004-04-04  Will Cohen  <wcohen@redhat.com>
 
 	* m4/builtinexpect.m4:

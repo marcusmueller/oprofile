@@ -50,8 +50,8 @@ name:x87_assist type:bitmask default:0x1f
 	0x10 handle x87 input assist
 name:machine_clear type:bitmask default:0x01
 	0x01 count a portion of cycles the machine is cleared for any cause
-	0x40 count cycles machine is cleared due to memory ordering issues
-	0x80 count cycles machine is cleared due to self modifying code
+	0x04 count each time the machine is cleared due to memory ordering issues
+	0x40 count each time the machine is cleared due to self modifying code
 name:global_power_events type:mandatory default:0x01
 	0x01 mandatory
 name:tc_ms_xfer type:mandatory default:0x01
