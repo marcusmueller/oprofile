@@ -1,9 +1,9 @@
-all: oprofpp oprof_convert
+all: oprofpp oprof_convert opf_filter
 
 .PHONY: all clean srcdoc
 
 clean: 
-	rm -f oprofpp *.o oprofpp-src.html oprof_convert
+	rm -f oprofpp *.o oprofpp-src.html oprof_convert opf_filter
 
 CC=@CC@
 prefix=@prefix@
@@ -11,11 +11,15 @@ exec_prefix=@exec_prefix@
 BINDIR=@bindir@
 MANDIR=@mandir@
 
-install: oprofpp oprof_convert
+install: oprofpp oprof_convert opf_filter op_to_source
 	cp oprofpp $(BINDIR)/oprofpp
 	chmod 755 $(BINDIR)/oprofpp
 	cp oprof_convert $(BINDIR)/oprof_convert
 	chmod 755 $(BINDIR)/oprof_convert
+	cp opf_filter $(BINDIR)/opf_filter
+	chmod 755 $(BINDIR)/opf_filter
+	cp op_to_source $(BINDIR)/op_to_source
+	chmod 755 $(BINDIR)/op_to_source
 
 CFLAGS=-Wall -Wstrict-prototypes -W -pipe -DOP_EVENTS_DESC -L/usr/lib @CFLAGS@
 LIBS=-lpopt -lbfd -liberty -ldl
@@ -34,3 +38,17 @@ oprofpp: $(SOURCES) $(HEADERS)
 
 oprof_convert: oprof_convert.c
 	$(CC) $< -Wall -o $@
+
+#CXX_DEBUG_LIBS = -L/usr/src/STLport-4.0/lib -lm -lstlport_gcc_stldebug
+#CXXFLAGS_DEBUG_STL = -D__STL_DEBUG -I/usr/src/STLport-4.0/stlport -Wno-long-long
+
+OPF_CXXFLAGS=-Wall -pedantic -O2 -g $(CXXFLAGS_DEBUG_STL)
+
+opf_container.o: opf_container.cpp opf_filter.h
+	g++ -c $(OPF_CFLAGS) $< -o $@
+
+opf_filter.o : opf_filter.cpp opf_filter.h
+	g++ -c $(OPF_CFLAGS) $< -o $@
+
+opf_filter: opf_filter.o opf_container.o
+	g++ $(CXX_DEBUG_LIBS) $^ -o $@ -lpopt

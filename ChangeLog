@@ -1,5 +1,19 @@
 2001-06-29  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/Makefile.in: fix up for opf_filter
+
+	* configure.in: add AC_PROG_CXX
+
+2001-06-29  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/opf_filter.cpp:
+	* pp/opf_container.cpp:
+	* pp/opf_filter.h:
+	* pp/op_to_source: new file which provide a source annotation utility.
+	* pp/Makefile.in: build and install opf_filter / op_to_source
+
+2001-06-29  John Levon  <moz@compsoc.man.ac.uk>
+
 	* configure.in:
 	* dae/opd_util.h: hide __attribute__((malloc)) warnings
 	  when necessary. Document --with-cc bug.

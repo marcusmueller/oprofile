@@ -1,0 +1,132 @@
+#!/bin/sh
+
+# This script simplify the call to oprofpp / objdump / opf_filter
+
+objdump_option="-d --no-show-raw-insn"
+oprofpp_option=""
+op_filter_option=""
+object_file=""
+do_to_asm=false
+seen_sample_file=false
+
+# TODO : fix the problem : bash sequeeze repeated blank char so
+# echo "see $0 --help" do not wok correctly with bash, same problem in op_start
+help_string='op-to-source usage: op-to-source [option] [image-file]$
+  -a --assembly                    output assembly code$
+  -s --source-with-assembly        mix asm with source file (imply --assembly)$
+  -c --sort-by-counter counter_nr  sort the output by decreasing samples nr on counter_nr$
+  -w --with-more-than-samples      show all source files if it contains more than percent samples (0-100 allowed)$
+  -u --until-more-than-samples     show all source files until the threshold specified is reached (0-100 allowed)$
+--with-more-than-samples and --until-more-samples can not be specified together$
+  -f --samples-file                specify the samples file$
+  -I --image-file                  specify the image file$
+  -d --demangle                    demangle symbol name$
+  -h --help                        this message$
+at least one of the image-file or the sample-file must be given$'
+
+while [ "$#" -ne 0 ] 
+do
+	case "$1" in
+		-a|--assembly)
+			do_to_asm=true
+			;;
+		-s|--source-with-assembly)
+			objdump_option="$objdump_option -S"
+			do_to_asm=true
+			;;
+		-c|--sort-by-counter)
+			shift
+			if [ x$1 == x"" ]; then
+				echo "Missing counter argument to --sort-by-counter option"
+				echo "see $0 --help"
+				exit 1
+			fi
+			op_filter_option="$op_filter_option --sort-by-counter $1"
+			;;
+		-d|--demangle)
+			oprofpp_option="$oprofpp_option -d"
+			# I do not like the output of objdump with --demangle.
+			# FIXME : is someone need it?
+#			objdump_option="$objdump_option --demangle"
+			;;
+		-f|--samples-file)
+			shift
+			if [ x$1 == x"" ]; then
+				echo "Missing sample-file to -f option"
+				echo "see $0 --help"
+				exit 1
+			fi
+			oprofpp_option="$oprofpp_option -f $1"
+			seen_sample_file=true
+			;;
+		-I|--image-file)
+			shift
+			if [ x$1 == x"" ]; then
+				echo "Missing image-file to -I option"
+				echo "see $0 --help"
+				exit 1
+			fi
+			object_file=$1
+			;;
+		-h|--help)
+			echo $help_string | tr \$ '\n'
+			exit 1
+			;;
+		-w|--with-more-than-samples)
+			shift
+			if [ x$1 == x"" ]; then
+				echo "Missing percent argument to -w option"
+				echo "see $0 --help"
+				exit 1
+			fi
+			op_filter_option="$op_filter_option --with-more-than-samples $1"
+			;;
+		-u|--until-more-than-samples)
+			shift
+			if [ x$1 == x"" ]; then
+				echo "Missing percent argument to -u option"
+				echo "see $0 --help"
+				exit 1
+			fi
+			op_filter_option="$op_filter_option --until-more-than-samples $1"
+			;;
+		*)
+			echo "Unknown option \"$arg\". See $0 --help"
+			echo "$#"
+			exit 1
+			;; 
+	esac
+	shift
+done
+
+# Check than enough option has been given.
+if [ $object_file == "" -a x$seen_sample_file == x"false" ]; then
+	echo "You need to give at least an object-file or a sample-file"
+	echo "see $0 --help"
+	exit 1
+fi
+
+# TODO : this is not sufficient, we need also to handle relative path name,
+# but oprofpp needs an absolute pathname. Gcc tree source contains somewhere
+# the neccessary code. Perhaps fix that in oprofpp.c ?
+case $object_file in
+	/*)
+		;;
+	*)
+		object_file=$PWD/$object_file
+		;;
+esac
+
+if [ x$object_file != x"" ]; then
+	oprofpp_option="$oprofpp_option -L $object_file"
+fi
+
+#echo "option : $op_filter_option"
+
+if [ x$do_to_asm == x"true" ]; then
+	# TODO : how to break the pipe if the first part of a pipeline loss ?
+	(oprofpp $oprofpp_option && echo "DISASSEMBLY_MARKER" && \
+		objdump $object_file $objdump_option) | opf_filter $op_filter_option
+else
+	oprofpp $oprofpp_option -o | opf_filter --use-linenr-info $op_filter_option
+fi
