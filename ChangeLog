@@ -1,5 +1,14 @@
 2003-03-17  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_kernel.c:
+	* daemon/opd_kernel.h:
+	* daemon/opd_image.c:
+	* daemon/oprofiled.c: don't try to reread the module
+	list on a failed EIP match. We must have the module load
+	notification instead.
+
+2003-03-17  John Levon  <levon@movementarian.org>
+
 	* daemon/opd_kernel.c: fix module accounting. Remove
 	quick-drop code that can't work.
 

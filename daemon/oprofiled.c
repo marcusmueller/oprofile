@@ -668,6 +668,7 @@ int main(int argc, char const * argv[])
 
 	opd_init_images();
 	opd_init_kernel_image();
+	opd_reread_module_info();
 
 	write_abi();
 

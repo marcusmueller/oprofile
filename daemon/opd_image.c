@@ -501,7 +501,7 @@ void opd_process_samples(char const * buffer, size_t count)
 
 			case DROP_MODULES_CODE:
 				verbprintf("DROP_MODULES\n");
-				opd_clear_module_info();
+				opd_reread_module_info();
 				break;
 
 			default:

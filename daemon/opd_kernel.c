@@ -76,28 +76,6 @@ void opd_parse_kernel_range(char const * arg)
 	}
 }
 
-/**
- * opd_clear_module_info - clear kernel module information
- *
- * Clear and free all kernel module information and reset
- * values.
- */
-void opd_clear_module_info(void)
-{
-	int i;
-
-	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].name)
-			free(opd_modules[i].name);
-		opd_modules[i].name = NULL;
-		opd_modules[i].start = 0;
-		opd_modules[i].end = 0;
-		nr_modules = 0;
-		list_init(&opd_modules[i].module_list);
-	}
-
-	opd_for_each_image(opd_delete_modules);
-}
 
 /**
  * new_module - initialise a module description
@@ -170,7 +148,32 @@ static struct opd_module * opd_get_module(char * name)
 
 
 /**
- * opd_read_module_info - parse /proc/modules for kernel modules
+ * opd_clear_module_info - clear kernel module information
+ *
+ * Clear and free all kernel module information and reset
+ * values.
+ */
+static void opd_clear_module_info(void)
+{
+	int i;
+
+	for (i=0; i < OPD_MAX_MODULES; i++) {
+		if (opd_modules[i].name)
+			free(opd_modules[i].name);
+		opd_modules[i].name = NULL;
+		opd_modules[i].start = 0;
+		opd_modules[i].end = 0;
+		list_init(&opd_modules[i].module_list);
+	}
+
+	nr_modules = 0;
+
+	opd_for_each_image(opd_delete_modules);
+}
+
+
+/**
+ * opd_reread_module_info - parse /proc/modules for kernel modules
  *
  * Parse the file /proc/module to read start address and size of module
  * each line is in the format:
@@ -180,7 +183,7 @@ static struct opd_module * opd_get_module(char * name)
  * without any blank space in each field
  *
  */
-static void opd_read_module_info(void)
+void opd_reread_module_info(void)
 {
 	FILE * fp;
 	char * line;
@@ -195,6 +198,8 @@ static void opd_read_module_info(void)
 
 	if (no_vmlinux)
 		return;
+
+	opd_clear_module_info();
 
 	printf("Reading module info.\n");
 
@@ -288,13 +293,6 @@ static void opd_handle_module_sample(vma_t eip, u32 counter)
 	struct opd_module * module;
 
 	module = opd_find_module_by_eip(eip);
-	if (!module) {
-		/* not found in known modules, re-read our info and retry */
-		opd_clear_module_info();
-		opd_read_module_info();
-
-		module = opd_find_module_by_eip(eip);
-	}
 
 	if (!module) {
 		opd_stats[OPD_LOST_MODULE]++;
@@ -396,13 +394,6 @@ static void opd_put_kernel_sample(vma_t eip, u32 counter,
 	}
 
 	module = opd_find_module_by_eip(eip);
-	if (!module) {
-		/* not found in known modules, re-read and retry */
-		opd_clear_module_info();
-		opd_read_module_info();
-
-		module = opd_find_module_by_eip(eip);
-	}
 
 	if (!module) {
 		opd_stats[OPD_LOST_MODULE]++;
