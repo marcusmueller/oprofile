@@ -1,3 +1,20 @@
+2001-12-05  Philippe Elie  <ph_e@club-internet.fr>
+
+	* autogen.sh: use autoheader to create config.h
+	* configure.in: handle missing libiberty.h and
+	  missing xcalloc in libiberty.a
+	* dae/opd_util.cpp:
+	* dae/opd_proc.c: 
+	* dae/opd_util.h:
+	* dae/oprofiled.c:
+	* evets/Makefile.in
+	* pp/oprof_convert.c:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp_util.cpp: replace opd_malloc() and related
+	  by xmalloc.
+	* util/op_popt.c: add call to xmalloc_set_program_name()
+	* ./cvsignore: add config.h, config.h.in
+
 2001-12-04  Dave Jones <davej@suse.de>
 
 	* events/op_events_desc.c:

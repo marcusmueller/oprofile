@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 
+#include "../dae/opd_util.h"
 #include "op_popt.h"
 
 /**
@@ -31,6 +32,8 @@ poptContext opd_poptGetContext(const char * name,
 {
 	poptContext optcon;
 	int c;
+
+	xmalloc_set_program_name(argv[0]);
 
 #ifdef CONST_POPT
 	optcon = poptGetContext(name, argc, argv, options, flags); 

@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.27 2001/12/04 21:16:11 phil_e Exp $ */
+/* $Id: opd_util.c,v 1.28 2001/12/05 04:31:17 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -20,136 +20,20 @@
 #include <stdlib.h> 
  
 #include "opd_util.h"
+#include "../config.h"
 
-/**
- * opd_malloc - allocate memory
- * @size: size in bytes
- *
- * Allocate memory of size @size bytes. Failure
- * to malloc() is fatal.
- *
- * The memory may be freed with standard C library
- * free().
- *
- * Returns a void pointer to the memory allocated.
- */ 
-void *opd_malloc(size_t size)
+#ifndef HAVE_XCALLOC
+/* some system have a valid libiberty without xcalloc */
+void * xcalloc(size_t n_elem, size_t sz)
 {
-	void *p;
+	void * ptr = xmalloc(n_elem * sz);
 
-#ifdef OPD_DEBUG 
-	if (size == 0) {
-		fprintf(stderr,"oprofiled:opd_malloc: 0 bytes requested\n");
-		abort();
-	}
+	memset(ptr, '\0', n_elem * sz);
+
+	return ptr;
+}
 #endif
 
-	p = malloc(size);
-
-	if (!p) {
-		fprintf(stderr,"oprofiled:opd_malloc: alloc %d bytes failed.\n",size);
-		exit(1);
-	}	
-
-	return p; 
-} 
- 
-/**
- * opd_malloc0 - allocate and clear memory
- * @size: size in bytes
- *
- * Allocate memory of size @size bytes. Failure
- * to malloc() is fatal. The buffer is filled
- * with zeroes.
- *
- * The memory may be freed with standard C library
- * free().
- *
- * Returns a void pointer to the memory allocated.
- */ 
-void *opd_malloc0(size_t size)
-{
-	void *p;
-
-	p = opd_malloc(size);
-	memset(p, 0, size); 
-	return p; 
-}
- 
-/**
- * opd_free - free previously allocated memory
- * @p: pointer to memory
- *
- * Free previously allocated memory. @p may be
- * %NULL, in which case nothing happens.
- */ 
-void opd_free(void *p)
-{
-	if (p)
-		free(p);
-}
- 
-/**
- * opd_realloc - resize allocated memory
- * @buf: current memory
- * @size: size in bytes of new request
- *
- * Re-allocates a buffer with a different
- * size. Requesting re-allocation of the
- * same size is a fatal error.
- *
- * @buf may be %NULL. Failure to allocate is a 
- * fatal error.
- * 
- * Returns a void pointer to the new memory
- * allocated. 
- */ 
-void *opd_realloc(void *buf, size_t size)
-{
-	void *p;
-
-#ifdef OPD_DEBUG 
-	if (!size) {
-		fprintf(stderr,"oprofiled:opd_realloc: 0 extra bytes requested\n");
-		abort(); 
-	}
-
-#endif 
- 
-	if (!buf)
-		return opd_malloc(size);
- 
-	p = realloc(buf, size);
-
-	if (!p) {
-		fprintf(stderr,"oprofiled:opd_realloc: realloc %d bytes failed.\n", size);
-		exit(1);
-	} 
-
-	return p; 
-}
-
-/**
- * opd_strdup - duplicate a string through opd_malloc
- * @str: string pointer
- *
- * Allocate memory of size strlen(@str) + 1 bytes then copy the @str
- * to new allocated storage. Failure to malloc() is fatal.
- *
- * The memory may be freed with standard C library
- * free().
- *
- * Returns a char* pointer to the duplicated string.
- */
-char *opd_strdup(const char *str) 
-{
-	size_t sz = strlen(str) + 1;
-
-	char *temp = (char *)opd_malloc(sz);
-	memcpy(temp, str, sz);
-
-	return temp;
-}
 
 /**
  * opd_mangle_filename - mangle a file filename
@@ -172,7 +56,7 @@ char* opd_mangle_filename(const char *smpdir, const char* image_name)
 	char *c;
 	const char *c2;
 
-	mangled = (char *)opd_malloc(strlen(smpdir) + 2 + strlen(image_name) + 32);
+	mangled = xmalloc(strlen(smpdir) + 2 + strlen(image_name) + 32);
 	strcpy(mangled, smpdir);
 	strcat(mangled, "/");
 	c = mangled + strlen(smpdir) + 1;
@@ -479,7 +363,7 @@ char *opd_get_line(FILE *fp)
 	/* average allocation is about 31, so 64 should be good */
 	size_t max = 64;
 
-	buf = (char *)opd_malloc(max);
+	buf = xmalloc(max);
 	cp = buf; 
 
 	do {
@@ -495,7 +379,7 @@ char *opd_get_line(FILE *fp)
 				*cp = (char)c;
 				cp++;
 				if (((size_t)(cp - buf)) == max) {
-					buf = (char *)opd_realloc(buf, max + 64);
+					buf = xrealloc(buf, max + 64);
 					cp = buf+max;
 					max += 64;
 				}
@@ -596,8 +480,8 @@ int opd_move_regular_file(const char *new_dir,
 	int ret = 0;
 	struct stat stat_buf;
 
-	char * src = opd_malloc(strlen(old_dir) + strlen(name) + 2);
-	char * dest = opd_malloc(strlen(new_dir) + strlen(name) + 2);
+	char * src = xmalloc(strlen(old_dir) + strlen(name) + 2);
+	char * dest = xmalloc(strlen(new_dir) + strlen(name) + 2);
 
 	strcpy(src, old_dir);
 	strcat(src, "/");
@@ -610,8 +494,8 @@ int opd_move_regular_file(const char *new_dir,
 	if (!stat(src, &stat_buf) && S_ISREG(stat_buf.st_mode))
 		ret = rename(src, dest);
 
-	opd_free(src);
-	opd_free(dest);
+	free(src);
+	free(dest);
 
 	return ret;
 }

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.13 2001/12/02 15:12:57 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.14 2001/12/05 04:31:17 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -285,7 +285,7 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd) const
 	/* abbreviation */
 	opd_write_u8(fp, '1');
 
-	hist = (u16*)opd_calloc0(histsize, sizeof(u16)); 
+	hist = (u16*)xcalloc(histsize, sizeof(u16)); 
  
 	for (i = 0; i < abfd.syms.size(); i++) {
 		abfd.get_symbol_range(i, start, end); 

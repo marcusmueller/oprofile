@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.51 2001/12/01 21:16:48 phil_e Exp $ */
+/* $Id: oprofiled.c,v 1.52 2001/12/05 04:31:17 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -169,7 +169,7 @@ static void opd_backup_samples_files(void)
 	DIR *dir;
 	struct dirent *dirent;
 
-	dir_name = opd_malloc(strlen(smpdir) + strlen("session-") + 10);
+	dir_name = xmalloc(strlen(smpdir) + strlen("session-") + 10);
 	strcpy(dir_name, smpdir);
 
 	do {
@@ -201,7 +201,7 @@ static void opd_backup_samples_files(void)
 
 	closedir(dir);
 
-	opd_free(dir_name);
+	free(dir_name);
 }
 
 /**
@@ -235,7 +235,7 @@ static int opd_need_backup_samples_files(void)
 	need_backup = 0;
 
 	while ((dirent = readdir(dir)) != 0 && need_backup == 0) {
-		char * file = opd_malloc(strlen(smpdir) + strlen(dirent->d_name) + 2);
+		char * file = xmalloc(strlen(smpdir) + strlen(dirent->d_name) + 2);
 		strcpy(file, smpdir);
 		strcat(file, "/");
 		strcat(file, dirent->d_name);
@@ -264,7 +264,7 @@ static int opd_need_backup_samples_files(void)
 			fclose(fp);
 		}
 
-		opd_free(file);
+		free(file);
 	}
 
 	for (i = 0 ; i < op_nr_counters; ++i) {
@@ -548,10 +548,10 @@ int main(int argc, char const *argv[])
 
 	s_buf_bytesize = opd_buf_size * sizeof(struct op_sample);
 
- 	sbuf = opd_malloc(s_buf_bytesize);
+ 	sbuf = xmalloc(s_buf_bytesize);
 
 	n_buf_bytesize = opd_note_buf_size * sizeof(struct op_note);
-	nbuf = opd_malloc(n_buf_bytesize);
+	nbuf = xmalloc(n_buf_bytesize);
  
 	opd_init_images();
 

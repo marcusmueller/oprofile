@@ -140,7 +140,7 @@ static char * get_binary_name(void)
 
 	c++;
 
-	file = opd_strdup(c);
+	file = xstrdup(c);
 
 	c=file;
 
@@ -171,7 +171,7 @@ static void v3_to_v4(FILE* fp) {
 
 	name = get_binary_name();
 	header_v4.mtime = opd_get_mtime(name);
-	opd_free(name); 
+	free(name); 
 
 	memset(&header_v4.v2.md5sum, '\0', sizeof(header_v4.v2.md5sum));
 
@@ -215,7 +215,7 @@ static void do_mapping_transfer(uint nr_samples, int counter,
 		return;
 	}
 
-	out_filename = (char *)opd_malloc(strlen(filename) + 32);
+	out_filename = (char *)xmalloc(strlen(filename) + 32);
 	strcpy(out_filename, filename);
 	sprintf(out_filename + strlen(out_filename), "#%d", counter);
 
@@ -300,7 +300,7 @@ err1:;
 		unlink(out_filename);
 	}
 
-	opd_free(out_filename);
+	free(out_filename);
 }
 
 /* PHE FIXME: really a fucking function, if you have problem with it flame
@@ -360,7 +360,7 @@ static void v4_to_v5(FILE* fp)
 	nr_samples = (old_size - sizeof(struct opd_header_v4)) / sizeof(struct old_opd_fentry);
 
 	len_filename = strlen(filename);
-	//out_filename = opd_malloc(len_filename + 32);
+	//out_filename = xmalloc(len_filename + 32);
 	//strcpy(out_filename, filename);
 
 	for (counter = 0; counter < 2 ; ++counter) {

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.80 2001/11/30 23:37:59 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.81 2001/12/05 04:31:17 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -156,11 +156,11 @@ void opd_read_system_map(const char *filename)
 	do {
 		line = opd_get_line(fp);
 		if (streq(line, "")) {
-			opd_free(line);
+			free(line);
 			break;
 		} else {
 			if (strlen(line) < 11) {
-				opd_free(line);
+				free(line);
 				continue;
 			}
 			cp = line+11;
@@ -168,7 +168,7 @@ void opd_read_system_map(const char *filename)
 				sscanf(line, "%x", &kernel_start);
 			else if (streq("_end", cp))
 				sscanf(line, "%x", &kernel_end);
-			opd_free(line);
+			free(line);
 		}
 	} while (1);
 
@@ -266,7 +266,7 @@ static void opd_open_image(struct opd_image *image, int hash, const char *name, 
 {
 	uint i;
 
-	image->name = opd_strdup(name);
+	image->name = xstrdup(name);
 	image->kernel = kernel;
 	image->hash = hash; 
 	image->len = 0;
@@ -384,7 +384,7 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 	sample_file->header->cpu_speed = cpu_speed;
 	sample_file->header->mtime = image->mtime;
 out:
-	opd_free(mangled);
+	free(mangled);
 	return;
 err2:
 	close(sample_file->fd);
@@ -493,9 +493,9 @@ inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16
 void opd_init_images(void)
 {
 	/* 0 is reserved for the kernel image */
-	opd_images = opd_calloc0(sizeof(struct opd_image), OPD_DEFAULT_IMAGES);
+	opd_images = xcalloc(sizeof(struct opd_image), OPD_DEFAULT_IMAGES);
 
-	opd_images[0].name = opd_strdup(vmlinux);
+	opd_images[0].name = xstrdup(vmlinux);
 	opd_images[0].kernel = 1;
 
 	opd_open_image(&opd_images[0], -1, vmlinux, 1);
@@ -509,7 +509,7 @@ void opd_init_images(void)
  */
 static void opd_grow_images(void)
 {
-	opd_images = opd_realloc(opd_images, sizeof(struct opd_image)*(max_nr_images+OPD_IMAGE_INC));
+	opd_images = xrealloc(opd_images, sizeof(struct opd_image)*(max_nr_images+OPD_IMAGE_INC));
 	max_nr_images += OPD_IMAGE_INC;
 }
 
@@ -637,7 +637,7 @@ static struct opd_proc * opd_new_proc(struct opd_proc *prev, struct opd_proc *ne
 {
 	struct opd_proc *proc;
 
-	proc = opd_malloc(sizeof(struct opd_proc));
+	proc = xmalloc(sizeof(struct opd_proc));
 	proc->maps = NULL;
 	proc->pid = 0;
 	proc->nr_maps = 0;
@@ -676,8 +676,8 @@ static void opd_delete_proc(struct opd_proc *proc)
 	if (proc->next)
 		proc->next->prev = proc->prev;
 	
-	opd_free(proc->maps);
-	opd_free(proc);
+	if (proc->maps) free(proc->maps);
+	free(proc);
 }
 
 /**
@@ -688,7 +688,7 @@ static void opd_delete_proc(struct opd_proc *proc)
  */
 static void opd_init_maps(struct opd_proc *proc)
 {
-	proc->maps = opd_calloc0(sizeof(struct opd_map), OPD_DEFAULT_MAPS);
+	proc->maps = xcalloc(sizeof(struct opd_map), OPD_DEFAULT_MAPS);
 	proc->max_nr_maps = OPD_DEFAULT_MAPS;
 	proc->nr_maps = 0;
 	proc->last_map = 0;
@@ -729,7 +729,7 @@ static struct opd_proc *opd_add_proc(u16 pid)
  */
 static void opd_grow_maps(struct opd_proc *proc)
 {
-	proc->maps = opd_realloc(proc->maps, sizeof(struct opd_map)*(proc->max_nr_maps+OPD_MAP_INC));
+	proc->maps = xrealloc(proc->maps, sizeof(struct opd_map)*(proc->max_nr_maps+OPD_MAP_INC));
 	proc->max_nr_maps += OPD_MAP_INC;
 }
 
@@ -743,7 +743,7 @@ static void opd_grow_maps(struct opd_proc *proc)
 static void opd_kill_maps(struct opd_proc *proc)
 {
 	if (proc->maps)
-		opd_free(proc->maps);
+		free(proc->maps);
 	proc->maps = NULL;
 	proc->nr_maps = 0;
 	proc->max_nr_maps = 0;
@@ -823,7 +823,7 @@ void opd_clear_module_info(void)
 	int i;
 
 	for (i=0; i < OPD_MAX_MODULES; i++) {
-		opd_free(opd_modules[i].name);
+		if (opd_modules[i].name) free(opd_modules[i].name);
 		opd_modules[i].name = NULL;
 		opd_modules[i].start = 0;
 		opd_modules[i].end = 0;
@@ -849,7 +849,7 @@ static struct opd_module *opd_get_module(char *name)
 	for (i=0; i < OPD_MAX_MODULES; i++) {
 		if (opd_modules[i].name && bstreq(name,opd_modules[i].name)) {
 			/* free this copy */
-			opd_free(name);
+			free(name);
 			return &opd_modules[i];
 		}
 	}
@@ -905,7 +905,7 @@ static void opd_get_module_info(void)
 	do {
 		line = opd_get_line(fp);
 		if (streq("", line) && !feof(fp)) {
-			opd_free(line);
+			free(line);
 			continue;
 		} else if (streq("",line))
 			goto failure;
@@ -916,7 +916,7 @@ static void opd_get_module_info(void)
 		}
 
 		if (strncmp("__insmod_", line+9, 9)) {
-			opd_free(line);
+			free(line);
 			continue;
 		}
 
@@ -932,7 +932,7 @@ static void opd_get_module_info(void)
 	
 		cp2++;
 		/* freed by opd_clear_module_info() or opd_get_module() */
-		modname = opd_malloc((size_t)((cp2-cp) + 1));
+		modname = xmalloc((size_t)((cp2-cp) + 1));
 		strncpy(modname, cp, (size_t)((cp2-cp)));
 		modname[cp2-cp] = '\0';
 
@@ -948,24 +948,24 @@ static void opd_get_module_info(void)
 					cp3++;
 
 				if (!*cp3) {
-					opd_free(line);
+					free(line);
 					continue;
 				}
 				
 				cp3++;
-				filename = opd_malloc((size_t)(cp3 - cp2 + 1));
+				filename = xmalloc((size_t)(cp3 - cp2 + 1));
 				strncpy(filename, cp2, (size_t)(cp3 - cp2));
 				filename[cp3-cp2] = '\0';
 
 				mod->image = opd_get_image(filename, -1, 1);
-				opd_free(filename);
+				free(filename);
 				break;
 
 			case 'S':
 				/* get extent of .text section */
 				cp2++;
 				if (strncmp(".text_L", cp2, 7)) {
-					opd_free(line);
+					free(line);
 					continue;
 				}
 
@@ -976,11 +976,11 @@ static void opd_get_module_info(void)
 				break;
 		}
 
-		opd_free(line);
+		free(line);
 	} while (1);
 
 failure:
-	opd_free(line);
+	free(line);
 	opd_close_file(fp);
 }
 
@@ -991,7 +991,7 @@ failure:
  */
 static void opd_enter_invalid_module(char const * name, struct module_info * info)
 {
-	opd_modules[nr_modules].name = opd_strdup(name);
+	opd_modules[nr_modules].name = xstrdup(name);
 	opd_modules[nr_modules].image = -1;
 	opd_modules[nr_modules].start = info->addr;
 	opd_modules[nr_modules].end = info->addr + info->size;
@@ -1015,14 +1015,14 @@ static void opd_drop_module_sample(u32 eip)
 	uint nr_mods;
 	uint mod = 0;
 	
-	module_names = opd_malloc(size);
+	module_names = xmalloc(size);
 	while (query_module(NULL, QM_MODULES, module_names, size, &ret)) {
 		if (errno != ENOSPC) {
 			verbprintf("query_module failed: %s\n", strerror(errno)); 
 			return;
 		}
 		size = ret;
-		module_names = opd_realloc(module_names, size);
+		module_names = xrealloc(module_names, size);
 	}
 
 	nr_mods = ret;
@@ -1041,7 +1041,7 @@ static void opd_drop_module_sample(u32 eip)
 		name += strlen(name) + 1;
 	}
 out:
-	opd_free(module_names);
+	if (module_names) free(module_names);
 }
 
 /**
@@ -1284,8 +1284,8 @@ void opd_handle_fork(const struct op_note *note)
 
 	/* remove the kernel map and copy over */
 
-	opd_free(proc->maps);
-	proc->maps = opd_malloc(sizeof(struct opd_map) * old->max_nr_maps);
+	if (proc->maps) free(proc->maps);
+	proc->maps = xmalloc(sizeof(struct opd_map) * old->max_nr_maps);
 	memcpy(proc->maps,old->maps,sizeof(struct opd_map) * old->nr_maps);
 	proc->nr_maps = old->nr_maps;
 	proc->max_nr_maps = old->max_nr_maps;
@@ -1500,11 +1500,11 @@ static void opd_get_ascii_maps(struct opd_proc *proc)
 	do {
 		line = opd_get_line(fp);
 		if (streq(line, "") && feof(fp)) {
-			opd_free(line);
+			free(line);
 			break;
 		} else {
 			opd_add_ascii_map(proc, line);
-			opd_free(line);
+			free(line);
 		}
 	} while (1);
 

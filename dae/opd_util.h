@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.21 2001/12/04 21:16:11 phil_e Exp $ */
+/* $Id: opd_util.h,v 1.22 2001/12/05 04:31:17 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -27,6 +27,10 @@
 #include <time.h> 
 #include <fcntl.h> 
 #include <popt.h>
+
+#ifdef HAVE_LIBIBERTY_H
+#include <libiberty.h>
+#endif
 
 #include "../op_user.h"
 
@@ -72,16 +76,27 @@ extern "C" {
 #define OP_ATTRIB_MALLOC
 #endif
 
-/* utility functions */
-#define opd_calloc(memb, size) opd_malloc(memb*size)
-#define opd_calloc0(memb, size) opd_malloc0(memb*size)
-#define opd_crealloc(memb, buf, size) opd_realloc((buf), memb*size)
+#ifndef HAVE_LIBIBERTY_H
+/* Set the program name used by xmalloc.  */
+void xmalloc_set_program_name(const char *);
 
-void *opd_malloc(size_t size) OP_ATTRIB_MALLOC;
-void *opd_malloc0(size_t size) OP_ATTRIB_MALLOC;
-char *opd_strdup(const char* str) OP_ATTRIB_MALLOC;
-void *opd_realloc(void *buf, size_t size);
-void opd_free(void *p);
+/* Allocate memory without fail.  If malloc fails, this will print a
+   message to stderr (using the name set by xmalloc_set_program_name,
+   if any) and then call xexit.  */
+void * xmalloc(size_t) OP_ATTRIB_MALLOC;
+
+/* Reallocate memory without fail.  This works like xmalloc.  Note,
+   realloc type functions are not suitable for attribute malloc since
+   they may return the same address across multiple calls. */
+void * xrealloc(void *, size_t);
+
+/* Allocate memory without fail and set it to zero.  This works like xmalloc */
+void * xcalloc(size_t, size_t) OP_ATTRIB_MALLOC;
+
+/* Copy a string into a memory buffer without fail.  */
+char *xstrdup(const char *) OP_ATTRIB_MALLOC;
+#endif	/* !LIBIBERTY_H */
+
 char* opd_mangle_filename(const char *smpdir, const char* filename);
 
 #define opd_try_open_file(n,m) opd_do_open_file((n), (m), 0)

@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.42 2001/12/01 21:16:48 phil_e Exp $
+# $Id: Makefile.in,v 1.43 2001/12/05 04:31:17 phil_e Exp $
 
 .PHONY: all install clean distclean maintainerclean uninstall tags
 
@@ -50,7 +50,7 @@ maintainerclean: distclean
 	rm -f configure doc/Makefile aclocal.m4
 
 distclean: clean
-	rm -f Makefile module/Makefile events/Makefile util/Makefile doc/oprofile.1 dae/Makefile pp/Makefile gui/Makefile gui/ui/Makefile tags config.status config.log config.cache version.h Rules.make
+	rm -f Makefile module/Makefile events/Makefile util/Makefile doc/oprofile.1 dae/Makefile pp/Makefile gui/Makefile gui/ui/Makefile tags config.status config.log config.cache version.h Rules.make config.h config.h.in
 
 tags:
 	ctags -R

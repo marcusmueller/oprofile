@@ -9,9 +9,11 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.60 2001/11/30 21:42:47 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.61 2001/12/05 04:31:17 phil_e Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
+
+AC_CONFIG_HEADER(config.h)
 
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
@@ -219,6 +221,10 @@ AC_MSG_CHECKING("whether to use included sstream")
 AC_TRY_COMPILE([#include <sstream>], [], 
 AC_MSG_RESULT([no]);,
 AC_MSG_RESULT([yes]); CXXFLAGS="$CXXFLAGS -I../include")
+
+dnl some distro have a libiberty.a but does not have a libiberty.h
+AC_CHECK_HEADERS(libiberty.h)
+AC_CHECK_FUNCS(xcalloc)
 
 dnl bfd.h pre 1998 check only for gnu 2.xx series, so gcc 3.0 can't compile it
 AC_MSG_CHECKING("whether bfd define bool")

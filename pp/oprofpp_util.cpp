@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.10 2001/12/04 21:16:11 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.11 2001/12/05 04:31:17 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -46,7 +46,7 @@ static char *remangle(const char *image)
 	else if (basedir[strlen(basedir)-1] == '/')
 		basedir[strlen(basedir)-1] = '\0';
 
-	file = (char*)opd_malloc(strlen(basedir) + strlen("/samples/") + strlen(image) + 1);
+	file = (char*)xmalloc(strlen(basedir) + strlen("/samples/") + strlen(image) + 1);
 	
 	strcpy(file, basedir);
 	strcat(file, "/samples/");
@@ -194,7 +194,7 @@ void opp_treat_options(const char* file, poptContext optcon)
 	if (!imagefile) {
 		std::string temp = demangle_filename(samplefile);
 		/* memory leak */
-		imagefile = opd_strdup(temp.c_str());
+		imagefile = xstrdup(temp.c_str());
 	}
 }
 
@@ -222,7 +222,7 @@ std::string demangle_symbol(const char* name)
 		char *unmangled = cplus_demangle(name, DMGL_PARAMS | DMGL_ANSI);
 		if (unmangled) {
 			std::string result(unmangled);
-			opd_free(unmangled);
+			free(unmangled);
 			return result;
 		}
 	}
@@ -295,7 +295,7 @@ opp_bfd::opp_bfd(const opd_header* header, uint nr_samples_)
  */
 opp_bfd::~opp_bfd()
 {
-	opd_free(bfd_syms);
+	if (bfd_syms) free(bfd_syms);
 	bfd_close(ibfd);
 }
 
@@ -397,7 +397,7 @@ bool opp_bfd::get_symbols()
 	if (size < 1)
 		return false;
 
-	bfd_syms = (asymbol**)opd_malloc(size);
+	bfd_syms = (asymbol**)xmalloc(size);
 	nr_all_syms = bfd_canonicalize_symtab(ibfd, bfd_syms);
 	if (nr_all_syms < 1) {
 		return false;
