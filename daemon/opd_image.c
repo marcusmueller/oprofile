@@ -102,8 +102,7 @@ void opd_for_each_image(opd_image_cb image_cb)
 	}
 }
 
-
-static int lookup_dcookie(int64_t cookie, char * buf, size_t size)
+static int opd_get_dcookie(unsigned long cookie, char * buf, size_t size)
 {
 	// FIXME
 	return syscall(253, cookie, buf, size);
@@ -118,12 +117,12 @@ static void opd_init_image(struct opd_image * image, unsigned long cookie,
 {
 	char buf[PATH_MAX + 1];
  
-	if (lookup_dcookie(cookie, buf, PATH_MAX))
+	if (opd_get_dcookie(cookie, buf, PATH_MAX))
 		image->name = xstrdup("");
 	else
 		image->name = xstrdup(buf);
  
-	if (lookup_dcookie(app_cookie, buf, PATH_MAX))
+	if (opd_get_dcookie(app_cookie, buf, PATH_MAX))
 		image->app_name = xstrdup("");
 	else
 		image->app_name = xstrdup(buf);
