@@ -1,3 +1,9 @@
+2001-11-08  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+
+	* configure.in: bump to 0.0.8cvs
+ 
 2001-11-07  John Levon  <moz@compsoc.man.ac.uk>
 
 	* acinclude.m4:

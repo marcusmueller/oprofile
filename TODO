@@ -17,6 +17,8 @@ o code factorisation between opf_filter / gui, more opf_filter/opf_container cle
 
 o ac kernel series allow to configure for 32 bits pid, we must check against that
  
+o move .oprofile to name=value pairs to avoid conflicts on change.
+ 
 Later
 -----
 
