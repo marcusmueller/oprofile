@@ -65,12 +65,12 @@ while ($_ = $ARGV[0]) {
 					$maxelapsed = $elapsed;
 				}
 				$count++;
-			} elsif (/user/) {
+			} elsif (/user[ \t]*[0-9mhs\.]*$/) {
 				($a,$b) = split(' ',$_);
 				($min,$sec) = split('m',$b);
 				$sec =~ s/s//;
 				$totuser += (60*$min) + $sec;
-			} elsif (/sys/) {
+			} elsif (/sys[ \t]*[0-9mhs\.]*$/) {
 				($a,$b) = split(' ',$_);
 				($min,$sec) = split('m',$b);
 				$sec =~ s/s//; 

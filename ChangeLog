@@ -1,3 +1,11 @@
+2001-06-12  John Levon  <moz@compsoc.man.ac.uk>
+
+	* results/intro: tidy up
+
+	* results/kernel-compile/time-aves.pl: fix regexps
+ 
+	* results/latex/: results from the LaTeX runs
+ 
 2001-06-09  Philippe Elie  <ph_e@club-internet.fr>
 
 	* op_start: avoid chmod to a non existing directory and setup access
