@@ -59,11 +59,15 @@ struct profile_dep_set {
  * A number of profile files all for the same binary with the same
  * profile specification (after merging). Includes the set of dependent
  * profile files, if any.
+ *
+ * For example, we could have image == "/bin/bash", where files
+ * contains all profiles against /bin/bash, and deps contains
+ * the sample file list for /lib/libc.so, /lib/ld.so etc.
  */
 struct profile_set {
 	std::string image;
 
-	/// the actual sample files
+	/// the actual sample files for the main image
 	std::list<std::string> files;
 
 	/// all profile files dependent on the main image
@@ -93,7 +97,14 @@ bool operator<(profile_class const & lhs,
 
 
 struct profile_classes {
-	/// this is only set if we're not classifying on event/count anyway
+	/**
+	 * This is only set if we're not classifying on event/count
+	 * anyway - if we're classifying on event/count, then we'll
+	 * already output the details of each class's event/count.
+	 *
+	 * It's only used when classifying by CPU, tgid etc. so the
+	 * user can still see what perfctr event was used.
+	 */
 	std::string event;
 
 	/// CPU info
@@ -108,6 +119,9 @@ struct profile_classes {
  * Take a list of sample filenames, and process them into a set of
  * classes containing profile_sets. Merging is done at this stage
  * as well as attaching dependent profiles to the main image.
+ *
+ * The classes correspond to the columns you'll get in opreport:
+ * this can be a number of events, or different CPUs, etc.
  */
 profile_classes const
 arrange_profiles(std::list<std::string> const & files,
@@ -132,6 +146,19 @@ typedef std::list<image_set> image_group_set;
 /**
  * All sample files where the binary image to open is
  * the same.
+ *
+ * This is the "inverse" to some degree of profile_set.
+ * For example, here we might have image = "/lib/libc.so",
+ * with groups being the profile classifications
+ * tgid:404, tgid:301, etc.
+ *
+ * Within each group there's a number of image_sets.
+ * All the sample files listed within the image_sets
+ * are still for /lib/libc.so, but they may have
+ * different app_image values, e.g. /bin/bash.
+ * We need to keep track of the app_image values to
+ * make opreport give the right info in the "app"
+ * column.
  */
 struct inverted_profile {
 	/// the image to open

@@ -1,3 +1,9 @@
+2003-09-15  John Levon  <levon@movementarian.org>
+
+	* libpp/arrange_profiles.cpp:
+	* libpp/arrange_profiles.h:
+	* pp/populate.cpp: more commentary
+
 2003-09-14  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opreport.cpp: handle 2.95 right io manipulator and the lack

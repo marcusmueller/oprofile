@@ -54,6 +54,10 @@ populate_for_image(profile_container & samples, inverted_profile const & ip)
 			list<image_set>::const_iterator const end
 				= ip.groups[i].end();
 
+			// we can only share a profile_t amongst each
+			// image_set's files - this is because it->app_image
+			// changes, and the .add() would mis-attribute
+			// to the wrong app_image otherwise
 			for (; it != end; ++it) {
 				profile_t profile;
 				populate_from_files(profile, it->files, offset);

@@ -26,6 +26,10 @@ using namespace std;
 
 namespace {
 
+/**
+ * The "axis" says what we've used to split the sample
+ * files into the classes. Only one is allowed.
+ */
 enum axis_types {
 	AXIS_EVENT,
 	AXIS_UNITMASK,
