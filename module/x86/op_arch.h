@@ -15,7 +15,6 @@
 
 /* How to access the processor's instruction pointer */
 #ifndef instruction_pointer
-/* x86-64 doesn't exist in 2.2 ... */
 #define instruction_pointer(regs) ((regs)->eip)
 #endif
 

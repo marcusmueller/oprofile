@@ -21,8 +21,6 @@
 #define NMI_DPL_LEVEL 0
 
 
-#ifndef CONFIG_X86_64
-
 /* copied from kernel 2.4.19 : arch/i386/traps.c */
 
 struct gate_struct {
@@ -46,14 +44,6 @@ do { \
 #define SET_NMI_GATE	\
 	_set_gate(&descr.base[NMI_VECTOR_NUM], NMI_GATE_TYPE, NMI_DPL_LEVEL, &op_nmi);
 
-#else /* CONFIG_X86_64 */
-#include <asm/desc.h>
-
-#define SET_NMI_GATE	\
-	_set_gate(&descr.base[NMI_VECTOR_NUM], NMI_GATE_TYPE, (unsigned long) &op_nmi, NMI_DPL_LEVEL, NMI_STACK);
-
-#endif /* CONFIG_X86_64 */
-	
 #define store_idt(addr) \
 	do { \
 		__asm__ __volatile__ ("sidt %0" \

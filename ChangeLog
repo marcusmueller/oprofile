@@ -1,5 +1,20 @@
 2005-03-26  John Levon  <levon@movementarian.org>
 
+	* Makefile.am:
+	* doc/oprofile.xml:
+	* m4/configmodule.m4:
+	* module/x86/Makefile.in:
+	* module/x86/hammer_entry.S:
+	* module/x86/hammer_ia32entry.S:
+	* module/x86/hammer_op_syscalls.c:
+	* module/x86/hammer_oprofile_nmi.S:
+	* module/x86/op_apic.h:
+	* module/x86/op_arch.h:
+	* module/x86/op_nmi.c: remove x86-64 support for 2.4
+	  kernels, as it's non-functional
+
+2005-03-26  John Levon  <levon@movementarian.org>
+
 	* daemon/oprofiled.c: honour oprofiled -v first, complain
 	if --events option is missing instead of core dumping
 

@@ -75,9 +75,6 @@ EXTRA_DIST = \
 	module/ia64/IA64syscallstub.h \
 	module/ia64/op_ia64_model.h \
 	module/x86/Makefile.in \
-	module/x86/hammer_entry.S \
-	module/x86/hammer_ia32entry.S \
-	module/x86/hammer_oprofile_nmi.S \
 	module/x86/oprofile_nmi.S \
 	module/x86/apic_compat.h \
 	module/x86/op_apic.h \
@@ -85,7 +82,6 @@ EXTRA_DIST = \
 	module/x86/op_x86_model.h \
 	module/x86/op_msr.h \
 	module/x86/cpu_type.c \
-	module/x86/hammer_op_syscalls.c \
 	module/x86/op_apic.c \
 	module/x86/op_fixmap.c \
 	module/x86/op_model_athlon.c \

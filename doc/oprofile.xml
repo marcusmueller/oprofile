@@ -80,10 +80,9 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 		<listitem><para>
 			OProfile uses a kernel module that can be compiled for
 			2.2.11 or later and 2.4. Versions 2.4.10 or above are recommended, and required if you use the
-			boot-time kernel option <option>nosmp</option>. AMD64 processors support requires a recent (&gt;= 2.4.19) kernel
-			with the line <constant>EXPORT_SYMBOL(do_fork);</constant> present in <filename>kernel/ksyms.c</filename>.
-			Such a kernel is present in the <ulink url="http://www.x86-64.org">x86-64.org</ulink> CVS repository.
-			2.6 kernels are supported with the in-kernel OProfile driver.
+			boot-time kernel option <option>nosmp</option>.  2.6 kernels are supported with the in-kernel
+			OProfile driver. Note that only 32-bit x86 and IA64 are supported on 2.2/2.4 kernels.
+
 			</para>
 			<para>
 			PPC64 processors (Power4/Power5/PPC970) require a recent (&gt; 2.6.5) kernel with the line 
@@ -105,13 +104,13 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 			required. In marketing terms this translates to anything
 			between an Intel Pentium Pro (not Pentium Classics) and
 			a Pentium 4 / Xeon, including all Celerons.  The AMD
-			Athlon, Duron, and Hammer CPUs are also supported.  Other IA32
+			Athlon, and Duron CPUs are also supported.  Other IA32
 			CPU types only support the RTC mode of OProfile; please
 			see later in this manual for details.  Hyper-threaded Pentium IVs
 			are not supported in 2.4. For 2.4 kernels, the Intel
 			IA-64 CPUs are also supported. For 2.6 kernels, there is additionally
-			support for Alpha processors, MIPS, ARM, sparc64, ppc64, and, in timer mode,
-			PA-RISC and s390.
+			support for Alpha processors, MIPS, ARM, x86-64, sparc64, ppc64, and,
+			in timer mode, PA-RISC and s390.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

@@ -34,7 +34,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 Before 1.0 little stuff
 -----------------------
 
- o if ev67 and 2.4 x86-64 are not fixed, back them out
+ o if ev67 is not fixed, back it out
  o TRACE_END is no longer sent by the driver, keep it a bit for compatibility
  o callgraph patch: better way to skip ignored backtrace ?
  o child sample count for recursive function is not a bug but a feature, it
