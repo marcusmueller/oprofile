@@ -78,16 +78,14 @@ public:
 
 	/// ensure this value is available
 	id_value const create(V const & value) {
-		typename id_map::iterator cit = ids.lower_bound(value);
-
-		if (cit == ids.end() || value < cit->first) {
-			id_value const id(values.size());
+		id_map::value_type val(value, id_value(values.size()));
+		std::pair<typename id_map::iterator, bool>
+			inserted = ids.insert(val);
+		if (inserted.second) {
 			values.push_back(value);
-			ids.insert(cit, id_map::value_type(value, id));
-			return id;
 		}
 
-		return cit->second;
+		return inserted.first->second;
 	}
 
 
