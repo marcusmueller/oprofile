@@ -212,6 +212,8 @@ regmatch_t const &
 regular_expression_replace::get_match(regmatch_t const * match, char idx) const
 {
 	size_t sub_expr = subexpr_index(idx);
+	if (sub_expr == size_t(-1))
+		throw bad_regex("expect group index: " + idx);
 	if (sub_expr >= max_match)
 		throw bad_regex("illegal group index :" + idx);
 	return match[sub_expr];
@@ -231,7 +233,7 @@ void regular_expression_replace::do_replace(string & str,
 			++i;
 			if (replace[i] == '\\') {
 				inserted += '\\';
-			}  else if (subexpr_index(replace[i]) != size_t(-1)) {
+			}  else {
 				regmatch_t const & matched = get_match(match,
 					replace[i]);
 				if (matched.rm_so == -1 && 
@@ -245,9 +247,6 @@ void regular_expression_replace::do_replace(string & str,
 					inserted += str.substr(matched.rm_so,
 					    matched.rm_eo - matched.rm_so);
 				}
-			} else {
-				throw bad_regex("expect group index: " +
-					replace);
 			}
 		} else {
 			inserted += replace[i];
