@@ -51,19 +51,34 @@ struct axis_t {
 	{ "cpu", "specify cpu: or --merge cpu" },
 };
 
-/**
- * We have more than axis of classification, tell the user.
- */
-void
-report_error(int axis, int newaxis)
+
+/// We have more than one axis of classification, tell the user.
+void report_error(profile_classes const & classes,
+                  axis_types axis, axis_types newaxis)
 {
-	string str = "attempted to display results for parameter ";
-	str += axes[newaxis].name;
-	str += " but already displaying results for parameter ";
+	string str = "Already displaying results for parameter ";
 	str += axes[axis].name;
-	str += "\n";
-	str += "suggestion: ";
-	str += axes[newaxis].suggestion;
+	str += " with values:\n";
+	vector<profile_class>::const_iterator it = classes.v.begin();
+	vector<profile_class>::const_iterator const end = classes.v.end();
+
+	size_t i = 5;
+
+	for (; it != end && i; ++it) {
+		str += it->name + ",";
+		--i;
+	}
+
+	if (!i) {
+		str += " and ";
+		str += tostr(classes.v.size() - 5);
+		str += " more,";
+	}
+
+	str += "\nwhich conflicts with parameter ";
+	str += axes[newaxis].name += ".\n";
+	str += "Suggestion: ";
+	str += axes[axis].suggestion;
 	throw op_fatal_error(str);
 }
 
@@ -227,16 +242,16 @@ void identify_classes(profile_classes & classes,
 			continue;
 
 		if (!allow_axes(classes, axis, axis_types(i)))
-			report_error(axis, i);
+			report_error(classes, axis, axis_types(i));
 		axis = axis_types(i);
+		/* do this early for report_error */
+		name_classes(classes, axis);
 	}
 
 	if (axis == AXIS_MAX) {
 		cerr << "Internal error - no equivalence class axis" << endl;
 		abort();
 	}
-
-	name_classes(classes, axis);
 }
 
 

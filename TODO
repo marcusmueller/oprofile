@@ -8,12 +8,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 
  o add separate_thread to opd_header or remove all separate from opd_header
  o thread separate GUI + docs
- o when --separate=thread, we really need to show the list of current
-   classes on a merge failure so user can get help specifying tgid where
-   relevant
- o x86_64 and 2.4 kernel: test the needed change
- o opannotate_options.cpp: we should accept merge options for tid/tgid/cpu and
-  not merge automatically.
 
 0.8 release
 -----------
@@ -31,6 +25,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o x86_64 and 2.4 kernel: test the needed change
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
   try to recover gracefully.
  o dae/opd_image.h: struct opd_sfile * sfiles[OP_MAX_COUNTERS][NR_CPUS]; 
@@ -51,8 +46,8 @@ Before 1.0 little stuff
    subdir and this lib must be self contained (not include anything in dae/*.h
    daemon/*.h) (<movewent> not really worth a whole new lib dir imho)
  o separate debug info stuff
- o opgprof always merges even if we provide a profile spec that's minimal
-   enough - you can't get "cpu:0"
+ o opgprof/opannotate always merges even if we provide a profile spec that's
+   minimal enough - you can't get "cpu:0"
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
  o create_path API is weird
  o opannotate should error out with a msg if no debug symbols are found at all

@@ -1,5 +1,10 @@
 2003-10-20  John Levon  <levon@movementarian.org>
 
+	* libpp/arrange_profiles.cpp: rework the clashing-axes
+	error message to be nicer to the user
+
+2003-10-20  John Levon  <levon@movementarian.org>
+
 	* libpp/arrange_profiles.cpp: if tid == tgid for
 	every profile class, allow axes of both TID and TGID
 	- there is no actual difference, only theoretical
