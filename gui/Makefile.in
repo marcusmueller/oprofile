@@ -1,19 +1,23 @@
-all: oprof_start
-
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 BINDIR=@bindir@
 MKDIR_P=mkdir -p
+MOC=@MOC@
+UIC=@UIC@
 
 .PHONY: all clean install uninstall
 .SUFFIXES:
 
+ifeq "@HAVE_QT2@" "1"
+all: oprof_start
+
 # oprof_start.cpp, oprof_start.h are generated file, but must not re-generated
 clean:
-	rm -f *.o *.moc.* oprof_start.base.cpp oprof_start.base.h oprof_start
+	$(MAKE) -C ui clean
+	rm -f *.o *.moc.* oprof_start
 
 # TODO: the sys_include is for the <sstream> thing add it to distrib
-CFLAGS=-I ../sys_include -DOP_EVENTS_DESC -g -ansi -Wall --pedantic -O2
+CFLAGS=-I@KINC@ -I../sys_include -DOP_EVENTS_DESC -g -ansi -Wall --pedantic -O2 @QT2_INCLUDES@
 
 install: all oprofile oprof_start
 	-$(MKDIR_P) $(BINDIR)
@@ -27,12 +31,13 @@ uninstall:
 	@echo "The uninstall target does not remove your ~/.oprofile directory"
 	@echo "---------------------------------------------------------------"
 
-SOURCES=oprof_start.base.o oprof_start.base.moc.o oprof_start.o \
- oprof_start.moc.o oprof_start_impl.o op_events.o oprof_start_config.o \
- oprof_start_main.o
+UISOURCES=ui/oprof_start.base.o ui/oprof_start.base.moc.o
+SOURCES=oprof_start.o oprof_start.moc.o oprof_start_impl.o op_events.o \
+ oprof_start_config.o oprof_start_main.o
 
 oprof_start: $(SOURCES)
-	g++ -o $@ $^ -L$(QTDIR)/lib -lqt
+	$(MAKE) -C ui
+	g++ -o $@ $^ $(UISOURCES) @QT2_LDFLAGS@ @QT2_LIBS@
 
 %.o: %.cpp
 	g++ -c $(CFLAGS) $< -o $@
@@ -43,46 +48,31 @@ oprof_start: $(SOURCES)
 op_events.o: ../op_events.c
 	gcc -c $(CFLAGS) $< -o $@
 
-# dependencies: auto-generated through CFLAGS += -MM, cat *.o
+ui/oprof_start.base.h:
+	$(MAKE) -C ui
+ 
 op_events.o: ../op_events.c ../op_user.h ../version.h
-oprof_start.base.moc.o: oprof_start.base.moc.cpp oprof_start.base.h
-oprof_start.base.o: oprof_start.base.cpp oprof_start.base.h
 oprof_start.moc.o: oprof_start.moc.cpp oprof_start.h \
- oprof_start.base.h oprof_start_config.h persistent_config.h \
+ ui/oprof_start.base.h oprof_start_config.h persistent_config.h \
  ../op_user.h ../version.h
-oprof_start.o: oprof_start.cpp oprof_start.h oprof_start.base.h \
+oprof_start.o: oprof_start.cpp oprof_start.h ui/oprof_start.base.h \
  oprof_start_config.h persistent_config.h ../op_user.h ../version.h
 oprof_start_config.o: oprof_start_config.cpp oprof_start_config.h \
  persistent_config.h ../op_user.h ../version.h
 oprof_start_impl.o: oprof_start_impl.cpp oprof_start.h \
- oprof_start.base.h oprof_start_config.h persistent_config.h \
+ ui/oprof_start.base.h oprof_start_config.h persistent_config.h \
  ../op_user.h ../version.h
 oprof_start_main.o: oprof_start_main.cpp oprof_start.h \
- oprof_start.base.h oprof_start_config.h persistent_config.h \
+ ui/oprof_start.base.h oprof_start_config.h persistent_config.h \
  ../op_user.h ../version.h            
 
-# generate qt header file
-oprof_start.base.h: oprof_start.base.ui
-	uic -o oprof_start.base.h oprof_start.base.ui
-
-# generate qt implementation file
-oprof_start.base.cpp: oprof_start.base.h oprof_start.base.ui
-	uic -o oprof_start.base.cpp -impl oprof_start.base.h oprof_start.base.ui
-
-# generate qt moc code for base class
-oprof_start.base.moc.cpp: oprof_start.base.h
-	moc -o oprof_start.base.moc.cpp oprof_start.base.h
-
 # generate qt moc code for subclass
-oprof_start.moc.cpp: oprof_start.h oprof_start.base.moc.cpp
-	moc -o oprof_start.moc.cpp oprof_start.h
+oprof_start.moc.cpp: oprof_start.h ui/oprof_start.base.moc.cpp
+	$(MOC) -o oprof_start.moc.cpp oprof_start.h
 
-# DO NOT un-comment these lines: just an examples of how to start a new form.
-# after using this line you must edit oprof_start.cpp and replace the include
-# oprof_start_base.h by oprof_start.h before compile it. I follow the following
-# name scheme : xxxx.base.ui is the saved designer file form. xxxx_base.cpp/.h
-# are base class read-only file. xxx.cpp/.h are derived class.
-
-# generate qt subclass header/implementation file, these file are created once
-#uic -o oprof_start.h -subdecl oprof_start oprof_start.base.h oprof_start.base.ui
-#uic -o oprof_start.cpp -subimpl oprof_start oprof_start.h oprof_start.base.ui
+else
+all:
+clean:
+install:
+uninstall:
+endif

@@ -64,7 +64,8 @@ std::string get_user_filename(const std::string& filename)
 	return get_user_dir() + "/" + filename;
 }
 
-// too tricky perhaps: exec a command and redirect stdout / stdout to the
+// FIXME: let's use a proper fork/exec with pipes
+// too tricky perhaps: exec a command and redirect stdout / stderr to the
 // corresponding ostream.
 int exec_command(const std::string& cmd_line, std::ostream& out, 
 		 std::ostream& err)
@@ -72,7 +73,7 @@ int exec_command(const std::string& cmd_line, std::ostream& out,
 	char name_stdout[L_tmpnam];
 	char name_stderr[L_tmpnam];
 
-	// using tmpnam is not recommanded...
+	// FIXME: using tmpnam is not recommanded...
 	tmpnam(name_stdout);
 	tmpnam(name_stderr);
 

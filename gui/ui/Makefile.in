@@ -1,0 +1,49 @@
+
+MOC=@MOC@
+UIC=@UIC@
+
+.PHONY: all clean install uninstall
+.SUFFIXES:
+
+all: oprof_start.base.o oprof_start.base.moc.o
+
+# oprof_start.cpp, oprof_start.h are generated file, but must not re-generated
+clean:
+	rm -f *.o *.moc.* oprof_start.base.cpp oprof_start.base.h
+
+# TODO: the sys_include is for the <sstream> thing add it to distrib
+CFLAGS=-g -ansi -Wall --pedantic -O2 @QT2_INCLUDES@
+
+install:
+uninstall:
+
+%.o: %.cpp
+	g++ -c $(CFLAGS) $< -o $@
+
+%.o: %.c
+	gcc -c $(CFLAGS) $< -o $@
+
+oprof_start.base.moc.o: oprof_start.base.moc.cpp oprof_start.base.h
+oprof_start.base.o: oprof_start.base.cpp oprof_start.base.h
+
+# generate qt header file
+oprof_start.base.h: oprof_start.base.ui
+	$(UIC) -o oprof_start.base.h oprof_start.base.ui
+
+# generate qt implementation file
+oprof_start.base.cpp: oprof_start.base.h oprof_start.base.ui
+	$(UIC) -o oprof_start.base.cpp -impl oprof_start.base.h oprof_start.base.ui
+
+# generate qt moc code for base class
+oprof_start.base.moc.cpp: oprof_start.base.h
+	$(MOC) -o oprof_start.base.moc.cpp oprof_start.base.h
+
+# DO NOT un-comment these lines: just an examples of how to start a new form.
+# after using this line you must edit oprof_start.cpp and replace the include
+# oprof_start_base.h by oprof_start.h before compile it. I follow the following
+# name scheme : xxxx.base.ui is the saved designer file form. xxxx_base.cpp/.h
+# are base class read-only file. xxx.cpp/.h are derived class.
+
+# generate qt subclass header/implementation file, these file are created once
+#uic -o oprof_start.h -subdecl oprof_start oprof_start.base.h oprof_start.base.ui
+#uic -o oprof_start.cpp -subimpl oprof_start oprof_start.h oprof_start.base.ui

@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.30 2001/09/12 02:54:30 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.31 2001/09/16 18:05:25 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -133,6 +133,7 @@ if test "$smp" = 0; then
   test "$apic" = 0 && AC_MSG_ERROR(local APIC not configured)
 fi
 
+AC_SUBST(KINC)
 BKCFLAGS="-I$KINC $BKCFLAGS"
 AC_SUBST(BKCFLAGS)
 
@@ -183,4 +184,13 @@ AC_CHECK_LIB(dl, dlopen,, AC_MSG_ERROR(dl library not found))
 AC_CHECK_LIB(iberty, cplus_demangle,, AC_MSG_ERROR(liberty library not found))
 AC_CHECK_LIB(bfd, bfd_openr,, AC_MSG_ERROR(bfd library not found))
 
-AC_OUTPUT(Makefile dae/Makefile doc/Makefile doc/oprofile.1 pp/Makefile gui/Makefile version.h)
+AC_PATH_XTRA 
+LIBS="$X_PRE_LIBS $LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"
+ 
+QT2_DO_IT_ALL
+ 
+AC_OUTPUT(Makefile dae/Makefile doc/Makefile doc/oprofile.1 pp/Makefile gui/Makefile gui/ui/Makefile version.h)
+
+if test "$HAVE_QT2" -eq 0; then
+	echo "WARNING: Qt2 not found; no GUI will be built"
+fi 

@@ -2,4 +2,5 @@
 
 # this simple currently
 
+aclocal 
 autoconf

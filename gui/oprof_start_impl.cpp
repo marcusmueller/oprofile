@@ -107,6 +107,7 @@ QString do_open_file_or_dir(QString base_dir, bool dir_only)
 	return result;
 }
 
+#if 0 
 void display_qt_hierarchy(QObject* root, int level = 0)
 {
 	for (int i = 0 ; i < level * 2 ; ++i) {
@@ -137,6 +138,7 @@ void display_qt_hierarchy(QObject* root, int level = 0)
 		// delete l;
 	}
 }
+#endif 
 
 // like posix shell utils basename, do not append trailing '/' to result.
 std::string basename(const std::string& path_name)
