@@ -69,6 +69,10 @@ inline static void next_sample(struct _oprof_data * data)
 inline static void evict_op_entry(uint cpu, struct _oprof_data * data,
 	struct op_sample const * ops, long eflags)
 {
+	/* ignore initial hash table cleanout */
+	if (ops->eip == 0)
+		return;
+ 
 	memcpy(&data->buffer[data->nextbuf], ops, sizeof(struct op_sample));
 	next_sample(data);
 	if (likely(!need_wakeup(cpu, data)))

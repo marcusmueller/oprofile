@@ -609,15 +609,11 @@ void opd_do_samples(struct op_buffer_head const * opd_buf)
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
+	verbprintf("Read buffer of %d entries.\n", opd_buf->count);
+ 
 	for (i = 0; i < opd_buf->count; i++) {
 		verbprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n",
 			i, buffer[i].eip, buffer[i].pid, buffer[i].count);
-
-		/* happens during initial startup whilst the
-		 * hash table is being filled
-		 */
-		if (buffer[i].eip == 0)
-			continue;
 
 		if (pid_filter && pid_filter != buffer[i].pid)
 			continue;
