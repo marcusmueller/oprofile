@@ -14,9 +14,6 @@
 	* module/op_syscalls.c: Use a struct to hold the whole
 	  sysctl settable things rather global var.
 
-	* oprofile-tests/understanding/dname-hash.c: new. A little test
-	  to show the behavior of the new hash coding collision handling.
-
 2001-11-03  Philippe Elie  <ph_e@club-internet.fr>
 
 	* modules/oprofile.h: add a sysctl struct to hold
