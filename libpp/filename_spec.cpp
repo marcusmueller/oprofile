@@ -11,7 +11,7 @@
 #include <string>
 
 #include "filename_spec.h"
-#include "split_sample_filename.h"
+#include "parse_filename.h"
 #include "generic_spec.h"
 
 
@@ -57,14 +57,14 @@ bool filename_spec::match(filename_spec const & rhs,
 
 void filename_spec::set_sample_filename(string const & filename)
 {
-	split_sample_filename split = split_sample_file(filename);
+	parsed_filename parsed = parse_filename(filename);
 
-	image = split.image;
-	lib_image = split.lib_image;
-	event = split.event;
-	count = lexical_cast_no_ws<int>(split.count);
-	unitmask = lexical_cast_no_ws<unsigned int>(split.unitmask);
-	tgid.set(split.tgid);
-	tid.set(split.tid);
-	cpu.set(split.cpu);
+	image = parsed.image;
+	lib_image = parsed.lib_image;
+	event = parsed.event;
+	count = lexical_cast_no_ws<int>(parsed.count);
+	unitmask = lexical_cast_no_ws<unsigned int>(parsed.unitmask);
+	tgid.set(parsed.tgid);
+	tid.set(parsed.tid);
+	cpu.set(parsed.cpu);
 }

@@ -27,6 +27,8 @@ libpp_a_SOURCES = \
 	op_header.cpp \
 	op_header.h \
 	symbol.h \
+	parse_filename.cpp \
+	parse_filename.h \
 	profile.cpp \
 	profile.h \
 	profile_container.cpp \
@@ -35,8 +37,6 @@ libpp_a_SOURCES = \
 	profile_spec.h \
 	sample_container.cpp \
 	sample_container.h \
-	split_sample_filename.cpp \
-	split_sample_filename.h \
 	symbol_container.cpp \
 	symbol_container.h \
 	symbol_functors.cpp \

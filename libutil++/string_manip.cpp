@@ -40,7 +40,7 @@ string tostr(unsigned int i)
 
 unsigned int touint(string const & s)
 {
-	unsigned int i;
+	unsigned int i = 0;
 	istringstream ss(s);
 	ss >> i;
 	return i;

@@ -1,3 +1,23 @@
+2003-09-14  John Levon  <levon@movementarian.org>
+
+	* libpp/Makefile.am:
+	* libpp/split_sample_filename.cpp:
+	* libpp/split_sample_filename.h: rename as ...
+
+	* libpp/parse_filename.cpp:
+	* libpp/parse_filename.h: ... this
+
+	* libpp/filename_spec.cpp:
+	* libpp/arrange_profiles.cpp:
+	* libpp/arrange_profiles.h: sort classes for niceness,
+	changes from above
+
+	* pp/opreport.cpp: remove needless double check of
+	exclude_dependent
+
+	* libutil++/string_manip.cpp: touint should init to 0
+	in case of parse failure
+
 2003-09-14  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* configure.in: fix maximum template depth to 50

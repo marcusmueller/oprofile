@@ -9,8 +9,10 @@
  * @author John Levon
  */
 
+#include "string_manip.h"
+
 #include "arrange_profiles.h"
-#include "split_sample_filename.h" // FIXME: merge this code
+#include "parse_filename.h"
 
 using namespace std;
 
@@ -21,22 +23,22 @@ namespace {
  * This is the heart of the merging and classification process.
  */
 bool class_match(profile_template const & ptemplate,
-                 split_sample_filename const & split)
+                 parsed_filename const & parsed)
 {
-	if (ptemplate.event != split.event)
+	if (ptemplate.event != parsed.event)
 		return false;
-	if (ptemplate.count != split.count)
+	if (ptemplate.count != parsed.count)
 		return false;
 		
 	// remember that if we're merging on any of
 	// these, the template value will be empty
-	if (!ptemplate.unitmask.empty() && ptemplate.unitmask != split.unitmask)
+	if (!ptemplate.unitmask.empty() && ptemplate.unitmask != parsed.unitmask)
 		return false;
-	if (!ptemplate.tgid.empty() && ptemplate.tgid != split.tgid)
+	if (!ptemplate.tgid.empty() && ptemplate.tgid != parsed.tgid)
 		return false;
-	if (!ptemplate.tid.empty() && ptemplate.tid != split.tid)
+	if (!ptemplate.tid.empty() && ptemplate.tid != parsed.tid)
 		return false;
-	if (!ptemplate.cpu.empty() && ptemplate.cpu != split.cpu)
+	if (!ptemplate.cpu.empty() && ptemplate.cpu != parsed.cpu)
 		return false;
 	return true;
 }
@@ -44,22 +46,22 @@ bool class_match(profile_template const & ptemplate,
 
 /// construct a class template from a profile
 profile_template const
-template_from_profile(split_sample_filename const & split,
+template_from_profile(parsed_filename const & parsed,
                       merge_option const & merge_by)
 {
 	profile_template ptemplate;
 
-	ptemplate.event = split.event;
-	ptemplate.count = split.count;
+	ptemplate.event = parsed.event;
+	ptemplate.count = parsed.count;
 
 	if (!merge_by.unitmask)
-		ptemplate.unitmask = split.unitmask;
+		ptemplate.unitmask = parsed.unitmask;
 	if (!merge_by.tgid)
-		ptemplate.tgid = split.tgid;
+		ptemplate.tgid = parsed.tgid;
 	if (!merge_by.tid)
-		ptemplate.tid = split.tid;
+		ptemplate.tid = parsed.tid;
 	if (!merge_by.cpu)
-		ptemplate.cpu = split.cpu;
+		ptemplate.cpu = parsed.cpu;
 	return ptemplate;
 }
 
@@ -69,21 +71,21 @@ template_from_profile(split_sample_filename const & split,
  * a new class if needed.
  */
 profile_class & find_class(vector<profile_class> & classes,
-                           split_sample_filename const & split,
+                           parsed_filename const & parsed,
                            merge_option const & merge_by)
 {
 	vector<profile_class>::iterator it = classes.begin();
 	vector<profile_class>::iterator const end = classes.end();
 
 	for (; it != end; ++it) {
-		if (class_match(it->ptemplate, split))
+		if (class_match(it->ptemplate, parsed))
 			return *it;
 	}
 
 	// FIXME: here we must verify new classes match only one axis
 	// of difference - opreport is not n-dimensional for n > 1
 	profile_class pclass;
-	pclass.ptemplate = template_from_profile(split, merge_by);
+	pclass.ptemplate = template_from_profile(parsed, merge_by);
 	classes.push_back(pclass);
 	return classes.back();
 }
@@ -95,10 +97,10 @@ profile_class & find_class(vector<profile_class> & classes,
  * on the normal list of profiles otherwise.
  */
 void
-add_to_profile_set(profile_set & set, split_sample_filename const & split)
+add_to_profile_set(profile_set & set, parsed_filename const & parsed)
 {
-	if (split.image == split.lib_image) {
-		set.files.push_back(split.sample_filename);
+	if (parsed.image == parsed.lib_image) {
+		set.files.push_back(parsed.filename);
 		return;
 	}
 
@@ -106,15 +108,15 @@ add_to_profile_set(profile_set & set, split_sample_filename const & split)
 	list<profile_dep_set>::iterator const end = set.deps.end();
 
 	for (; it != end; ++it) {
-		if (it->lib_image == split.lib_image) {
-			it->files.push_back(split.sample_filename);
+		if (it->lib_image == parsed.lib_image) {
+			it->files.push_back(parsed.filename);
 			return;
 		}
 	}
 
 	profile_dep_set depset;
-	depset.lib_image = split.lib_image;
-	depset.files.push_back(split.sample_filename);
+	depset.lib_image = parsed.lib_image;
+	depset.files.push_back(parsed.filename);
 	set.deps.push_back(depset);
 }
 
@@ -124,25 +126,66 @@ add_to_profile_set(profile_set & set, split_sample_filename const & split)
  * will have ensured the profile "fits", so now it's just a matter of
  * finding which sample file list it needs to go on.
  */
-void add_profile(profile_class & pclass, split_sample_filename const & split)
+void add_profile(profile_class & pclass, parsed_filename const & parsed)
 {
 	list<profile_set>::iterator it = pclass.profiles.begin();
 	list<profile_set>::iterator const end = pclass.profiles.end();
 
 	for (; it != end; ++it) {
-		if (it->image == split.image) {
-			add_to_profile_set(*it, split);
+		if (it->image == parsed.image) {
+			add_to_profile_set(*it, parsed);
 			return;
 		}
 	}
 
 	profile_set set;
-	set.image = split.image;
-	add_to_profile_set(set, split);
+	set.image = parsed.image;
+	add_to_profile_set(set, parsed);
 	pclass.profiles.push_back(set);
 }
 
+
+int numeric_compare(string const & lhs, string const & rhs)
+{
+	// FIXME: do we need to handle "all" ??
+	unsigned int lhsval = touint(lhs);
+	unsigned int rhsval = touint(rhs);
+	if (lhsval == rhsval)
+		return 0;
+	if (lhsval < rhsval)
+		return -1;
+	return 1;
+}
+
 };
+
+
+bool operator<(profile_class const & lhs,
+               profile_class const & rhs)
+{
+	profile_template const & lt = lhs.ptemplate;
+	profile_template const & rt = rhs.ptemplate;
+
+	int comp = numeric_compare(lt.cpu, rt.cpu);
+	if (comp)
+		return comp < 0;
+
+	comp = numeric_compare(lt.tgid, rt.tgid);
+	if (comp)
+		return comp < 0;
+
+	comp = numeric_compare(lt.tid, rt.tid);
+	if (comp)
+		return comp < 0;
+
+	comp = numeric_compare(lt.unitmask, rt.unitmask);
+	if (comp)
+		return comp < 0;
+
+	if (lt.event == rt.event)
+		return lt.count < rt.count;
+	return lt.event < rt.event;
+}
 
 
 vector<profile_class> const
@@ -154,25 +197,25 @@ arrange_profiles(list<string> const & files, merge_option const & merge_by)
 	list<string>::const_iterator const end = files.end();
 
 	for (; it != end; ++it) {
-		split_sample_filename split = split_sample_file(*it);
+		parsed_filename parsed = parse_filename(*it);
 
-		if (split.lib_image.empty())
-			split.lib_image = split.image;
+		if (parsed.lib_image.empty())
+			parsed.lib_image = parsed.image;
 
 		// This simplifies the add of the profile later,
 		// if we're lib-merging, then the app_image cannot
-		// matter. After this, any non-dependent split
-		// has image == lib_image
+		// matter. After this, any non-dependent has
+		// image == lib_image
 		if (merge_by.lib)
-			split.image = split.lib_image;
+			parsed.image = parsed.lib_image;
 
 		profile_class & pclass =
-			find_class(classes, split, merge_by);
-		add_profile(pclass, split);
+			find_class(classes, parsed, merge_by);
+		add_profile(pclass, parsed);
 	}
 
-	// FIXME: sort the class list by template so it is ordered
-	// sensibly in opreport columnar output
+	// sort by template for nicely ordered columns
+	stable_sort(classes.begin(), classes.end());
 
 	return classes;
 }

@@ -119,10 +119,7 @@ size_t app_summary::add_profile(profile_set const & profile,
 	counts[count_group] += app_count;
 	group_total += app_count;
 
-	if (options::exclude_dependent)
-		return group_total;
-
-	// now all dependent images
+	// now all dependent images if any
 	list<profile_dep_set>::const_iterator it = profile.deps.begin();
 	list<profile_dep_set>::const_iterator const end = profile.deps.end();
 
@@ -337,9 +334,6 @@ void populate_profile(profile_container & samples,
 {
 	populate_from_files(samples, count_group, profile.image,
 	                    profile.image, profile.files);
-
-	if (options::exclude_dependent)
-		return;
 
 	list<profile_dep_set>::const_iterator it = profile.deps.begin();
 	list<profile_dep_set>::const_iterator const end = profile.deps.end();

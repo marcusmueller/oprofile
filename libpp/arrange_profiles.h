@@ -85,6 +85,9 @@ struct profile_class {
 	profile_template ptemplate;
 };
 
+bool operator<(profile_class const & lhs,
+               profile_class const & rhs);
+
 
 /**
  * Take a list of sample filenames, and process them into a set of
