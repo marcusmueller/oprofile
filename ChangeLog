@@ -1,3 +1,12 @@
+2004-09-15  Maynard P. Johnson  <maynardj@us.ibm.com>
+
+	* events/Makefile.am:
+	* libop/op_cpu_type.h:
+	* libop/op_events.h:
+	* libop/op_events.c:
+	* utils/op_help.c:
+	* utils/opcontrol: PPC64 support
+	
 2004-09-13  John Levon  <levon@movementarian.org>
 
 	* configure.in: bump to 0.8.2cvs

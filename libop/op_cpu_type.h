@@ -39,6 +39,8 @@ typedef enum {
 	CPU_P6_MOBILE, /**< Pentium M series */
 	CPU_ARM_XSCALE1, /**< ARM XScale 1 */
 	CPU_ARM_XSCALE2, /**< ARM XScale 2 */
+	CPU_PPC64_POWER4, /**< ppc64 POWER4 family */
+	CPU_PPC64_POWER5, /**< ppc64 POWER5 family */
 	MAX_CPU_TYPE
 } op_cpu;
 

@@ -354,7 +354,12 @@ int main(int argc, char const *argv[])
 			struct op_event * event = list_entry(pos, struct op_event, event_next);
 
 			if (strcmp(event->name, chosen_events[0]) == 0) {
-				printf("%d\n", event->val);
+				char const * map = find_mapping_for_event(event->val, cpu_type);
+				if (map) {
+					printf("%d %s\n", event->val, map);
+				} else {
+					printf("%d\n", event->val);
+				}
 				exit(EXIT_SUCCESS);
 			}
 		}
@@ -402,6 +407,9 @@ int main(int argc, char const *argv[])
 	case CPU_ARM_XSCALE2:
 		printf("See Intel XScale Core Developer's Manual\n"
 		       "Chapter 8 Performance Monitoring\n");
+		break;
+	case CPU_PPC64_POWER4:
+	case CPU_PPC64_POWER5:
 		break;
 	case CPU_RTC:
 		break;

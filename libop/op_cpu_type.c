@@ -43,6 +43,8 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "Pentium M (P6 core)", "i386/p6_mobile", CPU_P6_MOBILE, 2 },
 	{ "ARM/XScale PMU1", "arm/xscale1", CPU_ARM_XSCALE1, 3 },
 	{ "ARM/XScale PMU2", "arm/xscale2", CPU_ARM_XSCALE2, 5 },
+	{ "ppc64 POWER4", "ppc64/power4", CPU_PPC64_POWER4, 8 },
+	{ "ppc64 POWER5", "ppc64/power5", CPU_PPC64_POWER5, 6 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

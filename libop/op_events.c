@@ -58,6 +58,17 @@ static int parse_hex(char const * str)
 }
 
 
+static u64 parse_long_hex(char const * str)
+{
+	u64 value;
+	if (sscanf(str, "%Lx", &value) != 1) {
+		parse_error("expected long hexadecimal value");
+	}
+	fflush(stderr);
+	return value;
+}
+
+
 /* name:MESI type:bitmask default:0x0f */
 static void parse_um(struct op_unit_mask * um, char const * line)
 {
@@ -522,6 +533,150 @@ struct op_event * find_event(u8 nr)
 	return NULL;
 }
 
+
+static FILE * open_event_mapping_file(const char * cpu_name) 
+{
+	char * ev_map_file;
+	char * dir;
+	dir = getenv("OPROFILE_EVENTS_DIR");
+	if (dir == NULL)
+	        dir = OP_DATADIR;
+
+	ev_map_file = xmalloc(strlen(dir) + strlen("/") + strlen(cpu_name) +
+	                    strlen("/") + + strlen("event_mappings") + 1);
+	strcpy(ev_map_file, dir);
+	strcat(ev_map_file, "/");
+
+	strcat(ev_map_file, cpu_name);
+	strcat(ev_map_file, "/");
+	strcat(ev_map_file, "event_mappings");
+	filename = ev_map_file;
+	return (fopen(ev_map_file, "r"));
+}
+
+
+/**
+ *  This function is PPC64-specific.
+ */
+char const * get_mapping(u8 nr, FILE * fp) 
+{
+	char * line;
+	char * name;
+	char * value;
+	char const * c;
+	char * map = NULL;
+
+	line_nr = 1;
+	int seen_event = 0, seen_mmcr0 = 0, seen_mmcr1 = 0, seen_mmcra = 0;
+	u32 mmcr0 = 0;
+	u64 mmcr1 = 0;
+	u32 mmcra = 0;
+	line = op_get_line(fp);
+	int event_found = 0;
+	while (line && !event_found) {
+		if (empty_line(line) || comment_line(line))
+			goto next;
+
+		seen_event = 0;
+		seen_mmcr0 = 0;
+		seen_mmcr1 = 0;
+		seen_mmcra = 0;
+		mmcr0 = 0;
+		mmcr1 = 0;
+		mmcra = 0;
+
+		c = line;
+		while (next_token(&c, &name, &value)) {
+			if (strcmp(name, "event") == 0) {
+				if (seen_event)
+					parse_error("duplicate event tag");
+				seen_event = 1;
+				u8 evt = parse_hex(value);
+				if (evt == nr) {
+					event_found = 1;
+				}
+				free(value);
+			} else if (strcmp(name, "mmcr0") == 0) {
+				if (seen_mmcr0)
+					parse_error("duplicate mmcr0 tag");
+				seen_mmcr0 = 1;
+				mmcr0 = parse_hex(value);
+				free(value);
+			} else if (strcmp(name, "mmcr1") == 0) {
+				if (seen_mmcr1)
+					parse_error("duplicate mmcr1: tag");
+				seen_mmcr1 = 1;
+				mmcr1 = parse_long_hex(value);
+				free(value);
+			} else if (strcmp(name, "mmcra") == 0) {
+				if (seen_mmcra)
+					parse_error("duplicate mmcra: tag");
+				seen_mmcra = 1;
+				mmcra = parse_hex(value);
+				free(value);
+			} else {
+				parse_error("unknown tag");
+			}
+
+			free(name);
+		}
+next:
+		free(line);
+		line = op_get_line(fp);
+		++line_nr;
+	}
+	if (event_found) {
+		if (!seen_mmcr0 || !seen_mmcr1 || !seen_mmcra) {
+			fprintf(stderr, "Error: Missing information in line %d of event mapping file %s\n", line_nr, filename);
+			exit(EXIT_FAILURE);
+		}
+		map = xmalloc(70);
+		char * val = xmalloc(20);
+		strcpy(map, "mmcr0:");
+		sprintf(val, "%u", mmcr0);
+		strcat(map, val);
+		free(val);
+
+		val = xmalloc(20);
+		sprintf(val, "%Lu", mmcr1);
+		strcat(map, " mmcr1:");		
+		strcat(map, val);
+		free(val);
+		
+		val = xmalloc(20);
+		sprintf(val, "%u", mmcra);
+		strcat(map, " mmcra:");		
+		strcat(map, val);
+		free(val);
+	}
+
+	fclose(fp);
+	return map;
+}
+
+
+char const * find_mapping_for_event(u8 nr, op_cpu cpu_type)
+{
+	char const * cpu_name = op_get_cpu_name(cpu_type);
+	FILE * fp = open_event_mapping_file(cpu_name);
+	char const * map = NULL;
+	switch (cpu_type) {
+		case CPU_PPC64_POWER4:
+		case CPU_PPC64_POWER5:
+			if (!fp) {
+				fprintf(stderr, "oprofile: could not open event mapping file %s\n", filename);
+				exit(EXIT_FAILURE);
+			} else {
+				map = get_mapping(nr, fp);
+			}
+			break;			
+		default:
+			break;
+	}
+	return map;
+}
+
+
 struct op_event * find_event_by_name(char const * name)
 {
 	struct list_head * pos;
@@ -579,7 +734,7 @@ int op_check_events(int ctr, u8 nr, u16 um, op_cpu cpu_type)
 			if (event->unit->um[i].value == um)
 				break;
 		}
-		
+
 		if (i == event->unit->num)
 			ret |= OP_INVALID_UM;
 	}
@@ -650,7 +805,11 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_ARM_XSCALE2:
 			descr->name = "CPU_CYCLES";
 			break;
-
+		case CPU_PPC64_POWER4:
+		case CPU_PPC64_POWER5:
+			descr->name = "CYCLES";
+			break;
+             
 		// don't use default, if someone add a cpu he wants a compiler
 		// warning if he forgets to handle it here.
 		case CPU_TIMER_INT:

@@ -68,6 +68,12 @@ struct op_event * op_find_event(op_cpu cpu_type, u8 nr);
 /** Find a given event by name */
 struct op_event * find_event_by_name(char const * name);
 
+/**
+ * Find a mapping for a given event ID for architectures requiring additional information
+ * from what is held in the events file. 
+ */
+char const * find_mapping_for_event(u8 val, op_cpu cpu_type);
+
 
 /** op_check_events() return code */
 enum op_event_check {
