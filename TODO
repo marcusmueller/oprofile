@@ -6,7 +6,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7.1 release
 -------------
 
- o image filtering needs to resolve symlinks
  o opgprof/opannotate always merges even if we provide a profile spec that's
    minimal enough - you can't get "cpu:0"
 

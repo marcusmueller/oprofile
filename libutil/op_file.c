@@ -274,3 +274,80 @@ out:
 	free(str);
 	return ret;
 }
+
+
+int op_is_directory(char const * dirname)
+{
+	struct stat st;
+
+	return !stat(dirname, &st) && S_ISDIR(st.st_mode);
+}
+
+
+/**
+ * @param path_name the path where we remove trailing '/'
+ *
+ * erase all trailing '/' in path_name except if the last '/' is at pos 0
+ */
+static void erase_trailing_path_separator(char * path_name)
+{
+	size_t len;
+	while ((len = strlen(path_name)) > 1) {
+		if (path_name[len - 1] != '/')
+			break;
+		path_name[len - 1] = '\0';
+	}
+}
+
+char * op_dirname(char const * file_name)
+{
+	char * result = xstrdup(file_name);
+	char * pos;
+
+	erase_trailing_path_separator(result);
+
+	if (!strchr(result, '/')) {
+		free(result);
+		result = xstrdup(".");
+		return result;
+	}
+
+	if (strlen(result) == 1)
+		/* catch result == "/" */
+		return result;
+
+	pos = strrchr(result, '/');
+	if (pos == result)
+		/* "/usr" must return "/" */
+		pos = result + 1;
+	*pos = '\0';
+
+	/* "////usr" must return "/" */
+	erase_trailing_path_separator(result);
+
+	return result;
+}
+
+
+char * op_follow_link(char const * name)
+{
+	char * tmp = xstrdup(name);
+	int iterate = 20;
+
+	while (iterate--) {
+		char * base;
+		char * linkbuf = op_get_link(tmp);
+		if (linkbuf == NULL)
+			return tmp;
+
+		if (op_is_directory(tmp))
+			base = xstrdup(tmp);
+		else
+			base = op_dirname(tmp);
+		free(tmp);
+		tmp = op_relative_to_absolute_path(linkbuf, base);
+		free(linkbuf);
+	}
+
+	return xstrdup(name);
+}

@@ -366,7 +366,7 @@ profile_spec profile_spec::create(vector<string> const & args,
 			tag_seen.insert(args[i]);
 			spec.parse(args[i]);
 		} else if (!substitute_alias(spec, args[i])) {
-			string file = op_follow_link(args[i]);
+			string file = follow_link(args[i]);
 			file = relative_to_absolute_path(file);
 			spec.set_image_or_lib_name(file);
 		}

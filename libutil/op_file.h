@@ -93,6 +93,34 @@ int create_dir(char const * dir);
  */
 int create_path(char const * path);
 
+/**
+ * op_is_directory - check if a name is directory
+ * @param path  directory name to check
+ *
+ * return non-zero if name is a directory
+ */
+int op_is_directory(char const * path);
+
+/**
+ * dirname - get the path component of a filename
+ * @param file_name  filename
+ *
+ * Returns the path name of a filename with trailing '/' removed.
+ * caller must free() the returned string.
+ */
+char * op_dirname(char const * file_name);
+
+/**
+ * op_follow_link - follow a symbolic link
+ * @param name the file name
+ *
+ * Resolve a symbolic link as far as possible.
+ * caller must free() the returned string.
+ * Duplicates and returns the original string on failure.
+ */
+char * op_follow_link(char const * name);
+
+
 #ifdef __cplusplus
 }
 #endif

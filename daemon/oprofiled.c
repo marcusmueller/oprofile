@@ -256,37 +256,35 @@ struct opd_hashed_name {
 	struct list_head next;
 };
 
+static void add_image_filter(char const * name)
+{
+	size_t hash;
+	struct opd_hashed_name * elt = xmalloc(sizeof(struct opd_hashed_name));
+	elt->name = op_follow_link(name);
+	hash = opd_hash_name(elt->name);
+	verbprintf("Adding to image filter: \"%s\"\n", elt->name);
+	list_add(&elt->next,&images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]);
+}
 
 static void opd_parse_image_filter(void)
 {
-	size_t i, hash;
-	struct opd_hashed_name * elt;
+	size_t i;
 	char const * last = binary_name_filter;
 	char const * cur = binary_name_filter;
 
 	if (!binary_name_filter)
 		return;
 
-	for (i = 0; i < OPD_IMAGE_FILTER_HASH_SIZE; ++i) {
+	for (i = 0; i < OPD_IMAGE_FILTER_HASH_SIZE; ++i)
 		list_init(&images_filter[i]);
-	}
 
-	i = 0;
 	while ((cur = strchr(last, ',')) != NULL) {
-		elt = xmalloc(sizeof(struct opd_hashed_name));
-		elt->name = op_xstrndup(last, cur - last);
-		hash = opd_hash_name(elt->name);
-		verbprintf("Adding to image filter: \"%s\"\n", elt->name);
-		list_add(&elt->next,
-		         &images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]);
+		char * tmp = op_xstrndup(last, cur - last);
+		add_image_filter(tmp);
+		free(tmp);
 		last = cur + 1;
 	}
-	elt = xmalloc(sizeof(struct opd_hashed_name));
-	elt->name = xstrdup(last);
-	verbprintf("Adding to image filter: \"%s\"\n", elt->name);
-	hash = opd_hash_name(elt->name);
-	list_add(&elt->next,
-	         &images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]);
+	add_image_filter(last);
 }
 
 

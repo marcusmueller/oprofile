@@ -35,7 +35,7 @@ bool is_files_identical(std::string const & file1, std::string const & file2);
  * Resolve a symbolic link as far as possible.
  * Returns the original string on failure.
  */
-std::string const op_follow_link(std::string const & name);
+std::string const follow_link(std::string const & name);
 
 /// return true if the given file is readable
 bool op_file_readable(std::string const & file);
