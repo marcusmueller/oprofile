@@ -1,3 +1,11 @@
+2001-10-12  John Levon  <moz@compsoc.man.ac.uk>
+
+	* doc/Makefile.in: add FIXME
+
+	* gui/oprof_start.cpp: fix std::
+
+	* acinclude.m4: more fixes
+ 
 2001-10-12  Philippe Elie  <ph_e@club-internet.fr>
 
 	* gui/oprof_start_util.cpp: use select() rather non-blocking

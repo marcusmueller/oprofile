@@ -249,7 +249,7 @@ bool oprof_start::save_config_file()
 // this work as load_config_file()/save_config_file()
 void oprof_start::load_event_config_file(uint ctr)
 {
-	ostringstream name;
+	std::ostringstream name;
 
 	name << get_user_filename(".oprofile/oprof_start_event");
 	name << "#" << ctr;
@@ -278,7 +278,7 @@ bool oprof_start::save_event_config_file(uint ctr)
 	if (check_and_create_config_dir() == false)
 		return false;
 
-	ostringstream name;
+	std::ostringstream name;
 
 	name << get_user_filename(".oprofile/oprof_start_event");
 	name << "#" << ctr;

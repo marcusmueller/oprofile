@@ -287,8 +287,6 @@ if test "$ac_qt2_includes" = NO || test "$ac_qt2_libraries" = NO; then
   else
     ac_qt2_notfound="(libraries)";
   fi
-
-  AC_MSG_ERROR([Qt2 $ac_qt2_notfound not found. Please check your installation! ]);
 else
   have_qt2="yes"
 fi
@@ -297,44 +295,44 @@ else
   dnl libs and headers supplied. Need to check lib name
   qt2_incdir="$ac_qt2_includes"
   qt2_libdir="$ac_qt2_libraries" 
+  ac_qt2_name="-lqt"
   QT2_CHECK_LIB_NAME
   have_qt2="yes"
 fi
 
 eval "$ac_cv_have_qt2"
 
+ac_cv_have_qt2="have_qt2=yes ac_qt2_name=$ac_qt2_name \
+  ac_qt2_includes=$ac_qt2_includes ac_qt2_libraries=$ac_qt2_libraries"
 if test "$have_qt2" != yes; then
   AC_MSG_RESULT([$have_qt2]);
 else
-  ac_cv_have_qt2="have_qt2=yes ac_qt2_name=$ac_qt2_name \
-    ac_qt2_includes=$ac_qt2_includes ac_qt2_libraries=$ac_qt2_libraries"
   AC_MSG_RESULT([libraries $ac_qt2_libraries, headers $ac_qt2_includes])
  
   qt2_libraries="$ac_qt2_libraries"
   qt2_includes="$ac_qt2_includes"
+
+  dnl check it is Qt2
+
+  SAVE_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -I$qt2_includes -L$qt2_libraries"
+  dnl specify we are definitely C++ compiling first
+  AC_LANG_CPLUSPLUS
+  AC_TRY_COMPILE([
+  #include <qglobal.h>
+  ],
+    [
+    #if (QT_VERSION < 221)
+    break_me_(\\\);
+    #endif
+  ],
+  ac_qt2_ok=yes,
+  ac_qt2_ok=no
+  )
+  test "$ac_qt2_ok" = no && AC_MSG_ERROR([Found an earlier version of Qt - you must specify the path to Qt2])
+  CXXFLAGS="$SAVE_CXXFLAGS"
 fi
 
-dnl check it is Qt2
-
-SAVE_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CXXFLAGS -I$qt2_includes -L$qt2_libraries"
-dnl specify we are definitely C++ compiling first
-AC_LANG_CPLUSPLUS
-AC_TRY_COMPILE([
-#include <qglobal.h>
-],
-[
-#if (QT_VERSION < 221)
-break_me_(\\\);
-#endif
-],
-ac_qt2_ok=yes,
-ac_qt2_ok=no
-)
-test "$ac_qt2_ok" = no && AC_MSG_ERROR([Found an earlier version of Qt - you must specify the path to Qt2])
-CXXFLAGS="$SAVE_CXXFLAGS"
-
-AC_SUBST(have_qt2) 
 AC_SUBST(qt2_libraries)
 AC_SUBST(qt2_includes)
 
@@ -354,6 +352,7 @@ fi
 
 QT2_LIBS="$ac_qt2_name"
  
+AC_SUBST(have_qt2)
 AC_SUBST(QT2_INCLUDES)
 AC_SUBST(QT2_LDFLAGS)
 AC_SUBST(QT2_LIBS)
