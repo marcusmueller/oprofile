@@ -7,7 +7,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 -----------
 
  o gui: show default event if none selected, fix counter allocation stuff.
-  We must allow to de-select a counter.
+ We must allow to de-select a counter (via "No event" entry in listbox)
 
  o autoconf 2.13 is broken
 
