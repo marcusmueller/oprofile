@@ -2,6 +2,13 @@
 
 	* module/compat22.h:
 	* module/compat24.h:
+	* module/op_syscalls.c: we mustn't take the mmap sem
+	  under 2.2
+ 
+2002-01-17  John Levon  <moz@compsoc.man.ac.uk>
+
+	* module/compat22.h:
+	* module/compat24.h:
 	* module/op_syscalls.c: whoops, handy to lock the
 	  BKL when it is necessary.
  

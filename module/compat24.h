@@ -50,11 +50,11 @@
  
 /* 2.4.3 introduced rw mmap semaphore  */
 #if VATLEAST(2,4,3)
-	#define take_mmap_sem(mm) down_read(&mm->mmap_sem)
-	#define release_mmap_sem(mm) up_read(&mm->mmap_sem)
+	#define lock_mmap(mm) down_read(&mm->mmap_sem)
+	#define unlock_mmap(mm) up_read(&mm->mmap_sem)
 #else
-	#define take_mmap_sem(mm) down(&mm->mmap_sem)
-	#define release_mmap_sem(mm) up(&mm->mmap_sem)
+	#define lock_mmap(mm) down(&mm->mmap_sem)
+	#define unlock_mmap(mm) up(&mm->mmap_sem)
 #endif
 
 #if VBEFORE(2,4,10)

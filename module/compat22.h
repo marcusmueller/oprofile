@@ -26,8 +26,6 @@
 /* FIXME: didn't this change in 2.2.21 ? */ 
 #define pte_page_address(x) pte_page(x)
 #define GET_VM_OFFSET(v) ((v)->vm_offset) 
-#define take_mmap_sem(mm) down(&mm->mmap_sem) 
-#define release_mmap_sem(mm) up(&mm->mmap_sem)
 #define MODULE_LICENSE(l)
 #define NEED_2_2_DENTRIES
 #define INC_USE_COUNT_MAYBE MOD_INC_USE_COUNT
@@ -35,6 +33,10 @@
 #define op_nmi op_nmi22
 #define lock_execve lock_kernel
 #define unlock_execve unlock_kernel
+ 
+/* BKL-protected on 2.2 */
+#define lock_mmap(mm) do {} while (0)
+#define unlock_mmap(mm) do {} while (0)
  
 // FIXME: untested
 static inline int wq_is_lockable(void)

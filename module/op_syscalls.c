@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.7 2002/01/17 09:15:06 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.8 2002/01/17 11:00:31 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -322,8 +322,7 @@ static int oprof_output_maps(struct task_struct *task)
 	if (!(mm = task->mm))
 		goto out;
 
-
-	take_mmap_sem(mm);
+	lock_mmap(mm);
 	spin_lock(&map_lock);
 	for (map = mm->mmap; map; map = map->vm_next) {
 		if (!(map->vm_flags & VM_EXEC) || !map->vm_file)
@@ -334,7 +333,7 @@ static int oprof_output_maps(struct task_struct *task)
 		is_execve = 0;
 	}
 	spin_unlock(&map_lock);
-	release_mmap_sem(mm);
+	unlock_mmap(mm);
 
 out:
 	return size;
