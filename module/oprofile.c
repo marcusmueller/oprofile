@@ -244,9 +244,7 @@ static int oprof_note_open(void)
 
 static int oprof_note_release(void)
 {
-	if (!oprof_note_opened)
-		return -EFAULT;
-
+	BUG_ON(!oprof_note_opened);
 	clear_bit(0, &oprof_note_opened);
 	DEC_USE_COUNT_MAYBE;
 	return 0;
@@ -381,8 +379,7 @@ static int oprof_release(struct inode * ino, struct file * file)
 		default: return -EINVAL;
 	}
 
-	if (!oprof_opened)
-		return -EFAULT;
+	BUG_ON(!oprof_opened);
 
 	/* finished quitting */
 	quitting = 0;
@@ -463,32 +460,22 @@ static int oprof_init_data(void)
 
 static int parms_check(void)
 {
-	int err = 0;
-	uint cpu;
-	struct _oprof_data *data;
+	int err;
 
-	if (check_range(sysctl.hash_size, 256, 262144,
-		"sysctl.hash_size value %d not in range (%d %d)\n"))
-		return 0;
-	if (check_range(sysctl.buf_size, OP_PRE_WATERMARK + 1024, 1048576,
-		"sysctl.buf_size value %d not in range (%d %d)\n"))
-		return 0;
-	if (check_range(sysctl.note_size, OP_PRE_NOTE_WATERMARK + 1024, 1048576,
-		"sysctl.note_size value %d not in range (%d %d)\n"))
-		return 0;
+	if ((err = check_range(sysctl.hash_size, 256, 262144,
+		"sysctl.hash_size value %d not in range (%d %d)\n")))
+		return err;
+	if ((err = check_range(sysctl.buf_size, OP_PRE_WATERMARK + 1024, 1048576,
+		"sysctl.buf_size value %d not in range (%d %d)\n")))
+		return err;
+	if ((err = check_range(sysctl.note_size, OP_PRE_NOTE_WATERMARK + 1024, 1048576,
+		"sysctl.note_size value %d not in range (%d %d)\n")))
+		return err;
 
 	if ((err = int_ops->check_params()))
 		return err;
 
-	for (cpu=0; cpu < smp_num_cpus; cpu++) {
-		data = &oprof_data[cpu];
-
-		/* make sure the buffer and hash table have been set up */
-		if (!data->buffer || !data->entries)
-			return -EFAULT;
-	}
-
-	return err;
+	return 0;
 }
 
 

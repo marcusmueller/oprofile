@@ -96,7 +96,7 @@ int check_range(int val, int l, int h, char const * msg)
 {
 	if (val < l || val > h) {
 		printk(msg, val, l, h);
-		return 1;
+		return -EINVAL;
 	}
 	return 0;
 } 

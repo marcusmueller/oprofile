@@ -10,6 +10,7 @@
  */
 
 #include "oprofile.h"
+#include "op_msr.h"
 #include "op_apic.h"
 #include "op_events.h"
 #include "op_util.h"

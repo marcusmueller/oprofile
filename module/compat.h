@@ -27,8 +27,6 @@
 	#include "compat24.h"
 #endif
 
-#include "arch/arch_compat.h"
- 
 #include "op_cache.h"
 
 #if V_BEFORE(2, 5, 14)
@@ -63,6 +61,10 @@
 
 /* Things that cannot rely on a particular linux version or are needed between
  * major release */
+
+#ifndef BUG_ON
+#define BUG_ON(p) do { if (p) BUG(); } while (0)
+#endif
 
 #ifndef MODULE_LICENSE
 #define MODULE_LICENSE(x)

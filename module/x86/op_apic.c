@@ -16,6 +16,7 @@
 #include <asm/io.h>
 
 #include "oprofile.h"
+#include "op_msr.h"
 #include "op_apic.h"
 
 static ulong idt_addr;

@@ -1,3 +1,22 @@
+2002-06-11  John Levon  <moz@compsoc.man.ac.uk>
+
+	* module/compat.h:
+	* module/x86/arch_compat.h: remove arch_compat.h,
+	  add BUG_ON()
+
+	* module/op_util.c: return -EINVAL not 1 from check_range() 
+
+	* module/oprofile.c: use BUG_ON() in release functions,
+	  fix use of check_range, remove spurious check for malloc
+	  failure (already checked)
+
+	* module/oprofile.h: clarify API 
+
+	* module/x86/op_msr.h: new file, MSR back-compat
+
+	* module/x86/op_nmi.c:
+	* module/x86/op_apic.c: use it
+ 
 2002-06-10  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update

@@ -1,6 +1,6 @@
 /**
- * @file arch_compat.h
- * x86-specific compatibility stuff
+ * @file op_msr.h
+ * x86-specific MSR stuff
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -9,8 +9,8 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
-#ifndef X86_COMPAT_H
-#define X86_COMPAT_H
+#ifndef OP_MSR_H
+#define OP_MSR_H
  
 /* work-around compiler bug in gcc 2.91.66, just mark all input register as
  * magically cloberred by wrmsr */
@@ -61,4 +61,4 @@
 #define MSR_K7_PERFCTR3 0xc0010007
 #endif
 
-#endif /* X86_COMPAT_H */
+#endif /* OP_MSR_H */

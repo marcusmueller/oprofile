@@ -104,20 +104,21 @@ struct oprof_sysctl {
  * op_do_profile().
  */
 struct op_int_operations {
-	/* initialise the handler on module load, if this function fail
-	 * oprofile try to fall back to RTC mode, on failure deinit handler is
-	 * not called so all resource allocated by init() must be freed
-	 * before returning an error code */
+	/* initialise the interrupt handler on module load.
+	 * On failure deinit handler is not called so all resources
+	 * allocated by init() must be freed before returning an error code
+	 * (or 0 on success)
+	 */
 	int (*init)(void);
 	/* deinitialise on module unload */
 	void (*deinit)(void);
-	/* add any handler-specific sysctls at the position given by @next */
+	/* add any handler-specific sysctls at the position given by @next. Return 0 on success */
 	int (*add_sysctls)(ctl_table *next);
 	/* remove handler-specific sysctls */
 	void (*remove_sysctls)(ctl_table *next);
-	/* check given profiling parameters are correct */
+	/* check given profiling parameters are correct. Return 0 on success */
 	int (*check_params)(void);
-	/* setup the handler from profiling parameters */
+	/* setup the handler from profiling parameters. Return 0 on success */
 	int (*setup)(void);
 	/* start profiling on all CPUs */
 	void (*start)(void);
