@@ -58,9 +58,6 @@ op_bfd::op_bfd(string const & filename, vector<string> const & exclude_symbols)
 		exit(EXIT_FAILURE);
 	}
 
-	/* Kernel / kernel modules are calculated as offsets against
-	 * the .text section, so they need special handling
-	 */
 	asection * sect = bfd_get_section_by_name(ibfd, ".text");
 	if (sect) {
 		text_offset = sect->filepos;
@@ -89,7 +86,7 @@ op_bfd::~op_bfd()
  */
 static bool symcomp(op_bfd_symbol const & a, op_bfd_symbol const & b)
 {
-	return a.vma() < b.vma();
+	return a.filepos() < b.filepos();
 }
 
 namespace {

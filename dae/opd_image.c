@@ -116,10 +116,6 @@ static void opd_init_image(struct opd_image * image, char const * name,
 /**
  * opd_open_image - open an image sample file
  * @param image  image to open file for
- * @param hash  hash of image
- * @param app_name  the application name where belongs this image
- * @param name  name of the image to add
- * @param kernel  is the image a kernel/module image
  *
  * @image at funtion entry is partially initialized by opd_init_image()
  *

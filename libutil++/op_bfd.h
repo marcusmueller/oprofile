@@ -136,9 +136,7 @@ public:
 	 */
 	void get_vma_range(u32 & start, u32 & end) const;
 
-	/**
-	 * return the text section filepos if the bfd object is the kernel
-	 * image or a module image, else return 0 */
+	/** return the text section filepos. */
 	u32 const get_start_offset() const { return text_offset; }
 
 	/// returns true if the underlying bfd object contains debug info

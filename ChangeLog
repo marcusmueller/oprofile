@@ -1,3 +1,13 @@
+2002-09-20  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_bfd.cpp: fix a bug where we broke
+	  with multiple executable sections due to sorting
+	  the symbols wrongly
+
+	* libutil++/op_bfd.h: fix an outdated comment
+
+	* dae/opd_image.c: fix comment
+ 
 2002-09-19  Graydon Hoare  <graydon@redhat.com>
 
 	* libop/op_events.h:
