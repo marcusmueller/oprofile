@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.4 2000/08/01 20:36:08 moz Exp $ */
+/* $Id: oprofiled.h,v 1.5 2000/08/01 23:00:17 moz Exp $ */
 
 #ifndef OPROFILED_H
 #define OPROFILED_H
@@ -29,39 +29,40 @@
  
 #define OPD_DEBUG
  
+#define streq(a,b) (!strcmp((a),(b))) 
+#define streqn(a,b,n) (!strncmp((a),(b),(n))) 
+ 
+/* this char replaces '/' in sample filenames */
+#define OPD_MANGLE_CHAR '}'
+ 
 /* maximum nr. of kernel modules */
 #define OPD_MAX_MODULES 64
  
 #define NR_CPUS 32
  
 /* stats for sample collection */
-#define OPD_MAX_STATS 10
+#define OPD_MAX_STATS 9
 
-/* nr. kernel samples not in process context */
-#define OPD_KERNEL_NP 0
+/* nr. kernel samples */
+#define OPD_KERNEL 0
 /* nr. samples for which process info couldn't be accessed */ 
 #define OPD_LOST_PROCESS 1
-/* nr. kernel samples in process context */
-#define OPD_KERNEL_P 2
 /* nr. userspace samples */
-#define OPD_PROCESS 3
+#define OPD_PROCESS 2
 /* nr. samples for which map info couldn't be accessed */
-#define OPD_LOST_MAP_PROCESS 4
+#define OPD_LOST_MAP_PROCESS 3
 /* nr. accesses of proc queue */
-#define OPD_PROC_QUEUE_ACCESS 5
+#define OPD_PROC_QUEUE_ACCESS 4
 /* cumulative depth of proc queue accesses */
-#define OPD_PROC_QUEUE_DEPTH 6
+#define OPD_PROC_QUEUE_DEPTH 5
 /* nr. of times buffer is read */
-#define OPD_DUMP_COUNT 7
+#define OPD_DUMP_COUNT 6
 /* nr. accesses of map array */
-#define OPD_MAP_ARRAY_ACCESS 8
+#define OPD_MAP_ARRAY_ACCESS 7
 /* cumulative depth of map array accesses */
-#define OPD_MAP_ARRAY_DEPTH 9 
+#define OPD_MAP_ARRAY_DEPTH 8 
  
 #define OPD_DEFAULT_BUF_SIZE 2048
- 
-#define streq(a,b) (!strcmp((a),(b))) 
-#define streqn(a,b,n) (!strncmp((a),(b),(n))) 
  
 #define OP_BITS 2
 

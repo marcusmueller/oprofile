@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.8 2000/08/01 21:10:20 moz Exp $ */
+/* $Id: opd_proc.c,v 1.9 2000/08/01 23:00:17 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -74,9 +74,8 @@ void opd_alarm(int val)
 	}
  
 	printf("%s stats:\n",opd_get_time());
-	printf("Nr. kernel samples with no process context: %lu\n",opd_stats[OPD_KERNEL_NP]);
+	printf("Nr. kernel samples: %lu\n",opd_stats[OPD_KERNEL]);
 	printf("Nr. samples lost due to no process information: %lu\n",opd_stats[OPD_LOST_PROCESS]);
-	printf("Nr. kernel samples with a process context: %lu\n",opd_stats[OPD_KERNEL_P]);
 	printf("Nr. process samples in user-space: %lu\n",opd_stats[OPD_PROCESS]);
 	printf("Nr. samples lost due to no map information: %lu\n",opd_stats[OPD_LOST_MAP_PROCESS]);
 	printf("Average depth of search of proc queue: %f\n",
@@ -178,7 +177,7 @@ static void opd_open_image(struct opd_image *image)
 	c2 = image->name;
 	do {
 		if (*c2=='/')
-			*c++ = '#';
+			*c++ = OPD_MANGLE_CHAR;
 		else
 			*c++ = *c2;
 	} while (*++c2);
@@ -786,7 +785,6 @@ retry:
  
 /**
  * opd_handle_kernel_sample - process a kernel sample
- * @proc: process for which the sample is, or %NULL for kernel thread
  * @eip: EIP value of sample
  * @count: count value of sample 
  *
@@ -796,9 +794,9 @@ retry:
  * This function requires the global variable
  * got_system_map to be %TRUE to handle module samples.
  */
-static void opd_handle_kernel_sample(struct opd_proc *proc, u32 eip, u16 count)
+static void opd_handle_kernel_sample(u32 eip, u16 count)
 {
-	(proc) ? (opd_stats[OPD_KERNEL_P]++) : (opd_stats[OPD_KERNEL_NP]++);
+	opd_stats[OPD_KERNEL]++;
 
 	if (got_system_map) {
 		if (eip < kernel_end) {
@@ -842,18 +840,12 @@ void opd_put_sample(const struct op_sample *sample)
 	unsigned int i; 
 	struct opd_proc *proc; 
 
-	if (!sample->pid) {
-		opd_handle_kernel_sample(NULL,sample->eip,sample->count);
+	if (opd_eip_is_kernel(sample->eip)) {
+		opd_handle_kernel_sample(sample->eip,sample->count);
 		return;
 	}
 		 
 	if (!(proc=opd_get_proc(sample->pid))) {
-		/* no mapping info ? probably kswapd or similar */
-		if (opd_eip_is_kernel(sample->eip)) {
-			opd_handle_kernel_sample(NULL,sample->eip,sample->count);
-			return;
-		}
- 
 		opd_stats[OPD_LOST_PROCESS]++;
 		return;
 	}
@@ -863,13 +855,9 @@ void opd_put_sample(const struct op_sample *sample)
 	opd_stats[OPD_MAP_ARRAY_ACCESS]++; 
 	for (i=0;i<proc->nr_maps;i++) {
 		if (opd_is_in_map(&proc->maps[i],sample->eip)) {
-			if (opd_eip_is_kernel(sample->eip))
-				opd_handle_kernel_sample(proc,sample->eip,sample->count);
-			else { 
-				u32 offset = opd_map_offset(&proc->maps[i],sample->eip); 
-				opd_put_image_sample(proc->maps[i].image,offset,sample->count);
-				opd_stats[OPD_PROCESS]++;
-			}
+			u32 offset = opd_map_offset(&proc->maps[i],sample->eip); 
+			opd_put_image_sample(proc->maps[i].image,offset,sample->count);
+			opd_stats[OPD_PROCESS]++;
 			return;
 		}
 		opd_stats[OPD_MAP_ARRAY_DEPTH]++; 
