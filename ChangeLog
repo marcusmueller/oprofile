@@ -1,3 +1,8 @@
+2002-12-21  John Levon  <levon@movementarian.org>
+
+	* utils/Makefile.am: fix back-compat scripts install
+	  for 2.5 kernel
+
 2002-12-19  Will Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol: Revise kernel range computation.
