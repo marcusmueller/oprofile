@@ -40,6 +40,19 @@
 using namespace std;
 using namespace options;
 
+namespace {
+
+/// how op_to_source was invoked
+string cmdline;
+
+/// string used as start / end comment to annotate source
+string const begin_comment("/* ");
+string const in_comment(" * ");
+string const end_comment(" */");
+
+};
+
+
 /// Store the configuration of one counter. Construct from an opd_header
 struct counter_setup {
 	counter_setup() :
@@ -62,19 +75,10 @@ struct counter_setup {
 	size_t total_samples;
 };
 
-namespace {
-
-/// how op_to_source was invoked
-string cmdline;
-
-};
 
 // This named namespace help doxygen to hierarchies documentation
 namespace op_to_source {
 
-/// string used as start / end comment to annotate source
-string const begin_comment("/*");
-string const end_comment("*/");
 /// This is usable only if one of the counter has been setup as: count
 /// some sort of cycles events. In the other case trying to use it to
 /// translate samples count to time is a non-sense.
@@ -113,13 +117,14 @@ bool annotate_source(string const & image_name, string const & sample_file,
 /**
  * @param out output stream
  *
- * Ouput an 'header comment'
+ * Output description as file footer
  *
- * Each annotated source file is prepended with a comment containing various
+ * Each annotated source file is appended with a comment containing various
  * things such as counter setup, command line used to produce the annotated
- * file and interpretation of command line
+ * file and interpretation of command line. Appending keeps source file
+ * numbers the same.
  */
-void output_header(ostream & out);
+void output_info(ostream & out);
 
 /**
  * @param image_name the binary image name
@@ -195,10 +200,12 @@ void output_one_file(istream & in, string const & filename,
  *  is not avaialble
  * @param out output stream (the annotated source file)
  * @param filename input source filename
+ * @param header if true, put file header at top, else at bottom
  *
  * helper function for output_one_file
  */
-void do_output_one_file(ostream & out, istream & in, string const & filename);
+void do_output_one_file(ostream & out, istream & in, string const & filename,
+                        bool header);
 
 /**
  * @param profile storage container for openeded samples files
@@ -219,7 +226,7 @@ bool setup_counter_param(profile_t const & profile);
  *
  * output a comment containing samples count for this source file filename
  */
-void output_counter_for_file(ostream & out, string const & filename,
+void output_per_file_info(ostream & out, string const & filename,
 			     const counter_array_t& count);
 
 /**
@@ -304,11 +311,12 @@ size_t get_sort_counter_nr();
 void counter_setup::print(ostream & out, op_cpu cpu_type, int counter) const
 {
 	if (enabled) {
+		out << in_comment << endl << in_comment;
 		op_print_event(out, counter, cpu_type, ctr_event, unit_mask,
 			       event_count_sample);
-		out << "total samples : " << total_samples;
+		out << in_comment << "Total samples : " << total_samples;
 	} else {
-		out << "Counter " << counter << " disabled";
+		out << in_comment << "Counter " << counter << " disabled";
 	}
 
 	out << endl;
@@ -404,51 +412,50 @@ bool annotate_source(string const & image_name, string const & sample_file,
 }
  
 
-void output_header(ostream & out)
+void output_info(ostream & out)
 {
 	out << begin_comment << endl;
 
-	out << "Command line:" << cmdline << endl << endl;
+	out << in_comment << "Command line: " << cmdline << endl << in_comment << endl;
 
-	out << "interpretation of command line:" << endl;
+	out << in_comment << "Interpretation of command line:" << endl;
 
 	if (!assembly) {
-		out << "output annotated source file with samples" << endl;
+		out << in_comment << "Output annotated source file with samples" << endl;
 
 		if (threshold_percent != 0) {
 			if (!do_until_more_than_samples) {
-				out << "output files where the selected counter reach "
+				out << in_comment << "Output files where the selected counter reach "
 				    << threshold_percent << "% of the samples"
 				    << endl;
 			} else {
-				out << "output files until " << threshold_percent
+				out << in_comment << "output files until " << threshold_percent
 				    << "% of the samples is reached on the selected counter"
 				    << endl;
 			}
 		} else {
-			out << "output all files" << endl;
+			out << in_comment << "Output all files" << endl;
 		}
 	} else {
-		out << "output annotated assembly listing with samples" << endl;
+		out << in_comment << "Output annotated assembly listing with samples" << endl;
 		if (!objdump_params.empty()) {
-			out << "passing the following additional arguments to objdump ; \"";
+			out << in_comment << "Passing the following additional arguments to objdump ; \"";
 			for (size_t i = 0 ; i < objdump_params.size() ; ++i)
 				out << objdump_params[i] << " ";
 			out << "\"" << endl;
 		}
 	}
 
-	out << endl;
-	out << "Cpu type: " << op_get_cpu_type_str(cpu_type) << endl;
-	out << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
-	out << endl;
+	out << in_comment << endl;
+	out << in_comment << "Cpu type: " << op_get_cpu_type_str(cpu_type) << endl;
+	out << in_comment << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
+	out << in_comment << endl;
 
 	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i) {
 		counter_info[i].print(out, cpu_type, i);
 	}
 
 	out << end_comment << endl;
-	out << endl;
 }
  
 
@@ -464,7 +471,7 @@ void output_asm(string const & image_name)
 	output_symbols =
 	 samples->select_symbols(index, threshold, do_until_more_than_samples);
 
-	output_header(cout);
+	output_info(cout);
 
 	output_objdump_asm(output_symbols, image_name);
 }
@@ -615,14 +622,14 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 
 void output_source(filename_match const & fn_match, bool output_separate_file)
 {
+	if (!output_separate_file)
+		output_info(cout);
+
 	size_t index = get_sort_counter_nr();
 
 	vector<string> filenames =
 		samples->select_filename(index, threshold_percent / 100.0,
 			do_until_more_than_samples);
-
-	if (!output_separate_file)
-		output_header(cout);
 
 	for (size_t i = 0 ; i < filenames.size() ; ++i) {
 		if (!fn_match.match(filenames[i]))
@@ -652,7 +659,7 @@ void output_one_file(istream & in, string const & filename,
 		     bool output_separate_file)
 {
 	if (!output_separate_file) {
-		do_output_one_file(cout, in, filename);
+		do_output_one_file(cout, in, filename, true);
 		return;
 	}
 
@@ -691,17 +698,20 @@ void output_one_file(istream & in, string const & filename,
 	if (!out) {
 		cerr << "unable to open output file "
 		     << '"' << out_filename << '"' << endl;
-	} else
-		do_output_one_file(out, in, filename);
+	} else {
+		do_output_one_file(out, in, filename, false);
+		output_info(out);
+	}
 }
 
  
-void do_output_one_file(ostream & out, istream & in, string const & filename)
+void do_output_one_file(ostream & out, istream & in, string const & filename, bool header)
 {
 	counter_array_t count;
 	samples->samples_count(count, filename);
 
-	output_counter_for_file(out, filename, count);
+	if (header)
+		output_per_file_info(out, filename, count);
 
 	find_and_output_counter(out, filename, 0, string());
 
@@ -715,7 +725,7 @@ void do_output_one_file(ostream & out, istream & in, string const & filename)
 			out << str << '\n';
 		}
 	} else {
-		// FIXME : we have no input file : for now we just output header
+		// FIXME : we have no input file : for now we just output footer
 		// so on user can known total nr of samples for this source
 		// later we must add code that iterate through symbol in this
 		// file to output one annotation for each symbol. To do this we
@@ -724,6 +734,9 @@ void do_output_one_file(ostream & out, istream & in, string const & filename)
 		// using a lazilly build symbol_map sorted by filename
 		// (necessary functors already exist in symbol_functors.h)
 	}
+
+	if (!header)
+		output_per_file_info(out, filename, count);
 }
 
  
@@ -761,12 +774,14 @@ bool setup_counter_param(profile_t const & profile)
 }
  
 
-void output_counter_for_file(ostream & out, string const & filename,
+void output_per_file_info(ostream & out, string const & filename,
 			     counter_array_t const & total_count_for_file)
 {
 	out << begin_comment << endl
-	     << " Total samples for file : " << '"' << filename << '"'
+	     << in_comment << "Total samples for file : "
+	     << '"' << filename << '"'
 	     << endl;
+	out << in_comment << endl << in_comment;
 	output_counter(out, total_count_for_file, false, string());
 	out << end_comment << endl << endl;
 }
