@@ -26,4 +26,10 @@
  * detection, so user can set up to (2^31)-1 */
 #define OP_MAX_PERF_COUNT	2147483647UL
 
+/**
+ * Shift value to remove trailing zero on a dcookie value, 7 is sufficient
+ * for most architecture
+ */
+#define DCOOKIE_SHIFT	7
+
 #endif /* OP_HW_CONFIG_H */

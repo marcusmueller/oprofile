@@ -26,8 +26,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <linux/cache.h>
-
 extern uint op_nr_counters;
 extern int separate_samples;
 
@@ -240,7 +238,7 @@ void opd_put_image_sample(struct opd_image * image,
 /** return hash value for a cookie */
 static unsigned long opd_hash_cookie(unsigned long cookie)
 {
-	return (cookie >> L1_CACHE_SHIFT) & (IMAGE_HASH_SIZE - 1);
+	return (cookie >> DCOOKIE_SHIFT) & (IMAGE_HASH_SIZE - 1);
 }
  
 

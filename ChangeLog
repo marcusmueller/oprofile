@@ -1,5 +1,10 @@
 2002-11-01  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libop/op_hw_config.h: define DCOOKIE_SHIFT
+	* daemon/opd_image.c: use it
+
+2002-11-01  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/Makefile.in: cleanup, build and use libpp.a
 
 2002-10-31  John Levon  <levon@movementarian.org>
