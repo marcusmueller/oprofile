@@ -2,6 +2,8 @@
 
 # useful for dumping ...
 
+echo "NOTE: op_dump is deprecated. Please use opcontrol --dump" >&2
+ 
 if [ ! -d /proc/sys/dev/oprofile ]; then
 	echo "You must have the oprofile module loaded to dump data." >&2
 	exit 1

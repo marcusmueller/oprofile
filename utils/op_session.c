@@ -145,6 +145,9 @@ int main(int argc, char const *argv[])
 
 	op_options(argc, argv);
 
+	fprintf(stderr, "NOTE: op_session is deprecated. Please use "
+		"opcontrol --save=%s\n", sessionname);
+
 	/* not ideal, but OK for now. The sleep hopefully
 	 * means the daemon starts reading before the signal
 	 * is delivered, so it will finish reading, *then*
