@@ -1,3 +1,13 @@
+2002-12-03  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: do not shutdown on --reset. Send
+	  signal on --reset/--save like op_session. Try to dump
+	  like op_session to hack race "fix"
+ 
+2002-12-03  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: complain on opcontrol --save 
+ 
 2002-12-03  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libdb/.cvsignore:
