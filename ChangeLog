@@ -1,3 +1,21 @@
+2003-03-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
+	* libutil/op_fileio.h:
+	* libutil/op_fileio.c: op_write_u64() new
+	* libutil/op_types.h: continue our silly typedef: add u64
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: op_bfd::arch_bits_per_address() new allowing
+	  to get, on a per-binary basis, the vma size.
+
+	* pp/oprofpp.cpp: fix 64 bits arch gprof output. Fix multiplier and
+	  get the multiplier of gprof file at runtime. Fix a very old bug
+	  where we credit the samples to previous gprof bin having the effect
+	  than sample at start of function was credited to the previous
+	  function
+
 2003-03-17  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_kernel.c:

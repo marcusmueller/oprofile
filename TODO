@@ -47,7 +47,6 @@ Before 1.0 little stuff
  o verify if we can remove the ELF-based symbol size code
  o must we do setrlimit(RLIMIT_NOFILE, ...) for daemon ? Isn't already limited
   by the kernel itself ?
- o gprof output is broke on 64 bit
 
 Documentation
 -------------

@@ -157,6 +157,21 @@ void op_write_u32(FILE * fp, u32 val)
 }
 
 /**
+ * op_write_u64 - write eight bytes to a file
+ * @param fp  file pointer
+ * @param val  value to write
+ *
+ * Write an unsigned eight-byte value val to a file.
+ * Failure is fatal.
+ *
+ * No byte-swapping is done.
+ */
+void op_write_u64(FILE * fp, u64 val)
+{
+	op_write_file(fp, &val, sizeof(val));
+}
+
+/**
  * op_read_int_from_file - parse an ASCII value from a file into an integer
  * @param filename  name of file to parse integer value from
  *

@@ -94,15 +94,75 @@ static void do_list_symbol(profile_container_t const & samples, format_output::f
 	out.output(cout, symb, need_vma64);
 }
 
+
 #define GMON_VERSION 1
 #define GMON_TAG_TIME_HIST 0
-#define MULTIPLIER 2
 
 struct gmon_hdr {
 	char cookie[4];
 	u32 version;
 	u32 spare[3];
 };
+
+
+static void op_write_vma(FILE * fp, op_bfd const & abfd, bfd_vma vma)
+{
+	// bfd vma write size is a per binary property not a bfd
+	// configuration property
+	switch (abfd.bfd_arch_bits_per_address()) {
+		case 32:
+			op_write_u32(fp, vma);
+			break;
+		case 64:
+			op_write_u64(fp, vma);
+			break;
+		default:
+			cerr << "oprofile: unknwon vma size for this binary\n";
+			exit(EXIT_FAILURE);
+	}
+}
+
+
+/**
+ * @param samples_files  profile container to act on
+ * @param sort_by_ctr  the used counter number
+ * @param gap  a power of 2
+ *
+ * return true if all sample in samples_files are at least aligned on gap. This
+ * function is used to get at runtime the right size of gprof bin size
+ * reducing gmon.out on arch with fixed size instruction length
+ *
+ */
+bool aligned_samples(op_bfd const & abfd,  profile_t const & samples_files,
+		     int sort_by_ctr, int gap)
+{
+	u32 start, end;
+	uint j;
+	bfd_vma low_pc;
+	bfd_vma high_pc;
+
+	// FIXME: see do_dump_gprof()
+	abfd.get_vma_range(low_pc, high_pc);
+
+	for (symbol_index_t i = 0; i < abfd.syms.size(); i++) {
+		abfd.get_symbol_range(i, start, end);
+		for (j = start; j < end; j++) {
+			u32 count;
+			u32 pos;
+			// we must offset by multiplier - 1 so rounding during
+			// division don't put samples in the previous chunk
+			pos = (abfd.sym_offset(i, j) + abfd.syms[i].vma() - low_pc);
+
+			/* opp_get_options have set ctr to one value != -1 */
+			count = samples_files.samples_count(sort_by_ctr, j);
+			if (count && (pos % gap))
+				return false;
+		}
+	}
+
+	return true;
+}
+
 
 /**
  * do_dump_gprof - produce gprof sample output
@@ -112,10 +172,8 @@ struct gmon_hdr {
  *
  * Dump gprof-format samples for this sample file and
  * counter specified ctr to the file specified by gproffile.
- *
- * this use the grpof format <= gcc 3.0
  */
-static void do_dump_gprof(op_bfd & abfd,
+static void do_dump_gprof(op_bfd const & abfd,
 			  profile_t const & samples_files,
 			  int sort_by_ctr)
 {
@@ -129,17 +187,26 @@ static void do_dump_gprof(op_bfd & abfd,
 
 	FILE * fp = op_open_file(options::gprof_file.c_str(), "w");
 
+	int multiplier = 2;
+	if (aligned_samples(abfd, samples_files, sort_by_ctr, 4))
+		multiplier = 8;
+
+	/* FIXME worth to try more multiplier ? is ia64 with its chunk of
+	 * instructions can get sample inside a chunck or always at chunk
+	 * boundary ? */
+
 	op_write_file(fp,&hdr, sizeof(gmon_hdr));
 
 	op_write_u8(fp, GMON_TAG_TIME_HIST);
 
+	// FIXME: we sur-estimate a lot the vma range here, we can shrink a lot
+	// the size of gmon.out by getting the lowest/higest vma with sample
 	abfd.get_vma_range(low_pc, high_pc);
 
-	// FIXME : is this (high - low - (MUL -1)) / MULT ? need a test ...
-	histsize = ((high_pc - low_pc) / MULTIPLIER) + 1;
+	histsize = ((high_pc - low_pc + multiplier - 1) / multiplier) + 1;
 
-	op_write_u32(fp, low_pc);
-	op_write_u32(fp, high_pc);
+	op_write_vma(fp, abfd, low_pc);
+	op_write_vma(fp, abfd, high_pc);
 	/* size of histogram */
 	op_write_u32(fp, histsize);
 	/* profiling rate */
@@ -155,7 +222,9 @@ static void do_dump_gprof(op_bfd & abfd,
 		for (j = start; j < end; j++) {
 			u32 count;
 			u32 pos;
-			pos = (abfd.sym_offset(i, j) + abfd.syms[i].vma() - low_pc) / MULTIPLIER;
+			// we must offset by multiplier - 1 so rounding during
+			// division don't put samples in the previous chunk
+			pos = (abfd.sym_offset(i, j) + abfd.syms[i].vma() - low_pc + multiplier - 1) / multiplier;
 
 			/* opp_get_options have set ctr to one value != -1 */
 			count = samples_files.samples_count(sort_by_ctr, j);

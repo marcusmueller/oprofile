@@ -155,6 +155,11 @@ public:
 	/// sorted vector by vma of interesting symbol.
 	std::vector<op_bfd_symbol> syms;
 
+	/// return in bits the bfd_vma size for this binary. This is needed
+	/// because gprof output depend on the bfd_vma for *this* binary
+	/// and do not depend on sizeof(bfd_vma)
+	size_t bfd_arch_bits_per_address() const;
+
 private:
 	/// file size in bytes
 	off_t file_size;

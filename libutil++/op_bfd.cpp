@@ -484,3 +484,8 @@ string op_bfd::get_filename() const
 {
 	return bfd_get_filename(ibfd);
 }
+
+size_t op_bfd::bfd_arch_bits_per_address() const
+{
+	return ::bfd_arch_bits_per_address(ibfd);
+}
