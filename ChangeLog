@@ -1,3 +1,8 @@
+2003-09-16  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libopt++/popt_options.h:
+	* libpp/locate_images.cpp: minor tidy
+
 2003-09-16  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol: don't pass pid/pgrp filter

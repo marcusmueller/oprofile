@@ -26,7 +26,7 @@
  */
 class extra_images {
 public:
-	extra_images() {};
+	extra_images() {}
 
 	/// add all filenames found in the given paths, recursively
 	void populate(std::vector<std::string> const & paths);	
