@@ -230,7 +230,7 @@ char *op_get_line(FILE * fp)
 	cp = buf;
 
 	while (1) {
-		switch (c = fgetc(fp)) {
+		switch (c = getc(fp)) {
 			case EOF:
 				free(buf);
 				return NULL;

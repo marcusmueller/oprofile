@@ -1,3 +1,7 @@
+2003-03-24  Will Cohen  <wcohen@redhat.com>
+
+	* libutil/op_fileio.c (op_get_line): Use lower cost getc().
+
 2003-03-24  John Levon  <levon@movementarian.org>
 
 	* m4/configmodule.m4: fix quoting problem for awk
