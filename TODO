@@ -6,18 +6,11 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
- o re-introduce image_set like functionality
  o sample-file: / binary: don't work in any useful way - can we fix this
    by peeking at binary: value and faking the split_sample_file somehow ?
- o separate debug info stuff
- o debian build stuff
  o side-by-side opreport output (--compare - needs UI spec)
  o thread profiling (Ka is on this)
  o per-cpu profiling
- o lib-image: and image: behavior depend on --separate=, if --separate=library
-  opreport "lib-image:*libc*" --merge=lib works but not
-  opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
-  --separate==none. Must we take care ?
  o output column shortname headers for opreport -l
 
 0.8 release
@@ -29,19 +22,14 @@ Before 1.0 big stuff
 --------------------
 
  o add support for samples not belonging to any symbols probably through
-   artificially created symbols
- o there is a design problem in libpp/partition_files, class partition_files
-  can handle sample filename with different event/count but I choose (phe)
-  to handle different count/event through an array of partition_files. It's
-  difficult to say if the original design allowed simpler code in opreport
-  w/o rewritting most of pp/opreport.cpp. We will retrieve this problem
-  when allowing !merge_by.cpu tid/tgid.  I'll investigate that after
-  re-writting opreport (w/o -l --details)
+   artificially created symbols (do we still need/want this ??)
  o opdiff
  
 Before 1.0 little stuff
 -----------------------
 
+ o separate debug info stuff
+ o debian build stuff
  o opgprof always merges even if we provide a profile spec that's minimal
    enough - you can't get "cpu:0"
  o we're not following symlinks for opreport etc. binary resolving. FIXED 
@@ -58,21 +46,24 @@ Before 1.0 little stuff
  o look if we must remove help_str support from libopt++
  o move oprofiled.log to OP_SAMPLE_DIR/current ?
  o OPD_MAX_MODULES is stupid, use a list instead
+ o lib-image: and image: behavior depend on --separate=, if --separate=library
+  opreport "lib-image:*libc*" --merge=lib works but not
+  opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
+  --separate==none. Must we take care ?
  o improve the *non* verbose daemon log to be a bit more informative
  o --buffer-size is useless on 2.5 without tuning of watershed
  o oprof_start: check lib samples when kernel samples checkbox is checked
- o we handle op_bfd failure but we ignore all samples for this binary,
- we would probably create a pseudo op_bfd to ensure the statistics are ok
  o mask SIGTERM over critical daemon operations that could corrupt sample files
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
- o must we do setrlimit(RLIMIT_NOFILE, ...) for daemon ? Isn't already limited
-  by the kernel itself ? - we must do this
+ o daemon needs setrlimit(RLIMIT_NOFILE, ...)
  o when we dump stats for oprofiled, dump kernel-side values too (for 2.5)
  o lookup_dcookie can return ENAMETOOLONG but we can't hack it
    - a C++ rewrite can handle this, and also the rlimit problem via caching name id's
      and opening when necessary etc.
  o remove 2.2 / gcc 2.91 support ?
  o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
+ o gcc-cvs -include stdc++ doesn't use precompiled header, when it'll work
+  we can remove pch-c++.h from cvs
 
 Documentation
 -------------
@@ -85,7 +76,6 @@ Documentation
 General checks to make
 ----------------------
  
- o check chroot() processes and the path hash stuff
  o rgrep FIXME
  o valgrind (--show-reachable=yes --leak-check=yes)
  o audit to track unnecessary include <>
@@ -97,8 +87,6 @@ General checks to make
  o test it to hell and back
  o compile all C++ programs with STL_port and test them
  o There is probably place of post profile tools where looking at errno will give better error messages.
- o gcc-cvs -include stdc++ doesn't use precompiled header, when it'll work
-  we can remove pch-c++.h from cvs
 
 Later
 -----
@@ -109,6 +97,8 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
 0804c350 64582    64582         35.0757     35.0757    odb_insert              /usr/loc...in/oprofiled /usr/local/oprofile-pp/bin/oprofiled
 
   Note the ellipsis
+ o we handle op_bfd failure but we ignore all samples for this binary,
+ we would probably create a pseudo op_bfd to ensure the statistics are ok
  o option xxx and negated option --no-xxx: we can hide them in --help and
   mention in the xxx option help string than the --no-xxx is allowed. Not
   really usefull if we have a little number of --no.
