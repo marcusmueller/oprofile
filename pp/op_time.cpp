@@ -475,7 +475,7 @@ static void output_symbols_count(map_t& files, int counter)
 		// feel bad.
 		if (op_file_readable(image_name)) {
 			add_samples(samples, samples_filename, counter,
-				    image_name);
+				    image_name, options::exclude_symbols);
 		}
 	}
 
