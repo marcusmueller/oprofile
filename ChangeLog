@@ -1,3 +1,7 @@
+2002-07-25  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in: bump to 0.4cvs
+ 
 2002-07-24  Kevin Puetz  <puetzk@iastate.edu>
 
 	* gui/ui/oprof_start.base.ui: fix resize
