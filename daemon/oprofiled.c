@@ -244,9 +244,6 @@ static void opd_setup_signals(void)
 		perror("oprofiled: install of SIGUSR1 handler failed: ");
 		exit(EXIT_FAILURE);
 	}
-
-	/* clean up every 10 minutes */
-	alarm(60 * 10);
 }
 
 
@@ -463,6 +460,9 @@ int main(int argc, char const * argv[])
 	opd_ops->init();
 
 	opd_go_daemon();
+
+	/* clean up every 10 minutes */
+	alarm(60*10);
 
 	if (op_write_lock_file(OP_LOCK_FILE)) {
 		fprintf(stderr, "oprofiled: could not create lock file "

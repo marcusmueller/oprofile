@@ -1,5 +1,10 @@
 2004-02-15  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* daemon/oprofiled.c: send alarm() after fork not before, behavior
+	  changed between 2.4 and 2.6 and according to posix 2.6 is right.
+
+2004-02-15  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* utils/op_help.c: output the default unit mask. when querying the
 	  default mask output it in decimal not hexadecimal
 	* libpp/op_header.cpp: event number must be output as integer not as
