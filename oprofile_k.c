@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.21 2000/08/25 20:23:27 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.22 2000/08/25 20:38:12 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -115,25 +115,18 @@ void oprof_out8(struct op_sample *samp);
 
 static int output_path_hash(const char *name, uint len);
 
-int oprof_hash_map_open(void)
+int oprof_init_hashmap(void)
 {
 	struct page *page;
-	char *tmp;
 
-	if (test_and_set_bit(0,&hash_map_open))
-		return -EBUSY;
-
-	tmp = kmalloc(PAGE_ALIGN(OP_HASH_MAP_SIZE), GFP_KERNEL);
-	if (!tmp) {
-		clear_bit(0,&hash_map_open);
+	hash_map = kmalloc(PAGE_ALIGN(OP_HASH_MAP_SIZE), GFP_KERNEL);
+	if (!hash_map)
 		return -EFAULT;
-	}
 
-	for (page = virt_to_page(tmp); page < virt_to_page(tmp+PAGE_ALIGN(OP_HASH_MAP_SIZE)); page++)
+	for (page = virt_to_page(hash_map); page < virt_to_page(hash_map+PAGE_ALIGN(OP_HASH_MAP_SIZE)); page++)
 		mem_map_reserve(page);
 
-	memset(tmp, 0, OP_HASH_MAP_SIZE);
-	hash_map = tmp;
+	memset(hash_map, 0, OP_HASH_MAP_SIZE);
 
 	output_path_hash("lib",3);
 	output_path_hash("bin",3);
@@ -145,12 +138,24 @@ int oprof_hash_map_open(void)
 	return 0;
 }
 
+void oprof_free_hashmap(void)
+{
+	kfree(hash_map);
+}
+
+int oprof_hash_map_open(void)
+{
+	if (test_and_set_bit(0,&hash_map_open))
+		return -EBUSY;
+
+	return 0;
+}
+
 int oprof_hash_map_release(void)
 {
 	if (!hash_map_open)
 		return -EFAULT;
 
-	kfree(hash_map);
 	clear_bit(0,&hash_map_open);
 	return 0;
 }
@@ -399,9 +404,6 @@ static int oprof_output_map(ulong addr, ulong len,
 	ulong offset, struct file *file, char *buf)
 {
 	u32 *tot;
-
-	if (!hash_map)
-		return 0;
 
 	spin_lock(&map_lock);
 	map_out32(addr);
