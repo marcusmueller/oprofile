@@ -1,5 +1,15 @@
 2003-08-11  John Levon  <levon@movementarian.org>
 
+	* libpp/count_array.cpp:
+	* libpp/count_array.h: auto-resize the number of groups
+	based on how we index.
+
+	* libpp/profile_container.cpp: remove check
+
+	* pp/opannotate.cpp: count_array.zero() not .empty()
+
+2003-08-11  John Levon  <levon@movementarian.org>
+
 	* libpp/filename_spec.h:
 	* libpp/profile_spec.cpp:
 	* libpp/profile_spec.h: add comments, allow comma lists

@@ -75,11 +75,6 @@ void profile_container::add(profile_t const & profile,
                             op_bfd const & abfd, string const & app_name,
                             size_t count_group)
 {
-	/* FIXME: temporary */
-	if (count_group > OP_MAX_COUNTERS)
-		throw runtime_error("profile_container::add(): "
-			"invalid count group");
-
 	string const image_name = abfd.get_filename();
 
 	for (symbol_index_t i = 0; i < abfd.syms.size(); ++i) {

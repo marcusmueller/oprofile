@@ -6,8 +6,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
- o event:xxxx,yyyy is interpreted as event name "xxx,yyy", need to update
- o pp_interface too
  o sample-file: / binary: don't work in any useful way - can we fix this
    by peeking at binary: value and faking the split_sample_file somehow ?
  o separate debug info stuff
@@ -21,8 +19,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
   opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
   --separate==none. Must we take care ?
  o document the maening of op_bfd.cpp warning: "some functions compiled without debug information may have incorrect source line attributions"
- o libpp/counter_array.h: too many memory use, you shouldn't have an upper
-  limit of allowed count
 
 0.8 release
 -----------

@@ -9,13 +9,11 @@
  * @author Philippe Elie
  */
 
-#ifndef COUNTER_ARRAY_H
-#define COUNTER_ARRAY_H
+#ifndef COUNT_ARRAY_H
+#define COUNT_ARRAY_H
 
-#include "op_hw_config.h"
 #include "op_types.h"
-
-#include <cstddef>
+#include <vector>
 
 /**
  * A simple container of sample counts for a set of count groups.
@@ -28,31 +26,25 @@ public:
 	/// all counts are intialized to zero
 	count_array_t();
 
-	// FIXME: premature optimisation ?
-	/**
-	 * Index into the count groups for a count value, no at()
-	 * style checking
-	 */
-	u32 operator[](size_t index) const {
-		return value[index];
-	}
-
-	// FIXME: premature optimisation ?
-	/**
-	 * Index into the count groups for a count value, no at()
-	 * style checking
-	 */
-	u32 & operator[](size_t index) {
-		return value[index];
-	}
+	typedef std::vector<u32> container_type;
+	typedef container_type::size_type size_type;
 
 	/**
-	 * return true if all values are zero
-	 *
-	 * FIXME: I do not like this name, it's not natural for the values
-	 * contained to affect a container's "empty()"
+	 * Index into the count groups for a count value. An out of
+	 * bounds index will return a value of zero.
+	 * style checking
 	 */
-	bool empty() const;
+	u32 operator[](size_type index) const;
+
+	/**
+	 * Index into the count groups for a count value. If the index
+	 * is larger than the current max index, the array is expanded,
+	 * zero-filling any intermediary gaps.
+	 */
+	u32 & operator[](size_type index);
+
+	/// return true if all values are zero
+	bool zero() const;
 
 	/**
 	 * vectorized += operator
@@ -66,11 +58,12 @@ public:
 	count_array_t & operator-=(count_array_t const & rhs);
 
 private:
-	/// container for sample counts
-	// FIXME too inneficient at memory use point of view. Also OP_MAX_COUNTERS
-	// is incorrect: there's no concept of counters in the new pp code,
-	// and we can exceed OP_MAX_COUNTERS easily (several events / tids / cpus)
-	u32 value[OP_MAX_COUNTERS];
+	/// resize and zero fill any new entries
+	void resize(size_type);
+
+	size_type size;
+
+	container_type container;
 };
 
-#endif // COUNTER_ARRAY_H
+#endif // COUNT_ARRAY_H

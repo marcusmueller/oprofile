@@ -437,7 +437,7 @@ string const source_line_annotation(debug_name_id filename, size_t linenr)
 	string str;
 
 	count_array_t counts = samples->samples_count(filename, linenr);
-	if (!counts.empty())
+	if (!counts.zero())
 		str += count_str(counts, samples->samples_count());
 
 	if (str.empty())
