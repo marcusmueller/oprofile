@@ -13,7 +13,7 @@ bin_PROGRAMS = opreport opannotate opdiff opgprof
 
 LIBS=@POPT_LIBS@ @BFD_LIBS@
 
-pp_commons = common_option.cpp
+pp_commons = common_option.cpp common_option.h
 
 common_libs =  \
 	../libpp/libpp.a \
@@ -24,15 +24,23 @@ common_libs =  \
 	../libutil/libutil.a \
 	../libdb/libodb.a
 
-opannotate_SOURCES = opannotate.cpp opannotate_options.cpp $(pp_commons)
+opannotate_SOURCES = opannotate.cpp \
+	opannotate_options.h opannotate_options.cpp \
+	$(pp_commons)
 opannotate_LDADD = $(common_libs)
 
-opdiff_SOURCES = opdiff.cpp opdiff_options.cpp $(pp_commons)
+opdiff_SOURCES = opdiff.cpp \
+	opdiff_options.h opdiff_options.cpp \
+	$(pp_commons)
 opdiff_LDADD = $(common_libs)
 
-opgprof_SOURCES = opgprof.cpp opgprof_options.cpp $(pp_commons)
+opgprof_SOURCES = opgprof.cpp \
+	opgprof_options.h opgprof_options.cpp \
+	$(pp_commons)
 opgprof_LDADD = $(common_libs)
 
-opreport_SOURCES = opreport.cpp opreport_options.cpp $(pp_commons)
+opreport_SOURCES = opreport.cpp \
+	opreport_options.h opreport_options.cpp \
+	$(pp_commons)
 opreport_LDADD = $(common_libs)
 
