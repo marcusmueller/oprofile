@@ -65,7 +65,7 @@ public:
 	const sample_entry * find_sample(bfd_vma vma) const;
 
 	/// Return a sample_entry by its index, index must be valid
-	const sample_entry & get_samples(size_t idx) const;
+	const sample_entry & get_samples(sample_index_t idx) const;
 
 	/**
 	 * select_symbols - create a set of symbols sorted by sample count

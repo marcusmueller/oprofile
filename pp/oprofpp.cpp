@@ -186,7 +186,7 @@ static void do_list_symbol(op_bfd & abfd,
 			   size_t cmask)
 {
 	symbol_index_t i = abfd.symbol_index(symbol);
-	if (i == symbol_index_t(-1)) {
+	if (i == nil_symbol_index) {
 		cerr << "oprofpp: symbol \"" << symbol
 		     << "\" not found in image file.\n";
 		return;

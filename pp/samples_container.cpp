@@ -199,9 +199,9 @@ void symbol_container_imp_t::get_symbols_by_count(size_t counter, vector<const s
 class sample_container_imp_t {
  public:
 
-	const sample_entry & operator[](size_t index) const;
+	const sample_entry & operator[](sample_index_t index) const;
 
-	size_t size() const;
+	sample_index_t size() const;
 
 	bool accumulate_samples(counter_array_t & counter,
 				const string & filename,
@@ -226,12 +226,12 @@ class sample_container_imp_t {
 
 //---------------------------------------------------------------------------
 
-inline const sample_entry & sample_container_imp_t::operator[](size_t index) const
+inline const sample_entry & sample_container_imp_t::operator[](sample_index_t index) const
 {
 	return samples[index];
 }
 
-inline size_t sample_container_imp_t::size() const
+inline sample_index_t sample_container_imp_t::size() const
 {
 	return samples.size();
 }
@@ -322,7 +322,7 @@ void sample_container_imp_t::flush_input_counter() const
 	if (!samples.size() || !samples_by_file_loc.empty())
 		return;
 
-	for (size_t i = 0 ; i < samples.size() ; ++i) {
+	for (sample_index_t i = 0 ; i < samples.size() ; ++i) {
 		samples_by_file_loc.insert(&samples[i]);
 	}
 }
@@ -423,7 +423,7 @@ void samples_container_t::do_add(const opp_samples_files & samples_files,
 
 		if (flags & osf_details) {
 			// 6th parameters is wrong must be translated to a vma
-			add_samples(samples_files, abfd, symbol_index_t(-1),
+			add_samples(samples_files, abfd, nil_symbol_index,
 				    start, end, start, image_name);
 		}
 
@@ -503,7 +503,7 @@ void samples_container_t::add_samples(const opp_samples_files& samples_files,
 
 		sample.file_loc.image_name = image_name;
 
-		sample.vma = (sym_index != symbol_index_t(-1))
+		sample.vma = (sym_index != nil_symbol_index)
 			? abfd.sym_offset(sym_index, pos) + base_vma 
 			: pos;
 
@@ -639,7 +639,7 @@ bool samples_container_t::samples_count(counter_array_t & result,
 					  nr_counters);
 }
 
-const sample_entry & samples_container_t::get_samples(size_t idx) const
+const sample_entry & samples_container_t::get_samples(sample_index_t idx) const
 {
 	return (*samples)[idx];
 

@@ -1,5 +1,15 @@
 2002-05-10  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/op_bfd.h:
+	* pp/op_bfd.cpp:
+	* pp/opp_symbol.h:
+	* pp/opp_symbol.cpp:
+	* pp/oprofpp.cpp:
+	* pp/samples_container.h:
+	* pp/samples_container.cpp: more typedef for indexed things
+
+2002-05-10  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/*: split oprofpp_util.cpp, oprofpp.h to these ..
 	* pp/samples_file.cpp: new file
 	* pp/samples_file.h: new file
@@ -7,7 +17,7 @@
 	* pp/opbfd.h: new file
 
 	* pp/*: add a symbol_index_t typedef
-	
+
 2002-05-10  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/srcdoc/Makefile: always clean before building

@@ -23,6 +23,8 @@
 class samples_container_t;
 class field_description;
 
+typedef size_t sample_index_t;
+
 //---------------------------------------------------------------------------
 /// A simple container for a fileno:linr location.
 struct file_location {
@@ -58,8 +60,8 @@ struct symbol_entry {
 	/// name of symbol
 	std::string name;
 	/// [first, last[ gives the range of sample_entry.
-	size_t first;
-	size_t last;
+	sample_index_t first;
+	sample_index_t last;
 };
 
 //---------------------------------------------------------------------------

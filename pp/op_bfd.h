@@ -21,15 +21,16 @@
 
 class opp_samples_files;
 
+/** all symbol vector indexation use this type */
+typedef size_t symbol_index_t;
+const symbol_index_t nil_symbol_index = symbol_index_t(-1);
+
 /** a symbol description from a bfd point of view */
 struct op_bfd_symbol {
 	asymbol* symbol;
 	bfd_vma vma;
 	size_t size;
 };
-
-/** all vector indexation must use this type */
-typedef size_t symbol_index_t;
 
 /** Encapsulation of a bfd object. Simplify open/close of bfd, enumerating
  * symbols and retrieving informations for symbols or vma. */

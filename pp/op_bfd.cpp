@@ -432,5 +432,5 @@ symbol_index_t op_bfd::symbol_index(char const * symbol) const
 			return i;
 	}
 
-	return symbol_index_t(-1);
+	return nil_symbol_index;
 }

@@ -218,7 +218,7 @@ void OutputSymbol::OutputDetails(std::ostream & out, const symbol_entry * symb)
 		cumulated_percent[i] = 0;
 	}
 
-	for (size_t cur = symb->first ; cur != symb->last ; ++cur) {
+	for (sample_index_t cur = symb->first ; cur != symb->last ; ++cur) {
 		out << ' ';
 
 		DoOutput(out, symb->name, samples_container.get_samples(cur),
