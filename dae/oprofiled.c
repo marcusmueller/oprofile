@@ -520,12 +520,6 @@ static void opd_do_read(struct op_buffer_head * buf, size_t size, struct op_note
 		while (count < 0) {
 			count = op_read_device(devfd, buf, size);
 
-			/* request to stop arrived */
-			if (buf->state == STOPPING) {
-				verbprintf("Shutting down by request.\n");
-				opd_shutdown(buf, size, nbuf, nsize);
-				return;
-			}
 		}
 
 		while (ncount < 0) {
@@ -534,6 +528,13 @@ static void opd_do_read(struct op_buffer_head * buf, size_t size, struct op_note
 
 		opd_do_notes(nbuf, ncount);
 		opd_do_samples(buf);
+ 
+		/* request to stop arrived */
+		if (buf->state == STOPPING) {
+			verbprintf("Shutting down by request.\n");
+			opd_shutdown(buf, size, nbuf, nsize);
+			return;
+		}
 	}
 }
 
