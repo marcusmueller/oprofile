@@ -403,7 +403,7 @@ static void opd_put_sample(struct opd_image * image, int in_kernel,
 	if (in_kernel > 0) {
 		struct opd_image * app_image = 0;
 
-		/* FIXME: in what case can we get nil image ? */
+		/* We can get a NULL image if it's a kernel thread */
 		if (separate_kernel_samples && image)
 			app_image = image->app_image;
 		verbprintf("Putting kernel sample 0x%llx, counter %lu - application %s\n",
@@ -472,8 +472,18 @@ void opd_process_samples(char const * buffer, size_t count)
 				if (++i == count)
 					break;
 				app_cookie = get_buffer_value(buffer, i);
+				/* This is a corner case - if a kernel sample follows this,
+				 * we need to make sure that it is attributed to the
+				 * right application, namely the one we just switched into.
+				 */
+				if (app_cookie)
+					image = opd_get_image(app_cookie, app_cookie);
+				else
+					image = 0;
+
+				verbprintf("CTX_SWITCH to pid %lu, cookie %llx, app %s\n",
+					pid, app_cookie, image ? image->name : "kernel");
 				++i;
-				verbprintf("CTX_SWITCH to pid %lu, app cookie %llx\n", pid, app_cookie);
 				break;
 
 			case KERNEL_ENTER_SWITCH_CODE:

@@ -1,5 +1,10 @@
 2003-02-20  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_image.c: Fixed a bitch of a bug with separate-kernel,
+	  now attribution of kernel samples should be more accurate
+
+2003-02-20  John Levon  <levon@movementarian.org>
+
 	* utils/opcontrol: set LIB_SAMPLES if KERNEL_SAMPLES in .daemonrc
 
 2003-02-20  John Levon  <levon@movementarian.org>
