@@ -259,7 +259,6 @@ int main(int argc, char const *argv[])
 			continue;
 
 		opp_samples_files samples_files(file, options::counter_mask);
-		samples_files.check_mtime(options::image_file);
 
 		// the first opened file is treated specially because
 		// user can specify the image name for this sample
@@ -267,9 +266,9 @@ int main(int argc, char const *argv[])
 		// name from the samples file name
 		if (it == filelist.begin()) {
 			op_bfd abfd(options::image_file, options::exclude_symbols);
-
+			samples_files.check_mtime(options::image_file);
 			samples_files.set_start_offset(abfd.get_start_offset());
-
+ 
 			samples.add(samples_files, abfd, options::symbol);
 		} else {
 			string app_name;
@@ -277,8 +276,9 @@ int main(int argc, char const *argv[])
 			app_name = extract_app_name(file, lib_name);
 
 			op_bfd abfd(demangle_filename(lib_name), options::exclude_symbols);
+			samples_files.check_mtime(demangle_filename(lib_name));
 			samples_files.set_start_offset(abfd.get_start_offset());
-
+ 
 			samples.add(samples_files, abfd, options::symbol);
 		}
 
