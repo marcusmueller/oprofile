@@ -1,5 +1,10 @@
 2003-06-12  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_image.c: we were not handling a truncated
+	TGID entry properly
+
+2003-06-12  John Levon  <levon@movementarian.org>
+
 	* libutil++/unique_storage.h: missing typename
 
 2003-06-11  Philippe Elie  <phil.el@wanadoo.fr>

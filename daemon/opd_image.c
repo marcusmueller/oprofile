@@ -474,8 +474,33 @@ static void opd_put_sample(struct transient * trans, vma_t eip)
 
 static void code_unknown(struct transient * trans __attribute__((unused)))
 {
-	fprintf(stderr, "Zero code !\n");
+	fprintf(stderr, "Unknown code !\n");
 	exit(EXIT_FAILURE);
+}
+
+
+static void get_tgid(struct transient * trans)
+{
+	if (trans->remaining < 2)
+		return;
+
+	int escape = is_escape_code(get_buffer_value(trans->buffer, 0));
+	unsigned long code = get_buffer_value(trans->buffer, 1);
+
+	if (!escape || code != CTX_TGID_CODE)
+		return;
+
+	if (trans->remaining == 3) {
+		verbprintf("CTX_TGID_CODE\n");
+		pop_buffer_value(trans);
+		pop_buffer_value(trans);
+		trans->tgid = pop_buffer_value(trans);
+		return;
+	}
+
+	/* -1, CTX_TGID_CODE, but no tgid - skip */
+	trans->tgid = -1;
+	trans->remaining = 0;
 }
 
 
@@ -499,14 +524,7 @@ static void code_ctx_switch(struct transient * trans)
 		trans->image = 0;
 
 	/* Look for a possible tgid postscript */
-	if (enough_remaining(trans, 3) &&
-	    is_escape_code(get_buffer_value(trans->buffer, 0)) &&
-	    get_buffer_value(trans->buffer, 1) == CTX_TGID_CODE) {
-		verbprintf("CTX_TGID_CODE\n");
-		pop_buffer_value(trans);
-		pop_buffer_value(trans);
-		trans->tgid = pop_buffer_value(trans);
-	}
+	get_tgid(trans);
 
 	verbprintf("CTX_SWITCH to pid %lu, tgid %lu, cookie %llx, app %s\n",
 		(unsigned long)trans->pid, (unsigned long)trans->tgid,
