@@ -103,12 +103,12 @@ public:
 	 * add() -  record symbols/samples in the underlined container
 	 * @samples_files: the samples files container
 	 * @abf: the associated bfd object
-	 * @add_zero_samples_symbols: must we had to the symbol container
+	 * @add_zero_samples_symbols: must we add to the symbol container
 	 *   symbols with zero samples count
-	 * @build_samples_by_vma: must we record also individual samples
-	 *  passing false as this parameter speed up the build time, in this
-	 *  case all functions that acts on samples or return sample_entry
-	 *  will fail.
+	 * @flags: optimize hint to add samples. The flags is a promise on what
+	 * will be required as information in future. Avoid to pass
+	 * osf_linenr_info greatly improve performance of add. Avoiding
+	 * osf_details is also an improvement.
 	 * @add_shared_libs: add to the set of symbols/samples shared libs
 	 *  which belongs to this image, only meaningfull if samples come from
 	 *  a --separate-samples session
@@ -121,7 +121,7 @@ public:
 	 */
 	void add(const opp_samples_files& samples_files,
 		 const opp_bfd& abfd, bool add_zero_samples_symbols,
-		 bool build_samples_by_vma, bool add_shared_libs, int counter);
+		 OutSymbFlag flags, bool add_shared_libs, int counter);
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
 	const symbol_entry* find_symbol(bfd_vma vma) const;
@@ -178,13 +178,15 @@ private:
 	/// helper for add();
 	void do_add(const opp_samples_files & samples_files,
 		    const opp_bfd & abfd,
-		    bool add_zero_samples_symbols = false,
-		    bool build_samples_by_vma = true);
+		    bool add_zero_samples_symbols,
+		    bool build_samples_by_vma,
+		    bool record_linenr_info);
 	/// helper for do_add()
 	void add_samples(const opp_samples_files& samples_files, 
 			 const opp_bfd & abfd, size_t sym_index,
 			 u32 start, u32 end, bfd_vma base_vma,
-			 const std::string & image_name);
+			 const std::string & image_name,
+			 bool record_linenr_info);
 
 	/**
 	 * create an unique artificial symbol for an offset range. The range

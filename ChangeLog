@@ -1,3 +1,15 @@
+2002-03-03  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/opf_filter.h:
+	* pp/opf_container.cpp: samples_files_t::add() add an hint
+	  parameter on what information will needed.
+	* pp/op_time.cpp:
+	* pp/oprofpp.cpp:
+	* pp/opf_filter.cpp: use it
+	
+	* pp/op_time.cpp: when a samples files for one counter
+	  does not exist avoid to load it (op_time -l) fix #525237
+
 2002-03-02  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/Makefile.in: add -pedantic to CXXFLAGS

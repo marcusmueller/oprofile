@@ -206,6 +206,15 @@ static void sort_file_list_by_name(map_t & result,
 {
 	list<string>::const_iterator it;
 	for (it = file_list.begin() ; it != file_list.end() ; ++it) {
+		// the file list is created with /base_dir/* pattern but with
+		// the lazilly samples creation it is perfectly correct for one
+		// samples file belonging to counter 0 exist and not exist for
+		// counter 1, so we must filter them.
+		std::ostringstream s;
+		s << string(base_dir) << "/" << *it << '#' << counter;
+		if (samples_file_exist(s.str()) == false)
+			continue;
+
 		image_name image(*it);
 
 		result.insert(map_t::value_type(image.app_name, image));
@@ -299,11 +308,7 @@ static void output_files_count(map_t& files)
 			  << p_it.first->second.samplefile_name
 			  << "#" << counter;
 
-			string filename = s.str();
-			if (samples_file_exist(filename) == false)
-				continue;
-
-			samples_file_t samples(filename);
+			samples_file_t samples(s.str());
 
 			u32 count = samples.count(0, samples.nr_samples);
 
@@ -421,7 +426,8 @@ static void output_symbols_count(map_t& files, int counter)
 		opp_bfd abfd(samples_file.header[samples_file.first_file],
 			     samples_file.nr_samples, image_file);
 
-		samples.add(samples_file, abfd, false, false, false, counter);
+		samples.add(samples_file, abfd, false, output_format_flags,
+			    false, counter);
 	}
 
 	// select the symbols
@@ -443,15 +449,6 @@ int main(int argc, char const * argv[])
 {
 	get_options(argc, argv);
 
-	/* TODO: allow as op_merge to specify explicitly name of samples
-	 * files rather getting the whole directory. Code in op_merge can
-	 * be probably re-used */
-	list<string> file_list;
-	get_sample_file_list(file_list, base_dir, "*");
-
-	map_t file_map;
-	sort_file_list_by_name(file_map, file_list);
-
 	if (list_symbols && show_shared_libs) {
 		cerr << "You can't specifiy --show-shared-libs and "
 		     << "--list-symbols together" << endl;
@@ -464,6 +461,15 @@ int main(int argc, char const * argv[])
 		     << "--list-symbols together" << endl;
 		exit(EXIT_FAILURE);
 	}
+
+	/* TODO: allow as op_merge to specify explicitly name of samples
+	 * files rather getting the whole directory. Code in op_merge can
+	 * be probably re-used */
+	list<string> file_list;
+	get_sample_file_list(file_list, base_dir, "*");
+
+	map_t file_map;
+	sort_file_list_by_name(file_map, file_list);
 
 	if (list_symbols) {
 		output_symbols_count(file_map, counter);

@@ -833,7 +833,10 @@ bool output::treat_input(const string & image_name, const string & sample_file,
 	uint tmp = samples_files.header[samples_files.first_file]->cpu_type;
 	cpu_type = static_cast<op_cpu>(tmp);
 
-	samples.add(samples_files, abfd, false, true, false, counter);
+	OutSymbFlag flag = osf_details;
+	if (!assembly)
+		flag = static_cast<OutSymbFlag>(flag | osf_linenr_info);
+	samples.add(samples_files, abfd, false, flag, false, counter);
 
 	if (!setup_counter_param(samples_files))
 		return false;
