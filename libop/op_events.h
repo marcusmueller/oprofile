@@ -46,8 +46,8 @@ struct op_unit_mask {
 
 /* op_events.c */
 /**
- * \param ctr_type event value
- * \param cpu_type cpu type
+ * @param ctr_type event value
+ * @param cpu_type cpu type
  *
  * The function returns > 0 if the event is found 0 otherwise
  */
@@ -55,10 +55,10 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type);
 
 /**
  * sanity check event values
- * \param ctr counter number
- * \param ctr_type event value for counter 0
- * \param ctr_um unit mask for counter 0
- * \param cpu_type processor type
+ * @param ctr counter number
+ * @param ctr_type event value for counter 0
+ * @param ctr_um unit mask for counter 0
+ * @param cpu_type processor type
  *
  * Check that the counter event and unit mask values are allowed.
  *
@@ -72,7 +72,7 @@ int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type);
 
 /**
  * get the number of counter available for this cpu
- * \param cpu_type the cpu type identifier
+ * @param cpu_type the cpu type identifier
  *
  * The function return the number of counter available for this
  * cpu type. return (u32)-1 if the cpu type is nopt recognized
@@ -81,8 +81,8 @@ u32 op_get_cpu_nr_counters(op_cpu cpu_type);
 
 /**
  * sanity check unit mask value
- * \param allow allowed unit mask array
- * \param um unit mask value to check
+ * @param allow allowed unit mask array
+ * @param um unit mask value to check
  *
  * Verify that a unit mask value is within the allowed array.
  *

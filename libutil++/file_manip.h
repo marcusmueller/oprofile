@@ -32,10 +32,10 @@ bool create_path(std::string const & path);
 std::string op_read_link(std::string const & name);
 
 /** 
- * \param file_list where to store result
- * \param base_dir directory from where lookup start
- * \param filter a filename filter
- * \param recursive if true lookup in sub-directory
+ * @param file_list where to store result
+ * @param base_dir directory from where lookup start
+ * @param filter a filename filter
+ * @param recursive if true lookup in sub-directory
  *
  * create a filelist under base_dir, filtered by filter and optionnaly
  * looking in sub-directory. If we look in sub-directory only sub-directory
@@ -47,8 +47,8 @@ bool create_file_list(std::list<std::string>& file_list,
 		      bool recursive = false);
 
 /** 
- * \param path path name to translate
- * \param base_dir base directory from where the path name is relative
+ * @param path path name to translate
+ * @param base_dir base directory from where the path name is relative
  * if abse_dir is empty $PWD is used as base directory
  *
  * translate a relative path to an absolute path.
@@ -63,8 +63,8 @@ std::string basename(std::string const & path_name);
 
 /**
  * extract_app_name - extract the mangled name of an application
- * \param name the mangled name
- * \param lib_name where to store the shared lib name if relevant
+ * @param name the mangled name
+ * @param lib_name where to store the shared lib name if relevant
  *
  * if name is: }usr}sbin}syslogd}}}lib}libc-2.1.2.so (shared lib)
  * we return }usr}sbin}syslogd and }lib}libc-2.1.2.so in lib_name
@@ -77,9 +77,9 @@ std::string extract_app_name(const std::string & name, std::string & lib_name);
 
 /**
  * get_sample_file_list - create a file list of base samples filename
- * \param file_list: where to store the results
- * \param base_dir: base directory
- * \param filter: a file filter name.
+ * @param file_list: where to store the results
+ * @param base_dir: base directory
+ * @param filter: a file filter name.
  *
  * fill file_list with a list of base samples filename where a base sample
  * filename is a samples filename without #nr suffix. Even if the call

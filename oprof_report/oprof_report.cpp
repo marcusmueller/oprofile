@@ -106,8 +106,8 @@ void oprof_report::mark_all_view_changed()
 
 /**
  * do_open_file_or_dir - open file/directory
- * @base_dir: directory to start at
- * @dir_only: directory or filename to select
+ * @param base_dir  directory to start at
+ * @param dir_only  directory or filename to select
  *
  * Select a file or directory. The selection is returned;
  * an empty string if the selection was cancelled.

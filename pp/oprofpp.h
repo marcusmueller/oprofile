@@ -1,18 +1,10 @@
-/* $Id: oprofpp.h,v 1.55 2002/05/06 18:00:34 movement Exp $ */
-/* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+/**
+ * \file oprofpp.h
+ * Copyright 2002 OProfile authors
+ * Read the file COPYING
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place - Suite 330, Boston, MA 02111-1307, USA.
+ * \author John Levon <moz@compsoc.man.ac.uk>
+ * \author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #ifndef OPROFPP_H
@@ -63,11 +55,11 @@ class opp_samples_files;
 void verbprintf(const char* args, ...) OP_VERBPRINTF_FORMAT;
 
 /**
- * \param out output to this ostream
- * \param cpu_type the cpu_type
- * \param type event type
- * \param um the unit mask
- * \param count events count before overflow
+ * @param out output to this ostream
+ * @param cpu_type the cpu_type
+ * @param type event type
+ * @param um the unit mask
+ * @param count events count before overflow
  *
  * output a human readable form of an event setting
  */
@@ -76,12 +68,12 @@ void op_print_event(std::ostream & out, int i, op_cpu cpu_type,
 
 /**
  * process command line options
- * \param file a filename passed on the command line, can be NULL
- * \param i counter number
- * \param optcon poptContext to allow better message handling
- * \param image_file where to store the image file name
- * \param sample_file ditto for sample filename
- * \param counter where to put the counter command line argument
+ * @param file a filename passed on the command line, can be NULL
+ * @param i counter number
+ * @param optcon poptContext to allow better message handling
+ * @param image_file where to store the image file name
+ * @param sample_file ditto for sample filename
+ * @param counter where to put the counter command line argument
  *
  * Process the arguments, fatally complaining on error. 
  *
@@ -102,7 +94,7 @@ void opp_treat_options(char const * filename, poptContext optcon,
 
 /**
  * quit with error
- * \param err error to show
+ * @param err error to show
  *
  * err may be NULL
  */
@@ -110,7 +102,7 @@ void quit_error(poptContext optcon, char const *err);
 
 /**
  * convert a sample filenames into the related image file name
- * \param sample_filename the samples image filename
+ * @param sample_filename the samples image filename
  *
  * if samples_filename does not contain any %OPD_MANGLE_CHAR
  * the string samples_filename itself is returned.
@@ -119,7 +111,7 @@ std::string demangle_filename(const std::string & samples_filename);
 
 /**
  * check if the symbol is in the exclude list
- * \param symbol symbol name to check
+ * @param symbol symbol name to check
  *
  * return true if symbol is in the list of excluded symbol
  */
@@ -127,8 +119,8 @@ bool is_excluded_symbol(const std::string & symbol);
 
 /**
  * check coherence between two headers.
- * \param f1 first header
- * \param f2 second header
+ * @param f1 first header
+ * @param f2 second header
  *
  * verify that header f1 and f2 are coherent.
  * all error are fatal
@@ -137,7 +129,7 @@ void check_headers(const opd_header * f1, const opd_header * f2);
 
 /**
  * sanity check of a struct opd_header *
- * \param header a pointer to header to check
+ * @param header a pointer to header to check
  *
  * all error are fatal
  */
@@ -145,8 +137,8 @@ void check_event(const opd_header * header);
 
 /**
  * validate the counter number
- * \param counter_mask bit mask specifying the counter nr to use
- * \param sort_by the counter nr from which we sort
+ * @param counter_mask bit mask specifying the counter nr to use
+ * @param sort_by the counter nr from which we sort
  *
  * all error are fatal
  */
@@ -202,8 +194,8 @@ private:
 class opp_bfd {
 public:
 	/**
-	 * \param samples a valid samples file associated with this image
-	 * \param image_file the name of the image file
+	 * @param samples a valid samples file associated with this image
+	 * @param image_file the name of the image file
 	 *
 	 * All error are fatal.
 	 *
@@ -214,10 +206,10 @@ public:
 	~opp_bfd();
 
 	/**
-	 * \param sym_idx index of the symbol
-	 * \param offset fentry number
-	 * \param filename output parameter to store filename
-	 * \param linenr output parameter to store linenr.
+	 * @param sym_idx index of the symbol
+	 * @param offset fentry number
+	 * @param filename output parameter to store filename
+	 * @param linenr output parameter to store linenr.
 	 *
 	 * retrieve the relevant finename:linenr information for the sym_idx
 	 * at offset. If the lookup fail return false. In some case this
@@ -228,9 +220,9 @@ public:
 			const char*& filename, unsigned int& linenr) const;
 
 	/**
-	 * \param sym_idx symbol index
-	 * \param start pointer to start var
-	 * \param end pointer to end var
+	 * @param sym_idx symbol index
+	 * @param start pointer to start var
+	 * @param end pointer to end var
 	 *
 	 * Calculates the range of sample file entries covered by sym. start
 	 * and end will be filled in appropriately. If index is the last entry
@@ -241,7 +233,7 @@ public:
 	 */
 	void get_symbol_range(uint sym_idx, u32 & start, u32 & end) const;
 
-	/** \param name the symbol name
+	/** @param name the symbol name
 	 *
 	 * find and return the index of a symbol else return -1
 	 */
@@ -249,8 +241,8 @@ public:
 
 	/**
 	 * sym_offset - return offset from a symbol's start
-	 * \param sym_index symbol number
-	 * \param num number of fentry
+	 * @param sym_index symbol number
+	 * @param num number of fentry
 	 *
 	 * Returns the offset of a sample at position num
 	 * in the samples file from the start of symbol sym_idx.
@@ -259,7 +251,7 @@ public:
 
 	/**
 	 * symbol_size - return the size of a symbol
-	 * \param index symbol index
+	 * @param index symbol index
 	 */
 	size_t symbol_size(uint sym_idx) const;
 
@@ -324,8 +316,8 @@ private:
  * sessionn can hold OP_MAX_COUNTERS sampels files */
 struct opp_samples_files {
 	/**
-	 * \param sample_file name of sample file to open w/o the #nr suffix
-	 * \param counter a bit mask specifying which sample file to open
+	 * @param sample_file name of sample file to open w/o the #nr suffix
+	 * @param counter a bit mask specifying which sample file to open
 	 *
 	 * Open all samples files specified through sample_file and counter.
 	 * Currently all error are fatal
@@ -337,7 +329,7 @@ struct opp_samples_files {
 
 	/**
 	 * is_open - test if a samples file is open
-	 * \param index index of the samples file to check.
+	 * @param index index of the samples file to check.
 	 *
 	 * return true if the samples file index is open
 	 */ 
@@ -346,8 +338,8 @@ struct opp_samples_files {
 	}
  
 	/**
-	 * \param index index of the samples files
-	 * \param sample_nr number of the samples to test.
+	 * @param index index of the samples files
+	 * @param sample_nr number of the samples to test.
 	 *
 	 * return the number of samples for samples file index at position
 	 * sample_nr. return 0 if the samples file is close or there is no
@@ -358,17 +350,17 @@ struct opp_samples_files {
 	}
 
 	/**
-	 * \param counter where to accumulate the samples
-	 * \param index index of the samples.
+	 * @param counter where to accumulate the samples
+	 * @param index index of the samples.
 	 *
 	 * return false if no samples has been found
 	 */
 
 	bool accumulate_samples(counter_array_t& counter, uint vma) const;
 	/**
-	 * \param counter where to accumulate the samples
-	 * \param start start index of the samples.
-	 * \param end end index of the samples.
+	 * @param counter where to accumulate the samples
+	 * @param start start index of the samples.
+	 * @param end end index of the samples.
 	 *
 	 * return false if no samples has been found
 	 */

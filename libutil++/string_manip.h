@@ -23,8 +23,8 @@
 #include <vector>
 
 /**
- * \param str string
- * \param ch the char from where we erase character
+ * @param str string
+ * @param ch the char from where we erase character
  *
  * erase char from the last occurence of ch to the end of str and return
  * the string
@@ -32,8 +32,8 @@
 std::string erase_from_last_of(std::string const & str, char ch);
 
 /**
- * \param str string
- * \param ch the characterto search
+ * @param str string
+ * @param ch the characterto search
  *
  * erase char from the begin of str to the last
  * occurence of ch from and return the string
@@ -42,8 +42,8 @@ std::string erase_to_last_of(std::string const & str, char ch);
 
 
 /**
- * \param str the string
- * \param ch the character to remove
+ * @param str the string
+ * @param ch the character to remove
  *
  * Returns str removed of its trailing ch
  */
@@ -53,9 +53,9 @@ std::string rtrim(std::string const & str, char ch);
 std::string tostr(unsigned int i);
 
 /**
- * \param result where to put results
- * \param str the string to tokenize
- * \param ch the separator_char
+ * @param result where to put results
+ * @param str the string to tokenize
+ * @param ch the separator_char
  *
  * separate fild in a string in a list of token; field are
  * separated by the sep character

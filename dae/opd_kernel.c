@@ -1,17 +1,10 @@
-/* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+/**
+ * \file opd_kernel.c
+ * Copyright 2002 OProfile authors
+ * Read the file COPYING
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place - Suite 330, Boston, MA 02111-1307, USA.
+ * \author John Levon <moz@compsoc.man.ac.uk>
+ * \author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #include "opd_proc.h"
@@ -31,7 +24,7 @@ static unsigned int nr_modules=0;
 
 /**
  * opd_read_system_map - parse System.map file
- * @filename: file name of System.map
+ * @param filename  file name of System.map
  *
  * Parse the kernel's System.map file. If the filename is
  * passed as "", a warning is produced and the function returns.
@@ -100,7 +93,7 @@ void opd_clear_module_info(void)
 
 /**
  * opd_get_module - get module structure
- * @name: name of module image
+ * @param name  name of module image
  *
  * Find the module structure for module image @name.
  * If it could not be found, add the module to
@@ -254,8 +247,8 @@ failure:
 
 /**
  * opd_enter_invalid_module - create a negative module entry
- * @name: name of module
- * @info: module info
+ * @param name  name of module
+ * @param info  module info
  */
 static void opd_enter_invalid_module(char const * name, struct module_info * info)
 {
@@ -272,7 +265,7 @@ static void opd_enter_invalid_module(char const * name, struct module_info * inf
 
 /**
  * opd_drop_module_sample - drop a module sample efficiently
- * @eip: eip of sample
+ * @param eip  eip of sample
  */
 static void opd_drop_module_sample(u32 eip)
 {
@@ -314,7 +307,7 @@ out:
 
 /**
  * opd_find_module_by_eip - find a module by its eip
- * @eip: EIP value
+ * @param eip  EIP value
  *
  * find in the modules container the module which
  * contain this @eip return %NULL if not found.
@@ -334,8 +327,8 @@ static struct opd_module * opd_find_module_by_eip(u32 eip)
 
 /**
  * opd_handle_module_sample - process a module sample
- * @eip: EIP value
- * @count: count value of sample
+ * @param eip  EIP value
+ * @param count  count value of sample
  *
  * Process a sample in module address space. The sample @eip
  * is matched against module information. If the search was
@@ -388,8 +381,8 @@ static void opd_handle_module_sample(u32 eip, u16 count)
 
 /**
  * opd_handle_kernel_sample - process a kernel sample
- * @eip: EIP value of sample
- * @count: count value of sample
+ * @param eip  EIP value of sample
+ * @param count  count value of sample
  *
  * Handle a sample in kernel address space or in a module. The sample is
  * output to the relevant image file.

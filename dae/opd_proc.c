@@ -1,18 +1,10 @@
-/* $Id: opd_proc.c,v 1.114 2002/05/06 18:00:29 movement Exp $ */
-/* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+/**
+ * \file opd_proc.c
+ * Copyright 2002 OProfile authors
+ * Read the file COPYING
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place - Suite 330, Boston, MA 02111-1307, USA.
+ * \author John Levon <moz@compsoc.man.ac.uk>
+ * \author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #include "opd_proc.h"
@@ -144,8 +136,8 @@ void opd_alarm(int val __attribute__((unused)))
 
 /**
  * opd_handle_old_sample_file - deal with old sample file
- * @mangled: the sample file name
- * @mtime: the new mtime of the binary
+ * @param mangled  the sample file name
+ * @param mtime  the new mtime of the binary
  *
  * If an old sample file exists, verify it is usable.
  * If not, move or delete it. Note than at startup the daemon
@@ -194,7 +186,7 @@ del:
 
 /**
  * opd_handle_old_sample_files - deal with old sample files
- * @image: the image to check files for
+ * @param image  the image to check files for
  *
  * to simplify admin of sample file we rename or remove sample
  * files for each counter.
@@ -223,11 +215,11 @@ static void opd_handle_old_sample_files(const struct opd_image * image)
 
 /**
  * opd_init_image - init an image sample file
- * @image: image to init file for
- * @hash: hash of image
- * @app_name: the application name where belongs this image
- * @name: name of the image to add
- * @kernel: is the image a kernel/module image
+ * @param image  image to init file for
+ * @param hash  hash of image
+ * @param app_name  the application name where belongs this image
+ * @param name  name of the image to add
+ * @param kernel  is the image a kernel/module image
  *
  * @image at funtion entry is uninitialised
  * @name is copied i.e. should be GC'd separately from the
@@ -251,11 +243,11 @@ static void opd_init_image(struct opd_image * image, const char * name,
  
 /**
  * opd_open_image - open an image sample file
- * @image: image to open file for
- * @hash: hash of image
- * @app_name: the application name where belongs this image
- * @name: name of the image to add
- * @kernel: is the image a kernel/module image
+ * @param image  image to open file for
+ * @param hash  hash of image
+ * @param app_name  the application name where belongs this image
+ * @param name  name of the image to add
+ * @param kernel  is the image a kernel/module image
  *
  * @image at funtion entry is partially initialized by opd_init_image()
  *
@@ -284,7 +276,7 @@ static void opd_open_image(struct opd_image *image)
 
 /**
  * opd_get_count - retrieve counter value
- * @count: raw counter value
+ * @param count  raw counter value
  *
  * Returns the counter value.
  */
@@ -295,7 +287,7 @@ inline static u16 opd_get_count(const u16 count)
 
 /**
  * opd_get_counter - retrieve counter type
- * @count: raw counter value
+ * @param count  raw counter value
  *
  * Returns the counter number (0-N)
  */
@@ -306,8 +298,8 @@ inline static u16 opd_get_counter(const u16 count)
 
 /*
  * opd_open_sample_file - open an image sample file
- * @image: image to open file for
- * @counter: counter number
+ * @param image  image to open file for
+ * @param counter  counter number
  *
  * Open image sample file for the image @image, counter
  * @counter and set up memory mappings for it.
@@ -385,7 +377,7 @@ void opd_reopen_sample_files(void)
 
 /**
  * opd_check_image_mtime - ensure samples file is up to date
- * @image: image to check
+ * @param image  image to check
  */
 static void opd_check_image_mtime(struct opd_image * image)
 {
@@ -423,9 +415,9 @@ static void opd_check_image_mtime(struct opd_image * image)
 
 /**
  * opd_put_image_sample - write sample to file
- * @image: image for sample
- * @offset: (file) offset to write to
- * @count: raw counter value
+ * @param image  image for sample
+ * @param offset  (file) offset to write to
+ * @param count  raw counter value
  *
  * Add to the count stored at position @offset in the
  * image file. Overflow pins the count at the maximum
@@ -471,10 +463,10 @@ void opd_init_images(void)
 
 /**
  * opd_add_image - add an image to the image structure
- * @name: name of the image to add
- * @hash: hash of image
- * @app_name: the application name where belongs this image
- * @kernel: is the image a kernel/module image
+ * @param name  name of the image to add
+ * @param hash  hash of image
+ * @param app_name  the application name where belongs this image
+ * @param kernel  is the image a kernel/module image
  *
  * Add an image to the image structure with name @name.
  *
@@ -506,8 +498,8 @@ static struct opd_image * opd_add_image(const char * name, int hash, const char 
 
 /**
  * bstreq - reverse string comparison
- * @str1: first string
- * @str2: second string
+ * @param str1  first string
+ * @param str2  second string
  *
  * Compares two strings, starting at the end.
  * Returns %1 if they match, %0 otherwise.
@@ -532,7 +524,7 @@ int bstreq(const char *str1, const char *str2)
 
 /**
  * opd_app_name - get the application name or %NULL if irrelevant
- * @proc: the process to examine
+ * @param proc  the process to examine
  *
  * Returns the app_name for the given @proc or %NULL if
  * it does not exist any mapping for this proc (which is
@@ -549,9 +541,9 @@ static inline const char * opd_app_name(const struct opd_proc * proc)
 
 /**
  * opd_find_image - find an image
- * @name: name of image to find
- * @hash: hash of image to find
- * @app_name: the application name where belongs this image
+ * @param name  name of image to find
+ * @param hash  hash of image to find
+ * @param app_name  the application name where belongs this image
  *
  * Returns the image pointer for the file specified by @name, or %NULL.
  */
@@ -605,8 +597,8 @@ static struct opd_image * opd_find_image(const char * name, int hash, const char
 /**
  * opd_get_image_by_hash - get an image from the image
  * structure by hash value
- * @hash: hash of the image to get
- * @app_name: the application name where belongs this image
+ * @param hash  hash of the image to get
+ * @param app_name  the application name where belongs this image
  *
  * Get the image specified by @hash and @app_name
  * if present, else return %NULL
@@ -632,10 +624,10 @@ static struct opd_image * opd_get_image_by_hash(int hash, const char * app_name)
 
 /**
  * opd_get_image - get an image from the image structure
- * @name: name of image
- * @hash: hash of the image to get
- * @app_name: the application name where belongs this image
- * @kernel: is the image a kernel/module image
+ * @param name  name of image
+ * @param hash  hash of the image to get
+ * @param app_name  the application name where belongs this image
+ * @param kernel  is the image a kernel/module image
  *
  * Get the image specified by the file name @name from the
  * image structure. If it is not present, the image is
@@ -654,8 +646,8 @@ struct opd_image * opd_get_image(const char * name, int hash, const char * app_n
 
 /**
  * opd_new_proc - create a new process structure
- * @prev: previous list entry
- * @next: next list entry
+ * @param prev  previous list entry
+ * @param next  next list entry
  *
  * Allocate and initialise a process structure and insert
  * it into the the list point specified by @prev and @next.
@@ -679,7 +671,7 @@ static struct opd_proc * opd_new_proc(struct opd_proc *prev, struct opd_proc *ne
 
 /**
  * proc_hash - hash pid value
- * @pid: pid value to hash
+ * @param pid  pid value to hash
  *
  */
 inline static uint proc_hash(u16 pid)
@@ -689,7 +681,7 @@ inline static uint proc_hash(u16 pid)
 
 /**
  * opd_delete_proc - delete a process
- * @proc: process to delete
+ * @param proc  process to delete
  *
  * Remove the process @proc from the process list and free
  * the associated structures.
@@ -710,7 +702,7 @@ static void opd_delete_proc(struct opd_proc *proc)
 
 /**
  * opd_init_maps - initialise map structure for a process
- * @proc: process to work on
+ * @param proc  process to work on
  *
  * Initialise the mapping info structure for process @proc.
  */
@@ -724,7 +716,7 @@ static void opd_init_maps(struct opd_proc *proc)
 
 /**
  * opd_add_proc - add a process
- * @pid: process id
+ * @param pid  process id
  *
  * Create a new process structure and add it
  * to the head of the process list. The process structure
@@ -750,7 +742,7 @@ static struct opd_proc *opd_add_proc(u16 pid)
 
 /**
  * opd_grow_maps - grow map structure for a process
- * @proc: process to work on
+ * @param proc  process to work on
  *
  * Grow the map structure for a process by %OPD_MAP_INC
  * entries.
@@ -763,7 +755,7 @@ static void opd_grow_maps(struct opd_proc *proc)
 
 /**
  * opd_kill_maps - delete mapping information for a process
- * @proc: process to work on
+ * @param proc  process to work on
  *
  * Frees structures holding mapping information and resets
  * the values, allocating a new map structure.
@@ -777,8 +769,8 @@ static void opd_kill_maps(struct opd_proc *proc)
 
 /**
  * opd_do_proc_lru - rework process list
- * @head: head of process list
- * @proc: process to move
+ * @param head  head of process list
+ * @param proc  process to move
  *
  * Perform LRU on the process list by moving it to
  * the head of the process list.
@@ -798,7 +790,7 @@ inline static void opd_do_proc_lru(struct opd_proc **head, struct opd_proc *proc
 
 /**
  * opd_get_proc - get process from process list
- * @pid: pid to search for
+ * @param pid  pid to search for
  *
  * A process with pid @pid is searched on the process list,
  * maintaining LRU order. If it is not found, %NULL is returned,
@@ -825,8 +817,8 @@ static struct opd_proc *opd_get_proc(u16 pid)
 
 /**
  * opd_is_in_map - check whether an EIP is within a mapping
- * @map: map to check
- * @eip: EIP value
+ * @param map  map to check
+ * @param eip  EIP value
  *
  * Return %1 if the EIP value @eip is within the boundaries
  * of the map @map, %0 otherwise.
@@ -838,9 +830,9 @@ inline static int opd_is_in_map(struct opd_map *map, u32 eip)
 
 /**
  * verb_show_sample - print the sample out to the log
- * @offset: the offset value
- * @map: map to print
- * @last_map: previous map used 
+ * @param offset  the offset value
+ * @param map  map to print
+ * @param last_map  previous map used 
  */
 inline static void verb_show_sample(u32 offset, struct opd_map *map, const char * last_map)
 {
@@ -851,8 +843,8 @@ inline static void verb_show_sample(u32 offset, struct opd_map *map, const char 
 
 /**
  * opd_map_offset - return offset of sample against map
- * @map: map to use
- * @eip: EIP value to use
+ * @param map  map to use
+ * @param eip  EIP value to use
  *
  * Returns the offset of the EIP value @eip into
  * the map @map, which is the same as the file offset
@@ -865,7 +857,7 @@ inline static u32 opd_map_offset(struct opd_map *map, u32 eip)
 
 /**
  * opd_eip_is_kernel - is the sample from kernel/module space
- * @eip: EIP value
+ * @param eip  EIP value
  *
  * Returns %1 if @eip is in the address space starting at
  * kernel_start, %0 otherwise.
@@ -878,7 +870,7 @@ inline static int opd_eip_is_kernel(u32 eip)
 
 /**
  * opd_put_sample - process a sample
- * @sample: sample to process
+ * @param sample  sample to process
  *
  * Write out the sample to the appropriate sample file. This
  * routine handles kernel and module samples as well as ordinary ones.
@@ -957,11 +949,11 @@ out:
 
 /**
  * opd_put_mapping - add a mapping to a process
- * @proc: process to add map to
- * @image: mapped image pointer
- * @start: start of mapping
- * @offset: file offset of mapping
- * @end: end of mapping
+ * @param proc  process to add map to
+ * @param image  mapped image pointer
+ * @param start  start of mapping
+ * @param offset  file offset of mapping
+ * @param end  end of mapping
  *
  * Add the mapping specified to the process @proc.
  */
@@ -986,7 +978,7 @@ static void opd_put_mapping(struct opd_proc *proc, struct opd_image * image, u32
 
 /**
  * opd_handle_fork - deal with fork notification
- * @note: note to handle
+ * @param note  note to handle
  *
  * Deal with a fork() notification by creating a new process
  * structure, and copying mapping information from the old process.
@@ -1030,7 +1022,7 @@ void opd_handle_fork(const struct op_note *note)
 
 /**
  * opd_handle_exit - deal with exit notification
- * @note: note to handle
+ * @param note  note to handle
  *
  * Deal with an exit() notification by setting the flag "dead"
  * on a process. These will be later cleaned up by the %SIGALRM
@@ -1056,7 +1048,7 @@ void opd_handle_exit(const struct op_note *note)
  
 /**
  * get_from_pool - retrieve string from hash map pool
- * @ind: index into pool
+ * @param ind  index into pool
  */
 inline static char * get_from_pool(uint ind)
 {
@@ -1066,8 +1058,8 @@ inline static char * get_from_pool(uint ind)
  
 /**
  * opd_handle_hashmap - parse image from kernel hash map
- * @hash: hash value
- * @app_name: the application name which belongs this image
+ * @param hash  hash value
+ * @param app_name  the application name which belongs this image
  *
  * Finds an image from its name.
  */
@@ -1099,7 +1091,7 @@ static struct opd_image * opd_handle_hashmap(int hash, const char * app_name)
 
 /**
  * opd_handle_mapping - deal with mapping notification
- * @note: mapping notification
+ * @param note  mapping notification
  *
  * Deal with one notification that a process has mapped
  * in a new executable file. The mapping information is
@@ -1142,7 +1134,7 @@ void opd_handle_mapping(const struct op_note *note)
 
 /**
  * opd_handle_exec - deal with notification of execve()
- * @pid: pid of execve()d process
+ * @param pid  pid of execve()d process
  *
  * Drop all mapping information for the process.
  */
@@ -1174,8 +1166,8 @@ void opd_handle_exec(u16 pid)
 
 /**
  * opd_add_ascii_map - parse an ASCII map string for a process
- * @proc: process to add map to
- * @line: 0-terminated ASCII string
+ * @param proc  process to add map to
+ * @param line  0-terminated ASCII string
  *
  * Attempt to parse the string @line for map information
  * and add the info to the process @proc. Returns %1
@@ -1231,7 +1223,7 @@ static int opd_add_ascii_map(struct opd_proc *proc, const char *line)
 
 /**
  * opd_get_ascii_maps - read all maps for a process
- * @proc: process to work on
+ * @param proc  process to work on
  *
  * Read the /proc/<pid>/maps file and add all
  * mapping information found to the process @proc.

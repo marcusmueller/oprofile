@@ -17,9 +17,9 @@
  
 /**
  * op_do_open_file - open a file
- * @name: file name
- * @mode: mode string
- * @fatal: is failure fatal or not
+ * @param name  file name
+ * @param mode  mode string
+ * @param fatal  is failure fatal or not
  *
  * Open a file name.
  * Returns file handle or %NULL on failure.
@@ -43,7 +43,7 @@ FILE * op_do_open_file(char const * name, char const * mode, int fatal)
 
 /**
  * op_close_file - close a file
- * @fp: file pointer
+ * @param fp  file pointer
  *
  * Closes a file pointer. A non-fatal
  * error message is produced if the
@@ -57,10 +57,10 @@ void op_close_file(FILE * fp)
 
 /**
  * op_do_read_file - read a file
- * @fp: file pointer
- * @buf: buffer
- * @size: size in bytes to read
- * @fatal: is failure fatal or not
+ * @param fp  file pointer
+ * @param buf  buffer
+ * @param size  size in bytes to read
+ * @param fatal  is failure fatal or not
  *
  * Read from a file. It is considered an error
  * if anything less than @size bytes is read.
@@ -86,7 +86,7 @@ void op_do_read_file(FILE * fp, void * buf, size_t size, int fatal)
 
 /**
  * op_do_read_u8 - read a byte from a file
- * @fp: file pointer
+ * @param fp  file pointer
  *
  * Read an unsigned byte from a file.
  * 0 is returned if the read fails in any way.
@@ -101,7 +101,7 @@ u8 op_read_u8(FILE * fp)
 
 /**
  * op_do_read_u16_he - read two bytes from a file
- * @fp: file pointer
+ * @param fp  file pointer
  *
  * Read an unsigned two-byte value from a file.
  * 0 is returned if the read fails in any way.
@@ -117,7 +117,7 @@ u16 op_read_u16_he(FILE * fp)
 
 /**
  * op_do_read_u32_he - read four bytes from a file
- * @fp: file pointer
+ * @param fp  file pointer
  *
  * Read an unsigned four-byte value from a file.
  * 0 is returned if the read fails in any way.
@@ -134,9 +134,9 @@ u32 op_read_u32_he(FILE * fp)
 
 /**
  * op_write_file - write to a file
- * @fp: file pointer
- * @buf: buffer
- * @size: nr. of bytes to write
+ * @param fp  file pointer
+ * @param buf  buffer
+ * @param size  nr. of bytes to write
  *
  * Write @size bytes of buffer @buf to a file.
  * Failure is fatal.
@@ -157,8 +157,8 @@ void op_write_file(FILE * fp, const void * buf, size_t size)
 
 /**
  * op_write_u8 - write a byte to a file
- * @fp: file pointer
- * @val: value to write
+ * @param fp  file pointer
+ * @param val  value to write
  *
  * Write the unsigned byte value @val to a file.
  * Failure is fatal.
@@ -170,8 +170,8 @@ void op_write_u8(FILE * fp, u8 val)
 
 /**
  * op_write_u16_he - write two bytes to a file
- * @fp: file pointer
- * @val: value to write
+ * @param fp  file pointer
+ * @param val  value to write
  *
  * Write an unsigned two-byte value @val to a file.
  * Failure is fatal.
@@ -185,8 +185,8 @@ void op_write_u16_he(FILE * fp, u16 val)
 
 /**
  * op_write_u23_he - write four bytes to a file
- * @fp: file pointer
- * @val: value to write
+ * @param fp  file pointer
+ * @param val  value to write
  *
  * Write an unsigned four-byte value @val to a file.
  * Failure is fatal.
@@ -200,7 +200,7 @@ void op_write_u32_he(FILE * fp, u32 val)
 
 /**
  * op_read_int_from_file - parse an ASCII value from a file into an integer
- * @filename: name of file to parse integer value from
+ * @param filename  name of file to parse integer value from
  *
  * Reads an ASCII integer from the given file. All errors are fatal.
  * The value read in is returned.
@@ -233,7 +233,7 @@ u32 op_read_int_from_file(char const * filename)
 
 /**
  * op_get_line - read an ASCII line from a file
- * @fp: file pointer
+ * @param fp  file pointer
  *
  * Get a line of ASCII text from a file. The file is read
  * up to the first \0 or \n. A trailing \n is deleted.

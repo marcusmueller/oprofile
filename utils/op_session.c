@@ -36,8 +36,8 @@ static struct poptOption options[] = {
  
 /**
  * op_options - parse command line options
- * @argc: argc
- * @argv: argv array
+ * @param argc  argc
+ * @param argv  argv array
  *
  * Parse all command line arguments.
  */
@@ -69,7 +69,7 @@ static void op_options(int argc, char const *argv[])
 
 /**
  * op_move_files - move all the sample files
- * \param sname name of session directory 
+ * @param sname name of session directory 
  *
  */
 static void op_move_files(char const * sname)

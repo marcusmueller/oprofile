@@ -19,8 +19,8 @@
  
 /**
  * op_open_device - open a special char device for reading
- * @name: file name of device file
- * @fatal: fatal or not
+ * @param name  file name of device file
+ * @param fatal  fatal or not
  *
  * Open the special file @name. Returns the file descriptor
  * for the file or -1 on error.
@@ -41,7 +41,7 @@ fd_t op_open_device(char const * name, int fatal)
 
 /**
  * op_close_device - close a special char device
- * @devfd: file descriptor of device
+ * @param devfd  file descriptor of device
  *
  * Close a special file. Failure is fatal.
  */ 
@@ -55,10 +55,10 @@ void op_close_device(fd_t devfd)
  
 /**
  * op_read_device - read from a special char device
- * @devfd: file descriptor of device
- * @buf: buffer
- * @size: size of buffer
- * @seek: seek to the start or not 
+ * @param devfd  file descriptor of device
+ * @param buf  buffer
+ * @param size  size of buffer
+ * @param seek  seek to the start or not 
  *
  * Read @size bytes from a device into buffer @buf.
  * A seek to the start of the device file is done first

@@ -183,7 +183,7 @@ unsigned long get_cpu_speed()
  
 /**
  * get_user_filename - get absoluate filename of file in user $HOME
- * @filename: the relative filename
+ * @param filename  the relative filename
  *
  * Get the absolute path of a file in a user's home directory.
  */
@@ -215,8 +215,8 @@ bool check_and_create_config_dir()
  
 /**
  * format - re-format a string 
- * @orig: string to format
- * @maxlen: width of line
+ * @param orig  string to format
+ * @param maxlen  width of line
  *
  * Re-formats a string to fit into a certain width,
  * breaking lines at spaces between words.
@@ -267,8 +267,8 @@ string const format(string const & orig, uint const maxlen)
 
 /**
  * do_exec_command - execute a command
- * @cmd: command name
- * @args: arguments to command
+ * @param cmd  command name
+ * @param args  arguments to command
  *
  * Execute a command synchronously. An error message is shown
  * if the command returns a non-zero status, which is also returned.
@@ -320,8 +320,8 @@ int do_exec_command(string const & cmd, vector<string> const & args)
  
 /**
  * do_open_file_or_dir - open file/directory
- * @base_dir: directory to start at
- * @dir_only: directory or filename to select
+ * @param base_dir  directory to start at
+ * @param dir_only  directory or filename to select
  *
  * Select a file or directory. The selection is returned;
  * an empty string if the selection was cancelled.

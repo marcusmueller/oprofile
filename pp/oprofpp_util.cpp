@@ -1,18 +1,10 @@
-/* $Id: oprofpp_util.cpp,v 1.52 2002/05/06 18:00:35 movement Exp $ */
-/* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+/**
+ * \file oprofpp_util.cpp
+ * Copyright 2002 OProfile authors
+ * Read the file COPYING
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place - Suite 330, Boston, MA 02111-1307, USA.
+ * \author Philippe Elie <phil_el@wanadoo.fr>
+ * \author John Levon <moz@compsoc.man.ac.uk>
  */
 
 // FIXME: printf -> ostream (and elsewhere) 
@@ -80,7 +72,7 @@ void verbprintf(const char * fmt, ...)
 
 /**
  * remangle - convert a filename into the related sample file name
- * \param image the image filename
+ * @param image the image filename
  */
 static char *remangle(const char *image)
 {
@@ -105,7 +97,7 @@ static char *remangle(const char *image)
 /**
  * demangle_filename - convert a sample filenames into the related
  * image file name
- * \param sample_filename the samples image filename
+ * @param sample_filename the samples image filename
  *
  * if samples_filename does not contain any %OPD_MANGLE_CHAR
  * the string samples_filename itself is returned.
@@ -124,7 +116,7 @@ std::string demangle_filename(const std::string & samples_filename)
 
 /**
  * is_excluded_symbol - check if the symbol is in the exclude list
- * \param symbol symbol name to check
+ * @param symbol symbol name to check
  *
  * return true if symbol is in the list of excluded symbol
  */
@@ -136,7 +128,7 @@ bool is_excluded_symbol(const std::string & symbol)
 
 /**
  * quit_error - quit with error
- * \param err error to show
+ * @param err error to show
  *
  * err may be NULL
  */
@@ -150,8 +142,8 @@ void quit_error(poptContext optcon, char const *err)
 
 /**
  * validate_counter - validate the counter nr
- * \param counter_mask bit mask specifying the counter nr to use
- * \param sort_by the counter nr from which we sort
+ * @param counter_mask bit mask specifying the counter nr to use
+ * @param sort_by the counter nr from which we sort
  *
  * all error are fatal
  */
@@ -178,11 +170,11 @@ void validate_counter(int counter_mask, int & sort_by_counter)
  
 /**
  * opp_treat_options - process command line options
- * \param file a filename passed on the command line, can be %NULL
- * \param optcon poptContext to allow better message handling
- * \param image_file where to store the image file name
- * \param sample_file ditto for sample filename
- * \param counter where to put the counter command line argument
+ * @param file a filename passed on the command line, can be %NULL
+ * @param optcon poptContext to allow better message handling
+ * @param image_file where to store the image file name
+ * @param sample_file ditto for sample filename
+ * @param counter where to put the counter command line argument
  *
  * Process the arguments, fatally complaining on
  * error. 
@@ -359,8 +351,8 @@ opp_bfd::~opp_bfd()
 
 /**
  * open_bfd_image - opp_bfd ctor helper
- * \param file name of a valid image file
- * \param is_kernel true if the image is the kernel or a module
+ * @param file name of a valid image file
+ * @param is_kernel true if the image is the kernel or a module
  *
  * This function will open a bfd image and process symbols
  * within this image file
@@ -716,7 +708,7 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 
 /**
  * symbol_index - find a symbol
- * \param name the symbol name
+ * @param name the symbol name
  *
  * find and return the index of a symbol.
  * if the name is not found -1 is returned
@@ -733,8 +725,8 @@ int opp_bfd::symbol_index(const char* symbol) const
 
 /**
  * check_headers - check coherence between two headers.
- * \param f1 first header
- * \param f2 second header
+ * @param f1 first header
+ * @param f2 second header
  *
  * verify that header f1 and f2 are coherent.
  * all error are fatal
@@ -777,8 +769,8 @@ void check_event(const struct opd_header * header)
 
 /**
  * opp_samples_files - construct an opp_samples_files object
- * \param sample_file the base name of sample file
- * \param counter which samples files to open, -1 means try to open
+ * @param sample_file the base name of sample file
+ * @param counter which samples files to open, -1 means try to open
  * all samples files.
  *
  * at least one sample file (based on sample_file name)
@@ -861,8 +853,8 @@ opp_samples_files::~opp_samples_files()
 
 /**
  * open_samples_file - ctor helper
- * \param counter the counter number
- * \param can_fail allow to fail gracefully
+ * @param counter the counter number
+ * @param can_fail allow to fail gracefully
  *
  * open and mmap the given samples files,
  * the member var samples[counter], header[counter]
@@ -892,8 +884,8 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 
 /**
  * accumulate_samples - lookup samples from a vma address
- * \param counter where to accumulate the samples
- * \param index index of the samples.
+ * @param counter where to accumulate the samples
+ * @param index index of the samples.
  *
  * return false if no samples has been found
  */
@@ -913,9 +905,9 @@ bool opp_samples_files::accumulate_samples(counter_array_t& counter, uint index)
 
 /**
  * accumulate_samples - lookup samples from a range of vma address
- * \param counter where to accumulate the samples
- * \param start start index of the samples.
- * \param end end index of the samples.
+ * @param counter where to accumulate the samples
+ * @param start start index of the samples.
+ * @param end end index of the samples.
  *
  * return false if no samples has been found
  */
@@ -946,7 +938,7 @@ void opp_samples_files::set_sect_offset(u32 sect_offset)
 
 /**
  * samples_file_t - construct a samples_file_t object
- * \param filename the full path of sample file
+ * @param filename the full path of sample file
  *
  * open and mmap the samples file specified by filename
  * samples file header coherence are checked
@@ -976,7 +968,7 @@ samples_file_t::~samples_file_t()
 /**
  * check_headers - check than the lhs and rhs headers are
  * coherent (same size, same mtime etc.)
- * \param rhs the other samples_file_t
+ * @param rhs the other samples_file_t
  *
  * all error are fatal
  *
@@ -997,8 +989,8 @@ void db_tree_callback(db_key_t, db_value_t value, void * data)
 
 /**
  * count - return the number of samples in given range
- * \param start start samples nr of range
- * \param end end samples br of range
+ * @param start start samples nr of range
+ * @param end end samples br of range
  *
  * return the number of samples in the the range [start, end]
  * no range checking is performed.

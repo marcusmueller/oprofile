@@ -27,7 +27,7 @@ struct list_head {
 
 /**
  * list_init - init a new entry
- * @ptr: the list to init
+ * @param ptr  the list to init
  *
  * Init a list head to create an empty list from it
  */
@@ -55,8 +55,8 @@ static __inline__ void __list_add(struct list_head * new,
 
 /**
  * list_add - add a new entry
- * @new: new entry to be added
- * @head: list head to add it after
+ * @param new  new entry to be added
+ * @param head  list head to add it after
  *
  * Insert a new entry after the specified head.
  * This is good for implementing stacks.
@@ -68,8 +68,8 @@ static __inline__ void list_add(struct list_head * new, struct list_head * head)
 
 /**
  * list_add_tail - add a new entry
- * @new: new entry to be added
- * @head: list head to add it before
+ * @param new  new entry to be added
+ * @param head  list head to add it before
  *
  * Insert a new entry before the specified head.
  * This is useful for implementing queues.
@@ -95,7 +95,7 @@ static __inline__ void __list_del(struct list_head * prev,
 
 /**
  * list_del - deletes entry from list.
- * @entry: the element to delete from the list.
+ * @param entry  the element to delete from the list.
  * Note: list_empty on entry does not return true after this, the entry is in an undefined state.
  */
 static __inline__ void list_del(struct list_head * entry)
@@ -105,7 +105,7 @@ static __inline__ void list_del(struct list_head * entry)
 
 /**
  * list_del_init - deletes entry from list and reinitialize it.
- * @entry: the element to delete from the list.
+ * @param entry  the element to delete from the list.
  */
 static __inline__ void list_del_init(struct list_head * entry)
 {
@@ -115,7 +115,7 @@ static __inline__ void list_del_init(struct list_head * entry)
 
 /**
  * list_empty - tests whether a list is empty
- * @head: the list to test.
+ * @param head  the list to test.
  */
 static __inline__ int list_empty(struct list_head * head)
 {
@@ -124,8 +124,8 @@ static __inline__ int list_empty(struct list_head * head)
 
 /**
  * list_splice - join two lists
- * @list: the new list to add.
- * @head: the place to add it in the first list.
+ * @param list  the new list to add.
+ * @param head  the place to add it in the first list.
  */
 static __inline__ void list_splice(struct list_head * list, struct list_head * head)
 {
@@ -145,26 +145,26 @@ static __inline__ void list_splice(struct list_head * list, struct list_head * h
 
 /**
  * list_entry - get the struct for this entry
- * @ptr:	the &struct list_head pointer.
- * @type:	the type of the struct this is embedded in.
- * @member:	the name of the list_struct within the struct.
+ * @param ptr 	the &struct list_head pointer.
+ * @param type 	the type of the struct this is embedded in.
+ * @param member 	the name of the list_struct within the struct.
  */
 #define list_entry(ptr, type, member) \
 	((type *)((char *)(ptr)-(unsigned long)(&((type *)0)->member)))
 
 /**
  * list_for_each - iterate over a list
- * @pos:	the &struct list_head to use as a loop counter.
- * @head:	the head for your list.
+ * @param pos 	the &struct list_head to use as a loop counter.
+ * @param head 	the head for your list.
  */
 #define list_for_each(pos, head) \
 	for (pos = (head)->next; pos != (head); pos = pos->next)
         	
 /**
  * list_for_each_safe - iterate over a list safe against removal of list entry
- * @pos:	the &struct list_head to use as a loop counter.
- * @n:		another &struct list_head to use as temporary storage
- * @head:	the head for your list.
+ * @param pos 	the &struct list_head to use as a loop counter.
+ * @param n 		another &struct list_head to use as temporary storage
+ * @param head 	the head for your list.
  */
 #define list_for_each_safe(pos, n, head) \
 	for (pos = (head)->next, n = pos->next; pos != (head); \

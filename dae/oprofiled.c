@@ -1,18 +1,10 @@
-/* $Id: oprofiled.c,v 1.75 2002/05/06 18:00:30 movement Exp $ */
-/* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+/**
+ * \file oprofiled.c
+ * Copyright 2002 OProfile authors
+ * Read the file COPYING
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place - Suite 330, Boston, MA 02111-1307, USA.
+ * \author John Levon <moz@compsoc.man.ac.uk>
+ * \author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #include "oprofiled.h"
@@ -340,8 +332,8 @@ static void opd_rtc_options(void)
  
 /**
  * opd_options - parse command line options
- * @argc: argc
- * @argv: argv array
+ * @param argc  argc
+ * @param argv  argv array
  *
  * Parse all command line arguments, and sanity
  * check what the user passed. Incorrect arguments
@@ -445,10 +437,10 @@ void opd_do_notes(struct op_note *opd_buf, size_t count);
 
 /**
  * do_shutdown - shutdown cleanly, reading as much remaining data as possible.
- * @buf: sample buffer area
- * @size: size of sample buffer
- * @nbuf: note buffer area
- * @nsize: size of note buffer
+ * @param buf  sample buffer area
+ * @param size  size of sample buffer
+ * @param nbuf  note buffer area
+ * @param nsize  size of note buffer
  */
 static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbuf, size_t nsize)
 {
@@ -491,10 +483,10 @@ static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbu
 
 /**
  * opd_do_read - enter processing loop
- * @buf: buffer to read into
- * @size: size of buffer
- * @nbuf: note buffer
- * @nsize: size of note buffer
+ * @param buf  buffer to read into
+ * @param size  size of buffer
+ * @param nbuf  note buffer
+ * @param nsize  size of note buffer
  *
  * Read some of a buffer from the device and process
  * the contents.
@@ -529,8 +521,8 @@ static void opd_do_read(struct op_sample *buf, size_t size, struct op_note *nbuf
 
 /**
  * opd_do_notes - process a notes buffer
- * @opd_buf: buffer to process
- * @count: number of bytes in buffer
+ * @param opd_buf  buffer to process
+ * @param count  number of bytes in buffer
  *
  * Process a buffer of notes.
  */
@@ -578,8 +570,8 @@ void opd_do_notes(struct op_note *opd_buf, size_t count)
 
 /**
  * opd_do_samples - process a sample buffer
- * @opd_buf: buffer to process
- * @count: number of bytes in buffer 
+ * @param opd_buf  buffer to process
+ * @param count  number of bytes in buffer 
  *
  * Process a buffer of samples.
  * The signals specified by the global variable maskset are

@@ -476,9 +476,9 @@ void output::find_and_output_counter(ostream & out, const string & filename, siz
 
 /**
  * output::output_objdump_asm_line - helper for output_objdump_asm
- * \param str the string reading from objdump output
- * \param output_symbols the symbols set to output
- * \param do_output in/out parameter which says if the current line
+ * @param str the string reading from objdump output
+ * @param output_symbols the symbols set to output
+ * @param do_output in/out parameter which says if the current line
  * must be output
  *
  */
@@ -549,7 +549,7 @@ output_objdump_asm_line(const std::string & str,
 
 /**
  * output::output_objdump_asm - output asm disassembly
- * \param output_symbols the set of symbols to output
+ * @param output_symbols the set of symbols to output
  *
  * Output asm (optionnaly mixed with source) annotated
  * with samples using objdump as external disassembler.
@@ -595,7 +595,7 @@ void output::output_objdump_asm(const vector<const symbol_entry *> & output_symb
 
 /**
  * output::output_dasm_asm - output asm disassembly
- * \param output_symbols the set of symbols to output
+ * @param output_symbols the set of symbols to output
  *
  * Output asm (optionnaly mixed with source) annotated
  * with samples using dasm as external disassembler.
@@ -894,11 +894,11 @@ static struct poptOption options[] = {
 
 /**
  * get_options - process command line
- * \param argc program arg count
- * \param argv program arg array
- * \param image_name where to store the image filename
- * \param sample_file ditto for sample filename
- * \param counter where to put the counter command line argument
+ * @param argc program arg count
+ * @param argv program arg array
+ * @param image_name where to store the image filename
+ * @param sample_file ditto for sample filename
+ * @param counter where to put the counter command line argument
  *
  * Process the arguments, fatally complaining on error.
  */

@@ -17,8 +17,8 @@
  
 /**
  * op_mangle_filename - mangle a file filename
- * @image_name: a path name to the image file
- * @app_name: a path name for the owner image
+ * @param image_name  a path name to the image file
+ * @param app_name  a path name for the owner image
  * of this image or %NULL if no owner exist
  *
  * Replace any path separator characters with %OPD_MANGLE_CHAR.

@@ -24,12 +24,12 @@ struct op_unit_desc {
 
 /**
  * get event name and description
- * \param cpu_type the cpu_type
- * \param type event value
- * \param um unit mask
- * \param typenamep returned event name string
- * \param typedescp returned event description string
- * \param umdescp returned unit mask description string
+ * @param cpu_type the cpu_type
+ * @param type event value
+ * @param um unit mask
+ * @param typenamep returned event name string
+ * @param typedescp returned event description string
+ * @param umdescp returned unit mask description string
  *
  * Get the associated event name and descriptions given
  * the cpu type, event value and unit mask value. It is a fatal error
@@ -65,7 +65,7 @@ op_cpu op_get_cpu_type(void);
 
 /**
  * get the cpu string.
- * \param cpu_type the cpu type identifier
+ * @param cpu_type the cpu type identifier
  *
  * The function always return a valid const char* the core cpu denomination
  * or "invalid cpu type" if cpu_type is not valid.

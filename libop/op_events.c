@@ -180,8 +180,8 @@ u32 op_nr_events = (sizeof(op_events)/sizeof(op_events[0]));
 
 /**
  * op_check_unit_mask - sanity check unit mask value
- * @allow: allowed unit mask array
- * @um: unit mask value to check
+ * @param allow  allowed unit mask array
+ * @param um  unit mask value to check
  *
  * Verify that a unit mask value is within the allowed array.
  *
@@ -228,8 +228,8 @@ int op_check_unit_mask(struct op_unit_mask * allow, u8 um)
 
 /**
  * op_min_count - get the minimum count value.
- * @ctr_type: event value
- * @cpu_type: cpu type
+ * @param ctr_type  event value
+ * @param cpu_type  cpu type
  *
  * The function returns > 0 if the event is found
  * 0 otherwise
@@ -252,10 +252,10 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type)
 
 /**
  * op_check_events - sanity check event values
- * @ctr: counter number
- * @ctr_type: event value for counter 0
- * @ctr_um: unit mask for counter 0
- * @cpu_type: processor type
+ * @param ctr  counter number
+ * @param ctr_type  event value for counter 0
+ * @param ctr_um  unit mask for counter 0
+ * @param cpu_type  processor type
  *
  * Check that the counter event and unit mask values
  * are allowed. @cpu_type should be set as follows :
@@ -310,7 +310,7 @@ static u32 cpu_max_counters[MAX_CPU_TYPE] = {
  
 /**
  * op_get_cpu_nr_counters - get the nr of counter
- * @cpu_type: the cpu type identifier
+ * @param cpu_type  the cpu type identifier
  *
  * The function return the number of counter available for this
  * cpu type. return (u32)-1 if the cpu type is nopt recognized

@@ -1,18 +1,10 @@
-/* $Id: oprofpp.cpp,v 1.43 2002/05/06 18:00:34 movement Exp $ */
-/* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+/**
+ * \file oprofpp.cpp
+ * Copyright 2002 OProfile authors
+ * Read the file COPYING
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place - Suite 330, Boston, MA 02111-1307, USA.
+ * \author John Levon <moz@compsoc.man.ac.uk>
+ * \author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 // FIXME: printf -> ostream (and elsewhere) 
@@ -72,11 +64,11 @@ static poptOption options[] = {
 
 /**
  * get_options - process command line
- * \param argc program arg count
- * \param argv program arg array
- * \param image_file where to store the image filename
- * \param sample_file ditto for sample filename
- * \param counter where to put the counter command line argument
+ * @param argc program arg count
+ * @param argv program arg array
+ * @param image_file where to store the image filename
+ * @param sample_file ditto for sample filename
+ * @param counter where to put the counter command line argument
  *
  * Process the arguments, fatally complaining on
  * error. Only a part of arguments analysing is
@@ -149,10 +141,10 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 
 /**
  * do_list_symbols - list symbol samples for an image
- * \param abfd the bfd object from where come the samples
- * \param samples_files the samples files where are stored samples
- * \param cmask on what counters we work
- * \param sort_by_ctr the counter number used for sort purpose
+ * @param abfd the bfd object from where come the samples
+ * @param samples_files the samples files where are stored samples
+ * @param cmask on what counters we work
+ * @param sort_by_ctr the counter number used for sort purpose
  *
  * Lists all the symbols in decreasing sample count order, to standard out.
  */
@@ -179,9 +171,9 @@ static void do_list_symbols(opp_bfd & abfd,
  
 /**
  * do_list_symbol - list detailed samples for a symbol
- * \param abfd the bfd object from where come the samples
- * \param samples_files the samples files where are stored samples
- * \param cmask on what counters we work
+ * @param abfd the bfd object from where come the samples
+ * @param samples_files the samples files where are stored samples
+ * @param cmask on what counters we work
  *
  * the global variable symbol is used to list all
  * the samples for this symbol from the image 
@@ -233,9 +225,9 @@ struct gmon_hdr {
  
 /**
  * do_dump_gprof - produce gprof sample output
- * \param abfd the bfd object from where come the samples
- * \param samples_files the samples files where are stored samples
- * \param sort_by_ctr the counter number used for sort purpose
+ * @param abfd the bfd object from where come the samples
+ * @param samples_files the samples files where are stored samples
+ * @param sort_by_ctr the counter number used for sort purpose
  *
  * Dump gprof-format samples for this sample file and
  * counter specified ctr to the file specified by gproffile.
@@ -322,10 +314,10 @@ static void do_dump_gprof(opp_bfd & abfd,
 
 /**
  * do_list_symbols_details - list all samples for all symbols.
- * \param abfd the bfd object from where come the samples
- * \param samples_files the samples files where are stored samples
- * \param cmask on what counters we work
- * \param sort_by_ctr the counter number used for sort purpose
+ * @param abfd the bfd object from where come the samples
+ * @param samples_files the samples files where are stored samples
+ * @param cmask on what counters we work
+ * @param sort_by_ctr the counter number used for sort purpose
  *
  * Lists all the samples for all the symbols, from the image specified by
  * abfd, in increasing order of vma, to standard out.

@@ -33,16 +33,16 @@ public:
 	 * Build an object to store information on samples. All parameters
 	 * acts as hint for what you will request after recording samples and
 	 * so on allow optimizations during recording the information.
-	 * \param add_zero_samples_symbols must we add to the symbol container
+	 * @param add_zero_samples_symbols must we add to the symbol container
 	 * symbols with zero samples count
-	 * \param flags optimize hint to add samples. The flags is a promise
+	 * @param flags optimize hint to add samples. The flags is a promise
 	 * on what will be required as information in future. Avoid to pass
 	 * osf_linenr_info greatly improve performance of add. Avoiding
 	 * osf_details is also an improvement.
-	 * \param add_shared_libs record to the set of symbols/samples shared
+	 * @param add_shared_libs record to the set of symbols/samples shared
 	 * libs which belongs to this image, only meaningfull if samples files
 	 * come from a --separate-samples session
-	 * \param counter_mask which counter we must record
+	 * @param counter_mask which counter we must record
 	 */
 	 samples_files_t(bool add_zero_samples_symbols, OutSymbFlag flags,
 			 bool add_shared_libs, int counter_mask);
@@ -50,8 +50,8 @@ public:
 
 	/**
 	 * add() -  record symbols/samples in the underlined container
-	 * \param samples_files the samples files container
-	 * \param abf the associated bfd object
+	 * @param samples_files the samples files container
+	 * @param abf the associated bfd object
 	 *
 	 * add() is an helper for delayed ctor. Take care you can't safely
 	 * make any call to add after any other member function call.
@@ -75,15 +75,15 @@ public:
 
 	/**
 	 * select_symbols - create a set of symbols sorted by sample count
-	 * \param result where to put result
-	 * \param ctr on what counter sorting must be made and threshold
+	 * @param result where to put result
+	 * @param ctr on what counter sorting must be made and threshold
 	 *   selection must be made
-	 * \param threshold select symbols which contains more than
+	 * @param threshold select symbols which contains more than
 	 *   threshold percent of samples
-	 * \param until_threshold rather to get symbols with more than
+	 * @param until_threshold rather to get symbols with more than
 	 *   percent threshold samples select symbols until the cumulated
 	 *   count of samples reach threshold percent
-	 * \param sort_by_vma rather to sort symbols by samples count
+	 * @param sort_by_vma rather to sort symbols by samples count
 	 *   sort them by vma
 	 *
 	 * until_threshold and threshold acts like the -w and -u options

@@ -1,21 +1,14 @@
-/* $Id: op_help.c,v 1.1 2002/05/06 18:00:35 movement Exp $ */
-/* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+/**
+ * \file op_help.c
+ * Copyright 2002 OProfile authors
+ * Read the file COPYING
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
+ * Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place - Suite 330, Boston, MA 02111-1307, USA.
+ * \author John Levon <moz@compsoc.man.ac.uk>
+ * \author Philippe Elie <phil_el@wanadoo.fr>
  */
 
-/* Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren */
 
 /* See IA32 Vol. 3 Appendix A */
 
@@ -33,7 +26,7 @@ static op_cpu cpu_type = CPU_NO_GOOD;
 
 /**
  * help_for_event - output event name and description
- * @i: event number
+ * @param i  event number
  *
  * output an help string for the event @i
  */
@@ -104,8 +97,8 @@ static struct poptOption options[] = {
 
 /**
  * get_options - process command line
- * @argc: program arg count
- * @argv: program arg array
+ * @param argc  program arg count
+ * @param argv  program arg array
  *
  * Process the arguments, fatally complaining on error.
  */

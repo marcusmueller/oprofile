@@ -45,9 +45,9 @@ static struct poptOption options[] = {
 
 /**
  * get_options - process command line
- * \param argc program arg count
- * \param argv program arg array
- * \param image: where to store the images filename
+ * @param argc program arg count
+ * @param argv program arg array
+ * @param image: where to store the images filename
  *
  * Process the arguments, fatally complaining on error.
  */
@@ -89,8 +89,8 @@ static string mangle_filename(const string & filename)
 /**
  * create_file_list - create the file list based
  *  on the command line file list
- * \param result where to store the created file list
- * \param images_filename the input file list contains either a binary
+ * @param result where to store the created file list
+ * @param images_filename the input file list contains either a binary
  * image name or a list of samples filenames
  *
  * if images_filename contain only one file it is assumed to be
@@ -152,7 +152,7 @@ static void create_file_list(list<string> & result,
 
 /**
  * check_samples_files_list - chack than all samples have coherent header
- * \param filenames: the filenames list from which we check sample file
+ * @param filenames: the filenames list from which we check sample file
  *
  * all error are fatal
  */ 
@@ -175,9 +175,9 @@ check_samples_files_list(const list<string> & filenames)
 /**
  * callback used to merge a database to another database.
  *
- * \param key
- * \param value
- * \param data is a pointer to the destination db_tree_t object
+ * @param key
+ * @param value
+ * @param data is a pointer to the destination db_tree_t object
  */
 static void copy_callback(db_key_t key, db_value_t value, void * data)
 {
@@ -189,8 +189,8 @@ static void copy_callback(db_key_t key, db_value_t value, void * data)
 /**
  * output_files - create a samples file by merging (cumulating samples count)
  *  from a collection of samples files
- * \param filename the output filename
- * \param filenames a collection of samples files name
+ * @param filename the output filename
+ * @param filenames a collection of samples files name
  *
  * all error are fatal
  */

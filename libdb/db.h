@@ -89,11 +89,11 @@ enum db_rw {
 };
  
 /** 
- * \param tree the data base object to setup 
- * \param root_idx_ptr an external pointer to put the root index, can be null
- * \param filename the filename where go the maped memory
- * \param write %DB_RW if opening for writing, else %DB_RDONLY
- * \param offset_page offset between the mapped memory and the data base page
+ * @param tree the data base object to setup 
+ * @param root_idx_ptr an external pointer to put the root index, can be null
+ * @param filename the filename where go the maped memory
+ * @param write %DB_RW if opening for writing, else %DB_RDONLY
+ * @param offset_page offset between the mapped memory and the data base page
  * area.
  *
  * parameter root_idx_ptr and offset allow to use a data base imbeded in
@@ -103,7 +103,7 @@ enum db_rw {
 void db_open(db_tree_t * tree, const char * filename, enum db_rw rw, size_t sizeof_header);
 
 /**
- * \param tree the data base to close
+ * @param tree the data base to close
  */
 void db_close(db_tree_t * tree);
 

@@ -206,8 +206,8 @@ static void handle_session_options(void)
  
 /**
  * get_options - process command line
- * \param argc program arg count
- * \param argv program arg array
+ * @param argc program arg count
+ * @param argv program arg array
  *
  * Process the arguments, fatally complaining on error.
  */
@@ -284,7 +284,7 @@ image_name::image_name(const string& samplefile_name)
 
 /**
  * samples_file_exist - test for a samples file existence
- * \param filename the base samples filename
+ * @param filename the base samples filename
  *
  * return true if filename exist
  */
@@ -297,8 +297,8 @@ static bool file_exist(const std::string & filename)
 
 /**
  * sort_file_list_by_name - insert in result a file list sorted by app name
- * \param result where to put result
- * \param file_list a list of string which must be insert in result
+ * @param result where to put result
+ * @param file_list a list of string which must be insert in result
  *
  * for each filename try to extract if possible the app name and
  * use it as a key to insert the filename in result
@@ -399,9 +399,9 @@ static void out_filename(const string& app_name,
 
 /**
  * output_image_samples_count - output the samples ratio for some images
- * \param first the start iterator
- * \param last the end iterator
- * \param total_count the total samples count
+ * @param first the start iterator
+ * @param last the end iterator
+ * @param total_count the total samples count
  *
  * iterator parameters are intended to be of type map_t::iterator or
  * map_t::reverse_iterator
@@ -423,9 +423,9 @@ static void output_image_samples_count(Iterator first, Iterator last,
 
 /**
  * build_sorted_map_by_count - insert element in a sorted_map_t
- * \param first the start iterator
- * \param last the end iterator
- * \param total_count the total samples count
+ * @param first the start iterator
+ * @param last the end iterator
+ * @param total_count the total samples count
  *
  */
 static void build_sorted_map_by_count(sorted_map_t & sorted_map, pair_it_t p_it)
@@ -441,7 +441,7 @@ static void build_sorted_map_by_count(sorted_map_t & sorted_map, pair_it_t p_it)
 /**
  * output_files_count - open each samples file to cumulate samples count
  * and display a sorted list of filename and samples ratio
- * \param files the file list to treat.
+ * @param files the file list to treat.
  *
  * print the whole cumulated count for all selected filename (currently
  * the whole base_dir directory), does not show any details about symbols
@@ -613,8 +613,8 @@ string check_image_name(const string & image_name,
 /**
  * output_symbols_count - open each samples file to cumulate samples count
  * and display a sorted list of symbols and samples ratio
- * \param files the file list to treat.
- * \param counter on which counter to work
+ * @param files the file list to treat.
+ * @param counter on which counter to work
  *
  * print the whole cumulated count for all symbols in selected filename
  * (currently the whole base_dir directory)

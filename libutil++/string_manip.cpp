@@ -27,8 +27,8 @@ using std::vector;
 /**
  * erase_from_last_of - erase a sequence from the last occurence
  * of a given char to the end of string
- * @str: string
- * @ch: the char from where we erase character
+ * @param str  string
+ * @param ch  the char from where we erase character
  *
  * erase char from the last occurence of @ch to the
  * end of @str and return the string
@@ -47,8 +47,8 @@ string erase_from_last_of(string const & str, char ch)
 /**
  * erase to_last_of - erase a sequence of character from
  * the begining of string to the last occurence of a given char
- * @str: string
- * @ch: the characterto search
+ * @param str  string
+ * @param ch  the characterto search
  *
  * erase char from the begin of @str to the last
  * occurence of @ch from and return the string
@@ -66,8 +66,8 @@ string erase_to_last_of(string const & str, char ch)
 
 /**
  * rtrim - remove last trailing character
- * @str: the string
- * @ch: the character to remove
+ * @param str  the string
+ * @param ch  the character to remove
  *
  * Returns the @str removed of its trailing @ch
  */
@@ -99,9 +99,9 @@ string tostr(unsigned int i)
 
 /**
  * separate_token - separate a list of tokens
- * @result: where to put results
- * @str: the string to tokenize
- * @ch: the separator_char
+ * @param result  where to put results
+ * @param str  the string to tokenize
+ * @param ch  the separator_char
  *
  */
 void separate_token(vector<string> & result, const string & str, char sep)

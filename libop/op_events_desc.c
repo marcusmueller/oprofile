@@ -55,7 +55,7 @@ static char const * cpu_names[MAX_CPU_TYPE] = {
 
 /**
  * op_get_cpu_type_str - get the cpu string.
- * @cpu_type: the cpu type identifier
+ * @param cpu_type  the cpu type identifier
  *
  * The function always return a valid const char*
  * the core cpu denomination or "invalid cpu type" if
@@ -237,8 +237,8 @@ char * op_event_descs[] = {
 
 /**
  * op_get_um_desc - verify and get unit mask description
- * @op_events_index: the index of the events in op_events array
- * @um: unit mask
+ * @param op_events_index  the index of the events in op_events array
+ * @param um  unit mask
  *
  * Try to get the associated unit mask given the event index and unit
  * mask value. No error can occur.
@@ -271,12 +271,12 @@ static char * op_get_um_desc(u32 op_events_index, u8 um)
 
 /**
  * op_get_event_desc - get event name and description
- * @cpu_type: the cpu_type
- * @type: event value
- * @um: unit mask
- * @typenamep: returned event name string
- * @typedescp: returned event description string
- * @umdescp: returned unit mask description string
+ * @param cpu_type  the cpu_type
+ * @param type  event value
+ * @param um  unit mask
+ * @param typenamep  returned event name string
+ * @param typedescp  returned event description string
+ * @param umdescp  returned unit mask description string
  *
  * Get the associated event name and descriptions given
  * the cpu type, event value and unit mask value. It is a fatal error

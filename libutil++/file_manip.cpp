@@ -48,8 +48,8 @@ using std::endl;
 
 /**
  * is_file_identical - check for identical files
- * @file1: first filename
- * @file2: scond filename
+ * @param file1  first filename
+ * @param file2  scond filename
  *
  * return true if the two filenames belong to the same file
  */
@@ -68,7 +68,7 @@ bool is_files_identical(string const & file1, string const & file2)
 
 /**
  * create_dir - create a directory
- * @dir: the directory name to create
+ * @param dir  the directory name to create
  *
  * return false if the directory @dir does not exist
  * and cannot be created
@@ -84,7 +84,7 @@ bool create_dir(string const & dir)
 
 /**
  * create_path - create a path
- * @dir: the path to create
+ * @param dir  the path to create
  *
  * create directory for each dir components in @path
  * return false if one of the path cannot be created.
@@ -114,7 +114,7 @@ bool create_path(string const & path)
 
 /**
  * op_read_link - read the contents of a symbolic link file
- * @name: the file name
+ * @param name  the file name
  *
  * return an empty string on failure
  */
@@ -198,7 +198,7 @@ std::string relative_to_absolute_path(const std::string & path,
 
 /**
  * dirname - get the path component of a filename
- * @file_name: filename
+ * @param file_name  filename
  *
  * Returns the path name of a filename with trailing '/' removed.
  */
@@ -209,7 +209,7 @@ string dirname(string const & file_name)
 
 /**
  * basename - get the basename of a path
- * @path_name: path
+ * @param path_name  path
  *
  * Returns the basename of a path with trailing '/' removed.
  */
@@ -263,9 +263,9 @@ string strip_filename_suffix(const std::string & filename)
  
 /**
  * get_sample_file_list - create a file list of base samples filename
- * @file_list: where to put the results
- * @base_dir: base directory
- * @filter: a file filter name.
+ * @param file_list  where to put the results
+ * @param base_dir  base directory
+ * @param filter  a file filter name.
  *
  * fill @file_list with a list of base samples
  * filename where a base sample filename is a

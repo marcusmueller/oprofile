@@ -1,5 +1,15 @@
 2002-05-06  John Levon  <moz@compsoc.man.ac.uk>
 
+	* <various>: move to new header style, doxygen
+	  should use @param blah not @blah: or \param blah 
+
+	* doc/srcdoc/Doxyfile: new file for api docs
+
+	* scripts/Doxyfile:
+	* scripts/dodoc: remove
+ 
+2002-05-06  John Levon  <moz@compsoc.man.ac.uk>
+
 	* configure.in: don't add KINC to BKCFLAGS directly
  
 	* module/Makefile.in: re-write

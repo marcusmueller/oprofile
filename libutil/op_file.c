@@ -19,8 +19,8 @@
  
 /**
  * op_get_fsize - get size of file
- * @file: file name
- * @fatal: exit on error
+ * @param file  file name
+ * @param fatal  exit on error
  *
  * Returns the size of the named file in bytes.
  * Failure is fatal if @fatal is %TRUE.
@@ -44,7 +44,7 @@ off_t op_get_fsize(char const * file, int fatal)
 
 /**
  * op_get_mtime - get mtime of file
- * @file: file name
+ * @param file  file name
  *
  * Returns the mtime of the given file or 0 on failure
  */
@@ -61,9 +61,9 @@ time_t op_get_mtime(char const * file)
 
 /**
  * op_move_regular_file - move file between directory
- * @new_dir: the destination directory
- * @old_dir: the source directory
- * @name: the filename
+ * @param new_dir  the destination directory
+ * @param old_dir  the source directory
+ * @param name  the filename
  *
  * move the file @old_dir/@name to @new_dir/@name iff
  * @old_dir/@name is a regular file
@@ -103,7 +103,7 @@ int op_move_regular_file(char const *new_dir,
 /**
  * remove_component_p - check if it is safe to remove the final component
  * of a path.
- * @path: string pointer
+ * @param path  string pointer
  *
  * Returns 1 if it is safe to remove the component
  * 0 otherwise
@@ -126,7 +126,7 @@ static int remove_component_p(char const * path)
 
 /**
  * op_simplify_path_name - simplify a path name in place
- * @path: string pointer to the path.
+ * @param path  string pointer to the path.
  *
  *  Simplify a path name in place, deleting redundant components.  This
  *  reduces OS overhead and guarantees that equivalent paths compare
@@ -236,8 +236,8 @@ static char * op_simplify_pathname(char * path)
 
 /**
  * op_relative_to_absolute_path - translate relative path to absolute path.
- * @path: path name
- * @base_dir: optionnal base directory, if %NULL getcwd() is used
+ * @param path  path name
+ * @param base_dir  optionnal base directory, if %NULL getcwd() is used
  * to get the base directory.
  *
  * prepend @base_dir or the result of getcwd if the path is not absolute.
