@@ -16,11 +16,8 @@ CTR1_OSUSR=0
 USE_PII=0 
 IGNORE_MYSELF=0 
 DIR="/var/opd"
-LOG_FILE="$DIR/oprofiled.log"
-IMAGES_FILE="$DIR/images.opd"
-SAMPLES_FILE="$DIR/samples.opd"
-DEVICE_FILE="$DIR/opdevice"
 MAP_FILE=
+VMLINUX= 
  
 help_string='op_start: usage:$
 Module options$
@@ -42,10 +39,11 @@ Daemon options$
   --ignore-myself=[0|1]     ignore samples for oprofiled$
   --log-file=file           log file$
   --base-dir=dir            base directory of daemon$
-  --images-file=file        output image list file$
-  --samples-file=file       output samples file$
+  --samples-dir=file        output samples directory$
   --device-file=file        profile device file$
+  --map-device-file=file    profile map device file$
   --map-file=file           System.map for running kernel file$
+  --vmlinux=file            vmlinux kernel image$
 $
 General options$
   --list-events             list event types and unit masks$
@@ -53,7 +51,7 @@ General options$
 
 if [ "$1" = "--help" ]
 then
-	echo $help_string | tr \$ '\n' 
+	echo $help_string | tr \$ '\n'
 	exit 0
 fi
 
@@ -63,6 +61,11 @@ then
 fi 
 
 
+LOG_FILE=
+SAMPLES_DIR=
+DEVICE_FILE=
+MAP_DEVICE_FILE=
+ 
 # get specified options
  
 while [ "$#" -ne 0 ]
@@ -116,21 +119,37 @@ do
 	if [ "$arg" = "--base-dir" ]; then
 		DIR=$val
 	fi 
-	if [ "$arg" = "--images-file" ]; then
-		IMAGES_FILE=$val
-	fi 
-	if [ "$arg" = "--samples-file" ]; then
-		SAMPLES_FILE=$val
+	if [ "$arg" = "--samples-dir" ]; then
+		SAMPLES_DIR=$val
 	fi 
 	if [ "$arg" = "--device-file" ]; then
 		DEVICE_FILE=$val
 	fi 
+	if [ "$arg" = "--map-device-file" ]; then
+		MAP_DEVICE_FILE=$val
+	fi 
 	if [ "$arg" = "--map-file" ]; then
 		MAP_FILE=$val
+	fi 
+	if [ "$arg" = "--vmlinux" ]; then
+		VMLINUX=$val
 	fi 
 	shift
 done 
 
+if [ "$LOG_FILE" = "" ]; then 
+	LOG_FILE="$DIR/oprofiled.log"
+fi
+if [ "$SAMPLES_DIR" = "" ]; then 
+	SAMPLES_DIR="$DIR/samples/"
+fi
+if [ "$DEVICE_FILE" = "" ]; then 
+	DEVICE_FILE="$DIR/opdev"
+fi
+if [ "$MAP_DEVICE_FILE" = "" ]; then 
+	MAP_DEVICE_FILE="$DIR/opmapdev" 
+fi
+ 
 echo "Parameters used:"
 echo "BUF_SIZE $BUF_SIZE"
 echo "HASH_SIZE $HASH_SIZE"
@@ -146,11 +165,51 @@ echo "USE_PII $USE_PII"
 echo "IGNORE_MYSELF $IGNORE_MYSELF" 
 echo "DIR $DIR"
 echo "LOG_FILE $LOG_FILE"
-echo "IMAGES_FILE $IMAGES_FILE"
-echo "SAMPLES_FILE $SAMPLES_FILE"
+echo "SAMPLES_DIR $SAMPLES_DIR"
 echo "DEVICE_FILE $DEVICE_FILE"
+echo "MAP_DEVICE_FILE $MAP_DEVICE_FILE"
 echo "MAP_FILE $MAP_FILE"
+echo "VMLINUX $VMLINUX"
 
+
+MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
+if [ -c "$DEVICE_FILE" ]
+then
+	echo "Removing $DEVICE_FILE"
+	rm "$DEVICE_FILE"
+fi
+
+if [ -c "$MAP_DEVICE_FILE" ]
+then
+	echo "Removing $MAP_DEVICE_FILE"
+	rm "$MAP_DEVICE_FILE"
+fi
+
+echo "Doing mknod $DEVICE_FILE"
+mknod "$DEVICE_FILE" c $MAJOR_NR 0
+if [ "$?" != "0" ]
+then
+	echo "Couldn't mknod $DEVICE_FILE"
+	exit 1
+fi
+
+echo "Doing mknod $MAP_DEVICE_FILE"
+mknod "$MAP_DEVICE_FILE" c $MAJOR_NR 2
+if [ "$?" != "0" ]
+then
+	echo "Couldn't mknod $MAP_DEVICE_FILE"
+	exit 1
+fi
+
+if [ ! -d "$SAMPLES_DIR" ]
+then
+	mkdir "$SAMPLES_DIR"
+	if [ "$?" != "0" ]
+	then
+		echo "Couldn't mkdir $SAMPLES_DIR"
+		exit 1
+	fi
+fi
 
 MOD_ARGS="op_hash_size=$HASH_SIZE op_buf_size=$BUF_SIZE" 
 if [ "$CTR0_TYPE" != "" ]; then
@@ -159,10 +218,10 @@ fi
 if [ "$CTR1_TYPE" != "" ]; then
 	MOD_ARGS="$MOD_ARGS op_ctr1_on=1 op_ctr1_type=$CTR1_TYPE op_ctr1_um=$CTR1_UM op_ctr1_count=$CTR1_COUNT op_ctr1_osusr=$CTR1_OSUSR"
 fi 
-	 
+
 INSMODCMD="insmod oprofile.o $MOD_ARGS" 
 echo "Loading module with: $INSMODCMD"
-$INSMODCMD 
+$INSMODCMD
 if [ "$?" != "0" ]
 then
 	echo "Couldn't load oprofile.o module"
@@ -170,36 +229,20 @@ then
 	exit 1
 fi
  
-MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
-if [ -c "$DEVICE_FILE" ]
-then
-	echo "Removing $DEVICE_FILE"
-	rm "$DEVICE_FILE"
-fi
-
-echo "Doing mknod $DEVICE_FILE"
-mknod "$DEVICE_FILE" c $MAJOR_NR 0
-if [ "$?" != "0" ]
-then
-	echo "Couldn't mknod $DEVICE_FILE"
-	rmmod oprofile
-	exit 1
-fi
-
 OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$USE_PII --ignore-myself=$IGNORE_MYSELF \
-	--log-file=$LOG_FILE --base-dir=$DIR --images-file=$IMAGES_FILE \
-	--samples-file=$SAMPLES_FILE --device-file=$DEVICE_FILE"
+	--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
+	--device-file=$DEVICE_FILE --map-device-file=$MAP_DEVICE_FILE --vmlinux=$VMLINUX"
 
 if [ "$CTR0_TYPE" != "" ]; then
 	OPD_ARGS="$OPD_ARGS --ctr0-event=$CTR0_TYPE --ctr0-unit-mask=$CTR0_UM"
-fi 
+fi
 
 if [ "$CTR1_TYPE" != "" ]; then
 	OPD_ARGS="$OPD_ARGS --ctr1-event=$CTR0_TYPE --ctr1-unit-mask=$CTR0_UM"
-fi 
+fi
 if [ "$MAP_FILE" != "" ]; then
 	OPD_ARGS="$OPD_ARGS --map-file=$MAP_FILE"
-fi 
+fi
 
 oprofiled $OPD_ARGS
 if [ "$?" != "0" ]
@@ -207,4 +250,4 @@ then
 	echo "Couldn't start oprofiled."
 	rmmod oprofile
 	exit 1
-fi 
+fi

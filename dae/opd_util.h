@@ -61,7 +61,7 @@ void opd_write_u32_ne(FILE *fp, u32 val);
 #define opd_try_open_device(n) opd_open_device((n),0)
 fd_t opd_open_device(const char *name, int fatal);
 void opd_close_device(fd_t devfd);
-void opd_read_device(fd_t devfd, void *buf, size_t size);
+void opd_read_device(fd_t devfd, void *buf, size_t size, int seek);
 off_t opd_get_fsize(const char *file);
  
 char *opd_get_time(void);

@@ -648,20 +648,23 @@ void opd_close_device(fd_t devfd)
  * @devfd: file descriptor of device
  * @buf: buffer
  * @size: size of buffer
+ * @seek: seek to the start or not 
  *
  * Read @size bytes from a device into buffer @buf.
- * A seek to the start of the device file is done first,
- * and a read is requested in one go of @size bytes.
+ * A seek to the start of the device file is done first
+ * if @seek is non-zero, then a read is requested in one 
+ * go of @size bytes.
  *
  * The driver returning %EAGAIN is handled to allow signals.
  * Any other error return is fatal.
  */ 
-void opd_read_device(fd_t devfd, void *buf, size_t size)
+void opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
 {
 	ssize_t count;
  
 	do {
-		lseek(devfd,0,SEEK_SET);
+		if (seek) 
+			lseek(devfd,0,SEEK_SET);
  
 		count = read(devfd, buf, size);
 

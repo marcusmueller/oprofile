@@ -19,9 +19,11 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
+#include <dirent.h> 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/poll.h>
+#include <sys/mman.h> 
 
 #include "opd_util.h"
  
@@ -32,13 +34,10 @@
 /* maximum nr. of kernel modules */
 #define OPD_MAX_MODULES 64
  
-/* processes unused in this nr. of seconds are forgotten */
-#define OPD_REAP_TIME 60*21
- 
 #define NR_CPUS 32
  
 /* stats for sample collection */
-#define OPD_MAX_STATS 8
+#define OPD_MAX_STATS 10
 
 /* nr. kernel samples not in process context */
 #define OPD_KERNEL_NP 0
@@ -56,20 +55,38 @@
 #define OPD_PROC_QUEUE_DEPTH 6
 /* nr. of times buffer is read */
 #define OPD_DUMP_COUNT 7
+/* nr. accesses of map array */
+#define OPD_MAP_ARRAY_ACCESS 8
+/* cumulative depth of map array accesses */
+#define OPD_MAP_ARRAY_DEPTH 9 
  
 #define OPD_DEFAULT_BUF_SIZE 2048
  
 #define streq(a,b) (!strcmp((a),(b))) 
 #define streqn(a,b,n) (!strncmp((a),(b),(n))) 
  
-#define OP_BITS 1
+#define OP_BITS 2
 
 /* top OP_BITS bits of count are used as follows: */
+/* is this actually a mapping notification ? */
+#define OP_MAPPING (1U<<15) 
 /* which perf counter the sample is from */
-#define OP_COUNTER (1<<15)
+#define OP_COUNTER (1U<<14)
 
-#define OP_COUNT_MASK ((1<<(16-OP_BITS))-1)
+#define OP_COUNT_MASK ((1U<<(16-OP_BITS))-1U)
 
+/* mapping notification types */ 
+/* fork(),vfork(),clone() */
+#define OP_FORK ((1U<<15)|(1U<<0))
+/* execve() */
+#define OP_DROP ((1U<<15)|(1U<<1))
+/* mapping */
+#define OP_MAP ((1U<<15)|(1U<<2))
+/* init_module() */
+#define OP_DROP_MODULES ((1U<<15)|(1U<<3))
+/* exit() */
+#define OP_EXIT ((1U<<15)|(1U<<4))
+ 
 /* event check returns */
 #define OP_EVENTS_OK            0x0
 #define OP_CTR0_NOT_FOUND       0x1
@@ -83,51 +100,72 @@
 #define OP_CTR0_PIII_EVENT     0x100
 #define OP_CTR1_PIII_EVENT     0x200
  
-/* file format header, network-endian */
-struct opd_header {
+#define OPD_MAGIC 0xdeb6
+#define OPD_VERSION 0x1
+ 
+/* at the end of the sample files */
+struct opd_footer {
 	u16 magic;
 	u16 version;
+	u8 is_kernel; 
+	u8 ctr0_type_val;
+	u8 ctr1_type_val;
+	u8 ctr0_um;
+	u8 ctr1_um;
 };
-
+ 
 /* note that pid_t is 32 bits, but only 16 are used
    currently, so to save cache, we use u16 */
 struct op_sample {
         u32 eip;
         u16 pid;
         u16 count;
-};
+} __attribute__((__packed__,__aligned__(8)));
 
+struct opd_image {
+	fd_t fd;
+	void *start;
+	off_t len; 
+	char *name;
+};
+ 
 /* kernel module */
 struct opd_module {
-	u16 image_nr;
+	struct opd_image *image;
 	char *name;
 	u32 start;
 	u32 end;
 };
  
 struct opd_map {
+	struct opd_image *image;
 	u32 start;
 	u32 offset;
 	u32 end;
-	u16 image_nr;
 };
 
 struct opd_proc {
 	struct opd_map *maps;
-	int nr_maps;
-	int max_nr_maps;
+	unsigned int nr_maps;
+	unsigned int max_nr_maps;
 	u16 pid;
-	u16 exe_nr;
-	time_t age;
+	int dead; 
 	struct opd_proc *prev;
 	struct opd_proc *next;
 };
  
 int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um, int p2, u8 *ctr0_t, u8 *ctr1_t);
  
+void opd_get_ascii_procs(void); 
 void opd_init_images(void);
-int opd_get_offset(u16 pid, u32 eip, u16 *image_nr, u32 *offset, u16 *name);
+void opd_put_sample(const struct op_sample *sample);
 void opd_read_system_map(const char *filename); 
 void opd_alarm(int val); 
+ 
+void opd_handle_fork(const struct op_sample *sample);
+void opd_handle_exit(const struct op_sample *sample);
+void opd_handle_mapping(const struct op_sample *sample);
+void opd_handle_drop_mappings(const struct op_sample *sample);
+void opd_clear_module_info(void);
  
 #endif /* OPROFILED_H */
