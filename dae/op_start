@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.62 2002/04/03 17:50:06 movement Exp $
+# $Id: op_start,v 1.63 2002/04/04 02:08:50 phil_e Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -17,7 +17,7 @@
 #
 
 # ensure bash2
-if [ "${BASH_VERSINFO[0]}" -lt 2 ]; then
+if [ "`echo $BASH_VERSION | cut -b1`" -lt 2 ]; then
 	exec /bin/bash2 $0 $@
 fi
 
