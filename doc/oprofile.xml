@@ -1186,16 +1186,6 @@ binaries profiled in <filename>/usr/bin/</filename>, I could do
 <command>opreport image:/usr/bin/\*</command>. Note the necessity
 to escape the special character from the shell.
 </para>
-<para>
-For a profile specification to produce useful data, all selected
-profiles must match in the basic event details. It's not possible
-to meaningfully compare profiles from two different counter types.
-So some parameters like <option>event:</option> do not
-allow a comma-separated list or glob, as collating results is not
-possible. This implies you might need to specify these parameters
-if you've profiled with multiple event types, so that the tools
-can disambiguate which profiles you actually mean.
-</para>
 
 <sect2 id="profile-spec-examples">
 <title>Examples</title>
@@ -1290,28 +1280,31 @@ excepting <filename>boring-test</filename> :
 	</varlistentry>
 
 	<varlistentry>
-		<term><option>event:</option><emphasis>eventname</emphasis></term>
+		<term><option>event:</option><emphasis>eventlist</emphasis></term>
 		<listitem><para>
 		The symbolic event name to match on, e.g. <option>event:DATA_MEM_REFS</option>.
+		You can pass a list of events for side-by-side comparison with <command>opreport</command>.
 		When using the timer interrupt, the event is always "TIMER".
 		</para></listitem>
 	</varlistentry>
 
 	<varlistentry>
-		<term><option>count:</option><emphasis>eventcount</emphasis></term>
+		<term><option>count:</option><emphasis>eventcountlist</emphasis></term>
 		<listitem><para>
 		The event count to match on, e.g. <option>event:DATA_MEM_REFS count:30000</option>.
 		Note that this value refers the setting used for <command>opcontrol</command>
 		only, and has nothing to do with the sample counts in the profile data
 		itself.
+		You can pass a list of events for side-by-side comparison with <command>opreport</command>.
 		When using the timer interrupt, the count is always 0 (indicating it cannot be set).
 		</para></listitem>
 	</varlistentry>
 
 	<varlistentry>
-		<term><option>unit-mask:</option><emphasis>maskvalue</emphasis></term>
+		<term><option>unit-mask:</option><emphasis>masklist</emphasis></term>
 		<listitem><para>
 		The unit mask value of the event to match on, e.g. <option>unit-mask:1</option>.
+		You can pass a list of events for side-by-side comparison with <command>opreport</command>.
 		</para></listitem>
 	</varlistentry>
 
@@ -1404,6 +1397,14 @@ when using <option>--separate=lib</option>).
 Sometimes it can be useful to merge these results back together
 before getting results. The <option>--merge</option> option allows
 you to do that.
+</sect2>
+
+<sect2 id="opreport-comparison">
+<title>Side-by-side multiple results</title>
+If you have used multiple events when profiling, by default you get
+side-by-side results of each event's sample values from <command>opreport</command>.
+You can restrict which events to list by appropriate use of the
+<option>event:</option> profile specifications, etc.
 </sect2>
 
 <sect2 id="opreport-options">

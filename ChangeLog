@@ -1,5 +1,10 @@
 2003-08-12  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml: document opreport's side-by-side a little
+	bit
+
+2003-08-12  John Levon  <levon@movementarian.org>
+
 	* opreport.cpp: s/group_summary/app_summary/, and
 	a lot of other renamings to clarify the count groups
 	usage.
