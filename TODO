@@ -66,6 +66,11 @@ Before 1.0 little stuff
  o --buffer-size is useless on 2.5 without tuning of watershed
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
  o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
+ o oparchive will be more usefull with a --root= options to allow profiling
+  on a small box, nfs mount / to another box and transfer sample file and
+  binary on a bigger box for analysis. There is also a problem in oparchive
+  you can use session: to get the right path to samples files but oprofiled.log
+  and abi files parth are hardcoded to /var/lib/oprofile.
 
 Documentation
 -------------
