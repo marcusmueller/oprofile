@@ -172,7 +172,7 @@ static void opd_open_image(struct opd_image * image)
 	/* samples files are lazily opened */
 }
 
-
+#if 0 /* re-enable it later */
 /**
  * opd_check_image_mtime - ensure samples file is up to date
  * @param image  image to check
@@ -209,7 +209,7 @@ void opd_check_image_mtime(struct opd_image * image)
 
 	opd_open_image(image);
 }
-
+#endif
 
 /**
  * opd_put_image_sample - write sample to file
@@ -260,7 +260,7 @@ static struct opd_image * opd_add_image(unsigned long cookie, unsigned long app_
 	opd_init_image(image, cookie, app_cookie);
 	list_add(&image->hash_list, &opd_images[hash]);
 	nr_images++;
-	opd_check_image_mtime(image);
+	opd_open_image(image);
 	return image;
 }
 
@@ -313,7 +313,7 @@ static struct opd_image * opd_add_kernel_image(char const * name)
 	image->kernel = 1;
 	list_add(&image->hash_list, &opd_images[HASH_KERNEL]);
 	nr_images++;
-	opd_check_image_mtime(image);
+	opd_open_image(image);
 	return image;
 }
 

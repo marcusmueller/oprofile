@@ -1,5 +1,9 @@
 2002-12-04  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* daemon/opd_image.c: revert last change, it break daemon...
+	
+2002-12-04  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* daemon/opd_image.c: re-enable opd_check_image_mtime() it's not
 	  perfect but better than nothing
 
