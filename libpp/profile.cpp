@@ -63,14 +63,12 @@ unsigned int profile_t::accumulate_samples(uint start, uint end) const
 void profile_t::add_sample_file(string const & filename, u32 offset)
 {
 	samples_odb_t samples_db;
-	char * err_msg;
 
 	int rc = odb_open(&samples_db, filename.c_str(), ODB_RDONLY,
-		sizeof(struct opd_header), &err_msg);
+		sizeof(struct opd_header));
 
 	if (rc != EXIT_SUCCESS) {
-		cerr << err_msg << endl;
-		free(err_msg);
+		cerr << samples_db.err_msg << endl;
 		exit(EXIT_FAILURE);
 	}
 

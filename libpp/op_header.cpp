@@ -102,14 +102,12 @@ void check_mtime(string const & file, opd_header const & header)
 opd_header read_header(string const & sample_filename)
 {
 	samples_odb_t samples_db;
-	char * err_msg;
 
 	int rc = odb_open(&samples_db, sample_filename.c_str(), ODB_RDONLY,
-		sizeof(struct opd_header), &err_msg);
+		sizeof(struct opd_header));
 
 	if (rc != EXIT_SUCCESS) {
-		cerr << err_msg << endl;
-		free(err_msg);
+		cerr << samples_db.err_msg << endl;
 		exit(EXIT_FAILURE);
 	}
 

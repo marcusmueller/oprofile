@@ -30,7 +30,8 @@ typedef odb_index_t odb_hash_mask_t;
  * goal is to get a O(1) amortized insert time. bucket factor must be a
  * power of two. FIXME: see big comment in odb_hash_add_node, you must
  * re-enable zeroing hash table if BUCKET_FACTOR > 2 (roughly exact, you
- * want to read the comment in odb_add_hash_node() if you tune this define) */
+ * want to read the comment in odb_add_hash_node() if you tune this define)
+ */
 #define BUCKET_FACTOR 1
 
 /** a db hash node */
@@ -42,7 +43,8 @@ typedef struct {
 
 /** the minimal information which must be stored in the file to reload
  * properly the data base, following this header is the node array then
- * the hash table (when growing we avoid to copy node array) */
+ * the hash table (when growing we avoid to copy node array)
+ */
 typedef struct {
 	odb_node_nr_t size;		/**< in node nr (power of two) */
 	odb_node_nr_t current_size;	/**< nr used node + 1, node 0 unused */
@@ -66,6 +68,9 @@ typedef struct {
  *  the hash table: array of odb_index_t indexing the node array 
  *    (descr->size * BUCKET_FACTOR) entries
  *
+ * the err_msg field is cleared by odb_clear_error(). This field record
+ * the first error encountered. It's a fatal error if an error occur and this
+ * field is non NULL
  */
 typedef struct {
 	odb_node_t * node_base;		/**< base memory area of the page */
@@ -76,6 +81,7 @@ typedef struct {
 	unsigned int offset_node;	/**< from base_memory to node array */
 	void * base_memory;		/**< base memory of the maped memory */
 	int fd;				/**< mmaped memory file descriptor */
+	char const * err_msg;		/**< *first* error message */
 } samples_odb_t;
 
 #ifdef __cplusplus
@@ -102,18 +108,21 @@ void odb_init(samples_odb_t * hash);
  * @param filename the filename where go the maped memory
  * @param rw \enum ODB_RW if opening for writing, else \enum ODB_RDONLY
  * @param sizeof_header size of the file header if any
- * @param err_msg error message is returned here when error occurs
  *
  * The sizeof_header parameter allows the data file to have a header
  * at the start of the file which is skipped.
  * odb_open() always preallocate a few number of pages.
  * returns EXIT_SUCCESS on success, EXIT_FAILURE on failure
- * on failure *err_msg contains a pointer to an asprintf-alloced string
- * containing an error message.  the string should be freed using free() */
- int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw, size_t sizeof_header, char ** err_msg);
+ * on failure hash->err_msg contains a pointer to a malloced string
+ * containing an error message.
+ */
+int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw, size_t sizeof_header);
 
 /** Close the given ODB hash */
 void odb_close(samples_odb_t * hash);
+
+/** clear the last occured error */
+void odb_clear_error(samples_odb_t * hash);
 
 /** issue a msync on the used size of the mmaped file */
 void odb_sync(samples_odb_t const * hash);
@@ -122,9 +131,10 @@ void odb_sync(samples_odb_t const * hash);
  * invalidated by this call !
  * returns the index of the created node on success or
  * ODB_NODE_NR_INVALID on failure
- * on failure *err_msg contains a pointer to an asprintf-alloced string
- * containing an error message.  the string should be freed using free() */
-odb_node_nr_t odb_hash_add_node(samples_odb_t * hash, char ** err_msg);
+ * on failure hash->err_msg contains a pointer to a malloced string
+ * containing an error message.
+ */
+odb_node_nr_t odb_hash_add_node(samples_odb_t * hash);
 
 /** "immpossible" node number to indicate an error from odb_hash_add_node() */
 #define ODB_NODE_NR_INVALID ((odb_node_nr_t)-1)
@@ -147,9 +157,10 @@ void odb_hash_free_stat(odb_hash_stat_t * stats);
 /** insert info at key, if key already exist the info is added to the
  * existing samples
  * returns EXIT_SUCCESS on success, EXIT_FAILURE on failure
- * on failure *err_msg contains a pointer to an asprintf-alloced string
- * containing an error message.  the string should be freed using free() */
-int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value, char ** err_msg);
+ * on failure hash->err_msg contains a pointer to a malloced string
+ * containing an error message.
+ */
+int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value);
 
 /* odb_travel.c */
 /** the call back type to pass to travel() */
@@ -185,9 +196,15 @@ static __inline unsigned int do_hash(samples_odb_t const * hash, odb_key_t value
 	 * so this hash coding use 15 low order bits of eip, then add one hash
 	 * bits at each grow. Hash table is stored in files avoiding to rebuild
 	 * ing them at profiling re-start so on changing do_hash() change the
-	 * file format */
+	 * file format
+	 */
 	return ((value << 0) ^ (value >> 8)) & hash->hash_mask;
 }
+
+/** not a part of the public interface: set error message to error. Fatal error
+ * occur if  hash->error_msg != NULL
+ */
+void odb_set_error(samples_odb_t * hash, char const * err_msg);
 
 #ifdef __cplusplus
 }

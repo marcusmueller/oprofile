@@ -1,3 +1,16 @@
+2003-06-03  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/op_header.cpp:
+	* libpp/profile.cpp:
+	* dae/opd_proc.c:
+	* dae/opd_sample_files.c:
+	* daemon/opd_image.c:
+	* daemon/opd_sample_files.c:
+	* libdb/odb_hash.h:
+	* libdb/db_insert.c:
+	* libdb/db_manage.c:
+	* libdb/db_test.c: error message is now a field of a samples_odb_t
+
 2003-06-03  John Levon  <levon@movementarian.org>
 
 	* libutil++/child_reader.cpp:

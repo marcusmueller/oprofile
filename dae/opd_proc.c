@@ -273,7 +273,6 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 			  u32 counter)
 {
 	samples_odb_t * sample_file;
-	char * err_msg;
 
 	sample_file = &image->sample_files[counter];
 
@@ -285,9 +284,8 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 		}
 	}
 
-	if (odb_insert(sample_file, offset, 1, &err_msg) != EXIT_SUCCESS) {
-		fprintf(stderr, "odb_insert() %s\n", err_msg);
-		free(err_msg);
+	if (odb_insert(sample_file, offset, 1) != EXIT_SUCCESS) {
+		fprintf(stderr, "odb_insert() %s\n", sample_file->err_msg);
 		exit(EXIT_FAILURE);
 	}
 }

@@ -14,7 +14,7 @@
 
 #include "odb_hash.h"
 
-int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value, char ** err_msg)
+int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value)
 {
 	size_t index;
 	odb_index_t new_node;
@@ -42,7 +42,7 @@ int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value, char ** e
 	 * the node_base array, odb_hash_add_node() increase current_size but
 	 * odb_travel just ignore node with a zero key so on setting the key
 	 * atomically update the node */
-	new_node = odb_hash_add_node(hash, err_msg);
+	new_node = odb_hash_add_node(hash);
 	if (new_node == ODB_NODE_NR_INVALID) {
 		return EXIT_FAILURE;
 	}

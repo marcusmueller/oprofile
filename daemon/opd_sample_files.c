@@ -162,7 +162,6 @@ void opd_open_sample_file(struct opd_image * image, int counter)
 	char * mangled;
 	samples_odb_t * sample_file;
 	struct opd_header * header;
-	char * err_msg;
 	int rc;
 
 	sample_file = &image->sample_files[counter];
@@ -171,11 +170,9 @@ void opd_open_sample_file(struct opd_image * image, int counter)
 
 	verbprintf("Opening \"%s\"\n", mangled);
 
-	rc = odb_open(sample_file, mangled, ODB_RDWR, sizeof(struct opd_header),
-		&err_msg);
+	rc = odb_open(sample_file, mangled, ODB_RDWR, sizeof(struct opd_header));
 	if (rc != EXIT_SUCCESS) {
-		fprintf(stderr, "%s", err_msg);
-		free(err_msg);
+		fprintf(stderr, "%s", sample_file->err_msg);
 		exit(EXIT_FAILURE);
 	}
 	if (!sample_file->base_memory) {
