@@ -7,6 +7,7 @@
 	* daemon/opd_kernel.c:
 	* daemon/oprofiled.c: include op_config_25.h
 
+	* dae/oprofiled.c:
 	* dae/opd_image.c:
 	* dae/opd_kernel.c:
 	* dae/opd_mapping.c: include op_config_24.h

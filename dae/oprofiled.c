@@ -30,6 +30,7 @@
 #include "op_libiberty.h"
 #include "op_interface.h"
 #include "op_hw_config.h"
+#include "op_config_24.h"
 
 #include <unistd.h>
 #include <signal.h>
