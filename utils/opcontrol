@@ -1076,7 +1076,7 @@ do_save_session () {
 	SAVE_DIR="${SAMPLES_DIR}${SAVE_NAME}"
 
 	if test -e "$SAVE_DIR"; then
-		echo "session $SAVE_DIR already exists\n" >& 2
+		echo "session $SAVE_DIR already exists" >&2
 		exit 1
 	fi
 		
