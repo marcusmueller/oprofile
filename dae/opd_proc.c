@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.97 2002/01/22 05:10:34 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.98 2002/01/24 17:35:48 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1029,10 +1029,6 @@ void opd_put_sample(const struct op_sample *sample)
 	if (kernel_only)
 		return;
 
-	/* FIXME: is this comment correct now we always apply the note buffer first ? */
-	/* here we don't want to add the new process because we don't know if it
-	 * was execve()d or a thread
-	 */
 	if (!(proc = opd_get_proc(sample->pid))) {
 		verbprintf("No proc info for pid %.6d.\n", sample->pid);
 		opd_stats[OPD_LOST_PROCESS]++;

@@ -1,14 +1,9 @@
 0.0.9 task list
 ---------------
 
- o check UP kernel on SMP hardware with and without APIC config options 
+ o ./dae/opd_proc.c:1094:/* FIXME: what if we are remapping over an old mapping - we want to find this one first ! */ 
+	- I suppose we need to trace munmap too :(
  
- o 	./module/compat22.h:26:/* FIXME: didn't this change in 2.2.21 ? */  
-	./dae/opd_proc.c:1033:  /* FIXME: is this comment correct now we always apply the note buffer first ? */
-	./dae/opd_proc.c:1094:/* FIXME: what if we are remapping over an old mapping - we want to find this one first ! */ 
- 
- o NEED_MPTABLE check should die - replace with MSR read ?
-
  o stress test
 
  o user request: op_time that shows /all/ available symbols (with correct %age).

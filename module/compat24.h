@@ -33,7 +33,6 @@
 #define hash_path(f) do_path_hash_2_4((f)->f_dentry, (f)->f_vfsmnt)
 #define request_region_check request_region
 #define op_cpu_id() cpu_number_map(smp_processor_id())
-#define pte_page_address(x) page_address(pte_page(x))
 #define GET_VM_OFFSET(v) ((v)->vm_pgoff << PAGE_SHIFT)
 #define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
 #define lock_execve() do { } while (0)

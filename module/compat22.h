@@ -25,8 +25,6 @@
  
 #include <linux/smp_lock.h>
  
-/* FIXME: didn't this change in 2.2.21 ? */ 
-#define pte_page_address(x) pte_page(x)
 #define GET_VM_OFFSET(v) ((v)->vm_offset) 
 #define MODULE_LICENSE(l)
 #define NEED_2_2_DENTRIES
