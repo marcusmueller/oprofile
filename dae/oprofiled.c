@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.18 2000/09/09 19:51:03 moz Exp $ */
+/* $Id: oprofiled.c,v 1.19 2000/09/28 21:34:18 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -293,6 +293,7 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 			continue;
 
 		if (opd_is_mapping(&opd_buf[i])) {
+			opd_stats[OPD_NOTIFICATIONS]++;
 			switch (opd_buf[i].count) {
 				case OP_FORK:
 					opd_handle_fork(&opd_buf[i]);

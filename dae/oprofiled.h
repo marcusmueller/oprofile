@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.15 2000/09/08 22:09:58 moz Exp $ */
+/* $Id: oprofiled.h,v 1.16 2000/09/28 21:34:18 moz Exp $ */
 
 #ifndef OPROFILED_H
 #define OPROFILED_H
@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <sys/poll.h>
 #include <sys/mman.h>
+#include <sys/ioctl.h>
 
 #include "opd_util.h"
 #include "../version.h"
@@ -46,13 +47,26 @@
 #define OPD_MAX_MODULES 64
 
 /* size of process hash table */
-#define OPD_MAX_PROC_HASH 128
+#define OPD_MAX_PROC_HASH 1024
 
 #define NR_CPUS 32
 
 /* stats for sample collection */
-#define OPD_MAX_STATS 9
+#define OPD_MAX_STATS 11
 
+enum {  OPD_KERNEL,
+	OPD_LOST_PROCESS,
+	OPD_PROCESS,
+	OPD_LOST_MAP_PROCESS,
+	OPD_PROC_QUEUE_ACCESS,
+	OPD_PROC_QUEUE_DEPTH,
+	OPD_DUMP_COUNT,
+	OPD_MAP_ARRAY_ACCESS,
+	OPD_MAP_ARRAY_DEPTH,
+	OPD_SAMPLES,
+	OPD_NOTIFICATIONS
+	};
+# if 0
 /* nr. kernel samples */
 #define OPD_KERNEL 0
 /* nr. samples for which process info couldn't be accessed */
@@ -71,6 +85,11 @@
 #define OPD_MAP_ARRAY_ACCESS 7
 /* cumulative depth of map array accesses */
 #define OPD_MAP_ARRAY_DEPTH 8
+/* nr. samples */
+#define OPD_SAMPLES 9
+/* nr. notifications */
+#define OPD_NOTIFICATIONS 10
+#endif
 
 #define OPD_DEFAULT_BUF_SIZE 2048
 

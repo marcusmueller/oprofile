@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.41 2000/09/28 02:37:00 moz Exp $ */
+/* $Id: opd_proc.c,v 1.42 2000/09/28 21:34:18 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -55,6 +55,7 @@ static void opd_delete_proc(struct opd_proc *proc);
    report stats */
 void opd_alarm(int val __attribute__((unused)))
 {
+	static int last = -1;
 	struct opd_proc *proc;
 	struct opd_proc *next;
 	uint i;
@@ -89,11 +90,17 @@ void opd_alarm(int val __attribute__((unused)))
 		(double)opd_stats[OPD_MAP_ARRAY_DEPTH]/(double)opd_stats[OPD_MAP_ARRAY_ACCESS]);
 	}
 	printf("Nr. sample dumps: %lu\n",opd_stats[OPD_DUMP_COUNT]);
+	printf("Nr. samples total: %lu\n",opd_stats[OPD_SAMPLES]);
+	printf("Nr. notifications: %lu\n",opd_stats[OPD_NOTIFICATIONS]);
 	fflush(stdout);
 
-	for (i=0;i<OPD_MAX_STATS;i++)
-		opd_stats[i]=0;
+	/* we should demand some data if we haven't got any recently */
 
+	if (last==(int)opd_stats[OPD_DUMP_COUNT])
+		ioctl(mapdevfd, 0, NULL);
+
+	last = opd_stats[OPD_DUMP_COUNT];
+	
 	alarm(60*10);
 }
 
@@ -195,6 +202,13 @@ static void opd_open_image(struct opd_image *image)
 	/* for each byte in original, two u32 counters */
 	image->len = opd_get_fsize(image->name)*sizeof(u32)*2;
 	
+	if (!image->len) {
+		dprintf("Length zero for %s\n",image->name);
+		image->fd = -1;
+		opd_free(mangled);
+		return;
+	}
+
 	/* give space for "negative" entries. This is because we
 	 * don't know about kernel/module sections other than .text so
 	 * a sample could be before our nominal start of image, or
@@ -590,11 +604,11 @@ static struct opd_proc *opd_get_proc(u16 pid)
 
 	opd_stats[OPD_PROC_QUEUE_ACCESS]++;
 	while (proc) {
-		opd_stats[OPD_PROC_QUEUE_DEPTH]++;
 		if (pid==proc->pid) {
 			opd_do_proc_lru(&opd_procs[proc_hash(pid)],proc);
 			return proc;
 		}
+		opd_stats[OPD_PROC_QUEUE_DEPTH]++;
 		proc=proc->next;
 	}
 
@@ -883,6 +897,8 @@ void opd_put_sample(const struct op_sample *sample)
 	unsigned int i;
 	struct opd_proc *proc;
 
+	opd_stats[OPD_SAMPLES]++;
+
 	dprintf("DO_PUT_SAMPLE: EIP 0x%.8x, pid %.6d, count %.6d\n",sample->eip,sample->pid,sample->count);
 
 	if (opd_eip_is_kernel(sample->eip)) {
@@ -898,11 +914,12 @@ void opd_put_sample(const struct op_sample *sample)
 		return;
 	}
 
+	opd_stats[OPD_MAP_ARRAY_ACCESS]++;
 	if (opd_is_in_map(&proc->maps[proc->last_map],sample->eip)) {
 		i = proc->last_map;
 		if (proc->maps[i].image!=-1) {
 		dprintf("DO_PUT_SAMPLE (LAST_MAP): calc offset 0x%.8x, map start 0x%.8x, end 0x%.8x, offset 0x%.8x, name $%s$\n",
-			offset, proc->maps[i].start, proc->maps[i].end, proc->maps[i].offset, opd_images[proc->maps[i].image].name);
+			opd_map_offset(&proc->maps[i],sample->eip), proc->maps[i].start, proc->maps[i].end, proc->maps[i].offset, opd_images[proc->maps[i].image].name);
 			opd_put_image_sample(&opd_images[proc->maps[i].image],opd_map_offset(&proc->maps[i],sample->eip),sample->count);
 		}
 		opd_stats[OPD_PROCESS]++;
@@ -910,8 +927,6 @@ void opd_put_sample(const struct op_sample *sample)
 	}
 
 	/* look for which map and find offset */
-	/* FIXME: binary search ? */
-	opd_stats[OPD_MAP_ARRAY_ACCESS]++;
 	for (i=0;i<proc->nr_maps;i++) {
 		if (opd_is_in_map(&proc->maps[i],sample->eip)) {
 			u32 offset = opd_map_offset(&proc->maps[i],sample->eip);
@@ -1080,9 +1095,9 @@ void opd_handle_mapping(const struct op_sample *sample)
 		pos += 4;
 
 		if (!mapping->num) {
-			fprintf(stderr,"oprofiled: Empty map.\n");
-			opd_free(buf);
-			return;
+			dprintf("Mapping of deleted file.\n");
+			/* this can happen when the file has been deleted */
+			continue;
 		}
 
 		*c = '\0';
