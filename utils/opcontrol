@@ -123,7 +123,7 @@ do_help()
 	  --no-vmlinux                 no vmlinux image available (no kernel vmlinux image available)
 	  -V/--verbose                 be verbose in the daemon log
 	  --kernel-range=start,end     kernel range vma address in hexadecimal
-	  --image=image_name[,names]   list of image to profile (default to all)
+	  --image[=image_name,names]   list of image to profile (default to all)
 
 	General options
 	  -l/--list-events             list event types and unit masks
@@ -612,7 +612,6 @@ do_options()
 				DO_SETUP=yes
 				;;
 			--image)
-				error_if_empty $arg $val
 				IMAGE_FILTER=$val
 				DO_SETUP=yes
 				;;
