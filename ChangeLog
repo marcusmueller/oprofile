@@ -1,3 +1,7 @@
+2003-11-11  John Levon  <levon@movementarian.org>
+
+	* configure.in: bump to 0.7.1
+
 2003-11-11  Joseph VanAndel  <unknown@unknown.org>
 
 	* daemon/liblegacy/init.c: fix #840046 (segfault when starting profiler

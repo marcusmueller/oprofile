@@ -3,9 +3,6 @@ This is an (incomplete) list of some of the stuff we want to look at doing.
 If you're interested in hacking on any of these, please contact the list first
 for some pointers and/or read HACKING and doc/CodingStyle.
 
-0.7.1 release
--------------
-
 0.8 release
 -----------
 
@@ -20,6 +17,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 Before 1.0 little stuff
 -----------------------
 
+ o we should try and resolve each path component for symlinks too
+  (/lib/modules/foo/build/vmlinux)
  o daemon: is NR_CPUS broken on smp box with more than 32 cpus ?
  o x86_64 and 2.4 kernel: it's apparently broken
  o Alpha ev67 events are broken
