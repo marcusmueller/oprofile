@@ -144,9 +144,10 @@ bool opp_samples_files::accumulate_samples(counter_array_t& counter, uint index)
 	bool found_samples = false;
 
 	for (uint k = 0; k < nr_counters; ++k) {
-		if (samples_count(k, index)) {
+		u32 count = samples_count(k, index);
+		if (count) {
+			counter[k] += count;
 			found_samples = true;
-			counter[k] += samples_count(k, index);
 		}
 	}
 

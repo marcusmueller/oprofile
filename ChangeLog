@@ -1,3 +1,11 @@
+2002-05-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/op_bfd.cpp:
+	* pp/op_bfd.h:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp.h:
+	* pp/samples_files.cpp: minor cleanup
+
 2002-05-10  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/op_bfd.h:

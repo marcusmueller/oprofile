@@ -94,6 +94,15 @@ public:
 	 */
 	u32 sym_offset(symbol_index_t num_symbols, u32 num) const;
 
+	/**
+	 * @param start reference to the start vma
+	 * @param end reference to the end vma
+	 *
+	 * return in @param start, @param end the vma range for
+	 * this binary object.
+	 */
+	void get_vma_range(u32 & start, u32 & end) const;
+
 	/** Returns true if the underlined bfd object contains debug info */
 	bool have_debug_info() const;
 

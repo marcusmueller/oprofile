@@ -243,8 +243,8 @@ static void do_dump_gprof(op_bfd & abfd,
 	FILE *fp; 
 	u32 start, end;
 	uint j;
-	u32 low_pc = (u32)-1;
-	u32 high_pc = 0;
+	u32 low_pc;
+	u32 high_pc;
 	u16 * hist;
 	u32 histsize;
 
@@ -254,16 +254,7 @@ static void do_dump_gprof(op_bfd & abfd,
 
 	op_write_u8(fp, GMON_TAG_TIME_HIST);
 
-	// syms are sorted by vma so vma of the first symbol and vma + size
-	// of the last symbol give the vma range for gprof output
-	if (abfd.syms.size()) {
-		const op_bfd_symbol & last_symb = abfd.syms[abfd.syms.size()-1];
-		low_pc = abfd.syms[0].vma;
-		high_pc = last_symb.vma + last_symb.size;
-	} else {
-		low_pc = 0;
-		high_pc = 0;
-	}
+	abfd.get_vma_range(low_pc, high_pc);
 
 	// FIXME : is this (high - low - (MUL -1)) / MULT ? need a test ...
 	histsize = ((high_pc - low_pc) / MULTIPLIER) + 1; 

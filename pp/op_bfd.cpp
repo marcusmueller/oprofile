@@ -434,3 +434,16 @@ symbol_index_t op_bfd::symbol_index(char const * symbol) const
 
 	return nil_symbol_index;
 }
+
+void op_bfd::get_vma_range(u32 & start, u32 & end) const
+{
+	if (syms.size()) {
+		// syms are sorted by vma so vma of the first symbol and vma +
+		// size of the last symbol give the vma range for gprof output
+		start = syms[0].vma;
+		end = syms[syms.size() - 1].vma + syms[syms.size() - 1].size;
+	} else {
+		start = 0;
+		end = 0;
+	}
+}
