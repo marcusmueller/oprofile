@@ -79,14 +79,14 @@ private:
 	 * Used for e.g. "opreport /bin/mybinary". We don't know yet
 	 * if this is an application or a dependent image.
 	 */
-	void set_image_or_lib_name(std::string const & tag_value);
+	void set_image_or_lib_name(std::string const & image);
 
 	/**
 	 * @param str  a "tag:value"
 	 *
 	 * return true if tag is a valid tag
 	 */
-	bool is_valid_tag(std::string const &);
+	bool is_valid_tag(std::string const & str);
 
 	/**
 	 * implement tag parsing: PP:3.3 to 3.16

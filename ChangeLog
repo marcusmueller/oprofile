@@ -1,7 +1,13 @@
 2004-02-20  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* libutil++/tests/string_manip_tests.cpp: fix a failure from the
-	 last format_percent() change
+	* doc/srcdoc/Doxyfile.in: Fix for doxygen 1.3.6
+	* libpp/profile_spec.h:
+	* libutil++/op_bfd.h: minor Doxygen comments fix
+
+2004-02-20  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/tests/string_manip_tests.cpp: fix a $ make check failure
+	  from the last format_percent() change
 
 2004-02-18  Philippe Elie  <phil.el@wanadoo.fr>
 

@@ -221,7 +221,8 @@ private:
 
 	/**
 	 * symbol_size - return the size of a symbol
-	 * @param sym_idx symbol index
+	 * @param sym  symbol to get size
+	 * @param next  next symbol in vma roder if any
 	 */
 	size_t symbol_size(op_bfd_symbol const & sym,
 			   op_bfd_symbol const * next) const;
