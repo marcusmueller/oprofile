@@ -1,4 +1,4 @@
-Event_files = \
+event_files = \
 	alpha/ev4/events alpha/ev4/unit_masks \
 	alpha/ev5/events alpha/ev5/unit_masks \
 	alpha/ev67/events alpha/ev67/unit_masks \
