@@ -1,3 +1,10 @@
+2002-01-09  John Levon  <moz@compsoc.man.ac.uk>
+
+	* doc/oprofile.sgml: update infodragon's email
+	  address
+ 
+	* configure.in: bump to 0.0.9cvs
+ 
 2002-01-08  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update
