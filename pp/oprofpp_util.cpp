@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.8 2001/12/01 21:16:48 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.9 2001/12/02 15:12:57 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -30,10 +30,6 @@ int list_all_symbols_details;
 /* counter k is selected if (ctr == -1 || ctr == k), if ctr == -1 counter 0
  * is used for sort purpose */
 int ctr = -1;
-
-static uint nr_samples; 
-/* if != -1 appended to samples files with "-%d" format */
-static int backup_number = -1;
 
 /**
  * remangle - convert a filename into the related sample file name
@@ -123,7 +119,6 @@ void quit_error(poptContext optcon, char const *err)
  */
 void opp_treat_options(const char* file, poptContext optcon)
 {
-	const char *file_backup_str;
 	char *file_ctr_str;
 	int counter;
 
@@ -183,14 +178,6 @@ void opp_treat_options(const char* file, poptContext optcon)
 		 * (op_to_source) to treat this */
 		if (!list_all_symbols_details)
 			ctr = 0;
-	}
-
-	/* Now record the backup number */
-	if (file_ctr_str) {
-		file_backup_str = strchr(file_ctr_str, '-');
-		if (file_backup_str) {
-			sscanf(file_backup_str + 1, "%d", &backup_number);
-		}
 	}
 
 	/* chop suffixes */
@@ -277,11 +264,12 @@ counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
  * All error are fatal.
  *
  */
-opp_bfd::opp_bfd(const opd_header* header)
+opp_bfd::opp_bfd(const opd_header* header, uint nr_samples_)
 	:
 	ibfd(0),
 	bfd_syms(0),
-	sect_offset(0)
+	sect_offset(0),
+	nr_samples(nr_samples_)
 {
 	if (!imagefile) {
 		fprintf(stderr,"oprofpp: oppp_bfd() imagefile is NULL.\n");
@@ -599,7 +587,7 @@ int opp_bfd::symbol_index(const char* symbol) const
  * verify that header @f1 and @f2 are coherent.
  * all error are fatal
  */
-static void check_headers(opd_header* f1, opd_header* f2)
+static void check_headers(const opd_header * f1, const opd_header * f2)
 {
 	if (f1->mtime != f2->mtime) {
 		fprintf(stderr, "oprofpp: header timestamps are different (%ld, %ld)\n", f1->mtime, f2->mtime);
@@ -705,7 +693,7 @@ opp_samples_files::opp_samples_files()
 /**
  * ~opp_samples_files - destroy an object opp_samples
  *
- * close and free all related to the samples file(s)
+ * close and free all related resource to the samples file(s)
  */
 opp_samples_files::~opp_samples_files()
 {
@@ -736,8 +724,6 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 {
 	std::ostringstream filename;
 	filename << samplefile << "#" << counter;
-	if (backup_number != -1)
-		filename << "-" << backup_number;
 	std::string temp = filename.str();
 
 	fd[counter] = open(temp.c_str(), O_RDONLY);

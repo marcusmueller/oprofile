@@ -1,3 +1,10 @@
+2001-12-02  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/oprofpp.h:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp_util.cpp:
+	* pp/opf_filter.cpp: small tidies
+
 2001-12-01  Philippe Elie  <ph_e@club-internet.fr>
 
 	* Makefile.in: build util sub-dir first

@@ -382,7 +382,8 @@ output::output(int argc_, char const * argv_[],
 	       bool source_with_assembly_)
 	:
 	samples_files(),
-	abfd(samples_files.header[samples_files.first_file]),
+	abfd(samples_files.header[samples_files.first_file],
+	     samples_files.nr_samples),
 	argc(argc_),
 	argv(argv_),
 	begin_comment("/*"),
