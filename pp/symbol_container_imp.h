@@ -11,6 +11,10 @@
 
 #ifndef SYMBOL_CONTAINER_IMP_H
 #define SYMBOL_CONTAINER_IMP_H
+
+#include <vector>
+#include <string>
+#include <set>
  
 class symbol_container_imp_t {
 public:
@@ -20,24 +24,24 @@ public:
  
 	void push_back(symbol_entry const &);
  
-	symbol_entry const * find(string filename, size_t linenr) const;
+	symbol_entry const * find(std::string filename, size_t linenr) const;
  
-	symbol_entry const * find(string name) const;
+	symbol_entry const * find(std::string name) const;
  
 	symbol_entry const * find_by_vma(bfd_vma vma) const;
 
-	void get_symbols_by_count(size_t counter, vector<symbol_entry const *>& v) const;
+	void get_symbols_by_count(size_t counter, std::vector<symbol_entry const *>& v) const;
  
 private:
 	void build_by_file_loc() const;
 
 	/// the main container of symbols. multiple symbols with the same
 	/// name are allowed.
-	vector<symbol_entry> symbols;
+	std::vector<symbol_entry> symbols;
 
 	/// different named symbol at same file location are allowed e.g.
 	/// template instanciation
-	typedef multiset<symbol_entry const *, less_by_file_loc>
+	typedef std::multiset<symbol_entry const *, less_by_file_loc>
 		set_symbol_by_file_loc;
 
 	// must be declared after the vector to ensure a correct life-time.

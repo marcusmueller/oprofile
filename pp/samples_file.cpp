@@ -13,12 +13,15 @@
 #include <errno.h>
 
 #include <sstream>
+#include <iostream>
 
 #include "oprofpp.h"
 #include "op_events.h"
 #include "op_events_desc.h"
 
 using std::string;
+using std::cout;
+using std::endl;
  
 opp_samples_files::opp_samples_files(string const & sample_file, int counter_)
 	:

@@ -30,7 +30,7 @@ const symbol_index_t nil_symbol_index = symbol_index_t(-1);
  * information pointed by an asymbol, we need this duplication in case
  * the symbol is an artificial symbol */
 class op_bfd_symbol {
-	friend op_bfd;
+	friend class op_bfd;
 public:
 
 	op_bfd_symbol(asymbol const * a, u32 value, u32 filepos, u32 sect_vma,

@@ -46,7 +46,7 @@
 
 /* 2.5.2 change the dev_t definition */
 #if V_BEFORE(2,5,2)
-#define minor(dev)	MINOR(dev)
+#define minor(d)	MINOR(d)
 #endif
  
 /* Things that cannot rely on a particular linux version or are needed between

@@ -12,6 +12,9 @@
 #ifndef SAMPLE_CONTAINER_IMP_H 
 #define SAMPLE_CONTAINER_IMP_H
 
+#include <vector>
+#include <string>
+
 class sample_container_imp_t {
 public:
 	sample_entry const & operator[](sample_index_t index) const;
@@ -32,7 +35,7 @@ public:
 private:
 	void flush_input_counter() const;
 
-	vector<sample_entry> samples;
+	std::vector<sample_entry> samples;
 
 	typedef std::multiset<sample_entry const *, less_by_file_loc> set_sample_entry_t;
 

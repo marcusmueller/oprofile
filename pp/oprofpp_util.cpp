@@ -26,6 +26,11 @@
 #include "op_events_desc.h"
  
 using std::string;
+using std::hex;
+using std::setfill;
+using std::dec;
+using std::setw;
+using std::istringstream;
 using std::vector;
 using std::ostream;
 using std::cerr;

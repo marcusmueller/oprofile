@@ -10,9 +10,12 @@
  */
 
 #include <algorithm>
+#include <string>
 
 #include "op_file.h"
 #include "oprofpp.h"
+
+using std::string;
 
 op_bfd::op_bfd(bool is_kernel, const std::string & filename)
 	:

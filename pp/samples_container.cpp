@@ -10,6 +10,9 @@
  */
 
 #include <set>
+#include <vector>
+#include <string>
+#include <iostream>
 #include <algorithm>
  
 #include "opp_symbol.h"
@@ -18,7 +21,11 @@
 #include "sample_container_imp.h"
 #include "symbol_container_imp.h"
 
+using std::vector;
 using std::sort;
+using std::string;
+using std::cerr;
+using std::set;
  
 namespace {
 

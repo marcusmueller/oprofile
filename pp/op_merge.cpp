@@ -34,6 +34,7 @@ using std::ostringstream;
 using std::ofstream;
 using std::cerr;
 using std::endl;
+using std::ifstream;
 
 static int showvers;
 static int counter;

@@ -1,3 +1,7 @@
+2002-05-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/*: gcc 3.1 compilation.
+
 2002-05-16  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* dae/opd_proc.c: close samples files at cleanup

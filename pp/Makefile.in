@@ -1,5 +1,7 @@
 include ../make.common
 
+CXXFLAGS += @BFD_CXXFLAGS@
+
 OPROFPP_SOURCES=samples_container.cpp sample_container_imp.cpp symbol_container_imp.cpp \
 	oprofpp.cpp oprofpp_util.cpp opp_symbol.cpp demangle_symbol.cpp op_bfd.cpp samples_file.cpp
 OP_TO_SOURCE_SOURCES=op_to_source.cpp op_bfd.cpp samples_file.cpp

@@ -26,6 +26,8 @@ using std::string;
 using std::vector;
 using std::cout;
 using std::cerr;
+using std::ifstream;
+using std::list;
  
 static char * ctr_str;
 static int showvers;

@@ -12,12 +12,14 @@
 #include <string>
 #include <algorithm>
 #include <set>
+#include <vector>
  
 #include "opp_symbol.h"
 #include "symbol_functors.h"
 #include "symbol_container_imp.h"
 #include "samples_container.h"
 
+using std::vector;
 using std::string;
 using std::stable_sort;
  
