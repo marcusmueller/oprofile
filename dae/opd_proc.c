@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.28 2000/09/01 00:31:02 moz Exp $ */
+/* $Id: opd_proc.c,v 1.29 2000/09/01 01:21:40 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -357,7 +357,7 @@ inline static int bstreq(const char *str1, const char *str2)
  * opd_find_image - find an image
  * @name: file name of image to find
  *
- * Returns the image pointer for the file specified by @name, or 0.
+ * Returns the image number for the file specified by @name, or -1.
  */
 static int opd_find_image(const char *name)
 {
@@ -381,6 +381,8 @@ static int opd_find_image(const char *name)
  *
  * @name is copied i.e. should be GC'd separately from the
  * image structure if appropriate.
+ *
+ * The image number is returned.
  */
 static int opd_add_image(const char *name, int kernel)
 {
@@ -404,8 +406,8 @@ static int opd_add_image(const char *name, int kernel)
  *
  * Get the image specified by the file name @name from the
  * image structure. If it is not present, the image is
- * added to the structure. In either case, a pointer to
- * the image structure is returned.
+ * added to the structure. In either case, the image number
+ * is returned. 
  */
 static int opd_get_image(const char *name, int kernel)
 {
@@ -481,7 +483,7 @@ static void opd_init_maps(struct opd_proc *proc)
  * @pid: process id
  *
  * Create a new process structure and add it
- * to the process list. The process structure
+ * to the head of the process list. The process structure
  * is filled in as appropriate.
  *
  */
@@ -519,7 +521,7 @@ static void opd_grow_maps(struct opd_proc *proc)
  * @proc: process to work on
  *
  * Frees structures holding mapping information and resets
- * the values.
+ * the values, allocating a new map structure.
  */
 static void opd_kill_maps(struct opd_proc *proc)
 {
@@ -538,7 +540,7 @@ static void opd_kill_maps(struct opd_proc *proc)
  * Perform LRU on the process list by moving it to
  * the head of the process list.
  */
-static void opd_do_proc_lru(struct opd_proc *proc)
+inline static void opd_do_proc_lru(struct opd_proc *proc)
 {
 	if (proc->prev) {
 		proc->prev->next = proc->next;
@@ -812,7 +814,7 @@ retry:
  * output to the relevant image file.
  *
  * This function requires the global variable
- * got_system_map to beTRUE to handle module samples.
+ * got_system_map to be %TRUE to handle module samples.
  */
 static void opd_handle_kernel_sample(u32 eip, u16 count)
 {
@@ -899,7 +901,7 @@ void opd_put_sample(const struct op_sample *sample)
 /**
  * opd_put_mapping - add a mapping to a process
  * @proc: process to add map to
- * @image: mapped image
+ * @image: mapped image number
  * @start: start of mapping
  * @offset: file offset of mapping
  * @end: end of mapping
@@ -958,7 +960,7 @@ void opd_handle_fork(const struct op_sample *sample)
  * @sample: sample structure from kernel
  *
  * Deal with an exit() notification by setting the flag "dead"
- * on a process. These will be later cleaned up bySIGALRM
+ * on a process. These will be later cleaned up by the %SIGALRM
  * handler.
  *
  * sample->pid contains the process id of the exited process.
@@ -1087,9 +1089,12 @@ void opd_handle_mapping(const struct op_sample *sample)
  * opd_handle_exec - deal with notification of execve()
  * @sample: sample structure from kernel
  *
- * Drop all mapping information for the process.
+ * Drop all mapping information for the process, and add
+ * any specified mappings.
  *
  * sample->pid contains the process id of the process.
+ * sample->eip contains how many bytes to read from the map
+ * device. 
  */
 void opd_handle_exec(const struct op_sample *sample)
 {
