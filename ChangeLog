@@ -1,5 +1,10 @@
 2003-04-08  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/op_bfd.cpp: check for #717720 and direct user to
+	  FAQ if detected. Note than we don't detect all symptom of this bug.
+
+2003-04-08  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/op_exception.h: op_runtime_error is no longer abstract
 
 	* libregex/op_regex.h: comment and tidy

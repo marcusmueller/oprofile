@@ -110,6 +110,14 @@ static size_t const nr_boring_symbols =
  */
 static bool interesting_symbol(asymbol *sym)
 {
+	// #717720 some binutils are miscompiled by gcc 2.95, one of the
+	// typical symptom can be catched here.
+	if (!sym->section) {
+		cerr << "Your version of binutils seems to have a bug.\n"
+		     << "Read http://oprofile.sf.net/faq/#binutilsbug" << endl;
+		exit(EXIT_FAILURE);
+	}
+
 	if (!(sym->section->flags & SEC_CODE))
 		return 0;
 
