@@ -617,12 +617,16 @@ void oprof_start::get_unit_mask_part(op_event_descr const & descr, uint num, boo
 // return the unit mask selected through the unit mask check box
 uint oprof_start::get_unit_mask(op_event_descr const & descr)
 {
-	// FIXME: utm_mandatory ?? 
- 
 	uint mask = 0;
 
 	if (!descr.unit)
 		return 0;
+
+	// mandatory mask is transparent for user.
+	if (descr.unit->unit_type_mask == utm_mandatory) {
+		mask = descr.unit->default_mask;
+		return mask;
+	}
  
 	get_unit_mask_part(descr, 0, check0->isChecked(), mask);
 	get_unit_mask_part(descr, 1, check1->isChecked(), mask);
@@ -677,7 +681,9 @@ void oprof_start::setup_unit_masks(const op_event_descr & descr)
 		if (um->unit_type_mask == utm_exclusive) {
 			check->setChecked(cfg[descr.name].umask == um->um[i]);
 		} else {
-			// FIXME: eh ?
+			// The last descriptor contains a mask that enable all
+			// value so we must enable the last check box only if
+			// all bits are on.
 			if (i == um->num - 1) {
 				check->setChecked(cfg[descr.name].umask == um->um[i]);
 			} else {
