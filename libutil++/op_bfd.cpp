@@ -28,6 +28,7 @@
 
 #include "op_exception.h"
 #include "op_bfd.h"
+#include "string_manip.h"
 #include "string_filter.h"
 #include "stream_util.h"
 #include "cverb.h"
@@ -48,8 +49,64 @@ void check_format(string const & file, bfd ** ibfd)
 	}
 }
 
+/**
+ * With Objective C, we'll get strings like:
+ *
+ * _i_GSUnicodeString__rangeOfCharacterSetFromSet_options_range
+ *
+ * for the symbol name, and:
+ * -[GSUnicodeString rangeOfCharacterFromSet:options:range:]
+ *
+ * for the function name, so we have to do some looser matching
+ * than for other languages (unfortunately, it's not possible
+ * to demangle Objective C symbols).
+ */
+bool objc_match(string const & sym, string const & method)
+{
+	if (method.length() < 3)
+		return false;
+
+	string mangled;
+
+	if (is_prefix(method, "-[")) {
+		mangled += "_i_";
+	} else if (is_prefix(method, "+[")) {
+		mangled += "_c_";
+	} else {
+		return false;
+	}
+
+	string::const_iterator it = method.begin() + 2;
+	string::const_iterator const end = method.end();
+
+	bool found_paren = false;
+
+	for (; it != end; ++it) {
+		switch (*it) {
+		case ' ':
+			mangled += '_';
+			if (!found_paren)
+				mangled += '_';
+			break;
+		case ':':
+			mangled += '_';
+			break;
+		case ')':
+		case ']':
+			break;
+		case '(':
+			found_paren = true;
+			mangled += '_';
+			break;
+		default:
+			mangled += *it;	
+		}
+	}
+
+	return sym == mangled;
 }
 
+} // namespace anon
 
 bfd * open_bfd(string const & file)
 {
@@ -587,7 +644,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 		// gcc doesn't emit mangled name for C++ static function so we
 		// try to recover by accepting this linenr info if functionname
 		// is a substring of sym.name, this is not a bug see gcc
-		// bugzilla #11774. Check agaisnt the filename part of the
+		// bugzilla #11774. Check against the filename part of the
 		// is error prone error (e.g. namespace A { static int f1(); })
 		// so we check only for a substring and warn the user.
 		static bool warned = false;
@@ -603,6 +660,8 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 		}
 		if (sym.name().find(functionname) == string::npos)
 			ret = false;
+		if (!ret)
+			ret = objc_match(sym.name(), functionname);
 	}
 
 	/* binutils 2.12 and below have a small bug where functions without a
@@ -685,12 +744,12 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 
 	io_state state(cverb << (vbfd&vlevel1));
 
-	cverb << (vbfd&vlevel1) << "symbol " << sym.name()
+	cverb << (vbfd & vlevel1) << "symbol " << sym.name()
 	      << ", value " << hex << sym.value() << endl;
 
 	start = sym.filepos();
 	if (sym.symbol()) {
-		cverb << (vbfd&vlevel1) << "in section "
+		cverb << (vbfd & vlevel1) << "in section "
 		      << sym.symbol()->section->name << ", filepos "
 		      << hex << sym.symbol()->section->filepos << endl;
 	}

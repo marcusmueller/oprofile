@@ -1,3 +1,8 @@
+2004-08-12  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_bfd.cpp: add a hack to support
+	Objective C
+
 2004-07-21  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libdb/db_manage.c: thinko in #931871 bug fix.
