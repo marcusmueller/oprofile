@@ -40,12 +40,12 @@ symbol_entry const * symbol_container::insert(symbol_entry const & symb)
 
 
 symbol_entry const *
-symbol_container::find(string const & filename, size_t linenr) const
+symbol_container::find(debug_name_id filename, size_t linenr) const
 {
 	build_by_loc();
 
 	symbol_entry symbol;
-	symbol.sample.file_loc.filename = debug_names.create(filename);
+	symbol.sample.file_loc.filename = filename;
 	symbol.sample.file_loc.linenr = linenr;
 
 	symbols_by_loc_t::const_iterator it = symbols_by_loc.find(&symbol);

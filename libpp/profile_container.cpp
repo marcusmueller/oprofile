@@ -29,8 +29,8 @@ using namespace std;
 namespace {
 
 struct filename_by_samples {
-	filename_by_samples(string filename_, double percent_)
-		: filename(filename_), percent(percent_)
+	filename_by_samples(debug_name_id id, double percent_)
+		: filename(id), percent(percent_)
 		{}
 
 	bool operator<(filename_by_samples const & lhs) const {
@@ -39,7 +39,7 @@ struct filename_by_samples {
 		return filename > lhs.filename;
 	}
 
-	string filename;
+	debug_name_id filename;
 	// ratio of samples which belongs to this filename.
 	double percent;
 };
@@ -207,9 +207,10 @@ profile_container::select_symbols(symbol_choice & choice) const
 }
 
 
-vector<string> const profile_container::select_filename(double threshold) const
+vector<debug_name_id> const
+profile_container::select_filename(double threshold) const
 {
-	set<string> filename_set;
+	set<debug_name_id> filename_set;
 
 	threshold /= 100.0;
 
@@ -223,16 +224,15 @@ vector<string> const profile_container::select_filename(double threshold) const
 	for (; sit != send; ++sit) {
 		debug_name_id name_id = sit->second.file_loc.filename;
 		if (name_id.id) {
-			string const & file = debug_names.name(name_id);
-			filename_set.insert(file);
+			filename_set.insert(name_id);
 		}
 	}
 
 	// Give a sort order on filename for the selected counter.
 	vector<filename_by_samples> file_by_samples;
 
-	set<string>::const_iterator it = filename_set.begin();
-	set<string>::const_iterator const end = filename_set.end();
+	set<debug_name_id>::const_iterator it = filename_set.begin();
+	set<debug_name_id>::const_iterator const end = filename_set.end();
 	for (; it != end; ++it) {
 		unsigned int count = samples_count(*it);
 
@@ -249,7 +249,7 @@ vector<string> const profile_container::select_filename(double threshold) const
 	vector<filename_by_samples>::const_iterator const cend
 		= file_by_samples.end();
 
-	vector<string> result;
+	vector<debug_name_id> result;
 	for (; cit != cend; ++cit) {
 		if (cit->percent >= threshold)
 			result.push_back(cit->filename);
@@ -275,7 +275,7 @@ profile_container::find_symbol(string const & image_name, bfd_vma vma) const
 
 
 symbol_entry const *
-profile_container::find_symbol(string const & filename, size_t linenr) const
+profile_container::find_symbol(debug_name_id filename, size_t linenr) const
 {
 	return symbols->find(filename, linenr);
 }
@@ -295,13 +295,13 @@ profile_container::find_sample(symbol_entry const * symbol, bfd_vma vma) const
 }
 
 
-unsigned int profile_container::samples_count(string const & filename) const
+unsigned int profile_container::samples_count(debug_name_id filename_id) const
 {
-	return samples->accumulate_samples(filename);
+	return samples->accumulate_samples(filename_id);
 }
 
 
-unsigned int profile_container::samples_count(string const & filename,
+unsigned int profile_container::samples_count(debug_name_id filename,
 				    size_t linenr) const
 {
 	return samples->accumulate_samples(filename, linenr);

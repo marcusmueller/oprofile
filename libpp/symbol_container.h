@@ -47,7 +47,7 @@ public:
 	symbol_entry const * insert(symbol_entry const &);
 
 	/// find the symbol at the given filename and line number, if any
-	symbol_entry const * find(std::string const & filename,
+	symbol_entry const * find(debug_name_id filename,
 	                          size_t linenr) const;
 
 	/// return all symbols of the given name

@@ -79,7 +79,7 @@ public:
 
 	/// Find a symbol from its filename, linenr, return zero if no symbol
 	/// at this location
-	symbol_entry const * find_symbol(std::string const & filename,
+	symbol_entry const * find_symbol(debug_name_id filename,
 					size_t linenr) const;
 
 	/// Find a sample by its symbol, vma, return zero if there is no sample
@@ -109,17 +109,17 @@ public:
 	symbol_collection const select_symbols(symbol_choice & choice) const;
 
 	/// Like select_symbols for filename without allowing sort by vma.
-	std::vector<std::string> const select_filename(double threshold) const;
+	std::vector<debug_name_id> const select_filename(double threshold) const;
 
 	/// return the total number of samples
 	unsigned int samples_count() const;
 
 	/// Get the samples count which belongs to filename. Return 0 if
 	/// no samples found.
-	unsigned int samples_count(std::string const & filename) const;
+	unsigned int samples_count(debug_name_id filename_id) const;
 	/// Get the samples count which belongs to filename, linenr. Return
 	/// 0 if no samples found.
-	unsigned int samples_count(std::string const & filename,
+	unsigned int samples_count(debug_name_id filename,
 			   size_t linenr) const;
 
 	/// return iterator to the first samples

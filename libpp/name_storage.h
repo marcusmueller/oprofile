@@ -92,6 +92,8 @@ struct debug_name_id {
 	/// a default constructed debug_name_id holding an invalid uid
 	debug_name_id() : id(0) {}
 	size_t id;	///< unique identifier associated with a filename
+
+	bool operator<(debug_name_id const & rhs) const;
 };
 
 

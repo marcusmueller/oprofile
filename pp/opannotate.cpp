@@ -430,7 +430,7 @@ void output_asm(string const & app_name)
 }
 
 
-string const source_line_annotation(string const & filename, size_t linenr)
+string const source_line_annotation(debug_name_id filename, size_t linenr)
 {
 	string str;
 
@@ -446,7 +446,7 @@ string const source_line_annotation(string const & filename, size_t linenr)
 }
 
 
-string source_symbol_annotation(string const & filename, size_t linenr)
+string source_symbol_annotation(debug_name_id filename, size_t linenr)
 {
 	symbol_entry const * symbol = samples->find_symbol(filename, linenr);
 
@@ -454,12 +454,12 @@ string source_symbol_annotation(string const & filename, size_t linenr)
 }
 
 
-void output_per_file_info(ostream & out, string const & filename,
+void output_per_file_info(ostream & out, debug_name_id filename,
 			  u32 total_count_for_file)
 {
 	out << begin_comment << '\n'
 	     << in_comment << "Total samples for file : "
-	     << '"' << filename << '"'
+	     << '"' << debug_names.name(filename) << '"'
 	     << '\n';
 	out << in_comment << '\n' << in_comment
 	    << counter_str(total_count_for_file, samples->samples_count())
@@ -468,7 +468,7 @@ void output_per_file_info(ostream & out, string const & filename,
 }
 
 
-string const line0_info(string const & filename)
+string const line0_info(debug_name_id filename)
 {
 	string annotation = source_line_annotation(filename, 0);
 	if (trim(annotation, " \t:").empty())
@@ -480,7 +480,7 @@ string const line0_info(string const & filename)
 }
 
 
-void do_output_one_file(ostream & out, istream & in, string const & filename,
+void do_output_one_file(ostream & out, istream & in, debug_name_id filename,
 			bool header)
 {
 	u32 count = samples->samples_count(filename);
@@ -518,7 +518,7 @@ void do_output_one_file(ostream & out, istream & in, string const & filename,
 }
 
 
-void output_one_file(istream & in, string const & filename,
+void output_one_file(istream & in, debug_name_id filename,
 		     bool output_separate_file)
 {
 	if (!output_separate_file) {
@@ -526,7 +526,8 @@ void output_one_file(istream & in, string const & filename,
 		return;
 	}
 
-	string out_filename = filename;
+	string out_filename = debug_names.name(filename);
+	string original_out_filename = out_filename;
 
 	size_t pos = out_filename.find(source_dir);
 	if (pos == 0) {
@@ -547,9 +548,9 @@ void output_one_file(istream & in, string const & filename,
 	}
 
 	// paranoid checking: out_filename and filename must be distinct file.
-	if (is_files_identical(filename, out_filename)) {
+	if (is_files_identical(original_out_filename, out_filename)) {
 		cerr << "input and output_filename are identical: "
-		     << '"' << filename << '"'
+		     << '"' << original_out_filename << '"'
 		     << ','
 		     << '"' << out_filename << '"'
 		     << endl;
@@ -572,27 +573,28 @@ void output_source(path_filter const & filter, bool output_separate_file)
 	if (!output_separate_file)
 		output_info(cout);
 
-	vector<string> filenames =
+	vector<debug_name_id> filenames =
 		samples->select_filename(options::threshold);
 
 	for (size_t i = 0 ; i < filenames.size() ; ++i) {
-		if (!filter.match(filenames[i]))
+		string filename = debug_names.name(filenames[i]);
+		if (!filter.match(filename))
 			continue;
 
-		ifstream in(filenames[i].c_str());
+		ifstream in(filename.c_str());
 
 		if (!in) {
 			// it is common to have empty filename due to the lack
 			// of debug info (eg _init function) so warn only
 			// if the filename is non empty. The case: no debug
 			// info at all has already been checked.
-			if (filenames[i].length())
+			if (filename.length())
 				cerr << "opannotate (warning): unable to "
 				     << "open for reading: "
-				     << filenames[i] << endl;
+				     << filename << endl;
 		} 
 
-		if (filenames[i].length()) {
+		if (filename.length()) {
 			output_one_file(in, filenames[i], output_separate_file);
 		}
 	}

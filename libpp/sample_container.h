@@ -45,10 +45,10 @@ public:
 	void insert(symbol_entry const * symbol, sample_entry const &);
 
 	/// return nr of samples in the given filename
-	unsigned int accumulate_samples(std::string const & filename) const;
+	unsigned int accumulate_samples(debug_name_id filename_id) const;
 
 	/// return nr of samples at the given line nr in the given file
-	unsigned int accumulate_samples(std::string const & filename,
+	unsigned int accumulate_samples(debug_name_id,
 					size_t linenr) const;
 
 	/// return the sample entry for the given image_name and vma if any

@@ -75,15 +75,13 @@ void sample_container::insert(symbol_entry const * symbol,
 
 
 unsigned int
-sample_container::accumulate_samples(string const & filename) const
+sample_container::accumulate_samples(debug_name_id filename_id) const
 {
 	build_by_loc();
 
 	sample_entry lower, upper;
 
-	debug_name_id const id = debug_names.create(filename);
-
-	lower.file_loc.filename = upper.file_loc.filename = id;
+	lower.file_loc.filename = upper.file_loc.filename = filename_id;
 	lower.file_loc.linenr = 0;
 	upper.file_loc.linenr = INT_MAX;
 
@@ -109,14 +107,14 @@ sample_container::find_by_vma(symbol_entry const * symbol, bfd_vma vma) const
 
 
 unsigned int
-sample_container::accumulate_samples(string const & filename,
+sample_container::accumulate_samples(debug_name_id filename,
                                      size_t linenr) const
 {
 	build_by_loc();
 
 	sample_entry sample;
 
-	sample.file_loc.filename = debug_names.create(filename);
+	sample.file_loc.filename = filename;
 	sample.file_loc.linenr = linenr;
 
 	typedef pair<samples_by_loc_t::const_iterator,
