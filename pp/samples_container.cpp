@@ -26,6 +26,7 @@ using std::sort;
 using std::string;
 using std::cerr;
 using std::set;
+using std::endl;
 
 namespace {
 
@@ -290,8 +291,8 @@ u32 samples_container_t::samples_count(size_t counter_nr) const
 bool samples_container_t::samples_count(counter_array_t & result,
 					string const & filename) const
 {
-	return samples->accumulate_samples(result,
-		filename, nr_counters);
+	return samples->accumulate_samples(result, filename,
+					   get_nr_counters());
 }
 
 bool samples_container_t::samples_count(counter_array_t & result,
@@ -299,10 +300,21 @@ bool samples_container_t::samples_count(counter_array_t & result,
 				    size_t linenr) const
 {
 	return samples->accumulate_samples(result,
-		filename, linenr, nr_counters);
+		filename, linenr, get_nr_counters());
 }
 
 sample_entry const & samples_container_t::get_samples(sample_index_t idx) const
 {
 	return (*samples)[idx];
+}
+
+uint samples_container_t::get_nr_counters() const
+{
+	if (nr_counters != static_cast<uint>(-1))
+		return nr_counters;
+
+	cerr << "Fatal: samples_container_t::get_nr_counters() attempt to\n"
+	     << "access a samples container w/o any samples files. Please \n"
+	     << "report this bug to <oprofile-list@lists.sourceforge.net>\n";
+	exit(EXIT_FAILURE);
 }

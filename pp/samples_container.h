@@ -114,10 +114,9 @@ public:
 	bool samples_count(counter_array_t & result,
 			   std::string const & filename,
 			   size_t linenr) const;
-	// FIXME: so let's assert() on this condition even if it means an
-	// an extra private bool
-	/// you can call this *after* the first call to add()
-	uint get_nr_counters() const { return nr_counters; }
+	/// you can call this *after* the first call to add() else the
+	/// application exit(1) with a meaningfull error message
+	uint get_nr_counters() const;
 
 private:
 	/// helper for do_add()
