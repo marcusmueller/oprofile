@@ -536,17 +536,22 @@ The <command>opcontrol</command> script options used with the
 		<tgroup cols='2'> 
 		<tbody>
 		<row><entry><option>library</option></entry><entry>per-application dynamically linked libraries samples files</entry></row>
-		<row><entry><option>kernel</option></entry><entry>per-application modules and kernel samples files, kernel imply library samples separation</entry></row>
-		<row><entry><option>all</option></entry><entry>imply all above options</entry></row>
+		<row><entry><option>kernel</option></entry><entry>per-application modules and kernel samples files, kernel implies library samples separation</entry></row>
+		<row><entry><option>all</option></entry><entry>implies all above options</entry></row>
 		</tbody>
 		</tgroup>
 		</informaltable>
 		<para>
 		<!-- FIXME: update if this change -->
-		The following restriction apply to <option>--separate=kernel</option> option. For all kernel version
-		hardware interrupt are credited to the current task. On 2.2/2.4 only kernel thread already started at
-		profiling start are correctly profiled, newly started kernel thread samples are credited to vmlinux file.
-		On 2.5 there is no kernel thread profiling, all these sample are credited to vmlinux file.
+		When using <option>--separate=kernel</option>, samples in hardware interrupts, soft-irqs, or other
+		asynchronous kernel contexts, are credited to the task currently running. This means you will see
+		seemingly nonsense profiles such as <filename>/bin/bash</filename> showing samples for the PPP modules,
+		etc.
+		</para>
+		<para>
+		On 2.2/2.4 only kernel threads already started when profiling begins are correctly profiled;
+		newly started kernel thread samples are credited to vmlinux file.
+		On 2.5 there is no kernel thread profiling, all these samples are credited to vmlinux file.
 		</para>
 		</listitem>
 	</varlistentry>
