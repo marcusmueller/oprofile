@@ -39,6 +39,7 @@ namespace options {
 	merge_option merge_by;
 	bool show_header = true;
 	bool long_filenames;
+	bool show_address;
 	bool accumulated;
 	bool reverse_sort;
 	bool global_percent;
@@ -80,7 +81,9 @@ popt::option options_array[] = {
 	popt::option(mergespec, "merge", 'm',
 		     "comma separated list", "cpu,pid,lib"),
 	popt::option(options::show_header, "no-header", 'n',
-		     "remove all header from output"),
+		     "remove all headers from output"),
+	popt::option(options::show_address, "show-address", 'w',
+	             "show VMA address of each symbol"),
 	popt::option(options::long_filenames, "long-filenames", 'f',
 		     "show the full path of filenames"),
 	popt::option(options::accumulated, "accumulated", 'c',
@@ -170,6 +173,12 @@ void check_options()
 	bool do_exit = false;
 
 	if (!symbols) {
+		if (show_address) {
+			cerr << "--show-address is meaningless "
+				"without --symbols" << endl;
+			do_exit = true;
+		}
+
 		if (debug_info || accumulated) {
 			cerr << "--debug-info and --accumulated are "
 			     << "meaningless without --symbols" << endl;
@@ -209,8 +218,10 @@ void handle_options(vector<string> const & non_options)
 {
 	using namespace options;
 
-	if (details)
+	if (details) {
 		symbols = true;
+		show_address = true;
+	}
 
 	handle_sort_option();
 	handle_merge_option();

@@ -36,6 +36,7 @@ namespace options {
 	extern merge_option merge_by;
 	extern bool global_percent;
 	extern bool long_filenames;
+	extern bool show_address;
 	extern string_filter symbol_filter;
 	extern double threshold;
 	extern bool show_header;

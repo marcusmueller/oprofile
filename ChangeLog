@@ -1,5 +1,13 @@
 2003-09-14  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml:
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp:
+	* pp/opreport_options.h: Turn off VMA report by
+	default, add --show-address
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
 	* pp/opreport.cpp: nice formatting of image report
 	column headers, respect --no-header
 

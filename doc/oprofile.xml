@@ -1463,6 +1463,9 @@ Output to the given file instead of stdout.
 <varlistentry><term><option>--reverse-sort / -r</option></term><listitem><para>
 Reverse the sort from the default.
 </para></listitem></varlistentry>
+<varlistentry><term><option>--show-address / -w</option></term><listitem><para>
+Show the VMA address of each symbol (off by default).
+</para></listitem></varlistentry>
 <varlistentry><term><option>--smart-demangle / -D</option></term><listitem><para>
 Use pattern-matching to make C++ symbol demangling more readable.
 </para></listitem></varlistentry>

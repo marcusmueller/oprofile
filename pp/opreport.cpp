@@ -397,8 +397,11 @@ void populate_profiles(profile_class const & pclass,
 format_flags const get_format_flags(column_flags const & cf)
 {
 	format_flags flags(ff_none);
-	flags = format_flags(flags | ff_vma | ff_nr_samples);
+	flags = format_flags(flags | ff_nr_samples);
 	flags = format_flags(flags | ff_percent | ff_symb_name);
+
+	if (options::show_address)
+		flags = format_flags(flags | ff_vma);
 
 	if (options::debug_info)
 		flags = format_flags(flags | ff_linenr_info);
