@@ -1,14 +1,12 @@
 0.0.7 task list
 ---------------
 
+o move module code into module/ subdir
+
 o I'm sick of these crappy makefiles. Let's see if we can use automake as well
   as autoconf.
  
 o determine where we need ctx_sw_on/off to prevent pre-emption + test
- 
-o make/get rid of op_to_source to have similar interface to other utils
-
-o Bob's rtc patch ?
  
 0.0.8 task list
 ---------------
@@ -20,6 +18,8 @@ o can we provide a small setuid helper for starting/stopping/flushing the profil
 Later
 -----
 
+o Bob's rtc patch ?
+ 
 o pentium 4 patches ?
  
 o post-prof GUI ? (big job)
