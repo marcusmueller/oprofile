@@ -1,5 +1,5 @@
 AM_CPPFLAGS = \
-	-I ${top_srcdir}/libutil++
+	-I ${top_srcdir}/libutil++ -D SRCDIR="\"${topdir}/libutil++/tests/\""
 
 COMMON_LIBS = ../libutil++.a ../../libutil/libutil.a
 

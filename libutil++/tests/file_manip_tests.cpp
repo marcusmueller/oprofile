@@ -183,9 +183,9 @@ static void op_file_readable_tests()
 
 static input_output<string, string> expect_relative_to_absolute_path[] =
 {
-	{ __FILE__, "/" __FILE__ },
-	{ "../tests/" __FILE__, "/" __FILE__ },
-	{ ".//.//" __FILE__, "/" __FILE__ },
+	{ "file_manip_tests.cpp", "file_manip_tests.cpp" },
+	{ "../tests/" "file_manip_tests.cpp", "file_manip_tests.cpp" },
+	{ ".//.//" "file_manip_tests.cpp", "file_manip_tests.cpp" },
 	// Posix says this is valid
 	{ "//", "//" },
 	{ "//usr", "//usr" },
@@ -196,15 +196,12 @@ static input_output<string, string> expect_relative_to_absolute_path[] =
 
 static void relative_to_absolute_path_tests()
 {
-	char current_dir[PATH_MAX+1];
-	getcwd(current_dir, PATH_MAX);
-
 	input_output<string, string> const * cur;
 	for (cur = expect_relative_to_absolute_path; !cur->input.empty(); ++cur) {
 		string result = relative_to_absolute_path(cur->input);
 		string expect = cur->output;
 		if (cur->input[0] != '/')
-			expect = current_dir + expect;
+			expect = SRCDIR + expect;
 		check_result("relative_to_absolute_path", cur->input,
 		            expect, result);
 	}

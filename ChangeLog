@@ -1,3 +1,9 @@
+2003-11-01  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/tests/Makefile.am:
+	* libutil++/tests/file_manip_tests.cpp; don't use getcwd nor __FILE__
+	  but ${topdir} and hard coded filename
+
 2003-11-01  John Levon  <levon@movementarian.org>
 
 	* daemon/liblegacy/opd_parse_proc.c: use op_follow_link
