@@ -1,3 +1,16 @@
+2002-05-08  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+
+	* doc/Makefile.in: make clean delete *.html
+ 
+	* libdb/db-debug.c: pedantry
+ 
+	* libutil/op_fileio.h:
+	* libutil/op_fileio.c:
+	* pp/oprofpp.cpp: remove unused code and change
+	  function names
+ 
 2002-05-08  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil/op_libiberty.h: fix compile error (missing

@@ -87,54 +87,6 @@ void op_do_read_file(FILE * fp, void * buf, size_t size, int fatal)
 }
 
 /**
- * op_do_read_u8 - read a byte from a file
- * @param fp  file pointer
- *
- * Read an unsigned byte from a file.
- * 0 is returned if the read fails in any way.
- */
-u8 op_read_u8(FILE * fp)
-{
-	u8 val = 0;
-	op_do_read_file(fp, &val, sizeof(u8), 0);
-
-	return val;
-}
-
-/**
- * op_do_read_u16_he - read two bytes from a file
- * @param fp  file pointer
- *
- * Read an unsigned two-byte value from a file.
- * 0 is returned if the read fails in any way.
- *
- * No byte-swapping is done.
- */
-u16 op_read_u16_he(FILE * fp)
-{
-	u16 val = 0;
-	op_do_read_file(fp, &val, sizeof(u16), 0);
-	return val;
-}
-
-/**
- * op_do_read_u32_he - read four bytes from a file
- * @param fp  file pointer
- *
- * Read an unsigned four-byte value from a file.
- * 0 is returned if the read fails in any way.
- *
- * No byte-swapping is done.
- */
-u32 op_read_u32_he(FILE * fp)
-{
-	u32 val = 0;
-	op_do_read_file(fp, &val, sizeof(u32), 0);
-
-	return val;
-}
-
-/**
  * op_write_file - write to a file
  * @param fp  file pointer
  * @param buf  buffer
@@ -162,7 +114,7 @@ void op_write_file(FILE * fp, const void * buf, size_t size)
  * @param fp  file pointer
  * @param val  value to write
  *
- * Write the unsigned byte value @val to a file.
+ * Write an unsigned byte value @val to a file.
  * Failure is fatal.
  */
 void op_write_u8(FILE * fp, u8 val)
@@ -171,22 +123,7 @@ void op_write_u8(FILE * fp, u8 val)
 }
 
 /**
- * op_write_u16_he - write two bytes to a file
- * @param fp  file pointer
- * @param val  value to write
- *
- * Write an unsigned two-byte value @val to a file.
- * Failure is fatal.
- *
- * No byte-swapping is done.
- */
-void op_write_u16_he(FILE * fp, u16 val)
-{
-	op_write_file(fp, &val, sizeof(val));
-}
-
-/**
- * op_write_u23_he - write four bytes to a file
+ * op_write_u32 - write four bytes to a file
  * @param fp  file pointer
  * @param val  value to write
  *
@@ -195,7 +132,7 @@ void op_write_u16_he(FILE * fp, u16 val)
  *
  * No byte-swapping is done.
  */
-void op_write_u32_he(FILE * fp, u32 val)
+void op_write_u32(FILE * fp, u32 val)
 {
 	op_write_file(fp, &val, sizeof(val));
 }

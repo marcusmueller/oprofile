@@ -41,3 +41,4 @@ uninstall:
 	-$(RM) -rf $(DOCDIR)
 
 clean:
+	-$(RM) -rf *.html

@@ -14,7 +14,7 @@
 #include "db.h"
 
 
-static void do_display_tree(const db_tree_t * tree, db_page_idx_t page_idx)
+static void do_display_tree(db_tree_t const * tree, db_page_idx_t page_idx)
 {
 	size_t i;
 	db_page_t * page;
@@ -32,12 +32,12 @@ static void do_display_tree(const db_tree_t * tree, db_page_idx_t page_idx)
 	}
 }
 
-void db_display_tree(const db_tree_t * tree)
+void db_display_tree(db_tree_t const * tree)
 {
 	do_display_tree(tree, tree->descr->root_idx);
 }
 
-static void do_raw_display_tree(const db_tree_t * tree)
+void db_raw_display_tree(db_tree_t const * tree)
 {
 	size_t i;
 	printf("tree root %d\n", tree->descr->root_idx);
@@ -57,17 +57,12 @@ static void do_raw_display_tree(const db_tree_t * tree)
 	}
 }
 
-void db_raw_display_tree(const db_tree_t * tree)
-{
-	do_raw_display_tree(tree);
-}
-
-static int do_check_page_pointer(const db_tree_t * tree,
-				 db_page_idx_t page_idx, int * viewed_page)
+static int do_check_page_pointer(db_tree_t const * tree,
+	db_page_idx_t page_idx, int * viewed_page)
 {
 	int ret;
 	size_t i;
-	const db_page_t * page;
+	db_page_t const * page;
 
 	if (page_idx == db_nil_page)
 		return 0;
@@ -110,7 +105,7 @@ static int do_check_page_pointer(const db_tree_t * tree,
 	return ret;
 }
 
-int db_check_page_pointer(const db_tree_t * tree)
+int db_check_page_pointer(db_tree_t const * tree)
 {
 	int ret;
 	int * viewed_page;
@@ -130,11 +125,11 @@ int db_check_page_pointer(const db_tree_t * tree)
 	return ret;
 }
 
-static int do_check_tree(const db_tree_t * tree, db_page_idx_t page_nr, 
-			 db_key_t last)
+static int do_check_tree(db_tree_t const * tree,
+	db_page_idx_t page_nr, db_key_t last)
 {
 	size_t i;
-	const db_page_t * page;
+	db_page_t const * page;
 
 	page = page_nr_to_page_ptr(tree, page_nr);
 
@@ -155,7 +150,7 @@ static int do_check_tree(const db_tree_t * tree, db_page_idx_t page_nr,
 	return 0;
 }
 
-int db_check_tree(const db_tree_t * tree)
+int db_check_tree(db_tree_t const * tree)
 {
 	int ret = db_check_page_pointer(tree);
 	if (!ret)

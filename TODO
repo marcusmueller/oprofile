@@ -1,13 +1,13 @@
 0.3 Release
 -----------
 
- o verify 2.2/modversions etc. module build
- * oprof_report/Makefile.in etc. 
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level. Important.
  o better support in post-prof for session names. Consistent cmd line interfaces - 
    this should be before 1.0 so we don't piss off users - spec this out
  o split doc into user's manual and hacking manual, document much more 
+ o verify 2.2/modversions etc. module build
+ o oprof_report/Makefile.in etc. 
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o document gcc 2.95 and linenr info problems especially for inline functions
  o document somewhere that oprofpp -s blah will only find the first symbol
@@ -29,7 +29,7 @@ Before 1.0 little stuff
 -----------------------
  
  o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
-   will fail because the ~ is not expanded (no space around it) 
+   will fail because the ~ is not expanded (no space around it) (popt bug I say)
  o move op_start to simple C program ??
  o move dev files to /dev ???
  o should we pin rather than loop sample buffer overflow too ?
@@ -44,6 +44,7 @@ Before 1.0 little stuff
 General checks to make
 ----------------------
  
+ o rgrep FIXME
  o audit to track unnecessary include <>
  o gcc 3.0/3.1 compile. (3.1 is not stable currently but I follow it, Phil)
  o verify builds (modversions, kernel versions, athlon etc.). I have the
@@ -65,15 +66,6 @@ Later
   the kernel service. The overhead for RTC is very big actually. Take care
   first from where come the overhead (read/write RTC CMOS is costly)
 
-o move uniformly to doxygen Javadoc style (also use new header style) :
-
-	/**
-	 * make two wheels go fast
-	 * @param first first wheel
-	 * @param second second wheel
-	 * @return false if there were no wheels
-	 */
- 
 - demangling automatically
  
 oprof_report:

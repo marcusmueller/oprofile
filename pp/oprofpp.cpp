@@ -270,12 +270,12 @@ static void do_dump_gprof(opp_bfd & abfd,
 	// FIXME : is this + 1 bogus ?
 	histsize = ((high_pc - low_pc) / MULTIPLIER) + 1; 
  
-	op_write_u32_he(fp, low_pc);
-	op_write_u32_he(fp, high_pc);
+	op_write_u32(fp, low_pc);
+	op_write_u32(fp, high_pc);
 	/* size of histogram */
-	op_write_u32_he(fp, histsize);
+	op_write_u32(fp, histsize);
 	/* profiling rate */
-	op_write_u32_he(fp, 1);
+	op_write_u32(fp, 1);
 	op_write_file(fp, "samples\0\0\0\0\0\0\0\0", 15); 
 	/* abbreviation */
 	op_write_u8(fp, '1');
