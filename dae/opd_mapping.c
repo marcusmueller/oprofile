@@ -15,7 +15,7 @@
 #include "opd_printf.h"
 
 #include "op_interface.h"
-#include "op_config.h"
+#include "op_config_24.h"
 #include "op_libiberty.h"
 
 #include <sys/mman.h>

@@ -26,6 +26,7 @@
 #include "op_events.h"
 #include "op_libiberty.h"
 #include "op_interface_25.h"
+#include "op_config_25.h"
 #include "op_hw_config.h"
 
 #include <unistd.h>

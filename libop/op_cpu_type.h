@@ -23,6 +23,7 @@ typedef enum {
 	CPU_PII, /**< Pentium II series */
 	CPU_PIII, /**< Pentium III series */
 	CPU_ATHLON, /**< AMD P6 series */
+	CPU_TIMER_INT, /**< CPU using the timer interrupt */
 	CPU_RTC, /**< other CPU to use the RTC */
 	MAX_CPU_TYPE
 } op_cpu;

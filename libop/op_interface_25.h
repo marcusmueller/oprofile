@@ -10,8 +10,8 @@
  * @author Philippe Elie
  */
 
-#ifndef OP_INTERFACE_H
-#define OP_INTERFACE_H
+#ifndef OP_INTERFACE_25_H
+#define OP_INTERFACE_25_H
 
 #include "op_config.h"
 #include "op_types.h"
@@ -31,4 +31,4 @@ struct op_buffer_head {
 	struct op_sample buffer[0]; /**< the sample buffer */
 } __attribute__((__packed__));
 	 
-#endif /* OP_INTERFACE_H */
+#endif /* OP_INTERFACE_25_H */

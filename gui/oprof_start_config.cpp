@@ -19,6 +19,7 @@
 #include "oprof_start_config.h"
 #include "oprof_start_util.h"
 #include "op_config.h"
+#include "op_config_24.h"
 
 namespace {
 

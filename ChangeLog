@@ -1,5 +1,26 @@
 2002-09-23  John Levon  <levon@movementarian.org>
 
+	* libop/op_config.h:
+	* libop/op_config_24.h:
+	* libop/op_config_25.h: split config file up
+ 
+	* daemon/opd_kernel.c:
+	* daemon/oprofiled.c: include op_config_25.h
+
+	* dae/opd_image.c:
+	* dae/opd_kernel.c:
+	* dae/opd_mapping.c: include op_config_24.h
+
+	* module/oprofile.h: include op_config_24.h
+ 
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_config.cpp: fix from above
+	  (old support only right now)
+
+	* libop/op_cpu_type.h: introduce 2.5-patch CPU_TIMER_INT
+
+2002-09-23  John Levon  <levon@movementarian.org>
+
 	* libop/op_interface_25.h: 2.5 interface
 
 	* daemon/opd_image.c:

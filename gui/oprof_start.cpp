@@ -35,6 +35,7 @@
 
 #include "oprof_start.h"
 #include "op_config.h"
+#include "op_config_24.h"
 #include "string_manip.h"
 
 using std::string;

@@ -16,7 +16,7 @@
 #include "opd_stats.h"
 
 #include "op_fileio.h"
-#include "op_config.h"
+#include "op_config_24.h"
 #include "op_libiberty.h"
 
 #include "p_module.h"
