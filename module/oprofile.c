@@ -242,6 +242,7 @@ static int oprof_note_open(void)
 {
 	if (test_and_set_bit(0, &oprof_note_opened))
 		return -EBUSY;
+	INC_USE_COUNT_MAYBE;
 	return 0;
 }
 
@@ -251,6 +252,7 @@ static int oprof_note_release(void)
 		return -EFAULT;
 
 	clear_bit(0, &oprof_note_opened);
+	DEC_USE_COUNT_MAYBE;
 	return 0;
 }
 
@@ -588,7 +590,6 @@ out:
 }
 
 static struct file_operations oprof_fops = {
-// FIXME: no locking at all for 2.2  ?
 #ifdef HAVE_FILE_OPERATIONS_OWNER
 	owner: THIS_MODULE,
 #endif 

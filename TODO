@@ -8,7 +8,6 @@ o check if spinlock busting of waitqueue_lock in 2.2 for NMI works
 o 	./pp/op_time.cpp:79:/* FIXME: -h means help not shared libs !!!! */
 	./module/compat22.h:167:        /* 2.2.18 introduced vmalloc_32, FIXME is old vmalloc equivalent */
 	./module/compat22.h:26:/* FIXME: didn't this change in 2.2.21 ? */  
-	./module/oprofile.c:591:// FIXME: no locking at all for 2.2  ? 
 	./dae/opd_proc.c:272:   /* FIXME: image->app_name can be null. */
 	./dae/opd_proc.c:1033:  /* FIXME: is this comment correct now we always apply the note buffer first ? */
 	./dae/opd_proc.c:1094:/* FIXME: what if we are remapping over an old mapping - we want to find this one first ! */ 

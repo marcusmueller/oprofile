@@ -34,9 +34,12 @@
 #define op_cpu_id() cpu_number_map(smp_processor_id())
 #define pte_page_address(x) page_address(pte_page(x))
 #define GET_VM_OFFSET(v) ((v)->vm_pgoff << PAGE_SHIFT)
-#define HAVE_CROSS_MOUNT_POINT
 #define HAVE_MMAP2
 #define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
+
+/* ->owner field in 2.4 */
+#define INC_USE_COUNT_MAYBE
+#define DEC_USE_COUNT_MAYBE
 
 /* 2.4.3 introduced rw mmap semaphore  */
 #if VAFTER(2,4,3)

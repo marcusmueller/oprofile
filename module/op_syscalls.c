@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.5 2002/01/11 05:24:07 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.6 2002/01/17 03:21:40 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -354,7 +354,6 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 	}
 	ret = do_execve(filename, (char **)regs.ecx, (char **)regs.edx, &regs);
 
-	// FIXME: check sys_execve
 	if (!ret) {
 		PTRACE_OFF(current);
 

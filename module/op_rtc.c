@@ -28,8 +28,6 @@
 #define RTC_IRQ 8
 #endif
  
-// FIXME: are we safe on 2.2 ?
- 
 /* ---------------- RTC handler ------------------ */
  
 // FIXME: share 

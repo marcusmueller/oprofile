@@ -177,7 +177,7 @@ is all you need, but note these arguments to <command>./configure</command> :
 <para>
 You'll need to have a configured kernel source for the current kernel to build the module.
 It is also recommended that you if you have a uniprocessor machine, you enable the local APIC / IO_APIC
-support for your kernel.
+support for your kernel (this is automatically enabled for SMP kernels).
 </para>
 
 </sect1>

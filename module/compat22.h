@@ -30,7 +30,9 @@
 #define release_mmap_sem(mm) up(&mm->mmap_sem)
 #define MODULE_LICENSE(l)
  
-#define NEED_2_2_DENTRIES
+#define INC_USE_COUNT_MAYBE MOD_INC_USE_COUNT
+#define DEC_USE_COUNT_MAYBE MOD_DEC_USE_COUNT
+ 
 extern int wind_dentries_2_2(struct dentry *dentry);
 extern uint do_path_hash_2_2(struct dentry *dentry);
 #define wind_dentries(d, v, r, m) wind_dentries_2_2(d)
