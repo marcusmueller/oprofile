@@ -1,3 +1,7 @@
+2004-01-02  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opgprof_options.cpp: use the proper type for options::demangle
+
 2004-01-01  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libregex/op_regex.cpp:
@@ -15,6 +19,6 @@
 
 2004-01-01  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* libregex/op_regex.cpp: don't assume int('a') > int('0)'
+	* libregex/op_regex.cpp: don't assume int('a') > int('0')
 
 See ChangeLog-2003 for earlier changelogs.
