@@ -1,5 +1,12 @@
 2001-09-21  Philippe Elie  <ph_e@club-internet.fr>
 
+	* pp/opf_filter.h: move declaration of counter_array_t to
+	* pp/oprofpp.h: here
+	* pp/oprofpp.c: define and use counter_array_t + minor cleanup
+	* pp/opf_filter.cpp: remove definition of counter_array_t
+
+2001-09-21  Philippe Elie  <ph_e@club-internet.fr>
+
 	* Makefile.in: remove aclocal.m4 in distclean
 	* pp/Makefile.in: use $(CXX) and $(CXXFLAGS)
 

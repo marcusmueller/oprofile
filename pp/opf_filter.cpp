@@ -231,22 +231,6 @@ inline double do_ratio(size_t counter, size_t total)
 
 } // anonymous namespace
 
-//---------------------------------------------------------------------------
-
-counter_array_t::counter_array_t()
-{
-	for (size_t i = 0 ; i < op_nr_counters ; ++i)
-		value[i] = 0;
-}
-
-counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
-{
-	for (size_t i = 0 ; i < op_nr_counters ; ++i)
-		value[i] += rhs.value[i];
-
-	return *this;
-}
-
 //--------------------------------------------------------------------------
 
 void sample_entry::debug_dump(ostream & out) const 
@@ -759,7 +743,7 @@ void output::build_samples_containers()
 
 		bool found_samples = false;
 		for (uint j = start; j < end; ++j)
-			found_samples |= samples_files.accumulate_samples(&symb_entry.sample.counter[0], j);
+			found_samples |= samples_files.accumulate_samples(symb_entry.sample.counter, j);
 
 		if (found_samples == 0)
 			continue;
@@ -783,7 +767,7 @@ void output::build_samples_containers()
 		for (u32 pos = start; pos < end ; ++pos) {
 			sample_entry sample;
 
-			if (samples_files.accumulate_samples(&sample.counter[0], pos) == false)
+			if (samples_files.accumulate_samples(sample.counter, pos) == false)
 				continue;
 
 			if (abfd.get_linenr(i, pos, &filename, &linenr)) {

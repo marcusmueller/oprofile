@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.17 2001/09/21 02:52:37 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.18 2001/09/21 06:33:17 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -62,7 +62,28 @@ char *cplus_demangle (const char *mangled, int options);
 			printf(args); \
 	} while (0)
 
+void opp_get_options(int argc, char const *argv[]);
 char* demangle_symbol(const char* symbol);
+
+//---------------------------------------------------------------------------
+// A simple container of counter.
+class counter_array_t {
+ public:
+	counter_array_t();
+
+	u32 operator[](size_t index) const {
+		return value[index];
+	}
+
+	u32 & operator[](size_t index) {
+		return value[index];
+	}
+
+	counter_array_t & operator+=(const counter_array_t &);
+
+ private:
+	u32 value[OP_MAX_COUNTERS];
+};
 
 struct opp_bfd {
 	opp_bfd(const opd_footer * footer);
@@ -101,7 +122,7 @@ struct opp_samples_files {
 
 	bool is_open(int index) const;
 	uint samples_count(int index, int sample_nr) const;
-	bool accumulate_samples(u32 counter[OP_MAX_COUNTERS], uint vma) const;
+	bool accumulate_samples(counter_array_t& counter, uint vma) const;
 
 	void output_header() const;
 
@@ -125,7 +146,5 @@ private:
 	void open_samples_file(u32 counter, bool can_fail);
 	void check_event(int i);
 };
-
-void opp_get_options(int argc, char const *argv[]);
 
 #endif /* OPROFPP_H */

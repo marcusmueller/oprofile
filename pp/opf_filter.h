@@ -11,26 +11,6 @@
 static const bool sanity_check = true;
 
 //---------------------------------------------------------------------------
-// A simple container of counter.
-class counter_array_t {
- public:
-	counter_array_t();
-
-	u32 operator[](size_t index) const {
-		return value[index];
-	}
-
-	u32 & operator[](size_t index) {
-		return value[index];
-	}
-
-	counter_array_t & operator+=(const counter_array_t &);
-
- private:
-	u32 value[OP_MAX_COUNTERS];
-};
-
-//---------------------------------------------------------------------------
 // A simple container for a fileno:linr location
 struct file_location {
 	// This rely on a ref counted string implementation for efficiency.

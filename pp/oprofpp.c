@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.48 2001/09/21 02:52:37 phil_e Exp $ */
+/* $Id: oprofpp.c,v 1.49 2001/09/21 06:33:17 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -321,6 +321,30 @@ void printf_symbol(const char *name)
 	printf("%s", unmangled);
 
 	opd_free(unmangled);
+}
+
+/**
+ * counter_array_t - construct a counter_array_t
+ *
+ * set count to zero for all counter
+ */
+counter_array_t::counter_array_t()
+{
+	for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i)
+		value[i] = 0;
+}
+
+/**
+ * operator+= - vectorized += operator
+ *
+ * accumulate samples in this object
+ */
+counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
+{
+	for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i)
+		value[i] += rhs.value[i];
+
+	return *this;
 }
 
 /**
@@ -895,7 +919,7 @@ uint opp_samples_files::samples_count(int index, int sample_nr) const
  *
  * return false if no samples has been found
  */
-bool opp_samples_files::accumulate_samples(u32 counter[OP_MAX_COUNTERS], uint index) const
+bool opp_samples_files::accumulate_samples(counter_array_t& counter, uint index) const
 {
 	uint k;
 	bool found_samples = false;
@@ -912,7 +936,7 @@ bool opp_samples_files::accumulate_samples(u32 counter[OP_MAX_COUNTERS], uint in
  
 struct opp_count {
 	asymbol *sym;
-	u32 count[OP_MAX_COUNTERS];
+	counter_array_t count;
 };
 
 /**
@@ -937,15 +961,13 @@ void opp_samples_files::do_list_symbols(opp_bfd* abfd) const
 {
 	std::vector<opp_count> scounts;
 	u32 start, end;
-	uint tot[OP_MAX_COUNTERS],i,j;
-	int found_samples;
+	counter_array_t tot; 
+	uint i,j;
+	bool found_samples;
 	uint k;
 
-	for (i = 0; i < nr_counters; ++i)
-		tot[i] = 0;
-
 	for (i = 0; i < abfd->syms.size(); i++) {
-		opp_count scount = { 0, { 0, } };
+		opp_count scount;
 
 		scount.sym = abfd->syms[i];
 
@@ -953,8 +975,7 @@ void opp_samples_files::do_list_symbols(opp_bfd* abfd) const
 		for (j = start; j < end; j++)
 			accumulate_samples(scount.count, j);
 
-		for (k = 0 ; k < nr_counters ; ++k)
-			tot[k] += scount.count[k];
+		tot += scount.count;
 
 		scounts.push_back(scount);
 	}
@@ -964,12 +985,12 @@ void opp_samples_files::do_list_symbols(opp_bfd* abfd) const
 	for (i = 0; i < abfd->syms.size(); i++) {
 		printf_symbol(scounts[i].sym->name);
 
-		found_samples = 0;
+		found_samples = false;
 		for (k = 0; k < nr_counters ; ++k) {
 			if (scounts[i].count[k]) {
 				printf("[0x%.8lx]: %2.4f%% (%u samples)\n", scounts[i].sym->value+scounts[i].sym->section->vma,
 				       (((double)scounts[i].count[k]) / tot[k])*100.0, scounts[i].count[k]);
-				found_samples = 1;
+				found_samples = true;
 			}
 			
 		}
@@ -1083,29 +1104,30 @@ void opp_samples_files::do_dump_gprof(struct opp_bfd* abfd) const
 	opd_write_file(fp, "samples\0\0\0\0\0\0\0\0", 15); 
 	/* abbreviation */
 	opd_write_u8(fp, '1');
-	
-	hist = (u16*)opd_malloc(sizeof(u16) * histsize); 
-	memset(hist, 0, sizeof(u16) * histsize);
+
+	hist = (u16*)opd_calloc0(histsize, sizeof(u16)); 
  
 	for (i = 0; i < abfd->syms.size(); i++) {
 		abfd->get_symbol_range(i, &start, &end); 
 		for (j=start; j < end; j++) {
-			u32 count = 0;
+			u32 count;
 			u32 pos;
 			pos = (abfd->sym_offset(i, j) + abfd->syms[i]->value + abfd->syms[i]->section->vma - low_pc) / MULTIPLIER; 
 
 			/* opp_get_options have set ctr to one value != -1 */
 			count = samples_count(ctr, j);
 
-			if (count > (u16)-1) {
-				printf("Warning: capping sample count !\n");
-				count = (u16)-1;
-			}
 			if (pos >= histsize) {
 				fprintf(stderr, "Bogus histogram bin %u, larger than %u !", pos, histsize);
 				continue;
 			}
-			hist[pos] += (u16)count;
+
+			if (hist[pos] + count > (u16)-1) {
+				printf("Warning: capping sample count !\n");
+				hist[pos] = (u16)-1;
+			} else {
+				hist[pos] += (u16)count;
+			}
 		}
 	}
 
@@ -1124,7 +1146,7 @@ void opp_samples_files::do_dump_gprof(struct opp_bfd* abfd) const
  */
 void opp_samples_files::do_list_symbol_details(opp_bfd* abfd, uint sym_idx) const
 {
-	u32 counter[OP_MAX_COUNTERS];
+	counter_array_t counter;
 	uint j, k;
 	bool found_samples;
 	bfd_vma vma, base_vma;
@@ -1134,9 +1156,6 @@ void opp_samples_files::do_list_symbol_details(opp_bfd* abfd, uint sym_idx) cons
 	sym = abfd->syms[sym_idx];
 
 	abfd->get_symbol_range(sym_idx, &start, &end);
-
-	for (k = 0; k < nr_counters; ++k)
-		counter[k] = 0;
 
 	/* To avoid outputing 0 samples symbols */
 	found_samples = false;
