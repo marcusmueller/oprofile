@@ -87,7 +87,8 @@ necks in real-world systems.
 	<varlistentry>
 		<term>OProfile GUI</term>
 		<listitem>
-			The use of the GUI to start the profiler requires the <filename>Qt 2</filename> library.
+			The use of the GUI to start the profiler requires the <filename>Qt 2</filename> library. Qt 3 should
+			also work.
 		</listitem>
 	</varlistentry>
 	<varlistentry>
