@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.21 2002/01/04 03:05:34 movement Exp $ */
+/* $Id: oprofile.c,v 1.22 2002/01/04 03:19:27 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -350,6 +350,11 @@ inline static void up_and_check_note(void)
 	 * to the last entry until it is read. This loses
 	 * notes, but we have no choice. */
 	if (unlikely(note_pos == sysctl.note_size)) {
+		static int warned;
+		if (!warned) {
+			printk("note buffer overflow: consider to restart profiler with increased size of note buffer");
+			warned = 1;
+		}
 		note_pos = sysctl.note_size - 1;
 	}
  
