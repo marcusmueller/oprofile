@@ -150,7 +150,7 @@ void op_print_event(ostream & out, op_cpu cpu_type, u8 type, u16 um, u32 count)
 		char old_fill = out.fill();
 		out << " with a unit mask of 0x"
 		    << hex << setw(2) << setfill('0') << unsigned(um) << " ("
-		    << um_desc << ")";
+		    << (um_desc ? um_desc : "multiple flags") << ")";
 		out << setfill(old_fill) << setw(old_width) << dec;
 	}
 	out << " count " << dec << count << endl;
