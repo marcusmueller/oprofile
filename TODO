@@ -6,12 +6,12 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
- o add separate_thread to opd_header or remove all separate from opd_header
- o thread separate GUI + docs
+ o thread separate GUI
 
 0.8 release
 -----------
 
+ o image filtering: --image /foo/bar/myapp (needs UI spec). For -s thread
  o merge BRANCH_CALLGRAPH
 
 Before 1.0 big stuff
