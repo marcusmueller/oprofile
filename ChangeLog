@@ -1,3 +1,9 @@
+2003-01-29  Dave Jones <davej@codemonkey.org.uk>
+
+	* utils/opcontrol: Trying to use the options --pid-filter=pid and
+	  --pgmr-filter=pgmr, opcontrol returned "command not found.
+	  This was due to 2 missing 'test' statements.
+	
 2003-01-29  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/op_to_source.cpp: read vma with strtoull not strtoul fixing

@@ -468,14 +468,14 @@ do_options() {
 				KERNEL_RANGE=$val
 				;;
 			--pid-filter)
-				if "$KERNEL_SUPPORT" = "yes"; then
+				if test "$KERNEL_SUPPORT" = "yes"; then
 					echo "\"$arg\" ignored" >& 2
 				else
 					PID_FILTER=$val
 				fi
 				;;
 			--pgrp-filter)
-				if "$KERNEL_SUPPORT" = "yes"; then
+				if test "$KERNEL_SUPPORT" = "yes"; then
 					echo "\"$arg\" ignored" >& 2
 				else
 					PGRP_FILTER=$val
