@@ -34,6 +34,7 @@ static char *gproffile;
 static char *symbol;
 static int list_symbols;
 static int output_linenr_info;
+static int reverse_sort;
 static int show_shared_libs;
 static char * output_format;
 static int list_all_symbols_details;
@@ -53,6 +54,8 @@ static poptOption options[] = {
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
 	{ "list-all-symbols-details", 'L', POPT_ARG_NONE, &list_all_symbols_details, 0, "list samples for all symbols", NULL, },
 	{ "output-linenr-info", 'o', POPT_ARG_NONE, &output_linenr_info, 0, "output filename:linenr info", NULL },
+	{ "reverse", 'r', POPT_ARG_NONE, &reverse_sort, 0,
+	  "reverse sort order", NULL, },
 	{ "exclude-symbol", 'e', POPT_ARG_STRING, &exclude_symbols_str, 0, "exclude these comma separated symbols", "symbol_name" },
 	{ "show-shared-libs", 'k', POPT_ARG_NONE, &show_shared_libs, 0,
 	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
@@ -103,6 +106,9 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 	if (show_shared_libs && (symbol || gproffile)) {
 		quit_error(optcon, "oprofpp: you cannot specify --show-shared-libs with --dump-gprof-file or --list-symbol output type.\n");
 	}
+ 
+	if (reverse_sort && !list_symbols)
+		quit_error(optcon, "oprofpp: reverse sort can only be used with -l option.\n");
  
 	/* non-option file, either a sample or binary image file */
 	file = poptGetArg(optcon);
@@ -160,7 +166,7 @@ static void do_list_symbols(samples_container_t & samples,
 
 	samples.select_symbols(symbols, sort_by_ctr, 0.0, false);
 
-	out.Output(cout, symbols, true);
+	out.Output(cout, symbols, reverse_sort == 0);
 }
 
 /**
@@ -180,7 +186,7 @@ static void do_list_symbols_details(samples_container_t & samples,
 
 	samples.select_symbols(symbols, sort_by_ctr, 0.0, false, true);
 
-	out.Output(cout, symbols, false);
+	out.Output(cout, symbols, reverse_sort != 0);
 }
  
 /**
@@ -305,7 +311,6 @@ static void do_dump_gprof(op_bfd & abfd,
 static bool file_exist(const std::string & filename)
 {
 	ifstream in(filename.c_str());
-
 	return in;
 }
 
