@@ -1,3 +1,7 @@
+2003-03-24  John Levon  <levon@movementarian.org>
+
+	* m4/configmodule.m4: fix quoting problem for awk
+
 2003-03-23  John Levon  <levon@movementarian.org>
 
 	* configure.in:

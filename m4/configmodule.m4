@@ -10,7 +10,7 @@ dnl  --- Get Linux kernel version and compile parameters ---
 AC_SUBST(KVERS)
 AC_MSG_CHECKING([for kernel version])
 dnl it's like this to handle mandrake's fubar version.h - bug #471448
-eval KVERS=`gcc -I$KINC -E -dM $KINC/linux/version.h | grep -w UTS_RELEASE | awk '{print $3}'`
+eval KVERS=`gcc -I$KINC -E -dM $KINC/linux/version.h | grep -w UTS_RELEASE | awk '{print $[]3}'`
 AC_MSG_RESULT([$KVERS])
 case "$KVERS" in
 2.2.*|2.4.*) ;;
