@@ -263,7 +263,7 @@ power management.
 </para>
 <para>
 Please note that you must save or have available the <filename>vmlinux</filename> file
-generated during a kernel compile, as OProfile needs it (on 2.5 kernels you can use
+generated during a kernel compile, as OProfile needs it (you can use
 <option>--no-vmlinux</option>, but this will prevent kernel profiling).
 </para>
 
@@ -291,8 +291,7 @@ running kernel is, for example :
 </para>
 <screen>opcontrol --vmlinux=/boot/vmlinux-`uname -r`</screen>
 <para>
-<!-- FIXME on change ... -->
-If you're running a 2.5 kernel, and you don't want to profile the kernel itself,
+If you don't want to profile the kernel itself,
 you can tell OProfile you don't have a <filename>vmlinux</filename> file :
 </para>
 <screen>opcontrol --no-vmlinux</screen>
@@ -837,6 +836,11 @@ In 2.5 kernels on CPUs without OProfile support for the hardware performance cou
 falls back to using the timer interrupt for profiling. Like the RTC mode in 2.4 kernels, this is not able to
 profile code that has interrupts disabled. Note that there are no configuration parameters for
 setting this, unlike the RTC and hardware performance counter setup.
+</para>
+<para>
+You can force use of the timer interrupt by using the <option>timer=1</option> module
+parameter (or <option>oprofile.timer=1</option> on the boot command line if OProfile is
+built-in).
 </para>
 </sect2>
 
