@@ -1,3 +1,7 @@
+2003-10-31  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_perfmon.c: fix compilation
+
 2003-10-30  John Levon  <levon@movementarian.org>
 
 	* libpp/profile_spec.cpp: introduce a helper function

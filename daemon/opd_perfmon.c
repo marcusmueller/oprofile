@@ -28,16 +28,19 @@
 #include <string.h>
 #include <errno.h>
 
-extern op_cpu op_cpu_type;
+extern op_cpu cpu_type;
+
+/* FIXME: should autoconf these */
 
 /* many glibc's are not yet up to date */
 #ifndef __NR_sched_setaffinity
 #define __NR_sched_setaffinity 1231
+#endif
+
 static int sched_setaffinity(pid_t pid, unsigned int len, unsigned long * mask)
 {
 	return syscall(__NR_sched_setaffinity, pid, len, mask);
 }
-#endif
 
 
 #ifndef __NR_perfmonctl
@@ -256,7 +259,7 @@ static void load_context(struct child * self)
 	pfarg_load_t load_args;
 	int err;
 
-	memset(load_args, 0, sizeof(load_args));
+	memset(&load_args, 0, sizeof(load_args));
 	load_args.load_pid = self->pid;
 
 	err = perfmonctl(self->ctx_fd, PFM_LOAD_CONTEXT, &load_args, 1);
