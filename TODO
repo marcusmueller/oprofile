@@ -21,6 +21,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o lib-image: and image: behavior depend on --separate=, if --separate=library
   opreport "lib-image:*libc*" --merge=lib works but not
   opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
+  --separate==none. Must we take care ?
 
 0.8 release
 -----------
@@ -45,7 +46,6 @@ Before 1.0 little stuff
  o restore stream state when using persistant formating flag like:
      s/ostream os; os << hex << foo/os << hex << foo << dec/
  o implement pp_interface alias
-  --separate==none. Must we take care ?
  o look if we must remove help_str support from libopt++
  o option xxx and negated option --no-xxx: we can hide them in --help and
   mention in the xxx option help string than the --no-xxx is allowed. Not
@@ -108,7 +108,7 @@ General checks to make
 Later
 -----
  
- o allow --ctr0-event to take event numbers. (is it worth ?)
+ o allow --event to take event numbers. (is it worth ?)
  o i18n. We need a good formatter, and also remember format_percent()
  o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
    will fail because the ~ is not expanded (no space around it) (popt bug I say)
