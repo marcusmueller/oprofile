@@ -1,3 +1,7 @@
+2003-01-21  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_kernel.c: use sscanf to parse /proc/modules
+
 2003-01-20  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_kernel.c: more robust /proc/modules parsing.

@@ -143,19 +143,23 @@ static struct opd_module * opd_get_module(char * name)
  * Parse the file /proc/module to read start address and size of module
  * each line is in the format:
  *
- * module_name 16480 1 - Live dependencies 0xe091e000
+ * module_name 16480 1 dependencies Live 0xe091e000
+ *
+ * without any blank space in each field
  *
  */
 static void opd_read_module_info(void)
 {
 	FILE * fp;
 	char * line;
-	char * cp;
-	char * filename_end;
-	char * filename;
 	struct opd_module * mod;
 	int module_size;
-	int j;
+	int ref_count;
+	int ret;
+	char module_name[256+1];
+	char live_info[32];
+	char dependencies[4096];
+	unsigned long long start_address;
 
 	fp = op_try_open_file("/proc/modules", "r");
 
@@ -175,43 +179,23 @@ static void opd_read_module_info(void)
 			continue;
 		}
 
-		for (filename_end = line ;
-		     *filename_end && *filename_end != ' ' ; ++filename_end) {
-		}
+		/* Hacky: pp tools rely on at least one '}' in samples filename
+		 * so I force module filename as if it reside in / directory */
+		module_name[0] = '/';
 
-		if (!*filename_end) {
+		ret = sscanf(line, "%256s %u %u %4096s %32s %llx",
+			     module_name+1, &module_size, &ref_count,
+			     dependencies, live_info, &start_address);
+		if (ret != 6) {
 			printf("bad /proc/modules entry: %s\n", line);
 			free(line);
 			continue;
 		}
 
-		cp = filename_end;
+		mod = opd_get_module(xstrdup(module_name));
+		mod->image = opd_get_kernel_image(module_name);
 
-		sscanf(cp,"%u", &module_size);
-
-		/* skip module_size, ref_count, deps and live */
-		for (j = 0 ; j < 4 ; ++j) {
-			for (++cp; *cp && *cp != ' ' ; ++cp) {
-			}
-			if (!*cp) {
-				printf("bad /proc/modules entry: %s\n", line);
-				free(line);
-				continue;
-			}
-		}
-
-		filename = xmalloc(filename_end - line + 2);
-		/* Hacky: pp tools rely on at least one '}' in samples filename
-		 * so I force module filename as if it reside in / directory */
-		filename[0] = '/';
-		memcpy(filename + 1, line, filename_end - line);
-		filename[(filename_end - line) + 1] = '\0';
-
-		mod = opd_get_module(xstrdup(filename));
-		mod->image = opd_get_kernel_image(filename);
-		free(filename);
-
-		sscanf(cp, "%llx", &mod->start);
+		mod->start = start_address;
 		mod->end = mod->start + module_size;
 
 		verbprintf("module %s start %llx end %llx\n",
