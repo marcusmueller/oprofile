@@ -307,7 +307,8 @@ void oprof_start::accept()
 	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr)
 		save_event_config_file(ctr);
  
-	record_config();
+	if (record_config() == false)
+		return;
 
 	save_config_file();
 
@@ -505,19 +506,10 @@ void oprof_start::record_selected_event_config()
 	persistent_config_t<event_setting>& cfg = event_cfgs[current_ctr];
 	std::string name(curr->name);
 
-	uint count = event_count_edit->text().toUInt();
-
-	if (cfg[name].count != count)
-		cfg[name].count = count;
-
-	if (cfg[name].os_ring_count != os_ring_count_cb->isChecked())
-		cfg[name].os_ring_count = os_ring_count_cb->isChecked();
-	
-	if (cfg[name].user_ring_count != user_ring_count_cb->isChecked())
-		cfg[name].user_ring_count = user_ring_count_cb->isChecked();
-
-	if (cfg[name].umask != get_unit_mask(*curr))
-		cfg[name].umask = get_unit_mask(*curr);
+	cfg[name].count = event_count_edit->text().toUInt();
+	cfg[name].os_ring_count = os_ring_count_cb->isChecked();
+	cfg[name].user_ring_count = user_ring_count_cb->isChecked();
+	cfg[name].umask = get_unit_mask(*curr);
 }
 
 // validate and save the configuration (The qt validator installed
@@ -526,12 +518,12 @@ bool oprof_start::record_config()
 {
 	config.kernel_filename = kernel_filename_edit->text().latin1();
 	config.map_filename = map_filename_edit->text().latin1();
-	
-	if (config.buffer_size < OP_MIN_BUFFER_SIZE || 
-	    config.buffer_size > OP_MAX_BUFFER_SIZE) {
+
+	uint temp = buffer_size_edit->text().toUInt();
+	if (temp < OP_MIN_BUFFER_SIZE || temp > OP_MAX_BUFFER_SIZE) {
 		std::ostringstream error;
 
-		error << "buffer size out of range: " << config.buffer_size
+		error << "buffer size out of range: " << temp
 		      << " valid range is [" << OP_MIN_BUFFER_SIZE << ", "
 		      << OP_MAX_BUFFER_SIZE << "]";
 
@@ -539,15 +531,13 @@ bool oprof_start::record_config()
 
 		return false;
 	}
+	config.buffer_size = temp;
 
-	config.buffer_size = buffer_size_edit->text().toUInt();
-
-	if (config.hash_table_size < OP_MIN_HASH_TABLE_SIZE || 
-	    config.hash_table_size > OP_MAX_HASH_TABLE_SIZE) {
+	temp = hash_table_size_edit->text().toUInt();
+	if (temp < OP_MIN_HASH_TABLE_SIZE || temp > OP_MAX_HASH_TABLE_SIZE) {
 		std::ostringstream error;
 
-		error << "hash table size out of range: " 
-		      << config.hash_table_size
+		error << "hash table size out of range: " << temp
 		      << " valid range is [" << OP_MIN_HASH_TABLE_SIZE << ", "
 		      << OP_MAX_HASH_TABLE_SIZE << "]";
 
@@ -555,13 +545,13 @@ bool oprof_start::record_config()
 
 		return false;
 	}
+	config.hash_table_size = temp;
 
-	if (config.note_table_size < OP_MIN_NOTE_TABLE_SIZE || 
-	    config.hash_table_size > OP_MAX_NOTE_TABLE_SIZE) {
+	temp = note_table_size_edit->text().toUInt();
+	if (temp < OP_MIN_NOTE_TABLE_SIZE || temp > OP_MAX_NOTE_TABLE_SIZE) {
 		std::ostringstream error;
 
-		error << "note table size out of range: " 
-		      << config.note_table_size
+		error << "note table size out of range: " << temp
 		      << " valid range is [" << OP_MIN_NOTE_TABLE_SIZE << ", "
 		      << OP_MAX_NOTE_TABLE_SIZE << "]";
 
@@ -569,9 +559,8 @@ bool oprof_start::record_config()
 
 		return false;
 	}
+	config.note_table_size = temp;
 
-	config.hash_table_size = hash_table_size_edit->text().toUInt();
-	config.note_table_size = note_table_size_edit->text().toUInt();
 	config.pid_filter = pid_filter_edit->text().toUInt();
 	config.pgrp_filter = pgrp_filter_edit->text().toUInt();
 	config.base_opd_dir = base_opd_dir_edit->text().latin1();

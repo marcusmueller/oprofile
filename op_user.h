@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.11 2001/10/14 19:35:13 movement Exp $ */
+/* $Id: op_user.h,v 1.12 2001/11/11 15:57:52 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -125,7 +125,7 @@ struct op_note {
 
 /* nr. entries in hash map, prime
  * this is the maximum number of name components allowed
- * Must not be more than 4093
+ * Must be a prime number
  */
 #define OP_HASH_MAP_NR 4093
 

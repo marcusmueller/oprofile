@@ -1,3 +1,9 @@
+2001-11-11  Philippe Elie  <ph_e@club-internet.fr>
+
+	* gui/oprof_start.cpp: fix record_config()
+
+	* op_user.h: fix one comment
+
 2001-11-10  Bob Montgomery  <bob_montgomery@hp.com>
 
 	* module/oprofile.c: fix pid/pgrp filter to reset counter 
