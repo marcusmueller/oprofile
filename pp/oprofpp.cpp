@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.8 2001/11/06 21:38:16 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.9 2001/11/12 10:16:40 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -15,8 +15,9 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-// FIXME: sprintf -> sstream (and elsewhere) 
+// FIXME: printf -> ostream (and elsewhere) 
 #include <algorithm>
+#include <sstream>
 
 #include "oprofpp.h"
  
@@ -61,7 +62,7 @@ static poptOption options[] = {
  * remangle - convert a filename into the related sample file name
  * @image: the image filename
  */
-char *remangle(const char *image)
+static char *remangle(const char *image)
 {
 	char *file;
 	char *c; 
@@ -846,20 +847,16 @@ opp_samples_files::~opp_samples_files()
  */
 void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 {
-	char* temp;
-
-	temp = (char*)opd_malloc(strlen(samplefile) +  32);
-
-	strcpy(temp, samplefile);
-
-	sprintf(temp + strlen(temp), "#%d", counter);
+	std::ostringstream filename;
+	filename << samplefile << "#" << counter;
 	if (session_number != -1)
-		sprintf(temp + strlen(temp), "-%d", session_number);
+		filename << "-" << session_number;
+	std::string temp = filename.str();
 
-	fd[counter] = open(temp, O_RDONLY);
+	fd[counter] = open(temp.c_str(), O_RDONLY);
 	if (fd[counter] == -1) {
 		if (can_fail == false)	{
-			fprintf(stderr, "oprofpp: Opening %s failed. %s\n", temp, strerror(errno));
+			fprintf(stderr, "oprofpp: Opening %s failed. %s\n", temp.c_str(), strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 		header[counter] = NULL;
@@ -868,18 +865,18 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 		return;
 	}
 
-	size[counter] = opd_get_fsize(temp, 1) - sizeof(opd_header); 
+	size[counter] = opd_get_fsize(temp.c_str(), 1) - sizeof(opd_header); 
 	if (size[counter] < sizeof(opd_header)) {
 		fprintf(stderr, "oprofpp: sample file %s is not the right "
 			"size: got %d, expected %d\n", 
-			temp, size[counter], sizeof(opd_header));
+			temp.c_str(), size[counter], sizeof(opd_header));
 		exit(EXIT_FAILURE);
 	}
 
 	header[counter] = (opd_header*)mmap(0, size[counter] + sizeof(opd_header), 
 				      PROT_READ, MAP_PRIVATE, fd[counter], 0);
 	if (header[counter] == (void *)-1) {
-		fprintf(stderr, "oprofpp: mmap of %s failed. %s\n", temp, strerror(errno));
+		fprintf(stderr, "oprofpp: mmap of %s failed. %s\n", temp.c_str(), strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -901,8 +898,6 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 		fprintf(stderr, "oprofpp: sanity check counter number fail %d, expect %d.\n", header[counter]->ctr, counter);
 		exit(EXIT_FAILURE);
 	}
-
-	opd_free(temp);
 }
 
 /**

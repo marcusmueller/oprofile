@@ -1,5 +1,11 @@
 2001-11-12  Philippe Elie  <ph_e@club-internet.fr>
 
+	* op_events.c: last commit was bad
+	
+	* pp/oprofpp.c: use sstream
+
+2001-11-12  Philippe Elie  <ph_e@club-internet.fr>
+
 	* util: new directory
 	* util/string_manip.cpp:
 	* util/string_manip.h: new

@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.35 2001/11/11 23:51:37 phil_e Exp $ */
+/* $Id: op_events.c,v 1.36 2001/11/12 10:16:39 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -327,112 +327,6 @@ int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, int cpu_type)
 		ret |= OP_EVT_NOT_FOUND;
 
 	return ret;
-}
-
-/**
- * op_check_events_str - sanity check event strings and unit masks
- * @ctr: ctr number
- * @ctr_type: event name for counter
- * @ctr_um: unit mask for counter
- * @cpu_type: processor type
- * @ctr_t: event value for counter
- *
- * Check that the counter event and unit mask values
- * are allowed. @cpu_type should be set as follows :
- *
- * 0 Pentium Pro
- *
- * 1 Pentium II
- *
- * 2 Pentium III
- *
- * 3 AMD Athlon
- *
- * Use "" strings for @ctr_type if the counter is not used.
- *
- * On successful return, @ctr_t will contain
- * the event values for counters ctr
- *
- * The function returns 1 if the values are allowed,
- * 0 otherwise
- */
-int op_check_events_str(int ctr, char *ctr_type, u8 ctr_um, int cpu_type, u8 *ctr_t)
-{
-	uint i;
-	int ctr_found = 0;
-	uint cpu_mask = 1 << cpu_type;
-
-	if (!ctr_type)
-		ctr_type="";
-
-	if (strcmp(ctr_type,"")) {
-		for (i=0; i < op_nr_events; i++) {
-			if (!strcmp(ctr_type, op_events[i].name) && 
-			    (op_events[i].cpu_mask & cpu_mask)) {
-				*ctr_t = op_events[i].val;
-				ctr_found = 1;
-				break;
-			}
-		}
-	}
-
-	if (strcmp(ctr_type,"") && !ctr_found)
-		return OP_EVT_NOT_FOUND;
-
-	return op_check_events(ctr, *ctr_t, ctr_um, cpu_type);
-}
-
-/**
- * op_check_events_str - sanity check event strings and unit masks
- * @ctr: ctr number
- * @ctr_type: event name for counter
- * @ctr_um: unit mask for counter
- * @cpu_type: processor type
- * @ctr_t: event value for counter
- *
- * Check that the counter event and unit mask values
- * are allowed. @cpu_type should be set as follows :
- *
- * 0 Pentium Pro
- *
- * 1 Pentium II
- *
- * 2 Pentium III
- *
- * 3 AMD Athlon
- *
- * Use "" strings for @ctr_type if the counter is not used.
- *
- * On successful return, @ctr_t will contain
- * the event values for counters ctr
- *
- * The function returns 1 if the values are allowed,
- * 0 otherwise
- */
-int op_check_events_str(int ctr, char *ctr_type, u8 ctr_um, int cpu_type, u8 *ctr_t)
-{
-	uint i;
-	int ctr_found = 0;
-	uint cpu_mask = 1 << cpu_type;
-
-	if (!ctr_type)
-		ctr_type="";
-
-	if (strcmp(ctr_type,"")) {
-		for (i=0; i < op_nr_events; i++) {
-			if (!strcmp(ctr_type, op_events[i].name) && 
-			    (op_events[i].cpu_mask & cpu_mask)) {
-				*ctr_t = op_events[i].val;
-				ctr_found = 1;
-				break;
-			}
-		}
-	}
-
-	if (strcmp(ctr_type,"") && !ctr_found)
-		return OP_EVT_NOT_FOUND;
-
-	return op_check_events(ctr, *ctr_t, ctr_um, cpu_type);
 }
 
 /**
