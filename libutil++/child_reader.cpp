@@ -135,7 +135,7 @@ bool child_reader::block_read()
 				buf2 = (char *)xrealloc(buf2, sz_buf2);
 			}
 
-			ssize_t temp = read(fd2, buf2, sz_buf2 - end2);
+			ssize_t temp = read(fd2, buf2 + end2, sz_buf2 - end2);
 			if (temp > 0)
 				end2 += temp;
 		}

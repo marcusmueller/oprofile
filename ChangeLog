@@ -1,3 +1,8 @@
+2002-10-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutill++/child_reader.cpp: read_block() : cumulate stderr
+	  output rather to overwrite always the same buffer space ...
+
 2002-10-16  John Levon  <levon@movementarian.org>
 
 	* utils/op_start_25: check if mounted, from Will Cohen
