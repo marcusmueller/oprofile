@@ -851,8 +851,9 @@ events other than the default event chosen by OProfile.
 <para>
 The hardware performance counters are detailed in the Intel IA-32 Architecture Manual, Volume 3, available
 from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>. The AMD Athlon/Duron
-implementation is detailed in <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/pdf/22007.pdf">
-http://www.amd.com/products/cpg/athlon/techdocs/pdf/22007.pdf</ulink>.
+implementation is detailed in <ulink
+url="http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf">
+http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf</ulink>.
 These processors are capable of delivering an interrupt when a counter overflows.
 This is the basic mechanism on which OProfile is based. The delivery mode is <acronym>NMI</acronym>,
 so blocking interrupts in the kernel does not prevent profiling. When the interrupt handler is called,

@@ -1,3 +1,7 @@
+2004-11-19  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: Fix AMD link (noticed by Emmanuel Araman).
+
 2004-11-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opgprof.cpp: ensure we load all callgraph file
