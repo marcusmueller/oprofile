@@ -33,6 +33,13 @@ all parts of a running system, from the kernel (including modules and interrupt 
 to binaries. It runs transparently in the background collecting information at a low overhead. These
 features make it ideal for profiling entire systems to determine bottle necks in real-world systems.
 </para>
+<para>
+Many CPUs provide "performance counters", hardware registers that can count "events"; for example,
+cache misses, or CPU cycles. OProfile provides access to these counters, so they may be used to
+provide profiles of code based on the number of these occurring events. Some hardware setups do
+not allow OProfile to use performance counters: in these cases, no events are available, and
+OProfile operates in timer/RTC mode, as described in later chapters.
+</para>
 
 <sect1 id="requirements">
 <title>System requirements</title>
@@ -218,6 +225,10 @@ a 2.2 kernel you must be root to compile the module. If you are using
 2.5 kernels or higher, you do not need kernel source, as long as the
 OProfile driver is enabled; additionally, you should not need to disable
 power management.
+</para>
+<para>
+Please note that you must save or have available the <filename>vmlinux</filename> file
+generated during a kernel compile, as OProfile needs it.
 </para>
 
 </sect1>

@@ -1,5 +1,9 @@
 2003-03-01  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml: expand intro a little, small fixes
+
+2003-03-01  John Levon  <levon@movementarian.org>
+
 	* pp/format_output.cpp: use "%" not "%-age"
 
 2003-02-28  John Levon  <levon@movementarian.org>
