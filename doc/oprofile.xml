@@ -556,7 +556,7 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		<row><entry><option>library</option></entry><entry>Create per-application profiles for libraries</entry></row>
 		<row><entry><option>kernel</option></entry><entry>Create per-application profiles for the kernel and kernel modules</entry></row>
 		<row><entry><option>thread</option></entry><entry>Create profiles for each thread and each task</entry></row>
-		<row><entry><option>cpu</option></entry><entry>Create profiles for each physical CPU</entry></row>
+		<row><entry><option>cpu</option></entry><entry>Create profiles for each CPU</entry></row>
 		<row><entry><option>all</option></entry><entry>All of the above options</entry></row>
 		</tbody>
 		</tgroup>

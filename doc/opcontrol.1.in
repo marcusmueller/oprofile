@@ -87,7 +87,7 @@ respectively.
 Separate samples based on the given separator. 'library' per-application
 dynamically linked libraries samples files. 'kernel' per-application modules
 and kernel samples files, 'kernel' imply 'library'. 'thread' gives separation
-for each thread and task. 'cpu' separates for each physical CPU. 'all' imply all the
+for each thread and task. 'cpu' separates for each CPU. 'all' imply all the
 above options and 'none' turns off separation.
 .br
 .TP

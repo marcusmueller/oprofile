@@ -1,3 +1,8 @@
+2003-10-20  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/oprofile.xml:
+	* doc/oprofile.1.in: s/physical CPU/CPU/
+
 2003-10-20  John Levon  <levon@movementarian.org>
 
 	* daemon/Makefile.am:
