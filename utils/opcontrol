@@ -314,7 +314,7 @@ check_valid_args() {
 
 # get start and end points of the kernel
 get_kernel_range() {
-	if test ! -z $KERNEL_RANGE; then
+	if test ! -z "$KERNEL_RANGE"; then
 		return;
 	fi
 	tmp1=`nm $VMLINUX | grep ' A _text'`
@@ -329,6 +329,17 @@ get_kernel_range() {
 	vecho "KERNEL_RANGE $KERNEL_RANGE"
 }
  
+ 
+# check value is set
+error_if_empty() {
+	if test -z "$2"; then
+		echo "No value given for option $1" >&2
+		do_help 
+		exit 1
+	fi
+}
+
+error_if_empty --kernel-range $val
 # get and check specified options
 do_options() {
 	while [ "$#" -ne 0 ]
@@ -369,6 +380,7 @@ do_options() {
 			--stop)
 				if test "$KERNEL_SUPPORT" != "yes"; then
 					echo "$arg unsupported. use \"--shutdown\"" >& 2
+					exit 1
 				else
 					DUMP=yes
 					STOP=yes
@@ -404,6 +416,7 @@ do_options() {
 			# --setup options
 
 			--buffer-size)
+				error_if_empty $arg $val
 				BUF_SIZE=$val
 				;;
 			--ctr*-unit-mask)
@@ -430,9 +443,11 @@ do_options() {
 				SEPARATE_SAMPLES=1
 				;;
 			--vmlinux)
+				error_if_empty $arg $val
 				VMLINUX=$val
 				;;
 			--kernel-range)
+				error_if_empty $arg $val
 				KERNEL_RANGE=$val
 				;;
 			--pid-filter)
@@ -779,8 +794,8 @@ do_deinit() {
 		umount /dev/oprofile
 	fi
 	#unload the oprofile module if it is around
-	OPROF_MOD = `lsmod | grep oprofile`
-	if test -n $OPROF_MOD; then
+	OPROF_MOD=`lsmod | grep oprofile`
+	if test -n "$OPROF_MOD"; then
 		echo "Unloading oprofile module" >& 2
 		rmmod oprofile
 	fi
