@@ -1,3 +1,7 @@
+2004-07-05  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.1.in: add opstack(1) to SEE ALSO
+
 2004-06-21  John Levon  <levon@movementarian.org>
 
 	* events/i386/p4/events:

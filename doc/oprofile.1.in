@@ -176,14 +176,15 @@ This man page is current for @PACKAGE@-@VERSION@.
 .BR @OP_DOCDIR@,
 .BR opcontrol(1),
 .BR opreport(1),
+.BR opstack(1),
 .BR opannotate(1),
 .BR opgprof(1),
 .BR gprof(1),
 .BR readprofile(1),
-.BR "Intel IA32 Architecture Developer's Manual, Volume 3"
+.BR CPU vendor architecture manuals
 
 .SH COPYRIGHT
-oprofile is Copyright (C) 1998-2003 University of Manchester, UK, John Levon,
+oprofile is Copyright (C) 1998-2004 University of Manchester, UK, John Levon,
 and others.
 OProfile is released under the GNU General Public License, Version 2,
 or (at your option) any later version.
