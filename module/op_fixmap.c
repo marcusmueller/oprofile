@@ -66,7 +66,7 @@ void do_fixmap(void)
 	printk(KERN_INFO "oprofile: mapping APIC.\n"); 
 #endif /* CONFIG_X86_LOCAL_APIC */
 #else
-#if V_BEFORE(2,4,0) && !defined(CONFIG_X86_LOCAL_APIC)
+#if !defined(CONFIG_X86_LOCAL_APIC)
 	make_fixmap();
 	printk(KERN_INFO "oprofile: mapping APIC.\n"); 
 #endif
