@@ -1,3 +1,12 @@
+2003-03-10  John Levon  <levon@movementarian.org>
+
+	* configure.in:
+	* doc/Makefile.am:
+	* doc/xsl/xhtml.xsl:
+	* doc/xsl/xhtml-chunk.xsl:
+	* doc/xsl/catalog-1.xml.in: Use a catalog for finding
+	the XSL, so we only have one .in file now.
+
 2003-03-08  Will Cohen  <wcohen@redhat.com>
 
 	* doc/Makefile.am: Correct path for htmldir.

@@ -24,7 +24,6 @@ Before 1.0 little stuff
  o improve --smart-demangle
 	o allow user to add it's own pattern in user.pat, document it.
 	o hard code ${typename} regular definition to remove all current limitations.
- o Add something  to op_help so user can see if they're using timer/rtc mode or not
  o oprof_start: check lib samples when kernel samples checkbox is checked
  o oprofpp needs -P too
  o "op_time" doesn't have a header !
