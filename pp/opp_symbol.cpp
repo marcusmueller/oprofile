@@ -377,8 +377,13 @@ string OutputSymbol::format_linenr_info(const std::string &,
 					const sample_entry & sample, int)
 {
 	ostringstream out;
-	
-	out << sample.file_loc.filename << ":" << sample.file_loc.linenr;
+
+	if (sample.file_loc.filename.length()) {
+		out << sample.file_loc.filename << ":"
+		    << sample.file_loc.linenr;
+	} else {
+		out << "(no location information)";
+	}
 
 	return out.str();
 }
@@ -388,8 +393,12 @@ string OutputSymbol::format_short_linenr_info(const std::string &,
 {
 	ostringstream out;
 
-	out << basename(sample.file_loc.filename) 
-	    << ":" << sample.file_loc.linenr;
+	if (sample.file_loc.filename.length()) {
+		out << basename(sample.file_loc.filename) 
+		    << ":" << sample.file_loc.linenr;
+	} else {
+		out << "(no location information)";
+	}
 
 	return out.str();
 }

@@ -478,7 +478,8 @@ add(const opp_samples_files & samples_files, const opp_bfd & abfd,
       bool add_shared_libs, int counter)
 {
 	do_add(samples_files, abfd, add_zero_samples_symbols, 
-	       flags & osf_details, flags & osf_linenr_info);
+	       flags & osf_details, 
+	       flags & (osf_linenr_info | osf_short_linenr_info));
 
 	if (!add_shared_libs)
 		return;
@@ -502,7 +503,7 @@ add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 
 		// TODO: check if third params must be add_zero_samples_symbols
 		do_add(samples_files, abfd, false, flags & osf_details,
-		       flags & osf_linenr_info);
+		       flags & (osf_linenr_info | osf_short_linenr_info));
 	}
 }
 
