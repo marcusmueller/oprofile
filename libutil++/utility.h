@@ -88,6 +88,17 @@ private:
 	scoped_array(scoped_array const &);
 	T * p_;
 };
+
+/**
+ * @param count
+ * @param total
+ *
+ * return total == 0 ? 1.0 : (count / total);
+ */
+inline double op_ratio(double count, double total)
+{
+	return total == 0 ? 0.0 : (count / total);
+}
  
 // Part copyright:
 //  (C) Copyright boost.org 1999. Permission to copy, use, modify, sell

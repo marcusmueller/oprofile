@@ -95,14 +95,6 @@ scoped_ptr<samples_container_t> samples(0);
 string extract_blank_at_begin(string const & str);
 
 /**
- * @param count
- * @param total
- *
- * return total == 0 ? 1.0 : ((double)count / total);
- */
-double do_ratio(size_t count, size_t total);
-
-/**
  * @param image_name the samples owner image name
  * @param sample_file the sample file base name (w/o counter nr suffix)
  * @param fn_match only source filename which match this filter will be output
@@ -326,11 +318,6 @@ string extract_blank_at_begin(string const & str)
 		end_pos = 0;
 
 	return str.substr(0, end_pos);
-}
-
-inline double do_ratio(size_t count, size_t total)
-{
-	return total == 0 ? 1.0 : ((double)count / total);
 }
 
 bool annotate_source(string const & image_name, string const & sample_file,
@@ -747,7 +734,7 @@ void output_one_counter(ostream & out, size_t counter, size_t total)
 {
 	out << " ";
 	out << counter << " ";
-	out << setprecision(4) << (do_ratio(counter, total) * 100.0) << "%";
+	out << setprecision(4) << (op_ratio(counter, total) * 100.0) << "%";
 }
 
 void output_counter(ostream & out, counter_array_t const & counter,

@@ -1,3 +1,11 @@
+2002-10-12  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/utility.h: op_ratio() new
+	* pp/op_time.cpp:
+	* pp/op_to_source.cpp:
+	* pp/opp_symbol.cpp:
+	* pp/samples_container.cpp: use op_ratio()
+
 2002-10-11  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/file_manip.cpp:

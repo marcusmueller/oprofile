@@ -446,9 +446,7 @@ string output_symbol::format_percent(string const &,
 {
 	ostringstream out;
 
-	double ratio = total_count[ctr]
-		? double(sample.counter[ctr]) / total_count[ctr]
-		: 0.0;
+	double ratio = op_ratio(sample.counter[ctr], total_count[ctr]);
 
 	out << ratio * 100.0;
 
@@ -463,9 +461,7 @@ string output_symbol::format_cumulated_percent(string const &,
 
 	cumulated_percent[ctr] += sample.counter[ctr];
 
-	double ratio = total_count[ctr]
-		? double(cumulated_percent[ctr]) / total_count[ctr]
-		: 0.0;
+	double ratio = op_ratio(cumulated_percent[ctr], total_count[ctr]);
 
 	out << ratio * 100.0;
 
@@ -477,9 +473,7 @@ string output_symbol::format_percent_details(string const &,
 {
 	ostringstream out;
 
-	double ratio = total_count_details[ctr]
-		? double(sample.counter[ctr]) / total_count_details[ctr]
-		: 0.0;
+	double ratio = op_ratio(sample.counter[ctr], total_count_details[ctr]);
 
 	out << ratio * 100.0;
 
@@ -494,9 +488,8 @@ string output_symbol::format_cumulated_percent_details(string const &,
 
 	cumulated_percent_details[ctr] += sample.counter[ctr];
 
-	double ratio = total_count_details[ctr]
-		? double(cumulated_percent_details[ctr]) / total_count_details[ctr]
-		: 0.0;
+	double ratio = op_ratio(cumulated_percent_details[ctr],
+				total_count_details[ctr]);
 
 	out << ratio * 100.0;
 

@@ -187,15 +187,13 @@ static void out_filename(string const & app_name,
 			// feel to rewrite with cout and its formated output
 #if 1
 			printf("%-9d ", count[i]);
-			double ratio = total_count[i] >= 1.0
-				? count[i] / total_count[i] : 0.0;
+			double ratio = op_ratio(count[i], total_count[i]);
 
 			if (ratio < 10.00 / 100.0)
 				printf(" ");
 			printf("%2.4f", ratio * 100);
 
-			ratio = app_count[i] >= 1.0
-				? count[i] / app_count[i] : 0.0;
+			ratio = op_ratio(count[i], app_count[i]);
 
 			if (ratio < 10.00 / 100.0)
 				printf(" ");

@@ -25,12 +25,6 @@ using namespace std;
 
 namespace {
 
-// FIXME: op_ratio.h in libutil ??
-inline double do_ratio(size_t counter, size_t total)
-{
-	return total == 0 ? 1.0 : ((double)counter / total);
-}
-
 struct filename_by_samples {
 	filename_by_samples(string filename_, double percent_)
 		: filename(filename_), percent(percent_)
@@ -187,8 +181,7 @@ samples_container_t::select_symbols(size_t ctr, double threshold,
 	symbol_collection::const_iterator const end = v.end();
 	for (; it < end && threshold >= 0; ++it) {
 		double const percent =
-			do_ratio((*it)->sample.counter[ctr],
-			total_count);
+			op_ratio((*it)->sample.counter[ctr], total_count);
 
 		if (until_threshold || percent >= threshold)
 			result.push_back((*it));
@@ -233,7 +226,7 @@ vector<string> const samples_container_t::select_filename(
 
 		samples_count(counter, *it);
 
-		filename_by_samples f(*it, do_ratio(counter[ctr], total_count));
+		filename_by_samples f(*it, op_ratio(counter[ctr], total_count));
 
 		file_by_samples.push_back(f);
 	}
