@@ -79,11 +79,12 @@ void oprof_report::load_samples_files(const string & filename)
 		mark_all_view_changed();
 
 		delete samples_files;
-		samples_files = new samples_files_t;
+		samples_files =
+			new samples_files_t(true, osf_details, true, counter);
+
 		// we filter nothing here to allow changing filtering later
 		// w/o reloading the whole samples files (TODO)
-		samples_files->add(samples_file, abfd, true, osf_details,
-				   true, counter);
+		samples_files->add(samples_file, abfd);
 	}
 
 	/* ... TODO and handle the relevant exception here ... */

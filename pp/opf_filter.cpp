@@ -118,10 +118,10 @@ class output {
 	       string const & output_filter,
 	       string const & no_output_filter,
 	       bool assembly,
-	       bool source_with_assembly);
+	       bool source_with_assembly,
+	       int counter_mask);
 
-	bool treat_input(const string & image_name, const string & sample_file,
-			 int counter);
+	bool treat_input(const string & image_name, const string & sample_file);
 
  private:
 	/// this output a comment containaing the counter setup and command
@@ -166,7 +166,7 @@ class output {
 	char const ** argv;
 
 	// hold all info for samples
-	samples_files_t samples;
+	samples_files_t * samples;
 
 	// samples files header are stored here
 	counter_setup counter_info[OP_MAX_COUNTERS];
@@ -199,6 +199,8 @@ class output {
 
 	bool assembly;
 	bool source_with_assembly;
+
+	int counter_mask;
 };
 
 //---------------------------------------------------------------------------
@@ -314,7 +316,8 @@ output::output(int argc_, char const * argv_[],
 	       string const & output_filter_,
 	       string const & no_output_filter_,
 	       bool assembly_,
-	       bool source_with_assembly_)
+	       bool source_with_assembly_,
+	       int counter_mask_)
 	:
 	argc(argc_),
 	argv(argv_),
@@ -330,7 +333,8 @@ output::output(int argc_, char const * argv_[],
 	output_separate_file(false),
 	fn_match(output_filter_, no_output_filter_),
 	assembly(assembly_),
-	source_with_assembly(source_with_assembly_)
+	source_with_assembly(source_with_assembly_),
+	counter_mask(counter_mask_)
 {
 	if (source_dir.empty() == false) {
 		output_separate_file = true;
@@ -362,6 +366,11 @@ output::output(int argc_, char const * argv_[],
 		     << "--output-dir and --source-dir" << endl;
 		exit(EXIT_FAILURE);
 	}
+
+	OutSymbFlag flag = osf_details;
+	if (!assembly)
+		flag = static_cast<OutSymbFlag>(flag | osf_linenr_info);
+	samples = new samples_files_t(false, flag, false, counter_mask);
 }
 
 // build a counter_setup from a header.
@@ -392,10 +401,10 @@ bool output::setup_counter_param(const opp_samples_files & samples_files)
 
 bool output::calc_total_samples()
 {
-	for (size_t i = 0 ; i < samples.get_nr_counters() ; ++i)
-		counter_info[i].total_samples = samples.samples_count(i);
+	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i)
+		counter_info[i].total_samples = samples->samples_count(i);
 
-	for (size_t i = 0 ; i < samples.get_nr_counters() ; ++i)
+	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i)
 		if (counter_info[i].total_samples != 0)
 			return true;
 
@@ -418,9 +427,10 @@ void output::output_counter(ostream & out, const counter_array_t & counter,
 	if (prefix.length())
 		out << " " << prefix;
 
-	for (size_t i = 0 ; i < samples.get_nr_counters() ; ++i)
+	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i)
 		if (counter_info[i].enabled)
-			output_one_counter(out, counter[i], counter_info[i].total_samples);
+			output_one_counter(out, counter[i],
+					   counter_info[i].total_samples);
 
 	out << " ";
      
@@ -435,7 +445,7 @@ void output::find_and_output_symbol(ostream & out, const string & str, const str
 {
 	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
-	const symbol_entry* symbol = samples.find_symbol(vma);
+	const symbol_entry* symbol = samples->find_symbol(vma);
 
 	if (symbol) {
 		out << blank;
@@ -448,7 +458,7 @@ void output::find_and_output_counter(ostream & out, const string & str, const st
 {
 	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
-	const sample_entry * sample = samples.find_sample(vma);
+	const sample_entry * sample = samples->find_sample(vma);
 	if (sample) {
 		out << blank;
 		output_counter(out, sample->counter, true, string());
@@ -458,12 +468,12 @@ void output::find_and_output_counter(ostream & out, const string & str, const st
 // Complexity: log(nr symbols) + log(nr filename/linenr)
 void output::find_and_output_counter(ostream & out, const string & filename, size_t linenr, const string & blank) const
 {
-	const symbol_entry * symbol = samples.find_symbol(filename, linenr);
+	const symbol_entry * symbol = samples->find_symbol(filename, linenr);
 	if (symbol)
 		output_counter(out, symbol->sample.counter, true, symbol->name);
 
 	counter_array_t counter;
-	if (samples.samples_count(counter, filename, linenr)) {
+	if (samples->samples_count(counter, filename, linenr)) {
 		out << blank;
 		output_counter(out, counter, true, string());
 	}
@@ -513,7 +523,7 @@ output_objdump_asm_line(const std::string & str,
 		// strtoul must work (assuming unsigned long can contain a vma)
 		bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
-		const symbol_entry* symbol = samples.find_symbol(vma);
+		const symbol_entry* symbol = samples->find_symbol(vma);
 
 		// ! complexity: linear in number of symbol must use sorted
 		// by address vector and lower_bound ?
@@ -609,7 +619,7 @@ void output::output_asm(const string & image_name)
 
 	double threshold = threshold_percent / 100.0;
 
-	samples.select_symbols(output_symbols, index,
+	samples->select_symbols(output_symbols, index,
 			       threshold, until_more_than_samples);
 
 	output_header(cout);
@@ -713,7 +723,7 @@ void output::output_source()
 	size_t index = get_sort_counter_nr();
 
 	vector<string> filenames;
-	samples.select_filename(filenames, index, threshold_percent / 100.0,
+	samples->select_filename(filenames, index, threshold_percent / 100.0,
 				until_more_than_samples);
 
 	if (output_separate_file == false)
@@ -733,7 +743,7 @@ void output::output_source()
 				     << filenames[i] << endl;
 		} else {
 			counter_array_t count;
-			samples.samples_count(count, filenames[i]);
+			samples->samples_count(count, filenames[i]);
 
 			output_one_file(in, filenames[i], count);
 		}
@@ -744,9 +754,9 @@ size_t output::get_sort_counter_nr() const
 {
 	size_t index = sort_by_counter;
 
-	if (index >= samples.get_nr_counters() ||
+	if (index >= samples->get_nr_counters() ||
 	    !counter_info[index].enabled) {
-		for (index = 0 ; index < samples.get_nr_counters() ; ++index) {
+		for (index = 0 ; index < samples->get_nr_counters(); ++index) {
 			if (counter_info[index].enabled)
 				break;
 		}
@@ -759,7 +769,7 @@ size_t output::get_sort_counter_nr() const
 	}
 
 	// paranoid checking.
-	if (index == samples.get_nr_counters())
+	if (index == samples->get_nr_counters())
 		throw "output::output_source(input &) cannot find a counter enabled";
 
 	return index;
@@ -802,7 +812,7 @@ void output::output_header(ostream& out) const
 	out << "Cpu type: " << op_get_cpu_type_str(cpu_type) << endl;
 	out << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
 
-	for (size_t i = 0 ; i < samples.get_nr_counters() ; ++i) {
+	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i) {
 		out << endl << "Counter " << i << " ";
 		counter_info[i].print(out, cpu_type);
 	}
@@ -811,15 +821,14 @@ void output::output_header(ostream& out) const
 	out << endl;
 }
 
-bool output::treat_input(const string & image_name, const string & sample_file,
-			 int counter)
+bool output::treat_input(const string & image_name, const string & sample_file)
 {
 	// this lexcical scope just optimize the memory use by relaxing
 	// the opp_bfd and opp_samples_files as short as we can.
 	{
 	// this order of declaration is required to ensure proper
 	// initialisation of oprofpp
-	opp_samples_files samples_files(sample_file, counter);
+	opp_samples_files samples_files(sample_file, counter_mask);
 	opp_bfd abfd(samples_files.header[samples_files.first_file],
 		     samples_files.nr_samples, image_name);
 
@@ -833,10 +842,7 @@ bool output::treat_input(const string & image_name, const string & sample_file,
 	uint tmp = samples_files.header[samples_files.first_file]->cpu_type;
 	cpu_type = static_cast<op_cpu>(tmp);
 
-	OutSymbFlag flag = osf_details;
-	if (!assembly)
-		flag = static_cast<OutSymbFlag>(flag | osf_linenr_info);
-	samples.add(samples_files, abfd, false, flag, false, counter);
+	samples->add(samples_files, abfd);
 
 	if (!setup_counter_param(samples_files))
 		return false;
@@ -976,9 +982,9 @@ int main(int argc, char const * argv[])
 			      source_dir ? source_dir : "",
 			      output_filter ? output_filter : "*",
 			      no_output_filter ? no_output_filter : "",
-			      assembly, source_with_assembly);
+			      assembly, source_with_assembly, -1);
 
-		if (output.treat_input(image_name, sample_file, -1) == false)
+		if (output.treat_input(image_name, sample_file) == false)
 			return EXIT_FAILURE;
 	}
 

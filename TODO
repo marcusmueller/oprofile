@@ -38,7 +38,7 @@ Before 1.0
 	- but they are so ugly ...
  o add option to op_to_source like oprofpp -u -m on a symbol basis.
  o review the exception table of the nmi handler (at least stop oprofile)
- o take oprof_convert out the back and do the cruel to be kind thing
+ o take oprof_convert out the back and do the cruel to be kind thing (cleanup after that misc.h/misc.c see opd_simplify_pathname)
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o use a filelock rather a sleep to synchronize op_start and daemon.
  o check chroot() processes and the path hash stuff

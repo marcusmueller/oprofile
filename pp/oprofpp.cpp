@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.33 2002/03/19 05:41:25 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.34 2002/03/20 05:42:36 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -120,7 +120,9 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 	}
 
 	if (list_symbols || list_all_symbols_details || symbol) {
-		OutSymbFlag fl = ParseOutputOption(output_format);
+		OutSymbFlag fl =
+			OutputSymbol::ParseOutputOption(output_format);
+
 		if (fl == osf_none) {
 			cerr << "oprofpp: invalid --output-format flags.\n";
 			OutputSymbol::ShowHelp();
@@ -164,10 +166,10 @@ void printf_symbol(const char *name)
  */
 void opp_samples_files::do_list_symbols(opp_bfd & abfd, int sort_by_ctr) const
 {
-	samples_files_t samples;
+	samples_files_t samples(true, output_format_flags,
+				show_shared_libs, counter);
 
-	samples.add(*this, abfd, true, output_format_flags,
-		    show_shared_libs, counter);
+	samples.add(*this, abfd);
 
 	vector<const symbol_entry *> symbols;
 
@@ -198,12 +200,12 @@ void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 		return;
 	}
 
-	samples_files_t samples;
-
 	output_format_flags = 
 	  static_cast<OutSymbFlag>(output_format_flags | osf_details | osf_show_all_counters);
 
-	samples.add(*this, abfd, true, output_format_flags, false, counter);
+	samples_files_t samples(true, output_format_flags, false, counter);
+
+	samples.add(*this, abfd);
 
 	const symbol_entry * symb = samples.find_symbol(abfd.syms[i]->value +
 						abfd.syms[i]->section->vma);
@@ -331,13 +333,16 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd, int sort_by_ctr) const
 void opp_samples_files::do_list_symbols_details(opp_bfd & abfd,
 						int sort_by_ctr) const
 {
-	samples_files_t samples;
+	output_format_flags = 
+	  static_cast<OutSymbFlag>(output_format_flags | osf_details);
+
+	samples_files_t samples(false, output_format_flags,
+				show_shared_libs, counter);
 
 	output_format_flags = 
 	  static_cast<OutSymbFlag>(output_format_flags | osf_details);
 
-	samples.add(*this, abfd, false, output_format_flags,
-		    show_shared_libs, counter);
+	samples.add(*this, abfd);
 
 	vector<const symbol_entry *> symbols;
 

@@ -51,7 +51,7 @@ public:
 		    std::vector<std::string> const & args);
 
 	/** wait for the termination of the child process if this have not
-	 * occur. In this case return code of the child process is not 
+	 * already occur. In this case return code of the child process is not 
 	 * available. */
 	~ChildReader();
 
@@ -94,7 +94,7 @@ private:
 	pid_t pid;
 	int first_error;
 	// child stderr is handled especially, we need to retain data even
-	// caller read only stdout of the child.
+	// if caller read only stdout of the child.
 	char * buf2;
 	ssize_t sz_buf2;
 	char * buf1;

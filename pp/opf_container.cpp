@@ -333,11 +333,18 @@ void sample_container_t::flush_input_counter() const
 //---------------------------------------------------------------------------
 // implementation of samples_files_t
 
-samples_files_t::samples_files_t()
+samples_files_t::samples_files_t(bool add_zero_samples_symbols_,
+				 OutSymbFlag flags_,
+				 bool add_shared_libs_, 
+				 int counter_mask_)
 	:
 	symbols(new symbol_container_t),
 	samples(new sample_container_t),
-	nr_counters(static_cast<uint>(-1))
+	nr_counters(static_cast<uint>(-1)),
+	add_zero_samples_symbols(add_zero_samples_symbols_),
+	flags(flags_),
+	add_shared_lib(add_shared_libs_),
+	counter_mask(counter_mask_)
 {
 }
 
@@ -352,15 +359,11 @@ samples_files_t::~samples_files_t()
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
 void samples_files_t::
-add(const opp_samples_files & samples_files, const opp_bfd & abfd,
-      bool add_zero_samples_symbols, OutSymbFlag flags,
-      bool add_shared_libs, int counter)
+add(const opp_samples_files & samples_files, const opp_bfd & abfd)
 {
-	do_add(samples_files, abfd, add_zero_samples_symbols, 
-	       flags & osf_details, 
-	       flags & (osf_linenr_info | osf_short_linenr_info));
+	do_add(samples_files, abfd, add_zero_samples_symbols);
 
-	if (!add_shared_libs)
+	if (!add_shared_lib)
 		return;
  
 	string const dir = dirname(samples_files.sample_filename);
@@ -375,14 +378,13 @@ add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 		string lib_name;
 		extract_app_name(*it, lib_name);
 
-		opp_samples_files samples_files(dir + "/" + *it, counter);
+		opp_samples_files samples_files(dir + "/" + *it, counter_mask);
 		opp_bfd abfd(samples_files.header[samples_files.first_file],
 			     samples_files.nr_samples,
 			     demangle_filename(lib_name));
 
 		// TODO: check if third params must be add_zero_samples_symbols
-		do_add(samples_files, abfd, false, flags & osf_details,
-		       flags & (osf_linenr_info | osf_short_linenr_info));
+		do_add(samples_files, abfd, false);
 	}
 }
 
@@ -390,10 +392,9 @@ add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 //  the symbols/samples are sorted by increasing vma.
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
-void samples_files_t::
-do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
-       bool add_zero_samples_symbols, bool build_samples_by_vma,
-       bool record_linenr_info)
+void samples_files_t::do_add(const opp_samples_files & samples_files,
+			     const opp_bfd & abfd, 
+			     bool add_zero_samples_symbols)
 {
 	// paranoiad checking
 	if (nr_counters != static_cast<uint>(-1) && 
@@ -425,11 +426,10 @@ do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 						 start, end);
 		counter += symb_entry.sample.counter;
 
-		if (build_samples_by_vma) {
+		if (flags & osf_details) {
 			// 6th parameters is wrong must be translated to a vma
 			add_samples(samples_files, abfd, size_t(-1),
-				    start, end, start, image_name,
-				    record_linenr_info);
+				    start, end, start, image_name);
 		}
 
 		symb_entry.last = samples->size();
@@ -455,7 +455,7 @@ do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 
 		symb_entry.name = demangle_symbol(abfd.syms[i]->name);
 
-		if (record_linenr_info &&
+		if ((flags & (osf_linenr_info | osf_short_linenr_info)) != 0 &&
 		    abfd.get_linenr(i, start, filename, linenr)) {
 			symb_entry.sample.file_loc.filename = filename;
 			symb_entry.sample.file_loc.linenr = linenr;
@@ -471,9 +471,9 @@ do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 
 		symb_entry.first = samples->size();
 
-		if (build_samples_by_vma)
+		if (flags & osf_details)
 			add_samples(samples_files, abfd, i, start, end,
-				    base_vma, image_name, record_linenr_info);
+				    base_vma, image_name);
 
 		symb_entry.last = samples->size();
 
@@ -484,8 +484,7 @@ do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 void samples_files_t::add_samples(const opp_samples_files& samples_files,
 				  const opp_bfd& abfd, size_t sym_index,
 				  u32 start, u32 end, bfd_vma base_vma,
-				  const std::string & image_name,
-				  bool record_linenr_info)
+				  const std::string & image_name)
 {
 	for (u32 pos = start; pos < end ; ++pos) {
 		const char * filename;
@@ -495,7 +494,7 @@ void samples_files_t::add_samples(const opp_samples_files& samples_files,
 		if (!samples_files.accumulate_samples(sample.counter, pos))
 			continue;
 
-		if (record_linenr_info &&
+		if ((flags & (osf_linenr_info | osf_short_linenr_info)) != 0 &&
 		    sym_index != size_t(-1) &&
 		    abfd.get_linenr(sym_index, pos, filename, linenr)) {
 			sample.file_loc.filename = filename;

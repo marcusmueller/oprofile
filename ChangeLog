@@ -1,3 +1,19 @@
+2002-03-20  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/opf_filter.h: simplify slightly interface of samples_files_t
+	* oprof_report/oprof_report.cpp:
+	* pp/op_time.cpp:
+	* pp/opf_container.cpp:
+	* pp/opf_filter.cpp:
+	* pp/oprofp.cpp: reflect the new interface.
+
+	* pp/opp_symbol.cpp: ParseOutputOption --> static member of
+	  OutputSymbol ...
+
+	* pp/opp_symbol.h:
+	* util/file_manip.h!
+	* util/string_manip.h: doxygen comments
+
 2002-03-19  Philippe Elie  <ph_e@club-internet.fr>
 
 	* scripts/Doxyfile: small tweak

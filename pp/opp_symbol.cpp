@@ -69,7 +69,7 @@ static const output_option * find_option(char ch)
 	return 0;
 }
 
-OutSymbFlag ParseOutputOption(const string & option)
+OutSymbFlag OutputSymbol::ParseOutputOption(const string & option)
 {
 	size_t flag = 0;
 	for (size_t i = 0 ; i < option.length() ; ++i) {

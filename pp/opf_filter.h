@@ -20,7 +20,6 @@
 
 #include <string>
 
-#include "oprofpp.h"
 #include "opp_symbol.h"
 
 class sample_container_t;
@@ -30,32 +29,36 @@ class symbol_container_t;
 /// A container to store symbol/sample from samples files/image file
 class samples_files_t {
 public:
-	 samples_files_t();
-	~samples_files_t();
-
 	/**
-	 * add() -  record symbols/samples in the underlined container
-	 * \param samples_files the samples files container
-	 * \param abf the associated bfd object
+	 * Build an object to store information on samples. All parameters
+	 * acts as hint for what you will request after recording samples and
+	 * so on allow optimizations during recording the information.
 	 * \param add_zero_samples_symbols must we add to the symbol container
 	 * symbols with zero samples count
 	 * \param flags optimize hint to add samples. The flags is a promise
 	 * on what will be required as information in future. Avoid to pass
 	 * osf_linenr_info greatly improve performance of add. Avoiding
 	 * osf_details is also an improvement.
-	 * \param add_shared_libs add to the set of symbols/samples shared
-	 * libs which belongs to this image, only meaningfull if samples come
-	 * from a --separate-samples session
+	 * \param add_shared_libs record to the set of symbols/samples shared
+	 * libs which belongs to this image, only meaningfull if samples files
+	 * come from a --separate-samples session
+	 * \param counter_mask which counter we must record
+	 */
+	 samples_files_t(bool add_zero_samples_symbols, OutSymbFlag flags,
+			 bool add_shared_libs, int counter_mask);
+	~samples_files_t();
+
+	/**
+	 * add() -  record symbols/samples in the underlined container
+	 * \param samples_files the samples files container
+	 * \param abf the associated bfd object
 	 *
 	 * add() is an helper for delayed ctor. Take care you can't safely
 	 * make any call to add after any other member function call.
-	 * Successive call to build must use the same boolean value and
-	 * obviously you can add only samples files which are coherent (same
+	 * Obviously you can add only samples files which are coherent (same
 	 * sampling rate, same events etc.)
 	 */
-	void add(const opp_samples_files& samples_files,
-		 const opp_bfd& abfd, bool add_zero_samples_symbols,
-		 OutSymbFlag flags, bool add_shared_libs, int counter);
+	void add(const opp_samples_files& samples_files, const opp_bfd& abfd);
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
 	const symbol_entry* find_symbol(bfd_vma vma) const;
@@ -114,15 +117,12 @@ private:
 	/// helper for add();
 	void do_add(const opp_samples_files & samples_files,
 		    const opp_bfd & abfd,
-		    bool add_zero_samples_symbols,
-		    bool build_samples_by_vma,
-		    bool record_linenr_info);
+		    bool add_zero_samples_symbols);
 	/// helper for do_add()
 	void add_samples(const opp_samples_files& samples_files, 
 			 const opp_bfd & abfd, size_t sym_index,
 			 u32 start, u32 end, bfd_vma base_vma,
-			 const std::string & image_name,
-			 bool record_linenr_info);
+			 const std::string & image_name);
 
 	/**
 	 * create an unique artificial symbol for an offset range. The range
@@ -155,6 +155,12 @@ private:
 	counter_array_t counter;
 	/// maximum number of counter available
 	uint nr_counters;
+
+	/// parameters passed to ctor
+	bool add_zero_samples_symbols;
+	OutSymbFlag flags;
+	bool add_shared_lib;
+	int counter_mask;
 };
 
 #endif /* !OPF_FILTER_H */

@@ -214,7 +214,9 @@ static void get_options(int argc, char const * argv[])
 	}
 
 	if (list_symbols) {
-		OutSymbFlag fl = ParseOutputOption(output_format);
+		OutSymbFlag fl =
+			OutputSymbol::ParseOutputOption(output_format);
+
 		if (fl == osf_none) {
 			cerr << "op_time: invalid --output-format flags.\n";
 			OutputSymbol::ShowHelp();
@@ -586,7 +588,7 @@ string check_image_name(const string & image_name,
  */
 static void output_symbols_count(map_t& files, int counter)
 {
-	samples_files_t samples;
+	samples_files_t samples(false, output_format_flags, false, counter);
 
 	map_t::iterator it_f;
 	for (it_f = files.begin() ; it_f != files.end() ; ++it_f) {
@@ -616,9 +618,7 @@ static void output_symbols_count(map_t& files, int counter)
 			opp_bfd abfd(samples_file.header[samples_file.first_file],
 				     samples_file.nr_samples, image_name);
 
-			samples.add(samples_file, abfd, false,
-				    output_format_flags,
-				    false, counter);
+			samples.add(samples_file, abfd);
 		}
 	}
 

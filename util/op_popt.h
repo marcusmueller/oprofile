@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-/* wrapper around popt library: handle all non recognized options. all error
+/** wrapper around popt library: handle all non recognized options. all error
  * are fatal */
 poptContext opd_poptGetContext(const char * name,
                 int argc, const char ** argv,

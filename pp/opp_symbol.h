@@ -69,11 +69,11 @@ struct symbol_entry {
 };
 
 //---------------------------------------------------------------------------
-/// flags passed to the ctr of an OutputSymbol object. This also specify the
-/// order of field output: lower enum tag ==> comes first in output order
-/// Note than changing value of enum is not safe. See OutputSymbol and
-/// the osf_repeat_mask use. So you can't reorder easily the output order
-/// of field...
+/** flags passed to the ctr of an OutputSymbol object. This also specify the
+ * order of field output: lower enum tag ==> comes first in output order
+ * Note than changing value of enum is not safe. See OutputSymbol and
+ * the osf_repeat_mask use. So you can't reorder easily the output order
+ * of field */
 enum OutSymbFlag {
 	osf_none = 0,
 	osf_vma = 1 << 0,
@@ -82,7 +82,7 @@ enum OutSymbFlag {
 	osf_nr_samples_cumulated = 1 << 2,
 	osf_percent = 1 << 3,
 	osf_percent_cumulated = 1 << 4,
-	// used internally
+	/// used internally
 	osf_repeat_mask = osf_nr_samples + osf_nr_samples_cumulated +
 			  osf_percent + osf_percent_cumulated,
 //	osf_time = 1 << 5,		// can be usefull, future. Do not use
@@ -97,7 +97,7 @@ enum OutSymbFlag {
 	osf_image_name = 1 << 11,
 	osf_short_image_name = 1 << 12,	// w/o path name
 	osf_details = 1 << 13,		// for oprofpp -L / -s
-	// only this field are showed in symbols samples details.
+	/// only this field are showed in symbols samples details.
 	osf_details_mask = osf_nr_samples + osf_nr_samples_cumulated +
 			osf_percent + osf_percent_cumulated +
 			osf_vma + osf_linenr_info + osf_short_linenr_info,
@@ -109,23 +109,38 @@ enum OutSymbFlag {
 	osf_header = 1 << 16
 };
 
+/**
+ * class to output in a columned format symbols and associated samples
+ */
 class OutputSymbol {
 public:
 	/// build an OutputSymbol object, the samples_files_t life time object
 	/// must be > of the life time of the OutputSymbol object.
 	OutputSymbol(const samples_files_t & samples_files, int counter);
 
-	/// convenience flag to set one flags w/o worrying about cast
+	/// convenience to set output options flags w/o worrying about cast
 	void SetFlag(OutSymbFlag flag);
 
+	/** output one symbol symb to out according to the output format
+	 * specifier previously set by call(s) to SetFlag() */
 	void Output(std::ostream & out, const symbol_entry * symb);
+	/** output a vector of symbols to out according to the output format
+	 * specifier previously set by call(s) to SetFlag() */
 	void Output(std::ostream & out,
 		    const std::vector<const symbol_entry *> & v, bool reverse);
 
+	/** output to stdout the formating options available */
 	static void ShowHelp();
 
-	/// the set of formating function, used internally by Output(), exposed
+	/** return osf_none if the option string is ill formed, so you can call
+	 * OutputSymbol::ShowHelp() to notify user on available options */
+	static OutSymbFlag ParseOutputOption(const std::string & option);
+
+	// FIXME, this does not work as expected in doxygen (member group
+	// comment)
+	/// the set of formating function, used internally by Output(). exposed
 	/// as public member for the future oprofpp GUI.
+	//@{
 	std::string format_vma(const std::string & name,
 			       const sample_entry & sample, size_t);
 	std::string format_symb_name(const std::string & name,
@@ -149,6 +164,7 @@ public:
 	std::string format_cumulated_percent(const std::string & name,
 					     const sample_entry & sample,
 					     size_t);
+	//@}
 private:
 	void DoOutput(std::ostream & out, const std::string & name,
 		      const sample_entry & sample, OutSymbFlag flags);
@@ -172,12 +188,5 @@ private:
 	int counter;
 	bool first_output;
 };
-
-/// return osf_none if the option string is ill formed
-OutSymbFlag ParseOutputOption(const std::string & option);
-
-// backward compatible with old stuff. Remove when OutputSymbol work proprely.
-void output_symbol(const symbol_entry* symb, bool show_image_name,
-		   bool output_linenr_info, int counter, u32 total_count);
 
 #endif /* !OPP_SYMBOL_H */
