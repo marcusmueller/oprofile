@@ -69,8 +69,6 @@ private:
  
 	/** @name format functions.
 	 * The set of formatting functions, used internally by output().
-	 * Exposed as public because we need to use them in an array of
-	 * pointer to member function
 	 */
 	//@{
 	std::string format_vma(field_datum const &);

@@ -54,6 +54,9 @@ public:
 	size_t size() const { return symb_size; }
 	void size(size_t s) { symb_size = s; }
 
+	/// compare two symbols by their filepos()
+	bool operator<(op_bfd_symbol const& lhs) const;
+
 private:
 	/// the original bfd symbol, this can be null if the symbol is an
 	/// artificial symbol
@@ -173,7 +176,8 @@ private:
 	 * symbol_size - return the size of a symbol
 	 * @param sym_idx symbol index
 	 */
-	size_t symbol_size(symbol_index_t sym_idx) const;
+	size_t symbol_size(op_bfd_symbol const & sym,
+			   op_bfd_symbol const * next) const;
 
 	/**
 	 * create an artificial symbol which cover the vma range start, end

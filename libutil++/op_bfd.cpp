@@ -18,6 +18,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <list>
 
 #include <cstdlib>
 
@@ -85,6 +86,11 @@ op_bfd::~op_bfd()
 static bool symcomp(op_bfd_symbol const & a, op_bfd_symbol const & b)
 {
 	return a.filepos() < b.filepos();
+}
+
+bool op_bfd_symbol::operator<(op_bfd_symbol const& lhs) const
+{
+	return symcomp(*this,  lhs);
 }
 
 namespace {
@@ -155,6 +161,11 @@ bool op_bfd::get_symbols(vector<string> const & excluded,
 	if (nr_all_syms < 1)
 		return false;
 
+	// after creating all symbol it's convenient for user code to access
+	// symbols through a vector. We use an intermediate list to avoid a
+	// O(N²) behavior when we will filter vector element below
+	list<op_bfd_symbol> symbols;
+
 	for (i = 0; i < nr_all_syms; i++) {
 		if (interesting_symbol(bfd_syms[i])) {
 			// we can't fill the size member for now, because in
@@ -162,63 +173,78 @@ bool op_bfd::get_symbols(vector<string> const & excluded,
 			// next symbol
 			asymbol const * symbol = bfd_syms[i];
 			op_bfd_symbol symb(symbol,
-				symbol->value,
-				symbol->section->filepos,
-				symbol->section->vma,
-				0,
-				symbol->name);
-			syms.push_back(symb);
+					   symbol->value,
+					   symbol->section->filepos,
+					   symbol->section->vma,
+					   0,
+					   symbol->name);
+			symbols.push_back(symb);
 		}
 	}
 
-	stable_sort(syms.begin(), syms.end(), symcomp);
+	symbols.sort();
 
 	// we need to ensure than for a given vma only one symbol exist else
 	// we read more than one time some samples. Fix #526098
 	// ELF symbols size : potential bogosity here because when using
 	// elf symbol size we need to check than two symbols does not overlap.
-	for (i =  1 ; i < syms.size() ; ++i) {
-		if (syms[i].vma() == syms[i-1].vma()) {
+	list<op_bfd_symbol>::iterator it;
+	for (it = symbols.begin() ; it != symbols.end(); ) {
+		list<op_bfd_symbol>::iterator temp = it;
+		++temp;
+		if (temp != symbols.end() && (it->vma() == temp->vma())) {
 			// TODO: choose more carefully the symbol we drop.
 			// If once have FUNCTION flag and not the other keep
 			// it etc.
-			syms.erase(syms.begin() + i);
-			i--;
+			symbols.erase(temp);
+		} else {
+			++it;
 		}
 	}
 
-	// now we can calculate the symbol size
-	for (i = 0 ; i < syms.size() ; ++i) {
-		syms[i].size(symbol_size(i));
+	// now we can calculate the symbol size, we can't first include/exclude
+	// symbols because the size of symbol is calculated from the difference
+	// between the vma of a symbol and the next one.
+	for (it = symbols.begin() ; it != symbols.end(); ++it) {
+		op_bfd_symbol const * next = 0;
+		list<op_bfd_symbol>::iterator temp = it;
+		++temp;
+		if (temp != symbols.end())
+			next = &*temp;
+		it->size(symbol_size(*it, next));
 	}
 
-	cverb << "number of symbols before excluding " << dec << syms.size() << endl;
+	cverb << "number of symbols before excluding " << dec << symbols.size() << endl;
 
 	// it's time to remove the excluded symbols
-	for (i = 0 ; i < syms.size() ; ) {
-		vector<string>::const_iterator it =
-			find(excluded.begin(), excluded.end(), syms[i].name());
-		if (it != excluded.end()) {
-			cverb << "excluding symbol " << syms[i].name() << endl;
-			syms.erase(syms.begin() + i);
+	for (it = symbols.begin() ; it != symbols.end(); ) {
+		vector<string>::const_iterator v_it =
+			find(excluded.begin(), excluded.end(), it->name());
+		if (v_it != excluded.end()) {
+			cverb << "excluding symbol " << it->name() << endl;
+			it = symbols.erase(it);
 		} else {
-			++i;
+			++it;
 		}
 	}
 
 	// it's time to remove all symbol except the included symbol
 	if (included.size()) {
-		for (i = 0 ; i < syms.size() ; ) {
-			vector<string>::const_iterator it =
+		for (it = symbols.begin() ; it != symbols.end(); ) {
+			vector<string>::const_iterator v_it =
 				find(included.begin(), included.end(),
 				     syms[i].name());
-			if (it == included.end()) {
+			if (v_it == included.end()) {
 				cverb << "excluding symbol " << syms[i].name() << endl;
-				syms.erase(syms.begin() + i);
+				it = symbols.erase(it);
 			} else {
-				++i;
+				++it;
 			}
 		}
+	}
+
+	for (it = symbols.begin() ; it != symbols.end(); ++it) {
+		syms.push_back(*it);
 	}
 
 	cverb << "number of symbols now " << dec << syms.size() << endl;
@@ -359,13 +385,9 @@ typedef struct
 
 #endif /* USE_ELF_INTERNAL */
 
-size_t op_bfd::symbol_size(symbol_index_t sym_idx) const
+size_t op_bfd::symbol_size(op_bfd_symbol const & sym,
+			   op_bfd_symbol const * next) const
 {
-	op_bfd_symbol const * next;
-	op_bfd_symbol const & sym = syms[sym_idx];
-
-	next = (sym_idx == syms.size() - 1) ? NULL : &syms[sym_idx + 1];
-
 	u32 start = sym.filepos();
 	size_t length;
 
@@ -438,7 +460,7 @@ void op_bfd::get_vma_range(u32 & start, u32 & end) const
 	if (syms.size()) {
 		// syms are sorted by vma so vma of the first symbol and vma +
 		// size of the last symbol give the vma range for gprof output
-		const op_bfd_symbol & last_symb = syms[syms.size() - 1];
+		op_bfd_symbol const & last_symb = syms[syms.size() - 1];
 		start = syms[0].vma();
 		end = last_symb.vma() + last_symb.size();
 	} else {
