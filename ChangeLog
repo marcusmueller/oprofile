@@ -1,3 +1,16 @@
+2002-07-05  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/filename_match.h:
+	* libutil++/filename_match.cpp: constify
+
+	* module/Makefile.in: small typo
+	* Makefile.in: do not make uninstall in module/arch
+
+	* pp/op_to_source_options.h:
+	* pp/op_to_source_options.cpp:
+	* pp/op_to_source.cpp: general cleanup, remove the output class and
+	  use free function instead, doxygen'ize them.
+
 2002-07-04  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_events.cpp:

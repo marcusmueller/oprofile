@@ -19,19 +19,6 @@
 
 #include <stdio.h>
 
-using std::vector;
-using std::string;
-using std::ostream;
-using std::ofstream;
-using std::istream;
-using std::ifstream;
-using std::endl;
-using std::cout;
-using std::cerr;
-using std::hex;
-using std::dec;
-using std::ostringstream;
-
 #include "samples_container.h"
 #include "samples_file.h"
 #include "demangle_symbol.h"
@@ -49,15 +36,20 @@ using std::ostringstream;
 
 #include "version.h"
 
-//---------------------------------------------------------------------------
-// Free function.
-namespace {
+using std::vector;
+using std::string;
+using std::ofstream;
+using std::ostream;
+using std::istream;
+using std::ifstream;
+using std::endl;
+using std::cout;
+using std::cerr;
+using std::hex;
+using std::dec;
+using std::ostringstream;
 
-string extract_blank_at_begin(string const & str);
-
-double do_ratio(size_t a, size_t total);
-
-}
+using namespace options;
 
 //---------------------------------------------------------------------------
 /// Store the configuration of one counter. Construct from an opd_header
@@ -65,137 +57,262 @@ struct counter_setup {
 	counter_setup() :
 		enabled(false), event_count_sample(0) {}
 
-	void print(ostream& out, op_cpu cpu_type, int counter) const;
+	/**
+	 * @param out output stream
+	 * @param cpu_type cpu type
+	 * @param counter counter number
+	 *
+	 * Convenience function : just output the setup of one counter.
+	 */
+	void print(ostream & out, op_cpu cpu_type, int counter) const;
 
 	// if false other field are not meaningful.
 	bool   enabled;
 	u8 ctr_event;
 	u8 unit_mask;
 	size_t event_count_sample;
-	// would be double?
 	size_t total_samples;
 };
 
 //---------------------------------------------------------------------------
-// All the work is made here.
-class output {
- public:
-	output(int argc, char const * argv[],
-	       size_t threshold_percent,
-	       bool until_more_than_samples,
-	       size_t sort_by_counter,
-	       string const & output_dir,
-	       string const & source_dir,
-	       string const & output_filter,
-	       string const & no_output_filter,
-	       bool assembly,
-	       bool source_with_assembly,
-	       int counter_mask);
+// This named namespace help doxygen to hierarchies documentation
+namespace op_to_source {
 
-	bool treat_input(string const & image_name, string const & sample_file);
+/// string used as start / end comment to annotate source
+string begin_comment("/*");
+string end_comment("*/");
+/// This is usable only if one of the counter has been setup as: count
+/// some sort of cycles events. In the other case trying to use it to
+/// translate samples count to time is a non-sense.
+double cpu_speed = 0.0;
+/// samples files header are stored here
+counter_setup counter_info[OP_MAX_COUNTERS];
+/// percent from where the source file is output.
+size_t threshold_percent;
+/// must we output source until we get threshold_percent or output source
+/// with more samples than threshold_percent
+bool do_until_more_than_samples;
+/// the cpu type, we fill this var from the header of samples files
+op_cpu cpu_type = CPU_NO_GOOD;
+/// hold all info for samples
+scoped_ptr<samples_container_t> samples(0);
 
- private:
-	symbol_entry const * find_symbol(string const & str_vma) const;
-	/// this output a comment containaing the counter setup and command
-	/// line.
-	void output_header(ostream & out) const;
+/**
+ * @param str the input string
+ *
+ * Return the substring at beginning of str which is only made of blank or
+ * tabulation.
+ */
+string extract_blank_at_begin(string const & str);
 
-	void output_asm(string const & image_name);
-	void output_objdump_asm_line(string const & str,
+/**
+ * @param count
+ * @param total
+ *
+ * return total == 0 ? 1.0 : ((double)count / total);
+ */
+double do_ratio(size_t count, size_t total);
+
+/**
+ * @param image_name the samples owner image name
+ * @param sample_file the sample file base name (w/o # suffix)
+ * @param fn_match only source filename which match this filter will be output
+ * @param argc command line number of argument
+ * @param argv command line argument array
+ *
+ * This is the entry point of the source annotation utility called after
+ * parsing and checking commnd line argument
+ */
+bool annotate_source(string const & image_name, string const & sample_file,
+		     filename_match const & fn_match,
+		     int argc, char const * argv[]);
+
+/**
+ * @param out output stream
+ * @param argc the command line number of argument
+ * @param argv the command line number of argument
+ *
+ * Ouput an 'header comment'
+ *
+ * Each annotated source file is prepended with a comment containing various
+ * things such as counter setup, command line used to produce the annotated
+ * file and interpretation of command line
+ */
+void output_header(ostream & out, int argc, char const * argv[]);
+
+/**
+ * @param argc the command line number of argument
+ * @param argv the command line number of argument
+ * @param image_name the binary image name
+ *
+ * output annotated disassembly optionnaly mixed with source file.
+ * Disassembly itself is provided by forking an objdump child process
+ * which is filtered through op_to_source process
+ */
+void output_asm(int argc, char const * argv[], string const & image_name);
+
+/**
+ * @param str one assembly line coming from objdump -d
+ * @param output_symbols symbols for the binary image being processed
+ *  filtered by --exclude-symbols
+ * @param do_output input/output parameters : true if we must output this line.
+ * We need an input/output parameters here because we must filter some symbols
+ * according to the user request
+ *
+ * Process one objdump -d output line, outputting and annotating it if
+ * necessary
+ */
+void output_objdump_asm_line(string const & str,
 		     vector<symbol_entry const *> const & output_symbols,
-		     bool & do_output);
-	void output_objdump_asm(vector<const symbol_entry *> const & output_symbols, string const & app_name);
-	void output_source();
+	     bool & do_output);
 
-	// output one file unconditionally.
-	void output_one_file(istream & in, string const & filename,
-		counter_array_t const & total_samples_for_file);
-	void do_output_one_file(ostream & out, istream & in, string const & filename,
-		counter_array_t const & total_samples_for_file);
+/**
+ * @param output_symbols symbols for the binary image being processed
+ *  filtered by --exclude-symbols
+ * @param app_name the binary image name
+ *
+ * fork an 'objdump -d app_name' then filter the objdump output echoing it to
+ * the proper stream with optional annotation
+ */
+void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
+			string const & app_name);
 
-	bool setup_counter_param(opp_samples_files const & samples_files);
-	bool calc_total_samples();
+/**
+ * @param argc the command line number of argument
+ * @param argv the command line number of argument
+ * @param fn_match only source filename which match this filter will be output
+ * @param output_separate_file true if user request for creating on file for
+ * each annotated source else op_to_source output only one report on cout
+ *
+ * output all annotated source
+ */
+void output_source(int argc, char const * argv[],
+		   filename_match const & fn_match,
+		   bool output_separate_file);
 
-	void output_counter_for_file(ostream & out, string const & filename,
-		const counter_array_t& count);
-	void output_counter(ostream & out, const counter_array_t & counter,
-		bool comment, string const & prefix = string()) const;
-	void output_one_counter(ostream & out, size_t counter, size_t total) const;
+/**
+ * @param in input stream
+ * @param filename: input source filename
+ * @param fn_match only source filename which match this filter will be output
+ * @param output_separate_file specify if we output all annotated source to
+ *  separate file or to cout
+ *
+ * output one annotated source file
+ */
+void output_one_file(istream & in, string const & filename,
+		     filename_match const & fn_match,
+		     bool output_separate_file);
+/**
+ * @param in input stream (a source file)
+ * @param out output stream (the annotated source file)
+ * @param filename input source filename
+ *
+ * helper function for output_one_file
+ */
+void do_output_one_file(ostream & out, istream & in, string const & filename);
 
-	void find_and_output_symbol(ostream & out, string const & str,
-		string const & blank) const;
-	void find_and_output_counter(ostream & out, string const & str,
-		string const & blank) const;
+/**
+ * @param samples_files storage container for openeded samples files
+ *
+ * store opd_header information from the samples to the global
+ * var counter_info. Caculate the total amount of samples for these samples
+ * files.
+ *
+ * return false if no samples are openeded or if no cumulated count of
+ * samples is zero
+ */
+bool setup_counter_param(opp_samples_files const & samples_files);
 
-	void find_and_output_counter(ostream & out, string const & filename,
-		size_t linenr, string const & blank) const;
+/**
+ * @param out output stream
+ * @param filename output filename
+ * @param count counter to output
+ *
+ * output a comment containing samples count for this source file filename
+ */
+void output_counter_for_file(ostream & out, string const & filename,
+			     const counter_array_t& count);
 
-	size_t get_sort_counter_nr() const;
+/**
+ * @param out output stream
+ * @param counter count to output
+ * @param total total nr of samples allowing to calculate the ratio
+ *
+ * output to out count followed by the ration total/count
+ */
+void output_one_counter(ostream & out, size_t counter, size_t total);
 
-	// used to output the command line.
-	int argc;
-	char const ** argv;
+/**
+ * @param out output stream
+ * @param counter counter to output
+ * @param comment true if we quote the output with begin_comment / end_comment
+ * @param prefix a string, optionally empty, to output before counter
+ *
+ * output to out the number of samples in counter optionnaly prefixed by
+ * the prefix string and quoted by comment
+ */
+void output_counter(ostream & out, const counter_array_t & counter,
+		    bool comment, string const & prefix = string());
 
-	// hold all info for samples
-	scoped_ptr<samples_container_t> samples;
+/**
+ * @param str_vma the input string produced by objdump
+ *
+ * parse str_vma, which is in the format xxxxxxx: or xxxxxx <symb_name>:
+ * to extract the vma address and search the associated symbol_entry object
+ * with this vma. return NULL if the search fail.
+ */
+symbol_entry const * find_symbol(string const & str_vma);
 
-	// samples files header are stored here
-	counter_setup counter_info[OP_MAX_COUNTERS];
+/**
+ * @param out output stream
+ * @param str an objdump output string on the form hexa_number: or
+ *   hexa_number <smbol_name>:
+ * @param blank a string containing a certain amount of space/tabulation
+ *   character allowing the output to be aligned with the previous line
+ *
+ * from the vma at start of str_vma find the associated symbol name
+ * then output to out the symbol name and numbers of samples belonging
+ * to this symbol
+ */
+void find_and_output_symbol(ostream & out, string const & str,
+			    string const & blank);
 
-	// FIXME : begin_comment, end_comment must be based on the current
-	// extension and must be properties of source filename.
-	string begin_comment;
-	string end_comment;
+/**
+ * @param out output stream
+ * @param str an objdump output string on the form hexa_number:
+ * @param blank a string containing a certain amount of space/tabulation
+ *   character allowing the output to be aligned with the previous line
+ *
+ * from the vma at start of str_vma find the associated samples number
+ * belonging to this vma then output them
+ */
+void find_and_output_counter(ostream & out, string const & str,
+			     string const & blank);
 
-	// This is usable only if one of the counter has been setup as: count
-	// some sort of cycles events. In the other case trying to use it to
-	// translate samples count to time is a non-sense.
-	double cpu_speed;
+/**
+ * @param out output stream
+ * @param filename a source filename
+ * @param linenr a line number into the source file
+ * @param blank a string containing a certain amount of space/tabulation
+ *   character allowing the output to be aligned with the previous line
+ *
+ * from filename, linenr find the associated samples numbers belonging
+ * to this source file, line nr then output them
+ */
+void find_and_output_counter(ostream & out, string const & filename,
+			     size_t linenr, string const & blank);
 
-	// percent from where the source file is output.
-	size_t threshold_percent;
+/**
+ * from the command line specification retrieve the counter nr used to
+ * as sort field when sorting samples nr. If command line did not specify
+ * any sort by counter fall back to the first valid counter number
+ */
+size_t get_sort_counter_nr();
 
-	// sort source by this counter.
-	size_t sort_by_counter;
-
-	op_cpu cpu_type;
-
-	bool until_more_than_samples;
-
-	string output_dir;
-	string source_dir;
-	bool output_separate_file;
-
-	filename_match fn_match;
-
-	bool assembly;
-	bool source_with_assembly;
-
-	int counter_mask;
-};
+} // op_to_source namespace
 
 //---------------------------------------------------------------------------
 
-namespace {
-
-// Return the substring at beginning of str which is only made of blank or tabulation.
-string extract_blank_at_begin(string const & str)
-{
-	size_t end_pos = str.find_first_not_of(" \t");
-	if (end_pos == string::npos)
-		end_pos = 0;
-
-	return str.substr(0, end_pos);
-}
-
-inline double do_ratio(size_t counter, size_t total)
-{
-	return total == 0 ? 1.0 : ((double)counter / total);
-}
-
-} // anonymous namespace
-
-// Convenience function : just output the setup of one counter.
 void counter_setup::print(ostream & out, op_cpu cpu_type, int counter) const
 {
 	if (enabled) {
@@ -208,40 +325,30 @@ void counter_setup::print(ostream & out, op_cpu cpu_type, int counter) const
 
 	out << endl;
 }
+
 //---------------------------------------------------------------------------
 
-// FIXME: why is this a class ? 
- 
-output::output(int argc_, char const * argv_[],
-	       size_t threshold_percent_,
-	       bool until_more_than_samples_,
-	       size_t sort_by_counter_,
-	       string const & output_dir_,
-	       string const & source_dir_,
-	       string const & output_filter_,
-	       string const & no_output_filter_,
-	       bool assembly_,
-	       bool source_with_assembly_,
-	       int counter_mask_)
-	:
-	argc(argc_),
-	argv(argv_),
-	samples(0),
-	begin_comment("/*"),
-	end_comment("*/"),
-	cpu_speed(0.0),
-	threshold_percent(threshold_percent_),
-	sort_by_counter(sort_by_counter_),
-	cpu_type(CPU_NO_GOOD),
-	until_more_than_samples(until_more_than_samples_),
-	output_dir(output_dir_),
-	source_dir(source_dir_),
-	output_separate_file(false),
-	fn_match(output_filter_, no_output_filter_),
-	assembly(assembly_),
-	source_with_assembly(source_with_assembly_),
-	counter_mask(counter_mask_)
+namespace op_to_source {
+
+string extract_blank_at_begin(string const & str)
 {
+	size_t end_pos = str.find_first_not_of(" \t");
+	if (end_pos == string::npos)
+		end_pos = 0;
+
+	return str.substr(0, end_pos);
+}
+
+inline double do_ratio(size_t count, size_t total)
+{
+	return total == 0 ? 1.0 : ((double)count / total);
+}
+
+bool annotate_source(string const & image_name, string const & sample_file,
+		     filename_match const & fn_match,
+		     int argc, char const * argv[])
+{
+	bool output_separate_file = false;
 	if (!source_dir.empty()) {
 		output_separate_file = true;
 
@@ -263,158 +370,125 @@ output::output(int argc_, char const * argv_[],
 		if (!create_dir(output_dir)) {
 			cerr << "unable to create " << output_dir
 			     << " directory: " << endl;
-			exit(EXIT_FAILURE);
+			return false;
 		}
 	}
 
 	if (output_separate_file && output_dir == source_dir) {
 		cerr << "You can not specify the same directory for "
 		     << "--output-dir and --source-dir" << endl;
-		exit(EXIT_FAILURE);
+		return false;
 	}
 
 	outsymbflag flag = osf_details;
 	if (!assembly)
 		flag = static_cast<outsymbflag>(flag | osf_linenr_info);
  
-	samples.reset(new samples_container_t(false, flag, counter_mask));
-}
+	samples.reset(new samples_container_t(false, flag, -1));
 
-// build a counter_setup from a header.
-bool output::setup_counter_param(opp_samples_files const & samples_files)
-{
-	bool have_counter_info = false;
+	// this lexical scope just optimize the memory use by relaxing
+	// the op_bfd and opp_samples_files as short as we can.
+	{
+		opp_samples_files samples_files(sample_file, -1);
+		samples_files.check_mtime(image_name);
 
-	for (size_t i = 0 ; i < samples_files.nr_counters ; ++i) {
-		if (!samples_files.is_open(i))
-			continue;
+		op_bfd abfd(image_name, exclude_symbols);
 
-		counter_info[i].enabled = true;
+		samples_files.set_start_offset(abfd.get_start_offset());
 
-		opd_header const & header = samples_files.samples[i]->header();
-		counter_info[i].ctr_event = header.ctr_event;
-		counter_info[i].unit_mask = header.ctr_um;
-		counter_info[i].event_count_sample = header.ctr_count;
+		if (!assembly && !abfd.have_debug_info()) {
+			cerr << "Request for source file annotated "
+			     << "with samples but no debug info available"
+			     << endl;
+			return false;
+		}
 
-		have_counter_info = true;
+		cpu_speed = samples_files.first_header().cpu_speed;
+		uint tmp = samples_files.first_header().cpu_type;
+		cpu_type = static_cast<op_cpu>(tmp);
+
+		samples->add(samples_files, abfd);
+
+		if (!setup_counter_param(samples_files))
+			return false;
 	}
 
-	if (!have_counter_info)
-		cerr << "op_to_source: no counter enabled ?" << endl;
+	if (assembly)
+		output_asm(argc, argv, image_name);
+	else
+		output_source(argc, argv, fn_match, output_separate_file);
 
-	return have_counter_info;
+	return true;
 }
 
-bool output::calc_total_samples()
+void output_header(ostream & out, int argc, char const * argv[])
 {
-	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i)
-		counter_info[i].total_samples = samples->samples_count(i);
+	out << begin_comment << endl;
 
-	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i)
-		if (counter_info[i].total_samples != 0)
-			return true;
+	out << "Command line:" << endl;
+	for (int i = 0 ; i < argc ; ++i)
+		out << argv[i] << " ";
+	out << endl << endl;
 
-	return false;
-}
+	out << "interpretation of command line:" << endl;
 
-void output::output_one_counter(ostream & out, size_t counter, size_t total) const
-{
-	out << " ";
-	out << counter << " ";
-	out << std::setprecision(4) << (do_ratio(counter, total) * 100.0) << "%";
-}
+	if (!assembly) {
+		out << "output annotated source file with samples" << endl;
 
-void output::output_counter(ostream & out, counter_array_t const & counter,
-			    bool comment, string const & prefix) const
-{
-	if (comment)
-		out << begin_comment;
-
-	if (prefix.length())
-		out << " " << prefix;
-
-	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i)
-		if (counter_info[i].enabled)
-			output_one_counter(out, counter[i],
-					   counter_info[i].total_samples);
-
-	out << " ";
-
-	if (comment)
-		out << end_comment;
-
-	out << '\n';
-}
-
-symbol_entry const * output::find_symbol(string const & str_vma) const
-{
-	// do not use the bfd equivalent:
-	//  - it does not skip space at begin
-	//  - we does not need cross architecture compile so the native
-	// strtoul must work (assuming unsigned long can contain a vma)
-	bfd_vma vma = strtoul(str_vma.c_str(), NULL, 16);
-
-	return samples->find_symbol(vma);
-}
-
-// Complexity: log(nr symbols)
-void output::find_and_output_symbol(ostream & out, string const & str, string const & blank) const
-{
-	symbol_entry const * symbol = find_symbol(str);
-
-	if (symbol) {
-		out << blank;
-		output_counter(out, symbol->sample.counter, true, string());
-	}
-}
-
-// Complexity: log(nr samples))
-void output::find_and_output_counter(ostream & out, string const & str, string const & blank) const
-{
-	// do not use the bfd equivalent:
-	//  - it does not skip space at begin
-	//  - we does not need cross architecture compile so the native
-	// strtoul must work (assuming unsigned long can contain a vma)
-	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
-
-	sample_entry const * sample = samples->find_sample(vma);
-	if (sample) {
-		out << blank;
-		output_counter(out, sample->counter, true, string());
-	}
-}
-
-// Complexity: log(nr symbols) + log(nr filename/linenr)
-void output::find_and_output_counter(ostream & out, string const & filename, size_t linenr, string const & blank) const
-{
-	symbol_entry const * symbol = samples->find_symbol(filename, linenr);
-	if (symbol) {
-		string const symname =
-			options::demangle ? demangle_symbol(symbol->name)
-			: symbol->name;
-
-		output_counter(out, symbol->sample.counter, true, symname);
+		if (threshold_percent != 0) {
+			if (!do_until_more_than_samples) {
+				out << "output files where the selected counter reach "
+				    << threshold_percent << "% of the samples"
+				    << endl;
+			} else {
+				out << "output files until " << threshold_percent
+				    << "% of the samples is reached on the selected counter"
+				    << endl;
+			}
+		} else {
+			out << "output all files" << endl;
+		}
+	} else {
+		out << "output annotated assembly listing with samples" << endl;
+		if (!objdump_params.empty()) {
+			out << "passing the following additional arguments to objdump ; \"" << objdump_params << "\"" << endl;
+		}
 	}
 
-	counter_array_t counter;
-	if (samples->samples_count(counter, filename, linenr)) {
-		out << blank;
-		output_counter(out, counter, true, string());
+	out << endl;
+	out << "Cpu type: " << op_get_cpu_type_str(cpu_type) << endl;
+	out << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
+	out << endl;
+
+	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i) {
+		counter_info[i].print(out, cpu_type, i);
 	}
+
+	out << end_comment << endl;
+	out << endl;
 }
 
-/**
- * output::output_objdump_asm_line - helper for output_objdump_asm
- * @param str the string reading from objdump output
- * @param output_symbols the symbols set to output
- * @param do_output in/out parameter which says if the current line
- * must be output
- *
- */
-void output::
-output_objdump_asm_line(string const & str,
-			vector<symbol_entry const *> const & output_symbols,
-			bool & do_output)
+void output_asm(int argc, char const * argv[], 
+		string const & image_name)
+{
+	// select the subset of symbols which statisfy the user requests
+	size_t index = get_sort_counter_nr();
+
+	vector<symbol_entry const *> output_symbols;
+
+	double threshold = threshold_percent / 100.0;
+
+	output_symbols =
+	 samples->select_symbols(index, threshold, do_until_more_than_samples);
+
+	output_header(cout, argc, argv);
+
+	output_objdump_asm(output_symbols, image_name);
+}
+
+void output_objdump_asm_line(string const & str,
+		     vector<symbol_entry const *> const & output_symbols,
+		     bool & do_output)
 {
 	// output of objdump is a human read-able form and can contain some
 	// ambiguity so this code is dirty. It is also optimized a little what
@@ -470,24 +544,16 @@ output_objdump_asm_line(string const & str,
 	}
 }
 
-/**
- * output::output_objdump_asm - output asm disassembly
- * @param output_symbols the set of symbols to output
- *
- * Output asm (optionnaly mixed with source) annotated
- * with samples using objdump as external disassembler.
- * This is the generic implementation if our own disassembler
- * do not work for this architecture.
- */
-void output::output_objdump_asm(vector<symbol_entry const *> const & output_symbols, string const & app_name)
+void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
+			string const & app_name)
 {
 	vector<string> args;
 	args.push_back("-d");
 	args.push_back("--no-show-raw-insn");
 	if (source_with_assembly)
 		args.push_back("-S");
-	if (!options::objdump_params.empty())
-		args.push_back(options::objdump_params);
+	if (!objdump_params.empty())
+		args.push_back(objdump_params);
 
 	args.push_back(app_name);
 	child_reader reader("objdump", args);
@@ -518,44 +584,48 @@ void output::output_objdump_asm(vector<symbol_entry const *> const & output_symb
 	}
 }
 
-void output::output_asm(string const & image_name)
+void output_source(int argc, char const * argv[],
+		   filename_match const & fn_match,
+		   bool output_separate_file)
 {
-	// select the subset of symbols which statisfy the user requests
 	size_t index = get_sort_counter_nr();
 
-	vector<symbol_entry const *> output_symbols;
+	vector<string> filenames =
+		samples->select_filename(index, threshold_percent / 100.0,
+			do_until_more_than_samples);
 
-	double threshold = threshold_percent / 100.0;
+	if (!output_separate_file)
+		output_header(cout, argc, argv);
 
-	output_symbols = samples->select_symbols(index,
-		threshold, until_more_than_samples);
+	for (size_t i = 0 ; i < filenames.size() ; ++i) {
+		ifstream in(filenames[i].c_str());
 
-	output_header(cout);
-
-	output_objdump_asm(output_symbols, image_name);
+		if (!in) {
+			// it is common to have empty filename due to the lack
+			// of debug info (eg _init function) so warn only
+			// if the filename is non empty. The case: no debug
+			// info at all has already been checked.
+			if (filenames[i].length())
+				cerr << "op_to_source (warning): unable to "
+				     << "open for reading: "
+				     << filenames[i] << endl;
+		} else {
+			output_one_file(in, filenames[i], fn_match,
+					output_separate_file);
+		}
+	}
 }
 
-void output::output_counter_for_file(ostream& out, string const & filename,
-	counter_array_t const & total_count_for_file)
-{
-	out << begin_comment << endl
-		<< " Total samples for file : " << '"' << filename << '"'
-		<< endl;
-	output_counter(out, total_count_for_file, false, string());
-	out << end_comment << endl << endl;
-}
-
-// Pre condition:
-//  the file has not been output.
-//  in is a valid file stream ie ifstream(filename)
-// Post condition:
-//  the entire file source and the associated samples has been output to
-//  the standard output.
-void output::output_one_file(istream & in, string const & filename,
-	counter_array_t const & total_count_for_file)
+void output_one_file(istream & in, string const & filename,
+		     filename_match const & fn_match,
+		     bool output_separate_file)
 {
 	if (!output_separate_file) {
-		do_output_one_file(cout, in, filename, total_count_for_file);
+		// FIXME: I dunno why the doc say
+		// when !output_separate_file filename filtering is not applied
+		// I will change the behavior and docs after thinking a little
+		// about that (2002/05/08)
+		do_output_one_file(cout, in, filename);
 		return;
 	}
 
@@ -572,6 +642,8 @@ void output::output_one_file(istream & in, string const & filename,
 	}
 
 	// filter
+	// FIXME we should filter before complaining about non-existent source
+	// see also the !output_separate_file at begin of this function
 	if (!fn_match.match(filename))
 		return;
 
@@ -599,20 +671,15 @@ void output::output_one_file(istream & in, string const & filename,
 		cerr << "unable to open output file "
 			<< '"' << out_filename << '"' << endl;
 	} else
-		do_output_one_file(out, in, filename, total_count_for_file);
+		do_output_one_file(out, in, filename);
 }
 
-// Pre condition:
-//  the file has not been output.
-//  in is a valid file stream ie ifstream(filename)
-// Post condition:
-//  the entire file source and the associated samples has been output to
-//  the standard output.
-void output::do_output_one_file(ostream& out, istream & in,
-				string const & filename,
-				counter_array_t const & total_count_for_file)
+void do_output_one_file(ostream & out, istream & in, string const & filename)
 {
-	output_counter_for_file(out, filename, total_count_for_file);
+	counter_array_t count;
+	samples->samples_count(count, filename);
+
+	output_counter_for_file(out, filename, count);
 
 	find_and_output_counter(out, filename, 0, string());
 
@@ -626,39 +693,136 @@ void output::do_output_one_file(ostream& out, istream & in,
 	}
 }
 
-void output::output_source()
+bool setup_counter_param(opp_samples_files const & samples_files)
 {
-	size_t index = get_sort_counter_nr();
+	bool have_counter_info = false;
 
-	vector<string> filenames =
-		samples->select_filename(index, threshold_percent / 100.0,
-			until_more_than_samples);
+	for (size_t i = 0 ; i < samples_files.nr_counters ; ++i) {
+		if (!samples_files.is_open(i))
+			continue;
 
-	if (!output_separate_file)
-		output_header(cout);
+		counter_info[i].enabled = true;
 
-	for (size_t i = 0 ; i < filenames.size() ; ++i) {
-		ifstream in(filenames[i].c_str());
+		opd_header const & header = samples_files.samples[i]->header();
+		counter_info[i].ctr_event = header.ctr_event;
+		counter_info[i].unit_mask = header.ctr_um;
+		counter_info[i].event_count_sample = header.ctr_count;
 
-		if (!in) {
-			// it is common to have empty filename due to the lack
-			// of debug info (eg _init function) so warn only
-			// if the filename is non empty. The case: no debug
-			// info at all has already been checked.
-			if (filenames[i].length())
-				cerr << "op_to_source (warning): unable to "
-				     << "open for reading: "
-				     << filenames[i] << endl;
-		} else {
-			counter_array_t count;
-			samples->samples_count(count, filenames[i]);
+		counter_info[i].total_samples = samples->samples_count(i);
 
-			output_one_file(in, filenames[i], count);
-		}
+		have_counter_info = true;
+	}
+
+	if (!have_counter_info) {
+		cerr << "op_to_source: no counter enabled ?" << endl;
+		return false;
+	}
+
+	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i)
+		if (counter_info[i].total_samples != 0)
+			return true;
+
+	cerr << "op_to_source: the input contains zero samples" << endl;
+	return false;
+}
+
+void output_counter_for_file(ostream & out, string const & filename,
+			     counter_array_t const & total_count_for_file)
+{
+	out << begin_comment << endl
+	     << " Total samples for file : " << '"' << filename << '"'
+	     << endl;
+	output_counter(out, total_count_for_file, false, string());
+	out << end_comment << endl << endl;
+}
+
+void output_one_counter(ostream & out, size_t counter, size_t total)
+{
+	out << " ";
+	out << counter << " ";
+	out << std::setprecision(4) << (do_ratio(counter, total) * 100.0) << "%";
+}
+
+void output_counter(ostream & out, counter_array_t const & counter,
+		    bool comment, string const & prefix)
+{
+	if (comment)
+		out << begin_comment;
+
+	if (prefix.length())
+		out << " " << prefix;
+
+	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i)
+		if (counter_info[i].enabled)
+			output_one_counter(out, counter[i],
+					   counter_info[i].total_samples);
+
+	out << " ";
+
+	if (comment)
+		out << end_comment;
+
+	out << '\n';
+}
+
+symbol_entry const * find_symbol(string const & str_vma)
+{
+	// do not use the bfd equivalent:
+	//  - it does not skip space at begin
+	//  - we does not need cross architecture compile so the native
+	// strtoul must work (assuming unsigned long can contain a vma)
+	bfd_vma vma = strtoul(str_vma.c_str(), NULL, 16);
+
+	return samples->find_symbol(vma);
+}
+
+void find_and_output_symbol(ostream & out, string const & str,
+			    string const & blank)
+{
+	symbol_entry const * symbol = find_symbol(str);
+
+	if (symbol) {
+		out << blank;
+		output_counter(out, symbol->sample.counter, true, string());
 	}
 }
 
-size_t output::get_sort_counter_nr() const
+void find_and_output_counter(ostream & out, string const & str,
+			     string const & blank)
+{
+	// do not use the bfd equivalent:
+	//  - it does not skip space at begin
+	//  - we does not need cross architecture compile so the native
+	// strtoul must work (assuming unsigned long can contain a vma)
+	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
+
+	sample_entry const * sample = samples->find_sample(vma);
+	if (sample) {
+		out << blank;
+		output_counter(out, sample->counter, true, string());
+	}
+}
+
+void find_and_output_counter(ostream & out, string const & filename,
+			     size_t linenr, string const & blank)
+{
+	symbol_entry const * symbol = samples->find_symbol(filename, linenr);
+	if (symbol) {
+		string const symname =
+			demangle ? demangle_symbol(symbol->name)
+			: symbol->name;
+
+		output_counter(out, symbol->sample.counter, true, symname);
+	}
+
+	counter_array_t counter;
+	if (samples->samples_count(counter, filename, linenr)) {
+		out << blank;
+		output_counter(out, counter, true, string());
+	}
+}
+
+size_t get_sort_counter_nr()
 {
 	size_t index = sort_by_counter;
 
@@ -669,7 +833,7 @@ size_t output::get_sort_counter_nr() const
 				break;
 		}
 
-		if (sort_by_counter != size_t(-1))
+		if (sort_by_counter != -1)
 			cerr << "op_to_source (warning): sort_by_counter "
 			     << "invalid or counter[sort_by_counter] disabled "
 			     << ": switch to the first valid counter "
@@ -677,100 +841,16 @@ size_t output::get_sort_counter_nr() const
 	}
 
 	// paranoid checking.
-	if (index == samples->get_nr_counters())
-		throw "output::get_sort_counter_nr() cannot find a counter enabled";
+	if (index == samples->get_nr_counters()) {
+		cerr << "get_sort_counter_nr() cannot find a counter enabled"
+		     << endl;
+		exit(EXIT_FAILURE);
+	}
 
 	return index;
 }
 
-// this output a comment containing the counter setup and command line. It can
-// be usefull for beginners to understand how the command line is interpreted.
-void output::output_header(ostream& out) const
-{
-	out << begin_comment << endl;
-
-	out << "Command line:" << endl;
-	for (int i = 0 ; i < argc ; ++i)
-		out << argv[i] << " ";
-	out << endl << endl;
-
-	out << "interpretation of command line:" << endl;
-
-	if (!assembly) {
-		out << "output annotated source file with samples" << endl;
-
-		if (threshold_percent != 0) {
-			if (!until_more_than_samples) {
-				out << "output files where the selected counter reach "
-				    << threshold_percent << "% of the samples"
-				    << endl;
-			} else {
-				out << "output files until " << threshold_percent
-				    << "% of the samples is reached on the selected counter"
-				    << endl;
-			}
-		} else {
-			out << "output all files" << endl;
-		}
-	} else {
-		out << "output annotated assembly listing with samples" << endl;
-	}
-
-	out << endl;
-	out << "Cpu type: " << op_get_cpu_type_str(cpu_type) << endl;
-	out << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
-	out << endl;
-
-	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i) {
-		counter_info[i].print(out, cpu_type, i);
-	}
-
-	out << end_comment << endl;
-	out << endl;
-}
-
-bool output::treat_input(string const & image_name, string const & sample_file)
-{
-	// this lexcical scope just optimize the memory use by relaxing
-	// the op_bfd and opp_samples_files as short as we can.
-	{
-	// this order of declaration is required to ensure proper
-	// initialisation of oprofpp
-	opp_samples_files samples_files(sample_file, counter_mask);
-	samples_files.check_mtime(image_name);
-
-	op_bfd abfd(image_name, options::exclude_symbols);
-
-	samples_files.set_start_offset(abfd.get_start_offset());
-
-	if (!assembly && !abfd.have_debug_info()) {
-		cerr << "Request for source file annotated "
-		     << "with samples but no debug info available" << endl;
-		exit(EXIT_FAILURE);
-	}
-
-	cpu_speed = samples_files.first_header().cpu_speed;
-	uint tmp = samples_files.first_header().cpu_type;
-	cpu_type = static_cast<op_cpu>(tmp);
-
-	samples->add(samples_files, abfd);
-
-	if (!setup_counter_param(samples_files))
-		return false;
-	}
-
-	if (!calc_total_samples()) {
-		cerr << "op_to_source: the input contains zero samples" << endl;
-		return false;
-	}
-
-	if (assembly)
-		output_asm(image_name);
-	else
-		output_source();
-
-	return true;
-}
+} // op_to_source namespace
 
 //---------------------------------------------------------------------------
 
@@ -792,60 +872,39 @@ int main(int argc, char const * argv[])
 
 	string const arg = get_options(argc, argv);
 
-	derive_files(arg, options::image_file, options::sample_file,
-		ctr_mask);
+	derive_files(arg, image_file, sample_file, ctr_mask);
 
-	validate_counter(ctr_mask, options::sort_by_counter);
+	validate_counter(ctr_mask, sort_by_counter);
 
-	if (ctr_mask != -1 && options::sort_by_counter != -1 &&
-	    ctr_mask != (1 << options::sort_by_counter)) {
+	if (ctr_mask != -1 && sort_by_counter != -1 &&
+	    ctr_mask != (1 << sort_by_counter)) {
 		cerr << "mismatch between --sort-by-counter and samples filename counter suffix.\n";
 		exit(EXIT_FAILURE);
 	}
 
-	try {
-		bool do_until_more_than_samples = false;
-		int threshold_percent = options::with_more_than_samples;
-		if (options::until_more_than_samples) {
-			threshold_percent = options::until_more_than_samples;
-			do_until_more_than_samples = true;
-		}
-
-		if (options::source_with_assembly)
-			options::assembly = true;
-
-		if (!options::objdump_params.empty() && !options::assembly) {
-			cerr << "You can't specificy --objdump-params= without assembly output" << endl;
-			exit(EXIT_FAILURE);
-		}
-
-		output output(argc, argv,
-			      threshold_percent,
-			      do_until_more_than_samples,
-			      options::sort_by_counter,
-			      options::output_dir,
-			      options::source_dir,
-			      options::output_filter,
-			      options::no_output_filter,
-			      options::assembly, options::source_with_assembly, -1);
-
-		if (!output.treat_input(options::image_file,
-			relative_to_absolute_path(options::sample_file, OP_SAMPLES_DIR)))
-			return EXIT_FAILURE;
+	op_to_source::do_until_more_than_samples = false;
+	op_to_source::threshold_percent = with_more_than_samples;
+	if (until_more_than_samples) {
+		op_to_source::threshold_percent = until_more_than_samples;
+		op_to_source::do_until_more_than_samples = true;
 	}
 
-	catch (string const & e) {
-		cerr << "op_to_source: Exception : " << e << endl;
+	if (source_with_assembly)
+		assembly = true;
+
+	if (!objdump_params.empty() && !assembly) {
+		cerr << "You can't specificy --objdump-params without assembly output" << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	sample_file = relative_to_absolute_path(sample_file, OP_SAMPLES_DIR);
+
+	filename_match fn_match(output_filter, no_output_filter);
+
+	if (!op_to_source::annotate_source(image_file, sample_file,
+					   fn_match, argc, argv))
 		return EXIT_FAILURE;
-	}
-	catch (char const * e) {
-		cerr << "op_to_source: Exception : " << e << endl;
-		return EXIT_FAILURE;
-	}
-	catch (...) {
-		cerr << "op_to_source: Unknown exception : really sorry " << endl;
-		return EXIT_FAILURE;
-	}
 
 	return EXIT_SUCCESS;
 }
+

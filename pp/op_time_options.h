@@ -52,7 +52,7 @@ namespace options {
 	/// whether to demangle
 	extern bool demangle;
 	/// Contains the list of image name for which we request information
-	extern std::vector<string> filename_filters;
+	extern std::vector<std::string> filename_filters;
 	/// verbose flag
 	extern bool verbose;
 }

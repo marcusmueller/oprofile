@@ -24,7 +24,7 @@ install.user: all
 	done
 
 uninstall:
-	for i in $(SUBDIRS) ; \
+	for i in $(USER_SUBDIRS) module; \
 	do \
 		(cd $$i && $(MAKE) uninstall) || exit 1 ; \
 	done

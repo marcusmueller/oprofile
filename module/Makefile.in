@@ -36,7 +36,7 @@ install: all
 uninstall:
 	-rm -f $(MODINSTALLDIR)/oprofile.o
 	-rmdir --ignore-fail-on-non-empty  $(MODINSTALLDIR)
-	if test "2.4.19-pre2-rmap12g" = "`uname -r`"; then depmod -a ; fi
+	if test $(KVERS) = "`uname -r`"; then depmod -a ; fi
  
 clean:
 	$(MAKE) -C arch clean

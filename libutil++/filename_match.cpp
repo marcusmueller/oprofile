@@ -36,7 +36,7 @@ filename_match::filename_match(vector<string> const & include_patterns,
 {
 }
 
-bool filename_match::match(string const & filename)
+bool filename_match::match(string const & filename) const
 {
 	string const & base = basename(filename);
 

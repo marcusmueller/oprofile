@@ -31,7 +31,7 @@ class filename_match {
 
 	/// return if true filename match include_pattern and does not match
 	/// exclude_pattern
-	bool match(std::string const & filename);
+	bool match(std::string const & filename) const;
 
  private:
 	// match helper
