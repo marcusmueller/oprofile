@@ -1,3 +1,7 @@
+2003-01-21  Dave Jones <davej@codemonkey.org.uk>
+
+	* libop/op_events.c: Add x86-64 specific events.
+
 2003-01-21  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_kernel.c: use sscanf to parse /proc/modules
