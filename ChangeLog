@@ -1,3 +1,8 @@
+2001-11-29  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/oprofpp_util.cpp: do not remove leading underscore to
+	  avoid C++ demangling failure
+
 2001-11-27  Philippe Elie  <ph_e@club-internet.fr>
 
 	* configure.in:

@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.4 2001/11/22 21:24:54 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.5 2001/11/28 23:35:01 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -235,13 +235,11 @@ std::string demangle_symbol(const char* name)
 	if (demangle) {
 		const char * cp = name;
 
-		while (*cp && *cp == '_')
-			cp++;
-
+		// Do not try to strip leading underscore, this leads to many
+		// C++ demangling failure.
 		if (*cp) {
 			char *unmangled = cplus_demangle(cp, DMGL_PARAMS | DMGL_ANSI);
 			if (unmangled) {
-				/* FIXME: leading underscores ? */
 				std::string result(unmangled);
 
 				opd_free(unmangled);
