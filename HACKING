@@ -95,5 +95,6 @@ message only needs to briefly describe what your change does - the change log
 should have the detailed description. Any non-trivial change needs approval
 from either John or Phil, unless stated otherwise. The CVS tree will freeze
 occassionally for release, in which case no commits are allowed at all without
-agreement of John and Phil.
+agreement of John and Phil. CVS admin changes (-kb, .cvsignore etc.) do not
+need a change log, and neither does changes to TODO.
 

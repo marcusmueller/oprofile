@@ -1,3 +1,12 @@
+2003-03-08  John Levon  <levon@movementarian.org>
+
+	* configure.in: specify distcheck ./configure flags.
+	  Add version.h to distclean.
+
+	* doc/Makefile.am: 
+	* doc/xsl/xhtml-1.in:
+	* doc/xsl/xhtml-chunk-1.in: fix make distcheck
+
 2003-03-08  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/xsl/.cvsignore: update

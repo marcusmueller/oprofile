@@ -1,6 +1,9 @@
 SUBDIRS = libutil libop libutil++ libopt++ libop++ libdb libabi \
 	libregex daemon dae utils pp gui doc events
 
+# The module will not build under distcheck
+DISTCHECK_CONFIGURE_FLAGS = --with-kernel-support
+
 all-local: kernel_module
 install-exec-local: install.kernel
 
@@ -20,6 +23,9 @@ install.kernel: kernel_module
 	cp module/oprofile-module.o $(MODINSTALLDIR)/oprofile/oprofile.o
 	if test $(KVERS) = "`uname -r`"; then depmod -a ; fi
 endif
+
+distclean-local:
+	rm -f version.h
 
 clean-local:
 	rm -f module/*.o module/@OPROFILE_MODULE_ARCH@/*.o \
