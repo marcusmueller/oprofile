@@ -31,6 +31,9 @@
 #include "op_interface.h"
 #include "op_hw_config.h"
 #include "op_config_24.h"
+#ifdef OPROF_ABI
+#include "op_abi.h"
+#endif
 
 #include <unistd.h>
 #include <signal.h>
@@ -725,6 +728,9 @@ static void setup_signals(void)
 int main(int argc, char const * argv[])
 {
 	struct op_buffer_head * sbuf;
+#ifdef OPROF_ABI
+	char * cbuf;
+#endif
 	size_t s_buf_bytesize;
 	struct op_note * nbuf;
 	size_t n_buf_bytesize;
@@ -740,6 +746,14 @@ int main(int argc, char const * argv[])
 	nbuf = xmalloc(n_buf_bytesize);
 
 	opd_init_kernel_image();
+
+#ifdef OPROF_ABI
+	cbuf = xmalloc(strlen(OP_BASE_DIR) + 5);
+	strcpy(cbuf, OP_BASE_DIR);
+	strcat(cbuf, "/abi");
+	op_write_abi_to_file(cbuf);
+	free(cbuf);
+#endif
 
 	if (atexit(clean_exit)) {
 		fprintf(stderr, "Couldn't set exit cleanup !\n");

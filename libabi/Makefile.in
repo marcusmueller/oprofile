@@ -1,0 +1,29 @@
+include ../make.common
+
+HEADERS=abi.h op_abi.h
+
+SOURCES=abi.cpp op_abi.cpp op_import.cpp abi_test.c
+
+OBJECTS=abi.o op_abi.o op_import.o abi_test.o
+
+TARGET=libabi.a op_import abi_test
+
+all: $(TARGET) op_import
+install:
+uninstall:
+clean:
+	rm -rf .deps $(OBJECTS) $(TARGET) 
+
+LIBDEPS=../libopt++/libopt++.a ../libop++/libop++.a ../libop/libop.a ../libutil++/libutil++.a ../libutil/libutil.a ../libdb/libdb.a
+LIBS=-lopt++ -lop++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl -labi
+
+libabi.a: abi.o op_abi.o
+	$(AR) cr $@ $^
+
+op_import: op_import.o libabi.a $(LIBDEPS)
+	$(CXX) -o $@ $< -L. $(LDFLAGS) $(LIBS) 
+
+abi_test: abi_test.o
+	$(CXX) -o $@ $< -L. $(LDFLAGS) $(LIBS) 
+
+include ../make.deps

@@ -11,10 +11,16 @@ DAEMON_VERSION=daemon
 else
 DAEMON_VERSION=dae
 endif
- 
+
+ifeq (@enable_abi@,yes)
+	ABI_SUBDIR = libabi
+else
+	ABI_SUBDIR = 
+endif
+
 # take care: order of sub-dir build is meaningful
 PRE_MODULE_SUBDIRS=libutil libop
-POST_MODULE_SUBDIRS=libutil++ libopt++ libop++ libdb $(DAEMON_VERSION) utils pp gui doc
+POST_MODULE_SUBDIRS=libutil++ libopt++ libop++ libdb $(ABI_SUBDIR) $(DAEMON_VERSION) utils pp gui doc
 USER_SUBDIRS=$(PRE_MODULE_SUBDIRS) $(POST_MODULE_SUBDIRS)
 SUBDIRS=$(PRE_MODULE_SUBDIRS) module/arch module $(POST_MODULE_SUBDIRS)
 

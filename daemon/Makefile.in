@@ -4,8 +4,8 @@ HEADERS=opd_printf.h p_module.h opd_stats.h opd_kernel.h opd_image.h opd_sample_
 SOURCES=opd_stats.c opd_kernel.c opd_image.c opd_sample_files.c oprofiled.c
 OBJECTS=opd_stats.o opd_kernel.o opd_image.o opd_sample_files.o oprofiled.o
 TARGET=oprofiled
-LIBDEPS=../libdb/libdb.a ../libop/libop.a ../libutil/libutil.a
-LIBS=-ldb -lop -lutil -lpopt -liberty
+LIBDEPS=../libdb/libdb.a $(ABI_LIB) ../libop/libop.a ../libutil/libutil.a
+LIBS=-ldb $(ABI_LINK) -lop -lutil -lpopt -liberty
  
 all: $(TARGET)
 
@@ -19,6 +19,6 @@ clean:
 	rm -rf .deps $(OBJECTS) $(TARGET) 
 
 $(TARGET): $(OBJECTS) $(LIBDEPS)
-	$(CC) -o $@ $(OBJECTS) $(LDFLAGS) $(LIBS)
+	$(CXX) -o $@ $(OBJECTS) $(LDFLAGS) $(LIBS)
  
 include ../make.deps

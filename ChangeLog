@@ -1,5 +1,18 @@
 2002-10-19  John Levon  <levon@movementarian.org>
 
+	* configure.in: AC_HELP_STRING is too new for my autoconf
+ 
+2002-10-18  Graydon Hoare  <graydon@redhat.com>
+
+	* libabi/*: Add support for abi descriptions, for portability.
+	* daemon/oprofiled.c:
+	* dae/oprofiled.c: Emit abi description on startup.
+	* configure.in: Add --enable-abi option.
+	* make.common.in:
+	* Makefile.in: Support building libabi/
+ 
+2002-10-19  John Levon  <levon@movementarian.org>
+ 
 	* utils/op_start_25: grep -o does not exist on any of
 	  my systems - fix
  
