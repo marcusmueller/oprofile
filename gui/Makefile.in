@@ -37,7 +37,7 @@ install:
 	$(INSTALL) $(INSTALL_LIST) $(BINDIR)
  
 uninstall:
-	rm -f $(INSTALL_LIST)
+	for f in $(INSTALL_LIST); do rm -f $(BINDIR)/$$f; done
 	@echo "---------------------------------------------------------------"
 	@echo "The uninstall target does not remove your ~/.oprofile directory"
 	@echo "---------------------------------------------------------------" 

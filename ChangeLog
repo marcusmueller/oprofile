@@ -1,4 +1,11 @@
 2002-05-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/Makefile.in:
+	* gui/Makefile.in:
+	* pp/Makefile.in:
+	* utils/Makefile.in: fix make uninstall
+
+2002-05-08  Philippe Elie  <phil.el@wanadoo.fr>
 	
 	* pp/opf_filter.cpp: move to ...
 	* pp/op_to_source.cpp:

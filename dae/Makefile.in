@@ -13,7 +13,7 @@ install:
 	$(INSTALL) oprofiled $(BINDIR)
  
 uninstall:
-	rm -f oprofiled
+	rm -f $(BINDIR)/oprofiled
  
 clean:
 	rm -rf .deps $(OBJECTS) $(TARGET) 

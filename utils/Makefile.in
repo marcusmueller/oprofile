@@ -16,23 +16,23 @@ TARGET=$(OP_SESSION_TARGET) $(OP_HELP_TARGET)
 
 OP_SESSION_LIBS=-lutil -lpopt -liberty
 OP_HELP_LIBS=-lutil -lop -lpopt -liberty
- 
+
 all: $(TARGET)
 
 INSTALL_LIST=op_help op_dump op_session op_start op_stop
 install:
 	$(INSTALL) $(INSTALL_LIST) $(BINDIR)
- 
+
 uninstall:
-	rm -f $(INSTALL_LIST)
- 
+	for f in $(INSTALL_LIST); do rm -f $(BINDIR)/$$f; done
+
 clean:
 	rm -rf .deps $(OBJECTS) $(TARGET) 
 
 $(OP_SESSION_TARGET): $(OP_SESSION_OBJECTS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(OP_SESSION_LIBS)
- 
+
 $(OP_HELP_TARGET): $(OP_HELP_OBJECTS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(OP_HELP_LIBS)
- 
+
 include ../make.deps
