@@ -62,14 +62,12 @@ string const get_user_dir()
 
 string daemon_pid;
 
-// hurrah ! Stupid interface
-int const HZ = 100;
-
 } // namespace anon
 
 daemon_status::daemon_status()
 	: running(false)
 {
+	int HZ;
 	if (!daemon_pid.empty()) {
 		string exec = op_read_link(string("/proc/") + daemon_pid + "/exe");
 		if (exec.empty())
@@ -98,6 +96,12 @@ daemon_status::daemon_status()
 		}
 
 		closedir(dir);
+	}
+
+	HZ = sysconf(_SC_CLK_TCK);
+	if (HZ == -1) {
+		perror("oprofiled: Unable to determine clock ticks per second. ");
+		exit(EXIT_FAILURE);
 	}
 
 	runtime.erase();

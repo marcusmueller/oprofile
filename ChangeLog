@@ -1,3 +1,12 @@
+2002-07-17  William Cohen  <wcohen@nc.rr.com>
+ 
+	* gui/oprof_start_util.cpp: get HZ from sysconf
+
+2002-07-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* gui/oprof_start.base.ui: revert patch 2002-07-13, reapply
+	  the same modification with QT2 designer rather QT3 designer
+
 2002-07-14  John Levon  <moz@compsoc.man.ac.uk>
 
 	* Makefile.in: set KVERS properly
@@ -1022,7 +1031,7 @@
 	* pp/oprofpp.cpp: only allow -r with -l
 	* doc/oprofile.1.in: document -r for oprofpp
  
-2002-05-15  Will Cohen  <wcohen@nc.rr.com>
+2002-05-15  William Cohen  <wcohen@nc.rr.com>
  
 	* pp/oprofpp.cpp: Added "-r" reverse sort option.
 
