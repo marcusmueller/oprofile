@@ -48,6 +48,7 @@ using std::cerr;
 using std::hex;
 using std::dec;
 using std::ostringstream;
+using std::find;
 
 using namespace options;
 

@@ -22,6 +22,7 @@ using std::string;
 using std::vector;
 using std::accumulate;
 using std::pair;
+using std::lower_bound;
 
 namespace {
 

@@ -24,6 +24,7 @@ CXXINCLUDES=@CXXINCLUDES@ -I$(TOPDIR)/libopt++ -I$(TOPDIR)/libutil++ -I$(TOPDIR)
 CXXFLAGS += $(INCLUDES) $(CXXINCLUDES)
 CXXFLAGS += -W -Wall -Wunused -Wmissing-prototypes
 CXXFLAGS += -pipe @CXXFLAGS@
+#CXXFLAGS += -D__STL_DEBUG -I/usr/src/STLport-4.5.3/stlport
 
 # enable -Werror for non-release versions except for gcc 2.91
 ifneq (,$(findstring cvs,@VERSION@))
@@ -33,5 +34,6 @@ endif
  
 LDFLAGS += -L$(TOPDIR)/libutil++ -L$(TOPDIR)/libutil -L$(TOPDIR)/libop++ -L$(TOPDIR)/libop \
 	-L$(TOPDIR)/libdb -L$(TOPDIR)/libopt++ @extra_libraries@
+#LDFLAGS += -L/usr/src/STLport-4.5.3/lib -lstlport_gcc_stldebug -lstlport_gcc -lpthread -lm
  
 .PHONY: all clean srcdoc install uninstall

@@ -21,6 +21,8 @@
 using std::vector;
 using std::string;
 using std::stable_sort;
+using std::find_if;
+using std::lower_bound;
 
 symbol_index_t symbol_container_imp_t::size() const
 {
