@@ -1,5 +1,14 @@
 2002-06-06  John Levon  <moz@compsoc.man.ac.uk>
 
+	* module/Makefile.in: use @CC@, add clean for x86
+
+	* module/compat24.h: add path_hash prototype 
+ 
+	* module/x86/Makefile.in: use @CC@, make sure
+	  options get picked up
+ 
+2002-06-06  John Levon  <moz@compsoc.man.ac.uk>
+
 	* libutil/op_get_time.c: return "" not NULL
 	  on failure, so we don't try to printf NULL
  

@@ -1,5 +1,5 @@
 LD=ld
-CC=gcc
+CC=@CC@
 
 include arch/arch.mak
 
@@ -30,6 +30,7 @@ uninstall:
 	if test "@KVERS@" = "`uname -r`"; then depmod -a ; fi
  
 clean:
+	$(MAKE) -C arch clean
 	rm -rf $(TARGET) $(OBJECTS) .deps
 
 arch/oprofile_arch.o:

@@ -25,6 +25,7 @@
 #define lock_rtc(f) spin_lock_irqsave(&rtc_lock, f)
 #define unlock_rtc(f) spin_unlock_irqrestore(&rtc_lock, f)
 #define wind_dentries(d, v, r, m) wind_dentries_2_4(d, v, r, m)
+extern uint do_path_hash_2_4(struct dentry * dentry, struct vfsmount * vfsmnt);
 #define hash_path(f) do_path_hash_2_4((f)->f_dentry, (f)->f_vfsmnt)
 #define request_region_check request_region
 #define op_cpu_id() cpu_number_map(smp_processor_id())
