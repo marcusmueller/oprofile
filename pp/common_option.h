@@ -6,12 +6,16 @@
  * @remark Copyright 2003 OProfile authors
  * @remark Read the file COPYING
  *
+ * @author John Levon
  * @author Philippe Elie
  */
 
 #ifndef COMMON_OPTION_H
 #define COMMON_OPTION_H
 
+#include <vector>
+
+#include "arrange_profiles.h"
 #include "locate_images.h"
 #include "demangle_symbol.h"
 
@@ -44,5 +48,16 @@ int run_pp_tool(int argc, char const * argv[], pp_fct_run_t fct);
  * is not valid.
  */
 demangle_type handle_demangle_option(std::string const & option);
+
+/**
+ * @param mergespec  merge option
+ * @param allow_lib  is merge)lib allowed in mergespec
+ * @param exclude_dependent user specified --exclude_dependent
+ *
+ * parse merge option and return a merge_option filled from it.
+ * 
+ */
+merge_option handle_merge_option(std::vector<std::string> const & mergespec,
+       bool allow_lib, bool exclude_dependent);
 
 #endif /* !COMMON_OPTION_H */

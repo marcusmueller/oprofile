@@ -29,6 +29,7 @@ namespace options {
 	string output_dir;
 	vector<string> search_dirs;
 	vector<string> base_dirs;
+	merge_option merge_by;
 	path_filter file_filter;
 	string_filter symbol_filter;
 	bool source;
@@ -45,6 +46,7 @@ string exclude_symbols;
 string include_file;
 string exclude_file;
 string demangle_option = "normal";
+vector<string> mergespec;
 
 popt::option options_array[] = {
 	popt::option(demangle_option, "demangle", '\0',
@@ -68,6 +70,8 @@ popt::option options_array[] = {
 		     "additionnal params to pass to objdump", "parameters"),
 	popt::option(options::exclude_dependent, "exclude-dependent", 'x',
 		     "exclude libs, kernel, and module samples for applications"),
+	popt::option(mergespec, "merge", 'm',
+		     "comma separated list", "cpu,tid,tgid,unitmask,all"),
 	popt::option(options::source, "source", 's', "output source"),
 	popt::option(options::assembly, "assembly", 'a', "output assembly"),
 };
@@ -113,12 +117,7 @@ void handle_options(vector<string> const & non_options)
 
 	// we always merge but this have no effect on output since at source
 	// or assembly point of view the result will be merged anyway
-	merge_option merge_by;
-	merge_by.cpu = true;
-	merge_by.lib = true;
-	merge_by.tid = true;
-	merge_by.tgid = true;
-	merge_by.unitmask = true;
+	merge_by = handle_merge_option(mergespec, false, exclude_dependent);
 
 	classes = arrange_profiles(sample_files, merge_by);
 

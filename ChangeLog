@@ -1,5 +1,12 @@
 2003-10-31  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/opreport_options.cpp: move handle_merge_option() ...
+	* pp/common_option.h: 
+	* pp/common_option.cpp: here
+	* pp/opannotate_options.cpp: use it but disallow --merge=lib
+
+2003-10-31  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil/op_file.c:
 	* libutil/op_file.h: implement dirname(), is_directory() and
 	  op_follow_link()

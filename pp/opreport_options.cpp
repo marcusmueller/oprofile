@@ -111,53 +111,6 @@ void handle_sort_option()
 
 
 // FIXME: separate file if reused
-void handle_merge_option()
-{
-	using namespace options;
-
-	bool is_all = false;
-
-	vector<string>::const_iterator cit = mergespec.begin();
-	vector<string>::const_iterator end = mergespec.end();
-
-	for (; cit != end; ++cit) {
-		if (*cit == "cpu") {
-			merge_by.cpu = true;
-		} else if (*cit == "tid") {
-			merge_by.tid = true;
-		} else if (*cit == "tgid") {
-			// PP:5.21 tgid merge imply tid merging.
-			merge_by.tgid = true;
-			merge_by.tid = true;
-		} else if (*cit == "lib") {
-			merge_by.lib = true;
-		} else if (*cit == "unitmask") {
-			merge_by.unitmask = true;
-		} else if (*cit == "all") {
-			merge_by.cpu = true;
-			merge_by.lib = true;
-			merge_by.tid = true;
-			merge_by.tgid = true;
-			merge_by.unitmask = true;
-			is_all = true;
-		} else {
-			cerr << "unknown merge option: " << *cit << endl;
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	// if --merge all, don't warn about lib merging,
-	// it's not user friendly. Behaviour should still
-	// be correct.
-	if (exclude_dependent && merge_by.lib && !is_all) {
-		cerr << "--merge=lib is meaningless "
-		     << "with --exclude-dependent" << endl;
-		exit(EXIT_FAILURE);
-	}
-}
-
-
-// FIXME: separate file if reused
 void handle_output_file()
 {
 	if (outfile.empty())
@@ -233,7 +186,7 @@ void handle_options(vector<string> const & non_options)
 	}
 
 	handle_sort_option();
-	handle_merge_option();
+	merge_by = handle_merge_option(mergespec, true, exclude_dependent);
 	handle_output_file();
 	demangle = handle_demangle_option(demangle_option);
 	check_options();
