@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.42 2000/12/05 01:03:25 moz Exp $ */
+/* $Id: oprofile.c,v 1.43 2000/12/05 01:18:28 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -571,6 +571,9 @@ again:
 	}
 	goto again;
 
+	/* FIXME: what if a signal occurs now ? What is returned to
+	 * the read() routine ?
+	 */
 doit:
 	pmc_select_stop(i);
 	spin_lock(&note_lock);

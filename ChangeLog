@@ -1,3 +1,7 @@
+2000-04-11  John Levon  <moz@compsoc.man.ac.uk>
+
+	* oprofile.c: what if signal happens later ?
+	* dae/opd_util.c: clarify opd_read_device() API
 
 2000-04-11  John Levon  <moz@compsoc.man.ac.uk>
 

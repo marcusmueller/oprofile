@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.8 2000/09/09 19:51:03 moz Exp $ */
+/* $Id: opd_util.c,v 1.9 2000/12/05 01:18:30 moz Exp $ */
 
 /* for hton */ 
 #include <netinet/in.h> 
@@ -634,6 +634,10 @@ void opd_close_device(fd_t devfd)
  *
  * The driver returning %EINTR is handled to allow signals.
  * Any other error return is fatal.
+ *
+ * It is the caller's responsibility to do further opd_read_device()
+ * calls if the number of bytes read is not what is requested
+ * (where this is applicable).
  *
  * The number of bytes read is returned.
  */ 
