@@ -41,7 +41,7 @@ static void save_value(std::ostream& out, const std::string& value,
 
 bool is_profiler_started()
 {
-	return !system("test `/sbin/pidof oprofiled`");
+	return !system("test `pidof oprofiled`");
 }
 
 event_setting::event_setting() 

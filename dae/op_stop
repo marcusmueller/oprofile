@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_stop,v 1.11 2001/09/25 17:07:07 movement Exp $ 
+# $Id: op_stop,v 1.12 2001/09/25 17:14:06 movement Exp $ 
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -16,14 +16,10 @@
 # Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-if test ! -f /sbin/pidof; then
-	echo "No /sbin/pidof found !!!!!" >&2
-fi
-
-if test `/sbin/pidof oprofiled`
+if test `pidof oprofiled`
 then
 	echo "Stopping profiling and killing daemon"
-	kill `/sbin/pidof oprofiled`
+	kill `pidof oprofiled`
 	exit
 fi
  
