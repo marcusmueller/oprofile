@@ -52,9 +52,9 @@ static int inline smp_call_function (void (*func) (void *info), void *info,
 #endif /* < 2.2.8 || (!SMP && <= 2.2.20) */
 
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,2)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,3)
 
-/* 2.2.2 introduced wait_event_interruptible */
+/* 2.2.3 introduced wait_event_interruptible */
 #define __wait_event_interruptible(wq, condition, ret)	\
 do {							\
 	struct wait_queue __wait;			\
@@ -237,9 +237,13 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
 #define GET_VM_OFFSET(v) ((v)->vm_pgoff << PAGE_SHIFT)
-#define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
 #else
 #define GET_VM_OFFSET(v) ((v)->vm_offset)
+#endif
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,2,20)
+#define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
+#else
 #define PTRACE_OFF(t) ((t)->flags &= ~PF_DTRACE)
 #endif
 

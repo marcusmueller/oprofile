@@ -1,3 +1,11 @@
+2002-01-17  Philippe Elie  <ph_e@club-internet.fr>
+
+	* TODO: update
+
+	* doc/oprofile.sgml: speach about assembler
+
+	* module/compat.h: small tweak for 2.2, no impact on 2.4
+
 2002-01-16  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: look for rtc_lock

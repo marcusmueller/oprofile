@@ -1041,7 +1041,7 @@ The options allowed are :
 		<term><option>-f</option> <filename>filename</filename></term>
 		<listitem><para>
 		Specify the samples file. At least one of the <option>&mdash;samples-file</option> or
-		<option>&mdash;image-file</option> must be specifed.
+		<option>&mdash;image-file</option> must be specified.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1114,7 +1114,7 @@ Options allowed are :
 <para>
 Another grey art. The standard caveats of profiling come
 to mind: profile realistic situations, profile difference scenarios, profile
-for as long as a time as possible, avoid system-specific artefacts, don't trust
+for as long as a time as possible, avoid system-specific artifacts, don't trust
 the profile data too much. Also bear in mind the comments on the performance
 counters above - you can <emphasis>not</emphasis> rely on totally accurate
 instruction-level profiling.  However, for almost all circumstances the data
@@ -1223,6 +1223,30 @@ accumulated at the position of the right brace of the expression. Using
 samples at an assembly level.
 </para>
 </sect1>
+<!-- FIXME: the wording is perhaps awkward for this section -->
+<!-- FIXME: an entry of the FAQ must point here ? -->
+<sect1 id="symbol-without-debug-info">
+<title>Assembly function</title>
+<para>
+Often assembler can not generate debug information automatically. Such example of commonly used assembler is
+<command>gas</command> and <command>nasm</command>. This means than you can not get source report unless 
+you manually define the neccessary debug information, report to your assembler documentation for that. The only
+debugging info needed currently by oprofile is the linenr/filename vma association. When profiling assembly
+without debugging info you can always get report for symbol and optionnaly for vma through <command>oprofpp -l</command>
+or <command>oprofpp -L</command> but this work only for symbol with the right attribute.
+For gas you can get this by
+<screen>
+.globl foo
+	.type	foo,@function
+</screen>
+while for nasm you must use
+<screen>
+	  GLOBAL foo:function		; [1]
+</screen>
+Note than oprofile do not need the global attribute, but only the function attribute. User of gas and nasm
+must found the right way to not declare the foo symbol global if necessary.
+</para>
+</sect1>
 <!-- 
 
 FIXME: I commented this bit out until we've written something ...
@@ -1257,6 +1281,9 @@ FIXME: we should document how samples can be lost by the daemon, and why not to 
  
 FIXME: more examples, basic and advanced trick. A howto use utilities FAQ ?
 
+The FAQ must use <sect1> and imbricated <sect2> to fit in only one page.
+It is possible through release to put the FAQ (or the whole doc ?) on sourceforge ?
+
 yes, indeed. We can do this bit by bit though, as long as we've done as much
 as we can for release 1.0 - john
  
@@ -1278,7 +1305,7 @@ o more ...
 <chapter id="overhead">
 <title>Profiling overhead</title>
 <para>
-One of the major design criterions for OProfile was low overhead. In many cases
+One of the major design criterion for OProfile was low overhead. In many cases
 profiling is hardly noticeable in terms of overhead (I regularly leave it turned on
 all the time). It achieves this by judicious use of kernel-side data structures
 to reduce the analysis overhead to a bare runtime minimum. There are several things

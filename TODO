@@ -10,7 +10,6 @@ o user request: op_time that shows /all/ available symbols (with correct %age).
   or a file.
  
 o more discussion of problematic code needs to go in the "interpreting" section. 
-  Maybe you should add the nasm tricks somewhere Phil ?
  
 4) GUI RTC - fix crash, better interface
  
