@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.6 2000/08/06 20:46:58 moz Exp $ */
+/* $Id: oprofpp.c,v 1.7 2000/08/31 23:16:40 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -231,6 +231,7 @@ uint get_symbols(bfd *ibfd, asymbol ***symsp)
 	uint nr_syms=0; 
 	uint i; 
 	size_t size;
+	asymbol **filt_syms;
 	asymbol **syms; 
 
 	if (!(bfd_get_file_flags(ibfd) & HAS_SYMS))
@@ -254,17 +255,18 @@ uint get_symbols(bfd *ibfd, asymbol ***symsp)
 			nr_syms++;
 	}
  
-	*symsp = opd_malloc(sizeof(asymbol *)*nr_syms);
+	filt_syms = opd_malloc(sizeof(asymbol *)*nr_syms);
 
 	for (nr_syms=0,i=0; i < nr_all_syms; i++) {
 		if (syms[i]->section->flags & SEC_CODE) {
-			*symsp[nr_syms] = syms[i];
+			filt_syms[nr_syms] = syms[i];
 			nr_syms++;
 		}
 	}
  
-	qsort(*symsp, nr_syms, sizeof(asymbol *), symcomp);
+	qsort(filt_syms, nr_syms, sizeof(asymbol *), symcomp);
  
+	*symsp = filt_syms;
 	return nr_syms;
 }
  
@@ -283,20 +285,28 @@ uint get_symbols(bfd *ibfd, asymbol ***symsp)
 void get_symbol_range(asymbol *sym, asymbol *next, u32 *start, u32 *end)
 {
 	/* offset from section */ 
-	*start = sym->value - sym->section->vma;	 
+	// value does not include vma val
+	//*start = sym->value - sym->section->vma;
+	*start = sym->value;
+	//printf("sym->value 0x%x\n",sym->value);
 	/* offset of section */
 	*start += sym->section->filepos;
+	//printf("plus offset 0x%x\n",*start);
 	/* adjust for kernel image */
 	*start += sect_offset;
 	if (next) {
 		/* offset from section */ 
-		*end = next->value - next->section->vma;	 
+		//*end = next->value - next->section->vma;	 
+		*end = next->value;
+		//printf("symnext->value 0x%x\n",next->value);
 		/* offset of section */
 		*end += next->section->filepos;
 		/* adjust for kernel image */
 		*end += sect_offset;
 	} else
 		*end = nr_samples;
+
+	printf("Start %u, end %u\n",*start,*end);
 }
  
 struct opp_count {
@@ -338,6 +348,10 @@ void do_list_symbols(void)
 	ibfd = open_image_file(samplefile);
 	num = get_symbols(ibfd,&syms);
 
+	for (i=0; i < nr_samples; i++) {
+		printf("%d: %d %d\n",i,samples[i].count0,samples[i].count1);
+	}
+
 	if (!num) {
 		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
 		exit(1);
@@ -361,13 +375,15 @@ void do_list_symbols(void)
 
 	for (i=0; i < num; i++) {
 		printf_symbol(scounts[i].sym->name);
-		if (ctr) { 
+		if (ctr && scounts[i].count1) { 
 			printf("[0x%.8lx]: %2.4f%% (%d samples)\n",scounts[i].sym->value,
 				((double)scounts[i].count1)/tot1, scounts[i].count1);
-		} else {
+		} else if (scounts[i].count0) {
+			printf_symbol(scounts[i].sym->name);
 			printf("[0x%.8lx]: %2.4f%% (%d samples)\n",scounts[i].sym->value,
 				((double)scounts[i].count0)/tot0, scounts[i].count0);
-		} 
+		} else if (!streq("",scounts[i].sym->name))
+			printf(" (0 samples)\n");
 	}
  
 	opd_free(scounts);
@@ -522,9 +538,20 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
  
-	op_get_event_desc(footer.ctr0_type_val, footer.ctr0_um, &ctr0_name, &ctr0_desc, &ctr0_um_desc);
-	op_get_event_desc(footer.ctr1_type_val, footer.ctr1_um, &ctr1_name, &ctr1_desc, &ctr1_um_desc);
+	// FIXME: null um_desc etc. in printf
+	printf("val 0 %d, val 1,%d\n",footer.ctr0_type_val,footer.ctr1_type_val);
+	if (footer.ctr0_type_val) {
+		op_get_event_desc(footer.ctr0_type_val, footer.ctr0_um, &ctr0_name, &ctr0_desc, &ctr0_um_desc);
+		printf("Counter 0 counted %s events (%s) with a unit mask of 0x%.2x (%s)\n",ctr0_name, ctr0_desc, 
+			 footer.ctr0_um, ctr0_um_desc);
+	}
 
+	if (footer.ctr1_type_val) {
+		op_get_event_desc(footer.ctr1_type_val, footer.ctr1_um, &ctr1_name, &ctr1_desc, &ctr1_um_desc);
+		printf("Counter 1 counted %s events (%s) with a unit mask of 0x%.2x (%s)\n",ctr1_name, ctr1_desc, 
+			 footer.ctr1_um, ctr1_um_desc);
+	}
+ 
 	fd = open(samplefile, O_RDONLY);
 
 	if (fd==-1) {
@@ -542,11 +569,6 @@ int main(int argc, char *argv[])
 
 	nr_samples = size/sizeof(struct opd_fentry);
 
-	printf("Counter 0 counted %s events (%s) with a unit mask of 0x%.2x (%s)\n",ctr0_name, ctr0_desc, 
-		 footer.ctr0_um, ctr0_um_desc);
-	printf("Counter 1 counted %s events (%s) with a unit mask of 0x%.2x (%s)\n",ctr1_name, ctr1_desc, 
-		 footer.ctr1_um, ctr1_um_desc);
- 
 	if (list_symbols) {
 		do_list_symbols();
 	} else if (symbol) {
