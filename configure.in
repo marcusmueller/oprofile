@@ -104,25 +104,27 @@ else
 fi
 
 AC_CHECK_PROG(XSLTPROC,xsltproc,xsltproc,)
-AC_MSG_CHECKING([whether xsltproc works])
 XSLTPROC_WORKS=no
-# We can't easily test this case !
-if test -n "$XML_CATALOG"; then
-	XSLTPROC_WORKS=yes
-else
-	if test -n "$XSLTPROC" -a test -n $DOCBOOK_ROOT; then
+if test -n "$XSLTPROC"; then
+	AC_MSG_CHECKING([whether xsltproc works])
+	# We can't easily test this case !
+	if test -n "$XML_CATALOG"; then
+		XSLTPROC_WORKS=yes
+	else
+		if test -n "$XSLTPROC" -a test -n $DOCBOOK_ROOT; then
 			$XSLTPROC $XSLTPROC_FLAGS $DOCBOOK_ROOT/docbook.xsl >/dev/null 2>&1 << END
 <?xml version="1.0" encoding='ISO-8859-1'?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 <book id="test">
 </book>
 END
-		if test "$?" = 0; then
-			XSLTPROC_WORKS=yes
+			if test "$?" = 0; then
+				XSLTPROC_WORKS=yes
+			fi
 		fi
 	fi
-fi
 AC_MSG_RESULT($XSLTPROC_WORKS)
+fi
 AM_CONDITIONAL(have_xsltproc, test "$XSLTPROC_WORKS" = "yes")
 
 AC_SUBST(XML_CATALOG)

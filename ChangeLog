@@ -1,5 +1,16 @@
 2003-03-15  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil/op_libiberty.h: cut&paste typo breaking compilation on box
+	  w/o libiberty.h
+
+	* daemon/opd_image.c: remove bogus fprintf. compilation was broken
+	  on alpha.
+
+	* configure.in: xsltproc checking fix, was always accepted even
+	 on box where xsltproc is not installed
+
+2003-03-15  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* TODO: upate
 
 	* Makefile.am: add ChangeLog-2002 in dist files
