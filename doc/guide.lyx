@@ -68,6 +68,8 @@ oprofile
  operation of the compiler, only with the output.
  An interface to the more specialised event monitoring facilities provided
  by the hardware performance counters is also provided.
+ The package is licensed under the GNU General Public License, version 2
+ or later.
 \layout Section
 
 Requirements
@@ -77,7 +79,8 @@ Currently
 \family typewriter 
 oprofile
 \family default 
- requires a Linux 2.4.0test11 or later kernel running on Intel hardware with a P6 core processor.
+ requires a Linux 2.4.0test12 or later kernel running on Intel hardware with
+ a P6 core processor.
  This translates to the Pentium Pro, Pentium II, Pentium III or any of their
  brethren such as Celerons
 \begin_float footnote 
@@ -88,9 +91,10 @@ The module will refuse to load if the correct processor type is not found.
 .
  Older A.OUT based systems are not supported (it is probably trivial to add
  this facility if needed).
- SMP systems are theoretically supported, but have not been tested at all, and support is not
- complete. If you are using the kernel debugging patchset, it should still work but might not
- as it plays with the APIC set up and PM counters.
+ SMP systems are theoretically supported, but have not been tested at all,
+ and support is not complete.
+ If you are using the kernel debugging patchset, it should still work but
+ might not as it plays with the APIC set up and PM counters.
 \layout Standard
 
 You must have the following libraries installed : 
@@ -112,7 +116,7 @@ dl
 .
 \layout Standard
 
-At least version 2.3.17 of 
+At least version 2.3.22 of 
 \family typewriter 
 modutils
 \family default 
@@ -133,7 +137,12 @@ Build & Install
 Download
 \layout Standard
 
-etc.
+Visit the web page and download the tarball : 
+\family typewriter 
+http://oprofile.sourceforge.net/
+\family default 
+.
+ There is also a CVS tree at sourceforge.
 \layout Section
 
 Configuration
@@ -155,7 +164,7 @@ autoconf
 CONFIG_MODULES
 \family default 
 , obviously).
- As with the kernel, you must compile using 
+ As with the kernel, you must compile using (the same version of) 
 \family typewriter 
 gcc
 \family default 
@@ -170,16 +179,17 @@ gcc
 
 
 \family typewriter 
----with-linux 
+---with-module-dir
 \family default 
-specify the path to the kernel source tree.
+ specify the path to install the module to
 \layout Description
 
 
 \family typewriter 
----with-module-dir
+---with-linux
 \family default 
- specify the path to install the module to
+ specify the path to the kernel source (if you are compiling for a kernel
+ different to one you are running)
 \layout Description
 
 
@@ -234,7 +244,15 @@ do_nmi
  This is not useful for stable systems so it is OK for it to be left unpatched.
  This will probably change if the uniprocessor NMI oopser makes it into
  the mainline kernel.
- 
+\layout Standard
+
+Note the 
+\family typewriter 
+upapic
+\family default 
+ patch to enable an NMI oopser on UP machines conflicts to some degree with
+ this module.
+ It hasn't been tested or investigated yet.
 \layout Standard
 
 If the 
@@ -416,7 +434,7 @@ The location of the
 \family typewriter 
 System.map
 \family default 
- file for the running kernel
+ file for the running kernel (required)
 \layout Description
 
 
@@ -427,7 +445,7 @@ The location of the
 \family typewriter 
 vmlinux
 \family default 
- file for the running kernel
+ file for the running kernel (required)
 \layout Description
 
 
@@ -476,7 +494,9 @@ The shell script
 \family typewriter 
 op_stop
 \family default 
- will stop the daemon, and remove the kernel module.
+ will stop the daemon.
+ Note that the kernel module is not unloadable (though it takes up very
+ little memory when not in use).
 \layout Section
 
 Retrieving profile data
@@ -534,6 +554,14 @@ gcc
 oprofpp -l <samplefile>
 \layout Standard
 
+(You can also simply specify the binary you want profile data for, e.g.
+ 
+\family typewriter 
+oprofpp -l /lib/libc-2.1.3.so
+\family default 
+).
+\layout Standard
+
 This will give a list of symbols, ordered by the number of samples registered
  against them.
  If the profiler is being used in a statistical execution profile manner,
@@ -589,6 +617,185 @@ The
 gprof
 \family default 
  format sample file, is not currently working ...
+\layout Section
+
+
+\family typewriter 
+/proc/dev/oprofile
+\family default 
+ files
+\layout Standard
+
+The module also provides 
+\family typewriter 
+sysctl
+\family default 
+ files for modifying the counters and parameters.
+ The use should be fairly trivial, as follows :
+\layout Description
+
+
+\family typewriter 
+.../oprofile/bufsize 
+\family default 
+\series bold 
+The size of the kernel buffer.
+ The byte size is this value multiplied by 8.
+\layout Description
+
+
+\family typewriter 
+.../oprofile/hashsize 
+\family default 
+\series bold 
+The size of the hash table.
+ The byte size is this value multiplied by 32.
+\layout Description
+
+
+\family typewriter 
+.../oprofile/pid_filter
+\family default 
+ 
+\series bold 
+The pid to filter on, if this feature is enabled.
+\layout Description
+
+
+\family typewriter 
+.../oprofile/pgrp_filter
+\family default 
+ 
+\series bold 
+The process group to filter on, if this feature is enabled.
+\layout Description
+
+
+\family typewriter 
+.../oprofile/dump
+\family default 
+ 
+\series bold 
+Tell the profiler to perform a partial data dump
+\layout Description
+
+
+\family typewriter 
+.../oprofile/0/
+\family default 
+ 
+\series bold 
+The counters for CPU#0
+\layout Description
+
+
+\family typewriter 
+.../oprofile/0/0/ 
+\family default 
+\series bold 
+The parameters for counter 0 on CPU#0
+\layout Description
+
+
+\family typewriter 
+.../0/0/event
+\family default 
+ 
+\series bold 
+The event value of the counter.
+ You can convert from names to values with e.g.
+ 
+\family typewriter 
+op_help INST_RETIRED
+\layout Description
+
+
+\family typewriter 
+.../0/0/count 
+\family default 
+\series bold 
+The counter reset value for this counter.
+\layout Description
+
+
+\family typewriter 
+.../0/0/unit_mask
+\family default 
+ 
+\series bold 
+The numeric unit mask for this counter.
+\layout Description
+
+
+\family typewriter 
+.../0/0/kernel
+\family default 
+ 
+\series bold 
+Whether to profile in ring 0 (kernel mode).
+\layout Description
+
+
+\family typewriter 
+.../0/0/user
+\family default 
+ 
+\series bold 
+Whether to profile in ring 3 (user mode).
+\layout Description
+
+
+\family typewriter 
+.../0/0/enabled
+\family default 
+ 
+\series bold 
+Whether this counter is enabled.
+\layout Standard
+
+As standard sysctl files, each file takes a single number.
+ Changes to every value except 
+\family typewriter 
+dump
+\family default 
+ only take effect when the daemon is re-started (i.e.
+ profiling is re-started).
+ A typical session might look like this :
+\layout LyX-Code
+
+cd /proc/sys/dev/oprofile
+\layout LyX-Code
+
+echo 65536 >bufsize
+\layout LyX-Code
+
+echo 384 >hashsize
+\layout LyX-Code
+
+cd 0/0/
+\layout LyX-Code
+
+echo `op_help CPU_CLK_UNHALTED` >event
+\layout LyX-Code
+
+echo 10000 >count
+\layout LyX-Code
+
+echo 0 >unit_mask
+\layout LyX-Code
+
+echo 1 >kernel
+\layout LyX-Code
+
+echo 1 >user
+\layout LyX-Code
+
+echo 1 >enabled
+\layout LyX-Code
+
+oprofiled -b 65536 -u 0 -0 CPU_CLK_UNHALTED
+\layout LyX-Code
+
 \layout Section
 
 Statistical profiling
@@ -943,15 +1150,6 @@ oprof_mmap()
 
 
 \family typewriter 
-oprof_ioctl()
-\family default 
- It can happen that nothing every reaches the daemon, because we are caching
- too well.
- This is a quick hack to force some stuff out (it needs working on)
-\layout Description
-
-
-\family typewriter 
 parms_ok(),oprof_init_data(),hw_ok(),oprof_init()
 \family default 
  self-explanatory initialisation stuff
@@ -970,7 +1168,15 @@ opd_do_samples()
 Credits
 \layout Standard
 
-etc.
+
+\family typewriter 
+oprofile
+\family default 
+ was written by John Levon.
+ The following people have been helpful in the design and/or coding of this
+ package (in no particular order) : Arjan van de Ven, Rik van Riel, Juan
+ Quintela, Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne,
+ Dave Jones, Charles Filtness.
 \layout Bibliography
 \bibitem {DCPI}
 

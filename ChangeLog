@@ -1,3 +1,11 @@
+2000-12-15  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in: default to /lib/modules/`uname -r`/build
+		as kernel source directory
+
+	* doc/guide.lyx:
+	* doc/guide.html: update documentation
+
 2000-12-13  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: bump minor version

@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.13 2000/12/15 02:52:11 moz Exp $)
+AC_REVISION($Id: configure.in,v 1.14 2000/12/17 02:46:04 moz Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -62,11 +62,10 @@ test "$LD" || AC_ERROR(ld not found)
 dnl  --- Find the Linux kernel, at least the headers ---
  
 AC_SUBST(KSRC)
-KSRC=/usr/src/linux
-AC_ARG_WITH(linux, [  --with-linux=dir             Path to Linux source tree], KSRC=$withval)
-AC_SUBST(KINC)
-
+KSRC=/lib/modules/`uname -r`/build
+AC_ARG_WITH(linux, [  --with-linux=dir             Path to Linux source tree], KSRC=$withval) 
 KINC=$KSRC/include
+AC_SUBST(KINC)
  
 if test ! -f $KINC/linux/autoconf.h; then
   AC_MSG_ERROR(no suitably configured kernel include tree found)
