@@ -1,5 +1,9 @@
 2002-01-14  John Levon  <moz@compsoc.man.ac.uk>
 
+	* module/op_rtc.c: remove unneeded check
+ 
+2002-01-14  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/op_start: fix for PMC case
  
 2002-01-14  John Levon  <moz@compsoc.man.ac.uk>

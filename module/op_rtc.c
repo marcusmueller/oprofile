@@ -78,9 +78,6 @@ static int rtc_setup(void)
  
 	target = sysctl.ctr[0].count;
 
-	if (target < OP_RTC_MIN || target > OP_RTC_MAX)
-		return -EINVAL;
-
 	exp = 0;
 	while (target > (1 << exp) + ((1 << exp) >> 1))
 		exp++;
@@ -100,11 +97,12 @@ static void rtc_start(void)
 	unsigned long flags;
 
 	spin_lock_irqsave(&rtc_lock, flags);
+ 
 	/* Enable periodic interrupts */
 	tmp_control = CMOS_READ(RTC_CONTROL);
 	tmp_control |= RTC_PIE;
 	CMOS_WRITE(tmp_control, RTC_CONTROL);
-
+ 
 	/* read the flags register to start interrupts */
 	CMOS_READ(RTC_INTR_FLAGS);
 
