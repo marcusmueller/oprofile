@@ -555,7 +555,7 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--separate=</option>[none,library,kernel,all]</term>
+		<term><option>--separate=</option>[none,library,kernel,thread,cpu,all]</term>
 		<listitem><para>
 		By default, every profile is stored in a single file. Thus, for example,
 		samples in the C library are all accredited to the <filename>/lib/libc.o</filename>
@@ -568,6 +568,8 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		<row><entry><option>none</option></entry><entry>No profile separation (default)</entry></row>
 		<row><entry><option>library</option></entry><entry>Create per-application profiles for libraries</entry></row>
 		<row><entry><option>kernel</option></entry><entry>Create per-application profiles for the kernel and kernel modules</entry></row>
+		<row><entry><option>thread</option></entry><entry>Create profiles for each thread and each task</entry></row>
+		<row><entry><option>cpu</option></entry><entry>Create profiles for each physical CPU</entry></row>
 		<row><entry><option>all</option></entry><entry>Both of the above options</entry></row>
 		</tbody>
 		</tgroup>
@@ -583,7 +585,6 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		<para>
 		On 2.2/2.4 only kernel threads already started when profiling begins are correctly profiled;
 		newly started kernel thread samples are credited to the vmlinux (kernel) profile.
-		On 2.6 there is no kernel thread profiling, all these samples are credited to the vmlinux profile.
 		</para>
 		</listitem>
 	</varlistentry>
@@ -1008,7 +1009,7 @@ If we had specified <option>--symbols</option> in the previous command, we would
 gotten a symbol summary of all the images across the entire system. We can restrict this to only
 part of the system profile; for example,
 below is a symbol summary of the OProfile daemon. Note that as we used
-<command>opcontrol --separate=all</command>, symbols from images that <command>oprofiled</command>
+<command>opcontrol --separate=kernel</command>, symbols from images that <command>oprofiled</command>
 has used are also shown.
 </para>
 <screen>

@@ -63,6 +63,7 @@ op_cpu cpu_type;
 int separate_lib;
 int separate_kernel;
 int separate_thread;
+int separate_cpu;
 int no_vmlinux;
 char * vmlinux;
 size_t kernel_pointer_size;
@@ -83,7 +84,8 @@ static struct poptOption options[] = {
 	{ "no-vmlinux", 0, POPT_ARG_NONE, &no_vmlinux, 0, "vmlinux kernel image file not available", NULL, },
 	{ "separate-lib", 0, POPT_ARG_INT, &separate_lib, 0, "separate library samples for each distinct application", "[0|1]", },
 	{ "separate-kernel", 0, POPT_ARG_INT, &separate_kernel, 0, "separate kernel samples for each distinct application", "[0|1]", },
-	{ "separate-thread", 0, POPT_ARG_INT, &separate_thread,0, "thread-profiling mode", "[0|1]"},
+	{ "separate-thread", 0, POPT_ARG_INT, &separate_thread, 0, "thread-profiling mode", "[0|1]" },
+	{ "separate-cpu", 0, POPT_ARG_INT, &separate_cpu, 0, "separate samples for each CPU", "[0|1]" },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
 	POPT_AUTOHELP

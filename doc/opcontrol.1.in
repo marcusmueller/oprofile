@@ -93,10 +93,11 @@ Only profile process tty group pgrp (only available for 2.4 version). Set
 to 'none' to enable profiling of all PIDs again.
 .br
 .TP
-.BI "--separate="[none,library,kernel,all]
+.BI "--separate="[none,library,kernel,thread,cpu,all]
 Separate samples based on the given separator. 'library' per-application
 dynamically linked libraries samples files. 'kernel' per-application modules
-and kernel samples files, 'kernel' imply 'library'. 'all' imply all the
+and kernel samples files, 'kernel' imply 'library'. 'thread' gives separation
+for each thread and task. 'cpu' separates for each physical CPU. 'all' imply all the
 above options and 'none' turns off separation.
 .br
 .TP

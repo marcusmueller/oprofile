@@ -32,6 +32,7 @@
 extern int separate_lib;
 extern int separate_kernel;
 extern int separate_thread;
+extern int separate_cpu;
 extern u32 ctr_count[OP_MAX_COUNTERS];
 extern u8 ctr_event[OP_MAX_COUNTERS];
 extern u16 ctr_um[OP_MAX_COUNTERS];
@@ -93,7 +94,10 @@ static char * mangle_filename(struct sfile const * sf, int counter)
 		values.tgid = sf->tgid;
 	}
  
-	/* FIXME: CPU */
+	if (separate_cpu) {
+		values.flags |= MANGLE_CPU;
+		values.cpu = sf->cpu;
+	}
 
 	if (cpu_type != CPU_TIMER_INT)
 		values.event_name = event->name;

@@ -28,6 +28,7 @@
 extern int separate_lib;
 extern int separate_kernel;
 extern int separate_thread;
+extern int separate_cpu;
 extern uint op_nr_counters;
 
 #define HASH_SIZE 2048
@@ -62,7 +63,8 @@ sfile_hash(struct transient const * trans, struct kernel_image * ki)
 	if (separate_kernel || (separate_lib && !ki))
 		val ^= trans->app_cookie >> (DCOOKIE_SHIFT + 3);
 
-	/* FIXME: CPU */
+	if (separate_cpu)
+		val ^= trans->cpu;
 
 	return val & HASH_BITS;
 }
@@ -88,7 +90,10 @@ sfile_match(struct transient const * trans, struct sfile const * sfile,
 			return 0;
 	}
 
-	/* FIXME: CPU */
+	if (separate_cpu) {
+		if (trans->cpu != sfile->cpu)
+			return 0;
+	}
 
 	if (separate_kernel || (separate_lib && !ki)) {
 		if (trans->app_cookie != sfile->app_cookie)
@@ -121,7 +126,7 @@ create_sfile(struct transient const * trans, struct kernel_image * ki)
 	sf->app_cookie = INVALID_COOKIE;
 	sf->tid = (pid_t)-1;
 	sf->tgid = (pid_t)-1;
-	sf->cpu = 0; /* FIXME: CPU */
+	sf->cpu = 0;
 	sf->kernel = ki;
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
@@ -132,6 +137,9 @@ create_sfile(struct transient const * trans, struct kernel_image * ki)
 		sf->tid = trans->tid;
 		sf->tgid = trans->tgid;
 	}
+
+	if (separate_cpu)
+		sf->cpu = trans->cpu;
 
 	if (separate_kernel || (separate_lib && !ki))
 		sf->app_cookie = trans->app_cookie;

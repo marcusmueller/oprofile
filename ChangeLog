@@ -1,5 +1,17 @@
 2003-09-24  John Levon  <levon@movementarian.org>
 
+	* doc/opcontrol.1.in:
+	* doc/oprofile.xml: document thread and cpu
+	profiling a bit
+
+	* daemon/opd_mangling.c:
+	* daemon/opd_sfile.c:
+	* daemon/oprofiled.c:
+	* utils/opcontrol: implement per-CPU profiling,
+	not tested yet
+
+2003-09-24  John Levon  <levon@movementarian.org>
+
 	* dae/opd_proc.c:
 	* dae/opd_sample_files.c:
 	* daemon/opd_mangling.c:
