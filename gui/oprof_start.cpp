@@ -170,7 +170,6 @@ oprof_start::oprof_start()
 	kernel_filename_edit->setText(config.kernel_filename.c_str());
 
 	buffer_size_edit->setText(QString().setNum(config.buffer_size));
-	hash_table_size_edit->setText(QString().setNum(config.hash_table_size));
 	note_table_size_edit->setText(QString().setNum(config.note_table_size));
 	if (config.pid_filter)
 		pid_filter_edit->setText(QString().setNum(config.pid_filter));
@@ -192,8 +191,6 @@ oprof_start::oprof_start()
 	QIntValidator * iv;
 	iv = new QIntValidator(OP_MIN_BUF_SIZE, OP_MAX_BUF_SIZE, buffer_size_edit);
 	buffer_size_edit->setValidator(iv);
-	iv = new QIntValidator(OP_MIN_HASH_SIZE, OP_MAX_HASH_SIZE, hash_table_size_edit);
-	hash_table_size_edit->setValidator(iv);
 	iv = new QIntValidator(OP_MIN_NOTE_TABLE_SIZE, OP_MAX_NOTE_TABLE_SIZE, note_table_size_edit);
 	note_table_size_edit->setValidator(iv);
 	iv = new QIntValidator(pid_filter_edit);
@@ -570,20 +567,6 @@ bool oprof_start::record_config()
 	}
 	config.buffer_size = temp;
 
-	temp = hash_table_size_edit->text().toUInt();
-	if (temp < OP_MIN_HASH_SIZE || temp > OP_MAX_HASH_SIZE) {
-		ostringstream error;
-
-		error << "hash table size out of range: " << temp
-		      << " valid range is [" << OP_MIN_HASH_SIZE << ", "
-		      << OP_MAX_HASH_SIZE << "]";
-
-		QMessageBox::warning(this, 0, error.str().c_str());
-
-		return false;
-	}
-	config.hash_table_size = temp;
-
 	temp = note_table_size_edit->text().toUInt();
 	if (temp < OP_MIN_NOTE_TABLE_SIZE || temp > OP_MAX_NOTE_TABLE_SIZE) {
 		ostringstream error;
@@ -849,7 +832,6 @@ void oprof_start::on_start_profiler()
 	args.push_back("--pid-filter=" + tostr(config.pid_filter));
 	args.push_back("--pgrp-filter=" + tostr(config.pgrp_filter));
 	args.push_back("--buffer-size=" + tostr(config.buffer_size));
-	args.push_back("--hash-table-size=" + tostr(config.hash_table_size));
 	args.push_back("--note-table-size=" + tostr(config.note_table_size));
 	if (config.separate_samples)
 		args.push_back("--separate-samples");

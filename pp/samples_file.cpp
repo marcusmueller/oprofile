@@ -40,6 +40,8 @@ samples_file_t::samples_file_t(string const & filename)
 			"mismatch ?" << endl;
 		exit(EXIT_FAILURE);
 	}
+
+	build_ordered_samples();
 }
 
 samples_file_t::~samples_file_t()
@@ -76,19 +78,30 @@ void samples_file_t::check_headers(samples_file_t const & rhs) const
 	}
 }
 
-static void samples_db_callback(db_key_t, db_value_t value, void * data)
+void samples_file_t::build_ordered_samples()
 {
-	u32 * count = (u32 *)data;
+	db_node_nr_t node_nr, pos;
+	db_node_t * node = db_get_iterator(&samples_db, &node_nr);
 
-	*count += value;
+	for ( pos = 0 ; pos < node_nr ; ++pos) {
+		if (node[pos].key) {
+			ordered_samples_t::value_type val(node[pos].key,
+							node[pos].value);
+			ordered_samples.insert(val);
+		}
+	}
 }
 
 u32 samples_file_t::count(uint start, uint end) const
 {
 	u32 count = 0;
 
-	db_travel(&samples_db, start - start_offset, end - start_offset,
-		  samples_db_callback, &count);
+	ordered_samples_t::const_iterator first, last;
+	first = ordered_samples.lower_bound(start - start_offset);
+	last = ordered_samples.lower_bound(end - start_offset);
+	for ( ; first != last ; ++first) {
+		count += first->second;
+	}
 
 	return count;
 }

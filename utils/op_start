@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.12 2002/09/23 02:01:34 movement Exp $
+# $Id: op_start,v 1.13 2002/12/03 01:57:58 phil_e Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -80,7 +80,6 @@ do_help() {
 	echo "op_start: usage:
 	Module options
 	  --buffer-size=num            number of samples in kernel buffer
-	  --hash-table-size=num        number of entries in kernel hash table
 	  --note-table-size	       number of notes in kernel notes buffer
 	  --kernel-only=[0|1]          profile only the kernel
 	  --ctrN-event=name            symbolic event name for ctr N
@@ -125,7 +124,6 @@ do_init() {
 	# for these three buffer size == 0 means use the default value
 	# hard-coded in op_user.h
 	BUF_SIZE=0
-	HASH_SIZE=0
 	NOTE_SIZE=0
 	KERNEL_ONLY=0
 	IGNORE_MYSELF=0
@@ -199,9 +197,6 @@ do_options() {
 		case "$arg" in
 			--buffer-size)
 				BUF_SIZE=$val
-				;;
-			--hash-table-size)
-				HASH_SIZE=$val
 				;;
 			--kernel-only)
 				if [ "$val" != "" ]; then
@@ -321,11 +316,6 @@ do_options() {
  
 	vecho "Parameters used:"
 	vecho "CPUTYPE $CPUTYPE"
-	if [ $HASH_SIZE != 0 ]; then
-		vecho "HASH_SIZE $HASH_SIZE"
-	else
-		vecho "HASH_SIZE default value"
-	fi;
 	if [ $BUF_SIZE != 0 ]; then
 		vecho "BUF_SIZE $BUF_SIZE"
 	else
@@ -425,9 +415,6 @@ do_setup() {
  
 # initialise sysctl parameters
 do_sysctl_setup() {
-	if [ $HASH_SIZE != 0 ]; then
-		$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE
-	fi
 	if [ $BUF_SIZE != 0 ]; then
 		$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE
 	fi

@@ -37,28 +37,15 @@
 #undef max
 
 #define streq(a, b) (!strcmp((a), (b)))
-#define streqn(a, b, len) (!strncmp((a), (b), (len)))
-
-#define OP_NR_ENTRY (SMP_CACHE_BYTES/sizeof(struct op_sample))
-
-struct op_entry {
-	struct op_sample samples[OP_NR_ENTRY];
-} __cacheline_aligned_in_smp;
 
 /* per-cpu dynamic data */
 struct _oprof_data {
-	/* hash table */
-	struct op_entry * entries;
 	/* eviction buffer */
 	struct op_sample * buffer;
-	/* nr. in hash table */
-	uint hash_size;
 	/* nr. in buffer */
 	uint buf_size;
 	/* next in buffer (atomic) */
 	uint nextbuf;
-	/* next sample in entry */
-	uint next;
 	/* number of IRQs for this CPU */
 	uint nr_irq;
 	/* reset counter values */
@@ -79,8 +66,6 @@ struct oprof_counter {
 struct oprof_sysctl {
 	/* nr. in eviction buffser */
 	int buf_size;
-	/* nr. in hash table */
-	int hash_size;
 	/* sysctl dump */
 	int dump;
 	/* dump and stop */
@@ -131,15 +116,6 @@ struct op_int_operations {
 
 /* maximum depth of dname trees - this is just a page */
 #define DNAME_STACK_MAX 1024
-
-/* is the count at maximal value ? */
-#define op_full_count(c) ((c) == OP_COUNT_MAX)
-
-/* the ctr bit is used to separate the two counters.
- * Simple and effective hash. If you can do better, prove it ...
- */
-#define op_hash(eip, pid, ctr) \
-	((eip + (pid << 5) + (ctr)) & (data->hash_size - 1))
 
 /* oprof_start() copy here the sysctl settable parameters */
 extern struct oprof_sysctl sysctl;

@@ -437,14 +437,6 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--hash-table-size=</option>nr</term>
-		<listitem><para>
-		This is the number of entries in the kernel-side profiling hash table. Generally the default value
-		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
-		Each entry in the hash table takes 32 bytes (4 samples for each entry).
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
 		<term><option>--note-table-size=</option>nr</term>
 		<listitem><para>
 		This is the number of entries in the kernel note table. Generally the default value
@@ -505,7 +497,7 @@ options, only interesting ones are listed here :
 <para>
 The runtime profiler system consists of two components: a kernel module (<filename>oprofile</filename>)
 and a user-space daemon process (<filename>oprofiled</filename>). The kernel module collects sample data into
-the hash table and buffer, and wakes up the daemon process when it is approaching full. The daemon will read this
+per-cpu buffers, and wakes up the daemon process when it is approaching full. The daemon will read this
 data, and process it into a non-volatile form. Any samples are recorded into the sample files at processing time.
 </para>
 <para>
@@ -877,12 +869,6 @@ The following files will be present :
 		<term><filename>bufsize</filename></term>
 		<listitem><para>
 		The buffer size, corresponding to the <option>--buffer-size</option> option.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>hashsize</filename></term>
-		<listitem><para>
-		The hash table size, corresponding to the <option>--hash-table-size</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1833,8 +1819,7 @@ noticeable.
 </para>
 <para>
 The worst-case scenario is where there are many short-lived processes. This can be seen
-in a kernel compile, for instance. This leads to hash table clashes; clashes lead to faster
-buffer filling; buffer filling leads to higher overhead. Even in this worst case overhead
+in a kernel compile, for instance. This leads to a lot of syscall interception. Even in this worst case overhead
 is low compared to other profilers; only very detailed profiling of these workloads
 has an overhead of higher than 5%. Actual performance
 data is presented in the source distribution. In fact most situations have much fewer

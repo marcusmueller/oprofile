@@ -13,8 +13,9 @@
 #define SAMPLES_FILE_H
 
 #include <string>
+#include <map>
 
-#include "db.h"
+#include "db-hash.h"
 #include "op_types.h"
 #include "op_hw_config.h"
 #include "utility.h"
@@ -80,9 +81,23 @@ struct samples_file_t /*:*/ noncopyable
 	void set_start_offset(u32 start_offset_) {
 		start_offset = start_offset_;
 	}
+
 private:
+	/// storage type for samples sorted by eip
+	typedef std::map<db_key_t, db_value_t> ordered_samples_t;
+	/// helper to build ordered samples by eip
+	void build_ordered_samples();
+
 	/// the underlying db object
 	samples_db_t samples_db;
+
+	/**
+	 * Samples are stored in hash table, iterating over hash table don't
+	 * provide any ordering, the above count() interface rely on samples
+	 * ordered by eip. This map is only a temporary storage where samples
+	 * are ordered by eip.
+	 */
+	ordered_samples_t ordered_samples;
 
 	/**
 	 * For the kernel and kernel modules, this value is non-zero and

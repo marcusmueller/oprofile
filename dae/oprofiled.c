@@ -642,8 +642,8 @@ void opd_do_samples(struct op_buffer_head const * opd_buf)
 		   (unsigned int) opd_buf->count);
  
 	for (i = 0; i < opd_buf->count; i++) {
-		verbprintf("%.6u: EIP: 0x%.8lx pid: %.6d count: %.6d\n",
-			i, buffer[i].eip, buffer[i].pid, buffer[i].count);
+		verbprintf("%.6u: EIP: 0x%.8lx pid: %.6d\n",
+			i, buffer[i].eip, buffer[i].pid);
 
 		/* FIXME : we can try to remove cast by using in module pid_t
 		 * as type for op_sample.pid but this don't work if kernel

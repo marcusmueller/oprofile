@@ -67,14 +67,8 @@ inline static void next_sample(struct _oprof_data * data)
 		data->nextbuf = 0;
 }
 
-inline static void evict_op_entry(uint cpu, struct _oprof_data * data,
-	struct op_sample const * ops, long eflags)
+inline static void evict_op_entry(uint cpu, struct _oprof_data * data, long eflags)
 {
-	/* ignore op_samples with no hits (initial value or recently dumped) */
-	if (ops->count == 0)
-		return;
- 
-	memcpy(&data->buffer[data->nextbuf], ops, sizeof(struct op_sample));
 	next_sample(data);
 	if (likely(!need_wakeup(cpu, data)))
 		return;
@@ -116,7 +110,6 @@ inline static void fill_op_entry(struct op_sample * ops, long eip, pid_t pid, in
 {
 	ops->eip = eip;
 	ops->pid = pid;
-	ops->count = 1;
 	ops->counter = ctr;
 }
 
@@ -125,25 +118,12 @@ void op_do_profile(uint cpu, struct pt_regs * regs, int ctr)
 	struct _oprof_data * data = &oprof_data[cpu];
 	pid_t const pid = current->pid;
 	long const eip = INST_PTR(regs);
-	struct op_sample * samples = data->entries[op_hash(eip, pid, ctr)].samples;
-	uint i;
+	struct op_sample * samples = &data->buffer[data->nextbuf];
 
 	data->nr_irq++;
 
-	for (i=0; i < OP_NR_ENTRY; i++) {
-		/* no need to check counter nr. too */ 
-		if (samples[i].eip != eip || samples[i].pid != pid)
-			continue;
-		if (op_full_count(samples[i].count))
-			continue;
-		samples[i].count++;
-		return;
-	}
-
-	evict_op_entry(cpu, data, &samples[data->next], STATUS(regs));
-	fill_op_entry(&samples[data->next], eip, pid, ctr);
-	data->next = (data->next + 1) % OP_NR_ENTRY;
-	return;
+	fill_op_entry(samples, eip, pid, ctr);
+	evict_op_entry(cpu, data, STATUS(regs));
 }
 
 /* ---------------- driver routines ------------------ */
@@ -435,11 +415,8 @@ static void oprof_free_mem(uint num)
 {
 	uint i;
 	for (i=0; i < num; i++) {
-		if (oprof_data[i].entries)
-			vfree(oprof_data[i].entries);
 		if (oprof_data[i].buffer)
 			vfree(oprof_data[i].buffer);
-		oprof_data[i].entries = NULL;
 		oprof_data[i].buffer = NULL;
 	}
 	vfree(note_buffer);
@@ -449,7 +426,7 @@ static void oprof_free_mem(uint num)
 static int oprof_init_data(void)
 {
 	uint i, notebufsize;
-	ulong hash_size, buf_size;
+	ulong buf_size;
 	struct _oprof_data * data;
 
 	notebufsize = sizeof(struct op_note) * sysctl.note_size;
@@ -464,37 +441,26 @@ static int oprof_init_data(void)
 	// safe init
 	for (i = 0; i < smp_num_cpus; ++i) {
 		data = &oprof_data[i];
-		data->hash_size = data->buf_size = 0;
-		data->entries = 0;
+		data->buf_size = 0;
 		data->buffer = 0;
 	}
  
-	hash_size = (sizeof(struct op_entry) * sysctl.hash_size);
 	buf_size = (sizeof(struct op_sample) * sysctl.buf_size);
 
 	for (i = 0 ; i < smp_num_cpus ; ++i) {
 		data = &oprof_data[i];
 
-		data->entries = vmalloc(hash_size);
-		if (!data->entries) {
-			printk(KERN_ERR "oprofile: failed to allocate hash table of %lu bytes\n",hash_size);
-			oprof_free_mem(i);
-			return -EFAULT;
-		}
-
 		data->buffer = vmalloc(buf_size);
 		if (!data->buffer) {
 			printk(KERN_ERR "oprofile: failed to allocate eviction buffer of %lu bytes\n",buf_size);
-			vfree(data->entries);
 			oprof_free_mem(i);
 			return -EFAULT;
 		}
 
-		memset(data->entries, 0, hash_size);
 		memset(data->buffer, 0, buf_size);
 
-		data->hash_size = sysctl.hash_size;
 		data->buf_size = sysctl.buf_size;
+		data->nextbuf = 0;
 	}
 
 	return 0;
@@ -504,9 +470,6 @@ static int parms_check(void)
 {
 	int err;
 
-	if ((err = check_range(sysctl.hash_size, 256, 262144,
-		"sysctl.hash_size value %d not in range (%d %d)\n")))
-		return err;
 	if ((err = check_range(sysctl.buf_size, OP_PRE_WATERMARK + 1024, 1048576,
 		"sysctl.buf_size value %d not in range (%d %d)\n")))
 		return err;
@@ -602,7 +565,7 @@ static int oprof_stop(void)
 	for (i = 0 ; i < smp_num_cpus; i++) {
 		struct _oprof_data * data = &oprof_data[i];
 		oprof_ready[i] = 0;
-		data->nextbuf = data->next = 0;
+		data->nextbuf = 0;
 	}
 
 	oprof_free_mem(smp_num_cpus);
@@ -629,7 +592,6 @@ static struct file_operations oprof_fops = {
 /*
  * /proc/sys/dev/oprofile/
  *                        bufsize
- *                        hashsize
  *                        notesize
  *                        dump
  *                        dump_stop
@@ -699,40 +661,12 @@ int lproc_dointvec(ctl_table * table, int write, struct file * filp, void * buff
 	return err;
 }
 
-static void dump_one(struct _oprof_data * data, struct op_sample * ops, uint cpu)
-{
-	if (!ops->count)
-		return;
-
-	memcpy(&data->buffer[data->nextbuf], ops, sizeof(struct op_sample));
-
-	ops->count = 0;
-
-	next_sample(data);
-	if (likely(!need_wakeup(cpu, data)))
-		return;
-	oprof_ready[cpu] = 1;
-}
-
 static void do_actual_dump(void)
 {
 	uint cpu;
-	int i,j;
 
-	/* clean out the hash table as far as possible */
 	for (cpu = 0 ; cpu < smp_num_cpus; cpu++) {
-		struct _oprof_data * data = &oprof_data[cpu];
-		spin_lock(&note_lock);
-		stop_cpu_perfctr(cpu);
-		for (i=0; i < data->hash_size; i++) {
-			for (j=0; j < OP_NR_ENTRY; j++)
-				dump_one(data, &data->entries[i].samples[j], cpu);
-			if (oprof_ready[cpu])
-				break;
-		}
-		spin_unlock(&note_lock);
 		oprof_ready[cpu] = 2;
-		start_cpu_perfctr(cpu);
 	}
 	oprof_wake_up(&oprof_wait);
 }
@@ -784,11 +718,10 @@ out:
 	return err;
 }
 
-int nr_oprof_static = 8;
+int nr_oprof_static = 7;
 
 static ctl_table oprof_table[] = {
 	{ 1, "bufsize", &sysctl_parms.buf_size, sizeof(int), 0644, NULL, &lproc_dointvec, NULL, },
-	{ 1, "hashsize", &sysctl_parms.hash_size, sizeof(int), 0644, NULL, &lproc_dointvec, NULL, },
 	{ 1, "dump", &sysctl_parms.dump, sizeof(int), 0666, NULL, &sysctl_do_dump, NULL, },
 	{ 1, "dump_stop", &sysctl_parms.dump_stop, sizeof(int), 0644, NULL, &sysctl_do_dump_stop, NULL, },
 	{ 1, "kernel_only", &sysctl_parms.kernel_only, sizeof(int), 0644, NULL, &lproc_dointvec, NULL, },
@@ -819,7 +752,6 @@ static int __init init_sysctl(void)
 	ctl_table * next = &oprof_table[nr_oprof_static];
 
 	/* these sysctl parms need sensible value */
-	sysctl_parms.hash_size = OP_DEFAULT_HASH_SIZE;
 	sysctl_parms.buf_size = OP_DEFAULT_BUF_SIZE;
 	sysctl_parms.note_size = OP_DEFAULT_NOTE_SIZE;
 

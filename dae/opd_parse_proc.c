@@ -162,7 +162,7 @@ void opd_get_ascii_procs(void)
 	DIR * dir;
 	struct dirent * dirent;
 	struct opd_proc * proc;
-	u16 pid;
+	u32 pid;
 
 	if (!(dir = opendir("/proc"))) {
 		perror("oprofiled: /proc directory could not be opened. ");
@@ -170,7 +170,7 @@ void opd_get_ascii_procs(void)
 	}
 
 	while ((dirent = readdir(dir))) {
-		if (sscanf(dirent->d_name, "%hu", &pid) == 1) {
+		if (sscanf(dirent->d_name, "%u", &pid) == 1) {
 			verbprintf("ASCII added %u\n", pid);
 			proc = opd_add_proc(pid);
 			opd_get_ascii_maps(proc);

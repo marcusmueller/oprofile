@@ -1,3 +1,53 @@
+2002-12-02  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
+	* dae/opd_image.h:
+	* dae/opd_kernel.c:
+	* dae/opd_kernel.h:
+	* dae/opd_parse_proc.c:
+	* dae/opd_proc.c:
+	* dae/opd_proc.h:
+	* dae/opd_sample_files.c:
+	* dae/oprofiled.c:
+	* daemon/opd_image.h:
+	* pp/op_merge.cpp:
+	* pp/samples_file.h:
+	* pp/samples_file.cpp:
+	* pp/Makefile.am:
+	* libabi/Makefile.am:
+	* libabi/abi.cpp:
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp: use hash table implementation of libdb
+
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_config.h:
+	* gui/ui/oprof_start.base.ui:
+	* utils/op_start:
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: remove module hash table size
+
+	* libdb/.cvsignore: update
+	* libdb/Makefile.am: build libdb-hash.a
+	* libdb/db-hash.h:
+	* libdb/db-hash-debug.c:
+	* libdb/db-hash-manage.c:
+	* libdb/db-hash-test.c:
+	* libdb/db-hash-insert.c:
+	* libdb/db-hash-stat.c:
+	* libdb/db-hash-travel.c: new files implementing a growable hash table
+	* libdb/Makefile.am: update
+
+	* libop/op_config_24.h: remove module hash table. Increase
+	  OP_PRE_WATERMARK, OP_DEFAULT_BUF_SIZE.
+	* libop/op_interface.h: struct op_sample update.
+
+	* module/oprofile.h:
+	* module/oprofile.c: remove hash table
+	* module/x86/opc,model_ppro.c: break overflowed counter checking loop
+	  sooner
+
 2002-12-02  John Levon  <levon@movementarian.org>
 
 	* configure.in: remove annoying AC_REVISION()

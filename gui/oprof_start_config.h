@@ -49,7 +49,6 @@ struct config_setting {
 	void save(std::ostream& out) const;
 
 	uint buffer_size;
-	uint hash_table_size;
 	uint note_table_size;
 	std::string kernel_filename;
 	// FIXME: unsuported for 2.5

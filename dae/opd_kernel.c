@@ -324,7 +324,7 @@ static struct opd_module * opd_find_module_by_eip(unsigned long eip)
 /**
  * opd_handle_module_sample - process a module sample
  * @param eip  EIP value
- * @param count  count value of sample
+ * @param counter  counter number
  *
  * Process a sample in module address space. The sample eip
  * is matched against module information. If the search was
@@ -337,7 +337,7 @@ static struct opd_module * opd_find_module_by_eip(unsigned long eip)
  * If the sample could not be located in a module, it is treated
  * as a kernel sample.
  */
-static void opd_handle_module_sample(unsigned long eip, u32 count, u32 counter)
+static void opd_handle_module_sample(unsigned long eip, u32 counter)
 {
 	struct opd_module * module;
 
@@ -354,7 +354,7 @@ static void opd_handle_module_sample(unsigned long eip, u32 count, u32 counter)
 		if (module->image != NULL) {
 			opd_stats[OPD_MODULE]++;
 			opd_put_image_sample(module->image,
-					     eip - module->start, count, counter);
+					     eip - module->start, counter);
 		} else {
 			opd_stats[OPD_LOST_MODULE]++;
 			verbprintf("No image for sampled module %s\n",
@@ -378,22 +378,21 @@ static void opd_handle_module_sample(unsigned long eip, u32 count, u32 counter)
 /**
  * opd_handle_kernel_sample - process a kernel sample
  * @param eip  EIP value of sample
- * @param count  count value of sample
  * @param counter  counter number
  *
  * Handle a sample in kernel address space or in a module. The sample is
  * output to the relevant image file.
  */
-void opd_handle_kernel_sample(unsigned long eip, u32 count, u32 counter)
+void opd_handle_kernel_sample(unsigned long eip, u32 counter)
 {
 	if (eip < kernel_end) {
 		opd_stats[OPD_KERNEL]++;
-		opd_put_image_sample(kernel_image, eip - kernel_start, count, counter);
+		opd_put_image_sample(kernel_image, eip - kernel_start, counter);
 		return;
 	}
 
 	/* in a module */
-	opd_handle_module_sample(eip, count, counter);
+	opd_handle_module_sample(eip, counter);
 }
  
 /**

@@ -1,6 +1,6 @@
 /**
- * @file db-test.c
- * Tests for DB tree
+ * @file db-hash-test.c
+ * Tests for DB hash
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -13,9 +13,9 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-#include "db.h"
+#include "db-hash.h"
 
-#define TEST_FILENAME "test-db.dat"
+#define TEST_FILENAME "test-hash-db.dat"
 
 static int nr_error;
 
@@ -33,15 +33,15 @@ static void speed_test(int nr_item, int nr_unique_item)
 {
 	int i;
 	double begin, end;
-	samples_db_t tree;
+	samples_db_t hash;
 
-	db_open(&tree, TEST_FILENAME, DB_RDWR, 128);
+	db_open(&hash, TEST_FILENAME, DB_RDWR, 128);
 	begin = user_time();
 	for (i = 0 ; i < nr_item ; ++i) {
-		db_insert(&tree, (random() % nr_unique_item) + 1, 1);
+		db_insert(&hash, (random() % nr_unique_item) + 1, 1);
 	}
 	end = user_time();
-	db_close(&tree);
+	db_close(&hash);
 
 	remove(TEST_FILENAME);
 
@@ -53,7 +53,7 @@ static void do_speed_test(void)
 {
 	int i, j;
 
-	for (i = 1000 ; i <= 1000000 ; i *= 10) {
+	for (i = 1000 ; i <= 10000000 ; i *= 10) {
 		for (j = 100 ; j <= i / 10 ; j *= 10) {
 			speed_test(i, j);
 		}
@@ -63,19 +63,20 @@ static void do_speed_test(void)
 static int test(int nr_item, int nr_unique_item)
 {
 	int i;
-	samples_db_t tree;
+	samples_db_t hash;
 	int ret;
 
-	db_open(&tree, TEST_FILENAME, DB_RDWR, 128);
+	db_open(&hash, TEST_FILENAME, DB_RDWR, 128);
 
 
 	for (i = 0 ; i < nr_item ; ++i) {
-		db_insert(&tree, (random() % nr_unique_item) + 1, 1);
+		db_key_t key = (random() % nr_unique_item) + 1;
+		db_insert(&hash, key, 1);
 	}
 
-	ret = db_check_tree(&tree);
+	ret = db_check_hash(&hash);
 
-	db_close(&tree);
+	db_close(&hash);
 
 	remove(TEST_FILENAME);
 
@@ -101,22 +102,14 @@ static void do_test(void)
 
 
 static db_key_t range_first, range_last;
-static db_key_t last_key_found;
 static void call_back(db_key_t key, db_value_t info, void * data)
 {
-	if (&info) {} if (&data) {}	/* suppress unused parameters */
-
-	if (key <= last_key_found) {
-		printf("%x %x\n", key, last_key_found);
-		nr_error++;
-	}
+	info = info; data = data;	/* suppress unused parameters */
 
 	if (key < range_first || key >= range_last) {
 		printf("%x %x %x\n", key, range_first, range_last);
 		nr_error++;
 	}
-
-	last_key_found = key;
 }
 
 static int callback_test(int nr_item, int nr_unique_item)
@@ -138,11 +131,10 @@ static int callback_test(int nr_item, int nr_unique_item)
 
 	for ( ; first_key < last_key ; last_key /= 2) {
 
-		last_key_found = first_key == 0 ? first_key : first_key - 1;
 		range_first = first_key;
 		range_last = last_key;
 
-		db_travel(&tree, first_key, last_key, call_back, 0);
+		samples_db_travel(&tree, first_key, last_key, call_back, 0);
 
 		first_key = first_key == 0 ? 1 : first_key * 2;
 	}
@@ -171,21 +163,21 @@ static void do_callback_test(void)
 
 static void sanity_check(char const * filename)
 {
-	samples_db_t tree;
+	samples_db_t hash;
 
-	db_open(&tree, filename, DB_RDONLY, 128);
+	db_open(&hash, filename, DB_RDONLY, 128);
 
-	if (db_check_tree(&tree)) {
+	if (db_check_hash(&hash)) {
 		printf("checking file %s FAIL\n", filename);
 		++nr_error;
 	}
 
-	db_close(&tree);
+	db_close(&hash);
 }
 
 int main(int argc, char * argv[1])
 {
-	/* if a filename is given take it as a checking of this db */
+	/* if a filename is given take it as: "check this db" */
 	if (argc > 1) {
 		int i;
 		for (i = 1 ; i < argc ; ++i)

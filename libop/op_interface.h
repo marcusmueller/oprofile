@@ -32,10 +32,9 @@
 /** Data type to transfer samples counts from the module to the daemon */
 struct op_sample {
 	unsigned long eip; /**< eip value where occur interrupt */
-	u32 count; /**< samples count */
 	u32 counter; /**< counter nr */
 	u32 pid; /**< 32 bits can hold any pid */
-} __attribute__((__packed__, __aligned__(16)));
+} __attribute__((__packed__));
 
 /** the current kernel-side profiler state */
 enum oprof_state {

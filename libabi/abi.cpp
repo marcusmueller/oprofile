@@ -9,7 +9,7 @@
  */
  
 #include "abi.h"
-#include "db.h"
+#include "db-hash.h"
 #include "op_sample_file.h"
 
 #include <iostream>
@@ -32,12 +32,9 @@ Abi_exception::Abi_exception(string const d) : desc(d) {}
 Abi::Abi() 
 {
 	
-	db_item_t item;
-	db_page_t page;
+	db_node_t node;
 	db_descr_t descr;
 	struct opd_header header;
-	
-	slots["db_max_page"] = DB_MAX_PAGE;
 	
 	slots["sizeof_double"] = sizeof(double);
 	slots["sizeof_time_t"] = sizeof(time_t);
@@ -45,26 +42,19 @@ Abi::Abi()
 	slots["sizeof_u32"] = sizeof(u32);
 	slots["sizeof_int"] = sizeof(int);
 	slots["sizeof_unsigned_int"] = sizeof(unsigned int);
-	slots["sizeof_db_page_count_t"] = sizeof(db_page_count_t);
-	slots["sizeof_db_page_idx_t"] = sizeof(db_page_idx_t);
-	slots["sizeof_db_value_t"] = sizeof(db_value_t);
 	slots["sizeof_db_key_t"] = sizeof(db_key_t);
-	slots["sizeof_db_item_t"] = sizeof(db_item_t);
-	slots["sizeof_db_page_t"] = sizeof(db_page_t);
+	slots["sizeof_db_index_t"] = sizeof(db_index_t);
+	slots["sizeof_db_value_t"] = sizeof(db_value_t);
+	slots["sizeof_db_node_nr_t"] = sizeof(db_node_nr_t);
 	slots["sizeof_db_descr_t"] = sizeof(db_descr_t);
 	slots["sizeof_struct_opd_header"] = sizeof(struct opd_header);		
 	
-	slots["offsetof_item_child_page"] = field_offset(item, child_page);
-	slots["offsetof_item_info"] = field_offset(item, info);
-	slots["offsetof_item_key"] = field_offset(item, key);
-	
-	slots["offsetof_page_count"] = field_offset(page, count);
-	slots["offsetof_page_p0"] = field_offset(page, p0);
-	slots["offsetof_page_page_table_offset"] = field_offset(page, page_table);
+	slots["offsetof_node_key"] = field_offset(node, key);
+	slots["offsetof_node_value"] = field_offset(node, value);
+	slots["offsetof_node_next"] = field_offset(node, next);
 	
 	slots["offsetof_descr_size"] = field_offset(descr, size);
 	slots["offsetof_descr_current_size"] = field_offset(descr, current_size);
-	slots["offsetof_descr_root_idx"] = field_offset(descr, root_idx);
 	
 	slots["offsetof_header_magic"] = field_offset(header, magic);
 	slots["offsetof_header_version"] = field_offset(header, version);

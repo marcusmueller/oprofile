@@ -103,10 +103,6 @@ RTC interrupts/second value. This is rounded up to a power of two when used.
 number of samples in kernel buffer
 .br
 .TP
-.BI "--hash-table-size=" nr
-number of entries in kernel hash table
-.br
-.TP
 .BI "--note-table-size=" nr
 number of entries in kernel note table
 .br

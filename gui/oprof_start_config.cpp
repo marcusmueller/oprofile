@@ -82,7 +82,6 @@ istream& operator>>(istream& in, event_setting& object)
 config_setting::config_setting()
 	:
 	buffer_size(OP_DEFAULT_BUF_SIZE),
-	hash_table_size(OP_DEFAULT_HASH_SIZE),
 	note_table_size(OP_DEFAULT_NOTE_SIZE),
 	kernel_only(0),
 	ignore_daemon_samples(0),
@@ -108,7 +107,10 @@ config_setting::config_setting()
 void config_setting::load(istream& in)
 {
 	in >> buffer_size;
-	in >> hash_table_size;
+	if (buffer_size == 0)
+		buffer_size = OP_DEFAULT_BUF_SIZE;
+	string obsolete_hash_table_size;
+	in >> obsolete_hash_table_size;
 	in >> kernel_filename;
 	string obsolete_map_filename;
 	in >> obsolete_map_filename;
@@ -117,6 +119,8 @@ void config_setting::load(istream& in)
 	in >> verbose;
 	in >> pgrp_filter;
 	in >> note_table_size;
+	if (note_table_size == 0)
+		note_table_size = OP_DEFAULT_NOTE_SIZE;
 	in >> separate_samples;
 	// the 3 following config item was kernel_range which are obsolete
 	string garbage;
@@ -129,8 +133,8 @@ void config_setting::load(istream& in)
 // sanitize needed ?
 void config_setting::save(ostream& out) const
 {
-	out << buffer_size << endl;
-	out << hash_table_size << endl;
+	out << (buffer_size == OP_DEFAULT_BUF_SIZE ? 0 : buffer_size) << endl;
+	out << "hash_table_size_obsolete_placeholder" << endl;
 
 	// for these we need always to put something sensible, else if we save
 	// empty string reload is confused by this empty string.
@@ -144,13 +148,13 @@ void config_setting::save(ostream& out) const
 	out << ignore_daemon_samples << endl;
 	out << verbose << endl;
 	out << pgrp_filter << endl;
-	out << note_table_size << endl;
+	out << (note_table_size == OP_DEFAULT_NOTE_SIZE ? 0 : note_table_size ) << endl;
 	out << separate_samples << endl;
 
 	// the 3 following config item was kernel_range which are obsolete
-	out << "kernnel_range_auto_obsolete_placeholder" << endl;
-	out << "kernnel_range_start_obsolete_placeholder" << endl;
-	out << "kernnel_range_end_obsolete_placeholder" << endl;
+	out << "kernel_range_auto_obsolete_placeholder" << endl;
+	out << "kernel_range_start_obsolete_placeholder" << endl;
+	out << "kernel_range_end_obsolete_placeholder" << endl;
 }
 
 ostream& operator<<(ostream& out, config_setting const & object)

@@ -1,5 +1,15 @@
+/**
+ * @file abi_test.cpp
+ * Import sample files from other ABI
+ *
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author Graydon Hoare 
+ */
+
 #include "abi.h"
-#include "db.h"
+#include "db-hash.h"
 #include "popt_options.h"
 #include "op_sample_file.h"
 #include "op_cpu_type.h"

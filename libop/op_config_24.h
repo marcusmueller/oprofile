@@ -23,22 +23,15 @@
 
 /*@{\name module default/min/max settings */
 
-/** 65536 * 32 = 2097152 bytes default */
-#define OP_DEFAULT_HASH_SIZE 65536
-/** maximum number of entry in module samples hash table */
-#define OP_MAX_HASH_SIZE 262144
-/** minimum number of entry in module samples hash table */
-#define OP_MIN_HASH_SIZE 256
-
-/** 32768 * 8 = 262144 bytes default */
-#define OP_DEFAULT_BUF_SIZE 32768
+/** 65536 * sizeof(op_sample) */
+#define OP_DEFAULT_BUF_SIZE 65536
 /** we don't try to wake-up daemon until it remains more than this free entry
  * in eviction buffer */
-#define OP_PRE_WATERMARK 2048
+#define OP_PRE_WATERMARK 8192
 /** maximum number of entry in samples eviction buffer */
 #define OP_MAX_BUF_SIZE	1048576
 /** minimum number of entry in samples eviction buffer */
-#define OP_MIN_BUF_SIZE	(1024 + OP_PRE_WATERMARK)
+#define OP_MIN_BUF_SIZE	(32768 + OP_PRE_WATERMARK)
 
 /** 16384 * sizeof(op_note) = 273680 bytes default */
 #define OP_DEFAULT_NOTE_SIZE 16384

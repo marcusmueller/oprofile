@@ -26,20 +26,20 @@ struct opd_proc {
 	unsigned int nr_maps;
 	unsigned int max_nr_maps;
 	unsigned int last_map;
-	u16 pid;
-	u16 accessed;
+	u32 pid;
+	int accessed;
 	int dead;
 	struct opd_proc * prev;
 	struct opd_proc * next;
 };
 
 void opd_put_sample(struct op_sample const * sample);
-void opd_put_image_sample(struct opd_image * image, unsigned long offset, u32 count, u32 counter);
+void opd_put_image_sample(struct opd_image * image, unsigned long offset, u32 counter);
 void opd_handle_fork(struct op_note const * note);
 void opd_handle_exit(struct op_note const * note);
-void opd_handle_exec(u16 pid);
-struct opd_proc * opd_get_proc(u16 pid);
-struct opd_proc * opd_add_proc(u16 pid);
+void opd_handle_exec(u32 pid);
+struct opd_proc * opd_get_proc(u32 pid);
+struct opd_proc * opd_add_proc(u32 pid);
 char const * opd_app_name(struct opd_proc const * proc);
 int opd_get_nr_procs(void);
 void opd_age_procs(void);

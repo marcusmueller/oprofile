@@ -137,7 +137,7 @@ static struct opd_proc * opd_new_proc(struct opd_proc * prev, struct opd_proc * 
  * @param pid  pid value to hash
  *
  */
-inline static uint proc_hash(u16 pid)
+inline static uint proc_hash(u32 pid)
 {
 	return ((pid>>4) ^ (pid)) % OPD_MAX_PROC_HASH;
 }
@@ -173,7 +173,7 @@ static void opd_delete_proc(struct opd_proc * proc)
  * is filled in as appropriate.
  *
  */
-struct opd_proc * opd_add_proc(u16 pid)
+struct opd_proc * opd_add_proc(u32 pid)
 {
 	struct opd_proc * proc;
 	uint hash = proc_hash(pid);
@@ -220,7 +220,7 @@ inline static void opd_do_proc_lru(struct opd_proc ** head, struct opd_proc * pr
  * maintaining LRU order. If it is not found, %NULL is returned,
  * otherwise the process structure is returned.
  */
-struct opd_proc * opd_get_proc(u16 pid)
+struct opd_proc * opd_get_proc(u32 pid)
 {
 	struct opd_proc * proc;
 
@@ -270,7 +270,7 @@ inline static void verb_show_sample(unsigned long offset, struct opd_map * map,
  * count is the raw value passed from the kernel.
  */
 void opd_put_image_sample(struct opd_image * image, unsigned long offset,
-			  u32 count, u32 counter)
+			  u32 counter)
 {
 	samples_db_t * sample_file;
 
@@ -284,7 +284,7 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 		}
 	}
 
-	db_insert(sample_file, offset, count);
+	db_insert(sample_file, offset, 1);
 }
 
 
@@ -303,13 +303,13 @@ void opd_put_sample(struct op_sample const * sample)
 	struct opd_proc * proc;
 
 	opd_stats[OPD_SAMPLES]++;
-	opd_stats[OPD_SAMPLE_COUNTS] += sample->count;
+	opd_stats[OPD_SAMPLE_COUNTS]++;
 
-	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8lx, pid %.6d, count %.6d\n",
-		sample->counter, sample->eip, sample->pid, sample->count);
+	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8lx, pid %.6d\n",
+		sample->counter, sample->eip, sample->pid);
 
 	if (opd_eip_is_kernel(sample->eip)) {
-		opd_handle_kernel_sample(sample->eip, sample->count, sample->counter);
+		opd_handle_kernel_sample(sample->eip, sample->counter);
 		return;
 	}
 
@@ -338,7 +338,7 @@ void opd_put_sample(struct op_sample const * sample)
 			verb_show_sample(opd_map_offset(&proc->maps[i], sample->eip),
 				&proc->maps[i], "(LAST MAP)");
 			opd_put_image_sample(proc->maps[i].image,
-				opd_map_offset(&proc->maps[i], sample->eip), sample->count, sample->counter);
+				opd_map_offset(&proc->maps[i], sample->eip), sample->counter);
 		}
 
 		opd_stats[OPD_PROCESS]++;
@@ -354,7 +354,7 @@ void opd_put_sample(struct op_sample const * sample)
 			unsigned long offset = opd_map_offset(&proc->maps[map], sample->eip);
 			if (proc->maps[map].image != NULL) {
 				verb_show_sample(offset, &proc->maps[map], "");
-				opd_put_image_sample(proc->maps[map].image, offset, sample->count, sample->counter);
+				opd_put_image_sample(proc->maps[map].image, offset, sample->counter);
 			}
 			proc->last_map = map;
 			opd_stats[OPD_PROCESS]++;
@@ -398,11 +398,11 @@ void opd_handle_fork(struct op_note const * note)
 	 * So we only create a new setup if it doesn't exist already, allowing
 	 * both the clone() and the execve() cases to work.
 	 */
-	if (opd_get_proc((u16)note->addr))
+	if (opd_get_proc(note->addr))
 		return;
 
 	/* eip is actually pid of new process */
-	proc = opd_add_proc((u16)note->addr);
+	proc = opd_add_proc(note->addr);
 
 	if (!old)
 		return;
@@ -448,7 +448,7 @@ void opd_handle_exit(struct op_note const * note)
  *
  * Drop all mapping information for the process.
  */
-void opd_handle_exec(u16 pid)
+void opd_handle_exec(u32 pid)
 {
 	struct opd_proc * proc;
 

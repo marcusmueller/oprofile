@@ -186,14 +186,16 @@ static void output_files(string const & filename,
 
 	samples_db_t dest;
 
-	db_open(&dest, filename.c_str(), DB_RDWR, sizeof(struct opd_header));
+	db_open(&dest, filename.c_str(), DB_RDWR,
+		     sizeof(struct opd_header));
 
 	for (++it ; it != filenames.end() ; ++it) {
 		samples_db_t src;
 
-		db_open(&src, it->c_str(), DB_RDONLY, sizeof(struct opd_header));
+		db_open(&src, it->c_str(), DB_RDONLY,
+			     sizeof(struct opd_header));
 
-		db_travel(&src, 0, ~0, copy_callback, &dest);
+		samples_db_travel(&src, 0, ~0, copy_callback, &dest);
 
 		db_close(&src);
 	}
@@ -221,4 +223,3 @@ int main(int argc, char const * argv[])
 
 	return EXIT_SUCCESS;
 }
-
