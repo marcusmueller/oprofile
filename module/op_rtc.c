@@ -16,6 +16,7 @@
 
 #include <linux/ioport.h>
 #include <linux/mc146818rtc.h>
+#include <asm/ptrace.h> 
  
 #include "oprofile.h"
 
@@ -49,6 +50,11 @@ static void do_rtc_interrupt(int irq, void *dev_id, struct pt_regs *regs)
 	uint cpu = op_cpu_id();
 	unsigned char intr_flags;
 	unsigned long flags; 
+
+	int usermode = user_mode(regs);
+	if (((sysctl.kernel_only || sysctl.ctr[0].kernel) && usermode)
+		|| (sysctl.ctr[0].user && !usermode))
+		return;
 
 	lock_rtc(flags);
  

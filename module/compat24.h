@@ -41,6 +41,9 @@
 #define INC_USE_COUNT_MAYBE
 #define DEC_USE_COUNT_MAYBE
 
+/* no global waitqueue spinlock in 2.4 */
+#define wq_is_lockable() (1)
+ 
 /* 2.4.3 introduced rw mmap semaphore  */
 #if VAFTER(2,4,3)
 	#define take_mmap_sem(mm) down_read(&mm->mmap_sem)

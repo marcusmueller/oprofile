@@ -16,29 +16,22 @@ o NEED_MPTABLE check should die - replace with MSR read ?
  
 o stress test, finish clean of 2.2 backport
 
-o no CONFIG_X86_LOCAL_APIC on 2.4 ?
- 
 o user request: op_time that shows /all/ available symbols (with correct %age).
   This must handle images with no symbols, so container must contain either a symbol + values,
   or a file.
  
-o more discussion of problematic code needs to go in the "interpreting" section. 
- 
-4) GUI RTC - fix crash, better interface
- 
 6) little output things (e.g. don't print unit mask) RTC
- 
-7) rtc - kernel vs. user interrupts
  
 o audit oprof_start for security...
  
 Before 1.0
 ----------
 
+ o more discussion of problematic code needs to go in the "interpreting" section. 
  o test it to hell and back
  o check documentation
  o difference between two profile session. Difference must be made at source level. 
-  (This is a part of post-prof)
+   (This is a part of post-prof)
  o improve format of oprofpp output etc.
  o profile the NMI handler code
  o verify builds (modversions, kernel versions, athlon etc.)

@@ -29,9 +29,19 @@
 #define take_mmap_sem(mm) down(&mm->mmap_sem) 
 #define release_mmap_sem(mm) up(&mm->mmap_sem)
 #define MODULE_LICENSE(l)
- 
+#define NEED_2_2_DENTRIES
 #define INC_USE_COUNT_MAYBE MOD_INC_USE_COUNT
 #define DEC_USE_COUNT_MAYBE MOD_DEC_USE_COUNT
+ 
+// FIXME: untested
+static inline int wq_is_lockable(void)
+{
+	if (spin_trylock(&waitqueue_lock)) {
+		spin_unlock(&waitqueue_lock);
+		return 1;
+	}
+	return 0;
+}
  
 extern int wind_dentries_2_2(struct dentry *dentry);
 extern uint do_path_hash_2_2(struct dentry *dentry);

@@ -86,10 +86,6 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const str
 	if (likely(!need_wakeup(cpu, data)))
 		return;
 
-	// FIXME: verify this on 2.2 !!!!
-
-	// FIXME: changes for RTC ? 
- 
 	/* locking rationale :
 	 *
 	 * other CPUs are not a race concern since we synch on oprof_wait->lock.
@@ -112,8 +108,11 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const str
 	 * Note that we use oprof_ready as our flag for whether we have initiated a
 	 * wake-up. Once the wake-up is received, the flag is reset as well as
 	 * data->nextbuf, preventing multiple wakeups.
+	 *
+	 * On 2.2, a global waitqueue_lock is used, so we must check it's not held
+	 * by the current CPU. This is done in a lossy way via spin_trylock()
 	 */
-	if (likely(regs->eflags & IF_MASK)) {
+	if (likely(regs->eflags & IF_MASK) && wq_is_lockable()) {
 		oprof_ready[cpu] = 1;
 		wake_up(&oprof_wait);
 	}
