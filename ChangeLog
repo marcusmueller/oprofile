@@ -1,3 +1,8 @@
+2003-09-04  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: mention --reset in
+	"Getting Started"
+
 2003-09-03  John Levon  <levon@movementarian.org>
 
 	* libop/op_events.c:

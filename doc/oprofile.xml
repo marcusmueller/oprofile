@@ -323,6 +323,9 @@ is necessary.
 Periodically (or on <command>opcontrol --shutdown</command> or <command>opcontrol --dump</command>)
 the profile data is written out into the <filename>/var/lib/oprofile/samples</filename> directory.
 These profile files cover shared libraries, applications, the kernel (vmlinux), and kernel modules.
+You can clear the profile data (at any time) with <command>opcontrol --reset</command>.
+</para>
+<para>
 You can get summaries of this data in a number of ways at any time. To get a summary of
 data across the entire system for all of these profiles, you can do :
 </para>
