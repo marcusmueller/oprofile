@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.56 2001/09/26 23:08:05 phil_e Exp $ */
+/* $Id: oprofpp.c,v 1.57 2001/09/27 00:46:52 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -179,7 +179,9 @@ void opp_get_options(int argc, const char **argv)
 
 	if (file) {
 		if (imagefile && samplefile) {
-			quit_error(&optcon, "too many filename on command line: you can specify at most one sample filename and one image filename.\n");
+			quit_error(&optcon, "oprofpp: too many filenames given on command line:" 
+				"you can specify at most one sample filename"
+				" and one image filename.\n");
 		}
 
 		file = opd_relative_to_absolute_path(file, NULL);
@@ -898,31 +900,6 @@ void opp_samples_files::check_event(int i)
 }
 
 /**
- * is_open - test if a samples file is open
- * @index: index of the samples file to check.
- *
- * return true if the samples file @index is open
- */ 
-bool opp_samples_files::is_open(int index) const
-{
-	return samples[index] != 0;
-}
-
-/**
- * samples_count - check if samples are available
- * @index: index of the samples files
- * @samples_nr: number of the samples to test.
- *
- * return the number of samples for samples file @index
- * at position @sample_nr. return 0 if the samples file
- * is close
- */
-uint opp_samples_files::samples_count(int index, int sample_nr) const
-{
-	return is_open(index) ? samples[index][sample_nr].count : 0;
-}
-
-/**
  * accumulate_samples - lookup samples from a vma address
  * @counter: where to accumulate the samples
  * @index: index of the samples.
@@ -1069,7 +1046,6 @@ struct gmon_hdr {
  * Dump gprof-format samples for the image specified by samplefile to
  * the file specified by gproffile.
  */
-// FIXME: too slow (and others) 
 void opp_samples_files::do_dump_gprof(struct opp_bfd* abfd) const
 {
 	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},}; 
@@ -1133,7 +1109,9 @@ void opp_samples_files::do_dump_gprof(struct opp_bfd* abfd) const
 			}
 
 			if (hist[pos] + count > (u16)-1) {
-				printf("Warning: capping sample count !\n");
+				printf("Warning: capping sample count by %u samples for "
+					"symbol \"%s\"\n", hist[pos] + count - ((u16)-1),
+					abfd->syms[i]->name);
 				hist[pos] = (u16)-1;
 			} else {
 				hist[pos] += (u16)count;

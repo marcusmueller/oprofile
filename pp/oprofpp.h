@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.19 2001/09/26 23:08:05 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.20 2001/09/27 00:46:52 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -121,8 +121,29 @@ struct opp_samples_files {
 	void do_list_symbols(opp_bfd* abfd) const;
 	void do_list_symbol(opp_bfd* abfd) const;
 
-	bool is_open(int index) const;
-	uint samples_count(int index, int sample_nr) const;
+	/**
+	 * is_open - test if a samples file is open
+	 * @index: index of the samples file to check.
+	 *
+	 * return true if the samples file @index is open
+	 */ 
+	bool is_open(int index) const {
+		return samples[index] != 0;
+	}
+ 
+	/**
+	 * samples_count - check if samples are available
+	 * @index: index of the samples files
+	 * @samples_nr: number of the samples to test.
+	 *
+	 * return the number of samples for samples file @index
+	 * at position @sample_nr. return 0 if the samples file
+	 * is close
+	 */
+	uint samples_count(int index, int sample_nr) const {
+		return is_open(index) ? samples[index][sample_nr].count : 0;
+	}
+ 
 	bool accumulate_samples(counter_array_t& counter, uint vma) const;
 
 	void output_header() const;

@@ -17,6 +17,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <numeric>
 #include <string>
 
 #include <limits.h>
@@ -367,6 +368,18 @@ const sample_entry * sample_container_impl::find_by_vma(unsigned long vma) const
 	return 0;
 }
 
+namespace {
+ 
+typedef multiset<const sample_entry *, less_by_file_loc>
+	set_sample_entry_t;
+ 
+counter_array_t & add_counts(counter_array_t & arr, const sample_entry * s)
+{
+	return arr += s->counter;
+}
+
+} // namespace anon
+	
 bool sample_container_impl::accumulate_samples(counter_array_t & counter,
 					       const string & filename, size_t linenr) const
 {
@@ -377,19 +390,13 @@ bool sample_container_impl::accumulate_samples(counter_array_t & counter,
 	sample.file_loc.filename = filename;
 	sample.file_loc.linenr = linenr;
 
-	typedef multiset<const sample_entry *, less_by_file_loc>
-		set_sample_entry_t;
 	typedef pair<set_sample_entry_t::const_iterator,
 		set_sample_entry_t::const_iterator> p_it_t;
 
 	p_it_t p_it = samples_by_file_loc.equal_range(&sample);
 
 	if (p_it.first != p_it.second) {
-		set_sample_entry_t::const_iterator it;
-		for (it = p_it.first ; it != p_it.second ; ++it) {
-			counter += (*it)->counter;
-		}
-
+		counter += std::accumulate(p_it.first, p_it.second, counter_array_t(), add_counts);
 		return true;
 	}
 
