@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.7 2000/09/07 20:15:14 moz Exp $ */
+/* $Id: opd_util.c,v 1.8 2000/09/09 19:51:03 moz Exp $ */
 
 /* for hton */ 
 #include <netinet/in.h> 
@@ -634,8 +634,10 @@ void opd_close_device(fd_t devfd)
  *
  * The driver returning %EINTR is handled to allow signals.
  * Any other error return is fatal.
+ *
+ * The number of bytes read is returned.
  */ 
-void opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
+size_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
 {
 	ssize_t count;
  
@@ -645,14 +647,11 @@ void opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
  
 		count = read(devfd, buf, size);
 
-		if (!count) {
-			fprintf(stderr,"oprofiled:opd_read_device: read 0 bytes from profile device.\n");
-			exit(1);
-		}
 		if (count<0 && errno!=EINTR) {
 			perror("oprofiled:opd_read_device: ");
 			exit(1);
 		}
  
 	} while (count < 0);
+	return count;
 }

@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.3 2000/08/01 20:36:08 moz Exp $ */
+/* $Id: opd_util.h,v 1.4 2000/09/09 19:51:03 moz Exp $ */
 
 #ifndef OPD_UTIL_H
 #define OPD_UTIL_H 
@@ -59,7 +59,7 @@ void opd_write_u32_ne(FILE *fp, u32 val);
 #define opd_try_open_device(n) opd_open_device((n),0)
 fd_t opd_open_device(const char *name, int fatal);
 void opd_close_device(fd_t devfd);
-void opd_read_device(fd_t devfd, void *buf, size_t size, int seek);
+size_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek);
 off_t opd_get_fsize(const char *file);
  
 char *opd_get_time(void);

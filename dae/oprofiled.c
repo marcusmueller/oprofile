@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.17 2000/09/07 20:15:47 moz Exp $ */
+/* $Id: oprofiled.c,v 1.18 2000/09/09 19:51:03 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -229,23 +229,25 @@ static void opd_go_daemon(void)
 	mypid = getpid();
 }
 
-void opd_do_samples(const struct op_sample *opd_buf);
+void opd_do_samples(const struct op_sample *opd_buf, size_t count);
 
 /**
  * opd_do_read - enter processing loop
  * @buf: buffer to read into
  * @size: size of buffer
  *
- * Read a full buffer from the device and process
+ * Read some of a buffer from the device and process
  * the contents.
  *
  * Never returns.
  */
 static void opd_do_read(struct op_sample *buf, size_t size)
 {
+	size_t count;
+ 
 	while (1) {
-		opd_read_device(devfd,buf,size,TRUE);
-		opd_do_samples(buf);
+		count=opd_read_device(devfd,buf,size,TRUE);
+		opd_do_samples(buf,count);
 	}
 }
 
@@ -262,10 +264,11 @@ inline static u16 opd_is_mapping(const struct op_sample *sample)
 }
 
 /**
- * opd_do_samples - process a full sample buffer
+ * opd_do_samples - process a sample buffer
  * @opd_buf: buffer to process
+ * @count: number of bytes in buffer 
  *
- * Process a buffer full of opd_buf_size samples.
+ * Process a buffer of samples.
  * The signals specified by the global variable maskset are
  * masked. Samples for oprofiled are ignored if the global
  * variable ignore_myself is set.
@@ -274,7 +277,7 @@ inline static u16 opd_is_mapping(const struct op_sample *sample)
  * to the relevant sample file. Additionally mapping and
  * process notifications are handled here.
  */
-void opd_do_samples(const struct op_sample *opd_buf)
+void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 {
 	uint i;
 
@@ -283,8 +286,7 @@ void opd_do_samples(const struct op_sample *opd_buf)
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
-	/* opd_buf->eip contains how many to read */
-	for (i=1; i <= opd_buf->eip; i++) {
+	for (i=0; i < count/sizeof(struct op_sample); i++) {
 		dprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n", i, opd_buf[i].eip, opd_buf[i].pid, opd_buf[i].count);
 
 		if (ignore_myself && opd_buf[i].pid==mypid)

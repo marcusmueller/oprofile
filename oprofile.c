@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.36 2000/09/07 20:12:47 moz Exp $ */
+/* $Id: oprofile.c,v 1.37 2000/09/09 19:51:02 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -566,7 +566,6 @@ void oprof_put_note(struct op_sample *samp)
 {
 	struct _oprof_data *data = &oprof_data[0];
 
-	//printk("in pos %d\n",data->nextbuf); 
 	/* FIXME: IPIs are expensive */
 	spin_lock(&note_lock);
 	pmc_select_stop(0);
@@ -676,13 +675,15 @@ doit:
 	} else
 		oprof_data[i].nextbuf=0;
 
-	mybuf->count = mybuf->pid = 0;
-	mybuf->eip = num;
-	memcpy(mybuf+1,oprof_data[i].buffer,max);
+	count = num*sizeof(struct op_sample);
+
+	if (count)
+		memcpy(mybuf,oprof_data[i].buffer,count);
+
 	spin_unlock(&note_lock);
 	pmc_select_start(i);
 
-	if (copy_to_user(buf, mybuf, count))
+	if (count && copy_to_user(buf, mybuf, count))
 		count = -EFAULT;
 
 	vfree(mybuf);
