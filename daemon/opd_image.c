@@ -384,7 +384,6 @@ static uint64_t get_buffer_value(void const * buffer, size_t index)
 {
 	if (kernel_pointer_size == 4) {
 		uint32_t const * lbuf = buffer;
-		fprintf(stderr, "Buffer at %u is %u\n", index,  lbuf[index]);
 		return lbuf[index];
 	} else {
 		uint64_t const * lbuf = buffer;
