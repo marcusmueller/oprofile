@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.26 2000/08/31 23:44:16 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.27 2000/09/04 22:54:12 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -207,8 +207,6 @@ int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 
 	max = OP_MAX_MAP_BUF*sizeof(u32);
 
-	//printk("Asking for %d bytes from ppos %ld.\n",count,*ppos);
-
 	if (!count)
 		return 0;
 
@@ -235,15 +233,12 @@ int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 
 	map = (struct op_mapping *)buf;
 
-	//printk("First entry: addr 0x%x, len 0x%x, num %u, offset 0x%x\n",map->addr,map->len,map->num,map->offset);
-
 	*ppos += count;
 
 	/* wrap around */
 	if (*ppos==max)
 		*ppos = 0;
 
-	//printk("Ppos now %ld.\n",*ppos);
 	return count;
 }
 
@@ -438,7 +433,6 @@ static int oprof_output_map(ulong addr, ulong len,
 	do_d_path(file->f_dentry, file->f_vfsmnt, buf, tot);
 	spin_unlock(&map_lock);
 
-	//printk("Map, final num is %d, size is %d\n",*tot,sizeof(u32)*(4+*tot));
 	return sizeof(u32)*(4+*tot);
 }
 
@@ -514,7 +508,6 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 		samp.pid = current->pid;
 		/* how many bytes to read from map buffer */
 		samp.eip = oprof_output_maps(current);
-		//printk("execve bytes to read %u\n",samp.eip);
 		oprof_out8(&samp);
 	}
 #endif
@@ -543,7 +536,6 @@ static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 	samp.pid = current->pid;
 	/* how many bytes to read from map buffer */
 	samp.eip = oprof_output_map(addr,len,offset,file,buffer);
-	//printk("out_mmap bytes to read %u\n",samp.eip);
 
 	fput(file);
 	free_page((ulong)buffer);

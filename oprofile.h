@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.14 2000/08/31 23:44:16 moz Exp $ */
+/* $Id: oprofile.h,v 1.15 2000/09/04 22:53:40 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -6,6 +6,7 @@
 #include <linux/init.h>
 #include <linux/malloc.h>
 #include <linux/delay.h>
+#include <linux/vmalloc.h>
 
 #include <asm/uaccess.h>
 #include <asm/smplock.h>

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.30 2000/08/31 23:06:03 moz Exp $ */
+/* $Id: oprofile.c,v 1.31 2000/09/04 22:53:40 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -640,7 +640,6 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	if (*ppos || count!=sizeof(struct op_sample)+max)
 		return -EINVAL;
 
-	/* FIXME: vmalloc */
 	mybuf = kmalloc(sizeof(struct op_sample)+max,GFP_KERNEL);
 	if (!mybuf)
 		return -EFAULT;
@@ -665,12 +664,12 @@ doit:
 	spin_lock(&note_lock);
 
 	num = oprof_data[i].nextbuf;
-	printk("oprofile: num %u, nextbuf %u\n",num,oprof_data[i].nextbuf);
 	/* might have overflowed. If not, set the buffer back to the start. */
 	if (num < oprof_data[i].buf_size/2)
 		num = oprof_data[i].buf_size;
 	else
 		oprof_data[i].nextbuf=0;
+	printk("oprofile: num %u, nextbuf %u\n",num,oprof_data[i].nextbuf);
 
 	mybuf->count = mybuf->pid = 0;
 	mybuf->eip = num;
@@ -727,9 +726,8 @@ static __init int parms_ok(void)
 	struct _oprof_data *data;
 	u8 ctr0_um, ctr1_um;
 
-	/* FIXME: change max when vmalloc */
-	op_check_range(op_hash_size,256,4096,"op_hash_size value %d not in range\n");
-	op_check_range(op_buf_size,512,16384,"op_buf_size value %d not in range\n");
+	op_check_range(op_hash_size,256,65536,"op_hash_size value %d not in range\n");
+	op_check_range(op_buf_size,512,65536,"op_buf_size value %d not in range\n");
 
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		data = &oprof_data[cpu];
@@ -803,7 +801,6 @@ static int __init oprof_init_data(void)
 		hash_size = (sizeof(struct op_entry)*op_hash_size);
 		buf_size = (sizeof(struct op_sample)*op_buf_size);
 
-		/* FIXME: use vmalloc not kmalloc to allow sizes bigger than 4096*32==131072 */
 		data->entries = kmalloc(hash_size,GFP_KERNEL);
 		if (!data->entries) {
 			printk("oprofile: failed to allocate hash table of %lu bytes\n",hash_size);
