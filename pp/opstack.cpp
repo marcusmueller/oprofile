@@ -15,6 +15,7 @@
 #include "opstack_options.h"
 #include "arrange_profiles.h"
 #include "callgraph_container.h"
+#include "image_errors.h"
 #include "populate.h"
 
 using namespace std;
@@ -76,6 +77,8 @@ int opstack(vector<string> const & non_options)
 
 	list<inverted_profile> iprofiles
 		= invert_profiles(classes, options::extra_found_images);
+
+	report_image_errors(iprofiles);
 
 	cg_container.populate(iprofiles);
 

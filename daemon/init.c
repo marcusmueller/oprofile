@@ -122,7 +122,7 @@ static void opd_do_samples(char const * opd_buf, ssize_t count)
  
 	opd_stats[OPD_DUMP_COUNT]++;
 
-	printf("Read buffer of %d entries.\n", (unsigned int)num);
+	verbprintf("Read buffer of %d entries.\n", (unsigned int)num);
  
 	opd_process_samples(opd_buf, num);
 

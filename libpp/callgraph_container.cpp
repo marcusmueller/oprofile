@@ -236,11 +236,14 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles)
 		parsed_filename caller_file = parse_filename(*cit);
 		string const app_name = caller_file.image;
 
-		// FIXME: there is some error checking needed here.
-		bool ok = true;
-		op_bfd caller_bfd(caller_file.lib_image, string_filter(), ok);
 		cverb << vdebug << "cg subset caller: "
 		      << caller_file.lib_image  << "\n";
+
+		bool ok = true;
+		op_bfd caller_bfd(caller_file.lib_image, string_filter(), ok);
+		if (!ok)
+			report_image_error(caller_file.lib_image,
+					   image_format_failure, false);
 
 		cg_fileset::const_iterator last;
 		for (last = fset.upper_bound(*cit); cit != last; ++cit) {
@@ -249,8 +252,12 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles)
 			      << "adding: " << callee_file.cg_image << endl;
 
 			// FIXME: there is some error checking needed here.
+			ok = true;
 			op_bfd callee_bfd(callee_file.cg_image,
 			                  string_filter(), ok);
+			if (!ok)
+				report_image_error(callee_file.cg_image,
+				   image_format_failure, false);
 
 			profile_t profile;
 			// We can't use start_offset support in profile_t, give

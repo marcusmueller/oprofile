@@ -13,39 +13,55 @@
 #include "arrange_profiles.h"
 
 #include <iostream>
+#include <set>
 
 using namespace std;
+
+namespace {
+
+set<string> reported_images_error;
+
+}
+
+void report_image_error(string const & image, image_error error, bool fatal)
+{
+	if (error == image_ok)
+		return;
+
+	if (reported_images_error.find(image) != reported_images_error.end()) {
+		reported_images_error.insert(image);
+
+		cerr << (fatal ? "error: " : "warning: ");
+		cerr << image << ' ';
+
+		switch (error) {
+			case image_not_found:
+				cerr << "could not be found.\n";
+				break;
+
+			case image_unreadable:
+				cerr << "could not be read.\n";
+				break;
+
+			case image_multiple_match:
+				cerr << "matches more than one file: "
+				    "detailed profile will not be provided.\n";
+				break;
+
+			case image_format_failure:
+				cerr << "is not in a usable binary format.\n";
+				break;
+
+			case image_ok:
+				break;
+		}
+	}
+}
 
 
 void report_image_error(inverted_profile const & profile, bool fatal)
 {
-	if (profile.error == image_ok)
-		return;
-
-	cerr << (fatal ? "error: " : "warning: ");
-	cerr << profile.image << ' ';
-
-	switch (profile.error) {
-		case image_not_found:
-			cerr << "could not be found.\n";
-			break;
-
-		case image_unreadable:
-			cerr << "could not be read.\n";
-			break;
-
-		case image_multiple_match:
-			cerr << "matches more than one file: "
-			     "detailed profile will not be provided.\n";
-			break;
-
-		case image_format_failure:
-			cerr << "is not in a usable binary format.\n";
-			break;
-
-		case image_ok:
-			break;
-	}
+	report_image_error(profile.image, profile.error, fatal);
 }
 
 

@@ -1,3 +1,12 @@
+2004-01-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/init.c: show buffer read only when --verbose
+
+	* libpp/image_errors.cpp:
+	* libpp/image_errors.h: add needed API for callgraph image error
+	* libpp/callgraph_container.cpp: use it.
+	* pp/opstack.cpp: report_image_errors()
+
 2004-01-27  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/op_bfd.cpp: Fix bfd_find_nearest_line() and separate

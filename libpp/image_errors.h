@@ -12,6 +12,7 @@
 #define IMAGE_ERRORS_H
 
 #include <list>
+#include <string>
 
 class inverted_profile;
 
@@ -23,6 +24,11 @@ enum image_error {
 	image_format_failure,
 	image_multiple_match
 };
+
+/// output why the image passed can't be read to stderr, we warranty only one
+/// error report by image name.
+void
+report_image_error(std::string const & image, image_error error, bool fatal);
 
 /// output why the image passed can't be read to stderr
 void report_image_error(inverted_profile const & profile, bool fatal);
