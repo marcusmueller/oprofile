@@ -1,9 +1,9 @@
 #!/bin/sh
-# $Id: op_start,v 1.5 2000/08/02 21:45:26 moz Exp $
+# $Id: op_start,v 1.6 2000/08/18 01:13:51 moz Exp $
 
 # quick and ugly interface
 # op_start --help and op_start --list-events have info
- 
+
 BUF_SIZE=8192
 HASH_SIZE=4096
 CTR0_TYPE=
@@ -12,43 +12,44 @@ CTR0_UM=0
 CTR1_UM=0
 CTR0_COUNT=
 CTR1_COUNT=
-CTR0_OSUSR=0 
-CTR1_OSUSR=0 
-USE_PII=0 
-IGNORE_MYSELF=0 
+CTR0_OSUSR=0
+CTR1_OSUSR=0
+USE_PII=0
+IGNORE_MYSELF=0
 DIR="/var/opd"
 MAP_FILE=
-VMLINUX= 
- 
+VMLINUX=
+
 help_string='op_start: usage:$
 Module options$
-  --buffer-size=num         number of samples in kernel buffer$
-  --hash-table-size=num     number of entries in kernel hash table$
+  --buffer-size=num            number of samples in kernel buffer$
+  --hash-table-size=num        number of entries in kernel hash table$
 $
 Module per-cpu options. Specify comma-separated values for each CPU$
-  --ctr0-event=name         symbolic event name for ctr0$
-  --ctr1-event=name         symbolic event name for ctr1$
-  --ctr0-count=val          number of events between samples for ctr0$
-  --ctr1-count=val          number of events between samples for ctr1$
-  --ctr0-unit-mask=val      unit mask for ctr0$
-  --ctr1-unit-mask=val      unit mask for ctr1$
-  --ctr0-os-usr=val         val==1 for kernel counting, ==2 for userspace only for ctr0$
-  --ctr1-os-usr=val         val==1 for kernel counting, ==2 for userspace only for ctr1$
+  --ctr0-event=name            symbolic event name for ctr0$
+  --ctr1-event=name            symbolic event name for ctr1$
+  --ctr0-count=val             number of events between samples for ctr0$
+  --ctr1-count=val             number of events between samples for ctr1$
+  --ctr0-unit-mask=val         unit mask for ctr0$
+  --ctr1-unit-mask=val         unit mask for ctr1$
+  --ctr0-os-usr=val            val==1 for kernel counting, ==2 for userspace only for ctr0$
+  --ctr1-os-usr=val            val==1 for kernel counting, ==2 for userspace only for ctr1$
 $
 Daemon options$
-  --use-cpu=[0|1|2]         0 or PPro, 1 for PII, 2 for PIII$
-  --ignore-myself=[0|1]     ignore samples for oprofiled$
-  --log-file=file           log file$
-  --base-dir=dir            base directory of daemon$
-  --samples-dir=file        output samples directory$
-  --device-file=file        profile device file$
-  --map-device-file=file    profile map device file$
-  --map-file=file           System.map for running kernel file$
-  --vmlinux=file            vmlinux kernel image$
+  --use-cpu=[0|1|2]            0 or PPro, 1 for PII, 2 for PIII$
+  --ignore-myself=[0|1]        ignore samples for oprofiled$
+  --log-file=file              log file$
+  --base-dir=dir               base directory of daemon$
+  --samples-dir=file           output samples directory$
+  --device-file=file           profile device file$
+  --map-device-file=file       profile map device file$
+  --hash-map-device-file=file  profile hash map device file$
+  --map-file=file              System.map for running kernel file$
+  --vmlinux=file               vmlinux kernel image$
 $
 General options$
-  --list-events             list event types and unit masks$
-  --help                    this message$'
+  --list-events                list event types and unit masks$
+  --help                       this message$'
 
 if [ "$1" = "--help" ]
 then
@@ -59,98 +60,104 @@ fi
 if [ "$1" = "--list-events" ]
 then
 	exec op_help
-fi 
+fi
 
 
 LOG_FILE=
 SAMPLES_DIR=
 DEVICE_FILE=
 MAP_DEVICE_FILE=
- 
+
 # get specified options
- 
+
 while [ "$#" -ne 0 ]
 do
-	arg=`echo $1 | awk -F= '{print $1}'` 
-	val=`echo $1 | awk -F= '{print $2}'` 
+	arg=`echo $1 | awk -F= '{print $1}'`
+	val=`echo $1 | awk -F= '{print $2}'`
 	if [ "$arg" = "--buffer-size" ]; then
-		BUF_SIZE=$val 
-	fi 
+		BUF_SIZE=$val
+	fi
 	if [ "$arg" = "--hash-table-size" ]; then
-		HASH_SIZE=$val 
-	fi 
+		HASH_SIZE=$val
+	fi
 	if [ "$arg" = "--ctr0-unit-mask" ]; then
-		CTR0_UM=$val 
-	fi 
+		CTR0_UM=$val
+	fi
 	if [ "$arg" = "--ctr1-unit-mask" ]; then
-		CTR1_UM=$val 
-	fi 
+		CTR1_UM=$val
+	fi
 	if [ "$arg" = "--ctr0-event" ]; then
-		CTR0_TYPE=$val 
-	fi 
+		CTR0_TYPE=$val
+	fi
 	if [ "$arg" = "--ctr1-event" ]; then
-		CTR1_TYPE=$val 
-	fi 
+		CTR1_TYPE=$val
+	fi
 	if [ "$arg" = "--ctr0-count" ]; then
-		CTR0_COUNT=$val 
-	fi 
+		CTR0_COUNT=$val
+	fi
 	if [ "$arg" = "--ctr1-count" ]; then
-		CTR1_COUNT=$val 
-	fi 
+		CTR1_COUNT=$val
+	fi
 	if [ "$arg" = "--ctr0-os-usr" ]; then
-		CTR0_OSUSR=$val 
-	fi 
+		CTR0_OSUSR=$val
+	fi
 	if [ "$arg" = "--ctr1-os-usr" ]; then
-		CTR1_OSUSR=$val 
-	fi 
+		CTR1_OSUSR=$val
+	fi
 	if [ "$arg" = "--use-cpu" ]; then
 		if [ "$val" != "" ]; then
 			USE_PII=$val
 		else
 			USE_PII=1
 		fi
-	fi 
+	fi
 	if [ "$arg" = "--ignore-myself" ]; then
 		if [ "$val" != "" ]; then
 			IGNORE_MYSELF=$val
 		else
 			IGNORE_MYSELF=1
 		fi
-	fi 
+	fi
 	if [ "$arg" = "--base-dir" ]; then
 		DIR=$val
-	fi 
+	fi
 	if [ "$arg" = "--samples-dir" ]; then
 		SAMPLES_DIR=$val
-	fi 
+	fi
 	if [ "$arg" = "--device-file" ]; then
 		DEVICE_FILE=$val
-	fi 
+	fi
 	if [ "$arg" = "--map-device-file" ]; then
 		MAP_DEVICE_FILE=$val
-	fi 
+	fi
+	if [ "$arg" = "--hash-map-device-file" ]; then
+		HASH_MAP_DEVICE_FILE=$val
+	fi
 	if [ "$arg" = "--map-file" ]; then
 		MAP_FILE=$val
-	fi 
+	fi
 	if [ "$arg" = "--vmlinux" ]; then
 		VMLINUX=$val
-	fi 
+	fi
 	shift
-done 
+done
 
-if [ "$LOG_FILE" = "" ]; then 
+if [ "$LOG_FILE" = "" ]; then
 	LOG_FILE="$DIR/oprofiled.log"
 fi
-if [ "$SAMPLES_DIR" = "" ]; then 
+if [ "$SAMPLES_DIR" = "" ]; then
 	SAMPLES_DIR="$DIR/samples/"
 fi
-if [ "$DEVICE_FILE" = "" ]; then 
+if [ "$DEVICE_FILE" = "" ]; then
 	DEVICE_FILE="$DIR/opdev"
 fi
-if [ "$MAP_DEVICE_FILE" = "" ]; then 
-	MAP_DEVICE_FILE="$DIR/opmapdev" 
+if [ "$MAP_DEVICE_FILE" = "" ]; then
+	MAP_DEVICE_FILE="$DIR/opmapdev"
 fi
- 
+if [ "$HASH_MAP_DEVICE_FILE" = "" ]; then
+	HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
+fi
+
 echo "Parameters used:"
 echo "BUF_SIZE $BUF_SIZE"
 echo "HASH_SIZE $HASH_SIZE"
@@ -161,9 +168,9 @@ echo "CTR1_UM $CTR1_UM"
 echo "CTR0_COUNT $CTR0_COUNT"
 echo "CTR1_COUNT $CTR1_COUNT"
 echo "CTR0_OSUSR $CTR0_OSUSR"
-echo "CTR1_OSUSR $CTR1_OSUSR" 
+echo "CTR1_OSUSR $CTR1_OSUSR"
 echo "USE_PII $USE_PII"
-echo "IGNORE_MYSELF $IGNORE_MYSELF" 
+echo "IGNORE_MYSELF $IGNORE_MYSELF"
 echo "DIR $DIR"
 echo "LOG_FILE $LOG_FILE"
 echo "SAMPLES_DIR $SAMPLES_DIR"
@@ -172,6 +179,21 @@ echo "MAP_DEVICE_FILE $MAP_DEVICE_FILE"
 echo "MAP_FILE $MAP_FILE"
 echo "VMLINUX $VMLINUX"
 
+>$LOG_FILE
+
+if [ -z "$MAP_FILE" ]
+then
+	echo "No map file specified."
+	echo $help_string | tr \$ '\n'
+	exit 1
+fi
+
+if [ -z "$VMLINUX" ]
+then
+	echo "No vmlinux file specified."
+	echo $help_string | tr \$ '\n'
+	exit 1
+fi
 
 if [ -c "$DEVICE_FILE" ]
 then
@@ -185,6 +207,12 @@ then
 	rm "$MAP_DEVICE_FILE"
 fi
 
+if [ -c "$HASH_MAP_DEVICE_FILE" ]
+then
+	echo "Removing $HASH_MAP_DEVICE_FILE"
+	rm "$HASH_MAP_DEVICE_FILE"
+fi
+
 if [ ! -d "$SAMPLES_DIR" ]
 then
 	mkdir "$SAMPLES_DIR"
@@ -193,28 +221,30 @@ then
 		echo "Couldn't mkdir $SAMPLES_DIR"
 		exit 1
 	fi
+else
+	cd "$SAMPLES_DIR"
+	rm -rf *
 fi
 
-MOD_ARGS="op_hash_size=$HASH_SIZE op_buf_size=$BUF_SIZE" 
+MOD_ARGS="op_hash_size=$HASH_SIZE op_buf_size=$BUF_SIZE"
 if [ "$CTR0_TYPE" != "" ]; then
 	MOD_ARGS="$MOD_ARGS op_ctr0_on=1 op_ctr0_type=$CTR0_TYPE op_ctr0_um=$CTR0_UM op_ctr0_count=$CTR0_COUNT op_ctr0_osusr=$CTR0_OSUSR"
-fi 
+fi
 if [ "$CTR1_TYPE" != "" ]; then
 	MOD_ARGS="$MOD_ARGS op_ctr1_on=1 op_ctr1_type=$CTR1_TYPE op_ctr1_um=$CTR1_UM op_ctr1_count=$CTR1_COUNT op_ctr1_osusr=$CTR1_OSUSR"
-fi 
+fi
 
-INSMODCMD="insmod oprofile.o $MOD_ARGS" 
-echo "Loading module with: $INSMODCMD"
-$INSMODCMD
+MODPROBECMD="modprobe oprofile $MOD_ARGS"
+echo "Loading module with: $MODPROBECMD"
+$MODPROBECMD
 if [ "$?" != "0" ]
 then
 	echo "Couldn't load oprofile.o module"
-	echo "Make sure it is on insmod's search path"
 	exit 1
 fi
 
 MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
- 
+
 echo "Doing mknod $DEVICE_FILE"
 mknod "$DEVICE_FILE" c $MAJOR_NR 0
 if [ "$?" != "0" ]
@@ -233,7 +263,8 @@ fi
 
 OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$USE_PII --ignore-myself=$IGNORE_MYSELF \
 	--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
-	--device-file=$DEVICE_FILE --map-device-file=$MAP_DEVICE_FILE --vmlinux=$VMLINUX"
+	--device-file=$DEVICE_FILE --map-device-file=$MAP_DEVICE_FILE --hash-map-device-file \
+	--vmlinux=$VMLINUX"
 
 if [ "$CTR0_TYPE" != "" ]; then
 	OPD_ARGS="$OPD_ARGS --ctr0-event=$CTR0_TYPE --ctr0-unit-mask=$CTR0_UM"

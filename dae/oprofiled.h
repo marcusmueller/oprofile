@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.7 2000/08/16 20:16:52 moz Exp $ */
+/* $Id: oprofiled.h,v 1.8 2000/08/18 01:13:51 moz Exp $ */
 
 #ifndef OPROFILED_H
 #define OPROFILED_H
@@ -74,6 +74,15 @@
 #define OP_COUNTER (1U<<14)
 
 #define OP_COUNT_MASK ((1U<<(16-OP_BITS))-1U)
+
+/* nr. entries in hash map, prime */
+#define OP_HASH_MAP_NR 1023
+
+/* size of hash map entries */
+#define OP_HASH_LINE 128
+
+/* size of hash map in bytes */
+#define OP_HASH_MAP_SIZE OP_HASH_LINE*OP_HASH_MAP_NR
 
 /* mapping notification types */ 
 /* fork(),vfork(),clone() */

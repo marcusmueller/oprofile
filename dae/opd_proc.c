@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.13 2000/08/04 02:16:02 moz Exp $ */
+/* $Id: opd_proc.c,v 1.14 2000/08/18 01:13:51 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -19,6 +19,7 @@ extern u8 ctr0_type_val;
 extern u8 ctr1_type_val;
 extern int ctr0_um;
 extern int ctr1_um;
+extern char **hashmap;
  
 /* LRU list of processes */ 
 static struct opd_proc *opd_procs;
@@ -82,7 +83,7 @@ void opd_alarm(int val __attribute__((unused)))
 		(double)opd_stats[OPD_PROC_QUEUE_DEPTH]/(double)opd_stats[OPD_PROC_QUEUE_ACCESS]);
 	printf("Average depth of iteration through mapping array: %f\n",
 		(double)opd_stats[OPD_MAP_ARRAY_DEPTH]/(double)opd_stats[OPD_MAP_ARRAY_DEPTH]);
-	printf("Nr. sample dumps %lu\n",opd_stats[OPD_DUMP_COUNT]); 
+	printf("Nr. sample dumps: %lu\n",opd_stats[OPD_DUMP_COUNT]); 
  
 	for (i=0;i<OPD_MAX_STATS;i++)
 		opd_stats[i]=0;
@@ -123,11 +124,6 @@ void opd_read_system_map(const char *filename)
 	char *line;
 	char *cp; 
 
-	if (streq("",filename)) {
-		printf("oprofiled: no System.map specified, cannot resolve kernel modules.\n"); 
-		return; 
-	}
- 
 	fp = opd_open_file(filename,"r");
 
         do {
@@ -242,7 +238,7 @@ inline static u16 opd_get_count(const u16 count)
  * opd_get_counter - retrieve counter type
  * @count: raw counter value
  *
- * Returns postive for counter 1, zero for counter 0.
+ * Returns positive for counter 1, zero for counter 0.
  */ 
 inline static u16 opd_get_counter(const u16 count)
 {
@@ -356,7 +352,7 @@ inline static int bstreq(const char *str1, const char *str2)
  * opd_find_image - find an image
  * @name: file name of image to find
  *
- * Returns the image * for the file specified by @name, or 0.
+ * Returns the image pointer for the file specified by @name, or 0.
  */
 static struct opd_image *opd_find_image(const char *name)
 {
@@ -657,6 +653,8 @@ static struct opd_module *opd_get_module(char *name)
  *
  * Currently the image file "objectfile" is stored, and details of
  * ".text" sections.
+ *
+ * FIXME: use query_module instead ?
  */
 static void opd_get_module_info(void)
 {
@@ -678,7 +676,6 @@ static void opd_get_module_info(void)
 
 	do {
 		line = opd_get_line(fp);
-		/* FIXME: bug present in 2.4.0-test3 - verify */ 
 		if (streq("",line) && !feof(fp)) {
 			opd_free(line);
 			continue;
@@ -811,7 +808,7 @@ retry:
  * output to the relevant image file.
  *
  * This function requires the global variable
- * got_system_map to be %TRUE to handle module samples.
+ * got_system_map to beTRUE to handle module samples.
  */
 static void opd_handle_kernel_sample(u32 eip, u16 count)
 {
@@ -927,6 +924,8 @@ void opd_handle_fork(const struct op_sample *sample)
 
 	old = opd_get_proc(sample->pid);
 
+	printf("Handle fork %u\n",sample->pid);
+
 	if (!old) {
 		printf("Told that non-existent process %u just forked.\n",sample->pid);
 		return;
@@ -949,7 +948,7 @@ void opd_handle_fork(const struct op_sample *sample)
  * @sample: sample structure from kernel
  *
  * Deal with an exit() notification by setting the flag "dead"
- * on a process. These will be later cleaned up by %SIGALRM 
+ * on a process. These will be later cleaned up bySIGALRM 
  * handler.
  *
  * sample->pid contains the process id of the exited process.
@@ -957,6 +956,8 @@ void opd_handle_fork(const struct op_sample *sample)
 void opd_handle_exit(const struct op_sample *sample)
 {
 	struct opd_proc *proc;
+
+	printf("proc %u just exited.\n",sample->pid);
 
 	proc = opd_get_proc(sample->pid);
 	if (proc)
@@ -969,15 +970,17 @@ struct op_mapping {
 	u32 addr;
 	u32 len;
 	u32 offset;
-	char path[0];
-} __attribute__((__packed__,__aligned__(16)));
+	u32 num;
+} __attribute__((__packed__));
  
+#define hash_access(hash) (hashmap[hash*OP_HASH_LINE])
+
 /**
  * opd_handle_mapping - deal with mapping notification
  * @sample: sample structure from kernel
  *
- * Deal with a notification that a process has mapped in
- * a new executable file. The mapping information is read
+ * Deal with one or more notifications that a process has mapped 
+ * in a new executable file. The mapping information is read
  * from the mapping device and added to the process structure.
  *
  * sample->pid contains the process id of the process.
@@ -986,9 +989,13 @@ struct op_mapping {
  */
 void opd_handle_mapping(const struct op_sample *sample)
 {
+	static char file[PATH_MAX];
 	struct opd_proc *proc;
 	struct op_mapping *mapping;
-	ssize_t size; 
+	u32 *buf;
+	uint pos;
+	uint hash;
+	ssize_t size;
 
 	proc = opd_get_proc(sample->pid);
 
@@ -998,21 +1005,53 @@ void opd_handle_mapping(const struct op_sample *sample)
 	}
 
 	/* eip is actually nr. of bytes to read from map device */
-	size = (ssize_t)sample->eip; 
+	size = (ssize_t)sample->eip;
+	if (size<sizeof(u32)*4) {
+		fprintf(stderr,"oprofiled: size is less than 32 : %lu\n", size);
+		exit(1);
+	}
 
-	mapping = opd_malloc(size+1);
+	buf = opd_malloc(size);
+	pos = 0;
 
-	opd_read_device(mapdevfd,mapping,size,0);
-	/* string might need terminating */
-	*(((char *)&mapping)+size) = '\0';
-	printf("Mapping from 0x%x, size 0x%x, offset 0x%x, of file $%s$\n",mapping->addr, mapping->len, mapping->offset,
-		mapping->path);
+	opd_read_device(mapdevfd,buf,size,0);
 
-	opd_put_mapping(proc,opd_get_image(mapping->path,0),mapping->addr, mapping->offset, mapping->addr+mapping->len);
-	opd_free(mapping); 
-}
+	while (pos < size/(sizeof u32)) { 
+		mapping = (struct op_mapping *)&buf[pos];
+		pos += 4;
  
-static void opd_get_ascii_maps(struct opd_proc *proc);
+		if (!mapping->num) {
+			fprintf(stderr,"oprofiled: Empty map.\n");
+			opd_free(buf);
+			return;
+		}
+ 
+		file[0]='\0';
+ 
+		while (mapping->num--) {
+			hash = buf[pos++];
+			if (hash>=OP_HASH_MAP_NR) {
+				fprintf(stderr,"Hash map value out of range.\n");
+				exit(1);
+			}
+
+			strcat(file,"/");
+
+			if (strlen(hash_access(hash))+1 >= PATH_MAX) {
+				fprintf(stderr,"String \"%s\" too large.\n",file);
+				exit(1);
+			}
+
+			strcat(file,hash_access(hash));
+		}
+
+		printf("Mapping from 0x%x, size 0x%x, offset 0x%x, of file $%s$\n",
+			mapping->addr, mapping->len, mapping->offset, file);
+
+		opd_put_mapping(proc,opd_get_image(file,0),mapping->addr, mapping->offset, mapping->addr+mapping->len);
+	}
+	opd_free(buf);
+}
  
 /**
  * opd_handle_drop_mappings - deal with notification of dropped mappings
@@ -1025,6 +1064,8 @@ static void opd_get_ascii_maps(struct opd_proc *proc);
 void opd_handle_drop_mappings(const struct op_sample *sample)
 {
 	struct opd_proc *proc;
+
+	printf("Told to drop mappings for proc %u.\n",sample->pid);
 
 	proc = opd_get_proc(sample->pid);
 	if (proc)
@@ -1100,8 +1141,6 @@ static void opd_get_ascii_maps(struct opd_proc *proc)
 	char mapsfile[20]="/proc/";
 	char *line; 
 
-	opd_init_maps(proc);
-
 	snprintf(mapsfile+6, 6, "%hu", proc->pid);
 	strcat(mapsfile,"/maps");
  
@@ -1111,7 +1150,6 @@ static void opd_get_ascii_maps(struct opd_proc *proc)
  
 	do {
 		line = opd_get_line(fp);
-		/* FIXME: ? currently eof check is necessary due to 2.4.0-test3 */
 		if (streq(line,"") && feof(fp)) {
 			opd_free(line);
 			break;
@@ -1142,6 +1180,7 @@ void opd_get_ascii_procs(void)
 
 	while ((dirent = readdir(dir))) {
 		if (sscanf(dirent->d_name, "%hu", &pid)==1) {
+			printf("ASCII added %u.\n",pid);
 			proc = opd_add_proc(pid);
 			opd_get_ascii_maps(proc);
 		}
