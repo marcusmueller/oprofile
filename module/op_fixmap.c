@@ -34,12 +34,41 @@ static void set_pte_phys(ulong vaddr, ulong phys)
 	__flush_tlb_one(vaddr);
 }
 
-void make_fixmap(void)
+static void alloc_fixmap(void)
 {
 	/* dirty hack :/ */
-	/* FIXME: memory leak at unload ... */
 	virt_apic_base = (ulong)vmalloc(4096);
 	set_pte_phys(virt_apic_base, APIC_DEFAULT_PHYS_BASE);
+}
+
+static void free_fixmap(void)
+{
+	ulong vaddr;
+	pgd_t *pgd;
+	pmd_t *pmd;
+	pte_t *pte;
+
+	vaddr = virt_apic_base;
+	if (!vaddr)
+		return;
+
+	pgd = pgd_offset_k(vaddr);
+	if (!pgd)
+		return;
+	
+	pmd = pmd_offset(pgd, vaddr);
+	if (!pmd)
+		return;
+
+	pte = pte_offset(pmd, vaddr);
+	if (!pte)
+		return;
+
+	/* FIXME: is this the right way */
+	pte_clear(pte);
+	__flush_tlb_one(vaddr);
+
+	vfree((void*)virt_apic_base);
 }
  
 /*
@@ -50,7 +79,7 @@ void make_fixmap(void)
  * Some kernel versions/configs won't map the APIC at all, in
  * which case we need to hack it ourselves.
  */
-void do_fixmap(void)
+void fixmap_setup(void)
 {
 #if V_BEFORE(2,4,10)
 #if defined(CONFIG_X86_LOCAL_APIC)
@@ -62,13 +91,30 @@ void do_fixmap(void)
 		printk(KERN_INFO "oprofile: remapping local APIC.\n");
 	}
 #else
-	make_fixmap();
+	alloc_fixmap();
 	printk(KERN_INFO "oprofile: mapping APIC.\n"); 
 #endif /* CONFIG_X86_LOCAL_APIC */
 #else
 #if !defined(CONFIG_X86_LOCAL_APIC)
-	make_fixmap();
+	alloc_fixmap();
 	printk(KERN_INFO "oprofile: mapping APIC.\n"); 
+#endif
+#endif
+}
+
+void fixmap_restore(void)
+{
+#if V_BEFORE(2,4,10)
+#if defined(CONFIG_X86_LOCAL_APIC)
+	/* Nothing to do */
+#else
+	free_fixmap();
+	printk(KERN_INFO "oprofile: freeing APIC mapping.\n"); 
+#endif /* CONFIG_X86_LOCAL_APIC */
+#else
+#if !defined(CONFIG_X86_LOCAL_APIC)
+	free_fixmap();
+	printk(KERN_INFO "oprofile: freeing APIC mapping.\n"); 
 #endif
 #endif
 }

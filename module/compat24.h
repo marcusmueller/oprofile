@@ -40,7 +40,6 @@
 #define unlock_execve() do { } while (0)
 #define lock_out_mmap() do { } while (0)
 #define unlock_out_mmap() do { } while (0)
-#define op_nmi op_nmi24
 #define HAVE_MMAP2
 #define HAVE_FILE_OPERATIONS_OWNER
 

@@ -50,7 +50,7 @@
 	.long 3b,6b;	\
 .previous
 
-ENTRY(op_nmi24)
+ENTRY(op_nmi)
         pushl %eax
         SAVE_ALL
         movl %esp,%edx

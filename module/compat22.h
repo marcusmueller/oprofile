@@ -32,7 +32,6 @@
 #define NEED_2_2_DENTRIES
 #define INC_USE_COUNT_MAYBE MOD_INC_USE_COUNT
 #define DEC_USE_COUNT_MAYBE MOD_DEC_USE_COUNT
-#define op_nmi op_nmi22
 #define lock_execve lock_kernel
 #define unlock_execve unlock_kernel
  

@@ -195,7 +195,7 @@ int __init apic_setup(void)
 	if (!check_cpu_ok())
 		goto nodev;
 
-	do_fixmap();
+	fixmap_setup();
 
 	switch (enable_apic()) {
 		case 0:
@@ -216,4 +216,9 @@ nodev:
 	printk(KERN_WARNING "Your CPU does not have a local APIC, e.g. "
 	       "mobile P6. Falling back to RTC mode.\n");
 	return -ENODEV;
+}
+
+void apic_restore(void)
+{
+	fixmap_restore();
 }

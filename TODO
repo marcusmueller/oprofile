@@ -1,7 +1,7 @@
 0.1 task list
 ---------------
 
- o fix vmalloc memleak in op_fixmap ! 
+ o review free_fixmap (already tested)
  o get symbol size via elf instead of bfd
  o add support for samples not belonging to any symbols probably through
    artificially created symbols

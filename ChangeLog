@@ -1,3 +1,16 @@
+2002-02-13  Philippe Elie  <ph_e@club-internet.fr>
+
+	* TODO: update
+
+	* module/compat22.h:
+	* module/compat24.h:
+	* module/oprofile_nmi.S: small tidy
+
+	* module/op_apic.c:
+	* module/op_fixmap.c:
+	* module/op_nmi.c:
+	* module/oprofile.h: avoid memory leak of apic mapping
+
 2002-02-12  Philippe Elie  <ph_e@club-internet.fr>
 
 	* TODO: update
