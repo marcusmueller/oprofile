@@ -25,7 +25,7 @@
 	* utils/op_help: implement --check_events, event validation
 	and counter allocation
 
-	* utils/opcontrol: use the above, implement --default=event
+	* utils/opcontrol: use the above, implement --event=default
 
 2003-06-14  John Levon  <levon@movementarian.org>
 
@@ -254,6 +254,7 @@
 	* libop/op_config_24.h: ... here
 
 	* libop/op_hw_config.h: remove unused OP_COUNT_MAX
+
 2003-06-03  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/op_header.cpp:
@@ -1209,7 +1210,7 @@
 
 	* pp/oprofpp.cpp pp/oprofpp_options.cpp pp/oprofpp_options.h:
 	* pp/op_time.cpp pp/op_time_options.cpp pp/op_time_options.h:
-	* pp/op_to_source.cpp pp/op_to_source_options.cpp
+	* pp/op_to_source.cpp pp/op_to_source_options.cpp:
 	* pp/op_to_source_options.h pp/op_merge.cpp: removed files
 
 	* pp/Makefile.am: update
