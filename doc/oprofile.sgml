@@ -863,8 +863,10 @@ All post profile tools accept the following options
 		<term><option>&mdash;version</option></term>
 		<term><option>-v</option></term>
 		<listitem><para>
-<!-- FIXME: check than all utilities show version nr in the same way and document it -->
-		Show the version number of oprofile
+		Show the version number of oprofile on the form:
+<screen>
+app_name:  oprofile 0.1cvs compiled on Mar  1 2002 20:40:40
+</screen>
 		</para></listitem>
 	</varlistentry>
 </variablelist>

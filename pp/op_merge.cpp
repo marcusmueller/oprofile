@@ -69,8 +69,7 @@ static void get_options(int argc, char const * argv[], vector<string> & images)
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
-		printf("op_merge: %s : " VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n", argv[0]);
-		exit(EXIT_SUCCESS);
+		show_version(argv[0]);
 	}
 
 	const char * file;

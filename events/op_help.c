@@ -1,4 +1,4 @@
-/* $Id: op_help.c,v 1.4 2001/12/31 14:45:33 movement Exp $ */
+/* $Id: op_help.c,v 1.5 2002/03/01 21:30:02 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -114,9 +114,7 @@ static void get_options(int argc, char const * argv[])
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
-		printf("%s : " VERSION_STRING " compiled on "
-		       __DATE__ " " __TIME__ "\n", argv[0]);
-		exit(EXIT_SUCCESS);
+		show_version(argv[0]);
 	}
 
 	/* non-option, must be a valid event name */

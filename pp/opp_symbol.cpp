@@ -17,42 +17,6 @@ using std::endl;
 extern uint op_nr_counters;
 
 
-#include <stdio.h>
-/**
- * backward compatibility until the OutputSymbol class is ok, remove it in
- * future
- */
-void output_symbol(const symbol_entry* symb, bool show_image_name,
-		   bool output_linenr_info, int counter, u32 total_count)
-{
-	if (show_image_name)
-		printf("%s ", symb->sample.file_loc.image_name.c_str());
-
-	if (output_linenr_info)
-		printf("%s:%u ",
-		       symb->sample.file_loc.filename.c_str(),
-		       symb->sample.file_loc.linenr);
-
-	int const is_anon = symb->name[0] == '?';
-
-	if (!is_anon)
-		printf("%s", symb->name.c_str());
-
-	u32 count = symb->sample.counter[counter];
-
-	if (count) {
-		if (!is_anon)
-			printf("[0x%.8lx]: ", symb->sample.vma);
-		else
-			printf("(no symbols) "); 
-
-		printf("%2.4f%% (%u samples)\n", 
-		       (((double)count) / total_count)*100.0, count);
-	} else {
-		printf(" (0 samples)\n");
-	}
-}
-
 struct output_option {
 	char option;
 	OutSymbFlag flag;
@@ -73,7 +37,7 @@ static const output_option output_options[] = {
 	{ 'L', osf_short_linenr_info, "base name of source file and line nr" },
 	{ 'i', osf_image_name, "image name" },
 	{ 'I', osf_short_image_name, "base name of image name" },
-	{ 'h', osf_header, "header" },
+	{ 'h', osf_no_header, "header" },
 	{ 'd', osf_details, "detailed samples for each selected symbol" }
 };
 
@@ -207,7 +171,6 @@ void OutputSymbol::OutputHeaderField(std::ostream & out, OutSymbFlag fl)
 {
 	const field_description * field = GetFieldDescr(fl);
 	if (field) {
-		// TODO: center the field header_name ?
 		out << field->header_name;
 
 		size_t sz = 1;	// at least one separator char
@@ -222,24 +185,15 @@ void OutputSymbol::OutputHeaderField(std::ostream & out, OutSymbFlag fl)
 // the next field not the current to avoid filling with blank the eol.
 void OutputSymbol::Output(ostream & out, const symbol_entry * symb)
 {
-#if 0
-	// the old behavior.
-	output_symbol(symb, flags & osf_image_name, flags & osf_linenr_info,
-		      counter, total_count);
-#else
 	DoOutput(out, symb->name, symb->sample, flags);
 
 	if (flags & osf_details) {
 		OutputDetails(out, symb);
 	}
-#endif
 }
 
 void OutputSymbol::OutputDetails(ostream & out, const symbol_entry * symb)
 {
-	// FIXME: obviously we must shrink some field ie do not repeat
-	// the symb name etc. but must we output a sub header here ?
-
 	// We need to save the accumulated count and to restore it on
 	// exit so global cumulation and detailed cumulation are separate
 	u32 temp_total_count[OP_MAX_COUNTERS];
@@ -322,7 +276,7 @@ void OutputSymbol::OutputHeader(ostream & out)
 
 	first_output = false;
 
-	if ((flags & osf_header) == 0) {
+	if ((flags & osf_no_header) != 0) {
 		return;
 	}
 

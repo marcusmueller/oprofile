@@ -102,7 +102,7 @@ enum OutSymbFlag {
 			osf_percent + osf_percent_cumulated +
 			osf_vma + osf_linenr_info + osf_short_linenr_info,
 	osf_show_all_counters = 1 << 14,// for oprofpp -L
-	osf_header = 1 << 15,
+	osf_no_header = 1 << 15,
 	// special format modifier: output all field selected separated by a
 	// single space. This is intended to run post profile tools as
 	// front-end of other tools which treat samples information.

@@ -22,9 +22,8 @@ extern unsigned long opd_stats[];
 extern struct opd_image * kernel_image;
 
 /* kernel and module support */
-static u32 kernel_start;
+u32 kernel_start;
 static u32 kernel_end;
-static char got_system_map=0;
 static struct opd_module opd_modules[OPD_MAX_MODULES];
 static unsigned int nr_modules=0;
 
@@ -37,8 +36,8 @@ static unsigned int nr_modules=0;
  *
  * If the file is parsed correctly, the global variables
  * kernel_start and kernel_end are set to the correct values for the
- * text section of the mainline kernel, and the global got_system_map
- * is set to %TRUE.
+ * text section of the mainline kernel else kernel_start is set to
+ * KERNEL_VMA_OFFSET and kernel_end to infinite
  *
  * Note that kernel modules will have EIP values above the value of
  * kernel_end.
@@ -70,8 +69,10 @@ void opd_read_system_map(const char *filename)
 		}
 	}
 
-	if (kernel_start && kernel_end)
-		got_system_map = TRUE;
+	if (!kernel_start)
+		kernel_start = KERNEL_VMA_OFFSET;
+	if (!kernel_end)
+		kernel_end = (u32)-1;
 
 	opd_close_file(fp);
 }
@@ -391,27 +392,17 @@ static void opd_handle_module_sample(u32 eip, u16 count)
  * Handle a sample in kernel address space or in a module. The sample is
  * output to the relevant image file.
  *
- * This function requires the global variable
- * got_system_map to be %TRUE to handle module samples.
+ * This function requires the global variable kernel_end to be known
+ * through the System.map to handle module samples.
  */
 void opd_handle_kernel_sample(u32 eip, u16 count)
 {
-	/* TODO: simplify this code, if we have not System.mapp just set
-	 * kernel_start to KERNEL_VMA_OFFSET and kernel end to infinite ? */
-	/* yes, why not ? */
-	if (got_system_map) {
-		if (eip < kernel_end) {
-			opd_stats[OPD_KERNEL]++;
-			opd_put_image_sample(kernel_image, eip - kernel_start, count);
-			return;
-		}
-
-		/* in a module */
-		opd_handle_module_sample(eip, count);
+	if (eip < kernel_end) {
+		opd_stats[OPD_KERNEL]++;
+		opd_put_image_sample(kernel_image, eip - kernel_start, count);
 		return;
 	}
 
-	opd_stats[OPD_KERNEL]++;
-	opd_put_image_sample(kernel_image, eip - KERNEL_VMA_OFFSET, count);
-	return;
+	/* in a module */
+	opd_handle_module_sample(eip, count);
 }

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.106 2002/03/01 19:23:20 movement Exp $ */
+/* $Id: opd_proc.c,v 1.107 2002/03/01 21:30:02 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -118,12 +118,10 @@ void opd_alarm(int val __attribute__((unused)))
 		}
 	}
 
-	j = 0;
 	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
 		proc = opd_procs[i];
 
 		while (proc) {
-			++j;
 			next = proc->next;
 			// delay death whilst its still being accessed
 			if (proc->dead) {
@@ -151,8 +149,6 @@ void opd_alarm(int val __attribute__((unused)))
  * check than the last (session) events settings match the
  * currents
  */
-/* TODO: opd_handle_old_sample_file and opd_handle_old_sample_files
- * can be simplified and improved */
 static void opd_handle_old_sample_file(const char * mangled, time_t mtime)
 {
 	struct opd_header oldheader; 
@@ -236,7 +232,7 @@ static void opd_handle_old_sample_files(const struct opd_image * image)
  *
  * Initialise an opd_image struct for the image @image
  * without opening the associated samples files. At return
- * the @image is partially initialized initialized.
+ * the @image is partially initialized.
  */
 static void opd_init_image(struct opd_image * image, const char * name,
 			   int hash, const char * app_name, int kernel)
@@ -421,8 +417,6 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 				exit(EXIT_FAILURE);
 			}
 
-			
-			/* list_del is sufficient here but ... */
 			list_del_init(pos);
 
 			verbprintf("unmamp at %p for %lu byte\n", temp->header, temp->len);
@@ -988,11 +982,12 @@ inline static u32 opd_map_offset(struct opd_map *map, u32 eip)
  * @eip: EIP value
  *
  * Returns %TRUE if @eip is in the address space starting at
- * %KERNEL_VMA_OFFSET, %FALSE otherwise.
+ * kernel_start, %FALSE otherwise.
  */
 inline static int opd_eip_is_kernel(u32 eip)
 {
-	return (eip >= KERNEL_VMA_OFFSET);
+	extern u32 kernel_start;
+	return (eip >= kernel_start);
 }
 
 /**

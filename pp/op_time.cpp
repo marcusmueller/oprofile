@@ -118,9 +118,7 @@ static void get_options(int argc, char const * argv[])
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
-		printf("%s: " VERSION_STRING " compiled on "
-		       __DATE__ " " __TIME__ "\n", argv[0]);
-		exit(EXIT_SUCCESS);
+		show_version(argv[0]);
 	}
 
 	// non-option file, must be valid directory name
@@ -131,12 +129,11 @@ static void get_options(int argc, char const * argv[])
 	if (counter == -1)
 		counter = 0;
 
-	/* TODO: tidy this */
 	if (show_image_name)
 		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_image_name);
 
 	if (output_format == 0) {
-		output_format = "vspnh";
+		output_format = "vspn";
 	} else {
 		if (!list_symbols) {
 			quit_error(optcon, "op_time: --output-format can be used only with --list-symbols.\n");

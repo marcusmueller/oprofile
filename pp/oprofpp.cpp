@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.26 2002/02/28 21:16:29 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.27 2002/03/01 21:30:02 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -44,8 +44,6 @@ static char * output_format;
 
 static OutSymbFlag output_format_flags;
 
-// FIXME: remove option show-shared-libs/output-linenr-info/demangle since
-//  obtained with --output_format ?
 static poptOption options[] = {
 	{ "samples-file", 'f', POPT_ARG_STRING, &samplefile, 0, "image sample file", "file", },
 	{ "image-file", 'i', POPT_ARG_STRING, &imagefile, 0, "image file", "file", },
@@ -92,8 +90,7 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
-		printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
-		exit(EXIT_SUCCESS);
+		show_version(argv[0]);
 	}
  
 	if (!list_all_symbols_details && !list_symbols && 
@@ -116,7 +113,7 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_linenr_info);
 
 	if (output_format == 0) {
-		output_format = "vspnh";
+		output_format = "vspn";
 	} else {
 		if (!list_symbols && !list_all_symbols_details && !symbol) {
 			quit_error(optcon, "oprofpp: --output-format can be used only without --list-symbols or --list-all-symbols-details.\n");
@@ -209,30 +206,6 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
  */
 void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 {
-#if 0
-	u32 start, end;
-	u32 j;
-
-	int i = abfd.symbol_index(symbol);
-	if (i < 0) {
-		fprintf(stderr, "oprofpp: symbol \"%s\" not found in image file.\n", symbol);
-		return;
-	}
-
-	// TODO: use OutputSymbol here by implementing show details.
-	printf("Samples for symbol \"%s\" in image %s\n", symbol, abfd.ibfd->filename);
-
-	abfd.get_symbol_range(i, start, end);
-	for (j = start; j < end; j++) {
-		uint sample_count = samples_count(counter, j);
-		if (!sample_count)
-			continue;
-
-		abfd.output_linenr(i, j);
-		printf("%s+%x/%x:\t%u\n", symbol, abfd.sym_offset(i, j), 
-		       end - start, sample_count);
-	}
-#else
 	int i = abfd.symbol_index(symbol);
 	if (i < 0) {
 		cerr << "oprofpp: symbol \"" << symbol
@@ -255,11 +228,9 @@ void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 	OutputSymbol out(samples, counter);
 
 	out.SetFlag(output_format_flags);
-//	out.SetFlag(osf_show_all_counters);
 	out.SetFlag(osf_details);
 
 	out.Output(cout, symb);
-#endif
 }
 
 #define GMON_VERSION 1

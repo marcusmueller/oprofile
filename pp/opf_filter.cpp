@@ -914,8 +914,7 @@ static void get_options(int argc, char const * argv[],
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
-		printf("op_to_source: %s : " VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n", argv[0]);
-		exit(EXIT_SUCCESS);
+		show_version(argv[0]);
 	}
 
 	if (with_more_than_samples && until_more_than_samples) {

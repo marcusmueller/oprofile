@@ -1,3 +1,24 @@
+2002-03-01  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/opd_kernel.c:
+	* dae/opd_proc.c: simplify handling of kernel samples
+
+	* pp/opt_time.cpp:
+	* pp/opp_symbol.cpp:
+	* pp/opp_symbol.h:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp.h: tidy, gives a negative form to header output
+	  format
+
+	* version.h.in: new macro show_version() to output version
+	* doc/oprofile.sgml: document it
+	* dae/oprofiled.c:
+	* events/op_help.c:
+	* pp/op_merge.cpp:
+	* pp/op_time.cpp:
+	* pp/opf_filter.cpp:
+	* pp/oprofpp.cpp: use it
+
 2002-03-01  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update
@@ -7,7 +28,7 @@
  
 2002-02-27  Philippe Elie  <ph_e@club-internet.fr>
 
-	* TODO: upadte:
+	* TODO: upadte
 
 	* doc/oprofile.1.in:
 	* doc/oprofile.sgml:

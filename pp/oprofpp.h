@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.39 2002/02/26 21:18:30 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.40 2002/03/01 21:30:02 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -73,10 +73,6 @@ void quit_error(poptContext optcon, char const *err);
 std::string demangle_filename(const std::string & samples_filename);
 bool is_excluded_symbol(const std::string & symbol);
 void check_headers(const opd_header * f1, const opd_header * f2);
-
-// TODO: near to be obsolete
-void output_symbol(const symbol_entry* symb, bool show_image_name,
-		   bool output_linenr_info, int counter, u32 total_count);
 
 // defined in oprofpp_util.cpp
 extern int verbose;
