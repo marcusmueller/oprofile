@@ -3,7 +3,7 @@ low-overhead system-wide profiler.
 
 You can find some documentation in the doc/ directory.
 
-Please visit the oprofile website at : http://oprofile.sf.net/ 
+Please visit the oprofile website at : http://oprofile.sf.net/
 
 oprofile was written by John Levon <levon@movementarian.org>
 and Philippe Elie <phil.el@wanadoo.fr>.
@@ -18,8 +18,8 @@ Will Cohen <wcohen@redhat.com> integrated the ia64 driver into the
 oprofile release, and contributed bug fixes and several cleanups.
 
 Graydon Hoare <graydon@redhat.com> provided P4 port, bug fixes and cleanups.
- 
-Other contributors are listed in the ChangeLog. 
+
+Other contributors are listed in the ChangeLog.
 
 Building
 --------

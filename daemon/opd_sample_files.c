@@ -51,7 +51,7 @@ char * opd_mangle_filename(struct opd_image const * image, int counter,
 	values.flags = 0;
 	if (image->kernel)
 		values.flags |= MANGLE_KERNEL;
-	if  (dep_name && strcmp(dep_name, image->name))
+	if (dep_name && strcmp(dep_name, image->name))
 		values.flags |= MANGLE_DEP_NAME;
 
 	if (cpu_type != CPU_TIMER_INT)
@@ -73,6 +73,7 @@ char * opd_mangle_filename(struct opd_image const * image, int counter,
 
 	return mangled;
 }
+
 
 /**
  * opd_handle_old_sample_file - deal with old sample file
