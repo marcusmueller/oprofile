@@ -189,31 +189,6 @@ support for your kernel (this is automatically enabled for SMP kernels).
 
 </sect1>
 
-<sect1 id="upgrading">
-<title>Upgrading the version of oprofile</title>
-<para>
-If you upgrade the version of oprofile you must first follow the instructions in <xref linkend="install" />.
-</para>
-<para>
-<!-- FIXME: what to do ? -->
-Oprofile is alpha software, and therefore does not guarantee that the file format of samples is compatible 
-with the format in older versions.
-If you want to keep old sample files you need to use the <command>oprof_convert</command> utility.
-In any case you should backup your old sample files before processing the files in case
-something bad occurs. This processing is not needed for all version changes - for now the only conversion needed
-is between the alpha 0.0.3 version and 0.0.4 or above. If no conversion is needed <command>oprof_convert</command> does
-nothing (successfully).
-</para>
-<para><command>oprof_convert</command> usage :</para>
-<para>
-<command>oprof_convert</command> [<option>--help</option>] [<option>--version</option>] <filename>filename</filename> [<filename>filenames</filename>]
-</para>
-<para>
-Will convert from your version to the current version.
-</para>
-<para>Be warned than you cannot convert from the new version to the old version.</para>
-</sect1>
-
 <sect1 id="uninstall">
 <title>Uninstalling oprofile</title>
 <para>

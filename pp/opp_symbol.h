@@ -39,7 +39,7 @@ struct file_location {
 	/// 0 means invalid or code is generated internally by the compiler
 	int linenr;
 
-	bool operator <(const file_location & rhs) const {
+	bool operator<(const file_location & rhs) const {
 		return filename < rhs.filename ||
 			(filename == rhs.filename && linenr < rhs.linenr);
 	}

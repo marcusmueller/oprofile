@@ -22,6 +22,9 @@
 #include <string>
 #include <list>
 
+// FIXME !!! 
+char *opd_relative_to_absolute_path(const char *path, const char *base_dir);
+ 
 /** return true if the two files are identical */
 bool is_files_identical(std::string const & file1, std::string const & file2);
 /** create a directory, return false on failure */

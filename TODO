@@ -51,9 +51,6 @@ Before 1.0
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o use a filelock rather a sleep to synchronize op_start and daemon.
  o check chroot() processes and the path hash stuff
- o check if we can use our own RTC irq handler rather to pass through the
-  the kernel service. The overhead for RTC is very big actually. Take care
-  first from where come the overhead (read/write RTC CMOS is costly)
  o thread profiling in the old and new flavour (2.5 introduce a new thread handling)
 
 Checks to make
@@ -70,6 +67,10 @@ Checks to make
 Later
 -----
  
+ o check if we can use our own RTC irq handler rather to pass through the
+  the kernel service. The overhead for RTC is very big actually. Take care
+  first from where come the overhead (read/write RTC CMOS is costly)
+
 o move uniformly to doxygen Javadoc style :
 
 	/**

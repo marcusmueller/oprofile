@@ -61,12 +61,6 @@ void * xcalloc(size_t, size_t) OP_ATTRIB_MALLOC;
 char *xstrdup(const char *) OP_ATTRIB_MALLOC;
 #endif	/* !HAVE_LIBIBERTY_H */
 
-/* TODO: it exist two version for this one in C and another in C++ the C
- * version in misc.c is likely to be removed when oprof_convert.c will removed
- * so don't worry about this code duplication, it'll disapear in near future */
-char *opd_simplify_pathname(char *path);
-char *opd_relative_to_absolute_path(const char *path, const char *base_dir);
-
 #ifdef __cplusplus
 }
 #endif

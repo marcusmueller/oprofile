@@ -1,4 +1,4 @@
-INSTALL_LIST=oprofpp oprof_convert op_to_source op_time op_merge
+INSTALL_LIST=oprofpp op_to_source op_time op_merge
 
 CFLAGS=@CFLAGS@ -pedantic -Wall -W -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline
 CXXFLAGS=@CXXFLAGS@ @BFD_CXXFLAGS@ -ansi -Wall -W -Wunused -Wmissing-prototypes
@@ -32,9 +32,6 @@ oprofpp-src.html: $(MY_SOURCES)
 oprofpp: oprofpp.o $(OBJS) opf_container.o opp_symbol.o demangle_symbol.o
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
-oprof_convert: oprof_convert.o ../dae/opd_util.o ../util/misc.o ../util/file_manip.o  ../util/string_manip.o
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
-
 op_to_source: opf_filter.o opf_container.o demangle_symbol.o ../util/child_reader.o $(OBJS) \
  ../util/string_manip.o
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
@@ -51,6 +48,6 @@ op_merge: op_merge.o $(OBJS)
 %.o: %cpp
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -g $< -o $@
 
-ALL_SOURCES = oprofpp.cpp oprofpp_util.cpp demangle_symbol.cpp opf_container.cpp opf_filter.cpp oprof_convert.c op_time.cpp op_merge.cpp opp_symbol.cpp
+ALL_SOURCES = oprofpp.cpp oprofpp_util.cpp demangle_symbol.cpp opf_container.cpp opf_filter.cpp op_time.cpp op_merge.cpp opp_symbol.cpp
 
 include ../Rules.make

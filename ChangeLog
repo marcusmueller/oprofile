@@ -1,5 +1,15 @@
 2002-04-16  John Levon  <moz@compsoc.man.ac.uk>
 
+	* TODO:
+	* doc/oprofile.xml:
+	* pp/oprof_convert.c:
+	* util/misc.h:
+	* util/misc.c:
+	* util/file_manip.h:
+	* pp/Makefile.in: kill oprof_convert
+	 
+2002-04-16  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/opf_container.cpp:
 	* pp/oprofpp.h:
 	* pp/demangle_symbol.h:
