@@ -139,8 +139,8 @@ void output_asm(string const & image_name);
  * necessary
  */
 void output_objdump_asm_line(string const & str,
-		     vector<symbol_entry const *> const & output_symbols,
-	     bool & do_output);
+	vector<symbol_entry const *> const & output_symbols,
+	bool & do_output);
 
 /**
  * @param output_symbols symbols for the binary image being processed
@@ -153,7 +153,7 @@ void output_objdump_asm_line(string const & str,
  * echoing it to the proper stream with optional annotation
  */
 void do_one_output_objdump(vector<symbol_entry const *> const & output_symbols,
-		   string const & app_name, bfd_vma start, bfd_vma end);
+	string const & app_name, bfd_vma start, bfd_vma end);
 
 /**
  * @param output_symbols symbols for the binary image being processed
@@ -164,7 +164,7 @@ void do_one_output_objdump(vector<symbol_entry const *> const & output_symbols,
  * the proper stream with optional annotation
  */
 void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
-			string const & app_name);
+	string const & app_name);
 
 /**
  * @param fn_match only source filename which match this filter will be output
@@ -200,13 +200,13 @@ void do_output_one_file(ostream & out, istream & in, string const & filename,
                         bool header);
 
 /**
- * @param profile storage container for openeded samples files
+ * @param profile storage container for opened samples files
  *
  * store opd_header information from the samples to the global
  * var counter_info. Caculate the total amount of samples for these samples
  * files.
  *
- * return false if no samples are openeded or if no cumulated count of
+ * return false if no samples are opened or if no cumulated count of
  * samples is zero
  */
 bool setup_counter_param(profile_t const & profile);
@@ -267,28 +267,26 @@ void find_and_output_symbol(ostream & out, string const & str,
 
 /**
  * @param out output stream
- * @param str an objdump output string on the form hexa_number:
- * @param blank a string containing a certain amount of space/tabulation
- *   character allowing the output to be aligned with the previous line
+ * @param str an objdump output string of the form hexa_number:
+ * @param blank a string to indent the output by
  *
  * from the vma at start of str_vma find the associated samples number
  * belonging to this vma then output them
  */
-void find_and_output_counter(ostream & out, string const & str,
-			     string const & blank);
+void annotate_asm_line(ostream & out, string const & str,
+                       string const & blank);
 
 /**
  * @param out output stream
  * @param filename a source filename
  * @param linenr a line number into the source file
- * @param blank a string containing a certain amount of space/tabulation
- *   character allowing the output to be aligned with the previous line
+ * @param blank a string to indent the output by
  *
  * from filename, linenr find the associated samples numbers belonging
  * to this source file, line nr then output them
  */
-void find_and_output_counter(ostream & out, string const & filename,
-			     size_t linenr, string const & blank);
+void annotate_line(ostream & out, string const & filename,
+                   size_t linenr, string const & blank);
 
 /**
  * from the command line specification retrieve the counter nr used to
@@ -473,7 +471,7 @@ void output_objdump_asm_line(string const & str,
 	// the robustness of this code.
 
 	// Do not use high level C++ construct such ostringstream: we need
-	// efficiency here.
+	// efficiency here. FIXME: have you proved it Phil ?
 	size_t pos = 0;
 	while (pos < str.length() && isspace(str[pos]))
 		++pos;
@@ -508,7 +506,7 @@ void output_objdump_asm_line(string const & str,
 
 	} else { // not a symbol, probably an asm line.
 		if (do_output)
-			find_and_output_counter(cout, str, " ");
+			annotate_asm_line(cout, str, " ");
 	}
 }
  
@@ -695,14 +693,14 @@ void do_output_one_file(ostream & out, istream & in, string const & filename, bo
 	if (header)
 		output_per_file_info(out, filename, count);
 
-	find_and_output_counter(out, filename, 0, string());
+	annotate_line(out, filename, 0, string());
 
 	if (in) {
 		string str;
 		for (size_t linenr = 1 ; getline(in, str) ; ++linenr) {
 			string const blank = ws_prefix(str);
 
-			find_and_output_counter(out, filename, linenr, blank);
+			annotate_line(out, filename, linenr, blank);
 
 			out << str << '\n';
 		}
@@ -825,8 +823,8 @@ void find_and_output_symbol(ostream & out, string const & str,
 }
 
  
-void find_and_output_counter(ostream & out, string const & str,
-			     string const & blank)
+void annotate_asm_line(ostream & out, string const & str,
+                       string const & blank)
 {
 	// do not use the bfd equivalent:
 	//  - it does not skip space at begin
@@ -843,8 +841,8 @@ void find_and_output_counter(ostream & out, string const & str,
 }
 
  
-void find_and_output_counter(ostream & out, string const & filename,
-			     size_t linenr, string const & blank)
+void annotate_line(ostream & out, string const & filename,
+                   size_t linenr, string const & blank)
 {
 	symbol_entry const * symbol = samples->find_symbol(filename, linenr);
 	if (symbol) {

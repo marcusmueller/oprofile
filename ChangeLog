@@ -1,5 +1,9 @@
 2003-04-06  John Levon  <levon@movementarian.org>
 
+	* pp/op_to_source.cpp: some renamings for clarity
+
+2003-04-06  John Levon  <levon@movementarian.org>
+
 	* pp/op_to_source.cpp: move extract_blank_at_begin() to ...
 
 	* libutil++/string_manip.cpp: ... here, and rename as
