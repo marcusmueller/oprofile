@@ -61,7 +61,6 @@ int separate_lib_samples;
 int separate_kernel_samples;
 int no_vmlinux;
 char * vmlinux;
-unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 size_t kernel_pointer_size;
 
 static char * kernel_range;

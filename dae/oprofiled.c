@@ -65,7 +65,6 @@ int separate_kernel_samples;
 int no_vmlinux;
 char * vmlinux;
 int kernel_only;
-unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 
 static char * kernel_range;
 static int showvers;
