@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.29 2000/09/07 00:12:33 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.30 2000/09/07 20:12:48 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -103,8 +103,8 @@ asmlinkage void my_do_nmi(struct pt_regs * regs, long error_code)
 
 /* --------- map reading stuff ----------- */
 
-static u32 map_buf[OP_MAX_MAP_BUF];
-static ulong nextmapbuf;
+static u32 *map_buf;
+static u32 nextmapbuf;
 static uint map_open;
 static uint hash_map_open;
 static char *hash_map;
@@ -118,6 +118,10 @@ static int output_path_hash(const char *name, uint len);
 int oprof_init_hashmap(void)
 {
 	struct page *page;
+
+	map_buf = vmalloc(OP_MAX_MAP_BUF*sizeof(u32));
+	if (!map_buf)
+		return -EFAULT;
 
 	hash_map = kmalloc(PAGE_ALIGN(OP_HASH_MAP_SIZE), GFP_KERNEL);
 	if (!hash_map)
@@ -140,6 +144,7 @@ int oprof_init_hashmap(void)
 
 void oprof_free_hashmap(void)
 {
+	vfree(map_buf);
 	kfree(hash_map);
 }
 
@@ -191,12 +196,9 @@ int oprof_map_release(void)
 	return 0;
 }
 
-static u32 saved_ppos;
-
 int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 {
 	ssize_t max;
-	struct op_mapping *map;
 	char *data = (char *)map_buf;
 
 	max = OP_MAX_MAP_BUF*sizeof(u32);
@@ -207,8 +209,6 @@ int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 	if (*ppos >= max)
 		return -EINVAL;
 
-	saved_ppos = (u32)((*ppos) ? (*ppos/sizeof(u32)) : (OP_MAX_MAP_BUF)); 
- 
 	if (*ppos + count > max) {
 		size_t firstcount = max - *ppos;
 
@@ -226,8 +226,6 @@ int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 
 	if (copy_to_user(buf,data,count))
 		return -EFAULT;
-
-	map = (struct op_mapping *)buf;
 
 	*ppos += count;
 
@@ -355,23 +353,18 @@ static int output_path_hash(const char *name, uint len)
 }
 
 extern u32 oprof_ready[NR_CPUS];
-int mapbufwakeup;
 
 /* called with map_lock held */
 inline static u32 *map_out32(u32 val)
 {
+	static u32 count=0;
 	u32 * pos=&map_buf[nextmapbuf];
-	ulong diff;
  
 	map_buf[nextmapbuf++] = val;
-	diff = abs(saved_ppos-nextmapbuf);
-	if (diff==OP_MAP_BUF_WATERMARK) {
-		mapbufwakeup=1;
-		oprof_ready[0] = 1;
-	} else if (nextmapbuf==OP_MAX_MAP_BUF) {
-		printk("oprofile: Overflowed, ppos %u\n",saved_ppos);
+	if (!(++count % OP_MAP_BUF_WATERMARK))
+		oprof_ready[0] = 2;
+	if (nextmapbuf==OP_MAX_MAP_BUF)
 		nextmapbuf=0;
-	}
 
 	return pos;
 }

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.35 2000/09/07 00:12:33 moz Exp $ */
+/* $Id: oprofile.c,v 1.36 2000/09/07 20:12:47 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -621,14 +621,13 @@ static int oprof_release(struct inode *ino, struct file *file)
 	return 0;
 }
 
-extern int mapbufwakeup;
-
 static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 {
 	struct op_sample *mybuf;
 	uint i;
 	uint num;
 	ssize_t max;
+	int mapbuf_wakeup;
 
 	if (!capable(CAP_SYS_PTRACE))
 		return -EPERM;
@@ -651,6 +650,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 again:
 	for (i=0; i<smp_num_cpus; i++) {
 		if (oprof_ready[i]) {
+			mapbuf_wakeup = oprof_ready[i]-1;
 			oprof_ready[i]=0;
 			goto doit;
 		}
@@ -659,7 +659,7 @@ again:
 	interruptible_sleep_on(&oprof_wait);
 	if (signal_pending(current)) {
 		vfree(mybuf);
-		return -EAGAIN;
+		return -EINTR;
 	}
 	goto again;
 
@@ -669,14 +669,12 @@ doit:
 
 	num = oprof_data[i].nextbuf;
 	/* might have overflowed from map buffer or ejection buffer */
-	if (num < oprof_data[i].buf_size-OP_PRE_WATERMARK && !mapbufwakeup) {
+	if (num < oprof_data[i].buf_size-OP_PRE_WATERMARK && !mapbuf_wakeup) {
 		printk(KERN_ERR "oprofile: Detected overflow of size %d. You must increase the "
 				"hash table or buffer size, or reduce the interrupt frequency\n", num);
 		num = oprof_data[i].buf_size;
-	} else {
+	} else
 		oprof_data[i].nextbuf=0;
-		mapbufwakeup=0;
-	}
 
 	mybuf->count = mybuf->pid = 0;
 	mybuf->eip = num;

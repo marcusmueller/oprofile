@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.19 2000/09/07 00:12:33 moz Exp $ */
+/* $Id: oprofile.h,v 1.20 2000/09/07 20:12:47 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -76,13 +76,13 @@ struct _oprof_data {
 #define OP_EXIT ((1U<<15)|(1U<<4))
 
 /* size of map buffer in u32 */
-#define OP_MAX_MAP_BUF 32768
+#define OP_MAX_MAP_BUF 262144
 
-/* oprof_data->ready will be set this many entries
- * in the map device before the end, to avoid overflow
- * in the case where the daemon hasn't read anything yet
+/* oprof_data->ready will be set every time this many
+ * entries are added to the map buffer in an attempt to
+ * prevent overflow
  */
-#define OP_MAP_BUF_WATERMARK 256
+#define OP_MAP_BUF_WATERMARK 1024
 
 /* nr. entries in hash map, prime */
 #define OP_HASH_MAP_NR 1023
