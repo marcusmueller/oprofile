@@ -621,11 +621,10 @@ void output_one_file(istream & in, string const & filename,
 		     filename_match const & fn_match,
 		     bool output_separate_file)
 {
+	if (!fn_match.match(filename))
+		return;
+
 	if (!output_separate_file) {
-		// FIXME: I dunno why the doc say
-		// when !output_separate_file filename filtering is not applied
-		// I will change the behavior and docs after thinking a little
-		// about that (2002/05/08)
 		do_output_one_file(cout, in, filename);
 		return;
 	}
@@ -641,12 +640,6 @@ void output_one_file(istream & in, string const & filename,
 		     << '"' << out_filename << '"' << " ignored" << endl;
 		return;
 	}
-
-	// filter
-	// FIXME we should filter before complaining about non-existent source
-	// see also the !output_separate_file at begin of this function
-	if (!fn_match.match(filename))
-		return;
 
 	out_filename = output_dir + out_filename;
 

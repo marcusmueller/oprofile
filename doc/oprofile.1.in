@@ -224,7 +224,6 @@ specify --source-dir neither --output-dir annotated source file go to stdout
 .TP
 .BI "--output " patterns
 if you request for annotated source this option give a list of patterns separated by "," so only source filename that match one of this pattern are output.
-This option have no effect if --source-dir or --output-dir have not been set.
 .br
 .TP
 .BI "--no-output " patterns

@@ -127,6 +127,7 @@ template <> class option_imp<void> : public option_base {
 public:
 	option_imp(bool & value, char const * option_name, char short_name,
 	       char const * help_str);
+	~option_imp() {}
 
 	void post_process();
 private:
@@ -143,6 +144,7 @@ template <> class option_imp<int> : public option_base {
 public:
 	option_imp(int & value, char const * option_name, char short_name,
 	       char const * help_str, char const * arg_help_str);
+	~option_imp() {}
 };
 
 /**
@@ -156,6 +158,7 @@ public:
 		   char short_name, char const * help_str,
 		   char const * arg_help_str);
 	void post_process();
+	~option_imp() {}
 private:
 	// we need an intermediate char array to pass to popt libs
 	char * popt_value;
@@ -175,6 +178,7 @@ public:
 		   char const * help_str, char const * arg_help_str,
 		   char separator = ',');
 	void post_process();
+	~option_imp() {}
 private:
 	vector<string> & value;
 	// we need an intermediate char array to pass to popt libs

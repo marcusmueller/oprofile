@@ -1,5 +1,13 @@
 2002-07-06  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libopt++/popt_options.cpp: provide a dtor in derived class
+
+	* doc/oprofile.1.in:
+	* pp/op_to_source.cpp: --output --no-output are meaningfull
+	  in all case.
+
+2002-07-06  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* gui/oprof_start.cpp:
 	* pp/sample_container_imp.cpp:
 	* pp/symbol_container_imp.cpp:
