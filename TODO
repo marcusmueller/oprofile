@@ -1,11 +1,13 @@
 0.0.9 task list
 ---------------
 
+o should we pin rather than loop sample buffer overflow too ?
+ 
 o remove note lock (and rename map lock) ... I think
  
-o use correct oprofile_nmi.S code for 2.2 AND 2.4
+o fix waitqueue_lock
 
-o check if spinlock busting of waitqueue_lock in 2.2 for NMI works
+o check UP kernel on SMP hardware with and without APIC config options 
  
 o 	./pp/op_time.cpp:79:/* FIXME: -h means help not shared libs !!!! */
 	./module/compat22.h:167:        /* 2.2.18 introduced vmalloc_32, FIXME is old vmalloc equivalent */
@@ -19,6 +21,7 @@ o NEED_MPTABLE check should die - replace with MSR read ?
 o oprofile_nmi22.S and oprofile24.S can use the same code.
 
 o review the exception table of the nmi handler (at least stop oprofile)
+	- why would we stop oprofile ? what am I missing ? 
  
 o stress test, finish clean of 2.2 backport
 
