@@ -78,7 +78,7 @@ public:
 
 	/// ensure this value is available
 	id_value const create(V const & value) {
-		id_map::value_type val(value, id_value(values.size()));
+		typename id_map::value_type val(value, id_value(values.size()));
 		std::pair<typename id_map::iterator, bool>
 			inserted = ids.insert(val);
 		if (inserted.second) {
