@@ -85,7 +85,7 @@ do_help() {
 	  --buffer-size=num            number of samples in kernel buffer
 	  -e/--event=[eventspec]       choose an event and values or "default". Of the form
 	                               name:count:unitmask:kernel:user
-                name:                  symbolic event name, e.g. CPU_CLK_UNHALTED or RTC
+                name:                  symbolic event name, e.g. CPU_CLK_UNHALTED or RTC_INTERRUPTS
 	        count:                 reset counter value e.g. 100000
 	        unitmask:              hardware unit mask e.g. 0x0f
 	        kernel:                whether to profile kernel: 0 or 1
@@ -805,7 +805,7 @@ do_sysctl_setup_24() {
 			if test -z "$USER"; then
 				USER=1
 			fi
-			if test "$EVENT" = "RTC"; then
+			if test "$EVENT" = "RTC_INTERRUPTS"; then
 				$SYSCTL -w dev.oprofile.rtc_value=$COUNT
 			else
 				$SYSCTL -w dev.oprofile.$CTR.enabled=1
@@ -866,7 +866,7 @@ do_sysctl_setup_25() {
 			if test -z "$USER"; then
 				USER=1
 			fi
-			if test "$EVENT" = "RTC"; then
+			if test "$EVENT" = "RTC_INTERRUPTS"; then
 				echo $COUNT >$MOUNT/rtc_value
 			else
 				echo 1 >$MOUNT/$CTR/enabled

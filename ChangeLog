@@ -1,6 +1,7 @@
 2003-07-15  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* events/rtc..events: use RTC as event name
+	* utils/opcontrol
+	* events/rtc..events: use RTC_INTERRUPTS as event name
 
 2003-07-15  Philippe Elie  <phil.el@wanadoo.fr>
 
