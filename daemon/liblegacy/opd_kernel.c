@@ -57,7 +57,7 @@ void opd_parse_kernel_range(char const * arg)
 {
 	sscanf(arg, "%lx,%lx", &kernel_start, &kernel_end);
 
-	verbprintf("OPD_PARSE_KERNEL_RANGE: kernel_start = %lx, kernel_end = %lx\n",
+	verbprintf(vmisc, "OPD_PARSE_KERNEL_RANGE: kernel_start = %lx, kernel_end = %lx\n",
 		   kernel_start, kernel_end);
 
 	if (!kernel_start && !kernel_end) {
@@ -116,7 +116,7 @@ void opd_clear_module_info(void)
 	struct list_head * pos2;
 	struct opd_module * module;
 
-	verbprintf("Removing module list\n");
+	verbprintf(vmodule, "Removing module list\n");
 	list_for_each_safe(pos, pos2, &opd_modules) {
 		module = list_entry(pos, struct opd_module, module_list);
 		free(module->name);
@@ -164,7 +164,7 @@ static void opd_get_module_info(void)
 		return;
 	}
 
-	verbprintf("Read module info.\n");
+	verbprintf(vmodule, "Read module info.\n");
 
 	while (1) {
 		line = op_get_line(fp);
@@ -282,7 +282,7 @@ static void opd_drop_module_sample(unsigned long eip)
 	module_names = xmalloc(size);
 	while (query_module(NULL, QM_MODULES, module_names, size, &ret)) {
 		if (errno != ENOSPC) {
-			verbprintf("query_module failed: %s\n", strerror(errno));
+			verbprintf(vmodule, "query_module failed: %s\n", strerror(errno));
 			return;
 		}
 		size = ret;
@@ -296,7 +296,7 @@ static void opd_drop_module_sample(unsigned long eip)
 		struct module_info info;
 		if (!query_module(name, QM_INFO, &info, sizeof(info), &ret)) {
 			if (eip >= info.addr && eip < info.addr + info.size) {
-				verbprintf("Sample from unprofilable module %s\n", name);
+				verbprintf(vmodule, "Sample from unprofilable module %s\n", name);
 				opd_create_module(name, info.addr, info.addr + info.size);
 				break;
 			}
@@ -369,7 +369,7 @@ static void opd_handle_module_sample(unsigned long eip, u32 counter)
 					     eip - module->start, counter);
 		} else {
 			opd_24_stats[OPD_LOST_MODULE]++;
-			verbprintf("No image for sampled module %s\n",
+			verbprintf(vmodule, "No image for sampled module %s\n",
 				   module->name);
 		}
 	} else {
@@ -406,7 +406,7 @@ void opd_add_kernel_map(struct opd_proc * proc, unsigned long eip)
 
 	app_name = proc->name;
 	if (!app_name) {
-		verbprintf("un-named proc for tid %d\n", proc->tid);
+		verbprintf(vmisc, "un-named proc for tid %d\n", proc->tid);
 		return;
 	}
 
@@ -414,7 +414,7 @@ void opd_add_kernel_map(struct opd_proc * proc, unsigned long eip)
 	if (eip < kernel_end) {
 		image = opd_get_kernel_image(vmlinux, app_name, proc->tid, proc->tgid);
 		if (!image) {
-			verbprintf("Can't create image for %s %s\n", vmlinux, app_name);
+			verbprintf(vmisc, "Can't create image for %s %s\n", vmlinux, app_name);
 			return;
 		}
 
@@ -437,13 +437,13 @@ void opd_add_kernel_map(struct opd_proc * proc, unsigned long eip)
 		if (module->image)
 			module_name = module->image->name;
 		if (!module_name) {
-			verbprintf("unable to get path name for module %s\n",
+			verbprintf(vmodule, "unable to get path name for module %s\n",
 			       module->name);
 			module_name = module->name;
 		}
 		image = opd_get_kernel_image(module_name, app_name, proc->tid, proc->tgid);
 		if (!image) {
-			verbprintf("Can't create image for %s %s\n",
+			verbprintf(vmodule, "Can't create image for %s %s\n",
 			       module->name, app_name);
 			return;
 		}

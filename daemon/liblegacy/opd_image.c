@@ -48,7 +48,7 @@ int opd_get_nr_images(void)
 
 void opd_delete_image(struct opd_image * image)
 {
-	verbprintf("Deleting image: name %s app_name %s, kernel %d, "
+	verbprintf(vmisc, "Deleting image: name %s app_name %s, kernel %d, "
 	           "tid %d, tgid %d ref count %u\n",
 	           image->name, image->app_name, image->kernel,
 	           image->tid, image->tgid, (int)image->ref_count);
@@ -132,7 +132,7 @@ opd_new_image(char const * name, char const * app_name, int kernel,
 	size_t hash_image;
 	struct opd_image * image;
 
-	verbprintf("Creating image: %s %s, kernel %d, tid %d, "
+	verbprintf(vmisc, "Creating image: %s %s, kernel %d, tid %d, "
 	           "tgid %d\n", name, app_name, kernel, tid, tgid);
 
 	image = xmalloc(sizeof(struct opd_image));

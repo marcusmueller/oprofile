@@ -86,10 +86,9 @@ move_and_remove()
 # verbose echo
 vecho()
 {
-	if test "$VERBOSE" != "yes"; then 
-		return;
+	if test -n "$VERBOSE"; then 
+		echo $@
 	fi
-	echo $@
 }
 
  
@@ -107,7 +106,7 @@ do_help()
    -d/--dump        flush the collected profiling data
    -t/--stop        stop data collection
    -h/--shutdown    stop data collection and kill daemon
-   -V/--verbose     be verbose in the daemon log
+   -V/--verbose[=all,sfile,arcs,samples,module,misc]     be verbose in the daemon log
    --reset          clears out data from current session
    --save=name      save data from current session to session_name
    --deinit         unload the oprofile module and oprofilefs
@@ -222,7 +221,7 @@ do_init()
 	CPU_BUF_SIZE=0
 	NOTE_SIZE=0
 	VMLINUX=
-	VERBOSE=no
+	VERBOSE=""
 	SEPARATE_LIB=0
 	SEPARATE_KERNEL=0
 	SEPARATE_THREAD=0
@@ -672,7 +671,11 @@ do_options()
 				;;
 
 			-V|--verbose)
-				VERBOSE=yes
+				if test -z "$val"; then
+					VERBOSE="all"
+				else
+					VERBOSE=$val
+				fi
 				;;
 
 			-l|--list-events)
@@ -701,7 +704,7 @@ do_options()
 		exit 1
 	fi
 
-	if test "$VERBOSE" = "yes"; then
+	if test -n "$VERBOSE"; then
 		if test "$START" != "yes" -a "$START_DAEMON" != "yes"; then
 			echo "Option --verbose may only be used with --start or --start-daemon" >&2
 			exit 1
@@ -985,8 +988,8 @@ do_start_daemon()
 		OPD_ARGS="$OPD_ARGS --image=$IMAGE_FILTER"
 	fi
 
-	if test "$VERBOSE" = "yes"; then
-		OPD_ARGS="$OPD_ARGS --verbose"
+	if test -n "$VERBOSE"; then
+		OPD_ARGS="$OPD_ARGS --verbose=$VERBOSE"
 	fi
 
 	vecho "executing oprofiled $OPD_ARGS"

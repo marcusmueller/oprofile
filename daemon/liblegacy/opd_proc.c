@@ -112,10 +112,10 @@ struct opd_proc * opd_get_proc(pid_t tid, pid_t tgid)
 inline static void
 verb_show_sample(unsigned long offset, struct opd_map * map)
 {
-	verbprintf("DO_PUT_SAMPLE : calc offset 0x%.8lx, map start 0x%.8lx,"
-		" end 0x%.8lx, offset 0x%.8lx, name \"%s\"\n",
-		   offset, map->start, map->end, map->offset, 
-		   map->image->name);
+	verbprintf(vsamples, "DO_PUT_SAMPLE : calc offset 0x%.8lx, "
+		"map start 0x%.8lx, end 0x%.8lx, offset 0x%.8lx, name \"%s\"\n",
+		offset, map->start, map->end, map->offset, 
+		map->image->name);
 }
 
 
@@ -194,7 +194,7 @@ void opd_put_sample(struct op_sample const * sample)
 
 	opd_24_stats[OPD_SAMPLES]++;
 
-	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8lx, tgid %.6d pid %.6d\n",
+	verbprintf(vsamples, "DO_PUT_SAMPLE: c%d, EIP 0x%.8lx, tgid %.6d pid %.6d\n",
 		sample->counter, sample->eip, sample->tgid, sample->pid);
 
 	if (!separate_kernel && in_kernel_eip) {
@@ -212,7 +212,7 @@ void opd_put_sample(struct op_sample const * sample)
 			 * at daemon startup time */
 			opd_handle_kernel_sample(sample->eip, sample->counter);
 		} else {
-			verbprintf("No proc info for tgid %.6d pid %.6d.\n",
+			verbprintf(vmisc, "No proc info for tgid %.6d pid %.6d.\n",
                                    sample->tgid, sample->pid);
 			opd_24_stats[OPD_LOST_PROCESS]++;
 		}
@@ -237,7 +237,7 @@ void opd_put_sample(struct op_sample const * sample)
 	}
 
 	/* couldn't locate it */
-	verbprintf("Couldn't find map for pid %.6d, EIP 0x%.8lx.\n",
+	verbprintf(vsamples, "Couldn't find map for pid %.6d, EIP 0x%.8lx.\n",
 		   sample->pid, sample->eip);
 	opd_24_stats[OPD_LOST_MAP_PROCESS]++;
 }
@@ -249,7 +249,7 @@ void opd_handle_fork(struct op_note const * note)
 	struct opd_proc * proc;
 	struct list_head * pos;
 
-	verbprintf("DO_FORK: from %d, %d to %ld, %ld\n", note->pid, note->tgid,
+	verbprintf(vmisc, "DO_FORK: from %d, %d to %ld, %ld\n", note->pid, note->tgid,
 	           note->addr, note->len);
 
 	old = opd_get_proc(note->pid, note->tgid);
@@ -295,7 +295,7 @@ void opd_handle_exec(pid_t tid, pid_t tgid)
 {
 	struct opd_proc * proc;
 
-	verbprintf("DO_EXEC: pid %u %u\n", tid, tgid);
+	verbprintf(vmisc, "DO_EXEC: pid %u %u\n", tid, tgid);
 
 	/* There is a race for samples received between fork/exec sequence.
 	 * These samples belong to the old mapping but we can not say if
@@ -326,14 +326,14 @@ void opd_handle_exit(struct op_note const * note)
 {
 	struct opd_proc * proc;
 
-	verbprintf("DO_EXIT: process %d\n", note->pid);
+	verbprintf(vmisc, "DO_EXIT: process %d\n", note->pid);
 
 	proc = opd_get_proc(note->pid, note->tgid);
 	if (proc) {
 		proc->dead = 1;
 		proc->accessed = 1;
 	} else {
-		verbprintf("unknown proc %u just exited.\n", note->pid);
+		verbprintf(vmisc, "unknown proc %u just exited.\n", note->pid);
 	}
 }
 

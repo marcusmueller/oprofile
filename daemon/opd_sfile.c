@@ -163,7 +163,7 @@ struct sfile * sfile_find(struct transient const * trans)
 	 * caller of cpu_buffer_reset() in the kernel
 	 */
 	if (trans->in_kernel == -1) {
-		verbprintf("Losing sample at 0x%llx of unknown provenance.\n",
+		verbprintf(vsamples, "Losing sample at 0x%llx of unknown provenance.\n",
 		           trans->pc);
 		opd_stats[OPD_NO_CTX]++;
 		return NULL;
@@ -173,7 +173,7 @@ struct sfile * sfile_find(struct transient const * trans)
 	if (trans->in_kernel) {
 		ki = find_kernel_image(trans);
 		if (!ki) {
-			verbprintf("Lost kernel sample %llx\n", trans->pc);
+			verbprintf(vsamples, "Lost kernel sample %llx\n", trans->pc);
 			opd_stats[OPD_LOST_KERNEL]++;
 			return NULL;
 		}
@@ -253,13 +253,14 @@ static samples_odb_t * get_file(struct sfile * sf, struct sfile * last,
 }
 
 
-static void verbose_sample(struct sfile * sf, vma_t pc, uint counter)
+static void
+verbose_sample(char const * prefix, struct sfile * sf, vma_t pc, uint counter)
 {
 	char const * name = verbose_cookie(sf->cookie);
 	char const * app = verbose_cookie(sf->app_cookie);
-	verbprintf("Sample at 0x%llx(%u): %s(%llx), app %s(%llx), kernel %s\n",
-	           pc, counter, name, sf->cookie, app, sf->app_cookie,
-		   sf->kernel ? sf->kernel->name : "no");
+	printf("%s at 0x%llx(%u): %s(%llx), app %s(%llx), kernel %s\n",
+	       prefix, pc, counter, name, sf->cookie, app, sf->app_cookie,
+	       sf->kernel ? sf->kernel->name : "no");
 }
 
 
@@ -280,10 +281,8 @@ static void sfile_log_arc(struct transient const * trans)
 	if (trans->last->kernel)
 		to -= trans->last->kernel->start;
 
-#if 0
-	if (verbose)
-		verbose_sample(trans->current, to, 0);
-#endif
+	if (varcs)
+		verbose_sample("Arc", trans->current, to, 0);
 
 	if (!file) {
 		opd_stats[OPD_LOST_SAMPLEFILE]++;
@@ -327,8 +326,8 @@ void sfile_log_sample(struct transient const * trans)
 	if (trans->current->kernel)
 		pc -= trans->current->kernel->start;
 
-	if (verbose)
-		verbose_sample(trans->current, pc, trans->event);
+	if (vsamples)
+		verbose_sample("Sample", trans->current, pc, trans->event);
 
 	if (!file) {
 		opd_stats[OPD_LOST_SAMPLEFILE]++;
@@ -416,13 +415,17 @@ void sfile_close_files(void)
 
 	list_for_each(pos, &lru_list) {
 		sf = list_entry(pos, struct sfile, lru);
-		for (i = 0; i < op_nr_counters; ++i)
+		for (i = 0; i < op_nr_counters; ++i) {
+			printf("odb_close normal %d\n", i);
 			odb_close(&sf->files[i]);
+		}
 
 		for (i = 0 ; i < CG_HASH_TABLE_SIZE; ++i) {
+			struct list_head * pos;
 			list_for_each(pos, &sf->cg_files[i]) {
 				struct cg_hash_entry * temp = list_entry(pos,
 					struct cg_hash_entry, next);
+				printf("odb_close cg\n");
 				odb_close(&temp->file);
 			}
 		}

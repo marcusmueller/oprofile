@@ -1,5 +1,28 @@
 2004-01-29  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* daemon/init.c:
+	* daemon/opd_events.c:
+	* daemon/opd_kernel.c:
+	* daemon/opd_mangling.c:
+	* daemon/opd_printf.h:
+	* daemon/opd_sfile.c:
+	* daemon/opd_trans.c:
+	* daemon/oprofiled.c:
+	* daemon/oprofiled.h:
+	* daemon/liblegacy/init.c:
+	* daemon/liblegacy/opd_image.c:
+	* daemon/liblegacy/opd_kernel.c:
+	* daemon/liblegacy/opd_mapping.c:
+	* daemon/liblegacy/opd_parse_proc.c:
+	* daemon/liblegacy/opd_proc.c:
+	* daemon/liblegacy/opd_sample_files.c:
+	* utils/opcontrol: split daemon --verbose, w/o argument it's synonymous
+	  to --verbose=all. Better splitting is welcome
+
+	* daemon/opd_sfile.c: Fix thinko, opcontrol --reset coredump'ed
+
+2004-01-29  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libop/op_events.c:
 	* utils/op_help.c: don't use default in switch (cpu_type) to ensure
 	  adding a cpu type will issue a warning where we forget to handle it.

@@ -44,7 +44,7 @@ void opd_create_vmlinux(char const * name, char const * arg)
 
 	sscanf(arg, "%llx,%llx", &vmlinux_image.start, &vmlinux_image.end);
 
-	verbprintf("kernel_start = %llx, kernel_end = %llx\n",
+	verbprintf(vmisc, "kernel_start = %llx, kernel_end = %llx\n",
 	           vmlinux_image.start, vmlinux_image.end);
 
 	if (!vmlinux_image.start && !vmlinux_image.end) {
@@ -157,7 +157,7 @@ void opd_reread_module_info(void)
 		image = opd_create_module(module_name, start_address,
 		                          start_address + module_size);
 
-		verbprintf("module %s start %llx end %llx\n",
+		verbprintf(vmodule, "module %s start %llx end %llx\n",
 			   image->name, image->start, image->end);
 
 		free(line);

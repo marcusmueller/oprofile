@@ -134,7 +134,7 @@ static void code_ctx_switch(struct transient * trans)
 	pop_buffer_value(trans);
 	trans->tgid = pop_buffer_value(trans);
 
-	if (verbose) {
+	if (vmisc) {
 		char const * app = find_cookie(trans->app_cookie);
 		printf("CTX_SWITCH to tid %lu, tgid %lu, cookie %llx(%s)\n",
 		       (unsigned long)trans->tid, (unsigned long)trans->tgid,
@@ -153,7 +153,7 @@ static void code_cpu_switch(struct transient * trans)
 	}
 
 	trans->cpu = pop_buffer_value(trans);
-	verbprintf("CPU_SWITCH to %lu\n", trans->cpu);
+	verbprintf(vmisc, "CPU_SWITCH to %lu\n", trans->cpu);
 }
 
 
@@ -168,9 +168,9 @@ static void code_cookie_switch(struct transient * trans)
 
 	trans->cookie = pop_buffer_value(trans);
 
-	if (verbose) {
+	if (vmisc) {
 		char const * name = verbose_cookie(trans->cookie);
-		verbprintf("COOKIE_SWITCH to cookie %s(%llx)\n",
+		verbprintf(vmisc, "COOKIE_SWITCH to cookie %s(%llx)\n",
 		           name, trans->cookie);
 	}
 }
@@ -178,7 +178,7 @@ static void code_cookie_switch(struct transient * trans)
 
 static void code_kernel_enter(struct transient * trans)
 {
-	verbprintf("KERNEL_ENTER_SWITCH to kernel\n");
+	verbprintf(vmisc, "KERNEL_ENTER_SWITCH to kernel\n");
 	trans->in_kernel = 1;
 	trans->current = NULL;
 	/* subtlety: we must keep trans->cookie cached,
@@ -191,7 +191,7 @@ static void code_kernel_enter(struct transient * trans)
 
 static void code_kernel_exit(struct transient * trans)
 {
-	verbprintf("KERNEL_EXIT_SWITCH to user-space\n");
+	verbprintf(vmisc, "KERNEL_EXIT_SWITCH to user-space\n");
 	trans->in_kernel = 0;
 	trans->current = NULL;
 }
@@ -199,7 +199,7 @@ static void code_kernel_exit(struct transient * trans)
 
 static void code_module_loaded(struct transient * trans __attribute__((unused)))
 {
-	verbprintf("MODULE_LOADED_CODE\n");
+	verbprintf(vmodule, "MODULE_LOADED_CODE\n");
 	opd_reread_module_info();
 	trans->current = NULL;
 }
@@ -207,14 +207,14 @@ static void code_module_loaded(struct transient * trans __attribute__((unused)))
 
 static void code_trace_begin(struct transient * trans)
 {
-	verbprintf("TRACE_BEGIN\n");
+	verbprintf(varcs, "TRACE_BEGIN\n");
 	trans->tracing = TRACING_START;
 }
 
 
 static void code_trace_end(struct transient * trans)
 {
-	verbprintf("TRACE_END\n");
+	verbprintf(varcs, "TRACE_END\n");
 	trans->tracing = TRACING_OFF;
 }
 
@@ -270,7 +270,7 @@ void opd_process_samples(char const * buffer, size_t count)
 		}
 
 		if (!trans.remaining) {
-			verbprintf("Dangling ESCAPE_CODE.\n");
+			verbprintf(vmisc, "Dangling ESCAPE_CODE.\n");
 			opd_stats[OPD_DANGLING_CODE]++;
 			break;
 		}

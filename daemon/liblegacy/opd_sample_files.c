@@ -40,7 +40,7 @@ static int opd_24_sfile_lru_clear(void)
 	struct opd_24_sfile * sfile;
 	int amount = LRU_AMOUNT;
 
-	verbprintf("image lru clear\n");
+	verbprintf(vsfile, "image lru clear\n");
 
 	if (list_empty(&lru_list))
 		return 1;
@@ -107,7 +107,7 @@ int opd_open_24_sample_file(struct opd_image * image, int counter, int cpu_nr)
 
 	mangled = opd_mangle_filename(image, counter, cpu_nr);
 
-	verbprintf("Opening \"%s\"\n", mangled);
+	verbprintf(vsfile, "Opening \"%s\"\n", mangled);
 
 	create_path(mangled);
 

@@ -61,7 +61,6 @@ extern sig_atomic_t signal_usr1;
 extern sig_atomic_t signal_usr2;
 
 extern unsigned int op_nr_counters;
-extern int verbose;
 extern int separate_lib;
 extern int separate_kernel;
 extern int separate_thread;

@@ -114,7 +114,7 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 		/* kernel thread are invalid symlink */
 		strcpy(image_name, exe_name);
 
-	verbprintf("image name %s for pid %u %u\n", image_name, proc->tid, proc->tgid);
+	verbprintf(vmisc, "image name %s for pid %u %u\n", image_name, proc->tid, proc->tgid);
 
 	while (1) {
 		line = op_get_line(fp);
@@ -212,7 +212,7 @@ void opd_get_ascii_procs(void)
 	while ((dirent = readdir(dir))) {
 		if (sscanf(dirent->d_name, "%u", &pid) == 1) {
 			u32 tgid = read_tgid(pid);
-			verbprintf("ASCII added %u %u\n", pid, tgid);
+			verbprintf(vmisc, "ASCII added %u %u\n", pid, tgid);
 			proc = opd_get_proc(pid, tgid);
 			if (!proc)
 				proc = opd_new_proc(pid, tgid);

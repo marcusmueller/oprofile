@@ -96,7 +96,7 @@ void opd_parse_events(char const * events)
 		exit(EXIT_FAILURE);
 	}
 
-	verbprintf("Events: %s\n", ev);
+	verbprintf(vmisc, "Events: %s\n", ev);
 
 	c = ev;
 

@@ -56,7 +56,7 @@ Before 1.0 little stuff
 
  o libop/op_string.c is dumb (skip_ws, skip_nonws) we can't use them
   to parse a file and report correct line number error because skip_ws skip
-  eat \n (so op_events.c report correct line number only if there is no empty
+  \n (so op_events.c report correct line number only if there is no empty
   line in the events files)
  o document OPROFILE_EVENT_FILES_DIR
  o depedencies between profile_container.h symbol_container.h and

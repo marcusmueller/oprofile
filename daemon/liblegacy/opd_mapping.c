@@ -70,7 +70,7 @@ void opd_add_mapping(struct opd_proc * proc, struct opd_image * image,
 {
 	struct opd_map * map;
 
-	verbprintf("Adding mapping for process %d: 0x%.8lx-0x%.8lx, off 0x%.8lx, \"%s\"\n",
+	verbprintf(vmisc, "Adding mapping for process %d: 0x%.8lx-0x%.8lx, off 0x%.8lx, \"%s\"\n",
 		proc->tid, start, end, offset, image->name);
 
 	map = malloc(sizeof(struct opd_map));
@@ -146,7 +146,7 @@ void opd_handle_mapping(struct op_note const * note)
 	proc = opd_get_proc(note->pid, note->tgid);
 
 	if (!proc) {
-		verbprintf("Told about mapping for non-existent process %u.\n", note->pid);
+		verbprintf(vmisc, "Told about mapping for non-existent process %u.\n", note->pid);
 		proc = opd_new_proc(note->pid, note->tgid);
 	}
 

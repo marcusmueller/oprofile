@@ -114,7 +114,7 @@ int opd_open_sample_file(samples_odb_t * file, struct sfile * last,
 	if (!mangled)
 		return EINVAL;
 
-	verbprintf("Opening \"%s\"\n", mangled);
+	verbprintf(vsfile, "Opening \"%s\"\n", mangled);
 
 	create_path(mangled);
 

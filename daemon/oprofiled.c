@@ -47,8 +47,12 @@ sig_atomic_t signal_usr1;
 sig_atomic_t signal_usr2;
 
 uint op_nr_counters;
-int verbose;
 op_cpu cpu_type;
+int vsfile;
+int vsamples;
+int varcs;
+int vmodule;
+int vmisc;
 int separate_lib;
 int separate_kernel;
 int separate_thread;
@@ -56,6 +60,7 @@ int separate_cpu;
 int no_vmlinux;
 char * vmlinux;
 char * kernel_range;
+static char * verbose;
 static char * binary_name_filter;
 static char * events;
 static int showvers;
@@ -77,7 +82,7 @@ static struct poptOption options[] = {
 	{ "separate-cpu", 0, POPT_ARG_INT, &separate_cpu, 0, "separate samples for each CPU", "[0|1]" },
 	{ "events", 'e', POPT_ARG_STRING, &events, 0, "events list", "[events]" },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
-	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
+	{ "verbose", 'V', POPT_ARG_STRING, &verbose, 0, "be verbose in log file", "all,sfile,arcs,samples,module,misc", },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
@@ -270,7 +275,7 @@ static void add_image_filter(char const * name)
 		return;
 	}
 	hash = opd_hash_name(elt->name);
-	verbprintf("Adding to image filter: \"%s\"\n", elt->name);
+	verbprintf(vmisc, "Adding to image filter: \"%s\"\n", elt->name);
 	list_add(&elt->next,&images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]);
 }
 
@@ -326,6 +331,48 @@ int opd_read_fs_int(char const * path, char const * name, int fatal)
 }
 
 
+static void opd_handle_verbose_option(char const * name)
+{
+	if (!strcmp(name, "all")) {
+		vsfile = 1;
+		vsamples = 1;
+		varcs = 1;
+		vmodule = 1;
+		vmisc = 1;
+	} else if (!strcmp(name, "sfile")) {
+		vsfile = 1;
+	} else if (!strcmp(name, "arcs")) {
+		varcs = 1;
+	} else if (!strcmp(name, "samples")) {
+		vsamples = 1;
+	} else if (!strcmp(name, "module")) {
+		vmodule = 1;
+	} else if (!strcmp(name, "misc")) {
+		vmisc = 1;
+	} else {
+		fprintf(stderr, "unknown verbose options\n");
+		exit(EXIT_FAILURE);
+	}
+}
+
+static void opd_parse_verbose(void)
+{
+	char const * last = verbose;
+	char const * cur = verbose;
+
+	if (!verbose)
+		return;
+
+	while ((cur = strchr(last, ',')) != NULL) {
+		char * tmp = op_xstrndup(last, cur - last);
+		opd_handle_verbose_option(tmp);
+		free(tmp);
+		last = cur + 1;
+	}
+	opd_handle_verbose_option(last);
+}
+
+
 static void opd_options(int argc, char const * argv[])
 {
 	poptContext optcon;
@@ -335,6 +382,8 @@ static void opd_options(int argc, char const * argv[])
 
 	if (showvers)
 		show_version(argv[0]);
+
+	opd_parse_verbose();
 
 	if (separate_kernel)
 		separate_lib = 1;

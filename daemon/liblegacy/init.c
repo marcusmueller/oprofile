@@ -148,7 +148,7 @@ static void opd_shutdown(struct op_buffer_head * buf, size_t size, struct op_not
 		count = op_read_device(devfd, buf, size);
 		if (count < 0 && errno == EAGAIN)
 			break;
-		verbprintf("Shutting down, state %d\n", buf->state);
+		verbprintf(vmisc, "Shutting down, state %d\n", buf->state);
 		opd_do_samples(buf);
 	}
 }
@@ -200,7 +200,7 @@ static void opd_do_read(struct op_buffer_head * buf, size_t size, struct op_note
  
 		/* request to stop arrived */
 		if (buf->state == STOPPING) {
-			verbprintf("Shutting down by request.\n");
+			verbprintf(vmisc, "Shutting down by request.\n");
 			opd_shutdown(buf, size, nbuf, nsize);
 			return;
 		}
@@ -271,13 +271,13 @@ static void opd_do_samples(struct op_buffer_head const * opd_buf)
 
 	opd_24_stats[OPD_DUMP_COUNT]++;
 
-	verbprintf("Read buffer of %d entries for cpu %d.\n",
+	verbprintf(vmisc, "Read buffer of %d entries for cpu %d.\n",
 		   (unsigned int)opd_buf->count, opd_buf->cpu_nr);
  
 	if (separate_cpu)
 		cpu_number = opd_buf->cpu_nr;
 	for (i = 0; i < opd_buf->count; i++) {
-		verbprintf("%.6u: EIP: 0x%.8lx pid: %.6d\n",
+		verbprintf(vsamples, "%.6u: EIP: 0x%.8lx pid: %.6d\n",
 			i, buffer[i].eip, buffer[i].pid);
 		opd_put_sample(&buffer[i]);
 	}
