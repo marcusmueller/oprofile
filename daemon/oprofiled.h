@@ -49,6 +49,9 @@ size_t opd_hash_name(char const * name);
  */
 int is_image_ignored(char const * name);
 
+/** return the int in the given oprofilefs file */
+int opd_read_fs_int(char const * path, char const * name);
+
 
 /** global variable positioned by signal handler */
 extern sig_atomic_t signal_alarm;

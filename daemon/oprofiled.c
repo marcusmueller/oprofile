@@ -26,6 +26,7 @@
 #include "op_popt.h"
 #include "op_lockfile.h"
 #include "op_list.h"
+#include "op_fileio.h"
 
 #include <sys/types.h>
 #include <sys/resource.h>
@@ -36,6 +37,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <assert.h>
+#include <dirent.h>
 
 sig_atomic_t signal_alarm;
 sig_atomic_t signal_hup;
@@ -306,6 +308,15 @@ int is_image_ignored(char const * name)
 	}
 
 	return 1;
+}
+
+
+/** return the int in the given oprofilefs file */
+int opd_read_fs_int(char const * path, char const * name)
+{
+	char filename[PATH_MAX + 1];
+	snprintf(filename, PATH_MAX, "%s/%s", path, name);
+	return op_read_int_from_file(filename);
 }
 
 

@@ -30,7 +30,6 @@
 #include "op_get_time.h"
 #include "op_fileio.h"
 
-#include <dirent.h>
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -107,15 +106,6 @@ static void op_open_files(void)
 	fflush(stdout);
 }
  
-
-/** return the int in the given oprofilefs file */
-static int opd_read_fs_int(char const * name)
-{
-	char filename[PATH_MAX + 1];
-	snprintf(filename, PATH_MAX, "%s/%s", OP_MOUNT, name);
-	return op_read_int_from_file(filename);
-}
-
 
 static void opd_do_samples(struct op_buffer_head const * buf);
 static void opd_do_notes(struct op_note const * opd_buf, size_t count);
@@ -344,8 +334,8 @@ static void opd_24_init(void)
 	int opd_note_buf_size = OP_DEFAULT_NOTE_SIZE;
 
 	opd_parse_kernel_range(kernel_range);
-	opd_buf_size = opd_read_fs_int("bufsize");
-	opd_note_buf_size = opd_read_fs_int("notesize");
+	opd_buf_size = opd_read_fs_int(OP_MOUNT, "bufsize");
+	opd_note_buf_size = opd_read_fs_int(OP_MOUNT, "notesize");
 
 	s_buf_bytesize = sizeof(struct op_buffer_head) + opd_buf_size * sizeof(struct op_sample);
 

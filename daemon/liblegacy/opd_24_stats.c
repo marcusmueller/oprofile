@@ -12,6 +12,7 @@
 #include "opd_24_stats.h"
 #include "opd_proc.h"
 #include "opd_image.h"
+#include "oprofiled.h"
 
 #include "op_get_time.h"
 
@@ -51,5 +52,9 @@ void opd_print_24_stats(void)
 	printf("Nr. sample dumps: %lu\n", opd_24_stats[OPD_DUMP_COUNT]);
 	printf("Nr. samples total: %lu\n", opd_24_stats[OPD_SAMPLES]);
 	printf("Nr. notifications: %lu\n", opd_24_stats[OPD_NOTIFICATIONS]);
+	printf("Nr. kernel note buffer overflow: %u\n",
+	       opd_read_fs_int(OP_MOUNT, "note_buffer_overflow"));
+	printf("Nr. kernel samples buffer overflow: %u\n",
+	       opd_read_fs_int(OP_MOUNT, "buffer_overflow"));
 	fflush(stdout);
 }

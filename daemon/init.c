@@ -26,7 +26,6 @@
 #include "op_libiberty.h"
 #include "op_fileio.h"
 
-#include <dirent.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
@@ -80,15 +79,6 @@ static void opd_open_files(void)
 	fflush(stdout);
 }
  
-
-/** return the int in the given oprofilefs file */
-static int opd_read_fs_int(char const * name)
-{
-	char filename[PATH_MAX + 1];
-	snprintf(filename, PATH_MAX, "/dev/oprofile/%s", name);
-	return op_read_int_from_file(filename);
-}
-
 
 /** Done writing out the samples, indicate with complete_dump file */
 static void complete_dump(void)
@@ -232,8 +222,8 @@ static void opd_26_init(void)
 
 	opd_create_vmlinux(vmlinux, kernel_range);
 
-	opd_buf_size = opd_read_fs_int("buffer_size");
-	kernel_pointer_size = opd_read_fs_int("pointer_size");
+	opd_buf_size = opd_read_fs_int("/dev/oprofile/", "buffer_size");
+	kernel_pointer_size = opd_read_fs_int("/dev/oprofile/", "pointer_size");
 
 	s_buf_bytesize = opd_buf_size * kernel_pointer_size;
 

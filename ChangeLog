@@ -1,5 +1,14 @@
 2003-11-09  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* daemon/init.c:
+	* daemon/liblegacy/init.c: move opd_read_fs_int ...
+	* daemon/oprofiled.h:
+	* daemon/oprofiled.c: here
+	* daemon/liblegacy/opd_24_stats.c: dump kernel note buffer overflow and
+	  buffer overlow
+
+2003-11-09  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* utils/op_help.c: do not use OP_MAX_COUNTERS but get counter number
 	  at runtime
 
