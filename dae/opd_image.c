@@ -45,9 +45,10 @@ static struct opd_image * images_with_hash[OP_HASH_MAP_NR];
  */
 static void opd_delete_image(struct opd_image * image)
 {
-	/* FIXME : must we free image->app_name ? */
 	if (image->name)
 		free(image->name);
+	if (image->app_name)
+		free(image->app_name);
 	free(image);
 }
 
@@ -111,8 +112,7 @@ static void opd_init_image(struct opd_image * image, char const * name,
 	image->name = xstrdup(name);
 	image->kernel = kernel;
 	image->hash = hash;
-	/* we do not duplicate this string! */
-	image->app_name = app_name;
+	image->app_name = app_name ? xstrdup(app_name) : NULL;
 }
 
 /**

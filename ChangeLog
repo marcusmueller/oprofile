@@ -1,3 +1,7 @@
+2002-10-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_image.c: allow to free(image->app_name)
+
 2002-10-05  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_image.c:
@@ -33,7 +37,7 @@
 	* libdb/db-*.c/*.h: typedef tweaking for 64 bits arch (signaled
 	  by Dave Jones)
 
-	* remove libdb/ChangeLog put, old entries are:
+	* remove libdb/ChangeLog, old entries are:
 
 	2002-04-20  Philippe Elie  <phil.el@wanadoo.fr>
 	* db-insert.c: check for count overflow

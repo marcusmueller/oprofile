@@ -145,8 +145,8 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 		}
 	}
 
-	/* we can't free image_name because opd_add_ascii_map assume than
-	 * image_name remains valid */
+	if (image_name)
+		free(image_name);
 
 	op_close_file(fp);
 }

@@ -35,7 +35,7 @@ struct opd_image {
 	char * name;
 	/* the application name where belongs this image, NULL if image has
 	 * no owner (such as vmlinux or module) */
-	char const * app_name;
+	char * app_name;
 	/* time of last modification */
 	time_t mtime;
 	/* kernel image or not */
