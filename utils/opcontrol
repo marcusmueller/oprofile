@@ -245,7 +245,10 @@ function create_dir {
 do_save_setup() {
 	create_dir "$SETUP_DIR"
 
-	rm $SETUP_FILE
+	if test -f "$SETUP_FILE"; then
+		rm $SETUP_FILE
+	fi
+ 
 	touch $SETUP_FILE
 	chmod 644 $SETUP_FILE
 
@@ -291,7 +294,7 @@ do_load_setup() {
 }
 
 check_valid_args() {
-	if [ "$one_enabled" == "0" ]; then
+	if [ "$one_enabled" = "0" ]; then
 		echo "You need at least one event to count, e.g." >&2
 		echo "opcontrol --setup ... --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000" >&2
 		echo "Enter opcontrol --help for full options" >&2
@@ -754,7 +757,7 @@ do_dump() {
 do_save_session () {
 	SAVE_DIR="${SAMPLES_DIR}${SAVE_NAME}"
 
-	if test ! -e $SAVE_DIR; then
+	if test ! -e "$SAVE_DIR"; then
 		
 		#create directory
 		mkdir -p "$SAVE_DIR"
@@ -849,7 +852,7 @@ do_operations() {
 # main
 
 if [ "$UID" != "0" ]; then
-	echo "Must be root to start oprofile." >&2
+	echo "Must be root to use oprofile." >&2
 	exit 1
 fi
 
