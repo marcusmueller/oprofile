@@ -1,5 +1,5 @@
 /**
- * @file arch.h
+ * @file op_arch.h
  * defines registers for x86
  *
  * @remark Copyright 2002 OProfile authors
@@ -8,8 +8,8 @@
  * @author Will Cohen
  */
 
-#ifndef ARCH_H
-#define ARCH_H
+#ifndef OP_ARCH_H
+#define OP_ARCH_H
 
 /* How to access the processor's instruction pointer */
 #ifdef CONFIG_X86_64
@@ -24,4 +24,4 @@
 /* Bit in processor's status register for interrupt masking */
 #define IRQ_ENABLED(eflags)	(eflags & IF_MASK)
 
-#endif /* ARCH_H */
+#endif /* OP_ARCH_H */

@@ -12,7 +12,7 @@
 #include "oprofile.h"
 #include "op_util.h"
 #include "version.h"
-#include "arch/arch.h"
+#include "op_arch.h"
 
 EXPORT_NO_SYMBOLS;
  

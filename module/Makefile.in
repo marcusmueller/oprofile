@@ -4,7 +4,7 @@ KVERS=@KVERS@
 KSRC=@KSRC@
 
 EXTRA_CFLAGS=@EXTRA_CFLAGS_MODULE@ @EXTRA_CFLAGS@ -D__NO_VERSION__ \
-	-I$(OPROFILE_DIR) -I$(OPROFILE_DIR)/libutil -I$(OPROFILE_DIR)/libop
+	-I$(OPROFILE_DIR)/module/@OPROFILE_MODULE_ARCH@ -I$(OPROFILE_DIR) -I$(OPROFILE_DIR)/libutil -I$(OPROFILE_DIR)/libop
 
 # enable -Werror for non-release versions except for on 2.5 kernels
 ifneq (,$(findstring cvs,$(VERSION)))
@@ -15,7 +15,7 @@ endif
  
 O_TARGET := oprofile-module.o
  
-obj-y := compat.o op_init.o op_util.o op_dname.o oprofile.o arch/arch.o $(OPROFILE_DIR)/libop/libop.a
+obj-y := compat.o op_init.o op_util.o op_dname.o oprofile.o @OPROFILE_MODULE_ARCH@/arch.o $(OPROFILE_DIR)/libop/libop.a
 obj-m := $(O_TARGET)
 O_OBJS := $(obj-y)
 M_OBJS := $(O_TARGET)

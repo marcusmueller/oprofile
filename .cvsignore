@@ -1,4 +1,5 @@
 missing
+autom4te-*
 mkinstalldirs
 INSTALL
 depcomp

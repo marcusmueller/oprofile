@@ -26,5 +26,10 @@ install-exec-local:
 	$(INSTALL_SCRIPT) $(srcdir)/$(OP_STOP) $(DESTDIR)$(bindir)/op_stop
 	$(INSTALL_SCRIPT) $(srcdir)/$(OP_DUMP) $(DESTDIR)$(bindir)/op_dump
 
+uninstall-local:
+	rm -f $(DESTDIR)$(bindir)/op_start
+	rm -f $(DESTDIR)$(bindir)/op_stop
+	rm -f $(DESTDIR)$(bindir)/op_dump
+
 # make sure everything gets distributed...
 EXTRA_DIST = op_dump op_dump_25 op_start_25 op_stop op_stop_25 op_start opcontrol

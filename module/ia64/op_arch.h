@@ -1,5 +1,5 @@
 /**
- * @file arch.h
+ * @file op_arch.h
  * defines machine specific values for ia64
  *
  * @remark Copyright 2002 OProfile authors
@@ -8,8 +8,8 @@
  * @author Will Cohen
  */
 
-#ifndef ARCH_H
-#define ARCH_H
+#ifndef OP_ARCH_H
+#define OP_ARCH_H
 
 /* How to access the processor's instruction pointer */
 #define INST_PTR(regs) ((regs)->cr_iip)
@@ -28,4 +28,4 @@
 #define IA64_1_PMD_MASK_VAL	((1UL << 32) - 1)
 #define IA64_2_PMD_MASK_VAL	((1UL << 47) - 1)
 
-#endif /* ARCH_H */
+#endif /* OP_ARCH_H */

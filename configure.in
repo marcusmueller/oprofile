@@ -160,7 +160,6 @@ if test "$OPROFILE_25" = "no"; then
 	AC_SUBST(BUILD_HAMMER)
 
 	test "$arch" = "unknown" && AC_MSG_ERROR(Unsupported architecture)
-	(cd ${srcdir}/module/ && rm -f arch/ && ln -s $arch arch)
 
 	dnl check to see if kernel verion appropriate for arch
 	AC_MSG_CHECKING(arch/kernel version combination)
@@ -180,11 +179,11 @@ if test "$OPROFILE_25" = "no"; then
 	AC_SUBST(KINC)
 
 	MODINSTALLDIR=/lib/modules/$KVERS
-else
-	# needed for clean build --with-kernel-support. Hack !
-	(cd ${srcdir}/module/ && rm -f arch/ && ln -s x86 arch) 
 fi
  
+OPROFILE_MODULE_ARCH=$arch
+AC_SUBST(OPROFILE_MODULE_ARCH)
+
 AC_ARG_WITH(module-dir,
 [  --with-module-dir=dir        Path to module installation directory], MODINSTALLDIR=$withval)
 AC_SUBST(MODINSTALLDIR)

@@ -1,5 +1,16 @@
 2002-12-21  John Levon  <levon@movementarian.org>
 
+	* module/Makefile.am:
+	* configure.in: remove the ln -s arch in favour of
+	  using -I and AC_SUBST
+
+	* module/ia64/arch.h:
+	* module/x86/arch.h: rename to op_arch.h
+
+	* utils/Makefile.am: fix make uninstall
+
+2002-12-21  John Levon  <levon@movementarian.org>
+
 	* utils/Makefile.am: fix back-compat scripts install
 	  for 2.5 kernel
 
