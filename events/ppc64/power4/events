@@ -42,13 +42,13 @@ event:0x37 counters:7 um:zero minimum:1000 name:PM_DATA_FROM_L25_MOD_GRP3 : (Gro
 
 #Group 4 pm_lsource2
 event:0x40 counters:0 um:zero minimum:1000 name:PM_INST_CMPL_GRP4 : (Group 4 pm_lsource2) Number of Eligible Instructions that completed
-event:0x41 counters:0 um:zero minimum:1000 name:PM_L2_DCACHE_RELOAD_VALID_GRP4 : (Group 4 pm_lsource2) The data source information is valid
-event:0x42 counters:0 um:zero minimum:1000 name:PM_CYC_GRP4 : (Group 4 pm_lsource2) Processor Cycles
-event:0x43 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L2_GRP4 : (Group 4 pm_lsource2) DL1 was reloaded from the local L2 due to a demand load
-event:0x44 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L25_SH_GRP4 : (Group 4 pm_lsource2) Data reloaded with shared (T) data from the L2 of a chip on this MCM due to a demand load
-event:0x45 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L275_SHR_GRP4 : (Group 4 pm_lsource2) Data reloaded with shared (T) data from the another MCM due to a demand load
-event:0x46 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L275_MOD_GRP4 : (Group 4 pm_lsource2) Data reloaded with modified (M) data from the another MCM due to a demand load
-event:0x47 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L25_MOD_GRP4 : (Group 4 pm_lsource2) Data reloaded with modified (M) data from the L2 of a chip on this MCM due to a demand load
+event:0x41 counters:1 um:zero minimum:1000 name:PM_L2_DCACHE_RELOAD_VALID_GRP4 : (Group 4 pm_lsource2) The data source information is valid
+event:0x42 counters:2 um:zero minimum:1000 name:PM_CYC_GRP4 : (Group 4 pm_lsource2) Processor Cycles
+event:0x43 counters:3 um:zero minimum:1000 name:PM_DATA_FROM_L2_GRP4 : (Group 4 pm_lsource2) DL1 was reloaded from the local L2 due to a demand load
+event:0x44 counters:4 um:zero minimum:1000 name:PM_DATA_FROM_L25_SH_GRP4 : (Group 4 pm_lsource2) Data reloaded with shared (T) data from the L2 of a chip on this MCM due to a demand load
+event:0x45 counters:5 um:zero minimum:1000 name:PM_DATA_FROM_L275_SHR_GRP4 : (Group 4 pm_lsource2) Data reloaded with shared (T) data from the another MCM due to a demand load
+event:0x46 counters:6 um:zero minimum:1000 name:PM_DATA_FROM_L275_MOD_GRP4 : (Group 4 pm_lsource2) Data reloaded with modified (M) data from the another MCM due to a demand load
+event:0x47 counters:7 um:zero minimum:1000 name:PM_DATA_FROM_L25_MOD_GRP4 : (Group 4 pm_lsource2) Data reloaded with modified (M) data from the L2 of a chip on this MCM due to a demand load
 
 #Group 5 pm_lsource3
 event:0x50 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L3_GRP5 : (Group 5 pm_lsource3) Data loaded from L3

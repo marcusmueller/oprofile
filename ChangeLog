@@ -1,3 +1,7 @@
+2004-10-15 Will Cohen <wcohen@redhat.com>
+
+	* events/ppc64/power4/events: Corrected group 4 counter assignments.
+
 2004-10-15 Maynard Johnson <maynardj@us.ibm.com>
 
 	* events/Makefile.am:
