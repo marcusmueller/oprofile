@@ -66,5 +66,13 @@ int main()
 	check(f6, "foo ", false);
 	check(f6, "foo/ bar", false);
 
+	path_filter f7(".", "");
+	check(f7, ".", true);
+	// a bit surprising but right IMHO, our implementation use successive
+	// dirname(input) to check vs the included path and
+	// dirname("foo") == "." so all relative path input match a "."
+	// included filter
+	check(f7, "foo", true);
+
 	return EXIT_SUCCESS;
 }

@@ -1,5 +1,12 @@
 2003-11-04  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/path_filter.cpp: remove 2 identical FIXME
+	* libutil++/tests/file_manip_tests.cpp:
+	* libutil++/tests/path_filter_tests.cpp: reflect the behavior by
+	  new tests
+
+2003-11-04  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libdb/db_manage.c:
 	* libop/op_events.h: -pedantic fix
 

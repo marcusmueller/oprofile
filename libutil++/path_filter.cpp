@@ -31,8 +31,7 @@ bool path_filter::match(std::string const & str) const
 		if (cit != exclude.end())
 			return false;
 
-		// FIXME: test uneccessary, wait a decent testsuite before
-		// removing
+		// dirname("foo") == "foo"
 		if (comp == op_dirname(comp))
 			break;
 		comp = op_dirname(comp);
@@ -58,7 +57,8 @@ bool path_filter::match(std::string const & str) const
 			fnmatcher(op_basename(compi)));
 		if (cit != include.end())
 			return true;
-		// FIXME see above.
+
+		// dirname("foo") == "foo"
 		if (compi == op_dirname(compi))
 			break;
 		compi = op_dirname(compi);
