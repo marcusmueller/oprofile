@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.43 2001/09/15 20:55:45 movement Exp $ */
+/* $Id: oprofpp.c,v 1.44 2001/09/15 21:05:59 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -206,8 +206,9 @@ static void get_options(int argc, char const *argv[])
 		/* a --counter=x have priority on the # suffixe of filename */
 		if (ctr != -1 && counter != -1) {
 			/* conflict between #%d and --ctr option */
-			fprintf(stderr, "oprofpp: conflict between %s filename counter nr and --ctr %d option, using --ctr option %d\n", file_ctr_str, ctr, ctr);
-			counter = ctr;
+			fprintf(stderr, "oprofpp: conflict between given counter and counter of samples file.\n");
+			poptPrintHelp(optcon, stderr, 0);
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -336,10 +337,9 @@ bfd *open_image_file(char const * mangled, time_t mtime)
 
 	newmtime = opd_get_mtime(file);
 	if (newmtime != mtime) {
-		fprintf(stderr, "oprofpp: the last modified time of the binary file %s does not match "
-			"that of the sample file. Either this is the wrong binary or the binary "
+		fprintf(stderr, "oprofpp: WARNING: the last modified time of the binary file %s does not match\n"
+			"that of the sample file. Either this is the wrong binary or the binary\n"
 			"has been modified since the sample file was created.\n", file);
-		exit(EXIT_FAILURE);
 	}
 			 
 	ibfd = bfd_openr(file, NULL);

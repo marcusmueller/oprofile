@@ -1,8 +1,14 @@
 2001-09-15  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/oprofpp.c: allow non-matching mtimes in order
+	  to allow pp on different machines. Make conflicting
+	  counter specifications a fatal error
+
+2001-09-15  John Levon  <moz@compsoc.man.ac.uk>
+
 	* all Makefile.in: install should depend on all
 
-	* oprofpp.c: fixes for Athlon 4 counters. Enable debug info
+	* pp/oprofpp.c: fixes for Athlon 4 counters. Enable debug info
 	  for list-symbol. Some stricter checking
 
 2001-09-15  Philippe Elie  <ph_e@club-internet.fr>
