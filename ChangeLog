@@ -1,3 +1,7 @@
+2003-07-31  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opannotate.cpp: output cpu type and cpu speed.
+
 2003-07-30  John Levon  <levon@movementarian.org>
 
 	* libpp/partition_files.cpp: remove some apparently

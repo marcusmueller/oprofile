@@ -174,6 +174,7 @@ void output_info(ostream & out)
 
 	stringstream stream;
 
+	output_cpu_info(stream, *header);
 	stream << *header;
 	stream.seekp(0);
 
