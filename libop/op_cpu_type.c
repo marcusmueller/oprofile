@@ -73,7 +73,8 @@ op_cpu op_get_cpu_type(void)
 	return cpu_type;
 }
 
-op_cpu op_get_cpu_number(char *cpu_string)
+
+op_cpu op_get_cpu_number(char const * cpu_string)
 {
 	int cpu_type = CPU_NO_GOOD;
 	size_t i;
@@ -94,12 +95,12 @@ op_cpu op_get_cpu_number(char *cpu_string)
 
 	return cpu_type;
 }
- 
+
+
 char const * op_get_cpu_type_str(op_cpu cpu_type)
 {
-	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
+	if (cpu_type <= CPU_NO_GOOD || cpu_type >= MAX_CPU_TYPE)
 		return "invalid cpu type";
-	}
 
 	return cpu_descrs[cpu_type].pretty;
 }
@@ -107,9 +108,8 @@ char const * op_get_cpu_type_str(op_cpu cpu_type)
 
 char const * op_get_cpu_name(op_cpu cpu_type)
 {
-	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
+	if (cpu_type <= CPU_NO_GOOD || cpu_type >= MAX_CPU_TYPE)
 		return "invalid cpu type";
-	}
 
 	return cpu_descrs[cpu_type].name;
 }
@@ -117,7 +117,7 @@ char const * op_get_cpu_name(op_cpu cpu_type)
 
 int op_get_nr_counters(op_cpu cpu_type)
 {
-	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE)
+	if (cpu_type <= CPU_NO_GOOD || cpu_type >= MAX_CPU_TYPE)
 		return 0;
 
 	return cpu_descrs[cpu_type].nr_counters;

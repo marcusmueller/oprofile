@@ -13,5 +13,4 @@ regex_test_LDADD = \
 
 EXTRA_DIST = mangled-name.txt
 
-# FIXME: add a script which do that and use TESTS = script
-TESTS = regex_test
+TESTS = ${check_PROGRAMS}

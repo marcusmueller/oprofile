@@ -10,4 +10,4 @@ file_tests_LDADD = ../libutil.a
 string_tests_SOURCES = string_tests.c
 string_tests_LDADD = ../libutil.a
 
-TESTS = file_tests string_tests
+TESTS = ${check_PROGRAMS}

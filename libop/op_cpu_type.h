@@ -53,7 +53,7 @@ op_cpu op_get_cpu_type(void);
  *
  * The function returns CPU_NO_GOOD if no matching string was found.
  */
-op_cpu op_get_cpu_number(char *cpu_string);
+op_cpu op_get_cpu_number(char const * cpu_string);
 
 /**
  * get the cpu string.
