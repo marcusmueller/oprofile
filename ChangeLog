@@ -1,5 +1,11 @@
 2003-07-30  John Levon  <levon@movementarian.org>
 
+	* events/i386.p4.unit_masks: make flame_uops value
+	mandatory, Yuan.Lu@rrze.uni-erlangen.de does not
+	see any events without setting the unit mask
+
+2003-07-30  John Levon  <levon@movementarian.org>
+
 	* libutil++/op_bfd.h:
 	* libutil++/op_bfd.cpp: bfd_openr() keeps a copy of
 	the passed in char * around, sickenly enough. Ensure lifetimes

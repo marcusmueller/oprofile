@@ -141,7 +141,7 @@ name:fsb_data_activity type:bitmask default:0x3f
 	0x08 count when this processor reserves bus for driving
 	0x10 count when other reserves bus and this processor will sample
 	0x20 count when other reserves bus and this processor will not sample
-name:flame_uop type:bitmask default:0x8000
+name:flame_uop type:mandatory default:0x8000
 	0x8000 count all uops of this type
 name:x87_simd_moves_uop type:bitmask default:0x18
 	0x08 count all x87 SIMD store/move uops
