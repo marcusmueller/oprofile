@@ -61,10 +61,11 @@ void op_regfree(regex_t & regexp)
 // these ranges.
 size_t subexpr_index(char ch)
 {
-	if (!isdigit(ch) && !(ch >='a' && ch <= 'z'))
-		return size_t(-1);
-
-	return ch >= 'a' ? ch - 'a' + 10  : ch - '0';
+	if (isdigit(ch))
+		return ch - '0';
+	if (ch >= 'a' && ch <= 'z')
+		return ch - 'a' + 10;
+	return size_t(-1);
 }
 
 }  // anonymous namespace
