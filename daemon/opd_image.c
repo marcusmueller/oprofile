@@ -303,14 +303,14 @@ static struct opd_image * opd_find_image(cookie_t cookie,
 		    image->app_cookie != trans->app_cookie)
 			continue;
  
-		if (image->cookie == cookie)
-			return image;
-
 		if (thread_profiling) {
 			if (image->tgid != trans->tgid ||
 			    image->tid != trans->tid)
 				continue;
 		}
+
+		if (image->cookie == cookie)
+			return image;
 	}
 	return NULL;
 }
