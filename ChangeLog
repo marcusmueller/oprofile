@@ -1,5 +1,10 @@
 2004-07-09  John Levon  <levon@movementarian.org>
 
+	* libpp/populate.cpp: quash timestamp warnings
+	 when using archive: profile specifier
+
+2004-07-09  John Levon  <levon@movementarian.org>
+
 	* pp/opstack_options.cpp: include call-graph
 	  files in archive.
 

@@ -6,7 +6,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8.1 release
 -------------
 
- o squish the time stamp warning in the opreport archive: case
  o IA64 and maybe others do not properly disable a counter if it's been
    used previously. Needs audit! (see bug 964097 report on sf). Needs
    2.6 patch at least.

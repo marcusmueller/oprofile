@@ -86,7 +86,8 @@ populate_for_image(string const & archive_path, profile_container & samples,
 		}
 	}
 
-	if (found == true && ip.error == image_ok)
+	// we shouldn't check/warn if an archive is used
+	if (archive_path.empty() && found == true && ip.error == image_ok)
 		check_mtime(abfd.get_filename(), header);
 
 	return abfd.has_debug_info();
