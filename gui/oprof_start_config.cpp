@@ -41,7 +41,7 @@ static void save_value(std::ostream& out, const std::string& value,
 
 bool is_profiler_started()
 {
-	return !system("ps aux | grep oprofiled | grep -v grep > /dev/null");
+	return !system("test `ps aux | grep oprofiled | grep -v grep | awk '{print $5}'`");
 }
 
 event_setting::event_setting() 

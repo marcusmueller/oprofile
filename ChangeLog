@@ -1,5 +1,9 @@
 2001-09-25  John Levon  <moz@compsoc.man.ac.uk>
 
+	* gui/oprof_start_config.cpp: fix is_profiler_started() too 
+ 
+2001-09-25  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/op_stop: fix terribly stupid error
  
 2001-09-25  John Levon  <moz@compsoc.man.ac.uk>
