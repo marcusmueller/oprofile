@@ -490,12 +490,13 @@ task's lists to look at). When a mapping is found that contains the PC
 value, we look up the mapped file's dentry in the dcookie cache. This
 gives the dcookie ID that will uniquely identify the mapped file. Then
 we alter the absolute value such that it is an offset from the start of
-the mapping (the mapping need not start at the start of the actual file,
-so we have to consider the offset value of the mapping). We store this
-dcookie ID into the event buffer; this identifies which binary the
-samples following it are against.
-In this manner, we have converted a PC value, which has transitory meaning
-only, into a static offset value for later processing by the daemon.
+the file being mapped (the mapping need not start at the start of the
+actual file, so we have to consider the offset value of the mapping). We
+store this dcookie ID into the event buffer; this identifies which
+binary the samples following it are against.
+In this manner, we have converted a PC value, which has transitory
+meaning only, into a static offset value for later processing by the
+daemon.
 </para>
 <para>
 We also attempt to avoid the relatively expensive lookup of the dentry
