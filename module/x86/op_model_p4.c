@@ -414,7 +414,7 @@ static void pmc_setup_one_p4_counter(unsigned int ctr)
 	}
 
 	printk(KERN_ERR 
-	       "oprofile: P4 event code 0x%lx no binding, ctr %d\n",
+	       "oprofile: P4 event code 0x%x no binding, ctr %d\n",
 	       sysctl.ctr[ctr].event, ctr);
 }
 
