@@ -19,11 +19,10 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-
 #ifndef MODUTILS_MODULE_H
 #define MODUTILS_MODULE_H 1
 
-#ident "$Id: p_module.h,v 1.1 2001/07/26 01:39:16 movement Exp $"
+#ident "$Id: p_module.h,v 1.2 2002/02/04 02:10:49 movement Exp $"
 
 /* This file contains the structures used by the 2.0 and 2.1 kernels.
    We do not use the kernel headers directly because we do not wish

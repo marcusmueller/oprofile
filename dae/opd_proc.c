@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.102 2002/01/27 00:37:05 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.103 2002/02/04 02:10:49 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1408,4 +1408,38 @@ void opd_get_ascii_procs(void)
 	}
 
 	closedir(dir);
+}
+
+
+/**
+ * opd_proc_cleanup - clean up on exit
+ */
+void opd_proc_cleanup(void)
+{
+	struct opd_image * image = 0;
+	struct list_head * pos, * pos2;
+	uint i;
+
+	list_for_each_safe(pos, pos2, &opd_images) {
+		image = list_entry(pos, struct opd_image, list_node);
+		if (image->name)
+			free(image->name);
+		free(image);
+	}
+ 
+	free(kernel_image->name); 
+	free(kernel_image);
+ 
+	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
+		struct opd_proc * proc = opd_procs[i];
+		struct opd_proc * next;
+
+		while (proc) {
+			next = proc->next;
+			opd_delete_proc(proc);
+			proc=next;
+		}
+	}
+	
+	opd_clear_module_info();
 }
