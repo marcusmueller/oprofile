@@ -615,7 +615,7 @@ Here, we have an Intel laptop without support for performance counters, running 
 <screen>
 # op_help -r
 CPU with RTC device
-# opcontrol --vmlinux=/boot/2.5.66/vmlinux --event=RTC:1024:0:1:1
+# opcontrol --vmlinux=/boot/2.5.66/vmlinux --event=RTC_INTERRUPTS:1024:0:1:1
 # opcontrol --start
 </screen>
 </sect3>
@@ -701,7 +701,7 @@ of the form <option><emphasis>name</emphasis>:<emphasis>count</emphasis>:<emphas
 </informaltable>
 <para>
 If OProfile is using RTC mode, and you want to alter the default counter value,
-you can use something like <option>--event=RTC:2048:0:1:1</option>. Note the last
+you can use something like <option>--event=RTC_INTERRUPTS:2048:0:1:1</option>. Note the last
 three values here are ignored.
 If OProfile is using timer-interrupt mode, there is no configuration possible.
 </para>
@@ -820,7 +820,7 @@ two.
 Setting the value from the GUI should be straightforward. On the command line, you need to specify the
 event to <command>opcontrol</command>, e.g. :
 </para>
-<para><command>opcontrol --event=RTC:256:0:1:1</command></para>
+<para><command>opcontrol --event=RTC_INTERRUPTS:256:0:1:1</command></para>
 </sect2>
 
 <sect2 id="timer">
