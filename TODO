@@ -17,10 +17,6 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
- o get a look at missing samples, run libdb/db_test on a sample file and see
-  if pp tools miss some samples. I get a deep look in opofiled, 0.5% of of
-  missing sample in the .plt section, a quick look on opreport show 2% missing
-    - up to date ?
  o thread profiling - kernel change in 2.5 to export task->tgid
  o per-cpu profiling
  o test opannotate -s -a on an application containing relative path debug
