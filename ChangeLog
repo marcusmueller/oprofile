@@ -1,3 +1,16 @@
+2002-12-10  Will Cohen  <wcohen@redhat.com>
+
+	* utils/op_dump_25: 
+	* utils/opcontrol (do_dump): Correct TMPFILE.
+
+2002-12-10  Will Cohen  <wcohen@redhat.com>
+
+	* daemon/opd_image.c (complete_dump): New.
+	* libop/op_config.h (OP_DUMP_STATUS): New.
+	* utils/op_dump_25: New file.
+	* utils/Makefile.am: Add op_dump_25.
+	* utils/opcontrol (do_dump): Revise how dump performed.
+
 2002-12-10  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/profile.cpp : oprofpp reported incorrectly counter setting when

@@ -39,7 +39,7 @@ fi
 
 if test "$KERNEL_SUPPORT" = "yes"; then
 	# find current time
-	TMPFILE=`mktemp /tmp/$0.XXXXXX` || exit 1
+	TMPFILE=`mktemp /tmp/oprofile.XXXXXX` || exit 1
 	echo 1 > $MOUNT/dump
 	# loop until there is a file to check
 	while [ ! -e "$DIR/complete_dump" ]
