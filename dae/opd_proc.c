@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.10 2000/08/02 21:40:54 moz Exp $ */
+/* $Id: opd_proc.c,v 1.11 2000/08/02 22:36:15 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -327,6 +327,32 @@ static void opd_grow_images(void)
 }
 
 /**
+ * bstreq - reverse string comparison
+ * @str1: first string
+ * @str2: second string
+ *
+ * Compares two strings, starting at the end.
+ * Returns %1 if they match, %0 otherwise.
+ */
+inline static int bstreq(const char *str1, const char *str2)
+{
+	char *a = (char *)str1;
+	char *b = (char *)str2;
+
+	while (*a && *b)
+		a++,b++;
+
+	if (*a || *b)
+		return 0;
+
+	while (a!=str1) {
+		if (*b--!=*a--)
+			return 0;
+	}
+	return 1;
+}
+ 
+/**
  * opd_find_image - find an image
  * @name: file name of image to find
  *
@@ -338,7 +364,7 @@ static struct opd_image *opd_find_image(const char *name)
 
 	/* FIXME: use hash table */
 	for (i=1;i<nr_images;i++) {
-		if (streq(opd_images[i].name, name))
+		if (bstreq(opd_images[i].name, name))
 			return &opd_images[i];
 	}
 
@@ -607,7 +633,7 @@ static struct opd_module *opd_get_module(char *name)
 	int i;
 
 	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].image && streq(name,opd_modules[i].image->name)) {
+		if (opd_modules[i].image && bstreq(name,opd_modules[i].image->name)) {
 			/* free this copy */ 
 			opd_free(name);
 			return &opd_modules[i];
