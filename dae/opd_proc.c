@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.50 2001/04/05 13:24:42 movement Exp $ */
+/* $Id: opd_proc.c,v 1.51 2001/04/06 14:16:46 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -75,7 +75,6 @@ static void opd_handle_old_sample_file(char * mangled, char * sum);
    report stats */
 void opd_alarm(int val __attribute__((unused)))
 {
-	static int last = -1;
 	struct opd_proc *proc;
 	struct opd_proc *next;
 	uint i;
@@ -114,13 +113,6 @@ void opd_alarm(int val __attribute__((unused)))
 	printf("Nr. notifications: %lu\n",opd_stats[OPD_NOTIFICATIONS]);
 	fflush(stdout);
 
-	/* we should demand some data if we haven't got any recently */
-
-	if (last==(int)opd_stats[OPD_DUMP_COUNT])
-		system("sysctl -w dev.oprofile.dump=1 >/dev/null");
-
-	last = opd_stats[OPD_DUMP_COUNT];
-	
 	alarm(60*10);
 }
 

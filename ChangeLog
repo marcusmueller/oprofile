@@ -1,5 +1,19 @@
 2001-04-05  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/opd_proc.c: remove forced dumping. It was
+	causing overhead spikes
+
+	* doc/html/results.html:
+	* doc/oprofile.sgml:
+	* dae/op_start: Hopefully document dump clearly enough
+
+2001-04-05  John Levon  <moz@compsoc.man.ac.uk>
+
+	* oprofile.h:
+	* op_syscalls.c: 2.4.3 and above have a rw mmap_sem
+
+2001-04-05  John Levon  <moz@compsoc.man.ac.uk>
+
 	* doc/html/: added missing files
 
 2001-04-05  John Levon  <moz@compsoc.man.ac.uk>

@@ -495,7 +495,13 @@ The following files will be present :
 <chapter id="results">
 <title>Obtaining and interpreting results</title>
 <para>
-OK, so the profiler has been running, but it's not much use unless we can get some data out. That's the job of
+OK, so the profiler has been running, but it's not much use unless we can get some data out. Fairly often,
+OProfile does a little <emphasis>too</emphasis> good a job of keeping overhead low, and no data reaches
+the profiler. This can happen on lightly-loaded machines. Remember you can force a dump at any time with :
+</para>
+<para><command>echo 1 &gt;/proc/sys/dev/oprofile/dump</command></para>
+<para>Remember to do this before complaining there is no profiling data !
+Now that we've got some data, it has to be processed. That's the job of
 <command>oprofpp</command>. This works on a sample file in the <filename>/var/opd/samples/</filename> directory,
 along with the binary file being profiled, to produce human-readable data. Note that if the binary file changes
 after the sample file was created, you won't be able to get useful data out. This situation is detected for you.

@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.1 2001/04/05 13:24:42 movement Exp $
+# $Id: Makefile.in,v 1.2 2001/04/06 14:16:46 movement Exp $
 
 prefix=@prefix@
 MANDIR=@mandir@

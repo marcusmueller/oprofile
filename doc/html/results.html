@@ -86,7 +86,20 @@ HREF="interpreting.html"
 ></DL
 ></DIV
 ><P
->OK, so the profiler has been running, but it's not much use unless we can get some data out. That's the job of
+>OK, so the profiler has been running, but it's not much use unless we can get some data out. Fairly often,
+OProfile does a little <I
+CLASS="EMPHASIS"
+>too</I
+> good a job of keeping overhead low, and no data reaches
+the profiler. This can happen on lightly-loaded machines. Remember you can force a dump at any time with :</P
+><P
+><B
+CLASS="COMMAND"
+>echo 1 &#62;/proc/sys/dev/oprofile/dump</B
+></P
+><P
+>Remember to do this before complaining there is no profiling data !
+Now that we've got some data, it has to be processed. That's the job of
 <B
 CLASS="COMMAND"
 >oprofpp</B
