@@ -28,7 +28,6 @@ using std::endl;
 namespace options {
 	string session;
 	string counter_str("0");
-	string output_format;
 	bool list_symbols;
 	bool show_image_name;
 	bool demangle;
@@ -46,12 +45,13 @@ namespace options {
 namespace {
 
 bool verbose;
+string output_format;
  
 option options_array[] = {
 	option(verbose, "verbose", 'V', "verbose output"),
+	option(output_format, "output-format", 't', "choose the output format", "output-format strings"),
 	option(options::session, "session", 's', "session to use", "name"),
 	option(options::counter_str, "counter", 'c', "which counter to use", "counter_nr[,counter_nr]"),
-	option(options::output_format, "output-format", 't', "choose the output format", "output-format strings"),
 	option(options::list_symbols, "list-symbols", 'l', "list samples by symbol"),
 	option(options::show_image_name, "show-image-name", 'n', "show the image name from where come symbols"),
 	option(options::path, "path", 'p', "add path for retrieving image", "path_name[,path_name]"),

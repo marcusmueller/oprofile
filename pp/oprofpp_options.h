@@ -19,23 +19,33 @@
 
 /// command line option values
 namespace options {
-	extern int counter_mask;
-	extern int sort_by_counter;
-	extern std::string gprof_file;
-	extern std::string symbol;
-	extern bool list_symbols;
-	extern bool output_linenr_info;
-	extern bool reverse_sort;
-	extern bool show_shared_libs;
-	extern OutSymbFlag output_format_flags;
-	extern bool list_all_symbols_details;
-	/** control the behavior of demangle_symbol() */
-	extern bool demangle;
-	/** a sample filename */
+	/// sample file to work on
 	extern std::string sample_file;
-	/** an image filename */
+	/// image file to work on
 	extern std::string image_file;
-	/** the set of symbols to ignore */
+	/// gprof file to output to
+	extern std::string gprof_file;
+	/// symbol to show in detail
+	extern std::string symbol;
+	/// mask of counters to show
+	extern int counter_mask;
+	/// counters to sort by
+	extern int sort_by_counter;
+	/// show symbol summary
+	extern bool list_symbols;
+	/// show all symbol's details
+	extern bool list_all_symbols_details;
+	/// show debug info
+	extern bool output_linenr_info;
+	/// reverse sort
+	extern bool reverse_sort;
+	/// show shared library symbols
+	extern bool show_shared_libs;
+	/// demangle symbols
+	extern bool demangle;
+	/// what format to output
+	extern OutSymbFlag output_format_flags;
+	/// symbols to exclude
 	extern std::vector<std::string> exclude_symbols;
 };
 

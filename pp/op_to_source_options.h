@@ -15,27 +15,34 @@
 #include <string>
 #include <vector>
 
-// FIXME
-
 /// command line option values
 namespace options {
-	extern int with_more_than_samples;
-	extern int until_more_than_samples;
-	extern int sort_by_counter;
-	extern std::string source_dir;
-	extern std::string output_dir;
-	extern std::string output_filter;
-	extern std::string no_output_filter;
-	extern bool assembly;
-	extern bool source_with_assembly;
-	/** control the behavior of demangle_symbol() */
-	extern bool demangle;
-	/** a sample filename */
+	/// sample file to work on
 	extern std::string sample_file;
-	/** an image filename */
+	/// image file to work on
 	extern std::string image_file;
-	/** the set of symbols to ignore */
+	/// show files with more than this nr. of samples 
+	extern int with_more_than_samples;
+	/// FIXME: doc 
+	extern int until_more_than_samples;
+	/// counter to sort by
+	extern int sort_by_counter;
+	/// top-level source directory
+	extern std::string source_dir;
+	/// top-level output directory
+	extern std::string output_dir;
+	/// comma-separated mask of files to output
+	extern std::string output_filter;
+	/// comma-separated mask of files to not output
+	extern std::string no_output_filter;
+	/// which symbols to exclude
 	extern std::vector<std::string> exclude_symbols;
+	/// whether to generate assembly
+	extern bool assembly;
+	/// whether to generate mixed source/assembly 
+	extern bool source_with_assembly;
+	/// whether to demangle
+	extern bool demangle;
 };
 
 /**

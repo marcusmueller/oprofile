@@ -21,22 +21,37 @@
 typedef std::multimap<std::string, std::string> alt_filename_t;
  
 namespace options {
+	/// session name
 	extern std::string session;
-	extern std::string counter_str;
-	extern std::string output_format;
-	extern bool list_symbols;
-	extern bool show_image_name;
-	extern std::vector<std::string> path;
-	extern std::vector<std::string> recursive_path;
-	extern bool reverse_sort;
-	extern bool show_shared_libs;
-	extern int sort_by_counter;
+	/// samples directory 
 	extern std::string samples_dir;
+	/// counter to use
 	extern int counter;
+	// FIXME: should be exposed only as a mask
+	/// selected counters (comma-separated)
+	extern std::string counter_str;
+	/// output format to use
 	extern OutSymbFlag output_format_flags;
-	extern bool demangle;
+	/// which symbols to exclude 
 	extern std::vector<std::string> exclude_symbols;
+	/// FIXME: doc
+	extern std::vector<std::string> path;
+	/// FIXME: doc
+	extern std::vector<std::string> recursive_path;
+	/// FIXME: doc
 	extern alt_filename_t alternate_filename;
+	/// whether to do symbol-based summary
+	extern bool list_symbols;
+	/// whether to show image name
+	extern bool show_image_name;
+	/// reverse the sort
+	extern bool reverse_sort;
+	/// show dependent shared library samples 
+	extern bool show_shared_libs;
+	/// counter to sort by
+	extern int sort_by_counter;
+	/// whether to demangle
+	extern bool demangle;
 }
 
 /**
