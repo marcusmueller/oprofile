@@ -117,8 +117,7 @@ void db_open(db_tree_t * tree, char const * filename, enum db_rw rw,
 
 	tree->base_memory =
 		mmap(0, (nr_page * sizeof(db_page_t)) + tree->offset_page,
-//			mmflags, MAP_SHARED, tree->fd, 0);
-		     mmflags, (rw == DB_RDWR) ? MAP_SHARED : MAP_PRIVATE, tree->fd, 0);
+			mmflags, MAP_SHARED, tree->fd, 0);
 
 	if (tree->base_memory == MAP_FAILED) {
 		fprintf(stderr, "db_add_page() mmap failure "
