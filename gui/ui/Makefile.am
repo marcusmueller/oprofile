@@ -3,7 +3,7 @@ if have_qt
 MOC=@MOC@
 UIC=@UIC@
 
-AM_CPP_FLAGS = @QT_INCLUDES@
+AM_CPPFLAGS = @QT_INCLUDES@
 
 noinst_LIBRARIES = liboprof_start.a
 nodist_liboprof_start_a_SOURCES = oprof_start.base.cpp oprof_start.base.moc.cpp

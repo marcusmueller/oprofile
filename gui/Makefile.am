@@ -20,6 +20,6 @@ oprof_start.moc.cpp: oprof_start.h
 clean-local:
 	rm -f oprof_start.moc.cpp
 
-EXTRA_DIST = oprof_start.h oprof_start_config.h oprof_start_util.h persistent_config.h $(distributed_sources)
-
 endif
+ 
+EXTRA_DIST = oprof_start.h oprof_start_config.h oprof_start_util.h persistent_config.h $(distributed_sources)

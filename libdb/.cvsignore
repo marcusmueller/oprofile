@@ -1,3 +1,4 @@
 .deps
 db-test
 Makefile
+Makefile.in

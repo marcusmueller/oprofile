@@ -1,5 +1,14 @@
 2002-11-09  John Levon  <levon@movementarian.org>
 
+	* all cvsignore: add Makefile.in
+ 
+	* gui/Makefile.am: move EXTRA_DIST out of qt check
+
+	* gui/ui/Makefile.am:
+	* oprof_report/ui/Makefile.am: fix AM_CPPFLAGS typo
+ 
+2002-11-09  John Levon  <levon@movementarian.org>
+
 	* all build files: use automake, written by Phil
  
 2002-11-09  Philippe Elie  <phil.el@wanadoo.fr>

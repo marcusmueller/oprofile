@@ -1,6 +1,7 @@
 .deps
 op_merge
 Makefile
+Makefile.in
 op_time
 oprofpp
 oprof_convert

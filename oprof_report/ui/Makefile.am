@@ -4,7 +4,7 @@ if have_qt
 MOC=@MOC@
 UIC=@UIC@
 
-AM_CPP_FLAGS = @QT_INCLUDES@
+AM_CPPFLAGS = @QT_INCLUDES@
 
 noinst_LIBRARIES = liboprof_report.a
 nodist_liboprof_report_a_SOURCES = oprof_report.base.cpp oprof_report.base.moc.cpp
