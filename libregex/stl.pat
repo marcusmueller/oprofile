@@ -22,7 +22,7 @@
 $integer = "\<[0-9]+"
 $identifier = "\<[_a-zA-Z][_a-zA-Z0-9]*"
 $typename = "${identifier}(::${identifier})*"
-$typename = "${typename}(<${typename}(,[ ]*${typename})*[ ]*>[ ]*)*"
+$typename = "${typename}(<${typename}(,[ ]*${typename})*[ ]*>[ ]*)*[ ]*\**"
 # adding more substitution allow more nested templated type but we run out of
 # \digit which is a wall. Indeed if you add more () grouping you need to
 # rename all relevant \digit in pattern which use this regular definition

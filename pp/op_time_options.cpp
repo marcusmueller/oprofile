@@ -65,7 +65,7 @@ popt::option options_array[] = {
 	popt::option(options::sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr"),
 	popt::option(options::exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name"),
 	popt::option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names"),
-	popt::option(options::demangle_and_shrink, "Demangle", 'D', "demangle GNU C++ symbol names then pass them through regular expression to dhrink them")
+	popt::option(options::demangle_and_shrink, "smart-demangle", 'D', "demangle GNU C++ symbol names then pass them through regular expression to shrink them")
 };
 
 /**
