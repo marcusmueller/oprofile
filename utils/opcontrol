@@ -426,6 +426,7 @@ validate_separate_args() {
 		case "$1" in
 			library)
 				SEPARATE_LIB_SAMPLES=1
+				SEPARATE_KERNEL_SAMPLES=0
 				;;
 			kernel)
 				# first implied by second

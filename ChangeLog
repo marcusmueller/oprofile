@@ -1,5 +1,9 @@
 2003-03-02  John Levon  <levon@movementarian.org>
 
+	* utils/opcontrol: --separate=library should turn kernel off
+
+2003-03-02  John Levon  <levon@movementarian.org>
+
 	* events/Makefile.am: fix uninstall
 
 2003-03-02  John Levon  <levon@movementarian.org>
