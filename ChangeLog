@@ -1,3 +1,8 @@
+2003-03-14  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_events.c: fix a daemon segfault depending on the used
+	  libc version, added 2003-03-04 (0.5.1 is ok)
+
 2003-03-13  Dave Jones <davej@codmeonkey.org.uk>
 
 	* events/x86-64.hammer.events: Remove duplicate minimum tag
