@@ -557,10 +557,10 @@ void oprof_start::event_over(QListViewItem * item)
 		help_str += " Conflict with:";
 
 		set<QListViewItem *>::const_iterator it;
-		for (it = selected_events.begin();
-		     it != selected_events.end(); ++it) {
+		for (it = selected_events.begin(); 
+		     it != selected_events.end(); ) {
 			QListViewItem * temp = *it;
-			selected_events.erase(it);
+			selected_events.erase(it++);
 			if (is_selectable_event(item)) {
 				help_str += " ";
 				help_str += temp->text(0).latin1();

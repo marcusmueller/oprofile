@@ -1,3 +1,7 @@
+2003-07-26  John Levon  <levon@movementarian.org>
+
+	* gui/oprof_start.cpp: don't use invalidated iterator
+
 2003-07-26  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* gui/oprof_start.cpp: fix for 2.91.66
