@@ -1,5 +1,9 @@
 2003-02-22  John Levon  <levon@movementarian.org>
 
+	* configure.in: fix X, non-Qt build case
+
+2003-02-22  John Levon  <levon@movementarian.org>
+
 	* libutil++/Makefile.am: fix make dist
 
 2003-02-21  Dave Jones <davej@codemonkey.org.uk>

@@ -283,12 +283,12 @@ AC_MSG_RESULT([no]);,
 AC_MSG_RESULT([yes]); AC_DEFINE(TRUE_FALSE_ALREADY_DEFINED, 1, [whether bfd.h defines bool values]))
 
 AC_PATH_XTRA
-SAVE_LIBS="$LIBS"
+ORIG_SAVE_LIBS="$LIBS"
 LIBS="$X_PRE_LIBS $LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"
 X_LIBS="$LIBS"
 AC_SUBST(X_LIBS)
 QT_DO_IT_ALL
-LIBS="$SAVE_LIBS"
+LIBS="$ORIG_SAVE_LIBS"
 
 dnl enable code to describe the binary layout of libdb files, for platform portability
 AC_ARG_ENABLE(abi,
