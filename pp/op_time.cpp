@@ -511,7 +511,7 @@ static int do_it(int argc, char const * argv[])
 	get_options(argc, argv);
 
 	if (options::list_symbols && options::show_shared_libs) {
-		cerr << "You can't specifiy --show-shared-libs and "
+		cerr << "You can't specify --show-shared-libs and "
 			"--list-symbols together." << endl;
 		exit(EXIT_FAILURE);
 	}

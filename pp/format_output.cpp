@@ -108,17 +108,17 @@ formatter::formatter(profile_container_t const & profile_container_, int counter
 	format_map[osf_vma] = field_description(9, "vma", &formatter::format_vma);
 	format_map[osf_nr_samples] = field_description(9, "samples", &formatter::format_nr_samples);
 	format_map[osf_nr_samples_cumulated] = field_description(9, "cum. samples", &formatter::format_nr_cumulated_samples);
-	format_map[osf_percent] = field_description(12, "%-age", &formatter::format_percent);
-	format_map[osf_percent_cumulated] = field_description(10, "cum %-age", &formatter::format_cumulated_percent);
+	format_map[osf_percent] = field_description(12, "%", &formatter::format_percent);
+	format_map[osf_percent_cumulated] = field_description(10, "cum. %", &formatter::format_cumulated_percent);
 	format_map[osf_symb_name] = field_description(24, "symbol name", &formatter::format_symb_name);
 	format_map[osf_linenr_info] = field_description(28, "linenr info", &formatter::format_linenr_info);
 	format_map[osf_short_linenr_info] = field_description(20, "linenr info", &formatter::format_short_linenr_info);
 	format_map[osf_image_name] = field_description(24, "image name", &formatter::format_image_name);
 	format_map[osf_short_image_name] = field_description(16, "image name", &formatter::format_short_image_name);
-	format_map[osf_percent] = field_description(12, "%-age", &formatter::format_percent);
-	format_map[osf_percent_cumulated] = field_description(10, "cum %-age", &formatter::format_cumulated_percent);
-	format_map[osf_percent_details] = field_description(12, "%-age", &formatter::format_percent_details);
-	format_map[osf_percent_cumulated_details] =field_description(10, "cum %-age", &formatter::format_cumulated_percent_details);
+	format_map[osf_percent] = field_description(12, "%", &formatter::format_percent);
+	format_map[osf_percent_cumulated] = field_description(10, "cum %", &formatter::format_cumulated_percent);
+	format_map[osf_percent_details] = field_description(12, "%", &formatter::format_percent_details);
+	format_map[osf_percent_cumulated_details] =field_description(10, "cum. %", &formatter::format_cumulated_percent_details);
 	format_map[osf_app_name] = field_description(24, "app name", &formatter::format_app_name);
 	format_map[osf_short_app_name] = field_description(16, "app name", &formatter::format_short_app_name);
 }

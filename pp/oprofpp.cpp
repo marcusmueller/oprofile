@@ -184,6 +184,7 @@ static void do_dump_gprof(op_bfd & abfd,
 }
 
 
+// FIXME:  do *what* !?!
 static int do_it(int argc, char const * argv[])
 {
 	string const arg = get_options(argc, argv);
