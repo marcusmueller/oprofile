@@ -11,8 +11,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
   outside .text section get a wrong offset
 
  o callgraph_container.cpp: the inner loop in add() is very fragile!
- o recursive call count are wrong
- o opstack  -t is not implemented, can we ?
+ o recursive call count are wrong. FIXME: unsure but now I think it comes from
+  the way we show results, ours results are ok.
  o Test all other opstack options.
  o review opstack documentation, improve it by giving examples of output and
   how to interpret it.
