@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.12 2001/07/27 00:58:27 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.13 2001/08/02 17:55:22 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -447,8 +447,6 @@ static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 	ulong fd, ulong offset)
 {
 	struct file *file;
-
-	MOD_INC_USE_COUNT;
 
 	file = fget(fd);
 	if (!file)

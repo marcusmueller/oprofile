@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.65 2001/07/27 00:47:16 movement Exp $ */
+/* $Id: oprofile.c,v 1.66 2001/08/02 17:55:22 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -825,9 +825,10 @@ static int oprof_start(void)
 		op_intercept_syscalls();
 
 	oprof_start_thread();
+ 
 	smp_call_function(pmc_start, NULL, 0, 1);
-	
 	pmc_start(NULL);
+ 
 	prof_on = 1;
 	
 out:
@@ -988,8 +989,8 @@ static ctl_table oprof_table[] = {
 	{ 1, "kernel_only", &kernel_only, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pid_filter", &pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pgrp_filter", &pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
-	{0,}, {0,}, {0,}, {0,},
-	{0,},
+	{ 0, }, { 0, }, { 0, }, { 0, }, 
+	{ 0, }, 
 };
 
 
@@ -1012,7 +1013,7 @@ static struct ctl_table_header *sysctl_header;
 int __init init_sysctl(void)
 {
 	ctl_table *next = &oprof_table[nr_oprof_static];
-	ctl_table *counter_table[OP_MAX_COUNTERS];
+	ctl_table *counter_table[OP_MAX_COUNTERS + 1];
 	ctl_table *tab;
 	int i,j;
 
@@ -1024,11 +1025,9 @@ int __init init_sysctl(void)
 		next->procname = names[i];
 		next->mode = 0700;
 
-		if (!(counter_table[i] = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
+		if (!(tab = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
 			goto cleanup;
-		next->child = counter_table[i];
-
-		tab = counter_table[i];
+		next->child = tab;
 
 		memset(tab, 0, sizeof(ctl_table)*7);
 		tab[0] = ((ctl_table){ 1, "enabled", &op_ctr_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
@@ -1037,6 +1036,7 @@ int __init init_sysctl(void)
 		tab[3] = ((ctl_table){ 1, "unit_mask", &op_ctr_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[4] = ((ctl_table){ 1, "kernel", &op_ctr_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[5] = ((ctl_table){ 1, "user", &op_ctr_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		counter_table[i] = tab;
 		next++;
 	}
 
@@ -1070,7 +1070,8 @@ static int can_unload(void)
 {
 	int can = -EBUSY;
 	down(&sysctlsem);
-	if (!prof_on)
+
+	if (!prof_on && !GET_USE_COUNT(THIS_MODULE))
 		can = 0;
 	up(&sysctlsem);
 	return can;
@@ -1096,7 +1097,8 @@ int __init oprof_init(void)
 		goto out_err;
 
 	err = oprof_init_hashmap();
-	if (err<0) {
+	if (err < 0) {
+		printk("oprofile: couldn't allocate hash map !\n"); 
 		unregister_chrdev(op_major, "oprof");
 		goto out_err;
 	}
@@ -1106,7 +1108,6 @@ int __init oprof_init(void)
 
 	/* do this now so we don't have to track save/restores later */
 	op_save_syscalls();
-
 	printk("oprofile: oprofile loaded, major %u\n", op_major);
 	return 0;
 
@@ -1122,7 +1123,6 @@ void __exit oprof_exit(void)
 	unregister_chrdev(op_major, "oprof");
 	smp_call_function(smp_apic_restore, NULL, 0, 1);
 	smp_apic_restore(NULL);
-
 	cleanup_sysctl();
 	// currently no need to reset APIC state
 }

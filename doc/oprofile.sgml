@@ -46,6 +46,13 @@ necks in real-world systems.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term>modutils 2.4.6 or above</term>
+		<listitem><para>
+			You should have installed modutils 2.4.6 or higher (in fact earlier versions work well in almost all
+			cases).
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term>Intel P6 processor</term>
 		<listitem><para>
 			An Intel P6 processor is required. In marketing terms this translates to anything between a Pentium Pro
