@@ -1,10 +1,10 @@
 include ../make.common
 
-HEADERS=op_print_event.h
+HEADERS=op_print_event.h op_mangling.h
  
-SOURCES=op_print_event.cpp
+SOURCES=op_print_event.cpp op_mangling.cpp
 
-OBJECTS=op_print_event.o
+OBJECTS=op_print_event.o op_mangling.o
 
 TARGET=libop++.a
 

@@ -19,6 +19,7 @@
 #include "oprofpp_options.h"
 #include "op_libiberty.h"
 #include "op_fileio.h"
+#include "op_mangling.h"
 #include "file_manip.h"
 #include "samples_container.h"
 

@@ -1,5 +1,16 @@
 2002-06-04  John Levon  <moz@compsoc.man.ac.uk>
 
+	* libop++/Makefile.in:
+	* libop++/op_mangling.h:
+	* libop++/op_mangling.cpp:
+	* pp/op_merge.cpp:
+	* pp/op_time.cpp:
+	* pp/oprofpp.cpp: 
+	* pp/oprofpp.h: 
+	* pp/oprofpp_util.cpp: move mangle/unmangle to libop++
+ 
+2002-06-04  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/Makefile.in:
 	* pp/op_to_source.cpp:
 	* pp/opp_symbol.cpp:

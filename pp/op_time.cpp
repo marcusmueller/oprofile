@@ -24,6 +24,7 @@
 
 #include "version.h"
 #include "op_libiberty.h"
+#include "op_mangling.h"
 #include "op_time_options.h"
  
 #include "oprofpp.h"

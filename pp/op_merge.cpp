@@ -24,6 +24,7 @@
 #include "version.h"
 #include "popt_options.h"
 #include "file_manip.h"
+#include "op_mangling.h"
 #include "db.h"
 
 using std::string;
@@ -94,7 +95,7 @@ static void create_file_list(list<string> & result,
 		/* get from the image name all samples on the form of
 		 * base_dir*}}mangled_name{{{images_filename) */
 		ostringstream os;
-		os << "*}}" << remangle(images_filename[0])
+		os << "*}}" << remangle_filename(images_filename[0])
 		   << "#" << counter;
 
 		get_sample_file_list(result, OP_SAMPLES_DIR, os.str());

@@ -23,6 +23,7 @@
 #include "oprofpp_options.h"
 #include "op_libiberty.h"
 #include "op_file.h"
+#include "op_mangling.h"
 #include "file_manip.h"
 #include "string_manip.h"
 #include "op_events.h"
@@ -55,34 +56,6 @@ void verbprintf(char const * fmt, ...)
 	}
 }
 
-string remangle(string const & filename)
-{
-	string result = filename;
-
-	std::replace(result.begin(), result.end(), '/', OPD_MANGLE_CHAR);
-
-	return result;
-}
-
-/**
- * demangle_filename - convert a sample filenames into the related
- * image file name
- * @param samples_filename the samples image filename
- *
- * if samples_filename does not contain any %OPD_MANGLE_CHAR
- * the string samples_filename itself is returned.
- */
-string demangle_filename(string const & samples_filename)
-{
-	string result(samples_filename);
-	size_t pos = samples_filename.find_first_of(OPD_MANGLE_CHAR);
-	if (pos != string::npos) {
-		result.erase(0, pos);
-		std::replace(result.begin(), result.end(), OPD_MANGLE_CHAR, '/');
-	}
-
-	return result;
-}
 
 /**
  * is_excluded_symbol - check if the symbol is in the exclude list
@@ -197,7 +170,7 @@ void opp_treat_options(string const & file,
 			quit_error("oprofpp: no samples file specified.\n");
 		} else {
 			/* we'll "leak" this memory */
-			samplefile = remangle(imagefile);
+			samplefile = remangle_filename(imagefile);
 		}
 	}
 

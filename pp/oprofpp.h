@@ -86,20 +86,6 @@ void opp_treat_options(std::string const & filename,
  */
 void quit_error(char const *err);
 
-/**
- * remangle - convert a filename into the related sample file name
- * @param filename the filename string
- */
-std::string remangle(std::string const & filename);
-
-/**
- * convert a sample filenames into the related image file name
- * @param samples_filename the samples image filename
- *
- * if samples_filename does not contain any %OPD_MANGLE_CHAR
- * the string samples_filename itself is returned.
- */
-std::string demangle_filename(std::string const & samples_filename);
 
 /**
  * check if the symbol is in the exclude list
