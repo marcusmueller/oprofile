@@ -33,18 +33,20 @@ using namespace std;
 
 namespace {
 
+verbose vbfd("bfd");
+
 bfd * open_bfd(string const & file)
 {
 	/* bfd keeps its own reference to the filename char *,
 	 * so it must have a lifetime longer than the ibfd */
 	bfd * ibfd = bfd_openr(file.c_str(), NULL);		
 	if (!ibfd) {
-		cverb << "bfd_openr failed for " << file << endl;
+		cverb << vbfd << "bfd_openr failed for " << file << endl;
 		goto out_fail;
 	}		
 	char ** matching;
 	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) {
-		cverb << "BFD format failure for " << file << endl;
+		cverb << vbfd << "BFD format failure for " << file << endl;
 		ibfd = NULL;
 	}
 
@@ -64,14 +66,14 @@ separate_debug_file_exists(string const & name,
 	if (!file)
 		return false;
 
-	cverb << "found " << name;
+	cverb << vbfd << "found " << name;
 	while (file) {
 		file.read(buffer, sizeof(buffer));
 		file_crc = calc_crc32(file_crc, 
 				      reinterpret_cast<unsigned char *>(&buffer[0]),
 				      file.gcount());
 	}
-	cverb << " with crc32 = " << hex << file_crc << endl;
+	cverb << vbfd << " with crc32 = " << hex << file_crc << endl;
 	return crc == file_crc;
 }
 
@@ -83,7 +85,7 @@ get_debug_link_info(bfd * ibfd,
 {
 	asection * sect;
 
-	cverb << "fetching .gnu_debuglink section" << endl;
+	cverb << vbfd << "fetching .gnu_debuglink section" << endl;
 	sect = bfd_get_section_by_name(ibfd, ".gnu_debuglink");
 	
 	if (sect == NULL)
@@ -91,7 +93,8 @@ get_debug_link_info(bfd * ibfd,
 	
 	bfd_size_type debuglink_size = bfd_section_size(ibfd, sect);  
 	char contents[debuglink_size];
-	cverb << ".gnu_debuglink section has size " << debuglink_size << endl;
+	cverb << vbfd
+	      << ".gnu_debuglink section has size " << debuglink_size << endl;
 	
 	bfd_get_section_contents(ibfd, sect, 
 				 reinterpret_cast<unsigned char *>(contents), 
@@ -105,7 +108,7 @@ get_debug_link_info(bfd * ibfd,
 	crc32 = bfd_get_32(ibfd, 
 			       reinterpret_cast<bfd_byte *>(contents + crc_offset));
 	filename = string(contents, filename_len);
-	cverb << ".gnu_debuglink filename is " << filename << endl;
+	cverb << vbfd << ".gnu_debuglink filename is " << filename << endl;
 	return true;
 }
 
@@ -132,7 +135,7 @@ find_separate_debug_file(bfd * ibfd,
 	if (global.size() > 0 && global.at(global.size() - 1) != '/')
 		global += '/';
 
-	cverb << "looking for debugging file " << basename 
+	cverb << vbfd << "looking for debugging file " << basename 
 	      << " with crc32 = " << hex << crc32 << endl;
 	
 	string first_try(dir + basename);
@@ -206,7 +209,7 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	ibfd = open_bfd(filename);
 
 	if (!ibfd) {
-		cverb << "open_bfd failed for " << filename << endl;
+		cverb << vbfd << "open_bfd failed for " << filename << endl;
 		ok = false;
 		goto out_fail;
 	}
@@ -216,8 +219,9 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	asection const * sect = bfd_get_section_by_name(ibfd, ".text");
 	if (sect) {
 		text_offset = sect->filepos;
-		io_state state(cverb);
-		cverb << ".text filepos " << hex << text_offset << endl;
+		io_state state(cverb << vbfd);
+		cverb << vbfd
+		      << ".text filepos " << hex << text_offset << endl;
 	}
 
 	for (sect = ibfd->sections; sect; sect = sect->next) {
@@ -233,7 +237,8 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 		string dirname(filename.substr(0, filename.rfind('/')));
 		if (find_separate_debug_file (ibfd, dirname, global,
 					      debug_filename)) {
-			cverb << "now loading: " << debug_filename << endl;
+			cverb << vbfd
+			      << "now loading: " << debug_filename << endl;
 			dbfd = open_bfd(debug_filename);
 			if (dbfd) {
 				for (sect = dbfd->sections; sect; 
@@ -246,9 +251,8 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 			} else {
 				// .debug is optional, so will not fail if
 				// problem opening file.
-				cverb << "unable to open: " << debug_filename
-				      << endl;
-				//				debug_filename = NULL;
+				cverb << vbfd << "unable to open: "
+				      << debug_filename << endl;
 			}
 		}
 	}
@@ -450,15 +454,17 @@ void op_bfd::add_symbols(op_bfd::symbols_found_t & symbols,
 	if (symbols.empty())
 		symbols.push_back(create_artificial_symbol());
 
-	cverb << "number of symbols before filtering " << symbols.size() << endl;
+	cverb << vbfd << "number of symbols before filtering "
+	      << symbols.size() << endl;
 
 	symbols_found_t::iterator it;
-	it = remove_if(symbols.begin(), symbols.end(), remove_filter(symbol_filter));
+	it = remove_if(symbols.begin(), symbols.end(),
+	               remove_filter(symbol_filter));
 	symbols.erase(it, symbols.end());
 
 	copy(symbols.begin(), symbols.end(), back_inserter(syms));
 
-	cverb << "number of symbols now " << syms.size() << endl;
+	cverb << vbfd << "number of symbols now " << syms.size() << endl;
 }
 
 
@@ -631,18 +637,21 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 {
 	op_bfd_symbol const & sym = syms[sym_idx];
 
-	io_state state(cverb);
+	io_state state(cverb << (vbfd&vlevel1));
 
-	cverb << "symbol " << sym.name() << ", value " << hex << sym.value() << endl;
+	cverb << (vbfd&vlevel1) << "symbol " << sym.name()
+	      << ", value " << hex << sym.value() << endl;
 
 	start = sym.filepos();
 	if (sym.symbol()) {
-		cverb << "in section " << sym.symbol()->section->name
-			<< ", filepos " << hex << sym.symbol()->section->filepos << endl;
+		cverb << (vbfd&vlevel1) << "in section "
+		      << sym.symbol()->section->name << ", filepos "
+		      << hex << sym.symbol()->section->filepos << endl;
 	}
 
 	end = start + syms[sym_idx].size();
-	cverb << "start " << hex << start << ", end " << end << endl;
+	cverb << (vbfd&vlevel1)
+	      << "start " << hex << start << ", end " << end << endl;
 
 	if (start >= file_size + text_offset) {
 		ostringstream os;

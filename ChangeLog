@@ -1,3 +1,20 @@
+2004-01-20  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/cverb.h:
+	* libutil++/cverb.cpp: new cverb handling. most interresting are
+	  --verbose=sfile,bfd,level1 resp. sample filename handling bfd
+	  handling and more verbosity (only for bfd actually)
+
+	* pp/opgprof.cpp: controlled by --verbose==bfd, add level1 to get
+	  verbose symbols.
+	* libpp/callgraph_container.cpp:
+	* libutil++/op_bfd.cpp:
+	* pp/common_option.cpp:
+	* pp/opannotate_options.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport_options.cpp:
+	* pp/opstack_options.cpp: use it
+
 2004-01-19  John Levon  <levon@movementarian.org>
 
 	* libpp/callgraph_container.h:

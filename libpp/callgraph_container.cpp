@@ -248,13 +248,14 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles)
 		// FIXME: there is some error checking needed here.
 		bool ok = true;
 		op_bfd caller_bfd(caller_file.lib_image, string_filter(), ok);
-		cverb << "cg subset caller: "
+		cverb << vdebug << "cg subset caller: "
 		      << caller_file.lib_image  << "\n";
 
 		cg_fileset::const_iterator last;
 		for (last = fset.upper_bound(*cit); cit != last; ++cit) {
 			parsed_filename callee_file = parse_filename(*cit);
-			cverb << "adding: " << callee_file.cg_image << endl;
+			cverb << vdebug
+			      << "adding: " << callee_file.cg_image << endl;
 
 			// FIXME: there is some error checking needed here.
 			op_bfd callee_bfd(callee_file.cg_image,
@@ -291,8 +292,9 @@ add(profile_t const & profile, op_bfd const & caller, op_bfd const & callee,
 	if (profile.get_header().cg_to_is_kernel)
 		callee_offset = callee.get_start_offset();
 
-	cverb << hex << "caller_offset: " << caller_offset << dec << endl;
-	cverb << hex << "callee_offset: " << callee_offset << dec << endl;
+	cverb << vdebug
+	      << hex << "caller_offset: " << caller_offset << dec << endl
+	      << hex << "callee_offset: " << callee_offset << dec << endl;
 
 	for (symbol_index_t i = 0; i < caller.syms.size(); ++i) {
 		u32 start, end;
@@ -328,7 +330,8 @@ add(profile_t const & profile, op_bfd const & caller, op_bfd const & callee,
 			bfd_vma callee_vma = (it.vma() & 0xffffffff) +
 				callee_offset;
 
-			cverb << "offset caller: " << hex
+			cverb << vdebug
+			      << "offset caller: " << hex
 			      << (p_it.first.vma() >> 32) << " callee: "
 			      << callee_vma << dec << endl;
 
@@ -349,7 +352,8 @@ add(profile_t const & profile, op_bfd const & caller, op_bfd const & callee,
 
 			u32 upper_bound = bfd_symb_callee->size() +
 				bfd_symb_callee->filepos();
-			cverb << "upper bound: " << hex << upper_bound
+			cverb << vdebug
+			      << "upper bound: " << hex << upper_bound
 			      << dec << endl;
 
 			// Process all arc from this caller to this callee
@@ -368,7 +372,8 @@ add(profile_t const & profile, op_bfd const & caller, op_bfd const & callee,
 
 			symb_caller.sample.counts[0] = caller_callee_count;
 
-			cverb << caller.syms[i].name() << " "
+			cverb << vdebug
+			      << caller.syms[i].name() << " "
 			      << bfd_symb_callee->name()   << " "
 			      << caller_callee_count << endl;
 

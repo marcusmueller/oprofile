@@ -2,7 +2,7 @@
  * @file cverb.h
  * verbose output stream
  *
- * @remark Copyright 2002 OProfile authors
+ * @remark Copyright 2002, 2004 OProfile authors
  * @remark Read the file COPYING
  *
  * @author Philippe Elie
@@ -13,19 +13,71 @@
 #define CVERB_H
 
 #include <iosfwd>
+#include <string>
+#include <vector>
 
-/** verbose outpust stream, all output through this stream are made only
- * if a set_verbose(true); call is issued.
- */
-extern std::ostream cverb;
+struct cverb_object { };
 
-/** 
- * @param verbose: verbose state
- * 
- *  Set the cverb ostream in a verbose/non verbose mode depending on the
- * verbose parameter. Currently set_verbose() can be called only one time. If
- * this function is never called the default state of cverb is non-verbose mode
+/**
+ * verbose object, all output through this stream are made only
+ * if a verbose object with a true state is injected in the stream.
  */
-void set_verbose(bool verbose);
+extern cverb_object cverb;
+
+/**
+ * typical use:
+ * declare some verbose global object:
+ * verbose debug("debug");
+ * verbose stats("stats");
+ * verbose level2("level2");
+ *
+ * setup from command line the state of these objects
+ *
+ * verbose::setup(command_line_args_to'--verbose=');
+ *
+ * cverb << stats << "stats\n";
+ * cverb << (stats&level2) << "very verbose stats\n"
+ * cverb << (stats|debug) << "bar\n";
+ * these will give a compile time error
+ * cverb << stats << "foo" << debug << "bar"; 
+ * cout << stats << "foo";
+ *
+ * In critical code path cverb can be used in the more efficient way:
+ * if (cerb << vdebug)
+ *    cverb << vdebug << "foo" << "bar";
+ * the condition test the fails bit for the returned stream while the later
+ * build a sentry object for each << (more efficient even with one level of <<)
+ */
+class verbose {
+	friend class verbose_recorder;
+	friend std::ostream & operator<<(cverb_object &, verbose const &);
+public:
+	/**
+	 * create a verbose object named name, the ctor auto-register name
+	 * as a verbose object, the set state can be intialized through
+	 * verbose::setup(name)
+	 */
+	verbose(char const * name);
+
+	verbose operator|(verbose const &);
+	verbose operator&(verbose const &);
+
+	/// Return false if this named verbose object has not be registred.
+	static bool setup(std::string const &);
+	/// convenient interface calling the above for string in args
+	static bool setup(std::vector<std::string> const & args);
+private:
+	bool set;
+};
+
+/**
+ * predefined general purpose verbose object, comment give their names
+ */
+extern verbose vlevel1; /**< named "level1" */
+extern verbose vlevel2; /**< named "level2" */
+extern verbose vdebug;  /**< named "debug"  */
+extern verbose vstats;  /**< named "stats"  */
+// all sample filename manipulation.
+extern verbose vsfile;  /**< named "vfsfile" */
 
 #endif /* !CVERB_H */

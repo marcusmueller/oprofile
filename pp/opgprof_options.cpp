@@ -45,9 +45,10 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 {
 	list<string> sample_files = spec.generate_file_list(exclude_dependent, false);
 
-	cverb << "Matched sample files: " << sample_files.size() << endl;
+	cverb << vsfile
+	      << "Matched sample files: " << sample_files.size() << endl;
 	copy(sample_files.begin(), sample_files.end(),
-	     ostream_iterator<string>(cverb, "\n"));
+	     ostream_iterator<string>(cverb << vsfile, "\n"));
 
 	// opgprof merge all by default
 	merge_option merge_by;
@@ -60,7 +61,7 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 	profile_classes classes
 		= arrange_profiles(sample_files, merge_by);
 
-	cverb << "profile_classes:\n" << classes << endl;
+	cverb << vsfile << "profile_classes:\n" << classes << endl;
 
 	size_t nr_classes = classes.v.size();
 
@@ -97,7 +98,8 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 
 void handle_options(vector<string> const & non_options)
 {
-	cverb << "output filename: " << options::gmon_filename << endl;
+	cverb << vsfile << "output filename: " << options::gmon_filename
+	      << endl;
 
 	profile_spec const spec =
 		profile_spec::create(non_options, options::extra_found_images);

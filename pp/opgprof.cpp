@@ -135,11 +135,11 @@ void output_gprof(op_bfd const & abfd, profile_container const & samples,
 	if (aligned_samples(samples, 4))
 		multiplier = 8;
 
-	cverb << "opgrof multiplier: " << multiplier << endl;
+	cverb << vdebug << "opgrof multiplier: " << multiplier << endl;
 
 	get_vma_range(low_pc, high_pc, samples);
 
-	cverb << "low_pc: " << hex << low_pc << " " << "high_pc: "
+	cverb << vdebug << "low_pc: " << hex << low_pc << " " << "high_pc: "
 	      << high_pc << dec << endl;
 
 	// round-down low_pc to ensure bin number is correct in the inner loop
@@ -147,7 +147,7 @@ void output_gprof(op_bfd const & abfd, profile_container const & samples,
 	// round-up high_pc to ensure a correct histsize calculus
 	high_pc = ((high_pc + multiplier - 1) / multiplier) * multiplier;
 
-	cverb << "low_pc: " << hex << low_pc << " " << "high_pc: "
+	cverb << vdebug << "low_pc: " << hex << low_pc << " " << "high_pc: "
 	      << high_pc << dec << endl;
 
 	size_t histsize = (high_pc - low_pc) / multiplier;

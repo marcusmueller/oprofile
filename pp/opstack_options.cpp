@@ -60,13 +60,14 @@ void handle_options(vector<string> const & non_options)
 	list<string> sample_files =
 		spec.generate_file_list(exclude_dependent, false);
 
-	cverb << "Matched sample files: " << sample_files.size() << endl;
+	cverb << vsfile << "Matched sample files: " << sample_files.size()
+	      << endl;
 	copy(sample_files.begin(), sample_files.end(),
-	     ostream_iterator<string>(cverb, "\n"));
+	     ostream_iterator<string>(cverb << vsfile, "\n"));
 
 	classes = arrange_profiles(sample_files, merge_by);
 
-	cverb << "profile_classes:\n" << classes << endl;
+	cverb << vsfile << "profile_classes:\n" << classes << endl;
 
 	if (classes.v.empty()) {
 		cerr << "error: no sample files found: profile specification "

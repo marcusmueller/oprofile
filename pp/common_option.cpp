@@ -22,7 +22,6 @@
 using namespace std;
 
 namespace options {
-	bool verbose;
 	extra_images extra_found_images;
 	double threshold = 0.0;
 }
@@ -31,10 +30,12 @@ namespace {
 
 string threshold;
 vector<string> image_path;
+vector<string> verbose_strings;
 
 popt::option common_options_array[] = {
-	popt::option(options::verbose, "verbose", 'V',
-		     "verbose output"),
+	popt::option(verbose_strings, "verbose", 'V',
+		     // FIXME help string for verbose level
+		     "verbose output", "all,debug,level1,level2,bfd,sfile,stats"),
 	popt::option(image_path, "image-path", 'p',
 		     "comma-separated path to search missing binaries","path"),
 	popt::option(threshold, "threshold", 't',
@@ -62,7 +63,7 @@ double handle_threshold(string threshold)
 		}
 	}
 
-	cverb << value << endl;;
+	cverb << vdebug << "threshold: " << value << endl;;
 
 	return value;
 }
@@ -76,7 +77,10 @@ vector<string> get_options(int argc, char const * argv[])
 	if (!::threshold.empty())
 		options::threshold = handle_threshold(::threshold);
 
-	set_verbose(options::verbose);
+	if (!verbose::setup(verbose_strings)) {
+		cerr << "unknown --verbose= options\n";
+		exit(EXIT_FAILURE);
+	}
 
 	bool ok = true;
 	vector<string>::const_iterator it;
