@@ -1,3 +1,7 @@
+2002-10-21  Graydon Hoare  <graydon@redhat.com>
+
+	* doc/oprofile.xml: Describe op_import and --enable-abi.
+
 2002-10-20  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/Makefile.in:

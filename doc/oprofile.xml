@@ -176,6 +176,20 @@ is all you need, but note these arguments to <command>./configure</command> :
 			<constant>$QTDIR</constant> if these are not specified.
 		</listitem>
 	</varlistentry>
+	<varlistentry id="enable-abi">
+		<term><option>--enable-abi</option></term>
+		<listitem>
+			Activate code within the oprofile sample collection daemon
+			<command>oprofiled</command> which records information about the binary
+			format of sample files in <filename>/var/lib/oprofile/abi</filename>, to
+			permit their transport between hosts using the
+			<command>op_import</command> utility. See <xref
+			linkend="op-import" />. This option is primarily intended for embedded
+			systems or remote analysis of production machines; if you will be
+			performing all sample analysis on the same machine as you are profiling,
+			it is safe to omit this option.
+		</listitem>
+	</varlistentry>
 </variablelist>
 <para>
 You'll need to have a configured kernel source for the current kernel
@@ -270,6 +284,20 @@ This section gives a brief description of the available oprofile utilities and t
 	<listitem><para>
 		This utility is useful to merge samples files which belongs to the same application
 		especially when you profile with separating samples for shared libs. See <xref linkend="op-merge" />.
+	</para></listitem>
+</varlistentry>
+
+<varlistentry id="op-import">
+	<term><filename>op_import</filename></term>
+	<listitem><para>
+		This utility converts sample database files from a foreign binary format (abi) to
+		the native format. This is useful only when moving sample files between hosts,
+		for analysis on platforms other than the one used for collection. The abi format
+		of the file to be imported is described in a text file located in
+		<filename>/var/lib/oprofile/abi</filename>, if the <option>--enable-abi</option>
+		configure-time option was enabled. Furthermore, the <command>op_import</command>
+		tool is not built unless <option>--enable-abi</option> is given. See <xref
+		linkend="enable-abi" />.
 	</para></listitem>
 </varlistentry>
 
