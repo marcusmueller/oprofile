@@ -603,7 +603,7 @@ Some CPU types do not provide the needed hardware support to use the hardware pe
 some laptops, classic Pentiums, and other CPU types not yet supported by OProfile (such as Cyrix and Pentium IV). 
 On these machines, OProfile falls
 back to using the real-time clock interrupt to collect samples. This interrupt is also used by the <command>rtc</command>
-module: you cannot have both the oprofile and rtc modules loaded.
+module: you cannot have both the oprofile and rtc modules loaded nor the rtc support compiled in the kernel.
 </para>
 <para>
 RTC mode is less capable than the hardware counters mode; in particular, it is unable to profile sections of

@@ -1,4 +1,5 @@
 LD=ld
+CC=gcc
 
 MODINSTALLDIR = @MODINSTALLDIR@/oprofile
 INCLUDES = -I@KINC@/ -I@topdir@/ -I@topdir@/libutil/ -I@topdir@/libop/

@@ -96,6 +96,8 @@ daemon_status::daemon_status()
 			daemon_pid = dirent->d_name;
 			running = true;
 		}
+
+		closedir(dir);
 	}
  
 	runtime.erase();

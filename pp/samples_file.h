@@ -16,11 +16,12 @@
 
 #include "db.h"
 #include "op_types.h"
+#include "utility.h"
 
 class counter_array_t;
 
 /** A class to store one samples file */
-struct samples_file_t
+struct samples_file_t : notcopyable
 {
 	/**
 	 * samples_file_t - construct a samples_file_t object
@@ -91,12 +92,6 @@ struct samples_file_t
 	 * file, as seen in /proc/pid/maps).
 	 */
 	u32 sect_offset;
-
-private:
-	// neither copy-able or copy constructible
-	// FIXME: let's derive from a non_copyable like in boost
-	samples_file_t(samples_file_t const &);
-	samples_file_t & operator=(samples_file_t const &);
 };
 
 // FIXME: can we split this file in two again ? I might want a samples_file_t
@@ -104,7 +99,7 @@ private:
  
 /** Store multiple samples files belonging to the same image and the same
  * session can hold OP_MAX_COUNTERS samples files */
-struct opp_samples_files {
+struct opp_samples_files /* : notcopyable FIXME bug gcc 2.91 */ {
 	/**
 	 * opp_samples_files - construct an opp_samples_files object
 	 * @param sample_file the base name of sample file

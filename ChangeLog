@@ -1,3 +1,16 @@
+2002-05-13  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/oprofile/xml: clarify RTC use, fix #555302
+
+	* gui/oprof_start_util.cpp: missing closedir(). Fix #555268
+	  Thanks to William Cohen for his precise report.
+
+	* module/Makefile.in: fix #555304, a non-native compiler can
+	  fail to compile oprofile
+
+	* libutil/utility.h: class notcopyable
+	* pp/samples_file.h: use it
+
 2002-05-12  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_events_desc.c:
