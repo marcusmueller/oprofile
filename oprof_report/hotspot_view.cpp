@@ -14,7 +14,7 @@
 #include <qvariant.h>
 #include <qpainter.h>
 
-#include "../pp/opf_filter.h"
+#include "../pp/samples_container.h"
 
 #include "hotspot_view.h"
 
