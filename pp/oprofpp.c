@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.33 2001/07/25 02:22:44 movement Exp $ */
+/* $Id: oprofpp.c,v 1.34 2001/07/25 02:35:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -137,6 +137,16 @@ static void get_options(int argc, char const *argv[])
 
 	/* non-option file, either a sample or binary image file */
 	file = poptGetArg(optcon);
+
+	/* some minor memory leak from the next call */
+	if (imagefile)
+		imagefile = opd_relative_to_absolute_path(imagefile, NULL);
+
+	if (samplefile)
+		samplefile = opd_relative_to_absolute_path(samplefile, NULL);
+
+	if (file)
+		file = opd_relative_to_absolute_path(file, NULL);
 
 	if (file) {
 		if (strchr(file, OPD_MANGLE_CHAR))

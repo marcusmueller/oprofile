@@ -3,7 +3,7 @@
 # This script simplify the call to oprofpp / objdump / opf_filter
 
 objdump_option="-d --no-show-raw-insn"
-oprofpp_option=""
+oprofpp_option="-L"
 op_filter_option=""
 object_file=""
 do_to_asm=false
@@ -66,6 +66,7 @@ do
 				echo "see $0 --help"
 				exit 1
 			fi
+			oprofpp_option="$oprofpp_option -i $1"
 			object_file=$1
 			;;
 		-h|--help)
@@ -104,21 +105,6 @@ if [ "$object_file" == "" -a "$seen_sample_file" == "false" ]; then
 	echo "You need to give at least an object-file or a sample-file"
 	echo "see $0 --help"
 	exit 1
-fi
-
-if [ "$object_file" != "" ]; then
-	# TODO : this is not sufficient, we need also to handle relative path name,
-	# but oprofpp needs an absolute pathname. Gcc tree source contains somewhere
-	# the neccessary code. Fix that in oprofpp.c.
-	case $object_file in
-		/*)
-			;;
-		*)
-			object_file=$PWD/$object_file
-			;;
-	esac
-
-	oprofpp_option="$oprofpp_option -L $object_file"
 fi
 
 #echo "option : $op_filter_option"
