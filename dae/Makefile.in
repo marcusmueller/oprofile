@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.3 2000/08/03 21:24:46 moz Exp $
+# $Id: Makefile.in,v 1.4 2000/08/04 02:15:38 moz Exp $
 
 .PHONY: all clean srcdoc install
  
@@ -8,6 +8,7 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 BINDIR=@bindir@
 MANDIR=@mandir@
+CC=@CC@
 
 install: oprofiled op_start op_stop op_help
 	cp oprofiled $(BINDIR)/oprofiled

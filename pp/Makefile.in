@@ -5,6 +5,7 @@ all: oprofpp
 clean: 
 	rm -f oprofpp *.o oprofpp-src.html
  
+CC=@CC@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 BINDIR=@bindir@
