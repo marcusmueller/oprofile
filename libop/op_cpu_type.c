@@ -48,6 +48,7 @@ static char const * cpu_names[MAX_CPU_TYPE] = {
 	"PII",
 	"PIII",
 	"Athlon",
+	"CPU with timer interrupt",
 	"CPU with RTC device"
 };
  
@@ -74,6 +75,7 @@ static int cpu_nr_counters[MAX_CPU_TYPE] = {
 	2, /* PII */
 	2, /* PIII */
 	4, /* Athlon */
+	1, /* Timer interrupt */
 	1  /* RTC */
 };
 
