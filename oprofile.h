@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.32 2001/01/31 16:02:29 movement Exp $ */
+/* $Id: oprofile.h,v 1.33 2001/02/02 15:56:43 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -149,6 +149,7 @@ void my_set_fixmap(void);
 int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc);
 void op_intercept_syscalls(void);
 void op_replace_syscalls(void);
+void op_save_syscalls(void);
 int is_map_ready(void); 
 int oprof_hash_map_open(void);
 int oprof_hash_map_release(void);

@@ -1,3 +1,49 @@
+2001-02-01  John Levon  <moz@compsoc.man.ac.uk>
+
+	* oprofile.h: add op_save_syscalls()
+
+	* oprofile.c: let interrupt_sleep_on() die
+	  add kernel_only option
+	  sysctl dumps everything it can now
+ 
+	* op_syscalls.c: add op_save_syscalls() 
+
+	* dae/opd_proc.c:
+	* dae/oprofiled.c:
+	* dae/op_start: add --kernel-only
+ 
+	* doc/guide.lyx: mention --kernel-only
+ 
+	* TODO: update
+ 
+2001-02-01  John Levon  <moz@compsoc.man.ac.uk>
+
+	* Makefile.in: split out op_init.c
+
+	* autogen.sh: new file
+
+	* configure.in: fix --with-cc. Split out op_init.c
+	
+	* op_init.c: new file, to allow rest -march=i686
+
+	* oprofile.c: cut out init stuff to op_init.c 
+
+	* opd_proc.c: more verbose
+
+	* results/kernel-compile/time-aves.pl: work with other
+	  time format too 
+	 
+2001-01-25  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in: add --with-cc option
+
+	* pp/oprofpp.c: fix const discard warnings
+
+2001-01-25  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in: must check for liberty *after*
+	  libdl
+
 2001-01-24  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.c: we're not using op_check_ctr()

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.47 2001/01/21 01:11:56 moz Exp $ */
+/* $Id: opd_proc.c,v 1.48 2001/02/02 15:56:43 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -26,6 +26,7 @@
 /* kernel image entries are offset by this many entries */
 #define OPD_KERNEL_OFFSET 524288
 
+extern int kernel_only; 
 extern int verbose;
 extern unsigned long opd_stats[];
 extern char *vmlinux;
@@ -585,7 +586,7 @@ static void opd_kill_maps(struct opd_proc *proc)
 
 /**
  * opd_do_proc_lru - rework process list
- * @head: head of process list 
+ * @head: head of process list
  * @proc: process to move
  *
  * Perform LRU on the process list by moving it to
@@ -922,10 +923,14 @@ void opd_put_sample(const struct op_sample *sample)
 		return;
 	}
 
+	if (kernel_only)
+		return;
+ 
 	/* here we don't want to add the new process because we don't know if it
 	 * was execve()d or a thread
 	 */
 	if (!(proc=opd_get_proc(sample->pid))) {
+		verbprintf("No proc info for pid %.6d.\n", sample->pid);
 		opd_stats[OPD_LOST_PROCESS]++;
 		return;
 	}
@@ -959,6 +964,7 @@ void opd_put_sample(const struct op_sample *sample)
 	}
 
 	/* couldn't locate it */
+	verbprintf("Couldn't find map for pid %.6d, EIP 0x%.8x.\n", sample->pid, sample->eip);
 	opd_stats[OPD_LOST_MAP_PROCESS]++;
 	return;
 }
@@ -1054,10 +1060,10 @@ void opd_handle_exit(const struct op_sample *sample)
 
 /**
  * opd_handle_mapping - deal with mapping notification
- * @mapping: mapping info 
+ * @mapping: mapping info
  *
  * Deal with one or more notifications that a process has mapped
- * in a new executable file. The mapping information is 
+ * in a new executable file. The mapping information is
  * added to the process structure.
  */
 void opd_handle_mapping(const struct op_mapping *mapping)
@@ -1076,8 +1082,8 @@ void opd_handle_mapping(const struct op_mapping *mapping)
 
 	*c = '\0';
 
-	hash = mapping->hash; 
- 
+	hash = mapping->hash;
+
 	while (hash != 0) {
 		if (hash==-1) {
 			/* possibly deleted file */
@@ -1101,7 +1107,7 @@ void opd_handle_mapping(const struct op_mapping *mapping)
 		/* move onto parent */
 		hash = hashmap[hash].parent;
 	}
- 
+
 	verbprintf("Mapping for pid %d: \"%s\", 0x%x, len 0x%x, offset 0x%x\n",
 			mapping->pid, c, mapping->addr, mapping->len, mapping->offset);
 

@@ -10,6 +10,7 @@ o SMP mappings - place in all buffers perhaps ?
 o check chroot() processes and the path hash stuff
 o There is no need for the daemon to run as root as long as every binary image
   is readable ...
+o non-recursive do_hash() ...
 
 Performance
 -----------
@@ -19,11 +20,9 @@ o investigate eviction strategy
 o the interrupt handler code could probably be improved by moving into asm
 o can we fold in the "untouched sample entry" case in hash table to another case ?
 o would query_module() be faster ? do we care ?
-o move out hw_ok() into a separate object file and compile the rest with -march ?
 
 WBNI
 ----
 
 o Other x86 processors, and maybe other archs.
 o gprof output from post-profiler
-o should have a full clean-out sysctl. is it possible ?

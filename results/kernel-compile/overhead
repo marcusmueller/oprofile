@@ -10,7 +10,7 @@ which must be parsed by the profiler.
 done with the kernel /proc/profile enabled at a multiplier of 1 (coming off the local APIC timer
 interrupt). Note that this only profiles the kernel, at a rate of 100 samples / second. A roughly
 similar setup was enabled with oprofile, "cpu_clk_unhalted-justkernel-6013765.out". It can be
-seen that the overhead of oprofile is lower than /proc/profile here.
+seen that the overhead of oprofile is lower than /proc/profile here
 
 
 
@@ -30,3 +30,11 @@ User         	| System          	| Elapsed         	| Config
 519.62 (3.94%) 	| 62.05 (17.84%) 	| 631.39 (8.41%) 	| inst_retired-100000.out
 510.68 (2.15%) 	| 53.82 (2.21%) 	| 598.09 (2.69%) 	| inst_retired-justkernel-100000.out
 509.82 (1.98%) 	| 54.16 (2.85%) 	| 597.27 (2.55%) 	| inst_retired-justkernel-50000.out
+
+----
+1004.38 (0.00%)	| 110.15 (0.00%) 	| 1210.76 (0.00%) 	| clean.out
+1007.25 (0.29%)	| 111.35 (1.09%) 	| 1215.48 (0.39%) 	| cpu_clk_unhalted-justkernel-6013765.out
+1009.48 (0.51%)	| 114.95 (4.36%) 	| 1227.24 (1.36%) 	| cpu_clk_unhalted-justkernel-100000.out
+1012.57 (0.82%)	| 116.14 (5.43%) 	| 1232.36 (1.78%) 	| cpu_clk_unhalted-justkernel-50000.out
+1010.68 (0.63%)	| 111.00 (0.77%) 	| 1224.79 (1.16%) 	| cpu_clk_unhalted-6013765.out
+1039.84 (3.53%)	| 198.48 (80.18%) 	| 1385.70 (14.45%) 	| cpu_clk_unhalted-100000.out

@@ -770,6 +770,15 @@ Tell the profiler to perform a partial data dump
 
 
 \family typewriter 
+.../oprofile/kernel_only
+\family default 
+ 
+\series bold 
+With this option no profiling of user space is done at all.
+\layout Description
+
+
+\family typewriter 
 .../oprofile/0/
 \family default 
  

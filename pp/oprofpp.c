@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.23 2001/01/21 01:11:59 moz Exp $ */
+/* $Id: oprofpp.c,v 1.24 2001/02/02 15:56:43 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -32,7 +32,7 @@ static int verbose;
  
 static char const *samplefile;
 static char *basedir="/var/opd";
-static char *imagefile;
+static const char *imagefile;
 static char *gproffile;
 static char *symbol;
 static int list_symbols;
@@ -65,7 +65,7 @@ static struct poptOption options[] = {
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
 
-char *remangle(char *image)
+char *remangle(const char *image)
 {
 	char *file;
 	char *c; 
@@ -104,7 +104,7 @@ static void get_options(int argc, char const *argv[])
 {
 	poptContext optcon;
 	char c; 
-	char *file;
+	const char *file;
 	
 	optcon = poptGetContext(NULL, argc, argv, options, 0);
 
@@ -210,7 +210,7 @@ bfd *open_image_file(char const *mangled)
 	char **matching;
 	bfd *ibfd;
 	 
-	file = imagefile;
+	file = (char *)imagefile;
 
 	if (!mangled) {
 		if (!file)

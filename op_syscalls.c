@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.4 2001/01/31 16:02:29 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.5 2001/02/02 15:56:43 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -547,7 +547,7 @@ asmlinkage static long my_sys_exit(int error_code)
 
 extern void *sys_call_table[];
 
-void op_intercept_syscalls(void)
+void op_save_syscalls(void)
 {
 	old_sys_fork = sys_call_table[__NR_fork];
 	old_sys_vfork = sys_call_table[__NR_vfork];
@@ -557,7 +557,10 @@ void op_intercept_syscalls(void)
 	old_sys_mmap2 = sys_call_table[__NR_mmap2];
 	old_sys_init_module = sys_call_table[__NR_init_module];
 	old_sys_exit = sys_call_table[__NR_exit];
-
+}
+ 
+void op_intercept_syscalls(void)
+{
 	sys_call_table[__NR_fork] = my_sys_fork;
 	sys_call_table[__NR_vfork] = my_sys_vfork;
 	sys_call_table[__NR_clone] = my_sys_clone;

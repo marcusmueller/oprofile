@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.51 2001/01/31 16:02:29 movement Exp $ */
+/* $Id: oprofile.c,v 1.52 2001/02/02 15:56:43 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -32,6 +32,7 @@ MODULE_DESCRIPTION("Continuous Profiling Module");
 static int op_hash_size=OP_DEFAULT_HASH_SIZE;
 static int op_buf_size=OP_DEFAULT_BUF_SIZE;
 static int sysctl_dump;
+static int kernel_only;
 static int op_ctr0_on[NR_CPUS];
 static int op_ctr1_on[NR_CPUS];
 static int op_ctr0_um[NR_CPUS];
@@ -50,7 +51,7 @@ pid_t pgrp_filter;
 u32 prof_on __cacheline_aligned;
 
 static int op_major;
-static int cpu_type;
+int cpu_type;
 
 static volatile uint oprof_opened __cacheline_aligned;
 static DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
@@ -571,13 +572,22 @@ void oprof_put_note(struct op_sample *samp)
 	spin_unlock(&note_lock);
 }
 
+uint cpu_num;
+
+static int is_ready(void)
+{
+	for (cpu_num=0; cpu_num < smp_num_cpus; cpu_num++) {
+		if (oprof_ready[cpu_num])
+			return 1;
+	}
+	return 0;
+}
+
 static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 {
 	struct op_sample *mybuf;
-	uint i;
 	uint num;
 	ssize_t max;
-	int forced_wakeup;
 
 	if (!capable(CAP_SYS_PTRACE))
 		return -EPERM;
@@ -599,45 +609,38 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	if (!mybuf)
 		return -EFAULT;
 
-again:
-	for (i=0; i<smp_num_cpus; i++) {
-		if (oprof_ready[i]) {
-			forced_wakeup = oprof_ready[i]-1;
-			oprof_ready[i]=0;
-			goto doit;
-		}
-	}
+	wait_event_interruptible(oprof_wait, is_ready());
 
-	interruptible_sleep_on(&oprof_wait);
 	if (signal_pending(current)) {
 		vfree(mybuf);
 		return -EINTR;
 	}
-	goto again;
 
 	/* FIXME: what if a signal occurs now ? What is returned to
 	 * the read() routine ?
 	 */
-doit:
-	pmc_select_stop(i);
+
+	pmc_select_stop(cpu_num);
 	spin_lock(&note_lock);
 
-	num = oprof_data[i].nextbuf;
+	num = oprof_data[cpu_num].nextbuf;
 	/* might have overflowed from map buffer or ejection buffer */
-	if (num < oprof_data[i].buf_size-OP_PRE_WATERMARK && !forced_wakeup) {
+	if (num < oprof_data[cpu_num].buf_size-OP_PRE_WATERMARK && oprof_ready[cpu_num] != 2) {
 		printk(KERN_ERR "oprofile: Detected overflow of size %d. You must increase the "
 				"hash table size or reduce the interrupt frequency\n", num);
-		num = oprof_data[i].buf_size;
+		num = oprof_data[cpu_num].buf_size;
 	} else
-		oprof_data[i].nextbuf=0;
+		oprof_data[cpu_num].nextbuf=0;
+
+	oprof_ready[cpu_num] = 0;
 
 	count = num*sizeof(struct op_sample);
 
 	if (count)
-		memcpy(mybuf,oprof_data[i].buffer,count);
+		memcpy(mybuf,oprof_data[cpu_num].buffer,count);
 
 	spin_unlock(&note_lock);
-	pmc_select_start(i);
+	pmc_select_start(cpu_num);
 
 	if (count && copy_to_user(buf, mybuf, count))
 		count = -EFAULT;
@@ -671,8 +674,8 @@ static int oprof_open(struct inode *ino, struct file *file)
 
 	err = oprof_start();
 	if (err)
-		clear_bit(0, &oprof_opened); 
-	return err; 
+		clear_bit(0, &oprof_opened);
+	return err;
 }
 
 static int oprof_release(struct inode *ino, struct file *file)
@@ -837,7 +840,8 @@ static int oprof_start(void)
 	
 	install_nmi();
 
-	op_intercept_syscalls();
+	if (!kernel_only)
+		op_intercept_syscalls();
 
 	oprof_start_thread();
 	smp_call_function(pmc_start,NULL,0,1);
@@ -905,98 +909,12 @@ static struct file_operations oprof_fops = {
 	mmap: oprof_mmap,
 };
 
-static int can_unload(void)
-{
-	return -EBUSY; /* nope */
-}
-
-static int __init hw_ok(void)
-{
-	/* we want to include all P6 processors (i.e. > Pentium Classic,
-	 * < Pentium IV
-	 */
-	if (current_cpu_data.x86_vendor != X86_VENDOR_INTEL ||
-	    current_cpu_data.x86 != 6) {
-		printk(KERN_ERR "oprofile: not an Intel P6 processor. Sorry.\n");
-		return 0;
-	}
-
-	/* 0 if PPro, 1 if PII, 2 if PIII */
-	cpu_type = (current_cpu_data.x86_model > 5) ? 2 :
-		(current_cpu_data.x86_model > 2);
-	return 1;
-}
-
-static int init_sysctl(void);
-static void cleanup_sysctl(void);
-
-int __init oprof_init(void)
-{
-	int err;
-
-	if (!hw_ok())
-		return -EINVAL;
-
-	printk(KERN_INFO "%s\n",op_version);
-
-	if ((err = apic_setup()))
-		return err;
-
-	if ((err = init_sysctl()))
-		goto out_err;
-
-	if ((err = smp_call_function(smp_apic_setup,NULL,0,1)))
-		goto out_err;
-
- 	err = op_major = register_chrdev(0,"oprof",&oprof_fops);
-	if (err<0)
-		goto out_err;
-
-	err = oprof_init_hashmap();
-	if (err<0) {
-		unregister_chrdev(op_major,"oprof");
-		goto out_err;
-	}
-
-	/* module is not unloadable */
-	THIS_MODULE->can_unload = can_unload;
-		
-	printk("oprofile: oprofile loaded, major %u\n",op_major);
-	return 0;
-
-out_err:
-	smp_call_function(disable_local_P6_APIC,NULL,0,1);
-	disable_local_P6_APIC(NULL);
-	return err;
-}
-
-void __exit oprof_exit(void)
-{
-	/* FIXME: what to do here ? will this ever happen ? */
-
-	cleanup_sysctl();
-
-	oprof_free_hashmap();
-
-	op_replace_syscalls();
-
-	unregister_chrdev(op_major,"oprof");
-
-	if (smp_call_function(disable_local_P6_APIC,NULL,0,1))
-		return;
-	disable_local_P6_APIC(NULL);
-
-	return;
-}
-
-module_init(oprof_init);
-module_exit(oprof_exit);
-
 /*
  * /proc/sys/dev/oprofile/
  *                    bufsize
  *                    hashsize
  *                    dump
+ *                    kernel_only
  *                    pid_filter
  *                    pgrp_filter
  *                    0/
@@ -1029,19 +947,48 @@ static int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *
 	return err;	
 }
 
+static void dump_one(struct _oprof_data *data, struct op_sample *ops, uint cpu)
+{
+	if (!ops->count)
+		return;
+
+	memcpy(&data->buffer[data->nextbuf], ops, sizeof(struct op_sample));
+
+	ops->count = 0;
+
+	if (++data->nextbuf != (data->buf_size-OP_PRE_WATERMARK)) {
+		if (data->nextbuf==data->buf_size)
+			data->nextbuf=0;
+		return;
+	}
+	oprof_ready[cpu] = 1;
+}
+
 static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
 {
 	uint cpu;
 	int err = -EINVAL;
+	int i,j;
+
+	if (!prof_on)
+		return err;
 
 	down(&sysctlsem);
 	
 	if (write) {
-		if (!prof_on)
-			goto out;
-
-		for (cpu=0; cpu < smp_num_cpus; cpu++)
-			oprof_ready[cpu]=2;
+		/* clean out the hash table as far as possible */
+		for (cpu=0; cpu < smp_num_cpus; cpu++) {
+			struct _oprof_data * data = &oprof_data[cpu];
+			pmc_select_stop(cpu);
+			for (i=0; i < data->hash_size; i++) {
+				for (j=0; j < OP_NR_ENTRY; j++)
+					dump_one(data, &data->entries[i].samples[j], cpu);
+				if (oprof_ready[cpu])
+					break;
+			}
+			oprof_ready[cpu] = 2;
+			pmc_select_start(cpu);
+		}
 		wake_up(&oprof_wait);
 		err = 0;
 		goto out;
@@ -1054,10 +1001,12 @@ out:
 	return err;
 }
 
+static int nr_oprof_static = 6;
 static ctl_table oprof_table[] = {
 	{ 1, "bufsize", &op_buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "hashsize", &op_hash_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "dump", &sysctl_dump, sizeof(int), 0600, NULL, &sysctl_do_dump, NULL, },
+	{ 1, "kernel_only", &kernel_only, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pid_filter", &pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pgrp_filter", &pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
 	{0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,},
@@ -1065,7 +1014,6 @@ static ctl_table oprof_table[] = {
 	{0,},
 };
 
-static int nr_oprof_static = 5;
 
 static ctl_table oprof_root[] = {
 	{1, "oprofile", NULL, 0, 0700, oprof_table},
@@ -1154,3 +1102,53 @@ void __exit cleanup_sysctl(void)
 	}
 	return;
 }
+
+static int can_unload(void)
+{
+	return -EBUSY; /* nope */
+}
+
+int __init oprof_init(void)
+{
+	int err;
+
+	printk(KERN_INFO "%s\n",op_version);
+
+	if ((err = apic_setup()))
+		return err;
+
+	if ((err = init_sysctl()))
+		goto out_err;
+
+	if ((err = smp_call_function(smp_apic_setup,NULL,0,1)))
+		goto out_err;
+
+ 	err = op_major = register_chrdev(0,"oprof",&oprof_fops);
+	if (err<0)
+		goto out_err;
+
+	err = oprof_init_hashmap();
+	if (err<0) {
+		unregister_chrdev(op_major,"oprof");
+		goto out_err;
+	}
+
+	/* module is not unloadable */
+	THIS_MODULE->can_unload = can_unload;
+
+	/* do this now so we don't have to track save/restores later */
+	op_save_syscalls();
+
+	printk("oprofile: oprofile loaded, major %u\n",op_major);
+	return 0;
+
+out_err:
+	smp_call_function(disable_local_P6_APIC,NULL,0,1);
+	disable_local_P6_APIC(NULL);
+	return err;
+}
+
+/*
+ * "The most valuable commodity I know of is information."
+ *      - Gordon Gekko
+ */

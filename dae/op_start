@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.20 2001/01/31 16:02:29 movement Exp $
+# $Id: op_start,v 1.22 2001/02/05 11:37:59 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -25,6 +25,7 @@ BUF_SIZE=262144
 HASH_SIZE=65536
 CTR0_EVENT=
 CTR1_EVENT=
+KERNEL_ONLY=0
 CTR0_UM=0
 CTR1_UM=0
 CTR0_COUNT=
@@ -46,6 +47,7 @@ help_string='op_start: usage:$
 Module options$
   --buffer-size=num            number of samples in kernel buffer$
   --hash-table-size=num        number of entries in kernel hash table$
+  --kernel-only=[0|1]          profile only the kernel$
 $
 Module per-cpu options. Specify comma-separated values for each CPU$
   --ctr0-event=name            symbolic event name for ctr0$
@@ -107,6 +109,13 @@ do
 			;;
 		--hash-table-size)
 			HASH_SIZE=$val
+			;;
+		--kernel-only)
+			if [ "$val" != "" ]; then
+				KERNEL_ONLY=$val
+			else
+				KERNEL_ONLY=1
+			fi
 			;;
 		--ctr0-unit-mask)
 			CTR0_UM=$val
@@ -311,32 +320,33 @@ chmod 700 "$HASH_MAP_DEVICE_FILE"
 
 op_stop >/dev/null
 
-$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE
-$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE
-$SYSCTL -w dev.oprofile.pid_filter=$PID_FILTER 
-$SYSCTL -w dev.oprofile.pgrp_filter=$PGRP_FILTER 
+$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE >/dev/null
+$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE >/dev/null
+$SYSCTL -w dev.oprofile.kernel_only=$KERNEL_ONLY >/dev/null
+$SYSCTL -w dev.oprofile.pid_filter=$PID_FILTER >/dev/null
+$SYSCTL -w dev.oprofile.pgrp_filter=$PGRP_FILTER >/dev/null
 
 # FIXME do something for all CPUs 
 if [ "$CTR0_EVENT" != "" ]; then
-	$SYSCTL -w dev.oprofile.0.0.enabled=1
-	$SYSCTL -w dev.oprofile.0.0.count=$CTR0_COUNT
-	$SYSCTL -w dev.oprofile.0.0.kernel=$CTR0_KERNEL
-	$SYSCTL -w dev.oprofile.0.0.user=$CTR0_USER
-	$SYSCTL -w dev.oprofile.0.0.unit_mask=$CTR0_UM
-	$SYSCTL -w dev.oprofile.0.0.event=$CTR0_EVENT_VAL
+	$SYSCTL -w dev.oprofile.0.0.enabled=1 >/dev/null
+	$SYSCTL -w dev.oprofile.0.0.count=$CTR0_COUNT >/dev/null
+	$SYSCTL -w dev.oprofile.0.0.kernel=$CTR0_KERNEL >/dev/null
+	$SYSCTL -w dev.oprofile.0.0.user=$CTR0_USER >/dev/null
+	$SYSCTL -w dev.oprofile.0.0.unit_mask=$CTR0_UM >/dev/null
+	$SYSCTL -w dev.oprofile.0.0.event=$CTR0_EVENT_VAL >/dev/null
 fi
 if [ "$CTR1_EVENT" != "" ]; then
-	$SYSCTL -w dev.oprofile.0.1.enabled=1
-	$SYSCTL -w dev.oprofile.0.1.count=$CTR1_COUNT
-	$SYSCTL -w dev.oprofile.0.1.kernel=$CTR1_KERNEL
-	$SYSCTL -w dev.oprofile.0.1.user=$CTR1_USER
-	$SYSCTL -w dev.oprofile.0.1.unit_mask=$CTR1_UM
-	$SYSCTL -w dev.oprofile.0.1.event=$CTR1_EVENT_VAL
+	$SYSCTL -w dev.oprofile.0.1.enabled=1 >/dev/null
+	$SYSCTL -w dev.oprofile.0.1.count=$CTR1_COUNT >/dev/null
+	$SYSCTL -w dev.oprofile.0.1.kernel=$CTR1_KERNEL >/dev/null
+	$SYSCTL -w dev.oprofile.0.1.user=$CTR1_USER >/dev/null
+	$SYSCTL -w dev.oprofile.0.1.unit_mask=$CTR1_UM >/dev/null
+	$SYSCTL -w dev.oprofile.0.1.event=$CTR1_EVENT_VAL >/dev/null
 fi
  
 OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$USE_PII --ignore-myself=$IGNORE_MYSELF \
 	--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
-	--device-file=$DEVICE_FILE \
+	--device-file=$DEVICE_FILE --kernel-only=$KERNEL_ONLY \
 	--hash-map-device-file=$HASH_MAP_DEVICE_FILE --vmlinux=$VMLINUX"
 
 if [ "$CTR0_EVENT" != "" ]; then
