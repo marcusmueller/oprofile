@@ -556,24 +556,41 @@ void output_one_file(istream & in, debug_name_id filename,
 /* Locate a source file from debug info, which may be relative */
 string const locate_source_file(debug_name_id filename_id)
 {
-	string const & relfile = debug_names.name(filename_id);
+	string const origfile = debug_names.name(filename_id);
+	string file = origfile;
 
-	if (op_file_readable(relfile))
-		return relfile;
+	if (file.empty())
+		return file;
+
+	/* Allow absolute paths to be relocated to a different directory */
+	if (file[0] == '/') {
+		vector<string>::const_iterator cit = base_dirs.begin();
+		vector<string>::const_iterator end = base_dirs.end();
+		for (; cit != end; ++cit) {
+			string path = relative_to_absolute_path(*cit);
+
+			if (is_prefix(file, path)) {
+				file = file.substr(path.length());
+				break;
+			}
+		}
+	}
 
 	vector<string>::const_iterator cit = search_dirs.begin();
 	vector<string>::const_iterator end = search_dirs.end();
 
 	for (; cit != end; ++cit) {
-		string const file =
-			relative_to_absolute_path(*cit + "/" + relfile);
+		string const absfile =
+			relative_to_absolute_path(*cit + "/" + file);
 
-		if (op_file_readable(file)) {
-			return file;
+		if (op_file_readable(absfile)) {
+			return absfile;
 		}
 	}
 
-	return relfile;
+	/* We didn't find a relocated absolute file, or a relative file,
+	 * assume the original is correct */
+	return origfile;
 }
 
 

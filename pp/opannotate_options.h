@@ -31,6 +31,7 @@ namespace options {
 	extern path_filter file_filter;
 	extern std::string output_dir;
 	extern std::vector<std::string> search_dirs;
+	extern std::vector<std::string> base_dirs;
 	extern std::vector<std::string> objdump_params;
 	extern double threshold;
 }

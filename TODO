@@ -34,6 +34,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
  o create_path API is weird
  o opannotate should error out with a msg if no debug symbols are found at all
  o oprof_start dialog size is too small initially

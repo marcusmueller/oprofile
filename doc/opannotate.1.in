@@ -71,6 +71,11 @@ Comma-separated list of paths to search for source files. You may need to use
 this option when the debug information for an image contains relative paths.
 .br
 .TP
+.BI "--base-dirs / -b [paths]"
+Comma-separated list of paths to strip from debug source files, prior to
+looking for them in --search-dirs.
+.br
+.TP
 .BI "--source / -s"
 Output annotated source. This requires debugging information to be available
 for the binaries.

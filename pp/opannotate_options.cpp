@@ -29,6 +29,7 @@ namespace options {
 	bool smart_demangle;
 	string output_dir;
 	vector<string> search_dirs;
+	vector<string> base_dirs;
 	path_filter file_filter;
 	string_filter symbol_filter;
 	bool source;
@@ -56,6 +57,8 @@ popt::option options_array[] = {
 		     "output directory", "directory name"),
 	popt::option(options::search_dirs, "search-dirs", 'd',
 	             "directories to look for source files", "comma-separated paths"),
+	popt::option(options::base_dirs, "base-dirs", 'b',
+	             "source file prefixes to strip", "comma-separated paths"),
 	popt::option(include_file, "include-file", '\0',
 		     "include these comma separated filename", "filenames"),
 	popt::option(exclude_file, "exclude-file", '\0',
@@ -86,6 +89,13 @@ void handle_options(vector<string> const & non_options)
 
 	if (!objdump_params.empty() && !assembly) {
 		cerr << "--objdump-params is meaningless without --assembly\n";
+		exit(EXIT_FAILURE);
+	}
+
+	if (search_dirs.empty() && !base_dirs.empty()) {
+		cerr << "--base-dirs is useless unless you specify an "
+			"alternative source location with --search-dirs"
+		     << endl;
 		exit(EXIT_FAILURE);
 	}
 

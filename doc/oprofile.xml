@@ -986,7 +986,7 @@ profile data. In the following example, we're getting an image summary for the w
 system:
 </para>
 <screen>
-[moz@lambent oprofile]$ opreport --long-filenames
+$ opreport --long-filenames
 CPU: PIII, speed 863.195 MHz (estimated)
 Counted CPU_CLK_UNHALTED events (clocks processor is not halted) with a unit mask of 0x00 (No unit mask) count 23150
    905898 59.7415 /usr/lib/gcc-lib/i386-redhat-linux/3.2/cc1plus
@@ -1011,7 +1011,7 @@ below is a symbol summary of the OProfile daemon. Note that as we used
 has used are also shown.
 </para>
 <screen>
-[moz@lambent oprofile]$ opreport -l `which oprofiled` 2>/dev/null | more
+$ opreport -l `which oprofiled` 2>/dev/null | more
 CPU: PIII, speed 863.195 MHz (estimated)
 Counted CPU_CLK_UNHALTED events (clocks processor is not halted) with a unit mask of 0x00 (No unit mask) count 23150
 vma      samples  %           image name               symbol name
@@ -1064,8 +1064,8 @@ for that line. Additionally, each symbol is annotated giving details for the sym
 as a whole. An example:
 </para>
 <screen>
-[moz@lambent moz]$ opannotate --source --output-dir=annotated /usr/local/oprofile-pp/bin/oprofiled
-[moz@lambent moz]$ ls annotated/home/moz/src/oprofile-pp/daemon/
+$ opannotate --source --output-dir=annotated /usr/local/oprofile-pp/bin/oprofiled
+$ ls annotated/home/moz/src/oprofile-pp/daemon/
 opd_cookie.h  opd_image.c  opd_kernel.c  opd_sample_files.c  oprofiled.c
 </screen>
 <para>
@@ -1099,6 +1099,33 @@ There are a number of options for specifying the output;  for more details,
 see <xref linkend="opannotate-details" />.
 </para>
 
+<sect2 id="opannotate-finding-source">
+<title>Locating source files</title>
+<para>
+Of course, <command>opannotate</command> needs to be able to locate the source files
+for the binary image(s) in order to produce output. Some binary images have debug
+information where the given source file paths are relative, not absolute. You can
+specify search paths to look for these files (similar to <command>gdb</command>'s
+<option>dir</option> command) with the <option>--search-dirs</option> option.
+</para>
+<para>
+Sometimes you may have a binary image which gives absolute paths for the source files,
+but you have the actual sources elsewhere (commonly, you've installed an SRPM for
+a binary on your system and you want annotation from an existing profile). You can
+use the <option>--base-dirs</option> option to redirect OProfile to look somewhere
+else for source files. For example, imagine we have a binary generated from a source
+file that is given in the debug information as <filename>/tmp/build/libfoo/foo.c</filename>,
+and you have the source tree matching that binary installed in <filename>/home/user/libfoo/</filename>.
+You can redirect OProfile to find <filename>foo.c</filename> correctly like this :
+</para>
+<screen>
+$ opannotate --source --base-dirs=/tmp/build/libfoo/ --search-dirs=/home/user/libfoo/ --output-dir=annotated/ /lib/libfoo.so
+</screen>
+<para>
+You can specify multiple (comma-separated) paths to both options.
+</para>
+</sect2>
+
 </sect1> <!-- opannotate -->
 
 <sect1 id="opgprof">
@@ -1111,8 +1138,8 @@ with <command>gprof -p</command>. Note that only a flat profile is included;
 OProfile cannot produce call graphs. For example:
 </para>
 <screen>
-[moz@lambent moz]$ opgprof `which oprofiled` # generates gmon.out file
-[moz@lambent moz]$ gprof -p `which oprofiled` | head
+$ opgprof `which oprofiled` # generates gmon.out file
+$ gprof -p `which oprofiled` | head
 Flat profile:
 
 Each sample counts as 1 samples.
@@ -1504,6 +1531,13 @@ source file.
 <varlistentry><term><option>--search-dirs / -d [paths]</option></term><listitem><para>
 Comma-separated list of paths to search for source files. This is useful to find
 source files when the debug information only contains relative paths.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--base-dirs / -b [paths]/</option></term><listitem><para>
+Comma-separated list of path prefixes. This can be used to point OProfile to a
+different location for source files when the debug information specifies an
+absolute path on your system for the source that does not exist. The prefix
+is stripped from the debug source file paths, then searched in the search dirs
+specified by <option>--search-dirs</option>.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--source / -s</option></term><listitem><para>
 Output annotated source. This requires debugging information to be available
