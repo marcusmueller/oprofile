@@ -26,43 +26,35 @@ name:segregload type:bitmask default:0xff
 	0x20 GS register
 	0x40 HS register
 name:ecc type:bitmask default:0x03
-# FIXME: a default that isn't an option ?
 	0x01 Scrubber error
 	0x02 Piggyback scrubber errors
 name:prefetch type:bitmask default:0x07
-# FIXME: a default that isn't an option ?
 	0x01 Load
 	0x02 Store
 	0x04 NTA
 name:fpu_instr type:bitmask default:0x0f
-# FIXME: a default that isn't an option ?
 	0x01 x87 instructions
 	0x02 Combined MMX & 3DNow instructions
 	0x04 Combined packed SSE & SSE2 instructions
 	0x08 Combined packed scalar SSE & SSE2 instructions
 name:fpu_fastpath type:bitmask default:0x07
-# FIXME: a default that isn't an option ?
 	0x01 With low op in position 0
 	0x02 With low op in position 1
 	0x04 With low op in position 2
 name:fpu_exceptions type:bitmask default:0x0f
-# FIXME: a default that isn't an option ?
 	0x01 x87 reclass microfaults
 	0x02 SSE retype microfaults
 	0x04 SSE reclass microfaults
 	0x08 SSE and x87 microtraps
 name:page_access type:bitmask default:0x07
-# FIXME: a default that isn't an option ?
 	0x01 Page hit
 	0x02 Page miss
 	0x04 Page conflict
 name:turnaround type:bitmask default:0x07
-# FIXME: a default that isn't an option ?
 	0x01 DIMM turnaround
 	0x02 Read to write turnaround
 	0x04 Write to read turnaround
 name:saturation type:bitmask default:0x0f
-# FIXME: a default that isn't an option ?
 	0x01 Memory controller high priority bypass
 	0x02 Memory controller low priority bypass
 	0x04 DRAM controller interface bypass
@@ -78,7 +70,6 @@ name:sizecmds type:bitmask default:0xff
 	0x20 RdSzDword
 	0x40 RdModWr
 name:probe type:bitmask default:0x0f
-# FIXME: a default that isn't an option ?
 	0x01 Probe miss
 	0x02 Probe hit
 	0x04 Probe hit dirty without memory cancel

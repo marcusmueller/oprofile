@@ -1,6 +1,6 @@
 # Pentium IV HyperThreading possible unit masks
 #
-# FIXME: should most of  these be mandatory, or have 0x0 listed ?
+# FIXME: should most of these be mandatory, or have 0x0 listed ?
 name:zero type:mandatory default:0x0
 	0x0 No unit mask
 name:branch_retired type:bitmask default:0x0c
