@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.5 2001/10/02 20:39:14 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.6 2001/10/02 21:21:46 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -964,10 +964,14 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 		printf_symbol(scounts[i].sym->name);
 
 		// FIXME: why we output also zero samples symbol ?
-		printf("[0x%.8lx]: %2.4f%% (%u samples)\n", 
-		       scounts[i].sym->value+scounts[i].sym->section->vma,
-		       (((double)scounts[i].count[ctr]) / tot[ctr])*100.0, 
-		       scounts[i].count[ctr]);
+		if (scounts[i].count[ctr]) {
+			printf("[0x%.8lx]: %2.4f%% (%u samples)\n", 
+			       scounts[i].sym->value+scounts[i].sym->section->vma,
+			       (((double)scounts[i].count[ctr]) / tot[ctr])*100.0, 
+			       scounts[i].count[ctr]);
+		} else {
+			printf(" (0 samples)\n");
+		}
 	}
 }
  
