@@ -43,6 +43,7 @@ struct op_unit_mask {
 		char * desc;
 	} um[MAX_UNIT_MASK];
 	struct list_head um_next; /**< next um in list */
+	int used;                 /**< used by events file parser */
 };
 
 

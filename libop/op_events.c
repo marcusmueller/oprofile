@@ -344,6 +344,7 @@ static void read_events(char const * file)
 					parse_error("duplicate um: tag");
 				seen_um = 1;
 				event->unit = find_um(value);
+				event->unit->used = 1;
 				free(value);
 			} else if (strcmp(name, "minimum") == 0) {
 				if (seen_minimum)
@@ -376,6 +377,7 @@ static void load_events(op_cpu cpu_type)
 	char * event_file;
 	char * um_file;
 	char * dir;
+	struct list_head * pos;
 
 	if (!list_empty(&events_list))
 		return;
@@ -402,6 +404,15 @@ static void load_events(op_cpu cpu_type)
 
 	read_unit_masks(um_file);
 	read_events(event_file);
+
+	/* sanity check: all unit mask must be used */
+	list_for_each(pos, &um_list) {
+		struct op_unit_mask * um = list_entry(pos, struct op_unit_mask, um_next);
+		if (!um->used) {
+			fprintf(stderr, "um %s is not used\n", um->name);
+		}
+	}
+	
 
 	free(um_file);
 	free(event_file);

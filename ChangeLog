@@ -1,3 +1,21 @@
+2004-02-10  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* events/i386/p4/events: s/instructions/uops/ when appropriate
+	* events/i386/p4/unit_masks: change many bitmask to mandatory,
+	  fix invalid default value, remove mask only used with HyperThreading
+	* events/i386/p4-ht/unit_masks: s/bitmask/mandatory. Remove unused
+	  unit mask
+
+	* libop/op_events.h:
+	* libop/op_events.c: warn if an unit mask is not used (this add a
+	  warning for Itanium2, added in TODO)
+
+	* libop/op_parse_event.c: don't silently accept invalid value as zero
+	  (e.g FOO:3000:0xx21 was accepted as FOO:3000:0x21)
+
+	* utils/opcontrol: mandatory default value was rejected because we
+	  checked the events before getting the default unit mask.
+
 2004-02-08  Zwane Mwaikambo  <zwane@arm.linux.org.uk>
 
 	* daemon/opd_cookie.c: Fix syscall base number.

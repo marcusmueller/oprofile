@@ -38,7 +38,7 @@ event:0x14 counters:2,6 um:flame_uop minimum:3000 name:PACKED_SP_UOP : packed si
 event:0x15 counters:2,6 um:flame_uop minimum:3000 name:PACKED_DP_UOP : packed double precision uops
 event:0x16 counters:2,6 um:flame_uop minimum:3000 name:SCALAR_SP_UOP : scalar single precision uops
 event:0x17 counters:2,6 um:flame_uop minimum:3000 name:SCALAR_DP_UOP : scalar double presision uops
-event:0x18 counters:2,6 um:flame_uop minimum:3000 name:64BIT_MMX_UOP : 64 bit SIMD MMX instructions
-event:0x19 counters:2,6 um:flame_uop minimum:3000 name:128BIT_MMX_UOP : 128 bit integer SIMD SSE2 instructions
+event:0x18 counters:2,6 um:flame_uop minimum:3000 name:64BIT_MMX_UOP : 64 bit integer SIMD MMX uops
+event:0x19 counters:2,6 um:flame_uop minimum:3000 name:128BIT_MMX_UOP : 128 bit integer SIMD SSE2 uops
 event:0x1a counters:2,6 um:flame_uop minimum:3000 name:X87_FP_UOP : x87 floating point uops
 event:0x1b counters:2,6 um:x87_simd_moves_uop minimum:3000 name:X87_SIMD_MOVES_UOP : x87 FPU, MMX, SSE, or SSE2 loads, stores and reg-to-reg moves

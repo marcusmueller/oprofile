@@ -42,6 +42,20 @@ static char * next_part(char const ** str)
 }
 
 
+static int parse_ulong(char const * str)
+{
+	unsigned long value;
+	char * end;
+	value = strtoul(str, &end, 0);
+	if (end && *end) {
+		fprintf(stderr, "Invalid event part %s\n", str);
+		exit(EXIT_FAILURE);
+	}
+
+	return value;
+}
+
+
 size_t parse_events(struct parsed_event * parsed_events, size_t max_events,
                   char const * const * events)
 {
@@ -72,14 +86,14 @@ size_t parse_events(struct parsed_event * parsed_events, size_t max_events,
 			exit(EXIT_FAILURE);
 		}
 
-		parsed_events[i].count = strtoul(part, NULL, 0);
+		parsed_events[i].count = parse_ulong(part);
 		free(part);
 
 		parsed_events[i].unit_mask = 0;
 		part = next_part(&cp);
 
 		if (part) {
-			parsed_events[i].unit_mask = strtoul(part, NULL, 0);
+			parsed_events[i].unit_mask = parse_ulong(part);
 			free(part);
 		}
 
@@ -87,7 +101,7 @@ size_t parse_events(struct parsed_event * parsed_events, size_t max_events,
 		part = next_part(&cp);
 
 		if (part) {
-			parsed_events[i].kernel = strtoul(part, NULL, 0);
+			parsed_events[i].kernel = parse_ulong(part);
 			free(part);
 		}
 
@@ -95,7 +109,7 @@ size_t parse_events(struct parsed_event * parsed_events, size_t max_events,
 		part = next_part(&cp);
 
 		if (part) {
-			parsed_events[i].user = strtoul(part, NULL, 0);
+			parsed_events[i].user = parse_ulong(part);
 			free(part);
 		}
 	
