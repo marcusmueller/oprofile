@@ -22,7 +22,7 @@
 #include "op_config.h"
 #include "op_mangling.h"
 #include "samples_container.h"
-#include "samples_file.h"
+#include "opp_samples_files.h"
 #include "counter_util.h"
 #include "derive_files.h"
 #include "string_manip.h"

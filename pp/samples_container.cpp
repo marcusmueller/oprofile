@@ -17,7 +17,7 @@
 
 #include "symbol_functors.h"
 #include "samples_container.h"
-#include "samples_file.h"
+#include "opp_samples_files.h"
 #include "sample_container_imp.h"
 #include "symbol_container_imp.h"
 

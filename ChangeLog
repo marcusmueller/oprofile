@@ -1,5 +1,16 @@
 2002-10-12  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/samples_file.h:
+	* pp/samples_file.cpp: move class opp_samples_files ...
+	* pp/opp_samples_files.h:
+	* pp/opp_samples_files.cpp: to these new files
+
+	* pp/Makefile.in:
+	* pp/op_to_source.cpp:
+	* pp/oprofpp.cpp:
+
+2002-10-12  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* dae/opd_sample_files.c: fixme remove
 	* dae/oprofiled.c:
 	* daemon/oprofiled.c: minor error message improvement

@@ -20,7 +20,7 @@
 #include <stdio.h>
 
 #include "samples_container.h"
-#include "samples_file.h"
+#include "opp_samples_files.h"
 #include "demangle_symbol.h"
 #include "derive_files.h"
 #include "counter_util.h"
