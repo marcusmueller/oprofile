@@ -33,9 +33,9 @@ uninstall:
 # ui is modified all ui files are modified.
 OP_REPORT_UI_OBJS=ui/oprof_report.base.o ui/oprof_report.base.moc.o
 OP_REPORT_OBJS=oprof_report.o oprof_report.moc.o oprof_report_main.o \
- oprofpp_view.o ../events/op_events.o ../events/op_events_desc.o \
- ../dae/opd_util.o ../util/string_manip.o ../util/file_manip.o ../util/misc.o \
- ../pp/oprofpp_util.o ../pp/opf_container.o
+ oprofpp_view.o hotspot_view.o ../events/op_events.o \
+ ../events/op_events_desc.o ../dae/opd_util.o ../util/string_manip.o \
+ ../util/file_manip.o ../util/misc.o ../pp/oprofpp_util.o ../pp/opf_container.o
 
 # We do not put $(OP_REPORT_UI_OBJS) as dependency of oprof_report (make don't
 # know how to rebuild it at this point) but it works due to side effect between
@@ -61,13 +61,15 @@ oprof_report_main.o: oprof_report_main.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 oprofpp_view.o: oprofpp_view.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+hotspot_view.o: hotspot_view.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # generate qt moc code for subclass
 oprof_report.moc.cpp: oprof_report.h ui/oprof_report.base.h
 	$(MOC) -o oprof_report.moc.cpp oprof_report.h
 
 # dependencies
-ALL_SOURCES = oprof_report_main.cpp oprof_report.cpp oprof_report.moc.cpp oprofpp_view.cpp
+ALL_SOURCES = oprof_report_main.cpp oprof_report.cpp oprof_report.moc.cpp oprofpp_view.cpp hotspot_view.cpp
 
 include ../Rules.make
 

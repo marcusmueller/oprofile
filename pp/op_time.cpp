@@ -202,22 +202,8 @@ static void get_options(int argc, char const * argv[])
 		counter_str = "0";
 
 	counter = counter_mask(counter_str);
-#if 0
-	if (sort_by_counter == -1) {
-		// get the first counter selected and use it as sort order
-		for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
-			if ((counter & (1 << i)) != 0)
-				sort_by_counter = i;
-		}
-	}
 
-	if ((counter & (1 << sort_by_counter)) == 0) {
-		cerr << "invalid sort counter nr\n";
-		exit(EXIT_FAILURE);
-	}
-#else
 	validate_counter(counter, sort_by_counter);
-#endif
 
 	if (output_format == 0) {
 		output_format = "hvspni";

@@ -23,7 +23,7 @@
 
 class samples_files_t;
 class OprofppView;
-class OprofppHotspot;
+class HotspotView;
 
 /**
  * oprofpp_report - the main class of the oprof_report application.
@@ -62,7 +62,7 @@ private:
 	OprofppView * oprofpp_view;
 
 	/// the (feel to write it) hotspot view handling
-	OprofppHotspot* hotspot_view;
+	HotspotView * hotspot_view;
 
 	samples_files_t * samples_files;
 };

@@ -20,13 +20,14 @@
  o remaining little cleanups of output format etc.
  o document gcc 2.95 and linenr info problems especially for inline functions
  o test post-profile -c0,1 --sort
+ o check post profile for multiple symbols with same name
 
 oprof_report:
 
 - demangling
 - folderview of sample files + sessions in the gui itself (later ?)
 - disassembly. form "+0x8b" for intra-symbol samples optionnaly, on by default?
-- hotspot
+- tune and test hotspot
 - source (later ?)
  
 Before 1.0

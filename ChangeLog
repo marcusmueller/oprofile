@@ -1,3 +1,15 @@
+2002-03-16  Philippe Elie  <ph_e@club-internet.fr>
+
+	* TODO: update
+
+	* oprof_report/hotspot_view.cpp: new
+	* oprof_report/hotspot_view.h: new HotspotView class
+	* oprof_report/oprof_report.cpp:
+	* oprof_report/oprof_report.h:  use HotspotView
+	* oprof_report/Makefile.in: reflect above
+
+	* pp/op_time.cpp: small tidy
+
 2002-03-15  Philippe Elie  <ph_e@club-internet.fr>
 
 	* TODO: update

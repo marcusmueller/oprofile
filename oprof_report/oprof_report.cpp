@@ -14,19 +14,19 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <vector>
 #include <iostream>
 
 #include <qfiledialog.h>
 #include <qtabwidget.h>
+#include <qlayout.h>
 
 #include "../pp/opf_filter.h"
 #include "../util/file_manip.h"
 #include "oprof_report.h"
 #include "oprofpp_view.h"
+#include "hotspot_view.h"
 
 using std::string;
-using std::vector;
 using std::cerr;
 
 /**
@@ -36,9 +36,10 @@ oprof_report::oprof_report()
 	:
 	oprof_report_base(0, 0, false, 0),
 	oprofpp_view(new OprofppView(oprofpp_view_widget)),
-	hotspot_view(0/*new HotspotView()*/),
+	hotspot_view(new HotspotView(hotspot_tab)),
 	samples_files(0)
 {
+	hotspot_tabLayout->addWidget(hotspot_view, 0, 0, 0);
 }
 
 /**
@@ -59,9 +60,13 @@ void oprof_report::load_samples_files(const string & filename)
 	string temp_filename = strip_filename_suffix(filename);
 	string app_name = extract_app_name(basename(temp_filename), lib_name);
 
+	/* TODO: on which counter we want to work must be user selectable.
+	 * for now let's as it but do not worry me about zero samples
+	 * details bug. */
+	int counter = -1;
+
 	/* TODO: oprofpp_util.cpp, opf_container.cpp: handle all error
 	 * through exception */
-	int counter = -1;
 	try {
 		opp_samples_files samples_file(temp_filename, counter);
 
@@ -95,7 +100,8 @@ void oprof_report::load_samples_files(const string & filename)
 void oprof_report::destroy_all_view()
 {
 	oprofpp_view->destroy();
-	//hotspot_view->destroy();
+	// destroy is ambiguous TODO: rename OpView::create, destroy
+	hotspot_view->OpView::destroy();
 }
 
 /**
@@ -105,7 +111,7 @@ void oprof_report::destroy_all_view()
  *
  * Select a file or directory. The selection is returned;
  * an empty string if the selection was cancelled.
- * TODO: share with oprof_start
+ * TODO: this must become a samples files folder
  */
 static string const do_open_file_or_dir(string const & base_dir, bool dir_only)
 {
@@ -157,7 +163,7 @@ void oprof_report::on_tab_change(QWidget* new_tab)
 		if (new_tab->name() == QString("oprofpp_tab")) {
 			oprofpp_view->create(samples_files);
 		} else if (new_tab->name() == QString("hotspot_tab")) {
-			//hotspot_view->create();
+			hotspot_view->OpView::create(samples_files);
 		}
 	}
 }
