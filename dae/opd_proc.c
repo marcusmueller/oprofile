@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.20 2000/08/26 23:56:45 moz Exp $ */
+/* $Id: opd_proc.c,v 1.21 2000/08/28 15:50:46 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -839,7 +839,7 @@ static void opd_handle_kernel_sample(u32 eip, u16 count)
  */
 inline static u32 opd_map_offset(struct opd_map *map, u32 eip)
 {
-	return map->offset + eip - map->start;
+	return (eip - map->start) + map->offset;
 }
 
 /**
