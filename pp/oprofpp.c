@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.9 2000/09/01 00:23:38 moz Exp $ */
+/* $Id: oprofpp.c,v 1.10 2000/09/01 01:19:37 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -87,7 +87,7 @@ static void get_options(int argc, char *argv[])
  * @name: verbatim symbol name
  *
  * Print the symbol name to stdout, demangling
- * the symbol if necessary, and "demangle" is %TRUE.
+ * the symbol if the global variable demangle is %TRUE.
  *
  * The demangled name lists the parameters and type
  * qualifiers such as "const".
@@ -199,7 +199,7 @@ u32 sym_offset(asymbol *sym, u32 num)
 	/* take off section offset */
 	num -= sym->section->filepos;
 	/* and take off symbol offset from section */
-	num -= sym->value - sym->section->vma;
+	num -= sym->value;
 
 	return num;
 }
@@ -284,21 +284,13 @@ uint get_symbols(bfd *ibfd, asymbol ***symsp)
  */
 void get_symbol_range(asymbol *sym, asymbol *next, u32 *start, u32 *end)
 {
-	/* offset from section */ 
-	// value does not include vma val
-	//*start = sym->value - sym->section->vma;
 	*start = sym->value;
-	//printf("sym->value 0x%x\n",sym->value);
 	/* offset of section */
 	*start += sym->section->filepos;
-	//printf("plus offset 0x%x\n",*start);
 	/* adjust for kernel image */
 	*start += sect_offset;
 	if (next) {
-		/* offset from section */ 
-		//*end = next->value - next->section->vma;	 
 		*end = next->value;
-		//printf("symnext->value 0x%x\n",next->value);
 		/* offset of section */
 		*end += next->section->filepos;
 		/* adjust for kernel image */
