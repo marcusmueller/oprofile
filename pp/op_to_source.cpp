@@ -243,7 +243,7 @@ output::output(int argc_, char const * argv_[],
 	source_with_assembly(source_with_assembly_),
 	counter_mask(counter_mask_)
 {
-	if (source_dir.empty() == false) {
+	if (!source_dir.empty()) {
 		output_separate_file = true;
 
 		source_dir = relative_to_absolute_path(source_dir);
@@ -252,7 +252,7 @@ output::output(int argc_, char const * argv_[],
 			source_dir += '/';
 	}
 
-	if (output_dir.empty() == false || output_separate_file == true) {
+	if (!output_dir.empty() || output_separate_file) {
 		output_separate_file = true;
 
 		output_dir = relative_to_absolute_path(output_dir);
@@ -261,14 +261,14 @@ output::output(int argc_, char const * argv_[],
 			output_dir += '/';
 
 
-		if (create_dir(output_dir) == false) {
+		if (!create_dir(output_dir)) {
 			cerr << "unable to create " << output_dir
 			     << " directory: " << endl;
 			exit(EXIT_FAILURE);
 		}
 	}
 
-	if (output_separate_file == true && output_dir == source_dir) {
+	if (output_separate_file && output_dir == source_dir) {
 		cerr << "You can not specify the same directory for "
 		     << "--output-dir and --source-dir" << endl;
 		exit(EXIT_FAILURE);
@@ -287,7 +287,7 @@ bool output::setup_counter_param(opp_samples_files const & samples_files)
 	bool have_counter_info = false;
 
 	for (size_t i = 0 ; i < samples_files.nr_counters ; ++i) {
-		if (samples_files.is_open(i) == false)
+		if (!samples_files.is_open(i))
 			continue;
 
 		counter_info[i].enabled = true;
@@ -589,7 +589,7 @@ void output::output_one_file(istream & in, string const & filename,
 	out_filename = output_dir + out_filename;
 
 	string path = dirname(out_filename);
-	if (create_path(path) == false) {
+	if (!create_path(path)) {
 		cerr << "unable to create directory: "
 		     << '"' << path << '"' << endl;
 		return;
@@ -645,7 +645,7 @@ void output::output_source()
 		samples->select_filename(index, threshold_percent / 100.0,
 			until_more_than_samples);
 
-	if (output_separate_file == false)
+	if (!output_separate_file)
 		output_header(cout);
 
 	for (size_t i = 0 ; i < filenames.size() ; ++i) {
@@ -711,7 +711,7 @@ void output::output_header(ostream& out) const
 		out << "output annotated source file with samples" << endl;
 
 		if (threshold_percent != 0) {
-			if (until_more_than_samples == false) {
+			if (!until_more_than_samples) {
 				out << "output files where the selected counter reach "
 				    << threshold_percent << "% of the samples"
 				    << endl;
@@ -835,7 +835,7 @@ int main(int argc, char const * argv[])
 			      options::no_output_filter,
 			      options::assembly, options::source_with_assembly, -1);
 
-		if (output.treat_input(options::image_file, options::sample_file) == false)
+		if (!output.treat_input(options::image_file, options::sample_file))
 			return EXIT_FAILURE;
 	}
 

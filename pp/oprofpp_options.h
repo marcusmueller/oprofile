@@ -17,7 +17,6 @@
 
 #include "outsymbflag.h"
 
-/// command line option values
 namespace options {
 	/// sample file to work on
 	extern std::string sample_file;

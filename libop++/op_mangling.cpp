@@ -73,7 +73,7 @@ void get_sample_file_list(list<string> & file_list,
 	file_list.clear();
 
 	list <string> files;
-	if (create_file_list(files, base_dir, filter) == false) {
+	if (!create_file_list(files, base_dir, filter)) {
 		cerr << "Can't open directory \"" << base_dir << "\": "
 		     << strerror(errno) << endl;
 		exit(EXIT_FAILURE);

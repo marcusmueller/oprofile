@@ -68,7 +68,7 @@ bool filename_match::match(vector<string> const & patterns,
 			   string const & filename)
 {
 	bool ok = false;
-	for (size_t i = 0 ; i < patterns.size() && ok == false ; ++i) {
+	for (size_t i = 0 ; i < patterns.size() && !ok; ++i) {
 		if (fnmatch(patterns[i].c_str(), filename.c_str(), 0) != FNM_NOMATCH)
 			ok = true;
 	}

@@ -91,7 +91,7 @@ public:
 	 *
 	 * until_threshold and threshold acts like the -w and -u options
 	 * of op_to_source. If you need to get all symbols call it with
-	 * threshold == 0.0 and until_threshold == false
+	 * threshold == 0.0 and !until_threshold
 	 */
 	symbol_collection const select_symbols(
 		size_t ctr, double threshold,

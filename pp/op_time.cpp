@@ -476,7 +476,7 @@ static void output_symbols_count(map_t& files, int counter)
 
 	out.SetFlag(options::output_format_flags);
 
-	out.Output(cout, symbols, options::reverse_sort == false);
+	out.Output(cout, symbols, !options::reverse_sort);
 }
 
 int main(int argc, char const * argv[])

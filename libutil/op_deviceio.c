@@ -60,7 +60,6 @@ void op_close_device(fd_t devfd)
  * @param devfd  file descriptor of device
  * @param buf  buffer
  * @param size  size of buffer
- * @param seek  seek to the start or not
  *
  * Read @size bytes from a device into buffer @buf.
  * A seek to the start of the device file is done first

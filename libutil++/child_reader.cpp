@@ -174,8 +174,8 @@ bool child_reader::getline(string & result)
 				ok = false;
 		}
 
-		// ok == false ==> endl has been read so do not copy it.
-		result.append(&buf1[pos1], (temp_pos - pos1) - (ok == false));
+		// !ok ==> endl has been read so do not copy it.
+		result.append(&buf1[pos1], (temp_pos - pos1) - !ok);
 
 		pos1 = temp_pos;
 	} while (ok && end1);
@@ -201,7 +201,7 @@ bool child_reader::get_data(ostream & out, ostream & err)
 
 int child_reader::terminate_process()
 {
-	if (is_terminated == false) {
+	if (!is_terminated) {
 		int ret;
 		waitpid(pid, &ret, 0);
 

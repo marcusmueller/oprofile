@@ -261,7 +261,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 	bool ret = bfd_find_nearest_line(ibfd, section, bfd_syms.get(), pc,
 					 &cfilename, &functionname, &linenr);
 
-	if (cfilename == 0 || ret == false) {
+	if (cfilename == 0 || !ret) {
 		cfilename = "";
 		linenr = 0;
 		ret = false;
@@ -269,8 +269,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 
 	// functioname and symbol name can be different if we query linenr info
 	// if we accept it we can get samples for the wrong symbol (#484660)
-	if (ret == true && functionname
-		&& syms[sym_idx].name() != string(functionname)) {
+	if (ret && functionname && syms[sym_idx].name() != string(functionname)) {
 		ret = false;
 	}
 

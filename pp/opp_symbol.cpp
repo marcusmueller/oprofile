@@ -290,7 +290,7 @@ void output_symbol::DoOutput(ostream & out, string const & name,
 
 void output_symbol::OutputHeader(ostream & out)
 {
-	if (first_output == false) {
+	if (!first_output) {
 		return;
 	}
 

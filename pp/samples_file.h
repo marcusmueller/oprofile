@@ -209,7 +209,7 @@ private:
 	 * The header is checked but coherence between
 	 * header can not be sanitized at this point.
 	 *
-	 * if can_fail == false all error are fatal.
+	 * if !can_fail all errors are fatal.
 	 */
 	void open_samples_file(u32 counter, bool can_fail);
 };

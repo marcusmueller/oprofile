@@ -21,7 +21,7 @@ public:
 	// ctor of derived class must add decoration
 	OpView() : notification_sended(false) {}
 	void data_change(samples_container_t const * samples) {
-		if (notification_sended == false) {
+		if (!notification_sended) {
 			do_data_change(samples);
 			notification_sended = true;
 		}

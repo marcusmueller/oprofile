@@ -197,7 +197,7 @@ bool check_and_create_config_dir()
 {
 	string dir = get_user_filename(".oprofile");
 
-	if (create_dir(dir) == false) {
+	if (!create_dir(dir)) {
 		std::ostringstream out;
 		out << "unable to create " << dir << " directory: ";
 		QMessageBox::warning(0, 0, out.str().c_str());

@@ -52,7 +52,7 @@ static void do_list_symbols(samples_container_t & samples,
 	vector<symbol_entry const *> symbols =
 		samples.select_symbols(sort_by_ctr, 0.0, false);
 
-	out.Output(cout, symbols, options::reverse_sort == false);
+	out.Output(cout, symbols, !options::reverse_sort);
 }
 
 /**
@@ -227,9 +227,7 @@ int main(int argc, char const *argv[])
 		get_sample_file_list(filelist, dir, name + "}}}*");
 	}
 
-	bool const add_zero_sample_symbols = options::list_all_symbols_details == false;
-
-	samples_container_t samples(add_zero_sample_symbols,
+	samples_container_t samples(!options::list_all_symbols_details,
 				    options::output_format_flags, options::counter_mask);
 
 	filelist.push_front(options::sample_file);
@@ -282,13 +280,13 @@ int main(int argc, char const *argv[])
 			samples.add(samples_files, abfd, options::symbol);
 		}
 
-		if (first_file == true) {
+		if (first_file) {
 			samples_files.output_header();
 			first_file = false;
 		}
 	}
 
-	if (first_file == true) {
+	if (first_file) {
 		cerr << "oprofpp: Cannot locate any samples file." << endl;
 		exit(EXIT_FAILURE);
 	}

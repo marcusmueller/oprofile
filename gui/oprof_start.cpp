@@ -281,7 +281,7 @@ void oprof_start::load_config_file()
 // create it. The parent directory of the config file is created if necessary
 bool oprof_start::save_config_file()
 {
-	if (check_and_create_config_dir() == false)
+	if (!check_and_create_config_dir())
 		return false;
 
 	std::string name = get_user_filename(".oprofile/oprof_start_config");
@@ -333,7 +333,7 @@ void oprof_start::load_event_config_file(uint ctr)
 // this work as load_config_file()/save_config_file()
 bool oprof_start::save_event_config_file(uint ctr)
 {
-	if (check_and_create_config_dir() == false)
+	if (!check_and_create_config_dir())
 		return false;
 
 	std::ostringstream name;
@@ -360,7 +360,7 @@ void oprof_start::accept()
 	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr)
 		save_event_config_file(ctr);
 
-	if (record_config() == false)
+	if (!record_config())
 		return;
 
 	save_config_file();
@@ -802,7 +802,7 @@ void oprof_start::on_start_profiler()
 	}
 
 	// record_config validate the config
-	if (record_config() == false)
+	if (!record_config())
 		return;
 
 	std::vector<std::string> args;
