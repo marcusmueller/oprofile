@@ -34,7 +34,7 @@ fi
 ])
  
  
-AC_REVISION($Id: configure.in,v 1.5 2000/08/03 21:28:14 moz Exp $)
+AC_REVISION($Id: configure.in,v 1.6 2000/08/03 21:43:06 moz Exp $)
 dnl
 dnl Process this file with autoconf to produce a configure script.
 dnl
@@ -44,6 +44,8 @@ AC_INIT(./oprofile.c)
 AC_PROG_CC
 test "$GCC" || AC_ERROR(You would not have much luck compiling kernel code with non-gcc...)
 AC_PROG_CPP
+AC_CHECK_PROG(LD,ld,ld,)
+test "$LD" || AC_ERROR(ld not found)
 
 dnl  --- Find the Linux kernel, at least the headers ---
 AC_SUBST(KSRC)

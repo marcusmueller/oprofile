@@ -1,7 +1,9 @@
-# $Id: Makefile.in,v 1.4 2000/08/03 21:09:55 moz Exp $
+# $Id: Makefile.in,v 1.5 2000/08/03 21:43:06 moz Exp $
  
 KCPPFLAGS=@KCPPFLAGS@
 MODINSTALLDIR=@MODINSTALLDIR@
+CC=@CC@ 
+LD=@LD@ 
  
 .PHONY: all install clean distclean
  
@@ -31,16 +33,16 @@ oprofile.o: oprofile_c.o oprofile_nmi.o oprofile_k.o op_events.o
 	ld -r -o $(G) $@ oprofile_c.o oprofile_nmi.o oprofile_k.o op_events.o
 
 oprofile_c.o: oprofile.c oprofile.h
-	gcc $(KCFLAGS) $(G) -c -o $@ $< 
+	$(CC) $(KCFLAGS) $(G) -c -o $@ $< 
 
 oprofile_k.o: oprofile_k.c oprofile.h
-	gcc $(KCFLAGS) $(G) -c -o $@ $< 
+	$(CC) $(KCFLAGS) $(G) -c -o $@ $< 
 
 oprofile.s: oprofile.c oprofile.h
-	gcc $(KCFLAGS) $(G) -S $<
+	$(CC) $(KCFLAGS) $(G) -S $<
  
 op_events.o: op_events.c
-	gcc $(KCFLAGS) $(G) -c -o $@ $< 
+	$(CC) $(KCFLAGS) $(G) -c -o $@ $< 
  
 oprofile_nmi.o: oprofile_nmi.S
-	gcc $(ASMFLAGS) -c -o $@ $<
+	$(CC) $(ASMFLAGS) -c -o $@ $<
