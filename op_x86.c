@@ -16,6 +16,8 @@
 
 #include "oprofile.h"
  
+extern int cpu_type;
+ 
 /* ---------------- NMI handler setup ------------ */
 
 static ulong idt_addr;
@@ -120,25 +122,19 @@ static int __init apic_needs_setup(void)
 	smp_num_cpus == 1;
 }
 
-int __init apic_setup(void)
+static int __init enable_apic(void)
 {
 	uint msr_low, msr_high;
 	uint val;
-
-	if (!apic_needs_setup()) {
-		printk(KERN_INFO "oprofile: no APIC setup needed.\n");
-		lvtpc_apic_setup(NULL);
-		return 0;
-	}
-
-	printk(KERN_INFO "oprofile: setting up APIC.\n");
 
 	/* ugly hack */
 	my_set_fixmap();
 
 	/* enable local APIC via MSR. Forgetting this is a fun way to
-	 * lock the box */
-	/* IA32 V3, 7.4.2 */
+	 * lock the box. But we have to hope this is allowed if the APIC
+	 * has already been enabled.
+	 *
+	 * IA32 V3, 7.4.2 */
 	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
 	wrmsr(MSR_IA32_APICBASE, msr_low | (1<<11), msr_high);
 
@@ -152,6 +148,46 @@ int __init apic_setup(void)
 	if (GET_APIC_MAXLVT(apic_read(APIC_LVR)) != 4)
 		goto not_local_p6_apic;
 
+	return 1;
+ 
+not_local_p6_apic:
+	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
+	wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
+	return 0;
+}
+
+/* does the CPU have a local APIC ? */
+static int __init check_p6_ok(void)
+{
+	if (cpu_type != CPU_PPRO &&
+		cpu_type != CPU_PII &&
+		cpu_type != CPU_PIII)
+		return 1; 
+
+	return enable_apic();
+}
+ 
+int __init apic_setup(void)
+{
+	uint msr_low, msr_high;
+	uint val;
+
+	if (!apic_needs_setup()) {
+		if (!check_p6_ok()) {
+			printk("Your CPU does not have a local APIC, e.g. mobile
+				P6. No profiling can be done.\n");
+			return -ENODEV;
+		}
+		printk(KERN_INFO "oprofile: no APIC setup needed.\n");
+		lvtpc_apic_setup(NULL);
+		return 0;
+	}
+
+	printk(KERN_INFO "oprofile: setting up APIC.\n");
+
+	if (!enable_apic())
+		goto not_local_p6_apic;
+ 
 	__cli();
 
 	/* enable APIC locally */
