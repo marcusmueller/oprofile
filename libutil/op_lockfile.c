@@ -58,6 +58,7 @@ int op_write_lock_file(char const * file)
 	if (op_get_fsize(file, 0) != 0) {
 		pid_t pid = op_read_lock_file(file);
  
+		/* FIXME: ESRCH vs. EPERM */
 		if (kill(pid, 0)) {
 			int err = unlink(file);
 			fprintf(stderr, "Removing stale lock file %s\n",

@@ -164,7 +164,7 @@ static void opd_open_image(struct opd_image * image)
  
 	opd_handle_old_sample_files(image);
 
-	/* samples files are lazily openeded */
+	/* samples files are lazily opened */
 }
 
  
@@ -265,15 +265,16 @@ static struct opd_image * opd_add_image(char const * name, int hash, char const 
  *
  * Returns the image pointer for the file specified by @name, or %NULL.
  */
-/*
- * We make here a linear search through the whole image list. There is no need
- * to improve performance, only /proc parsed app are hashless and when they
- * are found one time by this function they receive a valid hash code. */
 static struct opd_image * opd_find_image(char const * name, int hash, char const * app_name)
 {
 	struct opd_image * image = 0; /* supress warn non initialized use */
 	struct list_head * pos;
 
+	/* We make here a linear search through the whole image list. There is no need
+	 * to improve performance, only /proc parsed app are hashless and when they
+	 * are found one time by this function they receive a valid hash code. 
+	 */
+ 
 	list_for_each(pos, &opd_images) {
 
 		image = list_entry(pos, struct opd_image, list_node);
@@ -296,7 +297,7 @@ static struct opd_image * opd_find_image(char const * name, int hash, char const
 		 * are handled in a separate list */
 		if (hash != -1) {
 			image->hash = hash;
-			if (image->hash_next) {	/* parano check */
+			if (image->hash_next) {	/* paranoia check */
 				printf("error: image->hash_next != NULL and image->hash == -1\n");
 				exit(EXIT_FAILURE);
 			}

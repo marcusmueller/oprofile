@@ -1,3 +1,12 @@
+2002-06-01  John Levon  <moz@compsoc.man.ac.uk>
+
+	* make.common.in: make --with-extra-lib work again
+
+	* dae/opd_image.h:
+	* dae/opd_image.c: comment typos
+
+	* doc/srcdoc/Doxyfile: generate PNG not GIF 
+ 
 2002-05-23  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/srcdoc/Doxyfile:
@@ -211,7 +220,6 @@
 	  samples files belonging to a shared lib but we create at a higher
 	  level an explicit list of samples files : fix #555276
 
-
 	* pp/op_to_source.cpp:
 	* pp/sample_container.cpp:
 	* pp/opp_symbol.cpp: demangle symbol only when we output
@@ -224,7 +232,7 @@
 
 2002-05-13  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* doc/oprofile/xml: clarify RTC use, fix #555302
+	* doc/oprofile.xml: clarify RTC use, fix #555302
 
 	* gui/oprof_start_util.cpp: missing closedir(). Fix #555268
 	  Thanks to William Cohen for his precise report.

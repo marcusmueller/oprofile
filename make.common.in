@@ -23,6 +23,6 @@ CXXFLAGS += $(INCLUDES)
 CXXFLAGS += -W -Wall -Wunused -Wmissing-prototypes
 CXXFLAGS += -pipe -g -O2 @CXXFLAGS@
 
-LDFLAGS += -L$(TOPDIR)/libutil -L$(TOPDIR)/libutil++ -L$(TOPDIR)/libop -L$(TOPDIR)/libdb -L$(TOPDIR)/libopt++
+LDFLAGS += -L$(TOPDIR)/libutil -L$(TOPDIR)/libutil++ -L$(TOPDIR)/libop -L$(TOPDIR)/libdb -L$(TOPDIR)/libopt++ @extra_libraries@
  
 .PHONY: all clean srcdoc install uninstall

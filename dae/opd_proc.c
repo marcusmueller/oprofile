@@ -87,61 +87,6 @@ void opd_age_procs(void)
  
 
 /**
- * opd_get_count - retrieve counter value
- * @param count  raw counter value
- *
- * Returns the counter value.
- */
-inline static u16 opd_get_count(const u16 count)
-{
-	return (count & OP_COUNT_MASK);
-}
-
-/**
- * opd_get_counter - retrieve counter type
- * @param count  raw counter value
- *
- * Returns the counter number (0-N)
- */
-inline static u16 opd_get_counter(const u16 count)
-{
-	return OP_COUNTER(count);
-}
-
- 
-/**
- * opd_put_image_sample - write sample to file
- * @param image  image for sample
- * @param offset  (file) offset to write to
- * @param count  raw counter value
- *
- * Add to the count stored at position @offset in the
- * image file. Overflow pins the count at the maximum
- * value.
- *
- * @count is the raw value passed from the kernel.
- */
-void opd_put_image_sample(struct opd_image * image, u32 offset, u16 count)
-{
-	db_tree_t * sample_file;
-	int counter;
-
-	counter = opd_get_counter(count);
-	sample_file = &image->sample_files[counter];
-
-	if (!sample_file->base_memory) {
-		opd_open_sample_file(image, counter);
-		if (!sample_file->base_memory) {
-			/* opd_open_sample_file output an error message */
-			return;
-		}
-	}
-
-	db_insert(sample_file, offset, opd_get_count(count));
-}
-
-
-/**
  * opd_app_name - get the application name or %NULL if irrelevant
  * @param proc  the process to examine
  *
@@ -303,6 +248,63 @@ inline static void verb_show_sample(u32 offset, struct opd_map * map, char const
 		" end 0x%.8x, offset 0x%.8x, name \"%s\"\n",
 		last_map, offset, map->start, map->end, map->offset, map->image->name);
 }
+
+ 
+/**
+ * opd_get_count - retrieve counter value
+ * @param count  raw counter value
+ *
+ * Returns the counter value.
+ */
+inline static u16 opd_get_count(const u16 count)
+{
+	return (count & OP_COUNT_MASK);
+}
+
+ 
+/**
+ * opd_get_counter - retrieve counter type
+ * @param count  raw counter value
+ *
+ * Returns the counter number (0-N)
+ */
+inline static u16 opd_get_counter(const u16 count)
+{
+	return OP_COUNTER(count);
+}
+
+ 
+/**
+ * opd_put_image_sample - write sample to file
+ * @param image  image for sample
+ * @param offset  (file) offset to write to
+ * @param count  raw counter value
+ *
+ * Add to the count stored at position @offset in the
+ * image file. Overflow pins the count at the maximum
+ * value.
+ *
+ * @count is the raw value passed from the kernel.
+ */
+void opd_put_image_sample(struct opd_image * image, u32 offset, u16 count)
+{
+	db_tree_t * sample_file;
+	int counter;
+
+	counter = opd_get_counter(count);
+	sample_file = &image->sample_files[counter];
+
+	if (!sample_file->base_memory) {
+		opd_open_sample_file(image, counter);
+		if (!sample_file->base_memory) {
+			/* opd_open_sample_file output an error message */
+			return;
+		}
+	}
+
+	db_insert(sample_file, offset, opd_get_count(count));
+}
+
 
 /**
  * opd_eip_is_kernel - is the sample from kernel/module space

@@ -188,7 +188,7 @@ void opp_treat_options(string const & file,
 		       string & image_file, string & sample_file,
 		       int & counter, int & sort_by_counter)
 {
-	char *file_ctr_str;
+	char * file_ctr_str;
 	int temp_counter;
 
 	if (!imagefile.empty())
@@ -218,7 +218,7 @@ void opp_treat_options(string const & file,
 			/* we'll "leak" this memory */
 			samplefile = remangle(imagefile);
 		}
-	} 
+	}
 
 	/* we can not complete filename checking of imagefile because
 	 * it can be derived from the sample filename, we must process

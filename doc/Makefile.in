@@ -17,11 +17,11 @@ STYLESHEETS=$(XHTML_STYLESHEET) $(CHUNK_XHTML_STYLESHEET) xsl/xhtml-common.xsl
 
 all: oprofile.html
 
-# sedall ' xmlns="http://www.w3.org/1999/xhtml"' ''
+# sedall '' ''
 oprofile.html: oprofile.xml $(STYLESHEETS)
 	$(XSLTPROC) $(XHTML_STYLESHEET) $< > $@
 
-# sedall ' xmlns="http://www.w3.org/1999/xhtml"' ''
+# sedall '' ''
 chunk: oprofile.xml $(STYLESHEETS)
 	$(XSLTPROC) $(CHUNK_XHTML_STYLESHEET) $<
 

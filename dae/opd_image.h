@@ -28,14 +28,14 @@ struct opd_image {
 	db_tree_t sample_files[OP_MAX_COUNTERS];
 	int hash;
 	/* the application name where belongs this image, NULL if image has
-	 * no owner (such as wmlinux or module) */
+	 * no owner (such as vmlinux or module) */
 	char const * app_name;
-	time_t mtime;	/* image file mtime */
+	time_t mtime;
 	u8 kernel;
 	char * name;
 };
  
-// FIXME: the wrong file, conceptually
+// FIXME: the wrong file, conceptually - need a for_each_image possibly
 void opd_sync_sample_files(void);
 void opd_reopen_sample_files(void);
 void opd_image_cleanup(void);
