@@ -112,7 +112,7 @@ necks in real-world systems.
 		<term>Bug tracker</term>
 		<listitem><para>
 			There is a bug tracker for OProfile at the sourceforge page,
-			<ulink url="http://sourceforge.net/tracker/?group_id=16191&atid=116191">http://sourceforge.net/tracker/?group_id=16191&atid=116191</ulink>.
+			<ulink url="http://sourceforge.net/tracker/?group_id=16191&amp;atid=116191">http://sourceforge.net/tracker/?group_id=16191&amp;atid=116191</ulink>.
 		</para></listitem>
 	</varlistentry>
 </variablelist>

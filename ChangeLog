@@ -1,5 +1,9 @@
 2001-04-05  John Levon  <moz@compsoc.man.ac.uk>
 
+	* doc/html/: added missing files
+
+2001-04-05  John Levon  <moz@compsoc.man.ac.uk>
+
 	* doc/oprofile.sgml:
 	* doc/html/resources.html: add URLs
 
