@@ -1,3 +1,10 @@
+2002-12-04  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libdb/db_test.c: measure system + user time
+
+	* dae/oprofiled.c: better error message
+	* daemon/oprofiled.c: write_abi() is static
+
 2002-12-03  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libdb/db_stat.c:

@@ -19,13 +19,14 @@
 
 static int nr_error;
 
-static double user_time(void)
+static double used_time(void)
 {
   struct rusage  usage;
 
   getrusage(RUSAGE_SELF, &usage);
 
-  return usage.ru_utime.tv_sec + (usage.ru_utime.tv_usec / 1000000.0);
+  return usage.ru_utime.tv_sec + usage.ru_stime.tv_sec + 
+	((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0);
 }
 
 /* create nr item randomly created with nr_unique_item distinct items */
@@ -36,11 +37,11 @@ static void speed_test(int nr_item, int nr_unique_item)
 	samples_db_t hash;
 
 	db_open(&hash, TEST_FILENAME, DB_RDWR, 128);
-	begin = user_time();
+	begin = used_time();
 	for (i = 0 ; i < nr_item ; ++i) {
 		db_insert(&hash, (random() % nr_unique_item) + 1, 1);
 	}
-	end = user_time();
+	end = used_time();
 	db_close(&hash);
 
 	remove(TEST_FILENAME);

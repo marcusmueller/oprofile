@@ -802,8 +802,7 @@ int main(int argc, char const * argv[])
 	setup_signals();
  
 	if (op_write_lock_file(OP_LOCK_FILE)) {
-		fprintf(stderr,
-			"oprofiled: could not create lock file "
+		fprintf(stderr, "oprofiled: could not create lock file "
 			OP_LOCK_FILE "\n");
 		exit(EXIT_FAILURE);
 	}

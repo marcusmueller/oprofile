@@ -566,7 +566,7 @@ static void setup_signals(void)
 }
 
 
-void write_abi(void)
+static void write_abi(void)
 {
 #ifdef OPROF_ABI
 	char * cbuf;
@@ -596,7 +596,7 @@ int main(int argc, char const * argv[])
 	opd_init_kernel_image();
 
 	write_abi();
- 
+
 	if (atexit(clean_exit)) {
 		fprintf(stderr, "Couldn't set exit cleanup !\n");
 		unlink(OP_LOCK_FILE);
