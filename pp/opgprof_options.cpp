@@ -39,6 +39,9 @@ popt::option options_array[] = {
 	popt::option(options::gmon_filename, "output-filename", 'o',
 	             "output filename, defaults to gmon.out if not specified",
 	             "filename"),
+	popt::option(options::threshold_opt, "threshold", 't',
+		     "minimum percentage needed to produce output",
+		     "percent"),
 };
 
 

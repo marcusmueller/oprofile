@@ -22,6 +22,7 @@ namespace options {
 	extern bool verbose;
 	extern extra_images extra_found_images;
 	extern double threshold;
+	extern std::string threshold_opt;
 };
 
 /**

@@ -24,11 +24,11 @@ using namespace std;
 namespace options {
 	extra_images extra_found_images;
 	double threshold = 0.0;
+	string threshold_opt;
 }
 
 namespace {
 
-string threshold;
 vector<string> image_path;
 vector<string> verbose_strings;
 
@@ -38,9 +38,6 @@ popt::option common_options_array[] = {
 		     "verbose output", "all,debug,bfd,level1,sfile,stats"),
 	popt::option(image_path, "image-path", 'p',
 		     "comma-separated path to search missing binaries","path"),
-	popt::option(threshold, "threshold", 't',
-		     "minimum percentage needed to produce output",
-		     "percent"),
 };
 
 
@@ -74,8 +71,8 @@ vector<string> get_options(int argc, char const * argv[])
 	vector<string> non_options;
 	popt::parse_options(argc, argv, non_options);
 
-	if (!::threshold.empty())
-		options::threshold = handle_threshold(::threshold);
+	if (!options::threshold_opt.empty())
+		options::threshold = handle_threshold(options::threshold_opt);
 
 	if (!verbose::setup(verbose_strings)) {
 		cerr << "unknown --verbose= options\n";

@@ -1901,10 +1901,6 @@ Give verbose debugging output.
 Comma-separated list of additional paths to search for binaries.
 This is needed to find modules in kernels 2.6 and upwards.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--threshold / -t [percentage]</option></term><listitem><para>
-Only archive data for files that have more than the given percentage
-of total samples.
-</para></listitem></varlistentry>
 <varlistentry><term><option>--output-directory / -o [directory]</option></term><listitem><para>
 Output to the given directory. There is no default. This must be specified.
 </para></listitem></varlistentry>

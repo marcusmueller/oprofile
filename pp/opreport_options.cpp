@@ -92,6 +92,9 @@ popt::option options_array[] = {
 	popt::option(options::global_percent, "global-percent", '\0',
 		     "percentage are not relative to symbol count or image "
 		     "count but total sample count"),
+	popt::option(options::threshold_opt, "threshold", 't',
+		     "minimum percentage needed to produce output",
+		     "percent"),
 };
 
 

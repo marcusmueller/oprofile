@@ -76,6 +76,9 @@ popt::option options_array[] = {
 		     "comma separated list", "cpu,tid,tgid,unitmask,all"),
 	popt::option(options::source, "source", 's', "output source"),
 	popt::option(options::assembly, "assembly", 'a', "output assembly"),
+	popt::option(options::threshold_opt, "threshold", 't',
+		     "minimum percentage needed to produce output",
+		     "percent"),
 };
 
 }  // anonymous namespace

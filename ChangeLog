@@ -1,3 +1,16 @@
+2004-11-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/common_option.h:
+	* pp/common_option.cpp: move threshold option from here ...
+	* pp/opannotate_options.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport_options.cpp:
+	* pp/opstack_options.cpp: to each of these file using it. Side effect
+	  is to remove this option from oparchive which didn't handle it.
+	
+	* doc/oparchive.1.in:
+	* doc/oprofile.xml: there isn't any --threshold option to oparchive
+
 2004-11-07  Kristis Makris  <kristis.makris@asu.edu>
 
 	* doc/internals.xml: fix typo
@@ -10,7 +23,6 @@
 	  can be removed at some later date
 	* events/ppc64/power4/events: Make min counts consistent with ppc970
 	* events/ppc64/power5/events: Make min counts consistent with ppc970	  
- 	
 2004-11-01  Greg Banks  <gnb@melbourne.sgi.com>
 
 	* libop/op_events.c: Make the default sample rate for

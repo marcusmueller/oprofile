@@ -58,6 +58,9 @@ popt::option options_array[] = {
 		     "add source file and line number to output"),
 	popt::option(options::accumulated, "accumulated", 'c',
 		     "percentage field show accumulated count"),
+	popt::option(options::threshold_opt, "threshold", 't',
+		     "minimum percentage needed to produce output",
+		     "percent"),
 };
 
 }  // anonymous namespace
