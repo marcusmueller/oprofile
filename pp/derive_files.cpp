@@ -191,10 +191,9 @@ static string check_module_name(alt_filename_t const & alt_filename,
 	}
 
 	if (result.size() > 1) {
-		cerr << "the image name for samples files : "
-		     << samples_filename << " is ambiguous\n"
-		     << "so this file file will be ignored" << endl;
-		return string();
+		cerr << "The image name " << samples_filename
+		     << " matches more than one filename." << endl;
+	        cerr << "I have used " << result[0] << endl;
 	}
 
 	return result[0];
@@ -211,12 +210,12 @@ string check_image_name(alt_filename_t const & alternate_filename,
 	if (errno == EACCES) {
 		static bool first_warn = true;
 		if (first_warn) {
-			cerr << "you have not read access to some binary image"
-			     << ", all\nof this file(s) will be ignored in"
-			     << " statistics\n";
+			cerr << "You do not have read access to some binary images"
+			     << ", all\nof these files will be ignored in"
+			     << " the statistics\n";
 			first_warn = false;
 		}
-		cerr << "access denied for : " << image_name << endl;
+		cerr << "Access denied for : " << image_name << endl;
 
 		return string(); 
 	}
@@ -233,9 +232,9 @@ string check_image_name(alt_filename_t const & alternate_filename,
 	}
 
 	if (distance(p_it.first, p_it.second) != 1) {
-		cerr << "the image name for samples files : "
-		     << samples_filename << " is ambiguous\n"
-		     << "so this file file will be ignored" << endl;
+		return string();
+		cerr << "The image name " << samples_filename
+		     << " matches more than one filename, and will be ignored." << endl;
 		return string();
 	}
 

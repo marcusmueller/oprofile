@@ -1,3 +1,7 @@
+2003-03-18  John Levon  <levon@movementarian.org>
+
+	* pp/derive_files.cpp: some more 2.5 modules derivation fixes
+
 2003-03-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/derive_files.cpp: fix handling of 2.5 module name
