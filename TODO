@@ -26,13 +26,10 @@ Before 1.0 little stuff
  o remove 1 and 2 magic numbers for oprof_ready
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o document gcc 2.95 and linenr info problems especially for inline functions
- o 2.2 compile requires you to be root to compile the module 
  o make sure we behave sensibly in all places following symlinks etc. 
- o debian - libiberty is in "binutils-dev" package, document
  o document somewhere that oprofpp -s blah will only find the first symbol
    called "blah", or fix it
- o failure to open image can be due to EPERM problem, we must check it and printf nicer
-  message. There is probably other part of post profile tools where looking at errno sould give better messages
+ o There is probably place of post profile tools where looking at errno will give better error messages.
  o don't make hash table entries dependent on cache line size ?? 
  o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
    will fail because the ~ is not expanded (no space around it) (popt bug I say)

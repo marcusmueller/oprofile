@@ -1,5 +1,18 @@
 2002-09-28  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libopt++/popt_options.cpp: fix #615760, in rare case
+	  oprofpp called with lot of invalid arguments segfault
+	  during the help printing. All post-profile tools are
+	  concerned by this fix.
+
+	* doc/oprofile.xml: small improvements
+
+	* libutil++/op_bfd.cpp: improve error message when bfd_openr() fails.
+	
+	* TODO: update
+
+2002-09-28  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* dae/opd_image.c:
 	* dae/opd_kernel.c:
 	* dae/opd_parse_proc.c:

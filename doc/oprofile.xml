@@ -42,7 +42,7 @@ necks in real-world systems.
 	<varlistentry>
 		<term>Linux kernel 2.2/2.4</term>
 		<listitem>
-			OProfile uses a kernel module that can be compiled for 2.2.11 or later and 2.4. Support for 2.5 up to 2.5.2 is also provided.
+			OProfile uses a kernel module that can be compiled for 2.2.11 or later and 2.4. Support for 2.5 up to 2.5.38 is also provided but has not been extensively tested.
 			Versions 2.4.10 or above are recommended, and required if you use the
 			boot-time kernel option <option>nosmp</option>.
 <!-- FIXME: do we require always gte 2.4.10 for nosmp ? -->
@@ -76,7 +76,7 @@ necks in real-world systems.
 		<term>Required libraries</term>
 		<listitem>
 			These libraries are required : <filename>popt</filename>, <filename>bfd</filename>,
-			<filename>liberty</filename>, <filename>dl</filename>
+			<filename>liberty</filename> (debian user: libiberty is provided in binutils-dev package), <filename>dl</filename>
 		</listitem>
 	</varlistentry>
 	<varlistentry>
@@ -188,7 +188,8 @@ in the BIOS cannot handle the non-maskable interrupts (NMIs) used by
 OProfile for data collection. If you use the nmi watchdog be warned than
 watchdog is disable when profiling start and not re-enabled until the
 oprofile module is removed. So on op_stop does not re-enable the watchdog
-nmi because op_stop doesn't remove the module.
+nmi because op_stop doesn't remove the module. If you compile oprofile for
+a 2.2 kernel you must be root to compile the module.
 </para>
 
 </sect1>

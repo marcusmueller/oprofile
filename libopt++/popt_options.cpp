@@ -60,10 +60,13 @@ static struct poptOption appended_options[] = {
   POPT_TABLEEND
   };
 
+/* options parameter can't be a local variable because caller can use the
+ * returned poptContext which contains  pointer inside the options array */
 static poptContext do_parse_options(int argc, char const ** argv,
+				    vector<poptOption>& options,
 				    vector<string> & additional_params)
 {
-	vector<poptOption> options(popt_options);
+	options = popt_options;
 
 	int const nr_appended_options =
 		sizeof(appended_options) / sizeof(appended_options[0]);
@@ -92,15 +95,20 @@ static poptContext do_parse_options(int argc, char const ** argv,
 void parse_options(int argc, char const ** argv,
 		   vector<string> & additional_params)
 {
-	poptContext con = do_parse_options(argc, argv, additional_params);
+	vector<poptOption> options;
+
+	poptContext con = do_parse_options(argc, argv, options,
+					   additional_params);
 
 	poptFreeContext(con);
 }
 
 void parse_options(int argc, char const ** argv, string & additional_param)
 {
+	vector<poptOption> options;
 	vector<string> additional_params;
-	poptContext con = do_parse_options(argc, argv, additional_params);
+	poptContext con = do_parse_options(argc, argv, options,
+					   additional_params);
 
 	if (additional_params.size() > 1) {
 		cerr << "too many arguments\n";

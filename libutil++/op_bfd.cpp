@@ -11,6 +11,9 @@
 
 #include "op_file.h"
 
+#include <errno.h>
+#include <string.h>
+
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
@@ -48,6 +51,7 @@ op_bfd::op_bfd(string const & filename, vector<string> const & exclude_symbols)
 
 	if (!ibfd) {
 		cerr << "bfd_openr of " << filename << " failed." << endl;
+		cerr << strerror(errno) << endl;
 		exit(EXIT_FAILURE);
 	}
 
