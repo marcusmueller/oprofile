@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.52 2001/09/23 16:40:41 movement Exp $ */
+/* $Id: oprofpp.c,v 1.53 2001/09/24 02:18:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -17,6 +17,7 @@
 
 // FIXME: rename to oprofpp.cpp
  
+// FIXME: sprintf -> sstream (and elsewhere) 
 #include <algorithm>
 
 #include "oprofpp.h"

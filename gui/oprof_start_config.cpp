@@ -88,7 +88,7 @@ config_setting::config_setting()
 	buffer_size(OP_DEFAULT_BUFFER_SIZE),
 	hash_table_size(OP_DEFAULT_HASH_SIZE),
 
-	// TODO: member of config, hardcoded value probably come from ? 
+	// FIXME: member of config, hardcoded value probably come from ? 
 	base_opd_dir("/var/opd/"),
 	samples_files_dir("samples"),
 	device_file("opdev"),

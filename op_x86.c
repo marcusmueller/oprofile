@@ -293,7 +293,7 @@ void __init find_intel_smp (void)
 	unsigned int address;
 
 	/*
-	 * FIXME: Linux assumes you have 640K of base ram..
+	 * Linux assumes you have 640K of base ram..
 	 * this continues the error...
 	 *
 	 * 1) Scan the bottom 1K for a signature

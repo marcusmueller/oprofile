@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.26 2001/09/22 23:05:11 movement Exp $ */
+/* $Id: op_events.c,v 1.27 2001/09/24 02:18:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -170,34 +170,30 @@ struct op_event op_events[] = {
   { CTR_ALL, OP_PII, 0xd5, 6, "SEG_REG_RENAMES", 500 },
   { CTR_ALL, OP_PII, 0xd6, 0, "RET_SEG_RENAMES", 500 },
 
-  /* Data Cache Unit (DCU) */
-  /* PHE FIXME : for athlon check the op_min count */
-  /* PHE FIXME: Athlon put the most used entry at begin and update the
-   * description string, this is needed for the gui to display the most
-   * common used event first. */
+  /* athlon events */
+  { CTR_ALL, OP_ATHLON, 0xc0, 0, "RETIRED_INSNS", 500,},
+  { CTR_ALL, OP_ATHLON, 0xc1, 0, "RETIRED_OPS", 500,},
+  { CTR_ALL, OP_ATHLON, 0x80, 0, "ICACHE_FETCHES", 500,},
+  { CTR_ALL, OP_ATHLON, 0x81, 0, "ICACHE_MISSES", 500,},
   { CTR_ALL, OP_ATHLON, 0x40, 0, "DATA_CACHE_ACCESSES", 500,},
   { CTR_ALL, OP_ATHLON, 0x41, 0, "DATA_CACHE_MISSES", 500,},
   { CTR_ALL, OP_ATHLON, 0x42, 9, "DATA_CACHE_REFILLS_FROM_L2", 500,},
   { CTR_ALL, OP_ATHLON, 0x43, 9, "DATA_CACHE_REFILLS_FROM_SYSTEM", 500,},
   { CTR_ALL, OP_ATHLON, 0x44, 9, "DATA_CACHE_WRITEBACKS", 500,},
-  { CTR_ALL, OP_ATHLON, 0x45, 0, "L1_DTLB_MISSES_L2_DTLD_HITS", 500,},
-  { CTR_ALL, OP_ATHLON, 0x46, 0, "L1_AND_L2_DTLB_MISSES", 500,},
-  { CTR_ALL, OP_ATHLON, 0x47, 0, "MISALIGNED_DATA_REFS", 500,},
-  { CTR_ALL, OP_ATHLON, 0x80, 0, "ICACHE_FETCHES", 500,},
-  { CTR_ALL, OP_ATHLON, 0x81, 0, "ICACHE_MISSES", 500,},
-  { CTR_ALL, OP_ATHLON, 0x84, 0, "L1_ITLB_MISSES_L2_ITLB_HITS", 500,},
-  { CTR_ALL, OP_ATHLON, 0x85, 0, "L1_AND_L2_ITLB_MISSES", 500,},
-  { CTR_ALL, OP_ATHLON, 0xc0, 0, "RETIRED_INSNS", 500,},
-  { CTR_ALL, OP_ATHLON, 0xc1, 0, "RETIRED_OPS", 500,},
   { CTR_ALL, OP_ATHLON, 0xc2, 0, "RETIRED_BRANCHES", 500,},
   { CTR_ALL, OP_ATHLON, 0xc3, 0, "RETIRED_BRANCHES_MISPREDICTED", 500,},
   { CTR_ALL, OP_ATHLON, 0xc4, 0, "RETIRED_TAKEN_BRANCHES", 500,},
   { CTR_ALL, OP_ATHLON, 0xc5, 0, "RETIRED_TAKEN_BRANCHES_MISPREDICTED", 500,},
+  { CTR_ALL, OP_ATHLON, 0x45, 0, "L1_DTLB_MISSES_L2_DTLD_HITS", 500,},
+  { CTR_ALL, OP_ATHLON, 0x46, 0, "L1_AND_L2_DTLB_MISSES", 500,},
+  { CTR_ALL, OP_ATHLON, 0x47, 0, "MISALIGNED_DATA_REFS", 500,},
+  { CTR_ALL, OP_ATHLON, 0x84, 0, "L1_ITLB_MISSES_L2_ITLB_HITS", 500,},
+  { CTR_ALL, OP_ATHLON, 0x85, 0, "L1_AND_L2_ITLB_MISSES", 500,},
   { CTR_ALL, OP_ATHLON, 0xc6, 0, "RETIRED_FAR_CONTROL_TRANSFERS", 500,},
   { CTR_ALL, OP_ATHLON, 0xc7, 0, "RETIRED_RESYNC_BRANCHES", 500,},
   { CTR_ALL, OP_ATHLON, 0xcd, 0, "INTERRUPTS_MASKED", 500,},
   { CTR_ALL, OP_ATHLON, 0xce, 0, "INTERRUPTS_MASKED_PENDING", 500,},
-  { CTR_ALL, OP_ATHLON, 0xcf, 0, "HARDWARE_INTERRUPTS", 500,},
+  { CTR_ALL, OP_ATHLON, 0xcf, 0, "HARDWARE_INTERRUPTS", 10,},
 };
 
 /* the total number of events for all processor type */
@@ -619,25 +615,24 @@ char *op_event_descs[] = {
   "number of segment register renames",
   "number of segment register rename events retired",
   /* Athlon/Duron */
-  /* Cache */
+  "Retired instructions (includes exceptions, interrupts, resyncs)",
+  "Retired Ops",
+  "Instruction cache fetches)",
+  "Instruction cache misses)",
   "Data cache accesses",
   "Data cache misses",
   "Data cache refills from L2",
   "Data cache refills from system",
   "Data cache write backs",
-  "L1 DTLB misses and L2 DTLB hits",
-  "L1 and L2 DTLB misses",
-  "Misaligned data references",
-  "Instruction cache fetches)",
-  "Instruction cache misses)",
-  "L1 ITLB misses (and L2 ITLB hits)",
-  "(L1 and) L2 ITLB misses",
-  "Retired instructions (includes exceptions, interrupts, resyncs)",
-  "Retired Ops",
   "Retired branches (conditional, unconditional, exceptions, interrupts)",
   "Retired branches mispredicted",
   "Retired taken branches",
   "Retired taken branches mispredicted",
+  "L1 DTLB misses and L2 DTLB hits",
+  "L1 and L2 DTLB misses",
+  "Misaligned data references",
+  "L1 ITLB misses (and L2 ITLB hits)",
+  "L1 and L2 ITLB misses",
   "Retired far control transfers",
   "Retired resync branches (only non-control transfer branches counted)",
   "Interrupts masked cycles (IF=0)",

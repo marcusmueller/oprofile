@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.30 2001/09/21 02:52:37 phil_e Exp $
+# $Id: Makefile.in,v 1.31 2001/09/24 02:18:28 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -16,10 +16,10 @@ all: oprofile.o
 # doc/Makefile is deleted here but should be deleted in distclean.
 # When the dist target works move it as action of distclean.
 maintainerclean: distclean
-	rm -f configure doc/Makefile
+	rm -f configure doc/Makefile aclocal.m4
 
 distclean: clean
-	rm -f Makefile dae/Makefile pp/Makefile gui/Makefile tags aclocal.m4
+	rm -f Makefile dae/Makefile pp/Makefile gui/Makefile tags config.status config.log config.cache
 
 # broken 
 dist:
@@ -63,13 +63,12 @@ uninstall:
 	@echo "Goodbye."
 
 clean:
-	rm -f *.o config.status config.log config.cache
+	rm -f *.o
 	$(MAKE) -C dae clean
 	$(MAKE) -C pp clean
 	$(MAKE) -C doc clean
 	$(MAKE) -C gui clean
 
-# FIXME: move NMI code into separate to allow -march=ppro for that
 BKCFLAGS += -pipe -D__KERNEL__ -DMODULE -Wall -Wstrict-prototypes -Wunused -O2 -fomit-frame-pointer -fno-strict-aliasing
 KCFLAGS := $(BKCFLAGS) -march=i686
 ASMFLAGS := -D__ASSEMBLY__ -DMODULE -D__KERNEL__ -traditional

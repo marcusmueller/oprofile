@@ -5,11 +5,13 @@ o get opf_filter and friends working OK
  
 o fix showing all counters for oprofpp -s
  
-o clean up starting GUI
+o finish clean up starting GUI
 
 o check documentation
 
 o re-do performance tests
+ 
+o bug list (except nosmp)
  
 0.0.6 task list
 ---------------
@@ -28,6 +30,12 @@ o make hashmap use string pool method
 o implement proc->old_exec 
  
 o post-prof GUI ? (big job)
+ 
+Later
+-----
+
+I'm sick of these crappy makefiles. Let's see if we can use automake as well
+as autoconf.
  
 Correctness
 -----------

@@ -8,9 +8,8 @@ UIC=@UIC@
 CC=@CC@
 CXX=@CXX@
  
-# TODO: the sys_include is for the <sstream> thing add it to distrib
-CFLAGS=-Wall -W @CFLAGS@ -I@KINC@ -I../sys_include -DOP_EVENTS_DESC @QT2_INCLUDES@
-CXXFLAGS=-Wall -W @CXXFLAGS@ -I@KINC@ -I../sys_include -DOP_EVENTS_DESC @QT2_INCLUDES@
+CFLAGS=-Wall -W @CFLAGS@ -I@KINC@ -DOP_EVENTS_DESC @QT2_INCLUDES@
+CXXFLAGS=-Wall -W @CXXFLAGS@ -I@KINC@ -DOP_EVENTS_DESC @QT2_INCLUDES@
 
 # FIXME: dependencies are fucked ... my fault (john)
  

@@ -164,7 +164,7 @@ class output {
 	// samples files footer are stored here
 	counter_setup counter_info[OP_MAX_COUNTERS];
 
-	// TODO : begin_comment, end_comment must be based on the current 
+	// FIXME : begin_comment, end_comment must be based on the current 
 	// extension and must be properties of source_file.
 	string begin_comment;
 	string end_comment;
@@ -828,7 +828,7 @@ void output::output_command_line() const
 		}
 	} else {
 		out << "output annotated assembly listing with samples" << endl;
-		// TODO : is there any way to check if the objdump output mix
+		// FIXME : is there any way to check if the objdump output mix
 		// source within assembly ?
 	}
 

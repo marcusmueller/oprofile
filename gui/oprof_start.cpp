@@ -36,7 +36,7 @@
 
 #include "oprof_start.h"
 
-// TODO: some ~0u here for CRT_ALL
+// FIXME: some ~0u here for CRT_ALL
 // jbl: what does this mean ?
 
 op_event_descr::op_event_descr()
@@ -215,7 +215,7 @@ void oprof_start::load_event_config_file()
 		return;
 	}
 
-	// TODO: need checking on the key validity :(
+	// need checking on the key validity :(
 	// FIXME: this needs to be per-counter 
 	in >> event_cfgs[0];
 
@@ -246,7 +246,7 @@ void oprof_start::accept()
 	// record the previous settings
 	record_selected_event_config();
 
-	// TODO: check and warn about return code.
+	// FIXME: check and warn about return code.
 	// FIXME: counters
 	if (event_cfgs[0].dirty()) {
 		printf("saving configuration file");
@@ -417,7 +417,7 @@ void oprof_start::on_choose_file_or_dir()
 
 // this record the curernt selected event setting in the event_cfg[] stuff.
 // event_cfg->dirty is set only if change is recorded.
-// TODO: need validation?
+// FIXME: need validation?
 void oprof_start::record_selected_event_config()
 {
 	// saving must be made only if a change occur to avoid setting the

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.92 2001/09/21 08:29:10 movement Exp $ */
+/* $Id: oprofile.c,v 1.93 2001/09/24 02:18:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -251,7 +251,7 @@ static void pmc_start(void *info)
 	/* assert: all enable counter are setup except the bit start/stop,
 	 * all counter disable contains zeroes (except perhaps the reserved
 	 * bit 21), counter disable contains -1 sign extended in msr count */
-
+ 
 	/* enable all needed counter */
 	if (separate_running_bit == 0)
 		pmc_start_P6();

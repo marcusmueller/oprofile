@@ -1,3 +1,13 @@
+2001-09-24  John Levon  <moz@compsoc.man.ac.uk>
+
+	* include/sstream:
+	* Makefile.in:
+	* configure.in:
+	* pp/Makefile.in:
+	* gui/Makefile.in: configure/make fixes
+
+	* op_events.c: re-order for Athlon 
+	 
 2001-09-23  John Levon  <moz@compsoc.man.ac.uk>
 
 	* pp/oprofpp.c: small cleanup
