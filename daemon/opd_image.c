@@ -380,136 +380,230 @@ static inline int is_escape_code(uint64_t code)
 }
 
 
-static uint64_t get_buffer_value(void const * buffer, size_t index)
+/**
+ * Transient values used for parsing the event buffer.
+ * Note that these are reset for each buffer read, but
+ * that should be ok as in the kernel, cpu_buffer_reset()
+ * ensures that a correct context starts off the buffer.
+ */
+struct transient {
+	char const * buffer;
+	size_t remaining;
+	cookie_t cookie;
+	cookie_t app_cookie;
+	struct opd_image * image;
+	int in_kernel;
+	unsigned long cpu;
+	pid_t pid;
+	pid_t tgid;
+};
+
+
+static uint64_t pop_buffer_value(struct transient * trans)
 {
+	if (!trans->remaining) {
+		fprintf(stderr, "BUG: popping empty buffer !\n");
+		exit(EXIT_FAILURE);
+	}
+
+	trans->remaining--;
+
 	if (kernel_pointer_size == 4) {
-		uint32_t const * lbuf = buffer;
-		return lbuf[index];
+		uint32_t const * lbuf = (uint32_t const *)trans->buffer;
+		trans->buffer += 4;
+		return *lbuf;
 	} else {
-		uint64_t const * lbuf = buffer;
-		return lbuf[index];
+		uint64_t const * lbuf = (uint64_t const *)trans->buffer;
+		trans->buffer += 8;
+		return *lbuf;
 	}
 }
 
 
-static void opd_put_sample(struct opd_image * image, int in_kernel, 
-	char const * buffer, size_t index)
+static int enough_remaining(struct transient * trans, size_t size)
 {
-	vma_t eip = get_buffer_value(buffer, index);
-	unsigned long event = get_buffer_value(buffer, index + 1);
+	if (trans->remaining >= size)
+		return 1;
+
+	opd_stats[OPD_DANGLING_CODE]++;
+	trans->remaining = 0;
+	return 0;
+}
+
+
+static void opd_put_sample(struct transient * trans, vma_t eip)
+{
+	if (!enough_remaining(trans, 1))
+		return;
+
+	/* There is a small race where this *can* happen, see
+	 * caller of cpu_buffer_reset() in the kernel
+	 */
+	if (trans->in_kernel == -1) {
+		verbprintf("Losing sample at 0x%llx of unknown provenance.\n",
+		           eip);
+		pop_buffer_value(trans);
+		opd_stats[OPD_NO_CTX]++;
+		return;
+	}
+
+	unsigned long event = pop_buffer_value(trans);
 
 	opd_stats[OPD_SAMPLES]++;
 
-	if (in_kernel > 0) {
+	if (trans->in_kernel > 0) {
 		struct opd_image * app_image = 0;
 
 		/* We can get a NULL image if it's a kernel thread */
-		if (separate_kernel_samples && image)
-			app_image = image->app_image;
+		if (separate_kernel_samples && trans->image)
+			app_image = trans->image->app_image;
 		verbprintf("Putting kernel sample 0x%llx, counter %lu - application %s\n",
 			eip, event, app_image ? app_image->name : "kernel");
 		opd_handle_kernel_sample(eip, event, app_image);
-	} else if (in_kernel == 0) {
-		if (image != NULL) {
-			verbprintf("Putting image sample (%s) offset 0x%llx, counter %lu\n",
-				image->name, eip, event);
-			opd_put_image_sample(image, eip, event);
-		} else {
-			verbprintf("opd_put_sample() nil image, sample lost\n");
-			opd_stats[OPD_NIL_IMAGE]++;
-		}
-	} else {
-		fprintf(stderr, "Cannot determine if we are in kernel mode or not\n");
-		exit(EXIT_FAILURE);
+		return;
 	}
+
+	/* It's a user-space sample ... */
+
+	if (trans->image != NULL) {
+		verbprintf("Putting image sample (%s) offset 0x%llx, counter %lu\n",
+			trans->image->name, eip, event);
+		opd_put_image_sample(trans->image, eip, event);
+		return;
+	}
+
+	verbprintf("opd_put_sample() nil image, sample lost\n");
+	opd_stats[OPD_NIL_IMAGE]++;
 }
 
 
-// FIXME: pid/pgrp filter ?
+static void code_unknown(struct transient * trans __attribute__((unused)))
+{
+	fprintf(stderr, "Zero code !\n");
+	exit(EXIT_FAILURE);
+}
+
+
+static void code_ctx_switch(struct transient * trans)
+{
+	if (!enough_remaining(trans, 2))
+		return;
+
+	trans->pid = pop_buffer_value(trans);
+	trans->app_cookie = pop_buffer_value(trans);
+
+	/* This is a corner case - if a kernel sample follows this,
+	 * we need to make sure that it is attributed to the
+	 * right application, namely the one we just switched into.
+	 */
+	if (trans->app_cookie)
+		trans->image = opd_get_image(trans->app_cookie, trans->app_cookie);
+	else
+		trans->image = 0;
+
+	// FIXME: handle tgid addition here
+
+	verbprintf("CTX_SWITCH to pid %lu, cookie %llx, app %s\n",
+		(unsigned long)trans->pid, trans->app_cookie,
+		trans->image ? trans->image->name : "kernel");
+}
+
+
+static void code_cpu_switch(struct transient * trans)
+{
+	if (!enough_remaining(trans, 1))
+		return;
+
+	trans->cpu = pop_buffer_value(trans);
+	verbprintf("CPU_SWITCH to %lu\n", trans->cpu);
+}
+
+
+static void code_cookie_switch(struct transient * trans)
+{
+	if (!enough_remaining(trans, 1))
+		return;
+
+	trans->cookie = pop_buffer_value(trans);
+	trans->image = opd_get_image(trans->cookie, trans->app_cookie);
+	verbprintf("COOKIE_SWITCH to cookie %llx (%s)\n",
+	           trans->cookie, trans->image->name); 
+}
+
+
+static void code_kernel_enter(struct transient * trans)
+{
+	verbprintf("KERNEL_ENTER_SWITCH to kernel\n");
+	trans->in_kernel = 1;
+}
+
+
+static void code_kernel_exit(struct transient * trans)
+{
+	verbprintf("KERNEL_EXIT_SWITCH to user-space\n");
+	trans->in_kernel = 0;
+}
+
+
+static void code_module_loaded(struct transient * trans __attribute__((unused)))
+{
+	verbprintf("MODULE_LOADED_CODE\n");
+	opd_reread_module_info();
+}
+
+
+typedef void (*handler_t)(struct transient *);
+
+static handler_t handlers[LAST_CODE + 1] = {
+	&code_unknown,
+	&code_ctx_switch,
+	&code_cpu_switch,
+	&code_cookie_switch,
+	&code_kernel_enter,
+	&code_kernel_exit,
+	&code_module_loaded
+};
+
+
 void opd_process_samples(char const * buffer, size_t count)
 {
-	unsigned long i = 0;
-	unsigned long cpu = 0;
-	unsigned long code, pid;
-	cookie_t cookie, app_cookie = 0;
-	struct opd_image * image = NULL;
-	static int in_kernel = -1;
+	struct transient trans = {
+		.buffer = buffer,
+		.remaining = count,
+		.in_kernel = -1,
+		.cpu = -1,
+		.pid = -1,
+		.tgid = -1
+	};
+
+	unsigned long code;
 
 	printf("Reading sample buffer.\n");
 
-	while (i < count) {
-		if (!is_escape_code(get_buffer_value(buffer, i))) {
-			if (i + 1 == count)
-				return;
+	while (trans.remaining) {
+		code = pop_buffer_value(&trans);
 
-			opd_put_sample(image, in_kernel, buffer, i);
-			i += 2;
+		verbprintf("start code is %lu\n", code);
+
+		if (!is_escape_code(code)) {
+			opd_put_sample(&trans, code);
 			continue;
 		}
 
-		// skip ESCAPE_CODE
-		if (++i == count)
-			return;
-
-		code = get_buffer_value(buffer, i);
-
-		// skip code
-		if (++i == count)
-			return;
- 
-		switch (code) {
-			case CPU_SWITCH_CODE:
-				cpu = get_buffer_value(buffer, i);
-				verbprintf("CPU_SWITCH to %lu\n", cpu);
-				++i;
-				break;
-
-			case COOKIE_SWITCH_CODE:
-				cookie = get_buffer_value(buffer, i);
-				image = opd_get_image(cookie, app_cookie);
-				verbprintf("COOKIE_SWITCH to cookie %llx (%s)\n", cookie, image->name); 
-				++i;
-				break;
- 
-			case CTX_SWITCH_CODE:
-				pid = get_buffer_value(buffer, i);
-				// skip pid
-				if (++i == count)
-					break;
-				app_cookie = get_buffer_value(buffer, i);
-				/* This is a corner case - if a kernel sample follows this,
-				 * we need to make sure that it is attributed to the
-				 * right application, namely the one we just switched into.
-				 */
-				if (app_cookie)
-					image = opd_get_image(app_cookie, app_cookie);
-				else
-					image = 0;
-
-				verbprintf("CTX_SWITCH to pid %lu, cookie %llx, app %s\n",
-					pid, app_cookie, image ? image->name : "kernel");
-				++i;
-				break;
-
-			case KERNEL_ENTER_SWITCH_CODE:
-				verbprintf("KERNEL_ENTER_SWITCH to kernel\n");
-				in_kernel = 1;
-				break;
-
-			case KERNEL_EXIT_SWITCH_CODE:
-				verbprintf("KERNEL_EXIT_SWITCH to user-space\n");
-				in_kernel = 0;
-				break;
-
-			case MODULE_LOADED_CODE:
-				verbprintf("MODULE_LOADED_CODE\n");
-				opd_reread_module_info();
-				break;
-
-			default:
-				verbprintf("Unknown code %lx\n", code);
-				exit(EXIT_FAILURE);
-				break;
+		if (!trans.remaining) {
+			verbprintf("Dangling ESCAPE_CODE.\n");
+			opd_stats[OPD_DANGLING_CODE]++;
+			break;
 		}
+
+		// started with ESCAPE_CODE, next is type
+		code = pop_buffer_value(&trans);
+	
+		if (code >= LAST_CODE) {
+			fprintf(stderr, "Unknown code %lu\n", code);
+			exit(EXIT_FAILURE);
+		}
+
+		handlers[code](&trans);
 	}
 }

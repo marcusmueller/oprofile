@@ -1,5 +1,17 @@
 2003-05-26  John Levon  <levon@movementarian.org>
 
+	* libop/op_interface_25.h: add LAST_CODE
+
+	* daemon/opd_stats.h:
+	* daemon/opd_stats.c: count short reads of
+	buffer and unplacable samples
+
+	* daemon/opd_image.c: rewrite buffer parsing
+	code, handle window where we can't place a
+	sample
+
+2003-05-26  John Levon  <levon@movementarian.org>
+
 	* libutil++/utility.h: fix typo
 
 	* utils/opcontrol: fix typo

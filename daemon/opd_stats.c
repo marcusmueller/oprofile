@@ -30,9 +30,11 @@ void opd_print_stats(void)
 	printf("Nr. kernel samples: %lu\n", opd_stats[OPD_KERNEL]);
 	printf("Nr. modules samples: %lu\n", opd_stats[OPD_MODULE]);
 	printf("Nr. modules samples lost: %lu\n", opd_stats[OPD_LOST_MODULE]);
+	printf("Nr. lost samples (no kernel/user): %lu\n", opd_stats[OPD_NO_CTX]);
 	printf("Nr. lost userspace samples (no mm/dcookie): %lu\n", opd_stats[OPD_NO_MM]);
 	printf("Nr. lost userspace samples (nil image): %lu\n", opd_stats[OPD_NIL_IMAGE]);
 	printf("Nr. sample dumps: %lu\n", opd_stats[OPD_DUMP_COUNT]);
 	printf("Nr. samples total: %lu\n", opd_stats[OPD_SAMPLES]);
+	printf("Nr. incomplete code structs: %lu\n", opd_stats[OPD_DANGLING_CODE]);
 	fflush(stdout);
 }

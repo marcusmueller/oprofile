@@ -22,5 +22,6 @@
 #define KERNEL_ENTER_SWITCH_CODE	4
 #define KERNEL_EXIT_SWITCH_CODE		5
 #define MODULE_LOADED_CODE              6
+#define LAST_CODE			7
  
 #endif /* OP_INTERFACE_25_H */
