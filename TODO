@@ -41,9 +41,6 @@ Before 1.0 little stuff
   /{root}/path/to/appli/anon_mapping-0B8000-0BA0000/...
  o why rel_to_abs_path in locate_images ??
  o we can add lots more unit tests yet
- o better sharing of dae daemon: share dae /daemon need to create a libdaemon/
-   subdir and this lib must be self contained (not include anything in dae/*.h
-   daemon/*.h) (<movewent> not really worth a whole new lib dir imho)
  o output column shortname headers for opreport -l
  o separate debug info stuff
  o opgprof/opannotate always merges even if we provide a profile spec that's
