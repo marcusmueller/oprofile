@@ -1,5 +1,9 @@
 2003-03-04  John Levon  <levon@movementarian.org>
 
+	* utils/opcontrol: only sleep 2 after dump on 2.4
+
+2003-03-04  John Levon  <levon@movementarian.org>
+
 	* configure.in: tweak the xsltproc test
 
 2003-03-04  John Levon  <levon@movementarian.org>

@@ -1048,8 +1048,9 @@ do_dump() {
 		done
 		rm $TMPFILE
 	else
-
 		echo 1 > $MOUNT/dump
+		# HACK !
+		sleep 2
 	fi
 	return 0;
 }
@@ -1146,12 +1147,6 @@ do_operations() {
 		fi
 	fi
 
-	#FIXME this is a hack :(
-	if test "$SAVE_SESSION" = "yes" -o "$RESET" = "yes"; then
-		echo "Dumping stored data ..."
-		sleep 2
-	fi
-		 
 	if test "$SAVE_SESSION" = "yes"; then
 		do_save_session
 	fi
