@@ -142,8 +142,7 @@ EXPAND_ONLY_PREDEF     = YES
 SEARCH_INCLUDES        = YES
 INCLUDE_PATH           = 
 INCLUDE_FILE_PATTERNS  = 
-# doxygen work around due to a gcc 2.91 work around, see libutil++/utility.h
-PREDEFINED             = noncopyable=:noncopyable
+PREDEFINED             = 
 EXPAND_AS_DEFINED      = 
 SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------

@@ -1,3 +1,11 @@
+2003-05-24  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/srcdoc/Doxyfile:
+	* libpp/profile.h:
+	* libpp/profile_container.h:
+	* libutil++/utility.h: remove gcc 2.91 noncopyable as empty base class
+	 work-around
+
 2003-05-23  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* configure.in: do early check of libiberty

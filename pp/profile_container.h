@@ -26,7 +26,7 @@ class profile_t;
 
 /** store multiple samples files belonging to the same profiling session.
  * So on can hold samples files for arbitrary counter and binary image */
-class profile_container_t /*:*/ noncopyable {
+class profile_container_t : noncopyable {
 public:
 	/**
 	 * Build an object to store information on samples. All parameters

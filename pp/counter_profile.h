@@ -24,7 +24,7 @@ class counter_array_t;
 class opd_header;
 
 /** A class to store a sample file for one counter */
-class counter_profile_t /*:*/ noncopyable
+class counter_profile_t : noncopyable
 {
 public:
 	/**

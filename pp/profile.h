@@ -21,7 +21,7 @@
 #include "counter_profile.h"
 
 /** A class to store sample files over all counters */
-class profile_t /*:*/  noncopyable {
+class profile_t : noncopyable {
 public:
 	/**
 	 * profile_t - construct an profile_t object
