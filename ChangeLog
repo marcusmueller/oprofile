@@ -1,3 +1,8 @@
+2002-07-27  Will Cohen  <wcohen@nc.rr.com>
+ 
+	* gui/oprof_start_config.cpp: config_setting::config_setting()
+	  uses uname to guess path to vmlinux. 
+
 2002-07-27  John Levon  <levon@movementarian.org>
 
 	* dae/opd_stats.h:

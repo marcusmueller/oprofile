@@ -14,6 +14,7 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <sys/utsname.h>
 
 #include "oprof_start_config.h"
 #include "oprof_start_util.h"
@@ -45,7 +46,7 @@ event_setting::event_setting()
 {
 }
 
-void event_setting::save(std::ostream& out) const
+void event_setting::save(std::ostream & out) const
 {
 	out << count << " ";
 	out << umask << " ";
@@ -80,8 +81,6 @@ config_setting::config_setting()
 	buffer_size(OP_DEFAULT_BUF_SIZE),
 	hash_table_size(OP_DEFAULT_HASH_SIZE),
 	note_table_size(OP_DEFAULT_NOTE_SIZE),
-	// FIXME: member of config, hardcoded value probably come from ?
-	kernel_filename("/lib/modules/" KVERSION "/build/vmlinux"),
 	kernel_only(0),
 	ignore_daemon_samples(0),
 	verbose(0),
@@ -89,6 +88,17 @@ config_setting::config_setting()
 	pid_filter(0),
 	separate_samples(0)
 {
+	struct utsname info;
+
+	/* Guess path to vmlinux based on kernel currently running. */
+	if (uname(&info)) {
+		perror("oprof_start: Unable to determine OS release.");
+	} else {
+		std::string const version(info.release);
+		std::string const vmlinux_path("/lib/modules/" + version
+					 + "/build/vmlinux");
+		kernel_filename = vmlinux_path;
+	}
 }
 
 // sanitize needed ?
