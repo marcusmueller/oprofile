@@ -36,6 +36,11 @@ public:
 	 */
 	void set(std::string const & str, bool cumulative);
 
+	/// return true if a specific value is held by this container
+	bool is_set() const {
+		return !is_all;
+	}
+
 	/**
 	 * @param value  the value to test
 	 *

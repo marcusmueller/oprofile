@@ -313,15 +313,18 @@ bool profile_spec::match(string const & filename) const
 	// Logic for these next three: tgid:454 in profile spec
 	// should not match sample file with tgid:all
 
-	if (spec.cpu.is_set() && !cpu.match(spec.cpu.value())) {
+	if ((spec.cpu.is_set() && !cpu.match(spec.cpu.value())) || 
+	    (!spec.cpu.is_set() && cpu.is_set())) {
 		return false;
 	}
 
-	if (spec.tid.is_set() && !tid.match(spec.tid.value())) {
+	if ((spec.tid.is_set() && !tid.match(spec.tid.value())) ||
+	    (!spec.tid.is_set() && tid.is_set())) {
 		return false;
 	}
 
-	if (spec.tgid.is_set() && !tgid.match(spec.tgid.value())) {
+	if ((spec.tgid.is_set() && !tgid.match(spec.tgid.value())) ||
+	    (!spec.tgid.is_set() && tgid.is_set())) {
 		return false;
 	}
 
