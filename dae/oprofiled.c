@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.6 2000/08/04 02:14:45 moz Exp $ */
+/* $Id: oprofiled.c,v 1.7 2000/08/16 20:17:45 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -148,6 +148,12 @@ static void opd_options(int argc, char *argv[])
 		exit(1);
 	}
  
+	if (!systemmapfilename || streq("",systemmapfilename)) {
+		fprintf(stderr, "oprofiled: no System.map specified.\n");
+		poptPrintHelp(optcon, stderr, 0);
+		exit(1);
+	}
+
 	ret = op_check_events_str(ctr0_type, ctr1_type, (u8)ctr0_um, (u8)ctr1_um, cpu_type, &ctr0_type_val, &ctr1_type_val);
  
         if (ret&OP_CTR0_NOT_FOUND) fprintf(stderr, "oprofiled: ctr0: no such event\n");
@@ -300,8 +306,8 @@ void opd_do_samples(const struct op_sample *opd_buf)
 				default:
 					fprintf(stderr, "Received unknown notification type %u\n",opd_buf[i].count);
 					exit(1);
-					break; 
-			} 
+					break;
+			}
 		} else
 			opd_put_sample(&opd_buf[i]);
 	}
@@ -321,7 +327,7 @@ int main(int argc, char *argv[])
 {
 	struct op_sample *opd_buf;
 	size_t opd_buf_bytesize;
-	struct sigaction act; 
+	struct sigaction act;
 	int i; 
  
 	opd_options(argc, argv);
@@ -336,6 +342,10 @@ int main(int argc, char *argv[])
  	opd_buf = opd_malloc(opd_buf_bytesize);
 
 	opd_init_images();
+ 
+	/* yes, this is racey. */
+	opd_get_ascii_procs(); 
+ 
 	opd_go_daemon();
 
 	opd_open_files();
@@ -370,9 +380,6 @@ int main(int argc, char *argv[])
 	/* clean up every 20 minutes */
 	alarm(60*20);
 
-	/* yes, this is racey. */
-	opd_get_ascii_procs(); 
- 
 	/* simple sleep-then-process loop */
 	opd_do_read(opd_buf,opd_buf_bytesize);
  
