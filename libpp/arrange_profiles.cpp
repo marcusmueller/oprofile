@@ -28,6 +28,57 @@ using namespace std;
 
 namespace {
 
+int numeric_compare(string const & lhs, string const & rhs)
+{
+	if (lhs == "all" && rhs == "all")
+		return 0;
+	// we choose an order arbitrarily
+	if (lhs == "all")
+		return 1;
+	if (rhs == "all")
+		return -1;
+	unsigned int lhsval = op_lexical_cast<unsigned int>(lhs);
+	unsigned int rhsval = op_lexical_cast<unsigned int>(rhs);
+	if (lhsval == rhsval)
+		return 0;
+	if (lhsval < rhsval)
+		return -1;
+	return 1;
+}
+
+} // anonymous namespace
+
+
+// global to fix some C++ obscure corner case.
+bool operator<(profile_class const & lhs,
+               profile_class const & rhs)
+{
+	profile_template const & lt = lhs.ptemplate;
+	profile_template const & rt = rhs.ptemplate;
+
+	int comp = numeric_compare(lt.cpu, rt.cpu);
+	if (comp)
+		return comp < 0;
+
+	comp = numeric_compare(lt.tgid, rt.tgid);
+	if (comp)
+		return comp < 0;
+
+	comp = numeric_compare(lt.tid, rt.tid);
+	if (comp)
+		return comp < 0;
+
+	comp = numeric_compare(lt.unitmask, rt.unitmask);
+	if (comp)
+		return comp < 0;
+
+	if (lt.event == rt.event)
+		return lt.count < rt.count;
+	return lt.event < rt.event;
+}
+
+namespace {
+
 /**
  * The "axis" says what we've used to split the sample
  * files into the classes. Only one is allowed.
@@ -463,54 +514,7 @@ void add_profile(profile_class & pclass, parsed_filename const & parsed)
 	pclass.profiles.push_back(set);
 }
 
-
-int numeric_compare(string const & lhs, string const & rhs)
-{
-	if (lhs == "all" && rhs == "all")
-		return 0;
-	// we choose an order arbitrarily
-	if (lhs == "all")
-		return 1;
-	if (rhs == "all")
-		return -1;
-	unsigned int lhsval = op_lexical_cast<unsigned int>(lhs);
-	unsigned int rhsval = op_lexical_cast<unsigned int>(rhs);
-	if (lhsval == rhsval)
-		return 0;
-	if (lhsval < rhsval)
-		return -1;
-	return 1;
-}
-
 }  // anon namespace
-
-// global to fix some C++ obscure corner case.
-bool operator<(profile_class const & lhs,
-               profile_class const & rhs)
-{
-	profile_template const & lt = lhs.ptemplate;
-	profile_template const & rt = rhs.ptemplate;
-
-	int comp = numeric_compare(lt.cpu, rt.cpu);
-	if (comp)
-		return comp < 0;
-
-	comp = numeric_compare(lt.tgid, rt.tgid);
-	if (comp)
-		return comp < 0;
-
-	comp = numeric_compare(lt.tid, rt.tid);
-	if (comp)
-		return comp < 0;
-
-	comp = numeric_compare(lt.unitmask, rt.unitmask);
-	if (comp)
-		return comp < 0;
-
-	if (lt.event == rt.event)
-		return lt.count < rt.count;
-	return lt.event < rt.event;
-}
 
 
 profile_classes const
