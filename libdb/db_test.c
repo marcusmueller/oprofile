@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 
+#include "op_sample_file.h"
 #include "db_hash.h"
 
 #define TEST_FILENAME "test-hash-db.dat"
@@ -36,7 +37,7 @@ static void speed_test(int nr_item, int nr_unique_item)
 	double begin, end;
 	samples_db_t hash;
 
-	db_open(&hash, TEST_FILENAME, DB_RDWR, 128);
+	db_open(&hash, TEST_FILENAME, DB_RDWR, sizeof(struct opd_header));
 	begin = used_time();
 	for (i = 0 ; i < nr_item ; ++i) {
 		db_insert(&hash, (random() % nr_unique_item) + 1, 1);
@@ -67,7 +68,7 @@ static int test(int nr_item, int nr_unique_item)
 	samples_db_t hash;
 	int ret;
 
-	db_open(&hash, TEST_FILENAME, DB_RDWR, 128);
+	db_open(&hash, TEST_FILENAME, DB_RDWR, sizeof(struct opd_header));
 
 
 	for (i = 0 ; i < nr_item ; ++i) {
@@ -120,7 +121,7 @@ static int callback_test(int nr_item, int nr_unique_item)
 	db_key_t first_key, last_key;
 	int old_nr_error = nr_error;
 
-	db_open(&tree, TEST_FILENAME, DB_RDWR, 128);
+	db_open(&tree, TEST_FILENAME, DB_RDWR, sizeof(struct opd_header));
 
 	for (i = 0 ; i < nr_item ; ++i) {
 		db_insert(&tree, (random() % nr_unique_item) + 1, 1);
@@ -166,7 +167,7 @@ static void sanity_check(char const * filename)
 {
 	samples_db_t hash;
 
-	db_open(&hash, filename, DB_RDONLY, 128);
+	db_open(&hash, filename, DB_RDONLY, sizeof(struct opd_header));
 
 	if (db_check_hash(&hash)) {
 		printf("checking file %s FAIL\n", filename);
