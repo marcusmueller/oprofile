@@ -6,7 +6,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.6 release
 -----------
 
- o gui: show default event if none selected, fix counter allocation stuff
+ o gui: show default event if none selected, fix counter allocation stuff,
+  on 2.4 kernel-only is always on. Test RTC on 2.4 and timer int on 2.5
 
 0.7 release
 -----------
