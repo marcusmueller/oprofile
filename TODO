@@ -3,6 +3,13 @@ This is an (incomplete) list of some of the stuff we want to look at doing.
 If you're interested in hacking on any of these, please contact the list first
 for some pointers and/or read HACKING and doc/CodingStyle.
 
+Before 0.5.3
+------------
+
+ o update example in documentation to show the new output format 
+ o Add some example of typical tools output, this would not be in /doc/*
+  but directly accessible from http://oprofile.sourceforge.net/
+
 Before 1.0 big stuff
 --------------------
 
