@@ -1,3 +1,7 @@
+2002-05-22  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/oprofpp.cpp: fix a missing SAMPLES_DIR prepend
+
 2002-05-22  John Levon  <moz@compsoc.man.ac.uk>
 
 	* lib/util/op_file.c:

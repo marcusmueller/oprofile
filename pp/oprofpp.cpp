@@ -303,6 +303,10 @@ int main(int argc, char const *argv[])
 
 	opp_get_options(argc, argv, image_file, sample_file, counter);
 
+	// FIXME is this not a darining ?
+	if (sample_file.find_first_of('/') == string::npos)
+		sample_file = OP_SAMPLES_DIR + sample_file;
+
 	if (!gproffile.empty()) {
 		opp_samples_files samples_files(sample_file, counter);
 		check_mtime(samples_files, image_file);
