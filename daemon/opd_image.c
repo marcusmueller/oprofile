@@ -20,6 +20,7 @@
 #include "op_file.h"
 #include "op_interface_25.h"
  
+#include <errno.h>
 #include <unistd.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -102,7 +103,8 @@ void opd_for_each_image(opd_image_cb image_cb)
 	}
 }
 
-static int opd_get_dcookie(unsigned long cookie, char * buf, size_t size)
+
+static int lookup_dcookie(u_int64_t cookie, char * buf, size_t size)
 {
 	// FIXME
 	return syscall(253, cookie, buf, size);
@@ -119,15 +121,21 @@ static void opd_init_image(struct opd_image * image, unsigned long cookie,
  
 	/* FIXME: if dcookie lookup fail we will re open multiple time the
 	 * same db which doesn't work */
-	if (opd_get_dcookie(cookie, buf, PATH_MAX))
+	if (lookup_dcookie(cookie, buf, PATH_MAX) <= 0) {
+		verbprintf("Lookup of cookie %lu failed, errno=%d\n",
+			cookie, errno); 
 		image->name = xstrdup("");
-	else
+	} else {
 		image->name = xstrdup(buf);
+	}
  
-	if (opd_get_dcookie(app_cookie, buf, PATH_MAX))
+	if (lookup_dcookie(app_cookie, buf, PATH_MAX) <= 0) {
+		verbprintf("Lookup of cookie %lu failed, errno=%d\n",
+			cookie, errno); 
 		image->app_name = xstrdup("");
-	else
+	} else {
 		image->app_name = xstrdup(buf);
+	}
 
 	image->cookie = cookie;
 	image->app_cookie = app_cookie;

@@ -1,3 +1,9 @@
+2002-11-01  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_image.c: fix lookup_dcookie usage
+ 
+	* libabi/.cvsignore: add
+ 
 2002-11-01  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* module/x86/op_apic.c: restore correctly the lvtpc register
