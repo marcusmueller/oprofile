@@ -1,3 +1,16 @@
+2002-07-10  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
+	* pp/op_time.cpp:  errno for file permission problem is
+	  EACCES not EPERM ...
+
+	* module/x86/op_apic.c:
+	* module/x86/op_fixmap.c:
+	* module/x86/op_nmi.c: revert partially the 2002-06-26 patch, preempt
+	  need rather to be fixed before/after calling the
+	  op_int_operation functions pointer.
+
 2002-07-09  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* gui/oprof_start.cpp: use <ctime> not <time.h>

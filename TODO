@@ -4,10 +4,10 @@
  o fix some compile problem but with kernel > 2.5.20, an infinite recursion occur between our make and the kernel make (kernel make call our make w/o enough argument to avoid the all target to be reached)
  o fix GUI for --kernel-range. Done, can you look it John ?
  o verify 2.2/modversions etc. module build ... it's done but let me recheck later (phil)
- o can we get pre-emption up and running ?? I started it (phe), mainly it
-  remains to review carefully the current job (grep preempt in x86 subdir)
-  and to fix point #1 #3 of kernel_str/Documentation/preempt-locking.txt
-  most (all ?) of potential problem are in oprofile.c
+ o can we get pre-emption up and running ?? After a first try I think it should
+ be fixed by calling preempt_enable/disable before/after each op_int_operations
+ allowing arch depedant stuff to not worry about preemption or at least to minmize
+ things needed in arch dependant file
  
 Before 1.0 big stuff
 --------------------
@@ -86,8 +86,6 @@ o merge sample files into one big report (like vtune can do repeated runs)
  
 o move from racy sysctl to procfs, if it can be done nicely. Back compatibility
   probably prevents us from making a mini-filesystem.
-
-o integrate dasm, probably the best way is to allow to fall back to objdump.
 
 o turn (or only compile) daemon in C++ to allow more code sharing with pp/gui
   is it a good idea ?

@@ -27,9 +27,8 @@ unsigned long virt_apic_base;
 /* how about __attribute__(__unused__) then ? */
 
 /* FIXME is this comment right ? */
-/* all this file is preempt patch safe because we can get problem only
- * on smp machine but on smp this stuff is never called. For the same
- * reason we don't need to take care about locking mm->page_table_lock */
+/* We don't take care about locking mm->page_table_lock because this is
+ * only needed on SMP and on SMP we have already a sensible setup */
 
 /*static*/ void set_pte_phys(ulong vaddr, ulong phys)
 {

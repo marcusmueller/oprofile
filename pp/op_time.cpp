@@ -412,19 +412,18 @@ static void output_files_count(map_t& files)
 static string check_image_name(string const & image_name,
 			       string const & samples_filename)
 {
-	// FIXME: this isn't polite enough for a permissions problem.
 	if (op_file_readable(image_name))
 		return image_name;
 
-	// John did you think at something like this (FIXME above) ?
-	if (errno == EPERM) {
+	if (errno == EACCES) {
 		static bool first_warn = true;
 		if (first_warn) {
 			cerr << "you have not read access to some binary image"
 			     << ", all\nof this file(s) will be ignored in"
-			     << " statistics\n" << endl;
+			     << " statistics\n";
+			first_warn = false;
 		}
-		cerr << "access denied for : " << image_name;
+		cerr << "access denied for : " << image_name << endl;
 
 		return string(); 
 	}

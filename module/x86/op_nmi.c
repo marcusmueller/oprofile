@@ -27,7 +27,7 @@ static int separate_running_bit;
 
 /* ---------------- NMI handler ------------------ */
 /* preempt: all things inside the interrupt handler are preempt safe : we
- * never reenabme interrupt */
+ * never reenable interrupt */
 
 static void op_check_ctr(uint cpu, struct pt_regs *regs, int ctr)
 {
@@ -71,8 +71,6 @@ static void pmc_setup(void *dummy)
 	uint low, high;
 	int i;
 
-	preempt_disable();
-
 	/* IA Vol. 3 Figure 15-3 */
 
 	/* Stop and clear all counter: IA32 use bit 22 of eventsel_msr0 to
@@ -104,8 +102,6 @@ static void pmc_setup(void *dummy)
 	/* Here all setup is made except the start/stop bit 22, counter
 	 * disabled contains zeros in the eventsel msr except the reserved bit
 	 * 21 */
-
-	preempt_disable();
 }
 
 static int pmc_setup_all(void)
@@ -117,7 +113,6 @@ static int pmc_setup_all(void)
 	return 0;
 }
 
-/* called preempt disable */
 inline static void pmc_start_P6(void)
 {
 	uint low,high;
@@ -126,7 +121,6 @@ inline static void pmc_start_P6(void)
 	wrmsr(eventsel_msr[0], low | (1 << 22), high);
 }
 
-/* called preempt disable */
 inline static void pmc_start_Athlon(void)
 {
 	uint low,high;
@@ -140,7 +134,6 @@ inline static void pmc_start_Athlon(void)
 	}
 }
 
-/* called preempt disable */
 static void pmc_start(void *info)
 {
 	if (info && (*((uint *)info) != op_cpu_id()))
@@ -157,7 +150,6 @@ static void pmc_start(void *info)
 		pmc_start_Athlon();
 }
 
-/* called preempt disable */
 inline static void pmc_stop_P6(void)
 {
 	uint low,high;
@@ -166,7 +158,6 @@ inline static void pmc_stop_P6(void)
 	wrmsr(eventsel_msr[0], low & ~(1 << 22), high);
 }
 
-/* called preempt disable */
 inline static void pmc_stop_Athlon(void)
 {
 	uint low,high;
@@ -180,7 +171,6 @@ inline static void pmc_stop_Athlon(void)
 	}
 }
 
-/* called preempt disable */
 static void pmc_stop(void *info)
 {
 	if (info && (*((uint *)info) != op_cpu_id()))
@@ -201,14 +191,10 @@ static void pmc_select_start(uint cpu)
 	if (partial_stop)
 		return;
 
-	preempt_disable();
-
 	if (cpu == op_cpu_id())
 		pmc_start(NULL);
 	else
 		smp_call_function(pmc_start, &cpu, 0, 1);
-
-	preempt_enable();
 }
 
 static void pmc_select_stop(uint cpu)
@@ -216,14 +202,10 @@ static void pmc_select_stop(uint cpu)
 	if (partial_stop)
 		return;
 
-	preempt_disable();
-
 	if (cpu == op_cpu_id())
 		pmc_stop(NULL);
 	else
 		smp_call_function(pmc_stop, &cpu, 0, 1);
-
-	preempt_enable();
 }
 
 static void pmc_start_all(void)
@@ -241,20 +223,16 @@ static void pmc_start_all(void)
 		}
 	}
 
-	preempt_disable();
 	install_nmi();
 	smp_call_function(pmc_start, NULL, 0, 1);
 	pmc_start(NULL);
-	preempt_enable();
 }
 
 static void pmc_stop_all(void)
 {
-	preempt_disable();
 	smp_call_function(pmc_stop, NULL, 0, 1);
 	pmc_stop(NULL);
 	restore_nmi();
-	preempt_enable();
 }
 
 static int pmc_check_params(void)
@@ -346,8 +324,6 @@ static int pmc_init(void)
 			break;
 	}
 
-	preempt_disable();  /* FIXME: required ? */
-
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		rdmsr(eventsel_msr[i], saved_eventsel_low[i], saved_eventsel_high[i]);
 		rdmsr(perfctr_msr[i], saved_perfctr_low[i], saved_perfctr_high[i]);
@@ -362,7 +338,6 @@ static int pmc_init(void)
 	}
 
 out:
-	preempt_enable();
 	return err;
 }
 
@@ -370,8 +345,6 @@ static void pmc_deinit(void)
 {
 	int i;
 
-	preempt_disable();
- 
 	smp_call_function(lvtpc_apic_restore, NULL, 0, 1);
 	lvtpc_apic_restore(NULL);
 
@@ -381,7 +354,6 @@ static void pmc_deinit(void)
 	}
 
 	apic_restore();
-	preempt_enable();
 }
 
 static char *names[] = { "0", "1", "2", "3", "4", };
