@@ -132,7 +132,7 @@ string const find_image_path(string const & image_name,
 		return image;
 
 	if (errno == EACCES)
-		return image;
+		return string();
 
 	string const base = basename(image);
 

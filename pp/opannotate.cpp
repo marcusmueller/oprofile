@@ -655,7 +655,8 @@ int opannotate(vector<string> const & non_options)
 
 	list<string> images;
 
-	list<inverted_profile> iprofiles = invert_profiles(classes);
+	list<inverted_profile> iprofiles
+		= invert_profiles(classes, options::extra_found_images);
 
 	list<inverted_profile>::const_iterator it = iprofiles.begin();
 	list<inverted_profile>::const_iterator const end = iprofiles.end();

@@ -383,8 +383,6 @@ int opreport(vector<string> const & non_options)
 {
 	handle_options(non_options);
 
-	output_header();
-
 	nr_groups = classes.v.size();
 
 	if (!options::symbols) {
@@ -402,13 +400,16 @@ int opreport(vector<string> const & non_options)
 			multiple_apps = true;
 	}
 
-	list<inverted_profile> iprofiles = invert_profiles(classes);
+	list<inverted_profile> iprofiles
+		= invert_profiles(classes, options::extra_found_images);
 
 	list<inverted_profile>::const_iterator it = iprofiles.begin();
 	list<inverted_profile>::const_iterator const end = iprofiles.end();
 
 	for (; it != end; ++it)
 		populate_for_image(samples, *it);
+
+	output_header();
 
 	output_symbols(samples, multiple_apps);
 	return 0;

@@ -19,6 +19,7 @@
 
 #include "arrange_profiles.h"
 #include "parse_filename.h"
+#include "locate_images.h"
 
 using namespace std;
 
@@ -415,11 +416,32 @@ get_iprofile(app_map_t & app_map, string const & image, size_t nr_classes)
 	return app_map[image];
 }
 
+
+/// Pull out all the images, removing any we can't access.
+void
+verify_and_fill(app_map_t & app_map, list<inverted_profile> & plist,
+                extra_images const & extra)
+{
+	app_map_t::iterator it = app_map.begin();
+	app_map_t::iterator const end = app_map.end();
+
+	for (; it != end; ++it) {
+		string image = it->second.image;
+		it->second.image = find_image_path(image, extra);
+		if (!it->second.image.length()) {
+			cerr << "warning: " << image
+			     << " could not be read.\n";
+		} else {
+			plist.push_back(it->second);
+		}
+	}
+}
+
 };
 
 
 list<inverted_profile> const
-invert_profiles(profile_classes const & classes)
+invert_profiles(profile_classes const & classes, extra_images const & extra)
 {
 	app_map_t app_map;
 
@@ -457,10 +479,7 @@ invert_profiles(profile_classes const & classes)
 
 	list<inverted_profile> inverted_list;
 
-	app_map_t::const_iterator it = app_map.begin();
-	app_map_t::const_iterator const end = app_map.end();
-	for (; it != end; ++it)
-		inverted_list.push_back(it->second);
+	verify_and_fill(app_map, inverted_list, extra);
 
 	return inverted_list;
 }

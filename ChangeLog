@@ -1,5 +1,19 @@
 2003-09-14  John Levon  <levon@movementarian.org>
 
+	* libpp/arrange_profiles.h:
+	* libpp/arrange_profiles.cpp: add location of 
+	images when inverting profiles
+
+	* libpp/locate_images.cpp: return empty string
+	if file isn't readable
+
+	* pp/opannotate.cpp: use the above
+
+	* pp/opreport.cpp: use the above; place warnings
+	before any other output
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
 	* pp/opgprof_options.cpp: use locate_image_path
 
 2003-09-14  John Levon  <levon@movementarian.org>

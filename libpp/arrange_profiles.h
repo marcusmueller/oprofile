@@ -142,6 +142,8 @@ struct inverted_profile {
 };
 
 
+class extra_images;
+
 /**
  * Invert the profile set. For opreport -l, opannotate etc.,
  * processing the profile_classes directly is slow, because
@@ -159,6 +161,6 @@ struct inverted_profile {
  * applicable (hence image_set).
  */
 std::list<inverted_profile> const
-invert_profiles(profile_classes const & classes);
+invert_profiles(profile_classes const & classes, extra_images const & extra);
 
 #endif /* !ARRANGE_PROFILES_H */
