@@ -7,7 +7,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 -------------
 
  o image filtering needs to resolve symlinks
- o need a way to reset image filter
  o opgprof/opannotate always merges even if we provide a profile spec that's
    minimal enough - you can't get "cpu:0"
 
