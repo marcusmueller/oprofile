@@ -6,6 +6,15 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
+ o locate_images should return flags on what failure happened, and we mark
+   inverted_profile with that, and don't try to bfd_openr (pass in an invalid
+   bool to bfd_openr ctor that generates the fake bfd_openr that would happen
+   on bfd_openr failure)
+ o why rel_to_abs_path in locate_images ??
+ o add separate_thread_samples to opd_header or remove all separate from opd_header
+ o make opgprof use inverted_profile API, then:
+   o hide separate class/inverted stuff inside libpp
+   o return if multiple apps in the single API call used by all frontends
  o opcontrol --separate= must overwrite any previous settings
  o thread separate GUI + docs
  o we need to handle thread separate without needing a useless -m tid
