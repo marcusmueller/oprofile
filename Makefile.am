@@ -1,4 +1,5 @@
 SUBDIRS = \
+	m4 \
 	libutil \
 	libop \
 	libutil++ \
@@ -14,6 +15,8 @@ SUBDIRS = \
 	gui \
 	doc \
 	events
+
+ACLOCAL_AMFLAGS = -I m4
 
 # The module will not build under distcheck
 DISTCHECK_CONFIGURE_FLAGS = --with-kernel-support

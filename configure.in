@@ -406,6 +406,7 @@ AC_SUBST(OP_BINDIR)
 AC_SUBST(OP_DATADIR)
 
 AC_OUTPUT(Makefile \
+	m4/Makefile \
 	libutil/Makefile \
 	libutil++/Makefile \
 	libop/Makefile \

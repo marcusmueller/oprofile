@@ -35,7 +35,7 @@ if test -n "$1"; then
 	exit 1
 fi
 
-run $ACLOCAL
+run "$ACLOCAL -I m4"
 run $AUTOHEADER
 run "$AUTOMAKE --foreign --add-missing --copy"
 run $AUTOCONF
