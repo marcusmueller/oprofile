@@ -6,9 +6,9 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8 release
 -----------
 
- o op_bfd.cpp and separate debuginfo file, see ChangeLog
-  2004-01-18  Philippe Elie  <phil.el@wanadoo.fr> and
-  op_bfd.cpp:get_symbols_from_file()
+ o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
+  outside .text section get a wrong offset
+ o op_bfd.cpp:get_linenr() see FIXMe about the use of ibfd/dbfd, needs test.
  o finish opstack: proper output, various --separate= --merge= handling,
   later do we need an opreport like opstack (showing caller/callee at binary
   boundary not symbols) ?
@@ -19,10 +19,24 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 	Read buffer of 35220 entries.
 	Unknown code !
   phe: look like to occur when sampling rate is a bit too high.
+  (added later: the ring buffer patch to kernel driver fixed a lot of heisenbug
+  in daemon, I no longer see that: we need stress test now)
  o when samples rate is too high (< 100000) a lot of cpu buffer overflow occur
   then daemon get many problems. I dunno exactly what is wrong but in this case
   a lot of samples file creation fails, many samples are lost due to no mm etc.
   we can prolly make the daemon more robust in this case.
+  (added later: the ring buffer patch to kernel driver fixed a lot of heisenbug
+  in daemon, I no longer see that: we need stress test now)
+ o oprofiled.log now contains various statistics about lost sample etc. from
+  the driver. Post profile tools must parse that and warn eventually, warning
+  must include a proposed work around. User need this: if nothing seems wrong
+  people are unlikely to get a look in oprofiled.log (I ran oprofile on 2.6.1
+  2 weeks before noticing at 30000 I lost a lot of samples, the profile seemed
+  ok du to the randomization of lost samples). As developper we need that too,
+  actually we have no clear idea of the behavior on different arch, NUMA etc.
+  Not perfect because if the profiler is running the oprofiled.log will show
+  those warning only after the first  alarm signal, I think we must dump the
+  statistics information after each opcontrol --dump to avoid that.
 
 0.9 release
 -----------
