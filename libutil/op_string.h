@@ -12,6 +12,8 @@
 #ifndef OP_STRING_H
 #define OP_STRING_H
 
+#include <string.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,7 +38,7 @@ int strisprefix(char const * str, char const * prefix);
 /**
  * @param c: input string
  *
- * return a pointer to the first location in c whiwh is not a blank space
+ * return a pointer to the first location in c which is not a blank space
  * where blank space are in " \t\n"
  */
 char const * skip_ws(char const * c);
@@ -44,7 +46,7 @@ char const * skip_ws(char const * c);
 /**
  * @param c: input string
  *
- * return a pointer to the first location in c whiwh is a blank space
+ * return a pointer to the first location in c which is a blank space
  * where blank space are in " \t\n"
  */
 char const * skip_nonws(char const * c);
@@ -52,7 +54,7 @@ char const * skip_nonws(char const * c);
 /**
  * @param c: input string
  *
- * return non zero is c string contains only blank space
+ * return non zero if c string contains only blank space
  * where blank space are in " \t\n"
  */
 int empty_line(char const * c);
@@ -60,7 +62,7 @@ int empty_line(char const * c);
 /**
  * @param c: input string
  *
- * return non zero is c string is a comment. Comment are line with optionnal
+ * return non zero is c string is a comment. Comment are lines with optional
  * blank space at left then a '#' character. Blank space are in " \t\n"
  */
 int comment_line(char const * c);

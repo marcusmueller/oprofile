@@ -208,7 +208,7 @@ char * op_relative_to_absolute_path(char const * path, char const * base_dir)
 	char dir[PATH_MAX + 1];
 	char * temp_path = NULL;
 
-	if (path && path[0] != '/') {
+	if (path[0] != '/') {
 		if (base_dir == NULL) {
 			if (getcwd(dir, PATH_MAX) != NULL) {
 				base_dir = dir;

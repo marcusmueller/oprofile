@@ -1,3 +1,16 @@
+2003-09-26  John Levon  <levon@movementarian.org>
+
+	* libutil/op_file.c: don't test for NULL path
+	passed in, we want to crash here instead of
+	in xstrdup
+
+	* configure.in:
+	* libutil/Makefile.am:
+	* libutil/tests/Makefile.am:
+	* libutil/tests/file_tests.c:
+	* libutil/tests/string_tests.c: add some unit tests
+	for libutil string and path handling
+
 2003-09-26  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libdb/db_debug.c: remove useless display interface

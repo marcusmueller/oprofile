@@ -1,3 +1,5 @@
+SUBDIRS = . tests
+
 AM_CFLAGS = @OP_CFLAGS@
 
 noinst_LIBRARIES = libutil.a
