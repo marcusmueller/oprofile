@@ -41,8 +41,10 @@ char * opd_mangle_filename(struct opd_image const * image, int counter,
 {
 	char * mangled;
 	char const * dep_name = separate_lib_samples ? image->app_name : NULL;
-
-	struct op_event * event = op_find_event(cpu_type, ctr_event[counter]); 
+	struct op_event * event = NULL;
+       
+	if (cpu_type != CPU_TIMER_INT)
+		event = op_find_event(cpu_type, ctr_event[counter]); 
 
 	struct mangle_values values;
 	/* Here we can add TGID, TID, CPU, later.  */
@@ -52,7 +54,11 @@ char * opd_mangle_filename(struct opd_image const * image, int counter,
 	if  (dep_name && strcmp(dep_name, image->name))
 		values.flags |= MANGLE_DEP_NAME;
 
-	values.event_name = event->name;
+	if (cpu_type != CPU_TIMER_INT)
+		values.event_name = event->name;
+	else
+		values.event_name = "TIMER";
+
 	values.count = ctr_count[counter];
 	values.unit_mask = ctr_um[counter];
 

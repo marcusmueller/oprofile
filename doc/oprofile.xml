@@ -1267,6 +1267,7 @@ excepting <filename>boring-test</filename> :
 		<term><option>event:</option><emphasis>eventname</emphasis></term>
 		<listitem><para>
 		The symbolic event name to match on, e.g. <option>event:DATA_MEM_REFS</option>.
+		When using the timer interrupt, the event is always "TIMER".
 		</para></listitem>
 	</varlistentry>
 
@@ -1277,6 +1278,7 @@ excepting <filename>boring-test</filename> :
 		Note that this value refers the setting used for <command>opcontrol</command>
 		only, and has nothing to do with the sample counts in the profile data
 		itself.
+		When using the timer interrupt, the count is always 0 (indicating it cannot be set).
 		</para></listitem>
 	</varlistentry>
 

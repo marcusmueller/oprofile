@@ -105,7 +105,7 @@ void opd_for_each_image(opd_image_cb image_cb)
  * the image is partially initialized.
  */
 static void opd_init_image(struct opd_image * image, char const * name,
-			   int hash, char const * app_name, int kernel)
+                           int hash, char const * app_name, int kernel)
 {
 	uint i;
 
@@ -131,6 +131,8 @@ static void opd_init_image(struct opd_image * image, char const * name,
  * Initialise an opd_image struct for the image image
  * without opening the associated samples files. At return
  * the image is fully initialized.
+ *
+ * FIXME: weird name for a function that doesn't open...
  */
 static void opd_open_image(struct opd_image * image)
 {

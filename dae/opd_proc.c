@@ -40,6 +40,7 @@ static struct opd_proc * opd_procs[OPD_MAX_PROC_HASH];
 
 static void opd_delete_proc(struct opd_proc * proc);
 
+
 /**
  * opd_get_nr_procs - return number of processes tracked
  */
@@ -110,6 +111,7 @@ char const * opd_app_name(struct opd_proc const * proc)
 	return app_name;
 }
 
+
 /**
  * opd_new_proc - create a new process structure
  * @param prev  previous list entry
@@ -135,6 +137,7 @@ static struct opd_proc * opd_new_proc(struct opd_proc * prev, struct opd_proc * 
 	return proc;
 }
 
+
 /**
  * proc_hash - hash pid value
  * @param pid  pid value to hash
@@ -144,6 +147,7 @@ inline static uint proc_hash(u32 pid)
 {
 	return ((pid>>4) ^ (pid)) % OPD_MAX_PROC_HASH;
 }
+
 
 /**
  * opd_delete_proc - delete a process
@@ -202,7 +206,8 @@ struct opd_proc * opd_add_proc(u32 pid)
  * Perform LRU on the process list by moving it to
  * the head of the process list.
  */
-inline static void opd_do_proc_lru(struct opd_proc ** head, struct opd_proc * proc)
+inline static void
+opd_do_proc_lru(struct opd_proc ** head, struct opd_proc * proc)
 {
 	if (proc->prev) {
 		proc->prev->next = proc->next;
@@ -214,6 +219,7 @@ inline static void opd_do_proc_lru(struct opd_proc ** head, struct opd_proc * pr
 		(*head) = proc;
 	}
 }
+
 
 /**
  * opd_get_proc - get process from process list
@@ -249,8 +255,9 @@ struct opd_proc * opd_get_proc(u32 pid)
  * @param map  map to print
  * @param last_map  previous map used
  */
-inline static void verb_show_sample(unsigned long offset, struct opd_map * map,
-				    char const * last_map)
+inline static void
+verb_show_sample(unsigned long offset, struct opd_map * map,
+                 char const * last_map)
 {
 	verbprintf("DO_PUT_SAMPLE %s: calc offset 0x%.8lx, map start 0x%.8lx,"
 		" end 0x%.8lx, offset 0x%.8lx, name \"%s\"\n",
@@ -270,7 +277,7 @@ inline static void verb_show_sample(unsigned long offset, struct opd_map * map,
  * value.
  */
 void opd_put_image_sample(struct opd_image * image, unsigned long offset,
-			  u32 counter)
+                          u32 counter)
 {
 	samples_odb_t * sample_file;
 
@@ -348,6 +355,7 @@ static int opd_lookup_maps(struct opd_proc * proc,
 	return 0;
 }
 
+
 /**
  * opd_put_sample - process a sample
  * @param sample  sample to process
@@ -414,7 +422,6 @@ void opd_put_sample(struct op_sample const * sample)
 	verbprintf("Couldn't find map for pid %.6d, EIP 0x%.8lx.\n",
 		   sample->pid, sample->eip);
 	opd_stats[OPD_LOST_MAP_PROCESS]++;
-	return;
 }
 
 
@@ -461,6 +468,7 @@ void opd_handle_fork(struct op_note const * note)
 	proc->nr_maps = old->nr_maps;
 	proc->max_nr_maps = old->max_nr_maps;
 }
+
 
 /**
  * opd_handle_exit - deal with exit notification
@@ -540,6 +548,7 @@ void opd_proc_cleanup(void)
 	}
 }
 
+
 /**
  * opd_remove_kernel_mapping - remove all kernel mapping for an opd_proc
  * @param proc  proc where mappings must be updated.
@@ -563,6 +572,7 @@ void opd_remove_kernel_mapping(struct opd_proc * proc)
 	proc->nr_maps = dest;
 	proc->last_map = 0;
 }
+
 
 /**
  * opd_clear_kernel_mapping - remove all kernel mapping for all opd_proc

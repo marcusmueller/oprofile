@@ -307,8 +307,9 @@ int main(int argc, char const *argv[])
 	}
 
 	if (cpu_type == CPU_TIMER_INT) {
-		printf("using timer interrupt\n");
-		exit(chosen_events[0] ? EXIT_FAILURE : EXIT_SUCCESS);
+		if (!check_events)
+			printf("Using timer interrupt.\n");
+		exit(EXIT_SUCCESS);
 	}
 
 	events = op_events(cpu_type);

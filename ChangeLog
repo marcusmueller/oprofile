@@ -1,3 +1,11 @@
+2003-07-15  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: document event name for timer interrupt
+
+	* daemon/opd_sample_files.c: handle CPU_TIMER_INT
+
+	* utils/op_help.c: fix a core dump
+
 2003-07-13  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_image.c: verbprintf() when starting reading buffer not

@@ -6,7 +6,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.6 release
 -----------
 
- o Timer/rtc is buggered - event file reading in opd_sample_files.c
+ o RTC is buggered ? Phil can you test ?
  o update opcontrol --events stuff: rtc, gui
 
 0.7 release
@@ -36,8 +36,6 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
- o I'm seeing dazed and confuseds in 2.5 with counter 1 on, counter 0 off
-	- opcontrol --start && opcontrol --shutdown
  o test opannotate -s -a on an application containing relative path debug
   info and profiled in another directory than the application build once.
   can objdump retrieve the source file and if no can we work-around ?

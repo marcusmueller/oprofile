@@ -57,54 +57,6 @@ static int parse_hex(char const * str)
 }
 
 
-static struct op_unit_mask * new_unit_mask(void)
-{
-	struct op_unit_mask * um = xmalloc(sizeof(struct op_unit_mask));
-	memset(um, '\0', sizeof(struct op_unit_mask));
-	list_add_tail(&um->um_next, &um_list);
-
-	return um;
-}
-
-
-static void delete_unit_mask(struct op_unit_mask * unit)
-{
-	u32 cur;
-	for (cur = 0 ; cur < unit->num ; ++cur) {
-		if (unit->um[cur].desc)
-			free(unit->um[cur].desc);
-	}
-
-	if (unit->name)
-		free(unit->name);
-
-	list_del(&unit->um_next);
-	free(unit);
-}
-
-
-static struct op_event * new_event(void)
-{
-	struct op_event * event = xmalloc(sizeof(struct op_event));
-	memset(event, '\0', sizeof(struct op_event));
-	list_add_tail(&event->event_next, &events_list);
-
-	return event;
-}
-
-
-static void delete_event(struct op_event * event)
-{
-	if (event->name)
-		free(event->name);
-	if (event->desc)
-		free(event->desc);
-
-	list_del(&event->event_next);
-	free(event);
-}
-
-
 /* name:MESI type:bitmask default:0x0f */
 static void parse_um(struct op_unit_mask * um, char const * line)
 {
@@ -169,6 +121,16 @@ static void parse_um_entry(struct op_described_um * entry, char const * line)
 		parse_error("invalid unit mask entry");
 
 	entry->desc = xstrdup(c);
+}
+
+
+static struct op_unit_mask * new_unit_mask(void)
+{
+	struct op_unit_mask * um = xmalloc(sizeof(struct op_unit_mask));
+	memset(um, '\0', sizeof(struct op_unit_mask));
+	list_add_tail(&um->um_next, &um_list);
+
+	return um;
 }
 
 
@@ -303,6 +265,16 @@ static int next_token(char const ** cp, char ** name, char ** value)
 }
 
 
+static struct op_event * new_event(void)
+{
+	struct op_event * event = xmalloc(sizeof(struct op_event));
+	memset(event, '\0', sizeof(struct op_event));
+	list_add_tail(&event->event_next, &events_list);
+
+	return event;
+}
+
+
 /* event:0x00 counters:0 um:zero minimum:4096 name:ISSUES : Total issues */
 static void read_events(char const * file)
 {
@@ -399,6 +371,34 @@ struct list_head * op_events(op_cpu cpu_type)
 {
 	load_events(cpu_type);
 	return &events_list;
+}
+
+
+static void delete_unit_mask(struct op_unit_mask * unit)
+{
+	u32 cur;
+	for (cur = 0 ; cur < unit->num ; ++cur) {
+		if (unit->um[cur].desc)
+			free(unit->um[cur].desc);
+	}
+
+	if (unit->name)
+		free(unit->name);
+
+	list_del(&unit->um_next);
+	free(unit);
+}
+
+
+static void delete_event(struct op_event * event)
+{
+	if (event->name)
+		free(event->name);
+	if (event->desc)
+		free(event->desc);
+
+	list_del(&event->event_next);
+	free(event);
 }
 
 
