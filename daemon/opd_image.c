@@ -514,35 +514,32 @@ static void get_tgid(struct transient * trans)
 
 
 /**
- * There is two case where we will not get a cookie switch after a context
+ * There are two cases where we will not get a cookie switch after a context
  * switch so we must take care to update properly trans->image.
  * These two case are:
  * - context switch followed by a kernel sample
  * - context switch followed by a sample to the same shared libs as
  * the last sample went.
+ *
+ * The last case can cause an image A/B where task A doesn't
+ * actually mmap image B, no big deal.
  */
 static void ctx_switch_set_image(struct transient * trans)
 {
-	if (trans->app_cookie) {
-		if (trans->cookie)
-			// if the next sample goes to the same shared libs
-			// than the previous we will not get a cookie_switch
-			// so we force trans->image now. Note it means we
-			// can create invalid image where invalid means
-			// process A don't use shared libs B but we can create
-			// an image for A/B, indeed we will never get samples
-			// to this image so no big deal.
-			trans->image = opd_get_image(trans->cookie,
-			                             trans->app_cookie);
-		else
-			// If cookie == 0 and a kernel sample follows this
-			// we need to make sure that it is attributed to the
-			// right application, namely the one we just swiched to
-			trans->image = opd_get_image(trans->app_cookie,
-			                             trans->app_cookie);
-	} else {
+	cookie_t cookie = trans->cookie;
+
+	if (!trans->app_cookie) {
 		trans->image = 0;
+		return;
 	}
+
+	// If cookie == 0 and a kernel sample follows this
+	// we need to make sure that it is attributed to the
+	// right application, namely the one we just swiched to
+	if (!cookie)
+		cookie = trans->app_cookie;
+
+	trans->image = opd_get_image(cookie, trans->app_cookie);
 }
 
 
