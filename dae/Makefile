@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.4 2000/08/01 20:36:08 moz Exp $
+# $Id: Makefile,v 1.5 2000/08/01 21:10:05 moz Exp $
 
 all: cprofiled cp_help
  
@@ -13,7 +13,9 @@ INCLUDES=
 HEADERS=cprofiled.h
 SOURCES=cprofiled.c cpd_util.c cpd_proc.c ../cp_events.c
  
-srcdoc: $(SOURCES)
+srcdoc: cprofiled-src.html
+
+cprofiled-src.html: $(SOURCES)
 	kernel-doc -html $(SOURCES) >cprofiled-src.html
  
 cprofiled: $(SOURCES) $(HEADERS) 
