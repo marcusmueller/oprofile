@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.16 2000/09/07 02:56:37 moz Exp $ */
+/* $Id: oprofiled.c,v 1.17 2000/09/07 20:15:47 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -387,8 +387,8 @@ int main(int argc, char *argv[])
 	sigaddset(&maskset,SIGALRM);
 	sigaddset(&maskset,SIGHUP);
 
-	/* clean up every 20 minutes */
-	alarm(60*20);
+	/* clean up every 10 minutes */
+	alarm(60*10);
 
 	/* simple sleep-then-process loop */
 	opd_do_read(opd_buf,opd_buf_bytesize);
