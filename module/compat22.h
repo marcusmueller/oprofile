@@ -134,4 +134,18 @@ void *compat_request_region (unsigned long start, unsigned long n, char const * 
 	#define PTRACE_OFF(t) ((t)->flags &= ~PF_DTRACE)
 #endif
 
+/* 2.2.21 introduced cpuid_edx */
+#if V_BEFORE(2,2,21)
+static inline unsigned int cpuid_edx(unsigned int op)
+{
+	unsigned int eax, edx;
+
+	__asm__("cpuid"
+		: "=a" (eax), "=d" (edx)
+		: "0" (op)
+		: "bx", "cx");
+	return edx;
+}
+#endif
+
 #endif /* COMPAT22_H */
