@@ -1,3 +1,10 @@
+2003-09-25  John Levon  <levon@movementarian.org>
+
+	* daemon/oprofiled.c: push rlimit down back to 2048.
+	This gives a running RSS of about 10Mb when thread
+	profiling on my box, which seems reasonable (at 8192
+	it was hitting 40Mb)
+
 2003-09-25  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/oprofile.xml: clarify what means a configured kernel.

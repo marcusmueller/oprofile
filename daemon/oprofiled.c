@@ -412,7 +412,7 @@ int main(int argc, char const * argv[])
 	size_t s_buf_bytesize;
 	int i;
 	int err;
-	struct rlimit rlim = { 8192, 8192 };
+	struct rlimit rlim = { 2048, 2048 };
 
 	opd_options(argc, argv);
 
@@ -443,7 +443,7 @@ int main(int argc, char const * argv[])
  
 	err = setrlimit(RLIMIT_NOFILE, &rlim);
 	if (err) {
-		perror("warning: could not set RLIMIT_NOFILE to 8192: ");
+		perror("warning: could not set RLIMIT_NOFILE to 2048: ");
 	}
 
 	if (op_write_lock_file(OP_LOCK_FILE)) {
