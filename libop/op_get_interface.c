@@ -35,7 +35,7 @@ op_interface op_get_interface(void)
 		return current_interface;
 	}
 
-	/* Try 2.5's oprofilefs one instead. */
+	/* Try 2.6's oprofilefs one instead. */
 	fp = fopen("/dev/oprofile/cpu_type", "r");
 	if (fp) {
 		fclose (fp);
