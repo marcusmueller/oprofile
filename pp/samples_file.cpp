@@ -10,7 +10,7 @@
  */
 
 #include "op_file.h"
-
+#include "op_config.h"
 #include "op_events.h"
 #include "op_events_desc.h"
 #include "op_print_event.h"
@@ -32,6 +32,14 @@ samples_file_t::samples_file_t(string const & filename)
 	: start_offset(0)
 {
 	db_open(&db_tree, filename.c_str(), DB_RDONLY, sizeof(struct opd_header));
+
+	opd_header const & head = header();
+	if (head.version != OPD_VERSION) {
+		cerr << "oprofpp: samples files version mismatch, are you "
+			"running a daemon and post-profile tools with version "
+			"mismatch ?" << endl;
+		exit(EXIT_FAILURE);
+	}
 }
 
 samples_file_t::~samples_file_t()

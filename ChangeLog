@@ -1,3 +1,8 @@
+2002-11-09  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/samples_file.cpp: check than samples files version
+	  match expected version fixing #635759
+
 2002-11-07  John Levon  <levon@movementarian.org>
 
 	* configure.in:
