@@ -156,7 +156,6 @@ AC_OUTPUT(Makefile \
 	libutil/Makefile \
 	libutil++/Makefile \
 	libop/Makefile \
-	libop++/Makefile \
 	libopt++/Makefile \
 	libdb/Makefile \
 	libabi/Makefile \
@@ -169,6 +168,12 @@ AC_OUTPUT(Makefile \
 	doc/Makefile \
 	doc/xsl/catalog-1.xml \
 	doc/oprofile.1 \
+	doc/opcontrol.1 \
+	doc/op_help.1 \
+	doc/opreport.1 \
+	doc/opannotate.1 \
+	doc/opgprof.1 \
+	libpp/Makefile \
 	pp/Makefile \
 	gui/Makefile \
 	gui/ui/Makefile \

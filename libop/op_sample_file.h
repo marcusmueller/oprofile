@@ -16,9 +16,6 @@
 
 #include <time.h>
 
-/* this char replaces '/' in sample filenames */
-#define OPD_MANGLE_CHAR '}'
-
 /* header of the sample files */
 struct opd_header {
 	u8  magic[4];

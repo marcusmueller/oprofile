@@ -4,13 +4,13 @@ SUBDIRS = \
 	libop \
 	libutil++ \
 	libopt++ \
-	libop++ \
 	libdb \
 	libabi \
 	libregex \
 	daemon \
 	dae \
 	utils \
+	libpp \
 	pp \
 	gui \
 	doc \

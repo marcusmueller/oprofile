@@ -196,13 +196,13 @@ do_init() {
 	DIR="/var/lib/oprofile"
 	LOCK_FILE="/var/lib/oprofile/lock"
 	LOG_FILE="$DIR/oprofiled.log"
-	SAMPLES_DIR="$DIR/samples/"
+	SAMPLES_DIR="$DIR/samples"
+	CURRENT_SAMPLES_DIR=${SAMPLES_DIR}/current
 	if test "$KERNEL_SUPPORT" = "yes"; then
 		MOUNT="/dev/oprofile"
 		DEVICE_FILE="$MOUNT/buffer"
 	else
 		MOUNT="/proc/sys/dev/oprofile"
-		SAMPLES_DIR="$DIR/samples/"
 		DEVICE_FILE="$DIR/opdev"
 		NOTE_DEVICE_FILE="$DIR/opnotedev"
 		HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
@@ -878,7 +878,7 @@ do_setup() {
 		create_devices_24
 	fi
 
-	create_dir "$SAMPLES_DIR"
+	create_dir "$CURRENT_SAMPLES_DIR"
 }
 
 
@@ -1065,40 +1065,32 @@ hup_daemon() {
 
 #move all the sample files to a sample directory
 do_save_session () {
-	SAVE_DIR="${SAMPLES_DIR}${SAVE_NAME}"
+	SAVE_DIR="${SAMPLES_DIR}/${SAVE_NAME}"
 
 	if test -e "$SAVE_DIR"; then
 		echo "session $SAVE_DIR already exists" >&2
 		exit 1
 	fi
 		
-	#create directory
-	mkdir -p "$SAVE_DIR"
+	mv $CURRENT_SAMPLES_DIR $SAVE_DIR
 	if [ "$?" != "0" ]; then
-		echo "Couldn't mkdir -p $SAVE_DIR" >&2
+		echo "Couldn't move $CURRENT_SAMPLES_DIR to $SAVE_DIR" >&2
 		exit 1
 	fi
-
-	#move all the sample files to the directory
-	SAMPLE_FILES=`ls $SAMPLES_DIR`
-	for f in $SAMPLE_FILES; do
-		if test -f "${SAMPLES_DIR}${f}"; then
-			mv ${SAMPLES_DIR}${f} $SAVE_DIR
-		fi
-	done
 
 	hup_daemon
 }
 
 
-#remove all the sample files, but leave the session directories alone
+#remove all the sample files
 do_reset() {
-	SAMPLE_FILES=`ls $SAMPLES_DIR`
-	for f in $SAMPLE_FILES; do
-		if test -f "${SAMPLES_DIR}${f}"; then
-			rm ${SAMPLES_DIR}${f}
-		fi
-	done
+	if test -z "$SAMPLES_DIR"; then
+		echo "opcontrol:do_reset() SAMPLES_DIR is empty!"
+		exit 1;
+	fi
+	# daemon use {kern} and {root} subdir, it's not a typo to not use ${}
+	rm -rf $SAMPLES_DIR/current/{kern}
+	rm -rf $SAMPLES_DIR/current/{root}
 
 	hup_daemon
 }

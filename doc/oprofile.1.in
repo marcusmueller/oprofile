@@ -9,440 +9,109 @@ oprofile \- a sytem-wide profiler
 .I options
 ]
 .br
-.B oprofpp
+.B opreport
 [
 .I options
 ]
-[ sample-file ] [ binary ]
+[ profile specification ]
 .br
-.B op_to_source
+.B opannotate
 [
 .I options
 ]
+[ profile specification ]
 .br
-.B op_time
+.B opgprof
 [
 .I options
 ]
-[ samples-files-directory ]
-.br
-.B op_merge
-[
-.I options
-]
-[ samples-filenames or binary-filename]
-.br
-.B op_help
-[ event-name ]
-.br
-.B oprof_convert
+[ profile specification ]
 .br
 .SH DESCRIPTION
 OProfile is a profiling system for systems running Linux
-2.2,2.4, and 2.5. Profiling runs transparently in the background and profile
+2.2, 2.4, and 2.5. Profiling runs transparently in the background and profile
 data can be collected at any time. OProfile makes use of the hardware
-performance counters provided on Intel P6, Intel Pentium 4, and AMD
-Athlon family processors, and OProfile can use the RTC for profiling on other
-processor.  In the following description, options that begin
-with ctrN- define N as a logical counter number in the range 0-7, which is
-processor specific.  See the HTML documentation for further details.
-.SH COMMONS OPTIONS
-All utilities share the following options
-.TP
-.BI "--help -? --usage"
-Show help message.
-.br
-.TP
-.BI "--version -v"
-Show version.
-.br
-.SH OPTIONS
-.br
-.B opcontrol options
-.br
-.TP
-.BI "--list-events"
-Shows the monitorable events.
-.br
-.TP
-.BI "--init"
-Load the OProfile module if required and make the OProfile driver
-interface available.
-.br
-.TP
-.BI "--setup"
-Followed by list options for profiling setup. Store setup 
-in /home/root/.oprofile/daemonrc.
-.br
-.TP
-.BI "--start-daemon"
-Start the oprofile daemon without starting profiling. Not available
-in 2.2/2.4 kernels.
-.br
-.TP
-.BI "--start"
-Start data collection with either arguments provided by --setup
-of information saved in /home/root/.oprofile/daemonrc.
-.br
-.TP
-.BI "--dump"
-Force a flush of the collected profiling data to the daemon.
-.br
-.TP
-.BI "--stop"
-Stop data collection.
-.br
-.TP
-.BI "--shutdown"
-Stop data collection and remove daemon.
-.br
-.TP
-.BI "--reset"
-Clear out data from current session, but leaves saved sessions.
-.br
-.TP
-.BI "--save=" sessionname
-Save data from current session to sessionname.
-.br
-.TP
-.BI "--deinit"
-Shut down daemon. Unload the oprofile module and oprofilefs.
-.br
-.TP
-.BI "--buffer-size=" num
-Set kernel buffer to num samples.
-.br
-.TP
-.BI "--ctrN-event=" [name|none]
-Set counter N to measure symbolic event name, or to the
-string 'none' to disable the counter.
-.br
-.TP
-.BI "--ctrN-count=" val
-Number of events between samples for counter N.
-.br
-.TP
-.BI "--ctrN-unit-mask=" val
-Set unit mask for counter N (e.g. --ctr0-unit-mask=0xf).
-.br
-.TP
-.BI "--ctrN-kernel="[0|1]
-Count events in kernel mode when 1, do not count when 0 (default 1).
-.br
-.TP
-.BI "--ctrN-user="[0|1]
-Count events in user mode when 1, do not count when 0 (default 1).
-.br
-.TP
-.BI "--pid-filter=" pid
-Only profile process pid (only available for 2.4 version). Set
-to 'none' to enable profiling of all PIDs again.
-.br
-.TP
-.BI "--pgrp-filter=" pgrp
-Only profile process tty group pgrp (only available for 2.4 version). Set
-to 'none' to enable profiling of all PIDs again.
-.br
-.TP
-.BI "--separate="[none,library,kernel,all]
-Separate samples based on the given separator. 'library' per-application
-dynamically linked libraries samples files. 'kernel' per-application modules
-and kernel samples files, 'kernel' imply 'library'. 'all' imply all the
-above options and 'none' turns off separation.
-.br
-.TP
-.BI "--vmlinux=" file
-vmlinux kernel image.
-.br
-.TP
-.BI "--no-vmlinux"
-Use this when you don't have a kernel vmlinux file, and you don't want to
-profile the kernel. Note that overall profiling time through op_time always
-counts kernel samples.
-.br
-.TP
-.BI "--verbose"
-Be verbose in the daemon log.
-.br
-.TP
-.BI "--kernel-range=" start,end
-Set kernel range vma address in hexadecimal.
-.TP
-.br
-.B oprofpp options
-.br
-.TP
-.BI "--samples-file " filename ", -f "filename
-Analyze sample filename.
-.br
-.TP
-.BI "--image-file " filename ", -i "filename
-Analyze image filename.
-.br
-.TP
-.BI "--list-symbols -l"
-List samples by symbol.
-.br
-.TP
-.BI "--dump-gprof-file " filename ", -g "filename
-Dump gprof format file.
-.br
-.TP
-.BI "--list-symbol " name ", -s "name
-Give detailed samples for the symbol name.
-.br
-.TP
-.BI "--list-all-symbols-details -L"
-Give detailed samples for all symbols.
-.br
-.TP
-.BI "--output-linenr-info -o"
-Output filename:linenr info for all samples, usable only with
---list-all-symbols-details, --list-symbol and --list-symbols.
-.br
-.TP
-.BI "--demangle -d"
-Demangle GNU C++ symbol names.
-.br
-.TP
-.BI "--smart-demangle -D"
-Demangle GNU C++ symbol names then apply a set of regular expression to
-simplify stl library demangled name.
-.br
-.TP
-.BI "--counter " counter_nr ",  -c "counter_nr
-Analyze using counter nr.
-.br
-.TP
-.BI "--verbose -V"
-Generate verbose output.
-.br
-.TP
-.BI "--exclude-symbol " symbols "  -e "symbols
-Exclude list of comma separated symbols.
-.br
-.TP
-.BI "--show-shared-libs -k"
-Show the details for each shared lib which belongs to one application.
-This option is useful only if you have profiled with --separate=library
-option and you don't specify on the oprofpp command line --dump-gprof-file.
-.br
-.TP
-.BI "--reverse -r"
-Sort the entries in reverse order, from largest to smallest
-(only with --list-symbols).
-.br
-.TP
-.BI "--output-format " vsSpPqQnlLiIh ", -t " vsSpPqQnlLiIdh
-Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'd' details for each samples for the selected symbols and 'h' for the header itself. 'q','Q' are identical to 'p', 'P' but the percentage are relative to the total number of symbols. This option is not available with --dump-gprof-file.
-.br
-.TP
-.BI "--session " session-name
-Specify the session name you want to use, session-name can be an absolute path
-where samples reside or a session name relative to samples files base directory. If you specify a samples filename with an absolute path this option is ignored
-.br
-.TP
-.BI "--path " path_list ", -p " path_list
-Specify an alternate list of pathnames to locate image files. Use if the sample filenames do not match the image filenames, e.g. modules loaded at boot time through a RAM disk.
-The path_list is a comma-separated list of directories. Each directory is scanned recursively.
-.TP
-.br
-.B op_to_source options
-.br
-.TP
-.BI "--samples-file " filename ", -f "filename
-Annotate sample sample filename.
-.br
-.TP
-.BI "--image-file " filename ", -i "filename
-Annotate image filename.
-.br
-.TP
-.BI "--demangle -d"
-Demangle GNU C++ symbol names.
-.br
-.TP
-.BI "--smart-demangle -D"
-Demangle GNU C++ symbol names then apply a set of regular expression to
-simplify stl library demangled name.
-.br
-.TP
-.BI "--assembly -a"
-Output assembly code.
-.br
-.TP
-.BI "--source-dir " base_directory
-Search the base directory for the source files.
-All source file outside this base directory are ignored.
-If neither --source-dir nor --output-dir specified, annotated
-source files go to stdout.
-.br
-.TP
-.BI "--output-dir " base_directory
-Output annotated source file into base directory.
-If neither --source-dir nor --output-dir specified, annotated
-source files go to stdout.
-.br
-.TP
-.BI "--output " pattern
-Generate annotations only for the files matching pattern.
-Multiple patterns can be specified by separating the patterns with commas.
-.br
-.TP
-.BI "--no-output " pattern
-Do not generate annotations for files matching pattern.
-Multiple patterns can be specified by separating the patterns with commas.
-.br
-.TP
-.BI "--source-with-assembly -s"
-Output assembly mixed with source file.
-.br
-.TP
-.BI "--until-more-than-samples " percent_nr ", -m "percent_nr
-Output source files until the amount of samples in these files reach percent_nr samples.
-.br
-.TP
-.BI "--with-more-than-samples " percent_nr ", -w "percent_nr
-Annotate source files with more than percent_nr samples.
-.br
-.TP
-.BI "--sort-by-counter " counter_nr ", -c "counter_nr
-Sort on counter_nr.
-.br
-.TP
-.BI "--verbose -V"
-Generate verbose output.
-.br
-.TP
-.BI "--exclude-symbol " symbols ", -e "symbols
-Exclude comma separated list of symbols.
-.br
-.TP
-.BI "--include-symbol " symbol ", -y "symbol
-Include comma separated list of symbol.
-.br
-.TP
-.BI "--session " session-name
-Specify the session name you want to use, session-name can be an absolute path
-where samples reside or a session name relative to samples files base directory. If you specify a samples
-filename, with an absolute path this option is ignored.
-.TP
-.br
-.TP
-.BI "--objdump-params " 'params' ", -o "'params'
-Pass the comma separated additional parameters to objdump. Check the objdump man page
-to see what options objdump accept e.g. -o '--disassembler-options=intel' to get Intel assembly syntax instead of AT&T syntax.
-This option can be used only with --assembly or --source-with-assembly.
-.br
-.TP
-.B op_time options [image_name [image_names]]
-.br
-.TP
-.BI "--counter " counter_nr ", -c "counter_nr
-Sort on counter_nr.
-.TP
-.br
-.BI "--show-shared-libs -k"
-Show the details for each shared lib which belongs to one application. This option is useful only if you have profiled with --separate=library option.
-.TP
-.br
-.BI "--list-symbols -l"
-Show details for each symbol in each profiled file.
-.TP
-.br
-.BI "--demangle -d"
-Demangle GNU C++ symbol names.
-.br
-.TP
-.BI "--smart-demangle -D"
-Demangle GNU C++ symbol names then apply a set of regular expression to
-simplify stl library demangled name.
-.br
-.TP
-.BI "--show-image-name -n"
-Show the image name when specifying --list-symbols.
-.br
-.TP
-.BI "--output-format " vsSpPnlLiIeEh ", -t " vsSpPnlLiIeEh
-Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'e' application name, 'E' basename of application name 'e' and 'E' are useless unless you profile with --separate=[library|kernel], 'd' details for each samples for the selected symbols and 'h' for the header itself. This option is available only with --list-symbols
-.br
-.TP
-.BI "--reverse -r"
-Sort output from largest to smallest count.
-.br
-.TP
-.BI "--path " path_list ", -p " path_list
-Specify an alternate list of pathnames to locate image files. Use if the sample filenames do not match the image filenames, e.g. modules loaded at boot time through a RAM disk.
-The path_list is a comma-separated list of directories. Each directory is scanned recursively.
-.br
-.TP
-.BI "--session " session-name
-Specify the session name you want to use, session-name can be an absolute path
-where samples reside or a session name relative to samples files base directory
-.TP
-.br
-.B op_merge options
-.br
-.TP
-.BI "--counter " counter_nr ", -c "counter_nr
-Select sample files for counter_nr rather than the default 0.
-
-.SH USAGE
-Setup and start the profiler with the provided
+performance counters provided on Intel, AMD, and other processors,
+and uses a timer-interrupt based mechanism on CPUs without counters.
+OProfile can profile the whole system in high detail.
+.SH OPCONTROL
 .B opcontrol
-shell script. You are required to specify vmlinux, as well as specify a counter event and value, e.g. :
-.PP
-.I opcontrol --setup --vmlinux=/sys/vmlinux --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000
-.PP
-If you are using a linux 2.4 kernel on a machine that doesn't support
-the performance counters, you can use the RTC driver instead, e.g. :
-.PP
-.I opcontrol --setup --vmlinux=/sys/vmlinux --rtc-value=128
-.PP
-If you are using a linux 2.5 kernel on a machine that doesn't support
-the performance counters, you can use the TIMER_INT driver instead, e.g. :
-.PP
-.I opcontrol --setup --vmlinux=/sys/vmlinux
-.PP
-Then actually start profiling with :
-.PP
-.I opcontrol --start
-.PP
-Profiles will be stored in the sample files periodically.
-You can force a collection at any time :
-.PP
-.I opcontrol --dump
-.PP
-Stopping profiling is done using
-.PP
-.I opcontrol --shutdown
-.PP
-which also flushes all samples to disk.
-.PP
-As an alternative you can use the
-.B oprof_start
-GUI to start the profiler. See the HTML documentation for further details
-.PP
-You can then collect profiles for any binary or shared library by using
-.B oprofpp
-to read the sample file :
-.PP
-.I oprofpp -l /lib/libc-2.1.92.so
-.PP
-or by using :
-.B op_to_source
-.PP
-.I op_to_source -i /lib/libc-2.1.92.so
-.PP
-.B op_time
-utility can be used to get an overall view of all profiled applications.
-.PP
-.B op_merge
-utility can be used to merge multiple samples files which belongs to
-the same binary image.
-.PP
+is used for starting and stopping the OProfile daemon, and providing set-up
+parameters.
+.SH OPREPORT
+.B opreport
+gives image and symbol-based profile summaries for the whole system or
+a subset of binary images.
+.SH OPANNOTATE
+.B opannotate
+can produce annotated source or mixed source and assembly output.
+.SH OPGPROF
+.B opgprof
+can produce a gprof-format profile for a single binary.
+
+.SH PROFILE SPECIFICATIONS
+All of the post-profiling tools can take profile specifications,
+which is some combination of the following parameters.
+
+.TP
+.BI "session:"sessionlist
+A comma-separated list of session names to resolve in. Absence of this
+tag, unlike all others, means "the current session", equivalent to
+specifying "session:current".
+.br
+.TP
+.BI "session-exclude:"sessionlist
+A comma-separated list of sessions to exclude.
+.br
+.TP
+.BI "image:"imagelist
+A comma-separated list of image names to resolve. Each entry may be relative
+path, glob-style name, or full path, e.g.
+opreport 'image:/usr/bin/oprofiled,*op*,./oprofpp'
+.br
+.TP
+.BI "image-exclude:"imagelist
+Same as image:, but the matching images are excluded.
+.br
+.TP
+.BI "lib-image:"imagelist
+Same as image:, but only for images that are for
+a particular primary binary image (namely, an application). This only
+makes sense to use if you're using --separate.
+This includes kernel modules and the kernel when using
+--separate=kernel.
+.br
+.TP
+.BI "lib-image-exclude:"imagelist
+Same as <option>lib-image:</option>, but the matching images
+are excluded.
+.br
+.TP
+.BI "event:"eventname
+The symbolic event name to match on, e.g. event:DATA_MEM_REFS.
+.br
+.TP
+.BI "count:"eventcount
+The event count to match on, e.g. event:DATA_MEM_REFS count:30000.
+.br
+.TP
+.BI "unit-mask:"maskvalue
+The unit mask value of the event to match on, e.g. unit-mask:1.
+.br
+.TP
+.BI "binary:"file
+Give results only for the given file. This can only be used with
+sample-file:.
+.br
+.TP
+.BI "sample-file:"sample file
+Give results only for the given sample file. This can only be used with
+binary:.
+
+.\" FIXME: cpu: etc.
+
 .SH ENVIRONMENT
-No environment variables are recognised by oprofile.
+No special environment variables are recognised by oprofile.
 
 .SH FILES
 .TP
@@ -451,6 +120,9 @@ Configuration files
 .TP
 .I /home/root/.oprofile/daemonrc
 Configuration file for opcontrol
+.TP
+.I $prefix/share/oprofile/
+Event description files used by OProfile.
 .TP
 .I /var/lib/oprofile/oprofiled.log
 The user-space daemon logfile.
@@ -469,6 +141,10 @@ The location of the generated sample files.
 This man page is current for @PACKAGE@-@VERSION@.
 
 .SH SEE ALSO
+.BR opcontrol(1),
+.BR opreport(1),
+.BR opannotate(1),
+.BR opgprof(1),
 .BR gprof(1),
 .BR readprofile(1),
 .BR "Intel IA32 Architecture Developer's Manual, Volume 3"

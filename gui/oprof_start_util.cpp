@@ -27,6 +27,7 @@
 #include "string_manip.h"
 #include "file_manip.h"
 #include "child_reader.h"
+#include "op_libiberty.h"
 
 #include "oprof_start.h"
 #include "oprof_start_util.h"
@@ -133,7 +134,7 @@ daemon_status::daemon_status()
 
 	nr_interrupts = 0;
 
-	switch (op_get_interface()){
+	switch (op_get_interface()) {
 	case OP_INTERFACE_24:
 		{
 			ifstream ifs3("/proc/sys/dev/oprofile/nr_interrupts");
@@ -174,7 +175,7 @@ daemon_status::daemon_status()
 
 
 /**
- * get_user_filename - get absoluate filename of file in user $HOME
+ * get_user_filename - get absolute filename of file in user $HOME
  * @param filename  the relative filename
  *
  * Get the absolute path of a file in a user's home directory.
@@ -194,13 +195,19 @@ bool check_and_create_config_dir()
 {
 	string dir = get_user_filename(".oprofile");
 
-	if (!create_dir(dir)) {
+	char * name = xstrdup(dir.c_str());
+
+	if (!create_dir(name)) {
 		ostringstream out;
 		out << "unable to create " << dir << " directory: ";
 		QMessageBox::warning(0, 0, out.str().c_str());
 
+		free(name);
+
 		return false;
 	}
+
+	free(name);
 	return true;
 }
 

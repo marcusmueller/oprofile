@@ -20,4 +20,7 @@ void opd_close_image_samples_files(struct opd_image * image);
 void opd_handle_old_sample_files(struct opd_image const * image);
 void opd_open_sample_file(struct opd_image * image, int counter);
 
+char * opd_mangle_filename(struct opd_image const * image, int counter,
+			   int create_path);
+
 #endif /* OPD_SAMPLE_FILES_H */

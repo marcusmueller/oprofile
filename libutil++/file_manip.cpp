@@ -48,52 +48,6 @@ bool is_files_identical(string const & file1, string const & file2)
 }
 
 /**
- * create_dir - create a directory
- * @param dir  the directory name to create
- *
- * return false if the directory dir does not exist
- * and cannot be created
- */
-bool create_dir(string const & dir)
-{
-	if (access(dir.c_str(), F_OK)) {
-		if (mkdir(dir.c_str(), 0700))
-			return false;
-	}
-	return true;
-}
-
-/**
- * create_path - create a path
- * @param path  the path to create
- *
- * create directory for each dir components in path
- * return false if one of the path cannot be created.
- */
-bool create_path(string const & path)
-{
-	vector<string> path_component;
-
-	size_t slash = 0;
-	while (slash < path.length()) {
-		size_t new_pos = path.find_first_of('/', slash);
-		if (new_pos == string::npos)
-			new_pos = path.length();
-
-		path_component.push_back(path.substr(slash, (new_pos - slash) + 1));
-		slash = new_pos + 1;
-	}
-
-	string dir_name;
-	for (size_t i = 0 ; i < path_component.size() ; ++i) {
-		dir_name += '/' + path_component[i];
-		if (!create_dir(dir_name))
-			return false;
-	}
-	return true;
-}
-
-/**
  * op_read_link - read the contents of a symbolic link file
  * @param name  the file name
  *

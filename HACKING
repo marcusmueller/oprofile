@@ -33,6 +33,10 @@ doc/
 
 	User and developer documentation
 
+libpp/
+
+	Classes for handling profiles
+
 pp/
 
 	The post-profiling tools for showing results
@@ -48,10 +52,6 @@ libdb/
 libop/
 
 	C language oprofile-specific helper stuff
-
-libop++/
-
-	C++ oprofile-specific helper stuff
 
 libopt++/
 

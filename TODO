@@ -3,12 +3,32 @@ This is an (incomplete) list of some of the stuff we want to look at doing.
 If you're interested in hacking on any of these, please contact the list first
 for some pointers and/or read HACKING and doc/CodingStyle.
 
-Before 0.5.3
-------------
+After merging with trunk
+------------------------
 
- o update example in documentation to show the new output format 
- o Add some example of typical tools output, this would not be in /doc/*
-  but directly accessible from http://oprofile.sourceforge.net/
+ o we show a header but not column headers for image report
+ o write the man page and xml doc (i'll do this right at the end - john)
+ o test opannotate -s -a on an application containing relative path debug
+  info and profiled in another directory than the application build once.
+  can objdump retrieve the source file and if no can we work-around ?
+ o opannotate unhandled option (probably not exhaustive) 
+   --base-dir
+ o inhibit build of opdiff in pp/Makefile.am
+ o test with 2.95 if cout.rdbuf(os.rdbuf()); work even when there is non
+  flushed data in cout buffer. It's also not clear if at exit() we have not
+  a problem (who is the owner of the buffer and in what order of and cout will
+  be destroyed ?)
+
+ o fix John movement on 2.5: odb_insert failure (and message error corrupted ?)
+   - haven't been able to reproduce yet, I just get too many files open instead ;)
+
+ o look if we must remove help_str support from libopt++
+ o implement pp_interface alias
+ o restore stream state when using persistant formating flag like:
+     s/ostream os; os << hex << foo/os << hex << foo << dec/
+
+ o lib-image: is broken $ opreport /usr/local/bin/oprofiled "lib-image:*libc*"
+
 
 Before 1.0 big stuff
 --------------------
@@ -23,10 +43,27 @@ Before 1.0 big stuff
 	   dump the trace in the logs + new sample file format
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
+ o get a look at missing samples, run libdb/db_test on a sample file and see
+  if pp tools miss some samples. I get a deep look in opofiled, 0.5% of of
+  missing sample in the .plt section, a quick look on opreport show 2% missing
  
 Before 1.0 little stuff
 -----------------------
 
+ o option xxx and negated option --no-xxx: we can hide them in --help and
+  mention in the xxx option help string than the --no-xxx is allowed. Not
+  really usefull if we have a little number of --no.
+ o move oprofiled.log to OP_SAMPLE_DIR/current ?
+ o I think we should have the ability to have *fixed* width headers, e.g. :
+
+vma      samples  cum. samples  %           cum. %     symbol name             image name              app name
+0804c350 64582    64582         35.0757     35.0757    odb_insert              /usr/loc...in/oprofiled /usr/local/oprofile-pp/bin/oprofiled
+
+  Note the ellipsis
+
+ o OPD_MAX_MODULES is stupid, use a list instead
+ o configure.in: OP_DATADIR=`eval echo "$datadir/$PACKAGE/"`
+     AC_DEFINE_UNQUOTED(OP_DATADIR, "$OP_DATADIR", "foo path") seems to work
  o improve the *non* verbose daemon log to be a bit more informative
  o daemon: opd_put_kernel_samples vs. setup_kernel_sample vs. handle_. Rename, way too confusing
  o --buffer-size is useless on 2.5 without tuning of watershed
@@ -52,6 +89,11 @@ Before 1.0 little stuff
  o allow --ctr0-event to take event numbers. (is it worth ?)
  o when we dump stats for oprofiled, dump kernel-side values too (for 2.5)
  o lookup_dcookie can return ENAMETOOLONG but we can't hack it
+ o better treatment of section /wo symbol, actually we rely on _init being
+  the first symbol in the first CODE section, we would rather lookup all CODE
+  section and create a symbol from the start of the section to the fist symbol
+  in this section (if its size is zero don't create it) (FIXME is this already
+  done ?)
 
 Documentation
 -------------

@@ -1,24 +1,24 @@
-2003-05-27  John Levon  <levon@movementarian.org>
+2003-05-29  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* merge with pp-interface-branch: following ChangeLog was unmerged
+	  to branch
+
+	2003-05-27  John Levon  <levon@movementarian.org>
 
 	* configure.in: oprofile 0.5.3 is released, back to
 	0.6cvs
 
-2003-05-27  Philippe Elie  <phil.el@wanadoo.fr>
-
-	* doc/oprofile.xml: update example in "Interpreting profiling results"
-	section
-
-2003-05-26  John Levon  <levon@movementarian.org>
+	2003-05-26  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: update docs for --no-vmlinux
 
-2003-05-26  John Levon  <levon@movementarian.org>
+	2003-05-26  John Levon  <levon@movementarian.org>
 
 	* libop/op_interface_25.h:
 	* daemon/opd_image.c: handle tgid for future
 	compatibility, fix compile on older gccs
 
-2003-05-26  John Levon  <levon@movementarian.org>
+	2003-05-26  John Levon  <levon@movementarian.org>
 
 	* libop/op_interface_25.h: add LAST_CODE
 
@@ -30,16 +30,116 @@
 	code, handle window where we can't place a
 	sample
 
-2003-05-26  John Levon  <levon@movementarian.org>
+	2003-05-26  John Levon  <levon@movementarian.org>
 
 	* libutil++/utility.h: fix typo
 
 	* utils/opcontrol: fix typo
 
+	2003-05-16  John Levon  <levon@movementarian.org>
+
+	* pp/counter_profile.cpp: remove bogus cpu speed
+	consistency check
+
+	2003-05-09  John Levon  <levon@movementarian.org>
+
+	* m4/Makefile.am:
+	* m4/compileroption.m4: add a generalised compiler option
+	tester
+
+	* configure.in: use it, add -fno-common
+
+	2003-05-09  John Levon  <levon@movementarian.org>
+
+	* daemon/oprofiled.c:
+	* dae/oprofiled.c: remove duplicate declaration found
+	via -fno-common
+
+	2003-05-04  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: fix validation errors from xmllint --valid
+	
+
+2003-05-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/profile_spec.cpp: make image:/path/to:image working
+
+2003-05-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/string_manip.h:
+	* libutil++/string_manip.cpp: specialize
+	  lexical_cast_no_ws<unsigned int> to accept hexadecimal input
+
+	* pp/common_option.cpp: missing << endl
+
+2003-05-27  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/oprofile.xml: update example in "Interpreting profiling results"
+	section
+
+2003-05-26  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: add new pp tools options
+
+2003-05-26  John Levon  <levon@movementarian.org>
+
+	* doc/opreport.1.in:
+	* doc/opgprof.1.in:
+	* doc/opannotate.1.in:
+	* doc/op_help.1.in: complete
+
+2003-05-26  John Levon  <levon@movementarian.org>
+
+	* configure.in:
+	* doc/Makefile.am:
+	* doc/oprofile.1.in:
+	* doc/op_help.1.in:
+	* doc/opcontrol.1.in:
+	* doc/opreport.1.in:
+	* doc/opannotate.1.in:
+	* doc/opgprof.1.in: re-organise and add manpages
+
+2003-05-26  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: start to document the pp interface
+
+2003-05-26  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opreport.cpp: remove automatic switch to --symbols mode
+
+2003-05-26  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/symbol_sort.h:
+	* pp/opannotate_options.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport_options.cpp: handle meaningless options combinations
+
+2003-05-26  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opgprof_options.cpp: no need to use unmergeable_profile here
+
 2003-05-25  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* events/i386.piii.unit_masks: tweak comment, change default unit mask
 	  for kni instruction to 0 and type to exclusive
+
+2003-05-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/profile_container.cpp: thinko
+	* pp/opreport.cpp: typo
+
+2003-05-25  John Levon  <levon@movementarian.org>
+
+	* libopt++/popt_options.h:
+	* libopt++/popt_options.cpp: obvious cleanup,
+	remove some dead code
+
+2003-05-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/format_flags: cf_image_name new column_flags flag
+	* libpp/profile_container.cpp: use above flag. Don't compare app_name
+	  by string but id
+	* pp/opreport.cpp: hide image_name when un-neccessary
 
 2003-05-24  Philippe Elie  <phil.el@wanadoo.fr>
 
@@ -53,15 +153,66 @@
 
 	* configure.in: do early check of libiberty
 
+	* libpp/symbol_sort.cpp: 2.91 compile fix
+
 2003-05-22  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/child_reader.h: minor #include fix
 
+2003-05-22  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/name_storage.cpp: debug_name_storage::name() 
+	  return an empty string when for zero id to avoid exception
+
 2003-05-21  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/profile.cpp:
+	* libpp/op_header.h:
+	* libpp/op_header.cpp: when sample file differ ouput the sample
+	  filename
+
+	* pp/opannotate.cpp: remove spurious output
 
 	* */Makefile.am:
 	* configure.in: handle our own OP_CFLAGS, OP_CXXFLAGS to let user
 	  free to use make CFLAGS=
+
+2003-05-20  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/profile_spec.h:
+	* libpp/profile_spec.cpp: remove lib_image_exclude, use image_exclude
+	  instead. match() Handle image exclusion.
+
+	* libregex/stl.pat.in: FIXME
+
+	* libutil++/string_manip.h: compile fix
+
+2003-05-19  John Levon  <levon@movementarian.org>
+
+	* libutil++/comma_list.h:
+	* libpp/filename_spec.cpp:
+	* libutil++/string_manip.h:
+	* libutil++/generic_spec.h: rename strict_convert<>
+	to lexical_cast_no_ws<>
+
+2003-05-19  John Levon  <levon@movementarian.org>
+
+	* libutil++/generic_spec.h: move strict_convert<> to...
+
+	* libutil++/string_manip.h: ...here
+
+2003-05-19  John Levon  <levon@movementarian.org>
+
+	* libutil++/generic_spec.h: comma_list isn't a friend
+	any more
+
+	* libutil++/comma_list.h: use generic_spec<>::match()
+	directly
+
+2003-05-19  John Levon  <levon@movementarian.org>
+
+	* libpp/name_storage.h: s/name_map/stored_names/, it's not
+	a map any more.
 
 2003-05-19  Philippe Elie  <phil.el@wanadoo.fr>
 
@@ -69,9 +220,54 @@
 	* libregex/stl.pat.in: partial handling of _Identity<> and
 	  _Select1st<>, pattern fail if type are too complex
 
+2003-05-19  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/format_output.cpp: small cleanup
+
+	* libpp/name_storage.h:
+	* libpp/name_storage.cpp: ensure type safety by providing distinct
+	  type identifier for each name_storage based container
+
+	* libpp/profile_container.cpp:
+	* libpp/sample_container.cpp:
+	* libpp/symbol_functors.cpp:
+	* libpp/symbol_sort.cpp:
+	* libpp/opp_symbol.h: use the name identifier api
+
+	* libpp/op_header.cpp: 
+	* libpp/partition_files.cpp: use a set<string> not a name_storage
+
+	* libpp/format_output.cpp: small cleanup
+
+
+2003-05-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/partition_files.cpp: merge partition entry when neccessary
+	  fixing a corner case when a binary can be a dependent or a primary
+	  image and was not merged
+
+2003-05-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opreport_options.cpp:
+	* pp/opannotate_options.cpp: remove conflicting options shortcut
+
 2003-05-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libregex/stl.pat.in: add list<T>::{const_}+iterator
+
+2003-05-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/name_storage.cpp: basename() return an empty string for nil id
+
+2003-05-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/op_bfd.cpp: get_linenr() init linenr to zero
+
+	* libpp/name_storage.cpp: don't use id zero
+	* libpp/opp_symbol.h: now we use id and not string we must provide
+	  default ctor to initialize the id
+	* libpp/profile_container.cpp: init debug info entry only if
+	  get_linenr() succeed
 
 2003-05-17  Philippe Elie  <phil.el@wanadoo.fr>
 
@@ -80,28 +276,1278 @@
 
 	* module/x86/op_nmi.c: printk format fix
 
+2003-05-17  John Levon  <levon@movementarian.org>
+
+	* pp/opannotate_option.cpp:
+	* pp/opreport_options.cpp: command line changes
+
+2003-05-17  John Levon  <levon@movementarian.org>
+
+	* libpp/name_storage.h:
+	* libpp/name_storage.cpp: add present()
+
+	* libpp/op_header.cpp:
+	* libpp/partition_files.cpp: use a name store
+	to track what we've warned about, and clean up
+	the warnings a bit
+
 2003-05-16  John Levon  <levon@movementarian.org>
 
-	* pp/counter_profile.cpp: remove bogus cpu speed
-	consistency check
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: expose anonymous symbols
+	to the world as "??sectionname". Useful for .plt
+	and .fini, which are quite common.
+
+	* libpp/name_storage.cpp: demangle anonymous symbols
+	nicely.
+
+2003-05-16  John Levon  <levon@movementarian.org>
+
+	* libpp/symbol_sort.cpp: fix image-sorting
+
+2003-05-16  John Levon  <levon@movementarian.org>
+
+	* libpp/name_storage.h:
+	* libpp/name_storage.cpp: make ID be per-container
+
+2003-05-16  John Levon  <levon@movementarian.org>
+
+	* libpp/name_storage.h:
+	* libpp/name_storage.cpp: merge processed names
+	into one string, remove the boolean
+
+2003-05-16  John Levon  <levon@movementarian.org>
+
+	* libpp/name_storage.h:
+	* libpp/name_storage.cpp: whoops, use string
+	not stored_name for the ID map
+
+2003-05-16  John Levon  <levon@movementarian.org>
+
+	* libpp/name_storage.h:
+	* libpp/name_storage.cpp: split into three
+	stores for debug filenames, symbols, and images
+
+	* libpp/format_output.cpp:
+	* libpp/profile_container.cpp:
+	* libpp/sample_container.cpp:
+	* libpp/symbol_container.cpp:
+	* libpp/symbol_sort.cpp:
+	* pp/opannotate.cpp: changes from above
+
+2003-05-16  John Levon  <levon@movementarian.org>
+
+	* libpp/Makefile.am:
+	* libpp/name_storage.h:
+	* libpp/name_storage.cpp: add shared storage
+	and caching of symbol and file names
+
+	* libpp/opp_symbol.h:
+	* libpp/format_output.cpp:
+	* libpp/profile_container.cpp:
+	* libpp/sample_container.cpp:
+	* libpp/symbol_container.cpp:
+	* libpp/symbol_container.h:
+	* libpp/symbol_sort.cpp:
+	* libpp/symbol_sort.h:
+	* pp/opannotate.cpp:
+	* pp/opreport.cpp: use it
+
+	* pp/opgprof_options.cpp: add unused demangle
+	options to hack-fix the build
+
+2003-05-16  John Levon  <levon@movementarian.org>
+
+	* libpp/symbol_sort.cpp: fix --sort debug
+
+2003-05-16  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: remove have_debug_info()
+
+2003-05-16  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/op_header.cpp: remove cpu_speed checking
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: bailout in get_linenr() if binary doesn't
+	  contain any debug info. Speed up my test case opreport --debug-info
+	  -l by 25
+
+2003-05-16  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_bfd.cpp: clean up interesting_symbol
+	a bit
+
+2003-05-16  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_bfd.cpp: make sure linenr is
+	always set to something
+
+	* libpp/opp_symbol.h: linenr should be unsigned
+
+	* libpp/profile_container.cpp: remove some unneeded
+	copies
+	
+2003-05-16  John Levon  <levon@movementarian.org>
+
+	* pp/opannotate.cpp: small renaming
+
+2003-05-15  John Levon  <levon@movementarian.org>
+
+	* libpp/symbol_container.h:
+	* libpp/symbol_container.cpp: add begin(), end(),
+	remove symbols_by_count()
+
+	* libpp/profile_container.cpp: use symbol container
+	iterator directly in select_symbols()
+
+2003-05-15  John Levon  <levon@movementarian.org>
+
+	* libpp/format_output.h:
+	* libpp/format_output.cpp:
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp:
+	* libpp/symbol_container.h:
+	* libpp/symbol_container.cpp:
+	* libpp/symbol_sort.h:
+	* libpp/symbol_sort.cpp:
+	* pp/opannotate.cpp:
+	* pp/opreport.cpp:
+	* pp/opgprof.cpp: move symbol_collection typedef
+	  into global namespace, and use consistently
+
+2003-05-15  John Levon  <levon@movementarian.org>
+
+	* libpp/format_output.h:
+	* libpp/format_output.cpp: add vma_format_64bit(),
+	remove bool parameter from output()
+
+	* pp/opreport.cpp: change from above, refactor flags
+	code into get_format_flags() helper
+
+2003-05-12  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/format_output.h:
+	* libpp/format_output.cpp:
+	* libpp/symbol_sort.h:
+	* libpp/symbol_sort.cpp: handle reverse sort in sorting not in output
+	* pp/opannotate.cpp:
+	* pp/opreport.cpp: update according
+
+2003-05-12  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/symbol_sort.h:
+	* libpp/symbol_sort.cpp: handle sort order as specified on command line
+
+	* pp/opgprof.cpp: sort symbol is not neccessary for gprof
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp:
+	* pp/opannotate.cpp: use new sort API
+
+2003-05-12  John Levon  <levon@movementarian.org>
+
+	* libpp/symbol_sort.h:
+	* libpp/symbol_sort.cpp: partial implementation
+	of other sort options
+
+2003-05-12  John Levon  <levon@movementarian.org>
+
+	* libpp/Makefile.am:
+	* libpp/symbol_sort.h:
+	* libpp/symbol_sort.cpp: add sorting code
+
+	* symbol_functors.h: move some less() into
+	symbol_sort.cpp
+
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp: don't pass in
+	sort option to select_symbols(), do it in caller
+
+	* pp/opannotate.cpp:
+	* pp/opgprof.cpp:
+	* pp/opreport.cpp:
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp: from the above
+
+2003-05-12  John Levon  <levon@movementarian.org>
+
+	* format_flags.h: remove vma64_p. Add column_flags
+
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp: pass in a struct
+	to select_symbols. Generate hints for 64-bit VMA
+	and multiple apps in the profile.
+
+	* pp/opannotate.cpp:
+	* pp/opgprof.cpp:
+	* pp/opreport.cpp: use the above
+
+2003-05-12  John Levon  <levon@movementarian.org>
+
+	* libpp/format_output.cpp:
+	* libpp/format_flags.h:
+	* pp/opreport.cpp: trivial renaming of flags
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* libpp/format_output.cpp:
+	* libpp/format_flags.h: better output for
+	the default of short filenames
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* pp/opreport.cpp: improve the app/image name column
+	showing a bit
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* pp/opreport.cpp: default to -l if we were just
+	going to show one image summary.
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* pp/opreport.cpp: move some code around that
+	outputs the image summaries
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* libpp/format_output.h:
+	* libpp/format_output.cpp:
+	* pp/opreport.cpp:
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp: s/--short-filename/--long-filenames/
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* libpp/profile_spec.h:
+	* libpp/profile_spec.cpp: take exclude_dependent not
+	include_dependent
+
+	* pp/opannotate_options.c:
+	* pp/opgprof_options.c:
+	* pp/opreport_options.h:
+	* pp/opreport_options.c: change to use exclude_dependent,
+	remove --hide-dependent
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* locate_images.h:
+	* locate_images.cpp: extra_images can now use
+	relative paths for its search dirs. Move most of 
+	the warnings out of find_image_path, and make it
+	also handle relative paths. Return the file
+	even if it wasn't readable.
+
+	* libpp/partition_files.cpp: give warnings when
+	necessary.
+
+	* libpp/profile_spec.h:
+	* libpp/profile_spec.cpp: handle relative paths
+	inside image specs, as stated in pp_interface; also
+	use the extra images search path for resolution.
+
+	* pp/opannotate_options.cpp:
+	* pp/opreport_options.cpp:
+	* pp/opgprof_options.cpp: changes from above
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* libpp/format_flags.h: source doc improvements
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* libpp/opp_symbol.h: move vma64_p to ...
+
+	* libpp/format_flags.h: ... here
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* libpp/Makefile.am:
+	* libpp/outsymbflags.h:
+	* libpp/format_flags.h:
+	* libpp/profile_container.h:
+	* libpp/format_output.h:
+	* libpp/format_output.cpp:
+	* pp/opreport.cpp: rename outsymbflags to format_flags
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* profile_container.h:
+	* profile_container.cpp:
+	* opannotate.cpp: clean up select_filename() in a
+	similar fashion
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp:
+	* pp/opreport.cpp:
+	* pp/opannotate.cpp:
+	* pp/opgprof.cpp: another select_symbols() API cleanup
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* pp/opgprof.cpp: use select_symbols so we can
+	handle --threshold
+
+2003-05-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opannotate.cpp: use threshold for source output
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* pp/common_option.h:
+	* pp/common_option.cpp:
+	* pp/opannotate_options.cpp:
+	* pp/opreport_options.cpp: make --threshold
+	be a common option.
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* pp/profile_container.h:
+	* pp/profile_container.cpp:
+	* pp/opannotate.cpp:
+	* pp/opreport.cpp: clean up select_symbols
+	interface
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* pp/opreport.cpp: make --threshold work for
+	image summaries too
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* pp/opreport_options.cpp: fix --threshold
+	description to match reality
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* libpp/partition_files.h:
+	* libpp/partition_files.cpp:
+	* pp/opannotate_options.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp: rename merge_by members
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* pp/opreport.cpp: add some logic to not output
+	duplicate lines for dep images when we've already
+	shown all the possible details in the main image summary
+
+2003-05-11  John Levon  <levon@movementarian.org>
+
+	* pp/common_option.h: use std::
+
+2003-05-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opreport_options.cpp: move handle_threshold()
+	* pp/common_option.h:
+	* pp/common_option.cpp: here
+	* pp/opannotate_options.h:
+	* pp/opannotate_options.cpp:
+	* pp/opannotate.cpp: handle --threshold
+
+2003-05-10  John Levon  <levon@movementarian.org>
+
+	* libop/op_mangle.h:
+	* libop/op_mangle.c: use a temp struct for
+	passing the mangle parameters with a set of
+	flags.
+
+	* dae/opd_sample_files.c:
+	* daemon/opd_sample_files.c: use it
+
+2003-05-10  John Levon  <levon@movementarian.org>
+
+	* Makefile.am:
+	* HACKING:
+	* libop++/:
+	* pp/Makefile.am:
+	* libpp/Makefile.am:
+	* libpp/op_header.h:
+	* libpp/op_header.cpp: remove libop++ after
+	moving op_header into libpp
+
+2003-05-10  John Levon  <levon@movementarian.org>
+
+	* libop++/op_header.cpp: make CPU info take up
+	one line not two
+
+2003-05-10  John Levon  <levon@movementarian.org>
+
+	* libop++/Makefile.am:
+	* libop++/op_header.cpp:
+	* libop++/op_print_event.h:
+	* libop++/op_print_event.cpp: remove op_print_event
+	files, making it a function local to op_header.cpp
+
+2003-05-10  John Levon  <levon@movementarian.org>
+
+	* libop++/op_header.h:
+	* libop++/op_header.cpp: make output_header() be
+	an operator<<
+	
+	* pp/opannotate.cpp:
+	* pp/opreport.cpp: changes from the above
+
+	* libpp/profile.h: small cleanup
+
+2003-05-10  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/string_manip.h:
+	* libutil++/string_manip.cpp: replace format_percent() by
+	  format_double()
+
+	* libpp/format_output.cpp:
+	* pp/opannotate.cpp:
+	* pp/opreport.cpp: use format_double()
 
 2003-05-09  John Levon  <levon@movementarian.org>
 
-	* m4/Makefile.am:
-	* m4/compileroption.m4: add a generalised compiler option
-	tester
+	* libpp/opp_symbol.h: app name, image name should
+	be in symbol not in file_location
 
-	* configure.in: use it, add -fno-common
+	* libpp/format_output.cpp:
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp:
+	* libpp/symbol_container.cpp:
+	* libpp/symbol_functors.cpp: changes from above
 
 2003-05-09  John Levon  <levon@movementarian.org>
+
+	* libpp/format_output.h:
+	* libpp/format_output.cpp: vma_64 doesn't need
+	to be in field_datum. make one output() private
+
+2003-05-09  John Levon  <levon@movementarian.org>
+
+	* libpp/format_output.h:
+	* libpp/format_output.cpp: pass a symbol ref
+	not name down into the formatters
+
+2003-05-09  John Levon  <levon@movementarian.org>
+
+	* libutil++/string_manip.h:
+	* libutil++/string_manip.cpp: sample_filename() is unused
+
+2003-05-09  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop++/op_header.h:
+	* libop++/op_header.cpp: read_header() new
+	* libop++/Makefile.in: we depend on libdb
+
+	* pp/opannotate.cpp:
+	* pp/opreport.cpp: better way to get sample file header
+
+2003-05-09  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/format_output.cpp: remove redudant map formater
+	* pp/opannotate.cpp: spurious cout
+
+2003-05-08  John Levon  <levon@movementarian.org>
+
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp:
+	* pp/opreport_options.h: clean up cout stuff as
+	suggested by Phil
+
+2003-05-08  John Levon  <levon@movementarian.org>
+
+	* libpp/profile_spec.h:
+	* libpp/profile_spec.c: rename the set_p variables,
+	remove pointless is_empty() function
+
+	* pp/opreport.cpp: split collation and output into
+	two separate functions. Rename the temporary structures
+	so it's hopefully a bit more obvious what's happening.
+	Add sourcedocs.
+
+2003-05-08  John Levon  <levon@movementarian.org>
+
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp: add options::cout,
+	  --output-file option
+
+	* pp/opreport.cpp: use options::cout
+
+2003-05-08  John Levon  <levon@movementarian.org>
+
+	* pp/format_output.cpp: fix cumulative column widths
+
+2003-05-08  John Levon  <levon@movementarian.org>
+
+	* opreport_options.h: add accumulated
+
+	* opreport.cpp: handle --accumulated
+
+2003-05-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/symbol_container.cpp: minor tidy
+
+	* libpp/profile.h:
+	* libpp/profile.cpp: allow to cumulate sample file
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp: remove free function add_samples()
+
+	* pp/annotate.cpp:
+	* pp/opgprof.cpp:
+	* pp/opreport.cpp: when possible cumulate samples into a profile_t
+	  first before cumulating them in a profile_container
+
+2003-05-07  John Levon  <levon@movementarian.org>
+
+	* pp/opannotate.cpp: small cleanup
+
+2003-05-07  John Levon  <levon@movementarian.org>
+
+	* pp/opreport_options.cpp: remove unneeded include
+
+2003-05-07  John Levon  <levon@movementarian.org>
+
+	* libpp/Makefile.am:
+	* libpp/parse_cmdline.h:
+	* libpp/parse_cmdline.cpp: rename to ...
+
+	* libpp/profile_spec.h:
+	* libpp/profile_spec.cpp: this. Make handle_nonoptions()
+	be a static factory create() method instead. Make
+	select_sample_filenames() be a member generate_file_list()
+	instead. Concomitant cleanups.
+
+	* libpp/filename_spec.h:
+	* pp/opannotate_options.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport_options.cpp: changes from above
+
+2003-05-07  John Levon  <levon@movementarian.org>
+
+	* libpp/profile.cpp: fix stupid error in last commit
+
+2003-05-07  John Levon  <levon@movementarian.org>
+
+	* libpp/profile.h:
+	* libpp/profile.cpp: remove sample_filename member,
+	bogus old spurious check, set_start_offset().
+
+	* libpp/profile_container.cpp:
+	* pp/opannotate.cpp:
+	* pp/opreport.cpp: changes from above
+
+2003-05-07  John Levon  <levon@movementarian.org>
+
+	* libpp/derive_files.h:
+	* libpp/derive_files.cpp: rename files as ...
+
+	* libpp/locate_images.h:
+	* libpp/locate_images.cpp: this.
+
+	* libpp/Makefile.am:
+	* libpp/partition_files.h:
+	* pp/common_option.h:
+	* pp/opgprof.cpp:
+	* pp/opgprof_options.h:
+	* pp/opreport_options.h: changes from above
+
+2003-05-07  John Levon  <levon@movementarian.org>
+
+	* libpp/derive_files.h:
+	* libpp/derive_files.cpp: rework into extra_images
+	class
+
+	* libpp/partition_files.h:
+	* libpp/partition_files.cpp:
+	* pp/common_option.h:
+	* pp/common_option.cpp:
+	* pp/opannotate.cpp:
+	* pp/opgprof.cpp:
+	* pp/opreport.cpp: use the above
+
+2003-05-07  John Levon  <levon@movementarian.org>
+
+	* libpp/Makefile.am:
+	* session.h:
+	* session.cpp: remove session.{h,cpp}
+
+2003-05-07  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/oprofpp.cpp pp/oprofpp_options.cpp pp/oprofpp_options.h:
+	* pp/op_time.cpp pp/op_time_options.cpp pp/op_time_options.h:
+	* pp/op_to_source.cpp pp/op_to_source_options.cpp
+	* pp/op_to_source_options.h pp/op_merge.cpp: removed files
+
+	* pp/Makefile.am: update
+
+2003-05-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opgprof.cpp: infamous typo
+
+	* pp/opannotate.cpp: output sample file header
+
+
+2003-05-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpop++/op_mangling.h:
+	* libpop++/op_mangling.cpp: removed file
+	* libop++/op_header.h:
+	* libop++/op_header.cpp: new file, misc function acting on sample
+	  file header stolen from libpp/profile.(cpp|h)
+	* libop++/op_print_event.h: typo
+	* libop++/op_print_event.cpp: save/restore ostream state
+	* libop++/Makefile.am: update
+	
+	* libop/op_sample_file.h: remove dead #define OPD_MANGLE_CHAR
+
+	* libpp/profile.h:
+	* libpp/profile.cpp: move some member function to free function in
+	  libop++/op_header.(cpp|h)
+	* libpp/profile_container.cpp: minor call change
+
+	* libpp/Makefile.am: op_merge can't be compiled currently inhibit build
+
+	* libpp/opreport.cpp: output sample file header
+
+2003-05-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/path_filter.h: default param to empty string not "*"
+
+	* libpp/symbol_functors.h: remove dead code
+
+	* pp/opgprof.cpp: off by one in histsize calculation
+
+2003-05-04  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil/op_file.h:
+	* libutil/op_file.c: sanitize create_path()
+
+	* libutil++/path_filter.h: default ctor match all
+
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp:
+	* libpp/sample_container.h:
+	* libpp/sample_container.cpp:
+	* libpp/symbol_container.h:
+	* libpp/symbol_container.cpp: extend api to allow selecting symbol
+	  restricted to one appication, ditto for retrieving samples
+
+	* pp/opannotate_options.h:
+	* pp/opannotate_options.cpp:
+	* pp/opannotate.cpp: implement
+
+	* pp/opgprof_options.h:
+	* pp/opgprof_options.cpp:
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp: comment fix
+
+	* pp/opreport.cpp: update to match new profile_container api
+
+2003-05-03  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opreport.cpp: don't show dependent file if !--include-dependent
+
+2003-05-02  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/partition_files.h:
+	* libpp/partition_files.cpp: sort_by_image_name() new return a list
+	  of sample filename sorted by bfd image name.
+	* libpp/profile_container.cpp: add_samples() don't build op_bfd object
+	  used here but pass it as parameters
+
+	* pp/opgprof.cpp:
+	* pp/opreport.cpp: use the above change to avoid opening multiple time
+	  a bfd object.
+
+	* pp/opannotate_options.cpp: add --(include|exclude)-symbols
+
+	* libpp/parse_cmdline.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport.cpp: make a distinction in error message between no
+	  sample available and sample file available but no one was selected
+
+2003-05-01  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opannotate_options.h:
+	* pp/opannotate_options.cpp:
+	* pp/opdiff.cpp:
+	* pp/opdiff_options.h:
+	* pp/opdiff_options.cpp:
+	* pp/opgprof.cpp:
+	* pp/opgprof_options.h:
+	* pp/opgprof_options.cpp:
+	* pp/opreport.cpp:
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp: move common options handling ...
+	* pp/common_option.h:
+	* pp/common_option.cpp: here
+
+	* pp/opannotate.cpp: add options
+
+	* libpp/parse_cmdline.cpp: #include <iterator> ...
+
+2003-05-01  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/counter_util.h:
+	* libpp/counter_util.cpp: remove these files from cvs
+
+	* libpp/derive_files.h:
+	* libpp/derive_files.cpp: remove dead code derive_files() + typo
+
+	* libpp/parse_cmdline.cpp: select_sample_filename() throw if empty
+	  session after filtering
+
+	* pp/common_option.cpp: catch invalid_argument, return failure on
+	  catched excepton
+
+2003-05-01  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/op_bfd.cpp: remove _init from excluded symbol
+	* libpp/profile_container.cpp: tidy
+
+	* pp/opgprof.cpp: fix capping samples
+
+2003-04-30  John Levon  <levon@movementarian.org>
+
+	* pp/opgprof.cpp:
+	* pp/opgprof_options.cpp:
+	* libpp/profile.cpp: tiny cleanups, fix compile
+
+2003-04-30  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libdb/db_stat.c: minor improvment to stat, usefull to track missed
+	  sample by our tools.
+
+	* pp/op_report.cpp: move matching_sample_filename() to ...
+	* libpp/parse_cmdline.h:
+	* libpp/parse_cmdline.cpp: here renamed select_sample_filename()
+
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp: expose begin() / end() from
+	 sample_container
+
+	* pp/common_option.h:
+	* pp/common_option.cpp: move option which was not really common to ..
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp: here
+	* pp/opannotate_options.h:
+	* pp/opannotate_options.cpp: and here
+
+	* pp/operport.cpp:
+	* pp/opannotate.cpp: better to return a value from main() ...
+
+	* pp/opgprof_options.h:
+	* pp/opgprof_options.cpp:
+	* pp/opgprof.cpp: implement opgprof
+
+2003-04-29  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/parse_cmdline.h:
+	* libpp/parse_cmdline.cpp: handle opreport /lib/libc-2.2.5.so, now
+	  non tag, non option argument match either an image name or lib name
+
+2003-04-29  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_bfd.cpp: remove "static " inside anon namespace
+
+2003-04-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/format_output.h:
+	* libpp/format_output.cpp: need header tweaking
+
+	* pp/opannotate.cpp:
+	* pp/opgprof.cpp: minor tidy
+
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp:
+	* pp/opreport.cpp: handle -no-header and --image-path
+
+2003-04-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/glob_filter.cpp:
+	* libutil++/path_filter.cpp:
+	* libutil++/string_filter.cpp: #include <algorithm>
+
+2003-04-28  John Levon  <levon@movementarian.org>
+
+	* libutil++/string_filter.cpp:
+	* libutil++/string_filter.h:
+	* libutil++/glob_filter.h:
+	* libutil++/glob_filter.cpp:
+	* libutil++/path_filter.h:
+	* libutil++/path_filter.cpp: use std::find[_if],
+	share some code
+
+2003-04-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/op_bfd.cpp: replace a loop by a std::copy()
+
+2003-04-28  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: cleanup of last fix
+
+2003-04-28  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: make symbol filtering
+	happen *after* adding of artificial symbol
+
+2003-04-28  John Levon  <levon@movementarian.org>
+
+	* libutil++/string_filter.cpp:
+	* libutil++/glob_filter.cpp:
+	* libutil++/path_filter.cpp: match as true if
+	include_list is empty and not excluded
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: use string_filter to
+	filter symbols
+
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp:
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp:
+	* pp/opreport.cpp: changes from using string_filter
+
+2003-04-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opreport.cpp: finish to remove use of split_sample_filename
+
+2003-04-28  John Levon  <levon@movementarian.org>
+
+	* libutil++/filename_match.h:
+	* libutil++/filename_match.cpp: replace with ...
+
+	* libutil++/Makefile.am:
+	* libutil++/string_filter.h:
+	* libutil++/string_filter.cpp:
+	* libutil++/glob_filter.h:
+	* libutil++/glob_filter.cpp:
+	* libutil++/path_filter.h:
+	* libutil++/path_filter.cpp: .. split up variants
+	of the filters
+
+	* libpp/parse_cmdline.cpp: use glob_filter
+
+	* pp/op_to_source.cpp: use path_filter
+
+2003-04-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/partition_files.h:
+	* libpp/partition_files.cpp:
+	* libpp/split_sample_filename.h:
+	* libpp/split_sample_filename.cpp:
+	* pp/opreport.cpp: replace some use of std::string sample_filename
+	  by a split_sample_filename struct
+
+2003-04-28  John Levon  <levon@movementarian.org>
+
+	* libutil++/filename_match.h:
+	* libutil++/filename_match.cpp: use file-scope
+	not private static member function
+
+2003-04-27  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/format_output.h:
+	* libpp/format_output.cpp: remove all string based output format flag
+
+	* libpp/format_output.cpp: move options::demangle handling ...
+	* libregx/demangle_symbol.cpp: here
+
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp:
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp:
+	* pp/opreport.cpp: handle --include-symbols
+
+2003-04-27  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp:
+	* pp/opreport.cpp: handle --threshold, remove --ignore-symbols
+
+2003-04-27  John Levon  <levon@movementarian.org>
+
+	* libpp/<various>: minor spacing etc.
+
+2003-04-27  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/outsymbflag.h: remove osf_short_xxx variant
+	* libpp/format_output.h:
+	* libpp/format_output.cpp: replace osf_short_xxx by a boolean
+	* libpp/profile_container.cpp: update according
+
+	* pp/opreport_options.h: export short_filename option
+	* pp/opreport.cpp: use short_filename
+
+2003-04-27  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/symbol_functors.h: add less_symbol predicate
+	* libpp/symbol_functors.cpp: new file, less_symbol implementation
+	* libpp/Makefile.am: symbol_functors.cpp
+
+	* libpp/symbol_container.h:
+	* libpp/symbol_container.cpp: use a node based container for symbols
+	  ensuring validity of symbol pointer over a symbol_container life time
+	* libpp/sample_container.h:
+	* libpp/sample_container.cpp: ditto as above for samples
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp: use this new api to merge symbols
+	  and sample.
+
+	* libpp/format_output.h:
+	* libpp/format_output.cpp: use new api to iterate over sample by symbol
+
+	* pp/opreport.cpp: detailed output
+	
+
+2003-04-27  John Levon  <levon@movementarian.org>
+
+	* pp/opreport.cpp: make opreport -l put largest results
+	at the top like opreport does
+
+2003-04-26  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/profile_container.h: comment
+
+	* pp/opreport_options.h: more options export
+	* pp/opreport.cpp: implement -l. Doen't works correctly: --merge=lib
+
+2003-04-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opreport_options.h: export global_percent
+	* pp/opreport.cpp: finish to implement op_time like behavior. Remains
+	  to implement op_time -l
+
+2003-04-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/partition_files.cpp: fix a crash when profile spec is empty
+
+	* pp/opreport_options.cpp: bailout if no samples files are found
+
+2003-04-25  John Levon  <levon@movementarian.org>
+
+	* pp/opreport_options.cpp: --hide-dependent should have 'h' as
+	short form. Add a FIXME for a crash
+
+2003-04-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/partition_files.cpp: thinko in sample filename partition
+
+	* pp/opreport_options.h: export more options
+	* pp/opreport_options.cpp: add --hide-dependent, change --merge to not
+	  default to all
+	* pp/opreport.cpp: handle --hide-dependent --include-dependent and
+	  --merge=lib. Code is ugly, tidy incoming
+
+2003-04-25  John Levon  <levon@movementarian.org>
+
+	* libpp/format_output.cpp:
+	* libpp/format_output.h:
+	* libpp/outsymbflag.h: "immutable" not "imutable"
+
+	* libpp/partition_files.cpp: include <iterator> to compile
+
+2003-04-24  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/partition_files.h: typo
+	* libpp/profile.cpp: difficult to get right result with a random value
+	  in profile::start_offset
+
+	* pp/opreport_options.h: export options::reverse_sort
+	* pp/opreport_options.cpp: bailout if we get multiple counter
+
+	* pp/opreport.cpp: raw output result for application (not symbol)
+	  output.
+
+2003-04-24  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/filename_spec.h:
+	* libpp/filename_spec.cpp:
+	* libpp/parse_cmdline.h:
+	* libpp/parse_cmdline.cpp:
+	* libpp/split_sample_filename.h:
+	* libpp/split_sample_filename.cpp: s/unit_mask/unitmask
+
+	* libpp/merge_spec.cpp:
+	* libpp/merge_spec.h: rename to
+	* libpp/partition_files.h:
+	* libpp/partition_files.cpp: here. Add and merge_option.
+	  partition_files is now a class.
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp:
+	* pp/opreport.cpp: update according to the above. Add a roughly support
+	  to count samples for plain op_time opreport like
+
+2003-04-24  John Levon  <levon@movementarian.org>
+
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp: chop off the _t of the class name
+
+	* libpp/format_output.cpp:
+	* libpp/format_output.h:
+	* libpp/symbol_container.cpp:
+	* libpp/symbol_container.h:
+	* pp/op_time.cpp:
+	* pp/op_to_source.cpp:
+	* pp/oprofpp.cpp: changes from the above
+
+2003-04-24  John Levon  <levon@movementarian.org>
+
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp: pedantry for sample_container
+	indices.
+
+	* libpp/sample_container.h:
+	* libpp/sample_container.cpp: various cleanups and docs. Add
+	and use size_type.
+
+	* libpp/symbol_container.h:
+	* libpp/symbol_container.cpp: renamings. Add and use size_type.
+
+2003-04-24  John Levon  <levon@movementarian.org>
+
+	* libpp/symbol_container.h:
+	* libpp/symbol_container.cpp: remove unused operator[].
+	Add some docs. Some small cleanups
+
+2003-04-24  John Levon  <levon@movementarian.org>
+
+	* libpp/symbol_container_imp.h:
+	* libpp/symbol_container_imp.cpp:
+	* libpp/sample_container_imp.h:
+	* libpp/sample_container_imp.cpp: These classes weren't using
+	the pimpl idiom, so the _imp was spurious. Remove that as well
+	as removing the _t from the names, and rename to ...
+
+	* libpp/symbol_container.h:
+	* libpp/symbol_container.cpp:
+	* libpp/sample_container.h:
+	* libpp/sample_container.cpp: ...files moved from the above with
+	new names.
+
+2003-04-23  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/generic_spec.h: minor formating tweak
+
+	* libpp/parse_cmdline.h:
+	* libpp/parse_cmdline.cpp: handle_non_options(): return parse_cmdline
+	  by value
+
+	* libpp/merge_spec.h:
+	* libpp/merge_spec.cpp: new files: partition list of samples filename
+	  according to merge options.
+	* libpp/Makefile.am: update
+
+	* pp/opreport_options.cpp: more options handling, use partition_files()
+
+2003-04-22  John Levon  <levon@movementarian.org>
+
+	* pp/opreport_options.cpp: compile fix
+
+2003-04-21  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/filename_match.h:
+	* libutil++/filename_match.cpp: add strict_match()
+
+	* libutil++/generic_spec.cpp: generic_spec<string>::set() was not
+	  setting is_all member leading to bad matching
+
+	* libpp/filename_spec.cpp: minor tidy
+
+	* libpp/parse_cmdline.h:
+	* libpp/parse_cmdline.cpp: fix match()
+
+	* libpp/split_sample_filename.h:
+	* libpp/split_sample_filename.cpp: handle sample file base directory
+
+	* libop++/op_print_event.h:
+	* libop++/op_print_event.cpp:
+	* libpp/format_output.h:
+	* libpp/format_output.cpp:
+	* libpp/opp_symbol.h:
+	* libpp/profile.h:
+	* libpp/profile.cpp:
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp:
+	* libpp/sample_container_imp.h:
+	* libpp/sample_container_imp.cpp:
+	* libpp/symbol_container_imp.h:
+	* libpp/symbol_container_imp.cpp:
+	* libpp/symbol_functors.h: remove all use of counter number
+
+	* libpp/counter_array.h:
+	* libpp/counter_array.cpp:
+	* libpp/counter_profile.h:
+	* libpp/counter_profile.cpp: no longer used, move some bits to
+	  libpp/profile.(h|cpp) and remove these files.
+	* libpp/Makefile.am: update according
+
+	* pp/op_merge.cpp: use profile_t not counter_profile_t
+	* pp/makefile.am: correct lib for op_merge
+
+	* pp/opreport_options.cpp: more options handling
+
+2003-04-19  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libopt++/popt_options.cpp: don't show help_str with --usage
+	* libpp/format_output.cpp: typo
+	* libutil/op_file.c: create dir with 755 not 700
+	* pp/common_option.cpp: source formating
+
+	* libpp/parse_cmdline.h:
+	* libpp/parse_cmdline.cpp: handle_non_options() new
+	* pp/opreport_options.cpp: handle more options
+
+	* pp/opsummary.cpp:
+	* pp/opsummary_options.h:
+	* pp/opsummary_options.cpp: remove, opreport should do its job.
+	* pp/Makefile.am: update
+
+2003-04-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libopt++/popt_options.cpp: allow "no-" prefix to long option name
+	  implicitely specify the value must be negated
+	* libopt++/popt_options.cpp: update doxygen documentation
+
+	* libpp/format_output.h: missing #include
+	* libpp/format_output.cpp: space + minor change
+
+	* pp/opannotate_options.h:
+	* pp/opannotate_options.cpp:
+	* pp/opdiff_options.h:
+	* pp/opdiff_options.cpp:
+	* pp/opgprof_options.h:
+	* pp/opgprof_options.cpp:
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp:
+	* pp/opsummary_options.h:
+	* pp/opsummary_options.cpp: new skeleton file
+
+	* pp/opannotate.cpp:
+	* pp/opdiff.cpp:
+	* pp/opgprof.cpp:
+	* pp/opreport.cpp:
+	* pp/opsummary.cpp: update to handle options
+
+	* pp/common_option.cpp: follow more closely pp_interface
+
+	* pp/opsummary_options.cpp: start to handle opsummary option
+
+	* pp/Makefile.am: update
+
+2003-04-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/format_output.h:
+	* libpp/format_output.cpp:
+	* libpp/outsymbflag.h:
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp: osf_header/osf_details are no longer
+	  flags but separate boolean.
+
+2003-04-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_kernel.c:
+	* daemon/opd_kernel.c: remove leading '/' on module name fixing 2.5
+	 module not under {kern} and similar case for "no-vmlinux" with 2.4/2.5
+
+	* libutil/op_file.c: tiny tidy
+
+2003-04-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_mangle.c: app_name and image was reversed, {dep} was missing
+
+2003-04-17  John Levon  <levon@movementarian.org>
+
+	* libpp/filename_spec.h:
+	* libutil++/comma_list.h: compile fixes
+
+2003-04-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/opcontrol: better --reset handling
+
+2003-04-16  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae works, daemon compiles but not tested.
+
+	* libop/op_config.h:
+	* libpp/op_session.h:
+	* libpp/session.cpp:
+	* pp/op_merge: handle new path to samples files.
+
+	* libutil++/file_manip.h:
+	* libutil++/file_manip.cpp: move create_dir(), create_path() ...
+	* libutil/op_file.h:
+	* libutil/op_file.c: here. Remove op_move_regular_file()
+
+	* daemon/opd_image.c:
+	* daemon/opd_sample_files.h:
+	* daemon/opd_sample_files.c:
+	* dae/opd_image.c:
+	* dae/opd_sample_files.h:
+	* dae/opd_sample_files.c: use new filename scheme
 
 	* daemon/oprofiled.c:
-	* dae/oprofiled.c: remove duplicate declaration found
-	via -fno-common
+	* dae/oprofiled.c: remove samples files backup stuff
 
-2003-05-04  John Levon  <levon@movementarian.org>
+	* libop/op_mangle.h:
+	* libop/op_mangle.c: ugly modification to handle new samples filename
 
-	* doc/oprofile.xml: fix validation errors from xmllint --valid
+	* utils/opcontrol: handle new samples files path, --save and --reset
+	  are working too.
+
+	* gui/oprof_start_util.cpp: use new create_path() API
+
+2003-04-16  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/common_option.cpp:
+	* pp/common_option.h:
+	* libregex/demangle_symbol.cpp: rename demangle_and_shrink to
+	  smart_demangle
+
+2003-04-16  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* starting branch pp-interface-branch
+
+	* Makefile.am:
+	* configure.in: handle new sub dir libpp
+
+	* libutil++/comma_list.h: new file handling of comma separated list of
+	  items.
+	* libutil++/generic_spec.cpp:
+	* libutil++/generic_spec.h: new file
+	* libutil++/Makefile.am: handle new file
+
+	* pp/counter_array.*:
+	* pp/counter_profile.*:
+	* pp/counter_util.*:
+	* pp/derive_files.*:
+	* pp/format_output.*:
+	* pp/opp_symbol.h:
+	* pp/outsymbflag.h:
+	* pp/profile.*:
+	* pp/profile_container.*:
+	* pp/sample_container_imp.*:
+	* pp/session.*:
+	* pp/symbol_container_imp.*:
+	* pp/symbol_functors.*: move to
+
+	* libpp/*: here
+	* libpp/filename_spec.cpp:
+	* libpp/filename_spec.h: new file handling of pp sample filename
+	* libpp/parse_cmdline.cpp:
+	* libpp/parse_cmdline.h: new file, handling of command line tag:value
+	* libpp/Makefile.am: new file build libpp.a
+
+	* pp/common_option.h:
+	* pp/common_option.cpp: common option to pp tools. Implement common
+	  entry point to pp tools.
+	* pp/opannotate.cpp:
+	* pp/opdiff.cpp:
+	* pp/opgprof.cpp:
+	* pp/opreport.cpp:
+	* pp/opsummary.cpp: skeleton file for all pp tools.
+	* pp/Makefile.am: remove old pp tools, add the news.
 
 2003-04-28  Alex Tsariounov  <alext@fc.hp.com>
 

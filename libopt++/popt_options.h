@@ -30,6 +30,15 @@
  * any left over command line arguments in the add_params vector. Note
  * that the template parameter denotes the type of the option argument.
  *
+ * When the template parameter type is bool, option starting with "no-" prefix
+ * are implicitely considered as negated before writing the associated bool so
+ * this will work as expected:
+ * \code
+ * bool demangle;
+ * popt::option(demangle, "demangle", 'd', "demangle C++ symbols"),
+ * popt::option(demangle, "no-demangle", '\0', "don't demangle C++ symbols"),
+ * \endcode
+ *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
  *
@@ -49,22 +58,6 @@ namespace popt {
  * parse_options - parse command line options
  * @param argc like the parameter of main()
  * @param argv like the parameter of main()
- * @param additional_param an additional option is stored here
- * @param additional_help if user invoke --help this string is displayed
- *  after the automatic help displayed by popt lib
- *
- * Parse the given command line with the previous
- * options created. If more than one normal argument
- * is given, quit with a usage message.
- */
-void parse_options(int argc, char const ** argv,
-		   std::string & additional_param,
-		   std::string const & additional_help = std::string());
-
-/**
- * parse_options - parse command line options
- * @param argc like the parameter of main()
- * @param argv like the parameter of main()
  * @param additional_params additional options are stored here
  * @param additional_help if user invoke --help this string is displayed
  *  after the automatic help displayed by popt lib
@@ -75,8 +68,8 @@ void parse_options(int argc, char const ** argv,
  * vector.
  */
 void parse_options(int argc, char const ** argv,
-		   std::vector<std::string> & additional_params,
-		   std::string const & additional_help = std::string());
+                   std::vector<std::string> & additional_params,
+                   std::string const & additional_help = std::string());
 
 class option_base;
 
@@ -88,39 +81,45 @@ class option_base;
  */
 class option {
 public:
-	/** we don't define a generic implementation of this ctor, we
-	 * only declare/define specialization for the supported option type
+	/**
+	 * Templatized constructor for an option. This adds the option
+	 * to the option list on construction. This is specialized for
+	 * each recognised option value type below.
 	 */
 	template <class T> option(T &, char const * option_name,
-				  char short_name, char const * help_str,
-				  char const * arg_help_str);
+	                          char short_name, char const * help_str,
+	                          char const * arg_help_str);
 
 	/**
-	 * boolen operation don't get the same set of parameters as other
-	 * option. Due to a bug in gcc 2.95 we can't use a defaut parameter
+	 * boolean operations don't get the same set of parameters as other
+	 * option, as there is no argument to give help for.
+	 * Due to a bug in gcc 2.95 we can't use a default parameter
 	 * in the templatized ctor above because 2.95 is unable to match
-	 * the right ctor. So on we add a non templatized ctor with an exact
+	 * the right ctor. So on we add a non-templatized ctor with an exact
 	 * match for boolean option.
 	 */
-	option::option(bool&, char const * option_name,
-		       char short_name, char const * help_str);
+	option::option(bool &, char const * option_name,
+	               char short_name, char const * help_str);
+
 	~option();
+
 private:
 	option_base * the_option;
 };
 
+
 /**
- *  The supported option type, boolean option are matched by a non templatized
- * ctor.
+ * The supported option type, boolean option are matched by a non templatized
+ * ctor above.
  */
 template <> option::option(int &, char const * option_name, char short_name,
-			   char const * help_str, char const * arg_help_str);
+                           char const * help_str, char const * arg_help_str);
 template <> option::option(std::string &, char const * option_name,
-			   char short_name, char const * help_str,
-			   char const * arg_help_str);
+                           char short_name, char const * help_str,
+                           char const * arg_help_str);
 template <> option::option(std::vector<std::string> &,
-			   char const * option_name, char short_name,
-			   char const * help_str, char const * arg_help_str);
+                           char const * option_name, char short_name,
+                           char const * help_str, char const * arg_help_str);
 
 }; // namespace popt
 

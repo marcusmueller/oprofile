@@ -16,6 +16,7 @@
 struct odb_hash_stat_t {
 	odb_node_nr_t node_nr;
 	odb_node_nr_t used_node_nr;
+	odb_value_t   total_count;
 	odb_index_t   hash_table_size;
 	odb_node_nr_t max_list_length;		/**< worst case   */
 	double       average_list_length;	/**< average case */
@@ -46,6 +47,7 @@ odb_hash_stat_t * odb_hash_stat(samples_odb_t const * hash)
 		size_t cur_length = 0;
 		size_t index = hash->hash_base[pos];
 		while (index) {
+			result->total_count += hash->node_base[index].value;
 			index = hash->node_base[index].next;
 			++cur_length;
 		}
@@ -70,6 +72,7 @@ void odb_hash_display_stat(odb_hash_stat_t const * stat)
 {
 	printf("total node number:   %d\n", stat->node_nr);
 	printf("total used node:     %d\n", stat->used_node_nr);
+	printf("total count:         %d\n", stat->total_count);
 	printf("hash table size:     %d\n", stat->hash_table_size);
 	printf("greater list length: %d\n", stat->max_list_length);
 	printf("average non empty list length: %2.4f\n", stat->average_list_length);

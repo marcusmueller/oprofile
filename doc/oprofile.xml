@@ -316,11 +316,11 @@ These profile files cover shared libraries, applications, the kernel (vmlinux), 
 You can get summaries of this data in a number of ways at any time. To get a summary of
 data across the entire system for all of these profiles, you can do :
 </para>
-<screen>op_time</screen>
+<screen>opreport</screen>
 <para>
 Or to get a more detailed summary, for a particular image, you can do something like :
 </para>
-<screen>oprofpp -l /boot/vmlinux-`uname -r`</screen>
+<screen>opreport -l /boot/vmlinux-`uname -r`</screen>
 <para>
 There are also a number of other ways of presenting the data, as described later in this manual.
 Note that OProfile will choose a default profiling setup for you. However, there are a number
@@ -351,36 +351,27 @@ This section gives a brief description of the available OProfile utilities and t
 </varlistentry>
 
 <varlistentry>
-	<term><filename>oprofpp</filename></term>
+	<term><filename>opreport</filename></term>
 	<listitem><para>
 		This is the main tool for retrieving useful profile data, described in
-		<xref linkend="post-profiler" />.
+		<xref linkend="opreport" />.
 	</para></listitem>
 </varlistentry>
 
 <varlistentry>
-	<term><filename>op_time</filename></term>
-	<listitem><para>
-		This utility is useful for examining the relative profile values for
-		all images on the system to determine the applications with the largest
-		impact on system performance, described in <xref linkend="op-time" />.
-	</para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><filename>op_to_source</filename></term>
+	<term><filename>opannotate</filename></term>
 	<listitem><para>
 		This utility can be used to produce annotated source, assembly or mixed source/assembly.
 		Source level annotation is available only if the application was compiled with 
-		debugging symbols. See <xref linkend="op-to-source" />.
+		debugging symbols. See <xref linkend="opannotate" />.
 	</para></listitem>
 </varlistentry>
 
 <varlistentry>
-	<term><filename>op_merge</filename></term>
+	<term><filename>opgprof</filename></term>
 	<listitem><para>
-		This utility is useful to merge samples files which belongs to the same application
-		especially when you profile with separating samples for shared libs. See <xref linkend="op-merge" />.
+		This utility can output gprof-style data files for a binary, for use with
+		<command>gprof -p</command>. See <xref linkend="opgprof" />.
 	</para></listitem>
 </varlistentry>
 
@@ -521,7 +512,7 @@ The <command>opcontrol</command> script provides the following actions :
 <para>
 There are a number of possible settings, of which, only
 <option>--vmlinux</option> (or <option>--no-vmlinux</option>)
-is required. These settings are stored in <filename>~/.oprofile/daemon</filename>.
+is required. These settings are stored in <filename>~/.oprofile/daemonrc</filename>.
 </para>
 <variablelist>
 	<varlistentry>
@@ -607,8 +598,6 @@ is required. These settings are stored in <filename>~/.oprofile/daemon</filename
 		On 2.2/2.4 only kernel threads already started when profiling begins are correctly profiled;
 		newly started kernel thread samples are credited to the vmlinux (kernel) profile.
 		On 2.5 there is no kernel thread profiling, all these samples are credited to the vmlinux profile.
-		The <option>-k</option> option to <command>op_time</command> or <command>oprofpp</command>
-		will show these per-application profiles.
 		</para>
 		</listitem>
 	</varlistentry>
@@ -622,8 +611,8 @@ is required. These settings are stored in <filename>~/.oprofile/daemon</filename
 		<term><option>--no-vmlinux</option></term>
 		<listitem><para>
 		Use this when you don't have a kernel vmlinux file, and you don't want
-		to profile the kernel.
-		Note that overall profiling time through op_time always counts kernel samples.
+		to profile the kernel. This still counts the total number of kernel samples,
+		but can't give symbol-based results for the kernel or any modules.
 		</para></listitem>
 	</varlistentry>
 </variablelist>
@@ -682,6 +671,7 @@ it was running inside the kernel driver, and its use of shared libraries.
 # opcontrol --separate=kernel --vmlinux=/boot/2.5.66/vmlinux
 # opcontrol --start
 # my_favourite_stress_test --run
+<!-- FIXME -->
 # oprofpp -kl -p /lib/modules/2.5.66/kernel /usr/local/bin/oprofiled
 </screen>
 </sect3>
@@ -700,10 +690,10 @@ command <command>opcontrol --save</command> to do this. For example :
 <para>
 will create a sub-directory in <filename>/var/lib/oprofile/samples</filename> containing the samples
 up to that point (the current session's sample files are moved into this
-directory). You can then pass this name as, for example, a parameter to
-<command>op_time</command> to only get data up to the point you named the
+directory). You can then pass this session name as a parameter to the post-profiling
+analysis tools, to only get data up to the point you named the
 session. If you do not want to save a session, you can do
-<command>rm -rf /var/lib/oprofile/samples/blah</command> or, for the
+<command>rm -rf /var/lib/oprofile/samples/sessionname</command> or, for the
 current session, <command>opcontrol --reset</command>.
 </para>
 </sect3>
@@ -960,330 +950,79 @@ the profiler. This can happen on lightly-loaded machines. Remember you can force
 </para>
 <para><command>opcontrol --dump</command></para>
 <para>Remember to do this before complaining there is no profiling data !
-Now that we've got some data, it has to be processed. That's the job of <command>oprofpp</command>,
-<command>op_time</command>, or <command>op_to_source</command>.
-These work on sample files in the <filename>/var/lib/oprofile/samples/</filename> directory,
-along with the binary files being profiled, to produce human-readable data. Note that if the binary file changes
-after the sample file was created, you won't be able to get useful data out. This situation is detected for you.
-Several instances of a binary are merged into one sample file. By default, all samples from a dynamically linked library
-are merged into one sample file as well.
-</para>
-<para>
-A different scenario happen when re-starting profiling with different parameters, as the old sample files from previous sessions don't
-get deleted (allowing you to build profiles over many distinct profiling sessions).
-If the last session is determined to be out of date due to the use of different profiling parameters, all the samples files are
-backed up in a sub-directory named session-#nr.
-If during profiling the daemon detects a change to a binary image and a sample file belonging to this binary exists, the sample file is silently deleted.
-So if during profiling, you change a binary, it is your responsibility to save the binary image <emphasis>and</emphasis> the sample files, if 
-you need it.
+Now that we've got some data, it has to be processed. That's the job of <command>opreport</command>,
+<command>opannotate</command>, or <command>opgprof</command>.
 </para>
 
-<sect1 id="post-profiler">
-<title><command>oprofpp</command> usage</title>
+<sect1 id="opreport">
+<title>Image summaries and symbol summaries</title>
 <para>
-The <command>oprofpp</command> utility can be used in three major modes; list symbol mode, detailed symbol mode,
-or <command>gprof</command> mode.
-The first gives sorted histogram output of sample counts against functions as shown in the walkthrough. The second
-can show individual sample counts against instructions inside a function, useful for detailed profiling, whilst the
-third mode is handy if you're used to <command>gprof</command> style output. Note that only flat <command>gprof</command>
-profiles are supported, however.
-</para>
-<para>
-Some interesting options of the post-processor :
-</para>
-<variablelist>
-	<varlistentry>
-		<term><option>--samples-file</option> <filename>filename</filename></term>
-		<term><option>-f</option> <filename>filename</filename></term>
-		<listitem><para>
-		The sample file to use. By default, the current sample file for the given binary is used;
-		this option can be used to examine older sample files.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--image-file</option> <filename>filename</filename></term>
-		<term><option>-i</option> <filename>filename</filename></term>
-		<listitem><para>
-		The binary image (shared library, kernel vmlinux, or application) to produce data for.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--demangle</option></term>
-		<term><option>-d</option></term>
-		<listitem><para>
-		Demangle C++ symbol names.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--smart-demangle</option></term>
-		<term><option>-D</option></term>
-		<listitem><para>
-		Demangle GNU C++ symbol names, then apply a set of regular expressions to
-		simplify STL library demangled names. For example,
-		<function>foo(std::list&lt;std::string, std::allocator&lt;std::string&gt;&gt; &amp;)</function>
-		becomes <function>foo(list&lt;string&gt; &amp;)</function>.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--counter</option> nr</term>
-		<listitem><para>
-		Which counter (0 - N) to extract information for. N is dependent on your cpu type: 1 for P6 generation CPUs, 
-		3 for Athlon based CPUs, 7 for Pentium 4 / Xeon CPUs.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--list-symbols</option></term>
-		<term><option>-l</option></term>
-		<listitem><para>
-		List a histogram of sample counts against symbols. Each line shows the function name,
-		its starting address, the relative percentage of hits across that image, and the absolute
-		number of samples in this function.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--list-symbol</option> name</term>
-		<term><option>-s</option> name</term>
-		<listitem><para>
-		Provide a detailed listing for the specified symbol name. This shows, for each sample,
-		the position of the address, and the number of samples.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--dump-gprof-file filename</option></term>
-		<term><option>-g filename</option></term>
-		<listitem><para>
-		Dump output to the specified file in <command>gprof</command> format. If you specify <filename>gmon.out</filename>,
-		you can then call <command>gprof -p &lt;binary&gt;</command>.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--list-all-symbols-details</option></term>
-		<term><option>-L</option></term>
-		<listitem><para>
-		Provide a detailed listing for all symbols. Each line shows number of samples at the given
-		address for all counters.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--output-linenr-info</option></term>
-		<term><option>-o</option></term>
-		<listitem><para>
-		Show the function and line number for all samples. This requires that the image was compiled
-		with debug symbols (<option>-g</option>), and is
-		usable only with --list-all-symbols-details, --list-symbol and --list-symbols.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--exclude-symbol</option> symbol[,symbol]</term>
-		<term><option>-e</option> symbol[,symbol]</term>
-		<listitem><para>
-		Comma-separated list of symbols to ignore. This can be useful to ignore the leading contributors
-		to the sample histogram, as the percentage values are re-calculated.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--show-shared-libs</option></term>
-		<term><option>-k</option></term>
-		<listitem><para>
-		Show the details of shared library and kernel profiles specific to this application. This option is useful only
-		if you have profiled with the <option>--separate</option> option and you don't specify on
-		the oprofpp command line <option>--dump-gprof-file</option>.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--output-format</option> vsSpPqQnlLiIh</term>
-		<term><option>-t</option> vsSpPqQnlLiIh</term>
-		<listitem><para>Specify the output and formatting, as given in this table :</para>
-		<informaltable frame="all">
-		<tgroup cols='2'> 
-		<tbody>
-		<row><entry><option>v</option></entry><entry>VMA (symbol address)</entry></row>
-		<row><entry><option>s</option></entry><entry>Sample count</entry></row>
-		<row><entry><option>S</option></entry><entry>Accumulative sample count</entry></row>
-		<row><entry><option>p</option></entry><entry>Sample percentage relative to image</entry></row>
-		<row><entry><option>P</option></entry><entry>Accumulative sample percentage relative to image</entry></row>
-		<row><entry><option>q</option></entry><entry>Sample percentage relative to all images</entry></row>
-		<row><entry><option>Q</option></entry><entry>Accumulative sample percentage relative to all images</entry></row>
-		<row><entry><option>n</option></entry><entry>Name of symbol</entry></row>
-		<row><entry><option>l</option></entry><entry>Source filename and line number</entry></row>
-		<row><entry><option>L</option></entry><entry>Short source filename and line number</entry></row>
-		<row><entry><option>i</option></entry><entry>Image name</entry></row>
-		<row><entry><option>I</option></entry><entry>Short image name</entry></row>
-		<row><entry><option>d</option></entry><entry>Detailed sample results</entry></row>
-		<row><entry><option>h</option></entry><entry>Print a columns header</entry></row>
-		</tbody> 
-		</tgroup>
-		</informaltable>
-		<para>
-		This option is not relevant to --dump-gprof-file.
-		</para>
-		</listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--session</option> session-name</term>
-		<listitem><para>
-		Specify the session name you want to use. The session name can be an absolute path
-		where samples reside, or a session name relative to the sample files base directory.
-		If you specify a samples filename with an absolute path this option is ignored.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--path</option> path list ',' separated</term>
-		<term><option>-p</option> path list ',' separated</term>
-		<listitem><para>
-		Specify an alternate list of pathnames to locate image files. Use if the sample filenames
-		do not match the image filenames, e.g. modules loaded at boot time through a RAM disk.
-		The path list is a comma-separated list of directories. Each directory is scanned recursively.
-		</para></listitem>
-	</varlistentry>
-</variablelist>
-
-</sect1>
-
-<sect1 id="op-time">
-<title><command>op_time</command>: overall view of all system binaries</title>
-<para>
-You can get an overall summary of relative binary profiles using <command>op_time</command>. This utility displays
-the relative amount of samples for each application profiled sorted by decreasing order of samples count. So
-with <command>op_time [<option>--option</option>] [<filename>image_name[,image_names]</filename>]</command> you can get :
+The <command>opreport</command> utility is the primary utility you will use for 
+getting formatted data out of OProfile. It produces two types of data: image summaries
+and symbol summaries. An image summary lists the number of samples for individual
+binary images such as libraries or applications. Symbol summaries provide per-symbol
+profile data. In the following example, we're getting an image summary for the whole
+system:
 </para>
 <screen>
-/lib/libc-2.1.2.so 19 32.7586%
-/usr/X11R6/bin/XF86_SVGA 13 22.4138%
-...
-/usr/bin/grep 1 1.72414%
-/usr/X11R6/lib/libXt.so.6.0 1 1.72414%
+[moz@lambent oprofile]$ opreport --long-filenames
+CPU: PIII, speed 863.195 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (clocks processor is not halted) with a unit mask of 0x00 (No unit mask) count 23150
+   905898 59.7415 /usr/lib/gcc-lib/i386-redhat-linux/3.2/cc1plus
+   214320 14.1338 /boot/2.5.69/vmlinux
+   103450  6.8222 /lib/i686/libc-2.3.2.so
+    60160  3.9674 /usr/local/bin/madplay
+    31769  2.0951 /usr/local/oprofile-pp/bin/oprofiled
+    26550  1.7509 /usr/lib/libartsflow.so.1.0.0
+    23906  1.5765 /usr/bin/as
+    18770  1.2378 /oprofile
+    15528  1.0240 /usr/lib/qt-3.0.5/lib/libqt-mt.so.3.0.5
+    11979  0.7900 /usr/X11R6/bin/XFree86
+    11328  0.7471 /bin/bash
+    ...
 </screen>
 <para>
-If you don't specify any image names on the command line op_time reports information
-about all profiled binary images.
-You can use shell wildcards like :
-<command>op_time <filename>/usr/bin/*</filename></command>
+If we had specified <option>--symbols</option> in the previous command, we would have
+gotten a symbol summary of all the images across the entire system. We can restrict this to only
+part of the system profile; for example,
+below is a symbol summary of the OProfile daemon. Note that as we used
+<command>opcontrol --separate=all</command>, symbols from images that <command>oprofiled</command>
+has used are also shown.
 </para>
-<para>
-Options allowed are :
-</para> 
-<variablelist>
-	<varlistentry>
-		<term><option>--counter</option> nr</term>
-		<term><option>-c</option></term>
-		<listitem><para>
-		Use counter <option>nr</option> for sorting samples count.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--show-shared-libs</option></term>
-		<term><option>-k</option></term>
-		<listitem><para>
-		Show the details for the shared libraries/kernel for each application. This option is
-		useful only if you have profiled with the <option>--separate</option> option.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--list-symbols</option></term>
-		<term><option>-l</option></term>
-		<listitem><para>
-		Show details for each symbol in each profiled file.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--demangle</option></term>
-		<term><option>-d</option></term>
-		<listitem><para>
-		Demangle GNU C++ symbol names.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--smart-demangle</option></term>
-		<term><option>-D</option></term>
-		<listitem><para>
-		Demangle GNU C++ symbol names, then apply a set of regular expressions to
-		simplify STL library demangled names. For example,
-		<function>foo(std::list&lt;std::string, std::allocator&lt;std::string&gt;&gt; &amp;)</function>
-		becomes <function>foo(list&lt;string&gt; &amp;)</function>.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--show-image-name</option></term>
-		<term><option>-n</option></term>
-		<listitem><para>
-		Show the image name when using <option>--list-symbols</option>.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--reverse</option></term>
-		<term><option>-r</option></term>
-		<listitem><para>
-		Sort by decreasing sample count instead of increasing count.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--path</option> path list ',' separated</term>
-		<term><option>-p</option> path list ',' separated</term>
-		<listitem><para>
-		Specify an alternate list of pathnames to locate image files. Use if the sample filenames
-		do not match the image filenames, e.g. modules loaded at boot time through a RAM disk.
-		The path list is a comma-separated list of directories. Each directory is scanned recursively.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--output-format</option> vsSpPnlLiIeEh</term>
-		<term><option>-t</option> vsSpPnlLiIeEh</term>
-		<listitem><para>Specify the outputs and formatting, as given in this table :</para>
-		<informaltable frame="all">
-		<tgroup cols='2'> 
-		<tbody>
-		<row><entry><option>v</option></entry><entry>VMA (symbol address)</entry></row>
-		<row><entry><option>s</option></entry><entry>Sample count</entry></row>
-		<row><entry><option>S</option></entry><entry>Accumulative sample count</entry></row>
-		<row><entry><option>p</option></entry><entry>Sample percentage relative to image</entry></row>
-		<row><entry><option>P</option></entry><entry>Accumulative sample percentage relative to image</entry></row>
-		<row><entry><option>n</option></entry><entry>Name of symbol</entry></row>
-		<row><entry><option>l</option></entry><entry>Source filename and line number</entry></row>
-		<row><entry><option>L</option></entry><entry>Short source filename and line number</entry></row>
-		<row><entry><option>i</option></entry><entry>Image name</entry></row>
-		<row><entry><option>I</option></entry><entry>Short image name</entry></row>
-		<row><entry><option>e</option></entry><entry>Application name</entry></row>
-		<row><entry><option>E</option></entry><entry>Basename of application</entry></row>
-		<row><entry><option>d</option></entry><entry>Detailed sample results</entry></row>
-		<row><entry><option>h</option></entry><entry>Print a columns header</entry></row>
-		</tbody></tgroup>
-		</informaltable>
-		<para>
-		Options <option>e</option> and <option>E</option> are useless unless you profile with
-		<option>--separate=library</option>.
-		</para>
-		<para>
-		These options can only be used in conjunction with <option>--list-symbols</option>. 
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--exclude-symbol</option> symbol[,symbol]</term>
-		<term><option>-e</option> symbol[,symbol]</term>
-		<listitem><para>
-		Comma-separated list of symbols to ignore. This can be useful to ignore the leading contributors
-		to the sample histogram, as the percentage values are re-calculated.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--session</option> session-name</term>
-		<listitem><para>
-		Specify the session name you want to use. The session name can be an absolute path
-		where samples reside, or a session name relative to the sample files base directory.
-		</para></listitem>
-	</varlistentry>
-</variablelist>
-</sect1>
+<screen>
+[moz@lambent oprofile]$ opreport -l `which oprofiled` 2>/dev/null | more
+CPU: PIII, speed 863.195 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (clocks processor is not halted) with a unit mask of 0x00 (No unit mask) count 23150
+vma      samples  %           image name               symbol name
+0804be10 14971    28.1993     oprofiled                odb_insert
+0804afdc 7144     13.4564     oprofiled                pop_buffer_value
+c01daea0 6113     11.5144     vmlinux                  __copy_to_user_ll
+0804b060 2816      5.3042     oprofiled                opd_put_sample
+0804b4a0 2147      4.0441     oprofiled                opd_process_samples
+0804acf4 1855      3.4941     oprofiled                opd_put_image_sample
+0804ad84 1766      3.3264     oprofiled                opd_find_image
+0804a5ec 1084      2.0418     oprofiled                opd_find_module
+0804ba5c 741       1.3957     oprofiled                odb_hash_add_node
+...
+</screen>
 
-<sect1 id="op-to-source">
-<title><command>op_to_source</command>: outputting annotated source</title>
 <para>
-<command>op_to_source</command> generates annotated source files or assembly listings, optionally mixed with source.
+These are the two basic ways you are most likely to use regularly, but <command>opreport</command>
+can do a lot more than that. For more details, see <xref linkend="opreport-details" />.
+</para>
+
+</sect1> <!-- opreport -->
+
+<sect1 id="opannotate">
+<title>Outputting annotated source</title>
+<para>
+The <command>opannotate</command> utility generates annotated source files or assembly listings, optionally
+mixed with source.
 If you want to see the source file, the profiled application needs to have debug information, and the source
-must be available through this debug information. For GCC, you must use the <option>-g</option> when you are
-compiling.
-If the binary doesn't contain sufficient debug information, you can still use <command>op_to_source <option>--assembly</option></command>
-to get annotated assembly.
+must be available through this debug information. For GCC, you must use the <option>-g</option> option
+when you are compiling.
+If the binary doesn't contain sufficient debug information, you can still
+use <command>opannotate <option>--assembly</option></command> to get annotated assembly.
 </para>
 <para>
 Note that for the reason explained in <xref linkend="hardware-counters" /> the results can be
@@ -1293,188 +1032,508 @@ crediting source lines with samples not really "owned" by this line. Also see
 <xref linkend="interpreting" />.
 </para>
 <para>
-The options allowed are :
-</para> 
-<variablelist>
-	<varlistentry>
-		<term><option>--assembly</option></term>
-		<term><option>-a</option></term>
-		<listitem><para>
-		<!-- FIXME: update if this changes -->
-		Output assembly code. Currently the assembly code is sorted in increasing order of the <acronym>VMA</acronym> 
-		address. The <option>--sort-by-counter</option>, <option>--with-more-than-samples percent_nr</option> and
-		<option>--until-more-than-samples percent_nr</option> options can also be used with this
-		option to provide filtering capabilities.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--demangle</option></term>
-		<term><option>-d</option></term>
-		<listitem><para>
-		Demangle C++ symbol names.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--smart-demangle</option></term>
-		<term><option>-D</option></term>
-		<listitem><para>
-		Demangle GNU C++ symbol names, then apply a set of regular expressions to
-		simplify STL library demangled names. For example,
-		<function>foo(std::list&lt;std::string, std::allocator&lt;std::string&gt;&gt; &amp;)</function>
-		becomes <function>foo(list&lt;string&gt; &amp;)</function>.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--source-dir</option> <filename>dirname</filename></term>
-		<listitem><para>
-		This option is used in conjunction with <option>--output-dir</option>. You
-		can use it to specify the base directory of the source which you wish to produce
-		annotated output for. With this option, any source files outside the directory
-		(for example, system header files) are ignored.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--output-dir</option> <filename>dirname</filename></term>
-		<listitem><para>
-		Specify that you want to produce an annotated source tree, rather than getting all output to stdout. This
-		creates a hierarchy of annotated source files, and is affected by the <option>--source-dir</option>,
-		<option>--output</option>, and <option>--no-output</option> options.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--output patterns</option></term>
-		<listitem><para>
-		Specify a set of comma-separated patterns for matching annotated source output filenames.
-		If this option is present, a file is only output if it matches one of the given
-		patterns (which applies to the filename and each components of the containing directory names).
-		For example :
-		</para>
-		<para>
-		<command>--output '*.c,user.h'</command>
-		</para>
-		</listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--no-output patterns</option></term>
-		<listitem><para>
-		Specify a set of comma-separated patterns for filtering annotated source output filenames.
-		If this option is present, a file is only output if it does not match one of the given
-		patterns (which applies to the filename and each components of the containing directory names).
-		For example :
-		</para>
-		<para>
-		<command>--no-output 'boring.c,boring*.h'</command>
-		</para>
-		</listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--source-with-assembly</option></term>
-		<term><option>-s</option></term>
-		<listitem><para>
-		Output assembly code mixed with the source file. Implies <option>--assembly</option>.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--objdump-params</option></term>
-		<term><option>-o</option></term>
-		<listitem><para>
-		Pass the given, comma-separated, additional parameters to <command>objdump</command>.
-		Check the <command>objdump</command> man page
-		to see what options objdump accepts; e.g. <option>-o '--disassembler-options=intel'</option>
-		to get Intel assembly syntax instead of att syntax. This option can be used only with
-		<option>--assembly</option> or <option>--source-with-assembly</option>
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--sort-by-counter counter_nr</option></term>
-		<term><option>-c counter_nr</option></term>
-		<listitem><para>
-		Sort by decreasing number of samples on counter_nr. For assembly output this option provides only
-		filtering and not a sort order.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--with-more-than-samples percent_nr</option></term>
-		<term><option>-w percent_nr</option></term>
-		<listitem><para>
-		Output source file which contains at least <option>percent_nr</option> samples.
-		Cannot be combined with <option>--until-more-than-samples</option>.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--until-more-than-samples percent_nr</option></term>
-		<term><option>-m percent_nr</option></term>
-		<listitem><para>
-		Output source files until the amount of samples in these files reach percent_nr samples.
-		Cannot be combined with <option>--with-more-than-samples</option>.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--samples-file</option> <filename>filename</filename></term>
-		<term><option>-f</option> <filename>filename</filename></term>
-		<listitem><para>
-		Specify the samples file. At least one of the <option>--samples-file</option> or
-		<option>--image-file</option> must be specified.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--image-file</option> <filename>filename</filename></term>
-		<term><option>-i </option>  <filename>filename</filename></term>
-		<listitem><para>
-		Specify the image file.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--exclude-symbol</option> symbol[,symbol]</term>
-		<term><option>-e</option> symbol[,symbol]</term>
-		<listitem><para>
-		Comma-separated list of symbols to ignore. This can be useful to ignore the leading contributors
-		to the sample histogram, as the percentage values are re-calculated.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--include-symbol</option> symbol[,symbol]</term>
-		<term><option>-y</option> symbol[,symbol]</term>
-		<listitem><para>
-		Comma-separated list of symbols to include. This can be useful to only see the leading contributors
-		to the sample histogram, as the percentage values are re-calculated.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--session</option> session-name</term>
-		<listitem><para>
-		Specify the session name you want to use. The session name can be an absolute path
-		where samples reside, or a session name relative to the sample files base directory.
-		If you specify a samples filename with an absolute path this option is ignored.
-		</para></listitem>
-	</varlistentry>
-</variablelist>
-</sect1>
+You can output the annotation to one single file, containing all the source found using the
+<option>--source</option>. You can use this in conjunction with <option>--assembly</option>
+to get combined source/assembly output.
+</para>
+<para>
+You can also output a directory of annotated source files that maintains the structure of
+the original sources. Each line in the annotated source is prepended with the samples
+for that line. Additionally, each symbol is annotated giving details for the symbol
+as a whole. An example:
+</para>
+<screen>
+[moz@lambent moz]$ opannotate --source --output-dir=annotated --source-dir=/home/moz/src/oprofile-pp/ /usr/local/oprofile-pp/bin/oprofiled
+[moz@lambent moz]$ ls  annotated/daemon/
+opd_cookie.h  opd_image.c  opd_kernel.c  opd_sample_files.c  oprofiled.c
+</screen>
+<para>
+Line numbers are maintained in the source files, but each file has
+a footer appended describing the profiling details. The actual annotation
+looks something like this :
+</para>
+<screen>
+...
+               :static uint64_t pop_buffer_value(struct transient * trans)
+ 11510  1.9661 :{ /* pop_buffer_value total:  89901 15.3566 */
+               :        uint64_t val;
+               :
+ 10227  1.7469 :        if (!trans->remaining) {
+               :                fprintf(stderr, "BUG: popping empty buffer !\n");
+               :                exit(EXIT_FAILURE);
+               :        }
+               :
+               :        val = get_buffer_value(trans->buffer, 0);
+  2281  0.3896 :        trans->remaining--;
+  2296  0.3922 :        trans->buffer += kernel_pointer_size;
+               :        return val;
+ 10454  1.7857 :}
+...
+</screen>
 
-<sect1 id="op-merge">
-<title><command>op_merge</command>: merging samples files</title>
 <para>
-<command>op_merge</command> is used to merge samples wich belongs to the same binary image. Its main purpose
-is to merge samples files created by profiling with the option <option>--separate</option>. So you can create one samples
-file containing all samples for a shared library :
-<command>op_merge</command><filename>/usr/lib/ld-2.1.2.so</filename> will create a samples file named
-<filename>}usr}lib}ld-2.1.2.so</filename> ready to use with <command>oprofpp</command> or other post-profiling tools.
-Additionally you can merge a subset of samples files inside one sample file by specifying explicitly the sample files to merge.
-This allows you to use post-profile tools on shared libs for a subset of applications.
+The first number on each line is the number of samples, whilst the second is
+the relative percentage of total samples.
+There are a number of options for specifying the output;  for more details,
+see <xref linkend="opannotate-details" />.
+</para>
+
+</sect1> <!-- opannotate -->
+
+<sect1 id="opgprof">
+<title><command>gprof</command>-compatible output</title>
+<para>
+If you're familiar with the output produced by <command>GNU gprof</command>,
+you may find <command>opgprof</command> useful. It takes a single binary
+as an argument, and produces a <filename>gmon.out</filename> file for use
+with <command>gprof -p</command>. Note that only a flat profile is included;
+OProfile cannot produce call graphs. For example:
+</para>
+<screen>
+[moz@lambent moz]$ opgprof `which oprofiled` # generates gmon.out file
+[moz@lambent moz]$ gprof -p `which oprofiled` | head
+Flat profile:
+
+Each sample counts as 1 samples.
+  %   cumulative   self              self     total
+ time   samples   samples    calls  T1/call  T1/call  name
+ 33.13 206237.00 206237.00                             odb_insert
+ 22.67 347386.00 141149.00                             pop_buffer_value
+  9.56 406881.00 59495.00                             opd_put_sample
+  7.34 452599.00 45718.00                             opd_find_image
+  7.19 497327.00 44728.00                             opd_process_samples
+</screen>
+<para>
+A few options to <command>opgprof</command> are available, see
+<xref linkend="opgprof-details" />.
+</para>
+</sect1> <!-- opgprof -->
+
+<sect1 id="profile-spec">
+<title>Profile specifications</title>
+
+<para>
+All of the analysis tools take a <emphasis>profile specification</emphasis>.
+This is a set of definitions that describe which actual profiles should be
+examined. The simplest profile specification is empty: this will match all
+the available profile files for the current session (this is what happens
+when you do <command>opreport</command>).
 </para>
 <para>
-The options allowed are :
+Specification parameters are of the form <option>name:value[,value]</option>.
+For example, if I wanted to get a combined symbol summary for
+<filename>/bin/myprog</filename> and <filename>/bin/myprog2</filename>,
+I could do <command>opreport -l image:/bin/myprog,/bin/myprog2</command>.
+As a special case, you don't actually need to specify the <option>image:</option>
+part here: anything left on the command line is assumed to be an
+<option>image:</option> name. Similarly, if no <option>session:</option>
+is specified, then <option>session:current</option> is assumed ("current"
+is a special name of the current / last profiling session).
 </para>
+<para>
+In addition to the comma-separated list shown above, some of the 
+specification parameters can take <command>glob</command>-style
+values. For example, if I want to see image summaries for all
+binaries profiled in <filename>/usr/bin/</filename>, I could do
+<command>opreport image:/usr/bin/\*</command>. Note the necessity
+to escape the special character from the shell.
+</para>
+<para>
+For a profile specification to produce useful data, all selected
+profiles must match in the basic event details. It's not possible
+to meaningfully compare profiles from two different counter types.
+So some parameters like <option>event:</option> do not
+allow a comma-separated list or glob, as collating results is not
+possible. This implies you might need to specify these parameters
+if you've profiled with multiple event types, so that the tools
+can disambiguate which profiles you actually mean.
+</para>
+
+<sect2 id="profile-spec-examples">
+<title>Examples</title>
+
+<para>
+Image summaries for all profiles with <constant>DATA_MEM_REFS</constant>
+samples in the saved session called "stresstest" :
+</para>
+<screen>
+# opreport session:stresstest event:DATA_MEM_REFS
+</screen>
+
+<para>
+Symbol summary for the application called "test_sym53c8xx,9xx". Note the
+escaping is necessary as <option>image:</option> takes a comma-separated list.
+</para>
+<screen>
+# opreport -l ./test/test_sym53c8xx\,9xx
+</screen>
+
+<para>
+Get a symbol summary if you have the actual profile file and binary
+(perhaps somebody has sent you them via e-mail). These parameters
+cannot be used in combination with any others as the default searches
+are not performed.
+</para>
+<screen>
+# opreport -l binary:./mybinary sample-file:./CPU_CLK_UNHALTED.231500.0.all.all.all
+</screen>
+
+<para>
+Image summaries for all binaries in the <filename>test</filename> directory,
+excepting <filename>boring-test</filename> :
+</para>
+<screen>
+# opreport image:./test/\* image-exclude:./test/boring-test
+</screen>
+
+</sect2> <!-- profile spec examples -->
+
+<sect2 id="profile-spec-details">
+<title>Profile specification parameters</title>
+
 <variablelist>
 	<varlistentry>
-		<term><option>--counter</option> nr</term>
-		<term><option>-c</option></term>
+		<term><option>session:</option><emphasis>sessionlist</emphasis></term>
 		<listitem><para>
-		use the given counter number to select the appropriate samples files
+                A comma-separated list of session names to resolve in. Absence of this
+                tag, unlike all others, means "the current session", equivalent to
+                specifying "session:current".
 		</para></listitem>
 	</varlistentry>
+	<varlistentry>
+		<term><option>session-exclude:</option><emphasis>sessionlist</emphasis></term>
+		<listitem><para>
+                A comma-separated list of sessions to exclude.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>image:</option><emphasis>imagelist</emphasis></term>
+		<listitem><para>
+                A comma-separated list of image names to resolve. Each entry may be relative
+                path, <command>glob</command>-style name, or full path, e.g.</para>
+		<screen>opreport 'image:/usr/bin/oprofiled,*op*,./oprofpp'</screen>
+		</listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><option>image-exclude:</option><emphasis>imagelist</emphasis></term>
+		<listitem><para>
+		Same as <option>image:</option>, but the matching images are excluded.
+		</para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><option>lib-image:</option><emphasis>imagelist</emphasis></term>
+		<listitem><para>
+		Same as <option>image:</option>, but only for images that are for
+		a particular primary binary image (namely, an application). This only
+		makes sense to use if you're using <option>--separate</option>.
+		This includes kernel modules and the kernel when using
+		<option>--separate=kernel</option>.
+		</para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><option>lib-image-exclude:</option><emphasis>imagelist</emphasis></term>
+		<listitem><para>
+		Same as <option>lib-image:</option>, but the matching images
+		are excluded.
+		</para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><option>event:</option><emphasis>eventname</emphasis></term>
+		<listitem><para>
+		The symbolic event name to match on, e.g. <option>event:DATA_MEM_REFS</option>.
+		</para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><option>count:</option><emphasis>eventcount</emphasis></term>
+		<listitem><para>
+		The event count to match on, e.g. <option>event:DATA_MEM_REFS count:30000</option>.
+		Note that this value refers the setting used for <command>opcontrol</command>
+		only, and has nothing to do with the sample counts in the profile data
+		itself.
+		</para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><option>unit-mask:</option><emphasis>maskvalue</emphasis></term>
+		<listitem><para>
+		The unit mask value of the event to match on, e.g. <option>unit-mask:1</option>.
+		</para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><option>binary:</option><emphasis>file</emphasis></term>
+		<listitem><para>
+		Give results only for the given file. This can only be used with
+		<option>sample-file:</option>.
+		</para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><option>sample-file:</option><emphasis>file</emphasis></term>
+		<listitem><para>
+		Give results only for the given sample file. This can only be used with
+		<option>binary:</option>.
+		</para></listitem>
+	</varlistentry>
+
+<!-- FIXME: introduce when it does  something useful
+	<varlistentry>
+		<term><option>cpu:</option><emphasis>cpulist</emphasis></term>
+		<listitem><para>
+		Only consider profiles for the given numbered CPU (starting from zero).
+		This is only useful when using CPU profile separation.
+		</para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><option>tgid:</option><emphasis>pidlist</emphasis></term>
+		<listitem><para>
+		Only consider profiles for the given task groups. Unless some program
+		is using threads, the task group ID of a process is the same
+		as its process ID. This option corresponds to the POSIX
+		notion of a thread group.
+		This is only useful when using per-process profile separation.
+		</para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><option>tid:</option><emphasis>tidlist</emphasis></term>
+		<listitem><para>
+		Only consider profiles for the given threads. When using
+		recent thread libraries, all threads in a process share the
+		same task group ID, but have different thread IDs. You can
+		use this option in combination with <option>tgid:</option> to
+		restrict the results to particular threads within a process.
+		This is only useful when using per-process profile separation.
+		</para></listitem>
+	</varlistentry>
+-->
 </variablelist>
-</sect1>
+
+</sect2>
+
+<sect2>
+<title>Locating and managing binary images</title>
+<para>
+Each session's sample files can be found in the <filename>/var/lib/oprofile/samples/</filename> directory.
+These are used, along with the binary image files, to produce human-readable data.
+In some circumstances (kernel modules in an initrd, or modules on 2.5 kernels), OProfile
+will not be able to find the binary images. All the tools have an <option>--image-path</option>
+to which you can pass a comma-separated list of alternate paths to search. For example,
+I can let OProfile find my 2.5 modules by using <command>--image-path /lib/modules/2.5.69/kernel/</command>.
+It is your responsibility to ensure that the correct images are found when using this
+option.
+</para>
+<para>
+Note that if a binary image changes after the sample file was created, you won't be able to get useful
+symbol-based data out. This situation is detected for you. If you replace a binary, you should
+make sure to save the old binary if you need to do comparative profiles.
+</para>
+
+</sect2>
+
+</sect1> <!-- profile-spec -->
+
+<sect1 id="opreport-details">
+<title>Usage of <command>opreport</command></title>
+
+<sect2 id="opreport-merging">
+<title>Merging separate profiles</title>
+
+If you have used one of the <option>--separate=</option> options
+whilst profiling, there can be several separate profiles for
+a single binary image within a session. Normally the output
+will keep these images separated (so, for example, the image summary
+output shows library image summaries on a per-application basis,
+when using <option>--separate=lib</option>).
+Sometimes it can be useful to merge these results back together
+before getting results. The <option>--merge</option> option allows
+you to do that.
+</sect2>
+
+<sect2 id="opreport-options">
+<title>Options for <command>opreport</command></title>
+
+<variablelist>
+<varlistentry><term><option>--accumulated / -c</option></term><listitem><para>
+Accumulate sample and percentage counts in the symbol list.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--debug-info / -g</option></term><listitem><para>
+Show source file and line for each symbol.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--details / -d</option></term><listitem><para>
+Show per-instruction details for all selected symbols.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
+Do not include application-specific images for libraries, kernel modules
+and the kernel. This option only makes sense if the profile session
+used --separate.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--exclude-symbols / -e [symbols]</option></term><listitem><para>
+Exclude all the symbols in the given comma-separated list.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--global-percent</option></term><listitem><para>
+Make dependent image summary percentages relative to the whole profile,
+not just the application image.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
+Show help message.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--image-path / -p [paths]</option></term><listitem><para>
+Comma-separated list of additional paths to search for binaries.
+This is needed to find modules in kernels 2.5 and upwards.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--include-symbols / -i [symbols]</option></term><listitem><para>
+Only include symbols in the given comma-separated list.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--long-filenames / -l</option></term><listitem><para>
+Output full paths instead of basenames.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--merge / -m [cpu,pid,lib]</option></term><listitem><para>
+Merge any profiles separated in a --separate session.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--no-demangle</option></term><listitem><para>
+Do not attempt to demangle C++ symbols.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--no-header</option></term><listitem><para>
+Don't output a header detailing profiling parameters.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--output-file / -o [file]</option></term><listitem><para>
+Output to the given file instead of stdout.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--reverse-sort / -r</option></term><listitem><para>
+Reverse the sort from the default.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--smart-demangle / -D</option></term><listitem><para>
+Use pattern-matching to make C++ symbol demangling more readable.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--sort / -s [vma,sample,symbol,debug,image]</option></term><listitem><para>
+Sort the list of symbols by, respectively, symbol address,
+number of samples, symbol name, debug filename and line number,
+binary image filename.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--symbols / -l</option></term><listitem><para>
+List per-symbol information instead of a binary image summary.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--threshold / -t [percentage]</option></term><listitem><para>
+Only output data for symbols that have more than the given percentage
+of total samples.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--verbose / -V</option></term><listitem><para>
+Give verbose debugging output.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--version / -v</option></term><listitem><para>
+Show version.
+</para></listitem></varlistentry>
+</variablelist>
+
+</sect2>
+
+</sect1> <!-- opreport-details -->
+
+<sect1 id="opannotate-details">
+<title>Usage of <command>opannotate</command></title>
+
+<variablelist>
+<varlistentry><term><option>--assembly / -a</option></term><listitem><para>
+Output annotated assembly. If this is combined with --source, then mixed
+source / assembly annotations are output.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--base-dir / -b [dir]</option></term><listitem><para>
+FIXME
+</para></listitem></varlistentry>
+<varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
+Do not include application-specific images for libraries, kernel modules
+and the kernel. This option only makes sense if the profile session
+used --separate.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--exclude-file [files]</option></term><listitem><para>
+Exclude all files in the given comma-separated list of glob patterns.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--exclude-symbols / -e [symbols]</option></term><listitem><para>
+Exclude all the symbols in the given comma-separated list.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
+Show help message.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--image-path / -p [paths]</option></term><listitem><para>
+Comma-separated list of additional paths to search for binaries.
+This is needed to find modules in kernels 2.5 and upwards.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--include-file [files]</option></term><listitem><para>
+Only include files in the given comma-separated list of glob patterns.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--include-symbols / -i [symbols]</option></term><listitem><para>
+Only include symbols in the given comma-separated list.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--no-demangle</option></term><listitem><para>
+Do not attempt to demangle C++ symbols.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--objdump-params [params]</option></term><listitem><para>
+Pass the given parameters as extra values when calling objdump.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--output-dir / -o [dir]</option></term><listitem><para>
+Output directory. This makes opannotate output one annotated file for each
+source file.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--source / -s</option></term><listitem><para>
+Output annotated source. This requires debugging information to be available
+for the binaries.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--source-dir / -d [dir]</option></term><listitem><para>
+Top source directory for the source files.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--smart-demangle / -D</option></term><listitem><para>
+Use pattern-matching to make C++ symbol demangling more readable.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--threshold / -t [percentage]</option></term><listitem><para>
+Only output data for symbols that have more than the given percentage
+of total samples.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--verbose / -V</option></term><listitem><para>
+Give verbose debugging output.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--version / -v</option></term><listitem><para>
+Show version.
+</para></listitem></varlistentry>
+</variablelist>
+
+
+</sect1> <!-- opannotate-details -->
+
+<sect1 id="opgprof-details">
+<title>Usage of <command>opgprof</command></title>
+
+<variablelist>
+<varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
+Show help message.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--version / -v</option></term><listitem><para>
+Show version.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--verbose / -V</option></term><listitem><para>
+Give verbose debugging output.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--image-path / -p [paths]</option></term><listitem><para>
+Comma-separated list of additional paths to search for binaries.
+This is needed to find modules in kernels 2.5 and upwards.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--threshold / -t [percentage]</option></term><listitem><para>
+Only output data for symbols that have more than the given percentage
+of total samples.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--output-filename / -o [file]</option></term><listitem><para>
+Output to the given file instead of the default, gmon.out
+</para></listitem></varlistentry>
+</variablelist>
+
+</sect1> <!-- opgprof-details -->
+
 </chapter>
 
 <chapter id="interpreting">
@@ -1513,7 +1572,7 @@ Here the last instruction of the loop is very costly, and you would expect the r
 reflecting that - but (cutting the instructions inside the loop):
 </para>
 <screen>
-$ op_to_source -a -w 10 ./a.out
+$ opannotate -a -t 10 ./a.out
 
      88 15.38% : 8048337:       fadd   %st(3),%st
      48 8.391% : 8048339:       fmul   %st(2),%st
@@ -1531,7 +1590,7 @@ execution units and the out-of-order model of modern x86 CPUs also causes
 problems. This is the same function, with annotation :
 </para>
 <screen>
-$ op_to_source -w 10 ./a.out
+$ opannotate -s -t 10 ./a.out
 
                :double fun(double a, double b, double c)
                :{ /* _Z3funddd total:     572 100.0% */
@@ -1632,7 +1691,7 @@ an if statement:
 here the problem come from the position of line number. The available debug
 info does not give enough details for the if condition, so all samples are
 accumulated at the position of the right brace of the expression. Using
-<command>op_to_source <option>-a</option></command> can help to show the real
+<command>opannotate <option>-a</option></command> can help to show the real
 samples at an assembly level.
 </para>
 </sect2>
@@ -1687,7 +1746,7 @@ the listing does not add up to the correct total. To pick a real example :
 Here, the function is credited with 1,882 samples, but the annotations
 below do not account for this. This is usually because of inline functions -
 the compiler marks such code with debug entries for the inline function
-definition, and this is where <command>op_to_source</command> annotates
+definition, and this is where <command>opannotate</command> annotates
 such samples. In the case above, <function>memset</function> is the most
 likely candidate for this problem. Examining the mixed source/assembly
 output can help identify such results.
@@ -1731,7 +1790,7 @@ Compiled with <command>gcc</command> 3.0.4 the annotated source is clearly inacc
 </screen>
 <para>
 The problem here is distinct from the IRQ latency problem; the debug line number
-information is not precise enough; again, looking at output of <command>op_to_source -as</command> can help.
+information is not precise enough; again, looking at output of <command>opannoatate -as</command> can help.
 </para>
 <screen>
                :int main()
@@ -1783,8 +1842,8 @@ This means that you cannot get a source report unless
 you manually define the neccessary debug information; read your assembler documentation for how you might
 do that. The only
 debugging info needed currently by OProfile is the line-number/filename-VMA association. When profiling assembly
-without debugging info you can always get report for symbols, and optionally for VMA, through <command>oprofpp -l</command>
-or <command>oprofpp -L</command>, but this works only for symbol with the right attributes.
+without debugging info you can always get report for symbols, and optionally for VMA, through <command>opreport -l</command>
+or <command>opreport -d</command>, but this works only for symbol with the right attributes.
 For <command>gas</command> you can get this by
 </para>
 <screen>
@@ -1874,7 +1933,7 @@ is showed as "See section 1" ...
 <title>Why do I see (no symbol) in profiling report ?</title>
 <para>
 Some post-profile tools need only symbol information like the basic use of <command>oprofpp</command>, whilst
-others need debugging information, like <command>op_to_source</command>. The notions of debugging information and symbol
+others need debugging information, like <command>opannoate</command>. The notions of debugging information and symbol
 information are orthogonal. <command>gcc</command> always creates symbol information even without <option>-g</option>.
 You should be aware that <command>strip</command> by default remove debug <emphasis>and</emphasis> symbol information. You must use
 <command>strip <option>-d</option></command> to strip only debug information. Profiling binaries
@@ -1889,7 +1948,7 @@ function or from a static function which come immediately after this exported sy
 </para>
 <para>
 In short, if you want to profile already installed binaries on your system, reinstall them with the proper information,
-at least with symbol information for basic <command>oprofpp</command> and <command>op_time <option>-l</option></command> or with full
+at least with symbol information for basic <command>oprofpp</command> and <command>opreport <option>-l</option></command> or with full
 debug information to get annotated source. Unfortunately debug information can be very voluminous. The neeeded debug
 information for annotated source, line numbers, is only generated at <option>-g2</option> level.
 </para>

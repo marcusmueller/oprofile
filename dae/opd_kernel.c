@@ -53,7 +53,7 @@ void opd_init_kernel_image(void)
 {
 	/* for no vmlinux */
 	if (!vmlinux)
-		vmlinux = "/no-vmlinux";
+		vmlinux = "no-vmlinux";
 	kernel_image = opd_get_kernel_image(vmlinux, NULL);
 }
 

@@ -21,6 +21,8 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libutil \
 	-DKVERSION=\"@KVERS@\"
 
+AM_CXXFLAGS = @OP_CXXFLAGS@
+
 bin_PROGRAMS = oprof_start
 
 oprof_start_SOURCES = $(dist_sources)

@@ -11,29 +11,53 @@
 
 #include "op_file.h"
 
-#include <errno.h>
-#include <string.h>
+#include <cerrno>
+#include <cstring>
+#include <cstdlib>
 
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
-#include <string>
-#include <list>
-
-#include <cstdlib>
 
 #include "op_bfd.h"
+#include "string_filter.h"
 
 using namespace std;
 
 extern ostream cverb;
- 
-op_bfd::op_bfd(string const & filename, vector<string> const & exclude_symbols,
-	       vector<string> const & included_symbols)
+
+op_bfd_symbol::op_bfd_symbol(asymbol const * a)
+	: bfd_symbol(a), symb_value(a->value),
+	  section_filepos(a->section->filepos),
+	  section_vma(a->section->vma),
+	  symb_size(0)
+{
+	// Some sections have unnamed symbols in them. If
+	// we just ignore them then we end up sticking
+	// things like .plt hits inside of _init. So instead
+	// we name the symbol after the section.
+	if (a->name && a->name[0] != '\0') {
+		symb_name = a->name;
+	} else {
+		symb_name = string("??") + a->section->name;
+	}
+}
+
+
+op_bfd_symbol::op_bfd_symbol(bfd_vma vma, size_t size, string const & name)
+	: bfd_symbol(0), symb_value(vma),
+	  section_filepos(0), section_vma(0),
+	  symb_size(size), symb_name(name)
+{
+}
+
+
+op_bfd::op_bfd(string const & filename, string_filter const & symbol_filter)
 	:
 	file_size(0),
 	ibfd(0),
-	text_offset(0)
+	text_offset(0),
+	debug_info(false)
 {
 	if (filename.empty()) {
 		cerr << "op_bfd() empty image filename." << endl;
@@ -57,19 +81,26 @@ op_bfd::op_bfd(string const & filename, vector<string> const & exclude_symbols,
 		exit(EXIT_FAILURE);
 	}
 
-	asection * sect = bfd_get_section_by_name(ibfd, ".text");
+	asection const * sect = bfd_get_section_by_name(ibfd, ".text");
 	if (sect) {
 		text_offset = sect->filepos;
 		cverb << ".text filepos " << hex << text_offset << endl;
 	}
 
-	get_symbols(exclude_symbols, included_symbols);
-
-	if (syms.size() == 0) {
-		bfd_vma start, end;
-		get_vma_range(start, end);
-		create_artificial_symbol(start, end);
+	for (sect = ibfd->sections; sect; sect = sect->next) {
+		if (sect->flags & SEC_DEBUGGING) {
+			debug_info = true;
+			break;
+		}
 	}
+
+	// after creating all symbol it's convenient for user code to access
+	// symbols through a vector. We use an intermediate list to avoid a
+	// O(N²) behavior when we will filter vector element below
+	symbols_found_t symbols;
+
+	get_symbols(symbols);
+	add_symbols(symbols, symbol_filter);
 }
 
 
@@ -95,20 +126,10 @@ bool op_bfd_symbol::operator<(op_bfd_symbol const& lhs) const
 
 namespace {
 
-// only add symbols that would /never/ be
-// worth examining
-static char const * boring_symbols[] = {
-	"gcc2_compiled.",
-	"_init"
-};
-
-static size_t const nr_boring_symbols =
-			sizeof(boring_symbols) / sizeof(boring_symbols[0]);
-
 /**
  * Return true if the symbol is worth looking at
  */
-static bool interesting_symbol(asymbol *sym)
+bool interesting_symbol(asymbol * sym)
 {
 	// #717720 some binutils are miscompiled by gcc 2.95, one of the
 	// typical symptom can be catched here.
@@ -119,85 +140,90 @@ static bool interesting_symbol(asymbol *sym)
 	}
 
 	if (!(sym->section->flags & SEC_CODE))
-		return 0;
+		return false;
 
+	// returning true for fix up in op_bfd_symbol()
 	if (!sym->name || sym->name[0] == '\0')
-		return 0;
+		return true;
 
 	// C++ exception stuff
 	if (sym->name[0] == '.' && sym->name[1] == 'L')
-		return 0;
+		return false;
 
-	for (size_t i = 0; i < nr_boring_symbols; ++i) {
-		if (!strcmp(boring_symbols[i], sym->name))
-			return 0;
-	}
+	// This is still necessary because the symbol
+	// sits at the same VMA as a real function,
+	// so we can end up dropping the real function
+	// symbol when we remove duplicate VMAs in our
+	// caller.
+	if (!strcmp("gcc2_compiled.", sym->name))
+		return false;
 
-	return 1;
+	return true;
 }
 
+
+/// function object for filtering symbols to remove
+struct remove_filter {
+	remove_filter(string_filter const & filter)
+		: filter_(filter) {}
+
+	bool operator()(op_bfd_symbol const & symbol) {
+		return !filter_.match(symbol.name());
+	}
+
+	string_filter filter_;
+};
+
+
 } // namespace anon
+
 
 /**
  * get_symbols - op_bfd ctor helper
  *
  * Parse and sort in ascending order all symbols
  * in the file pointed to by abfd that reside in
- * a %SEC_CODE section. Returns true if symbol(s)
- * are found. The symbols are filtered through
+ * a %SEC_CODE section.
+ *
+ * The symbols are filtered through
  * the interesting_symbol() predicate and sorted
  * with the symcomp() comparator.
  */
-bool op_bfd::get_symbols(vector<string> const & excluded,
-			 vector<string> const & included)
+void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 {
 	uint nr_all_syms;
 	size_t size;
 
 	if (!(bfd_get_file_flags(ibfd) & HAS_SYMS))
-		return false;
+		return;
 
 	size = bfd_get_symtab_upper_bound(ibfd);
 
 	/* HAS_SYMS can be set with no symbols */
 	if (size < 1)
-		return false;
+		return;
 
 	bfd_syms.reset(new asymbol*[size]);
 	nr_all_syms = bfd_canonicalize_symtab(ibfd, bfd_syms.get());
 	if (nr_all_syms < 1)
-		return false;
-
-	// after creating all symbol it's convenient for user code to access
-	// symbols through a vector. We use an intermediate list to avoid a
-	// O(N²) behavior when we will filter vector element below
-	list<op_bfd_symbol> symbols;
+		return;
 
 	for (symbol_index_t i = 0; i < nr_all_syms; i++) {
 		if (interesting_symbol(bfd_syms[i])) {
-			// we can't fill the size member for now, because in
-			// some case it is calculated from the vma of the
-			// next symbol
-			asymbol const * symbol = bfd_syms[i];
-			op_bfd_symbol symb(symbol,
-					   symbol->value,
-					   symbol->section->filepos,
-					   symbol->section->vma,
-					   0,
-					   symbol->name);
-			symbols.push_back(symb);
+			symbols.push_back(op_bfd_symbol(bfd_syms[i]));
 		}
 	}
 
 	symbols.sort();
 
+	symbols_found_t::iterator it = symbols.begin();
+
 	// we need to ensure than for a given vma only one symbol exist else
 	// we read more than one time some samples. Fix #526098
 	// ELF symbols size : potential bogosity here because when using
 	// elf symbol size we need to check than two symbols does not overlap.
-	list<op_bfd_symbol>::iterator it;
-	for (it = symbols.begin() ; it != symbols.end(); ) {
-		list<op_bfd_symbol>::iterator temp = it;
+	for (; it != symbols.end();) {
+		symbols_found_t::iterator temp = it;
 		++temp;
 		if (temp != symbols.end() && (it->vma() == temp->vma())) {
 			// FIXME: choose more carefully the symbol we drop.
@@ -214,49 +240,31 @@ bool op_bfd::get_symbols(vector<string> const & excluded,
 	// between the vma of a symbol and the next one.
 	for (it = symbols.begin() ; it != symbols.end(); ++it) {
 		op_bfd_symbol const * next = 0;
-		list<op_bfd_symbol>::iterator temp = it;
+		symbols_found_t::iterator temp = it;
 		++temp;
 		if (temp != symbols.end())
 			next = &*temp;
 		it->size(symbol_size(*it, next));
 	}
+}
 
-	cverb << "number of symbols before excluding " << dec << symbols.size() << endl;
 
-	// it's time to remove the excluded symbols
-	for (it = symbols.begin() ; it != symbols.end(); ) {
-		vector<string>::const_iterator v_it =
-			find(excluded.begin(), excluded.end(), it->name());
-		if (v_it != excluded.end()) {
-			cverb << "excluding symbol " << it->name() << endl;
-			it = symbols.erase(it);
-		} else {
-			++it;
-		}
-	}
+void op_bfd::add_symbols(op_bfd::symbols_found_t & symbols,
+                         string_filter const & symbol_filter)
+{
+	// images with no symbols debug info available get a placeholder symbol
+	if (symbols.empty())
+		symbols.push_back(create_artificial_symbol());
 
-	// it's time to remove all symbol except the included symbol
-	if (included.size()) {
-		for (it = symbols.begin() ; it != symbols.end(); ) {
-			vector<string>::const_iterator v_it =
-				find(included.begin(), included.end(),
-				     it->name());
-			if (v_it == included.end()) {
-				cverb << "excluding symbol " << it->name() << endl;
-				it = symbols.erase(it);
-			} else {
-				++it;
-			}
-		}
-	}
+	cverb << "number of symbols before filtering " << dec << symbols.size() << endl;
 
-	for (it = symbols.begin() ; it != symbols.end(); ++it) {
-		syms.push_back(*it);
-	}
+	symbols_found_t::iterator it;
+	it = remove_if(symbols.begin(), symbols.end(), remove_filter(symbol_filter));
+	symbols.erase(it, symbols.end());
+
+	copy(symbols.begin(), symbols.end(), back_inserter(syms));
 
 	cverb << "number of symbols now " << dec << syms.size() << endl;
-
-	return !syms.empty();
 }
 
 
@@ -266,24 +274,18 @@ u32 op_bfd::sym_offset(symbol_index_t sym_index, u32 num) const
 	return num - syms[sym_index].filepos();
 }
 
-bool op_bfd::have_debug_info() const
-{
-	sec* section;
-	for (section = ibfd->sections; section; section = section->next)
-		if (section->flags & SEC_DEBUGGING)
-			break;
-
-	return section != NULL;
-}
 
 bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 			string & filename, unsigned int & linenr) const
 {
-	char const * functionname;
-	bfd_vma pc;
-
-	char const * cfilename = "";
 	linenr = 0;
+
+	if (!debug_info)
+		return false;
+
+	char const * functionname;
+	char const * cfilename = "";
+	bfd_vma pc;
 
 	// take care about artificial symbol
 	if (syms[sym_idx].symbol() == 0)
@@ -348,11 +350,11 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 
 			if (ret && linenr != 0
 				&& syms[sym_idx].name() == string(functionname)) {
-				return true;	// we win
+				return true;
 			}
 		}
 
-		// We lose it's worthwhile to try more.
+		// We lose it's pointless to try more.
 
 		// bfd_find_nearest_line clobber the memory pointed by filename
 		// from a previous call when the filename change across
@@ -363,10 +365,16 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 				      &cfilename, &functionname, &linenr);
 	}
 
-	filename = (cfilename) ? cfilename : "";
+	if (cfilename) {
+		filename = cfilename;
+	} else {
+		filename = "";
+		linenr = 0;
+	}
 
 	return ret;
 }
+
 
 // #define USE_ELF_INTERNAL
 
@@ -427,6 +435,7 @@ size_t op_bfd::symbol_size(op_bfd_symbol const & sym,
 	return length;
 }
 
+
 void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 			      u32 & start, u32 & end) const
 {
@@ -462,9 +471,10 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 	}
 }
 
+
 void op_bfd::get_vma_range(bfd_vma & start, bfd_vma & end) const
 {
-	if (syms.size()) {
+	if (!syms.empty()) {
 		// syms are sorted by vma so vma of the first symbol and vma +
 		// size of the last symbol give the vma range for gprof output
 		op_bfd_symbol const & last_symb = syms[syms.size() - 1];
@@ -477,22 +487,25 @@ void op_bfd::get_vma_range(bfd_vma & start, bfd_vma & end) const
 	}
 }
 
-void op_bfd::create_artificial_symbol(bfd_vma start, bfd_vma end)
+
+op_bfd_symbol const op_bfd::create_artificial_symbol()
 {
 	// FIXME: prefer a bool artificial; to this ??
 	string symname = "?";
 
 	symname += get_filename();
 
-	op_bfd_symbol symbol(0, 0, start, 0, end - start, symname);
-
-	syms.push_back(symbol);
+	bfd_vma start, end;
+	get_vma_range(start, end);
+	return op_bfd_symbol(start, end - start, symname);
 }
+
 
 string op_bfd::get_filename() const
 {
 	return bfd_get_filename(ibfd);
 }
+
 
 size_t op_bfd::bfd_arch_bits_per_address() const
 {

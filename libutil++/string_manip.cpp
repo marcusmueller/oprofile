@@ -10,6 +10,9 @@
  */
 
 #include <sstream>
+#include <iomanip>
+
+#include <cstdlib>
 
 #include "string_manip.h"
 
@@ -109,20 +112,6 @@ void separate_token(vector<string> & result, const string & str, char sep)
 }
 
 
-string sample_filename(string const& sample_dir,
-			string const& sample_filename, int counter)
-{
-	ostringstream s;
-
-	s << sample_dir;
-	if (sample_dir.length() && sample_dir[sample_dir.length() - 1] != '/')
-		s << "/";
-	s << sample_filename << '#' << counter;
-
-	return s.str();
-}
-
-
 string ltrim(string const & str, string const & totrim)
 {
 	string result;
@@ -151,38 +140,34 @@ string trim(string const & str, string const & totrim)
 }
 
 
-string const format_percent(double value, unsigned int width)
+string const format_double(double value, size_t int_width, size_t fract_width)
 {
 	ostringstream os;
-	// we don't use os << fixed << value; to support gcc 2.95
-	os.setf(ios::fixed, ios::floatfield);
-	os << value;
-	string const orig = os.str();
-	if (orig.length() < width) {
-		string pad = string(width - (orig.length() + 1), ' ');
-		return pad + orig + '%';
-	}
 
-	string integer = orig;
-	string const fractional = trim(split(integer, '.'));
-
-	// we just overflow here
-	if (integer.length() >= width - 2)
-		return integer + '%';
-
-	// take off integer, '.', and '%';
-	string::size_type remaining = width - (integer.length() + 2);
-
-	string frac;
-	string pad;
-
-	if (fractional.length() < remaining) {
-		pad = string(remaining - fractional.length(), ' ');
-		frac = fractional;
+	if (value > .001) {
+		// os << fixed << value unsupported by gcc 2.95
+		os.setf(ios::fixed, ios::floatfield);
+		os << setw(int_width + fract_width + 1)
+		   << setprecision(fract_width) << value;
 	} else {
-		// FIXME: round
-		frac = fractional.substr(0, remaining);
+		// os << scientific << value unsupported by gcc 2.95
+		os.setf(ios::scientific, ios::floatfield);
+		os << setw(int_width + fract_width + 1)
+		   // - 3 to count exponent part
+		   << setprecision(fract_width - 3) << value;
 	}
 
-	return pad + integer + '.' + frac + '%';
+	return os.str();
+}
+
+template <>
+unsigned int lexical_cast_no_ws<unsigned int>(std::string const & str)
+{
+	char* endptr;
+
+	unsigned long ret = strtoul(str.c_str(), &endptr, 0);
+	if (*endptr) {
+		throw std::invalid_argument("lexical_cast_no_ws<T>(\""+ str +"\")");
+	}
+	return ret;
 }

@@ -72,45 +72,6 @@ time_t op_get_mtime(char const * file)
 }
 
 
-/**
- * op_move_regular_file - move file between directory
- * @param new_dir  the destination directory
- * @param old_dir  the source directory
- * @param name  the filename
- *
- * move the file old_dir/name to new_dir/name iff
- * old_dir/name is a regular file
- *
- * return > 0 if the file is not a regular file, == 0 if the
- * file is successfully moved and < 0 on error
- */
-int op_move_regular_file(char const * new_dir,
-	char const * old_dir, char const * name)
-{
-	int ret = 1;
-	struct stat st;
-
-	char * src = xmalloc(strlen(old_dir) + strlen(name) + 2);
-	char * dest = xmalloc(strlen(new_dir) + strlen(name) + 2);
-
-	strcpy(src, old_dir);
-	strcat(src, "/");
-	strcat(src, name);
-
-	strcpy(dest, new_dir);
-	strcat(dest, "/");
-	strcat(dest, name);
-
-	// FIXME: rename is not cross-mount robust
-	if (!stat(src, &st) && S_ISREG(st.st_mode))
-		ret = rename(src, dest);
-
-	free(src);
-	free(dest);
-
-	return ret;
-}
-
 /* remove_component_p() and op_simplify_pathname() comes from the gcc
  preprocessor */
 
@@ -281,4 +242,51 @@ char * op_relative_to_absolute_path(char const * path, char const * base_dir)
 		temp_path = xstrdup(path);
 
 	return op_simplify_pathname(temp_path);
+}
+
+/**
+ * create_dir - create a directory
+ * @param dir  the directory name to create
+ *
+ * return false if the directory dir does not exist
+ * and cannot be created
+ */
+int create_dir(char const * dir)
+{
+	if (access(dir, F_OK)) {
+		if (mkdir(dir, 0755))
+			return 1;
+	}
+	return 0;
+}
+
+/**
+ * create_path - create a path
+ * @param path  the path to create
+ *
+ * create directory for each dir components in path
+ * return false if one of the path cannot be created.
+ * the last path component is not considered as a directory
+ * but as a filename
+ */
+int create_path(char const * path)
+{
+	int ret;
+
+	char * str = xstrdup(path);
+
+	char * pos = str[0] == '/' ? str + 1 : str;
+
+	for ( ; (pos = strchr(pos, '/')) != NULL; ++pos) {
+		*pos = '\0';
+		ret = create_dir(str);
+		*pos = '/';
+		if (ret) {
+			free(str);
+			return ret;
+		}
+	}
+
+	free(str);
+	return 0;
 }

@@ -201,9 +201,7 @@ void opd_check_image_mtime(struct opd_image * image)
 {
 	uint i;
 	char * mangled;
-	uint len;
 	time_t newmtime = op_get_mtime(image->name);
-	char const * app_name;
 
 	if (image->mtime == newmtime)
 		return;
@@ -211,21 +209,18 @@ void opd_check_image_mtime(struct opd_image * image)
 	verbprintf("Current mtime %lu differs from stored "
 		"mtime %lu for %s\n", newmtime, image->mtime, image->name);
 
-	app_name = separate_lib_samples ? image->app_name : NULL;
-	mangled = op_mangle_filename(image->name, app_name);
-
-	len = strlen(mangled);
-
 	for (i = 0; i < op_nr_counters; i++) {
 		samples_odb_t * db = &image->sample_files[i];
 		if (db->base_memory) {
 			odb_close(db);
 		}
-		sprintf(mangled + len, "#%d", i);
-		verbprintf("Deleting out of date \"%s\"\n", mangled);
-		remove(mangled);
+		if (ctr_event[i]) {
+			mangled = opd_mangle_filename(image, i, 0);
+			verbprintf("Deleting out of date \"%s\"\n", mangled);
+			remove(mangled);
+			free(mangled);
+		}
 	}
-	free(mangled);
 
 	opd_open_image(image);
 }

@@ -54,7 +54,7 @@ void opd_init_kernel_image(void)
 {
 	/* for no vmlinux */
 	if (!vmlinux)
-		vmlinux = "/no-vmlinux";
+		vmlinux = "no-vmlinux";
 	kernel_image = opd_get_kernel_image(vmlinux, 0);
 }
 
@@ -221,12 +221,8 @@ void opd_reread_module_info(void)
 			continue;
 		}
 
-		/* Hacky: pp tools rely on at least one '}' in samples filename
-		 * so I force module filename as if it reside in / directory */
-		module_name[0] = '/';
-
 		ret = sscanf(line, "%256s %u %u %4096s %32s %llx",
-			     module_name+1, &module_size, &ref_count,
+			     module_name, &module_size, &ref_count,
 			     dependencies, live_info, &start_address);
 		if (ret != 6) {
 			printf("bad /proc/modules entry: %s\n", line);

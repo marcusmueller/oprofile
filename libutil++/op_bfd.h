@@ -18,11 +18,13 @@
 
 #include <vector>
 #include <string>
+#include <list>
 
 #include "utility.h"
 #include "op_types.h"
 
 class op_bfd;
+class string_filter;
 
 /// all symbol vector indexing uses this type
 typedef size_t symbol_index_t;
@@ -36,16 +38,12 @@ symbol_index_t const nil_symbol_index = symbol_index_t(-1);
 class op_bfd_symbol {
 public:
 
-	op_bfd_symbol(asymbol const * a, u32 value, u32 filepos,
-		      bfd_vma sect_vma, u32 size, std::string name)
-		:
-		bfd_symbol(a),
-		symb_value(value),
-		section_filepos(filepos),
-		section_vma(sect_vma),
-		symb_size(size),
-		symb_name(name)
-		{}
+	/// ctor for real symbols
+	op_bfd_symbol(asymbol const * a);
+
+	/// ctor for artificial symbols
+	op_bfd_symbol(bfd_vma vma, size_t size, std::string const & name);
+
 	bfd_vma vma() const { return symb_value + section_vma; }
 	u32 value() const { return symb_value; }
 	u32 filepos() const { return symb_value + section_filepos; }
@@ -55,7 +53,7 @@ public:
 	void size(size_t s) { symb_size = s; }
 
 	/// compare two symbols by their filepos()
-	bool operator<(op_bfd_symbol const& lhs) const;
+	bool operator<(op_bfd_symbol const & lhs) const;
 
 private:
 	/// the original bfd symbol, this can be null if the symbol is an
@@ -84,14 +82,12 @@ class op_bfd {
 public:
 	/**
 	 * @param filename the name of the image file
-	 * @param excluded symbol names to exclude
-	 * @param included symbol names to include
+	 * @param symbol_filter  filter to apply to symbols
 	 *
 	 * All errors are fatal.
 	 */
 	op_bfd(std::string const & filename,
-	       std::vector<std::string> const & excluded,
-	       std::vector<std::string> const & included);
+	       string_filter const & symbol_filter);
 
 	/// close an opened bfd image and free all related resources
 	~op_bfd();
@@ -108,7 +104,7 @@ public:
 	 * retrieve the linenr and so can return zero in linenr
 	 */
 	bool get_linenr(symbol_index_t sym_idx, uint offset,
-			std::string & filename, unsigned int & linenr) const;
+			std::string & filename, uint & linenr) const;
 
 	/**
 	 * @param sym_idx symbol index
@@ -146,9 +142,6 @@ public:
 	/** return the text section filepos. */
 	u32 const get_start_offset() const { return text_offset; }
 
-	/// returns true if the underlying bfd object contains debug info
-	bool have_debug_info() const;
-
 	/// return the image name of the underlying binary image
 	std::string get_filename() const;
 
@@ -173,9 +166,26 @@ private:
 	// by this value.
 	u32 text_offset;
 
-	/// collect the symbols excluding any in the given vector
-	bool get_symbols(std::vector<std::string> const & excluded,
-			 std::vector<std::string> const & included);
+	/// true if at least one section has (flags & SEC_DEBUGGING) != 0
+	bool debug_info;
+
+	/// temporary container for getting symbols
+	typedef std::list<op_bfd_symbol> symbols_found_t;
+
+	/**
+	 * Collect the symbols excluding any in the given vector.
+	 *
+	 * Returns false if there were no symbols in the binary
+	 * before filtering.
+	 */
+	void get_symbols(symbols_found_t & symbols);
+
+	/**
+	 * Add the symbols in the binary, applying filtering,
+	 * and handling artificial symbol.
+	 */
+	void add_symbols(symbols_found_t & symbols,
+	                 string_filter const & symbol_filter);
 
 	/**
 	 * symbol_size - return the size of a symbol
@@ -184,10 +194,8 @@ private:
 	size_t symbol_size(op_bfd_symbol const & sym,
 			   op_bfd_symbol const * next) const;
 
-	/**
-	 * create an artificial symbol which cover the vma range start, end
-	 */
-	void create_artificial_symbol(bfd_vma start, bfd_vma end);
+	/// create an artificial symbol for a symbolless binary
+	op_bfd_symbol const create_artificial_symbol();
 };
 
 #endif /* !OP_BFD_H*/

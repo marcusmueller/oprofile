@@ -26,11 +26,15 @@ extern "C" char * cplus_demangle(char const * mangled, int options);
 using namespace std;
 
 namespace options {
-	extern bool demangle_and_shrink;
+	extern bool smart_demangle;
+	extern bool demangle;
 }
 
 string const demangle_symbol(string const & name)
 {
+	if (!options::demangle)
+		return name;
+
 	// Do not try to strip leading underscore, this leads to many
 	// C++ demangling failures.
 	char * unmangled = cplus_demangle(name.c_str(), DMGL_PARAMS | DMGL_ANSI);
@@ -41,7 +45,7 @@ string const demangle_symbol(string const & name)
 	string result(unmangled);
 	free(unmangled);
 
-	if (options::demangle_and_shrink) {
+	if (options::smart_demangle) {
 		static bool init = false;
 		static regular_expression_replace regex;
 		if (init == false) {

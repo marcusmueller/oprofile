@@ -21,10 +21,27 @@ extern "C" {
 int op_file_readable(char const * file);
 int op_get_fsize(char const * file, off_t * size);
 time_t op_get_mtime(char const * file);
-int op_move_regular_file(char const * new_dir,
-	char const * old_dir, char const * name);
 char * op_relative_to_absolute_path(
 	char const * path, char const * base_dir);
+
+/**
+ * create_dir - create a directory
+ * @param dir  the directory name to create
+ *
+ * return false if the directory dir does not exist
+ * and cannot be created
+ */
+int create_dir(char const * dir);
+
+
+/**
+ * create_path - create a path
+ * @param path  the path to create
+ *
+ * create directory for each dir components in path
+ * return false if one of the path cannot be created.
+ */
+int create_path(char const * path);
 
 #ifdef __cplusplus
 }

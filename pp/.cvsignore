@@ -2,7 +2,8 @@
 op_merge
 Makefile
 Makefile.in
-op_time
-oprofpp
-oprof_convert
-op_to_source
+opannotate
+opdiff
+opgprof
+opreport
+opsummary
