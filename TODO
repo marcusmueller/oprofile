@@ -1,8 +1,6 @@
 0.3 Release
 -----------
 
- o oprofpp -s is especially slow, we need to take care of that, probably by passing a
-   hint to samples_container_t::add to collect samples only for the selected symbols
  o verify 2.2/modversions etc. module build
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o document gcc 2.95 and linenr info problems especially for inline functions

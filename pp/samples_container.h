@@ -46,13 +46,16 @@ public:
 	 * add() -  record symbols/samples in the underlined container
 	 * @param samples_files the samples files container
 	 * @param abfd the associated bfd object
+	 * @param symbol_name if non empty add will record samples only
+	 * for this symbol name else all samples will be recorded
 	 *
 	 * add() is an helper for delayed ctor. Take care you can't safely
 	 * make any call to add after any other member function call.
 	 * Obviously you can add only samples files which are coherent (same
 	 * sampling rate, same events etc.)
 	 */
-	void add(opp_samples_files const & samples_files, op_bfd const & abfd);
+	void add(opp_samples_files const & samples_files, op_bfd const & abfd,
+		 std::string const & symbol_name = std::string());
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
 	symbol_entry const * find_symbol(bfd_vma vma) const;

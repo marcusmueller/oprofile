@@ -270,7 +270,7 @@ int main(int argc, char const *argv[])
 
 			samples_files.set_start_offset(abfd.get_start_offset());
 
-			samples.add(samples_files, abfd);
+			samples.add(samples_files, abfd, options::symbol);
 		} else {
 			string app_name;
 			string lib_name;
@@ -279,7 +279,7 @@ int main(int argc, char const *argv[])
 			op_bfd abfd(demangle_filename(lib_name), options::exclude_symbols);
 			samples_files.set_start_offset(abfd.get_start_offset());
 
-			samples.add(samples_files, abfd);
+			samples.add(samples_files, abfd, options::symbol);
 		}
 
 		if (first_file == true) {

@@ -76,7 +76,8 @@ samples_container_t::~samples_container_t()
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
 void samples_container_t::
-add(opp_samples_files const & samples_files, op_bfd const & abfd)
+add(opp_samples_files const & samples_files, op_bfd const & abfd,
+    string const & symbol_name)
 {
 	// paranoid checking
 	if (nr_counters != static_cast<uint>(-1) &&
@@ -93,6 +94,10 @@ add(opp_samples_files const & samples_files, op_bfd const & abfd)
 	bool const need_details = (flags & osf_details);
 
 	for (symbol_index_t i = 0 ; i < abfd.syms.size(); ++i) {
+
+		if (!symbol_name.empty() && abfd.syms[i].name() != symbol_name)
+			continue;
+
 		u32 start, end;
 		string filename;
 		uint linenr;

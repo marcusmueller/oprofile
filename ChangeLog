@@ -1,5 +1,19 @@
 2002-06-07  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* TODO: update
+
+	* pp/samples_container.cpp:
+	* pp/samples_container.h: add an hint parameter to add()
+	  used to avoid recording all samples.
+	* pp/oprofpp.cpp: use it for the -s option. This change
+	  slightly behavior of oprofpp -s, now percent are relative
+	  to the selected symbol, not to the whole samples file.
+	  Performance of oprofpp -s are improved a lot (40 times on vmlinux)
+
+	* utils/Makefile.in: missing libs dependencies
+
+2002-06-07  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/Makefile.in:
 	* dae/Makefile.in:
 	* gui/Makefile.in: update dependencies for library
