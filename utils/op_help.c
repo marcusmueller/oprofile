@@ -411,6 +411,7 @@ int main(int argc, char const *argv[])
 		break;
 	case CPU_PPC64_POWER4:
 	case CPU_PPC64_POWER5:
+	case CPU_PPC64_970:
 		break;
 	case CPU_RTC:
 		break;

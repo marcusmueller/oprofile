@@ -41,6 +41,7 @@ typedef enum {
 	CPU_ARM_XSCALE2, /**< ARM XScale 2 */
 	CPU_PPC64_POWER4, /**< ppc64 POWER4 family */
 	CPU_PPC64_POWER5, /**< ppc64 POWER5 family */
+	CPU_PPC64_970, /**< ppc64 970 family */
 	MAX_CPU_TYPE
 } op_cpu;
 

@@ -663,6 +663,7 @@ char const * find_mapping_for_event(u8 nr, op_cpu cpu_type)
 	FILE * fp = open_event_mapping_file(cpu_name);
 	char const * map = NULL;
 	switch (cpu_type) {
+		case CPU_PPC64_970:
 		case CPU_PPC64_POWER4:
 		case CPU_PPC64_POWER5:
 			if (!fp) {
@@ -807,6 +808,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_ARM_XSCALE2:
 			descr->name = "CPU_CYCLES";
 			break;
+		case CPU_PPC64_970:
 		case CPU_PPC64_POWER4:
 		case CPU_PPC64_POWER5:
 			descr->name = "CYCLES";
