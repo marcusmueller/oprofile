@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.19 2000/08/24 22:41:35 moz Exp $ */
+/* $Id: oprofile.c,v 1.20 2000/08/25 03:49:52 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 
@@ -66,13 +66,11 @@ static struct _oprof_data oprof_data[NR_CPUS];
 static void evict_op_entry(struct _oprof_data *data, struct op_sample *ops)
 {
 	memcpy(&data->buffer[data->nextbuf],ops,sizeof(struct op_sample));
-	if (++data->nextbuf!=data->buf_size)
+	if (++data->nextbuf!=(data->buf_size-OP_PRE_WATERMARK)) {
+		if (data->nextbuf==data->buf_size)
+			data->nextbuf=0;
 		return;
-
-	/* FIXME: we should wake up a few samples before the end so we 
-	 * can reduce the amount of thread wakeups
-	 */ 
-	data->nextbuf=0;
+	}
 	oprof_ready[smp_processor_id()] = 1;
 }
 
@@ -515,7 +513,7 @@ int oprof_thread(void *arg)
 		}
 		current->state = TASK_INTERRUPTIBLE;
 		/* FIXME: determine best value here */
-		schedule_timeout(HZ/40);
+		schedule_timeout(HZ/10);
 
 		if (diethreaddie)
 			break;
@@ -600,6 +598,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 {
 	struct op_sample *mybuf;
 	uint i;
+	uint num;
 	ssize_t max;
 
 	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
@@ -610,11 +609,11 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 
 	max = sizeof(struct op_sample)*op_buf_size;
 
-	if (*ppos || count!=max)
+	if (*ppos || count!=sizeof(struct op_sample)+max)
 		return -EINVAL;
 
 	/* FIXME: vmalloc */
-	mybuf = kmalloc(max,GFP_KERNEL);
+	mybuf = kmalloc(sizeof(struct op_sample)+max,GFP_KERNEL);
 	if (!mybuf)
 		return -EFAULT;
 
@@ -636,16 +635,19 @@ again:
 doit:
 	pmc_select_stop(i);
 
-	if (oprof_data[i].nextbuf) /* FIXME: remove */
-		printk("oprofile: lost %u samples waking up.\n",oprof_data[i].nextbuf);
+	num = oprof_data[i].nextbuf;
+	/* might have overflowed */
+	if (num < oprof_data[i].buf_size/2)
+		num = oprof_data[i].buf_size;
+	printk("oprofile: num %u, nextbuf %u\n",num,oprof_data[i].nextbuf);
 
-	memcpy(mybuf,oprof_data[i].buffer,max);
+	mybuf->count = mybuf->pid = 0;
+	mybuf->eip = num;
+	memcpy(mybuf+sizeof(struct op_sample),oprof_data[i].buffer,max);
 	pmc_select_start(i);
 
-	if (copy_to_user(buf,mybuf, count)) {
-		kfree(mybuf);
-		return -EFAULT;
-	}
+	if (copy_to_user(buf,mybuf, count))
+		count = -EFAULT;
 
 	kfree(mybuf);
 	return count;

@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.9 2000/08/18 00:31:39 moz Exp $ */
+/* $Id: oprofile.h,v 1.10 2000/08/25 03:49:52 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -46,6 +46,11 @@ struct _oprof_data {
 #define P6_MSR_EVNTSEL0 0x186
 #define P6_MSR_EVNTSEL1 0x187
 #define MSR_APIC_BASE   0x1B
+
+/* oprof_data->ready will be set this many samples
+ * before the end of the eviction buffer
+ */
+#define OP_PRE_WATERMARK 10
 
 #define OP_BITS 2
 /* 1==mapping info, 0 otherwise */
