@@ -99,7 +99,7 @@ string trim(string const & str, string const & totrim)
 }
 
 
-string const format_double(double value, size_t int_width, size_t fract_width)
+string const format_percent(double value, size_t int_width, size_t fract_width)
 {
 	ostringstream os;
 

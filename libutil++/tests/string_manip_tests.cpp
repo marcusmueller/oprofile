@@ -171,7 +171,7 @@ static void separate_token_tests()
 
 // FIXME: test for rtrim/ltrim/trim ?
 
-static input_output<double, char const*> expect_format_double[] =
+static input_output<double, char const*> expect_format_percent[] =
 {
 	{ 2.2,        " 2.2000" },
 	{ 0,          "0.0e+00" },
@@ -183,13 +183,13 @@ static input_output<double, char const*> expect_format_double[] =
 	{ -1.0, 0 }
 };
 
-static void format_double_tests()
+static void format_percent_tests()
 {
 	input_output<double, char const*> const * cur;
-	for (cur = expect_format_double; cur->input != -1.0; ++cur) {
-		string result = format_double(cur->input, percent_int_width,
+	for (cur = expect_format_percent; cur->input != -1.0; ++cur) {
+		string result = format_percent(cur->input, percent_int_width,
 		      percent_fract_width);
-		check_result("erase_to_last_of()", cur->input, cur->output,
+		check_result("format_percent()", cur->input, cur->output,
 			     result);
 	}
 }
@@ -254,6 +254,6 @@ int main()
 	split_tests();
 	is_prefix_tests();
 	separate_token_tests();
-	format_double_tests();
+	format_percent_tests();
 	return EXIT_SUCCESS;
 }

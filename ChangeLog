@@ -1,5 +1,14 @@
 2003-11-02  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/string_manip.cpp: format_double can only format percent
+	* libutil++/string_manip.h:
+	* libpp/format_output.cpp:
+	* libutil++/tests/string_manip_tests.cpp:
+	* pp/opannotate.cpp:
+	* pp/opreport.cpp: s/format_double/format_percent/
+
+2003-11-02  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/glob_filter.h:
 	* libutil++/string_filter.h:
 	* libutil++/tests/string_filter_tests.cpp: minor tidy
@@ -144,7 +153,7 @@
 2003-10-30  John Levon  <levon@movementarian.org>
 
 	* libutil++/tests/string_manip_tests.cpp: fix tobool test
-	("33" is not castable to boool)
+	("33" is not castable to bool)
 
 2003-10-30  Philippe Elie  <phil.el@wanadoo.fr>
 

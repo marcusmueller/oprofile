@@ -150,7 +150,7 @@ string count_str(count_array_t const & count,
 	for (size_t i = 0; i < nr_events; ++i) {
 		os << setw(count_width) << count[i] << ' ';
 
-		os << format_double(op_ratio(count[i], total[i]) * 100.0,
+		os << format_percent(op_ratio(count[i], total[i]) * 100.0,
 				    percent_int_width, percent_fract_width);
 	}
 	return os.str();

@@ -386,7 +386,7 @@ string formatter::format_percent(field_datum const & f)
 	double ratio = op_ratio(f.sample.counts[f.pclass],
 	                        total_count[f.pclass]);
 
-	return format_double(ratio * 100, percent_int_width,
+	return ::format_percent(ratio * 100, percent_int_width,
 	                     percent_fract_width);
 }
 
@@ -398,7 +398,7 @@ string formatter::format_cumulated_percent(field_datum const & f)
 	double ratio = op_ratio(cumulated_percent[f.pclass],
 	                        total_count[f.pclass]);
 
-	return format_double(ratio * 100, percent_int_width,
+	return ::format_percent(ratio * 100, percent_int_width,
 	                     percent_fract_width);
 }
 
@@ -409,7 +409,7 @@ string formatter::format_percent_details(field_datum const & f)
 	double ratio = op_ratio(f.sample.counts[f.pclass],
 	                        total_count_details[f.pclass]);
 
-	return format_double(ratio * 100, percent_int_width,
+	return ::format_percent(ratio * 100, percent_int_width,
 	                     percent_fract_width);
 }
 
@@ -423,7 +423,7 @@ string formatter::format_cumulated_percent_details(field_datum const & f)
 	double ratio = op_ratio(cumulated_percent_details[f.pclass],
 	                        total_count_details[f.pclass]);
 
-	return format_double(ratio * 100, percent_int_width,
+	return ::format_percent(ratio * 100, percent_int_width,
 			     percent_fract_width);
 }
 

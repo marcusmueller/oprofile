@@ -55,7 +55,7 @@ std::string rtrim(std::string const & str, std::string const & totrim = "\t ");
 std::string trim(std::string const & str, std::string const & totrim = "\t ");
 
 /**
- * format_double - smart format of double value
+ * format_percent - smart format of double percentage value
  * @param value - the value
  * @param int_width - the maximum integer integer width default to 2
  * @param frac_width - the fractionnary width default to 4
@@ -67,7 +67,7 @@ std::string trim(std::string const & str, std::string const & totrim = "\t ");
  *
  */
 std::string const
-format_double(double value, size_t int_width, size_t frac_width);
+format_percent(double value, size_t int_width, size_t frac_width);
 
 /// prefered width to format percentage
 static unsigned int const percent_int_width = 2;
