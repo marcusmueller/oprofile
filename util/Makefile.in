@@ -1,4 +1,6 @@
-CXXFLAGS=@CXXFLAGS@ -Wall -pedantic -W -Wunused -Wmissing-prototypes
+# we would like to use -pedantic, but that causes throw() vs. no specification problems
+# with libiberty and string.h
+CXXFLAGS=@CXXFLAGS@ -Wall -W -Wunused -Wmissing-prototypes
 CFLAGS=-pedantic -Wall -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
 
 .PHONY: all clean install
