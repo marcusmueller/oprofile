@@ -206,7 +206,7 @@ static char * op_simplify_pathname(char * path)
 /**
  * op_relative_to_absolute_path - translate relative path to absolute path.
  * @param path  path name
- * @param base_dir  optionnal base directory, if %NULL getcwd() is used
+ * @param base_dir  optional base directory, if %NULL getcwd() is used
  * to get the base directory.
  *
  * prepend base_dir or the result of getcwd if the path is not absolute.

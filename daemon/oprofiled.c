@@ -404,9 +404,36 @@ static size_t opd_pointer_size(void)
 	size_t size;
 	char elf_header[EI_NIDENT];
 	FILE * fp;
+	char * kp_file = xmalloc(strlen(mount) + strlen("/pointer_size"));
+
+	strcpy(kp_file, mount);
+	strcat(kp_file, "/pointer_size");
+
+	/* FIXME: later, insist on pointer_size only */
+	if (op_file_readable(kp_file)) {
+		unsigned long val = 0;
+
+		fp = op_open_file(kp_file, "r");
+		if (!fp) {
+			fprintf(stderr, "oprofiled: couldn't open "
+				"%s/pointer_size.\n", mount);
+			exit(EXIT_FAILURE);
+		}
+
+		fscanf(fp, "%lu\n", &val);
+		if (!val) {
+			fprintf(stderr, "oprofiled: couldn't read "
+				"%s/pointer_size.\n", mount);
+			exit(EXIT_FAILURE);
+		}
+
+		op_close_file(fp);
+		free(kp_file);
+		return val;
+	}
 
 	if (!op_file_readable("/proc/kcore")) {
-		fprintf(stderr, "oprofiled: /proc/kcore not readable.");
+		fprintf(stderr, "oprofiled: /proc/kcore not readable.\n");
 		goto guess;
 	}
 
@@ -416,7 +443,7 @@ static size_t opd_pointer_size(void)
 
 	/* CONFIG_KCORE_AOUT exists alas */
 	if (memcmp(elf_header, ELFMAG, SELFMAG) != 0) {
-		fprintf(stderr, "oprofiled: /proc/kcore not in ELF format.");
+		fprintf(stderr, "oprofiled: /proc/kcore not in ELF format.\n");
 		goto guess;
 	}
 
