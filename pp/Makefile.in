@@ -3,7 +3,7 @@ all: oprofpp
 .PHONY: all clean srcdoc 
  
 clean: 
-	rm -f oprofpp *.o 
+	rm -f oprofpp *.o oprofpp-src.html
  
 prefix=@prefix@
 exec_prefix=@exec_prefix@

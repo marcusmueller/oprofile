@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.2 2000/08/03 03:00:42 moz Exp $
+# $Id: Makefile.in,v 1.3 2000/08/03 21:24:46 moz Exp $
 
 .PHONY: all clean srcdoc install
  
@@ -17,7 +17,7 @@ install: oprofiled op_start op_stop op_help
 	cd $(BINDIR) && chmod 755 oprofiled op_start op_stop op_help
  
 clean:
-	rm -f oprofiled op_help *.o
+	rm -f oprofiled op_help *.o oprofiled-src.html
  
 CFLAGS=-Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
 LIBS=@extra_libraries@ -lpopt
