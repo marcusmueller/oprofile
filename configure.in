@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.104 2002/09/23 01:08:32 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.105 2002/09/23 03:01:09 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -142,6 +142,7 @@ if test "$OPROFILE_25" = "no"; then
 	test "$x86" = 1 && arch="x86"
 	test "$arch" = "unknown" && AC_MSG_ERROR(Unsupported architecture)
 	rm -f module/arch && ln -s "$arch" module/arch
+	ARCH_MAKEFILE=module/arch/Makefile
 
 	dnl for now we do not support PREEMPT patch
 	AC_MSG_CHECKING(for preempt patch)
@@ -286,7 +287,7 @@ AC_OUTPUT(make.common \
 	gui/ui/Makefile \
 	oprof_report/Makefile \
 	oprof_report/ui/Makefile \
-	module/arch/Makefile \
+	$ARCH_MAKEFILE \
 	version.h)
 
 if test -z "$QT_LIB"; then
