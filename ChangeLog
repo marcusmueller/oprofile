@@ -1,5 +1,10 @@
 2002-11-10  John Levon  <levon@movementarian.org>
 
+	* dae/oprofiled.c:
+	* daemon/oprofiled.c: abi tidy
+ 
+2002-11-10  John Levon  <levon@movementarian.org>
+
 	* autogen.sh: be verbose
  
 	* gui/Makefile.am:

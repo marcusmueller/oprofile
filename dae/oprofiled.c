@@ -738,12 +738,23 @@ static void setup_signals(void)
 }
 
 
+static void write_abi(void)
+{
+#ifdef OPROF_ABI
+	char * cbuf;
+ 
+	cbuf = xmalloc(strlen(OP_BASE_DIR) + 5);
+	strcpy(cbuf, OP_BASE_DIR);
+	strcat(cbuf, "/abi");
+	op_write_abi_to_file(cbuf);
+	free(cbuf);
+#endif
+}
+ 
+
 int main(int argc, char const * argv[])
 {
 	struct op_buffer_head * sbuf;
-#ifdef OPROF_ABI
-	char * cbuf;
-#endif
 	size_t s_buf_bytesize;
 	struct op_note * nbuf;
 	size_t n_buf_bytesize;
@@ -760,13 +771,7 @@ int main(int argc, char const * argv[])
 
 	opd_init_kernel_image();
 
-#ifdef OPROF_ABI
-	cbuf = xmalloc(strlen(OP_BASE_DIR) + 5);
-	strcpy(cbuf, OP_BASE_DIR);
-	strcat(cbuf, "/abi");
-	op_write_abi_to_file(cbuf);
-	free(cbuf);
-#endif
+	write_abi();
 
 	if (atexit(clean_exit)) {
 		fprintf(stderr, "Couldn't set exit cleanup !\n");
