@@ -1,3 +1,8 @@
+2003-01-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libdb/Makefile.am: fix include dir
+	* libdb/db_test.c: don't assume than sizeof(struct opd_header) == 128
+
 2003-01-06  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/op_bfd.h: fix for 64 bits.
