@@ -119,6 +119,8 @@ class output {
 	       bool source_with_assembly,
 	       int counter_mask);
 
+	~output();
+
 	bool treat_input(const string & image_name, const string & sample_file);
 
  private:
@@ -308,6 +310,7 @@ output::output(int argc_, char const * argv_[],
 	:
 	argc(argc_),
 	argv(argv_),
+	samples(0),
 	begin_comment("/*"),
 	end_comment("*/"),
 	cpu_speed(0.0),
@@ -358,6 +361,11 @@ output::output(int argc_, char const * argv_[],
 	if (!assembly)
 		flag = static_cast<OutSymbFlag>(flag | osf_linenr_info);
 	samples = new samples_files_t(false, flag, false, counter_mask);
+}
+
+output::~output()
+{
+	delete samples;
 }
 
 // build a counter_setup from a header.
