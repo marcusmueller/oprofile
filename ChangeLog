@@ -1,3 +1,8 @@
+2004-01-27  Will Cohen  <wcohen@redhat.com>
+
+	* events/i386/p4/unit_masks:
+	* events/i386/p4-ht/unit_masks: correct branch_type unit mask.
+	
 2004-01-25  John Levon  <levon@movementarian.org>
 
 	* doc/Makefile.am: fix make chunk

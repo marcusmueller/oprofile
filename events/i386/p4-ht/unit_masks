@@ -117,8 +117,9 @@ name:uops_retired type:bitmask default:0x01
 name:uop_type type:bitmask default:0x02
 	0x02 count uops which are load operations
 	0x04 count uops which are store operations
-name:branch_type type:bitmask default:0x1e
+name:branch_type type:bitmask default:0x1f
+	0x01 count unconditional jumps
 	0x02 count conditional jumps
-	0x04 count indirect call branches
+	0x04 count call branches
 	0x08 count return branches
-	0x10 count returns, indirect calls or indirect jumps
+	0x10 count indirect jumps
