@@ -1,5 +1,9 @@
 2003-03-01  John Levon  <levon@movementarian.org>
 
+	* libop/op_cpu_type.c: fix alpha/ev4 mis-detection
+
+2003-03-01  John Levon  <levon@movementarian.org>
+
 	* doc/oprofile.xml: expand intro a little, small fixes
 
 2003-03-01  John Levon  <levon@movementarian.org>
