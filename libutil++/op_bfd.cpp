@@ -118,7 +118,7 @@ op_bfd::~op_bfd()
 }
 
 
-bool op_bfd_symbol::operator<(op_bfd_symbol const& rhs) const
+bool op_bfd_symbol::operator<(op_bfd_symbol const & rhs) const
 {
 	return filepos() < rhs.filepos();
 }
