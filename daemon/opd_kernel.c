@@ -235,131 +235,6 @@ static void opd_read_module_info(void)
 
 
 /**
- * opd_get_module_info - parse mapping information for kernel modules
- *
- * Parse the file /proc/ksyms to read in mapping information for
- * all kernel modules. The modutils package adds special symbols
- * to this file which allows determination of the module image
- * and mapping addresses of the form :
- *
- * __insmod_modulename_Oobjectfile_Mmtime_Vversion
- * __insmod_modulename_Ssectionname_Llength
- *
- * Currently the image file "objectfile" is stored, and details of
- * ".text" sections.
- *
- * There is no query_module API that allow to get directly the pathname
- * of a module so we need to parse all the /proc/ksyms.
- *
- * FIXME remove this function when we drop old modules compatibility
- */
-static void opd_get_module_info(void)
-{
-	char * line;
-	char * cp, * cp2, * cp3;
-	FILE * fp;
-	struct opd_module * mod;
-	char * modname;
-	char * filename;
-
-	nr_modules=0;
-
-	fp = op_try_open_file("/proc/ksyms", "r");
-
-	if (!fp) {
-		printf("oprofiled: /proc/ksyms not readable, fallback to /proc/modules.\n");
-		opd_read_module_info();
-		return;
-	}
-
-	while (1) {
-		line = op_get_line(fp);
-
-		if (!line)
-			break;
-
-		if (!strcmp("", line)) {
-			free(line);
-			continue;
-		}
-
-		if (strlen(line) < 9) {
-			printf("oprofiled: corrupt /proc/ksyms line \"%s\"\n", line);
-			goto failure;
-		}
-
-		if (strncmp("__insmod_", line + 9, 9)) {
-			free(line);
-			continue;
-		}
-
-		cp = line + 18;
-		cp2 = cp;
-		while ((*cp2) && !!strncmp("_S", cp2 + 1, 2) && !!strncmp("_O", cp2 + 1, 2))
-			cp2++;
-
-		if (!*cp2) {
-			printf("oprofiled: corrupt /proc/ksyms line \"%s\"\n", line);
-			goto failure;
-		}
-
-		cp2++;
-		/* freed by opd_clear_module_info() or opd_get_module() */
-		modname = xmalloc((size_t)((cp2 - cp) + 1));
-		strncpy(modname, cp, (size_t)((cp2 - cp)));
-		modname[cp2-cp] = '\0';
-
-		mod = opd_get_module(modname);
-
-		switch (*(++cp2)) {
-			case 'O':
-				/* get filename */
-				cp2++;
-				cp3 = cp2;
-
-				while ((*cp3) && !!strncmp("_M", cp3 + 1, 2))
-					cp3++;
-
-				if (!*cp3) {
-					free(line);
-					continue;
-				}
-
-				cp3++;
-				filename = xmalloc((size_t)(cp3 - cp2 + 1));
-				strncpy(filename, cp2, (size_t)(cp3 - cp2));
-				filename[cp3-cp2] = '\0';
-
-				mod->image = opd_get_kernel_image(filename, 0);
-				free(filename);
-				break;
-
-			case 'S':
-				/* get extent of .text section */
-				cp2++;
-				if (strncmp(".text_L", cp2, 7)) {
-					free(line);
-					continue;
-				}
-
-				cp2 += 7;
-				sscanf(line,"%llx", &mod->start);
-				sscanf(cp2,"%llu", &mod->end);
-				mod->end += mod->start;
-				break;
-		}
-
-		free(line);
-	}
-
-failure:
-	if (line)
-		free(line);
-	op_close_file(fp);
-}
- 
-
-/**
  * opd_drop_module_sample - drop a module sample efficiently
  * @param eip  eip of sample
  */
@@ -449,7 +324,7 @@ static void opd_handle_module_sample(vma_t eip, u32 counter)
 	if (!module) {
 		/* not found in known modules, re-read our info and retry */
 		opd_clear_module_info();
-		opd_get_module_info();
+		opd_read_module_info();
 
 		module = opd_find_module_by_eip(eip);
 	}
@@ -566,14 +441,13 @@ static void opd_put_kernel_sample(vma_t eip, u32 counter,
 	if (!module) {
 		/* not found in known modules, re-read and retry */
 		opd_clear_module_info();
-		opd_get_module_info();
+		opd_read_module_info();
 
 		module = opd_find_module_by_eip(eip);
 	}
 
 	if (module) {
-		/* fix bad parsing /proc/ksyms see opd_get_module_info().
-		 * We can get also nil image for initrd setups:
+		/* We can get null image for initrd setups:
 		 * opd_drop_module_sample() create a module but can't create
 		 * a proper image */
 		if (!module->image) {

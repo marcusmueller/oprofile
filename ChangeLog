@@ -1,5 +1,9 @@
 2003-03-02  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_kernel.c: remove /proc/ksyms reading
+
+2003-03-02  John Levon  <levon@movementarian.org>
+
 	* libutil/op_fileio.c: change op_get_line to return
 	  NULL on EOF. Also bump up the default allocation some.
 
