@@ -1,5 +1,17 @@
 2002-05-17  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* dae/opd_proc.c: from a typo in opd_put_image_samples first
+	  incoming samples for each image was always ignored. As
+	  a side effect if opd_open_sample_file() fail the daemon
+	  will die with a seg fault. This behavior is in 0.2 release.
+	  fix #556918
+
+2002-05-17  John Levon  <moz@compsoc.man.ac.uk>
+
+	* utils/op_start: typo in detect stale lock file
+
+2002-05-17  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/*: gcc 3.1 compilation.
 
 2002-05-16  Philippe Elie  <phil.el@wanadoo.fr>

@@ -437,7 +437,7 @@ void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count)
 
 	if (!sample_file->tree.base_memory) {
 		opd_open_sample_file(image, counter);
-		if (sample_file->tree.base_memory) {
+		if (!sample_file->tree.base_memory) {
 			/* opd_open_sample_file output an error message */
 			return;
 		}
