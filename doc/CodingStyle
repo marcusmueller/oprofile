@@ -38,6 +38,15 @@ Arbitrary rules
 
 Two blank lines between functions.
 
+Use tabs for indentation, spaces for alignment. Avoid wrapping lines,
+but if you do, choose a reasonable point and align the next line
+sensibly. If there is no sensible alignment point, use single extra
+tab to indicate "continuation". Avoid using tabs for alignment: it
+breaks on different sized tabs. Lines should be less than 80
+on screen characters wide (assuming a maximum tab-size of 8).
+
+rationale: http://www.movementarian.org/docs/whytabs/
+
 C++ inline methods in headers. use Java braces :
 
 	void method() {
