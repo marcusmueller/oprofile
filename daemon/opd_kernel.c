@@ -18,7 +18,6 @@
 #include "op_config_25.h"
 #include "op_libiberty.h"
 
-#include "p_module.h"
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -58,6 +57,7 @@ void opd_init_kernel_image(void)
 	kernel_image = opd_get_kernel_image(vmlinux, 0);
 }
 
+
 /**
  * opd_parse_kernel_range - parse the kernel range values
  */
@@ -93,11 +93,13 @@ static struct opd_module * new_module(char * name, vma_t start, vma_t end)
 	list_init(&opd_modules[nr_modules].module_list);
 	nr_modules++;
 	if (nr_modules == OPD_MAX_MODULES) {
-		fprintf(stderr, "Exceeded %u kernel modules !\n", OPD_MAX_MODULES);
+		fprintf(stderr, "Exceeded %u kernel modules !\n",
+		        OPD_MAX_MODULES);
 		exit(EXIT_FAILURE);
 	}
 	return &opd_modules[nr_modules-1];
 }
+
 
 /**
  * opd_create_module - allocate and initialise a module description
@@ -105,8 +107,8 @@ static struct opd_module * new_module(char * name, vma_t start, vma_t end)
  * @param start start address
  * @param end end address
  */
-static struct opd_module * opd_create_module(char const * name,
-				vma_t start, vma_t end)
+static struct opd_module *
+opd_create_module(char const * name, vma_t start, vma_t end)
 {
 	struct opd_module * module = xmalloc(sizeof(struct opd_module));
 
@@ -118,6 +120,7 @@ static struct opd_module * opd_create_module(char const * name,
 
 	return module;
 }
+
 
 /**
  * opd_get_module - get module structure
@@ -206,7 +209,8 @@ void opd_reread_module_info(void)
 	fp = op_try_open_file("/proc/modules", "r");
 
 	if (!fp) {
-		printf("oprofiled: /proc/modules not readable, can't process module samples.\n");
+		printf("oprofiled: /proc/modules not readable, "
+			"can't process module samples.\n");
 		return;
 	}
 
@@ -306,8 +310,9 @@ static void opd_handle_module_sample(vma_t eip, u32 counter)
 	}
 }
 
-static struct opd_module * opd_find_module(struct opd_image const * app_image,
-					   vma_t eip)
+
+static struct opd_module *
+opd_find_module(struct opd_image const * app_image, vma_t eip)
 {
 	struct list_head * pos;
 	struct opd_module * module;
@@ -337,10 +342,9 @@ static struct opd_module * opd_find_module(struct opd_image const * app_image,
  * create an opd_module and associated opd_image then put a kernel module
  * sample in the newly created image
  */
-static void opd_setup_kernel_sample(vma_t eip, u32 counter,
-				    struct opd_image * app_image,
-				    char const * name,
-				    vma_t start, vma_t end)
+static void
+opd_setup_kernel_sample(vma_t eip, u32 counter, struct opd_image * app_image,
+                        char const * name, vma_t start, vma_t end)
 {
 	struct opd_image * image;
 	struct opd_module * new_module;
@@ -361,6 +365,7 @@ static void opd_setup_kernel_sample(vma_t eip, u32 counter,
 	opd_put_image_sample(image, eip - new_module->start, counter);
 }
 
+
 /**
  * opd_put_kernel_sample - process a kernel sample when
  *   separate_kernel_samples != 0
@@ -371,8 +376,8 @@ static void opd_setup_kernel_sample(vma_t eip, u32 counter,
  * Handle a sample in kernel address space or in a module. The sample is
  * output to the relevant image file.
  */
-static void opd_put_kernel_sample(vma_t eip, u32 counter,
-				  struct opd_image * app_image)
+static void
+opd_put_kernel_sample(vma_t eip, u32 counter, struct opd_image * app_image)
 {
 	struct opd_module * module = opd_find_module(app_image, eip);
 	if (module) {
@@ -409,6 +414,7 @@ static void opd_put_kernel_sample(vma_t eip, u32 counter,
 	                        module->start, module->end);
 }
 
+
 /**
  * opd_handle_kernel_sample - process a kernel sample
  * @param eip  EIP value of sample
@@ -419,8 +425,8 @@ static void opd_put_kernel_sample(vma_t eip, u32 counter,
  * Handle a sample in kernel address space or in a module. The sample is
  * output to the relevant image file.
  */
-void opd_handle_kernel_sample(vma_t eip, u32 counter, 
-			      struct opd_image * app_image)
+void
+opd_handle_kernel_sample(vma_t eip, u32 counter, struct opd_image * app_image)
 {
 	if (no_vmlinux) {
 		opd_stats[OPD_KERNEL]++;
@@ -431,7 +437,8 @@ void opd_handle_kernel_sample(vma_t eip, u32 counter,
 	if (!app_image) {
 		if (eip >= kernel_start && eip < kernel_end) {
 			opd_stats[OPD_KERNEL]++;
-			opd_put_image_sample(kernel_image, eip - kernel_start, counter);
+			opd_put_image_sample(kernel_image, eip - kernel_start,
+			                     counter);
 			return;
 		}
 

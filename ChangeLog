@@ -1,3 +1,25 @@
+2003-06-05  John Levon  <levon@movementarian.org>
+
+	* daemon/Makefile.am:
+	* daemon/opd_kernel.c:
+	* daemon/p_module.h: remove p_module.h, unused
+
+	* daemon/opd_cookie.h: use __NR_lookup_dcookie and
+	use our definitions only if it's not defined
+
+	* daemon/opd_image.c:
+	* daemon/opd_kernel.c:
+	* daemon/opd_sample_files.c:
+	* daemon/oprofiled.c: pedantry
+
+	* libabi/op_import.cpp:
+	* libabi/abi_test.cpp: fix build from odb change
+
+	* libop/op_config.h: move NR_CPUS to ...
+
+	* libop/op_config_24.h: ... here
+
+	* libop/op_hw_config.h: remove unused OP_COUNT_MAX
 2003-06-03  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/op_header.cpp:

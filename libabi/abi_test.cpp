@@ -52,14 +52,12 @@ int main(int argc, char const ** argv)
 
 	if (db_filename.size() > 0) {
 		samples_odb_t dest;
-		char * err_msg;
 		int rc = odb_open(&dest, db_filename.c_str(), ODB_RDWR,
-		                  sizeof(struct opd_header), &err_msg);
+		                  sizeof(struct opd_header));
 
 		if (rc != EXIT_SUCCESS) {
 			cerr << "odb_open() fail:\n"
-			     << err_msg << endl;
-			free(err_msg);
+			     << dest.err_msg << endl;
 			exit(EXIT_FAILURE);
 		}
 
@@ -81,11 +79,9 @@ int main(int argc, char const ** argv)
 
     
 		for (int i = 0; i < 3793; ++i) {
-			char * err_msg;
-			int rc = odb_insert(&dest, ((i*i) ^ (i+i)), ((i*i) ^ i), &err_msg);
+			int rc = odb_insert(&dest, ((i*i) ^ (i+i)), ((i*i) ^ i));
 			if (rc != EXIT_SUCCESS) {
-				cerr << err_msg << endl;
-				free(err_msg);
+				cerr << dest.err_msg << endl;
 				exit(EXIT_FAILURE);
 			}
 		}

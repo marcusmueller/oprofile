@@ -56,7 +56,7 @@ void op_write_vma(FILE * fp, op_bfd const & abfd, bfd_vma vma)
 
 
 void get_vma_range(bfd_vma & min, bfd_vma & max,
-		   profile_container const & samples)
+                   profile_container const & samples)
 {
 	min = bfd_vma(-1);
 	max = 0;
@@ -102,7 +102,7 @@ bool aligned_samples(profile_container const & samples, int gap)
 
 
 void output_gprof(profile_container const & samples,
-		  string gmon_filename, op_bfd const & abfd)
+                  string gmon_filename, op_bfd const & abfd)
 {
 	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},};
 
@@ -188,7 +188,7 @@ void output_gprof(profile_container const & samples,
 
 
 string load_samples(op_bfd const & abfd, image_set const & images,
-		    profile_container & samples)
+                    profile_container & samples)
 {
 	image_set::const_iterator it;
 	for (it = images.begin(); it != images.end(); ) {

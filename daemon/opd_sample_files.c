@@ -202,6 +202,7 @@ err:
 	free(mangled);
 }
 
+
 /**
  * @param image  the image pointer to work on
  *
@@ -214,6 +215,7 @@ void opd_sync_image_samples_files(struct opd_image * image)
 		odb_sync(&image->sample_files[i]);
 	}
 }
+
 
 /**
  * @param image  the image pointer to work on

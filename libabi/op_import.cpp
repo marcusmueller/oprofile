@@ -146,11 +146,9 @@ void import_from_abi(abi const & abi, void const * srcv,
 		odb_value_t val;
 		ext.extract(key, src, "sizeof_odb_key_t", "offsetof_node_key");
 		ext.extract(val, src, "sizeof_odb_value_t", "offsetof_node_value");
-		char * err_msg;
-		int rc = odb_insert(dest, key, val, &err_msg);
+		int rc = odb_insert(dest, key, val);
 		if (rc != EXIT_SUCCESS) {
-			cerr << err_msg << endl;
-			free(err_msg);
+			cerr << dest->err_msg << endl;
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -189,7 +187,6 @@ int main(int argc, char const ** argv)
 		struct stat statb;
 		void * in;
 		samples_odb_t dest;
-		char * err_msg;
 		int rc;
 
 		assert((in_fd = open(inputs[0].c_str(), O_RDONLY)) > 0);		
@@ -198,11 +195,10 @@ int main(int argc, char const ** argv)
 				  MAP_PRIVATE, in_fd, 0)) != (void *)-1);
 
 		rc = odb_open(&dest, output_filename.c_str(), ODB_RDWR,
-			      sizeof(struct opd_header), &err_msg);
+			      sizeof(struct opd_header));
 		if (rc != EXIT_SUCCESS) {
 			cerr << "odb_open() fail:\n"
-			     << err_msg << endl;
-			free(err_msg);
+			     << dest.err_msg << endl;
 			exit(EXIT_FAILURE);
 		}
 

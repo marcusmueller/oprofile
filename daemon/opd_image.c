@@ -73,9 +73,7 @@ static void opd_delete_image(struct opd_image * image)
 }
 
 
-/**
- * opd_image_cleanup - clean up images structures
- */
+/** opd_image_cleanup - clean up images structures */
 void opd_image_cleanup(void)
 {
 	/* to reuse opd_for_each_image we need to process images in two pass */
@@ -97,8 +95,7 @@ void opd_for_each_image(opd_image_cb image_cb)
 	int i;
 
 	for (i = 0; i < IMAGE_HASH_SIZE; ++i) {
-		/* image callback is allowed to delete the current pointer so on
-		 * use list_for_each_safe rather list_for_each */
+		/* image callback is allowed to delete the current pointer */
 		list_for_each_safe(pos, pos2, &opd_images[i]) {
 			struct opd_image * image =
 				list_entry(pos, struct opd_image, hash_list);
@@ -112,7 +109,6 @@ void opd_for_each_image(opd_image_cb image_cb)
 /**
  * opd_create_image - allocate and initialize an image struct
  * @param hash  hash entry number
- *
  */
 static struct opd_image * opd_create_image(unsigned long hash)
 {
@@ -138,9 +134,7 @@ static struct opd_image * opd_create_image(unsigned long hash)
 }
 
 
-/**
- * opd_init_image - init an image sample file
- */
+/** opd_init_image - init an image sample file */
 static void opd_init_image(struct opd_image * image, cookie_t cookie,
 	cookie_t app_cookie)
 {
@@ -239,8 +233,7 @@ void opd_check_image_mtime(struct opd_image * image)
  *
  * count is the raw value passed from the kernel.
  */
-void opd_put_image_sample(struct opd_image * image,
-	vma_t offset, int counter)
+void opd_put_image_sample(struct opd_image * image, vma_t offset, int counter)
 {
 	samples_odb_t * sample_file;
 
@@ -269,9 +262,7 @@ static unsigned long opd_hash_cookie(cookie_t cookie)
 }
  
 
-/**
- * opd_find_image - find an image
- */
+/** opd_find_image - find an image */
 static struct opd_image * opd_find_image(cookie_t cookie, cookie_t app_cookie)
 {
 	unsigned long hash = opd_hash_cookie(cookie);
@@ -331,7 +322,8 @@ static struct opd_image * opd_get_image(cookie_t cookie, cookie_t app_cookie)
 }
 
 
-struct opd_image * opd_add_kernel_image(char const * name, char const * app_name)
+struct opd_image *
+opd_add_kernel_image(char const * name, char const * app_name)
 {
 	struct opd_image * image = opd_create_image(HASH_KERNEL);
 
@@ -344,8 +336,8 @@ struct opd_image * opd_add_kernel_image(char const * name, char const * app_name
 }
 
  
-struct opd_image * opd_get_kernel_image(char const * name,
-					char const * app_name)
+struct opd_image *
+opd_get_kernel_image(char const * name, char const * app_name)
 {
 	struct list_head * pos;
 	struct opd_image * image;

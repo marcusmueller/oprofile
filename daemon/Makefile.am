@@ -9,7 +9,6 @@ dist_sources = \
 	opd_stats.h \
 	opd_kernel.h \
 	opd_sample_files.h \
-	p_module.h \
 	opd_cookie.h
 
 EXTRA_DIST = $(dist_sources)

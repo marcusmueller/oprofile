@@ -401,6 +401,7 @@ struct list_head * op_events(op_cpu cpu_type)
 	return &events_list;
 }
 
+
 void op_free_events(void)
 {
 	struct list_head * pos, * pos2;
@@ -414,6 +415,7 @@ void op_free_events(void)
 		delete_unit_mask(unit);
 	}
 }
+
 
 struct op_event * find_event(u8 nr)
 {
@@ -474,6 +476,7 @@ int op_check_events(int ctr, u8 nr, u16 um, op_cpu cpu_type)
 
 	return ret;
 }
+
 
 unsigned int op_min_count(u8 ctr_type, op_cpu cpu_type)
 {

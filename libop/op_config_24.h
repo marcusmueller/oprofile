@@ -67,4 +67,9 @@
 /** size of string pool in bytes */
 #define POOL_SIZE 65536
 
+#ifndef NR_CPUS
+/** maximum number of cpus present in the box */
+#define NR_CPUS 32
+#endif
+
 #endif /* OP_CONFIG_24_H */

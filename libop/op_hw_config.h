@@ -22,9 +22,6 @@
 #define OP_MAX_COUNTERS	8
 #endif
 
-/** a plain unsigned int magic value to check against counter overflow */
-#define OP_COUNT_MAX	~0u
-
 /** maximum number of events between interrupts. Counters are 40 bits, but
  * for convenience we only use 32 bits. The top bit is used for overflow
  * detection, so user can set up to (2^31)-1 */

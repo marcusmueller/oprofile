@@ -116,12 +116,12 @@ static void opd_open_logfile(void)
  
 
 /**
- * op_open_files - open necessary files
+ * opd_open_files - open necessary files
  *
  * Open the device files and the log file,
  * and mmap() the hash map.
  */
-static void op_open_files(void)
+static void opd_open_files(void)
 {
 	devfd = op_open_device(OP_DEVICE, 0);
 	if (devfd == -1) {
@@ -554,7 +554,7 @@ int main(int argc, char const * argv[])
 
 	opd_go_daemon();
 
-	op_open_files();
+	opd_open_files();
 
 	for (i=0; i< OPD_MAX_STATS; i++) {
 		opd_stats[i] = 0;

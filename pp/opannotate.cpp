@@ -91,6 +91,7 @@ image_set populate_samples(profile_container & samples,
 	return images;
 }
 
+
 void save_sample_file_header(partition_files const & files)
 {
 	if (files.nr_set()) {
