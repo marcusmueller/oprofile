@@ -149,6 +149,14 @@ struct inverted_profile {
  * dependent images etc.). This function returns an inverted
  * set of sample files, where the primary sort is on the binary
  * image to open.
+ *
+ * Thus each element in the returned list is for exactly one
+ * binary file that we're going to bfd_openr(). Attached to that
+ * is the actual sample files we need to process for that binary
+ * file. In order to get the output right, these have to be
+ * marked with the profile class they're from (hence the groups
+ * vector), and the app image that owned the sample file, if
+ * applicable (hence image_set).
  */
 std::list<inverted_profile> const
 invert_profiles(profile_classes const & classes);
