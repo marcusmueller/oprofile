@@ -16,7 +16,9 @@
 
 #include <linux/version.h>
 #include <linux/module.h>
+#ifdef HAVE_LINUX_SPINLOCK_HEADER
 #include <linux/spinlock.h> /* ensure visiblity of preempt_disable */
+#endif
 
 #define V_BEFORE(a,b,c) (LINUX_VERSION_CODE < KERNEL_VERSION(a,b,c))
 #define V_EQUAL(a,b,c) (LINUX_VERSION_CODE == KERNEL_VERSION(a,b,c))

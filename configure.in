@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.96 2002/07/01 19:58:50 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.97 2002/07/02 22:07:12 phil_e Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -102,9 +102,13 @@ AC_MSG_CHECKING(kernel version)
 AX_KERNEL_VERSION(2, 2, 10, <=, AC_MSG_RESULT("ok"), AC_MSG_ERROR("check html documentation install section"))
 
 dnl Check if we need to build the module with extra flags
-dnl FIXME this fix 2.5.19 build but perhaps its not the right way
-AC_MSG_CHECKING("wether module compilation need -DMODULE")
+dnl FIXME this fix 2.5.19 and 2.5.20 build but perhaps its not the right way
+AC_MSG_CHECKING([whether module compilation need -DMODULE])
 AX_KERNEL_VERSION(2, 5, 19, >=, AC_MSG_RESULT("no"), AC_MSG_RESULT("yes"); EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DMODULE")
+
+dnl linux/spinlock.h added at some point in past
+AC_CHECK_FILE("$KINC"/linux/spinlock.h, EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DHAVE_LINUX_SPINLOCK_HEADER")
+
 AC_SUBST(EXTRA_CFLAGS_MODULE)
 
 # FIXME: use config.h for the -D things ... 

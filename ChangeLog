@@ -1,5 +1,10 @@
 2002-07-01  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* configure.in:
+	* module/compat.h: fix compile error with kernel <= 2.2.17
+
+2002-07-01  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* TODO: minor upadte
 
 	* configure.in: support 2.5.20
