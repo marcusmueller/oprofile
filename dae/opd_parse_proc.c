@@ -55,14 +55,14 @@ static int opd_add_ascii_map(struct opd_proc * proc, char const * line,
 		return 0;
 
 	/* get start and end from "40000000-4001f000" */
-	if (sscanf(line,"%lx-%lx", &map->start, &map->end) != 2)
+	if (sscanf(line, "%lx-%lx", &map->start, &map->end) != 2)
 		return 0;
 
 	/* "p " */
 	cp += 2;
 
 	/* read offset */
-	if (sscanf(cp,"%lx", &map->offset) != 1)
+	if (sscanf(cp, "%lx", &map->offset) != 1)
 		return 0;
 
 	while (*cp && *cp != '/')

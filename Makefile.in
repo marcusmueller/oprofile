@@ -100,8 +100,9 @@ tags:
 dist:
 	mkdir tmpdist ; \
 	cd tmpdist ; \
-	cvs checkout oprofile ; \
+	cvs checkout -P oprofile ; \
 	cd oprofile ; \
+	cvs update -P ; \
 	(find -type d -name CVS | xargs rm -rf) ; \
 	./autogen.sh ; \
 	./configure --mandir=/usr/local/share/man ; \
