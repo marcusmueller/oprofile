@@ -13,6 +13,6 @@ and much more.
 
 Dave Jones <davej@suse.de> provided bug fixes and the Athlon support.
 
-Bob Montgomery <bobm@fc.hp.com> provided bug fixes and useful testing.
+Bob Montgomery <bobm@fc.hp.com> provided bug fixes, and the initial RTC driver.
 
 Other contributors are listed in the ChangeLog. 
