@@ -461,7 +461,8 @@ void op_bfd::get_vma_range(bfd_vma & start, bfd_vma & end) const
 		// size of the last symbol give the vma range for gprof output
 		op_bfd_symbol const & last_symb = syms[syms.size() - 1];
 		start = syms[0].vma();
-		end = last_symb.vma() + last_symb.size();
+		// end is excluded from range so + 1 *if* last_symb.size() != 0
+		end = last_symb.vma() + last_symb.size() + (last_symb.size() != 0);
 	} else {
 		start = 0;
 		end = file_size;

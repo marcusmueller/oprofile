@@ -146,6 +146,9 @@ bool aligned_samples(op_bfd const & abfd,  profile_t const & samples_files,
 	// FIXME: see do_dump_gprof()
 	abfd.get_vma_range(low_pc, high_pc);
 
+	// round-down low_pc to ensure bin number is correct in the inner loop
+	low_pc = (low_pc / gap) * gap;
+
 	for (symbol_index_t i = 0; i < abfd.syms.size(); i++) {
 		abfd.get_symbol_range(i, start, end);
 		for (j = start; j < end; j++) {
@@ -203,7 +206,12 @@ static void do_dump_gprof(op_bfd const & abfd,
 	// the size of gmon.out by getting the lowest/higest vma with sample
 	abfd.get_vma_range(low_pc, high_pc);
 
-	histsize = ((high_pc - low_pc + multiplier - 1) / multiplier) + 1;
+	// round-down low_pc to ensure bin number is correct in the inner loop
+	low_pc = (low_pc / multiplier) * multiplier;
+	// round-up high_pc to ensure a correct histsize calculus
+	high_pc = ((high_pc + multiplier - 1) / multiplier) * multiplier;
+
+	histsize = (high_pc - low_pc) / multiplier;
 
 	op_write_vma(fp, abfd, low_pc);
 	op_write_vma(fp, abfd, high_pc);
@@ -222,11 +230,9 @@ static void do_dump_gprof(op_bfd const & abfd,
 		for (j = start; j < end; j++) {
 			u32 count;
 			u32 pos;
-			// we must offset by multiplier - 1 so rounding during
-			// division don't put samples in the previous chunk
-			pos = (abfd.sym_offset(i, j) + abfd.syms[i].vma() - low_pc + multiplier - 1) / multiplier;
+			pos = (abfd.sym_offset(i, j) + abfd.syms[i].vma() - low_pc) / multiplier;
 
-			/* opp_get_options have set ctr to one value != -1 */
+			// opp_get_options have set ctr to one value != -1
 			count = samples_files.samples_count(sort_by_ctr, j);
 
 			if (pos >= histsize) {
