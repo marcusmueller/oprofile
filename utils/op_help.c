@@ -177,7 +177,7 @@ static void check_event(struct parsed_event * pev, struct op_event * event)
 }
 
 
-static void resolve_events(struct list_head * events)
+static void resolve_events()
 {
 	int count = parse_events();
 	int i;
@@ -191,18 +191,9 @@ static void resolve_events(struct list_head * events)
 	}
 
 	for (i = 0; i < count; ++i) {
-		struct list_head * pos;
 		struct parsed_event * pev = &parsed_events[i];
 
-		list_for_each(pos, events) {
-			struct op_event * ev =
-				list_entry(pos, struct op_event, event_next);
-
-			if (strcmp(ev->name, pev->name) == 0) {
-				selected_events[i] = ev;
-				break;
-			}
-		}
+		selected_events[i] = find_event_by_name(pev->name);
 
 		check_event(pev, selected_events[i]);
 	}
@@ -337,7 +328,7 @@ int main(int argc, char const *argv[])
 			fprintf(stderr, "No events given.\n");
 			exit(EXIT_FAILURE);
 		}
-		resolve_events(events);
+		resolve_events();
 		exit(EXIT_SUCCESS);
 	}
 

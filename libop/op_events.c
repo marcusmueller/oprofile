@@ -431,6 +431,19 @@ struct op_event * find_event(u8 nr)
 	return NULL;
 }
 
+struct op_event * find_event_by_name(char const * name)
+{
+	struct list_head * pos;
+
+	list_for_each(pos, &events_list) {
+		struct op_event * event = list_entry(pos, struct op_event, event_next);
+		if (strcmp(event->name, name) == 0)
+			return event;
+	}
+
+	return NULL;
+}
+
 
 struct op_event * op_find_event(op_cpu cpu_type, u8 nr)
 {

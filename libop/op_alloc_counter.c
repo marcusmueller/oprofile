@@ -93,21 +93,21 @@ size_t * map_event_to_counter(struct op_event * pev[], int nr_events,
 	nr_counters = op_get_nr_counters(cpu_type);
 	counter_map = xmalloc(nr_counters * sizeof(size_t));
 
-       for (i = 0; i < nr_counters; ++i)
+	for (i = 0; i < nr_counters; ++i)
 		counter_map[i] = i;
 
-       success = EXIT_FAILURE;
-       do {
+	success = EXIT_FAILURE;
+	do {
 		success = allocate_counter(counter_map, pev, nr_events);
 
 		if (success == EXIT_SUCCESS)
 			break;
 	} while (next_permutation(counter_map, counter_map + nr_counters));
 
-       if (success == EXIT_FAILURE) {
-	       free(counter_map);
-	       counter_map = 0;
-       }
+	if (success == EXIT_FAILURE) {
+		free(counter_map);
+		counter_map = 0;
+	}
 
-       return counter_map;
+	return counter_map;
 }

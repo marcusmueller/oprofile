@@ -1,3 +1,11 @@
+2003-07-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_alloc_counter.c: use tabulation
+
+	* libop/op_events.c:
+	* libop/op_events.h: find_event_by_name() new
+	* utils/op_help.c: use find_event_by_name()
+
 2003-07-24  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* utils/op_help.c: make valgrind happy + minor cleanup

@@ -64,6 +64,9 @@ struct list_head * op_events(op_cpu cpu_type);
 /** Find a given event */
 struct op_event * op_find_event(op_cpu cpu_type, u8 nr);
 
+/** Find a given event by name */
+struct op_event * find_event_by_name(char const * name);
+
 
 /** op_check_events() return code */
 enum op_event_check {
