@@ -1,5 +1,9 @@
 2001-09-29  Philippe Elie  <ph_e@club-internet.fr>
 
+	* pp/oprofpp.cpp: bug fix when calling the bfd lib.
+
+2001-09-29  Philippe Elie  <ph_e@club-internet.fr>
+
 	* gui/oprof_start.cpp: two minor fixes.
 
 2001-09-28  John Levon  <moz@compsoc.man.ac.uk>

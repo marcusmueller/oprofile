@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.21 2001/09/28 13:34:23 movement Exp $ */
+/* $Id: oprofpp.h,v 1.22 2001/09/29 14:59:31 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -99,7 +99,11 @@ struct opp_bfd {
 	u32 sym_offset(uint num_symbols, u32 num) const;
 
 	bfd *ibfd;
+	// sorted vector of interesting symbol.
 	std::vector<asymbol*> syms;
+	// vector of symbol filled by the bfd lib. Call to bfd lib must this
+	// instead of the syms vector.
+	asymbol **bfd_syms;
 	// image file such the linux kernel need than all vma are offset
 	// by this value.
 	u32 sect_offset;

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.2 2001/09/28 13:34:23 movement Exp $ */
+/* $Id: oprofpp.cpp,v 1.3 2001/09/29 14:59:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -395,6 +395,7 @@ opp_bfd::opp_bfd(const opd_header* header)
  */
 opp_bfd::~opp_bfd()
 {
+	opd_free(bfd_syms);
 	bfd_close(ibfd);
 }
 
@@ -486,7 +487,6 @@ bool opp_bfd::get_symbols()
 	uint nr_all_syms;
 	uint i; 
 	size_t size;
-	asymbol **temp_syms; 
 
 	if (!(bfd_get_file_flags(ibfd) & HAS_SYMS))
 		return false;
@@ -497,16 +497,15 @@ bool opp_bfd::get_symbols()
 	if (size < 1)
 		return false;
 
-	temp_syms = (asymbol**)opd_malloc(size);
-	nr_all_syms = bfd_canonicalize_symtab(ibfd, temp_syms);
+	bfd_syms = (asymbol**)opd_malloc(size);
+	nr_all_syms = bfd_canonicalize_symtab(ibfd, bfd_syms);
 	if (nr_all_syms < 1) {
-		opd_free(temp_syms);
 		return false;
 	}
 
 	for (i = 0; i < nr_all_syms; i++) {
-		if (interesting_symbol(temp_syms[i])) {
-			syms.push_back(temp_syms[i]);
+		if (interesting_symbol(bfd_syms[i])) {
+			syms.push_back(bfd_syms[i]);
 		}
 	}
 
@@ -563,6 +562,9 @@ bool opp_bfd::get_linenr(uint sym_idx, uint offset,
 	const char *functionname;
 	bfd_vma pc;
 
+	*filename = 0;
+	*linenr = 0;
+
 	asection* section = syms[sym_idx]->section;
 
 	if ((bfd_get_section_flags (ibfd, section) & SEC_ALLOC) == 0)
@@ -573,13 +575,10 @@ bool opp_bfd::get_linenr(uint sym_idx, uint offset,
 	if (pc >= bfd_section_size(ibfd, section))
 		return false;
 
-	bool ret = bfd_find_nearest_line(ibfd, section, &syms[0], pc,
+	bool ret = bfd_find_nearest_line(ibfd, section, bfd_syms, pc,
 					 filename, &functionname, linenr);
 
-	if (*filename == NULL)
-		*filename = "";
-
-	if (ret == false) {
+	if (*filename == NULL || ret == false) {
 		*filename = "";
 		*linenr = 0;
 	}
