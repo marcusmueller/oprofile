@@ -1,5 +1,10 @@
 2001-09-24  John Levon  <moz@compsoc.man.ac.uk>
 
+	* gui/oprofile:
+	* gui/Makefile.in: remove old gui
+ 
+2001-09-24  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/op_start: make a little more robust
  
 2001-09-24  John Levon  <moz@compsoc.man.ac.uk>

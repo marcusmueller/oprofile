@@ -23,14 +23,12 @@ clean:
 	$(MAKE) -C ui clean
 	rm -f *.o *.moc.* oprof_start
 
-install: all oprofile oprof_start
+install: all oprof_start
 	-$(MKDIR_P) $(BINDIR)
-# obsolete line, cleanup when remove oprofile gui.
-	cp oprofile $(BINDIR)/oprofile && chmod 755 $(BINDIR)/oprofile
 	cp oprof_start $(BINDIR)/oprof_start && chmod 755 $(BINDIR)/oprof_start
 
 uninstall:
-	-rm -f $(BINDIR)/oprofile
+	-rm -f $(BINDIR)/oprof_start
 	@echo "---------------------------------------------------------------"
 	@echo "The uninstall target does not remove your ~/.oprofile directory"
 	@echo "---------------------------------------------------------------"
