@@ -414,7 +414,7 @@ static void opd_options(int argc, char const * argv[])
 	op_nr_counters = op_get_nr_counters(cpu_type);
 
 	if (!no_vmlinux) {
-		if (!no_vmlinux && (!vmlinux || !strcmp("", vmlinux))) {
+		if (!vmlinux || !strcmp("", vmlinux)) {
 			fprintf(stderr, "oprofiled: no vmlinux specified.\n");
 			poptPrintHelp(optcon, stderr, 0);
 			exit(EXIT_FAILURE);
