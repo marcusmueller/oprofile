@@ -1,7 +1,7 @@
 INSTALL_LIST=oprofpp oprof_convert op_to_source op_time op_merge
 
 CFLAGS=@CFLAGS@ -pedantic -Wall -W -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline
-CXXFLAGS=@CXXFLAGS@ @BFD_CXXFLAGS@ -pedantic -ansi -Wall -W -Wunused -Wmissing-prototypes
+CXXFLAGS=@CXXFLAGS@ @BFD_CXXFLAGS@ -ansi -Wall -W -Wunused -Wmissing-prototypes
 LIBS=-lpopt -lbfd -liberty -ldl
 MY_SOURCES=oprofpp.cpp oprofpp_util.cpp
 OBJS=../events/op_events.o ../events/op_events_desc.o ../dae/opd_util.o oprofpp_util.o ../util/op_popt.o ../util/file_manip.o  ../util/string_manip.o ../util/misc.o

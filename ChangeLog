@@ -6,6 +6,11 @@
 
 2002-03-07  John Levon  <moz@compsoc.man.ac.uk>
 
+	* util/Makefile.in: remove -pedantic (Phil don't you
+	  read comments ? ;)
+ 
+2002-03-07  John Levon  <moz@compsoc.man.ac.uk>
+
 	* TODO: update
 
 	* pp/: use "invalid" not "illegal"
