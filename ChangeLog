@@ -1,8 +1,13 @@
 2001-08-11  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprofile.c: corner case where an a miss against a full count,
+	  we were attributing wrong (reported by Bob Montgomery)
+
+2001-08-11  John Levon  <moz@compsoc.man.ac.uk>
+
 	* oprofile.c: use a simple cli/sti when installing the NMI
 	  handler. It should work and avoids the unmasking problem.
- 
+
 2001-08-10  John Levon  <moz@compsoc.man.ac.uk>
 
 	* dae/oprofiled.h: fix header include (from Dave Jones)

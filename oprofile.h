@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.41 2001/07/25 02:54:49 movement Exp $ */
+/* $Id: oprofile.h,v 1.42 2001/08/11 01:29:07 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -172,7 +172,7 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #define take_mmap_sem(mm) down_read(&mm->mmap_sem)
 #define release_mmap_sem(mm) up_read(&mm->mmap_sem)
 #endif
- 
+
 int oprof_init(void);
 void oprof_exit(void);
 void my_set_fixmap(void);

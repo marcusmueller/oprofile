@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.68 2001/08/11 01:13:37 movement Exp $ */
+/* $Id: oprofile.c,v 1.69 2001/08/11 01:29:07 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -95,8 +95,6 @@ out:
 	return;
 full_entry:
 	evict_op_entry(data, &data->entries[h].samples[i]);
-	data->entries[h].samples[i].count = OP_COUNTER*ctr + 1;
-	goto out;
 new_entry:
 	fill_op_entry(&data->entries[h].samples[i],regs,ctr);
 	goto out;
