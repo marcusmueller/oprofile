@@ -39,8 +39,6 @@
 #define streq(a, b) (!strcmp((a), (b)))
 #define streqn(a, b, len) (!strncmp((a), (b), (len)))
 
-#define regparm3 __attribute__((regparm(3)))
-
 #define OP_NR_ENTRY (SMP_CACHE_BYTES/sizeof(struct op_sample))
 
 struct op_entry {
@@ -161,7 +159,7 @@ void oprof_free_hashmap(void);
  * performance counter */
 extern struct op_int_operations op_rtc_ops;
 
-void regparm3 op_do_profile(uint cpu, struct pt_regs *regs, int ctr);
+void FASTCALL(op_do_profile(uint cpu, struct pt_regs *regs, int ctr));
 extern struct _oprof_data oprof_data[NR_CPUS];
 extern struct oprof_sysctl sysctl_parms;
 extern int nr_oprof_static;

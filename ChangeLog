@@ -1,3 +1,12 @@
+2002-09-03  Will Cohen  <wcohen@redhat.com>
+
+	* module/oprofile.h: (regparm3): remove, use FASTCALL instead.
+	* module/oprofile.c: (op_do_profile): Eliminate regparm3.
+
+2002-09-03  Will Cohen  <wcohen@redhat.com>
+
+	* module/oprofile.c: (oprof_read, oprof_note_read): Return ssize_t.
+
 2002-08-30  Will Cohen <wcohen@nc.rr.com>
 
 	* Makefile.in:

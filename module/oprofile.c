@@ -119,7 +119,7 @@ inline static void fill_op_entry(struct op_sample * ops, long eip, pid_t pid, in
 	ops->counter = ctr;
 }
 
-void regparm3 op_do_profile(uint cpu, struct pt_regs * regs, int ctr)
+void op_do_profile(uint cpu, struct pt_regs * regs, int ctr)
 {
 	struct _oprof_data * data = &oprof_data[cpu];
 	pid_t const pid = current->pid;
@@ -220,7 +220,7 @@ void oprof_put_note(struct op_note * onote)
 	spin_unlock(&note_lock);
 }
 
-static int oprof_note_read(char * buf, size_t count, loff_t * ppos)
+static ssize_t oprof_note_read(char * buf, size_t count, loff_t * ppos)
 {
 	struct op_note * mybuf;
 	uint num;
@@ -316,7 +316,7 @@ out:
 	return ret;
 }
  
-static int oprof_read(struct file * file, char * buf, size_t count, loff_t * ppos)
+static ssize_t oprof_read(struct file * file, char * buf, size_t count, loff_t * ppos)
 {
 	ssize_t max;
 
