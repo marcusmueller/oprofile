@@ -12,6 +12,7 @@
 #include "oprofile.h"
 #include "op_apic.h"
 #include "op_events.h"
+#include "op_util.h"
 
 /* the MSRs we need */
 static uint perfctr_msr[OP_MAX_COUNTERS];
@@ -247,7 +248,7 @@ static int pmc_check_params(void)
 					"set for counter %d\n", i);
 				return 0;
 			}
-			op_check_range(sysctl.ctr[i].count, min_count,
+			check_range(sysctl.ctr[i].count, min_count,
 				OP_MAX_PERF_COUNT,
 				"ctr count value %d not in range (%d %ld)\n");
 

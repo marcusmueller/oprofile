@@ -49,9 +49,9 @@ struct op_entry {
 /* per-cpu dynamic data */
 struct _oprof_data {
 	/* hash table */
-	struct op_entry *entries;
+	struct op_entry * entries;
 	/* eviction buffer */
-	struct op_sample *buffer;
+	struct op_sample * buffer;
 	/* nr. in hash table */
 	uint hash_size;
 	/* nr. in buffer */
@@ -147,18 +147,9 @@ struct op_int_operations {
 #define op_hash(eip, pid, ctr) \
 	(((eip ) + (pid << 5) + (ctr)) & (data->hash_size - 1))
 
-#define op_check_range(val,l,h,str) do { \
-        if ((val) < (l) || (val) > (h)) { \
-                printk(str, (val), (l), (h)); \
-                return 0; \
-        } } while (0);
-
 /* oprof_start() copy here the sysctl settable parameters */
 extern struct oprof_sysctl sysctl;
 
-void * rvmalloc(signed long size);
-void rvfree(void * mem, signed long size);
-unsigned long kvirt_to_pa(unsigned long adr);
 int oprof_init(void);
 void oprof_exit(void);
 unsigned long is_map_ready(void);

@@ -10,11 +10,11 @@
  */
 
 #include "oprofile.h"
+#include "op_util.h"
+#include "version.h"
 
 EXPORT_NO_SYMBOLS;
-
-#include "version.h"
-static char *op_version = VERSION_STRING;
+ 
 MODULE_AUTHOR("John Levon (moz@compsoc.man.ac.uk)");
 MODULE_DESCRIPTION("Continuous Profiling Module");
 MODULE_LICENSE("GPL");
@@ -56,6 +56,8 @@ u32 note_pos __cacheline_aligned_in_smp;
 // the interrupt handler ops structure to use
 static struct op_int_operations const * int_ops;
 
+static char const * op_version = VERSION_STRING;
+ 
 /* ---------------- interrupt entry routines ------------------ */
 
 inline static int need_wakeup(uint cpu, struct _oprof_data * data)
@@ -464,11 +466,11 @@ static int parms_check(void)
 	uint cpu;
 	struct _oprof_data *data;
 
-	op_check_range(sysctl.hash_size, 256, 262144,
+	check_range(sysctl.hash_size, 256, 262144,
 		"sysctl.hash_size value %d not in range (%d %d)\n");
-	op_check_range(sysctl.buf_size, OP_PRE_WATERMARK + 1024, 1048576,
+	check_range(sysctl.buf_size, OP_PRE_WATERMARK + 1024, 1048576,
 		"sysctl.buf_size value %d not in range (%d %d)\n");
-	op_check_range(sysctl.note_size, OP_PRE_NOTE_WATERMARK + 1024, 1048576,
+	check_range(sysctl.note_size, OP_PRE_NOTE_WATERMARK + 1024, 1048576,
 		"sysctl.note_size value %d not in range (%d %d)\n");
 
 	if ((err = int_ops->check_params()))

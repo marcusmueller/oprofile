@@ -9,7 +9,14 @@ BASIC_KCFLAGS = $(ARCH_CFLAGS) -pipe -O2 -fno-strict-aliasing -Wall -Wstrict-pro
 BASIC_KCFLAGS += $(INCLUDES) -D__KERNEL__ -DMODULE @BKCFLAGS@ @MODVERSIONS@
 KCFLAGS = $(BASIC_KCFLAGS) @NO_MODULE_VERSION@
 
-HEADERS=apic_up_compat.h compat.h compat22.h compat24.h op_cache.h op_dcache.h oprofile.h
+# enable -Werror for non-release versions except for gcc 2.91
+ifneq (,$(findstring cvs,@VERSION@))
+ifneq (yes,@GCC_2_91@)
+KCFLAGS += -Werror
+endif
+endif
+ 
+HEADERS=apic_up_compat.h compat.h compat22.h compat24.h op_cache.h op_dcache.h oprofile.h op_util.h
 SOURCES=compat.c op_init.c op_rtc.c op_util.c oprofile.c op_dname.c
 OBJECTS=compat.o op_events_module.o op_init.o op_rtc.o op_util.o oprofile_c.o op_dname.o
 TARGET=oprofile.o

@@ -16,6 +16,7 @@
 
 #include "oprofile.h"
 #include "op_dcache.h"
+#include "op_util.h"
 
 /* --------- device routines ------------- */
 
@@ -57,7 +58,7 @@ int oprof_init_hashmap(void)
 	pool_end = pool_start + POOL_SIZE;
 	pool_pos = pool_start;
 
-	/* Ensure than the zero hash map entry is never used, we use this
+	/* Ensure that the zero hash map entry is never used, we use this
 	 * value as end of path terminator */
 	hash_map[0].name = alloc_in_pool("/", 1);
 	hash_map[0].parent = 0;

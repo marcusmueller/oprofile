@@ -15,6 +15,8 @@
 
 #include "compat.h"
 
+#include "op_util.h"
+ 
 /* Given PGD from the address space's page table, return the kernel
  * virtual mapping of the physical memory mapped at ADR.
  */
@@ -89,3 +91,12 @@ void rvfree(void * mem, signed long size)
 	}
 	vfree(mem);
 }
+
+int check_range(int val, int l, int h, char const * msg)
+{
+	if (val < l || val > h) {
+		printk(msg, val, l, h);
+		return 1;
+	}
+	return 0;
+} 

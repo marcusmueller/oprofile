@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.88 2002/06/06 04:17:01 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.89 2002/06/06 18:25:43 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -63,7 +63,7 @@ AC_SUBST(GCC_2_91)
 AC_TRY_COMPILE( 
   [],
   [
-  #if __GNUC__ == 2 || __GNUC_MINOR__ == 91
+  #if __GNUC__ == 2 && __GNUC_MINOR__ == 91
   break_me_hard(\\\);
   #endif
   ], AC_MSG_RESULT("no"); GCC_2_91=no, AC_MSG_RESULT("yes"); GCC_2_91=yes)

@@ -7,6 +7,13 @@ KCFLAGS += $(INCLUDES) -D__KERNEL__ -DMODULE @BKCFLAGS@ @MODVERSIONS@ @NO_MODULE
 KCFLAGS += $(BASIC_KCFLAGS)
 ASMFLAGS = -D__ASSEMBLY__ -DMODULE -D__KERNEL__ -traditional -I@KINC@
 
+# enable -Werror for non-release versions except for gcc 2.91
+ifneq (,$(findstring cvs,@VERSION@))
+ifneq (yes,@GCC_2_91@)
+KCFLAGS += -Werror
+endif
+endif
+ 
 HEADERS= op_apic.h
 SOURCES=cpu_type.c op_apic.c op_nmi.c op_fixmap.c op_syscalls.c
 ASMSOURCES=oprofile_nmi.S

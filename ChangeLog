@@ -1,5 +1,20 @@
 2002-06-06  John Levon  <moz@compsoc.man.ac.uk>
 
+	* configure.in: fix typo so non-2.91 is detected
+ 
+	* module/Makefile.in:
+	* module/x86/Makefile.in: enable -Werror
+
+	* module/op_dname.c:
+	* module/oprofile.h:
+	* module/oprofile.c:
+	* module/op_util.h:
+	* module/op_util.c:
+	* module/x86/op_nmi.c: add op_util.h, make
+	  op_check_range a function check_range
+ 
+2002-06-06  John Levon  <moz@compsoc.man.ac.uk>
+
 	* module/Makefile.in: use @CC@, add clean for x86
 
 	* module/compat24.h: add path_hash prototype 
