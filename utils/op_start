@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.14 2002/12/03 03:53:44 movement Exp $
+# $Id: op_start,v 1.15 2003/02/12 02:10:28 phil_e Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -477,7 +477,7 @@ do_start() {
 	fi
  
 	OPD_ARGS="--vmlinux=$VMLINUX --kernel-range=$KERNEL_RANGE \
-		--separate-samples=$SEPARATE_SAMPLES \
+		--separate-lib-samples=$SEPARATE_SAMPLES \
 		--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
 
 	if [ "$VERBOSE" = "1" ]; then
