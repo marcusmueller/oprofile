@@ -9,7 +9,7 @@
  * @author Philippe Elie
  */
 
-#include <config.h>
+#include "config.h"
  
 #include "opd_proc.h"
 #include "opd_mapping.h"

@@ -48,6 +48,8 @@ struct sfile {
 	struct list_head hash;
 	/** lru list */
 	struct list_head lru;
+	/** non zero if samples must be filtered */
+	int filtered;
 	/** opened sample files */
 	samples_odb_t files[OP_MAX_COUNTERS];
 };

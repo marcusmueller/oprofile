@@ -9,7 +9,7 @@
  */
 
 #include "opd_cookie.h"
-
+#include "opd_util.h"
 #include "op_list.h"
 #include "op_libiberty.h"
 
@@ -61,6 +61,7 @@ static inline int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
 struct cookie_entry {
 	cookie_t value;
 	char * name;
+	int filtered;
 	struct list_head list;
 };
 
@@ -85,6 +86,9 @@ static struct cookie_entry * create_cookie(cookie_t cookie)
 		       cookie, errno); 
 		free(entry->name);
 		entry->name = NULL;
+		entry->filtered = 0;
+	} else {
+		entry->filtered = is_image_filtered(entry->name);
 	}
 
 	return entry;
@@ -117,6 +121,24 @@ char const * find_cookie(cookie_t cookie)
 	list_add(&entry->list, &hashes[hash]);
 out:
 	return entry->name;
+}
+
+
+int is_cookie_filtered(cookie_t cookie)
+{
+	unsigned long hash = hash_cookie(cookie);
+	struct list_head * pos;
+	struct cookie_entry * entry;
+
+	list_for_each(pos, &hashes[hash]) {
+		entry = list_entry(pos, struct cookie_entry, list);
+		if (entry->value == cookie)
+			goto out;
+	}
+
+	return 0;
+out:
+	return entry->filtered;
 }
 
 

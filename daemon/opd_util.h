@@ -55,6 +55,25 @@ void opd_go_daemon(void);
  */
 void opd_write_abi(void);
 
+/**
+ * opd_hash_name - hash a name
+ * @param name  name to hash
+ *
+ * return the hash code for the passed parameter name. FIXME: in libop/ or
+ *  libutil/ ?
+ */
+size_t opd_hash_name(char const * name);
+
+
+/**
+ * is_image_filtered - check if we must profile this image
+ * @param name  the name to check
+ *
+ * return non zero if name has been specified through --image= option or user
+ * didn't ask for image filtering
+ */
+int is_image_filtered(char const * name);
+
 
 /**
  * opd_setup_signals - setup signal handler

@@ -1,3 +1,24 @@
+2003-10-26  Philippe Elie  <phil.el@wanadoo.fr>
+
+	implement image filtering:
+
+	* dae/opd_image.h: add a field filtered
+	* dae/opd_image.c: set it at image creation
+	* dae/opd_proc.c: don't record sample when !image->filtered
+
+	* daemon/opd_cookie.h: add a field filtered
+	* daemon/opd_cookie.c: set it a cookie_entry creation.
+	* daemon/opd_sfile.h: add a field filtered
+	* daemon/opd_file.c: set it a opd_sfile struct creation
+	* daemon/opd_trans.c: record sample if filtered
+
+	* daemon/opd_util.h: export opd_hash_name(), is_image_filtered()
+	* daemon/opd_util.c: implement --image=xxx
+
+	* oprofiled.c: #include "config.h" not <>
+
+	* utils/opcontrol: handle --image
+
 2003-10-26  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: remove some outdated stuff

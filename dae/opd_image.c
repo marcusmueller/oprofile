@@ -110,11 +110,9 @@ void opd_for_each_image(opd_image_cb image_cb)
  *
  * return the hash code for the passed parameters
  */
-static int opd_hash_image(char const * name, pid_t tid, pid_t tgid)
+static size_t opd_hash_image(char const * name, pid_t tid, pid_t tgid)
 {
-	int hash = 0;
-	for (; *name; ++name)
-		hash ^= (hash << 16) ^ (hash >> 8) ^ *name;
+	size_t hash = opd_hash_name(name);
 	if (separate_thread)
 		hash += tid + tgid;
 	return  hash % OPD_IMAGE_HASH_SIZE;
@@ -141,7 +139,7 @@ static struct opd_image *
 opd_new_image(char const * name, char const * app_name, int kernel,
               pid_t tid, pid_t tgid)
 {
-	int hash_image;
+	size_t hash_image;
 	struct opd_image * image;
 
 	verbprintf("Creating image: %s %s, kernel %d, tid %d, "
@@ -157,6 +155,12 @@ opd_new_image(char const * name, char const * app_name, int kernel,
 	image->ref_count = 0;
 	image->app_name = app_name ? xstrdup(app_name) : NULL;
 	image->mtime = op_get_mtime(image->name);
+
+	image->filtered = 0;
+	if (separate_lib && app_name)
+		image->filtered = is_image_filtered(app_name);
+	if (!image->filtered)
+		image->filtered = is_image_filtered(name);
 
 	memset(image->sfiles, '\0',
 	       OP_MAX_COUNTERS * NR_CPUS * sizeof(struct opd_sfile *));
@@ -230,7 +234,7 @@ static struct opd_image * opd_find_image(char const * name,
 {
 	struct opd_image * image = 0; /* supress warn non initialized use */
 	struct list_head * pos;
-	int bucket;
+	size_t bucket;
 
 	opd_stats[OPD_IMAGE_HASH_ACCESS]++;
 	bucket = opd_hash_image(name, tid, tgid);

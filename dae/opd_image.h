@@ -45,6 +45,8 @@ struct opd_image {
 	time_t mtime;
 	/* kernel image or not */
 	int kernel;
+	/* non zero if this image must be profiled */
+	int filtered;
 };
 
 typedef void (*opd_image_cb)(struct opd_image *);

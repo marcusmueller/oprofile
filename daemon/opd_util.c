@@ -9,7 +9,7 @@
  * @author Philippe Elie
  */
 
-#include <config.h>
+#include "config.h"
  
 #include "opd_util.h"
 #include "opd_printf.h"
@@ -24,6 +24,7 @@
 #include "op_cpu_type.h"
 #include "op_cpufreq.h"
 #include "op_popt.h"
+#include "op_list.h"
 
 #include <sys/types.h>
 #include <stdlib.h>
@@ -32,6 +33,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <assert.h>
 
 sig_atomic_t signal_alarm;
 sig_atomic_t signal_hup;
@@ -52,13 +54,18 @@ int separate_cpu;
 int no_vmlinux;
 char * vmlinux;
 char * kernel_range;
+static char * binary_name_filter;
 static char * events;
 static int showvers;
+
+#define OPD_IMAGE_FILTER_HASH_SIZE 32
+static struct list_head images_filter[OPD_IMAGE_FILTER_HASH_SIZE];
 
 static struct poptOption options[] = {
 	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "no-vmlinux", 0, POPT_ARG_NONE, &no_vmlinux, 0, "vmlinux kernel image file not available", NULL, },
+	{ "image", 0, POPT_ARG_STRING, &binary_name_filter, 0, "image name filter", "profile these comma separated image" },
 	{ "separate-lib", 0, POPT_ARG_INT, &separate_lib, 0, "separate library samples for each distinct application", "[0|1]", },
 	{ "separate-kernel", 0, POPT_ARG_INT, &separate_kernel, 0, "separate kernel samples for each distinct application", "[0|1]", },
 	{ "separate-thread", 0, POPT_ARG_INT, &separate_thread, 0, "thread-profiling mode", "[0|1]" },
@@ -328,6 +335,75 @@ static void opd_parse_events(char const * events)
 }
 
 
+size_t opd_hash_name(char const * name)
+{
+	size_t hash = 0;
+	for (; *name; ++name)
+		hash ^= (hash << 16) ^ (hash >> 8) ^ *name;
+	return hash;
+}
+
+
+struct opd_hashed_name {
+	char * name;
+	struct list_head next;
+};
+
+
+static void opd_parse_image_filter(void)
+{
+	size_t i, hash;
+	struct opd_hashed_name * elt;
+	char const * last = binary_name_filter;
+	char const * cur = binary_name_filter;
+
+	if (!binary_name_filter)
+		return;
+
+	for (i = 0; i < OPD_IMAGE_FILTER_HASH_SIZE; ++i) {
+		list_init(&images_filter[i]);
+	}
+
+	i = 0;
+	while ((cur = strchr(last, ',')) != NULL) {
+		elt = xmalloc(sizeof(struct opd_hashed_name));
+		elt->name = op_xstrndup(last, cur - last);
+		hash = opd_hash_name(elt->name);
+		verbprintf("Adding to image filter: \"%s\"\n", elt->name);
+		list_add(&elt->next,
+		         &images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]);
+		last = cur + 1;
+	}
+	elt = xmalloc(sizeof(struct opd_hashed_name));
+	elt->name = xstrdup(last);
+	verbprintf("Adding to image filter: \"%s\"\n", elt->name);
+	hash = opd_hash_name(elt->name);
+	list_add(&elt->next,
+	         &images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]);
+}
+
+
+int is_image_filtered(char const * name)
+{
+	size_t hash;
+	struct list_head * pos;
+
+	if (!binary_name_filter)
+		return 1;
+	
+	hash = opd_hash_name(name);
+
+	list_for_each(pos, &images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]) {
+		struct opd_hashed_name * hashed_name =
+		     list_entry(pos, struct opd_hashed_name, next);
+		if (!strcmp(hashed_name->name, name))
+			return 1;
+	}
+
+	return 0;
+}
+
+
 void opd_options(int argc, char const * argv[])
 {
 	poptContext optcon;
@@ -363,6 +439,8 @@ void opd_options(int argc, char const * argv[])
 	opd_parse_events(events);
 
 	cpu_speed = op_cpu_frequency();
+
+	opd_parse_image_filter();
 
 	poptFreeContext(optcon);
 }

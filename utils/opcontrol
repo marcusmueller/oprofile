@@ -123,6 +123,7 @@ do_help()
 	  --no-vmlinux                 no vmlinux image available (no kernel vmlinux image available)
 	  -V/--verbose                 be verbose in the daemon log
 	  --kernel-range=start,end     kernel range vma address in hexadecimal
+	  --image=image_name[,names]   list of image to profile (default to all)
 
 	General options
 	  -l/--list-events             list event types and unit masks
@@ -287,6 +288,7 @@ do_save_setup()
 	echo "SEPARATE_THREAD=$SEPARATE_THREAD" >> $SETUP_FILE
 	echo "SEPARATE_CPU=$SEPARATE_CPU" >> $SETUP_FILE
 	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
+	echo "IMAGE_FILTER=$IMAGE_FILTER" >> $SETUP_FILE
 	# write the actual information to file
 	if test "$BUF_SIZE" != 0; then
 		echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
@@ -609,6 +611,11 @@ do_options()
 				fi
 				DO_SETUP=yes
 				;;
+			--image)
+				error_if_empty $arg $val
+				IMAGE_FILTER=$val
+				DO_SETUP=yes
+				;;
 
 			-V|--verbose)
 				VERBOSE=1
@@ -897,6 +904,10 @@ do_start_daemon()
 		OPD_ARGS="$OPD_ARGS --no-vmlinux"
 	else
 		OPD_ARGS="$OPD_ARGS --vmlinux=$VMLINUX --kernel-range=$KERNEL_RANGE"
+	fi
+
+	if ! test -z "$IMAGE_FILTER"; then
+		OPD_ARGS="$OPD_ARGS --image=$IMAGE_FILTER"
 	fi
 
 	if test "$VERBOSE" = "1"; then
