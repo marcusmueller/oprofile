@@ -20,6 +20,7 @@
 #include "string_manip.h"
 #include "glob_filter.h"
 #include "locate_images.h"
+#include "op_exception.h"
 
 using namespace std;
 
@@ -442,11 +443,10 @@ list<string> profile_spec::generate_file_list(bool exclude_dependent) const
 	}
 
 	if (!found_file) {
-		// FIXME: must we throw ? (yes, please - exit() shouldn't be
-		// in library code)
-		cerr << "No sample file found: try running opcontrol --dump\n"
-		     << "or specify a session containing sample files" << endl;
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os  << "No sample file found: try running opcontrol --dump\n"
+		    << "or specify a session containing sample files\n";
+		throw op_fatal_error(os.str());
 	}
 
 	list<string> result;

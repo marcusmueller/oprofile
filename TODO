@@ -24,10 +24,6 @@ Before 1.0 little stuff
   can objdump retrieve the source file and if no can we work-around ?
  o opannotate unhandled option (probably not exhaustive) 
    --base-dir
- o test with 2.95 if cout.rdbuf(os.rdbuf()); work even when there is non
-  flushed data in cout buffer. It's also not clear if at exit() we have not
-  a problem (who is the owner of the buffer and in what order of and cout will
-  be destroyed ?)
  o restore stream state when using persistant formating flag like:
      s/ostream os; os << hex << foo/os << hex << foo << dec/
  o implement pp_interface alias

@@ -14,8 +14,10 @@
 #include "symbol_functors.h"
 #include "file_manip.h"
 #include "name_storage.h"
+#include "op_exception.h"
 
 #include <algorithm>
+#include <sstream>
 
 using namespace std;
 
@@ -76,9 +78,10 @@ int compare_by(sort_options::sort_order order,
 		default: {
 			// static_cast<> to shut up g++ 2.91.66 which warn
 			// about ambiguity between <<(int) and <<(long int)
-			cerr << "compare_by(): unknown sort option: "
-			     << static_cast<int>(order) << endl;
-			exit(EXIT_FAILURE);
+			ostringstream os;
+			os << "compare_by(): unknown sort option: "
+			   << static_cast<int>(order) << endl;
+			throw op_fatal_error(os.str());
 		}
 	}
 
@@ -139,8 +142,9 @@ void sort_options::add_sort_option(std::string const & name)
 	} else if (name == "image") {
 		options.push_back(image);
 	} else {
-		cerr << "unknown sort option: " << name << endl;
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "unknown sort option: " << name << endl;
+		throw op_fatal_error(os.str());
 	}
 }
 

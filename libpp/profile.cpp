@@ -14,9 +14,11 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 
 #include <cerrno>
 
+#include "op_excepton.h"
 #include "op_header.h"
 #include "op_config.h"
 #include "op_sample_file.h"
@@ -44,17 +46,19 @@ void profile_t::add_sample_file(string const & filename, u32 offset)
 		sizeof(struct opd_header));
 
 	if (rc != EXIT_SUCCESS) {
-		cerr << samples_db.err_msg << endl;
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << samples_db.err_msg << endl;
+		throw op_fatal_error(os.str());
 	}
 
 	opd_header const & head = *static_cast<opd_header *>(samples_db.base_memory);
 
 	if (head.version != OPD_VERSION) {
-		cerr << "oprofpp: samples files version mismatch, are you "
-			"running a daemon and post-profile tools with version "
-			"mismatch ?" << endl;
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "oprofpp: samples files version mismatch, are you "
+		   << "running a daemon and post-profile tools with version "
+		   <<  "mismatch ?\n";
+		throw op_fatal_error(os.str());
 	}
 
 	// if we already read a sample file header pointer is non null

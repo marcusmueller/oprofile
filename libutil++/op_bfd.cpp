@@ -18,7 +18,9 @@
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 
+#include "op_exception.h"
 #include "op_bfd.h"
 #include "string_filter.h"
 
@@ -60,8 +62,9 @@ op_bfd::op_bfd(string const & filename, string_filter const & symbol_filter)
 	debug_info(false)
 {
 	if (filename.empty()) {
-		cerr << "op_bfd() empty image filename." << endl;
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "op_bfd() empty image filename.\n";
+		throw op_runtime_error(os.str());
 	}
 
 	op_get_fsize(filename.c_str(), &file_size);
@@ -69,16 +72,17 @@ op_bfd::op_bfd(string const & filename, string_filter const & symbol_filter)
 	ibfd = bfd_openr(filename.c_str(), NULL);
 
 	if (!ibfd) {
-		cerr << "bfd_openr of " << filename << " failed." << endl;
-		cerr << strerror(errno) << endl;
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "bfd_openr of " << filename << " failed.";
+		throw op_runtime_error(os.str(), errno);
 	}
 
 	char ** matching;
 
 	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) {
-		cerr << "BFD format failure for " << filename << endl;
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "BFD format failure for " << filename << endl;
+		throw op_runtime_error(os.str());
 	}
 
 	asection const * sect = bfd_get_section_by_name(ibfd, ".text");
@@ -134,9 +138,10 @@ bool interesting_symbol(asymbol * sym)
 	// #717720 some binutils are miscompiled by gcc 2.95, one of the
 	// typical symptom can be catched here.
 	if (!sym->section) {
-		cerr << "Your version of binutils seems to have a bug.\n"
-		     << "Read http://oprofile.sf.net/faq/#binutilsbug" << endl;
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "Your version of binutils seems to have a bug.\n"
+		   << "Read http://oprofile.sf.net/faq/#binutilsbug\n";
+		throw op_runtime_error(os.str());
 	}
 
 	if (!(sym->section->flags & SEC_CODE))
@@ -453,21 +458,24 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 	cverb << "start " << hex << start << ", end " << end << endl;
 
 	if (start >= file_size + text_offset) {
-		cerr << "start " << hex << start
-			<< " out of range (max " << file_size << ")" << endl;
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "start " << hex << start
+		   << " out of range (max " << file_size << ")\n";
+		throw op_runtime_error(os.str());
 	}
 
 	if (end > file_size + text_offset) {
-		cerr << "end " << hex << end
-			<< " out of range (max " << file_size << ")" << endl;
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "end " << hex << end
+		   << " out of range (max " << file_size << ")\n";
+		throw op_runtime_error(os.str());
 	}
 
 	if (start > end) {
-		cerr << "start " << hex << start
-			<< " is more than end " << end << endl;
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "start " << hex << start
+		   << " is more than end" << end << endl;
+		throw op_runtime_error(os.str());
 	}
 }
 

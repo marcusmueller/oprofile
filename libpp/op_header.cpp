@@ -13,7 +13,9 @@
 #include <cstdlib>
 #include <iomanip>
 #include <set>
+#include <sstream>
 
+#include "op_exception.h"
 #include "odb_hash.h"
 #include "op_cpu_type.h"
 #include "op_file.h"
@@ -26,32 +28,36 @@ void op_check_header(opd_header const & h1, opd_header const & h2,
 		     string const & filename)
 {
 	if (h1.mtime != h2.mtime) {
-		cerr << "header timestamps are different ("
-		     << h1.mtime << ", " << h2.mtime << ") for "
-		     << filename << "\n";
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "header timestamps are different ("
+		   << h1.mtime << ", " << h2.mtime << ") for "
+		   << filename << "\n";
+		throw op_fatal_error(os.str());
 	}
 
 	if (h1.is_kernel != h2.is_kernel) {
-		cerr << "header is_kernel flags are different for "
-		     << filename << "\n";
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "header is_kernel flags are different for "
+		   << filename << "\n";
+		throw op_fatal_error(os.str());
 	}
 
 	if (h1.separate_lib_samples != h2.separate_lib_samples) {
-		cerr << "header separate_lib_samples are different ("
-		     << h1.separate_lib_samples << ", " 
-		     << h2.separate_lib_samples << ") for "
-		     << filename << "\n";
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "header separate_lib_samples are different ("
+		   << h1.separate_lib_samples << ", " 
+		   << h2.separate_lib_samples << ") for "
+		   << filename << "\n";
+		throw op_fatal_error(os.str());
 	}
 
 	if (h1.separate_kernel_samples != h2.separate_kernel_samples) {
-		cerr << "header separate_kernel_samples are different ("
-		     << h1.separate_kernel_samples << ", " 
-		     << h2.separate_kernel_samples << ") for"
-		     << filename << "\n";
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << "header separate_kernel_samples are different ("
+		   << h1.separate_kernel_samples << ", " 
+		   << h2.separate_kernel_samples << ") for"
+		   << filename << "\n";
+		throw op_fatal_error(os.str());
 	}
 
 	// Note that we don't check CPU speed since that can vary
@@ -107,8 +113,9 @@ opd_header read_header(string const & sample_filename)
 		sizeof(struct opd_header));
 
 	if (rc != EXIT_SUCCESS) {
-		cerr << samples_db.err_msg << endl;
-		exit(EXIT_FAILURE);
+		ostringstream os;
+		os << samples_db.err_msg << endl;
+		throw op_fatal_error(os.str());
 	}
 
 	opd_header head = *static_cast<opd_header *>(samples_db.base_memory);
