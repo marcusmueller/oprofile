@@ -24,6 +24,5 @@ WBNI
 ----
 
 o compile-time interrupt accounting (sysctl-read/writeable) - then re-do results/rates/
-o generate output in results/output/do_anonymous_page automatically
 o we don't really need a vmlinux file during profiling ...
 o Other x86 processors
