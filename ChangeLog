@@ -1,3 +1,8 @@
+2002-12-12  John Levon  <levon@movementarian.org>
+
+	* opcontrol: set one_enabled if timer interrupt. No
+	  behaviour change, but "safer"
+ 
 2002-12-11  John Levon  <levon@movementarian.org>
 
 	* pp/derive_files.h:

@@ -493,7 +493,8 @@ do_options() {
 				fi
 			fi
 		done
-	 
+	else
+		one_enabled=1
 	fi
 
  
