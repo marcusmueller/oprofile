@@ -45,28 +45,22 @@ int main()
 	check(c1, 3, true);
 	check(c1, 4, false);
 
-	generic_spec<int> gs1;
-	gs1.set("4");
-	check(c1, gs1, false);
-	gs1.set("all");
-	check(c1, gs1, true);
-
 	c1.set("all", false);
 
 	check(c1, 2, true);
 	check(c1, 4, true);
 	check(c1, 5, true);
 
-	comma_list<string> c2;
+	comma_list<int> c2;
 
+	c2.set("6", true);
 	c2.set("all", true);
 
-	check(c2, "foo", true);
-	check(c2, "", true);
-	check(c2, "all", true);
+	check(c2, 4, true);
+	check(c2, 0, true);
 
-	c2.set("bar", false);
-	check(c2, "foo", true);
-	check(c2, "bar", true);
+	c2.set("10", true);
+	check(c2, 10, true);
+	check(c2, 11, true);
 	return EXIT_SUCCESS;
 }

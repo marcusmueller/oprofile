@@ -36,9 +36,21 @@ public:
 	/// conversion is strict, no space are allowed at begin or end of str
 	void set(std::string const &);
 
+	/// return true if a specific value is held by this container
+	bool is_set() const {
+		return !is_all;
+	}
+
+	/// return the specific value (only if is_set() == true)
+	T const value() const {
+		if (!is_all)
+			return data;
+		throw std::out_of_range("generic_spec holds no value");
+	}
+
 	/// return true if rhs match this spec. Sub part of PP:3.24
-	bool match(T const & rhs, bool allow_all_match = true) const {
-		return (allow_all_match && is_all) || rhs == data;
+	bool match(T const & rhs) const {
+		return rhs == data;
 	}
 
 	/// return true if rhs match this spec. Sub part of PP:3.24

@@ -1,5 +1,21 @@
 2003-10-30  John Levon  <levon@movementarian.org>
 
+	* libutil++/generic_spec.h: add value() and
+	is_set(), remove bool parameter from T value
+	match() (it was never set to true)
+
+	* libutil++/comma_list.h: do not accept
+	generic_spec, the behaviour was to implicitly
+	not match an "all" generic_spec. Instead:
+
+	* libpp/profile_spec.cpp: encode the matching
+	behaviour explicitly, and add a comment.
+
+	* libutil++/tests/comma_list_tests.cpp: fix to
+	match the above
+
+2003-10-30  John Levon  <levon@movementarian.org>
+
 	* Makefile.am: re-order build subdirs
 
 	* libabi/Makefile.am: only build abitest on

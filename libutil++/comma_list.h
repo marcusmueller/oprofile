@@ -14,9 +14,7 @@
 #include <string>
 #include <vector>
 
-
-#include "generic_spec.h"
-
+#include "string_manip.h"
 
 /**
  * hold a list of item of type T, tracking also if item has been set.
@@ -44,14 +42,6 @@ public:
 	 * return true if value match one the stored value in items
 	 */
 	bool match(T const & value) const;
-
-	/**
-	 * @param value  the value to test
-	 *
-	 * return true if value.is_all == true or value match one of the
-	 * stored values in items
-	 */
-	bool match(generic_spec<T> const & value) const;
 
 private:
 	typedef T value_type;
@@ -111,24 +101,6 @@ bool comma_list<T>::match(T const & value) const
 
 	for (; cit != end; ++cit) {
 		if (value == *cit)
-			return true;
-	}
-
-	return false;
-}
-
-
-template <class T>
-bool comma_list<T>::match(generic_spec<T> const & value) const
-{
-	if (is_all)
-		return true;
-
-	const_iterator cit = items.begin();
-	const_iterator const end = items.end();
-
-	for (; cit != end; ++cit) {
-		if (value.match(*cit, false))
 			return true;
 	}
 
