@@ -551,6 +551,14 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>--cpu-buffer-size=</option>num</term>
+		<listitem><para>
+		Number of samples in kernel per-cpu buffer (2.6 only). If you
+		profile at high rate it can help to increase this if the log
+		file show excessive count of sample lost cpu buffer overflow. 
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>--event=</option>[eventspec]</term>
 		<listitem><para>
 		Use the given performance counter event to profile.

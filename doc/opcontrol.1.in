@@ -75,6 +75,12 @@ Shut down daemon. Unload the oprofile module and oprofilefs.
 Set kernel buffer to num samples.
 .br
 .TP
+.BI "--cpu-buffer-size="num
+Set kernel per cpu buffer to num samples (2.6 only). If you profile at high
+rate it can help to increase this if the log file show excessive count of
+sample lost cpu buffer overflow.
+.br
+.TP
 .BI "--event="[event|"default"]
 Add an event to measure for the hardware performance counters,
 or "default" for the default event. The event is of the form
