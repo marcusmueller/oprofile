@@ -1,15 +1,15 @@
-/* $Id: op_events.c,v 1.8 2000/12/12 02:55:32 moz Exp $ */ 
+/* $Id: op_events.c,v 1.12 2001/04/05 13:24:42 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
  * any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place - Suite 330, Boston, MA 02111-1307, USA.
@@ -17,50 +17,50 @@
 
 /* Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren */
 
-/* See IA32 Vol. 3 Appendix A */ 
- 
+/* See IA32 Vol. 3 Appendix A */
+
 /* for allowed */
 #define OP_0_ONLY 	0
 #define OP_1_ONLY 	1
 #define OP_ANY	 	2
-#define OP_PII_PIII	3 
+#define OP_PII_PIII	3
 #define OP_PII_ONLY	4
 #define OP_PIII_ONLY	5
- 
+
 #ifdef __KERNEL__
-#include <linux/string.h> 
-#define strcmp(a,b) strnicmp((a),(b),strlen((b))) 
+#include <linux/string.h>
+#define strcmp(a,b) strnicmp((a),(b),strlen((b)))
 #else
-#include <stdio.h> 
+#include <stdio.h>
 #include <string.h>
-#endif 
- 
-#define u8 unsigned char 
+#endif
+
+#define u8 unsigned char
 #define uint unsigned int
- 
+
 struct op_event {
 	uint allowed;
-	u8 val; /* event number */ 
+	u8 val; /* event number */
 	u8 unit; /* which unit mask if any allowed */
 	const char *name;
-}; 
+};
 
 struct op_unit_mask {
-	uint num; /* number of possible unit masks */ 
+	uint num; /* number of possible unit masks */
 	/* up to six allowed unit masks */
-	u8 um[6]; 
+	u8 um[6];
 };
 
 int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um, int p2, u8 *ctr0_t, u8 *ctr1_t);
 int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc);
-#ifdef OP_EVENTS_DESC 
-void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp); 
-#endif 
- 
+#ifdef OP_EVENTS_DESC
+void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
+#endif
+
 static struct op_unit_mask op_unit_masks[] = {
 	/* not used */
 	{ 1, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
-	/* MESI counters */ 
+	/* MESI counters */
 	{ 5, { 0x1, 0x2, 0x4, 0x8, 0xf, 0x0 }, },
 	/* EBL self/any */
 	{ 2, { 0x0, 0x20, 0x0, 0x0, 0x0, 0x0 }, },
@@ -72,9 +72,9 @@ static struct op_unit_mask op_unit_masks[] = {
 	/* KNI PIII events */
 	{ 4, { 0x0, 0x1, 0x2, 0x3, 0x0, 0x0 }, },
 	{ 2, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0 }, },
-}; 
- 
-static struct op_event op_events[] = { 
+};
+
+static struct op_event op_events[] = {
   /* Data Cache Unit (DCU) */
   {OP_ANY,0x43,0,"DATA_MEM_REFS",},
   {OP_ANY,0x45,0,"DCU_LINES_IN",},
@@ -165,18 +165,18 @@ static struct op_event op_events[] = {
   {OP_PII_ONLY,0xb0,0,"MMX_INSTR_EXEC",},
   {OP_PII_PIII,0xb1,0,"MMX_SAT_INSTR_EXEC",},
   {OP_PII_PIII,0xb2,3,"MMX_UOPS_EXEC",},
-  {OP_PII_PIII,0xb3,4,"MMX_INSTR_TYPE_EXEC",}, 
-  {OP_PII_PIII,0xcc,5,"FP_MMX_TRANS",}, 
+  {OP_PII_PIII,0xb3,4,"MMX_INSTR_TYPE_EXEC",},
+  {OP_PII_PIII,0xcc,5,"FP_MMX_TRANS",},
   {OP_PII_PIII,0xcd,0,"MMX_ASSIST",},
   {OP_PII_ONLY,0xce,0,"MMX_INSTR_RET",},
-  /* segment renaming (Pentium II only) */ 
+  /* segment renaming (Pentium II only) */
   {OP_PII_PIII,0xd4,6,"SEG_RENAME_STALLS",},
   {OP_PII_PIII,0xd5,6,"SEG_REG_RENAMES",},
   {OP_PII_PIII,0xd6,0,"RET_SEG_RENAMES",},
-}; 
+};
 
-uint op_nr_events = sizeof(op_events)/sizeof(struct op_event); 
- 
+uint op_nr_events = sizeof(op_events)/sizeof(struct op_event);
+
 #define OP_EVENTS_OK 		0x0
 #define OP_CTR0_NOT_FOUND 	0x1
 #define OP_CTR1_NOT_FOUND 	0x2
@@ -184,18 +184,18 @@ uint op_nr_events = sizeof(op_events)/sizeof(struct op_event);
 #define OP_CTR1_NO_UM 		0x8
 #define OP_CTR0_NOT_ALLOWED 	0x10
 #define OP_CTR1_NOT_ALLOWED 	0x20
-#define OP_CTR0_PII_EVENT	0x40 
-#define OP_CTR1_PII_EVENT	0x80 
-#define OP_CTR0_PIII_EVENT	0x100 
-#define OP_CTR1_PIII_EVENT	0x200 
- 
+#define OP_CTR0_PII_EVENT	0x40
+#define OP_CTR1_PII_EVENT	0x80
+#define OP_CTR0_PIII_EVENT	0x100
+#define OP_CTR1_PIII_EVENT	0x200
+
 /**
  * op_check_unit_mask - sanity check unit mask value
  * @allow: allowed unit mask array
  * @um: unit mask value to check
  *
  * Verify that a unit mask value is within the allowed array.
- */ 
+ */
 static int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
 {
 	u8 i;
@@ -205,9 +205,9 @@ static int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
 			return 0;
 	}
 
-	return 1; 
+	return 1;
 }
- 
+
 /**
  * op_check_events - sanity check event values
  * @ctr0_type: event value for counter 0
@@ -218,80 +218,88 @@ static int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
  *
  * Check that the counter event and unit mask values
  * are allowed. @proc should be set as follows :
- * 
+ *
  * 0 Pentium Pro
- * 
+ *
  * 1 Pentium II
- * 
+ *
  * 2 Pentium III
- * 
+ *
  * Use 0 values for @ctr0_type and @ctr1_type if the
  * counter is not used.
- * 
+ *
  * The function returns 1 if the values are allowed,
  * 0 otherwise
  */
 int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc)
 {
-	int ret = 0x0; 
+	int ret = 0x0;
 	uint i;
 	int ctr0_e=0,ctr1_e=0;
 
-	for (i=0; i<op_nr_events && !ctr0_e && !ctr1_e; i++) {
-		if (op_events[i].val==ctr0_type) {
-			switch (op_events[i].allowed) {
-				case OP_1_ONLY:
-					ret |= OP_CTR0_NOT_ALLOWED;
-					break;
-				
-				case OP_PII_ONLY:
-					if (proc!=1)
-						ret |= OP_CTR0_PII_EVENT;
-					break;
-		
-				case OP_PIII_ONLY:
-					if (proc!=2)
-						ret |= OP_CTR0_PIII_EVENT;
-					break;
+	if (ctr0_type) { 
+		for (i=0; i<op_nr_events && !ctr0_e; i++) {
+			if (op_events[i].val==ctr0_type) {
+				switch (op_events[i].allowed) {
+					case OP_1_ONLY:
+						ret |= OP_CTR0_NOT_ALLOWED;
+						break;
 
-				case OP_PII_PIII:
-					if (!proc)
-						ret |= OP_CTR0_PII_EVENT;
-					break;
-				default:
-					break;
-			}
-			if (op_events[i].unit)
-				ret |= OP_CTR0_NO_UM*op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr0_um);
-			ctr0_e=1; 
-		} 
-		if (op_events[i].val==ctr1_type) {
-			switch (op_events[i].allowed) {
-				case OP_0_ONLY:
-					ret |= OP_CTR1_NOT_ALLOWED;
-					break;
-				
-				case OP_PII_ONLY:
-					if (proc!=1)
-						ret |= OP_CTR1_PII_EVENT;
-					break;
-		
-				case OP_PIII_ONLY:
-					if (proc!=2)
-						ret |= OP_CTR1_PIII_EVENT;
-					break;
+					case OP_PII_ONLY:
+						if (proc!=1)
+							ret |= OP_CTR0_PII_EVENT;
+						break;
+	
+					case OP_PIII_ONLY:
+						if (proc!=2)
+							ret |= OP_CTR0_PIII_EVENT;
+						break;
 
-				case OP_PII_PIII:
-					if (!proc)
-						ret |= OP_CTR1_PII_EVENT;
-					break;
-				default:
-					break;
+					case OP_PII_PIII:
+						if (!proc)
+							ret |= OP_CTR0_PII_EVENT;
+						break;
+					default:
+						break;
+				}
+				if (op_events[i].unit)
+					ret |= OP_CTR0_NO_UM*op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr0_um);
+				ctr0_e=1;
+				break;
 			}
-			if (op_events[i].unit)
-				ret |= OP_CTR1_NO_UM*op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr1_um);
-			ctr1_e=1; 
-		} 
+		}
+	}
+
+	if (ctr1_type) {
+		for (i=0; i<op_nr_events && !ctr1_e; i++) {
+			if (op_events[i].val==ctr1_type) {
+				switch (op_events[i].allowed) {
+					case OP_0_ONLY:
+						ret |= OP_CTR1_NOT_ALLOWED;
+						break;
+				
+					case OP_PII_ONLY:
+						if (proc!=1)
+							ret |= OP_CTR1_PII_EVENT;
+						break;
+		
+					case OP_PIII_ONLY:
+						if (proc!=2)
+							ret |= OP_CTR1_PIII_EVENT;
+						break;
+
+					case OP_PII_PIII:
+						if (!proc)
+							ret |= OP_CTR1_PII_EVENT;
+						break;
+					default:
+						break;
+				}
+				if (op_events[i].unit)
+					ret |= OP_CTR1_NO_UM*op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr1_um);
+				ctr1_e=1;
+			}
+		}
 	}
 
 	if (!ctr0_e && ctr0_type)
@@ -299,8 +307,8 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
 	if (!ctr1_e && ctr1_type)
 		ret |= OP_CTR1_NOT_FOUND;
 
-	return ret; 
-} 
+	return ret;
+}
 
 /**
  * op_check_events_str - sanity check event strings and unit masks
@@ -316,17 +324,17 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
  * are allowed. @p2 should be set as follows :
  *
  * 0 Pentium Pro
- * 
+ *
  * 1 Pentium II
- * 
+ *
  * 2 Pentium III
- * 
+ *
  * Use "" strings for @ctr0_type and @ctr1_type if the
  * counter is not used.
- * 
+ *
  * On successful return, @ctr0_t and @ctr1_t will contain
  * the event values for counters 0 and 1 respectively
- * 
+ *
  * The function returns 1 if the values are allowed,
  * 0 otherwise
  */
@@ -337,18 +345,28 @@ int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um
 	int ctr1_e=0;
 
 	if (!ctr0_type)
-		ctr0_type=""; 
+		ctr0_type="";
+
 	if (!ctr1_type)
-		ctr1_type=""; 
- 
-	for (i=0; i<op_nr_events && !ctr0_e && !ctr1_e; i++) {
-		if (!strcmp(ctr0_type,op_events[i].name)) {
-			ctr0_e=1;
-			*ctr0_t=op_events[i].val;
+		ctr1_type="";
+
+	if (strcmp(ctr0_type,"")) {
+		for (i=0; i<op_nr_events && !ctr0_e; i++) {
+			if (!strcmp(ctr0_type,op_events[i].name)) {
+				ctr0_e=1;
+				*ctr0_t=op_events[i].val;
+				break;
+			}
 		}
-		if (!strcmp(ctr1_type,op_events[i].name)) {
-			ctr1_e=1;
-			*ctr1_t=op_events[i].val;
+	}
+
+	if (strcmp(ctr1_type,"")) {
+		for (i=0; i<op_nr_events && !ctr1_e; i++) {
+			if (!strcmp(ctr1_type,op_events[i].name)) {
+				ctr1_e=1;
+				*ctr1_t=op_events[i].val;
+				break;
+			}
 		}
 	}
 
@@ -361,11 +379,11 @@ int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um
 	return op_check_events(*ctr0_t,*ctr1_t,ctr0_um,ctr1_um,p2);
 }
 
-#ifdef OP_EVENTS_DESC 
+#ifdef OP_EVENTS_DESC
 struct op_unit_desc {
 	char *desc[6];
 };
- 
+
 static struct op_unit_desc op_unit_descs[] = {
 	{ { NULL, NULL, NULL, NULL, NULL, NULL, }, },
 	{ { "(I)nvalid cache state",
@@ -373,7 +391,7 @@ static struct op_unit_desc op_unit_descs[] = {
 	  "(E)xclusive cache state",
 	  "(M)odified cache state",
 	  "MESI cache state", NULL, }, },
-	{ { "self-generated transactions", 
+	{ { "self-generated transactions",
 	  "any transactions", NULL, NULL, NULL, NULL, }, },
 	{ { "mandatory", NULL, NULL, NULL, NULL, NULL, }, },
 	{ { "MMX packed multiplies",
@@ -398,7 +416,7 @@ static struct op_unit_desc op_unit_descs[] = {
 	{ { "packed and scalar", "packed", NULL, NULL, NULL, NULL, }, },
 
 };
- 
+
 static char *op_event_descs[] = {
   /* Data Cache Unit (DCU) */
   "all memory references, cachable and non",
@@ -489,11 +507,11 @@ static char *op_event_descs[] = {
   "number of MMX instructions executed",
   "number of MMX saturating instructions executed",
   "number of MMX UOPS executed",
-  "number of MMX packing instructions", 
-  "MMX-floating point transitions", 
+  "number of MMX packing instructions",
+  "MMX-floating point transitions",
   "number of EMMS instructions executed",
   "number of MMX instructions retired",
-  /* segment renaming (Pentium II only) */ 
+  /* segment renaming (Pentium II only) */
   "number of segment register renaming stalls",
   "number of segment register renames",
   "number of segment register rename events retired",
@@ -503,7 +521,7 @@ static char *op_event_descs[] = {
  * op_get_event_desc - get event name and description
  * @type: event value
  * @um: unit mask
- * @typenamep: returned event name string 
+ * @typenamep: returned event name string
  * @typedescp: returned event description string
  * @umdescp: returned unit mask description string
  *
@@ -511,28 +529,28 @@ static char *op_event_descs[] = {
  * the event value and unit mask value. It is a fatal error
  * to supply a non-valid @type value, but an invalid @um
  * will not exit.
- * 
+ *
  * @typenamep, @typedescp, @umdescp are filled in with pointers
- * to the relevant name and descriptions. @umdescp can be set to 
+ * to the relevant name and descriptions. @umdescp can be set to
  * NULL when @um is invalid for the given @type value.
  * These strings are in text section so should not be freed.
- */ 
-void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp) 
+ */
+void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp)
 {
 	uint i;
 	uint j;
-	
+
 	*typenamep = *typedescp = *umdescp = NULL;
 
 	for (i=0; i < op_nr_events; i++) {
 		if (op_events[i].val == type) {
 			*typenamep = (char *)op_events[i].name;
 			*typedescp = op_event_descs[i];
-			if (op_events[i].unit) { 
+			if (op_events[i].unit) {
 				for (j=0; j < op_unit_masks[op_events[i].unit].num; j++) {
 					if (op_unit_masks[op_events[i].unit].um[j]==um)
 						*umdescp = op_unit_descs[op_events[i].unit].desc[j];
-				} 
+				}
 			}
 			break;
 		}
@@ -542,14 +560,14 @@ void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char 
 		fprintf(stderr,"op_get_event_desc: no such event 0x%.2x\n",type);
 		exit(1);
 	}
-} 
+}
 
 #endif /* OP_EVENTS_DESC */
- 
+
 #ifdef OP_EVENTS_MAIN
 
 #include "version.h"
- 
+
 int main (int argc, char *argv[])
 {
 	uint i;
@@ -569,10 +587,10 @@ int main (int argc, char *argv[])
 		}
 		return 0;
 	}
- 
+
 	printf("oprofile: available events\n");
 	printf("--------------------------\n\n");
-	printf("See Intel Architecture Developer's Manual\nVol. 3, Appendix A\n\n"); 
+	printf("See Intel Architecture Developer's Manual\nVol. 3, Appendix A\n\n");
 
 	for (i=0; i<op_nr_events; i++) {
 		printf("%s:",op_events[i].name);
@@ -583,8 +601,8 @@ int main (int argc, char *argv[])
 			case 3: printf("- Pentium II/III only\n"); break;
 			case 4: printf("- Pentium II only\n"); break;
 			case 5: printf("- Pentium III only\n"); break;
-			default: printf("\n"); break; 
-		} 
+			default: printf("\n"); break;
+		}
 		if (op_events[i].unit) {
 			printf("\tUnit masks\n");
 			printf("\t----------\n");
@@ -596,6 +614,6 @@ int main (int argc, char *argv[])
 		}
 	}
 
-	return 0; 
-} 
+	return 0;
+}
 #endif /* OP_EVENTS_MAIN */

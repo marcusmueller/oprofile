@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.3 2001/01/22 02:11:06 moz Exp $ */
+/* $Id: op_syscalls.c,v 1.4 2001/01/31 16:02:29 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -63,68 +63,6 @@ void my_set_fixmap(void)
 	set_pte_phys (address,APIC_DEFAULT_PHYS_BASE);
 }
 #endif /* CONFIG_X86_UP_APIC */
-
-/* poor man's do_nmi() */
-
-static void mem_parity_error(unsigned char reason, struct pt_regs * regs)
-{
-	printk("oprofile: Uhhuh. NMI received. Dazed and confused, but trying to continue\n");
-	printk("You probably have a hardware problem with your RAM chips\n");
-
-	/* Clear and disable the memory parity error line. */
-	reason = (reason & 0xf) | 4;
-	outb(reason, 0x61);
-}
-
-static void io_check_error(unsigned char reason, struct pt_regs * regs)
-{
-	ulong i;
-
-	printk("oprofile: NMI: IOCK error (debug interrupt?)\n");
-	/* Can't show registers */
-
-	/* Re-enable the IOCK line, wait for a few seconds */
-	reason = (reason & 0xf) | 8;
-	outb(reason, 0x61);
-	i = 2000;
-	while (--i) udelay(1000);
-	reason &= ~8;
-	outb(reason, 0x61);
-}
-
-static void unknown_nmi_error(unsigned char reason, struct pt_regs * regs)
-{
-	/* No MCA check */
-
-	printk("oprofile: Uhhuh. NMI received for unknown reason %02x.\n", reason);
-	printk("Maybe you need to boot with nmi_watchdog=0\n");
-	printk("Dazed and confused, but trying to continue\n");
-	printk("Do you have a strange power saving mode enabled?\n");
-}
-
-asmlinkage void my_do_nmi(struct pt_regs * regs, long error_code)
-{
-	unsigned char reason = inb(0x61);
-
-	/* can't count this NMI */
-
-	if (!(reason & 0xc0)) {
-		unknown_nmi_error(reason, regs);
-		return;
-	}
-	if (reason & 0x80)
-		mem_parity_error(reason, regs);
-	if (reason & 0x40)
-		io_check_error(reason, regs);
-	/*
-	 * Reassert NMI in case it became active meanwhile
-	 * as it's edge-triggered.
-	 */
-	outb(0x8f, 0x70);
-	inb(0x71);		/* dummy */
-	outb(0x0f, 0x70);
-	inb(0x71);		/* dummy */
-}
 
 /* Given PGD from the address space's page table, return the kernel
  * virtual mapping of the physical memory mapped at ADR.

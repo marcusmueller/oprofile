@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.50 2001/01/21 12:57:39 moz Exp $ */
+/* $Id: oprofile.c,v 1.51 2001/01/31 16:02:29 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -128,22 +128,17 @@ new_entry:
 	goto out;
 }
 
-static int op_check_ctr(struct _oprof_data *data, struct pt_regs *regs, int ctr)
+static void op_check_ctr(struct _oprof_data *data, struct pt_regs *regs, int ctr)
 {
 	ulong l,h;
 	get_perfctr(l,h,ctr);
-	if (ctr_overflowed(l)) {
+	if (ctr_overflowed(l))
 		op_do_profile(data,regs,ctr);
-		return 1;
-	}
-	return 0;
 }
 
 asmlinkage void op_do_nmi(struct pt_regs * regs)
 {
 	struct _oprof_data *data = &oprof_data[smp_processor_id()];
-	uint low,high;
-	int overflowed=0;
 
 #ifdef PID_FILTER
 	if (pid_filter && current->pid!=pid_filter)
@@ -152,21 +147,10 @@ asmlinkage void op_do_nmi(struct pt_regs * regs)
 		return;
 #endif
 
-	/* disable counters */
-	rdmsr(MSR_IA32_EVNTSEL0,low,high);
-	wrmsr(MSR_IA32_EVNTSEL0,low&~(1<<22),high);
-
 	if (data->ctrs&OP_CTR_0)
-		overflowed = op_check_ctr(data,regs,0);
+		op_check_ctr(data,regs,0);
 	if (data->ctrs&OP_CTR_1)
-		overflowed |= op_check_ctr(data,regs,1);
-		
-	/* enable counters */
-	rdmsr(MSR_IA32_EVNTSEL0,low,high);
-	wrmsr(MSR_IA32_EVNTSEL0,low|(1<<22),high);
-
-	if (!overflowed)
-		DO_NMI(regs, 0);
+		op_check_ctr(data,regs,1);
 }
 
 /* ---------------- NMI handler setup ------------ */
@@ -667,6 +651,8 @@ static int oprof_stop(void);
 
 static int oprof_open(struct inode *ino, struct file *file)
 {
+	int err;
+
 	if (!capable(CAP_SYS_PTRACE))
 		return -EPERM;
 
@@ -683,7 +669,10 @@ static int oprof_open(struct inode *ino, struct file *file)
 	if (test_and_set_bit(0,&oprof_opened))
 		return -EBUSY;
 
-	return oprof_start();
+	err = oprof_start();
+	if (err)
+		clear_bit(0, &oprof_opened); 
+	return err; 
 }
 
 static int oprof_release(struct inode *ino, struct file *file)

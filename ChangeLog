@@ -1,3 +1,32 @@
+2001-01-24  John Levon  <moz@compsoc.man.ac.uk>
+
+	* oprofile.c: we're not using op_check_ctr()
+		return value, so don't have one
+
+2001-01-23  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in:
+	* op_syscalls.c:
+	* oprofile.c:
+	* oprofile.h: stripped the NMI error handling stuff
+
+	* op_events.c: fixed silly bug in the other place too :P
+	
+	* dae/oprofiled.c: improved error messages
+
+2001-01-22  John Levon  <moz@compsoc.man.ac.uk>
+
+	* op_events.c: fix silly bug so you can set both
+		counters at once
+
+	* oprofile.c: don't disable/enable counters in
+		the interrupt handler. It's expensive and
+		doesn't really buy anything.
+		Fix a silly EBUSY bug when open fails once.
+
+	* dae/op_start: don't remove old sample files
+		pass correct event to daemon for ctr1
+
 2001-01-22  John Levon  <moz@compsoc.man.ac.uk>
 
 	* op_syscalls.c:do_hash(): use strcpy not strncpy. 

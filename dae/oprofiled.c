@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.23 2001/01/21 01:11:57 moz Exp $ */
+/* $Id: oprofiled.c,v 1.24 2001/01/31 16:02:29 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -174,16 +174,16 @@ static void opd_options(int argc, char const *argv[])
 
 	ret = op_check_events_str(ctr0_type, ctr1_type, (u8)ctr0_um, (u8)ctr1_um, cpu_type, &ctr0_type_val, &ctr1_type_val);
 
-        if (ret&OP_CTR0_NOT_FOUND) fprintf(stderr, "oprofiled: ctr0: no such event\n");
-        if (ret&OP_CTR1_NOT_FOUND) fprintf(stderr, "oprofiled: ctr1: no such event\n");
-        if (ret&OP_CTR0_NO_UM) fprintf(stderr, "oprofiled: ctr0: invalid unit mask\n");
-        if (ret&OP_CTR1_NO_UM) fprintf(stderr, "oprofiled: ctr1: invalid unit mask\n");
-        if (ret&OP_CTR0_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr0: can't count event\n");
-        if (ret&OP_CTR1_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr1: can't count event\n");
-        if (ret&OP_CTR0_PII_EVENT) fprintf(stderr, "oprofiled: ctr0: event only available on PII\n");
-        if (ret&OP_CTR1_PII_EVENT) fprintf(stderr, "oprofiled: ctr1: event only available on PII\n");
-        if (ret&OP_CTR0_PIII_EVENT) fprintf(stderr, "oprofiled: ctr0: event only available on PIII\n");
-        if (ret&OP_CTR1_PIII_EVENT) fprintf(stderr, "oprofiled: ctr1: event only available on PIII\n");
+        if (ret&OP_CTR0_NOT_FOUND) fprintf(stderr, "oprofiled: ctr0: %s: no such event\n", ctr0_type);
+        if (ret&OP_CTR1_NOT_FOUND) fprintf(stderr, "oprofiled: ctr1: %s: no such event\n", ctr1_type);
+        if (ret&OP_CTR0_NO_UM) fprintf(stderr, "oprofiled: ctr0: 0x%.2x: invalid unit mask\n", ctr0_um);
+        if (ret&OP_CTR1_NO_UM) fprintf(stderr, "oprofiled: ctr1: 0x%.2x: invalid unit mask\n", ctr1_um);
+        if (ret&OP_CTR0_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr0: %s: can't count event\n", ctr0_type);
+        if (ret&OP_CTR1_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr1: %s: can't count event\n", ctr1_type);
+        if (ret&OP_CTR0_PII_EVENT) fprintf(stderr, "oprofiled: ctr0: %s: event only available on PII\n", ctr0_type);
+        if (ret&OP_CTR1_PII_EVENT) fprintf(stderr, "oprofiled: ctr1: %s: event only available on PII\n", ctr1_type);
+        if (ret&OP_CTR0_PIII_EVENT) fprintf(stderr, "oprofiled: ctr0: %s: event only available on PIII\n", ctr0_type);
+        if (ret&OP_CTR1_PIII_EVENT) fprintf(stderr, "oprofiled: ctr1: %s: event only available on PIII\n", ctr1_type);
 
 	if (ret!=OP_EVENTS_OK) {
 		poptPrintHelp(optcon, stderr, 0);
