@@ -1,5 +1,7 @@
 AM_CPPFLAGS=-I ${top_srcdir}/libop -I ${top_srcdir}/libutil
 
+LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
+
 bin_PROGRAMS = op_help
 dist_bin_SCRIPTS = opcontrol
 

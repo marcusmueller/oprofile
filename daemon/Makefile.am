@@ -14,6 +14,8 @@ dist_sources = \
 
 EXTRA_DIST = $(dist_sources)
 
+LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
+
 if kernel_support
 
 AM_CPPFLAGS = \
@@ -32,13 +34,15 @@ oprofiled_LDADD = \
 	../libdb/libodb.a \
 	../libop/libop.a \
 	../libutil/libutil.a
+LINKER=$(CXX)
 else
 oprofiled_LDADD = \
 	../libdb/libodb.a \
 	../libop/libop.a \
 	../libutil/libutil.a
+LINKER=$(CC)
 endif
 
-oprofiled_LINK = $(CXX) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+oprofiled_LINK = $(LINKER) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 
 endif

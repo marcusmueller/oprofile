@@ -1,3 +1,12 @@
+2003-04-06  John Levon  <levon@movementarian.org>
+
+	* configure.in:
+	* all Makefile.am: don't blindly set $LIBS, use
+	explicit mention of which libs are needed.
+
+	* dae/Makefile.am:
+	* daemon/Makefile.am: only link with C++ if needed.
+
 2003-04-05  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_config_24.h:

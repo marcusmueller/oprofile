@@ -246,8 +246,8 @@ void regular_expression_replace::do_replace(string & str, size_t start_pos,
 	str.replace(first, count, inserted);
 }
 
-void setup_regex(regular_expression_replace& regex,
-		 string const & filename)
+void setup_regex(regular_expression_replace & regex,
+                 string const & filename)
 {
 	ifstream in(filename.c_str());
 	if (!in) {

@@ -8,6 +8,8 @@ dist_sources = \
 
 EXTRA_DIST = $(dist_sources)
 
+LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
+
 if enable_abi
 
 AM_CPPFLAGS = \

@@ -38,6 +38,8 @@ libpp_a_SOURCES = \
 
 bin_PROGRAMS = oprofpp op_to_source op_time op_merge
 
+LIBS=@POPT_LIBS@ @BFD_LIBS@
+
 common_libs =  \
 	libpp.a \
 	../libopt++/libopt++.a \
