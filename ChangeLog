@@ -1,5 +1,12 @@
 2002-09-23  John Levon  <levon@movementarian.org>
 
+	* daemon/: new 2.5 patch daemon code. WIP
+
+	* configure.in:
+	* Makefile.in: detect 2.5 patch and build appropriately
+ 
+2002-09-23  John Levon  <levon@movementarian.org>
+
 	* module/x86/op_msr.h: match kernel naming
 
 	* module/x86/op_model_athlon.c: from above
