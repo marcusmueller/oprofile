@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.31 2002/03/03 01:18:19 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.32 2002/03/04 18:56:22 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -399,8 +399,18 @@ static bool symcomp(const asymbol * a, const asymbol * b)
 	return a->value + a->section->vma < b->value + b->section->vma;
 }
 
-/* need a better filter, but only this gets rid of _start
- * and other crud easily. 
+namespace { 
+ 
+// only add symbols that would /never/ be
+// worth examining
+static const char *boring_symbols[] = {
+	"gcc2_compiled.",
+};
+
+static const size_t nr_boring_symbols = (sizeof(boring_symbols) / sizeof(char *));
+ 
+/**
+ * Return true if the symbol is worth looking at
  */
 static bool interesting_symbol(asymbol *sym)
 {
@@ -413,12 +423,16 @@ static bool interesting_symbol(asymbol *sym)
 	if (streq("_init", sym->name))
 		return 0;
 
-	if (!(sym->flags & (BSF_FUNCTION | BSF_GLOBAL)))
-		return 0;
-
+	for (size_t i = 0; i < nr_boring_symbols; ++i) {
+		if (streq(boring_symbols[i], sym->name))
+			return 0;
+	}
+	 
 	return 1;
 }
 
+} // namespace anon
+ 
 /**
  * get_symbols - opp_bfd ctor helper
  *
