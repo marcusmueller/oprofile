@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <map>
+#include <set>
 
 #include "string_manip.h"
 #include "op_header.h"
@@ -208,32 +209,6 @@ void identify_classes(profile_classes & classes,
 }
 
 
-/**
- * Check if a profile can fit into an equivalence class.
- * This is the heart of the merging and classification process.
- */
-bool class_match(profile_template const & ptemplate,
-                 parsed_filename const & parsed)
-{
-	if (ptemplate.event != parsed.event)
-		return false;
-	if (ptemplate.count != parsed.count)
-		return false;
-		
-	// remember that if we're merging on any of
-	// these, the template value will be empty
-	if (!ptemplate.unitmask.empty() && ptemplate.unitmask != parsed.unitmask)
-		return false;
-	if (!ptemplate.tgid.empty() && ptemplate.tgid != parsed.tgid)
-		return false;
-	if (!ptemplate.tid.empty() && ptemplate.tid != parsed.tid)
-		return false;
-	if (!ptemplate.cpu.empty() && ptemplate.cpu != parsed.cpu)
-		return false;
-	return true;
-}
-
-
 /// construct a class template from a profile
 profile_template const
 template_from_profile(parsed_filename const & parsed,
@@ -259,23 +234,20 @@ template_from_profile(parsed_filename const & parsed,
 /**
  * Find a matching class the sample file could go in, or generate
  * a new class if needed.
+ * This is the heart of the merging and classification process.
+ * The returned value is non-const reference but the ptemplate member
+ * must be considered as const
  */
-profile_class & find_class(vector<profile_class> & classes,
+profile_class & find_class(set<profile_class> & classes,
                            parsed_filename const & parsed,
                            merge_option const & merge_by)
 {
-	vector<profile_class>::iterator it = classes.begin();
-	vector<profile_class>::iterator const end = classes.end();
+	profile_class cls;
+	cls.ptemplate = template_from_profile(parsed, merge_by);
 
-	for (; it != end; ++it) {
-		if (class_match(it->ptemplate, parsed))
-			return *it;
-	}
+	pair<set<profile_class>::iterator, bool> ret = classes.insert(cls);
 
-	profile_class pclass;
-	pclass.ptemplate = template_from_profile(parsed, merge_by);
-	classes.push_back(pclass);
-	return classes.back();
+	return const_cast<profile_class&>(*ret.first);
 }
 
 
@@ -379,7 +351,7 @@ bool operator<(profile_class const & lhs,
 profile_classes const
 arrange_profiles(list<string> const & files, merge_option const & merge_by)
 {
-	profile_classes classes;
+	set<profile_class> temp_classes;
 
 	list<string>::const_iterator it = files.begin();
 	list<string>::const_iterator const end = files.end();
@@ -398,9 +370,13 @@ arrange_profiles(list<string> const & files, merge_option const & merge_by)
 			parsed.image = parsed.lib_image;
 
 		profile_class & pclass =
-			find_class(classes.v, parsed, merge_by);
+			find_class(temp_classes, parsed, merge_by);
 		add_profile(pclass, parsed);
 	}
+
+	profile_classes classes;
+	copy(temp_classes.begin(), temp_classes.end(),
+	     back_inserter(classes.v));
 
 	if (classes.v.empty())
 		return classes;

@@ -1,5 +1,11 @@
 2003-10-17  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/arrange_profiles.cpp: use a set<profile_classes> instead
+	  of a vector<...> to replace a O(N*M) by a O(N*log(M)) behavior.
+	  (N number of samples files, M number of class).
+
+2003-10-17  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/op_bfd.cpp: show filename when warning about no debug
 	  information available
 
