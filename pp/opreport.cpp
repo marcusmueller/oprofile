@@ -220,15 +220,45 @@ void output_count(double total_count, size_t count)
 }
 
 
-void output_col_headers()
+void output_col_headers(bool indent)
 {
-	int colwidth = 9 + 1 + percent_width;
+	if (!options::show_header)
+		return;
+
+	if (indent)
+		cout << '\t';
+
+	size_t colwidth = 9 + 1 + percent_width;
 
 	for (size_t i = 0; i < classes.v.size(); ++i) {
-		cout << setw(colwidth)
-		     << classes.v[i].name.substr(0, colwidth);
-		cout << ' ';
+		string name = classes.v[i].name;
+		if (name.length() > colwidth)
+			name = name.substr(0, colwidth - 3)
+				+ "...";
+		cout << right << setw(colwidth) << name;
+		cout << '|';
 	}
+	cout << '\n';
+
+	if (indent)
+		cout << '\t';
+
+	for (size_t i = 0; i < classes.v.size(); ++i) {
+		cout << "  samples| ";
+		cout << setw(percent_width) << "%|";
+	}
+
+	cout << '\n';
+
+	if (indent)
+		cout << '\t';
+
+	for (size_t i = 0; i < classes.v.size(); ++i) {
+		cout << "-----------";
+		string str(percent_width, '-');
+		cout << str;
+	}
+
 	cout << '\n';
 
 }
@@ -244,8 +274,7 @@ output_deps(summary_container const & summaries,
 	if (app.deps.size() == 1)
 		return;
 
-	cout << '\t';
-	output_col_headers();
+	output_col_headers(true);
 
 	for (size_t j = 0 ; j < app.deps.size(); ++j) {
 		summary const & summ = app.deps[j];
@@ -273,7 +302,7 @@ output_deps(summary_container const & summaries,
  */
 void output_summaries(summary_container const & summaries)
 {
-	output_col_headers();
+	output_col_headers(false);
 
 	for (size_t i = 0; i < summaries.apps.size(); ++i) {
 		app_summary const & app = summaries.apps[i];

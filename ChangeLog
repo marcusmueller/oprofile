@@ -1,3 +1,8 @@
+2003-09-14  John Levon  <levon@movementarian.org>
+
+	* pp/opreport.cpp: nice formatting of image report
+	column headers, respect --no-header
+
 2003-09-14  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/arrange_profiles.cpp: use string::erase() not string::clear()

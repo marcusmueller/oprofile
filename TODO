@@ -19,6 +19,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
   opreport "lib-image:*libc*" --merge=lib works but not
   opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
   --separate==none. Must we take care ?
+ o output column shortname headers for opreport -l
 
 0.8 release
 -----------
