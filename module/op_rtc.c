@@ -60,6 +60,9 @@ static int rtc_setup(void)
 {
 	unsigned char tmp_control;
 	unsigned long flags;
+	unsigned char tmp_freq_select;
+	unsigned long target, rem;
+	unsigned int exp, freq;
 
  	spin_lock_irqsave(&rtc_lock, flags);
 
@@ -75,9 +78,6 @@ static int rtc_setup(void)
  
 // FIXME
 #if 0 
-	unsigned char tmp_freq_select;
-	unsigned long target, rem;
-	unsigned int exp, freq;
 	if (sysctl.ctr[0].count != 0) {
 		/* need to reverse the daemon's calculation without
 		 * being able to get cpu_khz parameter.
@@ -98,6 +98,7 @@ static int rtc_setup(void)
 			target = OP_RTC_MAX;
 		
 	} else 
+#endif 
 		target = 128;
 
 	exp = 0;
@@ -106,13 +107,15 @@ static int rtc_setup(void)
 	freq = 16 - exp;
 #ifdef BOBM_DEBUG
 	printk(KERN_ERR "oprofile: rtc freq: %d, code: %d\n", (1 << exp), freq);
-	printk(KERN_ERR "oprofile: old ctr[0].count = %d\n", sysctl.ctr[0].count);
 #endif
+#if 0
+	printk(KERN_ERR "oprofile: old ctr[0].count = %d\n", sysctl.ctr[0].count);
 	/* store our actual "effective" count back for the daemon */
 	sysctl.ctr[0].count = (boot_cpu_data.loops_per_jiffy * 100) / (1<<exp);
 	sysctl_parms.ctr[0].count = sysctl.ctr[0].count;
 #ifdef BOBM_DEBUG
 	printk(KERN_ERR "oprofile: new ctr[0].count = %d\n", sysctl.ctr[0].count);
+#endif
 #endif
 
 	tmp_freq_select = CMOS_READ(RTC_FREQ_SELECT);
@@ -120,7 +123,6 @@ static int rtc_setup(void)
 	CMOS_WRITE(tmp_freq_select, RTC_FREQ_SELECT);
 
 	spin_unlock_irqrestore(&rtc_lock, flags);
-#endif 
 	return 0; 
 }
 

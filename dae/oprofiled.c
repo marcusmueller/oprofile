@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.64 2002/01/05 02:40:57 movement Exp $ */
+/* $Id: oprofiled.c,v 1.65 2002/01/14 07:02:02 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -279,45 +279,15 @@ static int opd_need_backup_samples_files(void)
 }
 
 /**
- * opd_options - parse command line options
- * @argc: argc
- * @argv: argv array
- *
- * Parse all command line arguments, and sanity
- * check what the user passed. Incorrect arguments
- * are a fatal error.
+ * opd_pmc_options - read sysctls for pmc options
  */
-static void opd_options(int argc, char const *argv[])
+static void opd_pmc_options(void)
 {
-	poptContext optcon;
 	int ret;
 	uint i;
 	/* should be sufficient to hold /proc/sys/dev/oprofile/%d/yyyy */
 	char filename[PATH_MAX + 1];
-
-	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
-
-	if (showvers) {
-		printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
-		exit(0);
-	}
-
-	if (!vmlinux || streq("", vmlinux)) {
-		fprintf(stderr, "oprofiled: no vmlinux specified.\n");
-		poptPrintHelp(optcon, stderr, 0);
-		exit(1);
-	}
-
-	if (!systemmapfilename || streq("", systemmapfilename)) {
-		fprintf(stderr, "oprofiled: no System.map specified.\n");
-		poptPrintHelp(optcon, stderr, 0);
-		exit(1);
-	}
-
-	opd_buf_size = opd_read_int_from_file("/proc/sys/dev/oprofile/bufsize");
-	opd_note_buf_size = opd_read_int_from_file("/proc/sys/dev/oprofile/notesize");
-	kernel_only = opd_read_int_from_file("/proc/sys/dev/oprofile/kernel_only");
-
+ 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		sprintf(filename, "/proc/sys/dev/oprofile/%d/event", i);
 		ctr_event[i]= opd_read_int_from_file(filename);
@@ -349,6 +319,47 @@ static void opd_options(int argc, char const *argv[])
 
 		if (ret != OP_EVENTS_OK)
 			exit(1);
+	}
+} 
+ 
+/**
+ * opd_options - parse command line options
+ * @argc: argc
+ * @argv: argv array
+ *
+ * Parse all command line arguments, and sanity
+ * check what the user passed. Incorrect arguments
+ * are a fatal error.
+ */
+static void opd_options(int argc, char const *argv[])
+{
+	poptContext optcon;
+
+	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
+
+	if (showvers) {
+		printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
+		exit(0);
+	}
+
+	if (!vmlinux || streq("", vmlinux)) {
+		fprintf(stderr, "oprofiled: no vmlinux specified.\n");
+		poptPrintHelp(optcon, stderr, 0);
+		exit(1);
+	}
+
+	if (!systemmapfilename || streq("", systemmapfilename)) {
+		fprintf(stderr, "oprofiled: no System.map specified.\n");
+		poptPrintHelp(optcon, stderr, 0);
+		exit(1);
+	}
+
+	opd_buf_size = opd_read_int_from_file("/proc/sys/dev/oprofile/bufsize");
+	opd_note_buf_size = opd_read_int_from_file("/proc/sys/dev/oprofile/notesize");
+	kernel_only = opd_read_int_from_file("/proc/sys/dev/oprofile/kernel_only");
+
+	if (cpu_type != CPU_RTC) {
+		opd_pmc_options();
 	}
 
 	if (cpu_speed_str && strlen(cpu_speed_str))

@@ -2,6 +2,30 @@
 
 	* TODO: update
 
+	* dae/op_start: load module at start. Handle CPU_RTC.
+	  Avoid sysctl for now on RTC case.
+
+	* dae/oprofiled.c: only read sysctls if PMC. Needs clean.
+
+	* events/op_events.c: add RTC event.
+
+	* events/op_events_desc.c: get CPU type from module. 
+
+	* module/op_init.c: detect CPU_RTC.
+
+	* module/op_nmi.c: setup code moved from op_init.c
+
+	* module/op_rtc.c: enable interrupt, fixed at 128 for now.
+
+	* module/op_x86.c: add Athlon to needs_apic_setup checks
+
+	* module/oprofile.c: use correct interrupt handler based on
+	  CPU type
+
+2002-01-14  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+
 	* op_user.h: add CPU_RTC
 
 	* op_init.c: add FIXMEs

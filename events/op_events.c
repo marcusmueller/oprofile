@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.2 2001/12/31 14:45:33 movement Exp $ */
+/* $Id: op_events.c,v 1.3 2002/01/14 07:02:02 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -35,7 +35,8 @@ static const char* cpu_type_str[MAX_CPU_TYPE] = {
 	"Pentium Pro",
 	"PII",
 	"PIII",
-	"Athlon"
+	"Athlon",
+	"CPU with RTC device"
 };
 
 struct op_unit_mask op_unit_masks[] = {
@@ -58,6 +59,7 @@ struct op_unit_mask op_unit_masks[] = {
 };
 
 /* the following are just short cut for filling the table of event */
+#define OP_RTC		(1 << CPU_RTC)
 #define OP_ATHLON	(1 << CPU_ATHLON)
 #define OP_PPRO		(1 << CPU_PPRO)
 #define OP_PII		(1 << CPU_PII)
@@ -193,6 +195,9 @@ struct op_event op_events[] = {
   { CTR_ALL, OP_ATHLON, 0xcd, 0, "INTERRUPTS_MASKED", 500,},
   { CTR_ALL, OP_ATHLON, 0xce, 0, "INTERRUPTS_MASKED_PENDING", 500,},
   { CTR_ALL, OP_ATHLON, 0xcf, 0, "HARDWARE_INTERRUPTS", 10,},
+
+  /* other CPUs */
+  { CTR_0, OP_RTC, 0, 0, "RTCBLAHBLAHBLAH", 128,},
 };
 
 /* the total number of events for all processor type */
@@ -250,14 +255,6 @@ int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
  * op_min_count - get the minimum count value.
  * @ctr_type: event value
  * @cpu_type: cpu type
- *
- * 0 Pentium Pro
- *
- * 1 Pentium II
- *
- * 2 Pentium III
- *
- * 3 AMD Athlon
  *
  * The function returns > 0 if the event is found
  * 0 otherwise

@@ -819,13 +819,22 @@ int __init oprof_init(void)
 
 	printk(KERN_INFO "%s\n", op_version);
 
-	find_intel_smp();
+	if (sysctl.cpu_type != CPU_RTC) {
+		int_ops = &op_nmi_ops;
+ 
+		find_intel_smp();
 
-	// FIXME: for RTC
-	int_ops = &op_nmi_ops;
-
-	if ((err = int_ops->init())) {
-		return err;
+		// try to init, fall back to rtc if not
+		if ((err = int_ops->init())) {
+			int_ops = &op_rtc_ops;
+			if ((err = int_ops->init()))
+				return err;
+			sysctl.cpu_type = CPU_RTC;
+		}
+	} else {
+		int_ops = &op_rtc_ops;
+		if ((err = int_ops->init()))
+			return err;
 	}
  
 	if ((err = init_sysctl()))

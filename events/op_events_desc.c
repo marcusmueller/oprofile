@@ -1,4 +1,4 @@
-/* $Id: op_events_desc.c,v 1.4 2001/12/31 14:45:33 movement Exp $ */
+/* $Id: op_events_desc.c,v 1.5 2002/01/14 07:02:02 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -68,6 +68,29 @@ static op_cpu op_type_from_name(char const * name)
  */
 op_cpu op_get_cpu_type(void)
 {
+	int cpu_type = CPU_NO_GOOD;
+	char str[10];
+ 
+/* FIXME */ 
+	FILE * fp;
+
+	fp = fopen("/proc/sys/dev/oprofile/cpu_type", "r");
+	if (!fp) {
+		fprintf(stderr, "Unable to open /proc/sys/dev/oprofile/cpu_type  for reading\n");
+		return cpu_type;
+	}
+
+	fgets(str, 9, fp);
+ 
+	sscanf(str, "%d\n", &cpu_type);
+
+	fprintf(stderr, "type is %d\n", cpu_type);
+
+	fclose(fp);
+
+	return cpu_type;
+
+#if 0 
 	op_cpu cpu_type = CPU_NO_GOOD;
 	op_cpu cputmp;
 	char line[256];
@@ -92,6 +115,7 @@ op_cpu op_get_cpu_type(void)
 
 	fclose(fp);
 	return cpu_type;
+#endif 
 }
 
 #undef OP_CPU_TYPES_NR
@@ -258,6 +282,7 @@ char *op_event_descs[] = {
   "Interrupts masked cycles (IF=0)",
   "Interrupts masked while pending cycles (INTR while IF=0)",
   "Number of taken hardware interrupts",
+  "RTC blah blah blah",
 };
 
 /**
@@ -335,4 +360,3 @@ void op_get_event_desc(op_cpu cpu_type, u8 type, u8 um, char **typenamep, char *
 		exit(1);
 	}
 }
-

@@ -12,22 +12,15 @@ or a file.
 o more discussion of problematic code needs to go in the "interpreting" section. 
   Maybe you should add the nasm tricks somewhere Phil ?
  
-o prepare for rtc:
-	- move apic init to module init
-	- export proc type sysctl
-	- remove user-space proc type code
-	- probe module on start to get proc type
-	- generalise module start/stop/interrupt code (code move)
-o Bob's rtc patch ?
+o finish RTC
  
-o difference between two profile session. Difference must be made at source level. 
-  (This is a part of post-prof)
-
 o audit oprof_start for security...
  
 Before 1.0
 ----------
 
+ o difference between two profile session. Difference must be made at source level. 
+  (This is a part of post-prof)
  o improve format of oprofpp output etc.
  o implement a shadow interrupt handler so we can profile the NMI handler code
  o verify builds (modversions, kernel versions, athlon etc.)

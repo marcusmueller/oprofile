@@ -21,10 +21,10 @@ static uint perfctr_msr[OP_MAX_COUNTERS];
 static uint eventsel_msr[OP_MAX_COUNTERS];
 
 /* number of counters physically present */
-uint op_nr_counters = 2;
+static uint op_nr_counters = 2;
 
 /* whether we enable for each counter (athlon) or globally (intel) */
-int separate_running_bit;
+static int separate_running_bit;
 
 /* ---------------- NMI handler ------------------ */
 
@@ -307,7 +307,12 @@ static int pmc_init(void)
 	int i;
 	int err = 0; 
  
-	/* first, let's use the right MSRs */
+	if (sysctl.cpu_type == CPU_ATHLON) {
+		op_nr_counters = 4;
+		separate_running_bit = 1;
+	}
+ 
+	/* let's use the right MSRs */
 	switch (sysctl.cpu_type) {
 		case CPU_ATHLON:
 			eventsel_msr[0] = MSR_K7_PERFCTL0;

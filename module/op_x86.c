@@ -164,7 +164,8 @@ static int __init check_p6_ok(void)
 {
 	if (sysctl.cpu_type != CPU_PPRO &&
 		sysctl.cpu_type != CPU_PII &&
-		sysctl.cpu_type != CPU_PIII)
+		sysctl.cpu_type != CPU_PIII &&
+		sysctl.cpu_type != CPU_ATHLON)
 		return 1; 
 
 	return enable_apic();
