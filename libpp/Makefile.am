@@ -27,8 +27,6 @@ libpp_a_SOURCES = \
 	op_header.cpp \
 	op_header.h \
 	symbol.h \
-	partition_files.h \
-	partition_files.cpp \
 	profile.cpp \
 	profile.h \
 	profile_container.cpp \

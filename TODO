@@ -6,6 +6,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
+ o re-introduce image_set like functionality
  o sample-file: / binary: don't work in any useful way - can we fix this
    by peeking at binary: value and faking the split_sample_file somehow ?
  o separate debug info stuff

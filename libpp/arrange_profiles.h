@@ -17,7 +17,7 @@
 #include <vector>
 
 /**
- * store merging options options used to partition samples filename
+ * store merging options options used to classify profiles
  */
 struct merge_option {
 	bool cpu;

@@ -1,8 +1,13 @@
 2003-09-14  John Levon  <levon@movementarian.org>
 
-	* opannotate.cpp:
-	* opannotate_options.cpp:
-	* opannotate_options.h: use arrange_profiles API
+	* pp/partition_files.h:
+	* pp/partition_files.cpp: remove, now unused
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
+	* pp/opannotate.cpp:
+	* pp/opannotate_options.cpp:
+	* pp/opannotate_options.h: use arrange_profiles API
 
 2003-09-14  John Levon  <levon@movementarian.org>
 
