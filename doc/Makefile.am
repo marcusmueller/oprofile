@@ -16,12 +16,23 @@ dist_html_DATA = oprofile.html
 $(generated_mans):
 	echo ".so man1/oprofile.1" > $@
 
+if have_xsltproc
+
 oprofile.html: oprofile.xml $(STYLESHEETS)
 	$(XSLTPROC) --stringparam version @VERSION@ $(XHTML_STYLESHEET) $< > $@
 
 # rules to generate oprofile.sf.net/doc files
 chunk: oprofile.xml $(STYLESHEETS)
 	$(XSLTPROC) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
+
+else
+
+oprofile.html:
+	touch $@
+
+chunk:
+
+endif
 
 clean-local:
 	$(RM) -f $(generated_mans)

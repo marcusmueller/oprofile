@@ -1,5 +1,11 @@
 2003-03-04  John Levon  <levon@movementarian.org>
 
+	* configure.in:
+	* doc/Makefile.am: don't try to build the docs
+	  if it will fail.
+
+2003-03-04  John Levon  <levon@movementarian.org>
+
 	* utils/opcontrol:
 	* daemon/opd_kernel.h:
 	* daemon/opd_image.c:

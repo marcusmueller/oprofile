@@ -320,7 +320,25 @@ else
 	db_xsl=/usr/share/sgml/docbook/xsl-stylesheets/xhtml/
 fi
 AC_SUBST(db_xsl)
+
+AC_CHECK_PROG(XSLTPROC,xsltproc,xsltproc,)
+AC_MSG_CHECKING([whether xsltproc works])
+XSLTPROC_WORKS=no
+if test -n "$XSLTPROC"; then
+	$XSLTPROC $db_xsl/docbook.xsl << END
+<?xml version="1.0" encoding='ISO-8859-1'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<book id="test">
+</book>
+END
+	if test "$?" = 0; then
+		XSLTPROC_WORKS=yes
+	fi
+fi
+AC_MSG_RESULT($XSLTPROC_WORKS)
  
+AM_CONDITIONAL(have_xsltproc, test "$XSLTPROC_WORKS" = "yes")
+
 # do NOT put tests here, they will fail in the case X is not installed !
  
 AM_CONDITIONAL(have_qt, test -n "$QT_LIB")
