@@ -1,3 +1,8 @@
+2003-08-13  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/op_bfd.h:
+	* libpp/profile_container.cpp: remove nil_symbol_index
+
 2003-08-13  John Levon  <levon@movementarian.org>
 
 	* libpp/profile_container.cpp:

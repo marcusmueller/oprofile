@@ -28,7 +28,6 @@ class string_filter;
 
 /// all symbol vector indexing uses this type
 typedef size_t symbol_index_t;
-symbol_index_t const nil_symbol_index = symbol_index_t(-1);
 
 /**
  * A symbol description from a bfd point of view. This duplicate

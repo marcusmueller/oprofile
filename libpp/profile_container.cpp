@@ -137,7 +137,7 @@ profile_container::add_samples(op_bfd const & abfd, symbol_index_t sym_index,
 		sample.counts[count_group] = it.count();
 
 		sample.file_loc.linenr = 0;
-		if (debug_info && sym_index != nil_symbol_index) {
+		if (debug_info) {
 			string filename;
 			if (abfd.get_linenr(sym_index, it.vma(), filename,
 					    sample.file_loc.linenr)) {
@@ -146,9 +146,7 @@ profile_container::add_samples(op_bfd const & abfd, symbol_index_t sym_index,
 			}
 		}
 
-		sample.vma = (sym_index != nil_symbol_index)
-			? abfd.sym_offset(sym_index, it.vma()) + base_vma
-			: it.vma();
+		sample.vma = abfd.sym_offset(sym_index, it.vma()) + base_vma;
 
 		samples->insert(symbol, sample);
 	}
