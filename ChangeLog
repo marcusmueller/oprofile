@@ -1,5 +1,9 @@
 2001-06-22  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprofile.c: always have smp_apic_restore()
+ 
+2001-06-22  John Levon  <moz@compsoc.man.ac.uk>
+
 	* various: made spacing more consistent in C source,
 	  removed unused utility functions.
  

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.59 2001/06/22 03:16:24 movement Exp $ */
+/* $Id: oprofile.c,v 1.60 2001/06/22 17:29:39 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -255,12 +255,10 @@ static void __init smp_apic_setup(void *dummy)
 	apic_write(APIC_LVTPC, val);
 }
 
-#ifdef ALLOW_UNLOAD
 static void __exit smp_apic_restore(void *dummy)
 {
 	apic_write(APIC_LVTPC, old_lvtpc[smp_processor_id()]);
 }
-#endif
 
 static int __init apic_setup(void)
 {
