@@ -582,6 +582,34 @@ and restart the interface.
 
 </sect1>
 
+<sect1 id="misuse">
+<title>Misuse of <command>oprofile</command> and stability of system</title>
+<para>
+OProfile is a low-level profiler which allow continuous profiling with a low-overhead cost.
+If not used carefully, this can affect the stability of the system. 
+If too low a count reset value is set for a counter, the system can become overloaded with counter
+interrupts, and seem as if the system has frozen. 
+</para>
+<note><para>
+This can happen as follows: When the profiler count
+reaches zero an NMI handler is called which stores the sample values in an internal buffer, then resets the counter
+to its original value. If the count is very low, a pending NMI can be sent before the NMI handler has
+completed. Due to the priority of the NMI, the local APIC delivers the pending interrupt immediately after
+completion of the previous interrupt handler, and control never returns to other parts of the system. 
+In this way the system seems to be frozen.
+</para></note>
+<para>If this happens, it will be impossible to bring the system back to a workable state.
+There is no way to provide real security against this happening, other than making sure to use a reasonable value
+for the counter reset. For example, setting CPU_CLK_UNHALTED event type with a ridiculously low reset count (e.g. 500)
+is likely to freeze the system.
+</para> 
+<para>
+In short : <command>Don't try a foolish sample count value.</command> Unfortunately the definition of a foolish value 
+is really dependent on the event type - if ever in doubt, e-mail <address><email>oprofile-list@lists.sf.net</email></address>.
+</para>
+
+</sect1>
+
 </chapter>
  
 <chapter id="features">

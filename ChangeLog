@@ -1,3 +1,8 @@
+2001-07-18  John Levon  <moz@compsoc.man.ac.uk>
+
+	* doc/oprofile.sgml: added a warning about very low counter values
+	  (from Philippe, modified)
+ 
 2001-07-15  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.c:
