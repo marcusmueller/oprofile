@@ -75,7 +75,7 @@ void parse_options(int argc, char const ** argv,
 class option_base;
 
 /**
- * option_base - base class for a command line option
+ * option - base class for a command line option
  *
  * Every command line option added before calling parse_options()
  * is of this type.

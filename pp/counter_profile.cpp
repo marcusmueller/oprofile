@@ -16,7 +16,6 @@
 #include "op_print_event.h"
 #include "op_sample_file.h"
 #include "string_manip.h"
-#include "db_hash.h"
 
 #include "counter_array.h"
 

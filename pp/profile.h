@@ -52,7 +52,7 @@ public:
 	 * return true if the samples file index is open
 	 */
 	bool is_open(int i) const {
-		return samples[i] != 0;
+		return samples[i].get() != 0;
 	}
 
 	/**
@@ -108,7 +108,7 @@ public:
 	void set_start_offset(u32 start_offset);
 
 	// TODO privatize when we can
-	counter_profile_t * samples[OP_MAX_COUNTERS];
+	scoped_ptr<counter_profile_t> samples[OP_MAX_COUNTERS];
 	uint nr_counters;
 private:
 	std::string sample_filename;

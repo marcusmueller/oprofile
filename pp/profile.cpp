@@ -38,11 +38,6 @@ profile_t::profile_t(string const & sample_file, int counter_)
 	uint i, j;
 	time_t mtime = 0;
 
-	/* no samplefiles open initially */
-	for (i = 0; i < OP_MAX_COUNTERS; ++i) {
-		samples[i] = 0;
-	}
-
 	for (i = 0; i < OP_MAX_COUNTERS ; ++i) {
 		if ((counter_mask &  (1 << i)) != 0) {
 			/* if only the i th bit is set in counter spec we do
@@ -54,7 +49,7 @@ profile_t::profile_t(string const & sample_file, int counter_)
 
 	/* find first open file */
 	for (first_file = 0; first_file < OP_MAX_COUNTERS ; ++first_file) {
-		if (samples[first_file] != 0)
+		if (samples[first_file].get() != 0)
 			break;
 	}
 
@@ -73,7 +68,7 @@ profile_t::profile_t(string const & sample_file, int counter_)
 
 	/* check sample files match */
 	for (j = first_file + 1; j < OP_MAX_COUNTERS; ++j) {
-		if (samples[j] == 0)
+		if (samples[j].get() == 0)
 			continue;
 		samples[first_file]->check_headers(*samples[j]);
 	}
@@ -81,11 +76,6 @@ profile_t::profile_t(string const & sample_file, int counter_)
 
 profile_t::~profile_t()
 {
-	uint i;
-
-	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
-		delete samples[i];
-	}
 }
 
 void profile_t::check_mtime(string const & file) const
@@ -105,7 +95,7 @@ void profile_t::open_samples_file(u32 counter, bool can_fail)
 	string filename = ::sample_filename(string(), sample_filename, counter);
 
 	if (access(filename.c_str(), R_OK) == 0) {
-		samples[counter] = new counter_profile_t(filename);
+		samples[counter].reset(new counter_profile_t(filename));
 	} else {
 		if (!can_fail) {
 			cerr << "oprofpp: Opening " << filename <<  "failed."
@@ -174,7 +164,7 @@ void profile_t::output_header() const
 	cout << "Cpu speed was (MHz estimation) : " << header.cpu_speed << endl;
 
 	for (uint i = 0 ; i < OP_MAX_COUNTERS; ++i) {
-		if (samples[i] != 0) {
+		if (samples[i].get() != 0) {
 			op_print_event(cout, i, cpu, header.ctr_event,
 				       header.ctr_um, header.ctr_count);
 		}

@@ -1,5 +1,12 @@
 2002-12-08  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/profile.cpp: use scoped_ptr<counter_profile_t>
+
+	* libopt++/popt_options.h:
+	* pp/counter_profile.cpp: minor cleanup
+
+2002-12-08  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/counter_profile.cpp:
 	* pp/counter_profile.h: use scoped_ptr
 
