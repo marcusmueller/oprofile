@@ -1,5 +1,9 @@
 2003-08-16  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/opannotate.cpp: output threshold percent when necessary.
+
+2003-08-16  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/op_bfd.cpp: remove ELF-based symbol size code
 
 2003-08-15  William Cohen  <wcohen@redhat.com>

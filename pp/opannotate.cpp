@@ -137,23 +137,11 @@ void output_info(ostream & out)
 		out << in_comment
 		    << "Output annotated source file with samples" << '\n';
 
-		// FIXME: re-add this
-#if 0
-		if (threshold_percent != 0) {
-			if (!do_until_more_than_samples) {
-				out << in_comment
-				    << "Output files where the selected counter reach "
-				    << threshold_percent << "% of the samples"
-				    << '\n';
-			} else {
-				out << in_comment << "output files until "
-				    << threshold_percent
-				    << "% of the samples is reached on the selected counter"
-				    << '\n';
-			}
-		} else
-#endif
-		{
+		if (options::threshold != 0) {
+			out << in_comment
+			    << "Output files where samples count reach "
+			    << options::threshold << "% of the samples\n";
+		} else {
 			out << in_comment << "Output all files" << '\n';
 		}
 	} else {
