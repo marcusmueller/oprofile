@@ -314,7 +314,24 @@ uint samples_container_t::get_nr_counters() const
 		return nr_counters;
 
 	cerr << "Fatal: samples_container_t::get_nr_counters() attempt to\n"
-	     << "access a samples container w/o any samples files. Please \n"
+	     << "access a samples container w/o any samples files. Please\n"
 	     << "report this bug to <oprofile-list@lists.sourceforge.net>\n";
 	exit(EXIT_FAILURE);
+}
+
+bool add_samples(samples_container_t& samples, std::string sample_filename,
+		 size_t counter_mask, std::string image_name,
+		 vector<string> const& excluded_symbols,
+		 string symbol)
+{
+	opp_samples_files samples_files(sample_filename, counter_mask);
+
+	op_bfd abfd(image_name, excluded_symbols);
+
+	samples_files.check_mtime(image_name);
+	samples_files.set_start_offset(abfd.get_start_offset());
+	
+	samples.add(samples_files, abfd, symbol);
+
+	return abfd.have_debug_info();
 }

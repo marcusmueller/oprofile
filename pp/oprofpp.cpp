@@ -10,7 +10,6 @@
  */
 
 #include <algorithm>
-#include <sstream>
 #include <list>
 #include <fstream>
 
@@ -26,6 +25,7 @@
 #include "samples_file.h"
 #include "counter_util.h"
 #include "derive_files.h"
+#include "string_manip.h"
 
 using std::string;
 using std::vector;
@@ -35,7 +35,6 @@ using std::endl;
 using std::cerr;
 using std::ifstream;
 using std::ostream;
-using std::ostringstream;
 
 /**
  * do_list_symbols - list symbol samples for an image
@@ -235,16 +234,16 @@ int main(int argc, char const *argv[])
 	for (it = filelist.begin() ; it != filelist.end() ; ++it) {
 		string const dir = dirname(options::sample_file);
 
-		// shared libraries are added to the file list as relative paths
-		// so we fix that up here
+		// shared libraries are added to the file list as relative
+		// paths so we fix that up here
 		string file = relative_to_absolute_path(*it, dir);
 
 		int i;
 		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 			if ((options::counter_mask & (1 << i)) != 0) {
-				ostringstream s;
-				s << file << "#" << i;
-				if (op_file_readable(s.str()))
+				string filename = 
+					sample_filename(string(), file, i);
+				if (op_file_readable(filename))
 					break;
 			}
 		}
@@ -255,31 +254,25 @@ int main(int argc, char const *argv[])
 
 		opp_samples_files samples_files(file, options::counter_mask);
 
-		// the first opened file is treated specially because
-		// user can specify the image name for this sample
-		// file on command line else must deduce the image
-		// name from the samples file name
+		// the first opened file is treated specially because user can
+		// specify the image name for this sample file on command line
+		// we must deduce the image name from the samples file name
 		if (it == filelist.begin()) {
+			opp_samples_files samples_files(file, options::counter_mask);
 			op_bfd abfd(options::image_file, options::exclude_symbols);
 			samples_files.check_mtime(options::image_file);
 			samples_files.set_start_offset(abfd.get_start_offset());
- 
 			samples.add(samples_files, abfd, options::symbol);
+
+			samples_files.output_header();
+			first_file = false;
 		} else {
 			string app_name;
 			string lib_name;
 			app_name = extract_app_name(file, lib_name);
-
-			op_bfd abfd(demangle_filename(lib_name), options::exclude_symbols);
-			samples_files.check_mtime(demangle_filename(lib_name));
-			samples_files.set_start_offset(abfd.get_start_offset());
- 
-			samples.add(samples_files, abfd, options::symbol);
-		}
-
-		if (first_file) {
-			samples_files.output_header();
-			first_file = false;
+			lib_name = demangle_filename(lib_name);
+			add_samples(samples, file, options::counter_mask,
+			  lib_name, options::exclude_symbols, options::symbol);
 		}
 	}
 

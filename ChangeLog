@@ -1,3 +1,16 @@
+2002-09-29  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/string_manip.cpp:
+	* libutil++/string_manip.h: sample_filename() new
+	
+	* pp/samples_container.cpp:
+	* pp/samples_container.h: add_samples() new
+	
+	* pp/op_merge.cpp:
+	* pp/op_time.cpp:
+	* pp/oprofpp.cpp:
+	* pp/samples_file.cpp: use them + minor cleanup
+
 2002-09-28  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libopt++/popt_options.cpp: fix #615760, in rare case

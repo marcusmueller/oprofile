@@ -15,16 +15,15 @@
 #include "op_events_desc.h"
 #include "op_print_event.h"
 #include "op_sample_file.h"
+#include "string_manip.h"
 
 #include "counter_array.h"
 
 #include "samples_file.h"
 
-#include <cstdio>
 #include <cerrno>
 #include <unistd.h>
 
-#include <sstream>
 #include <iostream>
 
 using std::string;
@@ -106,16 +105,14 @@ void opp_samples_files::check_mtime(string const & file) const
 
 void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 {
-	std::ostringstream filename;
-	filename << sample_filename << "#" << counter;
-	string temp = filename.str();
+	string filename = ::sample_filename(string(), sample_filename, counter);
 
-	if (access(temp.c_str(), R_OK) == 0) {
-		samples[counter] = new samples_file_t(temp);
+	if (access(filename.c_str(), R_OK) == 0) {
+		samples[counter] = new samples_file_t(filename);
 	} else {
 		if (!can_fail) {
-			/* FIXME: nicer message if e.g. wrong counter */
-			fprintf(stderr, "oprofpp: Opening %s failed. %s\n", temp.c_str(), strerror(errno));
+			cerr << "oprofpp: Opening " << filename <<  "failed."
+			     << strerror(errno) << endl;
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -195,8 +192,7 @@ samples_file_t::samples_file_t(string const & filename)
 
 samples_file_t::~samples_file_t()
 {
-	if (db_tree.base_memory)
-		db_close(&db_tree);
+	db_close(&db_tree);
 }
 
 void samples_file_t::check_headers(samples_file_t const & rhs) const
@@ -204,24 +200,26 @@ void samples_file_t::check_headers(samples_file_t const & rhs) const
 	opd_header const & f1 = header();
 	opd_header const & f2 = rhs.header();
 	if (f1.mtime != f2.mtime) {
-		fprintf(stderr, "oprofpp: header timestamps are different (%ld, %ld)\n", f1.mtime, f2.mtime);
+		cerr << "oprofpp: header timestamps are different ("
+		     << f1.mtime << ", " << f2.mtime << ")\n";
 		exit(EXIT_FAILURE);
 	}
 
 	if (f1.is_kernel != f2.is_kernel) {
-		fprintf(stderr, "oprofpp: header is_kernel flags are different\n");
+		cerr << "oprofpp: header is_kernel flags are different\n";
 		exit(EXIT_FAILURE);
 	}
 
 	if (f1.cpu_speed != f2.cpu_speed) {
-		fprintf(stderr, "oprofpp: header cpu speeds are different (%f, %f)",
-			f2.cpu_speed, f2.cpu_speed);
+		cerr << "oprofpp: header cpu speeds are different ("
+		     << f1.cpu_speed << ", " << f2.cpu_speed << ")\n";
 		exit(EXIT_FAILURE);
 	}
 
 	if (f1.separate_samples != f2.separate_samples) {
-		fprintf(stderr, "oprofpp: header separate_samples are different (%d, %d)",
-			f2.separate_samples, f2.separate_samples);
+		cerr << "oprofpp: header separate_samples are different ("
+		     << f1.separate_samples << ", " 
+		     << f2.separate_samples << ")\n";
 		exit(EXIT_FAILURE);
 	}
 }

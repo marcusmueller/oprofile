@@ -22,6 +22,7 @@
 #include "version.h"
 #include "popt_options.h"
 #include "file_manip.h"
+#include "string_manip.h"
 #include "cverb.h"
 
 #include "op_config.h"
@@ -101,14 +102,13 @@ static void create_file_list(list<string> & result,
 		os << "*}}" << remangle_filename(images_filename[0])
 		   << "#" << counter;
 
+		// FIXME: why we hardcode OP_SAMPLES_DIR: should be an options?
 		get_sample_file_list(result, OP_SAMPLES_DIR, os.str());
 
 		// get_sample_file_list() shrink the #nr suffix so re-add it
 		list<string>::iterator it;
 		for (it = result.begin() ; it != result.end() ; ++it) {
-			ostringstream os;
-			os << string(OP_SAMPLES_DIR) << "/" << *it << "#" << counter;
-			*it = os.str();
+			*it = sample_filename(OP_SAMPLES_DIR, *it, counter);
 		}
 	} else {
 		/* Note than I don't check against filename i.e. all filename

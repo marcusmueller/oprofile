@@ -58,4 +58,18 @@ std::string tostr(unsigned int i);
 void separate_token(std::vector<std::string> & result, std::string const & str,
 		    char sep);
 
+/**
+ * sample_filename - build a sample filename
+ * @param  sample_dir sample files directory
+ * @param sample_filename base name of sample file
+ * @param counter counter nr
+ *
+ * If sample_dir is empty return sample_filename + "#" + counter
+ * else return sample_dir + "/" + sample_filename + "#" + counter
+ *
+ * Existence of the samples files is not checked.
+ */
+std::string sample_filename(std::string const& sample_dir,
+			    std::string const& sample_filename, int counter);
+
 #endif /* !STRING_MANIP_H */

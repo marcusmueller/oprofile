@@ -17,7 +17,6 @@
 #include <list>
 #include <iostream>
 #include <iomanip>
-#include <sstream>
 #include <fstream>
 #include <algorithm>
 #include <map>
@@ -40,7 +39,6 @@ using std::list;
 using std::cerr;
 using std::cout;
 using std::endl;
-using std::ostringstream;
 using std::vector;
 using std::ifstream;
 using std::multimap;
@@ -97,9 +95,9 @@ typedef multimap<counter_array_t, map_t::const_iterator, sort_by_counter_t> sort
 /**
  * image_name - ctor from a sample file name
  */
-image_name::image_name(string const & samplefile_name)
+image_name::image_name(string const & samplefile_name_)
 	:
-	samplefile_name(samplefile_name)
+	samplefile_name(samplefile_name_)
 {
 	app_name = extract_app_name(samplefile_name, lib_name);
 }
@@ -166,10 +164,10 @@ static void sort_file_list_by_name(map_t & result,
 		int i;
 		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 			if ((options::counter & (1 << i)) != 0) {
-				ostringstream s;
-				s << string(options::samples_dir) << "/" << *it
-				  << '#' << i;
-				if (op_file_readable(s.str())) {
+				string filename =
+					sample_filename(options::samples_dir,
+							*it, i);
+				if (op_file_readable(filename)) {
 					break;
 				}
 			}
@@ -294,18 +292,17 @@ static void output_files_count(map_t& files)
 	for (it = files.begin(); it != files.end() ; ) {
 		pair_it_t p_it = files.equal_range(it->first);
 
-		// the range [p_it.first, p_it.second[ belongs to application
+		// the range [p_it.first, p_it.second) belongs to application
 		// it.first->first
 		for ( ; p_it.first != p_it.second ; ++p_it.first) {
 			for (int i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
-				ostringstream s;
-				s << string(options::samples_dir) << "/"
-				  << p_it.first->second.samplefile_name
-				  << "#" << i;
-				if (!op_file_readable(s.str()))
+				string filename = sample_filename(
+					options::samples_dir,
+					p_it.first->second.samplefile_name, i);
+				if (!op_file_readable(filename))
 					continue;
 
-				samples_file_t samples(s.str());
+				samples_file_t samples(filename);
 
 				u32 count = samples.count(0, ~0);
 
@@ -497,15 +494,8 @@ static void output_symbols_count(map_t& files, int counter)
 		// check_image_name have already warned the user if something
 		// feel bad.
 		if (op_file_readable(image_name)) {
-			opp_samples_files samples_file(samples_filename,
-						       counter);
-			samples_file.check_mtime(image_name);
-
-			op_bfd abfd(image_name, options::exclude_symbols);
-
-			samples_file.set_start_offset(abfd.get_start_offset());
-
-			samples.add(samples_file, abfd);
+			add_samples(samples, samples_filename, counter,
+				    image_name);
 		}
 	}
 
