@@ -394,6 +394,7 @@ static void setup_signals(void)
 	sigemptyset(&maskset);
 	sigaddset(&maskset, SIGALRM);
 	sigaddset(&maskset, SIGHUP);
+	sigaddset(&maskset, SIGTERM);
 
 	/* clean up every 10 minutes */
 	alarm(60*10);
