@@ -276,6 +276,7 @@ void setup_regex(regular_expression_replace & regex,
 		line = trim(line);
 		if (line.empty() || line[0] == '#')
 			continue;
+
 		string temp = line;
 		var_name_rule.execute(temp);
 		if (temp == line) {
