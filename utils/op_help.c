@@ -17,6 +17,7 @@
 #include "version.h"
 #include "op_events.h"
 #include "op_popt.h"
+#include "op_cpufreq.h"
 
 static op_cpu cpu_type = CPU_NO_GOOD;
 
@@ -68,6 +69,7 @@ static void help_for_event(struct op_event * event)
 
 static int showvers;
 static int get_cpu_type;
+static int get_cpu_frequency;
 static char const * event_name;
 
 static struct poptOption options[] = {
@@ -75,6 +77,8 @@ static struct poptOption options[] = {
 	  "use the given numerical CPU type", "cpu type", },
 	{ "get-cpu-type", 'r', POPT_ARG_NONE, &get_cpu_type, 0,
 	  "show the auto-detected CPU type", NULL, },
+	{ "get-cpu-frequency", 'm', POPT_ARG_NONE|POPT_ARGFLAG_DOC_HIDDEN,
+	  &get_cpu_frequency, 0, "show the cpu frequency in MHz", NULL, },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
@@ -110,6 +114,11 @@ int main(int argc, char const *argv[])
 	char const * pretty;
 
 	get_options(argc, argv);
+
+	if (get_cpu_frequency) {
+		printf("%f\n", op_cpu_frequency());
+		exit(EXIT_SUCCESS);
+	}
 
 	if (cpu_type == CPU_NO_GOOD)
 		cpu_type = op_get_cpu_type();
