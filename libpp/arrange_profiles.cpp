@@ -80,8 +80,6 @@ void name_classes(profile_classes & classes, int axis)
 	vector<profile_class>::iterator it = classes.v.begin();
 	vector<profile_class>::iterator const end = classes.v.end();
 
-	// FIXME: add long name, lookup event etc.
-
 	for (; it != end; ++it) {
 		switch (axis) {
 		case 0:
