@@ -74,7 +74,7 @@ struct p4_event_binding p4_events[NUM_EVENTS] = {
 	},
 	
 	{ /* TC_DELIVER_MODE */
-		0x04, 0x01,
+		0x01, 0x01,
 		{ { CTR_MS_0, MSR_P4_TC_ESCR0},  
 		  { CTR_MS_2, MSR_P4_TC_ESCR1} }
 	},

@@ -1,3 +1,7 @@
+2002-09-26  Will Cohen  <wcohen@redhat.com>
+
+	* module/x86/op_model_p4.c: Correct TC_DELIVER_MODE cccr select.
+ 
 2002-09-23  Graydon Hoare  <graydon@redhat.com>
 
 	* dae/oprofiled.c:
