@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.11 2000/08/02 22:36:15 moz Exp $ */
+/* $Id: opd_proc.c,v 1.12 2000/08/04 01:51:16 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -540,9 +540,8 @@ static void opd_kill_maps(struct opd_proc *proc)
  * opd_do_proc_lru - rework process list
  * @proc: process to move
  *
- * Perform LRU on the process list by resetting
- * the process's age and moving it to the head
- * of the process list.
+ * Perform LRU on the process list by moving it to 
+ * the head of the process list.
  */
 static void opd_do_proc_lru(struct opd_proc *proc)
 {
@@ -562,9 +561,8 @@ static void opd_do_proc_lru(struct opd_proc *proc)
  * @pid: pid to search for
  *
  * A process with pid @pid is searched on the process list,
- * maintaining LRU. If it is not found, %NULL is returned.
- *
- * The process structure is returned.
+ * maintaining LRU order. If it is not found, %NULL is returned,
+ * otherwise the process structure is returned.
  */
 static struct opd_proc *opd_get_proc(u16 pid)
 {
