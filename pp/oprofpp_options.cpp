@@ -33,7 +33,7 @@ namespace options {
 	bool output_linenr_info;
 	bool reverse_sort;
 	bool show_shared_libs;
-	OutSymbFlag output_format_flags;
+	outsymbflag output_format_flags;
 	bool list_all_symbols_details;
 	string sample_file;
 	string image_file;
@@ -110,9 +110,9 @@ string const get_options(int argc, char const **argv)
 		quit_error("oprofpp: reverse sort can only be used with -l option.\n");
  
 	if (show_shared_libs)
-		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_image_name);
+		output_format_flags = static_cast<outsymbflag>(output_format_flags | osf_image_name);
 	if (output_linenr_info)
-		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_linenr_info);
+		output_format_flags = static_cast<outsymbflag>(output_format_flags | osf_linenr_info);
 
 	if (output_format.empty()) {
 		output_format = "hvspn";
@@ -123,16 +123,16 @@ string const get_options(int argc, char const **argv)
 	}
 
 	if (list_symbols || list_all_symbols_details || !symbol.empty()) {
-		OutSymbFlag fl =
-			OutputSymbol::ParseOutputOption(output_format);
+		outsymbflag fl =
+			output_symbol::ParseOutputOption(output_format);
 
 		if (fl == osf_none) {
 			std::cerr << "oprofpp: invalid --output-format flags.\n";
-			OutputSymbol::ShowHelp();
+			output_symbol::ShowHelp();
 			exit(EXIT_FAILURE);
 		}
 
-		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | fl);
+		output_format_flags = static_cast<outsymbflag>(output_format_flags | fl);
 	}
 
 	return arg;

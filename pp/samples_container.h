@@ -37,7 +37,7 @@ public:
 	 * osf_details is also an improvement.
 	 * @param counter_mask which counter we must record
 	 */
-	 samples_container_t(bool add_zero_samples_symbols, OutSymbFlag flags,
+	 samples_container_t(bool add_zero_samples_symbols, outsymbflag flags,
 			     int counter_mask);
 	~samples_container_t();
 
@@ -151,7 +151,7 @@ private:
 
 	/// parameters passed to ctor
 	bool add_zero_samples_symbols;
-	OutSymbFlag flags;
+	outsymbflag flags;
 	int counter_mask;
 };
 

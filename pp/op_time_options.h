@@ -31,7 +31,7 @@ namespace options {
 	/// selected counters (comma-separated)
 	extern std::string counter_str;
 	/// output format to use
-	extern OutSymbFlag output_format_flags;
+	extern outsymbflag output_format_flags;
 	/// which symbols to exclude 
 	extern std::vector<std::string> exclude_symbols;
 	/// FIXME: doc

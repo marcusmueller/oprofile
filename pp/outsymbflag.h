@@ -15,13 +15,13 @@
 // FIXME 
  
 /** 
- * flags passed to the ctr of an OutputSymbol object. This also specify the
+ * flags passed to the ctr of an output_symbol object. This also specify the
  * order of field output: lower enum tag ==> comes first in output order
- * Note than changing value of enum is not safe. See OutputSymbol and
+ * Note than changing value of enum is not safe. See output_symbol and
  * the osf_repeat_mask use. So you can't reorder easily the output order
  * of field 
  */
-enum OutSymbFlag {
+enum outsymbflag {
        osf_none = 0,
        osf_vma = 1 << 0,
        /// this four field can be repeated on output for each counter.

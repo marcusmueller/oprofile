@@ -68,15 +68,14 @@ struct symbol_entry {
 /**
  * class to output in a columned format symbols and associated samples
  */
-// FIXME: output_symbol not OutputSymbol ?? consistency ... 
-class OutputSymbol {
+class output_symbol {
 public:
-	/// build an OutputSymbol object, the samples_container_t life time
-	/// object must be > of the life time of the OutputSymbol object.
-	OutputSymbol(samples_container_t const & samples_container, int counter);
+	/// build an output_symbol object, the samples_container_t life time
+	/// object must be > of the life time of the output_symbol object.
+	output_symbol(samples_container_t const & samples_container, int counter);
 
 	/// convenience to set output options flags w/o worrying about cast
-	void SetFlag(OutSymbFlag flag);
+	void SetFlag(outsymbflag flag);
 
 	/** output one symbol symb to out according to the output format
 	 * specifier previously set by call(s) to SetFlag() */
@@ -90,8 +89,11 @@ public:
 	static void ShowHelp();
 
 	/** return osf_none if the option string is ill formed, so you can call
-	 * OutputSymbol::ShowHelp() to notify user on available options */
-	static OutSymbFlag ParseOutputOption(std::string const & option);
+	 * output_symbol::ShowHelp() to notify user on available options */
+	static outsymbflag ParseOutputOption(std::string const & option);
+
+	// FIXME: no need to be members ? Make them file-private until such
+	// a time as we /need/ them for the GUI please
 
 	/** @defgroup format The set of formatting functions, used internally by Output().
 	 * Exposed as public members for the future oprofpp GUI.
@@ -123,18 +125,18 @@ public:
 	//@}
 private:
 	void DoOutput(std::ostream & out, std::string const & name,
-		      sample_entry const & sample, OutSymbFlag flags);
+		      sample_entry const & sample, outsymbflag flags);
 	void OutputDetails(std::ostream & out, symbol_entry const * symb);
 	void OutputHeader(std::ostream & out);
 	// return the nr of char needed to padd this field
 	size_t OutputField(std::ostream & out, std::string const & name,
 			   sample_entry const & sample,
-			   OutSymbFlag fl, size_t ctr);
+			   outsymbflag fl, size_t ctr);
 	// return the nr of char needed to padd this field
-	size_t OutputHeaderField(std::ostream & out, OutSymbFlag fl);
-	static field_description const * GetFieldDescr(OutSymbFlag flag);
+	size_t OutputHeaderField(std::ostream & out, outsymbflag fl);
+	static field_description const * GetFieldDescr(outsymbflag flag);
 
-	OutSymbFlag flags;
+	outsymbflag flags;
 	samples_container_t const & samples_container;
 	u32 total_count[OP_MAX_COUNTERS];
 	u32 cumulated_samples[OP_MAX_COUNTERS];

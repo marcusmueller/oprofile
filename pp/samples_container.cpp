@@ -55,7 +55,7 @@ struct filename_by_samples {
 }
 
 samples_container_t::samples_container_t(bool add_zero_samples_symbols_,
-					 OutSymbFlag flags_,
+					 outsymbflag flags_,
 					 int counter_mask_)
 	:
 	symbols(new symbol_container_imp_t),

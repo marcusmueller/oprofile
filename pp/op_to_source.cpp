@@ -273,9 +273,9 @@ output::output(int argc_, char const * argv_[],
 		exit(EXIT_FAILURE);
 	}
 
-	OutSymbFlag flag = osf_details;
+	outsymbflag flag = osf_details;
 	if (!assembly)
-		flag = static_cast<OutSymbFlag>(flag | osf_linenr_info);
+		flag = static_cast<outsymbflag>(flag | osf_linenr_info);
 	samples = new samples_container_t(false, flag, counter_mask);
 }
 

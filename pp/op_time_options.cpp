@@ -38,7 +38,7 @@ namespace options {
 	bool show_shared_libs;
 	int sort_by_counter = -1;
 	string samples_dir;
-	OutSymbFlag output_format_flags;
+	outsymbflag output_format_flags;
 	alt_filename_t alternate_filename;
 }
 
@@ -162,12 +162,12 @@ void get_options(int argc, char const * argv[])
 	}
 
 	if (list_symbols) {
-		OutSymbFlag fl =
-			OutputSymbol::ParseOutputOption(output_format);
+		outsymbflag fl =
+			output_symbol::ParseOutputOption(output_format);
 
 		if (fl == osf_none) {
 			cerr << "op_time: invalid --output-format flags.\n";
-			OutputSymbol::ShowHelp();
+			output_symbol::ShowHelp();
 			exit(EXIT_FAILURE);
 		}
 
@@ -175,7 +175,7 @@ void get_options(int argc, char const * argv[])
 	}
 
 	if (show_image_name)
-		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_image_name);
+		output_format_flags = static_cast<outsymbflag>(output_format_flags | osf_image_name);
 
 	add_to_alternate_filename(path, false);
 

@@ -1,5 +1,10 @@
 2002-06-05  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/*: s/OutputSymbol/output_symbol/,
+	  s/OutSymbFlag/outsymbflag/
+ 
+2002-06-05  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/op_time_options.cpp:
 	* pp/op_time_options.h:
 	* pp/op_to_source_options.h:

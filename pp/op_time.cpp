@@ -53,7 +53,7 @@ static int counter;
  * part of complexity here by using samples_container_t to handle straight
  * op_time. Just create an artificial symbol that cover the whole samples
  * files with the name of the application this allow to remove image_name
- * and sorted_map_t class and all related  stuff and to use OutputSymbol to
+ * and sorted_map_t class and all related  stuff and to use output_symbol to
  * make the report
  */
 
@@ -485,7 +485,7 @@ static void output_symbols_count(map_t& files, int counter)
 	vector<symbol_entry const *> symbols =
 		samples.select_symbols(options::sort_by_counter, 0.0, false);
 
-	OutputSymbol out(samples, counter);
+	output_symbol out(samples, counter);
 
 	out.SetFlag(options::output_format_flags);
 

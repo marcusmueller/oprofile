@@ -47,7 +47,7 @@ using std::ostringstream;
  * Lists all the symbols in decreasing sample count order, to standard out.
  */
 static void do_list_symbols(samples_container_t & samples,
-			    OutputSymbol & out, int sort_by_ctr)
+			    output_symbol & out, int sort_by_ctr)
 {
 	vector<symbol_entry const *> symbols =
 		samples.select_symbols(sort_by_ctr, 0.0, false);
@@ -66,7 +66,7 @@ static void do_list_symbols(samples_container_t & samples,
  * abfd, in increasing order of vma, to standard out.
  */
 static void do_list_symbols_details(samples_container_t & samples,
-				    OutputSymbol & out, int sort_by_ctr)
+				    output_symbol & out, int sort_by_ctr)
 {
 	vector<symbol_entry const *> symbols =
 		samples.select_symbols(sort_by_ctr, 0.0, false, true);
@@ -84,7 +84,7 @@ static void do_list_symbols_details(samples_container_t & samples,
  * the samples for this symbol from the image 
  * specified by abfd.
  */
-static void do_list_symbol(samples_container_t & samples, OutputSymbol & out)
+static void do_list_symbol(samples_container_t & samples, output_symbol & out)
 {
 	symbol_entry const * symb = samples.find_symbol(options::symbol);
 	if (symb == 0) {
@@ -224,10 +224,10 @@ int main(int argc, char const *argv[])
 	}
 
 	options::output_format_flags = 
-		static_cast<OutSymbFlag>(options::output_format_flags | osf_show_all_counters);
+		static_cast<outsymbflag>(options::output_format_flags | osf_show_all_counters);
 	if (!options::symbol.empty() || options::list_all_symbols_details)
 		options::output_format_flags = 
-			static_cast<OutSymbFlag>(options::output_format_flags | osf_details);
+			static_cast<outsymbflag>(options::output_format_flags | osf_details);
 
 	/* create the file list of samples files we will use (w/o the
 	 * #counter_nr suffix) */
@@ -305,7 +305,7 @@ int main(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	OutputSymbol out(samples, options::counter_mask);
+	output_symbol out(samples, options::counter_mask);
 	out.SetFlag(options::output_format_flags);
 
 	if (options::list_symbols)

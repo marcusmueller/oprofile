@@ -44,7 +44,7 @@ namespace options {
 	/// demangle symbols
 	extern bool demangle;
 	/// what format to output
-	extern OutSymbFlag output_format_flags;
+	extern outsymbflag output_format_flags;
 	/// symbols to exclude
 	extern std::vector<std::string> exclude_symbols;
 };
