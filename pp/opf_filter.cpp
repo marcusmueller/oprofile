@@ -52,6 +52,9 @@ double do_ratio(size_t a, size_t total);
 bool create_dir(const std::string & dir);
 bool create_path_name(const std::string& path);
 
+	std::string dirname(std::string const & file_name);
+std::string basename(std::string const & path_name);
+
 }
 
 // The correct value is passed by oprofpp on standard input.
@@ -299,18 +302,38 @@ bool create_path_name(const std::string& path)
 }
 
 /**
- * pathname - get the path component of a filename
+ * dirname - get the path component of a filename
  * @file_name: filename
  *
  * Returns the path name of a filename with trailing '/' removed.
  */
-std::string const pathname(std::string const & file_name)
+std::string dirname(std::string const & file_name)
 {
 	std::string result = file_name;
 
 	std::string::size_type slash = result.find_last_of('/');
 	if (slash != std::string::npos)
 		result.erase(slash, result.length() - slash);
+
+	return result;
+}
+
+/**
+ * basename - get the basename of a path
+ * @path_name: path
+ *
+ * Returns the basename of a path with trailing '/' removed.
+ */
+std::string basename(std::string const & path_name)
+{
+	std::string result = path_name;
+
+	while (result.size() && result[result.size() - 1] == '/')
+		result = result.substr(0, result.size() - 1);
+
+	std::string::size_type slash = result.find_last_of('/');
+	if (slash != std::string::npos)
+		result.erase(0, slash + 1);
 
 	return result;
 }
@@ -367,7 +390,7 @@ void filename_match::build_pattern(std::vector<std::string>& result,
 
 		std::string pat = temp.substr(last_pos, pos - last_pos);
 
-		// Do we need to strip leading/trailing blank ni pat ?
+		// Do we need to strip leading/trailing blank in pat ?
 		result.push_back(pat);
 
 		if (pos != temp.length())
@@ -788,9 +811,6 @@ void output::output_one_file(istream & in, const string & filename,
 	std::string out_filename;
 
 	if (output_separate_file == true) {
-		if (fn_match.match(filename) == false)
-			return;
-
 		out_filename = filename;
 
 		size_t pos = out_filename.find(source_dir);
@@ -809,9 +829,16 @@ void output::output_one_file(istream & in, const string & filename,
 			return;
 		}
 
+		// out_filename is now relative to source_dir.
+		std::string base_name = basename(filename);
+		std::string dir_name  = dirname(filename);
+
+		if (!fn_match.match(base_name) && !fn_match.match(dir_name))
+			return;
+
 		out_filename = output_dir + out_filename;
 
-		std::string path = pathname(out_filename);
+		std::string path = dirname(out_filename);
 		if (create_path_name(path) == false) {
 			cerr << "unable to create directory: " 
 			     << '"' << path << '"' << endl;

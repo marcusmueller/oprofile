@@ -800,11 +800,7 @@ The options allowed are :
 		<term><option>&mdash;output patterns</option></term>
 		<listitem><para>
 		if you request for annotated source this option give a list of patterns saparated by "," so only
-		source filename that match one of this pattern are output. The patterns given in
-		<option>&mdash;output</option> and <option>&mdash;no-output</option> follow the locate utility
-		convention eg if you want to include a file named <filename>foo</filename> you must specify <filename>*foo*</filename> as pattern
-		to match the path part of the full filename. To match all file in a source sub-directory
-		named <filename>xxx/kernel/</filename> you can specify <filename>*kernel*</filename>. This option have no
+		source filename that match one of this pattern are output. This option have no
 		effect if <option>--source-dir</option> neither <option>--output-dir</option> have not been set.
 		</para></listitem>
 	</varlistentry>
