@@ -48,13 +48,13 @@ bool is_prefix(std::string const & s, std::string const & prefix);
  * @param str the string to tokenize
  * @param sep the separator_char
  *
- * separate fild in a string in a list of token; field are
+ * separate fields in a string in a list of token; field are
  * separated by the sep character, sep char can be escaped
  * by '\\' to specify a sep char in a token, '\\' not followed
  * by a sep is taken as it e.g. "\,\a" --> ",\a"
  */
-void separate_token(std::vector<std::string> & result, std::string const & str,
-		    char sep);
+void separate_token(std::vector<std::string> & result,
+                    std::string const & str, char sep);
 
 /// remove trim chars from start of input string return the new string
 std::string ltrim(std::string const & str, std::string const & totrim = "\t ");
@@ -75,8 +75,8 @@ std::string trim(std::string const & str, std::string const & totrim = "\t ");
  * shorter than (fract_with + int_width + 1)
  *
  */
-std::string const format_double(double value, size_t int_width,
-				size_t frac_width);
+std::string const
+format_double(double value, size_t int_width, size_t frac_width);
 
 /// prefered width to format percentage
 static unsigned int const percent_int_width = 2;
