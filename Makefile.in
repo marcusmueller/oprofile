@@ -1,7 +1,7 @@
-# $Id: Makefile.in,v 1.7 2000/08/08 03:21:05 moz Exp $
+# $Id: Makefile.in,v 1.8 2000/09/11 23:44:10 moz Exp $
 
 KCFLAGS=@KCFLAGS@
-MODINSTALLDIR=@MODINSTALLDIR@
+MODINSTALLDIR=@MODINSTALLDIR@/oprofile
 CC=@CC@
 LD=@LD@
 
@@ -18,6 +18,7 @@ tags:
 	ctags -R
 
 install: oprofile.o
+	mkdir -p $(MODINSTALLDIR)
 	cp oprofile.o $(MODINSTALLDIR)
 	depmod -a
 	$(MAKE) -C dae install
