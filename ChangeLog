@@ -1,5 +1,9 @@
 2003-11-06  John Levon  <levon@movementarian.org>
 
+	* gui/Makefile.am: remove unused -DKVERSION
+
+2003-11-06  John Levon  <levon@movementarian.org>
+
 	* configure.in: add --disable-werror and --disable-optimization
 
 	* doc/oprofile.xml: document above. Remove docs for

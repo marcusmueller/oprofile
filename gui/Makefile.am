@@ -17,8 +17,7 @@ AM_CPPFLAGS = \
 	@QT_INCLUDES@ \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libutil++ \
-	-I ${top_srcdir}/libutil \
-	-DKVERSION=\"@KVERS@\"
+	-I ${top_srcdir}/libutil
 
 AM_CXXFLAGS = @OP_CXXFLAGS@
 
