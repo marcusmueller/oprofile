@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.6 2001/11/06 18:02:56 movement Exp $ */
+/* $Id: oprofile.h,v 1.7 2001/11/07 01:35:38 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -150,6 +150,12 @@ struct oprof_sysctl {
 /* is the count at maximal value ? */
 #define op_full_count(c) (((c) & OP_COUNT_MASK) == OP_COUNT_MASK)
 
+/* no check for ctr needed as one of the three will differ in the hash */
+#define op_miss(ops)  \
+	((ops).eip != regs->eip || \
+	(ops).pid != current->pid || \
+	op_full_count((ops).count))
+
 /* the top half of pid is likely to remain static,
    so it's masked off. the ctr bit is used to separate
    the two counters */
@@ -196,6 +202,8 @@ asmlinkage void op_nmi(void);
 struct _descr { u16 limit; u32 base; } __attribute__((__packed__));
 struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 
+#define op_cpu_id() (cpu_number_map(smp_processor_id()))
+ 
 /* branch prediction */
 #ifndef likely
 #ifdef EXPECT_OK
@@ -242,25 +250,6 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #define MODULE_LICENSE(x)
 #endif
  
-// 2.4.13-ac8 introduced hard_get_current
-#ifdef HARD_CURRENT
-#define op_current() hard_get_current()
-/* no check for ctr needed as one of the three will differ in the hash */
-#define op_miss(ops)  \
-	((ops).eip != regs->eip || \
-	(ops).pid != hard_get_current()->pid || \
-	op_full_count((ops).count))
-#define op_cpu_id() (cpu_number_map(hard_get_current()->processor))
-#else
-#define op_current() get_current() 
-/* no check for ctr needed as one of the three will differ in the hash */
-#define op_miss(ops)  \
-	((ops).eip != regs->eip || \
-	(ops).pid != current->pid || \
-	op_full_count((ops).count))
-#define op_cpu_id() (cpu_number_map(smp_processor_id()))
-#endif
-
 /* These arrays are filled by hw_ok() */
 extern uint perfctr_msr[OP_MAX_COUNTERS];
 extern uint eventsel_msr[OP_MAX_COUNTERS];

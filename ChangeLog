@@ -1,3 +1,10 @@
+2001-11-07  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in:
+	* module/oprofile.h:
+	* module/oprofile.c: fail if hard_get_current() exists
+	  - this won't work
+ 
 2001-11-06  Philippe Elie  <ph_e@club-internet.fr>
 
 	* doc/oprofile.1.in: reformat options
@@ -7,7 +14,7 @@
 	* gui/oprof_start_util.cpp: fix basename()
 
 	* pp/oprofpp.cpp:
-	* pp/oprofpp.h
+	* pp/oprofpp.h:
 	* pp/opf_filter.cpp: better options handling
 
 	* module/oprofile.c: update one comment
@@ -62,7 +69,7 @@
 
 2001-10-31  John Levon  <moz@compsoc.man.ac.uk>
 
-	* module.oprofile.c: add comment about unfixable
+	* module/oprofile.c: add comment about unfixable
 	  races.
  
 2001-10-30  John Levon  <moz@compsoc.man.ac.uk>

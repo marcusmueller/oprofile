@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.50 2001/11/06 18:02:56 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.51 2001/11/07 01:35:38 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -116,7 +116,8 @@ if test -z "$HARD_GET_CURRENT"; then
   AC_MSG_RESULT(no)
 else
   AC_MSG_RESULT(yes)
-  BKCFLAGS="$BKCFLAGS -DHARD_CURRENT"
+  # hard_get_current() can't work for us... 
+  AC_MSG_ERROR(This kernel version is unsupported. Check oprofile bug tracker for more information.)
 fi
 
 AC_MSG_CHECKING(for x86 architecture)
