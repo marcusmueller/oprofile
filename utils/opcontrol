@@ -1024,15 +1024,21 @@ do_save_session () {
 }
 
 
+move_and_remove() {
+	mv $1 $SAMPLES_DIR/.tmp_reset.$$
+	rm -rf $SAMPLES_DIR/.tmp_reset.$$
+}
+
 #remove all the sample files
 do_reset() {
 	if test -z "$SAMPLES_DIR"; then
 		echo "opcontrol:do_reset() SAMPLES_DIR is empty!"
 		exit 1;
 	fi
+
 	# daemon use {kern} and {root} subdir, it's not a typo to not use ${}
-	rm -rf $SAMPLES_DIR/current/{kern}
-	rm -rf $SAMPLES_DIR/current/{root}
+	move_and_remove $SAMPLES_DIR/current/{kern}
+	move_and_remove $SAMPLES_DIR/current/{root}
 
 	hup_daemon
 }

@@ -28,8 +28,7 @@ char * op_relative_to_absolute_path(
  * create_dir - create a directory
  * @param dir  the directory name to create
  *
- * return false if the directory dir does not exist
- * and cannot be created
+ * Returns 0 on success.
  */
 int create_dir(char const * dir);
 
@@ -39,7 +38,10 @@ int create_dir(char const * dir);
  * @param path  the path to create
  *
  * create directory for each dir components in path
- * return false if one of the path cannot be created.
+ * the last path component is not considered as a directory
+ * but as a filename
+ *
+ * Returns 0 on success.
  */
 int create_path(char const * path);
 

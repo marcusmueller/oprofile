@@ -1,3 +1,31 @@
+2003-08-08  John Levon  <levon@movementarian.org>
+
+	* dae/opd_image.c:
+	* dae/opd_sample_files.h:
+	* dae/opd_sample_files.c:
+	* daemon/opd_image.c:
+	* daemon/opd_sample_files.h:
+	* daemon/opd_sample_files.c: remove "create" bool
+	from opd_mangle_filename(): only one callsite needs
+	that functionality, open code the create instead
+
+	* dae/opd_proc.c:
+	* dae/opd_sample_files.h:
+	* dae/opd_sample_files.c:
+	* daemon/opd_sample_files.h:
+	* daemon/opd_sample_files.c: return error from
+	opd_open_sample_filename(). Do not fail when odb_open
+	fails due to --reset races.
+
+	* dae/oprofiled.c:
+	* daemon/oprofiled.c: a little more verbosity.
+
+	* libutil/op_file.h:
+	* libutil/op_file.c: fix create_dir/path() comments,
+	don't use access()
+
+	* utils/opcontrol: reduce change of --reset races
+
 2003-08-06  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/symbol_sort.h:

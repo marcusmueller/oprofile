@@ -409,6 +409,7 @@ static void opd_alarm(int val __attribute__((unused)))
 /* re-open logfile for logrotate */
 static void opd_sighup(int val __attribute__((unused)))
 {
+	printf("Received SIGHUP.\n");
 	close(1);
 	close(2);
 	opd_open_logfile();

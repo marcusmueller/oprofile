@@ -169,7 +169,7 @@ void opd_check_image_mtime(struct opd_image * image)
 			odb_close(db);
 		}
 		if (ctr_event[i]) {
-			mangled = opd_mangle_filename(image, i, 0);
+			mangled = opd_mangle_filename(image, i);
 			verbprintf("Deleting out of date \"%s\"\n", mangled);
 			remove(mangled);
 			free(mangled);

@@ -244,34 +244,23 @@ char * op_relative_to_absolute_path(char const * path, char const * base_dir)
 	return op_simplify_pathname(temp_path);
 }
 
-/**
- * create_dir - create a directory
- * @param dir  the directory name to create
- *
- * return false if the directory dir does not exist
- * and cannot be created
- */
+
 int create_dir(char const * dir)
 {
-	if (access(dir, F_OK)) {
-		if (mkdir(dir, 0755))
-			return 1;
+	if (mkdir(dir, 0755)) {
+		/* FIXME: Does not verify existing is a dir */
+		if (errno == EEXIST)
+			return 0;
+		return errno;
 	}
+
 	return 0;
 }
 
-/**
- * create_path - create a path
- * @param path  the path to create
- *
- * create directory for each dir components in path
- * return false if one of the path cannot be created.
- * the last path component is not considered as a directory
- * but as a filename
- */
+
 int create_path(char const * path)
 {
-	int ret;
+	int ret = 0;
 
 	char * str = xstrdup(path);
 
@@ -282,11 +271,11 @@ int create_path(char const * path)
 		ret = create_dir(str);
 		*pos = '/';
 		if (ret) {
-			free(str);
-			return ret;
+			goto out;
 		}
 	}
 
+out:
 	free(str);
-	return 0;
+	return ret;
 }

@@ -36,8 +36,7 @@ extern u16 ctr_um[OP_MAX_COUNTERS];
 extern double cpu_speed;
 extern op_cpu cpu_type;
 
-char * opd_mangle_filename(struct opd_image const * image, int counter,
-                           int create)
+char * opd_mangle_filename(struct opd_image const * image, int counter)
 {
 	char * mangled;
 	char const * dep_name = separate_lib_samples ? image->app_name : NULL;
@@ -60,10 +59,6 @@ char * opd_mangle_filename(struct opd_image const * image, int counter,
 	values.dep_name = dep_name;
 
 	mangled = op_mangle_filename(&values);
-
-	if (create) {
-		create_path(mangled);
-	}
 
 	return mangled;
 }
@@ -139,7 +134,7 @@ void opd_handle_old_sample_files(struct opd_image const * image)
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		if (ctr_event[i]) {
-			char * mangled = opd_mangle_filename(image, i, 0);
+			char * mangled = opd_mangle_filename(image, i);
 			opd_handle_old_sample_file(mangled,  image->mtime);
 			free(mangled);
 		}
@@ -156,30 +151,40 @@ void opd_handle_old_sample_files(struct opd_image const * image)
  * counter and set up memory mappings for it.
  * image->kernel and image->name must have meaningful
  * values.
+ *
+ * Returns 0 on success.
  */
-void opd_open_sample_file(struct opd_image * image, int counter)
+int opd_open_sample_file(struct opd_image * image, int counter)
 {
 	char * mangled;
 	samples_odb_t * sample_file;
 	struct opd_header * header;
-	int rc;
+	int err;
 
 	sample_file = &image->sample_files[counter];
 
-	mangled = opd_mangle_filename(image, counter, 1);
+	mangled = opd_mangle_filename(image, counter);
 
 	verbprintf("Opening \"%s\"\n", mangled);
 
-	rc = odb_open(sample_file, mangled, ODB_RDWR, sizeof(struct opd_header));
-	if (rc != EXIT_SUCCESS) {
+	create_path(mangled);
+
+	err = odb_open(sample_file, mangled, ODB_RDWR, sizeof(struct opd_header));
+
+	/* This can naturally happen when racing against opcontrol --reset. */
+
+	if (err != EXIT_SUCCESS) {
 		fprintf(stderr, "%s", sample_file->err_msg);
-		exit(EXIT_FAILURE);
+		odb_clear_error(sample_file);
+		goto out;
 	}
+
 	if (!sample_file->base_memory) {
+		err = errno;
 		fprintf(stderr,
 			"oprofiled: odb_open() of image sample file \"%s\" failed: %s\n",
 			mangled, strerror(errno));
-		goto err;
+		goto out;
 	}
 
 	header = sample_file->base_memory;
@@ -198,8 +203,9 @@ void opd_open_sample_file(struct opd_image * image, int counter)
 	header->separate_lib_samples = separate_lib_samples;
 	header->separate_kernel_samples = separate_kernel_samples;
 
-err:
+out;
 	free(mangled);
+	return err;
 }
 
 /**

@@ -284,8 +284,7 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 	sample_file = &image->sample_files[counter];
 
 	if (!sample_file->base_memory) {
-		opd_open_sample_file(image, counter);
-		if (!sample_file->base_memory) {
+		if (opd_open_sample_file(image, counter)) {
 			/* opd_open_sample_file output an error message */
 			return;
 		}
