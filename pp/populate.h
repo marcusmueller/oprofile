@@ -18,6 +18,6 @@ class inverted_profile;
 
 /// Load all sample file information for exactly one binary image.
 void
-populate_for_image(profile_container & samples, inverted_profile const & ip);
+populate_for_image(profile_container & samples, inverted_profile & ip);
 
 #endif /* POPULATE_H */

@@ -31,8 +31,9 @@ namespace {
 // we should maintain the original to maintain the wordexp etc.
 string const fixup_image_spec(string const & str, extra_images const & extra)
 {
-	bool ok;
-	return find_image_path(str, extra, ok);
+	// FIXME: what todo if an error in find_image_path() ?
+	image_flags flags;
+	return find_image_path(str, extra, flags);
 }
 
 
@@ -248,7 +249,6 @@ bool profile_spec::match(string const & filename) const
 	if (!image_or_lib_image.empty()) {
 		// Need the path search for the benefit of modules
 		// which have "/oprofile" or similar
-		// FIXME: what todo if an error in find_image_path() ?
 		string simage = fixup_image_spec(spec.image, extra);
 		string slib_image = fixup_image_spec(spec.lib_image, extra);
 		glob_filter filter(image_or_lib_image, image_exclude);

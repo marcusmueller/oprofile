@@ -22,6 +22,7 @@
 
 #include "utility.h"
 #include "op_types.h"
+#include "image_flags.h"
 
 class op_bfd;
 class string_filter;
@@ -89,7 +90,7 @@ public:
 	 */
 	op_bfd(std::string const & filename,
 	       string_filter const & symbol_filter,
-	       bool create_fake);
+	       image_flags & flags);
 
 	/// close an opened bfd image and free all related resources
 	~op_bfd();

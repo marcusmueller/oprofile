@@ -28,6 +28,7 @@
 #include "profile_container.h"
 #include "symbol_sort.h"
 #include "format_output.h"
+#include "image_errors.h"
 
 using namespace std;
 
@@ -411,8 +412,10 @@ int opreport(vector<string> const & non_options)
 	list<inverted_profile> iprofiles
 		= invert_profiles(classes, options::extra_found_images);
 
-	list<inverted_profile>::const_iterator it = iprofiles.begin();
-	list<inverted_profile>::const_iterator const end = iprofiles.end();
+	report_image_errors(iprofiles);
+
+	list<inverted_profile>::iterator it = iprofiles.begin();
+	list<inverted_profile>::iterator const end = iprofiles.end();
 
 	for (; it != end; ++it)
 		populate_for_image(samples, *it);

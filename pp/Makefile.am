@@ -13,7 +13,8 @@ bin_PROGRAMS = opreport opannotate opgprof
 
 LIBS=@POPT_LIBS@ @BFD_LIBS@
 
-pp_commons = common_option.cpp common_option.h
+pp_commons = common_option.cpp common_option.h \
+	image_errors.h image_errors.cpp
 
 common_libs =  \
 	../libpp/libpp.a \

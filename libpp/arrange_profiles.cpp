@@ -455,11 +455,9 @@ verify_and_fill(app_map_t & app_map, list<inverted_profile> & plist,
 	app_map_t::iterator const end = app_map.end();
 
 	for (; it != end; ++it) {
-		string image = it->second.image;
-		bool ok;
-		it->second.image = find_image_path(image, extra, ok);
 		plist.push_back(it->second);
-		plist.back().image_unreadable = !ok;
+		inverted_profile & ip = plist.back();
+		ip.image = find_image_path(ip.image, extra, ip.flags);
 	}
 }
 

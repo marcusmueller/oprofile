@@ -20,6 +20,7 @@
 #include "file_manip.h"
 #include "profile_container.h"
 #include "arrange_profiles.h"
+#include "image_errors.h"
 #include "opgprof_options.h"
 #include "cverb.h"
 
@@ -49,7 +50,7 @@ void op_write_vma(FILE * fp, op_bfd const & abfd, bfd_vma vma)
 			op_write_u64(fp, vma);
 			break;
 		default:
-			cerr << "oprofile: unknwon vma size for this binary\n";
+			cerr << "oprofile: unknown vma size for this binary\n";
 			exit(EXIT_FAILURE);
 	}
 }
@@ -213,7 +214,12 @@ int opgprof(vector<string> const & non_options)
 	profile_container samples(false, true);
 
 	// FIXME: symbol_filter would be allowed through option
-	op_bfd abfd(image_profile.image, string_filter(), false);
+	op_bfd abfd(image_profile.image, string_filter(), image_profile.flags);
+
+	if (image_profile.flags != image_ok) {
+		report_image_error(image_profile, true);
+		exit(EXIT_FAILURE);
+	}
 
 	load_samples(abfd, image_profile.groups[0].begin()->files,
 	             image_profile.image, samples);

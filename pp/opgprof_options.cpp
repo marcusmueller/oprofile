@@ -66,8 +66,7 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 	list<inverted_profile> iprofiles
 		= invert_profiles(classes, options::extra_found_images);
 
-	if (nr_classes == 1 && iprofiles.size() == 1
-	    && !iprofiles.begin()->image_unreadable) {
+	if (nr_classes == 1 && iprofiles.size() == 1) {
 		image_profile = *(iprofiles.begin());
 		return true;
 	}
@@ -85,12 +84,6 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 	if (nr_classes > 1 || iprofiles.size() > 1) {
 		cerr << "error: specify exactly one binary to process "
 		     "and give an event: or count: specification if necessary"
-		     << endl;
-		exit(EXIT_FAILURE);
-	}
-
-	if (iprofiles.begin()->image_unreadable) {
-		cerr << "error: no readable binary image to process"
 		     << endl;
 		exit(EXIT_FAILURE);
 	}

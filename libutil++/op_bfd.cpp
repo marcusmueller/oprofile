@@ -55,7 +55,7 @@ op_bfd_symbol::op_bfd_symbol(bfd_vma vma, size_t size, string const & name)
 
 
 op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
-               bool create_fake)
+               image_flags & flags)
 	:
 	filename(fname),
 	file_size(-1),
@@ -68,11 +68,9 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	// O(N²) behavior when we will filter vector element below
 	symbols_found_t symbols;
 
-	if (create_fake) {
-		// file size will be maxed (-1) already
-		add_symbols(symbols, symbol_filter);
-		return;
-	}
+	// if there's a problem already, don't try to open it
+	if (flags != image_ok)
+		goto out_fail;
 
 	op_get_fsize(filename.c_str(), &file_size);
 
@@ -81,17 +79,19 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	ibfd = bfd_openr(filename.c_str(), NULL);
 
 	if (!ibfd) {
-		ostringstream os;
-		os << "bfd_openr of " << filename << " failed.";
-		throw op_runtime_error(os.str(), errno);
+		cverb << "bfd_openr failed for " << filename << endl;
+		flags = image_flags(flags | image_format_failure);
+		goto out_fail;
 	}
+
+	{
 
 	char ** matching;
 
 	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) {
-		ostringstream os;
-		os << "BFD format failure for " << filename << endl;
-		throw op_runtime_error(os.str());
+		cverb << "BFD format failure for " << filename << endl;
+		flags = image_flags(flags | image_format_failure);
+		goto out_fail;
 	}
 
 	asection const * sect = bfd_get_section_by_name(ibfd, ".text");
@@ -108,8 +108,20 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 		}
 	}
 
+	}
+
 	get_symbols(symbols);
+
+out:
 	add_symbols(symbols, symbol_filter);
+	return;
+out_fail:
+	if (ibfd)
+		bfd_close(ibfd);
+	ibfd = NULL;
+	// make the fake symbol fit within the fake file
+	file_size = -1;
+	goto out;
 }
 
 

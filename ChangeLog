@@ -1,3 +1,30 @@
+2003-09-18  John Levon  <levon@movementarian.org>
+
+	* libutil++/Makefile.am:
+	* libutil++/image_flags.h: flags for image read failure
+
+	* libpp/profile_spec.cpp:
+	* libpp/locate_images.h:
+	* libpp/locate_images.cpp:
+	* libpp/arrange_profiles.h:
+	* libpp/arrange_profiles.cpp: use image_flags
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: use image_flags, no longer error
+	out on format failure
+
+	* pp/Makefile.am:
+	* pp/image_errors.cpp:
+	* pp/image_errors.h: errors previously reported in locate_images
+	are now reported here by the client
+
+	* pp/opannotate.cpp:
+	* pp/opgprof.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport.cpp:
+	* pp/populate.h:
+	* pp/populate.cpp: use the above
+
 2003-09-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/format_output.cpp: use 9 not 12 for % field width

@@ -16,6 +16,8 @@
 #include <map>
 #include <vector>
 
+#include "image_flags.h"
+
 /**
  * A class containing mappings from an image basename,
  * such as 'floppy.ko', to locations in the paths passed
@@ -59,17 +61,18 @@ private:
 	images_t images;
 };
 
-
 /**
  * @param extra_images container where all extra candidate filenames are stored
  * @param image_name binary image name
- * @param ok return failure/success, in case of failure the returned string
- *  is identical to image_name
+ * @param flags errors are flagged in this passed enum ref
  *
  * Locate a (number of) matching absolute paths to the given image name.
  * If we fail to find the file or if it is not readable we provide a warning
  * and return an empty string.
  */
-std::string const find_image_path(std::string const & image_name,
-                            extra_images const & extra_images, bool & ok);
+std::string const
+find_image_path(std::string const & image_name,
+                extra_images const & extra_images,
+                image_flags & flags);
+
 #endif /* LOCATE_IMAGES_H */

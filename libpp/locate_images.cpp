@@ -11,6 +11,7 @@
 
 #include "file_manip.h"
 #include "locate_images.h"
+#include "image_flags.h"
 
 #include <cerrno>
 #include <iostream>
@@ -95,19 +96,18 @@ public:
 
 string const find_image_path(string const & image_name,
                              extra_images const & extra_images,
-                             bool & ok)
+                             image_flags & flags)
 {
 	string const image = relative_to_absolute_path(image_name);
 
 	// simplest case
 	if (op_file_readable(image)) {
-		ok = true;
+		flags = image_ok;
 		return image_name;
 	}
 
 	if (errno == EACCES) {
-		ok = false;
-		cerr << "warning: " << image_name << " could not be read.\n";
+		flags = image_flags(flags | image_unreadable);
 		return image_name;
 	}
 
@@ -120,20 +120,14 @@ string const find_image_path(string const & image_name,
 		result = extra_images.find(module_matcher(base + ".ko"));
 
 	if (result.empty()) {
-		ok = false;
-		cerr << "warning: " << image_name << " could not be found.\n";
+		flags = image_flags(flags | image_not_found);
 		return image_name;
 	}
 
 	if (result.size() > 1) {
-		ok = false;
-		cerr << "warning: " << image_name
-		     << " matches more than one file: "
-		        "detailed profile will not be provided."
-		     << endl;
+		flags = image_flags(flags | image_multiple_match);
 	        return image_name;
 	}
 
-	ok = true;
 	return result[0];
 }
