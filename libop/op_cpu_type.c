@@ -60,6 +60,7 @@ op_cpu op_get_cpu_type(void)
 		fp = fopen("/dev/oprofile/cpu_type", "r");
 		if (!fp) {
 			fprintf(stderr, "Unable to open cpu_type file for reading\n");
+			fprintf(stderr, "Forgot to load the oprofile kernel module ?\n");
 			return cpu_type;
 		}
 	}

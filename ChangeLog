@@ -1,3 +1,8 @@
+2003-01-29  Dave Jones <davej@codemonkey.org.uk>
+
+	* libop/op_cpu_type.c: Clue the user in on why the cpu type isn't
+	  recognised, by suggesting the module wasn't loaded.
+
 2003-01-28  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* utils/op_help.c: get cpu type only if not forced on command line.
