@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.11 2000/09/04 22:54:30 moz Exp $ */
+/* $Id: oprofpp.c,v 1.12 2000/09/04 23:04:35 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -317,8 +317,6 @@ void get_symbol_range(asymbol *sym, asymbol *next, u32 *start, u32 *end)
 		*end += sect_offset;
 	} else
 		*end = nr_samples;
-
-	printf("Symbol $%s$, value 0x%x, Start 0x%x, end 0x%x\n",sym->name,sym->value,*start,*end);
 }
  
 struct opp_count {
