@@ -1,5 +1,10 @@
 2002-09-23  John Levon  <levon@movementarian.org>
 
+	* utils/Makefile.in:
+	* utils/op_start_25: 2.5 patch start script
+ 
+2002-09-23  John Levon  <levon@movementarian.org>
+
 	* libop/op_cpu_type.c: fix arrays
  
 2002-09-23  John Levon  <levon@movementarian.org>

@@ -22,9 +22,16 @@ OP_HELP_LIBDEPS=../libutil/libutil.a ../libop/libop.a
 
 all: $(TARGET)
 
-INSTALL_LIST=op_help op_dump op_session op_start op_stop
+ifeq "@OPROFILE_25@" "no"
+OP_START=op_start
+else
+OP_START=op_start_25
+endif
+ 
+INSTALL_LIST=op_help op_dump op_session op_stop
 install:
 	$(INSTALL) $(INSTALL_LIST) $(BINDIR)
+	$(INSTALL) $(OP_START) $(BINDIR)/op_start
 
 uninstall:
 	for f in $(INSTALL_LIST); do rm -f $(BINDIR)/$$f; done
