@@ -44,7 +44,7 @@ static u32 prof_on __cacheline_aligned;
 static int quitting;
 /* is partial_stop made ?  Re-using quitting for this purpose is obfuscated */
 int partial_stop;
- 
+
 static int op_major;
 
 static volatile uint oprof_opened __cacheline_aligned;
@@ -61,9 +61,9 @@ extern spinlock_t map_lock;
 
 // the interrupt handler ops structure to use
 static struct op_int_operations * int_ops;
- 
+
 /* ---------------- interrupt entry routines ------------------ */
- 
+
 inline static int need_wakeup(uint cpu, struct _oprof_data * data)
 {
 	return data->nextbuf >= (data->buf_size - OP_PRE_WATERMARK) && !oprof_ready[cpu];
@@ -91,7 +91,7 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const str
 	 * were not disabled (corresponding to the irqsave/restores in __wake_up().
 	 *
 	 * Note that this requires all spinlocks taken by the full wake_up path
-	 * to have saved IRQs - otherwise we can interrupt whilst holding a spinlock 
+	 * to have saved IRQs - otherwise we can interrupt whilst holding a spinlock
 	 * taken from some non-wake_up() path and deadlock. Currently this means only
 	 * oprof_wait->lock and runqueue_lock: all instances disable IRQs before
 	 * taking the lock.
@@ -171,7 +171,7 @@ inline static void up_and_check_note(void)
 	note_pos++;
 	if (likely(note_pos < (sysctl.note_size - OP_PRE_NOTE_WATERMARK) && !is_ready()))
 		return;
- 
+
 	/* if we reach the end of the buffer, just pin
 	 * to the last entry until it is read. This loses
 	 * notes, but we have no choice. */
@@ -184,7 +184,7 @@ inline static void up_and_check_note(void)
 		}
 		note_pos = sysctl.note_size - 1;
 	}
- 
+
 	/* we just use cpu 0 as a convenient one to wake up */
 	oprof_ready[0] = 2;
 	oprof_wake_up(&oprof_wait);
@@ -303,7 +303,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 		if (cpu == smp_num_cpus)
 			return -EAGAIN;
 	} else if (quitting) {
-		/* we might have done dump_stop just before the daemon 
+		/* we might have done dump_stop just before the daemon
 		 * is about to sleep */
 		quitting = 0;
 		return 0;
@@ -311,11 +311,11 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 		wait_event_interruptible(oprof_wait, is_ready());
 	}
 
-	/* on SMP, we may have already dealt with the signal between 
-	 * the wake up from the signal and this point, this point, 
+	/* on SMP, we may have already dealt with the signal between
+	 * the wake up from the signal and this point, this point,
 	 * so we might go on to copy some data. But that's OK.
 	 */
-	if (signal_pending(current)) 
+	if (signal_pending(current))
 		return -EINTR;
 
 	/* if we are quitting, return 0 read to tell daemon */
@@ -325,7 +325,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	}
 
 	int_ops->stop_cpu(cpu_num);
- 
+
 	/* buffer might have overflowed */
 	num = check_buffer_amount(&oprof_data[cpu_num]);
 
@@ -390,7 +390,7 @@ static int oprof_release(struct inode *ino, struct file *file)
 	quitting = 0;
 	/* the block on re-starting is over */
 	partial_stop = 0;
- 
+
 	clear_bit(0, &oprof_opened);
 
 	return oprof_stop();
@@ -478,10 +478,10 @@ static int parms_check(void)
 
 	if ((err = int_ops->check_params()))
 		return err;
- 
+
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		data = &oprof_data[cpu];
- 
+
 		/* make sure the buffer and hash table have been set up */
 		if (!data->buffer || !data->entries)
 			return -EFAULT;
@@ -542,10 +542,10 @@ static void oprof_partial_stop(void)
 	op_replace_syscalls();
 
 	int_ops->stop();
- 
+
 	partial_stop = 1;
 }
- 
+
 static int oprof_stop(void)
 {
 	uint i;
@@ -569,7 +569,7 @@ static int oprof_stop(void)
 	prof_on = 0;
 
 	oprof_partial_stop();
- 
+
 	spin_lock(&map_lock);
 	spin_lock(&note_lock);
 
@@ -593,7 +593,7 @@ out:
 static struct file_operations oprof_fops = {
 #ifdef HAVE_FILE_OPERATIONS_OWNER
 	owner: THIS_MODULE,
-#endif 
+#endif
 	open: oprof_open,
 	release: oprof_release,
 	read: oprof_read,
@@ -624,15 +624,32 @@ static struct file_operations oprof_fops = {
  */
 
 /* These access routines are basically not safe on SMP for module unload.
- * And there is nothing we can do about it - the API is broken.
+ * And there is nothing we can do about it - the API is broken. We'll just
+ * make a best-efforts thing. Note the sem is needed to prevent parms_check
+ * bypassing during oprof_start().
  */
- 
+
+static void lock_sysctl(void)
+{
+	MOD_INC_USE_COUNT;
+	down(&sysctlsem);
+}
+
+static void unlock_sysctl(void)
+{
+	up(&sysctlsem);
+	MOD_DEC_USE_COUNT;
+}
+
 static int get_nr_interrupts(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
 {
 	uint cpu;
+	int ret = -EINVAL;
+
+	lock_sysctl();
 
 	if (write)
-		return -EINVAL;
+		goto out;
 
 	sysctl.nr_interrupts = 0;
 
@@ -641,18 +658,21 @@ static int get_nr_interrupts(ctl_table *table, int write, struct file *filp, voi
 		oprof_data[cpu].nr_irq = 0;
 	}
 
-	return proc_dointvec(table, write, filp, buffer, lenp);
+	ret =  proc_dointvec(table, write, filp, buffer, lenp);
+out:
+	unlock_sysctl();
+	return ret;
 }
 
 int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
 {
 	int err;
 
-	down(&sysctlsem);
+	lock_sysctl();
 	err = proc_dointvec(table, write, filp, buffer, lenp);
-	up(&sysctlsem);
+	unlock_sysctl();
 
-	return err;	
+	return err;
 }
 
 static void dump_one(struct _oprof_data *data, struct op_sample *ops, uint cpu)
@@ -674,7 +694,7 @@ static void do_actual_dump(void)
 {
 	uint cpu;
 	int i,j;
- 
+
 	/* clean out the hash table as far as possible */
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		struct _oprof_data * data = &oprof_data[cpu];
@@ -692,12 +712,13 @@ static void do_actual_dump(void)
 	}
 	oprof_wake_up(&oprof_wait);
 }
- 
+
 static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
 {
 	int err = -EINVAL;
 
-	down(&sysctlsem);
+	lock_sysctl();
+
 	if (!prof_on)
 		goto out;
 
@@ -707,18 +728,19 @@ static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *
 	}
 
 	do_actual_dump();
- 
+
 	err = 0;
 out:
-	up(&sysctlsem);
+	unlock_sysctl();
 	return err;
 }
 
 static int sysctl_do_dump_stop(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
 {
 	int err = -EINVAL;
- 
-	down(&sysctlsem);
+
+	lock_sysctl();
+
 	if (!prof_on)
 		goto out;
 
@@ -736,13 +758,13 @@ static int sysctl_do_dump_stop(ctl_table *table, int write, struct file *filp, v
 
 	/* also wakes up daemon */
 	do_actual_dump();
- 
+
 	err = 0;
-out: 
-	up(&sysctlsem);
+out:
+	unlock_sysctl();
 	return err;
 }
- 
+
 int nr_oprof_static = 10;
 
 static ctl_table oprof_table[] = {
@@ -820,7 +842,7 @@ int __init oprof_init(void)
 
 	if (sysctl.cpu_type != CPU_RTC) {
 		int_ops = &op_nmi_ops;
- 
+
 		// try to init, fall back to rtc if not
 		if ((err = int_ops->init())) {
 			int_ops = &op_rtc_ops;
@@ -833,7 +855,7 @@ int __init oprof_init(void)
 		if ((err = int_ops->init()))
 			return err;
 	}
- 
+
 	if ((err = init_sysctl()))
 		goto out_err;
 
@@ -867,7 +889,7 @@ out_err:
 void __exit oprof_exit(void)
 {
 	oprof_free_hashmap();
- 
+
 	unregister_chrdev(op_major, "oprof");
 
 	cleanup_sysctl();

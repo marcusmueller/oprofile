@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.103 2002/02/04 02:10:49 movement Exp $ */
+/* $Id: opd_proc.c,v 1.104 2002/02/04 03:21:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -643,7 +643,7 @@ int bstreq(const char *str1, const char *str2)
 	if (*a || *b)
 		return 0;
 
-	while (a!=str1) {
+	while (a != str1) {
 		if (*b-- != *a--)
 			return 0;
 	}

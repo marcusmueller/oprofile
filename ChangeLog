@@ -1,5 +1,9 @@
 2002-02-04  John Levon  <moz@compsoc.man.ac.uk>
 
+	* module/oprofile.c: add [un]lock_sysctl
+ 
+2002-02-04  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/oprofiled.h:
 	* dae/oprofiled.c:
 	* dae/opd_proc.c: free stuff on shutdown (to
