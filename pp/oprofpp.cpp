@@ -186,7 +186,7 @@ static void do_list_symbols_details(samples_container_t & samples,
 
 	samples.select_symbols(symbols, sort_by_ctr, 0.0, false, true);
 
-	out.Output(cout, symbols, reverse_sort != 0);
+	out.Output(cout, symbols, false);
 }
  
 /**
