@@ -20,6 +20,8 @@
 #include "op_popt.h"
 #include "op_cpufreq.h"
 #include "op_hw_config.h"
+#include "op_libiberty.h"
+#include "op_alloc_counter.h"
 
 static char const ** chosen_events;
 
@@ -27,8 +29,6 @@ struct parsed_event {
 	char * name;
 	int count;
 	int unit_mask;
-	int counter;
-	struct op_event * event;
 } parsed_events[OP_MAX_COUNTERS];
 
 
@@ -126,9 +126,6 @@ static int parse_events(void)
 			exit(EXIT_FAILURE);
 		}
 
-		/* initial guess */
-		parsed_events[i].counter = i;
-
 		parsed_events[i].name = part;
 
 		part = next_part(&cp);
@@ -157,9 +154,8 @@ static int parse_events(void)
 }
 
 
-static void check_event(struct parsed_event * pev)
+static void check_event(struct parsed_event * pev, struct op_event * event)
 {
-	struct op_event * event = pev->event;
 	int ret;
 
 	if (!event) {
@@ -185,80 +181,13 @@ static void check_event(struct parsed_event * pev)
 }
 
 
-static void iter_swap(size_t * a, size_t * b)
-{
-  size_t tmp = *a;
-  *a = *b;
-  *b = tmp;
-}
-
-
-void reverse(size_t * first, size_t * last)
-{
-	while (1) {
-		if (first == last || first == --last)
-			return;
-		else
-			iter_swap(first++, last);
-	}
-}
-
-
-int next_permutation(size_t * first, size_t * last)
-{
-	size_t * i;
-	if (first == last)
-		return 0;
-	i = first;
-	++i;
-	if (i == last)
-		return 0;
-	i = last;
-	--i;
-
-	for(;;) {
-		size_t * ii = i;
-		--i;
-		if (*i < *ii) {
-			size_t * j = last;
-			while (!(*i < *--j)) {
-			}
-			iter_swap(i, j);
-			reverse(ii, last);
-			return 1;
-		}
-		if (i == first) {
-			reverse(first, last);
-			return 0;
-		}
-	}
-}
-
-static int allocate_counter(size_t const * counter_map,
-                            struct parsed_event * pev, int nr_events)
-{
-	int c = 0;
-
-	for (; c < nr_events; ++c) {
-		/* assert(c < nr_counters) */
-		int mask = 1 << counter_map[c];
-		if (!(pev[c].event->counter_mask & mask))
-			return EXIT_FAILURE;
-
-		pev[c].counter = counter_map[c];
-	}
-
-	return EXIT_SUCCESS;
-}
-
-
 static void resolve_events(struct list_head * events)
 {
 	int count = parse_events();
 	int i;
-	int success = EXIT_FAILURE;
-	size_t counter_map[OP_MAX_COUNTERS];
+	size_t * counter_map;
 	int nr_counters = op_get_nr_counters(cpu_type);
+	struct op_event * selected_events[OP_MAX_COUNTERS];
 
 	if (count > nr_counters) {
 		fprintf(stderr, "Not enough hardware counters.\n");
@@ -274,32 +203,27 @@ static void resolve_events(struct list_head * events)
 				list_entry(pos, struct op_event, event_next);
 
 			if (strcmp(ev->name, pev->name) == 0) {
-				pev->event = ev;
+				selected_events[i] = ev;
+				break;
 			}
 		}
 
-		check_event(pev);
+		check_event(pev, selected_events[i]);
 	}
 
-	for (i = 0; i < nr_counters; ++i)
-		counter_map[i] = i;
+	counter_map = map_event_to_counter(selected_events, count, cpu_type);
 
-	do {
-		success = allocate_counter(counter_map, parsed_events, count);
-
-		if (success == EXIT_SUCCESS)
-			break;
-	} while (next_permutation(counter_map, counter_map + nr_counters));
-
-	if (success == EXIT_FAILURE) {
+	if (!counter_map) {
 		fprintf(stderr, "Couldn't allocate hardware counters for the selected events.\n");
 		exit(EXIT_FAILURE);
 	}
 
 	for (i = 0; i < count; ++i) {
-		printf("%d ", parsed_events[i].counter);
+		printf("%d ", counter_map[i]);
 	}
 	printf("\n");
+
+	free(counter_map);
 }
 
 
