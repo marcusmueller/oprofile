@@ -27,6 +27,9 @@
 #define opd_nr_lookup_dcookie 223
 #elif defined(__ia64__)
 #define opd_nr_lookup_dcookie 1237
+#elif defined(__sparc__)
+/* untested */
+#define opd_nr_lookup_dcookie 208
 #else
 #error Please define lookup_dcookie for your architecture
 #endif
@@ -42,6 +45,6 @@ static inline int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
 {
 	return syscall(opd_nr_lookup_dcookie, cookie, buf, size);
 }
-#endif /* ppc32 */
+#endif
 
 #endif /* OPD_COOKIE_H */

@@ -10,7 +10,7 @@ libodb_a_SOURCES = \
 	db_travel.c \
 	db_debug.c \
 	db_stat.c \
-	db_hash.h
+	odb_hash.h
 
 noinst_PROGRAMS = db_test
 

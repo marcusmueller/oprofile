@@ -1,4 +1,12 @@
+2003-04-01  John Levon  <levon@movementarian.org>
+
+	* libdb/Makefile.am: fix make dist
+
+	* daemon/opd_cookie.h: add SPARC syscall number.
+	  The system call function is OK for sparc/sparc64
+
 2003-03-31  Will Cohen  <wcohen@redhat.com>
+
 	* libdb/odb_hash.h: Renamed db_hash.h.
 
 	* dae/Makefile.am:
@@ -12,10 +20,10 @@
 	* daemon/opd_sample_files.c:
 	* libabi/Makefile.am:
 	* libabi/abi.cpp:
-	* libabi/abi_test.cpp
+	* libabi/abi_test.cpp:
 	* libabi/op_import.cpp:
 	* libdb/Makefile.am:
-	* libdb/db_debug.c
+	* libdb/db_debug.c:
 	* libdb/db_hash.h:
 	* libdb/db_insert.c:
 	* libdb/db_manage.c:
