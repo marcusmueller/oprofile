@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.11 2001/12/31 22:56:40 phil_e Exp $ */
+/* $Id: oprofile.h,v 1.12 2002/01/04 04:26:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -68,6 +68,7 @@ struct oprof_sysctl {
 	int buf_size; /* nr. in eviction buffser */
 	int hash_size; /* nr. in hash table */
 	int dump; /* sysctl dump */
+	int dump_stop; /* dump and stop */
 	int kernel_only; /* is profiling kernel only */
 	int note_size; /* nr. in note buffer */
 	int nr_interrupts; /* nr. interrupts occured */

@@ -1,3 +1,12 @@
+2002-01-04  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/op_stop:
+	* dae/oprofiled.c:
+	* doc/oprofile.sgml:
+	* module/oprofile.h:
+	* module/oprofile.c: implement new clean shutdown via
+	  sysctl dump_stop
+ 
 2002-01-04  Philippe Elie  <ph_e@club-internet.fr>
 
 	* module/oprofile.c: add a warning when note buff overflow.

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.59 2002/01/02 01:57:16 movement Exp $ */
+/* $Id: oprofiled.c,v 1.60 2002/01/04 04:26:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -50,7 +50,6 @@ static sigset_t maskset;
 static fd_t devfd;
 static fd_t notedevfd;
 struct op_hash_index *hashmap;
-volatile sig_atomic_t shutdown_requested; 
 
 static void opd_sighup(int val);
 static void opd_open_logfile(void);
@@ -427,14 +426,14 @@ static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbu
  
 	system("op_dump");
  
-	// the dump may have added no samples, so we must set
-	// non-blocking
+	/* the dump may have added no samples, so we must set
+	 * non-blocking */
 	if (fcntl(devfd, F_SETFL, fcntl(devfd, F_GETFL) | O_NONBLOCK) < 0) {
 		perror("Failed to set non-blocking read for device: ");
 		exit(1);
 	}
 
-	// it's always OK to read the note device
+	/* it's always OK to read the note device */
 	while (ncount < 0) {
 		ncount = opd_read_device(notedevfd, nbuf, nsize, TRUE);
 	}
@@ -443,13 +442,22 @@ static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbu
 		opd_do_notes(nbuf, ncount);
 	}
  
-	// read as much as we can until we have exhausted the data
-	while (errno != EAGAIN) {
+	/* read as much as we can until we have exhausted the data
+	 * (EAGAIN is returned).
+	 *
+	 * This will not livelock as the profiler has been partially
+	 * shut down by now. Multiple stops from user-space can cause
+	 * more reads of 0 size, so we cater for that. Technically this
+	 * would be a livelock, but it requires root to send stops constantly
+	 * and never lose the race. */
+	while (1) {
 		count = opd_read_device(devfd, buf, size, TRUE);
-		if (count > 0) {
+		if (count < 0 && errno == EAGAIN) {
+			break;
+		} else if (count > 0) {
 			opd_do_samples(buf, count);
 		}
-	}
+	};
 }
 
 /**
@@ -468,32 +476,24 @@ static void opd_do_read(struct op_sample *buf, size_t size, struct op_note *nbuf
 		ssize_t count = -1;
 		ssize_t ncount = -1;
  
-		if (shutdown_requested)
-			break;
- 
 		/* loop to handle EINTR */
 		while (count < 0) {
 			count = opd_read_device(devfd, buf, size, TRUE);
  
-			if (count < 0 && shutdown_requested)
-				goto out;
+			/* if count == 0, that means we need to stop ! */
+			if (count == 0) {
+				opd_shutdown(buf, size, nbuf, nsize);
+				return;
+			}
 		}
 
 		while (ncount < 0) {
 			ncount = opd_read_device(notedevfd, nbuf, nsize, TRUE);
- 
-			if (count < 0 && shutdown_requested) {
-				// handle previously read data
-				opd_do_samples(buf, size);
-				goto out;
-			}
 		}
+ 
 		opd_do_notes(nbuf, ncount);
 		opd_do_samples(buf, count);
 	}
- 
-out:
-	opd_shutdown(buf, size, nbuf, nsize);
 }
 
 /**
@@ -590,12 +590,6 @@ static void opd_sighup(int val __attribute__((unused)))
 	opd_open_logfile();
 }
 
-/* handle clean shutdown */
-static void opd_sigusr1(int val __attribute__((unused)))
-{
-	shutdown_requested = 1;
-}
-
 int main(int argc, char const *argv[])
 {
 	struct op_sample *sbuf;
@@ -654,16 +648,6 @@ int main(int argc, char const *argv[])
 		exit(1);
 	}
 
-	act.sa_handler = opd_sigusr1;
-	act.sa_flags = 0;
-	sigemptyset(&act.sa_mask);
-	sigaddset(&act.sa_mask, SIGUSR1);
-
-	if (sigaction(SIGUSR1, &act, NULL)) {
-		perror("oprofiled: install of SIGUSR1 handler failed: ");
-		exit(1);
-	}
- 
 	sigemptyset(&maskset);
 	sigaddset(&maskset, SIGALRM);
 	sigaddset(&maskset, SIGHUP);
@@ -674,5 +658,6 @@ int main(int argc, char const *argv[])
 	/* simple sleep-then-process loop */
 	opd_do_read(sbuf, s_buf_bytesize, nbuf, n_buf_bytesize);
 
+	printf("oprofiled stopped %s", opd_get_time());
 	return 0;
 }

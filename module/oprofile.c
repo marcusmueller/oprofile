@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.22 2002/01/04 03:19:27 phil_e Exp $ */
+/* $Id: oprofile.c,v 1.23 2002/01/04 04:26:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -51,6 +51,9 @@ int separate_running_bit;
 
 static u32 prof_on __cacheline_aligned;
 
+/* in the process of quitting ? */
+static int quitting;
+ 
 static int op_major;
 
 static volatile uint oprof_opened __cacheline_aligned;
@@ -481,10 +484,12 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	if (signal_pending(current))
 		return -EINTR;
 
-	/* FIXME: what if a signal occurs now ? What is returned to
-	 * the read() routine ?
-	 */
-
+	/* if we are quitting, return 0 read to tell daemon */
+	if (quitting) {
+		quitting = 0;
+		return 0;
+	}
+		 
 	pmc_select_stop(cpu_num);
 
 	/* buffer might have overflowed */
@@ -544,6 +549,9 @@ static int oprof_release(struct inode *ino, struct file *file)
 	if (!oprof_opened)
 		return -EFAULT;
 
+	/* finished quitting */
+	quitting = 0;
+ 
 	clear_bit(0, &oprof_opened);
 
 	return oprof_stop();
@@ -741,6 +749,18 @@ out:
 	return err;
 }
 
+/*
+ * stop interrupts being generated and notes arriving.
+ * This needs to be idempotent.
+ */
+static int oprof_partial_stop(void)
+{
+	op_replace_syscalls();
+	smp_call_function(pmc_stop, NULL, 0, 1);
+	pmc_stop(NULL);
+	restore_nmi();
+}
+ 
 static int oprof_stop(void)
 {
 	uint i;
@@ -761,14 +781,10 @@ static int oprof_stop(void)
 	 * we check explicitly for prof_on and synchronise via the spinlocks
 	 */
 
-	op_replace_syscalls();
-
 	prof_on = 0;
 
-	smp_call_function(pmc_stop, NULL, 0, 1);
-	pmc_stop(NULL);
-	restore_nmi();
-
+	oprof_partial_stop();
+ 
 	spin_lock(&map_lock);
 	spin_lock(&note_lock);
 
@@ -803,6 +819,7 @@ static struct file_operations oprof_fops = {
  *                        hashsize
  *                        notesize
  *                        dump
+ *                        dump_stop
  *                        kernel_only
  *                        pid_filter
  *                        pgrp_filter
@@ -866,21 +883,11 @@ static void dump_one(struct _oprof_data *data, struct op_sample *ops, uint cpu)
 	oprof_ready[cpu] = 1;
 }
 
-static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
+static void do_actual_dump(void)
 {
 	uint cpu;
-	int err = -EINVAL;
 	int i,j;
-
-	down(&sysctlsem);
-	if (!prof_on)
-		goto out;
-
-	if (!write) {
-		err = proc_dointvec(table, write, filp, buffer, lenp);
-		goto out;
-	}
-
+ 
 	/* clean out the hash table as far as possible */
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		struct _oprof_data * data = &oprof_data[cpu];
@@ -897,18 +904,65 @@ static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *
 		pmc_select_start(cpu);
 	}
 	wake_up(&oprof_wait);
+}
+ 
+static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
+{
+	int err = -EINVAL;
+
+	down(&sysctlsem);
+	if (!prof_on)
+		goto out;
+
+	if (!write) {
+		err = proc_dointvec(table, write, filp, buffer, lenp);
+		goto out;
+	}
+
+	do_actual_dump();
+ 
 	err = 0;
 out:
 	up(&sysctlsem);
 	return err;
 }
 
-static int nr_oprof_static = 9;
+static int sysctl_do_dump_stop(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
+{
+	int err = -EINVAL;
+ 
+	down(&sysctlsem);
+	if (!prof_on)
+		goto out;
+
+	if (!write) {
+		err = proc_dointvec(table, write, filp, buffer, lenp);
+		goto out;
+	}
+
+	/* this is unfortunate, but we have to make sure we don't enable
+	 * interrupts again, and the daemon knows to quit
+	 */
+	quitting = 1;
+
+	oprof_partial_stop();
+
+	/* also wakes up daemon */
+	do_actual_dump();
+ 
+	err = 0;
+out: 
+	up(&sysctlsem);
+	return err;
+}
+ 
+static int nr_oprof_static = 10;
 
 static ctl_table oprof_table[] = {
 	{ 1, "bufsize", &sysctl_parms.buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "hashsize", &sysctl_parms.hash_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "dump", &sysctl_parms.dump, sizeof(int), 0600, NULL, &sysctl_do_dump, NULL, },
+	{ 1, "dump_stop", &sysctl_parms.dump_stop, sizeof(int), 0600, NULL, &sysctl_do_dump_stop, NULL, },
 	{ 1, "kernel_only", &sysctl_parms.kernel_only, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pid_filter", &sysctl_parms.pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pgrp_filter", &sysctl_parms.pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },

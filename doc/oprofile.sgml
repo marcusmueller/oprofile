@@ -573,7 +573,8 @@ When the kernel module loads, it generates a file hierarchy underneath <filename
 You can read and write to these files to give direct access to the kernel parameters.
 <note>
 <para>
-With the exception of <filename>dump</filename>, any changes only take effect on restarting the profiler.
+With the exception of <filename>dump</filename> and <filename>dump_stop</filename>, 
+any changes only take effect on restarting the profiler.
 </para>
 </note>
 The following files will be present :
@@ -619,6 +620,13 @@ The following files will be present :
 		<listitem><para>
 		Writing <acronym>ASCII</acronym> "1" to the file will initiate a sample data dump. Note: ignore
 		the value "0" you get when reading the file - it is meaningless.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><filename>dump_stop</filename></term>
+		<listitem><para>
+		Writing to this file will stop the profiler, processing all pending data, and stopping the user-space
+		daemon.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

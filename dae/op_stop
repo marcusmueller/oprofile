@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_stop,v 1.14 2002/01/02 00:57:34 movement Exp $ 
+# $Id: op_stop,v 1.15 2002/01/04 04:26:34 movement Exp $ 
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -19,8 +19,8 @@
 if test `pidof oprofiled`
 then
 	echo "Stopping profiling and killing daemon"
-	kill -SIGUSR1 `pidof oprofiled`
-	exit
+	echo 1 >/proc/sys/dev/oprofile/dump_stop
+	exit 0
 fi
  
 # if profiler is not started consider as ok to try to stop it.
