@@ -1,5 +1,14 @@
 2001-06-25  John Levon  <moz@compsoc.man.ac.uk>
 
+	* op_events.c:
+	* pp/oprof_convert.c: add missing headers, remove CVS blip
+ 
+	* dae/opd_util.h: specify malloc attribute. gives warnings on
+	  older compilers, who cares. I doubt this will help but it can't
+	  harm
+ 
+2001-06-25  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/oprof_convert.c: continue if an error with one file occurs
  
 	* dae/op_stop: remove rmmod again - it is user's choice on when/whether

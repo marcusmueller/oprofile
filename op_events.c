@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.17 2001/06/22 03:16:24 movement Exp $ */
+/* $Id: op_events.c,v 1.18 2001/06/25 20:32:56 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -32,6 +32,7 @@
 #define strcmp(a,b) strnicmp((a),(b),strlen((b)))
 #else
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #endif
 

@@ -15,6 +15,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef unsigned char u8;
 typedef unsigned short u16;
@@ -140,7 +142,6 @@ static int get_converter_index(FILE* fp)
 		fseek(fp, -converter_array[i].sizeof_struct, SEEK_END);
 		fread(&footer_v2, sizeof(footer_v2), 1, fp);
 
-		if (footer_v2.magic != OPD_MAGIC)
 		if (footer_v2.magic == OPD_MAGIC && 
 		    footer_v2.version == converter_array[i].version) {
 

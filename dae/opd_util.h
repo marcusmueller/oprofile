@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.8 2001/06/22 03:16:24 movement Exp $ */
+/* $Id: opd_util.h,v 1.9 2001/06/25 20:32:56 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -33,8 +33,8 @@
 #define opd_calloc(memb, size) opd_malloc(memb*size)
 #define opd_calloc0(memb, size) opd_malloc0(memb*size)
 #define opd_crealloc(memb, buf, size) opd_realloc((buf), memb*size)
-void *opd_malloc(size_t size);
-void *opd_malloc0(size_t size);
+void *opd_malloc(size_t size) __attribute__((malloc));
+void *opd_malloc0(size_t size) __attribute__((malloc));
 void *opd_realloc(void *buf, size_t size);
 void opd_free(void *p);
  
