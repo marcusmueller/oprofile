@@ -29,6 +29,7 @@ using namespace std;
 profile_classes classes;
 
 namespace options {
+	std::string archive_path;
 	demangle_type demangle = dmt_normal;
 	bool symbols;
 	bool debug_info;
@@ -198,6 +199,9 @@ void handle_options(vector<string> const & non_options)
 		profile_spec::create(non_options, extra_found_images);
 
 	list<string> sample_files = spec.generate_file_list(exclude_dependent, true);
+
+	archive_path = spec.get_archive_path();
+	cverb << vsfile << "Archive: " << archive_path << endl;
 
 	cverb << vsfile << "Matched sample files: " << sample_files.size()
 	      << endl;

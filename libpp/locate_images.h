@@ -68,7 +68,8 @@ private:
  * If we fail to find the file we fill in error and return the original string.
  */
 std::string const
-find_image_path(std::string const & image_name,
+find_image_path(std::string const & archive_path,
+		std::string const & image_name,
                 extra_images const & extra_images,
                 image_error & error);
 

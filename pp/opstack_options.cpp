@@ -23,6 +23,7 @@ using namespace std;
 profile_classes classes;
 
 namespace options {
+	std::string archive_path;
 	demangle_type demangle = dmt_normal;
 	bool exclude_dependent;
 	merge_option merge_by;
@@ -74,6 +75,9 @@ void handle_options(vector<string> const & non_options)
 
 	list<string> sample_files =
 		spec.generate_file_list(exclude_dependent, false);
+
+	archive_path = spec.get_archive_path();
+	cverb << vsfile << "Archive: " << archive_path << endl;
 
 	cverb << vsfile << "Matched sample files: " << sample_files.size()
 	      << endl;

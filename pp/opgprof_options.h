@@ -17,6 +17,7 @@
 #include "common_option.h"
 
 namespace options {
+	extern std::string archive_path;
 	extern std::string gmon_filename;
 }
 

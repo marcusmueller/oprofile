@@ -674,8 +674,8 @@ get_iprofile(app_map_t & app_map, string const & image, size_t nr_classes)
 
 /// Pull out all the images, removing any we can't access.
 void
-verify_and_fill(app_map_t & app_map, list<inverted_profile> & plist,
-                extra_images const & extra)
+verify_and_fill(std::string archive_path, app_map_t & app_map,
+		list<inverted_profile> & plist, extra_images const & extra)
 {
 	app_map_t::iterator it = app_map.begin();
 	app_map_t::iterator const end = app_map.end();
@@ -683,7 +683,8 @@ verify_and_fill(app_map_t & app_map, list<inverted_profile> & plist,
 	for (; it != end; ++it) {
 		plist.push_back(it->second);
 		inverted_profile & ip = plist.back();
-		ip.image = find_image_path(ip.image, extra, ip.error);
+		ip.image = find_image_path(archive_path, ip.image, extra,
+					   ip.error);
 	}
 }
 
@@ -691,7 +692,8 @@ verify_and_fill(app_map_t & app_map, list<inverted_profile> & plist,
 
 
 list<inverted_profile> const
-invert_profiles(profile_classes const & classes, extra_images const & extra)
+invert_profiles(std::string archive_path, profile_classes const & classes,
+		extra_images const & extra)
 {
 	app_map_t app_map;
 
@@ -729,7 +731,7 @@ invert_profiles(profile_classes const & classes, extra_images const & extra)
 
 	list<inverted_profile> inverted_list;
 
-	verify_and_fill(app_map, inverted_list, extra);
+	verify_and_fill(archive_path, app_map, inverted_list, extra);
 
 	return inverted_list;
 }

@@ -27,6 +27,12 @@ oprofile \- a system-wide profiler
 ]
 [ profile specification ]
 .br
+.B oparchive
+[
+.I options
+]
+[ profile specification ]
+.br
 .B opgprof
 [
 .I options
@@ -59,6 +65,9 @@ enabled.
 .SH OPANNOTATE
 .B opannotate
 can produce annotated source or mixed source and assembly output.
+.SH OPARCHIVE
+.B oparchive
+produces oprofile archive for offline analysis
 .SH OPGPROF
 .B opgprof
 can produce a gprof-format profile for a single binary.
@@ -178,6 +187,7 @@ This man page is current for @PACKAGE@-@VERSION@.
 .BR opreport(1),
 .BR opstack(1),
 .BR opannotate(1),
+.BR oparchive(1),
 .BR opgprof(1),
 .BR gprof(1),
 .BR readprofile(1),

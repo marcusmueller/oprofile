@@ -415,7 +415,8 @@ int opreport(vector<string> const & non_options)
 	}
 
 	list<inverted_profile> iprofiles
-		= invert_profiles(classes, options::extra_found_images);
+		= invert_profiles(options::archive_path, classes,
+				  options::extra_found_images);
 
 	report_image_errors(iprofiles);
 
@@ -423,7 +424,8 @@ int opreport(vector<string> const & non_options)
 	list<inverted_profile>::iterator const end = iprofiles.end();
 
 	for (; it != end; ++it)
-		populate_for_image(samples, *it, options::symbol_filter);
+		populate_for_image(options::archive_path, samples,
+			*it, options::symbol_filter);
 
 	output_header();
 

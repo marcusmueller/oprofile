@@ -30,9 +30,10 @@ namespace {
 // we should maintain the original to maintain the wordexp etc.
 string const fixup_image_spec(string const & str, extra_images const & extra)
 {
+	string dummy_archive_path;
 	// FIXME: what todo if an error in find_image_path() ?
 	image_error error;
-	return find_image_path(str, extra, error);
+	return find_image_path(dummy_archive_path, str, extra, error);
 }
 
 
@@ -55,6 +56,7 @@ profile_spec::profile_spec(extra_images const & extra)
 	sample_file_set(false),
 	extra(extra)
 {
+	parse_table["archive"] = &profile_spec::parse_archive_path;
 	parse_table["sample-file"] = &profile_spec::parse_sample_file;
 	parse_table["binary"] = &profile_spec::parse_binary;
 	parse_table["session"] = &profile_spec::parse_session;
@@ -118,6 +120,18 @@ void profile_spec::set_image_or_lib_name(string const & str)
 	/* FIXME: what does spec say about this being allowed to be
 	 * a comma list or not ? */
 	image_or_lib_image.push_back(fixup_image_spec(str, extra));
+}
+
+
+void profile_spec::parse_archive_path(string const & str)
+{
+	archive_path = op_realpath(str);
+}
+
+
+string profile_spec::get_archive_path() const
+{
+	return archive_path;
 }
 
 
@@ -440,7 +454,7 @@ list<string> profile_spec::generate_file_list(bool exclude_dependent,
 
 		string base_dir;
 		if ((*cit)[0] != '.' && (*cit)[0] != '/')
-			base_dir = OP_SAMPLES_DIR;
+			base_dir = archive_path + OP_SAMPLES_DIR;
 		base_dir += *cit;
 
 		base_dir = op_realpath(base_dir);

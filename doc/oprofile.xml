@@ -404,6 +404,17 @@ This section gives a brief description of the available OProfile utilities and t
 	</para></listitem>
 </varlistentry>
 
+<varlistentry>
+	<term><filename>oparchive</filename></term>
+	<listitem><para>
+		This utility can be used to collect executables, debuginfo,
+		and sample files and copy the files into an archive.
+		The archive is self-contained and can be move to another
+		machine for further analysis.
+		See <xref linkend="oparchive" />.
+	</para></listitem>
+</varlistentry>
+
 <varlistentry id="op-import">
 	<term><filename>op_import</filename></term>
 	<listitem><para>
@@ -1300,6 +1311,28 @@ A few options to <command>opgprof</command> are available, see
 </para>
 </sect1> <!-- opgprof -->
 
+<sect1 id="oparchive">
+<title>Archiving measurements</title>
+<para>
+	The <command>oparchive</command> utility generates a directory populated
+	with executable, debug, and oprofile sample files. This directory can be
+	move to another machine via tar and analyzed without further use of the
+	data collection machine.
+</para>
+
+<para>
+	The following command would collect the sample files, the executables
+	associated with the sample files, and the debuginfo files associated
+	with the executables and copy them into
+	<filename>/tmp/current_data</filename>:
+</para>
+
+<screen>
+# oparchive -o /tmp/current_data
+</screen>
+
+</sect1> <!-- oparchive -->
+
 <sect1 id="profile-spec">
 <title>Profile specifications</title>
 
@@ -1374,11 +1407,19 @@ excepting <filename>boring-test</filename> :
 
 <variablelist>
 	<varlistentry>
+		<term><option>archive:</option><emphasis>archivepath</emphasis></term>
+		<listitem><para>
+		A path to an archive made with <command>oparchive</command>.
+		Absence of this tag, unlike others, means "the current system",
+		equivalent to specifying "archive:".
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>session:</option><emphasis>sessionlist</emphasis></term>
 		<listitem><para>
-                A comma-separated list of session names to resolve in. Absence of this
-                tag, unlike all others, means "the current session", equivalent to
-                specifying "session:current".
+		A comma-separated list of session names to resolve in. Absence of this
+		tag, unlike others, means "the current session", equivalent to
+		specifying "session:current".
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1834,6 +1875,34 @@ Output to the given file instead of the default, gmon.out
 </variablelist>
 
 </sect1> <!-- opgprof-details -->
+
+<sect1 id="oparchive-details">
+<title>Usage of <command>oparchive</command></title>
+
+<variablelist>
+<varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
+Show help message.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--version / -v</option></term><listitem><para>
+Show version.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
+Give verbose debugging output.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--image-path / -p [paths]</option></term><listitem><para>
+Comma-separated list of additional paths to search for binaries.
+This is needed to find modules in kernels 2.6 and upwards.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--threshold / -t [percentage]</option></term><listitem><para>
+Only archive data for files that have more than the given percentage
+of total samples.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--output-directory / -o [directory]</option></term><listitem><para>
+Output to the given directory. There is no default. This must be specified.
+</para></listitem></varlistentry>
+</variablelist>
+
+</sect1> <!-- oparchive-details -->
 
 </chapter>
 

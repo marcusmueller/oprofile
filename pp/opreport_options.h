@@ -23,6 +23,7 @@ class profile_classes;
 class merge_option;
 
 namespace options {
+	extern std::string archive_path;
 	extern demangle_type demangle;
 	extern bool symbols;
 	extern bool debug_info;

@@ -21,6 +21,7 @@
 class profile_classes;
 
 namespace options {
+	extern std::string archive_path;
 	extern demangle_type demangle;
 	extern bool source;
 	extern bool assembly;

@@ -25,6 +25,7 @@ using namespace std;
 inverted_profile image_profile;
 
 namespace options {
+	std::string archive_path;
 	string gmon_filename = "gmon.out";
 
 	// Ugly, for build only
@@ -66,7 +67,8 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 	size_t nr_classes = classes.v.size();
 
 	list<inverted_profile> iprofiles
-		= invert_profiles(classes, options::extra_found_images);
+		= invert_profiles(options::archive_path, classes,
+				  options::extra_found_images);
 
 	if (nr_classes == 1 && iprofiles.size() == 1) {
 		image_profile = *(iprofiles.begin());
@@ -98,11 +100,14 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 
 void handle_options(vector<string> const & non_options)
 {
-	cverb << vsfile << "output filename: " << options::gmon_filename
-	      << endl;
-
 	profile_spec const spec =
 		profile_spec::create(non_options, options::extra_found_images);
+
+	options::archive_path = spec.get_archive_path();
+	cverb << vsfile << "Archive: " << options::archive_path << endl;
+
+	cverb << vsfile << "output filename: " << options::gmon_filename
+	      << endl;
 
 	// we do a first try with exclude-dependent if it fails we include
 	// dependent. First try should catch "opgrof /usr/bin/make" whilst

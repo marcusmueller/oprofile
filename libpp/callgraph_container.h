@@ -116,7 +116,8 @@ public:
 	 * Currently all errors core dump.
 	 * FIXME: consider if this should be a ctor
 	 */
-	void populate(std::list<inverted_profile> const & iprofiles,
+	void populate(std::string const & archive_path,
+		      std::list<inverted_profile> const & iprofiles,
 		      extra_images const & extra, bool debug_info,
 		      double threshold, bool merge_lib);
 
@@ -150,12 +151,14 @@ private:
 		 profile_container const & symbols, bool debug_info,
 		 size_t pclass);
 
-	void populate(std::list<image_set> const & lset,
+	void populate(std::string const & archive_path,
+		      std::list<image_set> const & lset,
 		      std::string const & app_image,
 		      extra_images const & extra, size_t pclass,
 		      profile_container const & symbols, bool debug_info,
 		      bool merge_lib);
-	void populate(std::list<std::string> const & cg_files,
+	void populate(std::string const & archive_path,
+		      std::list<std::string> const & cg_files,
 		      std::string const & app_image,
 		      extra_images const & extra, size_t pclass,
 		      profile_container const & symbols, bool debug_info,

@@ -48,6 +48,8 @@ void check_format(string const & file, bfd ** ibfd)
 	}
 }
 
+}
+
 
 bfd * open_bfd(string const & file)
 {
@@ -64,6 +66,8 @@ bfd * open_bfd(string const & file)
 	return ibfd;
 }
 
+
+namespace {
 
 bfd * fdopen_bfd(string const & file, int fd)
 {
@@ -212,8 +216,8 @@ op_bfd_symbol::op_bfd_symbol(bfd_vma vma, size_t size, string const & name)
 }
 
 
-op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
-               bool & ok)
+op_bfd::op_bfd(string const & archive_path, string const & fname,
+	       string_filter const & symbol_filter, bool & ok)
 	:
 	filename(fname),
 	file_size(-1),
@@ -222,6 +226,7 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	text_offset(0),
 	debug_info(false)
 {
+	string image_path = archive_path + filename;
 	int fd;
 	struct stat st;
 	// after creating all symbol it's convenient for user code to access
@@ -234,9 +239,9 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	if (!ok)
 		goto out_fail;
 
-	fd = open(filename.c_str(), O_RDONLY);
+	fd = open(image_path.c_str(), O_RDONLY);
 	if (fd == -1) {
-		cverb << vbfd << "open failed for " << filename << endl;
+		cverb << vbfd << "open failed for " << image_path << endl;
 		ok = false;
 		goto out_fail;
 	}
@@ -249,10 +254,10 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 
 	file_size = st.st_size;
 
-	ibfd = fdopen_bfd(filename, fd);
+	ibfd = fdopen_bfd(image_path, fd);
 
 	if (!ibfd) {
-		cverb << vbfd << "fdopen_bfd failed for " << filename << endl;
+		cverb << vbfd << "fdopen_bfd failed for " << image_path << endl;
 		ok = false;
 		goto out_fail;
 	}
@@ -277,8 +282,8 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 
 	// if no debugging section check to see if there is an .debug file
 	if (!debug_info) {
-		string global(DEBUGDIR);
-		string dirname(filename.substr(0, filename.rfind('/')));
+		string global(archive_path + DEBUGDIR);
+		string dirname(image_path.substr(0, image_path.rfind('/')));
 		if (find_separate_debug_file (ibfd, dirname, global,
 					      debug_filename)) {
 			cverb << vbfd

@@ -220,6 +220,7 @@ class extra_images;
  * applicable (hence image_set).
  */
 std::list<inverted_profile> const
-invert_profiles(profile_classes const & classes, extra_images const & extra);
+invert_profiles(std::string archive_path, profile_classes const & classes,
+		extra_images const & extra);
 
 #endif /* !ARRANGE_PROFILES_H */

@@ -270,7 +270,8 @@ int opgprof(vector<string> const & non_options)
 
 	bool ok = image_profile.error == image_ok;
 	// FIXME: symbol_filter would be allowed through option
-	op_bfd abfd(image_profile.image, string_filter(), ok);
+	op_bfd abfd(options::archive_path, image_profile.image,
+		    string_filter(), ok);
 	if (!ok && image_profile.error == image_ok)
 		image_profile.error = image_format_failure;
 

@@ -27,6 +27,20 @@
 using namespace std;
 
 
+bool copy_file(string const & source, string const & destination)
+{
+	struct stat buf;
+	int status = stat(source.c_str(), &buf);
+
+	if (status == 0) {
+		/* FIXME: This code should avoid using system() if possible. */
+		string copy_command("cp -a -f " + source + " " + destination);
+		status = system(copy_command.c_str());
+	}
+	return !status;
+}
+
+
 bool is_directory(string const & dirname)
 {
 	struct stat st;

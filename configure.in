@@ -215,6 +215,7 @@ AC_OUTPUT(Makefile \
 	doc/opannotate.1 \
 	doc/opgprof.1 \
 	doc/opstack.1 \
+	doc/oparchive.1 \
 	doc/srcdoc/Doxyfile \
 	libpp/Makefile \
 	pp/Makefile \

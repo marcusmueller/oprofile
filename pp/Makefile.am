@@ -9,7 +9,7 @@ AM_CPPFLAGS = \
 
 AM_CXXFLAGS = @OP_CXXFLAGS@
 
-bin_PROGRAMS = opreport opannotate opgprof opstack
+bin_PROGRAMS = opreport opannotate opgprof opstack oparchive
 
 LIBS=@POPT_LIBS@ @BFD_LIBS@
 
@@ -43,3 +43,8 @@ opstack_SOURCES = opstack.cpp \
 	opstack_options.h opstack_options.cpp \
 	$(pp_common)
 opstack_LDADD = $(common_libs)
+
+oparchive_SOURCES = oparchive.cpp \
+	oparchive_options.h oparchive_options.cpp \
+	$(pp_common)
+oparchive_LDADD = $(common_libs)

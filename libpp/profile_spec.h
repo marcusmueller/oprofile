@@ -58,6 +58,12 @@ public:
 	 */
 	bool match(filename_spec const & file_spec) const;
 
+	/**
+	 * return archive name
+	 * returns an empty string if not using an archive.
+	 */
+	std::string get_archive_path() const;
+
 private:
 	profile_spec(extra_images const & extra);
 
@@ -91,6 +97,7 @@ private:
 	/**
 	 * implement tag parsing: PP:3.3 to 3.16
 	 */
+	void parse_archive_path(std::string const &);
 	void parse_sample_file(std::string const &);
 	void parse_binary(std::string const &);
 	void parse_session(std::string const &);
@@ -121,6 +128,7 @@ private:
 			     std::string & value);
 
 	filename_spec file_spec;
+	std::string archive_path;
 	std::string binary;
 	std::vector<std::string> session;
 	std::vector<std::string> session_exclude;

@@ -16,6 +16,15 @@
 #include <list>
 
 
+/**
+ * copy_file - copy a file or subtree
+ * @param source        filename to copy from
+ * @param destination   filename to copy into
+ *
+ * return true if copying successful
+ */
+bool copy_file(std::string const & source, std::string const & destination);
+
 /// return true if dir is an existing directory
 bool is_directory(std::string const & dirname);
 

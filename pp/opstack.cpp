@@ -62,12 +62,14 @@ int opstack(vector<string> const & non_options)
 	}
 
 	list<inverted_profile> iprofiles
-		= invert_profiles(classes, options::extra_found_images);
+		= invert_profiles(options::archive_path, classes,
+				  options::extra_found_images);
 
 	report_image_errors(iprofiles);
 
 	callgraph_container cg_container;
-	cg_container.populate(iprofiles, options::extra_found_images,
+	cg_container.populate(options::archive_path, iprofiles,
+		options::extra_found_images,
 		options::debug_info, options::threshold,
 			      options::merge_by.lib);
 

@@ -86,7 +86,8 @@ public:
 	 * open the bfd (because it's not there or whatever). On out,
 	 * it's set to false if the bfd couldn't be loaded.
 	 */
-	op_bfd(std::string const & filename,
+	op_bfd(std::string const & archive_path,
+	       std::string const & filename,
 	       string_filter const & symbol_filter,
 	       bool & ok);
 
@@ -145,7 +146,7 @@ public:
 
 	/** return the text section filepos. */
 	unsigned long const get_start_offset() const { return text_offset; }
-
+ 
 	/// return the image name of the underlying binary image
 	std::string get_filename() const;
 
@@ -256,4 +257,6 @@ find_separate_debug_file(bfd * ibfd,
                          std::string const & dir_in,
                          std::string const & global_in,
                          std::string & filename);
+
+extern bfd * open_bfd(std::string const & file);
 #endif /* !OP_BFD_H */

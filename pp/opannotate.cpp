@@ -677,7 +677,8 @@ int opannotate(vector<string> const & non_options)
 	list<string> images;
 
 	list<inverted_profile> iprofiles
-		= invert_profiles(classes, options::extra_found_images);
+		= invert_profiles(options::archive_path, classes,
+				  options::extra_found_images);
 
 	report_image_errors(iprofiles);
 
@@ -686,8 +687,8 @@ int opannotate(vector<string> const & non_options)
 
 	bool debug_info = false;
 	for (; it != end; ++it) {
-		debug_info |= populate_for_image(*samples, *it,
-		   options::symbol_filter);
+		debug_info |= populate_for_image(options::archive_path,
+			*samples, *it, options::symbol_filter);
 		images.push_back(it->image);
 	}
 

@@ -49,11 +49,12 @@ populate_from_files(profile_t & profile,
 
 
 bool
-populate_for_image(profile_container & samples, inverted_profile const & ip,
-   string_filter const & symbol_filter)
+populate_for_image(string const & archive_path, profile_container & samples,
+   inverted_profile const & ip, string_filter const & symbol_filter)
 {
 	bool ok = ip.error == image_ok;
-	op_bfd abfd(ip.image, symbol_filter, ok);
+
+	op_bfd abfd(archive_path, ip.image, symbol_filter, ok);
 	if (!ok && ip.error == image_ok)
 		ip.error = image_format_failure;
 

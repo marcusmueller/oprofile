@@ -20,6 +20,7 @@ class profile_classes;
 extern profile_classes classes;
 
 namespace options {
+	extern std::string archive_path;
 	extern demangle_type demangle;
 	extern merge_option merge_by;
 	extern bool long_filenames;

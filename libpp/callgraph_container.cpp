@@ -269,7 +269,8 @@ cg_symbol const * arc_recorder::find_caller(cg_symbol const & symbol) const
 }
 
 
-void callgraph_container::populate(list<inverted_profile> const & iprofiles,
+void callgraph_container::populate(string const & archive_path, 
+   list<inverted_profile> const & iprofiles,
    extra_images const & extra, bool debug_info, double threshold,
    bool merge_lib)
 {
@@ -281,12 +282,13 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles,
 	list<inverted_profile>::const_iterator const end = iprofiles.end();
 	for (it = iprofiles.begin(); it != end; ++it) {
 		// populate_caller_image take care about empty sample filename
-		populate_for_image(symbols, *it, string_filter());
+		populate_for_image(archive_path, symbols, *it,
+			string_filter());
 	}
 
 	for (it = iprofiles.begin(); it != end; ++it) {
 		for (size_t i = 0; i < it->groups.size(); ++i) {
-			populate(it->groups[i], it->image, extra,
+			populate(archive_path, it->groups[i], it->image, extra,
 				i, symbols, debug_info, merge_lib);
 		}
 	}
@@ -297,7 +299,8 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles,
 }
 
 
-void callgraph_container::populate(list<image_set> const & lset,
+void callgraph_container::populate(string const & archive_path,
+	list<image_set> const & lset,
 	string const & app_image, extra_images const & extra, size_t pclass,
 	profile_container const & symbols, bool debug_info, bool merge_lib)
 {
@@ -308,14 +311,16 @@ void callgraph_container::populate(list<image_set> const & lset,
 		list<profile_sample_files>::const_iterator pend
 			= lit->files.end();
 		for (pit = lit->files.begin(); pit != pend; ++pit) {
-			populate(pit->cg_files, app_image, extra, pclass,
+			populate(archive_path, pit->cg_files, app_image,
+				 extra, pclass,
 				 symbols, debug_info, merge_lib);
 		}
 	}
 }
 
 
-void callgraph_container::populate(list<string> const & cg_files,
+void callgraph_container::populate(string const & archive_path,
+	list<string> const & cg_files,
 	string const & app_image, extra_images const & extra, size_t pclass,
 	profile_container const & symbols, bool debug_info, bool merge_lib)
 {
@@ -327,17 +332,19 @@ void callgraph_container::populate(list<string> const & cg_files,
 
 		image_error error;
 		string caller_binary =
-			find_image_path(caller_file.lib_image, extra, error);
+			find_image_path(archive_path, caller_file.lib_image,
+					extra, error);
 
 		if (error != image_ok)
-			report_image_error(caller_file.lib_image, error, false);
+			report_image_error(archive_path + caller_file.lib_image,
+					   error, false);
 
 		cverb << vdebug << "caller binary name: "
 		      << caller_binary  << "\n";
 
 		bool bfd_caller_ok = true;
-		op_bfd caller_bfd(caller_binary, string_filter(),
-		                  bfd_caller_ok);
+		op_bfd caller_bfd(archive_path, caller_binary,
+				  string_filter(), bfd_caller_ok);
 		if (!bfd_caller_ok)
 			report_image_error(caller_binary,
 			                   image_format_failure, false);
@@ -345,7 +352,7 @@ void callgraph_container::populate(list<string> const & cg_files,
 		parsed_filename callee_file = parse_filename(*it);
 
 		string callee_binary =
-			find_image_path(callee_file.cg_image,
+			find_image_path(archive_path, callee_file.cg_image,
 			                extra, error);
 		if (error != image_ok)
 			report_image_error(callee_file.cg_image, error, false);
@@ -354,8 +361,8 @@ void callgraph_container::populate(list<string> const & cg_files,
 		      << callee_binary << endl;
 
 		bool bfd_callee_ok = true;
-		op_bfd callee_bfd(callee_binary, string_filter(),
-		                  bfd_callee_ok);
+		op_bfd callee_bfd(archive_path, callee_binary,
+				  string_filter(), bfd_callee_ok);
 		if (!bfd_callee_ok)
 			report_image_error(callee_binary,
 		                           image_format_failure, false);

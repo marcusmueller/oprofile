@@ -93,11 +93,12 @@ public:
 } // anon namespace
 
 
-string const find_image_path(string const & image_name,
+string const find_image_path(string const & archive_path,
+			     string const & image_name,
                              extra_images const & extra_images,
                              image_error & error)
 {
-	string const image = op_realpath(image_name);
+	string const image = op_realpath(archive_path + image_name);
 
 	// simplest case
 	if (op_file_readable(image)) {
