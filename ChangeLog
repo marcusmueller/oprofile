@@ -1,3 +1,12 @@
+2002-10-04  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opp_symbols.cpp:
+	* pp/opp_symbols.h:
+	* pp/outsymbflag.h: implement 'q' 'Q' format flags. Fix #618165
+	* pp/op_time_options.cpp: reject these formats for op_time
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: document them
+
 2002-10-02  John Levon  <levon@movementarian.org>
 
 	* Makefile.in: use -P to strip dead dirs on dist

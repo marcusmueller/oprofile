@@ -123,6 +123,11 @@ public:
 	std::string format_cumulated_percent(std::string const & name,
 					     sample_entry const & sample,
 					     size_t);
+	std::string format_percent_details(std::string const & name,
+				   sample_entry const & sample, size_t);
+	std::string format_cumulated_percent_details(std::string const & name,
+					     sample_entry const & sample,
+					     size_t);
 	//@}
 private:
 	void DoOutput(std::ostream & out, std::string const & name,
@@ -143,6 +148,8 @@ private:
 	u32 total_count[OP_MAX_COUNTERS];
 	u32 cumulated_samples[OP_MAX_COUNTERS];
 	u32 cumulated_percent[OP_MAX_COUNTERS];
+	u32 total_count_details[OP_MAX_COUNTERS];
+	u32 cumulated_percent_details[OP_MAX_COUNTERS];
 	int counter;
 	bool first_output;
 };

@@ -185,8 +185,8 @@ Show the details for each shared lib which belongs to one application. This opti
 Sort the entries in reverse (only with -l)
 .br
 .TP
-.BI "--output-format " vsSpPnlLiIh ", -t " vsSpPnlLiIdh
-Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'd' details for each samples for the selected symbols and 'h' for the header itself. This option is not available with --dump-gprof-file.
+.BI "--output-format " vsSpPqQnlLiIh ", -t " vsSpPqQnlLiIdh
+Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'd' details for each samples for the selected symbols and 'h' for the header itself. 'q','Q' are identical to 'p', 'P' but the percentage are relative to the total number of symbols. This option is not available with --dump-gprof-file.
 .br
 .TP
 .B op_to_source options

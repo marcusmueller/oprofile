@@ -36,6 +36,8 @@ static output_option const output_options[] = {
 	{ 'S', osf_nr_samples_cumulated, "nr cumulated samples" },
 	{ 'p', osf_percent, "nr percent samples" },
 	{ 'P', osf_percent_cumulated, "nr cumulated percent samples" },
+	{ 'q', osf_percent_details, "nr percent samples details" },
+	{ 'Q', osf_percent_cumulated_details, "nr cumulated percent samples details" },
 	{ 'n', osf_symb_name, "symbol name" },
 	{ 'l', osf_linenr_info, "source file name and line nr" },
 	{ 'L', osf_short_linenr_info, "base name of source file and line nr" },
@@ -118,6 +120,14 @@ static field_description const field_descr[] = {
 	  &output_symbol::format_image_name },
 	{ osf_short_image_name, 16, "image name",
 	  &output_symbol::format_short_image_name },
+	{ osf_percent, 12,
+	  "%-age", &output_symbol::format_percent },
+	{ osf_percent_cumulated, 10,
+	  "cum %-age", &output_symbol::format_cumulated_percent },
+	{ osf_percent_details, 12,
+	  "%-age", &output_symbol::format_percent_details },
+	{ osf_percent_cumulated_details, 10,
+	  "cum %-age", &output_symbol::format_cumulated_percent_details },
 };
 
 size_t const nr_field_descr = sizeof(field_descr) / sizeof(field_descr[0]);
@@ -132,8 +142,10 @@ output_symbol::output_symbol(samples_container_t const & samples_container_,
 {
 	for (size_t i = 0 ; i < samples_container.get_nr_counters() ; ++i) {
 		total_count[i] = samples_container.samples_count(i);
+		total_count_details[i] = samples_container.samples_count(i);
 		cumulated_samples[i] = 0;
 		cumulated_percent[i] = 0;
+		cumulated_percent_details[i] = 0;
 	}
 }
 
@@ -213,6 +225,7 @@ void output_symbol::OutputDetails(ostream & out, symbol_entry const * symb)
 		temp_cumulated_percent[i] = cumulated_percent[i];
 
 		total_count[i] = symb->sample.counter[i];
+		cumulated_percent_details[i] -= symb->sample.counter[i];
 		cumulated_samples[i] = 0;
 		cumulated_percent[i] = 0;
 	}
@@ -452,6 +465,37 @@ string output_symbol::format_cumulated_percent(string const &,
 
 	double ratio = total_count[ctr]
 		? double(cumulated_percent[ctr]) / total_count[ctr]
+		: 0.0;
+
+	out << ratio * 100.0;
+
+	return out.str();
+}
+
+string output_symbol::format_percent_details(string const &,
+				    sample_entry const & sample, size_t ctr)
+{
+	ostringstream out;
+
+	double ratio = total_count_details[ctr]
+		? double(sample.counter[ctr]) / total_count_details[ctr]
+		: 0.0;
+
+	out << ratio * 100.0;
+
+	return out.str();
+}
+
+string output_symbol::format_cumulated_percent_details(string const &,
+					      sample_entry const & sample,
+					      size_t ctr)
+{
+	ostringstream out;
+
+	cumulated_percent_details[ctr] += sample.counter[ctr];
+
+	double ratio = total_count_details[ctr]
+		? double(cumulated_percent_details[ctr]) / total_count_details[ctr]
 		: 0.0;
 
 	out << ratio * 100.0;
