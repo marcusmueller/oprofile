@@ -247,6 +247,7 @@ void opd_check_image_mtime(struct opd_image * image)
 void opd_put_image_sample(struct opd_image * image,
 	vma_t offset, int counter)
 {
+	char * err_msg;
 	samples_db_t * sample_file;
 
 	sample_file = &image->sample_files[counter];
@@ -260,8 +261,9 @@ void opd_put_image_sample(struct opd_image * image,
 	}
  
 	/* Possible narrowing to 32-bit value only. */
-	if (db_insert(sample_file, (unsigned long)offset, 1) != EXIT_SUCCESS) {
-		fprintf(stderr, "db_insert() index out of range\n");
+	if (db_insert(sample_file, (unsigned long)offset, 1, &err_msg) != EXIT_SUCCESS) {
+		fprintf(stderr, "db_insert() %s\n", err_msg);
+		free(err_msg);
 		exit(EXIT_FAILURE);
 	}
 }

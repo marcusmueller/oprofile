@@ -147,8 +147,13 @@ void import_from_abi(Abi const & abi,
 		db_value_t val;
 		ext.extract(key, src, "sizeof_db_key_t", "offsetof_node_key");
 		ext.extract(val, src, "sizeof_db_value_t", "offsetof_node_value");
-		int rc = db_insert(dest, key, val);
-		assert(rc == EXIT_SUCCESS);
+		char * err_msg;
+		int rc = db_insert(dest, key, val, &err_msg);
+		if (rc != EXIT_SUCCESS) {
+			cerr << err_msg << endl;
+			free(err_msg);
+			exit(EXIT_FAILURE);
+		}
 	}
 	// done extracting nodes
 }
@@ -187,14 +192,22 @@ main(int argc, char const ** argv)
 		struct stat statb;
 		void * in;
 		samples_db_t dest;
+		char * err_msg;
+		int rc;
 
 		assert((in_fd = open(inputs[0].c_str(), O_RDONLY)) > 0);		
 		assert(fstat(in_fd, &statb)==0);
 		assert((in = mmap(0, statb.st_size, PROT_READ, 
 				  MAP_PRIVATE, in_fd, 0)) != (void *)-1);
 
-		db_open(&dest, output_filename.c_str(), DB_RDWR, 
-			sizeof(struct opd_header));
+		rc = db_open(&dest, output_filename.c_str(), DB_RDWR, 
+			     sizeof(struct opd_header), &err_msg);
+		if (rc != EXIT_SUCCESS) {
+			cerr << "db_open() fail:\n"
+			     << err_msg << endl;
+			free(err_msg);
+			exit(EXIT_FAILURE);
+		}
 
 		try {
 			import_from_abi(input_abi, in, statb.st_size, &dest);

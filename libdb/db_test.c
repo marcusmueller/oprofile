@@ -49,9 +49,10 @@ static void speed_test(int nr_item, int nr_unique_item)
 	}
 	begin = used_time();
 	for (i = 0 ; i < nr_item ; ++i) {
-		rc = db_insert(&hash, (random() % nr_unique_item) + 1, 1);
+		rc = db_insert(&hash, (random() % nr_unique_item) + 1, 1, &err_msg);
 		if (rc != EXIT_SUCCESS) {
-			fprintf(stderr, "db_insert() failed !\n");
+			fprintf(stderr, "%s", err_msg);
+			free(err_msg);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -94,9 +95,10 @@ static int test(int nr_item, int nr_unique_item)
 
 	for (i = 0 ; i < nr_item ; ++i) {
 		db_key_t key = (random() % nr_unique_item) + 1;
-		rc = db_insert(&hash, key, 1);
+		rc = db_insert(&hash, key, 1, &err_msg);
 		if (rc != EXIT_SUCCESS) {
-			fprintf(stderr, "db_insert() failed !\n");
+			fprintf(stderr, "%s", err_msg);
+			free(err_msg);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -157,9 +159,10 @@ static int callback_test(int nr_item, int nr_unique_item)
 	}
 
 	for (i = 0 ; i < nr_item ; ++i) {
-		rc = db_insert(&tree, (random() % nr_unique_item) + 1, 1);
+		rc = db_insert(&tree, (random() % nr_unique_item) + 1, 1, &err_msg);
 		if (rc != EXIT_SUCCESS) {
-			fprintf(stderr, "db_insert() failed !\n");
+			fprintf(stderr, "%s", err_msg);
+			free(err_msg);
 			exit(EXIT_FAILURE);
 		}
 	}

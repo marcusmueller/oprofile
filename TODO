@@ -21,9 +21,6 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
- o db_insert error can output two error message, the second should be removed
-  either by removing it in client code or adding an err_msg params and removing
-  it in callee, third alternative is to add err_msg in samples_db_t.
  o improve --smart-demangle
 	o allow user to add it's own pattern in user.pat, document it.
 	o hard code ${typename} regular definition to remove all current limitations.

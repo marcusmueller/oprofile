@@ -272,6 +272,7 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 			  u32 counter)
 {
 	samples_db_t * sample_file;
+	char * err_msg;
 
 	sample_file = &image->sample_files[counter];
 
@@ -283,8 +284,9 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 		}
 	}
 
-	if (db_insert(sample_file, offset, 1) != EXIT_SUCCESS) {
-		fprintf(stderr, "db_insert() index out of range\n");
+	if (db_insert(sample_file, offset, 1, &err_msg) != EXIT_SUCCESS) {
+		fprintf(stderr, "db_insert() %s\n", err_msg);
+		free(err_msg);
 		exit(EXIT_FAILURE);
 	}
 }

@@ -1,3 +1,17 @@
+2003-03-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
+	* libdb/db_hash.h:
+	* libdb/db_insert.c: get error message from db_insert()
+
+	* libdb/db_test.c:
+	* dae/opd_proc.c:
+	* daemon/opd_image.c:
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp:
+	* pp/op_merge.cpp: update according to the new api
+
 2003-03-06  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: pedantry

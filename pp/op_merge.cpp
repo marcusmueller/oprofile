@@ -155,11 +155,13 @@ static void check_samples_files_list(list<string> const & filenames)
  */
 static void copy_callback(db_key_t key, db_value_t value, void * data)
 {
+	char * err_msg;
 	samples_db_t * dest = (samples_db_t *)data;
 
-	int rc = db_insert(dest, key, value);
+	int rc = db_insert(dest, key, value, &err_msg);
 	if (rc != EXIT_SUCCESS) {
-		cerr << "db_insert() failure !" << endl;
+		cerr << err_msg << endl;
+		free(err_msg);
 		exit(EXIT_FAILURE);
 	}
 }

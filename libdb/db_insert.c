@@ -14,12 +14,11 @@
 
 #include "db_hash.h"
 
-int db_insert(samples_db_t * hash, db_key_t key, db_value_t value)
+int db_insert(samples_db_t * hash, db_key_t key, db_value_t value, char ** err_msg)
 {
 	size_t index;
 	db_index_t new_node;
 	db_node_t * node;
-	char * err_msg;
 
 	index = hash->hash_base[do_hash(hash, key)];
 	while (index) {
@@ -43,10 +42,8 @@ int db_insert(samples_db_t * hash, db_key_t key, db_value_t value)
 	 * the node_base array, db_hash_add_node() increase current_size but
 	 * db_travel just ignore node with a zero key so on setting the key
 	 * atomically update the node */
-	new_node = db_hash_add_node(hash, &err_msg);
+	new_node = db_hash_add_node(hash, err_msg);
 	if (new_node == DB_NODE_NR_INVALID) {
-		fprintf(stderr, "%s", err_msg);
-		free(err_msg);
 		return EXIT_FAILURE;
 	}
 

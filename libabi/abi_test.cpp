@@ -51,7 +51,15 @@ int main(int argc, char const ** argv)
 
 	if (db_filename.size() > 0) {
 		samples_db_t dest;
-		db_open(&dest, db_filename.c_str(), DB_RDWR, sizeof(struct opd_header));
+		char * err_msg;
+		int rc;
+		rc = db_open(&dest, db_filename.c_str(), DB_RDWR, sizeof(struct opd_header), &err_msg);
+		if (rc != EXIT_SUCCESS) {
+			cerr << "db_open() fail:\n"
+			     << err_msg << endl;
+			free(err_msg);
+			exit(EXIT_FAILURE);
+		}
 
 		struct opd_header * header;
 		header = static_cast<struct opd_header *>(dest.base_memory);
@@ -71,19 +79,20 @@ int main(int argc, char const ** argv)
 
     
 		for (int i = 0; i < 3793; ++i) {
-			int rc = db_insert(&dest, ((i*i) ^ (i+i)), ((i*i) ^ i));
-			if (rc != EXIT_SUCCESS)
-				break;
+			char * err_msg;
+			int rc = db_insert(&dest, ((i*i) ^ (i+i)), ((i*i) ^ i), &err_msg);
+			if (rc != EXIT_SUCCESS) {
+				cerr << err_msg << endl;
+				free(err_msg);
+				exit(EXIT_FAILURE);
+			}
 		}
 		db_close(&dest);
 		file_processed = true;
-		if (rc != EXIT_SUCCESS)
-			cerr << "db_insert() failure" << endl;
 	}
 
 	if (!file_processed) {
 		cerr << "error: no file processed" << endl;
 		exit(1);
 	}
-
 }

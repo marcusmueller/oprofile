@@ -29,7 +29,7 @@ typedef db_index_t db_hash_mask_t;
  * excessive but hash coding eip don't give a good distributions and our
  * goal is to get a O(1) amortized insert time. bucket factor must be a
  * power of two. FIXME: see big comment in db_hash_add_node, you must
- * re-enable zering hash table if BUCKET_FACTOR > 2 (roughly exact, you
+ * re-enable zeroing hash table if BUCKET_FACTOR > 2 (roughly exact, you
  * want to read the comment in db_add_hash_node() if you tune this define) */
 #define BUCKET_FACTOR 1
 
@@ -82,7 +82,7 @@ typedef struct {
 extern "C" {
 #endif
 
-/* db-hash-manage.c */
+/* db_manage.c */
 
 /** how to open the DB hash file */
 enum db_rw {
@@ -102,6 +102,7 @@ void db_init(samples_db_t * hash);
  * @param filename the filename where go the maped memory
  * @param rw \enum DB_RW if opening for writing, else \enum DB_RDONLY
  * @param sizeof_header size of the file header if any
+ * @param err_msg error message is returned here when error occurs
  *
  * The sizeof_header parameter allows the data file to have a header
  * at the start of the file which is skipped.
@@ -128,7 +129,7 @@ db_node_nr_t db_hash_add_node(samples_db_t * hash, char ** err_msg);
 /** "immpossible" node number to indicate an error from db_hash_add_node() */
 #define DB_NODE_NR_INVALID ((db_node_nr_t)-1)
 
-/* db-hash-debug.c */
+/* db_debug.c */
 /** check than the hash is well build */
 int db_check_hash(const samples_db_t * hash);
 /** display the item in hash table */
@@ -136,19 +137,21 @@ void db_display_hash(samples_db_t const * hash);
 /** same as above, do not travel through the hash table but display raw node */
 void db_raw_display_hash(samples_db_t const * hash);
 
-/* db-hash-stat.c */
-typedef struct db_hash_stat_t db_hash_stat_t; /* FIXME: is this ISO ? */
+/* db_stat.c */
+typedef struct db_hash_stat_t db_hash_stat_t;
 db_hash_stat_t * db_hash_stat(samples_db_t const * hash);
 void db_hash_display_stat(db_hash_stat_t const * stats);
 void db_hash_free_stat(db_hash_stat_t * stats);
 
-/* db-hash-insert.c */
+/* db_insert.c */
 /** insert info at key, if key already exist the info is added to the
  * existing samples
- * returns EXIT_SUCCESS on success, EXIT_FAILURE on failure */
-int db_insert(samples_db_t * hash, db_key_t key, db_value_t value);
+ * returns EXIT_SUCCESS on success, EXIT_FAILURE on failure
+ * on failure *err_msg contains a pointer to an asprintf-alloced string
+ * containing an error message.  the string should be freed using free() */
+int db_insert(samples_db_t * hash, db_key_t key, db_value_t value, char ** err_msg);
 
-/* db-hash-travel.c */
+/* db_travel.c */
 /** the call back type to pass to travel() */
 typedef void (*samples_db_travel_callback)(db_key_t key, db_value_t value, void * data);
 /** iterate through key in range [first, last[ passing it to callback,
