@@ -4,7 +4,7 @@ HEADERS=opd_printf.h p_module.h opd_stats.h opd_kernel.h opd_proc.h opd_image.h 
 SOURCES=opd_stats.c opd_kernel.c opd_proc.c opd_image.c opd_mapping.c opd_parse_proc.c opd_sample_files.c oprofiled.c
 OBJECTS=opd_stats.o opd_kernel.o opd_proc.o opd_image.o opd_mapping.o opd_parse_proc.o opd_sample_files.o oprofiled.o
 TARGET=oprofiled
-
+LIBDEPS=../libdb/libdb.a ../libop/libop.a ../libutil/libutil.a
 LIBS=-ldb -lop -lutil -lpopt -liberty
  
 all: $(TARGET)
@@ -18,7 +18,7 @@ uninstall:
 clean:
 	rm -rf .deps $(OBJECTS) $(TARGET) 
 
-$(TARGET): $(OBJECTS)
-	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
+$(TARGET): $(OBJECTS) $(LIBDEPS)
+	$(CC) -o $@ $(OBJECTS) $(LDFLAGS) $(LIBS)
  
 include ../make.deps

@@ -19,7 +19,8 @@ TARGET=oprof_start
 CXXFLAGS += -DBINDIR=\"$(BINDIR)\" -DKVERSION=\"@KVERS@\"
 LDFLAGS += @QT2_LDFLAGS@
 LIBS=-lutil++ -lutil -lop -lpopt -liberty @QT2_LIBS@
- 
+LIB_DEPS=../libutil++/libutil++.a ../libutil/libutil.a ../libop/libop.a
+
 all: $(TARGET)
  
 .deps/oprof_start_config.cpp.d .deps/oprof_start_util.cpp.d .deps/oprof_start_main.cpp.d .deps/oprof_start.cpp.d: .buildui
@@ -46,8 +47,8 @@ clean:
 	$(MAKE) -C ui clean
 	rm -rf .deps $(OBJECTS) $(TARGET) .buildui oprof_start.moc.cpp
 
-$(TARGET): $(OBJECTS)
-	$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS)
+$(TARGET): $(OBJECTS) $(LIB_DEPS)
+	$(CXX) -o $@ $(OBJECTS) $(LDFLAGS) $(LIBS)
  
 include ../make.deps
  

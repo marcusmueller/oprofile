@@ -25,7 +25,6 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
  
- o dependencies are broke for .a libraries
  o make sure we behave sensibly in all places following symlinks etc. 
  o debian - libiberty is in "binutils-dev" package 
  o oprof_report/Makefile.in etc. 

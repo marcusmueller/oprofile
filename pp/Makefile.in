@@ -28,6 +28,8 @@ OP_TO_SOURCE_LIBS=-lopt++ -lop++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty
 OP_TIME_LIBS=-lopt++ -lop++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
 OP_MERGE_LIBS=-lopt++ -lop++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
 
+PP_LIBDEPS=../libopt++/libopt++.a ../libop++/libop++.a ../libop/libop.a ../libutil++/libutil++.a ../libutil/libutil.a ../libdb/libdb.a
+
 all: $(TARGET)
 
 INSTALL_LIST=$(TARGET)
@@ -40,16 +42,16 @@ uninstall:
 clean:
 	rm -rf .deps $(OBJECTS) $(TARGET) 
 
-$(OPROFPP_TARGET): $(OPROFPP_OBJECTS)
-	$(CXX) -o $@ $^ $(LDFLAGS) $(OPROFPP_LIBS)
+$(OPROFPP_TARGET): $(OPROFPP_OBJECTS) $(PP_LIBDEPS)
+	$(CXX) -o $@ $(OPROFPP_OBJECTS) $(LDFLAGS) $(OPROFPP_LIBS)
 
-$(OP_TO_SOURCE_TARGET): $(OP_TO_SOURCE_OBJECTS)
-	$(CXX) -o $@ $^ $(LDFLAGS) $(OP_TO_SOURCE_LIBS)
+$(OP_TO_SOURCE_TARGET): $(OP_TO_SOURCE_OBJECTS) $(PP_LIBDEPS)
+	$(CXX) -o $@ $(OP_TO_SOURCE_OBJECTS) $(LDFLAGS) $(OP_TO_SOURCE_LIBS)
 
-$(OP_TIME_TARGET): $(OP_TIME_OBJECTS)
-	$(CXX) -o $@ $^ $(LDFLAGS) $(OP_TIME_LIBS)
+$(OP_TIME_TARGET): $(OP_TIME_OBJECTS) $(PP_LIBDEPS)
+	$(CXX) -o $@ $(OP_TIME_OBJECTS) $(LDFLAGS) $(OP_TIME_LIBS)
 
-$(OP_MERGE_TARGET): $(OP_MERGE_OBJECTS)
-	$(CXX) -o $@ $^ $(LDFLAGS) $(OP_MERGE_LIBS)
+$(OP_MERGE_TARGET): $(OP_MERGE_OBJECTS) $(PP_LIBDEPS)
+	$(CXX) -o $@ $(OP_MERGE_OBJECTS) $(LDFLAGS) $(OP_MERGE_LIBS)
 
 include ../make.deps
