@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.32 2001/09/18 01:00:33 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.33 2001/09/21 08:29:10 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -91,6 +91,19 @@ AC_TRY_COMPILE(,[
 void monkey() __attribute__((malloc));
 ],AC_MSG_RESULT("yes"); CFLAGS="$SAVE_CFLAGS -DMALLOC_OK", AC_MSG_RESULT("no"); CFLAGS="$SAVE_CFLAGS")
 
+# FIXME !!!!!!!!
+# AC_MSG_CHECKING("whether __builtin_expect is understood")
+# SAVE_CFLAGS=$CFLAGS
+# CFLAGS="-Werror $CFLAGS"
+# AC_TRY_COMPILE(,[
+# int main() {
+#    int i;
+#    if (__builtin_expect(i, 0)) {
+#    }
+# }
+# ],AC_MSG_RESULT("yes"); BKCFLAGS="$BKCFLAGS -DEXPECT_OK", AC_MSG_RESULT("no");)
+# CFLAGS=$SAVE_CFLAGS 
+ 
  
 AC_MSG_CHECKING(for x86 architecture)
 AX_COMPILE_OPTION(CONFIG_X86,x86=1,x86=0)

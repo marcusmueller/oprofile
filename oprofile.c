@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.91 2001/09/19 20:08:21 movement Exp $ */
+/* $Id: oprofile.c,v 1.92 2001/09/21 08:29:10 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -74,13 +74,15 @@ extern spinlock_t map_lock;
 /* FIXME: this whole handler would probably be better in straight asm */
 static void evict_op_entry(struct _oprof_data *data, struct op_sample *ops)
 {
+	uint cpu = op_cpu_id();
+ 
 	memcpy(&data->buffer[data->nextbuf], ops, sizeof(struct op_sample));
-	if (++data->nextbuf != (data->buf_size - OP_PRE_WATERMARK)) {
+	if (likely(++data->nextbuf != (data->buf_size - OP_PRE_WATERMARK))) {
 		if (data->nextbuf == data->buf_size)
 			data->nextbuf = 0;
 		return;
 	}
-	oprof_ready[op_cpu_id()] = 1;
+	oprof_ready[cpu] = 1;
 }
 
 inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, int ctr)
@@ -100,9 +102,9 @@ inline static void op_do_profile(struct _oprof_data *data, struct pt_regs *regs,
 			data->entries[h].samples[i].count++;
 			set_perfctr(data->ctr_count[ctr], ctr);
 			return;
-		} else if (op_full_count(data->entries[h].samples[i].count)) {
+		} else if (unlikely(op_full_count(data->entries[h].samples[i].count))) {
 			goto full_entry;
-		} else if (!data->entries[h].samples[i].count)
+		} else if (unlikely(!data->entries[h].samples[i].count))
 			goto new_entry;
 	}
 
@@ -134,9 +136,9 @@ asmlinkage void op_do_nmi(struct pt_regs *regs)
 	struct _oprof_data *data = &oprof_data[op_cpu_id()];
 	int i;
 
-	if (pid_filter && current->pid != pid_filter)
+	if (unlikely(pid_filter) && likely(current->pid != pid_filter))
 		return;
-	if (pgrp_filter && current->pgrp != pgrp_filter)
+	if (unlikely(pgrp_filter) && likely(current->pgrp != pgrp_filter))
 		return;
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
@@ -843,7 +845,6 @@ static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *
 	int i,j;
 
 	down(&sysctlsem);
-	
 	if (!prof_on)
 		goto out;
 
@@ -858,6 +859,7 @@ static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *
 	/* clean out the hash table as far as possible */
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		struct _oprof_data * data = &oprof_data[cpu];
+		spin_lock(&note_lock);
 		pmc_select_stop(cpu);
 		for (i=0; i < data->hash_size; i++) {
 			for (j=0; j < OP_NR_ENTRY; j++)
@@ -865,6 +867,7 @@ static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *
 			if (oprof_ready[cpu])
 				break;
 		}
+		spin_unlock(&note_lock);
 		oprof_ready[cpu] = 2;
 		pmc_select_start(cpu);
 	}

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.73 2001/09/18 02:16:55 movement Exp $ */
+/* $Id: opd_proc.c,v 1.74 2001/09/21 08:29:10 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -635,7 +635,6 @@ static int opd_get_image_by_hash(int hash)
 	unsigned int i;
 
 	for (i=1; i < nr_images; i++) {
-		verbprintf("Looking for hash %d, this (%s) is %d\n", hash, opd_images[i].name, opd_images[i].hash); 
 		if (opd_images[i].hash == hash)
 			return i;
 	}

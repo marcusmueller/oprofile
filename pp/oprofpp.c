@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.49 2001/09/21 06:33:17 phil_e Exp $ */
+/* $Id: oprofpp.c,v 1.50 2001/09/21 08:29:10 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -15,6 +15,8 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+// FIXME: rename to oprofpp.cpp
+ 
 #include <algorithm>
 
 #include "oprofpp.h"
@@ -128,7 +130,7 @@ static void quit_error(poptContext * optcon, char const *err)
  *
  * post-condition: samplefile and imagefile are setup
  */
-void opp_get_options(int argc, char const *argv[])
+void opp_get_options(int argc, const char **argv)
 {
 	poptContext optcon;
 	char c; 
@@ -138,7 +140,7 @@ void opp_get_options(int argc, char const *argv[])
 	int counter;
 	
 	/* Some old version of popt needs the cast to char ** */
-	optcon = poptGetContext(NULL, argc, (char **)argv, options, 0);
+	optcon = poptGetContext(NULL, argc, argv, options, 0);
 
 	c=poptGetNextOpt(optcon);
 
