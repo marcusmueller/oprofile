@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.35 2002/03/20 21:19:43 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.36 2002/03/22 15:19:46 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -145,38 +145,28 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 }
 
 /**
- * printf_symbol - output a symbol name
- * \param name verbatim symbol name
- *
- * Print the symbol name to stdout, demangling
- * if if necessary.
- */
-void printf_symbol(const char *name)
-{
-	std::string unmangled = demangle_symbol(name);
-
-	printf("%s", unmangled.c_str());
-}
-
-/**
  * do_list_symbols - list symbol samples for an image
  * \param abfd the bfd object from where come the samples
+ * \param samples_files the samples files where are stored samples
+ * \param counter_mask on what counters we work
+ * \param sort_by_ctr the counter number used for sort purpose
  *
- * Lists all the symbols in decreasing sample count
- * order, to standard out.
+ * Lists all the symbols in decreasing sample count order, to standard out.
  */
-void opp_samples_files::do_list_symbols(opp_bfd & abfd, int sort_by_ctr) const
+static void do_list_symbols(opp_bfd & abfd,
+			    const opp_samples_files & samples_files,
+			    size_t counter_mask, int sort_by_ctr)
 {
 	samples_files_t samples(true, output_format_flags,
-				show_shared_libs, counter);
+				show_shared_libs, counter_mask);
 
-	samples.add(*this, abfd);
+	samples.add(samples_files, abfd);
 
 	vector<const symbol_entry *> symbols;
 
 	samples.select_symbols(symbols, sort_by_ctr, 0.0, false);
 
-	OutputSymbol out(samples, counter);
+	OutputSymbol out(samples, counter_mask);
 
 	out.SetFlag(output_format_flags);
 	out.SetFlag(osf_show_all_counters);
@@ -187,12 +177,16 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd, int sort_by_ctr) const
 /**
  * do_list_symbol - list detailed samples for a symbol
  * \param abfd the bfd object from where come the samples
+ * \param samples_files the samples files where are stored samples
+ * \param counter_mask on what counters we work
  *
  * the global variable symbol is used to list all
  * the samples for this symbol from the image 
  * specified by abfd.
  */
-void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
+static void do_list_symbol(opp_bfd & abfd,
+			   const opp_samples_files & samples_files,
+			   size_t counter_mask)
 {
 	int i = abfd.symbol_index(symbol);
 	if (i < 0) {
@@ -204,9 +198,10 @@ void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 	output_format_flags = 
 	  static_cast<OutSymbFlag>(output_format_flags | osf_details | osf_show_all_counters);
 
-	samples_files_t samples(true, output_format_flags, false, counter);
+	samples_files_t samples(true, output_format_flags,
+				false, counter_mask);
 
-	samples.add(*this, abfd);
+	samples.add(samples_files, abfd);
 
 	const symbol_entry * symb = samples.find_symbol(abfd.syms[i]->value +
 						abfd.syms[i]->section->vma);
@@ -216,7 +211,7 @@ void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 		return;
 	}
 
-	OutputSymbol out(samples, counter);
+	OutputSymbol out(samples, counter_mask);
 
 	out.SetFlag(output_format_flags);
 
@@ -236,13 +231,17 @@ struct gmon_hdr {
 /**
  * do_dump_gprof - produce gprof sample output
  * \param abfd the bfd object from where come the samples
+ * \param samples_files the samples files where are stored samples
+ * \param sort_by_ctr the counter number used for sort purpose
  *
  * Dump gprof-format samples for this sample file and
  * counter specified ctr to the file specified by gproffile.
  *
  * this use the grpof format <= gcc 3.0
  */
-void opp_samples_files::do_dump_gprof(opp_bfd & abfd, int sort_by_ctr) const
+static void do_dump_gprof(opp_bfd & abfd,
+			  const opp_samples_files & samples_files,
+			  int sort_by_ctr)
 {
 	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},}; 
 	FILE *fp; 
@@ -300,7 +299,7 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd, int sort_by_ctr) const
 			pos = (abfd.sym_offset(i, j) + abfd.syms[i]->value + abfd.syms[i]->section->vma - low_pc) / MULTIPLIER; 
 
 			/* opp_get_options have set ctr to one value != -1 */
-			count = samples_count(sort_by_ctr, j);
+			count = samples_files.samples_count(sort_by_ctr, j);
 
 			if (pos >= histsize) {
 				fprintf(stderr, "Bogus histogram bin %u, larger than %u !", pos, histsize);
@@ -327,29 +326,30 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd, int sort_by_ctr) const
 /**
  * do_list_symbols_details - list all samples for all symbols.
  * \param abfd the bfd object from where come the samples
+ * \param samples_files the samples files where are stored samples
+ * \param counter_mask on what counters we work
+ * \param sort_by_ctr the counter number used for sort purpose
  *
  * Lists all the samples for all the symbols, from the image specified by
  * abfd, in increasing order of vma, to standard out.
  */
-void opp_samples_files::do_list_symbols_details(opp_bfd & abfd,
-						int sort_by_ctr) const
+static void do_list_symbols_details(opp_bfd & abfd,
+				    const opp_samples_files & samples_files,
+				    size_t counter_mask, int sort_by_ctr)
 {
-	output_format_flags = 
+	output_format_flags =
 	  static_cast<OutSymbFlag>(output_format_flags | osf_details);
 
 	samples_files_t samples(false, output_format_flags,
-				show_shared_libs, counter);
+				show_shared_libs, counter_mask);
 
-	output_format_flags = 
-	  static_cast<OutSymbFlag>(output_format_flags | osf_details);
-
-	samples.add(*this, abfd);
+	samples.add(samples_files, abfd);
 
 	vector<const symbol_entry *> symbols;
 
 	samples.select_symbols(symbols, sort_by_ctr, 0.0, false, true);
 
-	OutputSymbol out(samples, counter);
+	OutputSymbol out(samples, counter_mask);
 
 	out.SetFlag(output_format_flags);
 
@@ -367,11 +367,10 @@ void opp_samples_files::do_list_symbols_details(opp_bfd & abfd,
  */
 void opp_samples_files::output_event(int i) const
 {
-	printf("Counter %d counted %s events (%s) with a unit mask of "
-	       "0x%.2x (%s) count %u\n", 
-	       i, ctr_name[i], ctr_desc[i], header[i]->ctr_um,
-	       ctr_um_desc[i] ? ctr_um_desc[i] : "Not set", 
-	       header[i]->ctr_count);
+	op_cpu cpu = static_cast<op_cpu>(header[first_file]->cpu_type);
+
+	op_print_event(cout, i, cpu, header[i]->ctr_event,
+		       header[i]->ctr_um, header[i]->ctr_count);
 }
 
 /**
@@ -411,13 +410,14 @@ int main(int argc, char const *argv[])
 	samples_files.output_header();
 
 	if (list_symbols)
-		samples_files.do_list_symbols(abfd, sort_by_counter);
+		do_list_symbols(abfd, samples_files, counter, sort_by_counter);
 	else if (symbol)
-		samples_files.do_list_symbol(abfd);
+		do_list_symbol(abfd, samples_files, counter);
 	else if (gproffile)
-		samples_files.do_dump_gprof(abfd, sort_by_counter);
+		do_dump_gprof(abfd, samples_files, sort_by_counter);
 	else if (list_all_symbols_details)
-		samples_files.do_list_symbols_details(abfd, sort_by_counter);
+		do_list_symbols_details(abfd, samples_files,
+					counter, sort_by_counter);
 
 	return 0;
 }

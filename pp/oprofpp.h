@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.46 2002/03/20 21:19:43 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.47 2002/03/22 15:19:46 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -32,6 +32,7 @@
 #include <sys/stat.h> 
 #include <sys/mman.h>
 
+#include <iostream>
 #include <vector>
 #include <string>
 
@@ -72,8 +73,21 @@ char *cplus_demangle (const char *mangled, int options);
 void verbprintf(const char* args, ...) OP_VERBPRINTF_FORMAT;
 
 /**
+ * \param out output to this ostream
+ * \param cpu_type the cpu_type
+ * \param type event type
+ * \param um the unit mask
+ * \param count events count before overflow
+ *
+ * output a human readable form of an event setting
+ */
+void op_print_event(ostream & out, int i, op_cpu cpu_type,
+		    u8 type, u8 um, u32 count);
+
+/**
  * process command line options
  * \param file a filename passed on the command line, can be NULL
+ * \param i counter number
  * \param optcon poptContext to allow better message handling
  * \param image_file where to store the image file name
  * \param sample_file ditto for sample filename
@@ -321,15 +335,9 @@ struct opp_samples_files {
 	 * Currently all error are fatal
 	 */
 	opp_samples_files(const std::string & sample_file, int counter);
+
 	/** Close all opened samples files and free all related resource. */
 	~opp_samples_files();
-
-	// TODO: this class make too many things, this interface is clearly
-	// not a part of opp_samples_files, this look like rather free fun.
-	void do_list_symbols_details(opp_bfd & abfd, int sort_by_ctr) const;
-	void do_dump_gprof(opp_bfd & abfd, int sort_by_ctr) const;
-	void do_list_symbols(opp_bfd & abfd, int sort_by_ctr) const;
-	void do_list_symbol(opp_bfd & abfd/*, int sort_by_ctr*/) const;
 
 	/**
 	 * is_open - test if a samples file is open
@@ -379,9 +387,6 @@ struct opp_samples_files {
 	 * set to -1 */
 	opd_fentry *samples[OP_MAX_COUNTERS];	// header + sizeof(header)
 	opd_header *header[OP_MAX_COUNTERS];	// mapping begin here
-	char *ctr_name[OP_MAX_COUNTERS];
-	char *ctr_desc[OP_MAX_COUNTERS];
-	char *ctr_um_desc[OP_MAX_COUNTERS];
 	fd_t fd[OP_MAX_COUNTERS];
 	// This do not include the header size
 	size_t size[OP_MAX_COUNTERS];
@@ -393,7 +398,7 @@ struct opp_samples_files {
 	std::string sample_filename;
 
 	// used in do_list_xxxx/do_dump_gprof.
-	int counter;
+	size_t counter_mask;
 
 private:
 	void output_event(int i) const;

@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.41 2002/03/20 21:19:43 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.42 2002/03/22 15:19:46 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -19,6 +19,7 @@
 #include <cstdarg>
 #include <algorithm>
 #include <sstream>
+#include <iomanip>
 
 #include <elf.h>
 
@@ -29,6 +30,7 @@
  
 using std::string;
 using std::vector;
+using std::ostream;
 
 int verbose;
 char const *samplefile;
@@ -37,6 +39,26 @@ char *basedir="/var/opd";
 int demangle;
 const char * exclude_symbols_str;
 static vector<string> exclude_symbols;
+
+void op_print_event(ostream & out, int i, op_cpu cpu_type,
+		    u8 type, u8 um, u32 count)
+{
+	char * typenamep;
+	char * typedescp;
+	char * umdescp;
+
+	op_get_event_desc(cpu_type, type, um, 
+			  &typenamep, &typedescp, &umdescp);
+
+	out << "Counter " << i << " counted " << typenamep << " events ("
+	    << typedescp << ")";
+	if (cpu_type != CPU_RTC) {
+		out << " with a unit mask of 0x"
+		    << hex << setw(2) << setfill('0') << unsigned(um) << " ("
+		    << (umdescp ? umdescp : "Not set") << ")";
+	}
+	out << " count " << dec << count << endl;
+}
 
 /**
  * verbprintf
@@ -782,7 +804,7 @@ opp_samples_files::opp_samples_files(const std::string & sample_file,
 	nr_counters(2),
 	first_file(-1),
 	sample_filename(sample_file),
-	counter(counter_)
+	counter_mask(counter_)
 {
 	uint i, j;
 	time_t mtime = 0;
@@ -791,19 +813,16 @@ opp_samples_files::opp_samples_files(const std::string & sample_file,
 	for (i = 0; i < OP_MAX_COUNTERS; ++i) {
 		samples[i] = 0;
 		header[i] = 0;
-		ctr_name[i] = 0;
-		ctr_desc[i] = 0;
-		ctr_um_desc[i] = 0;
 		fd[i] = -1;
 		size[i] = 0;
 	}
 
 	for (i = 0; i < OP_MAX_COUNTERS ; ++i) {
-		if ((counter &  (1 << i)) != 0) {
+		if ((counter_mask &  (1 << i)) != 0) {
 			/* if only the i th bit is set in counter spec we do
 			 * not allow opening failure to get a more precise
 			 * error message */
-			open_samples_file(i, (counter & ~(1 << i)) != 0);
+			open_samples_file(i, (counter_mask & ~(1 << i)) != 0);
 		}
 	}
 
@@ -958,10 +977,13 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
  */
 void opp_samples_files::check_event(int i)
 {
+	char * ctr_name;
+	char * ctr_desc;
+	char * ctr_um_desc;
+
 	op_cpu cpu = static_cast<op_cpu>(header[i]->cpu_type);
-	op_get_event_desc(cpu, header[i]->ctr_event,
-			  header[i]->ctr_um, &ctr_name[i],
-			  &ctr_desc[i], &ctr_um_desc[i]);
+	op_get_event_desc(cpu, header[i]->ctr_event, header[i]->ctr_um,
+			  &ctr_name, &ctr_desc, &ctr_um_desc);
 }
 
 /**

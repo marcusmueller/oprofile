@@ -92,14 +92,12 @@ struct counter_setup {
 	counter_setup() :
 		enabled(false), event_count_sample(0) {}
 
-	void print(ostream& out, op_cpu cpu_type) const;
+	void print(ostream& out, op_cpu cpu_type, int counter) const;
 
 	// if false other field are not meaningful.
 	bool   enabled;
-	string event_name;
-	string help_string;
-	u32 unit_mask;
-	string unit_mask_help;     // The string help for the unit mask
+	u8 ctr_event;
+	u8 unit_mask;
 	size_t event_count_sample;
 	// would be double?
 	size_t total_samples;
@@ -225,27 +223,16 @@ inline double do_ratio(size_t counter, size_t total)
 } // anonymous namespace
 
 // Convenience function : just output the setup of one counter.
-void counter_setup::print(ostream & out, op_cpu cpu_type) const
+void counter_setup::print(ostream & out, op_cpu cpu_type, int counter) const
 {
-	out << (enabled ? "enabled :" : "disabled");
-
 	if (enabled) {
-		out << " ";
-
-		out << event_name << " (" << help_string << ")" << endl;
-
-		if (cpu_type != CPU_RTC) {
-			out << "unit mask : "
-			    << "0x" << hex << std::setfill('0') << std::setw(2)
-			    << unit_mask
-			    << dec
-			    << " (" << unit_mask_help << ")";
-		}
-
-		out << " event_count : " << event_count_sample
-		    << " total samples : " << total_samples;
+		op_print_event(out, counter, cpu_type, ctr_event, unit_mask,
+			       event_count_sample);
+		out << "total samples : " << total_samples;
+	} else {
+		out << "Counter " << counter << " disabled";
 	}
-	
+
 	out << endl;
 }
 
@@ -383,11 +370,8 @@ bool output::setup_counter_param(const opp_samples_files & samples_files)
 			continue;
 
 		counter_info[i].enabled = true;
-		counter_info[i].event_name = samples_files.ctr_name[i];
-		counter_info[i].help_string = samples_files.ctr_desc[i];
+		counter_info[i].ctr_event = samples_files.header[i]->ctr_event;
 		counter_info[i].unit_mask = samples_files.header[i]->ctr_um;
-		counter_info[i].unit_mask_help = 
-			samples_files.ctr_um_desc[i] ? samples_files.ctr_um_desc[i] : "Not set";
 		counter_info[i].event_count_sample = samples_files.header[i]->ctr_count;
 
 		have_counter_info = true;
@@ -811,10 +795,10 @@ void output::output_header(ostream& out) const
 	out << endl;
 	out << "Cpu type: " << op_get_cpu_type_str(cpu_type) << endl;
 	out << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
+	out << endl;
 
 	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i) {
-		out << endl << "Counter " << i << " ";
-		counter_info[i].print(out, cpu_type);
+		counter_info[i].print(out, cpu_type, i);
 	}
 
 	out << end_comment << endl;

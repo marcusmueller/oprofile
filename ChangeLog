@@ -1,5 +1,13 @@
 2002-03-21  Philippe Elie  <ph_e@club-internet.fr>
 
+	* pp/opf_filter.cpp;
+	* pp/oprofpp.cpp:
+	* pp/oprofpp_util.cpp: factorize event settings output
+	* pp/oprofpp.h: ditto + do_list_xxx/do_dump_gprof : static
+	  free function rather than member function.
+
+2002-03-21  Philippe Elie  <ph_e@club-internet.fr>
+
 	* op_user.h:
 	* pp/oprofpp.h: more doxygen comments
 
