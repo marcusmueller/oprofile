@@ -1,3 +1,14 @@
+2003-11-11  Joseph VanAndel  <unknown@unknown.org>
+
+	* daemon/liblegacy/init.c: fix #840046 (segfault when starting profiler
+	 with --no-vmlinux setup), this bug was present in 0.7.0.
+
+2003-11-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/profile_spec.cpp: more precise error message
+	* libutil++/tests/file_manip_tests.cpp: corner case test added
+	  for dirname
+
 2003-11-11  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/arrange_profiles.cpp: report_error() shows only distinct

@@ -333,7 +333,8 @@ static void opd_24_init(void)
 	int opd_buf_size = OP_DEFAULT_BUF_SIZE;
 	int opd_note_buf_size = OP_DEFAULT_NOTE_SIZE;
 
-	opd_parse_kernel_range(kernel_range);
+	if (!no_vmlinux)
+		opd_parse_kernel_range(kernel_range);
 	opd_buf_size = opd_read_fs_int(OP_MOUNT, "bufsize");
 	opd_note_buf_size = opd_read_fs_int(OP_MOUNT, "notesize");
 

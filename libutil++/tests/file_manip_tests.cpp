@@ -71,6 +71,7 @@ static input_output<char const *, char const *> expect_dirname[] =
 	{ "./.", "." },
 	{ "..", "." },
 	{ ".", "." },
+	{ "", "." },
 	{ 0, 0 }
 };
 

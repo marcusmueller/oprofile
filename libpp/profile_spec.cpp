@@ -98,7 +98,7 @@ void profile_spec::validate()
 	// 3.4 binary can be used only with sample_file
 	if (normal_tag_set && (sample_file_set || !binary.empty())) {
 		throw invalid_argument("Cannot specify sample-file: or "
-			"binary: tag with another tag");
+			"binary: tag with another tag or binary name");
 	}
 
 	// PP:3.5 no session given means use the current session.
