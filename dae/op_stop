@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_stop,v 1.10 2001/09/25 16:13:14 movement Exp $ 
+# $Id: op_stop,v 1.11 2001/09/25 17:07:07 movement Exp $ 
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -16,14 +16,14 @@
 # Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-PSLINE=`ps x | grep oprofiled | grep -v grep`
+if test ! -f /sbin/pidof; then
+	echo "No /sbin/pidof found !!!!!" >&2
+fi
 
-NAME=`echo $PSLINE | awk '{print $5}'`
-if [ "$NAME" = "oprofiled" ]
+if test `/sbin/pidof oprofiled`
 then
-	PID=`echo $PSLINE | awk '{print $1}'`
 	echo "Stopping profiling and killing daemon"
-	kill $PID
+	kill `/sbin/pidof oprofiled`
 	exit
 fi
  
