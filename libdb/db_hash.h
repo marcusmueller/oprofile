@@ -56,7 +56,7 @@ typedef struct {
  * A typical use is:
  *
  * struct header { int etc; ... };
- * db_open(&tree, filename, DB_RW, sizeof(header));
+ * db_open(&hash, filename, DB_RW, sizeof(header));
  * so on this library have no dependency on the header type.
  *
  * the internal memory layout from base_memory is:
@@ -84,15 +84,21 @@ extern "C" {
 
 /* db-hash-manage.c */
 
-/** how to open the DB tree file */
+/** how to open the DB hash file */
 enum db_rw {
 	DB_RDONLY = 0,	/**< open for read only */
 	DB_RDWR = 1	/**< open for read and/or write */
 };
 
 /**
- * db_open - open a DB tree file
- * @param tree the data base object to setup
+ * db_init - initialize a hash struct
+ * @param hash the hash object to init
+ */
+void db_init(samples_db_t * hash);
+
+/**
+ * db_open - open a DB hash file
+ * @param hash the data base object to setup
  * @param filename the filename where go the maped memory
  * @param rw \enum DB_RW if opening for writing, else \enum DB_RDONLY
  * @param sizeof_header size of the file header if any

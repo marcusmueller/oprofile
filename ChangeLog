@@ -1,5 +1,15 @@
 2002-12-06  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libdb/db_manage.c:
+	* libdb/db_hash.h: db_init() new to properly initialize a samples_db_t
+
+	* dae/opd_image.c:
+	* daemon/opd_imge.c: earlier init a samples_db_t object using
+	  db_init() rather a memset. This fix a potential bogosity cause we
+	  closed a lot of time file descriptor 0
+
+2002-12-06  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* dae/opd_image.c:
 	* dae/opd_image.h:
 	* dae/opd_kernel.c: use hash table entry 0 for kernel and module image

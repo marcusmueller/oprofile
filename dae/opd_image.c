@@ -106,12 +106,18 @@ void opd_for_each_image(opd_image_cb image_cb)
 static void opd_init_image(struct opd_image * image, char const * name,
 			   int hash, char const * app_name, int kernel)
 {
+	uint i;
+
 	list_init(&image->list_node);
 	image->hash_next = NULL;
 	image->name = xstrdup(name);
 	image->kernel = kernel;
 	image->hash = hash;
 	image->app_name = app_name ? xstrdup(app_name) : NULL;
+
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		db_init(&image->sample_files[i]);
+	}
 }
 
 
@@ -127,14 +133,8 @@ static void opd_init_image(struct opd_image * image, char const * name,
  */
 static void opd_open_image(struct opd_image * image)
 {
-	uint i;
-
 	verbprintf("Opening image \"%s\" for app \"%s\"\n",
 		   image->name, image->app_name ? image->app_name : "none");
-
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		memset(&image->sample_files[i], '\0', sizeof(samples_db_t));
-	}
 
 	image->mtime = op_get_mtime(image->name);
 

@@ -122,6 +122,11 @@ db_index_t db_hash_add_node(samples_db_t * hash)
 	return (db_index_t)hash->descr->current_size++;
 }
 
+void db_init(samples_db_t * hash)
+{
+	memset(hash, '\0', sizeof(samples_db_t));
+	hash->fd = -1;
+}
 
 /* the default number of page, calculated to fit in 4096 bytes */
 #define DEFAULT_NODE_NR(offset_node)	128

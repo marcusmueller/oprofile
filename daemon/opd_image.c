@@ -105,6 +105,32 @@ void opd_for_each_image(opd_image_cb image_cb)
 }
 
 
+/**
+ * opd_create_image - allocate and initialize an image struct
+ * @param hash  hash entry number
+ *
+ */
+static struct opd_image * opd_create_image(unsigned long hash)
+{
+	uint i;
+	struct opd_image * image = xmalloc(sizeof(struct opd_image));
+
+	image->name = image->app_name = NULL;
+	image->cookie = image->app_cookie = 0;
+	image->mtime = 0;
+	image->kernel = 0;
+
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		db_init(&image->sample_files[i]);
+	}
+
+	list_add(&image->hash_list, &opd_images[hash]);
+
+	nr_images++;
+
+	return image;
+}
+
 static int lookup_dcookie(u_int64_t cookie, char * buf, size_t size)
 {
 	// FIXME
@@ -123,15 +149,15 @@ static void opd_init_image(struct opd_image * image, unsigned long cookie,
 	/* FIXME: if dcookie lookup fail we will re open multiple time the
 	 * same db which doesn't work */
 	if (lookup_dcookie(cookie, buf, PATH_MAX) <= 0) {
-		verbprintf("Lookup of cookie %lu failed, errno=%d\n",
-			cookie, errno); 
+		printf("Lookup of cookie %lu failed, errno=%d\n",
+		       cookie, errno); 
 		image->name = xstrdup("");
 	} else {
 		image->name = xstrdup(buf);
 	}
  
 	if (lookup_dcookie(app_cookie, buf, PATH_MAX) <= 0) {
-		verbprintf("Lookup of cookie %lu failed, errno=%d\n",
+		printf("Lookup of cookie %lu failed, errno=%d\n",
 			cookie, errno); 
 		image->app_name = xstrdup("");
 	} else {
@@ -140,7 +166,6 @@ static void opd_init_image(struct opd_image * image, unsigned long cookie,
 
 	image->cookie = cookie;
 	image->app_cookie = app_cookie;
-	image->kernel = 0;
 }
 
 
@@ -156,14 +181,8 @@ static void opd_init_image(struct opd_image * image, unsigned long cookie,
  */
 static void opd_open_image(struct opd_image * image)
 {
-	uint i;
-
 	verbprintf("Opening image \"%s\" for app \"%s\"\n",
 		   image->name, image->app_name ? image->app_name : "none");
-
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		memset(&image->sample_files[i], '\0', sizeof(samples_db_t));
-	}
 
 	image->mtime = op_get_mtime(image->name);
 
@@ -172,7 +191,8 @@ static void opd_open_image(struct opd_image * image)
 	/* samples files are lazily opened */
 }
 
-#if 0 /* re-enable it later */
+
+#if 0 /* not easy to re-enable ... */
 /**
  * opd_check_image_mtime - ensure samples file is up to date
  * @param image  image to check
@@ -210,6 +230,7 @@ void opd_check_image_mtime(struct opd_image * image)
 	opd_open_image(image);
 }
 #endif
+
 
 /**
  * opd_put_image_sample - write sample to file
@@ -254,13 +275,12 @@ static unsigned long opd_hash_cookie(unsigned long cookie)
  */
 static struct opd_image * opd_add_image(unsigned long cookie, unsigned long app_cookie)
 {
-	struct opd_image * image = xmalloc(sizeof(struct opd_image));
 	unsigned long hash = opd_hash_cookie(cookie);
+	struct opd_image * image = opd_create_image(hash);
 
 	opd_init_image(image, cookie, app_cookie);
-	list_add(&image->hash_list, &opd_images[hash]);
-	nr_images++;
 	opd_open_image(image);
+
 	return image;
 }
 
@@ -305,15 +325,12 @@ static struct opd_image * opd_get_image(unsigned long cookie, unsigned long app_
 
 static struct opd_image * opd_add_kernel_image(char const * name)
 {
-	struct opd_image * image = xmalloc(sizeof(struct opd_image));
-	image->cookie = 0;
-	image->app_cookie = 0;
+	struct opd_image * image = opd_create_image(HASH_KERNEL);
+
 	image->name = xstrdup(name);
-	image->app_name = NULL;
 	image->kernel = 1;
-	list_add(&image->hash_list, &opd_images[HASH_KERNEL]);
-	nr_images++;
 	opd_open_image(image);
+
 	return image;
 }
 
