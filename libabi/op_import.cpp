@@ -9,7 +9,7 @@
  */
 
 #include "abi.h"
-#include "odb_hash.h"
+#include "odb.h"
 #include "popt_options.h"
 #include "op_sample_file.h"
 
@@ -101,7 +101,7 @@ void extractor::extract(T & targ, void const * src_,
 
 
 void import_from_abi(abi const & abi, void const * srcv,
-                     size_t len, samples_odb_t * dest) throw (abi_exception)
+                     size_t len, odb_t * dest) throw (abi_exception)
 {
 	struct opd_header * head =
 		static_cast<opd_header *>(odb_get_data(dest));
@@ -187,7 +187,7 @@ int main(int argc, char const ** argv)
 	int in_fd;
 	struct stat statb;
 	void * in;
-	samples_odb_t dest;
+	odb_t dest;
 	int rc;
 
 	assert((in_fd = open(inputs[0].c_str(), O_RDONLY)) > 0);		

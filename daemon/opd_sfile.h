@@ -14,7 +14,7 @@
 
 #include "opd_cookie.h"
 
-#include "odb_hash.h"
+#include "odb.h"
 #include "op_hw_config.h"
 #include "op_types.h"
 #include "op_list.h"
@@ -33,7 +33,7 @@ struct cg_hash_entry {
 	unsigned int counter;
 	/** next in the hash slot */
 	struct list_head next;
-	samples_odb_t file;
+	odb_t file;
 };
 
 /**
@@ -63,7 +63,7 @@ struct sfile {
 	/** true if this file should be ignored in profiles */
 	int ignored;
 	/** opened sample files */
-	samples_odb_t files[OP_MAX_COUNTERS];
+	odb_t files[OP_MAX_COUNTERS];
 	/** hash table of opened cg sample files, this table is hashed
 	 * on counter nr, from cookie and to cookie */
 	struct list_head cg_files[CG_HASH_TABLE_SIZE];

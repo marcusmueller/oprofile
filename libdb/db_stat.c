@@ -1,6 +1,6 @@
 /**
  * @file db_stat.c
- * Statistics routines for libdb-hash
+ * Statistics routines for libdb
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -11,9 +11,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "odb_hash.h"
+#include "odb.h"
 
-/// hold various statistics data for a db hash file
+/// hold various statistics data for a db file
 struct odb_hash_stat_t {
 	odb_node_nr_t node_nr;			/**< allocated node number */
 	odb_node_nr_t used_node_nr;		/**< in use node number */
@@ -24,13 +24,13 @@ struct odb_hash_stat_t {
 	/* do we need variance ? */
 };
 
-odb_hash_stat_t * odb_hash_stat(samples_odb_t const * hash)
+odb_hash_stat_t * odb_hash_stat(odb_t const * odb)
 {
 	size_t max_length = 0;
 	double total_length = 0.0;
 	size_t nr_non_empty_list = 0;
 	size_t pos;
-	odb_data_t * data = hash->data;
+	odb_data_t * data = odb->data;
 
 	odb_hash_stat_t * result = calloc(1, sizeof(odb_hash_stat_t));
 	if (!result) {

@@ -1,6 +1,6 @@
 /**
  * @file db_manage.c
- * Management of a DB hash
+ * Management of a DB file
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -20,7 +20,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "odb_hash.h"
+#include "odb.h"
 #include "op_string.h"
 #include "op_libiberty.h"
 
@@ -60,9 +60,9 @@ static unsigned int tables_size(odb_data_t const * data, odb_node_nr_t node_nr)
 }
 
 
-odb_index_t odb_hash_add_node(samples_odb_t * hash)
+odb_index_t odb_hash_add_node(odb_t * odb)
 {
-	odb_data_t * data = hash->data;
+	odb_data_t * data = odb->data;
 
 	if (data->descr->current_size >= data->descr->size) {
 		unsigned int old_file_size;
@@ -121,9 +121,10 @@ odb_index_t odb_hash_add_node(samples_odb_t * hash)
 	return (odb_index_t)data->descr->current_size++;
 }
 
-void odb_init(samples_odb_t * hash)
+
+void odb_init(odb_t * odb)
 {
-	hash->data = NULL;
+	odb->data = NULL;
 }
 
 
@@ -163,20 +164,20 @@ find_samples_data(size_t hash, char const * filename)
 }
 
 
-int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw,
+int odb_open(odb_t * odb, char const * filename, enum odb_rw rw,
 	     size_t sizeof_header)
 {
 	struct stat stat_buf;
 	odb_node_nr_t nr_node;
 	odb_data_t *data;
-	size_t hash_code;
+	size_t hash;
 	int err = 0;
 
 	int flags = (rw == ODB_RDWR) ? (O_CREAT | O_RDWR) : O_RDONLY;
 	int mmflags = (rw == ODB_RDWR) ? (PROT_READ | PROT_WRITE) : PROT_READ;
 
-	hash_code = op_hash_string(filename) % FILES_HASH_SIZE;
-	data = find_samples_data(hash_code, filename);
+	hash = op_hash_string(filename) % FILES_HASH_SIZE;
+	data = find_samples_data(hash, filename);
 	if (data) {
 		data->ref_count++;
 		return 0;
@@ -248,8 +249,8 @@ int odb_open(samples_odb_t * hash, char const * filename, enum odb_rw rw,
 	data->node_base = odb_to_node_base(data);
 	data->hash_mask = (data->descr->size * BUCKET_FACTOR) - 1;
 
-	list_add(&data->list, &files_hash[hash_code]);
-	hash->data = data;
+	list_add(&data->list, &files_hash[hash]);
+	odb->data = data;
 out:
 	return err;
 fail_unmap:
@@ -258,14 +259,14 @@ fail:
 	close(data->fd);
 	free(data->filename);
 	free(data);
-	hash->data = NULL;
+	odb->data = NULL;
 	goto out;
 }
 
 
-void odb_close(samples_odb_t * hash)
+void odb_close(odb_t * odb)
 {
-	odb_data_t * data = hash->data;
+	odb_data_t * data = odb->data;
 
 	if (data) {
 		data->ref_count--;
@@ -277,29 +278,29 @@ void odb_close(samples_odb_t * hash)
 				close(data->fd);
 			free(data->filename);
 			free(data);
-			hash->data = NULL;
+			odb->data = NULL;
 		}
 	}
 }
 
 
-int odb_open_count(samples_odb_t const * hash)
+int odb_open_count(odb_t const * odb)
 {
-	if (!hash->data)
+	if (!odb->data)
 		return 0;
-	return hash->data->ref_count;
+	return odb->data->ref_count;
 }
 
 
-void * odb_get_data(samples_odb_t * hash)
+void * odb_get_data(odb_t * odb)
 {
-	return hash->data->base_memory;
+	return odb->data->base_memory;
 }
 
 
-void odb_sync(samples_odb_t const * hash)
+void odb_sync(odb_t const * odb)
 {
-	odb_data_t * data = hash->data;
+	odb_data_t * data = odb->data;
 	size_t size;
 
 	if (!data)

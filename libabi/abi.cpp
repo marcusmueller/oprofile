@@ -9,7 +9,7 @@
  */
 
 #include "abi.h"
-#include "odb_hash.h"
+#include "odb.h"
 #include "op_sample_file.h"
 
 #include <iostream>

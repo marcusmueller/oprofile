@@ -1,3 +1,29 @@
+2004-05-29  John Levon  <levon@movementarian.org>
+
+	* libdb/tests/Makefile.am: fix build
+
+ 	* daemon/opd_mangling.c:
+	* daemon/opd_mangling.h:
+	* daemon/opd_sfile.c:
+	* daemon/opd_sfile.h:
+	* daemon/liblegacy/opd_sample_files.h:
+	* libabi/abi.cpp:
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp:
+	* libdb/Makefile.am:
+	* libdb/db_debug.c:
+	* libdb/db_insert.c:
+	* libdb/db_manage.c:
+	* libdb/db_stat.c:
+	* libdb/db_travel.c:
+	* libdb/odb.h:
+	* libdb/odb_hash.h:
+	* libdb/tests/db_test.c:
+	* libpp/op_header.cpp:
+	* libpp/profile.cpp:
+	* libpp/profile.h: s/samples_odb_t/odb_t/, move
+	odb_hash.h to odb.h
+
 2004-05-28  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_mangling.cpp:

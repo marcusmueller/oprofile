@@ -14,5 +14,5 @@ libodb_a_SOURCES = \
 	db_travel.c \
 	db_debug.c \
 	db_stat.c \
-	odb_hash.h
+	odb.h
 

@@ -16,7 +16,7 @@
 #include <sstream>
 
 #include "op_exception.h"
-#include "odb_hash.h"
+#include "odb.h"
 #include "op_cpu_type.h"
 #include "op_file.h"
 #include "op_header.h"
@@ -90,7 +90,7 @@ void check_mtime(string const & file, opd_header const & header)
 
 opd_header const read_header(string const & sample_filename)
 {
-	samples_odb_t samples_db;
+	odb_t samples_db;
 
 	int rc = odb_open(&samples_db, sample_filename.c_str(), ODB_RDONLY,
 		sizeof(struct opd_header));

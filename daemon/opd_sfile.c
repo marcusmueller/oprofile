@@ -204,10 +204,10 @@ static size_t cg_hash(cookie_t from, cookie_t to, size_t counter)
 }
 
 
-static samples_odb_t * get_file(struct sfile * sf, struct sfile * last,
-                                uint counter, int cg)
+static odb_t *
+get_file(struct sfile * sf, struct sfile * last, uint counter, int cg)
 {
-	samples_odb_t * file;
+	odb_t * file;
 
 	if (counter >= op_nr_counters) {
 		fprintf(stderr, "%s: Invalid counter %u\n", __FUNCTION__,
@@ -271,7 +271,7 @@ static void sfile_log_arc(struct transient const * trans)
 	vma_t from = trans->pc;
 	vma_t to = trans->last_pc;
 	uint64_t key;
-	samples_odb_t * file;
+	odb_t * file;
 
 	file = get_file(trans->current, trans->last, trans->event, 1);
 
@@ -311,7 +311,7 @@ void sfile_log_sample(struct transient const * trans)
 {
 	int err;
 	vma_t pc = trans->pc;
-	samples_odb_t * file;
+	odb_t * file;
 
 	if (trans->tracing == TRACING_ON) {
 		/* can happen if kernel sample falls through the cracks,

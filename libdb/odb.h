@@ -1,7 +1,8 @@
 /**
- * @file odb_hash.h
+ * @file odb.h
  * This file contains various definitions and interface for management
- * of in-memory, through mmaped file, growable hash table.
+ * of in-memory, through mmaped file, growable hash table, that stores
+ * sample files.
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -87,7 +88,7 @@ typedef struct odb_data {
 
 typedef struct {
 	odb_data_t * data;
-} samples_odb_t;
+} odb_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -95,21 +96,21 @@ extern "C" {
 
 /* db_manage.c */
 
-/** how to open the DB hash file */
+/** how to open the DB file */
 enum odb_rw {
 	ODB_RDONLY = 0,	/**< open for read only */
 	ODB_RDWR = 1	/**< open for read and/or write */
 };
 
 /**
- * odb_init - initialize a hash struct
- * @param hash the hash object to init
+ * odb_init - initialize a DB file
+ * @param odb the DB file to init
  */
-void odb_init(samples_odb_t * hash);
+void odb_init(odb_t * odb);
 
 /**
- * odb_open - open a ODB hash file
- * @param hash the data base object to setup
+ * odb_open - open a DB file
+ * @param odb the data base object to setup
  * @param filename the filename where go the maped memory
  * @param rw \enum ODB_RW if opening for writing, else \enum ODB_RDONLY
  * @param sizeof_header size of the file header if any
@@ -119,20 +120,20 @@ void odb_init(samples_odb_t * hash);
  * odb_open() always preallocate a few number of pages.
  * returns 0 on success, errno on failure
  */
-int odb_open(samples_odb_t * hash, char const * filename,
+int odb_open(odb_t * odb, char const * filename,
              enum odb_rw rw, size_t sizeof_header);
 
-/** Close the given ODB hash */
-void odb_close(samples_odb_t * hash);
+/** Close the given ODB file */
+void odb_close(odb_t * odb);
 
 /** return the number of times this sample file is open */
-int odb_open_count(samples_odb_t const * hash);
+int odb_open_count(odb_t const * odb);
 
 /** return the start of the mapped data */
-void * odb_get_data(samples_odb_t * hash);
+void * odb_get_data(odb_t * odb);
 
 /** issue a msync on the used size of the mmaped file */
-void odb_sync(samples_odb_t const * hash);
+void odb_sync(odb_t const * odb);
 
 /** add a page returning its index. Take care all page pointer can be
  * invalidated by this call !
@@ -141,18 +142,18 @@ void odb_sync(samples_odb_t const * hash);
  * and errno is set by the first libc call failure allowing to retry after
  * cleanup some program resource.
  */
-odb_node_nr_t odb_hash_add_node(samples_odb_t * hash);
+odb_node_nr_t odb_hash_add_node(odb_t * odb);
 
 /** "immpossible" node number to indicate an error from odb_hash_add_node() */
 #define ODB_NODE_NR_INVALID ((odb_node_nr_t)-1)
 
 /* db_debug.c */
-/** check than the hash is well build */
-int odb_check_hash(samples_odb_t const * hash);
+/** check that the hash is well built */
+int odb_check_hash(odb_t const * odb);
 
 /* db_stat.c */
 typedef struct odb_hash_stat_t odb_hash_stat_t;
-odb_hash_stat_t * odb_hash_stat(samples_odb_t const * hash);
+odb_hash_stat_t * odb_hash_stat(odb_t const * odb);
 void odb_hash_display_stat(odb_hash_stat_t const * stats);
 void odb_hash_free_stat(odb_hash_stat_t * stats);
 
@@ -161,7 +162,7 @@ void odb_hash_free_stat(odb_hash_stat_t * stats);
  * existing samples
  * returns EXIT_SUCCESS on success, EXIT_FAILURE on failure
  */
-int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value);
+int odb_insert(odb_t * odb, odb_key_t key, odb_value_t value);
 
 /* db_travel.c */
 /**
@@ -169,7 +170,7 @@ int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value);
  * caller then will iterate through:
  *
  * odb_node_nr_t node_nr, pos;
- * odb_node_t * node = odb_get_iterator(hash, &node_nr);
+ * odb_node_t * node = odb_get_iterator(odb, &node_nr);
  *	for ( pos = 0 ; pos < node_nr ; ++pos) {
  *		if (node[pos].key) {
  *			// do something
@@ -178,7 +179,7 @@ int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value);
  *
  *  note than caller *must* filter nil key.
  */
-odb_node_t * odb_get_iterator(samples_odb_t const * hash, odb_node_nr_t * nr);
+odb_node_t * odb_get_iterator(odb_t const * odb, odb_node_nr_t * nr);
 
 static __inline unsigned int
 odb_do_hash(odb_data_t const * data, odb_key_t value)
@@ -199,4 +200,4 @@ odb_do_hash(odb_data_t const * data, odb_key_t value)
 }
 #endif
 
-#endif /* !ODB_HASH_H */
+#endif /* !ODB_H */

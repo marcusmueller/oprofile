@@ -17,7 +17,7 @@
 #include <fcntl.h>
 
 #include "op_sample_file.h"
-#include "odb_hash.h"
+#include "odb.h"
 
 #define TEST_FILENAME "test-hash-db.dat"
 
@@ -47,7 +47,7 @@ static void speed_test(int nr_item, int nr_unique_item)
 {
 	int i;
 	double begin, end;
-	samples_odb_t hash;
+	odb_t hash;
 	int rc;
 
 	rc = odb_open(&hash, TEST_FILENAME, ODB_RDWR, sizeof(struct opd_header));
@@ -88,7 +88,7 @@ static void do_speed_test(void)
 static int test(int nr_item, int nr_unique_item)
 {
 	int i;
-	samples_odb_t hash;
+	odb_t hash;
 	int ret;
 	int rc;
 
@@ -138,7 +138,7 @@ static void do_test(void)
 
 static void sanity_check(char const * filename)
 {
-	samples_odb_t hash;
+	odb_t hash;
 	int rc;
 
 	rc = odb_open(&hash, filename, ODB_RDONLY, sizeof(struct opd_header));

@@ -17,7 +17,7 @@
 #include <map>
 #include <iterator>
 
-#include "odb_hash.h"
+#include "odb.h"
 #include "op_types.h"
 #include "utility.h"
 
@@ -83,7 +83,7 @@ private:
 	/// helper for sample_count() and add_sample_file(). All error launch
 	/// an exception.
 	static void
-	open_sample_file(std::string const & filename, samples_odb_t &);
+	open_sample_file(std::string const & filename, odb_t &);
 
 	/// copy of the samples file header
 	scoped_ptr<opd_header> file_header;

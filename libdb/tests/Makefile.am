@@ -8,6 +8,6 @@ AM_CFLAGS = @OP_CFLAGS@
 check_PROGRAMS = db_test
 
 db_test_SOURCES = db_test.c
-db_test_LDADD = ../libodb.a
+db_test_LDADD = ../libodb.a ../../libutil/libutil.a
 
 TESTS = ${check_PROGRAMS}

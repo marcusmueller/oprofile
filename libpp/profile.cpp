@@ -36,7 +36,7 @@ profile_t::profile_t()
 // static member
 unsigned int profile_t::sample_count(string const & filename)
 {
-	samples_odb_t samples_db;
+	odb_t samples_db;
 
 	open_sample_file(filename, samples_db);
 
@@ -55,7 +55,7 @@ unsigned int profile_t::sample_count(string const & filename)
 }
 
 //static member
-void profile_t::open_sample_file(string const & filename, samples_odb_t & db)
+void profile_t::open_sample_file(string const & filename, odb_t & db)
 {
 	int rc = odb_open(&db, filename.c_str(), ODB_RDONLY,
 		sizeof(struct opd_header));
@@ -77,7 +77,7 @@ void profile_t::open_sample_file(string const & filename, samples_odb_t & db)
 
 void profile_t::add_sample_file(string const & filename, u32 offset)
 {
-	samples_odb_t samples_db;
+	odb_t samples_db;
 
 	open_sample_file(filename, samples_db);
 

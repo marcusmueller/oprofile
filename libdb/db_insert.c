@@ -1,6 +1,6 @@
 /**
  * @file db_insert.c
- * Inserting a key-value pair into a DB hash
+ * Inserting a key-value pair into a DB
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -15,16 +15,16 @@
 #include <string.h>
 #include <errno.h>
 
-#include "odb_hash.h"
+#include "odb.h"
 
-int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value)
+int odb_insert(odb_t * odb, odb_key_t key, odb_value_t value)
 {
 	odb_index_t index;
 	odb_index_t new_node;
 	odb_node_t * node;
 	odb_data_t * data;
 
-	data = hash->data;
+	data = odb->data;
 	index = data->hash_base[odb_do_hash(data, key)];
 	while (index) {
 		if (index <= 0 || index >= data->descr->current_size) {
@@ -48,7 +48,7 @@ int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value)
 	 * the node_base array, odb_hash_add_node() increase current_size but
 	 * odb_travel just ignore node with a zero key so on setting the key
 	 * atomically update the node */
-	new_node = odb_hash_add_node(hash);
+	new_node = odb_hash_add_node(odb);
 	if (new_node == ODB_NODE_NR_INVALID) {
 		return EINVAL;
 	}

@@ -1,6 +1,6 @@
 /**
  * @file db_debug.c
- * Debug routines for libdb-hash
+ * Debug routines for libdb
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "odb_hash.h"
+#include "odb.h"
 
 static int check_circular_list(odb_data_t const * data)
 {
@@ -86,14 +86,14 @@ static int check_redundant_key(odb_data_t const * data, odb_key_t max)
 	return 0;
 }
 
-int odb_check_hash(samples_odb_t const * hash)
+int odb_check_hash(odb_t const * odb)
 {
 	odb_node_nr_t pos;
 	odb_node_nr_t nr_node = 0;
 	odb_node_nr_t nr_node_out_of_bound = 0;
 	int ret = 0;
 	odb_key_t max = 0;
-	odb_data_t * data = hash->data;
+	odb_data_t * data = odb->data;
 
 	for (pos = 0 ; pos < data->descr->size * BUCKET_FACTOR ; ++pos) {
 		odb_index_t index = data->hash_base[pos];

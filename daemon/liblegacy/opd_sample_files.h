@@ -13,7 +13,7 @@
 #define OPD_SAMPLE_FILES_H
 
 #include "op_list.h"
-#include "odb_hash.h"
+#include "odb.h"
 
 struct opd_image;
 
@@ -22,7 +22,7 @@ struct opd_24_sfile {
 	/** lru list of sample file */
 	struct list_head lru_next;
 	/** the sample file itself */
-	samples_odb_t sample_file;
+	odb_t sample_file;
 };
 
 /**

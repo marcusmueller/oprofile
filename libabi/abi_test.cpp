@@ -9,7 +9,7 @@
  */
 
 #include "abi.h"
-#include "odb_hash.h"
+#include "odb.h"
 #include "popt_options.h"
 #include "op_sample_file.h"
 #include "op_cpu_type.h"
@@ -54,7 +54,7 @@ int main(int argc, char const ** argv)
 	}
 
 	if (!db_filename.empty()) {
-		samples_odb_t dest;
+		odb_t dest;
 		int rc = odb_open(&dest, db_filename.c_str(), ODB_RDWR,
 		                  sizeof(struct opd_header));
 
