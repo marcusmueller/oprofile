@@ -15,7 +15,9 @@ event_files = \
 	ia64/itanium2/events ia64/itanium2/unit_masks \
 	ia64/itanium/events ia64/itanium/unit_masks \
 	rtc/events rtc/unit_masks \
-	x86-64/hammer/events x86-64/hammer/unit_masks
+	x86-64/hammer/events x86-64/hammer/unit_masks \
+	arm/xscale1/events arm/xscale1/unit_masks \
+	arm/xscale2/events arm/xscale2/unit_masks
 
 install-data-local:
 	for i in ${event_files} ; do \

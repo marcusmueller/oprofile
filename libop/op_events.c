@@ -645,6 +645,12 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 			descr->name = "CYCLES";
 			break;
 
+		// we could possibly use the CCNT
+		case CPU_ARM_XSCALE1:
+		case CPU_ARM_XSCALE2:
+			descr->name = "CPU_CYCLES";
+			break;
+
 		// don't use default, if someone add a cpu he wants a compiler
 		// warning if he forgets to handle it here.
 		case CPU_TIMER_INT:

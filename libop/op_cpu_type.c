@@ -41,6 +41,8 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "Alpha EV6", "alpha/ev6", CPU_AXP_EV6, 2 },
 	{ "Alpha EV67", "alpha/ev67", CPU_AXP_EV67, 20 },
 	{ "Pentium M (P6 core)", "i386/p6_mobile", CPU_P6_MOBILE, 2 },
+	{ "ARM/XScale PMU1", "arm/xscale1", CPU_ARM_XSCALE1, 3 },
+	{ "ARM/XScale PMU2", "arm/xscale2", CPU_ARM_XSCALE2, 5 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

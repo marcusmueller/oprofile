@@ -37,6 +37,8 @@ typedef enum {
 	CPU_AXP_EV6, /**< Alpha EV6 family */
 	CPU_AXP_EV67, /**< Alpha EV67 family */
 	CPU_P6_MOBILE, /**< Pentium M series */
+	CPU_ARM_XSCALE1, /**< ARM XScale 1 */
+	CPU_ARM_XSCALE2, /**< ARM XScale 2 */
 	MAX_CPU_TYPE
 } op_cpu;
 

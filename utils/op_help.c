@@ -398,6 +398,11 @@ int main(int argc, char const *argv[])
 		printf("See Alpha Architecture Reference Manual\n"
 		       "ftp://ftp.compaq.com/pub/products/alphaCPUdocs/alpha_arch_ref.pdf\n");
 		break;
+	case CPU_ARM_XSCALE1:
+	case CPU_ARM_XSCALE2:
+		printf("See Intel XScale Core Developer's Manual\n"
+		       "Chapter 8 Performance Monitoring\n");
+		break;
 	case CPU_RTC:
 		break;
 
