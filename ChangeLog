@@ -1,5 +1,9 @@
 2003-07-23  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml: remove mention of oprof_start_event
+
+2003-07-23  John Levon  <levon@movementarian.org>
+
 	* dae/oprofiled.c:
 	* daemon/oprofiled.c: don't uselessly try to unlink
 	non-existent lockfile

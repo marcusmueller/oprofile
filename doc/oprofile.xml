@@ -745,8 +745,7 @@ Note that quitting <command>oprof_start</command> does not stop the profiler.
 </para>
 <para>
 Your configuration is saved in the same file as <command>opcontrol</command> uses; that is,
-<filename>~/.oprofile/daemonrc</filename>. In addition, the per-event parameters are saved in
-<filename>~/.oprofile/oprof_start_event</filename>.
+<filename>~/.oprofile/daemonrc</filename>.
 </para>
 
 </sect1>

@@ -37,6 +37,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o add -Wdeclaration-after-statement for $CC
  o GUI still has a physical-counter interface, should have a general one
    like opcontrol --event
  o test opannotate -s -a on an application containing relative path debug
