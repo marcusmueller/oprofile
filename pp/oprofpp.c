@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.42 2001/09/13 16:08:19 davej Exp $ */
+/* $Id: oprofpp.c,v 1.43 2001/09/15 20:55:45 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -148,6 +148,19 @@ static void get_options(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	/* check only one major mode specified */
+	if ((list_all_symbols_details + list_symbols + (gproffile != 0) + (symbol != 0)) > 1) {
+		fprintf(stderr, "oprofpp: must specify only one output type.\n");
+		poptPrintHelp(optcon, stderr, 0);
+		exit(EXIT_FAILURE);
+	}
+
+	if (output_linenr_info && !list_all_symbols_details && !symbol) {
+		fprintf(stderr, "oprofpp: cannot list debug info without -L or -s option.\n");
+		poptPrintHelp(optcon, stderr, 0);
+		exit(EXIT_FAILURE);
+	}
+ 
 	/* non-option file, either a sample or binary image file */
 	file = poptGetArg(optcon);
 
@@ -220,11 +233,12 @@ static void get_options(int argc, char const *argv[])
 	if (file_ctr_str)
 		file_ctr_str[0] = '\0';
 
-	if (ctr != -1 && (ctr < 0 || ctr >= (int)op_nr_counters)) {
-		ctr = 0;
-
-		fprintf(stderr, "oprofpp: invalid counter number, using %d\n", ctr);
-		
+	/* yes, OP_MAX_COUNTERS. We should initially allow for seeing if
+	 * there are samples for any counter
+	 */
+	if (ctr != -1 && (ctr < 0 || ctr >= OP_MAX_COUNTERS)) {
+		fprintf(stderr, "oprofpp: invalid counter number %u\n", ctr);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -421,6 +435,45 @@ static int interesting_symbol(asymbol *sym)
 }
 
 /**
+ * translate_address - lookup and output linenr info from a vma address
+ * in a given section to standard output.
+ * @ibfd: the bfd
+ * @syms: pointer to array of symbol pointers
+ * @section: the section containing the vma
+ * @pc: the virtual memory address
+ *
+ * Do not change output format without changing the corresponding tools
+ * that work with output from oprofpp.
+ */
+static void
+translate_address (bfd* ibfd, asymbol **syms, asection *section, bfd_vma pc)
+{
+	int found;
+	bfd_vma vma;
+
+	const char *filename;
+	const char *functionname;
+	unsigned int line;
+
+	if ((bfd_get_section_flags (ibfd, section) & SEC_ALLOC) == 0)
+		return;
+
+	vma = bfd_get_section_vma (ibfd, section);
+	if (pc < vma)
+		return;
+
+	found = bfd_find_nearest_line (ibfd, section, syms, pc - vma,
+				       &filename, &functionname, &line);
+
+	if (!found) {
+		printf ("??:0");
+	}
+	else {
+		printf ("%s:%u", filename, line);
+	}
+}
+
+/**
  * get_symbols - get symbols from bfd
  * @ibfd: bfd to read from
  * @symsp: pointer to array of symbol pointers
@@ -568,11 +621,6 @@ void do_list_symbols(asymbol **syms, uint num)
 		}
 	}
 
-	if (ctr == -1 || samples[ctr] == NULL) {
-		fprintf(stderr, " oprofpp: invalid counter %d before sort by count\n", ctr); 
-		exit(EXIT_FAILURE);
-	}
-
 	qsort(scounts, num, sizeof(struct opp_count), countcomp);
 
 	for (i=0; i < num; i++) {
@@ -618,16 +666,25 @@ void do_list_symbol(bfd * ibfd, asymbol **syms, uint num)
 found:
 	printf("Samples for symbol \"%s\" in image %s\n", symbol, ibfd->filename);
 	get_symbol_range(syms[i], (i == num-1) ? NULL : syms[i+1], &start, &end);
-	for (j=start; j < end; j++) { 
+	for (j=start; j < end; j++) {
 		for (k = 0 ; k < op_nr_counters ; ++k) {
-			if (samples[k] && samples[k][j].count) {
-				printf("%s+%x/%x:", symbol, sym_offset(syms[i], j), end-start);
+			if (samples[k] && samples[k][j].count)
 				break;
-			}
 		}
 
 		/* k != op_nr_counters <==> one of the counter is not empty */
 		if (k != op_nr_counters) {
+			bfd_vma vma, base_vma;
+			base_vma = syms[i]->value + syms[i]->section->vma;
+			vma = sym_offset(syms[i], j) + base_vma;
+
+			if (output_linenr_info)	{
+				translate_address(ibfd, syms, syms[i]->section, vma);
+				printf(" ");
+			}
+
+			printf("%s+%x/%x:", symbol, sym_offset(syms[i], j), end-start);
+ 
 			for (k = 0 ; k < op_nr_counters ; ++k) {
 				if (samples[k])
 					/* PHE: please keep this space a few
@@ -731,45 +788,6 @@ void do_dump_gprof(asymbol **syms, uint num)
 	 
 	opd_write_file(fp, hist, histsize * sizeof(u16));
 	opd_close_file(fp);
-}
-
-/**
- * translate_address - lookup and output linenr info from a vma address
- * in a given section to standard output.
- * @ibfd: the bfd
- * @syms: pointer to array of symbol pointers
- * @section: the section containing the vma
- * @pc: the virtual memory address
- *
- * Do not change output format without changing the corresponding tools
- * that work with output from oprofpp.
- */
-static void
-translate_address (bfd* ibfd, asymbol **syms, asection *section, bfd_vma pc)
-{
-	int found;
-	bfd_vma vma;
-
-	const char *filename;
-	const char *functionname;
-	unsigned int line;
-
-	if ((bfd_get_section_flags (ibfd, section) & SEC_ALLOC) == 0)
-		return;
-
-	vma = bfd_get_section_vma (ibfd, section);
-	if (pc < vma)
-		return;
-
-	found = bfd_find_nearest_line (ibfd, section, syms, pc - vma,
-				       &filename, &functionname, &line);
-
-	if (!found) {
-		printf ("??:0");
-	}
-	else {
-		printf ("%s:%u", filename, line);
-	}
 }
 
 /**
@@ -1115,6 +1133,14 @@ int main(int argc, char const *argv[])
 
 	verbprintf("nr_samples %d\n", nr_samples); 
 
+	for (i = 0; i < OP_MAX_COUNTERS; ++i) {
+		if (fd[i] != -1)
+			break;
+	}
+
+	if (footer[i]->cpu_type == CPU_ATHLON)
+		op_nr_counters = 4;
+
 	ibfd = open_image_file(samplefile, mtime);
 
 	num = get_symbols(ibfd, &syms);
@@ -1125,14 +1151,6 @@ int main(int argc, char const *argv[])
 		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
 		exit(EXIT_FAILURE);
 	}
-
-	for (i = 0; i < OP_MAX_COUNTERS; ++i) {
-		if (fd[i] != -1)
-			break;
-	}
-
-	if (footer[i]->cpu_type == CPU_ATHLON)
-		op_nr_counters = 4;
 
 	if (list_all_symbols_details)
 		/* TODO: temporary hack to fix and easy life of opf_filter.cpp

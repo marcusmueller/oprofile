@@ -9,7 +9,7 @@ exec_prefix=@exec_prefix@
 BINDIR=@bindir@
 MKDIR_P=mkdir -p
 
-install: oprofile
+install: all oprofile
 	-$(MKDIR_P) $(BINDIR)
 	cp oprofile $(BINDIR)/oprofile
 	cd $(BINDIR) && chmod 755 oprofile

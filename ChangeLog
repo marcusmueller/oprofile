@@ -1,3 +1,10 @@
+2001-09-15  John Levon  <moz@compsoc.man.ac.uk>
+
+	* all Makefile.in: install should depend on all
+
+	* oprofpp.c: fixes for Athlon 4 counters. Enable debug info
+	  for list-symbol. Some stricter checking
+
 2001-09-15  Philippe Elie  <ph_e@club-internet.fr>
 
 	* op_events.c: some static variable to global

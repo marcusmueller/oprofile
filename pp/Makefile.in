@@ -13,7 +13,7 @@ MANDIR=@mandir@
 MKDIR_P=mkdir -p
 INSTALL_LIST=oprofpp oprof_convert opf_filter op_to_source
 
-install: $(INSTALL_LIST)
+install: all $(INSTALL_LIST)
 	-$(MKDIR_P) $(BINDIR)
 	for f in $(INSTALL_LIST); do \
 		cp $$f $(BINDIR)/$$f && chmod 755 $(BINDIR)/$$f; \

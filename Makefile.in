@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.25 2001/09/01 02:03:34 movement Exp $
+# $Id: Makefile.in,v 1.26 2001/09/15 20:55:45 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -43,7 +43,7 @@ dist:
 tags:
 	ctags -R
 
-install: oprofile.o
+install: all oprofile.o
 	-$(MKDIR_P) $(MODINSTALLDIR)
 	cp oprofile.o $(MODINSTALLDIR)
 	depmod -a
