@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.6 2000/08/18 01:13:51 moz Exp $
+# $Id: op_start,v 1.7 2000/08/21 19:28:32 moz Exp $
 
 # quick and ugly interface
 # op_start --help and op_start --list-events have info
@@ -253,6 +253,14 @@ then
 	exit 1
 fi
 
+echo "Doing mknod $HASH_MAP_DEVICE_FILE"
+mknod "$HASH_MAP_DEVICE_FILE" c $MAJOR_NR 1
+if [ "$?" != "0" ]
+then
+	echo "Couldn't mknod $HASH_MAP_DEVICE_FILE"
+	exit 1
+fi
+
 echo "Doing mknod $MAP_DEVICE_FILE"
 mknod "$MAP_DEVICE_FILE" c $MAJOR_NR 2
 if [ "$?" != "0" ]
@@ -263,8 +271,8 @@ fi
 
 OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$USE_PII --ignore-myself=$IGNORE_MYSELF \
 	--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
-	--device-file=$DEVICE_FILE --map-device-file=$MAP_DEVICE_FILE --hash-map-device-file \
-	--vmlinux=$VMLINUX"
+	--device-file=$DEVICE_FILE --map-device-file=$MAP_DEVICE_FILE \
+	--hash-map-device-file=$HASH_MAP_DEVICE_FILE --vmlinux=$VMLINUX"
 
 if [ "$CTR0_TYPE" != "" ]; then
 	OPD_ARGS="$OPD_ARGS --ctr0-event=$CTR0_TYPE --ctr0-unit-mask=$CTR0_UM"
