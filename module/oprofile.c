@@ -470,6 +470,7 @@ static int oprof_init_data(void)
 
 	// There might be a race here, if we end up enabling perfctr's via smp_call_function,
 	// but we didn't allocate the hashtable or buffer ?
+	// to fix we should use cpu_possible() when it exists. 
 	for_each_online_cpu(i) {
 		data = &oprof_data[i];
 
