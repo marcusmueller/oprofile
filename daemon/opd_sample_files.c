@@ -16,7 +16,7 @@
 #include "opd_printf.h"
 
 #include "op_sample_file.h"
-#include "op_interface.h"
+#include "op_interface_25.h"
 #include "op_cpu_type.h"
 #include "op_mangle.h"
 

@@ -18,7 +18,7 @@
 #include "op_types.h" 
 #include "op_libiberty.h"
 #include "op_file.h"
-#include "op_interface.h"
+#include "op_interface_25.h"
  
 #include <unistd.h>
 #include <limits.h>
@@ -319,10 +319,12 @@ static int opd_get_counter(unsigned long val)
 }
  
 
+#if 0 /* not used (yet) */
 static int opd_get_cpu(unsigned long val)
 {
 	return val >> 2;
 }
+#endif
 
 
 void opd_put_sample(struct op_sample const * sample)

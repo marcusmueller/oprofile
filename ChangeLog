@@ -1,5 +1,17 @@
 2002-09-23  John Levon  <levon@movementarian.org>
 
+	* libop/op_interface_25.h: 2.5 interface
+
+	* daemon/opd_image.c:
+	* daemon/opd_sample_files.c:
+	* daemon/oprofiled.c:
+
+	* libop++/op_print_event.h: fix header
+
+	* pp/op_to_source.cpp: change from above
+
+2002-09-23  John Levon  <levon@movementarian.org>
+
 	* daemon/: new 2.5 patch daemon code. WIP
 
 	* configure.in:

@@ -28,6 +28,7 @@
 #include "op_print_event.h"
 #include "op_events_desc.h"
 #include "op_to_source_options.h"
+#include "op_config.h"
 
 #include "child_reader.h"
 #include "string_manip.h"
