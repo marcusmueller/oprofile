@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.67 2001/08/10 02:04:08 movement Exp $ */
+/* $Id: oprofile.c,v 1.68 2001/08/11 01:13:37 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -127,31 +127,6 @@ asmlinkage void op_do_nmi(struct pt_regs *regs)
 
 /* ---------------- NMI handler setup ------------ */
 
-void mask_LVT_NMIs(void)
-{
-	ulong v;
-
-	/* LVT0,1,PC can generate NMIs on APIC */
-	v = apic_read(APIC_LVT0);
-	apic_write(APIC_LVT0, v | APIC_LVT_MASKED);
-	v = apic_read(APIC_LVT1);
-	apic_write(APIC_LVT1, v | APIC_LVT_MASKED);
-        v = apic_read(APIC_LVTPC);
-        apic_write(APIC_LVTPC, v | APIC_LVT_MASKED);
-}
-
-void unmask_LVT_NMIs(void)
-{
-	ulong v;
-
-	v = apic_read(APIC_LVT0);
-	apic_write(APIC_LVT0, v & ~APIC_LVT_MASKED);
-	v = apic_read(APIC_LVT1);
-	apic_write(APIC_LVT1, v & ~APIC_LVT_MASKED);
-        v = apic_read(APIC_LVTPC);
-        apic_write(APIC_LVTPC, v & ~APIC_LVT_MASKED);
-}
-
 static ulong idt_addr;
 static ulong kernel_nmi;
 
@@ -160,7 +135,7 @@ static void install_nmi(void)
 	volatile struct _descr descr = { 0, 0,};
 	volatile struct _idt_descr *de;
 
-	mask_LVT_NMIs();
+	__cli();
 	store_idt(descr);
 	idt_addr = descr.base;
 	de = (struct _idt_descr *)idt_addr;
@@ -170,14 +145,14 @@ static void install_nmi(void)
 	kernel_nmi = (de->a & 0xffff) | (de->b & 0xffff0000);
 
 	_set_gate(de, 14, 0, &op_nmi);
-	unmask_LVT_NMIs();
+	__sti();
 }
 
 static void restore_nmi(void)
 {
-	mask_LVT_NMIs();
+	__cli();
 	_set_gate(((char *)(idt_addr)) + 16, 14, 0, kernel_nmi);
-	unmask_LVT_NMIs();
+	__sti();
 }
 
 /* ---------------- APIC setup ------------------ */
