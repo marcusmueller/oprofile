@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.20 2000/09/07 20:12:47 moz Exp $ */
+/* $Id: oprofile.h,v 1.21 2000/09/11 23:42:46 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -82,7 +82,7 @@ struct _oprof_data {
  * entries are added to the map buffer in an attempt to
  * prevent overflow
  */
-#define OP_MAP_BUF_WATERMARK 1024
+#define OP_MAP_BUF_WATERMARK 2048
 
 /* nr. entries in hash map, prime */
 #define OP_HASH_MAP_NR 1023

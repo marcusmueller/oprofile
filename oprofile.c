@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.37 2000/09/09 19:51:02 moz Exp $ */
+/* $Id: oprofile.c,v 1.38 2000/09/11 23:42:46 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -732,8 +732,8 @@ static __init int parms_ok(void)
 	struct _oprof_data *data;
 	u8 ctr0_um, ctr1_um;
 
-	op_check_range(op_hash_size,256,65536,"op_hash_size value %d not in range\n");
-	op_check_range(op_buf_size,512,65536,"op_buf_size value %d not in range\n");
+	op_check_range(op_hash_size,256,262144,"op_hash_size value %d not in range\n");
+	op_check_range(op_buf_size,512,262144,"op_buf_size value %d not in range\n");
 
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		data = &oprof_data[cpu];
