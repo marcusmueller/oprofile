@@ -14,13 +14,6 @@ EXTRA_CFLAGS=@EXTRA_CFLAGS_MODULE@ @EXTRA_CFLAGS@ -D__NO_VERSION__ \
  
 USE_STANDARD_AS_RULE=1
  
-# enable -Werror for non-release versions except for on 2.5 kernels
-ifneq (,$(findstring cvs,$(VERSION)))
-ifeq (,$(findstring 2.5,$(KVERS)))
-EXTRA_CFLAGS += -Werror
-endif
-endif
-
 # NB: do not add a file here without adding it to EXTRA_DIST in ../Makefile.am
 
 O_TARGET := arch.o
