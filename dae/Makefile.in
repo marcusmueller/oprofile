@@ -1,0 +1,39 @@
+# $Id: Makefile.in,v 1.1 2000/08/03 02:37:33 moz Exp $
+
+.PHONY: all clean srcdoc install
+ 
+all: oprofiled op_help
+ 
+BINDIR=@bindir@
+MANDIR=@mandir@
+PREFIX=@program_prefix@
+SUFFIX=@program_suffix@
+
+install: oprofiled op_start op_stop op_help
+	cp oprofiled $(BINDIR)/$(PREFIX)oprofiled$(SUFFIX)
+	cp op_start $(BINDIR)/$(PREFIX)op_start$(SUFFIX)
+	cp op_stop $(BINDIR)/$(PREFIX)op_stop$(SUFFIX)
+	cp op_help $(BINDIR)/op_help 
+	cd $(BINDIR) && chmod 755 $(PREFIX)oprofiled$(SUFFIX) $(PREFIX)op_start$(SUFFIX) $(PREFIX)op_stop$(SUFFIX) op_help
+ 
+clean:
+	rm -f oprofiled op_help *.o
+ 
+CFLAGS=-Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
+LIBS=@extra_libraries@ -lpopt
+INCLUDES=@extra_includes@
+HEADERS=oprofiled.h
+SOURCES=oprofiled.c opd_util.c opd_proc.c ../op_events.c
+ 
+srcdoc: oprofiled-src.html
+
+oprofiled-src.html: $(SOURCES)
+	../scripts/dodoc -html $(SOURCES) >oprofiled-src.html
+ 
+oprofiled: $(SOURCES) $(HEADERS) 
+	rm -f ../op_events.o 
+	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $(SOURCES) $(LIBS)
+
+op_help: ../op_events.c
+	rm -f ../op_events.o
+	$(CC) $(CFLAGS) -DOP_EVENTS_DESC -DOP_EVENTS_MAIN $(INCLUDES) -g -o op_help ../op_events.c
