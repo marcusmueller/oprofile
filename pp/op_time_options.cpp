@@ -15,7 +15,6 @@
 
 #include "popt_options.h"
 #include "file_manip.h"
-#include "verbose_ostream.h"
 
 #include <list>
 
@@ -123,7 +122,7 @@ void handle_session_options(void)
 
 } // namespace anon
 
-verbose_ostream cverb(std::cout);
+std::ostream cverb;
 
 /**
  * get_options - process command line
@@ -139,8 +138,8 @@ void get_options(int argc, char const * argv[])
 	string file;
 	parse_options(argc, argv, file);
 
-	if (!verbose)
-		cverb.go_silent();
+	if (verbose)
+		cverb.rdbuf(std::cout.rdbuf());
 
 	if (file.length())
 		session = file;

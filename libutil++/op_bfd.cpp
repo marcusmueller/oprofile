@@ -18,8 +18,6 @@
 
 #include <cstdlib>
 
-#include "verbose_ostream.h"
-
 #include "op_bfd.h"
 
 using std::find;
@@ -31,6 +29,8 @@ using std::hex;
 using std::dec;
 using std::endl;
 
+extern std::ostream cverb;
+ 
 op_bfd::op_bfd(string const & filename, vector<string> exclude_symbols)
 	:
 	file_size(0),

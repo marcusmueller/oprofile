@@ -11,7 +11,6 @@
 
 #include "op_to_source_options.h"
 #include "popt_options.h"
-#include "verbose_ostream.h"
 
 #include <iostream>
 
@@ -61,7 +60,7 @@ option options_array[] = {
 
 }
 
-verbose_ostream cverb(std::cout);
+std::ostream cverb;
 
 /**
  * get_options - process command line
@@ -76,8 +75,8 @@ string const get_options(int argc, char const * argv[])
 
 	parse_options(argc, argv, arg);
 
-	if (!verbose)
-		cverb.go_silent();
+	if (verbose)
+		cverb.rdbuf(std::cout.rdbuf());
 
 	if (options::with_more_than_samples
 		&& options::until_more_than_samples) {

@@ -9,7 +9,6 @@
  */
 
 #include "popt_options.h"
-#include "verbose_ostream.h"
 
 #include "oprofpp_options.h"
 #include "opp_symbol.h"
@@ -77,7 +76,7 @@ void quit_error(string const & err)
 
 } // namespace anon
 
-verbose_ostream cverb(std::cout);
+std::ostream cverb;
 
 string const get_options(int argc, char const **argv)
 {
@@ -88,9 +87,9 @@ string const get_options(int argc, char const **argv)
 
 	counter_mask = parse_counter_mask(counter_str);
 
-	if (!verbose)
-		cverb.go_silent();
-
+	if (verbose)
+		cverb.rdbuf(std::cout.rdbuf());
+ 
 	if (!list_all_symbols_details && !list_symbols &&
 	    gprof_file.empty() && symbol.empty())
 		quit_error("oprofpp: no mode specified. What do you want from me ?\n");

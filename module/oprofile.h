@@ -158,7 +158,6 @@ int oprof_hash_map_release(void);
 int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma);
 int oprof_map_open(void);
 int oprof_map_release(void);
-int oprof_map_read(char *buf, size_t count, loff_t *ppos);
 int oprof_init_hashmap(void);
 void oprof_free_hashmap(void);
 

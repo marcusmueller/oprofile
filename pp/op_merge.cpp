@@ -22,7 +22,6 @@
 #include "version.h"
 #include "popt_options.h"
 #include "file_manip.h"
-#include "verbose_ostream.h"
 
 #include "db.h"
 #include "op_config.h"
@@ -50,7 +49,7 @@ option options_array[] = {
 	option(counter, "use-counter", 'c', "use counter", "counter nr")
 };
 
-verbose_ostream cverb(std::cout);
+std::ostream cverb;
 
 /**
  * get_options - process command line
@@ -64,8 +63,8 @@ static void get_options(int argc, char const * argv[], vector<string> & images)
 {
 	parse_options(argc, argv, images);
 
-	if (!verbose)
-		cverb.go_silent();
+	if (verbose)
+		cverb.rdbuf(std::cout.rdbuf());
 
 	if (images.size() == 0) {
 		cerr << "Neither samples filename or image filename"

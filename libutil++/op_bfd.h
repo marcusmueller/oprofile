@@ -71,6 +71,8 @@ private:
 /**
  * Encapsulation of a bfd object. Simplifies open/close of bfd, enumerating
  * symbols and retrieving informations for symbols or vma.
+ *
+ * Use of this class relies on a std::ostream cverb
  */
 class op_bfd {
 public:
