@@ -2,6 +2,20 @@
 
 	* TODO: update
 
+	* libutil++/filename_match.cpp:
+	* libutil++/filename_match.h: add a convenience ctor.
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml:
+	* op_time.cpp: better error message for EPERM problem
+	* op_time_options.h:
+	* op_time_options.cpp: allow the user to specify explicitely on which
+	  filename he want to work
+
+2002-06-29  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
 	* acinclude.m4:
 	* configure.in:
 	* make.common.in:

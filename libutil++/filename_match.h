@@ -12,6 +12,8 @@
 #ifndef FILENAME_MATCH_H
 #define FILENAME_MATCH_H
 
+#include <vector>
+
 /// a class to encapsulate filename matching. The behavior look like
 /// fnmatch(pattern, filename, 0); eg * match '/' character. See the man page
 /// of fnmatch for further details.
@@ -21,6 +23,10 @@ class filename_match {
 	/// leading and trailing blank which are stripped from pattern.
 	filename_match(std::string const & include_patterns,
 		       std::string const & exclude_patterns);
+
+	/// directly specify include/exclude pattern through the argument
+	filename_match(std::vector<std::string> const & include_patterns,
+		       std::vector<std::string> const & exclude_patterns);
 
 
 	/// return if true filename match include_pattern and does not match

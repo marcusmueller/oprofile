@@ -255,7 +255,7 @@ verbose output
 exclude list of comma separated symbol
 .br
 .TP
-.B op_time options
+.B op_time options [image_name [image_names]]
 .br
 .TP
 .BI "--use-counter " counter_nr ", -c "counter_nr

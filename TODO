@@ -21,7 +21,6 @@ Before 1.0 big stuff
  o thread profiling in the old and new flavour (2.5 introduce a new thread handling)
    - what is different ?? 
  o CPU-specific sample files option ?
- o op_time for only some specified files... 
  o split doc into user's manual and hacking manual, document much more 
  
 Before 1.0 little stuff

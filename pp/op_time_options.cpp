@@ -39,6 +39,7 @@ namespace options {
 	string samples_dir;
 	outsymbflag output_format_flags;
 	alt_filename_t alternate_filename;
+	vector<string> filename_filters;
 }
 
 namespace {
@@ -134,14 +135,9 @@ void get_options(int argc, char const * argv[])
 {
 	using namespace options;
 
-	string file;
-	parse_options(argc, argv, file);
-
+	parse_options(argc, argv, filename_filters);
 
 	set_verbose(verbose);
-
-	if (file.length())
-		session = file;
 
 	handle_session_options();
 

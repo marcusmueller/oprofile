@@ -1135,7 +1135,7 @@ The options allowed are :
 <para>
 You can get a quick look at an overall summary of relative binary profiles using <command>op_time</command>. This utility displays
 the relative amount of samples for each application profiled sorted by decreasing order of samples count. So
-with <command>op_time [<option>--option</option>] [<filename>session</filename>]</command> you can get :
+with <command>op_time [<option>--option</option>] [<filename>image_name[,image_names]</filename>]</command> you can get :
 </para>
 <screen>
 /lib/libc-2.1.2.so 19 32.7586%
@@ -1144,6 +1144,14 @@ with <command>op_time [<option>--option</option>] [<filename>session</filename>]
 /usr/bin/grep 1 1.72414%
 /usr/X11R6/lib/libXt.so.6.0 1 1.72414%
 </screen>
+<para>
+If you don't specify any image_name on command line op_time report information about all profiled binary image.
+You can use shell wildcards like :
+<command>op_time <filename>/usr/bin/*</filename></command>
+<!-- FIXME: remove this if implementation is fixed see op_time.cpp filter_image_name() -->
+Currently you cannot use :
+<command>op_time <filename>"/usr/bin/*"</filename></command>
+</para>
 <para>
 Options allowed are :
 </para> 

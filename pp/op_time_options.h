@@ -48,6 +48,8 @@ namespace options {
 	extern int sort_by_counter;
 	/// whether to demangle
 	extern bool demangle;
+	// Contains the list of image name for which we request information
+	extern std::vector<string> filename_filters;
 }
 
 /**

@@ -11,6 +11,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <string>
 #include <list>
@@ -31,6 +32,7 @@
 #include "samples_container.h"
 #include "samples_file.h"
 
+#include "filename_match.h"
 #include "file_manip.h"
 #include "string_manip.h"
 
@@ -107,6 +109,32 @@ image_name::image_name(string const & samplefile_name)
 }
 
 /**
+ * filter_image_name - check if image name match one of the filter given
+ * on comand line.
+ */
+static bool filter_image_name(string const & image_name)
+{
+	if (options::filename_filters.empty())
+		return true;
+
+	string temp(image_name);
+	std::replace(temp.begin(), temp.end(), '}', '/');
+
+	/* FIXME : why this does not work, the intent is to allow 
+	 * op_time "/usr/bin/ *" to work-around a possible "Argument list
+	 * too long" when starting op_time */
+#if 0
+	filename_match fn(options::filename_filters, vector<string>());
+
+	return fn.match(temp);
+#else
+	return std::find(options::filename_filters.begin(),
+			 options::filename_filters.end(),
+			 temp) != options::filename_filters.end();
+#endif
+}
+
+/**
  * sort_file_list_by_name - insert in result a file list sorted by app name
  * @param result where to put result
  * @param file_list a list of string which must be insert in result
@@ -153,8 +181,10 @@ static void sort_file_list_by_name(map_t & result,
 
 		if (i < OP_MAX_COUNTERS) {
 			image_name image(*it);
-			map_t::value_type value(image.app_name, image);
-			result.insert(value);
+			if (filter_image_name(image.app_name)) {
+				map_t::value_type value(image.app_name, image);
+				result.insert(value);
+			}
 		}
 	}
 }
@@ -377,17 +407,32 @@ static void output_files_count(map_t& files)
 	}
 }
 
+
 /**
  * check_image_name - check than image_name belonging to samples_filename
  * exist. If not it try to retrieve it through the alternate_filename
  * location.
  */
-string check_image_name(string const & image_name,
-			string const & samples_filename)
+static string check_image_name(string const & image_name,
+			       string const & samples_filename)
 {
 	// FIXME: this isn't polite enough for a permissions problem.
 	if (op_file_readable(image_name))
 		return image_name;
+
+	// John did you think at something like this (FIXME above) ?
+	if (errno == EPERM) {
+		static bool first_warn = true;
+		if (first_warn) {
+			cerr << "you have not read access to some binary image"
+			     << ", all\nof this file(s) will be ignored in"
+			     << " statistics\n" << endl;
+		}
+		cerr << "access denied for : " << image_name;
+
+		// FIXME must we continue search in alternate path ?
+		return string(); 
+	}
 
 	typedef alt_filename_t::const_iterator it_t;
 	std::pair<it_t, it_t> p_it =

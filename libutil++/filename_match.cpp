@@ -28,6 +28,14 @@ filename_match::filename_match(string const & include_patterns,
 	separate_token(exclude_pattern, exclude_patterns, ',');
 }
 
+filename_match::filename_match(vector<string> const & include_patterns,
+			       vector<string> const & exclude_patterns)
+	:
+	include_pattern(include_patterns),
+	exclude_pattern(exclude_patterns)
+{
+}
+
 bool filename_match::match(string const & filename)
 {
 	string const & base = basename(filename);
