@@ -1,10 +1,13 @@
 2003-07-24  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* utils/op_help.c: make valgrind happy + minor cleanup
+
+2003-07-24  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libop/op_alloc_counter.h:
 	* libop/op_alloc_counter.c: new file providing mapping from an event 
 	  list to hardware counter number
 	* utils/op_help.c: use the above api
-
 
 2003-07-24  Philippe Elie  <phil.el@wanadoo.fr>
 

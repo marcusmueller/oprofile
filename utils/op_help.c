@@ -20,7 +20,7 @@
 #include "op_popt.h"
 #include "op_cpufreq.h"
 #include "op_hw_config.h"
-#include "op_libiberty.h"
+#include "op_string.h"
 #include "op_alloc_counter.h"
 
 static char const ** chosen_events;
@@ -33,6 +33,8 @@ struct parsed_event {
 
 
 static op_cpu cpu_type = CPU_NO_GOOD;
+
+static poptContext optcon;
 
 /**
  * help_for_event - output event name and description
@@ -49,21 +51,15 @@ static void help_for_event(struct op_event * event)
 
 	printf(": (counter: ");
 
-	/* FIXME, reintroduce
-	if (event->counter_mask == CTR_ALL) {
-		printf("all");
-	} else {
-	*/
-		mask = event->counter_mask;
-		for (i = 0; i < CHAR_BIT * sizeof(event->counter_mask); ++i) {
-			if (mask & (1 << i)) {
-				printf("%d", i);
-				mask &= ~(1 << i);
-				if (mask)
-					printf(", ");
-			}
+	mask = event->counter_mask;
+	for (i = 0; i < CHAR_BIT * sizeof(event->counter_mask); ++i) {
+		if (mask & (1 << i)) {
+			printf("%d", i);
+			mask &= ~(1 << i);
+			if (mask)
+				printf(", ");
 		}
-	/*}*/
+	}
 
 	printf(")\n\t%s (min count: %d)\n", event->desc, event->min_count);
 
@@ -100,7 +96,7 @@ static char * next_part(char const ** str)
 	if (c == *str)
 		return NULL;
 
-	ret = strndup(*str, c - *str);
+	ret = op_xstrndup(*str, c - *str);
 	*str += c - *str;
 	return ret;
 }
@@ -269,8 +265,6 @@ static struct poptOption options[] = {
  */
 static void get_options(int argc, char const * argv[])
 {
-	poptContext optcon;
-
 	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (show_vers) {
@@ -280,7 +274,21 @@ static void get_options(int argc, char const * argv[])
 	/* non-option, must be a valid event name or event specs */
 	chosen_events = poptGetArgs(optcon);
 
-	/* don't free the context, we need chosen_events */
+	/* don't free the context now, we need chosen_events */
+}
+
+
+/** make valgrind happy */
+static void cleanup()
+{
+	int i;
+	for (i = 0; i < op_get_nr_counters(cpu_type); ++i) {
+		if (parsed_events[i].name)
+			free(parsed_events[i].name);
+	}
+	op_free_events();
+	if (optcon)
+		poptFreeContext(optcon);
 }
 
 
@@ -289,6 +297,8 @@ int main(int argc, char const *argv[])
 	struct list_head * events;
 	struct list_head * pos;
 	char const * pretty;
+
+	atexit(cleanup);
 
 	get_options(argc, argv);
 
