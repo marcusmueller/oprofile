@@ -347,9 +347,10 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 			// FIXME: enough precise message ? We will get this
 			// message for static C++ function too, must we
 			// warn only if the following check fails ?
-			cerr << "warning: some functions compiled without "
-			     << "debug information may have incorrect source "
-			     << "line attributions" << endl;
+			cerr << "warning: \"" << this->filename << "\" some "
+			     << "functions compiled without debug information "
+			     << "may have incorrect source line attributions"
+			     << endl;
 			warned = true;
 		}
 		if (sym.name().find(functionname) == string::npos)
