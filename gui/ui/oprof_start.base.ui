@@ -11,8 +11,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>561</width>
-            <height>593</height>
+            <width>693</width>
+            <height>500</height>
         </rect>
     </property>
     <property stdset="1">
@@ -716,7 +716,7 @@
                                         <class>QLabel</class>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>TextLabel18</cstring>
+                                            <cstring>note_table_size_label</cstring>
                                         </property>
                                         <property stdset="1">
                                             <name>text</name>
@@ -731,7 +731,7 @@
                                         <class>QLabel</class>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>TextLabel8</cstring>
+                                            <cstring>pgrp_filter_label</cstring>
                                         </property>
                                         <property stdset="1">
                                             <name>text</name>
@@ -768,7 +768,7 @@
                                         <class>QLabel</class>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>TextLabel3</cstring>
+                                            <cstring>pid_filter_label</cstring>
                                         </property>
                                         <property stdset="1">
                                             <name>text</name>
@@ -779,7 +779,7 @@
                                         <class>QLabel</class>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>TextLabel2</cstring>
+                                            <cstring>buffer_size_label</cstring>
                                         </property>
                                         <property stdset="1">
                                             <name>text</name>
@@ -1111,18 +1111,40 @@
 </connections>
 <tabstops>
     <tabstop>setup_config_tab</tabstop>
+    <tabstop>counter_combo</tabstop>
+    <tabstop>enabled</tabstop>
+    <tabstop>events_list</tabstop>
     <tabstop>os_ring_count_cb</tabstop>
     <tabstop>user_ring_count_cb</tabstop>
     <tabstop>event_count_edit</tabstop>
-    <tabstop>start_profiler_btn</tabstop>
-    <tabstop>flush_profiler_data_btn</tabstop>
-    <tabstop>stop_profiler_btn</tabstop>
-    <tabstop>quit_and_save_btn</tabstop>
+    <tabstop>check0</tabstop>
+    <tabstop>check1</tabstop>
+    <tabstop>check2</tabstop>
+    <tabstop>check3</tabstop>
+    <tabstop>check4</tabstop>
+    <tabstop>check5</tabstop>
+    <tabstop>check6</tabstop>
+    <tabstop>check7</tabstop>
+    <tabstop>check8</tabstop>
+    <tabstop>check9</tabstop>
+    <tabstop>check10</tabstop>
+    <tabstop>check11</tabstop>
+    <tabstop>check12</tabstop>
     <tabstop>kernel_filename_edit</tabstop>
     <tabstop>buffer_size_edit</tabstop>
     <tabstop>pid_filter_edit</tabstop>
     <tabstop>pgrp_filter_edit</tabstop>
+    <tabstop>note_table_size_edit</tabstop>
     <tabstop>kernel_only_cb</tabstop>
     <tabstop>verbose</tabstop>
+    <tabstop>separate_kernel_samples_cb</tabstop>
+    <tabstop>separate_lib_samples_cb</tabstop>
+    <tabstop>start_profiler_btn</tabstop>
+    <tabstop>flush_profiler_data_btn</tabstop>
+    <tabstop>stop_profiler_btn</tabstop>
+    <tabstop>quit_and_save_btn</tabstop>
+    <tabstop>check13</tabstop>
+    <tabstop>check14</tabstop>
+    <tabstop>check15</tabstop>
 </tabstops>
 </UI>

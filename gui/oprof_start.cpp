@@ -166,6 +166,21 @@ oprof_start::oprof_start()
 
 	load_config_file();
 
+	bool is_25 = op_get_interface() == OP_INTERFACE_25;
+
+	if (is_25) {
+		pid_filter_label->hide();
+		pid_filter_edit->hide();
+		pgrp_filter_label->hide();
+		pgrp_filter_edit->hide();
+		note_table_size_edit->hide();
+		note_table_size_label->hide();
+		kernel_only_cb->hide();
+		// FIXME: can adapt to 2.5 ...
+		buffer_size_edit->hide();
+		buffer_size_label->hide();
+	}
+
 	// setup the configuration page.
 	kernel_filename_edit->setText(config.kernel_filename.c_str());
 
@@ -218,7 +233,10 @@ oprof_start::oprof_start()
 	// daemon status timer
 	startTimer(5000);
 	timerEvent(0);
+
+	resize(minimumSizeHint());
 }
+
 
 // load the configuration, if the configuration file does not exist create it.
 // the parent directory of the config file is created if necessary through
@@ -845,11 +863,18 @@ void oprof_start::on_start_profiler()
 		args.push_back("--separate=library");
 	if (config.separate_kernel_samples)
 		args.push_back("--separate=kernel");
+
+	if (do_exec_command(BINDIR "/opcontrol", args))
+		goto out;
+
+	// now actually start
+	args.clear();
+	args.push_back("--start");
 	if (config.verbose)
 		args.push_back("--verbose");
-	args.push_back("--start");
-
 	do_exec_command(BINDIR "/opcontrol", args);
+
+out:
 	total_nr_interrupts = 0;
 	timerEvent(0);
 }

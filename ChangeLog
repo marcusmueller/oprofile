@@ -1,3 +1,11 @@
+2003-02-19  John Levon  <levon@movementarian.org>
+
+	* acinclude.m4: update from upstream
+
+	* gui/ui/oprof_start.base.ui:
+	* gui/oprof_start.cpp: separate --setup,--start.
+	  Hide non-2.5 stuff in 2.5.
+
 2003-02-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update
