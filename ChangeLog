@@ -1,3 +1,8 @@
+2003-07-13  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_image.c: verbprintf() when starting reading buffer not
+	  printf
+
 2003-07-12  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* from BRANCH_CALLGRAPH:
