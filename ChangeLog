@@ -1,5 +1,10 @@
 2003-10-29  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/profile_spec.cpp: error out for all tag:value specified
+	  more than once.
+
+2003-10-29  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* doc/opannotate.1.in:
 	* doc/opreport.1.in:
 	* doc/oprofile.xml:

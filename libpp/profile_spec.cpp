@@ -338,9 +338,15 @@ profile_spec profile_spec::create(vector<string> const & args,
                                   extra_images const & extra)
 {
 	profile_spec spec(extra);
+	set<string> tag_seen;
 
 	for (size_t i = 0 ; i < args.size() ; ++i) {
 		if (spec.is_valid_tag(args[i])) {
+			if (tag_seen.find(args[i]) != tag_seen.end()) {
+				throw op_runtime_error("you can't specifiy a "
+				       "tag more than once: " + args[i]);
+			}
+			tag_seen.insert(args[i]);
 			spec.parse(args[i]);
 		} else if (!substitute_alias(spec, args[i])) {
 			string file = op_follow_link(args[i]);
