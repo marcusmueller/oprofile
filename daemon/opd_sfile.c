@@ -209,7 +209,7 @@ static samples_odb_t * get_file(struct sfile * sf, struct sfile * last,
 {
 	samples_odb_t * file;
 
-	if (counter >= OP_MAX_COUNTERS) {
+	if (counter >= op_nr_counters) {
 		fprintf(stderr, "Invalid counter %u\n", counter);
 		abort();
 	}
