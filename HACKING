@@ -73,3 +73,21 @@ You'll need autoconf 2.13+ and automake 2.5+ when using CVS. Don't forget to
 autogen.sh first.
 
 We still currently support gcc 2.91.66. Please bear this in mind.
+
+Making patches, commit rights
+-----------------------------
+
+Patches should be in diff -u format, appliable by patch -p1 in the top-level
+source directory. Patches should not include changes to generated files.
+
+Even trivial patches must have a change log entry in the usual format (see
+ChangeLog). Refer to bug numbers in the change log if relevant.
+
+You may after a while be given direct commit rights. You should be subscribed
+to both the main list and the commits mailing list if you do. Your cvs commit
+message only needs to briefly describe what your change does - the change log
+should have the detailed description. Any non-trivial change needs approval
+from either John or Phil, unless stated otherwise. The CVS tree will freeze
+occassionally for release, in which case no commits are allowed at all without
+agreement of John and Phil.
+
