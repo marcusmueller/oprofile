@@ -1,4 +1,5 @@
 .deps
 regex_test
+mangled-name
 Makefile
 Makefile.in
