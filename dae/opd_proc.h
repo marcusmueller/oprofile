@@ -20,6 +20,8 @@ struct op_note;
 struct op_sample;
 
 struct opd_proc {
+	/* maps are stored in such order than maps[0] is the mapping
+	 * for the primary image (so on maps are not ordered by vma) */
 	struct opd_map * maps;
 	unsigned int nr_maps;
 	unsigned int max_nr_maps;

@@ -97,6 +97,7 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 	char * line;
 	char exe_name[20];
 	char * image_name;
+	unsigned int map_nr;
 
 	snprintf(mapsfile + 6, 6, "%hu", proc->pid);
 
@@ -126,6 +127,22 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 		} else {
 			opd_add_ascii_map(proc, line, image_name);
 			free(line);
+		}
+	}
+
+	/* dae assume than map_nr is the primary image name, this is always
+	 * true at exec time but not for /proc/pid so reorder maps if necessary
+	 */
+	for (map_nr = 0 ; map_nr < proc->nr_maps ; ++map_nr) {
+		if (!strcmp(proc->maps[map_nr].image->name, image_name)) {
+			if (map_nr != 0) {
+				struct opd_map temp = proc->maps[0];
+				proc->maps[0] = proc->maps[map_nr];
+				proc->maps[map_nr] = temp;
+
+				fprintf(stderr, "swap map for image %s\n", image_name);
+			}
+			break;
 		}
 	}
 

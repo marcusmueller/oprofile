@@ -1,3 +1,11 @@
+2002-08-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_parse.c:
+	* dae/opd_proc.c:
+	* dae/opd_proc.h: fix #591275 which is a re-hash of #584723 we can
+	  now safely assume than proc->maps[0] is the primary image.
+	  Problem reported by William cohen
+
 2002-08-03  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/string_manip.h:

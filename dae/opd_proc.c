@@ -92,7 +92,9 @@ void opd_age_procs(void)
  *
  * Returns the app_name for the given @proc or %NULL if
  * it does not exist any mapping for this proc (which is
- * true for the first mapping at exec time)
+ * true for the first mapping at exec time and also true
+ * for process parsed through /proc/pid at startup because
+ * we reorder maps)
  */
 char const * opd_app_name(struct opd_proc const * proc)
 {
