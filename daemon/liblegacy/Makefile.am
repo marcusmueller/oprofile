@@ -3,7 +3,6 @@ noinst_LIBRARIES = liblegacy.a
 AM_CFLAGS = @OP_CFLAGS@
 
 AM_CPPFLAGS = \
-	-I ${top_srcdir}/libabi \
 	-I ${top_srcdir}/libutil \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libdb \
