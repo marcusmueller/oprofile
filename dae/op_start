@@ -172,7 +172,6 @@ echo "MAP_FILE $MAP_FILE"
 echo "VMLINUX $VMLINUX"
 
 
-MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
 if [ -c "$DEVICE_FILE" ]
 then
 	echo "Removing $DEVICE_FILE"
@@ -183,22 +182,6 @@ if [ -c "$MAP_DEVICE_FILE" ]
 then
 	echo "Removing $MAP_DEVICE_FILE"
 	rm "$MAP_DEVICE_FILE"
-fi
-
-echo "Doing mknod $DEVICE_FILE"
-mknod "$DEVICE_FILE" c $MAJOR_NR 0
-if [ "$?" != "0" ]
-then
-	echo "Couldn't mknod $DEVICE_FILE"
-	exit 1
-fi
-
-echo "Doing mknod $MAP_DEVICE_FILE"
-mknod "$MAP_DEVICE_FILE" c $MAJOR_NR 2
-if [ "$?" != "0" ]
-then
-	echo "Couldn't mknod $MAP_DEVICE_FILE"
-	exit 1
 fi
 
 if [ ! -d "$SAMPLES_DIR" ]
@@ -228,7 +211,25 @@ then
 	echo "Make sure it is on insmod's search path"
 	exit 1
 fi
+
+MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
  
+echo "Doing mknod $DEVICE_FILE"
+mknod "$DEVICE_FILE" c $MAJOR_NR 0
+if [ "$?" != "0" ]
+then
+	echo "Couldn't mknod $DEVICE_FILE"
+	exit 1
+fi
+
+echo "Doing mknod $MAP_DEVICE_FILE"
+mknod "$MAP_DEVICE_FILE" c $MAJOR_NR 2
+if [ "$?" != "0" ]
+then
+	echo "Couldn't mknod $MAP_DEVICE_FILE"
+	exit 1
+fi
+
 OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$USE_PII --ignore-myself=$IGNORE_MYSELF \
 	--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
 	--device-file=$DEVICE_FILE --map-device-file=$MAP_DEVICE_FILE --vmlinux=$VMLINUX"
