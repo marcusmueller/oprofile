@@ -21,6 +21,8 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o fix /dev/null mappings (see sf)
+ o add default event sets to avoid difficult first-time-setup for a user
  o mask SIGTERM over critical daemon operations that could corrupt sample files
  o fix 2.5 module handling
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
