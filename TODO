@@ -14,9 +14,9 @@ o re-do performance tests
 0.0.6 task list
 ---------------
 
-o remove oprofile thread. instead we check against irq counts and
-  global_irq_lock and only precede if we can lock against other CPUs
-  and we are not interrupting an interrupt
+o can we provide a small setuid helper for starting/stopping/flushing the profiler ?
+ 
+o remove oprofile thread. already exists in CVS branch BRANCH_NO_THREAD
 
 o modify mapping to queue maps on a separate device. the daemon always
   applys all maps immediately before doing the samples

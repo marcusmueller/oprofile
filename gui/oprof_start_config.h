@@ -36,7 +36,7 @@
 #define OP_MAX_HASH_TABLE_SIZE	262144
 #define OP_MIN_HASH_TABLE_SIZE	256
 
-// FIXME: come from where?
+// This is a standard non-portable assumption we make. 
 #define OP_MIN_PID		0
 #define OP_MAX_PID		32767
 #define OP_MIN_PGRP		0
@@ -44,26 +44,8 @@
 
 #define BUILD_DIR		"/lib/modules/" UTS_RELEASE "/build/"
 
-// FIXME:  how make gcc 2.91 accept correctly namespace
-// namespace {
-
-// return the ~ expansion suffixed with a '/'
-std::string get_user_dir();
-
-// return get_user_dir() + filename
-std::string get_user_filename(const std::string& filename);
-
-// exec a command and redirect stdout/stderr to out/err.
-int exec_command(const std::string& cmd_line, std::ostream& out, 
-			 std::ostream& err);
-
-// this work but output but all stdout are put in out before all output to
-// stderr. See the implementation.
-int exec_command(const std::string& cmd_line, std::ostream& out);
-
+// FIXME: goes elsewhere
 bool is_profiler_started();
-
-// } // anonymous namespace
 
 // Store the setup of one events.
 struct event_setting {

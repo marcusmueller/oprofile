@@ -38,130 +38,6 @@
 // TODO: some ~0u here for CRT_ALL
 // jbl: what does this mean ?
 
-namespace {
-
-inline double ratio(double x1, double x2)
-{
-	return fabs(((x1 - x2) / x2)) * 100;
-}
-
-bool check_and_create_config_dir()
-{
-	// create the directory if necessary.
-	std::string dir = get_user_filename(".oprofile");
-
-	if (access(dir.c_str(), F_OK)) {
-		if (mkdir(dir.c_str(), 0700)) {
-			std::ostringstream out;
-			out << "unable to create " << dir << " directory: ";
-			QMessageBox::warning(0, 0, out.str().c_str());
-
-			return false;
-		}
-	}
-
-	return true;
-}
-
-std::string const format(std::string const & orig, uint const maxlen)
-{
-	string text(orig);
-
-	std::istringstream ss(text);
-	std::vector<std::string> lines;
-
-	std::string oline;
-	std::string line;
-
-	while (getline(ss, oline)) {
-		if (line.size() + oline.size() < maxlen) {
-			lines.push_back(line + oline);
-			line.erase();
-		} else {
-			lines.push_back(line);
-			line.erase();
-			std::string s;
-			std::string word;
-			std::istringstream oss(oline);
-			while (oss >> word) {
-				if (line.size() + word.size() > maxlen) {
-					lines.push_back(line);
-					line.erase();
-				}
-				line += word + " ";
-			}
-		}
-	}
-
-	if (line.size())
-		lines.push_back(line);
-
-	std::string ret;
-
-	for(std::vector<std::string>::const_iterator it = lines.begin(); it != lines.end(); ++it)
-		ret += *it + "\n";
-
-	return ret;
-}
-
-
-int do_exec_command(const std::string& cmd)
-{
-	std::ostringstream out;
-	std::ostringstream err;
-
-	int ret = exec_command(cmd, out, err);
-
-	// FIXME: err is empty e.g. if you are not root !!
- 
-	if (ret) {
-		std::string error = "Failed: with error \"" + err.str() + "\"\n";
-		error += "Command was :\n\n" + cmd + "\n";
-
-		QMessageBox::warning(0, 0, format(error, 50).c_str());
-	}
-
-	return ret;
-}
-
-QString do_open_file_or_dir(QString base_dir, bool dir_only)
-{
-	QString result;
-
-	if (dir_only) {
-		result = QFileDialog::getExistingDirectory(base_dir, 0,
-			   "open_file_or_dir", "Get directory name", true);
-	} else {
-		result = QFileDialog::getOpenFileName(base_dir, 0, 0,
-			   "open_file_or_dir", "Get filename");
-	}
-
-	return result;
-}
-
-// like posix shell utils basename, do not append trailing '/' to result.
-std::string basename(const std::string& path_name)
-{
-	std::string result = path_name;
-
-	// remove all trailing '/'
-	size_t last_delimiter = result.find_last_of('/');
-	if (last_delimiter != std::string::npos) {
-		while (last_delimiter && result[last_delimiter] == '/')
-			--last_delimiter;
-
-		result.erase(last_delimiter);
-	}
-
-	last_delimiter = result.find_last_of('/');
-	if (last_delimiter != std::string::npos)
-		result.erase(last_delimiter);
-
-	return result;
-}
-
-} // anonymous namespace
-
 op_event_descr::op_event_descr()
 	: 
 	counter_mask(0),
@@ -495,6 +371,7 @@ void oprof_start::on_choose_file_or_dir()
 	const QObject* source = sender();
 
 	/* FIXME: yuck. let's just have separate slots for each event */
+ 
 	if (source) {
 		bool dir_only = false;
 		QString base_dir;
@@ -522,8 +399,8 @@ void oprof_start::on_choose_file_or_dir()
 		// the association between a file open tool button and the
 		// edit widget is made through its name base on the naming
 		// convention: object_name_tb --> object_name_edit
-		QString result = do_open_file_or_dir(base_dir, dir_only);
-		if (result.length()) {
+		std::string const result = do_open_file_or_dir(base_dir.latin1(), dir_only);
+		if (!result.empty()) {
 			std::string src_name(source->name());
 			// we support only '_tb' suffix, the right way is to
 			// remove the '_' suffix and append the '_edit' suffix
@@ -531,9 +408,8 @@ void oprof_start::on_choose_file_or_dir()
 			src_name += "_edit";
 
 			QObject* edit = child(src_name.c_str(), "QLineEdit");
-			if (edit) {
-				reinterpret_cast<QLineEdit*>(edit)->setText(result);
-			}
+			if (edit)
+				reinterpret_cast<QLineEdit*>(edit)->setText(result.c_str());
 		}
 	} else {
 		// Impossible if the dialog is well designed, if you see this
@@ -712,6 +588,8 @@ void oprof_start::setup_unit_masks(const op_event_descr & descr)
 		}
 		check->show();
 	}
+	unit_mask_group->setMinimumSize(unit_mask_group->sizeHint());
+	setup_config_tab->setMinimumSize(setup_config_tab->sizeHint());
 }
 
 void oprof_start::on_flush_profiler_data()
@@ -839,8 +717,6 @@ void oprof_start::on_start_profiler()
 	cmd_line << " --ignore-myself=" << config.ignore_daemon_samples;
 	cmd_line << " --buffer-size=" << config.buffer_size;
 	cmd_line << " --hash-table-size=" << config.hash_table_size;
-
-	std::cout << cmd_line.str() << std::endl;
 
 	do_exec_command(cmd_line.str());
 }

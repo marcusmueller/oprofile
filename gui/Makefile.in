@@ -38,7 +38,7 @@ uninstall:
 
 UISOURCES=ui/oprof_start.base.o ui/oprof_start.base.moc.o
 SOURCES=oprof_start.o oprof_start.moc.o op_events.o \
- oprof_start_config.o oprof_start_main.o
+ oprof_start_config.o oprof_start_main.o oprof_start_util.o
 
 oprof_start: $(SOURCES)
 	$(MAKE) -C ui
@@ -60,6 +60,8 @@ oprof_start.o: oprof_start.cpp oprof_start.h ui/oprof_start.base.h \
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 oprof_start_config.o: oprof_start_config.cpp oprof_start_config.h \
  persistent_config.h ../op_user.h ../version.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+oprof_start_util.o: oprof_start_util.cpp oprof_start_util.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 oprof_start_main.o: oprof_start_main.cpp oprof_start.h \
  ui/oprof_start.base.h oprof_start_config.h persistent_config.h \

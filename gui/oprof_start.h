@@ -21,6 +21,7 @@
 
 #include "ui/oprof_start.base.h"
 #include "oprof_start_config.h"
+#include "oprof_start_util.h"
 #include "persistent_config.h"
 #include "../op_user.h"
 

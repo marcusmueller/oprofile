@@ -11,7 +11,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>587</width>
+            <width>579</width>
             <height>520</height>
         </rect>
     </property>
@@ -81,7 +81,7 @@
                                 <property stdset="1">
                                     <name>sizePolicy</name>
                                     <sizepolicy>
-                                        <hsizetype>5</hsizetype>
+                                        <hsizetype>3</hsizetype>
                                         <vsizetype>0</vsizetype>
                                     </sizepolicy>
                                 </property>
