@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.91 2002/01/04 16:51:09 movement Exp $ */
+/* $Id: opd_proc.c,v 1.92 2002/01/04 19:02:49 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -45,20 +45,18 @@ static struct list_head opd_images = { &opd_images, &opd_images };
  * of opd_image. Hash-less image must be searched through opd_images list */
 static struct opd_image * images_with_hash[OP_HASH_MAP_NR];
 /* The kernel image is treated separately */
-static struct opd_image * kernel_image;
+struct opd_image * kernel_image;
 /* maintained for statistics purpose only */
 static unsigned int nr_images=0;
 
-/* kernel and module support */
-static u32 kernel_start;
-static u32 kernel_end;
-static char got_system_map=0;
-static struct opd_module opd_modules[OPD_MAX_MODULES];
-static unsigned int nr_modules=0;
-
 /* reversed LRU of mapped samples files, unmapped samples are not lru'ed  */
 static struct list_head opd_samples_files = { &opd_samples_files, &opd_samples_files };
-
+ 
+void opd_handle_kernel_sample(u32 eip, u16 count);
+struct opd_image * opd_get_image(const char *name, int hash, const char * app_name, int kernel);
+int bstreq(const char *str1, const char *str2);
+void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count);
+ 
 static struct opd_proc *opd_add_proc(u16 pid);
 static void opd_open_sample_file(struct opd_image *image, int counter);
 static void opd_open_image(struct opd_image *image);
@@ -66,7 +64,6 @@ static void opd_init_image(struct opd_image * image, const char * name, int hash
 static const char* opd_app_name(const struct opd_proc * proc);
 static struct opd_image * opd_find_image(const char *name, int hash, const char* app_name);
 static struct opd_image * opd_add_image(const char *name, int hash, const char * app_name, int kernel);
-static struct opd_image * opd_get_image(const char *name, int hash, const char * app_name, int kernel);
 static struct opd_image * opd_get_image_by_hash(int hash, const char * app_name);
 static void opd_init_maps(struct opd_proc *proc);
 static void opd_grow_maps(struct opd_proc *proc);
@@ -135,7 +132,8 @@ void opd_alarm(int val __attribute__((unused)))
 		image = list_entry(pos, struct opd_image, list_node);
 		for (j = 0 ; j < op_nr_counters ; ++j) {
 			if (image->sample_files[j].fd > 1)
-				msync(image->sample_files[j].header, image->len + sizeof(struct opd_header), MS_ASYNC);
+				msync(image->sample_files[j].header, 
+					image->len + sizeof(struct opd_header), MS_ASYNC);
 		}
 	}
 
@@ -160,66 +158,6 @@ void opd_alarm(int val __attribute__((unused)))
 	opd_print_stats();
 
 	alarm(60*10);
-}
-
-/**
- * opd_eip_is_kernel - is the sample from kernel/module space
- * @eip: EIP value
- *
- * Returns %TRUE if @eip is in the address space starting at
- * %KERNEL_VMA_OFFSET, %FALSE otherwise.
- */
-inline static int opd_eip_is_kernel(u32 eip)
-{
-	return (eip >= KERNEL_VMA_OFFSET);
-}
-
-/**
- * opd_read_system_map - parse System.map file
- * @filename: file name of System.map
- *
- * Parse the kernel's System.map file. If the filename is
- * passed as "", a warning is produced and the function returns.
- *
- * If the file is parsed correctly, the global variables
- * kernel_start and kernel_end are set to the correct values for the
- * text section of the mainline kernel, and the global got_system_map
- * is set to %TRUE.
- *
- * Note that kernel modules will have EIP values above the value of
- * kernel_end.
- */
-void opd_read_system_map(const char *filename)
-{
-	FILE *fp;
-	char *line;
-	char *cp;
-
-	fp = opd_open_file(filename, "r");
-
-	do {
-		line = opd_get_line(fp);
-		if (streq(line, "")) {
-			free(line);
-			break;
-		} else {
-			if (strlen(line) < 11) {
-				free(line);
-				continue;
-			}
-			cp = line+11;
-			if (streq("_text", cp))
-				sscanf(line, "%x", &kernel_start);
-			else if (streq("_end", cp))
-				sscanf(line, "%x", &kernel_end);
-			free(line);
-		}
-	} while (1);
-
-	if (kernel_start && kernel_end)
-		got_system_map = TRUE;
-
-	opd_close_file(fp);
 }
 
 /**
@@ -400,7 +338,7 @@ inline static u16 opd_get_count(const u16 count)
  * opd_get_counter - retrieve counter type
  * @count: raw counter value
  *
- * Returns positive for counter 1, zero for counter 0.
+ * Returns the counter number (0-N)
  */
 inline static u16 opd_get_counter(const u16 count)
 {
@@ -422,7 +360,8 @@ static int opd_try_mmap(struct opd_sample_file * sample_file,
 		PROT_READ|PROT_WRITE, MAP_SHARED, sample_file->fd, 0);
 
 	if (sample_file->header == (void *)-1) {
-		verbprintf("oprofiled: mmap of image sample file \"%s\" failed: %s\n", name, strerror(errno));
+		verbprintf("oprofiled: mmap of image sample file \"%s\" failed: %s\n", 
+			name, strerror(errno));
 		return 1;
 	}
 
@@ -469,14 +408,19 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 	open_flags = sample_file->opened ? O_RDWR : O_CREAT|O_RDWR;
 	sample_file->fd = open(mangled, open_flags, 0644);
 	if (sample_file->fd == -1) {
-		fprintf(stderr,"oprofiled: open of image sample file \"%s\" (opened %d) failed: %s\n", mangled, sample_file->opened, strerror(errno));
+		fprintf(stderr, 
+			"oprofiled: open of image sample file \"%s\" (opened %d) failed: %s\n", 
+			mangled, sample_file->opened, strerror(errno));
 		goto err1;
 	}
 
 	if ( sample_file->opened == 0) {
 		/* truncate to grow the file is ok on linux */
-		if (ftruncate(sample_file->fd, image->len + sizeof(struct opd_header)) == -1) {
-			fprintf(stderr, "oprofiled: ftruncate failed for \"%s\". %s\n", mangled, strerror(errno));
+		int err = ftruncate(sample_file->fd, image->len + sizeof(struct opd_header));
+		if (err == -1) {
+			fprintf(stderr, 
+				"oprofiled: ftruncate failed for \"%s\". %s\n",
+				mangled, strerror(errno));
 			goto err2;
 		}
 	}
@@ -485,10 +429,8 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 		struct opd_sample_file * temp;
 		struct list_head * tmp_pos, * pos;
 
-		/* debug trace, please keep it until the behavior of the lru
-		 * unmaping has been study in a real case, then turn it in
-		 * verbprintf, see other printf later */
-		verbprintf("try mmap loose, for %s on len %lu must unmap things\n", image->name, image->len);
+		verbprintf("try mmap loose, for %s on len %lu must unmap things\n", 
+			image->name, image->len);
 
 		list_for_each_safe(pos, tmp_pos, &opd_samples_files) {
 			temp = list_entry(pos, struct opd_sample_file, lru_node);
@@ -614,7 +556,7 @@ static void opd_check_image_mtime(struct opd_image * image)
  *
  * @count is the raw value passed from the kernel.
  */
-inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count)
+void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count)
 {
 	struct opd_fentry *fentry;
 	struct opd_sample_file* sample_file;
@@ -719,7 +661,7 @@ static struct opd_image * opd_add_image(const char * name, int hash, const char 
  * Compares two strings, starting at the end.
  * Returns %1 if they match, %0 otherwise.
  */
-inline static int bstreq(const char *str1, const char *str2)
+int bstreq(const char *str1, const char *str2)
 {
 	char *a = (char *)str1;
 	char *b = (char *)str2;
@@ -849,7 +791,7 @@ static struct opd_image * opd_get_image_by_hash(int hash, const char * app_name)
  * added to the structure. In either case, the image number
  * is returned.
  */
-static struct opd_image * opd_get_image(const char * name, int hash, const char * app_name, int kernel)
+struct opd_image * opd_get_image(const char * name, int hash, const char * app_name, int kernel)
 {
 	struct opd_image * image;
 	if ((image = opd_find_image(name, hash, app_name)) == NULL)
@@ -979,10 +921,6 @@ static void opd_kill_maps(struct opd_proc *proc)
 {
 	if (proc->maps)
 		free(proc->maps);
-	proc->maps = NULL;
-	proc->nr_maps = 0;
-	proc->max_nr_maps = 0;
-	proc->last_map = 0;
 	opd_init_maps(proc);
 }
 
@@ -1048,356 +986,13 @@ inline static int opd_is_in_map(struct opd_map *map, u32 eip)
 }
 
 /**
- * opd_clear_module_info - clear kernel module information
- *
- * Clear and free all kernel module information and reset
- * values.
- */
-void opd_clear_module_info(void)
-{
-	int i;
-
-	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].name)
-			free(opd_modules[i].name);
-		opd_modules[i].name = NULL;
-		opd_modules[i].start = 0;
-		opd_modules[i].end = 0;
-	}
-}
-
-/**
- * opd_get_module - get module structure
- * @name: name of module image
- *
- * Find the module structure for module image @name.
- * If it could not be found, add the module to
- * the global module structure.
- *
- * If an existing module is found, @name is free()d.
- * Otherwise it must be freed when the module structure
- * is removed (i.e. in opd_clear_module_info()).
- */
-static struct opd_module *opd_get_module(char *name)
-{
-	int i;
-
-	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].name && bstreq(name,opd_modules[i].name)) {
-			/* free this copy */
-			free(name);
-			return &opd_modules[i];
-		}
-	}
-
-	opd_modules[nr_modules].name = name;
-	opd_modules[nr_modules].image = NULL;
-	opd_modules[nr_modules].start = 0;
-	opd_modules[nr_modules].end = 0;
-	nr_modules++;
-	if (nr_modules == OPD_MAX_MODULES) {
-		fprintf(stderr, "Exceeded %u kernel modules !\n", OPD_MAX_MODULES);
-		exit(1);
-	}
-
-	return &opd_modules[nr_modules-1];
-}
-
-/**
- * opd_get_module_info - parse mapping information for kernel modules
- *
- * Parse the file /proc/ksyms to read in mapping information for
- * all kernel modules. The modutils package adds special symbols
- * to this file which allows determination of the module image
- * and mapping addresses of the form :
- *
- * __insmod_modulename_Oobjectfile_Mmtime_Vversion
- * __insmod_modulename_Ssectionname_Llength
- *
- * Currently the image file "objectfile" is stored, and details of
- * ".text" sections.
- *
- * There is no query_module API that allow to get directly the pathname
- * of a module so we need to parse all the /proc/ksyms.
- */
-static void opd_get_module_info(void)
-{
-	char *line;
-	char *cp, *cp2, *cp3;
-	FILE *fp;
-	struct opd_module *mod;
-	char *modname;
-	char *filename;
-
-	nr_modules=0;
-
-	fp = opd_try_open_file("/proc/ksyms", "r");
-
-	if (!fp) {	
-		printf("oprofiled: /proc/ksyms not readable, can't process module samples.\n");
-		return;
-	}
-
-	do {
-		line = opd_get_line(fp);
-		if (streq("", line) && !feof(fp)) {
-			free(line);
-			continue;
-		} else if (streq("",line))
-			goto failure;
-
-		if (strlen(line) < 9) {
-			printf("oprofiled: corrupt /proc/ksyms line \"%s\"\n", line);
-			goto failure;
-		}
-
-		if (strncmp("__insmod_", line+9, 9)) {
-			free(line);
-			continue;
-		}
-
-		cp = line + 18;
-		cp2 = cp;
-		while ((*cp2) && !streqn("_S", cp2+1, 2) && !streqn("_O", cp2+1, 2))
-			cp2++;
-
-		if (!*cp2) {
-			printf("oprofiled: corrupt /proc/ksyms line \"%s\"\n", line);
-			goto failure;
-		}
-	
-		cp2++;
-		/* freed by opd_clear_module_info() or opd_get_module() */
-		modname = xmalloc((size_t)((cp2-cp) + 1));
-		strncpy(modname, cp, (size_t)((cp2-cp)));
-		modname[cp2-cp] = '\0';
-
-		mod = opd_get_module(modname);
-
-		switch (*(++cp2)) {
-			case 'O':
-				/* get filename */
-				cp2++;
-				cp3 = cp2;
-
-				while ((*cp3) && !streqn("_M", cp3+1, 2))
-					cp3++;
-
-				if (!*cp3) {
-					free(line);
-					continue;
-				}
-				
-				cp3++;
-				filename = xmalloc((size_t)(cp3 - cp2 + 1));
-				strncpy(filename, cp2, (size_t)(cp3 - cp2));
-				filename[cp3-cp2] = '\0';
-
-				mod->image = opd_get_image(filename, -1, NULL, 1);
-				free(filename);
-				break;
-
-			case 'S':
-				/* get extent of .text section */
-				cp2++;
-				if (strncmp(".text_L", cp2, 7)) {
-					free(line);
-					continue;
-				}
-
-				cp2 += 7;
-				sscanf(line,"%x", &mod->start);
-				sscanf(cp2,"%u", &mod->end);
-				mod->end += mod->start;
-				break;
-		}
-
-		free(line);
-	} while (1);
-
-failure:
-	free(line);
-	opd_close_file(fp);
-}
-
-/**
- * opd_enter_invalid_module - create a negative module entry
- * @name: name of module
- * @info: module info
- */
-static void opd_enter_invalid_module(char const * name, struct module_info * info)
-{
-	opd_modules[nr_modules].name = xstrdup(name);
-	opd_modules[nr_modules].image = NULL;
-	opd_modules[nr_modules].start = info->addr;
-	opd_modules[nr_modules].end = info->addr + info->size;
-	nr_modules++;
-	if (nr_modules == OPD_MAX_MODULES) {
-		fprintf(stderr, "Exceeded %u kernel modules !\n", OPD_MAX_MODULES);
-		exit(1);
-	}
-}
-
-/**
- * opd_drop_module_sample - drop a module sample efficiently
- * @eip: eip of sample
- */
-static void opd_drop_module_sample(u32 eip)
-{
-	char * module_names;
-	char * name;
-	size_t size = 1024;
-	size_t ret;
-	uint nr_mods;
-	uint mod = 0;
-	
-	module_names = xmalloc(size);
-	while (query_module(NULL, QM_MODULES, module_names, size, &ret)) {
-		if (errno != ENOSPC) {
-			verbprintf("query_module failed: %s\n", strerror(errno)); 
-			return;
-		}
-		size = ret;
-		module_names = xrealloc(module_names, size);
-	}
-
-	nr_mods = ret;
-	name = module_names;
-
-	while (mod < nr_mods) {
-		struct module_info info;
-		if (!query_module(name, QM_INFO, &info, sizeof(info), &ret)) {
-			if (eip >= info.addr && eip < info.addr + info.size) {
-				verbprintf("Sample from unprofilable module %s\n", name);
-				opd_enter_invalid_module(name, &info);
-				goto out;
-			}
-		}
-		mod++;
-		name += strlen(name) + 1;
-	}
-out:
-	if (module_names) free(module_names);
-}
-
-/**
- * opd_find_module_by_eip - find a module by its eip
- * @eip: EIP value
- *
- * find in the modules container the module which
- * contain this @eip return %NULL if not found.
- * caller must check than the module image is valid
- */
-static struct opd_module * opd_find_module_by_eip(u32 eip)
-{
-	uint i;
-	for (i = 0; i < nr_modules; i++) {
-		if (opd_modules[i].start && opd_modules[i].end &&
-		    opd_modules[i].start <= eip && opd_modules[i].end > eip)
-			return &opd_modules[i];
-	}
-
-	return NULL;
-}
-
-/**
- * opd_handle_module_sample - process a module sample
- * @eip: EIP value
- * @count: count value of sample
- *
- * Process a sample in module address space. The sample @eip
- * is matched against module information. If the search was
- * successful, the sample is output to the relevant file.
- *
- * Note that for modules and the kernel, the offset will be
- * wrong in the file, as it is not a file offset, but the offset
- * from the text section. This is fixed up in pp.
- *
- * If the sample could not be located in a module, it is treated
- * as a kernel sample.
- */
-static void opd_handle_module_sample(u32 eip, u16 count)
-{
-	struct opd_module * module;
-
-	module = opd_find_module_by_eip(eip);
-	if (!module) {
-		/* not found in known modules, re-read our info and retry */
-		opd_clear_module_info();
-		opd_get_module_info();
-
-		module = opd_find_module_by_eip(eip);
-	}
-
-	if (module) {
-		if (module->image != NULL) {
-			opd_stats[OPD_MODULE]++;
-			opd_put_image_sample(module->image, 
-					     eip - module->start, count);
-		}
-		else {
-			opd_stats[OPD_LOST_MODULE]++;
-			verbprintf("No image for sampled module %s\n",
-				   module->name);
-		}
-	} else {
-		/* ok, we failed to place the sample even after re-reading
-		 * /proc/ksyms. It's either a rogue sample, or from a module
-		 * that didn't create symbols (like in some initrd setups).
-		 * So we check with query_module() if we can place it in a
-		 * symbol-less module, and if so create a negative entry for
-		 * it, to quickly ignore future samples.
-		 *
-		 * Problem uncovered by Bob Montgomery <bobm@fc.hp.com>
-		 */
-		opd_stats[OPD_LOST_MODULE]++;
-		opd_drop_module_sample(eip);
-	}
-}
-
-/**
- * opd_handle_kernel_sample - process a kernel sample
- * @eip: EIP value of sample
- * @count: count value of sample
- *
- * Handle a sample in kernel address space or in a module. The sample is
- * output to the relevant image file.
- *
- * This function requires the global variable
- * got_system_map to be %TRUE to handle module samples.
- */
-static void opd_handle_kernel_sample(u32 eip, u16 count)
-{
-	/* TODO: simplify this code, if we have not System.mapp just set
-	 * kernel_start to KERNEL_VMA_OFFSET and kernel end to infinite ? */
-	if (got_system_map) {
-		if (eip < kernel_end) {
-			opd_stats[OPD_KERNEL]++;
-			opd_put_image_sample(kernel_image, eip - kernel_start, count);
-			return;
-		}
-
-		/* in a module */
-		opd_handle_module_sample(eip, count);
-		return;
-	}
-
-	opd_stats[OPD_KERNEL]++;
-	opd_put_image_sample(kernel_image, eip - KERNEL_VMA_OFFSET, count);
-	return;
-}
-
-/**
  * verb_show_sample - print the sample out to the log
  * @offset: the offset value
  * @map: map to print
  */
 inline static void verb_show_sample(u32 offset, struct opd_map *map, const char * last_map)
 {
-	if (!verbose) 
-		return;
-
-	printf("DO_PUT_SAMPLE %s: calc offset 0x%.8x, map start 0x%.8x,"
+	verbprintf("DO_PUT_SAMPLE %s: calc offset 0x%.8x, map start 0x%.8x,"
 		" end 0x%.8x, offset 0x%.8x, name \"%s\"\n",
 		last_map, offset, map->start, map->end, map->offset, map->image->name);
 }
@@ -1414,6 +1009,18 @@ inline static void verb_show_sample(u32 offset, struct opd_map *map, const char 
 inline static u32 opd_map_offset(struct opd_map *map, u32 eip)
 {
 	return (eip - map->start) + map->offset;
+}
+
+/**
+ * opd_eip_is_kernel - is the sample from kernel/module space
+ * @eip: EIP value
+ *
+ * Returns %TRUE if @eip is in the address space starting at
+ * %KERNEL_VMA_OFFSET, %FALSE otherwise.
+ */
+inline static int opd_eip_is_kernel(u32 eip)
+{
+	return (eip >= KERNEL_VMA_OFFSET);
 }
 
 /**
@@ -1452,17 +1059,18 @@ void opd_put_sample(const struct op_sample *sample)
 
 	proc->accessed = 1;
 
-	/* TODO: Is it safe to not check than proc->nr_maps != 0?  test shows
-	 * this is always true but I can't be conveinced by this fact just by
-	 * by reading source :/ */
-
+	/* proc->last_map is always safe as mappings are never deleted except by
+	 * opd_kill_maps, which resets last_map. But we need to check we have
+	 * at least one map
+	 */
 	opd_stats[OPD_MAP_ARRAY_ACCESS]++;
-	if (opd_is_in_map(&proc->maps[proc->last_map], sample->eip)) {
+	if (proc->nr_maps && opd_is_in_map(&proc->maps[proc->last_map], sample->eip)) {
 		i = proc->last_map;
 		if (proc->maps[i].image != NULL) {
-			verb_show_sample(opd_map_offset(&proc->maps[i], sample->eip), &proc->maps[i], "(LAST MAP)");
-
-			opd_put_image_sample(proc->maps[i].image, opd_map_offset(&proc->maps[i], sample->eip), sample->count);
+			verb_show_sample(opd_map_offset(&proc->maps[i], sample->eip), 
+				&proc->maps[i], "(LAST MAP)");
+			opd_put_image_sample(proc->maps[i].image, 
+				opd_map_offset(&proc->maps[i], sample->eip), sample->count);
 		}
 
 		opd_stats[OPD_PROCESS]++;
@@ -1475,7 +1083,6 @@ void opd_put_sample(const struct op_sample *sample)
 			u32 offset = opd_map_offset(&proc->maps[i], sample->eip);
 			if (proc->maps[i].image != NULL) {
 				verb_show_sample(offset, &proc->maps[i], "");
-
 				opd_put_image_sample(proc->maps[i].image, offset, sample->count);
 			}
 			proc->last_map = i;
@@ -1537,7 +1144,10 @@ void opd_handle_fork(const struct op_note *note)
 	old = opd_get_proc(note->pid);
 
 	/* we can quite easily get a fork() after the execve() because the notifications
-	 * are racy. So we only create a new setup if it doesn't exist already, allowing
+	 * are racy. In particular, the fork notification is done on parent return (so we
+	 * know the pid), but this will often be after the execve is done by the child.
+	 *
+	 * So we only create a new setup if it doesn't exist already, allowing
 	 * both the clone() and the execve() cases to work.
 	 */
 	if (opd_get_proc((u16)note->addr))
@@ -1590,7 +1200,7 @@ void opd_handle_exit(const struct op_note *note)
  */
 inline static char * get_from_pool(uint ind)
 {
-	return ((char *)(hashmap+OP_HASH_MAP_NR) + ind);
+	return ((char *)(hashmap + OP_HASH_MAP_NR) + ind);
 }
 
  
@@ -1604,7 +1214,7 @@ inline static char * get_from_pool(uint ind)
 static struct opd_image * opd_handle_hashmap(int hash, const char * app_name)
 {
 	char file[PATH_MAX];
-	char *c=&file[PATH_MAX-1];
+	char *c = &file[PATH_MAX-1];
 	int orighash = hash;
 
 	*c = '\0'; 
@@ -1619,7 +1229,7 @@ static struct opd_image * opd_handle_hashmap(int hash, const char * app_name)
 		c -= strlen(name) + 1;
 		*c = '/';
 		strncpy(c + 1, name, strlen(name));
-		
+
 		/* move onto parent */
 		hash = hashmap[hash].parent;
 	}
@@ -1682,10 +1292,10 @@ void opd_handle_exec(u16 pid)
 
 	verbprintf("DO_EXEC: pid %u\n", pid);
 
-	/* There is a race for sample received between fork/exec sequence.
+	/* There is a race for samples received between fork/exec sequence.
 	 * These samples belong to the old mapping but we can not say if
 	 * samples has been received before the exec or after. This explain
-	 * the message "Couln't find map for ..." in verbose mode.
+	 * the message "Couldn't find map for ..." in verbose mode.
 	 *
 	 * Unhopefully it is difficult to get an estimation of these misplaced
 	 * samples, the error message can count only out of mapping samples but
@@ -1694,7 +1304,7 @@ void opd_handle_exec(u16 pid)
 	 *
 	 * Trying to save old mapping is not correct due the above reason. The
 	 * only manner to handle this is to flush the module samples hash table
-	 * after each fork which is unacceptable for perfomance issue */
+	 * after each fork which is unacceptable for performance reasons */
 	proc = opd_get_proc(pid);
 	if (proc)
 		opd_kill_maps(proc);
@@ -1745,7 +1355,8 @@ static int opd_add_ascii_map(struct opd_proc *proc, const char *line)
 	if (!*cp)
 		return FALSE;
 
-	/* TODO: must be fixed by assigning an uid to the app ? */
+	/* FIXME: we should verify this is indeed the primary
+	 * app image by readlinking /proc/pid/exe */
 	map->image = opd_get_image(cp, -1, opd_app_name(proc), 0);
 
 	if (!map->image)

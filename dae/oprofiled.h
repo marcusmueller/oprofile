@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.39 2002/01/04 15:11:09 movement Exp $ */
+/* $Id: oprofiled.h,v 1.40 2002/01/04 19:02:50 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -72,6 +72,7 @@ extern int separate_samples;
 
 /* list manipulation: come from the linux header, with some macro removed */
 /* There is no real need to put this in ../util/misc.c */
+/* FIXME: but do please put it in a separate header inside dae */
 
 /*
  * Simple doubly linked list implementation.

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.24 2002/01/04 15:11:09 movement Exp $ */
+/* $Id: oprofile.c,v 1.25 2002/01/04 19:02:50 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -758,7 +758,7 @@ out:
  * stop interrupts being generated and notes arriving.
  * This needs to be idempotent.
  */
-static int oprof_partial_stop(void)
+static void oprof_partial_stop(void)
 {
 	op_replace_syscalls();
 	smp_call_function(pmc_stop, NULL, 0, 1);

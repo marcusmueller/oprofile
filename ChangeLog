@@ -1,5 +1,12 @@
 2002-01-04  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/Makefile.in:
+	* dae/opd_proc.c:
+	* dae/opd_kernel.c: move kernel/module stuff into
+	  new file. Some minor changes.
+ 
+2002-01-04  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/oprofiled.c: remove extra dump
  
 2002-01-04  John Levon  <moz@compsoc.man.ac.uk>

@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.25 2001/12/31 06:37:26 movement Exp $
+# $Id: Makefile.in,v 1.26 2002/01/04 19:02:49 movement Exp $
 
 INSTALL_LIST=oprofiled op_start op_dump op_stop
 
@@ -6,7 +6,7 @@ CFLAGS=-Wall -Wstrict-prototypes -pipe -Wunused -W -Wshadow -Wmissing-prototypes
 LIBS=@extra_libraries@ -lpopt -liberty
 
 SOURCES=oprofiled.c opd_util.c opd_proc.c
-OBJS=oprofiled.o opd_util.o opd_proc.o ../events/op_events.o ../events/op_events_desc.o ../util/op_popt.o ../util/misc.o
+OBJS=oprofiled.o opd_util.o opd_proc.o opd_kernel.o ../events/op_events.o ../events/op_events_desc.o ../util/op_popt.o ../util/misc.o
 
 .PHONY: all clean srcdoc install uninstall
 
