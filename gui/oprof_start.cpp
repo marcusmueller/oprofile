@@ -43,6 +43,11 @@
 
 using namespace std;
 
+static bool has_unique_event(op_cpu cpu_type)
+{
+	return op_get_interface() == OP_INTERFACE_25 || cpu_type == CPU_RTC;
+}
+
 op_event_descr::op_event_descr()
 	:
 	counter_mask(0),
@@ -193,6 +198,13 @@ void oprof_start::fill_events()
 		v_events.push_back(descr);
 	}
 
+	if (!has_unique_event(cpu_type)) {
+		op_event_descr no_event;
+		no_event.name = "No event";
+		no_event.help_str = "Deselect event";
+		v_events.push_back(no_event);
+	}
+
 	events_list->header()->hide();
 	events_list->setSorting(-1);
 
@@ -233,6 +245,12 @@ void oprof_start::read_set_events()
 	string name = get_user_filename(".oprofile/daemonrc");
 
 	ifstream in(name.c_str());
+
+	if (!has_unique_event(cpu_type)) {
+		for (size_t ctr = 0; ctr < op_nr_counters; ++ctr) {
+			current_events[ctr] = &locate_event("No event");
+		}
+	}
 
 	if (!in) {
 		setup_default_event();
@@ -399,6 +417,9 @@ void oprof_start::counter_selected(int ctr)
 		events_list->setCurrentItem(theitem);
 		events_list->ensureItemVisible(theitem);
 	}
+
+	if (!has_unique_event(cpu_type))
+		new QListViewItem(events_list, "No event");
 
 	setUpdatesEnabled(true);
 	update();
@@ -685,15 +706,7 @@ void oprof_start::on_start_profiler()
 	// save the current settings
 	record_selected_event_config();
 
-	uint c;
-	for (c = 0; c < op_nr_counters; ++c) {
-		if (current_events[c])
-			break;
-	}
-	if (c == op_nr_counters && cpu_type != CPU_TIMER_INT) {
-		QMessageBox::warning(this, 0, "No counters enabled.\n");
-		return;
-	}
+	bool one_enable = false;
 
 	for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
 		if (!current_events[ctr])
@@ -702,6 +715,11 @@ void oprof_start::on_start_profiler()
 		event_setting_map & cfg = event_cfgs[ctr];
 
 		op_event_descr const * descr = current_events[ctr];
+
+		if (descr->name == "No event")
+			continue;
+
+		one_enable = true;
 
 		if (!cfg[descr->name].os_ring_count &&
 		    !cfg[descr->name].user_ring_count) {
@@ -735,6 +753,11 @@ void oprof_start::on_start_profiler()
 			QMessageBox::warning(this, 0, out.str().c_str());
 			return;
 		}
+	}
+
+	if (one_enable == false) {
+		QMessageBox::warning(this, 0, "No counters enabled.\n");
+		return;
 	}
 
 	if (daemon_status().running) {
@@ -792,11 +815,14 @@ bool oprof_start::save_config()
 		if (!current_events[ctr])
 			continue;
 
-		one_enabled = true;
-
 		event_setting_map & cfg = event_cfgs[ctr];
 
 		op_event_descr const * descr = current_events[ctr];
+
+		if (descr->name == "No event")
+			continue;
+
+		one_enabled = true;
 
 		string arg = "--event=" + descr->name;
 		arg += ":" + tostr(cfg[descr->name].count);
@@ -807,7 +833,7 @@ bool oprof_start::save_config()
 		tmpargs.push_back(arg);
 	}
 
-	// only set counters if at leat one is enabled
+	// only set counters if at least one is enabled
 	if (one_enabled)
 		args = tmpargs;
 

@@ -7,7 +7,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 -----------
 
  o gui: fix counter allocation stuff.
-   We must allow to de-select a counter (via "No event" entry in listbox)
 
 0.7 release
 -----------
