@@ -1,5 +1,10 @@
 2003-02-28  John Levon  <levon@movementarian.org>
 
+	* utils/opcontrol: fix IS_TIMER setting, noticed by
+	  Duncan Sands
+
+2003-02-28  John Levon  <levon@movementarian.org>
+
 	* configure.in: bump to 0.6cvs
 
 2003-02-28  John Levon  <levon@movementarian.org>

@@ -220,7 +220,8 @@ do_init() {
 	IS_TIMER=0
  
 	case "$CPUTYPE" in
-		4|5) 	IS_TIMER=1
+		timer|4|5)
+			IS_TIMER=1
 			;;
 	esac
 
