@@ -262,8 +262,8 @@ symbol_entry const * find_symbol(string const & str_vma);
  * then output to out the symbol name and numbers of samples belonging
  * to this symbol
  */
-void find_and_output_symbol(ostream & out, string const & str,
-			    string const & blank);
+void annotate_asm_symbol(ostream & out, string const & str,
+                         string const & blank);
 
 /**
  * @param out output stream
@@ -502,9 +502,10 @@ void output_objdump_asm_line(string const & str,
 		}
 
 		if (do_output)
-			find_and_output_symbol(cout, str, string());
+			annotate_asm_symbol(cout, str, string());
 
-	} else { // not a symbol, probably an asm line.
+	} else {
+		// not a symbol, probably an asm line.
 		if (do_output)
 			annotate_asm_line(cout, str, " ");
 	}
@@ -811,8 +812,8 @@ symbol_entry const * find_symbol(string const & str_vma)
 }
 
 
-void find_and_output_symbol(ostream & out, string const & str,
-			    string const & blank)
+void annotate_asm_symbol(ostream & out, string const & str,
+                         string const & blank)
 {
 	symbol_entry const * symbol = find_symbol(str);
 
