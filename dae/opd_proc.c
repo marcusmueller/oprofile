@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.30 2000/09/04 22:52:00 moz Exp $ */
+/* $Id: opd_proc.c,v 1.31 2000/09/04 23:04:23 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -405,7 +405,7 @@ static int opd_add_image(const char *name, int kernel)
  * Get the image specified by the file name @name from the
  * image structure. If it is not present, the image is
  * added to the structure. In either case, the image number
- * is returned. 
+ * is returned.
  */
 static int opd_get_image(const char *name, int kernel)
 {
@@ -965,6 +965,22 @@ void opd_handle_exit(const struct op_sample *sample)
 		printf("unknown proc %u just exited.\n",sample->pid);
 }
 
+/**
+ * read_map_bad_proc - read from map device and forget
+ *
+ * FIXME
+ */
+static void read_map_bad_proc(ssize_t size)
+{
+	u32 *buf;
+
+	buf = opd_malloc(size);
+
+	opd_read_device(mapdevfd,buf,size,0);
+
+	opd_free(buf);
+}
+
 struct op_mapping {
 	u32 addr;
 	u32 len;
@@ -1001,6 +1017,7 @@ void opd_handle_mapping(const struct op_sample *sample)
 
 	if (!proc) {
 		printf("Told about mapping for non-existent process %u.\n",sample->pid);
+		read_map_bad_proc((ssize_t)sample->eip);
 		return;
 	}
 
@@ -1067,7 +1084,7 @@ void opd_handle_mapping(const struct op_sample *sample)
  *
  * sample->pid contains the process id of the process.
  * sample->eip contains how many bytes to read from the map
- * device. 
+ * device.
  */
 void opd_handle_exec(const struct op_sample *sample)
 {
