@@ -51,7 +51,7 @@ public:
 	 * them. It's placed here so all access to samples files go through
 	 * profile_t static or non static member.
 	 */
-	static unsigned int sample_count(string const & filename);
+	static unsigned int sample_count(std::string const & filename);
 
 	/**
 	 * cumulate sample file to our container of samples
@@ -82,7 +82,8 @@ public:
 private:
 	/// helper for sample_count() and add_sample_file(). All error launch
 	/// an exception.
-	static void open_sample_file(string const & filename, samples_odb_t &);
+	static void
+	open_sample_file(std::string const & filename, samples_odb_t &);
 
 	/// copy of the samples file header
 	scoped_ptr<opd_header> file_header;
