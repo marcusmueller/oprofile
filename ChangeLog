@@ -1,5 +1,10 @@
 2003-07-26  John Levon  <levon@movementarian.org>
 
+	* gui/oprof_start.cpp: replace folder icons with clearer
+	red/green circles
+
+2003-07-26  John Levon  <levon@movementarian.org>
+
 	* gui/oprof_start.cpp: actually select and show the default
 	event
 

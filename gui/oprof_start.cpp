@@ -44,69 +44,50 @@
 
 using namespace std;
 
+static char const * green_xpm[] = {
+"16 16 2 1",
+" 	c None",
+".	c #00FF00",
+"    .......     ",
+"  ...........   ",
+" .............  ",
+" .............  ",
+"............... ",
+"............... ",
+"............... ",
+"............... ",
+"............... ",
+"............... ",
+"............... ",
+" .............  ",
+" .............  ",
+"  ...........   ",
+"    .......     ",
+"                " };
 
-// FIXME: we need something other than that. 16x16 ok/not ok will be fine
-// (green ok/red stop or something like that)
-static const char* folder_closed_xpm[]={
-    "16 16 9 1",
-    "g c #808080",
-    "b c #c0c000",
-    "e c #c0c0c0",
-    "# c #000000",
-    "c c #ffff00",
-    ". c None",
-    "a c #585858",
-    "f c #a0a0a4",
-    "d c #ffffff",
-    "..###...........",
-    ".#abc##.........",
-    ".#daabc#####....",
-    ".#ddeaabbccc#...",
-    ".#dedeeabbbba...",
-    ".#edeeeeaaaab#..",
-    ".#deeeeeeefe#ba.",
-    ".#eeeeeeefef#ba.",
-    ".#eeeeeefeff#ba.",
-    ".#eeeeefefff#ba.",
-    ".##geefeffff#ba.",
-    "...##gefffff#ba.",
-    ".....##fffff#ba.",
-    ".......##fff#b##",
-    ".........##f#b##",
-    "...........####."};
+static char const * red_xpm[] = {
+"16 16 2 1",
+" 	c None",
+".	c #FF0000",
+"    .......     ",
+"  ...........   ",
+" .............  ",
+" .............  ",
+"............... ",
+"............... ",
+"............... ",
+"............... ",
+"............... ",
+"............... ",
+"............... ",
+" .............  ",
+" .............  ",
+"  ...........   ",
+"    .......     ",
+"                " };
 
-static const char* folder_open_xpm[]={
-    "16 16 11 1",
-    "# c #000000",
-    "g c #c0c0c0",
-    "e c #303030",
-    "a c #ffa858",
-    "b c #808080",
-    "d c #a0a0a4",
-    "f c #585858",
-    "c c #ffdca8",
-    "h c #dcdcdc",
-    "i c #ffffff",
-    ". c None",
-    "....###.........",
-    "....#ab##.......",
-    "....#acab####...",
-    "###.#acccccca#..",
-    "#ddefaaaccccca#.",
-    "#bdddbaaaacccab#",
-    ".eddddbbaaaacab#",
-    ".#bddggdbbaaaab#",
-    "..edgdggggbbaab#",
-    "..#bgggghghdaab#",
-    "...ebhggghicfab#",
-    "....#edhhiiidab#",
-    "......#egiiicfb#",
-    "........#egiibb#",
-    "..........#egib#",
-    "............#ee#"};
-
-QPixmap *folderClosed = 0;
-QPixmap *folderOpen = 0;
+static QPixmap * green_pixmap;
+static QPixmap * red_pixmap;
 
 
 op_event_descr::op_event_descr()
@@ -127,8 +108,8 @@ oprof_start::oprof_start()
 	cpu_speed(op_cpu_frequency()),
 	total_nr_interrupts(0)
 {
-	folderOpen = new QPixmap(folder_open_xpm);
-	folderClosed = new QPixmap(folder_closed_xpm);
+	green_pixmap = new QPixmap(green_xpm);
+	red_pixmap = new QPixmap(red_xpm);
 	vector<string> args;
 	args.push_back("--init");
 
@@ -478,9 +459,9 @@ void oprof_start::draw_event_list()
 	QListViewItem * cur;
 	for (cur = events_list->firstChild(); cur; cur = cur->nextSibling()) {
 		if (is_selectable_event(cur))
-			cur->setPixmap(0, *folderOpen);
+			cur->setPixmap(0, *green_pixmap);
 		else
-			cur->setPixmap(0, *folderClosed);
+			cur->setPixmap(0, *red_pixmap);
 	}
 }
 
