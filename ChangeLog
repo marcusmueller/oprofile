@@ -1,3 +1,8 @@
+2003-12-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/tests/file_manip_tests.cpp: ensure filename passed to
+	  op_realpath() exists
+
 2003-12-28  John Levon  <levon@movementarian.org>
 
 	* doc/internals.xml:
@@ -7,7 +12,7 @@
 
 	* utils/opcontrol: error message rewording
 
-2003-12-16  Carlo Wood  <unknown@unknown.nl>
+2003-12-16  Carlo Wood  <carlo@alinoe.com>
 
 	* libregex/tests/Makefile.am: avoid to install mangled-name test file
 

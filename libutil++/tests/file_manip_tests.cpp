@@ -187,9 +187,10 @@ static void op_file_readable_tests()
 
 static input_output<string, string> expect_realpath[] =
 {
-	{ "file_manip_tests.cpp", "file_manip_tests.cpp" },
-	{ "../tests/" "file_manip_tests.cpp", "file_manip_tests.cpp" },
-	{ ".//.//" "file_manip_tests.cpp", "file_manip_tests.cpp" },
+	// realpath() file argument must exists.
+	{ "file_manip_tests.o", "file_manip_tests.o" },
+	{ "../tests/" "file_manip_tests.o", "file_manip_tests.o" },
+	{ ".//.//" "file_manip_tests.o", "file_manip_tests.o" },
 	// POSIX namespaces ignored by realpath(3)
 	{ "//", "/" },
 	{ "//usr", "/usr" },
