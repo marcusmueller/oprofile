@@ -75,6 +75,9 @@ static void opd_put_sample(struct transient * trans, unsigned long long pc)
 
 	event = pop_buffer_value(trans);
 
+	if (trans->tracing != TRACING_ON)
+		trans->event = event;
+
 	trans->pc = pc;
 
 	/* sfile can change at each sample for kernel */
@@ -87,12 +90,22 @@ static void opd_put_sample(struct transient * trans, unsigned long long pc)
 
 	/* can happen if kernel sample falls through the cracks */
 	if (!trans->current)
-		return;
+		goto out;
 
 	if (trans->current->ignored)
-		return;
+		goto out;
 
-	sfile_log_sample(trans->current, trans->pc, event);
+	/* log the sample or arc */
+	sfile_log_sample(trans);
+
+out:
+	/* switch to trace mode */
+	if (trans->tracing == TRACING_START)
+		trans->tracing = TRACING_ON;
+
+	/* used for callgraph only */
+	trans->last = trans->current;
+	trans->last_pc = trans->pc;
 }
 
 
@@ -192,6 +205,20 @@ static void code_module_loaded(struct transient * trans __attribute__((unused)))
 }
 
 
+static void code_trace_begin(struct transient * trans)
+{
+	verbprintf("TRACE_BEGIN\n");
+	trans->tracing = TRACING_START;
+}
+
+
+static void code_trace_end(struct transient * trans)
+{
+	verbprintf("TRACE_END\n");
+	trans->tracing = TRACING_OFF;
+}
+
+
 typedef void (*handler_t)(struct transient *);
 
 static handler_t handlers[LAST_CODE + 1] = {
@@ -202,7 +229,9 @@ static handler_t handlers[LAST_CODE + 1] = {
 	&code_kernel_enter,
 	&code_kernel_exit,
 	&code_module_loaded,
-	&code_unknown /* tgid handled differently */
+	&code_unknown, /* tgid handled differently */
+	&code_trace_begin,
+	&code_trace_end,
 };
 
 
@@ -211,10 +240,14 @@ void opd_process_samples(char const * buffer, size_t count)
 	struct transient trans = {
 		.buffer = buffer,
 		.remaining = count,
+		.tracing = TRACING_OFF,
 		.current = NULL,
+		.last = NULL,
 		.cookie = 0,
 		.app_cookie = 0,
 		.pc = 0,
+		.last_pc = 0,
+		.event = 0,
 		.in_kernel = -1,
 		.cpu = -1,
 		.tid = -1,

@@ -55,11 +55,12 @@ void op_read_file(FILE * fp, void * buf, size_t size);
 /**
  * op_read_int_from_file - parse an ASCII value from a file into an integer
  * @param filename  name of file to parse integer value from
+ * @param fatal  non-zero if any error must be fatal
  *
- * Reads an ASCII integer from the given file. All errors are fatal.
- * The value read in is returned.
+ * Reads an ASCII integer from the given file. If an error occur and fatal is
+ * zero (u32)-1 is returned else the value read in is returned.
  */
-u32 op_read_int_from_file(char const * filename);
+u32 op_read_int_from_file(char const * filename, int fatal);
 
 /**
  * op_close_file - close a file

@@ -20,6 +20,9 @@ struct parsed_filename
 {
 	std::string image;
 	std::string lib_image;
+	/// destination image for call graph file, empty if this sample
+	/// file is not a callgraph file.
+	std::string cg_image;
 	std::string event;
 	std::string count;
 	std::string unitmask;

@@ -19,12 +19,12 @@ extern "C" {
 #endif
 
 enum mangle_flags {
-	MANGLE_NONE     = 0,
-	MANGLE_DEP_NAME = (1 << 0),
-	MANGLE_CPU      = (1 << 1),
-	MANGLE_TGID     = (1 << 2),
-	MANGLE_TID      = (1 << 3),
-	MANGLE_KERNEL   = (1 << 4)
+	MANGLE_NONE      = 0,
+	MANGLE_CPU       = (1 << 0),
+	MANGLE_TGID      = (1 << 1),
+	MANGLE_TID       = (1 << 2),
+	MANGLE_KERNEL    = (1 << 3),
+	MANGLE_CALLGRAPH = (1 << 4)
 };
 
 /**
@@ -37,6 +37,7 @@ struct mangle_values {
 
 	char const * image_name;
 	char const * dep_name;
+	char const * cg_image_name;
 	char const * event_name;
 	int count;
 	unsigned int unit_mask;

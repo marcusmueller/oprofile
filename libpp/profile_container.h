@@ -19,9 +19,9 @@
 #include "utility.h"
 #include "op_bfd.h"
 #include "sample_container.h"
+#include "symbol_container.h"
 #include "format_flags.h"
 
-class symbol_container;
 class string_filter;
 class symbol_entry;
 class sample_entry;
@@ -82,6 +82,9 @@ public:
 	sample_entry const * find_sample(symbol_entry const * symbol,
 					 bfd_vma vma) const;
 
+	/// Search a symbol. Return NULL if not found.
+	symbol_entry const * find(symbol_entry const & symbol) const;
+
 	/// used for select_symbols()
 	struct symbol_choice {
 		symbol_choice()
@@ -116,6 +119,11 @@ public:
 	/// 0 if no samples found.
 	count_array_t samples_count(debug_name_id filename,
 			   size_t linenr) const;
+
+	/// return an iterator to the first symbol
+	symbol_container::symbols_t::iterator begin_symbol() const;
+	/// return an iterator to the last symbol
+	symbol_container::symbols_t::iterator end_symbol() const;
 
 	/// return iterator to the first samples
 	sample_container::samples_iterator begin() const;

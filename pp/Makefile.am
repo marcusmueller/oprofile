@@ -9,12 +9,11 @@ AM_CPPFLAGS = \
 
 AM_CXXFLAGS = @OP_CXXFLAGS@
 
-bin_PROGRAMS = opreport opannotate opgprof
+bin_PROGRAMS = opreport opannotate opgprof opstack
 
 LIBS=@POPT_LIBS@ @BFD_LIBS@
 
-pp_common = common_option.cpp common_option.h \
-	image_errors.h image_errors.cpp
+pp_common = common_option.cpp common_option.h
 
 common_libs =  \
 	../libpp/libpp.a \
@@ -27,15 +26,20 @@ common_libs =  \
 
 opreport_SOURCES = opreport.cpp \
 	opreport_options.h opreport_options.cpp \
-	populate.cpp populate.h $(pp_common)
+	$(pp_common)
 opreport_LDADD = $(common_libs)
 
 opannotate_SOURCES = opannotate.cpp \
 	opannotate_options.h opannotate_options.cpp \
-	populate.cpp populate.h $(pp_common)
+	$(pp_common)
 opannotate_LDADD = $(common_libs)
 
 opgprof_SOURCES = opgprof.cpp \
 	opgprof_options.h opgprof_options.cpp \
 	$(pp_common)
 opgprof_LDADD = $(common_libs)
+
+opstack_SOURCES = opstack.cpp \
+	opstack_options.h opstack_options.cpp \
+	$(pp_common)
+opstack_LDADD = $(common_libs)

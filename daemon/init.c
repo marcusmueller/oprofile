@@ -222,8 +222,8 @@ static void opd_26_init(void)
 
 	opd_create_vmlinux(vmlinux, kernel_range);
 
-	opd_buf_size = opd_read_fs_int("/dev/oprofile/", "buffer_size");
-	kernel_pointer_size = opd_read_fs_int("/dev/oprofile/", "pointer_size");
+	opd_buf_size = opd_read_fs_int("/dev/oprofile/", "buffer_size", 1);
+	kernel_pointer_size = opd_read_fs_int("/dev/oprofile/", "pointer_size", 1);
 
 	s_buf_bytesize = opd_buf_size * kernel_pointer_size;
 

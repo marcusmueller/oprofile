@@ -92,6 +92,12 @@ task.  'cpu' separates for each CPU. 'all' implies all of the above
 options and 'none' turns off separation.
 .br
 .TP
+.BI "--callgraph=#depth"
+Enable callgraph sample collection with a maximum depth. Use 0 to disable
+callgraph. This option is ignored with 2.2/2.4 or 2.6 kernel w/o the
+callgraph support patch (x86 only).
+.br
+.TP
 .BI "--image="[name,name...|"all"]
 Only profile the given absolute paths to binaries, or "all" to profile
 everything (the default).

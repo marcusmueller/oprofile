@@ -37,6 +37,6 @@ struct opd_header;
 
 /** fill the sample file header with event info etc. */
 void fill_header(struct opd_header * header, unsigned long counter,
-                 int is_kernel, time_t mtime);
+                 int is_kernel, int cg_to_is_kernel, time_t mtime);
 
 #endif /* OPD_EVENTS_H */

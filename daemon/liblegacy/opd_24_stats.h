@@ -20,6 +20,7 @@ enum {  OPD_KERNEL, /**< nr kernel samples */
 	OPD_LOST_PROCESS, /**< nr samples for which process info couldn't be accessed */
 	OPD_PROCESS, /**< nr userspace samples */
 	OPD_LOST_MAP_PROCESS, /**< nr samples for which map info couldn't be accessed */
+	OPD_LOST_SAMPLEFILE, /**< nr samples for which sample file can't be opened */
 	OPD_PROC_QUEUE_ACCESS, /**< nr accesses of proc queue */
 	OPD_PROC_QUEUE_DEPTH, /**< cumulative depth of proc queue accesses */
 	OPD_DUMP_COUNT, /**< nr of times buffer is read */

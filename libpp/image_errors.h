@@ -15,6 +15,15 @@
 
 class inverted_profile;
 
+/// possible reasons why we can't read a binary image
+enum image_error {
+	image_ok = 0,
+	image_not_found,
+	image_unreadable,
+	image_format_failure,
+	image_multiple_match
+};
+
 /// output why the image passed can't be read to stderr
 void report_image_error(inverted_profile const & profile, bool fatal);
 

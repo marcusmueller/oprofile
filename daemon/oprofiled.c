@@ -318,11 +318,11 @@ int is_image_ignored(char const * name)
 
 
 /** return the int in the given oprofilefs file */
-int opd_read_fs_int(char const * path, char const * name)
+int opd_read_fs_int(char const * path, char const * name, int fatal)
 {
 	char filename[PATH_MAX + 1];
 	snprintf(filename, PATH_MAX, "%s/%s", path, name);
-	return op_read_int_from_file(filename);
+	return op_read_int_from_file(filename, fatal);
 }
 
 

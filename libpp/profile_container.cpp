@@ -315,3 +315,18 @@ sample_container::samples_iterator profile_container::end() const
 {
 	return samples->end();
 }
+
+symbol_entry const * profile_container::find(symbol_entry const & symbol) const
+{
+	return symbols->find(symbol);
+}
+
+symbol_container::symbols_t::iterator profile_container::begin_symbol() const
+{
+	return symbols->begin();
+}
+
+symbol_container::symbols_t::iterator profile_container::end_symbol() const
+{
+	return symbols->end();
+}

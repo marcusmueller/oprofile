@@ -335,8 +335,8 @@ static void opd_24_init(void)
 
 	if (!no_vmlinux)
 		opd_parse_kernel_range(kernel_range);
-	opd_buf_size = opd_read_fs_int(OP_MOUNT, "bufsize");
-	opd_note_buf_size = opd_read_fs_int(OP_MOUNT, "notesize");
+	opd_buf_size = opd_read_fs_int(OP_MOUNT, "bufsize", 1);
+	opd_note_buf_size = opd_read_fs_int(OP_MOUNT, "notesize", 1);
 
 	s_buf_bytesize = sizeof(struct op_buffer_head) + opd_buf_size * sizeof(struct op_sample);
 

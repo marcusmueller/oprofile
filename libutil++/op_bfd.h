@@ -140,6 +140,9 @@ public:
 	 */
 	void get_vma_range(bfd_vma & start, bfd_vma & end) const;
 
+	/** return the relocated PC value for the given file offset */
+	bfd_vma offset_to_pc(bfd_vma offset) const;
+
 	/** return the text section filepos. */
 	u32 const get_start_offset() const { return text_offset; }
 

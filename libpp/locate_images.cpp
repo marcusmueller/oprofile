@@ -11,7 +11,6 @@
 
 #include "file_manip.h"
 #include "locate_images.h"
-#include "image_error.h"
 
 #include <cerrno>
 #include <iostream>

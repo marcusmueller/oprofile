@@ -141,7 +141,7 @@ struct opd_event * find_counter_event(unsigned long counter)
 
 
 void fill_header(struct opd_header * header, unsigned long counter,
-                 int is_kernel, time_t mtime)
+                 int is_kernel, int cg_to_is_kernel, time_t mtime)
 {
 	struct opd_event * event = find_counter_event(counter);
 
@@ -153,6 +153,7 @@ void fill_header(struct opd_header * header, unsigned long counter,
 	header->ctr_count = event->count;
 	header->ctr_um = event->um;
 	header->is_kernel = is_kernel;
+	header->cg_to_is_kernel = cg_to_is_kernel;
 	header->cpu_speed = cpu_speed;
 	header->mtime = mtime;
 }

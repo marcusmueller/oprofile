@@ -68,15 +68,12 @@ static char * opd_mangle_filename(struct opd_image const * image, int counter,
                                   int cpu_nr)
 {
 	char * mangled;
-	char const * dep_name = separate_lib ? image->app_name : NULL;
 	struct mangle_values values;
 	struct opd_event * event = find_counter_event(counter);
 
 	values.flags = 0;
 	if (image->kernel)
 		values.flags |= MANGLE_KERNEL;
-	if (dep_name && strcmp(dep_name, image->name))
-		values.flags |= MANGLE_DEP_NAME;
 
 	if (separate_thread) {
 		values.flags |= MANGLE_TGID | MANGLE_TID;
@@ -94,7 +91,7 @@ static char * opd_mangle_filename(struct opd_image const * image, int counter,
 	values.unit_mask = event->um;
 
 	values.image_name = image->name;
-	values.dep_name = dep_name;
+	values.dep_name = separate_lib ? image->app_name : image->name;
 
 	mangled = op_mangle_filename(&values);
 
@@ -145,7 +142,7 @@ retry:
 	}
 
 	fill_header(sfile->sample_file.base_memory, counter,
-	            image->kernel, image->mtime);
+	            image->kernel, 0, image->mtime);
 
 out:
 	free(mangled);

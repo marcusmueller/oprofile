@@ -6,17 +6,41 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8 release
 -----------
 
- o "finish" and merge BRANCH_CALLGRAPH. Phew.
+ o finish opstack: proper output, various --separate= --merge= handling,
+  later do we need an opreport like opstack (showing caller/callee at binary
+  boundary not symbols) ?
+ o first quick test show it works but I got in oprofiled.log (possibly when
+  shutdown oprofile)
+	Read buffer of 35253 entries.
+	Read buffer of 35220 entries.
+	Unknown code !
+  phe: look like to occur when sampling rate is a bit too high.
+ o when samples rate is too high (< 100000) a lot of cpu buffer overflow occur
+  then daemon get many problems. I dunno exactly what is wrong but in this case
+  a lot of samples file creation fails, many samples are lost due to no mm etc.
+  we can prolly make the daemon more robust in this case.
 
 0.9 release
 -----------
 
+ o better --verbose, roughly, if possible:
+   class verbose { enum verbose_mode { stats, bfd_debug, ... }; }
+   verbose stats; verbose bfd_debug;
+   cverb << stats << "foo\n";
+   cverb << (stats|bfd_debug) << "bar\n";
+   cverb << bfd_debug << "bar\n";
+   opreport --verbose=stats; opreport --verbose=stats,bfd_debug;
  o opdiff
  o add event aliases for common things like icache misses
 
 Before 1.0 little stuff
 -----------------------
 
+ o depedencies between profile_container.h symbol_container.h and
+  sample_container.h become more and more ugly, I needed to include them
+  in a specific order in some source.
+ o test and fix p4 support both for 2.4/2.6, merge HT support for 2.4 to 2.6
+  (if I can get a P4 HT box ...)
  o x86_64 and 2.4 kernel: it's apparently broken
  o Alpha ev67 events are broken
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't

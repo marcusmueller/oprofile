@@ -24,11 +24,13 @@ struct opd_header {
 	u32 ctr_event;
 	u32 ctr_um;
 	u32 ctr_count;
+	// for cg file the from_cg_is_kernel
 	u32 is_kernel;
 	double cpu_speed;
 	time_t mtime;
+	u32 cg_to_is_kernel;
 	/* binary compatibility reserve */
-	u32 reserved1[6];
+	u32 reserved1[5];
 };
 
 #endif /* OP_SAMPLE_FILE_H */

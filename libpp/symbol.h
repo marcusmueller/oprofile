@@ -17,6 +17,8 @@
 
 #include <bfd.h>
 
+#include <list>
+
 /// A simple container for a fileno:linenr location.
 struct file_location {
 	file_location() : linenr(0) {}
@@ -52,7 +54,7 @@ struct symbol_entry {
 	image_name_id image_name;
 	/// owning application name: identical to image name if profiling
 	/// session did not separate samples for shared libs or if image_name
-	// is not a shared lib
+	/// is not a shared lib
 	image_name_id app_name;
 	/// file location, vma and cumulated samples count for this symbol
 	sample_entry sample;

@@ -20,6 +20,8 @@
 #define KERNEL_EXIT_SWITCH_CODE		5
 #define MODULE_LOADED_CODE              6
 #define CTX_TGID_CODE			7
-#define LAST_CODE			8
+#define TRACE_BEGIN_CODE		8
+#define TRACE_END_CODE			9
+#define LAST_CODE			10
  
 #endif /* OPD_INTERFACE_H */

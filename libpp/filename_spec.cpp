@@ -61,10 +61,19 @@ void filename_spec::set_sample_filename(string const & filename)
 
 	image = parsed.image;
 	lib_image = parsed.lib_image;
+	cg_image = parsed.cg_image;
 	event = parsed.event;
 	count = op_lexical_cast<int>(parsed.count);
 	unitmask = op_lexical_cast<unsigned int>(parsed.unitmask);
 	tgid.set(parsed.tgid);
 	tid.set(parsed.tid);
 	cpu.set(parsed.cpu);
+}
+
+
+bool filename_spec::is_dependant() const
+{
+	if (cg_image.empty())
+		return image != lib_image;
+	return cg_image != image || cg_image != lib_image;
 }

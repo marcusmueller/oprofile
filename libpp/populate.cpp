@@ -14,36 +14,46 @@
 #include "arrange_profiles.h"
 #include "op_bfd.h"
 #include "op_header.h"
+#include "populate.h"
 
 #include "image_errors.h"
 
 using namespace std;
 
-namespace options {
-	extern string_filter symbol_filter;
-};
-
-
 namespace {
 
 /// load merged files for one set of sample files
-void
-populate_from_files(profile_t & profile, list<string> const & files, u32 offset)
+bool
+populate_from_files(profile_t & profile,
+   list<profile_sample_files> const & files, u32 offset)
 {
-	list<string>::const_iterator it = files.begin();
-	list<string>::const_iterator const end = files.end();
+	list<profile_sample_files>::const_iterator it = files.begin();
+	list<profile_sample_files>::const_iterator const end = files.end();
 
-	for (; it != end; ++it)
-		profile.add_sample_file(*it, offset);
+	bool found = false;
+	// we can't handle cg files here obviously
+	for (; it != end; ++it) {
+		// A bit ugly but we must acept silently empty sample filename
+		// since we can create a profile_sample_files for cg file only
+		// (i.e no sample to the binary)
+		if (!it->sample_filename.empty()) {
+			profile.add_sample_file(it->sample_filename, offset);
+			found = true;
+		}
+	}
+
+	return found;
 }
 
 }  // anon namespace
 
 
-bool populate_for_image(profile_container & samples, inverted_profile & ip)
+bool
+populate_for_image(profile_container & samples, inverted_profile const & ip,
+   string_filter const & symbol_filter)
 {
 	bool ok = ip.error == image_ok;
-	op_bfd abfd(ip.image, options::symbol_filter, ok);
+	op_bfd abfd(ip.image, symbol_filter, ok);
 	if (!ok && ip.error == image_ok)
 		ip.error = image_format_failure;
 
@@ -54,6 +64,7 @@ bool populate_for_image(profile_container & samples, inverted_profile & ip)
 
 	opd_header header;
 
+	bool found = false;
 	for (size_t i = 0; i < ip.groups.size(); ++i) {
 		list<image_set>::const_iterator it
 			= ip.groups[i].begin();
@@ -66,13 +77,15 @@ bool populate_for_image(profile_container & samples, inverted_profile & ip)
 		// to the wrong app_image otherwise
 		for (; it != end; ++it) {
 			profile_t profile;
-			populate_from_files(profile, it->files, offset);
-			header = profile.get_header();
-			samples.add(profile, abfd, it->app_image, i);
+			if (populate_from_files(profile, it->files, offset)) {
+				header = profile.get_header();
+				samples.add(profile, abfd, it->app_image, i);
+				found = true;
+			}
 		}
 	}
 
-	if (ip.error == image_ok)
+	if (found == true && ip.error == image_ok)
 		check_mtime(abfd.get_filename(), header);
 
 	return abfd.has_debug_info();

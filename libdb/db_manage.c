@@ -31,7 +31,7 @@ static __inline odb_descr_t * odb_to_descr(samples_odb_t * hash)
  
 static __inline odb_node_t * odb_to_node_base(samples_odb_t * hash)
 {
-  return (odb_node_t *)(((char *)hash->base_memory) + hash->offset_node);
+	return (odb_node_t *)(((char *)hash->base_memory) + hash->offset_node);
 }
 
  

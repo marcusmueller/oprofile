@@ -16,7 +16,7 @@
 #include <map>
 #include <vector>
 
-#include "image_error.h"
+#include "image_errors.h"
 
 /**
  * A class containing mappings from an image basename,

@@ -80,6 +80,9 @@ void op_write_file(FILE * fp, void const * buf, size_t size)
 {
 	size_t written;
 
+	if (size == 0)
+		return;
+
 	written = fwrite(buf, size, 1, fp);
 
 	if (written != 1) {
@@ -109,13 +112,15 @@ void op_write_u64(FILE * fp, u64 val)
 }
 
 
-u32 op_read_int_from_file(char const * filename)
+u32 op_read_int_from_file(char const * filename, int fatal)
 {
 	FILE * fp;
 	u32 value;
 
 	fp = fopen(filename, "r");
 	if (fp == NULL) {
+		if (!fatal)
+			return (u32)-1;
 		fprintf(stderr,
 			"op_read_int_from_file: Failed to open %s, reason %s\n",
 			filename, strerror(errno));
@@ -124,6 +129,8 @@ u32 op_read_int_from_file(char const * filename)
 
 	if (fscanf(fp, "%u", &value) != 1) {
 		fclose(fp);
+		if (!fatal)
+			return (u32)-1;
 		fprintf(stderr,
 			"op_read_int_from_file: Failed to convert contents of file %s to integer\n",
 			filename);

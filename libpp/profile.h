@@ -34,6 +34,9 @@ public:
 	 * profile_t - construct an empty  profile_t object
 	 */
 	profile_t();
+
+	/// return true if no sample file has been loaded
+	bool empty() const { return !file_header.get(); }
  
 	/// return the header of the last opened samples file
 	opd_header const & get_header() const {
@@ -71,7 +74,7 @@ public:
 	 * return an iterator pair to [start, end) range
 	 */
 	iterator_pair
-	samples_range(unsigned int start, unsigned int end) const;
+	samples_range(odb_key_t start, odb_key_t end) const;
 
 	/// return a pair of iterator for all samples
 	iterator_pair samples_range() const;
@@ -137,11 +140,14 @@ public:
 	unsigned int operator*() const { return it->second; }
 	const_iterator & operator++() { ++it; return *this; }
 
-	unsigned int vma() const { return it->first + start_offset; }
+	odb_key_t vma() const { return it->first + start_offset; }
 	unsigned int count() const { return **this; }
 
 	bool operator!=(const_iterator const & rhs) const {
 		return it != rhs.it;
+	}
+	bool operator==(const_iterator const & rhs) const {
+		return it == rhs.it;
 	}
 
 private:

@@ -109,12 +109,6 @@ parsed_filename parse_filename(string const & filename)
 				       filename);
 	}
 
-	// PP:3.23 {kern} must be followed by a single path component
-	if (path[0] == "{kern}" && path.size() != 2) {
-		throw invalid_argument("parse_filename() invalid filename: " +
-				       filename);
-	}
-
 	size_t i;
 	for (i = 1 ; i < path.size() ; ++i) {
 		if (path[i] == "{dep}")
@@ -123,27 +117,39 @@ parsed_filename parse_filename(string const & filename)
 		result.image += "/" + path[i];
 	}
 
-	if (i == path.size())
-		return result;
-
-	++i;
-
-	// PP:3.19 {dep}/ must be followed by {kern}/ or {root}/
-	if (path[i] == "{kern}") {
-		// PP:3.23 {kern} must be followed by a single path component
-		if (path.size() - i != 2) {
-			throw invalid_argument("parse_filename() invalid filename: " +
-					       filename);
-		}
-	} else if (path[i] != "{root}") {
+	if (i == path.size()) {
 		throw invalid_argument("parse_filename() invalid filename: " +
 				       filename);
 	}
 
-	++i;
+	++i;	// skip "{dep}"
 
-	for (size_t pos = i ; pos < path.size() ; ++pos) {
-		result.lib_image += "/" + path[pos];
+	// PP:3.19 {dep}/ must be followed by {kern}/ or {root}/
+	if (path[i] != "{kern}" && path[i] != "{root}") {
+		throw invalid_argument("parse_filename() invalid filename: " +
+				       filename);
+	}
+
+	++i;   // skip "{root}" or "{kern}"
+
+	for (; i < path.size(); ++i) {
+		if (path[i] == "{cg}")
+			break;
+		result.lib_image += "/" + path[i];
+	}
+
+	if (i != path.size()) {
+		++i;  // skip "{cg}"
+		if (i == path.size() ||
+		    (path[i] != "{kern}" && path[i] != "{root}")) {
+			throw invalid_argument(
+				"parse_filename() invalid filename: " +
+				filename);
+		}
+		++i; // skip "{root}" or "{kern}"
+	}
+	for (; i < path.size(); ++i) {
+		result.cg_image += "/" + path[i];
 	}
 
 	return result;

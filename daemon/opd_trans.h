@@ -17,6 +17,12 @@
 
 struct sfile;
 
+enum tracing_type {
+	TRACING_OFF,
+	TRACING_START,
+	TRACING_ON
+};
+
 /**
  * Transient values used for parsing the event buffer.
  * Note that these are reset for each buffer read, but
@@ -26,10 +32,14 @@ struct sfile;
 struct transient {
 	char const * buffer;
 	size_t remaining;
+	enum tracing_type tracing;
 	struct sfile * current;
+	struct sfile * last;
 	cookie_t cookie;
 	cookie_t app_cookie;
 	vma_t pc;
+	vma_t last_pc;
+	unsigned long event;
 	int in_kernel;
 	unsigned long cpu;
 	pid_t tid;

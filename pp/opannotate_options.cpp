@@ -108,7 +108,7 @@ void handle_options(vector<string> const & non_options)
 	profile_spec const spec =
 		profile_spec::create(non_options, options::extra_found_images);
 
-	list<string> sample_files = spec.generate_file_list(exclude_dependent);
+	list<string> sample_files = spec.generate_file_list(exclude_dependent, true);
 
 	cverb << "Matched sample files: " << sample_files.size() << endl;
 	copy(sample_files.begin(), sample_files.end(),
@@ -121,6 +121,8 @@ void handle_options(vector<string> const & non_options)
 	merge_by = handle_merge_option(mergespec, false, exclude_dependent);
 
 	classes = arrange_profiles(sample_files, merge_by);
+
+	cverb << "profile_classes:\n" << classes << endl;
 
 	if (classes.v.empty()) {
 		cerr << "error: no sample files found: profile specification "

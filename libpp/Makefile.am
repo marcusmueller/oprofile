@@ -13,6 +13,8 @@ noinst_LIBRARIES = libpp.a
 libpp_a_SOURCES = \
 	arrange_profiles.cpp \
 	arrange_profiles.h \
+	callgraph_container.h \
+	callgraph_container.cpp \
 	count_array.cpp \
 	count_array.h \
 	filename_spec.cpp \
@@ -20,7 +22,8 @@ libpp_a_SOURCES = \
 	format_flags.h \
 	format_output.cpp \
 	format_output.h \
-	image_error.h \
+	image_errors.h \
+	image_errors.cpp \
 	locate_images.cpp \
 	locate_images.h \
 	name_storage.cpp \
@@ -30,6 +33,8 @@ libpp_a_SOURCES = \
 	symbol.h \
 	parse_filename.cpp \
 	parse_filename.h \
+	populate.h \
+	populate.cpp \
 	profile.cpp \
 	profile.h \
 	profile_container.cpp \

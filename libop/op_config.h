@@ -28,6 +28,6 @@
 #endif
 
 #define OPD_MAGIC "DAE\n"
-#define OPD_VERSION 0x9
+#define OPD_VERSION 0x10
 
 #endif /* OP_CONFIG_H */

@@ -75,7 +75,7 @@ static int check_redundant_key(samples_odb_t const * hash, odb_key_t max)
 
 	for (pos = 1 ; pos < hash->descr->current_size ; ++pos) {
 		if (bitmap[hash->node_base[pos].key]) {
-			printf("redudant key found %d\n",
+			printf("redundant key found %lld\n",
 			       hash->node_base[pos].key);
 			return 1;
 		}

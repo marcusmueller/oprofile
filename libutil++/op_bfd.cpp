@@ -464,6 +464,21 @@ u32 op_bfd::sym_offset(symbol_index_t sym_index, u32 num) const
 }
 
 
+bfd_vma op_bfd::offset_to_pc(bfd_vma offset) const
+{
+	asection const * sect = ibfd->sections;
+
+	for (; sect; sect = sect->next) {
+		if (offset >= bfd_vma(sect->filepos) &&
+		    (!sect->next || offset < bfd_vma(sect->next->filepos))) {
+			return sect->vma + (offset - sect->filepos);
+		}
+	}
+
+	return 0;
+}
+
+
 bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 			string & source_filename, unsigned int & linenr) const
 {

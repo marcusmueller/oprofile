@@ -12,7 +12,6 @@
 #ifndef SYMBOL_CONTAINER_H
 #define SYMBOL_CONTAINER_H
 
-#include <vector>
 #include <string>
 #include <set>
 
@@ -54,6 +53,9 @@ public:
 	symbol_entry const * find_by_vma(std::string const & image_name,
 					 bfd_vma vma) const;
 
+	/// Search a symbol. Return NULL if not found.
+	symbol_entry const * find(symbol_entry const & symbol) const;
+
 	/// return start of symbols
 	symbols_t::iterator begin();
 
@@ -77,7 +79,7 @@ private:
 	typedef std::multiset<symbol_entry const *, less_by_file_loc>
 		symbols_by_loc_t;
 
-	// must be declared after the vector to ensure a correct life-time.
+	// must be declared after the set to ensure a correct life-time.
 
 	/**
 	 * Symbols sorted by location order. Lazily built on request,

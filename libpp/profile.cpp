@@ -116,7 +116,7 @@ void profile_t::add_sample_file(string const & filename, u32 offset)
 
 
 profile_t::iterator_pair
-profile_t::samples_range(unsigned int start, unsigned int end) const
+profile_t::samples_range(odb_key_t start, odb_key_t end) const
 {
 	// if the image contains no symbol the vma range is [0 - filesize]
 	// in this case we can't substract start_offset else we will underflow

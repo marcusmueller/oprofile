@@ -13,9 +13,10 @@
 #define ODB_HASH_H
 
 #include <stddef.h>
+#include <stdint.h>
 
-/** the type of key */
-typedef unsigned int odb_key_t;
+/** the type of key. 64-bit because CG needs 32-bit pair {from,to} */
+typedef uint64_t odb_key_t;
 /** the type of an information in the database */
 typedef unsigned int odb_value_t;
 /** the type of index (node number), list are implemented through index */
@@ -170,12 +171,12 @@ static __inline unsigned int odb_do_hash(samples_odb_t const * hash, odb_key_t v
 	 * and do a lot of tests ... */
 	/* trying to combine high order bits his a no-op: inside a binary image
 	 * high order bits don't vary a lot, hash table start with 7 bits mask
-	 * so this hash coding use 15 low order bits of eip, then add one hash
-	 * bits at each grow. Hash table is stored in files avoiding to rebuild
-	 * ing them at profiling re-start so on changing do_hash() change the
-	 * file format
+	 * so this hash coding use bits 0-7, 8-15. Hash table is stored in
+	 * files avoiding to rebuilding them at profiling re-start so
+	 * on changing do_hash() change the file format!
 	 */
-	return ((value << 0) ^ (value >> 8)) & hash->hash_mask;
+	uint32_t temp = (value >> 32) ^ value;
+	return ((temp << 0) ^ (temp >> 8)) & hash->hash_mask;
 }
 
 #ifdef __cplusplus

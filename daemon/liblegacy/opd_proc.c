@@ -137,6 +137,7 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 	if (!sfile || !sfile->sample_file.base_memory) {
 		if (opd_open_24_sample_file(image, counter, cpu_number)) {
 			/* opd_open_24_sample_file output an error message */
+			opd_24_stats[OPD_LOST_SAMPLEFILE]++;
 			return;
 		}
 		sfile = image->sfiles[cpu_number][counter];

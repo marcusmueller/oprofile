@@ -15,8 +15,9 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <iosfwd>
 
-#include "image_error.h"
+#include "image_errors.h"
 
 /**
  * store merging options options used to classify profiles
@@ -45,6 +46,25 @@ struct profile_template {
 
 
 /**
+ * A samples filename + its associated callgraph sample filename.
+ */
+struct profile_sample_files {
+	/**
+	 * This member can be empty since it is possible to get callgraph
+	 * w/o any samples to the binary. e.g an application which defer all
+	 * works to shared library but if arrange_profiles receive a sample
+	 * file list filtered from cg file sample_filename can't be empty
+	 */
+	std::string sample_filename;
+	/**
+	 * List of callgraph sample filename. If the {dep} part of
+	 * cg_filename != {cg} part it's a cross binary samples file.
+	 */
+	std::list<std::string> cg_files;
+};
+
+
+/**
  * A number of profiles files that are all dependent on
  * the same main (application) profile, for the same
  * dependent image.
@@ -53,8 +73,8 @@ struct profile_dep_set {
 	/// which dependent image is this set for
 	std::string lib_image;
 
-	/// the actual sample files
-	std::list<std::string> files;
+	/// the actual sample files optionnaly including callgraph sample files
+	std::list<profile_sample_files> files;
 };
 
 /**
@@ -69,8 +89,9 @@ struct profile_dep_set {
 struct profile_set {
 	std::string image;
 
-	/// the actual sample files for the main image
-	std::list<std::string> files;
+	/// the actual sample files for the main image and the asociated
+	/// callgraph files
+	std::list<profile_sample_files> files;
 
 	/// all profile files dependent on the main image
 	std::list<profile_dep_set> deps;
@@ -94,9 +115,6 @@ struct profile_class {
 	profile_template ptemplate;
 };
 
-bool operator<(profile_class const & lhs,
-               profile_class const & rhs);
-
 
 struct profile_classes {
 	/**
@@ -115,6 +133,14 @@ struct profile_classes {
 	/// the actual classes
 	std::vector<profile_class> v;
 };
+
+
+std::ostream & operator<<(std::ostream &, profile_sample_files const &);
+std::ostream & operator<<(std::ostream &, profile_dep_set const &);
+std::ostream & operator<<(std::ostream &, profile_set const &);
+std::ostream & operator<<(std::ostream &, profile_template const &);
+std::ostream & operator<<(std::ostream &, profile_class const &);
+std::ostream & operator<<(std::ostream &, profile_classes const &);
 
 
 /**
@@ -140,7 +166,7 @@ struct image_set {
 	std::string app_image;
 
 	/// the sample files
-	std::list<std::string> files;
+	std::list<profile_sample_files> files;
 };
 
 typedef std::list<image_set> image_group_set;
@@ -168,7 +194,7 @@ struct inverted_profile {
 	std::string image;
 
 	/// an error found in reading the image
-	image_error error;
+	mutable image_error error;
 
 	/// all sample files with data for the above image
 	std::vector<image_group_set> groups;

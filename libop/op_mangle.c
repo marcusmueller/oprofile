@@ -19,51 +19,53 @@
 #include "op_sample_file.h"
 #include "op_config.h"
 
+static void append_separator(char * dest, int flags, char const * image_name)
+{
+	if ((flags & MANGLE_KERNEL) && !strchr(image_name, '/')) {
+		strcat(dest, "{kern}" "/");
+	} else {
+		strcat(dest, "{root}" "/");
+	}
+}
+
 char * op_mangle_filename(struct mangle_values const * values)
 {
 	char * mangled;
 	size_t len;
-	char const * image_name = values->image_name;
-	char const * dep_name = values->dep_name;
+	/* if dep_name != image_name we need to revert them (and so revert them
+	 * unconditionnaly because if they are equal it doesn't hurt to invert
+	 * them), see P:3, FIXME: this is a bit weirds, we prolly need to
+	 * reword pp_interface */
+	char const * image_name = values->dep_name;
+	char const * dep_name = values->image_name;
 
 	len = strlen(OP_SAMPLES_CURRENT_DIR) + strlen(values->image_name)
-	      + 1 + strlen(values->event_name) + 1;
+	      + 1 + strlen(values->event_name) 
+	      + 1 + strlen(values->dep_name) + 1;
 
-	if (values->flags & MANGLE_DEP_NAME) {
-		len += strlen(values->dep_name) + 1;
+	if (values->flags & MANGLE_CALLGRAPH)
+		len += strlen(values->cg_image_name) + 1;
 
-		/* PP:3 image_name and dep_name are reversed when
-		 * profiling with --separate */
-		image_name = values->dep_name;
-		dep_name = values->image_name;
-	}
-
-	/* provision for tgid, tid, unit_mask, cpu and three {root}, {dep} or
-	 * {kern} marker */
-	len += 128;	/* FIXME: too ugly */
+	/* provision for tgid, tid, unit_mask, cpu and some {root}, {dep},
+	 * {kern} and {cg} marker */
+	len += 256;	/* FIXME: too ugly */
 
 	mangled = xmalloc(len);
 
 	strcpy(mangled, OP_SAMPLES_CURRENT_DIR);
-
-	if ((values->flags & MANGLE_KERNEL) && !strchr(image_name, '/')) {
-		strcat(mangled, "{kern}" "/");
-	} else {
-		strcat(mangled, "{root}" "/");
-	}
-
+	append_separator(mangled, values->flags, image_name);
 	strcat(mangled, image_name);
 	strcat(mangled, "/");
 
-	if (values->flags & MANGLE_DEP_NAME) {
-		strcat(mangled, "{dep}" "/");
-		if ((values->flags & MANGLE_KERNEL)
-		    && !strchr(image_name, '/')) {
-			strcat(mangled, "{kern}" "/");
-		} else {
-			strcat(mangled, "{root}" "/");
-		}
-		strcat(mangled, dep_name);
+	strcat(mangled, "{dep}" "/");
+	append_separator(mangled, values->flags, image_name);
+	strcat(mangled, dep_name);
+	strcat(mangled, "/");
+
+	if (values->flags & MANGLE_CALLGRAPH) {
+		strcat(mangled, "{cg}" "/");
+		append_separator(mangled, values->flags, values->cg_image_name);
+		strcat(mangled, values->cg_image_name);
 		strcat(mangled, "/");
 	}
 

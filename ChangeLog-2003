@@ -48,6 +48,48 @@
 	  event:count, meaning than unitmask is now a part of the event
 	  specification.
 
+2003-12-19  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_sfile.c: we reversed to/from pc in call graph sample
+
+2003-11-23  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/profile.h:
+	* pp/opgprof.cpp: oops a simplify a bit too cg handling in my last
+	  patch, it was segfaulting each time no cg file was found...
+
+2003-11-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opgprof.cpp: simplify a bit cg handling, we don't need to know
+	  if we retrieved some cg files since the profile_t will be empty
+	  in this case
+
+2003-11-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/profile.h: iterator::vma() must return the full key not only
+	  an unsigned int.
+	* pp/opgprof.cpp: implement merging of cg files.
+
+2003-11-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/profile_spec.cpp:
+	* libpp/profile_spec.h:
+	* pp/opannotate_options.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport_options.cpp: filter call graph samples files
+
+2003-11-14  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_mangling.c: oops, it's better to really open the cg file
+
+	* daemon/opd_sfile.c:
+	* daemon/opd_stats.c:
+	* daemon/opd_stats.h:
+	* daemon/liblegacy/opd_24_stats.c:
+	* daemon/liblegacy/opd_24_stats.h:
+	* daemon/liblegacy/opd_proc.c: log sample lost due to sample file open
+	  failure
+
 2003-11-15  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/liblegacy/opd_parse_proc.c: always provide an image name

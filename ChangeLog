@@ -1,3 +1,118 @@
+2004-01-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_sample_file.h: with cg file we need to field is_kernel.
+	* daemon/opd_events.c:
+	* daemon/opd_events.h:
+	* daemon/opd_mangling.c:
+	* daemon/liblegacy/opd_sample_files.c: handle cg_to_is_kernel
+
+	* pp/populate.cpp:
+	* pp/populate.h:
+	* pp/image_errors.cpp:
+	* pp/image_errors.h: move this four files to libpp
+
+	* libpp/populate.cpp: we can get empty filename now, ignore them.
+	* libpp/image_error.h: remove this file by moving its contents ...
+	* libpp/image_errors.h here (this two filenames was confusing)
+
+	* libpp/Makefile.am: update according to files move.
+
+	* libpp/arrange_profiles.h:
+	* libpp/arrange_profiles.cpp: Fix find_profile_sample_files(), I was
+	  creating to many profile_sample_files. Add a bunch of operator<<.
+
+	* libpp/callgraph_container.h:
+	* libpp/callgraph_container.cpp:
+
+	* libpp/filename_spec.h: add cg_filename member
+	* libpp/filename_spec.cpp: handle cg_filename, Fix an error in
+	  is_dependant(), I'm a bit nervous about this predicate...
+
+	* libpp/locate_images.h:
+	* libpp/locate_images.cpp: #include fix
+
+	* libpp/parse_filename.cpp: Fix cg filename handling to not trigger
+	  some invalid_filename error with cg filename.
+
+	* libpp/profile.h:
+	* libpp/profile.cpp: we can no longer assume we use u32, so use
+	  odb_key_t in public interface. Add operator== acting on iterator
+
+	* libpp/symbol_container.cpp:
+	* libpp/symbol_container.h: add find(symbol const &);
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp: add a public interface to iterate over
+	  all smybols and to find a specific symbol
+
+	* libpp/symbol.h: typo, missing include
+
+	* pp/Makefile.am: handle opstack various new files and files move to
+	  libpp.
+
+	* pp/opreport.cpp:
+	* pp/opannotate.cpp: pass symbol_filter as params to populate()
+
+	* pp/opannotate_options.cpp: add verbose output of profile_classes
+	* pp/opgprof_options.cpp:
+	* pp/opreport_options.cpp:
+
+	* pp/opstack.cpp:
+	* pp/opstack_options.cpp:
+	* pp/opstack_options.h: new callgraph utility far to be complete but
+	  enough to start to play with callgraph.
+
+2004-01-04  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil/op_fileio.c: op_write_file(): allow to write zero byte.
+	* libutil/op_fileio.h: add fatal error for opd_read_int_from_file()
+	* daemon/init.c: add fatal error for opd_read_fs_int
+	* daemon/oprofiled.c:
+	* daemon/oprofiled.h:
+	* daemon/liblegacy/init.c:
+	* daemon/liblegacy/opd_24_stats.c: use this new fatal parameter
+	* daemon/opd_stats.c: dump /dev/oprofile/stats/*
+
+	* daemon/opd_sfile.c:
+	* daemon/opd_sfile.h: augment opd_sfile with an hash table of related
+	  call graph file
+	
+	* daemon/opd_mangling.c:
+	* daemon/opd_mangling.h:
+	* daemon/liblegacy/opd_sample_files.c:
+	* libop/op_mangle.c:
+	* libop/op_mangle.h: use new mangling name scheme, in short word:
+	  {dep} part is no longer optionnal, a {cg}/binary_name can optionnally
+	  follow the {dep} part
+	* libop/tests/mangle_tests.c: update test according to sample filename
+	  change
+
+	* libpp/filename_spec.cpp:
+	* libpp/filename_spec.h: filename_spec::is_dependant() new function
+	* libpp/parse_filename.h: add a cg_image member
+	* libpp/parse_filename.cpp: handle callgraph filename
+
+	* libpp/arrange_profiles.cpp:
+	* libpp/arrange_profiles.h: rather to use string for sample files, use
+	  a { string sample_filename, list<string> cg_files }, if {dep} part
+	  != {cg} part it's a cross-call binary.
+	  Note the sample_filename string can be empty (callgraph file w/o any
+	  samples into a binary)
+
+	* libpp/profile_spec.h:
+	* libpp/profile_spec.cpp: fix filtering of callgraph filename (this fix
+	  Carlo problem where opreport die with an invalid_filename error)
+
+	* pp/opgprof.cpp: use the new arrange_profiles.h API to acquire
+	  callgraph filename associated with a binary
+	* pp/opgprof_options.cpp: don't filter callgraph filename
+
+	* pp/opreport.cpp:
+	* pp/populate.cpp: update according arrange_profile API change
+
+	* utils/opcontrol: add --callgraph=#depth parameter
+	* doc/opcontrol.1.in:
+	* doc/oprofile.xml: document opcontrol --callgraph=#depth
+
 2004-01-16  Will Cohen  <wcohen@redhat.com>
 
 	* libutil++/op_bfd.cpp: Always use filepos of original file.

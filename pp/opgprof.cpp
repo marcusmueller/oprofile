@@ -22,6 +22,7 @@
 #include "image_errors.h"
 #include "opgprof_options.h"
 #include "cverb.h"
+#include "op_file.h"
 
 using namespace std;
 
@@ -29,6 +30,7 @@ namespace {
 
 #define GMON_VERSION 1
 #define GMON_TAG_TIME_HIST 0
+#define GMON_TAG_CG_ARC 1
 
 struct gmon_hdr {
 	char cookie[4];
@@ -101,8 +103,27 @@ bool aligned_samples(profile_container const & samples, int gap)
 }
 
 
-void output_gprof(profile_container const & samples,
-                  string gmon_filename, op_bfd const & abfd)
+void output_cg(FILE * fp, op_bfd const & abfd, profile_t const & cg_db)
+{
+	bfd_vma offset = abfd.get_start_offset();
+	if (!cg_db.get_header().is_kernel)
+		offset = 0;
+
+	profile_t::iterator_pair p_it = cg_db.samples_range();
+	for (; p_it.first != p_it.second; ++p_it.first) {
+		bfd_vma from = p_it.first.vma() >> 32;
+		bfd_vma to = p_it.first.vma() & 0xffffffff;
+
+		op_write_u8(fp, GMON_TAG_CG_ARC);
+		op_write_vma(fp, abfd, abfd.offset_to_pc(from + offset));
+		op_write_vma(fp, abfd, abfd.offset_to_pc(to + offset));
+		op_write_u32(fp, p_it.first.count());
+	}
+}
+
+
+void output_gprof(op_bfd const & abfd, profile_container const & samples,
+                  profile_t const & cg_db, string const & gmon_filename)
 {
 	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},};
 
@@ -130,6 +151,11 @@ void output_gprof(profile_container const & samples,
 	      << high_pc << dec << endl;
 
 	size_t histsize = (high_pc - low_pc) / multiplier;
+
+	// FIXME: must we skip the flat profile write if histsize == 0 ?
+	// (this can occur with callgraph w/o samples to the binary) but in
+	// this case user must gprof --no-flat-profile whiwh is a bit boring
+	// and result *seems* weirds.
 
 	FILE * fp = op_open_file(gmon_filename.c_str(), "w");
 
@@ -164,7 +190,7 @@ void output_gprof(profile_container const & samples,
 
 			if (pos >= histsize) {
 				cerr << "Bogus histogram bin " << pos
-			     << ", larger than " << pos << " !\n";
+				     << ", larger than " << pos << " !\n";
 				continue;
 			}
 	
@@ -179,27 +205,57 @@ void output_gprof(profile_container const & samples,
 	}
 
 	op_write_file(fp, hist, histsize * sizeof(u16));
+
+	if (!cg_db.empty())
+		output_cg(fp, abfd, cg_db);
+
 	op_close_file(fp);
 
 	free(hist);
 }
 
 
-void load_samples(op_bfd const & abfd, list<string> const & files,
+void
+load_samples(op_bfd const & abfd, list<profile_sample_files> const & files,
                   string const & image, profile_container & samples)
 {
-	list<string>::const_iterator it = files.begin();
-	list<string>::const_iterator const end = files.end();
+	list<profile_sample_files>::const_iterator it = files.begin();
+	list<profile_sample_files>::const_iterator const end = files.end();
 
 	for (; it != end; ++it) {
+		// we can get call graph w/o any samples to the binary
+		if (it->sample_filename.empty())
+			continue;
 
 		profile_t profile;
 
-		profile.add_sample_file(*it, abfd.get_start_offset());
+		profile.add_sample_file(it->sample_filename,
+		   abfd.get_start_offset());
 
 		check_mtime(abfd.get_filename(), profile.get_header());
 
 		samples.add(profile, abfd, image, 0);
+	}
+}
+
+
+void load_cg(profile_t & cg_db, list<profile_sample_files> const & files)
+{
+	list<profile_sample_files>::const_iterator it = files.begin();
+	list<profile_sample_files>::const_iterator const end = files.end();
+
+	/* the list of non cg files is a super set of the list of cg file
+	 * (module always log a samples to non-cg files before logging
+	 * call stack) so by using the list of non-cg file we are sure to get
+	 * all existing cg files.
+	 */
+	for (; it != end; ++it) {
+		list<string>::const_iterator cit;
+		list<string>::const_iterator const cend = it->cg_files.end();
+		for (cit = it->cg_files.begin(); cit != cend; ++cit) {
+			// FIXME: do we need filtering ?
+			cg_db.add_sample_file(*cit, 0);
+		}
 	}
 }
 
@@ -224,7 +280,11 @@ int opgprof(vector<string> const & non_options)
 	load_samples(abfd, image_profile.groups[0].begin()->files,
 	             image_profile.image, samples);
 
-	output_gprof(samples, options::gmon_filename, abfd);
+	profile_t cg_db;
+
+	load_cg(cg_db, image_profile.groups[0].begin()->files);
+
+	output_gprof(abfd, samples, cg_db, options::gmon_filename);
 
 	return 0;
 }

@@ -15,8 +15,8 @@
 #include <vector>
 
 #include "symbol_functors.h"
-#include "symbol_container.h"
 #include "profile_container.h"
+#include "symbol_container.h"
 
 using namespace std;
 
@@ -93,4 +93,10 @@ symbol_container::symbols_t::iterator symbol_container::begin()
 symbol_container::symbols_t::iterator symbol_container::end()
 {
 	return symbols.end();
+}
+
+symbol_entry const * symbol_container::find(symbol_entry const & symbol) const
+{
+	symbols_t::const_iterator it = symbols.find(symbol);
+	return it == symbols.end() ? 0 : &*it;
 }

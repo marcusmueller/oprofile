@@ -134,6 +134,8 @@ do_help()
        cpu:      per CPU profiles
        all:      all of the above
 
+   -c/--callgraph=#depth         enable callgraph sample collection with a maximum depth. Use 0 to disable callgraph. This option is ignored with 2.2/2.4 or 2.6 kernel w/o the callgraph support patch (x86 only).
+
    -i/--image=name[,names]       list of binaries to profile (default is "all")
    --vmlinux=file                vmlinux kernel image
    --no-vmlinux                  no kernel image (vmlinux) available
@@ -222,6 +224,7 @@ do_init()
 	SEPARATE_KERNEL=0
 	SEPARATE_THREAD=0
 	SEPARATE_CPU=0
+	CALLGRAPH=0
 
 	OPROFILED="$OPDIR/oprofiled"
 
@@ -308,6 +311,7 @@ do_save_setup()
 	if test "$KERNEL_SUPPORT" != "yes"; then
 		echo "NOTE_SIZE=$NOTE_SIZE" >> $SETUP_FILE
 	fi
+	echo "CALLGRAPH=$CALLGRAPH" >> $SETUP_FILE
 }
 
 
@@ -333,6 +337,7 @@ do_load_setup()
 	vecho "SEPARATE_KERNEL $SEPARATE_KERNEL"
 	vecho "SEPARATE_THREAD $SEPARATE_THREAD"
 	vecho "SEPARATE_CPU $SEPARATE_CPU"
+	vecho "CALLGRAPH $CALLGRAPH"
 	vecho "VMLINUX $VMLINUX"
 }
 
@@ -599,6 +604,11 @@ do_options()
 				IFS=$OLD_IFS
 				DO_SETUP=yes
 				;;
+			-c|--callgraph)
+				error_if_empty $arg $val
+				CALLGRAPH=$val
+				DO_SETUP=yes
+				;;
 			--vmlinux)
 				error_if_empty $arg $val
 				VMLINUX=$val
@@ -834,6 +844,12 @@ do_param_setup()
 
 	if test $NOTE_SIZE != 0; then
 		set_param notesize $NOTE_SIZE
+	fi
+
+	if test "$KERNEL_SUPPORT" = "yes" -a -f $MOUNT/backtrace_depth; then
+		set_param backtrace_depth $CALLGRAPH
+	elif test "$CALLGRAPH" != "0"; then
+		echo "CALLGRAPH not supported with this kernel"
 	fi
 
 	if test "$IS_TIMER" = 1; then

@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <set>
 
@@ -127,13 +128,38 @@ opd_header const get_first_header(profile_class const & pclass)
 	// could be only one main app, with no samples for the main image
 	if (profile.files.empty()) {
 		profile_dep_set const & dep = *(profile.deps.begin());
-		list<string> const & files = dep.files;
-		file = *(files.begin());
+		list<profile_sample_files> const & files = dep.files;
+		profile_sample_files const & sample_files = *(files.begin());
+		if (!sample_files.sample_filename.empty())
+			file = sample_files.sample_filename;
+		else
+			file = *sample_files.cg_files.begin();
 	} else {
-		file = *(profile.files.begin());
+		profile_sample_files const & sample_files 
+		  = *(profile.files.begin());
+		if (!sample_files.sample_filename.empty())
+			file = sample_files.sample_filename;
+		else
+			file = *sample_files.cg_files.begin();
 	}
 
 	return read_header(file);
+}
+
+/// merge sample file header in the profile_sample_files
+void merge_header(profile_sample_files const & files, opd_header & header)
+{
+	if (!files.sample_filename.empty()) {
+		opd_header const temp = read_header(files.sample_filename);
+		header.ctr_um |=  temp.ctr_um;
+	}
+
+	list<string>::const_iterator it = files.cg_files.begin();
+	list<string>::const_iterator const end = files.cg_files.end();
+	for ( ; it != end; ++it) {
+		opd_header const temp = read_header(*it);
+		header.ctr_um |= temp.ctr_um;
+	}
 }
 
 /// merge sample file header in the class
@@ -147,21 +173,21 @@ opd_header const get_header(profile_class const & pclass,
 
 	profile_set const & profile = *(pclass.profiles.begin());
 
-	list<string>::const_iterator it = profile.files.begin();
-	list<string>::const_iterator const end = profile.files.end();
+	typedef list<profile_sample_files>::const_iterator citerator;
+
+	citerator it = profile.files.begin();
+	citerator const end = profile.files.end();
 	for ( ; it != end; ++it) {
-		opd_header const temp = read_header(*it);
-		header.ctr_um |= temp.ctr_um;
+		merge_header(*it, header);
 	}
 
 	list<profile_dep_set>::const_iterator dep_it = profile.deps.begin();
 	list<profile_dep_set>::const_iterator dep_end = profile.deps.end();
 	for ( ; dep_it != dep_end; ++dep_it) {
-		list<string>::const_iterator it = dep_it->files.begin();
-		list<string>::const_iterator const end = dep_it->files.end();
+		citerator it = dep_it->files.begin();
+		citerator const end = dep_it->files.end();
 		for ( ; it != end; ++it) {
-			opd_header const temp = read_header(*it);
-			header.ctr_um |= temp.ctr_um;
+			merge_header(*it, header);
 		}
 	}
 
@@ -318,6 +344,66 @@ profile_class & find_class(set<profile_class> & classes,
 
 
 /**
+ * Add a sample filename (either cg or non cg files) to this profile.
+ */
+void
+add_to_profile_sample_files(profile_sample_files & sample_files,
+    parsed_filename const & parsed)
+{
+	if (parsed.cg_image.empty()) {
+		// FIXME: is it worth (for now yes I expect bugs ...)
+		if (!sample_files.sample_filename.empty()) {
+			// FIXME: humm ?
+			ostringstream out;
+			out << "add_to_profile_sample_files(): sample file "
+			    << "parsed twice ?\nsample_filename:\n"
+			    << sample_files.sample_filename << endl
+			    << parsed << endl;
+			throw op_fatal_error(out.str());
+		}
+		sample_files.sample_filename = parsed.filename;
+	} else {
+		sample_files.cg_files.push_back(parsed.filename);
+	}
+}
+
+
+/**
+ * we need to fix cg filename: a callgraph filename can occur before the binary
+ * non callgraph samples filename occur so we must search.
+ */
+profile_sample_files &
+find_profile_sample_files(list<profile_sample_files> & files,
+    parsed_filename const & parsed)
+{
+	list<profile_sample_files>::iterator it;
+	list<profile_sample_files>::iterator const end = files.end();
+	for (it = files.begin(); it != end; ++it) {
+		if (!it->sample_filename.empty()) {
+			parsed_filename psample_filename =
+				parse_filename(it->sample_filename);
+			if (psample_filename.lib_image == parsed.lib_image &&
+			    psample_filename.image == parsed.image)
+				return *it;
+		}
+
+		list<string>::const_iterator cit;
+		list<string>::const_iterator const cend = it->cg_files.end();
+		for (cit = it->cg_files.begin(); cit != cend; ++cit) {
+			parsed_filename pcg_filename = parse_filename(*cit);
+			if (pcg_filename.lib_image == parsed.lib_image &&
+			    pcg_filename.image == parsed.image)
+				return *it;
+		}
+	}
+
+	// not found create a new once.
+	files.push_back(profile_sample_files());
+	return files.back();
+}
+
+
+/**
  * Add a profile to particular profile set. If the new profile is
  * a dependent image, it gets added to the dep list, or just placed
  * on the normal list of profiles otherwise.
@@ -326,7 +412,9 @@ void
 add_to_profile_set(profile_set & set, parsed_filename const & parsed)
 {
 	if (parsed.image == parsed.lib_image) {
-		set.files.push_back(parsed.filename);
+		profile_sample_files & sample_files =
+			find_profile_sample_files(set.files, parsed);
+		add_to_profile_sample_files(sample_files, parsed);
 		return;
 	}
 
@@ -335,14 +423,18 @@ add_to_profile_set(profile_set & set, parsed_filename const & parsed)
 
 	for (; it != end; ++it) {
 		if (it->lib_image == parsed.lib_image) {
-			it->files.push_back(parsed.filename);
+			profile_sample_files & sample_files =
+				find_profile_sample_files(it->files, parsed);
+			add_to_profile_sample_files(sample_files, parsed);
 			return;
 		}
 	}
 
 	profile_dep_set depset;
 	depset.lib_image = parsed.lib_image;
-	depset.files.push_back(parsed.filename);
+	profile_sample_files & sample_files =
+		find_profile_sample_files(depset.files, parsed);
+	add_to_profile_sample_files(sample_files, parsed);
 	set.deps.push_back(depset);
 }
 
@@ -391,7 +483,7 @@ int numeric_compare(string const & lhs, string const & rhs)
 
 }  // anon namespace
 
-
+// global to fix some C++ obscure corner case.
 bool operator<(profile_class const & lhs,
                profile_class const & rhs)
 {
@@ -463,11 +555,92 @@ arrange_profiles(list<string> const & files, merge_option const & merge_by)
 }
 
 
+ostream & operator<<(ostream & out, profile_sample_files const & sample_files)
+{
+	out << "sample_filename: " << sample_files.sample_filename << endl;
+	out << "callgraph filenames:\n";
+	copy(sample_files.cg_files.begin(), sample_files.cg_files.end(),
+	     ostream_iterator<string>(out, "\n"));
+	return out;
+}
+
+ostream & operator<<(ostream & out, profile_dep_set const & pdep_set)
+{
+	out << "lib_image: " << pdep_set.lib_image << endl;
+
+	list<profile_sample_files>::const_iterator it;
+	list<profile_sample_files>::const_iterator const end =
+		pdep_set.files.end();
+	size_t i = 0;
+	for (it = pdep_set.files.begin(); it != end; ++it)
+		out << "profile_sample_files #" << i++ << ":\n" << *it;
+
+	return out;
+}
+
+ostream & operator<<(ostream & out, profile_set const & pset)
+{
+	out << "image: " << pset.image << endl;
+
+	list<profile_sample_files>::const_iterator it;
+	list<profile_sample_files>::const_iterator const end =
+		pset.files.end();
+	size_t i = 0;
+	for (it = pset.files.begin(); it != end; ++it)
+		out << "profile_sample_files #" << i++ << ":\n" << *it;
+
+	list<profile_dep_set>::const_iterator cit;
+	list<profile_dep_set>::const_iterator const cend = pset.deps.end();
+	i = 0;
+	for (cit = pset.deps.begin(); cit != cend; ++cit)
+		out << "profile_dep_set #" << i++ << ":\n" << *cit;
+
+	return out;
+}
+
+ostream & operator<<(ostream & out, profile_template const & ptemplate)
+{
+	out << "event: " << ptemplate.event << endl
+	    << "count: " << ptemplate.count << endl
+	    << "unitmask: " << ptemplate.unitmask << endl
+	    << "tgid: " << ptemplate.tgid << endl
+	    << "tid: " << ptemplate.tid << endl
+	    << "cpu: " << ptemplate.cpu << endl;
+	return out;
+}
+
+ostream & operator<<(ostream & out, profile_class const & pclass)
+{
+	out << "name: " << pclass.name << endl
+	    << "longname: " << pclass.longname << endl
+	    << "ptemplate:\n" << pclass.ptemplate;
+
+	size_t i = 0;
+	list<profile_set>::const_iterator it;
+	list<profile_set>::const_iterator const end = pclass.profiles.end();
+	for (it = pclass.profiles.begin(); it != end; ++it)
+		out << "profiles_set #" << i++ << ":\n" << *it;
+
+	return out;
+}
+
+ostream & operator<<(ostream & out, profile_classes const & pclasses)
+{
+	out << "event: " << pclasses.event << endl
+	    << "cpuinfo: " << pclasses.cpuinfo << endl;
+
+	for (size_t i = 0; i < pclasses.v.size(); ++i)
+		out << "class #" << i << ":\n" << pclasses.v[i];
+
+	return out;
+}
+
+
 namespace {
 
 /// add the files to group of image sets
 void add_to_group(image_group_set & group, string const & app_image,
-                  list<string> const & files)
+                  list<profile_sample_files> const & files)
 {
 	image_set set;
 	set.app_image = app_image;
