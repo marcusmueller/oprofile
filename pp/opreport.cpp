@@ -250,9 +250,9 @@ output_deps(summary_container const & summaries,
 		}
 
 		if (file.lib_image.empty())
-			cout << " " << get_filename(file.image);
+			cout << get_filename(file.image);
 		else
-			cout << " " << get_filename(file.lib_image);
+			cout << get_filename(file.lib_image);
 		cout << '\n';
 	}
 }

@@ -1,3 +1,9 @@
+2003-08-22  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* events/i386.p4.events: clarify than 128BIT_MMX_UOP count only integer
+	  SSE2 ops
+	* pp/opreport.cpp: minor spacing change in output
+
 2003-08-22  John Levon  <levon@movementarian.org>
 
 	* daemon/oprofiled.c: report the kernel pointer size
