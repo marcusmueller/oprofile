@@ -66,6 +66,7 @@ necks in real-world systems.
 	<varlistentry>
 		<term>Uniprocessor or SMP</term>
 		<listitem><para>
+			<!-- FIXME John this is false now ? -->
 			<!-- FIXME: alter this later -->
 			<acronym>SMP</acronym> machines are supported, but performance is currently worse than the UP case.
 			This include SMP Athlon type machines.
@@ -473,7 +474,7 @@ between the counter overflow and the interrupt delivery that can skew results on
 you cannot rely on the profiles at the instruction level, except as a binary was/wasn't executed indicator.
 If you are using an "event-mode" counter such as the cache counters, a count registered against it doesn't mean
 that it is responsible for that event. However, it implies that the counter overflowed in the dynamic
-vicinity of that instruction, to within a few instructions. Further details on this problem can be found in
+vicinity of that instruction, to within a few instructions. Further details on this problem can be found in <xref linkend="interpreting"> and also in
 the Digital paper "ProfileMe: A Hardware Performance Counter". Also note that a very high number of interrupts
 can have a large performance effect, and even overflow the profiling data structures. This can lead to mapping information
 getting overwritten, and loss of respect from boxing promoter (don't worry, an obscure reference). The system
@@ -490,7 +491,7 @@ whilst in kernel or user space. You can configure these separately for each coun
 So you must specify a counter value with the <option>&mdash;ctrX-count</option> option, where <option>X</option>
 is the logical counter number in the range 0-3 (0-1 for Intel processors, which only have two counters). 
 Using multiple counters is useful for profiling several aspects of the same running program.
-After each overflow event, the counter will be re-initialised
+After each overflow event, the counter will be re-initialized
 such that another overflow will occur after this many events have been counted. Picking a good value for this
 parameter is, unfortunately, somewhat of a grey art (not quite black). It is of course dependent on the event
 you have chosen. For basic time-based profiling, you will probably use <constant>CPU_CLK_UNHALTED</constant>
@@ -668,7 +669,7 @@ The kernel module can be unloaded, but is designed to take very little memory wh
 There is no need to unload the module between profiler runs.
 </para>
 <para>
-<command>lsmod</command> and similar utilties will still show the module's use count as <constant>-1</constant>.
+<command>lsmod</command> and similar utilities will still show the module's use count as <constant>-1</constant>.
 However, this is not to be relied on - the module will become unloadable some short time after stopping profiling.
 </para>
 <para>
@@ -737,11 +738,10 @@ This section gives a brief description of the available oprofile utilities and t
 </varlistentry>
 
 <varlistentry>
-	<term><filename>op_to_source</filename>, <filename>opf_filter</filename></term>
+	<term><filename>op_to_source</filename></term>
 	<listitem><para>
-		This utility can be used to produce annotated source, if the application
-		was compiled with debugging symbols. <filename>opf_filter</filename> is used
-		internally by oprofile.
+		This utility can be used to produce annotated source or assembly annotated listing optionnaly mixed with source
+		source. Source level annotation is available only if the application was compiled with debugging symbols. See	<xref linkend="op-to-source">.
 	</para></listitem>
 </varlistentry>
 </variablelist>
@@ -1069,9 +1069,136 @@ instruction-level profiling.  However, for almost all circumstances the data
 can be useful. Ideally a utility such as Intel's VTUNE would be available to
 allow careful instruction-level analysis; go hassle Intel for this, not me ;)
 </para>
+<sect2 id="irq-latency">
+<title>irq latency</title>
 <para>
-FIXME: document various examples where oprofile can give misleading results (small functions etc.).
 </para>
+<para>
+Here one example that show the irq latency: you profile the following function.
+ The function is written to show, AKA, one of the worst case of discrepancy.
+</para>
+<screen>
+double fun(double a, double b, double c)
+{
+ double result = 0;
+ for (int i = 0 ; i < 10000; ++i) {
+  result += a;
+  result *= b;
+  result /= c;
+ }
+ return result;
+}
+</screen>
+<para>
+Here the last instruction of the loop is very costly and you expect the result
+reflecting that but (cutting the instructions inside the loop):
+</para>
+<screen>
+$op_to_source -a -w 10
+
+ /* 9349 0.3788% */
+ 8048394:       fadd   %st(3),%st
+ /* 22858 0.9261% */
+ 8048396:       fmul   %st(2),%st
+ /* 687682 27.86% */
+ 8048398:       fdiv   %st(1),%st
+ /* 1747822 70.81% */
+ 804839a:       decl   %eax
+ /* 17 0.0006887% */
+ 804839b:       jns    8048394
+</screen>
+<para>
+The problem come from the x86 hardware, when the counter overflow the irq line
+is asserted but the hardware have features that can delay the NMI interrupt:
+x86 hardware is synchronous (e.g. can not interrupt during an instruction but
+interrupt at the end of instruction), there is also a latency when the irq
+line is asserted the hardware can take some cycle to get account, the multiple
+execution unit and the in order/out of order model of modern x86 family cause
+problem. The following show the same function at source level
+</para>
+<para>
+<screen>
+$op_to_source -a -w 10 show
+
+double fun(double a, double b, double c)
+/* fun(double, double, double) 2468162 100% */
+/* 165 0.006685% */
+{
+        /* 3 0.0001215% */
+        double result = 0;
+        for (int i = 0 ; i < 10000; ++i) {
+                /* 9349 0.3788% */
+                result += a;
+                /* 22858 0.9261% */
+                result *= b;
+                /* 687682 27.86% */
+                result /= c;
+        /* 1747918 70.82% */
+        }
+        return result;
+/* 187 0.007576% */
+}
+</screen>
+</para>
+<para>
+So the conclusion: don't trust samples coming at the end of a loop,
+particularly if the last instruction generated by the compiler is costly, this
+case can occur also for each branch in your program. Always think than samples
+can be often delayed by a few cycles from its real position. That's a hardware
+problem and oprofile can do nothing with it.
+</para>
+</sect2>
+<sect2 id="debug-info">
+<title>inaccuracy from compiler</title>
+<para>
+Compiler can introduce some pitfall in the annotated source, you can write code
+and the optimizer move piece of code in such manner than two line of code
+are interlaced (scheduled). Also debug info generated by compiler can show
+strange behavior. This is especially true for complex expression e.g. inside
+an if statement:
+</para>
+<screen>
+	if (a && ..
+	    b && ..
+	    c &&)
+</screen>
+<para>
+here the problem come from the position of line number. Compiler have
+tendancies to not allow to step inside such expression, so all samples are
+cumulated at the position of the right brace of the expression. Using
+<command>op_to_source <option>-a</option></command> can help to show the real
+samples at assembly level.
+</para>
+</sect2>
+<sect2 id="small-functions">
+<title>small functions</title>
+<para>
+<!-- improve this ? but look first why this file is special -->
+very small function can show strange behavior. The file in your source
+directory of oprofile <filename>$SRC/test-oprofile/understanding/puzzle.c</filename>
+show such example
+</para>
+<sect2 id="hidden-cost">
+<title>Other discrepancy</title>
+<para>
+Another cause of apparent problem is the hidden cost of instruction. A very
+common example is two memory read: one from L1 cache and the other from memory.
+It's clear for all people than the second memory read will show more samples
+but there is many other cause of hidden cost of instructions. A non-exhaustive
+list: mispredicted branch, TLB cache miss, partial register stall,
+partial register dependencies, memory mismatch stall, re-executed µops. If you want to write
+programs at assembly level, or you write compiler take a look at the intel and
+<!-- get a quick look at this url is that ok ? -->
+AMD documentation at <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>
+and <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/">http://www.amd.com/products/cpg/athlon/techdocs/</ulink>.
+</para>
+</sect2>
+<sect2 id="none">
+<title>and more</title>
+<para>
+FIXME: more examples, basic and advanced trick. A howto use utilities FAQ ?
+</para>
+</sect2>
 </sect1>
 </chapter>
 
