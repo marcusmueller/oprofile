@@ -686,7 +686,7 @@ int opannotate(vector<string> const & non_options)
 {
 	handle_options(non_options);
 
-	samples.reset(new profile_container(false, true, true));
+	samples.reset(new profile_container(true, true));
 
 	save_sample_file_header(*sample_file_partition);
 

@@ -1,3 +1,13 @@
+2003-08-13  John Levon  <levon@movementarian.org>
+
+	* libpp/profile_container.cpp:
+	* libpp/profile_container.h: remove unused "zero samples"
+	optimization hint: it's always false
+
+	* pp/opannotate.cpp:
+	* pp/opgprof.cpp:
+	* pp/opreport.cpp: from above
+
 2003-08-12  John Levon  <levon@movementarian.org>
 
 	* pp/opreport.cpp: small trivialities

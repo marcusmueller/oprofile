@@ -49,14 +49,11 @@ struct filename_by_samples {
 }
 
 
-profile_container::profile_container(bool add_zero_samples_symbols_,
-                                     bool debug_info_,
-                                     bool need_details_)
+profile_container::profile_container(bool debug_info_, bool need_details_)
 	:
 	symbols(new symbol_container),
 	samples(new sample_container),
 	debug_info(debug_info_),
-	add_zero_samples_symbols(add_zero_samples_symbols_),
 	need_details(need_details_)
 {
 }
@@ -88,7 +85,9 @@ void profile_container::add(profile_t const & profile,
 			profile.samples_range(start, end);
 
 		u32 count = accumulate(p_it.first, p_it.second, 0);
-		if (count == 0 && !add_zero_samples_symbols)
+
+		// skip entries with no samples
+		if (count == 0)
 			continue;
 
 		symb_entry.sample.counts[count_group] = count;
@@ -236,7 +235,8 @@ profile_container::select_filename(double threshold) const
 		// FIXME: is samples_count() the right interface now ?
 		count_array_t counts = samples_count(*it);
 
-		filename_by_samples f(*it, op_ratio(counts[0], total_count[0]));
+		double const ratio = op_ratio(counts[0], total_count[0]);
+		filename_by_samples const f(*it, ratio);
 
 		file_by_samples.push_back(f);
 	}

@@ -217,7 +217,7 @@ int opgprof(vector<string> const & non_options)
 {
 	handle_options(non_options);
 
-	profile_container samples(false, false, true);
+	profile_container samples(false, true);
 
 	image_set images = sort_by_image(*sample_file_partition,
 					 options::extra_found_images);

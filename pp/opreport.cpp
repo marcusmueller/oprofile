@@ -396,8 +396,7 @@ int opreport(vector<string> const & non_options)
 		return 0;
 	}
 
-	profile_container samples(false,
-		options::debug_info, options::details);
+	profile_container samples(options::debug_info, options::details);
 
 	for (size_t i = 0; i < sample_file_partition.size(); ++i)
 		populate_profiles(sample_file_partition[i], samples, i);

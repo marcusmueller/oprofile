@@ -40,21 +40,14 @@ public:
 	/**
 	 * Build an object to store information on samples. All parameters
 	 * acts as hint for what you will request after recording samples and
-	 * so on allow optimizations during recording the information.
+	 * so allow optimizations during recording the information.
 	 *
-	 * @param add_zero_samples_symbols Must we add to the symbol container
-	 * symbols with zero samples count
+	 * @param debug_info If true line numbers and source files are recorded.
 	 *
-	 * @param debug_info Optimize hint to add samples. If true line number
-	 * are recorded. This boolean is a promise of what will be required as
-	 * information in future. Avoiding line number lookup greatly improves
-	 * performance.
-	 *
-	 * @param need_details true if we need to record all samples or to
-	 * to record them at symbol level. This is an optimization hint
+	 * @param need_details If true if we need to record all samples or to
+	 * to record them at symbol level.
 	 */
-	profile_container(bool add_zero_samples_symbols, bool debug_info,
-	                  bool need_details);
+	profile_container(bool debug_info, bool need_details);
 
 	~profile_container();
  
@@ -172,7 +165,6 @@ private:
 	 */
 	//@{
 	bool debug_info;
-	bool add_zero_samples_symbols;
 	bool need_details;
 	//@}
 };
