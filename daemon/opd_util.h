@@ -47,9 +47,11 @@ void opd_write_abi(void);
  */
 void opd_setup_signals(void);
 
-/** global variable positionned by signal handler */
+/** global variable positioned by signal handler */
 extern sig_atomic_t signal_alarm;
 extern sig_atomic_t signal_hup;
 extern sig_atomic_t signal_term;
+extern sig_atomic_t signal_usr1;
+extern sig_atomic_t signal_usr2;
 
 #endif /* OPD_UTIL_H */

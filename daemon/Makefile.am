@@ -13,7 +13,9 @@ dist_sources = \
 	opd_cookie.h \
 	opd_interface.h \
 	opd_mangling.c \
-	opd_mangling.h
+	opd_mangling.h \
+	opd_perfmon.h \
+	opd_perfmon.c
 
 EXTRA_DIST = $(dist_sources)
 
@@ -45,14 +47,16 @@ oprofiled_LDADD = \
 	../libabi/libabi.a \
 	../libdb/libodb.a \
 	../libop/libop.a \
-	../libutil/libutil.a
+	../libutil/libutil.a \
+	@PFM_LIBS@
 LINKER=$(CXX)
 else
 oprofiled_LDADD = \
 	libdaemon.a \
 	../libdb/libodb.a \
 	../libop/libop.a \
-	../libutil/libutil.a
+	../libutil/libutil.a \
+	@PFM_LIBS@
 LINKER=$(CC)
 endif
 

@@ -28,6 +28,8 @@
 sig_atomic_t signal_alarm;
 sig_atomic_t signal_hup;
 sig_atomic_t signal_term;
+sig_atomic_t signal_usr1;
+sig_atomic_t signal_usr2;
 
 
 void opd_open_logfile(void)
@@ -122,6 +124,18 @@ static void opd_sigterm(int val __attribute__((unused)))
 }
  
 
+static void opd_sigusr1(int val __attribute__((unused)))
+{
+	signal_usr1 = 1;
+}
+
+ 
+static void opd_sigusr2(int val __attribute__((unused)))
+{
+	signal_usr2 = 1;
+}
+
+
 void opd_setup_signals(void)
 {
 	struct sigaction act;
@@ -152,6 +166,26 @@ void opd_setup_signals(void)
 
 	if (sigaction(SIGTERM, &act, NULL)) {
 		perror("oprofiled: install of SIGTERM handler failed: ");
+		exit(EXIT_FAILURE);
+	}
+
+	act.sa_handler = opd_sigusr1;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SIGTERM);
+
+	if (sigaction(SIGUSR1, &act, NULL)) {
+		perror("oprofiled: install of SIGUSR1 handler failed: ");
+		exit(EXIT_FAILURE);
+	}
+
+	act.sa_handler = opd_sigusr2;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SIGTERM);
+
+	if (sigaction(SIGUSR2, &act, NULL)) {
+		perror("oprofiled: install of SIGUSR1 handler failed: ");
 		exit(EXIT_FAILURE);
 	}
 

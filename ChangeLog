@@ -1,3 +1,23 @@
+2003-10-14  John Levon  <levon@movementarian.org>
+
+	* m4/perfmon.m4:
+	* configure.in: look for pfmlib 3
+
+	* daemon/Makefile.am:
+	* daemon/opd_perfmon.h:
+	* daemon/opd_perfmon.c: interface to perfmon on 2.6 IA64
+
+	* daemon/opd_mangling.c:
+	* daemon/oprofiled.c: read event descriptions from command
+	line not oprofilefs
+
+	* daemon/opd_util.h:
+	* daemon/opd_util.c: receive SIGUSR1/2 for perfmon
+
+	* utils/opcontrol: handle multiple oprofileds. Send SIGUSR1/2
+	on start/stop. Pass in events list to oprofiled on 2.6. Don't
+	attempt to fill in oprofilefs with event info if using perfmon.
+
 2003-10-14  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_mangling.c:

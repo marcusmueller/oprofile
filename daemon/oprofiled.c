@@ -16,12 +16,15 @@
 #include "opd_util.h"
 #include "opd_kernel.h"
 #include "opd_trans.h"
+#include "opd_perfmon.h"
+#include "opd_printf.h"
 
 #include "op_version.h"
 #include "op_config.h"
 #include "op_popt.h"
 #include "op_file.h"
 #include "op_fileio.h"
+#include "op_string.h"
 #include "op_deviceio.h"
 #include "op_lockfile.h"
 #include "op_get_time.h"
@@ -48,9 +51,11 @@
 // GNU libc bug
 pid_t getpgid(pid_t pid);
 
-u32 ctr_count[OP_MAX_COUNTERS];
-u8 ctr_event[OP_MAX_COUNTERS];
-u16 ctr_um[OP_MAX_COUNTERS];
+static char * events;
+char * event_name[OP_MAX_COUNTERS];
+char * event_val[OP_MAX_COUNTERS];
+char * event_count[OP_MAX_COUNTERS];
+char * event_um[OP_MAX_COUNTERS];
 double cpu_speed;
 
 uint op_nr_counters;
@@ -66,7 +71,6 @@ size_t kernel_pointer_size;
 
 static char * kernel_range;
 static int showvers;
-static u32 ctr_enabled[OP_MAX_COUNTERS];
 static int opd_buf_size;
 static fd_t devfd;
 
@@ -82,6 +86,7 @@ static struct poptOption options[] = {
 	{ "separate-kernel", 0, POPT_ARG_INT, &separate_kernel, 0, "separate kernel samples for each distinct application", "[0|1]", },
 	{ "separate-thread", 0, POPT_ARG_INT, &separate_thread, 0, "thread-profiling mode", "[0|1]" },
 	{ "separate-cpu", 0, POPT_ARG_INT, &separate_cpu, 0, "separate samples for each CPU", "[0|1]" },
+	{ "events", 'e', POPT_ARG_STRING, &events, 0, "events list", "[0|1]" },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
 	POPT_AUTOHELP
@@ -128,15 +133,6 @@ static void opd_open_files(void)
 }
  
 
-/** return the int in the given counter's oprofilefs file */
-static int opd_read_fs_int_pmc(int ctr, char const * name)
-{
-	char filename[PATH_MAX + 1];
-	snprintf(filename, PATH_MAX, "/dev/oprofile/%d/%s", ctr, name);
-	return op_read_int_from_file(filename);
-}
-
- 
 /** return the int in the given oprofilefs file */
 static int opd_read_fs_int(char const * name)
 {
@@ -146,52 +142,83 @@ static int opd_read_fs_int(char const * name)
 }
 
 
-/**
- * opd_pmc_options - read sysctls for pmc options
- */
-static void opd_pmc_options(void)
+static void malformed_events(void)
 {
-	int ret;
-	uint i;
-	unsigned int min_count;
+	fprintf(stderr, "oprofiled: malformed events %s\n", events);
+	exit(EXIT_FAILURE);
+}
 
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		ctr_event[i] = opd_read_fs_int_pmc(i, "event");
-		ctr_count[i] = opd_read_fs_int_pmc(i, "count");
-		ctr_um[i] = opd_read_fs_int_pmc(i, "unit_mask");
-		ctr_enabled[i] = opd_read_fs_int_pmc(i, "enabled");
 
-		if (!ctr_enabled[i])
-			continue;
+static char * copy_token(char ** c, char delim)
+{
+	char * tmp = *c;
+	char * tmp2 = *c;
+	char * str;
 
-		ret = op_check_events(i, ctr_event[i], ctr_um[i], cpu_type);
+	if (!**c)
+		return NULL;
 
-		if (ret & OP_INVALID_EVENT)
-			fprintf(stderr, "oprofiled: ctr%d: %d: no such event for cpu %s\n",
-				i, ctr_event[i], op_get_cpu_type_str(cpu_type));
+	while (*tmp2 && *tmp2 != delim)
+		++tmp2;
 
-		if (ret & OP_INVALID_UM)
-			fprintf(stderr, "oprofiled: ctr%d: 0x%.2x: invalid unit mask for cpu %s\n",
-				i, ctr_um[i], op_get_cpu_type_str(cpu_type));
+	if (tmp2 == tmp)
+		return NULL;
 
-		if (ret & OP_INVALID_COUNTER)
-			fprintf(stderr, "oprofiled: ctr%d: %d: can't count event for this counter\n",
-				i, ctr_count[i]);
+	str = op_xstrndup(tmp, tmp2 - tmp);
+	*c = tmp2;
+	if (**c)
+		++*c;
+	return str;
+}
 
-		if (ret != OP_OK_EVENT)
-			exit(EXIT_FAILURE);
 
-		min_count = op_min_count(ctr_event[i], cpu_type);
-		if (ctr_count[i] < min_count) {
-			fprintf(stderr, "oprofiled: ctr%d: count is too low: %d, minimum is %d\n",
-				i, ctr_count[i], min_count);
-			exit(EXIT_FAILURE);
-		}
+/**
+ * opd_parse_events - parse the events list
+ */
+static void opd_parse_events(void)
+{
+	char * ev = xstrdup(events);
+	char * c;
+	size_t cur = 0;
+
+	if (cpu_type == CPU_TIMER_INT) {
+		event_name[0] = xstrdup("TIMER");
+		event_val[0] = xstrdup("0");
+		event_count[0] = xstrdup("0");
+		event_um[0] = xstrdup("0");
+		return;
 	}
 
-	op_free_events();
+	if (!ev || !strlen(ev)) {
+		fprintf(stderr, "oprofiled: no events passed.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	verbprintf("Events: %s\n", ev);
+
+	c = ev;
+
+	while (*c) {
+		event_name[cur] = copy_token(&c, ':');
+		if (!event_name[cur])
+			malformed_events();
+		event_val[cur] = copy_token(&c, ':');
+		if (!event_val[cur])
+			malformed_events();
+		event_count[cur] = copy_token(&c, ':');
+		if (!event_count[cur])
+			malformed_events();
+		event_um[cur] = copy_token(&c, ',');
+		if (!event_um[cur])
+			malformed_events();
+		++cur;
+	}
+
+	free(ev);
+
+	/* FIXME: validation ? */
 }
- 
+
 
 /**
  * opd_options - parse command line options
@@ -240,9 +267,7 @@ static void opd_options(int argc, char const * argv[])
 
 	opd_buf_size = opd_read_fs_int("buffer_size");
 
-	if (cpu_type != CPU_TIMER_INT) {
-		opd_pmc_options();
-	}
+	opd_parse_events();
 
 	cpu_speed = op_cpu_frequency();
 
@@ -332,6 +357,16 @@ static void opd_do_read(char * buf, size_t size)
 
 			if (signal_term)
 				opd_sigterm();
+
+			if (signal_usr1) {
+				signal_usr1 = 0;
+				perfmon_start();
+			}
+
+			if (signal_usr2) {
+				signal_usr2 = 0;
+				perfmon_stop();
+			}
 		}
 
 		opd_do_samples(buf, count);
@@ -362,6 +397,7 @@ static void opd_sighup(void)
 
 static void clean_exit(void)
 {
+	perfmon_exit();
 	unlink(OP_LOCK_FILE);
 }
 
@@ -424,24 +460,26 @@ int main(int argc, char const * argv[])
 
 	opd_write_abi();
 
-	if (atexit(clean_exit)) {
-		perror("oprofiled: couldn't set exit cleanup: ");
-		exit(EXIT_FAILURE);
-	}
-
 	opd_go_daemon();
 
 	opd_open_files();
 
-	for (i = 0; i < OPD_MAX_STATS; i++) {
+	for (i = 0; i < OPD_MAX_STATS; i++)
 		opd_stats[i] = 0;
-	}
+
+	perfmon_init();
 
 	opd_setup_signals();
  
 	err = setrlimit(RLIMIT_NOFILE, &rlim);
 	if (err) {
 		perror("warning: could not set RLIMIT_NOFILE to 2048: ");
+	}
+
+	/* must be /after/ perfmon_init() at least */
+	if (atexit(clean_exit)) {
+		perror("oprofiled: couldn't set exit cleanup: ");
+		exit(EXIT_FAILURE);
 	}
 
 	if (op_write_lock_file(OP_LOCK_FILE)) {
