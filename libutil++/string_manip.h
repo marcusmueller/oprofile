@@ -84,4 +84,11 @@ std::string rtrim(std::string const & str, std::string const & totrim = "\t ");
 /// ltrim(rtrim(str))
 std::string trim(std::string const & str, std::string const & totrim = "\t ");
 
+/**
+ * @param str the input string
+ *
+ * Return the substring at beginning of str which is only whitespace
+ */
+std::string const ws_prefix(std::string const & str);
+
 #endif /* !STRING_MANIP_H */

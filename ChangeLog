@@ -1,5 +1,19 @@
 2003-04-06  John Levon  <levon@movementarian.org>
 
+	* pp/op_to_source.cpp: move extract_blank_at_begin() to ...
+
+	* libutil++/string_manip.cpp: ... here, and rename as
+	ws_prefix().
+	
+2003-04-06  John Levon  <levon@movementarian.org>
+
+	* pp/op_to_source.cpp: prefix comment lines.
+	Output the general footer on each separate file.
+	Output the info at the bottom when outputting
+	separate files (towards maintaining line numbering).
+
+2003-04-06  John Levon  <levon@movementarian.org>
+
 	* pp/op_to_source.cpp: construct a file-scope
 	cmdline string, instead of passing it around.
 

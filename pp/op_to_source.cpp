@@ -96,14 +96,6 @@ op_cpu cpu_type = CPU_NO_GOOD;
 scoped_ptr<profile_container_t> samples(0);
 
 /**
- * @param str the input string
- *
- * Return the substring at beginning of str which is only made of blank or
- * tabulation.
- */
-string extract_blank_at_begin(string const & str);
-
-/**
  * @param image_name the samples owner image name
  * @param sample_file the sample file base name (w/o counter nr suffix)
  * @param fn_match only source filename which match this filter will be output
@@ -324,16 +316,6 @@ void counter_setup::print(ostream & out, op_cpu cpu_type, int counter) const
 
 
 namespace op_to_source {
-
-string extract_blank_at_begin(string const & str)
-{
-	size_t end_pos = str.find_first_not_of(" \t");
-	if (end_pos == string::npos)
-		end_pos = 0;
-
-	return str.substr(0, end_pos);
-}
- 
 
 bool annotate_source(string const & image_name, string const & sample_file,
 		     filename_match const & fn_match)
@@ -718,7 +700,7 @@ void do_output_one_file(ostream & out, istream & in, string const & filename, bo
 	if (in) {
 		string str;
 		for (size_t linenr = 1 ; getline(in, str) ; ++linenr) {
-			string blank = extract_blank_at_begin(str);
+			string const blank = ws_prefix(str);
 
 			find_and_output_counter(out, filename, linenr, blank);
 
@@ -911,6 +893,8 @@ size_t get_sort_counter_nr()
 
 } // op_to_source namespace
 
+using namespace op_to_source;
+
 static int do_op_to_source(int argc, char const * argv[])
 {
 #if (__GNUC__ >= 3)
@@ -939,11 +923,11 @@ static int do_op_to_source(int argc, char const * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	op_to_source::do_until_more_than_samples = false;
-	op_to_source::threshold_percent = with_more_than_samples;
+	do_until_more_than_samples = false;
+	threshold_percent = with_more_than_samples;
 	if (until_more_than_samples) {
-		op_to_source::threshold_percent = until_more_than_samples;
-		op_to_source::do_until_more_than_samples = true;
+		threshold_percent = until_more_than_samples;
+		do_until_more_than_samples = true;
 	}
 
 	if (source_with_assembly)
@@ -963,7 +947,7 @@ static int do_op_to_source(int argc, char const * argv[])
 	for (int i = 0 ; i < argc ; ++i)
 		cmdline += string(argv[i]) + " ";
 
-	if (!op_to_source::annotate_source(image_file, sample_file, fn_match))
+	if (!annotate_source(image_file, sample_file, fn_match))
 		return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;

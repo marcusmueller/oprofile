@@ -149,3 +149,17 @@ string trim(string const & str, string const & totrim)
 {
 	return rtrim(ltrim(str, totrim), totrim);
 }
+
+
+string const ws_prefix(string const & str)
+{
+	size_t end_pos = str.find_first_not_of(" \t");
+
+	// FIXME: surely this should return the entire string ?
+	if (end_pos == string::npos)
+		end_pos = 0;
+
+	return str.substr(0, end_pos);
+}
+ 
+
