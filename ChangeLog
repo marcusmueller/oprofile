@@ -1,5 +1,10 @@
 2003-07-30  John Levon  <levon@movementarian.org>
 
+	* libpp/partition_files.cpp: remove some apparently
+	dead code
+
+2003-07-30  John Levon  <levon@movementarian.org>
+
 	* events/i386.p4.unit_masks: make flame_uops value
 	mandatory, Yuan.Lu@rrze.uni-erlangen.de does not
 	see any events without setting the unit mask

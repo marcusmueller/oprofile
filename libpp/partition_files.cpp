@@ -48,9 +48,6 @@ vector<unmergeable_profile> merge_profile(list<string> const & files)
 
 	set<unmergeable_profile> spec_set;
 
-	// FIXME: what is this for ?
-	split_sample_filename model = split_sample_file(*files.begin());
-
 	list<string>::const_iterator it;
 	for (it = files.begin(); it != files.end(); ++it) {
 		split_sample_filename spec = split_sample_file(*it);
