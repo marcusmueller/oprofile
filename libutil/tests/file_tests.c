@@ -34,6 +34,7 @@ static char * tests[][2] = {
 	{ "././.", "/usr" },
 	/* Posix says this is valid */
 	{ "//", "//" },
+	{ "//usr", "//usr" },
 	/* but our implementation stolen from gcc treat this as "/" */
 	{ "///", "/" },
 	{ NULL, NULL },
