@@ -418,12 +418,6 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--kernel-range=</option>start,end</term>
-		<listitem><para>
-		kernel range vma address in hexadecimal
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
 		<term><option>--separate-samples</option></term>
 		<listitem><para>
 		separate samples for each distinct application. With this option, samples

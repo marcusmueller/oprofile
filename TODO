@@ -2,8 +2,6 @@
 -----------
 
 Fix autodeps with Qt include path
-Remove user setting of kernel range - only do it automatically based on
-the given vmlinux
 
 Before 1.0 big stuff
 --------------------

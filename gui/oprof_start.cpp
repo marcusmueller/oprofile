@@ -174,15 +174,6 @@ oprof_start::oprof_start()
 	// setup the configuration page.
 	kernel_filename_edit->setText(config.kernel_filename.c_str());
 
-	kernel_range_auto_cb->setChecked(config.kernel_range_auto);
-	kernel_start_edit->setText(QString().setNum(config.kernel_start, 16));
-	kernel_end_edit->setText(QString().setNum(config.kernel_end, 16));
-
-	// if config.kernel_range_auto is off we don't parse vmlinux, we rely
-	// on op_start to make this job : parsing the output of nm is easy in
-	// shell script and the only drawback is that we don't show the kernel
-	// range in the edit range widget. Feel free to ehance this stuff ...
-
 	buffer_size_edit->setText(QString().setNum(config.buffer_size));
 	hash_table_size_edit->setText(QString().setNum(config.hash_table_size));
 	note_table_size_edit->setText(QString().setNum(config.note_table_size));
@@ -566,11 +557,6 @@ void oprof_start::record_selected_event_config()
 bool oprof_start::record_config()
 {
 	config.kernel_filename = kernel_filename_edit->text().latin1();
-	config.kernel_range_auto = kernel_range_auto_cb->isChecked();
-	if (!config.kernel_range_auto) {
-		config.kernel_start = kernel_start_edit->text().toULong(0, 16);
-		config.kernel_end = kernel_end_edit->text().toULong(0, 16);
-	}
 
 	QString const t = buffer_size_edit->text();
 	uint temp = t.toUInt();
@@ -833,12 +819,6 @@ void oprof_start::on_start_profiler()
 			if (descr->um_desc)
 				args.push_back("--ctr" + tostr(ctr) + "-unit-mask=" + tostr(cfg[descr->name].umask));
 		}
-	}
-
-	if (!config.kernel_range_auto) {
-		std::ostringstream range;
-		range << std::hex << config.kernel_start << "," << config.kernel_end;
-		args.push_back("--kernel-range=" + range.str());
 	}
 
 	args.push_back("--vmlinux=" + config.kernel_filename);

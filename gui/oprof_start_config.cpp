@@ -82,11 +82,6 @@ config_setting::config_setting()
 	note_table_size(OP_DEFAULT_NOTE_SIZE),
 	// FIXME: member of config, hardcoded value probably come from ?
 	kernel_filename("/lib/modules/" KVERSION "/build/vmlinux"),
-	kernel_range_auto(1),
-	// kernel_range_auto is "true" by default so on we don't need to put
-	// sensible value now.
-	kernel_start(0),
-	kernel_end(0),
 	kernel_only(0),
 	ignore_daemon_samples(0),
 	verbose(0),
@@ -110,9 +105,11 @@ void config_setting::load(std::istream& in)
 	in >> pgrp_filter;
 	in >> note_table_size;
 	in >> separate_samples;
-	in >> kernel_range_auto;
-	in >> std::hex >> kernel_start;
-	in >> std::hex >> kernel_end;
+	// the 3 following config item was kernel_range which are obsolete
+	std::string garbage;
+	in >> garbage;
+	in >> garbage;
+	in >> garbage;
 	in >> std::dec;
 }
 
@@ -128,8 +125,7 @@ void config_setting::save(std::ostream& out) const
 
 	save_value(out, kernel_filename, def_val.kernel_filename);
 	out << std::endl;
-	std::string obsolete_map_filename("map_filename_obsolete_placeholder");
-	out << obsolete_map_filename << std::endl;
+	out << "map_filename_obsolete_placeholder" << std::endl;
 
 	out << kernel_only << std::endl;
 	out << ignore_daemon_samples << std::endl;
@@ -138,9 +134,10 @@ void config_setting::save(std::ostream& out) const
 	out << note_table_size << std::endl;
 	out << separate_samples << std::endl;
 
-	out << kernel_range_auto << std::endl;
-	out << std::hex << kernel_start << std::endl;
-	out << std::hex << kernel_end << std::endl;
+	// the 3 following config item was kernel_range which are obsolete
+	out << "kernnel_range_auto_obsolete_placeholder" << std::endl;
+	out << "kernnel_range_start_obsolete_placeholder" << std::endl;
+	out << "kernnel_range_end_obsolete_placeholder" << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& out, config_setting const & object)
