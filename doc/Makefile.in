@@ -1,10 +1,11 @@
-# $Id: Makefile.in,v 1.4 2001/07/27 00:28:44 movement Exp $
+# $Id: Makefile.in,v 1.5 2001/08/16 01:57:58 movement Exp $
 
 prefix=@prefix@
 MANDIR=@mandir@
 LN_SF=ln -sf
 RM=rm
 MKDIR=mkdir
+MKDIR_P=$(MKDIR) -p
 DB2HTML=db2html
 
 .PHONY: all clean install
@@ -19,6 +20,7 @@ all:
 	-$(RM) -rf oprofile 
  
 install:
+	-$(MKDIR_P) $(MANDIR)/man1 
 	cp oprofile.1 $(MANDIR)/man1/oprofile.1
 	-$(LN_SF) $(MANDIR)/man1/oprofile.1 $(MANDIR)/man1/oprofiled.1
 	-$(LN_SF) $(MANDIR)/man1/oprofile.1 $(MANDIR)/man1/op_start.1

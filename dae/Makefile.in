@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.12 2001/08/11 01:45:54 movement Exp $
+# $Id: Makefile.in,v 1.13 2001/08/16 01:57:58 movement Exp $
 
 .PHONY: all clean srcdoc install
  
@@ -9,8 +9,10 @@ exec_prefix=@exec_prefix@
 BINDIR=@bindir@
 MANDIR=@mandir@
 CC=@CC@
+MKDIR_P=mkdir -p
 
 install: oprofiled op_start op_dump op_stop op_help
+	-$(MKDIR_P) $(BINDIR)
 	cp oprofiled $(BINDIR)/oprofiled
 	cp op_start $(BINDIR)/op_start
 	cp op_dump $(BINDIR)/op_dump
