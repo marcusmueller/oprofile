@@ -8,6 +8,7 @@ if WITH_KERNEL_SUPPORT
 kernel_module:
 install.kernel:
 else
+# This must use a fully-qualified SUBDIRS path, so we can't use ${top_srcdir}
 kernel_module:
 	make -C libutil
 	make -C libop
