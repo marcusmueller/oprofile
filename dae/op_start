@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.12 2000/09/28 02:37:00 moz Exp $
+# $Id: op_start,v 1.13 2000/09/28 21:33:26 moz Exp $
 
 # quick and ugly interface
 # op_start --help and op_start --list-events have info
@@ -54,24 +54,6 @@ $
 General options$
   --list-events                list event types and unit masks$
   --help                       this message$'
-
-if [ "$1" = "--help" ]
-then
-	echo $help_string | tr \$ '\n'
-	exit 0
-fi
-
-if [ "$1" = "--list-events" ]
-then
-	exec op_help
-fi
-
-grep oprof /proc/devices >/dev/null
-if [ "$?" -eq 0 ]
-then
-	echo "Stopping profiling."
-	op_stop
-fi
 
 LOG_FILE=
 SAMPLES_DIR=
@@ -156,6 +138,13 @@ do
 		--pgrp-filter)
 			PGRP_FILTER=$val
 			;;
+		--help)
+			echo $help_string | tr \$ '\n'
+			exit 0
+			;;
+		--list-events)
+			exec op_help
+			;;
 		*)
 			echo "Unknown option \"$arg\". See op_start --help"
 			exit 1
@@ -163,6 +152,13 @@ do
 	esac
 	shift
 done
+
+grep oprof /proc/devices >/dev/null
+if [ "$?" -eq 0 ]
+then
+	echo "Stopping profiling."
+	op_stop
+fi
 
 if [ "$LOG_FILE" = "" ]; then
 	LOG_FILE="$DIR/oprofiled.log"
