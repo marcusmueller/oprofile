@@ -1,3 +1,22 @@
+2001-09-18  John Levon  <moz@compsoc.man.ac.uk>
+
+	* .cvsignore:
+	* README: update
+ 
+	* configure.in: small cleanup
+ 
+	* op_init.c: add comment
+
+	* oprofile.h: 
+	* op_syscalls.c:
+	* op_x86.c: move fixmap stuff, remove disable APIC
+
+	* oprofile.c: init failure fix 
+ 
+	* doc/oprofile.sgml:
+	* dae/opd_proc.c: fix handle_old_sample_files() bug,
+	  check mtime hasn't changed on a new map
+ 
 2001-09-16  John Levon  <moz@compsoc.man.ac.uk>
 
 	* acinclude.m4:

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.71 2001/09/15 01:51:30 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.72 2001/09/18 01:00:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -254,8 +254,8 @@ del:
   
  
 /**
- * opd_handle_old_sample_files - deal with old sample file
- * @image_name: image to open file for
+ * opd_handle_old_sample_files - deal with old sample files
+ * @image_name: image to open files for
  * @mtime: the new mtime of the binary
  *
  * to simplify admin of sample file we rename or remove sample
@@ -268,12 +268,14 @@ static void opd_handle_old_sample_files(const char *image_name, time_t mtime)
 {
 	uint i;
 	char *mangled;
+	uint len;
 
 	mangled = opd_mangle_filename(smpdir, image_name);
 
+	len = strlen(mangled);
+ 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		sprintf(mangled + strlen(mangled), "#%d", i);
-
+		sprintf(mangled + len, "#%d", i);
 		opd_handle_old_sample_file(i, mangled,  mtime);
 	}
 
@@ -308,13 +310,13 @@ static void opd_open_image(struct opd_image *image, const char *name, int kernel
 		image->sample_files[i].footer = (void *)-1;
 	}
 
-	verbprintf("Statting \"%s\"\n", name);
+	verbprintf("Getting size of \"%s\"\n", name);
 
 	/* for each byte in original one counter */
 	image->len = opd_get_fsize(name, 0) * sizeof(struct opd_fentry);
 	
 	if (!image->len) {
-		fprintf(stderr, "stat failed for %s\n", name);
+		verbprintf("Size check failed for %s\n", name);
 		return;
 	}
 
@@ -329,7 +331,7 @@ static void opd_open_image(struct opd_image *image, const char *name, int kernel
 
 	opd_handle_old_sample_files(name, image->mtime);
 
-	/* samples files are lazilly openeded */
+	/* samples files are lazily openeded */
 }
 
 /**
@@ -426,6 +428,45 @@ err1:
 	sample_file->fd = -2;
 	goto out;
 }
+
+ 
+/**
+ * opd_check_image_mtime - ensure samples file is up to date
+ * @image: image to check
+ */
+static void opd_check_image_mtime(struct opd_image * image)
+{
+	uint i;
+	char *mangled;
+	uint len;
+	char * tmp = image->name;
+	time_t newmtime = opd_get_mtime(image->name);
+ 
+	if (image->mtime == newmtime)
+		return;
+ 
+	verbprintf("Current mtime %lu differs from stored "
+		"mtime %lu for %s\n", newmtime, image->mtime, image->name);
+
+	mangled = opd_mangle_filename(smpdir, image->name);
+	len = strlen(mangled);
+
+	for (i=0; i < op_nr_counters; i++) {
+		struct opd_sample_file * file = &image->sample_files[i]; 
+		if (file->fd > 0) {
+			close(file->fd);
+			munmap(file->footer, image->len + sizeof(struct opd_footer));
+		}
+		sprintf(mangled + len, "#%d", i);
+		verbprintf("Deleting out of date \"%s\"\n", mangled);
+		unlink(mangled);
+	}
+	free(mangled);
+
+	opd_open_image(image, tmp, image->kernel);
+	free(tmp);
+}
+
 
 /**
  * opd_put_image_sample - write sample to file
@@ -1209,6 +1250,8 @@ void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset,
 	verbprintf("Placing mapping for process %d: 0x%.8x-0x%.8x, off 0x%.8x, \"%s\"\n",
 		proc->pid, start, end, offset, opd_images[image_nr].name);
 
+	opd_check_image_mtime(&opd_images[image_nr]);
+ 
 	proc->maps[proc->nr_maps].image = image_nr;
 	proc->maps[proc->nr_maps].start = start;
 	proc->maps[proc->nr_maps].offset = offset;
@@ -1351,6 +1394,9 @@ void opd_handle_exec(u16 pid)
 
 	verbprintf("DO_EXEC: pid %u\n", pid);
 
+	/* FIXME: we should save old maps into ->old_exec()
+	 * to reduce loss of samples in fork()/exec() window
+	 */
 	proc = opd_get_proc(pid);
 	if (proc)
 		opd_kill_maps(proc);

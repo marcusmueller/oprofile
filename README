@@ -8,7 +8,7 @@ Please visit the oprofile website at : http://oprofile.sf.net/
 oprofile was written by John Levon <moz@compsoc.man.ac.uk>.
 
 Philippe Elie <ph_e@club-internet.fr> contributed many bug fixes,
-wrote the tcl/tk oprofile interface and the source annotation facility,
+started the Qt2 oprofile interface, wrote the source annotation facility,
 and more.
 
 Dave Jones <davej@suse.de> provided bug fixes and the Athlon support.

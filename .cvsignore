@@ -2,8 +2,10 @@ configure
 Makefile
 version.h
 a.diff
+aclocal.m4
 oprofile.s
 confdefs.h
 config.log
 config.cache
 config.status
+tags

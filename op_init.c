@@ -1,4 +1,4 @@
-/* $Id: op_init.c,v 1.9 2001/09/12 02:54:30 movement Exp $ */
+/* $Id: op_init.c,v 1.10 2001/09/18 01:00:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -17,6 +17,8 @@
 
 #include "oprofile.h"
 
+/* these routines are in a separate file so the rest can be compiled for i686 */
+ 
 EXPORT_NO_SYMBOLS;
 
 MODULE_PARM(expected_cpu_type, "i");

@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.31 2001/09/16 18:05:25 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.32 2001/09/18 01:00:33 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -29,19 +29,6 @@ dnl results "yes" iff a==1, "no" else
 AC_DEFUN(AX_MSG_RESULT_YN, [x=no
 test "x$1" = "x1" && x=yes
 AC_MSG_RESULT($x)])
-
-dnl AX_EGREP(expr, file, action-if-found, action-if-not-found)
-dnl egrep for expr in file
-AC_DEFUN(AX_EGREP, [dnl
-changequote(, )dnl
-  if egrep "$1" $2 >/dev/null 2>&1; then
-changequote([, ])dnl
-  ifelse([$3], , :, [$3])
-ifelse([$4], , , [else
-  $4
-])dnl
-fi
-])
 
 dnl AX_COMPILE_OPTION(option, action-if-found, action-if-not-found)
 dnl see if autoconf.h defines the option
@@ -122,10 +109,6 @@ MODVERSIONS=""
 test "$mv" = 1 && MODVERSIONS="-DMODVERSIONS -include $KINC/linux/modversions.h"
 AC_SUBST(MODVERSIONS)
 
-# this serves to ensure that CONFIG_X86_UP_IOAPIC *or* CONFIG_X86_UP_APIC
-# have been selected. The first case means we have to do APIC setup ourselves,
-# the second case, it is important NOT to do it !
-# in SMP, I have NO idea... 
 if test "$smp" = 0; then 
   AC_MSG_CHECKING(for local APIC)
   AX_COMPILE_OPTION(CONFIG_X86_LOCAL_APIC,apic=1,apic=0)

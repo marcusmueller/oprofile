@@ -71,59 +71,6 @@ void restore_nmi(void)
 
 static int smp_hardware;
  
-/* PHE : this would be probably an unconditionnaly restore state from a saved
- *state 
- */
-void disable_local_P6_APIC(void *dummy)
-{
-#ifndef CONFIG_X86_UP_APIC
-	ulong v;
-	uint l;
-	uint h;
-
-	/* FIXME: maybe this should go at end of function ? */
-	/* PHE I think when the doc says : -if you disable the apic the bits 
-	 * of LVT cannot be reset- it talk about the SW disable through bit 8
-	 * of SPIV see 7.4.14 (7.5.14) not the hardware disable, so it is ok
-	 * but perhaps we need a software disable of the APIC at the end 
-	 */
-	/* first disable via MSR */
-	/* IA32 V3, 7.4.2 */
-	rdmsr(MSR_IA32_APICBASE, l, h);
-	wrmsr(MSR_IA32_APICBASE, l & ~(1<<11), h);
-
-	/*
-	 * Careful: we have to set masks only first to deassert
-	 * any level-triggered sources.
-	 */
-	v = apic_read(APIC_LVTT);
-	apic_write(APIC_LVTT, v | APIC_LVT_MASKED);
-	v = apic_read(APIC_LVT0);
-	apic_write(APIC_LVT0, v | APIC_LVT_MASKED);
-	v = apic_read(APIC_LVT1);
-	apic_write(APIC_LVT1, v | APIC_LVT_MASKED);
-	v = apic_read(APIC_LVTERR);
-	apic_write(APIC_LVTERR, v | APIC_LVT_MASKED);
-	v = apic_read(APIC_LVTPC);
-	apic_write(APIC_LVTPC, v | APIC_LVT_MASKED);
-
-	/*
-	 * Clean APIC state for other OSs:
-	 */
-	apic_write(APIC_LVTT, APIC_LVT_MASKED);
-	apic_write(APIC_LVT0, APIC_LVT_MASKED);
-	apic_write(APIC_LVT1, APIC_LVT_MASKED);
-	apic_write(APIC_LVTERR, APIC_LVT_MASKED);
-	apic_write(APIC_LVTPC, APIC_LVT_MASKED);
-
-	v = apic_read(APIC_SPIV);
-	v &= ~APIC_SPIV_APIC_ENABLED;
-	apic_write(APIC_SPIV, v);
-
-	printk(KERN_INFO "oprofile: disabled local APIC.\n");
-#endif
-}
-
 static uint lvtpc_old_mask[NR_CPUS];
 static uint lvtpc_old_mode[NR_CPUS];
 
@@ -260,6 +207,45 @@ not_local_p6_apic:
 	wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
 	return -ENODEV;
 }
+
+/* ---------------- fixmap hack ------------------ */
+ 
+/* FIXME: can remove this code altogether if UP oopser makes mainline, and insist on
+ * CONFIG_X86_UP_APIC
+ */
+#ifndef CONFIG_X86_UP_APIC
+
+#ifndef APIC_DEFAULT_PHYS_BASE
+#define APIC_DEFAULT_PHYS_BASE 0xfee00000
+#endif
+static void set_pte_phys(ulong vaddr, ulong phys)
+{
+	pgprot_t prot;
+	pgd_t *pgd;
+	pmd_t *pmd;
+	pte_t *pte;
+
+	pgd = pgd_offset_k(vaddr);
+	pmd = pmd_offset(pgd, vaddr);
+	pte = pte_offset(pmd, vaddr);
+	prot = PAGE_KERNEL;
+	if (test_bit(X86_FEATURE_PGE, &boot_cpu_data.x86_capability))
+		pgprot_val(prot) |= _PAGE_GLOBAL;
+	set_pte(pte, mk_pte_phys(phys, prot));
+	__flush_tlb_one(vaddr);
+}
+
+void my_set_fixmap(void)
+{
+	ulong address = __fix_to_virt(FIX_APIC_BASE);
+
+	set_pte_phys (address, APIC_DEFAULT_PHYS_BASE);
+}
+#else /* !CONFIG_X86_UP_APIC */
+void my_set_fixmap(void)
+{
+}
+#endif /* !CONFIG_X86_UP_APIC */
 
 /* ---------------- MP table code ------------------ */
  

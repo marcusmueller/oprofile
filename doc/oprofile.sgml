@@ -661,8 +661,9 @@ Now that we've got some data, it has to be processed. That's the job of
 along with the binary file being profiled, to produce human-readable data. Note that if the binary file changes
 after the sample file was created, you won't be able to get useful data out. This situation is detected for you.
 A similar scenario can happen when re-starting profiling, as the old sample files from previous sessions don't
-get deleted (allowing you to build profiles over many distinct profiling sessions). However in this case, if the
-binary has changed, the old sample file is automatically deleted for you.
+get deleted (allowing you to build profiles over many distinct profiling sessions).
+If the sample file is determined to be out of date, it is backed up with a different session number (appended to
+the name of the sample file), or deleted, as appropriate. 
 </para>
 <para>
 Note that kernel modules without symbol data (this can happen with some initrd setups) cannot be profiled (modules
