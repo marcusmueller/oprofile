@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.45 2001/09/22 23:05:11 movement Exp $ */
+/* $Id: oprofiled.c,v 1.46 2001/09/25 15:49:59 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -87,7 +87,6 @@ static void opd_open_logfile(void)
 		perror("oprofiled: couldn't dup stdout to stderr: ");
 		exit(1);
 	}
-
 }
 
 /**
