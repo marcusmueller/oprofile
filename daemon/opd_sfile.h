@@ -74,7 +74,7 @@ struct sfile {
 	/** opened sample files */
 	odb_t files[OP_MAX_COUNTERS];
 	/** hash table of opened cg sample files, this table is hashed
-	 * on counter nr, from and to */
+	 * on counter nr, from cookie and to cookie */
 	struct list_head cg_files[CG_HASH_TABLE_SIZE];
 };
 

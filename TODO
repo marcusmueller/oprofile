@@ -27,6 +27,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 
  o stress test opstack: compile a Big Application w/o frame pointer and look
    how driver and opstack react.
+ o opd_sfile.c:sfile_clear_kernel() must also clear cg file where from or to
+  is a module or vmlinux
 
 0.9 release
 -----------
