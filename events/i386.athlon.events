@@ -24,4 +24,4 @@ event:0xc7 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_RESYNC_BRANCHES : R
 event:0xcd counters:0,1,2,3 um:zero minimum:500 name:INTERRUPTS_MASKED : Interrupts masked cycles (IF=0)
 event:0xce counters:0,1,2,3 um:zero minimum:500 name:INTERRUPTS_MASKED_PENDING : Interrupts masked while pending cycles (INTR while IF=0)
 event:0xcf counters:0,1,2,3 um:zero minimum:10 minimum:500 name:HARDWARE_INTERRUPTS : Number of taken hardware interrupts
-# There are othere events, but they were removed from the architecture manuals
+# There are other events, but they were removed from the architecture manuals
