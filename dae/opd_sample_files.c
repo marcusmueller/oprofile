@@ -179,17 +179,13 @@ retry:
 	memset(header, '\0', sizeof(struct opd_header));
 	header->version = OPD_VERSION;
 	memcpy(header->magic, OPD_MAGIC, sizeof(header->magic));
-	header->is_kernel = image->kernel;
+	header->cpu_type = cpu_type;
 	header->ctr_event = event->value;
 	header->ctr_count = event->count;
 	header->ctr_um = event->um;
-	header->ctr = counter;
-	header->cpu_type = cpu_type;
+	header->is_kernel = image->kernel;
 	header->cpu_speed = cpu_speed;
 	header->mtime = image->mtime;
-	header->separate_lib = separate_lib;
-	header->separate_kernel = separate_kernel;
-	/* FIXME separate_thread, separate_cpu */
 
 out:
 	free(mangled);

@@ -72,13 +72,10 @@ int main(int argc, char const ** argv)
 		header->is_kernel = 1;
 		header->ctr_event = 0x80; /* ICACHE_FETCHES */
 		header->ctr_um = 0x0;
-		header->ctr = 0x0; 
 		header->cpu_type = CPU_ATHLON;
 		header->ctr_count = 0xdeadbeef;
 		header->cpu_speed = 0;
 		header->mtime = 1034790063;
-		header->separate_lib = 0;
-		header->separate_kernel = 0;
     
 		for (int i = 0; i < 3793; ++i) {
 			int rc = odb_insert(&dest, ((i*i) ^ (i+i)), ((i*i) ^ i));

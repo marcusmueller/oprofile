@@ -55,16 +55,13 @@ abi::abi()
 	
 	slots["offsetof_header_magic"] = field_offset(header, magic);
 	slots["offsetof_header_version"] = field_offset(header, version);
-	slots["offsetof_header_is_kernel"] = field_offset(header, is_kernel);
+	slots["offsetof_header_cpu_type"] = field_offset(header, cpu_type);
 	slots["offsetof_header_ctr_event"] = field_offset(header, ctr_event);
 	slots["offsetof_header_ctr_um"] = field_offset(header, ctr_um);
-	slots["offsetof_header_ctr"] = field_offset(header, ctr);
-	slots["offsetof_header_cpu_type"] = field_offset(header, cpu_type);
 	slots["offsetof_header_ctr_count"] = field_offset(header, ctr_count);
+	slots["offsetof_header_is_kernel"] = field_offset(header, is_kernel);
 	slots["offsetof_header_cpu_speed"] = field_offset(header, cpu_speed);
 	slots["offsetof_header_mtime"] = field_offset(header, mtime);
-	slots["offsetof_header_separate_lib"] = field_offset(header, separate_lib);
-	slots["offsetof_header_separate_kernel"] = field_offset(header, separate_kernel);
 
 	// determine endianness
 

@@ -20,19 +20,15 @@
 struct opd_header {
 	u8  magic[4];
 	u32 version;
-	u8 is_kernel;
+	u32 cpu_type;
 	u32 ctr_event;
 	u32 ctr_um;
-	/* ctr number, used for sanity checking */
-	u32 ctr;
-	u32 cpu_type;
 	u32 ctr_count;
+	u32 is_kernel;
 	double cpu_speed;
 	time_t mtime;
-	int separate_lib;
-	int separate_kernel;
 	/* binary compatibility reserve */
-	u32 reserved1[19];
+	u32 reserved1[6];
 };
 
 #endif /* OP_SAMPLE_FILE_H */

@@ -1,5 +1,18 @@
 2003-10-20  John Levon  <levon@movementarian.org>
 
+	* dae/opd_sample_files.c:
+	* daemon/opd_mangling.c:
+	* libabi/abi.cpp:
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp:
+	* libop/op_config.h:
+	* libop/op_sample_file.h:
+	* libpp/op_header.cpp: remove ctr and separate_* from
+	header. Re-arrange it a little, and make it 64 bytes
+	on ILP32. Bump the version.
+
+2003-10-20  John Levon  <levon@movementarian.org>
+
 	* libpp/arrange_profiles.cpp: rework the clashing-axes
 	error message to be nicer to the user
 
