@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_stop_25,v 1.1 2002/09/26 23:59:29 movement Exp $ 
+# $Id: op_stop_25,v 1.2 2002/12/03 03:53:44 movement Exp $ 
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -17,6 +17,8 @@
 #
 
 # FIXME: support different base dir ??
+ 
+echo "Note: op_stop is deprecated. Please use opcontrol --stop or opcontrol --shutdown" >&2
  
 if [ "$UID" != "0" ]; then
 	echo "Must be root to stop profiling." >&2

@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start_25,v 1.7 2002/11/20 19:48:52 movement Exp $
+# $Id: op_start_25,v 1.8 2002/12/03 03:53:44 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -151,8 +151,26 @@ get_kernel_range() {
 	KERNEL_RANGE="`echo $tmp1 | cut -d" " -f 1`,`echo $tmp2 | cut -d" " -f 1`"
 }
  
+# transform into opcontrol command
+print_deprecation() {
+	ARGS="$*"
+
+	echo "$ARGS" | grep -- --verbose >/dev/null 2>&1
+	if test "$?" -eq 0; then
+		USEVERBOSE="--verbose"
+	fi
+	ARGS=`echo $ARGS | sed 's/--verbose//'`
+
+	DEP_MESSAGE="opcontrol --setup $ARGS && opcontrol --start $USEVERBOSE"
+ 
+	echo "op_start is deprecated. Please use $DEP_MESSAGE" >&2
+}
+ 
 # get and check specified options
 do_options() {
+ 
+	print_deprecation $@
+ 
 	while [ "$#" -ne 0 ]
 	do
 		arg=`echo $1 | awk -F= '{print $1}'`

@@ -1,5 +1,12 @@
 2002-12-03  John Levon  <levon@movementarian.org>
 
+	* utils/op_start:
+	* utils/op_start_25:
+	* utils/op_stop_25:
+	* utils/op_stop: print deprecation notice
+ 
+2002-12-03  John Levon  <levon@movementarian.org>
+
 	* utils/op_session.c:
 	* utils/op_dump: print deprecation notice
  
