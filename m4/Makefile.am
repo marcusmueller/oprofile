@@ -3,6 +3,7 @@
 
 EXTRA_DIST = \
 	builtinexpect.m4 \
+	compileroption.m4 \
 	configmodule.m4 \
 	copyifchange.m4 \
 	docbook.m4 \

@@ -117,15 +117,18 @@ AM_CONDITIONAL(have_qt, test -n "$QT_LIB")
 # inihibited for now
 AM_CONDITIONAL(build_oprof_report, false)
 
-CFLAGS="$CFLAGS -W -Wall"
-CXXFLAGS="$CXXFLAGS -W -Wall"
+AX_CFLAGS_OPTION(,[-W])
+AX_CXXFLAGS_OPTION(,[-W])
+AX_CFLAGS_OPTION(,[-Wall])
+AX_CXXFLAGS_OPTION(,[-Wall])
+AX_CFLAGS_OPTION(,[-fno-common])
+AX_CXXFLAGS_OPTION(,[-fno-common])
 
 # enable -Werror for non-release versions.
 if echo "$VERSION" | grep cvs >/dev/null; then
-    CFLAGS="$CFLAGS -Werror"
-    CXXFLAGS="$CXXFLAGS -Werror"
+	AX_CFLAGS_OPTION(,[-Werror])
+	AX_CXXFLAGS_OPTION(,[-Werror])
 fi
- 
 
 # fixups for version.h
 if test "$prefix" = "NONE"; then

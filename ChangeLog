@@ -1,5 +1,13 @@
 2003-05-09  John Levon  <levon@movementarian.org>
 
+	* m4/Makefile.am:
+	* m4/compileroption.m4: add a generalised compiler option
+	tester
+
+	* configure.in: use it, add -fno-common
+
+2003-05-09  John Levon  <levon@movementarian.org>
+
 	* daemon/oprofiled.c:
 	* dae/oprofiled.c: remove duplicate declaration found
 	via -fno-common
