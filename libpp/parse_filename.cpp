@@ -159,6 +159,15 @@ parsed_filename parse_filename(string const & filename)
 	return result;
 }
 
+bool parsed_filename::profile_spec_equal(parsed_filename const & parsed)
+{
+	return 	event == parsed.event &&
+		count == parsed.count &&
+		unitmask == parsed.unitmask &&
+		tgid == parsed.tgid &&
+		tid == parsed.tid &&
+		cpu == parsed.tid;
+}
 
 ostream & operator<<(ostream & out, parsed_filename const & data)
 {

@@ -30,6 +30,9 @@ struct parsed_filename
 	std::string tid;
 	std::string cpu;
 
+	/// return true if the profile specification are identical.
+	bool profile_spec_equal(parsed_filename const & parsed);
+
 	/**
 	 * the original sample filename from which the
 	 * above components are built

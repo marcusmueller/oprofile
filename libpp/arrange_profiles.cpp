@@ -383,7 +383,8 @@ find_profile_sample_files(list<profile_sample_files> & files,
 			parsed_filename psample_filename =
 				parse_filename(it->sample_filename);
 			if (psample_filename.lib_image == parsed.lib_image &&
-			    psample_filename.image == parsed.image)
+			    psample_filename.image == parsed.image &&
+			    psample_filename.profile_spec_equal(parsed))
 				return *it;
 		}
 
@@ -392,7 +393,8 @@ find_profile_sample_files(list<profile_sample_files> & files,
 		for (cit = it->cg_files.begin(); cit != cend; ++cit) {
 			parsed_filename pcg_filename = parse_filename(*cit);
 			if (pcg_filename.lib_image == parsed.lib_image &&
-			    pcg_filename.image == parsed.image)
+			    pcg_filename.image == parsed.image &&
+			    pcg_filename.profile_spec_equal(parsed))
 				return *it;
 		}
 	}

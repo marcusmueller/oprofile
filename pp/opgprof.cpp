@@ -254,6 +254,8 @@ void load_cg(profile_t & cg_db, list<profile_sample_files> const & files)
 		list<string>::const_iterator const cend = it->cg_files.end();
 		for (cit = it->cg_files.begin(); cit != cend; ++cit) {
 			// FIXME: do we need filtering ?
+			/* We can't handle start_offset now but after splitting
+			 * data in from/to eip. */
 			cg_db.add_sample_file(*cit, 0);
 		}
 	}
