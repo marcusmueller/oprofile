@@ -1,3 +1,8 @@
+2002-01-29  John Levon  <moz@compsoc.man.ac.uk>
+
+	* module/op_fixmap.c: remap fake mapping on 2.2 as well
+	  when necessary
+ 
 2002-01-27  Philippe Elie  <ph_e@club-internet.fr>
 
 	* module/Makefile.in: sorry, -Werror is only usefull

@@ -52,7 +52,7 @@ void make_fixmap(void)
  */
 void do_fixmap(void)
 {
-#if V_AT_LEAST(2,4,0) && V_BEFORE(2,4,10)
+#if V_BEFORE(2,4,10)
 #if defined(CONFIG_X86_LOCAL_APIC)
 	int find_intel_smp(void);
 
@@ -75,7 +75,7 @@ void do_fixmap(void)
  
 /* ---------------- MP table code ------------------ */
  
-#if V_AT_LEAST(2,4,0) || defined(CONFIG_X86_LOCAL_APIC)
+#if defined(CONFIG_X86_LOCAL_APIC)
  
 static int __init mpf_checksum(unsigned char *mp, int len)
 {
