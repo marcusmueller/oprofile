@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.75 2001/09/28 13:34:22 movement Exp $ */
+/* $Id: opd_proc.c,v 1.76 2001/10/14 16:37:20 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -29,7 +29,7 @@ extern uint op_nr_counters;
 extern unsigned long opd_stats[];
 extern char *vmlinux;
 extern char *smpdir;
-extern struct op_hash *hashmap;
+extern struct op_hash_index *hashmap;
 
 /* hash of process lists */
 static struct opd_proc *opd_procs[OPD_MAX_PROC_HASH];
@@ -1355,6 +1355,16 @@ void opd_handle_exit(const struct op_sample *sample)
 
  
 /**
+ * get_from_pool - retrieve string from hash map pool
+ * @ind: index into pool
+ */
+inline static char * get_from_pool(uint ind)
+{
+	return ((char *)(hashmap+OP_HASH_MAP_NR) + ind);
+}
+
+ 
+/**
  * opd_handle_hashmap - parse image from kernel hash map
  * @hash: hash value
  * @c: string to fill
@@ -1364,16 +1374,19 @@ void opd_handle_exit(const struct op_sample *sample)
 static int opd_handle_hashmap(int hash, char **c)
 {
 	int orighash = hash;
+	char * name;
  
 	while (hash) {
-		if (strlen(hashmap[hash].name)+ 1 + strlen(*c) >= PATH_MAX) {
+		name = get_from_pool(hashmap[hash].name);
+ 
+		if (strlen(name) + 1 + strlen(*c) >= PATH_MAX) {
 			fprintf(stderr,"String \"%s\" too large.\n", *c);
 			exit(1);
 		}
 
-		*c -= strlen(hashmap[hash].name) + 1;
+		*c -= strlen(name) + 1;
 		**c = '/';
-		strncpy(*c + 1, hashmap[hash].name, strlen(hashmap[hash].name));
+		strncpy(*c + 1, name, strlen(name));
 		
 		/* move onto parent */
 		hash = hashmap[hash].parent;

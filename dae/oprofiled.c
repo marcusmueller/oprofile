@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.46 2001/09/25 15:49:59 movement Exp $ */
+/* $Id: oprofiled.c,v 1.47 2001/10/14 16:37:20 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -43,7 +43,7 @@ static char *systemmapfilename;
 static pid_t mypid;
 static sigset_t maskset;
 static fd_t devfd;
-struct op_hash *hashmap;
+struct op_hash_index *hashmap;
 
 static void opd_sighup(int val);
 static void opd_open_logfile(void);

@@ -1,3 +1,12 @@
+2001-10-14  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/opd_proc.c:
+	* dae/oprofiled.c:
+	* op_user.h:
+	* oprofile.h:
+	* op_syscalls.c: use string pool. Prime hash table
+	  with common entries. Consider parent in name_hash.
+ 
 2001-10-13  Philippe Elie  <ph_e@club-internet.fr>
 
 	* doc/oprofile.sgml: minor change

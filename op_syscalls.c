@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.19 2001/09/18 10:00:07 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.20 2001/10/14 16:37:19 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -29,10 +29,16 @@ extern u32 prof_on;
 static uint dname_top;
 static struct qstr **dname_stack;
 static uint hash_map_open;
-static struct op_hash *hash_map;
+static struct op_hash_index *hash_map;
+char * pool_pos;
+char * pool_start;
+char * pool_end;
 
 void oprof_put_note(struct op_sample *samp);
 void oprof_put_mapping(struct op_mapping *mapping);
+inline static uint alloc_in_pool(char const * str, uint len);
+inline static int add_hash_entry(struct op_hash_index * entry, uint parent, char const * name, uint len);
+inline static uint name_hash(const char *name, uint len, uint parent);
 
 /* --------- device routines ------------- */
 
@@ -43,6 +49,9 @@ int is_map_ready(void)
 
 int oprof_init_hashmap(void)
 {
+	uint i;
+	uint usrhash;
+ 
 	dname_stack = kmalloc(DNAME_STACK_MAX * sizeof(struct qstr *), GFP_KERNEL);
 	if (!dname_stack)
 		return -EFAULT;
@@ -52,6 +61,42 @@ int oprof_init_hashmap(void)
 	hash_map = rvmalloc(PAGE_ALIGN(OP_HASH_MAP_SIZE));
 	if (!hash_map)
 		return -EFAULT;
+
+	for (i = 0; i < OP_HASH_MAP_NR; ++i) {
+		hash_map[i].name = 0;
+		hash_map[i].parent = -1;
+	}
+ 
+	pool_start = (char *)(hash_map + OP_HASH_MAP_NR);
+	pool_end = pool_start + POOL_SIZE;
+	pool_pos = pool_start;
+
+	alloc_in_pool("/", 1);
+
+	/* set up some common entries */
+	/* feel free to add sensible ones ! */
+ 
+	/* /lib */
+	i = name_hash("lib", strlen("lib"), 0);
+	add_hash_entry(&hash_map[i], 0, "lib", strlen("lib"));
+	/* /lib */
+	usrhash = i = name_hash("usr", strlen("usr"), 0);
+	add_hash_entry(&hash_map[i], 0, "usr", strlen("usr"));
+	/* /bin */
+	i = name_hash("bin", strlen("bin"), 0);
+	add_hash_entry(&hash_map[i], 0, "bin", strlen("bin"));
+	/* /usr/bin */
+	i = name_hash("bin", strlen("bin"), usrhash);
+	add_hash_entry(&hash_map[i], usrhash, "bin", strlen("bin"));
+	/* /usr/lib */
+	i = name_hash("lib", strlen("lib"), usrhash);
+	add_hash_entry(&hash_map[i], usrhash, "lib", strlen("lib"));
+	/* /sbin */
+	i = name_hash("sbin", strlen("sbin"), 0);
+	add_hash_entry(&hash_map[i], 0, "sbin", strlen("sbin"));
+	/* /usr/X11R6 */
+	i = name_hash("X11R6", strlen("X11R6"), usrhash);
+	add_hash_entry(&hash_map[i], usrhash, "X11R6", strlen("X11R6"));
 
 	return 0;
 }
@@ -122,14 +167,14 @@ asmlinkage static long (*old_sys_exit)(int);
 
 spinlock_t map_lock = SPIN_LOCK_UNLOCKED;
 
-inline static short name_hash(const char *name, uint len)
+inline static uint name_hash(const char *name, uint len, uint parent)
 {
-	short hash=0;
+	uint hash=0;
 
 	while (len--)
 		hash = (hash + (name[len] << 4) + (name[len] >> 4)) * 11;
 
-	return abs(hash % OP_HASH_MAP_NR);
+	return abs((hash ^ parent) % OP_HASH_MAP_NR);
 }
 
 /* empty ascending dname stack */
@@ -150,22 +195,45 @@ inline static struct qstr *pop_dname(void)
 	return dname_stack[--dname_top];
 }
 
+inline static uint alloc_in_pool(char const * str, uint len)
+{
+	char * place = pool_pos;
+	if (pool_pos + len + 1 >= pool_end)
+		return 0;
+
+	strcpy(place, str);
+	pool_pos += len + 1;
+	return place - pool_start;
+}
+ 
+inline static char * get_from_pool(uint index)
+{
+	return pool_start + index;
+}
+
+inline static int add_hash_entry(struct op_hash_index * entry, uint parent, char const * name, uint len)
+{
+  	entry->name = alloc_in_pool(name, len);
+	if (!entry->name)
+		return -1;
+	entry->parent = parent;
+	return 0;
+} 
+ 
 /* called with map_lock held */
-static short do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt)
+static uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt)
 {
 	struct dentry *d = dentry;
 	struct vfsmount *v = vfsmnt;
 	struct qstr *dname;
-	short value = -1;
-	short firsthash;
-	short probe = 3;
-	short parent = 0;
+	uint value = -1;
+	uint firsthash;
+	uint probe = 3;
+	uint parent = 0;
+	struct op_hash_index *entry;
 
 	/* wind the dentries onto the stack pages */
 	for (;;) {
-		if (d->d_name.len > OP_HASH_LINE)
-			goto too_large;
-
 		/* deleted ? */
 		if (!IS_ROOT(d) && list_empty(&d->d_hash))
 			goto out;
@@ -190,20 +258,21 @@ static short do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dent
 	/* here we are at the bottom, unwind and hash */
 
 	while ((dname = pop_dname())) {
-		firsthash = value = name_hash(dname->name, dname->len);
+		firsthash = value = name_hash(dname->name, dname->len, parent);
 
 	retry:
+		entry = &hash_map[value];
+		/* existing entry ? */
+		if (streq(get_from_pool(entry->name), dname->name)
+			&& entry->parent == parent)
+			goto next;
+ 
 		/* new entry ? */
-		if (hash_map[value].name[0] == '\0') {
-			strcpy(hash_map[value].name, dname->name);
-			hash_map[value].parent = parent;
+		if (entry->parent == -1) {
+			if (add_hash_entry(entry, parent, dname->name, dname->len))
+				goto fullpool;
 			goto next;
 		}
-
-		/* existing entry ? */
-		if (streqn(hash_map[value].name, dname->name, dname->len)
-			&& hash_map[value].parent == parent)
-			goto next;
 
 		/* nope, find another place in the table */
 		value = abs((value + probe) % OP_HASH_MAP_NR);
@@ -219,20 +288,20 @@ static short do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dent
 out:
 	dname_top = 0;
 	return value;
+fullpool:
+	printk(KERN_ERR "oprofile: string pool exhausted.\n");
+	value = -1;
+	goto out;
 fulltable:
 	printk(KERN_ERR "oprofile: component hash table full :(\n");
 	value = -1;
 	goto out;
-too_large:
-	printk(KERN_ERR "oprofile: component %s length too large (%d > %d) !\n",
-		dentry->d_name.name, dentry->d_name.len, OP_HASH_LINE);
-	goto out;
 }
 
 /* called with map_lock held */
-static short do_path_hash(struct dentry *dentry, struct vfsmount *vfsmnt)
+static uint do_path_hash(struct dentry *dentry, struct vfsmount *vfsmnt)
 {
-	short value;
+	uint value;
 	struct vfsmount *rootmnt;
 	struct dentry *root;
 

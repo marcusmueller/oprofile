@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.56 2001/09/23 16:15:51 movement Exp $ */
+/* $Id: oprofile.h,v 1.57 2001/10/14 16:37:19 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -97,6 +97,7 @@ struct _oprof_data {
 #define APIC_SPIV_APIC_ENABLED (1<<8)
 #endif
 
+#define streq(a, b) (!strcmp((a), (b)))
 #define streqn(a, b, len) (!strncmp((a), (b), (len)))
 
 /* oprof_data->ready will be set this many samples
