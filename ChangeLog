@@ -1,5 +1,9 @@
 2003-07-15  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* events/rtc..events: use RTC as event name
+
+2003-07-15  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* daemon/opd_sample_files.c: C89 compile fix
 
 2003-07-15  John Levon  <levon@movementarian.org>

@@ -6,8 +6,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.6 release
 -----------
 
- o RTC is buggered ? Phil can you test ?
- o update opcontrol --events stuff: rtc, gui
+ o update opcontrol --events stuff: rtc, gui (phe opcontrol seems to work
+  GUI is out of date)
 
 0.7 release
 -----------
