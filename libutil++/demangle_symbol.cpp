@@ -21,19 +21,10 @@
 /*@}*/
 extern "C" char * cplus_demangle(char const * mangled, int options);
 
-// FIXME: all options should be in a public singleton
-// FIXME: this options should die IMO (then move this into libutil++)
-namespace options { 
-	extern bool demangle;
-};
- 
 using std::string;
  
 string const demangle_symbol(string const & name)
 {
-	if (!options::demangle)
-		return name;
- 
 	// Do not try to strip leading underscore, this leads to many
 	// C++ demangling failures.
 	char * unmangled = cplus_demangle(name.c_str(), DMGL_PARAMS | DMGL_ANSI);

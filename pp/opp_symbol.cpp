@@ -15,6 +15,8 @@
 #include "file_manip.h"
 
 #include "opp_symbol.h"
+// FIXME 
+#include "oprofpp_options.h"
 #include "samples_container.h"
 #include "demangle_symbol.h"
 
@@ -365,9 +367,9 @@ string OutputSymbol::format_vma(string const &,
 string OutputSymbol::format_symb_name(string const & name,
 				      sample_entry const &, size_t)
 {
-	int const is_anon = name[0] == '?';
-
-	return is_anon ? string("(no symbol)") : demangle_symbol(name);
+	if (name[0] == '?')
+		return "(no symbol)";
+	return options::demangle ? demangle_symbol(name) : name;
 }
 
 string OutputSymbol::format_image_name(string const &,

@@ -376,9 +376,13 @@ void output::find_and_output_counter(ostream & out, string const & str, string c
 void output::find_and_output_counter(ostream & out, string const & filename, size_t linenr, string const & blank) const
 {
 	symbol_entry const * symbol = samples->find_symbol(filename, linenr);
-	if (symbol)
-		output_counter(out, symbol->sample.counter, true,
-			       demangle_symbol(symbol->name));
+	if (symbol) {
+		string const symname =
+			options::demangle ? demangle_symbol(symbol->name)
+			: symbol->name;
+			 
+		output_counter(out, symbol->sample.counter, true, symname);
+	}
 
 	counter_array_t counter;
 	if (samples->samples_count(counter, filename, linenr)) {

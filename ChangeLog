@@ -1,5 +1,17 @@
 2002-06-04  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/Makefile.in:
+	* pp/op_to_source.cpp:
+	* pp/opp_symbol.cpp:
+	* pp/demangle_symbol.h:
+	* pp/demangle_symbol.cpp: move this ...
+ 
+	* libutil++/Makefile.in:
+	* libutil++/demangle_symbol.h:
+	* libutil++/demangle_symbol.cpp: ... to here
+
+2002-06-04  John Levon  <moz@compsoc.man.ac.uk>
+
 	* make.common.in: 
 	* make.deps: split out CXXINCLUDES
  

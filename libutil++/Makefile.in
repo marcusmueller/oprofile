@@ -1,10 +1,10 @@
 include ../make.common
 
-HEADERS=child_reader.h file_manip.h string_manip.h filename_match.h
+HEADERS=child_reader.h file_manip.h string_manip.h filename_match.h demangle_symbol.h
 
-SOURCES=child_reader.cpp file_manip.cpp string_manip.cpp filename_match.cpp
+SOURCES=child_reader.cpp file_manip.cpp string_manip.cpp filename_match.cpp demangle_symbol.cpp
 
-OBJECTS=child_reader.o file_manip.o string_manip.o filename_match.o
+OBJECTS=child_reader.o file_manip.o string_manip.o filename_match.o demangle_symbol.o
 
 TARGET=libutil++.a
 
