@@ -16,12 +16,10 @@ Before 1.0 big stuff
 	   dump the trace in the logs + new sample file format
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
- o implement --no-vmlinux for 2.4
  
 Before 1.0 little stuff
 -----------------------
 
- o allow --ctr0-event to take event numbers..
  o improve the *non* verbose daemon log to be a bit more informative
  o daemon: opd_put_kernel_samples vs. setup_kernel_sample vs. handle_. Rename, way too confusing
  o --buffer-size is useless on 2.5 without tuning of watershed
@@ -44,6 +42,7 @@ Before 1.0 little stuff
  o verify if we can remove the ELF-based symbol size code
  o must we do setrlimit(RLIMIT_NOFILE, ...) for daemon ? Isn't already limited
   by the kernel itself ?
+ o allow --ctr0-event to take event numbers. (is it worth ?)
 
 Documentation
 -------------

@@ -1,3 +1,16 @@
+2003-04-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* events/i386-ht.events: all events allow only one counter, remove
+	  three events due to ESCR restricton.
+	* events/i386.events: add some comments.
+
+	* module/x86/op_model_p4.c: synch with linux 2.5 mainline
+	  - except events CTR_BPU_0 all virtual counter was not working.
+	  - Prevents a segfault when using incorrect counter number.
+	  - ESCR event select is 6 bits length not 5.
+	  - Don't fail silently in p4_setup_ctrs().
+	* module/x86/op_msr.h: match name used in linux.
+
 2003-04-15  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.1.in:

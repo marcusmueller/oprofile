@@ -36,31 +36,32 @@ struct p4_event_binding {
 };
 
 /* nb: these CTR_* defines are a duplicate of defines in
-   libop/op_events.c. */
+   event/i386.p4*events. */
+
 
 #define CTR_BPU_0      (1 << 0)
-#define CTR_BPU_2      (1 << 1)
-#define CTR_MS_0       (1 << 2)
-#define CTR_MS_2       (1 << 3)
-#define CTR_FLAME_0    (1 << 4)
-#define CTR_FLAME_2    (1 << 5)
-#define CTR_IQ_4       (1 << 6)
+#define CTR_MS_0       (1 << 1)
+#define CTR_FLAME_0    (1 << 2)
+#define CTR_IQ_4       (1 << 3)
+#define CTR_BPU_2      (1 << 4)
+#define CTR_MS_2       (1 << 5)
+#define CTR_FLAME_2    (1 << 6)
 #define CTR_IQ_5       (1 << 7)
 
-struct p4_counter_binding p4_counters [NUM_COUNTERS] = {
+static struct p4_counter_binding p4_counters [NUM_COUNTERS] = {
 	{ CTR_BPU_0,   MSR_P4_BPU_PERFCTR0,   MSR_P4_BPU_CCCR0 },
-	{ CTR_BPU_2,   MSR_P4_BPU_PERFCTR2,   MSR_P4_BPU_CCCR2 },
 	{ CTR_MS_0,    MSR_P4_MS_PERFCTR0,    MSR_P4_MS_CCCR0 },
-	{ CTR_MS_2,    MSR_P4_MS_PERFCTR2,    MSR_P4_MS_CCCR2 },
 	{ CTR_FLAME_0, MSR_P4_FLAME_PERFCTR0, MSR_P4_FLAME_CCCR0 },
-	{ CTR_FLAME_2, MSR_P4_FLAME_PERFCTR2, MSR_P4_FLAME_CCCR2 },
 	{ CTR_IQ_4,    MSR_P4_IQ_PERFCTR4,    MSR_P4_IQ_CCCR4 },
-	{ CTR_IQ_5,    MSR_P4_IQ_PERFCTR5,    MSR_P4_IQ_CCCR5 },
+	{ CTR_BPU_2,   MSR_P4_BPU_PERFCTR2,   MSR_P4_BPU_CCCR2 },
+	{ CTR_MS_2,    MSR_P4_MS_PERFCTR2,    MSR_P4_MS_CCCR2 },
+	{ CTR_FLAME_2, MSR_P4_FLAME_PERFCTR2, MSR_P4_FLAME_CCCR2 },
+	{ CTR_IQ_5,    MSR_P4_IQ_PERFCTR5,    MSR_P4_IQ_CCCR5 }
 };
 
 /* p4 event codes in libop/op_event.h are indices into this table. */
 
-struct p4_event_binding p4_events[NUM_EVENTS] = {
+static struct p4_event_binding p4_events[NUM_EVENTS] = {
 	
 	{ /* BRANCH_RETIRED */
 		0x05, 0x06, 
@@ -134,16 +135,18 @@ struct p4_event_binding p4_events[NUM_EVENTS] = {
 		  { CTR_BPU_2, MSR_P4_BSU_ESCR1} }
 	},
 
+	/* intel doc vol 3 table A-1: P4 and xeon with cpuid signature < 0xf27
+	 * doen't allow MSR_FSB_ESCR1 so only counter 0 is available */
 	{ /* IOQ_ALLOCATION */
 		0x06, 0x03, 
 		{ { CTR_BPU_0, MSR_P4_FSB_ESCR0},
-		  {-1,-1} }
+		  { 0, 0 } }
 	},
 
 	{ /* IOQ_ACTIVE_ENTRIES */
 		0x06, 0x1a, 
 		{ { CTR_BPU_2, MSR_P4_FSB_ESCR1},
-		  {-1,-1} }
+		  { 0, 0 } }
 	},
 
 	{ /* FSB_DATA_ACTIVITY */
@@ -155,13 +158,15 @@ struct p4_event_binding p4_events[NUM_EVENTS] = {
 	{ /* BSQ_ALLOCATION */
 		0x07, 0x05, 
 		{ { CTR_BPU_0, MSR_P4_BSU_ESCR0},
-		  {-1,-1} }
+		  { 0, 0 } }
 	},
 
 	{ /* BSQ_ACTIVE_ENTRIES */
 		0x07, 0x06,
-		{ { CTR_BPU_2, MSR_P4_BSU_ESCR1 /* guess */},  
-		  {-1,-1} }
+		/* FIXME intel doc don't say which ESCR1 to use, using
+		   BSU_ESCR1 is a sensible guess but will need validation */
+		{ { CTR_BPU_2, MSR_P4_BSU_ESCR1 },  
+		  { 0, 0 } }
 	},
 
 	{ /* X87_ASSIST */
@@ -304,7 +309,7 @@ struct p4_event_binding p4_events[NUM_EVENTS] = {
 #define ESCR_CLEAR(escr) ((escr) &= ESCR_RESERVED_BITS)
 #define ESCR_SET_USR_0(escr, usr) ((escr) |= (((usr) & 1) << 2))
 #define ESCR_SET_OS_0(escr, os) ((escr) |= (((os) & 1) << 3))
-#define ESCR_SET_EVENT_SELECT(escr, sel) ((escr) |= (((sel) & 0x1f) << 25))
+#define ESCR_SET_EVENT_SELECT(escr, sel) ((escr) |= (((sel) & 0x3f) << 25))
 #define ESCR_SET_EVENT_MASK(escr, mask) ((escr) |= (((mask) & 0xffff) << 9))
 #define ESCR_READ(escr,high,ev,i) do {rdmsr(ev->bindings[(i)].escr_address, (escr), (high));} while (0);
 #define ESCR_WRITE(escr,high,ev,i) do {wrmsr(ev->bindings[(i)].escr_address, (escr), (high));} while (0);
@@ -325,25 +330,22 @@ struct p4_event_binding p4_events[NUM_EVENTS] = {
 #define CTR_WRITE(l,i) do {wrmsr(p4_counters[(i)].counter_address, -(u32)(l), -1);} while (0);
 #define CTR_OVERFLOW_P(ctr) (!((ctr) & 0x80000000))
 
-/* these access the underlying cccrs 1-18, not the subset of 8 bound to "virtual counters" */
-#define RAW_CCCR_READ(low, high, i) do {rdmsr (MSR_P4_BPU_CCCR0 + (i), (low), (high));} while (0);
-#define RAW_CCCR_WRITE(low, high, i) do {wrmsr (MSR_P4_BPU_CCCR0 + (i), (low), (high));} while (0);
 
 static void p4_fill_in_addresses(struct op_msrs * const msrs)
 {
 	int i; 
-	uint addr;
+	unsigned int addr;
 	
-	/* the 8 counter registers we pay attention to */
+	/* the counter registers we pay attention to */
 	for (i = 0; i < NUM_COUNTERS; ++i)
 		msrs->counters.addrs[i] = p4_counters[i].counter_address;
 
 	/* 18 CCCR registers */
-	for (i=0, addr = MSR_P4_BPU_CCCR0;
+	for (i = 0, addr = MSR_P4_BPU_CCCR0;
 	     addr <= MSR_P4_IQ_CCCR5; ++addr, ++i) 
 		msrs->controls.addrs[i] = addr;
 	
-	/* 43 ESCR registers */
+	/* 43 ESCR registers in three discontiguous group */
 	for (addr = MSR_P4_BSU_ESCR0;
 	     addr <= MSR_P4_SSU_ESCR0; ++addr, ++i){ 
 		msrs->controls.addrs[i] = addr;
@@ -359,20 +361,21 @@ static void p4_fill_in_addresses(struct op_msrs * const msrs)
 		msrs->controls.addrs[i] = addr;
 	}
 	
-	/* 2 remaining non-contiguously located ESCRs */
+	/* there are 2 remaining non-contiguously located ESCRs */
 	msrs->controls.addrs[i++] = MSR_P4_CRU_ESCR4;
 	msrs->controls.addrs[i++] = MSR_P4_CRU_ESCR5;
 }
 
-static void pmc_setup_one_p4_counter(uint ctr)
+
+static void pmc_setup_one_p4_counter(unsigned int ctr)
 {
 	int i;
 	int const maxbind = 2;
-	uint cccr = 0;
-	uint escr = 0;
-	uint high = 0;
-	uint counter_bit;
-	struct p4_event_binding * ev = NULL;
+	unsigned int cccr = 0;
+	unsigned int escr = 0;
+	unsigned int high = 0;
+	unsigned int counter_bit;
+	struct p4_event_binding * ev = 0;
 	
 	/* convert from counter *number* to counter *bit* */
 	counter_bit = 1 << ctr;
@@ -389,7 +392,7 @@ static void pmc_setup_one_p4_counter(uint ctr)
 	
 	for (i = 0; i < maxbind; i++) {
 		if (ev->bindings[i].virt_counter & counter_bit) {
-			
+
 			/* modify ESCR */
 			ESCR_READ(escr, high, ev, i);
 			ESCR_CLEAR(escr);
@@ -409,27 +412,31 @@ static void pmc_setup_one_p4_counter(uint ctr)
 			return;
 		}
 	}
+
+	printk(KERN_ERR 
+	       "oprofile: P4 event code 0x%lx no binding, ctr %d\n",
+	       sysctl.ctr[ctr].event, ctr);
 }
 
 
 static void p4_setup_ctrs(struct op_msrs const * const msrs)
 {
-	uint i;
-	uint low, high;
-	uint addr;
+	unsigned int i;
+	unsigned int low, high;
+	unsigned int addr;
 
-	rdmsr(MSR_P4_MISC, low, high);
+	rdmsr(MSR_IA32_MISC_ENABLE, low, high);
 	if (! MISC_PMC_ENABLED_P(low)) {
-		printk(KERN_ERR "oprofile: P4 PMC not available");
+		printk(KERN_ERR "oprofile: P4 PMC not available\n");
 		return;
 	}
 
 	/* clear all cccrs (including those outside our concern) */
-	for (i = 0 ; i < NUM_CCCRS ; ++i) {
-		RAW_CCCR_READ(low, high, i);
+	for (addr = MSR_P4_BPU_CCCR0 ; addr <= MSR_P4_IQ_CCCR5 ; ++addr) {
+		rdmsr(addr, low, high);
 		CCCR_CLEAR(low);
 		CCCR_SET_REQUIRED_BITS(low);
-		RAW_CCCR_WRITE(low, high, i);
+		wrmsr(addr, low, high);
 	}
 
 	/* clear all escrs (including those outside out concern) */
@@ -448,7 +455,6 @@ static void p4_setup_ctrs(struct op_msrs const * const msrs)
 		wrmsr(addr, 0, 0);
 	}
 	
-
 	/* setup all counters */
 	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
 		if (sysctl.ctr[i].event) {
@@ -458,11 +464,11 @@ static void p4_setup_ctrs(struct op_msrs const * const msrs)
 	}
 }
 
-static void p4_check_ctrs(uint const cpu, 
+static void p4_check_ctrs(unsigned int const cpu, 
 			  struct op_msrs const * const msrs,
 			  struct pt_regs * const regs)
 {
-	ulong ctr, low, high;
+	unsigned int ctr, low, high;
 	int i;
 	for (i = 0; i < NUM_COUNTERS; ++i) {
 		
@@ -504,8 +510,9 @@ static void p4_check_ctrs(uint const cpu,
 
 static void p4_start(struct op_msrs const * const msrs)
 {
-	uint low,high;
+	unsigned int low,high;
 	int i;
+
 	for (i = 0; i < NUM_COUNTERS; ++i) {
 		if (!sysctl.ctr[i].enabled) continue;
 		CCCR_READ(low, high, i);
@@ -514,10 +521,12 @@ static void p4_start(struct op_msrs const * const msrs)
 	}
 }
 
+
 static void p4_stop(struct op_msrs const * const msrs)
 {
-	uint low,high;
+	unsigned int low,high;
 	int i;
+
 	for (i = 0; i < NUM_COUNTERS; ++i) {
 		if (!sysctl.ctr[i].enabled) continue;
 		CCCR_READ(low, high, i);

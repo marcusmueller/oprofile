@@ -23,6 +23,10 @@
 				  : "ecx", "eax", "edx")
 #endif
 
+#ifndef MSR_IA32_MISC_ENABLE 
+#define MSR_IA32_MISC_ENABLE 0x1a0
+#endif
+
 /* MSRs */
 #ifndef MSR_P6_PERFCTR0
 #define MSR_P6_PERFCTR0 0xc1
@@ -71,10 +75,6 @@
    
    - 45 event selection control registers (ESCRs). */
 
-
-#ifndef MSR_P4_MISC 
-#define MSR_P4_MISC 0x1a0
-#endif
 
 #ifndef MSR_P4_BPU_PERFCTR0
 #define MSR_P4_BPU_PERFCTR0 0x300

@@ -10,7 +10,10 @@ event:0x08 counters:2,6 um:load_port_replay minimum:3000 name:LOAD_PORT_REPLAY :
 event:0x09 counters:2,6 um:store_port_replay minimum:3000 name:STORE_PORT_REPLAY : replayed events at the store port
 event:0x0a counters:0,4 um:mob_load_replay minimum:3000 name:MOB_LOAD_REPLAY : replayed loads from the memory order buffer
 event:0x0c counters:0,4 um:bsq_cache_reference minimum:3000 name:BSQ_CACHE_REFERENCE : cache references seen by the bus unit
+# intel doc vol 3 table A-1 P4 and xeon with cpuid signature < 0xf27 doen't allow MSR_FSB_ESCR1 so on only counter 0 is available
 event:0x0d counters:0 um:ioq minimum:3000 name:IOQ_ALLOCATION : bus transactions
+# FIXME the unit mask associated is known to get different behavior between cpu
+# step id, it need to be documented in P4 events doc
 event:0x0e counters:4 um:ioq minimum:3000 name:IOQ_ACTIVE_ENTRIES : number of entries in the IOQ which are active
 event:0x10 counters:0 um:bsq minimum:3000 name:BSQ_ALLOCATION : allocations in the bus sequence unit
 event:0x12 counters:3,7 um:x87_assist minimum:3000 name:X87_ASSIST : retired x87 instructions which required special handling
