@@ -835,7 +835,8 @@ int main(int argc, char const * argv[])
 			      options::no_output_filter,
 			      options::assembly, options::source_with_assembly, -1);
 
-		if (!output.treat_input(options::image_file, options::sample_file))
+		if (!output.treat_input(options::image_file,
+			relative_to_absolute_path(options::sample_file, OP_SAMPLES_DIR)))
 			return EXIT_FAILURE;
 	}
 

@@ -1,5 +1,14 @@
 2002-06-16  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/counter_util.cpp: stop when we reach the first
+	  available counter for sorting
+
+	* pp/op_to_source.cpp: use absolute sample file name 
+
+	* pp/samples_file.cpp: better error message
+
+2002-06-16  John Levon  <moz@compsoc.man.ac.uk>
+
 	* various: remove spurious == false, == true
  
 2002-06-15  John Levon  <moz@compsoc.man.ac.uk>

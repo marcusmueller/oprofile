@@ -63,8 +63,10 @@ void validate_counter(int counter_mask, int & sort_by_counter)
 	if (sort_by_counter == -1) {
 		// get the first counter selected and use it as sort order
 		for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
-			if ((counter_mask & (1 << i)) != 0)
+			if ((counter_mask & (1 << i)) != 0) {
 				sort_by_counter = i;
+				break;
+			}
 		}
 	}
 

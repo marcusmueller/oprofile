@@ -63,7 +63,8 @@ opp_samples_files::opp_samples_files(string const & sample_file, int counter_)
 	}
 
 	if (first_file == OP_MAX_COUNTERS) {
-		fprintf(stderr, "Can not open any samples files for %s last error %s\n", sample_filename.c_str(), strerror(errno));
+		cerr << "Can not open any samples files for " << sample_filename
+			<< ". Last error " << strerror(errno) << endl;
 		exit(EXIT_FAILURE);
 	}
 
