@@ -93,13 +93,27 @@ void profile_t::add_sample_file(string const & filename, u32 offset)
 profile_t::iterator_pair
 profile_t::samples_range(unsigned int start, unsigned int end) const
 {
-	// FIXME: this is wrong since we use samples_range(0, ~0);
-	// as special constant to get the whole sample count. Fix here or
-	// caller ?
-	ordered_samples_t::const_iterator first =
-		ordered_samples.lower_bound(start - start_offset);
+	// if the image contains no symbol the vma range is [0 - filesize]
+	// in this case we can't substract start_offset else we will underflow
+	// and the iterator range will be empty.
+	if (start) {
+		start -= start_offset;
+	}
+	end -= start_offset;
+
+	ordered_samples_t::const_iterator first = 
+		ordered_samples.lower_bound(start);
 	ordered_samples_t::const_iterator last =
-		last = ordered_samples.lower_bound(end - start_offset);
+		last = ordered_samples.lower_bound(end);
+
+	return make_pair(const_iterator(first, start_offset),
+		const_iterator(last, start_offset));
+}
+
+profile_t::iterator_pair profile_t::samples_range() const
+{
+	ordered_samples_t::const_iterator first = ordered_samples.begin();
+	ordered_samples_t::const_iterator last = ordered_samples.end();
 
 	return make_pair(const_iterator(first, start_offset),
 		const_iterator(last, start_offset));

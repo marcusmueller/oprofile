@@ -1,5 +1,11 @@
 2003-06-08  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/profile.cpp: don't underflow start offset when the vma range
+	  is unknown
+	* pp/opreport.cpp: use samples_range() not samples_range(0, ~0)
+
+2003-06-08  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libpp/profile.h:
 	* libpp/profile.cpp: replace accumulate_samples() API by an iterator
 	  interface

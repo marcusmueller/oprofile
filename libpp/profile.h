@@ -56,7 +56,17 @@ public:
 	class const_iterator;
 	typedef pair<const_iterator, const_iterator> iterator_pair;
 
-	iterator_pair samples_range(unsigned int start, unsigned int end) const;
+	/**
+	 * @param start  start offset
+	 * @param end  end offset
+	 *
+	 * return an iterator pair to [start, end) range
+	 */
+	iterator_pair
+	samples_range(unsigned int start, unsigned int end) const;
+
+	/// return a pair of iterator for all samples
+	iterator_pair samples_range() const;
 
 private:
 
