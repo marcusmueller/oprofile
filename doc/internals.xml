@@ -77,6 +77,18 @@ profile results are a statistical approximation of which code caused how many of
 given event.
 </para>
 <para>
+Consider a simplified system that only executes two functions A and B. A
+takes one cycle to execute, whereas B takes 99 cycles. Imagine we run at
+100 cycles a second, and we've set the performance counter to create an
+interrupt after a set number of "events" (in this case an event is one
+clock cycle). It should be clear that the chances of the interrupt
+occurring in function A is 1/100, and 99/100 for function B. Thus, we
+statistically approximate the actual relative performance features of
+the two functions over time. This same analysis works for other types of
+events, providing that the interrupt is tied to the number of events
+occurring (that is, after N events, an interrupt is generated).
+</para>
+<para>
 There are typically more than one of these counters, so it's possible to set up profiling
 for several different event types. Using these counters gives us a powerful, low-overhead
 way of gaining performance metrics. If OProfile, or the CPU, does not support performance
@@ -182,14 +194,116 @@ information.
 
 <sect1 id ="performance-counters-ui">
 <title>Providing a user interface</title>
+
+<para>
+The performance counter registers need programming in order to set the
+type of event to count, etc. OProfile uses a standard model across all
+CPUs for defining these events as follows :
+</para>
+<informaltable frame="all">
+<tgroup cols='2'> 
+<tbody>
+<row><entry><option>event</option></entry><entry>The event type e.g. DATA_MEM_REFS</entry></row>
+<row><entry><option>unit mask</option></entry><entry>The sub-events to count (more detailed specification)</entry></row>
+<row><entry><option>counter</option></entry><entry>The hardware counter(s) that can count this event</entry></row>
+<row><entry><option>count</option></entry><entry>The reset value (how many events before an interrupt)</entry></row>
+<row><entry><option>kernel</option></entry><entry>Whether the counter should increment when in kernel space</entry></row>
+<row><entry><option>user</option></entry><entry>Whether the counter should increment when in user space</entry></row>
+</tbody>
+</tgroup>
+</informaltable>
+<para>
+The term "unit mask" is borrowed from the Intel architectures, and can
+further specify exactly when a counter is incremented (for example,
+cache-related events can be restricted to particular state transitions
+of the cache lines).
+</para>
+<para>
+All of the available hardware events and their details are specified in
+the textual files in the <filename>events</filename> directory. The
+syntax of these files should be fairly obvious. The user specifies the
+names and configuration details of the chosen counters via
+<command>opcontrol</command>. These are then written to the kernel
+module (in numerical form) via <filename>/dev/oprofile/N/</filename>
+where N is the physical hardware counter (some events can only be used
+on specific counters; OProfile hides these details from the user when
+possible). On IA64, the perfmon-based interface behaves somewhat
+differently, as described later.
+</para>
+
 </sect1>
 
-<sect1 id="performance-counters-setup">
-<title>Setting up the counters</title>
-</sect1>
+<sect1 id="performance-counters-programming">
+<title>Programming the performance counter registers</title>
 
-<sect1 id="performance-counters-start">
-<title>Starting, stopping, and disabling the counters</title>
+<para>
+We have described how the user interface fills in the desired
+configuration of the counters and transmits the information to the
+kernel. It is the job of the <function>-&gt;setup()</function> method
+to actually program the performance counter registers. Clearly, the
+details of how this is done is architecture-specific; it is also
+model-specific on many architectures. For example, i386 provides methods
+for each model type that programs the counter registers correctly
+(see the <filename>op_model_*</filename> files in
+<filename>arch/i386/oprofile</filename> for the details). The method
+reads the values stored in the virtual oprofilefs files and programs
+the registers appropriately, ready for starting the actual profiling
+session.
+</para>
+<para>
+The architecture-specific drivers make sure to save the old register
+settings before doing OProfile setup. They are restored when OProfile
+shuts down. This is useful, for example, on i386, where the NMI watchdog
+uses the same performance counter registers as OProfile; they cannot
+run concurrently, but OProfile makes sure to restore the setup it found
+before it was running.
+</para>
+<para>
+In addition to programming the counter registers themselves, other setup
+is often necessary. For example, on i386, the local APIC needs
+programming in order to make the counter's overflow interrupt appear as
+an NMI (non-maskable interrupt). This allows sampling (and therefore
+profiling) of regions where "normal" interrupts are masked, enabling
+more reliable profiles.
+</para>
+
+<sect2 id="performance-counters-start">
+<title>Starting and stopping the counters</title>
+<para>
+Initiating a profiling session is done via writing an ASCII '1'
+to the file <filename>/dev/oprofile/enable</filename>. This sets up the
+core, and calls into the architecture-specific driver to actually
+enable each configured counter. Again, the details of how this is
+done is model-specific (for example, the Athlon models can disable
+or enable on a per-counter basis, unlike the PPro models).
+</para>
+</sect2>
+
+<sect2>
+<title>IA64 and perfmon</title>
+<para>
+The IA64 architecture provides a different interface from the other
+architectures, using the existing perfmon driver. Register programming
+is handled entirely in user-space (see
+<filename>daemon/opd_perfmon.c</filename> for the details). A process
+is forked for each CPU, which creates a perfmon context and sets the
+counter registers appropriately via the
+<function>sys_perfmonctl</function> interface. In addition, the actual
+initiation and termination of the profiling session is handled via the
+same interface using <constant>PFM_START</constant> and
+<constant>PFM_STOP</constant>. On IA64, then, there are no oprofilefs
+files for the performance counters, as the kernel driver does not
+program the registers itself.
+</para>
+<para>
+Instead, the perfmon driver for OProfile simply registers with the
+OProfile core with an OProfile-specific UUID. During a profiling
+session, the perfmon core calls into the OProfile perfmon driver and
+samples are registered with the OProfile core itself as usual (with
+<function>oprofile_add_sample()</function>).
+</para>
+</sect2>
+
 </sect1>
 
 </chapter>
@@ -197,8 +311,101 @@ information.
 <chapter id="collecting-samples">
 <title>Collecting and processing samples</title>
 
+<sect1 id="receiving-interrupts">
+<title>Receiving interrupts</title>
+<para>
+Naturally, how the overflow interrupts are received is specific
+to the hardware architecture, unless we are in "timer" mode, where the
+logging routine is called directly from the standard kernel timer
+interrupt handler.
+</para>
+<para>
+On the i386 architecture, the local APIC is programmed such that when a
+counter overflows (that is, it receives an event that causes an integer
+overflow of the register value to zero), an NMI is generated. This calls
+into the general handler <function>do_nmi()</function>; because OProfile
+has registered itself as capable of handling NMI interrupts, this will
+call into the OProfile driver code in
+<filename>arch/i386/oprofile</filename>. Here, the saved PC value (the
+CPU saves the register set at the time of interrupt on the stack
+available for inspection) is extracted, and the counters are examined to
+find out which one generated the interrupt. Also determined is whether
+the system was inside kernel or user space at the time of the interrupt.
+These three pieces of information are then forwarded onto the OProfile
+core via <function>oprofile_add_sample()</function>. Finally, the
+counter values are reset to the chosen count value, to ensure another
+interrupt happens after another N events have occurred. Other
+architectures behave in a similar manner.
+</para>
+</sect1>
+ 
+<sect1 id="core-structure">
+<title>Core data structures</title>
+<para>
+Before considering what happens when we log a sample, we shall divert
+for a moment and look at the general structure of the data collection
+system.
+</para>
+<para>
+OProfile maintains a small buffer for storing the logged samples for
+each CPU on the system. Only this buffer is altered when we actually log
+a sample (remember, we may still be in an NMI context, so no locking is
+possible). The buffer is managed by a two-handed system; the "head"
+iterator dictates where the next sample data should be placed in the
+buffer. Of course, overflow of the buffer is possible, in which case
+the sample is discarded.
+</para>
+<para>
+It is critical to remember that at this point, the PC value is an
+absolute value, and is therefore only meaningful in the context of which
+task it was logged against. Thus, these per-CPU buffers also maintain
+details of which task each logged sample is for, as described in the
+next section. In addition, we store whether the sample was in kernel
+space or user space (on some architectures and configurations, the address
+space is not sub-divided neatly at a specific PC value, so we must store
+this information).
+</para>
+<para>
+As well as these small per-CPU buffers, we have a considerably larger
+single buffer. This holds the data that is eventually copied out into
+the OProfile daemon. On certain system events, the per-CPU buffers are
+processed and entered (in mutated form) into the main buffer, known in
+the source as the "event buffer". The "tail" iterator indicates the
+point from which the CPU may be read, up to the position of the "head"
+iterator. This provides an entirely lock-free method for extracting data
+from the CPU buffers. This process is described in detail later in this chapter.
+</para>
+</sect1>
+
 <sect1 id="logging-sample">
 <title>Logging a sample</title>
+<para>
+As mentioned, the sample is logged into the buffer specific to the
+current CPU. The CPU buffer is a simple array of pairs of unsigned long
+values; for a sample, they hold the PC value and the counter for the
+sample. (The counter value is later used to translate back into the relevant
+event type the counter was programmed to).
+</para>
+<para>
+In addition to logging the sample itself, we also log task switches.
+This is simply done by storing the address of the last task to log a
+sample on that CPU in a data structure, and writing a task switch entry
+into the buffer if the new value of <function>current()</function> has
+changed. Note that later we will directly de-reference this pointer;
+this imposes certain restrictions on when and how the CPU buffers need
+to be processed.
+</para>
+<para>
+Finally, as mentioned, we log whether we have changed between kernel and
+userspace using a similar method. Both of these variables
+(<varname>last_task</varname> and <varname>last_is_kernel</varname>) are
+reset when the CPU buffer is read.
+</para>
+</sect1>
+
+<sect1 id="synchronising-buffers">
+<title>Synchronising the CPU buffers to the event buffer</title>
+<!-- FIXME: update when percpu patch goes in -->
 </sect1>
 
 <sect1 id="finding-dentry">
