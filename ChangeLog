@@ -1,3 +1,18 @@
+2002-05-22  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* configure.in:
+	* Makefile.in:
+	* libopt++/*: new directory, command line options handling
+	
+	* make.common.in:
+	* pp/Makefile.in:
+	* pp/op_merge.cpp:
+	* pp/op_time.cpp:
+	* pp/op_to_source.cpp:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp: use libpopt++
+
 2002-05-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update

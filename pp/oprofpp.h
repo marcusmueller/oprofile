@@ -67,12 +67,6 @@ void op_print_event(std::ostream & out, int counter_nr, op_cpu cpu_type,
 		    u8 type, u8 um, u32 count);
 
 /**
- * add to the exclude symbol list the symbols contained in the comma
- * separated list of symbols through the gloval var exclude_symbols_str
- */
-void handle_exclude_symbol_option();
-
-/**
  * process command line options
  * @param filename a filename passed on the command line, can be NULL
  * @param optcon poptContext to allow better message handling
@@ -94,18 +88,23 @@ void handle_exclude_symbol_option();
  *
  * post-condition: sample_file and image_file are setup
  */
-void opp_treat_options(char const * filename, poptContext optcon,
+void opp_treat_options(std::string const & filename, 
 		       std::string & image_file, std::string & sample_file,
 		       int & counter, int & sort_by_counter);
 
 /**
  * quit with error
- * @param optcon the popt context
  * @param err error to show
  *
  * err may be NULL
  */
-void quit_error(poptContext optcon, char const *err);
+void quit_error(char const *err);
+
+/**
+ * remangle - convert a filename into the related sample file name
+ * @param image the image filename
+ */
+std::string remangle(std::string const & filename);
 
 /**
  * convert a sample filenames into the related image file name
@@ -158,16 +157,16 @@ uint counter_mask(const std::string &);
 void check_mtime(opp_samples_files const & samples, std::string image_name);
 
 /** control the behavior of verbprintf() */
-extern int verbose;
+extern bool verbose;
 /** control the behavior of demangle_symbol() */
-extern int demangle;
+extern bool demangle;
 
 /** command line option specifying a sample filename */
-extern char const *samplefile;
+extern std::string samplefile;
 /** command line option specifying an image filename */
-extern char const *imagefile;
+extern std::string imagefile;
 /** command line option specifying the set of symbols to ignore */
-extern char const * exclude_symbols_str;
+extern std::vector<std::string> exclude_symbols;
 
 //---------------------------------------------------------------------------
 /** A simple container of counter. Can hold OP_MAX_COUNTERS counters */

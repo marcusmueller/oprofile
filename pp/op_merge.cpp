@@ -22,7 +22,7 @@
 #include "oprofpp.h"
  
 #include "version.h"
-#include "op_popt.h"
+#include "popt_options.h"
 #include "file_manip.h"
 #include "db.h"
 
@@ -36,15 +36,8 @@ using std::cerr;
 using std::endl;
 using std::ifstream;
 
-static int showvers;
 static int counter;
-
-static struct poptOption options[] = {
-	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
-	{ "use-counter", 'c', POPT_ARG_INT, &counter, 0, "use counter", "counter nr", },
-	POPT_AUTOHELP
-	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
-};
+static option<int> counter_opt(counter, "use-counter", 'c', "use counter", "counter nr");
 
 /**
  * get_options - process command line
@@ -56,37 +49,12 @@ static struct poptOption options[] = {
  */
 static void get_options(int argc, char const * argv[], vector<string> & images)
 {
-	poptContext optcon;
-
-	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
-
-	if (showvers) {
-		show_version(argv[0]);
-	}
-
-	char const * file;
-	while ((file = poptGetArg(optcon)) != 0) {
-		images.push_back(file);
-	}
+	parse_options(argc, argv, images);
 
 	if (images.size() == 0) {
-		quit_error(optcon, "Neither samples filename or image filename"
-			   " given on command line\n\n");
+		cerr << "Neither samples filename or image filename"
+		     <<	" given on command line\n\n";
 	}
-
-	poptFreeContext(optcon);
-}
-
-/**
- * That's the third version of that :/
- **/
-static string mangle_filename(const string & filename)
-{
-	string result = filename;
-
-	replace(result.begin(), result.end(), '/', '}');
-
-	return result;
 }
 
 /**
@@ -118,7 +86,7 @@ static void create_file_list(list<string> & result,
 		/* get from the image name all samples on the form of
 		 * base_dir*}}mangled_name{{{images_filename) */
 		ostringstream os;
-		os << "*}}" << mangle_filename(images_filename[0])
+		os << "*}}" << remangle(images_filename[0])
 		   << "#" << counter;
 
 		get_sample_file_list(result, OP_SAMPLES_DIR, os.str());
@@ -159,8 +127,7 @@ static void create_file_list(list<string> & result,
  *
  * all error are fatal
  */ 
-static void
-check_samples_files_list(const list<string> & filenames)
+static void check_samples_files_list(const list<string> & filenames)
 {
 	if (filenames.empty())
 		return;
@@ -203,18 +170,19 @@ static void output_files(const std::string & filename,
 	if (filenames.empty())
 		return;
 
-	db_tree_t dest;
-
-	db_open(&dest, filename.c_str(), DB_RDWR, sizeof(struct opd_header));
-
 	list<string>::const_iterator it(filenames.begin());
 
+	// the first file merged is copied as it so opd_header is initialized
 	{
 		ofstream out(filename.c_str());
 		ifstream in(it->c_str());
 
 		out << in.rdbuf();
 	}
+
+	db_tree_t dest;
+
+	db_open(&dest, filename.c_str(), DB_RDWR, sizeof(struct opd_header));
 
 	for (++it ; it != filenames.end() ; ++it) {
 		db_tree_t src;

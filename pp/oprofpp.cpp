@@ -16,7 +16,7 @@
 
 #include "version.h"
 #include "oprofpp.h"
-#include "op_popt.h"
+#include "popt_options.h"
 #include "op_libiberty.h"
 #include "op_fileio.h"
 #include "file_manip.h"
@@ -29,44 +29,34 @@ using std::cerr;
 using std::ifstream;
 using std::list;
  
-static char * ctr_str;
-static int showvers;
+static string ctr_str;
 static int sort_by_counter = -1;
-static char *gproffile;
-static char *symbol;
-static int list_symbols;
-static int output_linenr_info;
-static int reverse_sort;
-static int show_shared_libs;
-static char * output_format;
-static int list_all_symbols_details;
+static string gproffile;
+static string symbol;
+static bool list_symbols;
+static bool output_linenr_info;
+static bool reverse_sort;
+static bool show_shared_libs;
+static string output_format;
+static bool list_all_symbols_details;
 
 static OutSymbFlag output_format_flags;
 
-static poptOption options[] = {
-	{ "samples-file", 'f', POPT_ARG_STRING, &samplefile, 0, "image sample file", "file", },
-	{ "image-file", 'i', POPT_ARG_STRING, &imagefile, 0, "image file", "file", },
-	{ "list-symbols", 'l', POPT_ARG_NONE, &list_symbols, 0, "list samples by symbol", NULL, },
-	{ "dump-gprof-file", 'g', POPT_ARG_STRING, &gproffile, 0, "dump gprof format file", "file", },
-	{ "list-symbol", 's', POPT_ARG_STRING, &symbol, 0, "give detailed samples for a symbol", "symbol", },
-	{ "demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
-	{ "counter", 'c', POPT_ARG_STRING, &ctr_str, 0, "which counter to display", "counter number[,counter nr]", }, 
-	{ "sort", 'C', POPT_ARG_INT, &sort_by_counter, 0, "which counter to use for sampels sort", "counter nr", }, 
-	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
-	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
-	{ "list-all-symbols-details", 'L', POPT_ARG_NONE, &list_all_symbols_details, 0, "list samples for all symbols", NULL, },
-	{ "output-linenr-info", 'o', POPT_ARG_NONE, &output_linenr_info, 0, "output filename:linenr info", NULL },
-	{ "reverse", 'r', POPT_ARG_NONE, &reverse_sort, 0,
-	  "reverse sort order", NULL, },
-	{ "exclude-symbol", 'e', POPT_ARG_STRING, &exclude_symbols_str, 0, "exclude these comma separated symbols", "symbol_name" },
-	{ "show-shared-libs", 'k', POPT_ARG_NONE, &show_shared_libs, 0,
-	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
-	// FIXME: clarify this
-	{ "output-format", 't', POPT_ARG_STRING, &output_format, 0,
-	  "choose the output format", "output-format strings", },
-	POPT_AUTOHELP
-	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
-};
+static option<string> samplefile_opt(samplefile, "samples-file", 'f', "image sample file", "file");
+static option<string> imagefile_opt(imagefile, "image-file", 'i', "image file", "file");
+static option<void> list_symbols_opt(list_symbols, "list-symbols", 'l', "list samples by symbol");
+static option<string> gproffile_opt(gproffile, "dump-gprof-file", 'g', "dump gprof format file", "file");
+static option<string> symbol_opt(symbol, "list-symbol", 's', "give detailed samples for a symbol", "symbol");
+static option<void> demangle_opt(demangle, "demangle", 'd', "demangle GNU C++ symbol names");
+static option<string> ctr_str_opt(ctr_str, "counter", 'c', "which counter to display", "counter number[,counter nr]");
+static option<int> sort_by_counter_opt(sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr");
+static option<void> verbose_opt(verbose, "verbose", 'V', "verbose output");
+static option<void> list_all_symbols_details_opt(list_all_symbols_details, "list-all-symbols-details", 'L', "list samples for all symbols");
+static option<void> output_linenr_info_opt(output_linenr_info, "output-linenr-info", 'o', "output filename:linenr info");
+static option<void> reverse_sort_opt(reverse_sort, "reverse", 'r', "reverse sort order");
+static option< vector<string> > exclude_symbols_opt(exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name");
+static option<void> show_shared_libs_opt(show_shared_libs, "show-shared-libs", 'k', "show details for shared libs. Only meaningfull if you have profiled with --separate-samples");
+static option<string> output_format_opt(output_format, "output-format", 't', "choose the output format", "output-format strings");
 
 /**
  * get_options - process command line
@@ -85,50 +75,43 @@ static poptOption options[] = {
 static void opp_get_options(int argc, const char **argv, string & image_file,
 			    string & sample_file, int & counter)
 {
-	poptContext optcon;
-	char const * file;
+	/* non-option file, either a sample or binary image file */
+	string file;
 	
-	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
+	parse_options(argc, argv, file);
 
-	if (showvers) {
-		show_version(argv[0]);
-	}
- 
 	if (!list_all_symbols_details && !list_symbols && 
-	    !gproffile && !symbol)
-		quit_error(optcon, "oprofpp: no mode specified. What do you want from me ?\n");
+	    gproffile.empty() && symbol.empty())
+		quit_error("oprofpp: no mode specified. What do you want from me ?\n");
 
 	/* check only one major mode specified */
-	if ((list_all_symbols_details + list_symbols + (gproffile != 0) + (symbol != 0)) > 1)
-		quit_error(optcon, "oprofpp: must specify only one output type.\n");
+	if ((list_all_symbols_details + list_symbols + !gproffile.empty() + !symbol.empty()) > 1)
+		quit_error("oprofpp: must specify only one output type.\n");
 
-	if (output_linenr_info && !list_all_symbols_details && !symbol && !list_symbols)
-		quit_error(optcon, "oprofpp: cannot list debug info without -L or -s option.\n");
+	if (output_linenr_info && !list_all_symbols_details && symbol.empty() && !list_symbols)
+		quit_error("oprofpp: cannot list debug info without -L, -l or -s option.\n");
 
-	if (show_shared_libs && (symbol || gproffile)) {
-		quit_error(optcon, "oprofpp: you cannot specify --show-shared-libs with --dump-gprof-file or --list-symbol output type.\n");
+	if (show_shared_libs && (!symbol.empty() || !gproffile.empty())) {
+		quit_error("oprofpp: you cannot specify --show-shared-libs with --dump-gprof-file or --list-symbol output type.\n");
 	}
  
 	if (reverse_sort && !list_symbols)
-		quit_error(optcon, "oprofpp: reverse sort can only be used with -l option.\n");
+		quit_error("oprofpp: reverse sort can only be used with -l option.\n");
  
-	/* non-option file, either a sample or binary image file */
-	file = poptGetArg(optcon);
-
 	if (show_shared_libs)
 		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_image_name);
 	if (output_linenr_info)
 		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_linenr_info);
 
-	if (output_format == 0) {
+	if (output_format.empty()) {
 		output_format = "hvspn";
 	} else {
-		if (!list_symbols && !list_all_symbols_details && !symbol) {
-			quit_error(optcon, "oprofpp: --output-format can be used only without --list-symbols or --list-all-symbols-details.\n");
+		if (!list_symbols && !list_all_symbols_details && symbol.empty()) {
+			quit_error("oprofpp: --output-format can be used only without --list-symbols or --list-all-symbols-details.\n");
 		}
 	}
 
-	if (list_symbols || list_all_symbols_details || symbol) {
+	if (list_symbols || list_all_symbols_details || !symbol.empty()) {
 		OutSymbFlag fl =
 			OutputSymbol::ParseOutputOption(output_format);
 
@@ -141,15 +124,10 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | fl);
 	}
 
-	if (!ctr_str)
-		ctr_str = "";
-
 	counter = counter_mask(ctr_str);
 
-	opp_treat_options(file, optcon, image_file, sample_file,
+	opp_treat_options(file, image_file, sample_file,
 			  counter, sort_by_counter);
-
-	poptFreeContext(optcon);
 }
 
 /**
@@ -245,7 +223,7 @@ static void do_dump_gprof(op_bfd & abfd,
 	u16 * hist;
 	u32 histsize;
 
-	fp=op_open_file(gproffile, "w");
+	fp=op_open_file(gproffile.c_str(), "w");
 
 	op_write_file(fp,&hdr, sizeof(gmon_hdr));
 
@@ -325,7 +303,7 @@ int main(int argc, char const *argv[])
 
 	opp_get_options(argc, argv, image_file, sample_file, counter);
 
-	if (gproffile) {
+	if (!gproffile.empty()) {
 		opp_samples_files samples_files(sample_file, counter);
 		check_mtime(samples_files, image_file);
 
@@ -338,7 +316,7 @@ int main(int argc, char const *argv[])
 	bool add_zero_sample_symbols = list_all_symbols_details == 0;
 	output_format_flags = 
 		static_cast<OutSymbFlag>(output_format_flags | osf_show_all_counters);
-	if (symbol || list_all_symbols_details)
+	if (!symbol.empty() || list_all_symbols_details)
 		output_format_flags = 
 			static_cast<OutSymbFlag>(output_format_flags | osf_details);
 
@@ -416,8 +394,7 @@ int main(int argc, char const *argv[])
 	}
 
 	if (first_file == true) {
-		cerr << "oprofpp: Cannot locate any samples file.\n";
-		exit(EXIT_FAILURE);
+		quit_error("oprofpp: Cannot locate any samples file.\n");
 	}
 
 	OutputSymbol out(samples, counter);
@@ -425,7 +402,7 @@ int main(int argc, char const *argv[])
 
 	if (list_symbols)
 		do_list_symbols(samples, out, sort_by_counter);
-	else if (symbol)
+	else if (!symbol.empty())
 		do_list_symbol(samples, out);
 	else if (list_all_symbols_details)
 		do_list_symbols_details(samples, out, sort_by_counter);

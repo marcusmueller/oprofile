@@ -2,9 +2,9 @@
 
 # take care: order of sub-dir build is meaningfull.
 
-USER_SUBDIRS=libutil libutil++ libop libdb dae utils pp gui oprof_report doc
+USER_SUBDIRS=libutil libutil++ libopt++ libop libdb dae utils pp gui oprof_report doc
 SUBDIRS=$(USER_SUBDIRS) module
- 
+
 all:
 	for i in $(SUBDIRS) ; \
 	do \

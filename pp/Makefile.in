@@ -23,10 +23,10 @@ OP_TIME_TARGET=op_time
 OP_MERGE_TARGET=op_merge
 TARGET=$(OPROFPP_TARGET) $(OP_TO_SOURCE_TARGET) $(OP_TIME_TARGET) $(OP_MERGE_TARGET)
 
-OPROFPP_LIBS=-lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
-OP_TO_SOURCE_LIBS=-lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
-OP_TIME_LIBS=-lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
-OP_MERGE_LIBS=-lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
+OPROFPP_LIBS=-lopt++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
+OP_TO_SOURCE_LIBS=-lopt++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
+OP_TIME_LIBS=-lopt++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
+OP_MERGE_LIBS=-lopt++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
 
 all: $(TARGET)
 

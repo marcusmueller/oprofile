@@ -24,7 +24,7 @@
 
 #include "version.h"
 #include "op_libiberty.h"
-#include "op_popt.h"
+#include "popt_options.h"
  
 #include "oprofpp.h"
 #include "samples_container.h"
@@ -92,48 +92,32 @@ struct sort_by_counter_t {
 typedef multimap<counter_array_t, map_t::const_iterator, sort_by_counter_t>
   sorted_map_t;
 
-static char const * counter_str;
-static int counter;
+static string session;
+static string counter_str("0");
+static string output_format;
+static bool list_symbols;
+static bool show_image_name;
+static vector<string> path;
+static vector<string> recursive_path;
+static bool reverse_sort;
+static bool show_shared_libs;
 static int sort_by_counter = -1;
-static int showvers;
-static int reverse_sort;
-static int show_shared_libs;
-static int list_symbols;
-static int show_image_name;
-static char * output_format;
-static char * samples_dir;
-static char const * session;
-static char const * path;
-static char const * recursive_path;
-
+static string samples_dir;
+static int counter;
 static OutSymbFlag output_format_flags;
 
-static struct poptOption options[] = {
-	{ "session", 's', POPT_ARG_STRING, &session, 0, "session to use", "name", }, 
-	{ "counter", 'c', POPT_ARG_STRING, &counter_str, 0,
-	  "which counter to use", "counter nr,[counter nr]", },
-	{ "sort", 'C', POPT_ARG_INT, &sort_by_counter, 0, "which counter to use for sampels sort", "counter nr", }, 
-	{ "show-shared-libs", 'k', POPT_ARG_NONE, &show_shared_libs, 0,
-	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
-	{ "demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
-	{ "show-image-name", 'n', POPT_ARG_NONE, &show_image_name, 0, "show the image name from where come symbols", NULL, },
-	{ "list-symbols", 'l', POPT_ARG_NONE, &list_symbols, 0, "list samples by symbol", NULL, },
-	{ "reverse", 'r', POPT_ARG_NONE, &reverse_sort, 0,
-	  "reverse sort order", NULL, },
-	{ "exclude-symbol", 'e', POPT_ARG_STRING, &exclude_symbols_str, 0, "exclude these comma separated symbols", "symbol_name" },
-	// FIXME: clarify this
-	{ "output-format", 't', POPT_ARG_STRING, &output_format, 0,
-	  "choose the output format", "output-format strings", },
-	{ "path", 'p', POPT_ARG_STRING, &path, 0,
-	  "add path for retrieving image", "path_name[,path_name]", },
-	{ "recursive-path", 'P', POPT_ARG_STRING, &recursive_path, 0,
-	  "add path for retrieving image recursively", "path_name[,path_name]", },
-	{ "output-format", 't', POPT_ARG_STRING, &output_format, 0,
-	  "choose the output format", "output-format strings", },
-	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
-	POPT_AUTOHELP
-	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
-};
+static option<string> session_opt(session, "session", 's', "session to use", "name");
+static option<string> counter_str_opt(counter_str, "counter", 'c', "which counter to use", "counter_nr[,counter_nr]");
+static option<string> output_format_opt(output_format, "output-format", 't', "choose the output format", "output-format strings");
+static option<void> list_symbols_opt(list_symbols, "list-symbols", 'l', "list samples by symbol");
+static option<void> show_image_name_opt(show_image_name, "show-image-name", 'n', "show the image name from where come symbols");
+static option< vector<string> > path_opt(path, "path", 'p', "add path for retrieving image", "path_name[,path_name]");
+static option< vector<string> > recursive_path_opt(recursive_path, "recursive-path", 'P', "add path for retrieving image recursively", "path_name[,path_name]");
+static option<void> reverse_sort_opt(reverse_sort, "reverse", 'r', "reverse sort order");
+static option<void> show_shared_libs_opt(show_shared_libs, "show-shared-libs", 'k', "show details for shared libs. Only meaningfull if you have profiled with --separate-samples");
+static option<int> sort_by_counter_opt(sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr");
+static option< vector<string> > exclude_symbols_opt(exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name");
+static option<void> demangle_opt(demangle, "demangle", 'd', "demangle GNU C++ symbol names");
 
 /// associate filename with directory name where filename exist. Filled
 /// through the -p/-P option to allow retrieving of image name when samples
@@ -149,16 +133,13 @@ static alt_filename_t alternate_filename;
  * the set of alternative filename used to retrieve image name when
  * a samples image name directory is not accurate
  */
-void add_to_alternate_filename(const string & path_name, bool recursive)
+void add_to_alternate_filename(const vector<string> & path_names,
+			       bool recursive)
 {
-	vector<string> path_names;
-
-	separate_token(path_names, path_name, ',');
-
-	vector<string>::iterator path;
+	vector<string>::const_iterator path;
 	for (path = path_names.begin() ; path != path_names.end() ; ++path) {
 		list<string> file_list;
-		create_file_list(file_list, path_name, "*", recursive);
+		create_file_list(file_list, *path, "*", recursive);
 		list<string>::const_iterator it;
 		for (it = file_list.begin() ; it != file_list.end() ; ++it) {
 			typedef alt_filename_t::value_type value_t;
@@ -182,19 +163,17 @@ static void handle_session_options(void)
  * This should eventually be shared amongst all programs
  * to take session names.
  */
-	if (!session) {
+	if (session.empty()) {
 		samples_dir = OP_SAMPLES_DIR;
 		return;
 	}
 
 	if (session[0] == '/') {
-		samples_dir = (char*)session;
+		samples_dir = session;
 		return;
 	}
 
-	samples_dir = (char*)xmalloc(strlen(OP_SAMPLES_DIR) + strlen(session) + 1);
-	strcpy(samples_dir, OP_SAMPLES_DIR);
-	strcat(samples_dir, session);
+	samples_dir = OP_SAMPLES_DIR + session;
 }
 
  
@@ -207,40 +186,28 @@ static void handle_session_options(void)
  */
 static void get_options(int argc, char const * argv[])
 {
-	poptContext optcon;
-	char const * file;
+	string file;
+	parse_options(argc, argv, file);
 
-	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
-
-	if (showvers) {
-		show_version(argv[0]);
-	}
-
-	// non-option file, must be a session name
-	file = poptGetArg(optcon);
-	if (file) {
+	if (file.length())
 		session = file;
-	}
 
 	handle_session_options();
  
-	if (!counter_str)
-		counter_str = "0";
-
 	counter = counter_mask(counter_str);
 
 	validate_counter(counter, sort_by_counter);
 
-	if (output_format == 0) {
+	if (output_format.empty()) {
 		output_format = "hvspni";
 	} else {
 		if (!list_symbols) {
-			quit_error(optcon, "op_time: --output-format can be used only with --list-symbols.\n");
+			quit_error("op_time: --output-format can be used only with --list-symbols.\n");
 		}
 	}
 
-	if (exclude_symbols_str && !list_symbols) {
-			quit_error(optcon, "op_time: --exclude-symbol can be used only with --list-symbols.\n");
+	if (exclude_symbols.size() && !list_symbols) {
+		quit_error("op_time: --exclude-symbol can be used only with --list-symbols.\n");
 	}
 
 	if (list_symbols) {
@@ -259,17 +226,9 @@ static void get_options(int argc, char const * argv[])
 	if (show_image_name)
 		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_image_name);
 
-	if (path) {
-		add_to_alternate_filename(path, false);
-	}
+	add_to_alternate_filename(path, false);
 
-	if (recursive_path) {
-		add_to_alternate_filename(recursive_path, true);
-	}
-
-	handle_exclude_symbol_option();
-
-	poptFreeContext(optcon);
+	add_to_alternate_filename(recursive_path, true);
 }
 
 /**
@@ -665,7 +624,7 @@ static void output_symbols_count(map_t& files, int counter)
 
 	out.SetFlag(output_format_flags);
 
-	out.Output(cout, symbols, reverse_sort == 0);
+	out.Output(cout, symbols, reverse_sort == false);
 }
 
 /**
@@ -676,9 +635,8 @@ int main(int argc, char const * argv[])
 	get_options(argc, argv);
 
 	if (list_symbols && show_shared_libs) {
-		cerr << "You can't specifiy --show-shared-libs and "
-		     << "--list-symbols together" << endl;
-		exit(EXIT_FAILURE);
+		quit_error("You can't specifiy --show-shared-libs and "
+			   "--list-symbols together.\n");
 	}
 
 	/* TODO: allow as op_merge to specify explicitly name of samples

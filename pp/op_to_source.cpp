@@ -19,7 +19,7 @@
 
 #include <stdio.h>
 
-#include "op_popt.h"
+#include "popt_options.h"
 
 using std::vector;
 using std::string;
@@ -777,38 +777,29 @@ bool output::treat_input(const string & image_name, const string & sample_file)
 
 static int with_more_than_samples;
 static int until_more_than_samples;
-static int showvers;
 static int sort_by_counter = -1;
-static int assembly;
-static int source_with_assembly;
-static char const * source_dir;
-static char const * output_dir;
-static char const * output_filter;
-static char const * no_output_filter;
+static bool assembly;
+static bool source_with_assembly;
+static string source_dir;
+static string output_dir;
+static string output_filter;
+static string no_output_filter;
 
 /* -k is reserved for --show-shared-libs */
-static struct poptOption options[] = {
-	{ "samples-file", 'f', POPT_ARG_STRING, &samplefile, 0, "image sample file", "file", },
-	{ "image-file", 'i', POPT_ARG_STRING, &imagefile, 0, "image file", "file", },
-	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
-	{ "demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
-	{ "with-more-than-samples", 'w', POPT_ARG_INT, &with_more_than_samples, 0,
-	  "show all source file if the percent of samples in this file is more than argument", "[0-100]" },
-	{ "until-more-than-samples", 'm', POPT_ARG_INT, &until_more_than_samples, 0,
-	  "show all source files until the percent of samples specified is reached", "[0-100]" },
-	{ "sort-by-counter", 'c', POPT_ARG_INT, &sort_by_counter, 0,
-	  "sort by counter", "counter nr", },
-	{ "source-dir", 0, POPT_ARG_STRING, &source_dir, 0, "source directory", "directory name" },
-	{ "output-dir", 0, POPT_ARG_STRING, &output_dir, 0, "output directory", "directory name" },
-        { "output", 0, POPT_ARG_STRING, &output_filter, 0, "output filename filter", "filter string" },
-        { "no-output", 0, POPT_ARG_STRING, &no_output_filter, 0, "no output filename filter", "filter string" },
-	{ "assembly", 'a', POPT_ARG_NONE, &assembly, 0, "output assembly code", NULL },
-	{ "source-with-assembly", 's', POPT_ARG_NONE, &source_with_assembly, 0, "output assembly code mixed with source", NULL },
-	{ "--exclude-symbol", 'e', POPT_ARG_STRING, &exclude_symbols_str, 0, "exclude these comma separated symbols", "symbol_name" },
-	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
-	POPT_AUTOHELP
-	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
-};
+static option<string> samplefile_opt(samplefile, "samples-file", 'f', "image sample file", "file");
+static option<string> imagefile_opt(imagefile, "image-file", 'i', "image file", "file");
+static option<void> verbose_opt(verbose, "verbose", 'V', "verbose output");
+static option<void> demangle_opt(demangle, "demangle", 'd', "demangle GNU C++ symbol names");
+static option<int> with_more_than_samples_opt(with_more_than_samples, "with-more-than-samples", 'w', "show all source file if the percent of samples in this file is more than argument", "[0-100]");
+static option<int> until_more_than_sampels_opt(until_more_than_samples, "until-more-than-samples", 'm', "show all source files until the percent of samples specified is reached", "[0-100]");
+static option<int> sort_by_counter_opt(sort_by_counter, "sort-by-counter", 'c', "sort by counter", "counter nr");
+static option<string> source_dir_opt(source_dir, "source-dir", '\0', "source directory", "directory name");
+static option<string> output_dir_opt(output_dir, "output-dir", '\0', "output directory", "directory name");
+static option<string> output_filter_opt(output_filter, "output", '\0', "output filename filter", "filter string");
+static option<string> no_output_filter_opt(no_output_filter, "no-output", '\0', "no output filename filter", "filter string");
+static option<void> assembly_opt(assembly, "assembly", 'a', "output assembly code");
+static option<void> source_with_asssembly_opt(source_with_assembly, "source-with-assembly", 's', "output assembly code mixed with source");
+static option< vector<string> > exclude_symbols_opt(exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name");
 
 /**
  * get_options - process command line
@@ -824,26 +815,21 @@ static void get_options(int argc, char const * argv[],
 			string & image_name, string & sample_file,
 			int & counter)
 {
-	poptContext optcon;
+	/* non-option file, either a sample or binary image file */
+	string file;
 
-	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
-
-	if (showvers) {
-		show_version(argv[0]);
-	}
+	parse_options(argc, argv, file);
 
 	if (with_more_than_samples && until_more_than_samples) {
 		fprintf(stderr, "op_to_source: --with-more-than-samples and -until-more-than-samples can not specified together\n");
 		exit(EXIT_FAILURE);
 	}
 
-	/* non-option file, either a sample or binary image file */
-	char const * file = poptGetArg(optcon);
+	if (output_filter.empty())
+		output_filter = "*";
 
-	opp_treat_options(file, optcon, image_name, sample_file,
+	opp_treat_options(file, image_name, sample_file,
 			  counter, sort_by_counter);
-
-	poptFreeContext(optcon);
 }
 
 //---------------------------------------------------------------------------
@@ -889,10 +875,10 @@ int main(int argc, char const * argv[])
 			      threshold_percent,
 			      do_until_more_than_samples,
 			      sort_by_counter,
-			      output_dir ? output_dir : "",
-			      source_dir ? source_dir : "",
-			      output_filter ? output_filter : "*",
-			      no_output_filter ? no_output_filter : "",
+			      output_dir,
+			      source_dir,
+			      output_filter,
+			      no_output_filter,
 			      assembly, source_with_assembly, -1);
 
 		if (output.treat_input(image_name, sample_file) == false)

@@ -36,12 +36,11 @@ using std::ostream;
 using std::cerr;
 using std::endl;
 
-int verbose;
-char const *samplefile;
-char const * imagefile;
-int demangle;
-char const * exclude_symbols_str;
-static vector<string> exclude_symbols;
+bool verbose;
+string samplefile;
+string imagefile;
+bool demangle;
+vector<string> exclude_symbols;
 
 void op_print_event(ostream & out, int counter_nr, op_cpu cpu_type,
 		    u8 type, u8 um, u32 count)
@@ -82,24 +81,13 @@ void verbprintf(char const * fmt, ...)
  * remangle - convert a filename into the related sample file name
  * @param image the image filename
  */
-static char *remangle(char const * image)
+string remangle(string const & filename)
 {
-	char *file;
-	char *c; 
+	string result = filename;
 
-	file = (char *)xmalloc(strlen(OP_SAMPLES_DIR) + strlen(image) + 1);
-	
-	strcpy(file, OP_SAMPLES_DIR);
-	c = &file[strlen(file)];
-	strcat(file, image);
+	replace(result.begin(), result.end(), '/', OPD_MANGLE_CHAR);
 
-	while (*c) {
-		if (*c == '/')
-			*c = OPD_MANGLE_CHAR;
-		c++;
-	}
-	
-	return file;
+	return result;
 }
 
 /**
@@ -137,15 +125,13 @@ bool is_excluded_symbol(const std::string & symbol)
 /**
  * quit_error - quit with error
  * @param err error to show
- * @param optcon the popt context
  *
  * err may be NULL
  */
-void quit_error(poptContext optcon, char const *err)
+void quit_error(char const *err)
 {
 	if (err)
 		cerr << err; 
-	poptPrintHelp(optcon, stderr, 0);
 	exit(EXIT_FAILURE);
 }
 
@@ -178,19 +164,8 @@ void validate_counter(int counter_mask, int & sort_by_counter)
 }
 
 /**
- * add to the exclude symbol list the symbols contained in the comma
- * separated list of symbols through the gloval var exclude_symbols_str
- */
-void handle_exclude_symbol_option()
-{
-	if (exclude_symbols_str)
-		separate_token(exclude_symbols, exclude_symbols_str, ',');  
-}
- 
-/**
  * opp_treat_options - process command line options
  * @param file a filename passed on the command line, can be %NULL
- * @param optcon poptContext to allow better message handling
  * @param image_file where to store the image file name
  * @param sample_file ditto for sample filename
  * @param counter where to put the counter command line argument
@@ -213,41 +188,36 @@ void handle_exclude_symbol_option()
  *
  * post-condition: sample_file and image_file are setup
  */
-void opp_treat_options(char const * file, poptContext optcon,
+void opp_treat_options(string const & file,
 		       string & image_file, string & sample_file,
 		       int & counter, int & sort_by_counter)
 {
 	char *file_ctr_str;
 	int temp_counter;
 
-	/* add to the exclude symbol list the symbols contained in the comma
-	 * separated list of symbols */
-	handle_exclude_symbol_option();
+	if (!imagefile.empty())
+		imagefile = relative_to_absolute_path(imagefile);
 
-	/* some minor memory leak from the next calls */
-	if (imagefile)
-		imagefile = op_relative_to_absolute_path(imagefile, NULL);
+	if (!samplefile.empty())
+		samplefile = relative_to_absolute_path(samplefile);
 
-	if (samplefile)
-		samplefile = op_relative_to_absolute_path(samplefile, NULL);
-
-	if (file) {
-		if (imagefile && samplefile) {
-			quit_error(optcon, "oprofpp: too many filenames given on command line:" 
+	if (!file.empty()) {
+		if (!imagefile.empty() && !samplefile.empty()) {
+			quit_error("oprofpp: too many filenames given on command line:" 
 				"you can specify at most one sample filename"
 				" and one image filename.\n");
 		}
 
-		file = op_relative_to_absolute_path(file, NULL);
-		if (strchr(file, OPD_MANGLE_CHAR))
-			samplefile = file;
+		string temp = relative_to_absolute_path(file);
+		if (temp.find_first_of(OPD_MANGLE_CHAR) != string::npos)
+			samplefile = temp;
 		else
-			imagefile = file;
+			imagefile = temp;
 	}
 
-	if (!samplefile) { 
-		if (!imagefile) { 
-			quit_error(optcon, "oprofpp: no samples file specified.\n");
+	if (samplefile.empty()) { 
+		if (imagefile.empty()) { 
+			quit_error("oprofpp: no samples file specified.\n");
 		} else {
 			/* we'll "leak" this memory */
 			samplefile = remangle(imagefile);
@@ -259,15 +229,17 @@ void opp_treat_options(char const * file, poptContext optcon,
 	 * and chop optionnal suffixe "#%d" first */
 
 	/* check for a valid counter suffix in a given sample file */
+	/* FIXME we need probably generalized std::string filename manipulation
+	 * stripping suffix, getting counter nr etc ... */
 	temp_counter = -1;
-	file_ctr_str = strrchr(samplefile, '#');
+	file_ctr_str = strrchr(samplefile.c_str(), '#');
 	if (file_ctr_str) {
 		sscanf(file_ctr_str + 1, "%d", &temp_counter);
 	}
 
 	if (temp_counter != -1 && counter != -1 && counter != 0) {
 		if ((counter & (1 << temp_counter)) == 0)
-			quit_error(optcon, "oprofpp: conflict between given counter and counter of samples file.\n");
+			quit_error("oprofpp: conflict between given counter and counter of samples file.\n");
 	}
 
 	if (counter == -1 || counter == 0) {
@@ -277,13 +249,9 @@ void opp_treat_options(char const * file, poptContext optcon,
 			counter = 1 << 0;	// use counter 0
 	}
 
-	/* chop suffixes */
-	if (file_ctr_str)
-		file_ctr_str[0] = '\0';
+	sample_file = strip_filename_suffix(samplefile);
 
-	sample_file = samplefile;
-
-	if (!imagefile) {
+	if (imagefile.empty()) {
 		/* we allow for user to specify a sample filename on the form
 		 * /var/lib/oprofile/samples/}bin}nash}}}lib}libc.so so we need to
 		 * check against this form of mangled filename */
