@@ -31,7 +31,7 @@ using std::endl;
 
 extern std::ostream cverb;
  
-op_bfd::op_bfd(string const & filename, vector<string> exclude_symbols)
+op_bfd::op_bfd(string const & filename, vector<string> const & exclude_symbols)
 	:
 	file_size(0),
 	ibfd(0),
@@ -139,7 +139,7 @@ static bool interesting_symbol(asymbol *sym)
  * the interesting_symbol() predicate and sorted
  * with the symcomp() comparator.
  */
-bool op_bfd::get_symbols(vector<string> excluded)
+bool op_bfd::get_symbols(vector<string> const & excluded)
 {
 	uint nr_all_syms;
 	symbol_index_t i;

@@ -1,3 +1,12 @@
+2002-07-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: pass vector by const reference rather
+	  than by value
+
+	* pp/op_to_source.cpp: always output file even if the corresponding
+	  source file does not exist
+
 2002-07-06  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libopt++/popt_options.cpp: provide a dtor in derived class

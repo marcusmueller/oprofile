@@ -185,26 +185,26 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
  * @param output_separate_file true if user request for creating on file for
  * each annotated source else op_to_source output only one report on cout
  *
- * output all annotated source
+ * output all annotated source matching the fn_match parameters
  */
 void output_source(int argc, char const * argv[],
 		   filename_match const & fn_match,
 		   bool output_separate_file);
 
 /**
- * @param in input stream
+ * @param in input stream, in is not necessary valid if input source file is
+ *  not avaialble
  * @param filename: input source filename
- * @param fn_match only source filename which match this filter will be output
  * @param output_separate_file specify if we output all annotated source to
  *  separate file or to cout
  *
  * output one annotated source file
  */
 void output_one_file(istream & in, string const & filename,
-		     filename_match const & fn_match,
 		     bool output_separate_file);
 /**
- * @param in input stream (a source file)
+ * @param in input stream (a source file) or an invalid stream if source file
+ *  is not avaialble
  * @param out output stream (the annotated source file)
  * @param filename input source filename
  *
@@ -599,6 +599,9 @@ void output_source(int argc, char const * argv[],
 		output_header(cout, argc, argv);
 
 	for (size_t i = 0 ; i < filenames.size() ; ++i) {
+		if (!fn_match.match(filenames[i]))
+			continue;
+
 		ifstream in(filenames[i].c_str());
 
 		if (!in) {
@@ -610,20 +613,17 @@ void output_source(int argc, char const * argv[],
 				cerr << "op_to_source (warning): unable to "
 				     << "open for reading: "
 				     << filenames[i] << endl;
-		} else {
-			output_one_file(in, filenames[i], fn_match,
-					output_separate_file);
+		} 
+
+		if (filenames[i].length()) {
+			output_one_file(in, filenames[i],output_separate_file);
 		}
 	}
 }
 
 void output_one_file(istream & in, string const & filename,
-		     filename_match const & fn_match,
 		     bool output_separate_file)
 {
-	if (!fn_match.match(filename))
-		return;
-
 	if (!output_separate_file) {
 		do_output_one_file(cout, in, filename);
 		return;
@@ -677,13 +677,24 @@ void do_output_one_file(ostream & out, istream & in, string const & filename)
 
 	find_and_output_counter(out, filename, 0, string());
 
-	string str;
-	for (size_t linenr = 1 ; getline(in, str) ; ++linenr) {
-		string blank = extract_blank_at_begin(str);
+	if (in) {
+		string str;
+		for (size_t linenr = 1 ; getline(in, str) ; ++linenr) {
+			string blank = extract_blank_at_begin(str);
 
-		find_and_output_counter(out, filename, linenr, blank);
+			find_and_output_counter(out, filename, linenr, blank);
 
-		out << str << '\n';
+			out << str << '\n';
+		}
+	} else {
+		// TODO : we have no input file : for now we just output header
+		// so on user can known total nr of samples for this source
+		// later we must add code that iterate through symbol in this
+		// file to output one annotation for each symbol. To do this we
+		// need a select_symbol(filename); in samples_container_t which
+		// fall back to the implementation in symbol_container_imp_t
+		// using a lazilly build symbol_map sorted by filename
+		// (necessary functors already exist in symbol_functors.h)
 	}
 }
 
