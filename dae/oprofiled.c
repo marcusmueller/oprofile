@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.56 2001/12/31 14:45:32 movement Exp $ */
+/* $Id: oprofiled.c,v 1.57 2001/12/31 14:51:45 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -256,7 +256,7 @@ static int opd_need_backup_samples_files(void)
 			if (header.ctr_event != ctr_event[header.ctr] ||
 			    header.ctr_um != ctr_um[header.ctr] ||
 			    header.ctr_count != ctr_count[header.ctr] ||
-			    header.cpu_type != cpu_type ||
+			    header.cpu_type != (u32)cpu_type ||
 			    header.separate_samples != separate_samples) {
 				need_backup = 1;
 			}
