@@ -33,8 +33,7 @@ public:
 
 	/// reimplemented
 	void paintEvent(QPaintEvent *);
-	void do_create(const samples_files_t *);
-	void do_destroy();
+	void do_data_change(const samples_files_t *);
 private:
 	std::vector <const symbol_entry *> symbols;
 	const samples_files_t * samples;

@@ -1,3 +1,14 @@
+2002-03-17  Philippe Elie  <ph_e@club-internet.fr>
+
+	* oprof_report/op_view.h:
+	* oprof_report/hostpost_view.cpp:
+	* oprof_report/hostpost_view.h:
+	* oprof_report/oprof_report.cpp:
+	* oprof_report/oprof_report.h:
+	* oprof_report/oprof_view.cpp:
+	* oprof_report/oprof_view.h: simplify virtual interface +
+	  minor graphic bug fix
+
 2002-03-16  Philippe Elie  <ph_e@club-internet.fr>
 
 	* TODO: update

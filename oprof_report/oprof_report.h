@@ -55,8 +55,8 @@ private:
 	/// helper for on_open, must never throw
 	void load_samples_files(const std::string & filename);
 
-	/// clear and mark all view as destroyed
-	void destroy_all_view();
+	/// notify all view they have changed
+	void mark_all_view_changed();
 
 	/// the oprofpp view handling
 	OprofppView * oprofpp_view;
@@ -64,6 +64,8 @@ private:
 	/// the (feel to write it) hotspot view handling
 	HotspotView * hotspot_view;
 
+	/// the data container, notification function received it when the
+	/// the data changed when the view is showed for the first time.
 	samples_files_t * samples_files;
 };
 

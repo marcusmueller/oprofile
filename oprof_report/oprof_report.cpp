@@ -76,7 +76,7 @@ void oprof_report::load_samples_files(const string & filename)
 
 		// we defer clearing the view after ensuring than nothing
 		// bad occur (through exception) in file loading.
-		destroy_all_view();
+		mark_all_view_changed();
 
 		delete samples_files;
 		samples_files = new samples_files_t;
@@ -94,14 +94,13 @@ void oprof_report::load_samples_files(const string & filename)
 }
 
 /**
- * destroy_all_view - destroy and mark all view as not-created
- * to allow lazilly build of view
+ * mark_all_view_changed - mark all view has changed
+ * allowing lazilly clear and rebuild
  */
-void oprof_report::destroy_all_view()
+void oprof_report::mark_all_view_changed()
 {
-	oprofpp_view->destroy();
-	// destroy is ambiguous TODO: rename OpView::create, destroy
-	hotspot_view->OpView::destroy();
+	oprofpp_view->set_dirty();
+	hotspot_view->set_dirty();
 }
 
 /**
@@ -161,9 +160,9 @@ void oprof_report::on_tab_change(QWidget* new_tab)
 		// becomes a little what to great handle it through a
 		// std::map<QWidget*, OpView*> associative array filled in ctor
 		if (new_tab->name() == QString("oprofpp_tab")) {
-			oprofpp_view->create(samples_files);
+			oprofpp_view->data_change(samples_files);
 		} else if (new_tab->name() == QString("hotspot_tab")) {
-			hotspot_view->OpView::create(samples_files);
+			hotspot_view->data_change(samples_files);
 		}
 	}
 }

@@ -26,22 +26,19 @@ class samples_files_t;
 class OpView {
 public:
 	// ctor of derived class must add decoration
-	OpView() : is_created(false) {}
-	void create(const samples_files_t * samples) { 
-		if (is_created == false) { 
-			do_create(samples); 
-			is_created = true;
+	OpView() : notification_sended(false) {}
+	void data_change(const samples_files_t * samples) { 
+		if (notification_sended == false) { 
+			do_data_change(samples); 
+			notification_sended = true;
 		}
 	}
-	void destroy() {
-		if (is_created == true) { do_destroy(); is_created = false; }
-	} 
+	void set_dirty() { notification_sended = false; } 
 private:
-	virtual void do_create(const samples_files_t *) = 0;
-	virtual void do_destroy() = 0;
+	virtual void do_data_change(const samples_files_t *) = 0;
 	// FUTURE
 	// virtual void do_right_click();
-	bool is_created;
+	bool notification_sended;
 };
 
 #endif /* OP_VIEW_H */

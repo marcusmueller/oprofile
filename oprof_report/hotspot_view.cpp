@@ -44,7 +44,7 @@ HotspotView::HotspotView(QWidget * parent)
  * for now a simple and inneficient algorithm is used
  * all things are redrawn and we don't try to cache them
  */
-/* TODO: axis painting, check why to paintEvent occur is some circumstances */
+/* TODO: axis painting, check why two paintEvent occur sometimes */
 void HotspotView::paintEvent(QPaintEvent *)
 {
 	if (symbols.size() == 0)
@@ -107,19 +107,15 @@ void HotspotView::paintEvent(QPaintEvent *)
 }
 
 /**
- * do_create() - handle data change
+ * do_data_change() - handle data change
  */
-void HotspotView::do_create(const samples_files_t * samples_)
-{
-	samples = samples_;
-	samples->select_symbols(symbols, 0, 0.0, false, true);
-}
-
-/**
- * do_destroy() - handle data change
- */
-void HotspotView::do_destroy()
+void HotspotView::do_data_change(const samples_files_t * samples_)
 {
 	symbols.clear();
+
+	samples = samples_;
+	samples->select_symbols(symbols, 0, 0.0, false, true);
+
 	update();
 }
+

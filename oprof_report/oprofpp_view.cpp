@@ -244,10 +244,12 @@ OprofppView::OprofppView(QListView * view_)
 }
 
 /**
- * do_create - create and insert items in the view
+ * do_data_change - create and insert items in the view
  */
-void OprofppView::do_create(const samples_files_t * samples)
+void OprofppView::do_data_change(const samples_files_t * samples)
 {
+	view->clear();
+
 	vector<const symbol_entry *> symbs;
 	samples->select_symbols(symbs, 0, 0.0, false, true);
 
@@ -255,13 +257,5 @@ void OprofppView::do_create(const samples_files_t * samples)
 	for (it = symbs.begin() ; it != symbs.end() ; ++it) {
 		new SymbolItem(view, *it, *samples);
 	}
-}
-
-/**
- * do_destroy - clear the view
- */
-void OprofppView::do_destroy()
-{
-	view->clear();
 }
 
