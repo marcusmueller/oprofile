@@ -8,7 +8,6 @@ dist_sources = \
 	oprofiled.c \
 	opd_image.h \
 	opd_mapping.h \
-	opd_printf.h \
 	p_module.h \
 	opd_kernel.h \
 	opd_parse_proc.h \
