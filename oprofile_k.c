@@ -1,10 +1,5 @@
-/* $Id: oprofile_k.c,v 1.12 2000/08/08 01:56:52 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.13 2000/08/08 05:09:37 moz Exp $ */
 
-#include <linux/config.h>
-#include <linux/kernel.h>
-#include <linux/mm.h>
-#include <linux/init.h>
-#include <linux/delay.h>
 #include <linux/sched.h>
 #include <linux/unistd.h>
 #include <linux/mman.h>
@@ -258,19 +253,23 @@ inline static char *oprof_outstr(char *buf, char *str, int bytes)
 
 #define map_round(v) (((v)+(sizeof(struct op_map)/2))/sizeof(struct op_map))
 
-/* buf must be PAGE_SIZE bytes large, mmap_sem must be held */
+spinlock_t map_lock = SPIN_LOCK_UNLOCKED;
+
+/* buf must be PAGE_SIZE bytes large */
 static int oprof_output_map(ulong addr, ulong len,
 	ulong offset, struct file *file, char *buf)
 {
 	char *line;
 	ulong size=16;
 
+	line = d_path(file->f_dentry, file->f_vfsmnt, buf, PAGE_SIZE);
+
+	spin_lock(&map_lock);
+
 	map_buf[nextmapbuf].addr = addr;
 	map_buf[nextmapbuf].len = len;
 	map_buf[nextmapbuf].offset = offset;
 
-	line = d_path(file->f_dentry, file->f_vfsmnt, buf, PAGE_SIZE);
- 
 	line = oprof_outstr(map_buf[nextmapbuf].path,line,4);
 	nextmapbuf++;
 
@@ -286,6 +285,8 @@ static int oprof_output_map(ulong addr, ulong len,
 
 	if (nextmapbuf==OP_MAX_MAP_BUF)
 		nextmapbuf=0;
+
+	spin_unlock(&map_lock);
 
 	return size;
 }
@@ -372,10 +373,8 @@ static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 
 	samp.count = OP_MAP;
 	samp.pid = current->pid;
-	down(&current->mm->mmap_sem);
 	/* how many bytes to read from map buffer */
 	samp.eip = oprof_output_map(addr,len,offset,file,buffer);
-	up(&current->mm->mmap_sem);
 
 	fput(file);
 	free_page((ulong)buffer);
