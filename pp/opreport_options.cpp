@@ -25,7 +25,7 @@
 
 using namespace std;
 
-scoped_ptr<partition_files> sample_file_partition;
+vector<partition_files> sample_file_partition;
 
 namespace options {
 	bool demangle = true;
@@ -241,6 +241,7 @@ void handle_options(vector<string> const & non_options)
 		exit(EXIT_FAILURE);
 	}
 
+#if 0
 	if (unmerged_profile.size() > 1) {
 		// quick and dirty check for now
 		cerr << "Can't handle multiple counters." << endl;
@@ -248,7 +249,17 @@ void handle_options(vector<string> const & non_options)
 		     << "samples files set considered\n" << endl;
 		exit(EXIT_FAILURE);
 	}
+#endif
 
-	sample_file_partition.reset(
-		new partition_files(sample_files, merge_by));
+	unmergeable_samplefile unmerged_samplefile =
+		unmerge_samplefile(sample_files, unmerged_profile);
+
+	unmergeable_samplefile::const_iterator const cend =
+		unmerged_samplefile.end();
+	unmergeable_samplefile::const_iterator cit =
+		unmerged_samplefile.begin();
+	for ( ; cit != cend ; ++cit) {
+		sample_file_partition.push_back(
+			partition_files(*cit, merge_by));
+	}
 }

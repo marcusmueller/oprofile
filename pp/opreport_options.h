@@ -43,10 +43,10 @@ namespace options {
 }
 
 /**
- * a partition of sample filename to treat, each sub-list is a list of
- * sample to merge. filled by handle_options()
+ * a vector of partition of sample filename to treat. filled by
+ * handle_options()
  */
-extern scoped_ptr<partition_files> sample_file_partition;
+extern std::vector<partition_files> sample_file_partition;
 
 /**
  * get_options - process command line

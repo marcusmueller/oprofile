@@ -55,6 +55,17 @@ std::vector<unmergeable_profile> merge_profile(std::list<std::string> const & fi
 /// convenience function for debug/verbose
 std::ostream & operator<<(std::ostream & out, unmergeable_profile const & lhs);
 
+/// split samples filenames lists by unmergeable profile
+typedef std::vector<std::list<std::string> > unmergeable_samplefile;
+
+/**
+ * @param files samples filename list
+ * @param profiles different unmergeable profile built from files
+ */
+unmergeable_samplefile
+unmerge_samplefile(std::list<std::string> const & files,
+	std::vector<unmergeable_profile> const & profiles);
+
 
 /// Partition a list of sample filename.
 class partition_files {

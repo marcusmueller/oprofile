@@ -164,11 +164,17 @@ ostream & operator<<(ostream & out, opd_header const & header)
 {
 	op_cpu cpu = static_cast<op_cpu>(header.cpu_type);
 
-	out << "CPU: " << op_get_cpu_type_str(cpu);
-	out << ", speed " << header.cpu_speed << " MHz (estimated)" << endl;
-
 	op_print_event(out, cpu, header.ctr_event,
 	               header.ctr_um, header.ctr_count);
 
 	return out;
+}
+
+
+void output_cpu_info(std::ostream & out, opd_header const & header)
+{
+	op_cpu cpu = static_cast<op_cpu>(header.cpu_type);
+
+	out << "CPU: " << op_get_cpu_type_str(cpu);
+	out << ", speed " << header.cpu_speed << " MHz (estimated)" << endl;
 }

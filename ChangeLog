@@ -1,3 +1,18 @@
+2003-07-29  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/op_header.h:
+	* libpp/op_header.cpp: separate output of cpu_type, cpu_speed
+	  and counter setup
+
+	* libpp/partition_files.h:
+	* libpp/partition_files.cpp: unmergeable_profile() split profile
+	  by the unmergeable.
+
+	* pp/opreport_options.h:
+	* pp/opreport_options.cpp:
+	* pp/opreport.cpp: initial multiple counter output, multiple counter
+	  with -l is not yet available.
+
 2003-07-29  John Levon  <levon@movementarian.org>
 
 	* configure.in:

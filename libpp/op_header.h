@@ -45,8 +45,14 @@ void check_mtime(std::string const & file, opd_header const & header);
 opd_header read_header(std::string const & sample_filename);
 
 /**
- * output a readable form of header to out
+ * output a readable form of header to out, this don't include the cpu type
+ * and speed
  */
 std::ostream & operator<<(std::ostream & out, opd_header const & header);
+
+/**
+ * output a readable form of cpu type and speed extracted from the gien header
+ */
+void output_cpu_info(std::ostream & out, opd_header const & header);
 
 #endif // OP_HEADER_H

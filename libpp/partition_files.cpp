@@ -64,6 +64,43 @@ vector<unmergeable_profile> merge_profile(list<string> const & files)
 }
 
 
+unmergeable_samplefile
+unmerge_samplefile(list<string> const & files,
+	vector<unmergeable_profile> const & profiles)
+{
+	unmergeable_samplefile result(profiles.size());
+
+	// FIXME: inneficient, a multiset would do the trick in a better way
+	// but for now I want to test synched walking through multiple profile
+	unmergeable_samplefile::iterator result_it = result.begin();
+	vector<unmergeable_profile>::const_iterator const cend =
+		profiles.end();
+	vector<unmergeable_profile>::const_iterator cit = profiles.begin();
+	for ( ; cit != cend ; ++cit, ++result_it) {
+		list<string>::const_iterator const files_cend = files.end();
+		list<string>::const_iterator files_cit = files.begin();
+		for ( ; files_cit != files_cend; ++files_cit) {
+			// FIXME: this is redudant with partition_files, this
+			// mean we would use split_sample_file rather than
+			// string earlier and we would get a
+			// list<split_sample_filename> const & rather than a
+			// list<string> const & files parameter
+			// or we want to ret vector<list<split_sample_filename)
+			split_sample_filename splitted =
+				split_sample_file(*files_cit);
+
+			if (cit->event == splitted.event &&
+			    cit->count == splitted.count) {
+				result_it->push_back(*files_cit);
+			}
+		}
+		
+	}
+
+	return result;
+}
+
+
 /**
  * merge_compare - comparator used to partition a set of samples filename
  * into equivalence class.  The equivalence relation equiv(a, b) is given by
