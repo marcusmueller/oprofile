@@ -383,13 +383,13 @@ static void opd_parse_image_filter(void)
 }
 
 
-int is_image_filtered(char const * name)
+int is_image_ignored(char const * name)
 {
 	size_t hash;
 	struct list_head * pos;
 
 	if (!binary_name_filter)
-		return 1;
+		return 0;
 	
 	hash = opd_hash_name(name);
 
@@ -397,10 +397,10 @@ int is_image_filtered(char const * name)
 		struct opd_hashed_name * hashed_name =
 		     list_entry(pos, struct opd_hashed_name, next);
 		if (!strcmp(hashed_name->name, name))
-			return 1;
+			return 0;
 	}
 
-	return 0;
+	return 1;
 }
 
 

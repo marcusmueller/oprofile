@@ -61,7 +61,7 @@ static inline int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
 struct cookie_entry {
 	cookie_t value;
 	char * name;
-	int filtered;
+	int ignored;
 	struct list_head list;
 };
 
@@ -86,9 +86,9 @@ static struct cookie_entry * create_cookie(cookie_t cookie)
 		       cookie, errno); 
 		free(entry->name);
 		entry->name = NULL;
-		entry->filtered = 0;
+		entry->ignored = 0;
 	} else {
-		entry->filtered = is_image_filtered(entry->name);
+		entry->ignored = is_image_ignored(entry->name);
 	}
 
 	return entry;
@@ -124,7 +124,7 @@ out:
 }
 
 
-int is_cookie_filtered(cookie_t cookie)
+int is_cookie_ignored(cookie_t cookie)
 {
 	unsigned long hash = hash_cookie(cookie);
 	struct list_head * pos;
@@ -136,9 +136,10 @@ int is_cookie_filtered(cookie_t cookie)
 			goto out;
 	}
 
-	return 0;
+	/* The cookie isn't found. We assume it's ignored. */
+	return 1;
 out:
-	return entry->filtered;
+	return entry->ignored;
 }
 
 

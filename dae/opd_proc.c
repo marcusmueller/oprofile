@@ -216,7 +216,7 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 	struct opd_sfile * sfile;
 	int err;
 
-	if (!image->filtered)
+	if (image->ignored)
 		return;
 
 	sfile = image->sfiles[counter][cpu_number];

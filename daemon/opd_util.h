@@ -66,13 +66,12 @@ size_t opd_hash_name(char const * name);
 
 
 /**
- * is_image_filtered - check if we must profile this image
- * @param name  the name to check
+ * is_image_ignored - check if we must ignore this image
+ * @param name the name to check
  *
- * return non zero if name has been specified through --image= option or user
- * didn't ask for image filtering
+ * Return true if the image should not be profiled
  */
-int is_image_filtered(char const * name);
+int is_image_ignored(char const * name);
 
 
 /**

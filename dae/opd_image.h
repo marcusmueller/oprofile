@@ -46,7 +46,7 @@ struct opd_image {
 	/* kernel image or not */
 	int kernel;
 	/* non zero if this image must be profiled */
-	int filtered;
+	int ignored;
 };
 
 typedef void (*opd_image_cb)(struct opd_image *);

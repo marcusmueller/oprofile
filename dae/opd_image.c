@@ -156,11 +156,11 @@ opd_new_image(char const * name, char const * app_name, int kernel,
 	image->app_name = app_name ? xstrdup(app_name) : NULL;
 	image->mtime = op_get_mtime(image->name);
 
-	image->filtered = 0;
+	image->ignored = 1;
 	if (separate_lib && app_name)
-		image->filtered = is_image_filtered(app_name);
-	if (!image->filtered)
-		image->filtered = is_image_filtered(name);
+		image->ignored = is_image_ignored(app_name);
+	if (image->ignored)
+		image->ignored = is_image_ignored(name);
 
 	memset(image->sfiles, '\0',
 	       OP_MAX_COUNTERS * NR_CPUS * sizeof(struct opd_sfile *));

@@ -137,14 +137,14 @@ create_sfile(struct transient const * trans, struct kernel_image * ki)
 	if (separate_kernel || (separate_lib && !ki))
 		sf->app_cookie = trans->app_cookie;
 
-	sf->filtered = 0;
+	sf->ignored = 1;
 	if (separate_lib && trans->app_cookie != INVALID_COOKIE)
-		sf->filtered = is_cookie_filtered(trans->app_cookie);
-	if (!sf->filtered) {
+		sf->ignored = is_cookie_ignored(trans->app_cookie);
+	if (sf->ignored) {
 		if (!ki)
-			sf->filtered = is_cookie_filtered(trans->cookie);
+			sf->ignored = is_cookie_ignored(trans->cookie);
 		else
-			sf->filtered = is_image_filtered(ki->name);
+			sf->ignored = is_image_ignored(ki->name);
 	}
 
 	return sf;
