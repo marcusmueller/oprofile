@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.79 2002/04/24 17:59:30 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.80 2002/04/27 20:01:22 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -154,8 +154,8 @@ else
 fi
 
 AC_MSG_CHECKING(for x86 architecture)
-AX_COMPILE_OPTION(CONFIG_X86,x86=1,x86=0)
-AX_COMPILE_OPTION(CONFIG_X86_WP_WORKS_OK,x86=1,x86=x86)
+AX_COMPILE_OPTION(CONFIG_X86, x86=1, x86=0)
+AX_COMPILE_OPTION(CONFIG_X86_WP_WORKS_OK, x86=1, x86=$x86)
 AX_MSG_RESULT_YN($x86)
 test "$x86" = 1 || AC_MSG_ERROR(Unsupported architecture)
 

@@ -1,3 +1,8 @@
+2002-04-27  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in: fix little blooper that shows up
+	  when CONFIG_M386 is chosen
+ 
 2002-04-23  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/oprofpp.cpp:
@@ -207,7 +212,7 @@
 	we pick up highmem.h, which is needed with
 	some kernels (missing kmap_pagetable define
 	via pte_offset)
- 
+
 2002-03-18  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/op_time.cpp:
