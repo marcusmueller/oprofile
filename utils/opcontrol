@@ -91,7 +91,7 @@ do_help() {
 	Allowed counters for N are [$OP_COUNTERS]
 	  --pid-filter=pid             Only profile process pid  (2.4 version)
 	  --pgrp-filter=pgrp           Only profile process tty group pgrp (2.4 version)
-
+	  --rtc-value=val	       Set sample rate to val per second (2.4 version)
 	  --separate=[library]         separate samples as given
 	  --vmlinux=file               vmlinux kernel image
 	  --verbose                    be verbose in the daemon log
@@ -217,7 +217,7 @@ do_init() {
 	IS_TIMER=0
  
 	case "$CPUTYPE" in
-		4) 	IS_TIMER=1
+		4|5) 	IS_TIMER=1
 			;;
 	esac
 
@@ -268,6 +268,10 @@ do_save_setup() {
 			echo "CTR_UM[${f}]=${CTR_UM[$f]}" >> $SETUP_FILE
 			echo "CTR_EVENT_VAL[${f}]=${CTR_EVENT_VAL[$f]}"  >> $SETUP_FILE
 		done
+	else
+		if test "$KERNEL_SUPPORT" != "yes"; then
+			echo "RTC_VALUE $RTC_VALUE" >> $SETUP_FILE
+		fi
 	fi
  
 	echo "IGNORE_MYSELF=$IGNORE_MYSELF" >> $SETUP_FILE
@@ -458,6 +462,13 @@ do_options() {
 				CTR_KERNEL[`extract_int $arg`]=$val
 				if (($? != 0)); then exit 1; fi
 				;;
+			--rtc-value)
+				if test "$KERNEL_SUPPORT" = "yes"; then
+					echo "$arg unsupported. " >& 2
+					exit 1
+				fi
+				RTC_VALUE=$val
+				;;
 			--separate)
 				error_if_empty $arg $val
 				if test "$val" != "library"; then
@@ -554,6 +565,8 @@ do_options() {
 			vecho "CTR_USER[${f}] ${CTR_USER[$f]}"
 			vecho "CTR_KERNEL[${f}] ${CTR_KERNEL[$f]}"
 		done
+	else
+		vecho "RTC_VALUE $RTC_VALUE"
 	fi
  
 	vecho "IGNORE_MYSELF $IGNORE_MYSELF"

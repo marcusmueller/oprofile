@@ -1,3 +1,7 @@
+2003-02-09  Will Cohen  <wcohen@redhat.com>
+
+	* utils/opcontrol: Add rtc-value option.
+
 2003-02-09  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol: stale lock file detection
