@@ -1,3 +1,16 @@
+2002-07-03  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil/op_fileio.c: remove a FIXME, it's worthwhile to try to
+	  use GNU getline() instead of op_get_line()
+
+	* pp/op_time.cpp:
+	* pp/op_time_options.cpp:
+	* pp/op_time_options.h:
+	* pp/oprofpp.cpp: remove minor FIXME
+
+	* pp/opp_symbol.h: class outut_symbol: clarify why, with the current
+	  design, some function are public member rather private.
+
 2002-07-01  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* configure.in:

@@ -18,6 +18,9 @@
 
 #include "outsymbflag.h"
 
+/// the type used to store alternative location of binary image. We need a
+/// multimap to warn against ambiguity between mutiple time found image name.
+/// \sa options::alternate_filename
 typedef std::multimap<std::string, std::string> alt_filename_t;
 
 namespace options {
@@ -27,14 +30,14 @@ namespace options {
 	extern std::string samples_dir;
 	/// counter to use
 	extern int counter;
-	// FIXME: should be exposed only as a mask
-	/// selected counters (comma-separated)
-	extern std::string counter_str;
 	/// output format to use
 	extern outsymbflag output_format_flags;
 	/// which symbols to exclude
 	extern std::vector<std::string> exclude_symbols;
-	/// FIXME: doc
+	/// filled through the --path or --recursive-path allowing to specify
+	/// alternate location for binary image, this occur when when samples
+        /// filename contains an incorrect location for binary image name such
+	/// ram disk module at boot time
 	extern alt_filename_t alternate_filename;
 	/// whether to do symbol-based summary
 	extern bool list_symbols;
@@ -48,8 +51,10 @@ namespace options {
 	extern int sort_by_counter;
 	/// whether to demangle
 	extern bool demangle;
-	// Contains the list of image name for which we request information
+	/// Contains the list of image name for which we request information
 	extern std::vector<string> filename_filters;
+	/// verbose flag
+	extern bool verbose;
 }
 
 /**

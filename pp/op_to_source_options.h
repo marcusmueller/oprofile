@@ -21,9 +21,10 @@ namespace options {
 	extern std::string sample_file;
 	/// image file to work on
 	extern std::string image_file;
-	/// show files with more than this nr. of samples
+	/// show files with more than this precent nr. of samples
 	extern int with_more_than_samples;
-	/// FIXME: doc
+	/// show files until the cumulated percent of samples reach this
+	/// this nr. of samples
 	extern int until_more_than_samples;
 	/// counter to sort by
 	extern int sort_by_counter;

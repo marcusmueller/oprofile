@@ -28,7 +28,6 @@
 #include "op_mangling.h"
 #include "op_time_options.h"
 
-#include "counter_util.h"
 #include "samples_container.h"
 #include "samples_file.h"
 
@@ -47,9 +46,6 @@ using std::ifstream;
 using std::multimap;
 using std::pair;
 using std::setw;
-
-// FIXME
-static int counter;
 
 /* TODO: if we have a quick read samples files format we can handle a great
  * part of complexity here by using samples_container_t to handle straight
@@ -169,7 +165,7 @@ static void sort_file_list_by_name(map_t & result,
 		// counter 1, so we must filter them.
 		int i;
 		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
-			if ((counter & (1 << i)) != 0) {
+			if ((options::counter & (1 << i)) != 0) {
 				ostringstream s;
 				s << string(options::samples_dir) << "/" << *it
 				  << '#' << i;
@@ -198,7 +194,7 @@ static void out_filename(string const & app_name,
 			 double total_count[OP_MAX_COUNTERS])
 {
 	for (size_t i = 0 ; i < OP_MAX_COUNTERS; ++i) {
-		if ((counter & (1 << i)) != 0) {
+		if ((options::counter & (1 << i)) != 0) {
 			// feel to rewrite with cout and its formated output
 #if 1
 			printf("%-9d ", count[i]);
@@ -430,7 +426,6 @@ static string check_image_name(string const & image_name,
 		}
 		cerr << "access denied for : " << image_name;
 
-		// FIXME must we continue search in alternate path ?
 		return string(); 
 	}
 
@@ -528,10 +523,6 @@ int main(int argc, char const * argv[])
 {
 	get_options(argc, argv);
 
-	counter = parse_counter_mask(options::counter_str);
-
-	validate_counter(counter, options::sort_by_counter);
-
 	if (options::list_symbols && options::show_shared_libs) {
 		cerr << "You can't specifiy --show-shared-libs and "
 			"--list-symbols together." << endl;
@@ -548,7 +539,7 @@ int main(int argc, char const * argv[])
 	sort_file_list_by_name(file_map, file_list);
 
 	if (options::list_symbols) {
-		output_symbols_count(file_map, counter);
+		output_symbols_count(file_map, options::counter);
 	} else {
 		output_files_count(file_map);
 	}

@@ -11,6 +11,7 @@
 
 #include "opp_symbol.h"
 #include "op_time_options.h"
+#include "counter_util.h"
 #include "op_config.h"
 
 #include "popt_options.h"
@@ -28,7 +29,6 @@ using std::endl;
 
 namespace options {
 	string session;
-	string counter_str("0");
 	bool list_symbols;
 	bool show_image_name;
 	bool demangle;
@@ -36,24 +36,27 @@ namespace options {
 	bool reverse_sort;
 	bool show_shared_libs;
 	int sort_by_counter = -1;
+	int counter;
 	string samples_dir;
 	outsymbflag output_format_flags;
 	alt_filename_t alternate_filename;
 	vector<string> filename_filters;
+	bool verbose;
 }
 
 namespace {
 
-bool verbose;
 string output_format;
 vector<string> path;
 vector<string> recursive_path;
+/// selected counters (comma-separated)
+string counter_str("0");
 
 option options_array[] = {
-	option(verbose, "verbose", 'V', "verbose output"),
+	option(options::verbose, "verbose", 'V', "verbose output"),
 	option(output_format, "output-format", 't', "choose the output format", "output-format strings"),
 	option(options::session, "session", 's', "session to use", "name"),
-	option(options::counter_str, "counter", 'c', "which counter to use", "counter_nr[,counter_nr]"),
+	option(counter_str, "counter", 'c', "which counter to use", "counter_nr[,counter_nr]"),
 	option(options::list_symbols, "list-symbols", 'l', "list samples by symbol"),
 	option(options::show_image_name, "show-image-name", 'n', "show the image name from where come symbols"),
 	option(path, "path", 'p', "add path for retrieving image", "path_name[,path_name]"),
@@ -65,13 +68,6 @@ option options_array[] = {
 	option(options::exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name"),
 	option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names")
 };
-
-/// associate filename with directory name where filename exist. Filled
-/// through the -p/-P option to allow retrieving of image name when samples
-/// file name contains an incorrect location for the image such ram disk
-/// module at boot time. We need a multimap to warn against ambiguity between
-/// mutiple time found image name.
-// FIXME...
 
 /**
  * add_to_alternate_filename -
@@ -174,4 +170,8 @@ void get_options(int argc, char const * argv[])
 	add_to_alternate_filename(path, false);
 
 	add_to_alternate_filename(recursive_path, true);
+
+	options::counter = parse_counter_mask(counter_str);
+
+	validate_counter(counter, options::sort_by_counter);
 }

@@ -169,8 +169,7 @@ static void do_dump_gprof(op_bfd & abfd,
 			}
 
 			if (hist[pos] + count > (u16)-1) {
-				// FIXME cout or cerr ?
-				cout <<	"Warning: capping sample count by "
+				cerr <<	"Warning: capping sample count by "
 				     << hist[pos] + count - ((u16)-1)
 				     << "samples for symbol \""
 				     << abfd.syms[i].name() << "\"\n";

@@ -94,11 +94,9 @@ public:
 	 * output_symbol::ShowHelp() to notify user on available options */
 	static outsymbflag ParseOutputOption(std::string const & option);
 
-	// FIXME: no need to be members ? Make them file-private until such
-	// a time as we /need/ them for the GUI please
-
-	/** @defgroup format The set of formatting functions, used internally by Output().
-	 * Exposed as public members for the future oprofpp GUI.
+	/** @defgroup format The set of formatting functions, used internally
+	 * by Output(). Exposed as public because we need to use them in an
+	 * array of pointer to member function
 	 */
 	//@{
 	std::string format_vma(std::string const & name,

@@ -203,7 +203,7 @@ u32 op_read_int_from_file(char const * filename)
  * In *both* cases, the string must be free()d at some
  * point.
  *
- * FIXME: we should use GNU getline and kill this
+ * getline() is not a proper solution to replace this function
  */
 char *op_get_line(FILE * fp)
 {
