@@ -45,7 +45,7 @@ struct axis_t {
 	string suggestion;
 } axes[AXIS_MAX] = {
 	{ "event", "specify event: or count:" },
-	{ "unitmask", "specify unitmask: or -m unitmask" },
+	{ "unitmask", "specify unitmask: or --merge unitmask" },
 	{ "tgid", "specify tgid: or --merge tgid" },
 	{ "tid", "specify tid: or --merge tid" },
 	{ "cpu", "specify cpu: or --merge cpu" },
