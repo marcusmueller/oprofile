@@ -1,29 +1,34 @@
-Before 1.0 big stuff
---------------------
+0.3 Release
+-----------
 
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level. Important.
  o better support in post-prof for session names. Consistent cmd line interfaces - 
    this should be before 1.0 so we don't piss off users - spec this out
+ o split doc into user's manual and hacking manual, document much more 
+ o more discussion of problematic code needs to go in the "interpreting" section. 
+ o document gcc 2.95 and linenr info problems especially for inline functions
+ o document somewhere that oprofpp -s blah will only find the first symbol
+   called "blah" (not worth fixing) 
+ o determine where we need preempt_disable/enable to prevent pre-emption + test (ugh)
+ o op_session creates empty dirs
+ o op_session - save oprofiled.log too ? (yes) 
+ o op_session: if user don't supply a session name create an unique name (timestamp) (maybe - john) 
+ 
+Before 1.0 big stuff
+--------------------
+
  o get symbol size via elf instead of bfd ?
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
    these two todo are perhaps worthwhile to implement now. The new filtering
    of symbols make them less interesting. - let's wait - john
- o split doc into user's manual and hacking manual, document much more 
  o thread profiling in the old and new flavour (2.5 introduce a new thread handling)
    (how important is this one ?)
  
 Before 1.0 little stuff
 -----------------------
  
- o determine where we need preempt_disable/enable to prevent pre-emption + test (ugh)
- o document gcc 2.95 and linenr info problems especially for inline functions
- o document somewhere that oprofpp -s blah will only find the first symbol
-   called "blah" (not worth fixing) 
- o op_session creates empty dirs
- o op_session - save oprofiled.log too ? (yes) 
- o op_session: if user don't supply a session name create an unique name (timestamp) (maybe - john) 
  o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
    will fail because the ~ is not expanded (no space around it) 
  o move op_start to simple C program ??
@@ -35,7 +40,6 @@ Before 1.0 little stuff
  o use standard C integer type <stdint.h> int32_t int16_t etc.
  o add option to op_to_source like oprofpp -u -m on a symbol basis.
  o review the exception table of the nmi handler (at least stop oprofile)
- o more discussion of problematic code needs to go in the "interpreting" section. 
  o check chroot() processes and the path hash stuff
 
 General checks to make

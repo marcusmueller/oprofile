@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.49 2002/04/24 17:59:30 phil_e Exp $
+# $Id: Makefile.in,v 1.50 2002/05/05 00:47:57 movement Exp $
 
 .PHONY: all install clean distclean maintainerclean uninstall tags
 
@@ -67,12 +67,12 @@ tags:
 # 1. change version to non-cvs and commit
 # 2. make dist (with doopr) 
 # 3. upload to sf
-# 4. untar into webpage
-# 5. add release
-# 6. close fixed bugs
-# 7. send release email
-# 8. update freshmeat
-# 9. cvs tag RELEASE_0_0_8
+# 4. add release
+# 5. close fixed bugs
+# 6. send release email
+# 7. update freshmeat
+# 8. cvs tag RELEASE_0_0_8
+# 9. update webpage release-notes/, index, download
 dist:
 	mkdir tmpdist ; \
 	cd tmpdist ; \
