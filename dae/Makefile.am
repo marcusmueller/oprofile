@@ -11,14 +11,15 @@ AM_CPPFLAGS=-I ${top_srcdir}/libabi -I ${top_srcdir}/libutil -I ${top_srcdir}/li
 
 bin_PROGRAMS = oprofiled
 
+oprofiled_SOURCES = $(dist_sources)
+ 
 if enable_abi
 CLEANFILES = dummy.cpp
 dummy.cpp:
 	echo "static void dummy_crap_to_force_cxx_link() {}" >$@
-oprofiled_SOURCES = $(dist_sources) dummy.cpp
+nodist_oprofiled_SOURCES = dummy.cpp
 oprofiled_LDADD = ../libabi/libabi.a ../libdb/libdb.a ../libop/libop.a ../libutil/libutil.a
 else
-oprofiled_SOURCES = $(dist_sources)
 oprofiled_LDADD = ../libdb/libdb.a ../libop/libop.a ../libutil/libutil.a
 endif
 
