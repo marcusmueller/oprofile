@@ -55,10 +55,10 @@ op_bfd_symbol::op_bfd_symbol(bfd_vma vma, size_t size, string const & name)
 
 
 op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
-              bool  create_fake)
+               bool create_fake)
 	:
 	filename(fname),
-	file_size(0),
+	file_size(-1),
 	ibfd(0),
 	text_offset(0),
 	debug_info(false)
@@ -68,12 +68,13 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	// O(N²) behavior when we will filter vector element below
 	symbols_found_t symbols;
 
-	op_get_fsize(filename.c_str(), &file_size);
-
 	if (create_fake) {
+		// file size will be maxed (-1) already
 		add_symbols(symbols, symbol_filter);
 		return;
 	}
+
+	op_get_fsize(filename.c_str(), &file_size);
 
 	/* bfd keeps its own reference to the filename char *,
 	 * so it must have a lifetime longer than the ibfd */

@@ -90,42 +90,12 @@ public:
 	}
 };
 
-
-/**
- * @param extra_images container where all candidate filename are stored
- * @param image_name binary image name
- *
- * helper for find_image_path either return image name on success or an empty
- * string, output also a warning if we failt to retrieve the image name. All
- * this handling is special for 2.6 kernel modules where daemon has no way
- * to know full path name of module
- */
-string const find_module_path(string const & module_name,
-                              extra_images const & extra_images, bool & ok)
-{
-	vector<string> result =
-		extra_images.find(module_matcher(module_name));
-
-	if (result.empty()) {
-		ok = false;
-		return string();
-	}
-
-	if (result.size() > 1) {
-		ok = false;
-		return string();
-	}
-
-	ok = true;
-	return result[0];
-}
-
 } // anon namespace
 
 
 string const find_image_path(string const & image_name,
                              extra_images const & extra_images,
-			     bool & ok)
+                             bool & ok)
 {
 	string const image = relative_to_absolute_path(image_name);
 
@@ -146,23 +116,22 @@ string const find_image_path(string const & image_name,
 	vector<string> result = extra_images.find(base);
 
 	// not found, try a module search
+	if (result.empty())
+		result = extra_images.find(module_matcher(base + ".ko"));
+
 	if (result.empty()) {
-		string filename =
-		        find_module_path(base + ".ko", extra_images, ok);
-		if (!ok) {
-			cerr << "warning: The image " << image_name
-			     << " matches more than one file, using "
-			     << image_name << endl;
-			return image_name;
-		}
+		ok = false;
+		cerr << "warning: " << image_name << " could not be found.\n";
+		return image_name;
 	}
 
 	if (result.size() > 1) {
-		cerr << "warning: The image " << image_name
-		     << " matches more than one file, using " << image_name
-		     << endl;
 		ok = false;
-		return image_name;
+		cerr << "warning: " << image_name
+		     << " matches more than one file: "
+		        "detailed profile will not be provided."
+		     << endl;
+	        return image_name;
 	}
 
 	ok = true;
