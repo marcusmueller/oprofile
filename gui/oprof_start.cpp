@@ -884,11 +884,14 @@ bool oprof_start::save_config()
 		args.push_back("--note-table-size=" +
 			       tostr(config.note_table_size));
 	}
-	// opcontrol allow multiple setting of --separate option
-	if (config.separate_lib_samples)
-		args.push_back("--separate=library");
-	else if (config.separate_kernel_samples)
+	// opcontrol don't allow multiple setting of --separate option
+	// separate=kernel imply separate=library whilst opcontrol script
+	// reset separate=kernel when separate=library is given so the order
+	// of setting here is meaningfull.
+	if (config.separate_kernel_samples)
 		args.push_back("--separate=kernel");
+	else if (config.separate_lib_samples)
+		args.push_back("--separate=library");
 	else
 		args.push_back("--separate=none");
 
