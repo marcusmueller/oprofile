@@ -1,3 +1,9 @@
+2004-03-28  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_bfd.cpp: fix a BFD leak on format failure. Fix a
+	  small race when the binary changes, and we error fatally
+	  instead of recovering.
+
 2004-03-22  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* module/x86/hammer_op_syscalls.c: use the first map with VM_EXECUTABLE

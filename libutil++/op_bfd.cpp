@@ -12,6 +12,10 @@
 #include "op_file.h"
 #include "op_config.h"
 
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+
 #include <cerrno>
 #include <cstring>
 #include <cstdlib>
@@ -35,24 +39,48 @@ namespace {
 
 verbose vbfd("bfd");
 
+void check_format(string const & file, bfd ** ibfd)
+{
+	char ** matching;
+	if (!bfd_check_format_matches(*ibfd, bfd_object, &matching)) {
+		cverb << vbfd << "BFD format failure for " << file << endl;
+		bfd_close(*ibfd);
+		*ibfd = NULL;
+	}
+}
+
+
 bfd * open_bfd(string const & file)
 {
 	/* bfd keeps its own reference to the filename char *,
 	 * so it must have a lifetime longer than the ibfd */
-	bfd * ibfd = bfd_openr(file.c_str(), NULL);		
+	bfd * ibfd = bfd_openr(file.c_str(), NULL);
 	if (!ibfd) {
 		cverb << vbfd << "bfd_openr failed for " << file << endl;
-		goto out_fail;
-	}		
-	char ** matching;
-	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) {
-		cverb << vbfd << "BFD format failure for " << file << endl;
-		ibfd = NULL;
+		return NULL;
 	}
 
-out_fail:
+	check_format(file, &ibfd);
+
 	return ibfd;
 }
+
+
+bfd * fdopen_bfd(string const & file, int fd)
+{
+	/* bfd keeps its own reference to the filename char *,
+	 * so it must have a lifetime longer than the ibfd */
+	bfd * ibfd = bfd_fdopenr(file.c_str(), NULL, fd);
+	if (!ibfd) {
+		cverb << vbfd << "bfd_openr failed for " << file << endl;
+		return NULL;
+	}
+
+	check_format(file, &ibfd);
+
+	return ibfd;
+}
+
 
 bool
 separate_debug_file_exists(string const & name, 
@@ -195,31 +223,45 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	text_offset(0),
 	debug_info(false)
 {
+	int fd;
+	struct stat st;
 	// after creating all symbol it's convenient for user code to access
 	// symbols through a vector. We use an intermediate list to avoid a
 	// O(N²) behavior when we will filter vector element below
 	symbols_found_t symbols;
+	asection const * sect;
 
 	// if there's a problem already, don't try to open it
 	if (!ok)
 		goto out_fail;
 
-	op_get_fsize(filename.c_str(), &file_size);
-
-	ibfd = open_bfd(filename);
-
-	if (!ibfd) {
-		cverb << vbfd << "open_bfd failed for " << filename << endl;
+	fd = open(filename.c_str(), O_RDONLY);
+	if (fd == -1) {
+		cverb << vbfd << "open failed for " << filename << endl;
 		ok = false;
 		goto out_fail;
 	}
 
-	{
-	asection const * sect;
+	if (fstat(fd, &st)) {
+		cverb << vbfd << "stat failed for " << filename << endl;
+		ok = false;
+		goto out_fail;
+	}
+
+	file_size = st.st_size;
+
+	ibfd = fdopen_bfd(filename, fd);
+
+	if (!ibfd) {
+		cverb << vbfd << "fdopen_bfd failed for " << filename << endl;
+		ok = false;
+		goto out_fail;
+	}
 
 	// find the first text section as use that as text_offset
 	for (sect = ibfd->sections; sect; sect = sect->next) {
 		if (sect->flags & SEC_CODE) {
+			cerr << "text_offset for " << filename << " is " << sect->filepos << endl;
 			text_offset = sect->filepos;
 			io_state state(cverb << vbfd);
 			cverb << vbfd << sect->name << " filepos "
@@ -259,8 +301,6 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 				      << debug_filename << endl;
 			}
 		}
-	}
-
 	}
 
 	get_symbols(symbols);
@@ -653,7 +693,7 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 	}
 
 	end = start + syms[sym_idx].size();
-	cverb << (vbfd&vlevel1)
+	cverb << (vbfd & vlevel1)
 	      << "start " << hex << start << ", end " << end << endl;
 
 	if (start >= file_size + text_offset) {
