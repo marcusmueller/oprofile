@@ -443,6 +443,8 @@ void cg_formatter::output(ostream & out, cg_collection const & syms)
 
 	output_header(out);
 
+	out << string(79, '-') << endl;
+
 	cg_collection::const_iterator it;
 	cg_collection::const_iterator end = syms.end();
 

@@ -1,5 +1,10 @@
 2005-04-05  John Levon  <levon@movementarian.org>
 
+	* libpp/format_output.cpp: add separator at first function
+	  for opreport -c
+
+2005-04-05  John Levon  <levon@movementarian.org>
+
 	* libpp/callgraph_container.h:
 	* libpp/callgraph_container.cpp:
 	* pp/opreport.cpp:
