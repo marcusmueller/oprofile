@@ -1,3 +1,11 @@
+2003-02-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
+	* dae/opd_sample_files.c:
+	* daemon/opd_sample_files.c: opd_handle_old_sample_file() don't
+	  try to delete old samples files if they don't exist.
+
 2003-02-18  Will Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol (do_options): Better option error checking.

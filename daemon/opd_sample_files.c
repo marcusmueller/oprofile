@@ -52,9 +52,12 @@ static void opd_handle_old_sample_file(char const * mangled, time_t mtime)
 	fp = fopen(mangled, "r");
 	if (!fp) {
 		/* file might not be there, or it just might not be
-		 * openable for some reason, so try to remove anyway
+		 * openable for some reason, so try to remove if it exist
 		 */
-		goto del;
+		if (errno == ENOENT)
+			goto out;
+		else
+			goto del;
 	}
 
 	if (fread(&oldheader, sizeof(struct opd_header), 1, fp) != 1) {
@@ -81,6 +84,7 @@ closedel:
 del:
 	verbprintf("Deleting old sample file \"%s\".\n", mangled);
 	remove(mangled);
+out:
 }
 
 
