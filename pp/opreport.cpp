@@ -17,6 +17,7 @@
 #include <numeric>
 
 #include "op_exception.h"
+#include "stream_util.h"
 #include "string_manip.h"
 #include "file_manip.h"
 #include "opreport_options.h"
@@ -236,7 +237,11 @@ void output_col_headers(bool indent)
 		if (name.length() > colwidth)
 			name = name.substr(0, colwidth - 3)
 				+ "...";
-		cout << right << setw(colwidth) << name;
+		io_state state(cout);
+		// gcc 2.95 doesn't know right io manipulator
+		cout.setf(ios::right, ios::adjustfield);
+		// gcc 2.95 doesn't honor setw() for std::string
+		cout << setw(colwidth) << name.c_str();
 		cout << '|';
 	}
 	cout << '\n';
@@ -246,6 +251,9 @@ void output_col_headers(bool indent)
 
 	for (size_t i = 0; i < classes.v.size(); ++i) {
 		cout << "  samples| ";
+		io_state state(cout);
+		// gcc 2.95 doesn't know right io manipulator
+		cout.setf(ios::right, ios::adjustfield);
 		cout << setw(percent_width) << "%|";
 	}
 
@@ -261,7 +269,6 @@ void output_col_headers(bool indent)
 	}
 
 	cout << '\n';
-
 }
 
 
