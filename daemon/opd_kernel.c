@@ -166,6 +166,7 @@ static void opd_read_module_info(void)
 		line = op_get_line(fp);
 
 		if (feof(fp)) {
+			free(line);
 			break;
 		} else if (line[0] == '\0') {
 			free(line);
