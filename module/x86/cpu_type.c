@@ -123,11 +123,11 @@ __init op_cpu get_cpu_type(void)
 
 	switch (vendor) {
 		case X86_VENDOR_AMD:
-			if (family < 6)
-				return CPU_RTC;
+			if (family == 6)
+				return CPU_ATHLON;
 			if (family == 15)
 				return CPU_HAMMER;
-			return CPU_ATHLON;
+			return CPU_RTC;
 
 		case X86_VENDOR_INTEL:
 			switch (family) {

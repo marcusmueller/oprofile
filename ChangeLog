@@ -1,3 +1,7 @@
+2002-11-15  Dave Jones <davej@suse.de>
+
+	* module/x86/cputype.c: Make the AMD case a bit simpler.
+
 2002-11-14  John Levon  <levon@movementarian.org>
 
 	* dae/Makefile.am:

@@ -81,7 +81,6 @@ o the interrupt handler code could probably be improved by moving into asm
 o we don't really need a vmlinux file during profiling ...
  
 o Other x86 processors
-  - AMD Hammer in progress (davej).
   - VIA Eden now has (woo!) 3 events.
 
 o other processors through RTC iff we find testers
