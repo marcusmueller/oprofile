@@ -1,5 +1,16 @@
 2002-10-19  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/op_to_source.cpp:
+	* pp/op_to_source_options.cpp:
+	* pp/op_to_source_options.h:
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml:  allow to pass multiple options to objdump
+
+	* pp/opp_symbol.h:
+	* pp/samples_container.cpp: store symbol size in symbol_entry object.
+
+2002-10-19  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/child_reader.cpp: In some pathological case getline()
 	  finished too early when child process write on stderr.
 

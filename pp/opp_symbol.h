@@ -63,6 +63,8 @@ struct symbol_entry {
 	/// [first, last[ gives the range of sample_entry.
 	sample_index_t first;
 	sample_index_t last;
+	/// symbol size as calculated by op_bfd, start of symbol is sample.vma
+	size_t size;
 };
 
 // FIXME: I am rather dubious this should be a class..

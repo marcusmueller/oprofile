@@ -251,7 +251,7 @@ exclude list of comma separated symbol
 .br
 .TP
 .BI "--objdump-params " 'params' ", -o "'params'
-pass the params strings directly to objdump allowing to pass additional parameters to objdump. Check the objdump man page
+pass the comma separated additional parameters to objdump. Check the objdump man page
 to see what options objdump accept e.g. -o '--disassembler-options=intel' to get Intel assembly syntax instead of att syntax.
 This option can be used only with --assembly or --source-with-assembly
 .br

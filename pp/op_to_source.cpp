@@ -427,7 +427,10 @@ void output_header(ostream & out, int argc, char const * argv[])
 	} else {
 		out << "output annotated assembly listing with samples" << endl;
 		if (!objdump_params.empty()) {
-			out << "passing the following additional arguments to objdump ; \"" << objdump_params << "\"" << endl;
+			out << "passing the following additional arguments to objdump ; \"";
+			for (size_t i = 0 ; i < objdump_params.size() ; ++i)
+				out << objdump_params[i] << " ";
+			out << "\"" << endl;
 		}
 	}
 
@@ -524,14 +527,16 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 			string const & app_name)
 {
 	vector<string> args;
+
 	args.push_back("-d");
-	// FIXME: we shouldn't hard code this one unless
-	// objdump_params is empty
 	args.push_back("--no-show-raw-insn");
 	if (source_with_assembly)
 		args.push_back("-S");
-	if (!objdump_params.empty())
-		args.push_back(objdump_params);
+
+	if (!objdump_params.empty()) {
+		for (size_t i = 0 ; i < objdump_params.size() ; ++i)
+			args.push_back(objdump_params[i]);
+	}
 
 	args.push_back(app_name);
 	child_reader reader("objdump", args);

@@ -101,6 +101,8 @@ add(opp_samples_files const & samples_files, op_bfd const & abfd,
 		if (found_samples == 0 && !add_zero_samples_symbols)
 			continue;
 
+		symb_entry.size = end - start;
+
 		counter += symb_entry.sample.counter;
 
 		symb_entry.name = abfd.syms[i].name();
