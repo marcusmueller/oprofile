@@ -2,6 +2,7 @@
 
 	* events/x86-64.hammer.events:
 	* events/x86-64.hammer.unit_masks: typo fixes from AMD.
+	* module/x86/cpu_type.c: Check for APIC on Athlon before enabling it.
 
 2003-04-15  Philippe Elie  <phil.el@wanadoo.fr>
 

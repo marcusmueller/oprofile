@@ -114,6 +114,7 @@ __init op_cpu get_cpu_type(void)
 	__u8 vendor = current_cpu_data.x86_vendor;
 	__u8 family = current_cpu_data.x86;
 	__u8 model = current_cpu_data.x86_model;
+	__u16 val;
 
 	if (force_rtc) {
 		return CPU_RTC;
@@ -121,8 +122,15 @@ __init op_cpu get_cpu_type(void)
 
 	switch (vendor) {
 		case X86_VENDOR_AMD:
-			if (family == 6)
+			if (family == 6) {
+				/* certain models of K7 does not have apic.
+				 * Check if apic is really present before enabling it.
+				 * IA32 V3, 7.4.1 */
+				val = cpuid_edx(1);
+				if (!(val & (1 << 9)))
+					return CPU_RTC;
 				return CPU_ATHLON;
+			}
 			if (family == 15)
 				return CPU_HAMMER;
 			return CPU_RTC;
