@@ -57,7 +57,7 @@ void formatter::show_details(bool on_off)
 }
 
 
-void formatter::hide_header(bool on_off)
+void formatter::show_header(bool on_off)
 {
 	need_header = on_off;
 }

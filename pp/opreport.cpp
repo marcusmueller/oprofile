@@ -371,7 +371,7 @@ void output_symbols(profile_container const & samples, bool multiple_apps)
 
 	out.show_details(options::details);
 	out.show_long_filenames(options::long_filenames);
-	out.hide_header(!options::show_header);
+	out.show_header(options::show_header);
 	out.vma_format_64bit(choice.hints & cf_64bit_vma);
 	out.show_global_percent(options::global_percent);
 

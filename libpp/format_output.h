@@ -52,7 +52,7 @@ public:
 	/// set the output_details boolean
 	void show_details(bool);
 	/// set the need_header boolean to false
-	void hide_header(bool);
+	void show_header(bool);
 	/// show long (full path) filenames
 	void show_long_filenames(bool);
 	/// format for 64 bit wide VMAs
