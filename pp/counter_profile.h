@@ -41,7 +41,7 @@ public:
 	/**
 	 * ~counter_profile_t - destroy a counter_profile_t object
 	 *
-	 * close and unmap the samples file
+	 * relax resource used by a counter_profile_t object
 	 */
 	~counter_profile_t();
 
@@ -71,7 +71,7 @@ public:
 
 	/// return the header of this sample file
 	opd_header const & header() const {
-		return *static_cast<opd_header *>(samples_db.base_memory);
+		return *file_header;
 	}
 
 	/// see member variable start_offset
@@ -82,11 +82,12 @@ public:
 private:
 	/// storage type for samples sorted by eip
 	typedef std::map<db_key_t, db_value_t> ordered_samples_t;
-	/// helper to build ordered samples by eip
-	void build_ordered_samples();
 
-	/// the underlying db object
-	samples_db_t samples_db;
+	/// helper to build ordered samples by eip
+	void build_ordered_samples(string const & filename);
+
+	/// copy of the samples file header
+	opd_header * file_header;
 
 	/**
 	 * Samples are stored in hash table, iterating over hash table don't

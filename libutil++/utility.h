@@ -27,7 +27,7 @@ private:
 };
 
 /// work round for 2.91, this means you can't derive from noncopyable
-/// in the usual way but rather you need to struct derived /*:*/ noncpyable
+/// in the usual way but rather you need to struct derived /*:*/ noncopyable
 #if __GNUC__ == 2 && __GNUC_MINOR__ == 91
 #define noncopyable
 #else

@@ -1,5 +1,10 @@
 2002-12-08  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/counter_profile.h:
+	* pp/counter_profile.cpp: relax samples_db_t sooner
+
+2002-12-08  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/opp_samples_files.cpp:
 	* pp/opp_samples_files.h:
 	* pp/samples_container.cpp:

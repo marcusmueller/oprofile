@@ -16,6 +16,7 @@
 #include "op_print_event.h"
 #include "op_sample_file.h"
 #include "string_manip.h"
+#include "db_hash.h"
 
 #include "counter_array.h"
 
@@ -29,24 +30,16 @@
 using namespace std;
 
 counter_profile_t::counter_profile_t(string const & filename)
-	: start_offset(0)
+	:
+	file_header(0),
+	start_offset(0)
 {
-	db_open(&samples_db, filename.c_str(), DB_RDONLY, sizeof(struct opd_header));
-
-	opd_header const & head = header();
-	if (head.version != OPD_VERSION) {
-		cerr << "oprofpp: samples files version mismatch, are you "
-			"running a daemon and post-profile tools with version "
-			"mismatch ?" << endl;
-		exit(EXIT_FAILURE);
-	}
-
-	build_ordered_samples();
+	build_ordered_samples(filename);
 }
 
 counter_profile_t::~counter_profile_t()
 {
-	db_close(&samples_db);
+	delete file_header;
 }
 
 void counter_profile_t::check_headers(counter_profile_t const & rhs) const
@@ -78,8 +71,23 @@ void counter_profile_t::check_headers(counter_profile_t const & rhs) const
 	}
 }
 
-void counter_profile_t::build_ordered_samples()
+void counter_profile_t::build_ordered_samples(string const & filename)
 {
+	samples_db_t samples_db;
+
+	db_open(&samples_db, filename.c_str(), DB_RDONLY, sizeof(struct opd_header));
+
+	opd_header const & head = *static_cast<opd_header *>(samples_db.base_memory);
+
+	if (head.version != OPD_VERSION) {
+		cerr << "oprofpp: samples files version mismatch, are you "
+			"running a daemon and post-profile tools with version "
+			"mismatch ?" << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	file_header = new opd_header(head);
+
 	db_node_nr_t node_nr, pos;
 	db_node_t * node = db_get_iterator(&samples_db, &node_nr);
 
@@ -90,6 +98,8 @@ void counter_profile_t::build_ordered_samples()
 			ordered_samples.insert(val);
 		}
 	}
+
+	db_close(&samples_db);
 }
 
 u32 counter_profile_t::count(uint start, uint end) const
