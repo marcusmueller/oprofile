@@ -1,6 +1,7 @@
 0.1 task list
 ---------------
 
+ o fix vmalloc memleak in op_fixmap ! 
  o get symbol size via elf instead of bfd
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
@@ -13,6 +14,7 @@
  o cleanup cache things in compat22.h, add and use cache_line_aligned_in_smp
  o improve format of oprofpp output etc.
  o check than all post-profiles tools show version nr in the same way and document it
+ 
  
 Before 1.0
 ----------

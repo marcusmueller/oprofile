@@ -605,7 +605,9 @@ module: you cannot have both the oprofile and rtc modules loaded.
 RTC mode is less capable than the hardware counters mode; in particular, it is unable to profile sections of
 the kernel where interrupts are disabled. There is just one available event, "RTC interrupts", and its value 
 corresponds to the number of interrupts generated per second (that is, a higher number means a better profiling
-resolution, and higher overhead). Note that the value passed is rounded up to a power of two.
+resolution, and higher overhead). The current implementation of the real-time clock supports only power-of-two
+sampling rates from 2 to 4096 per second.  Other values within this range are rounded to the nearest power of
+two.
 </para>
 <para>
 Setting the value from the GUI should be straightforward. On the command line, you need to specify the
@@ -613,7 +615,9 @@ Setting the value from the GUI should be straightforward. On the command line, y
 </para>
 <para><command>op_start &mdash;map-file=/boot/2.4.0ac12/System.map &mdash;vmlinux=/boot/2.4.0ac12/vmlinux --rtc-value=256</command></para>
 <para>
-Note the sysctl tree described in the next section is different when the RTC is being used.
+Note the sysctl tree described in the next section is different when the RTC is being used.  In particular,
+the file <filename>/proc/sys/dev/oprofile/rtc_value</filename> is used by the tools to set the desired RTC 
+sampling rate, and will reflect the actual sampling rate after profiling has started.
 </para>
 </sect2>
 

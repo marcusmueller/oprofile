@@ -1,4 +1,4 @@
-/* $Id: op_init.c,v 1.6 2002/01/22 20:36:09 movement Exp $ */
+/* $Id: op_init.c,v 1.7 2002/02/09 21:02:46 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -21,7 +21,7 @@
  
 EXPORT_NO_SYMBOLS;
 
-static int __init hw_ok(void)
+static void __init set_cpu_type(void)
 {
 	/* we want to include all P6 processors (i.e. > Pentium Classic,
 	 * < Pentium IV
@@ -30,7 +30,7 @@ static int __init hw_ok(void)
 	    current_cpu_data.x86 != 6) ||
 		(current_cpu_data.x86_vendor != X86_VENDOR_AMD &&
 		 current_cpu_data.x86 != 6)) {
-		return CPU_RTC;
+		sysctl.cpu_type = CPU_RTC;
 	}
 
 	/* 0 if PPro, 1 if PII, 2 if PIII, 3 if Athlon */
@@ -41,22 +41,18 @@ static int __init hw_ok(void)
 			(current_cpu_data.x86_model > 2);
 	}
  
-	return sysctl.cpu_type;
+	sysctl.cpu_type = CPU_RTC; 
 }
 
 int __init stub_init(void)
 {
-	// FIXME: kill CPU_NO_GOOD ?
-	if (hw_ok() == CPU_NO_GOOD)
-		return -EINVAL;
-
+	set_cpu_type();
 	return oprof_init();
 }
 
 void __exit stub_exit(void)
 {
 	oprof_exit();
-	return;
 }
 
 module_init(stub_init);

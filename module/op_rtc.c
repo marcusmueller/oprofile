@@ -102,6 +102,9 @@ static int rtc_setup(void)
 	tmp_freq_select = (tmp_freq_select & 0xf0) | freq;
 	CMOS_WRITE(tmp_freq_select, RTC_FREQ_SELECT);
 
+	/* Update /proc with the actual frequency. */
+	sysctl_parms.ctr[0].count = sysctl.ctr[0].count = 1<<exp;
+
 	unlock_rtc(flags);
 	return 0; 
 }

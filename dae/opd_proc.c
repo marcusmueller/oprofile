@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.104 2002/02/04 03:21:28 movement Exp $ */
+/* $Id: opd_proc.c,v 1.105 2002/02/09 21:02:46 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1304,6 +1304,7 @@ void opd_handle_exec(u16 pid)
  *
  * 4001e000-400fc000 r-xp 00000000 03:04 31011      /lib/libc-2.1.2.so
  */
+/* FIXME: handle (deleted) */
 static int opd_add_ascii_map(struct opd_proc *proc, const char *line)
 {
 	struct opd_map *map = &proc->maps[proc->nr_maps];
