@@ -46,9 +46,9 @@ int compare_by(sort_options::sort_order order,
 {
 	switch (order) {
 		case sort_options::sample:
-			if (lhs->sample.count < rhs->sample.count)
+			if (lhs->sample.counts[0] < rhs->sample.counts[0])
 				return 1;
-			if (lhs->sample.count > rhs->sample.count)
+			if (lhs->sample.counts[0] > rhs->sample.counts[0])
 				return -1;
 			return 0;
 

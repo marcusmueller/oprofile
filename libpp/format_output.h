@@ -54,10 +54,12 @@ private:
 	/// data passed for output
 	struct field_datum {
 		field_datum(symbol_entry const & sym,
-		            sample_entry const & s)
-			: symbol(sym), sample(s) {}
+		            sample_entry const & s,
+			    size_t counter_)
+			: symbol(sym), sample(s), counter(counter_) {}
 		symbol_entry const & symbol;
 		sample_entry const & sample;
+		size_t counter;
 	};
  
 	/// format callback type
@@ -111,10 +113,9 @@ private:
 	void output_header(std::ostream & out);
  
 	/// returns the nr of char needed to pad this field
-	size_t output_field(std::ostream & out,
-	                   symbol_entry const & symbol,
-			   sample_entry const & sample,
-			   format_flags fl, size_t padding);
+	size_t output_field(std::ostream & out, field_datum const & datum,
+			   format_flags fl, size_t padding,
+			   bool hide_immutable);
  
 	/// returns the nr of char needed to pad this field
 	size_t output_header_field(std::ostream & out, format_flags fl,
@@ -127,15 +128,15 @@ private:
 	profile_container const & profile;
  
 	/// total sample count
-	unsigned int total_count;
+	counter_array_t total_count;
 	/// samples so far
-	unsigned int cumulated_samples;
+	counter_array_t cumulated_samples;
 	/// percentage so far
-	unsigned int cumulated_percent;
+	counter_array_t cumulated_percent;
 	/// detailed total count
-	unsigned int total_count_details;
+	counter_array_t total_count_details;
 	/// detailed percentage so far
-	unsigned int cumulated_percent_details;
+	counter_array_t cumulated_percent_details;
 	/// used for outputting header
 	bool first_output;
 	/// true if we need to format as 64 bits quantities

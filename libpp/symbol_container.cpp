@@ -32,7 +32,7 @@ symbol_entry const * symbol_container::insert(symbol_entry const & symb)
 	if (!p.second) {
 		// safe: count is not used by sorting criteria
 		symbol_entry * symbol = const_cast<symbol_entry*>(&*p.first);
-		symbol->sample.count += symb.sample.count;
+		symbol->sample.counts += symb.sample.counts;
 	}
 
 	return &*p.first;

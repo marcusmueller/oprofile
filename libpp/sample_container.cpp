@@ -20,9 +20,13 @@ using namespace std;
 
 namespace {
 
-inline unsigned int add_counts(unsigned int count, sample_entry const * s)
+// FIXME: efficiency ?
+counter_array_t add_counts(counter_array_t const & counts,
+			   sample_entry const * s)
 {
-	return count + s->count;
+	counter_array_t temp(counts);
+	temp += s->counts;
+	return temp;
 }
 
 } // namespace anon
@@ -65,14 +69,14 @@ void sample_container::insert(symbol_entry const * symbol,
 
 	samples_storage::iterator it = samples.find(key);
 	if (it != samples.end()) {
-		it->second.count += sample.count;
+		it->second.counts += sample.counts;
 	} else {
 		samples[key] = sample;
 	}
 }
 
 
-unsigned int
+counter_array_t
 sample_container::accumulate_samples(debug_name_id filename_id) const
 {
 	build_by_loc();
@@ -88,7 +92,7 @@ sample_container::accumulate_samples(debug_name_id filename_id) const
 	iterator it1 = samples_by_loc.lower_bound(&lower);
 	iterator it2 = samples_by_loc.upper_bound(&upper);
 
-	return accumulate(it1, it2, 0, add_counts);
+	return accumulate(it1, it2, counter_array_t(), add_counts);
 }
 
 
@@ -104,7 +108,7 @@ sample_container::find_by_vma(symbol_entry const * symbol, bfd_vma vma) const
 }
 
 
-unsigned int
+counter_array_t
 sample_container::accumulate_samples(debug_name_id filename,
                                      size_t linenr) const
 {
@@ -120,7 +124,7 @@ sample_container::accumulate_samples(debug_name_id filename,
 
 	it_pair itp = samples_by_loc.equal_range(&sample);
 
-	return accumulate(itp.first, itp.second, 0, add_counts);
+	return accumulate(itp.first, itp.second, counter_array_t(), add_counts);
 }
 
 

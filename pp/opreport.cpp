@@ -28,6 +28,8 @@
 
 using namespace std;
 
+size_t pp_nr_counters;
+
 namespace {
 
 
@@ -506,7 +508,7 @@ vector<event_group_summary> populate_group_summaries()
  * Load the given samples container with the profile data from
  * the files container, merging as appropriate.
  */
-void populate_profiles(partition_files const & files, profile_container & samples)
+void populate_profiles(partition_files const & files, profile_container & samples, size_t counter)
 {
 	image_set images = sort_by_image(files, options::extra_found_images);
 
@@ -533,7 +535,7 @@ void populate_profiles(partition_files const & files, profile_container & sample
 
 			check_mtime(abfd.get_filename(), profile.get_header());
 	
-			samples.add(profile, abfd, app_name);
+			samples.add(profile, abfd, app_name, counter);
 		} else {
 			for (; it != p_it.second; ++it) {
 				string app_name = it->second.image;
@@ -546,7 +548,7 @@ void populate_profiles(partition_files const & files, profile_container & sample
 				check_mtime(abfd.get_filename(),
 					    profile.get_header());
 	
-				samples.add(profile, abfd, app_name);
+				samples.add(profile, abfd, app_name, counter);
 			}
 		}
 	}
@@ -604,6 +606,8 @@ int opreport(vector<string> const & non_options)
 {
 	handle_options(non_options);
 
+	pp_nr_counters = sample_file_partition.size();
+
 	output_header();
 
 	if (!options::symbols) {
@@ -616,7 +620,8 @@ int opreport(vector<string> const & non_options)
 
 	profile_container samples(false,
 		options::debug_info, options::details);
-	populate_profiles(sample_file_partition[0], samples);
+	for (size_t i = 0; i < sample_file_partition.size(); ++i)
+		populate_profiles(sample_file_partition[i], samples, i);
 	output_symbols(samples);
 	return 0;
 }

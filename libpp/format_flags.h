@@ -13,9 +13,7 @@
 #define FORMAT_FLAGS_H
 
 /**
- * flags passed to the ctor of an output_symbol object. This also specify the
- * order of field output: lower enum tag ==> comes first in output order.
- * Note than changing value of enum is not safe. (why not ?)
+ * flags passed to the ctor of an output_symbol object.
  *
  * \sa formatter
  */
@@ -49,12 +47,7 @@ enum format_flags {
 	 * to symbol but relative to the total nr of samples,
 	 * accumulated
 	 */
-	ff_percent_cumulated_details = 1 << 10,
-
-	/// These fields are considered immutable when showing details for one
-	/// symbol, we show them only when outputting the symbol itself but
-	/// we don't display them in the details output line
-	ff_immutable_field = ff_symb_name + ff_image_name + ff_app_name
+	ff_percent_cumulated_details = 1 << 10
 };
 
 

@@ -26,6 +26,8 @@
 #include "sample_container.h"
 #include "symbol_container.h"
 
+extern size_t pp_nr_counters;
+
 using namespace std;
 
 namespace {
@@ -55,7 +57,6 @@ profile_container::profile_container(bool add_zero_samples_symbols_,
 	:
 	symbols(new symbol_container),
 	samples(new sample_container),
-	total_count(0),
 	debug_info(debug_info_),
 	add_zero_samples_symbols(add_zero_samples_symbols_),
 	need_details(need_details_)
@@ -73,8 +74,11 @@ profile_container::~profile_container()
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
 void profile_container::add(profile_t const & profile,
-                            op_bfd const & abfd, string const & app_name)
+                            op_bfd const & abfd, string const & app_name,
+			    size_t counter)
 {
+	if (counter > pp_nr_counters)
+		throw runtime_error("profile_container::add(): invalid counter");
 	string const image_name = abfd.get_filename();
 
 	for (symbol_index_t i = 0; i < abfd.syms.size(); ++i) {
@@ -86,15 +90,15 @@ void profile_container::add(profile_t const & profile,
 
 		profile_t::iterator_pair p_it =
 			profile.samples_range(start, end);
-		symb_entry.sample.count =
-			accumulate(p_it.first, p_it.second, 0);
 
-		if (symb_entry.sample.count == 0 && !add_zero_samples_symbols)
+		u32 count = accumulate(p_it.first, p_it.second, 0);
+		if (count == 0 && !add_zero_samples_symbols)
 			continue;
 
-		symb_entry.size = end - start;
+		symb_entry.sample.counts[counter] = count;
+		total_count[counter] += count;
 
-		total_count += symb_entry.sample.count;
+		symb_entry.size = end - start;
 
 		symb_entry.name = symbol_names.create(abfd.syms[i].name());
 
@@ -118,7 +122,7 @@ void profile_container::add(profile_t const & profile,
 		symbol_entry const * symbol = symbols->insert(symb_entry);
 
 		if (need_details) {
-			add_samples(abfd, i, p_it, base_vma, symbol);
+			add_samples(abfd, i, p_it, base_vma, symbol, counter);
 		}
 	}
 }
@@ -127,13 +131,14 @@ void profile_container::add(profile_t const & profile,
 void
 profile_container::add_samples(op_bfd const & abfd, symbol_index_t sym_index,
                                profile_t::iterator_pair const & p_it,
-			       bfd_vma base_vma, symbol_entry const * symbol)
+			       bfd_vma base_vma, symbol_entry const * symbol,
+			       size_t counter)
 {
 	profile_t::const_iterator it;
 	for (it = p_it.first; it != p_it.second ; ++it) {
 		sample_entry sample;
 
-		sample.count = it.count();
+		sample.counts[counter] = it.count();
 
 		sample.file_loc.linenr = 0;
 		if (debug_info && sym_index != nil_symbol_index) {
@@ -171,7 +176,7 @@ profile_container::select_symbols(symbol_choice & choice) const
 			continue;
 
 		double const percent =
-			op_ratio(it->sample.count, samples_count());
+			op_ratio(it->sample.counts[0], total_count[0]);
 
 		if (percent >= threshold) {
 			result.push_back(&*it);
@@ -232,9 +237,10 @@ profile_container::select_filename(double threshold) const
 	set<debug_name_id>::const_iterator it = filename_set.begin();
 	set<debug_name_id>::const_iterator const end = filename_set.end();
 	for (; it != end; ++it) {
-		unsigned int count = samples_count(*it);
+		// FIXME: is samples_count() the right interface now ?
+		counter_array_t counts = samples_count(*it);
 
-		filename_by_samples f(*it, op_ratio(count, samples_count()));
+		filename_by_samples f(*it, op_ratio(counts[0], total_count[0]));
 
 		file_by_samples.push_back(f);
 	}
@@ -258,7 +264,7 @@ profile_container::select_filename(double threshold) const
 }
 
 
-u32 profile_container::samples_count() const
+counter_array_t profile_container::samples_count() const
 {
 	return total_count;
 }
@@ -287,13 +293,13 @@ profile_container::find_sample(symbol_entry const * symbol, bfd_vma vma) const
 }
 
 
-unsigned int profile_container::samples_count(debug_name_id filename_id) const
+counter_array_t profile_container::samples_count(debug_name_id filename_id) const
 {
 	return samples->accumulate_samples(filename_id);
 }
 
 
-unsigned int profile_container::samples_count(debug_name_id filename,
+counter_array_t profile_container::samples_count(debug_name_id filename,
 				    size_t linenr) const
 {
 	return samples->accumulate_samples(filename, linenr);

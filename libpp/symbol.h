@@ -14,6 +14,7 @@
 
 #include "config.h"
 #include "name_storage.h"
+#include "counter_array.h"
 
 #include <string>
 #include <iostream>
@@ -38,13 +39,13 @@ struct file_location {
 
 /// associate vma address with a file location and a samples count
 struct sample_entry {
-	sample_entry() : vma(0), count(0) {}
+	sample_entry() : vma(0) {}
 	/// From where file location comes the samples
 	file_location file_loc;
 	/// From where virtual memory address comes the samples
 	bfd_vma vma;
 	/// the samples count
-	unsigned int count;
+	counter_array_t counts;
 };
 
 

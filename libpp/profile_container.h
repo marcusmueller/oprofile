@@ -68,7 +68,7 @@ public:
 	 * sampling rate, same events etc.)
 	 */
 	void add(profile_t const & profile, op_bfd const & abfd,
-		 std::string const & app_name);
+		 std::string const & app_name, size_t counter);
 
 	/// Find a symbol from its image_name, vma, return zero if no symbol
 	/// for this image at this vma
@@ -110,14 +110,14 @@ public:
 	std::vector<debug_name_id> const select_filename(double threshold) const;
 
 	/// return the total number of samples
-	unsigned int samples_count() const;
+	counter_array_t samples_count() const;
 
 	/// Get the samples count which belongs to filename. Return 0 if
 	/// no samples found.
-	unsigned int samples_count(debug_name_id filename_id) const;
+	counter_array_t samples_count(debug_name_id filename_id) const;
 	/// Get the samples count which belongs to filename, linenr. Return
 	/// 0 if no samples found.
-	unsigned int samples_count(debug_name_id filename,
+	counter_array_t samples_count(debug_name_id filename,
 			   size_t linenr) const;
 
 	/// return iterator to the first samples
@@ -134,7 +134,8 @@ private:
 	/// helper for add()
 	void add_samples(op_bfd const & abfd, symbol_index_t sym_index,
 	                 profile_t::iterator_pair const &,
-			 bfd_vma base_vma, symbol_entry const * symbol);
+			 bfd_vma base_vma, symbol_entry const * symbol,
+			 size_t counter);
 
 	/**
 	 * create an unique artificial symbol for an offset range. The range
@@ -159,7 +160,7 @@ private:
 	scoped_ptr<sample_container> samples;
 	/// build() must count samples count for each counter so cache it here
 	/// since user of profile_container often need it later.
-	unsigned int total_count;
+	counter_array_t total_count;
 
 	/**
 	 * Optimization hints for what information we are going to need,
