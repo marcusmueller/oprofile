@@ -71,7 +71,7 @@ struct counter_setup {
 	// if false other field are not meaningful.
 	bool   enabled;
 	u8 ctr_event;
-	u8 unit_mask;
+	u16 unit_mask;
 	size_t event_count_sample;
 	size_t total_samples;
 };

@@ -30,7 +30,7 @@ extern uint op_nr_counters;
 extern int separate_samples;
 extern u32 ctr_count[OP_MAX_COUNTERS];
 extern u8 ctr_event[OP_MAX_COUNTERS];
-extern u8 ctr_um[OP_MAX_COUNTERS];
+extern u16 ctr_um[OP_MAX_COUNTERS];
 extern double cpu_speed;
 extern op_cpu cpu_type;
 

@@ -70,7 +70,7 @@ static void help_for_event(int i)
 		printf("\t----------\n");
 
 		for (j=0; j < op_events[i].unit->num; j++) {
-			printf("\t%.2x: %s\n",
+			printf("\t0x%.2x: %s\n",
 			       op_events[i].unit->um[j].value,
 			       op_events[i].unit->um[j].desc);
 		}

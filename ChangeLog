@@ -1,3 +1,12 @@
+2002-09-23  Graydon Hoare  <graydon@redhat.com>
+
+	* dae/oprofiled.c:
+	* daemon/op_sample_files.c:
+	* daemon/oprofiled.c:
+	* pp/op_to_source.c:
+	* utils/op_help.c: u8 unit mask -> u16 unit-mask. I'm not sure this
+	  catches *all* the instances, but it does appear to be an improvement
+
 2002-09-30  William Cohen  <wcohen@redhat.com>
 
 	* libutil++/string_manip.cpp (sample_filename): Correct declaration.

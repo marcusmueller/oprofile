@@ -44,7 +44,7 @@ pid_t getpgid(pid_t pid);
 
 u32 ctr_count[OP_MAX_COUNTERS];
 u8 ctr_event[OP_MAX_COUNTERS];
-u8 ctr_um[OP_MAX_COUNTERS];
+u16 ctr_um[OP_MAX_COUNTERS];
 double cpu_speed;
 
 uint op_nr_counters;
