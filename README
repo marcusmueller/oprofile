@@ -1,4 +1,4 @@
-This is a beta release version of oprofile, a transparent
+This is an alpha release version of oprofile, a transparent
 low-overhead system-wide profiler.
 
 You can find some documentation in the doc/oprofile/ directory.
@@ -10,4 +10,4 @@ oprofile was written by John Levon <moz@compsoc.man.ac.uk>.
 Philippe Elie <ph_e@club-internet.fr> contributed fixes for unit-mask
 testing, verified many of the event types experimentally, wrote
 the tcl/tk oprofile interface, added options to oprofpp, and made various
-other small fixes.
+other fixes and feature implementations.

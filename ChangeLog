@@ -1,3 +1,7 @@
+2001-06-23  John Levon  <moz@compsoc.man.ac.uk>
+
+	* README: update
+ 
 2001-06-22  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.c: always have smp_apic_restore()
