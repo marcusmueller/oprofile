@@ -99,19 +99,40 @@ static string mangle_filename(const string & filename)
 	return result;
 }
 
+/**
+ * create_file_list - create the file list based
+ *  on the command line file list
+ * @result: where to store the created file list
+ * @images_name: the input file list contains either a binary
+ * image name or a list of samples filenames
+ *
+ * if @images_name contain only one file it is assumed to be
+ * the name of binary image and the created file list will
+ * contain all samples file name related to this image
+ * else the result contains only filename explicitly
+ * specified in @images_name
+ *
+ * FIXME: @images_name is ill-named
+ *
+ * all error are fatal.
+ */
 static void create_file_list(list<string> & result,
 			     const vector<string> & images_name)
 {
-	/* TODO protect again people that put on cmd line binary name and
-	 * samples files name, protect also against samples files specified
-	 * more than once */
+	/* user can not mix binary name and samples files name on the command
+	 * line, this error is captured later because when more one filename
+	 * is given all files are blindly loaded as samples file and so on
+	 * a fatal error occur at load time. FIXME for now I see no use to
+	 * allow mixing samples filename and binary name but later if we
+	 * separate samples for each this can be usefull? */
 	if (images_name.size() == 1 && 
-	    images_name[0].find_first_of('{') == string::npos) { /*}*/
+	    images_name[0].find_first_of('{') == string::npos) {
 		/* get from the image name all samples on the form of
 		 * base_dir*}}mangled_name{{{images_name) */
 		ostringstream os;
 		os << "*}}" << mangle_filename(images_name[0])
 		   << "#" << counter;
+
 		get_sample_file_list(result, base_dir, os.str());
 
 		// get_sample_file_list() shrink the #nr suffix so re-add it
@@ -122,16 +143,36 @@ static void create_file_list(list<string> & result,
 			*it = os.str();
 		}
 	} else {
-		/* FIXME: Note than I don't check against filename i.e. all
-		 * filename must not necessarilly belongs to the same
-		 * application. We check later only for coherent opd_header. If
-		 * we check against filename string we disallow the user to
-		 * merge already merged samples file */
-		result.insert(result.begin(),
-			      images_name.begin(), images_name.end());
+		/* Note than I don't check against filename i.e. all filename
+		 * must not necessarilly belongs to the same application. We
+		 * check later only for coherent opd_header. If we check
+		 * against filename string we disallow the user to merge
+		 * already merged samples file */
+
+		/* That's a common pitfall through regular expression to
+		 * provide more than one time the same filename on command
+		 * file, just silently remove duplicate */
+		for (size_t i = 0 ; i < images_name.size(); ++i) {
+			if (find(result.begin(), result.end(), images_name[i]) == result.end())
+				result.push_back(images_name[i]);
+		}
+	}
+
+	if (result.size() == 0) {
+		cerr << "No samples files found" << endl;
+		exit(EXIT_FAILURE);
 	}
 }
 
+/**
+ * create_samples_files_list - create a collection of opened samples files
+ * @filenames: the filenames list from which we open samples files
+ *
+ * from a collection of filenameswe create a collection of opened
+ * samples files
+ *
+ * all error are fatal
+ */ 
 static void
 create_samples_files_list(vector< SharedPtr<samples_file_t> > & samples_files,
 			  const list<string> & filenames)
@@ -148,6 +189,14 @@ create_samples_files_list(vector< SharedPtr<samples_file_t> > & samples_files,
 	}
 }
 
+/**
+ * output_files - create a samples file by merging (cumulating samples count)
+ *  from a collection of samples files
+ * @filename: the output filename
+ * @samples_files: a collection of opened samples files
+ *
+ * all error are fatal
+ */
 static void output_files(const std::string & filename,
 			 const vector< SharedPtr<samples_file_t> > & samples_files)
 {
@@ -156,7 +205,8 @@ static void output_files(const std::string & filename,
 
 	out.write(samples_files[0]->header, sizeof(opd_header));
 
-	size_t nr_samples = samples_files[0]->size / sizeof(opd_fentry);
+	// All size of samples has been checked and must be identical
+	size_t nr_samples = samples_files[0]->nr_samples;
 	for (size_t i = 0 ; i < nr_samples ; ++i) {
 		u32 count = 0;
 		for (size_t j = 0 ; j < samples_files.size() ; ++j)
@@ -175,11 +225,6 @@ int main(int argc, char const * argv[])
 	get_options(argc, argv, images_name);
 
 	create_file_list(samples_filenames, images_name);
-
-	if (samples_filenames.size() == 0) {
-		cerr << "No samples files found" << endl;
-		exit(EXIT_FAILURE);
-	}
 
 	vector< SharedPtr<samples_file_t> > samples_files;
 	create_samples_files_list(samples_files, samples_filenames);

@@ -77,7 +77,6 @@ static int show_shared_libs;
 static const char * base_dir = "/var/opd/samples";
 
 static struct poptOption options[] = {
-	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
 	{ "use-counter", 'c', POPT_ARG_INT, &ctr, 0,
 	  "use counter", "counter nr", },
 	{ "show-shared-libs", 'k', POPT_ARG_NONE, &show_shared_libs, 0,
@@ -152,17 +151,13 @@ image_name::image_name(const string& samplefile_name, u32 count_ = 0)
  */
 static bool samples_file_exist(const std::string & filename)
 {
-	std::ostringstream s;
-
-	s << filename << "#" << ctr;
-
-	ifstream in(s.str().c_str());
+	ifstream in(filename.c_str());
 
 	return in;
 }
 
 /**
- * sort_file_list - insert in result a file list sorted by app name
+ * sort_file_list_by_name - insert in result a file list sorted by app name
  * @result: where to put result
  * @file_list: a list of string which must be insert in @result
  *
@@ -173,11 +168,20 @@ static bool samples_file_exist(const std::string & filename)
  *     which belong to app /usr/sbin/syslogd)
  *  or
  *   }bin}bash (application)
- * This sorting is used later to find samples filename which belong
- * to the same application.
+ *
+ * The sort order used is likely to get in result file name as:
+ * app_name_A, all samples filenames from shared libs which belongs
+ *  to app_name_A,
+ * app_name_B, etc.
+ *
+ * This sort is used later to find samples filename which belong
+ * to the same application. Note than the sort is correct even if
+ * the input file list contains only app_name (i.e. samples file
+ * obtained w/o --separate-samples) in this case shared libs are
+ * treated as application
  */
-static void sort_file_list(map_t & result,
-			   const list<string> & file_list)
+static void sort_file_list_by_name(map_t & result,
+				   const list<string> & file_list)
 {
 	list<string>::const_iterator it;
 	for (it = file_list.begin() ; it != file_list.end() ; ++it) {
@@ -208,7 +212,7 @@ static void out_filename(const string& app_name, size_t app_count,
 }
 
 /**
- * output_image_details - output the samples ratio for some images
+ * output_image_samples_count - output the samples ratio for some images
  * @first: the start iterator
  * @last: the end iterator
  * @total_count: the total samples count
@@ -217,8 +221,8 @@ static void out_filename(const string& app_name, size_t app_count,
  * @map_t::reverse_iterator
  */
 template <class Iterator>
-static void output_image_details(Iterator first, Iterator last, u32 app_count,
-				 double total_count)
+static void output_image_samples_count(Iterator first, Iterator last,
+				       u32 app_count, double total_count)
 {
 	for (Iterator it = first ; it != last ; ++it) {
 		string name = it->second->second.lib_name;
@@ -251,6 +255,9 @@ void build_sorted_map_by_count(sorted_map_t & sorted_map, pair_it_t p_it)
  * treat_file_list - open each samples file to cumulate samples count
  * and display a sorted list of filename and samples ratio
  * @files: the file list to treat.
+ *
+ * print the whole cumulated count for all selected filename (currently
+ * the whole base_dir directory), does not show any details about symbols
  */
 static void treat_file_list(map_t& files)
 {
@@ -266,23 +273,17 @@ static void treat_file_list(map_t& files)
 		// the range [p_it.first, p_it.second[ belongs to application
 		// it.first->first
 		for ( ; p_it.first != p_it.second ; ++p_it.first) {
-			std::string filename(string(base_dir) + "/" +
-				     p_it.first->second.samplefile_name);
+			std::ostringstream s;
+			s << string(base_dir) << "/"
+			  << p_it.first->second.samplefile_name << "#" << ctr;
 
+			string filename = s.str();
 			if (samples_file_exist(filename) == false)
 				continue;
 
-			opp_samples_files samples(filename);
+			samples_file_t samples(filename);
 
-			u32 count = 0;
-			if (samples.is_open(ctr)) {
-				const opd_fentry * begin;
-				const opd_fentry * end;
-				begin = samples.samples[ctr];
-				end = begin + samples.nr_samples;
-				for ( ; begin != end ; ++begin)
-					count += begin->count;
-			}
+			u32 count = samples.count(0, samples.nr_samples);
 
 			p_it.first->second.count = count;
 			total_count += count;
@@ -335,10 +336,10 @@ static void treat_file_list(map_t& files)
 
 				build_sorted_map_by_count(temp_map, p_it);
 
-				output_image_details(temp_map.rbegin(),
-						     temp_map.rend(),
-						     s_it->first,
-						     total_count);
+				output_image_samples_count(temp_map.rbegin(),
+							   temp_map.rend(),
+							   s_it->first,
+							   total_count);
 			}
 		}
 	} else {
@@ -355,10 +356,10 @@ static void treat_file_list(map_t& files)
 
 				build_sorted_map_by_count(temp_map, p_it);
 
-				output_image_details(temp_map.begin(),
-						     temp_map.end(),
-						     s_it->first,
-						     total_count);
+				output_image_samples_count(temp_map.begin(),
+							   temp_map.end(),
+							   s_it->first,
+							   total_count);
 			}
 		}
 	}
@@ -371,11 +372,14 @@ int main(int argc, char const * argv[])
 {
 	get_options(argc, argv);
 
+	/* TODO: allow as op_merge to specify explicitly name of samples
+	 * files rather getting the whole directory. Code in op_merge can
+	 * be probably re-used */
 	list<string> file_list;
 	get_sample_file_list(file_list, base_dir, "*");
 
 	map_t file_map;
-	sort_file_list(file_map, file_list);
+	sort_file_list_by_name(file_map, file_list);
 
 	treat_file_list(file_map);
 

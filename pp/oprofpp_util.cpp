@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.21 2002/01/24 00:15:17 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.22 2002/01/25 03:29:11 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -922,6 +922,8 @@ samples_file_t::samples_file_t(const string & filename)
 	}
 
 	open_samples_file(fd, size, samples, header, filename);
+
+	nr_samples = size / sizeof(opd_fentry);
 }
 
 /**
@@ -957,4 +959,25 @@ bool samples_file_t::check_headers(const samples_file_t & rhs) const
 	}
 
 	return true;
+}
+
+/**
+ * count - return the number of samples in given range
+ * @start: start samples nr of range
+ * @end: end samples br of range
+ *
+ * return the number of samples in the the range [@start, @end]
+ * no range checking is performed.
+ *
+ * This actually code duplicate partially accumulate member of
+ * opp_samples_files which in future must use this as it internal
+ * implementation
+ */
+u32 samples_file_t::count(uint start, uint end) const
+{
+	u32 count = 0;
+	for ( ; start < end ; ++start)
+		count += samples[start].count;
+
+	return count;
 }

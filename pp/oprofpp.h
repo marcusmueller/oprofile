@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.36 2002/01/24 00:15:17 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.37 2002/01/25 03:29:11 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -142,6 +142,8 @@ struct samples_file_t
 
 	bool check_headers(const samples_file_t & headers) const;
 
+	u32 count(uint start, uint end) const;
+
 	// probably needs to be private and create the neccessary member
 	// function (not simple getter), make private and compile to see
 	// what operation we need later. I've currently not a clear view
@@ -152,6 +154,7 @@ struct samples_file_t
 	fd_t fd;
 	// This do not include the header size
 	size_t size;
+	size_t nr_samples;
 
 private:
 	// neither copy-able or copy constructible
