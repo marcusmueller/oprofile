@@ -24,12 +24,17 @@ void op_print_event(ostream & out, int counter_nr, op_cpu cpu_type,
 	char const * typedescp;
 	char const * umdescp;
 
+	if (cpu_type == CPU_TIMER_INT) {
+		out << "Profiling through timer interrupt\n";
+		return;
+	}
+
 	op_get_event_desc(cpu_type, type, um,
 			  &typenamep, &typedescp, &umdescp);
 
 	out << "Counter " << counter_nr << " counted "
 	    << typenamep << " events (" << typedescp << ")";
-	if (cpu_type != CPU_RTC && cpu_type != CPU_TIMER_INT) {
+	if (cpu_type != CPU_RTC) {
 		out << " with a unit mask of 0x"
 		    << hex << setw(2) << setfill('0') << unsigned(um) << " ("
 		    << (umdescp ? umdescp : "Not set") << ")";
