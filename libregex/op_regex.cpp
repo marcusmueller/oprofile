@@ -213,9 +213,8 @@ regular_expression_replace::get_match(regmatch_t const * match, char idx) const
 	return match[sub_expr];
 }
 
-void regular_expression_replace::do_replace(string & str,
-					    string const & replace,
-					    regmatch_t const * match) const
+void regular_expression_replace::do_replace
+(string & str, string const & replace, regmatch_t const * match) const
 {
 	string inserted;
 	for (size_t i = 0 ; i < replace.length() ; ++i) {

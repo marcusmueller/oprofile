@@ -658,7 +658,7 @@ presentation to the user.
 
 <para>
 The profile specification presented by the user is parsed in
-the function <function>profile_spec::create()O</function>. This
+the function <function>profile_spec::create()</function>. This
 creates an object representing the specification. Then we
 use <function>profile_spec::generate_file_list()</function>
 to search for all sample files and match them against the

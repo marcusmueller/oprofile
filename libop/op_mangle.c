@@ -59,7 +59,7 @@ char * op_mangle_filename(struct mangle_values const * values)
 	strcat(mangled, "/");
 
 	strcat(mangled, "{dep}" "/");
-	append_separator(mangled, values->flags, image_name);
+	append_separator(mangled, values->flags, dep_name);
 	strcat(mangled, dep_name);
 	strcat(mangled, "/");
 
