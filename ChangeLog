@@ -1,3 +1,7 @@
+2001-12-22  Dave Jones <davej@suse.de>
+
+	* Config.h.in: Readd to CVS.
+
 2001-12-18  Dave Jones <davej@suse.de>
 
 	* Makefile.in: Make documentation build again.
