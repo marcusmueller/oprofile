@@ -6,9 +6,15 @@ MKDIR_P=mkdir -p
 
 .PHONY: all install clean distclean maintainerclean uninstall tags
 
+ifeq "@OPROFILE_25@" "yes"
+DAEMON_VERSION=daemon
+else
+DAEMON_VERSION=dae
+endif
+ 
 # take care: order of sub-dir build is meaningful
 PRE_MODULE_SUBDIRS=libutil libop
-POST_MODULE_SUBDIRS=libutil++ libopt++ libop++ libdb dae utils pp gui doc
+POST_MODULE_SUBDIRS=libutil++ libopt++ libop++ libdb $(DAEMON_VERSION) utils pp gui doc
 USER_SUBDIRS=$(PRE_MODULE_SUBDIRS) $(POST_MODULE_SUBDIRS)
 SUBDIRS=$(PRE_MODULE_SUBDIRS) module/arch module $(POST_MODULE_SUBDIRS)
 
@@ -27,16 +33,21 @@ pre_module:
 		(cd $$i && $(MAKE)) || exit 1 ; \
 	done
 
+ifeq "@OPROFILE_25@" "no"
 kernel_module: pre_module
 	(cd $(KSRC) && $(MAKE) SUBDIRS=$(OPROFILE_DIR)/module/arch modules) || exit 1 ;
 	(cd $(KSRC) && $(MAKE) SUBDIRS=$(OPROFILE_DIR)/module modules) || exit 1 ;
-
-install: install.kernel install.user
 
 install.kernel: kernel_module
 	-$(MKDIR_P) $(MODINSTALLDIR)
 	cp module/oprofile-module.o $(MODINSTALLDIR)/oprofile.o
 	if test $(KVERS) = "`uname -r`"; then depmod -a ; fi
+else
+kernel_module:
+install.kernel:
+endif
+
+install: install.kernel install.user
 
 install.user: pre_module post_module
 	for i in $(USER_SUBDIRS) ; \

@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.102 2002/09/11 20:52:24 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.103 2002/09/23 01:01:48 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -101,22 +101,62 @@ dnl Check for the minimal kernel version supported
 AC_MSG_CHECKING(kernel version)
 AX_KERNEL_VERSION(2, 2, 10, <=, AC_MSG_RESULT("ok"), AC_MSG_ERROR("check html documentation install section"))
 
-dnl Check if we need to build the module with extra flags
-dnl FIXME this fix 2.5.19 and 2.5.20 build but perhaps its not the right way
-AC_MSG_CHECKING([whether module compilation need -DMODULE])
-AX_KERNEL_VERSION(2, 5, 19, >=, AC_MSG_RESULT("no"), AC_MSG_RESULT("yes"); EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DMODULE")
 
-dnl linux/spinlock.h added at some point in past
-AC_MSG_CHECKING([for "$KINC"/linux/spinlock.h])
-if test -f $KINC/linux/spinlock.h; then
-  EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DHAVE_LINUX_SPINLOCK_HEADER"
-  AC_MSG_RESULT([yes])
-else
-  AC_MSG_RESULT([no])
+AC_MSG_CHECKING(for kernel OProfile support)
+AX_COMPILE_OPTION(CONFIG_OPROFILE, OPROFILE_25=yes, OPROFILE_25=no)
+AX_COMPILE_OPTION(CONFIG_OPROFILE_MODULE, OPROFILE_25=yes, OPROFILE_25=$OPROFILE_25)
+AC_SUBST(OPROFILE_25)
+AC_MSG_RESULT($OPROFILE_25)
+
+if test "$OPROFILE_25" = "yes"; then
+	dnl Check if we need to build the module with extra flags
+	dnl FIXME this fix 2.5.19 and 2.5.20 build but perhaps its not the right way
+	AC_MSG_CHECKING([whether module compilation need -DMODULE])
+	AX_KERNEL_VERSION(2, 5, 19, >=, AC_MSG_RESULT("no"), AC_MSG_RESULT("yes"); EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DMODULE")
+
+	dnl linux/spinlock.h added at some point in past
+	AC_MSG_CHECKING([for "$KINC"/linux/spinlock.h])
+	if test -f $KINC/linux/spinlock.h; then
+	  EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DHAVE_LINUX_SPINLOCK_HEADER"
+	  AC_MSG_RESULT([yes])
+	else
+	  AC_MSG_RESULT([no])
+	fi
+	dnl AC_CHECK_FILE("$KINC"/linux/spinlock.h, EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DHAVE_LINUX_SPINLOCK_HEADER")
+
+	AC_SUBST(EXTRA_CFLAGS_MODULE)
+
+	AC_MSG_CHECKING(for rtc_lock)
+	gcc -I$KINC -E $KINC/linux/mc146818rtc.h | grep rtc_lock >/dev/null
+	if test "$?" -eq 0; then
+	  AC_MSG_RESULT(yes); EXTRA_CFLAGS="$EXTRA_CFLAGS -DRTC_LOCK";
+	else
+	  AC_MSG_RESULT(no);
+	fi
+	 
+	arch="unknown"
+	AC_MSG_CHECKING(for x86 architecture)
+	AX_COMPILE_OPTION(CONFIG_X86, x86=1, x86=0)
+	AX_COMPILE_OPTION(CONFIG_X86_WP_WORKS_OK, x86=1, x86=$x86)
+	AX_MSG_RESULT_YN($x86)
+	test "$x86" = 1 && arch="x86"
+	test "$arch" = "unknown" && AC_MSG_ERROR(Unsupported architecture)
+	rm -f module/arch && ln -s "$arch" module/arch
+
+	dnl for now we do not support PREEMPT patch
+	AC_MSG_CHECKING(for preempt patch)
+	AX_COMPILE_OPTION(CONFIG_PREEMPT,preempt=1,preempt=0)
+	AX_MSG_RESULT_YN($preempt)
+	test "$preempt" = 0 || AC_MSG_ERROR(unsupported kernel configuration : CONFIG_PREEMPT)
+
+	AC_SUBST(KINC)
+
+	MODINSTALLDIR=/lib/modules/$KVERS
 fi
-dnl AC_CHECK_FILE("$KINC"/linux/spinlock.h, EXTRA_CFLAGS_MODULE="$EXTRA_CFLAGS_MODULE -DHAVE_LINUX_SPINLOCK_HEADER")
-
-AC_SUBST(EXTRA_CFLAGS_MODULE)
+ 
+AC_ARG_WITH(module-dir,
+[  --with-module-dir=dir        Path to module installation directory], MODINSTALLDIR=$withval)
+AC_SUBST(MODINSTALLDIR)
 
 # FIXME: use config.h for the -D things ... 
 AC_MSG_CHECKING("whether malloc attribute is understood")
@@ -136,37 +176,8 @@ if (__builtin_expect(i, 0)) { }
 ],AC_MSG_RESULT("yes"); EXTRA_CFLAGS="$EXTRA_CFLAGS -DEXPECT_OK", AC_MSG_RESULT("no");)
 CFLAGS=$SAVE_CFLAGS 
  
-AC_MSG_CHECKING(for rtc_lock)
-gcc -I$KINC -E $KINC/linux/mc146818rtc.h | grep rtc_lock >/dev/null
-if test "$?" -eq 0; then
-  AC_MSG_RESULT(yes); EXTRA_CFLAGS="$EXTRA_CFLAGS -DRTC_LOCK";
-else
-  AC_MSG_RESULT(no);
-fi
- 
-arch="unknown"
-AC_MSG_CHECKING(for x86 architecture)
-AX_COMPILE_OPTION(CONFIG_X86, x86=1, x86=0)
-AX_COMPILE_OPTION(CONFIG_X86_WP_WORKS_OK, x86=1, x86=$x86)
-AX_MSG_RESULT_YN($x86)
-test "$x86" = 1 && arch="x86"
-test "$arch" = "unknown" && AC_MSG_ERROR(Unsupported architecture)
-rm -f module/arch && ln -s "$arch" module/arch
-
-dnl for now we do not support PREEMPT patch
-AC_MSG_CHECKING(for preempt patch)
-AX_COMPILE_OPTION(CONFIG_PREEMPT,preempt=1,preempt=0)
-AX_MSG_RESULT_YN($preempt)
-test "$preempt" = 0 || AC_MSG_ERROR(unsupported kernel configuration : CONFIG_PREEMPT)
-
-AC_SUBST(KINC)
 AC_SUBST(EXTRA_CFLAGS)
 
-MODINSTALLDIR=/lib/modules/$KVERS
- 
-AC_ARG_WITH(module-dir,
-[  --with-module-dir=dir        Path to module installation directory], MODINSTALLDIR=$withval)
-AC_SUBST(MODINSTALLDIR)
 
 dnl --- user space configuration ---
 
@@ -266,6 +277,7 @@ AC_OUTPUT(make.common \
 	libdb/Makefile \
 	module/Makefile \
 	dae/Makefile \
+	daemon/Makefile \
 	utils/Makefile \
 	doc/Makefile \
 	doc/oprofile.1 \
