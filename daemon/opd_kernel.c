@@ -419,4 +419,5 @@ opd_find_kernel_image(vma_t * eip, struct opd_image * app_image)
 
 	opd_stats[OPD_LOST_MODULE]++;
 	verbprintf("No image for sampled module %s\n", module->name);
+	return NULL;
 }

@@ -3,7 +3,7 @@
 	* utils/opcontrol: error out at --setup time if vmlinux is not
 	valid. Cleanup the error message if so
 
-	* daemon/opd_kernel.c: small cleanup
+	* daemon/opd_kernel.c: fix potential null deref
 
 2003-07-21  John Levon  <levon@movementarian.org>
 
