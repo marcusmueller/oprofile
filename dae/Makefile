@@ -2,7 +2,7 @@ all: cprofiled cp_help rdtsc div min loop
  
 .PHONY: all clean srcdoc 
 clean:
-	rm -f cprofiled cp_help rdtsc div min loop *.o
+	rm -f cprofiled cp_help rdtsc div min loop *.o && $(MAKE) -C pp clean
  
 CC=gcc 
 CFLAGS=-Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline
