@@ -54,7 +54,7 @@ void * xcalloc(size_t, size_t) OP_ATTRIB_MALLOC;
 char * xstrdup(char const *) OP_ATTRIB_MALLOC;
 
 /* Copy an existing memory buffer to a new memory buffer without fail.  */
-void * xmemdup(void const *, size_t, size_t) ATTRIBUTE_MALLOC;
+void * xmemdup(void const *, size_t, size_t) OP_ATTRIB_MALLOC;
 
 #endif	/* !HAVE_LIBIBERTY_H */
 
