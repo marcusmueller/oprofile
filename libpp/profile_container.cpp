@@ -35,8 +35,8 @@ struct filename_by_samples {
 
 	bool operator<(filename_by_samples const & lhs) const {
 		if (percent != lhs.percent)
-			return percent > lhs.percent;
-		return filename > lhs.filename;
+			return percent < lhs.percent;
+		return filename < lhs.filename;
 	}
 
 	debug_name_id filename;

@@ -1,3 +1,7 @@
+2003-06-07  John Levon  <levon@movementarian.org>
+
+	* libpp/profile_container.cpp: fix operator<
+
 2003-06-07  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/profile.h:
