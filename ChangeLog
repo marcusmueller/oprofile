@@ -1,3 +1,9 @@
+2002-11-14  John Levon  <levon@movementarian.org>
+
+	* dae/Makefile.am:
+	* daemon/Makefile.am: proper fix for c++ link
+	  as suggested by Alexandre Duret-Lutz
+ 
 2002-11-14  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* Makefile.am: we installed module in the wrong directory.

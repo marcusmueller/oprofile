@@ -622,7 +622,7 @@ you have chosen. For basic time-based profiling, you will probably use <constant
 (on Intel P6 generation processors). 
 You can estimate how many interrupts this value will generate per second with this event by dividing your CPU
 clock rate by the chosen value. I have a 600MHz Celeron, so specifying an overflow value of 100,000 will generate
-around 600 interrupts per second. Specifying too large a value will mean not enough interrupts are generated
+around 6000 interrupts per second. Specifying too large a value will mean not enough interrupts are generated
 to give a realistic profile (though this problem can be ameliorated by profiling for <emphasis>longer</emphasis>).
 Specifying too small a value can lead to overflow problems discussed previously.
 </para>

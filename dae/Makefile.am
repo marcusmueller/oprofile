@@ -14,13 +14,11 @@ bin_PROGRAMS = oprofiled
 oprofiled_SOURCES = $(dist_sources)
  
 if enable_abi
-CLEANFILES = dummy.cpp
-dummy.cpp:
-	echo "#define DUMMY_CXX_LINKING_CRAP" >$@
-nodist_oprofiled_SOURCES = dummy.cpp
 oprofiled_LDADD = ../libabi/libabi.a ../libdb/libdb.a ../libop/libop.a ../libutil/libutil.a
 else
 oprofiled_LDADD = ../libdb/libdb.a ../libop/libop.a ../libutil/libutil.a
 endif
 
+oprofiled_LINK = $(CXX) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+ 
 endif
