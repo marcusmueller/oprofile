@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.62 2001/12/09 21:48:52 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.63 2002/01/08 19:49:55 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -18,7 +18,7 @@ AC_CONFIG_HEADER(config.h)
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 PACKAGE=oprofile
-VERSION=0.0.8cvs
+VERSION=0.0.8
 
 dnl for the man page
 DATE="`date '+%a %d %B %Y'`"
@@ -198,15 +198,10 @@ AC_CHECK_LIB(dl, dlopen,, AC_MSG_ERROR(dl library not found))
 AC_CHECK_LIB(iberty, cplus_demangle,, AC_MSG_ERROR(liberty library not found))
 AC_CHECK_LIB(bfd, bfd_openr,, AC_MSG_ERROR(bfd library not found))
 
-AC_PATH_XTRA 
-LIBS="$X_PRE_LIBS $LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"
- 
 # C++ tests
  
 AC_LANG_CPLUSPLUS
 
-QT2_DO_IT_ALL
- 
 AC_MSG_CHECKING("popt prototype")
 SAVE_CXXFLAGS=$CXXFLAGS
 CXXFLAGS="-Werror $CXXFLAGS"
@@ -234,6 +229,12 @@ AC_MSG_RESULT([no]);,
 AC_MSG_RESULT([yes]); BFD_CXXFLAGS="-DTRUE_FALSE_ALREADY_DEFINED")
 AC_SUBST(BFD_CXXFLAGS)
 
+AC_PATH_XTRA 
+LIBS="$X_PRE_LIBS $LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"
+QT2_DO_IT_ALL
+ 
+# do NOT put tests here, they will fail in the case X is not installed !
+ 
 AC_OUTPUT(Makefile events/Makefile util/Makefile module/Makefile dae/Makefile doc/Makefile doc/oprofile.1 pp/Makefile gui/Makefile gui/ui/Makefile Rules.make version.h)
 
 if test "$have_qt2" != "yes"; then

@@ -1,3 +1,9 @@
+2002-01-08  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+
+	* configure.in: fix case when X isn't installed. Bump to 0.0.8
+ 
 2002-01-07  John Levon  <moz@compsoc.man.ac.uk>
 
 	* util/Makefile.in: "fix" last g++ 3.0 problem
