@@ -19,6 +19,8 @@
 #include <fstream>
 #include <algorithm>
 
+#include <qlineedit.h>
+#include <qlistview.h>
 #include <qcombobox.h> 
 #include <qlistbox.h>
 #include <qfiledialog.h>

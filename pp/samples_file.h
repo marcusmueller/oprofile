@@ -42,11 +42,11 @@ struct samples_file_t : notcopyable
 	~samples_file_t();
 
 	/**
-	 * check_headers - check than the lhs and rhs headers are
+	 * check_headers - check that the lhs and rhs headers are
 	 * coherent (same size, same mtime etc.)
-	 * @param rhs the other samples_file_t
+	 * @param headers the other samples_file_t
 	 *
-	 * all error are fatal
+	 * all errors are fatal
 	 */
 	void check_headers(samples_file_t const & headers) const;
 

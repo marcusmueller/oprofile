@@ -1,3 +1,7 @@
+2002-05-14  Cliff Woolley  <jwoolley@apache.org>
+
+	* gui/oprof_start.cpp: allow Qt3 compilation
+
 2002-05-13  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/oprofile/xml: clarify RTC use, fix #555302

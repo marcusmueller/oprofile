@@ -44,7 +44,8 @@ General checks to make
  
  o rgrep FIXME
  o audit to track unnecessary include <>
- o gcc 3.0/3.1 compile. (3.1 is not stable currently but I follow it, Phil)
+ o gcc 3.0/3.1 compile.  (3.1 is not stable currently but I follow it, Phil) 
+ o Qt2/3 check, no Qt check
  o verify builds (modversions, kernel versions, athlon etc.). I have the
   necessary stuff to check kernel versions/configurations on PPro core (Phil)
  o use nm and a little script to track unused function
