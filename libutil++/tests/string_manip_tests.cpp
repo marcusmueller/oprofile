@@ -168,9 +168,73 @@ static void separate_token_tests()
 }
 
 
-// FIXME: test for rtrim/ltrim/trim ?
+static input_output<char const *, char const *> expect_rtrim[] =
+{
+	{ "abc", "abc" },
+	{ "abc  ", "abc" },
+	{ " abc  ", " abc" },
+	{ " abc \t \t", " abc" },
+	{ " ", "" },
+	{ "\t \t", "" },
+	{ "", "" },
+	{ 0, 0 }
+};
 
-static input_output<double, char const*> expect_format_percent[] =
+static void rtrim_tests()
+{
+	input_output<char const *, char const*> const * cur;
+	for (cur = expect_rtrim; cur->input; ++cur) {
+		string result = rtrim(cur->input);
+		check_result("rtrim()", cur->input, cur->output, result);
+	}
+}
+
+
+static input_output<char const *, char const *> expect_ltrim[] =
+{
+	{ "abc", "abc" },
+	{ "abc ", "abc " },
+	{ " abc ", "abc " },
+	{ "\t  \tabc ", "abc " },
+	{ " ", "" },
+	{ "\t \t", "" },
+	{ "", "" },
+	{ 0, 0 }
+};
+
+static void ltrim_tests()
+{
+	input_output<char const *, char const*> const * cur;
+	for (cur = expect_ltrim; cur->input; ++cur) {
+		string result = ltrim(cur->input);
+		check_result("ltrim()", cur->input, cur->output, result);
+	}
+}
+
+
+static input_output<char const *, char const *> expect_trim[] =
+{
+	{ "abc", "abc" },
+	{ "abc ", "abc" },
+	{ " abc ", "abc" },
+	{ "\t  \tabc \t", "abc" },
+	{ " ", "" },
+	{ "\t \t", "" },
+	{ "", "" },
+	{ 0, 0 }
+};
+
+static void trim_tests()
+{
+	input_output<char const *, char const*> const * cur;
+	for (cur = expect_trim; cur->input; ++cur) {
+		string result = trim(cur->input);
+		check_result("trim()", cur->input, cur->output, result);
+	}
+}
+
+
+static input_output<double, char const *> expect_format_percent[] =
 {
 	{ 2.2,        " 2.2000" },
 	{ 0,          "0.0e+00" },
@@ -253,6 +317,9 @@ int main()
 	split_tests();
 	is_prefix_tests();
 	separate_token_tests();
+	rtrim_tests();
+	ltrim_tests();
+	trim_tests();
 	format_percent_tests();
 	return EXIT_SUCCESS;
 }
