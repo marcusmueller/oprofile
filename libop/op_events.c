@@ -419,7 +419,7 @@ struct op_event const op_events[] = {
     "number of L2 address strobes", 500 },
   { CTR_ALL, OP_IA_ALL, 0x22, &um_empty, "L2_DBUS_BUSY", 
     "number of cycles data bus was busy", 500 },
-  { CTR_ALL, OP_IA_ALL, 0x23, &um_empty, "L2_DMUS_BUSY_RD", 
+  { CTR_ALL, OP_IA_ALL, 0x23, &um_empty, "L2_DBUS_BUSY_RD", 
     "cycles data bus was busy in xfer from L2 to CPU", 500 },
   /* External Bus Logic (EBL) */
   { CTR_ALL, OP_IA_ALL, 0x62, &um_ebl, "BUS_DRDY_CLOCKS", 
