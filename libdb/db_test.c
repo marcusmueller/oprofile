@@ -8,6 +8,8 @@
  * @author Philippe Elie
  */
 
+#include <sys/types.h>
+#include <sys/time.h>
 #include <sys/resource.h>
 #include <stdlib.h>
 #include <stdio.h>

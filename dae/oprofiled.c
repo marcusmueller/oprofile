@@ -48,6 +48,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 // GNU libc bug
 pid_t getpgid(pid_t pid);

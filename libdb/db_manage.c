@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <sys/fcntl.h>
 #include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
