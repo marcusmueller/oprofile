@@ -174,8 +174,8 @@ int __init apic_setup(void)
 
 	if (!apic_needs_setup()) {
 		if (!check_p6_ok()) {
-			printk("Your CPU does not have a local APIC, e.g. mobile
-				P6. No profiling can be done.\n");
+			printk("Your CPU does not have a local APIC, e.g. mobile "
+				"P6. No profiling can be done.\n");
 			return -ENODEV;
 		}
 		printk(KERN_INFO "oprofile: no APIC setup needed.\n");
