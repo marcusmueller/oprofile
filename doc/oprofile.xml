@@ -493,7 +493,7 @@ The <command>opcontrol</command> script provides the following actions :
 	<varlistentry>
 		<term><option>--shutdown</option></term>
 		<listitem><para>
-		    Stop data collection and remove daemon.
+		    Stop data collection and kill the daemon.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

@@ -56,7 +56,7 @@ Stop data collection. Not available in 2.2/2.4 kernels.
 .br
 .TP
 .BI "--shutdown"
-Stop data collection and remove daemon.
+Stop data collection and kill the daemon.
 .br
 .TP
 .BI "--reset"

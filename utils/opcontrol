@@ -86,7 +86,7 @@ move_and_remove()
 # verbose echo
 vecho()
 {
-	if test "$VERBOSE" = "0"; then 
+	if test "$VERBOSE" != "yes"; then 
 		return;
 	fi
 	echo $@
@@ -217,7 +217,7 @@ do_init()
 	BUF_SIZE=0
 	NOTE_SIZE=0
 	VMLINUX=
-	VERBOSE=0
+	VERBOSE=no
 	SEPARATE_LIB=0
 	SEPARATE_KERNEL=0
 	SEPARATE_THREAD=0
@@ -635,7 +635,7 @@ do_options()
 				;;
 
 			-V|--verbose)
-				VERBOSE=1
+				VERBOSE=yes
 				;;
 
 			-l|--list-events)
@@ -662,6 +662,13 @@ do_options()
 	if test "$SETUP" = "yes" -a "$DO_SETUP" != "yes"; then
 		echo "No options specified for --setup." >&2
 		exit 1
+	fi
+
+	if test "$VERBOSE" = "yes"; then
+		if test "$START" != "yes" -a "$START_DAEMON" != "yes"; then
+			echo "Option --verbose may only be used with --start or --start-daemon" >&2
+			exit 1
+		fi
 	fi
 
 	if test "$DO_SETUP" = "yes"; then
@@ -927,7 +934,7 @@ do_start_daemon()
 		OPD_ARGS="$OPD_ARGS --image=$IMAGE_FILTER"
 	fi
 
-	if test "$VERBOSE" = "1"; then
+	if test "$VERBOSE" = "yes"; then
 		OPD_ARGS="$OPD_ARGS --verbose"
 	fi
 
