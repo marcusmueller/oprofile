@@ -527,8 +527,8 @@ void output::output_asm(const string & image_name)
 
 	double threshold = threshold_percent / 100.0;
 
-	samples->select_symbols(output_symbols, index,
-			       threshold, until_more_than_samples);
+	output_symbols = samples->select_symbols(index,
+		threshold, until_more_than_samples);
 
 	output_header(cout);
 
@@ -630,9 +630,9 @@ void output::output_source()
 {
 	size_t index = get_sort_counter_nr();
 
-	vector<string> filenames;
-	samples->select_filename(filenames, index, threshold_percent / 100.0,
-				until_more_than_samples);
+	vector<string> filenames = 
+		samples->select_filename(index, threshold_percent / 100.0,
+			until_more_than_samples);
 
 	if (output_separate_file == false)
 		output_header(cout);

@@ -655,9 +655,8 @@ static void output_symbols_count(map_t& files, int counter)
 	}
 
 	// select the symbols
-	vector<const symbol_entry *> symbols;
-
-	samples.select_symbols(symbols, sort_by_counter, 0.0, false);
+	vector<const symbol_entry *> symbols =
+		samples.select_symbols(sort_by_counter, 0.0, false);
 
 	OutputSymbol out(samples, counter);
 

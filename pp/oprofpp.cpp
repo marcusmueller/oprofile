@@ -162,9 +162,8 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 static void do_list_symbols(samples_container_t & samples,
 			    OutputSymbol & out, int sort_by_ctr)
 {
-	vector<const symbol_entry *> symbols;
-
-	samples.select_symbols(symbols, sort_by_ctr, 0.0, false);
+	vector<const symbol_entry *> symbols =
+		samples.select_symbols(sort_by_ctr, 0.0, false);
 
 	out.Output(cout, symbols, reverse_sort == 0);
 }
@@ -182,9 +181,8 @@ static void do_list_symbols(samples_container_t & samples,
 static void do_list_symbols_details(samples_container_t & samples,
 				    OutputSymbol & out, int sort_by_ctr)
 {
-	vector<const symbol_entry *> symbols;
-
-	samples.select_symbols(symbols, sort_by_ctr, 0.0, false, true);
+	vector<const symbol_entry *> symbols =
+		samples.select_symbols(sort_by_ctr, 0.0, false, true);
 
 	out.Output(cout, symbols, false);
 }

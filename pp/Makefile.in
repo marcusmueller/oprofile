@@ -1,20 +1,17 @@
 include ../make.common
 
-OPROFPP_HEADERS=oprofpp.h samples_container.h demangle_symbol.h opp_symbol.h
-OP_TO_SOURCE_HEADERS=
-OP_TIME_HEADERS=
-OP_MERGE_HEADERS=
-HEADERS=$(OPROFPP_HEADERS) $(OP_TO_SOURCE_HEADERS) $(OP_TIME_HEADERS) $(OP_MERGE_HEADERS)
-
-OPROFPP_SOURCES=oprofpp.cpp oprofpp_util.cpp opp_symbol.cpp demangle_symbol.cpp op_bfd.cpp samples_file.cpp
+OPROFPP_SOURCES=samples_container.cpp sample_container_imp.cpp symbol_container_imp.cpp \
+	oprofpp.cpp oprofpp_util.cpp opp_symbol.cpp demangle_symbol.cpp op_bfd.cpp samples_file.cpp
 OP_TO_SOURCE_SOURCES=op_to_source.cpp op_bfd.cpp samples_file.cpp
 OP_TIME_SOURCES=op_time.cpp op_bfd.cpp samples_file.cpp
 OP_MERGE_SOURCES=op_merge.cpp op_bfd.cpp samples_file.cpp
 SOURCES=$(OPROFPP_SOURCES) $(OP_TO_SOURCE_SOURCES) $(OP_TIME_SOURCES) $(OP_MERGE_SOURCES)
 
-OPROFPP_OBJECTS=oprofpp.o oprofpp_util.o samples_container.o opp_symbol.o demangle_symbol.o op_bfd.o samples_file.o
-OP_TO_SOURCE_OBJECTS=oprofpp_util.o op_to_source.o samples_container.o demangle_symbol.o op_bfd.o samples_file.o
-OP_TIME_OBJECTS=op_time.o oprofpp_util.o samples_container.o demangle_symbol.o opp_symbol.o op_bfd.o samples_file.o
+COMMON_OBJECTS=samples_container.o sample_container_imp.o symbol_container_imp.o \
+	oprofpp_util.o demangle_symbol.o op_bfd.o samples_file.o
+OPROFPP_OBJECTS=oprofpp.o opp_symbol.o $(COMMON_OBJECTS)
+OP_TO_SOURCE_OBJECTS=op_to_source.o $(COMMON_OBJECTS)
+OP_TIME_OBJECTS=op_time.o opp_symbol.o $(COMMON_OBJECTS)
 OP_MERGE_OBJECTS=op_merge.o oprofpp_util.o op_bfd.o samples_file.o
 OBJECTS=$(OPROFPP_OBJECTS) $(OP_TO_SOURCE_OBJECTS) $(OP_TIME_OBJECTS) $(OP_MERGE_OBJECTS)
 

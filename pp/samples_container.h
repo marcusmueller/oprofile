@@ -1,6 +1,6 @@
 /**
  * @file samples_container.h
- * Annotated source output
+ * Container for associating symbols and samples
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -15,13 +15,13 @@
 #include <string>
 
 #include "opp_symbol.h"
+#include "utility.h"
 
 class sample_container_imp_t;
 class symbol_container_imp_t;
 
-//---------------------------------------------------------------------------
 /// A container to store symbol/sample from samples files/image file
-class samples_container_t {
+class samples_container_t /*:*/ noncopyable {
 public:
 	/**
 	 * Build an object to store information on samples. All parameters
@@ -55,23 +55,27 @@ public:
 	void add(const opp_samples_files & samples_files, const op_bfd & abfd);
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
-	const symbol_entry* find_symbol(bfd_vma vma) const;
+	symbol_entry const * find_symbol(bfd_vma vma) const;
+ 
 	/// Find a symbol from its name, return zero if no symbol found
-	const symbol_entry* find_symbol(std::string const & name) const;
+	symbol_entry const * find_symbol(std::string const & name) const;
+ 
 	/// Find a symbol from its filename, linenr, return zero if no symbol
 	/// at this location
-	const symbol_entry* find_symbol(const std::string & filename,
+	symbol_entry const * find_symbol(const std::string & filename,
 					size_t linenr) const;
 
 	/// Find a sample by its vma, return zero if no sample at this vma
-	const sample_entry * find_sample(bfd_vma vma) const;
+	sample_entry const * find_sample(bfd_vma vma) const;
 
 	/// Return a sample_entry by its index, index must be valid
-	const sample_entry & get_samples(sample_index_t idx) const;
+	sample_entry const & get_samples(sample_index_t idx) const;
 
+	/// a collection of sorted symbols
+	typedef std::vector<symbol_entry const *> symbol_collection;
+ 
 	/**
 	 * select_symbols - create a set of symbols sorted by sample count
-	 * @param result where to put result
 	 * @param ctr on what counter sorting must be made and threshold
 	 *   selection must be made
 	 * @param threshold select symbols which contains more than
@@ -79,21 +83,21 @@ public:
 	 * @param until_threshold rather to get symbols with more than
 	 *   percent threshold samples select symbols until the cumulated
 	 *   count of samples reach threshold percent
-	 * @param sort_by_vma rather to sort symbols by samples count
-	 *   sort them by vma
+	 * @param sort_by_vma sort symbols by vma not counter samples
+	 * @return a sorted vector of symbols
 	 *
 	 * until_threshold and threshold acts like the -w and -u options
 	 * of op_to_source. If you need to get all symbols call it with
 	 * threshold == 0.0 and until_threshold == false
 	 */
-	void select_symbols(std::vector<const symbol_entry*> & result,
-			    size_t ctr, double threshold,
-			    bool until_threshold,
-			    bool sort_by_vma = false) const;
+	symbol_collection const select_symbols(
+		size_t ctr, double threshold,
+		bool until_threshold,
+		bool sort_by_vma = false) const;
 
 	/// Like select_symbols for filename without allowing sort by vma.
-	void select_filename(std::vector<std::string> & result, size_t ctr,
-			     double threshold, bool until_threshold) const;
+	std::vector<std::string> const select_filename(size_t ctr,
+		double threshold, bool until_threshold) const;
 
 	/// return the total number of samples for counter_nr
 	u32 samples_count(size_t counter_nr) const;
@@ -101,20 +105,23 @@ public:
 	/// Get the samples count which belongs to filename. Return false if
 	/// no samples found.
 	bool samples_count(counter_array_t & result,
-			   const std::string & filename) const;
+			   std::string const & filename) const;
 	/// Get the samples count which belongs to filename, linenr. Return
 	/// false if no samples found.
 	bool samples_count(counter_array_t & result,
-			   const std::string & filename,
+			   std::string const & filename,
 			   size_t linenr) const;
+	// FIXME: so let's assert() on this condition even if it means an
+	// an extra private bool
 	/// you can call this *after* the first call to add()
 	uint get_nr_counters() const { return nr_counters; }
+ 
 private:
 	/// helper for do_add()
-	void add_samples(const opp_samples_files& samples_files, 
-			 const op_bfd & abfd, symbol_index_t sym_index,
+	void add_samples(opp_samples_files const & samples_files, 
+			 op_bfd const & abfd, symbol_index_t sym_index,
 			 u32 start, u32 end, bfd_vma base_vma,
-			 const std::string & image_name);
+			 std::string const & image_name);
 
 	/**
 	 * create an unique artificial symbol for an offset range. The range
@@ -128,13 +135,8 @@ private:
 	 * function as little as possible and to create meaningfull symbols
 	 * for special case such image w/o symbol.
 	 */
-	std::string create_artificial_symbol(const op_bfd & abfd, u32 start,
+	std::string create_artificial_symbol(op_bfd const & abfd, u32 start,
 					     u32 & end, size_t & order);
-
-	/// not copy-constructible
-	samples_container_t(const samples_container_t&);
-	/// not copy-able
-	samples_container_t& operator=(const samples_container_t&);
 
 	/// The symbols collected by oprofpp sorted by increased vma, provide
 	/// also a sort order on samples count for each counter.
