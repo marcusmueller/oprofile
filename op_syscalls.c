@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.1 2001/01/21 01:11:55 moz Exp $ */
+/* $Id: op_syscalls.c,v 1.2 2001/01/22 00:11:45 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -173,7 +173,7 @@ static void * rvmalloc(signed long size)
 		return NULL;
 
 	memset(mem, 0, size);
-	 
+	
 	adr=(unsigned long) mem;
 	while (size > 0) {
 		page = kvirt_to_pa(adr);
@@ -190,7 +190,7 @@ static void rvfree(void * mem, signed long size)
 
 	if (!mem)
 		return;
-		 
+		
 	adr=(unsigned long) mem;
 	while (size > 0) {
 		page = kvirt_to_pa(adr);
@@ -349,14 +349,11 @@ inline static uint name_hash(const char *name, uint len)
 /* FIXME: make non-recursive */
 static short do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt)
 {
-	short value, parent, firsthash, probe = 1;
+	short value, parent, firsthash, probe = 3;
 
 	/* check not too long */
-	if (dentry->d_name.len > OP_HASH_LINE) {
-		printk(KERN_ERR "oprofile: component %s length too large (%d > %d) !\n",
-			dentry->d_name.name, dentry->d_name.len, OP_HASH_LINE);
-		return -1;
-	}
+	if (dentry->d_name.len > OP_HASH_LINE)
+		goto too_large;
 
 	/* has it been deleted ? */
 	if (!IS_ROOT(dentry) && list_empty(&dentry->d_hash))
@@ -382,26 +379,32 @@ static short do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dent
 	firsthash = value = name_hash(dentry->d_name.name, dentry->d_name.len);
 	
 retry:
+	/* have we got a new entry ? */
 	if (hash_map[value].name[0] == '\0')
-		goto done;
+		goto new_entry;
 
-	/* have we got the same component, with the same parent ? */
-	if (streqn(hash_map[value].name, dentry->d_name.name, dentry->d_name.len) &&
-		hash_map[value].parent == parent)
-		goto done;
+	/* existing entry ? */
+	if (streqn(hash_map[value].name, dentry->d_name.name, dentry->d_name.len)
+		&& hash_map[value].parent == parent)
+		return value;
 
+	/* nope, find another place in the table */
 	value = (value+probe) % OP_HASH_MAP_NR;
 	probe *= probe;
 	if (value == firsthash)
 		goto fulltable;
-	/* find another place in the table */
+
 	goto retry;
 
-done:
-	/* new entry */
+new_entry:
 	strncpy(hash_map[value].name, dentry->d_name.name, dentry->d_name.len);
 	hash_map[value].parent = parent;
 	return value;
+
+too_large:
+	printk(KERN_ERR "oprofile: component %s length too large (%d > %d) !\n",
+		dentry->d_name.name, dentry->d_name.len, OP_HASH_LINE);
+	return -1;
 
 fulltable:
 	printk(KERN_ERR "oprofile: component hash table full :(\n");

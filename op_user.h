@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.1 2001/01/21 01:11:55 moz Exp $ */
+/* $Id: op_user.h,v 1.2 2001/01/22 00:11:45 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -31,8 +31,8 @@
  */
 /* 262144 * 8 = 2097152 bytes default */
 #define OP_DEFAULT_BUF_SIZE 262144
-/* 32768 * 32 = 1048756 bytes default */
-#define OP_DEFAULT_HASH_SIZE 32768
+/* 65536 * 32 = 2097152 bytes default */
+#define OP_DEFAULT_HASH_SIZE 65536
 
 #define OP_BITS 2
 

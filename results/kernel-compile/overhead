@@ -2,20 +2,31 @@
 These tests were compiling 2.4.0ac9 kernel on 2.4.0ac9 with the standard test machine. The kernel
 was compiled with make -j3 MAKE="make -j3"
 
-clean averages : 
-499.97user 52.67system 585.38elapsed  94%CPU (0avgtext+0avgdata 0maxresident)k 0inputs+0outputs (673198major+678084minor)pagefaults 0swaps
+Kernel compiles represent pretty much a worst-case scenario for the profiler, because
+of the large number of new processes per minute. This generates a lot of mapping information
+which must be parsed by the profiler.
 
-readprofile averages : 
-508.22user 54.43system 595.62elapsed  94%CPU (0avgtext+0avgdata 0maxresident)k 0inputs+0outputs (673380major+678178minor)pagefaults 0swaps
-
-
-readprofile (multiplier 1) overhead :
--------------------------------------
-
-User time : 1.65 %
-System    : 3.34 %
-Elapsed   : 1.7  %
-
-This is effectively equivalent to oprofile running at around 100 interrupts/second, and only profiling the kernel.
+"clean.out" represents the results from no profiling at all. "readprofile.out" is compiles
+done with the kernel /proc/profile enabled at a multiplier of 1 (coming off the local APIC timer
+interrupt). Note that this only profiles the kernel, at a rate of 100 samples / second. A roughly
+similar setup was enabled with oprofile, "cpu_clk_unhalted-justkernel-6013765.out". It can be
+seen that the overhead of oprofile is lower than /proc/profile here.
 
 
+
+
+
+Averages (overhead %age)
+ 
+User         	| System          	| Elapsed         	| Config 
+--------------------------------------------------------------------------------------------------------
+499.94 (0.00%) 	| 52.66 (0.00%) 	| 582.42 (0.00%) 	| clean.out
+508.32 (1.68%) 	| 54.32 (3.16%) 	| 592.08 (1.66%) 	| readprofile.out
+503.22 (0.66%) 	| 53.08 (0.80%) 	| 589.27 (1.18%) 	| cpu_clk_unhalted-justkernel-6013765.out
+521.04 (4.22%) 	| 64.12 (21.77%) 	| 636.37 (9.26%) 	| cpu_clk_unhalted-100000.out
+535.24 (7.06%) 	| 57.68 (9.53%) 	| 639.72 (9.84%) 	| cpu_clk_unhalted-50000.out
+504.14 (0.84%) 	| 55.74 (5.85%) 	| 594.10 (2.00%) 	| cpu_clk_unhalted-justkernel-100000.out
+512.02 (2.42%) 	| 56.68 (7.63%) 	| 604.08 (3.72%) 	| cpu_clk_unhalted-justkernel-50000.out
+519.62 (3.94%) 	| 62.05 (17.84%) 	| 631.39 (8.41%) 	| inst_retired-100000.out
+510.68 (2.15%) 	| 53.82 (2.21%) 	| 598.09 (2.69%) 	| inst_retired-justkernel-100000.out
+509.82 (1.98%) 	| 54.16 (2.85%) 	| 597.27 (2.55%) 	| inst_retired-justkernel-50000.out

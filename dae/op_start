@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.18 2001/01/21 01:11:56 moz Exp $
+# $Id: op_start,v 1.19 2001/01/22 00:11:48 moz Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -22,7 +22,7 @@
 SYSCTL=sysctl
 
 BUF_SIZE=262144
-HASH_SIZE=32768
+HASH_SIZE=65536
 CTR0_EVENT=
 CTR1_EVENT=
 CTR0_UM=0
