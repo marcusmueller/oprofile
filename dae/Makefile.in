@@ -1,8 +1,8 @@
 include ../make.common
 
-HEADERS=p_module.h opd_proc.h oprofiled.h
-SOURCES=opd_kernel.c opd_proc.c oprofiled.c
-OBJECTS=opd_kernel.o opd_proc.o oprofiled.o
+HEADERS=opd_printf.h p_module.h opd_stats.h opd_kernel.h opd_proc.h opd_image.h opd_mapping.h opd_parse_proc.h opd_sample_files.h
+SOURCES=opd_stats.c opd_kernel.c opd_proc.c opd_image.c opd_mapping.c opd_parse_proc.c opd_sample_files.c oprofiled.c
+OBJECTS=opd_stats.o opd_kernel.o opd_proc.o opd_image.o opd_mapping.o opd_parse_proc.o opd_sample_files.o oprofiled.o
 TARGET=oprofiled
 
 LIBS=-ldb -lop -lutil -lpopt -liberty

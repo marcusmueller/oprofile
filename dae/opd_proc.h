@@ -1,6 +1,6 @@
 /**
  * @file opd_proc.h
- * Management of process samples
+ * Management of processes
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -12,20 +12,35 @@
 #ifndef OPD_PROC_H
 #define OPD_PROC_H
  
-#include "oprofiled.h"
-
-extern u32 ctr_count[OP_MAX_COUNTERS];
-extern u8 ctr_event[OP_MAX_COUNTERS];
-extern u8 ctr_um[OP_MAX_COUNTERS];
-extern double cpu_speed;
-extern struct op_hash_index *hashmap;
+#include "op_types.h"
  
-extern struct opd_image * kernel_image;
+struct opd_map;
+struct opd_image;
+struct op_note;
+struct op_sample;
+ 
+struct opd_proc {
+	struct opd_map * maps;
+	unsigned int nr_maps;
+	unsigned int max_nr_maps;
+	unsigned int last_map;
+	u16 pid;
+	u16 accessed;
+	int dead;
+	struct opd_proc * prev;
+	struct opd_proc * next;
+};
 
-struct opd_image * opd_get_image(char const * name, int hash, char const * app_name, int kernel);
-int bstreq(char const * str1, char const * str2);
-void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count);
-void opd_handle_kernel_sample(u32 eip, u16 count);
-void opd_reopen_sample_files(void);
+void opd_put_sample(struct op_sample const * sample);
+void opd_put_image_sample(struct opd_image * image, u32 offset, u16 count);
+void opd_handle_fork(struct op_note const * note);
+void opd_handle_exit(struct op_note const * note);
+void opd_handle_exec(u16 pid);
+struct opd_proc * opd_get_proc(u16 pid);
+struct opd_proc * opd_add_proc(u16 pid);
+char const * opd_app_name(struct opd_proc const * proc);
+int opd_get_nr_procs(void);
+void opd_age_procs(void);
+void opd_proc_cleanup(void);
 
 #endif /* OPD_PROC_H */

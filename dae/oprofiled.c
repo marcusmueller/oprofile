@@ -9,8 +9,13 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
-#include "oprofiled.h"
 #include "opd_proc.h"
+#include "opd_mapping.h"
+#include "opd_stats.h"
+#include "opd_sample_files.h"
+#include "opd_parse_proc.h"
+#include "opd_kernel.h"
+#include "opd_printf.h"
  
 #include "version.h"
 #include "op_popt.h"
@@ -22,14 +27,29 @@
 #include "op_sample_file.h"
 #include "op_events.h"
 #include "op_events_desc.h"
+#include "op_libiberty.h"
+#include "op_hw_config.h"
  
 #include <unistd.h>
+#include <signal.h> 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <string.h>
  
+u32 ctr_count[OP_MAX_COUNTERS];
+u8 ctr_event[OP_MAX_COUNTERS];
+u8 ctr_um[OP_MAX_COUNTERS];
+double cpu_speed;
+fd_t hashmapdevfd;
+
 uint op_nr_counters = 2;
 int verbose;
 op_cpu cpu_type;
 int separate_samples;
-char *vmlinux;
+char * vmlinux;
 int kernel_only;
 unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 
@@ -41,7 +61,7 @@ static u32 ctr_enabled[OP_MAX_COUNTERS];
 static char const * cpu_speed_str;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
-static char *systemmapfilename;
+static char * systemmapfilename;
 static pid_t mypid;
 static pid_t pid_filter;
 static pid_t pgrp_filter;
@@ -95,8 +115,6 @@ static void opd_open_logfile(void)
  */
 static void op_open_files(void)
 {
-	fd_t hashmapdevfd;
-
 	hashmapdevfd = op_open_device(OP_HASH_DEVICE, 0);
 	if (hashmapdevfd == -1) {
 		perror("Failed to open hash map device");
@@ -123,11 +141,7 @@ static void op_open_files(void)
 		exit(EXIT_FAILURE);
 	} 
  
-	hashmap = mmap(0, OP_HASH_MAP_SIZE, PROT_READ, MAP_SHARED, hashmapdevfd, 0);
-	if ((long)hashmap == -1) {
-		perror("oprofiled: couldn't mmap hash map");
-		exit(EXIT_FAILURE);
-	}
+	opd_init_hash_map();
 
 	/* give output before re-opening stdout as the logfile */
 	printf("Using log file " OP_LOG_FILE "\n");
@@ -159,8 +173,8 @@ static void opd_backup_samples_files(void)
 	char * dir_name;
 	int gen = 0;
 	struct stat stat_buf;
-	DIR *dir;
-	struct dirent *dirent;
+	DIR * dir;
+	struct dirent * dirent;
 
 	dir_name = xmalloc(strlen(OP_SAMPLES_DIR) + strlen("session-") + 10);
 	strcpy(dir_name, OP_SAMPLES_DIR);
@@ -328,7 +342,7 @@ static void opd_rtc_options(void)
 	}
  
 	ctr_count[0] = op_read_int_from_file("/proc/sys/dev/oprofile/rtc_value");
-	/* FIXME FIXME FIXME, oh wow, please FIXME */
+	/* FIXME ugly ... */
 	ctr_event[0] = 0xff;
 }
  
@@ -341,7 +355,7 @@ static void opd_rtc_options(void)
  * check what the user passed. Incorrect arguments
  * are a fatal error.
  */
-static void opd_options(int argc, char const *argv[])
+static void opd_options(int argc, char const * argv[])
 {
 	poptContext optcon;
 
@@ -355,13 +369,13 @@ static void opd_options(int argc, char const *argv[])
 	if (cpu_type == CPU_ATHLON)
 		op_nr_counters = 4;
 
-	if (!vmlinux || streq("", vmlinux)) {
+	if (!vmlinux || !strcmp("", vmlinux)) {
 		fprintf(stderr, "oprofiled: no vmlinux specified.\n");
 		poptPrintHelp(optcon, stderr, 0);
 		exit(EXIT_FAILURE);
 	}
 
-	if (!systemmapfilename || streq("", systemmapfilename)) {
+	if (!systemmapfilename || !strcmp("", systemmapfilename)) {
 		fprintf(stderr, "oprofiled: no System.map specified.\n");
 		poptPrintHelp(optcon, stderr, 0);
 		exit(EXIT_FAILURE);
@@ -434,8 +448,8 @@ static void opd_go_daemon(void)
 	mypid = getpid();
 }
 
-void opd_do_samples(const struct op_sample *opd_buf, size_t count);
-void opd_do_notes(struct op_note *opd_buf, size_t count);
+void opd_do_samples(struct op_sample const * opd_buf, size_t count);
+void opd_do_notes(struct op_note const * opd_buf, size_t count);
 
 /**
  * do_shutdown - shutdown cleanly, reading as much remaining data as possible.
@@ -444,7 +458,7 @@ void opd_do_notes(struct op_note *opd_buf, size_t count);
  * @param nbuf  note buffer area
  * @param nsize  size of note buffer
  */
-static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbuf, size_t nsize)
+static void opd_shutdown(struct op_sample * buf, size_t size, struct op_note * nbuf, size_t nsize)
 {
 	ssize_t count = -1;
 	ssize_t ncount = -1;
@@ -495,7 +509,7 @@ static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbu
  *
  * Never returns.
  */
-static void opd_do_read(struct op_sample *buf, size_t size, struct op_note *nbuf, size_t nsize)
+static void opd_do_read(struct op_sample * buf, size_t size, struct op_note * nbuf, size_t nsize)
 {
 	while (1) {
 		ssize_t count = -1;
@@ -528,10 +542,10 @@ static void opd_do_read(struct op_sample *buf, size_t size, struct op_note *nbuf
  *
  * Process a buffer of notes.
  */
-void opd_do_notes(struct op_note *opd_buf, size_t count)
+void opd_do_notes(struct op_note const * opd_buf, size_t count)
 {
 	uint i; 
-	struct op_note * note;
+	struct op_note const * note;
  
 	/* prevent signals from messing us up */
 	sigprocmask(SIG_BLOCK, &maskset, NULL);
@@ -583,7 +597,7 @@ void opd_do_notes(struct op_note *opd_buf, size_t count)
  * to the relevant sample file. Additionally mapping and
  * process notifications are handled here.
  */
-void opd_do_samples(const struct op_sample * opd_buf, size_t count)
+void opd_do_samples(struct op_sample const * opd_buf, size_t count)
 {
 	uint i;
 
@@ -613,6 +627,19 @@ void opd_do_samples(const struct op_sample * opd_buf, size_t count)
 	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
 }
 
+/** 
+ * opd_alarm - clean up old procs, msync, and report stats
+ */
+static void opd_alarm(int val __attribute__((unused)))
+{
+	opd_sync_sample_files();
+	opd_age_procs(); 
+ 
+	opd_print_stats();
+
+	alarm(60*10);
+}
+
 /* re-open logfile for logrotate */
 static void opd_sighup(int val __attribute__((unused)))
 {
@@ -636,11 +663,11 @@ static void opd_sigterm(int val __attribute__((unused)))
 }
 
  
-int main(int argc, char const *argv[])
+int main(int argc, char const * argv[])
 {
-	struct op_sample *sbuf;
+	struct op_sample * sbuf;
 	size_t s_buf_bytesize;
-	struct op_note *nbuf;
+	struct op_note * nbuf;
 	size_t n_buf_bytesize;
 	struct sigaction act;
 	int i;
@@ -654,7 +681,7 @@ int main(int argc, char const *argv[])
 	n_buf_bytesize = opd_note_buf_size * sizeof(struct op_note);
 	nbuf = xmalloc(n_buf_bytesize);
  
-	opd_init_images();
+	opd_init_kernel_image();
 
 	if (atexit(clean_exit)) {
 		fprintf(stderr, "Couldn't set exit cleanup !\n");
@@ -729,6 +756,7 @@ int main(int argc, char const *argv[])
 	free(sbuf);
 	free(nbuf);
 	opd_proc_cleanup();
+	opd_image_cleanup();
  
 	return 0;
 }

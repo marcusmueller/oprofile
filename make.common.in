@@ -14,7 +14,8 @@ exec_prefix=@exec_prefix@
 BINDIR=@bindir@
  
 # config
-INCLUDES=-I$(TOPDIR)/ -I$(TOPDIR)/libopt++ -I$(TOPDIR)/libutil -I$(TOPDIR)/libutil++ -I$(TOPDIR)/libop -I$(TOPDIR)/libdb @QT2_INCLUDES@ @extra_includes@
+INCLUDES=-I$(TOPDIR)/ -I$(TOPDIR)/libopt++ -I$(TOPDIR)/libutil -I$(TOPDIR)/libutil++ -I$(TOPDIR)/libop -I$(TOPDIR)/libdb \
+	@QT2_INCLUDES@ @extra_includes@
 CFLAGS += $(INCLUDES)
 CFLAGS += -W -Wall -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline 
 CFLAGS += -pipe -g -O2 @CFLAGS@

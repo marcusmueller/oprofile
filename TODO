@@ -1,37 +1,36 @@
 0.3 Release
 -----------
 
- o failure to open image can be due to EPERM problem, we must check it and printf nicer
-  message. There is probably other part of post profile tools where looking at errno sould give better messages
  o oprofpp -s is especially slow, we need to take care of that, probably by passing a
-hint to samples_containert_t::add to collect samples only for the selected symbols
+   hint to samples_container_t::add to collect samples only for the selected symbols
  o configure: at least --with-extra-libs and --with-extra-includes do not work
- o difference between two profile session. Difference must be made at source level. 
-   (This is a part of post-prof). Difference can be made also at symbols level. Important.
- o better support in post-prof for session names. Consistent cmd line interfaces - 
-   this should be before 1.0 so we don't piss off users - spec this out
- o split doc into user's manual and hacking manual, document much more 
  o verify 2.2/modversions etc. module build
- o oprof_report/Makefile.in etc. 
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o document gcc 2.95 and linenr info problems especially for inline functions
- o document somewhere that oprofpp -s blah will only find the first symbol
-   called "blah" (not worth fixing) 
  o determine where we need preempt_disable/enable to prevent pre-emption + test (ugh)
  
 Before 1.0 big stuff
 --------------------
 
+ o implement new pp spec
+ o difference between two profile session. Difference must be made at source level. 
+   (This is a part of post-prof). Difference can be made also at symbols level. Important.
  o get symbol size via elf instead of bfd ?
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
  o thread profiling in the old and new flavour (2.5 introduce a new thread handling)
-   (how important is this one ?)
+ o CPU-specific sample files option ?
  o op_time for only some specified files... 
+ o split doc into user's manual and hacking manual, document much more 
  
 Before 1.0 little stuff
 -----------------------
  
+ o oprof_report/Makefile.in etc. 
+ o document somewhere that oprofpp -s blah will only find the first symbol
+   called "blah" (not worth fixing) 
+ o failure to open image can be due to EPERM problem, we must check it and printf nicer
+  message. There is probably other part of post profile tools where looking at errno sould give better messages
  o don't make hash table entries dependent on cache line size ?? 
  o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
    will fail because the ~ is not expanded (no space around it) (popt bug I say)
@@ -48,8 +47,9 @@ General checks to make
 ----------------------
  
  o rgrep FIXME
+ o valgrind
  o audit to track unnecessary include <>
- o gcc 3.0/3.1 compile.  (3.1 is not stable currently but I follow it, Phil) 
+ o gcc 3.0/3.1 compile
  o Qt2/3 check, no Qt check
  o verify builds (modversions, kernel versions, athlon etc.). I have the
   necessary stuff to check kernel versions/configurations on PPro core (Phil)
@@ -64,14 +64,10 @@ Later
  
  o multiplexing for real
  
- o CPU-specific sample files option ?
- 
  o check if we can use our own RTC irq handler rather to pass through the
   the kernel service. The overhead for RTC is very big actually. Take care
   first from where come the overhead (read/write RTC CMOS is costly)
 
-- demangling automatically
- 
 oprof_report:
 
 IMHO this app isn't near what we really want. There's no point doing this
@@ -86,7 +82,8 @@ o profile the NMI handler code
  
 o merge sample files into one big report (like vtune can do repeated runs)
  
-o move from racy sysctl to procfs, if it can be done nicely
+o move from racy sysctl to procfs, if it can be done nicely. Back compatibility
+  probably prevents us from making a mini-filesystem.
 
 o integrate dasm, probably the best way is to allow to fall back to objdump.
 

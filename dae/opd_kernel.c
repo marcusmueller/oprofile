@@ -9,10 +9,30 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
+#include "opd_kernel.h"
 #include "opd_proc.h"
+#include "opd_image.h"
+#include "opd_printf.h"
+#include "opd_stats.h"
 
 #include "op_fileio.h"
+#include "op_config.h"
+#include "op_libiberty.h"
  
+#include "p_module.h"
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+ 
+/* kernel module */
+struct opd_module {
+	char * name;
+	struct opd_image * image;
+	u32 start;
+	u32 end;
+};
+ 
+extern char * vmlinux;
 extern int verbose;
 extern unsigned long opd_stats[];
  
@@ -23,6 +43,16 @@ u32 kernel_start;
 static u32 kernel_end;
 static struct opd_module opd_modules[OPD_MAX_MODULES];
 static unsigned int nr_modules=0;
+
+/**
+ * opd_init_kernel_image - initialise the kernel image
+ */
+void opd_init_kernel_image(void)
+{
+	/* the kernel image is treated apart from the list of images */
+	kernel_image = opd_create_image(vmlinux);
+}
+ 
 
 /**
  * opd_read_system_map - parse System.map file
@@ -41,15 +71,15 @@ static unsigned int nr_modules=0;
  */
 void opd_read_system_map(char const * filename)
 {
-	FILE *fp;
-	char *line;
-	char *cp;
+	FILE * fp;
+	char * line;
+	char * cp;
 
 	fp = op_open_file(filename, "r");
 
 	while (1) {
 		line = op_get_line(fp);
-		if (streq(line, "")) {
+		if (!strcmp(line, "")) {
 			free(line);
 			break;
 		} else {
@@ -58,9 +88,9 @@ void opd_read_system_map(char const * filename)
 				continue;
 			}
 			cp = line+11;
-			if (streq("_text", cp))
+			if (!strcmp("_text", cp))
 				sscanf(line, "%x", &kernel_start);
-			else if (streq("_end", cp))
+			else if (!strcmp("_end", cp))
 				sscanf(line, "%x", &kernel_end);
 			free(line);
 		}
@@ -105,12 +135,12 @@ void opd_clear_module_info(void)
  * Otherwise it must be freed when the module structure
  * is removed (i.e. in opd_clear_module_info()).
  */
-static struct opd_module *opd_get_module(char *name)
+static struct opd_module * opd_get_module(char * name)
 {
 	int i;
 
 	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].name && bstreq(name, opd_modules[i].name)) {
+		if (opd_modules[i].name && !strcmp(name, opd_modules[i].name)) {
 			/* free this copy */
 			free(name);
 			return &opd_modules[i];
@@ -149,12 +179,12 @@ static struct opd_module *opd_get_module(char *name)
  */
 static void opd_get_module_info(void)
 {
-	char *line;
-	char *cp, *cp2, *cp3;
-	FILE *fp;
-	struct opd_module *mod;
-	char *modname;
-	char *filename;
+	char * line;
+	char * cp, * cp2, * cp3;
+	FILE * fp;
+	struct opd_module * mod;
+	char * modname;
+	char * filename;
 
 	nr_modules=0;
 
@@ -167,10 +197,10 @@ static void opd_get_module_info(void)
 
 	while (1) {
 		line = op_get_line(fp);
-		if (streq("", line) && !feof(fp)) {
+		if (!strcmp("", line) && !feof(fp)) {
 			free(line);
 			continue;
-		} else if (streq("",line))
+		} else if (!strcmp("",line))
 			goto failure;
 
 		if (strlen(line) < 9) {
@@ -185,7 +215,7 @@ static void opd_get_module_info(void)
 
 		cp = line + 18;
 		cp2 = cp;
-		while ((*cp2) && !streqn("_S", cp2+1, 2) && !streqn("_O", cp2+1, 2))
+		while ((*cp2) && !!strncmp("_S", cp2+1, 2) && !!strncmp("_O", cp2+1, 2))
 			cp2++;
 
 		if (!*cp2) {
@@ -207,7 +237,7 @@ static void opd_get_module_info(void)
 				cp2++;
 				cp3 = cp2;
 
-				while ((*cp3) && !streqn("_M", cp3+1, 2))
+				while ((*cp3) && !!strncmp("_M", cp3+1, 2))
 					cp3++;
 
 				if (!*cp3) {
@@ -394,6 +424,7 @@ static void opd_handle_module_sample(u32 eip, u16 count)
  */
 void opd_handle_kernel_sample(u32 eip, u16 count)
 {
+	printf("start is %x, end is %x, eip is %x\n", kernel_start, kernel_end, eip); 
 	if (eip < kernel_end) {
 		opd_stats[OPD_KERNEL]++;
 		opd_put_image_sample(kernel_image, eip - kernel_start, count);
