@@ -21,7 +21,7 @@
 	  warning for Itanium2, added in TODO)
 
 	* libop/op_parse_event.c: don't silently accept invalid value as zero
-	  (e.g FOO:3000:0xx21 was accepted as FOO:3000:0x21)
+	  (e.g FOO:3000:0xx21 was accepted as FOO:3000:0x0)
 
 	* utils/opcontrol: mandatory default value was rejected because we
 	  checked the events before getting the default unit mask.
