@@ -11,6 +11,7 @@ General points
 Keep lines within 80 columns with a maximum tab size of 8.
 
 Keep files (especially headers) focussed on one small aspect.
+Make judicious use of forward declarations.
 
 	Rationale: reduce false include dependencies
 
@@ -19,7 +20,7 @@ utility library (e.g. libop/, libutil++).
 
 	Rationale: re-use, clean organisation
 
-Make judicious use of forward declarations.
+Avoid complex conditionals via helper functions (e.g. comma_match)
 
 Avoid ifdefs: prefer configure options / build trickery.
 
@@ -34,7 +35,8 @@ LIST = \
 	foo2
 rather than
 LIST = foo1 foo2
-	Rationale: diff are a lot of easier to read.
+
+	Rationale: diffs are a lot easier to read.
 
 Arbitrary rules
 ---------------
@@ -94,6 +96,9 @@ Use the standard comments + include guards for headers.
 Do not inline unless you have good reason.
 
 Use anon namespaces for static variables.
+
+In a derived class re-implementing a virtual function, include the
+(unnecessary) "virtual" keyword in the function declaration.
 
 "nr_doobries" not "no_doobries" - disambiguates between "number" and "negative"
 

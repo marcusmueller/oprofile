@@ -355,7 +355,7 @@ int numeric_compare(string const & lhs, string const & rhs)
 {
 	if (lhs == "all" && rhs == "all")
 		return 0;
-	// we choose arbitrary an order.
+	// we choose an order arbitrarily
 	if (lhs == "all")
 		return 1;
 	if (rhs == "all")
