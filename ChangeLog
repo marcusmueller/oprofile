@@ -1,5 +1,13 @@
 2003-02-13  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* TODO: update
+
+	* pp/output_format.h:
+	* pp/output_format.cpp: fix #686272, crash when using
+	  oprofpp -s symb_name.
+
+2003-02-13  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* dae/opd_kernel.h:
 	* dae/opd_image.h:
 	* dae/opd_image.c: don't use hash entry zeo for kernel image

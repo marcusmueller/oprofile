@@ -23,7 +23,6 @@
 #include "outsymbflag.h"
 
 class profile_container_t;
-class field_description;
 class symbol_entry;
 
 namespace format_output {

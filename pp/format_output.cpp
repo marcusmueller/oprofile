@@ -244,8 +244,22 @@ void formatter::do_output(ostream & out, string const & name,
 	}
 
 	// now the remaining field
-	size_t temp_flag = flag & ~(osf_vma|osf_repeat_mask|osf_details|osf_header);
-	size_t true_flags = flags & ~(osf_vma|osf_repeat_mask|osf_header);
+	// vma and repeated field has already been output. It's vital to mask
+	// too osf_details|osf_header cause they are not field but rather
+	// output modifier.
+	int const mask = osf_vma|osf_repeat_mask| osf_details|osf_header;
+
+	// don't be confused between flags member variable and flag passed as
+	// parameters, flags show the real requested field whilst flag contain
+	// the field which are really output. output flags wich are in flags
+	// but not in flag are blank output. this is used to re-use this
+	// function for detailed output, see various caller. FIXME: can be
+	// re-written by passing rather than outsymbflag flag parameter
+	// a bool do_output_details. Also we are trying to put too many things
+	// in output flags: osf_header and osf_details would be different
+	// boolean parameters rather encoded in flags.
+	size_t temp_flag = flag & ~mask;
+	size_t true_flags = flags & ~mask;
 	for (size_t i = 1 ; temp_flag != 0 ; i <<= 1) {
 		outsymbflag fl = static_cast<outsymbflag>(i);
 		if ((temp_flag & fl) != 0) {
