@@ -89,12 +89,12 @@ do_help() {
 	  --ctrN-kernel=[0|1]          whether to count kernel events for ctr N
 	  --ctrN-user=[0|1]            whether to count user events for ctr N
 	Allowed counters for N are [$OP_COUNTERS]
-	  --pid-filter=pid             Only profile process pid  (2.4 version)
-	  --pgrp-filter=pgrp           Only profile process tty group pgrp (2.4 version)
+	  --pid-filter=[pid|none]      Only profile process pid  (2.4 version)
+	  --pgrp-filter=[pgrp|none]    Only profile process tty group pgrp (2.4 version)
 	  --rtc-value=val	       Set sample rate to val per second (2.4 version)
 	  --kernel-only=[0|1]	       profile only the kernel (2.4 version)
 	  --note-table-size	       number of notes in kernel notes buffer (2.4 version)
-	  --separate=[library,kernel,all]         separate samples as given
+	  --separate=[none,library,kernel,all]         separate samples as given
 	  --vmlinux=file               vmlinux kernel image
 	  --verbose                    be verbose in the daemon log
 	  --kernel-range=start,end     kernel range vma address in hexadecimal
@@ -437,6 +437,10 @@ validate_separate_args() {
 				SEPARATE_LIB_SAMPLES=1
 				SEPARATE_KERNEL_SAMPLES=1
 				;;
+			none)
+				SEPARATE_LIB_SAMPLES=0
+				SEPARATE_KERNEL_SAMPLES=0
+				;;
 			*)
 				echo "invalid --separate= argument: $1"
 				exit 1
@@ -612,6 +616,9 @@ do_options() {
 				if test "$KERNEL_SUPPORT" = "yes"; then
 					echo "\"$arg\" ignored" >&2
 				else
+					if test "$val" = "none"; then
+						val=0
+					fi
 					PID_FILTER=$val
 				fi
 				NEED_SETUP=yes
@@ -620,6 +627,9 @@ do_options() {
 				if test "$KERNEL_SUPPORT" = "yes"; then
 					echo "\"$arg\" ignored" >&2
 				else
+					if test "$val" = "none"; then
+						val=0
+					fi
 					PGRP_FILTER=$val
 				fi
 				NEED_SETUP=yes

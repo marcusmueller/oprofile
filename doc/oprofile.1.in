@@ -134,17 +134,20 @@ Count events in user mode when 1, do not count when 0 (default 1).
 .br
 .TP
 .BI "--pid-filter=" pid
-Only profile process pid  (only available for 2.4 version).
+Only profile process pid (only available for 2.4 version). Set
+to 'none' to enable profiling of all PIDs again.
 .br
 .TP
 .BI "--pgrp-filter=" pgrp
-Only profile process tty group pgrp (only available for 2.4 version).
+Only profile process tty group pgrp (only available for 2.4 version). Set
+to 'none' to enable profiling of all PIDs again.
 .br
 .TP
-.BI "--separate="[library,kernel,all]
+.BI "--separate="[none,library,kernel,all]
 Separate samples based on the given separator. 'library' per-application
 dynamically linked libraries samples files. 'kernel' per-application modules
-and kernel samples files, 'kernel' imply 'library'. 'all' imply all above options.
+and kernel samples files, 'kernel' imply 'library'. 'all' imply all the
+above options and 'none' turns off separation.
 .br
 .TP
 .BI "--vmlinux=" file
