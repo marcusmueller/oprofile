@@ -1,5 +1,18 @@
 2002-01-14  John Levon  <moz@compsoc.man.ac.uk>
 
+	* TODO: update
+
+	* op_user.h: add CPU_RTC
+
+	* op_init.c: add FIXMEs
+
+	* op_nmi.c:
+	* op_rtc.c:
+	* oprofile.h:
+	* oprofile.c: implement abstract interrupt handler code
+
+2002-01-14  John Levon  <moz@compsoc.man.ac.uk>
+
 	* gui/oprof_start_config.cpp: fix vmlinux/system.map defaults
  
 2002-01-13  Philippe Elie  <ph_e@club-internet.fr>

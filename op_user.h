@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.15 2001/12/31 14:45:32 movement Exp $ */
+/* $Id: op_user.h,v 1.16 2002/01/14 06:01:45 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -54,6 +54,7 @@ enum op_cpu_ {
 	CPU_PII,
 	CPU_PIII,
 	CPU_ATHLON,
+	CPU_RTC,
 	MAX_CPU_TYPE
 };
  

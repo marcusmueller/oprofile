@@ -32,28 +32,22 @@ static int allow_unload = 1;
 #endif
 
 /* sysctl settables */
-static struct oprof_sysctl sysctl_parms;
+struct oprof_sysctl sysctl_parms;
 /* some of the sys ctl settable variable needs to be copied to protect
  * against user that try to change through /proc/sys/dev/oprofile/ * running
  * parameters during profiling */
 struct oprof_sysctl sysctl;
 
-/* the MSRs we need */
-static uint perfctr_msr[OP_MAX_COUNTERS];
-static uint eventsel_msr[OP_MAX_COUNTERS];
-
 /* number of counters physically present */
-uint op_nr_counters = 2;
-
-/* whether we enable for each counter (athlon) or globally (intel) */
-int separate_running_bit;
+// FIXME: remove 
+extern uint op_nr_counters;
 
 static u32 prof_on __cacheline_aligned;
 
 /* in the process of quitting ? */
 static int quitting;
 /* is partial_stop made ?  Re-using quitting for this purpose is obfuscated */
-static int partial_stop;
+int partial_stop;
  
 static int op_major;
 
@@ -62,15 +56,18 @@ static volatile uint oprof_note_opened __cacheline_aligned;
 static DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
 
 static u32 oprof_ready[NR_CPUS] __cacheline_aligned;
-static struct _oprof_data oprof_data[NR_CPUS];
+struct _oprof_data oprof_data[NR_CPUS];
 
 struct op_note * note_buffer __cacheline_aligned;
 u32 note_pos __cacheline_aligned;
 
 extern spinlock_t map_lock;
 
-/* ---------------- NMI handler ------------------ */
-
+// the interrupt handler ops structure to use
+static struct op_int_operations * int_ops;
+ 
+/* ---------------- interrupt entry routines ------------------ */
+ 
 inline static int need_wakeup(uint cpu, struct _oprof_data * data)
 {
 	return data->nextbuf >= (data->buf_size - OP_PRE_WATERMARK) && !oprof_ready[cpu];
@@ -90,6 +87,8 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const str
 		return;
 
 	// FIXME: verify this on 2.2 !!!!
+
+	// FIXME: changes for RTC ? 
  
 	/* locking rationale :
 	 *
@@ -127,7 +126,7 @@ inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, in
 	ops->count = (1U << OP_BITS_COUNT)*ctr + 1;
 }
 
-inline static void op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
+void op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
 {
 	struct _oprof_data * data = &oprof_data[cpu];
 	uint h = op_hash(regs->eip, current->pid, ctr);
@@ -154,191 +153,6 @@ full_entry:
 new_entry:
 	fill_op_entry(&data->entries[h].samples[i],regs,ctr);
 	return;
-}
-
-inline static int op_check_pid(void)
-{
-	if (unlikely(sysctl.pid_filter) && 
-	    likely(current->pid != sysctl.pid_filter))
-		return 1;
-
-	if (unlikely(sysctl.pgrp_filter) && 
-	    likely(current->pgrp != sysctl.pgrp_filter))
-		return 1;
-		
-	return 0;
-}
-
-static void op_check_ctr(uint cpu, struct pt_regs *regs, int ctr)
-{
-	ulong l,h;
-	get_perfctr(l, h, ctr);
-	if (likely(ctr_overflowed(l))) {
-		if (!op_check_pid())
-			op_do_profile(cpu, regs, ctr);
-
-		set_perfctr(oprof_data[cpu].ctr_count[ctr], ctr);
-	}
-}
-
-asmlinkage void op_do_nmi(struct pt_regs *regs)
-{
-	uint cpu = op_cpu_id();
-	int i;
-
-	for (i = 0 ; i < op_nr_counters ; ++i)
-		op_check_ctr(cpu, regs, i);
-}
-
-/* ---------------- PMC setup ------------------ */
-
-static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um)
-{
-	/* enable interrupt generation */
-	*val |= (1<<20);
-	/* enable/disable chosen OS and USR counting */
-	(user)   ? (*val |= (1<<16))
-		 : (*val &= ~(1<<16));
-
-	(kernel) ? (*val |= (1<<17))
-		 : (*val &= ~(1<<17));
-
-	/* what are we counting ? */
-	*val |= event;
-	*val |= (um<<8);
-}
-
-static void pmc_setup(void *dummy)
-{
-	uint low, high;
-	int i;
-
-	/* IA Vol. 3 Figure 15-3 */
-
-	/* Stop and clear all counter: IA32 use bit 22 of eventsel_msr0 to
-	 * enable/disable all counter, AMD use separate bit 22 in each msr,
-	 * all bits are cleared except the reserved bits 21 */
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		rdmsr(eventsel_msr[i], low, high);
-		wrmsr(eventsel_msr[i], low & (1 << 21), high);
-
-		/* avoid a false detection of ctr overflow in NMI handler */
-		wrmsr(perfctr_msr[i], -1, -1);
-	}
-
-	/* setup each counter */
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		if (sysctl.ctr[i].event) {
-			rdmsr(eventsel_msr[i], low, high);
-
-			low &= 1 << 21;  /* do not touch the reserved bit */
-			set_perfctr(sysctl.ctr[i].count, i);
-
-			pmc_fill_in(&low, sysctl.ctr[i].kernel, sysctl.ctr[i].user,
-				sysctl.ctr[i].event, sysctl.ctr[i].unit_mask);
-
-			wrmsr(eventsel_msr[i], low, high);
-		}
-	}
-	
-	/* Here all setup is made except the start/stop bit 22, counter
-	 * disabled contains zeros in the eventsel msr except the reserved bit
-	 * 21 */
-}
-
-inline static void pmc_start_P6(void)
-{
-	uint low,high;
-
-	rdmsr(eventsel_msr[0], low, high);
-	wrmsr(eventsel_msr[0], low | (1 << 22), high);
-}
-
-inline static void pmc_start_Athlon(void)
-{
-	uint low,high;
-	int i;
-
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		if (sysctl.ctr[i].count) {
-			rdmsr(eventsel_msr[i], low, high);
-			wrmsr(eventsel_msr[i], low | (1 << 22), high);
-		}
-	}
-}
-
-static void pmc_start(void *info)
-{
-	if (info && (*((uint *)info) != op_cpu_id()))
-		return;
-
-	/* assert: all enable counter are setup except the bit start/stop,
-	 * all counter disable contains zeroes (except perhaps the reserved
-	 * bit 21), counter disable contains -1 sign extended in msr count */
-
-	/* enable all needed counter */
-	if (separate_running_bit == 0)
-		pmc_start_P6();
-	else
-		pmc_start_Athlon();
-}
-
-inline static void pmc_stop_P6(void)
-{
-	uint low,high;
-
-	rdmsr(eventsel_msr[0], low, high);
-	wrmsr(eventsel_msr[0], low & ~(1 << 22), high);
-}
-
-inline static void pmc_stop_Athlon(void)
-{
-	uint low,high;
-	int i;
-
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		if (sysctl.ctr[i].count) {
-			rdmsr(eventsel_msr[i], low, high);
-			wrmsr(eventsel_msr[i], low & ~(1 << 22), high);
-		}
-	}
-}
-
-static void pmc_stop(void *info)
-{
-	if (info && (*((uint *)info) != op_cpu_id()))
-		return;
-
-	/* disable counters */
-	if (separate_running_bit == 0)
-		pmc_stop_P6();
-	else
-		pmc_stop_Athlon();
-}
-
-inline static void pmc_select_start(uint cpu)
-{
-	/* we must make sure not to re-enable the counters
-	 * after a dump_stop
-	 */
-	if (partial_stop)
-		return;
-
-	if (cpu == op_cpu_id())
-		pmc_start(NULL);
-	else
-		smp_call_function(pmc_start, &cpu, 0, 1);
-}
-
-inline static void pmc_select_stop(uint cpu)
-{
-	if (partial_stop)
-		return;
-
-	if (cpu == op_cpu_id())
-		pmc_stop(NULL);
-	else
-		smp_call_function(pmc_stop, &cpu, 0, 1);
 }
 
 /* ---------------- driver routines ------------------ */
@@ -507,8 +321,8 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 		return 0;
 	}
 
-	pmc_select_stop(cpu_num);
-
+	int_ops->stop_cpu(cpu_num);
+ 
 	/* buffer might have overflowed */
 	num = check_buffer_amount(&oprof_data[cpu_num]);
 
@@ -519,7 +333,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	if (count && copy_to_user(buf, oprof_data[cpu_num].buffer, count))
 		count = -EFAULT;
 
-	pmc_select_start(cpu_num);
+	int_ops->start_cpu(cpu_num);
 
 	/* 0 is a special case for us, prefer -EINTR instead. Ugly. */
 	if (!count)
@@ -646,14 +460,11 @@ static int oprof_init_data(void)
 	return 0;
 }
 
-static int parms_ok(void)
+static int parms_check(void)
 {
-	int ret;
-	int i;
+	int err = 0;
 	uint cpu;
-	int ok;
 	struct _oprof_data *data;
-	int enabled = 0;
 
 	op_check_range(sysctl.hash_size, 256, 262144,
 		"sysctl.hash_size value %d not in range (%d %d)\n");
@@ -662,66 +473,18 @@ static int parms_ok(void)
 	op_check_range(sysctl.note_size, OP_PRE_NOTE_WATERMARK + 1024, 1048576,
 		"sysctl.note_size value %d not in range (%d %d)\n");
 
-	for (i = 0; i < op_nr_counters ; i++) {
-
-		if (sysctl.ctr[i].enabled) {
-			int min_count = op_min_count(sysctl.ctr[i].event, sysctl.cpu_type);
-
-			if (!sysctl.ctr[i].user && !sysctl.ctr[i].kernel) {
-				printk(KERN_ERR "oprofile: neither kernel nor user "
-					"set for counter %d\n", i);
-				return 0;
-			}
-			op_check_range(sysctl.ctr[i].count, min_count,
-				OP_MAX_PERF_COUNT,
-				"ctr count value %d not in range (%d %ld)\n");
-
-			enabled = 1;
-		}
-	}
-
-	if (!enabled) {
-		printk(KERN_ERR "oprofile: no counters have been enabled.\n");
-		return 0;
-	}
-
-	/* hw_ok() has set sysctl.cpu_type */
-	ok = 1;
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		ret = op_check_events(i, sysctl.ctr[i].event, sysctl.ctr[i].unit_mask, sysctl.cpu_type);
-
-		if (ret & OP_EVT_NOT_FOUND)
-			printk(KERN_ERR "oprofile: ctr%d: %d: no such event for cpu %d\n", i, sysctl.ctr[i].event, sysctl.cpu_type);
-
-		if (ret & OP_EVT_NO_UM)
-			printk(KERN_ERR "oprofile: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n", i, sysctl.ctr[i].unit_mask, sysctl.cpu_type);
-
-		if (ret & OP_EVT_CTR_NOT_ALLOWED)
-			printk(KERN_ERR "oprofile: ctr%d: %d: can't count event for this counter\n", i, sysctl.ctr[i].event);
-
-		if (ret != OP_EVENTS_OK)
-			ok = 0;
-	}
-	
-	if (!ok)
-		return 0;
-
+	if ((err = int_ops->check_params()))
+		return err;
+ 
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		data = &oprof_data[cpu];
-
+ 
 		/* make sure the buffer and hash table have been set up */
 		if (!data->buffer || !data->entries)
-			return 0;
-
-		for (i = 0 ; i < op_nr_counters ; ++i) {
-			if (sysctl.ctr[i].enabled)
-				data->ctr_count[i] = sysctl.ctr[i].count;
-			else
-				data->ctr_count[i] = 0;
-		}
+			return -EFAULT;
 	}
 
-	return 1;
+	return err;
 }
 
 
@@ -742,27 +505,20 @@ static int oprof_start(void)
 	if ((err = oprof_init_data()))
 		goto out;
 
-	if (!parms_ok()) {
+	if ((err = parms_check())) {
 		oprof_free_mem(smp_num_cpus);
-		err = -EINVAL;
 		goto out;
 	}
 
-	if ((smp_call_function(pmc_setup, NULL, 0, 1))) {
+	if ((err = int_ops->setup())) {
 		oprof_free_mem(smp_num_cpus);
-		err = -EINVAL;
 		goto out;
 	}
-
-	pmc_setup(NULL);
-
-	install_nmi();
 
 	if (!sysctl.kernel_only)
 		op_intercept_syscalls();
 
-	smp_call_function(pmc_start, NULL, 0, 1);
-	pmc_start(NULL);
+	int_ops->start();
 
 	prof_on = 1;
 
@@ -781,9 +537,9 @@ static void oprof_partial_stop(void)
 		return;
 
 	op_replace_syscalls();
-	smp_call_function(pmc_stop, NULL, 0, 1);
-	pmc_stop(NULL);
-	restore_nmi();
+
+	int_ops->stop();
+ 
 	partial_stop = 1;
 }
  
@@ -886,7 +642,7 @@ static int get_nr_interrupts(ctl_table *table, int write, struct file *filp, voi
 	return proc_dointvec(table, write, filp, buffer, lenp);
 }
 
-static int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
+int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
 {
 	int err;
 
@@ -921,7 +677,7 @@ static void do_actual_dump(void)
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		struct _oprof_data * data = &oprof_data[cpu];
 		spin_lock(&note_lock);
-		pmc_select_stop(cpu);
+		int_ops->stop_cpu(cpu);
 		for (i=0; i < data->hash_size; i++) {
 			for (j=0; j < OP_NR_ENTRY; j++)
 				dump_one(data, &data->entries[i].samples[j], cpu);
@@ -930,7 +686,7 @@ static void do_actual_dump(void)
 		}
 		spin_unlock(&note_lock);
 		oprof_ready[cpu] = 2;
-		pmc_select_start(cpu);
+		int_ops->start_cpu(cpu);
 	}
 	wake_up(&oprof_wait);
 }
@@ -985,13 +741,14 @@ out:
 	return err;
 }
  
-static int nr_oprof_static = 10;
+int nr_oprof_static = 10;
 
 static ctl_table oprof_table[] = {
 	{ 1, "bufsize", &sysctl_parms.buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "hashsize", &sysctl_parms.hash_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "dump", &sysctl_parms.dump, sizeof(int), 0600, NULL, &sysctl_do_dump, NULL, },
 	{ 1, "dump_stop", &sysctl_parms.dump_stop, sizeof(int), 0600, NULL, &sysctl_do_dump_stop, NULL, },
+// FIXME: kernel only and rtc
 	{ 1, "kernel_only", &sysctl_parms.kernel_only, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pid_filter", &sysctl_parms.pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pgrp_filter", &sysctl_parms.pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
@@ -1012,68 +769,36 @@ static ctl_table dev_root[] = {
 	{0,},
 };
 
-static char *names[] = { "0", "1", "2", "3", "4", };
-
 static struct ctl_table_header *sysctl_header;
 
 /* NOTE: we do *not* support sysctl() syscall */
 
 static int __init init_sysctl(void)
 {
+	int err = 0;
 	ctl_table *next = &oprof_table[nr_oprof_static];
-	ctl_table *tab;
-	int i,j;
 
 	/* these sysctl parms need sensible value */
 	sysctl_parms.hash_size = OP_DEFAULT_HASH_SIZE;
 	sysctl_parms.buf_size = OP_DEFAULT_BUF_SIZE;
 	sysctl_parms.note_size = OP_DEFAULT_NOTE_SIZE;
 
-	/* FIXME: no proper numbers, or verifiers (where possible) */
-
-	for (i=0; i < op_nr_counters; i++) {
-		next->ctl_name = 1;
-		next->procname = names[i];
-		next->mode = 0700;
-
-		if (!(tab = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
-			goto cleanup;
-		next->child = tab;
-
-		memset(tab, 0, sizeof(ctl_table)*7);
-		tab[0] = ((ctl_table){ 1, "enabled", &sysctl_parms.ctr[i].enabled, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[1] = ((ctl_table){ 1, "event", &sysctl_parms.ctr[i].event, sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
-		tab[2] = ((ctl_table){ 1, "count", &sysctl_parms.ctr[i].count, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[3] = ((ctl_table){ 1, "unit_mask", &sysctl_parms.ctr[i].unit_mask, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[4] = ((ctl_table){ 1, "kernel", &sysctl_parms.ctr[i].kernel, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[5] = ((ctl_table){ 1, "user", &sysctl_parms.ctr[i].user, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		next++;
+	if ((err = int_ops->add_sysctls(next))) {
+		return err;
 	}
 
 	sysctl_header = register_sysctl_table(dev_root, 0);
-	return 0;
-
-cleanup:
-	next = &oprof_table[nr_oprof_static];
-	for (j = 0; j < i; j++) {
-		kfree(next->child);
-		next++;
-	}
-	return -EFAULT;
+	return err;
 }
 
 /* not safe to mark as __exit since used from __init code */
 static void cleanup_sysctl(void)
 {
-	int i;
 	ctl_table *next = &oprof_table[nr_oprof_static];
 	unregister_sysctl_table(sysctl_header);
 	
-	i = smp_num_cpus;
-	while (i-- > 0) {
-		kfree(next->child);
-		next++;
-	}
+	int_ops->remove_sysctls(next);
+
 	return;
 }
 
@@ -1088,57 +813,26 @@ static int can_unload(void)
 	return can;
 }
 
-static uint saved_perfctr_low[OP_MAX_COUNTERS];
-static uint saved_perfctr_high[OP_MAX_COUNTERS];
-static uint saved_eventsel_low[OP_MAX_COUNTERS];
-static uint saved_eventsel_high[OP_MAX_COUNTERS];
- 
 int __init oprof_init(void)
 {
-	int err;
-	int i;
+	int err = 0;
 
 	printk(KERN_INFO "%s\n", op_version);
 
 	find_intel_smp();
 
-	/* first, let's use the right MSRs */
-	switch (sysctl.cpu_type) {
-		case CPU_ATHLON:
-			eventsel_msr[0] = MSR_K7_PERFCTL0;
-			eventsel_msr[1] = MSR_K7_PERFCTL1;
-			eventsel_msr[2] = MSR_K7_PERFCTL2;
-			eventsel_msr[3] = MSR_K7_PERFCTL3;
-			perfctr_msr[0] = MSR_K7_PERFCTR0;
-			perfctr_msr[1] = MSR_K7_PERFCTR1;
-			perfctr_msr[2] = MSR_K7_PERFCTR2;
-			perfctr_msr[3] = MSR_K7_PERFCTR3;
-			break;
-		default:
-			eventsel_msr[0] = MSR_P6_EVNTSEL0;
-			eventsel_msr[1] = MSR_P6_EVNTSEL1;
-			perfctr_msr[0] = MSR_P6_PERFCTR0;
-			perfctr_msr[1] = MSR_P6_PERFCTR1;
-			break;
-	}
+	// FIXME: for RTC
+	int_ops = &op_nmi_ops;
 
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		rdmsr(eventsel_msr[i], saved_eventsel_low[i], saved_eventsel_high[i]);
-		rdmsr(perfctr_msr[i], saved_perfctr_low[i], saved_perfctr_high[i]);
-	}
-
-	/* setup each counter */
-	if ((err = apic_setup()))
+	if ((err = int_ops->init())) {
 		return err;
-
+	}
+ 
 	if ((err = init_sysctl()))
-		return err;
-
-	if ((err = smp_call_function(lvtpc_apic_setup, NULL, 0, 1)))
 		goto out_err;
 
  	err = op_major = register_chrdev(0, "oprof", &oprof_fops);
-	if (err<0)
+	if (err < 0)
 		goto out_err2;
 
 	err = oprof_init_hashmap();
@@ -1158,30 +852,21 @@ int __init oprof_init(void)
 	return 0;
 
 out_err2:
-	smp_call_function(lvtpc_apic_restore, NULL, 0, 1);
-	lvtpc_apic_restore(NULL);
-out_err:
 	cleanup_sysctl();
+out_err:
+	int_ops->deinit();
 	return err;
 }
 
 void __exit oprof_exit(void)
 {
-	int i;
-
 	oprof_free_hashmap();
+ 
 	unregister_chrdev(op_major, "oprof");
-	smp_call_function(lvtpc_apic_restore, NULL, 0, 1);
-	lvtpc_apic_restore(NULL);
+
 	cleanup_sysctl();
 
-	/* currently no need to reset APIC state */
-
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		wrmsr(eventsel_msr[i], saved_eventsel_low[i], saved_eventsel_high[i]);
-		wrmsr(perfctr_msr[i], saved_perfctr_low[i], saved_perfctr_high[i]);
-	}
-
+	int_ops->deinit();
 }
 
 /*

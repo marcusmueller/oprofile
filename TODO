@@ -28,6 +28,7 @@ o audit oprof_start for security...
 Before 1.0
 ----------
 
+ o improve format of oprofpp output etc.
  o implement a shadow interrupt handler so we can profile the NMI handler code
  o verify builds (modversions, kernel versions, athlon etc.)
  o merging utility for sample files (useful)

@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.16 2002/01/11 05:24:07 movement Exp $ */
+/* $Id: oprofile.h,v 1.17 2002/01/14 06:01:45 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -83,6 +83,21 @@ struct oprof_sysctl {
 	struct oprof_counter ctr[OP_MAX_COUNTERS];
 };
 
+/* interrupt abstraction */
+struct op_int_operations {
+	// FIXME doc
+	int (*init)(void);
+	void (*deinit)(void);
+	int (*add_sysctls)(ctl_table *);
+	void (*remove_sysctls)(ctl_table *);
+	int (*check_params)(void);
+	int (*setup)(void);
+	void (*start)(void);
+	void (*stop)(void);
+	void (*start_cpu)(uint);
+	void (*stop_cpu)(uint);
+};
+ 
 /* MSRs */
 #ifndef MSR_P6_PERFCTR0
 #define MSR_P6_PERFCTR0 0xc1
@@ -237,5 +252,16 @@ void lvtpc_apic_restore(void *dummy);
 void install_nmi(void);
 void restore_nmi(void);
 int apic_setup(void);
+
+/* used by interrupt handlers */
+extern struct op_int_operations op_nmi_ops;
+extern struct op_int_operations op_rtc_ops;
+ 
+void op_do_profile(uint cpu, struct pt_regs *regs, int ctr);
+extern struct _oprof_data oprof_data[NR_CPUS];
+extern int partial_stop;
+extern struct oprof_sysctl sysctl_parms;
+extern int nr_oprof_static;
+extern int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp);
 
 #endif /* OPROFILE_H */
