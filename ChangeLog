@@ -1,5 +1,10 @@
 2001-08-11  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprofile.h: 2.4.8 doesn't either. *sigh*. looks like we need
+	  some autoconfery :(
+ 
+2001-08-11  John Levon  <moz@compsoc.man.ac.uk>
+
 	* oprofile.h: 2.4.7-linus doesn't include the Andrew Morton
 	  complete_and_exit(). Hopefully this will make it into 2.4.8,
 	  I'm banking on this.

@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.44 2001/08/11 02:00:05 movement Exp $ */
+/* $Id: oprofile.h,v 1.45 2001/08/11 12:37:56 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -173,8 +173,8 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #define release_mmap_sem(mm) up_read(&mm->mmap_sem)
 #endif
 
-// 2.4.7 introduced completions.
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,8)
+// 2.4.9 introduced complete_and_exit
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,9)
 #define DECLARE_COMPLETION(x)	DECLARE_MUTEX_LOCKED(x)
 #define init_completion(x)
 #define complete_and_exit(x, y) up_and_exit((x), (y))
