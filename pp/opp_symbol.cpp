@@ -15,8 +15,6 @@
 #include "file_manip.h"
 
 #include "opp_symbol.h"
-// FIXME 
-#include "oprofpp_options.h"
 #include "samples_container.h"
 #include "demangle_symbol.h"
 
@@ -28,6 +26,10 @@ using std::ostream;
 using std::ostringstream;
 using std::endl;
 
+namespace options {
+	extern bool demangle;
+}
+ 
 struct output_option {
 	char option;
 	outsymbflag flag;
