@@ -9,7 +9,7 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
-#ifndef SAMPLE_CONTAINER_IMP_H 
+#ifndef SAMPLE_CONTAINER_IMP_H
 #define SAMPLE_CONTAINER_IMP_H
 
 #include <vector>
@@ -26,12 +26,12 @@ public:
 				uint max_counters) const;
 
 	sample_entry const * find_by_vma(bfd_vma vma) const;
- 
+
 	bool accumulate_samples(counter_array_t &, std::string const & filename,
 				size_t linenr, uint max_counters) const;
- 
+
 	void push_back(sample_entry const &);
- 
+
 private:
 	void flush_input_counter() const;
 

@@ -23,10 +23,10 @@ bool create_dir(std::string const & dir);
 bool create_path(std::string const & path);
 /// return the contents of a symbolic link or an empty string on failure
 std::string op_read_link(std::string const & name);
-/// return true if the given file is readable 
+/// return true if the given file is readable
 bool op_file_readable(std::string const & file);
 
-/** 
+/**
  * @param file_list where to store result
  * @param base_dir directory from where lookup start
  * @param filter a filename filter
@@ -41,7 +41,7 @@ bool create_file_list(std::list<std::string> & file_list,
 		      std::string const & filter = "*",
 		      bool recursive = false);
 
-/** 
+/**
  * @param path path name to translate
  * @param base_dir base directory from where the path name is relative
  * if abse_dir is empty $PWD is used as base directory

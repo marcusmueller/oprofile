@@ -19,9 +19,9 @@
 #include "op_config.h"
 
 namespace {
- 
+
 // output default_value if value is empty (empty <==> contains non blank char)
-static void save_value(std::ostream & out, std::string const & value, 
+static void save_value(std::ostream & out, std::string const & value,
 		       std::string const & default_value)
 {
 	std::istringstream in(value);
@@ -33,9 +33,9 @@ static void save_value(std::ostream & out, std::string const & value,
 		out << value;
 }
 
-} // namespace anon 
+} // namespace anon
 
-event_setting::event_setting() 
+event_setting::event_setting()
 	:
 	count(0),
 	umask(0),
@@ -79,7 +79,7 @@ config_setting::config_setting()
 	buffer_size(OP_DEFAULT_BUF_SIZE),
 	hash_table_size(OP_DEFAULT_HASH_SIZE),
 	note_table_size(OP_DEFAULT_NOTE_SIZE),
-	// FIXME: member of config, hardcoded value probably come from ? 
+	// FIXME: member of config, hardcoded value probably come from ?
 	kernel_filename("/lib/modules/" KVERSION "/build/vmlinux"),
 	map_filename("/lib/modules/" KVERSION "/build/System.map"),
 	kernel_only(0),

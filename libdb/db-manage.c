@@ -7,7 +7,7 @@
  *
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
- 
+
 #define _GNU_SOURCE
 
 #include <stdlib.h>
@@ -90,13 +90,13 @@ db_page_idx_t db_add_page(db_tree_t * tree)
 /* the default number of page, calculated to fit in 4096 bytes */
 #define DEFAULT_PAGE_NR(offset_page)			\
 	(4096 - offset_page) / sizeof(db_page_t) ?		\
-	(4096 - offset_page) / sizeof(db_page_t) : 1 
+	(4096 - offset_page) / sizeof(db_page_t) : 1
 
 void db_open(db_tree_t * tree, char const * filename, enum db_rw rw, size_t sizeof_header)
 {
 	struct stat stat_buf;
 	size_t nr_page;
-	int flags = (rw == DB_RDWR) ? (O_CREAT | O_RDWR) : O_RDONLY; 
+	int flags = (rw == DB_RDWR) ? (O_CREAT | O_RDWR) : O_RDONLY;
 	int mmflags = (rw == DB_RDWR) ? (PROT_READ | PROT_WRITE) : PROT_READ;
 
 	memset(tree, '\0', sizeof(db_tree_t));
@@ -136,7 +136,7 @@ void db_open(db_tree_t * tree, char const * filename, enum db_rw rw, size_t size
 		nr_page = (stat_buf.st_size - tree->offset_page) / sizeof(db_page_t);
 	}
 
-	tree->base_memory = 
+	tree->base_memory =
 		mmap(0, (nr_page * sizeof(db_page_t)) + tree->offset_page,
 			mmflags, MAP_SHARED, tree->fd, 0);
 
@@ -169,7 +169,7 @@ void db_close(db_tree_t * tree)
 	if (tree->base_memory) {
 		size_t size = (tree->descr->size * sizeof(db_page_t));
 		size += tree->offset_page;
- 
+
 		munmap(tree->base_memory, size);
 		tree->base_memory = 0;
 	}
@@ -183,10 +183,10 @@ void db_close(db_tree_t * tree)
 void db_sync(db_tree_t * tree)
 {
 	size_t size;
- 
+
 	if (!tree->base_memory)
 		return;
- 
+
 	size = tree->descr->current_size * sizeof(db_page_t);
 	size += tree->offset_page;
 	msync(tree->base_memory, size, MS_ASYNC);

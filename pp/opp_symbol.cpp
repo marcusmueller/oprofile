@@ -29,7 +29,7 @@ using std::endl;
 namespace options {
 	extern bool demangle;
 }
- 
+
 struct output_option {
 	char option;
 	outsymbflag flag;
@@ -83,7 +83,7 @@ outsymbflag output_symbol::ParseOutputOption(string const & option)
 void output_symbol::ShowHelp()
 {
 	for (size_t i = 0 ; i < nr_output_option ; ++i) {
-		cerr << output_options[i].option << "\t" 
+		cerr << output_options[i].option << "\t"
 		     << output_options[i].help_string << endl;
 	}
 }
@@ -265,7 +265,7 @@ void output_symbol::DoOutput(ostream & out, string const & name,
 				}
 			}
 		}
-		
+
 	}
 
 	// now the remaining field
@@ -316,13 +316,13 @@ void output_symbol::OutputHeader(ostream & out)
 					out << string(last_field_pad, ' ');
 					outsymbflag fl =
 					  static_cast<outsymbflag>(1 << i);
-					last_field_pad = 
+					last_field_pad =
 						OutputHeaderField(out, fl);
 					repeated_flag &= ~(1 << i);
 				}
 			}
 		}
-		
+
 	}
 
 	// now the remaining field
@@ -360,7 +360,7 @@ string output_symbol::format_vma(string const &,
 				sample_entry const & sample, size_t)
 {
 	ostringstream out;
-	
+
 	out << std::hex << std::setw(8) << std::setfill('0') << sample.vma;
 
 	return out.str();
@@ -409,7 +409,7 @@ string output_symbol::format_short_linenr_info(string const &,
 	ostringstream out;
 
 	if (sample.file_loc.filename.length()) {
-		out << basename(sample.file_loc.filename) 
+		out << basename(sample.file_loc.filename)
 		    << ":" << sample.file_loc.linenr;
 	} else {
 		out << "(no location information)";
@@ -463,7 +463,7 @@ string output_symbol::format_cumulated_percent(string const &,
 
 	cumulated_percent[ctr] += sample.counter[ctr];
 
-	double ratio = total_count[ctr] 
+	double ratio = total_count[ctr]
 		? double(cumulated_percent[ctr]) / total_count[ctr]
 		: 0.0;
 

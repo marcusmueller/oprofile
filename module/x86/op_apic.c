@@ -17,7 +17,7 @@
 
 #include "oprofile.h"
 #include "op_apic.h"
- 
+
 static ulong idt_addr;
 static ulong kernel_nmi;
 static ulong lvtpc_masked;
@@ -37,7 +37,7 @@ static void unmask_lvtpc(void * e)
 	if (!lvtpc_masked)
 		apic_write(APIC_LVTPC, apic_read(APIC_LVTPC) & ~APIC_LVT_MASKED);
 }
- 
+
 void install_nmi(void)
 {
 	volatile struct _descr descr = { 0, 0,};
@@ -119,7 +119,7 @@ static int __init enable_apic(void)
 
 	/* IA32 V3, 7.4.15 */
 	val = apic_read(APIC_LVR);
-	if (!APIC_INTEGRATED(GET_APIC_VERSION(val)))	
+	if (!APIC_INTEGRATED(GET_APIC_VERSION(val)))
 		goto not_local_p6_apic;
 
 	/* LVT0,LVT1,LVTT,LVTPC */
@@ -132,7 +132,7 @@ static int __init enable_apic(void)
 		apic_write(APIC_SPIV, val | APIC_SPIV_APIC_ENABLED);
 
 	return !!(val & APIC_SPIV_APIC_ENABLED);
- 
+
 not_local_p6_apic:
 	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
 	/* disable the apic only if it was disabled */
@@ -146,9 +146,9 @@ not_local_p6_apic:
 static void __init do_apic_setup(void)
 {
 	uint val;
- 
+
 	__cli();
- 
+
 	val = APIC_LVT_LEVEL_TRIGGER;
 	val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_EXINT);
 	apic_write(APIC_LVT0, val);
@@ -182,7 +182,7 @@ static void __init do_apic_setup(void)
 
 	__sti();
 }
- 
+
 /* does the CPU have a local APIC ? */
 static int __init check_cpu_ok(void)
 {
@@ -190,11 +190,11 @@ static int __init check_cpu_ok(void)
 		sysctl.cpu_type != CPU_PII &&
 		sysctl.cpu_type != CPU_PIII &&
 		sysctl.cpu_type != CPU_ATHLON)
-		return 0; 
+		return 0;
 
 	return 1;
 }
- 
+
 int __init apic_setup(void)
 {
 	uint val;

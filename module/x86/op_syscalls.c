@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -22,7 +22,7 @@ void oprof_put_note(struct op_note *samp);
 void __oprof_put_note(struct op_note *samp);
 
 extern spinlock_t note_lock;
- 
+
 /* ------------ system calls --------------- */
 
 struct mmap_arg_struct {
@@ -122,7 +122,7 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 		PTRACE_OFF(current);
 		oprof_output_maps(current);
 	}
- 
+
 	putname(filename);
 
 out:
@@ -137,7 +137,7 @@ static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 	struct file *file;
 
 	lock_out_mmap();
- 
+
 	file = fget(fd);
 	if (!file)
 		goto out;
@@ -164,7 +164,7 @@ asmlinkage static int my_sys_mmap2(ulong addr, ulong len,
 
 	if ((prot & PROT_EXEC) && ret >= 0)
 		out_mmap(ret, len, prot, flags, fd, pgoff << PAGE_SHIFT);
- 
+
 	MOD_DEC_USE_COUNT;
 	return ret;
 }

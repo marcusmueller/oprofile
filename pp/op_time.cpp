@@ -26,7 +26,7 @@
 #include "op_libiberty.h"
 #include "op_mangling.h"
 #include "op_time_options.h"
- 
+
 #include "counter_util.h"
 #include "samples_container.h"
 #include "samples_file.h"
@@ -46,9 +46,9 @@ using std::multimap;
 using std::pair;
 using std::setw;
 
-// FIXME 
+// FIXME
 static int counter;
- 
+
 /* TODO: if we have a quick read samples files format we can handle a great
  * part of complexity here by using samples_container_t to handle straight
  * op_time. Just create an artificial symbol that cover the whole samples
@@ -78,7 +78,7 @@ struct image_name
 	string lib_name;
 };
 
- 
+
 /// comparator for sorted_map_t
 struct sort_by_counter_t {
 	sort_by_counter_t(size_t index_) : index(index_) {}
@@ -143,7 +143,7 @@ static void sort_file_list_by_name(map_t & result,
 		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 			if ((counter & (1 << i)) != 0) {
 				ostringstream s;
-				s << string(options::samples_dir) << "/" << *it 
+				s << string(options::samples_dir) << "/" << *it
 				  << '#' << i;
 				if (op_file_readable(s.str())) {
 					break;
@@ -164,7 +164,7 @@ static void sort_file_list_by_name(map_t & result,
  */
 static void out_filename(string const & app_name,
 			 counter_array_t const & app_count,
-			 counter_array_t const & count, 
+			 counter_array_t const & count,
 			 double total_count[OP_MAX_COUNTERS])
 {
 	for (size_t i = 0 ; i < OP_MAX_COUNTERS; ++i) {
@@ -172,7 +172,7 @@ static void out_filename(string const & app_name,
 			// feel to rewrite with cout and its formated output
 #if 1
 			printf("%-9d ", count[i]);
-			double ratio = total_count[i] >= 1.0 
+			double ratio = total_count[i] >= 1.0
 				? count[i] / total_count[i] : 0.0;
 
 			if (ratio < 10.00 / 100.0)
@@ -187,7 +187,7 @@ static void out_filename(string const & app_name,
 			printf("%2.4f", ratio * 100);
 #else
 			cout << count[i] << " ";
-			
+
 			if (total_count[i] > 1) {
 				double ratio = count[i] / total_count[i];
 				cout << ratio * 100 << "%";
@@ -336,7 +336,7 @@ static void output_files_count(map_t& files)
 			map_t::const_iterator it = s_it->second;
 			counter_array_t temp;
 
-			out_filename(it->first, temp, s_it->first, 
+			out_filename(it->first, temp, s_it->first,
 				     total_count);
 
 			if (options::show_shared_libs) {
@@ -385,7 +385,7 @@ static void output_files_count(map_t& files)
 string check_image_name(string const & image_name,
 			string const & samples_filename)
 {
-	// FIXME: this isn't polite enough for a permissions problem. 
+	// FIXME: this isn't polite enough for a permissions problem.
 	if (op_file_readable(image_name))
 		return image_name;
 

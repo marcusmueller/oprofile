@@ -25,21 +25,21 @@
 
 class QIntValidator;
 class QListViewItem;
-class QTimerEvent; 
+class QTimerEvent;
 
 /// a struct describing a particular event type
 struct op_event_descr {
 	op_event_descr();
 
-	/// bit mask of allowed counters 
+	/// bit mask of allowed counters
 	uint counter_mask;
-	/// hardware event number 
+	/// hardware event number
 	u8 val;
-	/// unit mask values if applicable 
+	/// unit mask values if applicable
 	op_unit_mask const * unit;
 	/// unit mask descriptions if applicable
 	op_unit_desc const * um_desc;
-	/// name of event 
+	/// name of event
 	std::string name;
 	/// description of event
 	std::string help_str;
@@ -59,28 +59,28 @@ protected slots:
 	void choose_kernel_filename();
 	/// select the System.map filename
 	void choose_system_map_filename();
-	/// flush profiler 
+	/// flush profiler
 	void on_flush_profiler_data();
-	/// start profiler 
+	/// start profiler
 	void on_start_profiler();
 	/// stop profiler
 	void on_stop_profiler();
 	/// the counter combo has been activated
 	void counter_selected(int);
-	/// an event has been selected 
-	void event_selected(QListViewItem *); 
-	/// the mouse is over an event 
-	void event_over(QListViewItem *); 
+	/// an event has been selected
+	void event_selected(QListViewItem *);
+	/// the mouse is over an event
+	void event_over(QListViewItem *);
 	/// enabled has been changed
-	void enabled_toggled(bool); 
+	void enabled_toggled(bool);
 
 	/// close the dialog
 	void accept();
 
 	/// WM hide event
 	void closeEvent(QCloseEvent * e);
- 
-	/// timer event 
+
+	/// timer event
 	void timerEvent(QTimerEvent * e);
 
 private:
@@ -89,7 +89,7 @@ private:
 
 	/// update config on user change
 	void record_selected_event_config();
-	/// update config and validate 
+	/// update config and validate
 	bool record_config();
 
 	/// calculate unit mask for given event and unit mask part
@@ -104,16 +104,16 @@ private:
 
 	/// show an event's settings
 	void display_event(op_event_descr const * descrp);
- 
+
 	/// hide unit mask widgets
 	void hide_masks(void);
- 
+
 	/// update the counter combo at given position
 	void set_counter_combo(uint);
- 
+
 	/// load the event config file
 	void load_event_config_file(uint ctr);
-	/// save the event config file 
+	/// save the event config file
 	bool save_event_config_file(uint ctr);
 	/// load the extra config file
 	void load_config_file();
@@ -133,8 +133,8 @@ private:
 	/// current event configs for each counter
 	persistent_config_t<event_setting> event_cfgs[OP_MAX_COUNTERS];
 	/// enabled status for each counter
-	bool ctr_enabled[OP_MAX_COUNTERS]; 
- 
+	bool ctr_enabled[OP_MAX_COUNTERS];
+
 	/// current config
 	config_setting config;
 
@@ -146,7 +146,7 @@ private:
 
 	/// CPU speed in MHz
 	unsigned long cpu_speed;
- 
+
 	/// total number of available HW counters
 	uint op_nr_counters;
 

@@ -4,14 +4,14 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author Philippe Elie <phil_el@wanadoo.fr>
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
 #ifndef OP_DCACHE_H
 #define OP_DCACHE_H
- 
+
 #include <linux/sched.h>
 #include <linux/unistd.h>
 #include <linux/mman.h>

@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -16,7 +16,7 @@
 #include "opd_parse_proc.h"
 #include "opd_kernel.h"
 #include "opd_printf.h"
- 
+
 #include "version.h"
 #include "op_popt.h"
 #include "op_file.h"
@@ -29,9 +29,9 @@
 #include "op_events_desc.h"
 #include "op_libiberty.h"
 #include "op_hw_config.h"
- 
+
 #include <unistd.h>
-#include <signal.h> 
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -39,10 +39,10 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
- 
+
 // GNU libc bug
 pid_t getpgid(pid_t pid);
- 
+
 u32 ctr_count[OP_MAX_COUNTERS];
 u8 ctr_event[OP_MAX_COUNTERS];
 u8 ctr_um[OP_MAX_COUNTERS];
@@ -57,7 +57,7 @@ char * vmlinux;
 int kernel_only;
 unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 
- 
+
 static int showvers;
 static u32 ctr_enabled[OP_MAX_COUNTERS];
 /* Unfortunately popt does not have, on many versions, the POPT_ARG_DOUBLE type
@@ -124,7 +124,7 @@ static void op_open_files(void)
 		perror("Failed to open hash map device");
 		exit(EXIT_FAILURE);
 	}
- 
+
 	notedevfd = op_open_device(OP_NOTE_DEVICE, 0);
 	if (notedevfd == -1) {
 		if (errno == EINVAL)
@@ -134,7 +134,7 @@ static void op_open_files(void)
 			perror("Failed to open note device");
 		exit(EXIT_FAILURE);
 	}
- 
+
 	devfd = op_open_device(OP_DEVICE, 0);
 	if (devfd == -1) {
 		if (errno == EINVAL)
@@ -143,13 +143,13 @@ static void op_open_files(void)
 		else
 			perror("Failed to open profile device");
 		exit(EXIT_FAILURE);
-	} 
- 
+	}
+
 	opd_init_hash_map();
 
 	/* give output before re-opening stdout as the logfile */
 	printf("Using log file " OP_LOG_FILE "\n");
- 
+
 	/* set up logfile */
 	close(0);
 	close(1);
@@ -170,7 +170,7 @@ static void op_open_files(void)
  * opd_backup_samples_files - back up all the samples file
  *
  * move all files in samples dir to sub-directory
- * session-#nr/ 
+ * session-#nr/
  */
 static void opd_backup_samples_files(void)
 {
@@ -214,7 +214,7 @@ static void opd_backup_samples_files(void)
 }
 
 /**
- * opd_need_backup_samples_files - test if we need to 
+ * opd_need_backup_samples_files - test if we need to
  * backup samples files
  *
  * We can't backup lazily samples files else it can
@@ -248,7 +248,7 @@ static int opd_need_backup_samples_files(void)
 		strcat(file, dirent->d_name);
 		if (!stat(file, &stat_buf) && S_ISREG(stat_buf.st_mode)) {
 			struct opd_header header;
-			FILE * fp = fopen(file, "r"); 
+			FILE * fp = fopen(file, "r");
 			if (!fp)
 				continue;
 
@@ -299,7 +299,7 @@ static void opd_pmc_options(void)
 	uint i;
 	/* should be sufficient to hold /proc/sys/dev/oprofile/%d/yyyy */
 	char filename[PATH_MAX + 1];
- 
+
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		sprintf(filename, "/proc/sys/dev/oprofile/%d/event", i);
 		ctr_event[i]= op_read_int_from_file(filename);
@@ -321,7 +321,7 @@ static void opd_pmc_options(void)
 			fprintf(stderr, "oprofiled: ctr%d: %d: no such event for cpu %s\n",
 				i, ctr_event[i], op_get_cpu_type_str(cpu_type));
 
-		if (ret & OP_EVT_NO_UM) 
+		if (ret & OP_EVT_NO_UM)
 			fprintf(stderr, "oprofiled: ctr%d: 0x%.2x: invalid unit mask for cpu %s\n",
 				i, ctr_um[i], op_get_cpu_type_str(cpu_type));
 
@@ -332,24 +332,24 @@ static void opd_pmc_options(void)
 		if (ret != OP_EVENTS_OK)
 			exit(EXIT_FAILURE);
 	}
-} 
- 
+}
+
 /**
  * opd_rtc_options - read sysctls + set up for rtc options
  */
 static void opd_rtc_options(void)
 {
 	uint i;
- 
+
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		ctr_event[i] = ctr_count[i] =  ctr_um[i] = ctr_enabled[i] = 0;
 	}
- 
+
 	ctr_count[0] = op_read_int_from_file("/proc/sys/dev/oprofile/rtc_value");
 	/* FIXME ugly ... */
 	ctr_event[0] = 0xff;
 }
- 
+
 /**
  * opd_options - parse command line options
  * @param argc  argc
@@ -466,7 +466,7 @@ static void opd_shutdown(struct op_sample * buf, size_t size, struct op_note * n
 {
 	ssize_t count = -1;
 	ssize_t ncount = -1;
- 
+
 	/* the dump may have added no samples, so we must set
 	 * non-blocking */
 	if (fcntl(devfd, F_SETFL, fcntl(devfd, F_GETFL) | O_NONBLOCK) < 0) {
@@ -478,11 +478,11 @@ static void opd_shutdown(struct op_sample * buf, size_t size, struct op_note * n
 	while (ncount < 0) {
 		ncount = op_read_device(notedevfd, nbuf, nsize);
 	}
- 
+
 	if (ncount > 0) {
 		opd_do_notes(nbuf, ncount);
 	}
- 
+
 	/* read as much as we can until we have exhausted the data
 	 * (EAGAIN is returned).
 	 *
@@ -518,11 +518,11 @@ static void opd_do_read(struct op_sample * buf, size_t size, struct op_note * nb
 	while (1) {
 		ssize_t count = -1;
 		ssize_t ncount = -1;
- 
+
 		/* loop to handle EINTR */
 		while (count < 0) {
 			count = op_read_device(devfd, buf, size);
- 
+
 			/* if count == 0, that means we need to stop ! */
 			if (count == 0) {
 				opd_shutdown(buf, size, nbuf, nsize);
@@ -533,7 +533,7 @@ static void opd_do_read(struct op_sample * buf, size_t size, struct op_note * nb
 		while (ncount < 0) {
 			ncount = op_read_device(notedevfd, nbuf, nsize);
 		}
- 
+
 		opd_do_notes(nbuf, ncount);
 		opd_do_samples(buf, count);
 	}
@@ -548,20 +548,20 @@ static void opd_do_read(struct op_sample * buf, size_t size, struct op_note * nb
  */
 void opd_do_notes(struct op_note const * opd_buf, size_t count)
 {
-	uint i; 
+	uint i;
 	struct op_note const * note;
- 
+
 	/* prevent signals from messing us up */
 	sigprocmask(SIG_BLOCK, &maskset, NULL);
 
 	for (i = 0; i < count/sizeof(struct op_note); i++) {
 		note = &opd_buf[i];
- 
+
 		opd_stats[OPD_NOTIFICATIONS]++;
 
 		switch (note->type) {
 			case OP_MAP:
-			case OP_EXEC: 
+			case OP_EXEC:
 				if (note->type == OP_EXEC)
 					opd_handle_exec(note->pid);
 				opd_handle_mapping(note);
@@ -591,7 +591,7 @@ void opd_do_notes(struct op_note const * opd_buf, size_t count)
 /**
  * opd_do_samples - process a sample buffer
  * @param opd_buf  buffer to process
- * @param count  number of bytes in buffer 
+ * @param count  number of bytes in buffer
  *
  * Process a buffer of samples.
  * The signals specified by the global variable maskset are
@@ -611,7 +611,7 @@ void opd_do_samples(struct op_sample const * opd_buf, size_t count)
 	opd_stats[OPD_DUMP_COUNT]++;
 
 	for (i=0; i < count/sizeof(struct op_sample); i++) {
-		verbprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n", 
+		verbprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n",
 			i, opd_buf[i].eip, opd_buf[i].pid, opd_buf[i].count);
 
 		/* happens during initial startup whilst the
@@ -619,7 +619,7 @@ void opd_do_samples(struct op_sample const * opd_buf, size_t count)
 		 */
 		if (opd_buf[i].eip == 0)
 			continue;
- 
+
 		if (pid_filter && pid_filter != opd_buf[i].pid)
 			continue;
 		if (pgrp_filter && pgrp_filter != getpgid(opd_buf[i].pid))
@@ -631,14 +631,14 @@ void opd_do_samples(struct op_sample const * opd_buf, size_t count)
 	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
 }
 
-/** 
+/**
  * opd_alarm - clean up old procs, msync, and report stats
  */
 static void opd_alarm(int val __attribute__((unused)))
 {
 	opd_sync_sample_files();
-	opd_age_procs(); 
- 
+	opd_age_procs();
+
 	opd_print_stats();
 
 	alarm(60*10);
@@ -658,15 +658,15 @@ static void clean_exit(void)
 {
 	unlink(OP_LOCK_FILE);
 }
- 
- 
+
+
 static void opd_sigterm(int val __attribute__((unused)))
 {
 	clean_exit();
 	exit(EXIT_FAILURE);
 }
 
- 
+
 int main(int argc, char const * argv[])
 {
 	struct op_sample * sbuf;
@@ -684,7 +684,7 @@ int main(int argc, char const * argv[])
 
 	n_buf_bytesize = opd_note_buf_size * sizeof(struct op_note);
 	nbuf = xmalloc(n_buf_bytesize);
- 
+
 	opd_init_kernel_image();
 
 	if (atexit(clean_exit)) {
@@ -692,7 +692,7 @@ int main(int argc, char const * argv[])
 		unlink(OP_LOCK_FILE);
 		exit(EXIT_FAILURE);
 	}
- 
+
 	opd_go_daemon();
 
 	if (opd_need_backup_samples_files()) {
@@ -731,12 +731,12 @@ int main(int argc, char const * argv[])
 	act.sa_flags = 0;
 	sigemptyset(&act.sa_mask);
 	sigaddset(&act.sa_mask, SIGTERM);
-	
+
 	if (sigaction(SIGTERM, &act, NULL)) {
 		perror("oprofiled: install of SIGTERM handler failed: ");
 		exit(EXIT_FAILURE);
 	}
- 
+
 	sigemptyset(&maskset);
 	sigaddset(&maskset, SIGALRM);
 	sigaddset(&maskset, SIGHUP);
@@ -745,12 +745,12 @@ int main(int argc, char const * argv[])
 	alarm(60*10);
 
 	if (op_write_lock_file(OP_LOCK_FILE)) {
-		fprintf(stderr, 
+		fprintf(stderr,
 			"oprofiled: could not create lock file "
 			OP_LOCK_FILE "\n");
 		exit(EXIT_FAILURE);
 	}
- 
+
 	/* simple sleep-then-process loop */
 	opd_do_read(sbuf, s_buf_bytesize, nbuf, n_buf_bytesize);
 
@@ -761,6 +761,6 @@ int main(int argc, char const * argv[])
 	free(nbuf);
 	opd_proc_cleanup();
 	opd_image_cleanup();
- 
+
 	return 0;
 }

@@ -14,7 +14,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
- 
+
 #include "opp_symbol.h"
 #include "symbol_functors.h"
 #include "samples_container.h"
@@ -27,7 +27,7 @@ using std::sort;
 using std::string;
 using std::cerr;
 using std::set;
- 
+
 namespace {
 
 // FIXME: op_ratio.h in libutil ??
@@ -81,13 +81,13 @@ void samples_container_t::
 add(opp_samples_files const & samples_files, op_bfd const & abfd)
 {
 	// paranoid checking
-	if (nr_counters != static_cast<uint>(-1) && 
+	if (nr_counters != static_cast<uint>(-1) &&
 	    nr_counters != samples_files.nr_counters) {
 		cerr << "Fatal: samples_container_t::do_add(): mismatch"
 		     << "between nr_counters and samples_files.nr_counters\n";
 		exit(EXIT_FAILURE);
 	}
- 
+
 	nr_counters = samples_files.nr_counters;
 
 	string const image_name = abfd.get_filename();
@@ -146,7 +146,7 @@ void samples_container_t::add_samples(opp_samples_files const & samples_files,
 				      string const & image_name)
 {
 	bool const need_linenr = (flags & (osf_linenr_info | osf_short_linenr_info));
- 
+
 	for (u32 pos = start; pos < end ; ++pos) {
 		string filename;
 		sample_entry sample;
@@ -166,7 +166,7 @@ void samples_container_t::add_samples(opp_samples_files const & samples_files,
 		sample.file_loc.image_name = image_name;
 
 		sample.vma = (sym_index != nil_symbol_index)
-			? abfd.sym_offset(sym_index, pos) + base_vma 
+			? abfd.sym_offset(sym_index, pos) + base_vma
 			: pos;
 
 		samples->push_back(sample);
@@ -188,8 +188,8 @@ samples_container_t::select_symbols(size_t ctr, double threshold,
 	symbol_collection::const_iterator it = v.begin();
 	symbol_collection::const_iterator const end = v.end();
 	for (; it < end && threshold >= 0; ++it) {
-		double const percent = 
-			do_ratio((*it)->sample.counter[ctr], 
+		double const percent =
+			do_ratio((*it)->sample.counter[ctr],
 			total_count);
 
 		if (until_threshold || percent >= threshold)
@@ -234,7 +234,7 @@ vector<string> const samples_container_t::select_filename(
 		counter_array_t counter;
 
 		samples_count(counter, *it);
-			
+
 		filename_by_samples f(*it, do_ratio(counter[ctr], total_count));
 
 		file_by_samples.push_back(f);
@@ -259,7 +259,7 @@ vector<string> const samples_container_t::select_filename(
 }
 
 // Rest here are delegated to our private implementation.
- 
+
 symbol_entry const * samples_container_t::find_symbol(bfd_vma vma) const
 {
 	return symbols->find_by_vma(vma);
@@ -276,7 +276,7 @@ symbol_entry const * samples_container_t::find_symbol(string const & name) const
 }
 
 sample_entry const * samples_container_t::find_sample(bfd_vma vma) const
-{ 
+{
 	return samples->find_by_vma(vma);
 }
 
@@ -293,7 +293,7 @@ bool samples_container_t::samples_count(counter_array_t & result,
 }
 
 bool samples_container_t::samples_count(counter_array_t & result,
-				    string const & filename, 
+				    string const & filename,
 				    size_t linenr) const
 {
 	return samples->accumulate_samples(result,

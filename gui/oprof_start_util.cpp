@@ -9,11 +9,11 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
-#include <dirent.h> 
-#include <unistd.h> 
- 
-#include <cerrno> 
-#include <vector> 
+#include <dirent.h>
+#include <unistd.h>
+
+#include <cerrno>
+#include <vector>
 #include <cmath>
 #include <sstream>
 #include <iostream>
@@ -36,9 +36,9 @@ using std::cerr;
 using std::endl;
 using std::vector;
 using std::ostream;
- 
+
 namespace {
- 
+
 // return the ~ expansion suffixed with a '/'
 string const get_user_dir()
 {
@@ -64,20 +64,20 @@ string daemon_pid;
 
 // hurrah ! Stupid interface
 int const HZ = 100;
- 
-} // namespace anon 
- 
+
+} // namespace anon
+
 daemon_status::daemon_status()
 	: running(false)
 {
-	if (!daemon_pid.empty()) { 
+	if (!daemon_pid.empty()) {
 		string exec = op_read_link(string("/proc/") + daemon_pid + "/exe");
 		if (exec.empty())
 			daemon_pid.erase();
 		else
 			running = true;
 	}
- 
+
 	if (daemon_pid.empty()) {
 		DIR * dir;
 		struct dirent * dirent;
@@ -89,21 +89,21 @@ daemon_status::daemon_status()
 
 		while ((dirent = readdir(dir))) {
 			string const exec = op_read_link(string("/proc/") + dirent->d_name + "/exe");
-			string const name = basename(exec); 
+			string const name = basename(exec);
 			if (name != "oprofiled")
 				continue;
- 
+
 			daemon_pid = dirent->d_name;
 			running = true;
 		}
 
 		closedir(dir);
 	}
- 
+
 	runtime.erase();
 	if (daemon_pid.empty())
 		return;
- 
+
 	std::ifstream ifs((string("/proc/") + daemon_pid + "/stat").c_str());
 	if (!ifs)
 		return;
@@ -116,7 +116,7 @@ daemon_status::daemon_status()
 	ifs.ignore(); // state
 	for (uint i = 0; i < 17; ++i)
 		ifs >> dummy;
- 
+
 	ulong starttime;
 
 	ifs >> starttime;
@@ -124,17 +124,17 @@ daemon_status::daemon_status()
 	std::ifstream ifs2("/proc/uptime");
 	if (!ifs2)
 		return;
- 
+
 	double uptimef;
 	ifs2 >> uptimef;
 	int uptime = int(uptimef);
-	 
+
 	uint diff_mins = (uptime - starttime / HZ) / 60;
- 
+
 	std::ifstream ifs3("/proc/sys/dev/oprofile/nr_interrupts");
 	if (!ifs3)
 		return;
- 
+
 	ifs3 >> nr_interrupts;
 
 	runtime = tostr(diff_mins / 60) + " hours, " +
@@ -149,13 +149,13 @@ daemon_status::daemon_status()
 unsigned long get_cpu_speed()
 {
 	unsigned long speed = 0;
- 
+
 	std::ifstream ifs("/proc/cpuinfo");
 	if (!ifs)
 		return speed;
- 
+
 	string str;
-	 
+
 	while (getline(ifs, str)) {
 		if (str.size() < 7)
 			continue;
@@ -169,13 +169,13 @@ unsigned long get_cpu_speed()
 				break;
 			std::istringstream ss(str.substr(i, string::npos));
 			ss >> speed;
-			break; 
+			break;
 		}
 	}
 	return speed;
 }
- 
- 
+
+
 /**
  * get_user_filename - get absoluate filename of file in user $HOME
  * @param filename  the relative filename
@@ -187,7 +187,7 @@ string const get_user_filename(string const & filename)
 	return get_user_dir() + "/" + filename;
 }
 
- 
+
 /**
  * check_and_create_config_dir - make sure config dir is accessible
  *
@@ -207,9 +207,9 @@ bool check_and_create_config_dir()
 	return true;
 }
 
- 
+
 /**
- * format - re-format a string 
+ * format - re-format a string
  * @param orig  string to format
  * @param maxlen  width of line
  *
@@ -281,14 +281,14 @@ int do_exec_command(string const & cmd, vector<string> const & args)
 		cit != args.end(); ++cit) {
 		if (verify_argument(*cit))
 			continue;
- 
+
 		QMessageBox::warning(0, 0,
 			string(
 			"Could not execute: Argument \"" + *cit +
 			"\" contains shell metacharacters.\n").c_str());
 		return EINVAL;
 	}
- 
+
 	child_reader reader(cmd, args);
 	if (reader.error())
 		ok = false;
@@ -312,7 +312,7 @@ int do_exec_command(string const & cmd, vector<string> const & args)
 	return ret;
 }
 
- 
+
 /**
  * do_open_file_or_dir - open file/directory
  * @param base_dir  directory to start at
@@ -338,7 +338,7 @@ string const do_open_file_or_dir(string const & base_dir, bool dir_only)
 	else
 		return result.latin1();
 }
- 
+
 /**
  * verify_argument - check string for potentially dangerous characters
  *
@@ -346,7 +346,7 @@ string const do_open_file_or_dir(string const & base_dir, bool dir_only)
  * metacharacters.
  *
  * WWW Security FAQ dangerous chars:
- * 
+ *
  * & ; ` ' \ " | * ? ~ < > ^ ( ) [ ] { } $ \n \r
  *
  * David Wheeler: ! #

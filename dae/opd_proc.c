@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -16,7 +16,7 @@
 #include "opd_kernel.h"
 #include "opd_stats.h"
 #include "opd_printf.h"
- 
+
 #include "op_types.h"
 #include "op_interface.h"
 #include "op_libiberty.h"
@@ -25,13 +25,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
- 
+
 /* size of process hash table */
 #define OPD_MAX_PROC_HASH 1024
- 
+
 /* here to avoid warning */
 extern op_cpu cpu_type;
- 
+
 /* hash of process lists */
 static struct opd_proc * opd_procs[OPD_MAX_PROC_HASH];
 
@@ -44,7 +44,7 @@ int opd_get_nr_procs(void)
 {
 	struct opd_proc * proc;
 	int i,j = 0;
- 
+
 	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
 		proc = opd_procs[i];
 
@@ -55,8 +55,8 @@ int opd_get_nr_procs(void)
 	}
 	return j;
 }
- 
- 
+
+
 /**
  * opd_age_procs - age and delete processes
  *
@@ -67,7 +67,7 @@ void opd_age_procs(void)
 	uint i;
 	struct opd_proc * proc;
 	struct opd_proc * next;
- 
+
 	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
 		proc = opd_procs[i];
 
@@ -83,8 +83,8 @@ void opd_age_procs(void)
 			proc=next;
 		}
 	}
-} 
- 
+}
+
 
 /**
  * opd_app_name - get the application name or %NULL if irrelevant
@@ -97,7 +97,7 @@ void opd_age_procs(void)
 char const * opd_app_name(struct opd_proc const * proc)
 {
 	char const * app_name = NULL;
-	if (proc->nr_maps) 
+	if (proc->nr_maps)
 		app_name = proc->maps[0].image->name;
 
 	return app_name;
@@ -240,7 +240,7 @@ struct opd_proc * opd_get_proc(u16 pid)
  * verb_show_sample - print the sample out to the log
  * @param offset  the offset value
  * @param map  map to print
- * @param last_map  previous map used 
+ * @param last_map  previous map used
  */
 inline static void verb_show_sample(u32 offset, struct opd_map * map, char const * last_map)
 {
@@ -249,7 +249,7 @@ inline static void verb_show_sample(u32 offset, struct opd_map * map, char const
 		last_map, offset, map->start, map->end, map->offset, map->image->name);
 }
 
- 
+
 /**
  * opd_get_count - retrieve counter value
  * @param count  raw counter value
@@ -261,7 +261,7 @@ inline static u16 opd_get_count(const u16 count)
 	return (count & OP_COUNT_MASK);
 }
 
- 
+
 /**
  * opd_get_counter - retrieve counter type
  * @param count  raw counter value
@@ -273,7 +273,7 @@ inline static u16 opd_get_counter(const u16 count)
 	return OP_COUNTER(count);
 }
 
- 
+
 /**
  * opd_put_image_sample - write sample to file
  * @param image  image for sample
@@ -329,13 +329,13 @@ inline static int opd_eip_is_kernel(u32 eip)
 void opd_put_sample(struct op_sample const * sample)
 {
 	extern int kernel_only;
- 
+
 	unsigned int i;
 	struct opd_proc * proc;
 
 	opd_stats[OPD_SAMPLES]++;
 
-	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8x, pid %.6d, count %.6d\n", 
+	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8x, pid %.6d, count %.6d\n",
 		opd_get_counter(sample->count), sample->eip, sample->pid, sample->count);
 
 	if (opd_eip_is_kernel(sample->eip)) {
@@ -356,7 +356,7 @@ void opd_put_sample(struct op_sample const * sample)
 
 	if (!proc->nr_maps)
 		goto out;
- 
+
 	/* proc->last_map is always safe as mappings are never deleted except by
 	 * things which reset last_map. If last map is the primary image, we use it
 	 * anyway (last_map == 0).
@@ -365,9 +365,9 @@ void opd_put_sample(struct op_sample const * sample)
 	if (opd_is_in_map(&proc->maps[proc->last_map], sample->eip)) {
 		i = proc->last_map;
 		if (proc->maps[i].image != NULL) {
-			verb_show_sample(opd_map_offset(&proc->maps[i], sample->eip), 
+			verb_show_sample(opd_map_offset(&proc->maps[i], sample->eip),
 				&proc->maps[i], "(LAST MAP)");
-			opd_put_image_sample(proc->maps[i].image, 
+			opd_put_image_sample(proc->maps[i].image,
 				opd_map_offset(&proc->maps[i], sample->eip), sample->count);
 		}
 
@@ -470,7 +470,7 @@ void opd_handle_exit(struct op_note const * note)
 	}
 }
 
- 
+
 /**
  * opd_handle_exec - deal with notification of execve()
  * @param pid  pid of execve()d process
@@ -521,6 +521,6 @@ void opd_proc_cleanup(void)
 			proc=next;
 		}
 	}
-	
+
 	opd_clear_module_info();
 }

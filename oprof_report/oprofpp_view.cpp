@@ -122,7 +122,7 @@ static QString get_text(sample_entry const & sample,
  * get_key() - return the key string for a column. When the text string for
  * this column is suitable for sorting purpose we return the get_text() string
  */
-static QString get_key(sample_entry const & sample, 
+static QString get_key(sample_entry const & sample,
 		       string const & name,
 		       samples_container_t const & samples_container,
 		       int column)

@@ -5,7 +5,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author Philippe Elie <phil.el@wanadoo.fr>
  */
 
@@ -60,7 +60,7 @@ typedef struct {
 
 /** a "database". this is an in memory only description.
  *
- * We allow to manage a database inside a mapped file with an "header" of 
+ * We allow to manage a database inside a mapped file with an "header" of
  * unknown so db_open get a parameter to specify the size of this header.
  * A typical use is:
  *
@@ -89,10 +89,10 @@ enum db_rw {
 	DB_RDONLY = 0, /**< open for read only */
 	DB_RDWR = 1 /**< open for read and/or write */
 };
- 
-/** 
+
+/**
  * db_open - open a DB tree file
- * @param tree the data base object to setup 
+ * @param tree the data base object to setup
  * @param filename the filename where go the maped memory
  * @param rw \enum DB_RW if opening for writing, else \enum DB_RDONLY
  * @param sizeof_header size of the file header if any

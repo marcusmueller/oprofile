@@ -35,7 +35,7 @@ struct samples_file_t /*:*/ noncopyable
 	 * all error are fatal
 	 */
 	samples_file_t(std::string const & filename);
- 
+
 	/**
 	 * ~samples_file_t - destroy a samples_file_t object
 	 *
@@ -53,7 +53,7 @@ struct samples_file_t /*:*/ noncopyable
 	void check_headers(samples_file_t const & headers) const;
 
 	/// return the sample count at the given position
-	u32 count(uint start) const { 
+	u32 count(uint start) const {
 		return count(start, start + 1);
 	}
 
@@ -97,7 +97,7 @@ struct samples_file_t /*:*/ noncopyable
 
 // FIXME: can we split this file in two again ? I might want a samples_file_t
 // w/o needing this storage. File naming is a pain though...
- 
+
 /** Store multiple samples files belonging to the same image and the same
  * session can hold OP_MAX_COUNTERS samples files */
 struct opp_samples_files /*:*/  noncopyable {
@@ -120,7 +120,7 @@ struct opp_samples_files /*:*/  noncopyable {
 	 * check_mtime - check mtime of samples file against file
 	 */
 	void check_mtime(std::string const & file) const;
- 
+
 	/**
 	 * ~opp_samples_files - destroy an object opp_samples
 	 *
@@ -133,11 +133,11 @@ struct opp_samples_files /*:*/  noncopyable {
 	 * @param i index of the samples file to check.
 	 *
 	 * return true if the samples file index is open
-	 */ 
+	 */
 	bool is_open(int i) const {
 		return samples[i] != 0;
 	}
- 
+
 	/**
 	 * @param i index of the samples files
 	 * @param sample_nr number of the samples to test.
@@ -158,7 +158,7 @@ struct opp_samples_files /*:*/  noncopyable {
 	 * return false if no samples has been found
 	 */
 	bool accumulate_samples(counter_array_t & counter, uint vma) const;
- 
+
 	/**
 	 * accumulate_samples - lookup samples from a range of vma address
 	 * @param counter where to accumulate the samples

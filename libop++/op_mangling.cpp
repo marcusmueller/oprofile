@@ -16,12 +16,12 @@
 #include <algorithm>
 #include <iostream>
 #include <cerrno>
- 
+
 using std::string;
 using std::list;
 using std::cerr;
 using std::endl;
- 
+
 void strip_counter_suffix(string & name)
 {
 	size_t pos = name.find_last_of('#');
@@ -37,7 +37,7 @@ string remangle_filename(string const & filename)
 	return result;
 }
 
- 
+
 string demangle_filename(string const & samples_filename)
 {
 	string result(samples_filename);
@@ -49,8 +49,8 @@ string demangle_filename(string const & samples_filename)
 
 	return result;
 }
- 
- 
+
+
 string extract_app_name(const string & name, string & lib_name)
 {
 	string result(name);
@@ -92,7 +92,7 @@ void get_sample_file_list(list<string> & file_list,
 
 		// After stripping the # suffix multiples identicals filenames
 		// can exist.
-		if (find(file_list.begin(), file_list.end(), filename) == 
+		if (find(file_list.begin(), file_list.end(), filename) ==
 		    file_list.end())
 			file_list.push_back(filename);
 	}

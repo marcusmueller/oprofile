@@ -5,7 +5,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -14,7 +14,7 @@
 #include <linux/ioport.h>
 
 #ifdef NEED_2_2_DENTRIES
- 
+
 /* note - assumes you only test for NULL, and not
  * actually care about the return value */
 void *compat_request_region (unsigned long start, unsigned long n, char const * name)
@@ -24,7 +24,7 @@ void *compat_request_region (unsigned long start, unsigned long n, char const * 
         request_region (start, n, name);
         return (void *) 1;
 }
- 
+
 int wind_dentries_2_2(struct dentry *dentry)
 {
 	struct dentry * root = current->fs->root;
@@ -37,21 +37,21 @@ int wind_dentries_2_2(struct dentry *dentry)
 
 		if (dentry == root)
 			break;
- 
+
 		dentry = dentry->d_covers;
 		parent = dentry->d_parent;
- 
+
 		if (dentry == parent)
 			break;
- 
+
 		push_dname(&dentry->d_name);
- 
+
 		dentry = parent;
 	}
 
 	return 1;
 }
- 
+
 /* called with note_lock held */
 uint do_path_hash_2_2(struct dentry *dentry)
 {

@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author Philippe Elie <phil_el@wanadoo.fr>
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
@@ -21,7 +21,7 @@
 /**
  * a class to read stdout / stderr from a child process.
  *
- * two interfaces are provided. read line by line: getline() or read all data 
+ * two interfaces are provided. read line by line: getline() or read all data
  * in one : get_data(). In all case get_data() must be called once to flush the
  * stderr child output
  */
@@ -45,7 +45,7 @@ public:
 		std::vector<std::string> const & args);
 
 	/** wait for the termination of the child process if this have not
-	 * already occur. In this case return code of the child process is not 
+	 * already occur. In this case return code of the child process is not
 	 * available. */
 	~child_reader();
 
@@ -70,7 +70,7 @@ public:
 	 * < 0 : the child process can not be forked
 	 * > 0 : the child process have return a non zero value */
 	int error() const { return first_error; }
- 
+
 private:
 	// ctor helper: create the child process.
 	void exec_command(std::string const & cmd,

@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 	QApplication a(argc, argv);
 
 	oprof_report* dlg = new oprof_report();
-	
+
 	a.setMainWidget(dlg);
 
 	dlg->show();

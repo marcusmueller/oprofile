@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
@@ -12,22 +12,22 @@
 #include <sys/stat.h>
 #include <signal.h>
 #include <unistd.h>
-#include <dirent.h> 
-#include <errno.h> 
- 
+#include <dirent.h>
+#include <errno.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
- 
+
 #include "version.h"
 #include "op_popt.h"
 #include "op_libiberty.h"
 #include "op_lockfile.h"
 #include "op_file.h"
 #include "op_config.h"
- 
+
 char const * sessionname;
-int showvers; 
+int showvers;
 
 static struct poptOption options[] = {
 	{ "session", 's', POPT_ARG_STRING, &sessionname, 0, "save current session under this name", "session-name", },
@@ -36,7 +36,7 @@ static struct poptOption options[] = {
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
 
- 
+
 /**
  * op_options - parse command line options
  * @param argc  argc
@@ -65,14 +65,14 @@ static void op_options(int argc, char const *argv[])
 		poptPrintHelp(optcon, stderr, 0);
 		exit(EXIT_FAILURE);
 	}
- 
+
 	poptFreeContext(optcon);
 }
- 
+
 
 /**
  * op_move_files - move all the sample files
- * @param sname name of session directory 
+ * @param sname name of session directory
  */
 static void op_move_files(char const * sname)
 {
@@ -117,34 +117,34 @@ static void op_move_files(char const * sname)
  		op_move_regular_file(dir_name, OP_BASE_DIR, OP_LOG_FILE);
  	} else {
  		rmdir(dir_name);
- 
+
  		fprintf(stderr, "no samples files to save, session %s not created\n",
  			sname);
  		exit(EXIT_FAILURE);
  	}
- 
+
 	free(dir_name);
 }
 
- 
+
 /**
  * op_signal_daemon - signal daemon to re-open if it exists
  */
 static void op_signal_daemon(void)
 {
 	pid_t pid = op_read_lock_file(OP_LOCK_FILE);
- 
+
 	if (pid)
 		kill(pid, SIGHUP);
 }
 
- 
+
 int main(int argc, char const *argv[])
 {
 	pid_t pid;
- 
+
 	op_options(argc, argv);
-	
+
 	/* not ideal, but OK for now. The sleep hopefully
 	 * means the daemon starts reading before the signal
 	 * is delivered, so it will finish reading, *then*

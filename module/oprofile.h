@@ -4,14 +4,14 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #ifndef OPROFILE_H
 #define OPROFILE_H
- 
+
 #include <linux/version.h>
 #include <linux/module.h>
 #include <linux/config.h>
@@ -27,19 +27,19 @@
 #include <asm/uaccess.h>
 
 #include "compat.h"
- 
+
 #include "op_config.h"
 #include "op_hw_config.h"
 #include "op_interface.h"
 
 #undef min
 #undef max
- 
+
 #define streq(a, b) (!strcmp((a), (b)))
 #define streqn(a, b, len) (!strncmp((a), (b), (len)))
 
 #define regparm3 __attribute__((regparm(3)))
- 
+
 #define OP_NR_ENTRY (SMP_CACHE_BYTES/sizeof(struct op_sample))
 
 struct op_entry {
@@ -49,21 +49,21 @@ struct op_entry {
 /* per-cpu dynamic data */
 struct _oprof_data {
 	/* hash table */
-	struct op_entry *entries; 
+	struct op_entry *entries;
 	/* eviction buffer */
-	struct op_sample *buffer; 
+	struct op_sample *buffer;
 	/* nr. in hash table */
-	uint hash_size; 
+	uint hash_size;
 	/* nr. in buffer */
-	uint buf_size; 
+	uint buf_size;
 	/* next in buffer (atomic) */
-	uint nextbuf; 
+	uint nextbuf;
 	/* next sample in entry */
-	uint next; 
+	uint next;
 	/* number of IRQs for this CPU */
 	uint nr_irq;
 	/* reset counter values */
-	uint ctr_count[OP_MAX_COUNTERS]; 
+	uint ctr_count[OP_MAX_COUNTERS];
 } __cacheline_aligned;
 
 /* reflect /proc/sys/dev/oprofile/#counter files */
@@ -79,21 +79,21 @@ struct oprof_counter {
 /* reflect /proc/sys/dev/oprofile files */
 struct oprof_sysctl {
 	/* nr. in eviction buffser */
-	int buf_size; 
+	int buf_size;
 	/* nr. in hash table */
-	int hash_size; 
+	int hash_size;
 	/* sysctl dump */
-	int dump; 
+	int dump;
 	/* dump and stop */
-	int dump_stop; 
+	int dump_stop;
 	/* is profiling kernel only */
-	int kernel_only; 
+	int kernel_only;
 	/* nr. in note buffer */
-	int note_size; 
+	int note_size;
 	/* nr. interrupts occured */
-	int nr_interrupts; 
+	int nr_interrupts;
 	/* the cpu core type: CPU_PPRO, CPU_PII ... */
-	int cpu_type; 
+	int cpu_type;
 	/* counter setup */
 	struct oprof_counter ctr[OP_MAX_COUNTERS];
 };
@@ -128,7 +128,7 @@ struct op_int_operations {
 	/* stop profiling on the given CPU */
 	void (*stop_cpu)(uint);
 };
- 
+
 /* maximum depth of dname trees - this is just a page */
 #define DNAME_STACK_MAX 1024
 
@@ -156,9 +156,9 @@ struct op_int_operations {
 /* oprof_start() copy here the sysctl settable parameters */
 extern struct oprof_sysctl sysctl;
 
-void * rvmalloc(signed long size); 
+void * rvmalloc(signed long size);
 void rvfree(void * mem, signed long size);
-unsigned long kvirt_to_pa(unsigned long adr); 
+unsigned long kvirt_to_pa(unsigned long adr);
 int oprof_init(void);
 void oprof_exit(void);
 unsigned long is_map_ready(void);
@@ -174,7 +174,7 @@ void oprof_free_hashmap(void);
 /* used by interrupt handlers if the underlined harware doesn't support
  * performance counter */
 extern struct op_int_operations op_rtc_ops;
- 
+
 void regparm3 op_do_profile(uint cpu, struct pt_regs *regs, int ctr);
 extern struct _oprof_data oprof_data[NR_CPUS];
 extern int partial_stop;

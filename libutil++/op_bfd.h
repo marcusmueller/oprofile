@@ -25,7 +25,7 @@ class op_bfd;
 typedef size_t symbol_index_t;
 symbol_index_t const nil_symbol_index = symbol_index_t(-1);
 
-/** 
+/**
  * A symbol description from a bfd point of view. This duplicate
  * information pointed by an asymbol, we need this duplication in case
  * the symbol is an artificial symbol
@@ -96,7 +96,7 @@ public:
 	 * function can retrieve the filename and return true but fail to
 	 * retrieve the linenr and so can return zero in linenr
 	 */
-	bool get_linenr(symbol_index_t sym_idx, uint offset, 
+	bool get_linenr(symbol_index_t sym_idx, uint offset,
 			std::string & filename, unsigned int & linenr) const;
 
 	/**
@@ -158,7 +158,7 @@ private:
 	// image file such the linux kernel need than all vma are offset
 	// by this value.
 	u32 text_offset;
- 
+
 	/// collect the symbols excluding any in the given vector
 	bool get_symbols(std::vector<std::string> excluded);
 

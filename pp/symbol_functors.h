@@ -1,6 +1,6 @@
 /**
  * @file symbol_functors.h
- * Functors for symbol/sample comparison 
+ * Functors for symbol/sample comparison
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -11,7 +11,7 @@
 
 #ifndef SYMBOL_FUNCTORS_H
 #define SYMBOL_FUNCTORS_H
- 
+
 /// compare based on vma value (address)
 struct less_sample_entry_by_vma {
 	bool operator()(sample_entry const & lhs, sample_entry const & rhs) const {
@@ -55,7 +55,7 @@ struct equal_symbol_by_name {
 
 /// compare based on file location
 struct less_by_file_loc {
-	bool operator()(sample_entry const * lhs, 
+	bool operator()(sample_entry const * lhs,
 			sample_entry const * rhs) const {
 		return lhs->file_loc < rhs->file_loc;
 	}
@@ -66,4 +66,4 @@ struct less_by_file_loc {
 	}
 };
 
-#endif /* SYMBOL_FUNCTORS_H */ 
+#endif /* SYMBOL_FUNCTORS_H */

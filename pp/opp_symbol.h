@@ -8,7 +8,7 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
- 
+
 #ifndef OPP_SYMBOL_H
 #define OPP_SYMBOL_H
 

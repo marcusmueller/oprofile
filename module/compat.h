@@ -20,7 +20,7 @@
 #define V_BEFORE(a,b,c) (LINUX_VERSION_CODE < KERNEL_VERSION(a,b,c))
 #define V_EQUAL(a,b,c) (LINUX_VERSION_CODE == KERNEL_VERSION(a,b,c))
 #define V_AT_LEAST(a,b,c) (LINUX_VERSION_CODE >= KERNEL_VERSION(a,b,c))
- 
+
 #if V_BEFORE(2,4,0)
 	#include "compat22.h"
 #else
@@ -58,7 +58,7 @@
 #if V_BEFORE(2,5,2)
 #define minor(d)	MINOR(d)
 #endif
- 
+
 /* Things that cannot rely on a particular linux version or are needed between
  * major release */
 
@@ -102,7 +102,7 @@
 		#define unlikely(a) (a)
 	#endif
 #endif
- 
+
 /* MSRs */
 #ifndef MSR_P6_PERFCTR0
 #define MSR_P6_PERFCTR0 0xc1
@@ -151,5 +151,5 @@
 #ifndef APIC_DEFAULT_PHYS_BASE
 #define APIC_DEFAULT_PHYS_BASE 0xfee00000
 #endif
- 
+
 #endif /* COMPAT_H */

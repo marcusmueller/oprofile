@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -15,11 +15,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
- 
+
 #include "op_types.h"
- 
+
 #include <unistd.h>
- 
+
 fd_t op_open_device(char const * name, int fatal);
 void op_close_device(fd_t devfd);
 ssize_t op_read_device(fd_t devfd, void * buf, size_t size);

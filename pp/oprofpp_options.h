@@ -8,7 +8,7 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
- 
+
 #ifndef OPROFPP_OPTIONS_H
 #define OPROFPP_OPTIONS_H
 
@@ -60,5 +60,5 @@ namespace options {
  * namespace.
  */
 std::string const get_options(int argc, char const **argv);
- 
+
 #endif // OPROFPP_OPTIONS_H

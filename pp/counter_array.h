@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -16,7 +16,7 @@
 #include "op_types.h"
 
 #include <cstddef>
- 
+
 /**
  * A simple container of samples counts for a particular address.
  * Can hold OP_MAX_COUNTERS counters
@@ -29,7 +29,7 @@ public:
 	// FIXME: premature optimisation ?
 	/**
 	 * subscript operator indexed by a counter_nr, no bound check
-	 * is performed. 
+	 * is performed.
 	 */
 	u32 operator[](size_t counter_nr) const {
 		return value[counter_nr];

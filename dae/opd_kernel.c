@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -18,12 +18,12 @@
 #include "op_fileio.h"
 #include "op_config.h"
 #include "op_libiberty.h"
- 
+
 #include "p_module.h"
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
- 
+
 /* kernel module */
 struct opd_module {
 	char * name;
@@ -31,11 +31,11 @@ struct opd_module {
 	u32 start;
 	u32 end;
 };
- 
+
 extern char * vmlinux;
 extern int verbose;
 extern unsigned long opd_stats[];
- 
+
 extern struct opd_image * kernel_image;
 
 /* kernel and module support */
@@ -52,7 +52,7 @@ void opd_init_kernel_image(void)
 	/* the kernel image is treated apart from the list of images */
 	kernel_image = opd_create_image(vmlinux);
 }
- 
+
 
 /**
  * opd_read_system_map - parse System.map file
@@ -190,7 +190,7 @@ static void opd_get_module_info(void)
 
 	fp = op_try_open_file("/proc/ksyms", "r");
 
-	if (!fp) {	
+	if (!fp) {
 		printf("oprofiled: /proc/ksyms not readable, can't process module samples.\n");
 		return;
 	}
@@ -222,7 +222,7 @@ static void opd_get_module_info(void)
 			printf("oprofiled: corrupt /proc/ksyms line \"%s\"\n", line);
 			goto failure;
 		}
-	
+
 		cp2++;
 		/* freed by opd_clear_module_info() or opd_get_module() */
 		modname = xmalloc((size_t)((cp2-cp) + 1));
@@ -244,7 +244,7 @@ static void opd_get_module_info(void)
 					free(line);
 					continue;
 				}
-				
+
 				cp3++;
 				filename = xmalloc((size_t)(cp3 - cp2 + 1));
 				strncpy(filename, cp2, (size_t)(cp3 - cp2));
@@ -307,11 +307,11 @@ static void opd_drop_module_sample(u32 eip)
 	size_t ret;
 	uint nr_mods;
 	uint mod = 0;
-	
+
 	module_names = xmalloc(size);
 	while (query_module(NULL, QM_MODULES, module_names, size, &ret)) {
 		if (errno != ENOSPC) {
-			verbprintf("query_module failed: %s\n", strerror(errno)); 
+			verbprintf("query_module failed: %s\n", strerror(errno));
 			return;
 		}
 		size = ret;
@@ -389,7 +389,7 @@ static void opd_handle_module_sample(u32 eip, u16 count)
 	if (module) {
 		if (module->image != NULL) {
 			opd_stats[OPD_MODULE]++;
-			opd_put_image_sample(module->image, 
+			opd_put_image_sample(module->image,
 					     eip - module->start, count);
 		} else {
 			opd_stats[OPD_LOST_MODULE]++;

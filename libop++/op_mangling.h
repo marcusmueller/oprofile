@@ -11,13 +11,13 @@
 
 #ifndef OP_MANGLING_H
 #define OP_MANGLING_H
- 
+
 #include <string>
 #include <list>
- 
+
 /// remove a counter suffix, if any (e.g. #0)
 void strip_counter_suffix(std::string & name);
- 
+
 /**
  * remangle - convert a filename into the related sample file name
  * @param filename the filename string
@@ -48,7 +48,7 @@ std::string demangle_filename(std::string const & samples_filename);
  *  will return }bin}bash and an empty name in @lib_name
  */
 std::string extract_app_name(std::string const & name, std::string & lib_name);
- 
+
 /**
  * get_sample_file_list - create a file list of base samples filename
  * @param file_list: where to store the results

@@ -328,7 +328,7 @@ void output::output_one_counter(ostream & out, size_t counter, size_t total) con
 	out << std::setprecision(4) << (do_ratio(counter, total) * 100.0) << "%";
 }
 
-void output::output_counter(ostream & out, counter_array_t const & counter, 
+void output::output_counter(ostream & out, counter_array_t const & counter,
 			    bool comment, string const & prefix) const
 {
 	if (comment)
@@ -343,7 +343,7 @@ void output::output_counter(ostream & out, counter_array_t const & counter,
 					   counter_info[i].total_samples);
 
 	out << " ";
-     
+
 	if (comment)
 		out << end_comment;
 
@@ -383,7 +383,7 @@ void output::find_and_output_counter(ostream & out, string const & filename, siz
 		string const symname =
 			options::demangle ? demangle_symbol(symbol->name)
 			: symbol->name;
-			 
+
 		output_counter(out, symbol->sample.counter, true, symname);
 	}
 
@@ -565,7 +565,7 @@ void output::output_one_file(istream & in, string const & filename,
 		do_output_one_file(cout, in, filename, total_count_for_file);
 		return;
 	}
- 
+
 	string out_filename = filename;
 
 	size_t pos = out_filename.find(source_dir);
@@ -637,7 +637,7 @@ void output::output_source()
 {
 	size_t index = get_sort_counter_nr();
 
-	vector<string> filenames = 
+	vector<string> filenames =
 		samples->select_filename(index, threshold_percent / 100.0,
 			until_more_than_samples);
 

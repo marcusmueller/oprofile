@@ -7,7 +7,7 @@
  *
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
- 
+
 #include <sys/resource.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -135,7 +135,7 @@ static int callback_test(size_t nr_item, size_t nr_unique_item)
 
 	last_key = (db_key_t)-1;
 	first_key = 0;
-	
+
 	for ( ; first_key < last_key ; last_key /= 2) {
 
 		last_key_found = first_key == 0 ? first_key : first_key - 1;

@@ -7,23 +7,23 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
- 
+
 #include "popt_options.h"
 #include "verbose_ostream.h"
- 
+
 #include "oprofpp_options.h"
 #include "opp_symbol.h"
 #include "counter_util.h"
- 
+
 #include <sstream>
- 
+
 using std::string;
 using std::vector;
 using std::cerr;
 using std::endl;
 using std::ostream;
 using namespace options;
- 
+
 namespace options {
 	int counter_mask;
 	int sort_by_counter = -1;
@@ -40,13 +40,13 @@ namespace options {
 	bool demangle;
 	vector<string> exclude_symbols;
 };
- 
+
 namespace {
- 
+
 bool verbose;
 string output_format;
 string counter_str;
- 
+
 option options_array[] = {
 	option(options::sample_file, "samples-file", 'f', "image sample file", "file"),
 	option(options::image_file, "image-file", 'i', "image file", "file"),
@@ -64,34 +64,34 @@ option options_array[] = {
 	option(output_format, "output-format", 't', "choose the output format", "output-format strings"),
 	option(verbose, "verbose", 'V', "verbose output"),
 };
- 
+
 /**
  * quit_error - quit with error
  * @param err error to show
  */
 void quit_error(string const & err)
 {
-	cerr << err; 
+	cerr << err;
 	exit(EXIT_FAILURE);
 }
- 
+
 } // namespace anon
- 
+
 verbose_ostream cverb(std::cout);
- 
+
 string const get_options(int argc, char const **argv)
 {
 	/* non-option file, either a sample or binary image file */
 	string arg;
-	
+
 	parse_options(argc, argv, arg);
 
 	counter_mask = parse_counter_mask(counter_str);
- 
+
 	if (!verbose)
 		cverb.go_silent();
- 
-	if (!list_all_symbols_details && !list_symbols && 
+
+	if (!list_all_symbols_details && !list_symbols &&
 	    gprof_file.empty() && symbol.empty())
 		quit_error("oprofpp: no mode specified. What do you want from me ?\n");
 
@@ -105,10 +105,10 @@ string const get_options(int argc, char const **argv)
 	if (show_shared_libs && (!symbol.empty() || !gprof_file.empty())) {
 		quit_error("oprofpp: you cannot specify --show-shared-libs with --dump-gprof-file or --list-symbol output type.\n");
 	}
- 
+
 	if (reverse_sort && !list_symbols)
 		quit_error("oprofpp: reverse sort can only be used with -l option.\n");
- 
+
 	if (show_shared_libs)
 		output_format_flags = static_cast<outsymbflag>(output_format_flags | osf_image_name);
 	if (output_linenr_info)

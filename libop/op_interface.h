@@ -5,7 +5,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -15,7 +15,7 @@
 
 #include "op_config.h"
 #include "op_types.h"
- 
+
 /*@{\name op_check_events() return code */
 #define OP_EVENTS_OK		0x0
 /** The event number is invalid */

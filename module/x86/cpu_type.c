@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -30,11 +30,11 @@ __init op_cpu get_cpu_type(void)
 
 	if (vendor == X86_VENDOR_AMD)
 		return CPU_ATHLON;
- 
+
 	if (model > 5)
 		return CPU_PIII;
 	else if (model > 2)
-		return CPU_PII; 
+		return CPU_PII;
 
 	return CPU_PPRO;
 }

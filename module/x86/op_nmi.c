@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -94,7 +94,7 @@ static void pmc_setup(void *dummy)
 			wrmsr(eventsel_msr[i], low, high);
 		}
 	}
-	
+
 	/* Here all setup is made except the start/stop bit 22, counter
 	 * disabled contains zeros in the eventsel msr except the reserved bit
 	 * 21 */
@@ -207,7 +207,7 @@ static void pmc_select_stop(uint cpu)
 static void pmc_start_all(void)
 {
 	int cpu, i;
- 
+
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		struct _oprof_data * data = &oprof_data[cpu];
 
@@ -218,7 +218,7 @@ static void pmc_start_all(void)
 				data->ctr_count[i] = 0;
 		}
 	}
- 
+
 	install_nmi();
 	smp_call_function(pmc_start, NULL, 0, 1);
 	pmc_start(NULL);
@@ -230,15 +230,15 @@ static void pmc_stop_all(void)
 	pmc_stop(NULL);
 	restore_nmi();
 }
- 
+
 static int pmc_check_params(void)
 {
 	int i;
 	int enabled = 0;
 	int ok = 0;
- 
+
 	for (i = 0; i < op_nr_counters ; i++) {
- 
+
 		if (sysctl.ctr[i].enabled) {
 			int min_count = op_min_count(sysctl.ctr[i].event, sysctl.cpu_type);
 
@@ -283,17 +283,17 @@ static uint saved_perfctr_low[OP_MAX_COUNTERS];
 static uint saved_perfctr_high[OP_MAX_COUNTERS];
 static uint saved_eventsel_low[OP_MAX_COUNTERS];
 static uint saved_eventsel_high[OP_MAX_COUNTERS];
- 
+
 static int pmc_init(void)
 {
 	int i;
-	int err = 0; 
- 
+	int err = 0;
+
 	if (sysctl.cpu_type == CPU_ATHLON) {
 		op_nr_counters = 4;
 		separate_running_bit = 1;
 	}
- 
+
 	/* let's use the right MSRs */
 	switch (sysctl.cpu_type) {
 		case CPU_ATHLON:
@@ -329,14 +329,14 @@ static int pmc_init(void)
 
 	return err;
 }
- 
+
 static void pmc_deinit(void)
 {
 	int i;
- 
+
 	smp_call_function(lvtpc_apic_restore, NULL, 0, 1);
 	lvtpc_apic_restore(NULL);
- 
+
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		wrmsr(eventsel_msr[i], saved_eventsel_low[i], saved_eventsel_high[i]);
 		wrmsr(perfctr_msr[i], saved_perfctr_low[i], saved_perfctr_high[i]);
@@ -344,15 +344,15 @@ static void pmc_deinit(void)
 
 	apic_restore();
 }
- 
+
 static char *names[] = { "0", "1", "2", "3", "4", };
 
 static int pmc_add_sysctls(ctl_table * next)
 {
-	ctl_table * start = next; 
-	ctl_table * tab; 
+	ctl_table * start = next;
+	ctl_table * tab;
 	int i, j;
- 
+
 	for (i=0; i < op_nr_counters; i++) {
 		next->ctl_name = 1;
 		next->procname = names[i];
@@ -360,7 +360,7 @@ static int pmc_add_sysctls(ctl_table * next)
 
 		if (!(tab = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
 			goto cleanup;
- 
+
 		next->child = tab;
 
 		memset(tab, 0, sizeof(ctl_table)*7);
@@ -393,7 +393,7 @@ static void pmc_remove_sysctls(ctl_table * next)
 		next++;
 	}
 }
- 
+
 static struct op_int_operations op_nmi_ops = {
 	init: pmc_init,
 	deinit: pmc_deinit,
@@ -404,7 +404,7 @@ static struct op_int_operations op_nmi_ops = {
 	start: pmc_start_all,
 	stop: pmc_stop_all,
 	start_cpu: pmc_select_start,
-	stop_cpu: pmc_select_stop, 
+	stop_cpu: pmc_select_stop,
 };
 
 struct op_int_operations const * op_int_interface()

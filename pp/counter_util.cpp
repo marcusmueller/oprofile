@@ -11,19 +11,19 @@
 
 #include "counter_util.h"
 #include "op_hw_config.h"
- 
+
 #include "string_manip.h"
- 
+
 #include <vector>
 #include <sstream>
 #include <iostream>
- 
+
 using std::string;
 using std::vector;
 using std::cerr;
 using std::endl;
 using std::istringstream;
- 
+
 /**
  * parse_counter_mask -  given a --counter=0,1,..., option parameter return a mask
  * representing each counter. Bit i is on if counter i was specified.
@@ -44,8 +44,8 @@ int parse_counter_mask(string const & str)
 
 	return mask;
 }
- 
- 
+
+
 /**
  * validate_counter - validate the counter nr
  * @param counter_mask bit mask specifying the counter nr to use

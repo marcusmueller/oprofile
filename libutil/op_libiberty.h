@@ -5,7 +5,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -22,7 +22,7 @@
 #else
 #define OP_ATTRIB_MALLOC
 #endif
- 
+
 #ifdef HAVE_LIBIBERTY_H
 #include <libiberty.h>
 #else
@@ -59,5 +59,5 @@ char *xstrdup(char const *) OP_ATTRIB_MALLOC;
 #endif
 
 #endif /* !HAVE_LIBIBERTY_H */
- 
+
 #endif /* OP_LIBIBERTY_H */

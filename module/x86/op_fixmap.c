@@ -17,7 +17,7 @@
 #include <asm/io.h>
 
 #include "oprofile.h"
- 
+
 unsigned long virt_apic_base;
 
 /* some static commented out to avoid warning, trying to figure out
@@ -65,7 +65,7 @@ unsigned long virt_apic_base;
 	pgd = pgd_offset_k(vaddr);
 	if (!pgd)
 		return;
-	
+
 	pmd = pmd_offset(pgd, vaddr);
 	if (!pmd)
 		return;
@@ -80,11 +80,11 @@ unsigned long virt_apic_base;
 
 	vfree((void*)virt_apic_base);
 }
- 
+
 /*
  * Make sure we can access the APIC. Some kernel versions create
  * a meaningless zero-page mapping for the local APIC: we must
- * detect this case and reset it. 
+ * detect this case and reset it.
  *
  * Some kernel versions/configs won't map the APIC at all, in
  * which case we need to hack it ourselves.
@@ -96,18 +96,18 @@ void fixmap_setup(void)
 	static int find_intel_smp(void);
 
 	if (!find_intel_smp()) {
-		set_pte_phys(__fix_to_virt(FIX_APIC_BASE), 
+		set_pte_phys(__fix_to_virt(FIX_APIC_BASE),
 			APIC_DEFAULT_PHYS_BASE);
 		printk(KERN_INFO "oprofile: remapping local APIC.\n");
 	}
 #else
 	alloc_fixmap();
-	printk(KERN_INFO "oprofile: mapping APIC.\n"); 
+	printk(KERN_INFO "oprofile: mapping APIC.\n");
 #endif /* CONFIG_X86_LOCAL_APIC */
 #else
 #if !defined(CONFIG_X86_LOCAL_APIC)
 	alloc_fixmap();
-	printk(KERN_INFO "oprofile: mapping APIC.\n"); 
+	printk(KERN_INFO "oprofile: mapping APIC.\n");
 #endif
 #endif
 }
@@ -119,20 +119,20 @@ void fixmap_restore(void)
 	/* Nothing to do */
 #else
 	free_fixmap();
-	printk(KERN_INFO "oprofile: freeing APIC mapping.\n"); 
+	printk(KERN_INFO "oprofile: freeing APIC mapping.\n");
 #endif /* CONFIG_X86_LOCAL_APIC */
 #else
 #if !defined(CONFIG_X86_LOCAL_APIC)
 	free_fixmap();
-	printk(KERN_INFO "oprofile: freeing APIC mapping.\n"); 
+	printk(KERN_INFO "oprofile: freeing APIC mapping.\n");
 #endif
 #endif
 }
- 
+
 /* ---------------- MP table code ------------------ */
- 
+
 #if V_BEFORE(2,4,10) && defined(CONFIG_X86_LOCAL_APIC)
- 
+
 static int __init mpf_checksum(unsigned char *mp, int len)
 {
 	int sum = 0;

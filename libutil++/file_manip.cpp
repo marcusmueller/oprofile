@@ -13,14 +13,14 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <fnmatch.h>
- 
+
 #include <cstdio>
 #include <cerrno>
 #include <iostream>
 #include <vector>
- 
+
 #include "op_file.h"
- 
+
 #include "file_manip.h"
 #include "string_manip.h"
 
@@ -108,10 +108,10 @@ string op_read_link(string const & name)
 	int c;
 
 	c = readlink(name.c_str(), linkbuf, FILENAME_MAX);
- 
+
 	if (c == -1)
 		return string();
- 
+
 	if (c == FILENAME_MAX)
 		linkbuf[FILENAME_MAX-1] = '\0';
 	else
@@ -124,15 +124,15 @@ bool op_file_readable(string const & file)
 {
 	return op_file_readable(file.c_str());
 }
- 
+
 inline static bool is_directory_name(char const * name)
 {
-	return name[0] == '.' && 
-		(name[1] == '\0' || 
+	return name[0] == '.' &&
+		(name[1] == '\0' ||
 		 (name[1] == '.' && name[2] == '\0'));
 }
 
- 
+
 bool create_file_list(list<string> & file_list, string const & base_dir,
 		      string const & filter, bool recursive)
 {
@@ -180,7 +180,7 @@ std::string relative_to_absolute_path(string const & path,
 	// don't screw up on already absolute paths
 	if ((path.empty() || path[0] != '/') && !base_dir.empty())
 		dir = base_dir.c_str();
- 
+
 	char * result = op_relative_to_absolute_path(path.c_str(), dir);
 
 	string res(result);

@@ -17,7 +17,7 @@
 #include <asm/apic.h>
 #include <asm/apicdef.h>
 #include <asm/mpspec.h>
- 
+
 #include "apic_up_compat.h"
 
 #define pte_page_address(a) page_address(pte_page(a))
@@ -43,7 +43,7 @@
 
 /* no global waitqueue spinlock in 2.4 */
 #define wq_is_lockable() (1)
- 
+
 /* 2.4.3 introduced rw mmap semaphore  */
 #if V_AT_LEAST(2,4,3)
 	#define lock_mmap(mm) down_read(&mm->mmap_sem)

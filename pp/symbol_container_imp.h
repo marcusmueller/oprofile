@@ -17,23 +17,23 @@
 #include <set>
 
 #include "samples_container.h"
- 
+
 class symbol_container_imp_t {
 public:
 	symbol_index_t size() const;
- 
+
 	symbol_entry const & operator[](symbol_index_t index) const;
- 
+
 	void push_back(symbol_entry const &);
- 
+
 	symbol_entry const * find(std::string filename, size_t linenr) const;
- 
+
 	symbol_entry const * find(std::string name) const;
- 
+
 	symbol_entry const * find_by_vma(bfd_vma vma) const;
 
 	void get_symbols_by_count(size_t counter, samples_container_t::symbol_collection& v) const;
- 
+
 private:
 	void build_by_file_loc() const;
 

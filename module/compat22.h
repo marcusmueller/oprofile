@@ -13,23 +13,23 @@
 #define COMPAT22_H
 
 #include "apic_up_compat.h"
- 
+
 #include <linux/smp_lock.h>
 
 #define pte_page_address(a) pte_page(a)
- 
-#define GET_VM_OFFSET(v) ((v)->vm_offset) 
+
+#define GET_VM_OFFSET(v) ((v)->vm_offset)
 #define MODULE_LICENSE(l)
 #define NEED_2_2_DENTRIES
 #define INC_USE_COUNT_MAYBE MOD_INC_USE_COUNT
 #define DEC_USE_COUNT_MAYBE MOD_DEC_USE_COUNT
 #define lock_execve lock_kernel
 #define unlock_execve unlock_kernel
- 
+
 /* BKL-protected on 2.2 */
 #define lock_mmap(mm) do {} while (0)
 #define unlock_mmap(mm) do {} while (0)
- 
+
 /* the wake_up path doesn't disable interrupts for wait queue
  * manipulation. So let's force it to.
  */
@@ -58,7 +58,7 @@ static inline void unlock_out_mmap(void)
 	unlock_kernel();
 	up(&current->mm->mmap_sem);
 }
- 
+
 /* different request_region */
 #define request_region_check compat_request_region
 void *compat_request_region (unsigned long start, unsigned long n, char const * name);
@@ -107,7 +107,7 @@ void *compat_request_region (unsigned long start, unsigned long n, char const * 
 	#define vmalloc_32 vmalloc
 
 	/* 2.2.18 add doubled linked list wait_queue and mutex */
-	#define DECLARE_WAIT_QUEUE_HEAD(q) struct wait_queue *q = NULL 
+	#define DECLARE_WAIT_QUEUE_HEAD(q) struct wait_queue *q = NULL
 	#define DECLARE_MUTEX(foo)	struct semaphore foo = MUTEX
 
 	/* 2.2.18 add THIS_MODULE */
@@ -123,7 +123,7 @@ void *compat_request_region (unsigned long start, unsigned long n, char const * 
 	#define lock_rtc(f) do { save_flags(f); cli(); } while (0)
 	#define unlock_rtc(f) restore_flags(f)
 #endif /* RTC_LOCK */
- 
+
 #if V_AT_LEAST(2,2,20)
 	#define PTRACE_OFF(t) ((t)->ptrace &= ~PT_DTRACE)
 #else

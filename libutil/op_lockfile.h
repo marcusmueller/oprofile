@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 #include <sys/types.h>
- 
+
 pid_t op_read_lock_file(char const * file);
 int op_write_lock_file(char const * file);
 

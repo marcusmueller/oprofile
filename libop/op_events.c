@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -14,7 +14,7 @@
 /* See IA32 Vol. 3 Appendix A + Athlon optimization manual */
 
 #include "op_events.h"
- 
+
 struct op_unit_mask op_unit_masks[] = {
 	/* reserved empty entry */
 	{ 0, utm_mandatory, 0x00, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
@@ -210,7 +210,7 @@ int op_check_unit_mask(struct op_unit_mask * allow, u8 um)
 			/* Must reject 0 bit mask because it can count nothing */
 			if (um == 0)
 				break;
- 
+
 			mask = 0;
 			for (i=0; i < allow->num; i++) {
 				if (allow->um[i] == um)
@@ -288,7 +288,7 @@ int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type)
 				if ((op_events[i].counter_mask & ctr_mask) == 0)
 					ret |= OP_EVT_CTR_NOT_ALLOWED;
 
-				if (op_events[i].unit && 
+				if (op_events[i].unit &&
 				    op_check_unit_mask(&op_unit_masks[op_events[i].unit], ctr_um) < 0)
 					ret |= OP_EVT_NO_UM;
 				break;
@@ -309,7 +309,7 @@ static u32 cpu_max_counters[MAX_CPU_TYPE] = {
 	4, /* Athlon */
 	1  /* RTC */
 };
- 
+
 /**
  * op_get_cpu_nr_counters - get the nr of counter
  * @param cpu_type  the cpu type identifier

@@ -11,16 +11,16 @@
 
 #ifndef COUNTER_UTIL_H
 #define COUNTER_UTIL_H
- 
+
 #include <string>
- 
+
 /**
  * parse_counter_mask -  given a --counter=0,1,..., option parameter return a mask
  * representing each counter. Bit i is on if counter i was specified.
  * So we allow up to sizeof(uint) * CHAR_BIT different counter
  */
 int parse_counter_mask(std::string const & str);
- 
+
 /**
  * validate_counter - validate the counter nr
  * @param counter_mask bit mask specifying the counter nr to use

@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -15,13 +15,13 @@
 #include "op_sample_file.h"
 #include "op_interface.h"
 #include "op_mangle.h"
- 
-#include <sys/types.h> 
+
+#include <sys/types.h>
 #include <stdio.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <string.h>
-#include <errno.h> 
- 
+#include <errno.h>
+
 extern uint op_nr_counters;
 extern int separate_samples;
 extern u32 ctr_count[OP_MAX_COUNTERS];
@@ -29,7 +29,7 @@ extern u8 ctr_event[OP_MAX_COUNTERS];
 extern u8 ctr_um[OP_MAX_COUNTERS];
 extern double cpu_speed;
 extern op_cpu cpu_type;
- 
+
 /**
  * opd_handle_old_sample_file - deal with old sample file
  * @param mangled  the sample file name
@@ -42,10 +42,10 @@ extern op_cpu cpu_type;
  */
 static void opd_handle_old_sample_file(char const * mangled, time_t mtime)
 {
-	struct opd_header oldheader; 
+	struct opd_header oldheader;
 	FILE * fp;
 
-	fp = fopen(mangled, "r"); 
+	fp = fopen(mangled, "r");
 	if (!fp) {
 		/* file might not be there, or it just might not be
 		 * openable for some reason, so try to remove anyway
@@ -71,7 +71,7 @@ static void opd_handle_old_sample_file(char const * mangled, time_t mtime)
 	fclose(fp);
 	verbprintf("Re-using old sample file \"%s\".\n", mangled);
 	return;
- 
+
 closedel:
 	fclose(fp);
 del:
@@ -100,7 +100,7 @@ void opd_handle_old_sample_files(struct opd_image const * image)
 	mangled = op_mangle_filename(image->name, app_name);
 
 	len = strlen(mangled);
- 
+
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		sprintf(mangled + len, "#%d", i);
 		opd_handle_old_sample_file(mangled,  image->mtime);
@@ -139,8 +139,8 @@ void opd_open_sample_file(struct opd_image * image, int counter)
 
 	db_open(sample_file, mangled, DB_RDWR, sizeof(struct opd_header));
 	if (!sample_file->base_memory) {
-		fprintf(stderr, 
-			"oprofiled: db_open() of image sample file \"%s\" failed: %s\n", 
+		fprintf(stderr,
+			"oprofiled: db_open() of image sample file \"%s\" failed: %s\n",
 			mangled, strerror(errno));
 		goto err;
 	}

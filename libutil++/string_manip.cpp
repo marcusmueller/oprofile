@@ -55,7 +55,7 @@ string tostr(unsigned int i)
 	string str;
 	std::ostringstream ss(str);
 	ss << i;
-	return ss.str(); 
+	return ss.str();
 }
 
 void separate_token(vector<string> & result, const string & str, char sep)

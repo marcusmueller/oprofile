@@ -11,9 +11,9 @@
 
 #ifndef OPD_PRINTF_H
 #define OPD_PRINTF_H
- 
+
 extern int verbose;
- 
+
 #define verbprintf(args...) \
         do { \
 		if (verbose) \

@@ -4,21 +4,21 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #ifndef OPD_PROC_H
 #define OPD_PROC_H
- 
+
 #include "op_types.h"
- 
+
 struct opd_map;
 struct opd_image;
 struct op_note;
 struct op_sample;
- 
+
 struct opd_proc {
 	struct opd_map * maps;
 	unsigned int nr_maps;

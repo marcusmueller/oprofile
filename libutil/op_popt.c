@@ -5,13 +5,13 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #include "config.h"
- 
+
 #include <stdlib.h>
 #include "op_libiberty.h"
 #include "op_popt.h"
@@ -33,9 +33,9 @@ poptContext op_poptGetContext(char const * name,
 	xmalloc_set_program_name(argv[0]);
 
 #ifdef CONST_POPT
-	optcon = poptGetContext(name, argc, argv, options, flags); 
+	optcon = poptGetContext(name, argc, argv, options, flags);
 #else
-	optcon = poptGetContext((char *)name, argc, (char **)argv, options, flags); 
+	optcon = poptGetContext((char *)name, argc, (char **)argv, options, flags);
 #endif
 
 	c = poptGetNextOpt(optcon);

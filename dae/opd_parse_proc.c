@@ -4,25 +4,25 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #include "opd_parse_proc.h"
 #include "opd_proc.h"
-#include "opd_mapping.h" 
+#include "opd_mapping.h"
 #include "opd_image.h"
 #include "opd_printf.h"
- 
+
 #include "op_file.h"
 #include "op_fileio.h"
- 
+
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
- 
+
 /**
  * opd_add_ascii_map - parse an ASCII map string for a process
  * @param proc  process to add map to
@@ -80,7 +80,7 @@ static int opd_add_ascii_map(struct opd_proc * proc, char const * line)
 	return 1;
 }
 
- 
+
 /**
  * opd_get_ascii_maps - read all maps for a process
  * @param proc  process to work on

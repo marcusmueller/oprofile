@@ -5,7 +5,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -21,24 +21,24 @@
 #define OP_NOTE_DEVICE OP_BASE_DIR "opnotedev"
 #define OP_HASH_DEVICE OP_BASE_DIR "ophashmapdev"
 #define OP_LOG_FILE OP_BASE_DIR "oprofiled.log"
- 
+
 #define OPD_MAGIC "DAE\n"
 #define OPD_VERSION 0x6
 
 #ifndef NR_CPUS
 /** maximum number of cpus present in the box */
 #define NR_CPUS 32
-#endif 
+#endif
 
 /* See objdump --section-headers /usr/src/linux/vmlinux
  * used to catch out kernel samples (and also compute
- * text offset if no System.map or module info is available 
+ * text offset if no System.map or module info is available
  */
 #define KERNEL_VMA_OFFSET           0xc0100000
- 
+
 /** maximum number of profilable kernel modules */
 #define OPD_MAX_MODULES 64
- 
+
 /* This is a standard non-portable assumption we make. */
 #define OP_MIN_PID		0
 #define OP_MAX_PID		32767

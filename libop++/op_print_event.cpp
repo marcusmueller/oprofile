@@ -8,13 +8,13 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
- 
+
 #include "op_print_event.h"
-#include "op_events_desc.h" 
- 
+#include "op_events_desc.h"
+
 #include <iostream>
 #include <iomanip>
- 
+
 using std::ostream;
 using std::endl;
 using std::hex;
@@ -29,7 +29,7 @@ void op_print_event(ostream & out, int counter_nr, op_cpu cpu_type,
 	char * typedescp;
 	char * umdescp;
 
-	op_get_event_desc(cpu_type, type, um, 
+	op_get_event_desc(cpu_type, type, um,
 			  &typenamep, &typedescp, &umdescp);
 
 	out << "Counter " << counter_nr << " counted "

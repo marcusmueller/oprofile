@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -12,11 +12,11 @@
 #include "op_fileio.h"
 
 #include "op_libiberty.h"
- 
+
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
- 
+
 static FILE * op_do_open_file(char const * name, char const * mode, int fatal)
 {
 	FILE * fp;
@@ -31,7 +31,7 @@ static FILE * op_do_open_file(char const * name, char const * mode, int fatal)
 		}
 	}
 
-	return fp;	
+	return fp;
 }
 
 /**

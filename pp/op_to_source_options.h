@@ -8,7 +8,7 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
- 
+
 #ifndef OP_TO_SOURCE_OPTIONS_H
 #define OP_TO_SOURCE_OPTIONS_H
 
@@ -21,9 +21,9 @@ namespace options {
 	extern std::string sample_file;
 	/// image file to work on
 	extern std::string image_file;
-	/// show files with more than this nr. of samples 
+	/// show files with more than this nr. of samples
 	extern int with_more_than_samples;
-	/// FIXME: doc 
+	/// FIXME: doc
 	extern int until_more_than_samples;
 	/// counter to sort by
 	extern int sort_by_counter;
@@ -39,7 +39,7 @@ namespace options {
 	extern std::vector<std::string> exclude_symbols;
 	/// whether to generate assembly
 	extern bool assembly;
-	/// whether to generate mixed source/assembly 
+	/// whether to generate mixed source/assembly
 	extern bool source_with_assembly;
 	/// whether to demangle
 	extern bool demangle;
@@ -56,5 +56,5 @@ namespace options {
  * namespace.
  */
 std::string const get_options(int argc, char const **argv);
- 
+
 #endif // OP_TO_SOURCE_OPTIONS_H

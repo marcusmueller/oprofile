@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -13,17 +13,17 @@
 #include "opd_proc.h"
 #include "opd_image.h"
 #include "opd_printf.h"
- 
+
 #include "op_interface.h"
 #include "op_config.h"
 #include "op_libiberty.h"
- 
+
 #include <sys/mman.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
- 
+
 /* per-process */
 #define OPD_DEFAULT_MAPS 16
 #define OPD_MAP_INC 8
@@ -37,7 +37,7 @@ static struct op_hash_index * hashmap;
 void opd_init_hash_map(void)
 {
 	extern fd_t hashmapdevfd;
- 
+
 	hashmap = mmap(0, OP_HASH_MAP_SIZE, PROT_READ, MAP_SHARED, hashmapdevfd, 0);
 	if ((long)hashmap == -1) {
 		perror("oprofiled: couldn't mmap hash map");
@@ -46,7 +46,7 @@ void opd_init_hash_map(void)
 
 }
 
- 
+
 /**
  * opd_init_maps - initialise map structure for a process
  * @param proc  process to work on
@@ -61,7 +61,7 @@ void opd_init_maps(struct opd_proc * proc)
 	proc->last_map = 0;
 }
 
- 
+
 /**
  * opd_grow_maps - grow map structure for a process
  * @param proc  process to work on
@@ -75,7 +75,7 @@ void opd_grow_maps(struct opd_proc * proc)
 	proc->max_nr_maps += OPD_MAP_INC;
 }
 
- 
+
 /**
  * opd_kill_maps - delete mapping information for a process
  * @param proc  process to work on
@@ -108,12 +108,12 @@ static void opd_put_mapping(struct opd_proc * proc, struct opd_image * image,
 		proc->pid, start, end, offset, image->name, proc->nr_maps);
 
 	opd_check_image_mtime(image);
- 
+
 	proc->maps[proc->nr_maps].image = image;
 	proc->maps[proc->nr_maps].start = start;
 	proc->maps[proc->nr_maps].offset = offset;
 	proc->maps[proc->nr_maps].end = end;
-	
+
 	if (++proc->nr_maps == proc->max_nr_maps)
 		opd_grow_maps(proc);
 
@@ -121,7 +121,7 @@ static void opd_put_mapping(struct opd_proc * proc, struct opd_image * image,
 	proc->last_map = 0;
 }
 
- 
+
 /**
  * get_from_pool - retrieve string from hash map pool
  * @param ind index into pool
@@ -131,7 +131,7 @@ inline static char * get_from_pool(uint ind)
 	return ((char *)(hashmap + OP_HASH_MAP_NR) + ind);
 }
 
- 
+
 /**
  * opd_handle_hashmap - parse image from kernel hash map
  * @param hash hash value
@@ -145,10 +145,10 @@ static struct opd_image * opd_handle_hashmap(int hash, char const * app_name)
 	char * c = &file[PATH_MAX-1];
 	int orighash = hash;
 
-	*c = '\0'; 
+	*c = '\0';
 	while (hash) {
 		char * name = get_from_pool(hashmap[hash].name);
- 
+
 		if (strlen(name) + 1 + strlen(c) >= PATH_MAX) {
 			fprintf(stderr,"String \"%s\" too large.\n", c);
 			exit(EXIT_FAILURE);
@@ -163,7 +163,7 @@ static struct opd_image * opd_handle_hashmap(int hash, char const * app_name)
 	}
 	return opd_get_image(c, orighash, app_name, 0);
 }
- 
+
 
 /**
  * opd_handle_mapping - deal with mapping notification
@@ -201,7 +201,7 @@ void opd_handle_mapping(struct op_note const * note)
 
 	app_name = opd_app_name(proc);
 
-	image = opd_get_image_by_hash(hash, app_name); 
+	image = opd_get_image_by_hash(hash, app_name);
 	if (image == NULL)
 		image = opd_handle_hashmap(hash, app_name);
 

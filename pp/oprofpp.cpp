@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -19,7 +19,7 @@
 #include "op_libiberty.h"
 #include "op_fileio.h"
 #include "file_manip.h"
- 
+
 #include "op_config.h"
 #include "op_mangling.h"
 #include "samples_container.h"
@@ -36,7 +36,7 @@ using std::cerr;
 using std::ifstream;
 using std::ostream;
 using std::ostringstream;
- 
+
 /**
  * do_list_symbols - list symbol samples for an image
  * @param abfd the bfd object from where come the samples
@@ -73,7 +73,7 @@ static void do_list_symbols_details(samples_container_t & samples,
 
 	out.Output(cout, symbols, false);
 }
- 
+
 /**
  * do_list_symbol - list detailed samples for a symbol
  * @param abfd the bfd object from where come the samples
@@ -81,7 +81,7 @@ static void do_list_symbols_details(samples_container_t & samples,
  * @param cmask on what counters we work
  *
  * the global variable symbol is used to list all
- * the samples for this symbol from the image 
+ * the samples for this symbol from the image
  * specified by abfd.
  */
 static void do_list_symbol(samples_container_t & samples, output_symbol & out)
@@ -105,7 +105,7 @@ struct gmon_hdr {
 	u32 version;
 	u32 spare[3];
 };
- 
+
 /**
  * do_dump_gprof - produce gprof sample output
  * @param abfd the bfd object from where come the samples
@@ -121,7 +121,7 @@ static void do_dump_gprof(op_bfd & abfd,
 			  opp_samples_files const & samples_files,
 			  int sort_by_ctr)
 {
-	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},}; 
+	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},};
 	u32 start, end;
 	uint j;
 	u32 low_pc;
@@ -138,32 +138,32 @@ static void do_dump_gprof(op_bfd & abfd,
 	abfd.get_vma_range(low_pc, high_pc);
 
 	// FIXME : is this (high - low - (MUL -1)) / MULT ? need a test ...
-	histsize = ((high_pc - low_pc) / MULTIPLIER) + 1; 
- 
+	histsize = ((high_pc - low_pc) / MULTIPLIER) + 1;
+
 	op_write_u32(fp, low_pc);
 	op_write_u32(fp, high_pc);
 	/* size of histogram */
 	op_write_u32(fp, histsize);
 	/* profiling rate */
 	op_write_u32(fp, 1);
-	op_write_file(fp, "samples\0\0\0\0\0\0\0\0", 15); 
+	op_write_file(fp, "samples\0\0\0\0\0\0\0\0", 15);
 	/* abbreviation */
 	op_write_u8(fp, '1');
 
-	hist = (u16*)xcalloc(histsize, sizeof(u16)); 
- 
+	hist = (u16*)xcalloc(histsize, sizeof(u16));
+
 	for (symbol_index_t i = 0; i < abfd.syms.size(); i++) {
-		abfd.get_symbol_range(i, start, end); 
+		abfd.get_symbol_range(i, start, end);
 		for (j = start; j < end; j++) {
 			u32 count;
 			u32 pos;
-			pos = (abfd.sym_offset(i, j) + abfd.syms[i].vma() - low_pc) / MULTIPLIER; 
+			pos = (abfd.sym_offset(i, j) + abfd.syms[i].vma() - low_pc) / MULTIPLIER;
 
 			/* opp_get_options have set ctr to one value != -1 */
 			count = samples_files.samples_count(sort_by_ctr, j);
 
 			if (pos >= histsize) {
-				cerr << "Bogus histogram bin " << pos 
+				cerr << "Bogus histogram bin " << pos
 				     << ", larger than " << pos << " !\n";
 				continue;
 			}
@@ -171,7 +171,7 @@ static void do_dump_gprof(op_bfd & abfd,
 			if (hist[pos] + count > (u16)-1) {
 				// FIXME cout or cerr ?
 				cout <<	"Warning: capping sample count by "
-				     << hist[pos] + count - ((u16)-1) 
+				     << hist[pos] + count - ((u16)-1)
 				     << "samples for symbol \""
 				     << abfd.syms[i].name() << "\"\n";
 			} else {
@@ -211,10 +211,10 @@ int main(int argc, char const *argv[])
 		return 0;
 	}
 
-	options::output_format_flags = 
+	options::output_format_flags =
 		static_cast<outsymbflag>(options::output_format_flags | osf_show_all_counters);
 	if (!options::symbol.empty() || options::list_all_symbols_details)
-		options::output_format_flags = 
+		options::output_format_flags =
 			static_cast<outsymbflag>(options::output_format_flags | osf_details);
 
 	/* create the file list of samples files we will use (w/o the
@@ -223,12 +223,12 @@ int main(int argc, char const *argv[])
 	if (options::show_shared_libs) {
 		string const dir = dirname(options::sample_file);
 		string const name = basename(options::sample_file);
- 
+
 		get_sample_file_list(filelist, dir, name + "}}}*");
 	}
 
 	bool const add_zero_sample_symbols = options::list_all_symbols_details == false;
- 
+
 	samples_container_t samples(add_zero_sample_symbols,
 				    options::output_format_flags, options::counter_mask);
 
@@ -243,7 +243,7 @@ int main(int argc, char const *argv[])
 		// shared libraries are added to the file list as relative paths
 		// so we fix that up here
 		string file = relative_to_absolute_path(*it, dir);
-		 
+
 		int i;
 		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 			if ((options::counter_mask & (1 << i)) != 0) {

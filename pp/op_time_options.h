@@ -11,19 +11,19 @@
 
 #ifndef OP_TIME_OPTIONS_H
 #define OP_TIME_OPTIONS_H
- 
+
 #include <string>
 #include <vector>
 #include <map>
 
 #include "outsymbflag.h"
- 
+
 typedef std::multimap<std::string, std::string> alt_filename_t;
- 
+
 namespace options {
 	/// session name
 	extern std::string session;
-	/// samples directory 
+	/// samples directory
 	extern std::string samples_dir;
 	/// counter to use
 	extern int counter;
@@ -32,7 +32,7 @@ namespace options {
 	extern std::string counter_str;
 	/// output format to use
 	extern outsymbflag output_format_flags;
-	/// which symbols to exclude 
+	/// which symbols to exclude
 	extern std::vector<std::string> exclude_symbols;
 	/// FIXME: doc
 	extern std::vector<std::string> path;
@@ -46,7 +46,7 @@ namespace options {
 	extern bool show_image_name;
 	/// reverse the sort
 	extern bool reverse_sort;
-	/// show dependent shared library samples 
+	/// show dependent shared library samples
 	extern bool show_shared_libs;
 	/// counter to sort by
 	extern int sort_by_counter;

@@ -21,7 +21,7 @@
 
 #include <qlineedit.h>
 #include <qlistview.h>
-#include <qcombobox.h> 
+#include <qcombobox.h>
 #include <qlistbox.h>
 #include <qfiledialog.h>
 #include <qbuttongroup.h>
@@ -30,15 +30,15 @@
 #include <qmessagebox.h>
 #include <qvalidator.h>
 #include <qlabel.h>
-#include <qpushbutton.h> 
+#include <qpushbutton.h>
 
 #include "oprof_start.h"
 #include "string_manip.h"
 
 using std::string;
- 
+
 op_event_descr::op_event_descr()
-	: 
+	:
 	counter_mask(0),
 	val(0),
 	unit(0),
@@ -52,7 +52,7 @@ oprof_start::oprof_start()
 	oprof_start_base(0, 0, false, 0),
 	event_count_validator(new QIntValidator(event_count_edit)),
 	current_ctr(0),
-	cpu_speed(get_cpu_speed()), 
+	cpu_speed(get_cpu_speed()),
 	op_nr_counters(2),
 	total_nr_interrupts(0)
 {
@@ -60,15 +60,15 @@ oprof_start::oprof_start()
 		current_event[i] = 0;
 		ctr_enabled[i] = 0;
 	}
- 
+
 	std::vector<std::string> args;
 	args.push_back("oprofile");
- 
+
 	if (do_exec_command("/sbin/modprobe", args))
 		exit(EXIT_FAILURE);
- 
+
 	cpu_type = op_get_cpu_type();
- 
+
 	if (cpu_type == CPU_ATHLON)
 		op_nr_counters = 4;
 	else if (cpu_type == CPU_RTC) {
@@ -96,7 +96,7 @@ oprof_start::oprof_start()
 		int tmp;
 		in >> tmp;
 		op_cpu tmp_cpu_type = static_cast<op_cpu>(tmp);
- 
+
 		if (tmp_cpu_type != cpu_type) {
 			remove(config_name.c_str());
 
@@ -121,7 +121,7 @@ oprof_start::oprof_start()
 	for (uint i = 0 ; i < op_nr_events ; ++i) {
 		if (!(op_events[i].cpu_mask & cpu_mask))
 			continue;
-	 
+
 		op_event_descr descr;
 
 		descr.counter_mask = op_events[i].counter_mask;
@@ -140,22 +140,22 @@ oprof_start::oprof_start()
 
 		for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
 			uint count;
- 
+
 			if (!(descr.counter_mask & (1 << ctr)))
 				continue;
 
 			if (cpu_type == CPU_RTC) {
 				count = 1024;
-			} else { 
+			} else {
 				/* setting to cpu Hz / 2000 gives a safe value for
 				 * all events, and a good one for most.
 				 */
 				if (cpu_speed)
 					count = cpu_speed * 500;
 				else
-					count = descr.min_count * 100; 
+					count = descr.min_count * 100;
 			}
- 
+
 			event_cfgs[ctr][descr.name].count = count;
 			event_cfgs[ctr][descr.name].umask = 0;
 			if (descr.unit)
@@ -180,33 +180,33 @@ oprof_start::oprof_start()
 		pid_filter_edit->setText(QString().setNum(config.pid_filter));
 	else
 		pid_filter_edit->setText("");
-	if (config.pgrp_filter) 
+	if (config.pgrp_filter)
 		pgrp_filter_edit->setText(QString().setNum(config.pgrp_filter));
 	else
 		pgrp_filter_edit->setText("");
 	ignore_daemon_samples_cb->setChecked(config.ignore_daemon_samples);
-	verbose->setChecked(config.verbose); 
+	verbose->setChecked(config.verbose);
 	kernel_only_cb->setChecked(config.kernel_only);
 	separate_samples_cb->setChecked(config.separate_samples);
 
 	// the unit mask check boxes
 	hide_masks();
- 
-	event_count_edit->setValidator(event_count_validator); 
+
+	event_count_edit->setValidator(event_count_validator);
 	QIntValidator * iv;
 	iv = new QIntValidator(OP_MIN_BUF_SIZE, OP_MAX_BUF_SIZE, buffer_size_edit);
-	buffer_size_edit->setValidator(iv); 
+	buffer_size_edit->setValidator(iv);
 	iv = new QIntValidator(OP_MIN_HASH_SIZE, OP_MAX_HASH_SIZE, hash_table_size_edit);
-	hash_table_size_edit->setValidator(iv); 
+	hash_table_size_edit->setValidator(iv);
 	iv = new QIntValidator(OP_MIN_NOTE_TABLE_SIZE, OP_MAX_NOTE_TABLE_SIZE, note_table_size_edit);
-	note_table_size_edit->setValidator(iv); 
+	note_table_size_edit->setValidator(iv);
 	iv = new QIntValidator(OP_MIN_PID, OP_MAX_PID, pid_filter_edit);
-	pid_filter_edit->setValidator(iv); 
+	pid_filter_edit->setValidator(iv);
 	iv = new QIntValidator(OP_MIN_PGRP, OP_MAX_PGRP, pgrp_filter_edit);
-	pgrp_filter_edit->setValidator(iv); 
+	pgrp_filter_edit->setValidator(iv);
 
 	events_list->setSorting(-1);
- 
+
 	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr) {
 		load_event_config_file(ctr);
 		counter_combo->insertItem("");
@@ -214,7 +214,7 @@ oprof_start::oprof_start()
 	}
 
 	// re-init event stuff
-	enabled_toggled(ctr_enabled[current_ctr]); 
+	enabled_toggled(ctr_enabled[current_ctr]);
 	display_event(current_event[current_ctr]);
 
 	counter_selected(0);
@@ -222,7 +222,7 @@ oprof_start::oprof_start()
 	if (cpu_type == CPU_RTC)
 		events_list->setCurrentItem(events_list->firstChild());
 
-	// daemon status timer 
+	// daemon status timer
 	startTimer(5000);
 	timerEvent(0);
 }
@@ -251,18 +251,18 @@ void oprof_start::load_config_file()
 	int tmp;
 	in >> tmp;
 	op_cpu tmp_cpu_type = static_cast<op_cpu>(tmp);
- 
+
 	if (tmp_cpu_type != cpu_type) {
 		/* can never happen, if cpu type mismatch the file should be
 		 * already deleted */
-		QMessageBox::warning(this, 0, 
+		QMessageBox::warning(this, 0,
 				     "The cpu type in your configuration "
 				     "mismatch the current cpu core:\n\n"
 				     "Delete manually the configuration file");
 
 		exit(EXIT_FAILURE);
 	}
- 
+
 	for (uint i = 0; i < op_nr_counters; ++i) {
 		in >> ctr_enabled[i];
 		std::string ev;
@@ -288,7 +288,7 @@ bool oprof_start::save_config_file()
 	std::ofstream out(name.c_str());
 
 	out << static_cast<int>(cpu_type) << " ";
- 
+
 	for (uint i = 0; i < op_nr_counters; ++i) {
 		out << ctr_enabled[i];
 		if (current_event[i] == 0)
@@ -358,7 +358,7 @@ void oprof_start::accept()
 	// FIXME: check and warn about return code.
 	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr)
 		save_event_config_file(ctr);
- 
+
 	if (record_config() == false)
 		return;
 
@@ -367,23 +367,23 @@ void oprof_start::accept()
 	QDialog::accept();
 }
 
- 
+
 void oprof_start::closeEvent(QCloseEvent *)
 {
 	accept();
 }
- 
- 
+
+
 void oprof_start::timerEvent(QTimerEvent *)
 {
 	static time_t last = time(0);
- 
+
 	daemon_status dstat;
- 
-	flush_profiler_data_btn->setEnabled(dstat.running); 
+
+	flush_profiler_data_btn->setEnabled(dstat.running);
 	stop_profiler_btn->setEnabled(dstat.running);
 	start_profiler_btn->setEnabled(!dstat.running);
- 
+
 	if (!dstat.running) {
 		daemon_label->setText("Profiler is not running.");
 		return;
@@ -395,7 +395,7 @@ void oprof_start::timerEvent(QTimerEvent *)
 
 	time_t curr = time(0);
 	total_nr_interrupts += dstat.nr_interrupts;
- 
+
 	if (curr - last)
 		ss << " (" << dstat.nr_interrupts / (curr - last) << " interrupts / second, total " << total_nr_interrupts << ")";
 
@@ -404,7 +404,7 @@ void oprof_start::timerEvent(QTimerEvent *)
 	last = curr;
 }
 
- 
+
 void oprof_start::set_counter_combo(uint ctr)
 {
 	std::string ctrstr("Counter ");
@@ -416,22 +416,22 @@ void oprof_start::set_counter_combo(uint ctr)
 	else
 		ctrstr += "not used";
 	counter_combo->changeItem(ctrstr.c_str(), ctr);
-	counter_combo->setMinimumSize(counter_combo->sizeHint()); 
+	counter_combo->setMinimumSize(counter_combo->sizeHint());
 }
 
- 
+
 void oprof_start::counter_selected(int ctr)
 {
-	setUpdatesEnabled(false); 
+	setUpdatesEnabled(false);
 	events_list->clear();
- 
+
 	if (current_event[current_ctr])
 		record_selected_event_config();
 
 	current_ctr = ctr;
- 
+
 	display_event(current_event[current_ctr]);
- 
+
 	QListViewItem * theitem = 0;
 
 	for (std::vector<op_event_descr>::reverse_iterator cit = v_events.rbegin();
@@ -449,14 +449,14 @@ void oprof_start::counter_selected(int ctr)
 	}
 
 	enabled->setChecked(ctr_enabled[ctr]);
- 
+
 	setUpdatesEnabled(true);
 	update();
 }
 
 void oprof_start::display_event(op_event_descr const * descrp)
 {
-	setUpdatesEnabled(false); 
+	setUpdatesEnabled(false);
 
 	if (!descrp) {
 		os_ring_count_cb->setChecked(false);
@@ -464,25 +464,25 @@ void oprof_start::display_event(op_event_descr const * descrp)
 		user_ring_count_cb->setChecked(false);
 		user_ring_count_cb->setEnabled(false);
 		event_count_edit->setText("");
-		event_count_edit->setEnabled(false); 
+		event_count_edit->setEnabled(false);
 		hide_masks();
-		return; 
+		return;
 	}
 	setup_unit_masks(*descrp);
 	os_ring_count_cb->setEnabled(true);
 	user_ring_count_cb->setEnabled(true);
-	event_count_edit->setEnabled(true); 
+	event_count_edit->setEnabled(true);
 	persistent_config_t<event_setting> const & cfg = event_cfgs[current_ctr];
- 
+
 	os_ring_count_cb->setChecked(cfg[descrp->name].os_ring_count);
 	user_ring_count_cb->setChecked(cfg[descrp->name].user_ring_count);
 	QString count_text;
 	count_text.setNum(cfg[descrp->name].count);
 	event_count_edit->setText(count_text);
 	event_count_validator->setRange(descrp->min_count, max_perf_count());
- 
+
 	event_help_label->setText(descrp->help_str.c_str());
- 
+
 	setUpdatesEnabled(true);
 	update();
 }
@@ -491,30 +491,30 @@ void oprof_start::display_event(op_event_descr const * descrp)
 void oprof_start::event_selected(QListViewItem * item)
 {
 	op_event_descr const & descr = locate_event(item->text(0).latin1());
- 
+
 	if (current_event[current_ctr])
-		record_selected_event_config(); 
+		record_selected_event_config();
 
 	display_event(&descr);
 	current_event[current_ctr] = &descr;
- 
+
 	set_counter_combo(current_ctr);
 }
- 
- 
+
+
 void oprof_start::event_over(QListViewItem * item)
 {
 	op_event_descr const & descr = locate_event(item->text(0).latin1());
 	event_help_label->setText(descr.help_str.c_str());
 }
 
- 
+
 void oprof_start::enabled_toggled(bool en)
 {
 	ctr_enabled[current_ctr] = en;
 	if (!en) {
 		events_list->clearSelection();
-		current_event[current_ctr] = 0; 
+		current_event[current_ctr] = 0;
 		set_counter_combo(current_ctr);
 	}
 	events_list->setEnabled(en);
@@ -551,7 +551,7 @@ void oprof_start::record_selected_event_config()
 
 	if (!curr)
 		return;
- 
+
 	persistent_config_t<event_setting>& cfg = event_cfgs[current_ctr];
 	std::string name(curr->name);
 
@@ -623,10 +623,10 @@ bool oprof_start::record_config()
 void oprof_start::get_unit_mask_part(op_event_descr const & descr, uint num, bool selected, uint & mask)
 {
 	if (!selected)
-		return; 
+		return;
 	if  (num >= descr.unit->num)
 		return;
- 
+
 	if (descr.unit->unit_type_mask == utm_bitmask)
 		mask |= descr.unit->um[num];
 	else
@@ -646,7 +646,7 @@ uint oprof_start::get_unit_mask(op_event_descr const & descr)
 		mask = descr.unit->default_mask;
 		return mask;
 	}
- 
+
 	get_unit_mask_part(descr, 0, check0->isChecked(), mask);
 	get_unit_mask_part(descr, 1, check1->isChecked(), mask);
 	get_unit_mask_part(descr, 2, check2->isChecked(), mask);
@@ -658,23 +658,23 @@ uint oprof_start::get_unit_mask(op_event_descr const & descr)
 }
 
 void oprof_start::hide_masks()
-{ 
+{
 	check0->hide();
 	check1->hide();
 	check2->hide();
 	check3->hide();
 	check4->hide();
 	check5->hide();
-	check6->hide(); 
-} 
- 
+	check6->hide();
+}
+
 void oprof_start::setup_unit_masks(op_event_descr const & descr)
 {
 	op_unit_mask const * um = descr.unit;
 	op_unit_desc const * um_desc = descr.um_desc;
 
 	hide_masks();
- 
+
 	if (!um || um->unit_type_mask == utm_mandatory)
 		return;
 
@@ -728,10 +728,10 @@ void oprof_start::on_flush_profiler_data()
 // user is happy of its setting.
 void oprof_start::on_start_profiler()
 {
-	// save the current settings 
+	// save the current settings
 	record_selected_event_config();
 
-	uint c; 
+	uint c;
 	for (c = 0; c < op_nr_counters; ++c) {
 		if (ctr_enabled[c] && current_event[c])
 			break;
@@ -740,7 +740,7 @@ void oprof_start::on_start_profiler()
 		QMessageBox::warning(this, 0, "No counters enabled.\n");
 		return;
 	}
- 
+
 	for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
 		if (!current_event[ctr])
 			continue;
@@ -772,7 +772,7 @@ void oprof_start::on_start_profiler()
 			return;
 		}
 
-		if (descr->unit && 
+		if (descr->unit &&
 		    descr->unit->unit_type_mask != utm_exclusive &&
 		    cfg[descr->name].umask == 0) {
 			std::ostringstream out;
@@ -786,10 +786,10 @@ void oprof_start::on_start_profiler()
 	}
 
 	if (daemon_status().running) {
-		int user_choice = 
-			QMessageBox::warning(this, 0, 
+		int user_choice =
+			QMessageBox::warning(this, 0,
 					     "Profiler already started:\n\n"
-					     "stop and restart it?", 
+					     "stop and restart it?",
 					     "&Restart", "&Cancel", 0, 0, 1);
 
 		if (user_choice == 1)
@@ -859,7 +859,7 @@ void oprof_start::on_stop_profiler()
 	timerEvent(0);
 }
 
- 
+
 /// function object for matching against name
 class event_name_eq : public std::unary_function<op_event_descr, bool> {
 	std::string name_;

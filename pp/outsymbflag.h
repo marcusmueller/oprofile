@@ -11,15 +11,15 @@
 
 #ifndef OUTSYMBFLAG_H
 #define OUTSYMBFLAG_H
- 
-// FIXME 
- 
-/** 
+
+// FIXME
+
+/**
  * flags passed to the ctr of an output_symbol object. This also specify the
  * order of field output: lower enum tag ==> comes first in output order
  * Note than changing value of enum is not safe. See output_symbol and
  * the osf_repeat_mask use. So you can't reorder easily the output order
- * of field 
+ * of field
  */
 enum outsymbflag {
        osf_none = 0,
@@ -37,7 +37,7 @@ enum outsymbflag {
        osf_short_linenr_info = 1 << 7,// w/o path name
        osf_image_name = 1 << 8,
        osf_short_image_name = 1 << 9, // w/o path name
-       /// only this field are showed in symbols samples details. 
+       /// only this field are showed in symbols samples details.
 	osf_details = 1 << 10,		// for oprofpp -L / -s
 	/// only this field are showed in symbols samples details.
 	osf_details_mask = osf_nr_samples + osf_nr_samples_cumulated +

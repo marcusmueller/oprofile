@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 #include "op_interface.h"
- 
+
 /** Describe an event. */
 struct op_event {
 	u32 counter_mask;	/**< bitmask of allowed counter  */

@@ -4,19 +4,19 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #include "op_mangle.h"
- 
+
 #include <string.h>
 #include "op_libiberty.h"
- 
+
 #include "op_sample_file.h"
 #include "op_config.h"
- 
+
 /**
  * op_mangle_filename - mangle a file filename
  * @param image_name  a path name to the image file
@@ -41,7 +41,7 @@ char * op_mangle_filename(char const * image_name, char const * app_name)
 	}
 
 	mangled = xmalloc(len);
-	
+
 	strcpy(mangled, OP_SAMPLES_DIR);
 	strcat(mangled, "/");
 

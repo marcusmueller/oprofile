@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -137,15 +137,15 @@ int main(int argc, char const *argv[])
 	if (event_name) {
 		cpu_type_mask = 1 << cpu_type;
 		for (j=0; j < op_nr_events; j++) {
-			if (!strcmp(op_events[j].name, event_name) && 
+			if (!strcmp(op_events[j].name, event_name) &&
 			    (op_events[j].cpu_mask & cpu_type_mask)) {
-				printf("%d\n", op_events[j].val); 
+				printf("%d\n", op_events[j].val);
 				exit(EXIT_SUCCESS);
 			}
 		}
 		fprintf(stderr, "No such event \"%s\"\n", event_name);
 		exit(EXIT_FAILURE);
-	} 
+	}
 
 	printf("oprofile: available events\n");
 	printf("--------------------------\n\n");

@@ -45,7 +45,7 @@ oprof_report::~oprof_report()
 
 /**
  * load_samples_files - load the user selected samples file.
- */ 
+ */
 void oprof_report::load_samples_files(string const & filename)
 {
 	string lib_name;
@@ -125,7 +125,7 @@ static string const do_open_file_or_dir(string const & base_dir, bool dir_only)
 }
 
 /**
- * on_open - event handler 
+ * on_open - event handler
  *
  * get user input to select a new samples file.
  */
@@ -142,7 +142,7 @@ void oprof_report::on_open()
 }
 
 /**
- * on_tab_change - event handler 
+ * on_tab_change - event handler
  *
  * invoked when the user select a different view
  */

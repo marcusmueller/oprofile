@@ -10,18 +10,18 @@
  */
 
 #include "op_file.h"
- 
+
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <string>
 
 #include <cstdlib>
- 
+
 #include "verbose_ostream.h"
- 
+
 #include "op_bfd.h"
- 
+
 using std::find;
 using std::vector;
 using std::string;
@@ -46,12 +46,12 @@ op_bfd::op_bfd(string const & filename, vector<string> exclude_symbols)
 	op_get_fsize(filename.c_str(), &file_size);
 
 	ibfd = bfd_openr(filename.c_str(), NULL);
- 
+
 	if (!ibfd) {
 		cerr << "bfd_openr of " << filename << " failed." << endl;
 		exit(EXIT_FAILURE);
 	}
-	 
+
 	char ** matching;
 
 	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) {
@@ -59,7 +59,7 @@ op_bfd::op_bfd(string const & filename, vector<string> exclude_symbols)
 		exit(EXIT_FAILURE);
 	}
 
-	/* Kernel / kernel modules are calculated as offsets against 
+	/* Kernel / kernel modules are calculated as offsets against
 	 * the .text section, so they need special handling
 	 */
 	asection * sect = bfd_get_section_by_name(ibfd, ".text");
@@ -77,7 +77,7 @@ op_bfd::op_bfd(string const & filename, vector<string> exclude_symbols)
 	}
 }
 
- 
+
 op_bfd::~op_bfd()
 {
 	bfd_close(ibfd);
@@ -94,8 +94,8 @@ static bool symcomp(op_bfd_symbol const & a, op_bfd_symbol const & b)
 	return a.vma() < b.vma();
 }
 
-namespace { 
- 
+namespace {
+
 // only add symbols that would /never/ be
 // worth examining
 static char const * boring_symbols[] = {
@@ -105,7 +105,7 @@ static char const * boring_symbols[] = {
 
 static size_t const nr_boring_symbols =
 			sizeof(boring_symbols) / sizeof(boring_symbols[0]);
- 
+
 /**
  * Return true if the symbol is worth looking at
  */
@@ -125,12 +125,12 @@ static bool interesting_symbol(asymbol *sym)
 		if (!strcmp(boring_symbols[i], sym->name))
 			return 0;
 	}
-	 
+
 	return 1;
 }
 
 } // namespace anon
- 
+
 /**
  * get_symbols - op_bfd ctor helper
  *
@@ -144,7 +144,7 @@ static bool interesting_symbol(asymbol *sym)
 bool op_bfd::get_symbols(vector<string> excluded)
 {
 	uint nr_all_syms;
-	symbol_index_t i; 
+	symbol_index_t i;
 	size_t size;
 
 	if (!(bfd_get_file_flags(ibfd) & HAS_SYMS))
@@ -167,7 +167,7 @@ bool op_bfd::get_symbols(vector<string> excluded)
 			// some case it is calculated from the vma of the
 			// next symbol
 			asymbol const * symbol = bfd_syms[i];
-			op_bfd_symbol symb(symbol, 
+			op_bfd_symbol symb(symbol,
 				symbol->value,
 				symbol->section->filepos,
 				symbol->section->vma,
@@ -219,7 +219,7 @@ bool op_bfd::get_symbols(vector<string> excluded)
 
 	return true;
 }
- 
+
 
 u32 op_bfd::sym_offset(symbol_index_t sym_index, u32 num) const
 {
@@ -236,8 +236,8 @@ bool op_bfd::have_debug_info() const
 
 	return section != NULL;
 }
- 
-bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset, 
+
+bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 			string & filename, unsigned int & linenr) const
 {
 	char const * functionname;
@@ -271,7 +271,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 
 	// functioname and symbol name can be different if we query linenr info
 	// if we accept it we can get samples for the wrong symbol (#484660)
-	if (ret == true && functionname 
+	if (ret == true && functionname
 		&& syms[sym_idx].name() != string(functionname)) {
 		ret = false;
 	}
@@ -281,7 +281,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 	 * from bfd_find_nearest_line(). This can happen with certain gcc
 	 * versions such as 2.95.
 	 *
-	 * We work around this problem by scanning forward for a vma with 
+	 * We work around this problem by scanning forward for a vma with
 	 * valid linenr info, if we can't get a valid line number.
 	 * Problem uncovered by Norbert Kaufmann. The work-around decreases,
 	 * on the tincas application, the number of failure to retrieve linenr
@@ -326,7 +326,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 	}
 
 	filename = (cfilename) ? cfilename : "";
- 
+
 	return ret;
 }
 
@@ -399,7 +399,7 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 	op_bfd_symbol const & sym = syms[sym_idx];
 
 	cverb << "symbol " << sym.name() << ", value " << hex << sym.value() << endl;
- 
+
 	start = sym.filepos();
 	if (sym.symbol()) {
 		cverb << "in section " << sym.symbol()->section->name
@@ -444,11 +444,11 @@ void op_bfd::get_vma_range(u32 & start, u32 & end) const
 
 void op_bfd::create_artificial_symbol(u32 start, u32 end)
 {
-	// FIXME: prefer a bool artificial; to this ?? 
+	// FIXME: prefer a bool artificial; to this ??
 	string symname = "?";
 
 	symname += get_filename();
- 
+
 	op_bfd_symbol symbol(0, 0, start, 0, end - start, symname);
 
 	syms.push_back(symbol);

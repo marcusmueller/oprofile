@@ -4,15 +4,15 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
 #ifndef DEMANGLE_SYMBOL_H
 #define DEMANGLE_SYMBOL_H
- 
+
 #include <string>
- 
+
 /**
  * demangle_symbol - demangle a symbol
  * @param name the mangled symbol name

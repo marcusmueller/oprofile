@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -12,25 +12,25 @@
 #include "opd_image.h"
 #include "opd_printf.h"
 #include "opd_sample_files.h"
- 
+
 #include "op_file.h"
 #include "op_config.h"
 #include "op_mangle.h"
 #include "op_libiberty.h"
 #include "db.h"
- 
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
- 
+
 extern uint op_nr_counters;
 extern int separate_samples;
- 
+
 /* The kernel image is treated separately */
 struct opd_image * kernel_image;
 /* maintained for statistics purpose only */
 unsigned int nr_images=0;
- 
+
 /* list of images */
 static struct list_head opd_images = { &opd_images, &opd_images };
 /* Images which belong to the same hash, more than one only if separate_samples
@@ -55,7 +55,7 @@ void opd_sync_sample_files(void)
 	}
 }
 
- 
+
 /**
  * opd_reopen_sample_files - re-open all sample files
  *
@@ -67,18 +67,18 @@ void opd_reopen_sample_files(void)
 	struct list_head * pos;
 
 	list_for_each(pos, &opd_images) {
-		struct opd_image * image = 
+		struct opd_image * image =
 			list_entry(pos, struct opd_image, list_node);
 		unsigned int i;
- 
+
 		for (i = 0 ; i < op_nr_counters ; ++i) {
 			db_close(&image->sample_files[i]);
 		}
 	}
 }
- 
- 
-/** 
+
+
+/**
  * opd_image_cleanup - clean up structures
  */
 void opd_image_cleanup(void)
@@ -86,13 +86,13 @@ void opd_image_cleanup(void)
 	struct list_head * pos;
 	struct list_head * pos2;
 	uint i;
- 
+
 	list_for_each_safe(pos, pos2, &opd_images) {
 		struct opd_image * image =
 			list_entry(pos, struct opd_image, list_node);
 
 		for (i=0; i < op_nr_counters; i++) {
-			db_tree_t * file = &image->sample_files[i]; 
+			db_tree_t * file = &image->sample_files[i];
 			if (file->base_memory) {
 				db_close(file);
 			}
@@ -102,13 +102,13 @@ void opd_image_cleanup(void)
 			free(image->name);
 		free(image);
 	}
- 
+
 	/* FIXME */
-	free(kernel_image->name); 
+	free(kernel_image->name);
 	free(kernel_image);
 }
- 
- 
+
+
 /**
  * opd_init_image - init an image sample file
  * @param image  image to init file for
@@ -136,7 +136,7 @@ static void opd_init_image(struct opd_image * image, char const * name,
 	/* we do not duplicate this string! */
 	image->app_name = app_name;
 }
- 
+
 /**
  * opd_open_image - open an image sample file
  * @param image  image to open file for
@@ -163,13 +163,13 @@ static void opd_open_image(struct opd_image * image)
 	}
 
 	image->mtime = op_get_mtime(image->name);
- 
+
 	opd_handle_old_sample_files(image);
 
 	/* samples files are lazily opened */
 }
 
- 
+
 /**
  * opd_check_image_mtime - ensure samples file is up to date
  * @param image  image to check
@@ -181,7 +181,7 @@ void opd_check_image_mtime(struct opd_image * image)
 	uint len;
 	time_t newmtime = op_get_mtime(image->name);
 	char const * app_name;
- 
+
 	if (image->mtime == newmtime)
 		return;
 
@@ -194,7 +194,7 @@ void opd_check_image_mtime(struct opd_image * image)
 	len = strlen(mangled);
 
 	for (i=0; i < op_nr_counters; i++) {
-		db_tree_t * tree = &image->sample_files[i]; 
+		db_tree_t * tree = &image->sample_files[i];
 		if (tree->base_memory) {
 			db_close(tree);
 		}
@@ -222,7 +222,7 @@ struct opd_image * opd_create_image(char const * name)
 	opd_open_image(image);
 	return image;
 }
- 
+
 
 /**
  * opd_add_image - add an image to the image structure
@@ -274,9 +274,9 @@ static struct opd_image * opd_find_image(char const * name, int hash, char const
 
 	/* We make here a linear search through the whole image list. There is no need
 	 * to improve performance, only /proc parsed app are hashless and when they
-	 * are found one time by this function they receive a valid hash code. 
+	 * are found one time by this function they receive a valid hash code.
 	 */
- 
+
 	list_for_each(pos, &opd_images) {
 
 		image = list_entry(pos, struct opd_image, list_node);

@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -54,7 +54,7 @@ struct op_note * note_buffer __cacheline_aligned_in_smp;
 u32 note_pos __cacheline_aligned_in_smp;
 
 // the interrupt handler ops structure to use
-static struct op_int_operations * int_ops;
+static struct op_int_operations const * int_ops;
 
 /* ---------------- interrupt entry routines ------------------ */
 
@@ -120,7 +120,7 @@ inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, in
 void regparm3 op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
 {
 	struct _oprof_data * data = &oprof_data[cpu];
-	uint h, i; 
+	uint h, i;
 	struct op_sample * samples;
 
 	data->nr_irq++;
@@ -134,7 +134,7 @@ void regparm3 op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
 			return;
 		}
 	}
- 
+
 	evict_op_entry(cpu, data, &samples[data->next], regs);
 	fill_op_entry(&samples[data->next], regs, ctr);
 	data->next = (data->next + 1) % OP_NR_ENTRY;
@@ -188,7 +188,7 @@ void __oprof_put_note(struct op_note *onote)
 	memcpy(&note_buffer[note_pos], onote, sizeof(struct op_note));
 	up_and_check_note();
 }
- 
+
 void oprof_put_note(struct op_note *onote)
 {
 	spin_lock(&note_lock);
@@ -808,7 +808,7 @@ static void cleanup_sysctl(void)
 {
 	ctl_table *next = &oprof_table[nr_oprof_static];
 	unregister_sysctl_table(sysctl_header);
-	
+
 	int_ops->remove_sysctls(next);
 
 	return;

@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -143,7 +143,7 @@ int wind_dentries_2_4(struct dentry *dentry, struct vfsmount *vfsmnt, struct den
 }
 
 /* called with note_lock held */
-static uint do_path_hash_2_4(struct dentry *dentry, struct vfsmount *vfsmnt)
+uint do_path_hash_2_4(struct dentry *dentry, struct vfsmount *vfsmnt)
 {
 	uint value;
 	struct vfsmount *rootmnt;

@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -23,7 +23,7 @@
 #include "popt_options.h"
 #include "file_manip.h"
 #include "verbose_ostream.h"
- 
+
 #include "db.h"
 #include "op_config.h"
 #include "op_mangling.h"
@@ -51,7 +51,7 @@ option options_array[] = {
 };
 
 verbose_ostream cverb(std::cout);
- 
+
 /**
  * get_options - process command line
  * @param argc program arg count
@@ -66,7 +66,7 @@ static void get_options(int argc, char const * argv[], vector<string> & images)
 
 	if (!verbose)
 		cverb.go_silent();
- 
+
 	if (images.size() == 0) {
 		cerr << "Neither samples filename or image filename"
 		     <<	" given on command line\n\n";
@@ -97,7 +97,7 @@ static void create_file_list(list<string> & result,
 	 * a fatal error occur at load time. FIXME for now I see no use to
 	 * allow mixing samples filename and binary name but later if we
 	 * separate samples for each this can be usefull? */
-	if (images_filename.size() == 1 && 
+	if (images_filename.size() == 1 &&
 	    images_filename[0].find_first_of('{') == string::npos) {
 		/* get from the image name all samples on the form of
 		 * base_dir*}}mangled_name{{{images_filename) */
@@ -142,7 +142,7 @@ static void create_file_list(list<string> & result,
  * @param filenames: the filenames list from which we check sample file
  *
  * all error are fatal
- */ 
+ */
 static void check_samples_files_list(list<string> const & filenames)
 {
 	if (filenames.empty())

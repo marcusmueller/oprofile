@@ -7,7 +7,7 @@
  *
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
- 
+
 #include <sys/file.h>
 #include <assert.h>
 
@@ -122,7 +122,7 @@ static int do_reorg(db_tree_t * tree, db_page_idx_t page_idx, size_t pos,
 	page = page_nr_to_page_ptr(tree, page_idx);
 
 	assert(page->count <= DB_MAX_PAGE);
-	
+
 	/* the insertion pos can be at the end of the page so <= */
 	assert(pos <= DB_MAX_PAGE);
 

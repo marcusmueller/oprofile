@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author Linux kernel authors
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -39,7 +39,7 @@ static __inline__ void list_init(struct list_head * ptr)
 }
 
 /*
- * Insert a new entry between two known consecutive entries. 
+ * Insert a new entry between two known consecutive entries.
  *
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
@@ -160,7 +160,7 @@ static __inline__ void list_splice(struct list_head * list, struct list_head * h
  */
 #define list_for_each(pos, head) \
 	for (pos = (head)->next; pos != (head); pos = pos->next)
-        	
+
 /**
  * list_for_each_safe - iterate over a list safe against removal of list entry
  * @param pos 	the &struct list_head to use as a loop counter.

@@ -4,20 +4,20 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #ifndef OPD_MAPPING_H
 #define OPD_MAPPING_H
- 
+
 #include "op_types.h"
- 
+
 struct opd_image;
 struct opd_proc;
 struct op_note;
- 
+
 struct opd_map {
 	struct opd_image * image;
 	u32 start;
@@ -44,8 +44,8 @@ inline static int opd_is_in_map(struct opd_map * map, u32 eip)
 	return (eip >= map->start && eip < map->end);
 }
 
- 
-/* 
+
+/*
  * opd_map_offset - return offset of sample against map
  * @param map  map to use
  * @param eip  EIP value to use

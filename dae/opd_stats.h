@@ -4,16 +4,16 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 #ifndef OPD_STATS_H
 #define OPD_STATS_H
- 
+
 extern unsigned long opd_stats[];
- 
+
 enum {  OPD_KERNEL, /* nr. kernel samples */
 	OPD_MODULE, /* nr. module samples */
 	OPD_LOST_MODULE, /* nr. samples in module for which modules can not be located */

@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -13,9 +13,9 @@
 #define OP_SAMPLE_FILE_H
 
 #include "op_types.h"
- 
+
 #include <time.h>
- 
+
 /* this char replaces '/' in sample filenames */
 #define OPD_MANGLE_CHAR '}'
 

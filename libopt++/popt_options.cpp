@@ -31,7 +31,7 @@ class option_base {
 public:
 	/**
 	 * option_base - construct an option with the given options.
-	 * @param option_name name part of long form e.g. --option 
+	 * @param option_name name part of long form e.g. --option
 	 * @param short_name short form name e.g. -o
 	 * @param help_str short description of the option
 	 * @param arg_help_str short description of the argument (if any)
@@ -281,7 +281,7 @@ void option_imp<string>::post_process()
 
 option_imp< vector<string> >::option_imp(vector<string> & value_,
 				 char const * option_name, char short_name,
-				 char const * help_str, 
+				 char const * help_str,
 				 char const * arg_help_str,
 				 char separator_)
 	:
@@ -296,7 +296,7 @@ option_imp< vector<string> >::option_imp(vector<string> & value_,
 void option_imp< vector<string> >::post_process()
 {
 	if (popt_value) {
-		separate_token(value, popt_value, separator);  
+		separate_token(value, popt_value, separator);
 
 		popt_value = 0;
 	}

@@ -26,7 +26,7 @@
 HotspotView::HotspotView(QWidget * parent)
 	:
 	QWidget(parent)
-{ 
+{
 	setBackgroundMode(QWidget::PaletteBase);
 	setBackgroundColor(QColor(80, 255, 80));
 }
@@ -92,8 +92,8 @@ void HotspotView::paintEvent(QPaintEvent *)
 	paint.begin(this);
 
 	for (size_t i = 0 ; i < samples_nr.size() ; ++i) {
-		paint.drawLine(i, height(), 
-			       i, int(height() - 
+		paint.drawLine(i, height(),
+			       i, int(height() -
 					(samples_nr[i] * nr_sample_per_pel)));
 	}
 	paint.end();

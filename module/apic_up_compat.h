@@ -8,7 +8,7 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
- 
+
 #ifndef APIC_UP_COMPAT_H
 #define APIC_UP_COMPAT_H
 

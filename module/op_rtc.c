@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author Bob Montgomery <bobm@fc.hp.com>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  * @author John Levon <moz@compsoc.man.ac.uk>
@@ -12,8 +12,8 @@
 
 #include <linux/ioport.h>
 #include <linux/mc146818rtc.h>
-#include <asm/ptrace.h> 
- 
+#include <asm/ptrace.h>
+
 #include "oprofile.h"
 
 #define RTC_IO_PORTS 2
@@ -22,14 +22,14 @@
 #ifndef RTC_IRQ
 #define RTC_IRQ 8
 #endif
- 
+
 /* ---------------- RTC handler ------------------ */
 
 static void do_rtc_interrupt(int irq, void *dev_id, struct pt_regs *regs)
 {
 	uint cpu = op_cpu_id();
 	unsigned char intr_flags;
-	unsigned long flags; 
+	unsigned long flags;
 
 	int usermode = user_mode(regs);
 	if (((sysctl.kernel_only || sysctl.ctr[0].kernel) && usermode)
@@ -37,16 +37,16 @@ static void do_rtc_interrupt(int irq, void *dev_id, struct pt_regs *regs)
 		return;
 
 	lock_rtc(flags);
- 
+
 	/* read and ack the interrupt */
 	intr_flags = CMOS_READ(RTC_INTR_FLAGS);
 	/* Is this my type of interrupt? */
 	if (intr_flags & RTC_PF) {
 		op_do_profile(cpu, regs, 0);
 	}
- 
+
 	unlock_rtc(flags);
- 
+
 	return;
 }
 
@@ -69,14 +69,14 @@ static int rtc_setup(void)
 	/* Set the frequency for periodic interrupts by finding the
 	 * closest power of two within the allowed range.
 	 */
- 
+
 	target = sysctl.ctr[0].count;
 
 	exp = 0;
 	while (target > (1 << exp) + ((1 << exp) >> 1))
 		exp++;
 	freq = 16 - exp;
- 
+
 	tmp_freq_select = CMOS_READ(RTC_FREQ_SELECT);
 	tmp_freq_select = (tmp_freq_select & 0xf0) | freq;
 	CMOS_WRITE(tmp_freq_select, RTC_FREQ_SELECT);
@@ -85,7 +85,7 @@ static int rtc_setup(void)
 	sysctl_parms.ctr[0].count = sysctl.ctr[0].count = 1<<exp;
 
 	unlock_rtc(flags);
-	return 0; 
+	return 0;
 }
 
 static void rtc_start(void)
@@ -94,12 +94,12 @@ static void rtc_start(void)
 	unsigned long flags;
 
 	lock_rtc(flags);
- 
+
 	/* Enable periodic interrupts */
 	tmp_control = CMOS_READ(RTC_CONTROL);
 	tmp_control |= RTC_PIE;
 	CMOS_WRITE(tmp_control, RTC_CONTROL);
- 
+
 	/* read the flags register to start interrupts */
 	CMOS_READ(RTC_INTR_FLAGS);
 
@@ -131,7 +131,7 @@ static void rtc_stop_cpu(uint cpu)
 {
 	rtc_stop();
 }
- 
+
 static int rtc_check_params(void)
 {
 	int target = sysctl.ctr[0].count;
@@ -168,7 +168,7 @@ static void rtc_deinit(void)
 	free_irq(RTC_IRQ, NULL);
 	release_region(RTC_PORT(0), RTC_IO_PORTS);
 }
- 
+
 static int rtc_add_sysctls(ctl_table * next)
 {
 	*next = ((ctl_table){ 1, "rtc_value", &sysctl_parms.ctr[0].count, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
@@ -179,7 +179,7 @@ static void rtc_remove_sysctls(ctl_table * next)
 {
 	/* nothing to do */
 }
- 
+
 struct op_int_operations op_rtc_ops = {
 	init: rtc_init,
 	deinit: rtc_deinit,

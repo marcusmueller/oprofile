@@ -8,7 +8,7 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
- 
+
 #ifndef SAMPLES_CONTAINER_H
 #define SAMPLES_CONTAINER_H
 
@@ -55,10 +55,10 @@ public:
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
 	symbol_entry const * find_symbol(bfd_vma vma) const;
- 
+
 	/// Find a symbol from its name, return zero if no symbol found
 	symbol_entry const * find_symbol(std::string const & name) const;
- 
+
 	/// Find a symbol from its filename, linenr, return zero if no symbol
 	/// at this location
 	symbol_entry const * find_symbol(std::string const & filename,
@@ -72,7 +72,7 @@ public:
 
 	/// a collection of sorted symbols
 	typedef std::vector<symbol_entry const *> symbol_collection;
- 
+
 	/**
 	 * select_symbols - create a set of symbols sorted by sample count
 	 * @param ctr on what counter sorting must be made and threshold
@@ -114,10 +114,10 @@ public:
 	// an extra private bool
 	/// you can call this *after* the first call to add()
 	uint get_nr_counters() const { return nr_counters; }
- 
+
 private:
 	/// helper for do_add()
-	void add_samples(opp_samples_files const & samples_files, 
+	void add_samples(opp_samples_files const & samples_files,
 			 op_bfd const & abfd, symbol_index_t sym_index,
 			 u32 start, u32 end, bfd_vma base_vma,
 			 std::string const & image_name);

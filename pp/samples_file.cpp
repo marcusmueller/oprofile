@@ -10,28 +10,28 @@
  */
 
 #include "op_file.h"
- 
+
 #include "op_events.h"
 #include "op_events_desc.h"
 #include "op_print_event.h"
 #include "op_sample_file.h"
 
 #include "counter_array.h"
- 
+
 #include "samples_file.h"
- 
+
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
 
 #include <sstream>
 #include <iostream>
- 
+
 using std::string;
 using std::cout;
 using std::cerr;
 using std::endl;
- 
+
 opp_samples_files::opp_samples_files(string const & sample_file, int counter_)
 	:
 	nr_counters(2),
@@ -113,7 +113,7 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 		samples[counter] = new samples_file_t(temp);
 	} else {
 		if (can_fail == false) {
-			/* FIXME: nicer message if e.g. wrong counter */ 
+			/* FIXME: nicer message if e.g. wrong counter */
 			fprintf(stderr, "oprofpp: Opening %s failed. %s\n", temp.c_str(), strerror(errno));
 			exit(EXIT_FAILURE);
 		}
@@ -155,7 +155,7 @@ void opp_samples_files::set_start_offset(u32 start_offset)
 {
 	if (!first_header().is_kernel)
 		return;
- 
+
 	for (uint k = 0; k < nr_counters; ++k) {
 		if (is_open(k))
 			samples[k]->start_offset = start_offset;
@@ -173,7 +173,7 @@ void opp_samples_files::output_header() const
 	opd_header const & header = first_header();
 
 	op_cpu cpu = static_cast<op_cpu>(header.cpu_type);
- 
+
 	cout << "Cpu type: " << op_get_cpu_type_str(cpu) << endl;
 
 	cout << "Cpu speed was (MHz estimation) : " << header.cpu_speed << endl;

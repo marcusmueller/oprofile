@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -62,7 +62,7 @@ void * rvmalloc(signed long size)
 		return NULL;
 
 	memset(mem, 0, size);
-	
+
 	adr=(unsigned long) mem;
 	while (size > 0) {
 		page = kvirt_to_pa(adr);
@@ -79,7 +79,7 @@ void rvfree(void * mem, signed long size)
 
 	if (!mem)
 		return;
-		
+
 	adr=(unsigned long) mem;
 	while (size > 0) {
 		page = kvirt_to_pa(adr);

@@ -13,7 +13,7 @@
 #include <numeric>
 #include <algorithm>
 #include <vector>
- 
+
 #include "opp_symbol.h"
 #include "symbol_functors.h"
 #include "sample_container_imp.h"
@@ -22,7 +22,7 @@ using std::string;
 using std::vector;
 using std::accumulate;
 using std::pair;
- 
+
 namespace {
 
 inline counter_array_t & add_counts(counter_array_t & arr, sample_entry const * s)

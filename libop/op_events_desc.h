@@ -4,7 +4,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 #include "op_interface.h"
- 
+
 /** Human readable description for an unit mask. */
 struct op_unit_desc {
 	char * desc[7];

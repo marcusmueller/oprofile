@@ -7,7 +7,7 @@
  *
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
- 
+
 #include <stdio.h>
 
 #include "db.h"

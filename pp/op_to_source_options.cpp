@@ -14,7 +14,7 @@
 #include "verbose_ostream.h"
 
 #include <iostream>
- 
+
 using std::vector;
 using std::string;
 using std::cerr;
@@ -37,9 +37,9 @@ namespace options {
 };
 
 namespace {
- 
+
 bool verbose;
- 
+
 option options_array[] = {
 	option(verbose, "verbose", 'V', "verbose output"),
 	option(options::sample_file, "samples-file", 'f', "image sample file", "file"),
@@ -78,7 +78,7 @@ string const get_options(int argc, char const * argv[])
 
 	if (!verbose)
 		cverb.go_silent();
- 
+
 	if (options::with_more_than_samples
 		&& options::until_more_than_samples) {
 		cerr << "op_to_source: --with-more-than-samples and "

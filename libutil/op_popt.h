@@ -5,7 +5,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -19,7 +19,7 @@
 #ifndef POPT_TABLEEND
 #define POPT_TABLEEND { NULL, '\0', 0, 0, 0, NULL, NULL }
 #endif
- 
+
 #ifdef __cplusplus
 extern "C" {
 #endif

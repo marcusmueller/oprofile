@@ -37,7 +37,7 @@ class oprof_report : public oprof_report_base
 public:
 	oprof_report();
 	~oprof_report();
-    
+
 protected slots:
 	/// open a new samples file
 	void on_open();

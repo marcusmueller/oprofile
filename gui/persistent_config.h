@@ -45,7 +45,7 @@ public:
 
 private:
 	typedef std::map<std::string, T> map_t;
-	
+
 	map_t map;
 };
 

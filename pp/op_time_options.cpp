@@ -16,15 +16,15 @@
 #include "popt_options.h"
 #include "file_manip.h"
 #include "verbose_ostream.h"
- 
+
 #include <list>
- 
+
 using std::string;
 using std::vector;
 using std::list;
 using std::cerr;
 using std::endl;
- 
+
 namespace options {
 	string session;
 	string counter_str("0");
@@ -46,7 +46,7 @@ namespace {
 
 bool verbose;
 string output_format;
- 
+
 option options_array[] = {
 	option(verbose, "verbose", 'V', "verbose output"),
 	option(output_format, "output-format", 't', "choose the output format", "output-format strings"),
@@ -70,7 +70,7 @@ option options_array[] = {
 /// file name contains an incorrect location for the image such ram disk
 /// module at boot time. We need a multimap to warn against ambiguity between
 /// mutiple time found image name.
-// FIXME... 
+// FIXME...
 
 /**
  * add_to_alternate_filename -
@@ -122,9 +122,9 @@ void handle_session_options(void)
 }
 
 } // namespace anon
- 
+
 verbose_ostream cverb(std::cout);
- 
+
 /**
  * get_options - process command line
  * @param argc program arg count
@@ -135,18 +135,18 @@ verbose_ostream cverb(std::cout);
 void get_options(int argc, char const * argv[])
 {
 	using namespace options;
- 
+
 	string file;
 	parse_options(argc, argv, file);
 
 	if (!verbose)
 		cverb.go_silent();
- 
+
 	if (file.length())
 		session = file;
 
 	handle_session_options();
- 
+
 	if (output_format.empty()) {
 		output_format = "hvspni";
 	} else {

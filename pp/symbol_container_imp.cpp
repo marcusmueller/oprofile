@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <set>
 #include <vector>
- 
+
 #include "opp_symbol.h"
 #include "symbol_functors.h"
 #include "symbol_container_imp.h"
@@ -22,7 +22,7 @@
 using std::vector;
 using std::string;
 using std::stable_sort;
- 
+
 symbol_index_t symbol_container_imp_t::size() const
 {
 	return symbols.size();
@@ -60,7 +60,7 @@ symbol_entry const *
 symbol_container_imp_t::find(string name) const
 {
 	vector<symbol_entry>::const_iterator it =
-		find_if(symbols.begin(), symbols.end(), 
+		find_if(symbols.begin(), symbols.end(),
 			  equal_symbol_by_name(name));
 
 	if (it != symbols.end() && it->name == name)
@@ -93,7 +93,7 @@ symbol_entry const * symbol_container_imp_t::find_by_vma(bfd_vma vma) const
 	return 0;
 }
 
-void symbol_container_imp_t::get_symbols_by_count(size_t counter, 
+void symbol_container_imp_t::get_symbols_by_count(size_t counter,
 	samples_container_t::symbol_collection & v) const
 {
 	for (symbol_index_t i = 0 ; i < symbols.size() ; ++i)

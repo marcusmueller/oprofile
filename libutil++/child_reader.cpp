@@ -4,14 +4,14 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author Philippe Elie <phil_el@wanadoo.fr>
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
-#include <unistd.h> 
+#include <unistd.h>
 #include <sys/wait.h>
- 
+
 #include <cerrno>
 #include <sstream>
 #include <iostream>
@@ -23,7 +23,7 @@ using std::string;
 using std::vector;
 using std::cerr;
 using std::endl;
-using std::ostream; 
+using std::ostream;
 using std::max;
 
 child_reader::child_reader(string const & cmd, vector<string> const & args)
@@ -71,7 +71,7 @@ void child_reader::exec_command(string const & cmd, vector<string> const & args)
 			first_error = errno;
 			cerr << "Couldn't fork !" << endl;
 			return;
-		 
+
 		case 0: {
 			char const ** argv = new char const * [args.size() + 2];
 			size_t i;

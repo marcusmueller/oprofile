@@ -29,7 +29,7 @@
  * are passed to the program (myfrobber --allow-frob --frob foo), and place
  * any left over command line arguments in the add_params vector. Note
  * that the template parameter denotes the type of the option argument.
- * 
+ *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
  *

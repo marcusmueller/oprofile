@@ -4,23 +4,23 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
- 
+
 #include <sys/stat.h>
 #include <unistd.h>
- 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <limits.h>
- 
+
 #include "op_file.h"
-#include "op_libiberty.h" 
- 
+#include "op_libiberty.h"
+
 /**
  * op_file_readable - is a file readable
  * @param file file name
@@ -33,7 +33,7 @@ int op_file_readable(char const * file)
 {
 	return !access(file, R_OK);
 }
- 
+
 /**
  * op_get_fsize - get size of file
  * @param file file name
@@ -42,7 +42,7 @@ int op_file_readable(char const * file)
  * Returns the size of the named file in bytes
  * into the pointer given. Returns non-zero
  * on failure, in which case @size is not changed.
- */ 
+ */
 int op_get_fsize(char const * file, off_t * size)
 {
 	struct stat st;
@@ -82,9 +82,9 @@ time_t op_get_mtime(char const * file)
  * @old_dir/@name is a regular file
  *
  * return > 0 if the file is not a regular file, == 0 if the
- * file is successfully moved and < 0 on error 
- */ 
-int op_move_regular_file(char const * new_dir, 
+ * file is successfully moved and < 0 on error
+ */
+int op_move_regular_file(char const * new_dir,
 	char const * old_dir, char const * name)
 {
 	int ret = 1;
@@ -110,7 +110,7 @@ int op_move_regular_file(char const * new_dir,
 
 	return ret;
 }
- 
+
 /* remove_component_p() and op_simplify_pathname() comes from the gcc
  preprocessor */
 
@@ -121,7 +121,7 @@ int op_move_regular_file(char const * new_dir,
  *
  * Returns 1 if it is safe to remove the component
  * 0 otherwise
- */ 
+ */
 static int remove_component_p(char const * path)
 {
 	struct stat s;
@@ -169,7 +169,7 @@ static char * op_simplify_pathname(char * path)
 		return path;
 
 	from = to = path;
-    
+
 	/* Remove redundant leading /s.  */
 	if (*from == '/') {
 		absolute = 1;
@@ -209,7 +209,7 @@ static char * op_simplify_pathname(char * path)
 					from += 2;
 					continue;
 				}
-				/* Don't simplify if the previous component 
+				/* Don't simplify if the previous component
 				 * was "../", or if an error has already
 				 * occurred with (l)stat.  */
 				if (base != to && errno == 0) {
@@ -238,7 +238,7 @@ static char * op_simplify_pathname(char * path)
 		if (move_base)
 			base = to;
 	}
-    
+
 	/* Change the empty string to "." so that it is not treated as stdin.
 	   Null terminate.  */
 	if (to == path)
@@ -255,7 +255,7 @@ static char * op_simplify_pathname(char * path)
  * to get the base directory.
  *
  * prepend @base_dir or the result of getcwd if the path is not absolute.
- * The returned string is dynamic allocated, caller must free it. if 
+ * The returned string is dynamic allocated, caller must free it. if
  * base_dir == NULL this function use getcwd to translate the path.
  *
  * Returns the translated path.
@@ -281,7 +281,7 @@ char * op_relative_to_absolute_path(char const * path, char const * base_dir)
 		}
 	}
 
-	/* absolute path or (base_dir == NULL && getcwd have lose) : 
+	/* absolute path or (base_dir == NULL && getcwd have lose) :
          * always return a value */
 	if (temp_path == NULL)
 		temp_path = xstrdup(path);

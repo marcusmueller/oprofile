@@ -6,7 +6,7 @@
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
- * 
+ *
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
@@ -19,7 +19,7 @@
 
 #include "op_events.h"
 #include "op_events_desc.h"
- 
+
 /**
  * op_get_cpu_type - get from /proc/sys/dev/oprofile/cpu_type the cpu type
  *
@@ -29,7 +29,7 @@ op_cpu op_get_cpu_type(void)
 {
 	int cpu_type = CPU_NO_GOOD;
 	char str[10];
- 
+
 	FILE * fp;
 
 	fp = fopen("/proc/sys/dev/oprofile/cpu_type", "r");
@@ -39,7 +39,7 @@ op_cpu op_get_cpu_type(void)
 	}
 
 	fgets(str, 9, fp);
- 
+
 	sscanf(str, "%d\n", &cpu_type);
 
 	fclose(fp);
@@ -302,7 +302,7 @@ void op_get_event_desc(op_cpu cpu_type, u8 type, u8 um,
 		if (op_events[i].val == type && (op_events[i].cpu_mask & cpu_mask)) {
 			*typenamep = (char *)op_events[i].name;
 			*typedescp = op_event_descs[i];
-			
+
 			*umdescp = op_get_um_desc(i, um);
 			break;
 		}
