@@ -248,7 +248,7 @@ void opd_put_image_sample(struct opd_image * image, vma_t offset, int counter)
  
 	/* Possible narrowing to 32-bit value only. */
 	if (odb_insert(sample_file, (unsigned long)offset, 1) != EXIT_SUCCESS) {
-		fprintf(stderr, "odb_insert() %s\n", sample_file->err_msg);
+		fprintf(stderr, "%s\n", sample_file->err_msg);
 		exit(EXIT_FAILURE);
 	}
 }
