@@ -83,6 +83,12 @@ source directory. Patches should not include changes to generated files.
 Even trivial patches must have a change log entry in the usual format (see
 ChangeLog). Refer to bug numbers in the change log if relevant.
 
+If you make a change visible to the user in some way, you should check the
+website for any needed changes. Patches to oprofile-www CVS are preferred
+but a notification of what needs changing is good enough. Any changes that
+affect the docs (man-pages or oprofile.xml) must include documentation updates
+as appropriate.
+
 You may after a while be given direct commit rights. You should be subscribed
 to both the main list and the commits mailing list if you do. Your cvs commit
 message only needs to briefly describe what your change does - the change log
