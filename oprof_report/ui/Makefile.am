@@ -1,9 +1,6 @@
 if build_oprof_report
 if have_qt
 
-MOC=@MOC@
-UIC=@UIC@
-
 AM_CPPFLAGS = @QT_INCLUDES@
 
 noinst_LIBRARIES = liboprof_report.a

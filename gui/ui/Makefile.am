@@ -1,8 +1,5 @@
 if have_qt
 
-MOC=@MOC@
-UIC=@UIC@
-
 AM_CPPFLAGS = @QT_INCLUDES@
 
 noinst_LIBRARIES = liboprof_start.a

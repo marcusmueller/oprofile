@@ -1,5 +1,15 @@
 2002-11-10  John Levon  <levon@movementarian.org>
 
+	* autogen.sh: be verbose
+ 
+	* gui/Makefile.am:
+	* gui/ui/Makefile.am:
+	* oprof_report/Makefile.am:
+	* oprof_report/ui/Makefile.am: remove duplicate
+	  set MOC/UIC
+ 
+2002-11-10  John Levon  <levon@movementarian.org>
+
 	* Makefile.am: add comment
 
 	* configure.in: no need to subst OPROFILE_25

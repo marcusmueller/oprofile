@@ -4,8 +4,6 @@ distributed_sources = oprof_start.cpp oprof_start_config.cpp oprof_start_util.cp
 
 if have_qt
 
-MOC=@MOC@
-
 AM_CPPFLAGS = @QT_INCLUDES@ -I ${top_srcdir}/libop -I ${top_srcdir}/libutil++ -I ${top_srcdir}/libutil -DBINDIR=\"$(BINDIR)\" -DKVERSION=\"@KVERS@\"
 
 bin_PROGRAMS = oprof_start
