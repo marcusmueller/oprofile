@@ -33,7 +33,7 @@ op_import_LDADD = \
 	../libutil++/libutil++.a \
 	../libutil/libutil.a
 
-noinst_PROGRAMS = abi_test
+check_PROGRAMS = abi_test
 
 abi_test_SOURCES = abi_test.cpp
 abi_test_LDADD = \

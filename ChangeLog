@@ -1,5 +1,14 @@
 2003-10-30  John Levon  <levon@movementarian.org>
 
+	* Makefile.am: re-order build subdirs
+
+	* libabi/Makefile.am: only build abitest on
+	make check
+
+	* pp/Makefile.am: pp_common not pp_commons
+
+2003-10-30  John Levon  <levon@movementarian.org>
+
 	* libutil++/tests/Makefile.am:
 	* libutil++/tests/comma_list_tests.cpp: Add.
 

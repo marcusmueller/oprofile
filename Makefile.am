@@ -3,18 +3,18 @@ SUBDIRS = \
 	m4 \
 	libutil \
 	libop \
+	libdb \
 	libutil++ \
 	libopt++ \
-	libdb \
 	libabi \
-	libregex \
 	daemon \
 	utils \
+	libregex \
 	libpp \
 	pp \
-	gui \
+	events \
 	doc \
-	events
+	gui
 
 ACLOCAL_AMFLAGS = -I m4
 
