@@ -1,5 +1,4 @@
-# FIXME can we avoid -D
-AM_CPPFLAGS=-I ${top_srcdir}/libutil++ -DDATADIR=\"$(datadir)\"
+AM_CPPFLAGS=-I ${top_srcdir}/libutil++
 
 noinst_LIBRARIES = libop_regex.a
 

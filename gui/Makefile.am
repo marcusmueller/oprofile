@@ -7,7 +7,7 @@ EXTRA_DIST = $(dist_sources)
 
 if have_qt
 
-AM_CPPFLAGS = @QT_INCLUDES@ -I ${top_srcdir}/libop -I ${top_srcdir}/libutil++ -I ${top_srcdir}/libutil -DBINDIR=\"$(bindir)\" -DKVERSION=\"@KVERS@\"
+AM_CPPFLAGS = @QT_INCLUDES@ -I ${top_srcdir}/libop -I ${top_srcdir}/libutil++ -I ${top_srcdir}/libutil -DKVERSION=\"@KVERS@\"
 
 bin_PROGRAMS = oprof_start
 

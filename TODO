@@ -21,11 +21,6 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
- o write a M4 macro or a move-if-change script to handle version.h regeneration
-  when fixed fix also the following item.
- o libregex and gui use -D compile switch to know install dir supress that. We
-  need to put them in a version.h like file (currently if you ./configure
- --prefix=  some file which depend on the -D are not recompiled)
  o decide on -d vs. -D by default for demangle etc.
  o document that even with the in_interrupt trick in 2.5, you can still get a few
    samples in the wrong place - interrupt code outside of the irq_enter/exit

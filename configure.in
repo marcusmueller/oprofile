@@ -65,6 +65,20 @@ AC_TRY_COMPILE(
 CFLAGS=$SAVE_CFLAGS
 ])
 
+dnl AX_COPY_IF_CHANGE(source, dest)
+dnl copy source to dest if they don't compare equally or if dest doesn't exist
+AC_DEFUN(AX_COPY_IF_CHANGE, [
+if test -r $2; then
+	if cmp $1 $2 > /dev/null; then
+		echo $2 is unchanged
+	else
+		cp -f $1 $2
+	fi
+else
+	cp -f $1 $2
+fi
+])
+
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
@@ -344,7 +358,9 @@ AC_OUTPUT(Makefile \
 	module/Makefile \
 	module/x86/Makefile \
 	module/ia64/Makefile \
-	version.h)
+	version_tpl.h)
+
+AX_COPY_IF_CHANGE(version_tpl.h, version.h)
 
 if test -z "$QT_LIB"; then
 	echo "Warning: a working Qt not found; no GUI will be built"
