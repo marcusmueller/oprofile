@@ -300,8 +300,8 @@ basic_ostringstream<long>
 std::basic_stringstream<long, std::char_traits<long>, std::allocator<long> >
 basic_stringstream<long>
 
-# now all the above intantiated with char and wchar_t which fallback to
-# standardised typedef
+# all the above intantiated with char and wchar_t fallback to standardised
+# typedef except istreambuf_iterator and ostreambuf_iterator
 
 std::basic_ios<char, std::char_traits<char> >
 ios
@@ -348,18 +348,6 @@ fstream
 std::basic_fstream<wchar_t, std::char_traits<wchar_t> >
 wfstream
 
-# istreambuf_iterator and ostreambuf_iterator are not typedefed, let them here
-# need more checking in DR, FIXME
-#std::istreambuf_iterator<char, std::char_traits<char> >
-#istreambuf_iterator<long>
-#std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> >
-#istreambuf_iterator<long>
-
-#std::ostreambuf_iterator<char, std::char_traits<char> >
-#ostreambuf_iterator<long>
-#std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> >
-#ostreambuf_iterator<long>
-
 std::basic_stringbuf<char, std::char_traits<char>, std::allocator<char> >
 stringbuf
 std::basic_stringbuf<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >
@@ -380,39 +368,39 @@ stringstream
 std::basic_stringstream<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >
 wstringstream
 
-# these two are also in iosfw, manemly 
+# these two are also in iosfw, namely
 # typedef fpos<char_traits<char>::state_type>  streampos;
 # typedef fpos<char_traits<wchar_t>::state_type> wstreampos;
-# twice decay to fpos<__mbstate>, we choosed to translate to streampos
+# but twice decay to fpos<__mbstate>, we choosed to translate to streampos
 std::fpos<__mbstate_t>
 streampos
 
 # locale
-std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >
+std::num_put<char, std::ostreambuf_iterator<char> >
 num_put<char>
-std::num_put<wchar_t, std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >
+std::num_put<wchar_t, std::ostreambuf_iterator<wchar_t> >
 num_put<wchar_t>
-std::num_get<char, std::istreambuf_iterator<char, std::char_traits<char> > >
+std::num_get<char, std::istreambuf_iterator<char> >
 num_get<char>
-std::num_get<wchar_t, std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >
+std::num_get<wchar_t, std::istreambuf_iterator<wchar_t> >
 num_get<wchar_t>
 
-std::time_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >
+std::time_put<char, std::ostreambuf_iterator<char> >
 time_put<char>
-std::time_put<wchar_t, std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >
+std::time_put<wchar_t, std::ostreambuf_iterator<wchar_t> >
 time_put<wchar_t>
-std::time_get<char, std::istreambuf_iterator<char, std::char_traits<char> > >
+std::time_get<char, std::istreambuf_iterator<char> >
 time_get<char>
-std::time_get<wchar_t, std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >
+std::time_get<wchar_t, std::istreambuf_iterator<wchar_t> >
 time_get<wchar_t>
 
-std::money_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >
+std::money_put<char, std::ostreambuf_iterator<char> >
 money_put<char>
-std::money_put<wchar_t, std::ostreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >
+std::money_put<wchar_t, std::ostreambuf_iterator<wchar_t> >
 money_put<wchar_t>
-std::money_get<char, std::istreambuf_iterator<char, std::char_traits<char> > >
+std::money_get<char, std::istreambuf_iterator<char> >
 money_get<char>
-std::money_get<wchar_t, std::istreambuf_iterator<wchar_t, std::char_traits<wchar_t> > >
+std::money_get<wchar_t, std::istreambuf_iterator<wchar_t> >
 money_get<wchar_t>
 
 std::moneypunct<char, (bool)0>

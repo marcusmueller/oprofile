@@ -102,7 +102,7 @@ static int oprof_output_maps(struct task_struct *task)
 
 	/* We need two pass, daemon assume than the first mmap notification
 	 * is for the executable but some process doesn't follow this model.
-	 * FIXME for now it's more easy to fix here rather in daemon */
+	 */
 	for (map = mm->mmap; map; map = map->vm_next) {
 		if (!(map->vm_flags & VM_EXEC) || !map->vm_file)
 			continue;

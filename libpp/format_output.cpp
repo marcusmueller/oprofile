@@ -28,7 +28,6 @@ formatter::formatter(profile_container const & profile_)
 	flags(ff_none),
 	nr_classes(1),
 	profile(profile_),
-	first_output(true),
 	vma_64(false),
 	need_details(false),
 	need_header(true),
@@ -105,6 +104,8 @@ void formatter::output(ostream & out, symbol_entry const * symb)
 
 void formatter::output(ostream & out, symbol_collection const & symbols)
 {
+	output_header(out);
+
 	symbol_collection::const_iterator it = symbols.begin();
 	symbol_collection::const_iterator end = symbols.end();
 	for (; it != end; ++it) {
@@ -193,9 +194,6 @@ void formatter::output_details(ostream & out, symbol_entry const * symb)
 void formatter::do_output(ostream & out, symbol_entry const & symb,
 			  sample_entry const & sample, bool hide_immutable)
 {
-	// FIXME: weird place to put this
-	output_header(out);
-
 	size_t padding = 0;
 
 	// first output the vma field
@@ -255,11 +253,6 @@ void formatter::do_output(ostream & out, symbol_entry const & symb,
 
 void formatter::output_header(ostream & out)
 {
-	if (!first_output)
-		return;
-
-	first_output = false;
-
 	if (!need_header)
 		return;
 

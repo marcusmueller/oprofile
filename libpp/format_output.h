@@ -151,8 +151,6 @@ private:
 	count_array_t total_count_details;
 	/// detailed percentage so far
 	count_array_t cumulated_percent_details;
-	/// used for outputting header
-	bool first_output;
 	/// true if we need to format as 64 bits quantities
 	bool vma_64;
 	/// true if we need to show details for each symbols

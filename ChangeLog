@@ -1,3 +1,20 @@
+2003-10-19  Philippe Elie  <phil.el@wanadoo.fr>
+
+	rmove some FIXME:
+	* libpp/format_output.h: remove first_output bool member
+	* libpp/format_output.cpp: call output_header from the right place
+	* libpp/op_header.h: remove bogus FIXME
+
+	* libregex/tests/Makefile.am: fix dependencies on mangled-name file,
+	  fix make dist
+	* libregex/tests/mangled-name.in: simplify a bit and remove a bogus
+	  FIXME
+	* libregex/tests/regex_test.cpp: fix comment
+
+	* module/ia64/op_syscalls.c:
+	* module/x86/hammer_op_syscalls.c:
+	* module/x86/op_syscalls.c: remove some FIXME
+
 2003-10-17  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/arrange_profiles.cpp: clarify suggestion.

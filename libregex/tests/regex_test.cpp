@@ -5,7 +5,7 @@
  * $ regex_test
  * or
  * $ regex_test filename(s)
- * when no argument is provided mangled-name.txt is used,
+ * when no argument is provided "mangled-name" is used,
  * see it for the input file format
  *
  * @remark Copyright 2003 OProfile authors

@@ -9,8 +9,6 @@
  * @author Philippe Elie
  */
 
-// FIXME: merge this file in op_sample_file.h after dae re-write
-
 #ifndef OP_HEADER_H
 #define OP_HEADER_H
 
