@@ -225,9 +225,7 @@ string dirname(string const & file_name)
 	result.erase(pos, result.length() - pos);
 
 	// "////usr" must return "/"
-	result = erase_trailing_path_separator(result);
-
-	return result;
+	return erase_trailing_path_separator(result);
 }
 
 

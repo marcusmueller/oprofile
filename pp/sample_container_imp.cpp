@@ -63,12 +63,7 @@ bool sample_container_imp_t::accumulate_samples(counter_array_t & counter,
 
 	counter += accumulate(it1, it2, counter, add_counts);
 
-	for (size_t i = 0 ; i < max_counters ; ++i) {
-		if (counter[i] != 0)
-			return true;
-	}
-
-	return false;
+	return !counter.empty(max_counters);
 }
 
 sample_entry const * sample_container_imp_t::find_by_vma(bfd_vma vma) const
@@ -104,12 +99,7 @@ bool sample_container_imp_t::accumulate_samples(counter_array_t & counter,
 
 	counter += accumulate(p_it.first, p_it.second, counter, add_counts);
 
-	for (size_t i = 0 ; i < max_counters ; ++i) {
-		if (counter[i] != 0)
-			return true;
-	}
-
-	return false;
+	return !counter.empty(max_counters);
 }
 
 void sample_container_imp_t::flush_input_counter() const

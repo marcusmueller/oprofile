@@ -44,6 +44,11 @@ public:
 		return value[counter_nr];
 	}
 
+	/**
+	 * return true if value[0, nr_counters) are all zero
+	 */
+	bool empty(size_t nr_counters) const;
+
 	counter_array_t & operator+=(counter_array_t const & rhs);
 
 private:

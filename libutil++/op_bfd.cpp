@@ -199,7 +199,7 @@ bool op_bfd::get_symbols(vector<string> const & excluded,
 		vector<string>::const_iterator it =
 			find(excluded.begin(), excluded.end(), syms[i].name());
 		if (it != excluded.end()) {
-			cout << "excluding symbol " << syms[i].name() << endl;
+			cverb << "excluding symbol " << syms[i].name() << endl;
 			syms.erase(syms.begin() + i);
 		} else {
 			++i;
@@ -213,6 +213,7 @@ bool op_bfd::get_symbols(vector<string> const & excluded,
 				find(included.begin(), included.end(),
 				     syms[i].name());
 			if (it == included.end()) {
+				cverb << "excluding symbol " << syms[i].name() << endl;
 				syms.erase(syms.begin() + i);
 			} else {
 				++i;
@@ -222,10 +223,7 @@ bool op_bfd::get_symbols(vector<string> const & excluded,
 
 	cverb << "number of symbols now " << dec << syms.size() << endl;
 
-	if (syms.empty())
-		return false;
-
-	return true;
+	return !syms.empty();
 }
 
 

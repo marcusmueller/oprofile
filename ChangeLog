@@ -1,5 +1,15 @@
 2002-10-26  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/file_manip.cpp:
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: cleanup
+
+	* pp/counter_array.h:
+	* pp/counter_array.cpp: add a bool empty() member to counter_array_t
+	* pp/sample_container_imp.cpp: use it
+
+2002-10-26  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* configure.in: minor cleanup. Use config.h rather than gcc -D option
 
 	* libutil/op_libiberty.h:

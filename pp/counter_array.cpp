@@ -9,6 +9,9 @@
  * @author John Levon
  */
 
+#include <algorithm>
+#include <functional>
+
 #include "counter_array.h"
 
 counter_array_t::counter_array_t()
@@ -23,4 +26,12 @@ counter_array_t & counter_array_t::operator+=(counter_array_t const & rhs)
 		value[i] += rhs.value[i];
 
 	return *this;
+}
+
+bool counter_array_t::empty(size_t nr_counters) const
+{
+	u32 const * first = value;
+	u32 const * last  = value + nr_counters;
+
+	return find_if(first, last, bind2nd(not_equal_to<int>(), 0)) == last;
 }
