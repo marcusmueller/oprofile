@@ -11,6 +11,6 @@ regex_test_SOURCES = regex_test.cpp
 regex_test_LDADD = libop_regex.a ../libutil++/libutil++.a
 
 datadir = $(prefix)/share/oprofile
-data_DATA = stl.pat
+dist_data_DATA = stl.pat
 
 EXTRA_DIST = mangled-name.txt

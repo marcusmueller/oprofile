@@ -1,3 +1,9 @@
+2003-02-28  John Levon  <levon@movementarian.org>
+
+	* doc/Makefile.am: tweak
+
+	* libregex/Makefile.am: fix make dist
+
 2003-02-27  John Levon  <levon@movementarian.org>
 
 	* configure.in: bump to 0.5.1

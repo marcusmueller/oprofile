@@ -11,7 +11,7 @@ generated_mans = oprofiled.1 op_help.1 oprofpp.1 op_time.1 op_to_source.1 op_mer
 man_MANS = oprofile.1 $(generated_mans)
 
 htmldir = $(DESTDIR)$(prefix)/share/doc/oprofile
-html_DATA = oprofile.html
+dist_html_DATA = oprofile.html
 
 $(generated_mans):
 	echo ".so man1/oprofile.1" > $@
@@ -33,5 +33,5 @@ uninstall-local:
 		rm -f $(CATDIR)/cat1/$$f.gz;	\
 	done
 
-EXTRA_DIST = oprofile.1 oprofile.1.in oprofile.xml oprofile.html xsl/xhtml-chunk.xsl xsl/xhtml-common.xsl xsl/xhtml.xsl xsl/xhtml.xsl.in srcdoc/Doxyfile srcdoc/Makefile
+EXTRA_DIST = oprofile.1 oprofile.1.in oprofile.xml xsl/xhtml-chunk.xsl xsl/xhtml-common.xsl xsl/xhtml.xsl xsl/xhtml.xsl.in srcdoc/Doxyfile srcdoc/Makefile
 
