@@ -9,8 +9,21 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o anton's bug on the list about dcache aliasing
  o callgraph_container.cpp: the inner loop in add() is very fragile!
  o need --callgraph in oprof_start
+ o with opstack I can get "warning: /no-vmlinux could not be found.".
+   Should be smarter ?
+ o opstack gives weird output for an image with no symbols:
+
+  690      100.000  27697    100.000  libkdecore.so.4.1.0      (no symbols)
+690       0.9446  27697    37.9188  libkdecore.so.4.1.0      (no symbols)
+  4830     100.000  27697    100.000  libkdecore.so.4.1.0      (no symbols)
+  0              0  0              0  libkdecore.so.4.1.0      memcpy
+  0              0  0              0  libkdecore.so.4.1.0 __i686.get_pc_thunk.bx
+  0              0  0              0  libkdecore.so.4.1.0 __errno_location
+  0              0  0              0  libkdecore.so.4.1.0      (no symbols)
+  0              0  0              0  libkdecore.so.4.1.0      (no symbols)
+
  o stress test opstack: compile a Big Application w/o frame pointer and look
-  how driver and opstack react.
+   how driver and opstack react.
  o opdiff
  o add event aliases for common things like icache misses, we must start to 
   think about metrics including simple like event alias mapped to two or more
