@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.42 2000/09/28 21:34:18 moz Exp $ */
+/* $Id: opd_proc.c,v 1.43 2000/12/03 03:37:10 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -570,6 +570,7 @@ static void opd_kill_maps(struct opd_proc *proc)
 
 /**
  * opd_do_proc_lru - rework process list
+ * @head: head of process list 
  * @proc: process to move
  *
  * Perform LRU on the process list by moving it to
@@ -950,7 +951,7 @@ void opd_put_sample(const struct op_sample *sample)
 /**
  * opd_put_mapping - add a mapping to a process
  * @proc: process to add map to
- * @image: mapped image number
+ * @image_nr: mapped image number
  * @start: start of mapping
  * @offset: file offset of mapping
  * @end: end of mapping
