@@ -1,0 +1,148 @@
+.TH OPCONTROL 1 "@DATE@" "oprofile @VERSION@"
+.UC 4
+.SH NAME
+opcontrol \- control OProfile profiling
+.SH SYNOPSIS
+.br
+.B opcontrol
+[
+.I options
+]
+.SH DESCRIPTION
+.B opcontrol
+can be used to start profiling, end a profiling session,
+dump profile data, and set up the profiling parameters.
+
+.SH OPTIONS
+.TP
+.BI "--help"
+Show help message.
+.br
+.TP
+.BI "--version"
+Show version.
+.br
+.TP
+.BI "--list-events"
+Shows the monitorable events.
+.br
+.TP
+.BI "--init"
+Load the OProfile module if required and make the OProfile driver
+interface available.
+.br
+.TP
+.BI "--setup"
+Followed by list options for profiling setup. Store setup 
+in ~root/.oprofile/daemonrc. Optional.
+.br
+.TP
+.BI "--start-daemon"
+Start the oprofile daemon without starting profiling. Not available
+in 2.2/2.4 kernels.
+.br
+.TP
+.BI "--start"
+Start data collection with either arguments provided by --setup
+of information saved in ~root/.oprofile/daemonrc.
+.br
+.TP
+.BI "--dump"
+Force a flush of the collected profiling data to the daemon.
+.br
+.TP
+.BI "--stop"
+Stop data collection. Not available in 2.2/2.4 kernels.
+.br
+.TP
+.BI "--shutdown"
+Stop data collection and remove daemon.
+.br
+.TP
+.BI "--reset"
+Clear out data from current session, but leaves saved sessions.
+.br
+.TP
+.BI "--save="sessionname
+Save data from current session to sessionname.
+.br
+.TP
+.BI "--deinit"
+Shut down daemon. Unload the oprofile module and oprofilefs.
+.br
+.TP
+.BI "--buffer-size="num
+Set kernel buffer to num samples.
+.br
+.TP
+.BI "--ctrN-event="[name|none]
+Set counter N to measure symbolic event name, or to the
+string 'none' to disable the counter.
+.br
+.TP
+.BI "--ctrN-count="val
+Number of events between samples for counter N.
+.br
+.TP
+.BI "--ctrN-unit-mask="val
+Set unit mask for counter N (e.g. --ctr0-unit-mask=0xf).
+.br
+.TP
+.BI "--ctrN-kernel="[0|1]
+Count events in kernel mode when 1, do not count when 0 (default 1).
+.br
+.TP
+.BI "--ctrN-user="[0|1]
+Count events in user mode when 1, do not count when 0 (default 1).
+.br
+.TP
+.BI "--pid-filter="pid
+Only profile process pid (only available for 2.4 version). Set
+to 'none' to enable profiling of all PIDs again.
+.br
+.TP
+.BI "--pgrp-filter="pgrp
+Only profile process tty group pgrp (only available for 2.4 version). Set
+to 'none' to enable profiling of all PIDs again.
+.br
+.TP
+.BI "--separate="[none,library,kernel,all]
+Separate samples based on the given separator. 'library' per-application
+dynamically linked libraries samples files. 'kernel' per-application modules
+and kernel samples files, 'kernel' imply 'library'. 'all' imply all the
+above options and 'none' turns off separation.
+.br
+.TP
+.BI "--vmlinux="file
+vmlinux kernel image.
+.br
+.TP
+.BI "--no-vmlinux"
+Use this when you don't have a kernel vmlinux file, and you don't want to
+profile the kernel.
+.br
+.TP
+.BI "--verbose"
+Be verbose in the daemon log. This has a high overhead.
+.br
+.TP
+.BI "--kernel-range="start,end
+Set kernel range vma address in hexadecimal.
+
+.SH ENVIRONMENT
+No special environment variables are recognised by opreport.
+
+.SH FILES
+.TP
+.I /home/root/.oprofile/daemonrc
+Configuration file for opcontrol
+.TP
+.I /var/lib/oprofile/samples/
+The location of the generated sample files.
+
+.SH VERSION
+.TP
+This man page is current for @PACKAGE@-@VERSION@.
+
+.SH SEE ALSO
+.BR oprofile(1)
