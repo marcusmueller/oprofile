@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.8 2000/08/26 16:42:00 moz Exp $
+# $Id: op_start,v 1.9 2000/08/28 17:09:22 moz Exp $
 
 # quick and ugly interface
 # op_start --help and op_start --list-events have info
@@ -21,6 +21,8 @@ IGNORE_MYSELF=0
 DIR="/var/opd"
 MAP_FILE=
 VMLINUX=
+PID_FILTER=0
+PGRP_FILTER=0
 
 help_string='op_start: usage:$
 Module options$
@@ -36,6 +38,8 @@ Module per-cpu options. Specify comma-separated values for each CPU$
   --ctr1-unit-mask=val         unit mask for ctr1$
   --ctr0-os-usr=val            val==1 for kernel counting, ==2 for userspace only for ctr0$
   --ctr1-os-usr=val            val==1 for kernel counting, ==2 for userspace only for ctr1$
+  --pid-filter=pid             Only profile process pid (if compiled in)$
+  --pgrp-filter=pgrp           Only profile process group pgrp (if compiled in)$
 $
 Daemon options$
   --use-cpu=[0|1|2]            0 or PPro, 1 for PII, 2 for PIII$
@@ -141,6 +145,12 @@ do
 	if [ "$arg" = "--vmlinux" ]; then
 		VMLINUX=$val
 	fi
+	if [ "$arg" = "--pid-filter" ]; then
+		PID_FILTER=$val
+	fi 
+	if [ "$arg" = "--pgrp-filter" ]; then
+		PGRP_FILTER=$val
+	fi 
 	shift
 done
 
@@ -235,6 +245,12 @@ fi
 if [ "$CTR1_TYPE" != "" ]; then
 	MOD_ARGS="$MOD_ARGS op_ctr1_on=1 op_ctr1_type=$CTR1_TYPE op_ctr1_um=$CTR1_UM op_ctr1_count=$CTR1_COUNT op_ctr1_osusr=$CTR1_OSUSR"
 fi
+if [ "$PID_FILTER" != "0" ]; then
+	MOD_ARGS="$MOD_ARGS pid_filter=$PID_FILTER"
+fi 
+if [ "$PGRP_FILTER" != "0" ]; then
+	MOD_ARGS="$MOD_ARGS pgrp_filter=$PGRP_FILTER"
+fi 
 
 MODPROBECMD="modprobe oprofile $MOD_ARGS"
 echo "Loading module with: $MODPROBECMD"

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.28 2000/08/27 04:43:21 moz Exp $ */
+/* $Id: oprofile.c,v 1.29 2000/08/28 17:09:21 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -36,6 +36,12 @@ MODULE_PARM(op_ctr0_osusr,"1-32b");
 MODULE_PARM_DESC(op_ctr0_osusr,"All, O/S only, or userspace only counting for counter 0 (0/1/2)");
 MODULE_PARM(op_ctr1_osusr,"1-32b");
 MODULE_PARM_DESC(op_ctr1_osusr,"All, O/S only, or userspace only counting for counter 1 (0/1/2)");
+#ifdef PID_FILTER
+MODULE_PARM(pid_filter,"i");
+MODULE_PARM_DESC(pid_filter,"Ignore processes with a pid other than this value");
+MODULE_PARM(pgrp_filter,"i");
+MODULE_PARM_DESC(pgrp_filter,"Ignore processes with a process group other than this value");
+#endif
 static int op_hash_size=4096;
 static int op_buf_size=8192;
 static u8 op_ctr0_on[NR_CPUS];
@@ -50,6 +56,10 @@ static u8 op_ctr0_val[NR_CPUS];
 static u8 op_ctr1_val[NR_CPUS];
 static u8 op_ctr0_osusr[NR_CPUS];
 static u8 op_ctr1_osusr[NR_CPUS];
+#ifdef PID_FILTER
+pid_t pid_filter;
+pid_t pgrp_filter;
+#endif
 
 static int op_major;
 static int cpu_type;
@@ -148,6 +158,13 @@ asmlinkage void op_do_nmi(struct pt_regs * regs)
 	struct _oprof_data *data = &oprof_data[smp_processor_id()];
 	uint low,high;
 	int overflowed=0;
+
+#ifdef PID_FILTER
+	if (pid_filter && current->pid!=pid_filter)
+		return;
+	if (pgrp_filter && current->pgrp!=pgrp_filter)
+		return;
+#endif
 
 	/* disable counters */
 	rdmsr(P6_MSR_EVNTSEL0,low,high);
