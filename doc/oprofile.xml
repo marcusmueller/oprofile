@@ -268,6 +268,13 @@ This section gives a brief description of the available oprofile utilities and t
 </varlistentry>
  
 <varlistentry>
+	<term><filename>opcontrol</filename></term>
+	<listitem>
+		Used for controlling the oprofile data collection.
+	</listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><filename>oprofpp</filename></term>
 	<listitem><para>
 		This is the main tool for retrieving useful profile data, described in
@@ -508,6 +515,161 @@ via <command>sysctl</command>; the available files are detailed in <xref linkend
 </para>
 
 </sect1> 
+
+<sect1 id="controlling-daemon">
+<title>Controlling OProfile data collection with the <command>opcontrol</command> script</title>
+<para>
+In this section the configuration and control of the profiling system with opcontrol in more depth.
+</para>
+<para>
+The <command>opcontrol</command> script provides the following options :
+</para>
+<variablelist>
+	<varlistentry>
+		<term><option>--init</option></term>
+		<listitem><para>
+		Loads the OProfile module if required and makes the OProfile driver
+		interface available.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--setup</option></term>
+		<listitem><para>
+		    Followed by list arguments for profiling set up. List of arguments
+		    saved in <filename>/home/root/.oprofile/daemonrc</filename>.
+		  </para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--start</option></term>
+		<listitem><para>
+		    Start data collection with either arguments provided by <option>--setup</option>
+		of information saved in <filename>/home/root/.oprofile/daemonrc</filename>.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--dump</option></term>
+		<listitem><para>
+		    Force a flush of the collected profiling data to the daemon.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--stop</option></term>
+		<listitem><para>
+		    Stop data collection.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--shutdown</option></term>
+		<listitem><para>
+		    Stop data collection and remove daemon.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--reset</option></term>
+		<listitem><para>
+		    Clears out data from current session, but leaves saved sessions.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--save=</option>session_name</term>
+		<listitem><para>
+		    Save data from current session to session_name.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--deinit</option></term>
+		<listitem><para>
+                Shuts down daemon. Unload the oprofile module and oprofilefs.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--list-events</option></term>
+		<listitem><para>
+		    List event types and unit masks.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--help</option></term>
+		<listitem><para>
+		    Generate usage messages.
+		</para></listitem>
+	</varlistentry>
+</variablelist>
+
+<para>
+The <command>opcontrol</command> script options used with the
+	<option>--setup</option> option :
+</para>
+<variablelist>
+	<varlistentry>
+		<term><option>--buffer-size=</option>num</term>
+		<listitem><para>
+		Number of samples in kernel buffer.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--ctrN-event=</option>name</term>
+		<listitem><para>
+		Set counter N to measure symbolic event name.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--ctrN-count=</option>val</term>
+		<listitem><para>
+		Number of events between samples for counter N.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--ctrN-unit-mask=</option>val</term>
+		<listitem><para>
+		Set unit mask for counter N (e.g. --ctr0-unit-mask=0xf)
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--ctrN-kernel=</option>[0|1]</term>
+		<listitem><para>
+		Whether to count kernel events for counter N.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--pid-filter=</option>pid</term>
+		<listitem><para>
+		Only profile process pid  (only available for 2.4 version).
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--pgrp-filter=</option>pgrp</term>
+		<listitem><para>
+		Only profile process tty group pgrp (only avilable for 2.4 version)
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--separate-samples</option></term>
+		<listitem><para>
+		Separate samples for each distinct application shared library.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--vmlinux=</option>file</term>
+		<listitem><para>
+		vmlinux kernel image.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--verbose</option></term>
+		<listitem><para>
+		Be verbose in the daemon log.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--kernel-range=</option>start,end</term>
+		<listitem><para>
+		kernel range vma address in hexadecimal.
+		</para></listitem>
+	</varlistentry>
+</variablelist>
+
+</sect1>
  
 <sect1 id="oprofile-gui">
 <title>Starting profiling from the <command>oprofile</command> gui</title>

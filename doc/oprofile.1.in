@@ -10,6 +10,11 @@ oprofile \- a sytem-wide profiler
 .br
 .B op_stop
 .br
+.B opcontrol
+[
+.I options
+]
+.br
 .B oprofpp
 [
 .I options
@@ -129,6 +134,96 @@ penalty.
 .BI "--verbose"
 be verbose in the daemon log
 .PP
+.br
+.B opcontrol options
+.br
+.TP
+.BI "--list-events"
+Show available events for the hardware counters
+.br
+.TP
+.BI "--init"
+Loads the OProfile module if required and makes the OProfile driver
+interface available.
+.br
+.TP
+.BI "--setup"
+Followed by list options for profiling set up. List of options
+saved in /home/root/.oprofile/daemonrc.
+.br
+.TP
+.BI "--start"
+Start data collection with either arguments provided by --setup
+of information saved in /home/root/.oprofile/daemonrc.
+.br
+.TP
+.BI "--dump"
+Force a flush of the collected profiling data to the daemon.
+.br
+.TP
+.BI "--stop"
+Stop data collection.
+.br
+.TP
+.BI "--shutdown"
+Stop data collection and remove daemon.
+.br
+.TP
+.BI "--reset"
+Clears out data from current session, but leaves saved sessions.
+.br
+.TP
+.BI "--save=" sessionname
+Save data from current session to sessionname.
+.br
+.TP
+.BI "--deinit"
+Shuts down daemon. Unload the oprofile module and oprofilefs.
+.br
+.TP
+.BI "--buffer-size=" num
+Number of samples in kernel buffer.
+.br
+.TP
+.BI "--ctrN-event=" name
+Set counter N to measure symbolic event name.
+.br
+.TP
+.BI "--ctrN-count=" val
+Number of events between samples for counter N.
+.br
+.TP
+.BI "--ctrN-unit-mask=" val
+Set unit mask for counter N (e.g. --ctr0-unit-mask=0xf)
+.br
+.TP
+.BI "--ctrN-kernel="[0|1]
+Whether to count kernel events for counter N.
+.br
+.TP
+.BI "--pid-filter=" pid
+Only profile process pid  (only available for 2.4 version).
+.br
+.TP
+.BI "--pgrp-filter=" pgrp
+Only profile process tty group pgrp (only avilable for 2.4 version)
+.br
+.TP
+.BI "--separate-samples"
+Separate samples for each distinct application shared library.
+.br
+.TP
+.BI "--vmlinux=" file
+vmlinux kernel image.
+.br
+.TP
+.BI "--verbose"
+Be verbose in the daemon log.
+.br
+.TP
+.BI "--kernel-range=" start,end
+kernel range vma address in hexadecimal.
+.TP
 .br
 .B oprofpp options
 .br
