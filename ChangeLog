@@ -1,3 +1,8 @@
+2004-03-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/op_bfd.cpp: remove spurious cerr <<; fix a potential memory
+	  leak
+
 2004-03-28  John Levon  <levon@movementarian.org>
 
 	* libutil++/op_bfd.cpp: fix a BFD leak on format failure. Fix a

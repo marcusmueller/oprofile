@@ -41,8 +41,7 @@ verbose vbfd("bfd");
 
 void check_format(string const & file, bfd ** ibfd)
 {
-	char ** matching;
-	if (!bfd_check_format_matches(*ibfd, bfd_object, &matching)) {
+	if (!bfd_check_format_matches(*ibfd, bfd_object, NULL)) {
 		cverb << vbfd << "BFD format failure for " << file << endl;
 		bfd_close(*ibfd);
 		*ibfd = NULL;
@@ -261,7 +260,6 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	// find the first text section as use that as text_offset
 	for (sect = ibfd->sections; sect; sect = sect->next) {
 		if (sect->flags & SEC_CODE) {
-			cerr << "text_offset for " << filename << " is " << sect->filepos << endl;
 			text_offset = sect->filepos;
 			io_state state(cverb << vbfd);
 			cverb << vbfd << sect->name << " filepos "
