@@ -1,5 +1,11 @@
 2003-08-12  John Levon  <levon@movementarian.org>
 
+	* opreport.cpp: s/group_summary/app_summary/, and
+	a lot of other renamings to clarify the count groups
+	usage.
+
+2003-08-12  John Levon  <levon@movementarian.org>
+
 	* op_help.c: add --unit-mask
 
 	* opcontrol: use --unit-mask

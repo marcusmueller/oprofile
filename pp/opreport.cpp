@@ -30,7 +30,7 @@ using namespace std;
 
 namespace {
 
-static size_t pp_nr_counters;
+static size_t nr_groups;
 
 /// storage for a merged file summary
 struct summary {
@@ -46,20 +46,20 @@ struct summary {
 
 
 /**
- * Summary of a group. A group is a set of image summaries
+ * Summary of an application: a set of image summaries
  * for one application, i.e. an application image and all
  * dependent images such as libraries.
  */
-struct group_summary {
+struct app_summary {
 	count_array_t counts;
 	string image;
 	string lib_image;
 	vector<summary> files;
 
 	// return the number of samples added
-	size_t add_samples(split_sample_filename const &, size_t counts_group);
+	size_t add_samples(split_sample_filename const &, size_t count_group);
 
-	bool operator<(group_summary const & rhs) const {
+	bool operator<(app_summary const & rhs) const {
 		return options::reverse_sort 
 		    ? counts[0] < rhs.counts[0] : rhs.counts[0] < counts[0];
 	}
@@ -69,10 +69,14 @@ struct group_summary {
 };
 
 
-struct counts_group_summary {
-	counts_group_summary(vector<partition_files> const & sample_files);
-	/// all group summaries for a profiles set
-	vector<group_summary> groups;
+/**
+ * Summaries across all the count groups (multiple events, separated-out
+ * tgid/cpu, etc.)
+ */
+struct count_groups_summary {
+	count_groups_summary(vector<partition_files> const & sample_files);
+	/// all app summaries for a profiles set
+	vector<app_summary> apps;
 	/// total count of samples for all groups
 	count_array_t total_counts;
 };
@@ -102,10 +106,10 @@ void output_header()
 }
 
 
-size_t group_summary::
-add_samples(split_sample_filename const & split, size_t counts_group)
+size_t app_summary::
+add_samples(split_sample_filename const & split, size_t count_group)
 {
-	// FIXME: linear search inneficient ?
+	// FIXME: linear search inefficient ?
 	vector<summary>::iterator it;
 	for (it = files.begin(); it != files.end(); ++it) {
 		if (it->image == split.image && 
@@ -119,25 +123,25 @@ add_samples(split_sample_filename const & split, size_t counts_group)
 		summary summary;
 		summary.image = split.image;
 		summary.lib_image = split.lib_image;
-		summary.counts[counts_group] = nr_samples;
-		counts[counts_group] += nr_samples;
+		summary.counts[count_group] = nr_samples;
+		counts[count_group] += nr_samples;
 		files.push_back(summary);
 	} else {
-		// assert it->counts[counts_group] == 0
-		it->counts[counts_group] = nr_samples;
-		counts[counts_group] += nr_samples;
+		// assert it->counts[count_group] == 0
+		it->counts[count_group] = nr_samples;
+		counts[count_group] += nr_samples;
 	}
 
 	return nr_samples;
 }
 
 
-bool group_summary::should_hide_deps() const
+bool app_summary::should_hide_deps() const
 {
 	if (files.size() == 0)
 		return true;
 
-	// can this happens ?
+	// can this happen ?
 	if (counts.zero())
 		return true;
 
@@ -161,8 +165,8 @@ bool group_summary::should_hide_deps() const
 }
 
 
-counts_group_summary::
-counts_group_summary(vector<partition_files> const & sample_files)
+count_groups_summary::
+count_groups_summary(vector<partition_files> const & sample_files)
 {
 	// second member is the partition file index i.e. the events/counts
 	// identifier
@@ -188,24 +192,24 @@ counts_group_summary(vector<partition_files> const & sample_files)
 	for (; it != sample_filenames.end(); ) {
 		split_sample_filename const * cur = it->second.first;
 
-		group_summary group;
-		group.image = cur->image;
-		group.lib_image = cur->lib_image;
+		app_summary app;
+		app.image = cur->image;
+		app.lib_image = cur->lib_image;
 
 		pair<map_t::const_iterator, map_t::const_iterator> p_it =
 			sample_filenames.equal_range(it->first);
 		for (it = p_it.first; it != p_it.second; ++it) {
-			size_t nr_samples = group.add_samples(
+			size_t nr_samples = app.add_samples(
 				*it->second.first, it->second.second);
 			total_counts[it->second.second] += nr_samples;
 		}
 
-		stable_sort(group.files.begin(), group.files.end());
+		stable_sort(app.files.begin(), app.files.end());
 
-		groups.push_back(group);
+		apps.push_back(app);
 	}
 
-	stable_sort(groups.begin(), groups.end());
+	stable_sort(apps.begin(), apps.end());
 }
 
 
@@ -226,15 +230,15 @@ void output_count(double total_count, size_t count)
 
 
 void
-output_deps(counts_group_summary const & summaries,
-	    group_summary const & groups)
+output_deps(count_groups_summary const & summaries,
+	    app_summary const & app)
 {
-	for (size_t j = 0 ; j < groups.files.size(); ++j) {
+	for (size_t j = 0 ; j < app.files.size(); ++j) {
 		cout << "\t";
-		summary const & file = groups.files[j];
-		for (size_t i = 0; i < pp_nr_counters; ++i) {
+		summary const & file = app.files[j];
+		for (size_t i = 0; i < nr_groups; ++i) {
 			double tot_count = options::global_percent
-				? summaries.total_counts[i] : groups.counts[i];
+				? summaries.total_counts[i] : app.counts[i];
 
 			output_count(tot_count, file.counts[i]);
 		}
@@ -251,29 +255,29 @@ output_deps(counts_group_summary const & summaries,
 /**
  * Display all the given summary information
  */
-void output_summaries(counts_group_summary const & summaries)
+void output_summaries(count_groups_summary const & summaries)
 {
-	for (size_t i = 0; i < summaries.groups.size(); ++i) {
-		group_summary const & group = summaries.groups[i];
+	for (size_t i = 0; i < summaries.apps.size(); ++i) {
+		app_summary const & app = summaries.apps[i];
 
-		if ((group.counts[0] * 100.0) / summaries.total_counts[0] <
+		if ((app.counts[0] * 100.0) / summaries.total_counts[0] <
 		    options::threshold) {
 			continue;
 		}
 
-		for (size_t j = 0; j < pp_nr_counters; ++j) {
+		for (size_t j = 0; j < nr_groups; ++j) {
 			output_count(summaries.total_counts[j],
-				     group.counts[j]);
+				     app.counts[j]);
 		}
 
-		string image = group.image;
-		if (options::merge_by.lib && !group.lib_image.empty())
-			image = group.lib_image;
+		string image = app.image;
+		if (options::merge_by.lib && !app.lib_image.empty())
+			image = app.lib_image;
 
 		cout << get_filename(image) << '\n';
 
-		if (!group.should_hide_deps())
-			output_deps(summaries, group);
+		if (!app.should_hide_deps())
+			output_deps(summaries, app);
 	}
 }
 
@@ -354,7 +358,7 @@ format_flags const get_format_flags(column_flags const & cf)
 }
 
 
-void output_symbols(profile_container const & samples, size_t nr_groups)
+void output_symbols(profile_container const & samples)
 {
 	profile_container::symbol_choice choice;
 	choice.threshold = options::threshold;
@@ -386,19 +390,21 @@ int opreport(vector<string> const & non_options)
 
 	output_header();
 
-	if (!options::symbols) {
-		pp_nr_counters = sample_file_partition.size();
+	nr_groups = sample_file_partition.size();
 
-		counts_group_summary summaries(sample_file_partition);
+	if (!options::symbols) {
+		count_groups_summary summaries(sample_file_partition);
 		output_summaries(summaries);
 		return 0;
 	}
 
 	profile_container samples(false,
 		options::debug_info, options::details);
+
 	for (size_t i = 0; i < sample_file_partition.size(); ++i)
 		populate_profiles(sample_file_partition[i], samples, i);
-	output_symbols(samples, sample_file_partition.size());
+
+	output_symbols(samples);
 	return 0;
 }
 
