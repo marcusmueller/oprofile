@@ -22,16 +22,11 @@
 #include "op_hw_config.h"
 #include "op_string.h"
 #include "op_alloc_counter.h"
+#include "op_parse_event.h"
 
 static char const ** chosen_events;
 
-struct parsed_event {
-	char * name;
-	int count;
-	int unit_mask;
-	int kernel;
-	int user;
-} parsed_events[OP_MAX_COUNTERS];
+struct parsed_event parsed_events[OP_MAX_COUNTERS];
 
 
 static op_cpu cpu_type = CPU_NO_GOOD;
@@ -79,95 +74,6 @@ static void help_for_event(struct op_event * event)
 }
 
 
-static char * next_part(char const ** str)
-{
-	char const * c;
-	char * ret;
-
-	if ((*str)[0] == '\0')
-		return NULL;
-
-	if ((*str)[0] == ':')
-		++(*str);
-
-	c = *str;
-
-	while (*c != '\0' && *c != ':')
-		++c;
-
-	if (c == *str)
-		return NULL;
-
-	ret = op_xstrndup(*str, c - *str);
-	*str += c - *str;
-	return ret;
-}
-
-
-static int parse_events(void)
-{
-	int i = 0;
-
-	while (chosen_events[i]) {
-		int nr_counters = op_get_nr_counters(cpu_type);
-		char const * cp = chosen_events[i];
-		char * part = next_part(&cp);
-
-		if (i >= nr_counters) {
-			fprintf(stderr, "Too many events specified: CPU "
-			        "only has %d counters.\n", nr_counters);
-			exit(EXIT_FAILURE);
-		}
-
-		if (!part) {
-			fprintf(stderr, "Invalid event %s\n", cp);
-			exit(EXIT_FAILURE);
-		}
-
-		parsed_events[i].name = part;
-
-		part = next_part(&cp);
-
-		if (!part) {
-			fprintf(stderr, "Invalid event %s\n",
-			        chosen_events[i]);
-			exit(EXIT_FAILURE);
-		}
-
-		parsed_events[i].count = strtoul(part, NULL, 0);
-		free(part);
-
-		parsed_events[i].unit_mask = 0;
-		part = next_part(&cp);
-
-		if (part) {
-			parsed_events[i].unit_mask = strtoul(part, NULL, 0);
-			free(part);
-		}
-
-		parsed_events[i].kernel = 1;
-		part = next_part(&cp);
-
-		if (part) {
-			parsed_events[i].kernel = strtoul(part, NULL, 0);
-			free(part);
-		}
-
-		parsed_events[i].user = 1;
-		part = next_part(&cp);
-
-		if (part) {
-			parsed_events[i].user = strtoul(part, NULL, 0);
-			free(part);
-		}
-	
-		++i;
-	}
-
-	return i;
-}
-
-
 static void check_event(struct parsed_event * pev,
 			struct op_event const * event)
 {
@@ -198,12 +104,13 @@ static void check_event(struct parsed_event * pev,
 
 static void resolve_events(void)
 {
-	int count = parse_events();
-	int i, j;
+	size_t count;
+	size_t i, j;
 	size_t * counter_map;
-	int nr_counters = op_get_nr_counters(cpu_type);
+	size_t nr_counters = op_get_nr_counters(cpu_type);
 	struct op_event const * selected_events[OP_MAX_COUNTERS];
 
+	count = parse_events(parsed_events, OP_MAX_COUNTERS, chosen_events);
 	if (count > nr_counters) {
 		fprintf(stderr, "Not enough hardware counters.\n");
 		exit(EXIT_FAILURE);
@@ -252,8 +159,9 @@ static void resolve_events(void)
 static void show_unit_mask(void)
 {
 	struct op_event * event;
-	int count = parse_events();
+	size_t count;
 
+	count = parse_events(parsed_events, OP_MAX_COUNTERS, chosen_events);
 	if (count > 1) {
 		fprintf(stderr, "More than one event specified.\n");
 		exit(EXIT_FAILURE);

@@ -1,0 +1,5 @@
+.deps
+Makefile.in
+Makefile
+parse_event_tests
+alloc_counter_tests

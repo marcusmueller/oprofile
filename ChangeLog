@@ -1,5 +1,19 @@
 2003-10-01  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* configure.in:
+	* libop/Makefile.am: new subdir
+	* libop/op_events.c: allow to retrieve events file dir through
+	  environment variable
+	* utils/op_help.c: move parse_events() and parsed_event struct to ...
+	* libop/op_parse_event.h:
+	* libop/op_parse_event.c: these new files
+
+	* libop/tests/Makefile.am: new tests subdir
+	* libop/tests/alloc_counter_tests.c: events mapping to counter nr tests
+	* libop/tests/parse_event_tests.c: event parsing tests
+
+2003-10-01  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libop/op_alloc_counter.c: add forward declaration
 	* libop/op_alloc_counter.c: alloc counter in increasing number order,
 	  it's less suprising.

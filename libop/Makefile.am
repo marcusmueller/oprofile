@@ -1,3 +1,5 @@
+SUBDIRS = . tests
+
 AM_CPPFLAGS=-I${top_srcdir}/libutil
 AM_CFLAGS = @OP_CFLAGS@
 
@@ -5,6 +7,8 @@ noinst_LIBRARIES = libop.a
 libop_a_SOURCES = \
 	op_events.c \
 	op_events.h \
+	op_parse_event.c \
+	op_parse_event.h \
 	op_cpu_type.c \
 	op_cpu_type.h \
 	op_mangle.c \

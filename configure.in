@@ -177,6 +177,7 @@ AC_OUTPUT(Makefile \
 	libutil/tests/Makefile \
 	libutil++/Makefile \
 	libop/Makefile \
+	libop/tests/Makefile \
 	libopt++/Makefile \
 	libdb/Makefile \
 	libdb/tests/Makefile \
