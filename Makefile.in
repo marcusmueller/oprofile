@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.9 2000/11/14 00:46:28 moz Exp $
+# $Id: Makefile.in,v 1.10 2000/12/06 20:39:47 moz Exp $
 
 KCFLAGS=@KCFLAGS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -14,6 +14,21 @@ all: oprofile.o
 distclean: clean
 	rm -f Makefile dae/Makefile pp/Makefile tags
 
+# broken 
+dist:
+	mkdir tmpdist ; \
+	cd tmpdist ; \
+	cvs checkout oprofile ; \
+	cd oprofile ; \
+	(find -type d -name CVS | xargs rm -rf) ; \
+	autoconf ; \
+	cd .. ; \
+	mv oprofile oprofile-@VERSION@ ; \
+	tar cvfz ../oprofile-@VERSION@.tar.gz oprofile-@VERSION@ ; \
+	rm -rf oprofile-@VERSION@ ; \
+	cd ..  ; \
+	rm -rf tmpdist \
+	
 tags:
 	ctags -R
 
