@@ -453,12 +453,12 @@ do_options() {
 
 	while [ "$#" -ne 0 ]
 	do
-		arg=`echo $1 | awk -F= '{print $1}'`
-		val=`echo $1 | awk -F= '{print $2}'`
+		arg=`printf %s $1 | awk -F= '{print $1}'`
+		val=`printf %s $1 | awk -F= '{print $2}'`
 		shift
 		if test -z "$val"; then
 			local possibleval=$1
-			echo "$possibleval" | grep ^- >/dev/null 2>&1
+			printf %s $1 "$possibleval" | grep ^- >/dev/null 2>&1
 			if test "$?" != "0"; then
 				val=$possibleval
 				shift
