@@ -53,11 +53,15 @@ necks in real-world systems.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term>Intel P6 processor</term>
+		<term>Intel P6 processor or AMD Athlon/Duron.</term>
 		<listitem><para>
-			An Intel P6 processor is required. In marketing terms this translates to anything between a Pentium Pro
-			(NOT Pentium Classics) and a Pentium III. Specifically, Pentium IVs are not yet supported due to different
-			hardware. Also note that Mobile P6 processors lack the necessary CPU features and are also not supported.
+			A CPU with a P6 generation core is required. In marketing terms this translates to anything between an Intel
+			Pentium Pro (NOT Pentium Classics) and a Pentium III. Specifically, Pentium IVs are not yet supported due to
+			different hardware.
+			Also note that Mobile P6 processors lack the necessary CPU features and are also not supported.
+			The AMD Athlon & Duron CPUs are also supported, as their <acronym>APIC</acronym> and performance counters
+			are very similar. These CPUs offer 4 seperate counters as opposed to the 2 provided by the Intel P6 family.
+			OProfile currently only supports using 2 of these available counters.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -334,8 +338,8 @@ all the options, only interesting ones are listed here :
 	<varlistentry>
 		<term><option>--use-cpu</option></term>
 		<listitem><para>
-		Specify 0 for Pentium Pros, 1 for Pentium II and 2 for Pentium III. This is only needed if you use
-		an event not available on the Pentium Pro. 
+		Specify 0 for Pentium Pros, 1 for Pentium II, 2 for Pentium III and 3 for AMD Athlon/Duron.
+		This is only needed if you use an event not available on the Pentium Pro. 
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -379,9 +383,11 @@ via <command>sysctl</command>; the available files are detailed in <xref linkend
 <title>Intel P6 Performance Counters</title>
 <para>
 The hardware performance counters are detailed in the Intel IA-32 Architecture Manual, Volume 3, available
-from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>. P6-core processors are capable
-of delivering an interrupt to the local <acronym>APIC</acronym> <acronym>LVTPC</acronym> vector
-when a counter overflows. This is the basic mechanism on which OProfile is based. The kernel module
+from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>. The AMD Athlon/Duron
+implementation is detailed in <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/pdf/22007.pdf">
+http://www.amd.com/products/cpg/athlon/techdocs/pdf/22007.pdf</ulink>.
+P6-core processors are capable of delivering an interrupt to the local <acronym>APIC</acronym> <acronym>LVTPC</acronym>
+vector when a counter overflows. This is the basic mechanism on which OProfile is based. The kernel module
 installs an interrupt handler for this vector. The delivery mode is set to <acronym>NMI</acronym> so that
 blocking interrupts in the kernel does not prevent profiling. When the interrupt handler is called,
 the current <acronym>EIP</acronym> <acronym>PC</acronym> value, process id, and counter (there are only

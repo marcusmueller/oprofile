@@ -1,5 +1,7 @@
 2001-08-20  Dave Jones  <davej@suse.de>
 
+	* doc/oprofile.sgml:
+	  Updated to reflect new Athlon/Duron capabilities.
 	* pp/oprof_convert.c:
 	* pp/oprofpp.c: use EXIT_FAILURE | EXIT_SUCCESS
 	  in exit() calls.
