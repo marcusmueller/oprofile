@@ -22,6 +22,11 @@ Output annotated assembly. If this is combined with --source, then mixed
 source / assembly annotations are output.
 .br
 .TP
+.BI "--demangle none|smart|normal"
+none: no demangling. normal: use default demangler (default) smart: use
+pattern-matching to make C++ symbol demangling more readable.
+.br
+.TP
 .BI "--exclude-dependent / -x"
 Do not include application-specific images for libraries, kernel modules
 and the kernel. This option only makes sense if the profile session
@@ -53,10 +58,6 @@ Only include files in the given comma-separated list of glob patterns.
 Only include symbols in the given comma-separated list.
 .br
 .TP
-.BI "--no-demangle"
-Do not attempt to demangle C++ symbols.
-.br
-.TP
 .BI "--objdump-params [params]"
 Pass the given parameters as extra values when calling objdump.
 .br
@@ -79,10 +80,6 @@ looking for them in --search-dirs.
 .BI "--source / -s"
 Output annotated source. This requires debugging information to be available
 for the binaries.
-.br
-.TP
-.BI "--smart-demangle / -D"
-Use pattern-matching to make C++ symbol demangling more readable.
 .br
 .TP
 .BI "--threshold / -t [percentage]"

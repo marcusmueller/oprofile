@@ -13,6 +13,7 @@
 #define COMMON_OPTION_H
 
 #include "locate_images.h"
+#include "demangle_symbol.h"
 
 namespace options {
 	extern bool verbose;
@@ -35,5 +36,13 @@ typedef int (*pp_fct_run_t)(std::vector<std::string> const & non_options);
  * common options and providing the necessary try catch clause
  */
 int run_pp_tool(int argc, char const * argv[], pp_fct_run_t fct);
+
+/**
+ * @param option one of [smart,none,normal]
+ *
+ * return the demangle_type of option or throw an exception if option
+ * is not valid.
+ */
+demangle_type handle_demangle_option(string const & option);
 
 #endif /* !COMMON_OPTION_H */

@@ -28,8 +28,7 @@ using namespace std;
 profile_classes classes;
 
 namespace options {
-	bool demangle = true;
-	bool smart_demangle;
+	demangle_type demangle = dmt_normal;
 	bool symbols;
 	bool debug_info;
 	bool details;
@@ -53,14 +52,12 @@ vector<string> mergespec;
 vector<string> sort;
 vector<string> exclude_symbols;
 vector<string> include_symbols;
+string demangle_option = "normal";
 
 popt::option options_array[] = {
-	popt::option(options::demangle, "demangle", '\0',
-		     "demangle GNU C++ symbol names (default on)"),
-	popt::option(options::demangle, "no-demangle", '\0',
-		     "don't demangle GNU C++ symbol names"),
-	popt::option(options::smart_demangle, "smart-demangle", 'D',
-		     "demangle GNU C++ symbol names and shrink them"),
+	popt::option(demangle_option, "demangle", '\0',
+		     "demangle GNU C++ symbol names (default normal)",
+	             "none|normal|smart"),
 	popt::option(outfile, "output-file", 'o',
 	             "output to the given filename", "file"),
 	// PP:5
@@ -238,6 +235,7 @@ void handle_options(vector<string> const & non_options)
 	handle_sort_option();
 	handle_merge_option();
 	handle_output_file();
+	demangle = handle_demangle_option(demangle_option);
 	check_options();
 
 	symbol_filter = string_filter(include_symbols, exclude_symbols);

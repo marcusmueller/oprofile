@@ -1479,6 +1479,10 @@ Accumulate sample and percentage counts in the symbol list.
 <varlistentry><term><option>--debug-info / -g</option></term><listitem><para>
 Show source file and line for each symbol.
 </para></listitem></varlistentry>
+<varlistentry><term><option>--demangle none|normal|smart</option></term><listitem><para>
+none: no demangling. normal: use default demangler (default) smart: use
+pattern-matching to make C++ symbol demangling more readable.
+</para></listitem></varlistentry>
 <varlistentry><term><option>--details / -d</option></term><listitem><para>
 Show per-instruction details for all selected symbols.
 </para></listitem></varlistentry>
@@ -1509,9 +1513,6 @@ Output full paths instead of basenames.
 <varlistentry><term><option>--merge / -m [lib,cpu,tid,tgid,unitmask,all]</option></term><listitem><para>
 Merge any profiles separated in a --separate session.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--no-demangle</option></term><listitem><para>
-Do not attempt to demangle C++ symbols.
-</para></listitem></varlistentry>
 <varlistentry><term><option>--no-header</option></term><listitem><para>
 Don't output a header detailing profiling parameters.
 </para></listitem></varlistentry>
@@ -1523,9 +1524,6 @@ Reverse the sort from the default.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--show-address / -w</option></term><listitem><para>
 Show the VMA address of each symbol (off by default).
-</para></listitem></varlistentry>
-<varlistentry><term><option>--smart-demangle / -D</option></term><listitem><para>
-Use pattern-matching to make C++ symbol demangling more readable.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--sort / -s [vma,sample,symbol,debug,image]</option></term><listitem><para>
 Sort the list of symbols by, respectively, symbol address,
@@ -1559,6 +1557,10 @@ Show version.
 Output annotated assembly. If this is combined with --source, then mixed
 source / assembly annotations are output.
 </para></listitem></varlistentry>
+<varlistentry><term><option>--demangle none|normal|smart</option></term><listitem><para>
+none: no demangling. normal: use default demangler (default) smart: use
+pattern-matching to make C++ symbol demangling more readable.
+</para></listitem></varlistentry>
 <varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
 Do not include application-specific images for libraries, kernel modules
 and the kernel. This option only makes sense if the profile session
@@ -1583,9 +1585,6 @@ Only include files in the given comma-separated list of glob patterns.
 <varlistentry><term><option>--include-symbols / -i [symbols]</option></term><listitem><para>
 Only include symbols in the given comma-separated list.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--no-demangle</option></term><listitem><para>
-Do not attempt to demangle C++ symbols.
-</para></listitem></varlistentry>
 <varlistentry><term><option>--objdump-params [params]</option></term><listitem><para>
 Pass the given parameters as extra values when calling objdump.
 </para></listitem></varlistentry>
@@ -1607,9 +1606,6 @@ specified by <option>--search-dirs</option>.
 <varlistentry><term><option>--source / -s</option></term><listitem><para>
 Output annotated source. This requires debugging information to be available
 for the binaries.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--smart-demangle / -D</option></term><listitem><para>
-Use pattern-matching to make C++ symbol demangling more readable.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--threshold / -t [percentage]</option></term><listitem><para>
 Only output data for symbols that have more than the given percentage

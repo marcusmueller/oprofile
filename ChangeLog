@@ -1,5 +1,20 @@
 2003-10-29  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* doc/opannotate.1.in:
+	* doc/opreport.1.in:
+	* doc/oprofile.xml:
+	* libregex/demangle_symbol.cpp:
+	* libregex/demangle_symbol.h:
+	* pp/common_option.cpp:
+	* pp/common_option.h:
+	* pp/opannotate_options.cpp:
+	* pp/opannotate_options.h:
+	* pp/opreport_options.cpp:
+	* pp/opreport_options.h: remove --no-demangle, --smart-demangle and
+	  --demangle, replace them with --demangle=none|smart|normal
+
+2003-10-29  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/tests: new directory
 	* libutil++/tests/string_manip_tests.cpp: new tests file
 	* configure.in:

@@ -125,3 +125,16 @@ int run_pp_tool(int argc, char const * argv[], pp_fct_run_t fct)
 
 	return EXIT_FAILURE;
 }
+
+
+demangle_type handle_demangle_option(string const & option)
+{
+	if (option == "none")
+		return dmt_none;
+	if (option == "smart")
+		return dmt_smart;
+	if (option == "normal")
+		return dmt_normal;
+
+	throw op_runtime_error("invalid option --demangle=" + option);
+}

@@ -27,13 +27,12 @@ extern "C" char * cplus_demangle(char const * mangled, int options);
 using namespace std;
 
 namespace options {
-	extern bool smart_demangle;
-	extern bool demangle;
+	extern demangle_type demangle;
 }
 
 string const demangle_symbol(string const & name)
 {
-	if (!options::demangle)
+	if (options::demangle == dmt_none)
 		return name;
 
 	// Do not try to strip leading underscore, this leads to many
@@ -46,7 +45,7 @@ string const demangle_symbol(string const & name)
 	string result(unmangled);
 	free(unmangled);
 
-	if (options::smart_demangle) {
+	if (options::demangle == dmt_smart) {
 		static bool init = false;
 		static regular_expression_replace regex;
 		if (init == false) {

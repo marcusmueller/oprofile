@@ -25,6 +25,11 @@ Accumulate sample and percentage counts in the symbol list.
 Show source file and line for each symbol.
 .br
 .TP
+.BI "--demangle=none|smart|normal"
+none: no demangling. normal: use default demangler (default) smart: use
+pattern-matching to make C++ symbol demangling more readable.
+.br
+.TP
 .BI "--details / -d"
 Show per-instruction details for all selected symbols.
 .br
@@ -64,10 +69,6 @@ Output full paths instead of basenames.
 Merge any profiles separated in a --separate session.
 .br
 .TP
-.BI "--no-demangle"
-Do not attempt to demangle C++ symbols.
-.br
-.TP
 .BI "--no-header"
 Don't output a header detailing profiling parameters.
 .br
@@ -82,10 +83,6 @@ Reverse the sort from the default.
 .TP
 .BI "--show-address / -w"
 Show each symbol's VMA address.
-.br
-.TP
-.BI "--smart-demangle / -D"
-Use pattern-matching to make C++ symbol demangling more readable.
 .br
 .TP
 .BI "--sort / -s [vma,sample,symbol,debug,image]"

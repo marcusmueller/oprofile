@@ -13,6 +13,17 @@
 
 #include <string>
 
+/// demangle type: specify what demangling we use
+enum demangle_type {
+	/// no demangling.
+	dmt_none,
+	/// use cplus_demangle()
+	dmt_normal,
+	/// normal plus a pass through the regular expression to simplify
+	/// the mangled name
+	dmt_smart
+};
+
 /**
  * demangle_symbol - demangle a symbol
  * @param name the mangled symbol name
