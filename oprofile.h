@@ -1,5 +1,6 @@
-/* $Id: oprofile.h,v 1.5 2000/08/01 20:36:01 moz Exp $ */
+/* $Id: oprofile.h,v 1.6 2000/08/03 02:39:52 moz Exp $ */
 
+#include <linux/config.h> 
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/init.h> 
