@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.33 2002/03/04 21:24:34 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.34 2002/03/05 20:23:56 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -405,6 +405,7 @@ namespace {
 // worth examining
 static const char *boring_symbols[] = {
 	"gcc2_compiled.",
+	"_init"
 };
 
 static const size_t nr_boring_symbols = sizeof(boring_symbols) / sizeof(char *);
@@ -417,17 +418,11 @@ static bool interesting_symbol(asymbol *sym)
 	if (!(sym->section->flags & SEC_CODE))
 		return 0;
 
-	if (!(sym->flags & (BSF_FUNCTION | BSF_GLOBAL | BSF_LOCAL)))
-		return 0;
-
 	if (!sym->name || sym->name[0] == '\0')
 		return 0;
 
 	// C++ exception stuff
 	if (sym->name[0] == '.' && sym->name[1] == 'L')
-		return 0;
-
-	if (streq("_init", sym->name))
 		return 0;
 
 	for (size_t i = 0; i < nr_boring_symbols; ++i) {
@@ -478,6 +473,21 @@ bool opp_bfd::get_symbols()
 	}
 
 	std::stable_sort(syms.begin(), syms.end(), symcomp);
+
+	// we need to ensure than for a given vma only one symbol exist else
+	// we read more than one time some samples. Fix #526098
+	// ELF symbols size : potential bogosity here because when using
+	// elf symbol size we need to check than two symbols does not overlap.
+	for (i =  1 ; i < syms.size() ; ++i) {
+		if (syms[i]->value + syms[i]->section->vma ==
+		    syms[i-1]->value + syms[i-1]->section->vma) {
+			// TODO: choose more carefully the symbol we drop.
+			// If once have FUNCTION flag and not the other keep
+			// it etc.
+			syms.erase(syms.begin() + i);
+			i--;
+		}
+	}
 
 	verbprintf("nr symbols %u\n", syms.size());
 

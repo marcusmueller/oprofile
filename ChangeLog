@@ -1,3 +1,9 @@
+2002-03-05  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/oprofpp_util.cpp: remove multiple symbols belonging
+	  to the same vma (Fix #526098)
+	  Accept also all symbol types, we filter them by name.
+
 2002-03-04  Philippe Elie  <ph_e@club-internet.fr>
 
 	* util/misc.h: minor comment fix
