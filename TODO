@@ -73,6 +73,7 @@ Before 1.0 little stuff
 Documentation
 -------------
 
+ o the docs should mention the default event for each arch somewhere
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o document gcc 2.95 and linenr info problems especially for inline functions
  o audit oprof_start for security + then document sudo
