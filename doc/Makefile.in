@@ -1,8 +1,8 @@
 RM=rm
 CP=cp
 prefix=$(DESTDIR)@prefix@
-MANDIR=@mandir@/man1
-CATDIR=@mandir@/cat1
+MANDIR=$(DESTDIR)@mandir@/man1
+CATDIR=$(DESTDIR)@mandir@/cat1
 DOCDIR=$(prefix)/share/doc/oprofile
 LN_SF=ln -sf
 MKDIR=mkdir
