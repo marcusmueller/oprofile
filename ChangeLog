@@ -1,3 +1,13 @@
+2002-06-26  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
+	* module/compat.h:
+	* module/x86/op_apic.c:
+	* module/x86/op_fixmap.c:
+	* module/x86/op_nmi.c: preemptible kernel support. This fix point
+	  #2 of kernel_src/Documentation/preempt-locking.txt
+
 2002-06-25  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update

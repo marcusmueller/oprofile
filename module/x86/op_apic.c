@@ -24,8 +24,9 @@ static ulong kernel_nmi;
 static ulong lvtpc_masked;
 
 /* this masking code is unsafe and nasty but might deal with the small
- * race when installing the NMI entry into the IDT
+ * race when installing the NMI entry into the IDT.
  */
+/* Called with preempt_disable */
 static void mask_lvtpc(void * e)
 {
 	ulong v = apic_read(APIC_LVTPC);
@@ -33,12 +34,14 @@ static void mask_lvtpc(void * e)
 	apic_write(APIC_LVTPC, v | APIC_LVT_MASKED);
 }
 
+/* Called with preempt_disable */
 static void unmask_lvtpc(void * e)
 {
 	if (!lvtpc_masked)
 		apic_write(APIC_LVTPC, apic_read(APIC_LVTPC) & ~APIC_LVT_MASKED);
 }
 
+/* called with preempt_disable */
 void install_nmi(void)
 {
 	volatile struct _descr descr = { 0, 0,};
@@ -59,6 +62,7 @@ void install_nmi(void)
 	unmask_lvtpc(NULL);
 }
 
+/* called with preempt_disable */
 void restore_nmi(void)
 {
 	smp_call_function(mask_lvtpc, NULL, 0, 1);
@@ -73,10 +77,11 @@ void restore_nmi(void)
 static uint lvtpc_old_mask[NR_CPUS];
 static uint lvtpc_old_mode[NR_CPUS];
 
+/* Called with preempt_disable */
 void __init lvtpc_apic_setup(void * dummy)
 {
 	uint val;
-
+	
 	/* set up LVTPC as we need it */
 	/* IA32 V3, Figure 7.8 */
 	val = apic_read(APIC_LVTPC);
@@ -90,6 +95,7 @@ void __init lvtpc_apic_setup(void * dummy)
 }
 
 /* not safe to mark as __exit since used from __init code */
+/* Called with preempt_disable */
 void lvtpc_apic_restore(void * dummy)
 {
 	uint val = apic_read(APIC_LVTPC);
@@ -106,6 +112,8 @@ static int __init enable_apic(void)
 {
 	uint msr_low, msr_high;
 	uint val;
+
+	preempt_disable();
 
 	/* enable local APIC via MSR. Forgetting this is a fun way to
 	 * lock the box. But we have to hope this is allowed if the APIC
@@ -132,6 +140,8 @@ static int __init enable_apic(void)
 	if (!(val & APIC_SPIV_APIC_ENABLED))
 		apic_write(APIC_SPIV, val | APIC_SPIV_APIC_ENABLED);
 
+	preempt_enable();
+
 	return !!(val & APIC_SPIV_APIC_ENABLED);
 
 not_local_p6_apic:
@@ -139,6 +149,8 @@ not_local_p6_apic:
 	/* disable the apic only if it was disabled */
 	if ((msr_low & (1 << 11)) == 0)
 		wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
+
+	preempt_enable();
 
 	printk(KERN_ERR "oprofile: no local P6 APIC. Falling back to RTC mode.\n");
 	return -ENODEV;
@@ -148,7 +160,7 @@ static void __init do_apic_setup(void)
 {
 	uint val;
 
-	__cli();
+	__cli();	/* sufficient to take care of preemption */
 
 	val = APIC_LVT_LEVEL_TRIGGER;
 	val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_EXINT);
@@ -207,8 +219,10 @@ int __init apic_setup(void)
 
 	switch (enable_apic()) {
 		case 0:
+			preempt_disable();
 			do_apic_setup();
 			val = apic_read(APIC_ESR);
+			preempt_enable();
 			printk(KERN_INFO "oprofile: enabled local APIC. Err code %.08x\n", val);
 			break;
 		case 1:
@@ -218,7 +232,9 @@ int __init apic_setup(void)
 			goto nodev;
 	}
 
+	preempt_disable();
 	lvtpc_apic_setup(NULL);
+	preempt_enable();
 	return 0;
 nodev:
 	printk(KERN_WARNING "Your CPU does not have a local APIC, e.g. "

@@ -1,10 +1,13 @@
 0.3 Release
 -----------
 
- o fix compile problem with kernel >= 2.5.20, an infinite recursion occur between our make and the kernel make (kernel make call our make w/o enough argument to avoid the all target to be reached)
+ o fix some compile problem but with kernel >= 2.5.20, an infinite recursion occur between our make and the kernel make (kernel make call our make w/o enough argument to avoid the all target to be reached)
  o fix GUI for --kernel-range. Done, can you look it John ?
  o verify 2.2/modversions etc. module build ... it's done but let me recheck later (phil)
- o can we get pre-emption up and running ??
+ o can we get pre-emption up and running ?? I started it (phe), mainly it
+  remains to review carefully the current job (grep preempt in x86 subdir)
+  and to fix point #1 #3 of kernel_str/Documentation/preempt-locking.txt
+  most (all ?) of potential problem are in oprofile.c
  
 Before 1.0 big stuff
 --------------------
@@ -53,7 +56,7 @@ General checks to make
  o gcc 3.0/3.1 compile
  o Qt2/3 check, no Qt check
  o verify builds (modversions, kernel versions, athlon etc.). I have the
-  necessary stuff to check kernel versions/configurations on PPro core (Phil)
+  necessary stuff to check kernel versions/configurations on PIII core (Phil)
  o use nm and a little script to track unused function
  o test it to hell and back
  o compile all C++ programs with STL_port and test them

@@ -16,6 +16,7 @@
 
 #include <linux/version.h>
 #include <linux/module.h>
+#include <linux/spinlock.h> /* ensure visiblity of preempt_disable */
 
 #define V_BEFORE(a,b,c) (LINUX_VERSION_CODE < KERNEL_VERSION(a,b,c))
 #define V_EQUAL(a,b,c) (LINUX_VERSION_CODE == KERNEL_VERSION(a,b,c))
@@ -28,6 +29,11 @@
 #endif
 
 #include "op_cache.h"
+
+#ifndef preempt_disable
+#define preempt_disable()		do { } while (0)
+#define preempt_enable()		do { } while (0)
+#endif
 
 #if V_BEFORE(2, 5, 14)
 #define op_pfn_pte(x, y) mk_pte_phys((x), (y))
