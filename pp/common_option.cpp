@@ -12,6 +12,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "locate_images.h"
 #include "op_exception.h"
 #include "popt_options.h"
 #include "cverb.h"

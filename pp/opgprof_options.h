@@ -14,7 +14,6 @@
 
 #include <string>
 
-#include "utility.h"
 #include "common_option.h"
 
 namespace options {

@@ -14,7 +14,6 @@
 #include <iterator>
 #include <iostream>
 
-#include "op_fileio.h"
 #include "file_manip.h"
 #include "op_config.h"
 #include "profile_spec.h"

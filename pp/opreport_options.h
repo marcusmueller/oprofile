@@ -17,10 +17,7 @@
 #include <iosfwd>
 
 #include "common_option.h"
-#include "utility.h"
-#include "string_filter.h"
 #include "symbol_sort.h"
-#include "demangle_symbol.h"
 
 class profile_classes;
 class merge_option;

@@ -18,7 +18,6 @@
 #include "cverb.h"
 #include "profile_spec.h"
 #include "arrange_profiles.h"
-#include "locate_images.h"
 
 using namespace std;
 

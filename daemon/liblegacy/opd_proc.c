@@ -9,6 +9,7 @@
  * @author Philippe Elie
  */
 
+#include "op_hw_config.h"
 #include "opd_proc.h"
 #include "opd_image.h"
 #include "opd_mapping.h"

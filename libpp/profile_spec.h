@@ -15,7 +15,6 @@
 #include <vector>
 #include <list>
 
-#include "generic_spec.h"
 #include "filename_spec.h"
 #include "comma_list.h"
 

@@ -17,7 +17,6 @@
 #include "op_libiberty.h"
 #include "op_fileio.h"
 #include "string_filter.h"
-#include "file_manip.h"
 #include "profile_container.h"
 #include "arrange_profiles.h"
 #include "image_errors.h"

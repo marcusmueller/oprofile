@@ -13,10 +13,8 @@
 #define OPD_IMAGE_H
 
 #include "op_list.h"
-#include "op_hw_config.h"
 #include "op_config_24.h"
 #include "op_types.h"
-#include "odb_hash.h"
 
 #include <time.h>
 

@@ -15,11 +15,8 @@
 #include <string>
 #include <vector>
 
-#include "utility.h"
 #include "common_option.h"
-#include "string_filter.h"
 #include "path_filter.h"
-#include "demangle_symbol.h"
 
 class profile_classes;
 

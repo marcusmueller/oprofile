@@ -16,8 +16,6 @@
 #include <algorithm>
 #include <numeric>
 
-#include "string_filter.h"
-
 #include "symbol.h"
 #include "op_header.h"
 #include "profile.h"

@@ -12,7 +12,7 @@
 #ifndef STREAM_UTIL_H
 #define STREAM_UTIL_H
 
-#include <iosfwd>
+#include <iostream>
 
 /// class which save a stream state and restore it at dtor time
 class io_state {

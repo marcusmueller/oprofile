@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "arrange_profiles.h"
-#include "locate_images.h"
 #include "demangle_symbol.h"
 
 namespace options {

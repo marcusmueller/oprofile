@@ -14,7 +14,6 @@
 #include "arrange_profiles.h"
 #include "op_bfd.h"
 #include "op_header.h"
-#include "op_exception.h"
 
 #include "image_errors.h"
 

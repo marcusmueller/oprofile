@@ -12,7 +12,6 @@
 #ifndef OPD_MAPPING_H
 #define OPD_MAPPING_H
 
-#include "op_types.h"
 #include "op_list.h"
 
 struct opd_image;

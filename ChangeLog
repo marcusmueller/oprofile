@@ -1,3 +1,36 @@
+2003-11-04  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/liblegacy/opd_image.c:
+	* daemon/liblegacy/opd_image.h:
+	* daemon/liblegacy/opd_mapping.c:
+	* daemon/liblegacy/opd_mapping.h:
+	* daemon/liblegacy/opd_proc.c:
+	* gui/oprof_start.cpp:
+	* gui/oprof_start.h:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_util.cpp:
+	* libop/op_config_24.h:
+	* libpp/format_output.cpp:
+	* libpp/op_header.cpp:
+	* libpp/profile.h:
+	* libpp/profile_container.cpp:
+	* libpp/profile_spec.cpp:
+	* libpp/profile_spec.h:
+	* libpp/symbol.h:
+	* libpp/symbol_sort.cpp:
+	* libutil++/stream_util.cpp:
+	* libutil++/stream_util.h:
+	* libutil++/utility.h:
+	* pp/common_option.cpp:
+	* pp/common_option.h:
+	* pp/opannotate_options.h:
+	* pp/opgprof.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opgprof_options.h:
+	* pp/opreport_options.cpp:
+	* pp/opreport_options.h:
+	* pp/populate.cpp: remove some .h dependencies
+
 2003-11-03  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/tests/Makefile.am:

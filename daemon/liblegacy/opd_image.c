@@ -17,7 +17,6 @@
 
 #include "op_file.h"
 #include "op_config_24.h"
-#include "op_mangle.h"
 #include "op_libiberty.h"
 
 #include <string.h>

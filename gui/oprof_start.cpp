@@ -41,6 +41,9 @@
 #include "string_manip.h"
 #include "op_cpufreq.h"
 #include "op_alloc_counter.h"
+#include "oprof_start_util.h"
+
+#include "op_hw_config.h"
 
 using namespace std;
 

@@ -20,6 +20,7 @@
 #include "arrange_profiles.h"
 #include "opreport_options.h"
 #include "popt_options.h"
+#include "string_filter.h"
 #include "file_manip.h"
 #include "cverb.h"
 

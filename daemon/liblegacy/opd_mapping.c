@@ -18,9 +18,6 @@
 #include "op_config_24.h"
 #include "op_libiberty.h"
 
-#include "op_file.h"
-#include "op_fileio.h"
-
 #include <sys/mman.h>
 #include <limits.h>
 #include <stdlib.h>

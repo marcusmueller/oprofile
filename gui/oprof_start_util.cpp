@@ -24,7 +24,6 @@
 #include <qmessagebox.h>
 
 #include "op_file.h"
-#include "string_manip.h"
 #include "file_manip.h"
 #include "child_reader.h"
 #include "op_libiberty.h"

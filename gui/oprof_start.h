@@ -18,9 +18,7 @@
 
 #include "ui/oprof_start.base.h"
 #include "oprof_start_config.h"
-#include "oprof_start_util.h"
 
-#include "op_hw_config.h"
 #include "op_events.h"
 
 class QIntValidator;

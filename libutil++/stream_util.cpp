@@ -9,8 +9,6 @@
  * @author John Levon
  */
 
-#include <iostream>
-
 #include "stream_util.h"
 
 using namespace std;
