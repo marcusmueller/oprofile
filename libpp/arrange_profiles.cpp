@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
+#include <map>
 
 #include "string_manip.h"
 #include "op_header.h"
@@ -381,4 +382,85 @@ arrange_profiles(list<string> const & files, merge_option const & merge_by)
 	identify_classes(classes, merge_by);
 
 	return classes;
+}
+
+
+namespace {
+
+/// add the files to group of image sets
+void add_to_group(image_group_set & group, string const & app_image,
+                  list<string> const & files)
+{
+	image_set set;
+	set.app_image = app_image;
+	set.files = files;
+	group.push_back(set);
+}
+
+
+typedef map<string, inverted_profile> app_map_t;
+
+
+inverted_profile &
+get_iprofile(app_map_t & app_map, string const & image, size_t nr_classes)
+{
+	app_map_t::iterator ait = app_map.find(image);
+	if (ait != app_map.end())
+		return ait->second;
+
+	inverted_profile ip;
+	ip.image = image;
+	ip.groups.resize(nr_classes);
+	app_map[image] = ip;
+	return app_map[image];
+}
+
+};
+
+
+list<inverted_profile> const
+invert_profiles(profile_classes const & classes)
+{
+	app_map_t app_map;
+
+	size_t nr_classes = classes.v.size();
+
+	for (size_t i = 0; i < nr_classes; ++i) {
+		list<profile_set>::const_iterator pit
+			= classes.v[i].profiles.begin();
+		list<profile_set>::const_iterator pend
+			= classes.v[i].profiles.end();
+
+		for (; pit != pend; ++pit) {
+			// files can be empty if samples for a lib image
+			// but none for the main image. Deal with it here
+			// rather than later.
+			if (pit->files.size()) {
+				inverted_profile & ip = get_iprofile(app_map,
+					pit->image, nr_classes);
+				add_to_group(ip.groups[i], pit->image, pit->files);
+			}
+
+			list<profile_dep_set>::const_iterator dit
+				= pit->deps.begin();
+			list<profile_dep_set>::const_iterator const dend
+				= pit->deps.end();
+
+			for (;  dit != dend; ++dit) {
+				inverted_profile & ip = get_iprofile(app_map,
+					dit->lib_image, nr_classes);
+				add_to_group(ip.groups[i], pit->image,
+				             dit->files);
+			}
+		}
+	}
+
+	list<inverted_profile> inverted_list;
+
+	app_map_t::const_iterator it = app_map.begin();
+	app_map_t::const_iterator const end = app_map.end();
+	for (; it != end; ++it)
+		inverted_list.push_back(it->second);
+
+	return inverted_list;
 }

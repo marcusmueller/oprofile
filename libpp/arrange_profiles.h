@@ -113,4 +113,44 @@ profile_classes const
 arrange_profiles(std::list<std::string> const & files,
                  merge_option const & merge_by);
 
+
+/**
+ * A set of sample files where the image binary to open
+ * are all the same.
+ */
+struct image_set {
+	/// this is main app image, *not* necessarily
+	/// the one we need to open
+	std::string app_image;
+
+	/// the sample files
+	std::list<std::string> files;
+};
+
+typedef std::list<image_set> image_group_set;
+
+/**
+ * All sample files where the binary image to open is
+ * the same.
+ */
+struct inverted_profile {
+	/// the image to open
+	std::string image;
+
+	/// all sample files with data for the above image
+	std::vector<image_group_set> groups;
+};
+
+
+/**
+ * Invert the profile set. For opreport -l, opannotate etc.,
+ * processing the profile_classes directly is slow, because
+ * we end up opening BFDs multiple times (for each class,
+ * dependent images etc.). This function returns an inverted
+ * set of sample files, where the primary sort is on the binary
+ * image to open.
+ */
+std::list<inverted_profile> const
+invert_profiles(profile_classes const & classes);
+
 #endif /* !ARRANGE_PROFILES_H */

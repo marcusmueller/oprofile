@@ -324,28 +324,43 @@ void output_summaries(summary_container const & summaries)
 }
 
 
-/// load merged files for one profile
-void populate_from_files(profile_container & samples, size_t count_group,
-                         string const & image, string const & lib_image,
-                         list<string> const & files)
+/// load merged files for one set of sample files
+void
+populate_from_files(profile_t & profile, list<string> const & files, u32 offset)
 {
-	if (!files.size())
-		return;
+	list<string>::const_iterator it = files.begin();
+	list<string>::const_iterator const end = files.end();
 
+	for (; it != end; ++it)
+		profile.add_sample_file(*it, offset);
+}
+
+
+/// load all samples for one binary image
+void
+populate_for_image(profile_container & samples, inverted_profile const & ip)
+{
 	try {
-		op_bfd abfd(lib_image, options::symbol_filter);
-		profile_t results;
+		op_bfd abfd(ip.image, options::symbol_filter);
+		u32 offset = abfd.get_start_offset();
 
-		list<string>::const_iterator it = files.begin();
-		list<string>::const_iterator const end = files.end();
+		opd_header header;
 
-		for (; it != end; ++it) {
-			results.add_sample_file(*it, abfd.get_start_offset());
+		for (size_t i = 0; i < ip.groups.size(); ++i) {
+			list<image_set>::const_iterator it
+				= ip.groups[i].begin();
+			list<image_set>::const_iterator const end
+				= ip.groups[i].end();
+
+			for (; it != end; ++it) {
+				profile_t profile;
+				populate_from_files(profile, it->files, offset);
+				header = profile.get_header();
+				samples.add(profile, abfd, it->app_image, i);
+			}
 		}
 
-		check_mtime(abfd.get_filename(), results.get_header());
-
-		samples.add(results, abfd, image, count_group);
+		check_mtime(abfd.get_filename(), header);
 	}
 	catch (op_runtime_error const & e) {
 		static bool first_error = true;
@@ -353,43 +368,9 @@ void populate_from_files(profile_container & samples, size_t count_group,
 			cerr << "warning: some binary images could not be "
 			     << "read, and will be ignored in the results"
 			     << endl;
+			first_error = false;
 		}
 		cerr << "op_bfd: " << e.what() << endl;
-	}
-}
-
-
-/// load all samples for one given binary
-void populate_profile(profile_container & samples,
-                      profile_set const & profile, size_t count_group)
-{
-	populate_from_files(samples, count_group, profile.image,
-	                    profile.image, profile.files);
-
-	list<profile_dep_set>::const_iterator it = profile.deps.begin();
-	list<profile_dep_set>::const_iterator const end = profile.deps.end();
-
-	for (; it != end; ++it) {
-		populate_from_files(samples, count_group, profile.image,
-		                    it->lib_image, it->files);
-	}
-}
-
-
-/**
- * Load the given samples container with the profile data from
- * the files container, merging as appropriate.
- */
-void populate_profiles(profile_class const & pclass,
-                       profile_container & samples, size_t count_group)
-{
-	list<profile_set>::const_iterator it = pclass.profiles.begin();
-	list<profile_set>::const_iterator const end = pclass.profiles.end();
-
-	// FIXME: this opens binaries multiple times, need image_set
-	// replacement
-	for (; it != end; ++it) {
-		populate_profile(samples, *it, count_group);
 	}
 }
 
@@ -467,10 +448,17 @@ int opreport(vector<string> const & non_options)
 	bool multiple_apps = false;
 
 	for (size_t i = 0; i < classes.v.size(); ++i) {
-		populate_profiles(classes.v[i], samples, i);
 		if (classes.v[i].profiles.size() > 1)
 			multiple_apps = true;
 	}
+
+	list<inverted_profile> iprofiles = invert_profiles(classes);
+
+	list<inverted_profile>::const_iterator it = iprofiles.begin();
+	list<inverted_profile>::const_iterator const end = iprofiles.end();
+
+	for (; it != end; ++it)
+		populate_for_image(samples, *it);
 
 	output_symbols(samples, multiple_apps);
 	return 0;

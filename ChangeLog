@@ -1,5 +1,12 @@
 2003-09-14  John Levon  <levon@movementarian.org>
 
+	* libpp/arrange_profiles.h:
+	* libpp/arrange_profiles.cpp: add invert_profiles
+
+	* pp/opreport.cpp: use it
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
 	* doc/oprofile.xml:
 	* pp/opreport.cpp:
 	* pp/opreport_options.cpp:
