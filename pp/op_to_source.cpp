@@ -255,30 +255,21 @@ string const output_counter(const counter_array_t & counter);
  */
 symbol_entry const * find_symbol(string const & str_vma);
 
-/**
- * @param out output stream
- * @param str an objdump output string on the form hexa_number: or
- *   hexa_number <symbol_name>:
- * @param blank a string containing a certain amount of space/tabulation
- *   character allowing the output to be aligned with the previous line
+/*
+ * @param value an objdump output string of the form hexa_number:
  *
- * from the vma at start of str_vma find the associated symbol name
- * then output to out the symbol name and numbers of samples belonging
- * to this symbol
+ * from hexa_number find the associated samples numbers belonging
+ * to vma then output them
  */
-void annotate_asm_symbol(ostream & out, string const & str,
-                         string const & blank);
+string const asm_line_annotation(string const & value);
 
 /**
- * @param out output stream
- * @param str an objdump output string of the form hexa_number:
- * @param blank a string to indent the output by
+ * @param symbol a pointer to the symbol to consider, can NULL
  *
- * from the vma at start of str_vma find the associated samples number
- * belonging to this vma then output them
+ * return the symbol annoation for symbol or an empty string if symbol
+ * is NULL
  */
-void annotate_asm_line(ostream & out, string const & str,
-                       string const & blank);
+string const symbol_annotation(symbol_entry const * symbol);
 
 /**
  * @param filename a source filename
@@ -286,7 +277,7 @@ void annotate_asm_line(ostream & out, string const & str,
  *
  * If a symbol is associated with this line, output totals for the symbol.
  */
-string const symbol_annotation(string const & filename, size_t linenr);
+string const source_symbol_annotation(string const & filename, size_t linenr);
 
 /**
  * @param filename a source filename
@@ -295,7 +286,7 @@ string const symbol_annotation(string const & filename, size_t linenr);
  * from filename, linenr find the associated samples numbers belonging
  * to this source file, line nr then output them
  */
-string const line_annotation(string const & filename, size_t linenr);
+string const source_line_annotation(string const & filename, size_t linenr);
 
 /**
  * @param filename a source filename
@@ -400,6 +391,8 @@ bool annotate_source(string const & image_name, string const & sample_file,
 			return false;
 	}
 
+	annotation_fill = get_annotation_fill();
+
 	if (assembly)
 		output_asm(image_name);
 	else
@@ -493,14 +486,22 @@ void output_objdump_asm_line(string const & str,
 	while (pos < str.length() && isspace(str[pos]))
 		++pos;
 
-	if (pos == str.length() || !isxdigit(str[pos]))
-		return;
+	if (pos == str.length() || !isxdigit(str[pos])) {
+		if (do_output) {
+			cout << annotation_fill << " :" << str << endl;
+			return;
+		}
+	}
 
 	while (pos < str.length() && isxdigit(str[pos]))
 		++pos;
 
-	if (pos == str.length() || (!isspace(str[pos]) && str[pos] != ':'))
-		return;
+	if (pos == str.length() || (!isspace(str[pos]) && str[pos] != ':')) {
+		if (do_output) {
+			cout << annotation_fill << " :" << str << endl;
+			return;
+		}
+	}
 
 	// symbol are on the form 08030434 <symbol_name>:  we need to be strict
 	// here to avoid any interpretation of a source line as a symbol line
@@ -519,12 +520,12 @@ void output_objdump_asm_line(string const & str,
 		}
 
 		if (do_output)
-			annotate_asm_symbol(cout, str, string());
+			cout << str << symbol_annotation(symbol) << endl;
 
 	} else {
 		// not a symbol, probably an asm line.
 		if (do_output)
-			annotate_asm_line(cout, str, " ");
+			cout << asm_line_annotation(str) << str << endl;
 	}
 }
  
@@ -566,8 +567,6 @@ void do_one_output_objdump(vector<symbol_entry const *> const & output_symbols,
 	string str;
 	while (reader.getline(str)) {
 		output_objdump_asm_line(str, output_symbols, do_output);
-		if (do_output)
-			cout << str << '\n';
 	}
 
 	// objdump always returns SUCCESS so we must rely on the stderr state
@@ -637,8 +636,6 @@ string const get_annotation_fill()
 
 void output_source(filename_match const & fn_match, bool output_separate_file)
 {
-	annotation_fill = get_annotation_fill();
-
 	if (!output_separate_file)
 		output_info(cout);
 
@@ -737,8 +734,9 @@ void do_output_one_file(ostream & out, istream & in, string const & filename, bo
 		string str;
 
 		for (size_t linenr = 1 ; getline(in, str) ; ++linenr) {
-			out << line_annotation(filename, linenr) << str
-			    << symbol_annotation(filename, linenr) << '\n';
+			out << source_line_annotation(filename, linenr) << str
+			    << source_symbol_annotation(filename, linenr)
+			    << '\n';
 		}
 
 	} else {
@@ -784,9 +782,10 @@ bool setup_counter_param(profile_t const & profile)
 		return false;
 	}
 
-	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i)
+	for (size_t i = 0 ; i < samples->get_nr_counters() ; ++i) {
 		if (counter_info[i].total_samples != 0)
 			return true;
+	}
 
 	cerr << "op_to_source: the input contains zero samples" << endl;
 	return false;
@@ -845,43 +844,8 @@ symbol_entry const * find_symbol(string const & str_vma)
 }
 
 
-void annotate_asm_symbol(ostream & out, string const & str,
-                         string const & blank)
+string const symbol_annotation(symbol_entry const * symbol)
 {
-	symbol_entry const * symbol = find_symbol(str);
-
-	if (symbol) {
-		string annot = output_counter(symbol->sample.counter);
-		if (!annot.empty()) {
-			out << blank << begin_comment;
-			out << annot << end_comment << '\n';
-		}
-	}
-}
-
- 
-void annotate_asm_line(ostream & out, string const & str,
-                       string const & blank)
-{
-	// do not use the bfd equivalent:
-	//  - it does not skip space at begin
-	//  - we does not need cross architecture compile so the native
-	// strtoull must work, assuming unsigned long long can contain a vma
-	// and on 32/64 bits box bfd_vma is 64 bits
-	bfd_vma vma = strtoull(str.c_str(), NULL, 16);
-
-	sample_entry const * sample = samples->find_sample(vma);
-	if (sample) {
-		out << blank << begin_comment;
-		out << output_counter(sample->counter);
-		out << end_comment << '\n';
-	}
-}
-
- 
-string const symbol_annotation(string const & filename, size_t linenr)
-{
-	symbol_entry const * symbol = samples->find_symbol(filename, linenr);
 	if (!symbol)
 		return string();
 
@@ -901,7 +865,38 @@ string const symbol_annotation(string const & filename, size_t linenr)
 }
 
 
-string const line_annotation(string const & filename, size_t linenr)
+string const asm_line_annotation(string const & value)
+{
+	// do not use the bfd equivalent:
+	//  - it does not skip space at begin
+	//  - we does not need cross architecture compile so the native
+	// strtoull must work, assuming unsigned long long can contain a vma
+	// and on 32/64 bits box bfd_vma is 64 bits
+	bfd_vma vma = strtoull(value.c_str(), NULL, 16);
+
+	string str;
+
+	sample_entry const * sample = samples->find_sample(vma);
+	if (sample)
+		str += output_counter(sample->counter);
+
+	if (str.empty())
+		str = annotation_fill;
+
+	str += " :";
+	return str;
+}
+
+ 
+string const source_symbol_annotation(string const & filename, size_t linenr)
+{
+	symbol_entry const * symbol = samples->find_symbol(filename, linenr);
+
+	return symbol_annotation(symbol);
+}
+
+
+string const source_line_annotation(string const & filename, size_t linenr)
 {
 	string str;
 	counter_array_t counter;
@@ -919,7 +914,7 @@ string const line_annotation(string const & filename, size_t linenr)
 
 string const line0_info(string const & filename)
 {
-	string annotation = line_annotation(filename, 0);
+	string annotation = source_line_annotation(filename, 0);
 	if (trim(annotation, " \t:").empty())
 		return string();
 
