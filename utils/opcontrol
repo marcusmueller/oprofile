@@ -9,19 +9,19 @@
 # Authors: John Levon, Philippe Elie, Will Cohen
 
 # ensure bash2
-if [ "`echo $BASH_VERSION | cut -b1`" -lt 2 ]; then
+if test "`echo $BASH_VERSION | cut -b1`" -lt 2; then
 	exec /bin/bash2 $0 $@
 fi
  
 
 SYSCTL=do_sysctl
 
-#  A replacement function for the sysctl (procps package) utility which is
+# A replacement function for the sysctl (procps package) utility which is
 # missing on some distribution (e.g. slack 7.0). 
-#  Handle only the -w option of sysctl.
+# Handles only the -w option of sysctl.
 do_sysctl()
 {
-	if [ x$1 != x"-w" ]; then
+	if test "$1" != "-w"; then
 		echo "$0 unknown sysctl option" >&2
 		exit 1
 	fi
@@ -33,7 +33,7 @@ do_sysctl()
 
 	dev_name=`echo $arg | tr . /`
 
-	if [ ! -f /proc/sys/$dev_name ]; then
+	if test ! -f /proc/sys/$dev_name; then
 		echo "/proc/sys/$dev_name does not exist or is not a regular file" >&2
 		exit 1
 	fi
@@ -41,26 +41,52 @@ do_sysctl()
 }
 
 
-# extract the integer field N from --ctr[N]-xxxxxxx
-extract_int()
+# check value is set
+error_if_empty()
 {
-	local val=`echo $1 | sed 's,--ctr\([0-9]*\)[-A-Za-z]*,\1,'`
+	if test -z "$2"; then
+		echo "No value given for option $1" >&2
+		do_help 
+		exit 1
+	fi
+}
 
-	if test -z "$val"; then 
-		echo "Invalid option \"$1\"" >&2
+
+# rm_device arguments $1=file_name
+function rm_device
+{
+	if test -c "$1"; then
+		vecho "Removing $1"
+		rm "$1"
+	fi
+}
+
+
+# create_device arguments $1=file_name $2=MAJOR_NR $3=MINOR_NR
+function create_device {
+	vecho "Doing mknod $1"
+	mknod "$1" c $2 $3
+	if test "$?" != "0"; then
+		echo "Couldn't mknod $1" >&2
 		exit 1
 	fi
-	if [ ! -d $MOUNT/$val ]; then
-		echo "invalid argument $1: bad counter number" >&2
-		exit 1
+	chmod 700 "$1"
+}
+
+
+move_and_remove()
+{
+	if test -e $1; then
+		mv $1 $SAMPLES_DIR/.tmp_reset.$$
+		rm -rf $SAMPLES_DIR/.tmp_reset.$$
 	fi
-	echo $val
 }
 
 
 # verbose echo
-vecho() {
-	if [ "$VERBOSE" == "0" ]; then 
+vecho()
+{
+	if test "$VERBOSE" = "0"; then 
 		return;
 	fi
 	echo $@
@@ -68,7 +94,8 @@ vecho() {
 
  
 # print help message
-do_help() { 
+do_help()
+{ 
 	echo "opcontrol: usage:
 	--init			loads the oprofile module and oprofilefs
 	--setup			give setup arguments
@@ -104,22 +131,24 @@ do_help() {
 }
 
 
-load_module_26() {
+# load the module and mount oprofilefs
+load_module_26()
+{
 	grep oprofilefs /proc/filesystems >/dev/null
-	if [ "$?" -ne 0 ]; then
+	if test "$?" -ne 0; then
 		modprobe oprofile
-		if [ "$?" != "0" ]; then
+		if test "$?" != "0"; then
 			# couldn't load a module
 			return
 		fi
 		grep oprofile /proc/modules >/dev/null
-		if [ "$?" != "0" ]; then
+		if test "$?" != "0"; then
 			# didn't find module
 			return
 		fi
 	fi
 	grep oprofilefs /proc/filesystems >/dev/null
-	if [ "$?" -ne 0 ]; then
+	if test "$?" -ne 0; then
 		# filesystem still not around
 		return
 	fi
@@ -133,23 +162,24 @@ load_module_26() {
 }
 
 
-load_module_24() {
+load_module_24()
+{
 	grep oprof /proc/devices >/dev/null
-	if [ "$?" -ne 0 ]; then
+	if test "$?" -ne 0; then
 		modprobe oprofile
-		if [ "$?" != "0" ]; then
+		if test "$?" != "0"; then
 			# couldn't load a module
 			return
 		fi
 		grep oprofile /proc/modules >/dev/null
-		if [ "$?" != "0" ]; then
+		if test "$?" != "0"; then
 			# didn't find module
 			return
 		fi
 	fi
 	KERNEL_SUPPORT=no
 	OPROFILE_AVAILABLE=yes
-} 
+}
 
 
 load_module()
@@ -167,7 +197,8 @@ load_module()
 
 
 # initialise parameters
-do_init() {
+do_init()
+{
 	# for these three buffer size == 0 means use the default value
 	# hard-coded in op_user.h
 	BUF_SIZE=0
@@ -221,10 +252,11 @@ do_init() {
 }
 
 
-function create_dir {
-	if [ ! -d "$1" ]; then
+create_dir()
+{
+	if test ! -d "$1"; then
 	       mkdir -p "$1"
-	       if [ "$?" != "0" ]; then
+	       if test "$?" != "0"; then
 		       echo "Couldn't mkdir -p $1" >&2
 		       exit 1
 	       fi
@@ -234,7 +266,8 @@ function create_dir {
 
 
 # save all the setup related information
-do_save_setup() {
+do_save_setup()
+{
 	create_dir "$SETUP_DIR"
 
 	touch $SETUP_FILE
@@ -255,7 +288,7 @@ do_save_setup() {
 	echo "SEPARATE_CPU=$SEPARATE_CPU" >> $SETUP_FILE
 	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
 	# write the actual information to file
-	if [ "$BUF_SIZE" != 0 ]; then
+	if test "$BUF_SIZE" != 0; then
 		echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
 	fi;
 	if test "$KERNEL_SUPPORT" != "yes"; then
@@ -265,8 +298,9 @@ do_save_setup() {
 
 
 # reload all the setup-related information
-do_load_setup() {
-	if test  -f "$SETUP_FILE"; then
+do_load_setup()
+{
+	if test -f "$SETUP_FILE"; then
 		# load the actual information from file
 		# FIXME this is insecure, arbitrary commands could be added to
 		# $SETUP_FILE and be executed as root
@@ -275,7 +309,7 @@ do_load_setup() {
 
 	vecho "Parameters used:"
 	vecho "CPUTYPE $CPUTYPE"
-	if [ $BUF_SIZE != 0 ]; then
+	if test $BUF_SIZE != 0; then
 		vecho "BUF_SIZE $BUF_SIZE"
 	else
 		vecho "BUF_SIZE default value"
@@ -289,8 +323,9 @@ do_load_setup() {
 }
 
 
-check_valid_args() {
-	if [ -z "$VMLINUX" ]; then
+check_valid_args()
+{
+	if test -z "$VMLINUX"; then
 		echo "No vmlinux file specified. You must specify the correct vmlinux file, e.g." >&2
 		echo "opcontrol --vmlinux=/path/to/vmlinux" >&2
 		echo "If you do not have a vmlinux file, use " >&2
@@ -313,7 +348,8 @@ check_valid_args() {
 
 
 # get start and end points of the kernel
-get_kernel_range() {
+get_kernel_range()
+{
 	if test ! -z "$KERNEL_RANGE"; then
 		return;
 	fi
@@ -338,19 +374,10 @@ get_kernel_range() {
 }
  
  
-# check value is set
-error_if_empty() {
-	if test -z "$2"; then
-		echo "No value given for option $1" >&2
-		do_help 
-		exit 1
-	fi
-}
-
-
 # validate --separate= parameters. This function is called with IFS=,
 # so on each argument is splitted
-validate_separate_args() {
+validate_separate_args()
+{
 	error_if_empty $1 $2	# we need at least one argument
 	local i=1
 	SEPARATE_LIB=0
@@ -395,8 +422,8 @@ validate_separate_args() {
 
 
 # check the counters make sense, and resolve the hardware allocation
-verify_counters() {
-
+verify_counters()
+{
 	if test "$IS_TIMER" = 1; then
 		if test "$NR_CHOSEN" != 0; then
 	 		echo "You cannot specify any performance counter events" >&2
@@ -424,8 +451,8 @@ verify_counters() {
 
 
 # get and check specified options
-do_options() {
-
+do_options()
+{
 	EXCLUSIVE_ARGC=0
 	SETUP=no
 	NEED_SETUP=no
@@ -627,7 +654,8 @@ do_options() {
 
 
 # stop any existing daemon
-do_stop() {
+do_stop()
+{
 	if test ! -f "$LOCK_FILE"; then
 		echo "Daemon not running" >&2
 		return
@@ -648,7 +676,9 @@ do_stop() {
 }
 
 
-do_kill_daemon() {
+# kill the daemon process(es)
+do_kill_daemon()
+{
 	if test ! -f "$LOCK_FILE"; then
 		# no error message, do_kill_deamon imply stop and stop already
 		# output "Daemon not running"
@@ -688,7 +718,7 @@ do_kill_daemon() {
 		fi
 
 		COUNT=`expr $COUNT + 1`
-		if [ "$COUNT" -eq 15 ]; then
+		if test "$COUNT" -eq 15; then
 			echo "Daemon stuck shutting down; killing !"
 			kill -9 `cat $LOCK_FILE`
 		fi
@@ -699,35 +729,16 @@ do_kill_daemon() {
 }
 
 
-# rm_device arguments $1=file_name
-function rm_device {
-	if [ -c "$1" ]; then
-		vecho "Removing $1"
-		rm "$1"
-	fi
-}
-
-
-rm_devices_24() {
+rm_devices_24()
+{
 	rm_device "$DEVICE_FILE"
 	rm_device "$NOTE_DEVICE_FILE"
 	rm_device "$HASH_MAP_DEVICE_FILE"
 }
 
 
-# create_device arguments $1=file_name $2=MAJOR_NR $3=MINOR_NR
-function create_device {
-	vecho "Doing mknod $1"
-	mknod "$1" c $2 $3
-	if [ "$?" != "0" ]; then
-		echo "Couldn't mknod $1" >&2
-		exit 1
-	fi
-	chmod 700 "$1"
-}
-
-
-create_devices_24() {
+create_devices_24() 
+{
 	MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
 
 	create_device $DEVICE_FILE $MAJOR_NR 0
@@ -737,7 +748,8 @@ create_devices_24() {
 
 
 # setup and start module
-do_setup() {
+do_setup()
+{
 	create_dir "$DIR"
 
 	>$LOG_FILE
@@ -781,7 +793,7 @@ set_ctr_param()
 do_param_setup()
 {
 	# different names
-	if [ $BUF_SIZE != 0 ]; then
+	if test $BUF_SIZE != 0; then
 		if test "$KERNEL_SUPPORT" = "yes"; then
 			echo $BUF_SIZE >$MOUNT/buffer_size
 		else
@@ -789,7 +801,7 @@ do_param_setup()
 		fi
 	fi
 
-	if [ $NOTE_SIZE != 0 ]; then
+	if test $NOTE_SIZE != 0; then
 		set_param notesize $NOTE_SIZE
 	fi
 
@@ -854,7 +866,8 @@ do_param_setup()
 }
 
 
-do_start_daemon() {
+do_start_daemon()
+{
  
 	if test -f "$LOCK_FILE"; then
 		kill -s 0 `cat $LOCK_FILE` 2>/dev/null
@@ -880,13 +893,13 @@ do_start_daemon() {
 
 	OPD_ARGS="$OPD_ARGS --events=$OPROFILED_EVENTS"
 
-	if [ "$VMLINUX" = "none" ]; then
+	if test "$VMLINUX" = "none"; then
 		OPD_ARGS="$OPD_ARGS --no-vmlinux"
 	else
 		OPD_ARGS="$OPD_ARGS --vmlinux=$VMLINUX --kernel-range=$KERNEL_RANGE"
 	fi
 
-	if [ "$VERBOSE" = "1" ]; then
+	if test "$VERBOSE" = "1"; then
 		OPD_ARGS="$OPD_ARGS --verbose"
 	fi
 
@@ -899,7 +912,7 @@ do_start_daemon() {
 	do
 		sleep 1
 		COUNT=`expr $COUNT + 1`
-		if [ "$COUNT" -eq 30 ]; then
+		if test "$COUNT" -eq 10; then
 			echo "Couldn't start oprofiled." >&2
 			echo "Check the log file \"$LOG_FILE\" and /var/log/messages" >&2
 			exit 1
@@ -910,7 +923,8 @@ do_start_daemon() {
 }
 
 
-do_start() {
+do_start()
+{
 	if test "$KERNEL_SUPPORT" = "yes"; then
 		echo 1 >$MOUNT/enable
 	fi
@@ -922,7 +936,8 @@ do_start() {
 # do_dump
 # returns 0 if successful
 # returns 1 if the daemon is not running
-do_dump() {
+do_dump()
+{
 	# make sure that the daemon is running
 	if test -e "$DIR/lock"; then
 		OPROFILED_PID=`cat $DIR/lock`
@@ -957,8 +972,9 @@ do_dump() {
 }
 
 
-#tell daemon to re-open the sample files
-hup_daemon() {
+# tell daemon to re-open the sample files
+hup_daemon()
+{
 	if test -f "$LOCK_FILE"; then
 		echo -n "Signalling daemon... "
 		kill -HUP `cat $LOCK_FILE` 
@@ -967,8 +983,9 @@ hup_daemon() {
 }
  
 
-#move all the sample files to a sample directory
-do_save_session () {
+# move all the sample files to a sample directory
+do_save_session()
+{
 	SAVE_DIR="${SAMPLES_DIR}/${SAVE_NAME}"
 
 	if test -e "$SAVE_DIR"; then
@@ -984,7 +1001,7 @@ do_save_session () {
 	# FIXME: I don't think it's worth checking for empty current directory
 
 	mv $CURRENT_SAMPLES_DIR $SAVE_DIR
-	if [ "$?" != "0" ]; then
+	if test "$?" != "0"; then
 		echo "Couldn't move $CURRENT_SAMPLES_DIR to $SAVE_DIR" >&2
 		exit 1
 	fi
@@ -993,15 +1010,9 @@ do_save_session () {
 }
 
 
-move_and_remove() {
-	if test -e $1; then
-		mv $1 $SAMPLES_DIR/.tmp_reset.$$
-		rm -rf $SAMPLES_DIR/.tmp_reset.$$
-	fi
-}
-
-#remove all the sample files
-do_reset() {
+# remove all the sample files
+do_reset()
+{
 	if test -z "$SAMPLES_DIR"; then
 		echo "opcontrol:do_reset() SAMPLES_DIR is empty!"
 		exit 1;
@@ -1015,13 +1026,14 @@ do_reset() {
 }
 
 
-do_deinit() {
-	#unmount /dev/oprofile if it is mounted
+do_deinit()
+{
+	# unmount /dev/oprofile if it is mounted
 	OPROF_FS=`grep /dev/oprofile /etc/mtab`
 	if test -n "$OPROF_FS"; then
 		umount /dev/oprofile
 	fi
-	#unload the oprofile module if it is around
+	# unload the oprofile module if it is around
 	OPROF_MOD=`lsmod | grep oprofile`
 	if test -n "$OPROF_MOD"; then
 		echo "Unloading oprofile module" >& 2
@@ -1031,9 +1043,10 @@ do_deinit() {
 
 
 # The function that calls the appropriate operations
-do_operations() {
-	#INIT always done by load_module to get access to cputype
-	#thus INIT is a noop
+do_operations()
+{
+	# INIT always done by load_module to get access to cputype
+	# thus INIT is a noop
 
 	if test "$SETUP" = "yes"; then
 		check_valid_args
@@ -1079,7 +1092,8 @@ do_operations() {
 }
  
 # early check for --version, --help
-check_version_help() {
+check_version_help()
+{
 
 	OP_HELP="$OPDIR/op_help"
 
@@ -1103,7 +1117,7 @@ check_version_help() {
 
 # main
 
-#determine the location of opcontrol and related programs
+# determine the location of opcontrol and related programs
 OPCONTROL=`which $0`
 OPDIR=`dirname $OPCONTROL`
 
@@ -1116,7 +1130,7 @@ if test -z "$1"; then
 	exit 0
 fi
 
-if [ "$UID" != "0" ]; then
+if test "$UID" != "0"; then
 	echo "Must be root to use oprofile." >&2
 	exit 1
 fi
