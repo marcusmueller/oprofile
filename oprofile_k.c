@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.16 2000/08/18 01:19:07 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.17 2000/08/21 19:28:13 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -105,33 +105,40 @@ asmlinkage void my_do_nmi(struct pt_regs * regs, long error_code)
 
 static u32 map_buf[OP_MAX_MAP_BUF];
 static ulong nextmapbuf;
-static uint map_open __cacheline_aligned;
-static uint hash_map_open __cacheline_aligned;
+static uint map_open;
+static uint hash_map_open;
 static char **hash_map;
 
 void oprof_out8(void *buf);
 
 /* --------- device routines ------------- */
 
+static int output_path_hash(const char *name, uint len);
+
 int oprof_hash_map_open(void)
 {
 	struct page *page;
 
-	if (hash_map_open)
+	if (test_and_set_bit(0,&hash_map_open))
 		return -EBUSY;
 
-	hash_map_open=1;
-
-	hash_map = kmalloc(OP_HASH_MAP_SIZE, GFP_KERNEL);
+	hash_map = kmalloc(PAGE_ALIGN(OP_HASH_MAP_SIZE), GFP_KERNEL);
 	if (!hash_map) {
 		hash_map_open=0;
 		return -EFAULT;
 	}
 
+	for (page = virt_to_page(hash_map); page < virt_to_page(hash_map+PAGE_ALIGN(OP_HASH_MAP_SIZE)); page++)
+		mem_map_reserve(page);
+
 	memset(hash_map, 0, OP_HASH_MAP_SIZE);
 
-	for (page = virt_to_page(hash_map); page < virt_to_page(hash_map+OP_HASH_MAP_SIZE); page++)
-		mem_map_reserve(page);
+	output_path_hash("lib",3);
+	output_path_hash("bin",3);
+	output_path_hash("usr",3);
+	output_path_hash("sbin",4);
+	output_path_hash("local",5);
+	output_path_hash("X11R6",5);
 
 	return 0;
 }
@@ -142,7 +149,7 @@ int oprof_hash_map_release(void)
 		return -EFAULT;
 
 	kfree(hash_map);
-	hash_map_open=0;
+	clear_bit(0,&hash_map_open);
 	return 0;
 }
 
@@ -150,7 +157,7 @@ int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma)
 {
 	ulong size = (ulong)(vma->vm_end-vma->vm_start);
 
-	if (size>OP_HASH_MAP_SIZE || vma->vm_flags&VM_WRITE || vma->vm_pgoff)
+	if (size > PAGE_ALIGN(OP_HASH_MAP_SIZE) || vma->vm_flags&VM_WRITE || vma->vm_pgoff)
 		return -EINVAL;
 
 	if (remap_page_range(vma->vm_start, virt_to_phys(hash_map),
@@ -162,10 +169,9 @@ int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma)
 
 int oprof_map_open(void)
 {
-	if (map_open)
+	if (test_and_set_bit(0,&map_open))
 		return -EBUSY;
 
-	map_open=1;
 	return 0;
 }
 
@@ -174,7 +180,7 @@ int oprof_map_release(void)
 	if (!map_open)
 		return -EFAULT;
 
-	map_open=0;
+	clear_bit(0,&map_open);
 	return 0;
 }
 
@@ -400,6 +406,9 @@ static int oprof_output_map(ulong addr, ulong len,
 	ulong offset, struct file *file, char *buf)
 {
 	u32 *tot;
+
+	if (!hash_map)
+		return;
 
 	spin_lock(&map_lock);
 	map_out32(addr);
