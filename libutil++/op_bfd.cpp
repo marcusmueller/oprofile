@@ -515,16 +515,15 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 
 	pc = sym_offset(sym_idx, offset) + sym.value();
 
-	if (pc >= bfd_section_size(ibfd, section))
+	// FIXME: to test, I'm unsure if from this point we must use abfd
+	// or the check if (pc >= bfd_section_size(abfd, section)) must be done
+	// with ibfd.
+	bfd * abfd = dbfd ? dbfd : ibfd;
+
+	if (pc >= bfd_section_size(abfd, section))
 		return false;
 
-	// Try finding line information in binary first.
-	bool ret = bfd_find_nearest_line(ibfd, section, bfd_syms.get(), pc,
-					 &cfilename, &functionname, &linenr);
-
-	// Try finding line information in debug info file second.
-	if ((!ret) && dbfd)
-		ret = bfd_find_nearest_line(dbfd, section, bfd_syms.get(), pc,
+	bool ret = bfd_find_nearest_line(abfd, section, bfd_syms.get(), pc,
 					 &cfilename, &functionname, &linenr);
 
 	if (cfilename == 0 || !ret) {
@@ -580,12 +579,12 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 		// first restrict the search on a sensible range of vma,
 		// 16 is an intuitive value based on epilog code look
 		size_t max_search = 16;
-		size_t section_size = bfd_section_size(ibfd, section);
+		size_t section_size = bfd_section_size(abfd, section);
 		if (pc + max_search > section_size)
 			max_search = section_size - pc;
 
 		for (size_t i = 1 ; i < max_search ; ++i) {
-			bool ret = bfd_find_nearest_line(ibfd, section,
+			bool ret = bfd_find_nearest_line(abfd, section,
 							 bfd_syms.get(), pc+i,
 							 &cfilename,
 							 &functionname,
@@ -607,7 +606,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 		// As mentionned above a previous work-around break static
 		// inline function. We recover here by not checking than
 		// functionname == sym.name
-		bfd_find_nearest_line(ibfd, section, bfd_syms.get(), pc,
+		bfd_find_nearest_line(abfd, section, bfd_syms.get(), pc,
 				      &cfilename, &functionname, &linenr);
 	}
 
