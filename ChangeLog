@@ -1,5 +1,13 @@
 2001-10-03  Philippe Elie  <ph_e@club-internet.fr>
 
+	* doc/oprofile.1.in:
+	* doc/oprofile.sgml:
+	* pp/op_to_source:
+	* pp/opf_filter.cpp: implement --source-dir and --output-dir
+	  to generated separated annoted source file.
+
+2001-10-03  Philippe Elie  <ph_e@club-internet.fr>
+
 	* pp/oprofpp.cpp
 	* pp/oprofpp.h
 	* pp/opf_filter.cpp: minor cleanup

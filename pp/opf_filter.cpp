@@ -14,6 +14,8 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <sys/stat.h>
+
 #include <fstream>
 #include <iomanip>
 #include <vector>
@@ -46,6 +48,9 @@ string extract_blank_at_begin(const string & str);
 ostream & operator<<(ostream & out, const counter_setup &);
 
 double do_ratio(size_t a, size_t total);
+
+bool create_dir(const std::string & dir);
+bool create_path_name(const std::string& path);
 
 }
 
@@ -97,28 +102,34 @@ struct counter_setup {
 // All the work is made here.
 class output {
  public:
-	output(ostream & out_, int argc, char const * argv[],
+	output(int argc, char const * argv[],
 	       bool have_linenr_info_,
 	       size_t threshold_percent,
 	       bool until_more_than_samples,
-	       size_t sort_by_counter);
+	       size_t sort_by_counter,
+	       const char * output_dir,
+	       const char * source_dir);
 
 	bool treat_input(input &);
 
 	void debug_dump_vector() const;
 
  private:
-	void output_command_line() const;
+	/// this output a comment containaing the counter setup and command
+	/// the line.
+	void output_header(ostream& out) const;
 
 	void output_asm(input & in);
 	void output_source();
 
 	// output one file unconditionally.
-	void do_output_one_file(istream & in, const string & filename, 
+	void output_one_file(istream & in, const string & filename, 
+			     const counter_array_t & total_samples_for_file);
+	void do_output_one_file(ostream& out, istream & in, const string & filename, 
 				const counter_array_t & total_samples_for_file);
 
 	// accumulate counter for a given (filename, linenr).
-	void accumulate_and_output_counter(const string & filename, size_t linenr, 
+	void accumulate_and_output_counter(ostream& out, const string & filename, size_t linenr, 
 					   const string & blank);
 
 	void build_samples_containers();
@@ -126,23 +137,22 @@ class output {
 	bool setup_counter_param();
 	bool calc_total_samples();
 
-	void output_counter(const counter_array_t & counter, 
+	void output_counter_for_file(ostream& out, const string & filename, 
+				     const counter_array_t& count);
+	void output_counter(ostream& out, const counter_array_t & counter, 
 			    bool comment, const string & prefix) const;
-	void output_one_counter(size_t counter, size_t total) const;
+	void output_one_counter(ostream& out, size_t counter, size_t total) const;
 
-	void find_and_output_symbol(const string& str, const char * blank) const;
-	void find_and_output_counter(const string& str, const char * blank) const;
+	void find_and_output_symbol(ostream& out, const string& str, const char * blank) const;
+	void find_and_output_counter(ostream& out, const string& str, const char * blank) const;
 
-	void find_and_output_counter(const string & filename,
+	void find_and_output_counter(ostream& out, const string & filename,
 				     size_t linenr) const;
 
 	size_t get_sort_counter_nr() const;
 
 	// debug.
 	bool sanity_check_symbol_entry(size_t index) const;
-
-	// The output stream.
-	ostream & out;
 
 	// this order of declaration is required to ensure proper
 	// initialisation of oprofpp
@@ -185,6 +195,10 @@ class output {
 	bool until_more_than_samples;
 
 	bool have_linenr_info;
+
+	std::string output_dir;
+	std::string source_dir;
+	bool output_separate_file;
 };
 
 //---------------------------------------------------------------------------
@@ -204,7 +218,7 @@ string extract_blank_at_begin(const string & str)
 // Convenience function : just output the setup of one counter.
 ostream & operator<<(ostream & out, const counter_setup & rhs)
 {
-	out << (rhs.enabled ? "enabled" : "disabled")  << " :";
+	out << (rhs.enabled ? "enabled :" : "disabled");
 
 	if (rhs.enabled) {
 		out << " ";
@@ -227,6 +241,60 @@ ostream & operator<<(ostream & out, const counter_setup & rhs)
 inline double do_ratio(size_t counter, size_t total)
 {
 	return total == 0 ? 1.0 : ((double)counter / total);
+}
+
+bool create_dir(const std::string & dir)
+{
+	if (access(dir.c_str(), F_OK)) {
+		if (mkdir(dir.c_str(), 0700)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool create_path_name(const std::string& path)
+{
+	std::vector<std::string> path_component;
+
+	size_t slash = 0;
+	while (slash < path.length()) {
+		size_t new_pos = path.find_first_of('/', slash);
+		if (new_pos == std::string::npos) {
+			new_pos = path.length();
+		}
+
+		path_component.push_back(path.substr(slash, (new_pos - slash) + 1));
+		slash = new_pos + 1;
+
+	}
+
+	std::string dir_name;
+	for (size_t i = 0 ; i < path_component.size() ; ++i) {
+		dir_name += '/' + path_component[i];
+		if (create_dir(dir_name) == false)
+			return false;
+	}
+
+	return true;
+}
+
+/**
+ * pathname - get the path component of a filename
+ * @file_name: filename
+ *
+ * Returns the path name of a filename with trailing '/' removed.
+ */
+std::string const pathname(std::string const & file_name)
+{
+	std::string result = file_name;
+
+	std::string::size_type slash = result.find_last_of('/');
+	if (slash != std::string::npos)
+		result.erase(slash, result.length() - slash);
+
+	return result;
 }
 
 } // anonymous namespace
@@ -297,13 +365,14 @@ source_file::source_file(istream & in)
 
 //---------------------------------------------------------------------------
 
-output::output(ostream & out_, int argc_, char const * argv_[],
+output::output(int argc_, char const * argv_[],
 	       bool have_linenr_info_,
 	       size_t threshold_percent_,
 	       bool until_more_than_samples_,
-	       size_t sort_by_counter_)
+	       size_t sort_by_counter_,
+	       const char * output_dir_,
+	       const char * source_dir_)
 	: 
-	out(out_),
 	samples_files(),
 	abfd(samples_files.header[samples_files.first_file]),
 	argc(argc_),
@@ -315,7 +384,10 @@ output::output(ostream & out_, int argc_, char const * argv_[],
 	sort_by_counter(sort_by_counter_),
 	cpu_type(-1),
 	until_more_than_samples(until_more_than_samples_),
-	have_linenr_info(have_linenr_info_)
+	have_linenr_info(have_linenr_info_),
+	output_dir(output_dir_ ? output_dir_ : ""),
+	source_dir(source_dir_ ? source_dir_ : ""),
+	output_separate_file(false)
 {
 	if (have_linenr_info && !abfd.have_debug_info()) {
 		std:: cerr << "Request for source file annotated "
@@ -323,6 +395,33 @@ output::output(ostream & out_, int argc_, char const * argv_[],
 			   << std::endl;
 
 		exit(EXIT_FAILURE);
+	}
+
+	if (!output_dir.empty() || !source_dir.empty()) {
+		char* temp;
+
+		output_separate_file = true;
+
+		temp = opd_relative_to_absolute_path(output_dir.c_str(), NULL);
+		output_dir = temp;
+		opd_free(temp);
+
+		temp = opd_relative_to_absolute_path(source_dir.c_str(), NULL);
+		source_dir = temp;
+		opd_free(temp);
+
+		if (output_dir == source_dir) {
+			cerr << "You can not specify the same directory for "
+			     << "--output-dir and --src-dir" << endl;
+
+			exit(EXIT_FAILURE);
+		}
+
+		if (create_dir(output_dir) == false) {
+			cerr << "unable to create " << output_dir << " directory: " << endl;
+
+			exit(EXIT_FAILURE);
+		}
 	}
 }
 
@@ -410,7 +509,7 @@ bool output::calc_total_samples()
 	return false;
 }
 
-void output::output_one_counter(size_t counter, size_t total) const
+void output::output_one_counter(ostream& out, size_t counter, size_t total) const
 {
 
 	out << " ";
@@ -421,7 +520,7 @@ void output::output_one_counter(size_t counter, size_t total) const
 }
 
 void output::
-output_counter(const counter_array_t & counter, bool comment, 
+output_counter(ostream& out, const counter_array_t & counter, bool comment, 
 	       const string & prefix) const
 {
 	if (comment)
@@ -432,7 +531,7 @@ output_counter(const counter_array_t & counter, bool comment,
 
 	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		if (counter_info[i].enabled)
-			output_one_counter(counter[i], counter_info[i].total_samples);
+			output_one_counter(out, counter[i], counter_info[i].total_samples);
 
 	out << " ";
       
@@ -443,7 +542,7 @@ output_counter(const counter_array_t & counter, bool comment,
 }
 
 // Complexity: log(container.size())
-void output::find_and_output_symbol(const string& str, const char * blank) const
+void output::find_and_output_symbol(ostream& out, const string& str, const char * blank) const
 {
 	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
@@ -452,12 +551,12 @@ void output::find_and_output_symbol(const string& str, const char * blank) const
 	if (symbol) {
 		out <<  blank;
 
-		output_counter(symbol->sample.counter, true, string());
+		output_counter(out, symbol->sample.counter, true, string());
 	}
 }
 
 // Complexity: log(samples.size())
-void output::find_and_output_counter(const string& str, const char * blank) const
+void output::find_and_output_counter(ostream& out, const string& str, const char * blank) const
 {
 	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
@@ -465,16 +564,16 @@ void output::find_and_output_counter(const string& str, const char * blank) cons
 	if (sample) {
 		out <<  blank;
 
-		output_counter(sample->counter, true, string());
+		output_counter(out, sample->counter, true, string());
 	}
 }
 
 // Complexity: log(symbols.size())
-void output::find_and_output_counter(const string & filename, size_t linenr) const
+void output::find_and_output_counter(ostream& out, const string & filename, size_t linenr) const
 {
 	const symbol_entry * symbol = symbols.find(filename, linenr);
 	if (symbol)
-		output_counter(symbol->sample.counter, true, symbol->name);
+		output_counter(out, symbol->sample.counter, true, symbol->name);
 }
 
 void output::output_asm(input & in) 
@@ -502,7 +601,7 @@ void output::output_asm(input & in)
 		}
 	}
 
-	// now output_symbols contains the symbol of interest
+	output_header(cout);
 
 	// we want to avoid output of function that contain zero sample,
 	// these symbol are not in our set of symbol so we can detect this
@@ -527,7 +626,7 @@ void output::output_asm(input & in)
 
 			if (pos == str.length() || !isxdigit(str[pos])) {
 				if (do_output)
-					out << str << '\n';
+					cout << str << '\n';
 				continue;				
 			}
 
@@ -537,7 +636,7 @@ void output::output_asm(input & in)
 			if (pos == str.length() || 
 			    (!isspace(str[pos]) && str[pos] != ':')) {
 				if (do_output)
-					out << str << '\n';
+					cout << str << '\n';
 				continue;				
 			}
 
@@ -569,27 +668,111 @@ void output::output_asm(input & in)
 				}
 
 				if (do_output) {
-					find_and_output_symbol(str, "");
+					find_and_output_symbol(cout, str, "");
 				}
 			} else { // not a symbol, probably an asm line.
 				if (do_output)
-					find_and_output_counter(str, " ");
+					find_and_output_counter(cout, str, " ");
 			}
 		}
 
 		if (do_output)
-			out << str << '\n';
+			cout << str << '\n';
 	}
 }
 
-void output::accumulate_and_output_counter(const string & filename, size_t linenr,
+void output::accumulate_and_output_counter(ostream& out, const string & filename, size_t linenr,
 					   const string & blank)
 {
 	counter_array_t counter;
 	if (samples.accumulate_samples(counter, filename, linenr)) {
 		out << blank;
 
-		output_counter(counter, true, string());
+		output_counter(out, counter, true, string());
+	}
+}
+
+void output::output_counter_for_file(ostream& out, const string & filename,
+				     const counter_array_t & total_count_for_file)
+{
+	out << begin_comment << endl
+	    << " Total samples for file : " << '"' << filename << '"'
+	    << endl;
+
+	output_counter(out, total_count_for_file, false, string());
+
+	out << end_comment << endl << endl;
+}
+
+// Pre condition:
+//  the file has not been output.
+//  in is a valid file stream ie ifstream(filename)
+// Post condition:
+//  the entire file source and the associated samples has been output to
+//  the standard output.
+void output::output_one_file(istream & in, const string & filename,
+			     const counter_array_t & total_count_for_file)
+{
+	std::string out_filename;
+
+	if (output_separate_file == true) {
+		out_filename = filename;
+
+		size_t pos = out_filename.find(source_dir);
+		if (pos == 0) {
+			out_filename.erase(0, source_dir.length());
+		} else if (pos == string::npos) {
+			// filename is outside the source dir: ignore this file
+			cerr << "opf_filter: source file " 
+			     << '"' << out_filename << '"' 
+			     << " is outside the source directory "
+			     << '"' << source_dir << '"'
+			     << " specified through --source-dir" << endl
+			     << "file is ignored"
+			     << endl;
+
+			return;
+		}
+
+		out_filename = output_dir + out_filename;
+
+		std::string path = pathname(out_filename);
+		if (create_path_name(path) == false) {
+			cerr << "unable to create directory: " 
+			     << '"' << path << '"' << endl;
+			return;
+		}
+
+		// paranoid checking: out_filename and filename must be
+		// distinct file. FIXME: is this the correct way to check
+		// against identical file?
+		struct stat stat1;
+		struct stat stat2;
+		if (stat(filename.c_str(), &stat1) == 0 &&
+		    stat(out_filename.c_str(), &stat2) == 0) {
+			if (stat1.st_dev == stat2.st_dev &&
+			    stat1.st_ino == stat2.st_ino) {
+				cerr << "input and output_filename are" 
+				     << "identical ("
+				     << '"' << filename << '"'
+				     << ','
+				     << '"' << out_filename << '"'
+				     << endl;
+
+				return;
+			}
+		}
+
+		ofstream out(out_filename.c_str());
+		if (!out){
+			cerr << "unable to open output file "
+			     << '"' << out_filename << '"'
+			     << endl;
+		}
+
+		do_output_one_file(out, in, filename, total_count_for_file);
+	} else {
+		do_output_one_file(cout, in, filename, total_count_for_file);
 	}
 }
 
@@ -599,22 +782,15 @@ void output::accumulate_and_output_counter(const string & filename, size_t linen
 // Post condition:
 //  the entire file source and the associated samples has been output to
 //  the standard output.
-void output::do_output_one_file(istream & in, const string & filename, 
+void output::do_output_one_file(ostream& out, istream & in, 
+				const string & filename,
 				const counter_array_t & total_count_for_file)
 {
-	out << begin_comment << endl;
-
-	out << " Total samples for file : " << endl;
-
-	out << " \"" << filename << "\"" << endl;
-
-	output_counter(total_count_for_file, false, string());
-
-	out << end_comment << endl;
+	output_counter_for_file(out, filename, total_count_for_file);
 
 	source_file source(in);
 
-	//   This is a simple heuristic, we probably need another output format.
+	//  This is a simple heuristic, we probably need another output format
 	for (size_t linenr = 0; linenr <= source.file_line.size(); ++linenr) {
 		string blank;
 		string str;
@@ -625,9 +801,9 @@ void output::do_output_one_file(istream & in, const string & filename,
 			blank = extract_blank_at_begin(str);
 		}
 
-		find_and_output_counter(filename, linenr);
+		find_and_output_counter(out, filename, linenr);
 
-		accumulate_and_output_counter(filename, linenr, blank);
+		accumulate_and_output_counter(out, filename, linenr, blank);
 
 		if (linenr != 0)
 			out << str << '\n';
@@ -684,6 +860,9 @@ void output::output_source()
 
 	double threshold = threshold_percent / 100.0;
 
+	if (output_separate_file == false)
+		output_header(cout);
+
 	for (size_t i = 0 ; i < file_by_samples.size() && threshold >= 0 ; ++i) {
 		filename_by_samples & s = file_by_samples[i];
 		ifstream in(s.filename.c_str());
@@ -693,7 +872,7 @@ void output::output_source()
 		} else {
 			if (until_more_than_samples ||
 				(do_ratio(s.counter[index], counter_info[index].total_samples) >= threshold))
-				do_output_one_file(in, s.filename, s.counter);
+				output_one_file(in, s.filename, s.counter);
 		}
 
 		// Always decrease the threshold if needed, even if the file has not
@@ -829,17 +1008,17 @@ void output::build_samples_containers()
 	}
 }
 
-// It is usefull for the user to see the command line and the interpreted effect of the option
-void output::output_command_line() const 
+// this output a comment containaing the counter setup and command the line.
+void output::output_header(ostream& out) const 
 {
-	// It is usefull for the user to see the exact effect of the command line.
+	out << begin_comment << endl;
 
 	out << "Command line:" << endl;
 	for (int i = 0 ; i < argc ; ++i)
 		out << argv[i] << " ";
 	out << endl << endl;
 
-	out << "Output option (interpreted):" << endl;
+	out << "interpretation of command line:" << endl;
 
 	if (have_linenr_info) {
 		out << "output annotated source file with samples" << endl;
@@ -863,10 +1042,22 @@ void output::output_command_line() const
 		// source within assembly ?
 	}
 
+	out << endl;
+
 	out << "Cpu type: " << op_get_cpu_type_str(cpu_type) << endl;
 
 	out << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
 
+	out << endl;
+
+	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
+		if (i != 0)
+			out << endl;
+
+		out << "Counter " << i << " " << counter_info[i] << endl;
+	}
+
+	out << end_comment << endl;
 	out << endl;
 }
 
@@ -892,21 +1083,6 @@ bool output::treat_input(input & in)
 		return false;
 	}
 
-	out << begin_comment << endl;
-
-	output_command_line();
-
-	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
-		if (i != 0)
-			out << endl;
-
-		out << "Counter " << i << " " << counter_info[i] << endl;
-	}
-
-	out << end_comment << endl;
-
-//	debug_dump_vector(out);
-
 	if (have_linenr_info == false)
 		output_asm(in);
 	else
@@ -922,6 +1098,8 @@ static int with_more_than_samples;
 static int until_more_than_samples;
 static int showvers;
 static int sort_by_counter;
+static const char * source_dir;
+static const char * output_dir;
 
 // Do not add option with longname == 0
 static struct poptOption options[] = {
@@ -933,6 +1111,8 @@ static struct poptOption options[] = {
 	  "show all source files until the percent of samples specified is reached", NULL },
 	{ "sort-by-counter", 'c', POPT_ARG_INT, &sort_by_counter, 0,
 	  "sort by counter", "counter nr", },
+	{ "source-dir", 0, POPT_ARG_STRING, &source_dir, 0, "source directory", "directory name" },
+	{ "output-dir", 0, POPT_ARG_STRING, &output_dir, 0, "output directory", "directory name" },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
@@ -1044,11 +1224,13 @@ int main(int argc, char const * argv[]) {
 			do_until_more_than_samples = true;
 		}
 
-		output output(cout, argc, argv,
+		output output(argc, argv,
 			      have_linenr_info, 
 			      threshold_percent,
 			      do_until_more_than_samples,
-			      sort_by_counter);
+			      sort_by_counter,
+			      output_dir,
+			      source_dir);
 
 		if (output.treat_input(in) == false) {
 			return EXIT_FAILURE;

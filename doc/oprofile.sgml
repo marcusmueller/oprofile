@@ -779,6 +779,24 @@ The options allowed are :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>&mdash;source-dir</option></term>
+		<listitem><para>
+		if you request for annotated source this option give the base directory where
+		come the source file. All source file outside this base directory are ignored
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>&mdash;output-dir</option></term>
+		<listitem><para>
+		output base directory where annotated source file are generated. If you do not
+		specify <option>&mdash;source-dir</option> neither <option>&mdash;output-dir</option> annotated source file go to stdout.
+		The output filename is created as it: the common part path of the source filename and the path
+		specified by <option>&mdash;source-dir</option> is stripped from the source filename, then the path specified
+		by &mdash;output-dir is prepended 
+		to the source filename
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>&mdash;source-with-assembly</option></term>
 		<listitem><para>
 		Output assembly code mixed with the source file, implies <option>&mdash;assembly</option>.

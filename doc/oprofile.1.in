@@ -204,6 +204,16 @@ demangle GNU C++ symbol names
 output assembly code
 .br
 .TP
+.I "--source-dir"
+if you request for annotated source this option give the base directory where
+come the source file. All source file outside this base directory are ignored
+.br
+.TP
+.I "--output-dir"
+output base directory where annotated source file are generated. If you do not
+specify --source-dir neither --output-dir annotated source file go to stdout
+.br
+.TP
 .I "--source-with-assembly"
 output assembly mixed with source file
 .br
