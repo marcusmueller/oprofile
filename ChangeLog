@@ -1,3 +1,9 @@
+2003-09-14  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* configure.in: fix maximum template depth to 50
+	* libutil/op_fileio.c: op_get_link() don't truncate silently results
+	* m4/sstream.m4: use OP_CXXFLAGS not CXXFLAGS
+
 2003-09-14  John Levon  <levon@movementarian.org>
 
 	* pp/partition_files.h:

@@ -269,7 +269,7 @@ char * op_get_link(char const * filename)
 	char  * linkbuf;
 	int c;
 
-	linkbuf = xmalloc(FILENAME_MAX);
+	linkbuf = xmalloc(FILENAME_MAX+1);
 
 	c = readlink(filename, linkbuf, FILENAME_MAX);
 
@@ -278,9 +278,6 @@ char * op_get_link(char const * filename)
 		return NULL;
 	}
 
-	if (c == FILENAME_MAX)
-		linkbuf[FILENAME_MAX-1] = '\0';
-	else
-		linkbuf[c] = '\0';
+	linkbuf[c] = '\0';
 	return linkbuf;
 }
