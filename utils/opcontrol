@@ -302,6 +302,30 @@ do_load_setup() {
 	# FIXME this is insecure, arbitrary commands could be added to
 	# $SETUP_FILE and be executed as root
 	source $SETUP_FILE
+
+	vecho "Parameters used:"
+	vecho "CPUTYPE $CPUTYPE"
+	if [ $BUF_SIZE != 0 ]; then
+		vecho "BUF_SIZE $BUF_SIZE"
+	else
+		vecho "BUF_SIZE default value"
+	fi;
+	if test "$IS_TIMER" -ne 1; then
+		for f in $OP_COUNTERS ; do
+			vecho "CTR_EVENT[${f}] ${CTR_EVENT[$f]}"
+			vecho "CTR_COUNT[${f}] ${CTR_COUNT[$f]}"
+			vecho "CTR_UM[${f}] ${CTR_UM[$f]}"
+			vecho "CTR_USER[${f}] ${CTR_USER[$f]}"
+			vecho "CTR_KERNEL[${f}] ${CTR_KERNEL[$f]}"
+		done
+	else
+		vecho "RTC_VALUE $RTC_VALUE"
+	fi
+ 
+	vecho "IGNORE_MYSELF $IGNORE_MYSELF"
+	vecho "SEPARATE_LIB_SAMPLES $SEPARATE_LIB_SAMPLES"
+	vecho "SEPARATE_KERNEL_SAMPLES $SEPARATE_KERNEL_SAMPLES"
+	vecho "VMLINUX $VMLINUX"
 }
 
 
@@ -652,29 +676,6 @@ do_options() {
 		fi
 	fi
  
-	vecho "Parameters used:"
-	vecho "CPUTYPE $CPUTYPE"
-	if [ $BUF_SIZE != 0 ]; then
-		vecho "BUF_SIZE $BUF_SIZE"
-	else
-		vecho "BUF_SIZE default value"
-	fi;
-	if test "$IS_TIMER" -ne 1; then
-		for f in $OP_COUNTERS ; do
-			vecho "CTR_EVENT[${f}] ${CTR_EVENT[$f]}"
-			vecho "CTR_COUNT[${f}] ${CTR_COUNT[$f]}"
-			vecho "CTR_UM[${f}] ${CTR_UM[$f]}"
-			vecho "CTR_USER[${f}] ${CTR_USER[$f]}"
-			vecho "CTR_KERNEL[${f}] ${CTR_KERNEL[$f]}"
-		done
-	else
-		vecho "RTC_VALUE $RTC_VALUE"
-	fi
- 
-	vecho "IGNORE_MYSELF $IGNORE_MYSELF"
-	vecho "SEPARATE_LIB_SAMPLES $SEPARATE_LIB_SAMPLES"
-	vecho "SEPARATE_KERNEL_SAMPLES $SEPARATE_KERNEL_SAMPLES"
-	vecho "VMLINUX $VMLINUX"
 }
 
 
