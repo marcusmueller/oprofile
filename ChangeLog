@@ -1,3 +1,7 @@
+2003-05-22  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/child_read.h: minor #include fix
+
 2003-05-21  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* */Makefile.am:

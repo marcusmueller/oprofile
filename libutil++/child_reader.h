@@ -13,7 +13,6 @@
 #define CHILD_READER_H
 
 #include <sys/types.h>
-#include "op_types.h"
 
 #include <vector>
 #include <string>
