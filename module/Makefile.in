@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.2 2001/11/12 14:05:35 phil_e Exp $
+# $Id: Makefile.in,v 1.3 2001/11/26 21:44:35 phil_e Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -6,14 +6,15 @@ MKDIR_P=mkdir -p
 CC=@CC@
 LD=@LD@
 
-.PHONY: all install clean distclean uninstall
+BKCFLAGS += -pipe -D__KERNEL__ -DMODULE -Wall -Wstrict-prototypes -Wunused -O2 -fomit-frame-pointer -fno-strict-aliasing
+KCFLAGS := $(BKCFLAGS) -march=i686
+ASMFLAGS := -D__ASSEMBLY__ -DMODULE -D__KERNEL__ -traditional
+
+.PHONY: all install clean uninstall
 
 all: oprofile.o
 
-distclean: clean
-	rm -f Makefile
-
-install: oprofile.o
+install: all
 	-$(MKDIR_P) $(MODINSTALLDIR)
 	cp oprofile.o $(MODINSTALLDIR)
 	depmod -a
@@ -25,10 +26,6 @@ uninstall:
 
 clean:
 	rm -f *.o
-
-BKCFLAGS += -pipe -D__KERNEL__ -DMODULE -Wall -Wstrict-prototypes -Wunused -O2 -fomit-frame-pointer -fno-strict-aliasing
-KCFLAGS := $(BKCFLAGS) -march=i686
-ASMFLAGS := -D__ASSEMBLY__ -DMODULE -D__KERNEL__ -traditional
 
 oprofile.o: op_init.o op_util.o oprofile_c.o oprofile_nmi.o op_syscalls.o op_events_module.o op_x86.o
 	$(LD) -r -o $@ $^
@@ -50,7 +47,6 @@ op_x86.o: op_x86.c
 op_syscalls.o: op_syscalls.c oprofile.h
 	$(CC) $(KCFLAGS) -c -o $@ $<
 
-# FIXME: what is this ?
 oprofile.s: oprofile.c oprofile.h
 	$(CC) $(KCFLAGS) -S $<
 

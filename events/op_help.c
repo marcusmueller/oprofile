@@ -1,4 +1,4 @@
-/* $Id: op_help.c,v 1.1 2001/11/12 14:05:34 phil_e Exp $ */
+/* $Id: op_help.c,v 1.2 2001/11/26 21:44:35 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -24,7 +24,6 @@
 #include <string.h>
 #include <limits.h>
 
-#include "../version.h"
 #include "../op_user.h"
 
 static int cpu_type = CPU_NO_GOOD;

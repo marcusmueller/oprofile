@@ -1,3 +1,20 @@
+2001-11-26  Philippe Elie  <ph_e@club-internet.fr>
+
+	* Rules.make.in: new to add autodeps and share commons
+	  definitions
+	* all Makefile.in except module, gui: use autodeps
+
+	* doc/oprofile.1.in: typo
+
+	* util/filemanip.h: missing std::
+
+2001-11-25  Philippe Elie  <ph_e@club-internet.fr>
+
+	* oprofile-tests/understanding/persistent.cpp: new
+	* util/persistent.h: new. An attempt to provide a better
+	  configuration saving/restoring library. Not yet linked to
+	  oprof_start.
+
 2001-11-22  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/oprofpp_util.cpp: take care than get_linenr() get

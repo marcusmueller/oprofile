@@ -1,18 +1,18 @@
-# $Id: Makefile.in,v 1.19 2001/11/12 14:05:34 phil_e Exp $
+# $Id: Makefile.in,v 1.20 2001/11/26 21:44:35 phil_e Exp $
+
+INSTALL_LIST=oprofiled op_start op_dump op_stop
+
+CFLAGS=-Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
+LIBS=@extra_libraries@ -lpopt
+
+SOURCES=oprofiled.c opd_util.c opd_proc.c
+OBJS=oprofiled.o opd_util.o opd_proc.o ../events/op_events.o ../events/op_events_desc.o
 
 .PHONY: all clean srcdoc install uninstall
 
 all: oprofiled
 
-prefix=$(DESTDIR)@prefix@
-exec_prefix=@exec_prefix@
-BINDIR=@bindir@
-MANDIR=@mandir@
-CC=@CC@
-MKDIR_P=mkdir -p
-INSTALL_LIST=oprofiled op_start op_dump op_stop
-
-install: all $(INSTALL_LIST)
+install: all
 	-$(MKDIR_P) $(BINDIR)
 	for f in $(INSTALL_LIST); do \
 		cp $$f $(BINDIR)/$$f && chmod 755 $(BINDIR)/$$f; \
@@ -24,19 +24,19 @@ uninstall:
 	done
 
 clean:
-	rm -f oprofiled *.o oprofiled-src.html 
-
-CFLAGS=-Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
-LIBS=@extra_libraries@ -lpopt
-INCLUDES=-I. @extra_includes@
-HEADERS=oprofiled.h opd_util.h ../op_user.h ../version.h
-SOURCES=oprofiled.c opd_util.c opd_proc.c
-EVENTS_OBJS=../events/op_events.o ../events/op_events_desc.o
+	rm -f oprofiled *.o *.d oprofiled-src.html 
 
 srcdoc: oprofiled-src.html
 
 oprofiled-src.html: $(SOURCES)
 	../scripts/dodoc -html $(SOURCES) >oprofiled-src.html
 
-oprofiled: $(SOURCES) $(EVENTS_OBJS) $(HEADERS)
-	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $(SOURCES) $(EVENTS_OBJS) $(LIBS)
+oprofiled: $(OBJS)
+	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $^ $(LIBS)
+
+%.o: %c
+	$(CC) -c $(CFLAGS) -g $< -o $@
+
+ALL_SOURCES = $(SOURCES)
+
+include ../Rules.make

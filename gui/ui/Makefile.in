@@ -2,10 +2,9 @@
 MOC=@MOC@
 UIC=@UIC@
 
-CC=@CC@
 CXX=@CXX@
 CXXFLAGS=-Wall -W @CXXFLAGS@ @QT2_INCLUDES@
- 
+
 .PHONY: all clean install uninstall
 .SUFFIXES:
 

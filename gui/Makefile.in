@@ -5,11 +5,9 @@ MKDIR_P=mkdir -p
 MOC=@MOC@
 UIC=@UIC@
 
-CC=@CC@
 CXX=@CXX@
 
-CFLAGS=-Wall -W @CFLAGS@ -I@KINC@ @QT2_INCLUDES@
-CXXFLAGS=-Wall -W @CXXFLAGS@ -I@KINC@ @QT2_INCLUDES@
+CXXFLAGS=-Wall -pedantic -W @CXXFLAGS@ -I@KINC@ @QT2_INCLUDES@
 
 # FIXME: dependencies are fucked ... my fault (john)
 

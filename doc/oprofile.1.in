@@ -283,7 +283,7 @@ to read the sample file :
 or by using :
 .B op_to_source
 .PP
-.I op_to_source -I /lib/libc-2.1.92.so
+.I op_to_source -i /lib/libc-2.1.92.so
 .PP
 .SH ENVIRONMENT
 No environment variables are recognised by oprofile.

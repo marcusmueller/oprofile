@@ -24,6 +24,6 @@
 bool is_files_identical(std::string const & file1, std::string const & file2);
 bool create_dir(std::string const & dir);
 bool create_path(std::string const & path);
-string opd_read_link(string const & name);
+std::string opd_read_link(std::string const & name);
 
 #endif /* !FILE_MANIP_H */

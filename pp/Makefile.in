@@ -1,18 +1,19 @@
-all: oprofpp oprof_convert op_to_source
+INSTALL_LIST=oprofpp oprof_convert op_to_source
+
+CFLAGS=@CFLAGS@ -Wall -W -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline
+CXXFLAGS=@CXXFLAGS@ -Wall -W -Wunused -Wmissing-prototypes
+LIBS=-lpopt -lbfd -liberty -ldl
+MY_SOURCES=oprofpp.cpp oprofpp_util.cpp
+OBJS=../events/op_events.o ../events/op_events_desc.o ../dae/opd_util.o oprofpp_util.o
+
+all: $(INSTALL_LIST)
 
 .PHONY: all clean srcdoc install uninstall
 
 clean: 
-	rm -f oprofpp *.o oprofpp-src.html oprof_convert op_to_source
+	rm -f oprofpp *.o *.d oprofpp-src.html oprof_convert op_to_source
 
-prefix=$(DESTDIR)@prefix@
-exec_prefix=@exec_prefix@
-BINDIR=@bindir@
-MANDIR=@mandir@
-MKDIR_P=mkdir -p
-INSTALL_LIST=oprofpp oprof_convert op_to_source
-
-install: all $(INSTALL_LIST)
+install: all
 	-$(MKDIR_P) $(BINDIR)
 	for f in $(INSTALL_LIST); do \
 		cp $$f $(BINDIR)/$$f && chmod 755 $(BINDIR)/$$f; \
@@ -23,40 +24,27 @@ uninstall:
 		rm -f $(BINDIR)/$$f; \
 	done
 
-CC=@CC@
-CXX=@CXX@
-CFLAGS=@CFLAGS@ -Wall -W -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline
-CXXFLAGS=@CXXFLAGS@ -Wall -W -Wunused -Wmissing-prototypes
-LIBS=-lpopt -lbfd -liberty -ldl
-INCLUDES=@extra_includes@
-HEADERS=oprofpp.h ../dae/opd_util.h ../op_user.h
-MY_SOURCES=oprofpp.cpp oprofpp_util.cpp
-OBJS=../events/op_events.o ../events/op_events_desc.o ../dae/opd_util.o oprofpp_util.o
-
 srcdoc: oprofpp-src.html
 
 oprofpp-src.html: $(MY_SOURCES)
 	../scripts/dodoc -html $(MY_SOURCES) >oprofpp-src.html
 
-oprofpp: $(OBJS) oprofpp.o $(HEADERS)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $(OBJS) oprofpp.o $(LIBS)
+oprofpp: oprofpp.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ oprofpp.o $(OBJS) $(LIBS)
 
-oprof_convert: oprof_convert.c ../dae/opd_util.c ../dae/opd_util.h
+oprof_convert: oprof_convert.c ../dae/opd_util.c ../dae/opd_util.h ../op_user.h
 	$(CC) $(CFLAGS) oprof_convert.c ../dae/opd_util.c -o $@ $(LIBS)
-
-oprofpp_util.o: oprofpp_util.cpp $(HEADERS)
-	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -o $@ $<
-
-oprofpp.o: oprofpp.cpp $(HEADERS)
-	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -o $@ $<
-
-opf_container.o: opf_container.cpp opf_filter.h ../op_user.h ../util/string_manip.h
-	$(CXX) -c $(CXXFLAGS) $< -o $@
-
-opf_filter.o : opf_filter.cpp opf_filter.h ../op_user.h oprofpp.h ../util/child_reader.h ../util/file_manip.h
-	$(CXX) -c $(CXXFLAGS) $< -o $@
 
 op_to_source: opf_filter.o opf_container.o ../util/child_reader.o $(OBJS) \
  ../util/string_manip.o ../util/file_manip.o $(LIBS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
+%.o: %c
+	$(CC) -c $(CFLAGS) $(INCLUDES) -g $< -o $@
+
+%.o: %cpp
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -g $< -o $@
+
+ALL_SOURCES = oprofpp.cpp oprofpp_util.cpp opf_container.cpp opf_filter.cpp oprof_convert.c
+
+include ../Rules.make

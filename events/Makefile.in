@@ -1,40 +1,25 @@
+CFLAGS=-ansi -pedantic -Wall -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
+
 .PHONY: all clean install uninstall
 
 all: op_help
 
-prefix=$(DESTDIR)@prefix@
-exec_prefix=@exec_prefix@
-BINDIR=@bindir@
-MANDIR=@mandir@
-CC=@CC@
-MKDIR_P=mkdir -p
-INSTALL_LIST=op_help
-CFLAGS=-pedantic -Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
-LIBS=@extra_libraries@ -lpopt
-INCLUDES=-I. @extra_includes@
-
-install: all $(INSTALL_LIST)
+install: all
 	-$(MKDIR_P) $(BINDIR)
-	for f in $(INSTALL_LIST); do \
-		cp $$f $(BINDIR)/$$f && chmod 755 $(BINDIR)/$$f; \
-	done
+	cp op_help $(BINDIR)/op_help && chmod 755 $(BINDIR)/op_help
 
 uninstall:
-	for f in $(INSTALL_LIST); do \
-		rm -f $(BINDIR)/$$f; \
-	done
+	rm -f $(BINDIR)/op_help
 
 clean:
-	rm -f *.o op_help
+	rm -f *.o *.d op_help
 
 op_help: op_events.o op_events_desc.o op_help.o
 	$(CC) $(CFLAGS) $(INCLUDES) -g $^ -o $@
 
-op_events.o: op_events.c ../op_user.h
-	$(CC) -c $(CFLAGS) $(INCLUDES) -g $< -o $@
+%.o: %c
+	$(CC) -c $(CFLAGS) $(INCLUDE) -g $< -o $@
 
-op_events_desc.o: op_events_desc.c ../op_user.h
-	$(CC) -c $(CFLAGS) $(INCLUDES) -g $< -o $@
+ALL_SOURCES = op_events.c op_events_desc.c op_help.c
 
-op_help.o: op_help.c ../op_user.h
-	$(CC) -c $(CFLAGS) $(INCLUDES) -g $< -o $@
+include ../Rules.make
