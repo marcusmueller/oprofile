@@ -1,3 +1,9 @@
+2001-11-22  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/oprofpp_util.cpp: take care than get_linenr() get
+	  line nr and filename info from bfd for the right symbol
+	  and not for the nearest symbol with debug info (#484660)
+
 2001-11-15  Philippe Elie  <ph_e@club-internet.fr>
 
 	* module/oprofile.h: work around against a gcc

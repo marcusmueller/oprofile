@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.3 2001/11/14 21:19:01 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.4 2001/11/22 21:24:54 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -519,6 +519,13 @@ bool opp_bfd::get_linenr(uint sym_idx, uint offset,
 	if (filename == NULL || ret == false) {
 		filename = "";
 		linenr = 0;
+	}
+
+	// functioname and symbol name can be different if we query linenr info
+	// if we accept it we can get samples for the wrong symbol (#484660)
+	if (ret == true && functionname && 
+	    strcmp(functionname, syms[sym_idx]->name)) {
+		ret = false;
 	}
 
 	return ret;
