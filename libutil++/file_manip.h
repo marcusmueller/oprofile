@@ -17,7 +17,7 @@
 
 
 /// return true if dir is an existing directory
-bool is_directory(string const & dirname);
+bool is_directory(std::string const & dirname);
 
 /// return true if the two files are the same file
 bool is_files_identical(std::string const & file1, std::string const & file2);
