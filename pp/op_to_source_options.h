@@ -38,6 +38,8 @@ namespace options {
 	extern std::string no_output_filter;
 	/// which symbols to exclude
 	extern std::vector<std::string> exclude_symbols;
+	/// which symbols to include
+	extern std::vector<std::string> include_symbols;
 	/// whether to generate assembly
 	extern bool assembly;
 	/// whether to generate mixed source/assembly

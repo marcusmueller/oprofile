@@ -27,7 +27,8 @@ using namespace std;
 
 extern ostream cverb;
  
-op_bfd::op_bfd(string const & filename, vector<string> const & exclude_symbols)
+op_bfd::op_bfd(string const & filename, vector<string> const & exclude_symbols,
+	       vector<string> const & included_symbols)
 	:
 	file_size(0),
 	ibfd(0),
@@ -61,7 +62,7 @@ op_bfd::op_bfd(string const & filename, vector<string> const & exclude_symbols)
 		cverb << ".text filepos " << hex << text_offset << endl;
 	}
 
-	get_symbols(exclude_symbols);
+	get_symbols(exclude_symbols, included_symbols);
 
 	if (syms.size() == 0) {
 		u32 start, end;
@@ -133,7 +134,8 @@ static bool interesting_symbol(asymbol *sym)
  * the interesting_symbol() predicate and sorted
  * with the symcomp() comparator.
  */
-bool op_bfd::get_symbols(vector<string> const & excluded)
+bool op_bfd::get_symbols(vector<string> const & excluded,
+			 vector<string> const & included)
 {
 	uint nr_all_syms;
 	symbol_index_t i;
@@ -201,6 +203,20 @@ bool op_bfd::get_symbols(vector<string> const & excluded)
 			syms.erase(syms.begin() + i);
 		} else {
 			++i;
+		}
+	}
+
+	// it's time to remove all symbol except the included symbol
+	if (included.size()) {
+		for (i = 0 ; i < syms.size() ; ) {
+			vector<string>::const_iterator it =
+				find(included.begin(), included.end(),
+				     syms[i].name());
+			if (it == included.end()) {
+				syms.erase(syms.begin() + i);
+			} else {
+				++i;
+			}
 		}
 	}
 

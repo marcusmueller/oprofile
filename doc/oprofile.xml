@@ -1172,6 +1172,14 @@ The options allowed are :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>--include-symbol</option> symbol[,symbol]</term>
+		<term><option>-y</option> symbol[,symbol]</term>
+		<listitem><para>
+		Comma-separated list of symbols to include. This can be useful to only see the leading contributors
+		to the sample histogram, as the percentage values are re-calculated.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>--session</option> session-name</term>
 		<listitem><para>
 		Specify the session name you want to use, session-name can be an absolute path

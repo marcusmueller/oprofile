@@ -316,7 +316,7 @@ bool add_samples(samples_container_t& samples, string sample_filename,
 {
 	opp_samples_files samples_files(sample_filename, counter_mask);
 
-	op_bfd abfd(image_name, excluded_symbols);
+	op_bfd abfd(image_name, excluded_symbols, vector<string>());
 
 	samples_files.check_mtime(image_name);
 	samples_files.set_start_offset(abfd.get_start_offset());

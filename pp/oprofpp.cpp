@@ -198,7 +198,8 @@ int main(int argc, char const *argv[])
 		opp_samples_files samples_files(options::sample_file, options::counter_mask);
 		samples_files.check_mtime(options::image_file);
 
-		op_bfd abfd(options::image_file, options::exclude_symbols);
+		op_bfd abfd(options::image_file, options::exclude_symbols,
+			    vector<string>());
 		samples_files.set_start_offset(abfd.get_start_offset());
 		do_dump_gprof(abfd, samples_files, options::sort_by_counter);
 		return 0;
@@ -254,7 +255,9 @@ int main(int argc, char const *argv[])
 		// we must deduce the image name from the samples file name
 		if (it == filelist.begin()) {
 			opp_samples_files samples_files(file, options::counter_mask);
-			op_bfd abfd(options::image_file, options::exclude_symbols);
+			op_bfd abfd(options::image_file,
+				    options::exclude_symbols,
+				    vector<string>());
 			samples_files.check_mtime(options::image_file);
 			samples_files.set_start_offset(abfd.get_start_offset());
 			samples.add(samples_files, abfd, options::symbol);

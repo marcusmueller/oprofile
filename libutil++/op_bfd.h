@@ -84,7 +84,8 @@ public:
 	 * All errors are fatal.
 	 */
 	op_bfd(std::string const & filename,
-	       std::vector<std::string> const & excluded);
+	       std::vector<std::string> const & excluded,
+	       std::vector<std::string> const & included);
 
 	/// close an opened bfd image and free all related resources
 	~op_bfd();
@@ -162,7 +163,8 @@ private:
 	u32 text_offset;
 
 	/// collect the symbols excluding any in the given vector
-	bool get_symbols(std::vector<std::string> const & excluded);
+	bool get_symbols(std::vector<std::string> const & excluded,
+			 std::vector<std::string> const & included);
 
 	/**
 	 * symbol_size - return the size of a symbol

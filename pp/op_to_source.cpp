@@ -151,6 +151,19 @@ void output_objdump_asm_line(string const & str,
  * @param output_symbols symbols for the binary image being processed
  *  filtered by --exclude-symbols
  * @param app_name the binary image name
+ * @param start vma start address to disassemble
+ * @param end vma end address to disassemble
+ *
+ * fork objdump for the vma range requested then filter the objdump output
+ * echoing it to the proper stream with optional annotation
+ */
+void do_one_output_objdump(vector<symbol_entry const *> const & output_symbols,
+		   string const & app_name, bfd_vma start, bfd_vma end);
+
+/**
+ * @param output_symbols symbols for the binary image being processed
+ *  filtered by --exclude-symbols
+ * @param app_name the binary image name
  *
  * fork an 'objdump -d app_name' then filter the objdump output echoing it to
  * the proper stream with optional annotation
@@ -182,6 +195,7 @@ void output_source(int argc, char const * argv[],
  */
 void output_one_file(istream & in, string const & filename,
 		     bool output_separate_file);
+
 /**
  * @param in input stream (a source file) or an invalid stream if source file
  *  is not avaialble
@@ -368,7 +382,7 @@ bool annotate_source(string const & image_name, string const & sample_file,
 		opp_samples_files samples_files(sample_file, -1);
 		samples_files.check_mtime(image_name);
 
-		op_bfd abfd(image_name, exclude_symbols);
+		op_bfd abfd(image_name, exclude_symbols, include_symbols);
 
 		samples_files.set_start_offset(abfd.get_start_offset());
 
@@ -502,20 +516,13 @@ void output_objdump_asm_line(string const & str,
 		// pointer are unique
 		if (find(output_symbols.begin(),
 		       output_symbols.end(), symbol) != output_symbols.end()) {
-			// an error due to ambiguity in the input: source file
-			// mixed with asm contain a line which is taken as a
-			// valid symbol, in doubt turn output on
-			do_output = true;
-		} else if (threshold_percent == 0) {
-			// if the user have not requested threshold we must
-			// output all symbols even if it contains no samples.
 			do_output = true;
 		} else {
 			do_output = false;
 		}
 
 		if (do_output)
-			find_and_output_symbol(cout, str, "");
+			find_and_output_symbol(cout, str, string());
 
 	} else { // not a symbol, probably an asm line.
 		if (do_output)
@@ -523,8 +530,8 @@ void output_objdump_asm_line(string const & str,
 	}
 }
 
-void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
-			string const & app_name)
+void do_one_output_objdump(vector<symbol_entry const *> const & output_symbols,
+			   string const & app_name, bfd_vma start, bfd_vma end)
 {
 	vector<string> args;
 
@@ -532,6 +539,14 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 	args.push_back("--no-show-raw-insn");
 	if (source_with_assembly)
 		args.push_back("-S");
+
+	if (start || end != ~(bfd_vma)0) {
+		ostringstream arg1, arg2;
+		arg1 << "--start-address=" << start;
+		arg2 << "--stop-address=" << end;
+		args.push_back(arg1.str());
+		args.push_back(arg2.str());
+	}
 
 	if (!objdump_params.empty()) {
 		for (size_t i = 0 ; i < objdump_params.size() ; ++i)
@@ -576,6 +591,29 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 		cerr << "An error occur during the execution of objdump:\n\n";
 		cerr << reader.error_str() << endl;
 		return;
+	}
+}
+
+void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
+			string const & app_name)
+{
+	// this is only an optimisation, we can either filter output by
+	// directly calling objdump and rely on the symbol filtering or
+	// we can call objdump with the right parameter to just disassemble
+	// the needed part. This is a real win only when calling objdump
+	// a medium number of times, I dunno if the used threshold is optimal
+	// but it is a conservative value.
+	size_t const max_objdump_exec = 10;
+	if (output_symbols.size() <= max_objdump_exec) {
+		for (size_t i = 0 ; i < output_symbols.size() ; ++i) {
+			bfd_vma start = output_symbols[i]->sample.vma;
+			bfd_vma end  = start + output_symbols[i]->size;
+			do_one_output_objdump(output_symbols, app_name,
+					      start, end);
+		}
+	} else {
+		do_one_output_objdump(output_symbols, app_name,
+				      0, ~(bfd_vma)0);
 	}
 }
 
@@ -657,7 +695,7 @@ void output_one_file(istream & in, string const & filename,
 	ofstream out(out_filename.c_str());
 	if (!out) {
 		cerr << "unable to open output file "
-			<< '"' << out_filename << '"' << endl;
+		     << '"' << out_filename << '"' << endl;
 	} else
 		do_output_one_file(out, in, filename);
 }

@@ -1,5 +1,19 @@
 2002-10-24  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/op_bfd.cpp:
+	* libutil++/op_bfd.h: allow to specify explicetly on which symbol we
+	  want to work.
+
+	* pp/op_to_source_options.h:
+	* pp/op_to_source_options.cpp:
+	* pp/op_to_source.cpp: handle --include-symbol, for asm output only
+	  output for symbols with samplels or selected symbols.
+
+	* pp/oprofp.cpp:
+	* pp/samplesc_ontainer.cpp: minor change to reflect op_bfd api change
+
+2002-10-24  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* daemon/opd_image.c: revert 64 bit dcookie patch commited
 	  accidentally with 2002-10-18 abi patch.
 

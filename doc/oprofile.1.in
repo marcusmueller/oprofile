@@ -255,6 +255,10 @@ verbose output
 exclude list of comma separated symbol
 .br
 .TP
+.BI "--include-symbol " symbol ", -y "symbol
+include list of comma separated symbol
+.br
+.TP
 .BI "--session " session-name
 Specify the session name you want to use, session-name can be an absolute path
 where samples reside or a session name relative to samples files base directory. If you specify a samples
