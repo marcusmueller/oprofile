@@ -25,6 +25,14 @@ Use Doxygen comments judiciously. Actual source code should generally
 only document the unexpected. Comments should not duplicate what the code
 says (this means variable/function naming is uber-important).
 
+Makefile.am: prefer using
+LIST = \
+	foo1 \
+	foo2
+rather than
+LIST = foo1 foo2
+	Rationale: diff are a lot of easier to read.
+
 Arbitrary rules
 ---------------
 

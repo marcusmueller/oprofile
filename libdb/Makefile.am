@@ -1,8 +1,16 @@
-AM_CPPFLAGS=-I ${top_srcdir}/libop -I ${top_srcdir}/libutil
+AM_CPPFLAGS = \
+	-I ${top_srcdir}/libop \
+	-I ${top_srcdir}/libutil
 
 noinst_LIBRARIES = libdb.a
 
-libdb_a_SOURCES = db_manage.c db_insert.c db_travel.c db_debug.c db_stat.c db_hash.h
+libdb_a_SOURCES = \
+	db_manage.c \
+	db_insert.c \
+	db_travel.c \
+	db_debug.c \
+	db_stat.c \
+	db_hash.h
 
 noinst_PROGRAMS = db_test
 

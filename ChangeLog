@@ -1,5 +1,13 @@
 2003-03-15  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* TODO: upate
+
+	* Makefile.am: add ChangeLog-2002 in dist files
+	* all Makefile.am: put one item by line for most  xxxx = blah
+	* doc/CodingStyle: rationale for the above change
+
+2003-03-15  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libop/op_events.c: minor cleanup
 
 2003-03-15  Dave Jones <davej@codemonkey.org.uk>

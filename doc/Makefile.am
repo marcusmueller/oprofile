@@ -8,7 +8,14 @@ CHUNK_XHTML_STYLESHEET=$(srcdir)/xsl/xhtml-chunk.xsl
 XML_CATALOG_FILES=xsl/catalog.xml
 STYLESHEETS=$(CHUNK_XHTML_STYLESHEET) $(srcdir)/xsl/xhtml-common.xsl
 
-generated_mans = oprofiled.1 op_help.1 oprofpp.1 op_time.1 op_to_source.1 op_merge.1 opcontrol.1
+generated_mans = \
+	oprofiled.1 \
+	op_help.1 \
+	oprofpp.1 \
+	op_time.1 \
+	op_to_source.1 \
+	op_merge.1 \
+	opcontrol.1
 
 man_MANS = oprofile.1 $(generated_mans)
 
@@ -49,5 +56,13 @@ uninstall-local:
 		rm -f $(CATDIR)/cat1/$$f.gz;	\
 	done
 
-EXTRA_DIST = oprofile.1 oprofile.1.in oprofile.xml xsl/catalog-1.xml.in xsl/xhtml.xsl xsl/xhtml-common.xsl xsl/xhtml-chunk.xsl srcdoc/Doxyfile srcdoc/Makefile
-
+EXTRA_DIST = \
+	oprofile.1 \
+	oprofile.1.in \
+	oprofile.xml \
+	xsl/catalog-1.xml.in \
+	xsl/xhtml.xsl \
+	xsl/xhtml-common.xsl \
+	xsl/xhtml-chunk.xsl \
+	srcdoc/Doxyfile \
+	srcdoc/Makefile
