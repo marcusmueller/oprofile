@@ -77,7 +77,7 @@ do_help() {
 	-d/--dump		flush the collected profiling data
 	--stop			stop data collection
 	-h/--shutdown		stop data collection and kill daemon
-	-r/--reset		clears out data from current session
+	--reset			clears out data from current session
 	--save=session_name	save data from current session to session_name
 	--deinit		unload the oprofile module and oprofilefs
 
@@ -522,7 +522,7 @@ do_options() {
 				EXCLUSIVE_ARGV="$arg"
 				;;
 
-			-r|--reset)
+			--reset)
 				DUMP=yes
 				RESET=yes
 				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`

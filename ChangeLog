@@ -1,5 +1,9 @@
 2003-06-17  John Levon  <levon@movementarian.org>
 
+	* utils/opcontrol: don't accept "-r" - it's too easy to typo
+
+2003-06-17  John Levon  <levon@movementarian.org>
+
 	* doc/srcdoc/Doxyfile: removed
 
 	* doc/srcdoc/Doxyfile.in:
