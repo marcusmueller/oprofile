@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.55 2001/09/21 08:29:10 movement Exp $ */
+/* $Id: oprofile.h,v 1.56 2001/09/23 16:15:51 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -216,6 +216,13 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #include <linux/completion.h>
 #endif
 
+// 2.4.10 introduced APIC setup under normal APIC config
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,10)
+#ifndef CONFIG_X86_UP_APIC
+#define NEED_FIXMAP_HACK
+#endif
+#endif
+ 
 // 2.4.10 introduced MODULE_LICENSE
 #ifndef MODULE_LICENSE
 #define MODULE_LICENSE(x)

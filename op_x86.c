@@ -109,9 +109,14 @@ static int __init apic_needs_setup(void)
 #ifdef CONFIG_X86_UP_APIC
 	0 &&
 #else
+/* 2.4.10 and above do the necessary setup */
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,4,9)
+	0 &&
+#else
 /* otherwise, we detect SMP hardware via the MP table */
 	!smp_hardware &&
-#endif
+#endif /* 2.4.10 */
+#endif /* CONFIG_X86_UP_APIC */
 	smp_num_cpus == 1;
 }
 
@@ -210,11 +215,8 @@ not_local_p6_apic:
 
 /* ---------------- fixmap hack ------------------ */
  
-/* FIXME: can remove this code altogether if UP oopser makes mainline, and insist on
- * CONFIG_X86_UP_APIC
- */
-#ifndef CONFIG_X86_UP_APIC
-
+#ifdef NEED_FIXMAP_HACK
+ 
 #ifndef APIC_DEFAULT_PHYS_BASE
 #define APIC_DEFAULT_PHYS_BASE 0xfee00000
 #endif
@@ -241,11 +243,11 @@ void my_set_fixmap(void)
 
 	set_pte_phys (address, APIC_DEFAULT_PHYS_BASE);
 }
-#else /* !CONFIG_X86_UP_APIC */
+#else /* NEED_FIXMAP_HACK */
 void my_set_fixmap(void)
 {
 }
-#endif /* !CONFIG_X86_UP_APIC */
+#endif /* NEED_FIXMAP_HACK */
 
 /* ---------------- MP table code ------------------ */
  
