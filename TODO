@@ -21,6 +21,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o our tools require too much up and running just to do --version and --help !
  o --smart-demangle is not documented
  o Add something  to op_help so user can see if they're using timer/rtc mode or not
  o oprof_start: check lib samples when kernel samples checkbox is checked
