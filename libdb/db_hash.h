@@ -163,7 +163,7 @@ void samples_db_travel(samples_db_t const * hash, db_key_t first, db_key_t last,
  */
 db_node_t * db_get_iterator(samples_db_t const * hash, db_node_nr_t * nr);
 
-static __inline unsigned int do_hash(samples_db_t const * hash, db_value_t value)
+static __inline unsigned int do_hash(samples_db_t const * hash, db_key_t value)
 {
 	/* FIXME: better hash for eip value, needs to instrument code
 	 * and do a lot of tests ... */
