@@ -21,6 +21,8 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o stl.pat is installed in bin install dir
+ o fix --demangle / --Demangle -- too obscure, decide on -d vs. -D etc.
  o document that even with the in_interrupt trick in 2.5, you can still get a few
    samples in the wrong place - interrupt code outside of the irq_enter/exit
  o daemon/opd_image.c:opd_put_sample() if (image != NULL) { ... }
