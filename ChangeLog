@@ -6,6 +6,17 @@
 
 	* TODO: update
 
+	* doc/xsl/xhtml.xsl.in: move to
+	* doc/xsl/xhtml-1.xsl.in: here
+	* doc/xsl/xhtml-chunk.xsl.in: move to
+	* doc/xsl/xhtml-chunk-1.xsl.in: here
+	* doc/Makefile.am; update according
+	* configure.in: avoid to touch doc/xsl generated files
+
+2003-03-07  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
 	* daemon/opd_image.c:
 	* daemon/op_stats.c:
 	* daemon/opd_stats.h: add statistics for nil image whilst receiveing
