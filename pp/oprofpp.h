@@ -70,6 +70,12 @@ void op_print_event(std::ostream & out, int i, op_cpu cpu_type,
 		    u8 type, u8 um, u32 count);
 
 /**
+ * add to the exclude symbol list the symbols contained in the comma
+ * separated list of symbols through the gloval var exclude_symbols_str
+ */
+void handle_exclude_symbol_option();
+
+/**
  * process command line options
  * @param filename a filename passed on the command line, can be NULL
  * @param optcon poptContext to allow better message handling
@@ -193,6 +199,14 @@ private:
 	u32 value[OP_MAX_COUNTERS];
 };
 
+
+/** a symbol description from a bfd point of view */
+struct op_bfd_symbol {
+	asymbol* symbol;
+	bfd_vma vma;
+	size_t size;
+};
+
 /** Encapsulation of a bfd object. Simplify open/close of bfd, enumerating
  * symbols and retrieving informations for symbols or vma. */
 class opp_bfd {
@@ -254,19 +268,14 @@ public:
 	 */
 	u32 sym_offset(uint num_symbols, u32 num) const;
 
-	/**
-	 * symbol_size - return the size of a symbol
-	 * @param sym_idx symbol index
-	 */
-	size_t symbol_size(uint sym_idx) const;
-
 	/** Returns true if the underlined bfd object contains debug info */
 	bool have_debug_info() const;
 
 	// TODO: avoid this two public data members
 	bfd *ibfd;
-	// sorted vector of interesting symbol.
-	std::vector<asymbol*> syms;
+	// sorted vector by vma of interesting symbol.
+	std::vector<op_bfd_symbol> syms;
+
 	// nr of samples.
 	uint nr_samples;
 private:
@@ -279,6 +288,12 @@ private:
 	// ctor helper
 	void open_bfd_image(const std::string & file_name, bool is_kernel);
 	bool get_symbols();
+
+	/**
+	 * symbol_size - return the size of a symbol
+	 * @param sym_idx symbol index
+	 */
+	size_t symbol_size(uint sym_idx) const;
 };
 
 /** A class to store one samples file */

@@ -449,7 +449,7 @@ void samples_container_t::do_add(const opp_samples_files & samples_files,
 		counter += symb_entry.sample.counter;
 
 		// FIXME - kill char * !!!
-		char const * symname = abfd.syms[i]->name;
+		char const * symname = abfd.syms[i].symbol->name;
 		symb_entry.name = symname ? demangle_symbol(symname) : "";
 
 		if ((flags & (osf_linenr_info | osf_short_linenr_info)) != 0 &&
@@ -462,7 +462,7 @@ void samples_container_t::do_add(const opp_samples_files & samples_files,
 
 		symb_entry.sample.file_loc.image_name = image_name;
 
-		bfd_vma base_vma = abfd.syms[i]->value + abfd.syms[i]->section->vma;
+		bfd_vma base_vma = abfd.syms[i].vma;
 
 		symb_entry.sample.vma = abfd.sym_offset(i, start) + base_vma;
 

@@ -200,8 +200,7 @@ static void do_list_symbol(opp_bfd & abfd,
 
 	samples.add(samples_files, abfd);
 
-	const symbol_entry * symb = samples.find_symbol(abfd.syms[i]->value +
-						abfd.syms[i]->section->vma);
+	const symbol_entry * symb = samples.find_symbol(abfd.syms[i].vma);
 	if (symb == 0) {
 		cerr << "oprofpp: symbol \"" << symbol
 		     << "\" not found in samples container file.\n";
@@ -258,16 +257,15 @@ static void do_dump_gprof(opp_bfd & abfd,
 	// syms are sorted by vma so vma of the first symbol and vma + size
 	// of the last symbol give the vma range for gprof output
 	if (abfd.syms.size()) {
-		const asymbol * last_symb = abfd.syms[abfd.syms.size() - 1];
-		low_pc = abfd.syms[0]->value + abfd.syms[0]->section->vma;
-		high_pc = last_symb->value + last_symb->section->vma + 
-			abfd.symbol_size(abfd.syms.size() - 1);
+		const op_bfd_symbol & last_symb = abfd.syms[abfd.syms.size()-1];
+		low_pc = abfd.syms[0].vma;
+		high_pc = last_symb.vma + last_symb.size;
 	} else {
 		low_pc = 0;
 		high_pc = 0;
 	}
 
-	// FIXME : is this + 1 bogus ?
+	// FIXME : is this (high - low - (MUL -1)) / MULT ? need a test ...
 	histsize = ((high_pc - low_pc) / MULTIPLIER) + 1; 
  
 	op_write_u32(fp, low_pc);
@@ -287,20 +285,20 @@ static void do_dump_gprof(opp_bfd & abfd,
 		for (j = start; j < end; j++) {
 			u32 count;
 			u32 pos;
-			pos = (abfd.sym_offset(i, j) + abfd.syms[i]->value + abfd.syms[i]->section->vma - low_pc) / MULTIPLIER; 
+			pos = (abfd.sym_offset(i, j) + abfd.syms[i].vma - low_pc) / MULTIPLIER; 
 
 			/* opp_get_options have set ctr to one value != -1 */
 			count = samples_files.samples_count(sort_by_ctr, j);
 
 			if (pos >= histsize) {
-				fprintf(stderr, "Bogus histogram bin %u, larger than %u !", pos, histsize);
+				fprintf(stderr, "Bogus histogram bin %u, larger than %u !\n", pos, histsize);
 				continue;
 			}
 
 			if (hist[pos] + count > (u16)-1) {
 				printf("Warning: capping sample count by %u samples for "
 					"symbol \"%s\"\n", hist[pos] + count - ((u16)-1),
-					abfd.syms[i]->name);
+					abfd.syms[i].symbol->name);
 				hist[pos] = (u16)-1;
 			} else {
 				hist[pos] += (u16)count;

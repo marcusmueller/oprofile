@@ -120,6 +120,7 @@ static struct poptOption options[] = {
 	{ "list-symbols", 'l', POPT_ARG_NONE, &list_symbols, 0, "list samples by symbol", NULL, },
 	{ "reverse", 'r', POPT_ARG_NONE, &reverse_sort, 0,
 	  "reverse sort order", NULL, },
+	{ "exclude-symbol", 'e', POPT_ARG_STRING, &exclude_symbols_str, 0, "exclude these comma separated symbols", "symbol_name" },
 	// FIXME: clarify this
 	{ "output-format", 't', POPT_ARG_STRING, &output_format, 0,
 	  "choose the output format", "output-format strings", },
@@ -238,6 +239,10 @@ static void get_options(int argc, char const * argv[])
 		}
 	}
 
+	if (exclude_symbols_str && !list_symbols) {
+			quit_error(optcon, "op_time: --exclude-symbol can be used only with --list-symbols.\n");
+	}
+
 	if (list_symbols) {
 		OutSymbFlag fl =
 			OutputSymbol::ParseOutputOption(output_format);
@@ -261,6 +266,8 @@ static void get_options(int argc, char const * argv[])
 	if (recursive_path) {
 		add_to_alternate_filename(recursive_path, true);
 	}
+
+	handle_exclude_symbol_option();
 
 	poptFreeContext(optcon);
 }

@@ -170,6 +170,16 @@ void validate_counter(int counter_mask, int & sort_by_counter)
 		exit(EXIT_FAILURE);
 	}
 }
+
+/**
+ * add to the exclude symbol list the symbols contained in the comma
+ * separated list of symbols through the gloval var exclude_symbols_str
+ */
+void handle_exclude_symbol_option()
+{
+	if (exclude_symbols_str)
+		separate_token(exclude_symbols, exclude_symbols_str, ',');  
+}
  
 /**
  * opp_treat_options - process command line options
@@ -206,8 +216,7 @@ void opp_treat_options(char const * file, poptContext optcon,
 
 	/* add to the exclude symbol list the symbols contained in the comma
 	 * separated list of symbols */
-	if (exclude_symbols_str)
-		separate_token(exclude_symbols, exclude_symbols_str, ',');
+	handle_exclude_symbol_option();
 
 	/* some minor memory leak from the next calls */
 	if (imagefile)
@@ -398,9 +407,9 @@ void opp_bfd::open_bfd_image(const std::string & filename, bool is_kernel)
  * symcomp - comparator
  *
  */
-static bool symcomp(const asymbol * a, const asymbol * b)
+static bool symcomp(const op_bfd_symbol & a, const op_bfd_symbol & b)
 {
-	return a->value + a->section->vma < b->value + b->section->vma;
+	return a.vma < b.vma;
 }
 
 namespace { 
@@ -473,24 +482,45 @@ bool opp_bfd::get_symbols()
 
 	for (i = 0; i < nr_all_syms; i++) {
 		if (interesting_symbol(bfd_syms[i])) {
-			syms.push_back(bfd_syms[i]);
+			// we can't fill the size member for now, because in
+			// some case it is calculated from the vma of the
+			// next symbol
+			struct op_bfd_symbol symb = { bfd_syms[i], 
+			  bfd_syms[i]->value + bfd_syms[i]->section->vma, 0 };
+			syms.push_back(symb);
 		}
 	}
 
 	std::stable_sort(syms.begin(), syms.end(), symcomp);
+
+	// now we can calculate the symbol size
+	for (i = 0 ; i < syms.size() ; ++i) {
+		syms[i].size = symbol_size(i);
+	}
 
 	// we need to ensure than for a given vma only one symbol exist else
 	// we read more than one time some samples. Fix #526098
 	// ELF symbols size : potential bogosity here because when using
 	// elf symbol size we need to check than two symbols does not overlap.
 	for (i =  1 ; i < syms.size() ; ++i) {
-		if (syms[i]->value + syms[i]->section->vma ==
-		    syms[i-1]->value + syms[i-1]->section->vma) {
+		if (syms[i].vma == syms[i-1].vma) {
 			// TODO: choose more carefully the symbol we drop.
 			// If once have FUNCTION flag and not the other keep
 			// it etc.
 			syms.erase(syms.begin() + i);
 			i--;
+		}
+	}
+
+	verbprintf("nr symbols before excluding symbols%u\n", syms.size());
+
+	// it's time to remove the excluded symbol.
+	for (i = 0 ; i < syms.size() ; ) {
+		if (is_excluded_symbol(syms[i].symbol->name)) {
+			printf("excluding symbold %s\n", syms[i].symbol->name);
+			syms.erase(syms.begin() + i);
+		} else {
+			++i;
 		}
 	}
 
@@ -505,9 +535,9 @@ bool opp_bfd::get_symbols()
 u32 opp_bfd::sym_offset(uint sym_index, u32 num) const
 {
 	/* take off section offset */
-	num -= syms[sym_index]->section->filepos;
+	num -= syms[sym_index].symbol->section->filepos;
 	/* and take off symbol offset from section */
-	num -= syms[sym_index]->value;
+	num -= syms[sym_index].symbol->value;
 
 	return num;
 }
@@ -531,12 +561,12 @@ bool opp_bfd::get_linenr(uint sym_idx, uint offset,
 	filename = 0;
 	linenr = 0;
 
-	asection* section = syms[sym_idx]->section;
+	asection* section = syms[sym_idx].symbol->section;
 
 	if ((bfd_get_section_flags (ibfd, section) & SEC_ALLOC) == 0)
 		return false;
 
-	pc = sym_offset(sym_idx, offset) + syms[sym_idx]->value;
+	pc = sym_offset(sym_idx, offset) + syms[sym_idx].symbol->value;
 
 	if (pc >= bfd_section_size(ibfd, section))
 		return false;
@@ -553,7 +583,7 @@ bool opp_bfd::get_linenr(uint sym_idx, uint offset,
 	// functioname and symbol name can be different if we query linenr info
 	// if we accept it we can get samples for the wrong symbol (#484660)
 	if (ret == true && functionname && 
-	    strcmp(functionname, syms[sym_idx]->name)) {
+	    strcmp(functionname, syms[sym_idx].symbol->name)) {
 		ret = false;
 	}
 
@@ -590,7 +620,8 @@ bool opp_bfd::get_linenr(uint sym_idx, uint offset,
 							 &linenr);
 
 			if (ret == true && linenr != 0 &&
-			    strcmp(functionname, syms[sym_idx]->name) == 0) {
+			    strcmp(functionname,
+				   syms[sym_idx].symbol->name) == 0) {
 				return ret;	// we win
 			}
 		}
@@ -636,9 +667,9 @@ typedef struct
 size_t opp_bfd::symbol_size(uint sym_idx) const
 {
 	asymbol * next, *sym;
-	sym = syms[sym_idx];
 
-	next = (sym_idx == syms.size() - 1) ? NULL : syms[sym_idx + 1];
+	sym = syms[sym_idx].symbol;
+	next = (sym_idx == syms.size() - 1) ? NULL : syms[sym_idx + 1].symbol;
 
 	u32 start = sym->section->filepos + sym->value;
 	size_t length;
@@ -676,10 +707,7 @@ size_t opp_bfd::symbol_size(uint sym_idx) const
 
 void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 {
-	asymbol *sym, *next;
-
-	sym = syms[sym_idx];
-	next = (sym_idx == syms.size() - 1) ? NULL : syms[sym_idx + 1];
+	asymbol *sym = syms[sym_idx].symbol;
 
 	verbprintf("Symbol %s, value 0x%lx\n", sym->name, sym->value); 
 	start = sym->value;
@@ -687,11 +715,7 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 	start += sym->section->filepos;
 	verbprintf("in section %s, filepos 0x%lx\n", sym->section->name, sym->section->filepos);
 
-	if (is_excluded_symbol(sym->name)) {
-		end = start;
-	} else {
-		end = start + symbol_size(sym_idx);
-	}
+	end = start + syms[sym_idx].size;
 	verbprintf("start 0x%x, end 0x%x\n", start, end); 
 
 	if (start >= nr_samples + sect_offset) {
@@ -720,7 +744,7 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 int opp_bfd::symbol_index(char const * symbol) const
 {
 	for (size_t i = 0; i < syms.size(); i++) {
-		if (!strcmp(syms[i]->name, symbol))
+		if (!strcmp(syms[i].symbol->name, symbol))
 			return i;
 	}
 

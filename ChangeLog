@@ -1,3 +1,13 @@
+2002-05-10  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/oprofpp.h:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp_util.cpp:
+	* pp/samples_container.cpp: generalize infrastucture for symbol
+	  vma/size
+
+	* pp/op_time.cpp: allow to exclude symbol with op_time -l
+
 2002-05-09  John Levon  <moz@compsoc.man.ac.uk>
 
 	* doc/xhtml-chunk.xsl:
