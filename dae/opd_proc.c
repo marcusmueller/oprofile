@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.7 2000/08/01 20:36:08 moz Exp $ */
+/* $Id: opd_proc.c,v 1.8 2000/08/01 21:10:20 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -196,14 +196,12 @@ static void opd_open_image(struct opd_image *image)
 	printf("Trying to open %s.\n",mangled);
 	image->fd = open(mangled, O_CREAT|O_EXCL|O_RDWR,0644);
 	if (image->fd==-1) {
-		fprintf(stderr,"oprofiled: open of image sample file \"%s\" failed: ", mangled);
-		perror("");
+		fprintf(stderr,"oprofiled: open of image sample file \"%s\" failed: %s", mangled,strerror(errno));
 		goto out; 
 	}
 
 	if (lseek(image->fd, image->len, SEEK_SET)==-1) {
-		fprintf(stderr, "oprofiled: seek failed for \"%s\". ",mangled);
-		perror("");
+		fprintf(stderr, "oprofiled: seek failed for \"%s\". %s",mangled,strerror(errno));
 		goto err; 
 	}
 

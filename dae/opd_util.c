@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.3 2000/08/01 20:36:08 moz Exp $ */
+/* $Id: opd_util.c,v 1.4 2000/08/01 21:10:20 moz Exp $ */
 
 /* for hton */ 
 #include <netinet/in.h> 
@@ -134,8 +134,7 @@ gzFile opd_do_open_file_z(const char *name, const char *mode, int fatal)
 
 	if (!fp) {
 		if (fatal) { 
-			fprintf(stderr,"oprofiled:opd_do_open_file_z: %s: ",name); 
-			perror("");
+			fprintf(stderr,"oprofiled:opd_do_open_file_z: %s: %s",name,strerror(errno)); 
 			exit(1);
 		} 
 	}
@@ -161,8 +160,7 @@ FILE *opd_do_open_file(const char *name, const char *mode, int fatal)
 
 	if (!fp) {
 		if (fatal) { 
-			fprintf(stderr,"oprofiled:opd_do_open_file: %s: ",name); 
-			perror("");
+			fprintf(stderr,"oprofiled:opd_do_open_file: %s: %s",name,strerror(errno)); 
 			exit(1);
 		} 
 	}
@@ -619,8 +617,7 @@ fd_t opd_open_device(const char *name, int fatal)
  
 	fd = open(name, O_RDONLY);
 	if (fatal && fd==-1) {
-		fprintf(stderr,"oprofiled:opd_open_device: %s: ",name); 
-		perror("");
+		fprintf(stderr,"oprofiled:opd_open_device: %s: %s",name,strerror(errno)); 
 		exit(1);
 	}
 

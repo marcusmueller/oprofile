@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.3 2000/08/01 20:36:08 moz Exp $ */
+/* $Id: oprofiled.c,v 1.4 2000/08/01 21:10:20 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -85,14 +85,12 @@ static void opd_open_files(void)
 	mapdevfd = opd_open_device(devmapfilename,1);
  
 	if (devfd<0) {
-		fprintf(stderr,"oprofiled: couldn't open device file %s: ",devfilename);
-		perror("");
+		fprintf(stderr,"oprofiled: couldn't open device file %s: %s",devfilename,strerror(errno));
 		exit(1);
 	}
  
 	if (mapdevfd<0) {
-		fprintf(stderr,"oprofiled: couldn't open mapping device file %s: ",devmapfilename);
-		perror("");
+		fprintf(stderr,"oprofiled: couldn't open mapping device file %s: %s",devmapfilename,strerror(errno));
 		exit(1);
 	}
  
@@ -201,8 +199,7 @@ static void opd_go_daemon(void)
 	opd_fork();
  
 	if (chdir(opd_dir)) {
-		fprintf(stderr,"oprofiled: opd_go_daemon: couldn't chdir to %s: ",opd_dir); 
-		perror(""); 
+		fprintf(stderr,"oprofiled: opd_go_daemon: couldn't chdir to %s: %s",opd_dir,strerror(errno)); 
 		exit(1);
 	}
 
