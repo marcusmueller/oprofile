@@ -164,7 +164,8 @@ void opd_read_system_map(const char *filename)
  *
  * Open and initialise an image sample file for
  * the image @image and set up memory mappings for
- * it.
+ * it. image->kernel and image->name must have meaningful
+ * values.
  */
 static void opd_open_image(struct opd_image *image)
 {
@@ -266,6 +267,9 @@ struct opd_fentry {
  * Add to the count stored at position @offset in the
  * image file. Overflow pins the count at the maximum
  * value.
+ *
+ * If the image is a kernel or module image, the position
+ * is further offset by %OPD_KERNEL_OFFSET.
  *
  * @count is the raw value passed from the kernel.
  */
@@ -1038,7 +1042,7 @@ void opd_handle_drop_mappings(const struct op_sample *sample)
  *
  * The parsing is based on Linux 2.4 format, which looks like this :
  * 
- * 4001e000-400fc000 r-xp 00000000 03:04 31011      /lib/libc-2.1.2.so 
+ * 4001e000-400fc000 r-xp 00000000 03:04 31011      /lib/libc-2.1.2.so
  */
 static int opd_add_ascii_map(struct opd_proc *proc, const char *line)
 {
@@ -1105,7 +1109,7 @@ static void opd_get_ascii_maps(struct opd_proc *proc)
  
 	do {
 		line = opd_get_line(fp);
-		/*  currently eof check is necessary due to 2.4.0-test3 */
+		/* FIXME: ? currently eof check is necessary due to 2.4.0-test3 */
 		if (streq(line,"") && feof(fp)) {
 			opd_free(line);
 			break;
@@ -1113,7 +1117,7 @@ static void opd_get_ascii_maps(struct opd_proc *proc)
 			opd_add_ascii_map(proc,line);
 			opd_free(line);
 		}
-	} while (1);			
+	} while (1);
 }
 
 /**

@@ -4,7 +4,6 @@
 /* May 2000 */
 
 /* FIXME: data->next rotation ? */
-/* FIXME: what about rdtsc timestamping ? */
  
 #include "oprofile.h" 
  
@@ -618,7 +617,6 @@ static int oprof_release(struct inode *ino, struct file *file)
 	return 0;
 }
 
-/* FIXME: additional info struct on end, CPU# etc. ? */ 
 static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 {
 	struct op_sample *mybuf;
