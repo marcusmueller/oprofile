@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.51 2001/09/22 23:05:12 movement Exp $ */
+/* $Id: oprofpp.c,v 1.52 2001/09/23 16:40:41 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -273,6 +273,9 @@ void opp_get_options(int argc, const char **argv)
 		imagefile = file;
 	}
 }
+
+// FIXME: only use char arrays and pointers if you MUST. Otherwise std::string
+// and references everywhere please.
 
 /**
  * demangle_symbol - demangle a symbol
@@ -609,6 +612,7 @@ void opp_bfd::output_linenr(uint sym_idx, uint offset)
  *
  * All error are fatal.
  */
+// FIXME: references not pointers ! 
 void opp_bfd::get_symbol_range(uint sym_idx, u32 *start, u32 *end) const
 {
 	asymbol *sym, *next;
@@ -960,25 +964,21 @@ static bool countcomp(const opp_count& a, const opp_count& b)
  */
 void opp_samples_files::do_list_symbols(opp_bfd* abfd) const
 {
-	std::vector<opp_count> scounts;
+	std::vector<opp_count> scounts(abfd->syms.size());
 	u32 start, end;
-	counter_array_t tot; 
+	counter_array_t tot;
 	uint i,j;
 	bool found_samples;
 	uint k;
 
 	for (i = 0; i < abfd->syms.size(); i++) {
-		opp_count scount;
-
-		scount.sym = abfd->syms[i];
+		scounts[i].sym = abfd->syms[i];
 
 		abfd->get_symbol_range(i, &start, &end); 
 		for (j = start; j < end; j++)
-			accumulate_samples(scount.count, j);
+			accumulate_samples(scounts[i].count, j);
 
-		tot += scount.count;
-
-		scounts.push_back(scount);
+		tot += scounts[i].count;
 	}
 
 	std::sort(scounts.begin(), scounts.end(), countcomp);
@@ -989,8 +989,10 @@ void opp_samples_files::do_list_symbols(opp_bfd* abfd) const
 		found_samples = false;
 		for (k = 0; k < nr_counters ; ++k) {
 			if (scounts[i].count[k]) {
-				printf("[0x%.8lx]: %2.4f%% (%u samples)\n", scounts[i].sym->value+scounts[i].sym->section->vma,
-				       (((double)scounts[i].count[k]) / tot[k])*100.0, scounts[i].count[k]);
+				printf("[0x%.8lx]: %2.4f%% (%u samples)\n", 
+					scounts[i].sym->value+scounts[i].sym->section->vma,
+					(((double)scounts[i].count[k]) / tot[k])*100.0, 
+					scounts[i].count[k]);
 				found_samples = true;
 			}
 			
