@@ -1214,7 +1214,7 @@ as we can for release 1.0 - john
  
 List for how to :
 
-o how to get library samples (--separate-samples) 
+o how to get library samples (separate-samples) 
 o how to get module / kernel post-prof
 o how to use sudo (and risks !)
 o more ...

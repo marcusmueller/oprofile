@@ -1,3 +1,8 @@
+2002-01-05  Philippe Elie  <ph_e@club-internet.fr>
+
+	* doc/oprofile.sgml: Avoid to use -- inside
+	  sgml comment
+
 2002-01-05  John Levon  <moz@compsoc.man.ac.uk>
 
 	* dae/op_start:
