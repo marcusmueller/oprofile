@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.35 2000/09/07 02:56:37 moz Exp $ */
+/* $Id: opd_proc.c,v 1.36 2000/09/07 20:15:14 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -284,7 +284,7 @@ inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16
 	fentry = image->start + (offset*sizeof(struct opd_fentry));
 
 	if (image->kernel)
-		fentry += OPD_KERNEL_OFFSET;
+		fentry += OPD_KERNEL_OFFSET/sizeof(struct opd_fentry);
 
 	if (opd_get_counter(count)) {
 		if (fentry->count1 + count < fentry->count1)
@@ -604,6 +604,7 @@ void opd_clear_module_info(void)
 	int i;
 
 	for (i=0; i < OPD_MAX_MODULES; i++) {
+		opd_free(opd_modules[i].name);
 		opd_modules[i].start=0;
 		opd_modules[i].end=0;
 	}
@@ -626,13 +627,14 @@ static struct opd_module *opd_get_module(char *name)
 	int i;
 
 	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].image!=-1 && bstreq(name,opd_images[opd_modules[i].image].name)) {
+		if (opd_modules[i].name && bstreq(name,opd_modules[i].name)) {
 			/* free this copy */
 			opd_free(name);
 			return &opd_modules[i];
 		}
 	}
 
+	opd_modules[nr_modules].name = name;
 	opd_modules[nr_modules].image = -1;
 	opd_modules[nr_modules].start = 0;
 	opd_modules[nr_modules].end = 0;
@@ -684,7 +686,8 @@ static void opd_get_module_info(void)
 		if (streq("",line) && !feof(fp)) {
 			opd_free(line);
 			continue;
-		}
+		} else if (streq("",line))
+			goto failure;
 
 		if (strlen(line)<9) {
 			printf("oprofiled: corrupt /proc/ksyms line \"%s\"\n",line);
@@ -791,11 +794,8 @@ retry:
 		}
 	}
 
-	/* not locatable, log as kernel sample */
-	if (pass) {
-		opd_put_image_sample(&opd_images[0], eip - kernel_start, count);
+	if (pass)
 		return;
-	}
 
 	pass++;
 
@@ -873,7 +873,6 @@ void opd_put_sample(const struct op_sample *sample)
 	 * was execve()d or a thread
 	 */
 	if (!(proc=opd_get_proc(sample->pid))) {
-		fprintf(stderr,"Couldn't find process %u\n",sample->pid);
 		opd_stats[OPD_LOST_PROCESS]++;
 		return;
 	}
@@ -896,7 +895,6 @@ void opd_put_sample(const struct op_sample *sample)
 	}
 
 	/* couldn't locate it */
-	dprintf("Sample out of bounds for process %u, eip 0x%.8x\n",proc->pid,sample->eip);
 	opd_stats[OPD_LOST_MAP_PROCESS]++;
 	return;
 }
@@ -944,11 +942,6 @@ void opd_handle_fork(const struct op_sample *sample)
 
 	old = opd_get_proc(sample->pid);
 
-	if (!old) {
-		dprintf("Told that non-existent process %u just forked.\n",sample->pid);
-		return;
-	}
-
 	/* we can quite easily get a fork() after the execve() because the notifications
 	 * are racy. So we only create a new setup if it doesn't exist already, allowing
 	 * both the clone() and the execve() cases to work.
@@ -958,6 +951,9 @@ void opd_handle_fork(const struct op_sample *sample)
 
 	/* eip is actually pid of new process */
 	proc = opd_add_proc((u16)sample->eip);
+
+	if (!old)
+		return;
 
 	/* remove the kernel map and copy over */
 
@@ -987,8 +983,9 @@ void opd_handle_exit(const struct op_sample *sample)
 	proc = opd_get_proc(sample->pid);
 	if (proc)
 		proc->dead = 1;
-	else
+	else {
 		dprintf("unknown proc %u just exited.\n",sample->pid);
+	}
 }
 
 struct op_mapping {

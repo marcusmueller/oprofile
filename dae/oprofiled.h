@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.13 2000/09/07 02:56:37 moz Exp $ */
+/* $Id: oprofiled.h,v 1.14 2000/09/07 20:15:14 moz Exp $ */
 
 #ifndef OPROFILED_H
 #define OPROFILED_H
@@ -28,7 +28,7 @@
 
 /* various defines */
 
-#define OPD_DEBUG
+//#define OPD_DEBUG
 
 #ifdef OPD_DEBUG
 #define dprintf(args...) printf(args)
@@ -147,6 +147,7 @@ struct opd_image {
 
 /* kernel module */
 struct opd_module {
+	char *name;
 	int image;
 	u32 start;
 	u32 end;

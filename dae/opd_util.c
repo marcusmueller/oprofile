@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.6 2000/08/21 19:28:49 moz Exp $ */
+/* $Id: opd_util.c,v 1.7 2000/09/07 20:15:14 moz Exp $ */
 
 /* for hton */ 
 #include <netinet/in.h> 
@@ -632,7 +632,7 @@ void opd_close_device(fd_t devfd)
  * if @seek is non-zero, then a read is requested in one 
  * go of @size bytes.
  *
- * The driver returning %EAGAIN is handled to allow signals.
+ * The driver returning %EINTR is handled to allow signals.
  * Any other error return is fatal.
  */ 
 void opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
@@ -649,7 +649,7 @@ void opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
 			fprintf(stderr,"oprofiled:opd_read_device: read 0 bytes from profile device.\n");
 			exit(1);
 		}
-		if (count<0 && errno!=EAGAIN) {
+		if (count<0 && errno!=EINTR) {
 			perror("oprofiled:opd_read_device: ");
 			exit(1);
 		}
