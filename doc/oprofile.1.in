@@ -204,6 +204,11 @@ Output filename:linenr info for all samples, usable only with
 Demangle GNU C++ symbol names.
 .br
 .TP
+.BI "--smart-demangle -D"
+Demangle GNU C++ symbol names then apply a set of regular expression to
+simplify stl library demangled name.
+.br
+.TP
 .BI "--counter " counter_nr ",  -c "counter_nr
 Analyze using counter nr.
 .br
@@ -249,6 +254,11 @@ Annotate image filename.
 .TP
 .BI "--demangle -d"
 Demangle GNU C++ symbol names.
+.br
+.TP
+.BI "--smart-demangle -D"
+Demangle GNU C++ symbol names then apply a set of regular expression to
+simplify stl library demangled name.
 .br
 .TP
 .BI "--assembly -a"
@@ -336,6 +346,11 @@ Show details for each symbol in each profiled file.
 .br
 .BI "--demangle -d"
 Demangle GNU C++ symbol names.
+.br
+.TP
+.BI "--smart-demangle -D"
+Demangle GNU C++ symbol names then apply a set of regular expression to
+simplify stl library demangled name.
 .br
 .TP
 .BI "--show-image-name -n"

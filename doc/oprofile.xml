@@ -937,6 +937,14 @@ Some interesting options of the post-processor :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>--smart-demangle</option></term>
+		<term><option>-D</option></term>
+		<listitem><para>
+		Demangle GNU C++ symbol names then apply a set of regular expression to
+		simplify stl library demangled name.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>--counter</option> nr</term>
 		<listitem><para>
 		Which counter (0 - N) to extract information for. N is dependent on your cpu type: 1 for P6 generation CPUs, 
@@ -1097,6 +1105,14 @@ Options allowed are :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>--smart-demangle</option></term>
+		<term><option>-D</option></term>
+		<listitem><para>
+		Demangle GNU C++ symbol names then apply a set of regular expression to
+		simplify stl library demangled name.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>--show-image-name</option></term>
 		<term><option>-n</option></term>
 		<listitem><para>
@@ -1206,6 +1222,21 @@ The options allowed are :
 		address. The <option>--sort-by-counter</option>, <option>--with-more-than-samples percent_nr</option> and
 		<option>--until-more-than-samples percent_nr</option> options can also be used with this
 		option to provide filtering capabilities.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--demangle</option></term>
+		<term><option>-d</option></term>
+		<listitem><para>
+		Demangle C++ symbol names.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--smart-demangle</option></term>
+		<term><option>-D</option></term>
+		<listitem><para>
+		Demangle GNU C++ symbol names then apply a set of regular expression to
+		simplify stl library demangled name.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
