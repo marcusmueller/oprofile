@@ -1,5 +1,10 @@
 2004-03-22  Will Cohen  <wcohen@redhat.com>
 
+	* utils/opcontrol: Correct order of do_init_daemon_vars and
+	decide_orofile_devices.
+	
+2004-03-22  Will Cohen  <wcohen@redhat.com>
+
 	* utils/opcontrol: Tweak error messages and factor out common code.
 
 2004-03-19  Anton Blanchard  <anton@samba.org>
