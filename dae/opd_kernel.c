@@ -93,7 +93,7 @@ opd_create_module(char * name, unsigned long start, unsigned long end)
 	module->image = NULL;
 	module->start = start;
 	module->end = end;
-	list_init(&module->module_list);
+	list_add(&module->module_list, &opd_modules);
 
 	return module;
 }
@@ -114,8 +114,7 @@ void opd_clear_module_info(void)
 	verbprintf("Removing module list\n");
 	list_for_each_safe(pos, pos2, &opd_modules) {
 		module = list_entry(pos, struct opd_module, module_list);
-		if (module->name)
-			free(module->name);
+		free(module->name);
 		free(module);
 		list_del(pos);
 	}
@@ -158,6 +157,8 @@ static void opd_get_module_info(void)
 		printf("oprofiled: /proc/ksyms not readable, can't process module samples.\n");
 		return;
 	}
+
+	verbprintf("Read module info.\n");
 
 	while (1) {
 		line = op_get_line(fp);

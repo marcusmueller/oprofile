@@ -152,7 +152,7 @@ void opd_reread_module_info(void)
 
 	opd_clear_module_info();
 
-	printf("Reading module info.\n");
+	verbprintf("Reading module info.\n");
 
 	fp = op_try_open_file("/proc/modules", "r");
 
