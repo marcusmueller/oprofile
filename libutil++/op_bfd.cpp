@@ -144,7 +144,6 @@ bool op_bfd::get_symbols(vector<string> const & excluded,
 			 vector<string> const & included)
 {
 	uint nr_all_syms;
-	symbol_index_t i;
 	size_t size;
 
 	if (!(bfd_get_file_flags(ibfd) & HAS_SYMS))
@@ -166,7 +165,7 @@ bool op_bfd::get_symbols(vector<string> const & excluded,
 	// O(N²) behavior when we will filter vector element below
 	list<op_bfd_symbol> symbols;
 
-	for (i = 0; i < nr_all_syms; i++) {
+	for (symbol_index_t i = 0; i < nr_all_syms; i++) {
 		if (interesting_symbol(bfd_syms[i])) {
 			// we can't fill the size member for now, because in
 			// some case it is calculated from the vma of the
@@ -233,9 +232,9 @@ bool op_bfd::get_symbols(vector<string> const & excluded,
 		for (it = symbols.begin() ; it != symbols.end(); ) {
 			vector<string>::const_iterator v_it =
 				find(included.begin(), included.end(),
-				     syms[i].name());
+				     it->name());
 			if (v_it == included.end()) {
-				cverb << "excluding symbol " << syms[i].name() << endl;
+				cverb << "excluding symbol " << it->name() << endl;
 				it = symbols.erase(it);
 			} else {
 				++it;

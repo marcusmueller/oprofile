@@ -1,5 +1,9 @@
 2002-12-09  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/op_bfd.cpp: stupid segfault when filtering included symbols
+
+2002-12-09  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/op_bfd.h:
 	* libutil++/op_bfd.cpp: replace a 0(N²) by a 0(N) behavior
 
