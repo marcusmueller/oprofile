@@ -1,5 +1,10 @@
 2002-01-18  John Levon  <moz@compsoc.man.ac.uk>
 
+	* module/compat22.h: never wake up from NMI
+	  on 2.2 SMP for now :(
+ 
+2002-01-18  John Levon  <moz@compsoc.man.ac.uk>
+
 	* module/compat.h:
 	* module/compat22.h: 
 	* module/compat24.h: s/VATLEAST/V_AT_LEAST/

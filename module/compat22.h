@@ -38,13 +38,15 @@
 #define lock_mmap(mm) do {} while (0)
 #define unlock_mmap(mm) do {} while (0)
  
-// FIXME: untested
+// FIXME: THOROUGHLY BROKEN !
 static inline int wq_is_lockable(void)
 {
+	/* 
 	if (spin_trylock(&waitqueue_lock)) {
 		spin_unlock(&waitqueue_lock);
 		return 1;
 	}
+	*/
 	return 0;
 }
  
@@ -180,7 +182,6 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 	  #define module_exit(x)
 	#endif
 
-	 
 	/* 2.2.18 introduced vmalloc_32, FIXME is old vmalloc equivalent */
 	#define vmalloc_32 vmalloc
 
