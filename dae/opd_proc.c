@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.18 2000/08/24 17:49:43 moz Exp $ */
+/* $Id: opd_proc.c,v 1.19 2000/08/26 22:19:27 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -856,11 +856,13 @@ void opd_put_sample(const struct op_sample *sample)
 	unsigned int i;
 	struct opd_proc *proc;
 
+	printf("OPD_SAMPLE: Pid %u, eip 0x%.8x, count %u\n",sample->pid,sample->eip,sample->count);
+
 	if (opd_eip_is_kernel(sample->eip)) {
 		opd_handle_kernel_sample(sample->eip,sample->count);
 		return;
 	}
-		
+
 	if (!(proc=opd_get_proc(sample->pid))) {
 		fprintf(stderr,"Couldn't find process %u\n",sample->pid);
 		opd_stats[OPD_LOST_PROCESS]++;
@@ -924,7 +926,7 @@ void opd_handle_fork(const struct op_sample *sample)
 
 	old = opd_get_proc(sample->pid);
 
-	printf("Handle fork %u\n",sample->pid);
+	printf("OPD_FORK: Handle fork %u\n",sample->pid);
 
 	if (!old) {
 		printf("Told that non-existent process %u just forked.\n",sample->pid);
@@ -957,7 +959,7 @@ void opd_handle_exit(const struct op_sample *sample)
 {
 	struct opd_proc *proc;
 
-	printf("proc %u just exited.\n",sample->pid);
+	printf("OPD_EXIT: proc %u just exited.\n",sample->pid);
 
 	proc = opd_get_proc(sample->pid);
 	if (proc)
@@ -990,6 +992,7 @@ struct op_mapping {
 void opd_handle_mapping(const struct op_sample *sample)
 {
 	static char file[PATH_MAX];
+	char *c=&file[PATH_MAX-1];
 	struct opd_proc *proc;
 	struct op_mapping *mapping;
 	u32 *buf;
@@ -999,10 +1002,14 @@ void opd_handle_mapping(const struct op_sample *sample)
 
 	proc = opd_get_proc(sample->pid);
 
+	printf("OPD_MAP for process %u\n",sample->pid);
+
 	if (!proc) {
 		printf("Told about mapping for non-existent process %u.\n",sample->pid);
 		return;
 	}
+
+	printf("eip 0x%x, pid %u, count %u\n",sample->eip,sample->pid,sample->count);
 
 	/* eip is actually nr. of bytes to read from map device */
 	size = (ssize_t)sample->eip;
@@ -1026,7 +1033,7 @@ void opd_handle_mapping(const struct op_sample *sample)
 			return;
 		}
 
-		file[0]='\0';
+		*c = '\0';
 
 		while (mapping->num--) {
 			hash = buf[pos++];
@@ -1034,22 +1041,23 @@ void opd_handle_mapping(const struct op_sample *sample)
 				/* Output to the hash map went wrong */
 				fprintf(stderr,"Ignoring broken map\n");
 				opd_free(buf);
+				return;
 			}
 
-			strcat(file,"/");
-
-			if (strlen(&hash_access(hash))+1 >= PATH_MAX) {
+			if (strlen(&hash_access(hash))+1+strlen(c) >= PATH_MAX) {
 				fprintf(stderr,"String \"%s\" too large.\n",file);
 				exit(1);
 			}
 
-			strcat(file,&hash_access(hash));
+			c -= strlen(&hash_access(hash)+1);
+			strncpy(c,"/",1);
+			strncpy(c+1,&hash_access(hash),strlen(&hash_access(hash)));
 		}
 
 		printf("Mapping from 0x%x, size 0x%x, offset 0x%x, of file $%s$\n",
-			mapping->addr, mapping->len, mapping->offset, file);
+			mapping->addr, mapping->len, mapping->offset, c);
 
-		opd_put_mapping(proc,opd_get_image(file,0),mapping->addr, mapping->offset, mapping->addr+mapping->len);
+		opd_put_mapping(proc,opd_get_image(c,0),mapping->addr, mapping->offset, mapping->addr+mapping->len);
 	}
 	opd_free(buf);
 }
@@ -1066,7 +1074,7 @@ void opd_handle_drop_mappings(const struct op_sample *sample)
 {
 	struct opd_proc *proc;
 
-	printf("Told to drop mappings for proc %u.\n",sample->pid);
+	printf("OP_DROP_MAPPING: Told to drop mappings for proc %u.\n",sample->pid);
 
 	proc = opd_get_proc(sample->pid);
 	if (proc)

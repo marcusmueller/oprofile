@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.10 2000/08/25 03:50:17 moz Exp $ */
+/* $Id: oprofiled.c,v 1.11 2000/08/26 22:19:27 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -280,8 +280,11 @@ void opd_do_samples(const struct op_sample *opd_buf)
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
+	//printf("Reading %d entries.\n",opd_buf->eip);
+
 	/* opd_buf->eip contains how many to read */
 	for (i=1; i <= opd_buf->eip; i++) {
+		//printf("%u: eip 0x%x, pid %u, count %u\n",i,((struct op_sample *)opd_buf)[i].eip,((struct op_sample *)opd_buf)[i].pid,((struct op_sample *)opd_buf)[i].count); 
 		if (ignore_myself && opd_buf[i].pid==mypid)
 			continue;
 
