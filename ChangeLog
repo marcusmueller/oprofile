@@ -1,5 +1,12 @@
 2002-06-04  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/oprofpp.h:
+	* pp/samples_file.cpp:
+	* pp/oprofpp_util.cpp: remove a sanity check
+	  that wasn't particularly useful
+ 
+2002-06-04  John Levon  <moz@compsoc.man.ac.uk>
+
 	* libop++/Makefile.in:
 	* libop++/op_mangling.h:
 	* libop++/op_mangling.cpp:

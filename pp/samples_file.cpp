@@ -72,12 +72,6 @@ opp_samples_files::opp_samples_files(string const & sample_file, int counter_)
 			continue;
 		samples[first_file]->check_headers(*samples[j]);
 	}
-
-	/* sanity check on ctr_um, ctr_event and cpu_type */
-	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
-		if (samples[i] != 0)
-			check_event(&samples[i]->header());
-	}
 }
 
 opp_samples_files::~opp_samples_files()

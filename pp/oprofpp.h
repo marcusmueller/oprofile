@@ -96,14 +96,6 @@ void quit_error(char const *err);
 bool is_excluded_symbol(std::string const & symbol);
 
 /**
- * sanity check of a struct opd_header *
- * @param header a pointer to header to check
- *
- * all error are fatal
- */
-void check_event(opd_header const * header);
-
-/**
  * validate the counter number
  * @param counter_mask bit mask specifying the counter nr to use
  * @param sort_by the counter nr from which we sort

@@ -256,16 +256,6 @@ counter_array_t & counter_array_t::operator+=(counter_array_t const & rhs)
 	return *this;
 }
 
-void check_event(opd_header const * header)
-{
-	char * ctr_name;
-	char * ctr_desc;
-	char * ctr_um_desc;
-
-	op_cpu cpu = static_cast<op_cpu>(header->cpu_type);
-	op_get_event_desc(cpu, header->ctr_event, header->ctr_um,
-			  &ctr_name, &ctr_desc, &ctr_um_desc);
-}
 
 void check_mtime(opp_samples_files const & samples, string image_name)
 {
