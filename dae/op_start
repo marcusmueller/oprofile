@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.39 2001/09/06 18:13:28 movement Exp $
+# $Id: op_start,v 1.40 2001/09/06 19:06:22 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -76,7 +76,6 @@ esac
 # we can now default define individual counter setup variable.
 f=0
 while (( $f < $OP_MAX_COUNTERS )); do
-	CTR_COUNT[$f]=600000
 	CTR_USER[$f]=1
 	CTR_KERNEL[$f]=1
 	f=$(($f+1))
@@ -252,12 +251,22 @@ fi
 f=0
 while (( $f < $OP_MAX_COUNTERS )); do
 	if [[ ${#CTR_EVENT[$f]} != 0 ]]; then
+		if [ -z "${CTR_COUNT[$f]}" ]; then
+			echo "Event but no count specified for counter $f"
+			exit 1
+		fi
 		CTR_EVENT_VAL[$f]=`op_help --cpu-type=$CPUTYPE ${CTR_EVENT[$f]}`
 		if [ -z "${CTR_EVENT_VAL[$f]}" -a ! -z "${CTR_EVENT[$f]}" ]; then
 			echo "Unknown event \"${CTR_EVENT[$f]}\""
 			exit 1
 		fi
+	else 
+		if [ ! -z "${CTR_COUNT[$f]}" ]; then
+			echo "Count but no event specified for counter $f"
+			exit 1
+		fi
 	fi
+
 	f=$(($f+1))
 done
 
