@@ -1,3 +1,10 @@
+2001-09-13  Dave Jones  <davej@suse.de>
+
+	* doc/oprofile.1.in:
+	  Update so it doesn't say 'Intel only'
+	* dae/op_start:
+	  Fix output so that it prints [0-3] instead of [0-4[
+
 2001-09-12  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/oprofpp.c: fix cpu type output for opf_filter
