@@ -19,6 +19,8 @@
 #define opd_nr_lookup_dcookie 253
 #elif defined(__alpha__)
 #define opd_nr_lookup_dcookie 406
+#elif defined(__ia64__)
+#define opd_nr_lookup_dcookie 1237
 #else
 #error Please define lookup_dcookie for your architecture
 #endif
