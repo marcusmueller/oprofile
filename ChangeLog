@@ -1,3 +1,12 @@
+2002-03-13  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/oprofpp_util.cpp: get_linenr() better handling
+	  of bfd_find_nearest_line. Fix #529622
+
+	* pp/opf_container.cpp: simplify symbol_container_impl
+
+	* pp/opp_symbol.cpp: use ostringstream only when necessary
+
 2002-03-09  John Levon  <moz@compsoc.man.ac.uk>
 
 	* doc/oprofile.sgml: some laptops have a usable local APIC

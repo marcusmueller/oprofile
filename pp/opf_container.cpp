@@ -109,18 +109,14 @@ class symbol_container_impl {
 	// get a vector of symbols sorted by increased count.
 	void get_symbols_by_count(size_t counter, vector<const symbol_entry*>& v) const;
  private:
-	void flush_input_symbol(size_t counter) const;
 	void build_by_file_loc() const;
 
-	vector<symbol_entry> v;
-
-	typedef multiset<const symbol_entry *, less_symbol_entry_by_samples_nr>
-		set_symbol_by_samples_nr;
+	vector<symbol_entry> symbols;
 
 	typedef set<const symbol_entry *, less_by_file_loc>
 		set_symbol_by_file_loc;
 
-	// Carefull : these *MUST* be declared after the vector to ensure
+	// Carefull : this *MUST* be declared after the vector to ensure
 	// a correct life-time.
 	// symbol_entry sorted by decreasing samples number.
 	// symbol_entry_by_samples_nr[0] is sorted from counter0 etc.
@@ -129,8 +125,6 @@ class symbol_container_impl {
 	//  the nth first symbols that accumulate a certain amount of samples.
 
 	// lazily build when necessary from const function so mutable
-	mutable set_symbol_by_samples_nr symbol_entry_by_samples_nr[OP_MAX_COUNTERS];
-
 	mutable set_symbol_by_file_loc symbol_entry_by_file_loc;
 };
 
@@ -138,27 +132,21 @@ class symbol_container_impl {
 
 symbol_container_impl::symbol_container_impl()
 {
-	// symbol_entry_by_samples_nr has been setup by the default ctr, we
-	// need to rebuild it. do not assume that index 0 is correctly built
-	for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
-		less_symbol_entry_by_samples_nr compare(i);
-		symbol_entry_by_samples_nr[i] =	set_symbol_by_samples_nr(compare);
-	}
 }
 
 inline size_t symbol_container_impl::size() const
 {
-	return v.size();
+	return symbols.size();
 }
 
 inline const symbol_entry & symbol_container_impl::operator[](size_t index) const
 {
-	return v[index];
+	return symbols[index];
 }
 
 inline void symbol_container_impl::push_back(const symbol_entry & symbol)
 {
-	v.push_back(symbol);
+	symbols.push_back(symbol);
 }
 
 const symbol_entry *
@@ -179,21 +167,11 @@ symbol_container_impl::find(string filename, size_t linenr) const
 	return 0;
 }
 
-void symbol_container_impl::flush_input_symbol(size_t counter) const
-{
-	// Update the sets of symbols entries sorted by samples count and the
-	// set of symbol entries sorted by file location.
-	if (v.size() && symbol_entry_by_samples_nr[counter].empty()) {
-		for (size_t i = 0 ; i < v.size() ; ++i)
-			symbol_entry_by_samples_nr[counter].insert(&v[i]);
-	}
-}
-
 void  symbol_container_impl::build_by_file_loc() const
 {
-	if (v.size() && symbol_entry_by_file_loc.empty()) {
-		for (size_t i = 0 ; i < v.size() ; ++i)
-			symbol_entry_by_file_loc.insert(&v[i]);
+	if (symbols.size() && symbol_entry_by_file_loc.empty()) {
+		for (size_t i = 0 ; i < symbols.size() ; ++i)
+			symbol_entry_by_file_loc.insert(&symbols[i]);
 	}
 }
 
@@ -204,9 +182,10 @@ const symbol_entry * symbol_container_impl::find_by_vma(bfd_vma vma) const
 	value.sample.vma = vma;
 
 	vector<symbol_entry>::const_iterator it =
-		lower_bound(v.begin(), v.end(), value, less_sample_entry_by_vma());
+		lower_bound(symbols.begin(), symbols.end(),
+			    value, less_sample_entry_by_vma());
 
-	if (it != v.end() && it->sample.vma == vma)
+	if (it != symbols.end() && it->sample.vma == vma)
 		return &(*it);
 
 	return 0;
@@ -215,16 +194,14 @@ const symbol_entry * symbol_container_impl::find_by_vma(bfd_vma vma) const
 // get a vector of symbols sorted by increased count.
 void symbol_container_impl::get_symbols_by_count(size_t counter, vector<const symbol_entry*> & v) const
 {
-	flush_input_symbol(counter);
+	for (size_t i = 0 ; i < symbols.size() ; ++i)
+		v.push_back(&symbols[i]);
 
-	v.clear();
+	// check if this is necessary, already sanitized by caller ?
+	counter = counter == size_t(-1) ? 0 : counter;
+	less_symbol_entry_by_samples_nr compare(counter);
 
-	const set_symbol_by_samples_nr & temp = symbol_entry_by_samples_nr[counter];
-
-	set_symbol_by_samples_nr::const_iterator it;
-	for (it = temp.begin() ; it != temp.end(); ++it) {
-		v.push_back(*it);
-	}
+	std::stable_sort(v.begin(), v.end(), compare);
 }
 
 //---------------------------------------------------------------------------
@@ -662,6 +639,7 @@ void samples_files_t::select_symbols(vector<const symbol_entry*> & result,
 				     bool sort_by_vma) const
 {
 	vector<const symbol_entry *> v;
+
 	symbols.get_symbols_by_count(ctr , v);
 
 	u32 total_count = samples_count(ctr);

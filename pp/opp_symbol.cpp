@@ -341,36 +341,21 @@ string OutputSymbol::format_vma(const std::string &,
 string OutputSymbol::format_symb_name(const std::string & name,
 				      const sample_entry &, int)
 {
-	ostringstream out;
-
 	int const is_anon = name[0] == '?';
 
-	if (!is_anon)
-		out << name;
-	else
-		out << "(no symbols)";
-
-	return out.str();
+	return is_anon ? string("(no symbol)") : name;
 }
 
 string OutputSymbol::format_image_name(const std::string &,
 				       const sample_entry & sample, int)
 {
-	ostringstream out;
-	
-	out << sample.file_loc.image_name;
-
-	return out.str();
+	return sample.file_loc.image_name;
 }
 
 string OutputSymbol::format_short_image_name(const std::string &,
 					     const sample_entry & sample, int)
 {
-	ostringstream out;
-
-	out << basename(sample.file_loc.image_name);
-
-	return out.str();
+	return basename(sample.file_loc.image_name);
 }
 
 string OutputSymbol::format_linenr_info(const std::string &,

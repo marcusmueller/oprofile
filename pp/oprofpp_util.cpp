@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.35 2002/03/06 21:52:17 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.36 2002/03/13 21:26:42 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -574,6 +574,7 @@ bool opp_bfd::get_linenr(uint sym_idx, uint offset,
 	if (filename == NULL || ret == false) {
 		filename = "";
 		linenr = 0;
+		ret = false;
 	}
 
 	// functioname and symbol name can be different if we query linenr info
@@ -581,6 +582,51 @@ bool opp_bfd::get_linenr(uint sym_idx, uint offset,
 	if (ret == true && functionname && 
 	    strcmp(functionname, syms[sym_idx]->name)) {
 		ret = false;
+	}
+
+	// gcc 2.95 defer emission of linenr info after the end of function
+	// prolog so on finding linenr info for samples inside the prolog
+	// (or for the function symbol itself) return always 0 as linenr. We
+	// work around by scanning forward for a vma with valid linenr info.
+	// Problem uncovered by Norbert Kaufmann. The work-around decrease,
+	// on tincas application, the number of failure to retrieve linenr
+	// info from 835 to 173. Most of the remaining are c++ inline function
+	// mainly from the stl library. Fix #529622
+	if (/*ret == false || */linenr == 0) {
+		// FIXME: looking at debug info for all gcc version shows
+		// than the same problems can -perhaps- occur for epilog code:
+		// find a samples files with samples in epilog and try oprofpp
+		// -L -o on it, check it also with op_to_source.
+
+		// first restrict the search on a sensible range of vma,
+		// 16 is an intuitive value based on epilog code look
+		size_t max_search = 16;
+		size_t section_size = bfd_section_size(ibfd, section);
+		if (pc + max_search > section_size)
+			max_search = section_size - pc;
+
+		for (size_t i = 1 ; i < max_search ; ++i) {
+			bool ret = bfd_find_nearest_line(ibfd, section,
+							 bfd_syms, pc+i,
+							 &filename,
+							 &functionname,
+							 &linenr);
+
+			if (ret == true && linenr != 0 &&
+			    strcmp(functionname, syms[sym_idx]->name) == 0) {
+				return ret;	// we win
+			}
+		}
+
+		// We lose it's worthwhile to try more.
+
+		// bfd_find_nearest_line clobber the memory pointed by filename
+		// from a previous call when the filename change across
+		// multiple calls. The more easy way to recover is to reissue
+		// the first call, we don't need to recheck return value, we
+		// know that the call will succeed.
+		bfd_find_nearest_line(ibfd, section, bfd_syms, pc,
+				      &filename, &functionname, &linenr);
 	}
 
 	return ret;
