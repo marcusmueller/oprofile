@@ -192,7 +192,7 @@ static void run_child(size_t cpu)
 #define PMC_MANDATORY (1UL << 23)
 #define PMC_USER (1UL << 3)
 #define PMC_KERNEL (1UL << 0)
-	for (i = 0; opd_events[i].name; ++i) {
+	for (i = 0; i < op_nr_counters && opd_events[i].name; ++i) {
 		struct opd_event * event = &opd_events[i];
 		pc[i].reg_num = event->counter + 4;
 		pc[i].reg_value = PMC_GEN_INTERRUPT;
@@ -209,7 +209,7 @@ static void run_child(size_t cpu)
 		pc[i].reg_smpl_eventid = event->counter;
 	}
 
-	for (i = 0; opd_events[i].name; ++i) {
+	for (i = 0; i < op_nr_counters && opd_events[i].name; ++i) {
 		struct opd_event * event = &opd_events[i];
 		pd[i].reg_value = ~0UL - event->count + 1;
 		pd[i].reg_short_reset = ~0UL - event->count + 1;

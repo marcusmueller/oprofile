@@ -1,5 +1,12 @@
 2003-10-15  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* dae/opd_sample_files.c:
+	* daemon/opd_mangling.c:
+	* daemon/opd_perfmon.c:
+	* daemon/opd_util.c: check we not overflow op_nr_counters
+
+2003-10-15  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* events/ia64/itanium/events: correct counter avalaible according
 	  to intel doc.
 

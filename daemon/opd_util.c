@@ -303,7 +303,7 @@ static void opd_parse_events(char const * events)
 
 	c = ev;
 
-	while (*c) {
+	while (*c && cur < op_nr_counters) {
 		struct opd_event * event = &opd_events[cur];
 
 		if (!(event->name = copy_token(&c, ':')))
@@ -320,6 +320,10 @@ static void opd_parse_events(char const * events)
 	free(ev);
 
 	/* FIXME: validation ? */
+	if (*c) {
+		fprintf(stderr, "oprofiled: too many events passed.\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 

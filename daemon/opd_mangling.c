@@ -52,7 +52,7 @@ static struct opd_event * find_event(unsigned long counter)
 {
 	size_t i;
 
-	for (i = 0; opd_events[i].name; ++i) {
+	for (i = 0; i < op_nr_counters && opd_events[i].name; ++i) {
 		if (counter == opd_events[i].counter)
 			return &opd_events[i];
 	}
