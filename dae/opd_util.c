@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.32 2002/01/02 00:57:34 movement Exp $ */
+/* $Id: opd_util.c,v 1.33 2002/01/03 00:14:42 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -452,7 +452,7 @@ ssize_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
  
 	count = read(devfd, buf, size);
 
-	if (count < 0 && errno != EINTR) {
+	if (count < 0 && errno != EINTR && errno != EAGAIN) {
 		perror("oprofiled:opd_read_device: ");
 		exit(1);
 	}
