@@ -196,14 +196,11 @@ u32 op_read_int_from_file(char const * filename)
  * Get a line of ASCII text from a file. The file is read
  * up to the first '\0' or '\n'. A trailing '\n' is deleted.
  *
- * Empty lines are not handled.
- *
  * Returns the dynamically-allocated string containing
- * that line. At the end of a file a string "" will
+ * that line. At the end of a file NULL will be returned.
  * be returned.
  *
- * In *both* cases, the string must be free()d at some
- * point.
+ * The string returned must be free()d by the caller.
  *
  * getline() is not a proper solution to replace this function
  */
@@ -212,8 +209,7 @@ char *op_get_line(FILE * fp)
 	char * buf;
 	char * cp;
 	int c;
-	/* average allocation is about 31, so 64 should be good */
-	size_t max = 64;
+	size_t max = 512;
 
 	buf = xmalloc(max);
 	cp = buf;
@@ -221,6 +217,10 @@ char *op_get_line(FILE * fp)
 	while (1) {
 		switch (c = fgetc(fp)) {
 			case EOF:
+				free(buf);
+				return NULL;
+				break;
+
 			case '\n':
 			case '\0':
 				*cp = '\0';
@@ -231,9 +231,9 @@ char *op_get_line(FILE * fp)
 				*cp = (char)c;
 				cp++;
 				if (((size_t)(cp - buf)) == max) {
-					buf = xrealloc(buf, max + 64);
+					buf = xrealloc(buf, max + 128);
 					cp = buf + max;
-					max += 64;
+					max += 128;
 				}
 				break;
 		}

@@ -1,5 +1,15 @@
 2003-03-02  John Levon  <levon@movementarian.org>
 
+	* libutil/op_fileio.c: change op_get_line to return
+	  NULL on EOF. Also bump up the default allocation some.
+
+	* dae/opd_kernel.c:
+	* dae/opd_parse_proc.c:
+	* daemon/opd_kernel.c:
+	* libop/op_events.c: changes from the above
+
+2003-03-02  John Levon  <levon@movementarian.org>
+
 	* configure.in:
 	* Makefile.am:
 	* events/: add text files describing the CPU counters

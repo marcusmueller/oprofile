@@ -177,18 +177,21 @@ static void opd_get_module_info(void)
 
 	while (1) {
 		line = op_get_line(fp);
-		if (!strcmp("", line) && !feof(fp)) {
+
+		if (!line)
+			break;
+
+		if (!strcmp("", line)) {
 			free(line);
 			continue;
-		} else if (!strcmp("",line))
-			goto failure;
+		}
 
 		if (strlen(line) < 9) {
 			printf("oprofiled: corrupt /proc/ksyms line \"%s\"\n", line);
 			goto failure;
 		}
 
-		if (strncmp("__insmod_", line+9, 9)) {
+		if (strncmp("__insmod_", line + 9, 9)) {
 			free(line);
 			continue;
 		}
@@ -253,7 +256,8 @@ static void opd_get_module_info(void)
 	}
 
 failure:
-	free(line);
+	if (line)
+		free(line);
 	op_close_file(fp);
 }
  

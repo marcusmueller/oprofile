@@ -40,7 +40,7 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 	size_t valueend = 1, tagend = 1, start = 0;
 
 	while (line[valueend]) {
-		while (line[valueend] != ' ' && line[valueend])
+		while (line[valueend] != ' ' && line[valueend] != '\t' && line[valueend])
 			++valueend;
 
 		while (line[tagend] != ':' && line[tagend])
@@ -98,7 +98,7 @@ static void parse_um_entry(struct op_described_um * entry, char const * line)
 	/* skip the tab */
 	++line;
 
-	while (line[i] != ' ' && line[i])
+	while (line[i] != ' ' && line[i] != '\t' && line[i])
 		++i;
 
 	if (!line[i]) {
@@ -128,7 +128,6 @@ static void parse_um_entry(struct op_described_um * entry, char const * line)
 }
 
 
-/* FIXME  FIXME allow empty lines ! */
 static void read_unit_masks(char const * filename)
 {
 	struct op_unit_mask * um = NULL;
@@ -143,7 +142,9 @@ static void read_unit_masks(char const * filename)
 
 	line = op_get_line(fp);
 
-	while (strlen(line)) {
+	while (line) {
+		if (!strlen(line))
+			goto next;
 		if (line[0] == '#')
 			goto next;
 
@@ -174,7 +175,6 @@ next:
 		list_add_tail(&um->um_next, &um_list);
 	}
 
-	free(line);
 	fclose(fp);
 }
 
@@ -254,7 +254,7 @@ int next_token(char ** c, char ** name, char ** value)
 
 	j = i;
 
-	while ((*c)[j] && (*c)[j] != ' ')
+	while (*(*c + j) && *(*c + j) != ' ' && *(*c + j) != '\t')
 		++j;
 
 	*value = xmalloc(1 + j - i);
@@ -265,7 +265,6 @@ int next_token(char ** c, char ** name, char ** value)
 }
 
 
-/* FIXME  FIXME allow empty lines ! */
 void read_events(char const * filename)
 {
 	struct op_event * event = NULL;
@@ -282,7 +281,9 @@ void read_events(char const * filename)
 
 	line = op_get_line(fp);
 
-	while (strlen(line)) {
+	while (line) {
+		if (!strlen(line))
+			goto next;
 		if (line[0] == '#')
 			goto next;
 
@@ -322,7 +323,6 @@ next:
 		line = op_get_line(fp);
 	}
 
-	free(line);
 	fclose(fp);
 }
 

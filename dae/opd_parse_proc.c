@@ -120,13 +120,11 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 
 	while (1) {
 		line = op_get_line(fp);
-		if (!strcmp(line, "") && feof(fp)) {
-			free(line);
+		if (!line)
 			break;
-		} else {
-			opd_add_ascii_map(proc, line, image_name);
-			free(line);
-		}
+
+		opd_add_ascii_map(proc, line, image_name);
+		free(line);
 	}
 
 	/* dae assume than maps[0] is the primary image name, this is always
