@@ -615,8 +615,6 @@ void opd_process_samples(char const * buffer, size_t count)
 	while (trans.remaining) {
 		code = pop_buffer_value(&trans);
 
-		verbprintf("start code is %lu\n", code);
-
 		if (!is_escape_code(code)) {
 			opd_put_sample(&trans, code);
 			continue;
