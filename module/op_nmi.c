@@ -359,7 +359,6 @@ static void pmc_deinit(void)
 		wrmsr(eventsel_msr[i], saved_eventsel_low[i], saved_eventsel_high[i]);
 		wrmsr(perfctr_msr[i], saved_perfctr_low[i], saved_perfctr_high[i]);
 	}
-
 }
  
 static char *names[] = { "0", "1", "2", "3", "4", };

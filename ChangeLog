@@ -1,5 +1,9 @@
 2002-01-15  John Levon  <moz@compsoc.man.ac.uk>
 
+	* module/Makefile.in: whoops, forgot to commit this
+ 
+2002-01-15  John Levon  <moz@compsoc.man.ac.uk>
+
 	* gui/oprof_start.cpp: some improvements for RTC
  
 2002-01-15  John Levon  <moz@compsoc.man.ac.uk>

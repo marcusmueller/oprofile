@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.8 2002/01/11 05:24:07 movement Exp $
+# $Id: Makefile.in,v 1.9 2002/01/15 18:31:12 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -29,7 +29,7 @@ uninstall:
 clean:
 	rm -rf *.o .deps
 
-oprofile.o: op_init.o op_util.o oprofile_c.o oprofile_nmi.o op_syscalls.o op_events_module.o op_x86.o compat.o
+oprofile.o: op_init.o op_util.o oprofile_c.o op_nmi.o op_rtc.o oprofile_nmi.o op_syscalls.o op_events_module.o op_x86.o compat.o
 	$(LD) -r -o $@ $^
 
 # we can't use implicit rules for this directory
@@ -38,6 +38,12 @@ op_init.o: op_init.c
 	$(CC) $(BKCFLAGS) -c -o $@ $<
 
 op_util.o: op_util.c
+	$(CC) $(KCFLAGS) -c -o $@ $<
+
+op_nmi.o: op_nmi.c
+	$(CC) $(KCFLAGS) -c -o $@ $<
+
+op_rtc.o: op_rtc.c
 	$(CC) $(KCFLAGS) -c -o $@ $<
 
 # can't use auto deps here
@@ -64,7 +70,7 @@ oprofile_nmi.o: oprofile_nmi.S
 	$(CC) $(ASMFLAGS) -c -o $@ $<
 
 # not all object files can use auto deps in this directory
-ALL_SOURCES = op_init.c op_util.c op_x86.c op_syscall.c
+ALL_SOURCES = op_nmi.c op_rtc.c op_init.c op_util.c op_x86.c op_syscall.c
 
 include ../Rules.make
 
