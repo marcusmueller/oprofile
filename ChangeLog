@@ -1,5 +1,11 @@
 2002-06-16  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/op_time_options.h:
+	* pp/op_time_options.cpp: move private stuff out of
+	  options namespace
+ 
+2002-06-16  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/counter_util.cpp: stop when we reach the first
 	  available counter for sorting
 

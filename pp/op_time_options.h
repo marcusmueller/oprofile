@@ -35,10 +35,6 @@ namespace options {
 	/// which symbols to exclude
 	extern std::vector<std::string> exclude_symbols;
 	/// FIXME: doc
-	extern std::vector<std::string> path;
-	/// FIXME: doc
-	extern std::vector<std::string> recursive_path;
-	/// FIXME: doc
 	extern alt_filename_t alternate_filename;
 	/// whether to do symbol-based summary
 	extern bool list_symbols;
