@@ -166,6 +166,23 @@ bool interesting_symbol(asymbol * sym)
 	return true;
 }
 
+/**
+ * return true if the symbol is boring, boring symbol are eliminated
+ * when multiple symbol exist at the same vma
+ */
+bool boring_symbol(string const & name)
+{
+	// FIXME: check if we can't do a better job, this heuristic fix all
+	// case I'm aware
+	if (name == "Letext")
+		return true;
+
+	if (name.substr(0, 2) == "??")
+		return true;
+
+	return false;
+}
+
 
 /// function object for filtering symbols to remove
 struct remove_filter {
@@ -231,10 +248,11 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 		symbols_found_t::iterator temp = it;
 		++temp;
 		if (temp != symbols.end() && (it->vma() == temp->vma())) {
-			// FIXME: choose more carefully the symbol we drop.
-			// If once have FUNCTION flag and not the other keep
-			// it etc.
-			symbols.erase(temp);
+			if (boring_symbol(it->name())) {
+				it = symbols.erase(it);
+			} else {
+				symbols.erase(temp);
+			}
 		} else {
 			++it;
 		}

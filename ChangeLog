@@ -1,5 +1,10 @@
 2003-06-11  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/op_bfd.cpp: boring_symbol() new to get a better choice
+	when eliminatiing symbol at identical vma
+
+2003-06-11  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* utils/opcontrol: fix rtc option checking, bug added after 0.5.3,
 	no big deal
 
