@@ -5,7 +5,7 @@
 
 2002-09-02  Dave Jones <davej@suse.de>
 
-	* module/x64/cpu_type.c: support hammer in ia32 mode
+	* module/x86/cpu_type.c: support hammer in ia32 mode
 
 2002-09-02  John Levon  <levon@movementarian.org>
 
