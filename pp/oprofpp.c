@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.34 2001/07/25 02:35:33 movement Exp $ */
+/* $Id: oprofpp.c,v 1.35 2001/07/25 03:51:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -237,9 +237,7 @@ bfd *open_image_file(char const * mangled, time_t mtime)
 		char *mang;
 		char *c;
 
-		mang = strdup(mangled); 
-		if (!mang)
-			return NULL;
+		mang = opd_strdup(mangled); 
 		 
 		c = &mang[strlen(mang)];
 		/* strip leading dirs */
@@ -248,12 +246,7 @@ bfd *open_image_file(char const * mangled, time_t mtime)
 
 		c++;
 
-		file = strdup(c);
-
-		if (!file) {
-			fprintf(stderr, "oprofpp: strdup() failed.\n");
-			exit(1);
-		}
+		file = opd_strdup(c);
 
 		c=file;
 

@@ -19,11 +19,12 @@
 #include <string.h>
 
 #include "../version.h"
+#include "../dae/opd_util.h"
 
-typedef unsigned char u8;
-typedef unsigned short u16;
-typedef unsigned int u32;
-
+static char * filename;
+ 
+#define OPD_MANGLE_CHAR '}'
+ 
 #define OPD_MAGIC 0xdeb6
 
 /* at the end of the sample files */
@@ -46,6 +47,17 @@ struct opd_footer_v3 {
 	double cpu_speed;
 	/* binary compatibility reserve */
 	u32  reserved[32];
+};
+
+struct opd_footer_v4 {
+	struct opd_footer_v3 v3;
+	u32 ctr0_count;
+	u32 ctr1_count;
+	/* Set to 0.0 if not available */
+	double cpu_speed;
+	time_t mtime;
+	/* binary compatibility reserve */
+	u32  reserved[28];
 };
 
 /*
@@ -80,7 +92,56 @@ static void v2_to_v3(FILE* fp) {
 	fwrite(&footer_v3, sizeof(footer_v3), 1, fp);
 }
 
-/* provide a default conversion function which just increase the version number, It must
+static char * get_binary_name(void)
+{
+	char *file; 
+	char *mang;
+	char *c;
+
+	mang = opd_strdup(filename);
+		 
+	c = &mang[strlen(mang)];
+	/* strip leading dirs */
+	while (c != mang && *c != '/')
+		c--;
+
+	c++;
+
+	file = opd_strdup(c);
+
+	c=file;
+
+	do {
+		if (*c == OPD_MANGLE_CHAR)
+			*c='/';
+	} while (*c++);
+
+	free(mang);
+	return file; 
+}
+
+static void v3_to_v4(FILE* fp) {
+	struct opd_footer_v3 footer_v3;
+	struct opd_footer_v4 footer_v4;
+	char * name;
+
+	fread(&footer_v3, sizeof(footer_v3), 1, fp);
+
+	footer_v4.v3 = footer_v3;
+	footer_v4.v3.v2.version = 4;
+
+	name = get_binary_name();
+	footer_v4.mtime = opd_get_mtime(get_binary_name());
+	opd_free(get_binary_name()); 
+ 
+	/* binary compatibility reserve */
+	memset(&footer_v4.reserved, '\0', sizeof(footer_v4.reserved));
+
+	fseek(fp, -sizeof(footer_v3), SEEK_END);
+	fwrite(&footer_v4, sizeof(footer_v4), 1, fp);
+}
+ 
+/* provide a default conversion function which just increase the version number, It may
  * be used when a reserved field is used without changing the total sizeof of opd_footer
  * *and* the zero value in the reserve work correctly with your new code */
 /* Not used for now so no static to avoid warning. This code has not been tested */
@@ -99,6 +160,7 @@ static void v2_to_v3(FILE* fp) {
 
 static struct converter converter_array[] = {
 	{ v2_to_v3, sizeof(struct opd_footer_v2), 2 },
+	{ v3_to_v4, sizeof(struct opd_footer_v3), 3 }, 
 };
 
 /* This acts as a samples of how to add new conversion from version N to M :
@@ -130,7 +192,7 @@ void vN_to_vM(FILE* fp) {
   PHIL 20010623 : these features has not been tested.
 */
 
-#define nr_converter (sizeof(converter_array) / sizeof(converter_array[0]))
+#define nr_converter (signed int)((sizeof(converter_array) / sizeof(converter_array[0])))
 
 /* return -1 if no converter are available, else return the index of the first
  * converter  */
@@ -183,6 +245,9 @@ int main(int argc, char* argv[])
 	}
 
 	for (i = 1 ; i < argc ; ++i) {
+		// used in v3 conversion
+		filename = argv[i];
+ 
 		fp = fopen(argv[i], "r+w");
 		if (fp == NULL) {
 			fprintf(stderr, "can not open %s for read/write\n", argv[i]);

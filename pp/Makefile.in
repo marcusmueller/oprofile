@@ -36,8 +36,8 @@ oprofpp-src.html: $(MY_SOURCES)
 oprofpp: $(SOURCES) $(HEADERS)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $(SOURCES) $(LIBS)
 
-oprof_convert: oprof_convert.c
-	$(CC) $< -Wall -o $@
+oprof_convert: oprof_convert.c ../dae/opd_util.c ../dae/opd_util.h
+	$(CC) oprof_convert.c ../dae/opd_util.c -Wall -o $@
 
 #CXX_DEBUG_LIBS = -L/usr/src/STLport-4.0/lib -lm -lstlport_gcc_stldebug
 #CXXFLAGS_DEBUG_STL = -D__STL_DEBUG -I/usr/src/STLport-4.0/stlport -Wno-long-long
