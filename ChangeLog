@@ -1,3 +1,8 @@
+2002-11-23  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/oprofile.xml: start a FAQ. Clarify debug information vs
+	  symbol information. Explain why we don't use dynamic symbol
+
 2002-11-20  John Levon  <levon@movementarian.org>
 
 	* daemon/oprofiled.c:

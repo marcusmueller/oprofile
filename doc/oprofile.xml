@@ -344,7 +344,7 @@ Data is now being collected in the kernel. Now we can do whatever we like ... al
 Note that unlike <command>gprof</command>, no instrumentation (<option>-pg</option> and <option>-a</option> options to <command>gcc</command>)
 is necessary. This is major factor in achieving the low overhead of OProfile. Compiling with debug symbols (the <option>-g</option>
 option) is not necessary to get a basic function-based profile listing, but it must be used in order to retrieve line number
-information and create annotated source.
+information and create annotated source. See the FAQ <xref linkend="symbol-and-debug-info" /> about debug information vs symbol information.
 </para>
 <para>
 Rather than wait for the buffers to fill up, I now force the profiling data to be processed with :
@@ -1070,7 +1070,7 @@ Some interesting options of the post-processor :
 <command>op_to_source</command> generates annotated source files or assembly listings optionally mixed with source.
 If you want to see the source file the profiled application needs to have debug information and the source
 must be available through this debug information e.g. compile the application with <option>-g</option> for 
-<command>gcc</command>.
+<command>gcc</command>. If the binary don't contain sufficient debug info you can use <command>op_to_source <option>--assembly</option></command> to get assembly annotation. See the FAQ <xref linkend="symbol-and-debug-info" /> about debug information vs symbol information.
 </para>
 <para>
 Note that for the reason explained in <xref linkend="hardware-counters" /> the results can show some
@@ -1680,6 +1680,46 @@ numbers of processes, leading to far better performance.
 <para>Some graphs of performance characteristics of oprofile are available on the website
  - see <xref linkend="resources" />.
 </para>
+</chapter>
+
+<chapter id="FAQ">
+<title>FAQ</title>
+
+<!--
+
+FIXME: I tried to use <sect1>...<sect2> to ensure sourceforge FAQ will go on
+only one html page but <xref linkend="symbol-and-debug-info" /> are showed as: 
+"See Section 1.1"  whilst I expected "See Section 7.1.1" or 
+"See Chapter 7 section 1.1"
+And currently I get the same problem <xref linkend="symbol-and-debug-info" />
+is showed as "See section 1" ...
+
+-->
+
+<sect1 id="symbol-and-debug-info">
+<title>Symbol information vs debug information. Why I see (no symbol) in profiling report ?</title>
+<para>
+Some post-profile tools need only symbol information like basic use of <command>oprofpp</command> whilst
+other need debugging information like <command>op_to_source</command>. The notion of debugging information and symbol
+information are orthogonal. <command>gcc</command> always create symbol information even without <option>-g</option>.
+You must be aware than <command>strip</command> by default remove debug <emphasis>and</emphasis> symbol information. You must use
+<command>strip <option>-d</option></command> to strip only debug but symbol information. Profiling binary
+without symbol information leads to a lot of (no symbol) reported by <command>oprofpp</command>.
+</para>
+<para>
+Don't think post-profile tools can use dynamic symbol for shared library. These symbol are never stripped but
+using them conduct to wrong profling report. Dynamic symbol don't provide enough information to create accurate
+profiling report because the symbol size information is lost and so on we don't know if a sample go to an exported
+function or to a static function which come immediatly after this exported symbol.
+</para>
+<para>
+In short if you want to profile already installed binary on your system, reinstall them with the proper information,
+at least with symbol information for basic <command>oprofpp</command> and <command>op_time <option>-l</option></command> or with full
+debug information to get annotated source. Unhopefully debug information can be very voluminous and the neeeded debug
+information for annotated source, line numbers, are only generated at <option>-g2</option> level.
+</para>
+</sect1>
+
 </chapter>
 
 <chapter id="ack">
