@@ -1,9 +1,10 @@
-/* $Id: oprofile_k.c,v 1.14 2000/08/12 21:09:33 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.15 2000/08/18 01:12:47 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
 #include <linux/mman.h>
 #include <linux/file.h>
+#include <linux/wrapper.h>
 
 #include <asm/io.h>
 
@@ -100,24 +101,124 @@ asmlinkage void my_do_nmi(struct pt_regs * regs, long error_code)
 	inb(0x71);		/* dummy */
 }
 
-/* map reading stuff */
+/* --------- map reading stuff ----------- */
 
-/* we're ok to fill up one entry (8 bytes) in the buffer.
- * Any more (i.e. all mapping info) goes in the map buffer;
- * the daemon knows how many entries to read depending on
- * the value in the main buffer entry. All entries go into
- * CPU#0 buffer. Yes, this means we can have "broken" samples
- * in the other buffers. But we can also have them in the
- * hash table anyway, by similar mapping races involving
- * fork()/execve() and re-mapping.
- */
-
-/* each entry is 16-byte aligned */
-static struct op_map map_buf[OP_MAX_MAP_BUF];
+static u32 map_buf[OP_MAX_MAP_BUF];
 static ulong nextmapbuf;
-static uint map_open;
+static uint map_open __cacheline_aligned;
+static uint hash_map_open __cacheline_aligned;
+static char **hash_map;
 
 void oprof_out8(void *buf);
+
+/* --------- device routines ------------- */
+
+int oprof_hash_map_open(void)
+{
+	struct page *page;
+
+	if (hash_map_open)
+		return -EBUSY;
+
+	hash_map_open=1;
+
+	hash_map = kmalloc(OP_HASH_MAP_SIZE, GFP_KERNEL);
+	if (!hash_map) {
+		hash_map_open=0;
+		return -EFAULT;
+	}
+
+	memset(hash_map, 0, OP_HASH_MAP_SIZE);
+
+	for (page = virt_to_page(hash_map); page < virt_to_page(hash_map+OP_HASH_MAP_SIZE); page++)
+		mem_map_reserve(page);
+
+	return 0;
+}
+
+int oprof_hash_map_release(void)
+{
+	if (!hash_map_open)
+		return -EFAULT;
+
+	kfree(hash_map);
+	hash_map_open=0;
+	return 0;
+}
+
+int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	ulong size = (ulong)(vma->vm_end-vma->vm_start);
+
+	if (size>OP_HASH_MAP_SIZE || vma->vm_flags&VM_WRITE || vma->vm_pgoff)
+		return -EINVAL;
+
+	if (remap_page_range(vma->vm_start, virt_to_phys(hash_map),
+		size, vma->vm_page_prot))
+		return -EAGAIN;
+
+	return 0;
+}
+
+int oprof_map_open(void)
+{
+	if (map_open)
+		return -EBUSY;
+
+	map_open=1;
+	return 0;
+}
+
+int oprof_map_release(void)
+{
+	if (!map_open)
+		return -EFAULT;
+
+	map_open=0;
+	return 0;
+}
+
+int oprof_map_read(char *buf, size_t count, loff_t *ppos)
+{
+	ssize_t max;
+	char *data = (char *)map_buf;
+
+	max = OP_MAX_MAP_BUF*sizeof(u32);
+
+	if (!count)
+		return 0;
+
+	if (*ppos >= max)
+		return -EINVAL;
+
+	if (*ppos + count > max) {
+		size_t firstcount = max - *ppos;
+
+		if (copy_to_user(buf, data+*ppos, firstcount))
+			return -EFAULT;
+
+		count -= firstcount;
+		*ppos = 0;
+	}
+	
+	if (count > max)
+		return -EINVAL;
+
+	data += *ppos;
+
+	if (copy_to_user(buf,data,count))
+		return -EFAULT;
+
+	*ppos += count;
+
+	/* wrap around */
+	if (*ppos==max)
+		*ppos = 0;
+
+	return count;
+}
+
+/* ------------ system calls --------------- */
 
 struct mmap_arg_struct {
         unsigned long addr;
@@ -180,135 +281,134 @@ asmlinkage static int my_sys_clone(struct pt_regs regs)
 	return ret;
 }
 
-int oprof_map_open(void)
-{
-	if (map_open)
-		return -EBUSY;
-
-	map_open=1;
-	return 0;
-}
-
-int oprof_map_release(void)
-{
-	if (!map_open)
-		return -EFAULT;
-
-	map_open=0;
-	return 0;
-}
-
 spinlock_t map_lock = SPIN_LOCK_UNLOCKED;
 
-/* read from ring buffer. map_lock prevents against corruption
- * from oprof_output_map(). Code is ugly to prevent sleeping
- * whilst holding a spinlock.
- */
-int oprof_map_read(char *buf, size_t count, loff_t *ppos)
+inline static uint name_hash(const char *name, uint len)
 {
-	ssize_t max;
-	char *data = (char *)map_buf;
-	void *mybuf;
-	size_t total=count;
-	size_t firstcount=0;
+	uint hash=0;
 
-	max = sizeof(struct op_map)*OP_MAX_MAP_BUF;
+	while (len)
+		hash = ((hash << 4) | (hash >> 28)) ^ name[len-1];
 
-	if (!count)
-		return 0;
-
-	if (*ppos >= max)
-		return -EINVAL;
-
-	mybuf = kmalloc(total, GFP_KERNEL);
-	if (!mybuf)
-		return -EFAULT;
-
-	spin_lock(&map_lock);
-
-	if (*ppos + count > max) {
- 		firstcount = max - *ppos;
-		memcpy(mybuf, data+*ppos, firstcount);
-
-		count -= firstcount;
-		*ppos = 0;
-	}
-	
-	if (count > max) {
-		spin_unlock(&map_lock);
-		kfree(mybuf);
-		return -EINVAL;
-	}
-
-	memcpy(mybuf+firstcount, data+*ppos, count);
-
-	spin_unlock(&map_lock);
-
-	if (copy_to_user(buf,mybuf,total)) {
-		kfree(mybuf);
-		return -EFAULT;
-	}
-	
-	kfree(mybuf);
- 
-	*ppos += count;
-
-	/* wrap around */
-	if (*ppos==max)
-		*ppos = 0;
-
-	return count;
+	return hash % OP_HASH_MAP_NR;
 }
 
-inline static char *oprof_outstr(char *buf, char *str, int bytes)
+#define hash_access(hash) (hash_map[hash*OP_HASH_LINE])
+
+/* called with map_lock, VFS locks as below */
+static int output_path_hash(const char *name, uint len)
 {
-	while (*str && bytes) {
-		*buf++ = *str++;
-		bytes--;
+	uint firsthash;
+	uint hash;
+
+	printk(KERN_INFO "Output path hash: %s\n",name);
+
+	if (len>=OP_HASH_LINE) {
+		printk(KERN_ERR "Hash component \"%s\" is too long.\n",name);
+		return -1;
 	}
 
-	/* proper NULL-termination is handled by daemon */
-	if (bytes)
-		*buf='\0';
-	return str;
+	hash = firsthash = name_hash(name,len);
+	do {
+		if (!*hash_access(hash)) {
+			printk(KERN_INFO "oprofile: Adding %s at hash %u\n",name,hash);
+			strncpy(hash_access(hash), name, len);
+			return hash;
+		}
+
+		if (!strcmp(hash_access(hash),name))
+			return hash;
+
+		/* FIXME ? */
+		hash = (hash*hash+1) % OP_HASH_MAP_NR;
+	} while (hash!=firsthash);
+
+	printk(KERN_ERR "oprofile: hash map is full !\n");
+	return -1;
 }
 
-#define map_round(v) (((v)+(sizeof(struct op_map)/2))/sizeof(struct op_map))
+/* called with map_lock held */
+inline static u32 *map_out32(u32 val)
+{
+	u32 * pos=nextmapbuf;
+	map_buf[nextmapbuf++] = val;
+	if (nextmapbuf==OP_MAX_MAP_BUF)
+		nextmapbuf=0;
+	return pos;
+}
+
+/* called with map_lock held */
+static void do_d_path(struct dentry *dentry, struct vfsmount *vfsmnt, char *buf, u32 *count)
+{
+	struct vfsmount *rootmnt;
+	struct dentry *root;
+	int val;
+
+	/* we do same as d_path, but we only care about the components */
+
+	read_lock(&current->fs->lock);
+	rootmnt = mntget(current->fs->rootmnt);
+	root = dget(current->fs->root);
+	read_unlock(&current->fs->lock);
+	spin_lock(&dcache_lock);
+
+        if (!IS_ROOT(dentry) && list_empty(&dentry->d_hash))
+		return;
+
+        for (;;) {
+                struct dentry * parent;
+
+		if (dentry==root && vfsmnt==rootmnt)
+			break;
+
+		if (dentry==vfsmnt->mnt_root || IS_ROOT(dentry)) {
+			/* Global root? */
+			if (vfsmnt->mnt_parent==vfsmnt)
+				goto global_root;
+			dentry = vfsmnt->mnt_mountpoint;
+			vfsmnt = vfsmnt->mnt_parent;
+			continue;
+		}
+
+		val = output_path_hash(dentry->d_name.name, dentry->d_name.len);
+		if (val!=-1) {
+			(*count)++;
+			map_out32(val);
+		}
+		parent = dentry->d_parent;
+		dentry = parent;
+	}
+out:
+	spin_unlock(&dcache_lock);
+	dput(root);
+	mntput(rootmnt);
+	return;
+
+global_root:
+	/* FIXME: do we want this ? */
+	printk("Global root: %s\n",dentry->d_name.name);
+	val = output_path_hash(dentry->d_name.name, dentry->d_name.len);
+	if (val!=-1) {
+		(*count)++;
+		map_out32(val);
+	}
+	goto out;
+}
 
 /* buf must be PAGE_SIZE bytes large */
 static int oprof_output_map(ulong addr, ulong len,
 	ulong offset, struct file *file, char *buf)
 {
-	char *line;
-	ulong size=16;
-
-	line = d_path(file->f_dentry, file->f_vfsmnt, buf, PAGE_SIZE);
+	u32 *tot;
 
 	spin_lock(&map_lock);
+	map_out32(addr);
+	map_out32(len);
+	map_out32(offset);
+	tot = map_out32(0);
+	do_d_path(file->f_dentry, file->f_vfsmnt, buf, tot);
 
-	map_buf[nextmapbuf].addr = addr;
-	map_buf[nextmapbuf].len = len;
-	map_buf[nextmapbuf].offset = offset;
-
-	line = oprof_outstr(map_buf[nextmapbuf].path,line,4);
-	nextmapbuf++;
-
-	/* output in 16-byte chunks, wrapping round */
-	while (*line) {
-		if (nextmapbuf==OP_MAX_MAP_BUF)
-			nextmapbuf=0;
-
-		line = oprof_outstr((char *)&map_buf[nextmapbuf], line, 16);
-		size += 16;
-		nextmapbuf++;
-	}
-
-	if (nextmapbuf==OP_MAX_MAP_BUF)
-		nextmapbuf=0;
-
-	spin_unlock(&map_lock);
-
-	return size;
+	return sizeof(u32)*(4+*tot);
 }
 
 static int oprof_output_maps(struct task_struct *task)
@@ -368,8 +468,6 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 		samp.eip = oprof_output_maps(current);
 		oprof_out8(&samp);
 	}
-	if (ret > 0) /* FIXME: remove */
-		printk(KERN_ERR "huh ? %d\n",ret);
 	putname(filename);
         return ret;
 }
