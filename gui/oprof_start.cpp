@@ -148,14 +148,13 @@ oprof_start::oprof_start()
 		set_counter_combo(i);
 	}
 
-	counter_selected(0);
-	enabled_toggled(false);
- 
 	// daemon status timer 
 	startTimer(5000);
 	timerEvent(0);
  
 	load_event_config_file();
+
+	counter_selected(0);
 }
 
 // load the configuration, if the configuration file does not exist create it.
@@ -217,10 +216,25 @@ void oprof_start::load_event_config_file()
 		return;
 	}
 
+	for (uint i = 0; i < op_nr_counters; ++i) {
+		in >> ctr_enabled[i];
+		std::string ev;
+		in >> ev;
+		if (ev == "none")
+			current_event[i] = 0;
+		else
+			current_event[i] = &locate_event(ev);
+		set_counter_combo(i); 
+	}
+ 
 	// need checking on the key validity :(
-	// FIXME: this needs to be per-counter 
-	in >> event_cfgs[0];
+	for (uint i = 0; i < op_nr_counters; ++i)
+		in >> event_cfgs[i];
 
+	// re-init event stuff
+	enabled_toggled(ctr_enabled[current_ctr]); 
+	display_event(current_event[current_ctr]);
+ 
 	event_cfgs[0].set_dirty(false);
 }
 
@@ -234,8 +248,17 @@ bool oprof_start::save_event_config_file()
 
 	std::ofstream out(name.c_str());
 
-	// FIXME: !!!!! 
-	out << event_cfgs[0];
+	for (uint i = 0; i < op_nr_counters; ++i) {
+		out << ctr_enabled[i];
+		if (current_event[i] == 0)
+			out << " none ";
+		else
+			out << " " << current_event[i]->name + " ";
+	}
+	out << std::endl;
+ 
+	for (uint i = 0; i < op_nr_counters; ++i)
+		out << event_cfgs[i];
 
 	event_cfgs[0].set_dirty(false);
 
@@ -248,13 +271,15 @@ void oprof_start::accept()
 	// record the previous settings
 	record_selected_event_config();
 
-	// FIXME: check and warn about return code.
-	// FIXME: counters
-	if (event_cfgs[0].dirty()) {
-		printf("saving configuration file");
-		save_event_config_file();
+	uint i; 
+	for (i = 0; i < op_nr_counters; ++i) {
+		if (event_cfgs[0].dirty())
+			break;
 	}
-
+	// FIXME: check and warn about return code.
+	if (i != op_nr_counters)
+		save_event_config_file();
+ 
 	record_config();
 
 	save_config_file();
@@ -310,22 +335,30 @@ void oprof_start::set_counter_combo(uint ctr)
  
 void oprof_start::counter_selected(int ctr)
 {
-	// record the previous settings
-	record_selected_event_config();
- 
-	current_ctr = ctr;
- 
 	setUpdatesEnabled(false); 
 	events_list->clear();
  
+	if (current_event[current_ctr])
+		record_selected_event_config();
+
+	current_ctr = ctr;
+ 
+	display_event(current_event[current_ctr]);
+ 
+	QListViewItem * theitem = 0;
+
 	for (std::vector<op_event_descr>::reverse_iterator cit = v_events.rbegin();
 		cit != v_events.rend(); ++cit) {
- 
 		if (cit->counter_mask & (1 << ctr)) {
 			QListViewItem * item = new QListViewItem(events_list, cit->name.c_str());
 			if (current_event[ctr] != 0 && cit->name == current_event[ctr]->name)
-				events_list->setCurrentItem(item);
+				theitem = item;
 		}
+	}
+
+	if (theitem) {
+		events_list->setCurrentItem(theitem);
+		events_list->ensureItemVisible(theitem);
 	}
 
 	enabled->setChecked(ctr_enabled[ctr]);
@@ -334,34 +367,52 @@ void oprof_start::counter_selected(int ctr)
 	update();
 }
 
- 
-void oprof_start::event_selected(QListViewItem * item)
+void oprof_start::display_event(struct op_event_descr const * descrp)
 {
-	// record the previous settings
-	record_selected_event_config();
- 
-	op_event_descr const & descr = locate_event(item->text(0).latin1());
-
 	setUpdatesEnabled(false); 
- 
-	event_help_label->setText(descr.help_str.c_str());
-	setup_unit_masks(descr);
- 
-	event_count_validator->setRange(descr.min_count, OP_MAX_PERF_COUNT);
- 
+
+	if (!descrp) {
+		os_ring_count_cb->setChecked(false);
+		os_ring_count_cb->setEnabled(false);
+		user_ring_count_cb->setChecked(false);
+		user_ring_count_cb->setEnabled(false);
+		event_count_edit->setText("");
+		event_count_edit->setEnabled(false); 
+		hide_masks();
+		return; 
+	}
+	setup_unit_masks(*descrp);
+	os_ring_count_cb->setEnabled(true);
+	user_ring_count_cb->setEnabled(true);
+	event_count_edit->setEnabled(true); 
 	const persistent_config_t<event_setting> & cfg = event_cfgs[current_ctr];
  
-	os_ring_count_cb->setChecked(cfg[descr.name].os_ring_count);
-	user_ring_count_cb->setChecked(cfg[descr.name].user_ring_count);
+	os_ring_count_cb->setChecked(cfg[descrp->name].os_ring_count);
+	user_ring_count_cb->setChecked(cfg[descrp->name].user_ring_count);
 	QString count_text;
-	count_text.setNum(cfg[descr.name].count);
+	count_text.setNum(cfg[descrp->name].count);
 	event_count_edit->setText(count_text);
-
-	current_event[current_ctr] = &descr;
-	set_counter_combo(current_ctr);
+	event_count_validator->setRange(descrp->min_count, OP_MAX_PERF_COUNT);
+ 
+	event_help_label->setText(descrp->help_str.c_str());
  
 	setUpdatesEnabled(true);
 	update();
+}
+
+
+void oprof_start::event_selected(QListViewItem * item)
+{
+	op_event_descr const & descr = locate_event(item->text(0).latin1());
+ 
+	if (current_event[current_ctr])
+		record_selected_event_config(); 
+
+	display_event(&descr);
+	current_event[current_ctr] = &descr;
+	event_cfgs[current_ctr].set_dirty(true);
+ 
+	set_counter_combo(current_ctr);
 }
  
  
@@ -375,20 +426,16 @@ void oprof_start::event_over(QListViewItem * item)
 void oprof_start::enabled_toggled(bool en)
 {
 	ctr_enabled[current_ctr] = en;
-	if (!en)
+	if (!en) {
 		events_list->clearSelection();
-	events_list->setEnabled(en); 
-	check0->setEnabled(en); 
-	check1->setEnabled(en); 
-	check2->setEnabled(en); 
-	check3->setEnabled(en); 
-	check4->setEnabled(en); 
-	check5->setEnabled(en); 
-	check6->setEnabled(en); 
-	os_ring_count_cb->setEnabled(en); 
-	user_ring_count_cb->setEnabled(en); 
-	event_count_edit->setEnabled(en);
-	set_counter_combo(current_ctr); 
+		current_event[current_ctr] = 0; 
+		set_counter_combo(current_ctr);
+	}
+	events_list->setEnabled(en);
+
+	display_event(current_event[current_ctr]);
+
+	event_cfgs[current_ctr].set_dirty(true);
 }
 
 
@@ -569,13 +616,8 @@ uint oprof_start::get_unit_mask(op_event_descr const & descr)
 	return mask;
 }
 
-void oprof_start::setup_unit_masks(const op_event_descr & descr)
-{
-	// FIXME: the stuff needs rationalising between calling things "desc"
-	// and "descr" 
-	const op_unit_mask* um = descr.unit;
-	const op_unit_desc* um_desc = descr.um_descr;
-
+void oprof_start::hide_masks()
+{ 
 	check0->hide();
 	check1->hide();
 	check2->hide();
@@ -583,6 +625,16 @@ void oprof_start::setup_unit_masks(const op_event_descr & descr)
 	check4->hide();
 	check5->hide();
 	check6->hide(); 
+} 
+ 
+void oprof_start::setup_unit_masks(const op_event_descr & descr)
+{
+	// FIXME: the stuff needs rationalising between calling things "desc"
+	// and "descr" 
+	const op_unit_mask* um = descr.unit;
+	const op_unit_desc* um_desc = descr.um_descr;
+
+	hide_masks();
  
 	if (!um || um->unit_type_mask == utm_mandatory)
 		return;

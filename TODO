@@ -18,7 +18,8 @@ o bug list (except nosmp)
 
 o can we provide a small setuid helper for starting/stopping/flushing the profiler ?
  
-o remove oprofile thread. already exists in CVS branch BRANCH_NO_THREAD
+o remove oprofile thread. already exists in CVS branch BRANCH_NO_THREAD. This provides
+  no performance advantage but removes code. 
 
 o determine where we need ctx_sw_on/off to prevent pre-emption
  

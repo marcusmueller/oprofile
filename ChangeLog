@@ -1,5 +1,10 @@
 2001-09-27  John Levon  <moz@compsoc.man.ac.uk>
 
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp: get per-counter config working
+ 
+2001-09-27  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/Makefile.in:
 	* pp/oprofpp.c:
 	* pp/oprofpp.cpp: rename file

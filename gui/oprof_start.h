@@ -96,6 +96,12 @@ private:
 	/// set the unit mask widgets for given event
 	void setup_unit_masks(op_event_descr const & descr);
 
+	/// show an event's settings
+	void display_event(struct op_event_descr const * descrp);
+ 
+	/// hide unit mask widgets
+	void hide_masks(void);
+ 
 	/// update the counter combo at given position
 	void set_counter_combo(uint);
  
