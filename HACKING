@@ -116,3 +116,35 @@ validate: see http://www.htmlhelp.com/tools/validator/).
 Any user-visible change should have a short description in the file
 release-notes/release-<nextversion> in the oprofile-www CVS module.
 Do not document bug fixes that were not in the last released version.
+
+CVS branches
+------------
+
+You may need at some point to do your work on a CVS branch, if it's
+particularly invasive. CVS is a PITA in this respect unfortunately. It's
+strongly recommended that you merge changes from the trunk to your branch at
+regular intervals.
+
+To create a branch, create a branch tag :
+
+	cvs rtag -b BRANCH_WHATEVER oprofile
+
+And add a merge tag (in the trunk repository):
+
+	cvs rtag BRANCH_WHATEVER_MERGE oprofile
+
+Now make your changes on the branch as you wish. When you want to merge some
+fixes from the trunk in your branch, do something like this on a branch
+checkout :
+
+	cvs update -j BRANCH_WHATEVER_MERGE -j HEAD
+
+Fix up any conflicts and commit it the changes to the branch. Now move the
+merge tag along for the next merge (in the trunk repository) :
+
+	cvs rtag -F BRANCH_WHATEVER_MERGE oprofile
+
+When the time comes to merge the branch changes back into the trunk, I
+recommend just doing a diff -Naur on the two trees, which will make sure CVS
+hasn't done anything unusual. Don't forget to list your branch on the website
+CVS page.
