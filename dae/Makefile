@@ -1,8 +1,10 @@
-all: cprofiled cp_help rdtsc div min loop
+# $Id: Makefile,v 1.4 2000/08/01 20:36:08 moz Exp $
+
+all: cprofiled cp_help
  
 .PHONY: all clean srcdoc 
 clean:
-	rm -f cprofiled cp_help rdtsc div min loop *.o && $(MAKE) -C pp clean
+	rm -f cprofiled cp_help *.o && $(MAKE) -C pp clean
  
 CC=gcc 
 CFLAGS=-Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline
@@ -21,15 +23,3 @@ cprofiled: $(SOURCES) $(HEADERS)
 cp_help: ../cp_events.c
 	rm -f ../cp_events.o
 	$(CC) $(CFLAGS) -DCP_EVENTS_DESC -DCP_EVENTS_MAIN $(INCLUDES) -g -o cp_help ../cp_events.c
-
-rdtsc: rdtsc.c
-	$(CC) $(CFLAGS) $(INCLUDES) -o rdtsc rdtsc.c 
-
-div: div.c 
-	$(CC) $(CFLAGS) $(INCLUDES) -o div div.c
- 
-min: min.c 
-	$(CC) $(CFLAGS) $(INCLUDES) -o min min.c
-
-loop:loop.c
-	$(CC) -o loop loop.c

@@ -1,6 +1,4 @@
-/* oprofiled.c */
-/* John Levon (moz@compsoc.man.ac.uk) */
-/* May 2000 */
+/* $Id: oprofiled.c,v 1.3 2000/08/01 20:36:08 moz Exp $ */
 
 #include "oprofiled.h"
 

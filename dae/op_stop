@@ -1,4 +1,5 @@
 #!/bin/sh
+# $Id: op_stop,v 1.2 2000/08/01 20:36:08 moz Exp $ 
 
 # ugh
 PID=`ps x | grep oprofiled | grep -v grep | awk '{print $1}'`

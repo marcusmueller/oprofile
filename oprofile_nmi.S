@@ -1,4 +1,4 @@
-/* oprofile_nmi.S */
+/* $Id: oprofile_nmi.S,v 1.2 2000/08/01 20:36:01 moz Exp $ */
 
 #include <linux/sys.h>
 #include <linux/linkage.h>

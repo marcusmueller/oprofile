@@ -1,6 +1,4 @@
-/* opd_util.h */
-/* John Levon (moz@compsoc.man.ac.uk) */
-/* June 2000 */
+/* $Id: opd_util.h,v 1.3 2000/08/01 20:36:08 moz Exp $ */
 
 #ifndef OPD_UTIL_H
 #define OPD_UTIL_H 

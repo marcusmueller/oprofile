@@ -1,7 +1,4 @@
-/* oprofile.h */
-/* continuous profiling module for Linux 2.3 */
-/* John Levon (moz@compsoc.man.ac.uk) */
-/* May 2000 */
+/* $Id: oprofile.h,v 1.5 2000/08/01 20:36:01 moz Exp $ */
 
 #include <linux/kernel.h>
 #include <linux/module.h>

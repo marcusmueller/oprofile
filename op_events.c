@@ -1,5 +1,4 @@
-/* op_events.c */
-/* $Id: op_events.c,v 1.3 2000/08/01 20:26:16 moz Exp $ */ 
+/* $Id: op_events.c,v 1.4 2000/08/01 20:36:01 moz Exp $ */ 
 
 /* Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren */
 

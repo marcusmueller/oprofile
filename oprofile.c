@@ -1,7 +1,4 @@
-/* oprofile.c */
-/* continuous profiling module for Linux 2.4 */
-/* John Levon (moz@compsoc.man.ac.uk) */
-/* May 2000 */
+/* $Id: oprofile.c,v 1.9 2000/08/01 20:36:01 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
  

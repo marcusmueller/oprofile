@@ -1,4 +1,5 @@
 #!/bin/sh
+# $Id: op_start,v 1.4 2000/08/01 20:36:08 moz Exp $
 
 # quick and ugly interface
 # op_start --help and op_start --list-events have info

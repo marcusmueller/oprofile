@@ -1,6 +1,4 @@
-/* opd_proc.c */
-/* John Levon (moz@compsoc.man.ac.uk) */
-/* May 2000 */
+/* $Id: opd_proc.c,v 1.7 2000/08/01 20:36:08 moz Exp $ */
 
 #include "oprofiled.h"
 

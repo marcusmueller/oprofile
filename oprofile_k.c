@@ -1,3 +1,5 @@
+/* $Id: oprofile_k.c,v 1.7 2000/08/01 20:36:01 moz Exp $ */
+
 #include <linux/config.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
