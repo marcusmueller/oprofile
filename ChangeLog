@@ -1,3 +1,7 @@
+2003-07-20  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* m4/compileroption.m4: fix for autoconf 2.13
+
 2003-07-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* gui/oprof_start.cpp:
