@@ -17,7 +17,7 @@
 #define APIC_DEFAULT_PHYS_BASE 0xfee00000
  
 /* FIXME: not up to date */
-static void set_pte_phys(unsigned long vaddr, unsigned long phys)
+static void set_pte_phys(ulong vaddr, ulong phys)
 {
 	pgprot_t prot;
 	pgd_t *pgd;
@@ -36,7 +36,7 @@ static void set_pte_phys(unsigned long vaddr, unsigned long phys)
 
 void my_set_fixmap(void)
 {
-	unsigned long address = __fix_to_virt(FIX_APIC_BASE);
+	ulong address = __fix_to_virt(FIX_APIC_BASE);
 
 	set_pte_phys (address,APIC_DEFAULT_PHYS_BASE);
 }
@@ -55,7 +55,7 @@ static void mem_parity_error(unsigned char reason, struct pt_regs * regs)
 
 static void io_check_error(unsigned char reason, struct pt_regs * regs)
 {
-	unsigned long i;
+	ulong i;
 
 	printk("oprofile: NMI: IOCK error (debug interrupt?)\n");
 	/* Can't show registers */
@@ -117,19 +117,16 @@ asmlinkage void my_do_nmi(struct pt_regs * regs, long error_code)
     
 /* each entry is 16-byte aligned */
 static struct op_map map_buf[OP_MAX_MAP_BUF];
-static unsigned long nextmapbuf; 
-static unsigned int map_open; 
+static ulong nextmapbuf; 
+static uint map_open; 
  
 void oprof_out8(void *buf);
  
 asmlinkage static int (*old_sys_fork)(struct pt_regs);
 asmlinkage static int (*old_sys_vfork)(struct pt_regs);
 asmlinkage static int (*old_sys_clone)(struct pt_regs);
-#if 0 
 asmlinkage static int (*old_sys_execve)(struct pt_regs);
-#endif 
-asmlinkage static long (*old_sys_mmap2)(unsigned long, unsigned long, unsigned long,
-	unsigned long, unsigned long, unsigned long);
+asmlinkage static long (*old_sys_mmap2)(ulong, ulong, ulong, ulong, ulong, ulong);
 asmlinkage static long (*old_sys_init_module)(const char *, struct module *); 
 asmlinkage static long (*old_sys_exit)(int);
  
@@ -246,16 +243,20 @@ inline static char *oprof_outstr(char *buf, char *str, int bytes)
 }
 
 #define map_round(v) (((v)+(sizeof(struct op_map)/2))/sizeof(struct op_map)) 
+
+spinlock_t map_lock __cacheline_aligned = SPIN_LOCK_UNLOCKED;
  
 /* buf must be PAGE_SIZE bytes large */
-static int oprof_output_map(unsigned long addr, unsigned long len,
-	unsigned long pgoff, struct file *file, char *buf)
+static int oprof_output_map(ulong addr, ulong len,
+	ulong pgoff, struct file *file, char *buf)
 {
 	char *line;
-	unsigned long size=16;
+	ulong size=16;
  
 	if (!file)
 		return 0;
+ 
+	spin_lock(&map_lock);
  
 	map_buf[nextmapbuf].addr = addr;
 	map_buf[nextmapbuf].len = len;
@@ -281,10 +282,11 @@ static int oprof_output_map(unsigned long addr, unsigned long len,
 	if (nextmapbuf==OP_MAX_MAP_BUF)
 		nextmapbuf=0;
 
+	spin_unlock(&map_lock);
+ 
 	return size;
 }
 
-#if 0
 static int oprof_output_maps(struct task_struct *task)
 {
 	int size=0;
@@ -315,37 +317,45 @@ static int oprof_output_maps(struct task_struct *task)
 	}
 
 	up(&mm->mmap_sem);
+	mmput(mm);
  
-	/* FIXME: we need to lock before so we don't have to GC the mm (exit_mmap not exported) */
-	atomic_dec_and_test(&mm->mm_users);
-
 out:
-	free_page((unsigned long)buffer);
+	free_page((ulong)buffer);
 	return size;
 }
  
 asmlinkage static int my_sys_execve(struct pt_regs regs)
 {
-	struct task_struct *task = current;
+	char *filename; 
 	int ret;
  
-	ret = old_sys_execve(regs);
-	if (ret >= 0) {
+	filename = getname((char *)regs.ebx); 
+	ret = PTR_ERR(filename); 
+	if (IS_ERR(filename))
+		goto out; 
+	ret = do_execve(filename, (char **)regs.ecx, (char **)regs.edx, &regs);
+	if (!ret) {
 		struct op_sample samp;
-
+ 
+		current->ptrace &= ~PT_DTRACE;
+ 
 		samp.count = OP_DROP;
-		samp.pid = task->pid;
+		samp.pid = current->pid;
 		/* how many bytes to read from buffer */
-		samp.eip = oprof_output_maps(task);
+		samp.eip = oprof_output_maps(current);
 		oprof_out8(&samp);
 	}
-	return ret;
+	if (ret > 0)
+		printk(KERN_ERR "huh ? %d\n",ret); 
+ 
+	putname(filename);
+out:
+        return ret;
 }
-#endif 
 
-asmlinkage static int my_sys_mmap2(unsigned long addr, unsigned long len,
-	unsigned long prot, unsigned long flags,
-	unsigned long fd, unsigned long pgoff)
+asmlinkage static int my_sys_mmap2(ulong addr, ulong len,
+	ulong prot, ulong flags,
+	ulong fd, ulong pgoff)
 {
 	int ret;
 
@@ -363,7 +373,7 @@ asmlinkage static int my_sys_mmap2(unsigned long addr, unsigned long len,
 
 		file = fget(fd);
 		if (!file) {
-			free_page((unsigned long)buffer);
+			free_page((ulong)buffer);
 			return ret;
 		}
 
@@ -372,7 +382,7 @@ asmlinkage static int my_sys_mmap2(unsigned long addr, unsigned long len,
 		/* how many bytes to read from buffer */
 		samp.eip = oprof_output_map(ret,len,pgoff,file,buffer);
 		fput(file);
-		free_page((unsigned long)buffer);
+		free_page((ulong)buffer);
 		oprof_out8(&samp);
 	}
 	return ret;
@@ -408,6 +418,7 @@ asmlinkage static long my_sys_exit(int error_code)
  
 extern void *sys_call_table[];
  
+#if 0 
 int oprof_binary(struct linux_binprm *binprm, struct pt_regs *regs)
 {
 	struct op_sample samp;
@@ -421,13 +432,14 @@ int oprof_binary(struct linux_binprm *binprm, struct pt_regs *regs)
 }
  
 struct linux_binfmt oprof_binfmt = { NULL, THIS_MODULE, oprof_binary, NULL, NULL, 0 };
+#endif 
  
 void __init op_intercept_syscalls(void)
 {
 	old_sys_fork = sys_call_table[__NR_fork]; 
 	old_sys_vfork = sys_call_table[__NR_vfork];
 	old_sys_clone = sys_call_table[__NR_clone];
-	//old_sys_execve = sys_call_table[__NR_execve];
+	old_sys_execve = sys_call_table[__NR_execve];
 	old_sys_mmap2 = sys_call_table[__NR_mmap2];
 	old_sys_init_module = sys_call_table[__NR_init_module];
 	old_sys_exit = sys_call_table[__NR_exit]; 
@@ -435,22 +447,22 @@ void __init op_intercept_syscalls(void)
 	sys_call_table[__NR_fork] = my_sys_fork;
 	sys_call_table[__NR_vfork] = my_sys_vfork;
 	sys_call_table[__NR_clone] = my_sys_clone;
-	//sys_call_table[__NR_execve] = my_sys_execve;
+	sys_call_table[__NR_execve] = my_sys_execve;
 	sys_call_table[__NR_mmap2] = my_sys_mmap2; 
 	sys_call_table[__NR_init_module] = my_sys_init_module;
 	sys_call_table[__NR_exit] = my_sys_exit;
 
-	register_binfmt(&oprof_binfmt); 
+	//register_binfmt(&oprof_binfmt); 
 }
 
 void __exit op_replace_syscalls(void)
 {
-	unregister_binfmt(&oprof_binfmt);
+	//unregister_binfmt(&oprof_binfmt);
 
 	sys_call_table[__NR_fork] = old_sys_fork;
 	sys_call_table[__NR_vfork] = old_sys_vfork;
 	sys_call_table[__NR_clone] = old_sys_clone;
-	//sys_call_table[__NR_execve] = old_sys_execve;
+	sys_call_table[__NR_execve] = old_sys_execve;
 	sys_call_table[__NR_mmap2] = old_sys_mmap2; 
 	sys_call_table[__NR_init_module] = old_sys_init_module;
 	sys_call_table[__NR_exit] = old_sys_exit;
