@@ -38,7 +38,7 @@ struct oprof_sysctl sysctl_parms;
  * parameters during profiling */
 struct oprof_sysctl sysctl;
 
-static u32 prof_on __cacheline_aligned;
+static u32 prof_on __cacheline_aligned_in_smp;
 
 /* in the process of quitting ? */
 static int quitting;
@@ -47,15 +47,15 @@ int partial_stop;
 
 static int op_major;
 
-static volatile uint oprof_opened __cacheline_aligned;
-static volatile uint oprof_note_opened __cacheline_aligned;
+static volatile uint oprof_opened __cacheline_aligned_in_smp;
+static volatile uint oprof_note_opened __cacheline_aligned_in_smp;
 static DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
 
-static u32 oprof_ready[NR_CPUS] __cacheline_aligned;
+static u32 oprof_ready[NR_CPUS] __cacheline_aligned_in_smp;
 struct _oprof_data oprof_data[NR_CPUS];
 
-struct op_note * note_buffer __cacheline_aligned;
-u32 note_pos __cacheline_aligned;
+struct op_note * note_buffer __cacheline_aligned_in_smp;
+u32 note_pos __cacheline_aligned_in_smp;
 
 // the interrupt handler ops structure to use
 static struct op_int_operations * int_ops;
@@ -153,7 +153,7 @@ new_entry:
 
 /* ---------------- driver routines ------------------ */
 
-spinlock_t note_lock __cacheline_aligned = SPIN_LOCK_UNLOCKED;
+spinlock_t note_lock __cacheline_aligned_in_smp = SPIN_LOCK_UNLOCKED;
 uint cpu_num;
 
 static int is_ready(void)

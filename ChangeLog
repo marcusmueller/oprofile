@@ -1,3 +1,18 @@
+2002-03-02  Philippe Elie  <ph_e@club-internet.fr>
+
+	* module/op_syscalls.c: do not pre-allocate some dname
+	  hash map entry for common pathname but pre alloc entry
+	  zero to reserve it
+
+	* pp/op_time.cpp: add image name to the default output format
+
+	* module/compat22.h: move cacheline_aligned macro to ...
+	* module/op_cache.h: this new file
+	* module/compat.h: use it
+	* module/compat22.h:
+	* module/oprofile.c: replace some __cacheline_aligned by
+	  __cacheline_aligned_in_smp
+
 2002-03-01  Philippe Elie  <ph_e@club-internet.fr>
 
 	* dae/opd_kernel.c:

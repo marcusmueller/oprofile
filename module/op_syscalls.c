@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.12 2002/03/01 19:23:20 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.13 2002/03/02 01:25:18 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -49,7 +49,6 @@ int is_map_ready(void)
 int oprof_init_hashmap(void)
 {
 	uint i;
-	uint usrhash;
 
 	dname_stack = kmalloc(DNAME_STACK_MAX * sizeof(struct qstr *), GFP_KERNEL);
 	if (!dname_stack)
@@ -70,32 +69,10 @@ int oprof_init_hashmap(void)
 	pool_end = pool_start + POOL_SIZE;
 	pool_pos = pool_start;
 
-	alloc_in_pool("/", 1);
-
-	/* set up some common entries */
-	/* feel free to add sensible ones ! */
-
-	/* /lib */
-	i = name_hash("lib", strlen("lib"), 0);
-	add_hash_entry(&hash_map[i], 0, "lib", strlen("lib"));
-	/* /usr */
-	usrhash = i = name_hash("usr", strlen("usr"), 0);
-	add_hash_entry(&hash_map[i], 0, "usr", strlen("usr"));
-	/* /bin */
-	i = name_hash("bin", strlen("bin"), 0);
-	add_hash_entry(&hash_map[i], 0, "bin", strlen("bin"));
-	/* /usr/bin */
-	i = name_hash("bin", strlen("bin"), usrhash);
-	add_hash_entry(&hash_map[i], usrhash, "bin", strlen("bin"));
-	/* /usr/lib */
-	i = name_hash("lib", strlen("lib"), usrhash);
-	add_hash_entry(&hash_map[i], usrhash, "lib", strlen("lib"));
-	/* /sbin */
-	i = name_hash("sbin", strlen("sbin"), 0);
-	add_hash_entry(&hash_map[i], 0, "sbin", strlen("sbin"));
-	/* /usr/X11R6 */
-	i = name_hash("X11R6", strlen("X11R6"), usrhash);
-	add_hash_entry(&hash_map[i], usrhash, "X11R6", strlen("X11R6"));
+	/* Ensure than the zero hash map entry is never used, we use this
+	 * value as end of path terminator */
+	hash_map[0].name = alloc_in_pool("/", 1);
+	hash_map[0].parent = 0;
 
 	return 0;
 }

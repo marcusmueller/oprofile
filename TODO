@@ -8,7 +8,6 @@
    these two todo are perhaps worthwhile to implement now. The new filtering
    of symbols make them less interesting.
  o should we pin rather than loop sample buffer overflow too ?
- o cleanup cache things in compat22.h, add and use cache_line_aligned_in_smp
  o check oprofpp output/op_time format
  o test note_lock changes
  

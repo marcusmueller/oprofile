@@ -133,7 +133,7 @@ static void get_options(int argc, char const * argv[])
 		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_image_name);
 
 	if (output_format == 0) {
-		output_format = "vspn";
+		output_format = "vspni";
 	} else {
 		if (!list_symbols) {
 			quit_error(optcon, "op_time: --output-format can be used only with --list-symbols.\n");

@@ -34,6 +34,8 @@
 	#include "compat24.h"
 #endif
 
+#include "op_cache.h"
+
 /* 2.5.5 change pte_offset */
 #if V_AT_LEAST(2, 5, 5)
 #define pte_offset pte_offset_kernel
