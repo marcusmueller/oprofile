@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.16 2001/06/19 00:07:04 movement Exp $ */
+/* $Id: op_events.c,v 1.17 2001/06/22 03:16:24 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -277,20 +277,20 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
 	int ctr0_e=0,ctr1_e=0;
 
 	if (ctr0_type) { 
-		for (i=0; i<op_nr_events && !ctr0_e; i++) {
-			if (op_events[i].val==ctr0_type) {
+		for (i=0; i < op_nr_events && !ctr0_e; i++) {
+			if (op_events[i].val == ctr0_type) {
 				switch (op_events[i].allowed) {
 					case OP_1_ONLY:
 						ret |= OP_CTR0_NOT_ALLOWED;
 						break;
 
 					case OP_PII_ONLY:
-						if (proc!=1)
+						if (proc != 1)
 							ret |= OP_CTR0_PII_EVENT;
 						break;
 	
 					case OP_PIII_ONLY:
-						if (proc!=2)
+						if (proc != 2)
 							ret |= OP_CTR0_PIII_EVENT;
 						break;
 
@@ -302,7 +302,7 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
 						break;
 				}
 				if (op_events[i].unit && 
-				    op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr0_um) < 0)
+				    op_check_unit_mask(&op_unit_masks[op_events[i].unit], ctr0_um) < 0)
 					ret |= OP_CTR0_NO_UM;
 				ctr0_e=1;
 				break;
@@ -312,19 +312,19 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
 
 	if (ctr1_type) {
 		for (i=0; i<op_nr_events && !ctr1_e; i++) {
-			if (op_events[i].val==ctr1_type) {
+			if (op_events[i].val == ctr1_type) {
 				switch (op_events[i].allowed) {
 					case OP_0_ONLY:
 						ret |= OP_CTR1_NOT_ALLOWED;
 						break;
 				
 					case OP_PII_ONLY:
-						if (proc!=1)
+						if (proc != 1)
 							ret |= OP_CTR1_PII_EVENT;
 						break;
 		
 					case OP_PIII_ONLY:
-						if (proc!=2)
+						if (proc != 2)
 							ret |= OP_CTR1_PIII_EVENT;
 						break;
 
@@ -336,7 +336,7 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
 						break;
 				}
 				if (op_events[i].unit && 
-				    op_check_unit_mask(&op_unit_masks[op_events[i].unit],ctr1_um) < 0)
+				    op_check_unit_mask(&op_unit_masks[op_events[i].unit], ctr1_um) < 0)
 					ret |= OP_CTR1_NO_UM;
 				ctr1_e=1;
 			}
@@ -392,20 +392,20 @@ int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um
 		ctr1_type="";
 
 	if (strcmp(ctr0_type,"")) {
-		for (i=0; i<op_nr_events && !ctr0_e; i++) {
-			if (!strcmp(ctr0_type,op_events[i].name)) {
-				ctr0_e=1;
-				*ctr0_t=op_events[i].val;
+		for (i=0; i < op_nr_events && !ctr0_e; i++) {
+			if (!strcmp(ctr0_type, op_events[i].name)) {
+				ctr0_e = 1;
+				*ctr0_t = op_events[i].val;
 				break;
 			}
 		}
 	}
 
 	if (strcmp(ctr1_type,"")) {
-		for (i=0; i<op_nr_events && !ctr1_e; i++) {
-			if (!strcmp(ctr1_type,op_events[i].name)) {
-				ctr1_e=1;
-				*ctr1_t=op_events[i].val;
+		for (i=0; i < op_nr_events && !ctr1_e; i++) {
+			if (!strcmp(ctr1_type, op_events[i].name)) {
+				ctr1_e = 1;
+				*ctr1_t = op_events[i].val;
 				break;
 			}
 		}
@@ -417,7 +417,7 @@ int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um
 	if (strcmp(ctr1_type,"") && !ctr1_e)
 		return OP_CTR1_NOT_FOUND;
 
-	return op_check_events(*ctr0_t,*ctr1_t,ctr0_um,ctr1_um,p2);
+	return op_check_events(*ctr0_t, *ctr1_t, ctr0_um, ctr1_um, p2);
 }
 
 #ifdef OP_EVENTS_DESC
@@ -657,7 +657,7 @@ int main(int argc, char *argv[])
 
 		for (i=0; i < op_nr_events; i++) {
 			if (!strcmp(op_events[i].name, argv[1]))
-				printf("%d\n",op_events[i].val);
+				printf("%d\n", op_events[i].val);
 		}
 		return 0;
 	}
@@ -666,9 +666,9 @@ int main(int argc, char *argv[])
 	printf("--------------------------\n\n");
 	printf("See Intel Architecture Developer's Manual\nVol. 3, Appendix A\n\n");
 
-	for (i=0; i<op_nr_events; i++) {
-		printf("%s:",op_events[i].name);
-		printf("\n\t%s ",op_event_descs[i]);
+	for (i=0; i < op_nr_events; i++) {
+		printf("%s:", op_events[i].name);
+		printf("\n\t%s ", op_event_descs[i]);
 		switch (op_events[i].allowed) {
 			case 0: printf("- counter 0 only\n"); break;
 			case 1: printf("- counter 1 only\n"); break;
@@ -680,7 +680,7 @@ int main(int argc, char *argv[])
 		if (op_events[i].unit) {
 			printf("\tUnit masks\n");
 			printf("\t----------\n");
-			for (j=0; j<op_unit_masks[op_events[i].unit].num; j++) {
+			for (j=0; j < op_unit_masks[op_events[i].unit].num; j++) {
 				printf("\t%.2x: %s\n",
 					op_unit_masks[op_events[i].unit].um[j],
 					op_unit_descs[op_events[i].unit].desc[j]);

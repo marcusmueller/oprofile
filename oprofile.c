@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.58 2001/06/22 01:17:38 movement Exp $ */
+/* $Id: oprofile.c,v 1.59 2001/06/22 03:16:24 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -63,9 +63,9 @@ extern spinlock_t map_lock;
 /* FIXME: this whole handler would probably be better in straight asm */
 static void evict_op_entry(struct _oprof_data *data, struct op_sample *ops)
 {
-	memcpy(&data->buffer[data->nextbuf],ops,sizeof(struct op_sample));
-	if (++data->nextbuf!=(data->buf_size-OP_PRE_WATERMARK)) {
-		if (data->nextbuf==data->buf_size)
+	memcpy(&data->buffer[data->nextbuf], ops, sizeof(struct op_sample));
+	if (++data->nextbuf != (data->buf_size - OP_PRE_WATERMARK)) {
+		if (data->nextbuf == data->buf_size)
 			data->nextbuf=0;
 		return;
 	}
@@ -79,31 +79,15 @@ inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, in
 	ops->count = OP_COUNTER*ctr + 1;
 }
 
-#define op_full_count(c) (((c)&OP_MAX_COUNT)==OP_MAX_COUNT)
-
-/* no check for ctr needed as one of the three will differ in the hash */
-#define op_miss(ops)  \
-	((ops).eip!=regs->eip || \
-	(ops).pid!=current->pid || \
-	op_full_count((ops).count))
-
-/* the top half of pid is likely to remain static,
-   so it's masked off. the ctr bit is used to separate
-   the two counters */
-#define op_hash(eip,pid,ctr) \
-	((((((eip&0xff000)>>3)^eip)^(pid&0xff))^(eip<<9)) \
-	^ (ctr<<8)) & (data->hash_size-1)
-
 inline static void op_do_profile(struct _oprof_data *data, struct pt_regs *regs, int ctr)
 {
-	uint h = op_hash(regs->eip,current->pid,ctr);
+	uint h = op_hash(regs->eip, current->pid, ctr);
 	uint i;
 
-	/* FIXME: can we remove new sample check by pretending to be full ? */
 	for (i=0; i < OP_NR_ENTRY; i++) {
 		if (!op_miss(data->entries[h].samples[i])) {
 			data->entries[h].samples[i].count++;
-			set_perfctr(data->ctr_count[ctr],ctr);
+			set_perfctr(data->ctr_count[ctr], ctr);
 			return;
 		} else if (op_full_count(data->entries[h].samples[i].count)) {
 			goto full_entry;
@@ -111,14 +95,14 @@ inline static void op_do_profile(struct _oprof_data *data, struct pt_regs *regs,
 			goto new_entry;
 	}
 
-	evict_op_entry(data,&data->entries[h].samples[data->next]);
-	fill_op_entry(&data->entries[h].samples[data->next],regs,ctr);
-	data->next = (data->next+1) % OP_NR_ENTRY;
+	evict_op_entry(data, &data->entries[h].samples[data->next]);
+	fill_op_entry(&data->entries[h].samples[data->next], regs, ctr);
+	data->next = (data->next + 1) % OP_NR_ENTRY;
 out:
-	set_perfctr(data->ctr_count[ctr],ctr);
+	set_perfctr(data->ctr_count[ctr], ctr);
 	return;
 full_entry:
-	evict_op_entry(data,&data->entries[h].samples[i]);
+	evict_op_entry(data, &data->entries[h].samples[i]);
 	data->entries[h].samples[i].count = OP_COUNTER*ctr + 1;
 	goto out;
 new_entry:
@@ -129,26 +113,26 @@ new_entry:
 static void op_check_ctr(struct _oprof_data *data, struct pt_regs *regs, int ctr)
 {
 	ulong l,h;
-	get_perfctr(l,h,ctr);
+	get_perfctr(l, h, ctr);
 	if (ctr_overflowed(l))
-		op_do_profile(data,regs,ctr);
+		op_do_profile(data, regs, ctr);
 }
 
-asmlinkage void op_do_nmi(struct pt_regs * regs)
+asmlinkage void op_do_nmi(struct pt_regs *regs)
 {
 	struct _oprof_data *data = &oprof_data[smp_processor_id()];
 
 #ifdef PID_FILTER
-	if (pid_filter && current->pid!=pid_filter)
+	if (pid_filter && current->pid != pid_filter)
 		return;
-	if (pgrp_filter && current->pgrp!=pgrp_filter)
+	if (pgrp_filter && current->pgrp != pgrp_filter)
 		return;
 #endif
 
-	if (data->ctrs&OP_CTR_0)
-		op_check_ctr(data,regs,0);
-	if (data->ctrs&OP_CTR_1)
-		op_check_ctr(data,regs,1);
+	if (data->ctrs & OP_CTR_0)
+		op_check_ctr(data, regs, 0);
+	if (data->ctrs & OP_CTR_1)
+		op_check_ctr(data, regs, 1);
 }
 
 /* ---------------- NMI handler setup ------------ */
@@ -195,14 +179,14 @@ static void install_nmi(void)
 	/* see Intel Vol.3 Figure 5-2, interrupt gate */
 	kernel_nmi = (de->a & 0xffff) | (de->b & 0xffff0000);
 
-	_set_gate(de,14,0,&op_nmi);
+	_set_gate(de, 14, 0, &op_nmi);
 	unmask_LVT_NMIs();
 }
 
 static void restore_nmi(void)
 {
 	mask_LVT_NMIs();
-	_set_gate(((char *)(idt_addr))+16,14,0,kernel_nmi);
+	_set_gate(((char *)(idt_addr)) + 16, 14, 0, kernel_nmi);
 	unmask_LVT_NMIs();
 }
 
@@ -219,7 +203,7 @@ static void disable_local_P6_APIC(void *dummy)
 	/* first disable via MSR */
 	/* IA32 V3, 7.4.2 */
 	rdmsr(MSR_IA32_APICBASE, l, h);
-	wrmsr(MSR_IA32_APICBASE, l&~(1<<11), h);
+	wrmsr(MSR_IA32_APICBASE, l & ~(1<<11), h);
 
 	/*
 	 * Careful: we have to set masks only first to deassert
@@ -282,7 +266,7 @@ static int __init apic_setup(void)
 {
 	/* FIXME: davej says it might be possible to use PCI to find
 	   SMP systems with one CPU */
-	if (smp_num_cpus>1) {
+	if (smp_num_cpus > 1) {
 		smp_apic_setup(NULL);
 		return 0;
 	}
@@ -305,7 +289,7 @@ static int __init apic_setup(void)
 	   lock the box */
 	/* IA32 V3, 7.4.2 */
 	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
-	wrmsr(MSR_IA32_APICBASE, msr_low|(1<<11), msr_high);
+	wrmsr(MSR_IA32_APICBASE, msr_low | (1<<11), msr_high);
 
 	/* check for a good APIC */
 	/* IA32 V3, 7.4.15 */
@@ -314,7 +298,7 @@ static int __init apic_setup(void)
 		goto not_local_p6_apic;
 
 	/* LVT0,LVT1,LVTT,LVTPC */
-	if (GET_APIC_MAXLVT(apic_read(APIC_LVR))!=4)
+	if (GET_APIC_MAXLVT(apic_read(APIC_LVR)) != 4)
 		goto not_local_p6_apic;
 
 	__cli();
@@ -322,7 +306,7 @@ static int __init apic_setup(void)
 	/* enable APIC locally */
 	/* IA32 V3, 7.4.14.1 */
 	val = apic_read(APIC_SPIV);
-	apic_write(APIC_SPIV, val|APIC_SPIV_APIC_ENABLED);
+	apic_write(APIC_SPIV, val | APIC_SPIV_APIC_ENABLED);
 
 	/* FIXME: examine this stuff */
 	val = 0x00008700;
@@ -352,7 +336,6 @@ static int __init apic_setup(void)
 
 	__sti();
 
-
 	/* If the local APIC NMI watchdog has been disabled, we'll need
 	 * to set up NMI delivery anyway ...
 	 */
@@ -366,7 +349,7 @@ not_local_p6_apic:
 	printk(KERN_ERR "oprofile: no local P6 APIC\n");
 	/* IA32 V3, 7.4.2 */
 	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
-	wrmsr(MSR_IA32_APICBASE, msr_low&~(1<<11), msr_high);
+	wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
 	return -ENODEV;
 	}
 #endif /* CONFIG_X86_UP_APIC */
@@ -396,11 +379,11 @@ static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um, u8 edge_
 
 static void pmc_setup(void *dummy)
 {
-	uint low,high;
+	uint low, high;
 	uint cpu = smp_processor_id();
 
 	rdmsr(MSR_IA32_EVNTSEL0, low, high);
-	wrmsr(MSR_IA32_EVNTSEL0,low & ~(1<<22), high);
+	wrmsr(MSR_IA32_EVNTSEL0, low & ~(1<<22), high);
 
 	/* IA Vol. 3 Figure 15-3 */
 
@@ -409,18 +392,18 @@ static void pmc_setup(void *dummy)
 	low &= (1<<21);
 
 	if (op_ctr0_val[cpu]) {
-		set_perfctr(op_ctr0_count[cpu],0);
+		set_perfctr(op_ctr0_count[cpu], 0);
 		pmc_fill_in(&low, op_ctr0_kernel[cpu], op_ctr0_user[cpu], op_ctr0_val[cpu], op_ctr0_um[cpu], op_ctr0_edge_detect[cpu]);
 	}
 
-	wrmsr(MSR_IA32_EVNTSEL0,low,0);
+	wrmsr(MSR_IA32_EVNTSEL0, low, 0);
 
-	rdmsr(MSR_IA32_EVNTSEL1,low,high);
+	rdmsr(MSR_IA32_EVNTSEL1, low, high);
 	/* clear */
 	low &= (3<<21);
 
 	if (op_ctr1_val[cpu]) {
-		set_perfctr(op_ctr1_count[cpu],1);
+		set_perfctr(op_ctr1_count[cpu], 1);
 		pmc_fill_in(&low, op_ctr1_kernel[cpu], op_ctr1_user[cpu], op_ctr1_val[cpu], op_ctr1_um[cpu], op_ctr1_edge_detect[cpu]);
 		wrmsr(MSR_IA32_EVNTSEL1, low, high);
 	}
@@ -437,24 +420,24 @@ static void pmc_start(void *info)
 {
 	uint low,high;
 
-	if (info && (*((uint *)info)!=smp_processor_id()))
+	if (info && (*((uint *)info) != smp_processor_id()))
 		return;
 
  	/* enable counters */
-	rdmsr(MSR_IA32_EVNTSEL0,low,high);
-	wrmsr(MSR_IA32_EVNTSEL0,low|(1<<22),high);
+	rdmsr(MSR_IA32_EVNTSEL0, low, high);
+	wrmsr(MSR_IA32_EVNTSEL0, low | (1<<22), high);
 }
 
 static void pmc_stop(void *info)
 {
 	uint low,high;
 
-	if (info && (*((uint *)info)!=smp_processor_id()))
+	if (info && (*((uint *)info) != smp_processor_id()))
 		return;
 
 	/* disable counters */
-	rdmsr(MSR_IA32_EVNTSEL0,low,high);
-	wrmsr(MSR_IA32_EVNTSEL0,low&~(1<<22),high);
+	rdmsr(MSR_IA32_EVNTSEL0, low, high);
+	wrmsr(MSR_IA32_EVNTSEL0, low & ~(1<<22), high);
 }
 
 inline static void pmc_select_start(uint cpu)
@@ -462,7 +445,7 @@ inline static void pmc_select_start(uint cpu)
 	if (cpu==smp_processor_id())
 		pmc_start(NULL);
 	else
-		smp_call_function(pmc_start,&cpu,0,1);
+		smp_call_function(pmc_start, &cpu, 0, 1);
 }
 
 inline static void pmc_select_stop(uint cpu)
@@ -470,7 +453,7 @@ inline static void pmc_select_stop(uint cpu)
 	if (cpu==smp_processor_id())
 		pmc_stop(NULL);
 	else
-		smp_call_function(pmc_stop,&cpu,0,1);
+		smp_call_function(pmc_stop, &cpu, 0, 1);
 }
 
 /* ---------------- driver routines ------------------ */
@@ -498,7 +481,7 @@ int oprof_thread(void *arg)
 	current->nice = -20;
 
 	for (;;) {
-		for (i=0; i<smp_num_cpus; i++) {
+		for (i=0; i < smp_num_cpus; i++) {
 			if (oprof_ready[i])
 				wake_up(&oprof_wait);
 		}
@@ -529,11 +512,11 @@ void oprof_stop_thread(void)
 }
 
 #define wrap_nextbuf() do { \
-	if (++data->nextbuf==(data->buf_size-OP_PRE_WATERMARK)) { \
+	if (++data->nextbuf == (data->buf_size - OP_PRE_WATERMARK)) { \
 		oprof_ready[0] = 1; \
 		wake_up(&oprof_wait); \
-	} else if (data->nextbuf==data->buf_size) \
-		data->nextbuf=0; \
+	} else if (data->nextbuf == data->buf_size) \
+		data->nextbuf = 0; \
 	} while (0)
 
 spinlock_t note_lock __cacheline_aligned = SPIN_LOCK_UNLOCKED;
@@ -575,7 +558,7 @@ void oprof_put_note(struct op_sample *samp)
 	spin_lock(&note_lock);
 	pmc_select_stop(0);
 
-	memcpy(&data->buffer[data->nextbuf],samp,sizeof(struct op_sample));
+	memcpy(&data->buffer[data->nextbuf], samp, sizeof(struct op_sample));
 	wrap_nextbuf();
 
 	pmc_select_start(0);
@@ -610,12 +593,12 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	if (MINOR(file->f_dentry->d_inode->i_rdev) != 0)
 		return -EINVAL;
 
-	max = sizeof(struct op_sample)*op_buf_size;
+	max = sizeof(struct op_sample) * op_buf_size;
 
-	if (*ppos || count!=sizeof(struct op_sample)+max)
+	if (*ppos || count != sizeof(struct op_sample) + max)
 		return -EINVAL;
 
-	mybuf = vmalloc(sizeof(struct op_sample)+max);
+	mybuf = vmalloc(sizeof(struct op_sample) + max);
 	if (!mybuf)
 		return -EFAULT;
 
@@ -645,10 +628,10 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 
 	oprof_ready[cpu_num] = 0;
 
-	count = num*sizeof(struct op_sample);
+	count = num * sizeof(struct op_sample);
 
 	if (count)
-		memcpy(mybuf,oprof_data[cpu_num].buffer,count);
+		memcpy(mybuf, oprof_data[cpu_num].buffer, count);
 
 	spin_unlock(&note_lock);
 	pmc_select_start(cpu_num);
@@ -680,7 +663,7 @@ static int oprof_open(struct inode *ino, struct file *file)
 			return -EINVAL;
 	}
 
-	if (test_and_set_bit(0,&oprof_opened))
+	if (test_and_set_bit(0, &oprof_opened))
 		return -EBUSY;
 
 	err = oprof_start();
@@ -700,15 +683,15 @@ static int oprof_release(struct inode *ino, struct file *file)
 	if (!oprof_opened)
 		return -EFAULT;
 
-	clear_bit(0,&oprof_opened);
+	clear_bit(0, &oprof_opened);
 
 	return oprof_stop();
 }
 
 static int oprof_mmap(struct file *file, struct vm_area_struct *vma)
 {
-	if (MINOR(file->f_dentry->d_inode->i_rdev)==1)
-		return oprof_hash_map_mmap(file,vma);
+	if (MINOR(file->f_dentry->d_inode->i_rdev) == 1)
+		return oprof_hash_map_mmap(file, vma);
 	return -EINVAL;
 }
 
@@ -734,8 +717,8 @@ static int oprof_init_data(void)
 
 	for (i=0; i < smp_num_cpus; i++) {
 		data = &oprof_data[i];
-		hash_size = (sizeof(struct op_entry)*op_hash_size);
-		buf_size = (sizeof(struct op_sample)*op_buf_size);
+		hash_size = (sizeof(struct op_entry) * op_hash_size);
+		buf_size = (sizeof(struct op_sample) * op_buf_size);
 
 		data->entries = vmalloc(hash_size);
 		if (!data->entries) {
@@ -752,8 +735,8 @@ static int oprof_init_data(void)
 			return -EFAULT;
 		}
 
-		memset(data->entries,0,hash_size);
-		memset(data->buffer,0,buf_size);
+		memset(data->entries, 0, hash_size);
+		memset(data->buffer, 0, buf_size);
 
 		data->hash_size = op_hash_size;
 		data->buf_size = op_buf_size;
@@ -768,13 +751,13 @@ static int parms_ok(void)
 	uint cpu;
 	struct _oprof_data *data;
 
-	op_check_range(op_hash_size,256,262144,"op_hash_size value %d not in range\n");
-	op_check_range(op_buf_size,1024,1048576,"op_buf_size value %d not in range\n");
+	op_check_range(op_hash_size, 256, 262144, "op_hash_size value %d not in range\n");
+	op_check_range(op_buf_size, 1024, 1048576, "op_buf_size value %d not in range\n");
 
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		data = &oprof_data[cpu];
-		data->ctrs |= OP_CTR_0*(!!op_ctr0_on[cpu]);
-		data->ctrs |= OP_CTR_1*(!!op_ctr1_on[cpu]);
+		data->ctrs |= OP_CTR_0 * (!!op_ctr0_on[cpu]);
+		data->ctrs |= OP_CTR_1 * (!!op_ctr1_on[cpu]);
 
 		/* FIXME: maybe we should allow no set on a CPU ? */
 		if (!data->ctrs) {
@@ -791,31 +774,31 @@ static int parms_ok(void)
 				printk(KERN_ERR "oprofile: neither kernel nor user set for enabled counter 0 on CPU %d\n", cpu);
 				return 0;
 			}
-			op_check_range(op_ctr0_count[cpu],500,OP_MAX_PERF_COUNT,"ctr0 count value %d not in range\n");
-			data->ctr_count[0]=op_ctr0_count[cpu];
+			op_check_range(op_ctr0_count[cpu], 500, OP_MAX_PERF_COUNT, "ctr0 count value %d not in range\n");
+			data->ctr_count[0] = op_ctr0_count[cpu];
 		}
 		if (data->ctrs&OP_CTR_1) {
 			if (!op_ctr1_user[cpu] && !op_ctr1_kernel[cpu]) {
 				printk(KERN_ERR "oprofile: neither kernel nor user set for enabled counter 1 on CPU %d\n", cpu);
 				return 0;
 			}
-			op_check_range(op_ctr1_count[cpu],500,OP_MAX_PERF_COUNT,"ctr1 count value %d not in range\n");
-			data->ctr_count[1]=op_ctr1_count[cpu];
+			op_check_range(op_ctr1_count[cpu], 500, OP_MAX_PERF_COUNT, "ctr1 count value %d not in range\n");
+			data->ctr_count[1] = op_ctr1_count[cpu];
 		}
 
 		/* hw_ok() has set cpu_type */
 		ret = op_check_events(op_ctr0_val[cpu], op_ctr1_val[cpu], op_ctr0_um[cpu], op_ctr1_um[cpu], cpu_type);
 
-		if (ret&OP_CTR0_NOT_FOUND) printk(KERN_ERR "oprofile: ctr0: no such event\n");
-		if (ret&OP_CTR1_NOT_FOUND) printk(KERN_ERR "oprofile: ctr1: no such event\n");
-		if (ret&OP_CTR0_NO_UM) printk(KERN_ERR "oprofile: ctr0: invalid unit mask\n");
-		if (ret&OP_CTR1_NO_UM) printk(KERN_ERR "oprofile: ctr1: invalid unit mask\n");
-		if (ret&OP_CTR0_NOT_ALLOWED) printk(KERN_ERR "oprofile: ctr0 can't count this event\n");
-		if (ret&OP_CTR1_NOT_ALLOWED) printk(KERN_ERR "oprofile: ctr1 can't count this event\n");
-		if (ret&OP_CTR0_PII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PII\n");
-		if (ret&OP_CTR1_PII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PII\n");
-		if (ret&OP_CTR0_PIII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PIII\n");
-		if (ret&OP_CTR1_PIII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PIII\n");
+		if (ret & OP_CTR0_NOT_FOUND) printk(KERN_ERR "oprofile: ctr0: no such event\n");
+		if (ret & OP_CTR1_NOT_FOUND) printk(KERN_ERR "oprofile: ctr1: no such event\n");
+		if (ret & OP_CTR0_NO_UM) printk(KERN_ERR "oprofile: ctr0: invalid unit mask\n");
+		if (ret & OP_CTR1_NO_UM) printk(KERN_ERR "oprofile: ctr1: invalid unit mask\n");
+		if (ret & OP_CTR0_NOT_ALLOWED) printk(KERN_ERR "oprofile: ctr0 can't count this event\n");
+		if (ret & OP_CTR1_NOT_ALLOWED) printk(KERN_ERR "oprofile: ctr1 can't count this event\n");
+		if (ret & OP_CTR0_PII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PII\n");
+		if (ret & OP_CTR1_PII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PII\n");
+		if (ret & OP_CTR0_PIII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PIII\n");
+		if (ret & OP_CTR1_PIII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PIII\n");
 
 		if (ret)
 			return 0;
@@ -841,7 +824,7 @@ static int oprof_start(void)
 		goto out;
 	}
 		
-	if ((smp_call_function(pmc_setup,NULL,0,1))) {
+	if ((smp_call_function(pmc_setup, NULL, 0, 1))) {
 		oprof_free_mem(smp_num_cpus);
 		err = -EINVAL;
 		goto out;
@@ -855,7 +838,7 @@ static int oprof_start(void)
 		op_intercept_syscalls();
 
 	oprof_start_thread();
-	smp_call_function(pmc_start,NULL,0,1);
+	smp_call_function(pmc_start, NULL, 0, 1);
 	
 	pmc_start(NULL);
 	prof_on = 1;
@@ -891,7 +874,7 @@ static int oprof_stop(void)
 
 	prof_on = 0;
 
-	smp_call_function(pmc_stop,NULL,0,1);
+	smp_call_function(pmc_stop, NULL, 0, 1);
 	pmc_stop(NULL);
 	restore_nmi();
 
@@ -970,7 +953,7 @@ static void dump_one(struct _oprof_data *data, struct op_sample *ops, uint cpu)
 	ops->count = 0;
 
 	if (++data->nextbuf != (data->buf_size-OP_PRE_WATERMARK)) {
-		if (data->nextbuf==data->buf_size)
+		if (data->nextbuf == data->buf_size)
 			data->nextbuf=0;
 		return;
 	}
@@ -1152,16 +1135,16 @@ int __init oprof_init(void)
 	if ((err = init_sysctl()))
 		goto out_err;
 
-	if ((err = smp_call_function(smp_apic_setup,NULL,0,1)))
+	if ((err = smp_call_function(smp_apic_setup, NULL, 0, 1)))
 		goto out_err;
 
- 	err = op_major = register_chrdev(0,"oprof",&oprof_fops);
+ 	err = op_major = register_chrdev(0, "oprof", &oprof_fops);
 	if (err<0)
 		goto out_err;
 
 	err = oprof_init_hashmap();
 	if (err<0) {
-		unregister_chrdev(op_major,"oprof");
+		unregister_chrdev(op_major, "oprof");
 		goto out_err;
 	}
 
@@ -1171,11 +1154,11 @@ int __init oprof_init(void)
 	/* do this now so we don't have to track save/restores later */
 	op_save_syscalls();
 
-	printk("oprofile: oprofile loaded, major %u\n",op_major);
+	printk("oprofile: oprofile loaded, major %u\n", op_major);
 	return 0;
 
 out_err:
-	smp_call_function(disable_local_P6_APIC,NULL,0,1);
+	smp_call_function(disable_local_P6_APIC, NULL, 0, 1);
 	disable_local_P6_APIC(NULL);
 	return err;
 }

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.31 2001/06/22 01:17:39 movement Exp $ */
+/* $Id: oprofiled.c,v 1.32 2001/06/22 03:16:24 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -76,7 +76,7 @@ static struct poptOption options[] = {
  */
 static void opd_open_logfile(void)
 {
-	if (open(logfilename,O_WRONLY|O_CREAT|O_NOCTTY|O_APPEND,0755)==-1) {
+	if (open(logfilename, O_WRONLY|O_CREAT|O_NOCTTY|O_APPEND, 0755) == -1) {
 		perror("oprofiled: couldn't re-open stdout: ");
 		exit(1);
 	}
@@ -136,7 +136,7 @@ static void opd_open_files(void)
 	opd_open_logfile();
 
 	opd_read_system_map(systemmapfilename);
-	printf("oprofiled started %s",opd_get_time());
+	printf("oprofiled started %s", opd_get_time());
 	fflush(stdout);
 }
 
@@ -172,13 +172,13 @@ static void opd_options(int argc, char const *argv[])
 		exit(0);
 	}
 
-	if (!vmlinux || streq("",vmlinux)) {
+	if (!vmlinux || streq("", vmlinux)) {
 		fprintf(stderr, "oprofiled: no vmlinux specified.\n");
 		poptPrintHelp(optcon, stderr, 0);
 		exit(1);
 	}
 
-	if (!systemmapfilename || streq("",systemmapfilename)) {
+	if (!systemmapfilename || streq("", systemmapfilename)) {
 		fprintf(stderr, "oprofiled: no System.map specified.\n");
 		poptPrintHelp(optcon, stderr, 0);
 		exit(1);
@@ -186,18 +186,18 @@ static void opd_options(int argc, char const *argv[])
 
 	ret = op_check_events(footer.ctr0_type_val, footer.ctr1_type_val, footer.ctr0_um, footer.ctr1_um, cpu_type);
 
-        if (ret&OP_CTR0_NOT_FOUND) fprintf(stderr, "oprofiled: ctr0: %d: no such event\n",footer. ctr0_type_val);
-        if (ret&OP_CTR1_NOT_FOUND) fprintf(stderr, "oprofiled: ctr1: %d: no such event\n", footer.ctr1_type_val);
-        if (ret&OP_CTR0_NO_UM) fprintf(stderr, "oprofiled: ctr0: 0x%.2x: invalid unit mask\n", footer.ctr0_um);
-        if (ret&OP_CTR1_NO_UM) fprintf(stderr, "oprofiled: ctr1: 0x%.2x: invalid unit mask\n", footer.ctr1_um);
-        if (ret&OP_CTR0_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr0: %d: can't count event\n", footer.ctr0_type_val);
-        if (ret&OP_CTR1_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr1: %d: can't count event\n", footer.ctr1_type_val);
-        if (ret&OP_CTR0_PII_EVENT) fprintf(stderr, "oprofiled: ctr0: %d: event only available on PII\n", footer.ctr0_type_val);
-        if (ret&OP_CTR1_PII_EVENT) fprintf(stderr, "oprofiled: ctr1: %d: event only available on PII\n", footer.ctr1_type_val);
-        if (ret&OP_CTR0_PIII_EVENT) fprintf(stderr, "oprofiled: ctr0: %d: event only available on PIII\n", footer.ctr0_type_val);
-        if (ret&OP_CTR1_PIII_EVENT) fprintf(stderr, "oprofiled: ctr1: %d: event only available on PIII\n", footer.ctr1_type_val);
+        if (ret & OP_CTR0_NOT_FOUND) fprintf(stderr, "oprofiled: ctr0: %d: no such event\n",footer. ctr0_type_val);
+        if (ret & OP_CTR1_NOT_FOUND) fprintf(stderr, "oprofiled: ctr1: %d: no such event\n", footer.ctr1_type_val);
+        if (ret & OP_CTR0_NO_UM) fprintf(stderr, "oprofiled: ctr0: 0x%.2x: invalid unit mask\n", footer.ctr0_um);
+        if (ret & OP_CTR1_NO_UM) fprintf(stderr, "oprofiled: ctr1: 0x%.2x: invalid unit mask\n", footer.ctr1_um);
+        if (ret & OP_CTR0_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr0: %d: can't count event\n", footer.ctr0_type_val);
+        if (ret & OP_CTR1_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr1: %d: can't count event\n", footer.ctr1_type_val);
+        if (ret & OP_CTR0_PII_EVENT) fprintf(stderr, "oprofiled: ctr0: %d: event only available on PII\n", footer.ctr0_type_val);
+        if (ret & OP_CTR1_PII_EVENT) fprintf(stderr, "oprofiled: ctr1: %d: event only available on PII\n", footer.ctr1_type_val);
+        if (ret & OP_CTR0_PIII_EVENT) fprintf(stderr, "oprofiled: ctr0: %d: event only available on PIII\n", footer.ctr0_type_val);
+        if (ret & OP_CTR1_PIII_EVENT) fprintf(stderr, "oprofiled: ctr1: %d: event only available on PIII\n", footer.ctr1_type_val);
 
-	if (ret!=OP_EVENTS_OK) {
+	if (ret != OP_EVENTS_OK) {
 		poptPrintHelp(optcon, stderr, 0);
 		exit(1);
 	}
@@ -244,7 +244,7 @@ static void opd_go_daemon(void)
 	opd_fork();
 
 	if (chdir(opd_dir)) {
-		fprintf(stderr,"oprofiled: opd_go_daemon: couldn't chdir to %s: %s",opd_dir,strerror(errno));
+		fprintf(stderr,"oprofiled: opd_go_daemon: couldn't chdir to %s: %s", opd_dir, strerror(errno));
 		exit(1);
 	}
 
@@ -274,8 +274,8 @@ static void opd_do_read(struct op_sample *buf, size_t size)
 	size_t count;
  
 	while (1) {
-		count=opd_read_device(devfd,buf,size,TRUE);
-		opd_do_samples(buf,count);
+		count = opd_read_device(devfd, buf, size, TRUE);
+		opd_do_samples(buf, count);
 	}
 }
 
@@ -327,14 +327,14 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 	struct op_mapping mapping; 
 
 	/* prevent signals from messing us up */
-	sigprocmask(SIG_BLOCK,&maskset,NULL);
+	sigprocmask(SIG_BLOCK, &maskset, NULL);
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
 	for (i=0; i < count/sizeof(struct op_sample); i++) {
 		verbprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n", i, opd_buf[i].eip, opd_buf[i].pid, opd_buf[i].count);
 
-		if (ignore_myself && opd_buf[i].pid==mypid)
+		if (ignore_myself && opd_buf[i].pid == mypid)
 			continue;
 
 		if (opd_is_notification(&opd_buf[i])) {
@@ -345,9 +345,9 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 				if (IS_OP_EXEC(opd_buf[i].count))
 					opd_handle_exec(opd_buf[i].pid);
 
-				if (i+2 > count/sizeof(struct op_sample)) {
+				if (i + 2 > count / sizeof(struct op_sample)) {
 					verbprintf("Partial mapping ignored.\n");
-					i = count/sizeof(struct op_sample);
+					i = count / sizeof(struct op_sample);
 					break;
 				}
 
@@ -376,7 +376,7 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 			opd_put_sample(&opd_buf[i]);
 	}
 
-	sigprocmask(SIG_UNBLOCK,&maskset,NULL);
+	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
 }
 
 /* re-open logfile for logrotate */
@@ -407,7 +407,7 @@ int main(int argc, char const *argv[])
 	opd_options(argc, argv);
 
 	/* one extra for the "how many" header */
-	opd_buf_bytesize=(opd_buf_size+1)*sizeof(struct op_sample);
+	opd_buf_bytesize = (opd_buf_size + 1) * sizeof(struct op_sample);
 
  	opd_buf = opd_malloc(opd_buf_bytesize);
 
@@ -424,8 +424,8 @@ int main(int argc, char const *argv[])
 		opd_stats[i] = 0;
 	}
 
-	act.sa_handler=opd_alarm;
-	act.sa_flags=0;
+	act.sa_handler = opd_alarm;
+	act.sa_flags = 0;
 	sigemptyset(&act.sa_mask);
 
 	if (sigaction(SIGALRM, &act, NULL)) {
@@ -433,10 +433,10 @@ int main(int argc, char const *argv[])
 		exit(1);
 	}
 
-	act.sa_handler=opd_sighup;
-	act.sa_flags=0;
+	act.sa_handler = opd_sighup;
+	act.sa_flags = 0;
 	sigemptyset(&act.sa_mask);
-	sigaddset(&act.sa_mask,SIGALRM);
+	sigaddset(&act.sa_mask, SIGALRM);
 
 	if (sigaction(SIGHUP, &act, NULL)) {
 		perror("oprofiled: install of SIGHUP handler failed: ");
@@ -444,14 +444,14 @@ int main(int argc, char const *argv[])
 	}
 
 	sigemptyset(&maskset);
-	sigaddset(&maskset,SIGALRM);
-	sigaddset(&maskset,SIGHUP);
+	sigaddset(&maskset, SIGALRM);
+	sigaddset(&maskset, SIGHUP);
 
 	/* clean up every 10 minutes */
 	alarm(60*10);
 
 	/* simple sleep-then-process loop */
-	opd_do_read(opd_buf,opd_buf_bytesize);
+	opd_do_read(opd_buf, opd_buf_bytesize);
 
 	return 0;
 }

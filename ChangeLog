@@ -1,5 +1,10 @@
 2001-06-22  John Levon  <moz@compsoc.man.ac.uk>
 
+	* various: made spacing more consistent in C source,
+	  removed unused utility functions.
+ 
+2001-06-22  John Levon  <moz@compsoc.man.ac.uk>
+
 	* oprofile.c: actually call smp_apic_restore() on UP
 
 	* dae/op_start: don't remove the module immediately after

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.30 2001/06/22 01:17:39 movement Exp $ */
+/* $Id: oprofpp.c,v 1.31 2001/06/22 03:16:24 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -171,23 +171,23 @@ static void get_options(int argc, char const *argv[])
 void printf_symbol(const char *name)
 {
 	if (demangle) {
-		char *cp=(char *)name;
-		char *unmangled=cp;
+		char *cp = (char *)name;
+		char *unmangled = cp;
 
-		while (*cp && *cp=='_')
+		while (*cp && *cp == '_')
 			cp++;
 
 		if (*cp) {
-			unmangled = cplus_demangle(cp,DMGL_PARAMS|DMGL_ANSI);
+			unmangled = cplus_demangle(cp, DMGL_PARAMS | DMGL_ANSI);
 			if (unmangled) {
 				/* FIXME: print leading underscores ? */
-				printf("%s",unmangled);
+				printf("%s", unmangled);
 				free(unmangled);
 				return;
 			}
 		}
 	}
-	printf("%s",name);
+	printf("%s", name);
 }
 
 /**
@@ -234,7 +234,7 @@ bfd *open_image_file(char const * mangled, char * sum)
 		 
 		c = &mang[strlen(mang)];
 		/* strip leading dirs */
-		while (c!=mang && *c!='/')
+		while (c != mang && *c != '/')
 			c--;
 
 		c++;
@@ -249,7 +249,7 @@ bfd *open_image_file(char const * mangled, char * sum)
 		c=file;
 
 		do {
-			if (*c==OPD_MANGLE_CHAR)
+			if (*c == OPD_MANGLE_CHAR)
 				*c='/';
 		} while (*c++);
 
@@ -271,12 +271,12 @@ bfd *open_image_file(char const * mangled, char * sum)
 	ibfd = bfd_openr(file, NULL);
  
 	if (!ibfd) {
-		fprintf(stderr,"oprofpp: bfd_openr of %s failed.\n",file);
+		fprintf(stderr,"oprofpp: bfd_openr of %s failed.\n", file);
 		exit(1);
 	}
 	 
 	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) { 
-		fprintf(stderr,"oprofpp: BFD format failure for %s.\n",file);
+		fprintf(stderr,"oprofpp: BFD format failure for %s.\n", file);
 		exit(1);
 	}
  
@@ -288,7 +288,7 @@ bfd *open_image_file(char const * mangled, char * sum)
  
 		sect = bfd_get_section_by_name(ibfd, ".text");
 		sect_offset = OPD_KERNEL_OFFSET - sect->filepos;
-		verbprintf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n",sect_offset,sect->filepos); 
+		verbprintf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n", sect_offset, sect->filepos); 
 	}
  
 	return ibfd; 
@@ -324,9 +324,9 @@ int symcomp(const void *a, const void *b)
 	u32 va = (*((asymbol **)a))->value + (*((asymbol **)a))->section->filepos; 
 	u32 vb = (*((asymbol **)b))->value + (*((asymbol **)b))->section->filepos; 
 
-	if (va<vb)
+	if (va < vb)
 		return -1;
-	return (va>vb);
+	return (va > vb);
 }
 
 /* need a better filter, but only this gets rid of _start
@@ -337,10 +337,10 @@ static int interesting_symbol(asymbol *sym)
 	if (!(sym->section->flags & SEC_CODE))
 		return 0;
 
-	if (streq("",sym->name))
+	if (streq("", sym->name))
 		return 0;
 
-	if (streq("_init",sym->name))
+	if (streq("_init", sym->name))
 		return 0;
 
 	if (!(sym->flags & BSF_FUNCTION))
@@ -363,7 +363,7 @@ static int interesting_symbol(asymbol *sym)
 uint get_symbols(bfd *ibfd, asymbol ***symsp)
 {
 	uint nr_all_syms;
-	uint nr_syms=0; 
+	uint nr_syms = 0; 
 	uint i; 
 	size_t size;
 	asymbol **filt_syms;
@@ -390,9 +390,9 @@ uint get_symbols(bfd *ibfd, asymbol ***symsp)
 			nr_syms++;
 	}
  
-	filt_syms = opd_malloc(sizeof(asymbol *)*nr_syms);
+	filt_syms = opd_malloc(sizeof(asymbol *) * nr_syms);
 
-	for (nr_syms=0,i=0; i < nr_all_syms; i++) {
+	for (nr_syms = 0,i = 0; i < nr_all_syms; i++) {
 		if (interesting_symbol(syms[i])) {
 			filt_syms[nr_syms] = syms[i];
 			nr_syms++;
@@ -419,11 +419,11 @@ uint get_symbols(bfd *ibfd, asymbol ***symsp)
  */
 void get_symbol_range(asymbol *sym, asymbol *next, u32 *start, u32 *end)
 {
-	verbprintf("Symbol %s, value 0x%lx\n",sym->name, sym->value); 
+	verbprintf("Symbol %s, value 0x%lx\n", sym->name, sym->value); 
 	*start = sym->value;
 	/* offset of section */
 	*start += sym->section->filepos;
-	verbprintf("in section %s, filepos 0x%lx\n",sym->section->name, sym->section->filepos);
+	verbprintf("in section %s, filepos 0x%lx\n", sym->section->name, sym->section->filepos);
 	/* adjust for kernel image */
 	*start += sect_offset;
 	if (next) {
@@ -434,7 +434,7 @@ void get_symbol_range(asymbol *sym, asymbol *next, u32 *start, u32 *end)
 		*end += sect_offset;
 	} else
 		*end = nr_samples;
-	verbprintf("start 0x%x, end 0x%x\n",*start,*end); 
+	verbprintf("start 0x%x, end 0x%x\n", *start, *end); 
 }
  
 struct opp_count {
@@ -471,9 +471,9 @@ void do_list_symbols(bfd * ibfd)
 	asymbol **syms;
 	struct opp_count *scounts;
 	u32 start, end;
-	uint num,tot0=0,tot1=0,i,j;
+	uint num, tot0 = 0, tot1 = 0,i,j;
  
-	num = get_symbols(ibfd,&syms);
+	num = get_symbols(ibfd, &syms);
 
 	if (!num) {
 		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
@@ -485,21 +485,21 @@ void do_list_symbols(bfd * ibfd)
 
 	for (i=0; i < num; i++) {
 		scounts[i].sym = syms[i];
-		get_symbol_range(syms[i], (i==num-1) ? NULL : syms[i+1], &start, &end); 
+		get_symbol_range(syms[i], (i == num-1) ? NULL : syms[i+1], &start, &end); 
 		if (start >= nr_samples) {
-			fprintf(stderr,"oprofpp: start 0x%x out of range (max 0x%x)\n",start,nr_samples);
+			fprintf(stderr,"oprofpp: start 0x%x out of range (max 0x%x)\n", start, nr_samples);
 			exit(1);
 		}
 		if (end > nr_samples) {
-			fprintf(stderr,"oprofpp: end 0x%x out of range (max 0x%x)\n",end,nr_samples);
+			fprintf(stderr,"oprofpp: end 0x%x out of range (max 0x%x)\n", end, nr_samples);
 			exit(1);
 		}
 
-		for (j=start; j < end; j++) {
+		for (j = start; j < end; j++) {
 			if (samples[j].count0)
-				verbprintf("Adding %u 0-samples for symbol $%s$ at pos j 0x%x\n",samples[j].count0,syms[i]->name,j);
+				verbprintf("Adding %u 0-samples for symbol $%s$ at pos j 0x%x\n", samples[j].count0, syms[i]->name, j);
 			else if (samples[j].count1)
-				verbprintf("Adding %u 1-samples for symbol $%s$ at pos j 0x%x\n",samples[j].count1,syms[i]->name,j);
+				verbprintf("Adding %u 1-samples for symbol $%s$ at pos j 0x%x\n", samples[j].count1, syms[i]->name, j);
 			scounts[i].count0 += samples[j].count0;
 			scounts[i].count1 += samples[j].count1;
 			tot0 += samples[j].count0;
@@ -512,12 +512,12 @@ void do_list_symbols(bfd * ibfd)
 	for (i=0; i < num; i++) {
 		printf_symbol(scounts[i].sym->name);
 		if (ctr && scounts[i].count1) { 
-			printf("[0x%.8lx]: %2.4f%% (%u samples)\n",scounts[i].sym->value+scounts[i].sym->section->vma,
-				(((double)scounts[i].count1)/tot1)*100.0, scounts[i].count1);
+			printf("[0x%.8lx]: %2.4f%% (%u samples)\n", scounts[i].sym->value+scounts[i].sym->section->vma,
+				(((double)scounts[i].count1) / tot1)*100.0, scounts[i].count1);
 		} else if (!ctr && scounts[i].count0) {
-			printf("[0x%.8lx]: %2.4f%% (%u samples)\n",scounts[i].sym->value+scounts[i].sym->section->vma,
-				(((double)scounts[i].count0)/tot0)*100.0, scounts[i].count0);
-		} else if (!streq("",scounts[i].sym->name))
+			printf("[0x%.8lx]: %2.4f%% (%u samples)\n", scounts[i].sym->value+scounts[i].sym->section->vma,
+				(((double)scounts[i].count0) / tot0)*100.0, scounts[i].count0);
+		} else if (!streq("", scounts[i].sym->name))
 			printf(" (0 samples)\n");
 	}
  
@@ -547,7 +547,7 @@ void do_list_symbol(bfd * ibfd)
 	}
 
 	for (i=0; i < num; i++) {
-		if (streq(syms[i]->name,symbol))
+		if (streq(syms[i]->name, symbol))
 			goto found;
 	}
 
@@ -555,7 +555,7 @@ void do_list_symbol(bfd * ibfd)
 	return;
 found:
 	printf("Samples for symbol \"%s\" in image %s\n", symbol, ibfd->filename);
-	get_symbol_range(syms[i], (i==num-1) ? NULL : syms[i+1], &start, &end);
+	get_symbol_range(syms[i], (i == num-1) ? NULL : syms[i+1], &start, &end);
 	for (j=start; j < end; j++) { 
 		if (samples[j].count0 || samples[j].count1) {
 			printf("%s+%x/%x:\t%u \t%u\n", symbol, sym_offset(syms[i], j), end-start,
@@ -603,7 +603,7 @@ void do_dump_gprof(bfd * ibfd)
 		exit(1);
 	}
 	 
-	fp=opd_open_file(gproffile,"w");
+	fp=opd_open_file(gproffile, "w");
 
 	opd_write_file(fp,&hdr, sizeof(struct gmon_hdr));
 
@@ -637,11 +637,11 @@ void do_dump_gprof(bfd * ibfd)
 	/* abbreviation */
 	opd_write_u8(fp, '1');
 	
-	hist = opd_malloc(sizeof(u16)*histsize); 
-	memset(hist, 0, histsize*sizeof(u16));
+	hist = opd_malloc(sizeof(u16) * histsize); 
+	memset(hist, 0, sizeof(u16) * histsize);
  
 	for (i=0; i < num; i++) {
-		get_symbol_range(syms[i], (i==num-1) ? NULL : syms[i+1], &start, &end); 
+		get_symbol_range(syms[i], (i == num-1) ? NULL : syms[i+1], &start, &end); 
 		for (j=start; j < end; j++) {
 			u32 count;
 			u32 pos;
@@ -724,7 +724,7 @@ void do_list_all_symbols_details(bfd* ibfd) {
 	u32 start, end;
 	asymbol **syms;
 
-	num = get_symbols(ibfd,&syms);
+	num = get_symbols(ibfd, &syms);
 
 	if (!num) {
 		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
@@ -734,7 +734,7 @@ void do_list_all_symbols_details(bfd* ibfd) {
 	for (i = 0 ; i < num ; ++i) {
 		u32 ctr0, ctr1;
 
-		get_symbol_range(syms[i], (i==num-1) ? NULL : syms[i+1], 
+		get_symbol_range(syms[i], (i == num-1) ? NULL : syms[i+1], 
 				 &start, &end);
 
 		/* To avoid outputing 0 samples symbols */
@@ -801,23 +801,23 @@ int main(int argc, char const *argv[])
 		exit(1);
 	}
  
-	if (fseek(fp, -sizeof(struct opd_footer), SEEK_END)==-1) {
+	if (fseek(fp, -sizeof(struct opd_footer), SEEK_END) == -1) {
 		fprintf(stderr, "oprofpp: fseek of %s failed. %s\n", samplefile, strerror(errno));
 		exit(1);
 	}
 	 
-	if (fread(&footer, sizeof(struct opd_footer), 1, fp)!=1) {
+	if (fread(&footer, sizeof(struct opd_footer), 1, fp) != 1) {
 		fprintf(stderr, "oprofpp: fread of %s failed. %s\n", samplefile, strerror(errno));
 		exit(1);
 	}
 	fclose(fp);
 
-	if (footer.magic!=OPD_MAGIC) {
+	if (footer.magic != OPD_MAGIC) {
 		fprintf(stderr, "oprofpp: wrong magic 0x%x, expected 0x%x.\n", footer.magic, OPD_MAGIC);
 		exit(1);
 	}
  
-	if (footer.version!=OPD_VERSION) {
+	if (footer.version != OPD_VERSION) {
 		fprintf(stderr, "oprofpp: wrong version 0x%x, expected 0x%x.\n", footer.version, OPD_VERSION);
 		exit(1);
 	}
@@ -838,15 +838,15 @@ int main(int argc, char const *argv[])
  
 	fd = open(samplefile, O_RDONLY);
 
-	if (fd==-1) {
-		fprintf(stderr, "oprofpp: Opening %s failed. %s\n",samplefile, strerror(errno));
+	if (fd == -1) {
+		fprintf(stderr, "oprofpp: Opening %s failed. %s\n", samplefile, strerror(errno));
 		exit(1);
 	}
 
 	size = opd_get_fsize(samplefile, 1) - sizeof(struct opd_footer); 
 	samples = (struct opd_fentry *)mmap(0, size, PROT_READ, MAP_PRIVATE, fd, 0);
 
-	if (samples==(void *)-1) {
+	if (samples == (void *)-1) {
 		fprintf(stderr, "oprofpp: mmap of %s failed. %s\n", samplefile, strerror(errno));
 		exit(1);
 	}

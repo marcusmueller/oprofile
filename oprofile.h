@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.37 2001/06/22 00:19:31 movement Exp $ */
+/* $Id: oprofile.h,v 1.38 2001/06/22 03:16:24 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -92,9 +92,6 @@ struct _oprof_data {
  */
 #define OP_PRE_WATERMARK 768
 
-/* maximal value before eviction */
-#define OP_MAX_COUNT ((1U<<(16U-OP_BITS))-1U)
-
 /* maximum depth of dname trees - this is just a page */
 #define DNAME_STACK_MAX 1024
 
@@ -105,9 +102,25 @@ struct _oprof_data {
  * so user can set up to (2^31)-1 */
 #define OP_MAX_PERF_COUNT 2147483647UL
 
+/* is the count at maximal value ? */
+#define op_full_count(c) (((c) & OP_COUNT_MASK) == OP_COUNT_MASK)
+
+/* no check for ctr needed as one of the three will differ in the hash */
+#define op_miss(ops)  \
+	((ops).eip != regs->eip || \
+	(ops).pid != current->pid || \
+	op_full_count((ops).count))
+
+/* the top half of pid is likely to remain static,
+   so it's masked off. the ctr bit is used to separate
+   the two counters */
+#define op_hash(eip, pid, ctr) \
+	((((((eip&0xff000)>>3) ^ eip) ^ (pid&0xff)) ^ (eip<<9)) \
+	^ (ctr<<8)) & (data->hash_size - 1)
+
 /* relying on MSR numbers being neighbours */
-#define get_perfctr(l,h,c) do { rdmsr(MSR_IA32_PERFCTR0+c, (l),(h)); } while (0)
-#define set_perfctr(l,c) do { wrmsr(MSR_IA32_PERFCTR0+c, -(u32)(l), 0); } while (0)
+#define get_perfctr(l,h,c) do { rdmsr(MSR_IA32_PERFCTR0 + c, (l), (h)); } while (0)
+#define set_perfctr(l,c) do { wrmsr(MSR_IA32_PERFCTR0 + c, -(u32)(l), 0); } while (0)
 #define ctr_overflowed(n) (!((n) & (1U<<31)))
 
 #define OP_EVENTS_OK            0x0
@@ -149,7 +162,7 @@ asmlinkage void op_nmi(void);
 			"movl %%edx,%1" \
 			:"=m" (*((long *) (gate_addr))), \
 			"=m" (*(1+(long *) (gate_addr))), "=&a" (__d0), "=&d" (__d1) \
-			:"i" ((short) (0x8000+(dpl<<13)+(type<<8))), \
+			:"i" ((short) (0x8000 + (dpl<<13) + (type<<8))), \
 			"3" ((char *) (addr)),"2" (__KERNEL_CS << 16)); \
 	} while (0)
 

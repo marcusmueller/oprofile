@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.12 2001/06/22 01:17:38 movement Exp $ */
+/* $Id: opd_util.c,v 1.13 2001/06/22 03:16:24 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -40,7 +40,7 @@ void *opd_malloc(size_t size)
 	void *p;
 
 #ifdef OPD_DEBUG 
-	if (size==0) {
+	if (size == 0) {
 		fprintf(stderr,"oprofiled:opd_malloc: 0 bytes requested\n");
 		abort();
 	}
@@ -74,7 +74,7 @@ void *opd_malloc0(size_t size)
 	void *p;
 
 	p = opd_malloc(size);
-	memset(p,0,size); 
+	memset(p, 0, size); 
 	return p; 
 }
  
@@ -121,42 +121,15 @@ void *opd_realloc(void *buf, size_t size)
 	if (!buf)
 		return opd_malloc(size);
  
-	p = realloc(buf,size);
+	p = realloc(buf, size);
 
 	if (!p) {
-		fprintf(stderr,"oprofiled:opd_realloc: realloc %d bytes failed.\n",size);
+		fprintf(stderr,"oprofiled:opd_realloc: realloc %d bytes failed.\n", size);
 		exit(1);
 	} 
 
 	return p; 
 }
- 
-#ifdef OPD_GZIP 
-/**
- * opd_do_open_file_z - open a gzip file
- * @name: file name
- * @mode: mode string
- * @fatal: is failure fatal or not
- *
- * Open a file name via a gzip stream.
- * Returns file handle or %NULL on failure.
- */ 
-gzFile opd_do_open_file_z(const char *name, const char *mode, int fatal)
-{
-	gzFile fp;
-
-	fp = gzopen(name,mode);
-
-	if (!fp) {
-		if (fatal) { 
-			fprintf(stderr,"oprofiled:opd_do_open_file_z: %s: %s",name,strerror(errno)); 
-			exit(1);
-		} 
-	}
-
-	return fp;	
-}
-#endif /* OPD_GZIP */ 
  
 /**
  * opd_do_open_file - open a file
@@ -171,11 +144,11 @@ FILE *opd_do_open_file(const char *name, const char *mode, int fatal)
 {
 	FILE *fp;
 
-	fp = fopen(name,mode);
+	fp = fopen(name, mode);
 
 	if (!fp) {
 		if (fatal) { 
-			fprintf(stderr,"oprofiled:opd_do_open_file: %s: %s",name,strerror(errno)); 
+			fprintf(stderr,"oprofiled:opd_do_open_file: %s: %s", name, strerror(errno)); 
 			exit(1);
 		} 
 	}
@@ -216,98 +189,19 @@ char *opd_read_link(const char *name)
 
 	c = readlink(name, linkbuf, FILENAME_MAX);
 
-	if (c==-1)
+	if (c == -1)
 		return NULL; 
 
-	if (c==FILENAME_MAX)
-		linkbuf[FILENAME_MAX-1]='\0';
+	if (c == FILENAME_MAX)
+		linkbuf[FILENAME_MAX-1] = '\0';
 	else 
-		linkbuf[c]='\0'; 
+		linkbuf[c] = '\0'; 
 
-	str = opd_malloc(strlen(linkbuf)+1);
+	str = opd_malloc(strlen(linkbuf) + 1);
 
-	strcpy(str,linkbuf);
+	strcpy(str, linkbuf);
 	return str; 
 } 
- 
-#ifdef OPD_GZIP 
-/**
- * opd_do_read_file_z - read a gzip stream file
- * @fp: gzip file pointer
- * @buf: buffer
- * @size: size in bytes to read
- * @fatal: is failure fatal or not
- *
- * Read from a file, transparently de-compressing if
- * necessary. It is considered an error if anything less 
- * than @size bytes is read.
- */
-void opd_do_read_file_z(gzFile fp, void *buf, size_t size, int fatal)
-{
-	size_t count;
-
-	count = gzread(fp, buf, size);
-
-	if (fatal && count!=size) {
-		if (gzeof(fp))
-			fprintf(stderr,"oprofiled:opd_read_file: read less than expected %d bytes\n", size);
-		else
-			fprintf(stderr,"oprofiled:opd_read_file: error reading\n");
-		exit(1);
-	}
-}
- 
-/**
- * opd_do_read_u8_z - read a byte from a gzip stream file
- * @fp: gzip file pointer
- *
- * Read an unsigned byte from a file, transparently
- * de-compressing if necessary. 0 is returned if the read
- * fails in any way.
- */ 
-u8 opd_read_u8_z(gzFile fp)
-{
-	u8 val=0;
-	opd_do_read_file_z(fp,&val,sizeof(u8),0);
-
-	return val; 
-}
- 
-/**
- * opd_do_read_u16_he_z - read two bytes from a gzip stream file
- * @fp: gzip file pointer
- *
- * Read an unsigned two-byte value from a file, transparently
- * de-compressing if necessary. 0 is returned if the read
- * fails in any way.
- *
- * No byte-swapping is done. 
- */ 
-u16 opd_read_u16_he_z(gzFile fp)
-{
-	u16 val=0;
-	opd_do_read_file_z(fp,&val,sizeof(u16),0);
-	return val;
-}
- 
-/**
- * opd_do_read_u32_he_z - read four bytes from a gzip stream file
- * @fp: gzip file pointer
- *
- * Read an unsigned four-byte value from a file, transparently
- * de-compressing if necessary. 0 is returned if the read
- * fails in any way.
- *
- * No byte-swapping is done. 
- */ 
-u32 opd_read_u32_he_z(gzFile fp)
-{
-	u32 val=0;
-	opd_do_read_file_z(fp,&val,sizeof(u32),0);
- 
-	return val;
-}
-#endif /* OPD_GZIP */ 
  
 /**
  * opd_do_read_file - read a file
@@ -325,7 +219,7 @@ void opd_do_read_file(FILE *fp, void *buf, size_t size, int fatal)
 
 	count = fread(buf, size, 1, fp);
 
-	if (fatal && count!=1) {
+	if (fatal && count != 1) {
 		if (feof(fp))
 			fprintf(stderr,"oprofiled:opd_read_file: read less than expected %d bytes\n", size);
 		else
@@ -343,8 +237,8 @@ void opd_do_read_file(FILE *fp, void *buf, size_t size, int fatal)
  */ 
 u8 opd_read_u8(FILE *fp)
 {
-	u8 val=0;
-	opd_do_read_file(fp,&val,sizeof(u8),0);
+	u8 val = 0;
+	opd_do_read_file(fp, &val, sizeof(u8), 0);
 
 	return val; 
 }
@@ -360,8 +254,8 @@ u8 opd_read_u8(FILE *fp)
  */ 
 u16 opd_read_u16_he(FILE *fp)
 {
-	u16 val=0;
-	opd_do_read_file(fp,&val,sizeof(u16),0);
+	u16 val = 0;
+	opd_do_read_file(fp, &val, sizeof(u16), 0);
 	return val;
 }
  
@@ -376,46 +270,10 @@ u16 opd_read_u16_he(FILE *fp)
  */ 
 u32 opd_read_u32_he(FILE *fp)
 {
-	u32 val=0;
-	opd_do_read_file(fp,&val,sizeof(u32),0);
+	u32 val = 0;
+	opd_do_read_file(fp, &val, sizeof(u32), 0);
  
 	return val;
-}
- 
-/**
- * opd_do_read_u16_ne - read two bytes from a file
- * @fp: file pointer
- *
- * Read an unsigned two-byte value from a file.
- * 0 is returned if the read fails in any way.
- *
- * The value is assumed to be network-endian (big-endian)
- * and is byteswapped to the host format.
- */ 
-u16 opd_read_u16_ne(FILE *fp)
-{
-	u16 val=0;
-	opd_do_read_file(fp,&val,sizeof(u16),0);
- 
-	return ntohs(val);
-}
- 
-/**
- * opd_do_read_u32_ne - read four bytes from a file
- * @fp: file pointer
- *
- * Read an unsigned four-byte value from a file.
- * 0 is returned if the read fails in any way.
- *
- * The value is assumed to be network-endian (big-endian)
- * and is byteswapped to the host format.
- */ 
-u32 opd_read_u32_ne(FILE *fp)
-{
-	u32 val=0;
-	opd_do_read_file(fp,&val,sizeof(u32),0);
- 
-	return ntohl(val);
 }
  
 /**
@@ -433,8 +291,8 @@ void opd_write_file(FILE *fp, const void *buf, size_t size)
 
 	written = fwrite(buf, size, 1, fp);
 
-	if (written!=1) {
-		fprintf(stderr,"oprofiled:opd_write_file: wrote less than expected: %d bytes.\n",size);
+	if (written != 1) {
+		fprintf(stderr,"oprofiled:opd_write_file: wrote less than expected: %d bytes.\n", size);
 		exit(1);
 	}
 }
@@ -449,7 +307,7 @@ void opd_write_file(FILE *fp, const void *buf, size_t size)
  */ 
 void opd_write_u8(FILE *fp, u8 val)
 {
-	opd_write_file(fp,&val,sizeof(val));
+	opd_write_file(fp, &val, sizeof(val));
 }
  
 /**
@@ -464,7 +322,7 @@ void opd_write_u8(FILE *fp, u8 val)
  */
 void opd_write_u16_he(FILE *fp, u16 val)
 {
-	opd_write_file(fp,&val,sizeof(val));
+	opd_write_file(fp, &val, sizeof(val));
 }
  
 /**
@@ -479,39 +337,7 @@ void opd_write_u16_he(FILE *fp, u16 val)
  */ 
 void opd_write_u32_he(FILE *fp, u32 val)
 {
-	opd_write_file(fp,&val,sizeof(val));
-}
- 
-/**
- * opd_write_u16_ne - write two bytes to a file
- * @fp: file pointer
- * @val: value to write
- *
- * Write an unsigned two-byte value @val to a file.
- * Failure is fatal.
- *
- * The value is written in network-endian order.
- */
-void opd_write_u16_ne(FILE *fp, u16 val)
-{
-	val = htons(val);
-	opd_write_file(fp,&val,sizeof(val));
-}
- 
-/**
- * opd_write_u32_ne - write four bytes to a file
- * @fp: file pointer
- * @val: value to write
- *
- * Write an unsigned four-byte value @val to a file.
- * Failure is fatal.
- *
- * The value is written in network-endian order.
- */ 
-void opd_write_u32_ne(FILE *fp, u32 val)
-{
-	val = htonl(val);
-	opd_write_file(fp,&val,sizeof(val));
+	opd_write_file(fp, &val, sizeof(val));
 }
  
 /**
@@ -556,7 +382,7 @@ off_t opd_get_fsize(const char *file, int fatal)
 {
 	struct stat st;
 
-	if (stat(file,&st)) {
+	if (stat(file, &st)) {
 		if (!fatal)
 			return 0;
 		 
@@ -577,11 +403,9 @@ off_t opd_get_fsize(const char *file, int fatal)
  */ 
 char *opd_get_time(void)
 {
-	time_t t;
+	time_t t = time(NULL);
 
-	t = time(NULL);
-
-	if (t==-1)
+	if (t == -1)
 		return NULL;
 
 	return ctime(&t);
@@ -607,27 +431,27 @@ char *opd_get_line(FILE *fp)
 	char *cp;
 	int c;
 	/* average allocation is about 31, so 64 should be good */
-	size_t max=64;
+	size_t max = 64;
 
 	buf = opd_malloc(max);
 	cp = buf; 
 
 	do {
-		switch (c=fgetc(fp)) { 
+		switch (c = fgetc(fp)) { 
 			case EOF:
 			case '\n':
 			case '\0':
-				*cp='\0';
+				*cp = '\0';
 				return buf;
 				break;
 
 			default:
-				*cp=(char)c;
+				*cp = (char)c;
 				cp++;
-				if (((size_t)(cp-buf))==max) {
-					buf = opd_realloc(buf,max+64);
+				if (((size_t)(cp - buf)) == max) {
+					buf = opd_realloc(buf, max + 64);
 					cp = buf+max;
-					max+=64;
+					max += 64;
 				}
 				break;
 		}
@@ -647,8 +471,8 @@ fd_t opd_open_device(const char *name, int fatal)
 	fd_t fd;
  
 	fd = open(name, O_RDONLY);
-	if (fatal && fd==-1) {
-		fprintf(stderr,"oprofiled:opd_open_device: %s: %s\n",name,strerror(errno)); 
+	if (fatal && fd == -1) {
+		fprintf(stderr,"oprofiled:opd_open_device: %s: %s\n", name, strerror(errno)); 
 		exit(1);
 	}
 
@@ -700,7 +524,7 @@ size_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
  
 		count = read(devfd, buf, size);
 
-		if (count<0 && errno!=EINTR) {
+		if (count<0 && errno != EINTR) {
 			perror("oprofiled:opd_read_device: ");
 			exit(1);
 		}

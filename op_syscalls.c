@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.9 2001/06/22 00:19:31 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.10 2001/06/22 03:16:24 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -60,7 +60,7 @@ void my_set_fixmap(void)
 {
 	ulong address = __fix_to_virt(FIX_APIC_BASE);
 
-	set_pte_phys (address,APIC_DEFAULT_PHYS_BASE);
+	set_pte_phys (address, APIC_DEFAULT_PHYS_BASE);
 }
 #endif /* CONFIG_X86_UP_APIC */
 
@@ -116,8 +116,8 @@ static void * rvmalloc(signed long size)
 	while (size > 0) {
 		page = kvirt_to_pa(adr);
 		mem_map_reserve(virt_to_page(__va(page)));
-		adr+=PAGE_SIZE;
-		size-=PAGE_SIZE;
+		adr += PAGE_SIZE;
+		size -= PAGE_SIZE;
 	}
 	return mem;
 }
@@ -133,8 +133,8 @@ static void rvfree(void * mem, signed long size)
 	while (size > 0) {
 		page = kvirt_to_pa(adr);
 		mem_map_unreserve(virt_to_page(__va(page)));
-		adr+=PAGE_SIZE;
-		size-=PAGE_SIZE;
+		adr += PAGE_SIZE;
+		size -= PAGE_SIZE;
 	}
 	vfree(mem);
 }
@@ -175,7 +175,7 @@ void oprof_free_hashmap(void)
 
 int oprof_hash_map_open(void)
 {
-	if (test_and_set_bit(0,&hash_map_open))
+	if (test_and_set_bit(0, &hash_map_open))
 		return -EBUSY;
 
 	return 0;
@@ -196,7 +196,7 @@ int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma)
 	ulong page, pos;
 	ulong size = (ulong)(vma->vm_end-vma->vm_start);
 
-	if (size > PAGE_ALIGN(OP_HASH_MAP_SIZE) || vma->vm_flags&VM_WRITE || vma->vm_pgoff)
+	if (size > PAGE_ALIGN(OP_HASH_MAP_SIZE) || (vma->vm_flags & VM_WRITE) || vma->vm_pgoff)
 		return -EINVAL;
 
 	pos = (ulong)hash_map;
@@ -280,11 +280,11 @@ static short do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dent
 			goto out;
 
 		/* the root */
-		if (d==root && v==rootmnt)
+		if (d == root && v == rootmnt)
 			break;
 
-		if (d==v->mnt_root || IS_ROOT(d)) {
-			if (v->mnt_parent==v)
+		if (d == v->mnt_root || IS_ROOT(d)) {
+			if (v->mnt_parent == v)
 				break;
 			/* cross the mount point */
 			d = v->mnt_mountpoint;
@@ -315,7 +315,7 @@ static short do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dent
 			goto next;
 
 		/* nope, find another place in the table */
-		value = (value+probe) % OP_HASH_MAP_NR;
+		value = (value + probe) % OP_HASH_MAP_NR;
 		probe *= probe;
 		if (value == firsthash)
 			goto fulltable;
@@ -396,18 +396,18 @@ static int oprof_output_maps(struct task_struct *task)
 	   mm, then mm_users must be at least 2; we should never have to
 	   mmput() here. */
 
-	if (!(mm=task->mm))
+	if (!(mm = task->mm))
 		goto out;
 
  
 	take_mmap_sem(mm);
 	spin_lock(&map_lock);
-	for (map=mm->mmap; map; map=map->vm_next) {
-		if (!(map->vm_flags&VM_EXEC) || !map->vm_file)
+	for (map = mm->mmap; map; map = map->vm_next) {
+		if (!(map->vm_flags & VM_EXEC) || !map->vm_file)
 			continue;
 
 		oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
-			map->vm_pgoff<<PAGE_SHIFT, map->vm_file, is_execve);
+			map->vm_pgoff << PAGE_SHIFT, map->vm_file, is_execve);
 		is_execve = 0;
 	}
 	spin_unlock(&map_lock);
@@ -435,8 +435,8 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 		current->ptrace &= ~PT_DTRACE;
 
 #ifdef PID_FILTER
-		if ((!pid_filter || pid_filter==current->pid) &&
-		    (!pgrp_filter || pgrp_filter==current->pgrp))
+		if ((!pid_filter || pid_filter == current->pid) &&
+		    (!pgrp_filter || pgrp_filter == current->pgrp))
 			oprof_output_maps(current);
 #else
 		oprof_output_maps(current);
@@ -459,7 +459,7 @@ static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 		return;
 
 	spin_lock(&map_lock);
-	oprof_output_map(addr,len,offset,file,0);
+	oprof_output_map(addr, len, offset, file, 0);
 	spin_unlock(&map_lock);
 
 	fput(file);
@@ -472,16 +472,16 @@ asmlinkage static int my_sys_mmap2(ulong addr, ulong len,
 
 	LOCK_UNLOAD;
 
-	ret = old_sys_mmap2(addr,len,prot,flags,fd,pgoff);
+	ret = old_sys_mmap2(addr, len, prot, flags, fd, pgoff);
 
 #ifdef PID_FILTER
-	if ((pid_filter && current->pid!=pid_filter) ||
-	    (pgrp_filter && current->pgrp!=pgrp_filter))
+	if ((pid_filter && current->pid != pid_filter) ||
+	    (pgrp_filter && current->pgrp != pgrp_filter))
 		goto out;
 #endif
 
 	if ((prot&PROT_EXEC) && ret >= 0)
-		out_mmap(ret,len,prot,flags,fd,pgoff<<PAGE_SHIFT);
+		out_mmap(ret, len, prot, flags, fd, pgoff << PAGE_SHIFT);
 	goto out;
 out:
 	UNLOCK_UNLOAD;
@@ -497,8 +497,8 @@ asmlinkage static int my_old_mmap(struct mmap_arg_struct *arg)
 	ret = old_old_mmap(arg);
 
 #ifdef PID_FILTER
-	if ((pid_filter && current->pid!=pid_filter) ||
-	    (pgrp_filter && current->pgrp!=pgrp_filter))
+	if ((pid_filter && current->pid != pid_filter) ||
+	    (pgrp_filter && current->pgrp != pgrp_filter))
 		goto out;
 #endif
 
@@ -521,7 +521,7 @@ inline static void oprof_report_fork(u16 old, u32 new)
 	struct op_sample samp;
 
 #ifdef PID_FILTER
-	if (pgrp_filter && pgrp_filter!=current->pgrp)
+	if (pgrp_filter && pgrp_filter != current->pgrp)
 		return;
 #endif
 
@@ -598,8 +598,8 @@ asmlinkage static long my_sys_exit(int error_code)
 	LOCK_UNLOAD;
  
 #ifdef PID_FILTER
-	if ((pid_filter && current->pid!=pid_filter) ||
-	    (pgrp_filter && current->pgrp!=pgrp_filter))
+	if ((pid_filter && current->pid != pid_filter) ||
+	    (pgrp_filter && current->pgrp != pgrp_filter))
 		goto out;
 #endif
 

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.24 2001/06/22 01:17:39 movement Exp $ */
+/* $Id: oprofiled.h,v 1.25 2001/06/22 03:16:24 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -57,8 +57,8 @@
 			printf(args); \
 	} while (0)
 
-#define streq(a,b) (!strcmp((a),(b)))
-#define streqn(a,b,n) (!strncmp((a),(b),(n)))
+#define streq(a,b) (!strcmp((a), (b)))
+#define streqn(a,b,n) (!strncmp((a), (b), (n)))
 
 /* this char replaces '/' in sample filenames */
 #define OPD_MANGLE_CHAR '}'

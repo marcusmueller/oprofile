@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.11 2001/06/22 01:17:39 movement Exp $ */
+/* $Id: oprofpp.h,v 1.12 2001/06/22 03:16:24 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -52,7 +52,6 @@ void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char 
 #define u16 u_int16_t
 #define u32 u_int32_t
 #define fd_t int
-#define streq(a,b) (!strcmp((a),(b)))
 
 #define verbprintf(args...) \
 	do { \

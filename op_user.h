@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.2 2001/01/22 00:11:45 moz Exp $ */
+/* $Id: op_user.h,v 1.3 2001/06/22 03:16:24 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -42,7 +42,7 @@
 /* which perf counter the sample is from */
 #define OP_COUNTER (1U<<14)
 
-#define OP_COUNT_MASK ((1U<<(16-OP_BITS))-1U)
+#define OP_COUNT_MASK ((1U << (16 - OP_BITS)) - 1U)
 
 /* mapping notification types */
 /* fork(),vfork(),clone() */
@@ -50,11 +50,11 @@
 /* mapping */
 #define OP_MAP (OP_NOTE|(1U<<14))
 /* execve() */
-#define OP_EXEC (OP_NOTE|(1U<<14)|(1U<<13))
+#define OP_EXEC (OP_NOTE|(1U<<14) | (1U<<13))
 /* init_module() */
-#define OP_DROP_MODULES (OP_NOTE|(1U<<1))
+#define OP_DROP_MODULES (OP_NOTE | (1U<<1))
 /* exit() */
-#define OP_EXIT (OP_NOTE|(1U<<2))
+#define OP_EXIT (OP_NOTE | (1U<<2))
 
 #define IS_OP_MAP(v) ( \
 	((v) & OP_NOTE) && \
@@ -71,7 +71,7 @@ struct op_sample {
 	u16 count;
 	u16 pid;
 	u32 eip;
-} __attribute__((__packed__,__aligned__(8)));
+} __attribute__((__packed__, __aligned__(8)));
 
 #ifndef __ok_unused
 #define __ok_unused __attribute((__unused))
@@ -102,6 +102,6 @@ struct op_mapping {
 };
 
 /* size of hash map in bytes */
-#define OP_HASH_MAP_SIZE (OP_HASH_MAP_NR*sizeof(struct op_hash))
+#define OP_HASH_MAP_SIZE (OP_HASH_MAP_NR * sizeof(struct op_hash))
 
 #endif /* OP_USER_H */
