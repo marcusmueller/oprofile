@@ -16,8 +16,52 @@
 extern "C" {
 #endif
 
-#include "op_types.h"
 #include "op_cpu_type.h"
+#include "op_types.h"
+#include "op_list.h"
+
+/** Describe an unit mask type. Events can optionally use a filter called
+ * the unit mask. the mask type can be a bitmask or a discrete value */
+enum unit_mask_type {
+	utm_mandatory,		/**< useless but required by the hardware */
+	utm_exclusive,		/**< only one of the values is allowed */
+	utm_bitmask		/**< bitmask */
+};
+
+
+/** Describe an unit mask. */
+struct op_unit_mask {
+	char * name;		/**< name of unit mask type */
+	u32 num;		/**< number of possible unit masks */
+	enum unit_mask_type unit_type_mask;
+	u16 default_mask;	/**< only the gui use it */
+	/** up to sixteen allowed unit masks */
+	struct op_described_um {
+		u16 value;
+		char * desc;
+	} um[16];
+	struct list_head um_next; /**< next um in list */
+};
+
+
+/** Describe an event. */
+struct op_event {
+	u32 counter_mask;	/**< bitmask of allowed counter  */
+	u8 val;			/**< event number */
+	/** which unit mask if any allowed */
+	struct op_unit_mask * unit;			
+	char * name;		/**< the event name */
+	char * desc;      	/**< the event description */
+	int min_count;		/**< minimum counter value allowed */
+	struct list_head event_next;   /**< next event in list */
+};
+
+/** Return the known events list. Idempotent */
+struct list_head * op_events(op_cpu cpu_type);
+
+/** Find a given event */
+struct op_event * op_find_event(op_cpu cpu_type, u8 nr);
+
 
 /** op_check_events() return code */
 enum op_event_check {
@@ -27,52 +71,11 @@ enum op_event_check {
 	OP_INVALID_COUNTER = 4, /**< event is not allowed for the given counter */
 };
 
-
-/** Describe an unit mask type. Events can optionnaly use a filter called
- * the unit mask. the mask type can be a bitmask or a discrete value */
-enum unit_mask_type {
-	utm_mandatory,		/**< useless but required by the hardware */
-	utm_exclusive,		/**< only one of the values is allowed */
-	utm_bitmask		/**< bitmask */
-};
-
-/** Describe an unit mask. */
-struct op_unit_mask {
-	u32 num;		/**< number of possible unit masks */
-	enum unit_mask_type unit_type_mask;
-	u16 default_mask;	/**< only the gui use it */
-	/** up to sixteen allowed unit masks */
-	struct op_described_um {
-		u16 value;
-		char const * desc;
-	} um[16];
-};
-
-/** Describe an event. */
-struct op_event {
-	u32 counter_mask;	/**< bitmask of allowed counter  */
-	u32 cpu_mask;		/**< bitmask of allowed cpu_type */
-	u8 val;			/**< event number */
-	/** which unit mask if any allowed */
-	struct op_unit_mask const * unit;			
-	char const * name;	/**< the event name */
-	char const * desc;      /**< the event description */
-	int min_count;		/**< minimum counter value allowed */
-};
-
-/**
- * @param ctr_type event value
- * @param cpu_type cpu type
- *
- * The function returns > 0 if the event is found 0 otherwise
- */
-int op_min_count(u8 ctr_type, op_cpu cpu_type);
-
 /**
  * sanity check event values
  * @param ctr counter number
- * @param ctr_type event value for counter 0
- * @param ctr_um unit mask for counter 0
+ * @param event value for counter
+ * @param um unit mask for counter
  * @param cpu_type processor type
  *
  * Check that the counter event and unit mask values are allowed.
@@ -81,28 +84,7 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type);
  *
  * \sa op_cpu, OP_EVENTS_OK
  */
-int op_check_events(int ctr, u8 ctr_type, u16 ctr_um, op_cpu cpu_type);
-
-/**
- * sanity check unit mask value
- * @param allow allowed unit mask array
- * @param um unit mask value to check
- *
- * Verify that a unit mask value is within the allowed array.
- *
- * The function returns:
- * -1  if the value is not allowed,
- * 0   if the value is allowed and represent multiple units,
- * > 0 otherwise.
- *
- * if the return value is > 0 caller can access to the description of
- * the unit_mask through op_unit_descs
- * \sa op_unit_descs
- */
-int op_check_unit_mask(struct op_unit_mask const * allow, u16 um);
-
-/** a special constant meaning this event is available for all counters */
-#define CTR_ALL		(~0u)
+int op_check_events(int ctr, u8 event, u16 um, op_cpu cpu_type);
 
 #ifdef __cplusplus
 }

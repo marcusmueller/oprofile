@@ -1,3 +1,32 @@
+2003-03-02  John Levon  <levon@movementarian.org>
+
+	* configure.in:
+	* Makefile.am:
+	* events/: add text files describing the CPU counters
+	  and unit masks. Install them.
+
+	* libop/op_events.h:
+	* libop/op_events.c: remove the bletcherous hard coded
+	  descriptions.
+
+	* module/ia64/op_pmu.c:
+	* module/x86/op_nmi.c: remove another big of validation
+
+	* libutil/op_list.h: make C++ friendly
+
+	* libop/op_cpu_type.h:
+	* libop/op_cpu_type.c: add op_get_cpu_name()
+
+	* libop/Makefile:
+	* libop/op_events_desc.h:
+	* libop/op_events_desc.cpp: removed
+
+	* libop++/op_print_event.cpp:
+	* utils/Makefile.am:
+	* utils/op_help.c:
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp: changes from above
+
 2003-03-01  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: tweaks

@@ -80,8 +80,6 @@ oprof_start::oprof_start()
 		unit_mask_group->hide();
 	}
 
-	int cpu_mask = 1 << cpu_type;
-
 	// check if our cpu type match with the cpu type in config file, if we
 	// mismatch just delete all the oprof_start config file else we
 	// confuse later code.
@@ -118,23 +116,25 @@ oprof_start::oprof_start()
 	// we need to build the event descr stuff before loading the
 	// configuration because we use locate_events to get an event descr
 	// from its name.
-	for (uint i = 0 ; i < op_nr_events ; ++i) {
-		if (!(op_events[i].cpu_mask & cpu_mask))
-			continue;
+	struct list_head * pos;
+	struct list_head * events = op_events(cpu_type);
+
+	list_for_each(pos, events) {
+		struct op_event * event = list_entry(pos, struct op_event, event_next);
 
 		op_event_descr descr;
 
-		descr.counter_mask = op_events[i].counter_mask;
-		descr.val = op_events[i].val;
-		if (op_events[i].unit->num) {
-			descr.unit = op_events[i].unit;
+		descr.counter_mask = event->counter_mask;
+		descr.val = event->val;
+		if (event->unit->num) {
+			descr.unit = event->unit;
 		} else {
 			descr.unit = 0;
 		}
 
-		descr.name = op_events[i].name;
-		descr.help_str = op_events[i].desc;
-		descr.min_count = op_events[i].min_count;
+		descr.name = event->name;
+		descr.help_str = event->desc;
+		descr.min_count = event->min_count;
 
 		for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
 			uint count;

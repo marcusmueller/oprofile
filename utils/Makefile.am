@@ -8,7 +8,7 @@ op_session_SOURCES = op_session.c
 op_session_LDADD = ../libutil/libutil.a
 
 op_help_SOURCES = op_help.c
-op_help_LDADD = ../libutil/libutil.a ../libop/libop.a
+op_help_LDADD = ../libop/libop.a ../libutil/libutil.a
 
 if kernel_support
 OP_START=op_start_25

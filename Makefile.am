@@ -1,5 +1,5 @@
 SUBDIRS = libutil libop libutil++ libopt++ libop++ libdb libabi \
-	libregex daemon dae utils pp gui doc
+	libregex daemon dae utils pp gui doc events
 
 all-local: kernel_module
 install-exec-local: install.kernel

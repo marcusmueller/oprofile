@@ -11,8 +11,6 @@
 
 #include "op_file.h"
 #include "op_config.h"
-#include "op_events.h"
-#include "op_events_desc.h"
 #include "op_print_event.h"
 #include "op_sample_file.h"
 #include "string_manip.h"

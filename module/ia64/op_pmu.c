@@ -443,10 +443,8 @@ pmu_check_params(void)
 			return -EINVAL;
 		}
 
-		min_count = op_min_count(sysctl.ctr[i].event, sysctl.cpu_type);
-		if (check_range(sysctl.ctr[i].count, min_count,
-				OP_MAX_PERF_COUNT,
-				"ctr count value %d not in range (%d %ld)\n"))
+		if (check_range(sysctl.ctr[i].count, 1, OP_MAX_PERF_COUNT,
+			"ctr count value %d not in range (%d %ld)\n"))
 			return -EINVAL;
 	}
 

@@ -44,14 +44,14 @@ static __inline__ void list_init(struct list_head * ptr)
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
  */
-static __inline__ void __list_add(struct list_head * new,
+static __inline__ void __list_add(struct list_head * new_entry,
 	struct list_head * prev,
 	struct list_head * next)
 {
-	next->prev = new;
-	new->next = next;
-	new->prev = prev;
-	prev->next = new;
+	next->prev = new_entry;
+	new_entry->next = next;
+	new_entry->prev = prev;
+	prev->next = new_entry;
 }
 
 /**
@@ -62,9 +62,9 @@ static __inline__ void __list_add(struct list_head * new,
  * Insert a new entry after the specified head.
  * This is good for implementing stacks.
  */
-static __inline__ void list_add(struct list_head * new, struct list_head * head)
+static __inline__ void list_add(struct list_head * new_entry, struct list_head * head)
 {
-	__list_add(new, head, head->next);
+	__list_add(new_entry, head, head->next);
 }
 
 /**
@@ -75,9 +75,9 @@ static __inline__ void list_add(struct list_head * new, struct list_head * head)
  * Insert a new entry before the specified head.
  * This is useful for implementing queues.
  */
-static __inline__ void list_add_tail(struct list_head * new, struct list_head * head)
+static __inline__ void list_add_tail(struct list_head * new_entry, struct list_head * head)
 {
-	__list_add(new, head->prev, head);
+	__list_add(new_entry, head->prev, head);
 }
 
 /*
@@ -170,5 +170,10 @@ static __inline__ void list_splice(struct list_head * list, struct list_head * h
 #define list_for_each_safe(pos, n, head) \
 	for (pos = (head)->next, n = pos->next; pos != (head); \
 		pos = n, n = pos->next)
+
+#define LIST_HEAD_INIT(name) { &(name), &(name) }
+
+#define LIST_HEAD(name) \
+	        struct list_head name = LIST_HEAD_INIT(name)
 
 #endif /* OP_LIST_H */

@@ -1,0 +1,28 @@
+# Pentium IV HyperThreading events
+#
+event:0x01 counters:3,7 um:branch_retired minimum:3000 name:BRANCH_RETIRED : retired branches
+event:0x02 counters:3,7 um:mispred_branch_retired minimum:3000 name:MISPRED_BRANCH_RETIRED : retired mispredicted branches
+event:0x04 counters:0,4 um:bpu_fetch_request minimum:3000 name:BPU_FETCH_REQUEST : instruction fetch requests from the branch predict unit
+event:0x05 counters:0,4 um:itlb_reference minimum:3000 name:ITLB_REFERENCE : translations using the instruction translation lookaside buffer
+event:0x06 counters:2,6 um:memory_cancel minimum:3000 name:MEMORY_CANCEL : cancelled requesets in data cache address control unit
+event:0x07 counters:2,6 um:memory_complete minimum:3000 name:MEMORY_COMPLETE : completed load split, store split, uncacheable split, uncacheable load
+event:0x08 counters:2,6 um:load_port_replay minimum:3000 name:LOAD_PORT_REPLAY : replayed events at the load port
+event:0x09 counters:2,6 um:store_port_replay minimum:3000 name:STORE_PORT_REPLAY : replayed events at the store port
+event:0x0a counters:0,4 um:mob_load_replay minimum:3000 name:MOB_LOAD_REPLAY : replayed loads from the memory order buffer
+event:0x0c counters:0,4 um:bsq_cache_reference minimum:3000 name:BSQ_CACHE_REFERENCE : cache references seen by the bus unit
+event:0x0d counters:0 um:ioq minimum:3000 name:IOQ_ALLOCATION : bus transactions
+event:0x0e counters:4 um:ioq minimum:3000 name:IOQ_ACTIVE_ENTRIES : number of entries in the IOQ which are active
+event:0x10 counters:0 um:bsq minimum:3000 name:BSQ_ALLOCATION : allocations in the bus sequence unit
+event:0x12 counters:3,7 um:x87_assist minimum:3000 name:X87_ASSIST : retired x87 instructions which required special handling
+event:0x1c counters:3,7 um:machine_clear minimum:3000 name:MACHINE_CLEAR : cycles with entire machine pipeline cleared
+event:0x1d counters:0,4 um:global_power_events minimum:3000 name:GLOBAL_POWER_EVENTS : time during which processor is not stopped
+event:0x1e counters:1,5 um:tc_ms_xfer minimum:3000 name:TC_MS_XFER : number of times uops deliver changed from TC to MS ROM
+event:0x1f counters:1,5 um:uop_queue_writes minimum:3000 name:UOP_QUEUE_WRITES : number of valid uops written to the uop queue
+event:0x20 counters:3,7 um:front_end_event minimum:3000 name:FRONT_END_EVENT : retired uops, tagged with front-end tagging
+event:0x21 counters:3,7 um:execution_event minimum:3000 name:EXECUTION_EVENT : retired uops, tagged with execution tagging
+event:0x22 counters:3,7 um:replay_event minimum:3000 name:REPLAY_EVENT : retired uops, tagged with replay tagging
+event:0x23 counters:3,7 um:instr_retired minimum:3000 name:INSTR_RETIRED : retired instructions
+event:0x24 counters:3,7 um:uops_retired minimum:3000 name:UOPS_RETIRED : retired uops
+event:0x25 counters:3,7 um:uop_type minimum:3000 name:UOP_TYPE : type of uop tagged by front-end tagging
+event:0x26 counters:1,5 um:branch_type minimum:3000 name:RETIRED_MISPRED_BRANCH_TYPE : retired mispredicted branched, selected by type
+event:0x27 counters:1,5 um:branch_type minimum:3000 name:RETIRED_BRANCH_TYPE : retired branches, selected by type

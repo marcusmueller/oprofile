@@ -367,6 +367,7 @@ AC_OUTPUT(Makefile \
 	libregex/Makefile \
 	dae/Makefile \
 	daemon/Makefile \
+	events/Makefile \
 	utils/Makefile \
 	doc/Makefile \
 	doc/xsl/xhtml.xsl \

@@ -42,11 +42,6 @@ struct cpu_descr {
  
 static size_t nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
 
-/**
- * op_get_cpu_type - get the cpu type from the kernel
- *
- * returns %CPU_NO_GOOD if the CPU could not be identified
- */
 op_cpu op_get_cpu_type(void)
 {
 	int cpu_type = CPU_NO_GOOD;
@@ -86,14 +81,6 @@ op_cpu op_get_cpu_type(void)
 }
 
  
-/**
- * op_get_cpu_type_str - get the cpu string.
- * @param cpu_type  the cpu type identifier
- *
- * The function always return a valid char const *
- * the core cpu denomination or "invalid cpu type" if
- * cpu_type is not valid.
- */
 char const * op_get_cpu_type_str(op_cpu cpu_type)
 {
 	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
@@ -104,12 +91,16 @@ char const * op_get_cpu_type_str(op_cpu cpu_type)
 }
 
 
-/**
- * compute the number of counters available
- * @param cpu_type numeric processor type
- *
- * returns 0 if the CPU could not be identified
- */
+char const * op_get_cpu_name(op_cpu cpu_type)
+{
+	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
+		return "invalid cpu type";
+	}
+
+	return cpu_descrs[cpu_type].name;
+}
+
+
 int op_get_nr_counters(op_cpu cpu_type)
 {
 	if (cpu_type < 0 || cpu_type > MAX_CPU_TYPE)

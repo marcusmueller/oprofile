@@ -27,7 +27,6 @@
 #include "counter_util.h"
 #include "op_sample_file.h"
 #include "op_print_event.h"
-#include "op_events_desc.h"
 #include "op_to_source_options.h"
 #include "session.h"
 

@@ -16,7 +16,6 @@
 
 #include "version.h"
 #include "op_events.h"
-#include "op_events_desc.h"
 #include "op_popt.h"
 
 static op_cpu cpu_type = CPU_NO_GOOD;
@@ -27,52 +26,42 @@ static op_cpu cpu_type = CPU_NO_GOOD;
  *
  * output an help string for the event @i
  */
-static void help_for_event(int i)
+static void help_for_event(struct op_event * event)
 {
-	uint j,k;
-	op_cpu cpu;
+	uint i, j;
 	uint mask;
 
-	printf("%s", op_events[i].name);
+	printf("%s", event->name);
 
 	printf(": (counter: ");
-	if (op_events[i].counter_mask == CTR_ALL) {
+
+	/* FIXME, reintroduce
+	if (event->counter_mask == CTR_ALL) {
 		printf("all");
 	} else {
-		mask = op_events[i].counter_mask;
-		for (k = 0; k < CHAR_BIT * sizeof(op_events[i].counter_mask); ++k) {
-			if (mask & (1 << k)) {
-				printf("%d", k);
-				mask &= ~(1 << k);
+	*/
+		mask = event->counter_mask;
+		for (i = 0; i < CHAR_BIT * sizeof(event->counter_mask); ++i) {
+			if (mask & (1 << i)) {
+				printf("%d", i);
+				mask &= ~(1 << i);
 				if (mask)
 					printf(", ");
 			}
 		}
-	}
-	printf(")");
+	/*}*/
 
-	printf(" (supported cpu: ");
-	mask = op_events[i].cpu_mask;
-	for (cpu = 0; cpu < MAX_CPU_TYPE; ++cpu) {
-		if (mask & (1 << cpu)) {
-			printf("%s", op_get_cpu_type_str(cpu));
-			mask &= ~(1 << cpu);
-			if (mask)
-				printf(", ");
-		}
-	}
+	printf(")\n\t%s (min count: %d)\n", event->desc, event->min_count);
 
-	printf(")\n\t%s (min count: %d)\n", op_events[i].desc, op_events[i].min_count);
-
-	if (op_events[i].unit->num) {
+	if (strcmp(event->unit->name, "zero")) {
 
 		printf("\tUnit masks\n");
 		printf("\t----------\n");
 
-		for (j=0; j < op_events[i].unit->num; j++) {
+		for (j=0; j < event->unit->num; j++) {
 			printf("\t0x%.2x: %s\n",
-			       op_events[i].unit->um[j].value,
-			       op_events[i].unit->um[j].desc);
+			       event->unit->um[j].value,
+			       event->unit->um[j].desc);
 		}
 	}
 }
@@ -116,8 +105,8 @@ static void get_options(int argc, char const * argv[])
 
 int main(int argc, char const *argv[])
 {
-	int cpu_type_mask;
-	uint j;
+	struct list_head * events;
+	struct list_head * pos;
 
 	get_options(argc, argv);
 
@@ -134,12 +123,14 @@ int main(int argc, char const *argv[])
 		exit(EXIT_SUCCESS);
 	}
 
+	events = op_events(cpu_type);
+
 	if (event_name) {
-		cpu_type_mask = 1 << cpu_type;
-		for (j=0; j < op_nr_events; j++) {
-			if (!strcmp(op_events[j].name, event_name) &&
-			    (op_events[j].cpu_mask & cpu_type_mask)) {
-				printf("%d\n", op_events[j].val);
+		list_for_each(pos, events) {
+			struct op_event * event = list_entry(pos, struct op_event, event_next);
+
+			if (strcmp(event->name, event_name) == 0) {
+				printf("%d\n", event->val);
 				exit(EXIT_SUCCESS);
 			}
 		}
@@ -188,11 +179,9 @@ int main(int argc, char const *argv[])
 		printf("%d is not a valid processor type,\n", cpu_type);
 	}
 
-	cpu_type_mask = 1 << cpu_type;
-	for (j = 0; j < op_nr_events; j++) {
-		if ((op_events[j].cpu_mask & cpu_type_mask) != 0) {
-			help_for_event(j);
-		}
+	list_for_each(pos, events) {
+		struct op_event * event = list_entry(pos, struct op_event, event_next);
+		help_for_event(event);
 	}
 
 	return EXIT_SUCCESS;
