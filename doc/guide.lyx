@@ -706,13 +706,263 @@ This problem limits the use of the profiler in this way.
 Features & Misfeatures
 \layout Standard
 
+The worst-case scenario is that of many separate processes being created.
+ This can overflow the map buffer, leading to mysterious failures of the
+ daemon.
+ You can increase the map buffer size in the file 
+\family typewriter 
+oprofile.h
+\family default 
+ by setting the define 
+\family typewriter 
+OP_MAX_MAP_BUF
+\family default 
+ to a larger value.
+\layout Standard
+
+It is possible for the hash table to fill up, in which case you must increase
+ the define 
+\family typewriter 
+OP_HASH_MAP_NR
+\family default 
+ (additionally if you have a pathname component larger than 127 characters,
+ you must increase 
+\family typewriter 
+OP_HASH_LINE
+\family default 
+).
+ There are two 
+\begin_inset Quotes eld
+\end_inset 
+
+watermark
+\begin_inset Quotes erd
+\end_inset 
+
+ parameters, 
+\family typewriter 
+OP_PRE_WATERMARK
+\family default 
+ and 
+\family typewriter 
+OP_MAP_BUF_WATERMARK
+\family default 
+ you may want to decrease if you have trouble with overflow in the eviction
+ buffer or the map buffer.
+\layout Standard
+
 etc.
 \layout Chapter
 
 Under the hood
+\layout Section
+
+Kernel module
 \layout Standard
 
-etc.
+The local APIC is used to generate NMI interrupts.
+ At each interrupt delivery, the task state at the bottom of the stack is
+ examined to determine the process id, and the saved EIP is hashed with
+ it to work out the hash table entry.
+ Each entry has 4 samples, and if a match is found, the counter is incremented.
+ Otherwise, one of the existing samples is chosen for eviction to the map
+ buffer, and the new sample replaces it.
+ Thus the hash table is the primary method of defence against the sample
+ onslaught.
+\layout Standard
+
+The eviction buffer will gradually fill up.
+ Sooner or later, the sleeping daemon process is woken up and told to read
+ the existing sample data from the eviction buffer, and the buffer is emptied.
+\layout Standard
+
+At the same time as this goes on, system calls are being traced (see 
+\family typewriter 
+oprofile_k.c
+\family default 
+).
+ Each system call places some kind of notification into the eviction buffer
+ (see the defines 
+\family typewriter 
+CP_MAP
+\family default 
+ and friends in 
+\family typewriter 
+oprofile.h
+\family default 
+).
+ This notification takes different forms depending on the recorded system
+ call event, but it may indicate an amount to read from the map buffer.
+ The idea is that the daemon takes note of this notification of pending
+ data, and reads from the map buffer in order.
+ The map buffer contains information on memory maps that have been added
+ to the process, namely the start, end, file offset, and the numeric path
+ sequence.
+ The numeric path sequence is converted into a character string by lookup
+ in the component hash table (in the daemon code, the relevant function
+ is 
+\family typewriter 
+opd_handle_mapping()
+\family default 
+, and the hash table is mapped in at an address pointed to by 
+\family typewriter 
+hashmap
+\family default 
+, accessed with 
+\family typewriter 
+hash_access()
+\family default 
+).
+\layout Standard
+
+So the eviction buffer contains either samples are special notification
+ tokens indicating some special operation.
+ These are decoded in userspace in the 
+\family typewriter 
+opd_do_samples()
+\family default 
+ routine.
+\layout Description
+
+
+\family typewriter 
+op_do_nmi() 
+\family default 
+The NMI routine that deals with an overflow interrupt
+\layout Description
+
+
+\family typewriter 
+op_check_ctr(),op_do_profile(),fill_op_entry(),evict_op_entry()
+\family default 
+ These are routines for dealing with the samples at an interrupt
+\layout Description
+
+
+\family typewriter 
+mask_LVT_NMIs()
+\family default 
+ attempt to prevent an NMI from arriving at a nasty time
+\layout Description
+
+
+\family typewriter 
+install_nmi()
+\family default 
+ This sets up our NMI interrupt handler by resetting the vector in position
+ 2 of the IDT, so all NMIs are routed through to the assembly header in
+ 
+\family typewriter 
+oprofile_nmi.S
+\layout Description
+
+
+\family typewriter 
+restore_nmi()
+\family default 
+ puts back the old NMI handler
+\layout Description
+
+
+\family typewriter 
+disable_local_P6_APIC()
+\family default 
+ turns off the local APIC on unload.
+ This will be disappearing soon ...
+\layout Description
+
+
+\family typewriter 
+smp_apic_setup()
+\family default 
+ my guess at what needs setting up on SMP machines
+\layout Description
+
+
+\family typewriter 
+apic_setup()
+\family default 
+ initialise the necessary local APIC stuff for interrupt delivery
+\layout Description
+
+
+\family typewriter 
+pmc_fill_in(),pmc_setup()
+\family default 
+ set up the hardware counters as specified by the module parameters
+\layout Description
+
+
+\family typewriter 
+pmc_start/stop()
+\family default 
++friends this will disable counting temporarily during critical sections
+\layout Description
+
+
+\family typewriter 
+oprof_thread()
+\family default 
+ this is the wake-up thread.
+ It is needed because the NMI needs to wake things up, but cannot do so
+ in a race-free way.
+\layout Description
+
+
+\family typewriter 
+oprof_put_note()
+\family default 
+ This adds a notification to the eviction buffer
+\layout Description
+
+
+\family typewriter 
+oprof_open/release()
+\family default 
+ frontispieces for the special device files (there are three: eviction buffer,
+ map buffer, and component hash table)
+\layout Description
+
+
+\family typewriter 
+oprof_read()
+\family default 
+ used to read the eviction or map buffer.
+ The eviction logic is mildly hairy to avoid races, for example needed an
+ extra buffer copy
+\layout Description
+
+
+\family typewriter 
+oprof_mmap()
+\family default 
+ for access to the hash table
+\layout Description
+
+
+\family typewriter 
+oprof_ioctl()
+\family default 
+ It can happen that nothing every reaches the daemon, because we are caching
+ too well.
+ This is a quick hack to force some stuff out (it needs working on)
+\layout Description
+
+
+\family typewriter 
+parms_ok(),oprof_init_data(),hw_ok(),oprof_init()
+\family default 
+ self-explanatory initialisation stuff
+\layout Section
+
+Daemon
+\layout Standard
+
+Follow your nose from 
+\family typewriter 
+opd_do_samples()
+\family default 
+, it should hopefully be fairly obvious.
 \layout Chapter
 
 Credits

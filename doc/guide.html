@@ -42,7 +42,7 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <P>
 <H1 ALIGN="CENTER"><TT>oprofile</TT>: Continuous Statistical Profiler</H1>
 <P ALIGN="CENTER"><STRONG>John Levon</STRONG></P>
-<P ALIGN="CENTER"><STRONG>24 October 2000</STRONG></P>
+<P ALIGN="CENTER"><STRONG>25 October 2000</STRONG></P>
 
 <P>
 
@@ -435,6 +435,21 @@ and not to take the results at face value.
 </H1>
 
 <P>
+The worst-case scenario is that of many separate processes being created.
+This can overflow the map buffer, leading to mysterious failures of
+the daemon. You can increase the map buffer size in the file <TT>oprofile.h</TT>
+by setting the define <TT>OP_MAX_MAP_BUF</TT> to a larger value.
+
+<P>
+It is possible for the hash table to fill up, in which case you must
+increase the define <TT>OP_HASH_MAP_NR</TT> (additionally if you
+have a pathname component larger than 127 characters, you must increase
+<TT>OP_HASH_LINE</TT>). There are two ``watermark'' parameters,
+<TT>OP_PRE_WATERMARK</TT> and <TT>OP_MAP_BUF_WATERMARK</TT> you
+may want to decrease if you have trouble with overflow in the eviction
+buffer or the map buffer.
+
+<P>
 etc.
 
 <P>
@@ -444,7 +459,131 @@ etc.
 </H1>
 
 <P>
-etc.
+
+<H1><A NAME="SECTION00510000000000000000">
+5.1 Kernel module</A>
+</H1>
+
+<P>
+The local APIC is used to generate NMI interrupts. At each interrupt
+delivery, the task state at the bottom of the stack is examined to
+determine the process id, and the saved EIP is hashed with it to work
+out the hash table entry. Each entry has 4 samples, and if a match
+is found, the counter is incremented. Otherwise, one of the existing
+samples is chosen for eviction to the map buffer, and the new sample
+replaces it. Thus the hash table is the primary method of defence
+against the sample onslaught.
+
+<P>
+The eviction buffer will gradually fill up. Sooner or later, the sleeping
+daemon process is woken up and told to read the existing sample data
+from the eviction buffer, and the buffer is emptied.
+
+<P>
+At the same time as this goes on, system calls are being traced (see
+<TT>oprofile_k.c</TT>). Each system call places some kind of notification
+into the eviction buffer (see the defines <TT>CP_MAP</TT> and friends
+in <TT>oprofile.h</TT>). This notification takes different forms depending
+on the recorded system call event, but it may indicate an amount to
+read from the map buffer. The idea is that the daemon takes note of
+this notification of pending data, and reads from the map buffer in
+order. The map buffer contains information on memory maps that have
+been added to the process, namely the start, end, file offset, and
+the numeric path sequence. The numeric path sequence is converted
+into a character string by lookup in the component hash table (in
+the daemon code, the relevant function is <TT>opd_handle_mapping()</TT>,
+and the hash table is mapped in at an address pointed to by <TT>hashmap</TT>,
+accessed with <TT>hash_access()</TT>).
+
+<P>
+So the eviction buffer contains either samples are special notification
+tokens indicating some special operation. These are decoded in userspace
+in the <TT>opd_do_samples()</TT> routine.
+
+<P>
+<DL>
+<DT><STRONG><TT>op_do_nmi()</TT></STRONG></DT>
+<DD>The NMI routine that deals with an overflow
+interrupt
+</DD>
+<DT><STRONG><TT>op_check_ctr(),op_do_profile(),fill_op_entry(),evict_op_entry()</TT></STRONG></DT>
+<DD>These
+are routines for dealing with the samples at an interrupt
+</DD>
+<DT><STRONG><TT>mask_LVT_NMIs()</TT></STRONG></DT>
+<DD>attempt to prevent an NMI from arriving
+at a nasty time
+</DD>
+<DT><STRONG><TT>install_nmi()</TT></STRONG></DT>
+<DD>This sets up our NMI interrupt handler by
+resetting the vector in position 2 of the IDT, so all NMIs are routed
+through to the assembly header in <TT>oprofile_nmi.S</TT>
+</DD>
+<DT><STRONG><TT>restore_nmi()</TT></STRONG></DT>
+<DD>puts back the old NMI handler
+</DD>
+<DT><STRONG><TT>disable_local_P6_APIC()</TT></STRONG></DT>
+<DD>turns off the local APIC on unload.
+This will be disappearing soon ...
+</DD>
+<DT><STRONG><TT>smp_apic_setup()</TT></STRONG></DT>
+<DD>my guess at what needs setting up on
+SMP machines
+</DD>
+<DT><STRONG><TT>apic_setup()</TT></STRONG></DT>
+<DD>initialise the necessary local APIC stuff
+for interrupt delivery
+</DD>
+<DT><STRONG><TT>pmc_fill_in(),pmc_setup()</TT></STRONG></DT>
+<DD>set up the hardware counters
+as specified by the module parameters
+</DD>
+<DT><STRONG><TT>pmc_start/stop()</TT>+friends</STRONG></DT>
+<DD>this will disable counting temporarily
+during critical sections
+</DD>
+<DT><STRONG><TT>oprof_thread()</TT></STRONG></DT>
+<DD>this is the wake-up thread. It is needed
+because the NMI needs to wake things up, but cannot do so in a race-free
+way.
+</DD>
+<DT><STRONG><TT>oprof_put_note()</TT></STRONG></DT>
+<DD>This adds a notification to the eviction
+buffer
+</DD>
+<DT><STRONG><TT>oprof_open/release()</TT></STRONG></DT>
+<DD>frontispieces for the special device
+files (there are three: eviction buffer, map buffer, and component
+hash table)
+</DD>
+<DT><STRONG><TT>oprof_read()</TT></STRONG></DT>
+<DD>used to read the eviction or map buffer. The
+eviction logic is mildly hairy to avoid races, for example needed
+an extra buffer copy
+</DD>
+<DT><STRONG><TT>oprof_mmap()</TT></STRONG></DT>
+<DD>for access to the hash table
+</DD>
+<DT><STRONG><TT>oprof_ioctl()</TT></STRONG></DT>
+<DD>It can happen that nothing every reaches
+the daemon, because we are caching too well. This is a quick hack
+to force some stuff out (it needs working on)
+</DD>
+<DT><STRONG><TT>parms_ok(),oprof_init_data(),hw_ok(),oprof_init()</TT></STRONG></DT>
+<DD>self-explanatory
+initialisation stuff
+</DD>
+</DL>
+
+<P>
+
+<H1><A NAME="SECTION00520000000000000000">
+5.2 Daemon</A>
+</H1>
+
+<P>
+Follow your nose from <TT>opd_do_samples()</TT>, it should hopefully
+be fairly obvious.
 
 <P>
 
@@ -481,9 +620,9 @@ Computer Based Learning Unit, University of Leeds.
 Mathematics Department, Macquarie University, Sydney.
 <P>
 The command line arguments were: <BR>
- <STRONG>latex2html</STRONG> <TT>-no_subdir -split 0 -show_section_numbers /tmp/lyx_tmp1594aaa/lyx_bufrtmp1594aaa/guide.tex</TT>
+ <STRONG>latex2html</STRONG> <TT>-no_subdir -split 0 -show_section_numbers /tmp/lyx_tmp976aaa/lyx_bufrtmp976aaa/guide.tex</TT>
 <P>
-The translation was initiated by John Levon on 2000-10-24<BR><HR><H4>Footnotes</H4>
+The translation was initiated by John Levon on 2000-10-25<BR><HR><H4>Footnotes</H4>
 <DL>
 <DT><A NAME="foot22">... Celerons</A><A NAME="foot22"
  HREF="guide.html#tex2html1"><SUP>1.1</SUP></A>
@@ -503,7 +642,7 @@ found.
 <!--End of Navigation Panel-->
 <ADDRESS>
 John Levon
-2000-10-24
+2000-10-25
 </ADDRESS>
 </BODY>
 </HTML>
