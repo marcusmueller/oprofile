@@ -268,7 +268,14 @@ static struct opd_image * opd_find_image(unsigned long cookie, unsigned long app
 
 	list_for_each(pos, &opd_images[hash]) {
 		image = list_entry(pos, struct opd_image, hash_list);
-		if (image->cookie == cookie && image->app_cookie == app_cookie)
+
+		/* without this check !separate_samples will open the
+		 * same sample file multiple times
+		 */
+		if (separate_samples && image->app_cookie != app_cookie)
+			continue;
+ 
+		if (image->cookie == cookie)
 			return image;
 	}
 	return NULL;

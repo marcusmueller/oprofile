@@ -1,5 +1,9 @@
 2002-10-01  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_image.c: fix non --separate-samples. Still broke.
+ 
+2002-10-01  John Levon  <levon@movementarian.org>
+
 	* libop/op_cpu_type.h:
 	* libop/op_cpu_type.c: make this work on 2.5/normal both.
 	  Does not respect different mounted oprofilefs (yet)
