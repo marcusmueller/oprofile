@@ -12,13 +12,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "db_hash.h"
+#include "odb_hash.h"
 
-int db_insert(samples_db_t * hash, db_key_t key, db_value_t value, char ** err_msg)
+int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value, char ** err_msg)
 {
 	size_t index;
-	db_index_t new_node;
-	db_node_t * node;
+	odb_index_t new_node;
+	odb_node_t * node;
 
 	index = hash->hash_base[do_hash(hash, key)];
 	while (index) {
@@ -30,7 +30,7 @@ int db_insert(samples_db_t * hash, db_key_t key, db_value_t value, char ** err_m
 				node->value += value;
 			} else {
 				/* post profile tools must handle overflow */
-				node->value = ~(db_value_t)0;
+				node->value = ~(odb_value_t)0;
 			}
 			return EXIT_SUCCESS;
 		}
@@ -39,11 +39,11 @@ int db_insert(samples_db_t * hash, db_key_t key, db_value_t value, char ** err_m
 	}
 
 	/* no locking is necessary: iteration interface retrieve data through
-	 * the node_base array, db_hash_add_node() increase current_size but
-	 * db_travel just ignore node with a zero key so on setting the key
+	 * the node_base array, odb_hash_add_node() increase current_size but
+	 * odb_travel just ignore node with a zero key so on setting the key
 	 * atomically update the node */
-	new_node = db_hash_add_node(hash, err_msg);
-	if (new_node == DB_NODE_NR_INVALID) {
+	new_node = odb_hash_add_node(hash, err_msg);
+	if (new_node == ODB_NODE_NR_INVALID) {
 		return EXIT_FAILURE;
 	}
 

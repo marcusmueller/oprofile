@@ -15,7 +15,7 @@
 #include <string>
 #include <map>
 
-#include "db_hash.h"
+#include "odb_hash.h"
 #include "op_types.h"
 #include "op_hw_config.h"
 #include "utility.h"
@@ -81,7 +81,7 @@ public:
 
 private:
 	/// storage type for samples sorted by eip
-	typedef std::map<db_key_t, db_value_t> ordered_samples_t;
+	typedef std::map<odb_key_t, odb_value_t> ordered_samples_t;
 
 	/// helper to build ordered samples by eip
 	void build_ordered_samples(std::string const & filename);

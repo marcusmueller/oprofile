@@ -1,3 +1,32 @@
+2003-03-31  Will Cohen  <wcohen@redhat.com>
+	* libdb/odb_hash.h: Renamed db_hash.h.
+
+	* dae/Makefile.am:
+	* dae/opd_image.c:
+	* dae/opd_image.h:
+	* dae/opd_proc.c:
+	* dae/opd_sample_files.c:
+	* daemon/Makefile.am:
+	* daemon/opd_image.c:
+	* daemon/opd_image.h:
+	* daemon/opd_sample_files.c:
+	* libabi/Makefile.am:
+	* libabi/abi.cpp:
+	* libabi/abi_test.cpp
+	* libabi/op_import.cpp:
+	* libdb/Makefile.am:
+	* libdb/db_debug.c
+	* libdb/db_hash.h:
+	* libdb/db_insert.c:
+	* libdb/db_manage.c:
+	* libdb/db_stat.c:
+	* libdb/db_test.c:
+	* libdb/db_travel.c:
+	* pp/Makefile.am:
+	* pp/counter_profile.cpp:
+	* pp/counter_profile.h:
+	* pp/op_merge.cpp: Change names to avoid libdb.a name conflicts.
+	
 2003-03-30  John Levon  <levon@movementarian.org>
 
 	* configure.in: bump to 0.6cvs

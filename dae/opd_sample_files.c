@@ -132,7 +132,7 @@ void opd_handle_old_sample_files(struct opd_image const * image)
 void opd_open_sample_file(struct opd_image * image, int counter)
 {
 	char * mangled;
-	samples_db_t * sample_file;
+	samples_odb_t * sample_file;
 	struct opd_header * header;
 	char const * app_name;
 	char * err_msg;
@@ -147,7 +147,7 @@ void opd_open_sample_file(struct opd_image * image, int counter)
 
 	verbprintf("Opening \"%s\"\n", mangled);
 
-	rc = db_open(sample_file, mangled, DB_RDWR, sizeof(struct opd_header),
+	rc = odb_open(sample_file, mangled, ODB_RDWR, sizeof(struct opd_header),
 		&err_msg);
 	if (rc != EXIT_SUCCESS) {
 		fprintf(stderr, "%s", err_msg);
@@ -156,7 +156,7 @@ void opd_open_sample_file(struct opd_image * image, int counter)
 	}
 	if (!sample_file->base_memory) {
 		fprintf(stderr,
-			"oprofiled: db_open() of image sample file \"%s\" failed: %s\n",
+			"oprofiled: odb_open() of image sample file \"%s\" failed: %s\n",
 			mangled, strerror(errno));
 		goto err;
 	}
@@ -190,7 +190,7 @@ void opd_sync_image_samples_files(struct opd_image * image)
 {
 	uint i;
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		db_sync(&image->sample_files[i]);
+		odb_sync(&image->sample_files[i]);
 	}
 }
 
@@ -203,6 +203,6 @@ void opd_close_image_samples_files(struct opd_image * image)
 {
 	uint i;
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		db_close(&image->sample_files[i]);
+		odb_close(&image->sample_files[i]);
 	}
 }

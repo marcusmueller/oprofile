@@ -126,7 +126,7 @@ static struct opd_image * opd_create_image(unsigned long hash)
 	image->kernel = 0;
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		db_init(&image->sample_files[i]);
+		odb_init(&image->sample_files[i]);
 	}
 
 	list_add(&image->hash_list, &opd_images[hash]);
@@ -217,9 +217,9 @@ void opd_check_image_mtime(struct opd_image * image)
 	len = strlen(mangled);
 
 	for (i = 0; i < op_nr_counters; i++) {
-		samples_db_t * db = &image->sample_files[i];
+		samples_odb_t * db = &image->sample_files[i];
 		if (db->base_memory) {
-			db_close(db);
+			odb_close(db);
 		}
 		sprintf(mangled + len, "#%d", i);
 		verbprintf("Deleting out of date \"%s\"\n", mangled);
@@ -248,7 +248,7 @@ void opd_put_image_sample(struct opd_image * image,
 	vma_t offset, int counter)
 {
 	char * err_msg;
-	samples_db_t * sample_file;
+	samples_odb_t * sample_file;
 
 	sample_file = &image->sample_files[counter];
  
@@ -261,8 +261,8 @@ void opd_put_image_sample(struct opd_image * image,
 	}
  
 	/* Possible narrowing to 32-bit value only. */
-	if (db_insert(sample_file, (unsigned long)offset, 1, &err_msg) != EXIT_SUCCESS) {
-		fprintf(stderr, "db_insert() %s\n", err_msg);
+	if (odb_insert(sample_file, (unsigned long)offset, 1, &err_msg) != EXIT_SUCCESS) {
+		fprintf(stderr, "odb_insert() %s\n", err_msg);
 		free(err_msg);
 		exit(EXIT_FAILURE);
 	}

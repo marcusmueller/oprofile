@@ -15,7 +15,7 @@
 #include <fcntl.h>
 
 #include "op_sample_file.h"
-#include "db_hash.h"
+#include "odb_hash.h"
 
 #define TEST_FILENAME "test-hash-db.dat"
 
@@ -36,11 +36,11 @@ static void speed_test(int nr_item, int nr_unique_item)
 {
 	int i;
 	double begin, end;
-	samples_db_t hash;
+	samples_odb_t hash;
 	int rc;
 	char * err_msg;
 
-	rc = db_open(&hash, TEST_FILENAME, DB_RDWR, sizeof(struct opd_header),
+	rc = odb_open(&hash, TEST_FILENAME, ODB_RDWR, sizeof(struct opd_header),
 		&err_msg);
 	if (rc != EXIT_SUCCESS) {
 		fprintf(stderr, "%s", err_msg);
@@ -49,7 +49,7 @@ static void speed_test(int nr_item, int nr_unique_item)
 	}
 	begin = used_time();
 	for (i = 0 ; i < nr_item ; ++i) {
-		rc = db_insert(&hash, (random() % nr_unique_item) + 1, 1, &err_msg);
+		rc = odb_insert(&hash, (random() % nr_unique_item) + 1, 1, &err_msg);
 		if (rc != EXIT_SUCCESS) {
 			fprintf(stderr, "%s", err_msg);
 			free(err_msg);
@@ -57,7 +57,7 @@ static void speed_test(int nr_item, int nr_unique_item)
 		}
 	}
 	end = used_time();
-	db_close(&hash);
+	odb_close(&hash);
 
 	remove(TEST_FILENAME);
 
@@ -79,12 +79,12 @@ static void do_speed_test(void)
 static int test(int nr_item, int nr_unique_item)
 {
 	int i;
-	samples_db_t hash;
+	samples_odb_t hash;
 	int ret;
 	int rc;
 	char * err_msg;
 
-	rc = db_open(&hash, TEST_FILENAME, DB_RDWR, sizeof(struct opd_header),
+	rc = odb_open(&hash, TEST_FILENAME, ODB_RDWR, sizeof(struct opd_header),
 		&err_msg);
 	if (rc != EXIT_SUCCESS) {
 		fprintf(stderr, "%s", err_msg);
@@ -94,8 +94,8 @@ static int test(int nr_item, int nr_unique_item)
 
 
 	for (i = 0 ; i < nr_item ; ++i) {
-		db_key_t key = (random() % nr_unique_item) + 1;
-		rc = db_insert(&hash, key, 1, &err_msg);
+		odb_key_t key = (random() % nr_unique_item) + 1;
+		rc = odb_insert(&hash, key, 1, &err_msg);
 		if (rc != EXIT_SUCCESS) {
 			fprintf(stderr, "%s", err_msg);
 			free(err_msg);
@@ -103,9 +103,9 @@ static int test(int nr_item, int nr_unique_item)
 		}
 	}
 
-	ret = db_check_hash(&hash);
+	ret = odb_check_hash(&hash);
 
-	db_close(&hash);
+	odb_close(&hash);
 
 	remove(TEST_FILENAME);
 
@@ -130,8 +130,8 @@ static void do_test(void)
 }
 
 
-static db_key_t range_first, range_last;
-static void call_back(db_key_t key, db_value_t info, void * data)
+static odb_key_t range_first, range_last;
+static void call_back(odb_key_t key, odb_value_t info, void * data)
 {
 	info = info; data = data;	/* suppress unused parameters */
 
@@ -144,13 +144,13 @@ static void call_back(db_key_t key, db_value_t info, void * data)
 static int callback_test(int nr_item, int nr_unique_item)
 {
 	int i;
-	samples_db_t tree;
-	db_key_t first_key, last_key;
+	samples_odb_t tree;
+	odb_key_t first_key, last_key;
 	int old_nr_error = nr_error;
 	int rc;
 	char * err_msg;
 
-	rc = db_open(&tree, TEST_FILENAME, DB_RDWR, sizeof(struct opd_header),
+	rc = odb_open(&tree, TEST_FILENAME, ODB_RDWR, sizeof(struct opd_header),
 		     &err_msg);
 	if (EXIT_SUCCESS != rc) {
 		fprintf(stderr, "%s", err_msg);
@@ -159,7 +159,7 @@ static int callback_test(int nr_item, int nr_unique_item)
 	}
 
 	for (i = 0 ; i < nr_item ; ++i) {
-		rc = db_insert(&tree, (random() % nr_unique_item) + 1, 1, &err_msg);
+		rc = odb_insert(&tree, (random() % nr_unique_item) + 1, 1, &err_msg);
 		if (rc != EXIT_SUCCESS) {
 			fprintf(stderr, "%s", err_msg);
 			free(err_msg);
@@ -167,7 +167,7 @@ static int callback_test(int nr_item, int nr_unique_item)
 		}
 	}
 
-	last_key = (db_key_t)-1;
+	last_key = (odb_key_t)-1;
 	first_key = 0;
 
 	for ( ; first_key < last_key ; last_key /= 2) {
@@ -175,12 +175,12 @@ static int callback_test(int nr_item, int nr_unique_item)
 		range_first = first_key;
 		range_last = last_key;
 
-		samples_db_travel(&tree, first_key, last_key, call_back, 0);
+		samples_odb_travel(&tree, first_key, last_key, call_back, 0);
 
 		first_key = first_key == 0 ? 1 : first_key * 2;
 	}
 
-	db_close(&tree);
+	odb_close(&tree);
 
 	remove(TEST_FILENAME);
 
@@ -204,11 +204,11 @@ static void do_callback_test(void)
 
 static void sanity_check(char const * filename)
 {
-	samples_db_t hash;
+	samples_odb_t hash;
 	int rc;
 	char * err_msg;
 
-	rc = db_open(&hash, filename, DB_RDONLY, sizeof(struct opd_header),
+	rc = odb_open(&hash, filename, ODB_RDONLY, sizeof(struct opd_header),
 		     &err_msg);
 	if (EXIT_SUCCESS != rc) {
 		fprintf(stderr, "%s", err_msg);
@@ -216,12 +216,12 @@ static void sanity_check(char const * filename)
 	        exit(EXIT_FAILURE);
 	}
 
-	if (db_check_hash(&hash)) {
+	if (odb_check_hash(&hash)) {
 		printf("checking file %s FAIL\n", filename);
 		++nr_error;
 	}
 
-	db_close(&hash);
+	odb_close(&hash);
 }
 
 int main(int argc, char * argv[1])

@@ -11,25 +11,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "db_hash.h"
+#include "odb_hash.h"
 
-struct db_hash_stat_t {
-	db_node_nr_t node_nr;
-	db_node_nr_t used_node_nr;
-	db_index_t   hash_table_size;
-	db_node_nr_t max_list_length;		/**< worst case   */
+struct odb_hash_stat_t {
+	odb_node_nr_t node_nr;
+	odb_node_nr_t used_node_nr;
+	odb_index_t   hash_table_size;
+	odb_node_nr_t max_list_length;		/**< worst case   */
 	double       average_list_length;	/**< average case */
 	/* do we need variance ? */
 };
 
-db_hash_stat_t * db_hash_stat(samples_db_t const * hash)
+odb_hash_stat_t * odb_hash_stat(samples_odb_t const * hash)
 {
 	size_t max_length = 0;
 	double total_length = 0.0;
 	size_t nr_non_empty_list = 0;
 	size_t pos;
 
-	db_hash_stat_t * result = calloc(1, sizeof(db_hash_stat_t));
+	odb_hash_stat_t * result = calloc(1, sizeof(odb_hash_stat_t));
 	if (!result) {
 		fprintf(stderr, "not enough memory\n");
 		exit(EXIT_FAILURE);
@@ -66,7 +66,7 @@ db_hash_stat_t * db_hash_stat(samples_db_t const * hash)
 }
 
 
-void db_hash_display_stat(db_hash_stat_t const * stat)
+void odb_hash_display_stat(odb_hash_stat_t const * stat)
 {
 	printf("total node number:   %d\n", stat->node_nr);
 	printf("total used node:     %d\n", stat->used_node_nr);
@@ -76,7 +76,7 @@ void db_hash_display_stat(db_hash_stat_t const * stat)
 }
 
 
-void db_hash_free_stat(db_hash_stat_t * stat)
+void odb_hash_free_stat(odb_hash_stat_t * stat)
 {
 	free(stat);
 }

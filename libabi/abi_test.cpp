@@ -9,7 +9,7 @@
  */
 
 #include "abi.h"
-#include "db_hash.h"
+#include "odb_hash.h"
 #include "popt_options.h"
 #include "op_sample_file.h"
 #include "op_cpu_type.h"
@@ -50,12 +50,12 @@ int main(int argc, char const ** argv)
 	}
 
 	if (db_filename.size() > 0) {
-		samples_db_t dest;
+		samples_odb_t dest;
 		char * err_msg;
 		int rc;
-		rc = db_open(&dest, db_filename.c_str(), DB_RDWR, sizeof(struct opd_header), &err_msg);
+		rc = odb_open(&dest, db_filename.c_str(), ODB_RDWR, sizeof(struct opd_header), &err_msg);
 		if (rc != EXIT_SUCCESS) {
-			cerr << "db_open() fail:\n"
+			cerr << "odb_open() fail:\n"
 			     << err_msg << endl;
 			free(err_msg);
 			exit(EXIT_FAILURE);
@@ -80,14 +80,14 @@ int main(int argc, char const ** argv)
     
 		for (int i = 0; i < 3793; ++i) {
 			char * err_msg;
-			int rc = db_insert(&dest, ((i*i) ^ (i+i)), ((i*i) ^ i), &err_msg);
+			int rc = odb_insert(&dest, ((i*i) ^ (i+i)), ((i*i) ^ i), &err_msg);
 			if (rc != EXIT_SUCCESS) {
 				cerr << err_msg << endl;
 				free(err_msg);
 				exit(EXIT_FAILURE);
 			}
 		}
-		db_close(&dest);
+		odb_close(&dest);
 		file_processed = true;
 	}
 

@@ -9,7 +9,7 @@
  */
  
 #include "abi.h"
-#include "db_hash.h"
+#include "odb_hash.h"
 #include "op_sample_file.h"
 
 #include <iostream>
@@ -28,8 +28,8 @@ Abi_exception::Abi_exception(string const d) : desc(d) {}
 Abi::Abi() 
 {
 	
-	db_node_t node;
-	db_descr_t descr;
+	odb_node_t node;
+	odb_descr_t descr;
 	struct opd_header header;
 	
 	slots["sizeof_double"] = sizeof(double);
@@ -38,12 +38,12 @@ Abi::Abi()
 	slots["sizeof_u32"] = sizeof(u32);
 	slots["sizeof_int"] = sizeof(int);
 	slots["sizeof_unsigned_int"] = sizeof(unsigned int);
-	slots["sizeof_db_key_t"] = sizeof(db_key_t);
-	slots["sizeof_db_index_t"] = sizeof(db_index_t);
-	slots["sizeof_db_value_t"] = sizeof(db_value_t);
-	slots["sizeof_db_node_nr_t"] = sizeof(db_node_nr_t);
-	slots["sizeof_db_descr_t"] = sizeof(db_descr_t);
-	slots["sizeof_db_node_t"] = sizeof(db_node_t);
+	slots["sizeof_odb_key_t"] = sizeof(odb_key_t);
+	slots["sizeof_odb_index_t"] = sizeof(odb_index_t);
+	slots["sizeof_odb_value_t"] = sizeof(odb_value_t);
+	slots["sizeof_odb_node_nr_t"] = sizeof(odb_node_nr_t);
+	slots["sizeof_odb_descr_t"] = sizeof(odb_descr_t);
+	slots["sizeof_odb_node_t"] = sizeof(odb_node_t);
 	slots["sizeof_struct_opd_header"] = sizeof(struct opd_header);		
 	
 	slots["offsetof_node_key"] = field_offset(node, key);

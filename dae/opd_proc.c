@@ -271,7 +271,7 @@ inline static void verb_show_sample(unsigned long offset, struct opd_map * map,
 void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 			  u32 counter)
 {
-	samples_db_t * sample_file;
+	samples_odb_t * sample_file;
 	char * err_msg;
 
 	sample_file = &image->sample_files[counter];
@@ -284,8 +284,8 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 		}
 	}
 
-	if (db_insert(sample_file, offset, 1, &err_msg) != EXIT_SUCCESS) {
-		fprintf(stderr, "db_insert() %s\n", err_msg);
+	if (odb_insert(sample_file, offset, 1, &err_msg) != EXIT_SUCCESS) {
+		fprintf(stderr, "odb_insert() %s\n", err_msg);
 		free(err_msg);
 		exit(EXIT_FAILURE);
 	}

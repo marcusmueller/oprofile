@@ -24,7 +24,7 @@ bin_PROGRAMS = op_import
 op_import_SOURCES = op_import.cpp
 op_import_LDADD = \
 	libabi.a \
-	../libdb/libdb.a \
+	../libdb/libodb.a \
 	../libopt++/libopt++.a \
 	../libutil++/libutil++.a \
 	../libutil/libutil.a
@@ -34,7 +34,7 @@ noinst_PROGRAMS = abi_test
 abi_test_SOURCES = abi_test.cpp
 abi_test_LDADD = \
 	libabi.a \
-	../libdb/libdb.a \
+	../libdb/libodb.a \
 	../libopt++/libopt++.a \
 	../libutil++/libutil++.a \
 	../libutil/libutil.a

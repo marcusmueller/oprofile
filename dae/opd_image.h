@@ -15,7 +15,7 @@
 #include "op_list.h"
 #include "op_hw_config.h"
 #include "op_types.h"
-#include "db_hash.h"
+#include "odb_hash.h"
 
 #include <time.h>
 
@@ -29,7 +29,7 @@ struct opd_image {
 	/* used to link image with a valid hash, we never destroy image so a
 	 * simple link is necessary */
 	struct opd_image * hash_next;
-	samples_db_t sample_files[OP_MAX_COUNTERS];
+	samples_odb_t sample_files[OP_MAX_COUNTERS];
 	int hash;
 	/* name of this image */
 	char * name;

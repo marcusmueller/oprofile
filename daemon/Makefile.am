@@ -29,12 +29,12 @@ oprofiled_SOURCES = $(dist_sources)
 if enable_abi
 oprofiled_LDADD = \
 	../libabi/libabi.a \
-	../libdb/libdb.a \
+	../libdb/libodb.a \
 	../libop/libop.a \
 	../libutil/libutil.a
 else
 oprofiled_LDADD = \
-	../libdb/libdb.a \
+	../libdb/libodb.a \
 	../libop/libop.a \
 	../libutil/libutil.a
 endif

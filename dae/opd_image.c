@@ -116,7 +116,7 @@ static void opd_init_image(struct opd_image * image, char const * name,
 	image->app_name = app_name ? xstrdup(app_name) : NULL;
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		db_init(&image->sample_files[i]);
+		odb_init(&image->sample_files[i]);
 	}
 }
 
@@ -168,9 +168,9 @@ void opd_check_image_mtime(struct opd_image * image)
 	len = strlen(mangled);
 
 	for (i = 0; i < op_nr_counters; i++) {
-		samples_db_t * db = &image->sample_files[i];
+		samples_odb_t * db = &image->sample_files[i];
 		if (db->base_memory) {
-			db_close(db);
+			odb_close(db);
 		}
 		sprintf(mangled + len, "#%d", i);
 		verbprintf("Deleting out of date \"%s\"\n", mangled);

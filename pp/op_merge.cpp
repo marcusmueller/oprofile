@@ -151,14 +151,14 @@ static void check_samples_files_list(list<string> const & filenames)
  *
  * @param key
  * @param value
- * @param data is a pointer to the destination samples_db_t object
+ * @param data is a pointer to the destination samples_odb_t object
  */
-static void copy_callback(db_key_t key, db_value_t value, void * data)
+static void copy_callback(odb_key_t key, odb_value_t value, void * data)
 {
 	char * err_msg;
-	samples_db_t * dest = (samples_db_t *)data;
+	samples_odb_t * dest = (samples_odb_t *)data;
 
-	int rc = db_insert(dest, key, value, &err_msg);
+	int rc = odb_insert(dest, key, value, &err_msg);
 	if (rc != EXIT_SUCCESS) {
 		cerr << err_msg << endl;
 		free(err_msg);
@@ -190,10 +190,10 @@ static void output_files(string const & filename,
 		out << in.rdbuf();
 	}
 
-	samples_db_t dest;
+	samples_odb_t dest;
 	char * err_msg;
 
-	int rc = db_open(&dest, filename.c_str(), DB_RDWR,
+	int rc = odb_open(&dest, filename.c_str(), ODB_RDWR,
 		     sizeof(struct opd_header), &err_msg);
 	if (rc != EXIT_SUCCESS) {
 		cerr << err_msg << endl;
@@ -202,9 +202,9 @@ static void output_files(string const & filename,
 	}
 
 	for (++it ; it != filenames.end() ; ++it) {
-		samples_db_t src;
+		samples_odb_t src;
 
-		rc = db_open(&src, it->c_str(), DB_RDONLY,
+		rc = odb_open(&src, it->c_str(), ODB_RDONLY,
 			sizeof(struct opd_header), &err_msg);
 		if (rc != EXIT_SUCCESS) {
 			cerr << err_msg << endl;
@@ -212,12 +212,12 @@ static void output_files(string const & filename,
 			exit(EXIT_FAILURE);
 		}
 
-		samples_db_travel(&src, 0, ~0, copy_callback, &dest);
+		samples_odb_travel(&src, 0, ~0, copy_callback, &dest);
 
-		db_close(&src);
+		odb_close(&src);
 	}
 
-	db_close(&dest);
+	odb_close(&dest);
 }
 
 //---------------------------------------------------------------------------

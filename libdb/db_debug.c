@@ -12,40 +12,40 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "db_hash.h"
+#include "odb_hash.h"
 
-static void display_callback(db_key_t key, db_value_t value, void * data)
+static void display_callback(odb_key_t key, odb_value_t value, void * data)
 {
 	printf("%x %d\n", key, value);
 	data = data;
 }
 
-void db_display_hash(samples_db_t const * hash)
+void odb_display_hash(samples_odb_t const * hash)
 {
-	if (!db_check_hash(hash)) {
-		samples_db_travel(hash, 0, ~0, display_callback, 0);
+	if (!odb_check_hash(hash)) {
+		samples_odb_travel(hash, 0, ~0, display_callback, 0);
 	}
 }
 
-void db_raw_display_hash(samples_db_t const * hash)
+void odb_raw_display_hash(samples_odb_t const * hash)
 {
-	db_node_nr_t pos;
+	odb_node_nr_t pos;
 	for (pos = 1 ; pos < hash->descr->current_size ; ++pos) {
-		db_node_t const * node = &hash->node_base[pos];
+		odb_node_t const * node = &hash->node_base[pos];
 		printf("%x %d %d\n", node->key, node->value, node->next);
 	}
 }
 
-static int check_circular_list(samples_db_t const * hash)
+static int check_circular_list(samples_odb_t const * hash)
 {
-	db_node_nr_t pos;
+	odb_node_nr_t pos;
 	int do_abort = 0;
 	unsigned char * bitmap = malloc(hash->descr->current_size);
 	memset(bitmap, '\0', hash->descr->current_size);
 
 	for (pos = 0 ; pos < hash->descr->size*BUCKET_FACTOR ; ++pos) {
 
-		db_index_t index = hash->hash_base[pos];
+		odb_index_t index = hash->hash_base[pos];
 		if (index && !do_abort) {
 			while (index) {
 				if (bitmap[index]) {
@@ -88,9 +88,9 @@ static int check_circular_list(samples_db_t const * hash)
 	return do_abort;
 }
 
-static int check_redundant_key(samples_db_t const * hash, db_key_t max)
+static int check_redundant_key(samples_odb_t const * hash, odb_key_t max)
 {
-	db_node_nr_t pos;
+	odb_node_nr_t pos;
 
 	unsigned char * bitmap = malloc(max + 1);
 	memset(bitmap, '\0', max + 1);
@@ -108,16 +108,16 @@ static int check_redundant_key(samples_db_t const * hash, db_key_t max)
 	return 0;
 }
 
-int db_check_hash(samples_db_t const * hash)
+int odb_check_hash(samples_odb_t const * hash)
 {
-	db_node_nr_t pos;
-	db_node_nr_t nr_node = 0;
-	db_node_nr_t nr_node_out_of_bound = 0;
+	odb_node_nr_t pos;
+	odb_node_nr_t nr_node = 0;
+	odb_node_nr_t nr_node_out_of_bound = 0;
 	int ret = 0;
-	db_key_t max = 0;
+	odb_key_t max = 0;
 
 	for (pos = 0 ; pos < hash->descr->size * BUCKET_FACTOR ; ++pos) {
-		db_index_t index = hash->hash_base[pos];
+		odb_index_t index = hash->hash_base[pos];
 		while (index) {
 			if (index >= hash->descr->current_size) {
 				nr_node_out_of_bound++;
@@ -152,10 +152,10 @@ int db_check_hash(samples_db_t const * hash)
 	}
 
 	if (ret == 0) {
-		db_hash_stat_t * stats;
-		stats = db_hash_stat(hash);
-		db_hash_display_stat(stats);
-		db_hash_free_stat(stats);
+		odb_hash_stat_t * stats;
+		stats = odb_hash_stat(hash);
+		odb_hash_display_stat(stats);
+		odb_hash_free_stat(stats);
 	}
 
 	return ret;

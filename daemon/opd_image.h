@@ -15,7 +15,7 @@
 #include "op_list.h"
 #include "op_hw_config.h"
 #include "op_types.h"
-#include "db_hash.h"
+#include "odb_hash.h"
 
 #include <time.h>
 
@@ -35,7 +35,7 @@ struct opd_image {
 	/* hash table link */
 	struct list_head hash_list;
 	/* opened sample files */
-	samples_db_t sample_files[OP_MAX_COUNTERS];
+	samples_odb_t sample_files[OP_MAX_COUNTERS];
 	/* time of last modification */
 	time_t mtime;
 	/* kernel image or not */

@@ -78,10 +78,10 @@ void counter_profile_t::check_headers(counter_profile_t const & rhs) const
 
 void counter_profile_t::build_ordered_samples(string const & filename)
 {
-	samples_db_t samples_db;
+	samples_odb_t samples_db;
 	char * err_msg;
 
-	int rc = db_open(&samples_db, filename.c_str(), DB_RDONLY,
+	int rc = odb_open(&samples_db, filename.c_str(), ODB_RDONLY,
 		sizeof(struct opd_header), &err_msg);
 
 	if (rc != EXIT_SUCCESS) {
@@ -101,8 +101,8 @@ void counter_profile_t::build_ordered_samples(string const & filename)
 
 	file_header.reset(new opd_header(head));
 
-	db_node_nr_t node_nr, pos;
-	db_node_t * node = db_get_iterator(&samples_db, &node_nr);
+	odb_node_nr_t node_nr, pos;
+	odb_node_t * node = odb_get_iterator(&samples_db, &node_nr);
 
 	for ( pos = 0 ; pos < node_nr ; ++pos) {
 		if (node[pos].key) {
@@ -112,7 +112,7 @@ void counter_profile_t::build_ordered_samples(string const & filename)
 		}
 	}
 
-	db_close(&samples_db);
+	odb_close(&samples_db);
 }
 
 u32 counter_profile_t::count(uint start, uint end) const

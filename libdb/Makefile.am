@@ -2,9 +2,9 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libutil
 
-noinst_LIBRARIES = libdb.a
+noinst_LIBRARIES = libodb.a
 
-libdb_a_SOURCES = \
+libodb_a_SOURCES = \
 	db_manage.c \
 	db_insert.c \
 	db_travel.c \
@@ -15,4 +15,4 @@ libdb_a_SOURCES = \
 noinst_PROGRAMS = db_test
 
 db_test_SOURCES = db_test.c
-db_test_LDADD = libdb.a
+db_test_LDADD = libodb.a

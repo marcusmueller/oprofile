@@ -46,7 +46,7 @@ common_libs =  \
 	../libutil++/libutil++.a \
 	../libop/libop.a \
 	../libutil/libutil.a \
-	../libdb/libdb.a
+	../libdb/libodb.a
 
 
 oprofpp_SOURCES = oprofpp.cpp oprofpp_options.cpp
@@ -65,4 +65,4 @@ op_merge_LDADD = \
 	../libop++/libop++.a \
 	../libutil++/libutil++.a \
 	../libutil/libutil.a \
-	../libdb/libdb.a
+	../libdb/libodb.a

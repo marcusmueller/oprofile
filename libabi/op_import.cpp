@@ -9,7 +9,7 @@
  */
 
 #include "abi.h"
-#include "db_hash.h"
+#include "odb_hash.h"
 #include "popt_options.h"
 #include "op_sample_file.h"
 
@@ -101,7 +101,7 @@ void Extractor::extract(T & targ, void const * src_, const char * sz, const char
 void import_from_abi(Abi const & abi, 
 		     void const * srcv, 
 		     size_t len, 
-		     samples_db_t * dest) throw (Abi_exception)
+		     samples_odb_t * dest) throw (Abi_exception)
 {
 	struct opd_header * head;
 	head = static_cast<opd_header *>(dest->base_memory);	
@@ -127,28 +127,28 @@ void import_from_abi(Abi const & abi,
 	// done extracting opd header
 
 	// begin extracting necessary parts of descr
-	db_node_nr_t node_nr;
-	ext.extract(node_nr, src, "sizeof_db_node_nr_t", "offsetof_descr_current_size");
-	src += abi.need("sizeof_db_descr_t");
+	odb_node_nr_t node_nr;
+	ext.extract(node_nr, src, "sizeof_odb_node_nr_t", "offsetof_descr_current_size");
+	src += abi.need("sizeof_odb_descr_t");
 	// done extracting descr
 
 	// skip node zero, it is reserved and contains nothing usefull
-	src += abi.need("sizeof_db_node_t");
+	src += abi.need("sizeof_odb_node_t");
 
 	// begin extracting nodes
-	unsigned int step = abi.need("sizeof_db_node_t");
+	unsigned int step = abi.need("sizeof_odb_node_t");
 	if (verbose)
 		cerr << "extracting " << node_nr << " nodes of " << step << " bytes each " << endl;
 
 	assert(src + (node_nr * step) <= begin + len);
 
-	for (db_node_nr_t i = 1 ; i < node_nr ; ++i, src += step) {
-		db_key_t key;
-		db_value_t val;
-		ext.extract(key, src, "sizeof_db_key_t", "offsetof_node_key");
-		ext.extract(val, src, "sizeof_db_value_t", "offsetof_node_value");
+	for (odb_node_nr_t i = 1 ; i < node_nr ; ++i, src += step) {
+		odb_key_t key;
+		odb_value_t val;
+		ext.extract(key, src, "sizeof_odb_key_t", "offsetof_node_key");
+		ext.extract(val, src, "sizeof_odb_value_t", "offsetof_node_value");
 		char * err_msg;
-		int rc = db_insert(dest, key, val, &err_msg);
+		int rc = odb_insert(dest, key, val, &err_msg);
 		if (rc != EXIT_SUCCESS) {
 			cerr << err_msg << endl;
 			free(err_msg);
@@ -191,7 +191,7 @@ main(int argc, char const ** argv)
 		int in_fd;
 		struct stat statb;
 		void * in;
-		samples_db_t dest;
+		samples_odb_t dest;
 		char * err_msg;
 		int rc;
 
@@ -200,10 +200,10 @@ main(int argc, char const ** argv)
 		assert((in = mmap(0, statb.st_size, PROT_READ, 
 				  MAP_PRIVATE, in_fd, 0)) != (void *)-1);
 
-		rc = db_open(&dest, output_filename.c_str(), DB_RDWR, 
+		rc = odb_open(&dest, output_filename.c_str(), ODB_RDWR, 
 			     sizeof(struct opd_header), &err_msg);
 		if (rc != EXIT_SUCCESS) {
-			cerr << "db_open() fail:\n"
+			cerr << "odb_open() fail:\n"
 			     << err_msg << endl;
 			free(err_msg);
 			exit(EXIT_FAILURE);
@@ -215,7 +215,7 @@ main(int argc, char const ** argv)
 			cerr << "caught abi exception: " << e.desc << endl;
 		}
 
-		db_close(&dest);
+		odb_close(&dest);
 
 		assert(munmap(in, statb.st_size)==0);		
 	}
