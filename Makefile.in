@@ -1,12 +1,12 @@
-# $Id: Makefile.in,v 1.41 2001/11/26 21:44:34 phil_e Exp $
+# $Id: Makefile.in,v 1.42 2001/12/01 21:16:48 phil_e Exp $
 
 .PHONY: all install clean distclean maintainerclean uninstall tags
 
 # take care: order of sub-dir build is meaningfull.
 
 all:
-	$(MAKE) -C events
 	$(MAKE) -C util
+	$(MAKE) -C events
 	$(MAKE) -C module
 	$(MAKE) -C dae
 	$(MAKE) -C pp
@@ -18,8 +18,8 @@ install.kernel: all
 	$(MAKE) -C module install DESTDIR=$(DESTDIR)
 
 install.user: all
-	$(MAKE) -C events install DESTDIR=$(DESTDIR)
 	$(MAKE) -C util install DESTDIR=$(DESTDIR)
+	$(MAKE) -C events install DESTDIR=$(DESTDIR)
 	$(MAKE) -C dae install DESTDIR=$(DESTDIR)
 	$(MAKE) -C pp install DESTDIR=$(DESTDIR)
 	$(MAKE) -C doc install DESTDIR=$(DESTDIR)
@@ -36,8 +36,8 @@ uninstall:
 
 clean:
 	rm -f *.o
-	$(MAKE) -C events clean
 	$(MAKE) -C util clean
+	$(MAKE) -C events clean
 	$(MAKE) -C module clean
 	$(MAKE) -C dae clean
 	$(MAKE) -C pp clean

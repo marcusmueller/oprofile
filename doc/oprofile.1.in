@@ -168,7 +168,7 @@ give detailed samples for all symbols
 .br
 .TP
 .BI "--output-linenr-info -o"
-output filename:linenr info for all samples, usable only with --list-all-symbols-details
+output filename:linenr info for all samples, usable only with --list-all-symbols-details, --list-symbol and --list-symbols
 .br
 .TP
 .BI "--demangle -d"

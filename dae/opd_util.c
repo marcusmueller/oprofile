@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.25 2001/11/30 23:37:59 phil_e Exp $ */
+/* $Id: opd_util.c,v 1.26 2001/12/01 21:16:48 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -826,19 +826,3 @@ int opd_move_regular_file(const char *new_dir,
 	return ret;
 }
  
-/**
- * opd_poptGetContext - wrapper for popt
- *
- * Use this instead of poptGetContext to cope with
- * different popt versions. 
- */
-poptContext opd_poptGetContext(const char * name,
-		int argc, const char ** argv,
-		const struct poptOption * options, int flags)
-{
-#ifdef CONST_POPT
-	return poptGetContext(name, argc, argv, options, flags); 
-#else
-	return poptGetContext((char *)name, argc, (char **)argv, options, flags); 
-#endif
-}

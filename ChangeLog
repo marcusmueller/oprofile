@@ -1,5 +1,27 @@
 2001-12-01  Philippe Elie  <ph_e@club-internet.fr>
 
+	* Makefile.in: build util sub-dir first
+
+	* dae/opd_util.h:
+	* dae/opd_util.c: move opd_GetContext() ...
+	* util/opd_popt.h:
+	* util/opd_popt.c: in these new files
+
+	* pp/oprofpp.cpp:
+	* pp/opf_filter.cpp:
+	* pp/op_time.cpp:
+	* dae/oprofiled.c: free the poptContext + cleanup popt
+
+	* events/op_help.c:
+	* events/Makefile.in: use the popt library
+
+	* pp/oprofpp.cpp: allow to use --output-linenr-info with
+	  --list-symbols.
+	* doc/oprofile.1.in:
+	* doc/oprofile.sgml: reflect it
+
+2001-12-01  Philippe Elie  <ph_e@club-internet.fr>
+
 	* dae/opd_proc.c:
 	* dae/opd_util.c:
 	* dae/opd_util.h:

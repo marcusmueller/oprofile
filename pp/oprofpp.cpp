@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.11 2001/11/30 23:38:02 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.12 2001/12/01 21:16:48 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -20,6 +20,7 @@
 #include <sstream>
 
 #include "oprofpp.h"
+#include "../util/op_popt.h"
  
 static int showvers;
 static char *gproffile;
@@ -58,19 +59,9 @@ static poptOption options[] = {
 static void opp_get_options(int argc, const char **argv)
 {
 	poptContext optcon;
-	char c; 
 	const char *file;
 	
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
-
-	c=poptGetNextOpt(optcon);
-
-	if (c < -1) {
-		fprintf(stderr, "oprofpp: %s: %s\n",
-			poptBadOption(optcon, POPT_BADOPTION_NOALIAS),
-			poptStrerror(c));
-		quit_error(&optcon, NULL);
-	}
 
 	if (showvers) {
 		printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
@@ -79,19 +70,21 @@ static void opp_get_options(int argc, const char **argv)
  
 	if (!list_all_symbols_details && !list_symbols && 
 	    !gproffile && !symbol)
-		quit_error(&optcon, "oprofpp: no mode specified. What do you want from me ?\n");
+		quit_error(optcon, "oprofpp: no mode specified. What do you want from me ?\n");
 
 	/* check only one major mode specified */
 	if ((list_all_symbols_details + list_symbols + (gproffile != 0) + (symbol != 0)) > 1)
-		quit_error(&optcon, "oprofpp: must specify only one output type.\n");
+		quit_error(optcon, "oprofpp: must specify only one output type.\n");
 
-	if (output_linenr_info && !list_all_symbols_details && !symbol)
-		quit_error(&optcon, "oprofpp: cannot list debug info without -L or -s option.\n");
+	if (output_linenr_info && !list_all_symbols_details && !symbol && !list_symbols)
+		quit_error(optcon, "oprofpp: cannot list debug info without -L or -s option.\n");
  
 	/* non-option file, either a sample or binary image file */
 	file = poptGetArg(optcon);
 
-	opp_treat_options(file, &optcon);
+	opp_treat_options(file, optcon);
+
+	poptFreeContext(optcon);
 }
 
 /**
@@ -132,6 +125,8 @@ void opp_bfd::output_linenr(uint sym_idx, uint offset)
 struct opp_count {
 	asymbol *sym;
 	counter_array_t count;
+	u32 start;	// vma of sym
+	uint sym_idx;
 };
 
 /**
@@ -167,12 +162,18 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 		for (j = start; j < end; j++)
 			accumulate_samples(scounts[i].count, j);
 
+		scounts[i].start = start;
+		scounts[i].sym_idx = i;
+
 		tot += scounts[i].count;
 	}
 
 	std::sort(scounts.begin(), scounts.end(), countcomp);
 
 	for (i = 0; i < abfd.syms.size(); i++) {
+
+		abfd.output_linenr(scounts[i].sym_idx, scounts[i].start);
+
 		printf_symbol(scounts[i].sym->name);
 
 		if (scounts[i].count[ctr]) {
@@ -181,6 +182,7 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 			       (((double)scounts[i].count[ctr]) / tot[ctr])*100.0, 
 			       scounts[i].count[ctr]);
 		} else {
+			// FIXME: necessary to output zero samples ?
 			printf(" (0 samples)\n");
 		}
 	}

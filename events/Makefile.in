@@ -14,8 +14,8 @@ uninstall:
 clean:
 	rm -f *.o *.d op_help
 
-op_help: op_events.o op_events_desc.o op_help.o
-	$(CC) $(CFLAGS) $(INCLUDES) -g $^ -o $@
+op_help: op_events.o op_events_desc.o op_help.o ../util/op_popt.o
+	$(CC) $(CFLAGS) $(INCLUDES) -g $^ -o $@ -lpopt
 
 %.o: %c
 	$(CC) -c $(CFLAGS) $(INCLUDE) -g $< -o $@

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.50 2001/11/30 23:38:00 phil_e Exp $ */
+/* $Id: oprofiled.c,v 1.51 2001/12/01 21:16:48 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -16,6 +16,7 @@
  */
 
 #include "oprofiled.h"
+#include "../util/op_popt.h"
 
 extern double cpu_speed;
 extern u32 ctr_count[OP_MAX_COUNTERS];
@@ -295,21 +296,10 @@ static void opd_options(int argc, char const *argv[])
 	poptContext optcon;
 	int ret;
 	uint i;
-	char c;
 	/* should be sufficient to hold /proc/sys/dev/oprofile/%d/yyyy */
 	char filename[PATH_MAX + 1];
 
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
-
-	c=poptGetNextOpt(optcon);
-
-	if (c < -1) {
-		fprintf(stderr, "oprofiled: %s: %s\n",
-			poptBadOption(optcon, POPT_BADOPTION_NOALIAS),
-			poptStrerror(c));
-		poptPrintHelp(optcon, stderr, 0);
-		exit(1);
-	}
 
 	if (showvers) {
 		printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
@@ -367,6 +357,8 @@ static void opd_options(int argc, char const *argv[])
 
 	if (cpu_speed_str && strlen(cpu_speed_str))
 		sscanf(cpu_speed_str, "%lf", &cpu_speed);
+
+	poptFreeContext(optcon);
 }
 
 /**

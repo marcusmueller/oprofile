@@ -1,17 +1,21 @@
 CXXFLAGS=@CXXFLAGS@ -Wall -pedantic -W -Wunused -Wmissing-prototypes
+CFLAGS=-ansi -pedantic -Wall -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
 
 .PHONY: all clean install
 
-all: string_manip.o child_reader.o file_manip.o
+all: string_manip.o child_reader.o file_manip.o op_popt.o
 
 clean: 
 	rm -f *.o *.d
 
 install: all
 
+%.o: %c
+	$(CC) -c $(CFLAGS) $(INCLUDE) -g $< -o $@
+
 %.o: %cpp
 	$(CXX) -c $(CXXFLAGS) -g $< -o $@
 
-ALL_SOURCES = string_manip.cpp file_manip.cpp child_reader.cpp
+ALL_SOURCES = string_manip.cpp file_manip.cpp child_reader.cpp op_popt.c
 
 include ../Rules.make

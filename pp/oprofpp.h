@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.28 2001/12/01 03:56:07 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.29 2001/12/01 21:16:48 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -63,9 +63,9 @@ char *cplus_demangle (const char *mangled, int options);
 			printf(args); \
 	} while (0)
 
-void opp_treat_options(const char * filename, poptContext * optcon);
+void opp_treat_options(const char * filename, poptContext optcon);
 std::string demangle_symbol(const char* symbol);
-void quit_error(poptContext * optcon, char const *err);
+void quit_error(poptContext optcon, char const *err);
 std::string demangle_filename(const std::string & samples_filename);
 
 // defined in oprofpp_util.cpp

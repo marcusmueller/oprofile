@@ -766,7 +766,7 @@ Some interesting options of the post-processor :
 		<term><option>&mdash;output-linenr-info</option></term>
 		<term><option>-o</option></term>
 		<listitem><para>
-		Add filename::linenr info for all samples, usable only with &mdash;list-all-symbols-details or &mdash;list-symbol.
+		Add filename::linenr info for all samples, usable only with &mdash;list-all-symbols-details, &mdash;list-symbol and &mdash;list-symbols.
 		</para></listitem>
 	</varlistentry>
 </variablelist>

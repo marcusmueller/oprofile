@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.7 2001/12/01 03:56:07 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.8 2001/12/01 21:16:48 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -91,11 +91,11 @@ std::string demangle_filename(const std::string & samples_filename)
  *
  * err may be NULL
  */
-void quit_error(poptContext * optcon, char const *err)
+void quit_error(poptContext optcon, char const *err)
 {
 	if (err)
 		fprintf(stderr, err); 
-	poptPrintHelp(*optcon, stderr, 0);
+	poptPrintHelp(optcon, stderr, 0);
 	exit(EXIT_FAILURE);
 }
  
@@ -121,7 +121,7 @@ void quit_error(poptContext * optcon, char const *err)
  *
  * post-condition: samplefile and imagefile are setup
  */
-void opp_treat_options(const char* file, poptContext * optcon)
+void opp_treat_options(const char* file, poptContext optcon)
 {
 	const char *file_backup_str;
 	char *file_ctr_str;

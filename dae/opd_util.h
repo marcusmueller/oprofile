@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.19 2001/11/30 23:38:00 phil_e Exp $ */
+/* $Id: opd_util.h,v 1.20 2001/12/01 21:16:48 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -65,11 +65,6 @@ struct opd_fentry {
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/* ugh */
-poptContext opd_poptGetContext(const char * name,
-                int argc, const char ** argv,
-                const struct poptOption * options, int flags);
 
 #ifdef MALLOC_OK
 #define OP_ATTRIB_MALLOC	__attribute__((malloc))

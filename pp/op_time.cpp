@@ -1,4 +1,21 @@
-// TODO GPL
+/* COPYRIGHT (C) 2001 Philippe Elie
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * first written by P.Elie, many cleanup by John Levon
+ */
+
 #include <popt.h>
 #include <stdlib.h>
 
@@ -12,6 +29,7 @@
 #include "oprofpp.h"
 
 #include "../util/file_manip.h"
+#include "../util/op_popt.h"
 
 using std::string;
 using std::list;
@@ -59,21 +77,9 @@ static struct poptOption options[] = {
 static void get_options(int argc, char const * argv[])
 {
 	poptContext optcon;
-	char c;
 	char const * file;
 
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
-
-	c = poptGetNextOpt(optcon);
-
-	if (c < -1) {
-		fprintf(stderr, "op_time: %s: %s\n",
-			poptBadOption(optcon, POPT_BADOPTION_NOALIAS),
-			poptStrerror(c));
-
-		poptPrintHelp(optcon, stderr, 0);
-	        exit(EXIT_FAILURE);
-	}
 
 	if (showvers) {
 		printf("op_time: %s : " VERSION_STRING " compiled on "
@@ -88,6 +94,8 @@ static void get_options(int argc, char const * argv[])
 
 	if (ctr == -1)
 		ctr = 0;
+
+	poptFreeContext(optcon);
 }
 
 /**

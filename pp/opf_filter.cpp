@@ -27,7 +27,8 @@
 
 #include <stdio.h>
 #include <fnmatch.h>
-#include <popt.h>
+
+#include "../util/op_popt.h"
 
 using std::vector;
 using std::set;
@@ -1080,20 +1081,8 @@ static struct poptOption options[] = {
 static void get_options(int argc, char const * argv[])
 {
 	poptContext optcon;
-	char c;
 
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
-
-	c = poptGetNextOpt(optcon);
-
-	if (c < -1) {
-		fprintf(stderr, "opf_filter: %s: %s\n",
-			poptBadOption(optcon, POPT_BADOPTION_NOALIAS),
-			poptStrerror(c));
-
-		poptPrintHelp(optcon, stderr, 0);
-	        exit(EXIT_FAILURE);
-	}
 
 	if (showvers) {
 		printf("opf_filter: %s : " VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n", argv[0]);
@@ -1110,7 +1099,9 @@ static void get_options(int argc, char const * argv[])
 
 	list_all_symbols_details = 1;
 
-	opp_treat_options(file, &optcon);
+	opp_treat_options(file, optcon);
+
+	poptFreeContext(optcon);
 }
 
 //---------------------------------------------------------------------------
