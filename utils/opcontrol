@@ -1039,7 +1039,7 @@ do_save_session () {
 	fi
 
 	if ! test -e $CURRENT_SAMPLES_DIR; then
-		echo "$CURRENT_SAMPLES_DIR doesn't exist: nothing to save"
+		echo "$CURRENT_SAMPLES_DIR doesn't exist: nothing to save" >&2
 		exit 0
 	fi
 
