@@ -29,7 +29,7 @@ pid_t op_read_lock_file(char const * file)
 		return 0;
 
 	if (fscanf(fp, "%d", &value) != 1) {
-	fclose(fp);
+		fclose(fp);
 		return 0;
 	}
 
