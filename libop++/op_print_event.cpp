@@ -23,7 +23,7 @@ using std::setw;
 using std::setfill;
 
 void op_print_event(ostream & out, int counter_nr, op_cpu cpu_type,
-		    u8 type, u8 um, u32 count)
+		    u8 type, u16 um, u32 count)
 {
 	char const * typenamep;
 	char const * typedescp;

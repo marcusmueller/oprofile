@@ -640,6 +640,15 @@ uint oprof_start::get_unit_mask(op_event_descr const & descr)
 	get_unit_mask_part(descr, 4, check4->isChecked(), mask);
 	get_unit_mask_part(descr, 5, check5->isChecked(), mask);
 	get_unit_mask_part(descr, 6, check6->isChecked(), mask);
+	get_unit_mask_part(descr, 7, check7->isChecked(), mask);
+	get_unit_mask_part(descr, 8, check8->isChecked(), mask);
+	get_unit_mask_part(descr, 9, check9->isChecked(), mask);
+	get_unit_mask_part(descr, 10, check10->isChecked(), mask);
+	get_unit_mask_part(descr, 11, check11->isChecked(), mask);
+	get_unit_mask_part(descr, 12, check12->isChecked(), mask);
+	get_unit_mask_part(descr, 13, check13->isChecked(), mask);
+	get_unit_mask_part(descr, 14, check14->isChecked(), mask);
+	get_unit_mask_part(descr, 15, check15->isChecked(), mask);
 	return mask;
 }
 
@@ -652,6 +661,15 @@ void oprof_start::hide_masks()
 	check4->hide();
 	check5->hide();
 	check6->hide();
+	check7->hide();
+	check8->hide();
+	check9->hide();
+	check10->hide();
+	check11->hide();
+	check12->hide();
+	check13->hide();
+	check14->hide();
+	check15->hide();
 }
 
 void oprof_start::setup_unit_masks(op_event_descr const & descr)
@@ -677,6 +695,15 @@ void oprof_start::setup_unit_masks(op_event_descr const & descr)
 			case 4: check = check4; break;
 			case 5: check = check5; break;
 			case 6: check = check6; break;
+			case 7: check = check7; break;
+			case 8: check = check8; break;
+			case 9: check = check9; break;
+			case 10: check = check10; break;
+			case 11: check = check11; break;
+			case 12: check = check12; break;
+			case 13: check = check13; break;
+			case 14: check = check14; break;
+			case 15: check = check15; break;
 		}
 		check->setText(um->um[i].desc);
 		if (um->unit_type_mask == utm_exclusive) {

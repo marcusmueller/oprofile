@@ -124,7 +124,7 @@ static int __init enable_apic(void)
 		goto not_local_p6_apic;
 
 	/* LVT0,LVT1,LVTT,LVTPC */
-	if (GET_APIC_MAXLVT(apic_read(APIC_LVR)) != 4)
+	if (GET_APIC_MAXLVT(apic_read(APIC_LVR)) < 4)
 		goto not_local_p6_apic;
 
 	/* IA32 V3, 7.4.14.1 */
@@ -190,7 +190,8 @@ static int __init check_cpu_ok(void)
 	if (sysctl.cpu_type != CPU_PPRO &&
 		sysctl.cpu_type != CPU_PII &&
 		sysctl.cpu_type != CPU_PIII &&
-		sysctl.cpu_type != CPU_ATHLON)
+		sysctl.cpu_type != CPU_ATHLON &&
+		sysctl.cpu_type != CPU_P4)
 		return 0;
 
 	return 1;

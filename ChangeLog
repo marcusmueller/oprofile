@@ -1,3 +1,33 @@
+2002-09-25  John Levon  <levon@movementarian.org>
+
+	* module/x86/op_nmi.c: OP_MAX_CPUS is not necessarily
+	  static so use NR_CPUS for array instead. Fix a prototype.
+ 
+2002-09-23  Graydon Hoare  <graydon@redhat.com>
+ 
+	* doc/oprofile.xml: Add some P4 documentation.
+	* configure.in: Add detection of different stylesheet paths.
+	* doc/xsl/xhtml.xsl.in: Parameterize by configure's result.
+	* doc/xsl/xhtml.xsl: Remove.
+	* dae/opd_sample_files.c: Change unit mask from 8 to 16 bits.
+	* gui/oprof_start.cpp: Change number of unit masks from 7 to 16.
+	* gui/ui/oprof_start.base.ui: Likewise.
+	* libop/op_cpu_type.c: Add P4 CPU type.
+	* libop/op_events.h: Change unit mask bit width, number.
+	* libop/op_events.c: Add P4 events, unit masks.
+	* libop_op_hw_config.h: Set OP_MAX_COUNTERS to 8.
+	* libop++/op_print_event.cpp: Change unit mask bit width.
+	* libop++/op_print_event.h: Likewise.
+	* module/oprofile.c: Add extra sysctls for counters 5-8.
+	* module/x86/Makefile.in: Add op_model_p4.o to obj list.
+	* module/x86/cpu_type.c: Change CPU identification to handle P4.
+	* module/x86/op_apic.c: (enable_apic): APIC_MAXLVT < 4, not != 4.
+	(check_cpu_ok): Accept CPU_P4.
+	* module/x86/op_model_p4.c: New file.
+	* module/x86/op_nmi.c: (get_model): Handle CPU_P4.
+	Add sysctl names for counters 5-8.
+	* module/x86/op_x86_model.h: Declare extern op_p4_spec.
+
 2002-09-24  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* dae/opd_image.c:
@@ -21,6 +51,8 @@
 	* utils/op_start_25: 2.5 patch start script
  
 2002-09-23  John Levon  <levon@movementarian.org>
+  
+  	* dae/opd_image.c:
 
 	* libop/op_cpu_type.c: fix arrays
  

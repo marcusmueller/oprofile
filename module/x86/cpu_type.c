@@ -36,17 +36,25 @@ __init op_cpu get_cpu_type(void)
 			return CPU_ATHLON;
 
 		case X86_VENDOR_INTEL:
-			/* Less than a P6-class processor */
-			if (family != 6)
+			switch (family) {
+			default:
 				return CPU_RTC;
-
-			if (model > 5)
-				return CPU_PIII;
-			else if (model > 2)
-				return CPU_PII;
-
-			return CPU_PPRO;
-
+			case 6:
+				/* A P6-class processor */
+				if (model > 5)
+					return CPU_PIII;
+				else if (model > 2)
+					return CPU_PII;
+				return CPU_PPRO;
+			case 0xf:
+				if (model <= 3)
+					/* a Pentium 4 processor */
+					return CPU_P4;
+				else
+					/* Do not know what it is */
+					return CPU_RTC;
+			}
+			
 		default:
 			return CPU_RTC;
 	}

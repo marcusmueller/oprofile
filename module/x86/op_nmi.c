@@ -16,7 +16,7 @@
 #include "op_util.h"
 #include "op_x86_model.h"
 
-static struct op_msrs cpu_msrs[OP_MAX_CPUS];
+static struct op_msrs cpu_msrs[NR_CPUS];
 static struct op_x86_model_spec const * model = NULL;
 
 static struct op_x86_model_spec const * get_model(void)
@@ -27,7 +27,9 @@ static struct op_x86_model_spec const * get_model(void)
 		case CPU_ATHLON:
 			model = &op_athlon_spec;
 			break;
-		
+		case CPU_P4:
+			model = &op_p4_spec;
+			break;
 		default:
 			model = &op_ppro_spec;
 			break;
@@ -49,13 +51,11 @@ asmlinkage void op_do_nmi(struct pt_regs * regs)
 
 /* ---------------- PMC setup ------------------ */
 
-static int pmc_setup_ctr(void * dummy)
+static void pmc_setup_ctr(void * dummy)
 {
 	uint const cpu = op_cpu_id();
 	struct op_msrs const * const msrs = &cpu_msrs[cpu];
-
 	get_model()->setup_ctrs(msrs);
-	return 0;
 }
 
 
@@ -326,7 +326,7 @@ static void pmc_deinit(void)
 }
  
 
-static char *names[] = { "0", "1", "2", "3", "4", };
+static char *names[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8" };
 
 static int pmc_add_sysctls(ctl_table * next)
 {

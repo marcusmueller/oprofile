@@ -23,6 +23,6 @@
  * to the stream.
  */
 void op_print_event(std::ostream & out, int counter_nr,
-	op_cpu cpu_type, u8 type, u8 um, u32 count);
+	op_cpu cpu_type, u8 type, u16 um, u32 count);
 
 #endif // OP_PRINT_EVENT

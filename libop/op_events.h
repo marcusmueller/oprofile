@@ -40,12 +40,12 @@ enum unit_mask_type {
 struct op_unit_mask {
 	u32 num;		/**< number of possible unit masks */
 	enum unit_mask_type unit_type_mask;
-	u8 default_mask;	/**< only the gui use it */
+	u16 default_mask;	/**< only the gui use it */
 	/** up to sixteen allowed unit masks */
 	struct op_described_um {
-		u8 value;
+		u16 value;
 		char const * desc;
-	} um[7];
+	} um[16];
 };
 
 /** Describe an event. */
@@ -81,7 +81,7 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type);
  *
  * \sa op_cpu, OP_EVENTS_OK
  */
-int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type);
+int op_check_events(int ctr, u8 ctr_type, u16 ctr_um, op_cpu cpu_type);
 
 /**
  * sanity check unit mask value
@@ -99,7 +99,7 @@ int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type);
  * the unit_mask through op_unit_descs
  * \sa op_unit_descs
  */
-int op_check_unit_mask(struct op_unit_mask const * allow, u8 um);
+int op_check_unit_mask(struct op_unit_mask const * allow, u16 um);
 
 /** a special constant meaning this event is available for all counters */
 #define CTR_ALL		(~0u)

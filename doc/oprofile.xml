@@ -56,12 +56,14 @@ necks in real-world systems.
 		</listitem>
 	</varlistentry>
 	<varlistentry>
-		<term>Intel P6 processor or AMD Athlon/Duron.</term>
+		<term>Intel P6 processor, Pentium 4 / Xeon, or AMD Athlon/Duron.</term>
 		<listitem>
-			A CPU with a P6 generation core is required. In marketing terms this translates to anything between an Intel
-			Pentium Pro (NOT Pentium Classics) and a Pentium III, including all Celerons.
-			The AMD Athlon &amp; Duron CPUs are also supported.
-			Other CPU types only support the RTC mode of oprofile, please see later in this manual for details. 
+
+			A CPU with either a P6 generation or Pentium 4 core is required. In marketing terms this
+			translates to anything between an Intel Pentium Pro (NOT Pentium Classics) and a Pentium 4 / Xeon,
+			including all Celerons.  The AMD Athlon &amp; Duron CPUs are also supported.  Other CPU types only
+			support the RTC mode of oprofile, please see later in this manual for details.
+
 		</listitem>
 	</varlistentry>
 	<varlistentry>
@@ -541,9 +543,10 @@ values into a count against a file offset for a given binary image, in order to 
 at a later time.
 </para>
 <para>
-If we use an event such as <constant>CPU_CLK_UNHALTED</constant> or <constant>INST_RETIRED</constant>, we can
-use the overflow counts as an estimate of actual time spent in each part of code. Alternatively we can
-profile interesting data such as the cache behaviour of routines with the other available counters.
+If we use an event such as <constant>CPU_CLK_UNHALTED</constant> or <constant>INST_RETIRED</constant>
+(<constant>GLOBAL_POWER_EVENTS</constant> or <constant>INSTR_RETIRED</constant>, respectively, on the Pentium 4), we can
+use the overflow counts as an estimate of actual time spent in each part of code. Alternatively we can profile interesting
+data such as the cache behaviour of routines with the other available counters.
 </para>
 <para>
 However there are several caveats. Firstly there are those issues listed in the Intel manual. There is a delay
@@ -587,7 +590,7 @@ Specifying too small a value can lead to overflow problems discussed previously.
 <title>OProfile in RTC mode</title>
 <para>
 Some CPU types do not provide the needed hardware support to use the hardware performance counters. This includes
-some laptops, classic Pentiums, and other CPU types not yet supported by OProfile (such as Cyrix and Pentium IV). 
+some laptops, classic Pentiums, and other CPU types not yet supported by OProfile (such as Cyrix). 
 On these machines, OProfile falls
 back to using the real-time clock interrupt to collect samples. This interrupt is also used by the <command>rtc</command>
 module: you cannot have both the oprofile and rtc modules loaded nor the rtc support compiled in the kernel.
@@ -609,6 +612,24 @@ Setting the value from the GUI should be straightforward. On the command line, y
 Note the sysctl tree described in the next section is different when the RTC is being used.  In particular,
 the file <filename>/proc/sys/dev/oprofile/rtc_value</filename> is used by the tools to set the desired RTC 
 sampling rate, and will reflect the actual sampling rate after profiling has started.
+</para>
+</sect2>
+
+<sect2 id="p4">
+<title>Pentium 4 support</title>
+<para>
+The Pentium 4 / Xeon performance counters are organized around 3 types of model specific registers (MSRs): 45 event
+selection control registers (ESCRs), 18 counter configuration control registers (CCCRs) and 18 counters. ESCRs describe a
+particular set of events which are to be recorded, and CCCRs bind ESCRs to counters and configure their
+operation. Unfortunately the relationship between these registers is quite complex; they cannot all be used with one
+another at any time. There is, however, a subset of 8 counters, 8 ESCRs, and 8 CCCRs which can be used independently of
+one another, so the Oprofile module only accesses those registers, treating them as a bank of 8 "normal" counters, similar
+to those in the P6 or Athlon families of CPU.
+</para>
+<para>
+There is currently no support for Precision Event-Based Sampling (PEBS), nor any advanced uses of the Debug Store
+(DS). Current support is limited to the conservative extension of Oprofile's existing interrupt-based model described
+above.
 </para>
 </sect2>
 
@@ -891,7 +912,8 @@ Some interesting options of the post-processor :
 	<varlistentry>
 		<term><option>--counter</option> nr</term>
 		<listitem><para>
-		Which counter (0 - N) to extract information for. N is dependent on your cpu type: 1 for Intel CPUs, 3 for Athlon based CPUs.
+		Which counter (0 - N) to extract information for. N is dependent on your cpu type: 1 for P6 generation CPUs, 
+		3 for Athlon based CPUs, 8 for Pentium 4 / Xeon CPUs.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

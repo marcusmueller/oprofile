@@ -44,5 +44,6 @@ struct op_x86_model_spec {
 
 extern struct op_x86_model_spec const op_ppro_spec;
 extern struct op_x86_model_spec const op_athlon_spec;
+extern struct op_x86_model_spec const op_p4_spec;
 
 #endif /* OP_X86_MODEL_H */

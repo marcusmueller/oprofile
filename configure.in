@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.105 2002/09/23 03:01:09 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.106 2002/09/25 14:46:46 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -260,6 +260,14 @@ AC_SUBST(BFD_CXXFLAGS)
 AC_PATH_XTRA 
 LIBS="$X_PRE_LIBS $LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"
 QT_DO_IT_ALL
+
+# try to find the docbook stylesheets
+if test -e /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/xhtml/docbook.xsl; then
+	db_xsl=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/xhtml/docbook.xsl
+else
+	db_xsl=/usr/share/sgml/docbook/xsl-stylesheets/xhtml/docbook.xsl
+fi
+AC_SUBST(db_xsl)
  
 # do NOT put tests here, they will fail in the case X is not installed !
  
@@ -281,6 +289,7 @@ AC_OUTPUT(make.common \
 	daemon/Makefile \
 	utils/Makefile \
 	doc/Makefile \
+	doc/xsl/xhtml.xsl \
 	doc/oprofile.1 \
 	pp/Makefile \
 	gui/Makefile \

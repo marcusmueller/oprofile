@@ -93,6 +93,244 @@ static struct op_unit_mask const um_moesi =
 	    {0x1, "(I)nvalid cache state"},
 	    {0x1f, "all MOESI cache state"} } };
 
+/* pentium 4 events */
+
+/* BRANCH_RETIRED */
+static struct op_unit_mask um_branch_retired =
+	{4, utm_bitmask, 0x0c, 
+	 { {0x01, "branch not-taken predicted"},
+	   {0x02, "branch not-taken mispredicted"},
+	   {0x04, "branch taken predicted"},
+	   {0x08, "branch taken mispredicted"} } };
+
+/* MISPRED_BRANCH_RETIRED */
+static struct op_unit_mask um_mispred_branch_retired =
+	{1, utm_bitmask, 0x01, 
+	 { {0x01, "retired instruction is non-bogus"} } };
+
+/* TC_DELIVER_MODE */
+static struct op_unit_mask um_tc_deliver_mode =
+	{8, utm_bitmask, 0x01, 
+	 { {0x01, "both logical processors in deliver mode"}, 
+	   {0x02, "logical processor 0 in deliver mode, 1 in build mode"}, 
+	   {0x04, "logical processor 0 in deliver mode, 1 in halt/clear/trans mode"},
+	   {0x08, "logical processor 0 in build mode, 1 in deliver mode"}, 
+	   {0x10, "both logical processors in build mode"}, 
+	   {0x20, "logical processor 0 in build mode, 1 in halt/clear/trans mode"}, 
+	   {0x40, "logical processor 0 in halt/clear/trans mode, 1 in deliver mode"}, 
+	   {0x80, "logical processor 0 in halt/clear/trans mode, 1 in build mode"} } };
+
+/* BPU_FETCH_REQUEST */
+static struct op_unit_mask um_bpu_fetch_request =
+	{1, utm_bitmask, 0x00, 
+	 {{0x01, "trace cache lookup miss"} } };
+
+/* ITLB_REFERENCE */
+static struct op_unit_mask um_itlb_reference =
+	{3, utm_bitmask, 0x07, 
+	 { {0x01, "ITLB hit"}, 
+	   {0x02, "ITLB miss"}, 
+	   {0x04, "uncacheable ITLB hit"} } };
+
+/* MEMORY_CANCEL */
+static struct op_unit_mask um_memory_cancel =
+	{2, utm_bitmask, 0x06, 
+	 { {0x04, "replayed because no store request buffer available"},
+	   {0x08, "conflicts due to 64k aliasing"} } };
+
+/* MEMORY_COMPLETE */
+static struct op_unit_mask um_memory_complete =
+	{2, utm_bitmask, 0x03, 
+	 { {0x01, "load split completed, excluding UC/WC loads"},
+	   {0x02, "any split stores completed"} } };
+
+/* LOAD_PORT_REPLAY */
+static struct op_unit_mask um_load_port_replay =
+	{1, utm_bitmask, 0x02, 
+	 { {0x02, "split load"} } };
+
+/* STORE_PORT_REPLAY */
+static struct op_unit_mask um_store_port_replay =
+	{1, utm_bitmask, 0x02, 
+	 { {0x02, "split store"} } };
+
+/* MOB_LOAD_REPLAY */
+static struct op_unit_mask um_mob_load_replay =
+	{4, utm_bitmask, 0x3a, 
+	 { {0x02, "replay cause: unknown store address"}, 
+	   {0x08, "replay cause: unknown store data"}, 
+	   {0x10, "replay cause: partial overlap between load and store"}, 
+	   {0x20, "replay cause: mismatched low 4 bits between load and store addr"} } };
+
+/* PAGE_WALK_TYPE */
+static struct op_unit_mask um_page_walk_type =
+	{2, utm_bitmask, 0x03, 
+	 { {0x01, "page walk for data TLB miss"}, 
+	   {0x02, "page walk for instruction TLB miss"} } };
+
+/* BSQ_CACHE_REFERENCE */
+static struct op_unit_mask um_bsq_cache_reference =	
+	{9, utm_bitmask, 0x7ff, 
+	 { {0x01, "read 2nd level cache hit shared"}, 
+	   {0x02, "read 2nd level cache hit exclusive"},
+	   {0x04, "read 2nd level cache hit modified"}, 
+	   {0x08, "read 3rd level cache hit shared"}, 
+	   {0x10, "read 3rd level cache hit exclusive"},
+	   {0x20, "read 3rd level cache hit modified"}, 
+	   {0x100, "read 2nd level cache miss"}, 
+	   {0x200, "read 3rd level cache miss"}, 
+	   {0x400, "writeback lookup from DAC misses 2nd level cache"} } };
+
+/* IOQ_ALLOCATION */
+/* IOQ_ACTIVE_ENTRIES */
+static struct op_unit_mask um_ioq =
+	{15, utm_bitmask, 0xefe1, 
+	 { {0x01, "bus request type bit 0"},  
+	   {0x02, "bus request type bit 1"},  
+	   {0x04, "bus request type bit 2"}, 
+	   {0x08, "bus request type bit 3"}, 
+	   {0x10, "bus request type bit 4"}, 
+	   {0x20, "count read entries"},  
+	   {0x40, "count write entries"}, 
+	   {0x80, "count UC memory access entries"},
+	   {0x100, "count WC memory access entries"}, 
+	   {0x200, "count write-through memory access entries"}, 
+	   {0x400, "count write-protected memory access entries"}, 
+	   {0x800, "count WB memory access entries"}, 
+	   {0x2000, "count own store requests"}, 
+	   {0x4000, "count other / DMA store requests"}, 
+	   {0x8000, "count HW/SW prefetch requests"} } };
+
+/* FSB_DATA_ACTIVITY */
+static struct op_unit_mask um_fsb_data_activity =	 
+	{6, utm_bitmask, 0x3f, 
+	 { {0x01, "count when this processor drives data onto bus"}, 
+	   {0x02, "count when this processor reads data from bus"}, 
+	   {0x04, "count when data is on bus but not sampled by this processor"}, 
+	   {0x08, "count when this processor reserves bus for driving"}, 
+	   {0x10, "count when other reserves bus and this processor will sample"}, 
+	   {0x20, "count when other reserves bus and this processor will not sample"} } };
+
+/* BSQ_ALLOCATION */
+/* BSQ_ACTIVE_ENTRIES */
+static struct op_unit_mask um_bsq =	
+	{13, utm_bitmask, 0x21, 
+	 { {0x01, "(r)eq (t)ype (e)ncoding, bit 0: see next event"}, 
+	   {0x02, "rte bit 1: 00=read, 01=read invalidate, 10=write, 11=writeback"}, 
+	   {0x04, "req len bit 0"}, 
+	   {0x08, "req len bit 1"}, 
+	   {0x20, "request type is input (0=output)"}, 
+	   {0x40, "request type is bus lock"}, 
+	   {0x80, "request type is cacheable"},
+	   {0x100, "request type is 8-byte chunk split across 8-byte boundary"}, 
+	   {0x200, "request type is demand (0=prefetch)"}, 
+	   {0x400, "request type is ordered"}, 
+	   {0x800, "(m)emory (t)ype (e)ncoding, bit 0: see next events"}, 
+	   {0x1000, "mte bit 1: see next event"}, 
+	   {0x2000, "mte bit 2: 000=UC, 001=USWC, 100=WT, 101=WP, 110=WB"} } };
+
+/* X87_ASSIST */
+static struct op_unit_mask um_x87_assist =
+	{5, utm_bitmask, 0x1f, 
+	 { {0x01, "handle FP stack underflow"}, 
+	   {0x02, "handle FP stack overflow"}, 
+	   {0x04, "handle x87 output overflow"}, 
+	   {0x08, "handle x87 output underflow"}, 
+	   {0x10, "handle x87 input assist"} } };
+
+/* SSE_INPUT_ASSIST */
+/* {PACKED,SCALAR}_{SP,DP}_UOP */
+/* {64,128}BIT_MMX_UOP */
+/* X87_FP_UOP */
+static struct op_unit_mask um_flame_uop =
+	{1, utm_bitmask, 0x8000, 
+	 { {0x8000, "count all uops of this type" } } };
+
+/* X87_SIMD_MOVES_UOP */
+static struct op_unit_mask um_x87_simd_moves_uop =
+	{2, utm_bitmask, 0x18, 
+	 { { 0x08, "count all x87 SIMD store/move uops"}, 
+	   { 0x10, "count all x87 SIMD load uops"} } };
+
+/* MACHINE_CLEAR */
+static struct op_unit_mask um_machine_clear =
+	{3, utm_bitmask, 0x1, 
+	 { {0x01, "count a portion of cycles the machine is cleared for any cause"}, 
+	   {0x40, "count cycles machine is cleared due to memory ordering issues"}, 
+	   {0x80, "count cycles machine is cleared due to self modifying code"} } };
+
+/* GLOBAL_POWER_EVENTS */
+static struct op_unit_mask um_global_power_events =
+	{1, utm_bitmask, 0x1, 
+	 { {0x01, "count cycles when processor is active"} } };
+
+/* TC_MS_XFER */
+static struct op_unit_mask um_tc_ms_xfer =
+	{1, utm_bitmask, 0x1, 
+	 { {0x01, "count TC to MS transfers"} } };
+
+/* UOP_QUEUE_WRITES */
+static struct op_unit_mask um_uop_queue_writes =
+	{3, utm_bitmask, 0x7, 
+	 { {0x01, "count uops written to queue from TC build mode"}, 
+	   {0x02, "count uops written to queue from TC deliver mode"}, 
+	   {0x04, "count uops written to queue from microcode ROM" } } };
+
+/* FRONT_END_EVENT */
+static struct op_unit_mask um_front_end_event =
+	{2, utm_bitmask, 0x1, 
+	 { {0x01, "count marked uops which are non-bogus"}, 
+	   {0x02, "count marked uops which are bogus"} } };
+
+/* EXECUTION_EVENT */
+static struct op_unit_mask um_execution_event =
+	{8, utm_bitmask, 0x1, 
+	 { {0x01, "count 1st marked uops which are non-bogus"}, 
+	   {0x02, "count 2ns marked uops which are non-bogus"}, 
+	   {0x04, "count 3rd marked uops which are non-bogus"}, 
+	   {0x08, "count 4th marked uops which are non-bogus"}, 
+	   {0x10, "count 1st marked uops which are bogus"}, 
+	   {0x20, "count 2nd marked uops which are bogus"}, 
+	   {0x40, "count 3rd marked uops which are bogus"}, 
+	   {0x80, "count 4th marked uops which are bogus"} } };
+
+/* REPLAY_EVENT */
+static struct op_unit_mask um_replay_event =
+	{2, utm_bitmask, 0x1, 
+	 { {0x01, "count marked uops which are non-bogus"}, 
+	   {0x02, "count marked uops which are bogus"} } };
+
+/* INSTR_RETIRED */
+static struct op_unit_mask um_instr_retired =
+	{4, utm_bitmask, 0x1, 
+	 { {0x01, "count non-bogus instructions which are not tagged"}, 
+	   {0x02, "count non-bogus instructions which are tagged"}, 
+	   {0x04, "count bogus instructions which are not tagged"}, 
+	   {0x08, "count bogus instructions which are tagged"} } };
+
+/* UOPS_RETIRED */
+static struct op_unit_mask um_uops_retired =
+	{2, utm_bitmask, 0x1, 
+	 { {0x01, "count marked uops which are non-bogus"}, 
+	   {0x02, "count marked uops which are bogus"} } };
+
+/* UOP_TYPE */
+static struct op_unit_mask um_uop_type =
+	{2, utm_bitmask, 0x2, 
+	 { {0x02, "count uops which are load operations"}, 
+	   {0x04, "count uops which are store operations"} } };
+
+/* RETIRED_MISPRED_BRANCH_TYPE */
+/* RETIRED_BRANCH_TYPE */
+static struct op_unit_mask um_branch_type =
+	{4, utm_bitmask, 0x1e, 
+	 { {0x02, "count conditional jumps"}, 
+	   {0x04, "count indirect call branches"}, 
+	   {0x08, "count return branches"}, 
+	   {0x10, "count returns, indirect calls or indirect jumps"} } };
+
+
+
 /* the following are just short cut for filling the table of event */
 #define OP_RTC		(1 << CPU_RTC)
 #define OP_ATHLON	(1 << CPU_ATHLON)
@@ -102,8 +340,32 @@ static struct op_unit_mask const um_moesi =
 #define OP_PII_PIII	(OP_PII | OP_PIII)
 #define OP_IA_ALL	(OP_PII_PIII | OP_PPRO)
 
+#define OP_P4           (1 << CPU_P4)
+
 #define CTR_0		(1 << 0)
 #define CTR_1		(1 << 1)
+
+/* the pentium 4 has a complex set of restrictions between its 18
+   counters, so we simplify it a little and say there are 8 counters. these
+   8 at least can be treated as entirely independent, although they can
+   each only count certain classes of events. these defines are also
+   present in module/x86/op_nmi.c. */
+
+#define CTR_BPU_0      (1 << 0)
+#define CTR_BPU_2      (1 << 1)
+#define CTR_BPU_ALL    (CTR_BPU_0 | CTR_BPU_2)
+
+#define CTR_MS_0       (1 << 2)
+#define CTR_MS_2       (1 << 3)
+#define CTR_MS_ALL     (CTR_MS_0 | CTR_MS_2)
+
+#define CTR_FLAME_0    (1 << 4)
+#define CTR_FLAME_2    (1 << 5)
+#define CTR_FLAME_ALL  (CTR_FLAME_0 | CTR_FLAME_2)
+
+#define CTR_IQ_4       (1 << 6)    /* #4 for compatibility with PEBS */
+#define CTR_IQ_5       (1 << 7)
+#define CTR_IQ_ALL     (CTR_IQ_4 | CTR_IQ_5)
 
 /* ctr allowed, allowed cpus, Event #, unit mask, name, min event value */
 
@@ -340,6 +602,86 @@ struct op_event const op_events[] = {
   { CTR_ALL, OP_ATHLON, 0xcf, &um_empty, "HARDWARE_INTERRUPTS", 
     "Number of taken hardware interrupts", 10,},
 
+  /* pentium 4 events */
+  { CTR_IQ_ALL,    OP_P4, 0x01, &um_branch_retired, "BRANCH_RETIRED", 
+    "retired branches", 3000},
+  { CTR_IQ_ALL,    OP_P4, 0x02, &um_mispred_branch_retired, "MISPRED_BRANCH_RETIRED", 
+    "retired mispredicted branches", 3000},
+  { CTR_MS_ALL,    OP_P4, 0x03, &um_tc_deliver_mode, "TC_DELIVER_MODE", 
+    "duration (in clock cycles) in the trace cache and decode engine", 3000},  
+  { CTR_BPU_ALL,   OP_P4, 0x04, &um_bpu_fetch_request, "BPU_FETCH_REQUEST", 
+    "instruction fetch requests from the branch predict unit", 3000},
+  { CTR_BPU_ALL,   OP_P4, 0x05, &um_itlb_reference, "ITLB_REFERENCE", 
+    "translations using the instruction translation lookaside buffer", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x06, &um_memory_cancel, "MEMORY_CANCEL", 
+    "cancelled requesets in data cache address control unit", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x07, &um_memory_complete, "MEMORY_COMPLETE", 
+    "completed load split, store split, uncacheable split, uncacheable load", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x08, &um_load_port_replay, "LOAD_PORT_REPLAY", 
+    "replayed events at the load port", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x09, &um_store_port_replay, "STORE_PORT_REPLAY", 
+    "replayed events at the store port", 3000},
+  { CTR_BPU_ALL,   OP_P4, 0x0a, &um_mob_load_replay, "MOB_LOAD_REPLAY", 
+    "replayed loads from the memory order buffer", 3000},
+  { CTR_BPU_ALL,   OP_P4, 0x0b, &um_page_walk_type, "PAGE_WALK_TYPE", 
+    "page walks by the page miss handler", 3000},
+  { CTR_BPU_ALL,   OP_P4, 0x0c, &um_bsq_cache_reference, "BSQ_CACHE_REFERENCE", 
+    "cache references seen by the bus unit", 3000},
+  { CTR_BPU_0,     OP_P4, 0x0d, &um_ioq, "IOQ_ALLOCATION", 
+    "bus transactions", 3000},
+  { CTR_BPU_2,     OP_P4, 0x0e, &um_ioq, "IOQ_ACTIVE_ENTRIES", 
+    "number of entries in the IOQ which are active", 3000},
+  { CTR_BPU_ALL,   OP_P4, 0x0f, &um_fsb_data_activity, "FSB_DATA_ACTIVITY", 
+    "DRDY or DBSY events on the front side bus", 3000},
+  { CTR_BPU_0,     OP_P4, 0x10, &um_bsq, "BSQ_ALLOCATION", 
+    "allocations in the bus sequence unit", 3000},
+  { CTR_BPU_2,     OP_P4, 0x11, &um_bsq, "BSQ_ACTIVE_ENTRIES", 
+    "number of entries in the bus sequence unit which are active", 3000},
+  { CTR_IQ_ALL,    OP_P4, 0x12, &um_x87_assist, "X87_ASSIST", 
+    "retired x87 instructions which required special handling", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x13, &um_flame_uop, "SSE_INPUT_ASSIST", 
+    "input assists requested for SSE or SSE2 operands", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x14, &um_flame_uop, "PACKED_SP_UOP", 
+    "packed single precision uops", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x15, &um_flame_uop, "PACKED_DP_UOP", 
+    "packed double precision uops", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x16, &um_flame_uop, "SCALAR_SP_UOP", 
+    "scalar single precision uops", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x17, &um_flame_uop, "SCALAR_DP_UOP", 
+    "scalar double presision uops", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x18, &um_flame_uop, "64BIT_MMX_UOP", 
+    "64 bit SIMD MMX instructions", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x19, &um_flame_uop, "128BIT_MMX_UOP", 
+    "128 bit SIMD SSE2 instructions", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x1a, &um_flame_uop, "X87_FP_UOP", 
+    "x87 floating point uops", 3000},
+  { CTR_FLAME_ALL, OP_P4, 0x1b, &um_x87_simd_moves_uop, "X87_SIMD_MOVES_UOP", 
+    "x87 FPU, MMX, SSE, or SSE2 loads, stores and reg-to-reg moves", 3000},
+  { CTR_IQ_ALL,    OP_P4, 0x1c, &um_machine_clear, "MACHINE_CLEAR", 
+    "cycles with entire machine pipeline cleared", 3000},
+  { CTR_BPU_ALL,   OP_P4, 0x1d, &um_global_power_events, "GLOBAL_POWER_EVENTS", 
+    "time during which processor is not stopped", 3000},
+  { CTR_MS_ALL,    OP_P4, 0x1e, &um_tc_ms_xfer, "TC_MS_XFER", 
+    "number of times uops deliver changed from TC to MS ROM", 3000},
+  { CTR_MS_ALL,    OP_P4, 0x1f, &um_uop_queue_writes, "UOP_QUEUE_WRITES", 
+    "number of valid uops written to the uop queue", 3000},
+  { CTR_IQ_ALL,    OP_P4, 0x20, &um_front_end_event, "FRONT_END_EVENT", 
+    "retired uops, tagged with front-end tagging", 3000},
+  { CTR_IQ_ALL,    OP_P4, 0x21, &um_execution_event, "EXECUTION_EVENT", 
+    "retired uops, tagged with execution tagging", 3000},
+  { CTR_IQ_ALL,    OP_P4, 0x22, &um_replay_event, "REPLAY_EVENT", 
+    "retired uops, tagged with replay tagging", 3000},
+  { CTR_IQ_ALL,    OP_P4, 0x23, &um_instr_retired, "INSTR_RETIRED", 
+    "retired instructions", 3000},
+  { CTR_IQ_ALL,    OP_P4, 0x24, &um_uops_retired, "UOPS_RETIRED", 
+    "retired uops", 3000},
+  { CTR_IQ_ALL,    OP_P4, 0x25, &um_uop_type, "UOP_TYPE", 
+    "type of uop tagged by front-end tagging", 3000},
+  { CTR_MS_ALL,    OP_P4, 0x26, &um_branch_type, "RETIRED_MISPRED_BRANCH_TYPE", 
+    "retired mispredicted branched, selected by type", 3000},
+  { CTR_MS_ALL,    OP_P4, 0x27, &um_branch_type, "RETIRED_BRANCH_TYPE", 
+    "retired branches, selected by type", 3000},
+
   /* other CPUs */
   { CTR_0, OP_RTC, 0xff, &um_empty, "RTC_Interrupts", 
     "RTC interrupts/sec (rounded up to power of two)", 2,},
@@ -362,7 +704,7 @@ u32 const op_nr_events = (sizeof(op_events)/sizeof(op_events[0]));
  * > 0 otherwise, in this case allow->um[return value - 1] == um so the
  * caller can access to the description of the unit_mask.
  */
-int op_check_unit_mask(struct op_unit_mask const * allow, u8 um)
+int op_check_unit_mask(struct op_unit_mask const * allow, u16 um)
 {
 	u32 i, mask;
 
@@ -439,10 +781,12 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type)
  *
  * 3 AMD Athlon
  *
+ * 6 Pentium 4 / Xeon
+ *
  * The function returns bitmask of failure cause
  * 0 otherwise
  */
-int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type)
+int op_check_events(int ctr, u8 ctr_type, u16 ctr_um, op_cpu cpu_type)
 {
 	int ret = OP_OK_EVENT;
 	u32 i;

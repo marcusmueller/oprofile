@@ -796,7 +796,7 @@ static ctl_table oprof_table[] = {
 	{ 1, "nr_interrupts", &sysctl.nr_interrupts, sizeof(int), 0444, NULL, &get_nr_interrupts, NULL, },
 	{ 1, "notesize", &sysctl_parms.note_size, sizeof(int), 0644, NULL, &lproc_dointvec, NULL, },
 	{ 1, "cpu_type", &sysctl.cpu_type, sizeof(int), 0444, NULL, &lproc_dointvec, NULL, },
-	{ 0, }, { 0, }, { 0, }, { 0, },
+	{ 0, }, { 0, }, { 0, }, { 0, }, { 0, }, { 0, }, { 0, }, { 0, },
 	{ 0, },
 };
 

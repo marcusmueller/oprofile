@@ -25,6 +25,7 @@ typedef enum {
 	CPU_ATHLON, /**< AMD P6 series */
 	CPU_TIMER_INT, /**< CPU using the timer interrupt */
 	CPU_RTC, /**< other CPU to use the RTC */
+	CPU_P4,  /**< Pentium 4 / Xeon series */
 	MAX_CPU_TYPE
 } op_cpu;
 
