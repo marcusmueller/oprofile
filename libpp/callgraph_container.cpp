@@ -33,24 +33,6 @@ using namespace std;
 
 namespace {
 
-/// this comparator is used to partition cg filename by identical caller
-/// allowing to avoid (partially) some redundant bfd open
-/// \sa callgrap_container::populate()
-struct compare_cg_filename {
-	bool operator()(string const & lhs, string const & rhs) const;
-};
-
-
-bool
-compare_cg_filename::operator()(string const & lhs, string const & rhs) const
-{
-	parsed_filename plhs = parse_filename(lhs);
-	parsed_filename prhs = parse_filename(rhs);
-
-	return plhs.lib_image < prhs.lib_image;
-}
-
-
 bool operator==(cg_symbol const & lhs, cg_symbol const & rhs)
 {
 	less_symbol cmp_symb;

@@ -1,3 +1,10 @@
+2004-02-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/format_output.cpp: use "self/child" for header
+	* libutil++/string_manip.cpp: format_percent() return "0" if
+	  value == 0.0
+	* libpp/callgraph_container.cpp: remove some dead code.
+
 2004-02-16  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* module/compat24.h:

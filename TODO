@@ -6,13 +6,11 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8 release
 -----------
 
- o print "0" not "0.0e+00". should we consider reworking opstack output
-format? make the headers more explanative
+ o should we consider reworking opstack output format?
  o TRACE_END is no longer sent by the driver, keep it a bit for compatibility
  o callgraph_container.cpp: the inner loop in add() is very fragile!
  o We must define and choose the meaning of output
- o recursive call count are wrong. FIXME: unsure but now I think it comes from
-  the way we show results, ours results are ok.
+ o self sample for recursion are wrong
  o Test all other opstack options.
  o review opstack documentation, improve it by giving examples of output and
   how to interpret it.
@@ -20,7 +18,8 @@ format? make the headers more explanative
  o opstack --acumulate (fix it or inhibit) ?
 
  o callgraph patch: better way to skip ignored backtrace ?
- o can daemon avoid to hack about last_is_kernel ?
+ o can daemon avoid to hack about last_is_kernel ? No, non callgraph driver
+  in 2.6 get the same problem and we must be compatible.
 
 0.9 release
 -----------

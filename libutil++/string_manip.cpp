@@ -106,6 +106,9 @@ string const format_percent(double value, size_t int_width, size_t fract_width)
 {
 	ostringstream os;
 
+	if (value == 0.0)
+		return string(int_width + fract_width, ' ') + "0";
+
 	if (value > .001) {
 		// os << fixed << value unsupported by gcc 2.95
 		os.setf(ios::fixed, ios::floatfield);

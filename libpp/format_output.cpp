@@ -452,9 +452,9 @@ cg_formatter::cg_formatter(callgraph_container const & profile_)
 	total_count_callee = profile.samples_count();
 
 	format_map[ff_vma] = field_description(9, "vma", &cg_formatter::format_vma);
-	format_map[ff_nr_samples] = field_description(16, "samples", &cg_formatter::format_nr_samples);
+	format_map[ff_nr_samples] = field_description(16, "self/child", &cg_formatter::format_nr_samples);
 	format_map[ff_nr_samples_cumulated] = field_description(16, "cum. samples", &cg_formatter::format_nr_cumulated_samples);
-	format_map[ff_percent] = field_description(16, "%", &cg_formatter::format_percent);
+	format_map[ff_percent] = field_description(16, "self/child %", &cg_formatter::format_percent);
 	format_map[ff_percent_cumulated] = field_description(16, "cum. %", &cg_formatter::format_cumulated_percent);
 	format_map[ff_linenr_info] = field_description(28, "linenr info", &cg_formatter::format_linenr_info);
 	format_map[ff_image_name] = field_description(25, "image name", &cg_formatter::format_image_name);
