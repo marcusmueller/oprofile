@@ -17,7 +17,7 @@
 void opd_init_kernel_image(void);
 void opd_parse_kernel_range(char const * arg);
 void opd_clear_module_info(void);
-void opd_handle_kernel_sample(u32 eip, u16 count);
+void opd_handle_kernel_sample(u32 eip, u32 count, u32 counter);
 int opd_eip_is_kernel(u32 eip);
 
 #endif /* OPD_KERNEL_H */

@@ -255,30 +255,6 @@ inline static void verb_show_sample(u32 offset, struct opd_map * map, char const
 
 
 /**
- * opd_get_count - retrieve counter value
- * @param count  raw counter value
- *
- * Returns the counter value.
- */
-inline static u16 opd_get_count(const u16 count)
-{
-	return (count & OP_COUNT_MASK);
-}
-
-
-/**
- * opd_get_counter - retrieve counter type
- * @param count  raw counter value
- *
- * Returns the counter number (0-N)
- */
-inline static u16 opd_get_counter(const u16 count)
-{
-	return OP_COUNTER(count);
-}
-
-
-/**
  * opd_put_image_sample - write sample to file
  * @param image  image for sample
  * @param offset  (file) offset to write to
@@ -290,12 +266,10 @@ inline static u16 opd_get_counter(const u16 count)
  *
  * @count is the raw value passed from the kernel.
  */
-void opd_put_image_sample(struct opd_image * image, u32 offset, u16 count)
+void opd_put_image_sample(struct opd_image * image, u32 offset, u32 count, u32 counter)
 {
 	db_tree_t * sample_file;
-	int counter;
 
-	counter = opd_get_counter(count);
 	sample_file = &image->sample_files[counter];
 
 	if (!sample_file->base_memory) {
@@ -306,7 +280,7 @@ void opd_put_image_sample(struct opd_image * image, u32 offset, u16 count)
 		}
 	}
 
-	db_insert(sample_file, offset, opd_get_count(count));
+	db_insert(sample_file, offset, count);
 }
 
 
@@ -325,13 +299,13 @@ void opd_put_sample(struct op_sample const * sample)
 	struct opd_proc * proc;
 
 	opd_stats[OPD_SAMPLES]++;
-	opd_stats[OPD_SAMPLE_COUNTS] += opd_get_count(sample->count);
+	opd_stats[OPD_SAMPLE_COUNTS] += sample->count;
 
 	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8x, pid %.6d, count %.6d\n",
-		opd_get_counter(sample->count), sample->eip, sample->pid, sample->count);
+		sample->counter, sample->eip, sample->pid, sample->count);
 
 	if (opd_eip_is_kernel(sample->eip)) {
-		opd_handle_kernel_sample(sample->eip, sample->count);
+		opd_handle_kernel_sample(sample->eip, sample->count, sample->counter);
 		return;
 	}
 
@@ -360,7 +334,7 @@ void opd_put_sample(struct op_sample const * sample)
 			verb_show_sample(opd_map_offset(&proc->maps[i], sample->eip),
 				&proc->maps[i], "(LAST MAP)");
 			opd_put_image_sample(proc->maps[i].image,
-				opd_map_offset(&proc->maps[i], sample->eip), sample->count);
+				opd_map_offset(&proc->maps[i], sample->eip), sample->count, sample->counter);
 		}
 
 		opd_stats[OPD_PROCESS]++;
@@ -376,7 +350,7 @@ void opd_put_sample(struct op_sample const * sample)
 			u32 offset = opd_map_offset(&proc->maps[map], sample->eip);
 			if (proc->maps[map].image != NULL) {
 				verb_show_sample(offset, &proc->maps[map], "");
-				opd_put_image_sample(proc->maps[map].image, offset, sample->count);
+				opd_put_image_sample(proc->maps[map].image, offset, sample->count, sample->counter);
 			}
 			proc->last_map = map;
 			opd_stats[OPD_PROCESS]++;

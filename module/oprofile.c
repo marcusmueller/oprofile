@@ -115,7 +115,8 @@ inline static void fill_op_entry(struct op_sample * ops, long eip, pid_t pid, in
 {
 	ops->eip = eip;
 	ops->pid = pid;
-	ops->count = (1U << OP_BITS_COUNT) * ctr + 1;
+	ops->count = 1;
+	ops->counter = ctr;
 }
 
 void regparm3 op_do_profile(uint cpu, struct pt_regs * regs, int ctr)

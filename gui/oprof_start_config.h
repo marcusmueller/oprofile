@@ -12,6 +12,7 @@
 #ifndef OPROF_START_CONFIG_H
 #define OPROF_START_CONFIG_H
 
+#include <sys/types.h>
 #include <string>
 #include <iostream>
 
@@ -54,10 +55,9 @@ struct config_setting {
 	int kernel_only;
 	int ignore_daemon_samples;
 	int verbose;
-	// as string to allow symbolic group name ?
-	int pgrp_filter;
+	pid_t pgrp_filter;
 	// not persistent, no interest to save from one session to another
-	int pid_filter;
+	pid_t pid_filter;
 	int separate_samples;
 };
 

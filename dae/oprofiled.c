@@ -614,7 +614,10 @@ void opd_do_samples(struct op_buffer_head const * opd_buf)
 		verbprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n",
 			i, buffer[i].eip, buffer[i].pid, buffer[i].count);
 
-		if (pid_filter && pid_filter != buffer[i].pid)
+		/* FIXME : we can try to remove cast by using in module pid_t
+		 * as type for op_sample.pid but this don't work if kernel
+		 * space definition of pid_t was 16 bits in past */
+		if (pid_filter && (u32)pid_filter != buffer[i].pid)
 			continue;
 		if (pgrp_filter && pgrp_filter != getpgid(buffer[i].pid))
 			continue;

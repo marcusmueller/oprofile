@@ -45,7 +45,7 @@
 
 struct op_entry {
 	struct op_sample samples[OP_NR_ENTRY];
-};
+} __cacheline_aligned_in_smp;
 
 /* per-cpu dynamic data */
 struct _oprof_data {
@@ -135,7 +135,7 @@ struct op_int_operations {
 #define DNAME_STACK_MAX 1024
 
 /* is the count at maximal value ? */
-#define op_full_count(c) (((c) & OP_COUNT_MASK) == OP_COUNT_MASK)
+#define op_full_count(c) ((c) == OP_COUNT_MAX)
 
 /* the ctr bit is used to separate the two counters.
  * Simple and effective hash. If you can do better, prove it ...
