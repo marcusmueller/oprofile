@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.18 2002/01/07 08:49:42 movement Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.19 2002/01/14 08:38:54 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -774,6 +774,7 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 	fd[counter] = open(temp.c_str(), O_RDONLY);
 	if (fd[counter] == -1) {
 		if (can_fail == false)	{
+			/* FIXME: nicer message if e.g. wrong counter */ 
 			fprintf(stderr, "oprofpp: Opening %s failed. %s\n", temp.c_str(), strerror(errno));
 			exit(EXIT_FAILURE);
 		}

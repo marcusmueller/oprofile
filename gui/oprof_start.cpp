@@ -55,7 +55,6 @@ oprof_start::oprof_start()
 	oprof_start_base(0, 0, false, 0),
 	event_count_validator(new QIntValidator(event_count_edit)),
 	current_ctr(0),
-	cpu_type(op_get_cpu_type()),
 	cpu_speed(get_cpu_speed()), 
 	op_nr_counters(2),
 	total_nr_interrupts(0)
@@ -65,8 +64,18 @@ oprof_start::oprof_start()
 		ctr_enabled[i] = 0;
 	}
  
+	std::vector<std::string> args;
+	args.push_back("oprofile");
+ 
+	if (do_exec_command("/sbin/modprobe", args))
+		exit(1);
+ 
+	cpu_type = op_get_cpu_type();
+ 
 	if (cpu_type == CPU_ATHLON)
 		op_nr_counters = 4;
+	else if (cpu_type == CPU_RTC)
+		op_nr_counters = 1;
 
 	int cpu_mask = 1 << cpu_type;
 
@@ -203,9 +212,9 @@ retry:;
 	if (tmp_cpu_type != cpu_type) {
 		int user_choice = 
 			QMessageBox::warning(this, 0, 
-					     "The cpu type in your configuration mismatch the current cpu core:\n\n"
-					     "Delete the configuration or abort oprof_start?", 
-					     "&Delete", "&Quit", 0, 0, 1);
+				"The cpu type in your configuration mismatch the current cpu core:\n\n"
+				"Delete the configuration or abort oprof_start?", 
+				"&Delete", "&Quit", 0, 0, 1);
 
 		if (user_choice == 1)
 			exit(1);
@@ -767,23 +776,29 @@ void oprof_start::on_start_profiler()
 
 	std::vector<std::string> args;
 
-	for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
-		if (!current_event[ctr])
-			continue;
-		if (!ctr_enabled[ctr])
-			continue;
+	if (cpu_type == CPU_RTC) {
+		const persistent_config_t<event_setting>& cfg = event_cfgs[0];
+		const op_event_descr * descr = current_event[0];
+		args.push_back("--rtc-value=" + tostr(cfg[descr->name].count));
+	} else {
+		for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
+			if (!current_event[ctr])
+				continue;
+			if (!ctr_enabled[ctr])
+				continue;
 
-		const persistent_config_t<event_setting>& cfg = event_cfgs[ctr];
+			const persistent_config_t<event_setting>& cfg = event_cfgs[ctr];
 
-		const op_event_descr * descr = current_event[ctr];
+			const op_event_descr * descr = current_event[ctr];
 
-		args.push_back("--ctr" + tostr(ctr) + "-event=" + descr->name);
-		args.push_back("--ctr" + tostr(ctr) + "-count=" + tostr(cfg[descr->name].count));
-		args.push_back("--ctr" + tostr(ctr) + "-kernel=" + tostr(cfg[descr->name].os_ring_count));
-		args.push_back("--ctr" + tostr(ctr) + "-user=" + tostr(cfg[descr->name].user_ring_count));
+			args.push_back("--ctr" + tostr(ctr) + "-event=" + descr->name);
+			args.push_back("--ctr" + tostr(ctr) + "-count=" + tostr(cfg[descr->name].count));
+			args.push_back("--ctr" + tostr(ctr) + "-kernel=" + tostr(cfg[descr->name].os_ring_count));
+			args.push_back("--ctr" + tostr(ctr) + "-user=" + tostr(cfg[descr->name].user_ring_count));
 
-		if (descr->um_desc)
-			args.push_back("--ctr" + tostr(ctr) + "-unit-mask=" + tostr(cfg[descr->name].umask));
+			if (descr->um_desc)
+				args.push_back("--ctr" + tostr(ctr) + "-unit-mask=" + tostr(cfg[descr->name].umask));
+		}
 	}
 
 	args.push_back("--map-file=" + config.map_filename);

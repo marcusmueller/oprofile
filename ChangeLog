@@ -2,6 +2,25 @@
 
 	* TODO: update
 
+	* dae/op_start: take --rtc-value
+
+	* dae/oprofiled.c: set headers sensibly for RTC
+
+	* doc/oprofile.1.in: update
+
+	* doc/oprofile.sgml: RTC update
+
+	* events/op_events_descr.c: 
+	* events/op_events.c: good name for RTC event 
+
+	* gui/oprof_start.cpp: basic support for RTC
+
+	* module/op_rtc.c: implement and use rtc_value
+
+2002-01-14  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+
 	* dae/op_start: load module at start. Handle CPU_RTC.
 	  Avoid sysctl for now on RTC case.
 

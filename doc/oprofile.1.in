@@ -33,9 +33,10 @@ oprofile \- a sytem-wide profiler
 .B oprof_convert
 .br
 .SH DESCRIPTION
-oprofile is a profiling system for x86 systems running Linux 2.4. Profiling runs
+oprofile is a profiling system for x86 systems running Linux 2.2/2.4. Profiling runs
 transparently during the background, and profile data can be collected at any time. oprofile
-makes use of the hardware performance counters provided on Intel P6, and AMD Athlon family processors.
+makes use of the hardware performance counters provided on Intel P6, and AMD Athlon family processors,
+and can use the RTC for profiling on othe x86 processor types.
 In the following description, options that begin with ctrX- define a logical counter
 number in the range 0-3 (0-1 for Intel processors, which only have two counters).
 See the HTML documentation for further details.
@@ -79,6 +80,10 @@ whether to count kernel events for counter X
 .TP
 .BI "--ctrX-user"
 whether to count user events for counter X
+.br
+.TP
+.BI "--rtc-value"
+RTC interrupts/second value. This is rounded up to a power of two when used.
 .br
 .TP
 .BI "--buffer-size " nr
@@ -310,6 +315,10 @@ Start the profiler with the provided
 shell script. You are required to specify vmlinux and System.map, as well as specify a counter event and value, e.g. :
 .PP
 .I op_start --vmlinux=/sys/vmlinux --map-file=/sys/System.map --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000
+.PP
+If you are using a machine that doesn't support the performance counters, you can use the RTC driver instead, e.g. :
+.PP
+.I op_start   --vmlinux=/sys/vmlinux --map-file=/sys/System.map --rtc-value=128
 .PP
 Profiles will be collected every ten minutes. You can force a collection at any time :
 .PP

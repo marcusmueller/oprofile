@@ -1,4 +1,4 @@
-/* $Id: op_events_desc.c,v 1.5 2002/01/14 07:02:02 movement Exp $ */
+/* $Id: op_events_desc.c,v 1.6 2002/01/14 08:38:54 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -71,12 +71,11 @@ op_cpu op_get_cpu_type(void)
 	int cpu_type = CPU_NO_GOOD;
 	char str[10];
  
-/* FIXME */ 
 	FILE * fp;
 
 	fp = fopen("/proc/sys/dev/oprofile/cpu_type", "r");
 	if (!fp) {
-		fprintf(stderr, "Unable to open /proc/sys/dev/oprofile/cpu_type  for reading\n");
+		fprintf(stderr, "Unable to open /proc/sys/dev/oprofile/cpu_type for reading\n");
 		return cpu_type;
 	}
 
@@ -84,38 +83,9 @@ op_cpu op_get_cpu_type(void)
  
 	sscanf(str, "%d\n", &cpu_type);
 
-	fprintf(stderr, "type is %d\n", cpu_type);
-
 	fclose(fp);
 
 	return cpu_type;
-
-#if 0 
-	op_cpu cpu_type = CPU_NO_GOOD;
-	op_cpu cputmp;
-	char line[256];
-	FILE* fp;
-
-	fp = fopen("/proc/cpuinfo", "r");
-	if (!fp) {
-		fprintf(stderr, "Unable to open /proc/cpuinfo for reading\n");
-		return cpu_type;
-	}
-
-	while (fgets(line, sizeof(line) - 1, fp)) {
-		if (strncmp(line, MODEL_PREFIX, strlen(MODEL_PREFIX)) == 0) {
-			cputmp = op_type_from_name(line + strlen(MODEL_PREFIX));
-			if (cputmp != CPU_NO_GOOD)
-				cpu_type = cputmp;
-		}
-	}
-
-	if (cpu_type == CPU_NO_GOOD)
-		fprintf(stderr, "Unknown CPU type. Please send /proc/cpuinfo to oprofile-list@lists.sf.net\n");
-
-	fclose(fp);
-	return cpu_type;
-#endif 
 }
 
 #undef OP_CPU_TYPES_NR
@@ -282,7 +252,7 @@ char *op_event_descs[] = {
   "Interrupts masked cycles (IF=0)",
   "Interrupts masked while pending cycles (INTR while IF=0)",
   "Number of taken hardware interrupts",
-  "RTC blah blah blah",
+  "RTC interrupts/sec (rounded up to power of two)",
 };
 
 /**

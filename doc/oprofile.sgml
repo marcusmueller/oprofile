@@ -27,7 +27,7 @@
 <title>Introduction</title>
 
 <para>
-OProfile is a profiling system for Linux 2.4 systems on most x86 processors. It is capable of profiling
+OProfile is a profiling system for Linux 2.2/2.4 systems on most x86 processors. It is capable of profiling
 all parts of a running system, from the kernel (including modules and interrupt handlers) to shared libraries
 to binaries. It runs transparently in the background collecting information at a low overhead. These
 features make it ideal for profiling entire systems in production environments to determine bottle
@@ -39,10 +39,10 @@ necks in real-world systems.
 <para>
 <variablelist>
 	<varlistentry>
-		<term>Linux kernel 2.4</term>
+		<term>Linux kernel 2.2/2.4</term>
 		<listitem><para>
-			OProfile uses a kernel module which can only work on kernel 2.4.0 or above. Actually, some subset
-			of the 2.3 series will work as well. Note that version 2.4.10 or above is required if you use the
+			Oprofile uses a kernel module that can be compiled for 2.2 or 2.4. 
+			Versions 2.4.10 or above are recommended, and required if you use the
 			boot-time kernel option <option>nosmp</option>.
 		</para></listitem>
 	</varlistentry>
@@ -59,8 +59,7 @@ necks in real-world systems.
 			A CPU with a P6 generation core is required. In marketing terms this translates to anything between an Intel
 			Pentium Pro (NOT Pentium Classics) and a Pentium III, including all Celerons.
 			The AMD Athlon & Duron CPUs are also supported.
-			Pentium IVs are not yet supported due to different hardware.
-			Also note that Mobile P6 processors lack the necessary CPU features and are also not supported.
+			Other CPU types only support the RTC mode of oprofile, please see later in this manual for details. 
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -177,8 +176,8 @@ is all you need, but note these arguments to <command>./configure</command> :
 </para>
 <para>
 You'll need to have a configured kernel source for the current kernel to build the module.
-Also note you need to enable the <option>CONFIG_X86_UP_IOAPIC</option> or <option>CONFIG_X86_UP_APIC</option>
-options in your kernel configuration. Which one is available depends on kernel version.
+It is also recommended that you if you have a uniprocessor machine, you enable the local APIC / IO_APIC
+support for your kernel.
 </para>
 
 </sect1>
@@ -519,6 +518,12 @@ contain the general configuration, and event/counter setup, respectively.
 
 <sect2 id="hardware-counters">
 <title>Hardware Performance Counters</title>
+<note>
+<para>
+Your CPU type may not include the requisite support for hardware performance counters, in which case
+you must use Oprofile in RTC mode: see <xref linkend="rtc">.
+</para>
+</note>
 <para>
 The hardware performance counters are detailed in the Intel IA-32 Architecture Manual, Volume 3, available
 from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>. The AMD Athlon/Duron
@@ -574,6 +579,30 @@ to give a realistic profile (though this problem can be ameliorated by profiling
 Specifying too small a value can lead to overflow problems discussed previously.
 </para>
 
+</sect2>
+
+<sect2 id="rtc">
+<title>Oprofile in RTC mode</title>
+<para>
+Some CPU types do not provide the needed hardware support to use the hardware performance counters. This includes
+laptops, classic Pentiums, and other CPU types not yet supported by Oprofile. On these machines, Oprofile falls
+back to using the real-time clock interrupt to collect samples. This interrupt is also used by the <command>rtc</command>
+module: you cannot have both the oprofile and rtc modules loaded.
+</para>
+<para>
+RTC mode is less capable than the hardware counters mode; in particular, it is unable to profile sections of
+the kernel where interrupts are disabled. There is just one available event, "RTC interrupts", and its value 
+corresponds to the number of interrupts generated per second (that is, a higher number means a better profiling
+resolution, and higher overhead). Note that the value passed is rounded up to a power of two.
+</para>
+<para>
+Setting the value from the GUI should be straightforward. On the command line, you need to specify the
+<option>--rtc-value</option> option to <command>op_start</command>, e.g. :
+</para>
+<para><command>op_start &mdash;map-file=/boot/2.4.0ac12/System.map &mdash;vmlinux=/boot/2.4.0ac12/vmlinux --rtc-value=256</command></para>
+<para>
+Note the sysctl tree described in the next section is different when the RTC is being used.
+</para>
 </sect2>
 
 <sect2 id="sysctl">
@@ -644,6 +673,12 @@ The following files will be present :
 		<listitem><para>
 		Read only; the number of total interrupts received on all processors since this file was last
 		read. Used by the GUI.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term<filename>cpu_type</filename></term>
+		<listitem><para>
+		Read only; used internally by the oprofile tools.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

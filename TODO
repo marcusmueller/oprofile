@@ -12,7 +12,11 @@ or a file.
 o more discussion of problematic code needs to go in the "interpreting" section. 
   Maybe you should add the nasm tricks somewhere Phil ?
  
-o finish RTC
+4) GUI RTC - fix crash, better interface
+ 
+6) little output things (e.g. don't print unit mask) RTC
+ 
+7) RTC SMP ?? anything else ?
  
 o audit oprof_start for security...
  

@@ -61,7 +61,7 @@ static int rtc_setup(void)
 	unsigned char tmp_control;
 	unsigned long flags;
 	unsigned char tmp_freq_select;
-	unsigned long target, rem;
+	unsigned long target;
 	unsigned int exp, freq;
 
  	spin_lock_irqsave(&rtc_lock, flags);
@@ -76,48 +76,16 @@ static int rtc_setup(void)
 	 * closest power of two within the allowed range.
 	 */
  
-// FIXME
-#if 0 
-	if (sysctl.ctr[0].count != 0) {
-		/* need to reverse the daemon's calculation without
-		 * being able to get cpu_khz parameter.
-		 */
-		target = (boot_cpu_data.loops_per_jiffy * 100)/sysctl.ctr[0].count;
-		rem = (boot_cpu_data.loops_per_jiffy * 100)%sysctl.ctr[0].count;
-		/* round up */
-		if (rem >= (sysctl.ctr[0].count >> 1))
-			target++;
-#ifdef BOBM_DEBUG
-		printk(KERN_ERR "oprofile: loops_per_jiffy = %lu\n", 
-				boot_cpu_data.loops_per_jiffy);
-		printk(KERN_ERR "oprofile: requested value = %lu\n", target);
-#endif
-		if (target < OP_RTC_MIN) 
-			target = OP_RTC_MIN;
-		else if (target > OP_RTC_MAX)
-			target = OP_RTC_MAX;
-		
-	} else 
-#endif 
-		target = 128;
+	target = sysctl.ctr[0].count;
+
+	if (target < OP_RTC_MIN || target > OP_RTC_MAX)
+		return -EINVAL;
 
 	exp = 0;
 	while (target > (1 << exp) + ((1 << exp) >> 1))
 		exp++;
 	freq = 16 - exp;
-#ifdef BOBM_DEBUG
-	printk(KERN_ERR "oprofile: rtc freq: %d, code: %d\n", (1 << exp), freq);
-#endif
-#if 0
-	printk(KERN_ERR "oprofile: old ctr[0].count = %d\n", sysctl.ctr[0].count);
-	/* store our actual "effective" count back for the daemon */
-	sysctl.ctr[0].count = (boot_cpu_data.loops_per_jiffy * 100) / (1<<exp);
-	sysctl_parms.ctr[0].count = sysctl.ctr[0].count;
-#ifdef BOBM_DEBUG
-	printk(KERN_ERR "oprofile: new ctr[0].count = %d\n", sysctl.ctr[0].count);
-#endif
-#endif
-
+ 
 	tmp_freq_select = CMOS_READ(RTC_FREQ_SELECT);
 	tmp_freq_select = (tmp_freq_select & 0xf0) | freq;
 	CMOS_WRITE(tmp_freq_select, RTC_FREQ_SELECT);
@@ -171,7 +139,14 @@ static void rtc_stop_cpu(uint cpu)
  
 static int rtc_check_params(void)
 {
-	// FIXME 
+	int target = sysctl.ctr[0].count;
+
+	if (target < OP_RTC_MIN || target > OP_RTC_MAX) {
+		printk(KERN_ERR "RTC value %d is out of range (%d-%d)\n",
+			target, OP_RTC_MIN, OP_RTC_MAX);
+		return -EINVAL;
+	}
+
 	return 0;
 }
 
@@ -201,56 +176,13 @@ static void rtc_deinit(void)
  
 static int rtc_add_sysctls(ctl_table * next)
 {
-	return 0; 
-	/* OK, I see a simple "rtc_value" here with which we set it up,
-	 * maybe a better way ?
-	 */
-#if 0 
-	ctl_table * start = next; 
-	ctl_table * tab; 
-	int i, j;
- 
-	for (i=0; i < op_nr_counters; i++) {
-		next->ctl_name = 1;
-		next->procname = names[i];
-		next->mode = 0700;
-
-		if (!(tab = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
-			goto cleanup;
- 
-		next->child = tab;
-
-		memset(tab, 0, sizeof(ctl_table)*7);
-		tab[0] = ((ctl_table){ 1, "enabled", &sysctl_parms.ctr[i].enabled, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[1] = ((ctl_table){ 1, "event", &sysctl_parms.ctr[i].event, sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
-		tab[2] = ((ctl_table){ 1, "count", &sysctl_parms.ctr[i].count, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[3] = ((ctl_table){ 1, "unit_mask", &sysctl_parms.ctr[i].unit_mask, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[4] = ((ctl_table){ 1, "kernel", &sysctl_parms.ctr[i].kernel, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[5] = ((ctl_table){ 1, "user", &sysctl_parms.ctr[i].user, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		next++;
-	}
-
+	*next = ((ctl_table){ 1, "rtc_value", &sysctl_parms.ctr[0].count, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 	return 0;
-
-cleanup:
-	next = &oprof_table[nr_oprof_static];
-	for (j = 0; j < i; j++) {
-		kfree(next->child);
-		next++;
-	}
-	return -EFAULT;
-#endif 
 }
 
 static void rtc_remove_sysctls(ctl_table * next)
 {
-#if 0 
-	int i = smp_num_cpus;
-	while (i-- > 0) {
-		kfree(next->child);
-		next++;
-	}
-#endif 
+	/* nothing to do */
 }
  
 struct op_int_operations op_rtc_ops = {
