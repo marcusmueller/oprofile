@@ -1,3 +1,4 @@
+#define OP_INSTALL_PATH "@prefix@"
 #define OP_BINDIR "@OP_BINDIR@"
 #define OP_PKGDATADIR "@OP_PKGDATADIR@"
 
