@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <fnmatch.h>
 
-#include "../util/op_popt.h"
+#include "op_popt.h"
 
 using std::vector;
 using std::string;
@@ -45,11 +45,11 @@ using std::ostringstream;
 #include "opf_filter.h"
 #include "oprofpp.h"
 
-#include "../util/child_reader.h"
-#include "../util/string_manip.h"
-#include "../util/file_manip.h"
+#include "child_reader.h"
+#include "string_manip.h"
+#include "file_manip.h"
 
-#include "../version.h"
+#include "version.h"
 
 //---------------------------------------------------------------------------
 // Free function.
@@ -565,9 +565,9 @@ void output::output_objdump_asm(const vector<const symbol_entry *> & output_symb
 		args.push_back("-S");
 
 	args.push_back(app_name);
-	ChildReader reader("objdump", args);
+	child_reader reader("objdump", args);
 	if (reader.error())
-		// ChildReader output an error message, the only way I see to
+		// child_reader output an error message, the only way I see to
 		// go here is a failure to exec objdump.
 		return;
 
@@ -908,7 +908,7 @@ static void get_options(int argc, char const * argv[],
 {
 	poptContext optcon;
 
-	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
+	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
 		show_version(argv[0]);

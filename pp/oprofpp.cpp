@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.42 2002/05/02 02:19:11 movement Exp $ */
+/* $Id: oprofpp.cpp,v 1.43 2002/05/06 18:00:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -20,9 +20,13 @@
 #include <sstream>
 #include <list>
 
+#include "version.h"
 #include "oprofpp.h"
-#include "../util/op_popt.h"
-#include "../util/file_manip.h"
+#include "op_popt.h"
+#include "op_libiberty.h"
+#include "op_events_desc.h"
+#include "op_fileio.h"
+#include "file_manip.h"
 #include "opf_filter.h"
 
 using std::string;
@@ -86,7 +90,7 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 	poptContext optcon;
 	const char *file;
 	
-	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
+	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
 		show_version(argv[0]);
@@ -147,17 +151,17 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
  * do_list_symbols - list symbol samples for an image
  * \param abfd the bfd object from where come the samples
  * \param samples_files the samples files where are stored samples
- * \param counter_mask on what counters we work
+ * \param cmask on what counters we work
  * \param sort_by_ctr the counter number used for sort purpose
  *
  * Lists all the symbols in decreasing sample count order, to standard out.
  */
 static void do_list_symbols(opp_bfd & abfd,
 			    const opp_samples_files & samples_files,
-			    size_t counter_mask, int sort_by_ctr)
+			    size_t cmask, int sort_by_ctr)
 {
 	samples_files_t samples(true, output_format_flags,
-				show_shared_libs, counter_mask);
+				show_shared_libs, cmask);
 
 	samples.add(samples_files, abfd);
 
@@ -165,7 +169,7 @@ static void do_list_symbols(opp_bfd & abfd,
 
 	samples.select_symbols(symbols, sort_by_ctr, 0.0, false);
 
-	OutputSymbol out(samples, counter_mask);
+	OutputSymbol out(samples, cmask);
 
 	out.SetFlag(output_format_flags);
 	out.SetFlag(osf_show_all_counters);
@@ -177,7 +181,7 @@ static void do_list_symbols(opp_bfd & abfd,
  * do_list_symbol - list detailed samples for a symbol
  * \param abfd the bfd object from where come the samples
  * \param samples_files the samples files where are stored samples
- * \param counter_mask on what counters we work
+ * \param cmask on what counters we work
  *
  * the global variable symbol is used to list all
  * the samples for this symbol from the image 
@@ -185,7 +189,7 @@ static void do_list_symbols(opp_bfd & abfd,
  */
 static void do_list_symbol(opp_bfd & abfd,
 			   const opp_samples_files & samples_files,
-			   size_t counter_mask)
+			   size_t cmask)
 {
 	int i = abfd.symbol_index(symbol);
 	if (i < 0) {
@@ -198,7 +202,7 @@ static void do_list_symbol(opp_bfd & abfd,
 	  static_cast<OutSymbFlag>(output_format_flags | osf_details | osf_show_all_counters);
 
 	samples_files_t samples(true, output_format_flags,
-				false, counter_mask);
+				false, cmask);
 
 	samples.add(samples_files, abfd);
 
@@ -210,7 +214,7 @@ static void do_list_symbol(opp_bfd & abfd,
 		return;
 	}
 
-	OutputSymbol out(samples, counter_mask);
+	OutputSymbol out(samples, cmask);
 
 	out.SetFlag(output_format_flags);
 
@@ -251,11 +255,11 @@ static void do_dump_gprof(opp_bfd & abfd,
 	u16 * hist;
 	u32 histsize;
 
-	fp=opd_open_file(gproffile, "w");
+	fp=op_open_file(gproffile, "w");
 
-	opd_write_file(fp,&hdr, sizeof(gmon_hdr));
+	op_write_file(fp,&hdr, sizeof(gmon_hdr));
 
-	opd_write_u8(fp, GMON_TAG_TIME_HIST);
+	op_write_u8(fp, GMON_TAG_TIME_HIST);
 
 	// syms are sorted by vma so vma of the first symbol and vma + size
 	// of the last symbol give the vma range for gprof output
@@ -272,15 +276,15 @@ static void do_dump_gprof(opp_bfd & abfd,
 	// FIXME : is this + 1 bogus ?
 	histsize = ((high_pc - low_pc) / MULTIPLIER) + 1; 
  
-	opd_write_u32_he(fp, low_pc);
-	opd_write_u32_he(fp, high_pc);
+	op_write_u32_he(fp, low_pc);
+	op_write_u32_he(fp, high_pc);
 	/* size of histogram */
-	opd_write_u32_he(fp, histsize);
+	op_write_u32_he(fp, histsize);
 	/* profiling rate */
-	opd_write_u32_he(fp, 1);
-	opd_write_file(fp, "samples\0\0\0\0\0\0\0\0", 15); 
+	op_write_u32_he(fp, 1);
+	op_write_file(fp, "samples\0\0\0\0\0\0\0\0", 15); 
 	/* abbreviation */
-	opd_write_u8(fp, '1');
+	op_write_u8(fp, '1');
 
 	hist = (u16*)xcalloc(histsize, sizeof(u16)); 
  
@@ -310,8 +314,8 @@ static void do_dump_gprof(opp_bfd & abfd,
 		}
 	}
 
-	opd_write_file(fp, hist, histsize * sizeof(u16));
-	opd_close_file(fp);
+	op_write_file(fp, hist, histsize * sizeof(u16));
+	op_close_file(fp);
 
 	free(hist);
 }
@@ -320,7 +324,7 @@ static void do_dump_gprof(opp_bfd & abfd,
  * do_list_symbols_details - list all samples for all symbols.
  * \param abfd the bfd object from where come the samples
  * \param samples_files the samples files where are stored samples
- * \param counter_mask on what counters we work
+ * \param cmask on what counters we work
  * \param sort_by_ctr the counter number used for sort purpose
  *
  * Lists all the samples for all the symbols, from the image specified by
@@ -328,13 +332,13 @@ static void do_dump_gprof(opp_bfd & abfd,
  */
 static void do_list_symbols_details(opp_bfd & abfd,
 				    const opp_samples_files & samples_files,
-				    size_t counter_mask, int sort_by_ctr)
+				    size_t cmask, int sort_by_ctr)
 {
 	output_format_flags =
 	  static_cast<OutSymbFlag>(output_format_flags | osf_details);
 
 	samples_files_t samples(false, output_format_flags,
-				show_shared_libs, counter_mask);
+				show_shared_libs, cmask);
 
 	samples.add(samples_files, abfd);
 
@@ -342,7 +346,7 @@ static void do_list_symbols_details(opp_bfd & abfd,
 
 	samples.select_symbols(symbols, sort_by_ctr, 0.0, false, true);
 
-	OutputSymbol out(samples, counter_mask);
+	OutputSymbol out(samples, cmask);
 
 	out.SetFlag(output_format_flags);
 

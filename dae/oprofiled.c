@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.74 2002/05/02 02:19:08 movement Exp $ */
+/* $Id: oprofiled.c,v 1.75 2002/05/06 18:00:30 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -17,9 +17,18 @@
 
 #include "oprofiled.h"
 #include "opd_proc.h"
-#include "../util/op_popt.h"
-
-/* FIXME - how to get getpgid() defined ? */ 
+ 
+#include "version.h"
+#include "op_popt.h"
+#include "op_file.h"
+#include "op_fileio.h"
+#include "op_deviceio.h"
+#include "op_lockfile.h"
+#include "op_get_time.h"
+#include "op_sample_file.h"
+#include "op_events.h"
+#include "op_events_desc.h"
+ 
 #include <unistd.h>
  
 uint op_nr_counters = 2;
@@ -84,23 +93,23 @@ static void opd_open_logfile(void)
 }
 
 /**
- * opd_open_files - open necessary files
+ * op_open_files - open necessary files
  *
  * Open the device files and the log file,
  * and mmap() the hash map. Also read the System.map
  * file.
  */
-static void opd_open_files(void)
+static void op_open_files(void)
 {
 	fd_t hashmapdevfd;
 
-	hashmapdevfd = opd_open_device(OP_HASH_DEVICE, 0);
+	hashmapdevfd = op_open_device(OP_HASH_DEVICE, 0);
 	if (hashmapdevfd == -1) {
 		perror("Failed to open hash map device");
 		exit(EXIT_FAILURE);
 	}
  
-	notedevfd = opd_open_device(OP_NOTE_DEVICE, 0);
+	notedevfd = op_open_device(OP_NOTE_DEVICE, 0);
 	if (notedevfd == -1) {
 		if (errno == EINVAL)
 			fprintf(stderr, "Failed to open note device. Possibly you have passed incorrect\n"
@@ -110,7 +119,7 @@ static void opd_open_files(void)
 		exit(EXIT_FAILURE);
 	}
  
-	devfd = opd_open_device(OP_DEVICE, 0);
+	devfd = op_open_device(OP_DEVICE, 0);
 	if (devfd == -1) {
 		if (errno == EINVAL)
 			fprintf(stderr, "Failed to open device. Possibly you have passed incorrect\n"
@@ -141,7 +150,7 @@ static void opd_open_files(void)
 	opd_open_logfile();
 
 	opd_read_system_map(systemmapfilename);
-	printf("oprofiled started %s", opd_get_time());
+	printf("oprofiled started %s", op_get_time());
 	fflush(stdout);
 }
 
@@ -181,7 +190,7 @@ static void opd_backup_samples_files(void)
 	printf("Backing up samples file to directory %s\n", dir_name);
 
 	while ((dirent = readdir(dir)) != 0) {
-		if (opd_move_regular_file(dir_name, OP_SAMPLES_DIR, dirent->d_name)) {
+		if (op_move_regular_file(dir_name, OP_SAMPLES_DIR, dirent->d_name)) {
 			printf("unable to backup %s/%s to directory %s\n",
 			       OP_SAMPLES_DIR, dirent->d_name, dir_name);
 		}
@@ -281,16 +290,16 @@ static void opd_pmc_options(void)
  
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		sprintf(filename, "/proc/sys/dev/oprofile/%d/event", i);
-		ctr_event[i]= opd_read_int_from_file(filename);
+		ctr_event[i]= op_read_int_from_file(filename);
 
 		sprintf(filename, "/proc/sys/dev/oprofile/%d/count", i);
-		ctr_count[i]= opd_read_int_from_file(filename);
+		ctr_count[i]= op_read_int_from_file(filename);
 
 		sprintf(filename, "/proc/sys/dev/oprofile/%d/unit_mask", i);
-		ctr_um[i]= opd_read_int_from_file(filename);
+		ctr_um[i]= op_read_int_from_file(filename);
 
 		sprintf(filename, "/proc/sys/dev/oprofile/%d/enabled", i);
-		ctr_enabled[i]= opd_read_int_from_file(filename);
+		ctr_enabled[i]= op_read_int_from_file(filename);
 	}
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
@@ -324,7 +333,7 @@ static void opd_rtc_options(void)
 		ctr_event[i] = ctr_count[i] =  ctr_um[i] = ctr_enabled[i] = 0;
 	}
  
-	ctr_count[0] = opd_read_int_from_file("/proc/sys/dev/oprofile/rtc_value");
+	ctr_count[0] = op_read_int_from_file("/proc/sys/dev/oprofile/rtc_value");
 	/* FIXME FIXME FIXME, oh wow, please FIXME */
 	ctr_event[0] = 0xff;
 }
@@ -342,7 +351,7 @@ static void opd_options(int argc, char const *argv[])
 {
 	poptContext optcon;
 
-	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
+	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
 		show_version(argv[0]);
@@ -364,9 +373,9 @@ static void opd_options(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	opd_buf_size = opd_read_int_from_file("/proc/sys/dev/oprofile/bufsize");
-	opd_note_buf_size = opd_read_int_from_file("/proc/sys/dev/oprofile/notesize");
-	kernel_only = opd_read_int_from_file("/proc/sys/dev/oprofile/kernel_only");
+	opd_buf_size = op_read_int_from_file("/proc/sys/dev/oprofile/bufsize");
+	opd_note_buf_size = op_read_int_from_file("/proc/sys/dev/oprofile/notesize");
+	kernel_only = op_read_int_from_file("/proc/sys/dev/oprofile/kernel_only");
 
 	if (cpu_type != CPU_RTC) {
 		opd_pmc_options();
@@ -455,7 +464,7 @@ static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbu
 
 	/* it's always OK to read the note device */
 	while (ncount < 0) {
-		ncount = opd_read_device(notedevfd, nbuf, nsize, TRUE);
+		ncount = op_read_device(notedevfd, nbuf, nsize, 1);
 	}
  
 	if (ncount > 0) {
@@ -471,7 +480,7 @@ static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbu
 	 * would be a livelock, but it requires root to send stops constantly
 	 * and never lose the race. */
 	while (1) {
-		count = opd_read_device(devfd, buf, size, TRUE);
+		count = op_read_device(devfd, buf, size, 1);
 		if (count < 0 && errno == EAGAIN) {
 			break;
 		} else if (count > 0) {
@@ -500,7 +509,7 @@ static void opd_do_read(struct op_sample *buf, size_t size, struct op_note *nbuf
  
 		/* loop to handle EINTR */
 		while (count < 0) {
-			count = opd_read_device(devfd, buf, size, TRUE);
+			count = op_read_device(devfd, buf, size, 1);
  
 			/* if count == 0, that means we need to stop ! */
 			if (count == 0) {
@@ -510,7 +519,7 @@ static void opd_do_read(struct op_sample *buf, size_t size, struct op_note *nbuf
 		}
 
 		while (ncount < 0) {
-			ncount = opd_read_device(notedevfd, nbuf, nsize, TRUE);
+			ncount = op_read_device(notedevfd, nbuf, nsize, 1);
 		}
  
 		opd_do_notes(nbuf, ncount);
@@ -658,7 +667,7 @@ int main(int argc, char const *argv[])
 		opd_backup_samples_files();
 	}
 
-	opd_open_files();
+	op_open_files();
 
 	/* yes, this is racey. */
 	opd_get_ascii_procs();
@@ -693,7 +702,7 @@ int main(int argc, char const *argv[])
 	/* clean up every 10 minutes */
 	alarm(60*10);
 
-	if (opd_write_lock_file(OP_LOCK_FILE)) {
+	if (op_write_lock_file(OP_LOCK_FILE)) {
 		fprintf(stderr, 
 			"oprofiled: could not create lock file "
 			OP_LOCK_FILE "\n");
@@ -704,7 +713,7 @@ int main(int argc, char const *argv[])
 	opd_do_read(sbuf, s_buf_bytesize, nbuf, n_buf_bytesize);
 
 	opd_print_stats();
-	printf("oprofiled stopped %s", opd_get_time());
+	printf("oprofiled stopped %s", op_get_time());
 
 	free(sbuf);
 	free(nbuf);

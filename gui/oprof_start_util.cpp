@@ -29,9 +29,10 @@
 #include <qfiledialog.h>
 #include <qmessagebox.h>
 
-#include "../util/string_manip.h"
-#include "../util/file_manip.h"
-#include "../util/child_reader.h"
+#include "op_file.h"
+#include "string_manip.h"
+#include "file_manip.h"
+#include "child_reader.h"
 
 #include "oprof_start_util.h"
 
@@ -77,7 +78,7 @@ daemon_status::daemon_status()
 	: running(false)
 {
 	if (!daemon_pid.empty()) { 
-		string exec = opd_read_link(string("/proc/") + daemon_pid + "/exe");
+		string exec = op_read_link(string("/proc/") + daemon_pid + "/exe");
 		if (exec.empty())
 			daemon_pid.erase();
 		else
@@ -94,7 +95,7 @@ daemon_status::daemon_status()
 		}
 
 		while ((dirent = readdir(dir))) {
-			string const exec = opd_read_link(string("/proc/") + dirent->d_name + "/exe");
+			string const exec = op_read_link(string("/proc/") + dirent->d_name + "/exe");
 			string const name = basename(exec); 
 			if (name != "oprofiled")
 				continue;
@@ -293,7 +294,7 @@ int do_exec_command(string const & cmd, vector<string> const & args)
 		return EINVAL;
 	}
  
-	ChildReader reader(cmd, args);
+	child_reader reader(cmd, args);
 	if (reader.error())
 		ok = false;
 

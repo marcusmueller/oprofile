@@ -1,35 +1,33 @@
+include ../../make.common
 
 MOC=@MOC@
 UIC=@UIC@
+CXXFLAGS += @QT2_INCLUDES@
 
-CXX=@CXX@
-CXXFLAGS=-Wall -W @CXXFLAGS@ @QT2_INCLUDES@
+HEADERS=oprof_start.base.h
+SOURCES=oprof_start.base.cpp oprof_start.base.moc.cpp
+OBJECTS=oprof_start.base.o oprof_start.base.moc.o
+TARGET=$(OBJECTS)
 
-.PHONY: all clean install uninstall
-.SUFFIXES:
-
-all: oprof_start.base.o oprof_start.base.moc.o
-
-# oprof_start.cpp, oprof_start.h are generated file, but must not re-generated
-clean:
-	rm -f *.o *.moc.* oprof_start.base.cpp oprof_start.base.h
+all: $(TARGET)
 
 install:
 uninstall:
+ 
+clean:
+	rm -rf .deps $(HEADERS) $(SOURCES) $(OBJECTS)
 
-oprof_start.base.moc.o: oprof_start.base.moc.cpp oprof_start.base.h
-	$(CXX) -c $(CXXFLAGS) $< -o $@
 oprof_start.base.o: oprof_start.base.cpp oprof_start.base.h
 	$(CXX) -c $(CXXFLAGS) $< -o $@
+ 
+oprof_start.base.moc.o: oprof_start.base.moc.cpp oprof_start.base.h
+	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-# generate qt header file
 oprof_start.base.h: oprof_start.base.ui
-	$(UIC) -o oprof_start.base.h oprof_start.base.ui
-
-# generate qt implementation file
+	$(UIC) -o $@ $<
+ 
 oprof_start.base.cpp: oprof_start.base.h oprof_start.base.ui
-	$(UIC) -o oprof_start.base.cpp -impl oprof_start.base.h oprof_start.base.ui
-
-# generate qt moc code for base class
+	$(UIC) -o $@ -impl $^
+ 
 oprof_start.base.moc.cpp: oprof_start.base.h
-	$(MOC) -o oprof_start.base.moc.cpp oprof_start.base.h
+	$(MOC) -o $@ $<

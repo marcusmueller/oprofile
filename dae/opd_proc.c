@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.113 2002/05/02 02:19:08 movement Exp $ */
+/* $Id: opd_proc.c,v 1.114 2002/05/06 18:00:29 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -17,10 +17,19 @@
 
 #include "opd_proc.h"
 
+#include "op_get_time.h"
+#include "op_file.h"
+#include "op_fileio.h"
+#include "op_mangle.h"
+#include "op_sample_file.h"
+ 
 /* per-process */
 #define OPD_DEFAULT_MAPS 16
 #define OPD_MAP_INC 8
 
+/* here to avoid warning */
+extern op_cpu cpu_type;
+ 
 /* hash of process lists */
 static struct opd_proc *opd_procs[OPD_MAX_PROC_HASH];
 
@@ -60,7 +69,7 @@ void opd_print_stats(void)
 		}
 	}
  
-	printf("%s\n", opd_get_time());
+	printf("%s\n", op_get_time());
 	printf("Nr. proc struct: %d\n", j);
 	printf("Nr. image struct: %d\n", nr_images);
 	printf("Nr. kernel samples: %lu\n", opd_stats[OPD_KERNEL]);
@@ -200,7 +209,7 @@ static void opd_handle_old_sample_files(const struct opd_image * image)
 	uint len;
 	const char * app_name = separate_samples ? image->app_name : NULL;
 
-	mangled = opd_mangle_filename(image->name, app_name);
+	mangled = op_mangle_filename(image->name, app_name);
 
 	len = strlen(mangled);
  
@@ -266,7 +275,7 @@ static void opd_open_image(struct opd_image *image)
 		       sizeof(struct opd_sample_file));
 	}
 
-	image->mtime = opd_get_mtime(image->name);
+	image->mtime = op_get_mtime(image->name);
  
 	opd_handle_old_sample_files(image);
 
@@ -315,7 +324,7 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 	sample_file = &image->sample_files[counter];
 
 	app_name = separate_samples ? image->app_name : NULL;
-	mangled = opd_mangle_filename(image->name, app_name);
+	mangled = op_mangle_filename(image->name, app_name);
 
 	sprintf(mangled + strlen(mangled), "#%d", counter);
 
@@ -383,7 +392,7 @@ static void opd_check_image_mtime(struct opd_image * image)
 	uint i;
 	char *mangled;
 	uint len;
-	time_t newmtime = opd_get_mtime(image->name);
+	time_t newmtime = op_get_mtime(image->name);
 	const char * app_name;
  
 	if (image->mtime == newmtime)
@@ -393,7 +402,7 @@ static void opd_check_image_mtime(struct opd_image * image)
 		"mtime %lu for %s\n", newmtime, image->mtime, image->name);
 
 	app_name = separate_samples ? image->app_name : NULL;
-	mangled = opd_mangle_filename(image->name, app_name);
+	mangled = op_mangle_filename(image->name, app_name);
 
 	len = strlen(mangled);
 
@@ -819,8 +828,8 @@ static struct opd_proc *opd_get_proc(u16 pid)
  * @map: map to check
  * @eip: EIP value
  *
- * Return %TRUE if the EIP value @eip is within the boundaries
- * of the map @map, %FALSE otherwise.
+ * Return %1 if the EIP value @eip is within the boundaries
+ * of the map @map, %0 otherwise.
  */
 inline static int opd_is_in_map(struct opd_map *map, u32 eip)
 {
@@ -858,8 +867,8 @@ inline static u32 opd_map_offset(struct opd_map *map, u32 eip)
  * opd_eip_is_kernel - is the sample from kernel/module space
  * @eip: EIP value
  *
- * Returns %TRUE if @eip is in the address space starting at
- * kernel_start, %FALSE otherwise.
+ * Returns %1 if @eip is in the address space starting at
+ * kernel_start, %0 otherwise.
  */
 inline static int opd_eip_is_kernel(u32 eip)
 {
@@ -1169,8 +1178,8 @@ void opd_handle_exec(u16 pid)
  * @line: 0-terminated ASCII string
  *
  * Attempt to parse the string @line for map information
- * and add the info to the process @proc. Returns %TRUE
- * on success, %FALSE otherwise.
+ * and add the info to the process @proc. Returns %1
+ * on success, %0 otherwise.
  *
  * The parsing is based on Linux 2.4 format, which looks like this :
  *
@@ -1188,36 +1197,36 @@ static int opd_add_ascii_map(struct opd_proc *proc, const char *line)
 
 	/* handle rwx */
 	if (!*cp || (!*(++cp)) || (!*(++cp)) || (*(++cp) != 'x'))
-		return FALSE;
+		return 0;
 
 	/* get start and end from "40000000-4001f000" */
 	if (sscanf(line,"%x-%x", &map->start, &map->end) != 2)
-		return FALSE;
+		return 0;
 
 	/* "p " */
 	cp += 2;
 
 	/* read offset */
 	if (sscanf(cp,"%x", &map->offset) != 1)
-		return FALSE;
+		return 0;
 
 	while (*cp && *cp != '/')
 		cp++;
 
 	if (!*cp)
-		return FALSE;
+		return 0;
 
 	/* FIXME: we should verify this is indeed the primary
 	 * app image by readlinking /proc/pid/exe */
 	map->image = opd_get_image(cp, -1, opd_app_name(proc), 0);
 
 	if (!map->image)
-		return FALSE;
+		return 0;
 
 	if (++proc->nr_maps == proc->max_nr_maps)
 		opd_grow_maps(proc);
 
-	return TRUE;
+	return 1;
 }
 
 /**
@@ -1236,12 +1245,12 @@ static void opd_get_ascii_maps(struct opd_proc *proc)
 	snprintf(mapsfile + 6, 6, "%hu", proc->pid);
 	strcat(mapsfile,"/maps");
 
-	fp = opd_try_open_file(mapsfile, "r");
+	fp = op_try_open_file(mapsfile, "r");
 	if (!fp)
 		return;
 
 	while (1) {
-		line = opd_get_line(fp);
+		line = op_get_line(fp);
 		if (streq(line, "") && feof(fp)) {
 			free(line);
 			break;
@@ -1251,7 +1260,7 @@ static void opd_get_ascii_maps(struct opd_proc *proc)
 		}
 	}
 
-	opd_close_file(fp);
+	op_close_file(fp);
 }
 
 /**

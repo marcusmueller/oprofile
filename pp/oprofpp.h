@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.54 2002/05/02 02:19:12 movement Exp $ */
+/* $Id: oprofpp.h,v 1.55 2002/05/06 18:00:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -19,7 +19,6 @@
 #define OPROFPP_H
 
 #include <bfd.h>
-#include <popt.h>
  
 #include <string.h>
 #include <stdlib.h>
@@ -36,10 +35,11 @@
 #include <vector>
 #include <string>
 
-#include "../dae/opd_util.h"
-#include "../libdb/db.h"
-#include "../op_user.h"
-#include "../version.h"
+#include "db.h"
+#include "op_interface.h"
+#include "op_popt.h"
+#include "op_sample_file.h"
+#include "op_hw_config.h"
 
 class symbol_entry;
 class opp_samples_files;
@@ -71,7 +71,7 @@ void verbprintf(const char* args, ...) OP_VERBPRINTF_FORMAT;
  *
  * output a human readable form of an event setting
  */
-void op_print_event(ostream & out, int i, op_cpu cpu_type,
+void op_print_event(std::ostream & out, int i, op_cpu cpu_type,
 		    u8 type, u8 um, u32 count);
 
 /**
@@ -96,7 +96,7 @@ void op_print_event(ostream & out, int i, op_cpu cpu_type,
  *
  * post-condition: sample_file and image_file are setup
  */
-void opp_treat_options(const char * filename, poptContext optcon,
+void opp_treat_options(char const * filename, poptContext optcon,
 		       std::string & image_file, std::string & sample_file,
 		       int & counter, int & sort_by_counter);
 
@@ -167,9 +167,9 @@ extern int demangle;
 /** command line option specifying a sample filename */
 extern char const *samplefile;
 /** command line option specifying an image filename */
-extern const char *imagefile;
+extern char const *imagefile;
 /** command line option specifying the set of symbols to ignore */
-extern const char * exclude_symbols_str;
+extern char const * exclude_symbols_str;
 
 //---------------------------------------------------------------------------
 /** A simple container of counter. Can hold OP_MAX_COUNTERS counters */
@@ -341,8 +341,8 @@ struct opp_samples_files {
 	 *
 	 * return true if the samples file index is open
 	 */ 
-	bool is_open(int index) const {
-		return samples[index] != 0;
+	bool is_open(int i) const {
+		return samples[i] != 0;
 	}
  
 	/**
@@ -353,8 +353,8 @@ struct opp_samples_files {
 	 * sample_nr. return 0 if the samples file is close or there is no
 	 * samples at position sample_nr
 	 */
-	uint samples_count(int index, int sample_nr) const {
-		return is_open(index) ? samples[index]->count(sample_nr) : 0;
+	uint samples_count(int i, int sample_nr) const {
+		return is_open(i) ? samples[i]->count(sample_nr) : 0;
 	}
 
 	/**

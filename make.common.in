@@ -1,0 +1,27 @@
+# programs
+AR=ar
+LD=@LD@
+CC=@CC@
+CXX=@CXX@
+TOUCH=touch
+INSTALL=install
+MKDIR_P=mkdir -p
+
+# paths
+TOPDIR=@topdir@
+prefix=$(DESTDIR)@prefix@
+exec_prefix=@exec_prefix@
+BINDIR=@bindir@
+ 
+# config
+INCLUDES=-I$(TOPDIR)/ -I$(TOPDIR)/libutil -I$(TOPDIR)/libutil++ -I$(TOPDIR)/libop -I$(TOPDIR)/libdb @QT2_INCLUDES@ @extra_includes@
+CFLAGS += $(INCLUDES)
+CFLAGS += -W -Wall -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline 
+CFLAGS += -pipe -g -O2 @CFLAGS@
+CXXFLAGS += $(INCLUDES)
+CXXFLAGS += -W -Wall -Wunused -Wmissing-prototypes
+CXXFLAGS += -pipe -g -O2 @CXXFLAGS@
+
+LDFLAGS += -L$(TOPDIR)/libutil -L$(TOPDIR)/libutil++ -L$(TOPDIR)/libop -L$(TOPDIR)/libdb
+ 
+.PHONY: all clean srcdoc install uninstall

@@ -1,45 +1,24 @@
-# $Id: Makefile.in,v 1.29 2002/05/02 02:19:05 movement Exp $
+include ../make.common
 
-INSTALL_LIST=oprofiled op_start op_dump op_stop op_session
+HEADERS=p_module.h opd_proc.h oprofiled.h
+SOURCES=opd_kernel.c opd_proc.c oprofiled.c
+OBJECTS=opd_kernel.o opd_proc.o oprofiled.o
+TARGET=oprofiled
 
-CFLAGS=-Wall -Wstrict-prototypes -pipe -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
-LIBS=@extra_libraries@ -lpopt -liberty
-
-SOURCES=oprofiled.c opd_util.c opd_proc.c opd_kernel.c op_session.c
-OBJS=oprofiled.o opd_util.o opd_proc.o opd_kernel.o ../events/op_events.o ../events/op_events_desc.o ../util/op_popt.o ../util/misc.o
-
-.PHONY: all clean srcdoc install uninstall
-
-all: oprofiled op_session
-
-install: all
-	-$(MKDIR_P) $(BINDIR)
-	for f in $(INSTALL_LIST); do \
-		cp $$f $(BINDIR)/$$f && chmod 755 $(BINDIR)/$$f; \
-	done
-
-uninstall:
-	for f in $(INSTALL_LIST); do \
-		rm -f $(BINDIR)/$$f; \
-	done
-
-clean:
-	rm -rf oprofiled *.o .deps oprofiled-src.html 
-
-srcdoc: oprofiled-src.html
-
-oprofiled-src.html: $(SOURCES)
-	../scripts/dodoc -html $(SOURCES) >oprofiled-src.html
-
-oprofiled: $(OBJS) ../libdb/libdb.a
-	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $^ $(LIBS)
-
-op_session: op_session.o opd_util.o ../util/op_popt.o
-	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $^ $(LIBS)
+LIBS=-ldb -lop -lutil -lpopt -liberty
  
-%.o: %c
-	$(CC) -c $(CFLAGS) -g $< -o $@
+all: $(TARGET)
 
-ALL_SOURCES = $(SOURCES)
+install:
+	$(INSTALL) oprofiled $(BINDIR)
+ 
+uninstall:
+	rm -f oprofiled
+ 
+clean:
+	rm -rf .deps $(OBJECTS) $(TARGET) 
 
-include ../Rules.make
+$(TARGET): $(OBJECTS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
+ 
+include ../make.deps

@@ -1,3 +1,4 @@
-.deps
 Makefile
+.deps
+op_session
 op_help

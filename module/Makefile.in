@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.19 2002/02/12 21:26:54 phil_e Exp $
+# FIXME FIXME FIXME - sort out for new build scheme
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -7,7 +7,7 @@ MODINSTALLDIR=@MODINSTALLDIR@/oprofile
 # NO_MODULE_VERSION expand to __NO_VERSION__ in this case, this work
 # because only one module is compiled with BKCFLAGS. If you compile more
 # than one module with BKCFLAGS you break 2.2 compatibility. FIXME another way?
-BKCFLAGS += -pipe -D__KERNEL__ -DMODULE -Wall -Wstrict-prototypes -Wunused -O2 -fomit-frame-pointer -fno-strict-aliasing
+BKCFLAGS += -I@topdir@/ -I@topdir@/libutil -I@topdir@/libop -pipe -D__KERNEL__ -DMODULE -Wall -Wstrict-prototypes -Wunused -O2 -fomit-frame-pointer -fno-strict-aliasing
 KCFLAGS := $(BKCFLAGS) -mcpu=i686 @NO_MODULE_VERSION@
 ASMFLAGS := -D__ASSEMBLY__ -DMODULE -D__KERNEL__ -traditional -I@KINC@
 
@@ -46,9 +46,12 @@ op_rtc.o: op_rtc.c
 	$(CC) $(KCFLAGS) -c -o $@ $<
 
 # can't use auto deps here
-oprofile_c.o: oprofile.c oprofile.h ../op_user.h compat.h compat22.h compat24.h
+oprofile_c.o: oprofile.c oprofile.h compat.h compat22.h compat24.h
 	$(CC) $(KCFLAGS) -c -o $@ $<
 
+op_events_module.o: ../libop/op_events.c
+	$(CC) $(KCFLAGS) -c -o $@ $<
+ 
 op_apic.o: op_apic.c
 	$(CC) $(KCFLAGS) -c -o $@ $<
 
@@ -64,17 +67,13 @@ compat.o: compat.c
 oprofile.s: oprofile.c
 	$(CC) $(KCFLAGS) -S $<
 
-# can't use auto deps here
-op_events_module.o: ../events/op_events.c ../op_user.h
-	$(CC) $(KCFLAGS) -c -o $@ $<
-
 oprofile_nmi.o: oprofile_nmi.S
 	$(CC) $(ASMFLAGS) -c -o $@ $<
 
 # not all object files can use auto deps in this directory
-ALL_SOURCES = compat.c op_nmi.c op_rtc.c op_init.c op_util.c op_x86.c op_syscall.c
+#ALL_SOURCES = compat.c op_nmi.c op_rtc.c op_init.c op_util.c op_x86.c op_syscall.c
 
-include ../Rules.make
+#include ../make.deps
 
 # we must overwrite dependencies make flags, the default can't work
-CPPFLAGS_DEPS += $(BKCFLAGS)
+#CPPFLAGS_DEPS += $(BKCFLAGS)

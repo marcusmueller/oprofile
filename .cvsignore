@@ -1,6 +1,6 @@
 .deps
 configure
-Rules.make
+make.common
 cvs.log
 Makefile
 version.h

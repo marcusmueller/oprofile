@@ -1,3 +1,22 @@
+2002-05-06  John Levon  <moz@compsoc.man.ac.uk>
+
+	Massive re-organisation of code + build. Most
+	files have been changed. Some small cosmetic
+	changes.
+ 
+	* libutil/:
+	* libutil++/: general-purpose utility libs
+
+	* libop/: oprofile-specific utility lib
+
+	* utils/: moved op_start et al to this dir
+
+	* events/:
+	* util/: removed
+
+	* libutil++/child_reader.cpp: make sure to set
+	  member "pid", not local variable
+
 2002-05-05  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* dae/op_session.c: tweak error message when session already
@@ -12,6 +31,12 @@
 	* dae/opd_util.c:
 	* op_user.h: minor related change
 
+2002-05-05  John Levon  <moz@compsoc.man.ac.uk>
+
+	* doc/oprofile.xml: update copyright for 2002
+
+	* doc/xsl/xhtml-chunk.xsl: indent=yes
+ 
 2002-05-05  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update

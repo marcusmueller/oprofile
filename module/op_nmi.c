@@ -15,6 +15,7 @@
  */
 
 #include "oprofile.h"
+#include "op_events.h"
 
 /* the MSRs we need */
 static uint perfctr_msr[OP_MAX_COUNTERS];

@@ -16,7 +16,6 @@
  * first written by P.Elie, many cleanup by John Levon
  */
 
-#include <popt.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -30,12 +29,15 @@
 #include <map>
 #include <vector>
 
+#include "version.h"
+#include "op_libiberty.h"
+#include "op_popt.h"
+ 
 #include "oprofpp.h"
 #include "opf_filter.h"
 
-#include "../util/file_manip.h"
-#include "../util/string_manip.h"
-#include "../util/op_popt.h"
+#include "file_manip.h"
+#include "string_manip.h"
 
 using std::string;
 using std::list;
@@ -214,7 +216,7 @@ static void get_options(int argc, char const * argv[])
 	poptContext optcon;
 	char const * file;
 
-	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
+	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
 		show_version(argv[0]);

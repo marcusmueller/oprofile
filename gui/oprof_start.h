@@ -23,7 +23,10 @@
 #include "oprof_start_config.h"
 #include "oprof_start_util.h"
 #include "persistent_config.h"
-#include "../op_user.h"
+
+#include "op_hw_config.h"
+#include "op_events.h"
+#include "op_events_desc.h"
 
 class QIntValidator;
 class QListViewItem;

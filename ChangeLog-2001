@@ -599,7 +599,7 @@
 	* pp/child_reader.cpp: new, allow to fork a child and read
 	  its stdout/stderr
 	* pp/opf_filter.h:
-	* pp/opf_filter.cpp: use ChildReader to launch objdump.
+	* pp/opf_filter.cpp: use child_reader to launch objdump.
 	  op_to_source -a and -s must be specified with long
 	  form --assembly and --source-with-assembly. This also
 	  speed-up assembly output. Doc not updated.
@@ -928,7 +928,7 @@
 	* pp/oprofpp.c: get_linenr() never return null in
 	  filename  (fix bug #464482). symcomp() ensure
 	  correct vma comparison (fix #464093)
-	* dae/opd_util.c: minor fixe in opd_poptGetContext()
+	* dae/opd_util.c: minor fixe in op_poptGetContext()
 	* gui/oprof_start.cpp: minor cleanup
 
 2001-09-25  John Levon  <moz@compsoc.man.ac.uk>

@@ -20,6 +20,7 @@
 extern "C" char * cplus_demangle(const char * mangled, int options);
 
 // FIXME: all options should be in a public singleton
+// FIXME: this options should die IMO (then move this into libutil++)
 extern bool demangle;
  
 using std::string;

@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.51 2002/05/02 02:19:12 movement Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.52 2002/05/06 18:00:35 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -25,8 +25,12 @@
 
 #include "oprofpp.h"
 #include "opp_symbol.h"
-#include "../util/file_manip.h"
-#include "../util/string_manip.h"
+#include "op_libiberty.h"
+#include "op_file.h"
+#include "file_manip.h"
+#include "string_manip.h"
+#include "op_events.h"
+#include "op_events_desc.h"
  
 using std::string;
 using std::vector;
@@ -211,10 +215,10 @@ void opp_treat_options(const char* file, poptContext optcon,
 
 	/* some minor memory leak from the next calls */
 	if (imagefile)
-		imagefile = opd_relative_to_absolute_path(imagefile, NULL);
+		imagefile = op_relative_to_absolute_path(imagefile, NULL);
 
 	if (samplefile)
-		samplefile = opd_relative_to_absolute_path(samplefile, NULL);
+		samplefile = op_relative_to_absolute_path(samplefile, NULL);
 
 	if (file) {
 		if (imagefile && samplefile) {
@@ -223,7 +227,7 @@ void opp_treat_options(const char* file, poptContext optcon,
 				" and one image filename.\n");
 		}
 
-		file = opd_relative_to_absolute_path(file, NULL);
+		file = op_relative_to_absolute_path(file, NULL);
 		if (strchr(file, OPD_MANGLE_CHAR))
 			samplefile = file;
 		else
@@ -333,11 +337,11 @@ opp_bfd::opp_bfd(opp_samples_files& samples, const std::string & filename)
 		exit(EXIT_FAILURE);
 	}
 
-	nr_samples = opd_get_fsize(filename.c_str(), 0);
+	nr_samples = op_get_fsize(filename.c_str(), 0);
 
 	open_bfd_image(filename, samples.first_header()->is_kernel);
 
-	time_t newmtime = opd_get_mtime(filename.c_str());
+	time_t newmtime = op_get_mtime(filename.c_str());
 	if (newmtime != samples.first_header()->mtime) {
 		fprintf(stderr, "oprofpp: WARNING: the last modified time of the binary file %s does not match\n"
 			"that of the sample file. Either this is the wrong binary or the binary\n"
@@ -431,7 +435,7 @@ static bool interesting_symbol(asymbol *sym)
 		return 0;
 
 	for (size_t i = 0; i < nr_boring_symbols; ++i) {
-		if (streq(boring_symbols[i], sym->name))
+		if (!strcmp(boring_symbols[i], sym->name))
 			return 0;
 	}
 	 
@@ -720,7 +724,7 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 int opp_bfd::symbol_index(const char* symbol) const
 {
 	for (size_t i = 0; i < syms.size(); i++) {
-		if (streq(syms[i]->name, symbol))
+		if (!strcmp(syms[i]->name, symbol))
 			return i;
 	}
 
@@ -735,7 +739,7 @@ int opp_bfd::symbol_index(const char* symbol) const
  * verify that header f1 and f2 are coherent.
  * all error are fatal
  */
-void check_headers(const opd_header * f1, const opd_header * f2)
+void check_headers(opd_header const * f1, opd_header const * f2)
 {
 	if (f1->mtime != f2->mtime) {
 		fprintf(stderr, "oprofpp: header timestamps are different (%ld, %ld)\n", f1->mtime, f2->mtime);

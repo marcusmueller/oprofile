@@ -1,49 +1,18 @@
-/* $Id: op_events.c,v 1.6 2002/03/03 01:18:18 phil_e Exp $ */
-/* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+/**
+ * \file op_events.c
+ * Copyright 2002 OProfile authors
+ * Read the file COPYING
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place - Suite 330, Boston, MA 02111-1307, USA.
+ * \author John Levon <moz@compsoc.man.ac.uk>
+ * \author Philippe Elie <phil_el@wanadoo.fr>
  */
 
 /* Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren */
 
-/* See IA32 Vol. 3 Appendix A */
+/* See IA32 Vol. 3 Appendix A + Athlon optimization manual */
 
-#ifdef __KERNEL__
-#include <linux/string.h>
-#define strcmp(a,b) strnicmp((a),(b),strlen((b)))
-#else
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-#endif
-
-#include "../op_user.h"
-
-struct cpu_type_descr {
-	const char * name;
-	uint nr_counters;
-};
-
-static struct cpu_type_descr cpu_type_descrs[MAX_CPU_TYPE] = {
-	{ "Pentium Pro", 2 },
-	{ "PII", 2 },
-	{ "PIII", 2 },
-	{ "Athlon", 4 },
-	{ "CPU with RTC device", 1}
-};
-
+#include "op_events.h"
+ 
 struct op_unit_mask op_unit_masks[] = {
 	/* reserved empty entry */
 	{ 0, utm_mandatory, 0x00, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
@@ -207,7 +176,7 @@ struct op_event op_events[] = {
 };
 
 /* the total number of events for all processor type */
-uint op_nr_events = (sizeof(op_events)/sizeof(op_events[0]));
+u32 op_nr_events = (sizeof(op_events)/sizeof(op_events[0]));
 
 /**
  * op_check_unit_mask - sanity check unit mask value
@@ -222,9 +191,9 @@ uint op_nr_events = (sizeof(op_events)/sizeof(op_events[0]));
  * > 0 otherwise, in this case allow->um[return value - 1] == um so the
  * caller can access to the description of the unit_mask.
  */
-int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
+int op_check_unit_mask(struct op_unit_mask * allow, u8 um)
 {
-	uint i, mask;
+	u32 i, mask;
 
 	switch (allow->unit_type_mask) {
 		case utm_exclusive:
@@ -268,7 +237,7 @@ int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
 int op_min_count(u8 ctr_type, op_cpu cpu_type)
 {
 	int ret = 0;
-	uint i;
+	u32 i;
 	int cpu_mask = 1 << cpu_type;
 
 	for (i = 0; i < op_nr_events; i++) {
@@ -307,9 +276,9 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type)
 int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type)
 {
 	int ret = 0x0;
-	uint i = 0;
-	uint cpu_mask = 1 << cpu_type;
-	uint ctr_mask = 1 << ctr;
+	u32 i = 0;
+	u32 cpu_mask = 1 << cpu_type;
+	u32 ctr_mask = 1 << ctr;
 
 	if (ctr_type != 0) {
 		for ( ; i < op_nr_events; i++) {
@@ -331,35 +300,26 @@ int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type)
 	return ret;
 }
 
-/**
- * op_get_cpu_type_str - get the cpu string.
- * @cpu_type: the cpu type identifier
- *
- * The function always return a valid const char*
- * the core cpu denomination or "invalid cpu type" if
- * @cpu_type is not valid.
- */
-const char * op_get_cpu_type_str(op_cpu cpu_type)
-{
-	if (cpu_type < 0 || cpu_type > MAX_CPU_TYPE) {
-		return "invalid cpu type";
-	}
-
-	return cpu_type_descrs[cpu_type].name;
-}
-
+static u32 cpu_max_counters[MAX_CPU_TYPE] = {
+	2, /* PPro */
+	2, /* PII */
+	2, /* PIII */
+	4, /* Athlon */
+	1  /* RTC */
+};
+ 
 /**
  * op_get_cpu_nr_counters - get the nr of counter
  * @cpu_type: the cpu type identifier
  *
  * The function return the number of counter available for this
- * cpu type. return (uint)-1 if the cpu type is nopt recognized
+ * cpu type. return (u32)-1 if the cpu type is nopt recognized
  */
-uint op_get_cpu_nr_counters(op_cpu cpu_type)
+u32 op_get_cpu_nr_counters(op_cpu cpu_type)
 {
 	if (cpu_type < 0 || cpu_type > MAX_CPU_TYPE) {
-		return (uint)-1;
+		return (u32)-1;
 	}
 
-	return cpu_type_descrs[cpu_type].nr_counters;
+	return cpu_max_counters[cpu_type];
 }

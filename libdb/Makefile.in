@@ -1,22 +1,22 @@
-AR=ar
+include ../make.common
 
-CFLAGS=-Wall -Wstrict-prototypes -pipe -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
-CFLAGS+=-DNDEBUG
+# disabled db-test etc. for now
+ 
+HEADERS=db.h
+ 
+SOURCES=db-manage.c db-insert.c db-travel.c db-debug.c
 
-.PHONY: clean
+OBJECTS=db-manage.o db-insert.o db-travel.o db-debug.o
 
-all: libdb.a db-test
+TARGET=libdb.a
 
+all: $(TARGET)
+install:
+uninstall:
 clean:
-	rm -rf *.o *~ .deps db-test libdb.a
+	rm -rf .deps $(OBJECTS) $(TARGET) 
 
-libdb.a: db-insert.o db-manage.o db-travel.o db-debug.o
-	rm -f $@
+$(TARGET): $(OBJECTS)
 	$(AR) cr $@ $^
-
-db-test: db-test.o libdb.a
-	$(CC) $(CFLAGS) $^ -o $@
-
-ALL_SOURCES = db-insert.c db-manage.c db-travel.c db-debug.c db-test.c
-
-include ../Rules.make
+ 
+include ../make.deps

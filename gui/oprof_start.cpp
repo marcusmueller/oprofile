@@ -38,7 +38,7 @@
 #include <qpushbutton.h> 
 
 #include "oprof_start.h"
-#include "../util/string_manip.h"
+#include "string_manip.h"
 
 using std::string;
  

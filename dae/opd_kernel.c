@@ -16,6 +16,8 @@
 
 #include "opd_proc.h"
 
+#include "op_fileio.h"
+ 
 extern int verbose;
 extern unsigned long opd_stats[];
  
@@ -48,10 +50,10 @@ void opd_read_system_map(const char *filename)
 	char *line;
 	char *cp;
 
-	fp = opd_open_file(filename, "r");
+	fp = op_open_file(filename, "r");
 
 	while (1) {
-		line = opd_get_line(fp);
+		line = op_get_line(fp);
 		if (streq(line, "")) {
 			free(line);
 			break;
@@ -74,7 +76,7 @@ void opd_read_system_map(const char *filename)
 	if (!kernel_end)
 		kernel_end = (u32)-1;
 
-	opd_close_file(fp);
+	op_close_file(fp);
 }
 
 /**
@@ -161,7 +163,7 @@ static void opd_get_module_info(void)
 
 	nr_modules=0;
 
-	fp = opd_try_open_file("/proc/ksyms", "r");
+	fp = op_try_open_file("/proc/ksyms", "r");
 
 	if (!fp) {	
 		printf("oprofiled: /proc/ksyms not readable, can't process module samples.\n");
@@ -169,7 +171,7 @@ static void opd_get_module_info(void)
 	}
 
 	while (1) {
-		line = opd_get_line(fp);
+		line = op_get_line(fp);
 		if (streq("", line) && !feof(fp)) {
 			free(line);
 			continue;
@@ -247,7 +249,7 @@ static void opd_get_module_info(void)
 
 failure:
 	free(line);
-	opd_close_file(fp);
+	op_close_file(fp);
 }
 
 /**

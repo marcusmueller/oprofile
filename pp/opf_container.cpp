@@ -23,7 +23,7 @@
 
 #include <limits.h>
 
-#include "../util/file_manip.h"
+#include "file_manip.h"
 
 #include "demangle_symbol.h"
 

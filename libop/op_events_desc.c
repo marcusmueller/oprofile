@@ -1,35 +1,27 @@
-/* $Id: op_events_desc.c,v 1.8 2002/03/20 21:19:42 phil_e Exp $ */
-/* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+/**
+ * \file op_events_desc.c
+ * Copyright 2002 OProfile authors
+ * Read the file COPYING
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
+ * Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- * Place - Suite 330, Boston, MA 02111-1307, USA.
+ * \author John Levon <moz@compsoc.man.ac.uk>
+ * \author Philippe Elie <phil_el@wanadoo.fr>
  */
-
-/* Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren */
 
 /* See IA32 Vol. 3 Appendix A */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 
-#include "../op_user.h"
-
+#include "op_events.h"
+#include "op_events_desc.h"
+ 
 /**
  * op_get_cpu_type - get from /proc/sys/dev/oprofile/cpu_type the cpu type
  *
- * returns CPU_NO_GOOD if the CPU could not be identified
+ * returns %CPU_NO_GOOD if the CPU could not be identified
  */
 op_cpu op_get_cpu_type(void)
 {
@@ -51,6 +43,31 @@ op_cpu op_get_cpu_type(void)
 	fclose(fp);
 
 	return cpu_type;
+}
+
+static char const * cpu_names[MAX_CPU_TYPE] = {
+	"Pentium Pro",
+	"PII",
+	"PIII",
+	"Athlon",
+	"CPU with RTC device"
+};
+
+/**
+ * op_get_cpu_type_str - get the cpu string.
+ * @cpu_type: the cpu type identifier
+ *
+ * The function always return a valid const char*
+ * the core cpu denomination or "invalid cpu type" if
+ * @cpu_type is not valid.
+ */
+char const * op_get_cpu_type_str(op_cpu cpu_type)
+{
+	if (cpu_type < 0 || cpu_type > MAX_CPU_TYPE) {
+		return "invalid cpu type";
+	}
+
+	return cpu_names[cpu_type];
 }
 
 struct op_unit_desc op_unit_descs[] = {
@@ -93,7 +110,7 @@ struct op_unit_desc op_unit_descs[] = {
 	  "all MOESI cache state", NULL, }, },
 };
 
-char *op_event_descs[] = {
+char * op_event_descs[] = {
   "clocks processor is not halted",
   /* Data Cache Unit (DCU) */
   "all memory references, cachable and non",
@@ -230,11 +247,11 @@ char *op_event_descs[] = {
  * NULL if um is invalid.
  * This string is in text section so should not be freed.
  */
-static char *op_get_um_desc(uint op_events_index, u8 um)
+static char * op_get_um_desc(u32 op_events_index, u8 um)
 {
-	struct op_unit_mask *op_um_mask;
+	struct op_unit_mask * op_um_mask;
 	int um_mask_desc_index;
-	uint um_mask_index = op_events[op_events_index].unit;
+	u32 um_mask_index = op_events[op_events_index].unit;
 
 	if (!um_mask_index)
 		return NULL;
@@ -271,9 +288,10 @@ static char *op_get_um_desc(uint op_events_index, u8 um)
  * NULL when @um is invalid for the given @type value.
  * These strings are in text section so should not be freed.
  */
-void op_get_event_desc(op_cpu cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp)
+void op_get_event_desc(op_cpu cpu_type, u8 type, u8 um,
+	char ** typenamep, char ** typedescp, char ** umdescp)
 {
-	uint i;
+	u32 i;
 	int cpu_mask = 1 << cpu_type;
 
 	*typenamep = *typedescp = *umdescp = NULL;

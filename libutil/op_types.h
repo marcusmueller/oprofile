@@ -1,0 +1,24 @@
+/**
+ * \file op_types.h
+ * Copyright 2002 OProfile authors
+ * Read the file COPYING
+ *
+ * \author John Levon <moz@compsoc.man.ac.uk>
+ * \author Philippe Elie <phil_el@wanadoo.fr>
+ */
+
+#ifndef OP_TYPES_H
+#define OP_TYPES_H
+
+#ifndef __KERNEL__
+/*@{\name miscellaneous types */
+typedef unsigned char u8; 
+typedef unsigned short u16;
+typedef unsigned int u32;
+typedef int fd_t;
+/*@}*/
+#else
+#include <linux/types.h>
+#endif
+ 
+#endif /* OP_TYPES_H */

@@ -1,4 +1,5 @@
 *.*~
+*.html
 .deps
 oprofile.html
 guide.tex

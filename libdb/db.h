@@ -14,10 +14,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-#ifndef fd_t
-#define fd_t int
-#endif
-
 /** the type of a key */
 typedef unsigned int db_key_t;
 /** the type of an information in the database */
@@ -73,7 +69,7 @@ typedef struct {
  */
 typedef struct {
 	db_page_t * page_base;		/*< base memory area of the page */
-	fd_t fd;			/*< file descriptor of the maped mem */
+	int fd;				/*< file descriptor of the maped mem */
 	void * base_memory;		/*< base memory of the maped memory */
 	db_descr_t * descr;		/*< the current state of database */
 	size_t sizeof_header;		/*< from base_memory to descr */

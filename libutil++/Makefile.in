@@ -1,0 +1,20 @@
+include ../make.common
+
+HEADERS=child_reader.h file_manip.h string_manip.h
+ 
+SOURCES=child_reader.cpp file_manip.cpp string_manip.cpp
+
+OBJECTS=child_reader.o file_manip.o string_manip.o
+
+TARGET=libutil++.a
+
+all: $(TARGET)
+install:
+uninstall:
+clean:
+	rm -rf .deps $(OBJECTS) $(TARGET) 
+
+$(TARGET): $(OBJECTS)
+	$(AR) cr $@ $^
+ 
+include ../make.deps

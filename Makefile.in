@@ -1,19 +1,15 @@
-# $Id: Makefile.in,v 1.50 2002/05/05 00:47:57 movement Exp $
-
 .PHONY: all install clean distclean maintainerclean uninstall tags
 
 # take care: order of sub-dir build is meaningfull.
 
+USER_SUBDIRS=libutil libutil++ libop libdb dae utils pp gui oprof_report doc
+SUBDIRS=$(USER_SUBDIRS) module
+ 
 all:
-	$(MAKE) -C util
-	$(MAKE) -C events
-	$(MAKE) -C libdb
-	$(MAKE) -C module
-	$(MAKE) -C dae
-	$(MAKE) -C pp
-	$(MAKE) -C gui
-	$(MAKE) -C oprof_report
-	$(MAKE) -C doc
+	for i in $(SUBDIRS) ; \
+	do \
+		(cd $$i && $(MAKE)) || exit 1 ; \
+	done
 
 install: install.kernel install.user
 
@@ -21,43 +17,33 @@ install.kernel: all
 	$(MAKE) -C module install DESTDIR=$(DESTDIR)
 
 install.user: all
-	$(MAKE) -C util install DESTDIR=$(DESTDIR)
-	$(MAKE) -C events install DESTDIR=$(DESTDIR)
-	$(MAKE) -C dae install DESTDIR=$(DESTDIR)
-	$(MAKE) -C pp install DESTDIR=$(DESTDIR)
-	$(MAKE) -C gui install DESTDIR=$(DESTDIR)
-	$(MAKE) -C oprof_report install DESTDIR=$(DESTDIR)
-	$(MAKE) -C doc install DESTDIR=$(DESTDIR)
+	for i in $(USER_SUBDIRS) ; \
+	do
+		(cd $$i && $(MAKE) install) || exit 1 ; \
+	done 
 
 uninstall:
-	$(MAKE) -C events uninstall
-	$(MAKE) -C module uninstall
-	$(MAKE) -C dae uninstall
-	$(MAKE) -C pp uninstall
-	$(MAKE) -C gui uninstall
-	$(MAKE) -C oprof_report uninstall
-	$(MAKE) -C doc uninstall
+	for i in $(SUBDIRS) ; \
+	do \
+		(cd $$i && $(MAKE) uninstall) || exit 1 ; \
+	done
 	@echo "Goodbye."
 
 clean:
-	rm -f *.o
-	$(MAKE) -C util clean
-	$(MAKE) -C events clean
-	$(MAKE) -C libdb clean
-	$(MAKE) -C module clean
-	$(MAKE) -C dae clean
-	$(MAKE) -C pp clean
-	$(MAKE) -C doc clean
-	$(MAKE) -C gui clean
-	$(MAKE) -C oprof_report clean
+	for i in $(SUBDIRS) ; \
+	do \
+		(cd $$i && $(MAKE) clean) || exit 1 ; \
+	done
 
-# doc/Makefile is deleted here but should be deleted in distclean.
-# When the dist target works move it as action of distclean.
 maintainerclean: distclean
-	rm -f configure doc/Makefile aclocal.m4 config.h.in
+	rm -f configure aclocal.m4 config.h.in
 
 distclean: clean
-	rm -f Makefile module/Makefile events/Makefile libdb/Makefile util/Makefile doc/oprofile.1 dae/Makefile pp/Makefile oprof_report/Makefile oprof_report/ui/Makefile gui/Makefile gui/ui/Makefile tags config.status config.log config.cache version.h Rules.make config.h
+	rm -f Makefile tags config.status config.log config.cache make.common version.h config.h
+	for i in $(SUBDIRS) ; \
+	do \
+		rm -f $$i/Makefile ; \
+	done
 
 tags:
 	ctags -R

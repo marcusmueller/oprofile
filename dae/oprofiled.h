@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.45 2002/05/02 02:19:09 movement Exp $ */
+/* $Id: oprofiled.h,v 1.46 2002/05/06 18:00:30 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -23,7 +23,6 @@
    text offset if no System.map or module info is available */
 #define KERNEL_VMA_OFFSET           0xc0100000
 
-#include <popt.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -39,10 +38,11 @@
 #include <sys/poll.h>
 #include <sys/mman.h>
 
-#include "opd_util.h"
-#include "opd_list.h"
-#include "../op_user.h"
-#include "../libdb/db.h"
+#include "op_libiberty.h"
+#include "op_list.h"
+#include "op_interface.h"
+#include "op_hw_config.h"
+#include "db.h"
 
 /* 1 if we separate samples for shared lib */
 extern int separate_samples;
@@ -75,7 +75,6 @@ extern int separate_samples;
 extern uint op_nr_counters;
 extern int verbose;
 extern int kernel_only;
-extern op_cpu cpu_type; 
 extern int separate_samples;
 extern char * vmlinux;
 extern unsigned long opd_stats[];

@@ -1,4 +1,4 @@
-/* $Id: op_help.c,v 1.5 2002/03/01 21:30:02 phil_e Exp $ */
+/* $Id: op_help.c,v 1.1 2002/05/06 18:00:35 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -24,8 +24,10 @@
 #include <string.h>
 #include <limits.h>
 
-#include "../op_user.h"
-#include "../util/op_popt.h"
+#include "version.h"
+#include "op_events.h"
+#include "op_events_desc.h"
+#include "op_popt.h"
 
 static op_cpu cpu_type = CPU_NO_GOOD;
 
@@ -111,7 +113,7 @@ static void get_options(int argc, char const * argv[])
 {
 	poptContext optcon;
 
-	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
+	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
 		show_version(argv[0]);

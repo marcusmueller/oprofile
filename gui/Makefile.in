@@ -1,77 +1,54 @@
-MOC=@MOC@
-UIC=@UIC@
-
-CXXFLAGS=-ansi -Wall -pedantic -W @CXXFLAGS@ @QT2_INCLUDES@
-
-.PHONY: all clean install uninstall
-.SUFFIXES:
-
-ifeq "@have_qt2@" "yes"
-all: oprof_start
-
-clean:
-	$(MAKE) -C ui clean
-	rm -rf *.o .deps *.moc.* oprof_start
-
-install: all
-	-$(MKDIR_P) $(BINDIR)
-	cp oprof_start $(BINDIR)/oprof_start && chmod 755 $(BINDIR)/oprof_start
-
-uninstall:
-	-rm -f $(BINDIR)/oprof_start
-	@echo "---------------------------------------------------------------"
-	@echo "The uninstall target does not remove your ~/.oprofile directory"
-	@echo "---------------------------------------------------------------"
-
-# application oprof_start
-OP_START_UI_OBJS=ui/oprof_start.base.o ui/oprof_start.base.moc.o
-OP_START_OBJS=oprof_start.o oprof_start.moc.o ../events/op_events.o \
- ../events/op_events_desc.o oprof_start_config.o oprof_start_main.o \
- oprof_start_util.o ../util/string_manip.o ../util/child_reader.o \
- ../util/file_manip.o
-
-# We do not put $(OP_START_UI_OBJS) as dependency of oprof_start (make don't
-# know how to rebuild it at this point) but it works due to side effect between
-# Makefile, dependency file and ui/oprof_start.base.h
-oprof_start: $(OP_START_OBJS)
-	$(MAKE) -C ui
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(OP_START_UI_OBJS) @QT2_LDFLAGS@ @QT2_LIBS@ -liberty
-
-# we need explicit dependencies and build rules here else after a make clean
-# dependencies can not be regenerated. This also have the side effect to
-# implicitly put dependencies to oprof_start on *all* ui files because if one
-# ui is modified all ui files are modified.
-ui/oprof_start.base.h: ui/oprof_start.base.ui
-	$(MAKE) -C ui oprof_start.base.h
-ui/oprof_start.base.moc.cpp: ui/oprof_start.base.h
-	$(MAKE) -C ui oprof_start.base.h
-
-oprof_start.moc.o: oprof_start.moc.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-oprof_start.o: oprof_start.cpp
-	$(CXX) $(CXXFLAGS) -DBINDIR=\"$(BINDIR)\" -c $< -o $@
-oprof_start_config.o: oprof_start_config.cpp
-	$(CXX) $(CXXFLAGS) -DKVERSION=\"@KVERS@\" -c $< -o $@
-oprof_start_util.o: oprof_start_util.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-oprof_start_main.o: oprof_start_main.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# generate qt moc code for subclass
-oprof_start.moc.cpp: oprof_start.h ui/oprof_start.base.h
-	$(MOC) -o oprof_start.moc.cpp oprof_start.h
-
-# dependencies
-ALL_SOURCES = oprof_start_util.cpp oprof_start_config.cpp \
- oprof_start_main.cpp oprof_start.cpp oprof_start.moc.cpp
-
-include ../Rules.make
-
-CPPFLAGS_DEPS += @QT2_INCLUDES@
-
-else
+ifneq "@have_qt2@" "yes"
 all:
-clean:
 install:
 uninstall:
-endif
+clean:
+else
+
+include ../make.common
+
+MOC=@MOC@
+ 
+HEADERS=oprof_start.h oprof_start_config.h oprof_start_util.h persistent_config.h
+SOURCES=oprof_start.cpp oprof_start_config.cpp oprof_start_util.cpp oprof_start_main.cpp
+OBJECTS=ui/oprof_start.base.o ui/oprof_start.base.moc.o \
+	oprof_start.o oprof_start_config.o oprof_start_util.o oprof_start_main.o \
+	oprof_start.moc.o
+TARGET=oprof_start
+
+CXXFLAGS += -DBINDIR=\"$(BINDIR)\" -DKVERSION=\"@KVERS@\"
+LDFLAGS += @QT2_LDFLAGS@
+LIBS=-lutil++ -lutil -lop -lpopt -liberty @QT2_LIBS@
+ 
+all: $(TARGET)
+ 
+.deps/oprof_start_config.cpp.d .deps/oprof_start_util.cpp.d .deps/oprof_start_main.cpp.d .deps/oprof_start.cpp.d: .buildui
+ 
+oprof_start.moc.cpp: oprof_start.h
+	$(MOC) -o $@ oprof_start.h
+oprof_start.moc.o: oprof_start.moc.cpp
+
+.buildui:
+	$(MAKE) -C ui
+	$(TOUCH) $@
+
+INSTALL_LIST=oprof_start
+install:
+	$(INSTALL) $(INSTALL_LIST) $(BINDIR)
+ 
+uninstall:
+	rm -f $(INSTALL_LIST)
+	@echo "---------------------------------------------------------------"
+	@echo "The uninstall target does not remove your ~/.oprofile directory"
+	@echo "---------------------------------------------------------------" 
+ 
+clean:
+	$(MAKE) -C ui clean
+	rm -rf .deps $(OBJECTS) $(TARGET) .buildui oprof_start.moc.cpp
+
+$(TARGET): $(OBJECTS)
+	$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS)
+ 
+include ../make.deps
+ 
+endif 

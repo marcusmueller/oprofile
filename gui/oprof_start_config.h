@@ -21,15 +21,6 @@
 #include <iostream>
 
 #include "persistent_config.h"
-#include "../op_user.h"
-
-// This is a standard non-portable assumption we make. 
-#define OP_MIN_PID		0
-#define OP_MAX_PID		32767
-#define OP_MIN_PGRP		0
-#define OP_MAX_PGRP		32767
-
-#define BUILD_DIR		"/lib/modules/" UTS_RELEASE "/build/"
 
 // Store the setup of one events.
 struct event_setting {

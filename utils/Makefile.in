@@ -1,0 +1,38 @@
+include ../make.common
+
+HEADERS=
+ 
+OP_SESSION_SOURCES=op_session.c
+OP_HELP_SOURCES=op_help.c
+SOURCES=$(OP_SESSION_SOURCES) $(OP_HELP_SOURCES)
+
+OP_SESSION_OBJECTS=op_session.o
+OP_HELP_OBJECTS=op_help.o
+OBJECTS=$(OP_SESSION_OBJECTS) $(OP_HELP_OBJECTS)
+
+OP_SESSION_TARGET=op_session
+OP_HELP_TARGET=op_help
+TARGET=$(OP_SESSION_TARGET) $(OP_HELP_TARGET)
+
+OP_SESSION_LIBS=-lutil -lpopt -liberty
+OP_HELP_LIBS=-lutil -lop -lpopt -liberty
+ 
+all: $(TARGET)
+
+INSTALL_LIST=op_help op_dump op_session op_start op_stop
+install:
+	$(INSTALL) $(INSTALL_LIST) $(BINDIR)
+ 
+uninstall:
+	rm -f $(INSTALL_LIST)
+ 
+clean:
+	rm -rf .deps $(OBJECTS) $(TARGET) 
+
+$(OP_SESSION_TARGET): $(OP_SESSION_OBJECTS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(OP_SESSION_LIBS)
+ 
+$(OP_HELP_TARGET): $(OP_HELP_OBJECTS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(OP_HELP_LIBS)
+ 
+include ../make.deps

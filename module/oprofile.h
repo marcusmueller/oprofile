@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.24 2002/05/01 19:03:43 movement Exp $ */
+/* $Id: oprofile.h,v 1.25 2002/05/06 18:00:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -34,8 +34,9 @@
 
 #include "compat.h"
  
-/* userspace/module interface */
-#include "../op_user.h"
+#include "op_config.h"
+#include "op_hw_config.h"
+#include "op_interface.h"
 
 #undef min
 #undef max

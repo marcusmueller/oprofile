@@ -9,9 +9,9 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.82 2002/05/05 00:40:11 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.83 2002/05/06 18:00:28 movement Exp $)
 AC_PREREQ(2.13)
-AC_INIT(./op_user.h)
+AC_INIT(libop/op_config.h)
 
 AC_CONFIG_HEADER(config.h)
 
@@ -221,6 +221,10 @@ AC_SUBST(MODINSTALLDIR)
 
 dnl --- user space configuration ---
 
+# we are weak, so do not support separate build dir
+topdir=`pwd`
+AC_SUBST(topdir)
+ 
 AC_ARG_WITH(extra-includes,
 [  --with-extra-includes=DIR    add extra include paths],
   use_extra_includes="$withval",
@@ -297,7 +301,23 @@ QT2_DO_IT_ALL
  
 # do NOT put tests here, they will fail in the case X is not installed !
  
-AC_OUTPUT(Makefile events/Makefile libdb/Makefile util/Makefile module/Makefile dae/Makefile doc/Makefile doc/oprofile.1 pp/Makefile gui/Makefile gui/ui/Makefile oprof_report/Makefile oprof_report/ui/Makefile Rules.make version.h)
+AC_OUTPUT(make.common \
+	Makefile \
+	libutil/Makefile \
+	libutil++/Makefile \
+	libop/Makefile \
+	libdb/Makefile \
+	module/Makefile \
+	dae/Makefile \
+	utils/Makefile \
+	doc/Makefile \
+	doc/oprofile.1 \
+	pp/Makefile \
+	gui/Makefile \
+	gui/ui/Makefile \
+	oprof_report/Makefile \
+	oprof_report/ui/Makefile \
+	version.h)
 
 if test "$have_qt2" != "yes"; then
 	echo "Warning: Qt2 not found; no GUI will be built"

@@ -1,6 +1,8 @@
 0.3 Release
 -----------
 
+ o module/Makefile.in
+ * oprof_report/Makefile.in etc. 
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level. Important.
  o better support in post-prof for session names. Consistent cmd line interfaces - 
@@ -53,6 +55,8 @@ General checks to make
 Later
 -----
  
+ o The halting problem: get two make cleans in a row to not compile anything
+ 
  o multiplexing for real
  
  o CPU-specific sample files option ?
@@ -61,7 +65,7 @@ Later
   the kernel service. The overhead for RTC is very big actually. Take care
   first from where come the overhead (read/write RTC CMOS is costly)
 
-o move uniformly to doxygen Javadoc style :
+o move uniformly to doxygen Javadoc style (also use new header style) :
 
 	/**
 	 * make two wheels go fast

@@ -42,6 +42,7 @@
 <!-- This adds the XHTML DOCTYPE declaration-->
   <xsl:call-template name="write.chunk.with.doctype">
     <xsl:with-param name="filename" select="$filename"/>
+    <xsl:with-param name="indent" select="'yes'"/>
    <xsl:with-param name="doctype-public">-//W3C//DTD XHTML 1.0 Transitional//EN</xsl:with-param>
    <xsl:with-param name="doctype-system">http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd</xsl:with-param>
     <xsl:with-param name="content">
