@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.16 2000/09/28 21:34:18 moz Exp $ */
+/* $Id: oprofiled.h,v 1.17 2000/11/12 21:13:53 moz Exp $ */
 
 #ifndef OPROFILED_H
 #define OPROFILED_H
@@ -51,45 +51,19 @@
 
 #define NR_CPUS 32
 
-/* stats for sample collection */
-#define OPD_MAX_STATS 11
-
-enum {  OPD_KERNEL,
-	OPD_LOST_PROCESS,
-	OPD_PROCESS,
-	OPD_LOST_MAP_PROCESS,
-	OPD_PROC_QUEUE_ACCESS,
-	OPD_PROC_QUEUE_DEPTH,
-	OPD_DUMP_COUNT,
-	OPD_MAP_ARRAY_ACCESS,
-	OPD_MAP_ARRAY_DEPTH,
-	OPD_SAMPLES,
-	OPD_NOTIFICATIONS
+enum {  OPD_KERNEL, /* nr. kernel samples */
+	OPD_LOST_PROCESS, /* nr. samples for which process info couldn't be accessed */
+	OPD_PROCESS, /* nr. userspace samples */
+	OPD_LOST_MAP_PROCESS, /* nr. samples for which map info couldn't be accessed */
+	OPD_PROC_QUEUE_ACCESS, /* nr. accesses of proc queue */
+	OPD_PROC_QUEUE_DEPTH, /* cumulative depth of proc queue accesses */
+	OPD_DUMP_COUNT, /* nr. of times buffer is read */
+	OPD_MAP_ARRAY_ACCESS, /* nr. accesses of map array */
+	OPD_MAP_ARRAY_DEPTH, /* cumulative depth of map array accesses */
+	OPD_SAMPLES, /* nr. samples */
+	OPD_NOTIFICATIONS, /* nr. notifications */
+	OPD_MAX_STATS /* end of stats */
 	};
-# if 0
-/* nr. kernel samples */
-#define OPD_KERNEL 0
-/* nr. samples for which process info couldn't be accessed */
-#define OPD_LOST_PROCESS 1
-/* nr. userspace samples */
-#define OPD_PROCESS 2
-/* nr. samples for which map info couldn't be accessed */
-#define OPD_LOST_MAP_PROCESS 3
-/* nr. accesses of proc queue */
-#define OPD_PROC_QUEUE_ACCESS 4
-/* cumulative depth of proc queue accesses */
-#define OPD_PROC_QUEUE_DEPTH 5
-/* nr. of times buffer is read */
-#define OPD_DUMP_COUNT 6
-/* nr. accesses of map array */
-#define OPD_MAP_ARRAY_ACCESS 7
-/* cumulative depth of map array accesses */
-#define OPD_MAP_ARRAY_DEPTH 8
-/* nr. samples */
-#define OPD_SAMPLES 9
-/* nr. notifications */
-#define OPD_NOTIFICATIONS 10
-#endif
 
 #define OPD_DEFAULT_BUF_SIZE 2048
 
