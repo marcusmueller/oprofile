@@ -189,6 +189,11 @@ Sort the entries in reverse (only with -l)
 Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'd' details for each samples for the selected symbols and 'h' for the header itself. 'q','Q' are identical to 'p', 'P' but the percentage are relative to the total number of symbols. This option is not available with --dump-gprof-file.
 .br
 .TP
+.BI "--session " session-name
+Specify the session name you want to use, session-name can be an absolute path
+where samples reside or a session name relative to samples files base directory. If you specify a samples filename with an absolute path this option is ignored
+.TP
+.br
 .B op_to_source options
 .br
 .TP
@@ -250,6 +255,13 @@ verbose output
 exclude list of comma separated symbol
 .br
 .TP
+.BI "--session " session-name
+Specify the session name you want to use, session-name can be an absolute path
+where samples reside or a session name relative to samples files base directory. If you specify a samples
+filename with an absolute path this option is ignored
+.TP
+.br
+.TP
 .BI "--objdump-params " 'params' ", -o "'params'
 pass the comma separated additional parameters to objdump. Check the objdump man page
 to see what options objdump accept e.g. -o '--disassembler-options=intel' to get Intel assembly syntax instead of att syntax.
@@ -293,6 +305,11 @@ Specify an alternate list of pathname to locate image file. This is usefull if y
 .TP
 .BI "--recursive-path " path_list ',' separated ", -P " path_list ',' separated
 Same as --path but retrieve recursively the image file name in the path list
+.TP
+.br
+.BI "--session " session-name
+Specify the session name you want to use, session-name can be an absolute path
+where samples reside or a session name relative to samples files base directory
 .TP
 .br
 .B op_merge options

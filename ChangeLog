@@ -1,3 +1,14 @@
+2002-10-20  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/Makefile.in:
+	* pp/session.cpp:
+	* pp/session.h:
+	* pp/op_time_options.cpp:
+	* pp/op_to_source.cpp:
+	* pp/oprofpp.cpp:
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: handle --session options
+
 2002-10-19  John Levon  <levon@movementarian.org>
 
 	* configure.in: AC_HELP_STRING is too new for my autoconf

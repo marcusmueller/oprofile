@@ -994,6 +994,14 @@ Some interesting options of the post-processor :
 		This option is not available with --dump-gprof-file.
 		</para></listitem>
 	</varlistentry>
+	<varlistentry>
+		<term><option>--session</option> session-name</term>
+		<listitem><para>
+		Specify the session name you want to use, session-name can be an absolute path
+		where samples reside or a session name relative to samples files base directory.
+		If you specify a samples filename with an absolute path this option is ignored
+		</para></listitem>
+	</varlistentry>
 </variablelist>
 
 </sect1>
@@ -1135,6 +1143,14 @@ The options allowed are :
 		to the sample histogram, as the percentage values are re-calculated.
 		</para></listitem>
 	</varlistentry>
+	<varlistentry>
+		<term><option>--session</option> session-name</term>
+		<listitem><para>
+		Specify the session name you want to use, session-name can be an absolute path
+		where samples reside or a session name relative to samples files base directory.
+		If you specify a samples filename with an absolute path this option is ignored
+		</para></listitem>
+	</varlistentry>
 </variablelist>
 </sect1>
 
@@ -1262,6 +1278,13 @@ Options allowed are :
 		<listitem><para>
 		Comma-separated list of symbols to ignore. This can be useful to ignore the leading contributors
 		to the sample histogram, as the percentage values are re-calculated.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--session</option> session-name</term>
+		<listitem><para>
+		Specify the session name you want to use, session-name can be an absolute path
+		where samples reside or a session name relative to samples files base directory.
 		</para></listitem>
 	</varlistentry>
 </variablelist>

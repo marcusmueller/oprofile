@@ -12,7 +12,7 @@
 #include "opp_symbol.h"
 #include "op_time_options.h"
 #include "counter_util.h"
-#include "op_config.h"
+#include "session.h"
 
 #include "popt_options.h"
 #include "file_manip.h"
@@ -24,7 +24,6 @@
 using namespace std;
 
 namespace options {
-	string session;
 	bool list_symbols;
 	bool show_image_name;
 	bool demangle;
@@ -51,7 +50,6 @@ string counter_str("0");
 option options_array[] = {
 	option(options::verbose, "verbose", 'V', "verbose output"),
 	option(output_format, "output-format", 't', "choose the output format", "output-format strings"),
-	option(options::session, "session", 's', "session to use", "name"),
 	option(counter_str, "counter", 'c', "which counter to use", "counter_nr[,counter_nr]"),
 	option(options::list_symbols, "list-symbols", 'l', "list samples by symbol"),
 	option(options::show_image_name, "show-image-name", 'n', "show the image name from where come symbols"),
@@ -92,28 +90,6 @@ void add_to_alternate_filename(vector<string> const & path_names,
 	}
 }
 
-/**
- * handle_session_options - derive samples directory
- */
-void handle_session_options(void)
-{
-/*
- * This should eventually be shared amongst all programs
- * to take session names.
- */
-	if (options::session.empty()) {
-		options::samples_dir = OP_SAMPLES_DIR;
-		return;
-	}
-
-	if (options::session[0] == '/') {
-		options::samples_dir = options::session;
-		return;
-	}
-
-	options::samples_dir = OP_SAMPLES_DIR + options::session;
-}
-
 } // namespace anon
 
 /**
@@ -131,7 +107,7 @@ void get_options(int argc, char const * argv[])
 
 	set_verbose(verbose);
 
-	handle_session_options();
+	options::samples_dir = handle_session_options();
 
 	if (output_format.empty()) {
 		output_format = "hvspni";

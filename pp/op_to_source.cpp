@@ -28,7 +28,7 @@
 #include "op_print_event.h"
 #include "op_events_desc.h"
 #include "op_to_source_options.h"
-#include "op_config.h"
+#include "session.h"
 
 #include "child_reader.h"
 #include "string_manip.h"
@@ -896,7 +896,8 @@ int main(int argc, char const * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	sample_file = relative_to_absolute_path(sample_file, OP_SAMPLES_DIR);
+	string samples_dir = handle_session_options();
+	sample_file = relative_to_absolute_path(sample_file, samples_dir);
 
 	filename_match fn_match(output_filter, no_output_filter);
 

@@ -15,11 +15,11 @@
 
 #include "version.h"
 #include "oprofpp_options.h"
+#include "session.h"
 #include "op_libiberty.h"
 #include "op_fileio.h"
 #include "file_manip.h"
 
-#include "op_config.h"
 #include "op_mangling.h"
 #include "samples_container.h"
 #include "opp_samples_files.h"
@@ -189,8 +189,10 @@ int main(int argc, char const *argv[])
 
 	validate_counter(options::counter_mask, options::sort_by_counter);
 
+	string samples_dir = handle_session_options();
+
 	options::sample_file =
-		relative_to_absolute_path(options::sample_file, OP_SAMPLES_DIR);
+		relative_to_absolute_path(options::sample_file, samples_dir);
 
 	if (!options::gprof_file.empty()) {
 		opp_samples_files samples_files(options::sample_file, options::counter_mask);
