@@ -216,10 +216,10 @@ specify --source-dir neither --output-dir annotated source file go to stdout
 .TP
 .I "--output patterns"
 if you request for annotated source this option give a list of patterns saparated by "," so only source filename that match one of this pattern are output.
-The patterns given in --output and --no-output follow the shell convention eg
+The patterns given in --output and --no-output follow the locate utilities  convention eg
 if you want to include a file named "foo" you must specify "*foo*" as pattern
-to match the path part of the full filename. the only difference with shell
-filename match is that * match also the "/" characters in path name
+to match the path part of the full filename. To match all file in a source sub-directory
+named xxx/kernel/ you can specify *kernel*. This option have no effect if --source-dir or --output-dir have not been set.
 .br
 .TP
 .I "--no-output patterns"

@@ -1,3 +1,10 @@
+2001-10-09  Philippe Elie  <ph_e@club-internet.fr>
+
+	* doc/oprofile.sgml:
+	* doc/oprofile.1.in: clarify doc
+	* pp/opf_filter.cpp: corner case fix in --output-dir and
+	  --source-dir handling.
+
 2001-10-08  John Levon  <moz@compsoc.man.ac.uk>
 
 	* acinclude.m4:

@@ -451,7 +451,21 @@ output::output(int argc_, char const * argv_[],
 		exit(EXIT_FAILURE);
 	}
 
-	if (!output_dir.empty() || !source_dir.empty()) {
+	if (source_dir.empty() == false) {
+		char* temp;
+
+		output_separate_file = true;
+
+		temp = opd_relative_to_absolute_path(source_dir.c_str(), NULL);
+		source_dir = temp;
+		opd_free(temp);
+
+		if (source_dir.length() &&
+		    source_dir[source_dir.length() - 1] != '/')
+			source_dir += '/';
+	}
+
+	if (output_dir.empty() == false || output_separate_file == true) {
 		char* temp;
 
 		output_separate_file = true;
@@ -460,19 +474,23 @@ output::output(int argc_, char const * argv_[],
 		output_dir = temp;
 		opd_free(temp);
 
-		temp = opd_relative_to_absolute_path(source_dir.c_str(), NULL);
-		source_dir = temp;
-		opd_free(temp);
+		if (output_dir.length() &&
+		    output_dir[output_dir.length() - 1] != '/')
+			output_dir += '/';
 
-		if (output_dir == source_dir) {
-			cerr << "You can not specify the same directory for "
-			     << "--output-dir and --source-dir" << endl;
+
+		if (create_dir(output_dir) == false) {
+			cerr << "unable to create " << output_dir
+			     << " directory: " << endl;
 
 			exit(EXIT_FAILURE);
 		}
+	}
 
-		if (create_dir(output_dir) == false) {
-			cerr << "unable to create " << output_dir << " directory: " << endl;
+	if (output_separate_file == true) {
+		if (output_dir == source_dir) {
+			cerr << "You can not specify the same directory for "
+			     << "--output-dir and --source-dir" << endl;
 
 			exit(EXIT_FAILURE);
 		}
