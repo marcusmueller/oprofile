@@ -1,5 +1,12 @@
 2002-11-10  John Levon  <levon@movementarian.org>
 
+	* configure.in:
+	* gui/Makefile.am:
+	* oprof_report/Makefile.am: only use X libs where
+	  they're actually wanted
+ 
+2002-11-10  John Levon  <levon@movementarian.org>
+
 	* configure.in: make included sstream work again
  
 2002-11-08  Will Cohen  <wcohen@redhat.com>

@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.121 2002/11/10 16:25:34 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.122 2002/11/10 16:36:12 movement Exp $)
 AC_PREREQ(2.13)
 
 AC_INIT(libop/op_config.h)
@@ -275,9 +275,13 @@ AC_TRY_COMPILE([#include <bfd.h>], [],
 AC_MSG_RESULT([no]);,
 AC_MSG_RESULT([yes]); AC_DEFINE(TRUE_FALSE_ALREADY_DEFINED, 1, [whether bfd.h define bool value]))
 
-AC_PATH_XTRA 
+AC_PATH_XTRA
+SAVE_LIBS="$LIBS"
 LIBS="$X_PRE_LIBS $LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"
+X_LIBS="$LIBS"
+AC_SUBST(X_LIBS)
 QT_DO_IT_ALL
+LIBS="$SAVE_LIBS"
 
 dnl enable code to describe the binary layout of libdb files, for platform portability
 AC_ARG_ENABLE(abi,

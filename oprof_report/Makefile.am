@@ -15,7 +15,7 @@ bin_PROGRAMS = oprof_report
 
 oprof_report_SOURCES = $(dist_sources)
 nodist_oprof_report_SOURCES = oprof_report.moc.cpp
-oprof_report_LDADD = ../libutil++/libutil++.a ../libutil/libutil.a ../libop/libop.a ui/liboprof_report.a @QT_LDFLAGS@ @QT_LIB@
+oprof_report_LDADD = ../libutil++/libutil++.a ../libutil/libutil.a ../libop/libop.a ui/liboprof_report.a @QT_LDFLAGS@ @QT_LIB@ @X_LIBS@
 
 oprof_report.moc.cpp: ${top_srcdir}/oprof_report/oprof_report.h
 	$(MOC) -o $@ ${top_srcdir}/oprof_report/oprof_report.h

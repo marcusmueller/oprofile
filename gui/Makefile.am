@@ -13,7 +13,7 @@ bin_PROGRAMS = oprof_start
 
 oprof_start_SOURCES = $(dist_sources)
 nodist_oprof_start_SOURCES = oprof_start.moc.cpp
-oprof_start_LDADD = ../libutil++/libutil++.a ../libutil/libutil.a ../libop/libop.a ui/liboprof_start.a @QT_LDFLAGS@ @QT_LIB@
+oprof_start_LDADD = ../libutil++/libutil++.a ../libutil/libutil.a ../libop/libop.a ui/liboprof_start.a @QT_LDFLAGS@ @QT_LIB@ @X_LIBS@
 
 oprof_start.moc.cpp: ${top_srcdir}/gui/oprof_start.h
 	$(MOC) -o $@ ${top_srcdir}/gui/oprof_start.h
