@@ -50,7 +50,7 @@ static unsigned int nr_modules=0;
  */
 void opd_init_kernel_image(void)
 {
-	kernel_image = opd_get_kernel_image(vmlinux);
+	kernel_image = opd_get_kernel_image(vmlinux, 0);
 }
 
 /**
@@ -217,7 +217,7 @@ static void opd_read_module_info(void)
 		}
 
 		mod = opd_get_module(xstrdup(module_name));
-		mod->image = opd_get_kernel_image(module_name);
+		mod->image = opd_get_kernel_image(module_name, 0);
 
 		mod->start = start_address;
 		mod->end = mod->start + module_size;
@@ -325,7 +325,7 @@ static void opd_get_module_info(void)
 				strncpy(filename, cp2, (size_t)(cp3 - cp2));
 				filename[cp3-cp2] = '\0';
 
-				mod->image = opd_get_kernel_image(filename);
+				mod->image = opd_get_kernel_image(filename, 0);
 				free(filename);
 				break;
 
@@ -512,7 +512,7 @@ static void opd_setup_kernel_sample(vma_t eip, u32 counter,
 	struct opd_image * image;
 	struct opd_module * new_module;
 
-	image = opd_add_kernel_image(name, app_image->app_name);
+	image = opd_get_kernel_image(name, app_image->app_name);
 	if (!image) {
 		verbprintf("Can't create image for %s %s\n",
 			   name, app_image->app_name);
@@ -543,7 +543,7 @@ static void opd_put_kernel_sample(vma_t eip, u32 counter,
 {
 	struct opd_module * module = opd_find_module(app_image, eip);
 	if (module) {
-		verbprintf("Image (%s) offset 0x%Lx, counter %u\n",
+		verbprintf("Image (%s) offset 0x%llx, counter %u\n",
 			   module->image->name, eip, counter);
 		opd_put_image_sample(module->image, eip - module->start,
 				     counter);

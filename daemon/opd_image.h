@@ -56,7 +56,7 @@ void opd_image_cleanup(void);
 
 void opd_init_images(void);
 struct opd_image * opd_add_kernel_image(char const * name, char const * app_name);
-struct opd_image * opd_get_kernel_image(char const * name);
+struct opd_image * opd_get_kernel_image(char const * name, char const * app_name);
  
 struct op_sample;
  

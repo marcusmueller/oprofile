@@ -346,18 +346,26 @@ struct opd_image * opd_add_kernel_image(char const * name, char const * app_name
 }
 
  
-struct opd_image * opd_get_kernel_image(char const * name)
+struct opd_image * opd_get_kernel_image(char const * name,
+					char const * app_name)
 {
 	struct list_head * pos;
 	struct opd_image * image;
  
 	list_for_each(pos, &opd_images[HASH_KERNEL]) {
 		image = list_entry(pos, struct opd_image, hash_list);
-		if (!strcmp(image->name, name))
+		if (strcmp(image->name, name))
+			continue;
+		if (!separate_kernel_samples)
+			return image;
+		if (!app_name && !image->app_name)
+			return image;
+		if (app_name && image->app_name &&
+		    !strcmp(app_name, image->app_name))
 			return image;
 	}
 
-	return opd_add_kernel_image(name, 0);
+	return opd_add_kernel_image(name, app_name);
 }
 
 

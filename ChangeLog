@@ -1,5 +1,14 @@
 2003-02-19  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* TODO: update
+
+	* daemon/opd_image.h:
+	* daemon/opd_image.cpp:
+	* daemon/opd_kernel.cpp: fix thinko with --separate=kernel resulting
+	  in duplicate opening of the same samples file.
+
+2003-02-19  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/op_exception.h:
 	* libutil++/op_exception.cpp: new files, base class for exception.
 	  Not used for now.
