@@ -180,20 +180,72 @@ information.
 <chapter id="performance-counters">
 <title>Performance counter management</title>
 
+<sect1 id ="performance-counters-ui">
+<title>Providing a user interface</title>
+</sect1>
+
+<sect1 id="performance-counters-setup">
+<title>Setting up the counters</title>
+</sect1>
+
+<sect1 id="performance-counters-start">
+<title>Starting, stopping, and disabling the counters</title>
+</sect1>
+
 </chapter>
 
 <chapter id="collecting-samples">
 <title>Collecting and processing samples</title>
+
+<sect1 id="logging-sample">
+<title>Logging a sample</title>
+</sect1>
+
+<sect1 id="finding-dentry">
+<title>Finding a sample's binary image and offset</title>
+</sect1>
+
+<sect1 id="managing-buffer">
+<title>Managing the profile buffer</title>
+</sect1>
+
+<sect1 id="managing-maps">
+<title>Managing tasks and their mappings</title>
+</sect1>
 
 </chapter>
 
 <chapter id="sample-files">
 <title>Generating sample files</title>
 
+<sect1 id="processing-buffer">
+<title>Processing the buffer</title>
+</sect1>
+
+<sect1 id="sample-file-generation">
+<title>Locating and writing sample files</title>
+</sect1>
+
 </chapter>
 
 <chapter id="output">
 <title>Generating useful output</title>
+
+<sect1 id="profile-specification">
+<title>Handling the profile specification</title>
+</sect1>
+
+<sect1 id="sample-file-collating">
+<title>Collating the candidate sample files</title>
+</sect1>
+
+<sect1 id="generating-profile-data">
+<title>Generating profile data</title>
+</sect1>
+
+<sect1 id="generating-output">
+<title>Generating output</title>
+</sect1>
 
 </chapter>
 
