@@ -139,8 +139,6 @@ int is_cookie_ignored(cookie_t cookie)
 
 	entry = create_cookie(cookie);
 	list_add(&entry->list, &hashes[hash]);
-	return entry->ignored;
- 
 out:
 	return entry->ignored;
 }
