@@ -1,3 +1,8 @@
+2004-11-20  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_sfile.c: sfile_clear_kenel() : clear also callgraph
+	  file depending on module.
+
 2004-11-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_sfile.h:

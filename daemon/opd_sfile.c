@@ -363,6 +363,14 @@ void sfile_log_sample(struct transient const * trans)
 }
 
 
+static void kill_cg_file(struct cg_hash_entry * cg)
+{
+	odb_close(&cg->file);
+	list_del(&cg->next);
+	free(cg);
+}
+
+
 static void kill_sfile(struct sfile * sf)
 {
 	size_t i;
@@ -374,11 +382,9 @@ static void kill_sfile(struct sfile * sf)
 	for (i = 0 ; i < CG_HASH_TABLE_SIZE; ++i) {
 		struct list_head * pos, * pos2;
 		list_for_each_safe(pos, pos2, &sf->cg_files[i]) {
-			struct cg_hash_entry * temp = 
+			struct cg_hash_entry * cg = 
 				list_entry(pos, struct cg_hash_entry, next);
-			odb_close(&temp->file);
-			list_del(pos);
-			free(temp);
+			kill_cg_file(cg);
 		}
 	}
 
@@ -396,8 +402,20 @@ void sfile_clear_kernel(void)
 
 	list_for_each_safe(pos, pos2, &lru_list) {
 		sf = list_entry(pos, struct sfile, lru);
-		if (sf->kernel)
+		if (sf->kernel) {
 			kill_sfile(sf);
+		} else {
+			size_t i;
+			for (i = 0 ; i < CG_HASH_TABLE_SIZE; ++i) {
+				struct list_head * pos, * pos2;
+				list_for_each_safe(pos, pos2, &sf->cg_files[i]) {
+					struct cg_hash_entry * cg =
+					  list_entry(pos, struct cg_hash_entry, next);
+					if (cg->from.start || cg->to.start)
+						kill_cg_file(cg);
+				}
+			}
+		}
 	}
 }
 
