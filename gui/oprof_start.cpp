@@ -228,10 +228,10 @@ void oprof_start::read_set_events()
 		vector<string> parts;
 		separate_token(parts, val, ':');
 
-		if (parts.size() != 5) {
+		if (parts.size() != 5 && parts.size() != 2) {
 			cerr << "invalid configuration file\n";
 			// FIXME
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		/* fill in */
@@ -239,24 +239,23 @@ void oprof_start::read_set_events()
 
 		string ev_name = parts[0];
 		event_cfgs[ctr][ev_name].count = touint(parts[1]);
-		event_cfgs[ctr][ev_name].umask = touint(parts[2]);
-		event_cfgs[ctr][ev_name].user_ring_count = touint(parts[3]);
-		event_cfgs[ctr][ev_name].os_ring_count = touint(parts[4]);
+
+		// CPU_CLK_UNHALTED:10000 is also valid
+		if (parts.size() == 5) {
+			event_cfgs[ctr][ev_name].umask = touint(parts[2]);
+			event_cfgs[ctr][ev_name].user_ring_count = touint(parts[3]);
+			event_cfgs[ctr][ev_name].os_ring_count = touint(parts[4]);
+		} else {
+			event_cfgs[ctr][ev_name].umask = 0;
+			event_cfgs[ctr][ev_name].user_ring_count = 1;
+			event_cfgs[ctr][ev_name].os_ring_count = 1;
+		}
+
 		current_events[ctr] = &locate_event(ev_name);
 	}
 
 	// FIXME what about if ctr 0 is not set ?
 	current_event = 0;
-}
-
-
-void oprof_start::on_add_event()
-{
-}
-
-
-void oprof_start::on_remove_event()
-{
 }
 
 

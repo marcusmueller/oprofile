@@ -6,8 +6,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.6 release
 -----------
 
- o gui: --verbose is not saved, ui has something wrong (start with a very
-  small dialog box, dialog box resize itself depending on user input + test)
+ o gui: show default event if none selected
 
 0.7 release
 -----------

@@ -60,10 +60,6 @@ protected slots:
 	void on_start_profiler();
 	/// stop profiler
 	void on_stop_profiler();
-	/// add a new event
-	void on_add_event();
-	/// remove the current event
-	void on_remove_event();
 	/// the counter combo has been activated
 	void counter_selected(int);
 	/// an event has been selected
