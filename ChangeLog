@@ -1,7 +1,13 @@
+2002-11-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/op_to_source.cpp: op_to_source --source-with-assembly: avoid
+	  to be confused by source line which look like an asm line and
+	  stop incorrectly the output. This change go in 0.4 release
+
 2002-11-06  John Levon  <levon@movementarian.org>
 
 	* configure.in: bump to 0.4 in prep for release
- 
+
 2002-11-06  John Levon  <levon@movementarian.org>
 
 	* module/x86/cpu_type.c: detect if we actually are

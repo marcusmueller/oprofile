@@ -507,7 +507,9 @@ void output_objdump_asm_line(string const & str,
 	if (pos == str.length() || (!isspace(str[pos]) && str[pos] != ':'))
 		return;
 
-	if (str[pos] != ':') {  // is the line contain a symbol
+	// symbol are on the form 08030434 <symbol_name>:  we need to be strict
+	// here to avoid any interpretation of a source line as a symbol line
+	if (str[pos] == ' ' && str[pos+1] == '<' && str[str.length() - 1] == ':') {  // is the line contain a symbol
 		symbol_entry const * symbol = find_symbol(str);
 
 		// ! complexity: linear in number of symbol must use sorted
