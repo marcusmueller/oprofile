@@ -1,3 +1,8 @@
+2003-08-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_alloc_counter.c:
+	* libop/op_events.h: minor doxgen fix
+
 2003-08-08  John Levon  <levon@movementarian.org>
 
 	* dae/Makefile.am:
@@ -45,7 +50,7 @@
 	* libutil/op_file.c: fix create_dir/path() comments,
 	don't use access()
 
-	* utils/opcontrol: reduce change of --reset races
+	* utils/opcontrol: reduce chance of --reset races
 
 2003-08-06  Philippe Elie  <phil.el@wanadoo.fr>
 

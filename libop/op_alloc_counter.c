@@ -1,5 +1,5 @@
 /**
- * @file op_alloc_counter.h
+ * @file op_alloc_counter.c
  * hardware counter allocation
  *
  * You can have silliness here.

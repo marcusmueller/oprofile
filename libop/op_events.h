@@ -115,6 +115,7 @@ struct op_default_event_descr {
 /**
  * op_default_event - return the details of the default event
  * @param cpu_type  cpu type
+ * @param descr filled event description
  *
  * Fills in the event description if applicable
  */
