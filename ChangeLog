@@ -1,3 +1,9 @@
+2003-11-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/oprofile.xml:
+	* libop/op_cpu_type.c: s/hammer/AMD64 processors/ for user visible
+	  name.
+
 2003-11-13  John Levon  <levon@movementarian.org>
 
 	* libutil/op_file.h:
