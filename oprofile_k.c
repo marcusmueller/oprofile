@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.11 2000/08/07 03:01:32 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.12 2000/08/08 01:56:52 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -245,12 +245,14 @@ int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 
 inline static char *oprof_outstr(char *buf, char *str, int bytes)
 {
-	while (bytes-- && *str)
+	while (*str && bytes) {
 		*buf++ = *str++;
+		bytes--;
+	}
 
-	while (bytes--)
-		*buf++ = '\0';
-
+	/* proper NULL-termination is handled by daemon */
+	if (bytes)
+		*buf='\0';
 	return str;
 }
 
@@ -268,11 +270,8 @@ static int oprof_output_map(ulong addr, ulong len,
 	map_buf[nextmapbuf].offset = offset;
 
 	line = d_path(file->f_dentry, file->f_vfsmnt, buf, PAGE_SIZE);
-	printk("size %u\n",strlen(line));
-	printk("line %s\n",line);
-
+ 
 	line = oprof_outstr(map_buf[nextmapbuf].path,line,4);
-
 	nextmapbuf++;
 
 	/* output in 16-byte chunks, wrapping round */
@@ -350,7 +349,6 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 	}
 	if (ret > 0) /* FIXME: remove */
 		printk(KERN_ERR "huh ? %d\n",ret);
-
 	putname(filename);
         return ret;
 }
@@ -445,22 +443,6 @@ asmlinkage static long my_sys_exit(int error_code)
 
 extern void *sys_call_table[];
 
-#if 0
-int oprof_binary(struct linux_binprm *binprm, struct pt_regs *regs)
-{
-	struct op_sample samp;
-
-	printk("Called handler for pid %u\n",current->pid);
-	samp.count = OP_DROP;
-	samp.pid = current->pid;
-	samp.eip = 0;
-	oprof_out8(&samp);
-	return -ENOEXEC;
-}
-
-struct linux_binfmt oprof_binfmt = { NULL, THIS_MODULE, oprof_binary, NULL, NULL, 0 };
-#endif
-
 void __init op_intercept_syscalls(void)
 {
 	old_sys_fork = sys_call_table[__NR_fork];
@@ -480,14 +462,10 @@ void __init op_intercept_syscalls(void)
 	sys_call_table[__NR_mmap2] = my_sys_mmap2;
 	sys_call_table[__NR_init_module] = my_sys_init_module;
 	sys_call_table[__NR_exit] = my_sys_exit;
-
-	//register_binfmt(&oprof_binfmt);
 }
 
 void __exit op_replace_syscalls(void)
 {
-	//unregister_binfmt(&oprof_binfmt);
-
 	sys_call_table[__NR_fork] = old_sys_fork;
 	sys_call_table[__NR_vfork] = old_sys_vfork;
 	sys_call_table[__NR_clone] = old_sys_clone;
