@@ -125,6 +125,8 @@ static void opd_open_files(void)
 	opd_open_logfile();
 
 	printf("oprofiled started %s", op_get_time());
+	printf("kernel pointer size: %lu\n",
+		(unsigned long)kernel_pointer_size);
 	fflush(stdout);
 }
  

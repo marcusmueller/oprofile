@@ -1,5 +1,9 @@
 2003-08-22  John Levon  <levon@movementarian.org>
 
+	* daemon/oprofiled.c: report the kernel pointer size
+
+2003-08-22  John Levon  <levon@movementarian.org>
+
 	* daemon/oprofiled.c: read new /dev/oprofile/pointer_size
 	in preference to kcore. kcore code will eventually go.
 
