@@ -12,7 +12,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
   which conflicts with parameter tgid.
   Suggestion: specify event: or count:
    why events name are repeated?
- o document in FAQ the suse problem and its fix and the vwmare unfixable too
 
 0.8 release
 -----------
