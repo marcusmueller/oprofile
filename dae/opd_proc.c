@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.19 2000/08/26 22:19:27 moz Exp $ */
+/* $Id: opd_proc.c,v 1.20 2000/08/26 23:56:45 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -597,8 +597,6 @@ void opd_clear_module_info(void)
 	int i;
 
 	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].name)
-			opd_free(opd_modules[i].name);
 		opd_modules[i].start=0;
 		opd_modules[i].end=0;
 	}
