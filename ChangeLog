@@ -1,3 +1,8 @@
+2002-12-19  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/op_time.cpp: minor formating fix
+	* pp/oprofpp.cpp: fix #656123 corner case with --separate-sample
+
 2002-12-17  John Levon  <levon@movementarian.org>
 
 	* configure.in: remove oprof_report - breaks make dist
