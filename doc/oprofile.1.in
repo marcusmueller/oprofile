@@ -137,8 +137,10 @@ Only profile process pid  (only available for 2.4 version).
 Only profile process tty group pgrp (only avilable for 2.4 version)
 .br
 .TP
-.BI "--separate-samples"
-Separate samples for each distinct application shared library.
+.BI "--separate="[library]
+Separate samples based on the given separator. Currently only
+"library" is supported, which gives sample files for libraries
+on a per-application basis.
 .br
 .TP
 .BI "--vmlinux=" file
@@ -201,7 +203,7 @@ exclude list of comma separated symbol
 .br
 .TP
 .BI "--show-shared-libs -k"
-Show the details for each shared lib which belongs to one application. This option is useful only if you have profiled with --separate-samples option and you specify on the oprofpp command line either --list-symbols or --list-all-symbols-details.
+Show the details for each shared lib which belongs to one application. This option is useful only if you have profiled with --separate=library option and you specify on the oprofpp command line either --list-symbols or --list-all-symbols-details.
 .br
 .TP
 .BI "--reverse -r"
@@ -303,7 +305,7 @@ which counter to use for sorting purposes
 .TP
 .br
 .BI "--show-shared-libs -k"
-Show the details for each shared lib which belongs to one application. This option is usefull only if you have profiled with --separate-samples option
+Show the details for each shared lib which belongs to one application. This option is usefull only if you have profiled with --separate=library option
 .TP
 .br
 .BI "--list-symbols -l"
@@ -319,7 +321,7 @@ show the image name when specifying --list-symbols
 .br
 .TP
 .BI "--output-format " vsSpPnlLiIeEh ", -t " vsSpPnlLiIeEh
-Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'e' application name, 'E' basename of application name 'e' and 'E' are useless unless you profile with --separate-samples, 'd' details for each samples for the selected symbols and 'h' for the header itself. This option is available only with --list-symbols
+Specify the output format where a single format char is a field intended for: 'v' vma, 's' nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples, 'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'e' application name, 'E' basename of application name 'e' and 'E' are useless unless you profile with --separate=library, 'd' details for each samples for the selected symbols and 'h' for the header itself. This option is available only with --list-symbols
 .br
 .TP
 .BI "--reverse -r"

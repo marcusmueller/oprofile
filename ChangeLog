@@ -1,3 +1,10 @@
+2003-02-01  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: rename --separate-samples to --separate=library
+	  for future proofing.
+
+	* pp/format_output.cpp: output vma at a suitable width
+
 2003-01-31  Will Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol(get_kernel_range): Match only .text segment.

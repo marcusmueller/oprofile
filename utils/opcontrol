@@ -92,7 +92,7 @@ do_help() {
 	  --pid-filter=pid             Only profile process pid  (2.4 version)
 	  --pgrp-filter=pgrp           Only profile process tty group pgrp (2.4 version)
 
-	  --separate-samples           separate samples for each distinct application
+	  --separate=[library]         separate samples as given
 	  --vmlinux=file               vmlinux kernel image
 	  --verbose                    be verbose in the daemon log
 	  --kernel-range=start,end     kernel range vma address in hexadecimal
@@ -178,7 +178,7 @@ do_init() {
 	PID_FILTER=0
 	PGRP_FILTER=0
 	VERBOSE=0
-	SEPARATE_SAMPLES=0
+	SEPARATE_LIB_SAMPLES=0
 
 	# binaries called
 	OP_HELP=`dirname $0`/op_help
@@ -271,7 +271,7 @@ do_save_setup() {
 	fi
  
 	echo "IGNORE_MYSELF=$IGNORE_MYSELF" >> $SETUP_FILE
-	echo "SEPARATE_SAMPLES=$SEPARATE_SAMPLES" >> $SETUP_FILE
+	echo "SEPARATE_LIB_SAMPLES=$SEPARATE_LIB_SAMPLES" >> $SETUP_FILE
 	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
 	echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
 	if test "$KERNEL_SUPPORT" != "yes"; then
@@ -457,8 +457,14 @@ do_options() {
 				CTR_KERNEL[`extract_int $arg`]=$val
 				if (($? != 0)); then exit 1; fi
 				;;
-			--separate-samples)
-				SEPARATE_SAMPLES=1
+			--separate)
+				error_if_empty $arg $val
+				if test "$val" != "library"; then
+					echo "Unrecognised value for --separate" >&2
+					echo "Use --separate=library" >&2
+					exit 1;
+				fi
+				SEPARATE_LIB_SAMPLES=1
 				;;
 			--vmlinux)
 				error_if_empty $arg $val
@@ -470,14 +476,14 @@ do_options() {
 				;;
 			--pid-filter)
 				if test "$KERNEL_SUPPORT" = "yes"; then
-					echo "\"$arg\" ignored" >& 2
+					echo "\"$arg\" ignored" >&2
 				else
 					PID_FILTER=$val
 				fi
 				;;
 			--pgrp-filter)
 				if test "$KERNEL_SUPPORT" = "yes"; then
-					echo "\"$arg\" ignored" >& 2
+					echo "\"$arg\" ignored" >&2
 				else
 					PGRP_FILTER=$val
 				fi
@@ -550,7 +556,7 @@ do_options() {
 	fi
  
 	vecho "IGNORE_MYSELF $IGNORE_MYSELF"
-	vecho "SEPARATE_SAMPLES $SEPARATE_SAMPLES"
+	vecho "SEPARATE_LIB_SAMPLES $SEPARATE_LIB_SAMPLES"
 	vecho "VMLINUX $VMLINUX"
 }
 
@@ -736,7 +742,7 @@ do_start_daemon() {
 	fi
  
 	OPD_ARGS="--vmlinux=$VMLINUX --kernel-range=$KERNEL_RANGE \
-		--separate-samples=$SEPARATE_SAMPLES \
+		--separate-samples=$SEPARATE_LIB_SAMPLES \
 		--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
 
 	if [ "$VERBOSE" = "1" ]; then

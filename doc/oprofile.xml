@@ -528,9 +528,11 @@ The <command>opcontrol</command> script options used with the
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--separate-samples</option></term>
+		<term><option>--separate=</option>[library]</term>
 		<listitem><para>
-		Separate samples for each distinct application shared library.
+		Separate samples using the separator given. Currently, only
+		<option>--separate=library</option> is supported, which provides
+		per-application sample files for dynamically linked libraries.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -986,7 +988,7 @@ Some interesting options of the post-processor :
 		<term><option>-k</option></term>
 		<listitem><para>
 		Show the details for each shared lib which belongs to the given application. This option is useful only
-		if you have profiled with the <option>--separate-samples</option> option and you specify on the
+		if you have profiled with the <option>--separate=library</option> option and you specify on the
 		oprofpp command line either <option>--list-symbols</option> or 
 		<option>--list-all-symbols-details</option>.
 		</para></listitem>
@@ -1192,7 +1194,7 @@ The options allowed are :
 <title><command>op_merge</command>: merging samples files</title>
 <para>
 <command>op_merge</command> is used to merge samples wich belongs to the same binary image. Its main purpose
-is to merge samples files created by profiling with --separate-samples. So you can create one samples
+is to merge samples files created by profiling with the option <option>--separate</option>. So you can create one samples
 file containing all samples for a shared library :
 <command>op_merge</command><filename>/usr/lib/ld-2.1.2.so</filename> will create a samples file named
 <filename>}usr}lib}ld-2.1.2.so</filename> ready to use with <command>oprofpp</command> or other post-profiling tools.
@@ -1248,7 +1250,7 @@ Options allowed are :
 		<term><option>-k</option></term>
 		<listitem><para>
 		Show the details for each shared lib which belongs to one application. This option is
-		useful only if you have profiled with the <option>--separate-samples</option> option.
+		useful only if you have profiled with the <option>--separate=library</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1318,7 +1320,8 @@ Options allowed are :
 		</tbody></tgroup>
 		</informaltable>
 		<para>
-		<option>e</option> and <option>E</option> are useless unless you profile with --separate-samples.
+		<option>e</option> and <option>E</option> are useless unless you profile with
+		<option>--separate=library</option>.
 		</para>
 		<para>
 		These options can only be used in conjunction with <option>--list-symbols</option>. 

@@ -1,7 +1,7 @@
 This is an (incomplete) list of some of the stuff we want to look at doing.
 
 If you're interested in hacking on any of these, please contact the list first
-for some pointers.
+for some pointers and/or read HACKING and doc/CodingStyle.
 
 Before 1.0 big stuff
 --------------------
@@ -21,16 +21,22 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o -t pp format options are difficult to use. 1) list format options in --help 2) show
+   the default format -t options in --help
+ o "Deleting  old sample file "/var/lib/oprofile/samples//}sbin}init#0" is printed from daemon
+   even if no actual deletion was done. Confusing for debugging
+ o improve opcontrol argument error handling
+ o opcontrol --start should do minimal detection of stale lock files
+ o oprof_start calls op_start no opcontrol
+ o oprof_start not working properly with 2.5 I think
  o fix 2.5 module handling
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
  o op_session should allow to backup binary, see subject "features to make oprofile easier to use" on mail list
  o remove 1 and 2 magic numbers for oprof_ready
- o There is probably place of post profile tools where looking at errno will give better error messages.
  o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
    will fail because the ~ is not expanded (no space around it) (popt bug I say)
  o use standard C integer type <stdint.h> int32_t int16_t etc.
  o verify if we can remove the ELF-based symbol size code
- o auto-generate the event C files. They're too ugly. 
  o adapt Anton's patch for handling non-symbolled libraries ?
 
 Documentation
@@ -57,10 +63,13 @@ General checks to make
  o use nm and a little script to track unused function
  o test it to hell and back
  o compile all C++ programs with STL_port and test them
+ o There is probably place of post profile tools where looking at errno will give better error messages.
 
 Later
 -----
  
+ o auto-generate the event C files. They're too ugly. 
+
  o event multiplexing for real
  
 oprof_report:
