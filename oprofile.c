@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.66 2001/08/02 17:55:22 movement Exp $ */
+/* $Id: oprofile.c,v 1.67 2001/08/10 02:04:08 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -58,7 +58,7 @@ static void evict_op_entry(struct _oprof_data *data, struct op_sample *ops)
 	memcpy(&data->buffer[data->nextbuf], ops, sizeof(struct op_sample));
 	if (++data->nextbuf != (data->buf_size - OP_PRE_WATERMARK)) {
 		if (data->nextbuf == data->buf_size)
-			data->nextbuf=0;
+			data->nextbuf = 0;
 		return;
 	}
 	oprof_ready[smp_processor_id()] = 1;
@@ -229,7 +229,7 @@ static void disable_local_P6_APIC(void *dummy)
 
 static uint old_lvtpc[NR_CPUS];
 
-static void __init smp_apic_setup(void *dummy)
+static void __init lvtpc_apic_setup(void *dummy)
 {
 	uint val;
 
@@ -250,24 +250,28 @@ static void __exit smp_apic_restore(void *dummy)
 	apic_write(APIC_LVTPC, old_lvtpc[smp_processor_id()]);
 }
 
-static int __init apic_setup(void)
+static int __init apic_needs_setup(void)
 {
 	/* FIXME: we need to detect UP kernel, SMP hardware, and
-	 * not go past smp_apic_setup, to avoid screwing up the APIC
+	 * return 0 here, to avoid screwing up the APIC
 	 */
-	if (smp_num_cpus > 1) {
-		smp_apic_setup(NULL);
-		return 0;
-	}
-
+	return 
 /* if enabled, the kernel has already set it up */
 #ifdef CONFIG_X86_UP_APIC
-	smp_apic_setup(NULL);
-	return 0;
-#else
-	{
+	0 &&
+#endif
+	smp_num_cpus == 1;
+}
+
+static int __init apic_setup(void)
+{
 	uint msr_low, msr_high;
 	uint val;
+
+	if (!apic_needs_setup()) {
+		lvtpc_apic_setup(NULL);
+		return 0;
+	}
 
 	/* ugly hack */
 	my_set_fixmap();
@@ -328,7 +332,7 @@ static int __init apic_setup(void)
 	/* If the local APIC NMI watchdog has been disabled, we'll need
 	 * to set up NMI delivery anyway ...
 	 */
-	smp_apic_setup(NULL);
+	lvtpc_apic_setup(NULL);
 
 	printk(KERN_INFO "oprofile: enabled local APIC\n");
 
@@ -340,8 +344,6 @@ not_local_p6_apic:
 	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
 	wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
 	return -ENODEV;
-	}
-#endif /* CONFIG_X86_UP_APIC */
 }
 
 /* ---------------- PMC setup ------------------ */
@@ -1089,7 +1091,7 @@ int __init oprof_init(void)
 	if ((err = init_sysctl()))
 		goto out_err;
 
-	if ((err = smp_call_function(smp_apic_setup, NULL, 0, 1)))
+	if ((err = smp_call_function(lvtpc_apic_setup, NULL, 0, 1)))
 		goto out_err;
 
  	err = op_major = register_chrdev(0, "oprof", &oprof_fops);
