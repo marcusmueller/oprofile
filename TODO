@@ -34,6 +34,13 @@ Before 1.0 big stuff
 
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
+ o there is a design problem in libpp/partition_files, class partition_files
+  can handle sample filename with different event/count but I choose (phe)
+  to handle different count/event through an array of partition_files. It's
+  difficult to say if the original design allowed simpler code in opreport
+  w/o rewritting most of pp/opreport.cpp. We will retrieve this problem
+  when allowing !merge_by.cpu tid/tgid.  I'll investigate that after
+  re-writting opreport (w/o -l --details)
  o opdiff
  
 Before 1.0 little stuff
