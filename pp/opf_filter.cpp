@@ -77,7 +77,7 @@ struct source_file {
 };
 
 //---------------------------------------------------------------------------
-// To hold the setup of the profiler for one counter.
+/// Store the configuration of one counter. Construct from an opd_header
 struct counter_setup {
 	counter_setup() : 
 		enabled(false), event_count_sample(0) {}
@@ -452,9 +452,7 @@ output_counter(const counter_array_t & counter, bool comment,
 // Complexity: log(container.size())
 void output::find_and_output_symbol(const string& str, const char * blank) const
 {
-	unsigned long vma;
-
-	sscanf(str.c_str(), "%lx",  &vma);
+	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
 	const symbol_entry* symbol = symbols.find_by_vma(vma);
 
@@ -466,10 +464,9 @@ void output::find_and_output_symbol(const string& str, const char * blank) const
 }
 
 // Complexity: log(samples.size())
-void output::find_and_output_counter(const string& str, const char * blank) const {
-	unsigned long vma;
-
-	sscanf(str.c_str(), "%lx",  &vma);
+void output::find_and_output_counter(const string& str, const char * blank) const
+{
+	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
 	const sample_entry * sample = samples.find_by_vma(vma);
 	if (sample) {
@@ -552,17 +549,15 @@ void output::output_asm(input & in)
 			}
 
 			if (str[pos] != ':') { // is the line contain a symbol
-				unsigned long vma;
+				bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
-				sscanf(str.c_str(), "%lx",  &vma);
+				const symbol_entry* symbol = symbols.find_by_vma(vma);
 
 				// ! complexity: linear in number of symbol
 				// must use sorted by address vector and
 				// lower_bound ?
-				const symbol_entry* symbol = symbols.find_by_vma(vma);
-
 				// Note this use a pointer comparison. It work
-				// because symbols symbol pointer are unique
+				// because symbols pointer are unique
 				if (find(output_symbols.begin(), 
 					 output_symbols.end(), symbol) != output_symbols.end()) {
 					// probably an error due to ambiguity

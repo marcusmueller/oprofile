@@ -94,8 +94,7 @@ bool range_iterator_sorted_p(Iterator first, Iterator last, const Compare & comp
 
 
 //---------------------------------------------------------------------------
-// Implementation.
-
+/// implementation of symbol_container_t
 class symbol_container_impl {
  public:
 	symbol_container_impl();
@@ -104,7 +103,7 @@ class symbol_container_impl {
 	const symbol_entry & operator[](size_t index) const;
 	void push_back(const symbol_entry &);
 	const symbol_entry * find(string filename, size_t linenr) const;
-	const symbol_entry * find_by_vma(unsigned long vma) const;
+	const symbol_entry * find_by_vma(bfd_vma vma) const;
 
 	// get a vector of symbols sorted by increased count.
 	void get_symbols_by_count(size_t counter, vector<const symbol_entry*>& v) const;
@@ -206,7 +205,7 @@ void  symbol_container_impl::build_by_file_loc() const
 	}
 }
 
-const symbol_entry * symbol_container_impl::find_by_vma(unsigned long vma) const
+const symbol_entry * symbol_container_impl::find_by_vma(bfd_vma vma) const
 {
 	symbol_entry value;
 
@@ -276,7 +275,7 @@ symbol_container_t::find(string filename, size_t linenr) const
 	return impl->find(filename, linenr);
 }
 
-const symbol_entry * symbol_container_t::find_by_vma(unsigned long vma) const
+const symbol_entry * symbol_container_t::find_by_vma(bfd_vma vma) const
 {
 	return impl->find_by_vma(vma);
 }
@@ -288,7 +287,7 @@ void symbol_container_t::get_symbols_by_count(size_t counter, vector<const symbo
 }
 
 //---------------------------------------------------------------------------
-// Implementation.
+/// implementation of sample_container_t
 class sample_container_impl {
  public:
 
@@ -298,7 +297,7 @@ class sample_container_impl {
 
 	bool accumulate_samples_for_file(counter_array_t & counter, const string & filename) const;
 
-	const sample_entry * find_by_vma(unsigned long vma) const;
+	const sample_entry * find_by_vma(bfd_vma vma) const;
 	bool accumulate_samples(counter_array_t &, const string & filename, size_t linenr) const;
 	void push_back(const sample_entry &);
  private:
@@ -326,7 +325,8 @@ inline size_t sample_container_impl::size() const
 	return v.size();
 }
 
-inline void sample_container_impl::push_back(const sample_entry & sample) {
+inline void sample_container_impl::push_back(const sample_entry & sample)
+{
 	v.push_back(sample);
 }
 
@@ -364,7 +364,7 @@ bool sample_container_impl::accumulate_samples_for_file(counter_array_t & counte
 	return false;
 }
 
-const sample_entry * sample_container_impl::find_by_vma(unsigned long vma) const
+const sample_entry * sample_container_impl::find_by_vma(bfd_vma vma) const
 {
 	sample_entry value;
 
@@ -448,7 +448,8 @@ bool sample_container_t::accumulate_samples_for_file(counter_array_t & counter,
 	return impl->accumulate_samples_for_file(counter, filename);
 }
 
-const sample_entry * sample_container_t::find_by_vma(unsigned long vma) const {
+const sample_entry * sample_container_t::find_by_vma(bfd_vma vma) const
+{
 	return impl->find_by_vma(vma);
 }
 
