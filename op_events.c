@@ -1,6 +1,5 @@
 /* op_events.c */
-/* John Levon (moz@compsoc.man.ac.uk) */
-/* May 2000 */
+/* $Id: op_events.c,v 1.3 2000/08/01 20:26:16 moz Exp $ */ 
 
 /* Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren */
 
