@@ -50,9 +50,6 @@ public:
 	symbol_entry const * find(debug_name_id filename,
 	                          size_t linenr) const;
 
-	/// return all symbols of the given name
-	symbol_collection const find(std::string const & name) const;
-
 	/// find the symbol with the given image_name vma if any
 	symbol_entry const * find_by_vma(std::string const & image_name,
 					 bfd_vma vma) const;

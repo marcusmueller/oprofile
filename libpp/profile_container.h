@@ -73,10 +73,6 @@ public:
 	symbol_entry const * find_symbol(std::string const & image_name,
 					 bfd_vma vma) const;
 
-	/// Find a list of symbol from its name, return an empty vector if no
-	/// symbol found
-	symbol_collection const find_symbol(std::string const & name) const;
-
 	/// Find a symbol from its filename, linenr, return zero if no symbol
 	/// at this location
 	symbol_entry const * find_symbol(debug_name_id filename,

@@ -1,5 +1,13 @@
 2003-06-07  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp:
+	* libpp/symbol_container.h:
+	* libpp/symbol_container.cpp: remove dead api
+	  find_symbol(string symbol_name)
+
+2003-06-07  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libpp/name_storage.h:
 	* libpp/name_storage.cpp:
 	* libpp/profile_container.cpp:

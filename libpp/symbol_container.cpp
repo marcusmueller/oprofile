@@ -57,22 +57,6 @@ symbol_container::find(debug_name_id filename, size_t linenr) const
 }
 
 
-symbol_collection const symbol_container::find(string const & name) const
-{
-	symbol_collection v;
-
-	symbols_t::const_iterator cit = symbols.begin();
-	symbols_t::const_iterator end = symbols.end();
-
-	for (; cit != end; ++cit) {
-		if (symbol_names.name(cit->name) == name)
-			v.push_back(&*cit);
-	}
-
-	return v;
-}
-
-
 void symbol_container::build_by_loc() const
 {
 	if (!symbols_by_loc.empty())
