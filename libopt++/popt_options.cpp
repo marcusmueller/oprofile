@@ -53,10 +53,47 @@ public:
 static vector<poptOption> popt_options;
 static vector<option_base *> options_list;
 
+/// user can specify and additional help string
+static string user_help_str;
+
+
+static void help_callback(poptContext con,  enum poptCallbackReason reason,
+			  struct poptOption const * opt,
+			  char const *, void const *)
+{
+	if (reason != POPT_CALLBACK_REASON_OPTION) {
+		return;
+	}
+
+	if (!strcmp(opt->longName, "help")) {
+		poptPrintHelp(con, stdout, 0);
+	} else if (!strcmp(opt->longName, "usage")) {
+		poptPrintUsage(con, stdout, 0);
+	} else {
+		cerr << "popt_options.cpp: help_callback called called for "
+		     << "unknown option: " << opt->longName << endl;
+		poptPrintHelp(con, stdout, 0);
+		exit(EXIT_FAILURE);
+	}
+
+	cout << user_help_str;
+	
+	exit(EXIT_SUCCESS);
+}
+
 static int showvers;
+
+static struct poptOption HelpOptions[] = {
+  // C cast needed, pointer to function to void *
+  { 0, '\0', POPT_ARG_CALLBACK, (void*)help_callback, 0, 0, 0L, },
+  { "help", '?', POPT_ARG_NONE, 0, 0, "Show this help message", 0L },
+  { "usage", '\0', POPT_ARG_NONE, 0, 0, "Display brief usage message", 0L },
+  POPT_TABLEEND
+};
+
 static struct poptOption appended_options[] = {
   { "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
-  POPT_AUTOHELP
+  { NULL, '\0', POPT_ARG_INCLUDE_TABLE, HelpOptions, 0, "Help options:", 0 },
   POPT_TABLEEND
   };
 
@@ -93,8 +130,11 @@ static poptContext do_parse_options(int argc, char const ** argv,
 }
 
 void parse_options(int argc, char const ** argv,
-		   vector<string> & additional_params)
+		   vector<string> & additional_params,
+		   string const & additional_help)
 {
+	user_help_str = additional_help;
+
 	vector<poptOption> options;
 
 	poptContext con = do_parse_options(argc, argv, options,
@@ -103,8 +143,11 @@ void parse_options(int argc, char const ** argv,
 	poptFreeContext(con);
 }
 
-void parse_options(int argc, char const ** argv, string & additional_param)
+void parse_options(int argc, char const ** argv, string & additional_param,
+		   string const & additional_help)
 {
+	user_help_str = additional_help;
+
 	vector<poptOption> options;
 	vector<string> additional_params;
 	poptContext con = do_parse_options(argc, argv, options,
@@ -112,7 +155,8 @@ void parse_options(int argc, char const ** argv, string & additional_param)
 
 	if (additional_params.size() > 1) {
 		cerr << "too many arguments\n";
-		poptPrintHelp(con, stderr, 0);
+		poptPrintHelp(con, stdout, 0);
+		cout << user_help_str;
 		poptFreeContext(con);
 		exit(EXIT_FAILURE);
 	}

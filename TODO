@@ -21,8 +21,6 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
- o -t pp format options are difficult to use. 1) list format options in --help 2) show
-   the default format -t options in --help
  o "Deleting  old sample file "/var/lib/oprofile/samples//}sbin}init#0" is printed from daemon
    even if no actual deletion was done. Confusing for debugging
  o improve opcontrol argument error handling

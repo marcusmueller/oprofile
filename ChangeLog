@@ -1,3 +1,17 @@
+2003-02-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
+	* libopt++/popt_options.cpp:
+	* libopt++/popt_options.h: handle an user specific additional
+	  help string
+
+	* pp/output_format.h:
+	* pp/output_format.cpp:
+	* pp/op_time_options.cpp:
+	* pp/oprofpp_options.cpp: use it to show in --output_format
+	  options details.
+
 2003-02-14  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/oprofile.1.in:

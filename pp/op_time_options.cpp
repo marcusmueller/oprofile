@@ -21,6 +21,7 @@
 
 #include <list>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -105,7 +106,12 @@ void get_options(int argc, char const * argv[])
 {
 	using namespace options;
 
-	popt::parse_options(argc, argv, filename_filters);
+	ostringstream format_help;
+	format_help << endl;
+	format_output::show_help(format_help);	
+	format_help << "default format is hvspni, e format is added with -k "
+		    << "option" << endl;
+	popt::parse_options(argc, argv, filename_filters, format_help.str());
 
 	set_verbose(verbose);
 
@@ -135,7 +141,7 @@ void get_options(int argc, char const * argv[])
 		if (fl == osf_none || (fl & ~(osf_header|osf_details)) == 0 ||
 		    (fl & (osf_percent_details | osf_percent_cumulated_details))) {
 			cerr << "op_time: invalid --output-format flags.\n";
-			format_output::show_help();
+			format_output::show_help(cerr);
 			exit(EXIT_FAILURE);
 		}
 

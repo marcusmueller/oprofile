@@ -81,7 +81,13 @@ string const get_options(int argc, char const **argv)
 	/* non-option file, either a sample or binary image file */
 	string arg;
 
-	popt::parse_options(argc, argv, arg);
+	ostringstream format_help;
+	format_help << endl;
+	format_output::show_help(format_help);	
+	format_help << "default format is hvspn, i format is added with -k "
+		    << "option, d is added with -s or -L options and l is "
+		    << "added with -o" << endl;
+	popt::parse_options(argc, argv, arg, format_help.str());
 
 	counter_mask = parse_counter_mask(counter_str);
 
@@ -124,7 +130,7 @@ string const get_options(int argc, char const **argv)
 
 		if (fl == osf_none || (fl & ~(osf_header|osf_details)) == 0) {
 			cerr << "oprofpp: invalid --output-format flags.\n";
-			format_output::show_help();
+			format_output::show_help(cerr);
 			exit(EXIT_FAILURE);
 		}
 

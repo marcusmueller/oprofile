@@ -83,11 +83,12 @@ outsymbflag parse_format(string const & option)
 	return static_cast<outsymbflag>(flag);
 }
 
-void show_help()
+void show_help(ostream & out)
 {
+	out << "--ouput-format strings:\n";
 	for (size_t i = 0 ; i < nr_output_option ; ++i) {
-		cerr << output_options[i].option << "\t"
-		     << output_options[i].help_string << endl;
+		out << output_options[i].option << "\t"
+		    << output_options[i].help_string << endl;
 	}
 }
 
