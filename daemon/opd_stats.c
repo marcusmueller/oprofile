@@ -41,11 +41,13 @@ void opd_print_stats(void)
 	       opd_read_fs_int("/dev/oprofile/stats", "event_lost_overflow", 0));
 	printf("Nr. samples without file mapping: %u\n",
 	       opd_read_fs_int("/dev/oprofile/stats", "sample_lost_no_mapping", 0));
+	printf("Nr. backtrace skipped due to no file mapping: %u\n",
+	       opd_read_fs_int("/dev/oprofile/stats", "bt_lost_no_mapping", 0));
 	printf("Nr. samples without mm: %u\n",
 	       opd_read_fs_int("/dev/oprofile/stats", "sample_lost_no_mm", 0));
 
 	if (!(dir = opendir("/dev/oprofile/stats/")))
-		return;
+		goto out;
 	while ((dirent = readdir(dir))) {
 		int cpu_nr;
 		char filename[256];
@@ -59,7 +61,10 @@ void opd_print_stats(void)
 		       opd_read_fs_int(filename, "sample_lost_task_exit", 0));
 		printf("Nr. samples received: %u\n",
 		       opd_read_fs_int(filename, "sample_received", 0));
+		printf("Nr. backtrace aborted: %u\n",
+		       opd_read_fs_int(filename, "backtrace_aborted", 0));
 	}
 	closedir(dir);
+out:
 	fflush(stdout);
 }

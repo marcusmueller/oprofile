@@ -1,3 +1,7 @@
+2004-02-12  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_stats.c: handle new statistics added in callgraph patch
+
 2004-02-11  Will Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol: fix normalise_events for default event.
