@@ -44,6 +44,8 @@ bool filename_match::match(string const & filename) const
 	while (!comp.empty() && comp != "/") {
 		if (match(exclude_pattern, basename(comp)))
 			return false;
+		// FIXME: test uneccessary, wait a decent testsuite before
+		// removing
 		if (comp == dirname(comp))
 			break;
 		comp = dirname(comp);
@@ -63,6 +65,7 @@ bool filename_match::match(string const & filename) const
 	while (!compi.empty() && compi != "/") {
 		if (match(include_pattern, basename(compi)))
 			return true;
+		// FIXME see above.
 		if (compi == dirname(compi))
 			break;
 		compi = dirname(compi);

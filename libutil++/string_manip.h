@@ -34,14 +34,6 @@ std::string erase_from_last_of(std::string const & str, char ch);
 std::string erase_to_last_of(std::string const & str, char ch);
 
 
-/**
- * @param str the string
- * @param ch the character to remove
- *
- * Returns str removed of its trailing ch
- */
-std::string rtrim(std::string const & str, char ch);
-
 /// conversion to std::string
 std::string tostr(unsigned int i);
 

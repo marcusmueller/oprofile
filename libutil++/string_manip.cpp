@@ -36,18 +36,6 @@ string erase_to_last_of(string const & str, char ch)
 	return result;
 }
 
-string rtrim(string const & str, char ch)
-{
-	string result = str;
-
-	// a more efficient implementation is possible if we need it.
-	string::size_type slash = result.find_last_of(ch);
-	if (slash != string::npos)
-		result.erase(0, slash + 1);
-
-	return result;
-}
-
 string tostr(unsigned int i)
 {
 	string str;

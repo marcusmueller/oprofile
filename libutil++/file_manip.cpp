@@ -180,6 +180,26 @@ string relative_to_absolute_path(string const & path, string const & base_dir)
 	return res;
 }
 
+
+/**
+ * @param path_name the path where we remove trailing '/'
+ *
+ * erase all trailing '/' in path_name except if the last '/' is at pos 0
+ */
+static string erase_trailing_path_separator(string const & path_name)
+{
+	string result(path_name);
+
+	while (result.length() > 1) {
+		if (result[result.length() - 1] != '/')
+			break;
+		result.erase(result.length() - 1, 1);
+	}
+
+	return result;
+}
+
+
 /**
  * dirname - get the path component of a filename
  * @param file_name  filename
@@ -188,8 +208,28 @@ string relative_to_absolute_path(string const & path, string const & base_dir)
  */
 string dirname(string const & file_name)
 {
-	return erase_from_last_of(file_name, '/');
+	string result = erase_trailing_path_separator(file_name);
+
+	if (result.find_first_of('/') == string::npos)
+		return ".";
+
+	if (result.length() == 1)
+		// catch result == "/"
+		return result;
+
+	size_t pos = result.find_last_of('/');
+	if (pos == 0)
+		// "/usr" must return "/"
+		pos = 1;
+
+	result.erase(pos, result.length() - pos);
+
+	// "////usr" must return "/"
+	result = erase_trailing_path_separator(result);
+
+	return result;
 }
+
 
 /**
  * basename - get the basename of a path
@@ -199,7 +239,11 @@ string dirname(string const & file_name)
  */
 string basename(string const & path_name)
 {
-	string result = rtrim(path_name, '/');
+	string result = erase_trailing_path_separator(path_name);
+
+	if (result.length() == 1)
+		// catch result == "/"
+		return result;
 
 	return erase_to_last_of(result, '/');
 }

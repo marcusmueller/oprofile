@@ -1,3 +1,10 @@
+2002-10-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/file_manip.cpp:
+	* libutil++/filename_match.cpp:
+	* libutil++/string_manip.cpp:
+	* libutil++/string_manip.h: fix dirname(), basename(), remove rtrim()
+
 2002-10-07  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_image.h:
