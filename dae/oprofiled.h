@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.40 2002/01/04 19:02:50 movement Exp $ */
+/* $Id: oprofiled.h,v 1.41 2002/01/05 02:40:57 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -69,6 +69,15 @@ extern int separate_samples;
 
 /* size of process hash table */
 #define OPD_MAX_PROC_HASH 1024
+
+extern uint op_nr_counters;
+extern int verbose;
+extern int kernel_only;
+extern op_cpu cpu_type; 
+extern int separate_samples;
+extern char * smpdir; 
+extern char * vmlinux;
+extern unsigned long opd_stats[];
 
 /* list manipulation: come from the linux header, with some macro removed */
 /* There is no real need to put this in ../util/misc.c */

@@ -14,7 +14,7 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "oprofiled.h"
+#include "opd_proc.h"
 
 extern int verbose;
 extern unsigned long opd_stats[];
@@ -27,12 +27,6 @@ static u32 kernel_end;
 static char got_system_map=0;
 static struct opd_module opd_modules[OPD_MAX_MODULES];
 static unsigned int nr_modules=0;
-
-extern struct opd_image * opd_get_image(const char *name, int hash, const char * app_name, int kernel);
-extern int bstreq(const char *str1, const char *str2);
-extern void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count);
-
-void opd_handle_kernel_sample(u32 eip, u16 count);
 
 /**
  * opd_read_system_map - parse System.map file

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.63 2002/01/04 19:02:49 movement Exp $ */
+/* $Id: oprofiled.c,v 1.64 2002/01/05 02:40:57 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -16,45 +16,40 @@
  */
 
 #include "oprofiled.h"
+#include "opd_proc.h"
 #include "../util/op_popt.h"
 
-extern double cpu_speed;
-extern u32 ctr_count[OP_MAX_COUNTERS];
-extern u8 ctr_event[OP_MAX_COUNTERS];
-extern u8 ctr_um[OP_MAX_COUNTERS];
-static u32 ctr_enabled[OP_MAX_COUNTERS];
 uint op_nr_counters = 2;
-
-static int showvers;
 int verbose;
-
+op_cpu cpu_type;
+int separate_samples;
+char *smpdir="/var/opd/samples/";
+char *vmlinux;
 int kernel_only;
+unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
+
+ 
+static int showvers;
+static u32 ctr_enabled[OP_MAX_COUNTERS];
 /* Unfortunately popt does not have, on many versions, the POPT_ARG_DOUBLE type
  * so I must first store it as a string. */
 static const char *cpu_speed_str;
-op_cpu cpu_type;
-int separate_samples;
 static int ignore_myself;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
 static char *opd_dir="/var/opd/";
 static char *logfilename="oprofiled.log";
-char *smpdir="/var/opd/samples/";
 static char *devfilename="opdev";
 static char *notedevfilename="opnotedev";
 static char *devhashmapfilename="ophashmapdev";
-char *vmlinux;
 static char *systemmapfilename;
 static pid_t mypid;
 static sigset_t maskset;
 static fd_t devfd;
 static fd_t notedevfd;
-struct op_hash_index *hashmap;
 
 static void opd_sighup(int val);
 static void opd_open_logfile(void);
-
-unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 
 static struct poptOption options[] = {
 	{ "ignore-myself", 'm', POPT_ARG_INT, &ignore_myself, 0, "ignore samples of oprofile driver", "[0|1]"},
@@ -78,7 +73,7 @@ static struct poptOption options[] = {
  * opd_open_logfile - open the log file
  *
  * Open the logfile on stdout and stderr. This function
- * assumes that 1 and 2 are the lowest closed()d file
+ * assumes that 1 and 2 are the lowest close()d file
  * descriptors. Failure to open on either descriptor is
  * a fatal error.
  */
@@ -161,7 +156,7 @@ static void opd_open_files(void)
  * opd_backup_samples_files - back up all the samples file
  *
  * move all files in dir @smpdir to directory
- * @smdir/session-#nr
+ * @smpdir/session-#nr
  */
 static void opd_backup_samples_files(void)
 {
@@ -208,8 +203,8 @@ static void opd_backup_samples_files(void)
  * opd_need_backup_samples_files - test if we need to 
  * backup samples files
  *
- * We can't backup lazilly samples files else it can
- * leads to detect than backup is needed after some
+ * We can't backup lazily samples files else it can
+ * leads to detect that backup is needed after some
  * samples has been written (e.g. ctr 1 have the same
  * setting from the previous runs, ctr 0 have different
  * setting and the first samples output come from ctr1)
@@ -416,8 +411,11 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count);
 void opd_do_notes(struct op_note *opd_buf, size_t count);
 
 /**
- * do_shutdown - shutdown cleanly, reading as much
- * remaining data as possible.
+ * do_shutdown - shutdown cleanly, reading as much remaining data as possible.
+ * @buf: sample buffer area
+ * @size: size of sample buffer
+ * @nbuf: note buffer area
+ * @nsize: size of note buffer
  */
 static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbuf, size_t nsize)
 {
@@ -462,6 +460,8 @@ static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbu
  * opd_do_read - enter processing loop
  * @buf: buffer to read into
  * @size: size of buffer
+ * @nbuf: note buffer
+ * @nsize: size of note buffer
  *
  * Read some of a buffer from the device and process
  * the contents.

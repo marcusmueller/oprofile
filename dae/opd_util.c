@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.33 2002/01/03 00:14:42 movement Exp $ */
+/* $Id: opd_util.c,v 1.34 2002/01/05 02:40:57 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -464,6 +464,7 @@ ssize_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
  * opd_move_regular_file - move file between directory
  * @new_dir: the destination directory
  * @old_dir: the source directory
+ * @name: the filename
  *
  * move the file @old_dir/@name to @new_dir/@name iff
  * @old_dir/@name is a regular file

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.92 2002/01/04 19:02:49 movement Exp $ */
+/* $Id: opd_proc.c,v 1.93 2002/01/05 02:40:56 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -15,32 +15,26 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "oprofiled.h"
+#include "opd_proc.h"
 
 /* per-process */
 #define OPD_DEFAULT_MAPS 16
 #define OPD_MAP_INC 8
 
-extern int kernel_only;
-extern int verbose;
-extern uint op_nr_counters; 
-extern unsigned long opd_stats[];
-extern char *vmlinux;
-extern char *smpdir;
-extern struct op_hash_index *hashmap;
-
 /* hash of process lists */
 static struct opd_proc *opd_procs[OPD_MAX_PROC_HASH];
+
+/* hash map device mmap */
+struct op_hash_index *hashmap;
 
 u32 ctr_count[OP_MAX_COUNTERS];
 u8 ctr_event[OP_MAX_COUNTERS];
 u8 ctr_um[OP_MAX_COUNTERS];
-extern op_cpu cpu_type;
 double cpu_speed;
 
-/* list of image */
+/* list of images */
 static struct list_head opd_images = { &opd_images, &opd_images };
-/* Images wich belongs to the same hash, more than one only if separate_samples
+/* Images which belong to the same hash, more than one only if separate_samples
  *  == 1, are accessed by hash code and linked through the hash_next member
  * of opd_image. Hash-less image must be searched through opd_images list */
 static struct opd_image * images_with_hash[OP_HASH_MAP_NR];
@@ -52,28 +46,9 @@ static unsigned int nr_images=0;
 /* reversed LRU of mapped samples files, unmapped samples are not lru'ed  */
 static struct list_head opd_samples_files = { &opd_samples_files, &opd_samples_files };
  
-void opd_handle_kernel_sample(u32 eip, u16 count);
-struct opd_image * opd_get_image(const char *name, int hash, const char * app_name, int kernel);
-int bstreq(const char *str1, const char *str2);
-void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count);
- 
-static struct opd_proc *opd_add_proc(u16 pid);
-static void opd_open_sample_file(struct opd_image *image, int counter);
-static void opd_open_image(struct opd_image *image);
-static void opd_init_image(struct opd_image * image, const char * name, int hash, const char * app_name, int kernel);
-static const char* opd_app_name(const struct opd_proc * proc);
-static struct opd_image * opd_find_image(const char *name, int hash, const char* app_name);
-static struct opd_image * opd_add_image(const char *name, int hash, const char * app_name, int kernel);
-static struct opd_image * opd_get_image_by_hash(int hash, const char * app_name);
-static void opd_init_maps(struct opd_proc *proc);
-static void opd_grow_maps(struct opd_proc *proc);
-static void opd_kill_maps(struct opd_proc *proc);
-static void opd_put_mapping(struct opd_proc *proc, struct opd_image * image, u32 start, u32 offset, u32 end);
-static struct opd_proc *opd_get_proc(u16 pid);
-static void opd_delete_proc(struct opd_proc *proc);
-static void opd_handle_old_sample_file(const char * mangled, time_t mtime);
-static void opd_handle_old_sample_files(const struct opd_image * image);
-
+/**
+ * opd_print_stats - print out latest statistics
+ */
 void opd_print_stats(void)
 {
 	struct opd_proc *proc;
@@ -93,10 +68,13 @@ void opd_print_stats(void)
 	printf("Nr. image struct: %d\n", nr_images);
 	printf("Nr. kernel samples: %lu\n", opd_stats[OPD_KERNEL]);
 	printf("Nr. modules samples: %lu\n", opd_stats[OPD_MODULE]);
-	printf("Nr. modules samples lost: %lu\n", opd_stats[OPD_LOST_MODULE]);
-	printf("Nr. samples lost due to no process information: %lu\n", opd_stats[OPD_LOST_PROCESS]);
+	printf("Nr. modules samples lost: %lu\n", 
+		opd_stats[OPD_LOST_MODULE]);
+	printf("Nr. samples lost due to no process information: %lu\n", 
+		opd_stats[OPD_LOST_PROCESS]);
 	printf("Nr. process samples in user-space: %lu\n", opd_stats[OPD_PROCESS]);
-	printf("Nr. samples lost due to no map information: %lu\n", opd_stats[OPD_LOST_MAP_PROCESS]);
+	printf("Nr. samples lost due to no map information: %lu\n", 
+		opd_stats[OPD_LOST_MAP_PROCESS]);
 	if (opd_stats[OPD_PROC_QUEUE_ACCESS]) {
 		printf("Average depth of search of proc queue: %f\n",
 			(double)opd_stats[OPD_PROC_QUEUE_DEPTH] 
@@ -117,8 +95,11 @@ void opd_print_stats(void)
 	fflush(stdout);
 }
  
-/* every so many minutes, clean up old procs, msync mmaps, and
-   report stats */
+static void opd_delete_proc(struct opd_proc *proc);
+
+/** 
+ * opd_alarm - clean up old procs, msync, and report stats
+ */
 void opd_alarm(int val __attribute__((unused)))
 {
 	struct opd_proc *proc;
@@ -680,14 +661,14 @@ int bstreq(const char *str1, const char *str2)
 }
 
 /**
- * opd_app_name - get the application name
- *  or %NULL if irrelevant
+ * opd_app_name - get the application name or %NULL if irrelevant
+ * @proc: the process to examine
  *
  * Returns the app_name for the given @proc or %NULL if
  * it does not exist any mapping for this proc (which is
  * true for the first mapping at exec time)
  */
-inline static const char * opd_app_name(const struct opd_proc * proc)
+static inline const char * opd_app_name(const struct opd_proc * proc)
 {
 	const char * app_name = NULL;
 	if (proc->nr_maps) 
@@ -989,6 +970,7 @@ inline static int opd_is_in_map(struct opd_map *map, u32 eip)
  * verb_show_sample - print the sample out to the log
  * @offset: the offset value
  * @map: map to print
+ * @last_map: previous map used 
  */
 inline static void verb_show_sample(u32 offset, struct opd_map *map, const char * last_map)
 {
@@ -1239,7 +1221,7 @@ static struct opd_image * opd_handle_hashmap(int hash, const char * app_name)
 
 /**
  * opd_handle_mapping - deal with mapping notification
- * @mapping: mapping info
+ * @note: mapping notification
  *
  * Deal with one notification that a process has mapped
  * in a new executable file. The mapping information is
