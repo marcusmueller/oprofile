@@ -2,9 +2,10 @@ RM=rm
 MANDIR=$(DESTDIR)@mandir@/man1
 
 XSLTPROC=xsltproc
+XSLTPROC_FLAGS=@XSLTPROC_FLAGS@
 XHTML_STYLESHEET=$(srcdir)/xsl/xhtml.xsl
 CHUNK_XHTML_STYLESHEET=$(srcdir)/xsl/xhtml-chunk.xsl
-XML_CATALOG_FILES="xsl/catalog.xml"
+XML_CATALOG_FILES=xsl/catalog.xml
 STYLESHEETS=$(CHUNK_XHTML_STYLESHEET) $(srcdir)/xsl/xhtml-common.xsl
 
 generated_mans = oprofiled.1 op_help.1 oprofpp.1 op_time.1 op_to_source.1 op_merge.1 opcontrol.1
@@ -20,11 +21,11 @@ $(generated_mans):
 if have_xsltproc
 
 oprofile.html: ${top_srcdir}/doc/oprofile.xml
-	XML_CATALOG_FILES=$(XML_CATALOG_FILES) $(XSLTPROC) -o $@ --stringparam version @VERSION@ $(XHTML_STYLESHEET) $<
+	XML_CATALOG_FILES=$(XML_CATALOG_FILES) $(XSLTPROC) $(XSLTPROC_FLAGS) -o $@ --stringparam version @VERSION@ $(XHTML_STYLESHEET) $<
 
 # rules to generate oprofile.sf.net/doc files
 chunk: ${top_srcdir}/doc/oprofile.xml
-	$(XSLTPROC) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
+	$(XSLTPROC) $(XSLTPROC_FLAGS) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
 
 else
 

@@ -79,6 +79,59 @@ else
 fi
 ])
 
+dnl AX_CHECK_DOCBOOK
+AC_DEFUN(AX_CHECK_DOCBOOK, [
+# This may not exist
+XML_CATALOG=/etc/xml/catalog
+# It's just rude to go over the net to build
+XSLTPROC_FLAGS=--nonet
+DOCBOOK_ROOT=
+if test ! -f /etc/xml/catalog; then
+	for i in /usr/share/sgml/docbook/stylesheet/xsl/nwalsh /usr/share/sgml/docbook/xsl-stylesheets/;
+	do
+		if test -f "$i"; then
+			DOCBOOK_ROOT=$i
+		fi
+	done
+
+	# Last resort - try net
+	if test -z "$DOCBOOK_ROOT"; then
+		XSLTPROC_FLAGS==--warnnet
+	fi
+else
+	CAT_ENTRY_START='<!--'
+	CAT_ENTRY_END='-->'
+fi
+
+AC_CHECK_PROG(XSLTPROC,xsltproc,xsltproc,)
+AC_MSG_CHECKING([whether xsltproc works])
+XSLTPROC_WORKS=no
+# We can't easily test this case !
+if test -n "$XML_CATALOG"; then
+	XSLTPROC_WORKS=yes
+else
+	if test -n "$XSLTPROC" -a test -n $DOCBOOK_ROOT; then
+			$XSLTPROC $XSLTPROC_FLAGS $DOCBOOK_ROOT/docbook.xsl >/dev/null 2>&1 << END
+<?xml version="1.0" encoding='ISO-8859-1'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<book id="test">
+</book>
+END
+		if test "$?" = 0; then
+			XSLTPROC_WORKS=yes
+		fi
+	fi
+fi
+AC_MSG_RESULT($XSLTPROC_WORKS)
+AM_CONDITIONAL(have_xsltproc, test "$XSLTPROC_WORKS" = "yes")
+
+AC_SUBST(XML_CATALOG)
+AC_SUBST(XSLTPROC_FLAGS)
+AC_SUBST(DOCBOOK_ROOT)
+AC_SUBST(CAT_ENTRY_START)
+AC_SUBST(CAT_ENTRY_END)
+])
+
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
@@ -313,31 +366,7 @@ if test "$enable_abi" = yes; then
 fi
 AM_CONDITIONAL(enable_abi, test "$enable_abi" = yes)
 
-# try to find the docbook stylesheets
-if test -e /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/xhtml/docbook.xsl; then
-	db_xsl=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/xhtml/
-else
-	db_xsl=/usr/share/sgml/docbook/xsl-stylesheets/xhtml/
-fi
-AC_SUBST(db_xsl)
-
-AC_CHECK_PROG(XSLTPROC,xsltproc,xsltproc,)
-AC_MSG_CHECKING([whether xsltproc works])
-XSLTPROC_WORKS=no
-if test -n "$XSLTPROC"; then
-	$XSLTPROC $db_xsl/docbook.xsl >/dev/null 2>&1 << END
-<?xml version="1.0" encoding='ISO-8859-1'?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
-<book id="test">
-</book>
-END
-	if test "$?" = 0; then
-		XSLTPROC_WORKS=yes
-	fi
-fi
-AC_MSG_RESULT($XSLTPROC_WORKS)
- 
-AM_CONDITIONAL(have_xsltproc, test "$XSLTPROC_WORKS" = "yes")
+AX_CHECK_DOCBOOK
 
 # do NOT put tests here, they will fail in the case X is not installed !
  

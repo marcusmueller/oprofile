@@ -1,5 +1,11 @@
 2003-03-10  John Levon  <levon@movementarian.org>
 
+	* doc/Makefile.am:
+	* configure.in:
+	* doc/xsl/catalog-1.xml.in: more docbook changes
+
+2003-03-10  John Levon  <levon@movementarian.org>
+
 	* configure.in:
 	* doc/Makefile.am:
 	* doc/xsl/xhtml.xsl:
