@@ -1,3 +1,7 @@
+2004-03-22  Will Cohen  <wcohen@redhat.com>
+
+	* utils/opcontrol: Tweak error messages and factor out common code.
+
 2004-03-19  Anton Blanchard  <anton@samba.org>
 
 	* daemon/opd_sfile.c: Add function name to some error messages
