@@ -116,16 +116,8 @@ static void run_child(size_t cpu)
 	self->sigusr1 = 0;
 	self->sigusr2 = 0;
 
-	printf("1AA cpu %d\n", (int)cpu);
-	err = sched_setaffinity(self->pid, sizeof(unsigned long),
-	                        &affinity_mask);
+	/* FIXME: we can still get a signal before this, it's racy. */
 
-	if (err == -1) {
-		fprintf(stderr, "Failed to set affinity\n");
-		exit(EXIT_FAILURE);
-	}
-
-	printf("2AA\n");
 	act.sa_handler = child_sigusr1;
 	act.sa_flags = 0;
 	sigemptyset(&act.sa_mask);
@@ -135,7 +127,6 @@ static void run_child(size_t cpu)
 		exit(EXIT_FAILURE);
 	}
 
-	printf("3AA\n");
 	act.sa_handler = child_sigusr2;
 	act.sa_flags = 0;
 	sigemptyset(&act.sa_mask);
@@ -145,7 +136,14 @@ static void run_child(size_t cpu)
 		exit(EXIT_FAILURE);
 	}
 
-	printf("4AA\n");
+	err = sched_setaffinity(self->pid, sizeof(unsigned long),
+	                        &affinity_mask);
+
+	if (err == -1) {
+		fprintf(stderr, "Failed to set affinity\n");
+		exit(EXIT_FAILURE);
+	}
+
 	memset(&ctx, 0, sizeof(pfarg_context_t));
 	memcpy(&ctx.ctx_smpl_buf_id, &uuid, 16);
 	ctx.ctx_flags = PFM_FL_SYSTEM_WIDE;
@@ -164,7 +162,6 @@ static void run_child(size_t cpu)
 	memset(&inp,0, sizeof(inp));
 	memset(&outp,0, sizeof(outp));
 
-	printf("AAA\n");
 	for (i = 0; event_name[i]; ++i) {
 		err = pfm_find_event(event_name[i], &inp.pfp_events[i].event);
 		if (err != PFMLIB_SUCCESS) {
@@ -174,7 +171,6 @@ static void run_child(size_t cpu)
 		}
 	}
 
-	printf("BAA\n");
 	inp.pfp_dfl_plm = PFM_PLM3 | PFM_PLM0; 
 	inp.pfp_event_count = i;
 	inp.pfp_flags = PFMLIB_PFP_SYSTEMWIDE;
@@ -186,7 +182,6 @@ static void run_child(size_t cpu)
 		exit(EXIT_FAILURE);
 	}
 
-	printf("CAA\n");
 	/* FIXME: perfmon has a weird-ass way of doing unit masks,
 	 * we will probably have to dump using it.
 	 */
@@ -212,14 +207,12 @@ static void run_child(size_t cpu)
 		exit(EXIT_FAILURE);
 	}
 
-	printf("DAA\n");
 	err = perfmonctl(self->ctx_fd, PFM_WRITE_PMDS, pd, inp.pfp_event_count);
 	if (err == -1) {
 		perror("Couldn't write PMDs: ");
 		exit(EXIT_FAILURE);
 	}
 
-	printf("EAA\n");
 	load_args.load_pid = self->pid;
 
 	err = perfmonctl(self->ctx_fd, PFM_LOAD_CONTEXT, &load_args, 1);

@@ -16,8 +16,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o IA64: we free twice time profiling interrupt at shutdown
  o x86_64 and 2.4 kernel: test the needed change
  o perfmon: error out if pfmlib not found but needed
- o perfmon: work out the zombie problem and why perfmon doesn't work
-   sometimes
+ o perfmon: fix signal race in opd_perfmon.c
 
 0.8 release
 -----------
