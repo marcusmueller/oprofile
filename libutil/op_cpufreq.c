@@ -44,7 +44,7 @@ double op_cpu_frequency(void)
 		/* alpha */
 		if (sscanf(line, "cycle frequency [Hz] : %lu", &uval) == 1)
 			return uval / 1E6;
-		/* sparc64 if CONFiG_SMP only */
+		/* sparc64 if CONFIG_SMP only */
 		if (sscanf(line, "Cpu0ClkTck : %lx", &uval) == 1)
 			return uval / 1E6;
 
