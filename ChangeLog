@@ -1,3 +1,7 @@
+2003-10-10  John Levon  <levon@movementarian.org>
+
+	* libop/op_parse_event.c: fix compile for IA64
+
 2003-10-09  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: document "no results" and

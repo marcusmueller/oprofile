@@ -53,7 +53,7 @@ size_t parse_events(struct parsed_event * parsed_events, size_t max_events,
 
 		if (i >= max_events) {
 			fprintf(stderr, "Too many events specified: CPU "
-			        "only has %d counters.\n", max_events);
+			        "only has %d counters.\n", (int)max_events);
 			exit(EXIT_FAILURE);
 		}
 
