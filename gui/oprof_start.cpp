@@ -792,7 +792,7 @@ void oprof_start::on_start_profiler()
 		}
 
 		if (descr->unit &&
-		    descr->unit->unit_type_mask != utm_exclusive &&
+		    descr->unit->unit_type_mask == utm_bitmask &&
 		    cfg[descr->name].umask == 0) {
 			ostringstream out;
 

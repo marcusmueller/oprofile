@@ -1,5 +1,10 @@
 2003-03-03  Will Cohen  <wcohen@redhat.com>
 
+	* gui/oprof_start.cpp (oprof_start::on_start_profiler): Limit
+	  check to onlyl utm_bitmask.
+I
+2003-03-03  Will Cohen  <wcohen@redhat.com>
+
     * events/ia64.itanium2.events:
     * events/ia64.itanium2.unit_masks: Add Itanium 2 events.
 
