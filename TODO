@@ -3,11 +3,14 @@ This is an (incomplete) list of some of the stuff we want to look at doing.
 If you're interested in hacking on any of these, please contact the list first
 for some pointers and/or read HACKING and doc/CodingStyle.
 
-0.9 release
------------
+0.8.1 release
+-------------
 
+ o oparchive (and remove binary:/sample-file:)
  o anton's bug on the list about dcache aliasing
- o callgraph_container.cpp: the inner loop in add() is very fragile!
+ o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
+  outside .text section get a wrong offset
+ o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.
  o need --callgraph in oprof_start
  o with opstack I can get "warning: /no-vmlinux could not be found.".
    Should be smarter ?
@@ -24,30 +27,22 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 
  o stress test opstack: compile a Big Application w/o frame pointer and look
    how driver and opstack react.
+
+0.9 release
+-----------
+
  o opdiff
- o add event aliases for common things like icache misses, we must start to 
-  think about metrics including simple like event alias mapped to two or more
-  events and intepreted specially by user space tools like using the ratio
-  of samples; more tricky will be to select an event used as call count (no
-  cg on it) and  used to emulate the call count field in gprof. I think this is
-  a after 1.0 thing but event aliases must be specified in a way allowing such
-  extension
- o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.
- o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
-  outside .text section get a wrong offset
 
 Before 1.0 little stuff
 -----------------------
 
+ o if ev67 and 2.4 x86-64 are not fixed, back them out
  o TRACE_END is no longer sent by the driver, keep it a bit for compatibility
  o callgraph patch: better way to skip ignored backtrace ?
  o child sample count for recursive function is not a bug but a feature, it
-  needs documentation.
+  needs documentation. (What does this refer to exactly?)
+ o callgraph_container.cpp: the inner loop in add() is very fragile!
  o opcontrol --reset should avoid to reload the module if it's unloaded
- o zwane problem with wrong text offset showed an interesting problem: if
-  op_bfd.cpp get any symbol below text offset for vmlinux or a module then
-  profile_t::sample_range() return a pair of iterator with first > second
-  and we throw
  o oprofiled.log now contains various statistics about lost sample etc. from
   the driver. Post profile tools must parse that and warn eventually, warning
   must include a proposed work around. User need this: if nothing seems wrong
@@ -58,35 +53,20 @@ Before 1.0 little stuff
   Not perfect because if the profiler is running the oprofiled.log will show
   those warning only after the first  alarm signal, I think we must dump the
   statistics information after each opcontrol --dump to avoid that.
- o do we need an opreport like opstack (showing caller/callee at binary
-  boundary not symbols) ?
  o libop/op_string.c is dumb (skip_ws, skip_nonws) we can't use them
   to parse a file and report correct line number error because skip_ws skip
   \n (so op_events.c report correct line number only if there is no empty
   line in the events files)
  o document OPROFILE_EVENT_FILES_DIR
- o depedencies between profile_container.h symbol_container.h and
-  sample_container.h become more and more ugly, I needed to include them
-  in a specific order in some source.
- o test and fix p4 support both for 2.4/2.6, merge HT support from 2.6 to 2.4
-  (if I can get a P4 HT box ...)
- o x86_64 and 2.4 kernel: it's apparently broken
- o Alpha ev67 events are broken
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
   try to recover gracefully.
  o output column shortname headers for opreport -l
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
  o create_path API is weird
  o move oprofiled.log to OP_SAMPLE_DIR/current ?
- o lib-image: and image: behavior depend on --separate=, if --separate=library
-  opreport "lib-image:*libc*" --merge=lib works but not
-  opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
-  --separate==none. Must we take care ?
  o --buffer-size is useless on 2.5 without tuning of watershed
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
  o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
- o sample-file: / binary: don't work in any useful way - can we fix this
-   by peeking at binary: value and faking the split_sample_file somehow ?
 
 Documentation
 -------------
@@ -113,9 +93,26 @@ General checks to make
 
 Later
 -----
- 
- o increase encapsulation but, at least for now,  not at the cost of
-  getter()/setter(), this can go to Later section too.
+ o zwane problem with wrong text offset showed an interesting problem: if
+  op_bfd.cpp get any symbol below text offset for vmlinux or a module then
+  profile_t::sample_range() return a pair of iterator with first > second
+  and we throw
+ o lib-image: and image: behavior depend on --separate=, if --separate=library
+  opreport "lib-image:*libc*" --merge=lib works but not
+  opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
+  --separate==none. Must we take care ?
+ o depedencies between profile_container.h symbol_container.h and
+  sample_container.h become more and more ugly, I needed to include them
+  in a specific order in some source.
+ o add event aliases for common things like icache misses, we must start to 
+  think about metrics including simple like event alias mapped to two or more
+  events and intepreted specially by user space tools like using the ratio
+  of samples; more tricky will be to select an event used as call count (no
+  cg on it) and  used to emulate the call count field in gprof. I think this is
+  a after 1.0 thing but event aliases must be specified in a way allowing such
+  extension
+ o do we need an opreport like opstack (showing caller/callee at binary
+  boundary not symbols) ?
  o we should notice an opcontrol config change (--separate etc.) and
    auto-restart the daemon if necessary (Run)
  o we can add lots more unit tests yet
