@@ -374,7 +374,7 @@ static int pmc_add_sysctls(ctl_table * next)
 	for (i=0; i < op_nr_counters; i++) {
 		next->ctl_name = 1;
 		next->procname = names[i];
-		next->mode = 0700;
+		next->mode = 0755;
 
 		if (!(tab = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
 			goto cleanup;
@@ -382,12 +382,12 @@ static int pmc_add_sysctls(ctl_table * next)
 		next->child = tab;
 
 		memset(tab, 0, sizeof(ctl_table)*7);
-		tab[0] = ((ctl_table){ 1, "enabled", &sysctl_parms.ctr[i].enabled, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[1] = ((ctl_table){ 1, "event", &sysctl_parms.ctr[i].event, sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
-		tab[2] = ((ctl_table){ 1, "count", &sysctl_parms.ctr[i].count, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[3] = ((ctl_table){ 1, "unit_mask", &sysctl_parms.ctr[i].unit_mask, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[4] = ((ctl_table){ 1, "kernel", &sysctl_parms.ctr[i].kernel, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[5] = ((ctl_table){ 1, "user", &sysctl_parms.ctr[i].user, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[0] = ((ctl_table){ 1, "enabled", &sysctl_parms.ctr[i].enabled, sizeof(int), 0644, NULL, lproc_dointvec, NULL, });
+		tab[1] = ((ctl_table){ 1, "event", &sysctl_parms.ctr[i].event, sizeof(int), 0644, NULL, lproc_dointvec, NULL,  });
+		tab[2] = ((ctl_table){ 1, "count", &sysctl_parms.ctr[i].count, sizeof(int), 0644, NULL, lproc_dointvec, NULL, });
+		tab[3] = ((ctl_table){ 1, "unit_mask", &sysctl_parms.ctr[i].unit_mask, sizeof(int), 0644, NULL, lproc_dointvec, NULL, });
+		tab[4] = ((ctl_table){ 1, "kernel", &sysctl_parms.ctr[i].kernel, sizeof(int), 0644, NULL, lproc_dointvec, NULL, });
+		tab[5] = ((ctl_table){ 1, "user", &sysctl_parms.ctr[i].user, sizeof(int), 0644, NULL, lproc_dointvec, NULL, });
 		next++;
 	}
 

@@ -1,5 +1,16 @@
 2002-04-30  John Levon  <moz@compsoc.man.ac.uk>
 
+	* module/op_nmi.c: also allow user to see 0/ 1/ contents
+ 
+2002-04-30  William Cohen  <wcohen@nc.rr.com>
+
+	* module/oprofile.c: Allow non-root examination of
+	  /proc/sys/dev/oprofile and initiation of dump. 
+
+	* dae/op_dump: modify message for above
+
+2002-04-30  John Levon  <moz@compsoc.man.ac.uk>
+
 	* TODO: update
  
 	* libdb/Makefile: remove from CVS

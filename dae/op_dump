@@ -8,7 +8,7 @@ if [ ! -d /proc/sys/dev/oprofile ]; then
 fi
  
 if [ ! -w /proc/sys/dev/oprofile/dump ]; then
-	echo "Must be root." >&2
+	echo "Cannot initiate dump." >&2
 	exit 1
 fi
  

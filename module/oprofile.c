@@ -765,22 +765,22 @@ out:
 int nr_oprof_static = 10;
 
 static ctl_table oprof_table[] = {
-	{ 1, "bufsize", &sysctl_parms.buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
-	{ 1, "hashsize", &sysctl_parms.hash_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
-	{ 1, "dump", &sysctl_parms.dump, sizeof(int), 0600, NULL, &sysctl_do_dump, NULL, },
-	{ 1, "dump_stop", &sysctl_parms.dump_stop, sizeof(int), 0600, NULL, &sysctl_do_dump_stop, NULL, },
-	{ 1, "kernel_only", &sysctl_parms.kernel_only, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
-	{ 1, "pid_filter", &sysctl_parms.pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
-	{ 1, "pgrp_filter", &sysctl_parms.pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
-	{ 1, "nr_interrupts", &sysctl.nr_interrupts, sizeof(int), 0400, NULL, &get_nr_interrupts, NULL, },
-	{ 1, "notesize", &sysctl_parms.note_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
-	{ 1, "cpu_type", &sysctl.cpu_type, sizeof(int), 0400, NULL, &lproc_dointvec, NULL, },
+	{ 1, "bufsize", &sysctl_parms.buf_size, sizeof(int), 0644, NULL, &lproc_dointvec, NULL, },
+	{ 1, "hashsize", &sysctl_parms.hash_size, sizeof(int), 0644, NULL, &lproc_dointvec, NULL, },
+	{ 1, "dump", &sysctl_parms.dump, sizeof(int), 0666, NULL, &sysctl_do_dump, NULL, },
+	{ 1, "dump_stop", &sysctl_parms.dump_stop, sizeof(int), 0644, NULL, &sysctl_do_dump_stop, NULL, },
+	{ 1, "kernel_only", &sysctl_parms.kernel_only, sizeof(int), 0644, NULL, &lproc_dointvec, NULL, },
+	{ 1, "pid_filter", &sysctl_parms.pid_filter, sizeof(pid_t), 0644, NULL, &lproc_dointvec, NULL, },
+	{ 1, "pgrp_filter", &sysctl_parms.pgrp_filter, sizeof(pid_t), 0644, NULL, &lproc_dointvec, NULL, },
+	{ 1, "nr_interrupts", &sysctl.nr_interrupts, sizeof(int), 0444, NULL, &get_nr_interrupts, NULL, },
+	{ 1, "notesize", &sysctl_parms.note_size, sizeof(int), 0644, NULL, &lproc_dointvec, NULL, },
+	{ 1, "cpu_type", &sysctl.cpu_type, sizeof(int), 0444, NULL, &lproc_dointvec, NULL, },
 	{ 0, }, { 0, }, { 0, }, { 0, },
 	{ 0, },
 };
 
 static ctl_table oprof_root[] = {
-	{1, "oprofile", NULL, 0, 0700, oprof_table},
+	{1, "oprofile", NULL, 0, 0755, oprof_table},
  	{0,},
 };
 
