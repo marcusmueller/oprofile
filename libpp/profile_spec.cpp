@@ -32,8 +32,8 @@ namespace {
 string const fixup_image_spec(string const & str, extra_images const & extra)
 {
 	// FIXME: what todo if an error in find_image_path() ?
-	image_flags flags;
-	return find_image_path(str, extra, flags);
+	image_error error;
+	return find_image_path(str, extra, error);
 }
 
 

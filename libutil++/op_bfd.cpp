@@ -55,7 +55,7 @@ op_bfd_symbol::op_bfd_symbol(bfd_vma vma, size_t size, string const & name)
 
 
 op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
-               image_flags & flags)
+               bool & ok)
 	:
 	filename(fname),
 	file_size(-1),
@@ -69,7 +69,7 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	symbols_found_t symbols;
 
 	// if there's a problem already, don't try to open it
-	if (flags != image_ok)
+	if (!ok)
 		goto out_fail;
 
 	op_get_fsize(filename.c_str(), &file_size);
@@ -80,7 +80,7 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 
 	if (!ibfd) {
 		cverb << "bfd_openr failed for " << filename << endl;
-		flags = image_flags(flags | image_format_failure);
+		ok = false;
 		goto out_fail;
 	}
 
@@ -90,7 +90,7 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 
 	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) {
 		cverb << "BFD format failure for " << filename << endl;
-		flags = image_flags(flags | image_format_failure);
+		ok = false;
 		goto out_fail;
 	}
 

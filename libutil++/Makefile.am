@@ -27,5 +27,4 @@ libutil___a_SOURCES = \
 	child_reader.h \
 	unique_storage.h \
 	utility.h \
-	comma_list.h \
-	image_flags.h
+	comma_list.h

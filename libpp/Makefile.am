@@ -20,6 +20,7 @@ libpp_a_SOURCES = \
 	format_flags.h \
 	format_output.cpp \
 	format_output.h \
+	image_error.h \
 	locate_images.cpp \
 	locate_images.h \
 	name_storage.cpp \

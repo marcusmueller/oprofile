@@ -1,6 +1,27 @@
 2003-09-18  John Levon  <levon@movementarian.org>
 
 	* libutil++/Makefile.am:
+	* libutil++/image_flags.h: move to ...
+
+	* libpp/Makefile.am:
+	* libpp/image_error.h: ... here, and rename
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: take an in-out bool
+	instead of image_flags
+
+	* libpp/arrange_profiles.cpp:
+	* libpp/arrange_profiles.h:
+	* libpp/locate_images.cpp:
+	* libpp/locate_images.h:
+	* libpp/profile_spec.cpp:
+	* pp/image_errors.cpp:
+	* pp/opgprof.cpp:
+	* pp/populate.cpp: changes from above
+
+2003-09-18  John Levon  <levon@movementarian.org>
+
+	* libutil++/Makefile.am:
 	* libutil++/image_flags.h: flags for image read failure
 
 	* libpp/profile_spec.cpp:

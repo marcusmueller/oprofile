@@ -14,15 +14,16 @@
 
 using namespace std;
 
+
 void report_image_error(inverted_profile const & profile, bool fatal)
 {
-	if (profile.flags == image_ok)
+	if (profile.error == image_ok)
 		return;
 
 	cerr << (fatal ? "error: " : "warning: ");
 	cerr << profile.image << ' ';
 
-	switch (profile.flags) {
+	switch (profile.error) {
 		case image_not_found:
 			cerr << "could not be found.\n";
 			break;
@@ -40,10 +41,7 @@ void report_image_error(inverted_profile const & profile, bool fatal)
 			cerr << "is not in a usable binary format.\n";
 			break;
 
-		default:
-			cerr << "report_image_error: impossible flags "
-			     << profile.flags << endl;
-			abort();
+		case image_ok:
 			break;
 	}
 }

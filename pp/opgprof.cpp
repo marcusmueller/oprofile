@@ -213,10 +213,13 @@ int opgprof(vector<string> const & non_options)
 
 	profile_container samples(false, true);
 
+	bool ok = image_profile.error == image_ok;
 	// FIXME: symbol_filter would be allowed through option
-	op_bfd abfd(image_profile.image, string_filter(), image_profile.flags);
+	op_bfd abfd(image_profile.image, string_filter(), ok);
+	if (!ok && image_profile.error == image_ok)
+		image_profile.error = image_format_failure;
 
-	if (image_profile.flags != image_ok) {
+	if (image_profile.error != image_ok) {
 		report_image_error(image_profile, true);
 		exit(EXIT_FAILURE);
 	}

@@ -457,7 +457,7 @@ verify_and_fill(app_map_t & app_map, list<inverted_profile> & plist,
 	for (; it != end; ++it) {
 		plist.push_back(it->second);
 		inverted_profile & ip = plist.back();
-		ip.image = find_image_path(ip.image, extra, ip.flags);
+		ip.image = find_image_path(ip.image, extra, ip.error);
 	}
 }
 

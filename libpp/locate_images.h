@@ -16,7 +16,7 @@
 #include <map>
 #include <vector>
 
-#include "image_flags.h"
+#include "image_error.h"
 
 /**
  * A class containing mappings from an image basename,
@@ -64,7 +64,7 @@ private:
 /**
  * @param extra_images container where all extra candidate filenames are stored
  * @param image_name binary image name
- * @param flags errors are flagged in this passed enum ref
+ * @param error errors are flagged in this passed enum ref
  *
  * Locate a (number of) matching absolute paths to the given image name.
  * If we fail to find the file or if it is not readable we provide a warning
@@ -73,6 +73,6 @@ private:
 std::string const
 find_image_path(std::string const & image_name,
                 extra_images const & extra_images,
-                image_flags & flags);
+                image_error & error);
 
 #endif /* LOCATE_IMAGES_H */

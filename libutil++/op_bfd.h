@@ -22,7 +22,6 @@
 
 #include "utility.h"
 #include "op_types.h"
-#include "image_flags.h"
 
 class op_bfd;
 class string_filter;
@@ -83,14 +82,13 @@ public:
 	/**
 	 * @param filename  the name of the image file
 	 * @param symbol_filter  filter to apply to symbols
-	 * @param create_fake  Don't try to bfd_openr the file, only create
-	 *  a fake op_bfd
-	 *
-	 * All errors are fatal.
+	 * @param ok in-out parameter: on in, if not set, don't
+	 * open the bfd (because it's not there or whatever). On out,
+	 * it's set to false if the bfd couldn't be loaded.
 	 */
 	op_bfd(std::string const & filename,
 	       string_filter const & symbol_filter,
-	       image_flags & flags);
+	       bool & ok);
 
 	/// close an opened bfd image and free all related resources
 	~op_bfd();

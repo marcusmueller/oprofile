@@ -16,7 +16,7 @@
 #include <list>
 #include <vector>
 
-#include "image_flags.h"
+#include "image_error.h"
 
 /**
  * store merging options options used to classify profiles
@@ -163,12 +163,12 @@ typedef std::list<image_set> image_group_set;
  * column.
  */
 struct inverted_profile {
-	inverted_profile() : flags(image_ok) {}
+	inverted_profile() : error(image_ok) {}
 	/// the image to open
 	std::string image;
 
-	/// any errors found in reading the image
-	image_flags flags;
+	/// an error found in reading the image
+	image_error error;
 
 	/// all sample files with data for the above image
 	std::vector<image_group_set> groups;

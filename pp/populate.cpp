@@ -44,9 +44,12 @@ populate_from_files(profile_t & profile, list<string> const & files, u32 offset)
 void
 populate_for_image(profile_container & samples, inverted_profile & ip)
 {
-	op_bfd abfd(ip.image, options::symbol_filter, ip.flags);
+	bool ok = ip.error == image_ok;
+	op_bfd abfd(ip.image, options::symbol_filter, ok);
+	if (!ok && ip.error == image_ok)
+		ip.error = image_format_failure;
 
-	if (ip.flags & image_format_failure)
+	if (ip.error == image_format_failure)
 		report_image_error(ip, false);
 
 	u32 offset = abfd.get_start_offset();
@@ -71,6 +74,6 @@ populate_for_image(profile_container & samples, inverted_profile & ip)
 		}
 	}
 
-	if (ip.flags == image_ok)
+	if (ip.error == image_ok)
 		check_mtime(abfd.get_filename(), header);
 }
