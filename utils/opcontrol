@@ -174,7 +174,6 @@ do_init() {
 	# hard-coded in op_user.h
 	BUF_SIZE=0
 	NOTE_SIZE=0
-	IGNORE_MYSELF=0
 	VMLINUX=
 	PID_FILTER=0
 	PGRP_FILTER=0
@@ -217,11 +216,38 @@ do_init() {
 	CPUTYPE=`cat $MOUNT/cpu_type`
 	OP_COUNTERS=`ls $MOUNT/ | grep "^[0-9]\+\$" | tr "\n" " "`
 
+	CPU_SPEED=`grep "cpu MHz" /proc/cpuinfo | tail -1 | awk -F": " '{print $2}'`
+	vecho "cpu speed (estimation) : $CPU_SPEED"
+
 	IS_TIMER=0
+	DEFAULT_EVENT=
+	DEFAULT_UNIT_MASK=
+	# FIXME: scale
+	DEFAULT_COUNT=100000
  
 	case "$CPUTYPE" in
+		0|1|2|i386/ppro|i386/pii|i386/piii)
+			DEFAULT_EVENT=CPU_CLK_UNHALTED
+			;;
 		timer|4|5)
 			IS_TIMER=1
+			;;
+		3|10|i386/athlon|x86-64*)
+			DEFAULT_EVENT=RETIRED_INSNS
+			;;
+		6|11|i386/p4*)
+			DEFAULT_EVENT=GLOBAL_POWER_EVENTS
+			DEFAULT_UNIT_MASK=1
+			;;
+		7|8|9|ia64*)
+			DEFAULT_EVENT=CPU_CYCLES
+			;;
+		12|13|14|15|16|alpha/*)
+			DEFAULT_EVENT=CYCLES
+			;;
+		*)
+			echo "Unknown CPU type $CPUTYPE, please fix me !" >&2
+			exit 1
 			;;
 	esac
 
@@ -252,16 +278,13 @@ function create_dir {
 do_save_setup() {
 	create_dir "$SETUP_DIR"
 
-	if test -f "$SETUP_FILE"; then
-		rm $SETUP_FILE
-	fi
- 
 	touch $SETUP_FILE
 	chmod 644 $SETUP_FILE
+	>$SETUP_FILE
 
 	#write the actual information to file
 	if [ $BUF_SIZE != 0 ]; then
-		echo "BUF_SIZE=$BUF_SIZE" > $SETUP_FILE
+		echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
 	fi;
 	if test "$IS_TIMER" -ne 1; then
 		for f in $OP_COUNTERS ; do
@@ -278,7 +301,7 @@ do_save_setup() {
 		fi
 	fi
  
-	echo "IGNORE_MYSELF=$IGNORE_MYSELF" >> $SETUP_FILE
+	echo "one_enabled=$one_enabled" >> $SETUP_FILE
 	echo "SEPARATE_LIB_SAMPLES=$SEPARATE_LIB_SAMPLES" >> $SETUP_FILE
 	echo "SEPARATE_KERNEL_SAMPLES=$SEPARATE_KERNEL_SAMPLES" >> $SETUP_FILE
 	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
@@ -288,21 +311,32 @@ do_save_setup() {
 		echo "PID_FILTER=$PID_FILTER" >> $SETUP_FILE
 		echo "PGRP_FILTER=$PGRP_FILTER" >> $SETUP_FILE
 	fi
-	echo "one_enabled=$one_enabled" >> $SETUP_FILE
 }
 
 
-#reload all the setup releated information
+#reload all the setup-related information
 do_load_setup() {
-	if test ! -f "$SETUP_FILE"; then
-		echo "$SETUP_FILE does not exist" >& 2
-		exit 1
+	if test  -f "$SETUP_FILE"; then
+		# load the actual information from file
+		# FIXME this is insecure, arbitrary commands could be added to
+		# $SETUP_FILE and be executed as root
+		source $SETUP_FILE
 	fi
 
-	# load the actual information from file
-	# FIXME this is insecure, arbitrary commands could be added to
-	# $SETUP_FILE and be executed as root
-	source $SETUP_FILE
+	if test "$one_enabled" != "1"; then
+		if test -n "$DEFAULT_EVENT"; then
+			one_enabled=1
+			CTR_EVENT[0]=$DEFAULT_EVENT
+			CTR_EVENT_VAL[0]=`op_help $DEFAULT_EVENT`
+		fi
+		if test -n "$DEFAULT_UNIT_MASK"; then
+			CTR_UM[0]=$DEFAULT_UNIT_MASK
+		fi
+		if test -n "$DEFAULT_COUNT"; then
+			CTR_COUNT[0]=$DEFAULT_COUNT
+		fi
+		do_save_setup
+	fi
 
 	vecho "Parameters used:"
 	vecho "CPUTYPE $CPUTYPE"
@@ -322,8 +356,7 @@ do_load_setup() {
 	else
 		vecho "RTC_VALUE $RTC_VALUE"
 	fi
- 
-	vecho "IGNORE_MYSELF $IGNORE_MYSELF"
+
 	vecho "SEPARATE_LIB_SAMPLES $SEPARATE_LIB_SAMPLES"
 	vecho "SEPARATE_KERNEL_SAMPLES $SEPARATE_KERNEL_SAMPLES"
 	vecho "VMLINUX $VMLINUX"
@@ -332,15 +365,14 @@ do_load_setup() {
 
 check_valid_args() {
 	if [ "$one_enabled" = "0" ]; then
-		echo "You need at least one event to count, e.g." >&2
-		echo "opcontrol --setup ... --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000" >&2
-		echo "Enter opcontrol --help for full options" >&2
+		echo "Not one event enabled ? This should not happen !" >&2
+		echo "Please report a bug ..." >&2
 		exit 1
 	fi
 
 	if [ -z "$VMLINUX" ]; then
 		echo "No vmlinux file specified. You must specify the correct vmlinux file, e.g." >&2
-		echo "opcontrol --vmlinux=/path/to/vmlinux" >&2
+		echo "opcontrol --setup --vmlinux=/path/to/vmlinux" >&2
 		echo "Enter opcontrol --help for full options" >&2
 		exit 1
 	fi
@@ -417,6 +449,9 @@ do_options() {
 	EXCLUSIVE_ARGC=0
 	SETUP=no
 	NEED_SETUP=no
+
+	# load any default settings
+	do_load_setup
 
 	while [ "$#" -ne 0 ]
 	do
@@ -888,10 +923,8 @@ do_start_daemon() {
 		OPD_ARGS="$OPD_ARGS --verbose"
 	fi
 
-	cpu_speed=`grep "cpu MHz" /proc/cpuinfo | tail -1 | awk -F": " '{print $2}'`
-	OPD_ARGS="$OPD_ARGS --cpu-speed=$cpu_speed"
+	OPD_ARGS="$OPD_ARGS --cpu-speed=$CPU_SPEED"
 
-	vecho "cpu speed (estimation) : $cpu_speed"
 	vecho "executing oprofiled $OPD_ARGS"
 
 	$OPROFILED $OPD_ARGS
@@ -1029,8 +1062,8 @@ do_operations() {
 	#thus INIT is a noop
 
 	if test "$SETUP" = "yes"; then
-		do_save_setup
 		check_valid_args
+		do_save_setup
 	fi
 
 	if test "$START_DAEMON" = "yes"; then

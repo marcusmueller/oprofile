@@ -1,5 +1,12 @@
 2003-03-01  John Levon  <levon@movementarian.org>
 
+	* utils/opcontrol: setup default events. Allow part-setting
+	  using --setup. Fix a help text.
+
+	* doc/oprofile.xml: changes from the above
+
+2003-03-01  John Levon  <levon@movementarian.org>
+
 	* libop/op_cpu_type.c: fix alpha/ev4 mis-detection
 
 2003-03-01  John Levon  <levon@movementarian.org>

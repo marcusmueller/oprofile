@@ -322,21 +322,19 @@ This section gives a brief description of the available OProfile utilities and t
 <title>A typical session</title>
 <para>
 Before getting into detail about usage, it's probably a good idea to have a quick stroll through an example
-session (this example is for Intel P6 generation processors, but the process is similar).
+session.
 </para>
 <para>
 First we need to start the profiler running in the background. We need to specify the correct
-<filename>vmlinux</filename> file (to allow kernel profiling), and we need to specify what event to count and the counter value.
-Here I've started with :
+<filename>vmlinux</filename> file (to allow kernel profiling), and then we're ready to go.
 </para>
 <para>
-<command>opcontrol --setup --vmlinux=/boot/2.4.0ac12/vmlinux --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000</command>
+<command>opcontrol --setup --vmlinux=/boot/2.4.0ac12/vmlinux</command>
 </para><para>
 <command>opcontrol --start</command>
 </para>
-<para>
-Here we've enabled counter 0 to count "CPU_CLK_UNHALTED" (number of cycles CPU is not halted) events with a count value of 600,000.
-This event is useful as profiles resulting generally correspond to time-spent profiles for functions etc. 
+Note that OProfile will pick a default event for you, if OProfile is using the hardware performance counters.
+The event chosen roughly corresponds to measuring CPU time spent in code.
 </para>
 <para>
 A quick <command>ps ax</command> confirms that the daemon (<command>oprofiled</command>) has started.
@@ -379,7 +377,7 @@ Row::next(void) const[0x0813ac24]: 15.4904% (1352 samples)
 at the top. Note that over a longer run (or with a lower <option>ctr0-count</option> value) the number of samples will 
 be much more statistically
 reliable. Note that these sample counts do <emphasis>not</emphasis> necessarily reflect the relative amounts of time
-spent in each function - it depends on the event being counted. In this case we used <constant>CPU_CLK_UNHALTED</constant>
+spent in each function - it depends on the event being counted. In my case (on my CPU) OProfile used <constant>CPU_CLK_UNHALTED</constant>
 which the command <command>opcontrol --list-events</command> tells us is "clocks processor is not halted", so in fact is likely to represent
 the relative time spent accurately (in fact, experiments have shown that using this event is far more accurate than the values
 produced by <command>gprof</command>).
@@ -649,6 +647,8 @@ session.
 <para>
 Your CPU type may not include the requisite support for hardware performance counters, in which case
 you must use OProfile in RTC mode in 2.4 (see <xref linkend="rtc" />), or timer mode in 2.5 (see <xref linkend="timer" />). 
+You do not really need to read this section unless you are interested in using 
+events other than the default event chosen by OProfile.
 </para>
 </note>
 <para>

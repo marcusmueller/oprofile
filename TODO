@@ -27,7 +27,8 @@ Before 1.0 little stuff
 [root@lambent oprofile]# oprofpp -kDs strlen /usr/local/oprofile/bin/op_time | grep strlen
 0000e470 0        0           strlen                  /lib/ld-2.2.93.so
 
- o opcontrol should allow part-setting of --setup params
+ o opcontrol -- need a way to turn OFF a counter now after setting one up
+ o opcontrol - scale the default event count
  o oprofpp needs -P too
  o "op_time" doesn't have a header !
  o decide on -d vs. -D by default for demangle etc.
