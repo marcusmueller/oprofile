@@ -1,0 +1,21 @@
+
+These tests were compiling 2.4.0ac9 kernel on 2.4.0ac9 with the standard test machine. The kernel
+was compiled with make -j3 MAKE="make -j3"
+
+clean averages : 
+499.97user 52.67system 585.38elapsed  94%CPU (0avgtext+0avgdata 0maxresident)k 0inputs+0outputs (673198major+678084minor)pagefaults 0swaps
+
+readprofile averages : 
+508.22user 54.43system 595.62elapsed  94%CPU (0avgtext+0avgdata 0maxresident)k 0inputs+0outputs (673380major+678178minor)pagefaults 0swaps
+
+
+readprofile (multiplier 1) overhead :
+-------------------------------------
+
+User time : 1.65 %
+System    : 3.34 %
+Elapsed   : 1.7  %
+
+This is effectively equivalent to oprofile running at around 100 interrupts/second, and only profiling the kernel.
+
+
