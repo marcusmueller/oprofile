@@ -1,5 +1,15 @@
 2003-09-14  John Levon  <levon@movementarian.org>
 
+	* pp/opreport.cpp: output column headers for
+	image report
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
+	* libpp/arrange_profiles.cpp:
+	* pp/opreport.cpp:
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
 	* libpp/op_header.h:
 	* libpp/op_header.cpp: output header info to
 	a string not a stream

@@ -195,7 +195,7 @@ void output_header()
 
 	cout << classes.cpuinfo << endl;
 	if (!classes.event.empty())
-		cout << classes.event;
+		cout << classes.event << endl;
 
 	for (vector<profile_class>::size_type i = 0;
 	     i < classes.v.size(); ++i) {
@@ -220,6 +220,20 @@ void output_count(double total_count, size_t count)
 }
 
 
+void output_col_headers()
+{
+	int colwidth = 9 + 1 + percent_width;
+
+	for (size_t i = 0; i < classes.v.size(); ++i) {
+		cout << setw(colwidth)
+		     << classes.v[i].name.substr(0, colwidth);
+		cout << ' ';
+	}
+	cout << '\n';
+
+}
+
+
 void
 output_deps(summary_container const & summaries,
 	    app_summary const & app)
@@ -230,13 +244,16 @@ output_deps(summary_container const & summaries,
 	if (app.deps.size() == 1)
 		return;
 
+	cout << '\t';
+	output_col_headers();
+
 	for (size_t j = 0 ; j < app.deps.size(); ++j) {
 		summary const & summ = app.deps[j];
 
 		if (summ.counts.zero())
 			continue;
 
-		cout << "\t";
+		cout << '\t';
 
 		for (size_t i = 0; i < nr_groups; ++i) {
 			double tot_count = options::global_percent
@@ -256,6 +273,8 @@ output_deps(summary_container const & summaries,
  */
 void output_summaries(summary_container const & summaries)
 {
+	output_col_headers();
+
 	for (size_t i = 0; i < summaries.apps.size(); ++i) {
 		app_summary const & app = summaries.apps[i];
 

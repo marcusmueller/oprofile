@@ -113,8 +113,6 @@ void name_classes(profile_classes & classes, int axis)
 			it->longname = "Samples on CPU " + it->ptemplate.cpu;
 			break;
 		}
-		cerr << "Class name: " <<  it->name << endl;
-		cerr << "Long class name: " <<  it->longname << endl;
 	}
 }
 

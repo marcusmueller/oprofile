@@ -15,7 +15,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o side-by-side opreport output (--compare - needs UI spec)
  o thread profiling (Ka is on this)
  o per-cpu profiling
- o we show a header but not column headers for image report
  o lib-image: and image: behavior depend on --separate=, if --separate=library
   opreport "lib-image:*libc*" --merge=lib works but not
   opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
