@@ -21,6 +21,17 @@
 unsigned long opd_stats[OPD_MAX_STATS];
 
 /**
+ * print_if - print an integer value read from file filename,
+ * do nothing if the value read == -1 except if force is non-zero
+ */
+static void print_if(char const * fmt, char const * path, char const * filename, int force)
+{
+	int value = opd_read_fs_int(path, filename, 0);
+	if (value != -1 || force)
+		printf(fmt, value);
+}
+
+/**
  * opd_print_stats - print out latest statistics
  */
 void opd_print_stats(void)
@@ -37,32 +48,33 @@ void opd_print_stats(void)
 	printf("Nr. samples lost due to sample file open failure: %lu\n",
 		opd_stats[OPD_LOST_SAMPLEFILE]);
 	printf("Nr. incomplete code structs: %lu\n", opd_stats[OPD_DANGLING_CODE]);
-	printf("Nr. event lost due to buffer overflow: %u\n",
-	       opd_read_fs_int("/dev/oprofile/stats", "event_lost_overflow", 0));
-	printf("Nr. samples without file mapping: %u\n",
-	       opd_read_fs_int("/dev/oprofile/stats", "sample_lost_no_mapping", 0));
-	printf("Nr. backtrace skipped due to no file mapping: %u\n",
-	       opd_read_fs_int("/dev/oprofile/stats", "bt_lost_no_mapping", 0));
-	printf("Nr. samples without mm: %u\n",
-	       opd_read_fs_int("/dev/oprofile/stats", "sample_lost_no_mm", 0));
+
+	print_if("Nr. event lost due to buffer overflow: %u\n",
+	       "/dev/oprofile/stats", "event_lost_overflow", 1);
+	print_if("Nr. samples without file mapping: %u\n",
+	       "/dev/oprofile/stats", "sample_lost_no_mapping", 1);
+	print_if("Nr. backtrace skipped due to no file mapping: %u\n",
+	       "/dev/oprofile/stats", "bt_lost_no_mapping", 0);
+	print_if("Nr. samples without mm: %u\n",
+	       "/dev/oprofile/stats", "sample_lost_no_mm", 1);
 
 	if (!(dir = opendir("/dev/oprofile/stats/")))
 		goto out;
 	while ((dirent = readdir(dir))) {
 		int cpu_nr;
-		char filename[256];
+		char path[256];
 		if (sscanf(dirent->d_name, "cpu%d", &cpu_nr) != 1)
 			continue;
-		snprintf(filename, 256,
-			 "/dev/oprofile/stats/%s", dirent->d_name);
-		printf("Nr. samples lost cpu buffer overflow: %u\n",
-		       opd_read_fs_int(filename, "sample_lost_overflow", 0));
-		printf("Nr. samples lost task exit: %u\n",
-		       opd_read_fs_int(filename, "sample_lost_task_exit", 0));
-		printf("Nr. samples received: %u\n",
-		       opd_read_fs_int(filename, "sample_received", 0));
-		printf("Nr. backtrace aborted: %u\n",
-		       opd_read_fs_int(filename, "backtrace_aborted", 0));
+		snprintf(path, 256, "/dev/oprofile/stats/%s", dirent->d_name);
+
+		print_if("Nr. samples lost cpu buffer overflow: %u\n",
+		     path, "sample_lost_overflow", 1);
+		print_if("Nr. samples lost task exit: %u\n",
+		     path, "sample_lost_task_exit", 0);
+		print_if("Nr. samples received: %u\n",
+		     path, "sample_received", 1);
+		print_if("Nr. backtrace aborted: %u\n", 
+		     path, "backtrace_aborted", 0);
 	}
 	closedir(dir);
 out:
