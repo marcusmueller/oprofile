@@ -1,3 +1,9 @@
+2002-10-01  Will Cohen  <wcohen@redhat.com>
+ 
+	* module/x86/cpu_type.c (p4_threads): New.
+	  (get_cpu_type): Use p4_threads().
+	* doc/oprofile.xml: Add comment about P4 HT support.
+
 2002-10-01  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_image.c: fix non --separate-samples. Still broke.

@@ -633,7 +633,8 @@ to those in the P6 or Athlon families of CPU.
 <para>
 There is currently no support for Precision Event-Based Sampling (PEBS), nor any advanced uses of the Debug Store
 (DS). Current support is limited to the conservative extension of Oprofile's existing interrupt-based model described
-above.
+above.  Performance monitoring hardware on Pentium 4 / Xeon processors with Hyperthreading enabled (multiple logical
+processors on a single die) is not supported either.
 </para>
 </sect2>
 
