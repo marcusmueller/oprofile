@@ -1212,6 +1212,13 @@ FIXME: more examples, basic and advanced trick. A howto use utilities FAQ ?
 yes, indeed. We can do this bit by bit though, as long as we've done as much
 as we can for release 1.0 - john
  
+List for how to :
+
+o how to get library samples (--separate-samples) 
+o how to get module / kernel post-prof
+o how to use sudo (and risks !)
+o more ...
+ 
 <sect2 id="none">
 <title>and more</title>
 <para>
