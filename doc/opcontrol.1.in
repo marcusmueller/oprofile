@@ -91,6 +91,11 @@ for each thread and task. 'cpu' separates for each CPU. 'all' imply all the
 above options and 'none' turns off separation.
 .br
 .TP
+.BI "--image="[name,name...|"all"]
+Only profile the given absolute paths to binaries, or "all" to profile
+everything (the default).
+.br
+.TP
 .BI "--vmlinux="file
 vmlinux kernel image.
 .br

@@ -580,7 +580,7 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		</para>
 		</listitem>
 	</varlistentry>
-		<term><option>--image=</option>image,[images]</term>
+		<term><option>--image=</option>image,[images]|"all"</term>
 		<listitem><para>
 		Image filtering. If you specify one or more absolute
 		paths to binaries, OProfile will only produce profile results for those
@@ -590,7 +590,8 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		<option>--separate=library</option> or
 		<option>--separate=kernel</option>, then if you specification an
 		application binary, the shared libraries and kernel code
-		<emphasis>are</emphasis> included.
+		<emphasis>are</emphasis> included. Specify the value
+		"all" to profile everything (the default).
 		</para></listitem>
 	<varlistentry>
 	</varlistentry>

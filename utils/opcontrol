@@ -96,39 +96,51 @@ vecho()
 # print help message
 do_help()
 { 
-	echo "opcontrol: usage:
-	--init			loads the oprofile module and oprofilefs
-	--setup			give setup arguments
-	--start-daemon          start daemon without starting profiling
-	-s/--start		start data collection
-	-d/--dump		flush the collected profiling data
-	--stop			stop data collection
-	-h/--shutdown		stop data collection and kill daemon
-	--reset			clears out data from current session
-	--save=session_name	save data from current session to session_name
-	--deinit		unload the oprofile module and oprofilefs
+   echo "opcontrol: usage:
+   -l/--list-events list event types and unit masks
+   -?/--help        this message
+   -v/--version     show version
+   --init           loads the oprofile module and oprofilefs
+   --setup          give setup arguments (may be omitted)
+   --start-daemon   start daemon without starting profiling
+   -s/--start       start data collection
+   -d/--dump        flush the collected profiling data
+   -t/--stop        stop data collection
+   -h/--shutdown    stop data collection and kill daemon
+   -V/--verbose     be verbose in the daemon log
+   --reset          clears out data from current session
+   --save=name      save data from current session to session_name
+   --deinit         unload the oprofile module and oprofilefs
 
-	--setup options
-	  --buffer-size=num            number of samples in kernel buffer
-	  -e/--event=[eventspec]       choose an event and values or "default". Of the form
-	                               name:count:unitmask:kernel:user
-                name:                  symbolic event name, e.g. CPU_CLK_UNHALTED or RTC_INTERRUPTS
-	        count:                 reset counter value e.g. 100000
-	        unitmask:              hardware unit mask e.g. 0x0f
-	        kernel:                whether to profile kernel: 0 or 1
-	        user:                  whether to profile userspace: 0 or 1
-	  --note-table-size	       number of notes in kernel notes buffer (2.4 version)
-	  -p/--separate=[none,library,kernel,thread,cpu,all]     separate samples as given
-	  --vmlinux=file               vmlinux kernel image
-	  --no-vmlinux                 no vmlinux image available (no kernel vmlinux image available)
-	  -V/--verbose                 be verbose in the daemon log
-	  --kernel-range=start,end     kernel range vma address in hexadecimal
-	  --image[=image_name,names]   list of image to profile (default to all)
+   -e/--event=eventspec 
 
-	General options
-	  -l/--list-events             list event types and unit masks
-	  -?/--help                    this message
-	  -v/--version                 show version" >&2
+      Choose an event. May be specified multiple times. Of the form
+      "default" or "name:count:unitmask:kernel:user", where :
+
+      name:     event name, e.g. CPU_CLK_UNHALTED or RTC_INTERRUPTS
+      count:    reset counter value e.g. 100000
+      unitmask: hardware unit mask e.g. 0x0f
+      kernel:   whether to profile kernel: 0 or 1
+      user:     whether to profile userspace: 0 or 1
+
+   -p/--separate=type,[types]
+
+       Separate profiles as follows :
+
+       none:     no profile separation
+       library:  separate shared library profiles per-application
+       kernel:   same as library, plus kernel profiles
+       thread:   per-thread/process profiles
+       cpu:      per CPU profiles
+       all:      all of the above
+
+   -i/--image=name[,names]       list of binaries to profile (default is "all")
+   --vmlinux=file                vmlinux kernel image
+   --no-vmlinux                  no kernel image (vmlinux) available
+   --kernel-range=start,end      kernel range vma address in hexadecimal
+   --buffer-size=num             kernel buffer size in sample units
+   --note-table-size             kernel notes buffer size in notes units (2.4 only)
+" >&2
 }
 
 
@@ -515,7 +527,7 @@ do_options()
 				EXCLUSIVE_ARGV="$arg"
 				;;
 
-			--stop)
+			-t|--stop)
 				if test "$KERNEL_SUPPORT" != "yes"; then
 					echo "$arg unsupported. use \"--shutdown\"" >& 2
 					exit 1
@@ -604,6 +616,7 @@ do_options()
 				DO_SETUP=yes
 				;;
 			--note-table-size)
+				error_if_empty $arg $val
 				if test $"KERNEL_SUPPORT" = "yes"; then
 					echo "\"$arg\" ignored. " >& 2
 				else
@@ -611,8 +624,13 @@ do_options()
 				fi
 				DO_SETUP=yes
 				;;
-			--image)
-				IMAGE_FILTER=$val
+			-i|--image)
+				error_if_empty $arg $val
+				if test "$val" = "all"; then
+					IMAGE_FILTER=
+				else
+					IMAGE_FILTER=$val
+				fi
 				DO_SETUP=yes
 				;;
 

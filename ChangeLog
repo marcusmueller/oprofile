@@ -1,5 +1,15 @@
 2003-10-27  John Levon  <levon@movementarian.org>
 
+	* doc/opcontrol.1.in: document --image=
+
+	* doc/oprofile.xml:
+	* utils/opcontrol: make user specify "--image=all"
+	to reset. Clean up help message. Ensure note table
+	size is given a value. Add '-t' for '--stop', and
+	'-i' for '--image'.
+
+2003-10-27  John Levon  <levon@movementarian.org>
+
 	* doc/oprofile.xml: document opcontrol --image=
 
 2003-10-27  John Levon  <levon@movementarian.org>
