@@ -1,5 +1,9 @@
 2001-10-14  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprofile.c: merge no-thread code
+ 
+2001-10-14  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/opd_proc.c:
 	* dae/oprofiled.c:
 	* op_user.h:

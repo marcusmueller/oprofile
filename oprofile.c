@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.94 2001/09/26 22:05:18 movement Exp $ */
+/* $Id: oprofile.c,v 1.95 2001/10/14 17:06:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -71,18 +71,45 @@ extern spinlock_t map_lock;
 
 /* ---------------- NMI handler ------------------ */
 
-/* FIXME: this whole handler would probably be better in straight asm */
-static void evict_op_entry(struct _oprof_data *data, struct op_sample *ops)
+inline static int need_wakeup(uint cpu, struct _oprof_data * data)
 {
-	uint cpu = op_cpu_id();
+	return data->nextbuf >= (data->buf_size - OP_PRE_WATERMARK) && !oprof_ready[cpu];
+}
  
+inline static void next_sample(struct _oprof_data * data)
+{
+	if (unlikely(++data->nextbuf == data->buf_size))
+		data->nextbuf = 0;
+}
+ 
+inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const struct op_sample *ops, const struct pt_regs *regs)
+{
 	memcpy(&data->buffer[data->nextbuf], ops, sizeof(struct op_sample));
-	if (likely(++data->nextbuf != (data->buf_size - OP_PRE_WATERMARK))) {
-		if (data->nextbuf == data->buf_size)
-			data->nextbuf = 0;
+	next_sample(data);
+	if (likely(!need_wakeup(cpu, data)))
 		return;
+ 
+	/* locking rationale :
+	 *
+	 * other CPUs are not a race concern since we synch on oprof_wait->lock.
+	 *
+	 * for the current CPU, we might have interrupted another user of e.g. 
+	 * runqueue_lock, deadlocking on SMP and racing on UP. So we check that IRQs
+	 * were not disabled (corresponding to the irqsave/restores in __wake_up()
+	 *
+	 * This will mean that approaching the end of the buffer, a number of the
+	 * evictions may fail to wake up the daemon. We simply hope this doesn't
+	 * take long; a pathological case could cause buffer overflow (which will
+	 * be less of an issue when we have a separate map device anyway).
+	 *
+	 * Note that we use oprof_ready as our flag for whether we have initiated a
+	 * wake-up. Once the wake-up is received, the flag is reset as well as
+	 * data->nextbuf, preventing multiple wakeups.
+	 */
+	if (likely(regs->eflags & IF_MASK)) {
+		oprof_ready[cpu] = 1;
+		wake_up(&oprof_wait);
 	}
-	oprof_ready[cpu] = 1;
 }
 
 inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, int ctr)
@@ -92,13 +119,14 @@ inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, in
 	ops->count = (1U << OP_BITS_COUNT)*ctr + 1;
 }
 
-inline static void op_do_profile(struct _oprof_data *data, struct pt_regs *regs, int ctr)
+inline static void op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
 {
+	struct _oprof_data * data = &oprof_data[cpu]; 
 	uint h = op_hash(regs->eip, current->pid, ctr);
 	uint i;
 
 	for (i=0; i < OP_NR_ENTRY; i++) {
-		if (!op_miss(data->entries[h].samples[i])) {
+		if (likely(!op_miss(data->entries[h].samples[i]))) {
 			data->entries[h].samples[i].count++;
 			set_perfctr(data->ctr_count[ctr], ctr);
 			return;
@@ -108,32 +136,32 @@ inline static void op_do_profile(struct _oprof_data *data, struct pt_regs *regs,
 			goto new_entry;
 	}
 
-	evict_op_entry(data, &data->entries[h].samples[data->next]);
+	evict_op_entry(cpu, data, &data->entries[h].samples[data->next], regs);
 	fill_op_entry(&data->entries[h].samples[data->next], regs, ctr);
 	data->next = (data->next + 1) % OP_NR_ENTRY;
 out:
 	set_perfctr(data->ctr_count[ctr], ctr);
 	return;
 full_entry:
-	evict_op_entry(data, &data->entries[h].samples[i]);
+	evict_op_entry(cpu, data, &data->entries[h].samples[i], regs);
 new_entry:
 	fill_op_entry(&data->entries[h].samples[i],regs,ctr);
 	goto out;
 }
 
-static void op_check_ctr(struct _oprof_data *data, struct pt_regs *regs, int ctr)
+static void op_check_ctr(uint cpu, struct pt_regs *regs, int ctr)
 {
 	ulong l,h;
 	get_perfctr(l, h, ctr);
-	if (ctr_overflowed(l)) {
-		op_do_profile(data, regs, ctr);
-		op_irq_stats[op_cpu_id()]++;
+	if (likely(ctr_overflowed(l))) {
+		op_do_profile(cpu, regs, ctr);
+		op_irq_stats[cpu]++;
 	} 
 }
 
 asmlinkage void op_do_nmi(struct pt_regs *regs)
 {
-	struct _oprof_data *data = &oprof_data[op_cpu_id()];
+	uint cpu = op_cpu_id();
 	int i;
 
 	if (unlikely(pid_filter) && likely(current->pid != pid_filter))
@@ -141,9 +169,8 @@ asmlinkage void op_do_nmi(struct pt_regs *regs)
 	if (unlikely(pgrp_filter) && likely(current->pgrp != pgrp_filter))
 		return;
 
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		op_check_ctr(data, regs, i);
-	}
+	for (i = 0 ; i < op_nr_counters ; ++i)
+		op_check_ctr(cpu, regs, i);
 }
 
 /* ---------------- PMC setup ------------------ */
@@ -251,7 +278,7 @@ static void pmc_start(void *info)
 	/* assert: all enable counter are setup except the bit start/stop,
 	 * all counter disable contains zeroes (except perhaps the reserved
 	 * bit 21), counter disable contains -1 sign extended in msr count */
- 
+
 	/* enable all needed counter */
 	if (separate_running_bit == 0)
 		pmc_start_P6();
@@ -310,71 +337,16 @@ inline static void pmc_select_stop(uint cpu)
 
 /* ---------------- driver routines ------------------ */
 
-static u32 diethreaddie;
-static pid_t threadpid;
-
-DECLARE_COMPLETION(threadstop);
-
-/* we have to have another thread because we can't
- * do wake_up() from NMI due to no locking
- */
-static int oprof_thread(void *arg)
-{
-	int i;
-
-	daemonize();
-	sprintf(current->comm, "oprof-thread");
-	siginitsetinv(&current->blocked, sigmask(SIGKILL));
-	spin_lock(&current->sigmask_lock);
-	flush_signals(current);
-	spin_unlock(&current->sigmask_lock);
-	current->policy = SCHED_OTHER;
-	current->nice = -20;
-
-	for (;;) {
-		for (i=0; i < smp_num_cpus; i++) {
-			if (oprof_ready[i])
-				wake_up(&oprof_wait);
-		}
-		current->state = TASK_INTERRUPTIBLE;
-		/* FIXME: determine best value here */
-		schedule_timeout(HZ/10);
-
-		if (diethreaddie)
-			break;
-	}
-
-	complete_and_exit(&threadstop,0);
-	return 0;
-}
-
-static void oprof_start_thread(void)
-{
-	init_completion(&threadstop);
-	diethreaddie = 0;
-	threadpid = kernel_thread(oprof_thread, NULL, CLONE_FS|CLONE_FILES|CLONE_SIGHAND);
-	if (threadpid < 0) {
-		printk(KERN_ERR "oprofile: couldn't spawn wakeup thread.\n");
-		threadpid = 0;
-	}
-}
-
-static void oprof_stop_thread(void)
-{
-	diethreaddie = 1;
-	kill_proc(SIGKILL, threadpid, 1);
-	wait_for_completion(&threadstop);
-}
-
-#define wrap_nextbuf() do { \
-	if (++data->nextbuf == (data->buf_size - OP_PRE_WATERMARK)) { \
-		oprof_ready[0] = 1; \
-		wake_up(&oprof_wait); \
-	} else if (data->nextbuf == data->buf_size) \
-		data->nextbuf = 0; \
-	} while (0)
-
 spinlock_t note_lock __cacheline_aligned = SPIN_LOCK_UNLOCKED;
+
+inline static void oprof_wrap_buf(struct _oprof_data * data)
+{
+	next_sample(data);
+	if (likely(!need_wakeup(0, data)))
+		return;
+	oprof_ready[0] = 1;
+	wake_up(&oprof_wait);
+}
 
 void oprof_put_mapping(struct op_mapping *map)
 {
@@ -392,11 +364,11 @@ void oprof_put_mapping(struct op_mapping *map)
 	data->buffer[data->nextbuf].count =
 		((map->is_execve) ? OP_EXEC : OP_MAP)
 		| map->hash;
-	wrap_nextbuf();
+	oprof_wrap_buf(data);
 	data->buffer[data->nextbuf].eip = map->len;
 	data->buffer[data->nextbuf].pid = map->offset & 0xffff;
 	data->buffer[data->nextbuf].count = map->offset >> 16;
-	wrap_nextbuf();
+	oprof_wrap_buf(data);
 	
 	pmc_select_start(0);
 	spin_unlock(&note_lock);
@@ -414,7 +386,7 @@ void oprof_put_note(struct op_sample *samp)
 	pmc_select_stop(0);
 
 	memcpy(&data->buffer[data->nextbuf], samp, sizeof(struct op_sample));
-	wrap_nextbuf();
+	oprof_wrap_buf(data);
 
 	pmc_select_start(0);
 	spin_unlock(&note_lock);
@@ -716,8 +688,6 @@ static int oprof_start(void)
 	if (!kernel_only)
 		op_intercept_syscalls();
 
-	oprof_start_thread();
- 
 	smp_call_function(pmc_start, NULL, 0, 1);
 	pmc_start(NULL);
  
@@ -740,7 +710,6 @@ static int oprof_stop(void)
 
 	/* here we need to :
 	 * bring back the old system calls
-	 * stop the wake-up thread
 	 * stop the perf counter
 	 * bring back the old NMI handler
 	 * reset the map buffer stuff and ready values
@@ -750,8 +719,6 @@ static int oprof_stop(void)
 	 */
 
 	op_replace_syscalls();
-
-	oprof_stop_thread();
 
 	prof_on = 0;
 
@@ -850,11 +817,9 @@ static void dump_one(struct _oprof_data *data, struct op_sample *ops, uint cpu)
 
 	ops->count = 0;
 
-	if (++data->nextbuf != (data->buf_size - OP_PRE_WATERMARK)) {
-		if (data->nextbuf == data->buf_size)
-			data->nextbuf=0;
+	next_sample(data);
+	if (likely(!need_wakeup(cpu, data)))
 		return;
-	}
 	oprof_ready[cpu] = 1;
 }
 
