@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.23 2002/01/04 04:26:34 movement Exp $ */
+/* $Id: oprofile.c,v 1.24 2002/01/04 15:11:09 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -477,6 +477,11 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 		}
 		if (cpu == smp_num_cpus)
 			return -EAGAIN;
+	} else if (quitting) {
+		/* we might have done dump_stop just before the daemon 
+		 * is about to sleep */
+		quitting = 0;
+		return 0;
 	} else {
 		wait_event_interruptible(oprof_wait, is_ready());
 	}

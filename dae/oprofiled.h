@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.38 2001/12/22 18:01:52 phil_e Exp $ */
+/* $Id: oprofiled.h,v 1.39 2002/01/04 15:11:09 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -319,6 +319,7 @@ void opd_init_images(void);
 void opd_put_sample(const struct op_sample *sample);
 void opd_read_system_map(const char *filename);
 void opd_alarm(int val);
+void opd_print_stats(void);
 
 void opd_handle_fork(const struct op_note *note);
 void opd_handle_exec(u16 pid);

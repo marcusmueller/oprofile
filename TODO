@@ -1,15 +1,14 @@
 0.0.8 task list
 ---------------
  
-o we need an overhaul of the docs. An overview of the tools section is needed.
-  Discussion of problematic code needs to go in the "interpreting" section. Maybe
-  you should add the nasm tricks somewhere Phil ?
- 
 o test test test
  
 Later
 -----
 
+o more discussion of problematic code needs to go in the "interpreting" section. 
+  Maybe you should add the nasm tricks somewhere Phil ?
+ 
 ? o move .oprofile to name=value pairs to avoid conflicts on change.
  
 o prepare for rtc:
@@ -28,7 +27,8 @@ o can we provide a small setuid helper for starting/stopping/flushing the profil
  
 o Bob's rtc patch ?
  
-o can we add some code for linux kernel spinlock contention in .text.lock ?
+o can we add some code for linux kernel spinlock contention in .text.lock, i.e.
+  process the code in this section specially in the post-profile ?
 
 o pentium 4 patches ?
  

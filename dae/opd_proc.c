@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.89 2002/01/03 21:24:08 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.90 2002/01/04 15:11:09 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -77,6 +77,49 @@ static void opd_delete_proc(struct opd_proc *proc);
 static void opd_handle_old_sample_file(const char * mangled, time_t mtime);
 static void opd_handle_old_sample_files(const struct opd_image * image);
 
+void opd_print_stats(void)
+{
+	struct opd_proc *proc;
+	int i,j = 0;
+ 
+	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
+		proc = opd_procs[i];
+
+		while (proc) {
+			++j;
+			proc = proc->next;
+		}
+	}
+ 
+	printf("%s\n", opd_get_time());
+	printf("Nr. proc struct: %d\n", j);
+	printf("Nr. image struct: %d\n", nr_images);
+	printf("Nr. kernel samples: %lu\n", opd_stats[OPD_KERNEL]);
+	printf("Nr. modules samples: %lu\n", opd_stats[OPD_MODULE]);
+	printf("Nr. modules samples lost: %lu\n", opd_stats[OPD_LOST_MODULE]);
+	printf("Nr. samples lost due to no process information: %lu\n", opd_stats[OPD_LOST_PROCESS]);
+	printf("Nr. process samples in user-space: %lu\n", opd_stats[OPD_PROCESS]);
+	printf("Nr. samples lost due to no map information: %lu\n", opd_stats[OPD_LOST_MAP_PROCESS]);
+	if (opd_stats[OPD_PROC_QUEUE_ACCESS]) {
+		printf("Average depth of search of proc queue: %f\n",
+			(double)opd_stats[OPD_PROC_QUEUE_DEPTH] 
+			/ (double)opd_stats[OPD_PROC_QUEUE_ACCESS]);
+	}
+	if (opd_stats[OPD_MAP_ARRAY_ACCESS]) {
+		printf("Average depth of iteration through mapping array: %f\n",
+			(double)opd_stats[OPD_MAP_ARRAY_DEPTH] 
+			/ (double)opd_stats[OPD_MAP_ARRAY_ACCESS]);
+	}
+	printf("Nr. mapping: %lu\n", opd_stats[OPD_MAPPING]);
+	printf("Nr. mapping tried: %lu\n", opd_stats[OPD_TRY_MAPPING]);
+	printf("Nr. unmapping due to mapping failure: %lu\n",
+	       opd_stats[OPD_TRY_MAPPING] - opd_stats[OPD_MAPPING]);
+	printf("Nr. sample dumps: %lu\n", opd_stats[OPD_DUMP_COUNT]);
+	printf("Nr. samples total: %lu\n", opd_stats[OPD_SAMPLES]);
+	printf("Nr. notifications: %lu\n", opd_stats[OPD_NOTIFICATIONS]);
+	fflush(stdout);
+}
+ 
 /* every so many minutes, clean up old procs, msync mmaps, and
    report stats */
 void opd_alarm(int val __attribute__((unused)))
@@ -114,33 +157,7 @@ void opd_alarm(int val __attribute__((unused)))
 		}
 	}
 
-	printf("%s\n", opd_get_time());
-	printf("Nr. proc struct: %d\n", j);
-	printf("Nr. image struct: %d\n", nr_images);
-	printf("Nr. kernel samples: %lu\n", opd_stats[OPD_KERNEL]);
-	printf("Nr. modules samples: %lu\n", opd_stats[OPD_MODULE]);
-	printf("Nr. modules samples lost: %lu\n", opd_stats[OPD_LOST_MODULE]);
-	printf("Nr. samples lost due to no process information: %lu\n", opd_stats[OPD_LOST_PROCESS]);
-	printf("Nr. process samples in user-space: %lu\n", opd_stats[OPD_PROCESS]);
-	printf("Nr. samples lost due to no map information: %lu\n", opd_stats[OPD_LOST_MAP_PROCESS]);
-	if (opd_stats[OPD_PROC_QUEUE_ACCESS]) {
-		printf("Average depth of search of proc queue: %f\n",
-			(double)opd_stats[OPD_PROC_QUEUE_DEPTH] 
-			/ (double)opd_stats[OPD_PROC_QUEUE_ACCESS]);
-	}
-	if (opd_stats[OPD_MAP_ARRAY_ACCESS]) {
-		printf("Average depth of iteration through mapping array: %f\n",
-			(double)opd_stats[OPD_MAP_ARRAY_DEPTH] 
-			/ (double)opd_stats[OPD_MAP_ARRAY_ACCESS]);
-	}
-	printf("Nr. mapping: %lu\n", opd_stats[OPD_MAPPING]);
-	printf("Nr. mapping tried: %lu\n", opd_stats[OPD_TRY_MAPPING]);
-	printf("Nr. unmapping due to mapping failure: %lu\n",
-	       opd_stats[OPD_TRY_MAPPING] - opd_stats[OPD_MAPPING]);
-	printf("Nr. sample dumps: %lu\n", opd_stats[OPD_DUMP_COUNT]);
-	printf("Nr. samples total: %lu\n", opd_stats[OPD_SAMPLES]);
-	printf("Nr. notifications: %lu\n", opd_stats[OPD_NOTIFICATIONS]);
-	fflush(stdout);
+	opd_print_stats();
 
 	alarm(60*10);
 }

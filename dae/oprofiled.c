@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.60 2002/01/04 04:26:34 movement Exp $ */
+/* $Id: oprofiled.c,v 1.61 2002/01/04 15:11:09 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -658,6 +658,7 @@ int main(int argc, char const *argv[])
 	/* simple sleep-then-process loop */
 	opd_do_read(sbuf, s_buf_bytesize, nbuf, n_buf_bytesize);
 
+	opd_print_stats();
 	printf("oprofiled stopped %s", opd_get_time());
 	return 0;
 }
