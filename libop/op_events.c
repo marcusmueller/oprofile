@@ -20,6 +20,7 @@
  
 #include "op_events.h"
 
+/* nr. unit mask values, unit mask type, default, unit mask choices */
 struct op_unit_mask op_unit_masks[] = {
 	/* reserved empty entry */
 	{ 0, utm_mandatory, 0x00, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
@@ -51,7 +52,7 @@ struct op_unit_mask op_unit_masks[] = {
 #define CTR_0		(1 << 0)
 #define CTR_1		(1 << 1)
 
-/* ctr allowed, Event #, unit mask, name, minimum event value */
+/* ctr allowed, allowed cpus, Event #, unit mask, name, min event value */
 /* event name must be in one word */
 struct op_event op_events[] = {
   /* Clocks */

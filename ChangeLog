@@ -1,3 +1,7 @@
+2002-09-15  John Levon  <levon@movementarian.org>
+
+	* libop/op_event.c: fix comment
+ 
 2002-09-15  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* module/x86/cpu_type.c: allow to force RTC mode.
