@@ -137,7 +137,7 @@ public:
 	~samples_files_t();
 
 	/**
-	 * build() -  record symbols/samples in the underlined container
+	 * add() -  record symbols/samples in the underlined container
 	 * @samples_files: the samples files container
 	 * @abf: the associated bfd object
 	 * @add_zero_samples_symbols: must we had to the symbol container
@@ -150,12 +150,16 @@ public:
 	 *  which belongs to this image, only meaningfull if samples come from
 	 *  a --separate-samples session
 	 *
-	 * build() is a delayed ctor and must be called once.
+	 * add() is an helper for delayed ctor. Take care you can't safely
+	 * make any call to add after any other member function call.
+	 * Successive call to build must use the same boolean value and
+	 * obviously you can add only samples files which are coherent (same
+	 * sampling rate, same events etc.)
 	 */
-	void build(const opp_samples_files& samples_files,
-		   const opp_bfd& abfd, bool add_zero_samples_symbols = false,
-		   bool build_samples_by_vma = true, 
-		   bool add_shared_libs = false);
+	void add(const opp_samples_files& samples_files,
+		 const opp_bfd& abfd, bool add_zero_samples_symbols = false,
+		 bool build_samples_by_vma = true, 
+		 bool add_shared_libs = false);
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
 	const symbol_entry* find_symbol(bfd_vma vma) const;
@@ -185,9 +189,11 @@ public:
 	 * if you need to get all symbols call it with @threshold == 0.0
 	 * and @until_threshold == false
 	 */
-	void select_symbols(std::vector<const symbol_entry*> & result, size_t ctr,
-			    double threshold,
-			    bool until_threshold, bool sort_by_vma = false) const;
+	void select_symbols(std::vector<const symbol_entry*> & result,
+			    size_t ctr, double threshold,
+			    bool until_threshold,
+			    bool sort_by_vma = false) const;
+
 	/// Like select_symbols for filename without allowing sort by vma.
 	void select_filename(std::vector<std::string> & result, size_t ctr,
 			     double threshold,
@@ -202,15 +208,16 @@ public:
 			   const std::string & filename) const;
 	/// Get the samples count which belongs to filename, linenr. Return
 	/// false if no samples found.
-	bool samples_count(counter_array_t & result, const std::string & filename,
+	bool samples_count(counter_array_t & result,
+			   const std::string & filename,
 			   size_t linenr) const;
 private:
-	/// helper for build();
-	void do_build(const opp_samples_files & samples_files,
-		      const opp_bfd & abfd,
-		      bool add_zero_samples_symbols = false,
-		      bool build_samples_by_vma = true);
-	/// helper for do_build()
+	/// helper for add();
+	void do_add(const opp_samples_files & samples_files,
+		    const opp_bfd & abfd,
+		    bool add_zero_samples_symbols = false,
+		    bool build_samples_by_vma = true);
+	/// helper for do_add()
 	void add_samples(const opp_samples_files& samples_files, 
 			 const opp_bfd & abfd, size_t sym_index,
 			 u32 start, u32 end, bfd_vma base_vma,

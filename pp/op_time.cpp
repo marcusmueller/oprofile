@@ -45,7 +45,6 @@ using std::pair;
 
 int op_nr_counters = 2;
 
-// TODO header file
 /// image_name - class to store name for a samples file
 struct image_name
 {
@@ -387,7 +386,7 @@ static void output_symbols_count(map_t& files)
 		opp_bfd abfd(samples_file.header[samples_file.first_file],
 			     samples_file.nr_samples, image_file);
 
-		samples.build(samples_file, abfd, false, false, false);
+		samples.add(samples_file, abfd, false, false, false);
 	}
 
 	/* select the symbols */

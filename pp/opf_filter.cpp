@@ -839,7 +839,7 @@ bool output::treat_input(const string & image_name, const string & sample_file)
 	if (!setup_counter_param(samples_files))
 		return false;
 
-	samples.build(samples_files, abfd);
+	samples.add(samples_files, abfd);
 	}
 
 	if (!calc_total_samples()) {

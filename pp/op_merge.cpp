@@ -103,21 +103,19 @@ static string mangle_filename(const string & filename)
  * create_file_list - create the file list based
  *  on the command line file list
  * @result: where to store the created file list
- * @images_name: the input file list contains either a binary
+ * @images_filename: the input file list contains either a binary
  * image name or a list of samples filenames
  *
- * if @images_name contain only one file it is assumed to be
+ * if @images_filename contain only one file it is assumed to be
  * the name of binary image and the created file list will
  * contain all samples file name related to this image
  * else the result contains only filename explicitly
- * specified in @images_name
- *
- * FIXME: @images_name is ill-named
+ * specified in @images_filename
  *
  * all error are fatal.
  */
 static void create_file_list(list<string> & result,
-			     const vector<string> & images_name)
+			     const vector<string> & images_filename)
 {
 	/* user can not mix binary name and samples files name on the command
 	 * line, this error is captured later because when more one filename
@@ -125,12 +123,12 @@ static void create_file_list(list<string> & result,
 	 * a fatal error occur at load time. FIXME for now I see no use to
 	 * allow mixing samples filename and binary name but later if we
 	 * separate samples for each this can be usefull? */
-	if (images_name.size() == 1 && 
-	    images_name[0].find_first_of('{') == string::npos) {
+	if (images_filename.size() == 1 && 
+	    images_filename[0].find_first_of('{') == string::npos) {
 		/* get from the image name all samples on the form of
-		 * base_dir*}}mangled_name{{{images_name) */
+		 * base_dir*}}mangled_name{{{images_filename) */
 		ostringstream os;
-		os << "*}}" << mangle_filename(images_name[0])
+		os << "*}}" << mangle_filename(images_filename[0])
 		   << "#" << counter;
 
 		get_sample_file_list(result, base_dir, os.str());
@@ -152,9 +150,9 @@ static void create_file_list(list<string> & result,
 		/* That's a common pitfall through regular expression to
 		 * provide more than one time the same filename on command
 		 * file, just silently remove duplicate */
-		for (size_t i = 0 ; i < images_name.size(); ++i) {
-			if (find(result.begin(), result.end(), images_name[i]) == result.end())
-				result.push_back(images_name[i]);
+		for (size_t i = 0 ; i < images_filename.size(); ++i) {
+			if (find(result.begin(), result.end(), images_filename[i]) == result.end())
+				result.push_back(images_filename[i]);
 		}
 	}
 
@@ -219,12 +217,12 @@ static void output_files(const std::string & filename,
 
 int main(int argc, char const * argv[])
 {
-	vector<string> images_name;
+	vector<string> images_filename;
 	list<string> samples_filenames;
 
-	get_options(argc, argv, images_name);
+	get_options(argc, argv, images_filename);
 
-	create_file_list(samples_filenames, images_name);
+	create_file_list(samples_filenames, images_filename);
 
 	vector< SharedPtr<samples_file_t> > samples_files;
 	create_samples_files_list(samples_files, samples_filenames);

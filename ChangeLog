@@ -1,5 +1,19 @@
 2002-01-26  Philippe Elie  <ph_e@club-internet.fr>
 
+	* TODO: update
+
+	* pp/op_merge.c: remove FIXME
+	* pp/op_time.cpp: minor fix
+	
+	* pp/opf_filter.h:
+	* pp/opf_filter.cpp:
+	* pp/oprofpp.cpp:
+	* pp/opf_container.cpp: Show more clearly than
+	  samples_files_t support adding any number of samples
+	  files to the underlined container.
+
+2002-01-26  Philippe Elie  <ph_e@club-internet.fr>
+
 	* pp/oprofpp_util.cpp: allow to load image without symbols
 
 	* pp/Makefile.in:

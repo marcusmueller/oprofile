@@ -468,11 +468,11 @@ samples_files_t::~samples_files_t()
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
 void samples_files_t::
-build(const opp_samples_files & samples_files, const opp_bfd & abfd,
+add(const opp_samples_files & samples_files, const opp_bfd & abfd,
       bool add_zero_samples_symbols, bool build_samples_by_vma,
       bool add_shared_libs)
 {
-	do_build(samples_files, abfd, add_zero_samples_symbols,
+	do_add(samples_files, abfd, add_zero_samples_symbols,
 		 build_samples_by_vma);
 
 	if (!add_shared_libs)
@@ -495,7 +495,7 @@ build(const opp_samples_files & samples_files, const opp_bfd & abfd,
 			     samples_files.nr_samples,
 			     demangle_filename(lib_name));
 
-		do_build(samples_files, abfd, false, true);
+		do_add(samples_files, abfd, false, true);
 	}
 }
 
@@ -504,7 +504,7 @@ build(const opp_samples_files & samples_files, const opp_bfd & abfd,
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
 void samples_files_t::
-do_build(const opp_samples_files & samples_files, const opp_bfd & abfd,
+do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 	 bool add_zero_samples_symbols, bool build_samples_by_vma)
 {
 	string image_name = bfd_get_filename(abfd.ibfd);
@@ -710,4 +710,5 @@ bool samples_files_t::samples_count(counter_array_t & result,
 const sample_entry & samples_files_t::get_samples(size_t idx) const
 {
 	return samples[idx];
+
 }

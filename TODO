@@ -3,16 +3,20 @@
 
  o stress test
 
- o user request: op_time that shows /all/ available symbols (with correct %age).
-  This must handle images with no symbols, so container must contain either a symbol + values,
-  or a file.
+ o user request: op_time must handle images with no symbols, so container must
+ contain either a symbol + values, or a file. John, we must handle also samples
+ not accounted for any symbols this can be implemented through special symbol
+ name so all utilities including op_time will handle them w/o any modification
+ (symbols named xxxx-section_name xxxx = ?)
  
 Before 1.0
 ----------
 
- o pp rewrite !
+ o pp rewrite ! not clear if we need to rewrite it.
+ o coherent naming class conventions
+ o use standard C integer type <stdint.h> int32_t int16_t etc.
  o little output things (e.g. don't print unit mask) RTC
- o add option like opf_filer -u -m to oprofpp -l|-L on a symbol basis.
+ o add option to op_to_source like oprofpp -u -m on a symbol basis.
  o --help --version in a common options section in .sgml ?
    same thing for all common options between oprofpp/opf_filter ?
  o audit oprof_start for security...
@@ -23,16 +27,17 @@ Before 1.0
  o take oprof_convert out the back and do the cruel to be kind thing
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o test it to hell and back
+ o compile all C++ programs with STL_port and use them as bug tracker.
  o check documentation
  o difference between two profile session. Difference must be made at source level. 
-   (This is a part of post-prof)
+   (This is a part of post-prof). Difference can be made also at symbols level.
  o improve format of oprofpp output etc.
  o profile the NMI handler code
  o verify builds (modversions, kernel versions, athlon etc.)
- o merging utility for sample files (useful)
  o post-prof GUI ? (big job)
  o use a filelock rather a sleep to synchronize op_start and daemon.
  o check chroot() processes and the path hash stuff
+ o use nm and a little script to track unused function.
 
 Later
 -----
@@ -41,7 +46,7 @@ o merge sample files into one big report (like vtune can do repeated runs)
  
 ? o move .oprofile to name=value pairs to avoid conflicts on change.
 
-o determine where we need ctx_sw_on/off to prevent pre-emption + test
+o determine where we need preempt_disable/enable to prevent pre-emption + test
  
 o move from racy sysctl to procfs, if it can be done nicely
 

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.23 2002/01/21 02:47:28 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.24 2002/01/26 03:30:15 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -151,7 +151,7 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 	op_nr_counters = nr_counters;
 	samples_files_t samples;
 
-	samples.build(*this, abfd, true, false, show_shared_libs);
+	samples.add(*this, abfd, true, false, show_shared_libs);
 
 	vector<const symbol_entry *> symbols;
 
@@ -332,7 +332,7 @@ void opp_samples_files::do_list_all_symbols_details(opp_bfd & abfd) const
 
 	samples_files_t samples;
 
-	samples.build(*this, abfd, false, true, show_shared_libs);
+	samples.add(*this, abfd, false, true, show_shared_libs);
 
 	vector<const symbol_entry *> symbols;
 
