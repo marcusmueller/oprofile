@@ -1,3 +1,8 @@
+2005-03-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/opcontrol: revert last patch, bash can't do integer
+	  arithmetic on hexadecimal.
+
 2005-02-21  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol: further validation of the kernel range to

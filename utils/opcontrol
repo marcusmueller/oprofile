@@ -411,12 +411,6 @@ get_kernel_range()
 		exit 1
 	fi
 
-	if test "$tmp1" -eq 0 -o $(($tmp2 - $tmp1)) -eq 0; then
-		echo "Invalid kernel VMA range $tmp1-$tmp2" >&2
-		echo "Make sure you're using a correct relocated vmlinux file" >&2
-		exit 1
-	fi
-
 	KERNEL_RANGE="`echo $tmp1`,`echo $tmp2`"
 	vecho "KERNEL_RANGE $KERNEL_RANGE"
 }
