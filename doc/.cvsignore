@@ -1,13 +1,8 @@
 *.*~
 *.html
 .deps
+doc
 oprofile.html
-guide.tex
-index.html
-labels.pl
-WARNINGS
 Makefile
 Makefile.in
 *.1
-oprofile
-oprofile.junk

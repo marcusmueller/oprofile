@@ -22,14 +22,16 @@ internals.html: ${top_srcdir}/doc/internals.xml
 	XML_CATALOG_FILES=$(XML_CATALOG_FILES) $(XSLTPROC) $(XSLTPROC_FLAGS) -o $@ --stringparam version @VERSION@ $(XHTML_STYLESHEET) $<
 
 # rules to generate oprofile.sf.net/doc files
-oc: oprofile-chunk
-ic: internals-chunk
 
-oprofile-chunk: ${top_srcdir}/doc/oprofile.xml
-	$(XSLTPROC) $(XSLTPROC_FLAGS) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
+doc/index.html: ${top_srcdir}/doc/oprofile.xml
+	-mkdir doc/
+	$(XSLTPROC) -o doc/ $(XSLTPROC_FLAGS) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
 
-internals-chunk: ${top_srcdir}/doc/internals.xml
-	$(XSLTPROC) $(XSLTPROC_FLAGS) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
+doc/internals/index.html: ${top_srcdir}/doc/internals.xml
+	-mkdir doc/internals/
+	$(XSLTPROC) -o doc/internals/ $(XSLTPROC_FLAGS) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
+
+chunk: doc/index.html doc/internals/index.html
 
 else
 
