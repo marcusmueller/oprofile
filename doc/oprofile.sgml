@@ -599,7 +599,8 @@ Specifying too small a value can lead to overflow problems discussed previously.
 <title>Oprofile in RTC mode</title>
 <para>
 Some CPU types do not provide the needed hardware support to use the hardware performance counters. This includes
-laptops, classic Pentiums, and other CPU types not yet supported by Oprofile. On these machines, Oprofile falls
+some laptops, classic Pentiums, and other CPU types not yet supported by Oprofile (such as Cyrix and Pentium IV). 
+On these machines, Oprofile falls
 back to using the real-time clock interrupt to collect samples. This interrupt is also used by the <command>rtc</command>
 module: you cannot have both the oprofile and rtc modules loaded.
 </para>
