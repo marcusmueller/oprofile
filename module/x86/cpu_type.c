@@ -24,12 +24,14 @@ __init op_cpu get_cpu_type(void)
 		return CPU_RTC;
 	}
 
-	/* not a P6-class processor */
-	if (family != 6)
+	/* Less than a P6-class processor */
+	if (family < 6)
 		return CPU_RTC;
 
-	if (vendor == X86_VENDOR_AMD)
+	if (vendor == X86_VENDOR_AMD) {
+		/* FIXME: Test for hammer in longmode and warn. */
 		return CPU_ATHLON;
+	}
 
 	if (model > 5)
 		return CPU_PIII;
