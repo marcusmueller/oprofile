@@ -141,7 +141,7 @@ public:
 	 *
 	 * return in start, end the vma range for this binary object.
 	 */
-	void get_vma_range(u32 & start, u32 & end) const;
+	void get_vma_range(bfd_vma & start, bfd_vma & end) const;
 
 	/** return the text section filepos. */
 	u32 const get_start_offset() const { return text_offset; }
@@ -182,7 +182,7 @@ private:
 	/**
 	 * create an artificial symbol which cover the vma range start, end
 	 */
-	void create_artificial_symbol(u32 start, u32 end);
+	void create_artificial_symbol(bfd_vma start, bfd_vma end);
 };
 
 #endif /* !OP_BFD_H*/

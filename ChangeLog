@@ -1,5 +1,11 @@
 2003-01-08  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/op_bfd.cpp:
+	* libutil++/op_bfd.h:
+	* pp/oprofpp.cpp: more use of bfd_vma
+
+2003-01-08  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libdb/Makefile.am: fix include dir
 	* libdb/db_test.c: don't assume than sizeof(struct opd_header) == 128
 

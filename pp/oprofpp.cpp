@@ -117,8 +117,8 @@ static void do_dump_gprof(op_bfd & abfd,
 	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},};
 	u32 start, end;
 	uint j;
-	u32 low_pc;
-	u32 high_pc;
+	bfd_vma low_pc;
+	bfd_vma high_pc;
 	u16 * hist;
 	u32 histsize;
 

@@ -66,7 +66,7 @@ op_bfd::op_bfd(string const & filename, vector<string> const & exclude_symbols,
 	get_symbols(exclude_symbols, included_symbols);
 
 	if (syms.size() == 0) {
-		u32 start, end;
+		bfd_vma start, end;
 		get_vma_range(start, end);
 		create_artificial_symbol(start, end);
 	}
@@ -454,7 +454,7 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 	}
 }
 
-void op_bfd::get_vma_range(u32 & start, u32 & end) const
+void op_bfd::get_vma_range(bfd_vma & start, bfd_vma & end) const
 {
 	if (syms.size()) {
 		// syms are sorted by vma so vma of the first symbol and vma +
@@ -468,7 +468,7 @@ void op_bfd::get_vma_range(u32 & start, u32 & end) const
 	}
 }
 
-void op_bfd::create_artificial_symbol(u32 start, u32 end)
+void op_bfd::create_artificial_symbol(bfd_vma start, bfd_vma end)
 {
 	// FIXME: prefer a bool artificial; to this ??
 	string symname = "?";
