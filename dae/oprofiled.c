@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.61 2002/01/04 15:11:09 movement Exp $ */
+/* $Id: oprofiled.c,v 1.62 2002/01/04 16:55:57 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -423,8 +423,6 @@ static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbu
 {
 	ssize_t count = -1;
 	ssize_t ncount = -1;
- 
-	system("op_dump");
  
 	/* the dump may have added no samples, so we must set
 	 * non-blocking */
