@@ -1,7 +1,7 @@
 #ifndef APIC_UP_COMPAT_H
 #define APIC_UP_COMPAT_H
 
-#if VBEFORE(2,4,0)
+#if V_BEFORE(2,4,0)
 /* even on SMP, some defines are missing in 2.2 */
 #define APIC_LVR		0x30
 #define APIC_LVTPC		0x340

@@ -1,4 +1,4 @@
-/* $Id: op_init.c,v 1.5 2002/01/14 07:02:03 movement Exp $ */
+/* $Id: op_init.c,v 1.6 2002/01/22 20:36:09 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -21,8 +21,6 @@
  
 EXPORT_NO_SYMBOLS;
 
-/* #define FORCE_RTC */
-
 static int __init hw_ok(void)
 {
 	/* we want to include all P6 processors (i.e. > Pentium Classic,
@@ -42,10 +40,6 @@ static int __init hw_ok(void)
 		sysctl.cpu_type = (current_cpu_data.x86_model > 5) ? CPU_PIII :
 			(current_cpu_data.x86_model > 2);
 	}
- 
-#ifdef FORCE_RTC
-	sysctl.cpu_type = CPU_RTC;
-#endif
  
 	return sysctl.cpu_type;
 }

@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.19 2002/01/17 08:42:56 movement Exp $ */
+/* $Id: oprofile.h,v 1.20 2002/01/22 20:36:09 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -233,12 +233,12 @@ int oprof_map_release(void);
 int oprof_map_read(char *buf, size_t count, loff_t *ppos);
 int oprof_init_hashmap(void);
 void oprof_free_hashmap(void);
-void find_intel_smp(void);
 void lvtpc_apic_setup(void *dummy);
 void lvtpc_apic_restore(void *dummy);
 void install_nmi(void);
 void restore_nmi(void);
 int apic_setup(void);
+void do_fixmap(void);
 
 /* used by interrupt handlers */
 extern struct op_int_operations op_nmi_ops;

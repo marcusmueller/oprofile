@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.13 2002/01/21 02:47:27 phil_e Exp $
+# $Id: Makefile.in,v 1.14 2002/01/22 20:36:09 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -28,7 +28,7 @@ uninstall:
 clean:
 	rm -rf *.o .deps
 
-oprofile.o: op_init.o op_util.o oprofile_c.o op_nmi.o op_rtc.o oprofile_nmi22.o oprofile_nmi24.o op_syscalls.o op_events_module.o op_x86.o compat.o
+oprofile.o: op_init.o op_util.o oprofile_c.o op_nmi.o op_rtc.o oprofile_nmi22.o oprofile_nmi24.o op_syscalls.o op_events_module.o op_apic.o op_fixmap.o compat.o
 	$(LD) -r -o $@ $^
 
 # we can't use implicit rules for this directory
@@ -49,7 +49,10 @@ op_rtc.o: op_rtc.c
 oprofile_c.o: oprofile.c oprofile.h ../op_user.h compat.h compat22.h compat24.h
 	$(CC) $(KCFLAGS) -c -o $@ $<
 
-op_x86.o: op_x86.c
+op_apic.o: op_apic.c
+	$(CC) $(KCFLAGS) -c -o $@ $<
+
+op_fixmap.o: op_fixmap.c
 	$(CC) $(KCFLAGS) -c -o $@ $<
 
 op_syscalls.o: op_syscalls.c

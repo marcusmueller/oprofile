@@ -1,3 +1,20 @@
+2002-01-22  John Levon  <moz@compsoc.man.ac.uk>
+
+	* module/Makefile.in:
+	* module/oprofile.h:
+	* module/oprofile.c:
+	* module/op_x86.c:
+	* module/op_apic.c:
+	* module/op_fixmap.c: split op_x86.c. Various changes to
+	  only enable the APIC if it's not, and to remap / map the APIC
+	  as is necessary.
+
+	* module/apic_up_compat.h: 
+	* module/compat.h:
+	* module/compat22.h: clean up V_*() macros
+
+	* module/op_init.c: remove FORCE_RTC
+ 
 2002-01-22  Philippe Elie  <ph_e@club-internet.fr>
 
 	* TODO: update

@@ -83,8 +83,6 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 #else
 	#define op_cpu_id() smp_processor_id()
 	/* on 2.2, the APIC is never enabled on UP */
-	/* FIXME: what about smp running on an UP kernel */
-	#define NO_MPTABLE_CHECK_NEEDED
 #endif /* CONFIG_SMP */
 
 /* TODO: add __cache_line_aligned_in_smp and put this stuff in its own file */
@@ -118,7 +116,7 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 /* provide a working smp_call_function when: < 2.2.8 || (!SMP && <= 2.2.20),
  * this means than we support all UP kernel from 2.2.0 and all SMP kernel from
  * 2.2.8 */
-#if VBEFORE(2,2,8) || (!defined(CONFIG_SMP) && VBEFORE(2,2,21))
+#if V_BEFORE(2,2,8) || (!defined(CONFIG_SMP) && V_BEFORE(2,2,21))
 
 	#undef smp_call_function
 	static int inline smp_call_function (void (*func) (void *info), void *info,
@@ -130,7 +128,7 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 #endif /* < 2.2.8 || (!SMP && <= 2.2.20) */
 
 
-#if VBEFORE(2,2,3)
+#if V_BEFORE(2,2,3)
 
 	/* 2.2.3 introduced wait_event_interruptible */
 	#define __wait_event_interruptible(wq, condition, ret)	\
@@ -162,9 +160,9 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 		__ret;								\
 	})
 
-#endif /* VBEFORE(2,2,3) */
+#endif /* V_BEFORE(2,2,3) */
 
-#if VBEFORE(2,2,8)
+#if V_BEFORE(2,2,8)
 
 	/* 2.2.8 introduced rdmsr/wrmsr */
 	#define rdmsr(msr,val1,val2)				\
@@ -176,9 +174,9 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 				  : /* no outputs */			\
 				  : "c" (msr), "a" (val1), "d" (val2))
 
-#endif /* VBEFORE(2,2,8) */
+#endif /* V_BEFORE(2,2,8) */
 
-#if VBEFORE(2,2,18)
+#if V_BEFORE(2,2,18)
 
 	/* 2.2.18 introduced module_init */
 	/* Not sure what version aliases were introduced in, but certainly in 2.91.66.  */
@@ -205,7 +203,7 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 	/* 2.2.18 add THIS_MODULE */
 	#define THIS_MODULE (&__this_module)
 
-#endif /* VBEFORE(2,2,18) */
+#endif /* V_BEFORE(2,2,18) */
 
 /* 2.2.18 introduced the rtc lock */
 #ifdef RTC_LOCK

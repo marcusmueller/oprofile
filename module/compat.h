@@ -23,33 +23,28 @@
 
 #include <linux/version.h>
 
-#define VBEFORE(a,b,c) (LINUX_VERSION_CODE < KERNEL_VERSION(a,b,c))
-#define VEQUAL(a,b,c) (LINUX_VERSION_CODE == KERNEL_VERSION(a,b,c))
+#define V_BEFORE(a,b,c) (LINUX_VERSION_CODE < KERNEL_VERSION(a,b,c))
+#define V_EQUAL(a,b,c) (LINUX_VERSION_CODE == KERNEL_VERSION(a,b,c))
 #define V_AT_LEAST(a,b,c) (LINUX_VERSION_CODE >= KERNEL_VERSION(a,b,c))
  
-#if VBEFORE(2,4,0)
+#if V_BEFORE(2,4,0)
 	#include "compat22.h"
 #else
 	#include "compat24.h"
 #endif
 
 /* 2.5.2 change the dev_t definition */
-#if VBEFORE(2,5,2)
+#if V_BEFORE(2,5,2)
 #define minor(dev)	MINOR(dev)
 #endif
  
 /* Things that cannot rely on a particular linux version or are needed between
  * major release */
 
-#if VBEFORE(2,4,10)
+#if V_BEFORE(2,4,10)
 	/* 2.4.10 introduced MODULE_LICENSE */
 	#define MODULE_LICENSE(x)
-#endif /* VBEFORE(2,4,10) */
-
-/* 2.4.10 introduce apic up under normal apic configuration */
-#if !defined(CONFIG_X86_UP_APIC) && !(VEQUAL(2,4,10) && defined(CONFIG_X86_UP_IOAPIC))
-	#define NEED_FIXMAP_HACK
-#endif
+#endif /* V_BEFORE(2,4,10) */
 
 /* 2.4/2.5 kernel can be  patched with the preempt patch. We support only
  * recent version of this patch */
@@ -133,4 +128,8 @@
 #define APIC_SPIV_APIC_ENABLED (1<<8)
 #endif
 
+#ifndef APIC_DEFAULT_PHYS_BASE
+#define APIC_DEFAULT_PHYS_BASE 0xfee00000
+#endif
+ 
 #endif /* COMPAT_H */

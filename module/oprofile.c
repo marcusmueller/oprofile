@@ -822,8 +822,6 @@ int __init oprof_init(void)
 	if (sysctl.cpu_type != CPU_RTC) {
 		int_ops = &op_nmi_ops;
  
-		find_intel_smp();
-
 		// try to init, fall back to rtc if not
 		if ((err = int_ops->init())) {
 			int_ops = &op_rtc_ops;
@@ -857,7 +855,7 @@ int __init oprof_init(void)
 	/* do this now so we don't have to track save/restores later */
 	op_save_syscalls();
 
-	printk(KERN_INFO "oprofile: oprofile %s loaded, major %u\n", op_version, op_major);
+	printk(KERN_INFO "%s loaded, major %u\n", op_version, op_major);
 	return 0;
 
 out_err2:
