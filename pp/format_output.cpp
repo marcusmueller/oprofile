@@ -331,9 +331,8 @@ void formatter::output(ostream & out,
 string formatter::format_vma(field_datum const & f)
 {
 	ostringstream out;
-	int const width = (sizeof(bfd_vma) == 8 ? 16 : 8);
 
-	out << hex << setw(width) << setfill('0') << f.sample.vma;
+	out << hex << setw(8) << setfill('0') << f.sample.vma;
 
 	return out.str();
 }

@@ -1,3 +1,8 @@
+2003-02-02  John Levon  <levon@movementarian.org>
+
+	* pp/format_output.cpp: revert previous patch, Phil's
+	  x86 binutils is built with 64-bit bfd_vma
+
 2003-02-01  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol: rename --separate-samples to --separate=library
