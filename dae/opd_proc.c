@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.31 2000/09/04 23:04:23 moz Exp $ */
+/* $Id: opd_proc.c,v 1.32 2000/09/05 07:18:11 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -188,6 +188,9 @@ static void opd_open_image(struct opd_image *image)
 	if (image->kernel)
 		image->len += OPD_KERNEL_OFFSET*2;
 
+#ifdef OPD_DEBUG
+	printf("Opening $%s$\n",mangled);
+#endif
 	image->fd = open(mangled, O_CREAT|O_EXCL|O_RDWR,0644);
 	if (image->fd==-1) {
 		fprintf(stderr,"oprofiled: open of image sample file \"%s\" failed: %s", mangled,strerror(errno));
@@ -858,6 +861,10 @@ void opd_put_sample(const struct op_sample *sample)
 	unsigned int i;
 	struct opd_proc *proc;
 
+#ifdef OPD_DEBUG
+	printf("DO_PUT_SAMPLE: EIP 0x%.8x, pid %.6d, count %.6d\n",sample->eip,sample->pid,sample->count);
+#endif
+
 	if (opd_eip_is_kernel(sample->eip)) {
 		opd_handle_kernel_sample(sample->eip,sample->count);
 		return;
@@ -875,8 +882,14 @@ void opd_put_sample(const struct op_sample *sample)
 	for (i=0;i<proc->nr_maps;i++) {
 		if (opd_is_in_map(&proc->maps[i],sample->eip)) {
 			u32 offset = opd_map_offset(&proc->maps[i],sample->eip);
-			if (proc->maps[i].image!=-1)
+			if (proc->maps[i].image!=-1) {
+#ifdef OPD_DEBUG
+			printf("DO_PUT_SAMPLE: calc offset 0x%.8x, map start 0x%.8x, end 0x%.8x, offset 0x%.8x, name $%s$\n",
+				offset, proc->maps[i].start, proc->maps[i].end, proc->maps[i].offset, opd_images[proc->maps[i].image].name);
+
+#endif
 				opd_put_image_sample(&opd_images[proc->maps[i].image],offset,sample->count);
+			}
 			opd_stats[OPD_PROCESS]++;
 			return;
 		}
@@ -1206,6 +1219,9 @@ void opd_get_ascii_procs(void)
 
 	while ((dirent = readdir(dir))) {
 		if (sscanf(dirent->d_name, "%hu", &pid)==1) {
+#ifdef OPD_DEBUG
+			printf("ASCII added %u\n",pid);
+#endif
 			proc = opd_add_proc(pid);
 			opd_get_ascii_maps(proc);
 		}
