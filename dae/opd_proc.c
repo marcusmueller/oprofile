@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.82 2001/12/06 21:17:51 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.83 2001/12/07 22:13:54 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -86,18 +86,25 @@ void opd_alarm(int val __attribute__((unused)))
 		}
 	}
 
+	j = 0;
 	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
 		proc = opd_procs[i];
 
 		while (proc) {
+			++j;
 			next = proc->next;
-			if (proc->dead)
-				opd_delete_proc(proc);
+			if (proc->dead) {
+				proc->dead += proc->accessed;
+				proc->accessed = 0;
+				if (--proc->dead == 0)
+					opd_delete_proc(proc);
+			}
 			proc=next;
 		}
 	}
 
 	printf("%s\n", opd_get_time());
+	printf("Nr. proc struct: %d\n", j);
 	printf("Nr. kernel samples: %lu\n", opd_stats[OPD_KERNEL]);
 	printf("Nr. modules samples: %lu\n", opd_stats[OPD_MODULE]);
 	printf("Nr. modules samples lost: %lu\n", opd_stats[OPD_LOST_MODULE]);
@@ -646,6 +653,7 @@ static struct opd_proc * opd_new_proc(struct opd_proc *prev, struct opd_proc *ne
 	proc->max_nr_maps = 0;
 	proc->last_map = 0;
 	proc->dead = 0;
+	proc->accessed = 0;
 	proc->prev = prev;
 	proc->next = next;
 	return proc;
@@ -1215,6 +1223,8 @@ void opd_put_sample(const struct op_sample *sample)
 		return;
 	}
 
+	proc->accessed = 1;
+
 	opd_stats[OPD_MAP_ARRAY_ACCESS]++;
 	if (opd_is_in_map(&proc->maps[proc->last_map], sample->eip)) {
 		i = proc->last_map;
@@ -1331,8 +1341,10 @@ void opd_handle_exit(const struct op_note *note)
 	verbprintf("DO_EXIT: process %d\n", note->pid);
 
 	proc = opd_get_proc(note->pid);
-	if (proc)
+	if (proc) {
 		proc->dead = 1;
+		proc->accessed = 1;
+	}
 	else {
 		verbprintf("unknown proc %u just exited.\n", note->pid);
 	}

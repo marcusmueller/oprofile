@@ -1,3 +1,11 @@
+2001-12-07  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/oprofiled.h:
+	* dae/opd_proc.c: handle an accessed field of
+	  deleted of deleted procs to defer deleting
+	  the procs. This greatly reduce the Nr of lost
+	  samples due to no proc information.
+
 2001-12-06  Philippe Elie  <ph_e@club-internet.fr>
 
 	* dae/oprofiled.h:

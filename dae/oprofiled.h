@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.36 2001/12/06 21:17:51 phil_e Exp $ */
+/* $Id: oprofiled.h,v 1.37 2001/12/07 22:13:55 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -123,6 +123,7 @@ struct opd_proc {
 	unsigned int max_nr_maps;
 	unsigned int last_map;
 	u16 pid;
+	u16 accessed;
 	int dead;
 	struct opd_proc *prev;
 	struct opd_proc *next;

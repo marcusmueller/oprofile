@@ -3,8 +3,6 @@
  
 o determine where we need ctx_sw_on/off to prevent pre-emption + test
  
-o implement proc->old_exec
- 
 o can we provide a small setuid helper for starting/stopping/flushing the profiler ?
   is it a good idea ?
  
