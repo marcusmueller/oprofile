@@ -1,5 +1,10 @@
 2003-06-08  John Levon  <levon@movementarian.org>
 
+	* libutil++/unique_storage.h: make some of
+	id_value only visible to unique_storage.
+
+2003-06-08  John Levon  <levon@movementarian.org>
+
 	* libpp/name_storage.h:
 	* libutil++/unique_storage.h: move the ID class
 	into unique_storage, and make it derive from the

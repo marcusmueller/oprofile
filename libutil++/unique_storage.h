@@ -40,15 +40,18 @@ public:
 
 	/// the actual ID type
 	struct id_value : public I {
-		typedef typename stored_values::size_type size_type;
-
-		explicit id_value(size_type s) : I(), id(s) {}
-
+		/// default constructor
 		id_value() : I(), id(0) {}
 
-		operator size_type() const { return id; }
+		typedef typename stored_values::size_type size_type;
 
+		/// actual ID value
 		size_type id;
+
+	private:
+		friend class unique_storage<I, V>;
+
+		explicit id_value(size_type s) : I(), id(s) {}
 	};
 
 
@@ -70,8 +73,8 @@ protected:
 	/// return the stored value for the given ID
 	V const & get(id_value const & id) const {
 		// some stl lack at(), so we emulate it
-		if (id < values.size())
-			return values[id];
+		if (id.id < values.size())
+			return values[id.id];
 
 		throw std::out_of_range("unique_storage::get(): out of bounds");
 	}
