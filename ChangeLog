@@ -1,5 +1,10 @@
 2002-05-17  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* module/op_fixmap.c: revert my last change :/. Something is
+	  wrong with oprofiel and 2.5.15 but elsewhere
+
+2002-05-17  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* module/op_fixmap.c: fix a long time outstanding bug,
 	  we tested bit in the address of x86_capability
 	  rather the capability itself.
