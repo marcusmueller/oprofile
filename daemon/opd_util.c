@@ -59,15 +59,6 @@ static void opd_fork(void)
 }
 
  
-/**
- * opd_go_daemon - become daemon process
- *
- * Become an un-attached daemon in the standard
- * way (fork(),chdir(),setsid(),fork()).
- * Parents perform _exit().
- *
- * Any failure is fatal.
- */
 void opd_go_daemon(void)
 {
 	opd_fork();
@@ -84,4 +75,18 @@ void opd_go_daemon(void)
 	}
 
 	opd_fork();
+}
+
+
+void opd_write_abi(void)
+{
+#ifdef OPROF_ABI
+	char * cbuf;
+ 
+	cbuf = xmalloc(strlen(OP_BASE_DIR) + 5);
+	strcpy(cbuf, OP_BASE_DIR);
+	strcat(cbuf, "/abi");
+	op_write_abi_to_file(cbuf);
+	free(cbuf);
+#endif
 }

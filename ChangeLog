@@ -1,3 +1,10 @@
+2003-08-08  John Levon  <levon@movementarian.org>
+
+	* dae/oprofiled.c:
+	* daemon/oprofiled.c:
+	* daemon/opd_util.h:
+	* daemon/opd_util.c: share opd_write_abi()
+
 2003-08-08  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_alloc_counter.c:

@@ -33,4 +33,10 @@ void opd_open_logfile(void);
  */
 void opd_go_daemon(void);
 
+
+/**
+ * opd_write_abi - write out the ABI description if needed
+ */
+void opd_write_abi(void);
+
 #endif /* OPD_UTIL_H */
