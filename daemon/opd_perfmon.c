@@ -10,7 +10,9 @@
 
 #ifdef __ia64__
 
-#define _GNU_SOURCE /* need this for sched_setaffinity() in <sched.h> */
+/* need this for sched_setaffinity() in <sched.h> */
+#define _GNU_SOURCE
+
 #include "oprofiled.h"
 #include "opd_perfmon.h"
 #include "opd_events.h"
@@ -43,17 +45,19 @@ extern op_cpu cpu_type;
 
 /* Copied from glibc's <sched.h> and <bits/sched.h> and munged */
 #define CPU_SETSIZE	1024
-# define __NCPUBITS     (8 * sizeof (unsigned long))
+#define __NCPUBITS	(8 * sizeof (unsigned long))
 typedef struct
 {
 	unsigned long __bits[CPU_SETSIZE / __NCPUBITS];
 } cpu_set_t;
 
 #define CPU_SET(cpu, cpusetp) \
-  ((cpusetp)->__bits[(cpu)/__NCPUBITS] |= (1UL << ((cpu) % __NCPUBITS)))
-#define CPU_ZERO(cpusetp)       memset((cpusetp), 0, sizeof(cpu_set_t))
+	((cpusetp)->__bits[(cpu)/__NCPUBITS] |= (1UL << ((cpu) % __NCPUBITS)))
+#define CPU_ZERO(cpusetp) \
+	memset((cpusetp), 0, sizeof(cpu_set_t))
 
-static int sched_setaffinity(pid_t pid, size_t len, const cpu_set_t *cpusetp)
+static int
+sched_setaffinity(pid_t pid, size_t len, cpu_set_t const * cpusetp)
 {
 	return syscall(__NR_sched_setaffinity, pid, len, cpusetp);
 }

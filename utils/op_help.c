@@ -409,10 +409,24 @@ int main(int argc, char const *argv[])
 		printf("See Intel XScale Core Developer's Manual\n"
 		       "Chapter 8 Performance Monitoring\n");
 		break;
+		break;
+
 	case CPU_PPC64_POWER4:
 	case CPU_PPC64_POWER5:
 	case CPU_PPC64_970:
+	case CPU_MIPS_R10000:
+	case CPU_MIPS_R12000:
+	case CPU_MIPS_RM7000:
+	case CPU_MIPS_RM9000:
+	case CPU_MIPS_SB1:
+	case CPU_MIPS_VR5432:
+	case CPU_MIPS_VR5500:
+		/*
+		 * I have discovered a truly remarkable URL
+		 * which this editor is too small to contain.
+		 */
 		break;
+
 	case CPU_RTC:
 		break;
 

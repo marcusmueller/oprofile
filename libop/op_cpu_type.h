@@ -42,6 +42,13 @@ typedef enum {
 	CPU_PPC64_POWER4, /**< ppc64 POWER4 family */
 	CPU_PPC64_POWER5, /**< ppc64 POWER5 family */
 	CPU_PPC64_970, /**< ppc64 970 family */
+	CPU_MIPS_R10000, /**< MIPS R10000 */
+	CPU_MIPS_R12000, /**< MIPS R12000 */
+	CPU_MIPS_RM7000, /**< QED  RM7000 */
+	CPU_MIPS_RM9000, /**< PMC-Sierra RM9000 */
+	CPU_MIPS_SB1, /**< Broadcom SB1 */
+	CPU_MIPS_VR5432, /**< NEC VR5432 */
+	CPU_MIPS_VR5500, /**< MIPS VR5500, VR5532 and VR7701 */
 	MAX_CPU_TYPE
 } op_cpu;
 

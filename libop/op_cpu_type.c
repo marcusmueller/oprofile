@@ -46,6 +46,13 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ppc64 POWER4", "ppc64/power4", CPU_PPC64_POWER4, 8 },
 	{ "ppc64 POWER5", "ppc64/power5", CPU_PPC64_POWER5, 6 },
 	{ "ppc64 970", "ppc64/970", CPU_PPC64_970, 8 },
+	{ "MIPS R10000", "mips/r10000", CPU_MIPS_R10000, 2 },
+	{ "MIPS R12000", "mips/r12000", CPU_MIPS_R12000, 4 },
+	{ "QED RM7000", "mips/rm7000", CPU_MIPS_RM7000, 1 },
+	{ "PMC-Sierra RM9000", "mips/rm9000", CPU_MIPS_RM9000, 2 },
+	{ "Sibyte SB1", "mips/sb1", CPU_MIPS_SB1, 4 },
+	{ "NEC VR5432", "mips/vr5432", CPU_MIPS_VR5432, 2 },
+	{ "NEC VR5500", "mips/vr5500", CPU_MIPS_VR5500, 2 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

@@ -534,13 +534,13 @@ struct op_event * find_event(u8 nr)
 }
 
 
-static FILE * open_event_mapping_file(const char * cpu_name) 
+static FILE * open_event_mapping_file(char const * cpu_name) 
 {
 	char * ev_map_file;
 	char * dir;
 	dir = getenv("OPROFILE_EVENTS_DIR");
 	if (dir == NULL)
-	        dir = OP_DATADIR;
+		dir = OP_DATADIR;
 
 	ev_map_file = xmalloc(strlen(dir) + strlen("/") + strlen(cpu_name) +
 	                    strlen("/") + + strlen("event_mappings") + 1);
@@ -802,6 +802,25 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 			descr->name = "CYCLES";
 			break;
              
+		case CPU_MIPS_R10000:
+		case CPU_MIPS_R12000:
+			descr->name = "INSTRUCTIONS_GRADUATED";
+			break;
+
+		case CPU_MIPS_RM7000:
+		case CPU_MIPS_RM9000:
+			descr->name = "INSTRUCTIONS_ISSUED";
+			break;
+
+		case CPU_MIPS_SB1:
+			descr->name = "INSN_SURVIVED_STAGE7";
+			break;
+
+		case CPU_MIPS_VR5432:
+		case CPU_MIPS_VR5500:
+			descr->name = "INSTRUCTIONS_EXECUTED";
+			break;
+
 		// don't use default, if someone add a cpu he wants a compiler
 		// warning if he forgets to handle it here.
 		case CPU_TIMER_INT:

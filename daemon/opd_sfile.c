@@ -398,22 +398,22 @@ void sfile_clear_kernel(void)
 {
 	struct list_head * pos;
 	struct list_head * pos2;
-	struct sfile * sf;
 
 	list_for_each_safe(pos, pos2, &lru_list) {
-		sf = list_entry(pos, struct sfile, lru);
+		size_t i;
+		struct sfile * sf = list_entry(pos, struct sfile, lru);
 		if (sf->kernel) {
 			kill_sfile(sf);
-		} else {
-			size_t i;
-			for (i = 0 ; i < CG_HASH_TABLE_SIZE; ++i) {
-				struct list_head * pos, * pos2;
-				list_for_each_safe(pos, pos2, &sf->cg_files[i]) {
-					struct cg_hash_entry * cg =
-					  list_entry(pos, struct cg_hash_entry, next);
-					if (cg->from.start || cg->to.start)
-						kill_cg_file(cg);
-				}
+			continue;
+		}
+
+		for (i = 0 ; i < CG_HASH_TABLE_SIZE; ++i) {
+			struct list_head * pos, * pos2;
+			list_for_each_safe(pos, pos2, &sf->cg_files[i]) {
+				struct cg_hash_entry * cg = list_entry(pos,
+					struct cg_hash_entry, next);
+				if (cg->from.start || cg->to.start)
+					kill_cg_file(cg);
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-event_files = \
+Event_files = \
 	alpha/ev4/events alpha/ev4/unit_masks \
 	alpha/ev5/events alpha/ev5/unit_masks \
 	alpha/ev67/events alpha/ev67/unit_masks \
@@ -20,7 +20,14 @@ event_files = \
 	rtc/events rtc/unit_masks \
 	x86-64/hammer/events x86-64/hammer/unit_masks \
 	arm/xscale1/events arm/xscale1/unit_masks \
-	arm/xscale2/events arm/xscale2/unit_masks
+	arm/xscale2/events arm/xscale2/unit_masks \
+	mips/rm7000/events mips/rm7000/unit_masks \
+	mips/rm9000/events mips/rm9000/unit_masks \
+	mips/sb1/events mips/sb1/unit_masks \
+	mips/r10000/events mips/r10000/unit_masks \
+	mips/r12000/events mips/r12000/unit_masks \
+	mips/vr5432/events mips/vr5432/unit_masks \
+	mips/vr5500/events mips/vr5500/unit_masks
 
 install-data-local:
 	for i in ${event_files} ; do \

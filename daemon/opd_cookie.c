@@ -40,6 +40,20 @@
 #define __NR_lookup_dcookie 110
 #elif defined(__arm__)
 #define __NR_lookup_dcookie (__NR_SYSCALL_BASE+249)
+#elif defined(__mips__)
+#include <sgidefs.h>
+/* O32 */
+#if _MIPS_SIM == _MIPS_SIM_ABI32
+#define __NR_lookup_dcookie 4247
+/* N64 */
+#elif _MIPS_SIM == _MIPS_SIM_ABI64
+#define __NR_lookup_dcookie 5206
+/* N32 */
+#elif _MIPS_SIM == _MIPS_SIM_NABI32
+#define __NR_lookup_dcookie 6206
+#else
+#error Unknown MIPS ABI: Dunno __NR_lookup_dcookie
+#endif
 #else
 #error Please define __NR_lookup_dcookie for your architecture
 #endif

@@ -1,3 +1,34 @@
+2004-12-12  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: expand list of supported CPU types.
+
+2004-12-12  Ralf Baechle  <ralf@linux-mips.org>
+
+	* daemon/opd_cookie.c: Define __NR_lookup_dcookie for all three
+	  supported MIPS ABIs.
+
+	* events/mips/r10000/events:
+	* events/mips/r10000/unit_masks:
+	* events/mips/r12000/events:
+	* events/mips/r12000/unit_masks:
+	* events/mips/r5432/events:
+	* events/mips/r5432/unit_masks:
+	* events/mips/r5500/events:
+	* events/mips/r5500/unit_masks:
+	* events/mips/rm7000/events:
+	* events/mips/rm7000/unit_masks:
+	* events/mips/rm9000/events:
+	* events/mips/rm9000/unit_masks:
+	* events/mips/sb1/events:
+	* events/mips/sb1/unit_masks:
+	* events/Makefile.am:
+	* libop/op_cpu_type.h:
+	* libop/op_cpu_type.c: Add support for the MIPS R10000 and R12000,
+	  QED RM7000 and PMC-Sierra RM9000, NEC VR5432 and VR5500 and Sibyte SB1
+	   processors.
+
+	* README: List myself as the caretaker of the MIPS bits.
+
 2004-11-25  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_events.c: simplify a bit get_mapping()
@@ -69,6 +100,7 @@
 	  can be removed at some later date
 	* events/ppc64/power4/events: Make min counts consistent with ppc970
 	* events/ppc64/power5/events: Make min counts consistent with ppc970	  
+
 2004-11-01  Greg Banks  <gnb@melbourne.sgi.com>
 
 	* libop/op_events.c: Make the default sample rate for

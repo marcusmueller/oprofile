@@ -106,8 +106,8 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 			see later in this manual for details.  Hyper-threaded Pentium IVs
 			are not supported in 2.4. For 2.4 kernels, the Intel
 			IA-64 CPUs are also supported. For 2.6 kernels, there is additionally
-			support for Alpha processors, and sparc64, ppc64, and PA-RISC in
-			timer mode.
+			support for Alpha processors, MIPS, ARM, sparc64, ppc64, and, in timer mode,
+			PA-RISC and s390.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
