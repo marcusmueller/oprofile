@@ -1,7 +1,9 @@
 0.0.9 task list
 ---------------
 
-o get the 2.2 backport working if we can
+o stress test, finish clean of 2.2 backport
+
+o no CONFIG_X86_LOCAL_APIC on 2.4 ?
  
 o user request: op_time that shows /all/ available symbols (with correct %age).
   This must handle images with no symbols, so container must contain either a symbol + values,
@@ -21,11 +23,12 @@ o Bob's rtc patch ?
 o difference between two profile session. Difference must be made at source level. 
   (This is a part of post-prof)
 
-o whitelist op_start parameters so at least sudo oprof_start should be safe ...
+o audit oprof_start for security...
  
 Before 1.0
 ----------
 
+ o implement a shadow interrupt handler so we can profile the NMI handler code
  o verify builds (modversions, kernel versions, athlon etc.)
  o merging utility for sample files (useful)
  o - test it to hell and back

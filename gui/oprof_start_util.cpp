@@ -19,6 +19,7 @@
 #include <dirent.h> 
 #include <unistd.h> 
  
+#include <cerrno> 
 #include <vector> 
 #include <cmath>
 #include <sstream>
@@ -270,12 +271,28 @@ string const format(string const & orig, uint const maxlen)
  *
  * Execute a command synchronously. An error message is shown
  * if the command returns a non-zero status, which is also returned.
+ *
+ * The arguments are verified and will refuse to execute if they contain
+ * shell metacharacters.
  */
 int do_exec_command(string const & cmd, vector<string> const & args)
 {
 	std::ostringstream err;
 	bool ok = true;
 
+	// verify arguments
+	for (vector<string>::const_iterator cit = args.begin();
+		cit != args.end(); ++cit) {
+		if (verify_argument(*cit))
+			continue;
+ 
+		QMessageBox::warning(0, 0,
+			string(
+			"Could not execute: Argument \"" + *cit +
+			"\" contains shell metacharacters.\n").c_str());
+		return EINVAL;
+	}
+ 
 	ChildReader reader(cmd, args);
 	if (reader.error())
 		ok = false;
@@ -288,8 +305,9 @@ int do_exec_command(string const & cmd, vector<string> const & args)
 		string error = "Failed: \n" + err.str() + "\n";
 		string cmdline = cmd;
 		for (vector<string>::const_iterator cit = args.begin();
-			cit != args.end(); ++cit)
+			cit != args.end(); ++cit) {
 			cmdline += " " + *cit + " ";
+		}
 		error += "\n\nCommand was :\n\n" + cmdline + "\n";
 
 		QMessageBox::warning(0, 0, format(error, 50).c_str());
@@ -325,3 +343,26 @@ string const do_open_file_or_dir(string const & base_dir, bool dir_only)
 		return result.latin1();
 }
  
+/**
+ * verify_argument - check string for potentially dangerous characters
+ *
+ * This function returns false if the string contains dangerous shell
+ * metacharacters.
+ *
+ * WWW Security FAQ dangerous chars:
+ * 
+ * & ; ` ' \ " | * ? ~ < > ^ ( ) [ ] { } $ \n \r
+ *
+ * David Wheeler: ! #
+ *
+ * We allow '-' because we disallow whitespace. We allow ':' and '='
+ */
+bool verify_argument(string const & str)
+{
+	if (str.find_first_not_of(
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz0123456789_:=-+%,./")
+		!= string::npos)
+		return false;
+	return true;
+}

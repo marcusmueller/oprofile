@@ -3,9 +3,9 @@
 html
 guide.tex
 index.html
-labels.pl 
-WARNINGS 
+labels.pl
+WARNINGS
 Makefile
 oprofile.1
 oprofile
-oprofile.junk 
+oprofile.junk

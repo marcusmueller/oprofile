@@ -291,7 +291,7 @@ void my_set_fixmap(void)
 	/* dirty hack :/ */
 	virt_apic_base = (unsigned long)vmalloc(4096);
 
-	set_pte_phys (virt_apic_base, APIC_DEFAULT_PHYS_BASE);
+	set_pte_phys(virt_apic_base, APIC_DEFAULT_PHYS_BASE);
 #endif
 }
 #else /* NEED_FIXMAP_HACK */
