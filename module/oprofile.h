@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.22 2002/03/22 21:18:43 phil_e Exp $ */
+/* $Id: oprofile.h,v 1.23 2002/04/30 18:57:55 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -39,6 +39,11 @@
 
 #undef min
 #undef max
+ 
+#define streq(a, b) (!strcmp((a), (b)))
+#define streqn(a, b, len) (!strncmp((a), (b), (len)))
+
+#define regparm3 __attribute__((regparm(3)))
  
 #define OP_NR_ENTRY (SMP_CACHE_BYTES/sizeof(struct op_sample))
 
@@ -130,9 +135,6 @@ struct op_int_operations {
 	void (*stop_cpu)(uint);
 };
  
-#define streq(a, b) (!strcmp((a), (b)))
-#define streqn(a, b, len) (!strncmp((a), (b), (len)))
-
 /* maximum depth of dname trees - this is just a page */
 #define DNAME_STACK_MAX 1024
 
@@ -145,10 +147,11 @@ struct op_int_operations {
 	(ops).pid != current->pid || \
 	op_full_count((ops).count))
 
-/* the ctr bit is used to separate the two counters */
+/* the ctr bit is used to separate the two counters.
+ * Simple and effective hash. If you can do better, prove it ...
+ */
 #define op_hash(eip, pid, ctr) \
-	(((((((eip&0xff000)>>3) ^ eip) ^ pid) ^ (eip<<9)) \
-	^ (ctr<<8)) & (data->hash_size - 1))
+	(((eip ) + (pid << 5) + (ctr)) & (data->hash_size - 1))
 
 /* read/write of perf counters */
 #define get_perfctr(l,h,c) do { rdmsr(perfctr_msr[(c)], (l), (h)); } while (0)
@@ -226,7 +229,7 @@ void fixmap_restore(void);
 extern struct op_int_operations op_nmi_ops;
 extern struct op_int_operations op_rtc_ops;
  
-void op_do_profile(uint cpu, struct pt_regs *regs, int ctr);
+void regparm3 op_do_profile(uint cpu, struct pt_regs *regs, int ctr);
 extern struct _oprof_data oprof_data[NR_CPUS];
 extern int partial_stop;
 extern struct oprof_sysctl sysctl_parms;

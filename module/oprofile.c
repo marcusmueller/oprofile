@@ -117,37 +117,31 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const str
 inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, int ctr)
 {
 	ops->eip = regs->eip;
-	/* FIXME: tgid */ 
 	ops->pid = current->pid;
 	ops->count = (1U << OP_BITS_COUNT)*ctr + 1;
 }
 
-void op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
+void regparm3 op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
 {
 	struct _oprof_data * data = &oprof_data[cpu];
-	uint h = op_hash(regs->eip, current->pid, ctr);
-	uint i;
+	uint h, i; 
+	struct op_sample * samples;
 
 	data->nr_irq++;
 
-	for (i=0; i < OP_NR_ENTRY; i++) {
-		if (likely(!op_miss(data->entries[h].samples[i]))) {
-			data->entries[h].samples[i].count++;
-			return;
-		} else if (unlikely(op_full_count(data->entries[h].samples[i].count))) {
-			goto full_entry;
-		} else if (unlikely(!data->entries[h].samples[i].count))
-			goto new_entry;
-	}
+	h = op_hash(regs->eip, current->pid, ctr);
+	samples = data->entries[h].samples;
 
-	evict_op_entry(cpu, data, &data->entries[h].samples[data->next], regs);
-	fill_op_entry(&data->entries[h].samples[data->next], regs, ctr);
+	for (i=0; i < OP_NR_ENTRY; i++) {
+		if (likely(!op_miss(samples[i]))) {
+			samples[i].count++;
+			return;
+		}
+	}
+ 
+	evict_op_entry(cpu, data, &samples[data->next], regs);
+	fill_op_entry(&samples[data->next], regs, ctr);
 	data->next = (data->next + 1) % OP_NR_ENTRY;
-	return;
-full_entry:
-	evict_op_entry(cpu, data, &data->entries[h].samples[i], regs);
-new_entry:
-	fill_op_entry(&data->entries[h].samples[i],regs,ctr);
 	return;
 }
 

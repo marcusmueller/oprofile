@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.71 2002/03/20 21:19:42 phil_e Exp $ */
+/* $Id: oprofiled.c,v 1.72 2002/04/30 18:57:54 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -603,6 +603,11 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 	for (i=0; i < count/sizeof(struct op_sample); i++) {
 		verbprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n", i, opd_buf[i].eip, opd_buf[i].pid, opd_buf[i].count);
 
+		// happens during initial startup whilst the
+		// hash table is being filled
+		if (opd_buf[i].eip == 0)
+			continue;
+ 
 		if (ignore_myself && opd_buf[i].pid == mypid)
 			continue;
 
