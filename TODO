@@ -21,6 +21,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o oprof_start does not start with the default events like opcontrol does
  o --smart-demangle is not documented
  o Add something  to op_help so user can see if they're using timer/rtc mode or not
  o oprof_start should use the same config file as opcontrol ...

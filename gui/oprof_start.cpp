@@ -830,10 +830,10 @@ void oprof_start::on_start_profiler()
 		args.push_back("--rtc-value=" + tostr(cfg[descr->name].count));
 	} else {
 		for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
-			if (!current_event[ctr])
+			if (!current_event[ctr] || !ctr_enabled[ctr]) {
+				args.push_back("--ctr" + tostr(ctr) + "-event=none");
 				continue;
-			if (!ctr_enabled[ctr])
-				continue;
+			}
 
 			persistent_config_t<event_setting> const & cfg = event_cfgs[ctr];
 
@@ -862,8 +862,10 @@ void oprof_start::on_start_profiler()
 	// opcontrol allow multiple setting of --separate option
 	if (config.separate_lib_samples)
 		args.push_back("--separate=library");
-	if (config.separate_kernel_samples)
+	else if (config.separate_kernel_samples)
 		args.push_back("--separate=kernel");
+	else
+		args.push_back("--separate=none");
 
 	if (do_exec_command(OP_BINDIR "/opcontrol", args))
 		goto out;

@@ -1,5 +1,11 @@
 2003-03-03  John Levon  <levon@movementarian.org>
 
+	* gui/oprof_start.cpp: use --ctrX-event=none,
+	  --separate=none. --pid/pgrp-filter=0 was already
+	  being done.
+
+2003-03-03  John Levon  <levon@movementarian.org>
+
 	* doc/oprofile.1.in:
 	* doc/oprofile.xml:
 	* doc/opcontrol: add --ctrX-event=none
