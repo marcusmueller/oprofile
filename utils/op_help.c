@@ -101,6 +101,7 @@ static void check_event(struct parsed_event * pev,
 {
 	int ret;
 	int min_count;
+	int const callgraph_min_count_scale = 15;
 
 	if (!event) {
 		fprintf(stderr, "No event named %s is available.\n",
@@ -116,7 +117,9 @@ static void check_event(struct parsed_event * pev,
 		exit(EXIT_FAILURE);
 	}
 
-	min_count = event->min_count * (callgraph_depth ? 15 : 1);
+	min_count = event->min_count;
+	if (callgraph_depth)
+		min_count *= callgraph_min_count_scale;
 	if (pev->count < min_count) {
 		fprintf(stderr, "Count %d for event %s is below the "
 		        "minimum %d\n", pev->count, pev->name, min_count);
