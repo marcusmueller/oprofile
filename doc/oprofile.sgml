@@ -1141,10 +1141,24 @@ Options allowed are :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>&mdash;demangle</option></term>
+		<term><option>-d</option></term>
+		<listitem><para>
+		demangle GNU C++ symbol names
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>&mdash;show-image-name</option></term>
+		<term><option>-n</option></term>
+		<listitem><para>
+		show the image name when specifying <option>&mdash;list-symbols</option>
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>&mdash;reverse</option></term>
 		<term><option>-r</option></term>
 		<listitem><para>
-		Sort by decreasing samples count instead of increasing count.
+		Sort by decreasing samples count instead of increasing count. Can't be used with <option>&mdash;list-symbols</option>
 		</para></listitem>
 	</varlistentry>
 </variablelist>

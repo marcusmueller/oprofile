@@ -509,6 +509,42 @@ do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 {
 	string image_name = bfd_get_filename(abfd.ibfd);
 
+	/* kludge to get samples for image w/o symbols */
+	if (abfd.syms.size() == 0) {
+		u32 start, end;
+
+		cout << "adding artificial symbols for " << image_name << endl;
+
+		start = 0;
+		end = start + samples_files.nr_samples;
+
+		symbol_entry symb_entry;
+		symb_entry.first = 0;
+		symb_entry.name = "?" + image_name;
+		symb_entry.sample.vma = start;  // wrong fix this later
+		symb_entry.sample.file_loc.linenr = 0;
+		symb_entry.sample.file_loc.image_name = image_name;
+
+		samples_files.accumulate_samples(symb_entry.sample.counter,
+						 start, end);
+		counter += symb_entry.sample.counter;
+
+		/* we can't call add_samples */
+		for (u32 pos = start ; pos != end ; ++pos) {
+			sample_entry sample;
+
+			if (!samples_files.accumulate_samples(sample.counter, pos))
+				continue;
+
+			sample.file_loc.image_name = image_name;
+			sample.vma = pos;  // wrong fix this later
+			samples.push_back(sample);
+		}
+
+		symb_entry.last = samples.size();
+		symbols.push_back(symb_entry);
+	} /* kludgy block */
+
 	for (size_t i = 0 ; i < abfd.syms.size(); ++i) {
 		u32 start, end;
 		const char* filename;

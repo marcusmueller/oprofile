@@ -3,25 +3,19 @@
 
  o stress test
 
- o user request: op_time must handle images with no symbols, so container must
- contain either a symbol + values, or a file. John, we must handle also samples
- not accounted for any symbols this can be implemented through special symbol
- name so all utilities including op_time will handle them w/o any modification
- (symbols named xxxx-section_name xxxx = ?)
- o handle demangle in op_time, and show image name before the symbol too
- 
- o get symbol size via elf instead of bfd
- 
 Before 1.0
 ----------
 
  o pp rewrite ! not clear if we need to rewrite it.
+ o get symbol size via elf instead of bfd
+ o add support for samples not belonging to any symbols probably through
+   artificially created symbols
  o coherent naming class conventions
  o use standard C integer type <stdint.h> int32_t int16_t etc.
  o little output things (e.g. don't print unit mask) RTC
  o add option to op_to_source like oprofpp -u -m on a symbol basis.
  o --help --version in a common options section in .sgml ?
-   same thing for all common options between oprofpp/opf_filter ?
+   same thing for all common options between oprofpp/op_to_source ?
  o audit oprof_start for security...
  o review the exception table of the nmi handler (at least stop oprofile)
  o oprofile_nmi22.S and oprofile24.S can use the same code.
@@ -30,7 +24,7 @@ Before 1.0
  o take oprof_convert out the back and do the cruel to be kind thing
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o test it to hell and back
- o compile all C++ programs with STL_port and use them as bug tracker.
+ o compile all C++ programs with STL_port and test them
  o check documentation
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level.
@@ -39,7 +33,8 @@ Before 1.0
  o verify builds (modversions, kernel versions, athlon etc.)
  o use a filelock rather a sleep to synchronize op_start and daemon.
  o check chroot() processes and the path hash stuff
- o use nm and a little script to track unused function.
+ o use nm and a little script to track unused function
+ o audit to track unnecessary include <>
 
 Later
 -----
@@ -74,3 +69,5 @@ o can we fold in the "untouched sample entry" case in hash table to another case
 o we don't really need a vmlinux file during profiling ...
  
 o Other x86 processors
+
+o other processors through RTC iff we find testers

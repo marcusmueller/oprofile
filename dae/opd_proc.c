@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.101 2002/01/26 03:55:37 movement Exp $ */
+/* $Id: opd_proc.c,v 1.102 2002/01/27 00:37:05 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -483,8 +483,6 @@ err1:
  * opd_check_image_mtime - ensure samples file is up to date
  * @image: image to check
  */
-/* TODO: This is bugged we need to check mtime in opd_open_image: there is some
- * code that open image without checking for modified mtime ? */
 static void opd_check_image_mtime(struct opd_image * image)
 {
 	uint i;
@@ -558,7 +556,6 @@ void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count)
 	if (image->kernel)
 		fentry += OPD_KERNEL_OFFSET;
 
-	/* simplify this ? t least list_del(); is sufficient. */
 	list_del_init(&sample_file->lru_node);
 	list_add_tail(&sample_file->lru_node, &opd_samples_files);
 
@@ -590,12 +587,6 @@ void opd_init_images(void)
 	opd_init_image(kernel_image, vmlinux, -1, NULL, 1);
 
 	opd_open_image(kernel_image);
-
-#if 0
-	/* TEST: map 1.75 Go just to see the effect of the lru */
-	mmap(0, (1<<30) + (1<<29) + (1<<27), PROT_READ,
-	     MAP_ANON | MAP_PRIVATE, -1, 0);
-#endif
 }
 
 /**

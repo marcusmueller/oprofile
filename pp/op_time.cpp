@@ -74,6 +74,7 @@ static int showvers;
 static int reverse_sort;
 static int show_shared_libs;
 static int list_symbols;
+static int show_image_name;
 static const char * base_dir = "/var/opd/samples";
 
 static struct poptOption options[] = {
@@ -81,6 +82,8 @@ static struct poptOption options[] = {
 	  "use counter", "counter nr", },
 	{ "show-shared-libs", 'k', POPT_ARG_NONE, &show_shared_libs, 0,
 	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
+	{ "demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
+	{ "show-image-name", 'n', POPT_ARG_NONE, &show_image_name, 0, "show the image name from where come symbols", NULL, },
 	{ "list-symbols", 'l', POPT_ARG_NONE, &list_symbols, 0, "list samples by symbol", NULL, },
 	{ "reverse", 'r', POPT_ARG_NONE, &reverse_sort, 0,
 	  "reverse sort order", NULL, },
@@ -404,7 +407,7 @@ static void output_symbols_count(map_t& files)
 
 		// FIXME: Please don't take care of ugliness here this is like
 		// oprofpp -l code, I clean up when changing the output format
-		if (show_shared_libs)
+		if (show_image_name)
 			printf("%s ", (*it)->sample.file_loc.image_name.c_str());
 /*
 		if (output_linenr_info)
@@ -443,12 +446,15 @@ int main(int argc, char const * argv[])
 	map_t file_map;
 	sort_file_list_by_name(file_map, file_list);
 
-	/* FIXME: must we allow to show separated symbols in this case ? */
-	/* let's as it for now until we fix what policy we need for
-	 * separate samples, so currently for test purpose you can
-	 * use -kl to see from which app comes the symbols */
-	if (0 && list_symbols && show_shared_libs) {
+	if (list_symbols && show_shared_libs) {
 		cerr << "You can't specifiy --show-shared-libs and "
+		     << "--list-symbols together" << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	/* Disallow this until we fix output format */
+	if (list_symbols && reverse_sort) {
+		cerr << "You can't specifiy --reverse-sort and "
 		     << "--list-symbols together" << endl;
 		exit(EXIT_FAILURE);
 	}

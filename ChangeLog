@@ -1,3 +1,19 @@
+2002-01-27  Philippe Elie  <ph_e@club-internet.fr>
+
+	* TODO: update
+
+	* dae/opd_proc.c: small cleanup
+
+	* doc/opf_container.cpp: handle image without symbols
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.sgml:
+	* doc/op_time.cpp: implement and document --demangle
+	  and --show-image-name
+
+	* pp/oprofpp_util.cpp: add using elf symbols size but
+	  disable it
+
 2002-01-26  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update

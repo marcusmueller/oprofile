@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.23 2002/01/26 00:42:52 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.24 2002/01/27 00:37:05 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -18,6 +18,8 @@
 // FIXME: printf -> ostream (and elsewhere) 
 #include <algorithm>
 #include <sstream>
+
+#include <elf.h>
 
 #include "oprofpp.h"
 #include "../util/file_manip.h"
@@ -544,6 +546,30 @@ bool opp_bfd::get_linenr(uint sym_idx, uint offset,
 	return ret;
 }
 
+// #define USE_ELF_INTERNAL
+
+#ifdef USE_ELF_INTERNAL
+struct elf_internal_sym {
+  bfd_vma	st_value;		/* Value of the symbol */
+  bfd_vma	st_size;		/* Associated symbol size */
+  unsigned long	st_name;		/* Symbol name, index in string tbl */
+  unsigned char	st_info;		/* Type and binding attributes */
+  unsigned char	st_other;		/* No defined meaning, 0 */
+  unsigned short st_shndx;		/* Associated section index */
+};
+
+typedef struct elf_internal_sym Elf_Internal_Sym;
+
+typedef struct
+{
+  /* The BFD symbol.  */
+  asymbol symbol;
+  /* ELF symbol information.  */
+  Elf_Internal_Sym internal_elf_sym;
+} elf_symbol_type;
+
+#endif /* USE_ELF_INTERNAL */
+
 /**
  * get_symbol_range - get range of symbol
  * @sym_idx: symbol index
@@ -576,6 +602,7 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 	if (is_excluded_symbol(sym->name)) {
 		end = start;
 	} else {
+#ifndef USE_ELF_INTERNAL
 		if (next) {
 			end = next->value;
 			/* offset of section */
@@ -584,6 +611,9 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 			end += sect_offset;
 		} else
 			end = nr_samples;
+#else /* !USE_ELF_INTERNAL */
+		end = start + ((elf_symbol_type *)sym)->internal_elf_sym.st_size;
+#endif /* USE_ELF_INTERNAL */
 	}
 	verbprintf("start 0x%x, end 0x%x\n", start, end); 
 

@@ -297,8 +297,16 @@ Show the details for each shared lib which belongs to one application. This opti
 Show details for each symbols in each profiled files
 .TP
 .br
+.BI "--demangle -d"
+demangle GNU C++ symbol names
+.br
+.TP
+.BI "--show-image-name -n"
+show the image name when specifying --list-symbols
+.br
+.TP
 .BI "--reverse -r"
-sort output by increasing count of samples rather by decreasing count of samples
+sort output by increasing count of samples rather by decreasing count of samples. Can't be used with --list-symbols
 .TP
 .br
 .B op_merge options
