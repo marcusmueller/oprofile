@@ -14,8 +14,27 @@ AC_SUBST(VERSION)
 PACKAGE=oprofile
 VERSION=0.0.1
  
+dnl AX_MSG_RESULT_YN(a)
+dnl results "yes" iff a==1, "no" else
+AC_DEFUN(AX_MSG_RESULT_YN, [x=no
+test "x$1" = "x1" && x=yes
+AC_MSG_RESULT($x)])
+
+dnl AX_EGREP(expr, file, action-if-found, action-if-not-found)
+dnl egrep for expr in file
+AC_DEFUN(AX_EGREP, [dnl
+changequote(, )dnl
+  if egrep "$1" $2 >/dev/null 2>&1; then
+changequote([, ])dnl
+  ifelse([$3], , :, [$3])
+ifelse([$4], , , [else
+  $4
+])dnl
+fi
+])
  
-AC_REVISION($Id: configure.in,v 1.4 2000/08/03 21:09:55 moz Exp $)
+ 
+AC_REVISION($Id: configure.in,v 1.5 2000/08/03 21:28:14 moz Exp $)
 dnl
 dnl Process this file with autoconf to produce a configure script.
 dnl
