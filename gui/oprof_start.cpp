@@ -74,8 +74,14 @@ oprof_start::oprof_start()
  
 	if (cpu_type == CPU_ATHLON)
 		op_nr_counters = 4;
-	else if (cpu_type == CPU_RTC)
+	else if (cpu_type == CPU_RTC) {
 		op_nr_counters = 1;
+		current_ctr = 0;
+		enabled_toggled(1);
+		enabled->hide();
+		counter_combo->hide();
+		unit_mask_group->hide();
+	}
 
 	int cpu_mask = 1 << cpu_type;
 
@@ -103,17 +109,23 @@ oprof_start::oprof_start()
 		descr.min_count = op_events[i].min_count;
 
 		for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
+			uint count;
+ 
 			if (!(descr.counter_mask & (1 << ctr)))
 				continue;
 
-			/* setting to cpu Hz / 2000 gives a safe value for
-			 * all events, and a good one for most.
-			 */
-			uint count;
-			if (cpu_speed)
-				count = cpu_speed * 500;
-			else
-				count = descr.min_count * 100; 
+			if (cpu_type == CPU_RTC) {
+				count = 1024;
+			} else { 
+				/* setting to cpu Hz / 2000 gives a safe value for
+				 * all events, and a good one for most.
+				 */
+				if (cpu_speed)
+					count = cpu_speed * 500;
+				else
+					count = descr.min_count * 100; 
+			}
+ 
 			event_cfgs[ctr][descr.name].count = count;
 			event_cfgs[ctr][descr.name].umask = 0;
 			if (descr.unit)
@@ -177,6 +189,9 @@ oprof_start::oprof_start()
 	display_event(current_event[current_ctr]);
 
 	counter_selected(0);
+
+	if (cpu_type == CPU_RTC)
+		events_list->setCurrentItem(events_list->firstChild());
 
 	// daemon status timer 
 	startTimer(5000);
