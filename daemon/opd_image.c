@@ -19,6 +19,7 @@
 #include "op_libiberty.h"
 #include "op_file.h"
 #include "op_interface_25.h"
+#include "op_mangle.h"
  
 #include <errno.h>
 #include <unistd.h>
@@ -171,7 +172,6 @@ static void opd_open_image(struct opd_image * image)
 	/* samples files are lazily opened */
 }
 
-#if 0 // FIXME: when can we check this !?
 
 /**
  * opd_check_image_mtime - ensure samples file is up to date
@@ -210,7 +210,6 @@ void opd_check_image_mtime(struct opd_image * image)
 	opd_open_image(image);
 }
 
-#endif
 
 /**
  * opd_put_image_sample - write sample to file
@@ -261,7 +260,7 @@ static struct opd_image * opd_add_image(unsigned long cookie, unsigned long app_
 	opd_init_image(image, cookie, app_cookie);
 	list_add(&image->hash_list, &opd_images[hash]);
 	nr_images++;
-	opd_open_image(image);
+	opd_check_image_mtime(image);
 	return image;
 }
 
@@ -314,7 +313,7 @@ static struct opd_image * opd_add_kernel_image(char const * name)
 	image->kernel = 1;
 	list_add(&image->hash_list, &opd_images[HASH_KERNEL]);
 	nr_images++;
-	opd_open_image(image);
+	opd_check_image_mtime(image);
 	return image;
 }
 

@@ -1,3 +1,10 @@
+2002-12-04  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_image.c: re-enable opd_check_image_mtime() it's not
+	  perfect but better than nothing
+
+	* libutil++/cverb.cpp: comment fix
+
 2002-12-04  Will Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol: Revised checking to determine kernel

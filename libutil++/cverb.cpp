@@ -14,6 +14,8 @@
 
 using namespace std;
 
+// The right way is to use: ofstream fout; but cverb(fout.rdbuf()) receive
+// a null pointer and stl shipped with 2.91 segfault.
 ofstream fout("/dev/null");
 ostream cverb(fout.rdbuf());
 
