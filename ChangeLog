@@ -1,3 +1,8 @@
+2003-01-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/op_help.c: get cpu type only if not forced on command line.
+	  Avoid wrong warning about unsupported cpu type.
+
 2003-01-27  Will Cohen  <wcohen@redhat.com>
 
 	* daemon/opd_cookie.h(opd_nr_lookup_dcookie): Add ia64 version.

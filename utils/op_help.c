@@ -119,9 +119,10 @@ int main(int argc, char const *argv[])
 	int cpu_type_mask;
 	uint j;
 
-	cpu_type = op_get_cpu_type();
-
 	get_options(argc, argv);
+
+	if (cpu_type == CPU_NO_GOOD)
+		cpu_type = op_get_cpu_type();
 
 	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
 		fprintf(stderr, "invalid cpu type %d !\n", cpu_type);
@@ -157,6 +158,8 @@ int main(int argc, char const *argv[])
 	case CPU_PPRO:
 	case CPU_PII:
 	case CPU_PIII:
+	case CPU_P4:
+	case CPU_P4_HT2:
 		printf("See Intel Architecture Developer's Manual Vol. 3 (), Appendix A and\n"
 		"Intel Architecture Optimization Reference Manual (730795-001)\n\n");
 		break;
@@ -179,6 +182,7 @@ int main(int argc, char const *argv[])
 		       "ftp://ftp.compaq.com/pub/products/alphaCPUdocs/alpha_arch_ref.pdf\n");
 		break;
 	case CPU_RTC:
+	case CPU_TIMER_INT:
 		break;
 	default:
 		printf("%d is not a valid processor type,\n", cpu_type);
