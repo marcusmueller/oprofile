@@ -103,7 +103,7 @@ private:
 	char * buf2;
 	ssize_t sz_buf2;
 	char * buf1;
-	string process_name;
+	std::string process_name;
 	bool is_terminated;
 	bool terminate_on_exception;
 	bool forked;

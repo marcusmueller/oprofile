@@ -1,3 +1,12 @@
+2002-09-12  Will Cohen  <wcohen@redhat.com>
+ 
+        * libutil++/child_reader.h (child_reader): Add missing "std::".
+        * libutil++/child_reader.cpp (error_str): Ditto.
+ 
+2002-09-12  John Levon  <levon@movementarian.org>
+
+	* acinclude.m4: update from upstream
+ 
 2002-09-12  John Levon  <levon@movementarian.org>
 
 	* acinclude.m4: fix moc2/moc conflict, cache val

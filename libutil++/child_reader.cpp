@@ -238,7 +238,7 @@ int child_reader::terminate_process()
 
 std::string child_reader::error_str() const
 {
-	ostringstream err;
+	std::ostringstream err;
 	if (!forked) {
 		err << string("unable to fork, error: ")
 		    << strerror(first_error);
