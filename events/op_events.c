@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.4 2002/01/14 08:38:54 movement Exp $ */
+/* $Id: op_events.c,v 1.5 2002/01/15 22:26:01 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -71,6 +71,7 @@ struct op_unit_mask op_unit_masks[] = {
 #define CTR_1		(1 << 1)
 
 /* ctr allowed, Event #, unit mask, name, minimum event value */
+/* event name must be in one word */
 struct op_event op_events[] = {
   /* Clocks */
   { CTR_ALL, OP_IA_ALL, 0x79, 0, "CPU_CLK_UNHALTED", 6000 },
@@ -197,7 +198,7 @@ struct op_event op_events[] = {
   { CTR_ALL, OP_ATHLON, 0xcf, 0, "HARDWARE_INTERRUPTS", 10,},
 
   /* other CPUs */
-  { CTR_0, OP_RTC, 0xff, 0, "RTC Interrupts", 2,},
+  { CTR_0, OP_RTC, 0xff, 0, "RTC_Interrupts", 2,},
 };
 
 /* the total number of events for all processor type */

@@ -1,3 +1,9 @@
+2002-01-15  Philippe Elie  <ph_e@club-internet.fr>
+
+	* events/op_events.c: avoid gui crash: event name must
+	  contain only one word. If you test RTC patch destroy
+	  ~/.oprofile/oprof_start_event#0
+
 2002-01-15  John Levon  <moz@compsoc.man.ac.uk>
 
 	* module/compat.h:
