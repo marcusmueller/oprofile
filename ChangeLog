@@ -1,3 +1,9 @@
+2003-03-23  John Levon  <levon@movementarian.org>
+
+	* m4/ChangeLog: add comment
+
+	* m4/typedef.m4: can't use AC_LANG_PUSH/POP
+
 2003-03-23  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update

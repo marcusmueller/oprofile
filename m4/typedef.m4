@@ -3,7 +3,9 @@ dnl exec action-if-true if typedef_name is a typedef to type else exec
 dnl action-if-false
 dnl currently work only with type typedef'ed in stddef.h
 AC_DEFUN(AX_CHECK_TYPEDEF, [
-AC_LANG_PUSH(C)
+dnl AC_LANG_PUSH(C) not in autoconf 2.13
+AC_LANG_SAVE
+AC_LANG_C
 SAVE_CFLAGS=$CFLAGS
 CFLAGS="-Werror $CFLAGS"
 
@@ -21,7 +23,7 @@ AC_TRY_COMPILE(
 [$3],[$4])
 
 CFLAGS=$SAVE_CFLAGS
-AC_LANG_POP(C)
+AC_LANG_RESTORE
 ])
 
 
