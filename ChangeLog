@@ -1,5 +1,10 @@
 2001-09-02  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprofile.c: don't allow unload on SMP unless allow_unload
+	  is set. Still needs docs (no point till SMP works).
+ 
+2001-09-02  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/op_dump: complain if not root more clearly.
  
 2001-09-02  John Levon  <moz@compsoc.man.ac.uk>
