@@ -1,3 +1,8 @@
+2003-10-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* events/ia64/itanium/events: correct counter avalaible according
+	  to intel doc.
+
 2003-10-15  John Levon  <levon@movementarian.org>
 
 	* dae/opd_image.c:
