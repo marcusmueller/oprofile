@@ -1,3 +1,8 @@
+2002-10-19  John Levon  <levon@movementarian.org>
+
+	* utils/op_start_25: grep -o does not exist on any of
+	  my systems - fix
+ 
 2002-10-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/op_bfd.cpp: calculate symbol size after removing duplicate
