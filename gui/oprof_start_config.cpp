@@ -22,6 +22,8 @@
 #include "oprof_start_config.h"
 #include "oprof_start_util.h"
 
+namespace {
+ 
 // output default_value if value is empty (empty <==> contains non blank char)
 static void save_value(std::ostream& out, const std::string& value, 
 		const std::string& default_value)
@@ -35,13 +37,12 @@ static void save_value(std::ostream& out, const std::string& value,
 		out << value;
 }
 
+} // namespace anon 
 
 bool is_profiler_started()
 {
 	return !system("ps aux | grep oprofiled | grep -v grep > /dev/null");
 }
-
-// } // anonymous namespace
 
 event_setting::event_setting() 
 	:

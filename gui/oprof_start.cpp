@@ -16,12 +16,13 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <math.h>
 
+#include <cstdio>
+#include <cmath>
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 #include <qcombobox.h> 
 #include <qlistbox.h>
@@ -730,14 +731,19 @@ void oprof_start::on_stop_profiler()
 	}
 }
 
+ 
+/// function object for matching against name
+class event_name_eq : public std::unary_function<op_event_descr, bool> {
+	std::string name_;
+public:
+	explicit event_name_eq(std::string const s) : name_(s) {}
+	bool operator()(op_event_descr & d) const {
+		return d.name == name_;
+	}
+};
+
 // helper to retrieve an event descr through its name.
 const op_event_descr & oprof_start::locate_event(std::string const & name)
 {
-	// FIXME: use std::find_if
-	for (size_t i = 0 ; i < v_events.size() ; ++i) {
-		if (std::string(v_events[i].name) == name) {
-			return v_events[i];
-		}
-	}
-	return v_events[0];
+	return *(std::find_if(v_events.begin(), v_events.end(), event_name_eq(name)));
 }

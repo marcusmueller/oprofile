@@ -33,11 +33,10 @@
 
 typedef int fd_t;
  
-static int exec_command(std::string const & cmd, std::ostream & out, 
-		 std::ostream & err, std::vector<std::string> args);
+namespace {
  
 // return the ~ expansion suffixed with a '/'
-static std::string const get_user_dir()
+std::string const get_user_dir()
 {
 	static std::string user_dir;
 
@@ -57,15 +56,17 @@ static std::string const get_user_dir()
 	return user_dir;
 }
 
-// return get_user_dir() + filename
-std::string const get_user_filename(std::string const & filename)
-{
-	return get_user_dir() + "/" + filename;
-}
-
- 
+/**
+ * fill_from_fd - output fd to a stream
+ * @stream: the stream to output to
+ * @fd: the fd to read from
+ *
+ * Read from @fd until a read would block and write
+ * the output to @stream.
+ */
 static void fill_from_fd(std::ostream & stream, fd_t fd)
 {
+	// FIXME: there might be a better way than this; suggestions welcome 
 	fd_t fd_out; 
 	char templ[] = "/tmp/op_XXXXXX";
 	char buf[4096]; 
@@ -143,7 +144,26 @@ static int exec_command(std::string const & cmd, std::ostream & out,
 	return WEXITSTATUS(ret);
 }
 
+} // namespace anon 
  
+ 
+/**
+ * get_user_filename - get absoluate filename of file in user $HOME
+ * @filename: the relative filename
+ *
+ * Get the absolute path of a file in a user's home directory.
+ */
+std::string const get_user_filename(std::string const & filename)
+{
+	return get_user_dir() + "/" + filename;
+}
+
+ 
+/**
+ * check_and_create_config_dir - make sure config dir is accessible
+ *
+ * Returns %true if the dir is accessible.
+ */
 bool check_and_create_config_dir()
 {
 	// create the directory if necessary.
@@ -162,6 +182,16 @@ bool check_and_create_config_dir()
 }
 
  
+/**
+ * format - re-format a string 
+ * @orig: string to format
+ * @maxlen: width of line
+ *
+ * Re-formats a string to fit into a certain width,
+ * breaking lines at spaces between words.
+ *
+ * Returns the formatted string
+ */
 std::string const format(std::string const & orig, uint const maxlen)
 {
 	string text(orig);
@@ -204,6 +234,14 @@ std::string const format(std::string const & orig, uint const maxlen)
 }
 
 
+/**
+ * do_exec_command - execute a command
+ * @cmd: command name
+ * @args: arguments to command
+ *
+ * Execute a command synchronously. An error message is shown
+ * if the command returns a non-zero status, which is also returned.
+ */
 int do_exec_command(std::string const & cmd, std::vector<std::string> args)
 {
 	std::ostringstream out;
@@ -226,6 +264,14 @@ int do_exec_command(std::string const & cmd, std::vector<std::string> args)
 }
 
  
+/**
+ * do_open_file_or_dir - open file/directory
+ * @base_dir: directory to start at
+ * @dir_only: directory or filename to select
+ *
+ * Select a file or directory. The selection is returned;
+ * an empty string if the selection was cancelled.
+ */
 std::string const do_open_file_or_dir(std::string const & base_dir, bool dir_only)
 {
 	QString result;
@@ -242,7 +288,12 @@ std::string const do_open_file_or_dir(std::string const & base_dir, bool dir_onl
 }
  
 
-// like posix shell utils basename, do not append trailing '/' to result.
+/**
+ * basename - get the basename of a path
+ * @path_name: path
+ *
+ * Returns the basename of a path with trailing '/' removed.
+ */
 std::string const basename(std::string const & path_name)
 {
 	std::string result = path_name;
@@ -264,6 +315,12 @@ std::string const basename(std::string const & path_name)
 }
 
  
+/**
+ * tostr - convert integer to str
+ * i: the integer
+ *
+ * Returns the converted string
+ */ 
 std::string const tostr(unsigned int i)
 {
         string str;
@@ -271,5 +328,3 @@ std::string const tostr(unsigned int i)
 	ss << i;
 	return ss.str(); 
 }
-
-
