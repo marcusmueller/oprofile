@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.25 2000/08/30 20:22:54 moz Exp $ */
+/* $Id: opd_proc.c,v 1.26 2000/08/31 23:13:44 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -41,13 +41,13 @@ static unsigned int nr_modules=0;
 static struct opd_proc *opd_add_proc(u16 pid);
 static void opd_grow_images(void);
 static void opd_open_image(struct opd_image *image);
-static struct opd_image *opd_find_image(const char *name);
-static struct opd_image *opd_add_image(const char *name, int kernel);
-static struct opd_image *opd_get_image(const char *name, int kernel);
+static int opd_find_image(const char *name);
+static int opd_add_image(const char *name, int kernel);
+static int opd_get_image(const char *name, int kernel);
 static void opd_init_maps(struct opd_proc *proc);
 static void opd_grow_maps(struct opd_proc *proc);
 static void opd_kill_maps(struct opd_proc *proc);
-static void opd_put_mapping(struct opd_proc *proc, struct opd_image *image, u32 start, u32 offset, u32 end);
+static void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset, u32 end);
 static struct opd_proc *opd_get_proc(u16 pid);
 static void opd_delete_proc(struct opd_proc *proc);
 
@@ -179,6 +179,7 @@ static void opd_open_image(struct opd_image *image)
 	*c = '\0';
 
 	/* for each byte in original, two u32 counters */
+	printf("Getting size of $%s$\n",image->name);
 	image->len = opd_get_fsize(image->name)*sizeof(u32)*2;
 	
 	/* give space for "negative" entries. This is because we
@@ -269,7 +270,12 @@ inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16
 	struct opd_fentry *fentry;
 
 	if (image->fd<1) {
-		printf("Trying to write to non-opened image %s\n",image->name);
+		fprintf(stderr, "Trying to write to non-opened image %s\n",image->name);
+		return;
+	}
+
+	if (offset > (u32)image->len) {
+		fprintf(stderr, "oprofile: Offset %u larger than length %lu.\n",offset,image->len);
 		return;
 	}
 
@@ -353,17 +359,17 @@ inline static int bstreq(const char *str1, const char *str2)
  *
  * Returns the image pointer for the file specified by @name, or 0.
  */
-static struct opd_image *opd_find_image(const char *name)
+static int opd_find_image(const char *name)
 {
 	unsigned int i;
 
 	/* FIXME: use hash table */
 	for (i=1;i<nr_images;i++) {
 		if (bstreq(opd_images[i].name, name))
-			return &opd_images[i];
+			return i;
 	}
 
-	return NULL;
+	return -1;
 }
 
 /**
@@ -376,7 +382,7 @@ static struct opd_image *opd_find_image(const char *name)
  * @name is copied i.e. should be GC'd separately from the
  * image structure if appropriate.
  */
-static struct opd_image *opd_add_image(const char *name, int kernel)
+static int opd_add_image(const char *name, int kernel)
 {
 	opd_images[nr_images].name = opd_malloc(strlen(name)+1);
 	strncpy(opd_images[nr_images].name,name,strlen(name)+1);
@@ -388,7 +394,7 @@ static struct opd_image *opd_add_image(const char *name, int kernel)
 	if (nr_images==max_nr_images)
 		opd_grow_images();
 
-	return &opd_images[nr_images-1];
+	return nr_images-1;
 }
 
 /**
@@ -401,13 +407,13 @@ static struct opd_image *opd_add_image(const char *name, int kernel)
  * added to the structure. In either case, a pointer to
  * the image structure is returned.
  */
-static struct opd_image *opd_get_image(const char *name, int kernel)
+static int opd_get_image(const char *name, int kernel)
 {
-	struct opd_image *image;
-	if (!(image=opd_find_image(name)))
-		image=opd_add_image(name,kernel);
+	int image_nr;
+	if ((image_nr=opd_find_image(name))==-1)
+		image_nr=opd_add_image(name,kernel);
 
-	return image;
+	return image_nr;
 }
 
 
@@ -618,14 +624,14 @@ static struct opd_module *opd_get_module(char *name)
 	int i;
 
 	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].image && bstreq(name,opd_modules[i].image->name)) {
+		if (opd_modules[i].image!=-1 && bstreq(name,opd_images[opd_modules[i].image].name)) {
 			/* free this copy */
 			opd_free(name);
 			return &opd_modules[i];
 		}
 	}
 
-	opd_modules[nr_modules].image = NULL;
+	opd_modules[nr_modules].image = -1;
 	opd_modules[nr_modules].start = 0;
 	opd_modules[nr_modules].end = 0;
 	nr_modules++;
@@ -700,8 +706,8 @@ static void opd_get_module_info(void)
 	
 		cp2++;
 		/* freed by opd_clear_module_info() or opd_get_module() */
-		modname = opd_malloc((size_t)(cp2-cp+1));
-		strncpy(modname,cp,(size_t)(cp2-cp));
+		modname = opd_malloc((size_t)((cp2-cp)+1));
+		strncpy(modname,cp,(size_t)((cp2-cp)+1));
 		modname[cp2-cp]='\0';
 
 		mod = opd_get_module(modname);
@@ -723,6 +729,7 @@ static void opd_get_module_info(void)
 				cp3++;
 				filename = opd_malloc((size_t)(cp3-cp2+1));
 				strncpy(filename,cp2,(size_t)(cp3-cp2));
+				filename[cp3-cp2]='\0';
 
 				mod->image = opd_get_image(filename,1);
 				opd_free(filename);
@@ -774,10 +781,10 @@ static void opd_handle_module_sample(u32 eip, u16 count)
 
 retry:
 	for (i=0; i < nr_modules; i++) {
-		if (opd_modules[i].start && opd_modules[i].end &&
+		if (opd_modules[i].image!=-1 && opd_modules[i].start && opd_modules[i].end &&
 	            opd_modules[i].start <= eip &&
 	            opd_modules[i].end > eip) {
-			opd_put_image_sample(opd_modules[i].image, eip - opd_modules[i].start, count);
+			opd_put_image_sample(&opd_images[opd_modules[i].image], eip - opd_modules[i].start, count);
 			return;
 		}
 	}
@@ -872,7 +879,8 @@ void opd_put_sample(const struct op_sample *sample)
 	for (i=0;i<proc->nr_maps;i++) {
 		if (opd_is_in_map(&proc->maps[i],sample->eip)) {
 			u32 offset = opd_map_offset(&proc->maps[i],sample->eip);
-			opd_put_image_sample(proc->maps[i].image,offset,sample->count);
+			if (proc->maps[i].image!=-1)
+				opd_put_image_sample(&opd_images[proc->maps[i].image],offset,sample->count);
 			opd_stats[OPD_PROCESS]++;
 			return;
 		}
@@ -895,9 +903,9 @@ void opd_put_sample(const struct op_sample *sample)
  *
  * Add the mapping specified to the process @proc.
  */
-void opd_put_mapping(struct opd_proc *proc, struct opd_image *image, u32 start, u32 offset, u32 end)
+void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset, u32 end)
 {
-	proc->maps[proc->nr_maps].image = image;
+	proc->maps[proc->nr_maps].image = image_nr;
 	proc->maps[proc->nr_maps].start = start;
 	proc->maps[proc->nr_maps].offset = offset;
 	proc->maps[proc->nr_maps].end = end;
@@ -1006,12 +1014,12 @@ void opd_handle_mapping(const struct op_sample *sample)
 		return;
 	}
 
-	printf("eip 0x%x, pid %u, count %u\n",sample->eip,sample->pid,sample->count);
+	printf("Starting mapping: to read %u bytes, pid %u\n",sample->eip,sample->pid);
 
 	/* eip is actually nr. of bytes to read from map device */
 	size = (ssize_t)sample->eip;
 	if (size<(ssize_t)sizeof(u32)*4) {
-		fprintf(stderr,"oprofiled: size is less than 32 : %u\n", size);
+		fprintf(stderr,"oprofiled: size is less than 16 : %u\n", size);
 		exit(1);
 	}
 
@@ -1021,8 +1029,11 @@ void opd_handle_mapping(const struct op_sample *sample)
 	opd_read_device(mapdevfd,buf,size,0);
 
 	while (pos < size/sizeof(u32)) {
+		printf("size/4 %u, pos %u\n",size/4,pos);
 		mapping = (struct op_mapping *)&buf[pos];
 		pos += 4;
+
+		printf("Number of components: %u\n",mapping->num);
 
 		if (!mapping->num) {
 			fprintf(stderr,"oprofiled: Empty map.\n");
@@ -1034,12 +1045,21 @@ void opd_handle_mapping(const struct op_sample *sample)
 
 		while (mapping->num--) {
 			hash = buf[pos++];
+
 			if (hash==-1) {
 				/* Output to the hash map went wrong */
 				fprintf(stderr,"Ignoring broken map\n");
 				opd_free(buf);
 				return;
 			}
+
+			if (hash >= OP_HASH_MAP_NR) {
+				fprintf(stderr,"hash value %u out of range.\n",hash);
+				opd_free(buf);
+				return;
+			}
+
+			printf("Component hash: %u, string %s\n",hash,hash_access(hash));
 
 			if (strlen(hash_access(hash))+1+strlen(c) >= PATH_MAX) {
 				fprintf(stderr,"String \"%s\" too large.\n",file);
@@ -1055,6 +1075,7 @@ void opd_handle_mapping(const struct op_sample *sample)
 			mapping->addr, mapping->len, mapping->offset, c);
 
 		opd_put_mapping(proc,opd_get_image(c,0),mapping->addr, mapping->offset, mapping->addr+mapping->len);
+		printf("after: size %u, pos %u\n",size,pos);
 	}
 	opd_free(buf);
 }
@@ -1078,6 +1099,9 @@ void opd_handle_drop_mappings(const struct op_sample *sample)
 		opd_kill_maps(proc);
 	else
 		printf("Told to drop mappings for a non-existent process %u.\n",sample->pid);
+
+	/* now deal with execve'd new mapping */
+	opd_handle_mapping(sample);
 }
 
 /**

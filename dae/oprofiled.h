@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.10 2000/08/26 23:56:45 moz Exp $ */
+/* $Id: oprofiled.h,v 1.11 2000/08/31 23:13:44 moz Exp $ */
 
 #ifndef OPROFILED_H
 #define OPROFILED_H
@@ -134,20 +134,20 @@ struct op_sample {
 struct opd_image {
 	fd_t fd;
 	void *start;
-	off_t len; 
+	off_t len;
 	u8 kernel; 
 	char *name;
 };
  
 /* kernel module */
 struct opd_module {
-	struct opd_image *image;
+	int image;
 	u32 start;
 	u32 end;
 };
  
 struct opd_map {
-	struct opd_image *image;
+	int image;
 	u32 start;
 	u32 offset;
 	u32 end;
