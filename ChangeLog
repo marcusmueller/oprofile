@@ -1,3 +1,8 @@
+2002-11-14  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/op_start_25: /dev/oprofile/kernel_only doesn't exists
+	  in timer int mode. fix #637804
+
 2002-11-14  John Levon  <levon@movementarian.org>
 
 	* dae/*:
