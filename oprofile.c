@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.18 2000/08/24 17:47:09 moz Exp $ */
+/* $Id: oprofile.c,v 1.19 2000/08/24 22:41:35 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 
@@ -69,6 +69,9 @@ static void evict_op_entry(struct _oprof_data *data, struct op_sample *ops)
 	if (++data->nextbuf!=data->buf_size)
 		return;
 
+	/* FIXME: we should wake up a few samples before the end so we 
+	 * can reduce the amount of thread wakeups
+	 */ 
 	data->nextbuf=0;
 	oprof_ready[smp_processor_id()] = 1;
 }
