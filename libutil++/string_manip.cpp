@@ -81,3 +81,28 @@ string sample_filename(string const& sample_dir,
 
 	return s.str();
 }
+
+string ltrim(string const & str)
+{
+	string result;
+	size_t pos = str.find_first_not_of(" \t");
+	if (pos != string::npos) {
+		result = str.substr(pos );
+	}
+	return result;
+}
+
+string rtrim(string const & str)
+{
+	string result(str);
+	size_t pos = str.find_last_not_of(" \t");
+	if (pos != string::npos) {
+		result = str.substr(0, pos  + 1);
+	}
+	return result;
+}
+
+string trim(string const & str)
+{
+	return rtrim(ltrim(str));
+}

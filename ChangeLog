@@ -1,3 +1,21 @@
+2003-02-23  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/string_manip.h:
+	* libutil++/string_manip.cpp: trim(), ltrim(), rtrim() new functions
+
+	* Makefile.am: handle libregex directory
+	* configure.in: handle libregex/Makefile
+
+	* libregex/.cvsignore:
+	* libregex/Makefile.am :
+	* libregex/mangled-name.txt:
+	* libregex/op_regex.cpp:
+	* libregex/op_regex.h:
+	* libregex/regex_test.cpp:
+	* libregex/stl.pat: new file implementing a match and replace regular
+	  expression around glibc regex. Not used for now, next commit will
+	  use this for pp tools C++ name demangling.
+
 2003-02-22  John Levon  <levon@movementarian.org>
 
 	* configure.in: fix X, non-Qt build case

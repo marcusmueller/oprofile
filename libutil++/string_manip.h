@@ -64,4 +64,11 @@ void separate_token(std::vector<std::string> & result, std::string const & str,
 std::string sample_filename(std::string const& sample_dir,
 			    std::string const& sample_filename, int counter);
 
+/// remove space and tabulation at left of input string return the new string
+std::string ltrim(std::string const & str);
+/// remove space and tabulation at right of input string, return the new string
+std::string rtrim(std::string const & str);
+/// return ltrim(rtrim(str)
+std::string trim(std::string const & str);
+
 #endif /* !STRING_MANIP_H */
