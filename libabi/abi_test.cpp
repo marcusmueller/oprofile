@@ -6,6 +6,7 @@
 #include "op_config.h"
 
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -15,16 +16,16 @@ namespace {
 }
 
 
-option options_array[] = {
-	option(db_filename, "db", 'd', "output db to file", "filename"),
-	option(abi_filename, "abi", 'a', "output abi to file", "filename")
+popt::option options_array[] = {
+	popt::option(db_filename, "db", 'd', "output db to file", "filename"),
+	popt::option(abi_filename, "abi", 'a', "output abi to file", "filename")
 };
 
 
 int main(int argc, char const ** argv)
 {
 	vector<string> rest;
-	parse_options(argc, argv, rest);
+	popt::parse_options(argc, argv, rest);
 	bool file_processed = false;
 
 	Abi curr;

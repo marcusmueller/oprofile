@@ -19,6 +19,8 @@
 
 using namespace std;
 
+namespace popt {
+ 
 /**
  * option_base - base class for implementation of a command line option
  *
@@ -315,3 +317,5 @@ void option_imp< vector<string> >::post_process()
 		popt_value = 0;
 	}
 }
+
+} // namespace popt

@@ -1,3 +1,25 @@
+2002-11-14  John Levon  <levon@movementarian.org>
+
+	* libopt++/popt_options.h:
+	* libopt++/popt_options.cpp: place in popt
+	namespace to avoid clash with getopt.h
+
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp:
+	* pp/op_merge.cpp:
+	* pp/op_time_options.cpp:
+	* pp/op_to_source_options.cpp:
+	* pp/oprofpp_options.cpp:
+	* pp/session.cpp: fix for above
+ 
+	* libabi/abi.cpp:
+	* libabi/abi.h: g++ 3.2 fixes
+
+	* libabi/op_import.cpp: uninline extract
+
+	* dae/Makefile.am:
+	* daemon/Makefile.am: fix c++ link hack for -Werror
+ 
 2002-11-13  Graydon Hoare  <graydon@redhat.com>
 
 	( this changeset is mostly Dave Jones' work )

@@ -37,9 +37,9 @@ namespace {
 	bool verbose;
 }
 
-option options_array[] = {
-	option(verbose, "verbose", 'V', "verbose output"),
-	option(counter, "use-counter", 'c', "use counter", "counter nr")
+popt::option options_array[] = {
+	popt::option(verbose, "verbose", 'V', "verbose output"),
+	popt::option(counter, "use-counter", 'c', "use counter", "counter nr")
 };
 
 /**
@@ -52,7 +52,7 @@ option options_array[] = {
  */
 static void get_options(int argc, char const * argv[], vector<string> & images)
 {
-	parse_options(argc, argv, images);
+	popt::parse_options(argc, argv, images);
 
 	set_verbose(verbose);
 

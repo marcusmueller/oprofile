@@ -18,7 +18,7 @@ using namespace std;
 
 namespace {
 	string session;
-	option opt_session(session, "session", '\0', "session to use", "name");
+	popt::option opt_session(session, "session", '\0', "session to use", "name");
 };
 
 string handle_session_options(void)

@@ -1,6 +1,18 @@
+/**
+ * @file abi.cpp
+ *
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author Graydon Hoare
+ * @author John Levon
+ */
+ 
 #include "abi.h"
 #include "db.h"
 #include "op_sample_file.h"
+
+#include <iostream>
 
 using namespace std;
 

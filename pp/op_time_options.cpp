@@ -47,20 +47,20 @@ vector<string> recursive_path;
 /// selected counters (comma-separated)
 string counter_str("0");
 
-option options_array[] = {
-	option(options::verbose, "verbose", 'V', "verbose output"),
-	option(output_format, "output-format", 't', "choose the output format", "output-format strings"),
-	option(counter_str, "counter", 'c', "which counter to use", "counter_nr[,counter_nr]"),
-	option(options::list_symbols, "list-symbols", 'l', "list samples by symbol"),
-	option(options::show_image_name, "show-image-name", 'n', "show the image name from where come symbols"),
-	option(path, "path", 'p', "add path for retrieving image", "path_name[,path_name]"),
-	option(recursive_path, "recursive-path", 'P',
+popt::option options_array[] = {
+	popt::option(options::verbose, "verbose", 'V', "verbose output"),
+	popt::option(output_format, "output-format", 't', "choose the output format", "output-format strings"),
+	popt::option(counter_str, "counter", 'c', "which counter to use", "counter_nr[,counter_nr]"),
+	popt::option(options::list_symbols, "list-symbols", 'l', "list samples by symbol"),
+	popt::option(options::show_image_name, "show-image-name", 'n', "show the image name from where come symbols"),
+	popt::option(path, "path", 'p', "add path for retrieving image", "path_name[,path_name]"),
+	popt::option(recursive_path, "recursive-path", 'P',
 		"add path for retrieving image recursively", "path_name[,path_name]"),
-	option(options::reverse_sort, "reverse", 'r', "reverse sort order"),
-	option(options::show_shared_libs, "show-shared-libs", 'k', "show details for shared libraries."),
-	option(options::sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr"),
-	option(options::exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name"),
-	option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names")
+	popt::option(options::reverse_sort, "reverse", 'r', "reverse sort order"),
+	popt::option(options::show_shared_libs, "show-shared-libs", 'k', "show details for shared libraries."),
+	popt::option(options::sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr"),
+	popt::option(options::exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name"),
+	popt::option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names")
 };
 
 /**
@@ -103,7 +103,7 @@ void get_options(int argc, char const * argv[])
 {
 	using namespace options;
 
-	parse_options(argc, argv, filename_filters);
+	popt::parse_options(argc, argv, filename_filters);
 
 	set_verbose(verbose);
 

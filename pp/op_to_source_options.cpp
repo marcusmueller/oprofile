@@ -41,25 +41,25 @@ namespace {
 
 bool verbose;
 
-option options_array[] = {
-	option(verbose, "verbose", 'V', "verbose output"),
-	option(options::sample_file, "samples-file", 'f', "image sample file", "file"),
-	option(options::image_file, "image-file", 'i', "image file", "file"),
-	option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names"),
-	option(options::with_more_than_samples, "with-more-than-samples", 'w',
+popt::option options_array[] = {
+	popt::option(verbose, "verbose", 'V', "verbose output"),
+	popt::option(options::sample_file, "samples-file", 'f', "image sample file", "file"),
+	popt::option(options::image_file, "image-file", 'i', "image file", "file"),
+	popt::option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names"),
+	popt::option(options::with_more_than_samples, "with-more-than-samples", 'w',
 		"show all source file if the percent of samples in this file is more than argument", "[0-100]"),
-	option(options::until_more_than_samples, "until-more-than-samples", 'm',
+	popt::option(options::until_more_than_samples, "until-more-than-samples", 'm',
 		"show all source files until the percent of samples specified is reached", "[0-100]"),
-	option(options::sort_by_counter, "sort-by-counter", 'c', "sort by counter", "counter nr"),
-	option(options::source_dir, "source-dir", '\0', "source directory", "directory name"),
-	option(options::output_dir, "output-dir", '\0', "output directory", "directory name"),
-	option(options::output_filter, "output", '\0', "output filename filter", "filter string"),
-	option(options::no_output_filter, "no-output", '\0', "no output filename filter", "filter string"),
-	option(options::assembly, "assembly", 'a', "output assembly code"),
-	option(options::source_with_assembly, "source-with-assembly", 's', "output assembly code mixed with source"),
-	option(options::exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name"),
-	option(options::include_symbols, "include-symbol", 'y', "include these comma separated symbols", "symbol_name"),
-	option(options::objdump_params, "objdump-params", 'o', "additional comma separated parameters to pass to objdump", "objdump argument(s)")
+	popt::option(options::sort_by_counter, "sort-by-counter", 'c', "sort by counter", "counter nr"),
+	popt::option(options::source_dir, "source-dir", '\0', "source directory", "directory name"),
+	popt::option(options::output_dir, "output-dir", '\0', "output directory", "directory name"),
+	popt::option(options::output_filter, "output", '\0', "output filename filter", "filter string"),
+	popt::option(options::no_output_filter, "no-output", '\0', "no output filename filter", "filter string"),
+	popt::option(options::assembly, "assembly", 'a', "output assembly code"),
+	popt::option(options::source_with_assembly, "source-with-assembly", 's', "output assembly code mixed with source"),
+	popt::option(options::exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name"),
+	popt::option(options::include_symbols, "include-symbol", 'y', "include these comma separated symbols", "symbol_name"),
+	popt::option(options::objdump_params, "objdump-params", 'o', "additional comma separated parameters to pass to objdump", "objdump argument(s)")
 };
 
 }
@@ -75,7 +75,7 @@ string const get_options(int argc, char const * argv[])
 {
 	string arg;
 
-	parse_options(argc, argv, arg);
+	popt::parse_options(argc, argv, arg);
 
 	set_verbose(verbose);
 

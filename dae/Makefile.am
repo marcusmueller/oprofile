@@ -16,7 +16,7 @@ oprofiled_SOURCES = $(dist_sources)
 if enable_abi
 CLEANFILES = dummy.cpp
 dummy.cpp:
-	echo "static void dummy_crap_to_force_cxx_link() {}" >$@
+	echo "#define DUMMY_CXX_LINKING_CRAP" >$@
 nodist_oprofiled_SOURCES = dummy.cpp
 oprofiled_LDADD = ../libabi/libabi.a ../libdb/libdb.a ../libop/libop.a ../libutil/libutil.a
 else

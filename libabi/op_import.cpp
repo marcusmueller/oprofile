@@ -14,6 +14,7 @@
 #include "op_sample_file.h"
 
 #include <fstream>
+#include <iostream>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -23,6 +24,8 @@
 
 #define MAX_ENDIAN_CHUNK_SIZE 8
 
+using namespace std;
+ 
 struct Extractor 
 {
 	Abi const & abi;
@@ -42,38 +45,43 @@ struct Extractor
 		}
 	}
 
-	// FIXME: deinline, bloat ! 
 	void extract(void * targ_, void const * src_, 
-		     const char * sz, const char * off) throw (Abi_exception)
-	{
-		unsigned char * targ = static_cast<unsigned char *>(targ_);
-		unsigned char const * src = static_cast<unsigned char const *>(src_);
-		
-		int offset = abi.need(off);
-		int count = abi.need(sz);
-
-		if (count == 0) 
-		  return;
-
-		if (src + offset + count > last) {
-			throw Abi_exception("input file too short");
-		} 
-		
-		int chunk = (count < MAX_ENDIAN_CHUNK_SIZE 
-			     ? count 
-			     : MAX_ENDIAN_CHUNK_SIZE);
-		src += offset;
-		for(; count > 0; count -= chunk) {
-		  int k = (src-first) % chunk;
-		  for (int i = 0; i < chunk; i++) {
-		    targ[i] = src[endian[k] % chunk];
-		    k = (k + 1) % chunk;
-		  }
-		  targ += chunk;
-		  src += chunk;
-		}
-	}
+		     const char * sz, const char * off) throw (Abi_exception);
 };
+
+
+void Extractor::extract(void * targ_, void const * src_, 
+	const char * sz, const char * off) throw (Abi_exception)
+{
+	unsigned char * targ = static_cast<unsigned char *>(targ_);
+	unsigned char const * src = static_cast<unsigned char const *>(src_);
+		
+	int offset = abi.need(off);
+	int count = abi.need(sz);
+
+	if (count == 0) 
+		return;
+
+	if (src + offset + count > last) {
+		throw Abi_exception("input file too short");
+	} 
+		
+	int chunk = (count < MAX_ENDIAN_CHUNK_SIZE 
+		     ? count 
+		     : MAX_ENDIAN_CHUNK_SIZE);
+	src += offset;
+ 
+	for (; count > 0; count -= chunk) {
+		int k = (src-first) % chunk;
+		for (int i = 0; i < chunk; i++) {
+			targ[i] = src[endian[k] % chunk];
+			k = (k + 1) % chunk;
+		}
+		targ += chunk;
+		src += chunk;
+	}
+}
+ 
 
 void import_from_abi(Abi const & abi, 
 		     void const * srcv, 
@@ -128,12 +136,12 @@ namespace {
 	string output_filename;
 	string abi_filename;
 	bool verbose;
-}
+};
 
-option options_array[] = {
-	option(verbose, "verbose", 'V', "verbose output"),
-	option(output_filename, "output", 'o', "output to file", "filename"),
-	option(abi_filename, "abi", 'a', "abi description", "filename")
+popt::option options_array[] = {
+	popt::option(verbose, "verbose", 'V', "verbose output"),
+	popt::option(output_filename, "output", 'o', "output to file", "filename"),
+	popt::option(abi_filename, "abi", 'a', "abi description", "filename")
 };
 
 
@@ -142,7 +150,7 @@ main(int argc, char const ** argv)
 {
 
 	vector<string> inputs;
-	parse_options(argc, argv, inputs);
+	popt::parse_options(argc, argv, inputs);
 
 	if (inputs.size() != 1) {
 		cerr << "error: must specify exactly 1 input file" << endl;
