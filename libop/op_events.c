@@ -792,6 +792,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_IA64:
 		case CPU_IA64_1:
 		case CPU_IA64_2:
+			descr->count = 1000000;
 			descr->name = "CPU_CYCLES";
 			break;
 

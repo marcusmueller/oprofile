@@ -1,8 +1,13 @@
-2004-10-15 Will Cohen <wcohen@redhat.com>
+2004-10-31  Greg Banks  <gnb@melbourne.sgi.com>
+
+	* libop/op_events.c: Make the default sample rate for
+	  IA64 sensible (i.e. 10 times smaller).
+
+2004-10-15  Will Cohen  <wcohen@redhat.com>
 
 	* events/ppc64/power4/events: Corrected group 4 counter assignments.
 
-2004-10-15 Maynard Johnson <maynardj@us.ibm.com>
+2004-10-15  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* events/Makefile.am:
 	* oprofile/events/ppc64/970/event_mappings:
