@@ -50,8 +50,8 @@ struct extractor {
 	bool little_endian;
 
 	explicit
-	extractor(abi const & a, unsigned char const * src, size_t len) :
-		theabi(a), begin(src), end(src + len) {
+	extractor(abi const & a, unsigned char const * src, size_t len)
+		: theabi(a), begin(src), end(src + len) {
 		little_endian = theabi.need(string("little_endian")) == 1;
 		if (verbose) {
 			cerr << "source byte order is: "
