@@ -167,6 +167,17 @@ private:
 	// the bfd object.
 	bfd * ibfd;
 
+	// The following member variables: debug_filename and dbfd are
+	// used to access the optional debugging information file. See
+	// the comment for find_separate_debug_file() for additional
+	// information.
+
+	// corresponding debug file name
+	std::string debug_filename;
+
+	// corresponding debug bfd object.
+	bfd * dbfd;
+
 	// vector of symbol filled by the bfd lib.
 	scoped_array<asymbol*> bfd_syms;
 	// image file such the linux kernel need than all vma are offset
@@ -178,6 +189,13 @@ private:
 
 	/// temporary container for getting symbols
 	typedef std::list<op_bfd_symbol> symbols_found_t;
+
+	/**
+	 * Helper function for get_symbols.
+	 * Populates bfd_syms and extracts the "interesting_symbol"s.
+	 */
+	void get_symbols_from_file(bfd * ibfd, size_t start,
+				   op_bfd::symbols_found_t & symbols);
 
 	/**
 	 * Parse and sort in ascending order all symbols
@@ -208,4 +226,29 @@ private:
 	op_bfd_symbol const create_artificial_symbol();
 };
 
-#endif /* !OP_BFD_H*/
+/*
+ * find_separate_debug_file - return true if a valid separate debug file found
+ * @param ibfd binary file
+ * @param dir_in directory holding the binary file
+ * @param global_in
+ * @param filename path to valid debug file
+ *
+ * Search order for debug file and use first one found:
+ * 1) dir_in directory
+ * 2) dir_in/.debug directory
+ * 3) global_in/dir_in directory
+ *
+ * Newer binutils and Linux distributions (e.g. Fedora) allow the
+ * creation of debug files that are separate from the binary. The
+ * debugging information is stripped out of the binary file, placed in
+ * this separate file, and a link to the new file is placed in the
+ * binary. The debug files hold the information needed by the debugger
+ * (and OProfile) to map machine instructions back to source code.
+ */
+
+extern bool
+find_separate_debug_file(bfd * ibfd, 
+                         std::string const & dir_in,
+                         std::string const & global_in,
+                         std::string & filename);
+#endif /* !OP_BFD_H */

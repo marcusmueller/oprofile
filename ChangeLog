@@ -1,3 +1,14 @@
+2004-01-16  Will Cohen  <wcohen@redhat.com>
+
+	* libop/op_config.h (DEBUGDIR): New.
+	* libutil/op_fileio.h:
+	* libutil/op_fileio.c: New function calc_crc32
+	* libutil++/Makefile.am: Add libop to include directory.
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: New functions separate_debug_file_exists,
+	  get_debug_link_info, find_separate_debug_file, open_bfd, and
+	  get_symbols_from_file to support separate debug files. 
+
 2004-01-02  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opgprof_options.cpp: use the proper type for options::demangle

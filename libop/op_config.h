@@ -22,6 +22,11 @@
 #define OP_LOG_FILE OP_BASE_DIR "oprofiled.log"
 #define OP_DUMP_STATUS OP_BASE_DIR "complete_dump"
 
+/* Global directory that stores debug files */
+#ifndef DEBUGDIR
+#define DEBUGDIR "/usr/lib/debug"
+#endif
+
 #define OPD_MAGIC "DAE\n"
 #define OPD_VERSION 0x9
 

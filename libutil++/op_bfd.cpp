@@ -10,6 +10,7 @@
  */
 
 #include "op_file.h"
+#include "op_config.h"
 
 #include <cerrno>
 #include <cstring>
@@ -17,6 +18,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <sstream>
 
@@ -25,8 +27,134 @@
 #include "string_filter.h"
 #include "stream_util.h"
 #include "cverb.h"
+#include "op_fileio.h"
 
 using namespace std;
+
+namespace {
+
+bfd * open_bfd(string const & file)
+{
+	/* bfd keeps its own reference to the filename char *,
+	 * so it must have a lifetime longer than the ibfd */
+	bfd * ibfd = bfd_openr(file.c_str(), NULL);		
+	if (!ibfd) {
+		cverb << "bfd_openr failed for " << file << endl;
+		goto out_fail;
+	}		
+	char ** matching;
+	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) {
+		cverb << "BFD format failure for " << file << endl;
+		ibfd = NULL;
+	}
+
+out_fail:
+	return ibfd;
+}
+
+bool
+separate_debug_file_exists(string const & name, 
+                           unsigned long const crc)
+{
+	unsigned long file_crc = 0;
+	// The size of 8*1024 element for the buffer is arbitrary.
+	char buffer[8*1024];
+	
+	ifstream file(name.c_str());
+	if (!file)
+		return false;
+
+	cverb << "found " << name;
+	while (file) {
+		file.read(buffer, sizeof(buffer));
+		file_crc = calc_crc32(file_crc, 
+				      reinterpret_cast<unsigned char *>(&buffer[0]),
+				      file.gcount());
+	}
+	cverb << " with crc32 = " << hex << file_crc << endl;
+	return crc == file_crc;
+}
+
+
+bool
+get_debug_link_info(bfd * ibfd, 
+                    string & filename,
+                    unsigned long & crc32)
+{
+	asection * sect;
+
+	cverb << "fetching .gnu_debuglink section" << endl;
+	sect = bfd_get_section_by_name(ibfd, ".gnu_debuglink");
+	
+	if (sect == NULL)
+		return false;
+	
+	bfd_size_type debuglink_size = bfd_section_size(ibfd, sect);  
+	char contents[debuglink_size];
+	cverb << ".gnu_debuglink section has size " << debuglink_size << endl;
+	
+	bfd_get_section_contents(ibfd, sect, 
+				 reinterpret_cast<unsigned char *>(contents), 
+				 static_cast<file_ptr>(0), debuglink_size);
+	
+	/* CRC value is stored after the filename, aligned up to 4 bytes. */
+	size_t filename_len = strlen(contents);
+	size_t crc_offset = filename_len + 1;
+	crc_offset = (crc_offset + 3) & ~3;
+	
+	crc32 = bfd_get_32(ibfd, 
+			       reinterpret_cast<bfd_byte *>(contents + crc_offset));
+	filename = string(contents, filename_len);
+	cverb << ".gnu_debuglink filename is " << filename << endl;
+	return true;
+}
+
+} // namespace anon
+
+
+bool
+find_separate_debug_file(bfd * ibfd, 
+                         string const & dir_in,
+                         string const & global_in,
+                         string & filename)
+{
+	string dir(dir_in);
+	string global(global_in);
+	string basename;
+	unsigned long crc32;
+	
+	if (!get_debug_link_info(ibfd, basename, crc32))
+		return false;
+	
+	if (dir.size() > 0 && dir.at(dir.size() - 1) != '/')
+		dir += '/';
+	
+	if (global.size() > 0 && global.at(global.size() - 1) != '/')
+		global += '/';
+
+	cverb << "looking for debugging file " << basename 
+	      << " with crc32 = " << hex << crc32 << endl;
+	
+	string first_try(dir + basename);
+	string second_try(dir + ".debug/" + basename);
+
+	if (dir.size() > 0 && dir[0] == '/')
+		dir = dir.substr(1);
+
+	string third_try(global + dir + basename);
+	
+	if (separate_debug_file_exists(first_try, crc32)) 
+		filename = first_try; 
+	else if (separate_debug_file_exists(second_try, crc32))
+		filename = second_try;
+	else if (separate_debug_file_exists(third_try, crc32))
+		filename = third_try;
+	else
+		return false;
+	
+	return true;
+}
+
 
 op_bfd_symbol::op_bfd_symbol(asymbol const * a)
 	: bfd_symbol(a), symb_value(a->value),
@@ -60,6 +188,7 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 	filename(fname),
 	file_size(-1),
 	ibfd(0),
+	dbfd(0),
 	text_offset(0),
 	debug_info(false)
 {
@@ -74,25 +203,15 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 
 	op_get_fsize(filename.c_str(), &file_size);
 
-	/* bfd keeps its own reference to the filename char *,
-	 * so it must have a lifetime longer than the ibfd */
-	ibfd = bfd_openr(filename.c_str(), NULL);
+	ibfd = open_bfd(filename);
 
 	if (!ibfd) {
-		cverb << "bfd_openr failed for " << filename << endl;
+		cverb << "open_bfd failed for " << filename << endl;
 		ok = false;
 		goto out_fail;
 	}
 
 	{
-
-	char ** matching;
-
-	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) {
-		cverb << "BFD format failure for " << filename << endl;
-		ok = false;
-		goto out_fail;
-	}
 
 	asection const * sect = bfd_get_section_by_name(ibfd, ".text");
 	if (sect) {
@@ -108,6 +227,32 @@ op_bfd::op_bfd(string const & fname, string_filter const & symbol_filter,
 		}
 	}
 
+	// if no debugging section check to see if there is an .debug file
+	if (!debug_info) {
+		string global(DEBUGDIR);
+		string dirname(filename.substr(0, filename.rfind('/')));
+		if (find_separate_debug_file (ibfd, dirname, global,
+					      debug_filename)) {
+			cverb << "now loading: " << debug_filename << endl;
+			dbfd = open_bfd(debug_filename);
+			if (dbfd) {
+				for (sect = dbfd->sections; sect; 
+				     sect = sect->next) {
+					if (sect->flags & SEC_DEBUGGING) {
+						debug_info = true;
+						break;
+					}
+				}
+			} else {
+				// .debug is optional, so will not fail if
+				// problem opening file.
+				cverb << "unable to open: " << debug_filename
+				      << endl;
+				//				debug_filename = NULL;
+			}
+		}
+	}
+
 	}
 
 	get_symbols(symbols);
@@ -119,6 +264,9 @@ out_fail:
 	if (ibfd)
 		bfd_close(ibfd);
 	ibfd = NULL;
+	if (dbfd)
+		bfd_close(dbfd);
+	dbfd = NULL;
 	// make the fake symbol fit within the fake file
 	file_size = -1;
 	goto out;
@@ -129,6 +277,8 @@ op_bfd::~op_bfd()
 {
 	if (ibfd)
 		bfd_close(ibfd);
+	if (dbfd)
+		bfd_close(dbfd);
 }
 
 
@@ -208,31 +358,49 @@ struct remove_filter {
 
 } // namespace anon
 
+void op_bfd::get_symbols_from_file(bfd * ibfd, size_t start,
+                                   op_bfd::symbols_found_t & symbols)
+{
+	uint nr_all_syms;
+
+	nr_all_syms = bfd_canonicalize_symtab(ibfd, bfd_syms.get()+start);
+	if (nr_all_syms < 1)
+		return;
+
+	for (symbol_index_t i = start; i < start+nr_all_syms; i++) {
+		if (interesting_symbol(bfd_syms[i])) {
+			symbols.push_back(op_bfd_symbol(bfd_syms[i]));
+		}
+	}
+
+}
+
 
 void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 {
-	uint nr_all_syms;
 	size_t size;
+	size_t size_binary = 0;
+	size_t size_debug = 0;
 
-	if (!(bfd_get_file_flags(ibfd) & HAS_SYMS))
-		return;
+	if (bfd_get_file_flags(ibfd) & HAS_SYMS)
+		size_binary = bfd_get_symtab_upper_bound(ibfd);
 
-	size = bfd_get_symtab_upper_bound(ibfd);
+	if (dbfd && (bfd_get_file_flags(dbfd) & HAS_SYMS))
+		size_debug += bfd_get_symtab_upper_bound(dbfd);
+
+	size = size_binary + size_debug;
 
 	/* HAS_SYMS can be set with no symbols */
 	if (size < 1)
 		return;
 
 	bfd_syms.reset(new asymbol*[size]);
-	nr_all_syms = bfd_canonicalize_symtab(ibfd, bfd_syms.get());
-	if (nr_all_syms < 1)
-		return;
 
-	for (symbol_index_t i = 0; i < nr_all_syms; i++) {
-		if (interesting_symbol(bfd_syms[i])) {
-			symbols.push_back(op_bfd_symbol(bfd_syms[i]));
-		}
-	}
+	if (size_binary > 0)
+		get_symbols_from_file(ibfd, 0, symbols);
+
+	if (size_debug > 0)
+		get_symbols_from_file(dbfd, size_binary, symbols);
 
 	symbols.sort();
 
@@ -322,7 +490,13 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 	if (pc >= bfd_section_size(ibfd, section))
 		return false;
 
+	// Try finding line information in binary first.
 	bool ret = bfd_find_nearest_line(ibfd, section, bfd_syms.get(), pc,
+					 &cfilename, &functionname, &linenr);
+
+	// Try finding line information in debug info file second.
+	if ((!ret) && dbfd)
+		ret = bfd_find_nearest_line(dbfd, section, bfd_syms.get(), pc,
 					 &cfilename, &functionname, &linenr);
 
 	if (cfilename == 0 || !ret) {

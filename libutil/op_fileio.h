@@ -133,6 +133,17 @@ void op_write_u8(FILE * fp, u8 val);
  */
 char * op_get_line(FILE * fp);
 
+/**
+ * calc_crc32
+ * @param crc current value
+ * @param buf pointer to buffer
+ * @param len
+ *
+ * Returns current crc computed from the crc argument and the
+ * characters in len characters in buf.
+ */
+unsigned long calc_crc32(unsigned long crc, unsigned char *buf, size_t len);
+
 #ifdef __cplusplus
 }
 #endif
