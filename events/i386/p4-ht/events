@@ -1,5 +1,6 @@
 # Pentium IV HyperThreading events
 #
+event:0x1d counters:0 um:global_power_events minimum:3000 name:GLOBAL_POWER_EVENTS : time during which processor is not stopped
 event:0x01 counters:3 um:branch_retired minimum:3000 name:BRANCH_RETIRED : retired branches
 event:0x02 counters:3 um:mispred_branch_retired minimum:3000 name:MISPRED_BRANCH_RETIRED : retired mispredicted branches
 event:0x04 counters:0 um:bpu_fetch_request minimum:3000 name:BPU_FETCH_REQUEST : instruction fetch requests from the branch predict unit
@@ -12,7 +13,6 @@ event:0x0a counters:0 um:mob_load_replay minimum:3000 name:MOB_LOAD_REPLAY : rep
 event:0x0c counters:0 um:bsq_cache_reference minimum:3000 name:BSQ_CACHE_REFERENCE : cache references seen by the bus unit
 event:0x12 counters:3 um:x87_assist minimum:3000 name:X87_ASSIST : retired x87 instructions which required special handling
 event:0x1c counters:3 um:machine_clear minimum:3000 name:MACHINE_CLEAR : cycles with entire machine pipeline cleared
-event:0x1d counters:0 um:global_power_events minimum:3000 name:GLOBAL_POWER_EVENTS : time during which processor is not stopped
 event:0x1e counters:1 um:tc_ms_xfer minimum:3000 name:TC_MS_XFER : number of times uops deliver changed from TC to MS ROM
 event:0x1f counters:1 um:uop_queue_writes minimum:3000 name:UOP_QUEUE_WRITES : number of valid uops written to the uop queue
 event:0x20 counters:3 um:front_end_event minimum:3000 name:FRONT_END_EVENT : retired uops, tagged with front-end tagging

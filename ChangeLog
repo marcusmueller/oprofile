@@ -1,3 +1,14 @@
+2003-10-05  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* events/i386/p4/events:
+	* events/i386/p4-ht/events: put GLOBAL_POWER_EVENTS on top
+
+	* events/i386/pii/unit_masks:
+	* events/i386/piii/unit_masks: typo in help string
+
+	* utils/op_help.c: show "counter: all" instead an enumeration of all
+	  counter
+
 2003-10-02  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* events/*.events *.unit_masks: move these files to subdir named

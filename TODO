@@ -16,6 +16,9 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o when --separate=thread, we really need to show the list of current
    classes on a merge failure so user can get help specifying tgid where
    relevant
+ o we allow op_help --cpu-type=xx but with 16 it segfault on x86, alpha ev67
+  need OP_MAX_COUNTERS > 8 but we compile all tools with OP_MAX_COUNTERS==8
+  (see libop/op_hw_config.h). We should remove this #define
 
 0.8 release
 -----------
@@ -33,9 +36,6 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
- o oprofile-www/website: all unitmask are described in decimal, prefix them
-   with 0x. Generate the doc for events/ia64, x86-64, hammer and alpha. These
-   change can be reflected on website before 0.7 release.
  o can we log samples going to anonymous mapping by using
   - 2.6 one fake sample for all anonymous sample, cookie == 0 mean use this
   special sample file. (cookie == -1 or -2 as magic value ?)

@@ -28,7 +28,7 @@ name:mmx_instr_type_exec type:bitmask default:0x3f
 	0x02 MMX packed shifts
 	0x04 MMX pack operations
 	0x08 MMX unpack operations
-	0x10 MMX pack logical
+	0x10 MMX packed logical
 	0x20 MMX packed arithmetic
 	0x3f all of the above
 name:mmx_trans type:exclusive default:0x0

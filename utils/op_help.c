@@ -28,10 +28,25 @@ static char const ** chosen_events;
 
 struct parsed_event parsed_events[OP_MAX_COUNTERS];
 
-
 static op_cpu cpu_type = CPU_NO_GOOD;
 
 static poptContext optcon;
+
+/**
+ * return the number a non zero bit in mask
+ *
+ */
+static size_t bit_count(size_t mask)
+{
+	size_t count = 0;
+
+	while (mask) {
+		mask &= mask - 1;
+		count++;
+	}
+
+	return count;
+}
 
 /**
  * help_for_event - output event name and description
@@ -44,17 +59,23 @@ static void help_for_event(struct op_event * event)
 	uint i, j;
 	uint mask;
 
+	size_t nr_counters = op_get_nr_counters(cpu_type);
+
 	printf("%s", event->name);
 
 	printf(": (counter: ");
 
 	mask = event->counter_mask;
-	for (i = 0; i < CHAR_BIT * sizeof(event->counter_mask); ++i) {
-		if (mask & (1 << i)) {
-			printf("%d", i);
-			mask &= ~(1 << i);
-			if (mask)
-				printf(", ");
+	if (bit_count(mask) == nr_counters) {
+		printf("all");
+	} else {
+		for (i = 0; i < CHAR_BIT * sizeof(event->counter_mask); ++i) {
+			if (mask & (1 << i)) {
+				printf("%d", i);
+				mask &= ~(1 << i);
+				if (mask)
+					printf(", ");
+			}
 		}
 	}
 
