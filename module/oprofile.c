@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.19 2002/01/03 00:22:45 movement Exp $ */
+/* $Id: oprofile.c,v 1.20 2002/01/03 21:24:08 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -698,6 +698,7 @@ static int oprof_start(void)
 
 	/* save the sysctl settable things to protect against change through
 	 * systcl the profiler params */
+	sysctl_parms.cpu_type = sysctl.cpu_type;
 	sysctl = sysctl_parms;
 
 	if ((err = oprof_init_data()))
