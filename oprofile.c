@@ -515,11 +515,11 @@ inline static void pmc_select_stop(unsigned int cpu)
 
 u32 diethreaddie; 
 pid_t threadpid; 
+DECLARE_MUTEX_LOCKED(threadstopsem);
  
 /* we have to have another thread because we can't
  * do wake_up() from NMI due to no locking
  */
-/* FIXME: need exit semaphore for race in module unload/thread exit */ 
 int oprof_thread(void *arg)
 {
 	int i;
@@ -553,7 +553,9 @@ int oprof_thread(void *arg)
 		if (diethreaddie)
 			break;
 	}
-	return 0; 
+
+	up(&threadstopsem); 
+	return 0;
 }
  
 void oprof_start_thread(void)
@@ -566,6 +568,7 @@ void oprof_stop_thread(void)
 {
 	diethreaddie = 1;
 	kill_proc(SIGKILL, threadpid, 1);
+	down(&threadstopsem);
 }
  
 void oprof_out8(void *buf)
@@ -652,6 +655,9 @@ again:
  
 doit:
 	pmc_select_stop(i);
+	if (oprof_data[i].nextbuf)
+		printk("oprofile: lost %u samples waking up.\n",oprof_data[i].nextbuf); 
+ 
 	memcpy(mybuf,oprof_data[i].buffer,max);
 	pmc_select_start(i);
  
@@ -810,11 +816,9 @@ int __init hw_ok(void)
 		return 0;
 	}
 
-	/* FIXME: is this correct ? */
 	/* 0 if PPro, 1 if PII, 2 if PIII */
 	cpu_type = (current_cpu_data.x86_model > 2);
 	cpu_type += !!(current_cpu_data.x86_model > 5);
-	printk("CPU type %u\n",cpu_type);
 	return 1; 
 }
  

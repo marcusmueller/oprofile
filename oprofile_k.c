@@ -86,10 +86,6 @@ asmlinkage void my_do_nmi(struct pt_regs * regs, long error_code)
 	/* can't count this NMI */
  
 	if (!(reason & 0xc0)) {
-		/* FIXME: couldn't we do something with irq_stat ?
-		   we'd have to risk deadlock on console_lock ...
-		   how does do_nmi() panic the machine with do_exit() -
-		   neither !pid or in_interrupt() is necessarily true */ 
 		unknown_nmi_error(reason, regs);
 		return;
 	}
