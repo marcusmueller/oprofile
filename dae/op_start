@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.54 2001/12/29 23:51:24 phil_e Exp $
+# $Id: op_start,v 1.55 2002/01/05 17:54:54 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -478,14 +478,18 @@ do_start() {
 
 	vecho "executing oprofiled $OPD_ARGS"
 	oprofiled $OPD_ARGS
-	sleep 4
-	PID=`ps x | grep oprofiled | grep -v grep | awk '{print $1}'`
-	if [ "$PID" = "" ]; then
-		echo "Couldn't start oprofiled." >&2
-		echo "Check the log file \"$LOG_FILE\" and /var/log/messages" >&2
-		exit 1
-	fi
-
+ 
+	COUNT=0
+	while test -z `pidof oprofiled`
+	do
+		sleep 1
+		COUNT=`expr $COUNT + 1`
+		if [ "$COUNT" -eq 30 ]; then
+			echo "Couldn't start oprofiled." >&2
+			echo "Check the log file \"$LOG_FILE\" and /var/log/messages" >&2
+			exit 1
+		fi
+	done
 	echo "Daemon started. Remember you may need to use op_dump"
 	echo "to retrieve profile data"
 }
