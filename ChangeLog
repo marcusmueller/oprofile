@@ -1,3 +1,8 @@
+2001-10-06  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/opf_filter.cpp:
+	* pp/op_to_source: small cleanup
+
 2001-10-05  Philippe Elie  <ph_e@club-internet.fr>
 
 	* doc/oprofile.1.in:

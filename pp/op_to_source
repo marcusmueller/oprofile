@@ -154,6 +154,5 @@ fi
 if [ "$do_to_asm" == "true" ]; then
 	objdump $object_file $objdump_option | opf_filter $op_filter_option
 else
-	echo "$opf_filter_option"
 	opf_filter --use-linenr-info $op_filter_option
 fi

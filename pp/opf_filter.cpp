@@ -87,21 +87,6 @@ class filename_match {
 };
 
 //---------------------------------------------------------------------------
-// Just allow to read one line in advance and to put_back this line.
-class input {
- public:
-	input(istream & in_) : in(in_), put_back_area_valid(false) {}
-
-	bool read_line(string & str);
-	void put_back(const string &);
-
- private:
-	istream & in;
-	string put_back_area;
-	bool put_back_area_valid;
-};
-
-//---------------------------------------------------------------------------
 // store a complete source file.
 struct source_file {
 	source_file();
@@ -141,7 +126,7 @@ class output {
 	       const char * output_filter,
 	       const char * no_output_filter);
 
-	bool treat_input(input &);
+	bool treat_input();
 
 	void debug_dump_vector() const;
 
@@ -150,7 +135,7 @@ class output {
 	/// the line.
 	void output_header(ostream& out) const;
 
-	void output_asm(input & in);
+	void output_asm();
 	void output_source();
 
 	// output one file unconditionally.
@@ -366,7 +351,8 @@ void filename_match::build_pattern(std::vector<std::string>& result,
 {
 	std::string temp = patterns;
 
-	// unquote the pattern if necessary
+	// unquote the pattern if necessary. TODO: work around against
+	// op_to_source this block of code must go out later.
 	if (temp.find_first_of('\'') == 0 &&
 	    temp.find_last_of('\'')  == temp.length() - 1) {
 		temp =  temp.substr(1, temp.length() - 2);
@@ -380,6 +366,8 @@ void filename_match::build_pattern(std::vector<std::string>& result,
 			pos = temp.length();
 
 		std::string pat = temp.substr(last_pos, pos - last_pos);
+
+		// Do we need to strip leading/trailing blank ni pat ?
 		result.push_back(pat);
 
 		if (pos != temp.length())
@@ -410,32 +398,6 @@ void symbol_entry::debug_dump(ostream & out) const
 	out << "counters number range [" << first << ", " << last << "[" << endl;
 
 	sample.debug_dump(out);
-}
-
-//---------------------------------------------------------------------------
-
-bool input::read_line(string & str)
-{
-	if (put_back_area_valid) {
-		put_back_area_valid = false;
-
-		str = put_back_area;
-
-		return true;
-	}
-
-	return getline(in, str);
-}
-
-void input::put_back(const string & str)
-{
-	if (put_back_area_valid) {
-		throw "attempt to put_back() but put_back area full";
-	}
-  
-	put_back_area_valid = true;
-
-	put_back_area = str;
 }
 
 //---------------------------------------------------------------------------
@@ -558,7 +520,7 @@ bool output::setup_counter_param()
 	}
 
 	if (!have_counter_info) {
-		cerr << "opf_filter: malformed input, expect at least one counter description" << endl;
+		cerr << "opf_filter: no counter enabled ?" << endl;
 		
 		return false;
 	}
@@ -668,7 +630,7 @@ void output::find_and_output_counter(ostream& out, const string & filename, size
 		output_counter(out, symbol->sample.counter, true, symbol->name);
 }
 
-void output::output_asm(input & in) 
+void output::output_asm() 
 {
 	// select the subset of symbols which statisfy the user requests
 	size_t index = get_sort_counter_nr();
@@ -701,7 +663,7 @@ void output::output_asm(input & in)
 	bool do_output = true;
 
 	string str;
-	while (in.read_line(str)) {
+	while (std::getline(cin, str)) {
 		if (str.length())  {
 			// Yeps, output of objdump is a human read-able form
 			// and contain a few ambiguity so this code is fragile
@@ -1156,7 +1118,7 @@ void output::output_header(ostream& out) const
 	out << endl;
 }
 
-bool output::treat_input(input & in) 
+bool output::treat_input() 
 {
 	cpu_type = samples_files.header[samples_files.first_file]->cpu_type;
 
@@ -1170,8 +1132,6 @@ bool output::treat_input(input & in)
 
 	build_samples_containers();
 
-//	debug_dump_vector(out);
-
 	if (calc_total_samples() == false) {
 		cerr << "opf_filter: the input contains zero samples" << endl;
 
@@ -1179,7 +1139,7 @@ bool output::treat_input(input & in)
 	}
 
 	if (have_linenr_info == false)
-		output_asm(in);
+		output_asm();
 	else
 		output_source();
 
@@ -1304,8 +1264,8 @@ static void get_options(int argc, char const * argv[])
 
 //---------------------------------------------------------------------------
 
-int main(int argc, char const * argv[]) {
-
+int main(int argc, char const * argv[])
+{
 #if (__GNUC__ >= 3)
 	// this improves performance with gcc 3.x a bit
 	std::ios_base::sync_with_stdio(false);
@@ -1314,8 +1274,6 @@ int main(int argc, char const * argv[]) {
 	get_options(argc, argv);
 
 	try {
-		input in(cin);
-
 		bool do_until_more_than_samples = false;
 		int threshold_percent = with_more_than_samples;
 		if (until_more_than_samples) {
@@ -1333,7 +1291,7 @@ int main(int argc, char const * argv[]) {
 			      output_filter,
 			      no_output_filter);
 
-		if (output.treat_input(in) == false) {
+		if (output.treat_input() == false) {
 			return EXIT_FAILURE;
 		}
 	} 
