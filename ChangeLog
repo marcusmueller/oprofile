@@ -1,3 +1,7 @@
+2003-05-29  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: don't allow --rtc-value if not RTC mode
+
 2003-05-27  John Levon  <levon@movementarian.org>
 
 	* libutil++/string_manip.h: add <stdexcept>
