@@ -33,12 +33,6 @@
 /** maximum number of profilable kernel modules */
 #define OPD_MAX_MODULES 64
 
-/* This is a standard non-portable assumption we make. */
-#define OP_MIN_PID		0
-#define OP_MAX_PID		32767
-#define OP_MIN_PGRP		0
-#define OP_MAX_PGRP		32767
-
 /*@{\name module default/min/max settings */
 
 /** 65536 * 32 = 2097152 bytes default */

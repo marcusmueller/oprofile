@@ -1,3 +1,8 @@
+2002-09-14  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_config.h: remove OP_MIN/MAX_PID, OP_MIN/MAX_PGRP
+	* gui/oprof_start.cpp: pid_filter/pgrp_filter accept all integer
+
 2002-09-13  John Levon  <levon@movementarian.org>
 
 	* acinclude.m4: another tweak

@@ -198,9 +198,9 @@ oprof_start::oprof_start()
 	hash_table_size_edit->setValidator(iv);
 	iv = new QIntValidator(OP_MIN_NOTE_TABLE_SIZE, OP_MAX_NOTE_TABLE_SIZE, note_table_size_edit);
 	note_table_size_edit->setValidator(iv);
-	iv = new QIntValidator(OP_MIN_PID, OP_MAX_PID, pid_filter_edit);
+	iv = new QIntValidator(pid_filter_edit);
 	pid_filter_edit->setValidator(iv);
-	iv = new QIntValidator(OP_MIN_PGRP, OP_MAX_PGRP, pgrp_filter_edit);
+	iv = new QIntValidator(pgrp_filter_edit);
 	pgrp_filter_edit->setValidator(iv);
 
 	events_list->setSorting(-1);
