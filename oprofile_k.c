@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.18 2000/08/22 13:41:21 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.19 2000/08/24 17:47:21 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -118,20 +118,22 @@ static int output_path_hash(const char *name, uint len);
 int oprof_hash_map_open(void)
 {
 	struct page *page;
+	char *tmp;
 
 	if (test_and_set_bit(0,&hash_map_open))
 		return -EBUSY;
 
-	hash_map = kmalloc(PAGE_ALIGN(OP_HASH_MAP_SIZE), GFP_KERNEL);
-	if (!hash_map) {
+	tmp = kmalloc(PAGE_ALIGN(OP_HASH_MAP_SIZE), GFP_KERNEL);
+	if (!tmp) {
 		clear_bit(0,&hash_map_open);
 		return -EFAULT;
 	}
 
-	for (page = virt_to_page(hash_map); page < virt_to_page(hash_map+PAGE_ALIGN(OP_HASH_MAP_SIZE)); page++)
+	for (page = virt_to_page(tmp); page < virt_to_page(tmp+PAGE_ALIGN(OP_HASH_MAP_SIZE)); page++)
 		mem_map_reserve(page);
 
-	memset(hash_map, 0, OP_HASH_MAP_SIZE);
+	memset(tmp, 0, OP_HASH_MAP_SIZE);
+	hash_map = tmp;
 
 	output_path_hash("lib",3);
 	output_path_hash("bin",3);
@@ -293,8 +295,8 @@ inline static uint name_hash(const char *name, uint len)
 {
 	uint hash=0;
 
-	while (len)
-		hash = ((hash << 4) | (hash >> 28)) ^ name[len-1];
+	while (len--)
+		hash = ((hash << 4) | (hash >> 28)) ^ name[len];
 
 	return hash % OP_HASH_MAP_NR;
 }
@@ -306,8 +308,8 @@ static int output_path_hash(const char *name, uint len)
 {
 	uint firsthash;
 	uint hash;
-
-	printk(KERN_INFO "Output path hash: %s\n",name);
+	uint probe=1;
+	uint cnt=10;
 
 	if (len>=OP_HASH_LINE) {
 		printk(KERN_ERR "Hash component \"%s\" is too long.\n",name);
@@ -316,20 +318,24 @@ static int output_path_hash(const char *name, uint len)
 
 	hash = firsthash = name_hash(name,len);
 	do {
-		if (!*hash_access(hash)) {
+		cnt--;
+		if (!hash_access(hash)) {
 			printk(KERN_INFO "oprofile: Adding %s at hash %u\n",name,hash);
-			strncpy(hash_access(hash), name, len);
+			strncpy(&hash_access(hash), name, len);
 			return hash;
 		}
 
-		if (!strcmp(hash_access(hash),name))
+		if (!strcmp(&hash_access(hash),name)) {
+			printk("Found %s for %s\n",&hash_access(hash),name);
 			return hash;
+		}
 
-		/* FIXME ? */
-		hash = (hash*hash+1) % OP_HASH_MAP_NR;
-	} while (hash!=firsthash);
+		/* FIXME: FIXME: this can recurse forever ! 26,677 */
+		hash = (hash+probe) % OP_HASH_MAP_NR;
+		probe *= probe;
+	} while (cnt && hash!=firsthash);
 
-	printk(KERN_ERR "oprofile: hash map is full !\n");
+	printk(KERN_ERR "oprofile: hash map is full ! cnt = %u\n",cnt);
 	return -1;
 }
 
@@ -408,7 +414,7 @@ static int oprof_output_map(ulong addr, ulong len,
 	u32 *tot;
 
 	if (!hash_map)
-		return;
+		return 0;
 
 	spin_lock(&map_lock);
 	map_out32(addr);
