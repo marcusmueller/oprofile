@@ -1,3 +1,8 @@
+2003-07-15  John Levon  <levon@movementarian.org>
+
+	* utils/op_help.c: fix default RTC event to be
+	"RTC_INTERRUPTS"
+
 2003-07-15  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* utils/opcontrol

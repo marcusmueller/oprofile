@@ -252,7 +252,7 @@ static void show_default_event(void)
 			break;
 
 		case CPU_RTC:
-			printf("RTC:1024:0:1:1\n");
+			printf("RTC_INTERRUPTS:1024:0:1:1\n");
 			break;
 
 		case CPU_P4:
