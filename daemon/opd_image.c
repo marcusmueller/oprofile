@@ -481,11 +481,14 @@ static void code_unknown(struct transient * trans __attribute__((unused)))
 
 static void get_tgid(struct transient * trans)
 {
+	int escape;
+	unsigned long code;
+
 	if (trans->remaining < 2)
 		return;
 
-	int escape = is_escape_code(get_buffer_value(trans->buffer, 0));
-	unsigned long code = get_buffer_value(trans->buffer, 1);
+	escape = is_escape_code(get_buffer_value(trans->buffer, 0));
+	code = get_buffer_value(trans->buffer, 1);
 
 	if (!escape || code != CTX_TGID_CODE)
 		return;
