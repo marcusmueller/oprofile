@@ -1,5 +1,10 @@
 2003-09-15  John Levon  <levon@movementarian.org>
 
+	* common_option.cpp: rename the array to
+	avoid a link error in GCC 3.4
+
+2003-09-15  John Levon  <levon@movementarian.org>
+
 	* libop/Makefile.am:
 	* libop/op_interface_25.h: move to ...
 
