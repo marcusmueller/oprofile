@@ -1,5 +1,13 @@
 2002-02-05  Philippe Elie  <ph_e@club-internet.fr>
 
+	* TODO: update mainly by moving things to 0.1
+
+	* pp/opf_filter.h:
+	* pp/opf_container.cpp: small cleanup + minor tweak to get
+	  more reliable sort order on filename.
+
+2002-02-05  Philippe Elie  <ph_e@club-internet.fr>
+
 	* pp/opf_filter.h: declare create_artificial_symbol()
 	* pp/oprofpp_util.cpp: show how elf symbols size could
 	  be handled.

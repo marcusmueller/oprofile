@@ -520,6 +520,7 @@ do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 		symbol_entry symb_entry;
 		symb_entry.first = 0;
 		symb_entry.name = "?" + image_name;
+		// FIXME: get the base vma load adress of the image
 		symb_entry.sample.vma = start;  // wrong fix this later
 		symb_entry.sample.file_loc.linenr = 0;
 		symb_entry.sample.file_loc.image_name = image_name;
@@ -528,16 +529,10 @@ do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 						 start, end);
 		counter += symb_entry.sample.counter;
 
-		/* we can't call add_samples */
-		for (u32 pos = start ; pos != end ; ++pos) {
-			sample_entry sample;
-
-			if (!samples_files.accumulate_samples(sample.counter, pos))
-				continue;
-
-			sample.file_loc.image_name = image_name;
-			sample.vma = pos;  // wrong fix this later
-			samples.push_back(sample);
+		if (build_samples_by_vma) {
+			// 6th parameters is wrong must be translated to a vma
+			add_samples(samples_files, abfd, size_t(-1),
+				    start, end, start, image_name);
 		}
 
 		symb_entry.last = samples.size();
@@ -567,7 +562,6 @@ do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 			symb_entry.sample.file_loc.filename = filename;
 			symb_entry.sample.file_loc.linenr = linenr;
 		} else {
-			symb_entry.sample.file_loc.filename = string();
 			symb_entry.sample.file_loc.linenr = 0;
 		}
 
@@ -602,17 +596,19 @@ void samples_files_t::add_samples(const opp_samples_files& samples_files,
 		if (!samples_files.accumulate_samples(sample.counter, pos))
 			continue;
 
-		if (abfd.get_linenr(sym_index, pos, filename, linenr)) {
+		if (sym_index != size_t(-1) &&
+		    abfd.get_linenr(sym_index, pos, filename, linenr)) {
 			sample.file_loc.filename = filename;
 			sample.file_loc.linenr = linenr;
 		} else {
-			sample.file_loc.filename = string();
 			sample.file_loc.linenr = 0;
 		}
 
 		sample.file_loc.image_name = image_name;
 
-		sample.vma = abfd.sym_offset(sym_index, pos) + base_vma;
+		sample.vma = (sym_index != size_t(-1))
+			? abfd.sym_offset(sym_index, pos) + base_vma 
+			: pos;
 
 		samples.push_back(sample);
 	}
@@ -673,7 +669,9 @@ struct filename_by_samples {
 		{}
 
 	bool operator<(const filename_by_samples & lhs) const {
-		return percent > lhs.percent;
+		if (percent != lhs.percent)
+			return percent > lhs.percent;
+		return filename > lhs.filename;
 	}
 
 	string filename;

@@ -4,12 +4,16 @@
  o get symbol size via elf instead of bfd
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
+   these two todo are perhaps worthwhile to implement now. The new filtering
+   of symbols make them less interesting.
  o little output things (e.g. don't print unit mask) RTC
  o --help --version in a common options section in .sgml ?
    same thing for all common options between oprofpp/op_to_source ?
  o remove note lock (and rename map lock) ... I think
  o should we pin rather than loop sample buffer overflow too ?
  o cleanup cache things in compat22.h, add and use cache_line_aligned_in_smp
+ o improve format of oprofpp output etc.
+ o oprofile_nmi22.S and oprofile24.S can use the same code.
  
 Before 1.0
 ----------
@@ -21,7 +25,6 @@ Before 1.0
  o add option to op_to_source like oprofpp -u -m on a symbol basis.
  o audit oprof_start for security...
  o review the exception table of the nmi handler (at least stop oprofile)
- o oprofile_nmi22.S and oprofile24.S can use the same code.
  o take oprof_convert out the back and do the cruel to be kind thing
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o test it to hell and back
@@ -29,14 +32,17 @@ Before 1.0
  o check documentation
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level.
- o improve format of oprofpp output etc.
  o profile the NMI handler code
- o verify builds (modversions, kernel versions, athlon etc.)
+ o verify builds (modversions, kernel versions, athlon etc.). I have the
+  necessary stuff to check kernel versions/configurations on PPro core (Phil)
  o use a filelock rather a sleep to synchronize op_start and daemon.
  o check chroot() processes and the path hash stuff
  o use nm and a little script to track unused function
  o audit to track unnecessary include <>
- o gcc 3.0 compile.
+ o check if we can use our own RTC irq handler rather to pass through the
+  the kernel service. The overhead for RTC is very big actually. Take care
+  first from where come the overhead (read/write RTC CMOS is costly)
+ o gcc 3.0/3.1 compile. (3.1 is not stable currently but I follow it, Phil)
 
 Later
 -----

@@ -185,7 +185,7 @@ public:
 	 *   sort them by vma
 	 *
 	 * @until_threshold and @threshold acts like the -w and -u options
-	 * of opf_filter
+	 * of op_to_source
 	 * if you need to get all symbols call it with @threshold == 0.0
 	 * and @until_threshold == false
 	 */
@@ -196,8 +196,7 @@ public:
 
 	/// Like select_symbols for filename without allowing sort by vma.
 	void select_filename(std::vector<std::string> & result, size_t ctr,
-			     double threshold,
-			     bool until_threshold) const;
+			     double threshold, bool until_threshold) const;
 
 	/// return the total number of samples for counter_nr
 	u32 samples_count(size_t counter_nr) const;
@@ -224,22 +223,20 @@ private:
 			 const std::string & image_name);
 
 	/**
-	 * create an unique artificial symbol for a vma address range. The
-	 * vma range is only a hint of the maximum size of the created symbol.
-	 * We try this order to create the symbol.
-	 *  - find in abfd.bfd_syms a symbol which start at this vma, if ok
-	 *  we create giving it the size of the elf symbol but up to the
-	 *  nearest bfd_syms/syms.
-	 *  - create an unique symbol symbol as ?image_file_name#order
-	 * up to the nearest of bfd_syms/syms.
+	 * create an unique artificial symbol for an offset range. The range
+	 * is only a hint of the maximum size of the created symbol. We
+	 * give to the symbol an unique name as ?image_file_name#order and
+	 * a range up to the nearest of syms or for the whole range if no
+	 * syms exist after the start offset. the end parameter is updated
+	 * to reflect the symbol range.
 	 *
 	 * The rationale here is to try to create symbols for alignment between
 	 * function as little as possible and to create meaningfull symbols
-	 * when the symbols exist but has been filtered by interresting symbols
-	 */ 
-	void create_artificial_symbol(const opp_bfd & abfd, bfd_vma start_vma,
-				      bfd_vma end_vma, size_t& order,
-				      size_t vma_size);
+	 * for special case such image w/o symbol.
+	 * I am no longer convinced we really need that.
+	 */
+	std::string create_artificial_symbol(const opp_bfd & abfd, u32 start,
+					     u32 & end, size_t & order);
 
 	/// The symbols collected by oprofpp sorted by increased vma, provide
 	/// also a sort order on samples count for each counter.
