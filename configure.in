@@ -341,8 +341,6 @@ AC_OUTPUT(Makefile \
 	pp/Makefile \
 	gui/Makefile \
 	gui/ui/Makefile \
-	oprof_report/Makefile \
-	oprof_report/ui/Makefile \
 	module/Makefile \
 	module/arch/Makefile \
 	version.h)
