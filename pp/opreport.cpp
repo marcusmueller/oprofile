@@ -156,7 +156,11 @@ summary_container(vector<partition_files> const & sample_files)
 			partition_files::filename_set::const_iterator it;
 			for (it = files.begin(); it != files.end(); ++it) {
 				value_t value(&*it, i);
-				map_t::value_type val(it->image, value);
+				string name = it->image;
+				if (!it->lib_image.empty() &&
+				    options::merge_by.lib)
+					name = it->lib_image;
+				map_t::value_type val(name, value);
 				sample_filenames.insert(val);
 			}
 		}
@@ -272,7 +276,10 @@ void output_summaries(summary_container const & summaries)
 			             app.counts[j]);
 		}
 
-		cout << get_filename(app.image) << '\n';
+		if (app.lib_image.empty() || !options::merge_by.lib)
+			cout << get_filename(app.image) << "\n";
+		else
+			cout << get_filename(app.lib_image) << "\n";
 
 		if (!app.should_hide_deps())
 			output_deps(summaries, app);
