@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.8 2002/01/17 11:00:31 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.9 2002/01/20 12:33:47 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -376,15 +376,20 @@ static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 {
 	struct file *file;
 
+	lock_out_mmap();
+ 
 	file = fget(fd);
 	if (!file)
-		return;
+		goto out;
 
 	spin_lock(&map_lock);
 	oprof_output_map(addr, len, offset, file, 0);
 	spin_unlock(&map_lock);
 
 	fput(file);
+
+out:
+	unlock_out_mmap();
 }
 
 #ifdef HAVE_MMAP2
@@ -425,8 +430,10 @@ asmlinkage static int my_old_mmap(struct mmap_arg_struct *arg)
 	if (ret>=0) {
 		struct mmap_arg_struct a;
 
-		if (copy_from_user(&a, arg, sizeof(a)))
+		if (copy_from_user(&a, arg, sizeof(a))) {
+			ret = -EFAULT;
 			goto out;
+		}
 
 		if (a.prot&PROT_EXEC)
 			out_mmap(ret, a.len, a.prot, a.flags, a.fd, a.offset);

@@ -1,4 +1,4 @@
-/* $Id: compat.c,v 1.4 2002/01/17 15:10:57 movement Exp $ */
+/* $Id: compat.c,v 1.5 2002/01/20 12:33:47 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -61,13 +61,9 @@ int wind_dentries_2_2(struct dentry *dentry)
 uint do_path_hash_2_2(struct dentry *dentry)
 {
 	uint value;
-	struct dentry *root;
 
 	/* BKL is already taken */
- 
-	root = dget(current->fs->root);
-	value = do_hash(dentry, 0, root, 0);
-	dput(root);
+	value = do_hash(dentry, 0, 0, 0);
 	return value;
 }
 

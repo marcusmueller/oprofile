@@ -23,6 +23,8 @@
 
 #include "apic_up_compat.h"
  
+#include <linux/smp_lock.h>
+ 
 /* FIXME: didn't this change in 2.2.21 ? */ 
 #define pte_page_address(x) pte_page(x)
 #define GET_VM_OFFSET(v) ((v)->vm_offset) 
@@ -55,6 +57,18 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 #define wind_dentries(d, v, r, m) wind_dentries_2_2(d)
 #define hash_path(f) do_path_hash_2_2((f)->f_dentry)
 
+static inline void lock_out_mmap(void)
+{
+	lock_kernel();
+	down(&current->mm->mmap_sem);
+}
+
+static inline void unlock_out_mmap(void)
+{
+	unlock_kernel();
+	up(&current->mm->mmap_sem);
+}
+ 
 /* different request_region */
 #define request_region_check compat_request_region
 void *compat_request_region (unsigned long start, unsigned long n, const char *name);

@@ -309,7 +309,11 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 		wait_event_interruptible(oprof_wait, is_ready());
 	}
 
-	if (signal_pending(current))
+	/* on SMP, we may have already dealt with the signal between 
+	 * the wake up from the signal and this point, this point, 
+	 * so we might go on to copy some data. But that's OK.
+	 */
+	if (signal_pending(current)) 
 		return -EINTR;
 
 	/* if we are quitting, return 0 read to tell daemon */

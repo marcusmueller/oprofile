@@ -24,6 +24,7 @@
 #include <linux/version.h>
 
 #define VBEFORE(a,b,c) (LINUX_VERSION_CODE < KERNEL_VERSION(a,b,c))
+#define VEQUAL(a,b,c) (LINUX_VERSION_CODE == KERNEL_VERSION(a,b,c))
 #define V_AT_LEAST(a,b,c) (LINUX_VERSION_CODE >= KERNEL_VERSION(a,b,c))
  
 #if VBEFORE(2,4,0)
@@ -38,11 +39,12 @@
 #if VBEFORE(2,4,10)
 	/* 2.4.10 introduced MODULE_LICENSE */
 	#define MODULE_LICENSE(x)
-	/* 2.4.10 introduced APIC setup under normal APIC config */
-	#ifndef CONFIG_X86_UP_APIC
-		#define NEED_FIXMAP_HACK
-	#endif
 #endif /* VBEFORE(2,4,10) */
+
+/* 2.4.10 introduce apic up under normal apic configuration */
+#if !defined(CONFIG_X86_UP_APIC) && !(VEQUAL(2,4,10) && defined(CONFIG_X86_UP_IOAPIC))
+	#define NEED_FIXMAP_HACK
+#endif
 
 /* 2.4/2.5 kernel can be  patched with the preempt patch. We support only
  * recent version of this patch */

@@ -105,24 +105,16 @@ void lvtpc_apic_restore(void *dummy)
  * determine if the kernel has set up the APIC or not.
  *
  * It doesn't even work if there are BIOS problems or the like :(
+ *
+ * FIXME:
+ * This just need to get the case where we really can't setup the apic.
+ * On other case we rely on the robusteness of code.
  */
 static int __init apic_needs_setup(void)
 {
-#ifdef CONFIG_X86_UP_APIC
-	return 0;
-#else
-	#ifdef CONFIG_X86_LOCAL_APIC
-		/* 2.4.10 has UP APIC setup code too, but no extra 
-		 * config option */
-		#if LINUX_VERSION_CODE == KERNEL_VERSION(2,4,10)
-			return 0;
-		#else
-			return !smp_hardware;
-		#endif /* LINUX_VERSION_CODE == KERNEL_VERSION(2,4,10) */
-	#else
-		return 1;
-	#endif /* CONFIG_X86_LOCAL_APIC */
-#endif /* CONFIG_X86_UP_APIC */
+	/* FIXME: always safe to try to setup apic if !smp_hardware ? or
+         * do you need to ponderate this with :/ #ifdef ... #endif */
+	return !smp_hardware;
 }
 
 static int __init enable_apic(void)
@@ -139,9 +131,11 @@ static int __init enable_apic(void)
 	 *
 	 * IA32 V3, 7.4.2 */
 	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
-	wrmsr(MSR_IA32_APICBASE, msr_low | (1<<11), msr_high);
+	if ((msr_low & (1 << 11)) == 0)
+		wrmsr(MSR_IA32_APICBASE, msr_low | (1<<11), msr_high);
 
-	/* check for a good APIC */
+	/* even if the apic is up we must check for a good APIC */
+
 	/* IA32 V3, 7.4.15 */
 	val = apic_read(APIC_LVR);
 	if (!APIC_INTEGRATED(GET_APIC_VERSION(val)))	
@@ -155,7 +149,11 @@ static int __init enable_apic(void)
  
 not_local_p6_apic:
 	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
-	wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
+	/* disable the apic only if it was disabled */
+	if ((msr_low & (1 << 11)) == 0)
+		wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
+
+	printk(KERN_ERR "oprofile: no local P6 APIC. Your laptop doesn't have one !\n");
 	return 0;
 }
 
@@ -166,22 +164,24 @@ static int __init check_p6_ok(void)
 		sysctl.cpu_type != CPU_PII &&
 		sysctl.cpu_type != CPU_PIII &&
 		sysctl.cpu_type != CPU_ATHLON)
-		return 1; 
+		return 0; 
 
-	return enable_apic();
+	return 1;
 }
  
 int __init apic_setup(void)
 {
-	uint msr_low, msr_high;
 	uint val;
+	int apic_was_enabled;
+
+	/* paranoid checking */
+	if (!check_p6_ok()) {
+		printk("Your CPU does not have a local APIC, e.g. "
+		       "mogile P6. No profiling can be done.\n");
+		return -ENODEV;
+	}
 
 	if (!apic_needs_setup()) {
-		if (!check_p6_ok()) {
-			printk("Your CPU does not have a local APIC, e.g. mobile "
-				"P6. No profiling can be done.\n");
-			return -ENODEV;
-		}
 		printk(KERN_INFO "oprofile: no APIC setup needed.\n");
 		lvtpc_apic_setup(NULL);
 		return 0;
@@ -190,17 +190,25 @@ int __init apic_setup(void)
 	printk(KERN_INFO "oprofile: setting up APIC.\n");
 
 	if (!enable_apic())
-		goto not_local_p6_apic;
+		return -ENODEV;
  
-	__cli();
-
 	/* enable APIC locally */
 	/* IA32 V3, 7.4.14.1 */
 	val = apic_read(APIC_SPIV);
+	apic_was_enabled = val & APIC_SPIV_APIC_ENABLED;
+
+	if (apic_was_enabled) {
+		printk(KERN_INFO "oprofile: APIC was already enabled\n");
+		lvtpc_apic_setup(NULL);
+		return 0;
+	}
+ 
+	/* we blindly assume than if apic is up is state is ok */
+ 
+	__cli();
+ 
 	apic_write(APIC_SPIV, val | APIC_SPIV_APIC_ENABLED);
 
-	/* FIXME: the below code should be ruthlessly trimmed ! used on UP only */
- 
 	val = APIC_LVT_LEVEL_TRIGGER;
 	val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_EXINT);
 	apic_write(APIC_LVT0, val);
@@ -212,9 +220,8 @@ int __init apic_setup(void)
 	/* clear error register */
 	/* IA32 V3, 7.4.17 */
 	/* PHE must be cleared after unmasking by a back-to-back write,
-	 * but it is probably ok because we mask only, the ESR is not updated
-	 * is this a real problem ?
-	 */
+	 * but it is probably ok because we mask only, the ESR is not
+	 * updated is this a real problem ? */
 	apic_write(APIC_ESR, 0);
 
 	/* mask error interrupt */
@@ -225,32 +232,22 @@ int __init apic_setup(void)
 
 	/* setup timer vector */
 	/* IA32 V3, 7.4.8 */
-	/* PHE actually it is ok but kernel change can hang up the machine
-	 * after this point.
-	 */
 	apic_write(APIC_LVTT, APIC_SEND_PENDING | 0x31);
 
 	/* Divide configuration register */
-	/* PHE the apic clock is based on the FSB. This should only changed
-	 * with a calibration method.
-	 */
+	/* PHE the apic clock is based on the FSB. This should only
+	 * changed with a calibration method.  */
 	val = APIC_TDR_DIV_1;
 	apic_write(APIC_TDCR, val);
 
 	__sti();
 
+	val = apic_read(APIC_ESR);
+	printk(KERN_INFO "oprofile: enabled local APIC err code %.08x\n", val);
+
 	lvtpc_apic_setup(NULL);
 
-	printk(KERN_INFO "oprofile: enabled local APIC\n");
-
 	return 0;
-
-not_local_p6_apic:
-	printk(KERN_ERR "oprofile: no local P6 APIC. Your laptop doesn't have one !\n");
-	/* IA32 V3, 7.4.2 */
-	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
-	wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
-	return -ENODEV;
 }
 
 /* ---------------- fixmap hack ------------------ */
@@ -291,7 +288,7 @@ void my_set_fixmap(void)
 
 	set_pte_phys (address, APIC_DEFAULT_PHYS_BASE);
 #else
-	/* dirty hack :/ */
+	/* dirty hack :/ and memory leak at unload ... */
 	virt_apic_base = (unsigned long)vmalloc(4096);
 
 	set_pte_phys(virt_apic_base, APIC_DEFAULT_PHYS_BASE);
