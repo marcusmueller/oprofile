@@ -1,5 +1,12 @@
 2001-09-27  John Levon  <moz@compsoc.man.ac.uk>
 
+	* doc/oprofile.sgml: updates
+
+	* gui/oprof_start_util.cpp: fix compile, revert
+	  g++ extension (different on g++ 3.0) 
+ 
+2001-09-27  John Levon  <moz@compsoc.man.ac.uk>
+
 	* gui/oprof_start_util.cpp: use g++ extension to
 	  avoid using temporary files
  

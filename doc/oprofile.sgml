@@ -58,9 +58,9 @@ necks in real-world systems.
 		<listitem><para>
 			A CPU with a P6 generation core is required. In marketing terms this translates to anything between an Intel
 			Pentium Pro (NOT Pentium Classics) and a Pentium III, including all Celerons.
+			The AMD Athlon & Duron CPUs are also supported.
 			Pentium IVs are not yet supported due to different hardware.
 			Also note that Mobile P6 processors lack the necessary CPU features and are also not supported.
-			The AMD Athlon & Duron CPUs are also supported.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -164,8 +164,7 @@ is all you need, but note these arguments to <command>./configure</command> :
 <para>
 You'll need to have a configured kernel source for the current kernel to build the module.
 Also note you need to enable the <option>CONFIG_X86_UP_IOAPIC</option> or <option>CONFIG_X86_UP_APIC</option>
-options in your kernel configuration. Which one is available depends on kernel version (as of the time
-of writing, the second is only available in the ac series, but is to be preferred).
+options in your kernel configuration. Which one is available depends on kernel version.
 </para>
 
 </sect1>
@@ -176,7 +175,9 @@ of writing, the second is only available in the ac series, but is to be preferre
 If you upgrade the version of oprofile you must first follow the instructions in <xref linkend="install">.
 </para>
 <para>
-Oprofile does not guarantee that the file format of samples is compatible with the format in older versions.
+<!-- FIXME: what to do ? -->
+Oprofile is alpha software, and therefore does not guarantee that the file format of samples is compatible 
+with the format in older versions.
 If you want to keep old sample files you need to use the <command>oprof_convert</command> utility.
 In any case you should backup your old sample files before processing the files in case
 something bad occurs. This processing is not needed for all version changes - for now the only conversion needed
@@ -196,8 +197,8 @@ Will convert from your version to the current version.
 <sect1 id="uninstall">
 <title>Uninstalling oprofile</title>
 <para>
-You must have the source tree installed to uninstall oprofile, then a <command>make uninstall</command> will
-remove all installed file except your configuration file in the directory <filename>~/.oprofile</filename>
+You must have the source tree available to uninstall oprofile; a <command>make uninstall</command> will
+remove all installed files except your configuration file in the directory <filename>~/.oprofile</filename>.
 </para>
 </sect1>
 
@@ -210,7 +211,7 @@ remove all installed file except your configuration file in the directory <filen
 <title>A typical session</title>
 <para>
 Before getting into detail about usage, it's probably a good idea to have a quick stroll through an example
-session (this example is for Intel processors not AMD).
+session (this example is for Intel processors not AMD, but the process is the same).
 </para>
 <para>
 First we need to start the profiler running in the background. We need to pass the correct <filename>System.map</filename>
@@ -218,6 +219,10 @@ and <filename>vmlinux</filename> files to the daemon, and we need to specify wha
 Here I've started with :
 </para>
 <para><command>op_start &mdash;map-file=/boot/2.4.0ac12/System.map &mdash;vmlinux=/boot/2.4.0ac12/vmlinux  &mdash;ctr0-event=CPU_CLK_UNHALTED &mdash;ctr0-count=600000</command></para>
+<para>
+Here we've enabled counter 0 to count "CPU_CLK_UNHALTED" (number of cycles CPU is not halted) events with a count value of 600,000.
+This event is useful as profiles resulting generally correspond to time-spent profiles for functions etc. 
+</para>
 <para>
 A quick <command>ps ax</command> confirms that the daemon (<command>oprofiled</command>) has started,
 along with the kernel thread (<command>oprof-thread</command>). Data is now being collected in the kernel.
@@ -240,11 +245,12 @@ that's not normal behaviour; so if you are profiling over a larger period of tim
 
 I can now ask for a symbol-based summary of the sample profile :
 </para>
-<para><command>oprofpp &mdash;demangle -l /home/moz/lyx/lyx-devel/src/lyx &gt;oprof.out</command></para>
+<para><command>oprofpp &mdash;demangle -l ./lyx &gt;oprof.out</command></para>
 <para>
-You will have to specify the full path unless you also specify the sample file (see the manpage). This can be quite slow
-on large binaries, so sit tight. As it's a C++ program, I asked for the symbols to be demangled to a readable form. Examining
-the file will give the symbols against which the most hits were registered. In this case I got :
+You can also pass the full absoluate path of the binary to example. 
+This can be quite slow on large binaries, so sit tight. 
+As it's a C++ program, I asked for the symbols to be demangled to a readable form. Examining
+the output will give the symbols against which the most hits were registered. In this case I got :
 </para>
 <para>
 <screen>
@@ -256,7 +262,8 @@ Row::next(void) const[0x0813ac24]: 15.4904% (1352 samples)
 </screen> 
 </para>
 <para>
-at the top. Note that over a longer run (or with a lower ctr0-count value) the number of samples will be much more statistically
+at the top. Note that over a longer run (or with a lower <option>ctr0-count</option> value) the number of samples will 
+be much more statistically
 reliable. Note that these sample counts do <emphasis>not</emphasis> necessarily reflect the relative amounts of time
 spent in each function - it depends on the event being counted. In this case we used <constant>CPU_CLK_UNHALTED</constant>
 which the command <command>op_help</command> tells us is "clocks processor is not halted", so in fact is likely to represent
@@ -279,16 +286,20 @@ feature of <command>gprof</command>.
 In this section the configuration and startup of the profiler is discussed in more depth.
 </para>
 <para>
-A shell script <command>op_start</command> is provided to set up the correct environment, insert the kernel module,
-and start up the profiler daemon. It is recommended that you use this script to start profiling, though you can
-do it yourself by hand if you want (just see the shell script for how things need setting up). OProfile stores
-its relevant files in <filename>/var/opd</filename> by default. Of most interest are the <filename>oprofiled.log</filename>
-log file, and the <filename>samples/</filename> directory. The <filename>samples</filename> directory
-contains the actual sample profile files created by the daemon. Despite their apparent size they take up
-much less actual diskspace as they are created sparsely (<command>stat</command> should tell you their real
-on-disk size). Each filename corresponds to the profiled binary image (with <constant>/</constant> characters
-replaced with <constant>}</constant> characters). The man page for <command>op_start</command> details the
-all the options, only interesting ones are listed here :
+A shell script <command>op_start</command> is provided to set up the correct
+environment, insert the kernel module, and start up the profiler daemon.
+OProfile stores its relevant files in <filename>/var/opd</filename> by default.
+Of most interest are the <filename>oprofiled.log</filename> log file, and the
+<filename>samples/</filename> directory. The <filename>samples</filename>
+directory contains the actual sample profile files created by the daemon.
+Despite their apparent size they take up much less actual diskspace as they are
+created sparsely (<command>stat</command> should tell you their real on-disk
+size). Each filename corresponds to the profiled binary image (with
+<constant>/</constant> characters replaced with <constant>}</constant>
+characters). In addition, each filename has a suffix indicating the counter
+number, and an optional "session" suffix for backed-up sample files.
+The man page for <command>op_start</command> details the all the
+options, only interesting ones are listed here : 
 </para>
 <para>
 <variablelist>
@@ -364,7 +375,7 @@ all the options, only interesting ones are listed here :
 </variablelist>
 </para>
 <para>
-As mentioned, the runtime profiler system consists of two components: a kernel module (<filename>oprofile</filename>)
+The runtime profiler system consists of two components: a kernel module (<filename>oprofile</filename>)
 and a user-space daemon process (<filename>oprofiled</filename>). The kernel module collects sample data into
 the hash table and buffer, and wakes up the daemon process when it is approaching full. The daemon will read this
 data, and process it into a non-volatile form. Any samples are recorded into the sample files at processing time.
@@ -374,7 +385,41 @@ The <command>op_start</command> shell script will insert the kernel module if ne
 The profiling is activated when the daemon process initialises. Configuration of the kernel module parameters is done
 via <command>sysctl</command>; the available files are detailed in <xref linkend="sysctl">.
 </para>
+
+</sect1> 
  
+<sect1 id="oprofile-gui">
+<title>Starting profiling from the <command>oprofile</command> gui</title>
+<para>
+This section describes the <command>oprofile</command> Qt-based interface.
+</para>
+<para>
+The <command>oprof_start</command> application provides a convenient way to start the profiler.
+Note that <command>oprof_start</command> is just a wrapper around the <command>op_start</command> script,
+so it does not provide more services than the script itself.
+</para>
+<para>
+After <command>oprof_start</command> is started you can select the event type for each counter,
+the sampling rate and other related parameters as explained in <xref linkend="starting-daemon">.
+The "Configuration" section allows you to set general parameters such as the buffer size, kernel filename
+etc. The counter setup interface should be self-explanatory; <xref linkend="hardware-counters"> and related 
+links contain information on using unit masks.
+</para>
+<para>
+A status line shows the current status of the profiler: how long it has been running, and the average
+number of interrupts received per second, over all processors.
+Note that quitting <command>oprof_start</command> does not stop the profiler.
+</para>
+<para>
+Your configuration is saved when you quit the gui in two files in ~/.oprofile directory :
+<filename>oprof_start_config</filename> and <filename>oprof_start_event</filename>. These
+contain the general configuration, and event/counter setup, respectively.
+</para>
+
+</sect1>
+
+<sect1 id="detailed-parameters">
+<title>Configuration details</title>
 
 <sect2 id="hardware-counters">
 <title>Intel P6 Performance Counters</title>
@@ -485,6 +530,12 @@ The following files will be present :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term<filename>nr_interrupts</filename></term>
+		<listitem><para>
+		Read only; the number of total interrupts received on all processors since this file was last
+		read. Used by the GUI.
+		</para></listitem>
+	<varlistentry>
 		<term><filename>0, 1, ...</filename></term>
 		<listitem><para>
 		Each counter will have a directory containing files for that counter's settings.
@@ -535,57 +586,7 @@ The following files will be present :
 
 </sect2>
 
-</sect1>
-
-<sect1 id="oprofile-gui">
-<title>Starting profiling from the <command>oprofile</command> gui</title>
-<para>
-This section describe the <command>oprofile</command> gui.
-</para>
-<para>
-The <command>oprofile</command> gui provides a convenient way to start the profiler.
-Advanced users might prefer to use the script interface because it is a more powerful, automated way
-to profile a system. Note than this gui is just a wrapper around the <command>op_start</command> script,
-so it does not provide more services than the script itself.
-</para>
-<para>
-After <command>oprofile</command> is started you can select the event type for each counter,
-the sampling rate and other related parameters as explained in <xref linkend="starting-daemon">.
-The "advanced setup" form provide more parameters such as the buffer size, log filename, kernel filename
-etc. The status bar contains a short help string which changes when the mouse is moved on an event type
-radio button. The unit mask option form can be invoked from the main form to allow filtering, for certain
-types of event, the circumstances for which an event is counted. <xref linkend="hardware-counters"> and related links contain
-information on using unit masks.
-</para>
-<para>
-If you try to start profiling with parameters which seems incorrect you will be warned but you can bypass
-this. Passing incorrect parameters to the script can be painful, particulary if you try for example to
-sample with a very high rate. Despite oprofile's low overhead in most cases, profiling at a very high
-rate can slow down your system noticably.
-</para>
-<para>
-Stopping the profiler flushes also the data from the kernel module to the sample files. Be warned
-than the sysctl which provide this feature does not block, so after flushing a few seconds can be
-necessary for the data to be flushed to disk. You can quit the gui without stopping the profiler. Read
-<xref linkend="typical"> for further information.
-</para>
-<para>
-The first time you start the gui you can get a warning about a problem with the vmlinux and System.map
-filenames; follow the instructions to correct the situation. You can ignore it but you will unable to profile
-the linux kernel itself if you do.
-</para>
-<para>
-Your configuration is saved when you quit the gui in two files in ~/.oprofile directory :
-<filename>gui_setup</filename> and <filename>gui_advanced_setup</filename>. A default button allows you to
-reload the default configuration from the .defaults files in the same directory. It is safe to edit
-manually the .defaults file and to modify it if you are not satisfied with the default values. If you make
-a mistake and want to retrieve the original default values just quit the gui, delete the .defaults file
-and restart the interface.
-</para>
-
-</sect1>
-
-<sect1 id="misuse">
+<sect2 id="misuse">
 <title>Misuse of <command>oprofile</command> and stability of system</title>
 <para>
 OProfile is a low-level profiler which allow continuous profiling with a low-overhead cost.
@@ -615,23 +616,23 @@ circumstances, a simple solution is to disable kernel profiling by turning off t
 each enabled counter. As the NMI handler is in-kernel, this avoids the problem.
 </para>
 
+</sect2>
+
 </sect1>
-
-</chapter>
-
-<chapter id="features">
+ 
+<sect1 id="other-features">
 <title>Other features</title>
 
-<sect1 id="pidpgrpfilter">
+<sect2 id="pidpgrpfilter">
 <title>pid/pgrp filter</title>
 <para>There are situations where you are only interested in the profiling results of a particular
 running process, or process group. You can set
 the pid/pgrp values via the <filename>&mdash;pid-filter</filename> and <filename>&mdash;pgrp-filter</filename>
 options to <command>op_start</command>, or by setting the relevant sysctls as mentioned in <xref linkend="sysctl">.
 </para>
-</sect1>
+</sect2>
 
-<sect1 id="unloadable">
+<sect2 id="unloadable">
 <title>Unloadable kernel module</title>
 <para>
 The kernel module can be unloaded, but is designed to take very little memory when profiling is not underway.
@@ -648,9 +649,12 @@ re-enable the module unload by specifying the "allow_unload" parameter to the mo
 </para>
 <para><command>modprobe oprofile allow_unload=1</command></para>
 <para>This option can be <emphasis>DANGEROUS</emphasis> and should only be used on non-production systems.</para> 
-</sect1>
+</sect2>
 
+</sect1>
+ 
 </chapter>
+
 
 <chapter id="results">
 <title>Obtaining and interpreting results</title>
@@ -720,7 +724,7 @@ Some interesting options of the post-processor :
 	<varlistentry>
 		<term><option>&mdash;list-symbol</option></term>
 		<listitem><para>
-		Provide a detailed listing for the specified symbol. A future release should allow a full source annotation facility, but not now, Bernard.
+		Provide a detailed listing for the specified symbol.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -748,7 +752,7 @@ Some interesting options of the post-processor :
 </sect1>
 
 <sect1 id="op-to-source">
-<title><command>op_to_source</command> usage</title>
+<title>Outputting annotated source</title>
 <para>
 <command>op_to_source</command> generates annotated source files or assembly listings optionally mixed
 with source. The op_to_source utility is actually a wrapper script around the opf_filter application.
@@ -770,33 +774,35 @@ The options allowed are :
 		<listitem><para>
 		<!-- FIXME: update if this changes -->
 		Output assembly code. Currently the assembly code is sorted by increasing order on the vma
-		address but the <option>&mdash;sort-by-counter</option> provide a filtering option for assembly output.
+		address but the <option>&mdash;sort-by-counter</option> provides a filtering option for assembly output.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;source-with-assembly</option></term>
 		<listitem><para>
-		Output assembly code mixed with the source file, imply <option>&mdash;assembly</option>.
+		Output assembly code mixed with the source file, implies <option>&mdash;assembly</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;sort-by-counter counter_nr</option></term>
 		<listitem><para>
-		Sort by decreasing number of samples on counter_nr. For assembly output this option provide only
+		Sort by decreasing number of samples on counter_nr. For assembly output this option provides only
 		a filtering and not a sort order.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;with-more-than-samples percent_samples</option></term>
 		<listitem><para>
-		Output source file or assembly symbol which contains at least percent_samples. Note that you can only
-output one complete source file, there is no way to select only certain symbols in the source file. Can
-not be combined with <option>&mdash;with-more-samples</option>.
+		<!-- FIXME: update when we can do better -->
+		Output source file or assembly symbol which contains at least <option>percent_samples</option>. Note that you can only
+output one complete file containing all the sources; there is currently no way to select only certain symbols or files in the source file. Can
+not be combined with <option>&mdash;until-more-than-samples</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;until-more-than-samples percent_samples</option></term>
 		<listitem><para>
+		<!-- FIXME: it's unclear what this means exactly ? -->
 		Output source file or assembly symbol until the amount of samples outputted reach percent_samples. See the note
 above. Can not be combined with <option>&mdash;with-more-than-samples</option>.
 		</para></listitem>
@@ -847,7 +853,8 @@ noticeable.
 The worst-case scenario is where there are many short-lived processes. This can be seen
 in a kernel compile, for instance. This leads to hash table clashes; clashes lead to faster
 buffer filling; buffer filling leads to higher overhead. Even in this worst case overhead
-can be acceptable for many circumstances (especially compared to gprof): actual performance
+is low compared to other profilers; only very detailed profiling of these workloads
+has an overhead of higher than 5%. Actual performance
 data is presented in the source distribution. In fact most situations have much fewer
 numbers of processes, leading to far better performance.
 </para>

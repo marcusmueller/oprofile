@@ -44,7 +44,7 @@ std::string const get_user_dir()
 	if (user_dir.empty()) {
 		char * dir = getenv("HOME");
 		if (!dir) {
-			cerr << "Can't determine home directory !\n" << endl;
+			std::cerr << "Can't determine home directory !\n" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 
@@ -57,6 +57,44 @@ std::string const get_user_dir()
 	return user_dir;
 }
 
+/**
+ * fill_from_fd - output fd to a stream
+ * @stream: the stream to output to
+ * @fd: the fd to read from
+ *
+ * Read from @fd until a read would block and write
+ * the output to @stream.
+ */
+static void fill_from_fd(std::ostream & stream, fd_t fd)
+{
+	// FIXME: there might be a better way than this; suggestions welcome 
+	fd_t fd_out; 
+	char templ[] = "/tmp/op_XXXXXX";
+	char buf[4096]; 
+	
+	if ((fd_out = mkstemp(templ) == -1)) {
+		// *sigh*
+		//stream.set(ios_base::failbit); 
+		return;
+	}
+
+	ssize_t count;
+	fcntl(fd, F_SETFL, O_NONBLOCK);
+	while ((count = read(fd, buf, 4096)) != -1)
+		write(fd_out, buf, count);
+
+	close(fd_out);
+
+	std::ifstream in(templ);
+	std::string str;
+
+	while (getline(in, str))
+		stream << str;
+ 
+	unlink(templ);
+}
+
+ 
 static int exec_command(std::string const & cmd, std::ostream & out, 
 		 std::ostream & err, std::vector<std::string> args)
 {
@@ -102,19 +140,8 @@ static int exec_command(std::string const & cmd, std::ostream & out,
 	int ret;
 	waitpid(pid, &ret, 0);
  
-	/// don't hang when data ends
-	fcntl(pstdout[0], F_SETFL, O_NONBLOCK);
-	fcntl(pstderr[0], F_SETFL, O_NONBLOCK);
- 
-	// attach is non-standard, so we need GNU C++ 
-	std::ifstream outf(pstdout[0]);
-	std::ifstream errf(pstderr[0]);
-	std::string str;
- 
-	while (std::getline(outf, str))
-		out << str; 
-	while (std::getline(errf, str))
-		err << str; 
+	fill_from_fd(out, pstdout[0]);
+	fill_from_fd(err, pstderr[0]);
  
 	return WEXITSTATUS(ret);
 }
@@ -263,7 +290,7 @@ bool check_and_create_config_dir()
  */
 std::string const format(std::string const & orig, uint const maxlen)
 {
-	string text(orig);
+	std::string text(orig);
 
 	std::istringstream ss(text);
 	std::vector<std::string> lines;
@@ -347,10 +374,10 @@ std::string const do_open_file_or_dir(std::string const & base_dir, bool dir_onl
 
 	if (dir_only) {
 		result = QFileDialog::getExistingDirectory(base_dir.c_str(), 0,
-			   "open_file_or_dir", "Get directory name", true);
+			"open_file_or_dir", "Get directory name", true);
 	} else {
 		result = QFileDialog::getOpenFileName(base_dir.c_str(), 0, 0,
-			   "open_file_or_dir", "Get filename");
+			"open_file_or_dir", "Get filename");
 	}
 
 	if (result.isNull())
@@ -389,7 +416,7 @@ std::string const basename(std::string const & path_name)
  */ 
 std::string const tostr(unsigned int i)
 {
-        string str;
+	std::string str;
 	std::ostringstream ss(str);
 	ss << i;
 	return ss.str(); 
