@@ -51,7 +51,10 @@ struct config_setting {
 	uint hash_table_size;
 	uint note_table_size;
 	std::string kernel_filename;
-	std::string map_filename;
+	/// must we use kernel_{start,end} or figure them from vmlinux file
+	int kernel_range_auto;
+	ulong kernel_start;
+	ulong kernel_end;
 	int kernel_only;
 	int ignore_daemon_samples;
 	int verbose;

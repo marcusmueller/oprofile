@@ -57,8 +57,6 @@ public:
 protected slots:
 	/// select the kernel image filename
 	void choose_kernel_filename();
-	/// select the System.map filename
-	void choose_system_map_filename();
 	/// flush profiler
 	void on_flush_profiler_data();
 	/// start profiler

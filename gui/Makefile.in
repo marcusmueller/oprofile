@@ -27,7 +27,7 @@ all: $(TARGET)
  
 oprof_start.moc.cpp: oprof_start.h
 	$(MOC) -o $@ oprof_start.h
-oprof_start.moc.o: oprof_start.moc.cpp
+oprof_start.moc.o: oprof_start.moc.cpp ui/oprof_start.base.h
 
 .buildui:
 	$(MAKE) -C ui
@@ -47,7 +47,7 @@ clean:
 	$(MAKE) -C ui clean
 	rm -rf .deps $(OBJECTS) $(TARGET) .buildui oprof_start.moc.cpp
 
-$(TARGET): $(OBJECTS) $(LIB_DEPS)
+$(TARGET): .buildui $(OBJECTS) $(LIB_DEPS)
 	$(CXX) -o $@ $(OBJECTS) $(LDFLAGS) $(LIBS)
  
 include ../make.deps

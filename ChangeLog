@@ -2,6 +2,21 @@
 
 	* TODO: update
 
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: document op_start --kernel-range option
+	* gui/oprf_start.cpp:
+	* gui/oprof_start.h:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_config.h: 
+	* gui/ui/oprof_start_base.ui:
+	* utils/op_start: implement --kernel-range
+
+	* gui/Makefile.in: force ui sub-dir build
+	
+2002-06-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
 	* configure.in: new AX_KERNEL_VERSION()  to allow kernel version check,
 	  use it to check minimal kernel version and fix 2.5.19 breakage
 	* module/.cvsignore:

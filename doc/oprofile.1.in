@@ -70,6 +70,10 @@ Show available events for the hardware counters
 specify vmlinux kernel image
 .br
 .TP
+.BI "--kernel-range " start,end
+kernel range vma address in hexadecimal
+.br
+.TP
 .BI "--ctrX-event " event_name
 symbolic event name for counter X
 .br

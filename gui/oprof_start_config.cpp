@@ -81,7 +81,11 @@ config_setting::config_setting()
 	note_table_size(OP_DEFAULT_NOTE_SIZE),
 	// FIXME: member of config, hardcoded value probably come from ?
 	kernel_filename("/lib/modules/" KVERSION "/build/vmlinux"),
-	map_filename("/lib/modules/" KVERSION "/build/System.map"),
+	kernel_range_auto(1),
+	// kernel_range_auto is "true" by default so on we don't need to put
+	// sensible value now.
+	kernel_start(0),
+	kernel_end(0),
 	kernel_only(0),
 	ignore_daemon_samples(0),
 	verbose(0),
@@ -97,13 +101,18 @@ void config_setting::load(std::istream& in)
 	in >> buffer_size;
 	in >> hash_table_size;
 	in >> kernel_filename;
-	in >> map_filename;
+	std::string obsolete_map_filename;
+	in >> obsolete_map_filename;
 	in >> kernel_only;
 	in >> ignore_daemon_samples;
 	in >> verbose;
 	in >> pgrp_filter;
 	in >> note_table_size;
 	in >> separate_samples;
+	in >> kernel_range_auto;
+	in >> hex >> kernel_start;
+	in >> hex >> kernel_end;
+	in >> dec;
 }
 
 // sanitize needed ?
@@ -118,8 +127,8 @@ void config_setting::save(std::ostream& out) const
 
 	save_value(out, kernel_filename, def_val.kernel_filename);
 	out << std::endl;
-	save_value(out, map_filename, def_val.map_filename);
-	out << std::endl;
+	std::string obsolete_map_filename("map_filename_obsolete_placeholder");
+	out << obsolete_map_filename << std::endl;
 
 	out << kernel_only << std::endl;
 	out << ignore_daemon_samples << std::endl;
@@ -127,6 +136,10 @@ void config_setting::save(std::ostream& out) const
 	out << pgrp_filter << std::endl;
 	out << note_table_size << std::endl;
 	out << separate_samples << std::endl;
+
+	out << kernel_range_auto << std::endl;
+	out << hex << kernel_start << std::endl;
+	out << hex << kernel_end << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& out, config_setting const & object)
