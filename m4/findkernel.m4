@@ -22,6 +22,6 @@ if test "$OPROFILE_26" != "yes"; then
 fi
 AC_MSG_RESULT($OPROFILE_26)
 
-AM_CONDITIONAL(kernel_support, test $OPROFILE_26 = yes)
+AM_CONDITIONAL(kernel_support, test "$OPROFILE_26" = yes)
 ]
 )

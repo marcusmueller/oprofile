@@ -23,6 +23,8 @@ DISTCHECK_CONFIGURE_FLAGS = --with-kernel-support
 
 if !kernel_support
 
+.PHONY: module
+
 all-local: module
 
 # This must use a fully-qualified SUBDIRS path, so we can't use ${top_srcdir}
