@@ -771,6 +771,40 @@ you can use something like <option>--event=RTC_INTERRUPTS:2048</option>. Note th
 three values here are ignored.
 If OProfile is using timer-interrupt mode, there is no configuration possible.
 </para>
+<para>
+The table below lists the events selected by default
+(<option>--event=default</option>) for the various computer architectures:
+</para>
+<informaltable frame="all">
+<tgroup cols='3'> 
+<tbody>
+<row><entry>Processor</entry><entry>cpu_type</entry><entry>Default event</entry></row>
+<row><entry>Alpha EV4</entry><entry>alpha/ev4</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>Alpha EV5</entry><entry>alpha/ev5</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>Alpha PCA56</entry><entry>alpha/pca56</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>Alpha EV6</entry><entry>alpha/ev6</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>Alpha EV67</entry><entry>alpha/ev67</entry><entry>CYCLES:100000:0:1:1</entry></row>
+<row><entry>ARM/XScale PMU1</entry><entry>arm/xscale1</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
+<row><entry>ARM/XScale PMU2</entry><entry>arm/xscale2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
+<row><entry>Athlon</entry><entry>i386/athlon</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Pentium Pro</entry><entry>i386/ppro</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Pentium II</entry><entry>i386/pii</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Pentium III</entry><entry>i386/piii</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Pentium M (P6 core)</entry><entry>i386/p6_mobile</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Pentium 4 (non-HT)</entry><entry>i386/p4</entry><entry>GLOBAL_POWER_EVENTS:100000:1:1:1</entry></row>
+<row><entry>Pentium 4 (HT)</entry><entry>i386/p4-ht</entry><entry>GLOBAL_POWER_EVENTS:100000:1:1:1</entry></row>
+<row><entry>Hammer</entry><entry>x86-64/hammer</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
+<row><entry>Itanium</entry><entry>ia64/itanium</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
+<row><entry>Itanium 2</entry><entry>ia64/itanium2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
+<row><entry>TIMER_INT</entry><entry>timer</entry><entry>None selectable</entry></row>
+<row><entry>IBM iseries</entry><entry>timer</entry><entry>None selectable</entry></row>
+<row><entry>IBM pseries</entry><entry>timer</entry><entry>None selectable</entry></row>
+<row><entry>IBM s390</entry><entry>timer</entry><entry>None selectable</entry></row>
+<row><entry>IBM s390x</entry><entry>timer</entry><entry>None selectable</entry></row>
+</tbody>
+</tgroup>
+</informaltable>
+
 </sect2>
 
 </sect1>

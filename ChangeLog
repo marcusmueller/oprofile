@@ -1,3 +1,7 @@
+2004-08-18  Will Cohen  <wcohen@redhat.com>
+
+	* doc/oprofile.xml: List default events in documentation.
+
 2004-08-12  John Levon  <levon@movementarian.org>
 
 	* libutil++/op_bfd.cpp: we need to verify
