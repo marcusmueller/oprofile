@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.33 2001/02/02 15:56:43 movement Exp $ */
+/* $Id: oprofile.h,v 1.35 2001/04/05 13:24:42 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,15 +22,15 @@
 #include <linux/malloc.h>
 #include <linux/delay.h>
 #include <linux/vmalloc.h>
-#include <linux/sched.h> 
-#include <linux/sysctl.h> 
+#include <linux/sched.h>
+#include <linux/sysctl.h>
 
 #include <asm/uaccess.h>
 #include <asm/smplock.h>
 #include <asm/apic.h>
 
 /* userspace/module interface */
-#include "op_user.h" 
+#include "op_user.h"
 
 #define OP_NR_ENTRY (SMP_CACHE_BYTES/sizeof(struct op_sample))
 
@@ -87,6 +87,9 @@ struct _oprof_data {
 /* maximal value before eviction */
 #define OP_MAX_COUNT ((1U<<(16U-OP_BITS))-1U)
 
+/* maximum depth of dname trees - this is just a page */
+#define DNAME_STACK_MAX 1024
+
 /* maximum number of events between
  * interrupts. Counters are 40 bits, but
  * for convenience we only use 32 bits.
@@ -119,8 +122,8 @@ struct _oprof_data {
 
 asmlinkage void op_nmi(void);
 
-/* for installing and restoring the NMI handler */ 
- 
+/* for installing and restoring the NMI handler */
+
 #define store_idt(addr) \
 	do { \
 		__asm__ __volatile__ ( "sidt %0" \
@@ -150,7 +153,7 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
 void op_intercept_syscalls(void);
 void op_replace_syscalls(void);
 void op_save_syscalls(void);
-int is_map_ready(void); 
+int is_map_ready(void);
 int oprof_hash_map_open(void);
 int oprof_hash_map_release(void);
 int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma);

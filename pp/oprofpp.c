@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.24 2001/02/02 15:56:43 movement Exp $ */
+/* $Id: oprofpp.c,v 1.25 2001/02/05 11:37:59 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -56,7 +56,7 @@ static struct poptOption options[] = {
 	{ "list-symbols", 'l', POPT_ARG_NONE, &list_symbols, 0, "list samples by symbol", NULL, },
 	{ "dump-gprof-file", 'g', POPT_ARG_STRING, &gproffile, 0, "dump gprof format file", "file", },
 	{ "list-symbol", 's', POPT_ARG_STRING, &symbol, 0, "give detailed samples for a symbol", "symbol", },
-	{ "gcc-demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
+	{ "demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
 	{ "counter", 'c', POPT_ARG_INT, &ctr, 0, "which counter to use", "0|1", }, 
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
@@ -536,9 +536,9 @@ found:
 	printf("Samples for symbol \"%s\" in image %s\n", symbol, ibfd->filename);
 	get_symbol_range(syms[i], (i==num-1) ? NULL : syms[i+1], &start, &end);
 	for (j=start; j < end; j++) { 
-		if (samples[j].count0 || samples[j].count1) { 
-			printf("%s+%x/%x: %s:%u %s:%u\n", symbol, sym_offset(syms[i], j), end-start,
-				ctr0_name, samples[j].count0, ctr1_name, samples[j].count1);
+		if (samples[j].count0 || samples[j].count1) {
+			printf("%s+%x/%x:\t%u \t%u\n", symbol, sym_offset(syms[i], j), end-start,
+				samples[j].count0, samples[j].count1);
 		}
 	}
  

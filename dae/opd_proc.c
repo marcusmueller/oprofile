@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.48 2001/02/02 15:56:43 movement Exp $ */
+/* $Id: opd_proc.c,v 1.49 2001/02/05 11:37:59 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -26,7 +26,7 @@
 /* kernel image entries are offset by this many entries */
 #define OPD_KERNEL_OFFSET 524288
 
-extern int kernel_only; 
+extern int kernel_only;
 extern int verbose;
 extern unsigned long opd_stats[];
 extern char *vmlinux;
@@ -113,7 +113,7 @@ void opd_alarm(int val __attribute__((unused)))
 	/* we should demand some data if we haven't got any recently */
 
 	if (last==(int)opd_stats[OPD_DUMP_COUNT])
-		system("sysctl -w dev.oprofile.dump=1");
+		system("sysctl -w dev.oprofile.dump=1 >/dev/null");
 
 	last = opd_stats[OPD_DUMP_COUNT];
 	
@@ -313,15 +313,17 @@ inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16
 		return;
 	}
 
-	if (offset > (u32)image->len) {
-		fprintf(stderr, "oprofile: Offset %u larger than length %lu.\n",offset,image->len);
-		return;
-	}
-
 	fentry = image->start + (offset*sizeof(struct opd_fentry));
 
 	if (image->kernel)
 		fentry += OPD_KERNEL_OFFSET;
+
+	if (((u32)fentry) > ((u32)(image->start + image->len))) {
+		fprintf(stderr, "fentry %p out of bounds for \"%s\" (start %p, len 0x%.8lx, "
+			"end %p, orig offset 0x%.8x, kernel %d)\n", fentry, image->name, image->start,
+			image->len, image->start + image->len, offset, image->kernel);
+		return;
+	}
 
 	if (opd_get_counter(count)) {
 		if (fentry->count1 + count < fentry->count1)
@@ -925,7 +927,7 @@ void opd_put_sample(const struct op_sample *sample)
 
 	if (kernel_only)
 		return;
- 
+
 	/* here we don't want to add the new process because we don't know if it
 	 * was execve()d or a thread
 	 */
@@ -1084,7 +1086,7 @@ void opd_handle_mapping(const struct op_mapping *mapping)
 
 	hash = mapping->hash;
 
-	while (hash != 0) {
+	while (hash) {
 		if (hash==-1) {
 			/* possibly deleted file */
 			return;
@@ -1238,8 +1240,8 @@ void opd_get_ascii_procs(void)
 	}
 
 	while ((dirent = readdir(dir))) {
-		if (sscanf(dirent->d_name, "%hu", &pid)==1) {
-			verbprintf("ASCII added %u\n",pid);
+		if (sscanf(dirent->d_name, "%hu", &pid) == 1) {
+			verbprintf("ASCII added %u\n", pid);
 			proc = opd_add_proc(pid);
 			opd_get_ascii_maps(proc);
 		}

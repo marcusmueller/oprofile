@@ -1,3 +1,55 @@
+2001-02-05  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+
+	* results/intro: update
+
+	* results/kernel-compile/: update, add FIG files
+
+	* results/lmbench: lmbench results
+
+	* results/output/kernel-ac12-output: add readprofile output
+
+2001-02-04  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+
+	* op_syscalls.c: small re-org, some micro-optimisations
+	  to do_hash()
+
+	* pp/oprofpp.c: clean up --list-symbol output a little
+
+	* results/kernel-compile/overhead: update with results
+
+	* results/kernel-compile/time-aves.pl: add gnuplot output
+
+	* results/kernel-compile/raw/ : raw output files
+
+	* results/output/ : new dir for example output
+
+	* results/output/libc-2.1.92.so: output from libc profile
+
+	* results/output/kernel-ac12-output: output from kernel profile
+
+	* results/output/do_anonymous_page: detailed symbol profile
+
+	* results/output/oprofile.module: output for oprofile module
+
+2001-02-03  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+
+	* oprofile.h:
+	* op_syscalls.c: make do_hash() non-recursive
+
+	* oprofile.c: make thread wake up half as often
+
+	* dae/opd_proc.c: quiesce dump sysctl
+	  make resilient against broken sample (don't exceed mmap)
+
+	* pp/oprofpp.c: --gcc-demangle -> --demangle, just too
+	  annoying to live
+ 
 2001-02-01  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.h: add op_save_syscalls()

@@ -4,4 +4,4 @@ aspects of the profiler. Hopefully it can be fleshed out a little more soon.
 Everything was conducted on my home test machine, a UP Celeron Coppermine 600MHz,
 128Mb RAM, UDMA 66 hda, with a VIA VT82C693/A based Gigabyte 693A-596B-8671 motherboard.
 
-Unless otherwise specified, the kernel tested under was 2.4.0ac9 
+Unless otherwise specified, the kernel tested under was 2.4.0ac12

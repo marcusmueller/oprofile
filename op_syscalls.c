@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.5 2001/02/02 15:56:43 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.7 2001/04/05 13:24:42 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -139,6 +139,8 @@ static void rvfree(void * mem, signed long size)
 	vfree(mem);
 }
 
+static uint dname_top;
+static struct qstr **dname_stack;
 static uint hash_map_open;
 static struct op_hash *hash_map;
 
@@ -154,6 +156,11 @@ int is_map_ready(void)
 
 int oprof_init_hashmap(void)
 {
+	dname_stack = kmalloc(DNAME_STACK_MAX * sizeof(struct qstr *), GFP_KERNEL);
+	if (!dname_stack)
+		return -EFAULT;
+	dname_top = 0;
+
 	hash_map = rvmalloc(PAGE_ALIGN(OP_HASH_MAP_SIZE));
 	if (!hash_map)
 		return -EFAULT;
@@ -162,6 +169,7 @@ int oprof_init_hashmap(void)
 
 void oprof_free_hashmap(void)
 {
+	kfree(dname_stack);
 	rvfree(hash_map, PAGE_ALIGN(OP_HASH_MAP_SIZE));
 }
 
@@ -223,54 +231,6 @@ asmlinkage static long (*old_sys_mmap2)(ulong, ulong, ulong, ulong, ulong, ulong
 asmlinkage static long (*old_sys_init_module)(const char *, struct module *);
 asmlinkage static long (*old_sys_exit)(int);
 
-inline static void oprof_report_fork(u16 old, u32 new)
-{
-	struct op_sample samp;
-
-#ifdef PID_FILTER
-	if (pgrp_filter && pgrp_filter!=current->pgrp)
-		return;
-#endif
-
-	samp.count = OP_FORK;
-	samp.pid = old;
-	samp.eip = new;
-	oprof_put_note(&samp);
-}
-
-asmlinkage static int my_sys_fork(struct pt_regs regs)
-{
-	u16 pid = (u16)current->pid;
-	int ret;
-
-	ret = old_sys_fork(regs);
-	if (ret)
-		oprof_report_fork(pid,ret);
-	return ret;
-}
-
-asmlinkage static int my_sys_vfork(struct pt_regs regs)
-{
-	u16 pid = (u16)current->pid;
-	int ret;
-
-	ret = old_sys_vfork(regs);
-	if (ret)
-		oprof_report_fork(pid,ret);
-	return ret;
-}
-
-asmlinkage static int my_sys_clone(struct pt_regs regs)
-{
-	u16 pid = (u16)current->pid;
-	int ret;
-
-	ret = old_sys_clone(regs);
-	if (ret)
-		oprof_report_fork(pid,ret);
-	return ret;
-}
-
 spinlock_t map_lock = SPIN_LOCK_UNLOCKED;
 
 inline static uint name_hash(const char *name, uint len)
@@ -283,70 +243,99 @@ inline static uint name_hash(const char *name, uint len)
 	return hash % OP_HASH_MAP_NR;
 }
 
+/* empty ascending dname stack */
+inline static void push_dname(struct qstr *dname)
+{
+	dname_stack[dname_top] = dname;
+	if (dname_top != DNAME_STACK_MAX)
+		dname_top++;
+}
+
+inline static struct qstr *pop_dname(void)
+{
+	if (dname_top == 0)
+		return NULL;
+
+	return dname_stack[--dname_top];
+}
+
 /* called with map_lock held */
-/* FIXME: make non-recursive */
 static short do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt)
 {
-	short value, parent, firsthash, probe = 3;
+	struct dentry *d = dentry;
+	struct vfsmount *v = vfsmnt;
+	struct qstr *dname;
+	short value = -1;
+	short firsthash;
+	short probe = 3;
+	short parent = 0;
 
-	/* check not too long */
-	if (dentry->d_name.len > OP_HASH_LINE)
-		goto too_large;
+	/* wind the dentries onto the stack pages */
+	for (;;) {
+		if (d->d_name.len > OP_HASH_LINE)
+			goto too_large;
 
-	/* has it been deleted ? */
-	if (!IS_ROOT(dentry) && list_empty(&dentry->d_hash))
-		return -1;
+		/* deleted ? */
+		if (!IS_ROOT(d) && list_empty(&d->d_hash))
+			goto out;
 
-	/* the root */
-	if (dentry==root && vfsmnt==rootmnt)
-		return 0;
+		/* the root */
+		if (d==root && v==rootmnt)
+			break;
 
-	if (dentry==vfsmnt->mnt_root || IS_ROOT(dentry)) {
-		/* the very bottom ? */
-		if (vfsmnt->mnt_parent==vfsmnt)
-			return 0;
-		/* nope, jump to the mount point */
-		dentry = vfsmnt->mnt_mountpoint;
-		vfsmnt = vfsmnt->mnt_parent;
+		if (d==v->mnt_root || IS_ROOT(d)) {
+			if (v->mnt_parent==v)
+				break;
+			/* cross the mount point */
+			d = v->mnt_mountpoint;
+			v = v->mnt_parent;
+		}
+
+		push_dname(&d->d_name);
+
+		d = d->d_parent;
 	}
-	
-	parent = do_hash(dentry->d_parent, vfsmnt, root, rootmnt);
-	if (parent == -1)
-		return -1;
 
-	firsthash = value = name_hash(dentry->d_name.name, dentry->d_name.len);
-	
-retry:
-	/* have we got a new entry ? */
-	if (hash_map[value].name[0] == '\0')
-		goto new_entry;
+	/* here we are at the bottom, unwind and hash */
 
-	/* existing entry ? */
-	if (streqn(hash_map[value].name, dentry->d_name.name, dentry->d_name.len)
-		&& hash_map[value].parent == parent)
-		return value;
+	while ((dname = pop_dname())) {
+		firsthash = value = name_hash(dname->name, dname->len);
 
-	/* nope, find another place in the table */
-	value = (value+probe) % OP_HASH_MAP_NR;
-	probe *= probe;
-	if (value == firsthash)
-		goto fulltable;
+	retry:
+		/* new entry ? */
+		if (hash_map[value].name[0] == '\0') {
+			strcpy(hash_map[value].name, dname->name);
+			hash_map[value].parent = parent;
+			goto next;
+		}
 
-	goto retry;
+		/* existing entry ? */
+		if (streqn(hash_map[value].name, dname->name, dname->len)
+			&& hash_map[value].parent == parent)
+			goto next;
 
-new_entry:
-	strcpy(hash_map[value].name, dentry->d_name.name);
-	hash_map[value].parent = parent;
+		/* nope, find another place in the table */
+		value = (value+probe) % OP_HASH_MAP_NR;
+		probe *= probe;
+		if (value == firsthash)
+			goto fulltable;
+
+		goto retry;
+	next:
+		parent = value;
+	}
+
+out:
+	dname_top = 0;
 	return value;
-
+fulltable:
+	printk(KERN_ERR "oprofile: component hash table full :(\n");
+	value = -1;
+	goto out;
 too_large:
 	printk(KERN_ERR "oprofile: component %s length too large (%d > %d) !\n",
 		dentry->d_name.name, dentry->d_name.len, OP_HASH_LINE);
-	return -1;
-
-fulltable:
-	printk(KERN_ERR "oprofile: component hash table full :(\n");
-	return -1;
+	goto out;
 }
 
 /* called with map_lock held */
@@ -511,6 +500,54 @@ out:
 	return ret;
 }
 
+inline static void oprof_report_fork(u16 old, u32 new)
+{
+	struct op_sample samp;
+
+#ifdef PID_FILTER
+	if (pgrp_filter && pgrp_filter!=current->pgrp)
+		return;
+#endif
+
+	samp.count = OP_FORK;
+	samp.pid = old;
+	samp.eip = new;
+	oprof_put_note(&samp);
+}
+
+asmlinkage static int my_sys_fork(struct pt_regs regs)
+{
+	u16 pid = (u16)current->pid;
+	int ret;
+
+	ret = old_sys_fork(regs);
+	if (ret)
+		oprof_report_fork(pid,ret);
+	return ret;
+}
+
+asmlinkage static int my_sys_vfork(struct pt_regs regs)
+{
+	u16 pid = (u16)current->pid;
+	int ret;
+
+	ret = old_sys_vfork(regs);
+	if (ret)
+		oprof_report_fork(pid,ret);
+	return ret;
+}
+
+asmlinkage static int my_sys_clone(struct pt_regs regs)
+{
+	u16 pid = (u16)current->pid;
+	int ret;
+
+	ret = old_sys_clone(regs);
+	if (ret)
+		oprof_report_fork(pid,ret);
+	return ret;
+}
+
 asmlinkage static long my_sys_init_module(const char *name_user, struct module *mod_user)
 {
 	long ret;
@@ -558,7 +595,7 @@ void op_save_syscalls(void)
 	old_sys_init_module = sys_call_table[__NR_init_module];
 	old_sys_exit = sys_call_table[__NR_exit];
 }
- 
+
 void op_intercept_syscalls(void)
 {
 	sys_call_table[__NR_fork] = my_sys_fork;

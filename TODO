@@ -1,8 +1,3 @@
-Todo list
----------
-
-o we don't really need a vmlinux file during profiling ...
-
 Correctness
 -----------
 
@@ -10,7 +5,9 @@ o SMP mappings - place in all buffers perhaps ?
 o check chroot() processes and the path hash stuff
 o There is no need for the daemon to run as root as long as every binary image
   is readable ...
-o non-recursive do_hash() ...
+o negative process entries in the daemon - a fork() into the pid would always succeed,
+  in the meantime count the missed samples, possibly try to get info via /proc again ...
+o why the overflow message at 12k ints/sec on do_dump() ? 
 
 Performance
 -----------
@@ -20,9 +17,14 @@ o investigate eviction strategy
 o the interrupt handler code could probably be improved by moving into asm
 o can we fold in the "untouched sample entry" case in hash table to another case ?
 o would query_module() be faster ? do we care ?
+o change the path component hash to be pointer-parent pairs, and allocate the strings in
+  a pool - prolly saving locality for the hash map
 
 WBNI
 ----
 
-o Other x86 processors, and maybe other archs.
+o compile-time interrupt accounting (sysctl-read/writeable) - then re-do results/rates/
+o generate output in results/output/do_anonymous_page automatically
+o we don't really need a vmlinux file during profiling ...
 o gprof output from post-profiler
+o Other x86 processors
