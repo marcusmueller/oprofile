@@ -1,3 +1,7 @@
+2003-07-02  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opreport.cpp: honor options::show_header
+
 2003-06-30  Graydon Hoare  <graydon@redhat.com>
 
 	* libpp/op_header.cpp: Handle printing multiple bitmask values.

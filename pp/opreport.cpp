@@ -33,6 +33,9 @@ namespace {
 
 void output_header(partition_files const & files)
 {
+	if (!options::show_header)
+		return;
+
 	if (files.nr_set()) {
 		partition_files::filename_set const & file_set = files.set(0);
 		opd_header header =
