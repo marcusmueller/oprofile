@@ -20,7 +20,7 @@ AC_PROG_RANLIB
 dnl for the man page
 DATE="`date '+%a %d %B %Y'`"
 AC_SUBST(DATE)
- 
+
 dnl needed for module build
 OPROFILE_DIR=`pwd`
 AC_SUBST(OPROFILE_DIR)

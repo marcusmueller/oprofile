@@ -1,3 +1,8 @@
+2003-05-27  John Levon  <levon@movementarian.org>
+
+	* configure.in: oprofile 0.5.3 is released, back to
+	0.6cvs
+
 2003-05-27  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/oprofile.xml: update example in "Interpreting profiling results"
