@@ -11,9 +11,6 @@
  o document somewhere that oprofpp -s blah will only find the first symbol
    called "blah" (not worth fixing) 
  o determine where we need preempt_disable/enable to prevent pre-emption + test (ugh)
- o op_session creates empty dirs
- o op_session - save oprofiled.log too ? (yes) 
- o op_session: if user don't supply a session name create an unique name (timestamp) (maybe - john) 
  
 Before 1.0 big stuff
 --------------------

@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.38 2002/05/02 03:21:22 movement Exp $ */
+/* $Id: opd_util.c,v 1.39 2002/05/05 04:21:54 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -462,13 +462,13 @@ ssize_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
  * move the file @old_dir/@name to @new_dir/@name iff
  * @old_dir/@name is a regular file
  *
- * if renaming succeed zero or the file is not 
- * a regular file is returned
+ * return > 0 if the file is not a regular file, == 0 if the
+ * file is successfully moved and < 0 on error
  */ 
 int opd_move_regular_file(const char *new_dir, 
 			  const char *old_dir, const char *name)
 {
-	int ret = 0;
+	int ret = 1;
 	struct stat stat_buf;
 
 	char * src = xmalloc(strlen(old_dir) + strlen(name) + 2);

@@ -1,3 +1,12 @@
+2002-05-05  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update:
+
+	* dae/op_session.c: do not create empty session directory
+	  and backup oprofileg.log too
+	* dae/opd_util.c:
+	* op_user.h: minor related change
+
 2002-05-05  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update

@@ -69,12 +69,15 @@ static void opd_move_files(char const * sname)
 	char * dir_name;
 	DIR * dir;
 	struct dirent * dirent;
+	int is_dir_empty = 1;
 
 	dir_name = xmalloc(strlen(OP_SAMPLES_DIR) + strlen(sname) + 1);
 	strcpy(dir_name, OP_SAMPLES_DIR);
 	strcat(dir_name, sname);
 
 	/* FIXME: graceful handling of EEXIST */
+	/* John, I don't think it's safe, the samples can be overwriten or you can
+	 * mix in the same dir samples files with different profiling setup */
 	if (mkdir(dir_name, 0755)) {
 		fprintf(stderr, "unable to create directory %s\n", dir_name);
 		exit(EXIT_FAILURE);
@@ -86,14 +89,28 @@ static void opd_move_files(char const * sname)
 	}
 
 	while ((dirent = readdir(dir)) != 0) {
-		if (opd_move_regular_file(dir_name, OP_SAMPLES_DIR, dirent->d_name)) {
+		int ret;
+		ret = opd_move_regular_file(dir_name, OP_SAMPLES_DIR, dirent->d_name);
+		if (ret < 0) {
 			fprintf(stderr, "unable to backup %s/%s to directory %s\n",
 			       OP_SAMPLES_DIR, dirent->d_name, dir_name);
 			exit(EXIT_FAILURE);
+		} else if (ret == 0) {
+			is_dir_empty = 0;
 		}
 	}
 
 	closedir(dir);
+
+	if (!is_dir_empty) {
+		opd_move_regular_file(dir_name, OP_BASE_DIR, OP_LOG_FILENAME);
+	} else {
+		rmdir(dir_name);
+
+		fprintf(stderr, "no samples files to save, session %s not created\n",
+			sname);
+		exit(EXIT_FAILURE);
+	}
 
 	free(dir_name);
 }

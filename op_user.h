@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.23 2002/05/02 02:19:04 movement Exp $ */
+/* $Id: op_user.h,v 1.24 2002/05/05 04:21:54 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -27,7 +27,8 @@
 #define OP_DEVICE OP_BASE_DIR "opdev"
 #define OP_NOTE_DEVICE OP_BASE_DIR "opnotedev"
 #define OP_HASH_DEVICE OP_BASE_DIR "ophashmapdev"
-#define OP_LOG_FILE OP_BASE_DIR "oprofiled.log"
+#define OP_LOG_FILENAME "oprofiled.log"
+#define OP_LOG_FILE OP_BASE_DIR OP_LOG_FILENAME
  
 /*@{\name miscellaneous types */
 #ifndef u8
