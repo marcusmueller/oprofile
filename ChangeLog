@@ -1,5 +1,11 @@
 2001-09-27  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/Makefile.in:
+	* pp/oprofpp.c:
+	* pp/oprofpp.cpp: rename file
+ 
+2001-09-27  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/opf_container.cpp:
 	* pp/oprofpp.h:
 	* pp/oprofpp.c: speed improvements

@@ -30,7 +30,7 @@ CXXFLAGS=@CXXFLAGS@ -Wall -W -Wunused -Wmissing-prototypes -DOP_EVENTS_DESC
 LIBS=-lpopt -lbfd -liberty -ldl
 INCLUDES=@extra_includes@
 HEADERS=oprofpp.h ../dae/opd_util.h ../op_user.h
-MY_SOURCES=oprofpp.c
+MY_SOURCES=oprofpp.cpp
 SOURCES=$(MY_SOURCES) ../dae/opd_util.c ../op_events.c
 
 srcdoc: oprofpp-src.html
@@ -44,8 +44,8 @@ oprofpp: $(SOURCES) $(HEADERS)
 oprof_convert: oprof_convert.c ../dae/opd_util.c ../dae/opd_util.h
 	$(CC) $(CFLAGS) oprof_convert.c ../dae/opd_util.c -o $@ $(LIBS)
 
-oprofpp_no_main.o: oprofpp.c $(HEADERS)
-	$(CXX) -c -DOPROFPP_NO_MAIN $(CXXFLAGS) $(INCLUDES) -o $@ oprofpp.c
+oprofpp_no_main.o: oprofpp.cpp $(HEADERS)
+	$(CXX) -c -DOPROFPP_NO_MAIN $(CXXFLAGS) $(INCLUDES) -o $@ oprofpp.cpp
 
 opf_container.o: opf_container.cpp opf_filter.h ../op_user.h
 	$(CXX) -c $(CXXFLAGS) $< -o $@

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.57 2001/09/27 00:46:52 movement Exp $ */
+/* $Id: oprofpp.cpp,v 1.1 2001/09/27 01:16:45 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
