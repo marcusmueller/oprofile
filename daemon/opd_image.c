@@ -482,7 +482,7 @@ static void code_unknown(struct transient * trans __attribute__((unused)))
 static void get_tgid(struct transient * trans)
 {
 	int escape;
-	unsigned long code;
+	uint64_t code;
 
 	if (trans->remaining < 2)
 		return;
@@ -611,7 +611,7 @@ void opd_process_samples(char const * buffer, size_t count)
 		.tgid = -1
 	};
 
-	unsigned long code;
+	uint64_t code;
 
 	printf("Reading sample buffer.\n");
 
@@ -633,7 +633,7 @@ void opd_process_samples(char const * buffer, size_t count)
 		code = pop_buffer_value(&trans);
 	
 		if (code >= LAST_CODE) {
-			fprintf(stderr, "Unknown code %lu\n", code);
+			fprintf(stderr, "Unknown code %llu\n", code);
 			exit(EXIT_FAILURE);
 		}
 
