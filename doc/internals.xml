@@ -249,7 +249,7 @@ information.
 
 </chapter>
 
-<glossary>
+<glossary id="glossary">
 <title>Glossary of OProfile source concepts and types</title>
 
 <glossentry><glossterm>application image</glossterm>

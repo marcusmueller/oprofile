@@ -1,5 +1,9 @@
 2003-09-21  John Levon  <levon@movementarian.org>
 
+	* Makefile.am: back out broken make clean change
+
+2003-09-21  John Levon  <levon@movementarian.org>
+
 	* Makefile.am: make clean now removes *.html
 
 	* internals.xml: add some outline sections

@@ -12,7 +12,6 @@ man_MANS = oprofile.1 opcontrol.1 opreport.1 opannotate.1 opgprof.1 op_help.1
 
 htmldir = $(prefix)/share/doc/oprofile
 dist_html_DATA = oprofile.html internals.html
-CLEANFILES=*.html
 
 if have_xsltproc
 
