@@ -864,8 +864,9 @@ int __init oprof_init(void)
 		// try to init, fall back to rtc if not
 		if ((err = int_ops->init())) {
 			int_ops = &op_rtc_ops;
-			if ((err = int_ops->init()))
+			if ((err = int_ops->init())) {
 				return err;
+			}
 			sysctl.cpu_type = CPU_RTC;
 		}
 	} else {

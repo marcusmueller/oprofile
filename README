@@ -15,4 +15,8 @@ Dave Jones <davej@suse.de> provided bug fixes and the Athlon support.
 
 Bob Montgomery <bobm@fc.hp.com> provided bug fixes, and the initial RTC driver.
 
+Will Cohen <wcohen@redhat.com> contributed bug fixes and several cleanups.
+
+Graydon Hoare <graydon@redhat.com> contributed bug fixes and cleanups.
+ 
 Other contributors are listed in the ChangeLog. 

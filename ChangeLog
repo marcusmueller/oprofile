@@ -1,3 +1,28 @@
+2002-09-22  John Levon  <levon@movementarian.org>
+
+	* dae/opd_stats.c: nicify
+ 
+	* module/x86/op_model_pproc.c:
+	* module/x86/op_model_athlon.c: drop macro prefixes, ws fixes
+
+	* module/x86/op_nmi.c: fix save/restore possible crash, init
+	  possible leak
+ 
+2002-09-22  Philippe Elie <phil.el@wanadoo.fr>
+
+	* module/x86/op_model_pproc.c: fix p6_start()
+	* module/x86/op_model_athlon.c: fix athlon_start()
+	* module/x86/op_nmi.c: pmc_save_registers() typo when checking
+	  null for kmalloc return value
+ 
+2002-09-20  Graydon Hoare  <graydon@redhat.com>
+
+	* module/x86/op_x86_model.h: New interface for MSRs.
+	* module/x86/op_nmi.c: Use interface.
+	* module/x86/op_model_ppro.c: New, code from op_nmi.c.
+	* module/x86/op_model_athlon.c: New, code from op_nmi.c.
+	* module/x86/Makefile.in: Reflect new files.
+
 2002-09-20  John Levon  <levon@movementarian.org>
 
 	* libutil++/op_bfd.cpp: fix a bug where we broke

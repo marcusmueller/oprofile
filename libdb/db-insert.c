@@ -243,6 +243,7 @@ static int do_insert(db_tree_t * tree, db_page_idx_t page_idx,
 		/* found: even if the write is non-atomic we do not need
 		 * to lock() because we work only in the case of one writer,
 		 * multiple reader. */
+		// FIXME: where is the overflow handling here ? 
 		page->page_table[pos].info += value->info;
 		return 0;
 	}

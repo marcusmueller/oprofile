@@ -14,174 +14,83 @@
 #include "op_apic.h"
 #include "op_events.h"
 #include "op_util.h"
+#include "op_x86_model.h"
 
-/* the MSRs we need */
-static uint perfctr_msr[OP_MAX_COUNTERS];
-static uint eventsel_msr[OP_MAX_COUNTERS];
+static struct op_msrs cpu_msrs[OP_MAX_CPUS];
+static struct op_x86_model_spec const * model = NULL;
 
-/* number of counters physically present */
-static uint op_nr_counters = 2;
-
-/* whether we enable for each counter (athlon) or globally (intel) */
-static int separate_running_bit;
-
-/* ---------------- NMI handler ------------------ */
-/* preempt: all things inside the interrupt handler are preempt safe : we
- * never reenable interrupt */
-
-static void op_check_ctr(uint cpu, struct pt_regs *regs, int ctr)
+static struct op_x86_model_spec const * get_model(void)
 {
-	ulong l,h;
-	get_perfctr(l, h, ctr);
-	if (ctr_overflowed(l)) {
-		op_do_profile(cpu, regs, ctr);
-		set_perfctr(oprof_data[cpu].ctr_count[ctr], ctr);
+	if (!model) {	
+		/* pick out our per-model function table */
+		switch (sysctl.cpu_type) {
+		case CPU_ATHLON:
+			model = &op_athlon_spec;
+			break;
+		
+		default:
+			model = &op_ppro_spec;
+			break;
+		}
 	}
+	return model;
 }
 
+
+/* preempt: all things inside the interrupt handler are preempt safe : we
+ * never reenable interrupt */
 asmlinkage void op_do_nmi(struct pt_regs * regs)
 {
-	uint cpu = op_cpu_id();
-	int i;
+	uint const cpu = op_cpu_id();
+	struct op_msrs const * const msrs = &cpu_msrs[cpu];
 
-	for (i = 0 ; i < op_nr_counters ; ++i)
-		op_check_ctr(cpu, regs, i);
+	model->check_ctrs(cpu, msrs, regs);
 }
 
 /* ---------------- PMC setup ------------------ */
 
-static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um)
+static int pmc_setup_ctr(void * dummy)
 {
-	/* enable interrupt generation */
-	*val |= (1<<20);
-	/* enable/disable chosen OS and USR counting */
-	(user)   ? (*val |= (1<<16))
-		 : (*val &= ~(1<<16));
+	uint const cpu = op_cpu_id();
+	struct op_msrs const * const msrs = &cpu_msrs[cpu];
 
-	(kernel) ? (*val |= (1<<17))
-		 : (*val &= ~(1<<17));
-
-	/* what are we counting ? */
-	*val |= event;
-	*val |= (um<<8);
-}
-
-static void pmc_setup(void *dummy)
-{
-	uint low, high;
-	int i;
-
-	/* IA Vol. 3 Figure 15-3 */
-
-	/* Stop and clear all counter: IA32 use bit 22 of eventsel_msr0 to
-	 * enable/disable all counter, AMD use separate bit 22 in each msr,
-	 * all bits are cleared except the reserved bits 21 */
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		rdmsr(eventsel_msr[i], low, high);
-		wrmsr(eventsel_msr[i], low & (1 << 21), high);
-
-		/* avoid a false detection of ctr overflow in NMI handler */
-		wrmsr(perfctr_msr[i], -1, -1);
-	}
-
-	/* setup each counter */
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		if (sysctl.ctr[i].event) {
-			rdmsr(eventsel_msr[i], low, high);
-
-			low &= 1 << 21;  /* do not touch the reserved bit */
-			set_perfctr(sysctl.ctr[i].count, i);
-
-			pmc_fill_in(&low, sysctl.ctr[i].kernel, sysctl.ctr[i].user,
-				sysctl.ctr[i].event, sysctl.ctr[i].unit_mask);
-
-			wrmsr(eventsel_msr[i], low, high);
-		}
-	}
-
-	/* Here all setup is made except the start/stop bit 22, counter
-	 * disabled contains zeros in the eventsel msr except the reserved bit
-	 * 21 */
-}
-
-static int pmc_setup_all(void)
-{
-	if ((smp_call_function(pmc_setup, NULL, 0, 1)))
-		return -EFAULT;
-
-	pmc_setup(NULL);
+	get_model()->setup_ctrs(msrs);
 	return 0;
 }
 
-inline static void pmc_start_P6(void)
-{
-	uint low,high;
 
-	rdmsr(eventsel_msr[0], low, high);
-	wrmsr(eventsel_msr[0], low | (1 << 22), high);
+static int pmc_setup_all(void)
+{
+	if (smp_call_function(pmc_setup_ctr, NULL, 0, 1))
+		return -EFAULT;
+	pmc_setup_ctr(NULL);
+	return 0;
 }
 
-inline static void pmc_start_Athlon(void)
-{
-	uint low,high;
-	int i;
 
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		if (sysctl.ctr[i].count) {
-			rdmsr(eventsel_msr[i], low, high);
-			wrmsr(eventsel_msr[i], low | (1 << 22), high);
-		}
-	}
-}
-
-static void pmc_start(void *info)
+static void pmc_start(void * info)
 {
-	if (info && (*((uint *)info) != op_cpu_id()))
+	uint const cpu = op_cpu_id();
+	struct op_msrs const * const msrs = &cpu_msrs[cpu];
+
+	if (info && (*((uint *)info) != cpu))
 		return;
 
-	/* assert: all enable counter are setup except the bit start/stop,
-	 * all counter disable contains zeroes (except perhaps the reserved
-	 * bit 21), counter disable contains -1 sign extended in msr count */
-
-	/* enable all needed counter */
-	if (separate_running_bit == 0)
-		pmc_start_P6();
-	else
-		pmc_start_Athlon();
+	get_model()->start(msrs);
 }
 
-inline static void pmc_stop_P6(void)
-{
-	uint low,high;
-
-	rdmsr(eventsel_msr[0], low, high);
-	wrmsr(eventsel_msr[0], low & ~(1 << 22), high);
-}
-
-inline static void pmc_stop_Athlon(void)
-{
-	uint low,high;
-	int i;
-
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		if (sysctl.ctr[i].count) {
-			rdmsr(eventsel_msr[i], low, high);
-			wrmsr(eventsel_msr[i], low & ~(1 << 22), high);
-		}
-	}
-}
 
 static void pmc_stop(void *info)
 {
-	if (info && (*((uint *)info) != op_cpu_id()))
+	uint const cpu = op_cpu_id();
+	struct op_msrs const * const msrs = &cpu_msrs[cpu];
+
+	if (info && (*((uint *)info) != cpu))
 		return;
 
-	/* disable counters */
-	if (separate_running_bit == 0)
-		pmc_stop_P6();
-	else
-		pmc_stop_Athlon();
+	get_model()->stop(msrs);
 }
+
 
 static void pmc_select_start(uint cpu)
 {
@@ -191,6 +100,7 @@ static void pmc_select_start(uint cpu)
 		smp_call_function(pmc_start, &cpu, 0, 1);
 }
 
+
 static void pmc_select_stop(uint cpu)
 {
 	if (cpu == op_cpu_id())
@@ -199,6 +109,7 @@ static void pmc_select_stop(uint cpu)
 		smp_call_function(pmc_stop, &cpu, 0, 1);
 }
 
+
 static void pmc_start_all(void)
 {
 	int cpu, i;
@@ -206,7 +117,7 @@ static void pmc_start_all(void)
 	for (cpu = 0 ; cpu < OP_MAX_CPUS; cpu++) {
 		struct _oprof_data * data = &oprof_data[cpu];
 
-		for (i = 0 ; i < op_nr_counters ; ++i) {
+		for (i = 0 ; i < get_model()->num_counters ; ++i) {
 			if (sysctl.ctr[i].enabled)
 				data->ctr_count[i] = sysctl.ctr[i].count;
 			else
@@ -219,6 +130,7 @@ static void pmc_start_all(void)
 	pmc_start(NULL);
 }
 
+
 static void pmc_stop_all(void)
 {
 	smp_call_function(pmc_stop, NULL, 0, 1);
@@ -226,16 +138,17 @@ static void pmc_stop_all(void)
 	restore_nmi();
 }
 
+
 static int pmc_check_params(void)
 {
 	int i;
 	int enabled = 0;
 	int ok = 0;
 
-	for (i = 0; i < op_nr_counters ; i++) {
+	for (i = 0; i < get_model()->num_counters; i++) {
 		int min_count;
 		int ret;
-
+	
 		if (!sysctl.ctr[i].enabled)
 			continue;
 
@@ -280,72 +193,138 @@ static int pmc_check_params(void)
 	return ok;
 }
 
-static uint saved_perfctr_low[OP_MAX_COUNTERS];
-static uint saved_perfctr_high[OP_MAX_COUNTERS];
-static uint saved_eventsel_low[OP_MAX_COUNTERS];
-static uint saved_eventsel_high[OP_MAX_COUNTERS];
+
+static void free_msr_group(struct op_msr_group * group)
+{
+	if (group->addrs)
+		kfree(group->addrs);
+	if (group->saved)
+		kfree(group->saved);
+	group->addrs = NULL;
+	group->saved = NULL;
+}
+ 
+
+static void pmc_save_registers(void * dummy)
+{
+	uint i;
+	uint const cpu = op_cpu_id();
+	uint const nr_ctrs = get_model()->num_counters;
+	uint const nr_ctrls = get_model()->num_controls;
+	struct op_msr_group * counters = &cpu_msrs[cpu].counters;
+	struct op_msr_group * controls = &cpu_msrs[cpu].controls;
+
+	counters->addrs = NULL; 
+	counters->saved = NULL;
+	controls->addrs = NULL;
+	controls->saved = NULL;
+
+	counters->addrs = kmalloc(nr_ctrs * sizeof(uint), GFP_KERNEL);
+	if (!counters->addrs)
+		goto fault;
+
+	counters->saved = kmalloc(
+		nr_ctrs * sizeof(struct op_saved_msr), GFP_KERNEL);
+	if (!counters->saved)
+		goto fault;
+ 
+	controls->addrs = kmalloc(nr_ctrls * sizeof(uint), GFP_KERNEL);
+	if (!controls->addrs)
+		goto fault;
+
+	controls->saved = kmalloc(
+		nr_ctrls * sizeof(struct op_saved_msr), GFP_KERNEL);
+	if (!controls->saved)
+		goto fault;
+ 
+	model->fill_in_addresses(&cpu_msrs[cpu]);
+
+	for (i = 0; i < nr_ctrs; ++i) {
+		rdmsr(counters->addrs[i],
+			counters->saved[i].low,
+			counters->saved[i].high);
+	}
+
+	for (i = 0; i < nr_ctrls; ++i) {
+		rdmsr(controls->addrs[i],
+			controls->saved[i].low,
+			controls->saved[i].high);
+	}
+	return;
+
+fault:
+	free_msr_group(counters);
+	free_msr_group(controls);
+}
+ 
+
+static void pmc_restore_registers(void * dummy)
+{
+	uint i;
+	uint const cpu = op_cpu_id();
+	uint const nr_ctrs = get_model()->num_counters;
+	uint const nr_ctrls = get_model()->num_controls;
+	struct op_msr_group * counters = &cpu_msrs[cpu].counters;
+	struct op_msr_group * controls = &cpu_msrs[cpu].controls;
+
+	if (controls->addrs) {
+		for (i = 0; i < nr_ctrls; ++i) {
+			wrmsr(controls->addrs[i],
+				controls->saved[i].low,
+				controls->saved[i].high);
+		}
+	}
+
+	if (counters->addrs) {
+		for (i = 0; i < nr_ctrs; ++i) {
+			wrmsr(counters->addrs[i],
+				counters->saved[i].low,
+				counters->saved[i].high);
+		}
+	}
+
+	free_msr_group(counters);
+	free_msr_group(controls);
+}
+ 
 
 static int pmc_init(void)
 {
-	int i;
 	int err = 0;
-
-	if (sysctl.cpu_type == CPU_ATHLON) {
-		op_nr_counters = 4;
-		separate_running_bit = 1;
-	}
-
-	/* let's use the right MSRs */
-	switch (sysctl.cpu_type) {
-		case CPU_ATHLON:
-			eventsel_msr[0] = MSR_K7_PERFCTL0;
-			eventsel_msr[1] = MSR_K7_PERFCTL1;
-			eventsel_msr[2] = MSR_K7_PERFCTL2;
-			eventsel_msr[3] = MSR_K7_PERFCTL3;
-			perfctr_msr[0] = MSR_K7_PERFCTR0;
-			perfctr_msr[1] = MSR_K7_PERFCTR1;
-			perfctr_msr[2] = MSR_K7_PERFCTR2;
-			perfctr_msr[3] = MSR_K7_PERFCTR3;
-			break;
-		default:
-			eventsel_msr[0] = MSR_P6_EVNTSEL0;
-			eventsel_msr[1] = MSR_P6_EVNTSEL1;
-			perfctr_msr[0] = MSR_P6_PERFCTR0;
-			perfctr_msr[1] = MSR_P6_PERFCTR1;
-			break;
-	}
-
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		rdmsr(eventsel_msr[i], saved_eventsel_low[i], saved_eventsel_high[i]);
-		rdmsr(perfctr_msr[i], saved_perfctr_low[i], saved_perfctr_high[i]);
-	}
-
-	/* setup each counter */
-	if ((err = apic_setup()))
+ 
+	if ((err = smp_call_function(pmc_save_registers, NULL, 0, 1))) {
 		goto out;
+	}
+	pmc_save_registers(NULL);
+ 
+	if ((err = apic_setup()))
+		goto out_restore;
 
 	if ((err = smp_call_function(lvtpc_apic_setup, NULL, 0, 1))) {
 		lvtpc_apic_restore(NULL);
+		goto out_restore;
 	}
 
 out:
 	return err;
+out_restore:
+	smp_call_function(pmc_restore_registers, NULL, 0, 1);
+	pmc_restore_registers(NULL);
+	goto out;
 }
 
+ 
 static void pmc_deinit(void)
 {
-	int i;
-
 	smp_call_function(lvtpc_apic_restore, NULL, 0, 1);
 	lvtpc_apic_restore(NULL);
 
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		wrmsr(eventsel_msr[i], saved_eventsel_low[i], saved_eventsel_high[i]);
-		wrmsr(perfctr_msr[i], saved_perfctr_low[i], saved_perfctr_high[i]);
-	}
-
 	apic_restore();
+
+	smp_call_function(pmc_restore_registers, NULL, 0, 1);
+	pmc_restore_registers(NULL);
 }
+ 
 
 static char *names[] = { "0", "1", "2", "3", "4", };
 
@@ -355,7 +334,8 @@ static int pmc_add_sysctls(ctl_table * next)
 	ctl_table * tab;
 	int i, j;
 
-	for (i=0; i < op_nr_counters; i++) {
+	/* now init the sysctls */
+	for (i=0; i < get_model()->num_counters; i++) {
 		next->ctl_name = 1;
 		next->procname = names[i];
 		next->mode = 0755;
@@ -386,16 +366,17 @@ cleanup:
 	return -EFAULT;
 }
 
+ 
 static void pmc_remove_sysctls(ctl_table * next)
 {
 	int i;
-
-	for (i=0; i < op_nr_counters; i++) {
+	for (i=0; i < get_model()->num_counters; i++) {
 		kfree(next->child);
 		next++;
 	}
 }
 
+ 
 static struct op_int_operations op_nmi_ops = {
 	init: pmc_init,
 	deinit: pmc_deinit,
@@ -408,6 +389,7 @@ static struct op_int_operations op_nmi_ops = {
 	start_cpu: pmc_select_start,
 	stop_cpu: pmc_select_stop,
 };
+
 
 struct op_int_operations const * op_int_interface()
 {

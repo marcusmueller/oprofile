@@ -26,7 +26,7 @@ unsigned long opd_stats[OPD_MAX_STATS];
  */
 void opd_print_stats(void)
 {
-	printf("%s\n", op_get_time());
+	printf("\n%s\n", op_get_time());
 	printf("Nr. proc struct: %d\n", opd_get_nr_procs());
 	printf("Nr. image struct: %d\n", nr_images);
 	printf("Nr. kernel samples: %lu\n", opd_stats[OPD_KERNEL]);
