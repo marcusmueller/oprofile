@@ -1,5 +1,9 @@
 2003-02-02  John Levon  <levon@movementarian.org>
 
+	* configure.in: bump to 0.5
+
+2003-02-02  John Levon  <levon@movementarian.org>
+
 	* configure.in: disable x86_64
 
 2003-02-02  John Levon  <levon@movementarian.org>
