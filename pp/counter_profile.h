@@ -84,7 +84,7 @@ private:
 	typedef std::map<db_key_t, db_value_t> ordered_samples_t;
 
 	/// helper to build ordered samples by eip
-	void build_ordered_samples(string const & filename);
+	void build_ordered_samples(std::string const & filename);
 
 	/// copy of the samples file header
 	scoped_ptr<opd_header> file_header;
