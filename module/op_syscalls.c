@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.11 2002/02/10 20:22:56 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.12 2002/03/01 19:23:20 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -35,7 +35,10 @@ static uint hash_map_open;
 static struct op_hash_index *hash_map;
 
 void oprof_put_note(struct op_note *samp);
+void __oprof_put_note(struct op_note *samp);
 
+extern spinlock_t note_lock;
+ 
 /* --------- device routines ------------- */
 
 int is_map_ready(void)
@@ -163,8 +166,6 @@ asmlinkage static long (*old_sys_mmap2)(ulong, ulong, ulong, ulong, ulong, ulong
 asmlinkage static long (*old_sys_init_module)(const char *, struct module *);
 asmlinkage static long (*old_sys_exit)(int);
 
-spinlock_t map_lock = SPIN_LOCK_UNLOCKED;
-
 #ifndef NEED_2_2_DENTRIES
 int wind_dentries_2_4(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt)
 {
@@ -197,7 +198,7 @@ int wind_dentries_2_4(struct dentry *dentry, struct vfsmount *vfsmnt, struct den
 	return 1;
 }
 
-/* called with map_lock held */
+/* called with note_lock held */
 static uint do_path_hash_2_4(struct dentry *dentry, struct vfsmount *vfsmnt)
 {
 	uint value;
@@ -220,7 +221,7 @@ static uint do_path_hash_2_4(struct dentry *dentry, struct vfsmount *vfsmnt)
 }
 #endif /* NEED_2_2_DENTRIES */
 
-/* called with map_lock held */
+/* called with note_lock held */
 uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentry *root, struct vfsmount *rootmnt)
 {
 	struct qstr *dname;
@@ -281,7 +282,7 @@ fulltable:
 	goto out;
 }
 
-/* called with map_lock held */
+/* called with note_lock held */
 static void oprof_output_map(ulong addr, ulong len,
 	ulong offset, struct file *file, int is_execve)
 {
@@ -302,7 +303,8 @@ static void oprof_output_map(ulong addr, ulong len,
 	note.hash = hash_path(file);
 	if (note.hash == -1)
 		return;
-	oprof_put_note(&note);
+	/* holding note lock */
+	__oprof_put_note(&note);
 }
 
 static int oprof_output_maps(struct task_struct *task)
@@ -321,7 +323,7 @@ static int oprof_output_maps(struct task_struct *task)
 		goto out;
 
 	lock_mmap(mm);
-	spin_lock(&map_lock);
+	spin_lock(&note_lock);
 	for (map = mm->mmap; map; map = map->vm_next) {
 		if (!(map->vm_flags & VM_EXEC) || !map->vm_file)
 			continue;
@@ -330,7 +332,7 @@ static int oprof_output_maps(struct task_struct *task)
 			GET_VM_OFFSET(map), map->vm_file, is_execve);
 		is_execve = 0;
 	}
-	spin_unlock(&map_lock);
+	spin_unlock(&note_lock);
 	unlock_mmap(mm);
 
 out:
@@ -380,9 +382,9 @@ static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 	if (!file)
 		goto out;
 
-	spin_lock(&map_lock);
+	spin_lock(&note_lock);
 	oprof_output_map(addr, len, offset, file, 0);
-	spin_unlock(&map_lock);
+	spin_unlock(&note_lock);
 
 	fput(file);
 

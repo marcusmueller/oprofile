@@ -7,18 +7,17 @@
    artificially created symbols
    these two todo are perhaps worthwhile to implement now. The new filtering
    of symbols make them less interesting.
- o remove note lock (and rename map lock) ... I think
  o should we pin rather than loop sample buffer overflow too ?
  o cleanup cache things in compat22.h, add and use cache_line_aligned_in_smp
  o improve format of oprofpp output etc. The necessary stuff is in cvs now. It
   need perhaps to be tuned.
  o check than all post-profiles tools show version nr in the same way and document it
  
+ o test note_lock changes
  
 Before 1.0
 ----------
 
- o pp rewrite ! not clear if we need to rewrite it.
  o coherent naming class conventions
  o use standard C integer type <stdint.h> int32_t int16_t etc.
 	- but they are so ugly ...
@@ -32,7 +31,6 @@ Before 1.0
  o check documentation
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level.
- o profile the NMI handler code
  o verify builds (modversions, kernel versions, athlon etc.). I have the
   necessary stuff to check kernel versions/configurations on PPro core (Phil)
  o use a filelock rather a sleep to synchronize op_start and daemon.
@@ -49,6 +47,8 @@ Before 1.0
 Later
 -----
 
+o pp rewrite ! not clear if we need to rewrite it.
+o profile the NMI handler code
 o post-prof GUI ? (big job)
  
 o merge sample files into one big report (like vtune can do repeated runs)

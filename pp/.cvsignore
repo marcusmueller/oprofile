@@ -1,4 +1,5 @@
 .deps
+op_merge
 Makefile
 op_time
 oprofpp

@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.34 2002/01/05 02:40:57 movement Exp $ */
+/* $Id: opd_util.c,v 1.35 2002/03/01 19:23:20 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -365,7 +365,7 @@ char *opd_get_line(FILE *fp)
 	buf = xmalloc(max);
 	cp = buf; 
 
-	do {
+	while (1) {
 		switch (c = fgetc(fp)) { 
 			case EOF:
 			case '\n':
@@ -384,7 +384,7 @@ char *opd_get_line(FILE *fp)
 				}
 				break;
 		}
-	} while (1);
+	}
 }
 
 /**

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.105 2002/02/09 21:02:46 movement Exp $ */
+/* $Id: opd_proc.c,v 1.106 2002/03/01 19:23:20 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1368,7 +1368,7 @@ static void opd_get_ascii_maps(struct opd_proc *proc)
 	if (!fp)
 		return;
 
-	do {
+	while (1) {
 		line = opd_get_line(fp);
 		if (streq(line, "") && feof(fp)) {
 			free(line);
@@ -1377,7 +1377,7 @@ static void opd_get_ascii_maps(struct opd_proc *proc)
 			opd_add_ascii_map(proc, line);
 			free(line);
 		}
-	} while (1);
+	}
 
 	opd_close_file(fp);
 }

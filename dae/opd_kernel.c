@@ -51,7 +51,7 @@ void opd_read_system_map(const char *filename)
 
 	fp = opd_open_file(filename, "r");
 
-	do {
+	while (1) {
 		line = opd_get_line(fp);
 		if (streq(line, "")) {
 			free(line);
@@ -68,7 +68,7 @@ void opd_read_system_map(const char *filename)
 				sscanf(line, "%x", &kernel_end);
 			free(line);
 		}
-	} while (1);
+	}
 
 	if (kernel_start && kernel_end)
 		got_system_map = TRUE;
@@ -167,7 +167,7 @@ static void opd_get_module_info(void)
 		return;
 	}
 
-	do {
+	while (1) {
 		line = opd_get_line(fp);
 		if (streq("", line) && !feof(fp)) {
 			free(line);
@@ -242,7 +242,7 @@ static void opd_get_module_info(void)
 		}
 
 		free(line);
-	} while (1);
+	}
 
 failure:
 	free(line);

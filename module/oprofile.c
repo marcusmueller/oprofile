@@ -57,8 +57,6 @@ struct _oprof_data oprof_data[NR_CPUS];
 struct op_note * note_buffer __cacheline_aligned;
 u32 note_pos __cacheline_aligned;
 
-extern spinlock_t map_lock;
-
 // the interrupt handler ops structure to use
 static struct op_int_operations * int_ops;
 
@@ -119,6 +117,7 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const str
 inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, int ctr)
 {
 	ops->eip = regs->eip;
+	/* FIXME: tgid */ 
 	ops->pid = current->pid;
 	ops->count = (1U << OP_BITS_COUNT)*ctr + 1;
 }
@@ -190,14 +189,20 @@ inline static void up_and_check_note(void)
 	oprof_wake_up(&oprof_wait);
 }
 
-void oprof_put_note(struct op_note *onote)
+// if holding note_lock
+void __oprof_put_note(struct op_note *onote)
 {
 	if (!prof_on)
 		return;
 
-	spin_lock(&note_lock);
 	memcpy(&note_buffer[note_pos], onote, sizeof(struct op_note));
 	up_and_check_note();
+}
+ 
+void oprof_put_note(struct op_note *onote)
+{
+	spin_lock(&note_lock);
+	__oprof_put_note(onote);
 	spin_unlock(&note_lock);
 }
 
@@ -570,7 +575,6 @@ static int oprof_stop(void)
 
 	oprof_partial_stop();
 
-	spin_lock(&map_lock);
 	spin_lock(&note_lock);
 
 	for (i=0; i < smp_num_cpus; i++) {
@@ -582,7 +586,6 @@ static int oprof_stop(void)
 	oprof_free_mem(smp_num_cpus);
 
 	spin_unlock(&note_lock);
-	spin_unlock(&map_lock);
 	err = 0;
 
 out:
