@@ -18,10 +18,9 @@ class string_filter;
 
 
 /// Load all sample file information for exactly one binary image.
-/// return false if none of the image contains debug information
-bool
+void
 populate_for_image(std::string const & archive_path,
-   profile_container & samples,
-   inverted_profile const & ip, string_filter const & symbol_filter);
+   profile_container & samples, inverted_profile const & ip,
+   string_filter const & symbol_filter, bool * has_debug_info);
 
 #endif /* POPULATE_H */

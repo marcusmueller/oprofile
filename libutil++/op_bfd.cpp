@@ -149,7 +149,7 @@ separate_debug_file_exists(string const & name,
 {
 	unsigned long file_crc = 0;
 	// The size of 8*1024 element for the buffer is arbitrary.
-	char buffer[8*1024];
+	char buffer[2*1024];
 	
 	ifstream file(name.c_str());
 	if (!file)
@@ -277,18 +277,17 @@ op_bfd_symbol::op_bfd_symbol(bfd_vma vma, size_t size, string const & name)
 }
 
 
-op_bfd::op_bfd(string const & archive_path, string const & fname,
+op_bfd::op_bfd(string const & archive, string const & fname,
 	       string_filter const & symbol_filter, bool & ok)
 	:
 	filename(fname),
+	archive_path(archive),
 	file_size(-1),
 	ibfd(0),
 	dbfd(0),
 	text_offset(0),
-	debug_info(false),
 	prev_total_symcount(0)
 {
-	string image_path = archive_path + filename;
 	int fd;
 	struct stat st;
 	// after creating all symbol it's convenient for user code to access
@@ -296,6 +295,10 @@ op_bfd::op_bfd(string const & archive_path, string const & fname,
 	// O(N²) behavior when we will filter vector element below
 	symbols_found_t symbols;
 	asection const * sect;
+
+	string const image_path = archive_path + filename;
+
+	cverb << vbfd << "op_bfd ctor for " << image_path << endl;
 
 	// if there's a problem already, don't try to open it
 	if (!ok)
@@ -309,7 +312,7 @@ op_bfd::op_bfd(string const & archive_path, string const & fname,
 	}
 
 	if (fstat(fd, &st)) {
-		cverb << vbfd << "stat failed for " << filename << endl;
+		cverb << vbfd << "stat failed for " << image_path << endl;
 		ok = false;
 		goto out_fail;
 	}
@@ -332,39 +335,6 @@ op_bfd::op_bfd(string const & archive_path, string const & fname,
 			cverb << vbfd << sect->name << " filepos "
 				<< hex << text_offset << endl;
 			break;
-		}
-	}
-
-	for (sect = ibfd->sections; sect; sect = sect->next) {
-		if (sect->flags & SEC_DEBUGGING) {
-			debug_info = true;
-			break;
-		}
-	}
-
-	// if no debugging section check to see if there is an .debug file
-	if (!debug_info) {
-		string global(archive_path + DEBUGDIR);
-		string dirname(image_path.substr(0, image_path.rfind('/')));
-		if (find_separate_debug_file (ibfd, dirname, global,
-					      debug_filename)) {
-			cverb << vbfd
-			      << "now loading: " << debug_filename << endl;
-			dbfd = open_bfd(debug_filename);
-			if (dbfd) {
-				for (sect = dbfd->sections; sect; 
-				     sect = sect->next) {
-					if (sect->flags & SEC_DEBUGGING) {
-						debug_info = true;
-						break;
-					}
-				}
-			} else {
-				// .debug is optional, so will not fail if
-				// problem opening file.
-				cverb << vbfd << "unable to open: "
-				      << debug_filename << endl;
-			}
 		}
 	}
 
@@ -602,6 +572,12 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 	if (bfd_get_file_flags(ibfd) & HAS_SYMS)
 		size_binary = bfd_get_symtab_upper_bound(ibfd);
 
+	// On separate debug file systems, the main bfd has no symbols,
+	// so even for non -g reports, we want to process the dbfd.
+	// This hurts us pretty badly (the CRC), but we really don't
+	// have much choice at the moment.
+	has_debug_info();
+
 	if (dbfd && (bfd_get_file_flags(dbfd) & HAS_SYMS))
 		size_debug += bfd_get_symtab_upper_bound(dbfd);
 
@@ -611,7 +587,7 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 	if (size < 1)
 		return;
 
-	bfd_syms.reset(new asymbol*[size]);
+	bfd_syms.reset(new asymbol *[size]);
 
 	if (size_binary > 0)
 		get_symbols_from_file(ibfd, 0, symbols, false);
@@ -696,12 +672,48 @@ bfd_vma op_bfd::offset_to_pc(bfd_vma offset) const
 }
 
 
+bool op_bfd::has_debug_info() const
+{
+	if (debug_info.cached())
+		return debug_info.get();
+
+	asection const * sect;
+
+	for (sect = ibfd->sections; sect; sect = sect->next) {
+		if (sect->flags & SEC_DEBUGGING)
+			return debug_info.reset(true);
+	}
+
+	// check to see if there is an .debug file
+	string const global(archive_path + DEBUGDIR);
+	string const image_path = archive_path + filename;
+	string const dirname(image_path.substr(0, image_path.rfind('/')));
+
+	if (find_separate_debug_file(ibfd, dirname, global, debug_filename)) {
+		cverb << vbfd << "now loading: " << debug_filename << endl;
+		dbfd = open_bfd(debug_filename);
+		if (dbfd) {
+			for (sect = dbfd->sections; sect; sect = sect->next) {
+				if (sect->flags & SEC_DEBUGGING)
+					return debug_info.reset(true);
+			}
+		}
+	}
+
+	// .debug is optional, so will not fail if there's a problem
+	cverb << vbfd << "failed to process separate debug file "
+	      << debug_filename << endl;
+
+	return debug_info.reset(false);
+}
+
+
 bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 			string & source_filename, unsigned int & linenr) const
 {
 	linenr = 0;
 
-	if (!debug_info)
+	if (!has_debug_info())
 		return false;
 
 	char const * functionname;

@@ -463,7 +463,7 @@ int opreport(vector<string> const & non_options)
 
 		for (; it != end; ++it)
 			populate_for_image(options::archive_path, samples,
-				*it, options::symbol_filter);
+				*it, options::symbol_filter, 0);
 
 		output_symbols(samples, multiple_apps);
 	}

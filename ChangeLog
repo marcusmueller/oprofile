@@ -1,3 +1,17 @@
+2005-04-06  John Levon  <levon@movementarian.org>
+
+	* libpp/populate.h:
+	* libpp/populate.cpp:
+	* libpp/callgraph_container.cpp:
+	* libutil++/cached_value.h:
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp:
+	* pp/opannotate.cpp:
+	* pp/opreport.cpp:
+	* libutil++/tests/Makefile.am:
+	* libutil++/tests/cached_value_tests.cpp: tweak CRC buffer.
+	Do delayed debug info searching (makes no actual difference).
+
 2005-04-05  John Levon  <levon@movementarian.org>
 
 	* libpp/format_output.cpp: add separator at first function

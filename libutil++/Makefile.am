@@ -30,4 +30,5 @@ libutil___a_SOURCES = \
 	child_reader.h \
 	unique_storage.h \
 	utility.h \
+	cached_value.h \
 	comma_list.h

@@ -194,8 +194,7 @@ void callgraph_container::populate(string const & archive_path,
 	list<inverted_profile>::const_iterator const end = iprofiles.end();
 	for (it = iprofiles.begin(); it != end; ++it) {
 		// populate_caller_image take care about empty sample filename
-		populate_for_image(archive_path, pc, *it,
-			sym_filter);
+		populate_for_image(archive_path, pc, *it, sym_filter, 0);
 	}
 
 	add_symbols(pc);

@@ -1485,7 +1485,10 @@ function (for example, <function>repeat()</function> calls
 <function>strfry()</function>. The samples and percentage values here
 refer to the number of times we took a sample where this call was found
 in the stack; the percentage is relative to all other callers of the
-function we're focussing on.
+function we're focussing on. Note that these values are
+<emphasis>not</emphasis> call counts; they only reflect the call stack
+every time a sample is taken; that is, if a call is found in the stack
+at the time of a sample, it is recorded in this count.
 </para>
 <para>
 Below the line are functions that are called by

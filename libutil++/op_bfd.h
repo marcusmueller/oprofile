@@ -21,6 +21,7 @@
 #include <list>
 
 #include "utility.h"
+#include "cached_value.h"
 #include "op_types.h"
 
 class op_bfd;
@@ -154,7 +155,11 @@ public:
 	/** return the text section filepos. */
 	unsigned long const get_start_offset() const { return text_offset; }
  
-	/// return the image name of the underlying binary image
+	/**
+	 * Return the image name of the underlying binary image. For an
+	 * archive, this returns the path *within* the archive, not the
+	 * full path of the file.
+	 */
 	std::string get_filename() const;
 
 	/// sorted vector by vma of interesting symbol.
@@ -166,11 +171,14 @@ public:
 	size_t bfd_arch_bits_per_address() const;
 
 	/// return true if binary contain some debug information
-	bool has_debug_info() const { return debug_info; }
+	bool has_debug_info() const;
 
 private:
-	/// filename we open
+	/// filename we open (not including archive path)
 	std::string filename;
+
+	/// path to archive
+	std::string archive_path;
 
 	/// file size in bytes
 	off_t file_size;
@@ -184,10 +192,10 @@ private:
 	// information.
 
 	// corresponding debug file name
-	std::string debug_filename;
+	mutable std::string debug_filename;
 
 	// corresponding debug bfd object.
-	bfd * dbfd;
+	mutable bfd * dbfd;
 
 	// vector of symbol filled by the bfd lib.
 	scoped_array<asymbol*> bfd_syms;
@@ -196,7 +204,7 @@ private:
 	unsigned long text_offset;
 
 	/// true if at least one section has (flags & SEC_DEBUGGING) != 0
-	bool debug_info;
+	mutable cached_value<bool> debug_info;
 
 	/// temporary container for getting symbols
 	typedef std::list<op_bfd_symbol> symbols_found_t;

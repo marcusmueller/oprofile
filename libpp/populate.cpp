@@ -48,9 +48,10 @@ populate_from_files(profile_t & profile,
 }  // anon namespace
 
 
-bool
+void
 populate_for_image(string const & archive_path, profile_container & samples,
-   inverted_profile const & ip, string_filter const & symbol_filter)
+   inverted_profile const & ip, string_filter const & symbol_filter,
+   bool * has_debug_info)
 {
 	bool ok = ip.error == image_ok;
 
@@ -90,5 +91,6 @@ populate_for_image(string const & archive_path, profile_container & samples,
 	if (archive_path.empty() && found == true && ip.error == image_ok)
 		check_mtime(abfd.get_filename(), header);
 
-	return abfd.has_debug_info();
+	if (has_debug_info)
+		*has_debug_info = abfd.has_debug_info();
 }

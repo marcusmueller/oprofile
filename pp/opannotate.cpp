@@ -679,8 +679,8 @@ int opannotate(vector<string> const & non_options)
 
 	bool debug_info = false;
 	for (; it != end; ++it) {
-		debug_info |= populate_for_image(options::archive_path,
-			*samples, *it, options::symbol_filter);
+		populate_for_image(options::archive_path, *samples, *it,
+		                   options::symbol_filter, &debug_info);
 		images.push_back(it->image);
 	}
 
