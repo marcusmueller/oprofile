@@ -1,3 +1,10 @@
+2003-07-07  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opannotate.cpp:
+	* pp/opgprof.cpp:
+	* pp/opreport.cpp: cleanup walking through multimap with a
+	  pair<iterator, iterator>
+
 2003-07-05  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_image.c:

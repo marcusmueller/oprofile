@@ -263,10 +263,7 @@ void populate_profiles(partition_files const & files, profile_container & sample
 		pair<image_set::const_iterator, image_set::const_iterator>
 			p_it = images.equal_range(it->first);
 
-		if (p_it.first == p_it.second)
-			continue;
-
-		op_bfd abfd(p_it.first->first, options::symbol_filter);
+		op_bfd abfd(it->first, options::symbol_filter);
 
 		// we can optimize by cumulating samples to this binary in
 		// a profile_t only if we merge by lib since for non merging
@@ -276,7 +273,7 @@ void populate_profiles(partition_files const & files, profile_container & sample
 
 			profile_t profile;
 
-			for (it = p_it.first;  it != p_it.second; ++it) {
+			for (;  it != p_it.second; ++it) {
 				profile.add_sample_file(
 					it->second.sample_filename,
 					abfd.get_start_offset());
@@ -286,7 +283,7 @@ void populate_profiles(partition_files const & files, profile_container & sample
 	
 			samples.add(profile, abfd, app_name);
 		} else {
-			for (it = p_it.first;  it != p_it.second; ++it) {
+			for (; it != p_it.second; ++it) {
 				string app_name = it->second.image;
 
 				profile_t profile;

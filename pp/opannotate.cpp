@@ -67,9 +67,6 @@ image_set populate_samples(profile_container & samples,
 		pair<image_set::const_iterator, image_set::const_iterator>
 			p_it = images.equal_range(it->first);
 
-		if (p_it.first == p_it.second)
-			continue;
-
 		op_bfd abfd(p_it.first->first, symbol_filter);
 		profile_t profile;
 
@@ -78,7 +75,7 @@ image_set populate_samples(profile_container & samples,
 			app_name = p_it.first->first;
 		}
 
-		for (it = p_it.first;  it != p_it.second; ++it) {
+		for (; it != p_it.second; ++it) {
 			profile.add_sample_file(it->second.sample_filename,
 						abfd.get_start_offset());
 		}
