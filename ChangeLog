@@ -1,3 +1,9 @@
+2002-01-16  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in: look for rtc_lock
+ 
+	* module/compat.h: use rtc_lock if there
+
 2002-01-16  Philippe Elie  <ph_e@club-internet.fr>
 
 	* module/compat.h:

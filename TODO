@@ -16,8 +16,6 @@ o more discussion of problematic code needs to go in the "interpreting" section.
  
 6) little output things (e.g. don't print unit mask) RTC
  
-7) RTC SMP ?? anything else ?
- 
 o audit oprof_start for security...
  
 Before 1.0

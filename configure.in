@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.69 2002/01/13 21:33:38 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.70 2002/01/16 05:04:34 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -121,6 +121,14 @@ int i;
 if (__builtin_expect(i, 0)) { }
 ],AC_MSG_RESULT("yes"); BKCFLAGS="$BKCFLAGS -DEXPECT_OK", AC_MSG_RESULT("no");)
 CFLAGS=$SAVE_CFLAGS 
+ 
+AC_MSG_CHECKING(for rtc_lock)
+gcc -I$KINC -E $KINC/linux/mc146818rtc.h | grep rtc_lock >/dev/null
+if test "$?" -eq 0; then
+  AC_MSG_RESULT(yes); BKCFLAGS="$BKCFLAGS -DRTC_LOCK";
+else
+  AC_MSG_RESULT(no);
+fi
  
 AC_MSG_CHECKING(for hard_get_current())
 HARD_GET_CURRENT=`gcc -I$KINC -E $KINC/asm/current.h | grep hard_get_current`
