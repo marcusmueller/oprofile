@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.90 2001/09/18 10:00:07 movement Exp $ */
+/* $Id: oprofile.c,v 1.91 2001/09/19 20:08:21 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -462,7 +462,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 
 	max = sizeof(struct op_sample) * op_buf_size;
 
-	if (*ppos || count != sizeof(struct op_sample) + max)
+	if (*ppos || count != max)
 		return -EINVAL;
 
 	mybuf = vmalloc(max);

@@ -1,5 +1,13 @@
 2001-09-19  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprofile.c: fix silly read valid bug
+ 
+2001-09-19  John Levon  <moz@compsoc.man.ac.uk>
+
+	* Makefile.in: whoops, missed op_util.o from build
+ 
+2001-09-19  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/oprofiled.c: fix little bug, tidy a bit
 
 	* TODO: update
