@@ -102,7 +102,7 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 
 	strcpy(exe_name, mapsfile);
 
-	strcat(mapsfile,"/maps");
+	strcat(mapsfile, "/maps");
 
 	fp = op_try_open_file(mapsfile, "r");
 	if (!fp)
@@ -172,7 +172,7 @@ static u32 read_tgid(u32 tid)
 
 	snprintf(status_file + 6, 6, "%hu", tid);
 
-	strcat(status_file,"/status");
+	strcat(status_file, "/status");
 
 	fp = op_try_open_file(status_file, "r");
 	if (!fp)

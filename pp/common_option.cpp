@@ -37,7 +37,7 @@ popt::option common_options_array[] = {
 		     // FIXME help string for verbose level
 		     "verbose output", "all,debug,bfd,level1,sfile,stats"),
 	popt::option(image_path, "image-path", 'p',
-		     "comma-separated path to search missing binaries","path"),
+		     "comma-separated path to search missing binaries", "path"),
 };
 
 

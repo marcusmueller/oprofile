@@ -394,7 +394,7 @@ int main(int argc, char const *argv[])
 		       "Intel Itanium Processor Reference Manual\n"
 		       "for Software Optimization (Document 245473-003),\n"
 		       "Intel Itanium 2 Processor Reference Manual\n"
-		       "for Software Development and Optimization (Document 251110-001),\n\n");
+		       "for Software Development and Optimization (Document 251110-001)\n\n");
 		break;
 	case CPU_AXP_EV4:
 	case CPU_AXP_EV5:
@@ -455,7 +455,7 @@ int main(int argc, char const *argv[])
 	case CPU_TIMER_INT:
 	case CPU_NO_GOOD:
 	case MAX_CPU_TYPE:
-		printf("%d is not a valid processor type,\n", cpu_type);
+		printf("%d is not a valid processor type.\n", cpu_type);
 		break;
 	}
 

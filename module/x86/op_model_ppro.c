@@ -17,18 +17,18 @@
 #define NUM_COUNTERS 2
 #define NUM_CONTROLS 2
 
-#define CTR_READ(l,h,msrs,c) do {rdmsr(msrs->counters.addrs[(c)], (l), (h));} while (0)
-#define CTR_WRITE(l,msrs,c) do {wrmsr(msrs->counters.addrs[(c)], -(u32)(l), -1);} while (0)
+#define CTR_READ(l, h, msrs, c) do {rdmsr(msrs->counters.addrs[(c)], (l), (h));} while (0)
+#define CTR_WRITE(l, msrs, c) do {wrmsr(msrs->counters.addrs[(c)], -(u32)(l), -1);} while (0)
 #define CTR_OVERFLOWED(n) (!((n) & (1U<<31)))
 
-#define CTRL_READ(l,h,msrs,c) do {rdmsr((msrs->controls.addrs[(c)]), (l), (h));} while (0)
-#define CTRL_WRITE(l,h,msrs,c) do {wrmsr((msrs->controls.addrs[(c)]), (l), (h));} while (0)
+#define CTRL_READ(l, h, msrs, c) do {rdmsr((msrs->controls.addrs[(c)]), (l), (h));} while (0)
+#define CTRL_WRITE(l, h, msrs, c) do {wrmsr((msrs->controls.addrs[(c)]), (l), (h));} while (0)
 #define CTRL_SET_ACTIVE(n) (n |= (1<<22))
 #define CTRL_SET_INACTIVE(n) (n &= ~(1<<22))
 #define CTRL_CLEAR(x) (x &= (1<<21))
 #define CTRL_SET_ENABLE(val) (val |= 1<<20)
-#define CTRL_SET_USR(val,u) (val |= ((u & 1) << 16))
-#define CTRL_SET_KERN(val,k) (val |= ((k & 1) << 17))
+#define CTRL_SET_USR(val, u) (val |= ((u & 1) << 16))
+#define CTRL_SET_KERN(val, k) (val |= ((k & 1) << 17))
 #define CTRL_SET_UM(val, m) (val |= (m << 8))
 #define CTRL_SET_EVENT(val, e) (val |= e)
 
@@ -97,7 +97,7 @@ static void ppro_check_ctrs(uint const cpu,
  
 static void ppro_start(struct op_msrs const * const msrs)
 {
-	uint low,high;
+	uint low, high;
 	CTRL_READ(low, high, msrs, 0);
 	CTRL_SET_ACTIVE(low);
 	CTRL_WRITE(low, high, msrs, 0);
@@ -106,7 +106,7 @@ static void ppro_start(struct op_msrs const * const msrs)
 
 static void ppro_stop(struct op_msrs const * const msrs)
 {
-	uint low,high;
+	uint low, high;
 	CTRL_READ(low, high, msrs, 0);
 	CTRL_SET_INACTIVE(low);
 	CTRL_WRITE(low, high, msrs, 0);

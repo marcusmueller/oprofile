@@ -110,8 +110,7 @@ bool create_file_list(list<string> & file_list, string const & base_dir,
 						file_list.push_back(name);
 					}
 				}
-			}
-			else {
+			} else {
 				file_list.push_back(ent->d_name);
 			}
 		}

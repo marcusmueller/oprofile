@@ -30,17 +30,17 @@ struct gate_struct {
 	u32 b;
 } __attribute__((packed));
 
-#define _set_gate(gate_addr,type,dpl,addr) \
+#define _set_gate(gate_addr, type, dpl, addr) \
 do { \
 	int __d0, __d1; \
-	__asm__ __volatile__ ("movw %%dx,%%ax\n\t" \
-	"movw %4,%%dx\n\t" \
-	"movl %%eax,%0\n\t" \
-	"movl %%edx,%1" \
+	__asm__ __volatile__ ("movw %%dx, %%ax\n\t" \
+	"movw %4, %%dx\n\t" \
+	"movl %%eax, %0\n\t" \
+	"movl %%edx, %1" \
 	:"=m" (*((long *) (gate_addr))), \
 	 "=m" (*(1+(long *) (gate_addr))), "=&a" (__d0), "=&d" (__d1) \
 	:"i" ((short) (0x8000+(dpl<<13)+(type<<8))), \
-	 "3" ((char *) (addr)),"2" (__KERNEL_CS << 16)); \
+	 "3" ((char *) (addr)), "2" (__KERNEL_CS << 16)); \
 } while (0)
 
 #define SET_NMI_GATE	\

@@ -240,8 +240,8 @@ static void opd_get_module_info(void)
 				}
 
 				cp2 += 7;
-				sscanf(line,"%lx", &mod->start);
-				sscanf(cp2,"%lu", &mod->end);
+				sscanf(line, "%lx", &mod->start);
+				sscanf(cp2, "%lu", &mod->end);
 				mod->end += mod->start;
 				break;
 		}

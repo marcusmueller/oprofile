@@ -130,7 +130,7 @@ static void opd_go_daemon(void)
 	opd_fork();
 
 	if (chdir(OP_BASE_DIR)) {
-		fprintf(stderr,"oprofiled: opd_go_daemon: couldn't chdir to "
+		fprintf(stderr, "oprofiled: opd_go_daemon: couldn't chdir to "
 			OP_BASE_DIR ": %s", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
@@ -265,7 +265,7 @@ static void add_image_filter(char const * name)
 	}
 	hash = op_hash_string(elt->name);
 	verbprintf(vmisc, "Adding to image filter: \"%s\"\n", elt->name);
-	list_add(&elt->next,&images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]);
+	list_add(&elt->next, &images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]);
 }
 
 

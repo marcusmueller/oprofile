@@ -16,7 +16,7 @@
  * magically cloberred by wrmsr */
 #if __GNUC__ == 2 && __GNUC_MINOR__ == 91
 	#undef wrmsr
-	#define wrmsr(msr,val1,val2)				\
+	#define wrmsr(msr, val1, val2)				\
 		__asm__ __volatile__("wrmsr"			\
 			/* no outputs */			\
 			:					\

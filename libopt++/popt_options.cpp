@@ -157,7 +157,7 @@ public:
  */
 template <> class option_imp<string> : public option_base {
 public:
-	option_imp(string & value,char const * option_name,
+	option_imp(string & value, char const * option_name,
 	           char short_name, char const * help_str,
 	           char const * arg_help_str);
 

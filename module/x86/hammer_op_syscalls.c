@@ -136,7 +136,7 @@ out:
 	return size;
 }
 
-asmlinkage long my_sys_execve(char *name, char **argv,char **envp, struct pt_regs regs)
+asmlinkage long my_sys_execve(char *name, char **argv, char **envp, struct pt_regs regs)
 {
 	char *filename;
 	long ret;
@@ -191,7 +191,7 @@ int my_sys32_execve(char *name, u32 argv, u32 envp, struct pt_regs regs)
 { 
 	mm_segment_t oldseg; 
 	char **buf; 
-	int na,ne;
+	int na, ne;
 	int ret;
 	unsigned sz; 
 

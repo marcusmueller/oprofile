@@ -120,7 +120,7 @@ static char const * opd_get_hash_name(int hash)
 		char * name = get_from_pool(hashmap[hash].name);
 
 		if (strlen(name) + 1 + strlen(c) >= PATH_MAX) {
-			fprintf(stderr,"String \"%s\" too large.\n", c);
+			fprintf(stderr, "String \"%s\" too large.\n", c);
 			exit(EXIT_FAILURE);
 		}
 
@@ -158,7 +158,7 @@ void opd_handle_mapping(struct op_note const * note)
 	}
 
 	if (hash < 0 || hash >= OP_HASH_MAP_NR) {
-		fprintf(stderr, "hash value %u out of range.\n",hash);
+		fprintf(stderr, "hash value %u out of range.\n", hash);
 		return;
 	}
 

@@ -125,7 +125,7 @@ void output_cg(FILE * fp, op_bfd const & abfd, profile_t const & cg_db)
 void output_gprof(op_bfd const & abfd, profile_container const & samples,
                   profile_t const & cg_db, string const & gmon_filename)
 {
-	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},};
+	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0, 0, 0 } };
 
 	bfd_vma low_pc;
 	bfd_vma high_pc;
@@ -159,7 +159,7 @@ void output_gprof(op_bfd const & abfd, profile_container const & samples,
 
 	FILE * fp = op_open_file(gmon_filename.c_str(), "w");
 
-	op_write_file(fp,&hdr, sizeof(gmon_hdr));
+	op_write_file(fp, &hdr, sizeof(gmon_hdr));
 	op_write_u8(fp, GMON_TAG_TIME_HIST);
 
 	op_write_vma(fp, abfd, low_pc);

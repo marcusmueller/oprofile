@@ -17,11 +17,11 @@
 
 using namespace std;
 
-typedef map<string,int> abi_map;
-typedef map<string,int>::const_iterator abi_iter;
+typedef map<string, int> abi_map;
+typedef map<string, int>::const_iterator abi_iter;
 
 #define byte_addr(x) (reinterpret_cast<unsigned char *>(&(x)))
-#define field_offset(s,f) (byte_addr(s.f) - byte_addr(s))
+#define field_offset(s, f) (byte_addr(s.f) - byte_addr(s))
 
 abi_exception::abi_exception(string const d) : desc(d) {}
 

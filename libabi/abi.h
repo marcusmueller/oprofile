@@ -37,7 +37,7 @@ public:
 	friend std::istream & operator>>(std::istream & i, abi & abi);
 
 private:
-	std::map<std::string,int> slots;
+	std::map<std::string, int> slots;
 };
 
 #endif // OPROF_ABI_H
