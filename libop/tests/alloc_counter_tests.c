@@ -18,6 +18,8 @@
 #include "op_cpu_type.h"
 #include "op_events.h"
 
+/* FIXME: alpha description events need 20 but when running test on x86
+ * OP_MAX_COUNTERS is 8, so we can't use it */
 #define MAX_EVENTS 20
 
 

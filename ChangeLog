@@ -8,6 +8,8 @@
 	* libregex/tests/Makefile.am:
 	* libdb/tests/Makefile.am: s/TEST = (.*)/TESTS = ${check_PROGRAMS}/
 
+	* libop/tests/alloc_counter_tests.c: comment fix
+
 	* libop/tests/Makefile.am:
 	* libop/tests/cpu_type_tests.c: new file, test libop/op_cpu_type.c
 
