@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.30 2000/09/07 20:12:48 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.31 2000/09/28 21:33:11 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -353,6 +353,7 @@ static int output_path_hash(const char *name, uint len)
 }
 
 extern u32 oprof_ready[NR_CPUS];
+extern wait_queue_head_t oprof_wait;
 
 /* called with map_lock held */
 inline static u32 *map_out32(u32 val)
@@ -361,8 +362,10 @@ inline static u32 *map_out32(u32 val)
 	u32 * pos=&map_buf[nextmapbuf];
  
 	map_buf[nextmapbuf++] = val;
-	if (!(++count % OP_MAP_BUF_WATERMARK))
+	if (!(++count % OP_MAP_BUF_WATERMARK)) {
 		oprof_ready[0] = 2;
+		wake_up(&oprof_wait);
+	}
 	if (nextmapbuf==OP_MAX_MAP_BUF)
 		nextmapbuf=0;
 
@@ -383,6 +386,7 @@ static void do_d_path(struct dentry *dentry, struct vfsmount *vfsmnt, char *buf,
 	read_unlock(&current->fs->lock);
 	spin_lock(&dcache_lock);
 
+	/* has it been deleted */
         if (!IS_ROOT(dentry) && list_empty(&dentry->d_hash))
 		return;
 
@@ -432,7 +436,7 @@ static int oprof_output_map(ulong addr, ulong len,
 	tot = map_out32(0);
 	do_d_path(file->f_dentry, file->f_vfsmnt, buf, tot);
 
-	//printk("Map proc %d, 0x%.8x-0x%.8x,off0x%x\n",current->pid,addr,addr+len,offset);
+	//printk("Map proc %d, 0x%.8lx-0x%.8lx,off0x%lx, bytes %u, tot %u\n",current->pid,addr,addr+len,offset,sizeof(u32)*(4+*tot),*tot);
 	return sizeof(u32)*(4+*tot);
 }
 
@@ -524,7 +528,7 @@ static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
 	/* how many bytes to read from map buffer */
 	spin_lock(&map_lock);
 	samp.eip = oprof_output_map(addr,len,offset,file,buffer);
-	//printk("MMAP bytes %d ",samp.eip);
+	//printk("MMAP bytes %d \n",samp.eip);
 	oprof_put_note(&samp);
 	spin_unlock(&map_lock);
 

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.38 2000/09/11 23:42:46 moz Exp $ */
+/* $Id: oprofile.c,v 1.39 2000/09/28 21:33:10 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -626,7 +626,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	uint i;
 	uint num;
 	ssize_t max;
-	int mapbuf_wakeup;
+	int forced_wakeup;
 
 	if (!capable(CAP_SYS_PTRACE))
 		return -EPERM;
@@ -649,7 +649,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 again:
 	for (i=0; i<smp_num_cpus; i++) {
 		if (oprof_ready[i]) {
-			mapbuf_wakeup = oprof_ready[i]-1;
+			forced_wakeup = oprof_ready[i]-1;
 			oprof_ready[i]=0;
 			goto doit;
 		}
@@ -668,9 +668,9 @@ doit:
 
 	num = oprof_data[i].nextbuf;
 	/* might have overflowed from map buffer or ejection buffer */
-	if (num < oprof_data[i].buf_size-OP_PRE_WATERMARK && !mapbuf_wakeup) {
+	if (num < oprof_data[i].buf_size-OP_PRE_WATERMARK && !forced_wakeup) {
 		printk(KERN_ERR "oprofile: Detected overflow of size %d. You must increase the "
-				"hash table or buffer size, or reduce the interrupt frequency\n", num);
+				"hash table size or reduce the interrupt frequency\n", num);
 		num = oprof_data[i].buf_size;
 	} else
 		oprof_data[i].nextbuf=0;
@@ -697,12 +697,28 @@ static int oprof_mmap(struct file *file, struct vm_area_struct *vma)
 	return -EINVAL;
 }
 
+/* this is for when the hash table + buffer are doing too good a job */
+static int oprof_ioctl(struct inode *ino, struct file *file, uint cmd, ulong arg)
+{
+	uint i;
+	/* we don't care about args */
+
+	printk(KERN_INFO "oprofile: request to dump data.\n");
+
+	for (i=0; i < smp_num_cpus; i++)
+		oprof_ready[i]=2;
+
+	wake_up(&oprof_wait);
+	return 0;
+}
+
 static struct file_operations oprof_fops = {
 	owner: THIS_MODULE,
 	open: oprof_open,
 	release: oprof_release,
 	read: oprof_read,
 	mmap: oprof_mmap,
+	ioctl: oprof_ioctl,
 };
 
 /* ---------------- general setup ------------------------- */
