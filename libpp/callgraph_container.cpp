@@ -271,7 +271,8 @@ cg_symbol const * arc_recorder::find_caller(cg_symbol const & symbol) const
 
 
 void callgraph_container::populate(list<inverted_profile> const & iprofiles,
-   extra_images const & extra, bool debug_info, double threshold)
+   extra_images const & extra, bool debug_info, double threshold,
+   bool merge_lib)
 {
 	/// non callgraph samples container, we record sample at symbol level
 	/// not at vma level.
@@ -286,7 +287,8 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles,
 
 	for (it = iprofiles.begin(); it != end; ++it) {
 		for (size_t i = 0; i < it->groups.size(); ++i) {
-			populate(it->groups[i], extra, i, symbols, debug_info);
+			populate(it->groups[i], it->image, extra,
+				i, symbols, debug_info, merge_lib);
 		}
 	}
 
@@ -297,8 +299,8 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles,
 
 
 void callgraph_container::populate(list<image_set> const & lset,
-	extra_images const & extra, size_t pclass,
-	profile_container const & symbols, bool debug_info)
+	string const & app_image, extra_images const & extra, size_t pclass,
+	profile_container const & symbols, bool debug_info, bool merge_lib)
 {
 	list<image_set>::const_iterator lit;
 	list<image_set>::const_iterator const lend = lset.end();
@@ -307,16 +309,16 @@ void callgraph_container::populate(list<image_set> const & lset,
 		list<profile_sample_files>::const_iterator pend
 			= lit->files.end();
 		for (pit = lit->files.begin(); pit != pend; ++pit) {
-			populate(pit->cg_files, extra, pclass, symbols,
-				 debug_info);
+			populate(pit->cg_files, app_image, extra, pclass,
+				 symbols, debug_info, merge_lib);
 		}
 	}
 }
 
 
 void callgraph_container::populate(list<string> const & cg_files,
-	extra_images const & extra, size_t pclass,
-	profile_container const & symbols, bool debug_info)
+	string const & app_image, extra_images const & extra, size_t pclass,
+	profile_container const & symbols, bool debug_info, bool merge_lib)
 {
 	list<string>::const_iterator it;
 	list<string>::const_iterator const end = cg_files.end();
@@ -363,7 +365,8 @@ void callgraph_container::populate(list<string> const & cg_files,
 		// it a zero offset and we will fix that in add()
 		profile.add_sample_file(*it, 0);
 		add(profile, caller_bfd, bfd_caller_ok, callee_bfd,
-		    app_name, symbols, debug_info, pclass);
+		    merge_lib ? app_image : app_name, symbols,
+		    debug_info, pclass);
 	}
 }
 

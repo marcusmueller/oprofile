@@ -1,5 +1,12 @@
 2004-02-17  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/opstack_options.h:
+	* pp/opstack.cpp: pass mege_options::lib to callgraph_container
+	* libpp/callgraph_container.cpp:
+	* libpp/callgraph_container.h: handle merge_options::lib
+
+2004-02-17  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libpp/format_output.cpp: use "self/child" for header
 	* libutil++/string_manip.cpp: format_percent() return "0" if
 	  value == 0.0

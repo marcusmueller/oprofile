@@ -111,13 +111,14 @@ public:
 	 * @param extra  extra image list to fixup binary name.
 	 * @param debug_info  true if we must record linenr information
 	 * @param threshold  ignore sample percent below this threshold
+	 * @param merge_lib  merge library samples
 	 *
 	 * Currently all errors core dump.
 	 * FIXME: consider if this should be a ctor
 	 */
 	void populate(std::list<inverted_profile> const & iprofiles,
 		      extra_images const & extra, bool debug_info,
-		      double threshold);
+		      double threshold, bool merge_lib);
 
 	/// return hint on how data must be displayed.
 	column_flags output_hint() const;
@@ -150,11 +151,15 @@ private:
 		 size_t pclass);
 
 	void populate(std::list<image_set> const & lset,
+		      std::string const & app_image,
 		      extra_images const & extra, size_t pclass,
-		      profile_container const & symbols, bool debug_info);
+		      profile_container const & symbols, bool debug_info,
+		      bool merge_lib);
 	void populate(std::list<std::string> const & cg_files,
+		      std::string const & app_image,
 		      extra_images const & extra, size_t pclass,
-		      profile_container const & symbols, bool debug_info);
+		      profile_container const & symbols, bool debug_info,
+		      bool merge_lib);
 
 	/// add fake arc <from, NULL> to record leaf symbols.
 	void add_leaf_arc(profile_container const & symbols);

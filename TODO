@@ -14,7 +14,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o Test all other opstack options.
  o review opstack documentation, improve it by giving examples of output and
   how to interpret it.
- o finish opstack: various --separate= --merge= handling,
  o opstack --acumulate (fix it or inhibit) ?
 
  o callgraph patch: better way to skip ignored backtrace ?

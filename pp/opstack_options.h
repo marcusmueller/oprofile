@@ -21,6 +21,7 @@ extern profile_classes classes;
 
 namespace options {
 	extern demangle_type demangle;
+	extern merge_option merge_by;
 	extern bool long_filenames;
 	extern bool show_header;
 	extern bool show_address;
