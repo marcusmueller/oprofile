@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.22 2000/08/28 16:06:55 moz Exp $ */
+/* $Id: opd_proc.c,v 1.23 2000/08/28 16:08:36 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -50,7 +50,6 @@ static void opd_kill_maps(struct opd_proc *proc);
 static void opd_put_mapping(struct opd_proc *proc, struct opd_image *image, u32 start, u32 offset, u32 end);
 static struct opd_proc *opd_get_proc(u16 pid);
 static void opd_delete_proc(struct opd_proc *proc);
-static int opd_is_in_map(struct opd_map *map, u32 eip);
 
 /* every so many minutes, clean up old procs, msync mmaps, and
    report stats */
