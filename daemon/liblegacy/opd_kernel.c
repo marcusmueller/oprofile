@@ -60,7 +60,7 @@ void opd_parse_kernel_range(char const * arg)
 	verbprintf("OPD_PARSE_KERNEL_RANGE: kernel_start = %lx, kernel_end = %lx\n",
 		   kernel_start, kernel_end);
 
-	if (kernel_start == 0x0 || kernel_end == 0x0) {
+	if (!kernel_start && !kernel_end) {
 		fprintf(stderr,
 			"Warning: mis-parsed kernel range: %lx-%lx\n",
 			kernel_start, kernel_end);
@@ -325,8 +325,7 @@ static struct opd_module * opd_find_module_by_eip(unsigned long eip)
 
 	list_for_each(pos, &opd_modules) {
 		module = list_entry(pos, struct opd_module, module_list);
-		if (module->start && module->end &&
-		    module->start <= eip && module->end > eip)
+		if (module->start <= eip && module->end > eip)
 			return module;
 	}
 

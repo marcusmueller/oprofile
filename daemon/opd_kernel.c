@@ -47,7 +47,7 @@ void opd_create_vmlinux(char const * name, char const * arg)
 	verbprintf("kernel_start = %llx, kernel_end = %llx\n",
 	           vmlinux_image.start, vmlinux_image.end);
 
-	if (vmlinux_image.start == 0x0 || vmlinux_image.end == 0x0) {
+	if (!vmlinux_image.start && !vmlinux_image.end) {
 		fprintf(stderr, "error: mis-parsed kernel range: %llx-%llx\n",
 		        vmlinux_image.start, vmlinux_image.end);
 		exit(EXIT_FAILURE);
@@ -183,14 +183,12 @@ struct kernel_image * find_kernel_image(struct transient const * trans)
 	if (no_vmlinux)
 		return image;
 
-	if (image->start && image->end &&
-	    image->start <= trans->pc && image->end > trans->pc)
+	if (image->start <= trans->pc && image->end > trans->pc)
 		return image;
 
 	list_for_each(pos, &modules) {
 		image = list_entry(pos, struct kernel_image, list);
-		if (image->start && image->end &&
-		    image->start <= trans->pc && image->end > trans->pc)
+		if (image->start <= trans->pc && image->end > trans->pc)
 			return image;
 	}
 

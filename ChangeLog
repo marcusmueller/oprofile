@@ -1,3 +1,10 @@
+2003-11-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_kernel.c:
+	* daemon/liblegacy/opd_kernel.c: be less paranoiad about kernel range,
+	  this a slightly different thant the patch Thomas Spatzier tested but
+	  it can't hurt (last famous word ...)
+
 2003-11-06  Thomas Spatzier <tspat@de.ibm.com>
 
 	* daemon/opd_cookie.c: changed an #if defined for selecting right
