@@ -69,22 +69,19 @@ void restore_nmi(void)
 }
 
 /* ---------------- APIC setup ------------------ */
-
-static uint lvtpc_old_mask[NR_CPUS];
-static uint lvtpc_old_mode[NR_CPUS];
+static uint saved_lvtpc[NR_CPUS];
 
 void __init lvtpc_apic_setup(void * dummy)
 {
 	uint val;
-	
+
 	/* set up LVTPC as we need it */
 	/* IA32 V3, Figure 7.8 */
 	val = apic_read(APIC_LVTPC);
-	lvtpc_old_mask[op_cpu_id()] = val & APIC_LVT_MASKED;
+	saved_lvtpc[op_cpu_id()] = val;
 	/* allow PC overflow interrupts */
 	val &= ~APIC_LVT_MASKED;
 	/* set delivery to NMI */
-	lvtpc_old_mode[op_cpu_id()] = GET_APIC_DELIVERY_MODE(val);
 	val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_NMI);
 	apic_write(APIC_LVTPC, val);
 }
@@ -92,14 +89,15 @@ void __init lvtpc_apic_setup(void * dummy)
 /* not safe to mark as __exit since used from __init code */
 void lvtpc_apic_restore(void * dummy)
 {
-	uint val = apic_read(APIC_LVTPC);
-	// FIXME: this gives APIC errors on SMP hardware.
-	// val = SET_APIC_DELIVERY_MODE(val, lvtpc_old_mode[op_cpu_id()]);
-	if (lvtpc_old_mask[op_cpu_id()])
-		val |= APIC_LVT_MASKED;
-	else
-		val &= ~APIC_LVT_MASKED;
-	apic_write(APIC_LVTPC, val);
+	/* restoring APIC_LVTPC can trigger an apic error because the delivery
+	 * mode and vector nr combination can be illegal. That's by design: on
+	 * power on apic lvt contain a zero vector nr which are legal only for
+	 * NMI delivrey mode. So inhibit apic err before restoring lvtpc
+	 */
+	uint v = apic_read(APIC_LVTERR);
+	apic_write(APIC_LVTERR, v | APIC_LVT_MASKED);
+	apic_write(APIC_LVTPC, saved_lvtpc[op_cpu_id()]);
+	apic_write(APIC_LVTERR, v);
 }
 
 static int __init enable_apic(void)
