@@ -14,6 +14,8 @@
 
 #include "counter_array.h"
 
+using namespace std;
+ 
 counter_array_t::counter_array_t()
 {
 	for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i)
