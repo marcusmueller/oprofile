@@ -70,15 +70,22 @@ int main(int argc, char * argv[])
 				do_test(fin);
 			}
 		} else {
-			ifstream fin("mangled-name.txt");
+			ifstream fin("mangled-name");
+			if (!fin) {
+				cerr << "Unable to open input test "
+				     << "\"mangled_name\"\n" << endl;
+				exit(EXIT_FAILURE);
+			}
 			do_test(fin);
 		}
 	}
 	catch (bad_regex const & e) {
 		cerr << "bad_regex " << e.what() << endl;
+		return EXIT_FAILURE;
 	}
 	catch (exception const & e) {
 		cerr << "exception: " << e.what() << endl;
+		return EXIT_FAILURE;
 	}
 
 	return nr_error ? EXIT_FAILURE : EXIT_SUCCESS;

@@ -35,10 +35,10 @@ map<int, long, compare>
 bitset<33, unsigned long>
 bitset<33>
 
-istream_iterator<char, int>
+istream_iterator<char, @PTRDIFF_T_TYPE@>
 istream_iterator<char>
 
-ostream_iterator<char, int>
+ostream_iterator<char, @PTRDIFF_T_TYPE@>
 ostream_iterator<char>
 
 # shared between all supported gcc version
@@ -228,30 +228,30 @@ std::map<int, long, compare, std::allocator<std::pair<int const, long> > >
 map<int, long, compare>
 
 # parameter is size_t on x86 it's an unsigned
-bitset<(unsigned)33>
+bitset<(@SIZE_T_TYPE@)33>
 bitset<33>
 
-# 3rd is ptrdiff_t it's an int on x86
-std::iterator<std::input_iterator_tag, int, int, int*, int&>
+# 3, 4, 5th params are ptrdiff_t it's an int on x86
+std::iterator<std::input_iterator_tag, int, @PTRDIFF_T_TYPE@, @PTRDIFF_T_TYPE@*, @PTRDIFF_T_TYPE@&>
 iterator<input_iterator_tag, int>
 
-std::iterator<std::output_iterator_tag, int, int, int*, int&>
+std::iterator<std::output_iterator_tag, int, @PTRDIFF_T_TYPE@, @PTRDIFF_T_TYPE@*, @PTRDIFF_T_TYPE@&>
 iterator<output_iterator_tag, int>
 
-std::iterator<std::forward_iterator_tag, int, int, int*, int&>
+std::iterator<std::forward_iterator_tag, int, @PTRDIFF_T_TYPE@, @PTRDIFF_T_TYPE@*, @PTRDIFF_T_TYPE@&>
 iterator<forward_iterator_tag, int>
 
-std::iterator<std::bidirectional_iterator_tag, int, int, int*, int&>
+std::iterator<std::bidirectional_iterator_tag, int, @PTRDIFF_T_TYPE@, @PTRDIFF_T_TYPE@*, @PTRDIFF_T_TYPE@&>
 iterator<bidirectional_iterator_tag, int>
 
-std::iterator<std::random_iterator_tag, int, int, int*, int&>
+std::iterator<std::random_iterator_tag, int, @PTRDIFF_T_TYPE@, @PTRDIFF_T_TYPE@*, @PTRDIFF_T_TYPE@&>
 iterator<random_iterator_tag, int>
 
 # 4th parms is ptrdiff_t
-std::istream_iterator<long, char, std::char_traits<char>, int>
+std::istream_iterator<long, char, std::char_traits<char>, @PTRDIFF_T_TYPE@>
 istream_iterator<long>
 
-std::ostream_iterator<long, char, std::char_traits<char>, int>
+std::ostream_iterator<long, char, std::char_traits<char>, @PTRDIFF_T_TYPE@>
 ostream_iterator<long>
 
 # simple enough, it's just <iosfwd>

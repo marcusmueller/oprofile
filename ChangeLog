@@ -1,5 +1,16 @@
 2003-10-12  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* configure.in: add libregex/tests/mangled-name.in
+	* libregex/tests/mangled-name.txt: move ...
+	* libregex/tests/mangled-name.in: here, tune to support different arch
+	* libregex/tests/Makefile.am: s/mangled-name.txt/mangled-name.in
+	* libregex/stl.pat.in: fix iterator<... ptrdiff_t>
+	* libregex/tests/Makefile.am: update according to filename change
+
+	* libregex/tests/regex_test.cpp: really fails on exception.
+
+2003-10-12  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* dae/oprofiled.c: don't set cpu_number when !--separate=cpu
 	
 	* libop/tests/alloc_counter_tests.c: printf format for 64 bits arch

@@ -104,7 +104,7 @@ $typename = "(${typename}[ ]*\**|unsigned short[ ]**\**|unsigned int[ ]*\**|unsi
 "\<bitset<\(@SIZE_T_TYPE@\)(${integer})>" = "bitset<\1>"
 
 # iterator
-"\<iterator<(input|output|forward|bidirectional|random)_iterator_tag, ${typename}, @PTRDIFF_T_TYPE@, \2\*, \2&>" = "iterator<\1_iterator_tag, \2>"
+"\<iterator<(input|output|forward|bidirectional|random)_iterator_tag, ${typename}, (@PTRDIFF_T_TYPE@), \8\*, \8&>" = "iterator<\1_iterator_tag, \2>"
 "\<([io]stream_iterator)<${typename}, char, char_traits<char>, @PTRDIFF_T_TYPE@>" = "\1<\2>"
 
 # __gnu_cxx::__normal_iterator are used in two context: basic_string<> and

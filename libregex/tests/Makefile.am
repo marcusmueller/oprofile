@@ -11,6 +11,6 @@ regex_test_LDADD = \
 	../libop_regex.a \
 	../../libutil++/libutil++.a
 
-EXTRA_DIST = mangled-name.txt
+EXTRA_DIST = mangled-name
 
 TESTS = ${check_PROGRAMS}
