@@ -13,6 +13,8 @@ libutil___a_SOURCES = \
 	path_filter.h \
 	file_manip.cpp \
 	file_manip.h \
+	stream_util.cpp \
+	stream_util.h \
 	string_manip.cpp \
 	string_manip.h \
 	cverb.cpp \

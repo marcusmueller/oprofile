@@ -1,3 +1,12 @@
+2003-07-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/stream_util.h:
+	* libutil++/stream_util.cpp: new file, io_state() save object
+	* libutil++/Makefile.am: handle new file
+	* libutil++/op_bfd.cpp:
+	* libpp/opreport.cpp:
+	* libpp/op_header.cpp: use io_state
+
 2003-07-09  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* module/x86/op_model_p4.c: reflect intel documentation fix.

@@ -21,6 +21,7 @@
 #include "op_file.h"
 #include "op_header.h"
 #include "op_events.h"
+#include "stream_util.h"
 
 using namespace std;
 
@@ -146,14 +147,14 @@ void op_print_event(ostream & out, op_cpu cpu_type, u8 type, u16 um, u32 count)
 
 	out << "Counted " << event->name << " events (" << event->desc << ")";
 	if (cpu_type != CPU_RTC) {
-		int old_width = out.width();
-		char old_fill = out.fill();
+		io_state state(out);
+
 		out << " with a unit mask of 0x"
 		    << hex << setw(2) << setfill('0') << unsigned(um) << " ("
 		    << (um_desc ? um_desc : "multiple flags") << ")";
-		out << setfill(old_fill) << setw(old_width) << dec;
+
 	}
-	out << " count " << dec << count << endl;
+	out << " count " << count << endl;
 }
 
 }

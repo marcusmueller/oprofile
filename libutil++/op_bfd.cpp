@@ -23,10 +23,10 @@
 #include "op_exception.h"
 #include "op_bfd.h"
 #include "string_filter.h"
+#include "stream_util.h"
+#include "cverb.h"
 
 using namespace std;
-
-extern ostream cverb;
 
 op_bfd_symbol::op_bfd_symbol(asymbol const * a)
 	: bfd_symbol(a), symb_value(a->value),
@@ -88,6 +88,7 @@ op_bfd::op_bfd(string const & filename, string_filter const & symbol_filter)
 	asection const * sect = bfd_get_section_by_name(ibfd, ".text");
 	if (sect) {
 		text_offset = sect->filepos;
+		io_state state(cverb);
 		cverb << ".text filepos " << hex << text_offset << endl;
 	}
 
@@ -279,7 +280,7 @@ void op_bfd::add_symbols(op_bfd::symbols_found_t & symbols,
 	if (symbols.empty())
 		symbols.push_back(create_artificial_symbol());
 
-	cverb << "number of symbols before filtering " << dec << symbols.size() << endl;
+	cverb << "number of symbols before filtering " << symbols.size() << endl;
 
 	symbols_found_t::iterator it;
 	it = remove_if(symbols.begin(), symbols.end(), remove_filter(symbol_filter));
@@ -287,7 +288,7 @@ void op_bfd::add_symbols(op_bfd::symbols_found_t & symbols,
 
 	copy(symbols.begin(), symbols.end(), back_inserter(syms));
 
-	cverb << "number of symbols now " << dec << syms.size() << endl;
+	cverb << "number of symbols now " << syms.size() << endl;
 }
 
 
@@ -463,6 +464,8 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 			      u32 & start, u32 & end) const
 {
 	op_bfd_symbol const & sym = syms[sym_idx];
+
+	io_state state(cverb);
 
 	cverb << "symbol " << sym.name() << ", value " << hex << sym.value() << endl;
 

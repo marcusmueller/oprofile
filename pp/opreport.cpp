@@ -54,9 +54,6 @@ string get_filename(string const & filename)
 /// Output a count and a percentage
 void output_counter(double total_count, size_t count)
 {
-	// FIXME: left or right, op_time was using left
-	// left io manipulator doesn't exist in 2.95
-//	cout.setf(ios::left, ios::adjustfield);
 	cout << setw(9) << count << " ";
 	double ratio = op_ratio(count, total_count);
 	cout << format_double(ratio * 100, percent_int_width,
