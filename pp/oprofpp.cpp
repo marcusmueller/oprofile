@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.29 2002/03/04 00:12:43 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.30 2002/03/07 19:18:21 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -120,7 +120,7 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 	if (list_symbols || list_all_symbols_details || symbol) {
 		OutSymbFlag fl = ParseOutputOption(output_format);
 		if (fl == osf_none) {
-			cerr << "oprofpp: illegal --output-format flags.\n";
+			cerr << "oprofpp: invalid --output-format flags.\n";
 			OutputSymbol::ShowHelp();
 			exit(EXIT_FAILURE);
 		}

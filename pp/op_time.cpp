@@ -188,7 +188,7 @@ static void get_options(int argc, char const * argv[])
 	if (list_symbols) {
 		OutSymbFlag fl = ParseOutputOption(output_format);
 		if (fl == osf_none) {
-			cerr << "op_time: illegal --output-format flags.\n";
+			cerr << "op_time: invalid --output-format flags.\n";
 			OutputSymbol::ShowHelp();
 			exit(EXIT_FAILURE);
 		}

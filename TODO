@@ -1,9 +1,3 @@
-0.1 task list
----------------
-
- o review free_fixmap (already tested)
- o check oprofpp output/op_time format
- 
 Before 1.0
 ----------
 
@@ -40,6 +34,7 @@ Before 1.0
    see NGPT bug on sf)
  o split documentation into tutorial + ref. Include /everything/ in the ref: sample format,
    logfile meanings etc. 
+ o make oprofpp -t d not be allowed without -s symbol_name 
 
 Later
 -----
