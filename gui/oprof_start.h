@@ -147,6 +147,9 @@ private:
  
 	/// total number of available HW counters
 	uint op_nr_counters;
+
+	/// Total number of samples for this run
+	unsigned long total_nr_interrupts;
 };
 
 #endif // OPROF_START_H

@@ -57,7 +57,8 @@ oprof_start::oprof_start()
 	current_ctr(0),
 	cpu_type(op_get_cpu_type()),
 	cpu_speed(get_cpu_speed()), 
-	op_nr_counters(2)
+	op_nr_counters(2),
+	total_nr_interrupts(0)
 {
 	for (uint i = 0; i < OP_MAX_COUNTERS; ++i) {
 		current_event[i] = 0;
@@ -338,9 +339,10 @@ void oprof_start::timerEvent(QTimerEvent *)
 	ss << dstat.runtime;
 
 	time_t curr = time(0);
+	total_nr_interrupts += dstat.nr_interrupts;
  
 	if (curr - last)
-		ss << " (" << dstat.nr_interrupts / (curr - last) << " interrupts / second)";
+		ss << " (" << dstat.nr_interrupts / (curr - last) << " interrupts / second, total " << total_nr_interrupts << ")";
 
 	daemon_label->setText(ss.str().c_str());
 
@@ -798,6 +800,7 @@ void oprof_start::on_start_profiler()
 		args.push_back("--verbose");
 
 	do_exec_command("op_start", args);
+	total_nr_interrupts = 0;
 	timerEvent(0);
 }
 

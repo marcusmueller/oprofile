@@ -11,7 +11,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>555</width>
+            <width>551</width>
             <height>536</height>
         </rect>
     </property>
@@ -458,15 +458,15 @@
                                                 <cstring>unit_mask_group</cstring>
                                             </property>
                                             <property stdset="1">
+                                                <name>title</name>
+                                                <string>Unit mask</string>
+                                            </property>
+                                            <property stdset="1">
                                                 <name>sizePolicy</name>
                                                 <sizepolicy>
                                                     <hsizetype>1</hsizetype>
                                                     <vsizetype>5</vsizetype>
                                                 </sizepolicy>
-                                            </property>
-                                            <property stdset="1">
-                                                <name>title</name>
-                                                <string>Unit mask</string>
                                             </property>
                                             <property>
                                                 <name>toolTip</name>
@@ -1139,7 +1139,7 @@
                                         </property>
                                         <property>
                                             <name>toolTip</name>
-                                            <string>Separate samples for each shared library. This increase the overhead of OProfile.</string>
+                                            <string>Separate samples for each shared library. This increases the time and space overhead of OProfile.</string>
                                         </property>
                                     </widget>
                                 </vbox>

@@ -360,8 +360,11 @@ options, only interesting ones are listed here :
 	<varlistentry>
 		<term><option>&mdash;separate-samples</option></term>
 		<listitem><para>
-		separate samples for each distinct application i.e. multiple instance of the same application continue to share samples.
-		This features is experimental, the front-end tools (except op_time) does not support separate-samples features
+		separate samples for each distinct application. With this option, samples
+		in shared libraries are stored in a separate sample file specific to the
+		primate binary image (e.g. /bin/cp) that the code is mapped into. This feature
+		is not supported for process-context kernel samples, and incurs a performance
+		penalty.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -790,9 +793,10 @@ Some interesting options of the post-processor :
 		<term><option>&mdash;show-shared-libs</option></term>
 		<term><option>-h</option></term>
 		<listitem><para>
-		Show the details for each shared lib which belongs to one application. This option is usefull only
+		Show the details for each shared lib which belongs to one application. This option is useful only
 		if you have profiled with <option>&mdash;separate-samples</option> option and you specify on the
-		oprofpp command line either <option>&mdash;list-symbols</option> either <option>&mdash;list-all-symbols-details</option>
+		oprofpp command line either <option>&mdash;list-symbols</option> or 
+		<option>&mdash;list-all-symbols-details</option>.
 		</para></listitem>
 	</varlistentry>
 </variablelist>

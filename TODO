@@ -1,6 +1,16 @@
 0.0.8 task list
 ---------------
  
+o add docs for separate samples in extra features (more depth on
+	how to use it ...)
+ 
+o move the .d files out of the way !! (and add them to the .cvsignore files)
+ 
+Later
+-----
+
+? o move .oprofile to name=value pairs to avoid conflicts on change.
+ 
 o prepare for rtc:
 	- move apic init to module init
 	- export proc type sysctl
@@ -10,11 +20,6 @@ o prepare for rtc:
 
 o determine where we need ctx_sw_on/off to prevent pre-emption + test
  
-o move .oprofile to name=value pairs to avoid conflicts on change.
- 
-Later
------
-
 o move from racy sysctl to procfs, if it can be done nicely
 
 o can we provide a small setuid helper for starting/stopping/flushing the profiler ?

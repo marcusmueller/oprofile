@@ -130,8 +130,11 @@ profile hash map device file
 .br
 .TP
 .BI "--separate-samples "
-separate samples for each distinct application i.e. multiple instance
-of the same application continue to share samples. This features is experimental, the front-end tools (except op_time) does not support separate-samples features
+separate samples for each distinct application. With this option, samples
+in shared libraries are stored in a separate sample file specific to the
+primate binary image (e.g. /bin/cp) that the code is mapped into. This feature
+is not supported for process-context kernel samples, and incurs a performance
+penalty.
 .br
 .TP
 .BI "--verbose"
@@ -201,7 +204,7 @@ base directory of profile daemon
 .PP
 .br
 .BI "--show-shared-libs -h"
-Show the details for each shared lib which belongs to one application. This option is usefull only if you have profiled with --separate-samples option and you specify on the oprofpp command line either --list-symbols either --list-all-symbols-details
+Show the details for each shared lib which belongs to one application. This option is useful only if you have profiled with --separate-samples option and you specify on the oprofpp command line either --list-symbols or --list-all-symbols-details.
 .TP
 .br
 .B op_to_source options
