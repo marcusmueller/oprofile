@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.81 2002/05/04 04:09:57 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.82 2002/05/05 00:40:11 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -18,7 +18,7 @@ AC_CONFIG_HEADER(config.h)
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 PACKAGE=oprofile
-VERSION=0.2
+VERSION=0.3cvs
 
 dnl for the man page
 DATE="`date '+%a %d %B %Y'`"
