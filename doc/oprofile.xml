@@ -3,7 +3,7 @@
 
 <book id="oprofile-guide">
 <bookinfo>
-	<title>oprofile manual</title>
+	<title>OProfile manual</title>
  
 	<authorgroup>
 		<author>
@@ -28,7 +28,7 @@
 <title>Introduction</title>
 
 <para>
-oprofile is a profiling system for Linux 2.2/2.4/2.6 systems on a number of architectures. It is capable of profiling
+OProfile is a profiling system for Linux 2.2/2.4/2.6 systems on a number of architectures. It is capable of profiling
 all parts of a running system, from the kernel (including modules and interrupt handlers) to shared libraries
 to binaries. It runs transparently in the background collecting information at a low overhead. These
 features make it ideal for profiling entire systems to determine bottle necks in real-world systems.
@@ -41,12 +41,12 @@ features make it ideal for profiling entire systems to determine bottle necks in
 	<varlistentry>
 		<term>Linux kernel 2.2/2.4</term>
 		<listitem>
-			oprofile uses a kernel module that can be compiled for
+			OProfile uses a kernel module that can be compiled for
 			2.2.11 or later and 2.4. Versions 2.4.10 or above are recommended, and required if you use the
 			boot-time kernel option <option>nosmp</option>. AMD Hammer support requires a recent (&ge; 2.4.19) kernel
 			with the line <constant>EXPORT_SYMBOL(do_fork);</constant> present in <filename>kernel/ksyms.c</filename>.
 			Such a kernel is present in the <ulink url="http://www.x86-64.org">x86-64.org</ulink> CVS repository.
-			2.5 kernels are supported with the in-kernel oprofile driver.
+			2.5 kernels are supported with the in-kernel OProfile driver.
 <!-- FIXME: do we require always gte 2.4.10 for nosmp ? -->
 		</listitem>
 	</varlistentry>
@@ -66,7 +66,7 @@ features make it ideal for profiling entire systems to determine bottle necks in
 			between an Intel Pentium Pro (not Pentium Classics) and
 			a Pentium 4 / Xeon, including all Celerons.  The AMD
 			Athlon, Duron, and Hammer CPUs are also supported.  Other IA32
-			CPU types only support the RTC mode of oprofile; please
+			CPU types only support the RTC mode of OProfile; please
 			see later in this manual for details.  The Itanium 2
 			support uses the performance monitor unit in the processor.
 		</listitem>
@@ -92,7 +92,7 @@ features make it ideal for profiling entire systems to determine bottle necks in
 		</listitem>
 	</varlistentry>
 	<varlistentry>
-		<term>oprofile GUI</term>
+		<term>OProfile GUI</term>
 		<listitem>
 			The use of the GUI to start the profiler requires the <filename>Qt 2</filename> library. Qt 3 should
 			also work.
@@ -136,21 +136,21 @@ features make it ideal for profiling entire systems to determine bottle necks in
 	<varlistentry>
 		<term>Mailing list</term>
 		<listitem>
-			There is a very low-traffic oprofile-specific mailing list, details at
+			There is a very low-traffic OProfile-specific mailing list, details at
 			<ulink url="http://sf.net/mail/?group_id=16191">http://sf.net/mail/?group_id=16191</ulink>.
 		</listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Bug tracker</term>
 		<listitem>
-			There is a bug tracker for oprofile at SourceForge,
+			There is a bug tracker for OProfile at SourceForge,
 			<ulink url="http://sf.net/tracker/?group_id=16191&amp;atid=116191">http://sf.net/tracker/?group_id=16191&amp;atid=116191</ulink>.
 		</listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>IRC channel</term>
 		<listitem>
-			Several oprofile developers and users sometimes hang out on channel <command>#oprofile</command>
+			Several OProfile developers and users sometimes hang out on channel <command>#oprofile</command>
 			on the <ulink url="http://freenode.info">freenode</ulink> network. 
 		</listitem>
 	</varlistentry>
@@ -161,7 +161,7 @@ features make it ideal for profiling entire systems to determine bottle necks in
 <sect1 id="install">
 <title>Installation</title>
 
-First you need to build oprofile and install it. <command>./configure</command>, <command>make</command>, <command>make install</command>
+First you need to build OProfile and install it. <command>./configure</command>, <command>make</command>, <command>make install</command>
 is all you need, but note these arguments to <command>./configure</command> :
 <variablelist>
 	<varlistentry>
@@ -178,7 +178,7 @@ is all you need, but note these arguments to <command>./configure</command> :
 		<term><option>--with-kernel-support</option></term>
 		<listitem>
 			Use this option with linux 2.5 kernel to indicate the 
-	    		kernel provides the oprofile device driver.
+	    		kernel provides the OProfile device driver.
 		</listitem>
 	</varlistentry>
 	<varlistentry>
@@ -191,7 +191,7 @@ is all you need, but note these arguments to <command>./configure</command> :
 	<varlistentry id="enable-abi">
 		<term><option>--enable-abi</option></term>
 		<listitem>
-			Activate code within the oprofile sample collection daemon
+			Activate code within the OProfile sample collection daemon
 			<command>oprofiled</command> which records information about the binary
 			format of sample files in <filename>/var/lib/oprofile/abi</filename>, to
 			permit their transport between hosts using the
@@ -205,27 +205,27 @@ is all you need, but note these arguments to <command>./configure</command> :
 </variablelist>
 <para>
 You'll need to have a configured kernel source for the current kernel
-to build the module.  It is also recommended that if you have a
+to build the module for 2.4 kernels.  It is also recommended that if you have a
 uniprocessor machine, you enable the local APIC / IO_APIC support for
 your kernel (this is automatically enabled for SMP kernels).  On
 machines with power management, such as laptops, the power management
-must be turned off when using oprofile. The power management software
+must be turned off when using OProfile with 2.4 kernels. The power management software
 in the BIOS cannot handle the non-maskable interrupts (NMIs) used by
-oprofile for data collection. If you use the nmi watchdog be warned than
-watchdog is disabled when profiling starts, and not re-enabled until the
-oprofile module is removed. If you compile oprofile for
+OProfile for data collection. If you use the NMI watchdog, be aware that
+the watchdog is disabled when profiling starts, and not re-enabled until the
+OProfile module is removed (or, in 2.5, when OProfile is not running). If you compile OProfile for
 a 2.2 kernel you must be root to compile the module. If you are using
 2.5 kernels or higher, you do not need kernel source, as long as the
-oprofile driver is enabled; additionally, you should not need to disable
+OProfile driver is enabled; additionally, you should not need to disable
 power management.
 </para>
 
 </sect1>
 
 <sect1 id="uninstall">
-<title>Uninstalling oprofile</title>
+<title>Uninstalling OProfile</title>
 <para>
-You must have the source tree available to uninstall oprofile; a <command>make uninstall</command> will
+You must have the source tree available to uninstall OProfile; a <command>make uninstall</command> will
 remove all installed files except your configuration file in the directory <filename>~/.oprofile</filename>.
 </para>
 </sect1>
@@ -233,23 +233,23 @@ remove all installed files except your configuration file in the directory <file
 </chapter>
 
 <chapter id="overview"> 
-<title>Overview of oprofile tools</title>
+<title>Overview of OProfile tools</title>
 <para>
-This section gives a brief description of the available oprofile utilities and their purpose.
+This section gives a brief description of the available OProfile utilities and their purpose.
 </para>
 <variablelist>
 <varlistentry>
 	<term><filename>op_help</filename></term>
-	<listitem>
+	<listitem><para>
 		This utility lists the available events and short descriptions.
-	</listitem>
+	</para></listitem>
 </varlistentry>
 	
 <varlistentry>
 	<term><filename>opcontrol</filename></term>
-	<listitem>
-		Used for controlling the oprofile data collection, discussed in <xref linkend="usage" />.
-	</listitem>
+	<listitem><para>
+		Used for controlling the OProfile data collection, discussed in <xref linkend="usage" />.
+	</para></listitem>
 </varlistentry>
 
 <varlistentry>
@@ -311,15 +311,15 @@ This section gives a brief description of the available oprofile utilities and t
 <title>A typical session</title>
 <para>
 Before getting into detail about usage, it's probably a good idea to have a quick stroll through an example
-session (this example is for Intel P6 generation processors, but the process is the same).
+session (this example is for Intel P6 generation processors, but the process is similar).
 </para>
 <para>
-First we need to start the profiler running in the background. We need to pass the correct
-<filename>vmlinux</filename> file to the daemon (to allow kernel profiling), and we need to specify what event to count and the counter value.
+First we need to start the profiler running in the background. We need to specify the correct
+<filename>vmlinux</filename> file (to allow kernel profiling), and we need to specify what event to count and the counter value.
 Here I've started with :
 </para>
 <para>
-<command>opcontrol --setup --vmlinux=/boot/2.4.0ac12/vmlinux  --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000</command>
+<command>opcontrol --setup --vmlinux=/boot/2.4.0ac12/vmlinux --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000</command>
 </para><para>
 <command>opcontrol --start</command>
 </para>
@@ -332,7 +332,7 @@ A quick <command>ps ax</command> confirms that the daemon (<command>oprofiled</c
 Data is now being collected in the kernel. Now we can do whatever we like ... although in this case I'm profiling the C++ application
 <ulink url="http://www.lyx.org/">LyX</ulink>.
 Note that unlike <command>gprof</command>, no instrumentation (<option>-pg</option> and <option>-a</option> options to <command>gcc</command>)
-is necessary. This is major factor in achieving the low overhead of oprofile. Compiling with debug symbols (the <option>-g</option>
+is necessary. This is major factor in achieving the low overhead of OProfile. Compiling with debug symbols (the <option>-g</option>
 option) is not necessary to get a basic function-based profile listing, but it must be used in order to retrieve line number
 information and create annotated source. See the FAQ <xref linkend="symbol-and-debug-info" /> about debug information vs symbol information.
 </para>
@@ -376,7 +376,7 @@ produced by <command>gprof</command>).
 <note>
 <para>
 If you're more used to <command>gprof</command> style profile output, you can use <command>oprofpp -g gmon.out</command> and then
-<command>gprof -p binary</command> to get flat profiles. oprofile does not (cannot) support the call graph
+<command>gprof -p binary</command> to get flat profiles. OProfile does not (cannot) support the call graph
 feature of <command>gprof</command>.
 </para>
 </note>
@@ -384,7 +384,7 @@ feature of <command>gprof</command>.
 </sect1>
 
 <sect1 id="controlling-daemon">
-<title>Controlling oprofile data collection with the <command>opcontrol</command> script</title>
+<title>Controlling OProfile data collection with the <command>opcontrol</command> script</title>
 <para>
 In this section we describe the configuration and control of the profiling system with opcontrol in more depth.
 </para>
@@ -395,7 +395,7 @@ The <command>opcontrol</command> script provides the following options :
 	<varlistentry>
 		<term><option>--init</option></term>
 		<listitem><para>
-		Loads the oprofile module if required and makes the oprofile driver
+		Loads the OProfile module if required and makes the OProfile driver
 		interface available.
 		</para></listitem>
 	</varlistentry>
@@ -448,7 +448,7 @@ The <command>opcontrol</command> script provides the following options :
 	<varlistentry>
 		<term><option>--deinit</option></term>
 		<listitem><para>
-                Shuts down daemon. Unload the oprofile module and oprofilefs.
+                Shuts down daemon. Unload the OProfile module and oprofilefs.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -549,9 +549,9 @@ to specify any counter parameters, because there aren't any (see
 </sect1>
  
 <sect1 id="oprofile-gui">
-<title>Starting profiling from the <command>oprofile</command> GUI</title>
+<title>Starting profiling from the <command>OProfile</command> GUI</title>
 <para>
-This section describes the <command>oprofile</command> Qt-based interface.
+This section describes the <command>OProfile</command> Qt-based interface.
 </para>
 <para>
 The <command>oprof_start</command> application provides a convenient way to start the profiler.
@@ -606,7 +606,7 @@ session.
 <note>
 <para>
 Your CPU type may not include the requisite support for hardware performance counters, in which case
-you must use oprofile in RTC mode in 2.4 (see <xref linkend="rtc" />), or timer mode in 2.5 (see <xref linkend="timer" />). 
+you must use OProfile in RTC mode in 2.4 (see <xref linkend="rtc" />), or timer mode in 2.5 (see <xref linkend="timer" />). 
 </para>
 </note>
 <para>
@@ -615,7 +615,7 @@ from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink
 implementation is detailed in <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/pdf/22007.pdf">
 http://www.amd.com/products/cpg/athlon/techdocs/pdf/22007.pdf</ulink>.
 These processors are capable of delivering an interrupt to the local <acronym>APIC</acronym> <acronym>LVTPC</acronym>
-vector when a counter overflows. This is the basic mechanism on which oprofile is based. The kernel module
+vector when a counter overflows. This is the basic mechanism on which OProfile is based. The kernel module
 installs an interrupt handler for this vector. The delivery mode is set to <acronym>NMI</acronym> so that
 blocking interrupts in the kernel does not prevent profiling. When the interrupt handler is called,
 the current <acronym>EIP</acronym> <acronym>PC</acronym> value, process id, and counter
@@ -670,16 +670,16 @@ Specifying too small a value can lead to overflow problems discussed previously.
 </sect2>
 
 <sect2 id="rtc">
-<title>oprofile in RTC mode</title>
+<title>OProfile in RTC mode</title>
 <note><para>
 This section applies to 2.4 kernels only.
 </para></note>
 <para>
 Some CPU types do not provide the needed hardware support to use the hardware performance counters. This includes
-some laptops, classic Pentiums, and other CPU types not yet supported by oprofile (such as Cyrix). 
-On these machines, oprofile falls
+some laptops, classic Pentiums, and other CPU types not yet supported by OProfile (such as Cyrix). 
+On these machines, OProfile falls
 back to using the real-time clock interrupt to collect samples. This interrupt is also used by the <command>rtc</command>
-module: you cannot have both the oprofile and rtc modules loaded nor the rtc support compiled in the kernel.
+module: you cannot have both the OProfile and rtc modules loaded nor the rtc support compiled in the kernel.
 </para>
 <para>
 RTC mode is less capable than the hardware counters mode; in particular, it is unable to profile sections of
@@ -702,12 +702,12 @@ sampling rate, and will reflect the actual sampling rate after profiling has sta
 </sect2>
 
 <sect2 id="timer">
-<title>oprofile in timer interrupt mode</title>
+<title>OProfile in timer interrupt mode</title>
 <note><para>
-This section applies to 2.4 kernels only.
+This section applies to 2.5 kernels only.
 </para></note>
 <para>
-In 2.5 kernels on CPUs without oprofile support for the hardware performance counters, the driver
+In 2.5 kernels on CPUs without OProfile support for the hardware performance counters, the driver
 falls back to using the timer interrupt for profiling. Like the RTC mode in 2.4 kernels, this is not able to
 profile code that has interrupts disabled. Note that there are no configuration parameters for
 setting this, unlike RTC and hardware performance counter setup.
@@ -747,122 +747,15 @@ in sections of the IA64 kernel where interrupts are disabled.
 <para>
 None of the advance features of the Itanium 2 performance monitoring unit
 such as opcode matching, address range matching, or precise event sampling are
-supported by this version of oprofile.  The Itanium 2 support only maps oprofile's
+supported by this version of OProfile.  The Itanium 2 support only maps OProfile's
 existing interrupt-based model to the PMU hardware.
 </para>
 </sect2>
 
-<sect2 id="sysctl">
-<title><command>sysctl</command> tree</title>
-<para>
-When the kernel module loads, it generates a file hierarchy underneath <filename>/proc/sys/dev/oprofile</filename>.
-You can read and write to these files to give direct access to the kernel parameters.
-</para>
-<note>
-<para>
-With the exception of <filename>dump</filename> and <filename>dump_stop</filename>, 
-any changes only take effect on restarting the profiler.
-</para>
-</note>
-The following files will be present :
-<variablelist>
-	<varlistentry>
-		<term><filename>bufsize</filename></term>
-		<listitem><para>
-		The buffer size, corresponding to the <option>--buffer-size</option> option.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>notesize</filename></term>
-		<listitem><para>
-		The note table size, corresponding to the <option>--note-table-size</option> option.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>kernel_only</filename></term>
-		<listitem><para>
-		Corresponding to the <option>--kernel-only</option> option.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>dump</filename></term>
-		<listitem><para>
-		Writing <acronym>ASCII</acronym> "1" to the file will initiate a sample data dump. Note: ignore
-		the value "0" you get when reading the file - it is meaningless.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>dump_stop</filename></term>
-		<listitem><para>
-		Writing to this file will stop the profiler, processing all pending data, and stopping the user-space
-		daemon.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>nr_interrupts</filename></term>
-		<listitem><para>
-		Read only; the number of total interrupts received on all processors since this file was last
-		read. Used by the GUI.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>cpu_type</filename></term>
-		<listitem><para>
-		Read only; used internally by the oprofile tools.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>0, 1, ...</filename></term>
-		<listitem><para>
-		Each counter will have a directory containing files for that counter's settings.
-		The rest of the files described here are per-counter.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>count</filename></term>
-		<listitem><para>
-		The counter value for this counter.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>enabled</filename></term>
-		<listitem><para>
-		Whether this counter is active.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>event</filename></term>
-		<listitem><para>
-		The numeric event value. You can convert from symbolic event names to numeric values like so :
-		</para><para><command>echo `op_help CPU_CLK_UNHALTED` &gt;/proc/sys/dev/oprofile/0/0/event</command>.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>kernel</filename></term>
-		<listitem><para>
-		Whether to profile the kernel.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>unit_mask</filename></term>
-		<listitem><para>
-		The unit mask specified.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>user</filename></term>
-		<listitem><para>
-		Whether to profile user-space.
-		</para></listitem>
-	</varlistentry>
-</variablelist>
-
-</sect2>
-
 <sect2 id="misuse">
-<title>Misuse of <command>oprofile</command> and stability of system</title>
+<title>Misuse of <command>OProfile</command> and stability of system</title>
 <para>
-oprofile is a low-level profiler which allow continuous profiling with a low-overhead cost.
+OProfile is a low-level profiler which allow continuous profiling with a low-overhead cost.
 If not used carefully, this can affect the stability of the system.
 If too low a count reset value is set for a counter, the system can become overloaded with counter
 interrupts, and seem as if the system has frozen.
@@ -908,6 +801,9 @@ that don't match the filter.
 
 <sect2 id="unloadable">
 <title>Unloading the kernel module</title>
+<note><para>
+This section applies to 2.4 kernels only, OProfile in 2.5 can be unloaded safely.
+</para></note>
 <para>
 The kernel module can be unloaded, but is designed to take very little memory when profiling is not underway.
 There is no need to unload the module between profiler runs.
@@ -933,7 +829,7 @@ re-enable the module unload by specifying the "allow_unload" parameter to the mo
 <title>Obtaining results</title>
 <para>
 OK, so the profiler has been running, but it's not much use unless we can get some data out. Fairly often,
-oprofile does a little <emphasis>too</emphasis> good a job of keeping overhead low, and no data reaches
+OProfile does a little <emphasis>too</emphasis> good a job of keeping overhead low, and no data reaches
 the profiler. This can happen on lightly-loaded machines. Remember you can force a dump at any time with :
 </para>
 <para><command>opcontrol --dump</command></para>
@@ -977,11 +873,8 @@ All post profile tools accept the following options
 		<term><option>--version</option></term>
 		<term><option>-v</option></term>
 		<listitem><para>
-		Show the version number of oprofile on the form:
+		Show the version number of OProfile.
 		</para>
-<screen>
-app_name:  oprofile 0.1cvs compiled on Mar  1 2002 20:40:40
-</screen>
 		</listitem>
 	</varlistentry>
 </variablelist>
@@ -1026,7 +919,7 @@ Some interesting options of the post-processor :
 		<term><option>--counter</option> nr</term>
 		<listitem><para>
 		Which counter (0 - N) to extract information for. N is dependent on your cpu type: 1 for P6 generation CPUs, 
-		3 for Athlon based CPUs, 8 for Pentium 4 / Xeon CPUs.
+		3 for Athlon based CPUs, 7 for Pentium 4 / Xeon CPUs.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1092,15 +985,31 @@ Some interesting options of the post-processor :
 	<varlistentry>
 		<term><option>--output-format</option> vsSpPqQnlLiIh</term>
 		<term><option>-t</option> vsSpPqQnlLiIh</term>
-		<listitem><para>
-		Specify the output format where a single format char is a field intended for: 'v' vma, 's'
-		nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples,
-		'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source
-		file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'd' details for each samples for
-		the selected symbols and 'h' for the header itself. 'q','Q' are identical to 'p', 'P' but the
-		percentage are relative to the total number of symbols.
-		This option is not available with --dump-gprof-file.
-		</para></listitem>
+		<listitem><para>Specify the output and formatting, as given in this table :</para>
+		<informaltable frame="all">
+		<tgroup cols='2'> 
+		<tbody>
+		<row><entry><option>v</option></entry><entry>VMA (symbol address)</entry></row>
+		<row><entry><option>s</option></entry><entry>Sample count</entry></row>
+		<row><entry><option>S</option></entry><entry>Cumulative sample count</entry></row>
+		<row><entry><option>p</option></entry><entry>Sample percentage relative to image</entry></row>
+		<row><entry><option>P</option></entry><entry>Cumulative sample percentage relative to image</entry></row>
+		<row><entry><option>q</option></entry><entry>Sample percentage relative to all images</entry></row>
+		<row><entry><option>Q</option></entry><entry>Cumulative sample percentage relative to all images</entry></row>
+		<row><entry><option>n</option></entry><entry>Name of symbol</entry></row>
+		<row><entry><option>l</option></entry><entry>Source filename and line number</entry></row>
+		<row><entry><option>L</option></entry><entry>Short source filename and line number</entry></row>
+		<row><entry><option>i</option></entry><entry>Image name</entry></row>
+		<row><entry><option>I</option></entry><entry>Short image name</entry></row>
+		<row><entry><option>d</option></entry><entry>Detailed sample results</entry></row>
+		<row><entry><option>h</option></entry><entry>Print a columns header</entry></row>
+		</tbody> 
+		</tgroup>
+		</informaltable>
+		<para>
+		This option is not available with -dump-gprof-file.
+		</para>
+		</listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--session</option> session-name</term>
@@ -1275,11 +1184,11 @@ The options allowed are :
 <para>
 <command>op_merge</command> is used to merge samples wich belongs to the same binary image. Its main purpose
 is to merge samples files created by profiling with --separate-samples. So you can create one samples
-file containing all samples for a shared libs:
+file containing all samples for a shared library :
 <command>op_merge</command><filename>/usr/lib/ld-2.1.2.so</filename> will create a samples file named
 <filename>}usr}lib}ld-2.1.2.so</filename> ready to use with <command>oprofpp</command> or other post-profiling tools.
-Additionally you can merge a subset of samples files inside one sample file by specifying explicitly the samples files name to merge.
-This allows to use post-profile tools on shared libs for a subset of applications.
+Additionally you can merge a subset of samples files inside one sample file by specifying explicitly the sample files to merge.
+This allows you to use post-profile tools on shared libs for a subset of applications.
 </para>
 <para>
 The options allowed are :
@@ -1289,7 +1198,7 @@ The options allowed are :
 		<term><option>--use-counter</option> nr</term>
 		<term><option>-c</option></term>
 		<listitem><para>
-		use counter nr to select the appropriate samples files
+		use the given counter number to select the appropriate samples files
 		</para></listitem>
 	</varlistentry>
 </variablelist>
@@ -1379,13 +1288,26 @@ Options allowed are :
 	<varlistentry>
 		<term><option>--output-format</option> vsSpPnlLiIh</term>
 		<term><option>-t</option> vsSpPnlLiIh</term>
-		<listitem><para>
-		Specify the output format where a single format char is a field intended for: 'v' vma, 's'
-		nr samples, 'S' nr cumulated samples, 'p' percent samples, 'P' cumulated percent samples,
-		'n' symbol name, 'l' source file name and line nr, 'L' ditto as 'l' but with basename of source
-		file name, 'i' image name, 'I' ditto as 'i' but with base name of image name, 'd' details for each samples for
-		the selected symbols and 'h' for the header itself.
-		This option is available only with --list-symbols
+		<listitem><para>Specify the output and formatting, as given in this table :</para>
+		<informaltable frame="all">
+		<tgroup cols='2'> 
+		<tbody>
+		<row><entry><option>v</option></entry><entry>VMA (symbol address)</entry></row>
+		<row><entry><option>s</option></entry><entry>Sample count</entry></row>
+		<row><entry><option>S</option></entry><entry>Cumulative sample count</entry></row>
+		<row><entry><option>p</option></entry><entry>Sample percentage relative to image</entry></row>
+		<row><entry><option>P</option></entry><entry>Cumulative sample percentage relative to image</entry></row>
+		<row><entry><option>n</option></entry><entry>Name of symbol</entry></row>
+		<row><entry><option>l</option></entry><entry>Source filename and line number</entry></row>
+		<row><entry><option>L</option></entry><entry>Short source filename and line number</entry></row>
+		<row><entry><option>i</option></entry><entry>Image name</entry></row>
+		<row><entry><option>I</option></entry><entry>Short image name</entry></row>
+		<row><entry><option>d</option></entry><entry>Detailed sample results</entry></row>
+		<row><entry><option>h</option></entry><entry>Print a columns header</entry></row>
+		</tbody></tgroup>
+		</informaltable>
+		<para>
+		This can only be used in conjunction with <option>--list-symbols</option>. 
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1411,7 +1333,7 @@ Options allowed are :
 <title>Interpreting profiling results</title>
 <para>
 Another grey art. The standard caveats of profiling come
-to mind: profile realistic situations, profile difference scenarios, profile
+to mind: profile realistic situations, profile different scenarios, profile
 for as long as a time as possible, avoid system-specific artifacts, don't trust
 the profile data too much. Also bear in mind the comments on the performance
 counters above - you can <emphasis>not</emphasis> rely on totally accurate
@@ -1492,25 +1414,25 @@ So the conclusion: don't trust samples coming at the end of a loop,
 particularly if the last instruction generated by the compiler is costly, this
 case can occur also for each branch in your program. Always bear in mind that samples
 can be often delayed by a few cycles from its real position. That's a hardware
-problem and oprofile can do nothing about it.
+problem and OProfile can do nothing about it.
 </para>
 </sect1>
 <sect1 id="irq-masking">
 <title>Interrupt Masking</title>
 <para>
-oprofile uses non-maskable interrupts (NMI) on the P6 generation, Pentium 4,
+OProfile uses non-maskable interrupts (NMI) on the P6 generation, Pentium 4,
 Athlon and Duron processors. These interrupts can occur even in section of the
 Linux where interrupts are disabled, allowing collection of samples in virtually
-all executable code.  The RTC and Itanium 2 collection mechanisms use maskable
-interrupts. Thus, the RTC and Itanium 2 data collection mechanism have "sample
-shadows", regions where no samples where be collected. Typically, the samples
-will be attributed to the code immediately after the interrupt are re-enabled.
+all executable code.  The RTC, timer interrupt mode, and Itanium 2 collection mechanisms
+use maskable interrupts. Thus, the RTC and Itanium 2 data collection mechanism have "sample
+shadows", or blind spots: regions where no samples will be collected. Typically, the samples
+will be attributed to the code immediately after the interrupts are re-enabled.
 </para>
 </sect1>
 <sect1 id="debug-info">
 <title>Inaccuracies in annotated source</title>
 <sect2 id="effect-of-optimizations">
-<title>side effects of optimizations</title>
+<title>Side effects of optimizations</title>
 <para>
 The compiler can introduce some pitfalls in the annotated source output.
 The optimizer can move pieces of code in such manner that two line of codes
@@ -1544,7 +1466,7 @@ of a zero line number which give weirds annotation.
 </sect2>
 -->
 <sect2 id="wrong-linenr-info">
-<title>inaccuracy in line number information</title>
+<title>Inaccuracy in line number information</title>
 <para>
 Depending on your compiler you can fall into the following problem:
 </para>
@@ -1575,8 +1497,8 @@ int main()
 }
 </screen>
 <para>
-The problem here is distinct from the irq latency problem, the debug line number
-info are not enough precise, again looking at output of <command>op_to_source -as</command> can help.
+The problem here is distinct from the IRQ latency problem; the debug line number
+information is not precise enough; again, looking at output of <command>op_to_source -as</command> can help.
 </para>
 <screen>
 /* 7871 100% */
@@ -1616,26 +1538,25 @@ int main()
  80484f5:       ret
 </screen>
 <para>
-So here it's clear than copying is correctly credited of all samples but the
-line number info are misplaced. <command>objdump -dS</command> expose also the
-same problem. Note than maintaining accurate debug info for compilers when optimizing is difficult so this problem is not suprising. The problem of debug info
-accuracy is also dependant of the binutils used, some bfd libraries version
-contains work-around against known problem of gcc, some other not. This is unfortunate but we must live with that.
-Obviously the generally used advise: do not optimize when using debug info is here inapplicable because you want to profile optimized code.
+So here it's clear than copying is correctly credited with of all the samples, but the
+line number info are misplaced. <command>objdump -dS</command> exposes the
+same problem. Note that maintaining accurate debug info for compilers when optimizing is difficult so this problem is not suprising. The problem of debug info
+accuracy is also dependent on the binutils version used; some BFD library versions
+contain a work-around for known problems of gcc, some others do not. This is unfortunate but we must live with that,
+since profiling is pointless when you disable optimisation (which would give better debug info entries).
 </para>
 </sect2>
 </sect1>
-<!-- FIXME: the wording is perhaps awkward for this section -->
-<!-- FIXME: an entry of the FAQ must point here ? -->
 <sect1 id="symbol-without-debug-info">
 <title>Assembly function</title>
 <para>
-Often assembler can not generate debug information automatically. Such example of commonly used assembler is
-<command>gas</command> and <command>nasm</command>. This means than you can not get source report unless 
-you manually define the neccessary debug information, report to your assembler documentation for that. The only
-debugging info needed currently by oprofile is the linenr/filename vma association. When profiling assembly
-without debugging info you can always get report for symbol and optionnaly for vma through <command>oprofpp -l</command>
-or <command>oprofpp -L</command> but this work only for symbol with the right attribute.
+Often the assembler can not generate debug information automatically. Such example of commonly used assembler is
+<command>gas</command> and <command>nasm</command>. This means than you can not get a source report unless 
+you manually define the neccessary debug information; read your assembler documentation for how you might
+do that. The only
+debugging info needed currently by OProfile is the linenr/filename-VMA association. When profiling assembly
+without debugging info you can always get report for symbol, and optionally for VMA, through <command>oprofpp -l</command>
+or <command>oprofpp -L</command> but this works only for symbol with the right attributes.
 For gas you can get this by
 </para>
 <screen>
@@ -1649,8 +1570,8 @@ while for nasm you must use
 	  GLOBAL foo:function		; [1]
 </screen>
 <para>
-Note than oprofile do not need the global attribute, but only the function attribute. User of gas and nasm
-must found the right way to not declare the foo symbol global if necessary.
+Note than OProfile does not need the global attribute, but only the function attribute. Users of gas and nasm
+must find the right way to not declare the foo symbol global if necessary.
 </para>
 </sect1>
 <!-- 
@@ -1662,7 +1583,7 @@ improve this ? but look first why this file is special
 <title>Small functions</title>
 <para>
 Very small functions can show strange behavior. The file in your source
-directory of oprofile <filename>$SRC/test-oprofile/understanding/puzzle.c</filename>
+directory of OProfile <filename>$SRC/test-oprofile/understanding/puzzle.c</filename>
 show such example
 </para>
 </sect2>
@@ -1676,7 +1597,7 @@ It's clear for all people than the second memory read will show more samples
 but there are many other causes of hidden cost of instructions. A non-exhaustive
 list: mis-predicted branch, TLB cache miss, partial register stall,
 partial register dependencies, memory mismatch stall, re-executed µops. If you want to write
-programs at assembly level, or you write compiler take a look at the Intel and
+programs at the assembly level, be sure to take a look at the Intel and
 AMD documentation at <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>
 and <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/">http://www.amd.com/products/cpg/athlon/techdocs/</ulink>.
 </para>
@@ -1711,7 +1632,7 @@ o more ...
 <chapter id="overhead">
 <title>Profiling overhead</title>
 <para>
-One of the major design criterion for oprofile was low overhead. In many cases
+One of the major design criterion for OProfile was low overhead. In many cases
 profiling is hardly noticeable in terms of overhead (I regularly leave it turned on
 all the time). It achieves this by judicious use of kernel-side data structures
 to reduce the analysis overhead to a bare runtime minimum. There are several things
@@ -1720,13 +1641,13 @@ noticeable.
 </para>
 <para>
 The worst-case scenario is where there are many short-lived processes. This can be seen
-in a kernel compile, for instance. This leads to a lot of syscall interception. Even in this worst case overhead
+in a kernel compile, for instance. Even in this worst case overhead
 is low compared to other profilers; only very detailed profiling of these workloads
 has an overhead of higher than 5%. Actual performance
-data is presented in the source distribution. In fact most situations have much fewer
+data is presented in the CVS tree. In fact most situations have much fewer
 numbers of processes, leading to far better performance.
 </para>
-<para>Some graphs of performance characteristics of oprofile are available on the website
+<para>Some graphs of performance characteristics of OProfile are available on the website
  - see <xref linkend="resources" />.
 </para>
 </chapter>
@@ -1746,26 +1667,27 @@ is showed as "See section 1" ...
 -->
 
 <sect1 id="symbol-and-debug-info">
-<title>Symbol information vs debug information. Why I see (no symbol) in profiling report ?</title>
+<title>Why do I see (no symbol) in profiling report ?</title>
 <para>
-Some post-profile tools need only symbol information like basic use of <command>oprofpp</command> whilst
-other need debugging information like <command>op_to_source</command>. The notion of debugging information and symbol
-information are orthogonal. <command>gcc</command> always create symbol information even without <option>-g</option>.
-You must be aware than <command>strip</command> by default remove debug <emphasis>and</emphasis> symbol information. You must use
-<command>strip <option>-d</option></command> to strip only debug but symbol information. Profiling binary
+Some post-profile tools need only symbol information like basic use of <command>oprofpp</command>, whilst
+others need debugging information, like <command>op_to_source</command>. The notions of debugging information and symbol
+information are orthogonal. <command>gcc</command> always creates symbol information even without <option>-g</option>.
+You should be aware that <command>strip</command> by default remove debug <emphasis>and</emphasis> symbol information. You must use
+<command>strip <option>-d</option></command> to strip only debug information. Profiling binaries
 without symbol information leads to a lot of (no symbol) reported by <command>oprofpp</command>.
 </para>
 <para>
-Don't think post-profile tools can use dynamic symbol for shared library. These symbol are never stripped but
-using them conduct to wrong profling report. Dynamic symbol don't provide enough information to create accurate
-profiling report because the symbol size information is lost and so on we don't know if a sample go to an exported
-function or to a static function which come immediatly after this exported symbol.
+Note that the post-profile tools do not use dynamic symbols for shared libraries in the absence of
+symbol information. These symbol are never stripped but
+using them has a risk of a misleading profile. Dynamic symbols don't provide enough information to create accurate
+profiling report, because the symbol size information is lost, and we don't know if a sample is from an exported
+function or from a static function which come immediately after this exported symbol.
 </para>
 <para>
-In short if you want to profile already installed binary on your system, reinstall them with the proper information,
+In short, if you want to profile already installed binaries on your system, reinstall them with the proper information,
 at least with symbol information for basic <command>oprofpp</command> and <command>op_time <option>-l</option></command> or with full
-debug information to get annotated source. Unhopefully debug information can be very voluminous and the neeeded debug
-information for annotated source, line numbers, are only generated at <option>-g2</option> level.
+debug information to get annotated source. Unfortunately debug information can be very voluminous. The neeeded debug
+information for annotated source, line numbers, is only generated at <option>-g2</option> level.
 </para>
 </sect1>
 

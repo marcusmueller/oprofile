@@ -1,5 +1,11 @@
 2002-12-13  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml: lots of fixes. Remove sysctl documentation
+	  as its really an internal feature and was cluttering up
+	  the user manual.
+ 
+2002-12-13  John Levon  <levon@movementarian.org>
+
 	* doc/oprofile.xml: some clarifications on timer interrupt 
  
 2002-12-12  John Levon  <levon@movementarian.org>
