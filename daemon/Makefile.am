@@ -15,8 +15,6 @@ EXTRA_DIST = $(dist_sources)
 
 LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
 
-if kernel_support
-
 AM_CPPFLAGS = \
 	-I ${top_srcdir}/libabi \
 	-I ${top_srcdir}/libutil \
@@ -24,6 +22,14 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libdb
 
 AM_CFLAGS = @OP_CFLAGS@
+
+# code shared with 2.4 daemon
+noinst_LIBRARIES = libdaemon.a
+libdaemon_a_SOURCES = \
+	opd_util.h \
+	opd_util.c
+
+if kernel_support
 
 bin_PROGRAMS = oprofiled
 

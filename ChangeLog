@@ -1,5 +1,15 @@
 2003-08-08  John Levon  <levon@movementarian.org>
 
+	* dae/Makefile.am:
+	* dae/oprofiled.c:
+	* daemon/Makefile.am:
+	* daemon/oprofiled.c:
+	* daemon/opd_util.h:
+	* daemon/opd_util.c: share some small bits of code
+	between the daemons
+
+2003-08-08  John Levon  <levon@movementarian.org>
+
 	* dae/oprofiled.c:
 	* daemon/oprofiled.c: remove mypid, unused
 

@@ -19,6 +19,7 @@
 #include "opd_parse_proc.h"
 #include "opd_kernel.h"
 #include "opd_printf.h"
+#include "opd_util.h"
 
 #include "op_version.h"
 #include "op_popt.h"
@@ -79,7 +80,6 @@ static fd_t devfd;
 static fd_t notedevfd;
 
 static void opd_sighup(int val);
-static void opd_open_logfile(void);
 
 static struct poptOption options[] = {
 	{ "pid-filter", 0, POPT_ARG_INT, &pid_filter, 0, "only profile the given process ID", "pid" },
@@ -94,28 +94,6 @@ static struct poptOption options[] = {
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
- 
-
-/**
- * opd_open_logfile - open the log file
- *
- * Open the logfile on stdout and stderr. This function
- * assumes that 1 and 2 are the lowest close()d file
- * descriptors. Failure to open on either descriptor is
- * a fatal error.
- */
-static void opd_open_logfile(void)
-{
-	if (open(OP_LOG_FILE, O_WRONLY|O_CREAT|O_NOCTTY|O_APPEND, 0755) == -1) {
-		perror("oprofiled: couldn't re-open stdout: ");
-		exit(EXIT_FAILURE);
-	}
-
-	if (dup2(1, 2) == -1) {
-		perror("oprofiled: couldn't dup stdout to stderr: ");
-		exit(EXIT_FAILURE);
-	}
-}
  
 
 /**
@@ -317,56 +295,6 @@ static void opd_options(int argc, char const * argv[])
 }
 
  
-/**
- * opd_fork - fork and return as child
- *
- * fork() and exit the parent with _exit().
- * Failure is fatal.
- */
-static void opd_fork(void)
-{
-	switch (fork()) {
-		case -1:
-			perror("oprofiled: fork() failed: ");
-			exit(EXIT_FAILURE);
-			break;
-		case 0:
-			break;
-		default:
-			/* parent */
-			_exit(EXIT_SUCCESS);
-			break;
-	}
-}
-
- 
-/**
- * opd_go_daemon - become daemon process
- *
- * Become an un-attached daemon in the standard
- * way (fork(),chdir(),setsid(),fork()).
- * Parents perform _exit().
- *
- * Any failure is fatal.
- */
-static void opd_go_daemon(void)
-{
-	opd_fork();
-
-	if (chdir(OP_BASE_DIR)) {
-		fprintf(stderr,"oprofiled: opd_go_daemon: couldn't chdir to "
-			OP_BASE_DIR ": %s", strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	if (setsid() < 0) {
-		perror("oprofiled: opd_go_daemon: couldn't setsid: ");
-		exit(EXIT_FAILURE);
-	}
-
-	opd_fork();
-}
-
 static void opd_do_samples(struct op_buffer_head const * buf);
 static void opd_do_notes(struct op_note const * opd_buf, size_t count);
 
