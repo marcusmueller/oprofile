@@ -81,6 +81,9 @@ protected slots:
 	/// close the dialog
 	void accept();
 
+	/// WM hide event
+	void closeEvent(QCloseEvent * e);
+ 
 	/// timer event 
 	void timerEvent(QTimerEvent * e);
 

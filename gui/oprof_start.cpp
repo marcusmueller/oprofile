@@ -320,6 +320,12 @@ void oprof_start::accept()
 }
 
  
+void oprof_start::closeEvent(QCloseEvent *)
+{
+	accept();
+}
+ 
+ 
 void oprof_start::timerEvent(QTimerEvent *)
 {
 	static time_t last = time(0);

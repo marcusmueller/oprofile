@@ -1,5 +1,12 @@
 2002-01-03  John Levon  <moz@compsoc.man.ac.uk>
 
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp:
+	* gui/ui/oprof_start.base.ui: remove the config buttons
+	  and save on a hide from the WM
+ 
+2002-01-03  John Levon  <moz@compsoc.man.ac.uk>
+
 	* module/oprofile.c: make sure note_pos never goes
 	  past the buffer :P
  
