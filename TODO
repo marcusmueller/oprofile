@@ -21,6 +21,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o mask SIGTERM over critical daemon operations that could corrupt sample files
  o fix 2.5 module handling
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
  o op_session should allow to backup binary, see subject "features to make oprofile easier to use" on mail list
