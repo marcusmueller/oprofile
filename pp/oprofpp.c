@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.14 2000/09/27 21:45:30 moz Exp $ */
+/* $Id: oprofpp.c,v 1.15 2000/09/28 00:39:17 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -182,6 +182,7 @@ bfd *open_image_file(char *mangled)
  
 		sect = bfd_get_section_by_name(ibfd, ".text");
 		sect_offset = OPD_KERNEL_OFFSET - sect->filepos;
+		printf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n",sect_offset,sect->filepos); 
 	}
  
 	return ibfd; 
@@ -214,12 +215,12 @@ u32 sym_offset(asymbol *sym, u32 num)
  
 int symcomp(const void *a, const void *b)
 {
-	asymbol **sa= (asymbol **)a;
-	asymbol **sb= (asymbol **)b;
+	u32 va = (*((asymbol **)a))->value + (*((asymbol **)a))->section->filepos; 
+	u32 vb = (*((asymbol **)b))->value + (*((asymbol **)b))->section->filepos; 
 
-	if ((*sa)->value<(*sb)->value)
+	if (va<vb)
 		return -1;
-	return ((*sa)->value>(*sb)->value);
+	return (va>vb);
 }
 
 /* need a better filter, but only this gets rid of _start
@@ -312,9 +313,11 @@ uint get_symbols(bfd *ibfd, asymbol ***symsp)
  */
 void get_symbol_range(asymbol *sym, asymbol *next, u32 *start, u32 *end)
 {
+	printf("Symbol %s, value 0x%lx\n",sym->name, sym->value); 
 	*start = sym->value;
 	/* offset of section */
 	*start += sym->section->filepos;
+	printf("in section %s, filepos 0x%lx\n",sym->section->name, sym->section->filepos);
 	/* adjust for kernel image */
 	*start += sect_offset;
 	if (next) {
@@ -325,6 +328,7 @@ void get_symbol_range(asymbol *sym, asymbol *next, u32 *start, u32 *end)
 		*end += sect_offset;
 	} else
 		*end = nr_samples;
+	printf("start 0x%x, end 0x%x\n",*start,*end); 
 }
  
 struct opp_count {
@@ -366,12 +370,6 @@ void do_list_symbols(void)
 	ibfd = open_image_file(samplefile);
 	num = get_symbols(ibfd,&syms);
 
-/*
-	for (i=0; i < nr_samples; i++) {
-		printf("0x%x: %d %d\n",i,samples[i].count0,samples[i].count1);
-	}
-*/
-
 	if (!num) {
 		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
 		exit(1);
@@ -384,17 +382,17 @@ void do_list_symbols(void)
 		scounts[i].sym = syms[i];
 		get_symbol_range(syms[i], (i==num-1) ? NULL : syms[i+1], &start, &end); 
 		if (start >= nr_samples) {
-			fprintf(stderr,"oprofpp: start %u out of range (max %u)\n",start,nr_samples);
+			fprintf(stderr,"oprofpp: start 0x%x out of range (max 0x%x)\n",start,nr_samples);
 			exit(1);
 		}
 		if (end > nr_samples) {
-			fprintf(stderr,"oprofpp: end %u out of range (max %u)\n",end,nr_samples);
+			fprintf(stderr,"oprofpp: end 0x%x out of range (max 0x%x)\n",end,nr_samples);
 			exit(1);
 		}
 
 		for (j=start; j < end; j++) {
 			if (samples[j].count0)
-				printf("Adding %u samples for symbol $%s$ at pos j %d\n",samples[j].count0,syms[i]->name,j);
+				printf("Adding %u samples for symbol $%s$ at pos j 0x%x\n",samples[j].count0,syms[i]->name,j);
 			scounts[i].count0 += samples[j].count0;
 			scounts[i].count1 += samples[j].count1;
 			tot0 += samples[j].count0;

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.3 2000/08/03 03:19:06 moz Exp $ */
+/* $Id: oprofpp.h,v 1.4 2000/09/28 00:39:17 moz Exp $ */
 
 #include <libiberty.h>
 #include <bfd.h>
@@ -36,8 +36,8 @@ void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char 
 #define fd_t int
 #define streq(a,b) (!strcmp((a),(b)))
 
-/* kernel image entries are offset by this much */
-#define OPD_KERNEL_OFFSET 1000000
+/* kernel image entries are offset by this many entries */
+#define OPD_KERNEL_OFFSET 524288
  
 /* this char replaces '/' in sample filenames */
 #define OPD_MANGLE_CHAR '}'
