@@ -184,34 +184,34 @@ int main(int argc, char const ** argv)
 		cerr << "input abi is identical to native. "
 		     << "no conversion necessary." << endl;
 		exit(1);
-	} else {
-		int in_fd;
-		struct stat statb;
-		void * in;
-		samples_odb_t dest;
-		int rc;
-
-		assert((in_fd = open(inputs[0].c_str(), O_RDONLY)) > 0);		
-		assert(fstat(in_fd, &statb) == 0);
-		assert((in = mmap(0, statb.st_size, PROT_READ,
-				  MAP_PRIVATE, in_fd, 0)) != (void *)-1);
-
-		rc = odb_open(&dest, output_filename.c_str(), ODB_RDWR,
-			      sizeof(struct opd_header));
-		if (rc) {
-			cerr << "odb_open() fail:\n"
-			     << strerror(rc) << endl;
-			exit(EXIT_FAILURE);
-		}
-
-		try {
-			import_from_abi(input_abi, in, statb.st_size, &dest);
-		} catch (abi_exception & e) {
-			cerr << "caught abi exception: " << e.desc << endl;
-		}
-
-		odb_close(&dest);
-
-		assert(munmap(in, statb.st_size) == 0);
 	}
+
+	int in_fd;
+	struct stat statb;
+	void * in;
+	samples_odb_t dest;
+	int rc;
+
+	assert((in_fd = open(inputs[0].c_str(), O_RDONLY)) > 0);		
+	assert(fstat(in_fd, &statb) == 0);
+	assert((in = mmap(0, statb.st_size, PROT_READ,
+			  MAP_PRIVATE, in_fd, 0)) != (void *)-1);
+
+	rc = odb_open(&dest, output_filename.c_str(), ODB_RDWR,
+		      sizeof(struct opd_header));
+	if (rc) {
+		cerr << "odb_open() fail:\n"
+		     << strerror(rc) << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	try {
+		import_from_abi(input_abi, in, statb.st_size, &dest);
+	} catch (abi_exception & e) {
+		cerr << "caught abi exception: " << e.desc << endl;
+	}
+
+	odb_close(&dest);
+
+	assert(munmap(in, statb.st_size) == 0);
 }

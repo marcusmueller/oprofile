@@ -1,3 +1,8 @@
+2003-09-26  John Levon  <levon@movementarian.org>
+
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp: small cleanups
+
 2003-09-25  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_cookie.c:
