@@ -43,7 +43,6 @@ Before 1.0 little stuff
   opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
   --separate==none. Must we take care ?
  o --buffer-size is useless on 2.5 without tuning of watershed
- o oprof_start: check lib samples when kernel samples checkbox is checked
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
  o when we dump stats for oprofiled, dump kernel-side values too (for 2.5)
  o remove 2.2 / gcc 2.91 support ?

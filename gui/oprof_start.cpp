@@ -955,6 +955,13 @@ void oprof_start::on_stop_profiler()
 }
 
 
+void oprof_start::on_separate_kernel_cb_changed(int state)
+{
+	if (state == 2)
+		separate_lib_cb->setChecked(true);
+}
+
+
 /// function object for matching against name
 class event_name_eq {
 	string name_;

@@ -1,5 +1,12 @@
 2003-10-26  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* gui/ui/oprof_start.base.ui:
+	* gui/oprof_start.cpp:
+	* gui/oprof_start.h: check separate_lib checkbox when
+	  separate_kernel_cb is checked
+
+2003-10-26  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* utils/opcontrol: allow to reset --image through empty --image=
 	  or --image
 

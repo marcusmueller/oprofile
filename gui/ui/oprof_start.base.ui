@@ -11,7 +11,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>573</width>
+            <width>569</width>
             <height>735</height>
         </rect>
     </property>
@@ -1027,10 +1027,17 @@
         <receiver>oprof_start_base</receiver>
         <slot>event_over(QListViewItem *)</slot>
     </connection>
+    <connection>
+        <sender>separate_kernel_cb</sender>
+        <signal>stateChanged(int)</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>on_separate_kernel_cb_changed(int)</slot>
+    </connection>
     <slot access="protected">choose_kernel_filename()</slot>
     <slot access="protected">event_over(QListViewItem *)</slot>
     <slot access="protected">event_selected()</slot>
     <slot access="protected">on_flush_profiler_data()</slot>
+    <slot access="protected">on_separate_kernel_cb_changed(int)</slot>
     <slot access="protected">on_start_profiler()</slot>
     <slot access="protected">on_stop_profiler()</slot>
 </connections>

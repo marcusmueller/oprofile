@@ -65,6 +65,8 @@ protected slots:
 	void event_selected();
 	/// the mouse is over an event
 	void event_over(QListViewItem *);
+	/// state of separate_kernel_cb changed
+	void on_separate_kernel_cb_changed(int);
 
 	/// close the dialog
 	void accept();
