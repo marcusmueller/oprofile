@@ -26,7 +26,6 @@
 extern uint op_nr_counters;
 extern int separate_lib;
 extern int separate_thread;
-extern u8 ctr_event[OP_MAX_COUNTERS];
 
 /* maintained for statistics purpose only */
 unsigned int nr_images=0;

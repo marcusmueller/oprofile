@@ -206,7 +206,7 @@ static void run_child(size_t cpu)
 		pc[i].reg_value |= ((event->value & 0x7f) << 8);
 		pc[i].reg_value &= ~(0xf << 16);
 		pc[i].reg_value |= ((event->um & 0xf) << 16);
-		pc[i].reg_smpl_eventid = i;
+		pc[i].reg_smpl_eventid = event->counter;
 	}
 
 	for (i = 0; opd_events[i].name; ++i) {

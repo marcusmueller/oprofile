@@ -945,10 +945,8 @@ do_start_daemon() {
 		--separate-thread=$SEPARATE_THREAD \
 		--separate-cpu=$SEPARATE_CPU"
 
-	if test "$KERNEL_SUPPORT" = "yes";  then
-		get_events
-		OPD_ARGS="$OPD_ARGS --events=$OPROFILED_EVENTS"
-	fi
+	get_events
+	OPD_ARGS="$OPD_ARGS --events=$OPROFILED_EVENTS"
 
 	if [ "$VMLINUX" = "none" ]; then
 		OPD_ARGS="$OPD_ARGS --no-vmlinux"

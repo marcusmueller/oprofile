@@ -52,9 +52,6 @@
 #include <stdlib.h>
 #include <limits.h>
 
-u32 ctr_count[OP_MAX_COUNTERS];
-u8 ctr_event[OP_MAX_COUNTERS];
-u16 ctr_um[OP_MAX_COUNTERS];
 double cpu_speed;
 fd_t hashmapdevfd;
 
@@ -69,9 +66,9 @@ int no_vmlinux;
 char * vmlinux;
 int cpu_number;
 
+static char * events;
 static char * kernel_range;
 static int showvers;
-static u32 ctr_enabled[OP_MAX_COUNTERS];
 static char const * mount = OP_MOUNT;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
@@ -90,6 +87,7 @@ static struct poptOption options[] = {
 	{ "separate-kernel", 0, POPT_ARG_INT, &separate_kernel, 0, "separate kernel samples for each distinct application, this option imply --separate-lib=1", "[0|1]", },
 	{ "separate-thread", 0, POPT_ARG_INT, &separate_thread, 0, "thread-profiling mode", "[0|1]" },
 	{ "separate-cpu", 0, POPT_ARG_INT, &separate_cpu, 0, "separate samples for each CPU", "[0|1]" },
+	{ "events", 'e', POPT_ARG_STRING, &events, 0, "events list", "[0|1]" },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
 	POPT_AUTOHELP
@@ -152,15 +150,6 @@ static void op_open_files(void)
 }
  
 
-/** return the int in the given counter's oprofilefs file */
-static int opd_read_fs_int_pmc(int ctr, char const * name)
-{
-	char filename[PATH_MAX + 1];
-	snprintf(filename, PATH_MAX, "%s/%d/%s", mount, ctr, name);
-	return op_read_int_from_file(filename);
-}
-
- 
 /** return the int in the given oprofilefs file */
 static int opd_read_fs_int(char const * name)
 {
@@ -169,71 +158,6 @@ static int opd_read_fs_int(char const * name)
 	return op_read_int_from_file(filename);
 }
 
-
-/**
- * opd_pmc_options - read sysctls for pmc options
- */
-static void opd_pmc_options(void)
-{
-	int ret;
-	uint i;
-	unsigned int min_count;
-
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		ctr_event[i] = opd_read_fs_int_pmc(i, "event");
-		ctr_count[i] = opd_read_fs_int_pmc(i, "count");
-		ctr_um[i] = opd_read_fs_int_pmc(i, "unit_mask");
-		ctr_enabled[i] = opd_read_fs_int_pmc(i, "enabled");
-
-		if (!ctr_enabled[i])
-			continue;
-
-		ret = op_check_events(i, ctr_event[i], ctr_um[i], cpu_type);
-
-		if (ret & OP_INVALID_EVENT)
-			fprintf(stderr, "oprofiled: ctr%d: %d: no such event for cpu %s\n",
-				i, ctr_event[i], op_get_cpu_type_str(cpu_type));
-
-		if (ret & OP_INVALID_UM)
-			fprintf(stderr, "oprofiled: ctr%d: 0x%.2x: invalid unit mask for cpu %s\n",
-				i, ctr_um[i], op_get_cpu_type_str(cpu_type));
-
-		if (ret & OP_INVALID_COUNTER)
-			fprintf(stderr, "oprofiled: ctr%d: %d: can't count event for this counter\n",
-				i, ctr_count[i]);
-
-		if (ret != OP_OK_EVENT)
-			exit(EXIT_FAILURE);
-
-		min_count = op_min_count(ctr_event[i], cpu_type);
-		if (ctr_count[i] < min_count) {
-			fprintf(stderr, "oprofiled: ctr%d: count is too low: %d, minimum is %d\n",
-				i, ctr_count[i], min_count);
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	op_free_events();
-}
-
-/**
- * opd_rtc_options - read sysctls + set up for rtc options
- */
-static void opd_rtc_options(void)
-{
-	uint i;
-
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		ctr_event[i] = ctr_count[i] =  ctr_um[i] = ctr_enabled[i] = 0;
-	}
-
-	ctr_count[0] = op_read_int_from_file("/proc/sys/dev/oprofile/rtc_value");
-	ctr_enabled[0] = 1;
-
-	/* FIXME ugly ... */
-	ctr_event[0] = 0xff;
-}
- 
 
 /**
  * opd_options - parse command line options
@@ -281,10 +205,7 @@ static void opd_options(int argc, char const * argv[])
 	opd_buf_size = opd_read_fs_int("bufsize");
 	opd_note_buf_size = opd_read_fs_int("notesize");
 
-	if (cpu_type != CPU_RTC)
-		opd_pmc_options();
-	else
-		opd_rtc_options();
+	opd_parse_events(events);
 
 	cpu_speed = op_cpu_frequency();
 

@@ -14,9 +14,10 @@
 #include "opd_sample_files.h"
 #include "opd_image.h"
 #include "opd_printf.h"
-#include "op_file.h"
+#include "opd_util.h"
 
 #include "op_sample_file.h"
+#include "op_file.h"
 #include "op_config.h"
 #include "op_cpu_type.h"
 #include "op_mangle.h"
@@ -32,9 +33,6 @@ extern int separate_lib;
 extern int separate_kernel;
 extern int separate_thread;
 extern int separate_cpu;
-extern u32 ctr_count[OP_MAX_COUNTERS];
-extern u8 ctr_event[OP_MAX_COUNTERS];
-extern u16 ctr_um[OP_MAX_COUNTERS];
 extern double cpu_speed;
 extern op_cpu cpu_type;
 
@@ -74,24 +72,29 @@ void opd_sfile_lru(struct opd_sfile * sfile)
 }
 
 
+static struct opd_event * find_event(unsigned long counter)
+{
+	size_t i;
+
+	for (i = 0; opd_events[i].name; ++i) {
+		if (counter == opd_events[i].counter)
+			return &opd_events[i];
+	}
+
+	fprintf(stderr, "Unknown event for counter %lu\n", counter);
+	abort();
+	return NULL;
+}
+
+
 static char * opd_mangle_filename(struct opd_image const * image, int counter,
                                   int cpu_nr)
 {
 	char * mangled;
 	char const * dep_name = separate_lib ? image->app_name : NULL;
-	struct op_event * event = NULL;
 	struct mangle_values values;
+	struct opd_event * event = find_event(counter);
 
-	if (cpu_type != CPU_TIMER_INT) {
-		event = op_find_event(cpu_type, ctr_event[counter]); 
-		if (!event) {
-			fprintf(stderr, "Unknown event %u for counter %u\n",
-				ctr_event[counter], counter);
-			abort();
-		}
-	}
-
-	/* Here we can add TGID, TID, CPU, later.  */
 	values.flags = 0;
 	if (image->kernel)
 		values.flags |= MANGLE_KERNEL;
@@ -109,13 +112,9 @@ static char * opd_mangle_filename(struct opd_image const * image, int counter,
 		values.cpu = cpu_nr;
 	}
 
-	if (cpu_type != CPU_TIMER_INT)
-		values.event_name = event->name;
-	else
-		values.event_name = "TIMER";
-
-	values.count = ctr_count[counter];
-	values.unit_mask = ctr_um[counter];
+	values.event_name = event->name;
+	values.count = event->count;
+	values.unit_mask = event->um;
 
 	values.image_name = image->name;
 	values.dep_name = dep_name;
@@ -144,6 +143,7 @@ int opd_open_sample_file(struct opd_image * image, int counter, int cpu_nr)
 	char * mangled;
 	struct opd_sfile * sfile;
 	struct opd_header * header;
+	struct opd_event * event = find_event(counter);
 	int err;
 
 	mangled = opd_mangle_filename(image, counter, cpu_nr);
@@ -188,11 +188,11 @@ retry:
 	header->version = OPD_VERSION;
 	memcpy(header->magic, OPD_MAGIC, sizeof(header->magic));
 	header->is_kernel = image->kernel;
-	header->ctr_event = ctr_event[counter];
-	header->ctr_um = ctr_um[counter];
+	header->ctr_event = event->value;
+	header->ctr_count = event->count;
+	header->ctr_um = event->um;
 	header->ctr = counter;
 	header->cpu_type = cpu_type;
-	header->ctr_count = ctr_count[counter];
 	header->cpu_speed = cpu_speed;
 	header->mtime = image->mtime;
 	header->separate_lib = separate_lib;

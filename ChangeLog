@@ -1,5 +1,17 @@
 2003-10-14  John Levon  <levon@movementarian.org>
 
+	* dae/opd_image.c:
+	* dae/opd_sample_files.c:
+	* dae/oprofiled.c:
+	* utils/opcontrol: use --events for 2.4 daemon
+	too
+
+	* daemon/opd_perfmon.c:
+	* daemon/opd_mangling.c: fix counter numbering
+	on !perfmon
+
+2003-10-14  John Levon  <levon@movementarian.org>
+
 	* configure.in: xmemdup not xmemdump
 
 2003-10-14  John Levon  <levon@movementarian.org>
