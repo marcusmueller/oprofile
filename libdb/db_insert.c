@@ -22,7 +22,7 @@ int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value)
 	odb_index_t new_node;
 	odb_node_t * node;
 
-	index = hash->hash_base[do_hash(hash, key)];
+	index = hash->hash_base[odb_do_hash(hash, key)];
 	while (index) {
 		if (index <= 0 || index >= hash->descr->current_size) {
 			char * err_msg;
@@ -59,7 +59,7 @@ int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value)
 	node->key = key;
 
 	/* we need to recalculate hash code, hash table has perhaps grown */
-	index = do_hash(hash, key);
+	index = odb_do_hash(hash, key);
 	node->next = hash->hash_base[index];
 	hash->hash_base[index] = new_node;
 	

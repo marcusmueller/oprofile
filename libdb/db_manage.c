@@ -129,7 +129,7 @@ odb_index_t odb_hash_add_node(samples_odb_t * hash)
 
 		for (pos = 1; pos < hash->descr->current_size; ++pos) {
 			odb_node_t * node = &hash->node_base[pos];
-			size_t index = do_hash(hash, node->key);
+			size_t index = odb_do_hash(hash, node->key);
 			node->next = hash->hash_base[index];
 			hash->hash_base[index] = pos;
 		}

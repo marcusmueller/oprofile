@@ -187,7 +187,7 @@ void samples_odb_travel(samples_odb_t const * hash, odb_key_t first, odb_key_t l
  */
 odb_node_t * odb_get_iterator(samples_odb_t const * hash, odb_node_nr_t * nr);
 
-static __inline unsigned int do_hash(samples_odb_t const * hash, odb_key_t value)
+static __inline unsigned int odb_do_hash(samples_odb_t const * hash, odb_key_t value)
 {
 	/* FIXME: better hash for eip value, needs to instrument code
 	 * and do a lot of tests ... */

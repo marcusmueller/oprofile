@@ -114,6 +114,7 @@ profile_t::samples_range(unsigned int start, unsigned int end) const
 		const_iterator(last, start_offset));
 }
 
+
 profile_t::iterator_pair profile_t::samples_range() const
 {
 	ordered_samples_t::const_iterator first = ordered_samples.begin();
