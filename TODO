@@ -1,36 +1,46 @@
+This is an (incomplete) list of some of the stuff we want to look at doing.
+
+If you're interested in hacking on any of these, please contact the list first
+for some pointers.
+
 Before 1.0 big stuff
 --------------------
 
- o implement new pp spec
+ o implement new pp spec (see specification)
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level. Important.
- o get symbol size via elf instead of bfd ?
+ o real call graph profiling. Do try locks in NMI handler to track backwards then
+   dump the trace in the logs + new sample file format
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
- o thread profiling in the old and new flavour (2.5 introduce a new thread handling)
-   - what is different ?? 
- o CPU-specific sample files option ?
- o split doc into user's manual and hacking manual, document much more 
- o auto-generate the event C files. They're too ugly. 
+ o thread profiling
+ o per-binary kernel profiling (mostly done)
+ o per-cpu profiling
+ o implement --no-vmlinux
  
 Before 1.0 little stuff
 -----------------------
 
+ o fix 2.5 module handling
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
  o op_session should allow to backup binary, see subject "features to make oprofile easier to use" on mail list
  o remove 1 and 2 magic numbers for oprof_ready
- o more discussion of problematic code needs to go in the "interpreting" section. 
- o document gcc 2.95 and linenr info problems especially for inline functions
- o make sure we behave sensibly in all places following symlinks etc. 
- o document somewhere that oprofpp -s blah will only find the first symbol
-   called "blah", or fix it
  o There is probably place of post profile tools where looking at errno will give better error messages.
  o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
    will fail because the ~ is not expanded (no space around it) (popt bug I say)
- o should we pin rather than loop sample buffer overflow too ?
- o audit oprof_start for security + then document sudo
- o coherent naming class conventions
  o use standard C integer type <stdint.h> int32_t int16_t etc.
+ o verify if we can remove the ELF-based symbol size code
+ o auto-generate the event C files. They're too ugly. 
+
+Documentation
+-------------
+
+ o more discussion of problematic code needs to go in the "interpreting" section. 
+ o document gcc 2.95 and linenr info problems especially for inline functions
+ o document somewhere that oprofpp -s blah will only find the first symbol
+   called "blah", or fix it
+ o split doc into user's manual and hacking manual, document much more 
+ o audit oprof_start for security + then document sudo
 
 General checks to make
 ----------------------
@@ -39,7 +49,7 @@ General checks to make
  o rgrep FIXME
  o valgrind (--show-reachable=yes --leak-check=yes)
  o audit to track unnecessary include <>
- o gcc 3.0/3.1 compile
+ o gcc 3.0/3.x compile
  o Qt2/3 check, no Qt check
  o verify builds (modversions, kernel versions, athlon etc.). I have the
   necessary stuff to check kernel versions/configurations on PIII core (Phil)
@@ -50,7 +60,7 @@ General checks to make
 Later
 -----
  
- o multiplexing for real
+ o event multiplexing for real
  
 oprof_report:
 
@@ -58,24 +68,10 @@ IMHO this app isn't near what we really want. There's no point doing this
 GUI until we can give it some real power. Let's concentrate on making the
 command-line tools as good as possible first. 
 - folderview of sample files + sessions in the gui itself (later ?)
-- disassembly. form "+0x8b" for intra-symbol samples optionnaly, on by default?
+- disassembly. form "+0x8b" for intra-symbol samples optionally, on by default?
 - tune and test hotspot
 - source (later ?)
  
 o profile the NMI handler code
  
 o merge sample files into one big report (like vtune can do repeated runs)
- 
-o turn (or only compile) daemon in C++ to allow more code sharing with pp/gui
-  is it a good idea ?
-
-o maybe we should support a CPU mask for enabling counters (useful with
-  processor pinning ?) 
-
-o the interrupt handler code could probably be improved by moving into asm
-
-o we don't really need a vmlinux file during profiling ...
- 
-o More ports, I must have more !!!
-
-o other processors through RTC iff we find testers
