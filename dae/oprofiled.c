@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.9 2000/08/22 13:41:11 moz Exp $ */
+/* $Id: oprofiled.c,v 1.10 2000/08/25 03:50:17 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -273,14 +273,15 @@ inline static u16 opd_is_mapping(const struct op_sample *sample)
  */
 void opd_do_samples(const struct op_sample *opd_buf)
 {
-	int i;
+	uint i;
 
 	/* prevent signals from messing us up */
 	sigprocmask(SIG_BLOCK,&maskset,NULL);
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
-	for (i=0; i < opd_buf_size; i++) {
+	/* opd_buf->eip contains how many to read */
+	for (i=1; i <= opd_buf->eip; i++) {
 		if (ignore_myself && opd_buf[i].pid==mypid)
 			continue;
 
@@ -340,7 +341,8 @@ int main(int argc, char *argv[])
 	footer.ctr1_type_val = ctr1_type_val;
 	footer.ctr1_um = (u8)ctr1_um;
 
-	opd_buf_bytesize=opd_buf_size*sizeof(struct op_sample);
+	/* one extra for the "how many" header */
+	opd_buf_bytesize=(opd_buf_size+1)*sizeof(struct op_sample);
 
  	opd_buf = opd_malloc(opd_buf_bytesize);
 
