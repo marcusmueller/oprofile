@@ -42,8 +42,6 @@ static struct poptOption options[] = {
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
 	{ "use-counter", 'c', POPT_ARG_INT, &ctr, 0,
 	  "use counter", "counter nr", },
-	{ "backup-number", 'b', POPT_ARG_INT, &backup_number, 0,
-	  "suffixe number of sample file to use", "backup number", },
 	{ "reverse", 'r', POPT_ARG_NONE, &reverse_sort, 0,
 	  "reverse sort order", NULL, },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
@@ -118,8 +116,6 @@ static bool samples_file_exist(const std::string & filename)
 	std::ostringstream s;
 
 	s << filename << "#" << ctr;
-	if (backup_number != -1)
-		s << "-" << backup_number;
 
 	ifstream in(s.str().c_str());
 
@@ -153,8 +149,8 @@ static void get_file_list(list<string> & file_list)
 
 		string filename = strip_filename_suffix(*it);
 
-		//  After stripping the # suffix multiples identicals
-		// filenames can exist.
+		// After stripping the # suffix multiples identicals filenames
+		// can exist.
 		if (find(file_list.begin(), file_list.end(), filename) == 
 		    file_list.end())
 			file_list.push_back(filename);

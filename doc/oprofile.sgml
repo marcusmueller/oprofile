@@ -141,7 +141,7 @@ necks in real-world systems.
 <sect1 id="install">
 <title>Installation</title>
 <para>
-First you need to build <filename>oprofile</filename> and install it. <ommand>./autogen</command>,
+First you need to build <filename>oprofile</filename> and install it. <command>./autogen</command>,
 <command>./configure</command>, <command>make</command>, <command>make install</command>
 is all you need, but note these arguments to <command>./configure</command> :
 <variablelist>
@@ -722,6 +722,7 @@ Some interesting options of the post-processor :
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;demangle</option></term>
+		<term><option>-d</option></term>
 		<listitem><para>
 		Demangle C++ symbol names.
 		</para></listitem>
@@ -756,12 +757,14 @@ Some interesting options of the post-processor :
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;list-all-symbols-details</option></term>
+		<term><option>-L</option></term>
 		<listitem><para>
 		Provide a detailed listing for all symbols.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;output-linenr-info</option></term>
+		<term><option>-o</option></term>
 		<listitem><para>
 		Add filename::linenr info for all samples, usable only with &mdash;list-all-symbols-details or &mdash;list-symbol.
 		</para></listitem>
@@ -772,7 +775,7 @@ Some interesting options of the post-processor :
 </sect1>
 
 <sect1 id="op-to-source">
-<title>Outputting annotated source</title>
+<title><command>op_to_source</command>: Outputting annotated source</title>
 <para>
 <command>op_to_source</command> generates annotated source files or assembly listings optionally mixed with source.
 If you want to see the source file the profiled application needs to have debug information and the source
@@ -889,6 +892,43 @@ The options allowed are :
 		<term><option>-i </option>  <filename>filename</filename></term>
 		<listitem><para>
 		Specify the image file.
+		</para></listitem>
+	</varlistentry>
+</variablelist>
+</para>
+</sect1>
+
+<sect1 id="op-time">
+<title><command>op_time</command>: Overall of resultats</title>
+<para>
+You can get a quick look at an overall of resultats by using <command>op_time</command>. This utility display
+the relative amount of samples for each application profiled sorted by decreasing order of samples count. So
+with <command>op_time [<option>&mdash;option</option>] [<filename>samples_dir</filename>]</command> you can get :
+</para>
+<para>
+<screen>
+/lib/libc-2.1.2.so 19 32.7586%
+/usr/X11R6/bin/XF86_SVGA 13 22.4138%
+...
+/usr/bin/grep 1 1.72414%
+/usr/X11R6/lib/libXt.so.6.0 1 1.72414%
+</screen>
+</para>
+<para>
+Options allowed are :
+<variablelist>
+	<varlistentry>
+		<term><option>&mdash;use-counter</option> nr</term>
+		<term><option>-c</option></term>
+		<listitem><para>
+		use counter nr for sorting samples count
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>&mdash;reverse</option></term>
+		<term><option>-r</option></term>
+		<listitem><para>
+		Sort by decreasing samples count rather
 		</para></listitem>
 	</varlistentry>
 </variablelist>

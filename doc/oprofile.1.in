@@ -21,6 +21,12 @@ oprofile \- a sytem-wide profiler
 .I options
 ]
 .br
+.B op_time
+[
+.I options
+]
+[ samples-files-directory ]
+.br
 .B op_help
 [ event-name ]
 .br
@@ -255,6 +261,21 @@ verbose output
 base directory of profile daemon
 .br
 .TP
+.B op_time options
+.br
+.TP
+.BI "--help -? --usage"
+Show help message
+.TP
+.br
+.BI "--use-counter " counter_nr ", -c "counter_nr
+which counter to use for sorting purposes
+.TP
+.br
+.BI "--reverse -r"
+sort output by increasing count of samples rather by decreasing count of samples
+.TP
+.br
 .B oprof_convert filename [filenames]
 The oprof_convert utility is only needed when upgrading the profiler version. Further details
 can be found in the HTML documentation.
@@ -284,6 +305,9 @@ or by using :
 .B op_to_source
 .PP
 .I op_to_source -i /lib/libc-2.1.92.so
+.PP
+.B op_time
+utility can be usefull to get an overall of all profiled applications.
 .PP
 .SH ENVIRONMENT
 No environment variables are recognised by oprofile.

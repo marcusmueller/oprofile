@@ -13,11 +13,11 @@
 	* util/file_manip.cpp: create_file_list() new to create
 	  a list of all the file in a directory
 
-	* pp/op_time.cpp: new utility, not yet documented.
+	* pp/op_time.cpp: new utility
 	* pp/Makefile.in: handle op_time
 
-	* doc/oprofile.sgml: minor change on how to buid and
-	  install oprofile
+	* doc/oprofile.sgml: 
+	* doc/oprofile.1.in: Document op_time
 
 2001-11-30  Philippe Elie  <ph_e@club-internet.fr>
 

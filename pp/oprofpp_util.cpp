@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.6 2001/11/30 23:38:03 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.7 2001/12/01 03:56:07 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -33,7 +33,7 @@ int ctr = -1;
 
 static uint nr_samples; 
 /* if != -1 appended to samples files with "-%d" format */
-int backup_number = -1;
+static int backup_number = -1;
 
 /**
  * remangle - convert a filename into the related sample file name

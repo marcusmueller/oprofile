@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.27 2001/11/30 23:38:03 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.28 2001/12/01 03:56:07 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -76,7 +76,6 @@ extern char *basedir;
 extern const char *imagefile;
 extern int list_all_symbols_details;
 extern int ctr;
-extern int backup_number;
 
 //---------------------------------------------------------------------------
 // A simple container of counter.
