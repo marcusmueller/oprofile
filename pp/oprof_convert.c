@@ -25,6 +25,7 @@
 
 #include "../version.h"
 #include "../dae/opd_util.h"
+#include "../util/file_manip.h"
 
 static char * filename;
  
@@ -214,7 +215,7 @@ static void do_mapping_transfer(uint nr_samples, int counter,
 		return;
 	}
 
-	out_filename = opd_malloc(strlen(filename) + 32);
+	out_filename = (char *)opd_malloc(strlen(filename) + 32);
 	strcpy(out_filename, filename);
 	sprintf(out_filename + strlen(out_filename), "#%d", counter);
 
@@ -244,14 +245,14 @@ static void do_mapping_transfer(uint nr_samples, int counter,
 			goto err2;
 		}
 
-		header = mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, out_fd, 0);
+		header = (struct opd_header_v5*)mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, out_fd, 0);
 
 		if (header == (void *)-1) {
 			fprintf(stderr,"oprof_convert: mmap of output sample file \"%s\" failed: %s\n", out_filename, strerror(errno));
 			goto err2;
 		}
 
-		samples = (void *)(header + 1);
+		samples = (u32 *)(header + 1);
 
 		memset(header, '\0', sizeof(struct opd_header_v5));
 		memcpy(header->magic, OPD_MAGIC_V5, sizeof(header->magic));
@@ -350,7 +351,7 @@ static void v4_to_v5(FILE* fp)
 		goto err1;
 	}
 
-	old_samples = mmap(0, old_size, PROT_READ, MAP_PRIVATE, old_fd, 0);
+	old_samples = (struct old_opd_fentry *)mmap(0, old_size, PROT_READ, MAP_PRIVATE, old_fd, 0);
 	if (old_samples == (void *)-1) {
 		fprintf(stderr, "oprof_convert: mmap of %s failed. %s\n", filename, strerror(errno));
 		goto err1;

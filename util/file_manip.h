@@ -19,6 +19,8 @@
 #ifndef FILE_MANIP_H
 #define FILE_MANIP_H
 
+#ifdef __cplusplus
+
 #include <string>
 #include <list>
 
@@ -30,5 +32,20 @@ std::string opd_read_link(std::string const & name);
 /// return false if base_dir is not a valid directory.
 bool create_file_list(std::list<std::string>& file_list,
 		      const std::string & base_dir);
+
+std::string relative_to_absolute_path(const std::string & path,
+				const std::string & base_dir = std::string());
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+char *opd_simplify_pathname(char *path);
+char *opd_relative_to_absolute_path(const char *path, const char *base_dir);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !FILE_MANIP_H */

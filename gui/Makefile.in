@@ -38,7 +38,7 @@ SOURCES=oprof_start.o oprof_start.moc.o ../events/op_events.o \
 
 oprof_start: $(SOURCES)
 	$(MAKE) -C ui
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(UISOURCES) @QT2_LDFLAGS@ @QT2_LIBS@
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(UISOURCES) @QT2_LDFLAGS@ @QT2_LIBS@ -liberty
 
 ui/oprof_start.base.h:
 	$(MAKE) -C ui

@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.20 2001/12/01 21:16:48 phil_e Exp $ */
+/* $Id: opd_util.h,v 1.21 2001/12/04 21:16:11 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -84,14 +84,10 @@ void *opd_realloc(void *buf, size_t size);
 void opd_free(void *p);
 char* opd_mangle_filename(const char *smpdir, const char* filename);
 
-char *opd_simplify_pathname(char *path);
-char *opd_relative_to_absolute_path(const char *path, const char *base_dir);
- 
 #define opd_try_open_file(n,m) opd_do_open_file((n), (m), 0)
 #define opd_open_file(n,m) opd_do_open_file((n), (m), 1)
 FILE *opd_do_open_file(const char *name, const char *mode, int fatal);
 void opd_close_file(FILE *fp);
-char *opd_read_link(const char *name);
 #define opd_try_read_file(f,b,s) opd_do_read_file((f), (b), (s), 0);
 #define opd_read_file(f,b,s) opd_do_read_file((f), (b), (s), 1);
 void opd_do_read_file(FILE *fp, void *buf, size_t size, int fatal);

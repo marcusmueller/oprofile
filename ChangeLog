@@ -1,3 +1,15 @@
+2001-12-04  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/opd_util.c:
+	* dae/opd_util.c: move common fuctionnality to ...
+	* util/file_manip.h
+	* util/file_manip.c: here
+	* pp/oprof_convert.c: reflect above change
+	* pp/oprof_convert.c:
+	* pp/opf_filter.cpp: ditto + minor cleanup
+	* gui/Makefile.in:
+	* pp/Makefile.in: reflect above change
+
 2001-12-02  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/oprofpp.h:

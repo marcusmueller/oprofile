@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.9 2001/12/02 15:12:57 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.10 2001/12/04 21:16:11 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -20,6 +20,7 @@
 #include <sstream>
 
 #include "oprofpp.h"
+#include "../util/file_manip.h"
  
 int verbose;
 char const *samplefile;

@@ -151,6 +151,10 @@ class output {
 	void output_header(ostream & out) const;
 
 	void output_asm();
+	void output_objdump_asm_line(const std::string & str,
+				     const vector<const symbol_entry *> & output_symbols, bool & do_output);
+	void output_objdump_asm(const vector<const symbol_entry *> & output_symbols);
+	void output_dasm_asm(const vector<const symbol_entry *> & output_symbols);
 	void output_source();
 
 	// output one file unconditionally.
@@ -407,29 +411,18 @@ output::output(int argc_, char const * argv_[],
 	}
 
 	if (source_dir.empty() == false) {
-		char* temp;
-
 		output_separate_file = true;
 
-		// FIXME: provide C++ std::string version of this.
-		temp = opd_relative_to_absolute_path(source_dir.c_str(), NULL);
-		source_dir = temp;
-		opd_free(temp);
-
+		source_dir = relative_to_absolute_path(source_dir);
 		if (source_dir.length() &&
 		    source_dir[source_dir.length() - 1] != '/')
 			source_dir += '/';
 	}
 
 	if (output_dir.empty() == false || output_separate_file == true) {
-		char* temp;
-
 		output_separate_file = true;
 
-		temp = opd_relative_to_absolute_path(output_dir.c_str(), NULL);
-		output_dir = temp;
-		opd_free(temp);
-
+		output_dir = relative_to_absolute_path(output_dir);
 		if (output_dir.length() &&
 		    output_dir[output_dir.length() - 1] != '/')
 			output_dir += '/';
@@ -553,6 +546,137 @@ void output::find_and_output_counter(ostream & out, const string & filename, siz
 		output_counter(out, symbol->sample.counter, true, symbol->name);
 }
 
+/**
+ * output::output_objdump_asm_line - helper for output_objdump_asm
+ * @str: the string reading from objdump output
+ * @output_symbols: the symbols set to output
+ * @do_output: in/out parameter which says if the current line
+ * must be output
+ *
+ */
+void output::
+output_objdump_asm_line(const std::string & str,
+			const vector<const symbol_entry *> & output_symbols,
+			bool & do_output)
+{
+	// output of objdump is a human read-able form and can contain some
+	// ambiguity so this code is dirty. It is also optimized a little what
+	// so it is difficult to simplify it without beraking something ...
+
+	// line of interest are: "[:space:]*[:xdigit:]?[ :]", the last char of
+	// this regexp dis-ambiguate between a symbol line and an asm line. If
+	// source contain line of this form an ambiguity occur and we rely on
+	// the robustness of this code.
+
+	// Do not use high level C++ construct such ostringstream: we need
+	// efficiency here.
+	size_t pos = 0;
+	while (pos < str.length() && isspace(str[pos]))
+		++pos;
+
+	if (pos == str.length() || !isxdigit(str[pos]))
+		return;
+
+	while (pos < str.length() && isxdigit(str[pos]))
+		++pos;
+
+	if (pos == str.length() || (!isspace(str[pos]) && str[pos] != ':'))
+		return;
+
+	if (str[pos] != ':') {  // is the line contain a symbol
+		// do not use the bfd equivalent:
+		//  - it does not skip space at begin
+		//  - we does not need cross architecture compile so the native
+		// strtoul must work (assuming unsigned long can contain a vma)
+		bfd_vma vma = strtoul(str.c_str(), NULL, 16);
+
+		const symbol_entry* symbol = symbols.find_by_vma(vma);
+
+		// ! complexity: linear in number of symbol must use sorted
+		// by address vector and lower_bound ?
+		// Note this use a pointer comparison. It work because symbols
+		// pointer are unique
+		if (find(output_symbols.begin(),
+		       output_symbols.end(), symbol) != output_symbols.end()) {
+			// an error due to ambiguity in the input: source file
+			// mixed with asm contain a line which is taken as a
+			// valid symbol, in doubt turn output on
+			do_output = true;
+		} else if (threshold_percent == 0) {
+			// if the user have not requested threshold we must
+			// output all symbols even if it contains no samples.
+			do_output = true;
+		} else {
+			do_output = false;
+		}
+
+		if (do_output) {
+			find_and_output_symbol(cout, str, "");
+		}
+	} else { // not a symbol, probably an asm line.
+		if (do_output)
+			find_and_output_counter(cout, str, " ");
+	}
+}
+
+/**
+ * output::output_objdump_asm - output asm disassembly
+ * @output_symbols: the set of symbols to output
+ *
+ * Output asm (optionnaly mixed with source) annotated
+ * with samples using objdump as external disassembler.
+ * This is the generic implementation if our own disassembler
+ * do not work for this architecture.
+ */
+void output::output_objdump_asm(const vector<const symbol_entry *> & output_symbols)
+{
+	vector<string> args;
+	args.push_back("-d");
+	args.push_back("--no-show-raw-insn");
+	if (source_with_assembly)
+		args.push_back("-S");
+
+	args.push_back(bfd_get_filename(abfd.ibfd));
+	ChildReader reader("objdump", args);
+	if (reader.error())
+		// ChildReader output an error message, the only way I see to
+		// go here is a failure to exec objdump.
+		return;
+
+	// to filter output of symbols (filter based on command line options)
+	bool do_output = true;
+
+	string str;
+	while (reader.getline(str)) {
+		output_objdump_asm_line(str, output_symbols, do_output);
+		if (do_output)
+			cout << str << '\n';
+	}
+
+	// objdump always return SUCESS so we must rely on the stderr state
+	// of objdump. If objdump error message is cryptic our own error
+	// message will be probably also cryptic
+	ostringstream std_err;
+	ostringstream std_out;
+	reader.get_data(std_out, std_err);
+	if (std_err.str().length()) {
+		cerr << "An error occur during the execution of objdump:\n\n";
+		cerr << std_err.str() << endl;
+	}
+}
+
+/**
+ * output::output_dasm_asm - output asm disassembly
+ * @output_symbols: the set of symbols to output
+ *
+ * Output asm (optionnaly mixed with source) annotated
+ * with samples using dasm as external disassembler.
+ */
+void output::output_dasm_asm(const vector<const symbol_entry *> & /*output_symbols*/)
+{
+	// Not yet implemented :/
+}
+
 void output::output_asm()
 {
 	// select the subset of symbols which statisfy the user requests
@@ -578,110 +702,7 @@ void output::output_asm()
 
 	output_header(cout);
 
-	// we want to avoid output of function that contain zero sample,
-	// these symbol are not in our set of symbol so we can detect this
-	// case and turn off outputting.
-	bool do_output = true;
-
-	// FIXME: can this be simplified ?
-
-	// Future: use your own disassembler, work is in progress (slowly ...).
-	// This will issue all complexity here and improve performance.
-	vector<string> args;
-	args.push_back("-d");
-	args.push_back("--no-show-raw-insn");
-	if (source_with_assembly)
-		args.push_back("-S");
-
-	args.push_back(bfd_get_filename(abfd.ibfd));
-	ChildReader reader("objdump", args);
-	if (reader.error())
-		// ChildReader output an error message, the only way than i see
-		// to go here is a failure to exec objdump.
-		return;
-
-	string str;
-	while (reader.getline(str)) {
-		if (str.length()) {
-			// Yeps, output of objdump is a human read-able form
-			// and contain a few ambiguity so this code is fragile
-
-			// line of interest are: "[:space:]*[:xdigit:]?[ :]"
-			// the last char of this regexp dis-ambiguate between
-			// a symbol line and an asm line. If source contain
-			// line of this form an ambiguity occur and we must
-			// rely on the robustness of this code.
-
-			size_t pos = 0;
-			while (pos < str.length() && isspace(str[pos]))
-			       ++pos;
-
-			if (pos == str.length() || !isxdigit(str[pos])) {
-				if (do_output)
-					cout << str << '\n';
-				continue;				
-			}
-
-			while (pos < str.length() && isxdigit(str[pos]))
-			       ++pos;
-
-			if (pos == str.length() ||
-			    (!isspace(str[pos]) && str[pos] != ':')) {
-				if (do_output)
-					cout << str << '\n';
-				continue;				
-			}
-
-			if (str[pos] != ':') { // is the line contain a symbol
-				bfd_vma vma = strtoul(str.c_str(), NULL, 16);
-
-				const symbol_entry* symbol = symbols.find_by_vma(vma);
-
-				// ! complexity: linear in number of symbol
-				// must use sorted by address vector and
-				// lower_bound ?
-				// Note this use a pointer comparison. It work
-				// because symbols pointer are unique
-				if (find(output_symbols.begin(),
-					 output_symbols.end(), symbol) != output_symbols.end()) {
-					// probably an error due to ambiguity
-					// in the input: source file mixed with
-					// asm contain a line which is taken as
-					// a valid symbol, in doubt it is
-					// probably better to turn output on.
-					do_output = true;
-				} else if (threshold_percent == 0) {
-					// if the user have not requested
-					// threshold we must output all symbols
-					// even if it contains no samples.
-					do_output = true;
-				} else {
-					do_output = false;
-				}
-
-				if (do_output) {
-					find_and_output_symbol(cout, str, "");
-				}
-			} else { // not a symbol, probably an asm line.
-				if (do_output)
-					find_and_output_counter(cout, str, " ");
-			}
-		}
-
-		if (do_output)
-			cout << str << '\n';
-	}
-
-	// yet another cryptic error message: objdump always return SUCESS
-	// so we must rely on the stderr state of objdump. If the error message
-	// is cryptic our own error message will be probably also cryptic
-	ostringstream std_err;
-	ostringstream std_out;
-	reader.get_data(std_out, std_err);
-	if (std_err.str().length()) {
-		cerr << "An error occur during the execution of objdump:\n\n";
-		cerr << std_err.str() << endl;
-	}
+	output_objdump_asm(output_symbols);
 }
 
 void output::accumulate_and_output_counter(ostream & out, const string & filename, 
