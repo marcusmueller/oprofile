@@ -6,6 +6,10 @@
  
 2002-09-22  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libdb/db-insert.c: bad cut&paste. Shame on me, I broke the build...
+
+2002-09-22  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libdb/db-insert.c: handle samples count overflow.
 	
 	* libdb/Makefile.in: db-test new target not built by default.

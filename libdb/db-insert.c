@@ -194,7 +194,7 @@ static int do_insert(db_tree_t * tree, db_page_idx_t page_idx,
 			page->page_table[pos].info += value->info;
 		else
 			/* FIXME: post profile must handle that */
-			page->page_table[pos].info += (db_info_t)-1;
+			page->page_table[pos].info += (db_value_t)-1;
 		return 0;
 	}
 
@@ -248,7 +248,7 @@ static int do_insert(db_tree_t * tree, db_page_idx_t page_idx,
 			page->page_table[pos].info += value->info;
 		else
 			/* FIXME: post profile must handle that */
-			page->page_table[pos].info += (db_info_t)-1;
+			page->page_table[pos].info += (db_value_t)-1;
 		return 0;
 	}
 
