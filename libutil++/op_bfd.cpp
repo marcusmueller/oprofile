@@ -369,8 +369,13 @@ void op_bfd::get_symbols_from_file(bfd * ibfd, size_t start,
 
 	for (symbol_index_t i = start; i < start+nr_all_syms; i++) {
 		if (interesting_symbol(bfd_syms[i])) {
-			// need to use filepos of original file
-			bfd_syms[i]->section->filepos = text_offset;
+			// need to use filepos of original file for debug
+			// file symbs
+			if (debug_file)
+				// FIXME: this is not enough, we must get the
+				// offset where this symbol live in the
+				// original file.
+				bfd_syms[i]->section->filepos = text_offset;
 			symbols.push_back(op_bfd_symbol(bfd_syms[i]));
 		}
 	}
@@ -399,10 +404,10 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 	bfd_syms.reset(new asymbol*[size]);
 
 	if (size_binary > 0)
-		get_symbols_from_file(ibfd, 0, symbols);
+		get_symbols_from_file(ibfd, 0, symbols, false);
 
 	if (size_debug > 0)
-		get_symbols_from_file(dbfd, size_binary, symbols);
+		get_symbols_from_file(dbfd, size_binary, symbols, true);
 
 	symbols.sort();
 

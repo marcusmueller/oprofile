@@ -6,6 +6,9 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8 release
 -----------
 
+ o op_bfd.cpp and separate debuginfo file, see ChangeLog
+  2004-01-18  Philippe Elie  <phil.el@wanadoo.fr> and
+  op_bfd.cpp:get_symbols_from_file()
  o finish opstack: proper output, various --separate= --merge= handling,
   later do we need an opreport like opstack (showing caller/callee at binary
   boundary not symbols) ?

@@ -1,5 +1,12 @@
 2004-01-18  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/op_bfd.cpp: Don't fix symbol offset for symbol definition
+	  coming from the original file. A corner case remain broken: symbols
+	  definition coming from debug file and belonging to another section
+	  than .text are incorrecttly offseted.
+
+2004-01-18  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libop/op_sample_file.h: with cg file we need to field is_kernel.
 	* daemon/opd_events.c:
 	* daemon/opd_events.h:

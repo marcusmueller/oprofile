@@ -198,7 +198,8 @@ private:
 	 * Populates bfd_syms and extracts the "interesting_symbol"s.
 	 */
 	void get_symbols_from_file(bfd * ibfd, size_t start,
-				   op_bfd::symbols_found_t & symbols);
+				   op_bfd::symbols_found_t & symbols,
+				   bool debug_file);
 
 	/**
 	 * Parse and sort in ascending order all symbols
