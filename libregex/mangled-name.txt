@@ -57,6 +57,12 @@ list<int>
 list<op_bfd_symbol, allocator<op_bfd_symbol> >
 list<op_bfd_symbol>
 
+_List_iterator<int, int const &, int const *>
+list<int>::const_iterator
+
+_List_iterator<int, int &, int *>
+list<int>::iterator
+
 prefix_list<int, allocator<int> >
 prefix_list<int, allocator<int>>
 
