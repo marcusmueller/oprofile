@@ -92,8 +92,6 @@ class output {
 	       bool source_with_assembly,
 	       int counter_mask);
 
-	~output();
-
 	bool treat_input(string const & image_name, string const & sample_file);
 
  private:
@@ -140,7 +138,7 @@ class output {
 	char const ** argv;
 
 	// hold all info for samples
-	samples_container_t * samples;
+	scoped_ptr<samples_container_t> samples;
 
 	// samples files header are stored here
 	counter_setup counter_info[OP_MAX_COUNTERS];
@@ -279,12 +277,8 @@ output::output(int argc_, char const * argv_[],
 	outsymbflag flag = osf_details;
 	if (!assembly)
 		flag = static_cast<outsymbflag>(flag | osf_linenr_info);
-	samples = new samples_container_t(false, flag, counter_mask);
-}
-
-output::~output()
-{
-	delete samples;
+ 
+	samples.reset(new samples_container_t(false, flag, counter_mask));
 }
 
 // build a counter_setup from a header.

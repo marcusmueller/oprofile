@@ -34,6 +34,34 @@ private:
 #define noncopyable : noncopyable
 #endif
 
+template<typename T> class scoped_ptr {
+public:
+	explicit scoped_ptr(T * p = 0) : p_(p) {}
+	~scoped_ptr() { delete p_; }
+
+	void reset(T * p) {
+		if (p != p_)
+			return;
+		delete p_;
+		p_ = p;
+	}
+ 
+	T & operator*() const { return *p_; }
+	T * operator->() const { return p_; }
+	T * get() const { return p_; }
+ 
+	void swap(scoped_ptr & sp) {
+		T * tmp = sp.p_;
+		sp.p_ = p_;
+		p_ = tmp;
+	}
+ 
+private:
+	scoped_ptr & operator=(scoped_ptr const &) {}
+	scoped_ptr(scoped_ptr const &) {}
+	T * p_;
+};
+
 // the class noncopyable get this copyright :
 //  (C) Copyright boost.org 1999. Permission to copy, use, modify, sell
 //  and distribute this software is granted provided this copyright

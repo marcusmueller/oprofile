@@ -69,10 +69,8 @@ samples_container_t::samples_container_t(bool add_zero_samples_symbols_,
 
 samples_container_t::~samples_container_t()
 {
-	delete symbols;
-	delete samples;
 }
-
+ 
 // Post condition:
 //  the symbols/samples are sorted by increasing vma.
 //  the range of sample_entry inside each symbol entry are valid

@@ -37,10 +37,11 @@ public:
 	 * osf_details is also an improvement.
 	 * @param counter_mask which counter we must record
 	 */
-	 samples_container_t(bool add_zero_samples_symbols, outsymbflag flags,
+	samples_container_t(bool add_zero_samples_symbols, outsymbflag flags,
 			     int counter_mask);
-	~samples_container_t();
 
+	~samples_container_t();
+ 
 	/**
 	 * add() -  record symbols/samples in the underlined container
 	 * @param samples_files the samples files container
@@ -139,10 +140,10 @@ private:
 
 	/// The symbols collected by oprofpp sorted by increased vma, provide
 	/// also a sort order on samples count for each counter.
-	symbol_container_imp_t * symbols;
+	scoped_ptr<symbol_container_imp_t> symbols;
 	/// The samples count collected by oprofpp sorted by increased vma,
 	/// provide also a sort order on (filename, linenr)
-	sample_container_imp_t * samples;
+	scoped_ptr<sample_container_imp_t> samples;
 	/// build() must count samples count for each counter so cache it here
 	/// since user of samples_container_t often need it later.
 	counter_array_t counter;

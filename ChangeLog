@@ -1,5 +1,13 @@
 2002-06-07  John Levon  <moz@compsoc.man.ac.uk>
 
+	* libutil++/utility.h: add a scoped_ptr
+
+	* pp/op_to_source.cpp:
+	* pp/samples_container.h:
+	* pp/samples_container.cpp: use it
+
+2002-06-07  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/opd_kernel.c: remove some duplicate code
  
 2002-06-07  John Levon  <moz@compsoc.man.ac.uk>
