@@ -53,7 +53,7 @@ events are available, and OProfile operates in timer/RTC mode, as described in l
 		<listitem>
 			OProfile uses a kernel module that can be compiled for
 			2.2.11 or later and 2.4. Versions 2.4.10 or above are recommended, and required if you use the
-			boot-time kernel option <option>nosmp</option>. AMD Hammer support requires a recent (&ge; 2.4.19) kernel
+			boot-time kernel option <option>nosmp</option>. AMD Hammer support requires a recent (>= 2.4.19) kernel
 			with the line <constant>EXPORT_SYMBOL(do_fork);</constant> present in <filename>kernel/ksyms.c</filename>.
 			Such a kernel is present in the <ulink url="http://www.x86-64.org">x86-64.org</ulink> CVS repository.
 			2.5 kernels are supported with the in-kernel OProfile driver.
