@@ -1,26 +1,27 @@
-0.0.9 task list
+0.1 task list
 ---------------
 
- o stress test
-
+ o get symbol size via elf instead of bfd
+ o add support for samples not belonging to any symbols probably through
+   artificially created symbols
+ o little output things (e.g. don't print unit mask) RTC
+ o --help --version in a common options section in .sgml ?
+   same thing for all common options between oprofpp/op_to_source ?
+ o remove note lock (and rename map lock) ... I think
+ o should we pin rather than loop sample buffer overflow too ?
+ o cleanup cache things in compat22.h, add and use cache_line_aligned_in_smp
+ 
 Before 1.0
 ----------
 
  o pp rewrite ! not clear if we need to rewrite it.
- o get symbol size via elf instead of bfd
- o add support for samples not belonging to any symbols probably through
-   artificially created symbols
  o coherent naming class conventions
  o use standard C integer type <stdint.h> int32_t int16_t etc.
- o little output things (e.g. don't print unit mask) RTC
+	- but they are so ugly ...
  o add option to op_to_source like oprofpp -u -m on a symbol basis.
- o --help --version in a common options section in .sgml ?
-   same thing for all common options between oprofpp/op_to_source ?
  o audit oprof_start for security...
  o review the exception table of the nmi handler (at least stop oprofile)
  o oprofile_nmi22.S and oprofile24.S can use the same code.
- o remove note lock (and rename map lock) ... I think
- o should we pin rather than loop sample buffer overflow too ?
  o take oprof_convert out the back and do the cruel to be kind thing
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o test it to hell and back
@@ -35,7 +36,6 @@ Before 1.0
  o check chroot() processes and the path hash stuff
  o use nm and a little script to track unused function
  o audit to track unnecessary include <>
- o cleanup cache things in compat22.h, add and use cache_line_aligned_in_smp
  o gcc 3.0 compile.
 
 Later
