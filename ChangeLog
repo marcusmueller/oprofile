@@ -1,5 +1,9 @@
 2003-03-30  John Levon  <levon@movementarian.org>
 
+	* configure.in: bump to 0.5.2
+
+2003-03-30  John Levon  <levon@movementarian.org>
+
 	* Makefile.am: remove op_arch.h for ia64
 
 2003-03-27  John Levon  <levon@movementarian.org>
