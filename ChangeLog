@@ -1,3 +1,8 @@
+2001-07-28  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/opd_proc.c: d'oh, fat-fingered a slow memleak in the
+	  a-ksymoops modules fix
+ 
 2001-07-27  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/oprof_convert.c: fix bug when conversion skip more than one

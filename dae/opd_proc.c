@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.59 2001/07/26 01:39:16 movement Exp $ */
+/* $Id: opd_proc.c,v 1.60 2001/07/28 19:20:26 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -943,12 +943,14 @@ static void opd_drop_module_sample(u32 eip)
 			if (eip >= info.addr && eip < info.addr + info.size) {
 				verbprintf("Sample from unprofilable module %s\n", name);
 				opd_enter_invalid_module(name, &info);
-				return;
-			} 
+				goto out;
+			}
 		}
 		mod++;
 		name += strlen(name) + 1;
 	}
+out:
+	opd_free(module_names);
 }
 
 /**
