@@ -19,6 +19,14 @@
    insert the start/end (if clean, submit to linux-kernel)
  o remaining little cleanups of output format, module unloaded using of postprof etc.
  
+oprof_report:
+
+- demangling
+- folderview of sample files + sessions in the gui itself
+- disassembly. form "+0x8b" for intra-symbol samples 
+- hotspot ... is this op_time ??
+- source 
+ 
 Before 1.0
 ----------
 
