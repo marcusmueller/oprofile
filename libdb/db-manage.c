@@ -94,7 +94,7 @@ db_page_idx_t db_add_page(db_tree_t * tree)
 	(4096 - offset_page) / sizeof(db_page_t) : 1
 
 void db_open(db_tree_t * tree, char const * filename, enum db_rw rw,
-	     unsigned int sizeof_header)
+	     size_t sizeof_header)
 {
 	struct stat stat_buf;
 	db_page_count_t nr_page;
