@@ -13,6 +13,8 @@
 #ifndef OP_LIBIBERTY_H
 #define OP_LIBIBERTY_H
 
+#include <stddef.h>
+
 #include "config.h"
 
 // FIXME: take elsewhere ...

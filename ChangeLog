@@ -1,3 +1,8 @@
+2002-05-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil/op_libiberty.h: fix compile error (missing
+	  size_t definition)
+
 2002-05-08  John Levon  <moz@compsoc.man.ac.uk>
 
 	* Makefile.in: missing backslash
