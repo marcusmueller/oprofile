@@ -123,7 +123,8 @@ class output {
 	       bool assembly,
 	       bool source_with_assembly);
 
-	bool treat_input(const string & image_name, const string & sample_file);
+	bool treat_input(const string & image_name, const string & sample_file,
+			 int counter);
 
  private:
 	/// this output a comment containaing the counter setup and command
@@ -810,14 +811,15 @@ void output::output_header(ostream& out) const
 	out << endl;
 }
 
-bool output::treat_input(const string & image_name, const string & sample_file)
+bool output::treat_input(const string & image_name, const string & sample_file,
+			 int counter)
 {
 	// this lexcical scope just optimize the memory use by relaxing
 	// the opp_bfd and opp_samples_files as short as we can.
 	{
 	// this order of declaration is required to ensure proper
 	// initialisation of oprofpp
-	opp_samples_files samples_files(sample_file);
+	opp_samples_files samples_files(sample_file, counter);
 	opp_bfd abfd(samples_files.header[samples_files.first_file],
 		     samples_files.nr_samples, image_name);
 
@@ -837,7 +839,7 @@ bool output::treat_input(const string & image_name, const string & sample_file)
 	if (!setup_counter_param(samples_files))
 		return false;
 
-	samples.add(samples_files, abfd);
+	samples.add(samples_files, abfd, false, true, false, counter);
 	}
 
 	if (!calc_total_samples()) {
@@ -897,11 +899,13 @@ static struct poptOption options[] = {
  * @argv: program arg array
  * @image_name: where to store the image filename
  * @sample_file: ditto for sample filename
+ * @counter: where to put the counter command line argument
  *
  * Process the arguments, fatally complaining on error.
  */
 static void get_options(int argc, char const * argv[],
-			string & image_name, string & sample_file)
+			string & image_name, string & sample_file,
+			int & counter)
 {
 	poptContext optcon;
 
@@ -922,7 +926,7 @@ static void get_options(int argc, char const * argv[],
 
 	list_all_symbols_details = 1;
 
-	opp_treat_options(file, optcon, image_name, sample_file);
+	opp_treat_options(file, optcon, image_name, sample_file, counter);
 
 	poptFreeContext(optcon);
 }
@@ -938,8 +942,9 @@ int main(int argc, char const * argv[])
 
 	string image_name;
 	string sample_file;
+	int counter = -1;
 
-	get_options(argc, argv, image_name, sample_file);
+	get_options(argc, argv, image_name, sample_file, counter);
 
 	try {
 		bool do_until_more_than_samples = false;
@@ -962,7 +967,7 @@ int main(int argc, char const * argv[])
 			      no_output_filter ? no_output_filter : "",
 			      assembly, source_with_assembly);
 
-		if (output.treat_input(image_name, sample_file) == false)
+		if (output.treat_input(image_name, sample_file, counter) == false)
 			return EXIT_FAILURE;
 	}
 

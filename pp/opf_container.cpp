@@ -136,6 +136,8 @@ class symbol_container_impl {
 	mutable set_symbol_by_file_loc symbol_entry_by_file_loc;
 };
 
+//---------------------------------------------------------------------------
+
 symbol_container_impl::symbol_container_impl()
 {
 	// symbol_entry_by_samples_nr has been setup by the default ctr, we
@@ -145,8 +147,6 @@ symbol_container_impl::symbol_container_impl()
 		symbol_entry_by_samples_nr[i] =	set_symbol_by_samples_nr(compare);
 	}
 }
-
-//---------------------------------------------------------------------------
 
 inline size_t symbol_container_impl::size() const
 {
@@ -471,7 +471,7 @@ samples_files_t::~samples_files_t()
 void samples_files_t::
 add(const opp_samples_files & samples_files, const opp_bfd & abfd,
       bool add_zero_samples_symbols, bool build_samples_by_vma,
-      bool add_shared_libs)
+      bool add_shared_libs, int counter)
 {
 	do_add(samples_files, abfd, add_zero_samples_symbols,
 		 build_samples_by_vma);
@@ -491,7 +491,7 @@ add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 		string lib_name;
 		extract_app_name(*it, lib_name);
 
-		opp_samples_files samples_files(dir + "/" + *it);
+		opp_samples_files samples_files(dir + "/" + *it, counter);
 		opp_bfd abfd(samples_files.header[samples_files.first_file],
 			     samples_files.nr_samples,
 			     demangle_filename(lib_name));

@@ -34,6 +34,11 @@
 	#include "compat24.h"
 #endif
 
+/* 2.5.5 change pte_offset */
+#if V_AT_LEAST(2, 5, 5)
+#define pte_offset pte_offset_kernel
+#endif
+
 /* 2.5.3 change prototype of remap_page_range */
 #if V_BEFORE(2,5,3)
 #define REMAP_PAGE_RANGE(vma, start, page, page_size, flags) \

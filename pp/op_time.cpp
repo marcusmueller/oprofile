@@ -72,15 +72,21 @@ typedef multimap<string, image_name> map_t;
 typedef pair<map_t::iterator, map_t::iterator> pair_it_t;
 typedef multimap<u32, map_t::const_iterator> sorted_map_t;
 
+static int counter = -1;
 static int showvers;
 static int reverse_sort;
 static int show_shared_libs;
 static int list_symbols;
 static int show_image_name;
+static char * output_format;
 static const char * base_dir = "/var/opd/samples";
 
+static OutSymbFlag output_format_flags;
+
+// FIXME: remove demangle/show-image-name since they can be obtained with
+// --output_format ?
 static struct poptOption options[] = {
-	{ "use-counter", 'c', POPT_ARG_INT, &ctr, 0,
+	{ "use-counter", 'c', POPT_ARG_INT, &counter, 0,
 	  "use counter", "counter nr", },
 	{ "show-shared-libs", 'k', POPT_ARG_NONE, &show_shared_libs, 0,
 	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
@@ -89,6 +95,9 @@ static struct poptOption options[] = {
 	{ "list-symbols", 'l', POPT_ARG_NONE, &list_symbols, 0, "list samples by symbol", NULL, },
 	{ "reverse", 'r', POPT_ARG_NONE, &reverse_sort, 0,
 	  "reverse sort order", NULL, },
+	// FIXME: clarify this
+	{ "output-format", 't', POPT_ARG_STRING, &output_format, 0,
+	  "choose the output format", "output-format strings", },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
@@ -119,8 +128,32 @@ static void get_options(int argc, char const * argv[])
 	if (file)
 		base_dir = file;
 
-	if (ctr == -1)
-		ctr = 0;
+	if (counter == -1)
+		counter = 0;
+
+	/* TODO: tidy this */
+	if (show_image_name)
+		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_image_name);
+
+	if (output_format == 0) {
+		output_format = "vspnh";
+	} else {
+		if (!list_symbols) {
+			quit_error(optcon, "op_time: --output-format can be used only with --list-symbols.\n");
+		}
+	}
+
+	if (list_symbols) {
+		OutSymbFlag fl = ParseOutputOption(output_format);
+		if (fl == osf_none) {
+			cerr << "op_time: illegal --output-format flags.\n";
+			OutputSymbol::ShowHelp();
+			exit(EXIT_FAILURE);
+		}
+
+		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | fl);
+	}
+
 
 	poptFreeContext(optcon);
 }
@@ -268,7 +301,8 @@ static void output_files_count(map_t& files)
 		for ( ; p_it.first != p_it.second ; ++p_it.first) {
 			std::ostringstream s;
 			s << string(base_dir) << "/"
-			  << p_it.first->second.samplefile_name << "#" << ctr;
+			  << p_it.first->second.samplefile_name
+			  << "#" << counter;
 
 			string filename = s.str();
 			if (samples_file_exist(filename) == false)
@@ -362,13 +396,13 @@ static void output_files_count(map_t& files)
  * output_symbols_count - open each samples file to cumulate samples count
  * and display a sorted list of symbols and samples ratio
  * @files: the file list to treat.
+ * @counter: on which counter to work
  *
  * print the whole cumulated count for all symbols in selected filename
  * (currently the whole base_dir directory)
  */
-static void output_symbols_count(map_t& files)
+static void output_symbols_count(map_t& files, int counter)
 {
-	/* build a samples_files_t */
 	samples_files_t samples;
 
 	map_t::iterator it_f;
@@ -387,56 +421,24 @@ static void output_symbols_count(map_t& files)
 
 		image_file = demangle_filename(image_file);
 
-		opp_samples_files samples_file(samples_filename);
+		opp_samples_files samples_file(samples_filename, counter);
+
 		opp_bfd abfd(samples_file.header[samples_file.first_file],
 			     samples_file.nr_samples, image_file);
 
-		samples.add(samples_file, abfd, false, false, false);
+		samples.add(samples_file, abfd, false, false, false, counter);
 	}
 
-	/* select the symbols */
+	// select the symbols
 	vector<const symbol_entry *> symbols;
 
-	samples.select_symbols(symbols, ctr, 0.0, false);
+	samples.select_symbols(symbols, counter, 0.0, false);
 
-	u32 total_count = samples.samples_count(ctr);
+	OutputSymbol out(samples, counter);
 
-	/* for each symbols output it. */
+	out.SetFlag(output_format_flags);
 
-	// const_reverse_iterator can't work :/
-	vector<const symbol_entry*>::reverse_iterator it;
-	for (it = symbols.rbegin(); it != symbols.rend(); ++it) {
-
-		// FIXME: Please don't take care of ugliness here this is like
-		// oprofpp -l code, I clean up when changing the output format
-		if (show_image_name)
-			printf("%s ", (*it)->sample.file_loc.image_name.c_str());
-/*
-		if (output_linenr_info)
-			printf("%s:%u ",
-			       (*it)->sample.file_loc.filename.c_str(),
-			       (*it)->sample.file_loc.linenr);
-*/
-		int const is_anon = (*it)->name[0] == '?';
-
-		if (!is_anon)
-			printf("%s", (*it)->name.c_str());
-
-		u32 count = (*it)->sample.counter[ctr];
-
-		if (count) {
-			if (!is_anon)
-				printf("[0x%.8lx]: ", (*it)->sample.vma);
-			else
-				printf("(no symbols) "); 
-
-			printf("%2.4f%% (%u samples)\n", 
-			       (((double)count) / total_count)*100.0, 
-			       count);
-		} else {
-			printf(" (0 samples)\n");
-		}
-	}
+	out.Output(cout,  symbols, true);
 }
 
 /**
@@ -469,7 +471,7 @@ int main(int argc, char const * argv[])
 	}
 
 	if (list_symbols) {
-		output_symbols_count(file_map);
+		output_symbols_count(file_map, counter);
 	} else {
 		output_files_count(file_map);
 	}

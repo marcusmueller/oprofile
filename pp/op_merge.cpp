@@ -1,4 +1,4 @@
-/* COPYRIGHT (C) 2001 Philippe Elie
+/*
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -13,7 +13,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * first written by P.Elie, many cleanup by John Levon
+ * re-written by P.Elie based on (FIXME Dave Jones ?) first implementation,
+ * many cleanup by John Levon
  */
 
 #include <stdio.h>
@@ -25,7 +26,6 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
-
 
 #include "../version.h"
 #include "../util/op_popt.h"
@@ -203,7 +203,7 @@ static void output_files(const std::string & filename,
 	// TODO: bad approch, we don't create a sparsed file here :/
 	ofstream out(filename.c_str());
 
-	/* FIXME: these reinterpret's required by gcc 3, why ? */ 
+	// reinterpret's required by gcc 3, that's the standard :/
 	out.write(reinterpret_cast<char*>(samples_files[0]->header), sizeof(opd_header));
 
 	// All size of samples has been checked and must be identical

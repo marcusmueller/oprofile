@@ -29,7 +29,7 @@ srcdoc: oprofpp-src.html
 oprofpp-src.html: $(MY_SOURCES)
 	../scripts/dodoc -html $(MY_SOURCES) >oprofpp-src.html
 
-oprofpp: oprofpp.o $(OBJS) opf_container.o
+oprofpp: oprofpp.o $(OBJS) opf_container.o opp_symbol.o
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
 oprof_convert: oprof_convert.o ../dae/opd_util.o ../util/misc.o ../util/file_manip.o  ../util/string_manip.o
@@ -39,7 +39,7 @@ op_to_source: opf_filter.o opf_container.o ../util/child_reader.o $(OBJS) \
  ../util/string_manip.o
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
-op_time: op_time.o $(OBJS) opf_container.o
+op_time: op_time.o $(OBJS) opf_container.o opp_symbol.o
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
 op_merge: op_merge.o $(OBJS)
@@ -51,6 +51,6 @@ op_merge: op_merge.o $(OBJS)
 %.o: %cpp
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -g $< -o $@
 
-ALL_SOURCES = oprofpp.cpp oprofpp_util.cpp opf_container.cpp opf_filter.cpp oprof_convert.c op_time.cpp op_merge.cpp
+ALL_SOURCES = oprofpp.cpp oprofpp_util.cpp opf_container.cpp opf_filter.cpp oprof_convert.c op_time.cpp op_merge.cpp opp_symbol.cpp
 
 include ../Rules.make

@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.28 2002/02/12 21:26:54 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.29 2002/02/26 21:18:31 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,6 +22,7 @@
 #include <elf.h>
 
 #include "oprofpp.h"
+#include "opp_symbol.h"
 #include "../util/file_manip.h"
 #include "../util/string_manip.h"
  
@@ -33,9 +34,6 @@ char *basedir="/var/opd";
 const char *imagefile;
 int demangle;
 int list_all_symbols_details;
-/* counter k is selected if (ctr == -1 || ctr == k), if ctr == -1 counter 0
- * is used for sort purpose */
-int ctr = -1;
 const char * exclude_symbols_str;
 static std::vector<std::string> exclude_symbols;
 
@@ -121,6 +119,7 @@ void quit_error(poptContext optcon, char const *err)
  * @optcon: poptContext to allow better message handling
  * @image_file: where to store the image file name
  * @sample_file: ditto for sample filename
+ * @counter: where to put the counter command line argument
  *
  * Process the arguments, fatally complaining on
  * error. 
@@ -140,10 +139,11 @@ void quit_error(poptContext optcon, char const *err)
  * post-condition: @sample_file and @image_file are setup
  */
 void opp_treat_options(const char* file, poptContext optcon,
-		       string & image_file, string & sample_file)
+		       string & image_file, string & sample_file,
+		       int & counter)
 {
 	char *file_ctr_str;
-	int counter;
+	int temp_counter;
 
 	/* add to the exclude symbol list the symbols contained in the comma
 	 * separated list of symbols */
@@ -185,27 +185,27 @@ void opp_treat_options(const char* file, poptContext optcon,
 	 * and chop optionnal suffixe "#%d" first */
 
 	/* check for a valid counter suffix in a given sample file */
-	counter = -1;
+	temp_counter = -1;
 	file_ctr_str = strrchr(samplefile, '#');
 	if (file_ctr_str) {
-		sscanf(file_ctr_str + 1, "%d", &counter);
+		sscanf(file_ctr_str + 1, "%d", &temp_counter);
 	}
 
-	if (ctr != counter) {
+	if (counter != temp_counter) {
 		/* a --counter=x have priority on the # suffixe of filename */
-		if (ctr != -1 && counter != -1)
+		if (counter != -1 && temp_counter != -1)
 			quit_error(optcon, "oprofpp: conflict between given counter and counter of samples file.\n");
 	}
 
-	if (ctr == -1)
-		ctr = counter;
+	if (counter == -1)
+		counter = temp_counter;
 
-	if (ctr == -1) {
+	if (counter == -1) {
 		/* list_all_symbols_details always output all counter and do
 		 * not made any sort, it is the responsability of the backend
 		 * (op_to_source) to treat this */
 		if (!list_all_symbols_details)
-			ctr = 0;
+			counter = 0;
 	}
 
 	/* chop suffixes */
@@ -213,8 +213,8 @@ void opp_treat_options(const char* file, poptContext optcon,
 		file_ctr_str[0] = '\0';
 
 	/* check we have a valid ctr */
-	if (ctr != -1 && (ctr < 0 || ctr >= OP_MAX_COUNTERS)) {
-		fprintf(stderr, "oprofpp: invalid counter number %u\n", ctr);
+	if (counter != -1 && (counter < 0 || counter >= OP_MAX_COUNTERS)) {
+		fprintf(stderr, "oprofpp: invalid counter number %u\n", counter);
 		exit(EXIT_FAILURE);
 	}
 
@@ -695,6 +695,8 @@ void check_headers(const opd_header * f1, const opd_header * f2)
 /**
  * opp_samples_files - construct an opp_samples_files object
  * @sample_file: the base name of sample file
+ * @counter: which samples files to open, -1 means try to open
+ * all samples files.
  *
  * at least one sample file (based on @sample_file name)
  * must be opened. If more than one sample file is open
@@ -703,11 +705,13 @@ void check_headers(const opd_header * f1, const opd_header * f2)
  *
  * all error are fatal
  */
-opp_samples_files::opp_samples_files(const std::string & sample_file)
+opp_samples_files::opp_samples_files(const std::string & sample_file,
+				     int counter_)
 	:
 	nr_counters(2),
 	first_file(-1),
-	sample_filename(sample_file)
+	sample_filename(sample_file),
+	counter(counter_)
 {
 	uint i, j;
 	time_t mtime = 0;
@@ -724,11 +728,11 @@ opp_samples_files::opp_samples_files(const std::string & sample_file)
 	}
 
 	for (i = 0; i < OP_MAX_COUNTERS ; ++i) {
-		if (ctr == -1 || ctr == (int)i) {
-			/* if ctr == i, this means than we open only one
+		if (counter == -1 || counter == (int)i) {
+			/* if counter == i, this means than we open only one
 			 * samples file so don't allow opening failure to get
 			 * a more precise error message */
-			open_samples_file(i, ctr != (int)i);
+			open_samples_file(i, counter != (int)i);
 		}
 	}
 

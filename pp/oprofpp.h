@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.38 2002/01/27 20:52:48 movement Exp $ */
+/* $Id: oprofpp.h,v 1.39 2002/02/26 21:18:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -39,6 +39,8 @@
 #include "../op_user.h"
 #include "../version.h"
 
+class symbol_entry;
+
 /* missing from libiberty.h */
 #ifndef DMGL_PARAMS
 # define DMGL_PARAMS     (1 << 0)        /* Include function args */
@@ -64,12 +66,17 @@ char *cplus_demangle (const char *mangled, int options);
 	} while (0)
 
 void opp_treat_options(const char * filename, poptContext optcon,
-		       std::string & image_file, std::string & sample_file);
+		       std::string & image_file, std::string & sample_file,
+		       int & counter);
 std::string demangle_symbol(const char* symbol);
 void quit_error(poptContext optcon, char const *err);
 std::string demangle_filename(const std::string & samples_filename);
 bool is_excluded_symbol(const std::string & symbol);
 void check_headers(const opd_header * f1, const opd_header * f2);
+
+// TODO: near to be obsolete
+void output_symbol(const symbol_entry* symb, bool show_image_name,
+		   bool output_linenr_info, int counter, u32 total_count);
 
 // defined in oprofpp_util.cpp
 extern int verbose;
@@ -79,7 +86,6 @@ extern char *basedir;
 extern const char *imagefile;
 extern const char * exclude_symbols_str;
 extern int list_all_symbols_details;
-extern int ctr;
 
 //---------------------------------------------------------------------------
 // A simple container of counter.
@@ -166,7 +172,7 @@ private:
 /* It will be nice if someone redesign this to use samples_file_t for the
  * internal implementation of opp_samples_files */
 struct opp_samples_files {
-	opp_samples_files(const std::string & sample_file);
+	opp_samples_files(const std::string & sample_file, int counter);
 	~opp_samples_files();
 
 	void do_list_all_symbols_details(opp_bfd & abfd) const;
@@ -218,6 +224,9 @@ struct opp_samples_files {
 	int first_file;
 	uint nr_samples;
 	std::string sample_filename;
+
+	// used in do_list_xxxx/do_dump_gprof.
+	int counter;
 
 private:
 	void output_event(int i) const;

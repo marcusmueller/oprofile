@@ -23,45 +23,7 @@
 #include <string>
 
 #include "oprofpp.h"
-
-//---------------------------------------------------------------------------
-/// A simple container for a fileno:linr location
-struct file_location {
-	/// From where image come this file location
-	std::string image_name;
-	/// empty if not valid.
-	std::string filename;
-	/// 0 means invalid or code is generated internally by the compiler
-	int linenr;
-
-	bool operator <(const file_location & rhs) const {
-		return filename < rhs.filename ||
-			(filename == rhs.filename && linenr < rhs.linenr);
-	}
-};
-
-//---------------------------------------------------------------------------
-/// associate vma address with a file location and a samples count
-struct sample_entry {
-	/// From where file location comes the samples
-	file_location file_loc;
-	/// From where virtual memory address comes the samples
-	bfd_vma vma;
-	/// the samples count
-	counter_array_t counter;
-};
-
-//---------------------------------------------------------------------------
-/// associate a symbol with a file location, samples count and vma address
-struct symbol_entry {
-	/// file location, vma and cumulated samples count for this symbol
-	sample_entry sample;
-	/// name of symbol
-	std::string name;
-	/// [first, last[ gives the range of sample_entry.
-	size_t first;
-	size_t last;
-};
+#include "opp_symbol.h"
 
 //---------------------------------------------------------------------------
 class symbol_container_impl;
@@ -157,9 +119,8 @@ public:
 	 * sampling rate, same events etc.)
 	 */
 	void add(const opp_samples_files& samples_files,
-		 const opp_bfd& abfd, bool add_zero_samples_symbols = false,
-		 bool build_samples_by_vma = true, 
-		 bool add_shared_libs = false);
+		 const opp_bfd& abfd, bool add_zero_samples_symbols,
+		 bool build_samples_by_vma, bool add_shared_libs, int counter);
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
 	const symbol_entry* find_symbol(bfd_vma vma) const;

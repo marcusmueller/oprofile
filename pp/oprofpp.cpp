@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.24 2002/01/26 03:30:15 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.25 2002/02/26 21:18:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -30,14 +30,20 @@ using std::vector;
  
 // ugly global var for opf_container.cpp
 uint op_nr_counters;
- 
+
+static int ctr; 
 static int showvers;
 static char *gproffile;
 static char *symbol;
 static int list_symbols;
 static int output_linenr_info;
 static int show_shared_libs;
+static char * output_format;
 
+static OutSymbFlag output_format_flags;
+
+// FIXME: remove option show-shared-libs/output-linenr-info/demangle since
+//  obtained with --output_format ?
 static poptOption options[] = {
 	{ "samples-file", 'f', POPT_ARG_STRING, &samplefile, 0, "image sample file", "file", },
 	{ "image-file", 'i', POPT_ARG_STRING, &imagefile, 0, "image file", "file", },
@@ -54,6 +60,9 @@ static poptOption options[] = {
 	{ "exclude-symbol", 'e', POPT_ARG_STRING, &exclude_symbols_str, 0, "exclude these comma separated symbols", "symbol_name" },
 	{ "show-shared-libs", 'k', POPT_ARG_NONE, &show_shared_libs, 0,
 	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
+	// FIXME: clarify this
+	{ "output-format", 't', POPT_ARG_STRING, &output_format, 0,
+	  "choose the output format", "output-format strings", },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
@@ -64,6 +73,7 @@ static poptOption options[] = {
  * @argv: program arg array
  * @image_file: where to store the image filename
  * @sample_file: ditto for sample filename
+ * @counter: where to put the counter command line argument
  *
  * Process the arguments, fatally complaining on
  * error. Only a part of arguments analysing is
@@ -72,7 +82,7 @@ static poptOption options[] = {
  *
  */
 static void opp_get_options(int argc, const char **argv, string & image_file,
-			    string & sample_file)
+			    string & sample_file, int & counter)
 {
 	poptContext optcon;
 	const char *file;
@@ -98,7 +108,32 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 	/* non-option file, either a sample or binary image file */
 	file = poptGetArg(optcon);
 
-	opp_treat_options(file, optcon, image_file, sample_file);
+	/* TODO: tidy this */
+	if (show_shared_libs)
+		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_image_name);
+	if (output_linenr_info)
+		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | osf_linenr_info);
+
+	if (output_format == 0) {
+		output_format = "vspnh";
+	} else {
+		if (!list_symbols) {
+			quit_error(optcon, "oprofpp: --output-format can be used only with --list-symbols.\n");
+		}
+	}
+
+	if (list_symbols) {
+		OutSymbFlag fl = ParseOutputOption(output_format);
+		if (fl == osf_none) {
+			cerr << "oprofpp: illegal --output-format flags.\n";
+			OutputSymbol::ShowHelp();
+			exit(EXIT_FAILURE);
+		}
+
+		output_format_flags = static_cast<OutSymbFlag>(output_format_flags | fl);
+	}
+
+	opp_treat_options(file, optcon, image_file, sample_file, counter);
 
 	poptFreeContext(optcon);
 }
@@ -151,37 +186,17 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 	op_nr_counters = nr_counters;
 	samples_files_t samples;
 
-	samples.add(*this, abfd, true, false, show_shared_libs);
+	samples.add(*this, abfd, true, false, show_shared_libs, counter);
 
 	vector<const symbol_entry *> symbols;
 
-	samples.select_symbols(symbols, ctr, 0.0, false);
+	samples.select_symbols(symbols, counter, 0.0, false);
 
-	u32 total_count = samples.samples_count(ctr);
+	OutputSymbol out(samples, counter);
 
-	// const_reverse_iterator can't work :/
-	vector<const symbol_entry*>::reverse_iterator it;
-	for (it = symbols.rbegin(); it != symbols.rend(); ++it) {
-		if (show_shared_libs)
-			printf("%s ", (*it)->sample.file_loc.image_name.c_str());
-		if (output_linenr_info)
-			printf("%s:%u ",
-			       (*it)->sample.file_loc.filename.c_str(),
-			       (*it)->sample.file_loc.linenr);
+	out.SetFlag(output_format_flags);
 
-		printf("%s", (*it)->name.c_str());
-
-		u32 count = (*it)->sample.counter[ctr];
-
-		if (count) {
-			printf("[0x%.8lx]: %2.4f%% (%u samples)\n", 
-			       (*it)->sample.vma,
-			       (((double)count) / total_count)*100.0, 
-			       count);
-		} else {
-			printf(" (0 samples)\n");
-		}
-	}
+	out.Output(cout,  symbols, true);
 }
  
 /**
@@ -203,11 +218,12 @@ void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 		return;
 	}
 
+	// TODO: use OutputSymbol here by implementing show details.
 	printf("Samples for symbol \"%s\" in image %s\n", symbol, abfd.ibfd->filename);
 
 	abfd.get_symbol_range(i, start, end);
 	for (j = start; j < end; j++) {
-		uint sample_count = samples_count(ctr, j);
+		uint sample_count = samples_count(counter, j);
 		if (!sample_count)
 			continue;
 
@@ -294,7 +310,7 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd) const
 			pos = (abfd.sym_offset(i, j) + abfd.syms[i]->value + abfd.syms[i]->section->vma - low_pc) / MULTIPLIER; 
 
 			/* opp_get_options have set ctr to one value != -1 */
-			count = samples_count(ctr, j);
+			count = samples_count(counter, j);
 
 			if (pos >= histsize) {
 				fprintf(stderr, "Bogus histogram bin %u, larger than %u !", pos, histsize);
@@ -332,12 +348,13 @@ void opp_samples_files::do_list_all_symbols_details(opp_bfd & abfd) const
 
 	samples_files_t samples;
 
-	samples.add(*this, abfd, false, true, show_shared_libs);
+	samples.add(*this, abfd, false, true, show_shared_libs, counter);
 
 	vector<const symbol_entry *> symbols;
 
 	samples.select_symbols(symbols, first_file, 0.0, false, true);
 
+	// TODO: use OutputSymbol here by implementing show details.
 	vector<const symbol_entry*>::const_iterator it;
 	for (it = symbols.begin(); it != symbols.end(); ++it) {
 
@@ -415,9 +432,10 @@ int main(int argc, char const *argv[])
 {
 	string image_file;
 	string sample_file;
-	opp_get_options(argc, argv, image_file, sample_file);
+	int counter = -1;
+	opp_get_options(argc, argv, image_file, sample_file, counter);
 
-	opp_samples_files samples_files(sample_file);
+	opp_samples_files samples_files(sample_file, counter);
 	opp_bfd abfd(samples_files.header[samples_files.first_file],
 		     samples_files.nr_samples, image_file);
 

@@ -14,8 +14,12 @@
 #include "oprofile.h"
  
 unsigned long virt_apic_base;
- 
-static void set_pte_phys(ulong vaddr, ulong phys)
+
+/* some static commented out to avoid warning, trying to figure out
+ * in exactly which circumstances we need this function is too prone
+ * error to be made w/o a full rebuild of supported kernel version */
+
+/*static*/ void set_pte_phys(ulong vaddr, ulong phys)
 {
 	pgprot_t prot;
 	pgd_t *pgd;
@@ -34,14 +38,14 @@ static void set_pte_phys(ulong vaddr, ulong phys)
 	__flush_tlb_one(vaddr);
 }
 
-static void alloc_fixmap(void)
+/*static*/ void alloc_fixmap(void)
 {
 	/* dirty hack :/ */
 	virt_apic_base = (ulong)vmalloc(4096);
 	set_pte_phys(virt_apic_base, APIC_DEFAULT_PHYS_BASE);
 }
 
-static void free_fixmap(void)
+/*static*/ void free_fixmap(void)
 {
 	ulong vaddr;
 	pgd_t *pgd;
@@ -83,7 +87,7 @@ void fixmap_setup(void)
 {
 #if V_BEFORE(2,4,10)
 #if defined(CONFIG_X86_LOCAL_APIC)
-	int find_intel_smp(void);
+	static int find_intel_smp(void);
 
 	if (!find_intel_smp()) {
 		set_pte_phys(__fix_to_virt(FIX_APIC_BASE), 
@@ -121,7 +125,7 @@ void fixmap_restore(void)
  
 /* ---------------- MP table code ------------------ */
  
-#if defined(CONFIG_X86_LOCAL_APIC)
+#if V_BEFORE(2,4,10) && defined(CONFIG_X86_LOCAL_APIC)
  
 static int __init mpf_checksum(unsigned char *mp, int len)
 {
@@ -160,7 +164,7 @@ static int __init smp_scan_config (unsigned long base, unsigned long length)
 	return 0;
 }
 
-int __init find_intel_smp(void)
+static int __init find_intel_smp(void)
 {
 	unsigned int address;
 
@@ -175,4 +179,4 @@ int __init find_intel_smp(void)
 	return smp_scan_config(address, 0x1000);
 }
 
-#endif /* defined(CONFIG_X86_LOCAL_APIC) */
+#endif /* V_BEFORE(2,4,10) && defined(CONFIG_X86_LOCAL_APIC) */

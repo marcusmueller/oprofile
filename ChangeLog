@@ -1,3 +1,26 @@
+2002-02-26  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/op_merge.cpp: small tidy
+
+	* pp/op_time.cpp:
+	* pp/opf_container.cpp:
+	* pp/opf_filter.h:
+	* pp/opf_filter.cpp:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp: remove the nasty global var int ctr;
+	  pass it as parameter to each relevant function using it.
+
+	* module/compat.h: support for 2.5.5. 2.4.18 also tested
+
+	* pp/opp_symbol.h
+	* pp/opp_symbol.cpp: new, mainly for implementing --output-format
+	* pp/op_time.cpp:
+	* pp/oprofpp/cpp: use output format stuff
+	* pp/Makefile.in: reflect above change
+	* doc/oprofile.1.in:
+	* doc/oprofile.sgml: document --output-format
+
 2002-02-13  Philippe Elie  <ph_e@club-internet.fr>
 
 	* TODO: update
