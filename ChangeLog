@@ -1,5 +1,12 @@
 2003-03-08  John Levon  <levon@movementarian.org>
 
+	* libop/op_cpu_type.c: improve error message
+
+	* utils/op_help.c: show CPU name in events list. Show CPU
+	 pretty name in op_help --get-cpu-type.
+
+2003-03-08  John Levon  <levon@movementarian.org>
+
 	* configure.in: specify distcheck ./configure flags.
 	  Add version.h to distclean.
 

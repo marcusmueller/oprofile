@@ -72,9 +72,9 @@ static char const * event_name;
 
 static struct poptOption options[] = {
 	{ "cpu-type", 'c', POPT_ARG_INT, &cpu_type, 0,
-	  "force cpu type", "cpu type", },
+	  "use the given numerical CPU type", "cpu type", },
 	{ "get-cpu-type", 'r', POPT_ARG_NONE, &get_cpu_type, 0,
-	  "show the auto detected cpu type", NULL, },
+	  "show the auto-detected CPU type", NULL, },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
@@ -107,19 +107,21 @@ int main(int argc, char const *argv[])
 {
 	struct list_head * events;
 	struct list_head * pos;
+	char const * pretty;
 
 	get_options(argc, argv);
 
 	if (cpu_type == CPU_NO_GOOD)
 		cpu_type = op_get_cpu_type();
 
-	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
-		fprintf(stderr, "invalid cpu type %d !\n", cpu_type);
+	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE)
 		exit(EXIT_FAILURE);
-	}
+
+
+	pretty = op_get_cpu_type_str(cpu_type);
 
 	if (get_cpu_type) {
-		printf("%d\n", cpu_type);
+		printf("%s\n", pretty);
 		exit(EXIT_SUCCESS);
 	}
 
@@ -138,8 +140,7 @@ int main(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	printf("oprofile: available events\n");
-	printf("--------------------------\n\n");
+	printf("oprofile: available events for CPU type \"%s\"\n\n", pretty);
 	switch (cpu_type) {
 	case CPU_HAMMER:
 		break;
@@ -151,7 +152,7 @@ int main(int argc, char const *argv[])
 	case CPU_PIII:
 	case CPU_P4:
 	case CPU_P4_HT2:
-		printf("See Intel Architecture Developer's Manual Vol. 3 (), Appendix A and\n"
+		printf("See Intel Architecture Developer's Manual Volume 3, Appendix A and\n"
 		"Intel Architecture Optimization Reference Manual (730795-001)\n\n");
 		break;
 	case CPU_IA64:
