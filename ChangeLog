@@ -1,3 +1,27 @@
+2002-01-20  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: punt some things to next release
+
+	* dae/opd_proc.c: fix printf of null
+ 
+2002-01-20  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+ 
+	* module/oprofile.c: add comment
+ 
+	* module/compat22.h:
+	* module/compat24.h:
+	* module/op_syscalls.c: fix locking for out_mmap
+ 
+2002-01-20  Philippe Elie  <ph_e@club-internet.fr>
+
+	* module/op_x86.c: check MSR + SPIV for enabling APIC
+ 
+	* module/compat.c: don't attempt to get root
+
+	* module/compat.h: NEED_FIXMAP fixes
+ 
 2002-01-18  Philippe Elie  <ph_e@club-internet.fr>
 
 	* TODO: update
@@ -38,7 +62,7 @@
 	  BKL when it is necessary.
  
 	* dae/oprofiled.c: fix warning
- 
+
 2002-01-17  John Levon  <moz@compsoc.man.ac.uk>
 
 	* op_user.h:
@@ -148,7 +172,7 @@
 
 	* dae/op_stop: fix "op_start && op_stop" bug using multiple
 	  dump_stop writes.
- 
+
 2002-01-14  Dave Jones <davej@suse.de>
 
 	* pp/op_time.cpp: fix for printing (NaN%) in the zero sample case.
@@ -236,7 +260,7 @@
 	  to op_start
  
 	* TODO: update
- 
+
 2002-01-13  Philippe Elie  <ph_e@club-internet.fr>
 
 	* module/compat.h:
@@ -351,7 +375,7 @@
 	  address
  
 	* configure.in: bump to 0.0.9cvs
- 
+
 2002-01-08  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update
@@ -450,7 +474,7 @@
 	* module/oprofile.h:
 	* module/oprofile.c: implement new clean shutdown via
 	  sysctl dump_stop
- 
+
 2002-01-04  Philippe Elie  <ph_e@club-internet.fr>
 
 	* module/oprofile.c: add a warning when note buff overflow.

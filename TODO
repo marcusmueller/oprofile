@@ -1,41 +1,36 @@
 0.0.9 task list
 ---------------
 
-o should we pin rather than loop sample buffer overflow too ?
- 
-o remove note lock (and rename map lock) ... I think
- 
-o fix waitqueue_lock
+ o fix waitqueue_lock
 
-o check UP kernel on SMP hardware with and without APIC config options 
+ o check UP kernel on SMP hardware with and without APIC config options 
  
-o 	./pp/op_time.cpp:79:/* FIXME: -h means help not shared libs !!!! */
+ o 	./pp/op_time.cpp:79:/* FIXME: -h means help not shared libs !!!! */
 	./module/compat22.h:167:        /* 2.2.18 introduced vmalloc_32, FIXME is old vmalloc equivalent */
 	./module/compat22.h:26:/* FIXME: didn't this change in 2.2.21 ? */  
-	./dae/opd_proc.c:272:   /* FIXME: image->app_name can be null. */
 	./dae/opd_proc.c:1033:  /* FIXME: is this comment correct now we always apply the note buffer first ? */
 	./dae/opd_proc.c:1094:/* FIXME: what if we are remapping over an old mapping - we want to find this one first ! */ 
  
-o NEED_MPTABLE check should die - replace with MSR read ?
+ o NEED_MPTABLE check should die - replace with MSR read ?
 
-o oprofile_nmi22.S and oprofile24.S can use the same code.
+ o stress test, finish clean of 2.2 backport
 
-o review the exception table of the nmi handler (at least stop oprofile)
-	- why would we stop oprofile ? what am I missing ? 
- 
-o stress test, finish clean of 2.2 backport
-
-o user request: op_time that shows /all/ available symbols (with correct %age).
+ o user request: op_time that shows /all/ available symbols (with correct %age).
   This must handle images with no symbols, so container must contain either a symbol + values,
   or a file.
  
-6) little output things (e.g. don't print unit mask) RTC
- 
-o audit oprof_start for security...
+ o little output things (e.g. don't print unit mask) RTC
  
 Before 1.0
 ----------
 
+ o audit oprof_start for security...
+ o review the exception table of the nmi handler (at least stop oprofile)
+	- why would we stop oprofile ? what am I missing ? 
+ o oprofile_nmi22.S and oprofile24.S can use the same code.
+ o remove note lock (and rename map lock) ... I think
+ o should we pin rather than loop sample buffer overflow too ?
+ o take oprof_convert out the back and do the cruel to be kind thing
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o test it to hell and back
  o check documentation

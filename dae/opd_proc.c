@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.95 2002/01/17 02:33:04 movement Exp $ */
+/* $Id: opd_proc.c,v 1.96 2002/01/20 15:15:47 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -269,9 +269,8 @@ static void opd_open_image(struct opd_image *image)
 {
 	uint i;
 
-	/* FIXME: image->app_name can be null. */
 	verbprintf("Opening image \"%s\" for app \"%s\"\n",
-		   image->name, image->app_name);
+		   image->name, image->app_name ? image->app_name : "none");
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		image->sample_files[i].fd = -1;

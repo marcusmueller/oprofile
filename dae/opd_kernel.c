@@ -363,8 +363,7 @@ static void opd_handle_module_sample(u32 eip, u16 count)
 			opd_stats[OPD_MODULE]++;
 			opd_put_image_sample(module->image, 
 					     eip - module->start, count);
-		}
-		else {
+		} else {
 			opd_stats[OPD_LOST_MODULE]++;
 			verbprintf("No image for sampled module %s\n",
 				   module->name);
