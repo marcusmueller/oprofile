@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.3 2001/11/03 21:17:24 phil_e Exp $ */
+/* $Id: oprofile.h,v 1.4 2001/11/04 12:19:04 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -260,6 +260,8 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 /* These arrays are filled by hw_ok() */
 extern uint perfctr_msr[OP_MAX_COUNTERS];
 extern uint eventsel_msr[OP_MAX_COUNTERS];
+/* oprof_start() copy here the sysctl settable parameters */
+extern struct oprof_sysctl sysctl;
 
 void * rvmalloc(signed long size); 
 void rvfree(void * mem, signed long size);

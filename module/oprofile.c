@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.4 2001/11/03 21:17:24 phil_e Exp $ */
+/* $Id: oprofile.c,v 1.5 2001/11/04 12:19:04 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -31,23 +31,11 @@ static int allow_unload;
 #endif
 
 /* sysctl settables */
-static int op_hash_size=OP_DEFAULT_HASH_SIZE;
-static int op_buf_size=OP_DEFAULT_BUF_SIZE;
-// FIXME: make sysctl settable !!
-static int op_note_size=OP_DEFAULT_NOTE_SIZE;
-static int sysctl_dump;
-static int kernel_only;
-static int op_ctr_on[OP_MAX_COUNTERS];
-static int op_ctr_um[OP_MAX_COUNTERS];
-static int op_ctr_count[OP_MAX_COUNTERS];
-static int ctr_count[OP_MAX_COUNTERS];
-static int op_ctr_count[OP_MAX_COUNTERS];
-static int op_ctr_val[OP_MAX_COUNTERS];
-static int op_ctr_kernel[OP_MAX_COUNTERS];
-static int op_ctr_user[OP_MAX_COUNTERS];
-
-pid_t pid_filter;
-pid_t pgrp_filter;
+static struct oprof_sysctl sysctl_parms;
+/* some of the sys ctl settable variable needs to be copied to protect
+ * against user that try to change through /proc/sys/dev/oprofile/ * running
+ * parameters during a profiling session */
+struct oprof_sysctl sysctl;
 
 /* the MSRs we need */
 static uint perfctr_msr[OP_MAX_COUNTERS];
@@ -172,9 +160,9 @@ asmlinkage void op_do_nmi(struct pt_regs *regs)
 	uint cpu = op_cpu_id();
 	int i;
 
-	if (unlikely(pid_filter) && likely(current->pid != pid_filter))
+	if (unlikely(sysctl.pid_filter) && likely(current->pid != sysctl.pid_filter))
 		return;
-	if (unlikely(pgrp_filter) && likely(current->pgrp != pgrp_filter))
+	if (unlikely(sysctl.pgrp_filter) && likely(current->pgrp != sysctl.pgrp_filter))
 		return;
 
 	for (i = 0 ; i < op_nr_counters ; ++i)
@@ -219,14 +207,14 @@ static void pmc_setup(void *dummy)
 
 	/* setup each counter */
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		if (op_ctr_val[i]) {
+		if (sysctl.ctr[i].event) {
 			rdmsr(eventsel_msr[i], low, high);
 
 			low &= 1 << 21;  /* do not touch the reserved bit */
-			set_perfctr(op_ctr_count[i], i);
+			set_perfctr(sysctl.ctr[i].count, i);
 
-			pmc_fill_in(&low, op_ctr_kernel[i], op_ctr_user[i],
-				op_ctr_val[i], op_ctr_um[i]);
+			pmc_fill_in(&low, sysctl.ctr[i].kernel, sysctl.ctr[i].user,
+				sysctl.ctr[i].event, sysctl.ctr[i].unit_mask);
 
 			wrmsr(eventsel_msr[i], low, high);
 		}
@@ -251,7 +239,7 @@ inline static void pmc_start_Athlon(void)
 	int i;
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		if (op_ctr_count[i]) {
+		if (sysctl.ctr[i].count) {
 			rdmsr(eventsel_msr[i], low, high);
 			wrmsr(eventsel_msr[i], low | (1 << 22), high);
 		}
@@ -288,7 +276,7 @@ inline static void pmc_stop_Athlon(void)
 	int i;
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		if (op_ctr_count[i]) {
+		if (sysctl.ctr[i].count) {
 			rdmsr(eventsel_msr[i], low, high);
 			wrmsr(eventsel_msr[i], low & ~(1 << 22), high);
 		}
@@ -340,7 +328,7 @@ static int is_ready(void)
 inline static void up_and_check_note(void)
 {
 	note_pos++;
-	if (likely(note_pos < (op_note_size - OP_PRE_NOTE_WATERMARK) && !is_ready()))
+	if (likely(note_pos < (sysctl.note_size - OP_PRE_NOTE_WATERMARK) && !is_ready()))
 		return;
 	/* we just use cpu 0 as a convenient one to wake up */
 	oprof_ready[0] = 2;
@@ -364,7 +352,7 @@ static int oprof_note_read(char *buf, size_t count, loff_t *ppos)
 	uint num;
 	ssize_t max;
 
-	max = sizeof(struct op_note) * op_note_size;
+	max = sizeof(struct op_note) * sysctl.note_size;
 
 	if (*ppos || count != max)
 		return -EINVAL;
@@ -442,7 +430,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 		default: return -EINVAL;
 	}
 
-	max = sizeof(struct op_sample) * op_buf_size;
+	max = sizeof(struct op_sample) * sysctl.buf_size;
 
 	if (*ppos || count != max)
 		return -EINVAL;
@@ -549,18 +537,18 @@ static int oprof_init_data(void)
 	ulong hash_size,buf_size;
 	struct _oprof_data *data;
 
-	note_buffer = vmalloc(sizeof(struct op_note) * op_note_size);
+	note_buffer = vmalloc(sizeof(struct op_note) * sysctl.note_size);
  	if (!note_buffer) {
 		printk(KERN_ERR "oprofile: failed to allocate not buffer of %u bytes\n",
-			sizeof(struct op_note) * op_note_size);
+			sizeof(struct op_note) * sysctl.note_size);
 		return -EFAULT;
 	}
 	note_pos = 0;
 
 	for (i=0; i < smp_num_cpus; i++) {
 		data = &oprof_data[i];
-		hash_size = (sizeof(struct op_entry) * op_hash_size);
-		buf_size = (sizeof(struct op_sample) * op_buf_size);
+		hash_size = (sizeof(struct op_entry) * sysctl.hash_size);
+		buf_size = (sizeof(struct op_sample) * sysctl.buf_size);
 
 		data->entries = vmalloc(hash_size);
 		if (!data->entries) {
@@ -580,8 +568,8 @@ static int oprof_init_data(void)
 		memset(data->entries, 0, hash_size);
 		memset(data->buffer, 0, buf_size);
 
-		data->hash_size = op_hash_size;
-		data->buf_size = op_buf_size;
+		data->hash_size = sysctl.hash_size;
+		data->buf_size = sysctl.buf_size;
 	}
 
 	return 0;
@@ -596,26 +584,24 @@ static int parms_ok(void)
 	struct _oprof_data *data;
 	int enabled = 0;
 
-	op_check_range(op_hash_size, 256, 262144,
-		"op_hash_size value %d not in range (%d %d)\n");
-	op_check_range(op_buf_size, OP_PRE_WATERMARK + 1024, 1048576,
-		"op_buf_size value %d not in range (%d %d)\n");
-	op_check_range(op_note_size, OP_PRE_NOTE_WATERMARK + 1024, 1048576,
-		"op_note_size value %d not in range (%d %d)\n");
+	op_check_range(sysctl.hash_size, 256, 262144,
+		"sysctl.hash_size value %d not in range (%d %d)\n");
+	op_check_range(sysctl.buf_size, OP_PRE_WATERMARK + 1024, 1048576,
+		"sysctl.buf_size value %d not in range (%d %d)\n");
+	op_check_range(sysctl.note_size, OP_PRE_NOTE_WATERMARK + 1024, 1048576,
+		"sysctl.note_size value %d not in range (%d %d)\n");
 
 	for (i = 0; i < op_nr_counters ; i++) {
 
-		op_ctr_count[i] = ctr_count[i];
+		if (sysctl.ctr[i].enabled) {
+			int min_count = op_min_count(sysctl.ctr[i].event, cpu_type);
 
-		if (op_ctr_on[i]) {
-			int min_count = op_min_count(op_ctr_val[i], cpu_type);
-
-			if (!op_ctr_user[i] && !op_ctr_kernel[i]) {
+			if (!sysctl.ctr[i].user && !sysctl.ctr[i].kernel) {
 				printk(KERN_ERR "oprofile: neither kernel nor user "
 					"set for counter %d\n", i);
 				return 0;
 			}
-			op_check_range(op_ctr_count[i], min_count,
+			op_check_range(sysctl.ctr[i].count, min_count,
 				OP_MAX_PERF_COUNT,
 				"ctr count value %d not in range (%d %ld)\n");
 
@@ -631,16 +617,16 @@ static int parms_ok(void)
 	/* hw_ok() has set cpu_type */
 	ok = 1;
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		ret = op_check_events(i, op_ctr_val[i], op_ctr_um[i], cpu_type);
+		ret = op_check_events(i, sysctl.ctr[i].event, sysctl.ctr[i].unit_mask, cpu_type);
 
 		if (ret & OP_EVT_NOT_FOUND)
-			printk(KERN_ERR "oprofile: ctr%d: %d: no such event for cpu %d\n", i, op_ctr_val[i], cpu_type);
+			printk(KERN_ERR "oprofile: ctr%d: %d: no such event for cpu %d\n", i, sysctl.ctr[i].event, cpu_type);
 
 		if (ret & OP_EVT_NO_UM)
-			printk(KERN_ERR "oprofile: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n", i, op_ctr_um[i], cpu_type);
+			printk(KERN_ERR "oprofile: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n", i, sysctl.ctr[i].unit_mask, cpu_type);
 
 		if (ret & OP_EVT_CTR_NOT_ALLOWED)
-			printk(KERN_ERR "oprofile: ctr%d: %d: can't count event for this counter\n", i, op_ctr_val[i]);
+			printk(KERN_ERR "oprofile: ctr%d: %d: can't count event for this counter\n", i, sysctl.ctr[i].event);
 
 		if (ret != OP_EVENTS_OK)
 			ok = 0;
@@ -657,11 +643,10 @@ static int parms_ok(void)
 			return 0;
 
 		for (i = 0 ; i < op_nr_counters ; ++i) {
-			if (op_ctr_on[i]) {
-				data->ctr_count[i] = op_ctr_count[i];
-			} else {
+			if (sysctl.ctr[i].enabled)
+				data->ctr_count[i] = sysctl.ctr[i].count;
+			else
 				data->ctr_count[i] = 0;
-			}
 		}
 	}
 
@@ -677,6 +662,10 @@ static int oprof_start(void)
 	int err = 0;
 
 	down(&sysctlsem);
+
+	/* save the sysctl settable things to protect against change through
+	 * systcl the profiler params */
+	sysctl = sysctl_parms;
 
 	if ((err = oprof_init_data()))
 		goto out;
@@ -697,7 +686,7 @@ static int oprof_start(void)
 
 	install_nmi();
 
-	if (!kernel_only)
+	if (!sysctl.kernel_only)
 		op_intercept_syscalls();
 
 	smp_call_function(pmc_start, NULL, 0, 1);
@@ -791,8 +780,6 @@ static struct file_operations oprof_fops = {
  *                          user
  */
 
-static int nr_interrupts;
-
 /* These access routines are basically not safe on SMP for module unload.
  * And there is nothing we can do about it - the API is broken.
  */
@@ -804,10 +791,10 @@ static int get_nr_interrupts(ctl_table *table, int write, struct file *filp, voi
 	if (write)
 		return -EINVAL;
 
-	nr_interrupts = 0;
+	sysctl.nr_interrupts = 0;
 
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
-		nr_interrupts += oprof_data[cpu].nr_irq;
+		sysctl.nr_interrupts += oprof_data[cpu].nr_irq;
 		oprof_data[cpu].nr_irq = 0;
 	}
 
@@ -877,16 +864,17 @@ out:
 	return err;
 }
 
-static int nr_oprof_static = 7;
+static int nr_oprof_static = 8;
 
 static ctl_table oprof_table[] = {
-	{ 1, "bufsize", &op_buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
-	{ 1, "hashsize", &op_hash_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
-	{ 1, "dump", &sysctl_dump, sizeof(int), 0600, NULL, &sysctl_do_dump, NULL, },
-	{ 1, "kernel_only", &kernel_only, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
-	{ 1, "pid_filter", &pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
-	{ 1, "pgrp_filter", &pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
-	{ 1, "nr_interrupts", &nr_interrupts, sizeof(int), 0400, NULL, &get_nr_interrupts, NULL, },
+	{ 1, "bufsize", &sysctl_parms.buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
+	{ 1, "hashsize", &sysctl_parms.hash_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
+	{ 1, "dump", &sysctl_parms.dump, sizeof(int), 0600, NULL, &sysctl_do_dump, NULL, },
+	{ 1, "kernel_only", &sysctl_parms.kernel_only, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
+	{ 1, "pid_filter", &sysctl_parms.pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
+	{ 1, "pgrp_filter", &sysctl_parms.pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
+	{ 1, "nr_interrupts", &sysctl_parms.nr_interrupts, sizeof(int), 0400, NULL, &get_nr_interrupts, NULL, },
+	{ 1, "notesize", &sysctl_parms.note_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 0, }, { 0, }, { 0, }, { 0, },
 	{ 0, },
 };
@@ -913,6 +901,11 @@ static int __init init_sysctl(void)
 	ctl_table *tab;
 	int i,j;
 
+	/* these sysctl parms need sensible value */
+	sysctl_parms.hash_size = OP_DEFAULT_HASH_SIZE;
+	sysctl_parms.buf_size = OP_DEFAULT_BUF_SIZE;
+	sysctl_parms.note_size = OP_DEFAULT_NOTE_SIZE;
+
 	/* FIXME: no proper numbers, or verifiers (where possible) */
 
 	for (i=0; i < op_nr_counters; i++) {
@@ -925,12 +918,12 @@ static int __init init_sysctl(void)
 		next->child = tab;
 
 		memset(tab, 0, sizeof(ctl_table)*7);
-		tab[0] = ((ctl_table){ 1, "enabled", &op_ctr_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[1] = ((ctl_table){ 1, "event", &op_ctr_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
-		tab[2] = ((ctl_table){ 1, "count", &ctr_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[3] = ((ctl_table){ 1, "unit_mask", &op_ctr_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[4] = ((ctl_table){ 1, "kernel", &op_ctr_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[5] = ((ctl_table){ 1, "user", &op_ctr_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[0] = ((ctl_table){ 1, "enabled", &sysctl_parms.ctr[i].enabled, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[1] = ((ctl_table){ 1, "event", &sysctl_parms.ctr[i].event, sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
+		tab[2] = ((ctl_table){ 1, "count", &sysctl_parms.ctr[i].count, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[3] = ((ctl_table){ 1, "unit_mask", &sysctl_parms.ctr[i].unit_mask, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[4] = ((ctl_table){ 1, "kernel", &sysctl_parms.ctr[i].kernel, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[5] = ((ctl_table){ 1, "user", &sysctl_parms.ctr[i].user, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		next++;
 	}
 

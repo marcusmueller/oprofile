@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.50 2001/10/14 19:35:13 movement Exp $
+# $Id: op_start,v 1.51 2001/11/04 12:19:04 phil_e Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -75,6 +75,7 @@ do_help() {
 	Module options
 	  --buffer-size=num            number of samples in kernel buffer
 	  --hash-table-size=num        number of entries in kernel hash table
+	  --note-table-size	       number of notes in kernel notes buffer
 	  --kernel-only=[0|1]          profile only the kernel
 	  --ctrN-event=name            symbolic event name for ctr N
 	  --ctrN-count=val             number of events between samples for ctr N
@@ -111,6 +112,7 @@ do_init() {
 	HASH_MAP_DEVICE_FILE=
 	BUF_SIZE=262144
 	HASH_SIZE=65536
+	NOTE_SIZE=8192
 	KERNEL_ONLY=0
 	IGNORE_MYSELF=0
 	DIR="/var/opd"
@@ -210,6 +212,9 @@ do_options() {
 			--map-file)
 				MAP_FILE=$val
 				;;
+			--note-table-size)
+				NOTE_SIZE=$val
+				;;
 			--vmlinux)
 				VMLINUX=$val
 				;;
@@ -287,6 +292,7 @@ do_options() {
 	vecho "Parameters used:"
 	vecho "BUF_SIZE $BUF_SIZE"
 	vecho "HASH_SIZE $HASH_SIZE"
+	vecho "NOTE_SIZE $NOTE_SIZE"
 	f=0
 	while (( $f < $OP_MAX_COUNTERS )); do
 		vecho "CTR${f}_EVENT ${CTR_EVENT[$f]}"
@@ -428,6 +434,7 @@ do_sysctl_setup() {
 
 	$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE
 	$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE
+	$SYSCTL -w dev.oprofile.notesize=$NOTE_SIZE
 	$SYSCTL -w dev.oprofile.kernel_only=$KERNEL_ONLY
 	$SYSCTL -w dev.oprofile.pid_filter=$PID_FILTER
 	$SYSCTL -w dev.oprofile.pgrp_filter=$PGRP_FILTER

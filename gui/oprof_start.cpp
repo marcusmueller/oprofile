@@ -122,6 +122,7 @@ oprof_start::oprof_start()
 
 	buffer_size_edit->setText(QString().setNum(config.buffer_size));
 	hash_table_size_edit->setText(QString().setNum(config.hash_table_size));
+	note_table_size_edit->setText(QString().setNum(config.note_table_size));
 	if (config.pid_filter)
 		pid_filter_edit->setText(QString().setNum(config.pid_filter));
 	else
@@ -144,6 +145,8 @@ oprof_start::oprof_start()
 	buffer_size_edit->setValidator(iv); 
 	iv = new QIntValidator(OP_MIN_HASH_TABLE_SIZE, OP_MAX_HASH_TABLE_SIZE, hash_table_size_edit);
 	hash_table_size_edit->setValidator(iv); 
+	iv = new QIntValidator(OP_MIN_NOTE_TABLE_SIZE, OP_MAX_NOTE_TABLE_SIZE, note_table_size_edit);
+	note_table_size_edit->setValidator(iv); 
 	iv = new QIntValidator(OP_MIN_PID, OP_MAX_PID, pid_filter_edit);
 	pid_filter_edit->setValidator(iv); 
 	iv = new QIntValidator(OP_MIN_PGRP, OP_MAX_PGRP, pgrp_filter_edit);
@@ -553,7 +556,22 @@ bool oprof_start::record_config()
 		return false;
 	}
 
+	if (config.note_table_size < OP_MIN_NOTE_TABLE_SIZE || 
+	    config.hash_table_size > OP_MAX_NOTE_TABLE_SIZE) {
+		std::ostringstream error;
+
+		error << "note table size out of range: " 
+		      << config.note_table_size
+		      << " valid range is [" << OP_MIN_NOTE_TABLE_SIZE << ", "
+		      << OP_MAX_NOTE_TABLE_SIZE << "]";
+
+		QMessageBox::warning(this, 0, error.str().c_str());
+
+		return false;
+	}
+
 	config.hash_table_size = hash_table_size_edit->text().toUInt();
+	config.note_table_size = note_table_size_edit->text().toUInt();
 	config.pid_filter = pid_filter_edit->text().toUInt();
 	config.pgrp_filter = pgrp_filter_edit->text().toUInt();
 	config.base_opd_dir = base_opd_dir_edit->text().latin1();
@@ -783,6 +801,7 @@ void oprof_start::on_start_profiler()
 	args.push_back("--ignore-myself=" + tostr(config.ignore_daemon_samples));
 	args.push_back("--buffer-size=" + tostr(config.buffer_size));
 	args.push_back("--hash-table-size=" + tostr(config.hash_table_size));
+	args.push_back("--note-table-size=" + tostr(config.note_table_size));
 	if (config.verbose)
 		args.push_back("--verbose");
 

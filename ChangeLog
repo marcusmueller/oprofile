@@ -1,3 +1,22 @@
+2001-11-04  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/op_start:
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_config.h:
+	* gui/ui/oprof_start.base.ui: handle note table size sysctl
+
+	* module/op_syscalls.c: handle dname hash coding collision with
+	  a linear search.
+
+	* module/oprofile.c:
+	* module/oprofile.h:
+	* module/op_syscalls.c: Use a struct to hold the whole
+	  sysctl settable things rather global var.
+
+	* oprofile-tests/understanding/dname-hash.c: new. A little test
+	  to show the behavior of the new hash coding collision handling.
+
 2001-11-03  Philippe Elie  <ph_e@club-internet.fr>
 
 	* modules/oprofile.h: add a sysctl struct to hold

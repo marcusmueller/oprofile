@@ -82,7 +82,7 @@ config_setting::config_setting()
 	:
 	buffer_size(OP_DEFAULT_BUFFER_SIZE),
 	hash_table_size(OP_DEFAULT_HASH_SIZE),
-
+	note_table_size(OP_DEFAULT_NOTE_SIZE),
 	// FIXME: member of config, hardcoded value probably come from ? 
 	base_opd_dir("/var/opd/"),
 	samples_files_dir("samples"),
@@ -117,6 +117,7 @@ void config_setting::load(std::istream& in)
 	in >> ignore_daemon_samples;
 	in >> verbose;
 	in >> pgrp_filter;
+	in >> note_table_size;
 }
 
 // sanitize needed ?
@@ -125,7 +126,7 @@ void config_setting::save(std::ostream& out) const
 	out << buffer_size << std::endl;
 	out << hash_table_size << std::endl;
 
-	// for this we need always to put something sensible, else if we save
+	// for these we need always to put something sensible, else if we save
 	// empty string reload is confused by this empty string.
 	config_setting def_val;
 
@@ -150,6 +151,7 @@ void config_setting::save(std::ostream& out) const
 	out << ignore_daemon_samples << std::endl;
 	out << verbose << std::endl;
 	out << pgrp_filter << std::endl;
+	out << note_table_size << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& out, const config_setting& object)

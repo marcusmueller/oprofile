@@ -36,6 +36,11 @@
 #define OP_MAX_HASH_TABLE_SIZE	262144
 #define OP_MIN_HASH_TABLE_SIZE	256
 
+#define OP_DEFAULT_NOTE_SIZE	8192
+#define OP_PRE_NOTE_WATERMARK	64
+#define OP_MIN_NOTE_TABLE_SIZE	(1024 + OP_PRE_NOTE_WATERMARK)
+#define OP_MAX_NOTE_TABLE_SIZE	1048576
+
 // This is a standard non-portable assumption we make. 
 #define OP_MIN_PID		0
 #define OP_MAX_PID		32767
@@ -63,6 +68,11 @@ std::istream& operator>>(std::istream& in, event_setting& object);
 
 // Store the general  configuration of the profiler. File/path name buffer
 // size ETC.
+// You can add field here at any position but you must add them to
+// load()/save() at the end of loading/saving to ensure compatibility with
+// previous version of config file. If you remove field you must preserve
+// dummy read/write in load()/save() for the same reason. Obviously you must
+// also provide sensible value in the ctor.
 struct config_setting {
 	config_setting();
 
@@ -72,6 +82,7 @@ struct config_setting {
 
 	uint buffer_size;
 	uint hash_table_size;
+	uint note_table_size;
 	std::string base_opd_dir;
 	std::string samples_files_dir;
 	std::string device_file;
@@ -85,7 +96,7 @@ struct config_setting {
 	int verbose;
 	// as string to allow symbolic group name ?
 	int pgrp_filter;
-	// not persistent, no interest to save from one session to another?
+	// not persistent, no interest to save from one session to another
 	int pid_filter;
 };
 

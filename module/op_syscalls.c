@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.1 2001/10/30 17:32:14 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.2 2001/11/04 12:19:04 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,8 +22,6 @@
 
 #include "oprofile.h"
 
-extern pid_t pid_filter;
-extern pid_t pgrp_filter;
 extern u32 prof_on;
 
 static uint dname_top;
@@ -78,7 +76,7 @@ int oprof_init_hashmap(void)
 	/* /lib */
 	i = name_hash("lib", strlen("lib"), 0);
 	add_hash_entry(&hash_map[i], 0, "lib", strlen("lib"));
-	/* /lib */
+	/* /usr */
 	usrhash = i = name_hash("usr", strlen("usr"), 0);
 	add_hash_entry(&hash_map[i], 0, "usr", strlen("usr"));
 	/* /bin */
@@ -173,7 +171,7 @@ inline static uint name_hash(const char *name, uint len, uint parent)
 	while (len--)
 		hash = (hash + (name[len] << 4) + (name[len] >> 4)) * 11;
 
-	return abs((hash ^ parent) % OP_HASH_MAP_NR);
+	return (hash ^ parent) % OP_HASH_MAP_NR;
 }
 
 /* empty ascending dname stack */
@@ -227,7 +225,7 @@ static uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentr
 	struct qstr *dname;
 	uint value = -1;
 	uint firsthash;
-	uint probe = 3;
+	uint incr;
 	uint parent = 0;
 	struct op_hash_index *entry;
 
@@ -257,7 +255,12 @@ static uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentr
 	/* here we are at the bottom, unwind and hash */
 
 	while ((dname = pop_dname())) {
-		firsthash = value = name_hash(dname->name, dname->len, parent);
+		/* if N is prime, value in [0-N[ and incr = max(1, value) then
+		 * iteration: value = (value + incr) % N covers the range [0-N[
+		 * in N iterations */
+		incr = firsthash = value = name_hash(dname->name, dname->len, parent);
+		if (incr == 0)
+			incr = 1;
 
 	retry:
 		entry = &hash_map[value];
@@ -274,8 +277,8 @@ static uint do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dentr
 		}
 
 		/* nope, find another place in the table */
-		value = abs((value + probe) % OP_HASH_MAP_NR);
-		probe *= probe;
+		value = (value + incr) % OP_HASH_MAP_NR;
+
 		if (value == firsthash)
 			goto fulltable;
 
@@ -393,8 +396,8 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 	if (!ret) {
 		current->ptrace &= ~PT_DTRACE;
 
-		if ((!pid_filter || pid_filter == current->pid) &&
-		    (!pgrp_filter || pgrp_filter == current->pgrp))
+		if ((!sysctl.pid_filter || sysctl.pid_filter == current->pid) &&
+		    (!sysctl.pgrp_filter || sysctl.pgrp_filter == current->pgrp))
 			oprof_output_maps(current);
 	}
 	putname(filename);
@@ -427,8 +430,8 @@ asmlinkage static int my_sys_mmap2(ulong addr, ulong len,
 
 	ret = old_sys_mmap2(addr, len, prot, flags, fd, pgoff);
 
-	if ((pid_filter && current->pid != pid_filter) ||
-	    (pgrp_filter && current->pgrp != pgrp_filter))
+	if ((sysctl.pid_filter && current->pid != sysctl.pid_filter) ||
+	    (sysctl.pgrp_filter && current->pgrp != sysctl.pgrp_filter))
 		goto out;
 
 	if ((prot & PROT_EXEC) && ret >= 0)
@@ -447,8 +450,8 @@ asmlinkage static int my_old_mmap(struct mmap_arg_struct *arg)
 
 	ret = old_old_mmap(arg);
 
-	if ((pid_filter && current->pid != pid_filter) ||
-	    (pgrp_filter && current->pgrp != pgrp_filter))
+	if ((sysctl.pid_filter && current->pid != sysctl.pid_filter) ||
+	    (sysctl.pgrp_filter && current->pgrp != sysctl.pgrp_filter))
 		goto out;
 
 	if (ret>=0) {
@@ -469,7 +472,7 @@ inline static void oprof_report_fork(u16 old, u32 new)
 {
 	struct op_note note;
 
-	if (pgrp_filter && pgrp_filter != current->pgrp)
+	if (sysctl.pgrp_filter && sysctl.pgrp_filter != current->pgrp)
 		return;
 
 	note.type = OP_FORK;
@@ -542,8 +545,8 @@ asmlinkage static long my_sys_exit(int error_code)
 
 	MOD_INC_USE_COUNT;
 
-	if ((pid_filter && current->pid != pid_filter) ||
-	    (pgrp_filter && current->pgrp != pgrp_filter))
+	if ((sysctl.pid_filter && current->pid != sysctl.pid_filter) ||
+	    (sysctl.pgrp_filter && current->pgrp != sysctl.pgrp_filter))
 		goto out;
 
 	note.type = OP_EXIT;
