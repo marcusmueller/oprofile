@@ -134,7 +134,7 @@
 	* doc/oprofile.1.in:
 	* doc/oprofile.xml: handle --no-vmlinux
 
-	* daemon/opd_kernel.c: use /no-vmlinux not /no-vmlinux when user
+	* daemon/opd_kernel.c: use no-vmlinux not /no-vmlinux when user
 	  specify --no-vmlinux
 
 2003-04-08  John Levon  <levon@movementarian.org>
