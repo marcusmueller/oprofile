@@ -25,9 +25,17 @@ static char * tests[][2] = {
 	{ "/foo///", "/foo" },
 	{ "../", "/" },
 	{ "./", "/usr" },
+	{ ".", "/usr" },
 	{ "./../", "/" },
 	{ "bin/../bin/../" , "/usr" },
 	{ "../../../../../", "/" },
+	{ "/usr/bin/../../..", "/" },
+	{ "/usr/bin/../../../", "/" },
+	{ "././.", "/usr" },
+	/* Posix says this is valid */
+	{ "//", "//" },
+	/* but our implementation stolen from gcc treat this as "/" */
+	{ "///", "/" },
 	{ NULL, NULL },
 };
 

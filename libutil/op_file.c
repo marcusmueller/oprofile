@@ -134,9 +134,16 @@ static char * op_simplify_pathname(char * path)
 	if (*from == '/') {
 		absolute = 1;
 		to++;
-		/* FIXME: original code wasn't stripping '//' nor '///', saying
-		 * POSIX allows that, are we concerned ? */
-		while (*++from == '/') {
+		from++;
+		if (*from == '/') {
+			if (*++from == '/')
+				/* 3 or more initial /s are equivalent to
+				   1 /.  */
+				while (*++from == '/');
+			else
+				/* On some hosts // differs from /; Posix
+				   allows this.  */
+				to++;
 		}
 	}
 
