@@ -1,3 +1,11 @@
+2003-01-30  John Levon  <levon@movementarian.org>
+
+	From Anton Blanchard :
+
+	* daemon/opd_cookie.h: add ppc32/64
+
+	* utils/op_start_25: fix start of kernel for ppc
+
 2003-01-30  Will Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol(get_kernel_range): Avoid using perl arithmetic.

@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start_25,v 1.8 2002/12/03 03:53:44 movement Exp $
+# $Id: op_start_25,v 1.9 2003/01/30 17:36:15 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -141,6 +141,10 @@ get_kernel_range() {
 		return;
 	fi
 	tmp1=`nm $VMLINUX | grep ' A _text'`
+	# match start of kernel on ppc64 
+	if test -z "$tmp1"; then
+		tmp1=`nm $VMLINUX | grep ' T _stext'`
+	fi
 	tmp2=`nm $VMLINUX | grep ' A _end'`
 	if test -z "$tmp1" -o -z "$tmp2"; then
 		echo "Couldn't determine kernel start/end" >&2

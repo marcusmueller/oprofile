@@ -1,5 +1,5 @@
 /**
- * @file op_model_p4.h
+ * @file op_model_p4.c
  * P4 model-specific MSR operations
  *
  * @remark Copyright 2002 OProfile authors
