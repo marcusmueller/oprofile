@@ -112,7 +112,7 @@ void parse_options(int argc, char const ** argv,
 }
 
 
-template <class T> class option_imp;
+template <typename T> class option_imp;
 
 
 /**

@@ -251,7 +251,6 @@ void callgraph_container::populate(list<inverted_profile> const & iprofiles)
 			cverb << vdebug
 			      << "adding: " << callee_file.cg_image << endl;
 
-			// FIXME: there is some error checking needed here.
 			ok = true;
 			op_bfd callee_bfd(callee_file.cg_image,
 			                  string_filter(), ok);

@@ -1,5 +1,10 @@
 2004-01-28  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/tests/utility_tests.cpp:
+	* libopt++/popt_options.cpp: s/template <class/template <typename/
+
+2004-01-28  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* daemon/init.c: show buffer read only when --verbose
 
 	* libpp/image_errors.cpp:

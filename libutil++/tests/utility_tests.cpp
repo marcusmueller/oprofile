@@ -64,7 +64,7 @@ void check_alloc()
 
 struct A {};
 
-template <class Throw, class Catch>
+template <typename Throw, typename Catch>
 void throw_tests()
 {
 	scoped_ptr<A> a(new A);
@@ -77,7 +77,7 @@ void throw_tests()
 }
 
 
-template <class Throw, class Catch>
+template <typename Throw, typename Catch>
 void throw_tests(bool)
 {
 	scoped_array<A> b(new A[10]);
