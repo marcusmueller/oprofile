@@ -8,54 +8,41 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 
  o image filtering needs to resolve symlinks
  o need a way to reset image filter
+ o opgprof/opannotate always merges even if we provide a profile spec that's
+   minimal enough - you can't get "cpu:0"
 
 0.8 release
 -----------
 
- o merge BRANCH_CALLGRAPH
+ o "finish" and merge BRANCH_CALLGRAPH
 
-Before 1.0 big stuff
---------------------
+0.9 release
+-----------
 
- o add support for samples not belonging to any symbols probably through
-   artificially created symbols (do we still need/want this ??)
  o opdiff
- o side-by-side opreport output (--compare - needs UI spec) ???
- 
+ o add event aliases for common things like icache misses
+
 Before 1.0 little stuff
 -----------------------
 
  o x86_64 and 2.4 kernel: it's apparently broken
+ o Alpha ev67 events are broken
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
   try to recover gracefully.
- o dae/opd_image.h: struct opd_sfile * sfiles[OP_MAX_COUNTERS][NR_CPUS]; 
-   this use too many memory.
  o we allow op_help --cpu-type=xx but with 16 it segfault on x86, alpha ev67
   need OP_MAX_COUNTERS > 8 but we compile all tools with OP_MAX_COUNTERS==8
   (see libop/op_hw_config.h). We should remove this #define
- o can we log samples going to anonymous mapping by using
-  - 2.6 one fake sample for all anonymous sample, cookie == 0 mean use this
-  special sample file. (cookie == -1 or -2 as magic value ?)
-  - 2.4 we must pass to daemon note about exec anon mapping and create one
-  fake samples file by anon mapping specially named like 
-  /{root}/path/to/appli/anon_mapping-0B8000-0BA0000/...
- o why rel_to_abs_path in locate_images ??
  o we can add lots more unit tests yet
  o output column shortname headers for opreport -l
  o separate debug info stuff
- o opgprof/opannotate always merges even if we provide a profile spec that's
-   minimal enough - you can't get "cpu:0"
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
  o create_path API is weird
  o opannotate should error out with a msg if no debug symbols are found at all
- o GUI still has a physical-counter interface, should have a general one
-   like opcontrol --event
  o move oprofiled.log to OP_SAMPLE_DIR/current ?
  o lib-image: and image: behavior depend on --separate=, if --separate=library
   opreport "lib-image:*libc*" --merge=lib works but not
   opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
   --separate==none. Must we take care ?
- o improve the *non* verbose daemon log to be a bit more informative
  o --buffer-size is useless on 2.5 without tuning of watershed
  o oprof_start: check lib samples when kernel samples checkbox is checked
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
@@ -65,24 +52,13 @@ Before 1.0 little stuff
  o sample-file: / binary: don't work in any useful way - can we fix this
    by peeking at binary: value and faking the split_sample_file somehow ?
 
-Kernel
-------
- o error out of the vma list search early if we go past the EIP - list is
-   vma-start-ordered I think
- o move the unmap hook to the callers and do a check before unmapping to avoid
-   losing samples - a bit more expensive but saves on lots of lost samples.
-   this would move the hint hook up into sys_munmap, sys_mremap and maybe
-   other places ?
- o replace the exit hook crap with pinning the task struct in place with a
-   two-list destruction of task_struct
-
 Documentation
 -------------
 
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o document gcc 2.95 and linenr info problems especially for inline functions
- o split doc into user's manual and hacking manual, document much more 
  o audit oprof_start for security + then document sudo
+ o finish the internals manual
 
 General checks to make
 ----------------------
@@ -102,17 +78,24 @@ General checks to make
 Later
 -----
  
+ o Itanium event constraints are not implemented
+ o dae/opd_image.h: struct opd_sfile * sfiles[OP_MAX_COUNTERS][NR_CPUS]; 
+   this use too many memory.
+ o side-by-side opreport output (--compare - needs UI spec) ???
+ o can we log samples going to anonymous mapping by using
+  - 2.6 one fake sample for all anonymous sample, cookie == 0 mean use this
+  special sample file. (cookie == -1 or -2 as magic value ?)
+  - 2.4 we must pass to daemon note about exec anon mapping and create one
+  fake samples file by anon mapping specially named like 
+  /{root}/path/to/appli/anon_mapping-0B8000-0BA0000/...
+ o GUI still has a physical-counter interface, should have a general one
+   like opcontrol --event
  o I think we should have the ability to have *fixed* width headers, e.g. :
 
 vma      samples  cum. samples  %           cum. %     symbol name             image name              app name
 0804c350 64582    64582         35.0757     35.0757    odb_insert              /usr/loc...in/oprofiled /usr/local/oprofile-pp/bin/oprofiled
 
   Note the ellipsis
- o we handle op_bfd failure but we ignore all samples for this binary,
- we would probably create a pseudo op_bfd to ensure the statistics are ok
- o option xxx and negated option --no-xxx: we can hide them in --help and
-  mention in the xxx option help string than the --no-xxx is allowed. Not
-  really usefull if we have a little number of --no.
  o should we make the sighup handler re-read counter config and re-start profiling too ?
  o implement pp_interface alias (is it worth it ?)
  o improve --smart-demangle
@@ -129,7 +112,6 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
  o use standard C integer type <stdint.h> int32_t int16_t etc.
  o opcontrol --save should allow to backup binary, see subject "features to make oprofile easier to use" on mail list
  o event multiplexing for real
- 
-o profile the NMI handler code
- 
-o merge sample files into one big report (like vtune can do repeated runs)
+ o XML output
+ o profile the NMI handler code
+ o merge sample files into one big report (like vtune can do repeated runs)
