@@ -1,3 +1,14 @@
+2004-01-30  Philippe Elie  <phil.el@wanadoo.fr>
+
+	commit not itended but tree is stable so add a ChangeLog ...
+	* libpp/Makefile.am:
+	* libpp/symbol.cpp: new file for output_hint()
+	* libpp/profile_container.cpp: use output_hint()
+	* libpp/callgraph_container.cpp:
+	* libpp/callgraph_container.h:
+	* libpp/symbol.h:
+	* pp/opstack.cpp: get output hint from the callgraph container.
+
 2004-01-29  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/init.c:
