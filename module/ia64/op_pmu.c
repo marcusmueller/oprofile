@@ -427,7 +427,6 @@ pmu_check_params(void)
 {
 	int i;
 	int enabled = 0;
-	int ok = 0;
 
 	for (i = 0; i < op_nr_counters ; i++) {
 		int min_count;
@@ -449,24 +448,6 @@ pmu_check_params(void)
 				OP_MAX_PERF_COUNT,
 				"ctr count value %d not in range (%d %ld)\n"))
 			return -EINVAL;
-
-		ret = op_check_events(i, sysctl.ctr[i].event, sysctl.ctr[i].unit_mask, sysctl.cpu_type);
-
-		if (ret & OP_INVALID_EVENT) {
-			printk(KERN_ERR "oprofile: ctr%d: %d: no such event for cpu %d\n", i,
-				sysctl.ctr[i].event, sysctl.cpu_type);
-		}
-		if (ret & OP_INVALID_UM) {
-			printk(KERN_ERR "oprofile: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n", i,
-				sysctl.ctr[i].unit_mask, sysctl.cpu_type);
-		}
-		if (ret & OP_INVALID_COUNTER) {
-			printk(KERN_ERR "oprofile: ctr%d: %d: can't count event for this counter\n", i,
-				sysctl.ctr[i].event);
-		}
-
-		if (ret != OP_OK_EVENT)
-			ok = -EINVAL;
 	}
 
 	if (!enabled) {
@@ -474,7 +455,7 @@ pmu_check_params(void)
 		return -EINVAL;
 	}
 
-	return ok;
+	return 0;
 }
 
 

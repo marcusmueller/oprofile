@@ -348,7 +348,6 @@ check_valid_args() {
 		echo "The specified vmlinux file \"$VMLINUX\" doesn't exist." >&2
 		exit 1
 	fi
-
 }
 
 

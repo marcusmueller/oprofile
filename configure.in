@@ -86,7 +86,7 @@ AC_CHECK_PROG(LD,ld,ld,)
 test "$LD" || AC_ERROR(ld not found)
 
 AC_MSG_CHECKING([for kernel OProfile support])
-AC_ARG_WITH(kernel-support, [  --with-kernel-support        Select if using CONFIG_OPROFILE],
+AC_ARG_WITH(kernel-support, [  --with-kernel-support        Use 2.5 kernel (no kernel source tree required)],
 if test "$withval" = "yes"; then
 	OPROFILE_25=yes
 fi

@@ -14,8 +14,7 @@
 /* See IA32 Vol. 3 Appendix A + Athlon optimization manual */
 
 /*
- * WARNING: this code is also included in the kernel module,
- * so no silliness
+ * You can have silliness here.
  */ 
  
 #include "op_events.h"

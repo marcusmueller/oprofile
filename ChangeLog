@@ -1,3 +1,13 @@
+2003-02-25  John Levon  <levon@movementarian.org>
+
+	* configure.in: clarify --with-kernel-support
+
+	* libop/op_events.c:
+	* module/x86/op_nmi.c:
+	* module/ia64/op_nmi.c: remove sanity checking - it's
+	  the wrong place to have such code, is a barrier to op_events
+	  cleanup, and makes life harder for NDAers.
+
 2003-02-25  Will Cohen <wcohen@redhat.com>
 
 	* utils/opcontrol (do_deinit): Correct search for /dev/oprofile.
