@@ -67,7 +67,7 @@ private:
 	/// the section filepos for this symbol
 	u32 section_filepos;
 	/// the section vma for this symbol
-	u32 section_vma;
+	bfd_vma section_vma;
 	/// the size of this symbol
 	size_t symb_size;
 	/// the name of the symbol
