@@ -59,7 +59,8 @@ AC_CHECK_FUNCS(xmemdump)
 
 ORIG_SAVE_LIBS="$LIBS"
 AC_CHECK_LIB(popt, poptGetContext,, AC_MSG_ERROR([popt library not found]))
-AC_CHECK_LIB(dl, dlopen,, AC_MSG_ERROR([dl library not found]))
+AC_CHECK_LIB(dl, dlopen, LIBS="$LIBS -ldl"; DL_LIB="-ldl", DL_LIB="")
+AC_CHECK_LIB(intl, main, LIBS="$LIBS -lintl"; INTL_LIB="-lintl", INTL_LIB="")
 AC_CHECK_LIB(bfd, bfd_openr,, AC_MSG_ERROR([bfd library not found]))
 
 # C++ tests
@@ -111,9 +112,8 @@ AX_CHECK_DOCBOOK
 
 dnl finally restore the original libs setting
 LIBS="$ORIG_SAVE_LIBS"
-dnl some libiberties need -ldl ...
-LIBERTY_LIBS="-liberty -ldl"
-BFD_LIBS="-lbfd -liberty -ldl"
+LIBERTY_LIBS="-liberty $DL_LIB $INTL_LIB"
+BFD_LIBS="-lbfd -liberty $DL_LIB $INTL_LIB"
 POPT_LIBS="-lpopt"
 AC_SUBST(LIBERTY_LIBS)
 AC_SUBST(BFD_LIBS)

@@ -1,5 +1,9 @@
 2003-09-11  John Levon  <levon@movementarian.org>
 
+	* configure.in: check for -lintl, tweak -ldl check
+
+2003-09-11  John Levon  <levon@movementarian.org>
+
 	* dae/oprofiled.c:
 	* daemon/oprofiled.c:
 	* libdb/db_manage.c:
