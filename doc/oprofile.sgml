@@ -181,6 +181,14 @@ Will convert from your version to the current version.
 <para>Be warned than you cannot convert from new version to old version. If you convert to new version
 you cannot reverse the conversion.
 </sect1>
+
+<sect1 id="uninstall">
+<title>Uninstalling oprofile</title>
+<para>
+You must have the source tree installed to uninstall oprofile, then a <command>make uninstall</command> will
+remove all installed file except your configuration file in the directory <filename>~/.oprofile</filename>
+</para>
+</sect1>
  
 </chapter>
 

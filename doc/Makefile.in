@@ -1,15 +1,17 @@
-# $Id: Makefile.in,v 1.5 2001/08/16 01:57:58 movement Exp $
+# $Id: Makefile.in,v 1.6 2001/08/18 16:11:17 movement Exp $
 
 prefix=@prefix@
-MANDIR=@mandir@
+MANDIR=@mandir@/man1
+CATDIR=@mandir@/cat1
 LN_SF=ln -sf
 RM=rm
 MKDIR=mkdir
 MKDIR_P=$(MKDIR) -p
 DB2HTML=db2html
+LINK_LIST=oprofiled.1 op_start.1 op_stop.1 op_help.1 oprofpp.1
 
-.PHONY: all clean install
- 
+.PHONY: all clean install uninstall
+
 all:
 	-$(RM) -rf oprofile.junk
 	$(DB2HTML) oprofile.sgml
@@ -20,12 +22,18 @@ all:
 	-$(RM) -rf oprofile 
  
 install:
-	-$(MKDIR_P) $(MANDIR)/man1 
-	cp oprofile.1 $(MANDIR)/man1/oprofile.1
-	-$(LN_SF) $(MANDIR)/man1/oprofile.1 $(MANDIR)/man1/oprofiled.1
-	-$(LN_SF) $(MANDIR)/man1/oprofile.1 $(MANDIR)/man1/op_start.1
-	-$(LN_SF) $(MANDIR)/man1/oprofile.1 $(MANDIR)/man1/op_stop.1
-	-$(LN_SF) $(MANDIR)/man1/oprofile.1 $(MANDIR)/man1/op_help.1
-	-$(LN_SF) $(MANDIR)/man1/oprofile.1 $(MANDIR)/man1/oprofpp.1
- 
+	-$(MKDIR_P) $(MANDIR)
+	cp oprofile.1 $(MANDIR)/oprofile.1
+	@for f in $(LINK_LIST); do				\
+		$(LN_SF) $(MANDIR)/oprofile.1 $(MANDIR)/$$f;	\
+	done
+
+uninstall:
+	rm -f $(MANDIR)/oprofile.1
+	rm -f @mandir@/cat1/oprofile.1.gz
+	@for f in $(LINK_LIST); do		\
+		rm -f $(MANDIR)/$$f;		\
+		rm -f $(CATDIR)/cat1/$$f.gz;	\
+	done
+
 clean:

@@ -1,7 +1,7 @@
-# $Id: Makefile.in,v 1.13 2001/08/16 01:57:58 movement Exp $
+# $Id: Makefile.in,v 1.14 2001/08/18 16:11:17 movement Exp $
 
-.PHONY: all clean srcdoc install
- 
+.PHONY: all clean srcdoc install uninstall
+
 all: oprofiled op_help
  
 prefix=@prefix@
@@ -10,19 +10,22 @@ BINDIR=@bindir@
 MANDIR=@mandir@
 CC=@CC@
 MKDIR_P=mkdir -p
+INSTALL_LIST=oprofiled op_start op_dump op_stop op_help
 
-install: oprofiled op_start op_dump op_stop op_help
+install: $(INSTALL_LIST)
 	-$(MKDIR_P) $(BINDIR)
-	cp oprofiled $(BINDIR)/oprofiled
-	cp op_start $(BINDIR)/op_start
-	cp op_dump $(BINDIR)/op_dump
-	cp op_stop $(BINDIR)/op_stop
-	cp op_help $(BINDIR)/op_help
-	cd $(BINDIR) && chmod 755 oprofiled op_start op_dump op_stop op_help
- 
+	@for f in $(INSTALL_LIST); do				 \
+		cp $$f $(BINDIR)/$$f && chmod 755 $(BINDIR)/$$f; \
+	done
+
+uninstall:
+	@for f in $(INSTALL_LIST); do	\
+		rm -f $(BINDIR)/$$f;	\
+	done
+
 clean:
 	rm -f oprofiled  op_help *.o oprofiled-src.html 
- 
+
 CFLAGS=-Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
 LIBS=@extra_libraries@ -lpopt
 INCLUDES=-I. @extra_includes@

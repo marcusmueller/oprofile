@@ -1,6 +1,6 @@
 all: oprofpp oprof_convert opf_filter
 
-.PHONY: all clean srcdoc
+.PHONY: all clean srcdoc install uninstall
 
 clean: 
 	rm -f oprofpp *.o oprofpp-src.html oprof_convert opf_filter
@@ -11,17 +11,18 @@ exec_prefix=@exec_prefix@
 BINDIR=@bindir@
 MANDIR=@mandir@
 MKDIR_P=mkdir -p
+INSTALL_LIST=oprofpp oprof_convert opf_filter op_to_source
 
-install: oprofpp oprof_convert opf_filter op_to_source
+install: $(INSTALL_LIST)
 	-$(MKDIR_P) $(BINDIR)
-	cp oprofpp $(BINDIR)/oprofpp
-	chmod 755 $(BINDIR)/oprofpp
-	cp oprof_convert $(BINDIR)/oprof_convert
-	chmod 755 $(BINDIR)/oprof_convert
-	cp opf_filter $(BINDIR)/opf_filter
-	chmod 755 $(BINDIR)/opf_filter
-	cp op_to_source $(BINDIR)/op_to_source
-	chmod 755 $(BINDIR)/op_to_source
+	@for f in $(INSTALL_LIST); do				 \
+		cp $$f $(BINDIR)/$$f && chmod 755 $(BINDIR)/$$f; \
+	done
+
+uninstall:
+	@for f in $(INSTALL_LIST); do	\
+		rm -f $(BINDIR)/$$f;	\
+	done
 
 CFLAGS=-Wall -Wstrict-prototypes -W -pipe -DOP_EVENTS_DESC -L/usr/lib @CFLAGS@
 LIBS=-lpopt -lbfd -liberty -ldl

@@ -1,9 +1,9 @@
 all:
- 
-.PHONY: all clean
- 
+
+.PHONY: all clean install uninstall
+
 clean:
- 
+
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 BINDIR=@bindir@
@@ -13,3 +13,10 @@ install: oprofile
 	-$(MKDIR_P) $(BINDIR)
 	cp oprofile $(BINDIR)/oprofile
 	cd $(BINDIR) && chmod 755 oprofile
+
+uninstall:
+	rm -f $(BINDIR)/oprofile
+	@echo "---------------------------------------------------------------"
+	@echo "The uninstall target does not remove your ~/.oprofile directory"
+	@echo "---------------------------------------------------------------"
+

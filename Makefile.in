@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.22 2001/08/16 01:57:58 movement Exp $
+# $Id: Makefile.in,v 1.23 2001/08/18 16:11:17 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -6,18 +6,20 @@ MKDIR_P=mkdir -p
 CC=@CC@
 LD=@LD@
 
-.PHONY: all install clean distclean tags
+.PHONY: all install clean distclean maintainerclean uninstall tags
 
 all: oprofile.o
 	$(MAKE) -C dae
 	$(MAKE) -C pp
 	$(MAKE) -C gui
 
+# doc/Makefile is deleted here but should be deleted in distclean.
+# When the dist target works move it as action of distclean.
 maintainerclean: distclean
-	rm -f configure
+	rm -f configure doc/Makefile
 
 distclean: clean
-	rm -f Makefile dae/Makefile pp/Makefile tags
+	rm -f Makefile dae/Makefile pp/Makefile gui/Makefile tags
 
 # broken 
 dist:
@@ -30,7 +32,7 @@ dist:
 	./configure ; \
 	cp doc/Makefile doc/Makefile.tmp ; \
 	make distclean ; \
-	cd doc && make && rm -f Makefile && cd .. ; \
+	cd doc && make -f Makefile.tmp && rm -f Makefile.tmp && cd .. ; \
 	cd .. ; \
 	mv oprofile oprofile-@VERSION@ ; \
 	tar cvfz ../oprofile-@VERSION@.tar.gz oprofile-@VERSION@ ; \
@@ -49,6 +51,16 @@ install: oprofile.o
 	$(MAKE) -C pp install
 	$(MAKE) -C doc install 
 	$(MAKE) -C gui install
+
+uninstall:
+	-rm -f $(MODINSTALLDIR)/oprofile.o
+	-rmdir --ignore-fail-on-non-empty  $(MODINSTALLDIR)
+	depmod -a
+	$(MAKE) -C dae uninstall
+	$(MAKE) -C pp uninstall
+	$(MAKE) -C doc uninstall
+	$(MAKE) -C gui uninstall
+	@echo "Goodbye."
 
 clean:
 	rm -f *.o config.status config.log config.cache
