@@ -46,7 +46,6 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include <elf.h>
 #include <limits.h>
 
 // GNU libc bug
@@ -368,61 +367,31 @@ static void opd_sigterm(void)
 
 static size_t opd_pointer_size(void)
 {
-	size_t size;
-	char elf_header[EI_NIDENT];
+	unsigned long val = 0;
 	FILE * fp;
 
-	/* FIXME: later, insist on pointer_size only */
-	if (op_file_readable("/dev/oprofile/pointer_size")) {
-		unsigned long val = 0;
-
-		fp = op_open_file("/dev/oprofile/pointer_size", "r");
-		if (!fp) {
-			fprintf(stderr, "oprofiled: couldn't open "
-				"/dev/oprofile/pointer_size.\n");
-			exit(EXIT_FAILURE);
-		}
-
-		fscanf(fp, "%lu\n", &val);
-		if (!val) {
-			fprintf(stderr, "oprofiled: couldn't read "
-				"/dev/oprofile/pointer_size.\n");
-			exit(EXIT_FAILURE);
-		}
-
-		op_close_file(fp);
-		return val;
+	if (!op_file_readable("/dev/oprofile/pointer_size")) {
+		fprintf(stderr, "/dev/oprofile/pointer_size not readable\n");
+		exit(EXIT_FAILURE);
 	}
 
-	if (!op_file_readable("/proc/kcore")) {
-		fprintf(stderr, "oprofiled: /proc/kcore not readable.\n");
-		goto guess;
+
+	fp = op_open_file("/dev/oprofile/pointer_size", "r");
+	if (!fp) {
+		fprintf(stderr, "oprofiled: couldn't open "
+			"/dev/oprofile/pointer_size.\n");
+		exit(EXIT_FAILURE);
 	}
 
-	fp = op_open_file("/proc/kcore", "r");
-	op_read_file(fp, &elf_header, 16);
+	fscanf(fp, "%lu\n", &val);
+	if (!val) {
+		fprintf(stderr, "oprofiled: couldn't read "
+			"/dev/oprofile/pointer_size.\n");
+		exit(EXIT_FAILURE);
+	}
+
 	op_close_file(fp);
-
-	/* CONFIG_KCORE_AOUT exists alas */
-	if (memcmp(elf_header, ELFMAG, SELFMAG) != 0) {
-		fprintf(stderr, "oprofiled: /proc/kcore not in ELF format.\n");
-		goto guess;
-	}
-
-	switch (elf_header[EI_CLASS]) {
-		case ELFCLASS32:
-			return 4;
-		case ELFCLASS64:
-			return 8;
-	}
-
-	fprintf(stderr, "oprofiled: /proc/kcore has bad class.\n");
-
-guess:
-	size = sizeof(unsigned long);
-	fprintf(stderr, "oprofiled: assuming pointer size is %u\n",
-		(unsigned int)size);
-	return size;
+	return val;
 }
 
 
