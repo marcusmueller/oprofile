@@ -16,6 +16,7 @@
 
 #include "string_manip.h"
 #include "op_header.h"
+#include "op_exception.h"
 
 #include "arrange_profiles.h"
 #include "parse_filename.h"
@@ -25,13 +26,40 @@ using namespace std;
 
 namespace {
 
+enum axis_types {
+	AXIS_EVENT,
+	AXIS_UNITMASK,
+	AXIS_TGID,
+	AXIS_TID,
+	AXIS_CPU,
+	AXIS_MAX
+};
+
+struct axis_t {
+	string name;
+	string suggestion;
+} axes[AXIS_MAX] = {
+	{ "event", "specify event: or count:" },
+	{ "unitmask", "specify unitmask: or -m unitmask" },
+	{ "tgid", "specify tgid: or -m tgid" },
+	{ "tid", "specify tid: or -m tid" },
+	{ "cpu", "specify cpu: or -m cpu" },
+};
+
 /**
- * Make sure that if we have classes, that only one equivalence
- * relation has been triggered - for example, we can't have
- * both CPU and tgid varying - how would it be labelled ?
+ * We have more than axis of classification, tell the user.
  */
-void verify_one_dimension(vector<profile_class> const &, bool const *)
+void
+report_error(int axis, int newaxis)
 {
+	string str = "attempted to display results for parameter ";
+	str += axes[newaxis].name;
+	str += " but already displaying results for parameter ";
+	str += axes[axis].name;
+	str += "\n";
+	str += "suggestion: ";
+	str += axes[newaxis].suggestion;
+	throw op_fatal_error(str);
 }
 
 
@@ -69,7 +97,7 @@ string const get_cpu_info(profile_class const & pclass)
 
 
 /// Give human-readable names to each class.
-void name_classes(profile_classes & classes, int axis)
+void name_classes(profile_classes & classes, axis_types axis)
 {
 	classes.event = get_event_info(classes.v[0]);
 	classes.cpuinfo = get_cpu_info(classes.v[0]);
@@ -83,35 +111,33 @@ void name_classes(profile_classes & classes, int axis)
 	vector<profile_class>::iterator const end = classes.v.end();
 
 	for (; it != end; ++it) {
+		it->name = axes[axis].name + ":";
 		switch (axis) {
-		case 0:
+		case AXIS_EVENT:
 			it->name = it->ptemplate.event
 				+ ":" + it->ptemplate.count;
 			it->longname = get_event_info(*it);
 			break;
-		case 1:
-			it->name = "unitmask:";
+		case AXIS_UNITMASK:
 			it->name += it->ptemplate.unitmask;
 			it->longname = "Samples matching a unit mask of ";
 			it->longname += it->ptemplate.unitmask;
 			break;
-		case 2:
-			it->name = "tgid:";
+		case AXIS_TGID:
 			it->name += it->ptemplate.tgid;
 			it->longname = "Processes with a thread group ID of ";
 			it->longname += it->ptemplate.tgid;
 			break;
-		case 3:
-			it->name = "tid:";
+		case AXIS_TID:
 			it->name += it->ptemplate.tid;
 			it->longname = "Processes with a thread ID of ";
 			it->longname += it->ptemplate.tid;
 			break;
-		case 4:
-			it->name = "cpu:";
+		case AXIS_CPU:
 			it->name += it->ptemplate.cpu;
 			it->longname = "Samples on CPU " + it->ptemplate.cpu;
 			break;
+		case AXIS_MAX:;
 		}
 	}
 }
@@ -124,7 +150,7 @@ void identify_classes(profile_classes & classes,
                       merge_option const & merge_by)
 {
 	profile_template & ptemplate = classes.v[0].ptemplate;
-	bool changed[5] = { false, };
+	bool changed[AXIS_MAX] = { false, };
 
 	vector<profile_class>::iterator it = classes.v.begin();
 	++it;
@@ -132,13 +158,13 @@ void identify_classes(profile_classes & classes,
 
 	// only one class, name it after the event
 	if (it == end) {
-		changed[0] = true;
+		changed[AXIS_EVENT] = true;
 	}
 
 	for (; it != end; ++it) {
 		if (it->ptemplate.event != ptemplate.event
 		    ||  it->ptemplate.count != ptemplate.count)
-			changed[0] = true;
+			changed[AXIS_EVENT] = true;
 
 		// we need the merge checks here because each
 		// template is filled in from the first non
@@ -147,30 +173,29 @@ void identify_classes(profile_classes & classes,
 
 		if (!merge_by.unitmask
 		    && it->ptemplate.unitmask != ptemplate.unitmask)
-			changed[1] = true;
+			changed[AXIS_UNITMASK] = true;
 
 		if (!merge_by.tgid && it->ptemplate.tgid != ptemplate.tgid)
-			changed[2] = true;
+			changed[AXIS_TGID] = true;
 
 		if (!merge_by.tid && it->ptemplate.tid != ptemplate.tid)
-			changed[3] = true;
+			changed[AXIS_TID] = true;
 
 		if (!merge_by.cpu && it->ptemplate.cpu != ptemplate.cpu)
-			changed[4] = true;
+			changed[AXIS_CPU] = true;
 	}
 
-	verify_one_dimension(classes.v, changed);
+	axis_types axis = AXIS_MAX;
 
-	int axis = -1;
-
-	for (size_t i = 0; i < 5; ++i) {
+	for (size_t i = 0; i < AXIS_MAX; ++i) {
 		if (changed[i]) {
-			axis = i;
-			break;
+			if (axis != AXIS_MAX)
+				report_error(axis, i);
+			axis = axis_types(i);
 		}
 	}
 
-	if (axis == -1) {
+	if (axis == AXIS_MAX) {
 		cerr << "Internal error - no equivalence class axis" << endl;
 		abort();
 	}

@@ -1,5 +1,14 @@
 2003-09-14  John Levon  <levon@movementarian.org>
 
+	* libpp/arrange_profiles.cpp: throw an exception
+	if there are two many unmerged profiles, with details
+	of how to fix it
+
+	* pp/opgprof_options.cpp:
+	* pp/common_option.cpp: clean up error messages
+
+2003-09-14  John Levon  <levon@movementarian.org>
+
 	* libpp/arrange_profiles.h:
 	* libpp/arrange_profiles.cpp: add location of 
 	images when inverting profiles

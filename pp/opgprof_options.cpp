@@ -86,16 +86,11 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 		return false;
 
 	if (nr_app_profiles > 1) {
-		cerr << "Specify exactly one binary to process." << endl;
+		cerr << "error: specify exactly one binary to process "
+		     "and give an event: or count: specification if necessary"
+		     << endl;
 		exit(EXIT_FAILURE);
 	}
-
-	// FIXME: we can do a lot better in telling the user the
-	// *exact* problem based on the profile class templates
-	cerr << "Too many unmerged profile specifications." << endl;
-	cerr << "use event:xxxx and/or count:yyyyy to restrict "
-	     << "samples files considered.\n" << endl;
-	exit(EXIT_FAILURE);
 
 	return false;
 }
