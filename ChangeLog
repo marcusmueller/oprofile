@@ -1,3 +1,17 @@
+2002-05-23  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/oprofiled.c: minor bug when backing up samples dir
+
+	* libopt++/popt_options.h:
+	* libopt++/popt_options.cpp: avoid to force client code to
+	  explicitly select the option template specializations.
+
+	* pp/op_merge.cpp:
+	* pp/op_time.cpp:
+	* pp/op_to_source.pp:
+	* pp/oprofpp.cpp: we no longer need explicit template
+	  instantiations for options
+
 2002-05-22  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/oprofpp.cpp: fix a missing SAMPLES_DIR prepend

@@ -28,6 +28,7 @@ using std::cout;
 using std::cerr;
 using std::ifstream;
 using std::list;
+using std::ostringstream;
  
 static string ctr_str;
 static int sort_by_counter = -1;
@@ -42,21 +43,21 @@ static bool list_all_symbols_details;
 
 static OutSymbFlag output_format_flags;
 
-static option<string> samplefile_opt(samplefile, "samples-file", 'f', "image sample file", "file");
-static option<string> imagefile_opt(imagefile, "image-file", 'i', "image file", "file");
-static option<void> list_symbols_opt(list_symbols, "list-symbols", 'l', "list samples by symbol");
-static option<string> gproffile_opt(gproffile, "dump-gprof-file", 'g', "dump gprof format file", "file");
-static option<string> symbol_opt(symbol, "list-symbol", 's', "give detailed samples for a symbol", "symbol");
-static option<void> demangle_opt(demangle, "demangle", 'd', "demangle GNU C++ symbol names");
-static option<string> ctr_str_opt(ctr_str, "counter", 'c', "which counter to display", "counter number[,counter nr]");
-static option<int> sort_by_counter_opt(sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr");
-static option<void> verbose_opt(verbose, "verbose", 'V', "verbose output");
-static option<void> list_all_symbols_details_opt(list_all_symbols_details, "list-all-symbols-details", 'L', "list samples for all symbols");
-static option<void> output_linenr_info_opt(output_linenr_info, "output-linenr-info", 'o', "output filename:linenr info");
-static option<void> reverse_sort_opt(reverse_sort, "reverse", 'r', "reverse sort order");
-static option< vector<string> > exclude_symbols_opt(exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name");
-static option<void> show_shared_libs_opt(show_shared_libs, "show-shared-libs", 'k', "show details for shared libs. Only meaningfull if you have profiled with --separate-samples");
-static option<string> output_format_opt(output_format, "output-format", 't', "choose the output format", "output-format strings");
+static option samplefile_opt(samplefile, "samples-file", 'f', "image sample file", "file");
+static option imagefile_opt(imagefile, "image-file", 'i', "image file", "file");
+static option list_symbols_opt(list_symbols, "list-symbols", 'l', "list samples by symbol");
+static option gproffile_opt(gproffile, "dump-gprof-file", 'g', "dump gprof format file", "file");
+static option symbol_opt(symbol, "list-symbol", 's', "give detailed samples for a symbol", "symbol");
+static option demangle_opt(demangle, "demangle", 'd', "demangle GNU C++ symbol names");
+static option ctr_str_opt(ctr_str, "counter", 'c', "which counter to display", "counter number[,counter nr]");
+static option sort_by_counter_opt(sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr");
+static option verbose_opt(verbose, "verbose", 'V', "verbose output");
+static option list_all_symbols_details_opt(list_all_symbols_details, "list-all-symbols-details", 'L', "list samples for all symbols");
+static option output_linenr_info_opt(output_linenr_info, "output-linenr-info", 'o', "output filename:linenr info");
+static option reverse_sort_opt(reverse_sort, "reverse", 'r', "reverse sort order");
+static option exclude_symbols_opt(exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name");
+static option show_shared_libs_opt(show_shared_libs, "show-shared-libs", 'k', "show details for shared libs. Only meaningfull if you have profiled with --separate-samples");
+static option output_format_opt(output_format, "output-format", 't', "choose the output format", "output-format strings");
 
 /**
  * get_options - process command line

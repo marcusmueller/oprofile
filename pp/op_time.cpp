@@ -106,18 +106,18 @@ static string samples_dir;
 static int counter;
 static OutSymbFlag output_format_flags;
 
-static option<string> session_opt(session, "session", 's', "session to use", "name");
-static option<string> counter_str_opt(counter_str, "counter", 'c', "which counter to use", "counter_nr[,counter_nr]");
-static option<string> output_format_opt(output_format, "output-format", 't', "choose the output format", "output-format strings");
-static option<void> list_symbols_opt(list_symbols, "list-symbols", 'l', "list samples by symbol");
-static option<void> show_image_name_opt(show_image_name, "show-image-name", 'n', "show the image name from where come symbols");
-static option< vector<string> > path_opt(path, "path", 'p', "add path for retrieving image", "path_name[,path_name]");
-static option< vector<string> > recursive_path_opt(recursive_path, "recursive-path", 'P', "add path for retrieving image recursively", "path_name[,path_name]");
-static option<void> reverse_sort_opt(reverse_sort, "reverse", 'r', "reverse sort order");
-static option<void> show_shared_libs_opt(show_shared_libs, "show-shared-libs", 'k', "show details for shared libs. Only meaningfull if you have profiled with --separate-samples");
-static option<int> sort_by_counter_opt(sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr");
-static option< vector<string> > exclude_symbols_opt(exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name");
-static option<void> demangle_opt(demangle, "demangle", 'd', "demangle GNU C++ symbol names");
+static option session_opt(session, "session", 's', "session to use", "name");
+static option counter_str_opt(counter_str, "counter", 'c', "which counter to use", "counter_nr[,counter_nr]");
+static option output_format_opt(output_format, "output-format", 't', "choose the output format", "output-format strings");
+static option list_symbols_opt(list_symbols, "list-symbols", 'l', "list samples by symbol");
+static option show_image_name_opt(show_image_name, "show-image-name", 'n', "show the image name from where come symbols");
+static option path_opt(path, "path", 'p', "add path for retrieving image", "path_name[,path_name]");
+static option recursive_path_opt(recursive_path, "recursive-path", 'P', "add path for retrieving image recursively", "path_name[,path_name]");
+static option reverse_sort_opt(reverse_sort, "reverse", 'r', "reverse sort order");
+static option show_shared_libs_opt(show_shared_libs, "show-shared-libs", 'k', "show details for shared libs. Only meaningfull if you have profiled with --separate-samples");
+static option sort_by_counter_opt(sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr");
+static option exclude_symbols_opt(exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name");
+static option demangle_opt(demangle, "demangle", 'd', "demangle GNU C++ symbol names");
 
 /// associate filename with directory name where filename exist. Filled
 /// through the -p/-P option to allow retrieving of image name when samples

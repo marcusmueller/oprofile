@@ -198,7 +198,7 @@ static void opd_backup_samples_files(void)
 	printf("Backing up samples file to directory %s\n", dir_name);
 
 	while ((dirent = readdir(dir)) != 0) {
-		if (op_move_regular_file(dir_name, OP_SAMPLES_DIR, dirent->d_name)) {
+		if (op_move_regular_file(dir_name, OP_SAMPLES_DIR, dirent->d_name) < 0) {
 			printf("unable to backup %s/%s to directory %s\n",
 			       OP_SAMPLES_DIR, dirent->d_name, dir_name);
 		}

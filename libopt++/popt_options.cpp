@@ -21,6 +21,34 @@ using std::vector;
 using std::string;
 using std::cerr;
 
+/**
+ * option_base - base class for implementation of a command line option
+ *
+ * Every command line option added before calling parse_options()
+ * is of this type.
+ */
+class option_base {
+public:
+	/**
+	 * option_base - construct an option with the given options.
+	 * @param option_name name part of long form e.g. --option 
+	 * @param short_name short form name e.g. -o
+	 * @param help_str short description of the option
+	 * @param arg_help_str short description of the argument (if any)
+	 * @param data a pointer to the data to fill in
+	 * @param popt_flags the popt library data type
+	 */
+	option_base(char const * option_name, char short_name,
+		    char const * help_str, char const * arg_help_str,
+		    void * data, int popt_flags);
+	virtual ~option_base() {}
+
+	/**
+	 * post_process - perform any necessary post-processing
+	 */
+	virtual void post_process() {}
+};
+
 /** the popt array singleton options */
 static vector<poptOption> popt_options;
 static vector<option_base *> options_list;
@@ -87,6 +115,114 @@ void parse_options(int argc, char const ** argv, string & additional_param)
 	poptFreeContext(con);
 }
 
+template <class T> class option_imp;
+
+/**
+ * option<void> - a binary option
+ *
+ * Use this option type for constructing specified / not-specified
+ * options e.g. --frob
+ */
+template <> class option_imp<void> : public option_base {
+public:
+	option_imp(bool & value, char const * option_name, char short_name,
+	       char const * help_str);
+
+	void post_process();
+private:
+	bool & value;
+	int popt_value;
+};
+
+/**
+ * option<int> - a integer option
+ *
+ * Use this for options taking an integer e.g. --frob 6
+ */
+template <> class option_imp<int> : public option_base {
+public:
+	option_imp(int & value, char const * option_name, char short_name,
+	       char const * help_str, char const * arg_help_str);
+};
+
+/**
+ * option<std::string> - a string option
+ *
+ * Use this for options taking a string e.g. --frob parsley
+ */
+template <> class option_imp<std::string> : public option_base {
+public:
+	option_imp(std::string & value,char const * option_name,
+		   char short_name, char const * help_str,
+		   char const * arg_help_str);
+	void post_process();
+private:
+	// we need an intermediate char array to pass to popt libs
+	char * popt_value;
+	std::string & value;
+};
+
+/**
+ * option< std::vector<std::string> > - a string vector option
+ *
+ * Use this for options taking a number of string arguments,
+ * separated by the given separator.
+ */
+template <> class option_imp< std::vector<std::string> > : public option_base {
+public:
+	option_imp(std::vector<std::string> & value,
+		   char const * option_name, char short_name,
+		   char const * help_str, char const * arg_help_str,
+		   char separator = ',');
+	void post_process();
+private:
+	std::vector<std::string> & value;
+	// we need an intermediate char array to pass to popt libs
+	char * popt_value;
+	char const separator;
+};
+
+
+/** specialization of option ctor for boolean option */
+template <>
+option::option(bool & value, char const * option_name, char short_name,
+	       char const * help_str)
+	: the_option(new option_imp<void>(value, option_name, short_name,
+					  help_str))
+{
+}
+
+/** specialization of option ctor for integer option */
+template <>
+option::option(int & value, char const * option_name,
+	       char short_name, char const * help_str,
+	       char const * arg_help_str)
+	: the_option(new option_imp<int>(value, option_name, short_name,
+					  help_str, arg_help_str))
+{
+}
+
+/** specialization of option ctor for string option */
+template <>
+option::option(string & value, char const * option_name,
+	       char short_name, char const * help_str,
+	       char const * arg_help_str)
+	: the_option(new option_imp<string>(value, option_name, short_name,
+					  help_str, arg_help_str))
+{
+}
+
+/** specialization of option ctor for vector<string> option */
+template <>
+option::option(std::vector<std::string> & value,
+	       char const * option_name, char short_name,
+	       char const * help_str, char const * arg_help_str)
+	: the_option(new option_imp< vector<string> >(value, option_name,
+						      short_name, help_str,
+						      arg_help_str))
+{
+}
+
 option_base::option_base(char const * option_name, char short_name,
 			 char const * help_str, char const * arg_help_str,
 			 void * data, int popt_flags)
@@ -99,9 +235,9 @@ option_base::option_base(char const * option_name, char short_name,
 	options_list.push_back(this);
 }
 
-option<void>::option(bool & value_,
-		     char const * option_name, char short_name,
-		     char const * help_str)
+option_imp<void>::option_imp(bool & value_,
+			     char const * option_name, char short_name,
+			     char const * help_str)
 	:
 	option_base(option_name, short_name, help_str, 0, &popt_value,
 		    POPT_ARG_NONE),
@@ -110,22 +246,23 @@ option<void>::option(bool & value_,
 {
 }
 
-void option<void>::post_process()
+void option_imp<void>::post_process()
 {
 	value = popt_value != 0;
 }
 
-option<int>::option(int & value, char const * option_name, char short_name,
-		    char const * help_str, char const * arg_help_str)
+option_imp<int>::option_imp(int & value, char const * option_name,
+			    char short_name, char const * help_str,
+			    char const * arg_help_str)
 	:
 	option_base(option_name, short_name, help_str, arg_help_str, &value,
 		    POPT_ARG_INT)
 {
 }
 
-option<string>::option(string & value_, char const * option_name,
-		       char short_name, char const * help_str,
-		       char const * arg_help_str)
+option_imp<string>::option_imp(string & value_, char const * option_name,
+			       char short_name, char const * help_str,
+			       char const * arg_help_str)
 	:
 	option_base(option_name, short_name, help_str, arg_help_str,
 		    &popt_value, POPT_ARG_STRING),
@@ -134,7 +271,7 @@ option<string>::option(string & value_, char const * option_name,
 {
 }
 
-void option<string>::post_process()
+void option_imp<string>::post_process()
 {
 	if (popt_value) {
 		value = popt_value;
@@ -142,7 +279,7 @@ void option<string>::post_process()
 	}
 }
 
-option< vector<string> >::option(vector<string> & value_,
+option_imp< vector<string> >::option_imp(vector<string> & value_,
 				 char const * option_name, char short_name,
 				 char const * help_str, 
 				 char const * arg_help_str,
@@ -156,7 +293,7 @@ option< vector<string> >::option(vector<string> & value_,
 {
 }
 
-void option< vector<string> >::post_process()
+void option_imp< vector<string> >::post_process()
 {
 	if (popt_value) {
 		separate_token(value, popt_value, separator);  

@@ -786,20 +786,20 @@ static string output_filter;
 static string no_output_filter;
 
 /* -k is reserved for --show-shared-libs */
-static option<string> samplefile_opt(samplefile, "samples-file", 'f', "image sample file", "file");
-static option<string> imagefile_opt(imagefile, "image-file", 'i', "image file", "file");
-static option<void> verbose_opt(verbose, "verbose", 'V', "verbose output");
-static option<void> demangle_opt(demangle, "demangle", 'd', "demangle GNU C++ symbol names");
-static option<int> with_more_than_samples_opt(with_more_than_samples, "with-more-than-samples", 'w', "show all source file if the percent of samples in this file is more than argument", "[0-100]");
-static option<int> until_more_than_sampels_opt(until_more_than_samples, "until-more-than-samples", 'm', "show all source files until the percent of samples specified is reached", "[0-100]");
-static option<int> sort_by_counter_opt(sort_by_counter, "sort-by-counter", 'c', "sort by counter", "counter nr");
-static option<string> source_dir_opt(source_dir, "source-dir", '\0', "source directory", "directory name");
-static option<string> output_dir_opt(output_dir, "output-dir", '\0', "output directory", "directory name");
-static option<string> output_filter_opt(output_filter, "output", '\0', "output filename filter", "filter string");
-static option<string> no_output_filter_opt(no_output_filter, "no-output", '\0', "no output filename filter", "filter string");
-static option<void> assembly_opt(assembly, "assembly", 'a', "output assembly code");
-static option<void> source_with_asssembly_opt(source_with_assembly, "source-with-assembly", 's', "output assembly code mixed with source");
-static option< vector<string> > exclude_symbols_opt(exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name");
+static option samplefile_opt(samplefile, "samples-file", 'f', "image sample file", "file");
+static option imagefile_opt(imagefile, "image-file", 'i', "image file", "file");
+static option verbose_opt(verbose, "verbose", 'V', "verbose output");
+static option demangle_opt(demangle, "demangle", 'd', "demangle GNU C++ symbol names");
+static option with_more_than_samples_opt(with_more_than_samples, "with-more-than-samples", 'w', "show all source file if the percent of samples in this file is more than argument", "[0-100]");
+static option until_more_than_sampels_opt(until_more_than_samples, "until-more-than-samples", 'm', "show all source files until the percent of samples specified is reached", "[0-100]");
+static option sort_by_counter_opt(sort_by_counter, "sort-by-counter", 'c', "sort by counter", "counter nr");
+static option source_dir_opt(source_dir, "source-dir", '\0', "source directory", "directory name");
+static option output_dir_opt(output_dir, "output-dir", '\0', "output directory", "directory name");
+static option output_filter_opt(output_filter, "output", '\0', "output filename filter", "filter string");
+static option no_output_filter_opt(no_output_filter, "no-output", '\0', "no output filename filter", "filter string");
+static option assembly_opt(assembly, "assembly", 'a', "output assembly code");
+static option source_with_asssembly_opt(source_with_assembly, "source-with-assembly", 's', "output assembly code mixed with source");
+static option exclude_symbols_opt(exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name");
 
 /**
  * get_options - process command line

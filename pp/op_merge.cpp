@@ -37,7 +37,7 @@ using std::endl;
 using std::ifstream;
 
 static int counter;
-static option<int> counter_opt(counter, "use-counter", 'c', "use counter", "counter nr");
+static option counter_opt(counter, "use-counter", 'c', "use counter", "counter nr");
 
 /**
  * get_options - process command line

@@ -12,11 +12,16 @@
  *
  * bool allow_frob;
  * string frob;
- * static option<void> allow_frob_opt(allow_frob, "allow-frob", 'a', "allow frobs");
- * static option<string> frob_opt(frob, "frob", 'f', "what to frob", "name");
+ * static option allow_frob_opt(allow_frob, "allow-frob", 'a', "allow frobs");
+ * static option frob_opt(frob, "frob", 'f', "what to frob", "name");
  *
  * ...
  * parse_options(argc, argv, add_params);
+ *
+ * Note than if you try to implement an option for an unsupported type  like :
+ * static unsigned int i;
+ * static option i_opt(i, ....);
+ * you don't get a compile time error but a link time error.
  *
  * \endcode
  *
@@ -65,7 +70,7 @@ void parse_options(int argc, char const ** argv,
 void parse_options(int argc, char const ** argv,
 		   std::vector<std::string> & additional_params);
 
-template <class T> class option;
+class option_base;
 
 /**
  * option_base - base class for a command line option
@@ -73,90 +78,28 @@ template <class T> class option;
  * Every command line option added before calling parse_options()
  * is of this type.
  */
-class option_base {
+class option {
 public:
-	/**
-	 * option_base - construct an option with the given options.
-	 * @param option_name name part of long form e.g. --option 
-	 * @param short_name short form name e.g. -o
-	 * @param help_str short description of the option
-	 * @param arg_help_str short description of the argument (if any)
-	 * @param data a pointer to the data to fill in
-	 * @param popt_flags the popt library data type
+	/** we don't define a generic implementation of this ctor, we
+	 * only declare/define specialization for the supported option type
 	 */
-	option_base(char const * option_name, char short_name,
-		    char const * help_str, char const * arg_help_str,
-		    void * data, int popt_flags);
-	virtual ~option_base() {}
-
-	/**
-	 * post_process - perform any necessary post-processing
-	 */
-	virtual void post_process() {}
-};
-
-/**
- * option<void> - a binary option
- *
- * Use this option type for constructing specified / not-specified
- * options e.g. --frob
- */
-template <> class option<void> : public option_base {
-public:
-	option(bool & value, char const * option_name, char short_name,
-	       char const * help_str);
-
-	void post_process();
+	template <class T> option(T &, char const * option_name,
+				  char short_name, char const * help_str,
+				  char const * arg_help_str = 0);
 private:
-	bool & value;
-	int popt_value;
+	option_base * the_option;
 };
 
-/**
- * option<int> - a integer option
- *
- * Use this for options taking an integer e.g. --frob 6
- */
-template <> class option<int> : public option_base {
-public:
-	option(int & value, char const * option_name, char short_name,
-	       char const * help_str, char const * arg_help_str);
-};
-
-/**
- * option<std::string> - a string option
- *
- * Use this for options taking a string e.g. --frob parsley
- */
-template <> class option<std::string> : public option_base {
-public:
-	option(std::string & value,char const * option_name, char short_name,
-	       char const * help_str, char const * arg_help_str);
-	void post_process();
-private:
-	// we need an intermediate char array to pass to popt libs
-	char * popt_value;
-	std::string & value;
-};
-
-/**
- * option< std::vector<std::string> > - a string vector option
- *
- * Use this for options taking a number of string arguments,
- * separated by the given separator.
- */
-template <> class option< std::vector<std::string> > : public option_base {
-public:
-	option(std::vector<std::string> & value,
-	       char const * option_name, char short_name,
-	       char const * help_str, char const * arg_help_str,
-	       char separator = ',');
-	void post_process();
-private:
-	std::vector<std::string> & value;
-	// we need an intermediate char array to pass to popt libs
-	char * popt_value;
-	char const separator;
-};
+/** The supported option type */
+template <> option::option(bool &, char const * option_name, char short_name,
+			   char const * help_str);
+template <> option::option(int &, char const * option_name, char short_name,
+			   char const * help_str, char const * arg_help_str);
+template <> option::option(std::string &, char const * option_name,
+			   char short_name, char const * help_str,
+			   char const * arg_help_str);
+template <> option::option(std::vector<std::string> &,
+			   char const * option_name, char short_name,
+			   char const * help_str, char const * arg_help_str);
 
 #endif /* ! POPT_OPTIONS_H */
