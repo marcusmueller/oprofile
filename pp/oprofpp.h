@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.53 2002/05/02 01:12:32 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.54 2002/05/02 02:19:12 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -168,8 +168,6 @@ extern int demangle;
 extern char const *samplefile;
 /** command line option specifying an image filename */
 extern const char *imagefile;
-/** command line option specifying the base directory of samples files */
-extern char *basedir;
 /** command line option specifying the set of symbols to ignore */
 extern const char * exclude_symbols_str;
 

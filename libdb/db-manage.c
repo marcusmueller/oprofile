@@ -156,20 +156,28 @@ void db_open(db_tree_t * tree, const char * filename, enum db_rw rw, size_t size
 
 void db_close(db_tree_t * tree)
 {
-	if (tree->base_memory)
-		munmap(tree->base_memory,
-		  (tree->descr->size * sizeof(db_page_t)) + tree->offset_page);
+	if (tree->base_memory) {
+		size_t size = (tree->descr->size * sizeof(db_page_t));
+		size += tree->offset_page;
+ 
+		munmap(tree->base_memory, size);
+		tree->base_memory = 0;
+	}
 
-	if (tree->fd != -1)
+	if (tree->fd != -1) {
 		close(tree->fd);
+		tree->fd = -1;
+	}
 }
 
 void db_sync(db_tree_t * tree)
 {
-	if (tree->base_memory) {
-		msync(tree->base_memory,
-		      tree->offset_page +
-			   (tree->descr->current_size * sizeof(db_page_t)),
-		      MS_ASYNC);
-	}
+	size_t size;
+ 
+	if (!tree->base_memory)
+		return;
+ 
+	size = tree->descr->current_size * sizeof(db_page_t);
+	size += tree->offset_page;
+	msync(tree->base_memory, size, MS_ASYNC);
 }

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_stop,v 1.17 2002/01/15 00:57:21 movement Exp $ 
+# $Id: op_stop,v 1.18 2002/05/02 02:19:08 movement Exp $ 
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -16,26 +16,26 @@
 # Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-if test `pidof oprofiled`
-then
+# FIXME: support different base dir ??
+ 
+if test -f /var/lib/oprofile/lock; then
 	echo "Stopping profiling and killing daemon"
-	COUNT=0
-	while test `pidof oprofiled`
-	do
-		sleep 1
-		# we need this in here because we can send a dump_stop that gets missed
-		# when the daemon is just starting up - a better fix is a lockfile for
-		# "fully started up"
-		echo 1 >/proc/sys/dev/oprofile/dump_stop
-		COUNT=`expr $COUNT + 1`
-		if [ "$COUNT" -eq 30 ]; then
-			echo "Daemon stuck shutting down; killing !"
-			kill -9 `pidof oprofiled`
-			exit 0
-		fi
-	done
-	exit 0
+	echo 1 >/proc/sys/dev/oprofile/dump_stop
 fi
+
+COUNT=0
+while test `pidof oprofiled`
+do
+	sleep 1 
+	 
+	COUNT=`expr $COUNT + 1`
+	if [ "$COUNT" -eq 30 ]; then
+		echo "Daemon stuck shutting down; killing !"
+		kill -9 `pidof oprofiled`
+		rm -f /var/lib/oprofile/lock
+		exit 0
+	fi
+done
  
 # if profiler is not started consider as ok to try to stop it.
 exit 0

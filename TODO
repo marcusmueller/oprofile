@@ -3,23 +3,22 @@
  
  o fix kernel/module problem 
  o - disable oprof_report for now by default
- o test post-profile -c0,1 --sort
- o check post profile for multiple symbols with same name
 
 Before 1.0
 ----------
 
  o document gcc 2.95 and linenr info problems especially for inline functions
- o remove pid filter from module ...
- o get symbol size via elf instead of bfd
+ o document somewhere that oprofpp -s blah will only find the first symbol
+   called "blah" (not worth fixing) 
+ o get symbol size via elf instead of bfd ?
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
    these two todo are perhaps worthwhile to implement now. The new filtering
    of symbols make them less interesting. - let's wait - john
- o remaining little cleanups of output format etc. (wahat needs doing ??)
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level. Important.
- o Checkpointing 
+ o better support in post-prof for session names. Consistent cmd line interfaces - 
+   this should be before 1.0 so we don't piss off users
  
  o We want to make the post-prof stuff far more flexible. See my doc in oprofile-tests
    module. So for starters we want a nice internal API for accessing info that we can
@@ -41,18 +40,14 @@ Before 1.0
  o determine where we need preempt_disable/enable to prevent pre-emption + test (ugh)
  o should we pin rather than loop sample buffer overflow too ?
  o audit oprof_start for security + document sudo
- o split documentation into tutorial + ref. Include /everything/ in the ref: sample format,
-   logfile meanings etc.
+ o split doc into user's manual and hacking manual, document much more 
  o op_time for only some specified files... 
- o cache some stuff / nr. samples - op_time is horrendously slow
  o coherent naming class conventions
  o use standard C integer type <stdint.h> int32_t int16_t etc.
 	- but they are so ugly ...
  o add option to op_to_source like oprofpp -u -m on a symbol basis.
  o review the exception table of the nmi handler (at least stop oprofile)
- o take oprof_convert out the back and do the cruel to be kind thing (cleanup after that misc.h/misc.c see opd_simplify_pathname)
  o more discussion of problematic code needs to go in the "interpreting" section. 
- o use a filelock rather a sleep to synchronize op_start and daemon.
  o check chroot() processes and the path hash stuff
  o thread profiling in the old and new flavour (2.5 introduce a new thread handling)
 
@@ -85,7 +80,7 @@ o move uniformly to doxygen Javadoc style :
 	 * @return false if there were no wheels
 	 */
  
-- demangling
+- demangling automatically
  
 oprof_report:
 
@@ -97,18 +92,12 @@ command-line tools as good as possible first.
 - tune and test hotspot
 - source (later ?)
  
-
 o profile the NMI handler code
-o post-prof GUI ? (big job)
  
 o merge sample files into one big report (like vtune can do repeated runs)
  
-? o move .oprofile to name=value pairs to avoid conflicts on change.
-
 o move from racy sysctl to procfs, if it can be done nicely
 
-o pentium 4 patches ?
- 
 o integrate dasm, probably the best way is to allow to fall back to objdump.
 
 o turn (or only compile) daemon in C++ to allow more code sharing with pp/gui
@@ -122,8 +111,6 @@ o maybe we should support a CPU mask for enabling counters (useful with
 
 o the interrupt handler code could probably be improved by moving into asm
 
-o can we fold in the "untouched sample entry" case in hash table to another case ?
- 
 o we don't really need a vmlinux file during profiling ...
  
 o Other x86 processors

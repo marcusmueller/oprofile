@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.50 2002/05/02 01:12:32 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.51 2002/05/02 02:19:12 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -35,7 +35,6 @@ using std::ostream;
 int verbose;
 char const *samplefile;
 const char *imagefile;
-char *basedir="/var/opd";
 int demangle;
 const char * exclude_symbols_str;
 static vector<string> exclude_symbols;
@@ -84,15 +83,9 @@ static char *remangle(const char *image)
 	char *file;
 	char *c; 
 
-	if (!basedir || !*basedir)
-		basedir = "/var/opd";
-	else if (basedir[strlen(basedir)-1] == '/')
-		basedir[strlen(basedir)-1] = '\0';
-
-	file = (char*)xmalloc(strlen(basedir) + strlen("/samples/") + strlen(image) + 1);
+	file = (char *)xmalloc(strlen(OP_SAMPLES_DIR) + strlen(image) + 1);
 	
-	strcpy(file, basedir);
-	strcat(file, "/samples/");
+	strcpy(file, OP_SAMPLES_DIR);
 	c = &file[strlen(file)];
 	strcat(file, image);
 
@@ -277,7 +270,7 @@ void opp_treat_options(const char* file, poptContext optcon,
 
 	if (!imagefile) {
 		/* we allow for user to specify a sample filename on the form
-		 * /var/opd/samples/}bin}nash}}}lib}libc.so so we need to
+		 * /var/lib/oprofile/samples/}bin}nash}}}lib}libc.so so we need to
 		 * check against this form of mangled filename */
 		string lib_name;
 		string app_name = extract_app_name(sample_file, lib_name);

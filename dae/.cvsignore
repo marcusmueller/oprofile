@@ -1,4 +1,5 @@
 .deps
 Makefile
 oprofiled
+op_session
 op_help

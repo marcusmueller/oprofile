@@ -11,7 +11,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>547</width>
+            <width>539</width>
             <height>536</height>
         </rect>
     </property>
@@ -584,17 +584,6 @@
                                             <string>...</string>
                                         </property>
                                     </widget>
-                                    <widget row="2"  column="1" >
-                                        <class>QLineEdit</class>
-                                        <property stdset="1">
-                                            <name>name</name>
-                                            <cstring>base_opd_dir_edit</cstring>
-                                        </property>
-                                        <property>
-                                            <name>toolTip</name>
-                                            <string>The base directory for the profiler daemon</string>
-                                        </property>
-                                    </widget>
                                     <widget row="0"  column="2" >
                                         <class>QToolButton</class>
                                         <property stdset="1">
@@ -628,21 +617,6 @@
                                             <string>The map file for the running kernel</string>
                                         </property>
                                     </widget>
-                                    <widget row="2"  column="0" >
-                                        <class>QLabel</class>
-                                        <property stdset="1">
-                                            <name>name</name>
-                                            <cstring>TextLabel4</cstring>
-                                        </property>
-                                        <property stdset="1">
-                                            <name>text</name>
-                                            <string>Daemon directory</string>
-                                        </property>
-                                        <property>
-                                            <name>buddy</name>
-                                            <cstring>base_opd_dir_edit</cstring>
-                                        </property>
-                                    </widget>
                                     <widget row="1"  column="0" >
                                         <class>QLabel</class>
                                         <property stdset="1">
@@ -656,17 +630,6 @@
                                         <property>
                                             <name>buddy</name>
                                             <cstring>map_filename_edit</cstring>
-                                        </property>
-                                    </widget>
-                                    <widget row="2"  column="2" >
-                                        <class>QToolButton</class>
-                                        <property stdset="1">
-                                            <name>name</name>
-                                            <cstring>base_opd_dir_tb</cstring>
-                                        </property>
-                                        <property stdset="1">
-                                            <name>text</name>
-                                            <string>...</string>
                                         </property>
                                     </widget>
                                 </grid>
@@ -1199,12 +1162,6 @@
         <receiver>oprof_start_base</receiver>
         <slot>choose_system_map_filename()</slot>
     </connection>
-    <connection>
-        <sender>base_opd_dir_tb</sender>
-        <signal>clicked()</signal>
-        <receiver>oprof_start_base</receiver>
-        <slot>choose_opd_dir()</slot>
-    </connection>
     <slot access="protected">choose_opd_dir()</slot>
     <slot access="protected">choose_kernel_filename()</slot>
     <slot access="protected">choose_system_map_filename()</slot>
@@ -1231,7 +1188,6 @@
     <tabstop>hash_table_size_edit</tabstop>
     <tabstop>pid_filter_edit</tabstop>
     <tabstop>pgrp_filter_edit</tabstop>
-    <tabstop>base_opd_dir_edit</tabstop>
     <tabstop>kernel_only_cb</tabstop>
     <tabstop>ignore_daemon_samples_cb</tabstop>
 </tabstops>

@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.36 2002/03/20 21:19:42 phil_e Exp $ */
+/* $Id: opd_util.c,v 1.37 2002/05/02 02:19:08 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -24,33 +24,27 @@
  
 /**
  * opd_mangle_filename - mangle a file filename
- * @smpdir: base directory name
  * @image_name: a path name to the image file
  * @app_name: a path name for the owner image
  * of this image or %NULL if no owner exist
  *
- * allocate memory of size strlen(@image_name) + 
- * strlen(@smpdir) + strlen(@app_name) + 2 + 32 then
- * concat @smpdir and the mangled name of @filename
- * and optionnally @app_name. The 32 bytes added are
- * assumed to concat something like "#%d"
- *
- * Returns a char* pointer to the mangled string.
+ * Returns a char* pointer to the mangled string. Caller
+ * is respomsible for freeing this string.
  *
  */
-char* opd_mangle_filename(const char *smpdir, const char* image_name, const char * app_name)
+char* opd_mangle_filename(const char * image_name, const char * app_name)
 {
 	char *mangled;
 	char *c;
 	size_t len;
 
-	len = strlen(smpdir) + 2 + strlen(image_name) + 32;
+	len = strlen(OP_SAMPLES_DIR) + 2 + strlen(image_name) + 32;
 	if (app_name)
 		len += strlen(app_name) + 2;
 
 	mangled = xmalloc(len);
 	
-	strcpy(mangled, smpdir);
+	strcpy(mangled, OP_SAMPLES_DIR);
 	strcat(mangled, "/");
 
 	c = mangled + strlen(mangled);
@@ -257,7 +251,6 @@ void opd_write_u32_he(FILE *fp, u32 val)
  */
 u32 opd_read_int_from_file(const char *filename) 
 {
-
 	FILE *fp;
 	u32 value;
 
@@ -498,3 +491,52 @@ int opd_move_regular_file(const char *new_dir,
 	return ret;
 }
  
+
+/**
+ * opd_read_lock_file - read a lock file
+ *
+ * Return the pid written in the given lock file,
+ * or 0 if it doesn't exist.
+ */
+pid_t opd_read_lock_file(const char * file)
+{
+	FILE * fp;
+	pid_t value;
+ 
+	fp = fopen(file, "r");
+	if (fp == NULL)
+		return 0;
+ 
+	if (fscanf(fp, "%u", &value) != 1) {
+	        fclose(fp);
+		return 0;
+        }
+ 
+	fclose(fp);
+ 
+        return value;
+}
+ 
+ 
+/**  
+ * opd_write_lock_file - write a lock file
+ * \return errno on failure, or 0 on success
+ * 
+ * Write the pid into the given lock file.
+ */ 
+int opd_write_lock_file(const char * file)
+{
+	FILE * fp;
+
+	if (opd_get_fsize(file, 0) != 0)
+		return EEXIST;
+ 
+	fp = fopen(file, "w");
+	if (!fp)
+		return errno;
+
+	fprintf(fp, "%d", getpid());
+	fclose(fp);
+
+	return 0;
+}

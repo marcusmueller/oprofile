@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.64 2002/05/01 19:03:43 movement Exp $
+# $Id: op_start,v 1.65 2002/05/02 02:19:06 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -94,13 +94,7 @@ do_help() {
 	  --pgrp-filter=pgrp           Only profile process group pgrp
 
 	Daemon options
-	  --log-file=file              log file
-	  --base-dir=dir               base directory of daemon
-	  --samples-dir=file           output samples directory
 	  --separate-samples           separate samples for each distinct application
-	  --device-file=file           profile device file
-	  --note-device-file=file      note device file
-	  --hash-map-device-file=file  profile hash map device file
 	  --map-file=file              System.map for running kernel file
 	  --vmlinux=file               vmlinux kernel image
 	  --verbose                    be verbose in the daemon log
@@ -128,12 +122,6 @@ load_module() {
 
 # initialise parameters
 do_init() {
-	LOG_FILE=
-	SEPARATE_SAMPLES=0
-	SAMPLES_DIR=
-	DEVICE_FILE=
-	NOTE_DEVICE_FILE=
-	HASH_MAP_DEVICE_FILE=
 	# for these three buffer size == 0 means use the default value
 	# hard-coded in op_user.h
 	BUF_SIZE=0
@@ -141,12 +129,21 @@ do_init() {
 	NOTE_SIZE=0
 	KERNEL_ONLY=0
 	IGNORE_MYSELF=0
-	DIR="/var/opd"
 	MAP_FILE=
 	VMLINUX=
 	PID_FILTER=0
 	PGRP_FILTER=0
 	VERBOSE=0
+	SEPARATE_SAMPLES=0
+ 
+	# as in op_user.h
+	DIR="/var/lib/oprofile/"
+	LOCK_FILE="/var/lib/oprofile/lock"
+	LOG_FILE="$DIR/oprofiled.log"
+	SAMPLES_DIR="$DIR/samples/"
+	DEVICE_FILE="$DIR/opdev"
+	NOTE_DEVICE_FILE="$DIR/opnotedev"
+	HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
 
 	CPUTYPE=`cat /proc/sys/dev/oprofile/cpu_type`
 
@@ -229,26 +226,8 @@ do_options() {
 			--rtc-value)
 				RTC_VALUE=$val
 				;;
-			--base-dir)
-				DIR=$val
-				;;
-			--samples-dir)
-				SAMPLES_DIR=$val
-				;;
 			--separate-samples)
 				SEPARATE_SAMPLES=1
-				;;
-			--log-file)
-				LOG_FILE=$val
-				;;
-			--device-file)
-				DEVICE_FILE=$val
-				;;
-			--note-device-file)
-				NOTE_DEVICE_FILE=$val
-				;;
-			--hash-map-device-file)
-				HASH_MAP_DEVICE_FILE=$val
 				;;
 			--map-file)
 				MAP_FILE=$val
@@ -321,21 +300,6 @@ do_options() {
 		fi
 	fi
 
-	if [ "$LOG_FILE" = "" ]; then
-		LOG_FILE="$DIR/oprofiled.log"
-	fi
-	if [ "$SAMPLES_DIR" = "" ]; then
-		SAMPLES_DIR="$DIR/samples/"
-	fi
-	if [ "$DEVICE_FILE" = "" ]; then
-		DEVICE_FILE="$DIR/opdev"
-	fi
-	if [ "$NOTE_DEVICE_FILE" = "" ]; then
-		NOTE_DEVICE_FILE="$DIR/opnotedev"
-	fi
-	if [ "$HASH_MAP_DEVICE_FILE" = "" ]; then
-		HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
-	fi
 
 	vecho "Parameters used:"
 	vecho "CPUTYPE $CPUTYPE"
@@ -368,13 +332,7 @@ do_options() {
 		vecho "RTC_VALUE $RTC_VALUE"
 	fi
 	vecho "IGNORE_MYSELF $IGNORE_MYSELF"
-	vecho "DIR $DIR"
-	vecho "LOG_FILE $LOG_FILE"
-	vecho "SAMPLES_DIR $SAMPLES_DIR"
 	vecho "SEPARATE_SAMPLES $SEPARATE_SAMPLES"
-	vecho "DEVICE_FILE $DEVICE_FILE"
-	vecho "NOTE_DEVICE_FILE $NOTE_DEVICE_FILE"
-	vecho "HASH_MAP_DEVICE_FILE $HASH_MAP_DEVICE_FILE"
 	vecho "MAP_FILE $MAP_FILE"
 	vecho "VMLINUX $VMLINUX"
 
@@ -514,11 +472,14 @@ do_sysctl_setup() {
  
 # start the daemon
 do_start() {
-	OPD_ARGS=" \
-		--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
-		--device-file=$DEVICE_FILE --note-device-file=$NOTE_DEVICE_FILE \
-		--hash-map-device-file=$HASH_MAP_DEVICE_FILE --vmlinux=$VMLINUX \
-		--map-file=$MAP_FILE --separate-samples=$SEPARATE_SAMPLES \
+ 
+	if test -f $LOCK_FILE; then
+		echo "lock file $LOCK_FILE still present." >&2
+		exit 1
+	fi
+ 
+	OPD_ARGS="--vmlinux=$VMLINUX --map-file=$MAP_FILE \
+		--separate-samples=$SEPARATE_SAMPLES \
 		--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
 
 	if [ "$VERBOSE" = "1" ]; then
@@ -533,9 +494,8 @@ do_start() {
 	vecho "executing oprofiled $OPD_ARGS"
 	oprofiled $OPD_ARGS
  
-	# FIXME: does not check child is up and running 
 	COUNT=0
-	while test -z `pidof oprofiled`
+	while ! test -f "$DIR/lock"
 	do
 		sleep 1
 		COUNT=`expr $COUNT + 1`
@@ -545,6 +505,7 @@ do_start() {
 			exit 1
 		fi
 	done
+ 
 	echo "Daemon started. Remember you may need to use op_dump"
 	echo "to retrieve profile data"
 }

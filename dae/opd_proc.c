@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.112 2002/05/01 19:56:17 movement Exp $ */
+/* $Id: opd_proc.c,v 1.113 2002/05/02 02:19:08 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -200,7 +200,7 @@ static void opd_handle_old_sample_files(const struct opd_image * image)
 	uint len;
 	const char * app_name = separate_samples ? image->app_name : NULL;
 
-	mangled = opd_mangle_filename(smpdir, image->name, app_name);
+	mangled = opd_mangle_filename(image->name, app_name);
 
 	len = strlen(mangled);
  
@@ -307,7 +307,7 @@ inline static u16 opd_get_counter(const u16 count)
  */
 static void opd_open_sample_file(struct opd_image *image, int counter)
 {
-	char* mangled;
+	char * mangled;
 	struct opd_sample_file *sample_file;
 	struct opd_header * header;
 	const char * app_name;
@@ -315,7 +315,7 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 	sample_file = &image->sample_files[counter];
 
 	app_name = separate_samples ? image->app_name : NULL;
-	mangled = opd_mangle_filename(smpdir, image->name, app_name);
+	mangled = opd_mangle_filename(image->name, app_name);
 
 	sprintf(mangled + strlen(mangled), "#%d", counter);
 
@@ -350,6 +350,31 @@ err:
 
  
 /**
+ * opd_reopen_sample_files - re-open all sample files
+ *
+ * In fact we just close them, and re-open them lazily
+ * as usual.
+ */
+void opd_reopen_sample_files(void)
+{
+	struct list_head * pos;
+
+	list_for_each(pos, &opd_images) {
+		struct opd_image * image = 
+			list_entry(pos, struct opd_image, list_node);
+		unsigned int i;
+ 
+		for (i = 0 ; i < op_nr_counters ; ++i) {
+			struct opd_sample_file * samples = 
+				&image->sample_files[i];
+
+			db_close(&samples->tree);
+		}
+	}
+}
+
+
+/**
  * opd_check_image_mtime - ensure samples file is up to date
  * @image: image to check
  */
@@ -368,7 +393,7 @@ static void opd_check_image_mtime(struct opd_image * image)
 		"mtime %lu for %s\n", newmtime, image->mtime, image->name);
 
 	app_name = separate_samples ? image->app_name : NULL;
-	mangled = opd_mangle_filename(smpdir, image->name, app_name);
+	mangled = opd_mangle_filename(image->name, app_name);
 
 	len = strlen(mangled);
 

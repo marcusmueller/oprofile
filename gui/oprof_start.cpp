@@ -189,7 +189,6 @@ oprof_start::oprof_start()
 		pgrp_filter_edit->setText(QString().setNum(config.pgrp_filter));
 	else
 		pgrp_filter_edit->setText("");
-	base_opd_dir_edit->setText(config.base_opd_dir.c_str());
 	ignore_daemon_samples_cb->setChecked(config.ignore_daemon_samples);
 	verbose->setChecked(config.verbose); 
 	kernel_only_cb->setChecked(config.kernel_only);
@@ -549,16 +548,6 @@ void oprof_start::choose_system_map_filename()
 		map_filename_edit->setText(result.c_str());
 }
 
-/// select the base directory of the deamon
-void oprof_start::choose_opd_dir()
-{
-	QString base_dir = base_opd_dir_edit->text();
-	std::string result = do_open_file_or_dir(base_dir.latin1(), true);
-
-	if (!result.empty())
-		base_opd_dir_edit->setText(result.c_str());
-}
-
 // this record the current selected event setting in the event_cfg[] stuff.
 // FIXME: need validation?
 void oprof_start::record_selected_event_config()
@@ -628,15 +617,10 @@ bool oprof_start::record_config()
 
 	config.pid_filter = pid_filter_edit->text().toUInt();
 	config.pgrp_filter = pgrp_filter_edit->text().toUInt();
-	config.base_opd_dir = base_opd_dir_edit->text().latin1();
 	config.ignore_daemon_samples = ignore_daemon_samples_cb->isChecked();
 	config.kernel_only = kernel_only_cb->isChecked();
 	config.verbose = verbose->isChecked();
 	config.separate_samples = separate_samples_cb->isChecked();
-
-	if (config.base_opd_dir.length() && 
-	    config.base_opd_dir[config.base_opd_dir.length()-1] != '/')
-		config.base_opd_dir += '/';
 
 	return true;
 }
@@ -856,12 +840,6 @@ void oprof_start::on_start_profiler()
 	args.push_back("--kernel-only=" + tostr(config.kernel_only));
 	args.push_back("--pid-filter=" + tostr(config.pid_filter));
 	args.push_back("--pgrp-filter=" + tostr(config.pgrp_filter));
-	args.push_back("--base-dir=" + config.base_opd_dir);
-	args.push_back("--samples-dir=" + config.base_opd_dir + config.samples_files_dir);
-	args.push_back("--device-file=" + config.base_opd_dir + config.device_file);
-	args.push_back("--note-device-file=" + config.base_opd_dir + config.note_device_file);
-	args.push_back("--hash-map-device-file=" + config.base_opd_dir + config.hash_map_device);
-	args.push_back("--log-file=" + config.base_opd_dir + config.daemon_log_file);
 	args.push_back("--buffer-size=" + tostr(config.buffer_size));
 	args.push_back("--hash-table-size=" + tostr(config.hash_table_size));
 	args.push_back("--note-table-size=" + tostr(config.note_table_size));

@@ -873,7 +873,6 @@ static struct poptOption options[] = {
 	{ "samples-file", 'f', POPT_ARG_STRING, &samplefile, 0, "image sample file", "file", },
 	{ "image-file", 'i', POPT_ARG_STRING, &imagefile, 0, "image file", "file", },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
-	{ "base-dir", 'b', POPT_ARG_STRING, &basedir, 0, "base directory of profile daemon", NULL, },
 	{ "demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
 	{ "with-more-than-samples", 'w', POPT_ARG_INT, &with_more_than_samples, 0,
 	  "show all source file if the percent of samples in this file is more than argument", "[0-100]" },

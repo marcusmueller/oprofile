@@ -122,26 +122,6 @@ Only profile process pid
 Only profile process group pgrp
 .br
 .TP
-.BI "--log-file " filename
-specify log file
-.br
-.TP
-.BI "--base-dir " dirname
-base directory of daemon
-.br
-.TP
-.BI "--samples-dir " dirname
-output samples directory
-.br
-.TP
-.BI "--device-file " filename
-profile device file
-.br
-.TP
-.BI "--hash-map-device-file " filename
-profile hash map device file
-.br
-.TP
 .BI "--separate-samples "
 separate samples for each distinct application. With this option, samples
 in shared libraries are stored in a separate sample file specific to the
@@ -177,9 +157,6 @@ dump gprof format file
 give detailed samples for the symbol name
 .br
 .TP
-.BI "--base-dir " directory_name ", -b "directory_name
-.br
-.TP
 .BI "--list-all-symbols-details -L"
 give detailed samples for all symbols
 .br
@@ -202,10 +179,6 @@ verbose output
 .TP
 .BI "--exclude-symbol " symbol ", -e "symbol
 exclude list of comma separated symbol
-.br
-.TP
-.BI "--base-dir " dir_name ", -b "dirname
-base directory of profile daemon
 .br
 .TP
 .BI "--show-shared-libs -k"
@@ -278,10 +251,6 @@ verbose output
 exclude list of comma separated symbol
 .br
 .TP
-.BI "--base-dir " dirname ", -b "dirname
-base directory of profile daemon
-.br
-.TP
 .B op_time options
 .br
 .TP
@@ -326,15 +295,6 @@ Same as --path but retrieve recursively the image file name in the path list
 .TP
 .BI "--use-counter " counter_nr ", -c "counter_nr
 which counter to use for selecting filenames purposes
-.TP
-.br
-.BI "--base-dir " directory_name ", -b "directory_name
-where are located samples files. Default is /var/opd/samples
-.TP
-.br
-.B oprof_convert filename [filenames]
-The oprof_convert utility is only needed when upgrading the profiler version. Further details
-can be found in the HTML documentation.
 
 .SH USAGE
 Start the profiler with the provided
@@ -382,13 +342,13 @@ No environment variables are recognised by oprofile.
 
 .SH FILES
 .TP
-.I /var/opd/oprofiled.log
+.I /var/lib/oprofile/oprofiled.log
 The user-space daemon logfile.
 .TP
-.I /var/opd/opdev, /var/opd/ophashmapdev, /var/opd/opnotedev
+.I /var/lib/oprofile/opdev, /var/lib/oprofile/ophashmapdev, /var/lib/oprofile/opnotedev
 The device files for communication with the kernel module.
 .TP
-.I /var/opd/samples/
+.I /var/lib/oprofile/samples/
 The location of the generated sample files.
 
 .SH VERSION

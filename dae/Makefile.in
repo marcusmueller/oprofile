@@ -1,16 +1,16 @@
-# $Id: Makefile.in,v 1.28 2002/04/24 17:59:30 phil_e Exp $
+# $Id: Makefile.in,v 1.29 2002/05/02 02:19:05 movement Exp $
 
-INSTALL_LIST=oprofiled op_start op_dump op_stop
+INSTALL_LIST=oprofiled op_start op_dump op_stop op_session
 
 CFLAGS=-Wall -Wstrict-prototypes -pipe -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
 LIBS=@extra_libraries@ -lpopt -liberty
 
-SOURCES=oprofiled.c opd_util.c opd_proc.c opd_kernel.c
+SOURCES=oprofiled.c opd_util.c opd_proc.c opd_kernel.c op_session.c
 OBJS=oprofiled.o opd_util.o opd_proc.o opd_kernel.o ../events/op_events.o ../events/op_events_desc.o ../util/op_popt.o ../util/misc.o
 
 .PHONY: all clean srcdoc install uninstall
 
-all: oprofiled
+all: oprofiled op_session
 
 install: all
 	-$(MKDIR_P) $(BINDIR)
@@ -34,6 +34,9 @@ oprofiled-src.html: $(SOURCES)
 oprofiled: $(OBJS) ../libdb/libdb.a
 	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $^ $(LIBS)
 
+op_session: op_session.o opd_util.o ../util/op_popt.o
+	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $^ $(LIBS)
+ 
 %.o: %c
 	$(CC) -c $(CFLAGS) -g $< -o $@
 

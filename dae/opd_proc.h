@@ -31,5 +31,6 @@ struct opd_image * opd_get_image(const char *name, int hash, const char * app_na
 int bstreq(const char *str1, const char *str2);
 void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count);
 void opd_handle_kernel_sample(u32 eip, u16 count);
+void opd_reopen_sample_files(void);
 
 #endif /* OPD_PROC_H */

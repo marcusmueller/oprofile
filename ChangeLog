@@ -1,3 +1,42 @@
+2002-05-02  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
+ 
+	* op_user.h:
+	* dae/op_start: 
+	* dae/op_stop: 
+	* dae/opd_util.h:
+	* dae/opd_util.c: 
+	* dae/oprofiled.c: 
+	* dae/oprofiled.h: 
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: 
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp:
+ 	* gui/oprof_start_config.h:
+	* gui/oprof_start_config.cpp:
+	* gui/ui/oprof_start_base.ui: 
+	* oprof_report/oprof_report.cpp: 
+	* pp/op_merge.cpp: 
+	* pp/op_time.cpp: 
+	* pp/opf_filter.cpp: 
+	* pp/oprofpp.cpp: 
+	* pp/oprofpp.h: 
+	* pp/oprofpp_util.cpp: remove useless command line
+	  options in anticipation of the new spec
+	 
+	* libdb/db-manage.c: reset base_memory and fd
+	  on close
+ 
+	* dae/.cvsignore: 
+	* dae/Makefile.in:
+	* dae/op_session.c:
+	* dae/opd_proc.c: 
+	* dae/opd_proc.h:
+	* dae/oprofiled.h:
+	* dae/oprofiled.c: use lock file for daemon.
+	  Implement named sessions
+ 
 2002-05-02  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/oprofpp.cpp:

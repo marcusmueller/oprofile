@@ -106,7 +106,6 @@ static int show_shared_libs;
 static int list_symbols;
 static int show_image_name;
 static char * output_format;
-static const char * base_dir = "/var/opd/samples";
 static const char * path;
 static const char * recursive_path;
 
@@ -195,8 +194,9 @@ static void get_options(int argc, char const * argv[])
 
 	// non-option file, must be valid directory name
 	file = poptGetArg(optcon);
-	if (file)
-		base_dir = file;
+	if (file) {
+		quit_error(optcon, "op_time: command line error.\n");
+	}
 
 	if (!counter_str)
 		counter_str = "0";
@@ -300,7 +300,7 @@ static void sort_file_list_by_name(map_t & result,
 		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 			if ((counter & (1 << i)) != 0) {
 				std::ostringstream s;
-				s << string(base_dir) << "/" << *it 
+				s << string(OP_SAMPLES_DIR) << "/" << *it 
 				  << '#' << i;
 				if (file_exist(s.str()) == true) {
 					break;
@@ -430,7 +430,7 @@ static void output_files_count(map_t& files)
 		for ( ; p_it.first != p_it.second ; ++p_it.first) {
 			for (int i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 				std::ostringstream s;
-				s << string(base_dir) << "/"
+				s << string(OP_SAMPLES_DIR) << "/"
 				  << p_it.first->second.samplefile_name
 				  << "#" << i;
 				if (file_exist(s.str()) == false)
@@ -595,7 +595,7 @@ static void output_symbols_count(map_t& files, int counter)
 	for (it_f = files.begin() ; it_f != files.end() ; ++it_f) {
 
 		string filename = it_f->second.samplefile_name;
-		string samples_filename = string(base_dir) + "/" + filename;
+		string samples_filename = string(OP_SAMPLES_DIR) + "/" + filename;
 
 		string lib_name;
 		string image_name = extract_app_name(filename, lib_name);
@@ -651,7 +651,7 @@ int main(int argc, char const * argv[])
 	 * files rather getting the whole directory. Code in op_merge can
 	 * be probably re-used */
 	list<string> file_list;
-	get_sample_file_list(file_list, base_dir, "*#*");
+	get_sample_file_list(file_list, OP_SAMPLES_DIR, "*#*");
 
 	map_t file_map;
 	sort_file_list_by_name(file_map, file_list);

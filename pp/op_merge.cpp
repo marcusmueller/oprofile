@@ -44,12 +44,10 @@ using std::endl;
 
 static int showvers;
 static int counter;
-static const char * base_dir;
 
 static struct poptOption options[] = {
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "use-counter", 'c', POPT_ARG_INT, &counter, 0, "use counter", "counter nr", },
-	{ "base-dir", 'b', POPT_ARG_STRING, &base_dir, 0, "base directory of profile daemon", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
@@ -81,9 +79,6 @@ static void get_options(int argc, char const * argv[], vector<string> & images)
 		quit_error(optcon, "Neither samples filename or image filename"
 			   " given on command line\n\n");
 	}
-
-	if (base_dir == 0)
-		base_dir = "/var/opd/samples";
 
 	poptFreeContext(optcon);
 }
@@ -132,13 +127,13 @@ static void create_file_list(list<string> & result,
 		os << "*}}" << mangle_filename(images_filename[0])
 		   << "#" << counter;
 
-		get_sample_file_list(result, base_dir, os.str());
+		get_sample_file_list(result, OP_SAMPLES_DIR, os.str());
 
 		// get_sample_file_list() shrink the #nr suffix so re-add it
 		list<string>::iterator it;
 		for (it = result.begin() ; it != result.end() ; ++it) {
 			ostringstream os;
-			os << string(base_dir) << "/" << *it << "#" << counter;
+			os << string(OP_SAMPLES_DIR) << "/" << *it << "#" << counter;
 			*it = os.str();
 		}
 	} else {

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.44 2002/04/24 17:59:30 phil_e Exp $ */
+/* $Id: oprofiled.h,v 1.45 2002/05/02 02:19:09 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -77,7 +77,6 @@ extern int verbose;
 extern int kernel_only;
 extern op_cpu cpu_type; 
 extern int separate_samples;
-extern char * smpdir; 
 extern char * vmlinux;
 extern unsigned long opd_stats[];
 

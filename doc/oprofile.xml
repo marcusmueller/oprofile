@@ -357,7 +357,7 @@ In this section the configuration and startup of the profiler is discussed in mo
 <para>
 A shell script <command>op_start</command> is provided to set up the correct
 environment, insert the kernel module, and start up the profiler daemon.
-OProfile stores its relevant files in <filename>/var/opd</filename> by default.
+OProfile stores its relevant files in <filename>/var/lib/oprofile</filename>.
 Of most interest are the <filename>oprofiled.log</filename> log file, and the
 <filename>samples/</filename> directory. The <filename>samples</filename>
 directory contains the actual sample profile files created by the daemon.
@@ -796,7 +796,7 @@ the profiler. This can happen on lightly-loaded machines. Remember you can force
 <para><command>op_dump</command></para>
 <para>Remember to do this before complaining there is no profiling data !
 Now that we've got some data, it has to be processed. That's the job of <command>oprofpp</command> or <command>op_to_source</command>.
-This works on a sample file in the <filename>/var/opd/samples/</filename> directory,
+This works on a sample file in the <filename>/var/lib/oprofile/samples/</filename> directory,
 along with the binary file being profiled, to produce human-readable data. Note that if the binary file changes
 after the sample file was created, you won't be able to get useful data out. This situation is detected for you.
 Note that several instances of a binary are merged into one sample file. By default, all samples from a dynamically linked library

@@ -113,7 +113,7 @@ static struct opd_module *opd_get_module(char *name)
 	int i;
 
 	for (i=0; i < OPD_MAX_MODULES; i++) {
-		if (opd_modules[i].name && bstreq(name,opd_modules[i].name)) {
+		if (opd_modules[i].name && bstreq(name, opd_modules[i].name)) {
 			/* free this copy */
 			free(name);
 			return &opd_modules[i];

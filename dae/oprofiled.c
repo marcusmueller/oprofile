@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.73 2002/05/01 19:03:43 movement Exp $ */
+/* $Id: oprofiled.c,v 1.74 2002/05/02 02:19:08 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -26,7 +26,6 @@ uint op_nr_counters = 2;
 int verbose;
 op_cpu cpu_type;
 int separate_samples;
-char *smpdir="/var/opd/samples/";
 char *vmlinux;
 int kernel_only;
 unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
@@ -39,11 +38,6 @@ static u32 ctr_enabled[OP_MAX_COUNTERS];
 static const char *cpu_speed_str;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
-static char *opd_dir="/var/opd/";
-static char *logfilename="oprofiled.log";
-static char *devfilename="opdev";
-static char *notedevfilename="opnotedev";
-static char *devhashmapfilename="ophashmapdev";
 static char *systemmapfilename;
 static pid_t mypid;
 static pid_t pid_filter;
@@ -58,12 +52,6 @@ static void opd_open_logfile(void);
 static struct poptOption options[] = {
 	{ "pid-filter", 0, POPT_ARG_INT, &pid_filter, 0, "only profile the given process ID", "pid" },
 	{ "pgrp-filter", 0, POPT_ARG_INT, &pgrp_filter, 0, "only profile the given process group", "pgrp" },
-	{ "log-file", 'l', POPT_ARG_STRING, &logfilename, 0, "log file", "file", },
-	{ "base-dir", 'd', POPT_ARG_STRING, &opd_dir, 0, "base directory of daemon", "dir", },
-	{ "samples-dir", 's', POPT_ARG_STRING, &smpdir, 0, "output samples dir", "file", },
-	{ "device-file", 'd', POPT_ARG_STRING, &devfilename, 0, "profile device file", "file", },
-	{ "note-device-file", 'p', POPT_ARG_STRING, &notedevfilename, 0, "note device file", "file", },
-	{ "hash-map-device-file", 'h', POPT_ARG_STRING, &devhashmapfilename, 0, "profile hashmap device file", "file", },
 	{ "map-file", 'f', POPT_ARG_STRING, &systemmapfilename, 0, "System.map for running kernel file", "file", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "cpu-speed", 0, POPT_ARG_STRING, &cpu_speed_str, 0, "cpu speed (MHz)", "cpu_mhz", },
@@ -84,7 +72,7 @@ static struct poptOption options[] = {
  */
 static void opd_open_logfile(void)
 {
-	if (open(logfilename, O_WRONLY|O_CREAT|O_NOCTTY|O_APPEND, 0755) == -1) {
+	if (open(OP_LOG_FILE, O_WRONLY|O_CREAT|O_NOCTTY|O_APPEND, 0755) == -1) {
 		perror("oprofiled: couldn't re-open stdout: ");
 		exit(EXIT_FAILURE);
 	}
@@ -106,46 +94,46 @@ static void opd_open_files(void)
 {
 	fd_t hashmapdevfd;
 
-	hashmapdevfd = opd_open_device(devhashmapfilename, 0);
+	hashmapdevfd = opd_open_device(OP_HASH_DEVICE, 0);
 	if (hashmapdevfd == -1) {
-		perror("Failed to open hash map device: ");
+		perror("Failed to open hash map device");
 		exit(EXIT_FAILURE);
 	}
  
-	notedevfd = opd_open_device(notedevfilename, 0);
+	notedevfd = opd_open_device(OP_NOTE_DEVICE, 0);
 	if (notedevfd == -1) {
 		if (errno == EINVAL)
 			fprintf(stderr, "Failed to open note device. Possibly you have passed incorrect\n"
 				"parameters. Check /var/log/messages.");
 		else
-			perror("Failed to open note device: ");
+			perror("Failed to open note device");
 		exit(EXIT_FAILURE);
 	}
  
-	devfd = opd_open_device(devfilename, 0);
+	devfd = opd_open_device(OP_DEVICE, 0);
 	if (devfd == -1) {
 		if (errno == EINVAL)
 			fprintf(stderr, "Failed to open device. Possibly you have passed incorrect\n"
 				"parameters. Check /var/log/messages.");
 		else
-			perror("Failed to open profile device: ");
+			perror("Failed to open profile device");
 		exit(EXIT_FAILURE);
 	} 
  
 	hashmap = mmap(0, OP_HASH_MAP_SIZE, PROT_READ, MAP_SHARED, hashmapdevfd, 0);
 	if ((long)hashmap == -1) {
-		perror("oprofiled: couldn't mmap hash map: ");
+		perror("oprofiled: couldn't mmap hash map");
 		exit(EXIT_FAILURE);
 	}
 
 	/* give output before re-opening stdout as the logfile */
-	printf("Using log file \"%s\"\n", logfilename);
+	printf("Using log file " OP_LOG_FILE "\n");
  
 	/* set up logfile */
 	close(0);
 	close(1);
 
-	if (open("/dev/null",O_RDONLY) == -1) {
+	if (open("/dev/null", O_RDONLY) == -1) {
 		perror("oprofiled: couldn't re-open stdin as /dev/null: ");
 		exit(EXIT_FAILURE);
 	}
@@ -160,8 +148,8 @@ static void opd_open_files(void)
 /**
  * opd_backup_samples_files - back up all the samples file
  *
- * move all files in dir @smpdir to directory
- * @smpdir/session-#nr
+ * move all files in samples dir to sub-directory
+ * session-#nr/ 
  */
 static void opd_backup_samples_files(void)
 {
@@ -171,11 +159,11 @@ static void opd_backup_samples_files(void)
 	DIR *dir;
 	struct dirent *dirent;
 
-	dir_name = xmalloc(strlen(smpdir) + strlen("session-") + 10);
-	strcpy(dir_name, smpdir);
+	dir_name = xmalloc(strlen(OP_SAMPLES_DIR) + strlen("session-") + 10);
+	strcpy(dir_name, OP_SAMPLES_DIR);
 
 	do {
-		sprintf(dir_name + strlen(smpdir), "/session-%d", ++gen);
+		sprintf(dir_name + strlen(OP_SAMPLES_DIR), "/session-%d", ++gen);
 	} while (stat(dir_name, &stat_buf) == 0);
 
 	if (mkdir(dir_name, 0755)) {
@@ -185,17 +173,17 @@ static void opd_backup_samples_files(void)
 		exit(EXIT_FAILURE);
 	}
 
-	if (!(dir = opendir(smpdir))) {
-		printf("unable to open directory %s\n", smpdir);
+	if (!(dir = opendir(OP_SAMPLES_DIR))) {
+		printf("unable to open directory " OP_SAMPLES_DIR "\n");
 		exit(EXIT_FAILURE);
 	}
 
 	printf("Backing up samples file to directory %s\n", dir_name);
 
 	while ((dirent = readdir(dir)) != 0) {
-		if (opd_move_regular_file(dir_name, smpdir, dirent->d_name)) {
+		if (opd_move_regular_file(dir_name, OP_SAMPLES_DIR, dirent->d_name)) {
 			printf("unable to backup %s/%s to directory %s\n",
-			       smpdir, dirent->d_name, dir_name);
+			       OP_SAMPLES_DIR, dirent->d_name, dir_name);
 		}
 	}
 
@@ -225,9 +213,8 @@ static int opd_need_backup_samples_files(void)
 	int counter_set, old_counter_set;
 	uint i;
 
-	if (!(dir = opendir(smpdir))) {
-		printf("unable to open directory %s\n", smpdir);
-
+	if (!(dir = opendir(OP_SAMPLES_DIR))) {
+		printf("unable to open directory " OP_SAMPLES_DIR "\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -235,9 +222,8 @@ static int opd_need_backup_samples_files(void)
 	need_backup = 0;
 
 	while ((dirent = readdir(dir)) != 0 && need_backup == 0) {
-		char * file = xmalloc(strlen(smpdir) + strlen(dirent->d_name) + 2);
-		strcpy(file, smpdir);
-		strcat(file, "/");
+		char * file = xmalloc(strlen(OP_SAMPLES_DIR) + strlen(dirent->d_name) + 2);
+		strcpy(file, OP_SAMPLES_DIR);
 		strcat(file, dirent->d_name);
 		if (!stat(file, &stat_buf) && S_ISREG(stat_buf.st_mode)) {
 			struct opd_header header;
@@ -430,8 +416,9 @@ static void opd_go_daemon(void)
 {
 	opd_fork();
 
-	if (chdir(opd_dir)) {
-		fprintf(stderr,"oprofiled: opd_go_daemon: couldn't chdir to %s: %s", opd_dir, strerror(errno));
+	if (chdir(OP_BASE_DIR)) {
+		fprintf(stderr,"oprofiled: opd_go_daemon: couldn't chdir to "
+			OP_BASE_DIR ": %s", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -593,7 +580,7 @@ void opd_do_notes(struct op_note *opd_buf, size_t count)
  * to the relevant sample file. Additionally mapping and
  * process notifications are handled here.
  */
-void opd_do_samples(const struct op_sample *opd_buf, size_t count)
+void opd_do_samples(const struct op_sample * opd_buf, size_t count)
 {
 	uint i;
 
@@ -603,10 +590,12 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 	opd_stats[OPD_DUMP_COUNT]++;
 
 	for (i=0; i < count/sizeof(struct op_sample); i++) {
-		verbprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n", i, opd_buf[i].eip, opd_buf[i].pid, opd_buf[i].count);
+		verbprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n", 
+			i, opd_buf[i].eip, opd_buf[i].pid, opd_buf[i].count);
 
-		// happens during initial startup whilst the
-		// hash table is being filled
+		/* happens during initial startup whilst the
+		 * hash table is being filled
+		 */
 		if (opd_buf[i].eip == 0)
 			continue;
  
@@ -627,8 +616,16 @@ static void opd_sighup(int val __attribute__((unused)))
 	close(1);
 	close(2);
 	opd_open_logfile();
+	opd_reopen_sample_files();
 }
 
+
+static void clean_exit(void)
+{
+	unlink(OP_LOCK_FILE);
+}
+ 
+ 
 int main(int argc, char const *argv[])
 {
 	struct op_sample *sbuf;
@@ -649,6 +646,12 @@ int main(int argc, char const *argv[])
  
 	opd_init_images();
 
+	if (atexit(clean_exit)) {
+		fprintf(stderr, "Couldn't set exit cleanup !\n");
+		unlink(OP_LOCK_FILE);
+		exit(EXIT_FAILURE);
+	}
+ 
 	opd_go_daemon();
 
 	if (opd_need_backup_samples_files()) {
@@ -690,6 +693,13 @@ int main(int argc, char const *argv[])
 	/* clean up every 10 minutes */
 	alarm(60*10);
 
+	if (opd_write_lock_file(OP_LOCK_FILE)) {
+		fprintf(stderr, 
+			"oprofiled: could not create lock file "
+			OP_LOCK_FILE "\n");
+		exit(EXIT_FAILURE);
+	}
+ 
 	/* simple sleep-then-process loop */
 	opd_do_read(sbuf, s_buf_bytesize, nbuf, n_buf_bytesize);
 

@@ -84,12 +84,6 @@ config_setting::config_setting()
 	hash_table_size(OP_DEFAULT_HASH_SIZE),
 	note_table_size(OP_DEFAULT_NOTE_SIZE),
 	// FIXME: member of config, hardcoded value probably come from ? 
-	base_opd_dir("/var/opd/"),
-	samples_files_dir("samples"),
-	device_file("opdev"),
-	note_device_file("opnotedev"),
-	hash_map_device("ophashmapdev"),
-	daemon_log_file("oprofiled.log"),
 	kernel_filename("/lib/modules/" KVERSION "/build/vmlinux"),
 	map_filename("/lib/modules/" KVERSION "/build/System.map"),
 	kernel_only(0),
@@ -106,12 +100,6 @@ void config_setting::load(std::istream& in)
 {
 	in >> buffer_size;
 	in >> hash_table_size;
-	in >> base_opd_dir;
-	in >> samples_files_dir;
-	in >> device_file;
-	in >> note_device_file;
-	in >> hash_map_device;
-	in >> daemon_log_file;
 	in >> kernel_filename;
 	in >> map_filename;
 	in >> kernel_only;
@@ -132,18 +120,6 @@ void config_setting::save(std::ostream& out) const
 	// empty string reload is confused by this empty string.
 	config_setting def_val;
 
-	save_value(out, base_opd_dir, def_val.base_opd_dir);
-	out << std::endl;
-	save_value(out, samples_files_dir, def_val.samples_files_dir);
-	out << std::endl;
-	save_value(out, device_file, def_val.device_file);
-	out << std::endl;
-	save_value(out, note_device_file, def_val.note_device_file);
-	out << std::endl;
-	save_value(out, hash_map_device, def_val.hash_map_device);
-	out << std::endl;
-	save_value(out, daemon_log_file, def_val.daemon_log_file);
-	out << std::endl;
 	save_value(out, kernel_filename, def_val.kernel_filename);
 	out << std::endl;
 	save_value(out, map_filename, def_val.map_filename);

@@ -138,8 +138,7 @@ static string const do_open_file_or_dir(string const & base_dir, bool dir_only)
  */
 void oprof_report::on_open()
 {
-	// TODO: configuration string (must we share config with oprof_start ?)
-	static string dirname = "/var/opd/samples/*";
+	static string dirname = OP_SAMPLES_DIR "*";
 	string filename = do_open_file_or_dir(dirname, false);
 	if (filename.length()) {
 		load_samples_files(filename);
