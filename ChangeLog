@@ -1,3 +1,7 @@
+2002-11-29  Graydon Hoare  <graydon@redhat.com>
+
+	* module/x86/op_model_p4.c: fix dropped overflows.
+
 2002-11-26  Graydon Hoare  <graydon@redhat.com>
 
 	* module/x86/op_model_p4.c: fix CCCR-clearing logic.

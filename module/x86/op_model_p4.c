@@ -322,6 +322,7 @@ struct p4_event_binding p4_events[NUM_EVENTS] = {
 
 #define CTR_READ(l,h,i) do {rdmsr(p4_counters[(i)].counter_address, (l), (h));} while (0);
 #define CTR_WRITE(l,i) do {wrmsr(p4_counters[(i)].counter_address, -(u32)(l), -1);} while (0);
+#define CTR_OVERFLOW_P(ctr) (!((ctr) & 0x80000000))
 
 /* these access the underlying cccrs 1-18, not the subset of 8 bound to "virtual counters" */
 #define RAW_CCCR_READ(low, high, i) do {rdmsr (MSR_P4_BPU_CCCR0 + (i), (low), (high));} while (0);
@@ -414,6 +415,7 @@ static void p4_setup_ctrs(struct op_msrs const * const msrs)
 {
 	uint i;
 	uint low, high;
+	uint addr;
 
 	rdmsr(MSR_P4_MISC, low, high);
 	if (! MISC_PMC_ENABLED_P(low)) {
@@ -429,6 +431,23 @@ static void p4_setup_ctrs(struct op_msrs const * const msrs)
 		RAW_CCCR_WRITE(low, high, i);
 	}
 
+	/* clear all escrs (including those outside out concern) */
+	for (addr = MSR_P4_BSU_ESCR0;
+	     addr <= MSR_P4_SSU_ESCR0; ++addr){ 
+		wrmsr(addr, 0, 0);
+	}
+	
+	for (addr = MSR_P4_MS_ESCR0;
+	     addr <= MSR_P4_TC_ESCR1; ++addr){ 
+		wrmsr(addr, 0, 0);
+	}
+	
+	for (addr = MSR_P4_IX_ESCR0;
+	     addr <= MSR_P4_CRU_ESCR3; ++addr){ 
+		wrmsr(addr, 0, 0);
+	}
+	
+
 	/* setup all counters */
 	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
 		if (sysctl.ctr[i].event) {
@@ -442,19 +461,42 @@ static void p4_check_ctrs(uint const cpu,
 			  struct op_msrs const * const msrs,
 			  struct pt_regs * const regs)
 {
-	ulong low, high;
+	ulong ctr, low, high;
 	int i;
-
 	for (i = 0; i < NUM_COUNTERS; ++i) {
+		
+		if (!sysctl.ctr[i].event) 
+			continue;
+
+		/* 
+		 * there is some eccentricity in the hardware which
+		 * requires that we perform 2 extra corrections:
+		 *
+		 * - check both the CCCR:OVF flag for overflow and the
+		 *   counter high bit for un-flagged overflows.
+		 *
+		 * - write the counter back twice to ensure it gets
+		 *   updated properly.
+		 * 
+		 * the former seems to be related to extra NMIs happening
+		 * during the current NMI; the latter is reported as errata
+		 * N15 in intel doc 249199-029, pentium 4 specification
+		 * update, though their suggested work-around does not
+		 * appear to solve the problem.
+		 */
+
 		CCCR_READ(low, high, i);
-		if (CCCR_OVF_P(low)) {
+ 		CTR_READ(ctr, high, i);
+		if (CCCR_OVF_P(low) || CTR_OVERFLOW_P(ctr)) {
 			op_do_profile(cpu, regs, i);
+ 			CTR_WRITE(oprof_data[cpu].ctr_count[i], i);
 			CCCR_CLEAR_OVF(low);
-			CTR_WRITE(oprof_data[cpu].ctr_count[i], i);
 			CCCR_WRITE(low, high, i);
+ 			CTR_WRITE(oprof_data[cpu].ctr_count[i], i);
 		}
 	}
-	// P4 quirk: you have to re-unmask the apic vector
+
+	/* P4 quirk: you have to re-unmask the apic vector */
 	apic_write(APIC_LVTPC, apic_read(APIC_LVTPC) & ~APIC_LVT_MASKED);
 }
 
