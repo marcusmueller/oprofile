@@ -18,6 +18,8 @@
 
 #include "op_cpu_type.h"
 
+struct op_event;
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -57,7 +57,14 @@ build_counter_arc(struct op_event const * pev[], int nr_events)
 				counter_arc * arc = 
 					xmalloc(sizeof(counter_arc));
 				arc->counter = j;
-				list_add(&arc->next, &ctr_arc[i].next);
+				/* we are looping by increasing counter number,
+				 * allocation use a left to right tree walking
+				 * so we add at end to ensure counter will
+				 * be allocated by increasing number: it's not
+				 * required but a bit less surprising when
+				 * debugging code
+				 */
+				list_add_tail(&arc->next, &ctr_arc[i].next);
 				mask &= ~(1 << j);
 			}
 		}
