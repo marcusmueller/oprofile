@@ -1003,9 +1003,8 @@ Some interesting options of the post-processor :
 		<term><option>-k</option></term>
 		<listitem><para>
 		Show the details for each shared lib which belongs to the given application. This option is useful only
-		if you have profiled with the <option>--separate</option> option and you specify on the
-		oprofpp command line either <option>--list-symbols</option> or 
-		<option>--list-all-symbols-details</option>.
+		if you have profiled with the <option>--separate</option> option and you don't specify on
+		the oprofpp command line <option>--dump-gprof-file</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

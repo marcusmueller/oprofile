@@ -1,3 +1,9 @@
+2003-02-14  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml:
+	* pp/oprofpp_options.cpp: allow --show-shared-libs with -s
+
 2003-02-13  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update

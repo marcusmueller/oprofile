@@ -98,7 +98,7 @@ string const get_options(int argc, char const **argv)
 	if (output_linenr_info && !list_all_symbols_details && symbol.empty() && !list_symbols)
 		quit_error("oprofpp: cannot list debug info without -L, -l or -s option.\n");
 
-	if (show_shared_libs && (!symbol.empty() || !gprof_file.empty())) {
+	if (show_shared_libs && (/*!symbol.empty() ||*/ !gprof_file.empty())) {
 		quit_error("oprofpp: you cannot specify --show-shared-libs with --dump-gprof-file or --list-symbol output type.\n");
 	}
 

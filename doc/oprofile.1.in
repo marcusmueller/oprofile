@@ -210,8 +210,7 @@ Exclude list of comma separated symbols.
 .BI "--show-shared-libs -k"
 Show the details for each shared lib which belongs to one application.
 This option is useful only if you have profiled with --separate=library
-option and you specify on the oprofpp command line either --list-symbols
-or --list-all-symbols-details.
+option and you don't specify on the oprofpp command line --dump-gprof-file.
 .br
 .TP
 .BI "--reverse -r"
