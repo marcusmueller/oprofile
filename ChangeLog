@@ -1,3 +1,8 @@
+2003-04-15  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: small english fixes
+
 2003-04-14  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* dae/opd_kernel.c:
@@ -5,7 +10,7 @@
 	* dae/oprofiled.c:
 	* utils/opcontrol:
 	* doc/oprofile.1.in:
-	* doc/oprofile.xml: handle --vm-nolinux
+	* doc/oprofile.xml: handle --no-vmlinux
 
 	* daemon/opd_kernel.c: use /no-vmlinux not /no-vmlinux when user
 	  specify --no-vmlinux

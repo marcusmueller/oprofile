@@ -622,7 +622,7 @@ is required. These settings are stored in <filename>~/.oprofile/daemon</filename
 		<listitem><para>
 		Use this when you don't have a kernel vmlinux file, and you don't want
 		to profile the kernel.
-		Note than overall profiling time through op_time always count kernel samples.
+		Note that overall profiling time through op_time always counts kernel samples.
 		</para></listitem>
 	</varlistentry>
 </variablelist>

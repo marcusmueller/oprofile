@@ -157,8 +157,8 @@ vmlinux kernel image.
 .TP
 .BI "--no-vmlinux"
 Use this when you don't have a kernel vmlinux file, and you don't want to
-profile the kernel. Note than overall profiling time through op_time always
-count kernel samples.
+profile the kernel. Note that overall profiling time through op_time always
+counts kernel samples.
 .br
 .TP
 .BI "--verbose"
