@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# ugh
+PID=`ps x | grep oprofiled | grep -v grep | awk '{print $1}'`
+if [ "$PID" != "" ]
+then
+	echo "Killing oprofiled"
+	kill $PID
+	if [ "$?" -ne 0 ]
+	then
+		echo "Couldn't execute kill $PID"
+	fi
+fi
+
+# sleep to let process die
+sleep 2
+
+echo "Removing oprofile module"
+rmmod oprofile
