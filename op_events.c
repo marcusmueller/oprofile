@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.33 2001/10/22 16:14:16 davej Exp $ */
+/* $Id: op_events.c,v 1.34 2001/10/22 16:17:02 davej Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -194,7 +194,6 @@ struct op_event op_events[] = {
   { CTR_ALL, OP_ATHLON, 0xcd, 0, "INTERRUPTS_MASKED", 500,},
   { CTR_ALL, OP_ATHLON, 0xce, 0, "INTERRUPTS_MASKED_PENDING", 500,},
   { CTR_ALL, OP_ATHLON, 0xcf, 0, "HARDWARE_INTERRUPTS", 10,},
-  { CTR_ALL, OP_ATHLON, 0xd3, 0, "SERIALISE", 10,},
 };
 
 /* the total number of events for all processor type */
@@ -639,7 +638,6 @@ char *op_event_descs[] = {
   "Interrupts masked cycles (IF=0)",
   "Interrupts masked while pending cycles (INTR while IF=0)",
   "Number of taken hardware interrupts",
-  "Serialise",
 };
 
 /**
