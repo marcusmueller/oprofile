@@ -12,6 +12,7 @@
 #include "op_to_source_options.h"
 #include "popt_options.h"
 
+#include <fstream>
 #include <iostream>
 
 using std::vector;
@@ -60,7 +61,8 @@ option options_array[] = {
 
 }
 
-std::ostream cverb;
+static std::ofstream fout("/dev/null");
+std::ostream cverb(fout.rdbuf());
 
 /**
  * get_options - process command line
@@ -77,6 +79,8 @@ string const get_options(int argc, char const * argv[])
 
 	if (verbose)
 		cverb.rdbuf(std::cout.rdbuf());
+	else
+		cverb.clear(std::ios::badbit);
 
 	if (options::with_more_than_samples
 		&& options::until_more_than_samples) {

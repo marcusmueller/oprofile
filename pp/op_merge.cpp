@@ -49,7 +49,8 @@ option options_array[] = {
 	option(counter, "use-counter", 'c', "use counter", "counter nr")
 };
 
-std::ostream cverb;
+static ofstream fout("/dev/null");
+std::ostream cverb(fout.rdbuf());
 
 /**
  * get_options - process command line
@@ -65,6 +66,8 @@ static void get_options(int argc, char const * argv[], vector<string> & images)
 
 	if (verbose)
 		cverb.rdbuf(std::cout.rdbuf());
+	else
+		cverb.clear(std::ios::badbit);
 
 	if (images.size() == 0) {
 		cerr << "Neither samples filename or image filename"

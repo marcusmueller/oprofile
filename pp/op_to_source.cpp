@@ -792,8 +792,6 @@ int main(int argc, char const * argv[])
 	std::ios_base::sync_with_stdio(false);
 #endif
 
-	string image_name;
-	string sample_file;
 	/* global var sort_by_counter contains the counter used for sorting
 	 * purpose (-1 for sorting on first available counter). This contains
 	 * the counter to open (-1 for all). sort_by_counter is specified
@@ -837,7 +835,7 @@ int main(int argc, char const * argv[])
 			      options::no_output_filter,
 			      options::assembly, options::source_with_assembly, -1);
 
-		if (output.treat_input(image_name, sample_file) == false)
+		if (output.treat_input(options::image_file, options::sample_file) == false)
 			return EXIT_FAILURE;
 	}
 

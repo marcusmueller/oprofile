@@ -17,6 +17,7 @@
 #include "file_manip.h"
 
 #include <list>
+#include <fstream>
 
 using std::string;
 using std::vector;
@@ -122,7 +123,8 @@ void handle_session_options(void)
 
 } // namespace anon
 
-std::ostream cverb;
+static std::ofstream fout("/dev/null");
+std::ostream cverb(fout.rdbuf());
 
 /**
  * get_options - process command line
@@ -140,6 +142,8 @@ void get_options(int argc, char const * argv[])
 
 	if (verbose)
 		cverb.rdbuf(std::cout.rdbuf());
+	else
+		cverb.clear(std::ios::badbit);
 
 	if (file.length())
 		session = file;

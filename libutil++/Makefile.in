@@ -1,5 +1,7 @@
 include ../make.common
 
+CXXFLAGS += @BFD_CXXFLAGS@
+
 HEADERS=op_bfd.h child_reader.h file_manip.h string_manip.h filename_match.h demangle_symbol.h
 
 SOURCES=op_bfd.cpp child_reader.cpp file_manip.cpp string_manip.cpp filename_match.cpp demangle_symbol.cpp

@@ -8,6 +8,8 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
+#include <fstream>
+
 #include "popt_options.h"
 
 #include "oprofpp_options.h"
@@ -76,7 +78,8 @@ void quit_error(string const & err)
 
 } // namespace anon
 
-std::ostream cverb;
+static std::ofstream fout("/dev/null");
+std::ostream cverb(fout.rdbuf());
 
 string const get_options(int argc, char const **argv)
 {
@@ -89,6 +92,8 @@ string const get_options(int argc, char const **argv)
 
 	if (verbose)
 		cverb.rdbuf(std::cout.rdbuf());
+	else
+		cverb.clear(std::ios::badbit);
  
 	if (!list_all_symbols_details && !list_symbols &&
 	    gprof_file.empty() && symbol.empty())

@@ -11,7 +11,7 @@ KCFLAGS = $(BASIC_KCFLAGS) @NO_MODULE_VERSION@
 
 # enable -Werror for non-release versions except for on 2.5 kernels
 ifneq (,$(findstring cvs,@VERSION@))
-ifneq (,$(findstring 2.5,@KVERS@))
+ifeq (,$(findstring 2.5,@KVERS@))
 KCFLAGS += -Werror
 endif
 endif
