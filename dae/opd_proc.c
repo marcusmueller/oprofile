@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.72 2001/09/18 01:00:33 movement Exp $ */
+/* $Id: opd_proc.c,v 1.73 2001/09/18 02:16:55 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -55,10 +55,11 @@ static unsigned int nr_modules=0;
 static struct opd_proc *opd_add_proc(u16 pid);
 static void opd_grow_images(void);
 static void opd_open_sample_file(struct opd_image *image, int counter);
-static void opd_open_image(struct opd_image *image, const char *name, int kernl);
-static int opd_find_image(const char *name);
-static int opd_add_image(const char *name, int kernel);
-static int opd_get_image(const char *name, int kernel);
+static void opd_open_image(struct opd_image *image, int hash, const char *name, int kernl);
+static int opd_find_image(const char *name, int hash);
+static int opd_add_image(const char *name, int hash, int kernel);
+static int opd_get_image(const char *name, int hash, int kernel);
+static int opd_get_image_by_hash(int hash);
 static void opd_init_maps(struct opd_proc *proc);
 static void opd_grow_maps(struct opd_proc *proc);
 static void opd_kill_maps(struct opd_proc *proc);
@@ -285,6 +286,7 @@ static void opd_handle_old_sample_files(const char *image_name, time_t mtime)
 /**
  * opd_open_image - open an image sample file
  * @image: image to open file for
+ * @hash: hash of image
  * @name: name of the image to add
  * @kernel: is the image a kernel/module image
  *
@@ -296,12 +298,13 @@ static void opd_handle_old_sample_files(const char *image_name, time_t mtime)
  * without opening the associated samples files. At return
  * the @image is fully initialized.
  */
-static void opd_open_image(struct opd_image *image, const char *name, int kernel)
+static void opd_open_image(struct opd_image *image, int hash, const char *name, int kernel)
 {
 	uint i;
 
 	image->name = opd_strdup(name);
 	image->kernel = kernel;
+	image->hash = hash; 
 	image->len = 0;
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
@@ -463,7 +466,7 @@ static void opd_check_image_mtime(struct opd_image * image)
 	}
 	free(mangled);
 
-	opd_open_image(image, tmp, image->kernel);
+	opd_open_image(image, image->hash, tmp, image->kernel);
 	free(tmp);
 }
 
@@ -533,7 +536,7 @@ void opd_init_images(void)
 	opd_images[0].name = opd_strdup(vmlinux);
 	opd_images[0].kernel = 1;
 
-	opd_open_image(&opd_images[0], vmlinux, 1);
+	opd_open_image(&opd_images[0], -1, vmlinux, 1);
 	nr_images = 1;
 }
 
@@ -576,18 +579,22 @@ inline static int bstreq(const char *str1, const char *str2)
 
 /**
  * opd_find_image - find an image
- * @name: file name of image to find
+ * @name: name of image to find
+ * @hash: hash of image to find
  *
  * Returns the image number for the file specified by @name, or -1.
  */
-static int opd_find_image(const char *name)
+static int opd_find_image(const char * name, int hash)
 {
 	unsigned int i;
 
-	/* FIXME: use hash table */
-	for (i=1; i<nr_images; i++) {
-		if (bstreq(opd_images[i].name, name))
+	/* we can have hashless images from /proc/pid parsing */
+	for (i=1; i < nr_images; i++) {
+		if (bstreq(opd_images[i].name, name)) {
+			if (hash != -1)
+				opd_images[i].hash = hash;
 			return i;
+		}
 	}
 
 	return -1;
@@ -596,6 +603,7 @@ static int opd_find_image(const char *name)
 /**
  * opd_add_image - add an image to the image structure
  * @name: name of the image to add
+ * @hash: hash of image
  * @kernel: is the image a kernel/module image
  *
  * Add an image to the image structure with name @name.
@@ -605,9 +613,9 @@ static int opd_find_image(const char *name)
  *
  * The image number is returned.
  */
-static int opd_add_image(const char *name, int kernel)
+static int opd_add_image(const char * name, int hash, int kernel)
 {
-	opd_open_image(&opd_images[nr_images], name, kernel);
+	opd_open_image(&opd_images[nr_images], hash, name, kernel);
 	nr_images++;
 
 	if (nr_images == max_nr_images)
@@ -617,8 +625,28 @@ static int opd_add_image(const char *name, int kernel)
 }
 
 /**
+ * opd_get_image_by_hash - get an image from the image structure by hash value
+ * @hash: hash of the image to get
+ *
+ * Get the image specified by the hash @hash if present, else return -1
+ */
+static int opd_get_image_by_hash(int hash)
+{
+	unsigned int i;
+
+	for (i=1; i < nr_images; i++) {
+		verbprintf("Looking for hash %d, this (%s) is %d\n", hash, opd_images[i].name, opd_images[i].hash); 
+		if (opd_images[i].hash == hash)
+			return i;
+	}
+	return -1;
+}
+
+
+/**
  * opd_get_image - get an image from the image structure
- * @name: name of the image to get
+ * @name: name of image
+ * @hash: hash of the image to get
  * @kernel: is the image a kernel/module image
  *
  * Get the image specified by the file name @name from the
@@ -626,11 +654,11 @@ static int opd_add_image(const char *name, int kernel)
  * added to the structure. In either case, the image number
  * is returned.
  */
-static int opd_get_image(const char *name, int kernel)
+static int opd_get_image(const char * name, int hash, int kernel)
 {
 	int image_nr;
-	if ((image_nr = opd_find_image(name)) == -1)
-		image_nr = opd_add_image(name, kernel);
+	if ((image_nr = opd_find_image(name, hash)) == -1)
+		image_nr = opd_add_image(name, hash, kernel);
 
 	return image_nr;
 }
@@ -968,7 +996,7 @@ static void opd_get_module_info(void)
 				strncpy(filename, cp2, (size_t)(cp3 - cp2));
 				filename[cp3-cp2] = '\0';
 
-				mod->image = opd_get_image(filename, 1);
+				mod->image = opd_get_image(filename, -1, 1);
 				opd_free(filename);
 				break;
 
@@ -1326,6 +1354,35 @@ void opd_handle_exit(const struct op_sample *sample)
 	}
 }
 
+ 
+/**
+ * opd_handle_hashmap - parse image from kernel hash map
+ * @hash: hash value
+ * @c: string to fill
+ *
+ * Finds an image from a hashmap hash value
+ */
+static int opd_handle_hashmap(int hash, char **c)
+{
+	int orighash = hash;
+ 
+	while (hash) {
+		if (strlen(hashmap[hash].name)+ 1 + strlen(*c) >= PATH_MAX) {
+			fprintf(stderr,"String \"%s\" too large.\n", *c);
+			exit(1);
+		}
+
+		*c -= strlen(hashmap[hash].name) + 1;
+		**c = '/';
+		strncpy(*c + 1, hashmap[hash].name, strlen(hashmap[hash].name));
+		
+		/* move onto parent */
+		hash = hashmap[hash].parent;
+	}
+	return opd_get_image(*c, orighash, 0);
+}
+ 
+
 /**
  * opd_handle_mapping - deal with mapping notification
  * @mapping: mapping info
@@ -1339,7 +1396,8 @@ void opd_handle_mapping(const struct op_mapping *mapping)
 	static char file[PATH_MAX];
 	char *c=&file[PATH_MAX-1];
 	struct opd_proc *proc;
-	short hash;
+	int hash;
+	int im_nr;
 
 	proc = opd_get_proc(mapping->pid);
 
@@ -1352,34 +1410,21 @@ void opd_handle_mapping(const struct op_mapping *mapping)
 
 	hash = mapping->hash;
 
-	while (hash) {
-		if (hash == -1) {
-			/* possibly deleted file */
-			return;
-		}
-
-		if (hash < 0 || hash >= OP_HASH_MAP_NR) {
-			fprintf(stderr,"hash value %u out of range.\n",hash);
-			return;
-		}
-
-		if (strlen(hashmap[hash].name)+1+strlen(c) >= PATH_MAX) {
-			fprintf(stderr,"String \"%s\" too large.\n", file);
-			exit(1);
-		}
-
-		c -= strlen(hashmap[hash].name)+1;
-		strncpy(c,"/",1);
-		strncpy(c+1, hashmap[hash].name, strlen(hashmap[hash].name));
-		
-		/* move onto parent */
-		hash = hashmap[hash].parent;
+	if (hash == -1) {
+		/* possibly deleted file */
+		return;
 	}
 
-	verbprintf("Mapping for pid %d: \"%s\", 0x%x, len 0x%x, offset 0x%x\n",
-			mapping->pid, c, mapping->addr, mapping->len, mapping->offset);
+	if (hash < 0 || hash >= OP_HASH_MAP_NR) {
+		fprintf(stderr,"hash value %u out of range.\n",hash);
+		return;
+	}
 
-	opd_put_mapping(proc, opd_get_image(c,0), mapping->addr, mapping->offset, mapping->addr + mapping->len);
+	im_nr = opd_get_image_by_hash(hash); 
+	if (im_nr == -1)
+		im_nr = opd_handle_hashmap(hash, &c);
+
+	opd_put_mapping(proc, im_nr, mapping->addr, mapping->offset, mapping->addr + mapping->len);
 }
 
 /**
@@ -1447,7 +1492,7 @@ static int opd_add_ascii_map(struct opd_proc *proc, const char *line)
 	if (!*cp)
 		return FALSE;
 
-	map->image = opd_get_image(cp, 0);
+	map->image = opd_get_image(cp, -1, 0);
 
 	if (!map->image)
 		return FALSE;

@@ -1,5 +1,12 @@
 2001-09-18  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/opd_proc.c:
+	* dae/oprofiled.h: implement hashing of images
+
+	* doc/oprofile.sgml: fix -- issue and use <screen>
+ 
+2001-09-18  John Levon  <moz@compsoc.man.ac.uk>
+
 	* .cvsignore:
 	* README: update
  

@@ -79,8 +79,7 @@ necks in real-world systems.
 	<varlistentry>
 		<term>OProfile GUI</term>
 		<listitem><para>
-			<!-- FIXME: change this if we change to Qt -->
-			The use of the GUI to start the profiler requires : <filename>wish</filename> from the tk package.
+			The use of the GUI to start the profiler requires the <filename>Qt 2</filename> library.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -145,10 +144,17 @@ of <command>./configure</command>, <command>make</command>, <command>make instal
 is all you need, but note these arguments to <command>./configure</command> :
 <variablelist>
 	<varlistentry>
-		<term><option>--with-cc</option></term>
+		<term><option>&mdash;with-cc</option></term>
 		<listitem><para>
 			Use this to specify a C compiler that you used to compile the kernel if
 			necessary (e.g. <command>kgcc</command>).
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>&mdash;with-qt-dir/includes/libraries</option></term>
+		<listitem><para>
+			Specify the location of Qt2 headers and libraries. It defaults to searching in
+			<constant>$QTDIR</constant> if these are not specified.
 		</para></listitem>
 	</varlistentry>
 </variablelist>
@@ -177,7 +183,7 @@ nothing (successfully).
 </para>
 <para><command>oprof_convert</command> usage :</para>
 <para>
-<command>oprof_convert</command> [<option>--help</option>] [<option>--version</option>] <filename>filename</filename> [<filename>filenames</filename>]
+<command>oprof_convert</command> [<option>&mdash;help</option>] [<option>&mdash;version</option>] <filename>filename</filename> [<filename>filenames</filename>]
 </para>
 <para>
 Will convert from your version to the current version.
@@ -209,7 +215,7 @@ First we need to start the profiler running in the background. We need to pass t
 and <filename>vmlinux</filename> files to the daemon, and we need to specify what event to count and the counter value.
 Here I've started with :
 </para>
-<para><command>op_start --map-file=/boot/2.4.0ac12/System.map --vmlinux=/boot/2.4.0ac12/vmlinux  --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000</command></para>
+<para><command>op_start &mdash;map-file=/boot/2.4.0ac12/System.map &mdash;vmlinux=/boot/2.4.0ac12/vmlinux  &mdash;ctr0-event=CPU_CLK_UNHALTED &mdash;ctr0-count=600000</command></para>
 <para>
 A quick <command>ps ax</command> confirms that the daemon (<command>oprofiled</command>) has started,
 along with the kernel thread (<command>oprof-thread</command>). Data is now being collected in the kernel.
@@ -232,23 +238,20 @@ that's not normal behaviour; so if you are profiling over a larger period of tim
 
 I can now ask for a symbol-based summary of the sample profile :
 </para>
-<para><command>oprofpp --demangle -l /home/moz/lyx/lyx-devel/src/lyx &gt;oprof.out</command></para>
+<para><command>oprofpp &mdash;demangle -l /home/moz/lyx/lyx-devel/src/lyx &gt;oprof.out</command></para>
 <para>
 You will have to specify the full path unless you also specify the sample file (see the manpage). This can be quite slow
 on large binaries, so sit tight. As it's a C++ program, I asked for the symbols to be demangled to a readable form. Examining
 the file will give the symbols against which the most hits were registered. In this case I got :
 </para>
 <para>
-<!-- is DocBook really this shit ? Can't be ... literallayout class="Monospaced" just doesn't work for me ... -->
-<computeroutput>
-<literallayout>
+<screen>
 ...
 Row::par(void)[0x0813ab54]: 5.4079% (472 samples)
 LyXText::GetRow(LyXParagraph *, int, int &) const[0x08170a4c]: 5.5683% (486 samples)
 LyXParagraph::GetFontSettings(BufferParams const &, int) const[0x08145420]: 5.7516% (502 samples)
 Row::next(void) const[0x0813ac24]: 15.4904% (1352 samples)
-</literallayout>
-</computeroutput>
+</screen> 
 </para>
 <para>
 at the top. Note that over a longer run (or with a lower ctr0-count value) the number of samples will be much more statistically
@@ -288,14 +291,14 @@ all the options, only interesting ones are listed here :
 <para>
 <variablelist>
 	<varlistentry>
-		<term><option>--list-events</option></term>
+		<term><option>&mdash;list-events</option></term>
 		<listitem><para>
 		This gives a short list of the hardware events that are countable (see <xref linkend="hardware-counters">).
 		The meaning of options relating to the counters themselves is also detailed in that section.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--buffer-size</option></term>
+		<term><option>&mdash;buffer-size</option></term>
 		<listitem><para>
 		This is the number of entries in the kernel-side profiling buffer. Generally the default value
 		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
@@ -303,7 +306,7 @@ all the options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--hash-table-size</option></term>
+		<term><option>&mdash;hash-table-size</option></term>
 		<listitem><para>
 		This is the number of entries in the kernel-side profiling hash table. Generally the default value
 		is fine: you might want to change this on low-memory machines, or if you are doing very detailed profiling.
@@ -311,7 +314,7 @@ all the options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--kernel-only</option></term>
+		<term><option>&mdash;kernel-only</option></term>
 		<listitem><para>
 		Default is to profile both user-space and the kernel. You can profile only the kernel with this option;
 		this does not prevent the occasional user-space sample due to the hardware constraints, but reduces the
@@ -319,14 +322,14 @@ all the options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--map-file</option></term>
+		<term><option>&mdash;map-file</option></term>
 		<listitem><para>
 		Specify the <filename>System.map</filename> file from the current kernel's compile. This must match
 		the running kernel if you expect meaningful profiles of the kernel.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--vmlinux</option></term>
+		<term><option>&mdash;vmlinux</option></term>
 		<listitem><para>
 		Specify the <filename>vmlinux</filename> file from the current kernel's compile. This must match
 		the running kernel if you expect meaningful profiles of the kernel. Note that this is separate file
@@ -335,21 +338,21 @@ all the options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--pid-filter</option></term>
+		<term><option>&mdash;pid-filter</option></term>
 		<listitem><para>
 		Only samples of this process id will be collected (including any kernel-side samples when this process is in
 		the kernel). Note that threaded programs under Linux have a different process id for each thread.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--pgrp-filter</option></term>
+		<term><option>&mdash;pgrp-filter</option></term>
 		<listitem><para>
 		Only samples of this process group id will be collected (including any kernel-side samples when this process is in
 		the kernel).
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--verbose</option></term>
+		<term><option>&mdash;verbose</option></term>
 		<listitem><para>
 		This makes the daemon <emphasis>very</emphasis> verbose in its logfile. Don't use this unless you need it
 		as the overhead of logging the data is significant. It is however useful for determining profiler bugs
@@ -413,7 +416,7 @@ Second, there is the counter value, discussed below. Third, there is a parameter
 whilst in kernel or user space. You can configure these separately for each counter.
 </para>
 <para>
-So you must specify a counter value with the <option>--ctrX-count</option> option, where <option>X</option>
+So you must specify a counter value with the <option>&mdash;ctrX-count</option> option, where <option>X</option>
 is the logical counter number in the range 0-3 (0-1 for Intel processors, which only have two counters). 
 Using multiple counters is useful for profiling several aspects of the same running program.
 After each overflow event, the counter will be re-initialised
@@ -445,31 +448,31 @@ The following files will be present :
 	<varlistentry>
 		<term><filename>bufsize</filename></term>
 		<listitem><para>
-		The buffer size, corresponding to the <option>--buffer-size</option> option.
+		The buffer size, corresponding to the <option>&mdash;buffer-size</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>hashsize</filename></term>
 		<listitem><para>
-		The hash table size, corresponding to the <option>--hash-table-size</option> option.
+		The hash table size, corresponding to the <option>&mdash;hash-table-size</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>kernel_only</filename></term>
 		<listitem><para>
-		Corresponding to the <option>--kernel-only</option> option.
+		Corresponding to the <option>&mdash;kernel-only</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>pgrp_filter</filename></term>
 		<listitem><para>
-		Corresponding to the <option>--pgrp-filter</option> option.
+		Corresponding to the <option>&mdash;pgrp-filter</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><filename>pid_filter</filename></term>
 		<listitem><para>
-		Corresponding to the <option>--pid-filter</option> option.
+		Corresponding to the <option>&mdash;pid-filter</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -504,7 +507,7 @@ The following files will be present :
 		The numeric event value. You can convert from symbolic event names to numeric values like so :
 		</para><para><command>echo `op_help CPU_CLK_UNHALTED` &gt;/proc/sys/dev/oprofile/0/0/event</command>
 		You can override the detection of your cpu type with:
-		<command>op_help --cpu-type=3 RETIRED_INSNS</command> (for example) to see Athlon events on a PII.
+		<command>op_help &mdash;cpu-type=3 RETIRED_INSNS</command> (for example) to see Athlon events on a PII.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -621,7 +624,7 @@ each enabled counter. As the NMI handler is in-kernel, this avoids the problem.
 <title>pid/pgrp filter</title>
 <para>There are situations where you are only interested in the profiling results of a particular
 running process, or process group. You can set
-the pid/pgrp values via the <filename>--pid-filter</filename> and <filename>--pgrp-filter</filename>
+the pid/pgrp values via the <filename>&mdash;pid-filter</filename> and <filename>&mdash;pgrp-filter</filename>
 options to <command>op_start</command>, or by setting the relevant sysctls as mentioned in <xref linkend="sysctl">.
 </para>
 </sect1>
@@ -682,59 +685,59 @@ profiles are supported, however.
 Some interesting options of the post-processor :
 <variablelist>
 	<varlistentry>
-		<term><option>--samples-file</option></term>
+		<term><option>&mdash;samples-file</option></term>
 		<listitem><para>
 		The samples file to use. This is not necessary, as it can be derived from the filename of the
 		absolute-path-specified binary image.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--image-file</option></term>
+		<term><option>&mdash;image-file</option></term>
 		<listitem><para>
 		The binary image (shared library, kernel vmlinux, or program) to produce data for.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--demangle</option></term>
+		<term><option>&mdash;demangle</option></term>
 		<listitem><para>
 		Demangle C++ symbol names.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--counter</option></term>
+		<term><option>&mdash;counter</option></term>
 		<listitem><para>
 		Which counter (0 - 3) to extract information for.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--list-symbols</option></term>
+		<term><option>&mdash;list-symbols</option></term>
 		<listitem><para>
 		List a histogram of sample counts against symbols.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--list-symbol</option></term>
+		<term><option>&mdash;list-symbol</option></term>
 		<listitem><para>
 		Provide a detailed listing for the specified symbol. A future release should allow a full source annotation facility, but not now, Bernard.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--dump-gprof-file</option></term>
+		<term><option>&mdash;dump-gprof-file</option></term>
 		<listitem><para>
 		Dump output to the specified file in <command>gprof</command> format. If you specify <filename>gmon.out</filename>,
 		you can then call <command>gprof -p &lt;binary&gt;</command>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--list-all-symbols-details</option></term>
+		<term><option>&mdash;list-all-symbols-details</option></term>
 		<listitem><para>
 		Provide a detailed listing for all symbols.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--output-linenr-info</option></term>
+		<term><option>&mdash;output-linenr-info</option></term>
 		<listitem><para>
-		Add filename::linenr info for all samples, usable only with --list-all-symbols-details.
+		Add filename::linenr info for all samples, usable only with &mdash;list-all-symbols-details or &mdash;list-symbol.
 		</para></listitem>
 	</varlistentry>
 </variablelist>
@@ -761,50 +764,50 @@ and this leads to crediting one line of source for samples not really "owned" by
 The options allowed are :
 <variablelist>
 	<varlistentry>
-		<term><option>--assembly</option></term>
+		<term><option>&mdash;assembly</option></term>
 		<listitem><para>
 		<!-- FIXME: update if this changes -->
 		Output assembly code. Currently the assembly code is sorted by increasing order on the vma
-		address but the <option>--sort-by-counter</option> provide a filtering option for assembly output.
+		address but the <option>&mdash;sort-by-counter</option> provide a filtering option for assembly output.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--source-with-assembly</option></term>
+		<term><option>&mdash;source-with-assembly</option></term>
 		<listitem><para>
-		Output assembly code mixed with the source file, imply <option>--assembly</option>.
+		Output assembly code mixed with the source file, imply <option>&mdash;assembly</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--sort-by-counter counter_nr</option></term>
+		<term><option>&mdash;sort-by-counter counter_nr</option></term>
 		<listitem><para>
 		Sort by decreasing number of samples on counter_nr. For assembly output this option provide only
 		a filtering and not a sort order.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--with-more-than-samples percent_samples</option></term>
+		<term><option>&mdash;with-more-than-samples percent_samples</option></term>
 		<listitem><para>
 		Output source file or assembly symbol which contains at least percent_samples. Note that you can only
 output one complete source file, there is no way to select only certain symbols in the source file. Can
-not be combined with <option>--with-more-samples</option>.
+not be combined with <option>&mdash;with-more-samples</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--until-more-than-samples percent_samples</option></term>
+		<term><option>&mdash;until-more-than-samples percent_samples</option></term>
 		<listitem><para>
 		Output source file or assembly symbol until the amount of samples outputted reach percent_samples. See the note
-above. Can not be combined with <option>--with-more-than-samples</option>.
+above. Can not be combined with <option>&mdash;with-more-than-samples</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--samples-file</option></term>
+		<term><option>&mdash;samples-file</option></term>
 		<listitem><para>
-		Specify the samples file. At least one of the <option>--samples-file</option> or
-<option>--image-file</option> must be specifed.
+		Specify the samples file. At least one of the <option>&mdash;samples-file</option> or
+<option>&mdash;image-file</option> must be specifed.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--image-file</option></term>
+		<term><option>&mdash;image-file</option></term>
 		<listitem><para>
 		Specify the image file.
 		</para></listitem>

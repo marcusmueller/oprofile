@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.31 2001/09/01 02:03:34 movement Exp $ */
+/* $Id: oprofiled.h,v 1.32 2001/09/18 02:16:55 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -92,6 +92,7 @@ struct opd_sample_file {
 
 struct opd_image {
 	struct opd_sample_file sample_files[OP_MAX_COUNTERS];
+	int hash;
 	/* NOT counted the size of footer, to allow quick access check  */
 	off_t len;
 	time_t mtime;	/* image file mtime */
