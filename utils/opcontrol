@@ -342,7 +342,6 @@ error_if_empty() {
 	fi
 }
 
-error_if_empty --kernel-range $val
 # get and check specified options
 do_options() {
 	while [ "$#" -ne 0 ]
