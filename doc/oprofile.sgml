@@ -226,9 +226,11 @@ This event is useful as profiles resulting generally correspond to time-spent pr
 <para>
 A quick <command>ps ax</command> confirms that the daemon (<command>oprofiled</command>) has started.
 Data is now being collected in the kernel. Now we can do whatever we like ... although in this case I'm profiling the C++ application
-<ulink url="http://www.lyx.org/">LyX</ulink>, previously compiled using the <option>-g</option> option to <command>g++</command>.
+<ulink url="http://www.lyx.org/">LyX</ulink>.
 Note that unlike <command>gprof</command>, no instrumentation (<option>-pg</option> and <option>-a</option> options to <command>gcc</command>)
-is necessary. This is major factor in achieving the low overhead of OProfile.
+is necessary. This is major factor in achieving the low overhead of OProfile. Compiling with debug symbols (the <option>-g</option>
+option) is not necessary to get a basic function-based profile listing, but it must be used in order to retrieve line number
+information and create annotated source.
 </para>
 <para>
 Rather than wait for the buffers to fill up, I now force the profiling data to be processed with :
