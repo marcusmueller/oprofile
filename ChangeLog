@@ -1,3 +1,15 @@
+2004-10-15 Maynard Johnson <maynardj@us.ibm.com>
+
+	* events/Makefile.am:
+	* oprofile/events/ppc64/970/event_mappings:
+	* oprofile/events/ppc64/970/events:
+	* oprofile/events/ppc64/970/unit_masks:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/op_help.c:
+	* utils/opcontrol: Added ppc64/970 support.
+
 2004-10-14  Greg Banks  <gnb@melbourne.sgi.com>
 
 	* configure.in:
