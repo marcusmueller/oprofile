@@ -3,13 +3,15 @@
  
 o test test test
  
-Later
------
+0.0.9 task list
+---------------
 
+o user request: op_time that shows /all/ available symbols (with correct %age).
+  This must handle images with no symbols, so container must contain either a symbol + values,
+or a file.
+ 
 o more discussion of problematic code needs to go in the "interpreting" section. 
   Maybe you should add the nasm tricks somewhere Phil ?
- 
-? o move .oprofile to name=value pairs to avoid conflicts on change.
  
 o prepare for rtc:
 	- move apic init to module init
@@ -17,51 +19,50 @@ o prepare for rtc:
 	- remove user-space proc type code
 	- probe module on start to get proc type
 	- generalise module start/stop/interrupt code (code move)
+o Bob's rtc patch ?
+ 
+o difference between two profile session. Difference must be made at source level. 
+  (This is a part of post-prof)
+
+Before 1.0
+----------
+
+ o - test it to hell and back
+ o - check documentation
+ o user request:  kernel 2.2 support 
+ o post-prof GUI ? (big job)
+ o use a filelock rather a sleep to synchronize op_start and daemon.
+ o check chroot() processes and the path hash stuff
+
+Later
+-----
+
+? o move .oprofile to name=value pairs to avoid conflicts on change.
 
 o determine where we need ctx_sw_on/off to prevent pre-emption + test
  
 o move from racy sysctl to procfs, if it can be done nicely
 
-o can we provide a small setuid helper for starting/stopping/flushing the profiler ?
-  is it a good idea ?
- 
-o Bob's rtc patch ?
- 
 o can we add some code for linux kernel spinlock contention in .text.lock, i.e.
   process the code in this section specially in the post-profile ?
 
 o pentium 4 patches ?
  
-o post-prof GUI ? (big job)
-
-o difference between two profile session. Difference must be made at source level. 
-  (This is a part of post-prof)
-
 o integrate dasm, probably the best way is to allow to fall back to objdump.
 
 o turn (or only compile) daemon in C++ to allow more code sharing with pp/gui
   is it a good idea ?
 
-o use a filelock rather a sleep to synchronize op_start and daemon.
-
-Correctness
------------
-
-o check chroot() processes and the path hash stuff
 o negative process entries in the daemon - a fork() into the pid would always succeed,
   in the meantime count the missed samples, possibly try to get info via /proc again ...
 
 o maybe we should support a CPU mask for enabling counters (useful with
   processor pinning ?) 
 
-Performance
------------
-
 o the interrupt handler code could probably be improved by moving into asm
+
 o can we fold in the "untouched sample entry" case in hash table to another case ?
-
-WBNI
-----
-
+ 
 o we don't really need a vmlinux file during profiling ...
+ 
 o Other x86 processors
