@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.103 2002/09/23 01:01:48 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.104 2002/09/23 01:08:32 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -108,7 +108,7 @@ AX_COMPILE_OPTION(CONFIG_OPROFILE_MODULE, OPROFILE_25=yes, OPROFILE_25=$OPROFILE
 AC_SUBST(OPROFILE_25)
 AC_MSG_RESULT($OPROFILE_25)
 
-if test "$OPROFILE_25" = "yes"; then
+if test "$OPROFILE_25" = "no"; then
 	dnl Check if we need to build the module with extra flags
 	dnl FIXME this fix 2.5.19 and 2.5.20 build but perhaps its not the right way
 	AC_MSG_CHECKING([whether module compilation need -DMODULE])
