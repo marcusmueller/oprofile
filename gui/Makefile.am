@@ -7,8 +7,7 @@ dist_sources = \
 	oprof_start_main.cpp \
 	oprof_start.h \
 	oprof_start_config.h \
-	oprof_start_util.h \
-	persistent_config.h
+	oprof_start_util.h
 
 EXTRA_DIST = $(dist_sources)
 

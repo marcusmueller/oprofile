@@ -184,11 +184,9 @@ oprof_start::oprof_start()
 	events_list->header()->hide();
 	events_list->setSorting(-1);
 
-	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr) {
-		load_event_config_file(ctr);
-	}
-
 	read_set_events();
+
+	display_event(current_events[current_event]);
 
 	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr) {
 		counter_combo->insertItem("");
@@ -284,69 +282,11 @@ void oprof_start::load_config_file()
 }
 
 
-void oprof_start::load_event_config_file(uint ctr)
-{
-	ostringstream ss;
-
-	ss << get_user_filename(".oprofile/oprof_start_event");
-	ss << "#" << ctr;
-
-	string const name = ss.str();
-
-	ifstream in(name.c_str());
-	if (!in) {
-		if (!check_and_create_config_dir())
-			return;
-
-		ofstream out(name.c_str());
-		if (!out) {
-			string msg = "Unable to open configuration file ";
-			msg += name;
-			QMessageBox::warning(this, 0, msg.c_str());
-			return;
-		}
-		return;
-	}
-
-	// need checking on the key validity :(
-	in >> event_cfgs[ctr];
-}
-
-
-bool oprof_start::save_event_config_file(uint ctr)
-{
-	if (!check_and_create_config_dir())
-		return false;
-
-	ostringstream ss;
-
-	ss << get_user_filename(".oprofile/oprof_start_event");
-	ss << "#" << ctr;
-
-	string const name = ss.str();
-
-	ofstream out(name.c_str());
-	if (!out) {
-		string msg = "Unable to save configuration file ";
-		msg += name;
-		QMessageBox::warning(this, 0, msg.c_str());
-		return false;
-	}
-
-	out << event_cfgs[ctr];
-
-	return true;
-}
-
-
 // user request a "normal" exit so save the config file.
 void oprof_start::accept()
 {
 	// record the previous settings
 	record_selected_event_config();
-
-	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr)
-		save_event_config_file(ctr);
 
 	save_config();
 
@@ -451,7 +391,7 @@ void oprof_start::display_event(op_event_descr const * descrp)
 	user_ring_count_cb->setEnabled(true);
 	event_count_edit->setEnabled(true);
 
-	persistent_config_t<event_setting> const & cfg = event_cfgs[current_event];
+	event_setting_map & cfg = event_cfgs[current_event];
 
 	os_ring_count_cb->setChecked(cfg[descrp->name].os_ring_count);
 	user_ring_count_cb->setChecked(cfg[descrp->name].user_ring_count);
@@ -508,7 +448,7 @@ void oprof_start::record_selected_event_config()
 	if (!curr)
 		return;
 
-	persistent_config_t<event_setting> & cfg = event_cfgs[current_event];
+	event_setting_map & cfg = event_cfgs[current_event];
 	string name(curr->name);
 
 	cfg[name].count = event_count_edit->text().toUInt();
@@ -644,7 +584,7 @@ void oprof_start::setup_unit_masks(op_event_descr const & descr)
 	if (!um || um->unit_type_mask == utm_mandatory)
 		return;
 
-	persistent_config_t<event_setting> const & cfg = event_cfgs[current_event];
+	event_setting_map & cfg = event_cfgs[current_event];
 
 	unit_mask_group->setExclusive(um->unit_type_mask == utm_exclusive);
 
@@ -726,7 +666,7 @@ void oprof_start::on_start_profiler()
 		if (!current_events[ctr])
 			continue;
 
-		persistent_config_t<event_setting> const & cfg = event_cfgs[ctr];
+		event_setting_map & cfg = event_cfgs[ctr];
 
 		op_event_descr const * descr = current_events[ctr];
 
@@ -812,7 +752,7 @@ bool oprof_start::save_config()
 
 	if (cpu_type == CPU_RTC) {
 		// FIXME: obsolete ?
-		persistent_config_t<event_setting> const & cfg = event_cfgs[0];
+		event_setting_map & cfg = event_cfgs[0];
 		op_event_descr const * descr = current_events[0];
 		args.push_back("--rtc-value=" + tostr(cfg[descr->name].count));
 	} else {
@@ -824,14 +764,13 @@ bool oprof_start::save_config()
 
 		for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
 			if (!current_events[ctr]) {
-//				tmpargs.push_back("--event=none");
 				continue;
 			}
 
 
 			one_enabled = true;
 
-			persistent_config_t<event_setting> const & cfg = event_cfgs[ctr];
+			event_setting_map & cfg = event_cfgs[ctr];
 
 			op_event_descr const * descr = current_events[ctr];
 

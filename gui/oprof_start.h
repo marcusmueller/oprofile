@@ -13,11 +13,11 @@
 #define OPROF_START_H
 
 #include <vector>
+#include <map>
 
 #include "ui/oprof_start.base.h"
 #include "oprof_start_config.h"
 #include "oprof_start_util.h"
-#include "persistent_config.h"
 
 #include "op_hw_config.h"
 #include "op_events.h"
@@ -110,10 +110,6 @@ private:
 
 	/// read the events set in daemonrc
 	void read_set_events();
-	/// load the event config file
-	void load_event_config_file(uint ctr);
-	/// save the event config file
-	bool save_event_config_file(uint ctr);
 	/// load the extra config file
 	void load_config_file();
 	/// save the config
@@ -131,7 +127,8 @@ private:
 	std::vector<op_event_descr const *> current_events;
 
 	/// current event configs for each counter
-	persistent_config_t<event_setting> event_cfgs[OP_MAX_COUNTERS];
+	typedef std::map<std::string, event_setting> event_setting_map;
+	event_setting_map event_cfgs[OP_MAX_COUNTERS];
 
 	/// current config
 	config_setting config;

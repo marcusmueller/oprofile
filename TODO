@@ -6,8 +6,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.6 release
 -----------
 
- o update opcontrol --events stuff: rtc, gui (phe opcontrol seems to work
-  GUI is out of date)
+ o gui: --verbose is not saved, ui has something wrong (start with a very
+  small dialog box, dialog box resize itself depending on user input + test)
 
 0.7 release
 -----------

@@ -1,5 +1,12 @@
 2003-07-15  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* gui/persistent_config.h: remove
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp: debug, remove dead code, works better now, see
+	  TODO
+
+2003-07-15  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* gui/oprof_start.h:
 	* gui/oprof_start.cpp:
 	* gui/oprof_start_util.cpp: re-enable partially the gui, sorta of
