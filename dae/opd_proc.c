@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.37 2000/09/07 20:16:44 moz Exp $ */
+/* $Id: opd_proc.c,v 1.38 2000/09/08 22:09:57 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -21,8 +21,8 @@ extern int ctr0_um;
 extern int ctr1_um;
 extern char *hashmap;
 
-/* LRU list of processes */
-static struct opd_proc *opd_procs;
+/* hash of process lists */
+static struct opd_proc *opd_procs[OPD_MAX_PROC_HASH];
 
 struct opd_footer footer = { OPD_MAGIC, OPD_VERSION, 0, 0, 0, 0, 0, };
 
@@ -57,31 +57,38 @@ void opd_alarm(int val __attribute__((unused)))
 {
 	struct opd_proc *proc;
 	struct opd_proc *next;
-	unsigned int i;
+	uint i;
 
 	for (i=0; i < nr_images; i++) {
 		if (opd_images[i].fd!=-1)
 			msync(opd_images[i].start, opd_images[i].len, MS_ASYNC);
 	}
 
-	proc = opd_procs;
+	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
+		proc = opd_procs[i];
 
-	while (proc) {
-		next=proc->next;
-		if (proc->dead)
-			opd_delete_proc(proc);
-		proc=next;
+		while (proc) {
+			next=proc->next;
+			if (proc->dead)
+				opd_delete_proc(proc);
+			proc=next;
+		}
 	}
 
+	/* FIXME: div by zero */
 	printf("%s stats:\n",opd_get_time());
 	printf("Nr. kernel samples: %lu\n",opd_stats[OPD_KERNEL]);
 	printf("Nr. samples lost due to no process information: %lu\n",opd_stats[OPD_LOST_PROCESS]);
 	printf("Nr. process samples in user-space: %lu\n",opd_stats[OPD_PROCESS]);
 	printf("Nr. samples lost due to no map information: %lu\n",opd_stats[OPD_LOST_MAP_PROCESS]);
+	if (opd_stats[OPD_PROC_QUEUE_ACCESS]) {
 	printf("Average depth of search of proc queue: %f\n",
 		(double)opd_stats[OPD_PROC_QUEUE_DEPTH]/(double)opd_stats[OPD_PROC_QUEUE_ACCESS]);
+	}
+	if (opd_stats[OPD_MAP_ARRAY_DEPTH]) {
 	printf("Average depth of iteration through mapping array: %f\n",
 		(double)opd_stats[OPD_MAP_ARRAY_DEPTH]/(double)opd_stats[OPD_MAP_ARRAY_DEPTH]);
+	}
 	printf("Nr. sample dumps: %lu\n",opd_stats[OPD_DUMP_COUNT]);
 	fflush(stdout);
 
@@ -180,7 +187,7 @@ static void opd_open_image(struct opd_image *image)
 	*c = '\0';
 
 	dprintf("Statting $%s$\n", image->name);
- 
+
 	/* for each byte in original, two u32 counters */
 	image->len = opd_get_fsize(image->name)*sizeof(u32)*2;
 	
@@ -439,10 +446,21 @@ static struct opd_proc * opd_new_proc(struct opd_proc *prev, struct opd_proc *ne
 	proc->pid=0;
 	proc->nr_maps=0;
 	proc->max_nr_maps=0;
+	proc->last_map=0;
 	proc->dead=0;
 	proc->prev=prev;
 	proc->next=next;
 	return proc;
+}
+
+/**
+ * proc_hash - hash pid value
+ * @pid: pid value to hash
+ *
+ */
+inline static uint proc_hash(u16 pid)
+{
+	return ((pid>>4) ^ (pid)) % OPD_MAX_PROC_HASH;
 }
 
 /**
@@ -455,7 +473,7 @@ static struct opd_proc * opd_new_proc(struct opd_proc *prev, struct opd_proc *ne
 static void opd_delete_proc(struct opd_proc *proc)
 {
 	if (!proc->prev)
-		opd_procs=proc->next;
+		opd_procs[proc_hash(proc->pid)]=proc->next;
 	else
 		proc->prev->next=proc->next;
 
@@ -477,6 +495,7 @@ static void opd_init_maps(struct opd_proc *proc)
 	proc->maps = opd_calloc0(sizeof(struct opd_map), OPD_DEFAULT_MAPS);
 	proc->max_nr_maps = OPD_DEFAULT_MAPS;
 	proc->nr_maps = 0;
+	proc->last_map = 0;
 }
 
 /**
@@ -491,12 +510,13 @@ static void opd_init_maps(struct opd_proc *proc)
 static struct opd_proc *opd_add_proc(u16 pid)
 {
 	struct opd_proc *proc;
+	uint hash = proc_hash(pid);
 
-	proc=opd_new_proc(NULL,opd_procs);
-	if (opd_procs)
-		opd_procs->prev=proc;
+	proc=opd_new_proc(NULL,opd_procs[hash]);
+	if (opd_procs[hash])
+		opd_procs[hash]->prev=proc;
 
-	opd_procs=proc;
+	opd_procs[hash]=proc;
 
 	opd_init_maps(proc);
 	proc->pid=pid;
@@ -531,6 +551,7 @@ static void opd_kill_maps(struct opd_proc *proc)
 	proc->maps=NULL;
 	proc->nr_maps=0;
 	proc->max_nr_maps=0;
+	proc->last_map=0;
 	opd_init_maps(proc);
 }
 
@@ -541,16 +562,16 @@ static void opd_kill_maps(struct opd_proc *proc)
  * Perform LRU on the process list by moving it to
  * the head of the process list.
  */
-inline static void opd_do_proc_lru(struct opd_proc *proc)
+inline static void opd_do_proc_lru(struct opd_proc **head, struct opd_proc *proc)
 {
 	if (proc->prev) {
 		proc->prev->next = proc->next;
 		if (proc->next)
 			proc->next->prev = proc->prev;
-		opd_procs->prev = proc;
+		(*head)->prev = proc;
 		proc->prev=NULL;
-		proc->next=opd_procs;
-		opd_procs=proc;
+		proc->next=*head;
+		(*head)=proc;
 	}
 }
 
@@ -566,13 +587,13 @@ static struct opd_proc *opd_get_proc(u16 pid)
 {
 	struct opd_proc *proc;
 
-	proc = opd_procs;
+	proc = opd_procs[proc_hash(pid)];
 
 	opd_stats[OPD_PROC_QUEUE_ACCESS]++;
 	while (proc) {
 		opd_stats[OPD_PROC_QUEUE_DEPTH]++;
 		if (pid==proc->pid) {
-			opd_do_proc_lru(proc);
+			opd_do_proc_lru(&opd_procs[proc_hash(pid)],proc);
 			return proc;
 		}
 		proc=proc->next;
@@ -878,6 +899,17 @@ void opd_put_sample(const struct op_sample *sample)
 		return;
 	}
 
+	if (opd_is_in_map(&proc->maps[proc->last_map],sample->eip)) {
+		i = proc->last_map;
+		if (proc->maps[i].image!=-1) {
+		dprintf("DO_PUT_SAMPLE (LAST_MAP): calc offset 0x%.8x, map start 0x%.8x, end 0x%.8x, offset 0x%.8x, name $%s$\n",
+			offset, proc->maps[i].start, proc->maps[i].end, proc->maps[i].offset, opd_images[proc->maps[i].image].name);
+			opd_put_image_sample(&opd_images[proc->maps[i].image],opd_map_offset(&proc->maps[i],sample->eip),sample->count);
+		}
+		opd_stats[OPD_PROCESS]++;
+		return;
+	}
+
 	/* look for which map and find offset */
 	/* FIXME: binary search ? */
 	opd_stats[OPD_MAP_ARRAY_ACCESS]++;
@@ -889,6 +921,7 @@ void opd_put_sample(const struct op_sample *sample)
 				offset, proc->maps[i].start, proc->maps[i].end, proc->maps[i].offset, opd_images[proc->maps[i].image].name);
 				opd_put_image_sample(&opd_images[proc->maps[i].image],offset,sample->count);
 			}
+			proc->last_map = i;
 			opd_stats[OPD_PROCESS]++;
 			return;
 		}

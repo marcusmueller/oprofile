@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.14 2000/09/07 20:15:14 moz Exp $ */
+/* $Id: oprofiled.h,v 1.15 2000/09/08 22:09:58 moz Exp $ */
 
 #ifndef OPROFILED_H
 #define OPROFILED_H
@@ -44,6 +44,9 @@
 
 /* maximum nr. of kernel modules */
 #define OPD_MAX_MODULES 64
+
+/* size of process hash table */
+#define OPD_MAX_PROC_HASH 128
 
 #define NR_CPUS 32
 
@@ -164,6 +167,7 @@ struct opd_proc {
 	struct opd_map *maps;
 	unsigned int nr_maps;
 	unsigned int max_nr_maps;
+	unsigned int last_map;
 	u16 pid;
 	int dead;
 	struct opd_proc *prev;
