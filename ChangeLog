@@ -1,5 +1,15 @@
 2003-03-23  John Levon  <levon@movementarian.org>
 
+	* configure.in:
+	* m4/Makefile.am:
+	* m4/copyifchange.m4:
+	* m4/docbook.m4:
+	* m4/kerneloption.m4:
+	* m4/kernelversion.m4:
+ 	* m4/resultyn.m4: move configure.in macros to m4/
+
+2003-03-23  John Levon  <levon@movementarian.org>
+
 	* m4/ChangeLog: add comment
 
 	* m4/typedef.m4: can't use AC_LANG_PUSH/POP

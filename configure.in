@@ -25,114 +25,6 @@ dnl needed for module build
 OPROFILE_DIR=`pwd`
 AC_SUBST(OPROFILE_DIR)
  
-dnl -- local macros -- 
- 
-dnl AX_MSG_RESULT_YN(a)
-dnl results "yes" iff a==1, "no" else
-AC_DEFUN(AX_MSG_RESULT_YN, [x=no
-test "x$1" = "x1" && x=yes
-AC_MSG_RESULT($x)])
-
-dnl AX_COMPILE_OPTION(option, action-if-found, action-if-not-found)
-dnl see if autoconf.h defines the option
-AC_DEFUN(AX_COMPILE_OPTION, [
-SAVE_CFLAGS=$CFLAGS
-CFLAGS="-I$KINC -O2 -D__KERNEL__"
-AC_TRY_COMPILE( [#include <linux/config.h>],
-[
-#ifndef $1
-break_me_hard(\\\);
-#endif
-],[$2],[$3],)
-CFLAGS=$SAVE_CFLAGS
-])
-
-dnl AX_KERNEL_VERSION(major, minor, level, comparison, action-if-true, action-if-false)
-AC_DEFUN(AX_KERNEL_VERSION, [
-SAVE_CFLAGS=$CFLAGS
-CFLAGS="-I$KINC -D__KERNEL__ -Werror"
-AC_TRY_COMPILE( 
-  [
-  #include <linux/version.h>
-  #include <linux/config.h>
-  ],
-  [
-  #if LINUX_VERSION_CODE $4 KERNEL_VERSION($1, $2, $3)
-  break_me_hard(\\\);
-  #endif
-  ],
-[$5],[$6],)
-CFLAGS=$SAVE_CFLAGS
-])
-
-dnl AX_COPY_IF_CHANGE(source, dest)
-dnl copy source to dest if they don't compare equally or if dest doesn't exist
-AC_DEFUN(AX_COPY_IF_CHANGE, [
-if test -r $2; then
-	if cmp $1 $2 > /dev/null; then
-		echo $2 is unchanged
-	else
-		cp -f $1 $2
-	fi
-else
-	cp -f $1 $2
-fi
-])
-
-dnl AX_CHECK_DOCBOOK
-AC_DEFUN(AX_CHECK_DOCBOOK, [
-# It's just rude to go over the net to build
-XSLTPROC_FLAGS=--nonet
-DOCBOOK_ROOT=
-if test ! -f /etc/xml/catalog; then
-	for i in /usr/share/sgml/docbook/stylesheet/xsl/nwalsh /usr/share/sgml/docbook/xsl-stylesheets/;
-	do
-		if test -d "$i"; then
-			DOCBOOK_ROOT=$i
-		fi
-	done
-
-	# Last resort - try net
-	if test -z "$DOCBOOK_ROOT"; then
-		XSLTPROC_FLAGS=
-	fi
-else
-	XML_CATALOG=/etc/xml/catalog
-	CAT_ENTRY_START='<!--'
-	CAT_ENTRY_END='-->'
-fi
-
-AC_CHECK_PROG(XSLTPROC,xsltproc,xsltproc,)
-XSLTPROC_WORKS=no
-if test -n "$XSLTPROC"; then
-	AC_MSG_CHECKING([whether xsltproc works])
-
-	if test -n "$XML_CATALOG"; then
-		DB_FILE="http://docbook.sourceforge.net/release/xsl/current/xhtml/docbook.xsl"
-	else
-		DB_FILE="$DOCBOOK_ROOT/docbook.xsl"
-	fi
-
-	$XSLTPROC $XSLTPROC_FLAGS $DB_FILE >/dev/null 2>&1 << END
-<?xml version="1.0" encoding='ISO-8859-1'?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
-<book id="test">
-</book>
-END
-	if test "$?" = 0; then
-		XSLTPROC_WORKS=yes
-	fi
-	AC_MSG_RESULT($XSLTPROC_WORKS)
-fi
-AM_CONDITIONAL(have_xsltproc, test "$XSLTPROC_WORKS" = "yes")
-
-AC_SUBST(XML_CATALOG)
-AC_SUBST(XSLTPROC_FLAGS)
-AC_SUBST(DOCBOOK_ROOT)
-AC_SUBST(CAT_ENTRY_START)
-AC_SUBST(CAT_ENTRY_END)
-])
-
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
@@ -155,8 +47,8 @@ if test "$OPROFILE_25" != "yes"; then
 	KINC=$KSRC/include
 	AC_SUBST(KINC)
 
-	AX_COMPILE_OPTION(CONFIG_OPROFILE, OPROFILE_25=yes, OPROFILE_25=no)
-	AX_COMPILE_OPTION(CONFIG_OPROFILE_MODULE, OPROFILE_25=yes, OPROFILE_25=$OPROFILE_25)
+	AX_KERNEL_OPTION(CONFIG_OPROFILE, OPROFILE_25=yes, OPROFILE_25=no)
+	AX_KERNEL_OPTION(CONFIG_OPROFILE_MODULE, OPROFILE_25=yes, OPROFILE_25=$OPROFILE_25)
 fi
 AC_MSG_RESULT($OPROFILE_25)
 
@@ -204,7 +96,7 @@ if test "$OPROFILE_25" = "no"; then
 	 
 	arch="unknown"
 	AC_MSG_CHECKING(for x86-64 architecture)
-	AX_COMPILE_OPTION(CONFIG_X86_64, x8664=1, x8664=0)
+	AX_KERNEL_OPTION(CONFIG_X86_64, x8664=1, x8664=0)
 	AX_MSG_RESULT_YN($x8664)
 	BUILD_HAMMER=no
 	if test "$x8664" -eq 1; then
@@ -212,14 +104,14 @@ if test "$OPROFILE_25" = "no"; then
 		BUILD_HAMMER=yes
 	else
 		AC_MSG_CHECKING(for x86 architecture)
-		AX_COMPILE_OPTION(CONFIG_X86, x86=1, x86=0)
-		AX_COMPILE_OPTION(CONFIG_X86_WP_WORKS_OK, x86=1, x86=$x86)
+		AX_KERNEL_OPTION(CONFIG_X86, x86=1, x86=0)
+		AX_KERNEL_OPTION(CONFIG_X86_WP_WORKS_OK, x86=1, x86=$x86)
 		AX_MSG_RESULT_YN($x86)
 		test "$x86" = 1 && arch="x86"
 		
 		if test "$arch" = "unknown"; then
 	  		AC_MSG_CHECKING(for ia64 architecture)
-	  		AX_COMPILE_OPTION(CONFIG_IA64, ia64=1, ia64=0)
+	  		AX_KERNEL_OPTION(CONFIG_IA64, ia64=1, ia64=0)
 	  		AX_MSG_RESULT_YN($ia64)
 	  		test "$ia64" = 1 && arch="ia64"
 		fi
@@ -240,7 +132,7 @@ if test "$OPROFILE_25" = "no"; then
 
 	dnl for now we do not support PREEMPT patch
 	AC_MSG_CHECKING([for preempt patch])
-	AX_COMPILE_OPTION(CONFIG_PREEMPT,preempt=1,preempt=0)
+	AX_KERNEL_OPTION(CONFIG_PREEMPT,preempt=1,preempt=0)
 	AX_MSG_RESULT_YN([$preempt])
 	test "$preempt" = 0 || AC_MSG_ERROR([unsupported kernel configuration : CONFIG_PREEMPT])
 
