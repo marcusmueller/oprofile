@@ -188,7 +188,7 @@ merge_option handle_merge_option(vector<string> const & mergespec,
 	// if --merge all, don't warn about lib merging,
 	// it's not user friendly. Behaviour should still
 	// be correct.
-	if (exclude_dependent && merge_by.lib && !is_all) {
+	if (exclude_dependent && merge_by.lib && allow_lib && !is_all) {
 		cerr << "--merge=lib is meaningless "
 		     << "with --exclude-dependent" << endl;
 		exit(EXIT_FAILURE);

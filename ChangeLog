@@ -1,5 +1,10 @@
 2003-10-31  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/common_option.cpp: don't exit() if merge_by.lib is set through
+	  !allow_lib
+
+2003-10-31  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/opreport_options.cpp: move handle_merge_option() ...
 	* pp/common_option.h: 
 	* pp/common_option.cpp: here
