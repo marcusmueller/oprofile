@@ -43,6 +43,6 @@ int run_pp_tool(int argc, char const * argv[], pp_fct_run_t fct);
  * return the demangle_type of option or throw an exception if option
  * is not valid.
  */
-demangle_type handle_demangle_option(string const & option);
+demangle_type handle_demangle_option(std::string const & option);
 
 #endif /* !COMMON_OPTION_H */
