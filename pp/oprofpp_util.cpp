@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.26 2002/01/30 04:07:10 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.27 2002/02/05 05:42:01 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -399,7 +399,7 @@ static bool interesting_symbol(asymbol *sym)
 	if (streq("_init", sym->name))
 		return 0;
 
-	if (!(sym->flags & BSF_FUNCTION))
+	if (!(sym->flags & (BSF_FUNCTION | BSF_GLOBAL)))
 		return 0;
 
 	return 1;
@@ -607,7 +607,21 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 		} else
 			end = nr_samples;
 #else /* !USE_ELF_INTERNAL */
-		end = start + ((elf_symbol_type *)sym)->internal_elf_sym.st_size;
+		size_t length =
+			((elf_symbol_type *)sym)->internal_elf_sym.st_size;
+
+		// some asm symbol can have a zero length such system_call
+		// entry point in vmlinux. Calculate the length from the next
+		// symbol vma
+		if (length == 0) {
+			u32 next_offset = start;
+			if (next) {
+				next_offset = next->value +
+					next->section->filepos + sect_offset;
+			}
+			length = next_offset - start;
+		}
+		end = start + length;
 #endif /* USE_ELF_INTERNAL */
 	}
 	verbprintf("start 0x%x, end 0x%x\n", start, end); 

@@ -223,6 +223,24 @@ private:
 			 u32 start, u32 end, bfd_vma base_vma,
 			 const std::string & image_name);
 
+	/**
+	 * create an unique artificial symbol for a vma address range. The
+	 * vma range is only a hint of the maximum size of the created symbol.
+	 * We try this order to create the symbol.
+	 *  - find in abfd.bfd_syms a symbol which start at this vma, if ok
+	 *  we create giving it the size of the elf symbol but up to the
+	 *  nearest bfd_syms/syms.
+	 *  - create an unique symbol symbol as ?image_file_name#order
+	 * up to the nearest of bfd_syms/syms.
+	 *
+	 * The rationale here is to try to create symbols for alignment between
+	 * function as little as possible and to create meaningfull symbols
+	 * when the symbols exist but has been filtered by interresting symbols
+	 */ 
+	void create_artificial_symbol(const opp_bfd & abfd, bfd_vma start_vma,
+				      bfd_vma end_vma, size_t& order,
+				      size_t vma_size);
+
 	/// The symbols collected by oprofpp sorted by increased vma, provide
 	/// also a sort order on samples count for each counter.
 	symbol_container_t symbols;
