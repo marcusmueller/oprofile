@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.17 2000/10/05 02:01:12 moz Exp $ */
+/* $Id: oprofpp.c,v 1.18 2000/12/05 01:03:29 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -106,7 +106,7 @@ void printf_symbol(const char *name)
 		if (*cp) {
 			unmangled = cplus_demangle(cp,DMGL_PARAMS|DMGL_ANSI);
 			if (unmangled) {
-				/* FIXME: print underscores ? */
+				/* FIXME: print leading underscores ? */
 				printf("%s",unmangled);
 				free(unmangled);
 				return;
@@ -475,6 +475,8 @@ struct gmon_hdr {
  *
  * Dump gprof-format samples for the image specified by samplefile to
  * the file specified by gproffile.
+ *
+ * FIXME: this is totally broken (and never worked or was tested)
  */
 void do_dump_gprof(void)
 {

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.41 2000/11/17 00:39:49 moz Exp $ */
+/* $Id: oprofile.c,v 1.42 2000/12/05 01:03:25 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -177,28 +177,6 @@ void unmask_LVT_NMIs(void)
         apic_write(APIC_LVTPC, v & ~APIC_LVT_MASKED);
 }
 
-#define store_idt(addr) \
-	do { \
-	__asm__ __volatile__ ( "sidt %0" \
-		: "=m" (addr) \
-		: : "memory" ); } while (0)
-
-#define _set_gate(gate_addr,type,dpl,addr) \
-	do { \
-	  int __d0, __d1; \
-	  __asm__ __volatile__ ( "movw %%dx,%%ax\n\t" \
-		"movw %4,%%dx\n\t" \
-		"movl %%eax,%0\n\t" \
-		"movl %%edx,%1" \
-		:"=m" (*((long *) (gate_addr))), \
-		 "=m" (*(1+(long *) (gate_addr))), "=&a" (__d0), "=&d" (__d1) \
-		:"i" ((short) (0x8000+(dpl<<13)+(type<<8))), \
-		 "3" ((char *) (addr)),"2" (__KERNEL_CS << 16)); \
-	} while (0)
-
-struct _descr { u16 limit; u32 base; } __attribute__((__packed__));
-struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
-
 static ulong idt_addr;
 static ulong kernel_nmi;
 
@@ -317,7 +295,7 @@ static int __init apic_setup(void)
 	if (!APIC_INTEGRATED(GET_APIC_VERSION(val)))	
 		goto not_local_p6_apic;
 
-	/* LVT0,LVT1,LVTT,LVTPC FIXME: what about LVTERR ?*/
+	/* LVT0,LVT1,LVTT,LVTPC */
 	if (GET_APIC_MAXLVT(apic_read(APIC_LVR))!=4)
 		goto not_local_p6_apic;
 
@@ -350,7 +328,6 @@ static int __init apic_setup(void)
 	apic_write(APIC_LVTT, 0x0001031);
 
 	/* Divide configuration register */
-	/* FIXME: ref */
 	val = APIC_TDR_DIV_1;
 	apic_write(APIC_TDCR, val);
 

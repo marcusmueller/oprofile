@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.24 2000/11/14 00:46:28 moz Exp $ */
+/* $Id: oprofile.h,v 1.25 2000/12/05 01:03:26 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -36,8 +36,8 @@ struct _oprof_data {
 	uint buf_size; /* nr. in buffer */
 	uint ctr_count[2]; /* reset counter values */
 	uint nextbuf; /* next in buffer (atomic) */
-	u8 next; /* next sample in entry */
-	u8 ctrs; /* which counters are set */
+	u16 next; /* next sample in entry */
+	u16 ctrs; /* which counters are set */
 } __attribute__((__aligned__(SMP_CACHE_BYTES)));
 
 #define OP_CTR_0 0x1
@@ -58,13 +58,11 @@ struct _oprof_data {
 #define OP_BITS 2
 /* 1==mapping info, 0 otherwise */
 #define OP_MAPPING (1U<<15)
+/* FIXME: for pentium 4, this must be at least log2 18 bits. This will hurt
+ * performance only in ideal situations, so shouldn't be problem.
+ */
 /* 1==PERFCTR1, 0==PERFCTR0 */
 #define OP_COUNTER (1U<<14)
-/* FIXME: for things like TUX, where the value of PAGE_OFFSET
- * means that kernel/user addresses cannot be distinguished
- * by value, we need to add another bit for kernel/user,
- * but how ?
- */
 
 /* fork(),vfork(),clone() */
 #define OP_FORK ((1U<<15)|(1U<<0))
@@ -129,6 +127,32 @@ struct _oprof_data {
         } } while (0);
 
 asmlinkage void op_nmi(void);
+
+/* for installing and restoring the NMI handler */ 
+ 
+#define store_idt(addr) \
+	do { \
+		__asm__ __volatile__ ( "sidt %0" \
+			: "=m" (addr) \
+			: : "memory" ); \
+	} while (0)
+
+#define _set_gate(gate_addr,type,dpl,addr) \
+	do { \
+		int __d0, __d1; \
+		__asm__ __volatile__ ( \
+			"movw %%dx,%%ax\n\t" \
+			"movw %4,%%dx\n\t" \
+			"movl %%eax,%0\n\t" \
+			"movl %%edx,%1" \
+			:"=m" (*((long *) (gate_addr))), \
+			"=m" (*(1+(long *) (gate_addr))), "=&a" (__d0), "=&d" (__d1) \
+			:"i" ((short) (0x8000+(dpl<<13)+(type<<8))), \
+			"3" ((char *) (addr)),"2" (__KERNEL_CS << 16)); \
+	} while (0)
+
+struct _descr { u16 limit; u32 base; } __attribute__((__packed__));
+struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 
 /* If the do_nmi() patch has been applied, we can use the NMI watchdog */
 #ifdef OP_EXPORTED_DO_NMI

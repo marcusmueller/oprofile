@@ -1,7 +1,12 @@
-/* $Id: op_ioctl.h,v 1.1 2000/11/14 00:46:28 moz Exp $ */
+/* $Id: op_ioctl.h,v 1.2 2000/12/05 01:03:25 moz Exp $ */
 
 #ifndef OP_IOCTL_H
 #define OP_IOCTL_H
+
+/* FIXME: I knew this was too gross. If we ever support Pentium 4,
+ * we will have to use struct-passing, as we have 18 counters amongst
+ * other things.
+ */
 
 enum {
 

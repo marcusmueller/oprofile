@@ -1,0 +1,11 @@
+
+2000-04-11  John Levon  <moz@compsoc.man.ac.uk>
+
+	* ChangeLog: started ChangeLog (cue gc koan)
+	* op_ioctl.h: added FIXME comment
+	* oprofile.c: slight cleanup 
+	* oprofile.h: cleanups, use u16 for data->ctrs,
+		data->next
+	
+	* pp/oprofpp.c: added comments
+	* pp/oprofpp.h: fixed #defines
