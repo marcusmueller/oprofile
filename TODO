@@ -8,8 +8,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 
  o add separate_thread to opd_header or remove all separate from opd_header
  o thread separate GUI + docs
- o we need to handle thread separate without needing a useless -m tid
-   (several processes w/o using threads)
  o when --separate=thread, we really need to show the list of current
    classes on a merge failure so user can get help specifying tgid where
    relevant

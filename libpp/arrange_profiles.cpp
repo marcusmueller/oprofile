@@ -68,6 +68,36 @@ report_error(int axis, int newaxis)
 }
 
 
+/**
+ * check that two different axes are OK - this is only
+ * allowed if they are TGID,TID and for each class,
+ * tid == tgid
+ */
+bool allow_axes(profile_classes const & classes,
+                axis_types oldaxis, axis_types newaxis)
+{
+	// No previous axis - OK
+	if (oldaxis == AXIS_MAX)
+		return true;
+
+	if (oldaxis != AXIS_TID && oldaxis != AXIS_TGID)
+		return false;
+
+	if (newaxis != AXIS_TID && newaxis != AXIS_TGID)
+		return false;
+
+	vector<profile_class>::const_iterator it = classes.v.begin();
+	vector<profile_class>::const_iterator const end = classes.v.end();
+
+	for (; it != end; ++it) {
+		if (it->ptemplate.tgid != it->ptemplate.tid)
+			return false;
+	}
+
+	return true;
+}
+
+
 /// find the first sample file header in the class
 opd_header const get_header(profile_class const & pclass)
 {
@@ -193,11 +223,12 @@ void identify_classes(profile_classes & classes,
 	axis_types axis = AXIS_MAX;
 
 	for (size_t i = 0; i < AXIS_MAX; ++i) {
-		if (changed[i]) {
-			if (axis != AXIS_MAX)
-				report_error(axis, i);
-			axis = axis_types(i);
-		}
+		if (!changed[i])
+			continue;
+
+		if (!allow_axes(classes, axis, axis_types(i)))
+			report_error(axis, i);
+		axis = axis_types(i);
 	}
 
 	if (axis == AXIS_MAX) {
