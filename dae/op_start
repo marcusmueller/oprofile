@@ -1,11 +1,11 @@
 #!/bin/sh
-# $Id: op_start,v 1.4 2000/08/01 20:36:08 moz Exp $
+# $Id: op_start,v 1.5 2000/08/02 21:45:26 moz Exp $
 
 # quick and ugly interface
 # op_start --help and op_start --list-events have info
  
-BUF_SIZE=4096
-HASH_SIZE=1024 
+BUF_SIZE=8192
+HASH_SIZE=4096
 CTR0_TYPE=
 CTR1_TYPE=
 CTR0_UM=0
@@ -247,7 +247,9 @@ if [ "$MAP_FILE" != "" ]; then
 fi
 
 oprofiled $OPD_ARGS
-if [ "$?" != "0" ]
+sleep 2
+PID=`ps x | grep oprofiled | grep -v grep | awk '{print $1}'`
+if [ "$PID" = "" ]
 then
 	echo "Couldn't start oprofiled."
 	rmmod oprofile
