@@ -20,8 +20,8 @@
 
 #include "samples_file.h"
 
-#include <stdio.h>
-#include <errno.h>
+#include <cstdio>
+#include <cerrno>
 #include <unistd.h>
 
 #include <sstream>

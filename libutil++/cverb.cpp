@@ -17,6 +17,9 @@ std::ostream cverb(fout.rdbuf());
 
 void set_verbose(bool verbose)
 {
+	// Note: should really be std::ios_base::badbit
+	// but for now the old version will do
+ 
 	if (verbose)
 		cverb.rdbuf(std::cout.rdbuf());
 	else

@@ -95,7 +95,7 @@ void op_read_file(FILE * fp, void * buf, size_t size)
 	if (count != 1) {
 		if (feof(fp)) {
 			fprintf(stderr,
-				"oprofiled:op_read_file: read less than expected %d bytes\n",
+				"oprofiled:op_read_file: read less than expected %zd bytes\n",
 				size);
 		} else {
 			fprintf(stderr,
@@ -122,7 +122,7 @@ void op_write_file(FILE * fp, void const * buf, size_t size)
 
 	if (written != 1) {
 		fprintf(stderr,
-			"oprofiled:op_write_file: wrote less than expected: %d bytes.\n",
+			"oprofiled:op_write_file: wrote less than expected: %zd bytes.\n",
 			size);
 		exit(EXIT_FAILURE);
 	}
