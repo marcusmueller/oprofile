@@ -420,18 +420,6 @@ static inline int is_escape_code(uint64_t code)
 }
 
 
-static inline uint64_t get_buffer_value(void const * buffer, size_t pos)
-{
-	if (kernel_pointer_size == 4) {
-		uint32_t const * lbuf = buffer;
-		return lbuf[pos];
-	} else {
-		uint64_t const * lbuf = buffer;
-		return lbuf[pos];
-	}
-}
-
-
 static uint64_t pop_buffer_value(struct transient * trans)
 {
 	uint64_t val;
@@ -441,7 +429,14 @@ static uint64_t pop_buffer_value(struct transient * trans)
 		abort();
 	}
 
-	val = get_buffer_value(trans->buffer, 0);
+	if (kernel_pointer_size == 4) {
+		uint32_t const * lbuf = (void const *)trans->buffer;
+		val = *lbuf;
+	} else {
+		uint64_t const * lbuf = (void const *)trans->buffer;
+		val = *lbuf;
+	}
+
 	trans->remaining--;
 	trans->buffer += kernel_pointer_size;
 	return val;
@@ -523,34 +518,6 @@ static void code_unknown(struct transient * trans __attribute__((unused)))
 }
 
 
-static void get_tgid(struct transient * trans)
-{
-	int escape;
-	uint64_t code;
-
-	if (trans->remaining < 2)
-		return;
-
-	escape = is_escape_code(get_buffer_value(trans->buffer, 0));
-	code = get_buffer_value(trans->buffer, 1);
-
-	if (!escape || code != CTX_TGID_CODE)
-		return;
-
-	if (trans->remaining >= 3) {
-		verbprintf("CTX_TGID_CODE\n");
-		pop_buffer_value(trans);
-		pop_buffer_value(trans);
-		trans->tgid = pop_buffer_value(trans);
-		return;
-	}
-
-	/* -1, CTX_TGID_CODE, but no tgid - skip */
-	trans->tgid = -1;
-	trans->remaining = 0;
-}
-
-
 /**
  * There are two cases where we will not get a cookie switch after a context
  * switch so we must take care to update properly trans->image.
@@ -583,16 +550,19 @@ static void ctx_switch_set_image(struct transient * trans)
 
 static void code_ctx_switch(struct transient * trans)
 {
-	if (!enough_remaining(trans, 2)) {
+	if (!enough_remaining(trans, 5)) {
 		trans->remaining = 0;
 		return;
 	}
 
 	trans->tid = pop_buffer_value(trans);
 	trans->app_cookie = pop_buffer_value(trans);
-
-	/* Look for a possible tgid postscript */
-	get_tgid(trans);
+	/* must be ESCAPE_CODE, CTX_TGID_CODE, tgid. Like this
+	 * because tgid was added later in a compatible manner.
+	 */
+	pop_buffer_value(trans);
+	pop_buffer_value(trans);
+	trans->tgid = pop_buffer_value(trans);
 
 	ctx_switch_set_image(trans);
 

@@ -1,5 +1,10 @@
 2003-09-24  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_image.c: remove support for missing
+	CTX_TGID
+
+2003-09-24  John Levon  <levon@movementarian.org>
+
 	* daemon/oprofiled.c: remove /proc/kcore support
 
 2003-09-22  Philippe Elie  <phil.el@wanadoo.fr>
