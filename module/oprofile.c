@@ -529,15 +529,16 @@ out:
 
 /*
  * stop interrupts being generated and notes arriving.
- * This needs to be idempotent.
+ * This is idempotent.
  */
 static void oprof_partial_stop(void)
 {
 	BUG_ON(state == STOPPED);
 
-	op_restore_syscalls();
-
-	int_ops->stop();
+	if (state == RUNNING) {
+		op_restore_syscalls();
+		int_ops->stop();
+	}
 
 	state = STOPPING;
 }

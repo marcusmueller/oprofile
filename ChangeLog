@@ -1,3 +1,7 @@
+2003-10-13  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* module/oprofile.c: don't restore syscall and stop counter twice
+
 2003-10-13  Will Cohen  <wcohen@redhat.com>
 
 	* libop/op_parse_event.c(parse_events): Correct fprintf.
