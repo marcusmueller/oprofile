@@ -15,7 +15,7 @@
 #include "oprofile.h"
 #include "op_util.h"
 #include <asm/perfmon.h>
-#include "arch.h"
+#include "op_arch.h"
 #include "op_ia64_model.h"
 
 /* number of counters physically present */
