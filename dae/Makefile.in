@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.9 2001/04/06 14:16:46 movement Exp $
+# $Id: Makefile.in,v 1.10 2001/07/25 02:22:44 movement Exp $
 
 .PHONY: all clean srcdoc install
  
@@ -23,8 +23,8 @@ clean:
 CFLAGS=-Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
 LIBS=@extra_libraries@ -lpopt
 INCLUDES=@extra_includes@
-HEADERS=oprofiled.h opd_util.h ../op_user.h ../version.h md5.h
-SOURCES=oprofiled.c opd_util.c opd_proc.c ../op_events.c md5.c
+HEADERS=oprofiled.h opd_util.h ../op_user.h ../version.h
+SOURCES=oprofiled.c opd_util.c opd_proc.c ../op_events.c
  
 srcdoc: oprofiled-src.html
 

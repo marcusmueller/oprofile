@@ -1,3 +1,20 @@
+2001-07-25  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/opd_proc.c: fix uninitialised pointer access (reported by
+	<bobm@fc.hp.com>) that could segfault oprofile in case of
+	module load/unload activity
+
+	* Makefile.in:
+	* dae/opd_proc.c:
+	* dae/opd_util.c:
+	* dae/opd_util.h:
+	* dae/oprofiled.c:
+	* dae/oprofiled.h:
+	* pp/Makefile.in:
+	* pp/oprofpp.c:
+	* pp/oprofpp.h: use mtime() instead of md5sum(). Still doesn't handle
+	  "./a; gcc -o a a.c; ./a"
+ 
 2001-07-22  Philippe Elie  <ph_e@club-internet.fr>
 
 	* doc/oprofile.1.in:

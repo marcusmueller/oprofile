@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.32 2001/06/24 23:52:47 movement Exp $ */
+/* $Id: oprofpp.c,v 1.33 2001/07/25 02:22:44 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -26,8 +26,6 @@
  */
 
 #include "oprofpp.h"
- 
-#include "../dae/md5.h"
  
 static int showvers;
 static int verbose; 
@@ -194,7 +192,7 @@ void printf_symbol(const char *name)
 /**
  * open_image_file - open associated binary image
  * @mangled: name of samples file
- * @sum: md5sum from sample file
+ * @mtime: mtime from samples file
  *
  * This function will open and process the binary
  * image associated with the samples file @mangled,
@@ -213,11 +211,11 @@ void printf_symbol(const char *name)
  * The global struct footer must be valid. sect_offset
  * will be set as appropriate.
  */
-bfd *open_image_file(char const * mangled, char * sum)
+bfd *open_image_file(char const * mangled, time_t mtime)
 {
 	char *file;
 	char **matching;
-	char newsum[16]; 
+	time_t newmtime;
 	bfd *ibfd;
 	 
 	file = (char *)imagefile;
@@ -257,13 +255,10 @@ bfd *open_image_file(char const * mangled, char * sum)
 		free(mang);
 	}
 
-	if (md5_file(file, newsum)) {
-		fprintf(stderr, "oprofpp: couldn't md5sum the binary file %s.\n", file);
-		exit(1);
-	}
+	newmtime = opd_get_mtime(file);
  
-	if (memcmp(sum, newsum, 16)) {
-		fprintf(stderr, "oprofpp: the md5sum of the binary file %s does not match "
+	if (newmtime != mtime) {
+		fprintf(stderr, "oprofpp: the last modified time of the binary file %s does not match "
 			"that of the sample file. Either this is the wrong binary or the binary "
 			"has been modified since the sample file was created.\n", file);
 		exit(1);
@@ -854,7 +849,7 @@ int main(int argc, char const *argv[])
 
 	nr_samples = size/sizeof(struct opd_fentry);
 
-	ibfd = open_image_file(samplefile, footer.md5sum);
+	ibfd = open_image_file(samplefile, footer.mtime);
  
 	if (list_symbols) {
 		do_list_symbols(ibfd);

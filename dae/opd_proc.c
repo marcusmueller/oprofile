@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.57 2001/07/21 22:53:38 movement Exp $ */
+/* $Id: opd_proc.c,v 1.58 2001/07/25 02:22:44 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -16,8 +16,6 @@
  */
 
 #include "oprofiled.h"
-
-#include "md5.h" 
 
 #define OPD_DEFAULT_IMAGES 32
 #define OPD_IMAGE_INC 16
@@ -38,8 +36,7 @@ extern struct op_hash *hashmap;
 /* hash of process lists */
 static struct opd_proc *opd_procs[OPD_MAX_PROC_HASH];
 
-struct opd_footer footer = { OPD_MAGIC, OPD_VERSION, 
-	0, 0, 0, 0, 0, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, 0, 0, 0.0, { 0 } };
+struct opd_footer footer;
 
 /* image structure */
 static struct opd_image *opd_images;
@@ -65,7 +62,7 @@ static void opd_kill_maps(struct opd_proc *proc);
 static void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset, u32 end);
 static struct opd_proc *opd_get_proc(u16 pid);
 static void opd_delete_proc(struct opd_proc *proc);
-static void opd_handle_old_sample_file(char * mangled, char * sum);
+static void opd_handle_old_sample_file(char * mangled, time_t mtime);
 
 /* every so many minutes, clean up old procs, msync mmaps, and
    report stats */
@@ -75,12 +72,10 @@ void opd_alarm(int val __attribute__((unused)))
 	struct opd_proc *next;
 	uint i;
 
-/*
 	for (i=0; i < nr_images; i++) {
 		if (opd_images[i].fd != -1)
 			msync(opd_images[i].start, opd_images[i].len, MS_ASYNC);
 	}
-*/ 
 
 	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
 		proc = opd_procs[i];
@@ -209,12 +204,12 @@ static void opd_save_old_sample_file(char * file)
 /**
  * opd_handle_old_sample_file - deal with old sample file
  * @mangled: the sample file name
- * @sum: the new md5sum
+ * @mtime: the new mtime of the binary
  *
  * If an old sample file exists, verify it is usable.
  * If not, move or delete it.
  */
-static void opd_handle_old_sample_file(char * mangled, char * sum)
+static void opd_handle_old_sample_file(char * mangled, time_t mtime)
 {
 	struct opd_footer oldfooter; 
 	FILE * fp;
@@ -235,7 +230,7 @@ static void opd_handle_old_sample_file(char * mangled, char * sum)
 	if (oldfooter.magic != OPD_MAGIC || oldfooter.version != OPD_VERSION)
 		goto closedel; 
 
-	if (memcmp(sum, oldfooter.md5sum, 16))
+	if (difftime(mtime, oldfooter.mtime))
 		goto closedel;
 
 	/* versions match, but we might be using different values */
@@ -301,10 +296,7 @@ static void opd_open_image(struct opd_image *image)
 		return;
 	}
 
-	if (md5_file(image->name, footer.md5sum)) {
-		fprintf(stderr, "Warning: md5sum failed for %s\n", image->name);
-		memset(&footer.md5sum, 0, 16);
-	} 
+	footer.mtime = opd_get_mtime(image->name);
  
 	/* give space for "negative" entries. This is because we
 	 * don't know about kernel/module sections other than .text so
@@ -313,7 +305,7 @@ static void opd_open_image(struct opd_image *image)
 	if (image->kernel)
 		image->len += OPD_KERNEL_OFFSET * sizeof(struct opd_fentry) * 2;
 
-	opd_handle_old_sample_file(mangled, footer.md5sum);
+	opd_handle_old_sample_file(mangled, footer.mtime);
  
 	verbprintf("Opening $%s$\n", mangled);
 
@@ -742,6 +734,7 @@ void opd_clear_module_info(void)
 
 	for (i=0; i < OPD_MAX_MODULES; i++) {
 		opd_free(opd_modules[i].name);
+		opd_modules[i].name = NULL;
 		opd_modules[i].start = 0;
 		opd_modules[i].end = 0;
 	}

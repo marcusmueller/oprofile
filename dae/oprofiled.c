@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.37 2001/07/15 16:25:06 movement Exp $ */
+/* $Id: oprofiled.c,v 1.38 2001/07/25 02:22:44 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -184,6 +184,8 @@ static void opd_options(int argc, char const *argv[])
 		exit(1);
 	}
 
+	footer.magic = OPD_MAGIC;
+	footer.version = OPD_VERSION;
 	footer.ctr0_type_val = opd_read_int_from_file("/proc/sys/dev/oprofile/0/event");
 	footer.ctr0_um = (u8) opd_read_int_from_file("/proc/sys/dev/oprofile/0/unit_mask");
 	footer.ctr1_type_val = opd_read_int_from_file("/proc/sys/dev/oprofile/1/event");

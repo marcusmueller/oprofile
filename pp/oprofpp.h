@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.12 2001/06/22 03:16:24 movement Exp $ */
+/* $Id: oprofpp.h,v 1.13 2001/07/25 02:22:44 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -72,7 +72,7 @@ struct opd_fentry {
 
 /* FIXME : Carefull these are also present in dae/oprofiled.h */
 #define OPD_MAGIC 0xdeb6
-#define OPD_VERSION 0x3
+#define OPD_VERSION 0x4
 
 /* at the end of the sample files */
 struct opd_footer {
@@ -83,11 +83,12 @@ struct opd_footer {
         u8 ctr1_type_val;
         u8 ctr0_um;
         u8 ctr1_um;
-	char md5sum[16];
+	u8 reserved1[16];
 	u32 ctr0_count;
 	u32 ctr1_count;
 	/* Set to 0.0 if not available */
 	double cpu_speed;
+	time_t mtime;
 	/* binary compatibility reserve */
-	u32  reserved[32];
+	u32  reserved2[28];
 };

@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.14 2001/06/27 20:55:53 movement Exp $ */
+/* $Id: opd_util.c,v 1.15 2001/07/25 02:22:44 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -392,6 +392,23 @@ off_t opd_get_fsize(const char *file, int fatal)
 
 	return st.st_size;
 }
+
+/**
+ * opd_get_mtime - get mtime of file
+ * @file: file name
+ *
+ * Returns the mtime of the given file or 0 on failure
+ */
+time_t opd_get_mtime(const char * file)
+{
+	struct stat st;
+
+	if (stat(file, &st))
+		return 0;
+
+	return st.st_mtime;
+}
+
 
 /**
  * opd_get_time - get current date and time
