@@ -93,6 +93,14 @@ static struct op_unit_mask const um_moesi =
 	    {0x1, "(I)nvalid cache state"},
 	    {0x1f, "all MOESI cache state"} } };
 
+/* Hammer HT cache events */
+static struct op_unit_mask const um_ht =
+	{ 4, utm_bitmask, 0x7,
+	  { {0x0, "Command sent"},
+	    {0x1, "Data sent"},
+	    {0x2, "Buffer release sent"},
+	    {0x3, "Nop sent"} } };
+
 /* pentium 4 events */
 
 /* BRANCH_RETIRED */
@@ -731,11 +739,11 @@ struct op_event const op_events[] = {
     "Sized Commands", 500,},
   { CTR_ALL, OP_HAMMER, 0xec, &um_moesi, "PROBE_RESULT",
     "Probe Result", 500,},
-  { CTR_ALL, OP_HAMMER, 0xf6, &um_moesi, "HYPERTRANSPORT_BUS0_WIDTH",
+  { CTR_ALL, OP_HAMMER, 0xf6, &um_ht, "HYPERTRANSPORT_BUS0_WIDTH",
     "HyperTransport (tm) bus 0 bandwidth", 500,},
-  { CTR_ALL, OP_HAMMER, 0xf7, &um_moesi, "HYPERTRANSPORT_BUS1_WIDTH",
+  { CTR_ALL, OP_HAMMER, 0xf7, &um_ht, "HYPERTRANSPORT_BUS1_WIDTH",
     "HyperTransport (tm) bus 1 bandwidth", 500,},
-  { CTR_ALL, OP_HAMMER, 0xf8, &um_moesi, "HYPERTRANSPORT_BUS2_WIDTH",
+  { CTR_ALL, OP_HAMMER, 0xf8, &um_ht, "HYPERTRANSPORT_BUS2_WIDTH",
     "HyperTransport (tm) bus 2 bandwidth", 500,},
 
   /* pentium 4 events */
