@@ -24,11 +24,11 @@ static uint op_nr_counters = 4;
  * as the event selection; the pmd register is the counter. */
 #define perf_reg(c)	((c)+4)
 
-/* The appropriate value is selected in pmu_init() */
-unsigned long pmd_mask = IA64_2_PMD_MASK_VAL;
-
 #define IA64_1_PMD_MASK_VAL	((1UL << 32) - 1)
 #define IA64_2_PMD_MASK_VAL	((1UL << 47) - 1)
+
+/* The appropriate value is selected in pmu_init() */
+unsigned long pmd_mask = IA64_2_PMD_MASK_VAL;
 
 #define pmd_overflowed(r,c) ((r) & (1 << perf_reg(c)))
 #define set_pmd_neg(v,c) do { \
@@ -430,9 +430,6 @@ pmu_check_params(void)
 	int enabled = 0;
 
 	for (i = 0; i < op_nr_counters ; i++) {
-		int min_count;
-		int ret;
-
 		if (!sysctl.ctr[i].enabled)
 			continue;
 

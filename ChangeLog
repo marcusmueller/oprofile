@@ -1,3 +1,7 @@
+2003-04-28  Alex Tsariounov  <alext@fc.hp.com>
+
+	* module/ia64/op_pmu.c: fix compile
+
 2003-04-24  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* module/compat22.h: add cpuid_edx when linux version < 2.2.21
