@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_stop,v 1.8 2001/09/12 17:10:50 movement Exp $ 
+# $Id: op_stop,v 1.9 2001/09/12 22:22:40 phil_e Exp $ 
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -21,4 +21,8 @@ if [ "$PID" != "" ]
 then
 	echo "Stopping profiling and killing daemon"
 	kill $PID
+	exit
 fi
+
+# if profiler is not started consider as ok to try to stop it.
+exit 0
