@@ -10,6 +10,7 @@
  */
 
 #include <fstream>
+#include <iostream>
 #include "cverb.h"
 
 using namespace std;

@@ -12,7 +12,7 @@
 #ifndef CVERB_H
 #define CVERB_H
 
-#include <iostream>
+#include <iosfwd>
 
 /** verbose outpust stream, all output through this stream are made only
  * if a set_verbose(true); call is issued.

@@ -14,7 +14,6 @@
 
 #include <cmath>
 #include <string>
-#include <iostream>
 #include <vector>
 
 /// Store various daemon status data

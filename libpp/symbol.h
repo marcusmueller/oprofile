@@ -15,9 +15,6 @@
 #include "name_storage.h"
 #include "count_array.h"
 
-#include <string>
-#include <iostream>
-
 #include <bfd.h>
 
 /// A simple container for a fileno:linenr location.

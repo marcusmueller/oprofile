@@ -1,6 +1,15 @@
 2004-01-01  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* gui/oprof_start_config.h:
+	* gui/oprof_start_util.h:
+	* libpp/symbol.h:
+	* libutil++/cverb.cpp:
+	* libutil++/cverb.h:
+	* pp/opannotate_options.cpp:
+	* pp/opgprof_options.cpp: move some #include <> from .h to .cpp
+
+2004-01-01  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libregex/op_regex.cpp: don't assume in('a') > int('0)'
 
-See ChangeLog-2002 for earlier changelogs.
-
+See ChangeLog-2003 for earlier changelogs.

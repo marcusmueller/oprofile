@@ -12,6 +12,7 @@
 #include <vector>
 #include <list>
 #include <iterator>
+#include <iostream>
 
 #include "profile_spec.h"
 #include "arrange_profiles.h"

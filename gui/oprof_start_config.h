@@ -14,7 +14,7 @@
 
 #include <sys/types.h>
 #include <string>
-#include <iostream>
+#include <iosfwd>
 
 /// Store the setup of one event
 struct event_setting {
