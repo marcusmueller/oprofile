@@ -1,3 +1,20 @@
+2001-12-22  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/op_start: add --separate-samples
+	* dae/oprofiled.c: ditto
+	* dae/opd_proc.c:
+	* dae/opd_util.h:
+	* dae/opd_util.c:
+	* dae/oprofiled.h: implementation of above
+	* pp/op_time.cpp: 
+	* doc/oprofile.1.in:
+	* doc/oprfile.sgml: handle and document above
+	* pp/oprofpp_util.cpp: minor change related
+
+	* dae/oprofiled.c: bug fix while blocking signal
+
+	* doc/Makefile.in: avoid unecessary build of html doc
+
 2001-12-22  Dave Jones <davej@suse.de>
 
 	* Config.h.in: Readd to CVS.

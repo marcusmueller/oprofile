@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.29 2001/12/12 02:27:27 phil_e Exp $ */
+/* $Id: opd_util.c,v 1.30 2001/12/22 18:01:52 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -15,8 +15,6 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-/* for hton */ 
-#include <netinet/in.h> 
 #include <stdlib.h> 
  
 #include "opd_util.h"
@@ -26,35 +24,47 @@
  * opd_mangle_filename - mangle a file filename
  * @smpdir: base directory name
  * @image_name: a path name to the image file
- * @extra_size: an extra size to allocate
+ * @app_name: a path name for the owner image
+ * of this image or %NULL if no owner exist
  *
  * allocate memory of size strlen(@image_name) + 
- * strlen(@smpdir) + 2 + 32 then concat
- * @smpdir and the mangled name of @filename
- * the 32 bytes added are assumed to concat
- * something like "-%d"
+ * strlen(@smpdir) + strlen(@app_name) + 2 + 32 then
+ * concat @smpdir and the mangled name of @filename
+ * and optionnally @app_name. The 32 bytes added are
+ * assumed to concat something like "#%d"
  *
  * Returns a char* pointer to the mangled string.
  *
  */
-char* opd_mangle_filename(const char *smpdir, const char* image_name)
+char* opd_mangle_filename(const char *smpdir, const char* image_name, const char * app_name)
 {
 	char *mangled;
 	char *c;
-	const char *c2;
+	size_t len;
 
-	mangled = xmalloc(strlen(smpdir) + 2 + strlen(image_name) + 32);
+	len = strlen(smpdir) + 2 + strlen(image_name) + 32;
+	if (app_name)
+		len += strlen(app_name) + 2;
+
+	mangled = xmalloc(len);
+	
 	strcpy(mangled, smpdir);
 	strcat(mangled, "/");
-	c = mangled + strlen(smpdir) + 1;
-	c2 = image_name;
-	do {
-		if (*c2 == '/')
-			*c++ = OPD_MANGLE_CHAR;
-		else
-			*c++ = *c2;
-	} while (*++c2);
-	*c = '\0';
+
+	c = mangled + strlen(mangled);
+
+	if (app_name) {
+		strcat(mangled, app_name);
+		/* a double OPD_MANGLE_CHAR used as marker ? */
+		strcat(mangled, "//");
+	}
+
+	strcat(mangled, image_name);
+
+	for ( ; *c != '\0'; ++c) {
+		if (*c == '/')
+			*c = OPD_MANGLE_CHAR;
+	}
 
 	return mangled;
 }

@@ -25,6 +25,7 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+#include <map>
 
 #include "oprofpp.h"
 
@@ -38,28 +39,49 @@ using std::cout;
 using std::endl;
 using std::ostringstream;
 using std::ifstream;
+using std::multimap;
+using std::pair;
 
-struct samples_file_header
+// TODO header file
+/// image_name - class to store name for a samples file
+struct image_name
 {
-	samples_file_header(const std::string & filename = std::string(), 
-			    u32 count = 0)
-		: count(count), filename(filename) {}
+	image_name(const string& samplefile_name_, const string& app_name_,
+		   const string& lib_name_, u32 = 0);
 
-	bool operator<(const samples_file_header & rhs) const
-		{ return count > rhs.count; }
+	image_name(const string& samplefile_name, u32 count = 0);
 
+	/// total number of samples for this samples file, this is a place
+	/// holder to avoid separate data struct which associate image_name
+	/// with a sample count.
 	u32 count;
-	string filename;
+	/// complete name of the samples file (without leading dir)
+	string samplefile_name;
+	/// application name which belong this sample file, == name if the
+	/// file belong to an application or if the user have obtained
+	/// this file without --separate-samples
+	string app_name;
+	/// image name which belong this sample file, empty if the file belong
+	/// to an application or if the user have obtained this file without
+	/// --separate-samples
+	string lib_name;
 };
+
+typedef multimap<string, image_name> map_t;
+typedef pair<map_t::iterator, map_t::iterator> pair_it_t;
+typedef multimap<u32, map_t::const_iterator> sorted_map_t;
 
 static int showvers;
 static int reverse_sort;
+static int show_details;
 static const char * base_dir = "/var/opd/samples";
 
 static struct poptOption options[] = {
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
 	{ "use-counter", 'c', POPT_ARG_INT, &ctr, 0,
 	  "use counter", "counter nr", },
+	{ "show-details", 's', POPT_ARG_NONE, &show_details, 0,
+	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
 	{ "reverse", 'r', POPT_ARG_NONE, &reverse_sort, 0,
 	  "reverse sort order", NULL, },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
@@ -82,7 +104,7 @@ static void get_options(int argc, char const * argv[])
 	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
 
 	if (showvers) {
-		printf("op_time: %s : " VERSION_STRING " compiled on "
+		printf("%s: " VERSION_STRING " compiled on "
 		       __DATE__ " " __TIME__ "\n", argv[0]);
 		exit(EXIT_SUCCESS);
 	}
@@ -96,6 +118,56 @@ static void get_options(int argc, char const * argv[])
 		ctr = 0;
 
 	poptFreeContext(optcon);
+}
+
+/**
+ * extract_app_name - extract the mangled name of an application
+ * @name the mangled name on the form of
+ *   }usr}sbin}syslogd}}}lib}libc-2.1.2.so (shared lib
+ *     which belong to app /usr/sbin/syslogd)
+ *  or
+ *   }bin}bash (application)
+ *
+ * which return }usr}sbin}syslogd and }lib}libc-2.1.2.so
+ * or }bin}bash
+ */
+static string extract_app_name(const string & name, string & lib_name)
+{
+	string result(name);
+	lib_name = string();
+
+	size_t pos = result.find("}}");
+	if (pos != string::npos) {
+		result.erase(pos, result.length() - pos);
+		lib_name = name.substr(pos + 2);
+	}
+
+	return result;
+}
+
+/**
+ * image_name - ctor from an already parsed name
+ *
+ */
+image_name::image_name(const string& samplefile_name_, const string& app_name_,
+		       const string& lib_name_, u32 count_ = 0)
+	: 
+	count(count_),
+	samplefile_name(samplefile_name_),
+	app_name(app_name_),
+	lib_name(lib_name_)
+{
+}
+
+/**
+ * image_name - ctor from a sample file name
+ */
+image_name::image_name(const string& samplefile_name, u32 count_ = 0)
+	:
+	count(count_),
+	samplefile_name(samplefile_name)
+{
+	app_name = extract_app_name(samplefile_name, lib_name);
 }
 
 /**
@@ -152,7 +224,7 @@ static void get_file_list(list<string> & file_list)
 	list<string>::iterator it;
 	for (it = files.begin(); it != files.end(); ++it) {
 
-		if ((*it).find_first_of(OPD_MANGLE_CHAR) == string::npos)
+		if (it->find_first_of(OPD_MANGLE_CHAR) == string::npos)
 			continue;
 
 		string filename = strip_filename_suffix(*it);
@@ -166,12 +238,85 @@ static void get_file_list(list<string> & file_list)
 }
 
 /**
- * out_filename - display a filename and it assiocated ratio of samples
+ * sort_file_list - insert in result a file list sorted by app name
+ * @result: where to put result
+ * @file_list: a list of string which must be insert in @result
+ *
+ * for each filename try to extract if possible the app name and
+ * use it as a key of the }result mp to insert the filename
+ *  filename are on the form
+ *   }usr}sbin}syslogd}}}lib}libc-2.1.2.so (shared lib
+ *     which belong to app /usr/sbin/syslogd)
+ *  or
+ *   }bin}bash (application)
+ * This sorting is used later to find samples filename which belong
+ * to the same application.
  */
-static void out_filename(const samples_file_header & sfh, double total_count)
+static void sort_file_list(map_t & result,
+			   const list<string> & file_list)
 {
-	cout << demangle_filename(sfh.filename) << " " << sfh.count  << " "
-	     << (sfh.count / total_count) * 100 << "%" << endl;
+	list<string>::const_iterator it;
+	for (it = file_list.begin() ; it != file_list.end() ; ++it) {
+		image_name image(*it);
+
+		result.insert(map_t::value_type(image.app_name, image));
+	}
+}
+
+/**
+ * out_filename - display a filename and it associated ratio of samples
+ */
+static void out_filename(const string& app_name, size_t app_count,
+			 u32 count, double total_count)
+{
+	cout << demangle_filename(app_name) << " " << count  << " "
+	     << (count / total_count) * 100 << "%";
+
+	if (app_count != size_t(-1))
+		cout << " (" << (count / double(app_count)) * 100 << "%)";
+
+	cout << endl;
+}
+
+/**
+ * output_image_details - output the samples ratio for some images
+ * @first: the start iterator
+ * @last: the end iterator
+ * @total_count: the total samples count
+ *
+ * iterator parameters are intended to be of type @map_t::iterator or
+ * @map_t::reverse_iterator
+ * FIXME: how to reference the global map_t typedef with doxygen ?
+ */
+template <class Iterator>
+static void output_image_details(Iterator first, Iterator last, u32 app_count,
+				 double total_count)
+{
+	for (Iterator it = first ; it != last ; ++it) {
+		string name = it->second->second.lib_name;
+		if (name.length() == 0)
+			name = it->second->second.samplefile_name;
+
+		cout << "  ";
+		out_filename(name, app_count, it->first, total_count);
+	}
+}
+
+/**
+ * build_sorted_map_by_count - insert element in a @sorted_map_t
+ * @first: the start iterator
+ * @last: the end iterator
+ * @total_count: the total samples count
+ *
+ */
+void build_sorted_map_by_count(sorted_map_t & sorted_map, pair_it_t p_it)
+{
+	map_t::iterator it;
+	for (it = p_it.first ; it != p_it.second ; ++it) {
+		sorted_map_t::value_type value(it->second.count, it);
+
+		sorted_map.insert(value);
+	}
 }
 
 /**
@@ -179,60 +324,130 @@ static void out_filename(const samples_file_header & sfh, double total_count)
  * and display a sorted list of filename and samples ratio
  * @files: the file list to treat.
  */
-static void treat_file_list(const list<string>& files)
+static void treat_file_list(map_t& files)
 {
-	vector<samples_file_header> headers;
-
 	double total_count = 0;
 
-	list<string>::const_iterator it;
-	for (it = files.begin(); it != files.end(); ++it) {
-		std::string filename = string(base_dir) + "/" + *it;
-		samplefile = filename.c_str();
+	/* 1st pass: accumalte for each image_name the samples count, also
+	 * update the total_count of samples */
 
-		if (samples_file_exist(filename) == false)
-			continue;
+	map_t::const_iterator it;
+	for (it = files.begin(); it != files.end() ; ) {
+		pair_it_t p_it = files.equal_range(it->first);
 
-		opp_samples_files samples;
+		// the range [p_it.first, p_it.second[ belongs to application
+		// it.first->first
+		for ( ; p_it.first != p_it.second ; ++p_it.first) {
+			std::string filename(string(base_dir) + "/" +
+				     p_it.first->second.samplefile_name);
 
-		u32 count = 0;
-		if (samples.is_open(ctr)) {
-			opd_fentry * begin;
-			opd_fentry * end;
-			begin = samples.samples[ctr];
-			end = begin + (samples.size[ctr] / sizeof(opd_fentry));
-			for ( ; begin != end ; ++begin)
-				count += begin->count;
-			  
+			if (samples_file_exist(filename) == false)
+				continue;
+
+			/* TODO: really need to fix that */
+			/* ctr of opp_samples_files use a global var :/ */
+			samplefile = filename.c_str();
+			opp_samples_files samples;
+
+			u32 count = 0;
+			if (samples.is_open(ctr)) {
+				const opd_fentry * begin;
+				const opd_fentry * end;
+				begin = samples.samples[ctr];
+				end = begin + samples.nr_samples;
+				for ( ; begin != end ; ++begin)
+					count += begin->count;
+			}
+
+			p_it.first->second.count = count;
+			total_count += count;
 		}
 
-		total_count += count;
-
-		headers.push_back(samples_file_header(filename, count));
+		it = p_it.second;
 	}
 
-	sort(headers.begin(), headers.end());
+	/* 2nd pass: insert the count of samples for each application and
+	 * associate with an iterator to a image name (e.g. insert one
+	 * item for each applciation */
 
-	if (!reverse_sort) {
-		vector<samples_file_header>::const_iterator c_it;
-		for (c_it = headers.begin(); c_it != headers.end() ; ++c_it)
-			out_filename(*c_it, total_count);
+	sorted_map_t sorted_map;
+	for (it = files.begin(); it != files.end() ; ) {
+		pair_it_t p_it = files.equal_range(it->first);
+		u32 count = 0;
+		for ( ; p_it.first != p_it.second ; ++p_it.first) {
+			count += p_it.first->second.count;
+		}
+
+		sorted_map.insert(sorted_map_t::value_type(count, it));
+
+		it = p_it.second;
+	}
+
+	/* 3rd pass: we can output the result, during the output we optionnaly
+	 * build the set of image_file which belongs to one application and
+	 * display these results too */
+
+	/* this if else are only different by the type of iterator used, we
+	 * can't easily templatize the block on iterator type because we use
+	 * in one case begin()/end() and in another rbegin()/rend(), it's
+	 * worthwhile to try to factorize this two piece of code */
+	if (reverse_sort) {
+		sorted_map_t::reverse_iterator s_it = sorted_map.rbegin();
+		for ( ; s_it != sorted_map.rend(); ++s_it) {
+			map_t::const_iterator it = s_it->second;
+
+			out_filename(it->first, size_t(-1), s_it->first,
+				     total_count);
+
+			if (show_details) {
+				pair_it_t p_it = files.equal_range(it->first);
+				sorted_map_t temp_map;
+
+				build_sorted_map_by_count(temp_map, p_it);
+
+				output_image_details(temp_map.rbegin(),
+						     temp_map.rend(),
+						     s_it->first,
+						     total_count);
+			}
+		}
 	} else {
-		vector<samples_file_header>::reverse_iterator c_it;
-		for (c_it = headers.rbegin(); headers.rend() != c_it ; ++c_it)
-			out_filename(*c_it, total_count);
+		sorted_map_t::iterator s_it = sorted_map.begin();
+		for ( ; s_it != sorted_map.end() ; ++s_it) {
+			map_t::const_iterator it = s_it->second;
+
+			out_filename(it->first, size_t(-1), s_it->first,
+				     total_count);
+
+			if (show_details) {
+				pair_it_t p_it = files.equal_range(it->first);
+				sorted_map_t temp_map;
+
+				build_sorted_map_by_count(temp_map, p_it);
+
+				output_image_details(temp_map.begin(),
+						     temp_map.end(),
+						     s_it->first,
+						     total_count);
+			}
+		}
 	}
 }
 
+/**
+ * yet another main ...
+ */
 int main(int argc, char const * argv[])
 {
 	get_options(argc, argv);
 
 	list<string> file_list;
-
 	get_file_list(file_list);
 
-	treat_file_list(file_list);
+	map_t file_map;
+	sort_file_list(file_map, file_list);
+
+	treat_file_list(file_map);
 
 	return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.53 2001/12/10 15:45:45 movement Exp $ */
+/* $Id: oprofiled.c,v 1.54 2001/12/22 18:01:52 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -33,6 +33,7 @@ int kernel_only;
  * so I must first store it as a string. */
 static const char *cpu_speed_str;
 u32 cpu_type;
+int separate_samples;
 static int ignore_myself;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
@@ -66,6 +67,7 @@ static struct poptOption options[] = {
 	{ "map-file", 'f', POPT_ARG_STRING, &systemmapfilename, 0, "System.map for running kernel file", "file", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "cpu-speed", 0, POPT_ARG_STRING, &cpu_speed_str, 0, "cpu speed (MHz)", "cpu_mhz", },
+	{ "separate-samples", 0, POPT_ARG_INT, &separate_samples, 0, "separate samples for each distinct application (DO NOT USE experimental)", "[0|1]", },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
 	POPT_AUTOHELP
@@ -254,7 +256,8 @@ static int opd_need_backup_samples_files(void)
 			if (header.ctr_event != ctr_event[header.ctr] ||
 			    header.ctr_um != ctr_um[header.ctr] ||
 			    header.ctr_count != ctr_count[header.ctr] ||
-			    header.cpu_type != cpu_type) {
+			    header.cpu_type != cpu_type ||
+			    header.separate_samples != separate_samples) {
 				need_backup = 1;
 			}
 
@@ -273,7 +276,7 @@ static int opd_need_backup_samples_files(void)
 	}
 
 	/* old_counter_set == 0 means there is no samples file in the sample
-	 * dir, so avoid to try to backup else whe get empty backup dir */
+	 * dir, so avoid to try to backup else we get an empty backup dir */
 	if (old_counter_set && old_counter_set != counter_set)
 		need_backup = 1;
 
@@ -507,7 +510,7 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 	uint i;
 
 	/* prevent signals from messing us up */
-	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
+	sigprocmask(SIG_BLOCK, &maskset, NULL);
 
 	opd_stats[OPD_DUMP_COUNT]++;
 

@@ -129,6 +129,11 @@ profile device file
 profile hash map device file
 .br
 .TP
+.BI "--separate-samples "
+separate samples for each distinct application i.e. multiple instance
+of the same application continue to share samples. This features is experimental, the front-end tools (except op_time) does not support separate-samples features
+.br
+.TP
 .BI "--verbose"
 be verbose in the daemon log
 .PP
@@ -270,6 +275,10 @@ Show help message
 .br
 .BI "--use-counter " counter_nr ", -c "counter_nr
 which counter to use for sorting purposes
+.TP
+.br
+.BI "--show-details -s"
+Show the details for each shared lib which belongs to one application. This option is usefull only if you have profiled with --separate-samples option
 .TP
 .br
 .BI "--reverse -r"

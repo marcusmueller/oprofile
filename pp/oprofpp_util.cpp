@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.11 2001/12/05 04:31:17 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.12 2001/12/22 18:01:52 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -109,7 +109,7 @@ void quit_error(poptContext optcon, char const *err)
  * if it contains at least one OPD_MANGLE_CHAR else
  * it is an image file. If no image file is given
  * on command line the sample file name is un-mangled
- * -after- stripping the optionnal "#d-d" suffixe. This
+ * -after- stripping the optionnal "#d" suffixe. This
  * give some limitations on the image filename.
  *
  * all filename checking is made here only with a
@@ -603,6 +603,12 @@ static void check_headers(const opd_header * f1, const opd_header * f2)
 	if (f1->cpu_speed != f2->cpu_speed) {
 		fprintf(stderr, "oprofpp: header cpu speeds are different (%f, %f)",
 			f2->cpu_speed, f2->cpu_speed);
+		exit(EXIT_FAILURE);
+	}
+
+	if (f1->separate_samples != f2->separate_samples) {
+		fprintf(stderr, "oprofpp: header separate_samples are different (%d, %d)",
+			f2->separate_samples, f2->separate_samples);
 		exit(EXIT_FAILURE);
 	}
 }

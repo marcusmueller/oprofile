@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.11 2001/12/12 02:27:27 phil_e Exp $
+# $Id: Makefile.in,v 1.12 2001/12/22 18:01:52 phil_e Exp $
 
 RM=rm
 CP=cp
@@ -14,16 +14,18 @@ LINK_LIST=oprofiled.1 op_start.1 op_stop.1 op_help.1 oprofpp.1
 
 .PHONY: all clean install uninstall
 
-all:
+all: html/install.html
+
+html/install.html: oprofile.sgml
 	-$(RM) -rf oprofile.junk
-	$(DB2HTML) oprofile.sgml
+	-$(DB2HTML) oprofile.sgml
 	-$(MKDIR) html
 	-$(MKDIR) html/stylesheet-images/ 
 	-mv oprofile/* html/
 	-mv oprofile/stylesheet-images/* html/stylesheet-images/
 	-$(RM) -rf oprofile 
 
-install:
+install: all
 	-$(MKDIR_P) $(MANDIR)
 	cp oprofile.1 $(MANDIR)/oprofile.1
 	@for f in $(LINK_LIST); do				\
@@ -44,5 +46,3 @@ uninstall:
 	-$(RM) -rf $(DOCDIR)
 
 clean:
-
-

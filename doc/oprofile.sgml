@@ -359,6 +359,13 @@ options, only interesting ones are listed here :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>&mdash;separate-samples</option></term>
+		<listitem><para>
+		separate samples for each distinct application i.e. multiple instance of the same application continue to share samples.
+		This features is experimental, the front-end tools (except op_time) does not support separate-samples features
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>&mdash;pid-filter</option> pid</term>
 		<listitem><para>
 		Only samples of this process id will be collected (including any kernel-side samples when this process is in
@@ -926,6 +933,14 @@ Options allowed are :
 		<term><option>-c</option></term>
 		<listitem><para>
 		use counter nr for sorting samples count
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>&mdash;show-details</option></term>
+		<term><option>-s</option></term>
+		<listitem><para>
+		Show the details for each shared lib which belongs to one application. This option is
+		usefull only if you have profiled with <option>&mdash;separate-samples</option> option
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

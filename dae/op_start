@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.52 2001/11/14 21:19:01 phil_e Exp $
+# $Id: op_start,v 1.53 2001/12/22 18:01:52 phil_e Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -91,6 +91,7 @@ do_help() {
 	  --log-file=file              log file
 	  --base-dir=dir               base directory of daemon
 	  --samples-dir=file           output samples directory
+	  --separate-samples           separate samples for each distinct application  (experimental)
 	  --device-file=file           profile device file
 	  --note-device-file=file      note device file
 	  --hash-map-device-file=file  profile hash map device file
@@ -106,6 +107,7 @@ do_help() {
 # initialise parameters
 do_init() {
 	LOG_FILE=
+	SEPARATE_SAMPLES=0
 	SAMPLES_DIR=
 	DEVICE_FILE=
 	NOTE_DEVICE_FILE=
@@ -196,6 +198,9 @@ do_options() {
 				;;
 			--samples-dir)
 				SAMPLES_DIR=$val
+				;;
+			--separate-samples)
+				SEPARATE_SAMPLES=1
 				;;
 			--log-file)
 				LOG_FILE=$val
@@ -307,6 +312,7 @@ do_options() {
 	vecho "DIR $DIR"
 	vecho "LOG_FILE $LOG_FILE"
 	vecho "SAMPLES_DIR $SAMPLES_DIR"
+	vecho "SEPARATE_SAMPLES $SEPARATE_SAMPLES"
 	vecho "DEVICE_FILE $DEVICE_FILE"
 	vecho "NOTE_DEVICE_FILE $NOTE_DEVICE_FILE"
 	vecho "HASH_MAP_DEVICE_FILE $HASH_MAP_DEVICE_FILE"
@@ -459,7 +465,7 @@ do_start() {
 		--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
 		--device-file=$DEVICE_FILE --note-device-file=$NOTE_DEVICE_FILE \
 		--hash-map-device-file=$HASH_MAP_DEVICE_FILE --vmlinux=$VMLINUX \
-		--map-file=$MAP_FILE"
+		--map-file=$MAP_FILE --separate-samples=$SEPARATE_SAMPLES"
 
 	if [ "$VERBOSE" = "1" ]; then
 		OPD_ARGS="$OPD_ARGS --verbose"

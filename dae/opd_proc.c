@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.85 2001/12/14 21:33:02 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.86 2001/12/22 18:01:52 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -17,8 +17,6 @@
 
 #include "oprofiled.h"
 
-#define OPD_DEFAULT_IMAGES 32
-#define OPD_IMAGE_INC 16
 /* per-process */
 #define OPD_DEFAULT_MAPS 16
 #define OPD_MAP_INC 8
@@ -40,10 +38,16 @@ u8 ctr_um[OP_MAX_COUNTERS];
 extern u32 cpu_type;
 double cpu_speed;
 
-/* image structure */
-static struct opd_image *opd_images;
+/* list of image */
+static struct list_head opd_images = { &opd_images, &opd_images };
+/* Images wich belongs to the same hash, more than one only if separate_samples
+ *  == 1, are accessed by hash code and linked through the hash_next member
+ * of opd_image. Hash-less image must be searched through opd_images list */
+static struct opd_image * images_with_hash[OP_HASH_MAP_NR];
+/* The kernel image is treated separately */
+static struct opd_image * kernel_image;
+/* maintained for statistics purpose only */
 static unsigned int nr_images=0;
-static unsigned int max_nr_images=OPD_DEFAULT_IMAGES;
 
 /* kernel and module support */
 static u32 kernel_start;
@@ -52,22 +56,26 @@ static char got_system_map=0;
 static struct opd_module opd_modules[OPD_MAX_MODULES];
 static unsigned int nr_modules=0;
 
+/* reversed LRU of mapped samples files, unmapped samples are not lru'ed  */
+static struct list_head opd_samples_files = { &opd_samples_files, &opd_samples_files };
+
 static struct opd_proc *opd_add_proc(u16 pid);
-static void opd_grow_images(void);
 static void opd_open_sample_file(struct opd_image *image, int counter);
-static void opd_open_image(struct opd_image *image, int hash, const char *name, int kernl);
-static int opd_find_image(const char *name, int hash);
-static int opd_add_image(const char *name, int hash, int kernel);
-static int opd_get_image(const char *name, int hash, int kernel);
-static int opd_get_image_by_hash(int hash);
+static void opd_open_image(struct opd_image *image);
+static void opd_init_image(struct opd_image * image, const char * name, int hash, const char * app_name, int kernel);
+static const char* opd_app_name(const struct opd_proc * proc);
+static struct opd_image * opd_find_image(const char *name, int hash, const char* app_name);
+static struct opd_image * opd_add_image(const char *name, int hash, const char * app_name, int kernel);
+static struct opd_image * opd_get_image(const char *name, int hash, const char * app_name, int kernel);
+static struct opd_image * opd_get_image_by_hash(int hash, const char * app_name);
 static void opd_init_maps(struct opd_proc *proc);
 static void opd_grow_maps(struct opd_proc *proc);
 static void opd_kill_maps(struct opd_proc *proc);
-static void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset, u32 end);
+static void opd_put_mapping(struct opd_proc *proc, struct opd_image * image, u32 start, u32 offset, u32 end);
 static struct opd_proc *opd_get_proc(u16 pid);
 static void opd_delete_proc(struct opd_proc *proc);
 static void opd_handle_old_sample_file(const char * mangled, time_t mtime);
-static void opd_handle_old_sample_files(const char * mangled, time_t mtime);
+static void opd_handle_old_sample_files(const struct opd_image * image);
 
 /* every so many minutes, clean up old procs, msync mmaps, and
    report stats */
@@ -77,9 +85,11 @@ void opd_alarm(int val __attribute__((unused)))
 	struct opd_proc *next;
 	uint i;
 	uint j;
+	struct opd_image * image;
+	struct list_head * pos;
 
-	for (i = 0; i < nr_images; i++) {
-		struct opd_image* image = &opd_images[i];
+	list_for_each(pos, &opd_images) {
+		image = list_entry(pos, struct opd_image, list_node);
 		for (j = 0 ; j < op_nr_counters ; ++j) {
 			if (image->sample_files[j].fd > 1)
 				msync(image->sample_files[j].header, image->len + sizeof(struct opd_header), MS_ASYNC);
@@ -105,6 +115,7 @@ void opd_alarm(int val __attribute__((unused)))
 
 	printf("%s\n", opd_get_time());
 	printf("Nr. proc struct: %d\n", j);
+	printf("Nr. image struct: %d\n", nr_images);
 	printf("Nr. kernel samples: %lu\n", opd_stats[OPD_KERNEL]);
 	printf("Nr. modules samples: %lu\n", opd_stats[OPD_MODULE]);
 	printf("Nr. modules samples lost: %lu\n", opd_stats[OPD_LOST_MODULE]);
@@ -119,6 +130,10 @@ void opd_alarm(int val __attribute__((unused)))
 	printf("Average depth of iteration through mapping array: %f\n",
 		(double)opd_stats[OPD_MAP_ARRAY_DEPTH] / (double)opd_stats[OPD_MAP_ARRAY_ACCESS]);
 	}
+	printf("Nr. mapping: %lu\n", opd_stats[OPD_MAPPING]);
+	printf("Nr. mapping tried: %lu\n", opd_stats[OPD_TRY_MAPPING]);
+	printf("Nr. unmapping due to mapping failure: %lu\n",
+	       opd_stats[OPD_TRY_MAPPING] - opd_stats[OPD_MAPPING]);
 	printf("Nr. sample dumps: %lu\n", opd_stats[OPD_DUMP_COUNT]);
 	printf("Nr. samples total: %lu\n", opd_stats[OPD_SAMPLES]);
 	printf("Nr. notifications: %lu\n", opd_stats[OPD_NOTIFICATIONS]);
@@ -197,6 +212,8 @@ void opd_read_system_map(const char *filename)
  * check than the last (session) events settings match the
  * currents
  */
+/* TODO: opd_handle_old_sample_file and opd_handle_old_sample_files
+ * can be simplified and improved */
 static void opd_handle_old_sample_file(const char * mangled, time_t mtime)
 {
 	struct opd_header oldheader; 
@@ -233,41 +250,42 @@ del:
 	verbprintf("Deleting old sample file \"%s\".\n", mangled);
 	unlink(mangled);
 }
-  
- 
+
+
 /**
  * opd_handle_old_sample_files - deal with old sample files
- * @image_name: image to open files for
- * @mtime: the new mtime of the binary
+ * @image: the image to check files for
  *
  * to simplify admin of sample file we rename or remove sample
  * files for each counter.
  *
  * If an old sample file exists, verify it is usable.
- * If not, move or delete it.
+ * If not, delete it.
  */
-static void opd_handle_old_sample_files(const char *image_name, time_t mtime)
+static void opd_handle_old_sample_files(const struct opd_image * image)
 {
 	uint i;
 	char *mangled;
 	uint len;
+	const char * app_name = separate_samples ? image->app_name : NULL;
 
-	mangled = opd_mangle_filename(smpdir, image_name);
+	mangled = opd_mangle_filename(smpdir, image->name, app_name);
 
 	len = strlen(mangled);
  
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		sprintf(mangled + len, "#%d", i);
-		opd_handle_old_sample_file(mangled,  mtime);
+		opd_handle_old_sample_file(mangled,  image->mtime);
 	}
 
 	free(mangled);
 }
- 
+
 /**
- * opd_open_image - open an image sample file
- * @image: image to open file for
+ * opd_init_image - init an image sample file
+ * @image: image to init file for
  * @hash: hash of image
+ * @app_name: the application name where belongs this image
  * @name: name of the image to add
  * @kernel: is the image a kernel/module image
  *
@@ -277,34 +295,60 @@ static void opd_handle_old_sample_files(const char *image_name, time_t mtime)
  *
  * Initialise an opd_image struct for the image @image
  * without opening the associated samples files. At return
+ * the @image is partially initialized initialized.
+ */
+static void opd_init_image(struct opd_image * image, const char * name,
+			   int hash, const char * app_name, int kernel)
+{
+	list_init(&image->list_node);
+	image->hash_next = NULL;
+	image->name = xstrdup(name);
+	image->kernel = kernel;
+	image->hash = hash;
+	/* we do not duplicate this string! */
+	image->app_name = app_name;
+	image->len = 0;
+}
+ 
+/**
+ * opd_open_image - open an image sample file
+ * @image: image to open file for
+ * @hash: hash of image
+ * @app_name: the application name where belongs this image
+ * @name: name of the image to add
+ * @kernel: is the image a kernel/module image
+ *
+ * @image at funtion entry is partially initialized by opd_init_image()
+ *
+ * Initialise an opd_image struct for the image @image
+ * without opening the associated samples files. At return
  * the @image is fully initialized.
  */
-static void opd_open_image(struct opd_image *image, int hash, const char *name, int kernel)
+static void opd_open_image(struct opd_image *image)
 {
 	uint i;
 
-	image->name = xstrdup(name);
-	image->kernel = kernel;
-	image->hash = hash; 
-	image->len = 0;
+	verbprintf("Opening image \"%s\" for app \"%s\"\n",
+		   image->name, image->app_name);
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		image->sample_files[i].fd = -1;
 		image->sample_files[i].start = (void *)-1;
 		image->sample_files[i].header = (void *)-1;
+		image->sample_files[i].opened = 0;
 	}
 
-	verbprintf("Getting size of \"%s\"\n", name);
+	verbprintf("Getting size of \"%s\"\n", image->name);
 
 	/* for each byte in original one counter */
-	image->len = opd_get_fsize(name, 0) * sizeof(struct opd_fentry);
-	
+	image->len = opd_get_fsize(image->name, 0) * sizeof(struct opd_fentry);
+
 	if (!image->len) {
-		verbprintf("Size check failed for %s\n", name);
+		verbprintf("Size check failed for %s\n", image->name);
 		return;
 	}
 
-	image->mtime = opd_get_mtime(name);
+	image->mtime = opd_get_mtime(image->name);
  
 	/* give space for "negative" entries. This is because we
 	 * don't know about kernel/module sections other than .text so
@@ -313,7 +357,7 @@ static void opd_open_image(struct opd_image *image, int hash, const char *name, 
 	if (image->kernel)
 		image->len += OPD_KERNEL_OFFSET * sizeof(struct opd_fentry);
 
-	opd_handle_old_sample_files(name, image->mtime);
+	opd_handle_old_sample_files(image);
 
 	/* samples files are lazily openeded */
 }
@@ -341,6 +385,35 @@ inline static u16 opd_get_counter(const u16 count)
 }
 
 /*
+ * opd_try_mmap - try to mmap a sample file
+ * @sample_file: the sample file to mmap
+ *
+ * try to mmap a sample file, return non-zero on failure
+ */
+static int opd_try_mmap(struct opd_sample_file * sample_file,
+			u32 len, const char * name)
+{
+	opd_stats[OPD_TRY_MAPPING]++;
+
+	sample_file->header = mmap(0, len + sizeof(struct opd_header),
+		PROT_READ|PROT_WRITE, MAP_SHARED, sample_file->fd, 0);
+
+	if (sample_file->header == (void *)-1) {
+		verbprintf("oprofiled: mmap of image sample file \"%s\" failed: %s\n", name, strerror(errno));
+		return 1;
+	}
+
+	opd_stats[OPD_MAPPING]++;
+
+	sample_file->start = sample_file->header + 1;
+	sample_file->len = len;
+
+	list_add_tail(&sample_file->lru_node, &opd_samples_files);
+
+	return 0;
+}
+
+/*
  * opd_open_sample_file - open an image sample file
  * @image: image to open file for
  * @counter: counter number
@@ -354,6 +427,8 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 {
 	char* mangled;
 	struct opd_sample_file *sample_file;
+	const char * app_name;
+	int open_flags;
 
 	sample_file = &image->sample_files[counter];
 
@@ -361,45 +436,92 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 	if (sample_file->fd == -2)
 		return;
 
-	mangled = opd_mangle_filename(smpdir, image->name);
+	app_name = separate_samples ? image->app_name : NULL;
+	mangled = opd_mangle_filename(smpdir, image->name, app_name);
 
 	sprintf(mangled + strlen(mangled), "#%d", counter);
 
 	verbprintf("Opening \"%s\"\n", mangled);
 
-	sample_file->fd = open(mangled, O_CREAT|O_RDWR, 0644);
+	open_flags = sample_file->opened ? O_RDWR : O_CREAT|O_RDWR;
+	sample_file->fd = open(mangled, open_flags, 0644);
 	if (sample_file->fd == -1) {
-		fprintf(stderr,"oprofiled: open of image sample file \"%s\" failed: %s\n", mangled, strerror(errno));
+		fprintf(stderr,"oprofiled: open of image sample file \"%s\" (opened %d) failed: %s\n", mangled, sample_file->opened, strerror(errno));
 		goto err1;
 	}
 
-	/* truncate to grow the file is ok on linux */
-	if (ftruncate(sample_file->fd, image->len + sizeof(struct opd_header)) == -1) {
-		fprintf(stderr, "oprofiled: ftruncate failed for \"%s\". %s\n", mangled, strerror(errno));
-		goto err2;
+	if ( sample_file->opened == 0) {
+		/* truncate to grow the file is ok on linux */
+		if (ftruncate(sample_file->fd, image->len + sizeof(struct opd_header)) == -1) {
+			fprintf(stderr, "oprofiled: ftruncate failed for \"%s\". %s\n", mangled, strerror(errno));
+			goto err2;
+		}
 	}
 
-	sample_file->header = mmap(0, image->len + sizeof(struct opd_header),
-		PROT_READ|PROT_WRITE, MAP_SHARED, sample_file->fd, 0);
+	if (opd_try_mmap(sample_file, image->len, image->name)) {
+		struct opd_sample_file * temp;
+		struct list_head * tmp_pos, * pos;
 
-	if (sample_file->header == (void *)-1) {
-		fprintf(stderr,"oprofiled: mmap of image sample file \"%s\" failed: %s\n", mangled, strerror(errno));
-		goto err2;
+		/* debug trace, please keep it until the behavior of the lru
+		 * unmaping has been study in a real case, then turn it in
+		 * verbprintf, see other printf later */
+		verbprintf("try mmap loose, for %s on len %lu must unmap things\n", image->name, image->len);
+
+		list_for_each_safe(pos, tmp_pos, &opd_samples_files) {
+			temp = list_entry(pos, struct opd_sample_file, lru_node);
+
+			if (temp == sample_file) {
+				/* something feel very bad in the lru list */
+				fprintf(stderr, "ARGH: temp == sample_file\n");
+				exit(EXIT_FAILURE);
+			}
+
+			
+			/* list_del is sufficient here but ... */
+			list_del_init(pos);
+
+			verbprintf("unmamp at %p for %lu byte\n", temp->header, temp->len);
+
+			close(temp->fd);
+			munmap(temp->header, temp->len + sizeof(struct opd_header));
+
+			temp->fd = -1;
+			temp->start = (void *)-1;
+			temp->header = (void *)-1;
+
+			if (!opd_try_mmap(sample_file, image->len, image->name))
+				break;
+		}
+
+		if (pos == &opd_samples_files) {
+			fprintf(stderr, "oprofiled: unable to map image \"%s\" even after whole unmaping/\n", mangled);
+			/* not an exit just in case of failure due trying a
+			 * very big mapping */
+			goto err2;
+		}
+
+		verbprintf("mapping ok for %s at %p for len %lu (%lu)\n",
+			   image->name, sample_file->start, sample_file->len,
+			   image->len);
 	}
 
-	sample_file->start = sample_file->header + 1;
+	if (sample_file->opened == 0) {
+		memset(sample_file->header, '\0', sizeof(struct opd_header));
+		sample_file->header->version = OPD_VERSION;
+		memcpy(&sample_file->header->magic, OPD_MAGIC, sizeof(sample_file->header->magic));
+		sample_file->header->is_kernel = image->kernel;
+		sample_file->header->ctr_event = ctr_event[counter];
+		sample_file->header->ctr_um = ctr_um[counter];
+		sample_file->header->ctr = counter;
+		sample_file->header->cpu_type = cpu_type;
+		sample_file->header->ctr_count = ctr_count[counter];
+		sample_file->header->cpu_speed = cpu_speed;
+		sample_file->header->mtime = image->mtime;
+		sample_file->header->separate_samples = separate_samples;
+	}
 
-	memset(sample_file->header, '\0', sizeof(struct opd_header));
-	sample_file->header->version = OPD_VERSION;
-	memcpy(&sample_file->header->magic, OPD_MAGIC, sizeof(sample_file->header->magic));
-	sample_file->header->is_kernel = image->kernel;
-	sample_file->header->ctr_event = ctr_event[counter];
-	sample_file->header->ctr_um = ctr_um[counter];
-	sample_file->header->ctr = counter;
-	sample_file->header->cpu_type = cpu_type;
-	sample_file->header->ctr_count = ctr_count[counter];
-	sample_file->header->cpu_speed = cpu_speed;
-	sample_file->header->mtime = image->mtime;
+	sample_file->opened = 1;
+
 out:
 	free(mangled);
 	return;
@@ -416,21 +538,25 @@ err1:
  * opd_check_image_mtime - ensure samples file is up to date
  * @image: image to check
  */
+/* TODO: This is bugged we need to check mtime in opd_open_image: there is some
+ * code that open image without checking for modified mtime ? */
 static void opd_check_image_mtime(struct opd_image * image)
 {
 	uint i;
 	char *mangled;
 	uint len;
-	char * tmp = image->name;
 	time_t newmtime = opd_get_mtime(image->name);
+	const char * app_name;
  
 	if (image->mtime == newmtime)
 		return;
- 
+
 	verbprintf("Current mtime %lu differs from stored "
 		"mtime %lu for %s\n", newmtime, image->mtime, image->name);
 
-	mangled = opd_mangle_filename(smpdir, image->name);
+	app_name = separate_samples ? image->app_name : NULL;
+	mangled = opd_mangle_filename(smpdir, image->name, app_name);
+
 	len = strlen(mangled);
 
 	for (i=0; i < op_nr_counters; i++) {
@@ -445,8 +571,7 @@ static void opd_check_image_mtime(struct opd_image * image)
 	}
 	free(mangled);
 
-	opd_open_image(image, image->hash, tmp, image->kernel);
-	free(tmp);
+	opd_open_image(image);
 }
 
 
@@ -487,6 +612,10 @@ inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16
 	if (image->kernel)
 		fentry += OPD_KERNEL_OFFSET;
 
+	/* simplify this ? t least list_del(); is sufficient. */
+	list_del_init(&sample_file->lru_node);
+	list_add_tail(&sample_file->lru_node, &opd_samples_files);
+
 	if (((u32)fentry) > ((u32)(sample_file->start + image->len))) {
 		fprintf(stderr, "fentry %p out of bounds for \"%s\" (start %p, len 0x%.8lx, "
 			"end %p, orig offset 0x%.8x, kernel %d)\n", fentry, image->name, sample_file->start,
@@ -509,22 +638,53 @@ inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16
  */
 void opd_init_images(void)
 {
-	/* 0 is reserved for the kernel image */
-	opd_images = xcalloc(sizeof(struct opd_image), OPD_DEFAULT_IMAGES);
+	/* the kernel image is treated a part the list of image */
+	kernel_image = xmalloc(sizeof(struct opd_image));
 
-	opd_open_image(&opd_images[0], -1, vmlinux, 1);
-	nr_images = 1;
+	opd_init_image(kernel_image, vmlinux, -1, NULL, 1);
+
+	opd_open_image(kernel_image);
+
+#if 0
+	/* TEST: map 1.75 Go just to see the effect of the lru */
+	mmap(0, (1<<30) + (1<<29) + (1<<27), PROT_READ,
+	     MAP_ANON | MAP_PRIVATE, -1, 0);
+#endif
 }
 
 /**
- * opd_grow_images - grow the image structure
+ * opd_add_image - add an image to the image structure
+ * @name: name of the image to add
+ * @hash: hash of image
+ * @app_name: the application name where belongs this image
+ * @kernel: is the image a kernel/module image
  *
- * Grow the global image structure by %OPD_IMAGE_INC entries.
+ * Add an image to the image structure with name @name.
+ *
+ * @name is copied i.e. should be GC'd separately from the
+ * image structure if appropriate.
+ *
+ * The new image pointer is returned.
  */
-static void opd_grow_images(void)
+static struct opd_image * opd_add_image(const char * name, int hash, const char * app_name, int kernel)
 {
-	opd_images = xrealloc(opd_images, sizeof(struct opd_image)*(max_nr_images+OPD_IMAGE_INC));
-	max_nr_images += OPD_IMAGE_INC;
+	struct opd_image * image = xmalloc(sizeof(struct opd_image));
+
+	opd_init_image(image, name, hash, app_name, kernel);
+
+	list_add(&image->list_node, &opd_images);
+
+	/* image with hash -1 are lazilly put in the images_with_hash array */
+	if (hash != -1) {
+		image->hash_next = images_with_hash[hash];
+		images_with_hash[hash] = image;
+	}
+
+	nr_images++;
+
+	opd_open_image(image);
+
+	return image;
 }
 
 /**
@@ -554,67 +714,102 @@ inline static int bstreq(const char *str1, const char *str2)
 }
 
 /**
+ * opd_app_name - get the application name
+ *  or %NULL if irrelevant
+ *
+ * Returns the app_name for the given @proc or %NULL if
+ * it does not exist any mapping for this proc (which is
+ * true for the first mapping at exec time)
+ */
+inline static const char * opd_app_name(const struct opd_proc * proc)
+{
+	const char * app_name = NULL;
+	if (proc->nr_maps) 
+		app_name = proc->maps[0].image->name;
+
+	return app_name;
+}
+
+/**
  * opd_find_image - find an image
  * @name: name of image to find
  * @hash: hash of image to find
+ * @app_name: the application name where belongs this image
  *
- * Returns the image number for the file specified by @name, or -1.
+ * Returns the image pointer for the file specified by @name, or %NULL.
  */
-static int opd_find_image(const char * name, int hash)
+/*
+ * We make here a linear search through the whole image list. There is no need
+ * to improve performance, only /proc parsed app are hashless and when they
+ * are found one time by this function they receive a valid hash code. */
+static struct opd_image * opd_find_image(const char * name, int hash, const char * app_name)
 {
-	unsigned int i;
+	struct opd_image * image = 0; /* supress warn non initialized use */
+	struct list_head * pos;
 
-	/* we can have hashless images from /proc/pid parsing */
-	for (i=1; i < nr_images; i++) {
-		if (bstreq(opd_images[i].name, name)) {
-			if (hash != -1)
-				opd_images[i].hash = hash;
-			return i;
+	list_for_each(pos, &opd_images) {
+
+		image = list_entry(pos, struct opd_image, list_node);
+
+		if (bstreq(image->name, name)) {
+			if (!separate_samples)
+				break;
+
+			if (image->app_name == NULL && app_name == NULL)
+				break;
+
+			if (image->app_name != NULL && app_name != NULL &&
+			    bstreq(image->app_name, app_name))
+				break;
 		}
 	}
 
-	return -1;
-}
+	if (pos != &opd_images) {
+		/* we can have hashless images from /proc/pid parsing, modules
+		 * are handled in a separate list */
+		if (hash != -1) {
+			image->hash = hash;
+			if (image->hash_next) {	/* parano check */
+				printf("error: image->hash_next != NULL and image->hash == -1\n");
+				exit(EXIT_FAILURE);
+			}
 
-/**
- * opd_add_image - add an image to the image structure
- * @name: name of the image to add
- * @hash: hash of image
- * @kernel: is the image a kernel/module image
- *
- * Add an image to the image structure with name @name.
- *
- * @name is copied i.e. should be GC'd separately from the
- * image structure if appropriate.
- *
- * The image number is returned.
- */
-static int opd_add_image(const char * name, int hash, int kernel)
-{
-	opd_open_image(&opd_images[nr_images], hash, name, kernel);
-	nr_images++;
+			image->hash_next = images_with_hash[hash];
+			images_with_hash[hash] = image;
+		}
 
-	if (nr_images == max_nr_images)
-		opd_grow_images();
-
-	return nr_images-1;
-}
-
-/**
- * opd_get_image_by_hash - get an image from the image structure by hash value
- * @hash: hash of the image to get
- *
- * Get the image specified by the hash @hash if present, else return -1
- */
-static int opd_get_image_by_hash(int hash)
-{
-	unsigned int i;
-
-	for (i=1; i < nr_images; i++) {
-		if (opd_images[i].hash == hash)
-			return i;
+		/* The app_name field is always valid */
+		return image;
 	}
-	return -1;
+
+	return NULL;
+}
+
+/**
+ * opd_get_image_by_hash - get an image from the image
+ * structure by hash value
+ * @hash: hash of the image to get
+ * @app_name: the application name where belongs this image
+ *
+ * Get the image specified by @hash and @app_name
+ * if present, else return %NULL
+ */
+static struct opd_image * opd_get_image_by_hash(int hash, const char * app_name)
+{
+	struct opd_image * image;
+	for (image = images_with_hash[hash]; image != NULL; image = image->hash_next) {
+		if (!separate_samples)
+			break;
+
+		if (image->app_name == NULL && app_name == NULL)
+			break;
+
+		if (image->app_name != NULL && app_name != NULL &&
+		    bstreq(image->app_name, app_name))
+			break;
+	}
+
+	return image;
 }
 
 
@@ -622,6 +817,7 @@ static int opd_get_image_by_hash(int hash)
  * opd_get_image - get an image from the image structure
  * @name: name of image
  * @hash: hash of the image to get
+ * @app_name: the application name where belongs this image
  * @kernel: is the image a kernel/module image
  *
  * Get the image specified by the file name @name from the
@@ -629,13 +825,13 @@ static int opd_get_image_by_hash(int hash)
  * added to the structure. In either case, the image number
  * is returned.
  */
-static int opd_get_image(const char * name, int hash, int kernel)
+static struct opd_image * opd_get_image(const char * name, int hash, const char * app_name, int kernel)
 {
-	int image_nr;
-	if ((image_nr = opd_find_image(name, hash)) == -1)
-		image_nr = opd_add_image(name, hash, kernel);
+	struct opd_image * image;
+	if ((image = opd_find_image(name, hash, app_name)) == NULL)
+		image = opd_add_image(name, hash, app_name, kernel);
 
-	return image_nr;
+	return image;
 }
 
 
@@ -690,7 +886,7 @@ static void opd_delete_proc(struct opd_proc *proc)
 
 	if (proc->next)
 		proc->next->prev = proc->prev;
-	
+
 	if (proc->maps) free(proc->maps);
 	free(proc);
 }
@@ -871,7 +1067,7 @@ static struct opd_module *opd_get_module(char *name)
 	}
 
 	opd_modules[nr_modules].name = name;
-	opd_modules[nr_modules].image = -1;
+	opd_modules[nr_modules].image = NULL;
 	opd_modules[nr_modules].start = 0;
 	opd_modules[nr_modules].end = 0;
 	nr_modules++;
@@ -973,7 +1169,7 @@ static void opd_get_module_info(void)
 				strncpy(filename, cp2, (size_t)(cp3 - cp2));
 				filename[cp3-cp2] = '\0';
 
-				mod->image = opd_get_image(filename, -1, 1);
+				mod->image = opd_get_image(filename, -1, NULL, 1);
 				free(filename);
 				break;
 
@@ -1008,7 +1204,7 @@ failure:
 static void opd_enter_invalid_module(char const * name, struct module_info * info)
 {
 	opd_modules[nr_modules].name = xstrdup(name);
-	opd_modules[nr_modules].image = -1;
+	opd_modules[nr_modules].image = NULL;
 	opd_modules[nr_modules].start = info->addr;
 	opd_modules[nr_modules].end = info->addr + info->size;
 	nr_modules++;
@@ -1110,9 +1306,9 @@ static void opd_handle_module_sample(u32 eip, u16 count)
 	}
 
 	if (module) {
-		if (module->image != -1) {
+		if (module->image != NULL) {
 			opd_stats[OPD_MODULE]++;
-			opd_put_image_sample(&opd_images[module->image],
+			opd_put_image_sample(module->image, 
 					     eip - module->start, count);
 		}
 		else {
@@ -1148,10 +1344,12 @@ static void opd_handle_module_sample(u32 eip, u16 count)
  */
 static void opd_handle_kernel_sample(u32 eip, u16 count)
 {
+	/* TODO: simplify this code, if we have not System.mapp just set
+	 * kernel_start to KERNEL_VMA_OFFSET and kernel end to infinite ? */
 	if (got_system_map) {
 		if (eip < kernel_end) {
 			opd_stats[OPD_KERNEL]++;
-			opd_put_image_sample(&opd_images[0], eip - kernel_start, count);
+			opd_put_image_sample(kernel_image, eip - kernel_start, count);
 			return;
 		}
 
@@ -1161,7 +1359,7 @@ static void opd_handle_kernel_sample(u32 eip, u16 count)
 	}
 
 	opd_stats[OPD_KERNEL]++;
-	opd_put_image_sample(&opd_images[0], eip - KERNEL_VMA_OFFSET, count);
+	opd_put_image_sample(kernel_image, eip - KERNEL_VMA_OFFSET, count);
 	return;
 }
 
@@ -1170,14 +1368,14 @@ static void opd_handle_kernel_sample(u32 eip, u16 count)
  * @offset: the offset value
  * @map: map to print
  */
-inline static void verb_show_sample(u32 offset, struct opd_map *map)
+inline static void verb_show_sample(u32 offset, struct opd_map *map, const char * last_map)
 {
 	if (!verbose) 
 		return;
 
-	printf("DO_PUT_SAMPLE (LAST_MAP): calc offset 0x%.8x, map start 0x%.8x,"
+	printf("DO_PUT_SAMPLE %s: calc offset 0x%.8x, map start 0x%.8x,"
 		" end 0x%.8x, offset 0x%.8x, name \"%s\"\n",
-		offset, map->start, map->end, map->offset, opd_images[map->image].name);
+		last_map, offset, map->start, map->end, map->offset, map->image->name);
 }
 
 /**
@@ -1230,13 +1428,19 @@ void opd_put_sample(const struct op_sample *sample)
 
 	proc->accessed = 1;
 
+	/* TODO: Is it safe to not check than proc->nr_maps != 0?  test shows
+	 * this is always true but I can't be conveinced by this fact just by
+	 * by reading source :/ */
+
 	opd_stats[OPD_MAP_ARRAY_ACCESS]++;
 	if (opd_is_in_map(&proc->maps[proc->last_map], sample->eip)) {
 		i = proc->last_map;
-		if (proc->maps[i].image != -1) {
-			verb_show_sample(opd_map_offset(&proc->maps[i], sample->eip), &proc->maps[i]); 
-			opd_put_image_sample(&opd_images[proc->maps[i].image], opd_map_offset(&proc->maps[i], sample->eip), sample->count);
+		if (proc->maps[i].image != NULL) {
+			verb_show_sample(opd_map_offset(&proc->maps[i], sample->eip), &proc->maps[i], "(LAST MAP)");
+
+			opd_put_image_sample(proc->maps[i].image, opd_map_offset(&proc->maps[i], sample->eip), sample->count);
 		}
+
 		opd_stats[OPD_PROCESS]++;
 		return;
 	}
@@ -1245,9 +1449,10 @@ void opd_put_sample(const struct op_sample *sample)
 	for (i=0; i < proc->nr_maps; i++) {
 		if (opd_is_in_map(&proc->maps[i], sample->eip)) {
 			u32 offset = opd_map_offset(&proc->maps[i], sample->eip);
-			if (proc->maps[i].image != -1) {
-				verb_show_sample(offset, &proc->maps[i]); 
-				opd_put_image_sample(&opd_images[proc->maps[i].image], offset, sample->count);
+			if (proc->maps[i].image != NULL) {
+				verb_show_sample(offset, &proc->maps[i], "");
+
+				opd_put_image_sample(proc->maps[i].image, offset, sample->count);
 			}
 			proc->last_map = i;
 			opd_stats[OPD_PROCESS]++;
@@ -1265,21 +1470,21 @@ void opd_put_sample(const struct op_sample *sample)
 /**
  * opd_put_mapping - add a mapping to a process
  * @proc: process to add map to
- * @image_nr: mapped image number
+ * @image: mapped image pointer
  * @start: start of mapping
  * @offset: file offset of mapping
  * @end: end of mapping
  *
  * Add the mapping specified to the process @proc.
  */
-void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset, u32 end)
+static void opd_put_mapping(struct opd_proc *proc, struct opd_image * image, u32 start, u32 offset, u32 end)
 {
-	verbprintf("Placing mapping for process %d: 0x%.8x-0x%.8x, off 0x%.8x, \"%s\"\n",
-		proc->pid, start, end, offset, opd_images[image_nr].name);
+	verbprintf("Placing mapping for process %d: 0x%.8x-0x%.8x, off 0x%.8x, \"%s\" at maps pos %d\n",
+		proc->pid, start, end, offset, image->name, proc->nr_maps);
 
-	opd_check_image_mtime(&opd_images[image_nr]);
+	opd_check_image_mtime(image);
  
-	proc->maps[proc->nr_maps].image = image_nr;
+	proc->maps[proc->nr_maps].image = image;
 	proc->maps[proc->nr_maps].start = start;
 	proc->maps[proc->nr_maps].offset = offset;
 	proc->maps[proc->nr_maps].end = end;
@@ -1369,11 +1574,11 @@ inline static char * get_from_pool(uint ind)
 /**
  * opd_handle_hashmap - parse image from kernel hash map
  * @hash: hash value
- * @c: string to fill
+ * @app_name: the application name which belongs this image
  *
- * Finds an image from a hashmap hash value
+ * Finds an image from its name.
  */
-static int opd_handle_hashmap(int hash)
+static struct opd_image * opd_handle_hashmap(int hash, const char * app_name)
 {
 	char file[PATH_MAX];
 	char *c=&file[PATH_MAX-1];
@@ -1395,7 +1600,7 @@ static int opd_handle_hashmap(int hash)
 		/* move onto parent */
 		hash = hashmap[hash].parent;
 	}
-	return opd_get_image(c, orighash, 0);
+	return opd_get_image(c, orighash, app_name, 0);
 }
  
 
@@ -1403,15 +1608,16 @@ static int opd_handle_hashmap(int hash)
  * opd_handle_mapping - deal with mapping notification
  * @mapping: mapping info
  *
- * Deal with one or more notifications that a process has mapped
+ * Deal with one notification that a process has mapped
  * in a new executable file. The mapping information is
  * added to the process structure.
  */
 void opd_handle_mapping(const struct op_note *note)
 {
 	struct opd_proc *proc;
+	struct opd_image * image;
 	int hash;
-	int im_nr;
+	const char * app_name;
 
 	proc = opd_get_proc(note->pid);
 
@@ -1432,11 +1638,13 @@ void opd_handle_mapping(const struct op_note *note)
 		return;
 	}
 
-	im_nr = opd_get_image_by_hash(hash); 
-	if (im_nr == -1)
-		im_nr = opd_handle_hashmap(hash);
+	app_name = opd_app_name(proc);
 
-	opd_put_mapping(proc, im_nr, note->addr, note->offset, note->addr + note->len);
+	image = opd_get_image_by_hash(hash, app_name); 
+	if (image == NULL)
+		image = opd_handle_hashmap(hash, app_name);
+
+	opd_put_mapping(proc, image, note->addr, note->offset, note->addr + note->len);
 }
 
 /**
@@ -1514,7 +1722,8 @@ static int opd_add_ascii_map(struct opd_proc *proc, const char *line)
 	if (!*cp)
 		return FALSE;
 
-	map->image = opd_get_image(cp, -1, 0);
+	/* TODO: must be fixed by assigning an uid to the app ? */
+	map->image = opd_get_image(cp, -1, opd_app_name(proc), 0);
 
 	if (!map->image)
 		return FALSE;
