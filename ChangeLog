@@ -1,3 +1,7 @@
+2003-06-17  Will Cohen  <wcohen@redhat.com>
+
+	* daemon/opd_cookie.h: Add s390 syscall value.
+	
 2003-06-17  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol: don't accept "-r" - it's too easy to typo

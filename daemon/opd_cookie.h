@@ -31,6 +31,8 @@
 #elif defined(__sparc__)
 /* untested */
 #define __NR_lookup_dcookie 208
+#elif defined(__s390__) || defined (__s390x__)
+#define opd_nr_lookup_dcookie 110
 #else
 #error Please define __NR_lookup_dcookie for your architecture
 #endif
