@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.24 2001/06/08 23:54:22 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.25 2001/06/22 00:19:31 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -134,7 +134,10 @@ AC_ARG_WITH(module-dir,
 AC_SUBST(MODINSTALLDIR)
 
 AC_ARG_ENABLE(filter,
-[  --enable-filter              Enable filtering on pid or pgrp value feature], BKCFLAGS="$BKCFLAGS -DPID_FILTER")
+[  --enable-filter              Enable filtering on pid or pgrp value feature (warning - slower !)], BKCFLAGS="$BKCFLAGS -DPID_FILTER")
+
+AC_ARG_ENABLE(unload,
+[  --enable-unload              Enable module to be unloaded (warning - slower !)], BKCFLAGS="$BKCFLAGS -DALLOW_UNLOAD")
 
 dnl --- user space configuration ---
 

@@ -1,4 +1,4 @@
-/* $Id: op_init.c,v 1.4 2001/04/06 14:16:46 movement Exp $ */
+/* $Id: op_init.c,v 1.5 2001/06/22 00:19:31 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -20,7 +20,6 @@
 EXPORT_NO_SYMBOLS;
 
 extern int cpu_type;
-extern int oprof_init(void);
 
 static int __init hw_ok(void)
 {
@@ -49,6 +48,7 @@ int __init stub_init(void)
 
 void __exit stub_exit(void)
 {
+	oprof_exit();
 	return;
 }
 

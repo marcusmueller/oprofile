@@ -1,3 +1,18 @@
+2001-06-22  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in:
+	* dae/op_stop:
+	* doc/oprofile.sgml:
+	* op_init.c:
+	* op_syscalls.c:
+	* oprofile.h:
+	* oprofile.c: add and document the ability 
+	  to make the module unloadable. Not well tested
+	  (but seems to work).
+ 
+	* doc/oprofile.sgml: document compile-time options
+	  better, thank Philippe
+ 
 2001-06-21  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.c: remove stale comments. fix theoretical

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.56 2001/06/21 22:45:53 movement Exp $ */
+/* $Id: oprofile.c,v 1.57 2001/06/22 00:19:31 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -251,13 +251,15 @@ static void disable_local_P6_APIC(void *dummy)
 #endif
 }
 
+static uint old_lvtpc[NR_CPUS];
+
 static void __init smp_apic_setup(void *dummy)
 {
 	uint val;
 
 	/* set up LVTPC as we need it */
 	/* IA32 V3, Figure 7.8 */
-	val = apic_read(APIC_LVTPC);
+	old_lvtpc[smp_processor_id()] = val = apic_read(APIC_LVTPC);
 	/* allow PC overflow interrupts */
 	val &= ~(1<<16);
 	/* set delivery to NMI */
@@ -266,6 +268,13 @@ static void __init smp_apic_setup(void *dummy)
 	val &= ~(1<<8);
 	apic_write(APIC_LVTPC, val);
 }
+
+#ifdef ALLOW_UNLOAD
+static void __exit smp_apic_restore(void *dummy)
+{
+	apic_write(APIC_LVTPC, old_lvtpc[smp_processor_id()]);
+}
+#endif
 
 static int __init apic_setup(void)
 {
@@ -1111,7 +1120,14 @@ void __exit cleanup_sysctl(void)
 
 static int can_unload(void)
 {
-	return -EBUSY; /* nope */
+	int can = -EBUSY;
+#ifdef ALLOW_UNLOAD
+	down(&sysctlsem);
+	if (!prof_on)
+		can = 0;
+	up(&sysctlsem);
+#endif
+	return can;
 }
 
 int __init oprof_init(void)
@@ -1139,7 +1155,7 @@ int __init oprof_init(void)
 		goto out_err;
 	}
 
-	/* module is not unloadable */
+	/* module might not be unloadable */
 	THIS_MODULE->can_unload = can_unload;
 
 	/* do this now so we don't have to track save/restores later */
@@ -1154,6 +1170,15 @@ out_err:
 	return err;
 }
 
+void __exit oprof_exit(void)
+{
+	oprof_free_hashmap();
+	unregister_chrdev(op_major, "oprof");
+	smp_call_function(smp_apic_restore, NULL, 0, 1);
+	cleanup_sysctl();
+	// currently no need to reset APIC state
+}
+ 
 /*
  * "The most valuable commodity I know of is information."
  *      - Gordon Gekko

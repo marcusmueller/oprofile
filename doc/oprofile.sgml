@@ -492,6 +492,38 @@ The following files will be present :
 
 </chapter>
  
+<chapter id="features">
+<title>Other features</title>
+ 
+<sect1 id="pidpgrpfilter">
+<title>pid/pgrp filter</title>
+<para>There are situations where you are only interested in the profiling results of a particular
+running process, or process group. You can enable the optional filter at build time, and set
+the pid/pgrp values via the <filename>--pid-filter</filename> and <filename>--pgrp-filter</filename>
+options to <command>op_start</command>, or by setting the relevant sysctls as mentioned in <xref linkend="sysctl">.
+</para>
+<note><para>Enabling filtering can have an impact on the performance of the profiler even when a filter
+is not set (numbers not yet available).</para></note> 
+</sect1>
+ 
+<sect1 id="unloadable">
+<title>Unloadable kernel module</title>
+<para>
+By default, the kernel module is not unloadable. This is due to its internal behaviour with respect
+to tracing system calls of processes. However you can optionally compile the ability for the module
+to unload itself, in which case it will do so when you run op_stop. This can be useful if you need
+to upgrade to a new version of oprofile without rebooting, or you are hacking on oprofile itself ;)
+</para>
+<para>
+<command>lsmod</command> and similar utilties will still show the module's use count as <constant>-1</constant>.
+However, this is not to be relied on - the module will become unloadable some short time after stopping profiling.
+</para>
+<note><para>Enabling the ability to unload can have an impact on the performance of the profiler (numbers
+not yet available).</para></note>
+</sect1> 
+
+</chapter>
+ 
 <chapter id="results">
 <title>Obtaining and interpreting results</title>
 <para>
@@ -620,7 +652,7 @@ numbers of processes, leading to far better performance.
 <chapter id="ack">
 <title>Acknowledgments</title>
 <para>
-Thanks to (in no particular order) : Arjan van de Ven, Rik van Riel, Juan Quintela,
+Thanks to (in no particular order) : Arjan van de Ven, Rik van Riel, Juan Quintela, Philippe Elie,
 Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne,
 Dave Jones, Charles Filtness; and finally Pulp, for "Intro". 
 </para>

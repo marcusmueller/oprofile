@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.36 2001/04/06 14:16:46 movement Exp $ */
+/* $Id: oprofile.h,v 1.37 2001/06/22 00:19:31 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -74,6 +74,14 @@ struct _oprof_data {
 #define APIC_SPIV_APIC_ENABLED (1<<8)
 #endif
 
+#ifdef ALLOW_UNLOAD
+#define LOCK_UNLOAD MOD_INC_USE_COUNT
+#define UNLOCK_UNLOAD MOD_DEC_USE_COUNT
+#else
+#define LOCK_UNLOAD do { } while (0)
+#define UNLOCK_UNLOAD do { } while (0)
+#endif
+ 
 #define streqn(a, b, len) (!strncmp((a), (b), (len)))
 
 /* oprof_data->ready will be set this many samples
@@ -157,6 +165,8 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #define release_mmap_sem(mm) up_read(&mm->mmap_sem)
 #endif
  
+int oprof_init(void);
+void oprof_exit(void);
 void my_set_fixmap(void);
 int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc);
 void op_intercept_syscalls(void);
