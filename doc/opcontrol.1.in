@@ -79,7 +79,7 @@ Set kernel buffer to num samples.
 Add an event to measure for the hardware performance counters,
 or "default" for the default event. The event is of the form
 "CPU_CLK_UNHALTED:30000:0:1:1" where the numeric values are
-count, unit mask, user-space counting, kernel-space counting,
+count, unit mask, kernel-space counting, user-space counting,
 respectively.
 .br
 .TP

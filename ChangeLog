@@ -1,3 +1,8 @@
+2003-11-10  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/opcontrol.1.in: reverse kernel:user in event setting description.
+	  Fix #838968
+
 2003-11-09  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/init.c:
