@@ -933,9 +933,9 @@ check_event_mapping_data()
 		# the same group.  Only one event is assigned per counter,
 		# hence there will not be a conflict on the counters
 		if [ "$MMCR0_CK_VAL" = "" ] ; then    
-			let MMCR0_CK_VAL=$MMCR0_VAL
-			let MMCR1_CK_VAL=$MMCR1_VAL
-			let MMCRA_CK_VAL=$MMCRA_VAL
+			MMCR0_CK_VAL=$MMCR0_VAL
+			MMCR1_CK_VAL=$MMCR1_VAL
+			MMCRA_CK_VAL=$MMCRA_VAL
 		else
 			# make sure all events are from the same group 
                         if test $MMCR0_CK_VAL != $MMCR0_VAL \

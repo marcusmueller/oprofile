@@ -1,3 +1,7 @@
+2004-10-07  Will Cohen  <wcohen@redhat.com>
+
+	* utils/opcontrol: Correct ppc64 check that events are in same group.
+
 2004-09-21  Will Cohen  <wcohen@redhat.com>
 
 	* libutil++/op_bfd.h:
