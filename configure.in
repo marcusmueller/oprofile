@@ -34,7 +34,7 @@ fi
 ])
  
  
-AC_REVISION($Id: configure.in,v 1.6 2000/08/03 21:43:06 moz Exp $)
+AC_REVISION($Id: configure.in,v 1.7 2000/08/07 04:18:27 moz Exp $)
 dnl
 dnl Process this file with autoconf to produce a configure script.
 dnl
@@ -100,6 +100,12 @@ AX_EGREP([^ *\#define  *CONFIG_MODVERSIONS], $KINC/linux/autoconf.h, mv=1)
 AX_MSG_RESULT_YN($mv)
 test "$mv" = 1 && AC_DEFINE(MODVERSIONS)
 
+AC_MSG_CHECKING(for do_nmi patch) 
+nmipatch=0
+AX_EGREP([^ *EXPORT_SYMBOL *\( *do_nmi *\) *], $KSRC/arch/i386/kernel/i386_ksyms.c, nmipatch=1)
+AX_MSG_RESULT_YN($nmipatch)
+test "$nmipatch" = 1 && KCPPFLAGS="$KCPPFLAGS -DOP_EXPORTED_DO_NMI"
+ 
 dnl --- Configuration parameters ---
 
 AC_MSG_CHECKING("whether $CC accepts -mpreferred-stack-boundary=2")
