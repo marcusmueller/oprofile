@@ -13,8 +13,6 @@ configure
 make.common
 cvs.log
 Makefile
-version.h
-version-1.h
 a.diff
 aclocal.m4
 oprofile.s

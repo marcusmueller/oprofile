@@ -133,7 +133,7 @@ fi
 AC_SUBST(OP_CFLAGS)
 AC_SUBST(OP_CXXFLAGS)
 
-# fixups for version.h
+# fixups for config.h
 if test "$prefix" = "NONE"; then
 	prefix="$ac_default_prefix"
 fi
@@ -147,9 +147,9 @@ if test "$datadir" = "NONE"; then
 	datadir="$prefix/share"
 fi
 OP_DATADIR=`eval echo "$datadir/$PACKAGE/"`
+AC_DEFINE_UNQUOTED(OP_DATADIR, "$OP_DATADIR", [package data directory])
 OP_BINDIR=`eval echo "$bindir/"`
-AC_SUBST(OP_BINDIR)
-AC_SUBST(OP_DATADIR)
+AC_DEFINE_UNQUOTED(OP_BINDIR, "$OP_BINDIR", [package binary directory])
 
 AC_OUTPUT(Makefile \
 	m4/Makefile \
@@ -179,10 +179,8 @@ AC_OUTPUT(Makefile \
 	gui/ui/Makefile \
 	module/Makefile \
 	module/x86/Makefile \
-	module/ia64/Makefile \
-	version-1.h)
+	module/ia64/Makefile)
 
-AX_COPY_IF_CHANGE(version-1.h, version.h)
 AX_COPY_IF_CHANGE(doc/xsl/catalog-1.xml, doc/xsl/catalog.xml)
 
 if test -z "$QT_LIB"; then

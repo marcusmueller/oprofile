@@ -1,3 +1,21 @@
+2003-05-31  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* configure.in: use AC_DEFINE_UNQUOTED() to define version string
+	  in config.h not in version-1.h
+	* Makefile.am: distclean-local: is no longer used
+	* version-1.h.in: delete
+	* libutil/op_version.h:
+	* libutil/op_version.c: new file: package version output
+	* libutil/Makefile.am:
+	* dae/oprofiled.c:
+	* daemon/oprofiled.c:
+	* gui/oprof_start.h:
+	* libop/op_events.c:
+	* libopt++/popt_options.cpp:
+	* libregex/demangle_sybol.cpp:
+	* module/oprofile.c:
+	* utils/op_help.c: tweak # include according
+
 2003-05-30  Dan Zink  <Dan.Zink@hp.com>
 
 	* module/x86/op_apic.c: really disable the apic if it was disabled
@@ -1848,7 +1866,7 @@
 	* libregex/stl.pat: move to ...
 	* libregex/stl.pat.in: here. Use @SIZE_T_TYPE@ ans @PTRDIFF_T_TYPE@
 	* libregex/Makefile.am: update according
-	* libregex/.cvsignore: ingre stl.pat
+	* libregex/.cvsignore: ignore stl.pat
 
 2003-03-22  Philippe Elie  <phil.el@wanadoo.fr>
 

@@ -14,7 +14,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include "version.h"
+#include "op_version.h"
 #include "op_events.h"
 #include "op_popt.h"
 #include "op_cpufreq.h"

@@ -11,7 +11,7 @@
 
 #include "oprofile.h"
 #include "op_util.h"
-#include "version.h"
+#include "config.h"
 
 EXPORT_NO_SYMBOLS;
  
@@ -51,7 +51,7 @@ u32 note_pos __cacheline_aligned_in_smp;
 // the interrupt handler ops structure to use
 static struct op_int_operations const * int_ops;
 
-static char const * op_version = VERSION_STRING;
+static char const * op_version = PACKAGE " " VERSION;
  
 /* ---------------- interrupt entry routines ------------------ */
 

@@ -41,9 +41,6 @@ install.kernel: kernel_module
 	if test $(KVERS) = "`uname -r`"; then depmod -a ; fi
 endif
 
-distclean-local:
-	rm -f version.h
-
 clean-local:
 	rm -f module/*.o module/@OPROFILE_MODULE_ARCH@/*.o \
 	module/.*.o.cmd module/.*.o.flags \

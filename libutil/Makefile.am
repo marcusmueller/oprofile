@@ -21,4 +21,6 @@ libutil_a_SOURCES = \
 	op_list.h \
 	op_popt.h \
 	op_string.h \
-	op_cpufreq.h
+	op_cpufreq.h \
+	op_version.c \
+	op_vesion.h

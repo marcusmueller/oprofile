@@ -8,9 +8,10 @@
  * @author John Levon
  */
 
+#include "config.h"
+
 #include "demangle_symbol.h"
 #include "op_regex.h"
-#include "version.h"
 
 // from libiberty
 /*@{\name demangle option parameter */

@@ -33,12 +33,12 @@
 #include <qlabel.h>
 #include <qpushbutton.h>
 
+#include "config.h"
 #include "oprof_start.h"
 #include "op_config.h"
 #include "op_config_24.h"
 #include "string_manip.h"
 #include "op_cpufreq.h"
-#include "version.h"
 
 using namespace std;
 

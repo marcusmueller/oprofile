@@ -12,7 +12,7 @@
 #include <iostream>
 
 #include "op_popt.h"
-#include "version.h"
+#include "op_version.h"
 
 #include "popt_options.h"
 #include "string_manip.h"

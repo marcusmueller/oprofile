@@ -15,7 +15,6 @@
 #include "op_libiberty.h"
 #include "op_fileio.h"
 #include "op_string.h"
-#include "version.h"
 
 #include <string.h>
 #include <stdlib.h>

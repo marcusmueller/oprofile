@@ -20,7 +20,7 @@
 #include "opd_kernel.h"
 #include "opd_printf.h"
 
-#include "version.h"
+#include "op_version.h"
 #include "op_popt.h"
 #include "op_file.h"
 #include "op_fileio.h"

@@ -49,8 +49,6 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
   Note the ellipsis
 
  o OPD_MAX_MODULES is stupid, use a list instead
- o configure.in: OP_DATADIR=`eval echo "$datadir/$PACKAGE/"`
-     AC_DEFINE_UNQUOTED(OP_DATADIR, "$OP_DATADIR", "foo path") seems to work
  o improve the *non* verbose daemon log to be a bit more informative
  o daemon: opd_put_kernel_samples vs. setup_kernel_sample vs. handle_. Rename, way too confusing
  o --buffer-size is useless on 2.5 without tuning of watershed
