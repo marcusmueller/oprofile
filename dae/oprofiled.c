@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.52 2001/12/05 04:31:17 phil_e Exp $ */
+/* $Id: oprofiled.c,v 1.53 2001/12/10 15:45:45 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -450,7 +450,7 @@ void opd_do_notes(struct op_note *opd_buf, size_t count)
 	struct op_note * note;
  
 	/* prevent signals from messing us up */
-	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
+	sigprocmask(SIG_BLOCK, &maskset, NULL);
 
 	for (i = 0; i < count/sizeof(struct op_note); i++) {
 		note = &opd_buf[i];
