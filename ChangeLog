@@ -7,7 +7,7 @@
 2003-10-17  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/op_bfd.cpp: show filename when warning about no debug
-	  information available
+	  information available. get_linenr(): s/filename/source_filename/
 
 2003-10-16  Philippe Elie  <phil.el@wanadoo.fr>
 

@@ -295,7 +295,7 @@ u32 op_bfd::sym_offset(symbol_index_t sym_index, u32 num) const
 
 
 bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
-			string & filename, unsigned int & linenr) const
+			string & source_filename, unsigned int & linenr) const
 {
 	linenr = 0;
 
@@ -347,7 +347,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 			// FIXME: enough precise message ? We will get this
 			// message for static C++ function too, must we
 			// warn only if the following check fails ?
-			cerr << "warning: \"" << this->filename << "\" some "
+			cerr << "warning: \"" << get_filename() << "\" some "
 			     << "functions compiled without debug information "
 			     << "may have incorrect source line attributions"
 			     << endl;
@@ -410,9 +410,9 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 	}
 
 	if (cfilename) {
-		filename = cfilename;
+		source_filename = cfilename;
 	} else {
-		filename = "";
+		source_filename = "";
 		linenr = 0;
 	}
 
