@@ -72,7 +72,7 @@ popt::option options_array[] = {
 	popt::option(options::exclude_dependent, "exclude-dependent", 'x',
 		     "exclude libs, kernel, and module samples for applications"),
 	popt::option(sort, "sort", 's',
-		     "sort by", "vma,sample,symbol,debug,image"),
+		     "sort by", "sample,image,app-name,symbol,debug,vma"),
 	popt::option(exclude_symbols, "exclude-symbols", 'e',
 		     "exclude these comma separated symbols", "symbols"),
 	popt::option(include_symbols, "include-symbols", 'i',

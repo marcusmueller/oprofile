@@ -21,11 +21,15 @@ class symbol_entry;
 
 struct sort_options {
 	enum sort_order {
-		vma,
-		sample,
-		symbol,
+		// order give sort order if caller doesn't specify one
+		first,
+		sample = first,
 		image,
-		debug
+		app_name,
+		symbol,
+		debug,
+		vma,
+		last
 	};
 
 	sort_options() {}

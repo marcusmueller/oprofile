@@ -59,6 +59,9 @@ int compare_by(sort_options::sort_order order,
 		case sort_options::image:
 			return image_compare(lhs->image_name, rhs->image_name);
 
+		case sort_options::app_name:
+			return image_compare(lhs->app_name, rhs->app_name);
+
 		case sort_options::vma:
 			if (lhs->sample.vma < rhs->sample.vma)
 				return -1;
@@ -85,7 +88,7 @@ int compare_by(sort_options::sort_order order,
 		}
 	}
 
-	return false;
+	return 0;
 }
 
 
@@ -124,8 +127,16 @@ void sort_options::sort(symbol_collection & syms,
 {
 	long_filenames = lf;
 
+	std::vector<sort_order> sort_option(options);
+	for (sort_order cur = first; cur != last; ) {
+		if (find(sort_option.begin(), sort_option.end(), cur) ==
+		    sort_option.end())
+			sort_option.push_back(cur);
+		cur = sort_order(cur + 1);
+	}
+
 	stable_sort(syms.begin(), syms.end(),
-	            symbol_compare(options, reverse_sort));
+	            symbol_compare(sort_option, reverse_sort));
 }
 
 
@@ -141,6 +152,8 @@ void sort_options::add_sort_option(std::string const & name)
 		options.push_back(debug);
 	} else if (name == "image") {
 		options.push_back(image);
+	} else if (name == "app-name") {
+		options.push_back(app_name);
 	} else {
 		ostringstream os;
 		os << "unknown sort option: " << name << endl;

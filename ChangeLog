@@ -1,3 +1,10 @@
+2003-08-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/symbol_sort.h:
+	* libpp/symbol_sort.cpp: add app_name sort order, force sort order
+	  for criteria unspecified by user.
+	* pp/opreport_options.cpp: update --sort option help string.
+
 2003-08-04  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml:
