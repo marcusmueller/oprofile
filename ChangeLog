@@ -1,5 +1,9 @@
 2003-03-16  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* utils/opcontrol: check return code for --ctr??-event=none
+
+2003-03-16  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* gui/oprof_start.cpp: check for --separate=xxxx in the right order.
 	  Old code do: if user set separate=library and separate=kernel only
 	  separate=library was taken by opcontrol
