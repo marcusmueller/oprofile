@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.19 2000/08/24 17:47:21 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.20 2000/08/24 17:49:33 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -354,7 +354,6 @@ static void do_d_path(struct dentry *dentry, struct vfsmount *vfsmnt, char *buf,
 {
 	struct vfsmount *rootmnt;
 	struct dentry *root;
-	int val;
 
 	/* we do same as d_path, but we only care about the components */
 
@@ -382,11 +381,8 @@ static void do_d_path(struct dentry *dentry, struct vfsmount *vfsmnt, char *buf,
 			continue;
 		}
 
-		val = output_path_hash(dentry->d_name.name, dentry->d_name.len);
-		if (val!=-1) {
-			(*count)++;
-			map_out32(val);
-		}
+		(*count)++;
+		map_out32(output_path_hash(dentry->d_name.name, dentry->d_name.len));
 		parent = dentry->d_parent;
 		dentry = parent;
 	}
@@ -399,11 +395,8 @@ out:
 global_root:
 	/* FIXME: do we want this ? */
 	printk("Global root: %s\n",dentry->d_name.name);
-	val = output_path_hash(dentry->d_name.name, dentry->d_name.len);
-	if (val!=-1) {
-		(*count)++;
-		map_out32(val);
-	}
+	(*count)++;
+	map_out32(output_path_hash(dentry->d_name.name, dentry->d_name.len));
 	goto out;
 }
 
