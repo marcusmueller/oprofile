@@ -1,3 +1,11 @@
+2005-03-26  John Levon  <levon@movementarian.org>
+
+	* daemon/oprofiled.c: honour oprofiled -v first, complain
+	if --events option is missing instead of core dumping
+
+	* doc/oprofiled.xml: explain opreport -d behaviour for
+	  no-symbol binaries
+
 2005-03-14  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* utils/op_help.c:

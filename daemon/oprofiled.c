@@ -402,6 +402,12 @@ static void opd_options(int argc, char const * argv[])
 		}
 	}
 
+	if (events == NULL) {
+		fprintf(stderr, "oprofiled: no events specified.\n");
+		poptPrintHelp(optcon, stderr, 0);
+		exit(EXIT_FAILURE);
+	}
+	
 	opd_parse_events(events);
 
 	opd_parse_image_filter();
@@ -437,18 +443,18 @@ int main(int argc, char const * argv[])
 	int err;
 	struct rlimit rlim = { 2048, 2048 };
 
+	opd_options(argc, argv);
+
+	opd_setup_signals();
+
 	err = setrlimit(RLIMIT_NOFILE, &rlim);
 	if (err) {
 		perror("warning: could not set RLIMIT_NOFILE to 2048: ");
 	}
 
-	opd_setup_signals();
+	opd_write_abi();
 
 	opd_ops = get_ops();
-
-	opd_options(argc, argv);
-
-	opd_write_abi();
 
 	opd_ops->init();
 

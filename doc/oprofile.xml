@@ -1692,7 +1692,9 @@ none: no demangling. normal: use default demangler (default) smart: use
 pattern-matching to make C++ symbol demangling more readable.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--details / -d</option></term><listitem><para>
-Show per-instruction details for all selected symbols.
+Show per-instruction details for all selected symbols. Note that, for
+binaries without symbol information, the VMA values shown are raw file
+offsets for the image binary.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
 Do not include application-specific images for libraries, kernel modules
