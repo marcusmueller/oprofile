@@ -1,6 +1,10 @@
+2002-01-03  John Levon  <moz@compsoc.man.ac.uk>
+
+	* doc/oprofile.sgml: some fixes, comments
+	 
 2002-01-03  Philippe Elie  <ph_e@club-internet.fr>
 
-	* pp/oprofile.sgml: improve documentation, corrected
+	* doc/oprofile.sgml: improve documentation, corrected
 	  by John Levon
 
 2002-01-03  John Levon  <moz@compsoc.man.ac.uk>

@@ -66,10 +66,7 @@ necks in real-world systems.
 	<varlistentry>
 		<term>Uniprocessor or SMP</term>
 		<listitem><para>
-			<!-- FIXME John this is false now ? -->
-			<!-- FIXME: alter this later -->
-			<acronym>SMP</acronym> machines are supported, but performance is currently worse than the UP case.
-			This include SMP Athlon type machines.
+			SMP machines are also supported in both Intel and AMD variants.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -211,6 +208,70 @@ remove all installed files except your configuration file in the directory <file
 
 </chapter>
 
+<chapter id="overview"> 
+<title>Overview of oprofile tools</title>
+<para>
+This section gives a brief description of the available oprofile utilities and their purpose.
+</para>
+<variablelist>
+<varlistentry>
+	<term><filename>op_help</filename></term>
+	<listitem><para>
+		This utility lists the availabe events and short descriptions.
+	</para></listitem>
+</varlistentry>
+	
+<varlistentry>
+	<term><filename>op_start</filename>, <filename>oprof_start</filename></term>
+	<listitem><para>
+		Used for starting profiling, discussed in <xref linkend="usage">.
+	</para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><filename>op_stop</filename></term>
+	<listitem><para>
+		You should stop the profiler using this script. The profiler will collect
+		all the data remaining to be processed, and quit.
+	</para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><filename>op_dump</filename></term>
+	<listitem><para>
+		This causes the profiler to process all pending information.
+	</para></listitem> 
+</varlistentry>
+ 
+<varlistentry>
+	<term><filename>oprofpp</filename></term>
+	<listitem><para>
+		This is the main tool for retrieving useful profile data, described in
+		<xref linkend="results">.
+	</para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><filename>op_time</filename></term>
+	<listitem><para>
+		This utility is useful for examining the relative profile values for
+		all images on the system to determine the applications with the largest
+		impact on system performance.
+	</para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><filename>op_to_source</filename></term>
+	<listitem><para>
+		This utility can be used to produce annotated source, assembly or mixed source/assembly.
+		Source level annotation is available only if the application was compiled with 
+		debugging symbols. See	<xref linkend="op-to-source">.
+	</para></listitem>
+</varlistentry>
+</variablelist>
+	
+</chapter>
+ 
 <chapter id="usage">
 <title>Usage</title>
 
@@ -447,7 +508,7 @@ contain the general configuration, and event/counter setup, respectively.
 <title>Configuration details</title>
 
 <sect2 id="hardware-counters">
-<title>Intel P6 Performance Counters</title>
+<title>Hardware Performance Counters</title>
 <para>
 The hardware performance counters are detailed in the Intel IA-32 Architecture Manual, Volume 3, available
 from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>. The AMD Athlon/Duron
@@ -685,71 +746,8 @@ re-enable the module unload by specifying the "allow_unload" parameter to the mo
  
 </chapter>
 
-<chapter id="overview"> 
-<title>Overview of oprofile tools</title>
-<para>
-This section gives a brief description of the available oprofile utilities and their purpose.
-</para>
-<variablelist>
-<varlistentry>
-	<term><filename>op_help</filename></term>
-	<listitem><para>
-		This utility lists the availabe events and short descriptions.
-	</para></listitem>
-</varlistentry>
-	
-<varlistentry>
-	<term><filename>op_start</filename>, <filename>oprof_start</filename></term>
-	<listitem><para>
-		Used for starting profiling, discussed in <xref linkend="usage">.
-	</para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><filename>op_stop</filename></term>
-	<listitem><para>
-		You should stop the profiler using this script. The profiler will collect
-		all the data remaining to be processed, and quit.
-	</para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><filename>op_dump</filename></term>
-	<listitem><para>
-		This causes the profiler to process all pending information.
-	</para></listitem> 
-</varlistentry>
- 
-<varlistentry>
-	<term><filename>oprofpp</filename></term>
-	<listitem><para>
-		This is the main tool for retrieving useful profile data, described in
-		<xref linkend="results">.
-	</para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><filename>op_time</filename></term>
-	<listitem><para>
-		This utility is useful for examining the relative profile values for
-		all images on the system to determine the applications with the largest
-		impact on system performance.
-	</para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><filename>op_to_source</filename></term>
-	<listitem><para>
-		This utility can be used to produce annotated source or assembly annotated listing optionnaly mixed with source
-		source. Source level annotation is available only if the application was compiled with debugging symbols. See	<xref linkend="op-to-source">.
-	</para></listitem>
-</varlistentry>
-</variablelist>
-	
-</chapter>
- 
 <chapter id="results">
-<title>Obtaining and interpreting results</title>
+<title>Obtaining results</title>
 <para>
 OK, so the profiler has been running, but it's not much use unless we can get some data out. Fairly often,
 OProfile does a little <emphasis>too</emphasis> good a job of keeping overhead low, and no data reaches
@@ -1013,7 +1011,7 @@ The options allowed are :
 </sect1>
 
 <sect1 id="op-time">
-<title><command>op_time</command>: Overall of all system binaries</title>
+<title><command>op_time</command>: Overall view of all system binaries</title>
 <para>
 You can get a quick look at an overall summary of relative binary profiles using <command>op_time</command>. This utility displays
 the relative amount of samples for each application profiled sorted by decreasing order of samples count. So
@@ -1056,8 +1054,9 @@ Options allowed are :
 </variablelist>
 </para>
 </sect1>
+</chapter>
 
-<sect1 id="interpreting">
+<chapter id="interpreting">
 <title>Interpreting profiling results</title>
 <para>
 Another grey art. The standard caveats of profiling come
@@ -1069,13 +1068,14 @@ instruction-level profiling.  However, for almost all circumstances the data
 can be useful. Ideally a utility such as Intel's VTUNE would be available to
 allow careful instruction-level analysis; go hassle Intel for this, not me ;)
 </para>
-<sect2 id="irq-latency">
-<title>irq latency</title>
+<sect1 id="irq-latency">
+<title>Profiling interrupt latency</title>
 <para>
 </para>
 <para>
-Here one example that show the irq latency: you profile the following function.
- The function is written to show, AKA, one of the worst case of discrepancy.
+This is an example of how the latency of delivery of profiling interrupts
+can impact the reliability of the profiling data. This is pretty much a 
+worst-case-scenario example: these problems are fairly rare.
 </para>
 <screen>
 double fun(double a, double b, double c)
@@ -1090,11 +1090,11 @@ double fun(double a, double b, double c)
 }
 </screen>
 <para>
-Here the last instruction of the loop is very costly and you expect the result
-reflecting that but (cutting the instructions inside the loop):
+Here the last instruction of the loop is very costly, and you would expect the result
+reflecting that - but (cutting the instructions inside the loop):
 </para>
 <screen>
-$op_to_source -a -w 10
+$ op_to_source -a -w 10
 
  /* 9349 0.3788% */
  8048394:       fadd   %st(3),%st
@@ -1108,13 +1108,13 @@ $op_to_source -a -w 10
  804839b:       jns    8048394
 </screen>
 <para>
-The problem come from the x86 hardware, when the counter overflow the irq line
+The problem comes from the x86 hardware; when the counter overflows the IRQ line
 is asserted but the hardware have features that can delay the NMI interrupt:
 x86 hardware is synchronous (e.g. can not interrupt during an instruction but
-interrupt at the end of instruction), there is also a latency when the irq
-line is asserted the hardware can take some cycle to get account, the multiple
-execution unit and the in order/out of order model of modern x86 family cause
-problem. The following show the same function at source level
+interrupt at the end of instruction), there is also a latency when the IRQ
+line is asserted the hardware can take some cycles to get account; the multiple
+execution unit and the out of order model of modern x86 family also causes
+problems. The following shows the same function at source level
 </para>
 <para>
 <screen>
@@ -1143,18 +1143,18 @@ double fun(double a, double b, double c)
 <para>
 So the conclusion: don't trust samples coming at the end of a loop,
 particularly if the last instruction generated by the compiler is costly, this
-case can occur also for each branch in your program. Always think than samples
+case can occur also for each branch in your program. Always bear in mind that samples
 can be often delayed by a few cycles from its real position. That's a hardware
-problem and oprofile can do nothing with it.
+problem and oprofile can do nothing about it.
 </para>
-</sect2>
-<sect2 id="debug-info">
-<title>inaccuracy from compiler</title>
+</sect1>
+<sect1 id="debug-info">
+<title>Inaccuracies in annotated source</title>
 <para>
-Compiler can introduce some pitfall in the annotated source, you can write code
-and the optimizer move piece of code in such manner than two line of code
-are interlaced (scheduled). Also debug info generated by compiler can show
-strange behavior. This is especially true for complex expression e.g. inside
+The compiler can introduce some pitfalls in the annotated source output.
+The optimizer can move pieces of code in such manner that two line of codes
+are interlaced (instruction scheduling). Also debug info generated by the compiler 
+can show strange behavior. This is especially true for complex expressions e.g. inside
 an if statement:
 </para>
 <screen>
@@ -1163,43 +1163,53 @@ an if statement:
 	    c &&)
 </screen>
 <para>
-here the problem come from the position of line number. Compiler have
-tendancies to not allow to step inside such expression, so all samples are
-cumulated at the position of the right brace of the expression. Using
+here the problem come from the position of line number. The available debug
+info does not give enough details for the if condition, so all samples are
+accumulated at the position of the right brace of the expression. Using
 <command>op_to_source <option>-a</option></command> can help to show the real
-samples at assembly level.
+samples at an assembly level.
 </para>
-</sect2>
+</sect1>
+<!-- 
+
+FIXME: I commented this bit out until we've written something ...
+
+improve this ? but look first why this file is special 
 <sect2 id="small-functions">
-<title>small functions</title>
+<title>Small functions</title>
 <para>
-<!-- improve this ? but look first why this file is special -->
-very small function can show strange behavior. The file in your source
+Very small functions can show strange behavior. The file in your source
 directory of oprofile <filename>$SRC/test-oprofile/understanding/puzzle.c</filename>
 show such example
 </para>
-<sect2 id="hidden-cost">
-<title>Other discrepancy</title>
+</sect2>
+--> 
+<sect1 id="hidden-cost">
+<title>Other discrepancies</title>
 <para>
-Another cause of apparent problem is the hidden cost of instruction. A very
-common example is two memory read: one from L1 cache and the other from memory.
+Another cause of apparent problems is the hidden cost of instructions. A very
+common example is two memory reads: one from L1 cache and the other from memory.
 It's clear for all people than the second memory read will show more samples
-but there is many other cause of hidden cost of instructions. A non-exhaustive
-list: mispredicted branch, TLB cache miss, partial register stall,
+but there are many other causes of hidden cost of instructions. A non-exhaustive
+list: mis-predicted branch, TLB cache miss, partial register stall,
 partial register dependencies, memory mismatch stall, re-executed µops. If you want to write
-programs at assembly level, or you write compiler take a look at the intel and
-<!-- get a quick look at this url is that ok ? -->
+programs at assembly level, or you write compiler take a look at the Intel and
 AMD documentation at <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>
 and <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/">http://www.amd.com/products/cpg/athlon/techdocs/</ulink>.
 </para>
-</sect2>
+</sect1>
+<!-- 
+FIXME: more examples, basic and advanced trick. A howto use utilities FAQ ?
+
+yes, indeed. We can do this bit by bit though, as long as we've done as much
+as we can for release 1.0 - john
+ 
 <sect2 id="none">
 <title>and more</title>
 <para>
-FIXME: more examples, basic and advanced trick. A howto use utilities FAQ ?
 </para>
 </sect2>
-</sect1>
+--> 
 </chapter>
 
 <chapter id="overhead">
