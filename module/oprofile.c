@@ -89,6 +89,8 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const str
 	if (likely(!need_wakeup(cpu, data)))
 		return;
 
+	// FIXME: verify this on 2.2 !!!!
+ 
 	/* locking rationale :
 	 *
 	 * other CPUs are not a race concern since we synch on oprof_wait->lock.
