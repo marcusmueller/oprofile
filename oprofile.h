@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.58 2001/10/14 19:35:13 movement Exp $ */
+/* $Id: oprofile.h,v 1.59 2001/10/16 15:56:46 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -181,18 +181,16 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #define op_cpu_id() (cpu_number_map(smp_processor_id()))
 
 /* branch prediction */
-#ifdef EXPECT_OK
 #ifndef likely
+#ifdef EXPECT_OK
 #define likely(a) __builtin_expect((a), 1)
+#else
+#define likely(a) (a)
 #endif
 #ifndef unlikely
+#ifdef EXPECT_OK
 #define unlikely(a) __builtin_expect((a), 0)
-#endif
 #else
-#ifdef likely
-#error likely defined - kernel compiler and compiler specified do not match !
-#endif
-#define likely(a) (a)
 #define unlikely(a) (a)
 #endif
  
