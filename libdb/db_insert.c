@@ -1,5 +1,5 @@
 /**
- * @file db-hash-insert.c
+ * @file db_insert.c
  * Inserting a key-value pair into a DB hash
  *
  * @remark Copyright 2002 OProfile authors

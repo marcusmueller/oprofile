@@ -1,5 +1,5 @@
 /**
- * @file db-hash-travel.c
+ * @file db_travel.c
  * Inspection of a DB tree
  *
  * @remark Copyright 2002 OProfile authors

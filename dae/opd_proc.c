@@ -260,7 +260,6 @@ inline static void verb_show_sample(unsigned long offset, struct opd_map * map,
  * opd_put_image_sample - write sample to file
  * @param image  image for sample
  * @param offset  (file) offset to write to
- * @param count  raw counter value
  * @param counter  counter number
  *
  * Add to the count stored at position offset in the

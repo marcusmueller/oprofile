@@ -83,7 +83,7 @@ void op_close_file(FILE * fp)
  * @param size  size in bytes to read
  *
  * Read from a file. It is considered an error
- * if anything less than @size bytes is read.
+ * if anything less than size bytes is read.
  * Failure is fatal.
  */
 void op_read_file(FILE * fp, void * buf, size_t size)
@@ -111,7 +111,7 @@ void op_read_file(FILE * fp, void * buf, size_t size)
  * @param buf  buffer
  * @param size  nr. of bytes to write
  *
- * Write @size bytes of buffer @buf to a file.
+ * Write size bytes of buffer buf to a file.
  * Failure is fatal.
  */
 void op_write_file(FILE * fp, void const * buf, size_t size)
@@ -133,7 +133,7 @@ void op_write_file(FILE * fp, void const * buf, size_t size)
  * @param fp  file pointer
  * @param val  value to write
  *
- * Write an unsigned byte value @val to a file.
+ * Write an unsigned byte value val to a file.
  * Failure is fatal.
  */
 void op_write_u8(FILE * fp, u8 val)
@@ -146,7 +146,7 @@ void op_write_u8(FILE * fp, u8 val)
  * @param fp  file pointer
  * @param val  value to write
  *
- * Write an unsigned four-byte value @val to a file.
+ * Write an unsigned four-byte value val to a file.
  * Failure is fatal.
  *
  * No byte-swapping is done.
@@ -194,7 +194,7 @@ u32 op_read_int_from_file(char const * filename)
  * @param fp  file pointer
  *
  * Get a line of ASCII text from a file. The file is read
- * up to the first \0 or \n. A trailing \n is deleted.
+ * up to the first '\0' or '\n'. A trailing '\n' is deleted.
  *
  * Empty lines are not handled.
  *

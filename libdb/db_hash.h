@@ -1,5 +1,5 @@
 /**
- * @file db-hash.h
+ * @file db_hash.h
  * This file contains various definitions and interface for management
  * of in-memory, through mmaped file, growable hash table.
  *

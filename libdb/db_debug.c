@@ -1,5 +1,5 @@
 /**
- * @file db-hash-debug.c
+ * @file db_debug.c
  * Debug routines for libdb-hash
  *
  * @remark Copyright 2002 OProfile authors

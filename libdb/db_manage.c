@@ -1,5 +1,5 @@
 /**
- * @file db-hash-manage.c
+ * @file db_manage.c
  * Management of a DB hash
  *
  * @remark Copyright 2002 OProfile authors

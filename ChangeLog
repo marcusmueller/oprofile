@@ -1,3 +1,9 @@
+2002-12-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libdb/*.c *.h:
+	* libutil/op_fileio.c:
+	* dae/opd_proc.c: doxygen comment fix
+
 2002-12-16  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* module/ia64/op_syscalls.c:

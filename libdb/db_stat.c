@@ -1,5 +1,5 @@
 /**
- * @file db-hash-stat.c
+ * @file db_stat.c
  * Statistics routines for libdb-hash
  *
  * @remark Copyright 2002 OProfile authors

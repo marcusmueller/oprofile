@@ -1,5 +1,5 @@
 /**
- * @file db-hash-test.c
+ * @file db_test.c
  * Tests for DB hash
  *
  * @remark Copyright 2002 OProfile authors
