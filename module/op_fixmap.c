@@ -9,6 +9,7 @@
 #include <linux/mm.h>
 #include <linux/init.h>
 #include <linux/config.h>
+#include <linux/pagemap.h>
 #include <asm/io.h>
 
 #include "oprofile.h"
