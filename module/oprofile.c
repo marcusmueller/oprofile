@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.3 2001/11/03 06:43:14 phil_e Exp $ */
+/* $Id: oprofile.c,v 1.4 2001/11/03 21:17:24 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -39,6 +39,8 @@ static int sysctl_dump;
 static int kernel_only;
 static int op_ctr_on[OP_MAX_COUNTERS];
 static int op_ctr_um[OP_MAX_COUNTERS];
+static int op_ctr_count[OP_MAX_COUNTERS];
+static int ctr_count[OP_MAX_COUNTERS];
 static int op_ctr_count[OP_MAX_COUNTERS];
 static int op_ctr_val[OP_MAX_COUNTERS];
 static int op_ctr_kernel[OP_MAX_COUNTERS];
@@ -602,6 +604,9 @@ static int parms_ok(void)
 		"op_note_size value %d not in range (%d %d)\n");
 
 	for (i = 0; i < op_nr_counters ; i++) {
+
+		op_ctr_count[i] = ctr_count[i];
+
 		if (op_ctr_on[i]) {
 			int min_count = op_min_count(op_ctr_val[i], cpu_type);
 
@@ -740,8 +745,9 @@ static int oprof_stop(void)
 		struct _oprof_data *data = &oprof_data[i];
 		oprof_ready[i] = 0;
 		data->nextbuf = data->next = 0;
-		oprof_free_mem(smp_num_cpus);
 	}
+
+	oprof_free_mem(smp_num_cpus);
 
 	spin_unlock(&note_lock);
 	spin_unlock(&map_lock);
@@ -921,7 +927,7 @@ static int __init init_sysctl(void)
 		memset(tab, 0, sizeof(ctl_table)*7);
 		tab[0] = ((ctl_table){ 1, "enabled", &op_ctr_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[1] = ((ctl_table){ 1, "event", &op_ctr_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
-		tab[2] = ((ctl_table){ 1, "count", &op_ctr_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[2] = ((ctl_table){ 1, "count", &ctr_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[3] = ((ctl_table){ 1, "unit_mask", &op_ctr_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[4] = ((ctl_table){ 1, "kernel", &op_ctr_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[5] = ((ctl_table){ 1, "user", &op_ctr_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
