@@ -1,3 +1,13 @@
+2005-01-04  Andy Fleming  <afleming@freescale.com>
+
+	* events/Makefile.am:
+	* events/ppc/e500/events:
+	* events/ppc/e500/unit_masks:
+	* libop/op_events.c:
+	* libop/op_cpu_type.h:
+	* libop/op_cpu_type.c:
+	* utils/op_help.c: Add PPC e500 support
+
 2005-01-02  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opannotate.cpp: fix #1093162 by simplifying the code, this was

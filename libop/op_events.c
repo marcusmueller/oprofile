@@ -796,12 +796,13 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_ARM_XSCALE2:
 			descr->name = "CPU_CYCLES";
 			break;
+
 		case CPU_PPC64_970:
 		case CPU_PPC64_POWER4:
 		case CPU_PPC64_POWER5:
 			descr->name = "CYCLES";
 			break;
-             
+
 		case CPU_MIPS_R10000:
 		case CPU_MIPS_R12000:
 			descr->name = "INSTRUCTIONS_GRADUATED";
@@ -821,6 +822,10 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 			descr->name = "INSTRUCTIONS_EXECUTED";
 			break;
 
+		case CPU_PPC_E500:
+			descr->name = "CPU_CLK";
+			break;
+             
 		// don't use default, if someone add a cpu he wants a compiler
 		// warning if he forgets to handle it here.
 		case CPU_TIMER_INT:

@@ -49,6 +49,7 @@ typedef enum {
 	CPU_MIPS_SB1, /**< Broadcom SB1 */
 	CPU_MIPS_VR5432, /**< NEC VR5432 */
 	CPU_MIPS_VR5500, /**< MIPS VR5500, VR5532 and VR7701 */
+	CPU_PPC_E500,	/**< e500 */
 	MAX_CPU_TYPE
 } op_cpu;
 

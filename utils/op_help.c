@@ -443,6 +443,12 @@ int main(int argc, char const *argv[])
 		     "http://www.necel.com/nesdis/image/U16677EJ3V0UM00.pdf\n");
 		break;
 
+	case CPU_PPC_E500:
+		printf("See PowerPC e500 Core Complex Reference Manual\n"
+			"Chapter 7: Performance Monitor\n"
+			"Downloadable from http://www.freescale.com\n");
+		break;
+
 	case CPU_RTC:
 		break;
 
