@@ -74,7 +74,7 @@ void HotspotView::paintEvent(QPaintEvent *)
 		if (end != start) {
 			for ( ; start != end ; ++start) {
 				// get all sample belonging to this vma
-				const sample_entry * sample =
+				sample_entry const * sample =
 					samples->find_sample(start);
 
 				if (sample)
@@ -102,7 +102,7 @@ void HotspotView::paintEvent(QPaintEvent *)
 /**
  * do_data_change() - handle data change
  */
-void HotspotView::do_data_change(const samples_container_t * samples_)
+void HotspotView::do_data_change(samples_container_t const * samples_)
 {
 	samples = samples_;
 	samples->select_symbols(symbols, 0, 0.0, false, true);

@@ -95,7 +95,7 @@ void op_do_read_file(FILE * fp, void * buf, size_t size, int fatal)
  * Write @size bytes of buffer @buf to a file.
  * Failure is fatal.
  */
-void op_write_file(FILE * fp, const void * buf, size_t size)
+void op_write_file(FILE * fp, void const * buf, size_t size)
 {
 	size_t written;
 

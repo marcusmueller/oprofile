@@ -63,7 +63,7 @@ string const get_user_dir()
 string daemon_pid;
 
 // hurrah ! Stupid interface
-const int HZ = 100;
+int const HZ = 100;
  
 } // namespace anon 
  

@@ -156,7 +156,7 @@ private:
 	std::vector<std::string> & value;
 	// we need an intermediate char array to pass to popt libs
 	char * popt_value;
-	const char separator;
+	char const separator;
 };
 
 #endif /* ! POPT_OPTIONS_H */

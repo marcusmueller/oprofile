@@ -20,7 +20,7 @@ class OpView {
 public:
 	// ctor of derived class must add decoration
 	OpView() : notification_sended(false) {}
-	void data_change(const samples_container_t * samples) { 
+	void data_change(samples_container_t const * samples) { 
 		if (notification_sended == false) { 
 			do_data_change(samples); 
 			notification_sended = true;
@@ -28,7 +28,7 @@ public:
 	}
 	void data_destroy() { do_data_destroy(); notification_sended = false; }
 private:
-	virtual void do_data_change(const samples_container_t *) = 0;
+	virtual void do_data_change(samples_container_t const *) = 0;
 	virtual void do_data_destroy() = 0;
 	// FUTURE
 	// virtual void do_right_click();

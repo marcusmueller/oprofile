@@ -55,7 +55,7 @@ using std::setw;
 /// image_name - class to store name for a samples file
 struct image_name
 {
-	image_name(const string& samplefile_name);
+	image_name(string const & samplefile_name);
 
 	/// total number of samples for this samples file, this is a place
 	/// holder to avoid separate data struct which associate image_name
@@ -80,8 +80,8 @@ typedef pair<map_t::iterator, map_t::iterator> pair_it_t;
 struct sort_by_counter_t {
 	sort_by_counter_t(size_t index_) : index(index_) {}
 
-	bool operator()(const counter_array_t & lhs,
-			const counter_array_t & rhs) const {
+	bool operator()(counter_array_t const & lhs,
+			counter_array_t const & rhs) const {
 		return lhs[index] < rhs[index];
 	}
 
@@ -133,7 +133,7 @@ static alt_filename_t alternate_filename;
  * the set of alternative filename used to retrieve image name when
  * a samples image name directory is not accurate
  */
-void add_to_alternate_filename(const vector<string> & path_names,
+void add_to_alternate_filename(vector<string> const & path_names,
 			       bool recursive)
 {
 	vector<string>::const_iterator path;
@@ -234,7 +234,7 @@ static void get_options(int argc, char const * argv[])
 /**
  * image_name - ctor from a sample file name
  */
-image_name::image_name(const string& samplefile_name)
+image_name::image_name(string const & samplefile_name)
 	:
 	samplefile_name(samplefile_name)
 {
@@ -247,7 +247,7 @@ image_name::image_name(const string& samplefile_name)
  *
  * return true if filename exist
  */
-static bool file_exist(const std::string & filename)
+static bool file_exist(string const & filename)
 {
 	ifstream in(filename.c_str());
 
@@ -279,7 +279,7 @@ static bool file_exist(const std::string & filename)
  * treated as application
  */
 static void sort_file_list_by_name(map_t & result,
-				   const list<string> & file_list)
+				   list<string> const & file_list)
 {
 	list<string>::const_iterator it;
 	for (it = file_list.begin() ; it != file_list.end() ; ++it) {
@@ -290,7 +290,7 @@ static void sort_file_list_by_name(map_t & result,
 		int i;
 		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 			if ((counter & (1 << i)) != 0) {
-				std::ostringstream s;
+				ostringstream s;
 				s << string(samples_dir) << "/" << *it 
 				  << '#' << i;
 				if (file_exist(s.str()) == true) {
@@ -310,9 +310,9 @@ static void sort_file_list_by_name(map_t & result,
 /**
  * out_filename - display a filename and it associated ratio of samples
  */
-static void out_filename(const string& app_name,
-			 const counter_array_t & app_count,
-			 const counter_array_t & count, 
+static void out_filename(string const & app_name,
+			 counter_array_t const & app_count,
+			 counter_array_t const & count, 
 			 double total_count[OP_MAX_COUNTERS])
 {
 	for (size_t i = 0 ; i < OP_MAX_COUNTERS; ++i) {
@@ -367,7 +367,7 @@ static void out_filename(const string& app_name,
  */
 template <class Iterator>
 static void output_image_samples_count(Iterator first, Iterator last,
-				       const counter_array_t & app_count,
+				       counter_array_t const & app_count,
 				       double total_count[OP_MAX_COUNTERS])
 {
 	for (Iterator it = first ; it != last ; ++it) {
@@ -420,7 +420,7 @@ static void output_files_count(map_t& files)
 		// it.first->first
 		for ( ; p_it.first != p_it.second ; ++p_it.first) {
 			for (int i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
-				std::ostringstream s;
+				ostringstream s;
 				s << string(samples_dir) << "/"
 				  << p_it.first->second.samplefile_name
 				  << "#" << i;
@@ -530,8 +530,8 @@ static void output_files_count(map_t& files)
  * exist. If not it try to retrieve it through the alternate_filename
  * location.
  */
-string check_image_name(const string & image_name,
-			const string & samples_filename)
+string check_image_name(string const & image_name,
+			string const & samples_filename)
 {
 	// FIXME: this isn't polite enough for a permissions problem. 
 	if (file_exist(image_name))
@@ -617,7 +617,7 @@ static void output_symbols_count(map_t& files, int counter)
 	}
 
 	// select the symbols
-	vector<const symbol_entry *> symbols =
+	vector<symbol_entry const *> symbols =
 		samples.select_symbols(sort_by_counter, 0.0, false);
 
 	OutputSymbol out(samples, counter);

@@ -21,8 +21,8 @@
 namespace {
  
 // output default_value if value is empty (empty <==> contains non blank char)
-static void save_value(std::ostream& out, const std::string& value, 
-		const std::string& default_value)
+static void save_value(std::ostream & out, std::string const & value, 
+		       std::string const & default_value)
 {
 	std::istringstream in(value);
 	std::string word;
@@ -129,7 +129,7 @@ void config_setting::save(std::ostream& out) const
 	out << separate_samples << std::endl;
 }
 
-std::ostream& operator<<(std::ostream& out, const config_setting& object)
+std::ostream& operator<<(std::ostream& out, config_setting const & object)
 {
 	object.save(out);
 	return out;

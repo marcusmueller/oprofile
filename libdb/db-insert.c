@@ -29,7 +29,7 @@ static void unlock_db(db_tree_t * tree)
 	}
 }
 
-static void copy_item(db_item_t * dest, const db_item_t * src,
+static void copy_item(db_item_t * dest, db_item_t const * src,
 		      size_t nr_item)
 {
 	size_t i;

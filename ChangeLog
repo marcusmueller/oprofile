@@ -1,3 +1,14 @@
+2002-05-22  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* gui:
+	* libdb:
+	* libopt++:
+	* libutil:
+	* libutil++:
+	* oprof_report:
+	* pp: all C/c++ source/header file, fix a few doxygen warning,
+	  many const type to  type const + other minor comestic change.
+
 2002-05-22  John Levon  <moz@compsoc.man.ac.uk>
 
 	* libopt++/popt_options.cpp: my usual boring shit

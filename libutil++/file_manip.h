@@ -35,8 +35,8 @@ std::string op_read_link(std::string const & name);
  * which match filter are traversed.
  */
 bool create_file_list(std::list<std::string>& file_list,
-		      const std::string & base_dir,
-		      const std::string & filter = "*",
+		      std::string const & base_dir,
+		      std::string const & filter = "*",
 		      bool recursive = false);
 
 /** 
@@ -46,8 +46,8 @@ bool create_file_list(std::list<std::string>& file_list,
  *
  * translate a relative path to an absolute path.
  */
-std::string relative_to_absolute_path(const std::string & path,
-				const std::string & base_dir = std::string());
+std::string relative_to_absolute_path(std::string const & path,
+				std::string const & base_dir = std::string());
 
 /** return the base name of file_name as basename(1) */
 std::string dirname(std::string const & file_name);
@@ -66,7 +66,7 @@ std::string basename(std::string const & path_name);
  *  we return }bin}bash and an empty name in lib_name
  */
 // TODO: can we demangle filename before returning it to simplify caller code ?
-std::string extract_app_name(const std::string & name, std::string & lib_name);
+std::string extract_app_name(std::string const & name, std::string & lib_name);
 
 /**
  * get_sample_file_list - create a file list of base samples filename
@@ -86,10 +86,10 @@ std::string extract_app_name(const std::string & name, std::string & lib_name);
  * only on counter #0 it must refilter the filelist created
  */
 void get_sample_file_list(std::list<std::string> & file_list,
-			  const std::string & base_dir,
-			  const std::string & filter);
+			  std::string const & base_dir,
+			  std::string const & filter);
 
 /** strip the #nr suffix of a samples filename */
-std::string strip_filename_suffix(const std::string & filename);
+std::string strip_filename_suffix(std::string const & filename);
 
 #endif /* !FILE_MANIP_H */

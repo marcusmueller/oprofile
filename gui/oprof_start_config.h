@@ -31,8 +31,8 @@ struct event_setting {
 	int user_ring_count;
 };
 
-std::ostream& operator<<(std::ostream& out, const event_setting& object);
-std::istream& operator>>(std::istream& in, event_setting& object);
+std::ostream& operator<<(std::ostream& out, event_setting const & object);
+std::istream& operator>>(std::istream& in, event_setting & object);
 
 // Store the general  configuration of the profiler. File/path name buffer
 // size ETC.

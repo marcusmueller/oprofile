@@ -46,7 +46,7 @@ oprof_report::~oprof_report()
 /**
  * load_samples_files - load the user selected samples file.
  */ 
-void oprof_report::load_samples_files(const string & filename)
+void oprof_report::load_samples_files(string const & filename)
 {
 	string lib_name;
 

@@ -20,7 +20,7 @@ using std::string;
 using std::cout;
 using std::endl;
 
-op_bfd::op_bfd(bool is_kernel, std::string const & filename)
+op_bfd::op_bfd(bool is_kernel, string const & filename)
 	:
 	ibfd(0),
 	bfd_syms(0),
@@ -53,7 +53,7 @@ op_bfd::~op_bfd()
  * Failure to open the image a fatal
  * gettings zero symbols from the image is not an error
  */
-void op_bfd::open_bfd_image(std::string const & filename, bool is_kernel)
+void op_bfd::open_bfd_image(string const & filename, bool is_kernel)
 {
 	char **matching;
 
@@ -93,7 +93,7 @@ void op_bfd::open_bfd_image(std::string const & filename, bool is_kernel)
  * symcomp - comparator
  *
  */
-static bool symcomp(const op_bfd_symbol & a, const op_bfd_symbol & b)
+static bool symcomp(op_bfd_symbol const & a, op_bfd_symbol const & b)
 {
 	return a.vma() < b.vma();
 }
@@ -107,7 +107,7 @@ static char const * boring_symbols[] = {
 	"_init"
 };
 
-static const size_t nr_boring_symbols =
+static size_t const nr_boring_symbols =
 			sizeof(boring_symbols) / sizeof(boring_symbols[0]);
  
 /**
@@ -170,14 +170,13 @@ bool op_bfd::get_symbols()
 			// we can't fill the size member for now, because in
 			// some case it is calculated from the vma of the
 			// next symbol
-			const asymbol * symbol = bfd_syms[i];
-			struct op_bfd_symbol symb(op_bfd_symbol(
-				symbol, 
+			asymbol const * symbol = bfd_syms[i];
+			op_bfd_symbol symb(symbol, 
 				symbol->value,
 				symbol->section->filepos,
 				symbol->section->vma,
 				0,
-				symbol->name));
+				symbol->name);
 			syms.push_back(symb);
 		}
 	}

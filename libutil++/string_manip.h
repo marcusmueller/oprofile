@@ -53,7 +53,7 @@ std::string tostr(unsigned int i);
  * separate fild in a string in a list of token; field are
  * separated by the sep character
  */
-void separate_token(std::vector<std::string> & result, const std::string & str,
+void separate_token(std::vector<std::string> & result, std::string const & str,
 		    char sep);
 
 #endif /* !STRING_MANIP_H */

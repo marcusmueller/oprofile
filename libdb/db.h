@@ -118,11 +118,11 @@ db_page_idx_t db_add_page(db_tree_t * tree);
  * checking than item are correctly sorted */
 int db_check_tree(const db_tree_t * tree);
 /** check than child page nr are coherent */
-int db_check_page_pointer(const db_tree_t * tree);
+int db_check_page_pointer(db_tree_t const * tree);
 /** display the item in tree */
-void db_display_tree(const db_tree_t * tree);
+void db_display_tree(db_tree_t const * tree);
 /** same as above but do not travel through the tree, just display raw page */
-void db_raw_display_tree(const db_tree_t * tree);
+void db_raw_display_tree(db_tree_t const * tree);
 
 /* db-insert.c */
 /** insert info at key, if key already exist the info is added to the
@@ -134,11 +134,11 @@ void db_insert(db_tree_t * tree, db_key_t key, db_value_t info);
 typedef void (*db_travel_callback)(db_key_t key, db_value_t info, void * data);
 /** iterate through key in rang [first, last[ passing it to callback,
  * data is optional user data to pass to the callback */
-void db_travel(const db_tree_t * tree, db_key_t first, db_key_t last,
+void db_travel(db_tree_t const * tree, db_key_t first, db_key_t last,
 	       db_travel_callback callback, void * data);
 
 /** from a page index return a page pointer */
-static __inline db_page_t * page_nr_to_page_ptr(const db_tree_t * tree,
+static __inline db_page_t * page_nr_to_page_ptr(db_tree_t const * tree,
 						db_page_idx_t page_nr)
 {
 	assert(page_nr < tree->descr->current_size);

@@ -46,7 +46,7 @@ protected slots:
 
 private:
 	/// helper for on_open, must never throw
-	void load_samples_files(const std::string & filename);
+	void load_samples_files(std::string const & filename);
 
 	/// notify all view they have changed
 	void mark_all_view_changed();

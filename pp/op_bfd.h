@@ -24,7 +24,7 @@ class op_bfd;
 
 /** all symbol vector indexation use this type */
 typedef size_t symbol_index_t;
-const symbol_index_t nil_symbol_index = symbol_index_t(-1);
+symbol_index_t const nil_symbol_index = symbol_index_t(-1);
 
 /** a symbol description from a bfd point of view. This duplicate
  * information pointed by an asymbol, we need this duplication in case
@@ -72,7 +72,8 @@ private:
 class op_bfd {
 public:
 	/**
-	 * @param samples a valid samples file associated with this image
+	 * @param is_kernel true if the image is a kernel module or a
+	 * vmlinux file
 	 * @param filename the name of the image file
 	 *
 	 * All error are fatal.
@@ -140,7 +141,7 @@ public:
 	/**
 	 * return the text section filepos if the bfd object is the kernel
 	 * image or a module image, else return 0 */
-	const u32 get_start_offset() const { return text_offset; }
+	u32 const get_start_offset() const { return text_offset; }
 
 	/** Returns true if the underlined bfd object contains debug info */
 	bool have_debug_info() const;

@@ -32,8 +32,8 @@ class persistent_config_t
 public:
 	persistent_config_t() {}
 
-	T& operator[](const std::string& key);
-	const T& operator[](const std::string& key) const;
+	T & operator[](std::string const & key);
+	T const & operator[](std::string const & key) const;
 
 	// save and load using the file format
 	// key value1 value2 value3 ... valueN through the overload of
@@ -50,15 +50,15 @@ private:
 };
 
 template <typename T>
-T& persistent_config_t<T>::operator[](const std::string& key)
+T & persistent_config_t<T>::operator[](std::string const & key)
 {
 	return map[key];
 }
 
 template <typename T>
-const T& persistent_config_t<T>::operator[](const std::string& key) const
+T const & persistent_config_t<T>::operator[](std::string const & key) const
 {
-	return const_cast<map_t&>(map)[key];
+	return const_cast<map_t &>(map)[key];
 }
 
 template <typename T>
@@ -93,7 +93,7 @@ std::istream& operator>>(std::istream& in, persistent_config_t<T>& cfg)
 }
 
 template <typename T>
-std::ostream& operator<<(std::ostream& out, const persistent_config_t<T>& cfg)
+std::ostream& operator<<(std::ostream& out, persistent_config_t<T> const & cfg)
 {
 	cfg.save(out);
 

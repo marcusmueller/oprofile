@@ -147,7 +147,7 @@ struct opp_samples_files /*:*/  noncopyable {
 	/**
 	 * accumulate_samples - lookup samples from a vma address
 	 * @param counter where to accumulate the samples
-	 * @param index index of the samples.
+	 * @param vma index of the samples.
 	 *
 	 * return false if no samples has been found
 	 */
@@ -173,7 +173,7 @@ struct opp_samples_files /*:*/  noncopyable {
 	void output_header() const;
 
 	/// return the header of the first opened samples file
-	struct opd_header const & first_header() const {
+	opd_header const & first_header() const {
 		return samples[first_file]->header();
 	}
 

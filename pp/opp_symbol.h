@@ -35,7 +35,7 @@ struct file_location {
 	/// 0 means invalid or code is generated internally by the compiler
 	int linenr;
 
-	bool operator<(const file_location & rhs) const {
+	bool operator<(file_location const & rhs) const {
 		return filename < rhs.filename ||
 			(filename == rhs.filename && linenr < rhs.linenr);
 	}
@@ -108,74 +108,74 @@ enum OutSymbFlag {
 /**
  * class to output in a columned format symbols and associated samples
  */
-/// FIXME: output_symbol not OutputSymbol ?? consistency ... 
+// FIXME: output_symbol not OutputSymbol ?? consistency ... 
 class OutputSymbol {
 public:
 	/// build an OutputSymbol object, the samples_container_t life time
 	/// object must be > of the life time of the OutputSymbol object.
-	OutputSymbol(const samples_container_t & samples_container, int counter);
+	OutputSymbol(samples_container_t const & samples_container, int counter);
 
 	/// convenience to set output options flags w/o worrying about cast
 	void SetFlag(OutSymbFlag flag);
 
 	/** output one symbol symb to out according to the output format
 	 * specifier previously set by call(s) to SetFlag() */
-	void Output(std::ostream & out, const symbol_entry * symb);
+	void Output(std::ostream & out, symbol_entry const * symb);
 	/** output a vector of symbols to out according to the output format
 	 * specifier previously set by call(s) to SetFlag() */
 	void Output(std::ostream & out,
-		    const std::vector<const symbol_entry *> & v, bool reverse);
+		    std::vector<symbol_entry const *> const & v, bool reverse);
 
 	/** output to stdout the formating options available */
 	static void ShowHelp();
 
 	/** return osf_none if the option string is ill formed, so you can call
 	 * OutputSymbol::ShowHelp() to notify user on available options */
-	static OutSymbFlag ParseOutputOption(const std::string & option);
+	static OutSymbFlag ParseOutputOption(std::string const & option);
 
 	/** @defgroup format The set of formatting functions, used internally by Output().
 	 * Exposed as public members for the future oprofpp GUI.
 	 */
 	//@{
-	std::string format_vma(const std::string & name,
-			       const sample_entry & sample, size_t);
-	std::string format_symb_name(const std::string & name,
-				     const sample_entry & sample, size_t);
-	std::string format_image_name(const std::string & name,
-				      const sample_entry & sample, size_t);
-	std::string format_short_image_name(const std::string & name,
-					    const sample_entry & sample,
+	std::string format_vma(std::string const & name,
+			       sample_entry const & sample, size_t);
+	std::string format_symb_name(std::string const & name,
+				     sample_entry const & sample, size_t);
+	std::string format_image_name(std::string const & name,
+				      sample_entry const & sample, size_t);
+	std::string format_short_image_name(std::string const & name,
+					    sample_entry const & sample,
 					    size_t);
-	std::string format_linenr_info(const std::string & name,
-				       const sample_entry & sample, size_t);
-	std::string format_short_linenr_info(const std::string & name,
-					     const sample_entry & sample,
+	std::string format_linenr_info(std::string const & name,
+				       sample_entry const & sample, size_t);
+	std::string format_short_linenr_info(std::string const & name,
+					     sample_entry const & sample,
 					     size_t);
-	std::string format_nr_samples(const std::string & name,
-				      const sample_entry & sample, size_t ctr);
-	std::string format_nr_cumulated_samples(const std::string & name,
-					const sample_entry & sample, size_t);
-	std::string format_percent(const std::string & name,
-				   const sample_entry & sample, size_t);
-	std::string format_cumulated_percent(const std::string & name,
-					     const sample_entry & sample,
+	std::string format_nr_samples(std::string const & name,
+				      sample_entry const & sample, size_t ctr);
+	std::string format_nr_cumulated_samples(std::string const & name,
+					sample_entry const & sample, size_t);
+	std::string format_percent(std::string const & name,
+				   sample_entry const & sample, size_t);
+	std::string format_cumulated_percent(std::string const & name,
+					     sample_entry const & sample,
 					     size_t);
 	//@}
 private:
-	void DoOutput(std::ostream & out, const std::string & name,
-		      const sample_entry & sample, OutSymbFlag flags);
-	void OutputDetails(std::ostream & out, const symbol_entry * symb);
+	void DoOutput(std::ostream & out, std::string const & name,
+		      sample_entry const & sample, OutSymbFlag flags);
+	void OutputDetails(std::ostream & out, symbol_entry const * symb);
 	void OutputHeader(std::ostream & out);
 	// return the nr of char needed to padd this field
-	size_t OutputField(std::ostream & out, const std::string & name,
-			   const sample_entry & sample,
+	size_t OutputField(std::ostream & out, std::string const & name,
+			   sample_entry const & sample,
 			   OutSymbFlag fl, size_t ctr);
 	// return the nr of char needed to padd this field
 	size_t OutputHeaderField(std::ostream & out, OutSymbFlag fl);
-	static const field_description * GetFieldDescr(OutSymbFlag flag);
+	static field_description const * GetFieldDescr(OutSymbFlag flag);
 
 	OutSymbFlag flags;
-	const samples_container_t & samples_container;
+	samples_container_t const & samples_container;
 	u32 total_count[OP_MAX_COUNTERS];
 	u32 cumulated_samples[OP_MAX_COUNTERS];
 	u32 cumulated_percent[OP_MAX_COUNTERS];

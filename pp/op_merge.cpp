@@ -73,7 +73,7 @@ static void get_options(int argc, char const * argv[], vector<string> & images)
  * all error are fatal.
  */
 static void create_file_list(list<string> & result,
-			     const vector<string> & images_filename)
+			     vector<string> const & images_filename)
 {
 	/* user can not mix binary name and samples files name on the command
 	 * line, this error is captured later because when more one filename
@@ -127,7 +127,7 @@ static void create_file_list(list<string> & result,
  *
  * all error are fatal
  */ 
-static void check_samples_files_list(const list<string> & filenames)
+static void check_samples_files_list(list<string> const & filenames)
 {
 	if (filenames.empty())
 		return;
@@ -164,8 +164,8 @@ static void copy_callback(db_key_t key, db_value_t value, void * data)
  *
  * all error are fatal
  */
-static void output_files(const std::string & filename,
-			 const list<string>& filenames)
+static void output_files(string const & filename,
+			 list<string> const & filenames)
 {
 	if (filenames.empty())
 		return;

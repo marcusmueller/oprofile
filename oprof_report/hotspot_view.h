@@ -27,11 +27,11 @@ public:
 
 	/// reimplemented
 	void paintEvent(QPaintEvent *);
-	void do_data_change(const samples_container_t *);
+	void do_data_change(samples_container_t const *);
 	void do_data_destroy();
 private:
-	std::vector <const symbol_entry *> symbols;
-	const samples_container_t * samples;
+	std::vector <symbol_entry const *> symbols;
+	samples_container_t const * samples;
 };
 
 #endif /* !HOTSPOT_VIEW_H */

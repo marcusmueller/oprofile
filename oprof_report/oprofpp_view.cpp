@@ -31,8 +31,8 @@ using std::string;
 /// the class decribing an item in view
 class SymbolItem : public QListViewItem {
 public:
-	SymbolItem(QListView* parent, const symbol_entry * symbol_,
-		   const samples_container_t & samples_container_);
+	SymbolItem(QListView* parent, symbol_entry const * symbol_,
+		   samples_container_t const & samples_container_);
 
 	/// reimplemented
 	QString text(int column) const;
@@ -41,24 +41,24 @@ public:
 	/// reimplemented
 	void setOpen(bool open);
 private:
-	const symbol_entry * symbol;
+	symbol_entry const * symbol;
 	/// needed mainly for statistics purpose
-	const samples_container_t & samples_container;
+	samples_container_t const & samples_container;
 };
 
 /// the class decribing a detailed item in view
 class SampleItem : public QListViewItem {
 public:
-	SampleItem(QListViewItem * parent, const sample_entry & sample_,
-		   const samples_container_t & samples_container_);
+	SampleItem(QListViewItem * parent, sample_entry const & sample_,
+		   samples_container_t const & samples_container_);
 
 	/// reimplemented
 	QString text(int column) const;
 	/// reimplemented
 	QString key(int column, bool ascending) const;
 private:
-	const sample_entry & sample;
-	const samples_container_t & samples_container;
+	sample_entry const & sample;
+	samples_container_t const & samples_container;
 };
 
 // the column description of an oprofpp_view
@@ -88,14 +88,14 @@ enum ColumnId {
 	cid_symbol_name
 };
 
-const size_t nr_column_descr = sizeof(column_descr) / sizeof(column_descr[0]);
+size_t const nr_column_descr = sizeof(column_descr) / sizeof(column_descr[0]);
 
 /**
  * get_text() - helper function to get the text string for a column
  */
-static QString get_text(const sample_entry & sample,
-			const string & name,
-			const samples_container_t & samples_container,
+static QString get_text(sample_entry const & sample,
+			string const & name,
+			samples_container_t const & samples_container,
 			int column)
 {
 	char buffer[256];
@@ -122,9 +122,9 @@ static QString get_text(const sample_entry & sample,
  * get_key() - return the key string for a column. When the text string for
  * this column is suitable for sorting purpose we return the get_text() string
  */
-static QString get_key(const sample_entry & sample, 
-		       const string & name,
-		       const samples_container_t & samples_container,
+static QString get_key(sample_entry const & sample, 
+		       string const & name,
+		       samples_container_t const & samples_container,
 		       int column)
 {
 	char buffer[32];
@@ -147,8 +147,8 @@ static QString get_key(const sample_entry & sample,
 /**
  * SymbolItem - ctor
  */
-SymbolItem::SymbolItem(QListView* parent, const symbol_entry * symbol_,
-		       const samples_container_t & samples_container_)
+SymbolItem::SymbolItem(QListView* parent, symbol_entry const * symbol_,
+		       samples_container_t const & samples_container_)
 	:
 	QListViewItem(parent),
 	symbol(symbol_),
@@ -186,7 +186,7 @@ void SymbolItem::setOpen(bool open)
 {
 	if (open && !childCount()) {
 		for (size_t i = symbol->first ; i != symbol->last ; ++i) {
-			const sample_entry & sample =
+			sample_entry const & sample =
 				samples_container.get_samples(i);
 
 			new SampleItem(this, sample, samples_container);
@@ -200,8 +200,8 @@ void SymbolItem::setOpen(bool open)
  * SampleItem - build a sample item which appears as a sub item
  * (details for a symbol)
  */
-SampleItem::SampleItem(QListViewItem * parent, const sample_entry & sample_,
-		       const samples_container_t & samples_container_)
+SampleItem::SampleItem(QListViewItem * parent, sample_entry const & sample_,
+		       samples_container_t const & samples_container_)
 	:
 	QListViewItem(parent),
 	sample(sample_),
@@ -244,10 +244,10 @@ OprofppView::OprofppView(QListView * view_)
  */
 void OprofppView::do_data_change(const samples_container_t * samples)
 {
-	vector<const symbol_entry *> symbs;
+	vector<symbol_entry const *> symbs;
 	samples->select_symbols(symbs, 0, 0.0, false, true);
 
-	vector<const symbol_entry *>::const_iterator it;
+	vector<symbol_entry const *>::const_iterator it;
 	for (it = symbs.begin() ; it != symbs.end() ; ++it) {
 		new SymbolItem(view, *it, *samples);
 	}

@@ -454,7 +454,7 @@ void oprof_start::counter_selected(int ctr)
 	update();
 }
 
-void oprof_start::display_event(struct op_event_descr const * descrp)
+void oprof_start::display_event(op_event_descr const * descrp)
 {
 	setUpdatesEnabled(false); 
 
@@ -472,7 +472,7 @@ void oprof_start::display_event(struct op_event_descr const * descrp)
 	os_ring_count_cb->setEnabled(true);
 	user_ring_count_cb->setEnabled(true);
 	event_count_edit->setEnabled(true); 
-	const persistent_config_t<event_setting> & cfg = event_cfgs[current_ctr];
+	persistent_config_t<event_setting> const & cfg = event_cfgs[current_ctr];
  
 	os_ring_count_cb->setChecked(cfg[descrp->name].os_ring_count);
 	user_ring_count_cb->setChecked(cfg[descrp->name].user_ring_count);
@@ -547,7 +547,7 @@ void oprof_start::choose_system_map_filename()
 // FIXME: need validation?
 void oprof_start::record_selected_event_config()
 {
-	struct op_event_descr const * curr = current_event[current_ctr];
+	op_event_descr const * curr = current_event[current_ctr];
 
 	if (!curr)
 		return;
@@ -670,15 +670,15 @@ void oprof_start::hide_masks()
  
 void oprof_start::setup_unit_masks(op_event_descr const & descr)
 {
-	const op_unit_mask* um = descr.unit;
-	const op_unit_desc* um_desc = descr.um_desc;
+	op_unit_mask const * um = descr.unit;
+	op_unit_desc const * um_desc = descr.um_desc;
 
 	hide_masks();
  
 	if (!um || um->unit_type_mask == utm_mandatory)
 		return;
 
-	const persistent_config_t<event_setting>& cfg = event_cfgs[current_ctr];
+	persistent_config_t<event_setting> const & cfg = event_cfgs[current_ctr];
 
 	unit_mask_group->setExclusive(um->unit_type_mask == utm_exclusive);
 
@@ -747,9 +747,9 @@ void oprof_start::on_start_profiler()
 		if (!ctr_enabled[ctr])
 			continue;
 
-		const persistent_config_t<event_setting>& cfg = event_cfgs[ctr];
+		persistent_config_t<event_setting> const & cfg = event_cfgs[ctr];
 
-		const op_event_descr * descr = current_event[ctr];
+		op_event_descr const * descr = current_event[ctr];
 
 		if (!cfg[descr->name].os_ring_count &&
 		    !cfg[descr->name].user_ring_count) {
@@ -806,8 +806,8 @@ void oprof_start::on_start_profiler()
 	std::vector<std::string> args;
 
 	if (cpu_type == CPU_RTC) {
-		const persistent_config_t<event_setting>& cfg = event_cfgs[0];
-		const op_event_descr * descr = current_event[0];
+		persistent_config_t<event_setting> const & cfg = event_cfgs[0];
+		op_event_descr const * descr = current_event[0];
 		args.push_back("--rtc-value=" + tostr(cfg[descr->name].count));
 	} else {
 		for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
@@ -816,9 +816,9 @@ void oprof_start::on_start_profiler()
 			if (!ctr_enabled[ctr])
 				continue;
 
-			const persistent_config_t<event_setting>& cfg = event_cfgs[ctr];
+			persistent_config_t<event_setting> const & cfg = event_cfgs[ctr];
 
-			const op_event_descr * descr = current_event[ctr];
+			op_event_descr const * descr = current_event[ctr];
 
 			args.push_back("--ctr" + tostr(ctr) + "-event=" + descr->name);
 			args.push_back("--ctr" + tostr(ctr) + "-count=" + tostr(cfg[descr->name].count));
@@ -864,14 +864,14 @@ void oprof_start::on_stop_profiler()
 class event_name_eq : public std::unary_function<op_event_descr, bool> {
 	std::string name_;
 public:
-	explicit event_name_eq(std::string const s) : name_(s) {}
+	explicit event_name_eq(std::string const & s) : name_(s) {}
 	bool operator()(op_event_descr & d) const {
 		return d.name == name_;
 	}
 };
 
 // helper to retrieve an event descr through its name.
-const op_event_descr & oprof_start::locate_event(std::string const & name)
+op_event_descr const & oprof_start::locate_event(std::string const & name)
 {
 	return *(std::find_if(v_events.begin(), v_events.end(), event_name_eq(name)));
 }

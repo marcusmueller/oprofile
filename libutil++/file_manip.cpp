@@ -175,14 +175,14 @@ bool create_file_list(list<string>& file_list, const string & base_dir,
 }
 
 
-std::string relative_to_absolute_path(const std::string & path,
-				      const std::string & base_dir)
+std::string relative_to_absolute_path(string const & path,
+				      string const & base_dir)
 {
 	char const * dir = base_dir.length() ? base_dir.c_str() : NULL;
 
 	char * result = op_relative_to_absolute_path(path.c_str(), dir);
 
-	std::string res(result);
+	string res(result);
 
 	free(result);
 
@@ -241,9 +241,9 @@ string extract_app_name(const string & name, string & lib_name)
 /**
  * strip_filename_suffix - strip the #nr suffix of a samples filename
  */
-string strip_filename_suffix(const std::string & filename)
+string strip_filename_suffix(string const & filename)
 {
-	std::string result(filename);
+	string result(filename);
 
 	size_t pos = result.find_last_of('#');
 	if (pos != string::npos)
@@ -267,8 +267,8 @@ string strip_filename_suffix(const std::string & filename)
  * returned (ie string like base/dir/session-xxx are filtered)
  */
 void get_sample_file_list(list<string> & file_list,
-			  const std::string & base_dir,
-			  const std::string & filter)
+			  string const & base_dir,
+			  string const & filter)
 {
 	file_list.clear();
 

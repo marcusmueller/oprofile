@@ -14,7 +14,7 @@
 
 /** notcopyable : object of class derived from this class can't be copyed
  * neither copy-constructible */
-/** FIXME: take care using this class, it seems a bug in gcc 2.91 forgive to
+/* FIXME: take care using this class, it seems a bug in gcc 2.91 forgive to
  * use it blindly in some case (I do not know in which circumstances this bug
  * appears). */
 class noncopyable {

@@ -32,7 +32,7 @@ struct output_option {
 	char const * help_string;
 };
 
-static const output_option output_options[] = {
+static output_option const output_options[] = {
 	{ 'v', osf_vma, "vma offset" },
 	{ 's', osf_nr_samples, "nr samples" },
 	{ 'S', osf_nr_samples_cumulated, "nr cumulated samples" },
@@ -50,9 +50,9 @@ static const output_option output_options[] = {
 	{ 'd', osf_details, "detailed samples for each selected symbol" }
 };
 
-const size_t nr_output_option = sizeof(output_options) / sizeof(output_options[0]);
+size_t const nr_output_option = sizeof(output_options) / sizeof(output_options[0]);
 
-static const output_option * find_option(char ch)
+static output_option const * find_option(char ch)
 {
 	for (size_t i = 0 ; i < nr_output_option ; ++i) {
 		if (ch == output_options[i].option) {
@@ -63,11 +63,11 @@ static const output_option * find_option(char ch)
 	return 0;
 }
 
-OutSymbFlag OutputSymbol::ParseOutputOption(const string & option)
+OutSymbFlag OutputSymbol::ParseOutputOption(string const & option)
 {
 	size_t flag = 0;
 	for (size_t i = 0 ; i < option.length() ; ++i) {
-		const output_option * opt = find_option(option[i]);
+		output_option const * opt = find_option(option[i]);
 		if (!opt)
 			return osf_none;
 		flag |= opt->flag;
@@ -84,8 +84,8 @@ void OutputSymbol::ShowHelp()
 	}
 }
 
-typedef string (OutputSymbol::*fct_format)(const string & symb_name,
-					   const sample_entry & symb,
+typedef string (OutputSymbol::*fct_format)(string const & symb_name,
+					   sample_entry const & symb,
 					   size_t ctr);
 
 /// decribe one field of the colummned output.
@@ -102,7 +102,7 @@ struct field_description {
 // ratio between 100 and the selected % to grow non fixed field use also
 // lib[n?]curses to get the console width (look info source) (so on add a fixed
 // field flags)
-static const field_description field_descr[] = {
+static field_description const field_descr[] = {
 	{ osf_vma, 9,
 	  "vma", &OutputSymbol::format_vma },
 	{ osf_nr_samples, 9,
@@ -127,9 +127,9 @@ static const field_description field_descr[] = {
 	  &OutputSymbol::format_short_image_name },
 };
 
-const size_t nr_field_descr = sizeof(field_descr) / sizeof(field_descr[0]);
+size_t const nr_field_descr = sizeof(field_descr) / sizeof(field_descr[0]);
 
-OutputSymbol::OutputSymbol(const samples_container_t & samples_container_,
+OutputSymbol::OutputSymbol(samples_container_t const & samples_container_,
 			   int counter_)
 	:
 	flags(osf_none),
@@ -144,7 +144,7 @@ OutputSymbol::OutputSymbol(const samples_container_t & samples_container_,
 	}
 }
 
-const field_description * OutputSymbol::GetFieldDescr(OutSymbFlag flag)
+field_description const * OutputSymbol::GetFieldDescr(OutSymbFlag flag)
 {
 	for (size_t i = 0 ; i < nr_field_descr ; ++i) {
 		if (flag == field_descr[i].flag)
@@ -159,12 +159,12 @@ void OutputSymbol::SetFlag(OutSymbFlag flag)
 	flags = static_cast<OutSymbFlag>(flags | flag);
 }
 
-size_t OutputSymbol::OutputField(std::ostream & out, const std::string & name,
-			       const sample_entry & sample,
-			       OutSymbFlag fl, size_t ctr)
+size_t OutputSymbol::OutputField(ostream & out, string const & name,
+				 sample_entry const & sample,
+				 OutSymbFlag fl, size_t ctr)
 {
 	size_t sz = 0;
-	const field_description * field = GetFieldDescr(fl);
+	field_description const * field = GetFieldDescr(fl);
 	if (field) {
 		string str = (this->*field->formater)(name, sample, ctr);
 		out << str;
@@ -177,10 +177,10 @@ size_t OutputSymbol::OutputField(std::ostream & out, const std::string & name,
 	return sz;
 }
 
-size_t OutputSymbol::OutputHeaderField(std::ostream & out, OutSymbFlag fl)
+size_t OutputSymbol::OutputHeaderField(ostream & out, OutSymbFlag fl)
 {
 	size_t sz = 0;
-	const field_description * field = GetFieldDescr(fl);
+	field_description const * field = GetFieldDescr(fl);
 	if (field) {
 		out << field->header_name;
 
@@ -192,7 +192,7 @@ size_t OutputSymbol::OutputHeaderField(std::ostream & out, OutSymbFlag fl)
 	return sz;
 }
 
-void OutputSymbol::Output(std::ostream & out, const symbol_entry * symb)
+void OutputSymbol::Output(ostream & out, symbol_entry const * symb)
 {
 	DoOutput(out, symb->name, symb->sample, flags);
 
@@ -201,7 +201,7 @@ void OutputSymbol::Output(std::ostream & out, const symbol_entry * symb)
 	}
 }
 
-void OutputSymbol::OutputDetails(std::ostream & out, const symbol_entry * symb)
+void OutputSymbol::OutputDetails(ostream & out, symbol_entry const * symb)
 {
 	// We need to save the accumulated count and to restore it on
 	// exit so global cumulation and detailed cumulation are separate
@@ -233,8 +233,8 @@ void OutputSymbol::OutputDetails(std::ostream & out, const symbol_entry * symb)
 	}
 }
 
-void OutputSymbol::DoOutput(std::ostream & out, const std::string & name,
-			    const sample_entry & sample, OutSymbFlag flag)
+void OutputSymbol::DoOutput(ostream & out, string const & name,
+			    sample_entry const & sample, OutSymbFlag flag)
 {
 	OutputHeader(out);
 
@@ -274,7 +274,7 @@ void OutputSymbol::DoOutput(std::ostream & out, const std::string & name,
 			last_field_pad = OutputField(out, name, sample, fl, 0);
 			temp_flag &= ~(1 << i);
 		} else if ((true_flags & fl) != 0) {
-			const field_description * field = GetFieldDescr(fl);
+			field_description const * field = GetFieldDescr(fl);
 			if (field) {
 				last_field_pad += field->width;
 			}
@@ -284,7 +284,7 @@ void OutputSymbol::DoOutput(std::ostream & out, const std::string & name,
 	out << "\n";
 }
 
-void OutputSymbol::OutputHeader(std::ostream & out)
+void OutputSymbol::OutputHeader(ostream & out)
 {
 	if (first_output == false) {
 		return;
@@ -335,25 +335,25 @@ void OutputSymbol::OutputHeader(std::ostream & out)
 	out << "\n";
 }
 
-void OutputSymbol::Output(std::ostream & out,
-			  const std::vector<const symbol_entry *> & symbols,
+void OutputSymbol::Output(ostream & out,
+			  vector<symbol_entry const *> const & symbols,
 			  bool reverse)
 {
 	if (reverse) {
-		vector<const symbol_entry*>::const_reverse_iterator it;
+		vector<symbol_entry const *>::const_reverse_iterator it;
 		for (it = symbols.rbegin(); it != symbols.rend(); ++it) {
 			Output(out, *it);
 		}
 	} else {
-		vector<const symbol_entry*>::const_iterator it;
+		vector<symbol_entry const *>::const_iterator it;
 		for (it = symbols.begin(); it != symbols.end(); ++it) {
 			Output(out, *it);
 		}
 	}
 }
 
-string OutputSymbol::format_vma(const std::string &,
-				const sample_entry & sample, size_t)
+string OutputSymbol::format_vma(string const &,
+				sample_entry const & sample, size_t)
 {
 	ostringstream out;
 	
@@ -362,29 +362,29 @@ string OutputSymbol::format_vma(const std::string &,
 	return out.str();
 }
 
-string OutputSymbol::format_symb_name(const std::string & name,
-				      const sample_entry &, size_t)
+string OutputSymbol::format_symb_name(string const & name,
+				      sample_entry const &, size_t)
 {
 	int const is_anon = name[0] == '?';
 
 	return is_anon ? string("(no symbol)") : demangle_symbol(name);
 }
 
-string OutputSymbol::format_image_name(const std::string &,
-				       const sample_entry & sample, size_t)
+string OutputSymbol::format_image_name(string const &,
+				       sample_entry const & sample, size_t)
 {
 	return sample.file_loc.image_name;
 }
 
-string OutputSymbol::format_short_image_name(const std::string &,
-					     const sample_entry & sample,
+string OutputSymbol::format_short_image_name(string const &,
+					     sample_entry const & sample,
 					     size_t)
 {
 	return basename(sample.file_loc.image_name);
 }
 
-string OutputSymbol::format_linenr_info(const std::string &,
-					const sample_entry & sample, size_t)
+string OutputSymbol::format_linenr_info(string const &,
+					sample_entry const & sample, size_t)
 {
 	ostringstream out;
 
@@ -398,8 +398,8 @@ string OutputSymbol::format_linenr_info(const std::string &,
 	return out.str();
 }
 
-string OutputSymbol::format_short_linenr_info(const std::string &,
-					      const sample_entry & sample,
+string OutputSymbol::format_short_linenr_info(string const &,
+					      sample_entry const & sample,
 					      size_t)
 {
 	ostringstream out;
@@ -414,8 +414,8 @@ string OutputSymbol::format_short_linenr_info(const std::string &,
 	return out.str();
 }
 
-string OutputSymbol::format_nr_samples(const std::string &,
-				       const sample_entry & sample, size_t ctr)
+string OutputSymbol::format_nr_samples(string const &,
+				       sample_entry const & sample, size_t ctr)
 {
 	ostringstream out;
 
@@ -424,8 +424,8 @@ string OutputSymbol::format_nr_samples(const std::string &,
 	return out.str();
 }
 
-string OutputSymbol::format_nr_cumulated_samples(const std::string &,
-						 const sample_entry & sample,
+string OutputSymbol::format_nr_cumulated_samples(string const &,
+						 sample_entry const & sample,
 						 size_t ctr)
 {
 	ostringstream out;
@@ -437,8 +437,8 @@ string OutputSymbol::format_nr_cumulated_samples(const std::string &,
 	return out.str();
 }
 
-string OutputSymbol::format_percent(const std::string &,
-				    const sample_entry & sample, size_t ctr)
+string OutputSymbol::format_percent(string const &,
+				    sample_entry const & sample, size_t ctr)
 {
 	ostringstream out;
 
@@ -451,8 +451,8 @@ string OutputSymbol::format_percent(const std::string &,
 	return out.str();
 }
 
-string OutputSymbol::format_cumulated_percent(const std::string &,
-					      const sample_entry & sample,
+string OutputSymbol::format_cumulated_percent(string const &,
+					      sample_entry const & sample,
 					      size_t ctr)
 {
 	ostringstream out;

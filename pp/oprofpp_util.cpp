@@ -77,15 +77,11 @@ void verbprintf(char const * fmt, ...)
 	}
 }
 
-/**
- * remangle - convert a filename into the related sample file name
- * @param image the image filename
- */
 string remangle(string const & filename)
 {
 	string result = filename;
 
-	replace(result.begin(), result.end(), '/', OPD_MANGLE_CHAR);
+	std::replace(result.begin(), result.end(), '/', OPD_MANGLE_CHAR);
 
 	return result;
 }
@@ -98,11 +94,11 @@ string remangle(string const & filename)
  * if samples_filename does not contain any %OPD_MANGLE_CHAR
  * the string samples_filename itself is returned.
  */
-std::string demangle_filename(const std::string & samples_filename)
+string demangle_filename(string const & samples_filename)
 {
-	std::string result(samples_filename);
+	string result(samples_filename);
 	size_t pos = samples_filename.find_first_of(OPD_MANGLE_CHAR);
-	if (pos != std::string::npos) {
+	if (pos != string::npos) {
 		result.erase(0, pos);
 		std::replace(result.begin(), result.end(), OPD_MANGLE_CHAR, '/');
 	}
@@ -116,7 +112,7 @@ std::string demangle_filename(const std::string & samples_filename)
  *
  * return true if symbol is in the list of excluded symbol
  */
-bool is_excluded_symbol(const std::string & symbol)
+bool is_excluded_symbol(string const & symbol)
 {
 	return std::find(exclude_symbols.begin(), exclude_symbols.end(),
 			 symbol) != exclude_symbols.end();
@@ -275,7 +271,7 @@ void opp_treat_options(string const & file,
  * representing each counter. Bit i is on if counter i was specified.
  * So we allow up to sizeof(uint) * CHAR_BIT different counter
  */
-uint counter_mask(const std::string & str)
+uint counter_mask(string const & str)
 {
 	vector<string> result;
 	separate_token(result, str, ',');
@@ -297,7 +293,7 @@ counter_array_t::counter_array_t()
 		value[i] = 0;
 }
 
-counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
+counter_array_t & counter_array_t::operator+=(counter_array_t const & rhs)
 {
 	for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i)
 		value[i] += rhs.value[i];
@@ -305,7 +301,7 @@ counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
 	return *this;
 }
 
-void check_event(const struct opd_header * header)
+void check_event(opd_header const * header)
 {
 	char * ctr_name;
 	char * ctr_desc;

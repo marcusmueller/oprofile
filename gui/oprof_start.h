@@ -36,9 +36,9 @@ struct op_event_descr {
 	/// hardware event number 
 	u8 val;
 	/// unit mask values if applicable 
-	const op_unit_mask * unit;
+	op_unit_mask const * unit;
 	/// unit mask descriptions if applicable
-	const op_unit_desc * um_desc;
+	op_unit_desc const * um_desc;
 	/// name of event 
 	std::string name;
 	/// description of event
@@ -85,7 +85,7 @@ protected slots:
 
 private:
 	/// find an event description by name
-	const op_event_descr & locate_event(std::string const & name);
+	op_event_descr const & locate_event(std::string const & name);
 
 	/// update config on user change
 	void record_selected_event_config();
@@ -103,7 +103,7 @@ private:
 	uint max_perf_count() const;
 
 	/// show an event's settings
-	void display_event(struct op_event_descr const * descrp);
+	void display_event(op_event_descr const * descrp);
  
 	/// hide unit mask widgets
 	void hide_masks(void);
@@ -129,7 +129,7 @@ private:
 	/// the current counter in the GUI
 	uint current_ctr;
 	/// current event selections for each counter
-	struct op_event_descr const * current_event[OP_MAX_COUNTERS];
+	op_event_descr const * current_event[OP_MAX_COUNTERS];
 	/// current event configs for each counter
 	persistent_config_t<event_setting> event_cfgs[OP_MAX_COUNTERS];
 	/// enabled status for each counter

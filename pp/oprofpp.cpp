@@ -72,7 +72,7 @@ static option<string> output_format_opt(output_format, "output-format", 't', "ch
  * opp_treat_options().
  *
  */
-static void opp_get_options(int argc, const char **argv, string & image_file,
+static void opp_get_options(int argc, char const **argv, string & image_file,
 			    string & sample_file, int & counter)
 {
 	/* non-option file, either a sample or binary image file */
@@ -142,7 +142,7 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 static void do_list_symbols(samples_container_t & samples,
 			    OutputSymbol & out, int sort_by_ctr)
 {
-	vector<const symbol_entry *> symbols =
+	vector<symbol_entry const *> symbols =
 		samples.select_symbols(sort_by_ctr, 0.0, false);
 
 	out.Output(cout, symbols, reverse_sort == 0);
@@ -161,7 +161,7 @@ static void do_list_symbols(samples_container_t & samples,
 static void do_list_symbols_details(samples_container_t & samples,
 				    OutputSymbol & out, int sort_by_ctr)
 {
-	vector<const symbol_entry *> symbols =
+	vector<symbol_entry const *> symbols =
 		samples.select_symbols(sort_by_ctr, 0.0, false, true);
 
 	out.Output(cout, symbols, false);
@@ -211,7 +211,7 @@ struct gmon_hdr {
  * this use the grpof format <= gcc 3.0
  */
 static void do_dump_gprof(op_bfd & abfd,
-			  const opp_samples_files & samples_files,
+			  opp_samples_files const & samples_files,
 			  int sort_by_ctr)
 {
 	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},}; 
@@ -286,7 +286,7 @@ static void do_dump_gprof(op_bfd & abfd,
  *
  * return true if filename exist
  */
-static bool file_exist(const std::string & filename)
+static bool file_exist(string const & filename)
 {
 	ifstream in(filename.c_str());
 	return in;
@@ -349,7 +349,7 @@ int main(int argc, char const *argv[])
 		int i;
 		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 			if ((counter & (1 << i)) != 0) {
-				std::ostringstream s;
+				ostringstream s;
 				s << *it << '#' << i;
 				if (file_exist(s.str()) == true) {
 					break;

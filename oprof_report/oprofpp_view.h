@@ -19,7 +19,7 @@ class OprofppView : public OpView {
 public:
 	OprofppView(QListView * view);
 private:
-	void do_data_change(const samples_container_t * );
+	void do_data_change(samples_container_t const * );
 	void do_data_destroy();
 
 	QListView * view;

@@ -36,7 +36,7 @@ extern "C" {
  * ourself the missing proto */
 #ifndef HAVE_LIBIBERTY_H
 /* Set the program name used by xmalloc.  */
-void xmalloc_set_program_name(const char *);
+void xmalloc_set_program_name(char const *);
 
 /* Allocate memory without fail.  If malloc fails, this will print a
    message to stderr (using the name set by xmalloc_set_program_name,
@@ -52,7 +52,7 @@ void * xrealloc(void *, size_t);
 void * xcalloc(size_t, size_t) OP_ATTRIB_MALLOC;
 
 /* Copy a string into a memory buffer without fail.  */
-char *xstrdup(const char *) OP_ATTRIB_MALLOC;
+char *xstrdup(char const *) OP_ATTRIB_MALLOC;
 #endif	/* !HAVE_LIBIBERTY_H */
 
 #ifdef __cplusplus

@@ -50,7 +50,7 @@ using std::ostringstream;
 // Free function.
 namespace {
 
-string extract_blank_at_begin(const string & str);
+string extract_blank_at_begin(string const & str);
 
 double do_ratio(size_t a, size_t total);
 
@@ -91,43 +91,43 @@ class output {
 
 	~output();
 
-	bool treat_input(const string & image_name, const string & sample_file);
+	bool treat_input(string const & image_name, string const & sample_file);
 
  private:
 	/// this output a comment containaing the counter setup and command
 	/// line.
 	void output_header(ostream & out) const;
 
-	void output_asm(const string & image_name);
-	void output_objdump_asm_line(const std::string & str,
-		     const vector<const symbol_entry *> & output_symbols,
+	void output_asm(string const & image_name);
+	void output_objdump_asm_line(string const & str,
+		     vector<symbol_entry const *> const & output_symbols,
 		     bool & do_output);
-	void output_objdump_asm(const vector<const symbol_entry *> & output_symbols, const string & app_name);
-	void output_dasm_asm(const vector<const symbol_entry *> & output_symbols, const string & image_name);
+	void output_objdump_asm(vector<const symbol_entry *> const & output_symbols, string const & app_name);
+	void output_dasm_asm(vector<const symbol_entry *> const & output_symbols, string const & image_name);
 	void output_source();
 
 	// output one file unconditionally.
-	void output_one_file(istream & in, const string & filename,
-		const counter_array_t & total_samples_for_file);
-	void do_output_one_file(ostream & out, istream & in, const string & filename,
-		const counter_array_t & total_samples_for_file);
+	void output_one_file(istream & in, string const & filename,
+		counter_array_t const & total_samples_for_file);
+	void do_output_one_file(ostream & out, istream & in, string const & filename,
+		counter_array_t const & total_samples_for_file);
 
-	bool setup_counter_param(const opp_samples_files & samples_files);
+	bool setup_counter_param(opp_samples_files const & samples_files);
 	bool calc_total_samples();
 
-	void output_counter_for_file(ostream & out, const string & filename,
+	void output_counter_for_file(ostream & out, string const & filename,
 		const counter_array_t& count);
 	void output_counter(ostream & out, const counter_array_t & counter,
-		bool comment, const string & prefix = string()) const;
+		bool comment, string const & prefix = string()) const;
 	void output_one_counter(ostream & out, size_t counter, size_t total) const;
 
-	void find_and_output_symbol(ostream & out, const string & str,
-		const string & blank) const;
-	void find_and_output_counter(ostream & out, const string & str,
-		const string & blank) const;
+	void find_and_output_symbol(ostream & out, string const & str,
+		string const & blank) const;
+	void find_and_output_counter(ostream & out, string const & str,
+		string const & blank) const;
 
-	void find_and_output_counter(ostream & out, const string & filename,
-		size_t linenr, const string & blank) const;
+	void find_and_output_counter(ostream & out, string const & filename,
+		size_t linenr, string const & blank) const;
 
 	size_t get_sort_counter_nr() const;
 
@@ -178,7 +178,7 @@ class output {
 namespace {
 
 // Return the substring at beginning of str which is only made of blank or tabulation.
-string extract_blank_at_begin(const string & str)
+string extract_blank_at_begin(string const & str)
 {
 	size_t end_pos = str.find_first_not_of(" \t");
 	if (end_pos == string::npos)
@@ -282,7 +282,7 @@ output::~output()
 }
 
 // build a counter_setup from a header.
-bool output::setup_counter_param(const opp_samples_files & samples_files)
+bool output::setup_counter_param(opp_samples_files const & samples_files)
 {
 	bool have_counter_info = false;
 
@@ -325,8 +325,8 @@ void output::output_one_counter(ostream & out, size_t counter, size_t total) con
 	out << std::setprecision(4) << (do_ratio(counter, total) * 100.0) << "%";
 }
 
-void output::output_counter(ostream & out, const counter_array_t & counter, 
-			    bool comment, const string & prefix) const
+void output::output_counter(ostream & out, counter_array_t const & counter, 
+			    bool comment, string const & prefix) const
 {
 	if (comment)
 		out << begin_comment;
@@ -348,11 +348,11 @@ void output::output_counter(ostream & out, const counter_array_t & counter,
 }
 
 // Complexity: log(nr symbols)
-void output::find_and_output_symbol(ostream & out, const string & str, const string & blank) const
+void output::find_and_output_symbol(ostream & out, string const & str, string const & blank) const
 {
 	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
-	const symbol_entry* symbol = samples->find_symbol(vma);
+	symbol_entry const * symbol = samples->find_symbol(vma);
 
 	if (symbol) {
 		out << blank;
@@ -361,11 +361,11 @@ void output::find_and_output_symbol(ostream & out, const string & str, const str
 }
 
 // Complexity: log(nr samples))
-void output::find_and_output_counter(ostream & out, const string & str, const string & blank) const
+void output::find_and_output_counter(ostream & out, string const & str, string const & blank) const
 {
 	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
-	const sample_entry * sample = samples->find_sample(vma);
+	sample_entry const * sample = samples->find_sample(vma);
 	if (sample) {
 		out << blank;
 		output_counter(out, sample->counter, true, string());
@@ -373,9 +373,9 @@ void output::find_and_output_counter(ostream & out, const string & str, const st
 }
 
 // Complexity: log(nr symbols) + log(nr filename/linenr)
-void output::find_and_output_counter(ostream & out, const string & filename, size_t linenr, const string & blank) const
+void output::find_and_output_counter(ostream & out, string const & filename, size_t linenr, string const & blank) const
 {
-	const symbol_entry * symbol = samples->find_symbol(filename, linenr);
+	symbol_entry const * symbol = samples->find_symbol(filename, linenr);
 	if (symbol)
 		output_counter(out, symbol->sample.counter, true,
 			       demangle_symbol(symbol->name));
@@ -396,8 +396,8 @@ void output::find_and_output_counter(ostream & out, const string & filename, siz
  *
  */
 void output::
-output_objdump_asm_line(const std::string & str,
-			const vector<const symbol_entry *> & output_symbols,
+output_objdump_asm_line(string const & str,
+			vector<symbol_entry const *> const & output_symbols,
 			bool & do_output)
 {
 	// output of objdump is a human read-able form and can contain some
@@ -431,7 +431,7 @@ output_objdump_asm_line(const std::string & str,
 		// strtoul must work (assuming unsigned long can contain a vma)
 		bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
-		const symbol_entry* symbol = samples->find_symbol(vma);
+		symbol_entry const * symbol = samples->find_symbol(vma);
 
 		// ! complexity: linear in number of symbol must use sorted
 		// by address vector and lower_bound ?
@@ -469,7 +469,7 @@ output_objdump_asm_line(const std::string & str,
  * This is the generic implementation if our own disassembler
  * do not work for this architecture.
  */
-void output::output_objdump_asm(const vector<const symbol_entry *> & output_symbols, const string & app_name)
+void output::output_objdump_asm(vector<symbol_entry const *> const & output_symbols, string const & app_name)
 {
 	vector<string> args;
 	args.push_back("-d");
@@ -513,17 +513,17 @@ void output::output_objdump_asm(const vector<const symbol_entry *> & output_symb
  * Output asm (optionnaly mixed with source) annotated
  * with samples using dasm as external disassembler.
  */
-void output::output_dasm_asm(const vector<const symbol_entry *> & /*output_symbols*/, const string  & /*image_name*/)
+void output::output_dasm_asm(vector<symbol_entry const *> const & /*output_symbols*/, string  const & /*image_name*/)
 {
 	// Not yet implemented :/
 }
 
-void output::output_asm(const string & image_name)
+void output::output_asm(string const & image_name)
 {
 	// select the subset of symbols which statisfy the user requests
 	size_t index = get_sort_counter_nr();
 
-	vector<const symbol_entry *> output_symbols;
+	vector<symbol_entry const *> output_symbols;
 
 	double threshold = threshold_percent / 100.0;
 
@@ -535,8 +535,8 @@ void output::output_asm(const string & image_name)
 	output_objdump_asm(output_symbols, image_name);
 }
 
-void output::output_counter_for_file(ostream& out, const string & filename,
-	const counter_array_t & total_count_for_file)
+void output::output_counter_for_file(ostream& out, string const & filename,
+	counter_array_t const & total_count_for_file)
 {
 	out << begin_comment << endl
 		<< " Total samples for file : " << '"' << filename << '"'
@@ -551,8 +551,8 @@ void output::output_counter_for_file(ostream& out, const string & filename,
 // Post condition:
 //  the entire file source and the associated samples has been output to
 //  the standard output.
-void output::output_one_file(istream & in, const string & filename,
-	const counter_array_t & total_count_for_file)
+void output::output_one_file(istream & in, string const & filename,
+	counter_array_t const & total_count_for_file)
 {
 	if (!output_separate_file) {
 		do_output_one_file(cout, in, filename, total_count_for_file);
@@ -609,8 +609,8 @@ void output::output_one_file(istream & in, const string & filename,
 //  the entire file source and the associated samples has been output to
 //  the standard output.
 void output::do_output_one_file(ostream& out, istream & in,
-				const string & filename,
-				const counter_array_t & total_count_for_file)
+				string const & filename,
+				counter_array_t const & total_count_for_file)
 {
 	output_counter_for_file(out, filename, total_count_for_file);
 
@@ -729,7 +729,7 @@ void output::output_header(ostream& out) const
 	out << endl;
 }
 
-bool output::treat_input(const string & image_name, const string & sample_file)
+bool output::treat_input(string const & image_name, string const & sample_file)
 {
 	// this lexcical scope just optimize the memory use by relaxing
 	// the op_bfd and opp_samples_files as short as we can.
@@ -885,7 +885,7 @@ int main(int argc, char const * argv[])
 			return EXIT_FAILURE;
 	}
 
-	catch (const string & e) {
+	catch (string const & e) {
 		cerr << "op_to_source: Exception : " << e << endl;
 		return EXIT_FAILURE;
 	}

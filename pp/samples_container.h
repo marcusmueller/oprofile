@@ -33,9 +33,6 @@ public:
 	 * on what will be required as information in future. Avoid to pass
 	 * osf_linenr_info greatly improve performance of add. Avoiding
 	 * osf_details is also an improvement.
-	 * @param add_shared_libs record to the set of symbols/samples shared
-	 * libs which belongs to this image, only meaningfull if samples files
-	 * come from a --separate-samples session
 	 * @param counter_mask which counter we must record
 	 */
 	 samples_container_t(bool add_zero_samples_symbols, OutSymbFlag flags,
@@ -52,7 +49,7 @@ public:
 	 * Obviously you can add only samples files which are coherent (same
 	 * sampling rate, same events etc.)
 	 */
-	void add(const opp_samples_files & samples_files, const op_bfd & abfd);
+	void add(opp_samples_files const & samples_files, op_bfd const & abfd);
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
 	symbol_entry const * find_symbol(bfd_vma vma) const;
@@ -62,7 +59,7 @@ public:
  
 	/// Find a symbol from its filename, linenr, return zero if no symbol
 	/// at this location
-	symbol_entry const * find_symbol(const std::string & filename,
+	symbol_entry const * find_symbol(std::string const & filename,
 					size_t linenr) const;
 
 	/// Find a sample by its vma, return zero if no sample at this vma

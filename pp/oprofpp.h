@@ -29,7 +29,6 @@
 
 #include "db.h"
 #include "op_interface.h"
-#include "op_popt.h"
 #include "op_sample_file.h"
 #include "op_hw_config.h"
 #include "op_bfd.h"
@@ -69,7 +68,6 @@ void op_print_event(std::ostream & out, int counter_nr, op_cpu cpu_type,
 /**
  * process command line options
  * @param filename a filename passed on the command line, can be NULL
- * @param optcon poptContext to allow better message handling
  * @param image_file where to store the image file name
  * @param sample_file ditto for sample filename
  * @param counter where to put the counter command line argument
@@ -102,18 +100,18 @@ void quit_error(char const *err);
 
 /**
  * remangle - convert a filename into the related sample file name
- * @param image the image filename
+ * @param filename the filename string
  */
 std::string remangle(std::string const & filename);
 
 /**
  * convert a sample filenames into the related image file name
- * @param sample_filename the samples image filename
+ * @param samples_filename the samples image filename
  *
  * if samples_filename does not contain any %OPD_MANGLE_CHAR
  * the string samples_filename itself is returned.
  */
-std::string demangle_filename(const std::string & samples_filename);
+std::string demangle_filename(std::string const & samples_filename);
 
 /**
  * check if the symbol is in the exclude list
@@ -121,7 +119,7 @@ std::string demangle_filename(const std::string & samples_filename);
  *
  * return true if symbol is in the list of excluded symbol
  */
-bool is_excluded_symbol(const std::string & symbol);
+bool is_excluded_symbol(std::string const & symbol);
 
 /**
  * sanity check of a struct opd_header *
@@ -129,7 +127,7 @@ bool is_excluded_symbol(const std::string & symbol);
  *
  * all error are fatal
  */
-void check_event(const opd_header * header);
+void check_event(opd_header const * header);
 
 /**
  * validate the counter number
@@ -145,10 +143,10 @@ void validate_counter(int counter_mask, int & sort_by);
  * representing each counter. Bit i is on if counter i was specified.
  * So we allow up to sizeof(uint) * CHAR_BIT different counter
  */
-uint counter_mask(const std::string &);
+uint counter_mask(std::string const &);
 
 /**
- * @param samples_file the samples files
+ * @param samples the samples files
  * @param image_name the image filename
  *
  * check than the modification time of image_name is the same as provided
@@ -188,7 +186,7 @@ public:
 	}
 
 	/** vectorised += operator */
-	counter_array_t & operator+=(const counter_array_t & rhs);
+	counter_array_t & operator+=(counter_array_t const & rhs);
 
 private:
 	u32 value[OP_MAX_COUNTERS];
