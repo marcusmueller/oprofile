@@ -13,6 +13,7 @@
 #define CALLGRAPH_CONTAINER_H
 
 #include <set>
+#include <vector>
 #include <list>
 #include <string>
 
@@ -50,13 +51,13 @@ public:
 	void fixup_callee_counts();
 
 	// sorted sequence of cg_symbol.
-	vector<cg_symbol> get_arc() const;
-	vector<cg_symbol> get_callee(cg_symbol const &) const;
-	vector<cg_symbol> get_caller(cg_symbol const &) const;
+	std::vector<cg_symbol> get_arc() const;
+	std::vector<cg_symbol> get_callee(cg_symbol const &) const;
+	std::vector<cg_symbol> get_caller(cg_symbol const &) const;
 private:
 	cg_symbol const * find_caller(cg_symbol const &) const;
 
-	typedef multimap<cg_symbol, cg_symbol const *, less_symbol> map_t;
+	typedef std::multimap<cg_symbol, cg_symbol const *, less_symbol> map_t;
 	typedef map_t::const_iterator iterator;
 	map_t caller_callee;
 	map_t callee_caller;
@@ -75,9 +76,9 @@ public:
 
 	/// These just dispatch to callee_caller_recorder. It's the way client
 	/// code acquire results.
-	vector<cg_symbol> get_arc() const;
-	vector<cg_symbol> get_callee(cg_symbol const &) const;
-	vector<cg_symbol> get_caller(cg_symbol const &) const;
+	std::vector<cg_symbol> get_arc() const;
+	std::vector<cg_symbol> get_callee(cg_symbol const &) const;
+	std::vector<cg_symbol> get_caller(cg_symbol const &) const;
 
 private:
 	/** Record caller/callee for one cg file
@@ -88,7 +89,7 @@ private:
 	 * @param symbols  the profile_container holding all non cg samples.
 	 */
 	void add(profile_t const & profile, op_bfd const & bfd_caller,
-		 op_bfd const & bfd_callee, string const & app_name,
+		 op_bfd const & bfd_callee, std::string const & app_name,
 		 profile_container const & symbols);
 
 	/// add fake arc <from, NULL> to record leaf symbols.
