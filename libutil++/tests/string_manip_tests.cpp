@@ -237,7 +237,7 @@ static void trim_tests()
 static input_output<double, char const *> expect_format_percent[] =
 {
 	{ 2.2,        " 2.2000" },
-	{ 0,          "0.0e+00" },
+	{ 0,          "      0" },
 	{ 100.00,     "100.000" },
 	{ 99.99999,   "100.000" },
 	{ 0.00000344, "3.4e-06" },
