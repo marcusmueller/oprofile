@@ -126,6 +126,7 @@ struct opd_image {
 	fd_t fd;
 	void *start;
 	off_t len; 
+	u8 kernel; 
 	char *name;
 };
  

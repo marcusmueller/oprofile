@@ -10,6 +10,9 @@
 #define OPD_DEFAULT_MAPS 16
 #define OPD_MAP_INC 8 
  
+/* kernel image entries are offset by this much */
+#define OPD_KERNEL_OFFSET 1000000
+
 extern unsigned long opd_stats[];
 extern fd_t mapdevfd;
 extern char *vmlinux; 
@@ -38,7 +41,7 @@ static unsigned int nr_modules=0;
  
 static struct opd_proc *opd_add_proc(u16 pid);
 static void opd_grow_images(void);
-static void opd_open_image(struct opd_image *image, int kernel);
+static void opd_open_image(struct opd_image *image);
 static struct opd_image *opd_find_image(const char *name);
 static struct opd_image *opd_add_image(const char *name, int kernel);
 static struct opd_image *opd_get_image(const char *name, int kernel);
@@ -158,13 +161,12 @@ void opd_read_system_map(const char *filename)
 /**
  * opd_open_image - open an image sample file
  * @image: image to open file for
- * @kernel: is the image a "kernel" image
  *
  * Open and initialise an image sample file for
  * the image @image and set up memory mappings for
  * it.
  */
-static void opd_open_image(struct opd_image *image, int kernel)
+static void opd_open_image(struct opd_image *image)
 {
 	char *mangled;
 	char *c;
@@ -186,6 +188,12 @@ static void opd_open_image(struct opd_image *image, int kernel)
 	/* for each byte in original, two u32 counters */
 	image->len = opd_get_fsize(image->name)*sizeof(u32)*2;
 	
+	/* give space for "negative" entries. This is because we
+	 * don't know about kernel/module sections other than .text so
+	 * a sample could be before our nominal start of image */
+	if (image->kernel)
+		image->len += OPD_KERNEL_OFFSET;
+ 
 	printf("Trying to open %s.\n",mangled);
 	image->fd = open(mangled, O_CREAT|O_EXCL|O_RDWR,0644);
 	if (image->fd==-1) {
@@ -200,7 +208,7 @@ static void opd_open_image(struct opd_image *image, int kernel)
 		goto err; 
 	}
 
-	footer.is_kernel = kernel;
+	footer.is_kernel = image->kernel;
 	 
 	if ((write(image->fd, &footer, sizeof(struct opd_footer)))<(signed)sizeof(struct opd_footer)) {
 		perror("oprofiled: wrote less than expected opd_footer. ");
@@ -263,13 +271,18 @@ struct opd_fentry {
  */
 inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count)
 {
-	struct opd_fentry *fentry = image->start + offset;
+	struct opd_fentry *fentry;
 
 	if (image->fd<1) {
 		printf("Trying to write to non-opened image %s\n",image->name);
 		return; 
 	} 
  
+	fentry = image->start + offset;
+
+	if (image->kernel)
+		fentry += OPD_KERNEL_OFFSET;
+
 	if (opd_get_counter(count)) {
 		if (fentry->count1 + count < fentry->count1)
 			fentry->count1 = (u32)-1;
@@ -297,7 +310,8 @@ void opd_init_images(void)
 	opd_images[0].name = opd_malloc(strlen(vmlinux)+1);
 	strncpy(opd_images[0].name,vmlinux,strlen(vmlinux)+1);
 	 
-	opd_open_image(&opd_images[0],1);
+	opd_images[0].kernel = 1; 
+	opd_open_image(&opd_images[0]);
 	nr_images=1;
 }
 
@@ -346,7 +360,8 @@ static struct opd_image *opd_add_image(const char *name, int kernel)
 	opd_images[nr_images].name = opd_malloc(strlen(name)+1);
 	strncpy(opd_images[nr_images].name,name,strlen(name)+1);
  
-	opd_open_image(&opd_images[nr_images],kernel);
+	opd_images[nr_images].kernel = kernel; 
+	opd_open_image(&opd_images[nr_images]);
 	nr_images++;
 
 	if (nr_images==max_nr_images)
