@@ -7,9 +7,6 @@
 
 #include "oprofpp.h"
 
-// Add run-time checking if true.
-static const bool sanity_check = true;
-
 //---------------------------------------------------------------------------
 /// A simple container for a fileno:linr location
 struct file_location {
@@ -28,8 +25,6 @@ struct sample_entry {
 	bfd_vma vma;
 	/// the samples count
 	counter_array_t counter;
-
-	void debug_dump(std::ostream & out) const;
 };
 
 //---------------------------------------------------------------------------
@@ -42,8 +37,6 @@ struct symbol_entry {
 	/// [first, last[ gives the range of sample_entry.
 	size_t first;
 	size_t last;
-
-	void debug_dump(std::ostream & out) const;
 };
 
 //---------------------------------------------------------------------------

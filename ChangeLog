@@ -1,3 +1,22 @@
+2001-11-12  Philippe Elie  <ph_e@club-internet.fr>
+
+	* util: new directory
+	* util/string_manip.cpp:
+	* util/string_manip.h: new
+	* Makefile.in: handle util directory
+	* pp/Makefile.in:
+	* pp/opf_filter.h:
+	* pp/opf_filter.cpp:
+	* gui/Makefile.in:
+	* gui/oprof_start_util.cpp:
+	* gui/oprof_start_util.h: update to use string_manip.cpp
+
+	* op_events.c:
+	* op_user.h:
+	* pp/opf_filter.h:
+	* pp/opf_filter.cpp:
+	* pp/opf_container.cpp: remove dead code
+
 2001-11-11  Dave Jones <davej@suse.de>
 
 	* module/oprofile.[c|h]: Change MSR defines from

@@ -16,8 +16,6 @@
  * first written by P.Elie, mostly rewritten by John Levon
  */
 
-#include "oprof_start_util.h"
-
 #include <sys/types.h>
 #include <sys/stat.h> 
 #include <sys/wait.h> 
@@ -33,6 +31,9 @@
 
 #include <qfiledialog.h>
 #include <qmessagebox.h>
+
+#include "../util/string_manip.h"
+#include "oprof_start_util.h"
 
 typedef int fd_t;
  
@@ -443,38 +444,3 @@ string const do_open_file_or_dir(string const & base_dir, bool dir_only)
 		return result.latin1();
 }
  
-
-/**
- * basename - get the basename of a path
- * @path_name: path
- *
- * Returns the basename of a path with trailing '/' removed.
- */
-string const basename(string const & path_name)
-{
-	string result = path_name;
-
-	while (result.size() && result[result.size() - 1] == '/')
-		result = result.substr(0, result.size() - 1);
-
-	string::size_type slash = result.find_last_of('/');
-	if (slash != string::npos)
-		result.erase(0, slash + 1);
-
-	return result;
-}
-
- 
-/**
- * tostr - convert integer to str
- * i: the integer
- *
- * Returns the converted string
- */ 
-string const tostr(unsigned int i)
-{
-	string str;
-	std::ostringstream ss(str);
-	ss << i;
-	return ss.str(); 
-}

@@ -82,24 +82,6 @@ struct less_by_file_loc {
 	}
 };
 
-// A predicate which return true if the iterator range is sorted.
-template <class Iterator, class Compare>
-bool range_iterator_sorted_p(Iterator first, Iterator last, const Compare & compare)
-{
-	if (distance(first, last) > 1) {
-  		for (++first ; first != last ; ++first) {
-			Iterator temp = first;
-			--temp;
-			if (!compare(*temp, *first)) {
-				return false;
-			}
-		}
-	}
-
-	return true;
-}
-
-
 //---------------------------------------------------------------------------
 /// implementation of symbol_container_t
 class symbol_container_impl {
@@ -198,15 +180,6 @@ void symbol_container_impl::flush_input_symbol(size_t counter) const
 void  symbol_container_impl::build_by_file_loc() const
 {
 	if (v.size() && symbol_entry_by_file_loc.empty()) {
-		if (range_iterator_sorted_p(v.begin(), v.end(),
-				    less_sample_entry_by_vma()) == false) {
-			cerr << "opf_filter: post condition fail : "
-			     << "symbol_vector not sorted by increased vma"
-			     << endl;
-
-			exit(EXIT_FAILURE);
-		}
-
 		for (size_t i = 0 ; i < v.size() ; ++i)
 			symbol_entry_by_file_loc.insert(&v[i]);
 	}
@@ -415,15 +388,6 @@ void sample_container_impl::flush_input_counter() const
 	if (v.size() && samples_by_file_loc.empty()) {
 		for (size_t i = 0 ; i < v.size() ; ++i)
 			samples_by_file_loc.insert(&v[i]);
-
-		if (range_iterator_sorted_p(v.begin(), v.end(),
-					less_sample_entry_by_vma()) == false) {
-			cerr << "opf_filter: post condition fail : "
-			     << "counter_vector not sorted by increased vma"
-			     << endl;
-
-			exit(EXIT_FAILURE);
-		}
 	}
 }
 

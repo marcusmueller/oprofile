@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.38 2001/11/10 13:16:15 movement Exp $
+# $Id: Makefile.in,v 1.39 2001/11/11 23:51:36 phil_e Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MKDIR_P=mkdir -p
@@ -8,6 +8,7 @@ LD=@LD@
 .PHONY: all install clean distclean maintainerclean uninstall tags
 
 all:
+	$(MAKE) -C util
 	$(MAKE) -C module
 	$(MAKE) -C dae
 	$(MAKE) -C pp
@@ -34,19 +35,20 @@ uninstall:
 
 clean:
 	rm -f *.o
+	$(MAKE) -C util clean
 	$(MAKE) -C module clean
 	$(MAKE) -C dae clean
 	$(MAKE) -C pp clean
 	$(MAKE) -C doc clean
 	$(MAKE) -C gui clean
- 
+
 # doc/Makefile is deleted here but should be deleted in distclean.
 # When the dist target works move it as action of distclean.
 maintainerclean: distclean
 	rm -f configure doc/Makefile aclocal.m4
 
 distclean: clean
-	rm -f Makefile doc/oprofile.1 dae/Makefile pp/Makefile gui/Makefile tags config.status config.log config.cache version.h
+	rm -f Makefile util/Makefile doc/oprofile.1 dae/Makefile pp/Makefile gui/Makefile tags config.status config.log config.cache version.h
 
 tags:
 	ctags -R

@@ -49,6 +49,8 @@ using std::ostringstream;
 #include "oprofpp.h"
 #include "child_reader.h"
 
+#include "../util/string_manip.h"
+
 #include "../version.h"
 
 //---------------------------------------------------------------------------
@@ -68,9 +70,6 @@ double do_ratio(size_t a, size_t total);
 
 bool create_dir(const string & dir);
 bool create_path_name(const string & path);
-
-string dirname(string const & file_name);
-string basename(string const & path_name);
 
 }
 
@@ -149,8 +148,6 @@ class output {
 
 	bool treat_input();
 
-	void debug_dump_vector() const;
-
  private:
 	/// this output a comment containaing the counter setup and command
 	/// the line.
@@ -189,9 +186,6 @@ class output {
 		size_t linenr) const;
 
 	size_t get_sort_counter_nr() const;
-
-	// debug.
-	bool sanity_check_symbol_entry(size_t index) const;
 
 	// this order of declaration is required to ensure proper
 	// initialisation of oprofpp
@@ -284,6 +278,7 @@ inline double do_ratio(size_t counter, size_t total)
 	return total == 0 ? 1.0 : ((double)counter / total);
 }
 
+// perhaps put the two next function in util/file_namnip.cpp ?
 bool create_dir(const string & dir)
 {
 	if (access(dir.c_str(), F_OK)) {
@@ -314,43 +309,6 @@ bool create_path_name(const string & path)
 			return false;
 	}
 	return true;
-}
-
-/**
- * dirname - get the path component of a filename
- * @file_name: filename
- *
- * Returns the path name of a filename with trailing '/' removed.
- */
-string dirname(string const & file_name)
-{
-	string result = file_name;
-
-	string::size_type slash = result.find_last_of('/');
-	if (slash != string::npos)
-		result.erase(slash, result.length() - slash);
-
-	return result;
-}
-
-/**
- * basename - get the basename of a path
- * @path_name: path
- *
- * Returns the basename of a path with trailing '/' removed.
- */
-string basename(string const & path_name)
-{
-	string result = path_name;
-
-	while (result.size() && result[result.size() - 1] == '/')
-		result = result.substr(0, result.size() - 1);
-
-	string::size_type slash = result.find_last_of('/');
-	if (slash != string::npos)
-		result.erase(0, slash + 1);
-
-	return result;
 }
 
 } // anonymous namespace
@@ -434,28 +392,6 @@ void filename_match::build_pattern(vector<string> & result,
 }
 
 //--------------------------------------------------------------------------
-
-void sample_entry::debug_dump(ostream & out) const
-{
-	if (file_loc.filename.length())
-		out << file_loc.filename << ":" << file_loc.linenr << " ";
-
-	out << hex << vma << dec << " ";
-
-	for (size_t i = 0 ; i < op_nr_counters ; ++i)
-		out << counter[i] << " ";
-}
-
-//--------------------------------------------------------------------------
-
-void symbol_entry::debug_dump(ostream & out) const
-{
-	out << "[" << name << "]" << endl;
-	out << "counters number range [" << first << ", " << last << "[" << endl;
-	sample.debug_dump(out);
-}
-
-//---------------------------------------------------------------------------
 
 source_file::source_file()
 {
@@ -551,27 +487,6 @@ output::output(int argc_, char const * argv_[],
 	}
 }
 
-void output::debug_dump_vector() const
-{
-	cerr << "total samples :";
-
-	for (size_t i = 0 ; i < op_nr_counters ; ++i)
-		cerr << " " << counter_info[i].total_samples;
-	
-	cerr << endl;
-
-	for (size_t i = 0 ; i < symbols.size() ; ++i) {
-
-		symbols[i].debug_dump(cerr);
-		cerr << endl;
-
-		for (size_t j = symbols[i].first ; j < symbols[i].last; ++j) {
-			samples[j].debug_dump(cerr);
-			cerr << endl;
-		}
-	}
-}
-
 // build a counter_setup from a header.
 bool output::setup_counter_param()
 {
@@ -608,24 +523,6 @@ bool output::calc_total_samples()
 	for (size_t i = 0 ; i < symbols.size() ; ++i) {
 		for (size_t j = 0 ; j < op_nr_counters ; ++j)
 			counter_info[j].total_samples += symbols[i].sample.counter[j];
-	}
-
-	if (sanity_check) {
-		counter_array_t total_counter;
-
-		for (size_t i = 0 ; i < samples.size() ; ++i) {
-			total_counter += samples[i].counter;
-		}
-
-		for (size_t i = 0 ; i < op_nr_counters ; ++i) {
-			if (total_counter[i] != counter_info[i].total_samples) {
-				cerr << "opf_filter: output::calc_total_samples() : bad counter accumulation"
-				     << " " << total_counter[i]
-				     << " " << counter_info[i].total_samples
-				     << endl;
-				exit(EXIT_FAILURE);
-			}
-		}
 	}
 
 	for (size_t i = 0 ; i < op_nr_counters ; ++i)
@@ -1056,41 +953,9 @@ size_t output::get_sort_counter_nr() const
 	return index;
 }
 
-bool output::sanity_check_symbol_entry(size_t index) const
-{
-	if (index == 0) {
-		if (symbols[0].first != 0) {
-			cerr << "opf_filter: symbol[0].first != 0" << endl;
-			return false;
-		}
-
-		if (symbols[0].last > samples.size()) {
-			cerr << "opf_filter: symbols[0].last > samples.size()" << endl;
-			return false;
-		}
-	} else {
-		if (symbols[index-1].last != symbols[index].first) {
-			cerr << "opf_filter: symbols[" << index - 1
-			     << "].last != symbols[" << index
-			     << "].first" << endl;
-			return false;
-		}
-	}
-
-	if (index == symbols.size() - 1) {
-		if (symbols[index].last != samples.size()) {
-			cerr << "opf_filter: symbols[symboles.size() -1].last != symbols.size()" << endl;
-			return false;
-		}
-	}
-
-	return true;
-}
-
 // Post condition:
 //  the symbols/samples are sorted by increasing vma.
-//  the range of sample_entry inside each symbol entry are valid, see
-//    sanity_check_symbol_entry()
+//  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
 void output::build_samples_containers()
 {
@@ -1146,15 +1011,6 @@ void output::build_samples_containers()
 		symb_entry.last = samples.size();
 
 		symbols.push_back(symb_entry);
-	}
-
-	if (sanity_check) {
-		// All the range in the symbol vector must be valid.
-		for (size_t i = 0 ; i < symbols.size() ; ++i) {
-			if (sanity_check_symbol_entry(i) == false) {
-				exit(EXIT_FAILURE);
-			}
-		}
 	}
 }
 

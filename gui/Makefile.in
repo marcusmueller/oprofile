@@ -7,12 +7,12 @@ UIC=@UIC@
 
 CC=@CC@
 CXX=@CXX@
- 
+
 CFLAGS=-Wall -W @CFLAGS@ -I@KINC@ -DOP_EVENTS_DESC @QT2_INCLUDES@
 CXXFLAGS=-Wall -W @CXXFLAGS@ -I@KINC@ -DOP_EVENTS_DESC @QT2_INCLUDES@
 
 # FIXME: dependencies are fucked ... my fault (john)
- 
+
 .PHONY: all clean install uninstall
 .SUFFIXES:
 
@@ -37,7 +37,7 @@ UISOURCES=ui/oprof_start.base.o ui/oprof_start.base.moc.o
 SOURCES=oprof_start.o oprof_start.moc.o op_events.o \
  oprof_start_config.o oprof_start_main.o oprof_start_util.o
 
-oprof_start: $(SOURCES)
+oprof_start: $(SOURCES) ../util/string_manip.o
 	$(MAKE) -C ui
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(UISOURCES) @QT2_LDFLAGS@ @QT2_LIBS@
 
@@ -46,19 +46,19 @@ op_events.o: ../op_events.c
 
 ui/oprof_start.base.h:
 	$(MAKE) -C ui
- 
+
 op_events.o: ../op_events.c ../op_user.h ../version.h
 oprof_start.moc.o: oprof_start.moc.cpp oprof_start.h \
  ui/oprof_start.base.h oprof_start_config.h persistent_config.h \
  ../op_user.h ../version.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 oprof_start.o: oprof_start.cpp oprof_start.h ui/oprof_start.base.h \
- oprof_start_config.h persistent_config.h ../op_user.h ../version.h
+ oprof_start_config.h persistent_config.h ../op_user.h ../version.h ../util/string_manip.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 oprof_start_config.o: oprof_start_config.cpp oprof_start_config.h \
  persistent_config.h ../op_user.h ../version.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-oprof_start_util.o: oprof_start_util.cpp oprof_start_util.h
+oprof_start_util.o: oprof_start_util.cpp oprof_start_util.h ../util/string_manip.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 oprof_start_main.o: oprof_start_main.cpp oprof_start.h \
  ui/oprof_start.base.h oprof_start_config.h persistent_config.h \

@@ -1,0 +1,13 @@
+all: string_manip.o
+
+clean: 
+	rm -f *.o
+
+.PHONY: all clean
+
+CXX=@CXX@
+CXXFLAGS=@CXXFLAGS@ -Wall -pedantic -ansi -W -Wunused -Wmissing-prototypes
+
+string_manip.o: string_manip.cpp string_manip.h
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+

@@ -47,7 +47,7 @@ oprof_convert: oprof_convert.c ../dae/opd_util.c ../dae/opd_util.h
 oprofpp_no_main.o: oprofpp.cpp $(HEADERS)
 	$(CXX) -c -DOPROFPP_NO_MAIN $(CXXFLAGS) $(INCLUDES) -o $@ oprofpp.cpp
 
-opf_container.o: opf_container.cpp opf_filter.h ../op_user.h
+opf_container.o: opf_container.cpp opf_filter.h ../op_user.h ../util/string_manip.h
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
 opf_filter.o : opf_filter.cpp opf_filter.h ../op_user.h oprofpp.h child_reader.h
@@ -56,6 +56,6 @@ opf_filter.o : opf_filter.cpp opf_filter.h ../op_user.h oprofpp.h child_reader.h
 child_reader.o: child_reader.cpp child_reader.h ../op_user.h
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-op_to_source: opf_filter.o opf_container.o child_reader.o oprofpp_no_main.o ../op_events.o ../dae/opd_util.o $(LIBS)
+op_to_source: opf_filter.o opf_container.o child_reader.o oprofpp_no_main.o ../op_events.o ../dae/opd_util.o ../util/string_manip.o $(LIBS)
 	$(CXX) $(CXXFLAGS) $^ -o op_to_source
 
