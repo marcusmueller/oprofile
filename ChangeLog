@@ -1,5 +1,20 @@
 2002-11-10  John Levon  <levon@movementarian.org>
 
+	* Makefile.am:
+	* configure.in:
+	* dae/Makefile.am:
+	* daemon/Makefile.am:
+	* utils/Makefile.am: s/WITH_KERNEL_SUPPORT/kernel_support
+
+	* configure.in:
+	* dae/Makefile.am:
+	* dae/oprofiled.c:
+	* daemon/Makefile.am:
+	* daemon/oprofiled.c:
+	* libabi/Makefile.am: approximate working --enable-abi more
+
+2002-11-10  John Levon  <levon@movementarian.org>
+
 	* dae/oprofiled.c:
 	* daemon/oprofiled.c: abi tidy
  

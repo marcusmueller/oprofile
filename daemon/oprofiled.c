@@ -9,6 +9,8 @@
  * @author Philippe Elie
  */
 
+#include <config.h>
+ 
 #include "opd_stats.h"
 #include "opd_sample_files.h"
 #include "opd_image.h"

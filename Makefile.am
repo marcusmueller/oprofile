@@ -4,7 +4,7 @@ SUBDIRS = libutil libop libutil++ libopt++ libop++ libdb libabi daemon dae \
 all-local: kernel_module
 install-exec-local: install.kernel
 
-if WITH_KERNEL_SUPPORT
+if kernel_support
 kernel_module:
 install.kernel:
 else

@@ -1,5 +1,7 @@
 AM_CPPFLAGS=-I ${top_srcdir}/libop -I ${top_srcdir}/libutil -I ${top_srcdir}/libdb -I ${top_srcdir}/libopt++
 
+if enable_abi
+ 
 noinst_LIBRARIES = libabi.a
 libabi_a_SOURCES = abi.cpp op_abi.cpp
 
@@ -13,5 +15,7 @@ noinst_PROGRAMS = abi_test
 abi_test_SOURCES = abi_test.cpp
 abi_test_LDADD = libabi.a ../libdb/libdb.a ../libopt++/libopt++.a ../libutil++/libutil++.a ../libutil/libutil.a
 
+endif
+ 
 EXTRA_DIST = abi.h op_abi.h
 

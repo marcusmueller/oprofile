@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.118 2002/11/10 00:58:47 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.119 2002/11/10 02:00:50 movement Exp $)
 AC_PREREQ(2.13)
 
 AC_INIT(libop/op_config.h)
@@ -93,7 +93,7 @@ if test "$OPROFILE_25" != "yes"; then
 fi
 AC_MSG_RESULT($OPROFILE_25)
 
-AM_CONDITIONAL(WITH_KERNEL_SUPPORT, test $OPROFILE_25 = yes)
+AM_CONDITIONAL(kernel_support, test $OPROFILE_25 = yes)
  
 if test "$OPROFILE_25" = "no"; then
 	if test ! -f $KINC/linux/autoconf.h; then
@@ -284,7 +284,10 @@ dnl enable code to describe the binary layout of libdb files, for platform porta
 AC_ARG_ENABLE(abi,
 	[  --enable-abi                 enable abi portability code (default is disabled)],
 	enable_abi=$enableval, enable_abi=no)
-AC_SUBST(enable_abi)
+if test "$enable_abi" = yes; then
+	AC_DEFINE(OPROF_ABI, 1, [whether to build ABI tools])
+fi
+AM_CONDITIONAL(enable_abi, test "$enable_abi" = yes)
 
 # try to find the docbook stylesheets
 if test -e /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/xhtml/docbook.xsl; then
