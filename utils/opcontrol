@@ -262,7 +262,7 @@ do_init()
 	OP_COUNTERS=`ls $MOUNT/ | grep "^[0-9]\+\$" | tr "\n" " "`
 	NR_CHOSEN=0
 
-	DEFAULT_EVENT=`$OP_HELP --get-default-event`
+	DEFAULT_EVENT=`$OPHELP --get-default-event`
  
 	IS_TIMER=0
 	IS_PERFMON=0
@@ -475,16 +475,16 @@ verify_counters()
 		return
 	fi
 
-	OP_HELP_ARGS=
+	OPHELP_ARGS=
 
 	if test "$NR_CHOSEN" != 0; then
 		for f in `seq 0 $((NR_CHOSEN - 1))`; do
 			if test "${CHOSEN_EVENTS[$f]}" != ""; then
-				OP_HELP_ARGS="$OP_HELP_ARGS ${CHOSEN_EVENTS[$f]}"
+				OPHELP_ARGS="$OPHELP_ARGS ${CHOSEN_EVENTS[$f]}"
 			fi
 		done
 
-		HW_CTRS=`$OP_HELP --check-events $OP_HELP_ARGS --callgraph=$CALLGRAPH`
+		HW_CTRS=`$OPHELP --check-events $OPHELP_ARGS --callgraph=$CALLGRAPH`
 		if test "$?" != 0; then
 			exit 1
 		fi
@@ -502,7 +502,7 @@ normalise_events()
 	for f in `seq 0 $((NR_CHOSEN - 1))`; do
 		if test "${CHOSEN_EVENTS[$f]}" != ""; then
 			EVENT=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $1}'`
-			EVENT_VAL=`$OP_HELP $EVENT`
+			EVENT_VAL=`$OPHELP $EVENT`
 			if test "$?" != 0; then
 				exit 1
 			fi
@@ -512,7 +512,7 @@ normalise_events()
 			USER=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $5}'`
 			if test -z "$UNIT_MASK"; then
 				TMPEVENT="$EVENT:$COUNT"
-				UNIT_MASK=`$OP_HELP --unit-mask $TMPEVENT`
+				UNIT_MASK=`$OPHELP --unit-mask $TMPEVENT`
 				if test "$?" != 0; then
 					exit 1
 				fi
@@ -730,7 +730,7 @@ do_options()
 			-l|--list-events)
 				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
 				EXCLUSIVE_ARGV="$arg"
-				exec $OP_HELP
+				exec $OPHELP
 				;;
 				
 			*)
@@ -988,7 +988,7 @@ do_param_setup()
 	if test "$NR_CHOSEN" = 0; then
 		CHOSEN_EVENTS[0]=$DEFAULT_EVENT
 		NR_CHOSEN=1
-		HW_CTRS=`$OP_HELP --check-events $DEFAULT_EVENT --callgraph=$CALLGRAPH`
+		HW_CTRS=`$OPHELP --check-events $DEFAULT_EVENT --callgraph=$CALLGRAPH`
 		echo "Using default event: ${CHOSEN_EVENTS[0]}"
 	fi
 
@@ -1006,7 +1006,7 @@ do_param_setup()
 	for f in `seq 0 $((NR_CHOSEN - 1))`; do
 		if test "${CHOSEN_EVENTS[$f]}" != ""; then
 			EVENT=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $1}'`
-			EVENT_STR=`$OP_HELP $EVENT`
+			EVENT_STR=`$OPHELP $EVENT`
 			# For some architectures, additional information associated with given
 			# event is returned in EVENT_STR, so we validate this information if necessary
 			check_event_mapping_data
@@ -1297,7 +1297,7 @@ do_operations()
 check_version_help()
 {
 
-	OP_HELP="$OPDIR/op_help"
+	OPHELP="$OPDIR/ophelp"
 
 	for i in $@; do
 		case "$i" in
@@ -1308,7 +1308,7 @@ check_version_help()
 
 			-v|--version)
 				echo -n "`basename $0`: "
-				$OP_HELP --version | cut -d' ' -f2-
+				$OPHELP --version | cut -d' ' -f2-
 				exit 0
 				;;
  
@@ -1364,8 +1364,10 @@ if test "$UID" != "0"; then
 	ONLY_DUMP=yes
 	do_dump
 	exit 0;
+    elif test "$1" = "--list-events" -a -z "$2"; then
+	exec $OPHELP
     else
-	echo "Normal users are limited to '--dump'." >&2
+	echo "Normal users are limited to either '--dump' or '--list-events'." >&2
 	exit 1
     fi
 fi

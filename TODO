@@ -51,10 +51,6 @@ Before 1.0 little stuff
   Not perfect because if the profiler is running the oprofiled.log will show
   those warning only after the first  alarm signal, I think we must dump the
   statistics information after each opcontrol --dump to avoid that.
- o libop/op_string.c is dumb (skip_ws, skip_nonws) we can't use them
-  to parse a file and report correct line number error because skip_ws skip
-  \n (so op_events.c report correct line number only if there is no empty
-  line in the events files)
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
   try to recover gracefully.
  o output column shortname headers for opreport -l
@@ -69,6 +65,7 @@ Before 1.0 little stuff
   you can use session: to get the right path to samples files but oprofiled.log
   and abi files path are hardcoded to /var/lib/oprofile.
  o remove oprof_start, or add call graph option
+ o opimport needs a man page
 
 Documentation
 -------------

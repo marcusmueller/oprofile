@@ -3,7 +3,7 @@ dist_sources = \
 	op_abi.cpp \
 	abi.h \
 	op_abi.h \
-	op_import.cpp \
+	opimport.cpp \
 	abi_test.cpp
 
 EXTRA_DIST = $(dist_sources)
@@ -23,10 +23,10 @@ AM_CXXFLAGS = @OP_CXXFLAGS@
 noinst_LIBRARIES = libabi.a
 libabi_a_SOURCES = abi.cpp op_abi.cpp
 
-bin_PROGRAMS = op_import
+bin_PROGRAMS = opimport
 
-op_import_SOURCES = op_import.cpp
-op_import_LDADD = \
+opimport_SOURCES = opimport.cpp
+opimport_LDADD = \
 	libabi.a \
 	../libdb/libodb.a \
 	../libopt++/libopt++.a \

@@ -14,7 +14,7 @@ man_MANS = \
 	opreport.1 \
 	opannotate.1 \
 	opgprof.1 \
-	op_help.1 \
+	ophelp.1 \
 	opstack.1 \
 	oparchive.1
 

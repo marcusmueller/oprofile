@@ -45,7 +45,7 @@ pp/
 
 libabi/
 
-	op_import and its ABI support library
+	opimport and its ABI support library
 
 libdb/
 

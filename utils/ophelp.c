@@ -1,5 +1,5 @@
 /**
- * @file op_help.c
+ * @file ophelp.c
  * Print out PMC event information
  *
  * @remark Copyright 2002 OProfile authors

@@ -1,5 +1,5 @@
 abi_test
-op_import
+opimport
 Makefile
 Makefile.in
 .deps

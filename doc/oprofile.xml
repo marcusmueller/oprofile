@@ -240,8 +240,8 @@ is often all you need, but note these arguments to <command>./configure</command
 			<command>oprofiled</command> which records information about the binary
 			format of sample files in <filename>/var/lib/oprofile/abi</filename>, to
 			permit their transport between hosts using the
-			<command>op_import</command> utility. See <xref
-			linkend="op-import" />. This option is primarily intended for embedded
+			<command>opimport</command> utility. See <xref
+			linkend="opimport" />. This option is primarily intended for embedded
 			systems or remote analysis of production machines; if you will be
 			performing all sample analysis on the same machine as you are profiling,
 			it is safe to omit this option.
@@ -360,7 +360,7 @@ This section gives a brief description of the available OProfile utilities and t
 </para>
 <variablelist>
 <varlistentry>
-	<term><filename>op_help</filename></term>
+	<term><filename>ophelp</filename></term>
 	<listitem><para>
 		This utility lists the available events and short descriptions.
 	</para></listitem>
@@ -394,7 +394,7 @@ This section gives a brief description of the available OProfile utilities and t
 	<term><filename>opstack</filename></term>
 	<listitem><para>
 		This utility can output call-graph profiles. This require an x86
-		based box and a 2.6 box with the <ulink url="http://oprofile.sf.net/patches/">call-graph patch</ulink>.
+		based box and a recent 2.6 kernel.
 		 See <xref linkend="opstack" />.
 	</para></listitem>
 </varlistentry>
@@ -418,15 +418,15 @@ This section gives a brief description of the available OProfile utilities and t
 	</para></listitem>
 </varlistentry>
 
-<varlistentry id="op-import">
-	<term><filename>op_import</filename></term>
+<varlistentry id="opimport">
+	<term><filename>opimport</filename></term>
 	<listitem><para>
 		This utility converts sample database files from a foreign binary format (abi) to
 		the native format. This is useful only when moving sample files between hosts,
 		for analysis on platforms other than the one used for collection. The abi format
 		of the file to be imported is described in a text file located in
 		<filename>/var/lib/oprofile/abi</filename>, if the <option>--enable-abi</option>
-		configure-time option was enabled. Furthermore, the <command>op_import</command>
+		configure-time option was enabled. Furthermore, the <command>opimport</command>
 		tool is not built unless <option>--enable-abi</option> is given. See <xref
 		linkend="enable-abi" />.
 	</para></listitem>
@@ -678,7 +678,7 @@ references are happening most, and also get results for CPU time.
 Here, we have an Intel laptop without support for performance counters, running on 2.4 kernels.
 </para>
 <screen>
-# op_help -r
+# ophelp -r
 CPU with RTC device
 # opcontrol --vmlinux=/boot/2.6.0/vmlinux --event=RTC_INTERRUPTS:1024
 # opcontrol --start
@@ -1333,9 +1333,7 @@ See <xref linkend="opstack-details" />.
 </para>
 <para>
 If you would like to use call-graph profiling, you need to be running on
-an x86 machine with 2.6 kernel. You must also apply <ulink
-url="http://oprofile.sf.net/patches/">a kernel patch</ulink> to generate the
-data.
+an x86 machine with a recent 2.6 kernel.
 </para>
 
 </sect1> <!-- opstack -->

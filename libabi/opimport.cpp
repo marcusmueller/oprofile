@@ -1,5 +1,5 @@
 /**
- * @file op_import.cpp
+ * @file opimport.cpp
  * Import sample files from other ABI
  *
  * @remark Copyright 2002 OProfile authors

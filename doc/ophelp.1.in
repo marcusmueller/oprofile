@@ -1,10 +1,10 @@
-.TH OP_HELP 1 "@DATE@" "oprofile @VERSION@"
+.TH OPHELP 1 "@DATE@" "oprofile @VERSION@"
 .UC 4
 .SH NAME
-op_help \- list OProfile events
+ophelp \- list OProfile events
 .SH SYNOPSIS
 .br
-.B op_help
+.B ophelp
 [
 .I options
 ]
@@ -12,10 +12,10 @@ op_help \- list OProfile events
 .SH DESCRIPTION
 
 By default,
-.B op_help
+.B ophelp
 lists the available performance counter options. If you
 give it a symbolic event name, it will return the hardware
-value (e.g. "op_help DATA_MEM_REFS").
+value (e.g. "ophelp DATA_MEM_REFS").
 
 .SH OPTIONS
 .TP
@@ -35,7 +35,7 @@ Show help message.
 Show version.
 
 .SH ENVIRONMENT
-No special environment variables are recognised by op_help.
+No special environment variables are recognised by ophelp.
 
 .SH FILES
 .TP

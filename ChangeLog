@@ -1,5 +1,24 @@
 2005-03-31  John Levon  <levon@movementarian.org>
 
+	* HACKING:
+	* TODO:
+	* configure.in:
+	* doc/Makefile.am:
+	* doc/op_help.1.in:
+	* doc/ophelp.1.in:
+	* doc/oprofile.xml:
+	* libabi/.cvsignore:
+	* libabi/Makefile.am:
+	* libabi/opimport.cpp:
+	* utils/.cvsignore:
+	* utils/Makefile.am:
+	* utils/opcontrol:
+	* utils/ophelp.c: rename op_import->opimport,
+	  op_help->ophelp. Allow normal user to use
+	  opcontrol --list-events
+
+2005-03-31  John Levon  <levon@movementarian.org>
+
 	* doc/internals.xml: more internals docs
 
 2005-03-29  John Levon  <levon@movementarian.org>
