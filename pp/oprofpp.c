@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.15 2000/09/28 00:39:17 moz Exp $ */
+/* $Id: oprofpp.c,v 1.16 2000/09/28 21:34:31 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -406,10 +406,10 @@ void do_list_symbols(void)
 		printf_symbol(scounts[i].sym->name);
 		if (ctr && scounts[i].count1) { 
 			printf("[0x%.8lx]: %2.4f%% (%u samples)\n",scounts[i].sym->value+scounts[i].sym->section->vma,
-				((double)scounts[i].count1)/tot1, scounts[i].count1);
+				(((double)scounts[i].count1)/tot1)*100.0, scounts[i].count1);
 		} else if (scounts[i].count0) {
 			printf("[0x%.8lx]: %2.4f%% (%u samples)\n",scounts[i].sym->value+scounts[i].sym->section->vma,
-				((double)scounts[i].count0)/tot0, scounts[i].count0);
+				(((double)scounts[i].count0)/tot0)*100.0, scounts[i].count0);
 		} else if (!streq("",scounts[i].sym->name))
 			printf(" (0 samples)\n");
 	}
