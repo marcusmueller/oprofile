@@ -1,5 +1,11 @@
 2003-07-15  John Levon  <levon@movementarian.org>
 
+	* utils/opcontrol:
+	* utils/op_help.c: move the default event strings into
+	op_help.c instead of in opcontrol
+
+2003-07-15  John Levon  <levon@movementarian.org>
+
 	* doc/oprofile.xml: document event name for timer interrupt
 
 	* daemon/opd_sample_files.c: handle CPU_TIMER_INT
