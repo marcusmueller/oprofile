@@ -342,7 +342,7 @@ architectures behave in a similar manner.
 <sect1 id="core-structure">
 <title>Core data structures</title>
 <para>
-Before considering what happens when we log a sample, we shall divert
+Before considering what happens when we log a sample, we shall digress
 for a moment and look at the general structure of the data collection
 system.
 </para>

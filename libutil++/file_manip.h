@@ -22,7 +22,7 @@ bool is_directory(std::string const & dirname);
 /**
  * is_file_identical - check for identical files
  * @param file1  first filename
- * @param file2  scond filename
+ * @param file2  second filename
  *
  * return true if the two filenames belong to the same file
  */
@@ -46,7 +46,7 @@ bool op_file_readable(std::string const & file);
  * @param filter a filename filter
  * @param recursive if true lookup in sub-directory
  *
- * create a filelist under base_dir, filtered by filter and optionnaly
+ * create a filelist under base_dir, filtered by filter and optionally
  * looking in sub-directory. If we look in sub-directory only sub-directory
  * which match filter are traversed.
  */
