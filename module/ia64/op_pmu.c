@@ -58,8 +58,6 @@ op_do_pmu_interrupt(u64 pmc0, struct pt_regs *regs)
 
 	for (ctr = 0 ; ctr < op_nr_counters ; ++ctr) {
 		if (pmd_overflowed(pmc0, ctr)) {
-			/* FIXME: We're saying it's always OK to evict here.
-			 * Looks buggy to me. */
 			op_do_profile(cpu, regs->cr_iip, 1, ctr);
 			set_pmd_neg(oprof_data[cpu].ctr_count[ctr], ctr);
 		}
