@@ -1,5 +1,9 @@
 2003-06-15  John Levon  <levon@movementarian.org>
 
+	* README: fix autogen.sh line
+
+2003-06-15  John Levon  <levon@movementarian.org>
+
 	* daemon/opd_image.c: 64 bit fixes
 
 2003-06-15  John Levon  <levon@movementarian.org>

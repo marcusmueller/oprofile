@@ -5,11 +5,8 @@ You can find some documentation in the doc/ directory.
 
 Please visit the oprofile website at : http://oprofile.sf.net/ 
 
-oprofile was written by John Levon <levon@movementarian.org>.
-
-Philippe Elie <phil.el@wanadoo.fr> contributed many bug fixes,
-started the Qt2 oprofile interface, wrote the source annotation facility,
-and much more.
+oprofile was written by John Levon <levon@movementarian.org>
+and Philippe Elie <phil.el@wanadoo.fr>.
 
 Dave Jones <davej@suse.de> provided bug fixes and support for
 the AMD Athlon, and AMD Hammer families of CPUs.
@@ -33,7 +30,7 @@ http://oprofile.sourceforge.net/doc/install.html.
 Quick start :
 
 (If using CVS: ./autogen.sh first. You need automake 1.5 or higher. You
-can specify a different version, e.g. ./autogen.sh AUTOMAKE=automake1.5)
+can specify a different version, e.g. AUTOMAKE=automake1.5 ./autogen.sh)
 
 2.4 kernels
 
