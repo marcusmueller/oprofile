@@ -39,7 +39,7 @@ op_to_source: opf_filter.o opf_container.o ../util/child_reader.o $(OBJS) \
  ../util/string_manip.o
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
-op_time: op_time.o $(OBJS)
+op_time: op_time.o $(OBJS) opf_container.o
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
 op_merge: op_merge.o $(OBJS)

@@ -1,3 +1,16 @@
+2002-01-26  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/oprofpp_util.cpp: allow to load image without symbols
+
+	* pp/Makefile.in:
+	* pp/op_time: implement -l option that show symbols details.
+	  Currently with separate-samples files symbols are showed
+	  more than one time. This is a bug rather a feature.
+	* doc/oprofile.1.in:
+	* doc/oprofile.sgml: document op_time -l
+
+	* dae/opd_proc.c: bug fix from last change
+
 2002-01-25  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO:

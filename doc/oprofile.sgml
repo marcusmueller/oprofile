@@ -1134,6 +1134,13 @@ Options allowed are :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>&mdash;list-symbols</option></term>
+		<term><option>-l</option></term>
+		<listitem><para>
+		Show details for each symbols in each profiled files
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>&mdash;reverse</option></term>
 		<term><option>-r</option></term>
 		<listitem><para>

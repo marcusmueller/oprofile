@@ -28,6 +28,7 @@
 #include <map>
 
 #include "oprofpp.h"
+#include "opf_filter.h"
 
 #include "../util/file_manip.h"
 #include "../util/op_popt.h"
@@ -42,13 +43,12 @@ using std::ifstream;
 using std::multimap;
 using std::pair;
 
+int op_nr_counters = 2;
+
 // TODO header file
 /// image_name - class to store name for a samples file
 struct image_name
 {
-	image_name(const string& samplefile_name_, const string& app_name_,
-		   const string& lib_name_, u32 = 0);
-
 	image_name(const string& samplefile_name, u32 count = 0);
 
 	/// total number of samples for this samples file, this is a place
@@ -74,6 +74,7 @@ typedef multimap<u32, map_t::const_iterator> sorted_map_t;
 static int showvers;
 static int reverse_sort;
 static int show_shared_libs;
+static int list_symbols;
 static const char * base_dir = "/var/opd/samples";
 
 static struct poptOption options[] = {
@@ -81,6 +82,7 @@ static struct poptOption options[] = {
 	  "use counter", "counter nr", },
 	{ "show-shared-libs", 'k', POPT_ARG_NONE, &show_shared_libs, 0,
 	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
+	{ "list-symbols", 'l', POPT_ARG_NONE, &list_symbols, 0, "list samples by symbol", NULL, },
 	{ "reverse", 'r', POPT_ARG_NONE, &reverse_sort, 0,
 	  "reverse sort order", NULL, },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
@@ -120,19 +122,6 @@ static void get_options(int argc, char const * argv[])
 }
 
 /**
- * image_name - ctor from an already parsed name
- */
-image_name::image_name(const string& samplefile_name_, const string& app_name_,
-		       const string& lib_name_, u32 count_ = 0)
-	: 
-	count(count_),
-	samplefile_name(samplefile_name_),
-	app_name(app_name_),
-	lib_name(lib_name_)
-{
-}
-
-/**
  * image_name - ctor from a sample file name
  */
 image_name::image_name(const string& samplefile_name, u32 count_ = 0)
@@ -147,7 +136,7 @@ image_name::image_name(const string& samplefile_name, u32 count_ = 0)
  * samples_file_exist - test for a samples file existence
  * @filename: the base samples filename
  *
- * return true if @filename#ctr exists
+ * return true if @filename
  */
 static bool samples_file_exist(const std::string & filename)
 {
@@ -241,7 +230,7 @@ static void output_image_samples_count(Iterator first, Iterator last,
  * @total_count: the total samples count
  *
  */
-void build_sorted_map_by_count(sorted_map_t & sorted_map, pair_it_t p_it)
+static void build_sorted_map_by_count(sorted_map_t & sorted_map, pair_it_t p_it)
 {
 	map_t::iterator it;
 	for (it = p_it.first ; it != p_it.second ; ++it) {
@@ -252,14 +241,14 @@ void build_sorted_map_by_count(sorted_map_t & sorted_map, pair_it_t p_it)
 }
 
 /**
- * treat_file_list - open each samples file to cumulate samples count
+ * output_files_count - open each samples file to cumulate samples count
  * and display a sorted list of filename and samples ratio
  * @files: the file list to treat.
  *
  * print the whole cumulated count for all selected filename (currently
  * the whole base_dir directory), does not show any details about symbols
  */
-static void treat_file_list(map_t& files)
+static void output_files_count(map_t& files)
 {
 	double total_count = 0;
 
@@ -366,6 +355,80 @@ static void treat_file_list(map_t& files)
 }
 
 /**
+ * output_symbols_count - open each samples file to cumulate samples count
+ * and display a sorted list of symbols and samples ratio
+ * @files: the file list to treat.
+ *
+ * print the whole cumulated count for all symbols in selected filename
+ * (currently the whole base_dir directory)
+ */
+static void output_symbols_count(map_t& files)
+{
+	/* build a samples_files_t */
+	samples_files_t samples;
+
+	map_t::iterator it_f;
+	for (it_f = files.begin() ; it_f != files.end() ; ++it_f) {
+
+		string filename = it_f->second.samplefile_name;
+		string samples_filename = string(base_dir) + "/" + filename;
+
+		string lib_name;
+		string image_file = extract_app_name(filename, lib_name);
+
+		// if the samples file belongs to a shared lib we need to get
+		// the right binary name
+		if (lib_name.length())
+			image_file = lib_name;
+
+		image_file = demangle_filename(image_file);
+
+		opp_samples_files samples_file(samples_filename);
+		opp_bfd abfd(samples_file.header[samples_file.first_file],
+			     samples_file.nr_samples, image_file);
+
+		samples.build(samples_file, abfd, false, false, false);
+	}
+
+	/* select the symbols */
+	vector<const symbol_entry *> symbols;
+
+	samples.select_symbols(symbols, ctr, 0.0, false);
+
+	u32 total_count = samples.samples_count(ctr);
+
+	/* for each symbols output it. */
+
+	// const_reverse_iterator can't work :/
+	vector<const symbol_entry*>::reverse_iterator it;
+	for (it = symbols.rbegin(); it != symbols.rend(); ++it) {
+
+		// FIXME: Please don't take care of ugliness here this is like
+		// oprofpp -l code, I clean up when changing the output format
+		if (show_shared_libs)
+			printf("%s ", (*it)->sample.file_loc.image_name.c_str());
+/*
+		if (output_linenr_info)
+			printf("%s:%u ",
+			       (*it)->sample.file_loc.filename.c_str(),
+			       (*it)->sample.file_loc.linenr);
+*/
+		printf("%s", (*it)->name.c_str());
+
+		u32 count = (*it)->sample.counter[ctr];
+
+		if (count) {
+			printf("[0x%.8lx]: %2.4f%% (%u samples)\n", 
+			       (*it)->sample.vma,
+			       (((double)count) / total_count)*100.0, 
+			       count);
+		} else {
+			printf(" (0 samples)\n");
+		}
+	}
+}
+
+/**
  * yet another main ...
  */
 int main(int argc, char const * argv[])
@@ -381,7 +444,21 @@ int main(int argc, char const * argv[])
 	map_t file_map;
 	sort_file_list_by_name(file_map, file_list);
 
-	treat_file_list(file_map);
+	/* FIXME: must we allow to show separated symbols in this case ? */
+	/* let's as it for now until we fix what policy we need for
+	 * separate samples, so currently for test purpose you can
+	 * use -kl to see from which app comes the symbols */
+	if (0 && list_symbols && show_shared_libs) {
+		cerr << "You can't specifiy --show-shared-libs and "
+		     << "--list-symbols together" << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	if (list_symbols) {
+		output_symbols_count(file_map);
+	} else {
+		output_files_count(file_map);
+	}
 
 	return 0;
 }

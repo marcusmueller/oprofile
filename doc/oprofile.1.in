@@ -293,6 +293,10 @@ which counter to use for sorting purposes
 Show the details for each shared lib which belongs to one application. This option is usefull only if you have profiled with --separate-samples option
 .TP
 .br
+.BI "--list-symbols -l"
+Show details for each symbols in each profiled files
+.TP
+.br
 .BI "--reverse -r"
 sort output by increasing count of samples rather by decreasing count of samples
 .TP

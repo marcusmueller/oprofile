@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.99 2002/01/25 13:29:00 movement Exp $ */
+/* $Id: opd_proc.c,v 1.100 2002/01/26 00:42:52 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1061,14 +1061,14 @@ void opd_put_sample(const struct op_sample *sample)
 	/* look for which map and find offset. We search backwards in order to prefer
 	 * more recent mappings (which means we don't need to intercept munmap)
 	 */
-	for (i=proc->nr_maps-1; i < proc->nr_maps; i--) {
-		if (opd_is_in_map(&proc->maps[i], sample->eip)) {
-			u32 offset = opd_map_offset(&proc->maps[i], sample->eip);
-			if (proc->maps[i].image != NULL) {
-				verb_show_sample(offset, &proc->maps[i], "");
-				opd_put_image_sample(proc->maps[i].image, offset, sample->count);
+	for (i=proc->nr_maps; i > 0; i--) {
+		if (opd_is_in_map(&proc->maps[i-1], sample->eip)) {
+			u32 offset = opd_map_offset(&proc->maps[i-1], sample->eip);
+			if (proc->maps[i-1].image != NULL) {
+				verb_show_sample(offset, &proc->maps[i-1], "");
+				opd_put_image_sample(proc->maps[i-1].image, offset, sample->count);
 			}
-			proc->last_map = i;
+			proc->last_map = i - 1;
 			opd_stats[OPD_PROCESS]++;
 			return;
 		}

@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.22 2002/01/25 03:29:11 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.23 2002/01/26 00:42:52 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -345,8 +345,8 @@ opp_bfd::~opp_bfd()
  * @is_kernel must be true if the image is
  * the linux kernel.
  *
- * Failure to open the image or to get symbol from
- * the image is fatal.
+ * Failure to open the image a fatal
+ * gettings zero symbols from the image is not an error
  */
 void opp_bfd::open_bfd_image(const string & filename, bool is_kernel)
 {
@@ -364,9 +364,11 @@ void opp_bfd::open_bfd_image(const string & filename, bool is_kernel)
 		exit(EXIT_FAILURE);
 	}
 
+	/* FIXME: I let this as warning until we check than caller code is
+	 * enough robust and treatment of samples outside any symbols is
+	 * implemented */
 	if (get_symbols() == false) {
-		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
-		exit(EXIT_FAILURE);
+		fprintf(stderr, "oprofpp: warning couldn't get any symbols from image file \"%s\".\n", filename.c_str());
 	}
 
 	if (is_kernel) {
