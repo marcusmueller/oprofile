@@ -15,7 +15,7 @@ PACKAGE=oprofile
 VERSION=0.0.1
  
  
-AC_REVISION($Id: configure.in,v 1.3 2000/08/03 03:19:03 moz Exp $)
+AC_REVISION($Id: configure.in,v 1.4 2000/08/03 21:09:55 moz Exp $)
 dnl
 dnl Process this file with autoconf to produce a configure script.
 dnl
@@ -81,6 +81,12 @@ test "$mv" = 1 && AC_DEFINE(MODVERSIONS)
 
 dnl --- Configuration parameters ---
 
+AC_MSG_CHECKING("whether $CC accepts -mpreferred-stack-boundary=2")
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="-mpreferred-stack-boundary=2 $CFLAGS"
+AC_TRY_COMPILE(,,AC_MSG_RESULT("yes");KCPPFLAGS="-mpreferred-stack-boundary=2 $KCPPFLAGS",AC_MSG_RESULT("no"))
+CFLAGS=$SAVE_CFLAGS
+ 
 AC_MSG_CHECKING(for local APIC)
 apic=0
 AX_EGREP([^ *\#define  *CONFIG_X86_LOCAL_APIC], $KINC/linux/autoconf.h, apic=1)

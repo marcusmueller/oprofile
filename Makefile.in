@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.3 2000/08/03 03:19:03 moz Exp $
+# $Id: Makefile.in,v 1.4 2000/08/03 21:09:55 moz Exp $
  
 KCPPFLAGS=@KCPPFLAGS@
 MODINSTALLDIR=@MODINSTALLDIR@
@@ -23,7 +23,7 @@ clean:
 	$(MAKE) -C pp clean 
  
 # FIXME: move NMI code into separate to allow -march=ppro for that
-KCFLAGS:=-D__KERNEL__ -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe  -mpreferred-stack-boundary=2 -march=i586 -fno-strict-aliasing -DMODULE -Wunused $(KCPPFLAGS) $(KCFLAGS)
+KCFLAGS:=-D__KERNEL__ -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe  -march=i586 -fno-strict-aliasing -DMODULE -Wunused $(KCPPFLAGS) $(KCFLAGS)
  
 ASMFLAGS=-D__ASSEMBLY__ -D__KERNEL__ -traditional
  
