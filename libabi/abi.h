@@ -1,3 +1,17 @@
+/**
+ * @file abi.h
+ *
+ * Contains internal ABI management class
+ *
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author Graydon Hoare
+ */
+
+#ifndef OPROF_ABI_H
+#define OPROF_ABI_H
+ 
 #include <string>
 #include <map>
 
@@ -19,3 +33,4 @@ public:
 	friend istream & operator>>(std::istream & i, Abi & abi);
 };
 
+#endif // OPROF_ABI_H

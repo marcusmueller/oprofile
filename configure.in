@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.119 2002/11/10 02:00:50 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.120 2002/11/10 02:34:26 movement Exp $)
 AC_PREREQ(2.13)
 
 AC_INIT(libop/op_config.h)
@@ -235,6 +235,7 @@ if test -n "$use_extra_libs" && \
    IFS=$ac_save_ifs
 fi
 
+# FIXME: automake ??? 
 AC_SUBST(extra_includes)
 AC_SUBST(extra_libraries)
 

@@ -1,3 +1,5 @@
+EXTRA_DIST = oprof_start.base.ui
+
 if have_qt
 
 AM_CPPFLAGS = @QT_INCLUDES@
@@ -18,5 +20,3 @@ clean-local:
 	rm -f oprof_start.base.h oprof_start.base.cpp oprof_start.base.moc.cpp
 
 endif
-
-EXTRA_DIST = oprof_start.base.ui

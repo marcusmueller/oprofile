@@ -30,4 +30,4 @@ int op_abi_compatible_p(char const * abi_file);
 }
 #endif
 
-#endif
+#endif // OP_ABI_H

@@ -19,6 +19,5 @@ OP_STOP=op_stop
 OP_DUMP=op_dump
 endif
 
+# make sure everything gets distributed...
 EXTRA_DIST = op_dump op_start_25 op_stop_25 op_start op_stop
-
-
