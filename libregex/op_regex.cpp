@@ -96,18 +96,14 @@ regular_expression_replace::~regular_expression_replace()
 void regular_expression_replace::add_definition(string const & name,
 						string const & definition)
 {
-	string expanded_definition;
-	expand_string(definition, expanded_definition);
-
-	defs[name] = expanded_definition;
+	defs[name] = expand_string(definition);
 }
 
 
 void regular_expression_replace::add_pattern(string const & pattern,
 					     string const & replace)
 {
-	string expanded_pattern;
-	expand_string(pattern, expanded_pattern);
+	string expanded_pattern = expand_string(pattern);
 
 	regex_t regexp;
 	op_regcomp(regexp, expanded_pattern);
@@ -116,24 +112,21 @@ void regular_expression_replace::add_pattern(string const & pattern,
 }
 
 
-void regular_expression_replace::expand_string(string const & input,
-					       string & result)
+string regular_expression_replace::expand_string(string const & input)
 {
 	string last, expanded(input);
 	size_t i = 0;
 	for (i = 0 ; i < limit_defs_expansion ; ++i) {
 		last = expanded;
 		expanded = substitute_definition(last);
-		if (expanded == last) {
+		if (expanded == last)
 			break;
-		}
 	}
 
-	if (i == limit_defs_expansion) {
+	if (i == limit_defs_expansion)
 		throw bad_regex("too many substitution for: + input");
-	}
 
-	result = last;
+	return last;
 }
 
 

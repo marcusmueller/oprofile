@@ -94,7 +94,7 @@ private:
 			regmatch_t const * match) const;
 
 	// helper to add_definition() and add_pattern()
-	void expand_string(std::string const & input, std::string & result);
+	std::string expand_string(std::string const & input);
 
 	// helper to add_pattern
 	std::string substitute_definition(std::string const & pattern);
