@@ -1,5 +1,13 @@
 2002-01-11  John Levon  <moz@compsoc.man.ac.uk>
 
+	* TODO: update
+
+	* dae/opd_proc.c:
+	* doc/oprofile.sgml:
+	* pp/op_time.cpp: add FIXMEs
+ 
+2002-01-11  John Levon  <moz@compsoc.man.ac.uk>
+
 	* module/oprofile.c: never return 0 unless we're
 	  really closing down
  

@@ -26,6 +26,8 @@ o whitelist op_start parameters so at least sudo oprof_start should be safe ...
 Before 1.0
 ----------
 
+ o verify builds (modversions, kernel versions, athlon etc.)
+ o merging utility for sample files (useful)
  o - test it to hell and back
  o - check documentation
  o user request:  kernel 2.2 support 
@@ -36,6 +38,8 @@ Before 1.0
 Later
 -----
 
+o merge sample files into one big report (like vtune can do repeated runs)
+ 
 ? o move .oprofile to name=value pairs to avoid conflicts on change.
 
 o determine where we need ctx_sw_on/off to prevent pre-emption + test

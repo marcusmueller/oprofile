@@ -1217,6 +1217,9 @@ and <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/">http://www.amd
 </para>
 </sect1>
 <!-- 
+
+FIXME: we should document how samples can be lost by the daemon, and why not to worry
+ 
 FIXME: more examples, basic and advanced trick. A howto use utilities FAQ ?
 
 yes, indeed. We can do this bit by bit though, as long as we've done as much

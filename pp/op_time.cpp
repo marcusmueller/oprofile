@@ -76,6 +76,7 @@ static int reverse_sort;
 static int show_shared_libs;
 static const char * base_dir = "/var/opd/samples";
 
+/* FIXME: -h means help not shared libs !!!! */ 
 static struct poptOption options[] = {
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
 	{ "use-counter", 'c', POPT_ARG_INT, &ctr, 0,

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.93 2002/01/05 02:40:56 movement Exp $ */
+/* $Id: opd_proc.c,v 1.94 2002/01/11 14:41:32 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1030,6 +1030,7 @@ void opd_put_sample(const struct op_sample *sample)
 	if (kernel_only)
 		return;
 
+	/* FIXME: is this comment correct now we always apply the note buffer first ? */
 	/* here we don't want to add the new process because we don't know if it
 	 * was execve()d or a thread
 	 */
