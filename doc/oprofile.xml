@@ -621,7 +621,8 @@ is required. These settings are stored in <filename>~/.oprofile/daemon</filename
 		<term><option>--no-vmlinux</option></term>
 		<listitem><para>
 		Use this when you don't have a kernel vmlinux file, and you don't want
-		to profile the kernel. Only available with OProfile on 2.5 kernels.
+		to profile the kernel.
+		Note than overall profiling time through op_time always count kernel samples.
 		</para></listitem>
 	</varlistentry>
 </variablelist>

@@ -156,8 +156,9 @@ vmlinux kernel image.
 .br
 .TP
 .BI "--no-vmlinux"
-No vmlinux file is available. This prevents kernel profiling, and is
-only available on 2.5 kernels.
+Use this when you don't have a kernel vmlinux file, and you don't want to
+profile the kernel. Note than overall profiling time through op_time always
+count kernel samples.
 .br
 .TP
 .BI "--verbose"
