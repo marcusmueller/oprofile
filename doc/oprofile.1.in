@@ -113,8 +113,9 @@ Shut down daemon. Unload the oprofile module and oprofilefs.
 Set kernel buffer to num samples.
 .br
 .TP
-.BI "--ctrN-event=" name
-Set counter N to measure symbolic event name.
+.BI "--ctrN-event=" [name|none]
+Set counter N to measure symbolic event name, or to the
+string 'none' to disable the counter.
 .br
 .TP
 .BI "--ctrN-count=" val

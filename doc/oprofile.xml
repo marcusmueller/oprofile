@@ -500,9 +500,11 @@ stored in <filename>~/.oprofile/daemon</filename>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--ctrN-event=</option>name</term>
+		<term><option>--ctrN-event=</option>[none,name]</term>
 		<listitem><para>
-		Set counter N to measure symbolic event name.
+		Set counter N to measure symbolic event name, or "none"
+		to disable this counter. The event names are listed by
+		<option>--list-events</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -514,7 +516,8 @@ stored in <filename>~/.oprofile/daemon</filename>.
 	<varlistentry>
 		<term><option>--ctrN-unit-mask=</option>val</term>
 		<listitem><para>
-		Set unit mask for counter N (e.g. --ctr0-unit-mask=0xf)
+		Set unit mask for counter N (e.g. --ctr0-unit-mask=0xf). The
+		possible unit mask values are listed by <option>--list-events</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

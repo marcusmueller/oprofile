@@ -1,8 +1,14 @@
+2003-03-03  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml:
+	* doc/opcontrol: add --ctrX-event=none
+
 2003-03-03  Will Cohen  <wcohen@redhat.com>
 
 	* gui/oprof_start.cpp (oprof_start::on_start_profiler): Limit
 	  check to onlyl utm_bitmask.
-I
+
 2003-03-03  Will Cohen  <wcohen@redhat.com>
 
     * events/ia64.itanium2.events:

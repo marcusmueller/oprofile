@@ -83,7 +83,7 @@ do_help() {
 
 	--setup options
 	  --buffer-size=num            number of samples in kernel buffer
-	  --ctrN-event=name            symbolic event name for ctr N
+	  --ctrN-event=[name|none]     symbolic event name for ctr N, or none to disable
 	  --ctrN-count=val             number of events between samples for ctr N
 	  --ctrN-unit-mask=val         unit mask for ctr N (e.g. --ctr0-unit-mask=0xf)
 	  --ctrN-kernel=[0|1]          whether to count kernel events for ctr N
@@ -366,8 +366,7 @@ do_load_setup() {
 
 check_valid_args() {
 	if [ "$one_enabled" = "0" ]; then
-		echo "Not one event enabled ? This should not happen !" >&2
-		echo "Please report a bug ..." >&2
+		echo "You must enable at least one event with --setup" >&2
 		exit 1
 	fi
 
@@ -568,9 +567,19 @@ do_options() {
 				NEED_SETUP=yes
 				;;
 			--ctr*-event)
-				CTR_EVENT[`extract_int $arg`]=$val
-				if (($? != 0)); then exit 1; fi
-				NEED_SETUP=yes
+				if test "$val" = "none"; then
+					CTR_EVENT[`extract_int $arg`]=
+					CTR_COUNT[`extract_int $arg`]=
+					CTR_USER[`extract_int $arg`]=1
+					CTR_KERNEL[`extract_int $arg`]=1
+					CTR_UNIT_MASK[`extract_int $arg`]=0
+					CTR_EVENT_VAL[`extract_int $arg`]=
+					# one_enabled is fixed up below
+				else
+					CTR_EVENT[`extract_int $arg`]=$val
+					if (($? != 0)); then exit 1; fi
+					NEED_SETUP=yes
+				fi
 				;;
 			--ctr*-count)
 				CTR_COUNT[`extract_int $arg`]=$val
