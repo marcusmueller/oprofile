@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.46 2001/09/23 02:36:03 movement Exp $
+# $Id: op_start,v 1.47 2001/09/24 14:34:27 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -50,6 +50,10 @@ extract_int()
 {
 	local val=`echo $1 | sed 's,--ctr\([0-9]*\)[-A-Za-z]*,\1,'`
 
+	if test -z "$val"; then 
+		echo "invalid option \"$1\"" >&2
+		exit 1
+	fi
 	if (($val >= $OP_MAX_COUNTERS || $val < 0)); then
 		echo "invalid argument $1: bad counter number" >&2
 		exit 1
