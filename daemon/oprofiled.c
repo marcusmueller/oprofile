@@ -468,6 +468,8 @@ int main(int argc, char const * argv[])
 		opd_stats[i] = 0;
 
 	perfmon_init();
+	cookie_init();
+	sfile_init();
 
 	opd_setup_signals();
  
@@ -487,9 +489,6 @@ int main(int argc, char const * argv[])
 			OP_LOCK_FILE "\n");
 		exit(EXIT_FAILURE);
 	}
-
-	cookie_init();
-	sfile_init();
 
 	/* simple sleep-then-process loop */
 	opd_do_read(sbuf, s_buf_bytesize);
