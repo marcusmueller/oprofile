@@ -1,3 +1,17 @@
+2002-05-22  John Levon  <moz@compsoc.man.ac.uk>
+
+	* libopt++/popt_options.cpp: my usual boring shit
+ 
+	* libopt++/popt_options.h: document
+
+	* libutil/op_popt.h: POPT_TABLEEND missing in some popt.h
+ 
+	* TODO: update
+ 
+	* doc/oprofile.xml: add some to ack.html
+ 
+	* libop/op_events_desc.c: fix long-standing typo
+ 
 2002-05-22  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* configure.in:

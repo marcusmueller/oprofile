@@ -15,6 +15,11 @@
 
 #include <popt.h>
 
+// not in some versions of popt.h
+#ifndef POPT_TABLEEND
+#define POPT_TABLEEND { NULL, '\0', 0, 0, 0, NULL, NULL }
+#endif
+ 
 #ifdef __cplusplus
 extern "C" {
 #endif

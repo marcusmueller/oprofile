@@ -186,7 +186,7 @@ char * op_event_descs[] = {
   "cycles interrupts are disabled with pending interrupts",
   /* Branches */
   "number of branch instructions retired",
-  "number of mispredicted bracnhes retired",
+  "number of mispredicted branches retired",
   "number of taken branches retired",
   "number of taken mispredictions branches retired",
   "number of branch instructions decoded",

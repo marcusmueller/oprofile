@@ -23,7 +23,7 @@ using std::cerr;
 
 /** the popt array singleton options */
 static vector<poptOption> popt_options;
-static vector<option_base*> options_list;
+static vector<option_base *> options_list;
 
 static int showvers;
 static struct poptOption appended_options[] = {
@@ -33,7 +33,7 @@ static struct poptOption appended_options[] = {
   };
 
 static poptContext do_parse_options(int argc, char const ** argv,
-				    vector<string> & additional_parms)
+				    vector<string> & additional_params)
 {
 	vector<poptOption> options(popt_options);
 
@@ -51,7 +51,7 @@ static poptContext do_parse_options(int argc, char const ** argv,
 
 	char const * file;
 	while ((file = poptGetArg(con)) != 0) {
-		additional_parms.push_back(file);
+		additional_params.push_back(file);
 	}
 
 	for (size_t i = 0 ; i < options_list.size() ; ++i) {
@@ -62,27 +62,27 @@ static poptContext do_parse_options(int argc, char const ** argv,
 }
 
 void parse_options(int argc, char const ** argv,
-		   vector<string> & additional_parms)
+		   vector<string> & additional_params)
 {
-	poptContext con = do_parse_options(argc, argv, additional_parms);
+	poptContext con = do_parse_options(argc, argv, additional_params);
 
 	poptFreeContext(con);
 }
 
-void parse_options(int argc, char const ** argv, string & additional_parm)
+void parse_options(int argc, char const ** argv, string & additional_param)
 {
-	vector<string> additional_parms;
-	poptContext con = do_parse_options(argc, argv, additional_parms);
+	vector<string> additional_params;
+	poptContext con = do_parse_options(argc, argv, additional_params);
 
-	if (additional_parms.size() > 1) {
+	if (additional_params.size() > 1) {
 		cerr << "too many arguments\n";
 		poptPrintHelp(con, stderr, 0);
 		poptFreeContext(con);
 		exit(EXIT_FAILURE);
 	}
 
-	if (additional_parms.size() == 1)
-		additional_parm = additional_parms[0];
+	if (additional_params.size() == 1)
+		additional_param = additional_params[0];
 
 	poptFreeContext(con);
 }
@@ -164,5 +164,3 @@ void option< vector<string> >::post_process()
 		popt_value = 0;
 	}
 }
-
-

@@ -27,21 +27,21 @@ Before 1.0 big stuff
    artificially created symbols
  o thread profiling in the old and new flavour (2.5 introduce a new thread handling)
    (how important is this one ?)
+ o op_time for only some specified files... 
  
 Before 1.0 little stuff
 -----------------------
  
+ o don't make hash table entries dependent on cache line size ?? 
  o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
    will fail because the ~ is not expanded (no space around it) (popt bug I say)
  o move op_start to simple C program ??
  o move dev files to /dev ???
  o should we pin rather than loop sample buffer overflow too ?
  o audit oprof_start for security + document sudo
- o op_time for only some specified files... 
  o coherent naming class conventions
  o use standard C integer type <stdint.h> int32_t int16_t etc.
  o add option to op_to_source like oprofpp -u -m on a symbol basis.
- o review the exception table of the nmi handler (at least stop oprofile)
  o check chroot() processes and the path hash stuff
 
 General checks to make

@@ -179,7 +179,7 @@ static void do_list_symbols_details(samples_container_t & samples,
  */
 static void do_list_symbol(samples_container_t & samples, OutputSymbol & out)
 {
-	const symbol_entry * symb = samples.find_symbol(symbol);
+	symbol_entry const * symb = samples.find_symbol(symbol);
 	if (symb == 0) {
 		cerr << "oprofpp: symbol \"" << symbol
 		     << "\" not found in samples container file.\n";

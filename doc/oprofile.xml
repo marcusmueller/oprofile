@@ -1460,7 +1460,7 @@ numbers of processes, leading to far better performance.
 <para>
 Thanks to (in no particular order) : Arjan van de Ven, Rik van Riel, Juan Quintela, Philippe Elie,
 Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne, Bob Montgomery, Ray Bryant, H.J. Lu,
-Jeff Esper,
+Jeff Esper, Will Cohen, Cliff Woolley,
 Richard Reich (rreich@rdrtech.com), Dave Jones, Charles Filtness; and finally Pulp, for "Intro".
 </para>
 </chapter>
