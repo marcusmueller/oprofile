@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.23 2001/06/03 19:20:28 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.24 2001/06/08 23:54:22 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -110,7 +110,7 @@ mv=0
 AX_COMPILE_OPTION(CONFIG_MODVERSIONS,mv=1,mv=0)
 AX_MSG_RESULT_YN($mv)
 MODVERSIONS=""
-test "$mv" = 1 && MODVERSIONS="-DMODVERSIONS"
+test "$mv" = 1 && MODVERSIONS="-DMODVERSIONS -include $KINC/linux/modversions.h"
 AC_SUBST(MODVERSIONS)
 
 # this serves to ensure that CONFIG_X86_UP_IOAPIC *or* CONFIG_X86_UP_APIC

@@ -1,3 +1,8 @@
+2001-06-09  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in: fix build with CONFIG_MODVERSIONS
+	  enabled.
+ 
 2001-06-04  John Levon  <moz@compsoc.man.ac.uk>
 
 	* dae/oprofiled.c: move logfile message to
