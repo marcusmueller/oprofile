@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.12 2000/08/04 01:51:16 moz Exp $ */
+/* $Id: opd_proc.c,v 1.13 2000/08/04 02:16:02 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -53,7 +53,7 @@ static int opd_is_in_map(struct opd_map *map, u32 eip);
  
 /* every so many minutes, clean up old procs, msync mmaps, and
    report stats */ 
-void opd_alarm(int val)
+void opd_alarm(int val __attribute__((unused)))
 {
 	struct opd_proc *proc;
 	struct opd_proc *next;
@@ -467,18 +467,12 @@ static void opd_delete_proc(struct opd_proc *proc)
  * @proc: process to work on
  *
  * Initialise the mapping info structure for process @proc.
- * The zeroth map is set to values for the kernel.
  */
 static void opd_init_maps(struct opd_proc *proc)
 {
-	/* first map is the kernel */ 
 	proc->maps = opd_calloc0(sizeof(struct opd_map), OPD_DEFAULT_MAPS);
-	proc->maps[0].start = KERNEL_VMA_OFFSET; 
-	proc->maps[0].offset = 0;
-	proc->maps[0].end = 0xffffffff;
-	proc->maps[0].image = opd_get_image(vmlinux,1);
 	proc->max_nr_maps = OPD_DEFAULT_MAPS; 
-	proc->nr_maps = 1;
+	proc->nr_maps = 0;
 }
 
 /**
@@ -890,6 +884,7 @@ void opd_put_sample(const struct op_sample *sample)
 	}
 
 	/* couldn't locate it */ 
+	fprintf(stderr,"Sample out of bounds for process %u, eip 0x%.8x\n",proc->pid,sample->eip);
 	opd_stats[OPD_LOST_MAP_PROCESS]++;
 	return;
 }
@@ -906,7 +901,6 @@ void opd_put_sample(const struct op_sample *sample)
  */
 void opd_put_mapping(struct opd_proc *proc, struct opd_image *image, u32 start, u32 offset, u32 end)
 {
-	/* note we can have duplicate maps due to binary handler kludge. so what ? */
 	proc->maps[proc->nr_maps].image = image;
 	proc->maps[proc->nr_maps].start = start; 
 	proc->maps[proc->nr_maps].offset = offset; 
