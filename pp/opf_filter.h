@@ -10,6 +10,8 @@
 //---------------------------------------------------------------------------
 /// A simple container for a fileno:linr location
 struct file_location {
+	/// the image name from where come the samples or the symbol
+	string image_name;
 	/// empty if not valid.
 	string filename;
 	/// 0 means invalid or code is generated internally by the compiler

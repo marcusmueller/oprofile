@@ -344,10 +344,7 @@ static void treat_file_list(map_t& files)
 			if (samples_file_exist(filename) == false)
 				continue;
 
-			/* TODO: really need to fix that */
-			/* ctr of opp_samples_files use a global var :/ */
-			samplefile = filename.c_str();
-			opp_samples_files samples;
+			opp_samples_files samples(filename);
 
 			u32 count = 0;
 			if (samples.is_open(ctr)) {
@@ -364,6 +361,11 @@ static void treat_file_list(map_t& files)
 		}
 
 		it = p_it.second;
+	}
+
+	if (total_count == 0.0) {
+		cerr << "no samples files found\n";
+		return;	// Would exit(EXIT_FAILURE); perhaps
 	}
 
 	/* 2nd pass: insert the count of samples for each application and

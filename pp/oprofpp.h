@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.31 2001/12/23 21:15:10 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.32 2001/12/27 21:16:09 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -63,7 +63,8 @@ char *cplus_demangle (const char *mangled, int options);
 			printf(args); \
 	} while (0)
 
-void opp_treat_options(const char * filename, poptContext optcon);
+void opp_treat_options(const char * filename, poptContext optcon,
+		       string & image_file, string & sample_file);
 std::string demangle_symbol(const char* symbol);
 void quit_error(poptContext optcon, char const *err);
 std::string demangle_filename(const std::string & samples_filename);
@@ -100,12 +101,12 @@ class counter_array_t {
 };
 
 struct opp_bfd {
-	opp_bfd(const opd_header * header, uint nr_samples);
+	opp_bfd(const opd_header * header, uint nr_samples, const string & filename);
 	~opp_bfd();
 
 	bool get_linenr(uint sym_idx, uint offset, 
-			const char*& filename, unsigned int& linenr);
-	void output_linenr(uint sym_idx, uint offset);
+			const char*& filename, unsigned int& linenr) const;
+	void output_linenr(uint sym_idx, uint offset) const;
 	void get_symbol_range(uint sym_idx, u32 & start, u32 & end) const;
 	int symbol_index(const char* symbol) const;
 
@@ -126,13 +127,13 @@ struct opp_bfd {
 private:
 	uint nr_samples;
 	// ctor helper
-	void open_bfd_image(const char* file, bool is_kernel);
+	void open_bfd_image(const string & file_name, bool is_kernel);
 	bool get_symbols();
 };
 
 /* if entry i is invalid all members are set to zero except fd[i] set to -1 */
 struct opp_samples_files {
-	opp_samples_files();
+	opp_samples_files(const std::string & sample_file);
 	~opp_samples_files();
 
 	void do_list_all_symbols_details(opp_bfd & abfd) const;
@@ -186,7 +187,8 @@ private:
 	void output_event(int i) const;
 
 	// ctor helper
-	void open_samples_file(u32 counter, bool can_fail);
+	void open_samples_file(const string & sample_file, u32 counter,
+			       bool can_fail);
 	void check_event(int i);
 };
 

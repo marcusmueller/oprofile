@@ -224,9 +224,8 @@ Here we've enabled counter 0 to count "CPU_CLK_UNHALTED" (number of cycles CPU i
 This event is useful as profiles resulting generally correspond to time-spent profiles for functions etc. 
 </para>
 <para>
-A quick <command>ps ax</command> confirms that the daemon (<command>oprofiled</command>) has started,
-along with the kernel thread (<command>oprof-thread</command>). Data is now being collected in the kernel.
-Now we can do whatever we like ... although in this case I'm profiling the C++ application
+A quick <command>ps ax</command> confirms that the daemon (<command>oprofiled</command>) has started.
+Data is now being collected in the kernel. Now we can do whatever we like ... although in this case I'm profiling the C++ application
 <ulink url="http://www.lyx.org/">LyX</ulink>, previously compiled using the <option>-g</option> option to <command>g++</command>.
 Note that unlike <command>gprof</command>, no instrumentation (<option>-pg</option> and <option>-a</option> options to <command>gcc</command>)
 is necessary. This is major factor in achieving the low overhead of OProfile.

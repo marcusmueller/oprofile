@@ -1,3 +1,19 @@
+2001-12-26  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/opf_filter.cpp:
+	* pp/opf_filter.h:
+	* pp/oprofpp.h:
+	* pp/opf_filter.cpp:	
+	* pp/oprofpp_util.cpp:
+	* pp/oprofpp.cpp:
+	* pp/op_time.c: remove some use of global var
+	  samplefile and imagefile
+
+	* pp/oprofpp.cpp: do_dump_gprof() free memory
+	  too soon. (was bugged from 2001-12-05)
+
+	* doc/oprofile.sgml: remove mention about oprof-thread
+	  
 2001-12-23  Philippe Elie  <ph_e@club-internet.fr>
 
 	* util/string_manip.h:

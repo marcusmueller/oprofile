@@ -139,18 +139,19 @@ class output {
 	       bool assembly,
 	       bool source_with_assembly);
 
-	bool treat_input();
+	bool treat_input(const string & image_file, const string & sample_file);
 
  private:
 	/// this output a comment containaing the counter setup and command
 	/// the line.
 	void output_header(ostream & out) const;
 
-	void output_asm();
+	void output_asm(const opp_bfd & abfd);
 	void output_objdump_asm_line(const std::string & str,
-				     const vector<const symbol_entry *> & output_symbols, bool & do_output);
-	void output_objdump_asm(const vector<const symbol_entry *> & output_symbols);
-	void output_dasm_asm(const vector<const symbol_entry *> & output_symbols);
+		     const vector<const symbol_entry *> & output_symbols,
+		     bool & do_output);
+	void output_objdump_asm(const vector<const symbol_entry *> & output_symbols, const opp_bfd & abfd);
+	void output_dasm_asm(const vector<const symbol_entry *> & output_symbols, const opp_bfd & abfd);
 	void output_source();
 
 	// output one file unconditionally.
@@ -163,9 +164,9 @@ class output {
 	void accumulate_and_output_counter(ostream& out, const string & filename,
 		size_t linenr, const string & blank);
 
-	void build_samples_containers();
+	void build_samples_containers(opp_samples_files & samples_files, const opp_bfd & abfd);
 
-	bool setup_counter_param();
+	bool setup_counter_param(const opp_samples_files & samples_files);
 	bool calc_total_samples();
 
 	void output_counter_for_file(ostream & out, const string & filename,
@@ -183,11 +184,6 @@ class output {
 		size_t linenr) const;
 
 	size_t get_sort_counter_nr() const;
-
-	// this order of declaration is required to ensure proper
-	// initialisation of oprofpp
-	opp_samples_files samples_files;
-	opp_bfd abfd;
 
 	// used to output the command line.
 	int argc;
@@ -359,9 +355,6 @@ output::output(int argc_, char const * argv_[],
 	       bool assembly_,
 	       bool source_with_assembly_)
 	:
-	samples_files(),
-	abfd(samples_files.header[samples_files.first_file],
-	     samples_files.nr_samples),
 	argc(argc_),
 	argv(argv_),
 	begin_comment("/*"),
@@ -378,12 +371,6 @@ output::output(int argc_, char const * argv_[],
 	assembly(assembly_),
 	source_with_assembly(source_with_assembly_)
 {
-	if (!assembly && !abfd.have_debug_info()) {
-		cerr << "Request for source file annotated "
-		     << "with samples but no debug info available" << endl;
-		exit(EXIT_FAILURE);
-	}
-
 	if (source_dir.empty() == false) {
 		output_separate_file = true;
 
@@ -417,7 +404,7 @@ output::output(int argc_, char const * argv_[],
 }
 
 // build a counter_setup from a header.
-bool output::setup_counter_param()
+bool output::setup_counter_param(const opp_samples_files & samples_files)
 {
 	bool have_counter_info = false;
 
@@ -584,9 +571,9 @@ output_objdump_asm_line(const std::string & str,
 			do_output = false;
 		}
 
-		if (do_output) {
+		if (do_output)
 			find_and_output_symbol(cout, str, "");
-		}
+
 	} else { // not a symbol, probably an asm line.
 		if (do_output)
 			find_and_output_counter(cout, str, " ");
@@ -602,7 +589,7 @@ output_objdump_asm_line(const std::string & str,
  * This is the generic implementation if our own disassembler
  * do not work for this architecture.
  */
-void output::output_objdump_asm(const vector<const symbol_entry *> & output_symbols)
+void output::output_objdump_asm(const vector<const symbol_entry *> & output_symbols, const opp_bfd & abfd)
 {
 	vector<string> args;
 	args.push_back("-d");
@@ -646,12 +633,12 @@ void output::output_objdump_asm(const vector<const symbol_entry *> & output_symb
  * Output asm (optionnaly mixed with source) annotated
  * with samples using dasm as external disassembler.
  */
-void output::output_dasm_asm(const vector<const symbol_entry *> & /*output_symbols*/)
+void output::output_dasm_asm(const vector<const symbol_entry *> & /*output_symbols*/, const opp_bfd & /*abfd*/)
 {
 	// Not yet implemented :/
 }
 
-void output::output_asm()
+void output::output_asm(const opp_bfd & abfd)
 {
 	// select the subset of symbols which statisfy the user requests
 	size_t index = get_sort_counter_nr();
@@ -676,7 +663,7 @@ void output::output_asm()
 
 	output_header(cout);
 
-	output_objdump_asm(output_symbols);
+	output_objdump_asm(output_symbols, abfd);
 }
 
 void output::accumulate_and_output_counter(ostream & out, const string & filename, 
@@ -800,7 +787,7 @@ struct filename_by_samples {
 	}
 
 	string filename;
-	// -- tricky: this info is valid only for one of the counter. The 
+	// -- ugly: this info is valid only for one of the counter. The 
 	// information: from which counter this percentage is valid is not 
 	// self contained in this structure.
 	double percent;
@@ -900,8 +887,10 @@ size_t output::get_sort_counter_nr() const
 //  the symbols/samples are sorted by increasing vma.
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
-void output::build_samples_containers()
+void output::build_samples_containers(opp_samples_files & samples_files, const opp_bfd & abfd)
 {
+	string image_name = bfd_get_filename(abfd.ibfd);
+
 	// fill the symbol table.
 	for (size_t i = 0 ; i < abfd.syms.size(); ++i) {
 		u32 start, end;
@@ -929,6 +918,8 @@ void output::build_samples_containers()
 			symb_entry.sample.file_loc.linenr = 0;
 		}
 
+		symb_entry.sample.file_loc.image_name = image_name;
+
 		bfd_vma base_vma = abfd.syms[i]->value + abfd.syms[i]->section->vma;
 		symb_entry.sample.vma = abfd.sym_offset(i, start) + base_vma;
 
@@ -945,6 +936,8 @@ void output::build_samples_containers()
 				sample.file_loc.filename = string();
 				sample.file_loc.linenr = 0;
 			}
+
+			sample.file_loc.image_name = image_name;
 
 			sample.vma = abfd.sym_offset(i, pos) + base_vma;
 
@@ -1004,8 +997,20 @@ void output::output_header(ostream& out) const
 	out << endl;
 }
 
-bool output::treat_input()
+bool output::treat_input(const string & image_file, const string & sample_file)
 {
+	// this order of declaration is required to ensure proper
+	// initialisation of oprofpp
+	opp_samples_files samples_files(sample_file);
+	opp_bfd abfd(samples_files.header[samples_files.first_file],
+		     samples_files.nr_samples, image_file);
+
+	if (!assembly && !abfd.have_debug_info()) {
+		cerr << "Request for source file annotated "
+		     << "with samples but no debug info available" << endl;
+		exit(EXIT_FAILURE);
+	}
+
 	cpu_type = samples_files.header[samples_files.first_file]->cpu_type;
 
 	if (cpu_type == CPU_ATHLON)
@@ -1013,10 +1018,10 @@ bool output::treat_input()
 
 	cpu_speed = samples_files.header[samples_files.first_file]->cpu_speed;
 
-	if (!setup_counter_param())
+	if (!setup_counter_param(samples_files))
 		return false;
 
-	build_samples_containers();
+	build_samples_containers(samples_files, abfd);
 
 	if (!calc_total_samples()) {
 		cerr << "opf_filter: the input contains zero samples" << endl;
@@ -1024,7 +1029,7 @@ bool output::treat_input()
 	}
 
 	if (assembly)
-		output_asm();
+		output_asm(abfd);
 	else
 		output_source();
 
@@ -1072,10 +1077,13 @@ static struct poptOption options[] = {
  * get_options - process command line
  * @argc: program arg count
  * @argv: program arg array
+ * @image_file: where to store the image filename
+ * @sample_file: ditto for sample filename
  *
  * Process the arguments, fatally complaining on error.
  */
-static void get_options(int argc, char const * argv[])
+static void get_options(int argc, char const * argv[],
+			string & image_file, string & sample_file)
 {
 	poptContext optcon;
 
@@ -1096,7 +1104,7 @@ static void get_options(int argc, char const * argv[])
 
 	list_all_symbols_details = 1;
 
-	opp_treat_options(file, optcon);
+	opp_treat_options(file, optcon, image_file, sample_file);
 
 	poptFreeContext(optcon);
 }
@@ -1110,7 +1118,10 @@ int main(int argc, char const * argv[])
 	std::ios_base::sync_with_stdio(false);
 #endif
 
-	get_options(argc, argv);
+	string image_file;
+	string sample_file;
+
+	get_options(argc, argv, image_file, sample_file);
 
 	try {
 		bool do_until_more_than_samples = false;
@@ -1133,7 +1144,7 @@ int main(int argc, char const * argv[])
 			      no_output_filter ? no_output_filter : "",
 			      assembly, source_with_assembly);
 
-		if (output.treat_input() == false)
+		if (output.treat_input(image_file, sample_file) == false)
 			return EXIT_FAILURE;
 	}
 

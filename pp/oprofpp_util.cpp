@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.13 2001/12/23 21:15:10 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.14 2001/12/27 21:16:09 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -115,6 +115,8 @@ void quit_error(poptContext optcon, char const *err)
  * opp_treat_options - process command line options
  * @file: a filename passed on the command line, can be %NULL
  * @optcon: poptContext to allow better message handling
+ * @image_file: where to store the image file name
+ * @sample_file: ditto for sample filename
  *
  * Process the arguments, fatally complaining on
  * error. 
@@ -131,9 +133,10 @@ void quit_error(poptContext optcon, char const *err)
  * syntactical approch. (ie existence of filename is
  * not tested)
  *
- * post-condition: samplefile and imagefile are setup
+ * post-condition: @sample_file and @image_file are setup
  */
-void opp_treat_options(const char* file, poptContext optcon)
+void opp_treat_options(const char* file, poptContext optcon,
+		       string & image_file, string & sample_file)
 {
 	char *file_ctr_str;
 	int counter;
@@ -175,7 +178,7 @@ void opp_treat_options(const char* file, poptContext optcon)
 
 	/* we can not complete filename checking of imagefile because
 	 * it can be derived from the sample filename, we must process
-	 * and chop optionnal suffixe "#%d-%d" first */
+	 * and chop optionnal suffixe "#%d" first */
 
 	/* check for a valid counter suffix in a given sample file */
 	counter = -1;
@@ -211,11 +214,12 @@ void opp_treat_options(const char* file, poptContext optcon)
 		exit(EXIT_FAILURE);
 	}
 
-	if (!imagefile) {
-		std::string temp = demangle_filename(samplefile);
-		/* memory leak */
-		imagefile = xstrdup(temp.c_str());
-	}
+	sample_file = samplefile;
+
+	if (!imagefile)
+		image_file = demangle_filename(sample_file);
+	else
+		image_file = imagefile;
 }
 
 // FIXME: only use char arrays and pointers if you MUST. Otherwise std::string
@@ -277,33 +281,33 @@ counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
 /**
  * opp_bfd - construct an opp_bfd object
  * @header: a valid samples file opd_header
- *
- * The global variable imagefile is used to
- * open the binary file. After construction
- * the data member are setup.
+ * @nr_samples: the number of samples location for
+ * this image ie the number of bytes memory mapped
+ * for this image with EXEC right
+ * @image_file: the name of the image file
  *
  * All error are fatal.
  *
  */
-opp_bfd::opp_bfd(const opd_header* header, uint nr_samples_)
+opp_bfd::opp_bfd(const opd_header* header, uint nr_samples_, const string & filename)
 	:
 	ibfd(0),
 	bfd_syms(0),
 	sect_offset(0),
 	nr_samples(nr_samples_)
 {
-	if (!imagefile) {
-		fprintf(stderr,"oprofpp: oppp_bfd() imagefile is NULL.\n");
+	if (filename.length() == 0) {
+		fprintf(stderr,"oprofpp: oppp_bfd() empty image filename.\n");
 		exit(EXIT_FAILURE);
 	} 
 
-	open_bfd_image(imagefile, header->is_kernel);
+	open_bfd_image(filename, header->is_kernel);
 
-	time_t newmtime = opd_get_mtime(imagefile);
+	time_t newmtime = opd_get_mtime(filename.c_str());
 	if (newmtime != header->mtime) {
 		fprintf(stderr, "oprofpp: WARNING: the last modified time of the binary file %s does not match\n"
 			"that of the sample file. Either this is the wrong binary or the binary\n"
-			"has been modified since the sample file was created.\n", imagefile);
+			"has been modified since the sample file was created.\n", filename.c_str());
 	}
 }
 
@@ -334,19 +338,19 @@ opp_bfd::~opp_bfd()
  * Failure to open the image or to get symbol from
  * the image is fatal.
  */
-void opp_bfd::open_bfd_image(const char* file, bool is_kernel)
+void opp_bfd::open_bfd_image(const string & filename, bool is_kernel)
 {
 	char **matching;
 
-	ibfd = bfd_openr(file, NULL);
+	ibfd = bfd_openr(filename.c_str(), NULL);
  
 	if (!ibfd) {
-		fprintf(stderr,"oprofpp: bfd_openr of %s failed.\n", file);
+		fprintf(stderr,"oprofpp: bfd_openr of %s failed.\n", filename.c_str());
 		exit(EXIT_FAILURE);
 	}
 	 
 	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) { 
-		fprintf(stderr,"oprofpp: BFD format failure for %s.\n", file);
+		fprintf(stderr,"oprofpp: BFD format failure for %s.\n", filename.c_str());
 		exit(EXIT_FAILURE);
 	}
 
@@ -492,7 +496,7 @@ bool opp_bfd::have_debug_info() const
  * is never set to NULL.
  */
 bool opp_bfd::get_linenr(uint sym_idx, uint offset, 
-			const char*& filename, unsigned int& linenr)
+			const char*& filename, unsigned int& linenr) const
 {
 	const char *functionname;
 	bfd_vma pc;
@@ -640,18 +644,16 @@ static void check_headers(const opd_header * f1, const opd_header * f2)
 
 /**
  * opp_samples_files - construct an opp_samples_files object
+ * @sample_file: the base name of sample file
  *
- * the global variable @samplefile is used to locate the samples
- * filename.
- *
- * at least one sample file (based on @samplefile name)
+ * at least one sample file (based on @sample_file name)
  * must be opened. If more than one sample file is open
  * their header must be coherent. Each header is also
  * sanitized.
  *
  * all error are fatal
  */
-opp_samples_files::opp_samples_files()
+opp_samples_files::opp_samples_files(const std::string & sample_file)
 	:
 	nr_counters(2),
 	first_file(-1)
@@ -675,7 +677,7 @@ opp_samples_files::opp_samples_files()
 			/* if ctr == i, this means than we open only one
 			 * samples file so don't allow opening failure to get
 			 * a more precise error message */
-			open_samples_file(i, ctr != (int)i);
+			open_samples_file(sample_file, i, ctr != (int)i);
 		}
 	}
 
@@ -686,7 +688,7 @@ opp_samples_files::opp_samples_files()
 	}
 
 	if (first_file == OP_MAX_COUNTERS) {
-		fprintf(stderr, "Can not open any samples files for %s last error %s\n", samplefile, strerror(errno));
+		fprintf(stderr, "Can not open any samples files for %s last error %s\n", sample_file.c_str(), strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -741,6 +743,7 @@ opp_samples_files::~opp_samples_files()
 
 /**
  * open_samples_file - ctor helper
+ * @sample_file: the base name of sample file
  * @counter: the counter number
  * @can_fail: allow to fail gracefully
  *
@@ -752,10 +755,11 @@ opp_samples_files::~opp_samples_files()
  *
  * if @can_fail == false all error are fatal.
  */
-void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
+void opp_samples_files::open_samples_file(const string & sample_file,
+					  u32 counter, bool can_fail)
 {
 	std::ostringstream filename;
-	filename << samplefile << "#" << counter;
+	filename << sample_file << "#" << counter;
 	std::string temp = filename.str();
 
 	fd[counter] = open(temp.c_str(), O_RDONLY);

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.16 2001/12/23 21:15:10 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.17 2001/12/27 21:16:09 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -50,6 +50,8 @@ static poptOption options[] = {
  * get_options - process command line
  * @argc: program arg count
  * @argv: program arg array
+ * @image_file: where to store the image filename
+ * @sample_file: ditto for sample filename
  *
  * Process the arguments, fatally complaining on
  * error. Only a part of arguments analysing is
@@ -57,7 +59,8 @@ static poptOption options[] = {
  * opp_treat_options().
  *
  */
-static void opp_get_options(int argc, const char **argv)
+static void opp_get_options(int argc, const char **argv, string & image_file,
+			    string & sample_file)
 {
 	poptContext optcon;
 	const char *file;
@@ -83,7 +86,7 @@ static void opp_get_options(int argc, const char **argv)
 	/* non-option file, either a sample or binary image file */
 	file = poptGetArg(optcon);
 
-	opp_treat_options(file, optcon);
+	opp_treat_options(file, optcon, image_file, sample_file);
 
 	poptFreeContext(optcon);
 }
@@ -109,7 +112,7 @@ void printf_symbol(const char *name)
  * @offset: offset
  *
  */
-void opp_bfd::output_linenr(uint sym_idx, uint offset)
+void opp_bfd::output_linenr(uint sym_idx, uint offset) const
 {
 	const char *filename;
 	unsigned int line;
@@ -236,8 +239,8 @@ struct gmon_hdr {
  * do_dump_gprof - produce gprof sample output
  * @abfd: the bfd object from where come the samples
  *
- * Dump gprof-format samples for the image specified by samplefile to
- * the file specified by gproffile.
+ * Dump gprof-format samples for this sample file and
+ * counter specified ctr to the file specified by gproffile.
  *
  * this use the grpof format <= gcc 3.0
  */
@@ -317,10 +320,10 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd) const
 		}
 	}
 
-	free(hist);
-
 	opd_write_file(fp, hist, histsize * sizeof(u16));
 	opd_close_file(fp);
+
+	free(hist);
 }
 
 /**
@@ -435,11 +438,13 @@ void opp_samples_files::output_header() const
  */
 int main(int argc, char const *argv[])
 {
-	opp_get_options(argc, argv);
+	string image_file;
+	string sample_file;
+	opp_get_options(argc, argv, image_file, sample_file);
 
-	opp_samples_files samples_files;
+	opp_samples_files samples_files(sample_file);
 	opp_bfd abfd(samples_files.header[samples_files.first_file],
-		     samples_files.nr_samples);
+		     samples_files.nr_samples, image_file);
 
 	samples_files.output_header();
 
