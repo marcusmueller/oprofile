@@ -22,8 +22,11 @@ int odb_insert(samples_odb_t * hash, odb_key_t key, odb_value_t value)
 
 	index = hash->hash_base[do_hash(hash, key)];
 	while (index) {
-		if (index <= 0 || index >= hash->descr->current_size)
+		if (index <= 0 || index >= hash->descr->current_size) {
+			asprintf(err_msg, "odb_insert() invalid index %u\n",
+				 index);
 			return EXIT_FAILURE;
+		}
 		node = &hash->node_base[index];
 		if (node->key == key) {
 			if (node->value + value >= node->value) {

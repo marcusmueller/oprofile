@@ -1,3 +1,8 @@
+2003-06-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libdb/db_insert.cpp: missing initialization of error message on
+	  error path
+
 2003-06-17  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol: accept some short forms for common
