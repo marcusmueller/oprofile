@@ -452,10 +452,10 @@ cg_formatter::cg_formatter(callgraph_container const & profile_)
 	total_count_callee = profile.samples_count();
 
 	format_map[ff_vma] = field_description(9, "vma", &cg_formatter::format_vma);
-	format_map[ff_nr_samples] = field_description(16, "self/child", &cg_formatter::format_nr_samples);
-	format_map[ff_nr_samples_cumulated] = field_description(16, "cum. samples", &cg_formatter::format_nr_cumulated_samples);
-	format_map[ff_percent] = field_description(16, "self/child %", &cg_formatter::format_percent);
-	format_map[ff_percent_cumulated] = field_description(16, "cum. %", &cg_formatter::format_cumulated_percent);
+	format_map[ff_nr_samples] = field_description(17, "self/child", &cg_formatter::format_nr_samples);
+	format_map[ff_nr_samples_cumulated] = field_description(17, "cum. samples", &cg_formatter::format_nr_cumulated_samples);
+	format_map[ff_percent] = field_description(18, "self/child %", &cg_formatter::format_percent);
+	format_map[ff_percent_cumulated] = field_description(18, "cum. %", &cg_formatter::format_cumulated_percent);
 	format_map[ff_linenr_info] = field_description(28, "linenr info", &cg_formatter::format_linenr_info);
 	format_map[ff_image_name] = field_description(25, "image name", &cg_formatter::format_image_name);
 	format_map[ff_app_name] = field_description(25, "app name", &cg_formatter::format_app_name);
@@ -553,6 +553,10 @@ size_t cg_formatter::output_header_field(ostream & out, format_flags fl,
 
 void cg_formatter::output(std::ostream & out)
 {
+	// amount of spacing prefixing child and parent lines
+	string const child_parent_prefix("  ");
+
+	out << child_parent_prefix;
 	output_header(out);
 
 	cg_collection arcs = profile.get_arc();
@@ -587,7 +591,7 @@ void cg_formatter::output(std::ostream & out)
 		}
 
 		for (size_t j = 0; j < callee_arcs.size(); ++j) {
-			out << "    ";
+			out << child_parent_prefix;
 			do_output(out, callee_arcs[j]);
 		}
 
@@ -622,7 +626,7 @@ void cg_formatter::output(std::ostream & out)
 		}
 
 		for (size_t j = 0; j < caller_arcs.size(); ++j) {
-			out << "    ";
+			out << child_parent_prefix;
 			do_output(out, caller_arcs[j]);
 		}
 

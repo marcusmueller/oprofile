@@ -1,3 +1,7 @@
+2004-02-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/format_output.cpp: change output spacing.
+
 2004-02-17  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opstack_options.h:

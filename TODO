@@ -14,10 +14,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o review opstack documentation, improve it by giving examples of output and
   how to interpret it.
 
- o callgraph patch: better way to skip ignored backtrace ?
- o can daemon avoid to hack about last_is_kernel ? No, non callgraph driver
-  in 2.6 get the same problem and we must be compatible.
-
 0.9 release
 -----------
 
@@ -36,6 +32,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 Before 1.0 little stuff
 -----------------------
 
+ o callgraph patch: better way to skip ignored backtrace ?
  o opcontrol --reset should avoid to reload the module if it's unloaded
  o zwane problem with wrong text offset showed an interesting problem: if
   op_bfd.cpp get any symbol below text offset for vmlinux or a module then
