@@ -58,6 +58,13 @@ bool operator==(cg_symbol const & lhs, cg_symbol const & rhs)
 }
 
 
+bool compare_by_callee_vma(pair<odb_key_t, odb_value_t> const & lhs,
+			   pair<odb_key_t, odb_value_t> const & rhs)
+{
+	return (lhs.first & 0xffffffff) < (rhs.first & 0xffffffff);
+}
+
+
 /**
  * We need 2 comparators for callgraph, the arcs are sorted by callee_count,
  * the callees too and the callers by callee_counts in reversed order like:
@@ -439,20 +446,31 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 		}
 
 		// Our odb_key_t contain (from_eip << 32 | to_eip), the range
-		// of key we selected above can contain different callee but
-		// due to the ordering this callee are consecutive so we
-		// iterate over the range, then iterate over the sub-range
-		// for each distinct callee symbol.
+		// of key we selected above contain one caller but different
+		// callee and due to the ordering callee offsets are not
+		// consecutive so we must sort them first.
 
-		while (p_it.first != p_it.second) {
+		typedef vector<pair<odb_key_t, odb_value_t> > data_t;
+		data_t data;
+
+		for (; p_it.first != p_it.second; ++p_it.first) {
+			data.push_back(make_pair(p_it.first.vma(),
+				p_it.first.count()));
+		}
+
+		sort(data.begin(), data.end(), compare_by_callee_vma);
+		
+		data_t::const_iterator dit;
+		data_t::const_iterator dend = data.end();
+		for (dit = data.begin(); dit != dend; ) {
 			// find the callee.
-			profile_t::const_iterator it = p_it.first;
-			bfd_vma callee_vma = (it.vma() & 0xffffffff) +
+			data_t::const_iterator it = dit;
+			bfd_vma callee_vma = (it->first & 0xffffffff) +
 				callee_offset;
 
 			cverb << vdebug
 			      << "offset caller: " << hex
-			      << (p_it.first.vma() >> 32) << " callee: "
+			      << (it->first >> 32) << " callee: "
 			      << callee_vma << dec << endl;
 
 			op_bfd_symbol symb(callee_vma, 0, string());
@@ -473,21 +491,25 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 			}
 
 			u32 upper_bound = bfd_symb_callee->size() +
-				bfd_symb_callee->filepos();
+				bfd_symb_callee->filepos() - callee_offset;
 			cverb << vdebug
 			      << "upper bound: " << hex << upper_bound
 			      << dec << endl;
 
+			data_t::const_iterator dcur = it;
 			// Process all arc from this caller to this callee
 			u32 caller_callee_count = 0;
-			for (; it != p_it.second && 
-			 (it.vma() & 0xffffffff) + callee_offset < upper_bound;
+			for (; it != dend &&
+			     (it->first & 0xffffffff) < upper_bound;
 			     ++it) {
-				caller_callee_count += it.count();
+				cverb << (vdebug&vlevel1) << hex
+				      << "offset: " << (it->first & 0xffffffff)
+				      << dec << endl;
+				caller_callee_count += it->second;
 			}
 			// FIXME: very fragile, any innacuracy in caller offset
 			// can lead to an abort!
-			if (it == p_it.first) {
+			if (it == dcur) {
 				// This is impossible, we need a core dump else
 				// we enter in an infinite loop
 				cerr << "failure to advance iterator\n";
@@ -498,7 +520,7 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 
 			cverb << vdebug
 			      << caller.syms[i].name() << " "
-			      << bfd_symb_callee->name()   << " "
+			      << bfd_symb_callee->name() << " "
 			      << caller_callee_count << endl;
 
 			cg_symbol symb_callee;
@@ -533,7 +555,7 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 			recorder.add_arc(symb_caller, &symb_callee);
 
 			// next callee symbol
-			p_it.first = it;
+			dit = it;
 		}
 	}
 }
