@@ -27,10 +27,10 @@ oprofile \- a sytem-wide profiler
 .B oprof_convert
 .br
 .SH DESCRIPTION
-oprofile is a profiling system for Intel x86 systems running Linux 2.4. Profiling runs
+oprofile is a profiling system for x86 systems running Linux 2.4. Profiling runs
 transparently during the background, and profile data can be collected at any time. oprofile
-makes use of the hardware performance counters provided on Intel P6 processors. See the HTML
-documentation for further details.
+makes use of the hardware performance counters provided on Intel P6, and AMD Athlon family processors.
+See the HTML documentation for further details.
 
 .SH OPTIONS
 .br
