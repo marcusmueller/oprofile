@@ -1,5 +1,5 @@
 /**
- * @file apic_up_compat.h
+ * @file apic_compat.h
  * Definitions and functions for APIC interaction
  *
  * @remark Copyright 2002 OProfile authors
@@ -9,8 +9,8 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
-#ifndef APIC_UP_COMPAT_H
-#define APIC_UP_COMPAT_H
+#ifndef APIC_COMPAT_H
+#define APIC_COMPAT_H
 
 #if V_BEFORE(2,4,0)
 /* even on SMP, some defines are missing in 2.2 */
@@ -77,4 +77,4 @@ static __inline unsigned long apic_read(unsigned long reg)
 
 #endif /* !defined(CONFIG_X86_LOCAL_APIC) */
 
-#endif /* APIC_UP_COMPAT_H */
+#endif /* APIC_COMPAT_H */
