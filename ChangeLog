@@ -1,5 +1,11 @@
 2003-10-27  John Levon  <levon@movementarian.org>
 
+	* daemon/init.c:
+	* daemon/opd_perfmon.c: move timer interrupt checks
+	into perfmon
+
+2003-10-27  John Levon  <levon@movementarian.org>
+
 	* daemon/oprofiled.c: use op_get_interface()
 
 	* libop/op_get_interface.c: simplify

@@ -175,14 +175,12 @@ static void opd_do_read(char * buf, size_t size)
 
 			if (signal_usr1) {
 				signal_usr1 = 0;
-				if (cpu_type != CPU_TIMER_INT)
-					perfmon_start();
+				perfmon_start();
 			}
 
 			if (signal_usr2) {
 				signal_usr2 = 0;
-				if (cpu_type != CPU_TIMER_INT)
-					perfmon_stop();
+				perfmon_stop();
 			}
 		}
 
@@ -214,8 +212,7 @@ static void opd_sighup(void)
 
 static void clean_exit(void)
 {
-	if (cpu_type != CPU_TIMER_INT)
-		perfmon_exit();
+	perfmon_exit();
 	unlink(OP_LOCK_FILE);
 }
 
@@ -247,16 +244,14 @@ static void opd_26_init(void)
 	for (i = 0; i < OPD_MAX_STATS; i++)
 		opd_stats[i] = 0;
 
-	if (cpu_type != CPU_TIMER_INT)
-		perfmon_init();
+	perfmon_init();
 
 	cookie_init();
 	sfile_init();
 
 	/* must be /after/ perfmon_init() at least */
 	if (atexit(clean_exit)) {
-		if (cpu_type != CPU_TIMER_INT)
-			perfmon_exit();
+		perfmon_exit();
 		perror("oprofiled: couldn't set exit cleanup: ");
 		exit(EXIT_FAILURE);
 	}

@@ -353,6 +353,9 @@ void perfmon_init(void)
 	size_t i;
 	long nr;
 
+	if (cpu_type == CPU_TIMER_INT)
+		return;
+
 	nr = sysconf(_SC_NPROCESSORS_ONLN);
 	if (nr == -1) {
 		fprintf(stderr, "Couldn't determine number of CPUs.\n");
@@ -392,6 +395,9 @@ void perfmon_exit(void)
 {
 	size_t i;
 
+	if (cpu_type == CPU_TIMER_INT)
+		return;
+
 	for (i = 0; i < nr_cpus; ++i) {
 		kill(children[i].pid, SIGKILL);
 		waitpid(children[i].pid, NULL, 0);
@@ -403,6 +409,9 @@ void perfmon_start(void)
 {
 	size_t i;
 
+	if (cpu_type == CPU_TIMER_INT)
+		return;
+
 	for (i = 0; i < nr_cpus; ++i)
 		kill(children[i].pid, SIGUSR1);
 }
@@ -411,6 +420,9 @@ void perfmon_start(void)
 void perfmon_stop(void)
 {
 	size_t i;
+
+	if (cpu_type == CPU_TIMER_INT)
+		return;
 
 	for (i = 0; i < nr_cpus; ++i)
 		kill(children[i].pid, SIGUSR2);
