@@ -387,6 +387,7 @@ int opreport(vector<string> const & non_options)
 
 	if (!options::symbols) {
 		summary_container summaries(classes.v);
+		output_header();
 		output_summaries(summaries);
 		return 0;
 	}
