@@ -1467,9 +1467,10 @@ Show version.
 Output annotated assembly. If this is combined with --source, then mixed
 source / assembly annotations are output.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--base-dir / -b [dir]</option></term><listitem><para>
-FIXME
+<!-- FIXME: when re-enabled ...
+<varlistentry><term><option>- -base-dir / -b [dir]</option></term><listitem><para>
 </para></listitem></varlistentry>
+-->
 <varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
 Do not include application-specific images for libraries, kernel modules
 and the kernel. This option only makes sense if the profile session
