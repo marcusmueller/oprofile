@@ -27,6 +27,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 Before 1.0 little stuff
 -----------------------
 
+ o daemon: is NR_CPUS broken on smp box with more than 32 cpus ?
  o x86_64 and 2.4 kernel: it's apparently broken
  o Alpha ev67 events are broken
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
