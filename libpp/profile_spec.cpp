@@ -51,14 +51,9 @@ void fixup_image_spec(vector<string> & images, extra_images const & extra)
 
 
 profile_spec::profile_spec(extra_images const & extra)
-	:
-	normal_tag_set(false),
-	sample_file_set(false),
-	extra(extra)
+	: extra(extra)
 {
 	parse_table["archive"] = &profile_spec::parse_archive_path;
-	parse_table["sample-file"] = &profile_spec::parse_sample_file;
-	parse_table["binary"] = &profile_spec::parse_binary;
 	parse_table["session"] = &profile_spec::parse_session;
 	parse_table["session-exclude"] =
 		&profile_spec::parse_session_exclude;
@@ -94,29 +89,8 @@ bool profile_spec::is_valid_tag(string const & tag_value)
 }
 
 
-void profile_spec::validate()
-{
-	// 3.3 sample_file can be used only with binary
-	// 3.4 binary can be used only with sample_file
-	if (normal_tag_set && (sample_file_set || !binary.empty())) {
-		throw invalid_argument("Cannot specify sample-file: or "
-			"binary: tag with another tag or binary name");
-	}
-
-	// PP:3.5 no session given means use the current session.
-	if (session.empty()) {
-		session.push_back("current");
-	}
-
-	// PP:3.7 3.8 3.9 3.10: is it the right time to translate all filename
-	// to absolute path ? (if yes do it after plugging this code in
-	// oprofile)
-}
-
-
 void profile_spec::set_image_or_lib_name(string const & str)
 {
-	normal_tag_set = true;
 	/* FIXME: what does spec say about this being allowed to be
 	 * a comma list or not ? */
 	image_or_lib_image.push_back(fixup_image_spec(str, extra));
@@ -135,36 +109,20 @@ string profile_spec::get_archive_path() const
 }
 
 
-void profile_spec::parse_sample_file(string const & str)
-{
-	sample_file_set = true;
-	file_spec.set_sample_filename(str);
-}
-
-
-void profile_spec::parse_binary(string const & str)
-{
-	binary = str;
-}
-
-
 void profile_spec::parse_session(string const & str)
 {
-	normal_tag_set = true;
 	session = separate_token(str, ',');
 }
 
 
 void profile_spec::parse_session_exclude(string const & str)
 {
-	normal_tag_set = true;
 	session_exclude = separate_token(str, ',');
 }
 
 
 void profile_spec::parse_image(string const & str)
 {
-	normal_tag_set = true;
 	image = separate_token(str, ',');
 	fixup_image_spec(image, extra);
 }
@@ -172,14 +130,12 @@ void profile_spec::parse_image(string const & str)
 
 void profile_spec::parse_image_exclude(string const & str)
 {
-	normal_tag_set = true;
 	image_exclude = separate_token(str, ',');
 }
 
 
 void profile_spec::parse_lib_image(string const & str)
 {
-	normal_tag_set = true;
 	lib_image = separate_token(str, ',');
 	fixup_image_spec(image, extra);
 }
@@ -187,42 +143,36 @@ void profile_spec::parse_lib_image(string const & str)
 
 void profile_spec::parse_event(string const & str)
 {
-	normal_tag_set = true;
 	event.set(str);
 }
 
 
 void profile_spec::parse_count(string const & str)
 {
-	normal_tag_set = true;
 	count.set(str);
 }
 
 
 void profile_spec::parse_unitmask(string const & str)
 {
-	normal_tag_set = true;
 	unitmask.set(str);
 }
 
 
 void profile_spec::parse_tid(string const & str)
 {
-	normal_tag_set = true;
 	tid.set(str);
 }
 
 
 void profile_spec::parse_tgid(string const & str)
 {
-	normal_tag_set = true;
 	tgid.set(str);
 }
 
 
 void profile_spec::parse_cpu(string const & str)
 {
-	normal_tag_set = true;
 	cpu.set(str);
 }
 
@@ -272,11 +222,6 @@ bool comma_match(comma_list<T> const & cl, generic_spec<T> const & value)
 
 bool profile_spec::match(filename_spec const & spec) const
 {
-	// PP:3.3 if spec was defined through sample-file: match it directly
-	if (sample_file_set) {
-		return file_spec.match(spec, binary);
-	}
-
 	bool matched_by_image_or_lib_image = false;
 
 	// PP:3.19
@@ -374,7 +319,10 @@ profile_spec profile_spec::create(vector<string> const & args,
 		}
 	}
 
-	spec.validate();
+	// PP:3.5 no session given means use the current session.
+	if (spec.session.empty()) {
+		spec.session.push_back("current");
+	}
 
 	return spec;
 }

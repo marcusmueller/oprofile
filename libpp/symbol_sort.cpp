@@ -126,7 +126,7 @@ void sort_options::sort(symbol_collection & syms,
 {
 	long_filenames = lf;
 
-	std::vector<sort_order> sort_option(options);
+	vector<sort_order> sort_option(options);
 	for (sort_order cur = first; cur != last; cur = sort_order(cur + 1)) {
 		if (find(sort_option.begin(), sort_option.end(), cur) ==
 		    sort_option.end())
@@ -138,7 +138,7 @@ void sort_options::sort(symbol_collection & syms,
 }
 
 
-void sort_options::add_sort_option(std::string const & name)
+void sort_options::add_sort_option(string const & name)
 {
 	if (name == "vma") {
 		options.push_back(vma);

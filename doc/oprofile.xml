@@ -577,7 +577,7 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--separate=</option>[none,library,kernel,thread,cpu,all]</term>
+		<term><option>--separate=</option>[none,lib,kernel,thread,cpu,all]</term>
 		<listitem><para>
 		By default, every profile is stored in a single file. Thus, for example,
 		samples in the C library are all accredited to the <filename>/lib/libc.o</filename>
@@ -588,7 +588,7 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		<tgroup cols='2'> 
 		<tbody>
 		<row><entry><option>none</option></entry><entry>No profile separation (default)</entry></row>
-		<row><entry><option>library</option></entry><entry>Create per-application profiles for libraries</entry></row>
+		<row><entry><option>lib</option></entry><entry>Create per-application profiles for libraries</entry></row>
 		<row><entry><option>kernel</option></entry><entry>Create per-application profiles for the kernel and kernel modules</entry></row>
 		<row><entry><option>thread</option></entry><entry>Create profiles for each thread and each task</entry></row>
 		<row><entry><option>cpu</option></entry><entry>Create profiles for each CPU</entry></row>
@@ -597,7 +597,7 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		</tgroup>
 		</informaltable>
 		<para>
-		Note  that <option>--separate=kernel</option> also turns on <option>--separate=library</option>.
+		Note  that <option>--separate=kernel</option> also turns on <option>--separate=lib</option>.
 		<!-- FIXME: update if this change -->
 		When using <option>--separate=kernel</option>, samples in hardware interrupts, soft-irqs, or other
 		asynchronous kernel contexts are credited to the task currently running. This means you will see
@@ -630,7 +630,7 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		binary images. This is useful for restricting the sometimes voluminous
 		output you may get otherwise, especially with
 		<option>--separate=thread</option>. Note that if you are using
-		<option>--separate=library</option> or
+		<option>--separate=lib</option> or
 		<option>--separate=kernel</option>, then if you specification an
 		application binary, the shared libraries and kernel code
 		<emphasis>are</emphasis> included. Specify the value
@@ -1383,16 +1383,6 @@ escaping is necessary as <option>image:</option> takes a comma-separated list.
 </screen>
 
 <para>
-Get a symbol summary if you have the actual profile file and binary
-(perhaps somebody has sent you them via e-mail). These parameters
-cannot be used in combination with any others as the default searches
-are not performed.
-</para>
-<screen>
-# opreport -l binary:./mybinary sample-file:./CPU_CLK_UNHALTED.231500.0.all.all.all
-</screen>
-
-<para>
 Image summaries for all binaries in the <filename>test</filename> directory,
 excepting <filename>boring-test</filename> :
 </para>
@@ -1493,22 +1483,6 @@ excepting <filename>boring-test</filename> :
 	</varlistentry>
 
 	<varlistentry>
-		<term><option>binary:</option><emphasis>file</emphasis></term>
-		<listitem><para>
-		Give results only for the given file. This can only be used with
-		<option>sample-file:</option>.
-		</para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term><option>sample-file:</option><emphasis>file</emphasis></term>
-		<listitem><para>
-		Give results only for the given sample file. This can only be used with
-		<option>binary:</option>.
-		</para></listitem>
-	</varlistentry>
-
-	<varlistentry>
 		<term><option>cpu:</option><emphasis>cpulist</emphasis></term>
 		<listitem><para>
 		Only consider profiles for the given numbered CPU (starting from zero).
@@ -1593,7 +1567,7 @@ taken per second.
 Similarly, if the binary spends little time in the main binary image
 itself, with most of it spent in shared libraries it uses, you might
 not see any samples for the binary image itself. You can check this
-by using <command>opcontrol --separate=library</command> before the
+by using <command>opcontrol --separate=lib</command> before the
 profiling session, so <command>opreport</command> and friends show
 the library profiles on a per-application basis.
 </para></listitem></varlistentry>

@@ -1,3 +1,17 @@
+2004-07-06  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml:
+	* libpp/profile_spec.h:
+	* libpp/profile_spec.cpp: remove sample-file
+	  and binary profile specifiers
+
+	* doc/opcontrol.1.in:
+	* doc/oprofile.xml:
+	* pp/common_option.cpp:
+	* utils/opcontrol: allow either "lib" or "library"
+	 for merge/separate option. Document "lib"
+
 2004-07-06  Will Cohen <wcohen@redhat.com>
 
 	* doc/oprofile.xml:

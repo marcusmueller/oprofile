@@ -47,7 +47,7 @@ setup_stream setup;
 // We use a multimap because user can create multiple verbose object with
 // the same name, these are synonymous, setting up one to true will setup
 // all with the same name to true.
-typedef std::multimap<std::string, verbose *> recorder_t;
+typedef multimap<string, verbose *> recorder_t;
 // The recorder is lazilly created by verbose object ctor
 static recorder_t * object_map;
 

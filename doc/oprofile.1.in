@@ -140,16 +140,6 @@ libraries, all threads in a process share the same task group ID, but
 have different thread IDs. You can use this option in combination with
 tgid: to restrict the results to particular threads within a process.
 This is only useful when using per-process profile separation.
-.br
-.TP
-.BI "binary:"file
-Give results only for the given file. This can only be used with
-sample-file:.
-.br
-.TP
-.BI "sample-file:"sample file
-Give results only for the given sample file. This can only be used with
-binary:.
 
 .SH ENVIRONMENT
 No special environment variables are recognised by oprofile.

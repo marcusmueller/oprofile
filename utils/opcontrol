@@ -428,7 +428,7 @@ validate_separate_args()
 	while (($i < $#)); do
 		shift
 		case "$1" in
-			library)
+			lib|library)
 				SEPARATE_LIB=1
 				;;
 			kernel)

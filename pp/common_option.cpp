@@ -173,7 +173,7 @@ merge_option handle_merge_option(vector<string> const & mergespec,
 			// PP:5.21 tgid merge imply tid merging.
 			merge_by.tgid = true;
 			merge_by.tid = true;
-		} else if (*cit == "lib" && allow_lib) {
+		} else if ((*cit == "lib" || *cit == "library") && allow_lib) {
 			merge_by.lib = true;
 		} else if (*cit == "unitmask") {
 			merge_by.unitmask = true;

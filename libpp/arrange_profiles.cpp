@@ -674,7 +674,7 @@ get_iprofile(app_map_t & app_map, string const & image, size_t nr_classes)
 
 /// Pull out all the images, removing any we can't access.
 void
-verify_and_fill(std::string archive_path, app_map_t & app_map,
+verify_and_fill(string archive_path, app_map_t & app_map,
 		list<inverted_profile> & plist, extra_images const & extra)
 {
 	app_map_t::iterator it = app_map.begin();
@@ -692,7 +692,7 @@ verify_and_fill(std::string archive_path, app_map_t & app_map,
 
 
 list<inverted_profile> const
-invert_profiles(std::string archive_path, profile_classes const & classes,
+invert_profiles(string archive_path, profile_classes const & classes,
 		extra_images const & extra)
 {
 	app_map_t app_map;

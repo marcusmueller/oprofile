@@ -74,12 +74,6 @@ private:
 	void parse(std::string const & tag_value);
 
 	/**
-	 * must be called when parsing is finished to check constraint
-	 * on argument stated in various place of PP:3
-	 */
-	void validate();
-
-	/**
 	 * @param image an image or a libray name given on command line
 	 *
 	 * Used for e.g. "opreport /bin/mybinary". We don't know yet
@@ -98,8 +92,6 @@ private:
 	 * implement tag parsing: PP:3.3 to 3.16
 	 */
 	void parse_archive_path(std::string const &);
-	void parse_sample_file(std::string const &);
-	void parse_binary(std::string const &);
 	void parse_session(std::string const &);
 	void parse_session_exclude(std::string const &);
 	void parse_image(std::string const &);
@@ -127,7 +119,6 @@ private:
 	action_t get_handler(std::string const & tag_value,
 			     std::string & value);
 
-	filename_spec file_spec;
 	std::string archive_path;
 	std::string binary;
 	std::vector<std::string> session;
@@ -144,10 +135,6 @@ private:
 	// specified by user on command like opreport image1 image2 ...
 	std::vector<std::string> image_or_lib_image;
 
-	/// tree if any tag except sample-file: and binary: are seen
-	bool normal_tag_set;
-	/// true if sample-file: tag has been seen
-	bool sample_file_set;
 	/// extra search path for images
 	extra_images const & extra;
 };

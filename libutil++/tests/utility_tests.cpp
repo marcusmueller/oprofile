@@ -21,13 +21,13 @@ using namespace std;
 static int nb_new;
 static int nb_new_array;
 
-void* operator new(std::size_t size) throw(std::bad_alloc)
+void* operator new(size_t size) throw(bad_alloc)
 {
 	nb_new++;
 	return malloc(size);
 }
 
-void* operator new[](std::size_t size) throw(std::bad_alloc)
+void* operator new[](size_t size) throw(bad_alloc)
 {
 	nb_new_array++;
 	return malloc(size);

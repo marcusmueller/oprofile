@@ -24,7 +24,7 @@ bool glob_filter::fnmatcher::operator()(string const & s)
 }
 
 
-bool glob_filter::match(std::string const & str) const
+bool glob_filter::match(string const & str) const
 {
 	vector<string>::const_iterator cit;
 	cit = find_if(exclude.begin(), exclude.end(), fnmatcher(str));

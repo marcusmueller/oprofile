@@ -25,7 +25,7 @@ using namespace std;
 inverted_profile image_profile;
 
 namespace options {
-	std::string archive_path;
+	string archive_path;
 	string gmon_filename = "gmon.out";
 
 	// Ugly, for build only

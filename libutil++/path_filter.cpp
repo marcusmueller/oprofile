@@ -19,7 +19,7 @@
 
 using namespace std;
 
-bool path_filter::match(std::string const & str) const
+bool path_filter::match(string const & str) const
 {
 	vector<string>::const_iterator cit;
 

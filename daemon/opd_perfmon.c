@@ -172,7 +172,6 @@ static void setup_signals(void)
 		perror("oprofiled: install of SIGTERM handler failed: ");
 		exit(EXIT_FAILURE);
 	}
-
 }
 
 

@@ -138,7 +138,7 @@ unsigned int op_lexical_cast<unsigned int, string>(string const & str)
 	unsigned long ret = 0;
 	ret = strtoul(str.c_str(), &endptr, 0);
 	if (*endptr) {
-		throw std::invalid_argument("op_lexical_cast(\""+ str +"\")");
+		throw invalid_argument("op_lexical_cast(\""+ str +"\")");
 	}
 	return ret;
 }

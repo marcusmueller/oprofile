@@ -26,7 +26,7 @@ using namespace std;
 profile_classes classes;
 
 namespace options {
-	std::string archive_path;
+	string archive_path;
 	demangle_type demangle = dmt_normal;
 	string output_dir;
 	vector<string> search_dirs;

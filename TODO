@@ -6,8 +6,11 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8.1 release
 -------------
 
- o our option to -m is called "lib", but opcontrol --separate only accepts "library"
- o oparchive (and remove binary:/sample-file:)
+ o squish the time stamp warning in the opreport archive: case
+ o oparchive doesn't include callgraph files
+ o IA64 and maybe others do not properly disable a counter if it's been
+   used previously. Needs audit! (see bug 964097 report on sf). Needs
+   2.6 patch at least.
  o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
   outside .text section get a wrong offset
  o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.
@@ -111,6 +114,7 @@ Later
   cg on it) and  used to emulate the call count field in gprof. I think this is
   a after 1.0 thing but event aliases must be specified in a way allowing such
   extension
+ o oparchive could do with an --exclude-dependent option
  o do we need an opreport like opstack (showing caller/callee at binary
   boundary not symbols) ?
  o we should notice an opcontrol config change (--separate etc.) and
@@ -146,7 +150,6 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
  o remove 1 and 2 magic numbers for oprof_ready
  o adapt Anton's patch for handling non-symbolled libraries ?
  o use standard C integer type <stdint.h> int32_t int16_t etc.
- o opcontrol --save should allow to backup binary, see subject "features to make oprofile easier to use" on mail list
  o event multiplexing for real
  o XML output
  o profile the NMI handler code
