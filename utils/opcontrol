@@ -92,7 +92,9 @@ do_help() {
 	  --pid-filter=pid             Only profile process pid  (2.4 version)
 	  --pgrp-filter=pgrp           Only profile process tty group pgrp (2.4 version)
 	  --rtc-value=val	       Set sample rate to val per second (2.4 version)
-	  --separate=[library][,][kernel][,][all]         separate samples as given
+	  --kernel-only=[0|1]	       profile only the kernel (2.4 version)
+	  --note-table-size	       number of notes in kernel notes buffer (2.4 version)
+	  --separate=[library,kernel,all]         separate samples as given
 	  --vmlinux=file               vmlinux kernel image
 	  --verbose                    be verbose in the daemon log
 	  --kernel-range=start,end     kernel range vma address in hexadecimal
@@ -171,7 +173,6 @@ do_init() {
 	# for these three buffer size == 0 means use the default value
 	# hard-coded in op_user.h
 	BUF_SIZE=0
-	HASH_SIZE=0
 	NOTE_SIZE=0
 	IGNORE_MYSELF=0
 	VMLINUX=
@@ -180,6 +181,7 @@ do_init() {
 	VERBOSE=0
 	SEPARATE_LIB_SAMPLES=0
 	SEPARATE_KERNEL_SAMPLES=0
+	KERNEL_ONLY=0 # 2.2/2.4 kernel
 
 	# binaries called
 	OP_HELP=`dirname $0`/op_help
@@ -281,7 +283,6 @@ do_save_setup() {
 	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
 	echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
 	if test "$KERNEL_SUPPORT" != "yes"; then
-		echo "HASH_SIZE=$HASH_SIZE" >> $SETUP_FILE
 		echo "NOTE_SIZE=$NOTE_SIZE" >> $SETUP_FILE
 		echo "PID_FILTER=$PID_FILTER" >> $SETUP_FILE
 		echo "PGRP_FILTER=$PGRP_FILTER" >> $SETUP_FILE
@@ -525,6 +526,25 @@ do_options() {
 					PGRP_FILTER=$val
 				fi
 				;;
+			--kernel-only)
+				if test $"KERNEL_SUPPORT" = "yes"; then
+					echo "\"$arg\" ignored. " >& 2
+				else
+					if [ "$val" != "" ]; then
+						KERNEL_ONLY=$val
+					else
+						KERNEL_ONLY=1
+					fi
+				fi
+				;;
+			--note-table-size)
+				if test $"KERNEL_SUPPORT" = "yes"; then
+					echo "\"$arg\" ignored. " >& 2
+				else
+					NOTE_SIZE=$val
+				fi
+				;;
+
 			--verbose)
 				VERBOSE=1
 				;;
@@ -541,6 +561,7 @@ do_options() {
 			--list-events)
 				exec $OP_HELP
 				;;
+				
 			*)
 				echo "Unknown option \"$arg\". See opcontrol --help" >&2
 				exit 1
@@ -712,9 +733,6 @@ do_setup() {
 
 # initialise sysctl parameters
 do_sysctl_setup_24() {
-	if [ $HASH_SIZE != 0 ]; then
-		$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE
-	fi
 	if [ $BUF_SIZE != 0 ]; then
 		$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE
 	fi
