@@ -42,7 +42,7 @@ oprofpp: $(SOURCES) $(HEADERS)
 	$(CXX) $(CFLAGS) $(INCLUDES) -o $@ $(SOURCES) $(LIBS)
 
 oprof_convert: oprof_convert.c ../dae/opd_util.c ../dae/opd_util.h
-	$(CC) -Wall oprof_convert.c ../dae/opd_util.c -o $@
+	$(CC) $(CFLAGS) oprof_convert.c ../dae/opd_util.c -o $@ $(LIBS)
 
 oprofpp_no_main.o: oprofpp.c $(HEADERS)
 	$(CXX) -c -DOPROFPP_NO_MAIN $(CXXFLAGS) $(INCLUDES) -o $@ oprofpp.c

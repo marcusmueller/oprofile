@@ -11,8 +11,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>591</width>
-            <height>477</height>
+            <width>587</width>
+            <height>520</height>
         </rect>
     </property>
     <property stdset="1">
@@ -78,6 +78,13 @@
                                     <name>name</name>
                                     <cstring>counter_combo</cstring>
                                 </property>
+                                <property stdset="1">
+                                    <name>sizePolicy</name>
+                                    <sizepolicy>
+                                        <hsizetype>5</hsizetype>
+                                        <vsizetype>0</vsizetype>
+                                    </sizepolicy>
+                                </property>
                                 <property>
                                     <name>toolTip</name>
                                     <string>Select a counter to setup</string>
@@ -126,10 +133,25 @@
                                 <number>6</number>
                             </property>
                             <widget>
+                                <class>QCheckBox</class>
+                                <property stdset="1">
+                                    <name>name</name>
+                                    <cstring>enabled</cstring>
+                                </property>
+                                <property stdset="1">
+                                    <name>text</name>
+                                    <string>&amp;Enabled</string>
+                                </property>
+                                <property>
+                                    <name>toolTip</name>
+                                    <string>Is this counter enabled ?</string>
+                                </property>
+                            </widget>
+                            <widget>
                                 <class>QLayoutWidget</class>
                                 <property stdset="1">
                                     <name>name</name>
-                                    <cstring>Layout23</cstring>
+                                    <cstring>Layout15</cstring>
                                 </property>
                                 <hbox>
                                     <property stdset="1">
@@ -141,84 +163,35 @@
                                         <number>6</number>
                                     </property>
                                     <widget>
-                                        <class>QLayoutWidget</class>
+                                        <class>QListView</class>
+                                        <column>
+                                            <property>
+                                                <name>text</name>
+                                                <string>Event</string>
+                                            </property>
+                                            <property>
+                                                <name>clickable</name>
+                                                <bool>false</bool>
+                                            </property>
+                                            <property>
+                                                <name>resizeable</name>
+                                                <bool>true</bool>
+                                            </property>
+                                        </column>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>Layout21</cstring>
+                                            <cstring>events_list</cstring>
                                         </property>
-                                        <vbox>
-                                            <property stdset="1">
-                                                <name>margin</name>
-                                                <number>0</number>
-                                            </property>
-                                            <property stdset="1">
-                                                <name>spacing</name>
-                                                <number>6</number>
-                                            </property>
-                                            <widget>
-                                                <class>QLabel</class>
-                                                <property stdset="1">
-                                                    <name>name</name>
-                                                    <cstring>events_label</cstring>
-                                                </property>
-                                                <property stdset="1">
-                                                    <name>text</name>
-                                                    <string>&amp;Events</string>
-                                                </property>
-                                                <property>
-                                                    <name>buddy</name>
-                                                    <cstring>events_list</cstring>
-                                                </property>
-                                                <property stdset="1">
-                                                    <name>sizePolicy</name>
-                                                    <sizepolicy>
-                                                        <hsizetype>7</hsizetype>
-                                                        <vsizetype>1</vsizetype>
-                                                    </sizepolicy>
-                                                </property>
-                                            </widget>
-                                            <widget>
-                                                <class>QListView</class>
-                                                <column>
-                                                    <property>
-                                                        <name>text</name>
-                                                        <string>Event</string>
-                                                    </property>
-                                                    <property>
-                                                        <name>clickable</name>
-                                                        <bool>false</bool>
-                                                    </property>
-                                                    <property>
-                                                        <name>resizeable</name>
-                                                        <bool>true</bool>
-                                                    </property>
-                                                </column>
-                                                <column>
-                                                    <property>
-                                                        <name>text</name>
-                                                        <string>Description</string>
-                                                    </property>
-                                                    <property>
-                                                        <name>clickable</name>
-                                                        <bool>false</bool>
-                                                    </property>
-                                                    <property>
-                                                        <name>resizeable</name>
-                                                        <bool>true</bool>
-                                                    </property>
-                                                </column>
-                                                <property stdset="1">
-                                                    <name>name</name>
-                                                    <cstring>events_list</cstring>
-                                                </property>
-                                            </widget>
-                                        </vbox>
+                                        <property>
+                                            <name>toolTip</name>
+                                            <string>Available events</string>
+                                        </property>
                                     </widget>
                                     <widget>
                                         <class>QLayoutWidget</class>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>Layout22</cstring>
+                                            <cstring>Layout18</cstring>
                                         </property>
                                         <vbox>
                                             <property stdset="1">
@@ -263,7 +236,7 @@
                                                 <class>QLayoutWidget</class>
                                                 <property stdset="1">
                                                     <name>name</name>
-                                                    <cstring>Layout7</cstring>
+                                                    <cstring>Layout16</cstring>
                                                 </property>
                                                 <hbox>
                                                     <property stdset="1">
@@ -310,7 +283,7 @@
                                                     <spacer>
                                                         <property>
                                                             <name>name</name>
-                                                            <cstring>Spacer4</cstring>
+                                                            <cstring>Spacer13_2</cstring>
                                                         </property>
                                                         <property stdset="1">
                                                             <name>orientation</name>
@@ -318,7 +291,7 @@
                                                         </property>
                                                         <property stdset="1">
                                                             <name>sizeType</name>
-                                                            <enum>Minimum</enum>
+                                                            <enum>Expanding</enum>
                                                         </property>
                                                         <property>
                                                             <name>sizeHint</name>
@@ -337,15 +310,15 @@
                                                     <cstring>unit_mask_group</cstring>
                                                 </property>
                                                 <property stdset="1">
-                                                    <name>title</name>
-                                                    <string>Unit mask</string>
-                                                </property>
-                                                <property stdset="1">
                                                     <name>sizePolicy</name>
                                                     <sizepolicy>
                                                         <hsizetype>1</hsizetype>
                                                         <vsizetype>5</vsizetype>
                                                     </sizepolicy>
+                                                </property>
+                                                <property stdset="1">
+                                                    <name>title</name>
+                                                    <string>Unit mask</string>
                                                 </property>
                                                 <property>
                                                     <name>toolTip</name>
@@ -360,6 +333,17 @@
                                                         <name>spacing</name>
                                                         <number>6</number>
                                                     </property>
+                                                    <widget>
+                                                        <class>QCheckBox</class>
+                                                        <property stdset="1">
+                                                            <name>name</name>
+                                                            <cstring>check0</cstring>
+                                                        </property>
+                                                        <property stdset="1">
+                                                            <name>text</name>
+                                                            <string>check0</string>
+                                                        </property>
+                                                    </widget>
                                                     <widget>
                                                         <class>QCheckBox</class>
                                                         <property stdset="1">
@@ -426,29 +410,29 @@
                                                             <string>check6</string>
                                                         </property>
                                                     </widget>
+                                                    <spacer>
+                                                        <property>
+                                                            <name>name</name>
+                                                            <cstring>Spacer14</cstring>
+                                                        </property>
+                                                        <property stdset="1">
+                                                            <name>orientation</name>
+                                                            <enum>Vertical</enum>
+                                                        </property>
+                                                        <property stdset="1">
+                                                            <name>sizeType</name>
+                                                            <enum>Expanding</enum>
+                                                        </property>
+                                                        <property>
+                                                            <name>sizeHint</name>
+                                                            <size>
+                                                                <width>20</width>
+                                                                <height>20</height>
+                                                            </size>
+                                                        </property>
+                                                    </spacer>
                                                 </vbox>
                                             </widget>
-                                            <spacer>
-                                                <property>
-                                                    <name>name</name>
-                                                    <cstring>Spacer1</cstring>
-                                                </property>
-                                                <property stdset="1">
-                                                    <name>orientation</name>
-                                                    <enum>Vertical</enum>
-                                                </property>
-                                                <property stdset="1">
-                                                    <name>sizeType</name>
-                                                    <enum>Expanding</enum>
-                                                </property>
-                                                <property>
-                                                    <name>sizeHint</name>
-                                                    <size>
-                                                        <width>20</width>
-                                                        <height>20</height>
-                                                    </size>
-                                                </property>
-                                            </spacer>
                                         </vbox>
                                     </widget>
                                 </hbox>
@@ -479,6 +463,13 @@
                                             <bool>true</bool>
                                         </property>
                                         <property stdset="1">
+                                            <name>sizePolicy</name>
+                                            <sizepolicy>
+                                                <hsizetype>3</hsizetype>
+                                                <vsizetype>1</vsizetype>
+                                            </sizepolicy>
+                                        </property>
+                                        <property stdset="1">
                                             <name>frameShape</name>
                                             <enum>WinPanel</enum>
                                         </property>
@@ -489,13 +480,6 @@
                                         <property stdset="1">
                                             <name>text</name>
                                             <string></string>
-                                        </property>
-                                        <property stdset="1">
-                                            <name>sizePolicy</name>
-                                            <sizepolicy>
-                                                <hsizetype>3</hsizetype>
-                                                <vsizetype>1</vsizetype>
-                                            </sizepolicy>
                                         </property>
                                     </widget>
                                     <spacer>
@@ -1116,21 +1100,6 @@
                     <name>spacing</name>
                     <number>6</number>
                 </property>
-                <widget>
-                    <class>QPushButton</class>
-                    <property stdset="1">
-                        <name>name</name>
-                        <cstring>buttonHelp</cstring>
-                    </property>
-                    <property stdset="1">
-                        <name>text</name>
-                        <string>&amp;Help</string>
-                    </property>
-                    <property stdset="1">
-                        <name>autoDefault</name>
-                        <bool>true</bool>
-                    </property>
-                </widget>
                 <spacer>
                     <property>
                         <name>name</name>
@@ -1270,9 +1239,21 @@
     </connection>
     <connection>
         <sender>counter_combo</sender>
-        <signal>highlighted(int)</signal>
+        <signal>activated(int)</signal>
         <receiver>oprof_start_base</receiver>
         <slot>counter_selected(int)</slot>
+    </connection>
+    <connection>
+        <sender>enabled</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>enabled_toggled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>events_list</sender>
+        <signal>onItem(QListViewItem*)</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>event_over(QListViewItem *)</slot>
     </connection>
     <connection>
         <sender>events_list</sender>
@@ -1281,7 +1262,9 @@
         <slot>event_selected(QListViewItem *)</slot>
     </connection>
     <slot access="public">counter_selected(int)</slot>
+    <slot access="public">enabled_toggled(bool)</slot>
     <slot access="public">event_selected(QListViewItem *)</slot>
+    <slot access="public">event_over(QListViewItem *)</slot>
     <slot access="protected">on_choose_file_or_dir()</slot>
     <slot access="protected">on_flush_profiler_data()</slot>
     <slot access="protected">on_start_profiler()</slot>
@@ -1292,7 +1275,6 @@
     <tabstop>os_ring_count_cb</tabstop>
     <tabstop>user_ring_count_cb</tabstop>
     <tabstop>event_count_edit</tabstop>
-    <tabstop>buttonHelp</tabstop>
     <tabstop>start_profiler_btn</tabstop>
     <tabstop>flush_profiler_data_btn</tabstop>
     <tabstop>stop_profiler_btn</tabstop>

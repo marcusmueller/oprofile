@@ -256,13 +256,11 @@ void config_setting::save(std::ostream& out) const
 std::ostream& operator<<(std::ostream& out, const config_setting& object)
 {
 	object.save(out);
-
 	return out;
 }
 
 std::istream& operator>>(std::istream& in, config_setting& object)
 {
 	object.load(in);
-
 	return in;
 }

@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.15 2001/09/20 03:20:36 phil_e Exp $ */
+/* $Id: opd_util.h,v 1.16 2001/09/22 23:05:11 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -26,6 +26,7 @@
 #include <errno.h> 
 #include <time.h> 
 #include <fcntl.h> 
+#include <popt.h>
 
 #include "../op_user.h"
 
@@ -64,6 +65,11 @@ struct opd_fentry {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* ugh */
+poptContext opd_poptGetContext(const char * name,
+                int argc, const char ** argv,
+                const struct poptOption * options, int flags);
 
 /* utility functions */
 #define opd_calloc(memb, size) opd_malloc(memb*size)

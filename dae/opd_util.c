@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.21 2001/09/20 03:20:36 phil_e Exp $ */
+/* $Id: opd_util.c,v 1.22 2001/09/22 23:05:11 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -789,4 +789,22 @@ size_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
  
 	} while (count < 0);
 	return count;
+}
+
+ 
+/**
+ * opd_poptGetContext - wrapper for popt
+ *
+ * Use this instead of poptGetContext to cope with
+ * different popt versions. 
+ */
+poptContext opd_poptGetContext(const char * name,
+		int argc, const char ** argv,
+		const struct poptOption * options, int flags)
+{
+#ifdef CONST_POPT
+	return poptGetContext(name, argc, argv, options, flags); 
+#else
+	return poptGetContext(name, argc, (char **)argv, options, flags); 
+#endif
 }

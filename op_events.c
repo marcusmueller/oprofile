@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.25 2001/09/15 01:51:30 phil_e Exp $ */
+/* $Id: op_events.c,v 1.26 2001/09/22 23:05:11 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -496,9 +496,9 @@ struct op_unit_desc op_unit_descs[] = {
 	  "MMX unpack operations",
 	  "MMX packed logical",
 	  "MMX packed arithmetic",
-	  "MMX pack/unpack operations, packed multiplies/shifts/logical/arithmetic" }, },
-	{ { "transitions from MMX to floating point",
-	  "transitions from floating point to MMX",
+	  "All the above" }, },
+	{ { "MMX->float transitions",
+	  "float->MMX transitions",
 	  NULL, NULL, NULL, NULL, NULL, }, },
 	{ { "ES register",
 	  "DS register",

@@ -294,7 +294,7 @@ static void do_mapping_transfer(uint nr_samples, int counter,
 
 err2:
 		close(out_fd);
-err1:
+err1:;
 	}
 
 	/* respect the new lazilly file creation behavior of the daemon */
@@ -310,7 +310,6 @@ err1:
 static void v4_to_v5(FILE* fp)
 {
 	struct opd_footer_v4 footer_v4;
-	char *out_filename;
 	char *session_str;
 	int session_number;
 	int ok;
@@ -344,12 +343,13 @@ static void v4_to_v5(FILE* fp)
 	old_fd = open(filename, O_RDONLY);
 	if (old_fd == -1) {
 		fprintf(stderr, "oprof_convert: Opening %s failed. %s\n", filename, strerror(errno));
-		goto out;
+		return;
 	}
 
 	old_size = opd_get_fsize(filename, 1);
-	if (old_size < sizeof(struct opd_footer_v4)) {
-		fprintf(stderr, "oprof_convert: sample file %s not enough big %d, expected %d\n", filename, old_size, sizeof(struct opd_footer_v4));
+	if (old_size < (off_t)sizeof(struct opd_footer_v4)) {
+		fprintf(stderr, "oprof_convert: sample file %s not big enough big %d, expected %d\n", 
+			filename, old_size, sizeof(struct opd_footer_v4));
 		goto err1;
 	}
 
@@ -362,8 +362,8 @@ static void v4_to_v5(FILE* fp)
 	nr_samples = (old_size - sizeof(struct opd_footer_v4)) / sizeof(struct old_opd_fentry);
 
 	len_filename = strlen(filename);
-	out_filename = opd_malloc(len_filename + 32);
-	strcpy(out_filename, filename);
+	//out_filename = opd_malloc(len_filename + 32);
+	//strcpy(out_filename, filename);
 
 	for (counter = 0; counter < 2 ; ++counter) {
 		do_mapping_transfer(nr_samples, counter, filename,
@@ -375,8 +375,6 @@ static void v4_to_v5(FILE* fp)
 
 err1:
 	close(old_fd);
-out:
-	opd_free(out_filename);
 }
 
 static struct converter converter_array[] = {

@@ -27,18 +27,24 @@
 class QIntValidator;
 class QListViewItem;
 
+/// a struct describing a particular event type
 struct op_event_descr {
 	op_event_descr();
 
-	uint counter_mask;		// bitmask of allowed counter
-	u8 val;				// event number
-	const op_unit_mask* unit;	// != 0 if unit mask allowed
-	const op_unit_desc* um_descr;	// ditto
-	// FIXME: char arrays ... NOOOO ! ;) 
-	const char* name;		// never nil
-	const char* help_str;		// ditto
-	uint min_count;			// minimum counter value allowed
-	QCheckBox* cb;
+	/// bit mask of allowed counters 
+	uint counter_mask;
+	/// hardware event number 
+	u8 val;
+	/// unit mask values if applicable 
+	const op_unit_mask * unit;
+	/// unit mask descriptions if applicable
+	const op_unit_desc * um_descr;
+	/// name of event 
+	std::string name;
+	/// description of event
+	std::string help_str;
+	/// minimum counter value
+	uint min_count;
 };
 
 class oprof_start : public oprof_start_base
@@ -48,59 +54,85 @@ class oprof_start : public oprof_start_base
 public:
 	oprof_start();
 
-protected:
+protected slots:
+	/// after selecting to choose a file/dir
 	void on_choose_file_or_dir();
-	void on_event_clicked();
+	/// flush profiler 
 	void on_flush_profiler_data();
+	/// start profiler 
 	void on_start_profiler();
+	/// stop profiler
 	void on_stop_profiler();
+	/// the counter combo has been activated
 	void counter_selected(int);
+	/// an event has been selected 
 	void event_selected(QListViewItem *); 
+	/// the mouse is over an event 
+	void event_over(QListViewItem *); 
+	/// enabled has been changed
+	void enabled_toggled(bool); 
 
+	/// close the dialog
 	void accept();
 
 private:
-	// return 0 if not found
-	const op_event_descr* locate_event(const char* name);
+	/// find an event description by name
+	const op_event_descr & locate_event(std::string const & name);
 
-	void do_selected_event_change(const op_event_descr*);
-	void event_checked(const op_event_descr*);
-	void event_unchecked(const op_event_descr*);
-
-	// recorded in memory, not to persistent storage
+	/// update config on user change
 	void record_selected_event_config();
+	/// update config and validate 
 	bool record_config();
 
-	uint get_unit_mask_part(const QCheckBox* cb, uint result);
-	uint get_unit_mask();
-	void create_unit_mask_btn(const op_event_descr* descr);
+	/// calculate unit mask for given event and unit mask part
+	void get_unit_mask_part(op_event_descr const & descr, uint num, bool selected, uint & mask);
+	/// calculate unit mask for given event
+	uint get_unit_mask(op_event_descr const & descr);
+	/// set the unit mask widgets for given event
+	void setup_unit_masks(op_event_descr const & descr);
 
+	/// update the counter combo at given position
+	void set_counter_combo(uint);
+ 
+	/// load the event config file
 	void load_event_config_file();
+	/// save the event config file 
 	bool save_event_config_file();
-
+	/// load the extra config file
 	void load_config_file();
+	/// save the extra config file
 	bool save_config_file();
 
+	//@ validators
 	QIntValidator* validate_buffer_size;
 	QIntValidator* validate_hash_table_size;
 	QIntValidator* validate_event_count;
 	QIntValidator* validate_pid_filter;
 	QIntValidator* validate_pgrp_filter;
+	//@
 
+	/// all available events for this hardware
 	std::vector<op_event_descr> v_events;
 
-	// to avoid wasting cpu time when re-selecting the same event.
-	//const op_event_descr* event_selected;
-	// same: used to optimize mouse move event
-	uint last_mouse_motion_cb_index;
-
-	persistent_config_t<event_setting> event_cfg;
+	/// the current counter in the GUI
+	uint current_ctr;
+	/// current event selections for each counter
+	struct op_event_descr const * current_event[OP_MAX_COUNTERS];
+	/// current event configs for each counter
+	persistent_config_t<event_setting> event_cfgs[OP_MAX_COUNTERS];
+	/// enabled status for each counter
+	bool ctr_enabled[OP_MAX_COUNTERS]; 
+ 
+	/// current config
 	config_setting config;
 
-	// the expansion of "~" directory
+	/// the expansion of "~" directory
 	std::string user_dir;
 
+	/// CPU type
 	int cpu_type;
+
+	/// total number of available HW counters
 	uint op_nr_counters;
 };
 

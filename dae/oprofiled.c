@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.44 2001/09/20 03:20:36 phil_e Exp $ */
+/* $Id: oprofiled.c,v 1.45 2001/09/22 23:05:11 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -161,8 +161,7 @@ static void opd_options(int argc, char const *argv[])
 	/* should be sufficient to hold /proc/sys/dev/oprofile/%d/yyyy */
 	char filename[PATH_MAX + 1];
 
-	/* Some old version of popt need the cast to char ** */
-	optcon = poptGetContext(NULL, argc, (char **)argv, options, 0);
+	optcon = opd_poptGetContext(NULL, argc, argv, options, 0);
 
 	c=poptGetNextOpt(optcon);
 

@@ -28,7 +28,6 @@
 #include <qfiledialog.h>
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
-#include <qobjectlist.h>
 #include <qtabwidget.h>
 #include <qmessagebox.h>
 #include <qvalidator.h>
@@ -37,6 +36,7 @@
 #include "oprof_start.h"
 
 // TODO: some ~0u here for CRT_ALL
+// jbl: what does this mean ?
 
 namespace {
 
@@ -51,7 +51,7 @@ bool check_and_create_config_dir()
 	std::string dir = get_user_filename(".oprofile");
 
 	if (access(dir.c_str(), F_OK)) {
-		if (mkdir(dir.c_str(), R_OK|W_OK|X_OK)) {
+		if (mkdir(dir.c_str(), 0700)) {
 			std::ostringstream out;
 			out << "unable to create " << dir << " directory: ";
 			QMessageBox::warning(0, 0, out.str().c_str());
@@ -63,6 +63,48 @@ bool check_and_create_config_dir()
 	return true;
 }
 
+std::string const format(std::string const & orig, uint const maxlen)
+{
+	string text(orig);
+
+	std::istringstream ss(text);
+	std::vector<std::string> lines;
+
+	std::string oline;
+	std::string line;
+
+	while (getline(ss, oline)) {
+		if (line.size() + oline.size() < maxlen) {
+			lines.push_back(line + oline);
+			line.erase();
+		} else {
+			lines.push_back(line);
+			line.erase();
+			std::string s;
+			std::string word;
+			std::istringstream oss(oline);
+			while (oss >> word) {
+				if (line.size() + word.size() > maxlen) {
+					lines.push_back(line);
+					line.erase();
+				}
+				line += word + " ";
+			}
+		}
+	}
+
+	if (line.size())
+		lines.push_back(line);
+
+	std::string ret;
+
+	for(std::vector<std::string>::const_iterator it = lines.begin(); it != lines.end(); ++it)
+		ret += *it + "\n";
+
+	return ret;
+}
+
+
 int do_exec_command(const std::string& cmd)
 {
 	std::ostringstream out;
@@ -70,19 +112,13 @@ int do_exec_command(const std::string& cmd)
 
 	int ret = exec_command(cmd, out, err);
 
+	// FIXME: err is empty e.g. if you are not root !!
+ 
 	if (ret) {
-		// TODO: output to a window error message or a tree view error
-#if 0		// gives very bad output: qt message box do not cut long line.
-		std::string error = "command fail:\n" + cmd + "\n";
-		error += out.str() + "\n" + err.str();;
+		std::string error = "Failed: with error \"" + err.str() + "\"\n";
+		error += "Command was :\n\n" + cmd + "\n";
 
-		QMessageBox::warning(0, 0, error.c_str());
-#else
-		std::string error = "command fail:\n" + cmd + "\n";
-		error += out.str() + "\n" + err.str();;
-
-		std::cout << error;
-#endif
+		QMessageBox::warning(0, 0, format(error, 50).c_str());
 	}
 
 	return ret;
@@ -132,10 +168,7 @@ op_event_descr::op_event_descr()
 	val(0),
 	unit(0),
 	um_descr(0),
-	name(0),
-	help_str(0),
-	min_count(0),
-	cb(0)
+	min_count(0)
 {
 }
 
@@ -147,10 +180,15 @@ oprof_start::oprof_start()
 	validate_event_count(new QIntValidator(event_count_edit)),
 	validate_pid_filter(new QIntValidator(pid_filter_edit)),
 	validate_pgrp_filter(new QIntValidator(pgrp_filter_edit)),
-	last_mouse_motion_cb_index((uint)-1),
+	current_ctr(0),
 	cpu_type(op_get_cpu_type()),
 	op_nr_counters(2)
 {
+	for (uint i = 0; i < OP_MAX_COUNTERS; ++i) {
+		current_event[i] = 0;
+		ctr_enabled[i] = 0;
+	}
+ 
 	if (cpu_type == CPU_ATHLON)
 		op_nr_counters = 4;
 
@@ -183,12 +221,13 @@ oprof_start::oprof_start()
 	kernel_only_cb->setChecked(config.kernel_only);
 
 	// the unit mask check boxes
+	check0->hide();
 	check1->hide();
 	check2->hide();
 	check3->hide();
 	check4->hide();
 	check5->hide();
-	check6->hide();
+	check6->hide(); 
  
 	// build from stuff in op_events.c the description of events.
 	for (uint i = 0 ; i < op_nr_events ; ++i) {
@@ -209,16 +248,17 @@ oprof_start::oprof_start()
 			descr.help_str = op_event_descs[i];
 			descr.min_count = op_events[i].min_count;
 
-			// These event_cfg set acts like as default value if
-			// the event config does not exist.
-
-			// min value * 100 is the default value.
-			event_cfg[descr.name].count = descr.min_count * 100;
-			event_cfg[descr.name].umask = 0;
-			if (descr.unit)
-				event_cfg[descr.name].umask = descr.unit->default_mask;
-			event_cfg[descr.name].os_ring_count = 1;
-			event_cfg[descr.name].user_ring_count = 1;
+			for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
+				if (!(descr.counter_mask & (1 << ctr)))
+					continue;
+ 
+				event_cfgs[ctr][descr.name].count = descr.min_count * 100;
+				event_cfgs[ctr][descr.name].umask = 0;
+				if (descr.unit)
+					event_cfgs[ctr][descr.name].umask = descr.unit->default_mask;
+				event_cfgs[ctr][descr.name].os_ring_count = 1;
+				event_cfgs[ctr][descr.name].user_ring_count = 1;
+			}
 
 			v_events.push_back(descr);
 		}
@@ -231,11 +271,16 @@ oprof_start::oprof_start()
 	validate_pid_filter->setRange(OP_MIN_PID, OP_MAX_PID);
 	validate_pgrp_filter->setRange(OP_MIN_PID, OP_MAX_PID);
 
+	events_list->setSorting(-1);
+ 
 	for (uint i = 0; i < op_nr_counters; ++i) {
-		std::string str("Counter ");
-		char c = '1' + i;
-		counter_combo->insertItem((str + c).c_str());
+		counter_combo->insertItem("");
+		set_counter_combo(i);
 	}
+
+	counter_selected(0);
+	enabled_toggled(false);
+ 
 	load_event_config_file();
 }
 
@@ -248,8 +293,8 @@ void oprof_start::load_config_file()
 
 	{
 		std::ifstream in(name.c_str());
+		// this creates the config directory if necessary
 		if (!in)
-			// trick: this create the config directory if necessary
 			save_config_file();
 	}
 
@@ -286,8 +331,8 @@ void oprof_start::load_event_config_file()
 
 	{
 		std::ifstream in(name.c_str());
+		// this creates the config directory if necessary
 		if (!in)
-			// trick: this create the config directory if necessary
 			save_event_config_file();
 	}
 
@@ -299,9 +344,10 @@ void oprof_start::load_event_config_file()
 	}
 
 	// TODO: need checking on the key validity :(
-	in >> event_cfg;
+	// FIXME: this needs to be per-counter 
+	in >> event_cfgs[0];
 
-	event_cfg.set_dirty(false);
+	event_cfgs[0].set_dirty(false);
 }
 
 // this work as load_config_file()/save_config_file()
@@ -314,9 +360,10 @@ bool oprof_start::save_event_config_file()
 
 	std::ofstream out(name.c_str());
 
-	out << event_cfg;
+	// FIXME: !!!!! 
+	out << event_cfgs[0];
 
-	event_cfg.set_dirty(false);
+	event_cfgs[0].set_dirty(false);
 
 	return true;
 }
@@ -324,12 +371,12 @@ bool oprof_start::save_event_config_file()
 // user is happy and want to quit in the normal way, so save the config file.
 void oprof_start::accept()
 {
-	// Configuration for an event is recorded only when the user change
-	// the currently selected events, so force the recording here.
+	// record the previous settings
 	record_selected_event_config();
 
 	// TODO: check and warn about return code.
-	if (event_cfg.dirty()) {
+	// FIXME: counters
+	if (event_cfgs[0].dirty()) {
 		printf("saving configuration file");
 		save_event_config_file();
 	}
@@ -341,36 +388,106 @@ void oprof_start::accept()
 	QDialog::accept();
 }
 
-// counter combo box selected
+ 
+void oprof_start::set_counter_combo(uint ctr)
+{
+	std::string ctrstr("Counter ");
+	char c = '0' + ctr;
+	ctrstr += c;
+	ctrstr += string(": ");
+	if (current_event[ctr])
+		ctrstr += current_event[ctr]->name;
+	else
+		ctrstr += "not used";
+	counter_combo->changeItem(ctrstr.c_str(), ctr);
+	counter_combo->setMinimumSize(counter_combo->sizeHint()); 
+}
+
+ 
 void oprof_start::counter_selected(int ctr)
 {
+	// record the previous settings
+	record_selected_event_config();
+ 
+	current_ctr = ctr;
+ 
+	setUpdatesEnabled(false); 
 	events_list->clear();
  
-	for (std::vector<op_event_descr>::const_iterator cit = v_events.begin();
-		cit != v_events.end(); ++cit) {
+	for (std::vector<op_event_descr>::reverse_iterator cit = v_events.rbegin();
+		cit != v_events.rend(); ++cit) {
  
-		// FIXME: counter_mask check
-
-		new QListViewItem(events_list, cit->name, cit->help_str); 
+		if (cit->counter_mask & (1 << ctr)) {
+			QListViewItem * item = new QListViewItem(events_list, cit->name.c_str());
+			if (current_event[ctr] != 0 && cit->name == current_event[ctr]->name)
+				events_list->setCurrentItem(item);
+		}
 	}
+
+	enabled->setChecked(ctr_enabled[ctr]);
+ 
+	setUpdatesEnabled(true);
+	update();
 }
 
  
-// event selected
 void oprof_start::event_selected(QListViewItem * item)
 {
-	op_event_descr const * descr = locate_event(item->text(0).latin1());
-
-	std::string str(descr->help_str);
-	str += " (min count: FIXME)";
-
-	event_help_label->setText(str.c_str());
+	// record the previous settings
+	record_selected_event_config();
  
-	// FIXME: here we make visible the right checkboxes and set their
-	// tooltips and text.
+	op_event_descr const & descr = locate_event(item->text(0).latin1());
+
+	setUpdatesEnabled(false); 
+ 
+	event_help_label->setText(descr.help_str.c_str());
+	setup_unit_masks(descr);
+ 
+	validate_event_count->setRange(descr.min_count, OP_MAX_PERF_COUNT);
+ 
+	const persistent_config_t<event_setting> & cfg = event_cfgs[current_ctr];
+ 
+	os_ring_count_cb->setChecked(cfg[descr.name].os_ring_count);
+	user_ring_count_cb->setChecked(cfg[descr.name].user_ring_count);
+	QString count_text;
+	count_text.setNum(cfg[descr.name].count);
+	event_count_edit->setText(count_text);
+
+	current_event[current_ctr] = &descr;
+	set_counter_combo(current_ctr);
+ 
+	setUpdatesEnabled(true);
+	update();
 }
  
  
+void oprof_start::event_over(QListViewItem * item)
+{
+	op_event_descr const & descr = locate_event(item->text(0).latin1());
+	event_help_label->setText(descr.help_str.c_str());
+}
+
+ 
+void oprof_start::enabled_toggled(bool en)
+{
+	ctr_enabled[current_ctr] = en;
+	if (!en)
+		events_list->clearSelection();
+	events_list->setEnabled(en); 
+	check0->setEnabled(en); 
+	check1->setEnabled(en); 
+	check2->setEnabled(en); 
+	check3->setEnabled(en); 
+	check4->setEnabled(en); 
+	check5->setEnabled(en); 
+	check6->setEnabled(en); 
+	os_ring_count_cb->setEnabled(en); 
+	user_ring_count_cb->setEnabled(en); 
+	event_count_edit->setEnabled(en);
+	set_counter_combo(current_ctr); 
+}
+
+
 // user need to select a file or directory, distinction about what the user
 // needs to select is made through the source of the qt event.
 void oprof_start::on_choose_file_or_dir()
@@ -431,7 +548,6 @@ void oprof_start::on_choose_file_or_dir()
 // TODO: need validation?
 void oprof_start::record_selected_event_config()
 {
-#if 0 
 	// saving must be made only if a change occur to avoid setting the
 	// dirty flag in event_cfg. For the same reason we can not use a
 	// temporay to an 'event_setting&' to clarify the code.
@@ -440,29 +556,28 @@ void oprof_start::record_selected_event_config()
 	// call the non const operator [] ofevent_cfg. We can probably do
 	// better in event_cfg stuff but it need a proxy return from []. 
 	// See persistent_config_t doc
-	if (event_selected) {
-		const persistent_config_t<event_setting>& cfg = event_cfg;
 
-		uint count = event_count_edit->text().toUInt();
+	struct op_event_descr const * curr = current_event[current_ctr];
 
-		if (cfg[event_selected->name].count != count)
-			event_cfg[event_selected->name].count = count;
+	if (!curr)
+		return;
+ 
+	const persistent_config_t<event_setting>& cfg = event_cfgs[current_ctr];
+	std::string name(curr->name);
 
-		if (cfg[event_selected->name].os_ring_count !=
-		    os_ring_count_cb->isChecked())
-			event_cfg[event_selected->name].os_ring_count = 
-				os_ring_count_cb->isChecked();
-		
-		if (cfg[event_selected->name].user_ring_count !=
-		    user_ring_count_cb->isChecked())
-			event_cfg[event_selected->name].user_ring_count =
-				user_ring_count_cb->isChecked();
+	uint count = event_count_edit->text().toUInt();
 
-		if (cfg[event_selected->name].umask != get_unit_mask())
-			event_cfg[event_selected->name].umask = 
-				get_unit_mask();
-	}
-#endif
+	if (cfg[name].count != count)
+		event_cfgs[current_ctr][name].count = count;
+
+	if (cfg[name].os_ring_count != os_ring_count_cb->isChecked())
+		event_cfgs[current_ctr][name].os_ring_count = os_ring_count_cb->isChecked();
+	
+	if (cfg[name].user_ring_count != user_ring_count_cb->isChecked())
+		event_cfgs[current_ctr][name].user_ring_count = user_ring_count_cb->isChecked();
+
+	if (cfg[name].umask != get_unit_mask(*curr))
+		event_cfgs[current_ctr][name].umask = get_unit_mask(*curr);
 }
 
 // same design as record_selected_event_config without trying to not dirties
@@ -517,340 +632,127 @@ bool oprof_start::record_config()
 	return true;
 }
 
-// helper to get_unit_mask. assert cb != 0
-uint oprof_start::get_unit_mask_part(const QCheckBox* cb, uint mask)
+void oprof_start::get_unit_mask_part(op_event_descr const & descr, uint num, bool selected, uint & mask)
 {
-#if 0 
-	// trick: the name of cb is an integer which can index the unit_mask
-	// stuff
-	QString name = cb->name();
-	uint idx = name.toUInt();
-	const op_unit_mask* um = event_selected->unit;
-	if  (idx >= 0 && idx < um->num) {
-		if (cb->isChecked()) {
-			if (um->unit_type_mask == utm_bitmask)
-				mask |= um->um[idx];
-			else {
-				if (mask) {
-					QMessageBox::warning(this, 0, "oprof_start::get_unit_mask() exclusive mask get multiple definition");
-				}
-				mask = um->um[idx];
-			}
-		}
-	}
-
-	return mask;
-#endif 
+	if (!selected)
+		return; 
+	if  (num >= descr.unit->num)
+		return;
+ 
+	if (descr.unit->unit_type_mask == utm_bitmask)
+		mask |= descr.unit->um[num];
+	else
+		mask = descr.unit->um[num];
 }
 
 // return the unit mask selected through the unit mask check box
-uint oprof_start::get_unit_mask()
+uint oprof_start::get_unit_mask(op_event_descr const & descr)
 {
-#if 0 
+	// FIXME: utm_mandatory ?? 
+ 
 	uint mask = 0;
 
-	if (event_selected && event_selected->unit) {
-		QObjectList* l = 
-			const_cast<QObjectList*>(unit_mask_group->children());
-		if (l) {
-			for (QObject* cur = l->first(); cur; cur = l->next()) {
-				QCheckBox* cb = dynamic_cast<QCheckBox*>(cur);
-				if (cb) {
-					mask = get_unit_mask_part(cb, mask);
-				}
-			}
-		
-			// FIXME docs says: do it but this segfault
-			// delete l;
-		}
-	}
-
+	if (!descr.unit)
+		return 0;
+ 
+	get_unit_mask_part(descr, 0, check0->isChecked(), mask);
+	get_unit_mask_part(descr, 1, check1->isChecked(), mask);
+	get_unit_mask_part(descr, 2, check2->isChecked(), mask);
+	get_unit_mask_part(descr, 3, check3->isChecked(), mask);
+	get_unit_mask_part(descr, 4, check4->isChecked(), mask);
+	get_unit_mask_part(descr, 5, check5->isChecked(), mask);
+	get_unit_mask_part(descr, 6, check6->isChecked(), mask);
 	return mask;
-#endif 
 }
 
-// create and setup the unit mask btn stuff. assert descr->unit != 0 &&
-// descr->um_descr != 0
-void oprof_start::create_unit_mask_btn(const op_event_descr* descr)
+void oprof_start::setup_unit_masks(const op_event_descr & descr)
 {
-#if 0 
-	const op_unit_mask* um = descr->unit;
-	const op_unit_desc* um_desc = descr->um_descr;
+	// FIXME: the stuff needs rationalising between calling things "desc"
+	// and "descr" 
+	const op_unit_mask* um = descr.unit;
+	const op_unit_desc* um_desc = descr.um_descr;
 
-	if (!um || !um_desc) {
-		QMessageBox::critical(this, 0, "oprof_start::create_unit_mask_btn descr->unit == 0 or descr->um_desc == 0");
-
-		exit(EXIT_FAILURE);
-	}
-
-	// assert um->unit_type_mask != utm_mandatory
+	check0->hide();
+	check1->hide();
+	check2->hide();
+	check3->hide();
+	check4->hide();
+	check5->hide();
+	check6->hide(); 
+ 
+	if (!um || um->unit_type_mask == utm_mandatory)
+		return;
 
 	// we need const access. see record_selected_event_config()
-	const persistent_config_t<event_setting>& cfg = event_cfg;
+	const persistent_config_t<event_setting>& cfg = event_cfgs[current_ctr];
 
-	if (um->unit_type_mask == utm_exclusive)
-		unit_mask_group->setExclusive(true);
+	unit_mask_group->setExclusive(um->unit_type_mask == utm_exclusive);
 
 	for (size_t i = 0; i < um->num ; ++i) {
-		// allow to use the name of unit mask checkbox as an index of
-		// which button has been selected. Would be unique? If you
-		// change the name scheming you must modify get_unit_mask
-		QString name;
-		name.setNum(i);
-
-		QCheckBox* btn =  new QCheckBox(um_desc->desc[i],
-						unit_mask_group, 
-						name.latin1());
-
-		btn->setFixedSize(btn->sizeHint());
-
-		// FIXME: 20 must be get at run time?
-		btn->move(20, (i * btn->height()) + 20);
-
-		btn->show();
-
+		QCheckBox * check = 0;
+		switch (i) {
+			case 0: check = check0; break;
+			case 1: check = check1; break;
+			case 2: check = check2; break;
+			case 3: check = check3; break;
+			case 4: check = check4; break;
+			case 5: check = check5; break;
+			case 6: check = check6; break;
+		}
+		check->setText(um_desc->desc[i]);
 		if (um->unit_type_mask == utm_exclusive) {
-			if (cfg[descr->name].umask == um->um[i])
-				btn->setChecked(true);
+			check->setChecked(cfg[descr.name].umask == um->um[i]);
 		} else {
+			// FIXME: eh ?
 			if (i == um->num - 1) {
-				if (cfg[descr->name].umask == um->um[i])
-					btn->setChecked(true);
+				check->setChecked(cfg[descr.name].umask == um->um[i]);
 			} else {
-				if (cfg[descr->name].umask & um->um[i])
-					btn->setChecked(true);
+				check->setChecked(cfg[descr.name].umask & um->um[i]);
 			}
 		}
+		check->show();
 	}
-#endif 
 }
 
-// the event selected has been perhaps changed, descr is the new event selected
-// event_selected the old.
-void oprof_start::do_selected_event_change(const op_event_descr* descr)
-{
-#if 0 
-	if (!descr || descr == event_selected)
-		return;
-
-	// record the new setting in the event_cfg stuff.
-	record_selected_event_config();
-
-	validate_event_count->setRange(descr->min_count, OP_MAX_PERF_COUNT);
-
-	if (event_selected) {
-		event_selected->cb->setBackgroundMode(event_background_mode);
-	}
-
-	descr->cb->setBackgroundMode(PaletteMidlight);
-
-	// unit_mask_frame is the container of unit mask object the once
-	// child is the QButtonGroup unit_mask_group we delete unit_mask_goup
-	// to avoid buggy redisplay and to get less screen flickering. The only
-	// purpose of unit_mask_frame is to provide the size and position of
-	// the unit_mask_group.
-
-	// do not assume than unit_mask_group title is hard-coded so changing
-	// it in the designer or at oprof_start() ctr time is sufficient.
-	QString um_group_title = unit_mask_group->title();
-
-	delete unit_mask_group;
-	unit_mask_group = new QButtonGroup(um_group_title, unit_mask_frame);
-
-	unit_mask_group->setFixedSize(unit_mask_frame->size());
-	unit_mask_group->show();
-
-	const op_unit_mask* um = descr->unit;
-
-	if (um && um->unit_type_mask != utm_mandatory) {
-		create_unit_mask_btn(descr);
-	}
-
-	// we need const access. see record_selected_event_config()
-	const persistent_config_t<event_setting>& cfg = event_cfg;
-
-	os_ring_count_cb->setChecked(cfg[descr->name].os_ring_count);
-	user_ring_count_cb->setChecked(cfg[descr->name].user_ring_count);
-
-	QString count_text;
-	count_text.setNum(cfg[descr->name].count);
-	event_count_edit->setText(count_text);
-
-	event_selected = descr;
-#endif 
-}
-
-// helper for on_event_clicked(). This function is complicated by assymetric
-// counter events eg P6 which allow a few evebt only in counter 0 and a few
-// other only in counter 1. For now P6 is the only arch with this "features"
-// so we handle it in an ugly but simple way.
-void oprof_start::event_checked(const op_event_descr* descr)
-{
-#if 0
-	// sanity checking.
-	size_t i;
-	for (i = 0 ; i < v_events_selected.size() ; ++i) {
-		if (descr == v_events_selected[i]) {
-			break;
-		}
-	}
-
-	if (v_events_selected.size() && i != v_events_selected.size()) {
-		printf("oprof_start::on_event_clicked(): try "
-		       "to insert already selected event\n");
-		return;		// Fatal ?
-	}
-
-	// some arch needs to use specific counters for some events. For now
-	// only the P6 core have this, so I use a specific trick for P6 which
-	// can not work in the general case. The general solution is to use an
-	// algo that treat counter as resource to allocate for events with an
-	// optimal allocation order (something like an inteference graph would
-	// work)
-	int bit_mask = 0;
-	for (size_t j = 0; j < v_events_selected.size(); ++j)
-		if (v_events_selected[j]->counter_mask != ~0u)
-			bit_mask |= v_events_selected[j]->counter_mask;
-
-	if (descr->counter_mask != ~0u && descr->counter_mask & bit_mask) {
-		descr->cb->setChecked(false);
-				
-		// FIXME: document
-		QMessageBox::warning(this, 0, "The selected event use a counter already used by another event, check the html doc");
-		return;
-	}
-
-	bool swap_counter = false;
-	// ugly: work only for the P6 asymetric counter
-	if (descr->counter_mask == 1 && bit_mask == 2) {
-		swap_counter = true;
-	}
-
-	v_events_selected.push_back(descr);
-
-	if (swap_counter)
-		// ugly: work only for the P6 asymetric counter
-		std::swap(v_events_selected[0], v_events_selected[1]);
-#endif 
-}
-
-// helper for on_event_clicked()
-void oprof_start::event_unchecked(const op_event_descr* descr)
-{
-#if 0 
-	// sanity checking.
-	size_t i;
-	for (i = 0; i < v_events_selected.size(); ++i) {
-		if (descr == v_events_selected[i]) {
-			break;
-		}
-	}
-
-	if (v_events_selected.size() == 0 || i == v_events_selected.size()) {
-		printf("oprof_start::on_event_clicked(): try "
-		       "to remove already unselected event\n");
-		return;		// Fatal ?
-	} 
-
-	v_events_selected.erase(v_events_selected.begin() + i);
-#endif 
-}
-
-// Handle event check box click. The current state of the check box is set by
-// Qt before calling this slot.
-void oprof_start::on_event_clicked()
-{
-#if 0 
-	QObject* source = const_cast<QObject*>(sender());
-
-	// we don't disable the counter setup page to allow user to change
-	// setting even when the checkbox is un-selected. User get a visual
-	// feedback of which event check box is currently selected.
-	if (source) {
-
-		QCheckBox* cb = dynamic_cast<QCheckBox*>(source);
-		if (cb == 0) {
-			// fatal ?
-			fprintf(stderr, "oprof_start::on_event_clicked() event"
-				"come from: (%s, %s), expect QCheckBox\n",
-				source->className(), source->name());
-
-			return;
-		}
-
-		const op_event_descr* descr = locate_event(source->name());
-		if (descr->cb != cb) {
-			QMessageBox::critical(this, 0, "oprof_start::on_event_clicked() cb != descr->cb");
-
-			exit(EXIT_FAILURE);
-		}
-
-		if (cb->isChecked()) {
-			if (v_events_selected.size() >= op_nr_counters) {
-				cb->setChecked(false);
-
-				QMessageBox::warning(this, 0, "Too many selected events for this architecture.");
-
-				return;
-			}
-		}
-
-		do_selected_event_change(descr);
-
-		if (cb->isChecked()) {
-			event_checked(descr);
-		} else {
-			event_unchecked(descr);
-		}
-	}
-#endif 
-}
-
-// called on explict user request through btn "flush profiler data" and also
-// when the profiler is stopped. (start the profiler also try to stop the
-// profiling if on so start profiler imply also a flush of data)
 void oprof_start::on_flush_profiler_data()
 {
-	if (is_profiler_started()) {
+	if (is_profiler_started())
 		do_exec_command("op_dump");
-	} else {
+	else
 		QMessageBox::warning(this, 0, "The profiler is not started.");
-	}
 }
 
 // user is happy of its setting.
 void oprof_start::on_start_profiler()
 {
-#if 0 
-	if (v_events_selected.empty()) {
-		QMessageBox::warning(this, 0, 
-				     "You must select at least one event");
-		return;
-	}
-
-	// Configuration for an event is recorded only when the user change
-	// the currently selected events, so force the recording here.
+	// save the current settings 
 	record_selected_event_config();
 
-	// we need const access. see record_selected_event_config()
-	const persistent_config_t<event_setting>& cfg = event_cfg;
+	uint c; 
+	for (c = 0; c < op_nr_counters; ++c) {
+		if (ctr_enabled[c] && current_event[c])
+			break;
+	}
+	if (c == op_nr_counters) {
+		QMessageBox::warning(this, 0, "No counters enabled.\n");
+		return;
+	}
+ 
+	for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
+		if (!current_event[ctr])
+			continue;
+		if (!ctr_enabled[ctr])
+			continue;
 
-	// sanitize the counter setup.
-	for (size_t i = 0; i < v_events_selected.size(); ++i) {
+		// we need const access. see record_selected_event_config()
+		const persistent_config_t<event_setting>& cfg = event_cfgs[ctr];
 
-		// if sanitize lose we set the currently selected event on
-		// the failing event and ensure than the check box is visible.
-
-		const op_event_descr* descr = v_events_selected[i];
+		const op_event_descr * descr = current_event[ctr];
 
 		if (!cfg[descr->name].os_ring_count &&
 		    !cfg[descr->name].user_ring_count) {
-			QMessageBox::warning(this, 0, "You must select at "
-					 "least one ring count: user or os");
-
-			do_selected_event_change(descr);
-			user_ring_count_cb->setFocus();
-
+			QMessageBox::warning(this, 0, "You must select to "
+					 "profile at least one of user binaries/kernel");
 			return;
 		}
 
@@ -865,10 +767,6 @@ void oprof_start::on_start_profiler()
 			    << "]";
 
 			QMessageBox::warning(this, 0, out.str().c_str());
-
-			do_selected_event_change(descr);
-			event_count_edit->setFocus();
-
 			return;
 		}
 
@@ -881,11 +779,6 @@ void oprof_start::on_start_profiler()
 			    << cfg[descr->name].umask << std::endl;
 
 			QMessageBox::warning(this, 0, out.str().c_str());
-
-			do_selected_event_change(descr);
-
-			// difficult to put the focus, don't take care?
-
 			return;
 		}
 	}
@@ -895,7 +788,7 @@ void oprof_start::on_start_profiler()
 			QMessageBox::warning(this, 0, 
 					     "Profiler already started:\n\n"
 					     "stop and restart it?", 
-					     "Restart", "Cancel", 0, 0, 1);
+					     "&Restart", "&Cancel", 0, 0, 1);
 
 		if (user_choice == 1)
 			return;
@@ -904,31 +797,34 @@ void oprof_start::on_start_profiler()
 		on_stop_profiler();
 	}
 
+	// record_config validate the config
+	if (record_config() == false)
+		return;
+
 	// build the cmd line.
 	std::ostringstream cmd_line;
 
 	cmd_line << "op_start";
 
-	for (size_t i = 0; i < v_events_selected.size(); ++i) {
-		const op_event_descr* descr = v_events_selected[i];
+	for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
+		if (!current_event[ctr])
+			continue;
+		if (!ctr_enabled[ctr])
+			continue;
 
-		cmd_line << " --ctr" << i << "-event=" << descr->name;
-		cmd_line << " --ctr" << i << "-count=" 
-			 << cfg[descr->name].count;
-		cmd_line << " --ctr" << i << "-kernel=" 
-			 << cfg[descr->name].os_ring_count;
-		cmd_line << " --ctr" << i << "-user=" 
-			 << cfg[descr->name].user_ring_count;
+		// we need const access. see record_selected_event_config()
+		const persistent_config_t<event_setting>& cfg = event_cfgs[ctr];
 
-		if (descr->um_descr) {
-			cmd_line << " --ctr" << i << "-unit-mask="
-				 << cfg[descr->name].umask;
-		}
+		const op_event_descr * descr = current_event[ctr];
+
+		cmd_line << " --ctr" << ctr << "-event=" << descr->name;
+		cmd_line << " --ctr" << ctr << "-count=" << cfg[descr->name].count;
+		cmd_line << " --ctr" << ctr << "-kernel=" << cfg[descr->name].os_ring_count;
+		cmd_line << " --ctr" << ctr << "-user=" << cfg[descr->name].user_ring_count;
+
+		if (descr->um_descr)
+			cmd_line << " --ctr" << ctr << "-unit-mask=" << cfg[descr->name].umask;
 	}
-
-	// record_config validate the config
-	if (record_config() == false)
-		return;
 
 	cmd_line << " --map-file=" << config.map_filename;
 	cmd_line << " --vmlinux=" << config.kernel_filename;
@@ -936,22 +832,17 @@ void oprof_start::on_start_profiler()
 	cmd_line << " --pid-filter=" << config.pid_filter;
 	cmd_line << " --pgrp-filter=" << config.pgrp_filter;
 	cmd_line << " --base-dir=" << config.base_opd_dir;
-	cmd_line << " --samples-dir=" << config.base_opd_dir 
-		 << config.samples_files_dir;
-	cmd_line << " --device-file=" << config.base_opd_dir 
-		 << config.device_file;
-	cmd_line << " --hash-map-device-file=" << config.base_opd_dir
-		 << config.hash_map_device;
-	cmd_line << " --log-file=" << config.base_opd_dir
-		 << config.daemon_log_file;
+	cmd_line << " --samples-dir=" << config.base_opd_dir << config.samples_files_dir;
+	cmd_line << " --device-file=" << config.base_opd_dir << config.device_file;
+	cmd_line << " --hash-map-device-file=" << config.base_opd_dir << config.hash_map_device;
+	cmd_line << " --log-file=" << config.base_opd_dir << config.daemon_log_file;
 	cmd_line << " --ignore-myself=" << config.ignore_daemon_samples;
 	cmd_line << " --buffer-size=" << config.buffer_size;
 	cmd_line << " --hash-table-size=" << config.hash_table_size;
 
-//	std::cout << cmd_line.str() << std::endl;
+	std::cout << cmd_line.str() << std::endl;
 
 	do_exec_command(cmd_line.str());
-#endif 
 }
 
 // flush and stop the profiler if it was started.
@@ -967,13 +858,13 @@ void oprof_start::on_stop_profiler()
 }
 
 // helper to retrieve an event descr through its name.
-const op_event_descr* oprof_start::locate_event(const char* name)
+const op_event_descr & oprof_start::locate_event(std::string const & name)
 {
+	// FIXME: use std::find_if
 	for (size_t i = 0 ; i < v_events.size() ; ++i) {
 		if (std::string(v_events[i].name) == name) {
-			return &v_events[i];
+			return v_events[i];
 		}
 	}
-
-	return 0;
+	return v_events[0];
 }

@@ -963,7 +963,7 @@ static void get_options(int argc, char const * argv[])
 
 	opp_get_options(oprofpp_opt.size(), oprofpp_opt.begin());
 
-	optcon = poptGetContext(NULL, opf_opt.size(), opf_opt.begin(), 
+	optcon = opd_poptGetContext(NULL, opf_opt.size(), opf_opt.begin(), 
 				options, 0);
 
 	c = poptGetNextOpt(optcon);

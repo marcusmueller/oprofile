@@ -5,6 +5,13 @@ MKDIR_P=mkdir -p
 MOC=@MOC@
 UIC=@UIC@
 
+CC=@CC@
+CXX=@CXX@
+ 
+# TODO: the sys_include is for the <sstream> thing add it to distrib
+CFLAGS=@CFLAGS@ -I@KINC@ -I../sys_include -DOP_EVENTS_DESC @QT2_INCLUDES@
+CXXFLAGS=@CXXFLAGS@ -I@KINC@ -I../sys_include -DOP_EVENTS_DESC @QT2_INCLUDES@
+
 # FIXME: dependencies are fucked ... my fault (john)
  
 .PHONY: all clean install uninstall
@@ -13,13 +20,9 @@ UIC=@UIC@
 ifeq "@HAVE_QT2@" "1"
 all: oprof_start
 
-# oprof_start.cpp, oprof_start.h are generated file, but must not re-generated
 clean:
 	$(MAKE) -C ui clean
 	rm -f *.o *.moc.* oprof_start
-
-# TODO: the sys_include is for the <sstream> thing add it to distrib
-CFLAGS=-I@KINC@ -I../sys_include -DOP_EVENTS_DESC -g -ansi -Wall --pedantic -O2 @QT2_INCLUDES@
 
 install: all oprofile oprof_start
 	-$(MKDIR_P) $(BINDIR)
@@ -39,16 +42,10 @@ SOURCES=oprof_start.o oprof_start.moc.o op_events.o \
 
 oprof_start: $(SOURCES)
 	$(MAKE) -C ui
-	g++ -o $@ $^ $(UISOURCES) @QT2_LDFLAGS@ @QT2_LIBS@
-
-%.o: %.cpp
-	g++ -c $(CFLAGS) $< -o $@
-
-%.o: %.c
-	gcc -c $(CFLAGS) $< -o $@
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(UISOURCES) @QT2_LDFLAGS@ @QT2_LIBS@
 
 op_events.o: ../op_events.c
-	gcc -c $(CFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 
 ui/oprof_start.base.h:
 	$(MAKE) -C ui
@@ -57,13 +54,17 @@ op_events.o: ../op_events.c ../op_user.h ../version.h
 oprof_start.moc.o: oprof_start.moc.cpp oprof_start.h \
  ui/oprof_start.base.h oprof_start_config.h persistent_config.h \
  ../op_user.h ../version.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 oprof_start.o: oprof_start.cpp oprof_start.h ui/oprof_start.base.h \
  oprof_start_config.h persistent_config.h ../op_user.h ../version.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 oprof_start_config.o: oprof_start_config.cpp oprof_start_config.h \
  persistent_config.h ../op_user.h ../version.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 oprof_start_main.o: oprof_start_main.cpp oprof_start.h \
  ui/oprof_start.base.h oprof_start_config.h persistent_config.h \
  ../op_user.h ../version.h            
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # generate qt moc code for subclass
 oprof_start.moc.cpp: oprof_start.h ui/oprof_start.base.moc.cpp
