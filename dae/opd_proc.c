@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.44 2000/12/06 20:39:49 moz Exp $ */
+/* $Id: opd_proc.c,v 1.45 2000/12/12 02:55:35 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -112,7 +112,7 @@ void opd_alarm(int val __attribute__((unused)))
 	/* we should demand some data if we haven't got any recently */
 
 	if (last==(int)opd_stats[OPD_DUMP_COUNT])
-		ioctl(mapdevfd, 0, NULL);
+		system("sysctl -w dev.oprofile.dump=1");
 
 	last = opd_stats[OPD_DUMP_COUNT];
 	

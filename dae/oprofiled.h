@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.18 2000/12/06 20:39:50 moz Exp $ */
+/* $Id: oprofiled.h,v 1.19 2000/12/12 02:55:36 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -37,7 +37,6 @@
 #include <sys/stat.h>
 #include <sys/poll.h>
 #include <sys/mman.h>
-#include <sys/ioctl.h>
 
 #include "opd_util.h"
 #include "../version.h"

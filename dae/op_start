@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.15 2000/12/06 20:39:49 moz Exp $
+# $Id: op_start,v 1.16 2000/12/12 02:55:35 moz Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -19,16 +19,20 @@
 # quick and ugly interface
 # op_start --help and op_start --list-events have info
 
+SYSCTL=sysctl
+
 BUF_SIZE=65536
 HASH_SIZE=16384
-CTR0_TYPE=
-CTR1_TYPE=
+CTR0_EVENT=
+CTR1_EVENT=
 CTR0_UM=0
 CTR1_UM=0
 CTR0_COUNT=
 CTR1_COUNT=
-CTR0_OSUSR=0
-CTR1_OSUSR=0
+CTR0_USER=1
+CTR0_KERNEL=1
+CTR1_USER=1
+CTR1_KERNEL=1
 USE_PII=0
 IGNORE_MYSELF=0
 DIR="/var/opd"
@@ -49,8 +53,10 @@ Module per-cpu options. Specify comma-separated values for each CPU$
   --ctr1-count=val             number of events between samples for ctr1$
   --ctr0-unit-mask=val         unit mask for ctr0$
   --ctr1-unit-mask=val         unit mask for ctr1$
-  --ctr0-os-usr=val            val==1 for kernel counting, ==2 for userspace only for ctr0$
-  --ctr1-os-usr=val            val==1 for kernel counting, ==2 for userspace only for ctr1$
+  --ctr0-kernel=[0|1]          whether to count kernel events for ctr 0$
+  --ctr0-user=[0|1]            whether to count user events for ctr 0$
+  --ctr1-kernel=[0|1]          whether to count kernel events for ctr 1$
+  --ctr1-user=[0|1]            whether to count user events for ctr1$
   --pid-filter=pid             Only profile process pid (if compiled in)$
   --pgrp-filter=pgrp           Only profile process group pgrp (if compiled in)$
 $
@@ -109,10 +115,10 @@ do
 			CTR1_UM=$val
 			;;
 		--ctr0-event)
-			CTR0_TYPE=$val
+			CTR0_EVENT=$val
 			;;
 		--ctr1-event)
-			CTR1_TYPE=$val
+			CTR1_EVENT=$val
 			;;
 		--ctr0-count)
 			CTR0_COUNT=$val
@@ -120,11 +126,17 @@ do
 		--ctr1-count)
 			CTR1_COUNT=$val
 			;;
-		--ctr0-os-usr)
-			CTR0_OSUSR=$val
+		--ctr0-user)
+			CTR0_USER=$val
 			;;
-		--ctr1-os-usr)
-			CTR1_OSUSR=$val
+		--ctr0-kernel)
+			CTR0_KERNEL=$val
+			;;
+		--ctr0-user)
+			CTR0_USER=$val
+			;;
+		--ctr0-kernel)
+			CTR0_KERNEL=$val
 			;;
 		--base-dir)
 			DIR=$val
@@ -168,6 +180,9 @@ do
 	shift
 done
 
+CTR0_EVENT_VAL=`op_help $CTR0_EVENT`
+CTR1_EVENT_VAL=`op_help $CTR1_EVENT`
+
 grep oprof /proc/devices >/dev/null
 if [ "$?" -ne 0 ]
 then
@@ -177,6 +192,17 @@ then
 		echo "Couldn't load oprofile.o module"
 		exit 1
 	fi
+fi
+
+if [ ! -d "$DIR" ]
+then
+       mkdir -p "$DIR"
+       if [ "$?" != "0" ]
+       then
+               echo "Couldn't mkdir -p $DIR"
+               exit 1
+       fi
+       chmod 700 "$SAMPLES_DIR"
 fi
 
 if [ "$LOG_FILE" = "" ]; then
@@ -198,8 +224,8 @@ fi
 echo "Parameters used:"
 echo "BUF_SIZE $BUF_SIZE"
 echo "HASH_SIZE $HASH_SIZE"
-echo "CTR0_TYPE $CTR0_TYPE"
-echo "CTR1_TYPE $CTR1_TYPE"
+echo "CTR0_EVENT $CTR0_EVENT"
+echo "CTR1_EVENT $CTR1_EVENT"
 echo "CTR0_UM $CTR0_UM"
 echo "CTR1_UM $CTR1_UM"
 echo "CTR0_COUNT $CTR0_COUNT"
@@ -252,10 +278,10 @@ fi
 
 if [ ! -d "$SAMPLES_DIR" ]
 then
-	mkdir "$SAMPLES_DIR"
+	mkdir -p "$SAMPLES_DIR"
 	if [ "$?" != "0" ]
 	then
-		echo "Couldn't mkdir $SAMPLES_DIR"
+		echo "Couldn't mkdir -p $SAMPLES_DIR"
 		exit 1
 	fi
 	chmod 700 "$SAMPLES_DIR"
@@ -293,45 +319,46 @@ then
 fi
 chmod 700 "$MAP_DEVICE_FILE"
 
-oprofctl --device-file="$DEVICE_FILE" --stop >/dev/null 2>&1
+op_stop
 
-oprofctl --device-file="$DEVICE_FILE" --hash-size=$HASH_SIZE --buf-size=$BUF_SIZE
-# FIXME: enable SMP setup ...
-if [ "$CTR0_TYPE" != "" ]; then
-	oprofctl --device-file="$DEVICE_FILE" --cpu=0 --counter=0 --event=$CTR0_TYPE --unit-mask=$CTR0_UM --value=$CTR0_COUNT --os-usr=$CTR0_OSUSR
-	if [ "$?" != "0" ]; then echo "oprofctl failed."; exit 1; fi
-fi
-if [ "$CTR1_TYPE" != "" ]; then
-	oprofctl --device-file="$DEVICE_FILE" --cpu=0 --counter=1 --event=$CTR1_TYPE --unit-mask=$CTR1_UM --value=$CTR1_COUNT --os-usr=$CTR1_OSUSR
-	if [ "$?" != "0" ]; then echo "oprofctl failed."; exit 1; fi
-fi
-if [ "$PID_FILTER" != "0" ]; then
-	oprofctl --device-file="$DEVICE_FILE" --pid-filter=$PID_FILTER 
-	if [ "$?" != "0" ]; then echo "oprofctl failed."; exit 1; fi
-fi 
-if [ "$PGRP_FILTER" != "0" ]; then
-	oprofctl --device-file="$DEVICE_FILE" --pgrp-filter=$PGRP_FILTER 
-	if [ "$?" != "0" ]; then echo "oprofctl failed."; exit 1; fi
-fi 
+$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE
+$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE
+$SYSCTL -w dev.oprofile.pid_filter=$PID_FILTER 
+$SYSCTL -w dev.oprofile.pgrp_filter=$PGRP_FILTER 
 
+# FIXME do something for all CPUs 
+if [ "$CTR0_EVENT" != "" ]; then
+	$SYSCTL -w dev.oprofile.0.0.enabled=1
+	$SYSCTL -w dev.oprofile.0.0.count=$CTR0_COUNT
+	$SYSCTL -w dev.oprofile.0.0.kernel=$CTR0_KERNEL
+	$SYSCTL -w dev.oprofile.0.0.user=$CTR0_USER
+	$SYSCTL -w dev.oprofile.0.0.unit_mask=$CTR0_UM
+	$SYSCTL -w dev.oprofile.0.0.event=$CTR0_EVENT_VAL
+fi
+if [ "$CTR1_EVENT" != "" ]; then
+	$SYSCTL -w dev.oprofile.0.1.enabled=1
+	$SYSCTL -w dev.oprofile.0.1.count=$CTR1_COUNT
+	$SYSCTL -w dev.oprofile.0.1.kernel=$CTR1_KERNEL
+	$SYSCTL -w dev.oprofile.0.1.user=$CTR1_USER
+	$SYSCTL -w dev.oprofile.0.1.unit_mask=$CTR1_UM
+	$SYSCTL -w dev.oprofile.0.1.event=$CTR1_EVENT_VAL
+fi
+ 
 OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$USE_PII --ignore-myself=$IGNORE_MYSELF \
 	--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
 	--device-file=$DEVICE_FILE --map-device-file=$MAP_DEVICE_FILE \
 	--hash-map-device-file=$HASH_MAP_DEVICE_FILE --vmlinux=$VMLINUX"
 
-if [ "$CTR0_TYPE" != "" ]; then
-	OPD_ARGS="$OPD_ARGS --ctr0-event=$CTR0_TYPE --ctr0-unit-mask=$CTR0_UM"
+if [ "$CTR0_EVENT" != "" ]; then
+	OPD_ARGS="$OPD_ARGS --ctr0-event=$CTR0_EVENT --ctr0-unit-mask=$CTR0_UM"
 fi
 
-if [ "$CTR1_TYPE" != "" ]; then
-	OPD_ARGS="$OPD_ARGS --ctr1-event=$CTR0_TYPE --ctr1-unit-mask=$CTR0_UM"
+if [ "$CTR1_EVENT" != "" ]; then
+	OPD_ARGS="$OPD_ARGS --ctr1-event=$CTR0_EVENT --ctr1-unit-mask=$CTR0_UM"
 fi
 if [ "$MAP_FILE" != "" ]; then
 	OPD_ARGS="$OPD_ARGS --map-file=$MAP_FILE"
 fi
-
-oprofctl --device-file="$DEVICE_FILE" --start
-if [ "$?" != "0" ]; then echo "oprofctl --start failed."; exit 1; fi
 
 oprofiled $OPD_ARGS
 sleep 2

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.19 2000/12/06 20:39:58 moz Exp $ */
+/* $Id: oprofpp.c,v 1.20 2000/12/12 02:55:37 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -19,7 +19,7 @@
  
 static int showvers;
  
-static char *samplefile;
+static char const *samplefile;
 static char *imagefile;
 static char *gproffile;
 static char *symbol;
@@ -60,7 +60,7 @@ static struct poptOption options[] = {
  * error. samplefile is guaranteed to have some
  * non-NULL value after this function.
  */
-static void get_options(int argc, char *argv[])
+static void get_options(int argc, char const *argv[])
 {
 	poptContext optcon;
 	char c; 
@@ -149,16 +149,21 @@ void printf_symbol(const char *name)
  * The global struct footer must be valid. sect_offset
  * will be set as appropriate.
  */
-bfd *open_image_file(char *mangled)
+bfd *open_image_file(char const *mangled)
 {
-	char *c = &mangled[strlen(mangled)];
+	char *mang = strdup(mangled); 
+	char *c;
 	char *file;
 	char **matching;
 	bfd *ibfd; 
+	 
+	if (!mang)
+		return NULL;
 
+	c = &mang[strlen(mang)];
 	if (!imagefile) { 
 		/* strip leading dirs */
-		while (c!=mangled && *c!='/')
+		while (c!=mang && *c!='/')
 			c--;
 
 		c++;
@@ -200,6 +205,8 @@ bfd *open_image_file(char *mangled)
 		printf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n",sect_offset,sect->filepos); 
 	}
  
+ 	free(mang);
+
 	return ibfd; 
 }
 
@@ -548,7 +555,7 @@ void do_dump_gprof(void)
 }
 
  
-int main(int argc, char *argv[])
+int main(int argc, char const *argv[])
 {
 	fd_t fd;
 	FILE *fp;

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.20 2000/12/06 20:39:50 moz Exp $ */
+/* $Id: oprofiled.c,v 1.21 2000/12/12 02:55:35 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -104,9 +104,10 @@ static void opd_open_files(void)
 {
 	fd_t hashmapdevfd;
 
-	devfd = opd_open_device(devfilename,1);
-	mapdevfd = opd_open_device(devmapfilename,1);
 	hashmapdevfd = opd_open_device(devhashmapfilename,1);
+	mapdevfd = opd_open_device(devmapfilename,1);
+	/* must open last as this enables profiling */ 
+	devfd = opd_open_device(devfilename,1);
 
 	hashmap = mmap(0, OP_HASH_MAP_SIZE, PROT_READ, MAP_SHARED, hashmapdevfd, 0);
 	if ((long)hashmap==-1) {
@@ -139,7 +140,7 @@ static void opd_open_files(void)
  * check what the user passed. Incorrect arguments
  * are a fatal error.
  */
-static void opd_options(int argc, char *argv[])
+static void opd_options(int argc, char const *argv[])
 {
 	poptContext optcon;
 	int ret;
@@ -350,7 +351,7 @@ static void opd_sighup(int val __attribute__((unused)))
 	opd_open_logfile();
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char const *argv[])
 {
 	struct op_sample *opd_buf;
 	size_t opd_buf_bytesize;

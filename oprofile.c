@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.44 2000/12/06 20:39:47 moz Exp $ */
+/* $Id: oprofile.c,v 1.45 2000/12/12 02:55:32 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -27,23 +27,28 @@ EXPORT_NO_SYMBOLS;
 static char *op_version = VERSION_STRING;
 MODULE_AUTHOR("John Levon (moz@compsoc.man.ac.uk)");
 MODULE_DESCRIPTION("Continuous Profiling Module");
+
+/* sysctl settables */
 static int op_hash_size;
 static int op_buf_size;
-static u8 op_ctr0_on[NR_CPUS];
-static u8 op_ctr1_on[NR_CPUS];
-static u8 op_ctr0_um[NR_CPUS];
-static u8 op_ctr1_um[NR_CPUS];
+static int sysctl_dump;
+static int op_ctr0_on[NR_CPUS];
+static int op_ctr1_on[NR_CPUS];
+static int op_ctr0_um[NR_CPUS];
+static int op_ctr1_um[NR_CPUS];
 static int op_ctr0_count[NR_CPUS];
 static int op_ctr1_count[NR_CPUS];
-static u8 op_ctr0_val[NR_CPUS];
-static u8 op_ctr1_val[NR_CPUS];
-static u8 op_ctr0_osusr[NR_CPUS];
-static u8 op_ctr1_osusr[NR_CPUS];
+static int op_ctr0_val[NR_CPUS];
+static int op_ctr1_val[NR_CPUS];
+static int op_ctr0_kernel[NR_CPUS];
+static int op_ctr0_user[NR_CPUS];
+static int op_ctr1_kernel[NR_CPUS];
+static int op_ctr1_user[NR_CPUS];
 pid_t pid_filter;
 pid_t pgrp_filter;
 
 u32 prof_on __cacheline_aligned;
- 
+
 static int op_major;
 static int cpu_type;
 
@@ -363,21 +368,15 @@ not_local_p6_apic:
 
 /* ---------------- PMC setup ------------------ */
 
-static void pmc_fill_in(uint *val, u8 osusr, u8 event, u8 um)
+static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um)
 {
 	/* enable interrupt generation */
 	*val |= (1<<20);
 	/* enable chosen OS and USR counting */
-	switch (osusr) {
-		case 2: /* userspace only */
-			*val |= (1<<16);
-			break;
-		default: /* O/S and userspace */
-			*val |= (1<<16);
-		case 1: /* O/S only */
-			*val |= (1<<17);
-			break;
-	}
+	if (user) 
+		*val |= (1<<16);
+	if (kernel) 
+		*val |= (1<<17);
 	/* what are we counting ? */
 	*val |= event;
 	*val |= (um<<8);
@@ -396,7 +395,7 @@ static void pmc_setup(void *dummy)
 
 	if (op_ctr0_val[cpu]) {
 		set_perfctr(op_ctr0_count[cpu],0);
-		pmc_fill_in(&low, op_ctr0_osusr[cpu], op_ctr0_val[cpu], op_ctr0_um[cpu]);
+		pmc_fill_in(&low, op_ctr0_kernel[cpu], op_ctr0_user[cpu], op_ctr0_val[cpu], op_ctr0_um[cpu]);
 	}
 
 	wrmsr(P6_MSR_EVNTSEL0,low,0);
@@ -407,7 +406,7 @@ static void pmc_setup(void *dummy)
 
 	if (op_ctr1_val[cpu]) {
 		set_perfctr(op_ctr1_count[cpu],1);
-		pmc_fill_in(&low, op_ctr1_osusr[cpu], op_ctr1_val[cpu], op_ctr1_um[cpu]);
+		pmc_fill_in(&low, op_ctr1_kernel[cpu], op_ctr1_user[cpu], op_ctr1_val[cpu], op_ctr1_um[cpu]);
 	}
 
 	wrmsr(P6_MSR_EVNTSEL1,low,high);
@@ -469,12 +468,7 @@ int oprof_thread(void *arg)
 	threadpid = current->pid;
 
 	lock_kernel();
-	exit_mm(current);
-	current->session = 1;
-	current->pgrp = 1;
-	/* FIXME: daemonize() does this as of test11 */
-	exit_files(current);
-	exit_fs(current);
+	daemonize(); 
 	sprintf(current->comm, "oprof-thread");
 	siginitsetinv(&current->blocked, sigmask(SIGKILL));
         spin_lock(&current->sigmask_lock);
@@ -530,7 +524,7 @@ void oprof_put_note(struct op_sample *samp)
 	memcpy(&data->buffer[data->nextbuf],samp,sizeof(struct op_sample));
 	if (++data->nextbuf==(data->buf_size-OP_PRE_WATERMARK)) {
 		oprof_ready[0] = 1;
-		// FIXME: this ok under a spinlock ? 
+		// FIXME: this ok under a spinlock ?
 		wake_up(&oprof_wait);
 	} else if (data->nextbuf==data->buf_size)
 		data->nextbuf=0;
@@ -558,7 +552,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
 		case 2: return oprof_map_read(buf,count,ppos);
 		case 1: return -EINVAL;
-		default: 
+		default:
 	}
 
 	max = sizeof(struct op_sample)*op_buf_size;
@@ -616,7 +610,10 @@ doit:
 	vfree(mybuf);
 	return count;
 }
- 
+
+static int oprof_start(void);
+static int oprof_stop(void);
+
 static int oprof_open(struct inode *ino, struct file *file)
 {
 	if (!capable(CAP_SYS_PTRACE))
@@ -626,15 +623,16 @@ static int oprof_open(struct inode *ino, struct file *file)
 		case 2: return oprof_map_open();
 		case 1: return oprof_hash_map_open();
 		default:
+			/* make sure the other devices are open */ 
+			if (!is_map_ready())
+				return -EINVAL;
 	}
 
 	if (test_and_set_bit(0,&oprof_opened))
 		return -EBUSY;
 
-	return 0;
+	return oprof_start();
 }
-
-static int oprof_stop(void);
 
 static int oprof_release(struct inode *ino, struct file *file)
 {
@@ -648,9 +646,8 @@ static int oprof_release(struct inode *ino, struct file *file)
 		return -EFAULT;
 
 	clear_bit(0,&oprof_opened);
-	oprof_stop();
 
-	return 0;
+	return oprof_stop();
 }
 
 static int oprof_mmap(struct file *file, struct vm_area_struct *vma)
@@ -665,9 +662,9 @@ static void oprof_free_mem(uint num)
 {
 	uint i;
 	for (i=0; i < num; i++) {
-		if (oprof_data[i].entries) 
+		if (oprof_data[i].entries)
 			vfree(oprof_data[i].entries);
-		if (oprof_data[i].buffer) 
+		if (oprof_data[i].buffer)
 			vfree(oprof_data[i].buffer);
 		oprof_data[i].entries = NULL;
 		oprof_data[i].buffer = NULL;
@@ -735,10 +732,18 @@ static int parms_ok(void)
 			return 0;
 
 		if (data->ctrs&OP_CTR_0) {
+			if (!op_ctr0_user[cpu] && !op_ctr0_kernel[cpu]) {
+				printk("oprofile: neither kernel nor user set for enabled counter 0 on CPU %d\n", cpu);
+				return 0;
+			}
 			op_check_range(op_ctr0_count[cpu],500,OP_MAX_PERF_COUNT,"ctr0 count value %d not in range\n");
 			data->ctr_count[0]=op_ctr0_count[cpu];
 		}
 		if (data->ctrs&OP_CTR_1) {
+			if (!op_ctr1_user[cpu] && !op_ctr1_kernel[cpu]) {
+				printk("oprofile: neither kernel nor user set for enabled counter 1 on CPU %d\n", cpu);
+				return 0;
+			}
 			op_check_range(op_ctr1_count[cpu],500,OP_MAX_PERF_COUNT,"ctr1 count value %d not in range\n");
 			data->ctr_count[1]=op_ctr1_count[cpu];
 		}
@@ -764,24 +769,44 @@ static int parms_ok(void)
 	return 1;
 }
 
+DECLARE_MUTEX(sysctlsem);
+
 static int oprof_start(void)
 {
-	if (!parms_ok())
-		return -EINVAL;
-		 
-	if ((smp_call_function(pmc_setup,NULL,0,1)))
-		return -EFAULT;
+	int err = 0;
+	
+	down(&sysctlsem);
+
+	if ((err = oprof_init_data()))
+		goto out;
+
+	if (!parms_ok()) {
+		oprof_free_mem(smp_num_cpus);
+		err = -EINVAL;
+		goto out;
+	}
+		
+	if ((smp_call_function(pmc_setup,NULL,0,1))) {
+		oprof_free_mem(smp_num_cpus);
+		err = -EINVAL;
+		goto out;
+	}
+
 	pmc_setup(NULL);
- 
+	
 	install_nmi();
 
 	op_intercept_syscalls();
 
 	oprof_start_thread();
 	smp_call_function(pmc_start,NULL,0,1);
+	
 	pmc_start(NULL);
 	prof_on = 1;
-	return 0;
+	
+out:
+	up(&sysctlsem);
+	return err;
 }
 
 static int oprof_stop(void)
@@ -791,12 +816,13 @@ static int oprof_stop(void)
 	if (!prof_on)
 		return -EINVAL;
 
+	down(&sysctlsem);
+
 	/* here we need to :
 	 * bring back the old system calls
 	 * stop the wake-up thread
 	 * stop the perf counter
 	 * bring back the old NMI handler
-	 * remove any sleeping readers of the eviction buffer
 	 * reset the map buffer stuff and ready values
 	 *
 	 * Nothing will be able to write into the map buffer because
@@ -813,13 +839,6 @@ static int oprof_stop(void)
 	pmc_stop(NULL);
 	restore_nmi();
 
-	wake_up(&oprof_wait);
-	/* the daemon will eventually die when it tries to read without prof_on */
-	while (test_bit(0,&oprof_opened)) {
-		set_current_state(TASK_UNINTERRUPTIBLE);
-		schedule_timeout(HZ/2);
-	}
-
 	spin_lock(&map_lock);
 	spin_lock(&note_lock);
 
@@ -827,7 +846,7 @@ static int oprof_stop(void)
 
 	for (i=0; i < smp_num_cpus; i++) {
 		struct _oprof_data *data = &oprof_data[i];
-		oprof_ready[i] = 0; 
+		oprof_ready[i] = 0;
 		data->nextbuf = data->next = 0;
 		oprof_free_mem(smp_num_cpus);
 	}
@@ -835,116 +854,7 @@ static int oprof_stop(void)
 	spin_unlock(&note_lock);
 	spin_unlock(&map_lock);
 
-	return 0;
-}
-
-/* this is already losing, maybe sysctls for the config bits would be better. */
-static int oprof_ioctl(struct inode *ino, struct file *file, uint cmd, ulong arg)
-{
-	uint cpu;
-
-	if (prof_on && cmd!=OPROF_DUMP && cmd!=OPROF_STOP)
-		return -EBUSY;
-
-	switch (cmd) {
-		case OPROF_DUMP:
-			for (cpu=0; cpu < smp_num_cpus; cpu++)
-				oprof_ready[cpu]=2;
-			wake_up(&oprof_wait);
-			return 0; break;
-
-		case OPROF_START:
-			return oprof_start();
-			break;
-
-		case OPROF_STOP:
-			return oprof_stop(); 
-			break;
-
-		case OPROF_SET_HASH_SIZE:
-			op_hash_size=arg;
-			oprof_free_mem(smp_num_cpus);
-			return oprof_init_data(); 
-			break;
-		
-		case OPROF_SET_BUF_SIZE:
-			op_buf_size=arg;
-			oprof_free_mem(smp_num_cpus);
-			return oprof_init_data(); 
-			break;
-		
-		case OPROF_SET_CTR0:
-			if ((arg & ~(1<<31)) > smp_num_cpus)
-				return -EINVAL;
-			op_ctr0_on[(arg & ~(1<<31))] = (arg & (1<<31));
-			return 0; break;
-
-		case OPROF_SET_CTR1:
-			if ((arg & ~(1<<31)) > smp_num_cpus)
-				return -EINVAL;
-			op_ctr1_on[(arg & ~(1<<31))] = (arg & (1<<31));
-			return 0; break;
-
-		case OPROF_SET_PID_FILTER:
-#ifndef PID_FILTER
-			return -EINVAL;
-#endif
-			pid_filter = (pid_t)arg;
-			return 0; break;
-
-		case OPROF_SET_PGRP_FILTER:
-#ifndef PID_FILTER
-			return -EINVAL;
-#endif
-			pgrp_filter = (pid_t)arg;
-			return 0; break;
-	}
-	
-	/* top two bytes are which cpu for the cpu-specific 
-	 * options below. Validation is done in parms_ok().
-	 */
-	cpu = arg>>16;
-
-	if (cpu >= smp_num_cpus) 
-		return -EINVAL;
-
-	switch (cmd) {
-		case OPROF_SET_CTR0_VAL:
-			op_ctr0_val[cpu] = (arg & 0xff);
-			break;
-		
-		case OPROF_SET_CTR1_VAL:
-			op_ctr1_val[cpu] = (arg & 0xff);
-			break;
-			 
-		case OPROF_SET_CTR0_UM:
-			op_ctr0_um[cpu] = (arg & 0xff);
-			break;
-			 
-		case OPROF_SET_CTR1_UM:
-			op_ctr1_um[cpu] = (arg & 0xff);
-			break;
-		
-		case OPROF_SET_CTR0_COUNT:
-			op_ctr0_count[cpu] = (arg & 0xffff);
-			break;
-		
-		case OPROF_SET_CTR1_COUNT:
-			op_ctr1_count[cpu] = (arg & 0xffff);
-			break;
-		
-		case OPROF_SET_CTR0_OS_USR:
-			if ((arg & 0xf) > 2)
-				return -EINVAL; 
-			op_ctr0_osusr[cpu] = (arg & 0xf);
-			break;
-			 
-		case OPROF_SET_CTR1_OS_USR:
-			if ((arg & 0xf) > 2)
-				return -EINVAL;
-			op_ctr1_osusr[cpu] = (arg & 0xf);
-			break;
-	}
+	up(&sysctlsem);
 	return 0;
 }
 
@@ -954,14 +864,13 @@ static struct file_operations oprof_fops = {
 	release: oprof_release,
 	read: oprof_read,
 	mmap: oprof_mmap,
-	ioctl: oprof_ioctl,
 };
 
 static int can_unload(void)
 {
 	return -EBUSY; /* nope */
 }
- 
+
 static int __init hw_ok(void)
 {
 	if (current_cpu_data.x86_vendor != X86_VENDOR_INTEL ||
@@ -976,19 +885,25 @@ static int __init hw_ok(void)
 	return 1;
 }
 
+static int init_sysctl(void);
+static void cleanup_sysctl(void);
+
 int __init oprof_init(void)
 {
 	int err;
+
+	if ((err = init_sysctl()))
+		return err;
 
 	if (!hw_ok())
 		return -EINVAL;
 
 	printk(KERN_INFO "%s\n",op_version);
 
-	if ((err=apic_setup()))
+	if ((err = apic_setup()))
 		return err;
 
-	if ((err=smp_call_function(smp_apic_setup,NULL,0,1)))
+	if ((err = smp_call_function(smp_apic_setup,NULL,0,1)))
 		goto out_err;
 
  	err = op_major = register_chrdev(0,"oprof",&oprof_fops);
@@ -1004,7 +919,7 @@ int __init oprof_init(void)
 	/* module is not unloadable */
 	THIS_MODULE->can_unload = can_unload;
 		
-	printk("oprofile: /dev/oprofile enabled, major %u\n",op_major);
+	printk("oprofile: oprofile loaded, major %u\n",op_major);
 	return 0;
 
 out_err:
@@ -1016,6 +931,8 @@ out_err:
 void __exit oprof_exit(void)
 {
 	/* FIXME: what to do here ? will this ever happen ? */
+
+	cleanup_sysctl();
 
 	oprof_free_hashmap();
 
@@ -1032,3 +949,166 @@ void __exit oprof_exit(void)
 
 module_init(oprof_init);
 module_exit(oprof_exit);
+
+/*
+ * /proc/sys/dev/oprofile/
+ *                    bufsize
+ *                    hashsize
+ *                    dump
+ *                    pid_filter
+ *                    pgrp_filter
+ *                    0/
+ *                      0/
+ *                        event
+ *                        enabled 
+ *                        count
+ *                        unit_mask
+ *                        kernel
+ *                        user
+ *                      1/
+ *                        event
+ *                        enabled
+ *                        count
+ *                        unit_mask
+ *                        kernel
+ *                        user
+ *                    1/
+ *                    ...
+ */
+
+static int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
+{
+	int err;
+
+	down(&sysctlsem);
+	err = proc_dointvec(table, write, filp, buffer, lenp);
+	up(&sysctlsem);
+
+	return err;	
+}
+
+static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
+{
+	uint cpu; 
+	int err = -EINVAL;
+
+	down(&sysctlsem);
+	
+	if (write) {
+		if (!prof_on)
+			goto out;
+
+		for (cpu=0; cpu < smp_num_cpus; cpu++)
+			oprof_ready[cpu]=2;
+		wake_up(&oprof_wait);
+		err = 0;
+		goto out;
+	}
+	
+	err = proc_dointvec(table, write, filp, buffer, lenp);
+	
+out:
+	up(&sysctlsem);
+	return err;
+}
+
+static ctl_table oprof_table[] = {
+	{ 1, "bufsize", &op_buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
+	{ 1, "hashsize", &op_hash_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
+	{ 1, "dump", &sysctl_dump, sizeof(int), 0600, NULL, &sysctl_do_dump, NULL, },
+	{ 1, "pid_filter", &pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
+	{ 1, "pgrp_filter", &pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
+	{0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,},
+	{0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,},
+	{0,},
+};
+
+static int nr_oprof_static = 5;
+
+static ctl_table oprof_root[] = {
+	{1, "oprofile", NULL, 0, 0700, oprof_table},
+ 	{0,},
+};
+
+static ctl_table dev_root[] = {
+	{CTL_DEV, "dev", NULL, 0, 0555, oprof_root},
+	{0,},
+};
+
+static char *names[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
+	"15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", };
+
+static struct ctl_table_header *sysctl_header;
+
+/* NOTE: we do *not* support sysctl() syscall */
+
+int __init init_sysctl(void)
+{
+	ctl_table *next = &oprof_table[nr_oprof_static];
+	ctl_table *cpu_table;
+	ctl_table *curr;
+	int i;
+
+	/* FIXME: leaks if kmalloc() fails */
+
+	/* FIXME: no proper numbers, or verifiers (where possible) */
+
+	/* FIXME: events should be a string for convenience */
+
+	/* iterate over each CPU */
+	for (i=0; i < smp_num_cpus; i++) {
+		next->ctl_name = 1;
+		next->procname = names[i];
+		next->mode = 0700;
+
+		if (!(cpu_table = kmalloc(sizeof(ctl_table)*3, GFP_KERNEL)))
+			return -EFAULT;
+		memset(cpu_table, 0, sizeof(ctl_table)*3);
+		cpu_table[0] = ((ctl_table){ 1, "0", NULL, 0, 0700, NULL, NULL, NULL, });
+		cpu_table[1] = ((ctl_table){ 1, "1", NULL, 0, 0700, NULL, NULL, NULL, });
+		next->child = cpu_table;
+
+		/* counter 0 */
+		if (!(curr = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
+			return -EFAULT;
+		memset(curr, 0, sizeof(ctl_table)*7);
+		curr[0] = ((ctl_table){ 1, "enabled", &op_ctr0_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		curr[1] = ((ctl_table){ 1, "event", &op_ctr0_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
+		curr[2] = ((ctl_table){ 1, "count", &op_ctr0_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		curr[3] = ((ctl_table){ 1, "unit_mask", &op_ctr0_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		curr[4] = ((ctl_table){ 1, "kernel", &op_ctr0_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		curr[5] = ((ctl_table){ 1, "user", &op_ctr0_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		cpu_table[0].child = curr;
+		
+		/* counter 1 */
+		if (!(curr = kmalloc(sizeof(ctl_table)*7, GFP_KERNEL)))
+			return -EFAULT;
+		memset(curr, 0, sizeof(ctl_table)*7);
+		curr[0] = ((ctl_table){ 1, "enabled", &op_ctr1_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		curr[1] = ((ctl_table){ 1, "event", &op_ctr1_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
+		curr[2] = ((ctl_table){ 1, "count", &op_ctr1_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		curr[3] = ((ctl_table){ 1, "unit_mask", &op_ctr1_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		curr[4] = ((ctl_table){ 1, "kernel", &op_ctr1_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		curr[5] = ((ctl_table){ 1, "user", &op_ctr1_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		cpu_table[1].child = curr;
+		next++;
+	}
+
+	sysctl_header = register_sysctl_table(dev_root, 0);
+	return 0;
+}
+
+void __exit cleanup_sysctl(void)
+{
+	int i;
+	ctl_table *next = &oprof_table[nr_oprof_static];
+	unregister_sysctl_table(sysctl_header);
+	
+	for (i=0; i < smp_num_cpus; i++) {
+		kfree(next->child[0].child);
+		kfree(next->child[1].child);
+		kfree(next->child);
+		next ++;
+	}
+	return;
+}

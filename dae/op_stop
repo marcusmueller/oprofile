@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_stop,v 1.4 2000/12/06 20:39:49 moz Exp $ 
+# $Id: op_stop,v 1.5 2000/12/12 02:55:35 moz Exp $ 
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -17,9 +17,6 @@
 #
 
 echo "Stopping profiling and killing daemon"
-oprofctl --stop
- 
-# make sure the daemon is dead
 PID=`ps x | grep oprofiled | grep -v grep | awk '{print $1}'`
 if [ "$PID" != "" ]
 then

@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.26 2000/12/06 20:39:48 moz Exp $ */
+/* $Id: oprofile.h,v 1.27 2000/12/12 02:55:32 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -23,13 +23,13 @@
 #include <linux/delay.h>
 #include <linux/vmalloc.h>
 #include <linux/sched.h> 
+#include <linux/sysctl.h> 
 
 #include <asm/uaccess.h>
 #include <asm/smplock.h>
 #include <asm/apic.h>
 
 #include "version.h"
-#include "op_ioctl.h"
 
 struct op_sample {
 	u16 count;
@@ -182,6 +182,7 @@ void my_set_fixmap(void);
 int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc);
 void op_intercept_syscalls(void);
 void op_replace_syscalls(void);
+int is_map_ready(void); 
 int oprof_hash_map_open(void);
 int oprof_hash_map_release(void);
 int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma);

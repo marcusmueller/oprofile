@@ -1,9 +1,40 @@
-2000-04-11  John Levon  <moz@compsoc.man.ac.uk>
+2000-12-12  John Levon  <moz@compsoc.man.ac.uk>
+
+	* Makefile.in:
+	* configure.in: approximate working modversions
+		a little more
+
+	* op_events.c: op_help INST_RETIRED will print out
+		the value now
+
+	* op_ioctl.h:
+	* oprofile.c:
+	* oprofile.h:
+	* oprofile_k.c:
+	* dae/Makefile.in:
+	* dae/op_start:
+	* dae/op_stop:
+	* dae/opd_proc.c:
+	* dae/oprofctl.c:
+	* dae/oprofctl.h:
+	* dae/oprofiled.h: ioctl() didn't last long. Replaced with
+		sysctls. This has had a knock-on effect of moving the
+		start/stop mechanism into the driver open/close routines
+	 
+	* dae/oprofiled.c: must open devices in "reverse" order now
+	 
+	* oprofile_k.c: fix X86_FEATURE_PGE testing
+	 
+	* oprofile.c: use daemonize()
+	
+	* pp/oprofpp.c: fix working on constant argv
+
+2000-11-04  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.c: what if signal happens later ?
 	* dae/opd_util.c: clarify opd_read_device() API
 
-2000-04-11  John Levon  <moz@compsoc.man.ac.uk>
+2000-11-04  John Levon  <moz@compsoc.man.ac.uk>
 
 	* ChangeLog: started ChangeLog (cue gc koan)
 	* op_ioctl.h: added FIXME comment

@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.7 2000/12/06 20:39:47 moz Exp $ */ 
+/* $Id: op_events.c,v 1.8 2000/12/12 02:55:32 moz Exp $ */ 
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -555,9 +555,19 @@ int main (int argc, char *argv[])
 	uint i;
 	uint j;
 
-	if (argc>1 && (!strcmp(argv[1],"--version") || !strcmp(argv[1],"-v"))) {
-		printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
-		exit(0);
+	if (argc>1) {
+		if ((!strcmp(argv[1],"--version") || !strcmp(argv[1],"-v"))) {
+			printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
+			exit(0);
+		}
+
+		/* interpret given string */
+
+		for (i=0; i < op_nr_events; i++) {
+			if (!strcmp(op_events[i].name, argv[1]))
+				printf("%d\n",op_events[i].val);
+		}
+		return 0;
 	}
  
 	printf("oprofile: available events\n");

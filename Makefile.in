@@ -1,6 +1,6 @@
-# $Id: Makefile.in,v 1.10 2000/12/06 20:39:47 moz Exp $
+# $Id: Makefile.in,v 1.11 2000/12/12 02:55:32 moz Exp $
 
-KCFLAGS=@KCFLAGS@
+KCFLAGS=@KCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
 CC=@CC@
 LD=@LD@
@@ -52,7 +52,7 @@ ASMFLAGS=-D__ASSEMBLY__ -DMODULE -D__KERNEL__ -traditional
 oprofile.o: oprofile_c.o oprofile_nmi.o oprofile_k.o op_events.o
 	ld -r -o $(G) $@ oprofile_c.o oprofile_nmi.o oprofile_k.o op_events.o
 
-oprofile_c.o: oprofile.c oprofile.h op_ioctl.h
+oprofile_c.o: oprofile.c oprofile.h
 	$(CC) $(KCFLAGS) $(G) -c -o $@ $<
 
 oprofile_k.o: oprofile_k.c oprofile.h
