@@ -4,7 +4,7 @@
 	* libutil++/stream_util.cpp: new file, io_state() save object
 	* libutil++/Makefile.am: handle new file
 	* libutil++/op_bfd.cpp:
-	* libpp/opreport.cpp:
+	* pp/opreport.cpp:
 	* libpp/op_header.cpp: use io_state
 
 2003-07-09  Philippe Elie  <phil.el@wanadoo.fr>
