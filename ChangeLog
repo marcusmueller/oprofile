@@ -1,5 +1,10 @@
 2004-01-18  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* doc/opstack.1.in: new file, describe opstack usage
+	* doc/oprofile.xml: describe opstack
+
+2004-01-18  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/op_bfd.cpp: Don't fix symbol offset for symbol definition
 	  coming from the original file. A corner case remain broken: symbols
 	  definition coming from debug file and belonging to another section

@@ -1,0 +1,71 @@
+.TH OPSTACK 1 "@DATE@" "oprofile @VERSION@"
+.UC 4
+.SH NAME
+opstack \- produce callgraph symbol summaries
+.SH SYNOPSIS
+.br
+.B opstack
+[
+.I options
+]
+[profile specification]
+.SH DESCRIPTION
+
+.B opstack
+outputs binary callgraph symbol summaries. This require an x86 based box
+and a 2.6 kernel patch see http://perso.wanadoo.fr/phil.el/. Note this tools
+is actively developped, don't report glitch for now please.
+
+.SH OPTIONS
+.TP
+.BI "--demangle=none|smart|normal"
+none: no demangling. normal: use default demangler (default) smart: use
+pattern-matching to make C++ symbol demangling more readable.
+.br
+.TP
+.BI "--exclude-dependent / -x"
+Do not include application-specific images for libraries, kernel modules
+and the kernel. This option only makes sense if the profile session
+used --separate.
+.br
+.TP
+.BI "--help / -? / --usage"
+Show help message.
+.br
+.TP
+.BI "--image-path / -p [paths]"
+Comma-separated list of additional paths to search for binaries.
+This is needed to find modules in kernels 2.6 and upwards.
+.br
+.TP
+.BI "--merge / -m [lib,cpu,tid,tgid,unitmask,all]"
+Merge any profiles separated in a --separate session.
+.br
+.TP
+.BI "--threshold / -t [percentage]"
+Only output data for symbols that have more than the given percentage
+of total samples.
+.br
+.TP
+.BI "--verbose / -V"
+Give verbose debugging output.
+.br
+.TP
+.BI "--version / -v"
+Show version.
+
+.SH ENVIRONMENT
+No special environment variables are recognised by opstack
+
+.SH FILES
+.TP
+.I /var/lib/oprofile/samples/
+The location of the generated sample files.
+
+.SH VERSION
+.TP
+This man page is current for @PACKAGE@-@VERSION@.
+
+.SH SEE ALSO
+.BR @OP_DOCDIR@,
+.BR oprofile(1)

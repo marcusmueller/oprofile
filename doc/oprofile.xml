@@ -387,6 +387,16 @@ This section gives a brief description of the available OProfile utilities and t
 </varlistentry>
 
 <varlistentry>
+	<term><filename>opstack</filename></term>
+	<listitem><para>
+		This utility can output callgraph profile. This require an x86
+		based box and a 2.6 box with this <ulink url="http://perso.wanadoo.fr/phil.el/">patch</ulink>.
+		Note this tools is actively developped, don't report glitch for now please.
+		 See <xref linkend="opstack" />.
+	</para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><filename>opgprof</filename></term>
 	<listitem><para>
 		This utility can output gprof-style data files for a binary, for use with
@@ -995,7 +1005,7 @@ the profiler. This can happen on lightly-loaded machines. Remember you can force
 <para><command>opcontrol --dump</command></para>
 <para>Remember to do this before complaining there is no profiling data !
 Now that we've got some data, it has to be processed. That's the job of <command>opreport</command>,
-<command>opannotate</command>, or <command>opgprof</command>.
+<command>opannotate</command>, <command>opstack</command> or <command>opgprof</command>.
 </para>
 
 <sect1 id="opreport">
@@ -1150,6 +1160,76 @@ You can specify multiple (comma-separated) paths to both options.
 </sect2>
 
 </sect1> <!-- opannotate -->
+
+<sect1 id="opstack">
+<title>Outputting callgraph profile</title>
+<para>
+The <command>opstack</command> utility generates callgraph profile at symbol level.
+It's able to traverse shared library boundary but actually can't traverse the 
+kernel syscall barrier.
+An example:
+</para>
+<screen>
+$ opstack /usr/src/phe/cg_tests/temp/cg_tests
+...
+	_start 0/2683
+__libc_start_main 0/2683
+	main 0/2683
+--------------------------------------------------
+	main 0/2683
+entry1_lib_c(void) 0/893
+	fct1_lib_c(void) 893/893
+--------------------------------------------------
+	main 0/2683
+entry1_lib_b(void) 0/896
+	fct1_lib_b(void) 896/896
+--------------------------------------------------
+	main 0/2683
+entry1_lib_a(void) 0/894
+	fct1_lib_a(void) 894/894
+--------------------------------------------------
+	__libc_start_main 0/2683
+main 0/2683
+	entry1_lib_b(void) 0/896
+	entry1_lib_a(void) 0/894
+	entry1_lib_c(void) 0/893
+--------------------------------------------------
+_start 0/2683
+	__libc_start_main 0/2683
+--------------------------------------------------
+...
+	entry1_lib_c(void) 0/893
+fct1_lib_c(void) 893/893
+--------------------------------------------------
+	entry1_lib_a(void) 0/894
+fct1_lib_a(void) 894/894
+--------------------------------------------------
+	entry1_lib_b(void) 0/896
+fct1_lib_b(void) 896/896
+--------------------------------------------------
+</screen>
+
+<para>
+The output is a bit similar to gprof output, for each separated entry non
+indented line are the function itself, indented line above are caller
+, below callee, number are self sample count/child sample counts. So in this
+entry
+<screen>
+	__libc_start_main 0/2683
+main 0/2683
+	entry1_lib_b(void) 0/896
+	entry1_lib_a(void) 0/894
+	entry1_lib_c(void) 0/893
+</screen>
+
+main is called only by _libc_start_main and call three functions. No samples
+has been received by any of these, meaning than sample occured into callee
+of entry1_lib_xxx functons.
+
+see <xref linkend="opstack-details" />.
+</para>
+
+</sect1> <!-- opstack -->
 
 <sect1 id="opgprof">
 <title><command>gprof</command>-compatible output</title>
@@ -1635,6 +1715,42 @@ Show version.
 
 
 </sect1> <!-- opannotate-details -->
+
+
+<sect1 id="opstack-details">
+<title>Usage of <command>opstack</command></title>
+
+<variablelist>
+<varlistentry><term><option>--demangle none|normal|smart</option></term><listitem><para>
+none: no demangling. normal: use default demangler (default) smart: use
+pattern-matching to make C++ symbol demangling more readable.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
+Do not include application-specific images for libraries, kernel modules
+and the kernel. This option only makes sense if the profile session
+used --separate.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
+Show help message.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--image-path / -p [paths]</option></term><listitem><para>
+Comma-separated list of additional paths to search for binaries.
+This is needed to find modules in kernels 2.6 and upwards.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--threshold / -t [percentage]</option></term><listitem><para>
+Only output data for symbols that have more than the given percentage
+of total samples.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--verbose / -V</option></term><listitem><para>
+Give verbose debugging output.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--version / -v</option></term><listitem><para>
+Show version.
+</para></listitem></varlistentry>
+</variablelist>
+
+
+</sect1> <!-- opstack-details -->
 
 <sect1 id="opgprof-details">
 <title>Usage of <command>opgprof</command></title>

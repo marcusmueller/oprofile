@@ -8,7 +8,14 @@ CHUNK_XHTML_STYLESHEET=$(srcdir)/xsl/xhtml-chunk.xsl
 XML_CATALOG_FILES=xsl/catalog.xml
 STYLESHEETS=$(CHUNK_XHTML_STYLESHEET) $(srcdir)/xsl/xhtml-common.xsl
 
-man_MANS = oprofile.1 opcontrol.1 opreport.1 opannotate.1 opgprof.1 op_help.1
+man_MANS = \
+	oprofile.1 \
+	opcontrol.1 \
+	opreport.1 \
+	opannotate.1 \
+	opgprof.1 \
+	op_help.1 \
+	opstack.1
 
 htmldir = $(prefix)/share/doc/oprofile
 dist_html_DATA = oprofile.html internals.html

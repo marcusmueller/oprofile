@@ -12,6 +12,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o finish opstack: proper output, various --separate= --merge= handling,
   later do we need an opreport like opstack (showing caller/callee at binary
   boundary not symbols) ?
+ o remember to update doc to opstack when adding feature.
  o first quick test show it works but I got in oprofiled.log (possibly when
   shutdown oprofile)
 	Read buffer of 35253 entries.
