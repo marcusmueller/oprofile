@@ -251,7 +251,7 @@ op_bfd_symbol::op_bfd_symbol(asymbol const * a)
 	: bfd_symbol(a), symb_value(a->value),
 	  section_filepos(a->section->filepos),
 	  section_vma(a->section->vma),
-	  symb_size(0)
+	  symb_size(0), symb_hidden(false), symb_weak(false)
 {
 	// Some sections have unnamed symbols in them. If
 	// we just ignore them then we end up sticking
