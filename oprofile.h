@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.12 2000/08/25 20:38:12 moz Exp $ */
+/* $Id: oprofile.h,v 1.13 2000/08/27 04:43:21 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -97,8 +97,6 @@ struct _oprof_data {
 #define ctr_overflowed(n) (!((n) & (1U<<31)))
 
 asmlinkage void op_nmi(void);
-ulong idt_addr;
-ulong kernel_nmi;
 
 /* If the do_nmi() patch has been applied, we can use the NMI watchdog */
 #ifdef OP_EXPORTED_DO_NMI

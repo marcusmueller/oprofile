@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.27 2000/08/27 04:12:06 moz Exp $ */
+/* $Id: oprofile.c,v 1.28 2000/08/27 04:43:21 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -214,6 +214,9 @@ void unmask_LVT_NMIs(void)
 
 struct _descr { u16 limit; u32 base; } __attribute__((__packed__));
 struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
+
+static ulong idt_addr;
+static ulong kernel_nmi;
 
 static void install_nmi(void)
 {
