@@ -1,4 +1,8 @@
-2004-11-17  Philippe Elie  <phil.el@wanadoo.fr>
+2004-11-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opgprof.cpp: ensure we load all callgraph file
+
+2004-11-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/locate_images.cpp: ensure error is always set,
 	  callgraph_container was using an uninitialized value.

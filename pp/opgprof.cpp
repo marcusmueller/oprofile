@@ -226,6 +226,9 @@ load_samples(op_bfd const & abfd, list<profile_sample_files> const & files,
 		// we can get call graph w/o any samples to the binary
 		if (it->sample_filename.empty())
 			continue;
+			
+		cverb << vsfile << "loading flat samples files : "
+		      << it->sample_filename << endl;
 
 		profile_t profile;
 
@@ -256,6 +259,8 @@ void load_cg(profile_t & cg_db, list<profile_sample_files> const & files)
 			// FIXME: do we need filtering ?
 			/* We can't handle start_offset now but after splitting
 			 * data in from/to eip. */
+			cverb << vsfile << "loading cg samples file : " 
+			      << *cit << endl;
 			cg_db.add_sample_file(*cit, 0);
 		}
 	}
@@ -280,12 +285,15 @@ int opgprof(vector<string> const & non_options)
 		exit(EXIT_FAILURE);
 	}
 
-	load_samples(abfd, image_profile.groups[0].begin()->files,
-	             image_profile.image, samples);
-
 	profile_t cg_db;
+	
+	image_group_set const & groups = image_profile.groups[0];
+	image_group_set::const_iterator it;
+	for (it = groups.begin(); it != groups.end(); ++it) {
+		load_samples(abfd, it->files, image_profile.image, samples);
 
-	load_cg(cg_db, image_profile.groups[0].begin()->files);
+		load_cg(cg_db, it->files);
+	}
 
 	output_gprof(abfd, samples, cg_db, options::gmon_filename);
 
