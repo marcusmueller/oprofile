@@ -1,4 +1,4 @@
-/* $Id: op_events_desc.c,v 1.3 2001/12/09 17:34:22 davej Exp $ */
+/* $Id: op_events_desc.c,v 1.4 2001/12/31 14:45:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -28,7 +28,7 @@
 
 struct op_cpu_type {
 	const char *cpu_name;
-	int cpu_type;
+	op_cpu cpu_type;
 };
 
 /* be careful here, later entries will be override earlier ones */
@@ -47,10 +47,10 @@ static struct op_cpu_type op_cpu_types[] = {
 #define OP_CPU_TYPES_NR (sizeof(op_cpu_types) / sizeof(op_cpu_types[0]))
 
 
-static int op_type_from_name(char const * name)
+static op_cpu op_type_from_name(char const * name)
 {
 	uint i;
-	int cpu_type = CPU_NO_GOOD;
+	op_cpu cpu_type = CPU_NO_GOOD;
 
 	for (i = 0; i < OP_CPU_TYPES_NR; i++) {
 		if (strstr(name, op_cpu_types[i].cpu_name))
@@ -66,10 +66,10 @@ static int op_type_from_name(char const * name)
  *
  * returns CPU_NO_GOOD if the CPU could not be identified
  */
-int op_get_cpu_type(void)
+op_cpu op_get_cpu_type(void)
 {
-	int cpu_type = CPU_NO_GOOD;
-	int cputmp;
+	op_cpu cpu_type = CPU_NO_GOOD;
+	op_cpu cputmp;
 	char line[256];
 	FILE* fp;
 
@@ -313,7 +313,7 @@ static char *op_get_um_desc(uint op_events_index, u8 um)
  * NULL when @um is invalid for the given @type value.
  * These strings are in text section so should not be freed.
  */
-void op_get_event_desc(int cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp)
+void op_get_event_desc(op_cpu cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp)
 {
 	uint i;
 	int cpu_mask = 1 << cpu_type;

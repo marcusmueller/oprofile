@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.18 2001/12/29 23:51:25 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.19 2001/12/31 14:45:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -529,7 +529,9 @@ void opp_samples_files::output_event(int i) const
  */
 void opp_samples_files::output_header() const
 {
-	printf("Cpu type: %s\n", op_get_cpu_type_str(header[first_file]->cpu_type));
+	op_cpu cpu = static_cast<op_cpu>(header[first_file]->cpu_type);
+ 
+	printf("Cpu type: %s\n", op_get_cpu_type_str(cpu));
 
 	printf("Cpu speed was (MHz estimation) : %f\n", header[first_file]->cpu_speed);
 

@@ -1,4 +1,4 @@
-/* $Id: op_init.c,v 1.1 2001/10/30 17:32:14 movement Exp $ */
+/* $Id: op_init.c,v 1.2 2001/12/31 14:45:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -23,9 +23,9 @@ EXPORT_NO_SYMBOLS;
 
 MODULE_PARM(expected_cpu_type, "i");
 MODULE_PARM_DESC(expected_cpu_type, "Allow checking of detected hardware from the user space");
-static int expected_cpu_type = -1;
+static op_cpu expected_cpu_type = CPU_NO_GOOD;
 
-extern int cpu_type;
+extern op_cpu cpu_type;
 extern uint op_nr_counters;
 extern int separate_running_bit;
 
@@ -43,11 +43,12 @@ static int __init hw_ok(void)
 	}
 
 	/* 0 if PPro, 1 if PII, 2 if PIII, 3 if Athlon */
-	if (current_cpu_data.x86_vendor == X86_VENDOR_AMD)
+	if (current_cpu_data.x86_vendor == X86_VENDOR_AMD) {
 		cpu_type = CPU_ATHLON;
-	else
+	} else {
 		cpu_type = (current_cpu_data.x86_model > 5) ? CPU_PIII :
 			(current_cpu_data.x86_model > 2);
+	}
  
 	if (cpu_type == CPU_ATHLON) {
 		op_nr_counters = 4;

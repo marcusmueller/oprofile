@@ -42,6 +42,8 @@ extern "C" {
 char *opd_simplify_pathname(char *path);
 char *opd_relative_to_absolute_path(const char *path, const char *base_dir);
 
+/* FIXME: why these protos ? we are not allowed to build w/o libiberty.h,
+   we just have to cope with missing xcalloc  ... ? */ 
 #ifndef HAVE_LIBIBERTY_H
 /* Set the program name used by xmalloc.  */
 void xmalloc_set_program_name(const char *);

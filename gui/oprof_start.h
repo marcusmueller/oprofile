@@ -140,7 +140,7 @@ private:
 	std::string user_dir;
 
 	/// CPU type
-	int cpu_type;
+	op_cpu cpu_type;
 
 	/// CPU speed in MHz
 	unsigned long cpu_speed;

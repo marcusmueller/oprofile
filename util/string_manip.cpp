@@ -69,7 +69,7 @@ string erase_to_last_of(string const & str, char ch)
  * @str: the string
  * @ch: the character to remove
  *
- * Returns the @str removed of it's trailing @ch
+ * Returns the @str removed of its trailing @ch
  */
 string rtrim(string const & str, char ch)
 {
@@ -98,7 +98,7 @@ string tostr(unsigned int i)
 }
 
 /**
- * separate_token - separate a list of token
+ * separate_token - separate a list of tokens
  * @result: where to put results
  * @str: the string to tokenize
  * @ch: the separator_char
@@ -106,7 +106,7 @@ string tostr(unsigned int i)
  */
 void separate_token(vector<string> & result, const string & str, char sep)
 {
-	string temp = str;
+	string const temp = str;
 
 	size_t last_pos = 0;
 	for (size_t pos = 0 ; pos != temp.length() ; ) {

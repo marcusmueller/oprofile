@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.55 2001/12/29 23:51:24 phil_e Exp $ */
+/* $Id: oprofiled.c,v 1.56 2001/12/31 14:45:32 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -32,7 +32,7 @@ int kernel_only;
 /* Unfortunately popt does not have, on many versions, the POPT_ARG_DOUBLE type
  * so I must first store it as a string. */
 static const char *cpu_speed_str;
-u32 cpu_type;
+op_cpu cpu_type;
 int separate_samples;
 static int ignore_myself;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;

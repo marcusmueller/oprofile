@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.15 2001/12/31 05:53:47 movement Exp $ */
+/* $Id: oprofile.c,v 1.16 2001/12/31 14:45:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -52,7 +52,7 @@ int separate_running_bit;
 static u32 prof_on __cacheline_aligned;
 
 static int op_major;
-int cpu_type;
+op_cpu cpu_type;
 
 static volatile uint oprof_opened __cacheline_aligned;
 static volatile uint oprof_note_opened __cacheline_aligned;

@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.30 2001/12/22 18:01:52 phil_e Exp $ */
+/* $Id: opd_util.c,v 1.31 2001/12/31 14:45:32 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -20,6 +20,8 @@
 #include "opd_util.h"
 #include "../config.h"
 
+/* FIXME: move into util/ ?? */
+ 
 /**
  * opd_mangle_filename - mangle a file filename
  * @smpdir: base directory name

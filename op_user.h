@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.14 2001/11/12 14:05:34 phil_e Exp $ */
+/* $Id: op_user.h,v 1.15 2001/12/31 14:45:32 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -48,14 +48,18 @@
 #define OP_EVT_CTR_NOT_ALLOWED	0x4
 
 /* supported cpu type */
-#define CPU_NO_GOOD	-1
-#define CPU_PPRO	0
-#define CPU_PII		1
-#define CPU_PIII	2
-#define CPU_ATHLON	3
-#define MAX_CPU_TYPE	4
-
-#ifndef NR_CPUS 
+enum op_cpu_ {
+	CPU_NO_GOOD = -1,
+	CPU_PPRO,
+	CPU_PII,
+	CPU_PIII,
+	CPU_ATHLON,
+	MAX_CPU_TYPE
+};
+ 
+typedef enum op_cpu_ op_cpu;
+ 
+#ifndef NR_CPUS
 #define NR_CPUS 32
 #endif 
 
@@ -179,11 +183,11 @@ extern "C" {
 #endif
 
 /* op_events.c */
-int op_min_count(u8 ctr_type, int cpu_type);
-int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, int cpu_type);
-const char* op_get_cpu_type_str(int cpu_type);
-void op_get_event_desc(int cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
-int op_get_cpu_type(void);
+int op_min_count(u8 ctr_type, op_cpu cpu_type);
+int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type);
+const char* op_get_cpu_type_str(op_cpu cpu_type);
+void op_get_event_desc(op_cpu cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
+op_cpu op_get_cpu_type(void);
 int op_check_unit_mask(struct op_unit_mask *allow, u8 um);
 
 #ifdef __cplusplus

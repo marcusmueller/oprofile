@@ -1,4 +1,4 @@
-/* $Id: op_help.c,v 1.3 2001/12/01 21:16:48 phil_e Exp $ */
+/* $Id: op_help.c,v 1.4 2001/12/31 14:45:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -27,7 +27,7 @@
 #include "../op_user.h"
 #include "../util/op_popt.h"
 
-static int cpu_type = CPU_NO_GOOD;
+static op_cpu cpu_type = CPU_NO_GOOD;
 
 /**
  * help_for_event - output event name and description
@@ -37,7 +37,8 @@ static int cpu_type = CPU_NO_GOOD;
  */
 static void help_for_event(int i)
 {
-	uint k, j;
+	uint j,k;
+	op_cpu cpu;
 	uint mask;
 
 	printf("%s", op_events[i].name);
@@ -60,10 +61,10 @@ static void help_for_event(int i)
 
 	printf(" (supported cpu: ");
 	mask = op_events[i].cpu_mask;
-	for (k = 0; k < MAX_CPU_TYPE; ++k) {
-		if (mask & (1 << k)) {
-			printf("%s", op_get_cpu_type_str(k));
-			mask &= ~(1 << k);
+	for (cpu = 0; cpu < MAX_CPU_TYPE; ++cpu) {
+		if (mask & (1 << cpu)) {
+			printf("%s", op_get_cpu_type_str(cpu));
+			mask &= ~(1 << cpu);
 			if (mask)
 				printf(", ");
 		}
@@ -86,7 +87,6 @@ static void help_for_event(int i)
 }
 
 static int showvers;
-static int cpu_type;
 static int get_cpu_type;
 static const char * event_name;
 

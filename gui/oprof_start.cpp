@@ -196,9 +196,10 @@ retry:;
 		return;
 	}
 
-	int tmp_cpu_type;
-
-	in >> tmp_cpu_type;
+	int tmp;
+	in >> tmp;
+	op_cpu tmp_cpu_type = static_cast<op_cpu>(tmp);
+ 
 	if (tmp_cpu_type != cpu_type) {
 		int user_choice = 
 			QMessageBox::warning(this, 0, 

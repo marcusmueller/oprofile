@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.86 2001/12/22 18:01:52 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.87 2001/12/31 14:45:32 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -35,7 +35,7 @@ static struct opd_proc *opd_procs[OPD_MAX_PROC_HASH];
 u32 ctr_count[OP_MAX_COUNTERS];
 u8 ctr_event[OP_MAX_COUNTERS];
 u8 ctr_um[OP_MAX_COUNTERS];
-extern u32 cpu_type;
+extern op_cpu cpu_type;
 double cpu_speed;
 
 /* list of image */

@@ -107,12 +107,14 @@ char *opd_simplify_pathname (char *path)
 		to++;
 		from++;
 		if (*from == '/') {
-			if (*++from == '/')
-				/* 3 or more initial /s are equivalent to 1 /.  */
-				while (*++from == '/');
-			else
-				/* On some hosts // differs from /; Posix allows this.  */
+			if (*++from == '/') {
+				/* 3 or more initial /s are equivalent to 1 /. */
+				while (*++from == '/')
+					;
+			} else {
+				/* deal with special ^// case */
 				to++;
+			}
 		}
 	}
 
@@ -129,11 +131,11 @@ char *opd_simplify_pathname (char *path)
 		if (*from == '.') {
 			if (from[1] == '\0')
 				break;
+ 
 			if (from[1] == '/') {
 				from += 2;
 				continue;
-			}
-			else if (from[1] == '.' && (from[2] == '/' || from[2] == '\0')) {
+			} else if (from[1] == '.' && (from[2] == '/' || from[2] == '\0')) {
 				/* Don't simplify if there was no previous component.  */
 				if (absolute && orig_base == to) {
 					from += 2;
@@ -199,7 +201,6 @@ char *opd_relative_to_absolute_path(const char *path, const char *base_dir)
 			if (getcwd(dir, FILENAME_MAX) != NULL) {
 				base_dir = dir;
 			}
-
 		}
 
 		if (base_dir != NULL) {

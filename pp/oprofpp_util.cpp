@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.15 2001/12/29 23:51:25 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.16 2001/12/31 14:45:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -820,7 +820,8 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
  */
 void opp_samples_files::check_event(int i)
 {
-	op_get_event_desc(header[i]->cpu_type, header[i]->ctr_event,
+	op_cpu cpu = static_cast<op_cpu>(header[i]->cpu_type);
+	op_get_event_desc(cpu, header[i]->ctr_event,
 			  header[i]->ctr_um, &ctr_name[i],
 			  &ctr_desc[i], &ctr_um_desc[i]);
 }

@@ -16,7 +16,7 @@
 
 #include "oprofile.h"
  
-extern int cpu_type;
+extern op_cpu cpu_type;
  
 /* ---------------- NMI handler setup ------------ */
 

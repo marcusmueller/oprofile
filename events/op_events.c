@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.1 2001/11/12 14:05:34 phil_e Exp $ */
+/* $Id: op_events.c,v 1.2 2001/12/31 14:45:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -262,7 +262,7 @@ int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
  * The function returns > 0 if the event is found
  * 0 otherwise
  */
-int op_min_count(u8 ctr_type, int cpu_type)
+int op_min_count(u8 ctr_type, op_cpu cpu_type)
 {
 	int ret = 0;
 	uint i;
@@ -301,7 +301,7 @@ int op_min_count(u8 ctr_type, int cpu_type)
  * The function returns bitmask of failure cause
  * 0 otherwise
  */
-int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, int cpu_type)
+int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type)
 {
 	int ret = 0x0;
 	uint i = 0;
@@ -336,7 +336,7 @@ int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, int cpu_type)
  * the core cpu denomination or "invalid cpu type" if
  * @cpu_type is not valid.
  */
-const char* op_get_cpu_type_str(int cpu_type)
+const char * op_get_cpu_type_str(op_cpu cpu_type)
 {
 	if (cpu_type < 0 || cpu_type > MAX_CPU_TYPE) {
 		return "invalid cpu type";

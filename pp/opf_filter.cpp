@@ -194,7 +194,7 @@ class output {
 	// sort source by this counter.
 	size_t sort_by_counter;
 
-	int cpu_type;
+	op_cpu cpu_type;
 
 	bool until_more_than_samples;
 
@@ -327,7 +327,7 @@ output::output(int argc_, char const * argv_[],
 	cpu_speed(0.0),
 	threshold_percent(threshold_percent_),
 	sort_by_counter(sort_by_counter_),
-	cpu_type(-1),
+	cpu_type(CPU_NO_GOOD),
 	until_more_than_samples(until_more_than_samples_),
 	output_dir(output_dir_),
 	source_dir(source_dir_),
@@ -829,7 +829,7 @@ bool output::treat_input(const string & image_name, const string & sample_file)
 		exit(EXIT_FAILURE);
 	}
 
-	cpu_type = samples_files.header[samples_files.first_file]->cpu_type;
+	cpu_type = static_cast<op_cpu>(samples_files.header[samples_files.first_file]->cpu_type);
 
 	if (cpu_type == CPU_ATHLON)
 		op_nr_counters = 4;

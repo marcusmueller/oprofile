@@ -153,7 +153,7 @@ static char * get_binary_name(void)
 	return file; 
 }
 
-// just reset the md5sum to 0, don't change the size of opd_header.
+/* just reset the md5sum to 0, don't change the size of opd_header. */
 static void v3_to_v4(FILE* fp) {
 	struct opd_header_v3 header_v3;
 	struct opd_header_v4 header_v4;
@@ -188,7 +188,7 @@ struct old_opd_fentry {
 	u32 count1;
 };
 
-static int cpu_type = -1;
+static op_cpu cpu_type = CPU_NO_GOOD;
 
 /* PHE FIXME: really a fucking function, if you have problem with it flame
  * me at <phe@club-internet.fr> */
@@ -333,8 +333,6 @@ static void v4_to_v5(FILE* fp)
 	}
 
 	if (ok == 0) {
-		/* PHE FIXME: probably needs to remove this warning */
-//		fprintf(stderr, "Bad file naming scheme %s\n", filename);
 		backup_number = -1;
 	}
 
@@ -360,8 +358,6 @@ static void v4_to_v5(FILE* fp)
 	nr_samples = (old_size - sizeof(struct opd_header_v4)) / sizeof(struct old_opd_fentry);
 
 	len_filename = strlen(filename);
-	//out_filename = xmalloc(len_filename + 32);
-	//strcpy(out_filename, filename);
 
 	for (counter = 0; counter < 2 ; ++counter) {
 		do_mapping_transfer(nr_samples, counter,
@@ -438,12 +434,12 @@ int main(int argc, char* argv[])
 
 	/* for v4 --> v5 */
 	if (strncmp(argv[i], "--cpu-type", strlen("--cpu-type")) == 0) {
-		sscanf(argv[i] + strlen("--cpu-type="), "%d", &cpu_type);
+		sscanf(argv[i] + strlen("--cpu-type="), "%d", (int *)&cpu_type);
 		++i;
 	}
 
 	for ( ; i < argc ; ++i) {
-		// used in v3 conversion
+		/* used in v3 conversion */
 		filename = argv[i];
  
 		fp = fopen(argv[i], "r+w");
