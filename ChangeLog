@@ -1,5 +1,9 @@
 2001-09-25  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/op_stop: fix terribly stupid error
+ 
+2001-09-25  John Levon  <moz@compsoc.man.ac.uk>
+
 	* op_event.c: whooops
  
 2001-09-25  John Levon  <moz@compsoc.man.ac.uk>
