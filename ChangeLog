@@ -1,6 +1,10 @@
+2003-07-09  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* module/x86/op_model_p4.c: reflect intel documentation fix.
+
 2003-07-08  Will Cohen  <wcohen@redhat.com>
 
-        * daemon/opd_kernel.c: Handle /proc/modules format.
+	* daemon/opd_kernel.c: Handle /proc/modules format.
 	
 2003-07-08  Will Cohen  <wcohen@redhat.com>
 
