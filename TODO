@@ -21,6 +21,9 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o daemon/opd_image.c:opd_put_sample() if (image != NULL) { ... }
+  *else verbrintf(SAMPLE LOST)* the else is missing, if log file show such
+  message track the cause
  o fix the numerous bizarre problems with --separate=kernel
  o fix the 2.5 module-finding problem as best as Rusty will let us
  o implement module-drop event in 2.5 kernel
