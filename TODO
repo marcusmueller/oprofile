@@ -1,11 +1,12 @@
 0.2
 ---
+ 
  o get symbol size via elf instead of bfd
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
    these two todo are perhaps worthwhile to implement now. The new filtering
    of symbols make them less interesting. - let's wait - john
- o remaining little cleanups of output format etc.
+ o remaining little cleanups of output format etc. (wahat needs doing ??)
  o document gcc 2.95 and linenr info problems especially for inline functions
  o test post-profile -c0,1 --sort
  o check post profile for multiple symbols with same name
@@ -13,13 +14,32 @@
 Before 1.0
 ----------
 
+ o difference between two profile session. Difference must be made at source level. 
+   (This is a part of post-prof). Difference can be made also at symbols level. Important.
+ o Checkpointing 
+ 
+ o We want to make the post-prof stuff far more flexible. See my doc in oprofile-tests
+   module. So for starters we want a nice internal API for accessing info that we can
+   use from a new frontend ("op_report" anyone ?)
+  
+   We don't want to hard code counter numbers anywhere any more. Why ? Because it
+   makes multiplexing events impossible. We want things like : 
+
+	op_start --events=CPU_CLK_UNHALTED,INST_RETIRED, ...
+
+   An optional interface will allow you to set individual counts for each thing if we
+   don't need to multiplex, else counter0 gets used as periodic timer to count the
+   events. This needs a lot of changes but we should bear it in mind. 
+
+ o move op_start to simple C program ??
+
+ o move dev files to /dev ???
+ o new tree code to replace mmap.
  o determine where we need preempt_disable/enable to prevent pre-emption + test (ugh)
  o should we pin rather than loop sample buffer overflow too ?
  o audit oprof_start for security + document sudo
  o split documentation into tutorial + ref. Include /everything/ in the ref: sample format,
    logfile meanings etc.
- o difference between two profile session. Difference must be made at source level. 
-   (This is a part of post-prof). Difference can be made also at symbols level.
  o op_time for only some specified files... 
  o cache some stuff / nr. samples - op_time is horrendously slow
  o coherent naming class conventions
@@ -31,16 +51,15 @@ Before 1.0
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o use a filelock rather a sleep to synchronize op_start and daemon.
  o check chroot() processes and the path hash stuff
- o audit to track unnecessary include <>
  o check if we can use our own RTC irq handler rather to pass through the
   the kernel service. The overhead for RTC is very big actually. Take care
   first from where come the overhead (read/write RTC CMOS is costly)
- o thread profiling in the old and new flavour (2.5 introduce a new thread handling) (also
-   see NGPT bug on sf)
+ o thread profiling in the old and new flavour (2.5 introduce a new thread handling)
 
 Checks to make
 --------------
  
+ o audit to track unnecessary include <>
  o gcc 3.0/3.1 compile. (3.1 is not stable currently but I follow it, Phil)
  o verify builds (modversions, kernel versions, athlon etc.). I have the
   necessary stuff to check kernel versions/configurations on PPro core (Phil)
@@ -51,8 +70,6 @@ Checks to make
 Later
 -----
  
-oprof_report:
-
 o move uniformly to doxygen Javadoc style :
 
 	/**
@@ -61,7 +78,14 @@ o move uniformly to doxygen Javadoc style :
 	 * @param second second wheel
 	 * @return false if there were no wheels
 	 */
+ 
 - demangling
+ 
+oprof_report:
+
+IMHO this app isn't near what we really want. There's no point doing this
+GUI until we can give it some real power. Let's concentrate on making the
+command-line tools as good as possible first. 
 - folderview of sample files + sessions in the gui itself (later ?)
 - disassembly. form "+0x8b" for intra-symbol samples optionnaly, on by default?
 - tune and test hotspot
