@@ -1,5 +1,10 @@
 2002-05-05  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* dae/op_session.c: tweak error message when session already
+	  exist. Avoid to op_dump when profiler is not started.
+
+2002-05-05  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* TODO: update:
 
 	* dae/op_session.c: do not create empty session directory

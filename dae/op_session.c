@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <dirent.h> 
+#include <errno.h> 
  
 #include "opd_util.h"
 #include "../util/op_popt.h"
@@ -75,11 +76,12 @@ static void opd_move_files(char const * sname)
 	strcpy(dir_name, OP_SAMPLES_DIR);
 	strcat(dir_name, sname);
 
-	/* FIXME: graceful handling of EEXIST */
-	/* John, I don't think it's safe, the samples can be overwriten or you can
-	 * mix in the same dir samples files with different profiling setup */
 	if (mkdir(dir_name, 0755)) {
-		fprintf(stderr, "unable to create directory %s\n", dir_name);
+		if (errno == EEXIST) {
+			fprintf(stderr, "session \"%s\" already exists\n", dir_name);
+		} else {
+			fprintf(stderr, "unable to create directory \"%s\"\n", dir_name);
+		}
 		exit(EXIT_FAILURE);
 	}
 
@@ -131,15 +133,19 @@ static void opd_signal_daemon(void)
  
 int main(int argc, char const *argv[])
 {
+	pid_t pid;
 	opd_options(argc, argv);
-	
+
 	/* not ideal, but OK for now. The sleep hopefully
 	 * means the daemon starts reading before the signal
 	 * is delivered, so it will finish reading, *then*
 	 * handle the SIGHUP. Hack !
 	 */
-	system("op_dump");
-	sleep(2);
+	pid = opd_read_lock_file(OP_LOCK_FILE);
+	if (pid) {
+		system("op_dump");
+		sleep(2);
+	}
  
 	opd_move_files(sessionname);
 	opd_signal_daemon();
