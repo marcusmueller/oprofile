@@ -1,5 +1,11 @@
 2004-01-18  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/callgraph_container.cpp: Obviously not2(weak_ordering_function)
+	  is not a weak_ordering function leading to mysterious segfault
+	  during sort.
+
+2004-01-18  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* doc/opstack.1.in: new file, describe opstack usage
 	* doc/oprofile.xml: describe opstack
 

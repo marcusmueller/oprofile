@@ -70,13 +70,19 @@ compare_cg_symbol_by_self_count(cg_symbol const & lhs, cg_symbol const & rhs)
 	return lhs.self_counts[0] < rhs.self_counts[0];
 }
 
-struct compare_cg_symbol_by_callee_count
-	: public binary_function<cg_symbol, cg_symbol, bool> {
+bool
+compare_cg_symbol_by_callee_count(cg_symbol const & lhs, cg_symbol const & rhs)
+{
+	return lhs.callee_counts[0] < rhs.callee_counts[0];
+}
 
-	bool operator()(cg_symbol const & lhs, cg_symbol const & rhs) const {
-		return lhs.callee_counts[0] < rhs.callee_counts[0];
-	}
-};
+// FIXME: better name ?
+bool
+compare_cg_symbol_by_callee_count2(cg_symbol const & lhs,
+                                   cg_symbol const & rhs)
+{
+	return rhs.callee_counts[0] < lhs.callee_counts[0];
+}
 
 } // anonymous namespace
 
@@ -159,8 +165,8 @@ get_callee(cg_symbol const & symbol) const
 		}
 	}
 
-	sort(result.begin(), result.end(),
-	     compare_cg_symbol_by_callee_count());
+	sort(result.begin(), result.end(), compare_cg_symbol_by_callee_count);
+
 	return result;
 }
 
@@ -183,8 +189,8 @@ get_caller(cg_symbol const & symbol) const
 		}
 	}
 
-	sort(result.begin(), result.end(),
-	     not2(compare_cg_symbol_by_callee_count()));
+	sort(result.begin(), result.end(), compare_cg_symbol_by_callee_count2);
+
 	return result;
 }
 
