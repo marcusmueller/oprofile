@@ -27,9 +27,7 @@ scoped_ptr<partition_files> sample_file_partition;
 namespace options {
 	bool demangle = true;
 	bool smart_demangle;
-	string source_dir;
 	string output_dir;
-	string base_dir;
 	path_filter file_filter;
 	string_filter symbol_filter;
 	bool source;
@@ -53,14 +51,8 @@ popt::option options_array[] = {
 		     "don't demangle GNU C++ symbol names"),
 	popt::option(options::smart_demangle, "smart-demangle", 'D',
 		     "demangle GNU C++ symbol names and shrink them"),
-	popt::option(options::source_dir, "source-dir", 'd',
-		     "base directory of source", "directory name"),
 	popt::option(options::output_dir, "output-dir", 'o',
 		     "output directory", "directory name"),
-#if 0 // Disabled until we find a testcase we need this for
-	popt::option(options::base_dir, "base-dir", 'b',
-		     "FIXME", "directory name"),
-#endif
 	popt::option(include_file, "include-file", '\0',
 		     "include these comma separated filename", "filenames"),
 	popt::option(exclude_file, "exclude-file", '\0',

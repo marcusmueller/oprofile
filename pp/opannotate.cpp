@@ -526,41 +526,28 @@ void output_one_file(istream & in, debug_name_id filename,
 		return;
 	}
 
-	string out_filename = debug_names.name(filename);
-	string original_out_filename = out_filename;
+	string const source_file = debug_names.name(filename);
+	string const out_file =
+		relative_to_absolute_path(output_dir + source_file);
 
-	size_t pos = out_filename.find(source_dir);
-	if (pos == 0) {
-		out_filename.erase(0, source_dir.length());
-	} else if (pos == string::npos) {
-		// filename is outside the source dir: ignore this file
-		cerr << "opannotate: file "
-		     << '"' << out_filename << '"' << " ignored" << endl;
+	/* Just because you're paranoid doesn't mean they're not out to
+	 * get you ... */
+	if (is_files_identical(out_file, source_file)) {
+		cerr << "input and output files are identical: "
+		     << out_file << endl;
 		return;
 	}
 
-	out_filename = relative_to_absolute_path(output_dir + out_filename);
-
-	if (create_path(out_filename.c_str())) {
+	if (create_path(out_file.c_str())) {
 		cerr << "unable to create directory: "
-		     << '"' << dirname(out_filename) << '"' << endl;
+		     << '"' << dirname(out_file) << '"' << endl;
 		return;
 	}
 
-	// paranoid checking: out_filename and filename must be distinct file.
-	if (is_files_identical(original_out_filename, out_filename)) {
-		cerr << "input and output_filename are identical: "
-		     << '"' << original_out_filename << '"'
-		     << ','
-		     << '"' << out_filename << '"'
-		     << endl;
-		return;
-	}
-
-	ofstream out(out_filename.c_str());
+	ofstream out(out_file.c_str());
 	if (!out) {
 		cerr << "unable to open output file "
-		     << '"' << out_filename << '"' << endl;
+		     << '"' << out_file << '"' << endl;
 	} else {
 		do_output_one_file(out, in, filename, false);
 		output_info(out);
@@ -606,16 +593,8 @@ bool annotate_source(image_set const & images)
 	annotation_fill = get_annotation_fill();
 
 	bool output_separate_file = false;
-	if (!source_dir.empty()) {
-		output_separate_file = true;
 
-		source_dir = relative_to_absolute_path(source_dir);
-		if (source_dir.length() &&
-		    source_dir[source_dir.length() - 1] != '/')
-			source_dir += '/';
-	}
-
-	if (!output_dir.empty() || output_separate_file) {
+	if (!output_dir.empty()) {
 		output_separate_file = true;
 
 		output_dir = relative_to_absolute_path(output_dir);
@@ -623,18 +602,18 @@ bool annotate_source(image_set const & images)
 		    output_dir[output_dir.length() - 1] != '/')
 			output_dir += '/';
 
+		/* Don't let the user stomp on their sources */
+		if (output_dir == "/") {
+			cerr << "Output path of / would over-write the "
+				"source files" << endl;
+			return false;
+		}
 
 		if (create_path(output_dir.c_str())) {
 			cerr << "unable to create " << output_dir
 			     << " directory: " << endl;
 			return false;
 		}
-	}
-
-	if (output_separate_file && output_dir == source_dir) {
-		cerr << "You cannot specify the same directory for "
-		     << "--output-dir and --source-dir" << endl;
-		return false;
 	}
 
 	if (assembly) {

@@ -1064,8 +1064,8 @@ for that line. Additionally, each symbol is annotated giving details for the sym
 as a whole. An example:
 </para>
 <screen>
-[moz@lambent moz]$ opannotate --source --output-dir=annotated --source-dir=/home/moz/src/oprofile-pp/ /usr/local/oprofile-pp/bin/oprofiled
-[moz@lambent moz]$ ls  annotated/daemon/
+[moz@lambent moz]$ opannotate --source --output-dir=annotated /usr/local/oprofile-pp/bin/oprofiled
+[moz@lambent moz]$ ls annotated/home/moz/src/oprofile-pp/daemon/
 opd_cookie.h  opd_image.c  opd_kernel.c  opd_sample_files.c  oprofiled.c
 </screen>
 <para>
@@ -1467,10 +1467,6 @@ Show version.
 Output annotated assembly. If this is combined with --source, then mixed
 source / assembly annotations are output.
 </para></listitem></varlistentry>
-<!-- FIXME: when re-enabled ...
-<varlistentry><term><option>- -base-dir / -b [dir]</option></term><listitem><para>
-</para></listitem></varlistentry>
--->
 <varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
 Do not include application-specific images for libraries, kernel modules
 and the kernel. This option only makes sense if the profile session
@@ -1508,9 +1504,6 @@ source file.
 <varlistentry><term><option>--source / -s</option></term><listitem><para>
 Output annotated source. This requires debugging information to be available
 for the binaries.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--source-dir / -d [dir]</option></term><listitem><para>
-Top source directory for the source files.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--smart-demangle / -D</option></term><listitem><para>
 Use pattern-matching to make C++ symbol demangling more readable.

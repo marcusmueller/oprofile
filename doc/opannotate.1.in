@@ -22,10 +22,6 @@ Output annotated assembly. If this is combined with --source, then mixed
 source / assembly annotations are output.
 .br
 .TP
-.BI "--base-dir / -b [dir]"
-FIXME
-.br
-.TP
 .BI "--exclude-dependent / -x"
 Do not include application-specific images for libraries, kernel modules
 and the kernel. This option only makes sense if the profile session
@@ -73,10 +69,6 @@ source file.
 .BI "--source / -s"
 Output annotated source. This requires debugging information to be available
 for the binaries.
-.br
-.TP
-.BI "--source-dir / -d [dir]"
-Top source directory for the source files.
 .br
 .TP
 .BI "--smart-demangle / -D"
