@@ -1,6 +1,8 @@
 0.0.9 task list
 ---------------
 
+o remove note lock (and rename map lock) ... I think
+ 
 o use correct oprofile_nmi.S code for 2.2 AND 2.4
 
 o check if spinlock busting of waitqueue_lock in 2.2 for NMI works
