@@ -3,6 +3,7 @@ Makefile
 version.h
 a.diff
 oprofile.s
+confdefs.h
 config.log
 config.cache
 config.status
