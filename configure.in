@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.49 2001/10/30 17:32:13 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.50 2001/11/06 18:02:56 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -110,6 +110,15 @@ else
   AC_MSG_RESULT("no")
 fi
  
+AC_MSG_CHECKING(for hard_get_current())
+HARD_GET_CURRENT=`gcc -I$KINC -E $KINC/asm/current.h | grep hard_get_current`
+if test -z "$HARD_GET_CURRENT"; then
+  AC_MSG_RESULT(no)
+else
+  AC_MSG_RESULT(yes)
+  BKCFLAGS="$BKCFLAGS -DHARD_CURRENT"
+fi
+
 AC_MSG_CHECKING(for x86 architecture)
 AX_COMPILE_OPTION(CONFIG_X86,x86=1,x86=0)
 AX_MSG_RESULT_YN($x86)

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.7 2001/11/06 02:05:49 movement Exp $ */
+/* $Id: oprofile.c,v 1.8 2001/11/06 18:02:56 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -112,14 +112,14 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const str
 inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, int ctr)
 {
 	ops->eip = regs->eip;
-	ops->pid = current->pid;
+	ops->pid = op_current()->pid;
 	ops->count = (1U << OP_BITS_COUNT)*ctr + 1;
 }
 
 inline static void op_do_profile(uint cpu, struct pt_regs *regs, int ctr)
 {
 	struct _oprof_data * data = &oprof_data[cpu];
-	uint h = op_hash(regs->eip, current->pid, ctr);
+	uint h = op_hash(regs->eip, op_current()->pid, ctr);
 	uint i;
 
 	data->nr_irq++;
@@ -162,9 +162,9 @@ asmlinkage void op_do_nmi(struct pt_regs *regs)
 	uint cpu = op_cpu_id();
 	int i;
 
-	if (unlikely(sysctl.pid_filter) && likely(current->pid != sysctl.pid_filter))
+	if (unlikely(sysctl.pid_filter) && likely(op_current()->pid != sysctl.pid_filter))
 		return;
-	if (unlikely(sysctl.pgrp_filter) && likely(current->pgrp != sysctl.pgrp_filter))
+	if (unlikely(sysctl.pgrp_filter) && likely(op_current()->pgrp != sysctl.pgrp_filter))
 		return;
 
 	for (i = 0 ; i < op_nr_counters ; ++i)
