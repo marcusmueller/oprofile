@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.10 2000/12/06 20:39:50 moz Exp $ */
+/* $Id: opd_util.c,v 1.11 2001/01/21 01:11:56 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -517,15 +517,19 @@ void opd_write_u32_ne(FILE *fp, u32 val)
 /**
  * opd_get_fsize - get size of file
  * @file: file name
+ * @fatal: exit on error
  *
  * Returns the size of the named file in bytes.
- * Failure is fatal.
+ * Failure is fatal if @fatal is %TRUE.
  */ 
-off_t opd_get_fsize(const char *file)
+off_t opd_get_fsize(const char *file, int fatal)
 {
 	struct stat st;
 
 	if (stat(file,&st)) {
+		if (!fatal)
+			return 0;
+		 
 		fprintf(stderr,"opd_get_fsize: stat failed\n");
 		exit(1);
 	}

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.48 2001/01/19 00:49:41 moz Exp $ */
+/* $Id: oprofile.c,v 1.49 2001/01/21 01:11:55 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -29,8 +29,8 @@ MODULE_AUTHOR("John Levon (moz@compsoc.man.ac.uk)");
 MODULE_DESCRIPTION("Continuous Profiling Module");
 
 /* sysctl settables */
-static int op_hash_size;
-static int op_buf_size;
+static int op_hash_size=OP_DEFAULT_HASH_SIZE;
+static int op_buf_size=OP_DEFAULT_BUF_SIZE;
 static int sysctl_dump;
 static int op_ctr0_on[NR_CPUS];
 static int op_ctr1_on[NR_CPUS];
@@ -59,7 +59,6 @@ u32 oprof_ready[NR_CPUS] __cacheline_aligned;
 static struct _oprof_data oprof_data[NR_CPUS];
 
 extern spinlock_t map_lock;
-extern u32 nextmapbuf;
 
 /* ---------------- NMI handler ------------------ */
 
@@ -388,11 +387,13 @@ static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um)
 {
 	/* enable interrupt generation */
 	*val |= (1<<20);
-	/* enable chosen OS and USR counting */
-	if (user)
-		*val |= (1<<16);
-	if (kernel)
-		*val |= (1<<17);
+	/* enable/disable chosen OS and USR counting */
+	(user)   ? (*val |= (1<<16))
+		 : (*val &= ~(1<<16));
+
+	(kernel) ? (*val |= (1<<17))
+		 : (*val &= ~(1<<17));
+
 	/* what are we counting ? */
 	*val |= event;
 	*val |= (um<<8);
@@ -429,7 +430,7 @@ static void pmc_setup(void *dummy)
 		wrmsr(MSR_IA32_EVNTSEL1, low, high);
 	}
 
-	/* disable ctr1 if the UP oopser might be on, but we can't do anything 
+	/* disable ctr1 if the UP oopser might be on, but we can't do anything
 	 * interesting with the NMIs
 	 */
 #if !defined(CONFIG_X86_UP_APIC) || !defined(OP_EXPORTED_DO_NMI)
@@ -514,25 +515,59 @@ int oprof_thread(void *arg)
 			break;
 	}
 
-	up(&threadstopsem);
+	up_and_exit(&threadstopsem,0);
 	return 0;
 }
 
 void oprof_start_thread(void)
 {
+	diethreaddie = 0;
 	if (kernel_thread(oprof_thread, NULL, CLONE_FS|CLONE_FILES|CLONE_SIGHAND)<0)
 		printk(KERN_ERR "oprofile: couldn't spawn wakeup thread.\n");
 }
 
 void oprof_stop_thread(void)
 {
-	printk("stopping thread.\n"); 
 	diethreaddie = 1;
 	kill_proc(SIGKILL, threadpid, 1);
 	down(&threadstopsem);
 }
 
+#define wrap_nextbuf() do { \
+	if (++data->nextbuf==(data->buf_size-OP_PRE_WATERMARK)) { \
+		oprof_ready[0] = 1; \
+		wake_up(&oprof_wait); \
+	} else if (data->nextbuf==data->buf_size) \
+		data->nextbuf=0; \
+	} while (0)
+
 spinlock_t note_lock __cacheline_aligned = SPIN_LOCK_UNLOCKED;
+
+void oprof_put_mapping(struct op_mapping *map)
+{
+	struct _oprof_data *data = &oprof_data[0];
+
+	if (!prof_on)
+		return;
+
+	/* FIXME: IPI :( */
+	spin_lock(&note_lock);
+	pmc_select_stop(0);
+
+	data->buffer[data->nextbuf].eip = map->addr;
+	data->buffer[data->nextbuf].pid = map->pid;
+	data->buffer[data->nextbuf].count =
+		((map->is_execve) ? OP_EXEC : OP_MAP)
+		| map->hash;
+	wrap_nextbuf();
+	data->buffer[data->nextbuf].eip = map->len;
+	data->buffer[data->nextbuf].pid = map->offset & 0xffff;
+	data->buffer[data->nextbuf].count = map->offset >> 16;
+	wrap_nextbuf();
+	
+	pmc_select_start(0);
+	spin_unlock(&note_lock);
+}
 
 void oprof_put_note(struct op_sample *samp)
 {
@@ -546,12 +581,7 @@ void oprof_put_note(struct op_sample *samp)
 	pmc_select_stop(0);
 
 	memcpy(&data->buffer[data->nextbuf],samp,sizeof(struct op_sample));
-	if (++data->nextbuf==(data->buf_size-OP_PRE_WATERMARK)) {
-		oprof_ready[0] = 1;
-		// FIXME: this ok under a spinlock ?
-		wake_up(&oprof_wait);
-	} else if (data->nextbuf==data->buf_size)
-		data->nextbuf=0;
+	wrap_nextbuf();
 
 	pmc_select_start(0);
 	spin_unlock(&note_lock);
@@ -573,11 +603,8 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 		return -EINTR;
 	}
 
-	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
-		case 2: return oprof_map_read(buf,count,ppos);
-		case 1: return -EINVAL;
-		default:
-	}
+	if (MINOR(file->f_dentry->d_inode->i_rdev) != 0)
+		return -EINVAL;
 
 	max = sizeof(struct op_sample)*op_buf_size;
 
@@ -644,12 +671,13 @@ static int oprof_open(struct inode *ino, struct file *file)
 		return -EPERM;
 
 	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
-		case 2: return oprof_map_open();
 		case 1: return oprof_hash_map_open();
-		default:
+		case 0:
 			/* make sure the other devices are open */
-			if (!is_map_ready())
-				return -EINVAL;
+			if (is_map_ready())
+				break;
+		default:
+			return -EINVAL;
 	}
 
 	if (test_and_set_bit(0,&oprof_opened))
@@ -661,9 +689,9 @@ static int oprof_open(struct inode *ino, struct file *file)
 static int oprof_release(struct inode *ino, struct file *file)
 {
 	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
-		case 2: return oprof_map_release();
 		case 1: return oprof_hash_map_release();
-		default:
+		case 0: break;
+		default: return -EINVAL;
 	}
 
 	if (!oprof_opened)
@@ -738,7 +766,7 @@ static int parms_ok(void)
 	struct _oprof_data *data;
 
 	op_check_range(op_hash_size,256,262144,"op_hash_size value %d not in range\n");
-	op_check_range(op_buf_size,512,262144,"op_buf_size value %d not in range\n");
+	op_check_range(op_buf_size,512,1048576,"op_buf_size value %d not in range\n");
 
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		data = &oprof_data[cpu];
@@ -865,8 +893,6 @@ static int oprof_stop(void)
 
 	spin_lock(&map_lock);
 	spin_lock(&note_lock);
-
-	nextmapbuf = 0;
 
 	for (i=0; i < smp_num_cpus; i++) {
 		struct _oprof_data *data = &oprof_data[i];

@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.29 2001/01/19 00:49:42 moz Exp $ */
+/* $Id: oprofile.h,v 1.30 2001/01/21 01:11:55 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -29,13 +29,8 @@
 #include <asm/smplock.h>
 #include <asm/apic.h>
 
-#include "version.h"
-
-struct op_sample {
-	u16 count;
-	u16 pid;
-	u32 eip;
-} __attribute__((__packed__,__aligned__(8)));
+/* userspace/module interface */
+#include "op_user.h" 
 
 #define OP_NR_ENTRY (SMP_CACHE_BYTES/sizeof(struct op_sample))
 
@@ -79,52 +74,12 @@ struct _oprof_data {
 #define APIC_SPIV_APIC_ENABLED (1<<8)
 #endif
 
-#ifndef __ok_unused
-#define __ok_unused __attribute((__unused))
-#endif
+#define streqn(a, b, len) (!strncmp((a), (b), (len)))
 
 /* oprof_data->ready will be set this many samples
  * before the end of the eviction buffer
  */
 #define OP_PRE_WATERMARK 256
-
-#define OP_BITS 2
-/* 1==mapping info, 0 otherwise */
-#define OP_MAPPING (1U<<15)
-/* FIXME: for pentium 4, this must be at least log2 18 bits. This will hurt
- * performance only in ideal situations, so shouldn't be problem.
- */
-/* 1==PERFCTR1, 0==PERFCTR0 */
-#define OP_COUNTER (1U<<14)
-
-/* fork(),vfork(),clone() */
-#define OP_FORK ((1U<<15)|(1U<<0))
-/* execve() */
-#define OP_EXEC ((1U<<15)|(1U<<1))
-/* mapping */
-#define OP_MAP ((1U<<15)|(1U<<2))
-/* init_module() */
-#define OP_DROP_MODULES ((1U<<15)|(1U<<3))
-/* exit() */
-#define OP_EXIT ((1U<<15)|(1U<<4))
-
-/* size of map buffer in u32 */
-#define OP_MAX_MAP_BUF 524288
-
-/* oprof_data->ready will be set every time this many
- * entries are added to the map buffer in an attempt to
- * prevent overflow
- */
-#define OP_MAP_BUF_WATERMARK 512
-
-/* nr. entries in hash map, prime */
-#define OP_HASH_MAP_NR 1023
-
-/* size of hash map entries */
-#define OP_HASH_LINE 128
-
-/* size of hash map in bytes */
-#define OP_HASH_MAP_SIZE OP_HASH_LINE*OP_HASH_MAP_NR
 
 /* maximal value before eviction */
 #define OP_MAX_COUNT ((1U<<(16U-OP_BITS))-1U)

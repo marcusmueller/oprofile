@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.22 2001/01/19 00:49:43 moz Exp $ */
+/* $Id: oprofiled.c,v 1.23 2001/01/21 01:11:57 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -31,20 +31,18 @@ static int cpu_type;
 static int ignore_myself;
 static char *ctr0_type="INST_RETIRED";
 static char *ctr1_type="";
-static int opd_buf_size=OPD_DEFAULT_BUF_SIZE;
+static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static char *opd_dir="/var/opd/";
 static char *logfilename="oprofiled.log";
 char *smpdir="/var/opd/samples/";
 static char *devfilename="opdev";
-static char *devmapfilename="opmapdev";
 static char *devhashmapfilename="ophashmapdev";
 char *vmlinux;
 static char *systemmapfilename;
 static pid_t mypid;
 static sigset_t maskset;
 static fd_t devfd;
-fd_t mapdevfd;
-char *hashmap;
+struct op_hash *hashmap;
 
 static void opd_sighup(int val);
 static void opd_open_logfile(void);
@@ -63,7 +61,6 @@ static struct poptOption options[] = {
 	{ "base-dir", 'd', POPT_ARG_STRING, &opd_dir, 0, "base directory of daemon", "dir", },
 	{ "samples-dir", 's', POPT_ARG_STRING, &smpdir, 0, "output samples dir", "file", },
 	{ "device-file", 'd', POPT_ARG_STRING, &devfilename, 0, "profile device file", "file", },
-	{ "map-device-file", 'd', POPT_ARG_STRING, &devmapfilename, 0, "profile mapping device file", "file", },
 	{ "hash-map-device-file", 'h', POPT_ARG_STRING, &devhashmapfilename, 0, "profile hashmap device file", "file", },
 	{ "map-file", 'f', POPT_ARG_STRING, &systemmapfilename, 0, "System.map for running kernel file", "file", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
@@ -98,7 +95,7 @@ static void opd_open_logfile(void)
 /**
  * opd_open_files - open necessary files
  *
- * Open the three device files and the log file,
+ * Open the device files and the log file,
  * and mmap() the hash map. Also read the System.map
  * file.
  */
@@ -107,8 +104,6 @@ static void opd_open_files(void)
 	fd_t hashmapdevfd;
 
 	hashmapdevfd = opd_open_device(devhashmapfilename,1);
-	mapdevfd = opd_open_device(devmapfilename,1);
-	/* must open last as this enables profiling */ 
 	devfd = opd_open_device(devfilename,1);
 
 	hashmap = mmap(0, OP_HASH_MAP_SIZE, PROT_READ, MAP_SHARED, hashmapdevfd, 0);
@@ -276,11 +271,27 @@ static void opd_do_read(struct op_sample *buf, size_t size)
  * Returns positive if the sample is actually a notification,
  * zero otherwise.
  */
-inline static u16 opd_is_mapping(const struct op_sample *sample)
+inline static u16 opd_is_notification(const struct op_sample *sample)
 {
-	return (sample->count & OP_MAPPING);
+	return (sample->count & OP_NOTE);
 }
 
+/**
+ *  opd_unpack_mapping - unpack a mapping notification
+ *  @mapping: map structure to fill in
+ *  @samples: two contiguous samples containing the packed data
+ *
+ * Unpacks two samples into the map structure for further processing.
+ */ 
+static void opd_unpack_mapping(struct op_mapping *map, const struct op_sample *samples)
+{
+	map->addr = samples[0].eip;
+	map->pid = samples[0].pid;
+	map->hash = samples[0].count & ~OP_EXEC;
+	map->len = samples[1].eip;
+	map->offset = samples[1].pid | (((u32)samples[1].count) << 16);
+}
+ 
 /**
  * opd_do_samples - process a sample buffer
  * @opd_buf: buffer to process
@@ -298,6 +309,7 @@ inline static u16 opd_is_mapping(const struct op_sample *sample)
 void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 {
 	uint i;
+	struct op_mapping mapping; 
 
 	/* prevent signals from messing us up */
 	sigprocmask(SIG_BLOCK,&maskset,NULL);
@@ -310,19 +322,26 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 		if (ignore_myself && opd_buf[i].pid==mypid)
 			continue;
 
-		if (opd_is_mapping(&opd_buf[i])) {
+		if (opd_is_notification(&opd_buf[i])) {
 			opd_stats[OPD_NOTIFICATIONS]++;
-			switch (opd_buf[i].count) {
+			 
+			/* is a mapping type notification ? */
+			if (IS_OP_MAP(opd_buf[i].count)) {
+				if (IS_OP_EXEC(opd_buf[i].count))
+					opd_handle_exec(opd_buf[i].pid);
+
+				if (i+2 > count/sizeof(struct op_sample)) {
+					verbprintf("Partial mapping ignored.\n");
+					i = count/sizeof(struct op_sample);
+					break;
+				}
+
+				opd_unpack_mapping(&mapping, &opd_buf[i]);
+				opd_handle_mapping(&mapping);
+				i++;
+			} else switch (opd_buf[i].count) {
 				case OP_FORK:
 					opd_handle_fork(&opd_buf[i]);
-					break;
-
-				case OP_EXEC:
-					opd_handle_exec(&opd_buf[i]);
-					break;
-
-				case OP_MAP:
-					opd_handle_mapping(&opd_buf[i]);
 					break;
 
 				case OP_DROP_MODULES:

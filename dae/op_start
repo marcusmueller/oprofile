@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.17 2001/01/19 00:49:43 moz Exp $
+# $Id: op_start,v 1.18 2001/01/21 01:11:56 moz Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -21,8 +21,8 @@
 
 SYSCTL=sysctl
 
-BUF_SIZE=65536
-HASH_SIZE=16384
+BUF_SIZE=262144
+HASH_SIZE=32768
 CTR0_EVENT=
 CTR1_EVENT=
 CTR0_UM=0
@@ -68,7 +68,6 @@ Daemon options$
   --base-dir=dir               base directory of daemon$
   --samples-dir=file           output samples directory$
   --device-file=file           profile device file$
-  --map-device-file=file       profile map device file$
   --hash-map-device-file=file  profile hash map device file$
   --map-file=file              System.map for running kernel file$
   --vmlinux=file               vmlinux kernel image$
@@ -81,7 +80,6 @@ General options$
 LOG_FILE=
 SAMPLES_DIR=
 DEVICE_FILE=
-MAP_DEVICE_FILE=
 
 # get specified options
 
@@ -134,11 +132,11 @@ do
 		--ctr0-kernel)
 			CTR0_KERNEL=$val
 			;;
-		--ctr0-user)
-			CTR0_USER=$val
+		--ctr1-user)
+			CTR1_USER=$val
 			;;
-		--ctr0-kernel)
-			CTR0_KERNEL=$val
+		--ctr1-kernel)
+			CTR1_KERNEL=$val
 			;;
 		--base-dir)
 			DIR=$val
@@ -148,9 +146,6 @@ do
 			;;
 		--device-file)
 			DEVICE_FILE=$val
-			;;
-		--map-device-file)
-			MAP_DEVICE_FILE=$val
 			;;
 		--hash-map-device-file)
 			HASH_MAP_DEVICE_FILE=$val
@@ -219,9 +214,6 @@ fi
 if [ "$DEVICE_FILE" = "" ]; then
 	DEVICE_FILE="$DIR/opdev"
 fi
-if [ "$MAP_DEVICE_FILE" = "" ]; then
-	MAP_DEVICE_FILE="$DIR/opmapdev"
-fi
 if [ "$HASH_MAP_DEVICE_FILE" = "" ]; then
 	HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
 fi
@@ -244,7 +236,6 @@ if [ "$VERBOSE" = "1" ]; then
   echo "LOG_FILE $LOG_FILE"
   echo "SAMPLES_DIR $SAMPLES_DIR"
   echo "DEVICE_FILE $DEVICE_FILE"
-  echo "MAP_DEVICE_FILE $MAP_DEVICE_FILE"
   echo "MAP_FILE $MAP_FILE"
   echo "VMLINUX $VMLINUX"
 fi
@@ -271,14 +262,6 @@ then
 	echo "Removing $DEVICE_FILE"
 	fi 
 	rm "$DEVICE_FILE"
-fi
-
-if [ -c "$MAP_DEVICE_FILE" ]
-then
-	if [ "$VERBOSE" = "1" ]; then 
-	echo "Removing $MAP_DEVICE_FILE"
-	fi 
-	rm "$MAP_DEVICE_FILE"
 fi
 
 if [ -c "$HASH_MAP_DEVICE_FILE" ]
@@ -327,17 +310,6 @@ then
 fi
 chmod 700 "$HASH_MAP_DEVICE_FILE"
 
-if [ "$VERBOSE" = "1" ]; then 
-echo "Doing mknod $MAP_DEVICE_FILE"
-fi 
-mknod "$MAP_DEVICE_FILE" c $MAJOR_NR 2
-if [ "$?" != "0" ]
-then
-	echo "Couldn't mknod $MAP_DEVICE_FILE"
-	exit 1
-fi
-chmod 700 "$MAP_DEVICE_FILE"
-
 # stop any existing daemon
 
 op_stop >/dev/null
@@ -367,7 +339,7 @@ fi
  
 OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$USE_PII --ignore-myself=$IGNORE_MYSELF \
 	--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
-	--device-file=$DEVICE_FILE --map-device-file=$MAP_DEVICE_FILE \
+	--device-file=$DEVICE_FILE \
 	--hash-map-device-file=$HASH_MAP_DEVICE_FILE --vmlinux=$VMLINUX"
 
 if [ "$CTR0_EVENT" != "" ]; then

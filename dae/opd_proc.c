@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.46 2001/01/19 00:49:43 moz Exp $ */
+/* $Id: opd_proc.c,v 1.47 2001/01/21 01:11:56 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -28,14 +28,13 @@
 
 extern int verbose;
 extern unsigned long opd_stats[];
-extern fd_t mapdevfd;
 extern char *vmlinux;
 extern char *smpdir;
 extern u8 ctr0_type_val;
 extern u8 ctr1_type_val;
 extern int ctr0_um;
 extern int ctr1_um;
-extern char *hashmap;
+extern struct op_hash *hashmap;
 
 /* hash of process lists */
 static struct opd_proc *opd_procs[OPD_MAX_PROC_HASH];
@@ -216,10 +215,10 @@ static void opd_open_image(struct opd_image *image)
 	verbprintf("Statting $%s$\n", image->name);
 
 	/* for each byte in original, two u32 counters */
-	image->len = opd_get_fsize(image->name)*sizeof(u32)*2;
+	image->len = opd_get_fsize(image->name, 0)*sizeof(u32)*2;
 	
 	if (!image->len) {
-		verbprintf("Length zero for %s\n",image->name);
+		fprintf(stderr, "stat failed for %s\n",image->name);
 		image->fd = -1;
 		opd_free(mangled);
 		return;
@@ -234,7 +233,7 @@ static void opd_open_image(struct opd_image *image)
 
 	verbprintf("Opening $%s$\n",mangled);
 
-	image->fd = open(mangled, O_CREAT|O_EXCL|O_RDWR,0644);
+	image->fd = open(mangled, O_CREAT|O_RDWR, 0644);
 	if (image->fd==-1) {
 		fprintf(stderr,"oprofiled: open of image sample file \"%s\" failed: %s", mangled,strerror(errno));
 		goto out;
@@ -309,7 +308,7 @@ inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16
 	struct opd_fentry *fentry;
 
 	if (image->fd<1) {
-		fprintf(stderr, "Trying to write to non-opened image %s\n",image->name);
+		verbprintf("Trying to write to non-opened image %s\n",image->name);
 		return;
 	}
 
@@ -1053,127 +1052,79 @@ void opd_handle_exit(const struct op_sample *sample)
 	}
 }
 
-struct op_mapping {
-	u32 addr;
-	u32 len;
-	u32 offset;
-	u32 num;
-} __attribute__((__packed__));
-
-#define hash_access(hash) (&hashmap[hash*OP_HASH_LINE])
-
 /**
  * opd_handle_mapping - deal with mapping notification
- * @sample: sample structure from kernel
+ * @mapping: mapping info 
  *
  * Deal with one or more notifications that a process has mapped
- * in a new executable file. The mapping information is read
- * from the mapping device and added to the process structure.
- *
- * sample->pid contains the process id of the process.
- * sample->eip contains the number of bytes to read from
- * the mapping device.
+ * in a new executable file. The mapping information is 
+ * added to the process structure.
  */
-void opd_handle_mapping(const struct op_sample *sample)
+void opd_handle_mapping(const struct op_mapping *mapping)
 {
 	static char file[PATH_MAX];
 	char *c=&file[PATH_MAX-1];
 	struct opd_proc *proc;
-	struct op_mapping *mapping;
-	u32 *buf;
-	uint pos;
-	int hash;
-	ssize_t size;
+	short hash;
 
-
-	verbprintf("DO_MAPPING: pid %u, bytes %d\n",sample->pid,sample->eip);
-
-	proc = opd_get_proc(sample->pid);
+	proc = opd_get_proc(mapping->pid);
 
 	if (!proc) {
-		verbprintf("Told about mapping for non-existent process %u.\n",sample->pid);
-		proc = opd_add_proc(sample->pid);
+		verbprintf("Told about mapping for non-existent process %u.\n", mapping->pid);
+		proc = opd_add_proc(mapping->pid);
 	}
 
-	/* eip is actually nr. of bytes to read from map device */
-	size = (ssize_t)sample->eip;
-	if (size<(ssize_t)sizeof(u32)*4) {
-		fprintf(stderr,"oprofiled: size is less than 16 : %u\n", size);
-		exit(1);
-	}
+	*c = '\0';
 
-	buf = opd_malloc(size);
-	pos = 0;
-
-	opd_read_device(mapdevfd,buf,size,0);
-
-	while (pos < size/sizeof(u32)) {
-		mapping = (struct op_mapping *)&buf[pos];
-		pos += 4;
-
-		if (!mapping->num) {
-			verbprintf("Mapping of deleted file.\n");
-			/* this can happen when the file has been deleted */
-			continue;
+	hash = mapping->hash; 
+ 
+	while (hash != 0) {
+		if (hash==-1) {
+			/* possibly deleted file */
+			return;
 		}
 
-		*c = '\0';
-
-		while (mapping->num--) {
-			hash = buf[pos++];
-
-			if (hash==-1) {
-				/* Output to the hash map went wrong */
-				fprintf(stderr,"Ignoring broken map\n");
-				opd_free(buf);
-				return;
-			}
-
-			if (hash >= OP_HASH_MAP_NR) {
-				fprintf(stderr,"hash value %u out of range.\n",hash);
-				opd_free(buf);
-				return;
-			}
-
-			if (strlen(hash_access(hash))+1+strlen(c) >= PATH_MAX) {
-				fprintf(stderr,"String \"%s\" too large.\n",file);
-				exit(1);
-			}
-
-			c -= strlen(hash_access(hash))+1;
-			strncpy(c,"/",1);
-			strncpy(c+1,hash_access(hash),strlen(hash_access(hash)));
+		if (hash >= OP_HASH_MAP_NR) {
+			fprintf(stderr,"hash value %u out of range.\n",hash);
+			return;
 		}
-		opd_put_mapping(proc,opd_get_image(c,0),mapping->addr, mapping->offset, mapping->addr+mapping->len);
+
+		if (strlen(hashmap[hash].name)+1+strlen(c) >= PATH_MAX) {
+			fprintf(stderr,"String \"%s\" too large.\n", file);
+			exit(1);
+		}
+
+		c -= strlen(hashmap[hash].name)+1;
+		strncpy(c,"/",1);
+		strncpy(c+1, hashmap[hash].name, strlen(hashmap[hash].name));
+		
+		/* move onto parent */
+		hash = hashmap[hash].parent;
 	}
-	opd_free(buf);
+ 
+	verbprintf("Mapping for pid %d: \"%s\", 0x%x, len 0x%x, offset 0x%x\n",
+			mapping->pid, c, mapping->addr, mapping->len, mapping->offset);
+
+	opd_put_mapping(proc, opd_get_image(c,0), mapping->addr, mapping->offset, mapping->addr+mapping->len);
 }
 
 /**
  * opd_handle_exec - deal with notification of execve()
- * @sample: sample structure from kernel
+ * @pid: pid of execve()d process
  *
- * Drop all mapping information for the process, and add
- * any specified mappings.
- *
- * sample->pid contains the process id of the process.
- * sample->eip contains how many bytes to read from the map
- * device.
+ * Drop all mapping information for the process.
  */
-void opd_handle_exec(const struct op_sample *sample)
+void opd_handle_exec(u16 pid)
 {
 	struct opd_proc *proc;
 
-	verbprintf("DO_EXEC: pid %u\n",sample->pid);
+	verbprintf("DO_EXEC: pid %u\n", pid);
 
-	proc = opd_get_proc(sample->pid);
+	proc = opd_get_proc(pid);
 	if (proc)
 		opd_kill_maps(proc);
 	else
-		opd_add_proc(sample->pid);
-
-	/* now deal with execve'd new mapping */
-	opd_handle_mapping(sample);
+		opd_add_proc(pid);
 }
 
 /**

@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.5 2000/12/06 20:39:50 moz Exp $ */
+/* $Id: opd_util.h,v 1.6 2001/01/21 01:11:56 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -75,7 +75,7 @@ void opd_write_u32_ne(FILE *fp, u32 val);
 fd_t opd_open_device(const char *name, int fatal);
 void opd_close_device(fd_t devfd);
 size_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek);
-off_t opd_get_fsize(const char *file);
+off_t opd_get_fsize(const char *file, int fatal);
  
 char *opd_get_time(void);
 char *opd_get_line(FILE *fp);

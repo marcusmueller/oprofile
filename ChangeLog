@@ -1,24 +1,61 @@
-2000-01-18  John Levon  <moz@compsoc.man.ac.uk>
+2001-01-20  John Levon  <moz@compsoc.man.ac.uk>
+
+	* TODO: update
 
 	* configure.in: add comment
-	
+
+	* Makefile.in: moved oprofile_k.c to op_syscalls.c, op_user.h added
+
+	* op_syscalls.c: rename of oprofile_k.c
+		map buffer is dead now
+		use vmalloc() and friends for hash map
+		Reworking of hash_map stuff into abb's linked
+		hash map structure
+
+	* op_user.h: new file representing shared structs etc.
+		between daemon and kernel module
+		Reworked OP_ flags in count.
+		Reworked hash map structure
+
 	* oprofile.c: get along with the new UP APIC stuff in 2.4.0ac9
 		remove extraneous lock_kernel()
+		default buffer size added
+		map buffer died
+		Use up_and_exit() in kernel thread to fix zombies :P
+		Set diethreaddie = 0 in start_thread()
+		oprof_put_mapping() added
+		we weren't turning OFF kernel/user counting when asked to
 
-	* oprofile.h: add __ok_unused for the future
-		
+	* oprofile.h: move shared stuff to op_user.h
+
+	* dae/Makefile.in: dependencies on op_user.h and version.h 
+
 	* dae/op_start: hide confusing output of op_stop
 		--verbose option
+		map buffer died
 
-	* dae/opd_proc.c:
-	* dae/oprofiled.h:
+	* dae/opd_proc.c: --verbose option
+		don't insist on new sample files
+		Rework mapping code
+		Be a little more forgiving with unstattable images 
+
+	* dae/opd_util.h:
+	* dae/opd_util.c: add fatal flag to opd_get_fsize().
+
+	* dae/oprofiled.h: --verbose option
+		move common code to op_user.h
+
 	* dae/oprofiled.c: add --verbose option (very verbose !)
+		map buffer died
+		Add code for unpacking mapping notifications, rework
+		mapping recognition
 
 	* doc/guide.html:
 	* doc/guide.lyx: some small updates
 
 	* pp/oprofpp.c: fix segfault on failure to open binary.
 		add --verbose option
+
 	* pp/oprofpp.h: add --verbose option
 
 2000-01-12  John Levon  <moz@compsoc.man.ac.uk>

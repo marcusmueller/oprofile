@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.20 2001/01/19 00:49:43 moz Exp $ */
+/* $Id: oprofiled.h,v 1.21 2001/01/21 01:11:57 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -39,7 +39,7 @@
 #include <sys/mman.h>
 
 #include "opd_util.h"
-#include "../version.h"
+#include "../op_user.h"
 
 /* various defines */
 
@@ -69,8 +69,6 @@
 /* size of process hash table */
 #define OPD_MAX_PROC_HASH 1024
 
-#define NR_CPUS 32
-
 enum {  OPD_KERNEL, /* nr. kernel samples */
 	OPD_LOST_PROCESS, /* nr. samples for which process info couldn't be accessed */
 	OPD_PROCESS, /* nr. userspace samples */
@@ -84,39 +82,6 @@ enum {  OPD_KERNEL, /* nr. kernel samples */
 	OPD_NOTIFICATIONS, /* nr. notifications */
 	OPD_MAX_STATS /* end of stats */
 	};
-
-#define OPD_DEFAULT_BUF_SIZE 2048
-
-#define OP_BITS 2
-
-/* top OP_BITS bits of count are used as follows: */
-/* is this actually a mapping notification ? */
-#define OP_MAPPING (1U<<15)
-/* which perf counter the sample is from */
-#define OP_COUNTER (1U<<14)
-
-#define OP_COUNT_MASK ((1U<<(16-OP_BITS))-1U)
-
-/* nr. entries in hash map, prime */
-#define OP_HASH_MAP_NR 1023
-
-/* size of hash map entries */
-#define OP_HASH_LINE 128
-
-/* size of hash map in bytes */
-#define OP_HASH_MAP_SIZE OP_HASH_LINE*OP_HASH_MAP_NR
-
-/* mapping notification types */
-/* fork(),vfork(),clone() */
-#define OP_FORK ((1U<<15)|(1U<<0))
-/* execve() */
-#define OP_EXEC ((1U<<15)|(1U<<1))
-/* mapping */
-#define OP_MAP ((1U<<15)|(1U<<2))
-/* init_module() */
-#define OP_DROP_MODULES ((1U<<15)|(1U<<3))
-/* exit() */
-#define OP_EXIT ((1U<<15)|(1U<<4))
 
 /* event check returns */
 #define OP_EVENTS_OK            0x0
@@ -144,14 +109,6 @@ struct opd_footer {
 	u8 ctr0_um;
 	u8 ctr1_um;
 };
-
-/* note that pid_t is 32 bits, but only 16 are used
-   currently, so to save cache, we use u16 */
-struct op_sample {
-        u16 count;
-        u16 pid;
-        u32 eip;
-} __attribute__((__packed__));
 
 struct opd_image {
 	fd_t fd;
@@ -196,9 +153,9 @@ void opd_read_system_map(const char *filename);
 void opd_alarm(int val);
 
 void opd_handle_fork(const struct op_sample *sample);
-void opd_handle_exec(const struct op_sample *sample);
+void opd_handle_exec(u16 pid);
 void opd_handle_exit(const struct op_sample *sample);
-void opd_handle_mapping(const struct op_sample *sample);
+void opd_handle_mapping(const struct op_mapping *mapping);
 void opd_clear_module_info(void);
 
 #endif /* OPROFILED_H */

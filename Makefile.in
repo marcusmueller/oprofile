@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.11 2000/12/12 02:55:32 moz Exp $
+# $Id: Makefile.in,v 1.12 2001/01/21 01:11:55 moz Exp $
 
 KCFLAGS=@KCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -49,13 +49,15 @@ KCFLAGS:=-pipe -D__KERNEL__ -DMODULE -Wall -Wstrict-prototypes -Wunused -O2 -mar
 
 ASMFLAGS=-D__ASSEMBLY__ -DMODULE -D__KERNEL__ -traditional
 
-oprofile.o: oprofile_c.o oprofile_nmi.o oprofile_k.o op_events.o
-	ld -r -o $(G) $@ oprofile_c.o oprofile_nmi.o oprofile_k.o op_events.o
+oprofile.o: oprofile_c.o oprofile_nmi.o op_syscalls.o op_events.o
+	ld -r -o $(G) $@ oprofile_c.o oprofile_nmi.o op_syscalls.o op_events.o
+
+oprofile.h: op_user.h version.h
 
 oprofile_c.o: oprofile.c oprofile.h
 	$(CC) $(KCFLAGS) $(G) -c -o $@ $<
 
-oprofile_k.o: oprofile_k.c oprofile.h
+op_syscalls.o: op_syscalls.c oprofile.h
 	$(CC) $(KCFLAGS) $(G) -c -o $@ $<
 
 oprofile.s: oprofile.c oprofile.h

@@ -5,23 +5,20 @@ o we don't really need a vmlinux file during profiling ...
 
 Correctness
 -----------
- 
-o SMP mappings - place in all buffers perhaps ? 
-o check chroot() processes and do_d_path() 
+
+o SMP mappings - place in all buffers perhaps ?
+o check chroot() processes and the path hash stuff
 o There is no need for the daemon to run as root as long as every binary image
   is readable ...
- 
+
 Performance
------------ 
- 
+-----------
+
 o The note spinlock and stop/start should be grouped into one for multiple map adding.
 o investigate eviction strategy
 o the interrupt handler code could probably be improved by moving into asm
-o can we fold in the "untouched sample entry" case in hash table to another case ? 
-o would query_module() be faster ? do we care ? 
-o investigate whether it would be better to have abb's linked component hash table
-  - this would complicate the dumping code but reduce the output to the map buffer
-o use u16's not u32's for the map buffer
+o can we fold in the "untouched sample entry" case in hash table to another case ?
+o would query_module() be faster ? do we care ?
 o move out hw_ok() into a separate object file and compile the rest with -march ?
 
 WBNI
@@ -29,4 +26,4 @@ WBNI
 
 o Other x86 processors, and maybe other archs.
 o gprof output from post-profiler
-o should have a full clean-out sysctl. is it possible ? 
+o should have a full clean-out sysctl. is it possible ?

@@ -423,15 +423,25 @@ The unit mask for the counter
 
 
 \family typewriter 
----ctr0-os-usr 
+---ctr0-kernel
 \family default 
-Whether the counter should count both userspace and kernel execution (0),
- just kernel (1), or just userspace (2).
+Whether the counter should count in kernel space (1) or not (0). Note that due
+to interrupt delivery delays, a small number of samples may still be taken in
+kernel space even if disabled (rarely more than 1% of total samples).
 \layout Description
 
 
 \family typewriter 
----ctr1-event,---ctr1-count,---ctr1-unit-mask,---ctr1-os-usr 
+---ctr0-user
+\family default 
+Whether the counter should count in user space (1) or not (0). Note that due
+to interrupt delivery delays, a small number of samples may still be taken in
+user space even if disabled (rarely more than 1% of total samples).
+\layout Description
+
+
+\family typewriter 
+---ctr1-event,---ctr1-count,---ctr1-unit-mask,---ctr1-kernel,---ctr1-user 
 \family default 
 The same options for the second counter
 \layout Description

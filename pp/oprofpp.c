@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.22 2001/01/19 00:49:45 moz Exp $ */
+/* $Id: oprofpp.c,v 1.23 2001/01/21 01:11:59 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -672,7 +672,7 @@ int main(int argc, char const *argv[])
 		exit(1);
 	}
 
-	size = opd_get_fsize(samplefile) - sizeof(struct opd_footer); 
+	size = opd_get_fsize(samplefile, 1) - sizeof(struct opd_footer); 
 	samples = (struct opd_fentry *)mmap(0, size, PROT_READ, MAP_PRIVATE, fd, 0);
 
 	if (samples==(void *)-1) {
