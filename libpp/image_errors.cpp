@@ -28,7 +28,7 @@ void report_image_error(string const & image, image_error error, bool fatal)
 	if (error == image_ok)
 		return;
 
-	if (reported_images_error.find(image) != reported_images_error.end()) {
+	if (reported_images_error.find(image) == reported_images_error.end()) {
 		reported_images_error.insert(image);
 
 		cerr << (fatal ? "error: " : "warning: ");

@@ -1,5 +1,9 @@
 2004-01-28  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/image_errors.cpp: typo, warn at first error not from second
+
+2004-01-28  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/tests/utility_tests.cpp:
 	* libopt++/popt_options.cpp: s/template <class/template <typename/
 
