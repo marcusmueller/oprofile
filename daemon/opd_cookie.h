@@ -32,13 +32,14 @@
 /* untested */
 #define __NR_lookup_dcookie 208
 #elif defined(__s390__) || defined (__s390x__)
-#define opd_nr_lookup_dcookie 110
+#define __NR_lookup_dcookie 110
 #else
 #error Please define __NR_lookup_dcookie for your architecture
 #endif
 #endif /* __NR_lookup_dcookie */
 
-#if (defined(__powerpc__) && !defined(__powerpc64__)) || defined(__hppa__)
+#if (defined(__powerpc__) && !defined(__powerpc64__)) || defined(__hppa__)\
+	|| defined(__s390__) || defined(__s390x__)
 static inline int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
 {
 	return syscall(__NR_lookup_dcookie, (unsigned long)(cookie >> 32),

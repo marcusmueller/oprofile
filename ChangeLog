@@ -1,3 +1,7 @@
+2003-08-15  Thomas Spatzier  <TSPAT@de.ibm.com>
+
+	* daemon/opd_cookie.h: fix s390 syscall
+
 2003-08-14  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/string_manip.cpp: erase_to_last_of() is not a ltrim()
