@@ -302,27 +302,3 @@ int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type)
 
 	return ret;
 }
-
-static u32 cpu_max_counters[MAX_CPU_TYPE] = {
-	2, /* PPro */
-	2, /* PII */
-	2, /* PIII */
-	4, /* Athlon */
-	1  /* RTC */
-};
-
-/**
- * op_get_cpu_nr_counters - get the nr of counter
- * @param cpu_type  the cpu type identifier
- *
- * The function return the number of counter available for this
- * cpu type. return (u32)-1 if the cpu type is nopt recognized
- */
-u32 op_get_cpu_nr_counters(op_cpu cpu_type)
-{
-	if (cpu_type < 0 || cpu_type > MAX_CPU_TYPE) {
-		return (u32)-1;
-	}
-
-	return cpu_max_counters[cpu_type];
-}

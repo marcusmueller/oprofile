@@ -14,6 +14,8 @@
 
 #include <linux/smp_lock.h>
 
+#define local_irq_disable()	__cli()
+#define local_irq_enable()	__sti()
 #define pte_page_address(a) pte_page(a)
 
 #define GET_VM_OFFSET(v) ((v)->vm_offset)

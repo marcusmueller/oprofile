@@ -45,7 +45,7 @@ op_cpu op_get_cpu_type(void);
 char const * op_get_cpu_type_str(op_cpu cpu_type);
 
 /**
- * op_get_nr_counters - compute the number of counters available
+ * compute the number of counters available
  * @param cpu_type numeric processor type
  *
  * returns 0 if the CPU could not be identified

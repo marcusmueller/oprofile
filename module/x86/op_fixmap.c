@@ -19,6 +19,12 @@
 #include "oprofile.h"
 #include "apic_compat.h"
 
+#if V_BEFORE(2, 4, 0)
+#define cpu_has_pge (test_bit(X86_FEATURE_PGE, &boot_cpu_data.x86_capability)) 
+#elif V_BEFORE(2, 5, 0)
+#define cpu_has_pge (test_bit(X86_FEATURE_PGE, boot_cpu_data.x86_capability))
+#endif
+
 unsigned long virt_apic_base;
 
 /* some static commented out to avoid warning, trying to figure out
@@ -43,7 +49,7 @@ unsigned long virt_apic_base;
 	prot = PAGE_KERNEL;
 	/* when !CONFIG_X86_LOCAL_APIC we can't rely on no cache flag set */
 	pgprot_val(prot) |= _PAGE_PCD;
-	if (test_bit(X86_FEATURE_PGE, &boot_cpu_data.x86_capability))
+	if (cpu_has_pge)
 		pgprot_val(prot) |= _PAGE_GLOBAL;
 	set_pte(pte, op_pfn_pte(phys, prot));
 	__flush_tlb_one(vaddr);

@@ -1,3 +1,17 @@
+2002-07-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.h:
+	* pp/samples_file.cpp: op_get_cpu_nr_counters() / op_get_nr_counters()
+	  merge
+
+	* module/compat22.h:
+	* module/x68/op_apic.c: __cli()/__sti() removal, this fix build up
+	  to 2.5.29
+
+	* module/op_fixmap.c: fix test_bit() warning
+
 2002-07-27  Will Cohen  <wcohen@nc.rr.com>
  
 	* gui/oprof_start_config.cpp: config_setting::config_setting()

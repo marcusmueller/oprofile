@@ -77,15 +77,6 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type);
 int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type);
 
 /**
- * get the number of counter available for this cpu
- * @param cpu_type the cpu type identifier
- *
- * The function return the number of counter available for this
- * cpu type. return (u32)-1 if the cpu type is nopt recognized
- */
-u32 op_get_cpu_nr_counters(op_cpu cpu_type);
-
-/**
  * sanity check unit mask value
  * @param allow allowed unit mask array
  * @param um unit mask value to check

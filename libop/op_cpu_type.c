@@ -69,32 +69,24 @@ char const * op_get_cpu_type_str(op_cpu cpu_type)
 	return cpu_names[cpu_type];
 }
 
- 
+static int cpu_nr_counters[MAX_CPU_TYPE] = {
+	2, /* PPro */
+	2, /* PII */
+	2, /* PIII */
+	4, /* Athlon */
+	1  /* RTC */
+};
+
 /**
- * op_get_nr_counters - compute the number of counters available
+ * compute the number of counters available
  * @param cpu_type numeric processor type
  *
  * returns 0 if the CPU could not be identified
  */
 int op_get_nr_counters(op_cpu cpu_type)
 {
-	uint nr_counters;
+	if (cpu_type < 0 || cpu_type > MAX_CPU_TYPE)
+		return 0;
 
-	switch (cpu_type) {
-	case CPU_PPRO:
-	case CPU_PII:
-	case CPU_PIII:
-		nr_counters = 2;
-		break;
-	case CPU_ATHLON:
-		nr_counters = 4;
-		break;
-	case CPU_RTC:
-		nr_counters = 1;
-		break;
-	default:
-		nr_counters = 0;
-		break;
-	}
-	return cpu_type;
+	return cpu_nr_counters[cpu_type];
 }

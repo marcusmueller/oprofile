@@ -148,7 +148,7 @@ static void __init do_apic_setup(void)
 {
 	uint val;
 
-	__cli();
+	local_irq_disable();
 
 	val = APIC_LVT_LEVEL_TRIGGER;
 	val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_EXINT);
@@ -181,7 +181,7 @@ static void __init do_apic_setup(void)
 	val = APIC_TDR_DIV_1;
 	apic_write(APIC_TDCR, val);
 
-	__sti();
+	local_irq_enable();
 }
 
 /* does the CPU have a local APIC ? */

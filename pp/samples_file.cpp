@@ -73,7 +73,7 @@ opp_samples_files::opp_samples_files(string const & sample_file, int counter_)
 
 	/* determine how many counters are possible via the sample file */
 	op_cpu cpu = static_cast<op_cpu>(header.cpu_type);
-	nr_counters = op_get_cpu_nr_counters(cpu);
+	nr_counters = op_get_nr_counters(cpu);
 
 	/* check sample files match */
 	for (j = first_file + 1; j < OP_MAX_COUNTERS; ++j) {
