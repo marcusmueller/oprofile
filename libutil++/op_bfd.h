@@ -44,8 +44,8 @@ public:
 	op_bfd_symbol(bfd_vma vma, size_t size, std::string const & name);
 
 	bfd_vma vma() const { return symb_value + section_vma; }
-	u32 value() const { return symb_value; }
-	u32 filepos() const { return symb_value + section_filepos; }
+	unsigned long value() const { return symb_value; }
+	unsigned long filepos() const { return symb_value + section_filepos; }
 	std::string const & name() const { return symb_name; }
 	asymbol const * symbol() const { return bfd_symbol; }
 	size_t size() const { return symb_size; }
@@ -60,9 +60,9 @@ private:
 	asymbol const * bfd_symbol;
 	/// the offset of this symbol relative to the begin of the section's
 	/// symbol
-	u32 symb_value;
+	unsigned long symb_value;
 	/// the section filepos for this symbol
-	u32 section_filepos;
+	unsigned long section_filepos;
 	/// the section vma for this symbol
 	bfd_vma section_vma;
 	/// the size of this symbol
@@ -120,7 +120,7 @@ public:
 	 * All errors are fatal.
 	 */
 	void get_symbol_range(symbol_index_t sym_idx,
-			      u32 & start, u32 & end) const;
+			      unsigned long & start, unsigned long & end) const;
 
 	/**
 	 * sym_offset - return offset from a symbol's start
@@ -130,7 +130,7 @@ public:
 	 * Returns the offset of a sample at position num
 	 * in the samples file from the start of symbol sym_idx.
 	 */
-	u32 sym_offset(symbol_index_t num_symbols, u32 num) const;
+	unsigned long sym_offset(symbol_index_t num_symbols, u32 num) const;
 
 	/**
 	 * @param start reference to the start vma
@@ -144,7 +144,7 @@ public:
 	bfd_vma offset_to_pc(bfd_vma offset) const;
 
 	/** return the text section filepos. */
-	u32 const get_start_offset() const { return text_offset; }
+	unsigned long const get_start_offset() const { return text_offset; }
 
 	/// return the image name of the underlying binary image
 	std::string get_filename() const;
@@ -185,7 +185,7 @@ private:
 	scoped_array<asymbol*> bfd_syms;
 	// image file such the linux kernel need than all vma are offset
 	// by this value.
-	u32 text_offset;
+	unsigned long text_offset;
 
 	/// true if at least one section has (flags & SEC_DEBUGGING) != 0
 	bool debug_info;

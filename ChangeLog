@@ -1,3 +1,11 @@
+2004-05-11  Andi Kleen  <ak@suse.de>
+
+	* libpp/callgraph_container.cpp:
+	* libpp/profile_container.cpp:
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: use unsigned long in various
+	  places - u32 was breaking 64-bit usage
+
 2004-05-11  John Levon  <levon@movementarian.org>
 
 	* configure.in: bump to 0.8.1cvs

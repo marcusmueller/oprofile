@@ -510,7 +510,7 @@ void op_bfd::add_symbols(op_bfd::symbols_found_t & symbols,
 }
 
 
-u32 op_bfd::sym_offset(symbol_index_t sym_index, u32 num) const
+unsigned long op_bfd::sym_offset(symbol_index_t sym_index, u32 num) const
 {
 	/* take off section offset and symb value */
 	return num - syms[sym_index].filepos();
@@ -666,15 +666,15 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 size_t op_bfd::symbol_size(op_bfd_symbol const & sym,
 			   op_bfd_symbol const * next) const
 {
-	u32 start = sym.filepos();
-	u32 end = next ? next->filepos() : file_size;
+	unsigned long start = sym.filepos();
+	unsigned long end = next ? next->filepos() : file_size;
 
 	return end - start;
 }
 
 
 void op_bfd::get_symbol_range(symbol_index_t sym_idx,
-			      u32 & start, u32 & end) const
+			      unsigned long & start, unsigned long & end) const
 {
 	op_bfd_symbol const & sym = syms[sym_idx];
 

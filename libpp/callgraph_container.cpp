@@ -403,7 +403,7 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 	      << "bfd_callee_start_offset: " << callee_offset << dec << endl;
 
 	for (symbol_index_t i = 0; i < caller.syms.size(); ++i) {
-		u32 start, end;
+		unsigned long start, end;
 		caller.get_symbol_range(i, start, end);
 
 		profile_t::iterator_pair p_it = profile.samples_range(
@@ -528,7 +528,7 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 				symbol_index_t index =
 					distance(callee.syms.begin(),
 						 bfd_symb_callee);
-				u32 start, end;
+				unsigned long start, end;
 				callee.get_symbol_range(index, start, end);
 
 				string filename;
