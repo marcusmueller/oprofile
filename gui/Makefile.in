@@ -19,7 +19,7 @@ TARGET=oprof_start
 CXXFLAGS += -DBINDIR=\"$(BINDIR)\" -DKVERSION=\"@KVERS@\" @QT_INCLUDES@
 CXX_CPPFLAGS_DEPS =  @QT_INCLUDES@
 LDFLAGS += @QT_LDFLAGS@
-LIBS=-lutil++ -lutil -lop -lpopt -liberty @QT_LIBS@
+LIBS=-lutil++ -lutil -lop -lpopt -liberty @QT_LIB@
 LIB_DEPS=../libutil++/libutil++.a ../libutil/libutil.a ../libop/libop.a
 
 all: $(TARGET)
