@@ -23,6 +23,7 @@ libutil___a_SOURCES = \
 	op_exception.h \
 	child_reader.cpp \
 	child_reader.h \
+	unique_storage.h \
 	utility.h \
 	comma_list.h
 
