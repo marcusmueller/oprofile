@@ -403,6 +403,9 @@ static void opd_options(int argc, char const * argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	/* canonicalise vmlinux filename. fix #637805 */
+	vmlinux = op_relative_to_absolute_path(vmlinux, NULL);
+
 	if (!kernel_range || !strcmp("", kernel_range)) {
 		fprintf(stderr, "oprofiled: no kernel VMA range specified.\n");
 		poptPrintHelp(optcon, stderr, 0);
@@ -815,6 +818,7 @@ int main(int argc, char const * argv[])
 	free(nbuf);
 	opd_proc_cleanup();
 	opd_image_cleanup();
+	free(vmlinux);
 
 	return 0;
 }

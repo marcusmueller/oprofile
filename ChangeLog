@@ -1,5 +1,12 @@
 2002-11-14  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil/op_file.c: op_simplify_path_name(): strip leading '/'
+	* daemon/oprofiled.c:
+	* dae/oprofiled.c: fix incorrect specification of vmlinux file
+	  through --vmlinux=/foo//bar fixing #637805
+
+2002-11-14  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* utils/op_start_25: /dev/oprofile/kernel_only doesn't exists
 	  in timer int mode. fix #637804
 
