@@ -49,7 +49,7 @@ int main(void)
 		char * result = op_mangle_filename(&test->values);
 		if (strcmp(result, test->result)) {
 			fprintf(stderr, "test %d:\nfound: %s\nexpect:%s\n",
-				test - tests, result, test->result);
+				(int)(test - tests), result, test->result);
 			exit(EXIT_FAILURE);
 		}
 		free(result);
