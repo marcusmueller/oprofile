@@ -1,5 +1,16 @@
 2005-03-18  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* events/i386/p4/events:
+	* events/i386/p4/unit_masks:
+	* events/i386/p4-ht/events:
+	* events/i386/p4-ht/unit_masks: remove FRONT_END_EVENT, EXECUTION_EVENT
+	  and REPLAY_EVENT.
+
+	* libop/tests/alloc_counter_tests.c: update test according events
+	  removal
+
+2005-03-18  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* utils/opcontrol: revert last patch, bash can't do integer
 	  arithmetic on hexadecimal.
 

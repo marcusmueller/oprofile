@@ -96,7 +96,7 @@ static char const * const events_p4_2[] = {
 	/* fail_to_alloc_counter: 3 event to counter 3, 7 */
 	"BRANCH_RETIRED:4096:0:1:1",
 	"MISPRED_BRANCH_RETIRED:4096:0:1:1",
-	"FRONT_END_EVENT:4096:0:1:1",
+	"INSTR_RETIRED:4096:0:1:1",
 	"BPU_FETCH_REQUEST:4096:0:1:1",
 	"ITLB_REFERENCE:4096:0:1:1",
 	"MEMORY_CANCEL:4096:0:1:1",

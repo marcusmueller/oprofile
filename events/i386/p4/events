@@ -24,9 +24,6 @@ event:0x12 counters:3,7 um:x87_assist minimum:3000 name:X87_ASSIST : retired x87
 event:0x1c counters:3,7 um:machine_clear minimum:3000 name:MACHINE_CLEAR : cycles with entire machine pipeline cleared
 event:0x1e counters:1,5 um:tc_ms_xfer minimum:3000 name:TC_MS_XFER : number of times uops deliver changed from TC to MS ROM
 event:0x1f counters:1,5 um:uop_queue_writes minimum:3000 name:UOP_QUEUE_WRITES : number of valid uops written to the uop queue
-event:0x20 counters:3,7 um:front_end_event minimum:3000 name:FRONT_END_EVENT : retired uops, tagged with front-end tagging
-event:0x21 counters:3,7 um:execution_event minimum:3000 name:EXECUTION_EVENT : retired uops, tagged with execution tagging
-event:0x22 counters:3,7 um:replay_event minimum:3000 name:REPLAY_EVENT : retired uops, tagged with replay tagging
 event:0x23 counters:3,7 um:instr_retired minimum:3000 name:INSTR_RETIRED : retired instructions
 event:0x24 counters:3,7 um:uops_retired minimum:3000 name:UOPS_RETIRED : retired uops
 event:0x25 counters:3,7 um:uop_type minimum:3000 name:UOP_TYPE : type of uop tagged by front-end tagging

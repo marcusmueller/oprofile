@@ -90,21 +90,6 @@ name:uop_queue_writes type:bitmask default:0x07
 	0x01 count uops written to queue from TC build mode
 	0x02 count uops written to queue from TC deliver mode
 	0x04 count uops written to queue from microcode ROM
-name:front_end_event type:bitmask default:0x01
-	0x01 count marked uops which are non-bogus
-	0x02 count marked uops which are bogus
-name:execution_event type:bitmask default:0x01
-	0x01 count 1st marked uops which are non-bogus
-	0x02 count 2ns marked uops which are non-bogus
-	0x04 count 3rd marked uops which are non-bogus
-	0x08 count 4th marked uops which are non-bogus
-	0x10 count 1st marked uops which are bogus
-	0x20 count 2nd marked uops which are bogus
-	0x40 count 3rd marked uops which are bogus
-	0x80 count 4th marked uops which are bogus
-name:replay_event type:bitmask default:0x01
-	0x01 count marked uops which are non-bogus
-	0x02 count marked uops which are bogus
 name:instr_retired type:bitmask default:0x01
 	0x01 count non-bogus instructions which are not tagged
 	0x02 count non-bogus instructions which are tagged
