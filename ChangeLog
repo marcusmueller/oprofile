@@ -1,5 +1,9 @@
 2001-09-15  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/oprofpp.c: some cleanup
+ 
+2001-09-15  John Levon  <moz@compsoc.man.ac.uk>
+
 	* pp/oprofpp.c: allow non-matching mtimes in order
 	  to allow pp on different machines. Make conflicting
 	  counter specifications a fatal error

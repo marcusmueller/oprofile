@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.44 2001/09/15 21:05:59 movement Exp $ */
+/* $Id: oprofpp.c,v 1.45 2001/09/15 22:03:57 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -13,16 +13,6 @@
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place - Suite 330, Boston, MA 02111-1307, USA.
- */
-
-/*
- * You can start this program in various ways, e.g.
- *
- * oprofpp <options> /var/opd/samples/}bin}mv
- * oprofpp <options> /bin/mv
- * oprofpp <options> -f /var/opd/samples/}bin}mv -i /bin/mv
- * oprofpp <options> -i /path/to/the/same/bin/mv /var/opd/samples/}bin}mv
- *
  */
 
 #include "oprofpp.h"
@@ -66,8 +56,7 @@ static struct poptOption options[] = {
 	{ "dump-gprof-file", 'g', POPT_ARG_STRING, &gproffile, 0, "dump gprof format file", "file", },
 	{ "list-symbol", 's', POPT_ARG_STRING, &symbol, 0, "give detailed samples for a symbol", "symbol", },
 	{ "demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
-	/* DJ FIXME: --counter should show max-counter.*/
-	{ "counter", 'c', POPT_ARG_INT, &ctr, 0, "which counter to use", "0|1", }, 
+	{ "counter", 'c', POPT_ARG_INT, &ctr, 0, "which counter to use", "counter number", }, 
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
 	{ "base-dir", 'b', POPT_ARG_STRING, &basedir, 0, "base directory of profile daemon", NULL, }, 
@@ -79,6 +68,10 @@ static struct poptOption options[] = {
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
 
+/**
+ * remangle - convert a filename into the related sample file name
+ * @image: the image filename
+ */
 char *remangle(const char *image)
 {
 	char *file;
@@ -106,13 +99,27 @@ char *remangle(const char *image)
 }
 
 /**
+ * quit_error - quit with error
+ * @optcon: popt context
+ * @err: error to show
+ *
+ * err may be NULL
+ */
+static void quit_error(poptContext * optcon, char const *err)
+{
+	if (err)
+		fprintf(stderr, err); 
+	poptPrintHelp(*optcon, stderr, 0);
+	exit(EXIT_FAILURE);
+}
+ 
+/**
  * get_options - process command line
  * @argc: program arg count
  * @argv: program arg array
  *
  * Process the arguments, fatally complaining on
- * error. samplefile is guaranteed to have some
- * non-NULL value after this function.
+ * error.
  */
 static void get_options(int argc, char const *argv[])
 {
@@ -128,12 +135,11 @@ static void get_options(int argc, char const *argv[])
 
 	c=poptGetNextOpt(optcon);
 
-	if (c<-1) {
+	if (c < -1) {
 		fprintf(stderr, "oprofpp: %s: %s\n",
-	                poptBadOption(optcon, POPT_BADOPTION_NOALIAS),
-	                poptStrerror(c));
-	        poptPrintHelp(optcon, stderr, 0);
-	        exit(EXIT_FAILURE);
+			poptBadOption(optcon, POPT_BADOPTION_NOALIAS),
+			poptStrerror(c));
+		quit_error(&optcon, NULL);
 	}
 
 	if (showvers) {
@@ -142,24 +148,15 @@ static void get_options(int argc, char const *argv[])
 	}
  
 	if (!list_all_symbols_details && !list_symbols && 
-	    !gproffile && !symbol) {
-		fprintf(stderr, "oprofpp: no mode specified. What do you want from me ?\n");
-		poptPrintHelp(optcon, stderr, 0);
-		exit(EXIT_FAILURE);
-	}
+	    !gproffile && !symbol)
+		quit_error(&optcon, "oprofpp: no mode specified. What do you want from me ?\n");
 
 	/* check only one major mode specified */
-	if ((list_all_symbols_details + list_symbols + (gproffile != 0) + (symbol != 0)) > 1) {
-		fprintf(stderr, "oprofpp: must specify only one output type.\n");
-		poptPrintHelp(optcon, stderr, 0);
-		exit(EXIT_FAILURE);
-	}
+	if ((list_all_symbols_details + list_symbols + (gproffile != 0) + (symbol != 0)) > 1)
+		quit_error(&optcon, "oprofpp: must specify only one output type.\n");
 
-	if (output_linenr_info && !list_all_symbols_details && !symbol) {
-		fprintf(stderr, "oprofpp: cannot list debug info without -L or -s option.\n");
-		poptPrintHelp(optcon, stderr, 0);
-		exit(EXIT_FAILURE);
-	}
+	if (output_linenr_info && !list_all_symbols_details && !symbol)
+		quit_error(&optcon, "oprofpp: cannot list debug info without -L or -s option.\n");
  
 	/* non-option file, either a sample or binary image file */
 	file = poptGetArg(optcon);
@@ -171,10 +168,8 @@ static void get_options(int argc, char const *argv[])
 	if (samplefile)
 		samplefile = opd_relative_to_absolute_path(samplefile, NULL);
 
-	if (file)
-		file = opd_relative_to_absolute_path(file, NULL);
-
 	if (file) {
+		file = opd_relative_to_absolute_path(file, NULL);
 		if (strchr(file, OPD_MANGLE_CHAR))
 			samplefile = file;
 		else
@@ -192,24 +187,17 @@ static void get_options(int argc, char const *argv[])
 		}
 	}
 
-	/* We must get account 2 var : ctr, mangled filename, if ctr is not
-         * provided it can be provided inside the filename itself by the #%d
-	 * terminateur, if ctr is given we check an eventual conflict */
-	/* PHE FIXME: can be simplified probably ? */
-	file_ctr_str = strrchr(samplefile, '#');
+	/* check for a valid counter suffix in a given sample file */
 	counter = -1;
+	file_ctr_str = strrchr(samplefile, '#');
 	if (file_ctr_str) {
 		sscanf(file_ctr_str + 1, "%d", &counter);
 	}
 
 	if (ctr != counter) {
 		/* a --counter=x have priority on the # suffixe of filename */
-		if (ctr != -1 && counter != -1) {
-			/* conflict between #%d and --ctr option */
-			fprintf(stderr, "oprofpp: conflict between given counter and counter of samples file.\n");
-			poptPrintHelp(optcon, stderr, 0);
-			exit(EXIT_FAILURE);
-		}
+		if (ctr != -1 && counter != -1)
+			quit_error(&optcon, "oprofpp: conflict between given counter and counter of samples file.\n");
 	}
 
 	if (ctr == -1)
@@ -231,12 +219,11 @@ static void get_options(int argc, char const *argv[])
 		}
 	}
 
+	/* chop suffixes */
 	if (file_ctr_str)
 		file_ctr_str[0] = '\0';
 
-	/* yes, OP_MAX_COUNTERS. We should initially allow for seeing if
-	 * there are samples for any counter
-	 */
+	/* check we have a valid ctr */
 	if (ctr != -1 && (ctr < 0 || ctr >= OP_MAX_COUNTERS)) {
 		fprintf(stderr, "oprofpp: invalid counter number %u\n", ctr);
 		exit(EXIT_FAILURE);
@@ -303,7 +290,7 @@ bfd *open_image_file(char const * mangled, time_t mtime)
 	char **matching;
 	time_t newmtime;
 	bfd *ibfd;
-	uint i;
+	uint first;
 	 
 	file = (char *)imagefile;
 
@@ -327,10 +314,11 @@ bfd *open_image_file(char const * mangled, time_t mtime)
 
 		c=file;
 
-		do {
+		while (*c) {
 			if (*c == OPD_MANGLE_CHAR)
 				*c='/';
-		} while (*c++);
+			c++;
+		}
 
 		free(mang);
 	}
@@ -357,20 +345,19 @@ bfd *open_image_file(char const * mangled, time_t mtime)
  	if (!imagefile)
 		free(file);
 
-	for (i = 0; i < op_nr_counters; ++i) {
-		if (footer[i])
+	for (first = 0; first < op_nr_counters; ++first) {
+		if (footer[first])
 			break;
 	}
 
-	/* should never happens */
-	if (i == op_nr_counters) {
+	/* should never happen */
+	if (first == op_nr_counters) {
 		fprintf(stderr,"oprofpp: open_image_file() no samples file open for %s.\n", file);
 		exit(EXIT_FAILURE);
 	}
 
-	if (footer[i]->is_kernel) {
+	if (footer[first]->is_kernel) {
 		asection *sect; 
- 
 		sect = bfd_get_section_by_name(ibfd, ".text");
 		sect_offset = OPD_KERNEL_OFFSET - sect->filepos;
 		verbprintf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n", sect_offset, sect->filepos); 
@@ -435,7 +422,7 @@ static int interesting_symbol(asymbol *sym)
 }
 
 /**
- * translate_address - lookup and output linenr info from a vma address
+ * ouput_linenr - lookup and output linenr info from a vma address
  * in a given section to standard output.
  * @ibfd: the bfd
  * @syms: pointer to array of symbol pointers
@@ -445,16 +432,17 @@ static int interesting_symbol(asymbol *sym)
  * Do not change output format without changing the corresponding tools
  * that work with output from oprofpp.
  */
-static void
-translate_address (bfd* ibfd, asymbol **syms, asection *section, bfd_vma pc)
+static void output_linenr(bfd* ibfd, asymbol **syms, asection *section, bfd_vma pc)
 {
 	int found;
 	bfd_vma vma;
-
 	const char *filename;
 	const char *functionname;
 	unsigned int line;
 
+	if (!output_linenr_info)
+		return;
+ 
 	if ((bfd_get_section_flags (ibfd, section) & SEC_ALLOC) == 0)
 		return;
 
@@ -462,15 +450,13 @@ translate_address (bfd* ibfd, asymbol **syms, asection *section, bfd_vma pc)
 	if (pc < vma)
 		return;
 
-	found = bfd_find_nearest_line (ibfd, section, syms, pc - vma,
-				       &filename, &functionname, &line);
+	found = bfd_find_nearest_line(ibfd, section, syms, pc - vma,
+			&filename, &functionname, &line);
 
-	if (!found) {
-		printf ("??:0");
-	}
-	else {
-		printf ("%s:%u", filename, line);
-	}
+	if (!found)
+		printf ("??:0 ");
+	else
+		printf ("%s:%u ", filename, line);
 }
 
 /**
@@ -505,8 +491,8 @@ uint get_symbols(bfd *ibfd, asymbol ***symsp)
 	syms = opd_malloc(size);
 	nr_all_syms = bfd_canonicalize_symtab(ibfd, syms);
 	if (nr_all_syms < 1) {
-	        opd_free(syms);
-	        return 0;
+		opd_free(syms);
+		return 0;
 	}
 
 	for (i=0; i < nr_all_syms; i++) {
@@ -612,13 +598,11 @@ void do_list_symbols(asymbol **syms, uint num)
 			exit(EXIT_FAILURE);
 		}
 
-		for (j = start; j < end; j++) {
+		for (j = start; j < end; j++)
 			accumulate_samples(scounts[i].count, j);
-		}
 
-		for (k = 0 ; k < op_nr_counters ; ++k) {
+		for (k = 0 ; k < op_nr_counters ; ++k)
 			tot[k] += scounts[i].count[k];
-		}
 	}
 
 	qsort(scounts, num, sizeof(struct opp_count), countcomp);
@@ -655,6 +639,7 @@ void do_list_symbol(bfd * ibfd, asymbol **syms, uint num)
 	u32 start, end;
 	u32 i, j;
 	uint k;
+	bfd_vma vma, base_vma;
 
 	for (i=0; i < num; i++) {
 		if (streq(syms[i]->name, symbol))
@@ -672,29 +657,25 @@ found:
 				break;
 		}
 
-		/* k != op_nr_counters <==> one of the counter is not empty */
-		if (k != op_nr_counters) {
-			bfd_vma vma, base_vma;
-			base_vma = syms[i]->value + syms[i]->section->vma;
-			vma = sym_offset(syms[i], j) + base_vma;
-
-			if (output_linenr_info)	{
-				translate_address(ibfd, syms, syms[i]->section, vma);
-				printf(" ");
-			}
-
-			printf("%s+%x/%x:", symbol, sym_offset(syms[i], j), end-start);
+		/* all counters are empty at this address */ 
+		if (k == op_nr_counters)
+			continue;
  
-			for (k = 0 ; k < op_nr_counters ; ++k) {
-				if (samples[k])
-					/* PHE: please keep this space a few
-					 * time, I can't live without it ;) */
-					printf("\t%u ", samples[k][j].count);
-				else
-					printf("\t%u", 0U);
-			}
-			printf("\n");
+		base_vma = syms[i]->value + syms[i]->section->vma;
+		vma = sym_offset(syms[i], j) + base_vma;
+
+		output_linenr(ibfd, syms, syms[i]->section, vma);
+		printf("%s+%x/%x:", symbol, sym_offset(syms[i], j), end-start);
+ 
+		for (k = 0 ; k < op_nr_counters ; ++k) {
+			if (samples[k])
+				/* PHE: please keep this space a few
+				 * time, I can't live without it ;) */
+				printf("\t%u ", samples[k][j].count);
+			else
+				printf("\t%u", 0U);
 		}
+		printf("\n");
 	}
 }
 
@@ -715,7 +696,7 @@ struct gmon_hdr {
  * Dump gprof-format samples for the image specified by samplefile to
  * the file specified by gproffile.
  */
-/* PHE: this fun has not been tested */
+/* PHE: FIXME: this fun has not been tested */
 void do_dump_gprof(asymbol **syms, uint num)
 {
 	static struct gmon_hdr hdr = { "gmon", GMON_VERSION, {0,0,0,},}; 
@@ -814,8 +795,69 @@ static int accumulate_samples(u32 counter[OP_MAX_COUNTERS], int index)
 }
 
 /**
+ * do_list_symbol_details - list all samples for a given symbol
+ * @ibfd: the bfd
+ * @syms: all symbols
+ * @sym: the symbol
+ * @next: the next symbol
+ */
+static void do_list_symbol_details(bfd * ibfd, asymbol **syms, asymbol * sym, asymbol * next)
+{
+	u32 counter[OP_MAX_COUNTERS];
+	uint j, k;
+	int found_samples;
+	bfd_vma vma, base_vma;
+	u32 start, end;
+
+	get_symbol_range(sym, next, &start, &end);
+
+	for (k = 0; k < op_nr_counters; ++k)
+		counter[k] = 0;
+
+	/* To avoid outputing 0 samples symbols */
+	found_samples = 0;
+	for (j = start; j < end; ++j)
+		found_samples |= accumulate_samples(counter, j);
+
+	if (!found_samples)
+		return;
+
+	base_vma = sym->value + sym->section->vma;
+
+	vma = sym_offset(sym, start) + base_vma;
+
+	output_linenr(ibfd, syms, sym->section, vma);
+	printf("%.8lx ", base_vma);
+	for (k = 0 ; k < op_nr_counters ; ++k)
+		printf("%u ", counter[k]);
+	printf_symbol(sym->name);
+	printf("\n");
+
+	for (j = start; j < end; j++) {
+		for (k = 0; k < op_nr_counters; ++k)
+			counter[k] = 0;
+
+		found_samples = accumulate_samples(counter, j);
+		if (!found_samples)
+			continue;
+
+		vma = sym_offset(sym, j) + base_vma;
+
+		printf(" ");
+		output_linenr(ibfd, syms, sym->section, vma);
+		printf("%.8lx", vma);
+
+		for (k = 0; k < op_nr_counters; ++k)
+			printf(" %u", counter[k]);
+		printf("\n");
+	}
+}
+
+/**
  * do_list_all_symbols_details - list all samples for all symbols.
  * @ibfd: the bfd
+ * @syms: the symbols
+ * @num: total number of symbols
  *
  * Lists all the samples for all the symbols, from the image specified by
  * @samplefile, in increasing order of vma, to standard out.
@@ -823,81 +865,18 @@ static int accumulate_samples(u32 counter[OP_MAX_COUNTERS], int index)
  * Do not change output format without changing the corresponding tools
  * that work with output from oprofpp
  */
-void do_list_all_symbols_details(bfd *ibfd, asymbol **syms, uint num)
+static void do_list_all_symbols_details(bfd *ibfd, asymbol **syms, uint num)
 {
-	uint i, j;
-	u32 start, end;
+	uint i;
+	asymbol * next;
 
 	for (i = 0 ; i < num ; ++i) {
-		u32 counter[OP_MAX_COUNTERS];
-		uint k;
-		int found_samples;
-
-		get_symbol_range(syms[i], (i == num-1) ? NULL : syms[i+1], 
-				 &start, &end);
-
-		for (k = 0; k < op_nr_counters; ++k) {
-			counter[k] = 0;
-		}
-
-		/* To avoid outputing 0 samples symbols */
-		found_samples = 0;
-		for (j = start; j < end; ++j) {
-			found_samples |= accumulate_samples(counter, j);
-		}
-
-		if (found_samples) {
-			bfd_vma vma, base_vma;
-
-			base_vma = syms[i]->value + syms[i]->section->vma;
-
-			vma = sym_offset(syms[i], start) + base_vma;
-
-			if (output_linenr_info)	{
-				translate_address(ibfd, syms, syms[i]->section,
-						  vma);
-
-				printf(" ");
-			}
-
-			printf("%.8lx ", base_vma);
-			for (k = 0 ; k < op_nr_counters ; ++k) {
-				printf("%u ", counter[k]);
-			}
-			printf_symbol(syms[i]->name);
-			printf("\n");
-
-			for (j = start; j < end; j++) {
-
-				for (k = 0; k < op_nr_counters; ++k) {
-					counter[k] = 0;
-				}
-
-				found_samples = accumulate_samples(counter, j);
-
-				if (found_samples) {
-					vma = sym_offset(syms[i], j) + 
-						base_vma;
-
-					if (output_linenr_info)	{
-						printf(" ");
-
-						translate_address(ibfd, syms,
-								  syms[i]->section,
-								  vma);
-					}
-
-					printf(" %.8lx", vma);
-
-					for (k = 0; k < op_nr_counters; ++k) {
-						printf(" %u", counter[k]);
-					}
-
-					printf("\n");
-				}
-			}
-		}
-	}
+		if (i == num - 1) 
+			next = NULL;
+		else
+			next = syms[i+1];
+		do_list_symbol_details(ibfd, syms, syms[i], next); 
+	} 
 }
 
 /**
@@ -941,72 +920,49 @@ static fd_t open_samples_file(u32 counter, size_t *size,
 			fprintf(stderr, "oprofpp: Opening %s failed. %s\n", temp, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
-
-		goto err1;
+		footer[counter] = NULL;
+		samples[counter] = NULL;
+		*size = 0;
+		return -1;
 	}
 
 	*size = opd_get_fsize(temp, 1) - sizeof(struct opd_footer); 
 	if (*size < sizeof(struct opd_footer)) {
-		if (!can_fail) {
-			fprintf(stderr, "oprofpp: sample file %s not enough big %d, expected %d\n", temp, *size, sizeof(struct opd_footer));
-			exit(EXIT_FAILURE);
-		}
-
-		goto err2;
+		fprintf(stderr, "oprofpp: sample file %s is not the right "
+			"size: got %d, expected %d\n", 
+			temp, *size, sizeof(struct opd_footer));
+		exit(EXIT_FAILURE);
 	}
 
 	footer[counter] = mmap(0, *size + sizeof(struct opd_footer), PROT_READ,
 			       MAP_PRIVATE, fd, 0);
 	if (footer[counter] == (void *)-1) {
-		if (!can_fail) {
-			fprintf(stderr, "oprofpp: mmap of %s failed. %s\n", temp, strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-		goto err2;
+		fprintf(stderr, "oprofpp: mmap of %s failed. %s\n", temp, strerror(errno));
+		exit(EXIT_FAILURE);
 	}
 
 	/* need a cast here :( */
 	samples[counter] = (struct opd_fentry *)(footer[counter] + 1);
 
 	if (memcmp(footer[counter]->magic, OPD_MAGIC, sizeof(footer[0]->magic))) {
-		if (!can_fail) {
-			/* FIXME: is 4.4 ok : there is no zero terminator */
-			fprintf(stderr, "oprofpp: wrong magic %4.4s, expected %s.\n", footer[counter]->magic, OPD_MAGIC);
-			exit(EXIT_FAILURE);
-		}
-		goto  err3;
+		/* FIXME: is 4.4 ok : there is no zero terminator */
+		fprintf(stderr, "oprofpp: wrong magic %4.4s, expected %s.\n", footer[counter]->magic, OPD_MAGIC);
+		exit(EXIT_FAILURE);
 	}
 
 	if (footer[counter]->version != OPD_VERSION) {
-		if (!can_fail) {
-			fprintf(stderr, "oprofpp: wrong version 0x%x, expected 0x%x.\n", footer[counter]->version, OPD_VERSION);
-			exit(EXIT_FAILURE);
-		}
-		goto err3;
+		fprintf(stderr, "oprofpp: wrong version 0x%x, expected 0x%x.\n", footer[counter]->version, OPD_VERSION);
+		exit(EXIT_FAILURE);
 	}
 
-	/* This should be warrented by the daemon */
+	/* This should be guaranteed by the daemon */
 	if (footer[counter]->ctr != counter) {
-		if (!can_fail) {
-			fprintf(stderr, "oprofpp: sanity check counter number fail %d, expect %d.\n", footer[counter]->ctr, counter);
-			exit(EXIT_FAILURE);
-		}
-		goto err3;
+		fprintf(stderr, "oprofpp: sanity check counter number fail %d, expect %d.\n", footer[counter]->ctr, counter);
+		exit(EXIT_FAILURE);
 	}
 
 	opd_free(temp);
 
-	return fd;
-
-err3:
-	munmap(footer[counter], *size + sizeof(struct opd_footer));
-err2:
-	close(fd);
-err1:
-	fd = -1;
-	footer[counter] = NULL;
-	samples[counter] = NULL;
-	*size = 0;
 	return fd;
 }
 
@@ -1036,113 +992,119 @@ static void check_and_output_event(int i)
  * @f1: first footer
  * @f2: second footer
  *
- * verify than footer @f1 and @f2 are coherent.
+ * verify that footer @f1 and @f2 are coherent.
  * fatal error ocur if the footers are not coherent.
  */
 static void check_footers(struct opd_footer* f1, struct opd_footer* f2)
 {
 	if (f1->mtime != f2->mtime) {
-		fprintf(stderr, "oprofpp: footer time stamp are different (%ld, %ld)\n", f1->mtime, f2->mtime);
+		fprintf(stderr, "oprofpp: footer timestamps are different (%ld, %ld)\n", f1->mtime, f2->mtime);
 		exit(EXIT_FAILURE);
 	}
 
 	if (f1->is_kernel != f2->is_kernel) {
-		fprintf(stderr, "oprofpp: footer is_kernel are different\n");
+		fprintf(stderr, "oprofpp: footer is_kernel flags are different\n");
 		exit(EXIT_FAILURE);
 	}
 
 	if (f1->cpu_speed != f2->cpu_speed) {
-		fprintf(stderr, "oprofpp: footer cpu speed are different (%f, %f)",
+		fprintf(stderr, "oprofpp: footer cpu speeds are different (%f, %f)",
 			f2->cpu_speed, f2->cpu_speed);
 		exit(EXIT_FAILURE);
 	}
 }
 
-int main(int argc, char const *argv[])
+static bfd *ibfd; 
+static asymbol **syms;
+static fd_t fd[OP_MAX_COUNTERS];
+static size_t size[OP_MAX_COUNTERS];
+ 
+/**
+ * open_files - open all necessary files
+ */
+static void open_files(void)
 {
-	bfd *ibfd; 
-	asymbol **syms;
-	uint i, j;
-	fd_t fd[OP_MAX_COUNTERS];
-	size_t size[OP_MAX_COUNTERS];
-	uint num;
+	uint i, j, first;
 	time_t mtime = 0;
  
-	get_options(argc, argv);
-
-	/* op_nr_counters is discovered from the samples itself, until we
-	 * have opened the samples file(s) we must loop over all the possible
-	 * available counters. This is a little what ugly but it allows
-	 * to interpret samples files on a different hardware where the
-	 * the profiler has run */
-	for (i = 0; i < OP_MAX_COUNTERS; ++i) {
+	/* no samplefiles open initially */
+	for (i = 0; i < OP_MAX_COUNTERS; ++i)
 		fd[i] = -1;
-		size[i] = 0;
-		samples[i] = NULL;
-		footer[i] = NULL;
-	}
 
 	for (i = 0; i < OP_MAX_COUNTERS ; ++i) {
-		if (ctr == -1 || ctr == (int)i)
+		if (ctr == -1 || ctr == (int)i) {
 			/* if ctr == i, this means than we open only one
 			 * samples file so don't allow opening failure to get
 			 * a more precise error message */
 			fd[i] = open_samples_file(i, &size[i], ctr != (int)i);
+		}
 	}
 
-	for (i = 0; i < OP_MAX_COUNTERS ; ++i) {
-		if (fd[i] != -1)
+	/* find first open file */
+	for (first = 0; first < OP_MAX_COUNTERS ; ++first) {
+		if (fd[first] != -1)
 			break;
 	}
 
-	if (i == OP_MAX_COUNTERS) {
+	if (first == OP_MAX_COUNTERS) {
 		fprintf(stderr, "Can not open any samples files for %s last error %s\n", samplefile, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	/* sanity check between the different samples files */
-	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
-		if (fd[i] != -1)
-			break;
-	}
+	/* determine how many counters are possible via the sample file.
+	 * allows use on different platform */ 
+	if (footer[first]->cpu_type == CPU_ATHLON)
+		op_nr_counters = 4;
 
-	for (j = i + 1; j < OP_MAX_COUNTERS; ++j) {
-		if (fd[j] != -1) {
-			if (size[i] != size[j]) {
-				fprintf(stderr, "oprofpp: mapping file size "
-					"for ctr (%d, %d) are different "
-					"(%d, %d)\n", i, j, size[i], size[j]);
+	if (list_all_symbols_details)
+		/* TODO: temporary hack to fix and easy life of opf_filter.cpp
+		 * Will be cleanup when linking opf_filter with oprofpp. */
+		printf("Cpu type: %d\n", footer[first]->cpu_type);
+	else
+		printf("Cpu type: %s\n", op_get_cpu_type_str(footer[first]->cpu_type));
 
-				exit(EXIT_FAILURE);
-			}
-			
-			check_footers(footer[i], footer[j]);
+	printf("Cpu speed was (MHz estimation) : %f\n", footer[first]->cpu_speed);
+ 
+	/* check sample files match */
+	for (j = first + 1; j < OP_MAX_COUNTERS; ++j) {
+		if (fd[j] == -1)
+			continue;
+		if (size[first] != size[j]) {
+			fprintf(stderr, "oprofpp: mapping file size "
+				"for ctr (%d, %d) are different "
+				"(%d, %d)\n", first, j, size[first], size[j]);
+
+			exit(EXIT_FAILURE);
 		}
+		check_footers(footer[first], footer[j]);
 	}
 
 	/* output and sanity check on ctr_um, ctr_event and cpu_type */
 	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
-		if (fd[i] != -1) {
-			check_and_output_event(i);
+		if (fd[i] == -1)
+			continue;
 
-			/* redundant set but correct and simplify the code */
-			nr_samples = size[i] / sizeof(struct opd_fentry);
-			mtime = footer[i]->mtime;
-		}
+		check_and_output_event(i);
+		/* redundant set but correct and simplify the code */
+		nr_samples = size[i] / sizeof(struct opd_fentry);
+		mtime = footer[i]->mtime;
 	}
 
 	verbprintf("nr_samples %d\n", nr_samples); 
 
-	for (i = 0; i < OP_MAX_COUNTERS; ++i) {
-		if (fd[i] != -1)
-			break;
-	}
-
-	if (footer[i]->cpu_type == CPU_ATHLON)
-		op_nr_counters = 4;
-
 	ibfd = open_image_file(samplefile, mtime);
+}
 
+ 
+int main(int argc, char const *argv[])
+{
+	uint i;
+	uint num;
+ 
+	get_options(argc, argv);
+
+	open_files();
+ 
 	num = get_symbols(ibfd, &syms);
 
 	verbprintf("nr symbols %u\n", num); 
@@ -1151,15 +1113,6 @@ int main(int argc, char const *argv[])
 		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
 		exit(EXIT_FAILURE);
 	}
-
-	if (list_all_symbols_details)
-		/* TODO: temporary hack to fix and easy life of opf_filter.cpp
-		 * Will be cleanup when linking opf_filter with oprofpp. */
-		printf("Cpu type: %d\n", footer[i]->cpu_type);
-	else
-		printf("Cpu type: %s\n", op_get_cpu_type_str(footer[i]->cpu_type));
-
-	printf("Cpu speed was (MHz estimation) : %f\n", footer[i]->cpu_speed);
 
 	if (list_symbols) {
 		do_list_symbols(syms, num);
