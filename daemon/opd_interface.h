@@ -1,7 +1,7 @@
 /**
- * @file op_interface_25.h
+ * @file opd_interface.h
  *
- * Module / user space interface for the new OProfile patch
+ * Module / user space interface for 2.6 kernels and above
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -10,11 +10,8 @@
  * @author Philippe Elie
  */
 
-#ifndef OP_INTERFACE_25_H
-#define OP_INTERFACE_25_H
-
-#include "op_config.h"
-#include "op_types.h"
+#ifndef OPD_INTERFACE_H
+#define OPD_INTERFACE_H
 
 #define CTX_SWITCH_CODE			1
 #define CPU_SWITCH_CODE			2
@@ -25,4 +22,10 @@
 #define CTX_TGID_CODE			7
 #define LAST_CODE			8
  
-#endif /* OP_INTERFACE_25_H */
+/**
+ * Shift value to remove trailing zero on a dcookie value, 7 is sufficient
+ * for most architecture
+ */
+#define DCOOKIE_SHIFT	7
+
+#endif /* OPD_INTERFACE_H */

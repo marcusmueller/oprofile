@@ -15,11 +15,11 @@
 #include "opd_sample_files.h"
 #include "opd_printf.h"
 #include "opd_cookie.h"
+#include "opd_interface.h"
  
 #include "op_types.h" 
 #include "op_libiberty.h"
 #include "op_file.h"
-#include "op_interface_25.h"
 #include "op_mangle.h"
  
 #include <errno.h>

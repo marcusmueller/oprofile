@@ -1,5 +1,22 @@
 2003-09-15  John Levon  <levon@movementarian.org>
 
+	* libop/Makefile.am:
+	* libop/op_interface_25.h: move to ...
+
+	* daemon/Makefile.am:
+	* daemon/opd_interface.h: ... here
+
+	* daemon/opd_image.c:
+	* daemon/oprofiled.c: use above. Remove pointless
+	command line options.
+
+	* libop/op_config_25.h: remove.
+
+	* libop/op_hw_config.h: move DCOOKIE_SHIFT to
+	opd_interface.h
+
+2003-09-15  John Levon  <levon@movementarian.org>
+
 	* configure.in: use -Wdeclaration-after-statement
 	if available
 

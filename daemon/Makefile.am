@@ -8,6 +8,7 @@ dist_sources = \
 	opd_stats.h \
 	opd_kernel.h \
 	opd_cookie.h \
+	opd_interface.h \
 	opd_sample_files.c \
 	opd_sample_files.h
 

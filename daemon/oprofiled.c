@@ -19,6 +19,7 @@
 #include "opd_util.h"
 
 #include "op_version.h"
+#include "op_config.h"
 #include "op_popt.h"
 #include "op_file.h"
 #include "op_fileio.h"
@@ -28,8 +29,6 @@
 #include "op_sample_file.h"
 #include "op_events.h"
 #include "op_libiberty.h"
-#include "op_interface_25.h"
-#include "op_config_25.h"
 #include "op_hw_config.h"
 #ifdef OPROF_ABI
 #include "op_abi.h"
@@ -68,19 +67,13 @@ size_t kernel_pointer_size;
 static char * kernel_range;
 static int showvers;
 static u32 ctr_enabled[OP_MAX_COUNTERS];
-static char const * mount = OP_MOUNT;
 static int opd_buf_size;
-static pid_t pid_filter;
-static pid_t pgrp_filter;
 static sigset_t maskset;
 static fd_t devfd;
 
 static void opd_sighup(int val);
 
 static struct poptOption options[] = {
-	{ "mount", 'm', POPT_ARG_STRING, &mount, 0, "path to mounted oprofilefs", "dir" },
-	{ "pid-filter", 0, POPT_ARG_INT, &pid_filter, 0, "only profile the given process ID", "pid" },
-	{ "pgrp-filter", 0, POPT_ARG_INT, &pgrp_filter, 0, "only profile the given process tty group", "pgrp" },
 	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "no-vmlinux", 0, POPT_ARG_NONE, &no_vmlinux, 0, "vmlinux kernel image file not available", NULL, },
@@ -101,7 +94,7 @@ static struct poptOption options[] = {
  */
 static void opd_open_files(void)
 {
-	devfd = op_open_device(OP_DEVICE, 0);
+	devfd = op_open_device("/dev/oprofile/buffer", 0);
 	if (devfd == -1) {
 		if (errno == EINVAL)
 			fprintf(stderr, "Failed to open device. Possibly you have passed incorrect\n"
@@ -136,7 +129,7 @@ static void opd_open_files(void)
 static int opd_read_fs_int_pmc(int ctr, char const * name)
 {
 	char filename[PATH_MAX + 1];
-	snprintf(filename, PATH_MAX, "%s/%d/%s", mount, ctr, name);
+	snprintf(filename, PATH_MAX, "/dev/oprofile/%d/%s", ctr, name);
 	return op_read_int_from_file(filename);
 }
 
@@ -145,7 +138,7 @@ static int opd_read_fs_int_pmc(int ctr, char const * name)
 static int opd_read_fs_int(char const * name)
 {
 	char filename[PATH_MAX + 1];
-	snprintf(filename, PATH_MAX, "%s/%s", mount, name);
+	snprintf(filename, PATH_MAX, "/dev/oprofile/%s", name);
 	return op_read_int_from_file(filename);
 }
 
@@ -407,31 +400,26 @@ static size_t opd_pointer_size(void)
 	size_t size;
 	char elf_header[EI_NIDENT];
 	FILE * fp;
-	char * kp_file = xmalloc(strlen(mount) + strlen("/pointer_size") + 1);
-
-	strcpy(kp_file, mount);
-	strcat(kp_file, "/pointer_size");
 
 	/* FIXME: later, insist on pointer_size only */
-	if (op_file_readable(kp_file)) {
+	if (op_file_readable("/dev/oprofile/pointer_size")) {
 		unsigned long val = 0;
 
-		fp = op_open_file(kp_file, "r");
+		fp = op_open_file("/dev/oprofile/pointer_size", "r");
 		if (!fp) {
 			fprintf(stderr, "oprofiled: couldn't open "
-				"%s/pointer_size.\n", mount);
+				"/dev/oprofile/pointer_size.\n");
 			exit(EXIT_FAILURE);
 		}
 
 		fscanf(fp, "%lu\n", &val);
 		if (!val) {
 			fprintf(stderr, "oprofiled: couldn't read "
-				"%s/pointer_size.\n", mount);
+				"/dev/oprofile/pointer_size.\n");
 			exit(EXIT_FAILURE);
 		}
 
 		op_close_file(fp);
-		free(kp_file);
 		return val;
 	}
 

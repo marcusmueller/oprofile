@@ -2,7 +2,7 @@
  * @file op_config.h
  *
  * Parameters a user may want to change. See
- * also the relevant op_config_2[45].h
+ * also op_config_24.h
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
