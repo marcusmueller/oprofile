@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.69 2001/08/11 01:29:07 movement Exp $ */
+/* $Id: oprofile.c,v 1.70 2001/08/11 01:38:29 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -419,7 +419,8 @@ inline static void pmc_select_stop(uint cpu)
 
 u32 diethreaddie;
 pid_t threadpid;
-DECLARE_MUTEX_LOCKED(threadstopsem);
+
+DECLARE_COMPLETION(threadstop);
 
 /* we have to have another thread because we can't
  * do wake_up() from NMI due to no locking
@@ -452,12 +453,13 @@ int oprof_thread(void *arg)
 			break;
 	}
 
-	up_and_exit(&threadstopsem,0);
+	complete_and_exit(&threadstop,0);
 	return 0;
 }
 
 void oprof_start_thread(void)
 {
+	init_completion(&threadstop);
 	diethreaddie = 0;
 	if (kernel_thread(oprof_thread, NULL, CLONE_FS|CLONE_FILES|CLONE_SIGHAND)<0)
 		printk(KERN_ERR "oprofile: couldn't spawn wakeup thread.\n");
@@ -467,7 +469,7 @@ void oprof_stop_thread(void)
 {
 	diethreaddie = 1;
 	kill_proc(SIGKILL, threadpid, 1);
-	down(&threadstopsem);
+	wait_for_completion(&threadstop);
 }
 
 #define wrap_nextbuf() do { \

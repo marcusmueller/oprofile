@@ -1,3 +1,9 @@
+2001-08-11  Dave Jones  <davej@suse.de>
+
+	* oprofile.h:
+	* oprofile.c: back-compat code and use of new struct completion
+	  for the thread
+
 2001-08-11  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.c: corner case where an a miss against a full count,

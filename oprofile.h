@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.42 2001/08/11 01:29:07 movement Exp $ */
+/* $Id: oprofile.h,v 1.43 2001/08/11 01:38:29 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -19,7 +19,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/init.h>
-#include <linux/malloc.h>
+#include <linux/slab.h>
 #include <linux/delay.h>
 #include <linux/vmalloc.h>
 #include <linux/sched.h>
@@ -171,6 +171,14 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #else
 #define take_mmap_sem(mm) down_read(&mm->mmap_sem)
 #define release_mmap_sem(mm) up_read(&mm->mmap_sem)
+#endif
+
+// 2.4.7 introduced completions.
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,7)
+#define DECLARE_COMPLETION(x)	DECLARE_MUTEX_LOCKED(x)
+#define init_completion(x)
+#define complete_and_exit(x, y) up_and_exit((x), (y))
+#define wait_for_completion(x) down(x)
 #endif
 
 int oprof_init(void);
