@@ -1513,18 +1513,14 @@ Here the last instruction of the loop is very costly, and you would expect the r
 reflecting that - but (cutting the instructions inside the loop):
 </para>
 <screen>
-$ op_to_source -a -w 10
+$ op_to_source -a -w 10 ./a.out
 
- /* 9349 0.3788% */
- 8048394:       fadd   %st(3),%st
- /* 22858 0.9261% */
- 8048396:       fmul   %st(2),%st
- /* 687682 27.86% */
- 8048398:       fdiv   %st(1),%st
- /* 1747822 70.81% */
- 804839a:       decl   %eax
- /* 17 0.0006887% */
- 804839b:       jns    8048394
+     88 15.38% : 8048337:       fadd   %st(3),%st
+     48 8.391% : 8048339:       fmul   %st(2),%st
+     68 11.88% : 804833b:       fdiv   %st(1),%st
+    368 64.33% : 804833d:       inc    %eax
+               : 804833e:       cmp    $0x270f,%eax
+               : 8048343:       jle    8048337
 </screen>
 <para>
 The problem comes from the x86 hardware; when the counter overflows the IRQ
@@ -1535,26 +1531,18 @@ execution units and the out-of-order model of modern x86 CPUs also causes
 problems. This is the same function, with annotation :
 </para>
 <screen>
-$op_to_source -a -w 10 show
+$ op_to_source -w 10 ./a.out
 
-double fun(double a, double b, double c)
-/* fun(double, double, double) 2468162 100% */
-/* 165 0.006685% */
-{
-        /* 3 0.0001215% */
-        double result = 0;
-        for (int i = 0 ; i &lt; 10000; ++i) {
-                /* 9349 0.3788% */
-                result += a;
-                /* 22858 0.9261% */
-                result *= b;
-                /* 687682 27.86% */
-                result /= c;
-        /* 1747918 70.82% */
-        }
-        return result;
-/* 187 0.007576% */
-}
+               :double fun(double a, double b, double c)
+               :{ /* _Z3funddd total:     572 100.0% */
+               : double result = 0;
+    368 64.33% : for (int i = 0 ; i &lt; 10000; ++i) {
+     88 15.38% :  result += a;
+     48 8.391% :  result *= b;
+     68 11.88% :  result /= c;
+               : }
+               : return result;
+               :}
 </screen>
 <para>
 The conclusion: don't trust samples coming at the end of a loop,
@@ -1667,47 +1655,33 @@ You may see that a function is credited with a certain number of samples, but
 the listing does not add up to the correct total. To pick a real example :
 </para>
 <screen>
-internal_sk_buff_alloc_security(struct sk_buff *skb)
-/* internal_sk_buff_alloc_security 1882 12.48% */
-/* 353 2.342% */
-{
-
-        sk_buff_security_t *sksec;
-        /* 15 0.0995% */
-        int rc = 0;
-
-        /* 10 0.06633% */
-        sksec = skb-&gt;lsm_security;
-        /* 468 3.104% */
-        if (sksec &amp;&amp; sksec-&gt;magic == DSI_MAGIC) {
-                goto out;
-        }
-
-        sksec = (sk_buff_security_t *) get_sk_buff_memory(skb);
-        /* 3 0.0199% */
-        if (!sksec) {
-                /* 38 0.2521% */
-                rc = -ENOMEM;
-                goto out;
-        /* 10 0.06633% */
-        }
-        memset(sksec, 0, sizeof (sk_buff_security_t));
-        /* 44 0.2919% */
-        sksec-&gt;magic = DSI_MAGIC;
-        /* 32 0.2123% */
-        sksec-&gt;skb = skb;
-        /* 45 0.2985% */
-        sksec-&gt;sid = DSI_SID_NORMAL;
-        /* 31 0.2056% */
-        skb-&gt;lsm_security = sksec;
-
-      out:
-
-        /* 146 0.9685% */
-        return rc;
-
-/* 98 0.6501% */
-}
+               :internal_sk_buff_alloc_security(struct sk_buff *skb)
+ 353 2.342%    :{ /* internal_sk_buff_alloc_security total: 1882 12.48% */
+               :
+               :        sk_buff_security_t *sksec;
+  15 0.0995%   :        int rc = 0;
+               :
+  10 0.06633%  :        sksec = skb-&gt;lsm_security;
+ 468 3.104%    :        if (sksec &amp;&amp; sksec-&gt;magic == DSI_MAGIC) {
+               :                goto out;
+               :        }
+               :
+               :        sksec = (sk_buff_security_t *) get_sk_buff_memory(skb);
+   3 0.0199%   :        if (!sksec) {
+  38 0.2521%   :                rc = -ENOMEM;
+               :                goto out;
+  10 0.06633%  :        }
+               :        memset(sksec, 0, sizeof (sk_buff_security_t));
+  44 0.2919%   :        sksec-&gt;magic = DSI_MAGIC;
+  32 0.2123%   :        sksec-&gt;skb = skb;
+  45 0.2985%   :        sksec-&gt;sid = DSI_SID_NORMAL;
+  31 0.2056%   :        skb-&gt;lsm_security = sksec;
+               :
+               :      out:
+               :
+ 146 0.9685%   :        return rc;
+               :
+  98 0.6501%   :}
 </screen>
 <para>
 Here, the function is credited with 1,882 samples, but the annotations
@@ -1747,56 +1721,48 @@ int main()
 Compiled with <command>gcc</command> 3.0.4 the annotated source is clearly inaccurate:
 </para>
 <screen>
-int main()
-{
-        big_object a, b;
-/* main 7871 100% */
-        for (int i = 0 ; i != 1000 * 1000; ++i)
-                b = a;
-        /* 7871 100% */
-        return 0;
-}
+               :int main()
+               :{  /* main total: 7871 100% */
+               :        big_object a, b;
+               :        for (int i = 0 ; i != 1000 * 1000; ++i)
+               :                b = a;
+ 7871 100%     :        return 0;
+               :}
 </screen>
 <para>
 The problem here is distinct from the IRQ latency problem; the debug line number
 information is not precise enough; again, looking at output of <command>op_to_source -as</command> can help.
 </para>
 <screen>
-/* 7871 100% */
-int main()
-{
-        big_object a, b;
-        for (int i = 0 ; i != 1000 * 1000; ++i)
- 80484c0:       push   %ebp
- 80484c1:       mov    %esp,%ebp
- 80484c3:       sub    $0xfac,%esp
- 80484c9:       push   %edi
- 80484ca:       push   %esi
- 80484cb:       push   %ebx
-                b = a;
- 80484cc:       lea    0xfffff060(%ebp),%edx
- 80484d2:       lea    0xfffff830(%ebp),%eax
- 80484d8:       mov    $0xf423f,%ebx
- 80484dd:       lea    0x0(%esi),%esi
-        return 0;
- /* 3 0.03811% */
- 80484e0:       mov    %edx,%edi
- 80484e2:       mov    %eax,%esi
- /* 1 0.0127% */
- 80484e4:       cld
- /* 8 0.1016% */
- 80484e5:       mov    $0x1f4,%ecx
- /* 7850 99.73% */
- 80484ea:       repz movsl %ds:(%esi),%es:(%edi)
- /* 9 0.1143% */
- 80484ec:       dec    %ebx
- 80484ed:       jns    80484e0
- 80484ef:       xor    %eax,%eax
- 80484f1:       pop    %ebx
- 80484f2:       pop    %esi
- 80484f3:       pop    %edi
- 80484f4:       leave
- 80484f5:       ret
+               :int main()
+               :{
+               :        big_object a, b;
+               :        for (int i = 0 ; i != 1000 * 1000; ++i)
+               : 80484c0:       push   %ebp
+               : 80484c1:       mov    %esp,%ebp
+               : 80484c3:       sub    $0xfac,%esp
+               : 80484c9:       push   %edi
+               : 80484ca:       push   %esi
+               : 80484cb:       push   %ebx
+               :                b = a;
+               : 80484cc:       lea    0xfffff060(%ebp),%edx
+               : 80484d2:       lea    0xfffff830(%ebp),%eax
+               : 80484d8:       mov    $0xf423f,%ebx
+               : 80484dd:       lea    0x0(%esi),%esi
+               :        return 0;
+    3 0.03811% : 80484e0:       mov    %edx,%edi
+               : 80484e2:       mov    %eax,%esi
+    1 0.0127%  : 80484e4:       cld
+    8 0.1016%  : 80484e5:       mov    $0x1f4,%ecx
+ 7850 99.73%   : 80484ea:       repz movsl %ds:(%esi),%es:(%edi)
+    9 0.1143%  : 80484ec:       dec    %ebx
+               : 80484ed:       jns    80484e0
+               : 80484ef:       xor    %eax,%eax
+               : 80484f1:       pop    %ebx
+               : 80484f2:       pop    %esi
+               : 80484f3:       pop    %edi
+               : 80484f4:       leave
+               : 80484f5:       ret
 </screen>
 <para>
 So here it's clear that copying is correctly credited with of all the samples, but the

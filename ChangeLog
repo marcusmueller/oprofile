@@ -1,3 +1,8 @@
+2003-05-27  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/oprofile.xml: update example in "Interpreting profiling results"
+	section
+
 2003-05-26  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: update docs for --no-vmlinux
