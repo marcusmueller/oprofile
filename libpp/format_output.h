@@ -16,14 +16,14 @@
 
 #include <string>
 #include <map>
-#include <vector>
 #include <iosfwd>
 
 #include "format_flags.h"
-#include "opp_symbol.h"
+#include "symbol.h"
 #include "profile_container.h"
 
 class symbol_entry;
+class sample_entry;
 
 namespace format_output {
  

@@ -14,8 +14,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "opp_symbol.h"
-#include "symbol_functors.h"
 #include "sample_container.h"
 
 using namespace std;

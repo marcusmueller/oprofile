@@ -15,18 +15,20 @@
 #include <string>
 #include <vector>
 
-#include "opp_symbol.h"
 #include "profile.h"
 #include "utility.h"
 #include "op_bfd.h"
 #include "sample_container.h"
 #include "format_flags.h"
 
+class symbol_container;
+class string_filter;
+class symbol_entry;
+class sample_entry;
+
 /// a collection of sorted symbols
 typedef std::vector<symbol_entry const *> symbol_collection;
 
-class symbol_container;
-class string_filter;
 
 /** store multiple samples files belonging to the same profiling session.
  * So on can hold samples files for arbitrary counter and binary image */

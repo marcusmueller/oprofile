@@ -10,7 +10,7 @@
  */
 
 #include "symbol_sort.h"
-#include "opp_symbol.h"
+#include "symbol.h"
 #include "symbol_functors.h"
 #include "file_manip.h"
 #include "name_storage.h"

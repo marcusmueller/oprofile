@@ -1,5 +1,5 @@
 /**
- * @file opp_symbol.h
+ * @file symbol.h
  * Symbol containers
  *
  * @remark Copyright 2002 OProfile authors
@@ -9,8 +9,8 @@
  * @author John Levon
  */
 
-#ifndef OPP_SYMBOL_H
-#define OPP_SYMBOL_H
+#ifndef SYMBOL_H
+#define SYMBOL_H
 
 #include "config.h"
 #include "name_storage.h"
@@ -65,4 +65,4 @@ struct symbol_entry {
 	size_t size;
 };
 
-#endif /* !OPP_SYMBOL_H */
+#endif /* !SYMBOL_H */

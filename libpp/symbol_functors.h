@@ -12,7 +12,7 @@
 #ifndef SYMBOL_FUNCTORS_H
 #define SYMBOL_FUNCTORS_H
 
-#include "opp_symbol.h"
+#include "symbol.h"
 
 /// compare based on file location
 struct less_by_file_loc {

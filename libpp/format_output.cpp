@@ -15,10 +15,9 @@
 #include "file_manip.h"
 #include "string_manip.h"
 
-#include "opp_symbol.h"
 #include "format_output.h"
-#include "profile_container.h"
 #include "sample_container.h"
+#include "symbol.h"
 
 using namespace std;
 

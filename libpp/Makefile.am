@@ -22,7 +22,7 @@ libpp_a_SOURCES = \
 	name_storage.h \
 	op_header.cpp \
 	op_header.h \
-	opp_symbol.h \
+	symbol.h \
 	partition_files.h \
 	partition_files.cpp \
 	profile.cpp \

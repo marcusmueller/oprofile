@@ -16,7 +16,7 @@
 #include <set>
 #include <string>
 
-#include "opp_symbol.h"
+#include "symbol.h"
 #include "symbol_functors.h"
 
 /**

@@ -1,5 +1,22 @@
 2003-06-09  John Levon  <levon@movementarian.org>
 
+	* libpp/opp_symbol.h: rename to ...
+
+	* libpp/symbol.h: ... this
+
+	* libpp/Makefile.am:
+	* libpp/format_output.h:
+	* libpp/format_output.cpp:
+	* libpp/profile_container.h:
+	* libpp/profile_container.cpp:
+	* libpp/sample_container.h:
+	* libpp/sample_container.cpp:
+	* libpp/symbol_functors.h:
+	* libpp/symbol_sort.cpp: fix up from above and some header
+	cleanups
+
+2003-06-09  John Levon  <levon@movementarian.org>
+
 	* libpp/profile.h: std::pair not pair
 
 2003-06-08  Philippe Elie  <phil.el@wanadoo.fr>
