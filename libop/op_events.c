@@ -14,6 +14,7 @@
 #include "op_events.h"
 #include "op_libiberty.h"
 #include "op_fileio.h"
+#include "op_string.h"
 #include "version.h"
 
 #include <string.h>
@@ -26,55 +27,79 @@ static LIST_HEAD(um_list);
 static char const * filename;
 static unsigned int line_nr;
 
-static void parse_error()
+static void parse_error(char const * context)
 {
 	fprintf(stderr, "oprofile: parse error in %s, line %u\n",
 		filename, line_nr);
+	fprintf(stderr, "%s\n", context);
 	exit(EXIT_FAILURE);
 }
 
 
-/* return true if s2 is a prefix of s1 */
-/* FIXME: move to libutil */
-static int strisprefix(char const * s1, char const * s2)
+static int parse_int(char const * str)
 {
-	if (strlen(s1) < strlen(s2))
-		return 0;
+	int value;
+	if (sscanf(str, "%d", &value) != 1) {
+		parse_error("expected decimal value");
+	}
 
-	return strncmp(s1, s2, strlen(s2)) == 0;
+	return value;
 }
 
 
-/* FIXME: move to libutil */
-char const * skip_ws(char const * c)
+static int parse_hexa(char const * str)
 {
-	while (*c && (*c == ' ' || *c == '\t' || *c == '\n'))
-		++c;
-	return c;
+	int value;
+	if (sscanf(str, "%x", &value) != 1) {
+		parse_error("expected hexadecimal value");
+	}
+
+	return value;
 }
 
 
-/* FIXME: move to libutil */
-char const * skip_nonws(char const * c)
+static struct op_unit_mask * new_unit_mask(void)
 {
-	while (*c && !(*c == ' ' || *c == '\t' || *c == '\n'))
-		++c;
-	return c;
+	struct op_unit_mask * um = xmalloc(sizeof(struct op_unit_mask));
+	memset(um, '\0', sizeof(struct op_unit_mask));
+	list_add_tail(&um->um_next, &um_list);
+
+	return um;
+}
+
+static void delete_unit_mask(struct op_unit_mask * unit)
+{
+	u32 cur;
+	for (cur = 0 ; cur < unit->num ; ++cur) {
+		if (unit->um[cur].desc)
+			free(unit->um[cur].desc);
+	}
+
+	if (unit->name)
+		free(unit->name);
+
+	free(unit);
 }
 
 
-/* FIXME: move to libutil */
-int empty_line(char const * c)
+static struct op_event * new_event(void)
 {
-	return !(*skip_ws(c));
+	struct op_event * event = xmalloc(sizeof(struct op_event));
+	memset(event, '\0', sizeof(struct op_event));
+	list_add_tail(&event->event_next, &events_list);
+
+	return event;
 }
 
 
-/* FIXME: move to libutil */
-int comment_line(char const * c)
+static void delete_event(struct op_event * event)
 {
-	c = skip_ws(c);
-	return *c == '#';
+	if (event->name)
+		free(event->name);
+	if (event->desc)
+		free(event->desc);
+
+	free(event);
 }
 
 
@@ -97,9 +122,7 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 		++tagend;
 
 		if (strisprefix(start, "name")) {
-			um->name = xmalloc(1 + valueend - tagend);
-			strncpy(um->name, tagend, valueend - tagend);
-			um->name[valueend - tagend] = '\0';
+			um->name = op_xstrndup(tagend, valueend - tagend);
 		} else if (strisprefix(start, "type")) {
 			if (strisprefix(tagend, "mandatory")) {
 				um->unit_type_mask = utm_mandatory;
@@ -108,18 +131,12 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 			} else if (strisprefix(tagend, "exclusive")) {
 				um->unit_type_mask = utm_exclusive;
 			} else {
-				parse_error();
+				parse_error("invalid unit mask type");
 			}
 		} else if (strisprefix(start, "default")) {
-			int um_val;
-			char * val = xmalloc(1 + valueend - tagend);
-			strncpy(val, tagend, valueend - tagend);
-			val[valueend - tagend] = '\0';
-			sscanf(val, "%x", &um_val);
-			um->default_mask = um_val;
-			free(val);
+			um->default_mask = parse_hexa(tagend);
 		} else {
-			parse_error();
+			parse_error("invalid unit mask tag");
 		}
 
 		valueend = skip_ws(valueend);
@@ -133,39 +150,30 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 static void parse_um_entry(struct op_described_um * entry, char const * line)
 {
 	char const * c = line;
-	char const * c2;
-	size_t len;
-	int um_val;
-	char * val;
-       
+
 	c = skip_ws(c);
-	c2 = c;
+	entry->value = parse_hexa(c);
 	c = skip_nonws(c);
 
 	if (!*c)
-		parse_error();
-
-	len = (c - c2);
-	val = xmalloc(len + 1);
-	strncpy(val, c2, len);
-	val[len] = '\0';
-	sscanf(val, "%x", &um_val);
-	entry->value = um_val;
-	free(val);
+		parse_error("invalid unit mask entry");
 
 	c = skip_ws(c);
 
 	if (!*c)
-		parse_error();
+		parse_error("invalid unit mask entry");
 
 	entry->desc = xstrdup(c);
 }
 
 
+/*
+ * name:zero type:mandatory default:0x0
+ * \t0x0 No unit mask
+ */
 static void read_unit_masks(char const * file)
 {
 	struct op_unit_mask * um = NULL;
-	int nr_entries = 0;
 	char * line;
 	FILE * fp = fopen(file, "r");
 
@@ -185,20 +193,17 @@ static void read_unit_masks(char const * file)
 			goto next;
 
 		if (line[0] != '\t') {
-			if (um) {
-				um->num = nr_entries;
-				list_add_tail(&um->um_next, &um_list);
-			}
-			nr_entries = 0;
-			um = xmalloc(sizeof(struct op_unit_mask));
+			um = new_unit_mask();
 			parse_um(um, line);
 		} else {
-			if (nr_entries >= MAX_UNIT_MASK) {
-				fprintf(stderr, "oprofile: maximum unit mask entries exceeded\n");
-				exit(EXIT_FAILURE);
+			if (!um) {
+				parse_error("no unit mask name line");
 			}
-			parse_um_entry(&um->um[nr_entries], line);
-			++nr_entries;
+			if (um->num >= MAX_UNIT_MASK) {
+				parse_error("oprofile: maximum unit mask entries exceeded");
+			}
+			parse_um_entry(&um->um[um->num], line);
+			++(um->num);
 		}
 
 next:
@@ -207,48 +212,32 @@ next:
 		++line_nr;
 	}
 
-	if (um) {
-		um->num = nr_entries;
-		list_add_tail(&um->um_next, &um_list);
-	}
-
 	fclose(fp);
 }
 
 
-u32 parse_counter_mask(char const * str)
+static u32 parse_counter_mask(char const * str)
 {
 	u32 mask = 0;
-	char * valstr;
-	int val;
-	char const * numend = str;
 	char const * numstart = str;
 
-	while (*numend) {
+	while (*numstart) {
+		mask |= 1 << parse_int(numstart);
 
-		while (*numend && *numend != ',')
-			++numend;
-
-		valstr = xmalloc(1 + numend - numstart);
-		strncpy(valstr, numstart, numend - numstart);
-		valstr[numend - numstart] = '\0';
-		sscanf(valstr, "%d", &val);
-		mask |= (1 << val);
-		free(valstr);
-
+		while (*numstart && *numstart != ',')
+			++numstart;
 		/* skip , unless we reach eos */
-		if (*numend)
-			++numend;
+		if (*numstart)
+			++numstart;
 
-		numend = skip_ws(numend);
-		numstart = numend;
+		numstart = skip_ws(numstart);
 	}
 
 	return mask;
 }
 
 
-struct op_unit_mask * find_um(char const * value)
+static struct op_unit_mask * find_um(char const * value)
 {
 	struct list_head * pos;
 
@@ -263,7 +252,8 @@ struct op_unit_mask * find_um(char const * value)
 }
 
 
-int next_token(char const ** cp, char ** name, char ** value)
+/* parse either a "tag:value" or a ": trailing description string" */
+static int next_token(char const ** cp, char ** name, char ** value)
 {
 	size_t tag_len;
 	size_t val_len;
@@ -275,54 +265,51 @@ int next_token(char const ** cp, char ** name, char ** value)
 	end = colon = c;
 	end = skip_nonws(end);
 
-	while (*colon && *colon != ':')
-		++colon;
+	colon = strchr(colon, ':');
 
-	if (!*colon)
+	if (!colon) {
+		if (*c) {
+			parse_error("next_token(): garbage at end of line");
+		}
 		return 0;
+	}
 
 	if (colon >= end)
-		parse_error();
+		parse_error("next_token() expected ':'");
 
 	tag_len = colon - c;
 	val_len = end - (colon + 1);
 
-	/* trailing description */
 	if (!tag_len) {
+		/* : trailing description */
 		end = skip_ws(end);
-		val_len = strlen(end);
 		*name = xstrdup("desc");
-		*value = xmalloc(val_len + 1);
-		strcpy(*value, end);
-		end += val_len;
-		*cp = end;
-		return 1;
+		*value = xstrdup(end);
+		end += strlen(end);
 	} else {
-		*name = xmalloc(tag_len + 1);
-		strncpy(*name, c, tag_len);
-		*(*name + tag_len) = '\0';
+		/* tag:value */
+		*name = op_xstrndup(c, tag_len);
+		*value = op_xstrndup(colon + 1, val_len);
+		end = skip_ws(end);
 	}
 
-	*value = xmalloc(val_len + 1);
-	strncpy(*value, colon + 1, val_len);
-	*(*value + val_len) = '\0';
-	end = skip_ws(end);
 	*cp = end;
 	return 1;
 }
 
 
-void read_events(char const * file)
+/* event:0x00 counters:0 um:zero minimum:4096 name:ISSUES : Total issues */
+static void read_events(char const * file)
 {
 	struct op_event * event = NULL;
 	char * line;
 	char * name;
 	char * value;
-	char * c;
+	char const * c;
 	FILE * fp = fopen(file, "r");
 
 	if (!fp) {
-		fprintf(stderr, "oprofile: could not open event description file %s\n", filename);
+		fprintf(stderr, "oprofile: could not open event description file %s\n", file);
 		exit(EXIT_FAILURE);
 	}
 
@@ -335,16 +322,14 @@ void read_events(char const * file)
 		if (empty_line(line) || comment_line(line))
 			goto next;
 
-		event = xmalloc(sizeof(struct op_event));
+		event = new_event();
 
 		c = line;
-		while (next_token((char const **)&c, &name, &value)) {
+		while (next_token(&c, &name, &value)) {
 			if (strcmp(name, "name") == 0) {
 				event->name = value;
 			} else if (strcmp(name, "event") == 0) {
-				int val;
-				sscanf(value, "%x", &val);
-				event->val = val;
+				event->val = parse_hexa(value);
 				free(value);
 			} else if (strcmp(name, "counters") == 0) {
 				event->counter_mask = parse_counter_mask(value);
@@ -353,20 +338,16 @@ void read_events(char const * file)
 				event->unit = find_um(value);
 				free(value);
 			} else if (strcmp(name, "minimum") == 0) {
-				sscanf(value, "%d", &event->min_count);
+				event->min_count = parse_int(value);
 				free(value);
 			} else if (strcmp(name, "desc") == 0) {
 				event->desc = value;
 			} else {
-				printf("Parse error: unknown tag %s in file %s\n", name, filename);
-				exit(1);
+				parse_error("unknown tag");
 			}
 
 			free(name);
 		}
-
-		list_add_tail(&event->event_next, &events_list);
-
 next:
 		free(line);
 		line = op_get_line(fp);
@@ -415,7 +396,24 @@ struct list_head * op_events(op_cpu cpu_type)
 	return &events_list;
 }
 
+void op_free_events(void)
+{
+	struct list_head * pos, * pos2;
+	list_for_each_safe(pos, pos2, &events_list) {
+		struct op_event * event = list_entry(pos, struct op_event, event_next);
+		/* FIXME: how in delete_event I can move lis_del(pos) in
+		 * delete_event() w/o passing the pos parameters ? */
+		list_del(pos);
+		delete_event(event);
+	}
 
+	list_for_each_safe(pos, pos2, &um_list) {
+		struct op_unit_mask * unit = list_entry(pos, struct op_unit_mask, um_next);
+		/* FIXME: ditto as above */
+		list_del(pos);
+		delete_unit_mask(unit);
+	}
+}
 
 struct op_event * find_event(u8 nr)
 {
@@ -443,7 +441,7 @@ struct op_event * op_find_event(op_cpu cpu_type, u8 nr)
 		return event;
 
 	fprintf(stderr, "oprofile: could not find event %d\n", nr);
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 

@@ -88,6 +88,11 @@ enum op_event_check {
  */
 int op_check_events(int ctr, u8 event, u16 um, op_cpu cpu_type);
 
+/**
+ * free memory used by any call to above function. Need to be called only once
+ */
+void op_free_events(void);
+
 #ifdef __cplusplus
 }
 #endif

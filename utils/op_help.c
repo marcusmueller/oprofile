@@ -114,15 +114,21 @@ int main(int argc, char const *argv[])
 	if (cpu_type == CPU_NO_GOOD)
 		cpu_type = op_get_cpu_type();
 
-	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE)
+	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
+		fprintf(stderr, "cpu_type '%d' is not valid\n", cpu_type);
 		exit(EXIT_FAILURE);
-
+	}
 
 	pretty = op_get_cpu_type_str(cpu_type);
 
 	if (get_cpu_type) {
 		printf("%s\n", pretty);
 		exit(EXIT_SUCCESS);
+	}
+
+	if (cpu_type == CPU_TIMER_INT) {
+		printf("using timer interrupt\n");
+		exit(event_name ? EXIT_FAILURE : EXIT_SUCCESS);
 	}
 
 	events = op_events(cpu_type);
@@ -174,7 +180,6 @@ int main(int argc, char const *argv[])
 		       "ftp://ftp.compaq.com/pub/products/alphaCPUdocs/alpha_arch_ref.pdf\n");
 		break;
 	case CPU_RTC:
-	case CPU_TIMER_INT:
 		break;
 	default:
 		printf("%d is not a valid processor type,\n", cpu_type);

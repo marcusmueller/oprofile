@@ -342,6 +342,7 @@ AC_MSG_RESULT([yes]); CXXFLAGS="$CXXFLAGS -I\${top_srcdir}/include")
 dnl some distro have a libiberty.a but does not have a libiberty.h
 AC_CHECK_HEADERS(libiberty.h)
 AC_CHECK_FUNCS(xcalloc)
+AC_CHECK_FUNCS(xmemdump)
 
 dnl bfd.h pre 1998 check only for gnu 2.xx series, so gcc 3.0 can't compile it
 AC_MSG_CHECKING([whether bfd defines bool])

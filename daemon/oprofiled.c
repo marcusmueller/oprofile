@@ -337,6 +337,8 @@ static void opd_pmc_options(void)
 		if (ret != OP_OK_EVENT)
 			exit(EXIT_FAILURE);
 	}
+
+	op_free_events();
 }
  
 

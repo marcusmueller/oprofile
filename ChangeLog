@@ -1,3 +1,27 @@
+2003-03-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* configure.in: add checking for existence of xmemdup()
+
+	* libutil/Makefile.am:
+	* libutil/op_string.h:
+	* libutil/op_string.c: new, a few C string handling function
+
+	* libutil/op_libiberty.h:
+	* libutil/op_libiberty.c: xmemdup() new.
+
+	* libop/op_events.h:
+	* libop/op_events.c: tidy parser. Add op_free_events(). Fix minor
+	  buglet.
+
+	* dae/oprofiled.c:
+	* daemon/oprofiled.c: fix memleak from parsing events files
+
+	* gui/Makefile.am:
+	* pp/Makefile.am: fix lib ordering, now libop depend on libutil
+
+	* utils/op_help.c: error message if invalid cpu type. Fix op_help
+	  when using timer interrupt.
+
 2003-03-14  Andi Kleen <ak@suse.de>
 
 	* oprofile/module/x86/op_nmi.c: Fix another possible race condition.
