@@ -1,3 +1,7 @@
+2003-03-08  Will Cohen  <wcohen@redhat.com>
+
+	* doc/Makefile.am: Correct path for htmldir.
+
 2003-03-08  John Levon  <levon@movementarian.org>
 
 	* libop/op_cpu_type.c: improve error message

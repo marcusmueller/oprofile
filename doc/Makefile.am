@@ -10,7 +10,7 @@ generated_mans = oprofiled.1 op_help.1 oprofpp.1 op_time.1 op_to_source.1 op_mer
 
 man_MANS = oprofile.1 $(generated_mans)
 
-htmldir = $(DESTDIR)$(prefix)/share/doc/oprofile
+htmldir = $(prefix)/share/doc/oprofile
 dist_html_DATA = oprofile.html
 
 $(generated_mans):
