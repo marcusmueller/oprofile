@@ -58,6 +58,7 @@ struct child {
 	int ctx_fd;
 	sig_atomic_t sigusr1;
 	sig_atomic_t sigusr2;
+	sig_atomic_t sigterm;
 };
 
 static struct child * children;
@@ -106,6 +107,13 @@ static void child_sigusr2(int val __attribute__((unused)))
 }
 
 
+static void child_sigterm(int val __attribute__((unused)))
+{
+	printf("Child received SIGTERM, killing parent.\n");
+	kill(getppid(), SIGTERM);
+}
+
+
 static void run_child(size_t cpu)
 {
 	struct child * self = &children[cpu];
@@ -121,6 +129,7 @@ static void run_child(size_t cpu)
 	self->pid = getpid();
 	self->sigusr1 = 0;
 	self->sigusr2 = 0;
+	self->sigterm = 0;
 
 	/* FIXME: we can still get a signal before this, it's racy. */
 
@@ -139,6 +148,15 @@ static void run_child(size_t cpu)
 
 	if (sigaction(SIGUSR2, &act, NULL)) {
 		perror("oprofiled: install of SIGUSR2 handler failed: ");
+		exit(EXIT_FAILURE);
+	}
+
+	act.sa_handler = child_sigterm;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+
+	if (sigaction(SIGTERM, &act, NULL)) {
+		perror("oprofiled: install of SIGTERM handler failed: ");
 		exit(EXIT_FAILURE);
 	}
 
@@ -271,7 +289,7 @@ void perfmon_exit(void)
 	size_t i;
 
 	for (i = 0; i < nr_cpus; ++i)
-		kill(children[i].pid, SIGTERM);
+		kill(children[i].pid, SIGKILL);
 }
 
 

@@ -1,5 +1,10 @@
 2003-10-14  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_perfmon.c: propagate a SIGTERM
+	up to the parent.
+
+2003-10-14  John Levon  <levon@movementarian.org>
+
 	* m4/perfmon.m4:
 	* configure.in: remove pfmlib checks
 
