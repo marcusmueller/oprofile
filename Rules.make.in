@@ -4,6 +4,7 @@
 # common deps
 CC=@CC@
 CXX=@CXX@
+LD=@LD@
 prefix=$(DESTDIR)@prefix@
 exec_prefix=@exec_prefix@
 BINDIR=@bindir@

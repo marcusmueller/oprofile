@@ -17,6 +17,8 @@
 #ifndef CHILD_READER_H
 #define CHILD_READER_H
 
+#include <sys/types.h>
+
 #include <vector>
 #include <string>
 
@@ -87,7 +89,7 @@ private:
 	// caller read only stdout of the child.
 	char * buf2;
 	ssize_t sz_buf2;
-	char buf1[PIPE_BUF];
+	char * buf1;
 	bool is_terminated;
 };
 

@@ -1,5 +1,5 @@
 CXXFLAGS=@CXXFLAGS@ -Wall -pedantic -W -Wunused -Wmissing-prototypes
-CFLAGS=-ansi -pedantic -Wall -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
+CFLAGS=-ansi -pedantic -Wall -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
 
 .PHONY: all clean install
 

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.34 2001/10/14 19:35:14 movement Exp $ */
+/* $Id: oprofiled.h,v 1.35 2001/12/05 21:25:26 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -44,7 +44,7 @@
 
 /* various defines */
 
-//#define OPD_DEBUG
+/*#define OPD_DEBUG*/
 
 #ifdef OPD_DEBUG
 #define dprintf(args...) printf(args)

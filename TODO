@@ -1,9 +1,6 @@
 0.0.8 task list
 ---------------
  
-o I'm sick of these crappy makefiles. Let's see if we can use automake as well
-  as autoconf. At least for user-space stuff.
- 
 o determine where we need ctx_sw_on/off to prevent pre-emption + test
  
 o implement proc->old_exec
@@ -12,8 +9,6 @@ o can we provide a small setuid helper for starting/stopping/flushing the profil
   is it a good idea ?
  
 o move from racy sysctl to procfs, if it can be done nicely
-
-o code factorisation between opf_filter / gui, more opf_filter/opf_container cleanup
 
 o move .oprofile to name=value pairs to avoid conflicts on change.
  
@@ -26,9 +21,14 @@ o pentium 4 patches ?
  
 o post-prof GUI ? (big job)
 
-o difference between two profile session. Difference must be made at source level. How to save the old binary files if needed ? (This is a part of post-prof)
+o difference between two profile session. Difference must be made at source level. (This is a part of post-prof)
 
 o integrate dasm, probably the best way is to allow to fall back to objdump.
+
+o turn (or only compile) daemon in C++ to allow more code sharing with pp/gui
+ is it a good idea ?
+
+o use a filelock rather a sleep to synchronize op_start and daemon.
 
 Correctness
 -----------

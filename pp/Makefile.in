@@ -1,7 +1,7 @@
 INSTALL_LIST=oprofpp oprof_convert op_to_source op_time
 
-CFLAGS=@CFLAGS@ -Wall -W -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline
-CXXFLAGS=@CXXFLAGS@ @BFD_CXXFLAGS@ -Wall -W -Wunused -Wmissing-prototypes
+CFLAGS=@CFLAGS@ -pedantic -Wall -W -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline
+CXXFLAGS=@CXXFLAGS@ @BFD_CXXFLAGS@ -ansi -Wall -W -Wunused -Wmissing-prototypes
 LIBS=-lpopt -lbfd -liberty -ldl
 MY_SOURCES=oprofpp.cpp oprofpp_util.cpp
 OBJS=../events/op_events.o ../events/op_events_desc.o ../dae/opd_util.o oprofpp_util.o ../util/op_popt.o ../util/file_manip.o
@@ -30,14 +30,14 @@ oprofpp-src.html: $(MY_SOURCES)
 	../scripts/dodoc -html $(MY_SOURCES) >oprofpp-src.html
 
 oprofpp: oprofpp.o $(OBJS)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ oprofpp.o $(OBJS) $(LIBS)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
-oprof_convert: oprof_convert.c ../dae/opd_util.o ../util/file_manip.o ../dae/opd_util.h ../op_user.h
-	$(CXX) $(CXXFLAGS) oprof_convert.c ../util/file_manip.o ../dae/opd_util.o -o $@ $(LIBS)
+oprof_convert: oprof_convert.o ../dae/opd_util.o ../util/file_manip.o
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
 op_to_source: opf_filter.o opf_container.o ../util/child_reader.o $(OBJS) \
- ../util/string_manip.o $(LIBS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+ ../util/string_manip.o
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
 op_time: op_time.o $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)

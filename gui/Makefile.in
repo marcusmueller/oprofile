@@ -1,15 +1,9 @@
-prefix=$(DESTDIR)@prefix@
-exec_prefix=@exec_prefix@
-BINDIR=@bindir@
-MKDIR_P=mkdir -p
 MOC=@MOC@
 UIC=@UIC@
 
-CXX=@CXX@
+CXXFLAGS=-ansi -Wall -pedantic -W @CXXFLAGS@ -I@KINC@ @QT2_INCLUDES@
 
-CXXFLAGS=-Wall -pedantic -W @CXXFLAGS@ -I@KINC@ @QT2_INCLUDES@
-
-# FIXME: dependencies are fucked ... my fault (john)
+# be warned: there is kludge here for auto-deps
 
 .PHONY: all clean install uninstall
 .SUFFIXES:
@@ -19,7 +13,7 @@ all: oprof_start
 
 clean:
 	$(MAKE) -C ui clean
-	rm -f *.o *.moc.* oprof_start
+	rm -f *.o *.d *.moc.* oprof_start
 
 install: all oprof_start
 	-$(MKDIR_P) $(BINDIR)
@@ -40,29 +34,37 @@ oprof_start: $(SOURCES)
 	$(MAKE) -C ui
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(UISOURCES) @QT2_LDFLAGS@ @QT2_LIBS@ -liberty
 
-ui/oprof_start.base.h:
-	$(MAKE) -C ui
+# we need explicit dependencies and build rules here else after a make clean
+# dependencies can not be regenerated
+ui/oprof_start.base.h: ui/oprof_start.base.ui
+	$(MAKE) -C ui oprof_start.base.h
+ui/oprof_start.base.moc.cpp: ui/oprof_start.base.h
+	$(MAKE) -C ui oprof_start.base.h
 
-oprof_start.moc.o: oprof_start.moc.cpp oprof_start.h \
- ui/oprof_start.base.h oprof_start_config.h persistent_config.h \
- ../op_user.h ../version.h
+oprof_start.moc.o: oprof_start.moc.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-oprof_start.o: oprof_start.cpp oprof_start.h ui/oprof_start.base.h \
- oprof_start_config.h persistent_config.h ../op_user.h ../version.h ../util/string_manip.h
+oprof_start.o: oprof_start.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-oprof_start_config.o: oprof_start_config.cpp oprof_start_config.h \
- persistent_config.h ../op_user.h ../version.h
+oprof_start_config.o: oprof_start_config.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-oprof_start_util.o: oprof_start_util.cpp oprof_start_util.h ../util/string_manip.h ../util/child_reader.h ../util/file_manip.h
+oprof_start_util.o: oprof_start_util.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-oprof_start_main.o: oprof_start_main.cpp oprof_start.h \
- ui/oprof_start.base.h oprof_start_config.h persistent_config.h \
- ../op_user.h ../version.h            
+oprof_start_main.o: oprof_start_main.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # generate qt moc code for subclass
-oprof_start.moc.cpp: oprof_start.h ui/oprof_start.base.moc.cpp
+oprof_start.moc.cpp: oprof_start.h  ui/oprof_start.base.h
 	$(MOC) -o oprof_start.moc.cpp oprof_start.h
+
+ALL_SOURCES = oprof_start_util.cpp oprof_start_config.cpp oprof_start_main.cpp oprof_start.cpp oprof_start.moc.cpp
+
+# Makefile depends on included .d file which needs ui/oprof_start.base.h to be
+# created so add an explicit rules to create it, I see no way to avoid it.
+oprof_start.cpp.d: ui/oprof_start.base.h
+
+include ../Rules.make
+
+CPPFLAGS_DEPS += @QT2_INCLUDES@
 
 else
 all:

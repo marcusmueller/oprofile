@@ -29,6 +29,7 @@
 #include <stdio.h>
 
 #include "child_reader.h"
+#include "../dae/opd_util.h"
 
 using std::string;
 using std::vector;
@@ -48,6 +49,7 @@ ChildReader::ChildReader(string const & cmd, vector<string> const & args)
 	first_error(0),
 	buf2(0),
 	sz_buf2(0),
+	buf1(new char [PIPE_BUF]),
 	is_terminated(true)
 {
 	exec_command(cmd, args);
@@ -57,6 +59,8 @@ ChildReader::ChildReader(string const & cmd, vector<string> const & args)
 ChildReader::~ChildReader()
 {
 	terminate_process();
+	delete [] buf1;
+	if (buf2) free(buf2);	// allocated through C alloc
 }
 
 // ctor helper: fork the child process cmd passing it the vector of arguments
@@ -138,12 +142,12 @@ bool ChildReader::block_read()
 
 	if (select(std::max(fd1, fd2) + 1, &read_fs, 0, 0, 0) >= 0) {
 		if (FD_ISSET(fd1, &read_fs))
-			end1 = read(fd1, buf1, sizeof(buf1));
+			end1 = read(fd1, buf1, PIPE_BUF);
 
 		if (FD_ISSET(fd2, &read_fs)) {
 			if (end2 >= sz_buf2) {
 				sz_buf2 += PIPE_BUF;
-				buf2 = (char *)realloc(buf2, sz_buf2);
+				buf2 = (char *)xrealloc(buf2, sz_buf2);
 			}
 
 			ssize_t temp = read(fd2, buf2, sz_buf2 - end2);

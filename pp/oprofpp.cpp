@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.14 2001/12/05 04:31:17 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.15 2001/12/05 21:25:26 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -312,6 +312,8 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd) const
 			}
 		}
 	}
+
+	free(hist);
 
 	opd_write_file(fp, hist, histsize * sizeof(u16));
 	opd_close_file(fp);

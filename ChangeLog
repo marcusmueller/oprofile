@@ -1,5 +1,21 @@
 2001-12-05  Philippe Elie  <ph_e@club-internet.fr>
 
+	* Rules.make.in:
+	* dae/Makefile.in:
+	* events/Makefile.in:
+	* pp/Makefile.in: 
+	* util/Makefile.in: tidy
+	* module/Makefile.in:
+	* gui/Makefile.in: use auto-deps
+
+	* util/child_reader.h: allow to compile with -ansi
+	* util/child_reader.cpp: fix memory leak fix
+	* pp/oprofpp.cpp: fix memory leak
+
+	* TODO: update
+
+2001-12-05  Philippe Elie  <ph_e@club-internet.fr>
+
 	* autogen.sh: use autoheader to create config.h
 	* configure.in: handle missing libiberty.h and
 	  missing xcalloc in libiberty.a

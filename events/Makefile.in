@@ -15,10 +15,10 @@ clean:
 	rm -f *.o *.d op_help
 
 op_help: op_events.o op_events_desc.o op_help.o ../util/op_popt.o
-	$(CC) $(CFLAGS) $(INCLUDES) -g $^ -o $@ -lpopt -liberty
+	$(CC) $(CFLAGS) $(INCLUDES) $^ -o $@ -lpopt -liberty
 
 %.o: %c
-	$(CC) -c $(CFLAGS) $(INCLUDE) -g $< -o $@
+	$(CC) -c $(CFLAGS) $(INCLUDE) $< -o $@
 
 ALL_SOURCES = op_events.c op_events_desc.c op_help.c
 
