@@ -20,6 +20,34 @@
 ##    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ##    Boston, MA 02111-1307, USA.       
 
+dnl Sanity check, we trust than we found qt but now we check than
+dnl the used compiler is able to compile/link a basic qt program
+dnl $1: include dir, $2: qt lib dir, $3: qt lib name, $4: output receiving
+dnl YES/NO value
+AC_DEFUN(CHECK_QT_LINK,
+[
+ac_cxxflags_safe="$CXXFLAGS"
+ac_ldflags_safe="$LDFLAGS"
+ac_libs_safe="$LIBS"
+
+CXXFLAGS="$CXXFLAGS -I$1"
+LDFLAGS="-L$2 $X_LDFLAGS"
+LIBS="$LIBS -l$3 -lXext -lX11 $LIBSOCKET"
+
+QT2_PRINT_PROGRAM
+
+if AC_TRY_EVAL(ac_link) && test -s conftest; then
+  $4=YES
+else
+  echo "configure: failed program was:" >&AC_FD_CC
+  $4=NO
+fi
+rm -f conftest*
+CXXFLAGS="$ac_cxxflags_safe"
+LDFLAGS="$ac_ldflags_safe"
+LIBS="$ac_libs_safe"
+])
+
 ## ------------------------------------------------------------------------
 ## Find a file (or one of more files in a list of dirs)
 ## ------------------------------------------------------------------------
@@ -381,20 +409,25 @@ dnl the same sub-dir and so on must be sane.
 AC_FIND_FILE(libqt-mt.so.3, $QTDIR/lib, qt3_libdir)
 
 if test "$qt3_incdir" != "NO" -a "$qt3_bindir" != "NO" -a "$qt3_libdir" != "NO"; then
-	AC_MSG_RESULT(yes)
-	have_qt="yes"
-	QT_LDFLAGS=-L"$QTDIR"/lib
-	QT_LIBS=-lqt-mt
-	QT_INCLUDES=-I"$qt3_incdir"
-	MOC="$QTDIR"/bin/moc
-	UIC="$QTDIR"/bin/uic
-	AC_SUBST(have_qt)
-	AC_SUBST(QT_INCLUDES)
-	AC_SUBST(QT_LDFLAGS)
-	AC_SUBST(QT_LIBS)
-	AC_SUBST(UIC)
-	AC_SUBST(MOC)
+	CHECK_QT_LINK($qt3_incdir, $qt3_libdir, qt-mt, qt_ok)
+	if test $qt_ok == "YES"; then
+		AC_MSG_RESULT(yes)
+		have_qt="yes"
+		QT_LDFLAGS=-L"$QTDIR"/lib
+		QT_LIBS=-lqt-mt
+		QT_INCLUDES=-I"$qt3_incdir"
+		MOC="$QTDIR"/bin/moc
+		UIC="$QTDIR"/bin/uic
+		AC_SUBST(have_qt)
+		AC_SUBST(QT_INCLUDES)
+		AC_SUBST(QT_LDFLAGS)
+		AC_SUBST(QT_LIBS)
+		AC_SUBST(UIC)
+		AC_SUBST(MOC)
+	else
+		AC_MSG_RESULT(no)
+	fi
 else
-	AC_MSG_RESULT("no")
+	AC_MSG_RESULT(no)
 fi
 ])

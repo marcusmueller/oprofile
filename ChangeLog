@@ -1,5 +1,9 @@
 2002-09-11  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* acinclude.m4: fix qt3 detection in some corner case.
+
+2002-09-11  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/samples_container.cpp:
 	* pp/samples_container.h: Check at run time we don't try to use an
 	  unitialized samples_container_t.
