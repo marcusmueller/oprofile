@@ -16,7 +16,11 @@
  * use of this variable is for static/local array dimension. Never use it in
  * loop or in array index access/index checking unless you know what you
  * made. */
+#ifdef __alpha__
+#define OP_MAX_COUNTERS	20
+#else
 #define OP_MAX_COUNTERS	8
+#endif
 
 /** a plain unsigned int magic value to check against counter overflow */
 #define OP_COUNT_MAX	~0u

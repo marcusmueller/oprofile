@@ -51,7 +51,7 @@ struct op_unit_mask {
 /** Describe an event. */
 struct op_event {
 	u32 counter_mask;	/**< bitmask of allowed counter  */
-	u16 cpu_mask;		/**< bitmask of allowed cpu_type */
+	u32 cpu_mask;		/**< bitmask of allowed cpu_type */
 	u8 val;			/**< event number */
 	/** which unit mask if any allowed */
 	struct op_unit_mask const * unit;			

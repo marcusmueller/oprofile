@@ -170,6 +170,14 @@ int main(int argc, char const *argv[])
 		       "Intel Itanium 2 Processor Reference Manual\n"
 		       "for Software Development and Optimization (Document 251110-001),\n\n");
 		break;
+	case CPU_AXP_EV4:
+	case CPU_AXP_EV5:
+	case CPU_AXP_PCA56:
+	case CPU_AXP_EV6:
+	case CPU_AXP_EV67:
+		printf("See Alpha Architecture Reference Manual\n"
+		       "ftp://ftp.compaq.com/pub/products/alphaCPUdocs/alpha_arch_ref.pdf\n");
+		break;
 	case CPU_RTC:
 		break;
 	default:

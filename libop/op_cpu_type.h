@@ -31,6 +31,11 @@ typedef enum {
 	CPU_IA64_2, /**< IA64 McKinley */
 	CPU_HAMMER, /**< AMD Hammer family */
 	CPU_P4_HT2, /**< Pentium 4 / Xeon series with 2 hyper-threads */
+	CPU_AXP_EV4, /**< Alpha EV4 family */
+	CPU_AXP_EV5, /**< Alpha EV5 family */
+	CPU_AXP_PCA56, /**< Alpha PCA56 family */
+	CPU_AXP_EV6, /**< Alpha EV6 family */
+	CPU_AXP_EV67, /**< Alpha EV67 family */
 	MAX_CPU_TYPE
 } op_cpu;
 

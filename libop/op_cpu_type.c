@@ -33,6 +33,11 @@ struct cpu_descr {
 	{ "Itanium 2", "ia64/itanium2", CPU_IA64_2, 4 },
 	{ "Hammer", "x86-64/hammer", CPU_HAMMER, 4 },
 	{ "P4 / Xeon with 2 hyper-threads", "i386/p4-ht", CPU_P4_HT2, 4 },
+	{ "Alpha EV4", "alpha/ev5", CPU_AXP_EV4, 2 },
+	{ "Alpha EV5", "alpha/ev5", CPU_AXP_EV5, 3 },
+	{ "Alpha PCA56", "alpha/pca56", CPU_AXP_PCA56, 3 },
+	{ "Alpha EV6", "alpha/ev6", CPU_AXP_EV6, 2 },
+	{ "Alpha EV67", "alpha/ev67", CPU_AXP_EV67, 20 },
 };
  
 static size_t nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

@@ -1,3 +1,14 @@
+2003-01-18  Falk Hueffner  <falk@debian.org>
+
+	* libop/op_cpu_type.h:
+	* libop/op_cpu_type.c: add Alpha CPU families.
+	* libop/op_events.h: make op_event.cpu_mask u32, since we now have
+	  more than 16 CPU types
+	* libop/op_hw_config.h: bump OP_MAX_COUNTERS to 20 for Alpha
+	* libop/op_events.c: add Alpha events
+	* daemon/opd_cookie.h: add dcookie syscall number for Alpha
+	* utils/op_help.c (main): add help string for Alpha
+
 2003-01-18  John Levon  <levon@movementarian.org>
 
 	* module/Makefile.in:

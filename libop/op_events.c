@@ -351,8 +351,16 @@ static struct op_unit_mask um_branch_type =
 #define OP_IA64_2	(1 << CPU_IA64_2)
 #define OP_IA64_ALL	(OP_IA64 | OP_IA64_1 | OP_IA64_2)
 
+#define OP_EV4		(1 << CPU_AXP_EV4)
+#define OP_EV5		(1 << CPU_AXP_EV5)
+#define OP_EV6		(1 << CPU_AXP_EV6)
+#define OP_EV67		(1 << CPU_AXP_EV67)
+
 #define CTR_0		(1 << 0)
 #define CTR_1		(1 << 1)
+#define CTR_2		(1 << 2)
+
+#define PM_CTR(x, y)	(1 << (14 * x + y + 2))
 
 /* the pentium 4 has a complex set of restrictions between its 18
    counters, so we simplify it a little and say there are 8 counters. these
@@ -709,6 +717,201 @@ struct op_event const op_events[] = {
     "IA-64 Instructions Retired", 500,},
   { CTR_4_5, OP_IA64_1, 0x15, &um_empty, "IA32_INST_RETIRED",
     "IA-32 Instructions Retired", 500,},
+ 
+   /* Alpha EV4 */
+   { CTR_0, OP_EV4, 0, &um_empty, "ISSUES",
+     "Total issues divided by 2", 4096 },
+   { CTR_0, OP_EV4, 2, &um_empty, "PIPELINE_DRY",
+     "Nothing issued, no valid I-stream data", 4096 },
+   { CTR_0, OP_EV4, 4, &um_empty, "LOAD_INSNS",
+     "All load instructions", 4096 },
+   { CTR_0, OP_EV4, 6, &um_empty, "PIPELINE_FROZEN",
+     "Nothing issued, resource conflict", 4096 },
+   { CTR_0, OP_EV4, 8, &um_empty, "BRANCH_INSNS",
+     "All branches (conditional, unconditional, jsr, hw_rei)", 4096 },
+   { CTR_0, OP_EV4, 10, &um_empty, "CYCLES",
+     "Total cycles", 4096 },
+   { CTR_0, OP_EV4, 11, &um_empty, "PAL_MODE",
+     "Cycles while in PALcode environment", 4096 },
+   { CTR_0, OP_EV4, 12, &um_empty, "NON_ISSUES",
+     "Total nonissues divided by 2", 4096 },
+   { CTR_1, OP_EV4, 16, &um_empty, "DCACHE_MISSES",
+     "Total D-cache misses", 256 },
+   { CTR_1, OP_EV4, 17, &um_empty, "ICACHE_MISSES",
+     "Total I-cache misses", 256 },
+   { CTR_1, OP_EV4, 18, &um_empty, "DUAL_ISSUE_CYCLES",
+     "Cycles of dual issue", 256 },
+   { CTR_1, OP_EV4, 19, &um_empty, "BRANCH_MISPREDICTS",
+     "Branch mispredicts (conditional, jsr, hw_rei)", 256 },
+   { CTR_1, OP_EV4, 20, &um_empty, "FP_INSNS",
+     "FP operate instructions (not br, load, store)", 256 },
+   { CTR_1, OP_EV4, 21, &um_empty, "INTEGER_OPERATE",
+     "Integer operate instructions", 256 },
+   { CTR_1, OP_EV4, 22, &um_empty, "STORE_INSNS",
+     "Store instructions", 256 },
+   /* ??? There's also "EXTERNAL", by which we could monitor the
+      21066/21068 bus controller.  */
+ 
+   /* Alpha EV5 */
+   { CTR_0 | CTR_2, OP_EV5, 0, &um_empty, "CYCLES",
+     "Total cycles", 256 },
+   { CTR_0, OP_EV5, 1, &um_empty, "ISSUES",
+     "Total issues", 256 },
+   { CTR_1, OP_EV5, 2, &um_empty, "NON_ISSUE_CYCLES",
+     "Nothing issued, pipeline frozen", 256 },
+   { CTR_1, OP_EV5, 3, &um_empty, "SPLIT_ISSUE_CYCLES",
+     "Some but not all issuable instructions issued", 256 },
+   { CTR_1, OP_EV5, 4, &um_empty, "PIPELINE_DRY",
+     "Nothing issued, pipeline dry", 256 },
+   { CTR_1, OP_EV5, 5, &um_empty, "REPLAY_TRAP",
+     "Replay traps (ldu, wb/maf, litmus test)", 256 },
+   { CTR_1, OP_EV5, 6, &um_empty, "SINGLE_ISSUE_CYCLES",
+     "Single issue cycles", 256 },
+   { CTR_1, OP_EV5, 7, &um_empty, "DUAL_ISSUE_CYCLES",
+     "Dual issue cycles", 256 },
+   { CTR_1, OP_EV5, 8, &um_empty, "TRIPLE_ISSUE_CYCLES",
+     "Triple issue cycles", 256 },
+   { CTR_1, OP_EV5, 9, &um_empty, "QUAD_ISSUE_CYCLES",
+     "Quad issue cycles", 256 },
+   { CTR_1, OP_EV5, 10, &um_empty, "FLOW_CHANGE",
+     "Flow change (meaning depends on counter 2)", 256 },
+     /* ??? This one's dependent on the value in PCSEL2:
+ 	If measuring PC_MISPR, this is jsr-ret instructions,
+ 	if measuring BRANCH_MISPREDICTS, this is conditional branches,
+ 	otherwise this is all branch insns, including hw_rei.  */
+   { CTR_1, OP_EV5, 11, &um_empty, "INTEGER_OPERATE", 
+     "Integer operate instructions", 256 },
+   { CTR_1, OP_EV5, 12, &um_empty, "FP_INSNS",
+     "FP operate instructions (not br, load, store)", 256 },
+   { CTR_1, OP_EV5, 12, &um_empty, "LOAD_INSNS",
+     "Load instructions", 256 },
+   { CTR_1, OP_EV5, 13, &um_empty, "STORE_INSNS",
+     "Store instructions", 256 },
+   { CTR_1, OP_EV5, 14, &um_empty, "ICACHE_ACCESS", 
+     "Instruction cache access", 256 },
+   { CTR_1, OP_EV5, 15, &um_empty, "DCACHE_ACCESS",
+     "Data cache access", 256 },
+   { CTR_2, OP_EV5, 16, &um_empty, "LONG_STALLS",
+     "Stalls longer than 15 cycles", 256 },
+   { CTR_2, OP_EV5, 17, &um_empty, "PC_MISPR",
+     "PC mispredicts", 256 },
+   { CTR_2, OP_EV5, 18, &um_empty, "BRANCH_MISPREDICTS",
+     "Branch mispredicts", 256 },
+   { CTR_2, OP_EV5, 19, &um_empty, "ICACHE_MISSES",
+     "Instruction cache misses", 256 },
+   { CTR_2, OP_EV5, 20, &um_empty, "ITB_MISS",
+     "Instruction TLB miss", 256 },
+   { CTR_2, OP_EV5, 21, &um_empty, "DCACHE_MISSES",
+     "Data cache misses", 256 },
+   { CTR_2, OP_EV5, 22, &um_empty, "DTB_MISS",
+     "Data TLB miss", 256 },
+   { CTR_2, OP_EV5, 23, &um_empty, "LOADS_MERGED",
+     "Loads merged in MAF", 256 },
+   { CTR_2, OP_EV5, 24, &um_empty, "LDU_REPLAYS",
+     "LDU replay traps", 256 },
+   { CTR_2, OP_EV5, 25, &um_empty, "WB_MAF_FULL_REPLAYS",
+     "WB/MAF full replay traps", 256 },
+   { CTR_2, OP_EV5, 26, &um_empty, "MEM_BARRIER",
+     "Memory barrier instructions", 256 },
+   { CTR_2, OP_EV5, 27, &um_empty, "LOAD_LOCKED",
+     "LDx/L instructions", 256 },
+   { CTR_1, OP_EV5, 28, &um_empty, "SCACHE_ACCESS",
+     "S-cache access", 256 },
+   { CTR_1, OP_EV5, 29, &um_empty, "SCACHE_READ",
+     "S-cache read", 256 },
+   { CTR_1 | CTR_2, OP_EV5, 30, &um_empty, "SCACHE_WRITE",
+     "S-cache write", 256 },
+   { CTR_1, OP_EV5, 31, &um_empty, "SCACHE_VICTIM",
+     "S-cache victim", 256 },
+   { CTR_2, OP_EV5, 32, &um_empty, "SCACHE_MISS",
+     "S-cache miss", 256 },
+   { CTR_2, OP_EV5, 33, &um_empty, "SCACHE_READ_MISS",
+     "S-cache read miss", 256 },
+   { CTR_2, OP_EV5, 34, &um_empty, "SCACHE_WRITE_MISS",
+     "S-cache write miss", 256 },
+   { CTR_2, OP_EV5, 35, &um_empty, "SCACHE_SH_WRITE",
+     "S-cache shared writes", 256 },
+   { CTR_1, OP_EV5, 36, &um_empty, "BCACHE_HIT",
+     "B-cache hit", 256 },
+   { CTR_1, OP_EV5, 37, &um_empty, "BCACHE_VICTIM",
+     "B-cache victim", 256 },
+   { CTR_2, OP_EV5, 38, &um_empty, "BCACHE_MISS",
+     "B-cache miss", 256 },
+   { CTR_1, OP_EV5, 39, &um_empty, "SYS_REQ",
+     "System requests", 256 },
+   { CTR_2, OP_EV5, 40, &um_empty, "SYS_INV",
+     "System invalidates", 256 },
+   { CTR_2, OP_EV5, 41, &um_empty, "SYS_READ_REQ",
+     "System read requests", 256},
+ 
+   /* Alpha EV6 */
+   { CTR_0 | CTR_1, OP_EV6, 0, &um_empty, "CYCLES",
+     "Total cycles", 500 },
+   { CTR_0, OP_EV6, 1, &um_empty, "RETIRED",
+     "Retired instructions", 500 },
+   { CTR_1, OP_EV6, 2, &um_empty, "COND_BRANCHES",
+     "Retired conditional branches", 500 },
+   { CTR_1, OP_EV6, 3, &um_empty, "BRANCH_MISPREDICTS",
+     "Retired branch mispredicts", 500 },
+   { CTR_1, OP_EV6, 4, &um_empty, "DTB_MISS",
+     "Retired DTB single misses * 2", 500 },
+   { CTR_1, OP_EV6, 5, &um_empty, "DTB_DD_MISS",
+     "Retired DTB double double misses", 500 },
+   { CTR_1, OP_EV6, 6, &um_empty, "ITB_MISS",
+     "Retired ITB misses", 500 },
+   { CTR_1, OP_EV6, 7, &um_empty, "UNALIGNED_TRAP",
+     "Retired unaligned traps", 500 },
+   { CTR_1, OP_EV6, 8, &um_empty, "REPLAY_TRAP",
+     "Replay traps", 500 },
+
+   /* Alpha EV67 */
+  { CTR_0 | CTR_1, OP_EV67, 0, &um_empty, "CYCLES",
+     "Total cycles", 500 },
+  { CTR_1, OP_EV67, 1, &um_empty, "DELAYED_CYCLES",
+     "Cycles of delayed retire pointer advance", 500 },
+  { CTR_0 | CTR_1, OP_EV67, 0, &um_empty, "RETIRED",
+     "Retired instructions", 500 },
+  { CTR_1, OP_EV67, 2, &um_empty, "BCACHE_MISS",
+     "Bcache misses/long probe latency", 500 },
+  { CTR_1, OP_EV67, 3, &um_empty, "MBOX_REPLAY",
+     "Mbox replay traps", 500 },
+
+  { PM_CTR(0, 0), OP_EV67, 4, &um_empty, "STALLED_0",
+     "PCTR0 triggered; stalled between fetch and map stages", 500 },
+  { PM_CTR(0, 1), OP_EV67, 5, &um_empty, "TAKEN_0",
+     "PCTR0 triggered; branch was not mispredicted and taken", 500 },
+  { PM_CTR(0, 2), OP_EV67, 6, &um_empty, "MISPREDICT_0",
+     "PCTR0 triggered; branch was mispredicted", 500 },
+  { PM_CTR(0, 3), OP_EV67, 7, &um_empty, "ITB_MISS_0",
+     "PCTR0 triggered; ITB miss", 500 },
+  { PM_CTR(0, 4), OP_EV67, 8, &um_empty, "DTB_MISS_0",
+     "PCTR0 triggered; DTB miss", 500 },
+  { PM_CTR(0, 5), OP_EV67, 9, &um_empty, "REPLAY_0",
+     "PCTR0 triggered; replay trap", 500 },
+  { PM_CTR(0, 6), OP_EV67, 10, &um_empty, "LOAD_STORE_0",
+     "PCTR0 triggered; load-store order replay trap", 500 },
+  { PM_CTR(0, 7), OP_EV67, 11, &um_empty, "ICACHE_MISS_0",
+     "PCTR0 triggered; Icache miss", 500 },
+  { PM_CTR(0, 8), OP_EV67, 12, &um_empty, "UNALIGNED_0",
+     "PCTR0 triggered; unaligned load/store trap", 500 },
+  { PM_CTR(1, 0), OP_EV67, 13, &um_empty, "STALLED_1",
+     "PCTR1 triggered; stalled between fetch and map stages", 500 },
+  { PM_CTR(1, 1), OP_EV67, 14, &um_empty, "TAKEN_1",
+     "PCTR1 triggered; branch was not mispredicted and taken", 500 },
+  { PM_CTR(1, 2), OP_EV67, 15, &um_empty, "MISPREDICT_1",
+     "PCTR1 triggered; branch was mispredicted", 500 },
+  { PM_CTR(1, 3), OP_EV67, 16, &um_empty, "ITB_MISS_1",
+     "PCTR1 triggered; ITB miss", 500 },
+  { PM_CTR(1, 4), OP_EV67, 17, &um_empty, "DTB_MISS_1",
+     "PCTR1 triggered; DTB miss", 500 },
+  { PM_CTR(1, 5), OP_EV67, 18, &um_empty, "REPLAY_1",
+     "PCTR1 triggered; replay trap", 500 },
+  { PM_CTR(1, 6), OP_EV67, 19, &um_empty, "LOAD_STORE_1",
+     "PCTR1 triggered; load-store order replay trap", 500 },
+  { PM_CTR(1, 7), OP_EV67, 20, &um_empty, "ICACHE_MISS_1",
+     "PCTR1 triggered; Icache miss", 500 },
+  { PM_CTR(1, 8), OP_EV67, 21, &um_empty, "UNALIGNED_1",
+     "PCTR1 triggered; unaligned load/store trap", 500 },
 };
 
 
@@ -795,27 +998,7 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type)
  * @param cpu_type  processor type
  *
  * Check that the counter event and unit mask values
- * are allowed. cpu_type should be set as follows :
- *
- * 0 Pentium Pro
- *
- * 1 Pentium II
- *
- * 2 Pentium III
- *
- * 3 AMD Athlon
- *
- * 6 Pentium 4 / Xeon
- *
- * 4 RTC
- *
- * 5 Generic IA64
- *
- * 6 Itanium (Merced)
- *
- * 7 Itanium 2 (McKinley)
- *
- * 8 Pentium 4 / Xeon with 2 hyper-threads
+ * are allowed. cpu_type should be set as for op_cpu.
  *
  * The function returns bitmask of failure cause
  * 0 otherwise
