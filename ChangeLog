@@ -1,5 +1,11 @@
 2003-04-07  John Levon  <levon@movementarian.org>
 
+	* pp/op_to_source.cpp: append symbol summary
+	annotations separate from the prolog samples on
+	the same line.
+
+2003-04-07  John Levon  <levon@movementarian.org>
+
 	* pp/op_to_source.cpp: only output line 0 annotation
 	if samples found there.
 

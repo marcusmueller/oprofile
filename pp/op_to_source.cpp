@@ -284,6 +284,14 @@ void annotate_asm_line(ostream & out, string const & str,
  * @param filename a source filename
  * @param linenr a line number into the source file
  *
+ * If a symbol is associated with this line, output totals for the symbol.
+ */
+string const symbol_annotation(string const & filename, size_t linenr);
+
+/**
+ * @param filename a source filename
+ * @param linenr a line number into the source file
+ *
  * from filename, linenr find the associated samples numbers belonging
  * to this source file, line nr then output them
  */
@@ -730,8 +738,8 @@ void do_output_one_file(ostream & out, istream & in, string const & filename, bo
 		string str;
 
 		for (size_t linenr = 1 ; getline(in, str) ; ++linenr) {
-			out << line_annotation(filename, linenr)
-			    << str << '\n';
+			out << line_annotation(filename, linenr) << str
+			    << symbol_annotation(filename, linenr) << '\n';
 		}
 
 	} else {
@@ -872,23 +880,32 @@ void annotate_asm_line(ostream & out, string const & str,
 }
 
  
+string const symbol_annotation(string const & filename, size_t linenr)
+{
+	symbol_entry const * symbol = samples->find_symbol(filename, linenr);
+	if (!symbol)
+		return string();
+
+	string annot = output_counter(symbol->sample.counter);
+	if (annot.empty())
+		return  string();
+
+	string symname = symbol->name;
+	if (demangle)
+	       symname = demangle_symbol(symbol->name);
+
+	string str = " ";
+	str += begin_comment + symname + " total: ";
+	str += output_counter(symbol->sample.counter);
+	str += end_comment;
+	return str;
+}
+
+
 string const line_annotation(string const & filename, size_t linenr)
 {
 	string str;
 	counter_array_t counter;
-	unsigned int count = samples->samples_count(counter, filename, linenr);
-
-	symbol_entry const * symbol = samples->find_symbol(filename, linenr);
-	if (symbol) {
-		string symname = symbol->name;
-		if (demangle)
-		       symname = demangle_symbol(symbol->name);
-
-		str += symname + " ";
-		str += output_counter(symbol->sample.counter);
-		if (count)
-			str += ", prolog ";
-	}
 
 	if (samples->samples_count(counter, filename, linenr))
 		str += output_counter(counter);
