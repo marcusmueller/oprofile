@@ -173,7 +173,8 @@ private:
  */
 bool add_samples(samples_container_t& samples, std::string sample_filename,
 		 size_t counter_mask, std::string binary_name,
-		 vector<string> const& excluded_symbols = vector<string>(),
-		 string symbol = string());
+		 std::vector<std::string> const& excluded_symbols =
+		 	std::vector<std::string>(),
+		 std::string symbol = std::string());
 
 #endif /* !SAMPLES_CONTAINER_H */

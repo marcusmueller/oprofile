@@ -1,3 +1,8 @@
+2002-09-30  William Cohen  <wcohen@redhat.com>
+
+	* libutil++/string_manip.cpp (sample_filename): Correct declaration.
+	* pp/samples_container.h: Correct add_samples() declaration. 
+
 2002-09-29  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/string_manip.cpp:
