@@ -1,3 +1,9 @@
+2002-01-11  Philippe Elie  <ph_e@club-internet.fr>
+
+	* module/compat.h: support for UP from 2.2.0, for SMP
+	  from 2.2.8. It is worthwhile to try more support.
+	  !CONFIG_X86_LOCAL_APIC not yet supported.
+
 2002-01-11  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update

@@ -1,4 +1,5 @@
 /* COPYRIGHT (C) 2002 Philippe Elie, based on discussion with John Levon
+ * stuff here come from various source, linux kernel header, John's trick etc.
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -22,6 +23,12 @@
 
 #include <linux/version.h>
 
+/* FIXME: John you use 2.3.21, I prefer 2.2.20, it is worthwhile to try to
+ * support obsolete development kernel, from now just support the 2.5 and drop
+ * the 2.3 support ?. The state is actually we compile from 2.2.0 to 2.2.20 UP
+ * and from 2.2.8 to 2.2.20. !CONFIG_X86_LOCAL_APIC do not compile see later
+ * in this file*/
+
 /* You want to keep this sorted by increasing linux version. Prefer checking
  * against linux version rather existence of macro */
 
@@ -32,6 +39,61 @@
 #include <asm/apicdef.h>
 #include <asm/mpspec.h>
 #endif
+
+/* provide a working smp_call_function when: < 2.2.8 || (!SMP && <= 2.2.20),
+ * this means than we support all UP kernel from 2.2.0 and all SMP kernel from
+ * 2.2.8 */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,8) || \
+      (!defined(CONFIG_SMP) && LINUX_VERSION_CODE <= KERNEL_VERSION(2,2,20))
+
+static int inline smp_call_function (void (*func) (void *info), void *info,
+				     int retry, int wait)
+{
+	return 0;
+}
+
+#endif /* < 2.2.8 || (!SMP && <= 2.2.20) */
+
+/* FIXME: the right place to abort compilation or in configure.in ? */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,8) && defined(CONFIG_SMP)
+/* Note than theorically we can support SMP when < 2.2.8 but that's worthwhile,
+ * we need a working smp_call_function() which is not obvious to provide */
+#error "unsupported configuration: kernel < 2.2.8 must be compiled as UP to create a working oprofile"
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,2)
+
+/* 2.2.2 introduced wait_event_interruptible */
+#define __wait_event_interruptible(wq, condition, ret)	\
+do {							\
+	struct wait_queue __wait;			\
+							\
+	__wait.task = current;				\
+	add_wait_queue(&wq, &__wait);			\
+	for (;;) {					\
+		current->state = TASK_INTERRUPTIBLE;	\
+		if (condition)				\
+			break;				\
+		if (!signal_pending(current)) {		\
+			schedule();			\
+			continue;			\
+		}					\
+		ret = -ERESTARTSYS;			\
+		break;					\
+	}						\
+	current->state = TASK_RUNNING;			\
+	remove_wait_queue(&wq, &__wait);		\
+} while (0)
+
+#define wait_event_interruptible(wq, condition)				\
+({									\
+	int __ret = 0;							\
+	if (!(condition))						\
+		__wait_event_interruptible(wq, condition, __ret);	\
+	__ret;								\
+})
+
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,2,2) */
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,8)
 
@@ -88,17 +150,6 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 #define hash_path(f) do_path_hash_2_4((f)->f_dentry, (f)->f_vfsmnt)
 #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,3,21) */
 
-// 2.2's UP version of this is broken
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,1)
-#ifndef __SMP__
-#undef smp_call_function
-inline static int smp_call_function(void (*f)(void *in), void *i, int n, int w)
-{
-	return 0;
-}
-#endif /* __SMP__ */
-#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,3,1) */
- 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
 
 /* on 2.2, the APIC is never enabled on UP */
@@ -146,6 +197,9 @@ inline static int smp_call_function(void (*f)(void *in), void *i, int n, int w)
 #define __exit
 #define __init
 
+/* FIXME: John, the intent of __SMP__ is to pass it to kernel header not
+ * to use it, 2.2 always declare correctly CONFIG_SMP but the 2.2 headers are
+ * broken and in a few place use __SMP__. Replace this by CONFIG_SMP ? */
 #ifndef __SMP__
 #include "apic_up_compat.h"
 #else
@@ -166,6 +220,10 @@ inline static int smp_call_function(void (*f)(void *in), void *i, int n, int w)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
 
 /* FIXME: consider apic_up_compat ... */
+/* John 2.4.0 #ifndef CONFIG_X86_LOCAL_APIC #include "apic_up_compat.h" #endif
+ * do not work because we get redefinition about APIC_BASE. I let this left for
+ * now, currently I get no prototype for apic_read/apic_write when
+ * !CONFIG_X86_LOCAL_APIC */
  
 /* 2.4.0 introduced vfsmount cross mount point */
 #define HAVE_CROSS_MOUNT_POINT
@@ -175,16 +233,19 @@ inline static int smp_call_function(void (*f)(void *in), void *i, int n, int w)
 
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0) */
 
+/*****************************************************************************/
+/* FIXME PHE to myself I suspect something wrong here look bttv.c */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
 /* 2.4.0 change proto of pte_page and make it unusable param to page_address */
 #define pte_page_address(x) page_address(pte_page(x))
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,2,7)
-/* 2.2.0 make pte_page_address and pte_page equivalent */
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,2,0)
+/* 2.2.? to 2.2.20 make pte_page_address and pte_page equivalent */
 #define pte_page_address(x) pte_page(pte)
-#else
-/* < 2.2.20 use MAP_NR(x) as arg of page_address() */
+#else /* urks, unreachable but previous test shows that's was used */
+/* < 2.2.7 use MAP_NR(x) as arg of page_address() */
 #define pte_page_address(x) page_address(MAP_NR(x))
 #endif
+/*****************************************************************************/
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
 #define GET_VM_OFFSET(v) ((v)->vm_pgoff << PAGE_SHIFT)
