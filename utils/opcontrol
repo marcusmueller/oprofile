@@ -183,10 +183,7 @@ do_init() {
 	SEPARATE_KERNEL_SAMPLES=0
 	KERNEL_ONLY=0 # 2.2/2.4 kernel
 
-	OPROFILED=`dirname $0`/oprofiled
-	if test ! -f "$OPROFILED"; then
-		OPROFILED=oprofiled
-	fi
+	OPROFILED="$OPDIR/oprofiled"
 
 	# location for daemon setup information
 	SETUP_DIR="/root/.oprofile"
@@ -792,7 +789,7 @@ do_sysctl_setup_24() {
 	for f in `seq 0 $((NR_CHOSEN - 1))`; do
 		if test "${CHOSEN_EVENTS[$f]}" != ""; then
 			EVENT=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $1}'`
-			EVENT_VAL=`op_help $EVENT`
+			EVENT_VAL=`$OP_HELP $EVENT`
 			COUNT=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $2}'`
 			UNIT_MASK=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $3}'`
 			KERNEL=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $4}'`
@@ -1107,10 +1104,7 @@ do_operations() {
 # early check for --version, --help
 check_version_help() {
 
-	OP_HELP=`dirname $0`/op_help
-	if test ! -f "$OP_HELP"; then
-		OP_HELP=op_help
-	fi
+	OP_HELP="$OPDIR/op_help"
 
 	for i in $@; do
 		case "$i" in
@@ -1131,6 +1125,12 @@ check_version_help() {
 
 
 # main
+
+#determine the location of opcontrol and related programs
+OPCONTROL=`which $0`
+OPDIR=`dirname $OPCONTROL`
+
+PATH=/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin
 
 check_version_help $@
 
