@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# useful for dumping ...
+
+if [ ! -f /proc/sys/dev/oprofile/dump ]; then
+	echo "You must have the oprofile module loaded to dump data."
+	exit 1
+fi
+ 
+echo 1 >/proc/sys/dev/oprofile/dump
+
+exit 0
