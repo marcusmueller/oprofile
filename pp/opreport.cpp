@@ -209,7 +209,7 @@ void output_header()
 
 string get_filename(string const & filename)
 {
-	return options::long_filenames ? filename : basename(filename);
+	return options::long_filenames ? filename : op_basename(filename);
 }
 
 

@@ -31,7 +31,7 @@ static void check_result(char const * fct_name, Input const & input,
 		  Output const & output, Result const & result)
 {
 	if (result != output) {
-		cerr << fct_name << ": \n"
+		cerr << fct_name << " "
 		     << "for:\n\"" << input << "\"\n"
 		     << "expect:\n\"" << output << "\"\n"
 		     << "found:\n\"" << result << "\"\n";
@@ -54,7 +54,7 @@ static void check_result(char const * fct_name, Input const & input1,
 }
 
 
-static input_output<char const*, char const*> expect_dirname[] =
+static input_output<char const *, char const *> expect_dirname[] =
 {
 	{ "/", "/" },
 	{ "//////", "/" },
@@ -74,15 +74,15 @@ static input_output<char const*, char const*> expect_dirname[] =
 
 static void dirname_tests()
 {
-	input_output<char const *, char const*> const * cur;
+	input_output<char const *, char const *> const * cur;
 	for (cur = expect_dirname; cur->input; ++cur) {
-		string result = dirname(cur->input);
+		string result = op_dirname(cur->input);
 		check_result("dirname", cur->input, cur->output, result);
 	}
 }
 
 
-static input_output<char const*, char const*> expect_basename[] =
+static input_output<char const *, char const*> expect_basename[] =
 {
 	{ "/", "/" },
 	{ "//////", "/" },
@@ -101,15 +101,15 @@ static input_output<char const*, char const*> expect_basename[] =
 
 static void basename_tests()
 {
-	input_output<char const *, char const*> const * cur;
+	input_output<char const *, char const *> const * cur;
 	for (cur = expect_basename; cur->input; ++cur) {
-		string result = basename(cur->input);
+		string result = op_basename(cur->input);
 		check_result("basename", cur->input, cur->output, result);
 	}
 }
 
 
-static input_output<char const*, bool> expect_is_directory[] =
+static input_output<char const *, bool> expect_is_directory[] =
 {
 	{ ".", true },
 	{ "/.", true },
@@ -157,7 +157,7 @@ void is_files_identical_tests(char const * prog_name)
 }
 
 
-static input_output<char const*, bool> expect_op_file_readable[] =
+static input_output<char const *, bool> expect_op_file_readable[] =
 {
 	{ __FILE__, true },
 	{ "./" __FILE__, true },
@@ -225,10 +225,10 @@ void create_file_list_tests()
 }
 
 
-// FIXME: op_follow_link: usefull to test it but need to create various symlink
+// FIXME: op_follow_link: useful to test it but need to create various symlink
 
 
-int main(int /*argc*/, char * argv[])
+int main(int, char * argv[])
 {
 	dirname_tests();
 	basename_tests();

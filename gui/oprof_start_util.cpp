@@ -87,7 +87,7 @@ daemon_status::daemon_status()
 			string const exec =
 				follow_link(string("/proc/")
 				               + dirent->d_name + "/exe");
-			string const name = basename(exec);
+			string const name = op_basename(exec);
 			if (name != "oprofiled")
 				continue;
 

@@ -32,7 +32,7 @@ void extra_images::populate(vector<string> const & paths)
 		list<string>::const_iterator lit = file_list.begin();
 		list<string>::const_iterator lend = file_list.end();
 		for (; lit != lend; ++lit) {
-			value_type v(basename(*lit), dirname(*lit));
+			value_type v(op_basename(*lit), op_dirname(*lit));
 			images.insert(v);
 		}
 	}
@@ -111,7 +111,7 @@ string const find_image_path(string const & image_name,
 		return image_name;
 	}
 
-	string const base = basename(image);
+	string const base = op_basename(image);
 
 	vector<string> result = extra_images.find(base);
 

@@ -49,23 +49,10 @@ bool is_files_identical(string const & file1, string const & file2)
 
 string const follow_link(string const & name)
 {
-	string tmp = name;
-	int iterate = 20;
-
-	while (iterate--) {
-		char * linkbuf = op_get_link(tmp.c_str());
-		if (linkbuf == NULL)
-			return tmp;
-		string base;
-		if (is_directory(tmp))
-			base = tmp;
-		else
-			base = dirname(tmp);
-		tmp = relative_to_absolute_path(linkbuf, base);
-		free(linkbuf);
-	}
-
-	return name;
+	char * tmp = op_follow_link(name.c_str());
+	string tmp2(tmp);
+	free(tmp);
+	return tmp2;
 }
 
 
@@ -158,21 +145,21 @@ static string erase_trailing_path_separator(string const & path_name)
 }
 
 
-string dirname(string const & file_name)
+string op_dirname(string const & file_name)
 {
-	char * temp = op_dirname(file_name.c_str());
+	char * temp = op_c_dirname(file_name.c_str());
 	string result(temp);
 	free(temp);
 	return result;
 }
 
 
-string basename(string const & path_name)
+string op_basename(string const & path_name)
 {
 	string result = erase_trailing_path_separator(path_name);
 
+	// catch result == "/"
 	if (result.length() == 1)
-		// catch result == "/"
 		return result;
 
 	return erase_to_last_of(result, '/');

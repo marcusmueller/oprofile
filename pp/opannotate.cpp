@@ -503,7 +503,7 @@ void output_one_file(istream & in, debug_name_id filename,
 
 	if (create_path(out_file.c_str())) {
 		cerr << "unable to create directory: "
-		     << '"' << dirname(out_file) << '"' << endl;
+		     << '"' << op_dirname(out_file) << '"' << endl;
 		return;
 	}
 

@@ -1,3 +1,23 @@
+2003-11-01  John Levon  <levon@movementarian.org>
+
+	* daemon/liblegacy/opd_parse_proc.c: use op_follow_link
+
+	* libutil/op_file.c:
+	* libutil/op_file.h: make op_get_link() static, rename
+	op_basename to op_c_basename
+
+	* libutil++/file_manip.cpp:
+	* libutil++/file_manip.h: rename to op_basename()/op_dirname().
+	Use op_follow_link() for follow_link().
+
+	* libutil++/tests/file_manip_tests.cpp:
+	* gui/oprof_start_util.cpp:
+	* libpp/locate_images.cpp:
+	* libpp/name_storage.cpp:
+	* libutil++/path_filter.cpp:
+	* pp/opannotate.cpp:
+	* pp/opreport.cpp: fixup from above changes
+
 2003-11-01  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/op_bfd.h: has_debug_info() new member

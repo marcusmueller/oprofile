@@ -109,12 +109,7 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 		return;
 
 	strcat(exe_name, "/exe");
-	image_name = op_get_link(exe_name);
-	if (!image_name)
-		/* FIXME likely to be kernel thread, actually we don't use them
-		 * because samples go to vmlinux samples file but for
-		 * completeness we record them in proc struct */
-		image_name = xstrdup(exe_name);
+	image_name = op_follow_link(exe_name);
 
 	verbprintf("image name %s for pid %u %u\n", image_name, proc->tid, proc->tgid);
 

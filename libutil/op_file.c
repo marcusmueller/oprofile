@@ -51,25 +51,6 @@ time_t op_get_mtime(char const * file)
 }
 
 
-char * op_get_link(char const * filename)
-{
-	char  * linkbuf;
-	int c;
-
-	linkbuf = xmalloc(FILENAME_MAX+1);
-
-	c = readlink(filename, linkbuf, FILENAME_MAX);
-
-	if (c == -1) {
-		free(linkbuf);
-		return NULL;
-	}
-
-	linkbuf[c] = '\0';
-	return linkbuf;
-}
-
-
 /* remove_component_p() and op_simplify_pathname() comes from the gcc
  preprocessor */
 
@@ -299,7 +280,7 @@ static void erase_trailing_path_separator(char * path_name)
 	}
 }
 
-char * op_dirname(char const * file_name)
+char * op_c_dirname(char const * file_name)
 {
 	char * result = xstrdup(file_name);
 	char * pos;
@@ -312,13 +293,14 @@ char * op_dirname(char const * file_name)
 		return result;
 	}
 
+	/* catch result == "/" */
 	if (strlen(result) == 1)
-		/* catch result == "/" */
 		return result;
 
 	pos = strrchr(result, '/');
+
+	/* "/usr" must return "/" */
 	if (pos == result)
-		/* "/usr" must return "/" */
 		pos = result + 1;
 	*pos = '\0';
 
@@ -329,6 +311,33 @@ char * op_dirname(char const * file_name)
 }
 
 
+/**
+ * Follow exactly one level of symbolic link.
+ * Returns NULL if it's not a symlink or on error,
+ * or a string that caller must free.
+ *
+ * This does not re-seat any returned relative
+ * symbolic links.
+ */
+static char * get_link(char const * filename)
+{
+	char  * linkbuf;
+	int c;
+
+	linkbuf = xmalloc(FILENAME_MAX+1);
+
+	c = readlink(filename, linkbuf, FILENAME_MAX);
+
+	if (c == -1) {
+		free(linkbuf);
+		return NULL;
+	}
+
+	linkbuf[c] = '\0';
+	return linkbuf;
+}
+
+
 char * op_follow_link(char const * name)
 {
 	char * tmp = xstrdup(name);
@@ -336,14 +345,14 @@ char * op_follow_link(char const * name)
 
 	while (iterate--) {
 		char * base;
-		char * linkbuf = op_get_link(tmp);
+		char * linkbuf = get_link(tmp);
 		if (linkbuf == NULL)
 			return tmp;
 
 		if (op_is_directory(tmp))
 			base = xstrdup(tmp);
 		else
-			base = op_dirname(tmp);
+			base = op_c_dirname(tmp);
 		free(tmp);
 		tmp = op_relative_to_absolute_path(linkbuf, base);
 		free(linkbuf);

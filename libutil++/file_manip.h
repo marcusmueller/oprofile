@@ -29,7 +29,7 @@ bool is_directory(std::string const & dirname);
 bool is_files_identical(std::string const & file1, std::string const & file2);
 
 /**
- * op_follow_link - follow a symbolic link
+ * follow_link - follow a symbolic link
  * @param name the file name
  *
  * Resolve a symbolic link as far as possible.
@@ -67,19 +67,22 @@ std::string relative_to_absolute_path(std::string const & path,
 				std::string const & base_dir = std::string());
 
 /**
- * dirname - get the path component of a filename
+ * op_dirname - get the path component of a filename
  * @param file_name  filename
  *
  * Returns the path name of a filename with trailing '/' removed.
  */
-std::string dirname(std::string const & file_name);
+std::string op_dirname(std::string const & file_name);
 
 /**
- * basename - get the basename of a path
+ * op_basename - get the basename of a path
  * @param path_name  path
  *
  * Returns the basename of a path with trailing '/' removed.
+ *
+ * Always use this instead of the C basename() - header order
+ * can affect behaviour  for basename("/")
  */
-std::string basename(std::string const & path_name);
+std::string op_basename(std::string const & path_name);
 
 #endif /* !FILE_MANIP_H */
