@@ -236,8 +236,9 @@ u32 parse_counter_mask(char const * str)
 		mask |= (1 << val);
 		free(valstr);
 
-		/* skip , */
-		++numend;
+		/* skip , unless we reach eos */
+		if (*numend)
+			++numend;
 
 		numend = skip_ws(numend);
 		numstart = numend;
