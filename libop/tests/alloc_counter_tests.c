@@ -1,5 +1,5 @@
 /**
- * @file parse_event_tests.c
+ * @file alloc_counter_tests.c
  *
  * @remark Copyright 2003 OProfile authors
  * @remark Read the file COPYING

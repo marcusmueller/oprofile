@@ -1,5 +1,5 @@
 /**
- * @file dae/opd_proc.c
+ * @file opd_proc.c
  * Management of processes
  *
  * @remark Copyright 2002 OProfile authors
@@ -157,7 +157,8 @@ void opd_for_each_proc(opd_proc_cb proc_cb)
 
 /**
  * opd_get_proc - get process from process list
- * @param pid  pid to search for
+ * @param tid  tid for this process
+ * @param tgid  tgid for this process
  *
  * A process with pid pid is searched on the process list,
  * maintaining LRU order. If it is not found, %NULL is returned,
@@ -397,7 +398,8 @@ void opd_handle_fork(struct op_note const * note)
 
 /**
  * opd_handle_exec - deal with notification of execve()
- * @param pid  pid of execve()d process
+ * @param tid  tid for this process
+ * @param tgid  tgid for this process
  *
  * Drop all mapping information for the process.
  */

@@ -1,5 +1,5 @@
 /**
- * @file dae/opd_sample_files.c
+ * @file opd_sample_files.c
  * Management of sample files
  *
  * @remark Copyright 2002 OProfile authors

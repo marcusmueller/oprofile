@@ -1,5 +1,5 @@
 /**
- * @file dae/opd_proc.h
+ * @file opd_proc.h
  * Management of processes
  *
  * @remark Copyright 2002 OProfile authors

@@ -66,7 +66,7 @@ struct cookie_entry {
 };
 
 
-#define HASH_SIZE 2048
+#define HASH_SIZE 512
 #define HASH_BITS (HASH_SIZE - 1)
 
 static struct list_head hashes[HASH_SIZE];

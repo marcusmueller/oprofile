@@ -1,5 +1,5 @@
 /**
- * @file daemon/oprofiled.h
+ * @file daemon/oprofiled.c
  * Initialisation and setup
  *
  * @remark Copyright 2002, 2003 OProfile authors

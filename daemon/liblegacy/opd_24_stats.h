@@ -1,5 +1,5 @@
 /**
- * @file dae/opd_24_stats.h
+ * @file opd_24_stats.h
  * Management of daemon statistics
  *
  * @remark Copyright 2002 OProfile authors

@@ -1,5 +1,11 @@
 2003-10-26  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_cookie.c: reduce the hash table size somewhat
+
+	* various: fixes for doxygen
+
+2003-10-26  John Levon  <levon@movementarian.org>
+
 	* HACKING:
 	* configure.in:
 	* Makefile.am:
