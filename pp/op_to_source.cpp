@@ -731,12 +731,12 @@ void output::output_header(ostream& out) const
 bool output::treat_input(const string & image_name, const string & sample_file)
 {
 	// this lexcical scope just optimize the memory use by relaxing
-	// the opp_bfd and opp_samples_files as short as we can.
+	// the op_bfd and opp_samples_files as short as we can.
 	{
 	// this order of declaration is required to ensure proper
 	// initialisation of oprofpp
 	opp_samples_files samples_files(sample_file, counter_mask);
-	opp_bfd abfd(samples_files, image_name);
+	op_bfd abfd(samples_files, image_name);
 
 	if (!assembly && !abfd.have_debug_info()) {
 		cerr << "Request for source file annotated "

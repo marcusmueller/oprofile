@@ -648,7 +648,7 @@ static void output_symbols_count(map_t& files, int counter)
 			opp_samples_files samples_file(samples_filename,
 						       counter);
 
-			opp_bfd abfd(samples_file, image_name);
+			op_bfd abfd(samples_file, image_name);
 
 			samples.add(samples_file, abfd);
 		}

@@ -150,7 +150,7 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
  *
  * Lists all the symbols in decreasing sample count order, to standard out.
  */
-static void do_list_symbols(opp_bfd & abfd,
+static void do_list_symbols(op_bfd & abfd,
 			    const opp_samples_files & samples_files,
 			    size_t cmask, int sort_by_ctr)
 {
@@ -181,12 +181,12 @@ static void do_list_symbols(opp_bfd & abfd,
  * the samples for this symbol from the image 
  * specified by abfd.
  */
-static void do_list_symbol(opp_bfd & abfd,
+static void do_list_symbol(op_bfd & abfd,
 			   const opp_samples_files & samples_files,
 			   size_t cmask)
 {
-	int i = abfd.symbol_index(symbol);
-	if (i < 0) {
+	symbol_index_t i = abfd.symbol_index(symbol);
+	if (i == symbol_index_t(-1)) {
 		cerr << "oprofpp: symbol \"" << symbol
 		     << "\" not found in image file.\n";
 		return;
@@ -235,14 +235,14 @@ struct gmon_hdr {
  *
  * this use the grpof format <= gcc 3.0
  */
-static void do_dump_gprof(opp_bfd & abfd,
+static void do_dump_gprof(op_bfd & abfd,
 			  const opp_samples_files & samples_files,
 			  int sort_by_ctr)
 {
 	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},}; 
 	FILE *fp; 
 	u32 start, end;
-	uint i, j;
+	uint j;
 	u32 low_pc = (u32)-1;
 	u32 high_pc = 0;
 	u16 * hist;
@@ -280,7 +280,7 @@ static void do_dump_gprof(opp_bfd & abfd,
 
 	hist = (u16*)xcalloc(histsize, sizeof(u16)); 
  
-	for (i = 0; i < abfd.syms.size(); i++) {
+	for (symbol_index_t i = 0; i < abfd.syms.size(); i++) {
 		abfd.get_symbol_range(i, start, end); 
 		for (j = start; j < end; j++) {
 			u32 count;
@@ -322,7 +322,7 @@ static void do_dump_gprof(opp_bfd & abfd,
  * Lists all the samples for all the symbols, from the image specified by
  * abfd, in increasing order of vma, to standard out.
  */
-static void do_list_symbols_details(opp_bfd & abfd,
+static void do_list_symbols_details(op_bfd & abfd,
 				    const opp_samples_files & samples_files,
 				    size_t cmask, int sort_by_ctr)
 {
@@ -383,7 +383,7 @@ int main(int argc, char const *argv[])
 	opp_get_options(argc, argv, image_file, sample_file, counter);
 
 	opp_samples_files samples_files(sample_file, counter);
-	opp_bfd abfd(samples_files, image_file);
+	op_bfd abfd(samples_files, image_file);
 
 	if (!gproffile)
 		samples_files.output_header();

@@ -95,8 +95,8 @@ struct less_by_file_loc {
 /// implementation of symbol_container_imp_t
 class symbol_container_imp_t {
  public:
-	size_t size() const;
-	const symbol_entry & operator[](size_t index) const;
+	symbol_index_t size() const;
+	const symbol_entry & operator[](symbol_index_t index) const;
 	void push_back(const symbol_entry &);
 	const symbol_entry * find(string filename, size_t linenr) const;
 	const symbol_entry * find_by_vma(bfd_vma vma) const;
@@ -124,12 +124,12 @@ class symbol_container_imp_t {
 
 //---------------------------------------------------------------------------
 
-inline size_t symbol_container_imp_t::size() const
+inline symbol_index_t symbol_container_imp_t::size() const
 {
 	return symbols.size();
 }
 
-inline const symbol_entry & symbol_container_imp_t::operator[](size_t index) const
+inline const symbol_entry & symbol_container_imp_t::operator[](symbol_index_t index) const
 {
 	return symbols[index];
 }
@@ -160,7 +160,7 @@ symbol_container_imp_t::find(string filename, size_t linenr) const
 void  symbol_container_imp_t::build_by_file_loc() const
 {
 	if (symbols.size() && symbol_entry_by_file_loc.empty()) {
-		for (size_t i = 0 ; i < symbols.size() ; ++i)
+		for (symbol_index_t i = 0 ; i < symbols.size() ; ++i)
 			symbol_entry_by_file_loc.insert(&symbols[i]);
 	}
 }
@@ -184,7 +184,7 @@ const symbol_entry * symbol_container_imp_t::find_by_vma(bfd_vma vma) const
 // get a vector of symbols sorted by increased count.
 void symbol_container_imp_t::get_symbols_by_count(size_t counter, vector<const symbol_entry*> & v) const
 {
-	for (size_t i = 0 ; i < symbols.size() ; ++i)
+	for (symbol_index_t i = 0 ; i < symbols.size() ; ++i)
 		v.push_back(&symbols[i]);
 
 	// check if this is necessary, already sanitized by caller ?
@@ -356,7 +356,7 @@ samples_container_t::~samples_container_t()
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
 void samples_container_t::
-add(const opp_samples_files & samples_files, const opp_bfd & abfd)
+add(const opp_samples_files & samples_files, const op_bfd & abfd)
 {
 	do_add(samples_files, abfd, add_zero_samples_symbols);
 
@@ -376,7 +376,7 @@ add(const opp_samples_files & samples_files, const opp_bfd & abfd)
 		extract_app_name(*it, lib_name);
 
 		opp_samples_files samples_files(dir + "/" + *it, counter_mask);
-		opp_bfd abfd(samples_files, demangle_filename(lib_name));
+		op_bfd abfd(samples_files, demangle_filename(lib_name));
 
 		// TODO: check if third params must be add_zero_samples_symbols
 		do_add(samples_files, abfd, false);
@@ -388,7 +388,7 @@ add(const opp_samples_files & samples_files, const opp_bfd & abfd)
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
 void samples_container_t::do_add(const opp_samples_files & samples_files,
-				 const opp_bfd & abfd, 
+				 const op_bfd & abfd, 
 				 bool add_zero_samples_symbols)
 {
 	// paranoiad checking
@@ -423,7 +423,7 @@ void samples_container_t::do_add(const opp_samples_files & samples_files,
 
 		if (flags & osf_details) {
 			// 6th parameters is wrong must be translated to a vma
-			add_samples(samples_files, abfd, size_t(-1),
+			add_samples(samples_files, abfd, symbol_index_t(-1),
 				    start, end, start, image_name);
 		}
 
@@ -431,7 +431,7 @@ void samples_container_t::do_add(const opp_samples_files & samples_files,
 		symbols->push_back(symb_entry);
 	} /* kludgy block */
 
-	for (size_t i = 0 ; i < abfd.syms.size(); ++i) {
+	for (symbol_index_t i = 0 ; i < abfd.syms.size(); ++i) {
 		u32 start, end;
 		char const * filename;
 		uint linenr;
@@ -479,7 +479,8 @@ void samples_container_t::do_add(const opp_samples_files & samples_files,
 }
 
 void samples_container_t::add_samples(const opp_samples_files& samples_files,
-				      const opp_bfd& abfd, size_t sym_index,
+				      const op_bfd& abfd,
+				      symbol_index_t sym_index,
 				      u32 start, u32 end, bfd_vma base_vma,
 				      const std::string & image_name)
 {
@@ -502,7 +503,7 @@ void samples_container_t::add_samples(const opp_samples_files& samples_files,
 
 		sample.file_loc.image_name = image_name;
 
-		sample.vma = (sym_index != size_t(-1))
+		sample.vma = (sym_index != symbol_index_t(-1))
 			? abfd.sym_offset(sym_index, pos) + base_vma 
 			: pos;
 

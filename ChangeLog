@@ -1,5 +1,15 @@
 2002-05-10  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* pp/*: split oprofpp_util.cpp, oprofpp.h to these ..
+	* pp/samples_file.cpp: new file
+	* pp/samples_file.h: new file
+	* pp/op_bfd.cpp: new file
+	* pp/opbfd.h: new file
+
+	* pp/*: add a symbol_index_t typedef
+	
+2002-05-10  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* doc/srcdoc/Makefile: always clean before building
 	* doc/srcdoc/Doxyfile: ehance file filtering
 

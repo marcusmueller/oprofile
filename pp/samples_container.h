@@ -52,7 +52,7 @@ public:
 	 * Obviously you can add only samples files which are coherent (same
 	 * sampling rate, same events etc.)
 	 */
-	void add(const opp_samples_files & samples_files, const opp_bfd & abfd);
+	void add(const opp_samples_files & samples_files, const op_bfd & abfd);
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
 	const symbol_entry* find_symbol(bfd_vma vma) const;
@@ -110,11 +110,11 @@ public:
 private:
 	/// helper for add();
 	void do_add(const opp_samples_files & samples_files,
-		    const opp_bfd & abfd,
+		    const op_bfd & abfd,
 		    bool add_zero_samples_symbols);
 	/// helper for do_add()
 	void add_samples(const opp_samples_files& samples_files, 
-			 const opp_bfd & abfd, size_t sym_index,
+			 const op_bfd & abfd, symbol_index_t sym_index,
 			 u32 start, u32 end, bfd_vma base_vma,
 			 const std::string & image_name);
 
@@ -130,7 +130,7 @@ private:
 	 * function as little as possible and to create meaningfull symbols
 	 * for special case such image w/o symbol.
 	 */
-	std::string create_artificial_symbol(const opp_bfd & abfd, u32 start,
+	std::string create_artificial_symbol(const op_bfd & abfd, u32 start,
 					     u32 & end, size_t & order);
 
 	/// not copy-constructible
