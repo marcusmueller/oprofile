@@ -15,7 +15,7 @@ install: oprofpp
 	cd $(BINDIR) && chmod 755 $(PREFIX)oprofpp$(SUFFIX)
  
 CFLAGS=-Wall -Wstrict-prototypes -W -O2 -pipe -DOP_EVENTS_DESC -L/usr/lib @CFLAGS@
-LIBS=-lpopt -lbfd -liberty -dl
+LIBS=-lpopt -lbfd -liberty -ldl
 INCLUDES=@extra_includes@
 HEADERS=oprofpp.h ../dae/opd_util.h
 MY_SOURCES=oprofpp.c
