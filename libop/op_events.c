@@ -23,6 +23,17 @@
 static LIST_HEAD(events_list);
 static LIST_HEAD(um_list);
 
+static char const * filename;
+static unsigned int line_nr;
+
+static void parse_error()
+{
+	fprintf(stderr, "oprofile: parse error in %s, line %u\n",
+		filename, line_nr);
+	exit(EXIT_FAILURE);
+}
+
+
 /* return true if s2 is a prefix of s1 */
 /* FIXME: move to libutil */
 static int strisprefix(char const * s1, char const * s2)
@@ -34,16 +45,50 @@ static int strisprefix(char const * s1, char const * s2)
 }
 
 
+/* FIXME: move to libutil */
+char const * skip_ws(char const * c)
+{
+	while (*c && (*c == ' ' || *c == '\t' || *c == '\n'))
+		++c;
+	return c;
+}
+
+
+/* FIXME: move to libutil */
+char const * skip_nonws(char const * c)
+{
+	while (*c && !(*c == ' ' || *c == '\t' || *c == '\n'))
+		++c;
+	return c;
+}
+
+
+/* FIXME: move to libutil */
+int empty_line(char const * c)
+{
+	return !(*skip_ws(c));
+}
+
+
+/* FIXME: move to libutil */
+int comment_line(char const * c)
+{
+	c = skip_ws(c);
+	return *c == '#';
+}
+
+
 /* name:MESI type:bitmask default:0x0f */
 static void parse_um(struct op_unit_mask * um, char const * line)
 {
-	size_t valueend = 1, tagend = 1, start = 0;
+	char const * valueend = line + 1;
+       	char const * tagend = line + 1;
+	char const * start = line;
 
-	while (line[valueend]) {
-		while (line[valueend] != ' ' && line[valueend] != '\t' && line[valueend])
-			++valueend;
+	while (*valueend) {
+		valueend = skip_nonws(valueend);
 
-		while (line[tagend] != ':' && line[tagend])
+		while (*tagend != ':' && *tagend)
 			++tagend;
 
 		if (valueend == tagend)
@@ -51,37 +96,33 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 
 		++tagend;
 
-		if (strisprefix(line + start, "name")) {
+		if (strisprefix(start, "name")) {
 			um->name = xmalloc(1 + valueend - tagend);
-			strncpy(um->name, line + tagend, valueend - tagend);
+			strncpy(um->name, tagend, valueend - tagend);
 			um->name[valueend - tagend] = '\0';
-		} else if (strisprefix(line + start, "type")) {
-			if (strisprefix(line + tagend, "mandatory")) {
+		} else if (strisprefix(start, "type")) {
+			if (strisprefix(tagend, "mandatory")) {
 				um->unit_type_mask = utm_mandatory;
-			} else if (strisprefix(line + tagend, "bitmask")) {
+			} else if (strisprefix(tagend, "bitmask")) {
 				um->unit_type_mask = utm_bitmask;
-			} else if (strisprefix(line + tagend, "exclusive")) {
+			} else if (strisprefix(tagend, "exclusive")) {
 				um->unit_type_mask = utm_exclusive;
 			} else {
-				fprintf(stderr, "oprofile: parse error in \"%s\"\n", line);
-				exit(EXIT_FAILURE);
+				parse_error();
 			}
-		} else if (strisprefix(line + start, "default")) {
+		} else if (strisprefix(start, "default")) {
 			int um_val;
 			char * val = xmalloc(1 + valueend - tagend);
-			strncpy(val, line + tagend, valueend - tagend);
+			strncpy(val, tagend, valueend - tagend);
 			val[valueend - tagend] = '\0';
 			sscanf(val, "%x", &um_val);
 			um->default_mask = um_val;
 			free(val);
 		} else {
-			fprintf(stderr, "oprofile: parse error in \"%s\"\n", line);
-			exit(EXIT_FAILURE);
+			parse_error();
 		}
 
-		if (!line[valueend])
-			break;
-		++valueend;
+		valueend = skip_ws(valueend);
 		tagend = valueend;
 		start = valueend;
 	}
@@ -91,61 +132,56 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 /* \t0x08 (M)odified cache state */
 static void parse_um_entry(struct op_described_um * entry, char const * line)
 {
-	int i = 0;
+	char const * c = line;
+	char const * c2;
+	size_t len;
 	int um_val;
 	char * val;
        
-	/* skip the tab */
-	++line;
+	c = skip_ws(c);
+	c2 = c;
+	c = skip_nonws(c);
 
-	while (line[i] != ' ' && line[i] != '\t' && line[i])
-		++i;
+	if (!*c)
+		parse_error();
 
-	if (!line[i]) {
-		fprintf(stderr, "oprofile: parse error in \"%s\"\n", line);
-		exit(EXIT_FAILURE);
-	}
-
-	val = xmalloc(i + 1);
-	strncpy(val, line, i);
-	val[i] = '\0';
+	len = (c - c2);
+	val = xmalloc(len + 1);
+	strncpy(val, c2, len);
+	val[len] = '\0';
 	sscanf(val, "%x", &um_val);
 	entry->value = um_val;
 	free(val);
 
-	while (line[i] != ' ' && line[i])
-		++i;
+	c = skip_ws(c);
 
-	if (!line[i]) {
-		fprintf(stderr, "oprofile: missing description for unit mask in \"%s\"\n", line);
-		exit(EXIT_FAILURE);
-	}
-	
-	// skip space
-	++i;
+	if (!*c)
+		parse_error();
 
-	entry->desc = xstrdup(line + i);
+	entry->desc = xstrdup(c);
 }
 
 
-static void read_unit_masks(char const * filename)
+static void read_unit_masks(char const * file)
 {
 	struct op_unit_mask * um = NULL;
 	int nr_entries = 0;
 	char * line;
-	FILE * fp = fopen(filename, "r");
+	FILE * fp = fopen(file, "r");
 
 	if (!fp) {
-		fprintf(stderr, "oprofile: could not open unit mask description file %s\n", filename);
+		fprintf(stderr,
+			"oprofile: could not open unit mask description file %s\n", file);
 		exit(EXIT_FAILURE);
 	}
+
+	filename = file;
+	line_nr = 1;
 
 	line = op_get_line(fp);
 
 	while (line) {
-		if (!strlen(line))
-			goto next;
-		if (line[0] == '#')
+		if (empty_line(line) || comment_line(line))
 			goto next;
 
 		if (line[0] != '\t') {
@@ -168,6 +204,7 @@ static void read_unit_masks(char const * filename)
 next:
 		free(line);
 		line = op_get_line(fp);
+		++line_nr;
 	}
 
 	if (um) {
@@ -199,10 +236,10 @@ u32 parse_counter_mask(char const * str)
 		mask |= (1 << val);
 		free(valstr);
 
-		if (!*numend)
-			break;
-
+		/* skip , */
 		++numend;
+
+		numend = skip_ws(numend);
 		numstart = numend;
 	}
 
@@ -221,75 +258,86 @@ struct op_unit_mask * find_um(char const * value)
 	}
 
 	fprintf(stderr, "oprofile: could not find unit mask %s\n", value);
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 
-int next_token(char ** c, char ** name, char ** value)
+int next_token(char const ** cp, char ** name, char ** value)
 {
-	int i = 0, j;
+	size_t tag_len;
+	size_t val_len;
+	char const * c = *cp;
+	char const * end;
+	char const * colon;
 
-	while (*(*c + i) && *(*c + i) != ':')
-		++i;
+	c = skip_ws(c);
+	end = colon = c;
+	end = skip_nonws(end);
 
-	if (!i && **c != ':')
+	while (*colon && *colon != ':')
+		++colon;
+
+	if (!*colon)
 		return 0;
 
+	if (colon >= end)
+		parse_error();
+
+	tag_len = colon - c;
+	val_len = end - (colon + 1);
+
 	/* trailing description */
-	if (**c == ':') {
-		size_t len = strlen(*c + i);
+	if (!tag_len) {
+		end = skip_ws(end);
+		val_len = strlen(end);
 		*name = xstrdup("desc");
-		i += 2;
-		*value = xmalloc(len + 1);
-		strcpy(*value, *c + i);
-		*c += len;
+		*value = xmalloc(val_len + 1);
+		strcpy(*value, end);
+		end += val_len;
+		*cp = end;
 		return 1;
 	} else {
-		*name = xmalloc(i + 1);
-		strncpy(*name, *c, i);
-		*(*name + i) = '\0';
+		*name = xmalloc(tag_len + 1);
+		strncpy(*name, c, tag_len);
+		*(*name + tag_len) = '\0';
 	}
 
-	++i;
-
-	j = i;
-
-	while (*(*c + j) && *(*c + j) != ' ' && *(*c + j) != '\t')
-		++j;
-
-	*value = xmalloc(1 + j - i);
-	strncpy(*value, *c + i, j - i);
-	*(*value + j - i) = '\0';
-	*c += 1 + j;
+	*value = xmalloc(val_len + 1);
+	strncpy(*value, colon + 1, val_len);
+	*(*value + val_len) = '\0';
+	end = skip_ws(end);
+	*cp = end;
 	return 1;
 }
 
 
-void read_events(char const * filename)
+void read_events(char const * file)
 {
 	struct op_event * event = NULL;
 	char * line;
 	char * name;
 	char * value;
 	char * c;
-	FILE * fp = fopen(filename, "r");
+	FILE * fp = fopen(file, "r");
 
 	if (!fp) {
 		fprintf(stderr, "oprofile: could not open event description file %s\n", filename);
 		exit(EXIT_FAILURE);
 	}
 
+	filename = file;
+	line_nr = 1;
+
 	line = op_get_line(fp);
 
 	while (line) {
-		if (!strlen(line))
-			goto next;
-		if (line[0] == '#')
+		if (empty_line(line) || comment_line(line))
 			goto next;
 
 		event = xmalloc(sizeof(struct op_event));
+
 		c = line;
-		while (next_token(&c, &name, &value)) {
+		while (next_token((char const **)&c, &name, &value)) {
 			if (strcmp(name, "name") == 0) {
 				event->name = value;
 			} else if (strcmp(name, "event") == 0) {
@@ -321,6 +369,7 @@ void read_events(char const * filename)
 next:
 		free(line);
 		line = op_get_line(fp);
+		++line_nr;
 	}
 
 	fclose(fp);
