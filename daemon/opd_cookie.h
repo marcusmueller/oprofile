@@ -21,13 +21,15 @@
 #define opd_nr_lookup_dcookie 235
 #elif defined(__alpha__)
 #define opd_nr_lookup_dcookie 406
+#elif defined(__hppa__)
+#define opd_nr_lookup_dcookie 223
 #elif defined(__ia64__)
 #define opd_nr_lookup_dcookie 1237
 #else
 #error Please define lookup_dcookie for your architecture
 #endif
 
-#if defined(__powerpc__) && !defined(__powerpc64__)
+#if (defined(__powerpc__) && !defined(__powerpc64__)) || defined(__hppa__)
 static inline int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
 {
 	return syscall(opd_nr_lookup_dcookie, (unsigned long)(cookie >> 32),

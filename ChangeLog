@@ -1,3 +1,9 @@
+2003-01-30  Philippe Elie  <phil.el@wanadoo.fr>
+
+	From Randolph Chung :
+
+	* daemon/opd_cookie.h: add parisc support
+
 2003-01-30  John Levon  <levon@movementarian.org>
 
 	From Anton Blanchard :
