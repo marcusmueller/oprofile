@@ -127,14 +127,18 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 	if (image->ignored)
 		return;
 
-	sfile = image->sfiles[counter][cpu_number];
+	if (!image->sfiles[cpu_number]) {
+		image->sfiles[cpu_number] =
+			xcalloc(OP_MAX_COUNTERS, sizeof(struct op_24_sfile *));
+	}
+	sfile = image->sfiles[cpu_number][counter];
 
 	if (!sfile || !sfile->sample_file.base_memory) {
 		if (opd_open_24_sample_file(image, counter, cpu_number)) {
 			/* opd_open_24_sample_file output an error message */
 			return;
 		}
-		sfile = image->sfiles[counter][cpu_number];
+		sfile = image->sfiles[cpu_number][counter];
 	}
 
 	err = odb_insert(&sfile->sample_file, offset, 1);

@@ -1,5 +1,13 @@
 2003-11-02  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* daemon/liblegacy/opd_image.h:
+	* daemon/liblegacy/opd_image.c:
+	* daemon/liblegacy/opd_proc.c:
+	* daemon/liblegacy/opd_sample_files.c: sparse sample file array
+	  allocated by line.
+
+2003-11-02  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/glob_filter.h:
 	* libutil++/path_filter.h:
 	* libutil++/string_filter.h: comment fix to match implementation

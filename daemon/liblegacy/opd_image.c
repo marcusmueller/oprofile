@@ -153,8 +153,7 @@ opd_new_image(char const * name, char const * app_name, int kernel,
 	if (image->ignored)
 		image->ignored = is_image_ignored(name);
 
-	memset(image->sfiles, '\0',
-	       OP_MAX_COUNTERS * NR_CPUS * sizeof(struct opd_24_sfile *));
+	memset(image->sfiles, '\0', NR_CPUS * sizeof(struct opd_24_sfile **));
 
 	hash_image = opd_hash_image(name, tid, tgid);
 	list_add(&image->hash_next, &opd_images[hash_image]);

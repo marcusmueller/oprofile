@@ -114,12 +114,12 @@ int opd_open_24_sample_file(struct opd_image * image, int counter, int cpu_nr)
 
 	create_path(mangled);
 
-	sfile = image->sfiles[counter][cpu_nr];
+	sfile = image->sfiles[cpu_nr][counter];
 	if (!sfile) {
 		sfile = malloc(sizeof(struct opd_24_sfile));
 		list_init(&sfile->lru_next);
 		odb_init(&sfile->sample_file);
-		image->sfiles[counter][cpu_nr] = sfile;
+		image->sfiles[cpu_nr][counter] = sfile;
 	}
 
 	list_del(&sfile->lru_next);
@@ -170,11 +170,11 @@ void opd_close_image_samples_files(struct opd_image * image)
 	uint i, j;
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		for (j = 0; j < NR_CPUS; ++j) {
-			if (image->sfiles[i][j]) {
-				odb_close(&image->sfiles[i][j]->sample_file);
-				list_del(&image->sfiles[i][j]->lru_next);
-				free(image->sfiles[i][j]);
-				image->sfiles[i][j] = 0;
+			if (image->sfiles[j] && image->sfiles[j][i]) {
+				odb_close(&image->sfiles[j][i]->sample_file);
+				list_del(&image->sfiles[j][i]->lru_next);
+				free(image->sfiles[j][i]);
+				image->sfiles[j][i] = 0;
 			}
 		}
 	}

@@ -32,7 +32,7 @@ struct opd_image {
 	/** how many time this opd_image is referenced */
 	int ref_count;
 	/** all samples files belonging to this image */
-	struct opd_24_sfile * sfiles[OP_MAX_COUNTERS][NR_CPUS];
+	struct opd_24_sfile ** sfiles[NR_CPUS];
 	/** name of this image */
 	char * name;
 	/** the application name where belongs this image, NULL if image has

@@ -79,8 +79,6 @@ Later
 -----
  
  o Itanium event constraints are not implemented
- o dae/opd_image.h: struct opd_sfile * sfiles[OP_MAX_COUNTERS][NR_CPUS]; 
-   this use too many memory.
  o side-by-side opreport output (--compare - needs UI spec) ???
  o can we log samples going to anonymous mapping by using
   - 2.6 one fake sample for all anonymous sample, cookie == 0 mean use this
