@@ -1,10 +1,10 @@
-# $Id: Makefile.in,v 1.17 2001/09/15 20:55:45 movement Exp $
+# $Id: Makefile.in,v 1.18 2001/10/25 18:37:09 movement Exp $
 
 .PHONY: all clean srcdoc install uninstall
 
 all: oprofiled op_help
  
-prefix=@prefix@
+prefix=$(DESTDIR)@prefix@
 exec_prefix=@exec_prefix@
 BINDIR=@bindir@
 MANDIR=@mandir@

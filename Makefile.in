@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.34 2001/10/18 00:01:13 movement Exp $
+# $Id: Makefile.in,v 1.35 2001/10/25 18:37:09 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -50,14 +50,18 @@ dist:
 tags:
 	ctags -R
 
-install: all oprofile.o
+install: install.kernel install.user
+
+install.kernel: oprofile.o
 	-$(MKDIR_P) $(MODINSTALLDIR)
 	cp oprofile.o $(MODINSTALLDIR)
 	depmod -a
-	$(MAKE) -C dae install
-	$(MAKE) -C pp install
-	$(MAKE) -C doc install 
-	$(MAKE) -C gui install
+
+install.user: all
+	$(MAKE) -C dae install DESTDIR=$(DESTDIR)
+	$(MAKE) -C pp install DESTDIR=$(DESTDIR)
+	$(MAKE) -C doc install DESTDIR=$(DESTDIR)
+	$(MAKE) -C gui install DESTDIR=$(DESTDIR)
 
 uninstall:
 	-rm -f $(MODINSTALLDIR)/oprofile.o

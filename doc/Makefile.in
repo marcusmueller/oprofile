@@ -1,6 +1,6 @@
-# $Id: Makefile.in,v 1.9 2001/10/25 02:18:49 movement Exp $
+# $Id: Makefile.in,v 1.10 2001/10/25 18:37:09 movement Exp $
 
-prefix=@prefix@
+prefix=$(DESTDIR)@prefix@
 MANDIR=@mandir@/man1
 CATDIR=@mandir@/cat1
 LN_SF=ln -sf

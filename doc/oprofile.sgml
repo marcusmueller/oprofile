@@ -911,7 +911,7 @@ numbers of processes, leading to far better performance.
 <title>Acknowledgments</title>
 <para>
 Thanks to (in no particular order) : Arjan van de Ven, Rik van Riel, Juan Quintela, Philippe Elie,
-Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne, Bob Montgomery, Ray Bryant,
+Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne, Bob Montgomery, Ray Bryant, H.J. Lu,
 Richard Reich (rreich@shadowtechllc.com), Dave Jones, Charles Filtness; and finally Pulp, for "Intro".
 </para>
 </chapter>
