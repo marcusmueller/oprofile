@@ -247,7 +247,7 @@ profile_class & find_class(set<profile_class> & classes,
 
 	pair<set<profile_class>::iterator, bool> ret = classes.insert(cls);
 
-	return const_cast<profile_class&>(*ret.first);
+	return const_cast<profile_class &>(*ret.first);
 }
 
 
