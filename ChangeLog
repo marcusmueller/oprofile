@@ -1,5 +1,9 @@
 2002-11-09  John Levon  <levon@movementarian.org>
 
+	* autogen.sh: use --foreign
+ 
+2002-11-09  John Levon  <levon@movementarian.org>
+
 	* configure.in: fix --with-kernel-support
  
 	* doc/.cvsignore: add *.1
