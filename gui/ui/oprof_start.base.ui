@@ -682,54 +682,6 @@
                                             <cstring>note_table_size_edit</cstring>
                                         </property>
                                     </widget>
-                                    <widget row="3"  column="0" >
-                                        <class>QLabel</class>
-                                        <property stdset="1">
-                                            <name>name</name>
-                                            <cstring>pgrp_filter_label</cstring>
-                                        </property>
-                                        <property stdset="1">
-                                            <name>text</name>
-                                            <string>Process group filter</string>
-                                        </property>
-                                        <property>
-                                            <name>buddy</name>
-                                            <cstring>pgrp_filter_edit</cstring>
-                                        </property>
-                                    </widget>
-                                    <widget row="3"  column="1" >
-                                        <class>QLineEdit</class>
-                                        <property stdset="1">
-                                            <name>name</name>
-                                            <cstring>pgrp_filter_edit</cstring>
-                                        </property>
-                                        <property>
-                                            <name>toolTip</name>
-                                            <string>Process group ID to filter samples on</string>
-                                        </property>
-                                    </widget>
-                                    <widget row="2"  column="1" >
-                                        <class>QLineEdit</class>
-                                        <property stdset="1">
-                                            <name>name</name>
-                                            <cstring>pid_filter_edit</cstring>
-                                        </property>
-                                        <property>
-                                            <name>toolTip</name>
-                                            <string>Process ID to filter samples on</string>
-                                        </property>
-                                    </widget>
-                                    <widget row="2"  column="0" >
-                                        <class>QLabel</class>
-                                        <property stdset="1">
-                                            <name>name</name>
-                                            <cstring>pid_filter_label</cstring>
-                                        </property>
-                                        <property stdset="1">
-                                            <name>text</name>
-                                            <string>Process ID filter</string>
-                                        </property>
-                                    </widget>
                                     <widget row="1"  column="0" >
                                         <class>QLabel</class>
                                         <property stdset="1">
@@ -779,21 +731,6 @@
                                         <name>spacing</name>
                                         <number>6</number>
                                     </property>
-                                    <widget>
-                                        <class>QCheckBox</class>
-                                        <property stdset="1">
-                                            <name>name</name>
-                                            <cstring>kernel_only_cb</cstring>
-                                        </property>
-                                        <property stdset="1">
-                                            <name>text</name>
-                                            <string>Kernel only</string>
-                                        </property>
-                                        <property>
-                                            <name>toolTip</name>
-                                            <string>Profile only the kernel</string>
-                                        </property>
-                                    </widget>
                                     <widget>
                                         <class>QCheckBox</class>
                                         <property stdset="1">
@@ -1096,10 +1033,7 @@
     <tabstop>kernel_filename_edit</tabstop>
     <tabstop>no_vmlinux</tabstop>
     <tabstop>buffer_size_edit</tabstop>
-    <tabstop>pid_filter_edit</tabstop>
-    <tabstop>pgrp_filter_edit</tabstop>
     <tabstop>note_table_size_edit</tabstop>
-    <tabstop>kernel_only_cb</tabstop>
     <tabstop>verbose</tabstop>
     <tabstop>separate_kernel_cb</tabstop>
     <tabstop>separate_lib_cb</tabstop>

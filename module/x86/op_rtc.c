@@ -34,7 +34,7 @@ static void do_rtc_interrupt(int irq, void * dev_id, struct pt_regs * regs)
 	unsigned long flags;
 
 	int usermode = user_mode(regs);
-	if (((sysctl.kernel_only || sysctl.ctr[0].kernel) && usermode)
+	if ((sysctl.ctr[0].kernel && usermode)
 		|| (sysctl.ctr[0].user && !usermode))
 		return;
 

@@ -128,13 +128,8 @@ oprof_start::oprof_start()
 	bool is_26 = op_get_interface() == OP_INTERFACE_26;
 
 	if (is_26) {
-		pid_filter_label->hide();
-		pid_filter_edit->hide();
-		pgrp_filter_label->hide();
-		pgrp_filter_edit->hide();
 		note_table_size_edit->hide();
 		note_table_size_label->hide();
-		kernel_only_cb->hide();
 		// FIXME: can adapt to 2.6 ...
 		buffer_size_edit->hide();
 		buffer_size_label->hide();
@@ -147,16 +142,7 @@ oprof_start::oprof_start()
 
 	buffer_size_edit->setText(QString().setNum(config.buffer_size));
 	note_table_size_edit->setText(QString().setNum(config.note_table_size));
-	if (config.pid_filter)
-		pid_filter_edit->setText(QString().setNum(config.pid_filter));
-	else
-		pid_filter_edit->setText("");
-	if (config.pgrp_filter)
-		pgrp_filter_edit->setText(QString().setNum(config.pgrp_filter));
-	else
-		pgrp_filter_edit->setText("");
 	verbose->setChecked(config.verbose);
-	kernel_only_cb->setChecked(config.kernel_only);
 	separate_lib_cb->setChecked(config.separate_lib);
 	separate_kernel_cb->setChecked(config.separate_kernel);
 
@@ -169,10 +155,6 @@ oprof_start::oprof_start()
 	buffer_size_edit->setValidator(iv);
 	iv = new QIntValidator(OP_MIN_NOTE_TABLE_SIZE, OP_MAX_NOTE_TABLE_SIZE, note_table_size_edit);
 	note_table_size_edit->setValidator(iv);
-	iv = new QIntValidator(pid_filter_edit);
-	pid_filter_edit->setValidator(iv);
-	iv = new QIntValidator(pgrp_filter_edit);
-	pgrp_filter_edit->setValidator(iv);
 
 	// daemon status timer
 	startTimer(5000);
@@ -639,9 +621,6 @@ bool oprof_start::record_config()
 	}
 	config.note_table_size = temp;
 
-	config.pid_filter = pid_filter_edit->text().toUInt();
-	config.pgrp_filter = pgrp_filter_edit->text().toUInt();
-	config.kernel_only = kernel_only_cb->isChecked();
 	config.verbose = verbose->isChecked();
 	config.separate_lib = separate_lib_cb->isChecked();
 	config.separate_kernel = separate_kernel_cb->isChecked();
@@ -932,9 +911,6 @@ bool oprof_start::save_config()
 	}
 
 	if (op_get_interface() == OP_INTERFACE_24) {
-		args.push_back("--kernel-only=" + tostr(config.kernel_only));
-		args.push_back("--pid-filter=" + tostr(config.pid_filter));
-		args.push_back("--pgrp-filter=" + tostr(config.pgrp_filter));
 		args.push_back("--buffer-size=" + tostr(config.buffer_size));
 		args.push_back("--note-table-size=" +
 			       tostr(config.note_table_size));

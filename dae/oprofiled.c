@@ -52,9 +52,6 @@
 #include <stdlib.h>
 #include <limits.h>
 
-// GNU libc bug
-pid_t getpgid(pid_t pid);
-
 u32 ctr_count[OP_MAX_COUNTERS];
 u8 ctr_event[OP_MAX_COUNTERS];
 u16 ctr_um[OP_MAX_COUNTERS];
@@ -70,7 +67,6 @@ int separate_thread;
 int separate_cpu;
 int no_vmlinux;
 char * vmlinux;
-int kernel_only;
 int cpu_number;
 
 static char * kernel_range;
@@ -79,8 +75,6 @@ static u32 ctr_enabled[OP_MAX_COUNTERS];
 static char const * mount = OP_MOUNT;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
-static pid_t pid_filter;
-static pid_t pgrp_filter;
 static fd_t devfd;
 static fd_t notedevfd;
 
@@ -89,8 +83,6 @@ static void opd_alarm(void);
 static void opd_sigterm(void);
 
 static struct poptOption options[] = {
-	{ "pid-filter", 0, POPT_ARG_INT, &pid_filter, 0, "only profile the given process ID", "pid" },
-	{ "pgrp-filter", 0, POPT_ARG_INT, &pgrp_filter, 0, "only profile the given process tty group", "pgrp" },
 	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "no-vmlinux", 0, POPT_ARG_NONE, &no_vmlinux, 0, "vmlinux kernel image file not available", NULL, },
@@ -288,7 +280,6 @@ static void opd_options(int argc, char const * argv[])
 
 	opd_buf_size = opd_read_fs_int("bufsize");
 	opd_note_buf_size = opd_read_fs_int("notesize");
-	kernel_only = opd_read_fs_int("kernel_only");
 
 	if (cpu_type != CPU_RTC)
 		opd_pmc_options();
@@ -473,15 +464,6 @@ static void opd_do_samples(struct op_buffer_head const * opd_buf)
 	for (i = 0; i < opd_buf->count; i++) {
 		verbprintf("%.6u: EIP: 0x%.8lx pid: %.6d\n",
 			i, buffer[i].eip, buffer[i].pid);
-
-		/* FIXME : we can try to remove cast by using in module pid_t
-		 * as type for op_sample.pid but this don't work if kernel
-		 * space definition of pid_t was 16 bits in past */
-		if (pid_filter && (u32)pid_filter != buffer[i].pid)
-			continue;
-		if (pgrp_filter && pgrp_filter != getpgid(buffer[i].pid))
-			continue;
-
 		opd_put_sample(&buffer[i]);
 	}
 }

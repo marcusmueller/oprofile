@@ -72,8 +72,6 @@ struct oprof_sysctl {
 	int dump;
 	/* dump and stop */
 	int dump_stop;
-	/* is profiling kernel only */
-	int kernel_only;
 	/* nr. in note buffer */
 	int note_size;
 	/* nr. interrupts occured */

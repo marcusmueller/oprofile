@@ -83,16 +83,6 @@ count, unit mask, user-space counting, kernel-space counting,
 respectively.
 .br
 .TP
-.BI "--pid-filter="pid
-Only profile process pid (only available for 2.4 version). Set
-to 'none' to enable profiling of all PIDs again.
-.br
-.TP
-.BI "--pgrp-filter="pgrp
-Only profile process tty group pgrp (only available for 2.4 version). Set
-to 'none' to enable profiling of all PIDs again.
-.br
-.TP
 .BI "--separate="[none,library,kernel,thread,cpu,all]
 Separate samples based on the given separator. 'library' per-application
 dynamically linked libraries samples files. 'kernel' per-application modules

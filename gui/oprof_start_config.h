@@ -41,10 +41,7 @@ struct config_setting {
 	uint note_table_size;
 	std::string kernel_filename;
 	bool no_kernel;
-	bool kernel_only;
 	bool verbose;
-	pid_t pgrp_filter;
-	pid_t pid_filter;
 	bool separate_lib;
 	bool separate_kernel;
 };

@@ -282,8 +282,6 @@ static int opd_lookup_maps(struct opd_proc * proc,
  */
 void opd_put_sample(struct op_sample const * sample)
 {
-	extern int kernel_only;
-
 	struct opd_proc * proc;
 	int in_kernel_eip = opd_eip_is_kernel(sample->eip);
 
@@ -296,9 +294,6 @@ void opd_put_sample(struct op_sample const * sample)
 		opd_handle_kernel_sample(sample->eip, sample->counter);
 		return;
 	}
-
-	if (kernel_only && !in_kernel_eip)
-		return;
 
 	if (!(proc = opd_get_proc(sample->pid, sample->tgid))) {
 		if (in_kernel_eip || no_vmlinux) {

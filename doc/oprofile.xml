@@ -542,20 +542,6 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--pid-filter=</option>pid</term>
-		<listitem><para>
-		Only profile the given process PID (only available for 2.4 version). Set to
-		"none" to re-enable profiling of all PIDs.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--pgrp-filter=</option>pgrp</term>
-		<listitem><para>
-		Only profile the given process tty group (only avilable for 2.4 version). Set
-		to "none" to re-enable profiling of all PGRPs.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
 		<term><option>--separate=</option>[none,library,kernel,thread,cpu,all]</term>
 		<listitem><para>
 		By default, every profile is stored in a single file. Thus, for example,

@@ -90,9 +90,6 @@ do_help() {
 	        unitmask:              hardware unit mask e.g. 0x0f
 	        kernel:                whether to profile kernel: 0 or 1
 	        user:                  whether to profile userspace: 0 or 1
-	  --pid-filter=[pid|none]      Only profile process pid  (2.4 version)
-	  --pgrp-filter=[pgrp|none]    Only profile process tty group pgrp (2.4 version)
-	  --kernel-only=[0|1]	       profile only the kernel (2.4 version)
 	  --note-table-size	       number of notes in kernel notes buffer (2.4 version)
 	  -p/--separate=[none,library,kernel,thread,cpu,all]     separate samples as given
 	  --vmlinux=file               vmlinux kernel image
@@ -176,14 +173,11 @@ do_init() {
 	BUF_SIZE=0
 	NOTE_SIZE=0
 	VMLINUX=
-	PID_FILTER=0
-	PGRP_FILTER=0
 	VERBOSE=0
 	SEPARATE_LIB=0
 	SEPARATE_KERNEL=0
 	SEPARATE_THREAD=0
 	SEPARATE_CPU=0
-	KERNEL_ONLY=0 # 2.2/2.4 kernel
 
 	OPROFILED="$OPDIR/oprofiled"
 
@@ -232,7 +226,7 @@ function create_dir {
 }
 
 
-#save all the setup related information
+# save all the setup related information
 do_save_setup() {
 	create_dir "$SETUP_DIR"
 
@@ -253,20 +247,17 @@ do_save_setup() {
 	echo "SEPARATE_THREAD=$SEPARATE_THREAD" >> $SETUP_FILE
 	echo "SEPARATE_CPU=$SEPARATE_CPU" >> $SETUP_FILE
 	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
-	#write the actual information to file
+	# write the actual information to file
 	if [ "$BUF_SIZE" != 0 ]; then
 		echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
 	fi;
 	if test "$KERNEL_SUPPORT" != "yes"; then
-		echo "KERNEL_ONLY=$KERNEL_ONLY" >> $SETUP_FILE
 		echo "NOTE_SIZE=$NOTE_SIZE" >> $SETUP_FILE
-		echo "PID_FILTER=$PID_FILTER" >> $SETUP_FILE
-		echo "PGRP_FILTER=$PGRP_FILTER" >> $SETUP_FILE
 	fi
 }
 
 
-#reload all the setup-related information
+# reload all the setup-related information
 do_load_setup() {
 	if test  -f "$SETUP_FILE"; then
 		# load the actual information from file
@@ -283,7 +274,6 @@ do_load_setup() {
 		vecho "BUF_SIZE default value"
 	fi;
 
-	vecho "KERNEL_ONLY $KERNEL_ONLY"
 	vecho "SEPARATE_LIB $SEPARATE_LIB"
 	vecho "SEPARATE_KERNEL $SEPARATE_KERNEL"
 	vecho "SEPARATE_THREAD $SEPARATE_THREAD"
@@ -577,40 +567,6 @@ do_options() {
 				KERNEL_RANGE=$val
 				DO_SETUP=yes
 				;;
-			--pid-filter)
-				if test "$KERNEL_SUPPORT" = "yes"; then
-					echo "\"$arg\" ignored" >&2
-				else
-					if test "$val" = "none"; then
-						val=0
-					fi
-					PID_FILTER=$val
-				fi
-				DO_SETUP=yes
-				;;
-			--pgrp-filter)
-				if test "$KERNEL_SUPPORT" = "yes"; then
-					echo "\"$arg\" ignored" >&2
-				else
-					if test "$val" = "none"; then
-						val=0
-					fi
-					PGRP_FILTER=$val
-				fi
-				DO_SETUP=yes
-				;;
-			--kernel-only)
-				if test $"KERNEL_SUPPORT" = "yes"; then
-					echo "\"$arg\" ignored. " >& 2
-				else
-					if [ "$val" != "" ]; then
-						KERNEL_ONLY=$val
-					else
-						KERNEL_ONLY=1
-					fi
-				fi
-				DO_SETUP=yes
-				;;
 			--note-table-size)
 				if test $"KERNEL_SUPPORT" = "yes"; then
 					echo "\"$arg\" ignored. " >& 2
@@ -794,7 +750,6 @@ do_sysctl_setup_24() {
 	if [ $NOTE_SIZE != 0 ]; then
 		$SYSCTL -w dev.oprofile.notesize=$NOTE_SIZE
 	fi
-	$SYSCTL -w dev.oprofile.kernel_only=$KERNEL_ONLY
 
 	if test "$IS_TIMER" = 1; then
 		return
@@ -946,11 +901,6 @@ do_start_daemon() {
 		--separate-kernel=$SEPARATE_KERNEL \
 		--separate-thread=$SEPARATE_THREAD \
 		--separate-cpu=$SEPARATE_CPU"
-
-	if [ "$KERNEL_SUPPORT" != "yes" ]; then
-		OPD_ARGS="$OPD_ARGS \
-			--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
-	fi
 
 	if [ "$VMLINUX" = "none" ]; then
 		OPD_ARGS="$OPD_ARGS --no-vmlinux"
