@@ -9,7 +9,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
   try to recover gracefully.
  o test dcookie failure with random injection
- o test reaching EMFILE
  o add separate_thread to opd_header or remove all separate from opd_header
  o thread separate GUI + docs
  o we need to handle thread separate without needing a useless -m tid
@@ -123,7 +122,6 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
 	o hard code ${typename} regular definition to remove all current limitations (difficult, perhaps after 1.0 ?).
  o oprof_start dialog size is too small initially
  o oprof_start key movement through events doesn't change help text
- o allow --event to take event numbers. (is it worth ?)
  o i18n. We need a good formatter, and also remember format_percent()
  o opannotate --source --output-dir=~moz/op/ /usr/bin/oprofiled
    will fail because the ~ is not expanded (no space around it) (popt bug I say)
