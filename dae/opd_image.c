@@ -167,7 +167,7 @@ void opd_check_image_mtime(struct opd_image * image)
 
 	len = strlen(mangled);
 
-	for (i=0; i < op_nr_counters; i++) {
+	for (i = 0; i < op_nr_counters; i++) {
 		db_tree_t * tree = &image->sample_files[i];
 		if (tree->base_memory) {
 			db_close(tree);

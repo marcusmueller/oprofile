@@ -28,7 +28,8 @@ struct opd_map {
 void opd_init_hash_map(void);
 void opd_init_maps(struct opd_proc * proc);
 void opd_handle_mapping(struct op_note const * note);
-void opd_grow_maps(struct opd_proc * proc);
+void opd_add_mapping(struct opd_proc * proc, struct opd_image *,
+		unsigned long start, unsigned long offset, unsigned long end);
 void opd_kill_maps(struct opd_proc * proc);
 
 /**

@@ -43,7 +43,8 @@
 static int opd_add_ascii_map(struct opd_proc * proc, char const * line,
 			     char * const image_name)
 {
-	struct opd_map * map = &proc->maps[proc->nr_maps];
+	unsigned long offset, start, end;
+	struct opd_image * image;
 	char const * cp = line;
 
 	/* skip to protection field */
@@ -55,14 +56,14 @@ static int opd_add_ascii_map(struct opd_proc * proc, char const * line,
 		return 0;
 
 	/* get start and end from "40000000-4001f000" */
-	if (sscanf(line, "%lx-%lx", &map->start, &map->end) != 2)
+	if (sscanf(line, "%lx-%lx", &start, &end) != 2)
 		return 0;
 
 	/* "p " */
 	cp += 2;
 
 	/* read offset */
-	if (sscanf(cp, "%lx", &map->offset) != 1)
+	if (sscanf(cp, "%lx", &offset) != 1)
 		return 0;
 
 	while (*cp && *cp != '/')
@@ -71,13 +72,11 @@ static int opd_add_ascii_map(struct opd_proc * proc, char const * line,
 	if (!*cp)
 		return 0;
 
-	map->image = opd_get_image(cp, -1, image_name, 0);
-
-	if (!map->image)
+	image = opd_get_image(cp, -1, image_name, 0);
+	if (!image)
 		return 0;
 
-	if (++proc->nr_maps == proc->max_nr_maps)
-		opd_grow_maps(proc);
+	opd_add_mapping(proc, image, start, offset, end);
 
 	return 1;
 }

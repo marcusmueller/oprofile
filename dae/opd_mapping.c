@@ -63,20 +63,6 @@ void opd_init_maps(struct opd_proc * proc)
 
 
 /**
- * opd_grow_maps - grow map structure for a process
- * @param proc  process to work on
- *
- * Grow the map structure for a process by %OPD_MAP_INC
- * entries. (FIXME: should be static)
- */
-void opd_grow_maps(struct opd_proc * proc)
-{
-	proc->maps = xrealloc(proc->maps, sizeof(struct opd_map)*(proc->max_nr_maps+OPD_MAP_INC));
-	proc->max_nr_maps += OPD_MAP_INC;
-}
-
-
-/**
  * opd_kill_maps - delete mapping information for a process
  * @param proc  process to work on
  *
@@ -99,23 +85,28 @@ void opd_kill_maps(struct opd_proc * proc)
  * @param offset  file offset of mapping
  * @param end  end of mapping
  *
- * Add the mapping specified to the process @proc.
+ * Add the mapping specified to the process proc growing the maps array
+ * if necessary.
  */
-static void opd_put_mapping(struct opd_proc * proc, struct opd_image * image,
-	unsigned long start, unsigned long offset, unsigned long end)
+void opd_add_mapping(struct opd_proc * proc, struct opd_image * image,
+		unsigned long start, unsigned long offset, unsigned long end)
 {
-	verbprintf("Placing mapping for process %d: 0x%.8lx-0x%.8lx, off 0x%.8lx, \"%s\" at maps pos %d\n",
+	struct opd_map * map = &proc->maps[proc->nr_maps];
+
+	verbprintf("Adding mapping for process %d: 0x%.8lx-0x%.8lx, off 0x%.8lx, \"%s\" at maps pos %d\n",
 		proc->pid, start, end, offset, image->name, proc->nr_maps);
 
 	opd_check_image_mtime(image);
 
-	proc->maps[proc->nr_maps].image = image;
-	proc->maps[proc->nr_maps].start = start;
-	proc->maps[proc->nr_maps].offset = offset;
-	proc->maps[proc->nr_maps].end = end;
+	map->image = image;
+	map->start = start;
+	map->offset = offset;
+	map->end = end;
 
-	if (++proc->nr_maps == proc->max_nr_maps)
-		opd_grow_maps(proc);
+	if (++proc->nr_maps == proc->max_nr_maps) {
+		proc->max_nr_maps += OPD_MAP_INC;
+		proc->maps = xrealloc(proc->maps, sizeof(struct opd_map)*(proc->max_nr_maps));
+	}
 
 	/* we reset last map here to force searching backwards */
 	proc->last_map = 0;
@@ -205,5 +196,5 @@ void opd_handle_mapping(struct op_note const * note)
 	if (image == NULL)
 		image = opd_handle_hashmap(hash, app_name);
 
-	opd_put_mapping(proc, image, note->addr, note->offset, note->addr + note->len);
+	opd_add_mapping(proc, image, note->addr, note->offset, note->addr + note->len);
 }

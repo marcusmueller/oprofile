@@ -1,5 +1,14 @@
 2002-10-05  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* daemon/opd_image.c:
+	* dae/opd_image.c: spacing
+
+	* dae/opd_mapping.c:
+	* dae/opd_mapping.h: kill op_grow_maps() simplify adding map path
+	* dae/opd_parse_proc.c: use opd_add_mapping()
+
+2002-10-05  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* TODO: update
 
 	* doc/oprofile.xml: more doc in interpreting results
