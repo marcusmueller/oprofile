@@ -23,19 +23,19 @@
 #include "odb_hash.h"
 
  
-static inline odb_descr_t * odb_to_descr(samples_odb_t * hash)
+static __inline odb_descr_t * odb_to_descr(samples_odb_t * hash)
 {
 	return (odb_descr_t *)(((char*)hash->base_memory) + hash->sizeof_header);
 }
 
  
-static inline odb_node_t * odb_to_node_base(samples_odb_t * hash)
+static __inline odb_node_t * odb_to_node_base(samples_odb_t * hash)
 {
   return (odb_node_t *)(((char *)hash->base_memory) + hash->offset_node);
 }
 
  
-static inline odb_index_t * odb_to_hash_base(samples_odb_t * hash)
+static __inline odb_index_t * odb_to_hash_base(samples_odb_t * hash)
 {
 	return (odb_index_t *)(((char *)hash->base_memory) + 
 				hash->offset_node +

@@ -73,7 +73,7 @@ enum op_event_check {
 	OP_OK_EVENT = 0, /**< event is valid and allowed */
 	OP_INVALID_EVENT = 1, /**< event number is invalid */
 	OP_INVALID_UM = 2, /**< unit mask is invalid */
-	OP_INVALID_COUNTER = 4, /**< event is not allowed for the given counter */
+	OP_INVALID_COUNTER = 4 /**< event is not allowed for the given counter */
 };
 
 /**
