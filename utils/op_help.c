@@ -215,6 +215,27 @@ static void resolve_events()
 }
 
 
+static void show_unit_mask()
+{
+	struct op_event * event;
+	int count = parse_events();
+
+	if (count > 1) {
+		fprintf(stderr, "More than one event specified.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	event = find_event_by_name(parsed_events[0].name);
+
+	if (!event) {
+		fprintf(stderr, "No such event found.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	printf("0x%x\n", event->unit->default_mask);
+}
+
+
 static void show_default_event()
 {
 	struct op_default_event_descr descr;
@@ -231,6 +252,7 @@ static void show_default_event()
 static int show_vers;
 static int get_cpu_type;
 static int check_events;
+static int unit_mask;
 static int get_default_event;
 
 static struct poptOption options[] = {
@@ -238,6 +260,8 @@ static struct poptOption options[] = {
 	  "use the given numerical CPU type", "cpu type", },
 	{ "check-events", 'e', POPT_ARG_NONE, &check_events, 0,
 	  "check the given event descriptions for validity", NULL, },
+	{ "unit-mask", 'u', POPT_ARG_NONE, &unit_mask, 0,
+	  "default unit mask for the given event", NULL, },
 	{ "get-cpu-type", 'r', POPT_ARG_NONE, &get_cpu_type, 0,
 	  "show the auto-detected CPU type", NULL, },
 	{ "get-default-event", 'd', POPT_ARG_NONE, &get_default_event, 0,
@@ -324,11 +348,17 @@ int main(int argc, char const *argv[])
 
 	events = op_events(cpu_type);
 
+	if (!chosen_events && (unit_mask || check_events)) {
+		fprintf(stderr, "No events given.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (unit_mask) {
+		show_unit_mask();
+		exit(EXIT_SUCCESS);
+	}
+
 	if (check_events) {
-		if (!chosen_events) {
-			fprintf(stderr, "No events given.\n");
-			exit(EXIT_FAILURE);
-		}
 		resolve_events();
 		exit(EXIT_SUCCESS);
 	}

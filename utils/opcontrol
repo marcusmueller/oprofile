@@ -796,7 +796,8 @@ do_sysctl_setup_24() {
 			USER=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $5}'`
 			CTR=`echo $HW_CTRS | awk "{print \\$$((f + 1))}"`
 			if test -z "$UNIT_MASK"; then
-				UNIT_MASK=0
+				TMPEVENT="$EVENT:$COUNT"
+				UNIT_MASK=`$OP_HELP --unit-mask $TMPEVENT`
 			fi
 			if test -z "$KERNEL"; then
 				KERNEL=1
@@ -857,7 +858,8 @@ do_sysctl_setup_25() {
 			USER=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $5}'`
 			CTR=`echo $HW_CTRS | awk "{print \\$$((f + 1))}"`
 			if test -z "$UNIT_MASK"; then
-				UNIT_MASK=0
+				TMPEVENT="$EVENT:$COUNT"
+				UNIT_MASK=`$OP_HELP --unit-mask $TMPEVENT`
 			fi
 			if test -z "$KERNEL"; then
 				KERNEL=1
