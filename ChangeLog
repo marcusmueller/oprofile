@@ -1,3 +1,7 @@
+2003-02-18  Will Cohen  <wcohen@redhat.com>
+
+	* utils/opcontrol (do_options): Better option error checking.
+
 2003-02-17  Will Cohen  <wcohen@redhat.com>
 
 	* pp/format_output.h (show_help): namespace std.

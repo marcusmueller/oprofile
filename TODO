@@ -23,7 +23,6 @@ Before 1.0 little stuff
 
  o "Deleting  old sample file "/var/lib/oprofile/samples//}sbin}init#0" is printed from daemon
    even if no actual deletion was done. Confusing for debugging
- o improve opcontrol argument error handling
  o oprof_start not working properly with 2.5 I think
  o fix 2.5 module handling
  o pp tools must handle samples count overflow (marked as (unsigned)-1)

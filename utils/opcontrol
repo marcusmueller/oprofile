@@ -387,6 +387,11 @@ validate_separate_args() {
 
 # get and check specified options
 do_options() {
+
+	EXCLUSIVE_ARGC=0
+	SETUP=no
+	NEED_SETUP=no
+
 	while [ "$#" -ne 0 ]
 	do
 		arg=`echo $1 | awk -F= '{print $1}'`
@@ -408,6 +413,8 @@ do_options() {
 				# because need to know the processor type
 				# and number of registers
 				INIT=yes;
+				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
+				EXCLUSIVE_ARGV="$arg"
 				;;
 
 			--setup)
@@ -420,15 +427,21 @@ do_options() {
 					exit 1
 				fi
 				START_DAEMON=yes
+				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
+				EXCLUSIVE_ARGV="$arg"
 				;;
 
 			--start)
 				START=yes
+				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
+				EXCLUSIVE_ARGV="$arg"
 				;;
 
 			--dump)
 				DUMP=yes
 				ONLY_DUMP=yes
+				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
+				EXCLUSIVE_ARGV="$arg"
 				;;
 
 			--stop)
@@ -438,17 +451,23 @@ do_options() {
 				fi
 				DUMP=yes
 				STOP=yes
+				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
+				EXCLUSIVE_ARGV="$arg"
 				;;
 
 			--shutdown)
 				DUMP=yes
 				STOP=yes
 				KILL_DAEMON=yes
+				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
+				EXCLUSIVE_ARGV="$arg"
 				;;
 
 			--reset)
 				DUMP=yes
 				RESET=yes
+				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
+				EXCLUSIVE_ARGV="$arg"
 				;;
 
 			--save)
@@ -456,6 +475,8 @@ do_options() {
 				DUMP=yes
 				SAVE_SESSION=yes
 				SAVE_NAME=$val
+				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
+				EXCLUSIVE_ARGV="$arg"
 				;;
 
 			--deinit)
@@ -463,6 +484,8 @@ do_options() {
 				STOP=yes
 				KILL_DAEMON=yes
 				DEINIT=yes
+				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
+				EXCLUSIVE_ARGV="$arg"
 				;;
 
 			# --setup options
@@ -470,26 +493,32 @@ do_options() {
 			--buffer-size)
 				error_if_empty $arg $val
 				BUF_SIZE=$val
+				NEED_SETUP=yes
 				;;
 			--ctr*-unit-mask)
 				CTR_UM[`extract_int $arg`]=$val
 				if (($? != 0)); then exit 1; fi
+				NEED_SETUP=yes
 				;;
 			--ctr*-event)
 				CTR_EVENT[`extract_int $arg`]=$val
 				if (($? != 0)); then exit 1; fi
+				NEED_SETUP=yes
 				;;
 			--ctr*-count)
 				CTR_COUNT[`extract_int $arg`]=$val
 				if (($? != 0)); then exit 1; fi
+				NEED_SETUP=yes
 				;;
 			--ctr*-user)
 				CTR_USER[`extract_int $arg`]=$val
 				if (($? != 0)); then exit 1; fi
+				NEED_SETUP=yes
 				;;
 			--ctr*-kernel)
 				CTR_KERNEL[`extract_int $arg`]=$val
 				if (($? != 0)); then exit 1; fi
+				NEED_SETUP=yes
 				;;
 			--rtc-value)
 				if test "$KERNEL_SUPPORT" = "yes"; then
@@ -497,20 +526,24 @@ do_options() {
 					exit 1
 				fi
 				RTC_VALUE=$val
+				NEED_SETUP=yes
 				;;
 			--separate)
 				OLD_IFS=$IFS
 				IFS=,
 				validate_separate_args $arg $val
 				IFS=$OLD_IFS
+				NEED_SETUP=yes
 				;;
 			--vmlinux)
 				error_if_empty $arg $val
 				VMLINUX=$val
+				NEED_SETUP=yes
 				;;
 			--kernel-range)
 				error_if_empty $arg $val
 				KERNEL_RANGE=$val
+				NEED_SETUP=yes
 				;;
 			--pid-filter)
 				if test "$KERNEL_SUPPORT" = "yes"; then
@@ -518,6 +551,7 @@ do_options() {
 				else
 					PID_FILTER=$val
 				fi
+				NEED_SETUP=yes
 				;;
 			--pgrp-filter)
 				if test "$KERNEL_SUPPORT" = "yes"; then
@@ -525,6 +559,7 @@ do_options() {
 				else
 					PGRP_FILTER=$val
 				fi
+				NEED_SETUP=yes
 				;;
 			--kernel-only)
 				if test $"KERNEL_SUPPORT" = "yes"; then
@@ -536,6 +571,7 @@ do_options() {
 						KERNEL_ONLY=1
 					fi
 				fi
+				NEED_SETUP=yes
 				;;
 			--note-table-size)
 				if test $"KERNEL_SUPPORT" = "yes"; then
@@ -543,6 +579,7 @@ do_options() {
 				else
 					NOTE_SIZE=$val
 				fi
+				NEED_SETUP=yes
 				;;
 
 			--verbose)
@@ -559,6 +596,8 @@ do_options() {
 				;;
  
 			--list-events)
+				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
+				EXCLUSIVE_ARGV="$arg"
 				exec $OP_HELP
 				;;
 				
@@ -595,6 +634,21 @@ do_options() {
 		one_enabled=1
 	fi
 
+	#error checking to make sure options make sense
+	if test "$EXCLUSIVE_ARGC" -gt 1; then
+		echo "Option \"$EXCLUSIVE_ARGV\" not valid with other options." >&2
+		exit 1
+	fi
+	if test "$NEED_SETUP" = "yes" && test "$SETUP" != "yes"; then
+		echo "Setup options require \"--setup\"." >&2
+		exit 1
+	fi
+	if test "$EXCLUSIVE_ARGC" -eq 1 && test "$SETUP" = "yes"; then
+	    if test "EXCLUSIVE_ARGV" != "--start-daemon" && test "EXCLUSIVE_ARGV" != "--start"; then
+			echo "Option \"--setup\" not valid with \"$EXCLUSIVE_ARGV\"." >&2
+			exit 1
+		fi
+	fi
  
 	vecho "Parameters used:"
 	vecho "CPUTYPE $CPUTYPE"
