@@ -1,5 +1,10 @@
 2003-06-18  John Levon  <levon@movementarian.org>
 
+	* pp/opannotate_options.c: hide the unhandled
+	--base-dir option
+
+2003-06-18  John Levon  <levon@movementarian.org>
+
 	* pp/Makefile.am: don't build opdiff
 
 2003-06-17  Will Cohen  <wcohen@redhat.com>

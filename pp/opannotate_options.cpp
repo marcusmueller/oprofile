@@ -57,8 +57,10 @@ popt::option options_array[] = {
 		     "base directory of source", "directory name"),
 	popt::option(options::output_dir, "output-dir", 'o',
 		     "output directory", "directory name"),
+#if 0 // Disabled until we find a testcase we need this for
 	popt::option(options::base_dir, "base-dir", 'b',
 		     "FIXME", "directory name"),
+#endif
 	popt::option(include_file, "include-file", '\0',
 		     "include these comma separated filename", "filenames"),
 	popt::option(exclude_file, "exclude-file", '\0',

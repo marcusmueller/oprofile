@@ -8,8 +8,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 
  o Timer/rtc is buggered - event file reading in opd_sample_files.c
  o update opcontrol --events stuff: rtc, gui
- o opannotate unhandled option (probably not exhaustive) 
-   --base-dir - possibly remove this at least temporarily
 
 0.7 release
 -----------
@@ -80,6 +78,7 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
    - a C++ rewrite can handle this, and also the rlimit problem via caching name id's
      and opening when necessary etc.
  o remove 2.2 / gcc 2.91 support ?
+ o opannotate unhandled option: --base-dir
 
 Documentation
 -------------
