@@ -26,15 +26,19 @@ using namespace std;
 #include "opf_filter.h"
 
 //---------------------------------------------------------------------------
-// Functor used as predicate for vma comparison.
+// Functors used as predicate for vma comparison.
 struct less_sample_entry_by_vma {
-	bool operator()(const sample_entry & lsh, const sample_entry & rsh) const {
-		return lsh.vma < rsh.vma;
+	bool operator()(const sample_entry & lhs, const sample_entry & rhs) const {
+		return lhs.vma < rhs.vma;
+	}
+
+	bool operator()(const symbol_entry & lhs, const symbol_entry & rhs) const {
+		return (*this)(lhs.sample, rhs.sample);
 	}
 };
 
 //---------------------------------------------------------------------------
-// Functor used as predicate for less than comparison of counter_array_t. There is no
+// Functors used as predicate for less than comparison of counter_array_t. There is no
 //  multi-sort choice, ie the the counter number used is statically set at ctr time.
 struct less_sample_entry_by_samples_nr {
 	// Precondition: index < max_counter_number. Used also as default ctr.
@@ -44,30 +48,30 @@ struct less_sample_entry_by_samples_nr {
 		return lhs->counter[index] < rhs->counter[index];
 	}
 
+	bool operator()(const symbol_entry * lhs, const symbol_entry * rhs) const {
+		return (*this)(&lhs->sample, &rhs->sample);
+	}
+
 	size_t index;
 };
 
 //---------------------------------------------------------------------------
-// Functor used as predicate for filename::linenr equality comparison.
-struct equal_by_file_loc {
-	equal_by_file_loc(const file_location & file_loc_)
-		: file_loc(file_loc_) {}
-
-	bool operator()(const file_location & lsh) const {
-		return file_loc.linenr == lsh.linenr && 
-			file_loc.filename == lsh.filename;
+// Functors used as predicate for filename::linenr less than comparison.
+struct less_by_file_loc {
+	bool operator()(const file_location &lhs,
+			const file_location &rhs) const {
+		return lhs.filename < rhs.filename ||
+			(lhs.filename == rhs.filename && lhs.linenr < rhs.linenr);
 	}
 
-	file_location file_loc;
-};
+	bool operator()(const sample_entry *lhs,
+			const sample_entry *rhs) const {
+		return (*this)(lhs->file_loc, rhs->file_loc);
+	}
 
-//---------------------------------------------------------------------------
-// Functor used as predicate for filename::linenr less than comparison.
-struct less_by_file_loc {
-	bool operator()(const file_location * lhs,
-			const file_location * rhs) const {
-		return lhs->filename < rhs->filename ||
-			(lhs->filename == rhs->filename && lhs->linenr < rhs->linenr);
+	bool operator()(const symbol_entry *lhs,
+			const symbol_entry *rhs) const {
+		return (*this)(&lhs->sample, &rhs->sample);
 	}
 };
 
@@ -111,16 +115,17 @@ class symbol_container_impl {
 	// symbol_entry_by_samples_nr[0] is sorted from counter0 etc.
 	// This allow easy acccess to (at a samples numbers point of view) :
 	//  the nth first symbols.
-	//  the nth first symbols that cumulate a certain amount of samples.
+	//  the nth first symbols that accumulate a certain amount of samples.
 	std::multiset<const symbol_entry *, less_sample_entry_by_samples_nr>
 		symbol_entry_by_samples_nr[max_counter_number];
+
+	std::set<const symbol_entry *, less_by_file_loc> symbol_entry_by_file_loc;
 };
 
 symbol_container_impl::symbol_container_impl() {
 	// symbol_entry_by_samples_nr has been setup by the default ctr, we need to
-	// rebuild it but index 0 is already correct because it correspond to the
-	// default comparator ctr so start at index 1.
-	for (size_t i = 1 ; i < max_counter_number ; ++i) {
+	// rebuild it. do not assume than index 0 is correctly build
+	for (size_t i = 0 ; i < max_counter_number ; ++i) {
 		less_sample_entry_by_samples_nr compare(i);
 		symbol_entry_by_samples_nr[i] =
 			multiset<const symbol_entry *, less_sample_entry_by_samples_nr>(compare);
@@ -147,30 +152,27 @@ void symbol_container_impl::push_back(const symbol_entry & symbol) {
 
 const symbol_entry * 
 symbol_container_impl::find(string filename, size_t linenr) const {
-	//  TODO : this is a linear search (number of symbols), if should be
-	// replaced by a log(number of symbols) complexity search. 
-	//  (really an increase of speed ? )
-	file_location file_loc;
-	file_loc.filename = filename;
-	file_loc.linenr = linenr;
+	symbol_entry symbol;
+	symbol.sample.file_loc.filename = filename;
+	symbol.sample.file_loc.linenr = linenr;
 
-	equal_by_file_loc compare_by(file_loc);
+	std::set<const symbol_entry *, less_by_file_loc>::const_iterator it =
+		symbol_entry_by_file_loc.find(&symbol);
 
-	vector<symbol_entry>::const_iterator it = 
-		find_if(v.begin(), v.end(), compare_by);
-
-	if (it != v.end()) {
-		return &(*it);
-	}
+	if (it != symbol_entry_by_file_loc.end())
+		return *it;
 
 	return 0;
 }
 
 void symbol_container_impl::flush_input_symbol() {
-	// Update the set of symbol entry sorted by samples count.
+	// Update the sets of symbols entries sorted by samples count and the set of
+	// symbol entries sorted by file location.
 	for (size_t i = 0 ; i < v.size() ; ++i) {
 		for (size_t counter = 0 ; counter < max_counter_number ; ++counter)
 			symbol_entry_by_samples_nr[counter].insert(&v[i]);
+		
+		symbol_entry_by_file_loc.insert(&v[i]);
 	}
 
 	if (range_iterator_sorted_p(v.begin(), v.end(), 
@@ -186,12 +188,12 @@ const symbol_entry * symbol_container_impl::find_by_vma(unsigned long vma) const
 
 	symbol_entry value;
 
-	value.vma = vma;
+	value.sample.vma = vma;
 
 	vector<symbol_entry>::const_iterator it =
 		lower_bound(v.begin(), v.end(), value, less_sample_entry_by_vma());
 
-	if (it != v.end() && it->vma == vma)
+	if (it != v.end() && it->sample.vma == vma)
 		return &(*it);
 
 	return 0;
@@ -250,10 +252,10 @@ class sample_container_impl {
 
 	size_t size() const;
 
-	bool cumulate_samples_for_file(counter_array_t & counter, const string & filename) const;
+	bool accumulate_samples_for_file(counter_array_t & counter, const string & filename) const;
 
 	const sample_entry * find_by_vma(unsigned long vma) const;
-	bool cumulate_samples(counter_array_t &, const string & filename, size_t linenr) const;
+	bool accumulate_samples(counter_array_t &, const string & filename, size_t linenr) const;
 	void flush_input_counter();
 	void push_back(const sample_entry &);
  private:
@@ -275,13 +277,13 @@ size_t sample_container_impl::size() const {
 }
 
 
-bool sample_container_impl::cumulate_samples_for_file(counter_array_t & counter, 
-						      const string & filename) const {
+bool sample_container_impl::accumulate_samples_for_file(counter_array_t & counter, 
+							const string & filename) const {
 	sample_entry lower, upper;
 
-	lower.filename = upper.filename = filename;
-	lower.linenr = 0;
-	upper.linenr = INT_MAX;
+	lower.file_loc.filename = upper.file_loc.filename = filename;
+	lower.file_loc.linenr = 0;
+	upper.file_loc.linenr = INT_MAX;
 
 	typedef multiset<const sample_entry *, less_by_file_loc>
 		set_sample_entry_t;
@@ -317,13 +319,13 @@ const sample_entry * sample_container_impl::find_by_vma(unsigned long vma) const
 	return 0;
 }
 
-bool sample_container_impl::cumulate_samples(counter_array_t & counter,
-					     const string & filename, size_t linenr) const {
+bool sample_container_impl::accumulate_samples(counter_array_t & counter,
+					       const string & filename, size_t linenr) const {
 
 	sample_entry sample;
 
-	sample.filename = filename;
-	sample.linenr = linenr;
+	sample.file_loc.filename = filename;
+	sample.file_loc.linenr = linenr;
 
 	typedef multiset<const sample_entry *, less_by_file_loc>
 		set_sample_entry_t;
@@ -384,18 +386,18 @@ size_t sample_container_t::size() const {
 	return impl->size();
 }
 
-bool sample_container_t::cumulate_samples_for_file(counter_array_t & counter, 
-						   const string & filename) const {
-	return impl->cumulate_samples_for_file(counter, filename);
+bool sample_container_t::accumulate_samples_for_file(counter_array_t & counter, 
+						     const string & filename) const {
+	return impl->accumulate_samples_for_file(counter, filename);
 }
 
 const sample_entry * sample_container_t::find_by_vma(unsigned long vma) const {
 	return impl->find_by_vma(vma);
 }
 
-bool sample_container_t::cumulate_samples(counter_array_t & counter,
-					  const string & filename, size_t linenr) const {
-	return impl->cumulate_samples(counter, filename, linenr);
+bool sample_container_t::accumulate_samples(counter_array_t & counter,
+					    const string & filename, size_t linenr) const {
+	return impl->accumulate_samples(counter, filename, linenr);
 }
 
 void sample_container_t::flush_input_counter() {

@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../version.h"
+
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
@@ -169,8 +171,7 @@ int main(int argc, char* argv[])
 
 	/* Should use popt in future if new options are added */
 	if (strcmp(argv[1], "--version") == 0 || strcmp(argv[1], "-v") == 0) {
-		// TODO version string.
-		printf("%s: %s compiled on %s %s\n", argv[0], "0.0.0(alpha)", __DATE__, __TIME__);
+		printf("%s : " VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n", argv[0]);
 
 		exit(0);
 	}

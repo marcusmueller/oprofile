@@ -28,6 +28,8 @@ using namespace std;
 
 #include "opf_filter.h"
 
+#include "../version.h"
+
 //---------------------------------------------------------------------------
 // Forward declaration.
 
@@ -35,12 +37,15 @@ class counter_setup;
 
 //---------------------------------------------------------------------------
 // Free function.
+namespace {
 
 string extract_blank_at_begin(const string & str);
 
 ostream & operator<<(ostream & out, const counter_setup &);
 
 double do_ratio(size_t a, size_t total);
+
+}
 
 //---------------------------------------------------------------------------
 // Just allow to read one line in advance and to put_back this line.
@@ -73,7 +78,7 @@ struct counter_setup {
 	counter_setup() : 
 		enabled(false), event_count_sample(0) {}
 
-	// if false other field are not meaningfull.
+	// if false other field are not meaningful.
 	bool   enabled;
 	string event_name;
 	string help_string;
@@ -104,13 +109,13 @@ class output {
 	void output_asm(input & in);
 	void output_source(input & in);
 
-	// output one file unconditionnaly.
+	// output one file unconditionally.
 	void do_output_one_file(istream & in, const string & filename, 
 				const counter_array_t & total_samples_for_file);
 
-	// cumulate counter for a given (filename, linenr).
-	void cumulate_and_output_counter(const string & filename, size_t linenr, 
-					 const string & blank);
+	// accumulate counter for a given (filename, linenr).
+	void accumulate_and_output_counter(const string & filename, size_t linenr, 
+					   const string & blank);
 
 	void read_input(input & in);
 	void treat_line(const string & str);
@@ -134,6 +139,7 @@ class output {
 	// The output stream.
 	ostream & out;
 
+	// used to output the command line.
 	int argc;
 	char const ** argv;
 
@@ -145,7 +151,7 @@ class output {
 	// order on (filename, linenr)
 	sample_container_t samples;
 
-	// oprofpp give some info on the setting of the two counter. These
+	// oprofpp give some info on the setting of the counters. These
 	// are stored here.
 	counter_setup counter_info[max_counter_number];
 
@@ -155,8 +161,8 @@ class output {
 	string end_comment;
 
 	// This is usable only if one of the counter has been setup as: count
-	// some sort of cycles events. In the other case triyng to use it to 
-	// translate samples count to time is a non-sens.
+	// some sort of cycles events. In the other case trying to use it to 
+	// translate samples count to time is a non-sense.
 	double cpu_speed;
 
 	// percent from where the source file is output.
@@ -172,7 +178,9 @@ class output {
 
 //---------------------------------------------------------------------------
 
-// Return the substring at beginning of str wich is only made of blank or tabulation.
+namespace {
+
+// Return the substring at beginning of str which is only made of blank or tabulation.
 string extract_blank_at_begin(const string & str) {
 
 	size_t end_pos = str.find_first_not_of(" \t");
@@ -207,6 +215,8 @@ inline double do_ratio(size_t counter, size_t total) {
 	return total == 0 ? 1.0 : ((double)counter / total);
 }
 
+} // anonymous namespace
+
 //---------------------------------------------------------------------------
 
 counter_array_t::counter_array_t()
@@ -226,8 +236,8 @@ counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
 //--------------------------------------------------------------------------
 
 void sample_entry::debug_dump(ostream & out) const {
-	if (filename.length())
-		out << filename << ":" << linenr << " ";
+	if (file_loc.filename.length())
+		out << file_loc.filename << ":" << file_loc.linenr << " ";
 
 	out << hex << vma << dec << " ";
 
@@ -244,9 +254,9 @@ size_t sample_entry::build(string str, size_t pos, bool have_linenr_info) {
 		if (end_pos == string::npos)
 			throw "vma_info::build(string, size_t, bool) invalid input line";
 
-		filename = str.substr(pos ,end_pos - pos);
+		file_loc.filename = str.substr(pos, end_pos - pos);
 
-		sscanf(str.c_str() + end_pos + 1, "%d", &linenr);
+		sscanf(str.c_str() + end_pos + 1, "%d", &file_loc.linenr);
 
 		pos = str.find(' ', end_pos + 1);
 	}
@@ -272,7 +282,7 @@ void symbol_entry::debug_dump(ostream & out) const {
 
 	out << "counters number range [" << first << ", " << last << "[" << endl;
 
-	sample_entry::debug_dump(out);
+	sample.debug_dump(out);
 }
 
 //---------------------------------------------------------------------------
@@ -357,11 +367,11 @@ void output::debug_dump_vector(ostream & out) const {
 	}
 }
 
-// Some unneccessary complexity to handle the output format of oprofpp
+// Some unnecessary complexity to handle the output format of oprofpp
 // TODO : Perhaps fix oprofpp output to simplify this code? FOR NOW don't touch
 // a this code, see with John if the code of oprofpp can be modified. Or modify
 // the design to use oprofpp function as a libray, this need more work on libbfd
-// becaus we want in some case the disassembly code.
+// because we want in some case the disassembly code.
 void output::setup_counter_param(input & in) {
 	string str;
 	in.read_line(str);
@@ -413,8 +423,12 @@ void output::setup_counter_param(input & in) {
 					str.substr(pos + 1, (end_pos - pos) - 1);
 			}
 
-			// TODO : NA for now, would be passed bye oprofpp.
 			counter_info[counter_number].event_count_sample = 0;
+			pos = str.rfind(") count ");
+			if (pos != string::npos) {
+				sscanf(str.c_str() + pos, ") count %u",
+				       &counter_info[counter_number].event_count_sample);
+				}
 		}
 	} else {
 		in.put_back(str);
@@ -428,7 +442,7 @@ bool output::calc_total_samples() {
 
 	for (size_t i = 0 ; i < symbols.size() ; ++i) {
 		for (size_t j = 0 ; j < max_counter_number ; ++j)
-			counter_info[j].total_samples += symbols[i].counter[j];
+			counter_info[j].total_samples += symbols[i].sample.counter[j];
 	}
 
 	if (sanity_check) {
@@ -441,7 +455,7 @@ bool output::calc_total_samples() {
 		for (size_t i = 0 ; i < max_counter_number ; ++i) {
 			if (total_counter[i] != counter_info[i].total_samples) {
 				cerr << "output::calc_total_samples() : "
-				     << "bad counter cumulation"
+				     << "bad counter accumulation"
 				     << " " << total_counter[i] 
 				     << " " << counter_info[i].total_samples;
 				exit(1);
@@ -484,7 +498,7 @@ output_counter(const counter_array_t & counter, bool comment,
 	if (comment)
 		out << end_comment;
 
-	out << endl;
+	out << '\n';
 }
 
 // Complexity: log(container.size())
@@ -498,11 +512,11 @@ void output::find_and_output_symbol(string str, const char * blank) const {
 	if (symbol) {
 		out <<  blank;
 
-		output_counter(symbol->counter, true, string());
+		output_counter(symbol->sample.counter, true, string());
 	}
 }
 
-// Complexity: log(container.size())
+// Complexity: log(samples.size())
 void output::find_and_output_counter(string str, const char * blank) const {
 	unsigned long vma;
 
@@ -516,12 +530,12 @@ void output::find_and_output_counter(string str, const char * blank) const {
 	}
 }
 
-// Complexity: check the complexity of symbols::find(string, size_t).
+// Complexity: log(symbols.size())
 void output::find_and_output_counter(const string & filename, size_t linenr) const
 {
 	const symbol_entry * symbol = symbols.find(filename, linenr);
 	if (symbol)
-		output_counter(symbol->counter, true, symbol->name);
+		output_counter(symbol->sample.counter, true, symbol->name);
 }
 
 void output::output_asm(input & in) {
@@ -538,14 +552,14 @@ void output::output_asm(input & in) {
 				find_and_output_counter(str, " ");
 			}
 		}
-		out << str << endl;
+		out << str << '\n';
 	}
 }
 
-void output::cumulate_and_output_counter(const string & filename, size_t linenr,
-					 const string & blank) {
+void output::accumulate_and_output_counter(const string & filename, size_t linenr,
+					   const string & blank) {
 	counter_array_t counter;
-	if (samples.cumulate_samples(counter, filename, linenr)) {
+	if (samples.accumulate_samples(counter, filename, linenr)) {
 		out << blank;
 
 		output_counter(counter, true, string());
@@ -586,10 +600,10 @@ void output::do_output_one_file(istream & in, const string & filename,
 
 		find_and_output_counter(filename, linenr);
 
-		cumulate_and_output_counter(filename, linenr, blank);
+		accumulate_and_output_counter(filename, linenr, blank);
 
 		if (linenr != 0)
-			out << str << endl;
+			out << str << '\n';
 	}
 }
 
@@ -614,7 +628,7 @@ void output::output_source(input & /*in*/) {
 	set<string> filename_set;
 
 	for (size_t i = 0 ; i < samples.size() ; ++i) {
-		filename_set.insert(samples[i].filename);
+		filename_set.insert(samples[i].file_loc.filename);
 	}
 
 	// Give a sort order on filename for each counter.
@@ -628,7 +642,7 @@ void output::output_source(input & /*in*/) {
 
 			counter_array_t total_count_for_file;
 
-			samples.cumulate_samples_for_file(total_count_for_file, *it);
+			samples.accumulate_samples_for_file(total_count_for_file, *it);
 			
 			if (counter_info[i].enabled) {
 				percent = do_ratio(total_count_for_file[i],
@@ -794,7 +808,7 @@ void output::treat_line(const string & str) {
 
 			symbol_entry symbol;
 
-			size_t pos = symbol.build(str, 0, have_linenr_info);
+			size_t pos = symbol.sample.build(str, 0, have_linenr_info);
 
 			pos = str.find(' ', pos);
 			symbol.name = str.substr(pos + 1, (str.length() - pos) - 1);
@@ -953,9 +967,7 @@ static void get_options(int argc, char const * argv[])
 	}
 
 	if (showvers) {
-		// TODO version string.
-		printf("%s: %s compiled on %s %s\n", 
-		       argv[0], "0.0.0(alpha)", __DATE__, __TIME__);
+		printf("%s : " VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n", argv[0]);
 		exit(0);
 	}
 
@@ -968,6 +980,11 @@ static void get_options(int argc, char const * argv[])
 //---------------------------------------------------------------------------
 
 int main(int argc, char const * argv[]) {
+
+#if (__GNUC__ >= 3)
+	// this improve a little what performance with gcc 3.0.
+	std::ios_base::sync_with_stdio(false);
+#endif
 
 	get_options(argc, argv);
 

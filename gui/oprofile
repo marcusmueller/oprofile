@@ -3,62 +3,53 @@
 # the next line restarts using wish \
 exec wish "$0" "$@"
 
-# Do not worry me about problems of design in this file. This is my first
-# tcl/tk app so in many case I have write dirty thing to work around
-# documentation failure and/or my poor knowledge of tcl/tk, but the 
-# script seems to work fine. I need feed back from a tcl/tk wizard on
-# many thing in this file.
+# This is my first tcl/tk app so in many case I have write dirty thing to work around my
+# poor knowledge of tcl/tk. I need feed back from a tcl/tk wizard on many thing in this file.
+
+# BAD thing : the unit mask is not saved properly. There is also some tricky
+# code about managing the unit mask. The correct solution is probably to put the
+# um option button directly on the main form so user will get meaningful info about
+# this problem. This must be made when finishing the port to multiple (P IV) counter
+
+# The only place where I make some supposition on the number of counter is
+# inside the gui creation ( proc setup_event_frame )
 
 # global var
-global event_type_0 event_type_1
-global old_event_type_0 old_event_type_1
-global event_type_list
-global unit_mask_0 unit_mask_1
-global counter_0 counter_1
-global usr_count_0 kernel_count_0 usr_count_1 kernel_count_1
-global ctr_edge_detect_0 ctr_edge_detect_1
-global kernel_filename map_filename
-global buffer_size hash_size
-global kernel_only ignore_myself
-global pid_filter pgrp_filter
-global base_dir samples_dir
-global device_filename hashmap_device_file log_filename
+
+# The maximum number of counter. Would be a parameter read at run time or a configure
+# time option
+set max_counter_number 2
+
+# To manipulate the global var needed by each counter.
+set counter_setup_var { event_type counter unit_mask usr_count kernel_count ctr_edge_detect }
 
 # This is defined in oprofile.h
-global OP_MAX_PERF_COUNT
 set OP_MAX_PERF_COUNT 2147483647
-
-set old_event_type_0 ""
-set old_event_type_1 ""
 
 #  This section contains the setting of default hard-coded value. They are
 # use only if the ~./oprofile/gui_advanced_setup.defaults do not exist else
-# this value are overrided by loading the configuration file.
+# this value are override by loading the configuration file.
 # Must be coherent with op_start and the documentation (not strongly required, 
 # this is just required to not confuse the user).
 
+for { set i 0 } { $i < $max_counter_number } { incr i } {
+    set event_type_$i "DISABLED"
+    set counter_$i 600000
+    set unit_mask_$i -1
+    set ctr_edge_detect_$i 0
+    set usr_count_$i 1
+    set kernel_count_$i 1
+
+    set old_event_type_$i ""
+}
+
 set event_type_0 "CPU_CLK_UNHALTED"
-set event_type_1 "DISABLED"
-
-set counter_0 600000
-set counter_1 600000
-
-set unit_mask_0 0
-set unit_mask_1 0
-
-set ctr_edge_detect_0 0
-set ctr_edge_detect_1 0
-
-set usr_count_0 1
-set usr_count_1 1
-set kernel_count_0 1
-set kernel_count_1 1
 
 # In some situation it is incorrect to get the System.map and kernel
 # filename from here but this provide a correct default value in many case.
-set build_dir [concat /lib/modules/[exec uname -r]/build]
-set kernel_filename [concat $build_dir/vmlinux]
-set map_filename [concat $build_dir/System.map]
+set build_dir /lib/modules/[exec uname -r]/build
+set kernel_filename $build_dir/vmlinux
+set map_filename $build_dir/System.map
 
 set buffer_size 262144
 set hash_size 65536
@@ -77,8 +68,17 @@ set log_filename "oprofiled.log"
 
 # utilities proc
 
+proc str_eq { a b } {
+    if { $a == $b } then {
+	return 1
+    } else {
+	return 0
+    }
+}
+
 # item_list: { name text }*
 proc create_checkbutton_group { parent_name side width item_list } {
+
     foreach i $item_list {
 	set button_name $parent_name[lindex $i 0]
 	set button_text [lindex $i 1]
@@ -92,7 +92,7 @@ proc create_checkbutton_group { parent_name side width item_list } {
     }
 }
 
-# create a simple text entry optionnally read only.
+# create a simple text entry optionally read only.
 proc create_text { parent_name name height read_only } {
 
     set name $parent_name$name
@@ -110,22 +110,17 @@ proc create_text { parent_name name height read_only } {
     pack $name
 }
 
-# item_list: { name value text [ { command value }* ] }*
+# item_list: { name value text ["additional command"] }
 proc create_radiobutton_group { parent_name var_name side item_list } {
 
     foreach i $item_list {
 
 	set name $parent_name[lindex $i 0]
-	set value [lindex $i 1]
-	set text [lindex $i 2]
 
-	radiobutton $name -text $text -variable $var_name -value $value
+	radiobutton $name -text [lindex $i 2] -variable $var_name -value [lindex $i 1]
 
 	if [ expr [ llength $i] >= 4 ] then {
-	    # TODO : this is not clean but how to pass "-state disabled"
-	    # and correctly interpret it here.
-	    set cmd [lindex $i 3]
-	    $name configure [lindex $cmd 0] [lindex $cmd 1]
+	    uplevel $name configure [lrange [lindex $i 3] 0 end]
 	}
 
 	if { $side == "top" || $side == "bottom" } then {
@@ -136,7 +131,6 @@ proc create_radiobutton_group { parent_name var_name side item_list } {
     }
 }
 
-
 # Return the event entry list for event name hint else an empty list.
 proc search_event { hint } {
     global event_type_list
@@ -146,8 +140,6 @@ proc search_event { hint } {
 	    return $i
 	}
     }
-
-    return { }
 }
 
 # Return 1 if the event named hint need a (non-mandatory) unit mask option, 
@@ -155,8 +147,7 @@ proc search_event { hint } {
 proc need_unit_mask { hint } {
     set i [search_event $hint]
 
-    if { [expr [ llength $i ] > 4] && \
-	     [string compare [lindex $i 4] mandatory] } then {
+    if { [expr [ llength $i ] > 4] && [str_eq [lindex $i 4] mandatory] == 0 } then {
 	return 1
     } else {
 	return 0
@@ -164,23 +155,25 @@ proc need_unit_mask { hint } {
 }
 
 # return a list usable as the param item_list of create_radiobutton_group.
-proc create_event_list { processor_mask counter_mask } {
-
+proc create_event_list { counter } {
+    global processor_type
     global event_type_list
+
+    set counter_mask [expr 1 << $counter ]
+    set processor_mask [expr 1 << $processor_type]
 
     set j 1
 
     foreach i $event_type_list {
-	set entry rb$j
-	lappend entry [ lindex $i 0 ]
-	lappend entry [ lindex $i 0 ]
+	# this work because [lindex $i 0] is a single word string
+	set entry "rb$j [lindex $i 0] [lindex $i 0]"
 
 	if { ! ( ( [ lindex $i 1 ] & $processor_mask) &&
 	     ( [ lindex $i 2 ] & $counter_mask) )  } then {
-	    # TODO : see comment in create_radiobutton_group : it is better
-	    # to: lappend entry "-state disabled" but it do not work
-	    lappend entry { -state disabled }
+	    lappend entry "-state disabled"
 	}
+
+	lappend entry "-command \"onRadiobuttonChange $counter 1\""
 
 	lappend temp_list $entry
 	incr j
@@ -189,18 +182,46 @@ proc create_event_list { processor_mask counter_mask } {
     return $temp_list;
 }
 
-# Start the profiling.
-# Some dirty fix in this proc : building completly the command line do not work
-# it seems than tcl/tk interpret a var containing  
-# --map-file=map_filename --ctr0-count=100000
-# as the argument "--map-file=map_filename --ctr0-count" and "=10000".
-# Workaround is to build the cmd line separatly
+# return 1 if the profiler is started else return 0
+proc is_profiler_started {} {
+
+    set ps_x [exec ps -x]
+    if { [string first oprofiled $ps_x] != -1 } {
+	return 1
+    }
+
+    return 0
+}
+
+# pre-condition : the counter is not disabled.
+# return 1 if setup is ok or if user bypass the warning else return 0.
+proc validate_counter_setup { counter } {
+
+    global usr_count_$counter kernel_count_$counter
+    global counter_$counter
+    global OP_MAX_PERF_COUNT
+
+    if { [set usr_count_$counter] == 0 && [set kernel_count_$counter] == 0 } then {
+	tk_messageBox -message "You must enable at least one of the USR ring count/OS ring count for counter $counter"
+	return 0
+    }
+
+    set message [op_check_range counter_$counter 500 $OP_MAX_PERF_COUNT]
+    if { [string length $message] != 0 } then {
+	set answer [tk_messageBox -type yesno -message \
+			"invalid parameter apply anyway ? :$message"]
+	case $answer {
+	    no { return 0 }
+	}
+    }
+
+    # Some other validation needed here ?
+
+    return 1
+}
+
+# Start the profiler.
 proc onStartProfiling {} {
-    global event_type_0 event_type_1
-    global counter_0 counter_1
-    global kernel_count_0 usr_count_0 kernel_count_1 usr_count_1
-    global ctr_edge_detect_0 ctr_edge_detect_1
-    global unit_mask_0 unit_mask_1
     global processor_type
     global kernel_filename map_filename
     global buffer_size hash_size
@@ -209,10 +230,12 @@ proc onStartProfiling {} {
     global base_dir samples_dir
     global device_filename hashmap_device_file log_filename
 
-    if { [string compare $event_type_0 DISABLED] == 0 && 
-	 [string compare $event_type_1 DISABLED] == 0 } then {
- 	tk_messageBox -message "you must enable at least one of the counter"
- 	return
+    if { [is_profiler_started] == 1 } {
+	    set answer [tk_messageBox -type yesno -message \
+			    "profiler is already started : stop and restart it ?"]
+	    case $answer {
+		no { return }
+	    }
     }
 
     # This can be redundant some times and give twice time the warning message to 
@@ -222,124 +245,85 @@ proc onStartProfiling {} {
 	return
     }
 
-    global OP_MAX_PERF_COUNT
+    global max_counter_number
 
-    if { [string compare [set event_type_0] DISABLED] != 0 } then {
-	if { $usr_count_0 == 0 && $kernel_count_0 == 0 } then {
-	    tk_messageBox -message "You must enable at least one of the USR ring count/OS ring count for counter 0"
-	    return
-	}
+    # for now validation is made counter by counter, if requested it can be make
+    # by accumulating error message and by showing only one error message.
+    for { set i 0 } { $i < $max_counter_number } { incr i } {
 
-	set message [op_check_range counter_0 500 $OP_MAX_PERF_COUNT]
-	if { [string length $message] != 0 } then {
-	    set answer [tk_messageBox -type yesno -message \
-			    "invalid parameter apply anyway ? :$message"]
-	    case $answer {
-		no { return }
+	global event_type_$i
+
+	if { [str_eq [set event_type_$i] DISABLED] == 0 } {
+
+	    global counter_$i
+
+	    if { [validate_counter_setup $i] == 0 } then {
+		return
 	    }
 	}
     }
 
-    if { [string compare [set event_type_1] DISABLED] != 0 } then {
-	if { $usr_count_1 == 0 && $kernel_count_1 == 0 } then {
-	    tk_messageBox -message "You must enable at least one of the USR ring count/OS ring count for counter 1"
-	    return
-	}
+    set args ""
 
-	set message [op_check_range counter_1 500 $OP_MAX_PERF_COUNT]
-	if { [string length $message] != 0 } then {
-	    set answer [tk_messageBox -type yesno -message \
-			    "invalid parameter apply anyway ? :$message"]
-	    case $answer {
-		no { return }
+    global counter_setup_var
+
+    for { set i 0 } { $i < $max_counter_number } { incr i } {
+
+	if { [str_eq [set event_type_$i] DISABLED] == 0 } {
+	    
+	    foreach item $counter_setup_var {
+		global [set item]_$i
 	    }
+
+	    append args " --ctr$i-event=[set event_type_$i]"
+	    append args " --ctr$i-count=[set counter_$i]"
+	    append args " --ctr$i-kernel=[set kernel_count_$i]"
+	    append args " --ctr$i-user=[set usr_count_$i]"
+
+	    # A value of -1 is used to mark than unit mask has not been set but
+	    # op_start needs a 0 value in this case.
+	    if { [set unit_mask_$i] == -1 } then {
+		append args " --ctr$i-unit-mask=0"
+	    } else {
+		append args " --ctr$i-unit-mask=[set unit_mask_$i]"
+	    }
+
+	    append args " --ctr$i-edge-detect=[set ctr_edge_detect_$i]"
 	}
     }
 
-    # Some other validation needed here ?
-    # TODO : do we need more check or lets the op_start/daemon making the 
-    # check, the problem is that the op_start/daemon are a little too verbose.
-    # The way tcl/tk handle of the error message is not really cleanly.
-
-    # :( redundant code we must separate all case
-    if { [string compare [set event_type_0] DISABLED] && 
-	 [string compare [set event_type_1] DISABLED] } then {
-	# counter 0 / 1 enabled
-	tk_messageBox -message "[exec op_start --ctr0-event=$event_type_0 \
-	    --ctr0-count=$counter_0 \
-	    --ctr0-kernel=$kernel_count_0 \
-	    --ctr0-user=$usr_count_0 \
-	    --ctr0-unit-mask=$unit_mask_0 \
-	    --ctr0-edge-detect=$ctr_edge_detect_0 \
-	    --ctr1-event=$event_type_1 \
-	    --ctr1-count=$counter_1 \
-	    --ctr1-kernel=$kernel_count_1 \
-	    --ctr1-user=$usr_count_1 \
-	    --ctr1-unit-mask=$unit_mask_1 \
-	    --ctr1-edge-detect=$ctr_edge_detect_1 \
-	    --use-cpu=$processor_type \
-	    --map-file=$map_filename \
-	    --vmlinux=$kernel_filename \
-	    --ignore-myself=$ignore_myself \
-	    --kernel-only=$kernel_only \
-	    --pid-filter=$pid_filter \
-	    --pgrp-filter=$pgrp_filter \
-	    --base-dir=$base_dir \
-	    --samples-dir=$base_dir/$samples_dir \
-	    --device-file=$base_dir/$device_filename \
-	    --hash-map-device-file=$base_dir/$hashmap_device_file \
-	    --log-file=$base_dir/$log_filename]\n\
-            or to use the Flush profile data button"
-    } elseif { [string compare [set event_type_0] DISABLED] != 0 } then {
-	# counter 0 only
-	tk_messageBox -message "[exec op_start --ctr0-event=$event_type_0 \
-	    --ctr0-count=$counter_0 \
-	    --ctr0-kernel=$kernel_count_0 \
-	    --ctr0-user=$usr_count_0 \
-	    --ctr0-unit-mask=$unit_mask_0 \
-	    --ctr0-edge-detect=$ctr_edge_detect_0 \
-	    --use-cpu=$processor_type \
-	    --map-file=$map_filename \
-	    --vmlinux=$kernel_filename  \
-            --ignore-myself=$ignore_myself \
-	    --kernel-only=$kernel_only \
-	    --pid-filter=$pid_filter \
-	    --pgrp-filter=$pgrp_filter \
-	    --base-dir=$base_dir \
-	    --samples-dir=$base_dir/$samples_dir \
-	    --device-file=$base_dir/$device_filename \
-	    --hash-map-device-file=$base_dir/$hashmap_device_file \
-	    --log-file=$base_dir/$log_filename]\n\
-            or to use the Flush profile data button"
-    } else {
-	# counter 1 only
-	tk_messageBox -message "[exec op_start --ctr1-event=$event_type_1 \
-	    --ctr1-count=$counter_1 \
-	    --ctr1-kernel=$kernel_count_1 \
-	    --ctr1-user=$usr_count_1 \
-	    --ctr1-unit-mask=$unit_mask_1 \
-	    --ctr1-edge-detect=$ctr_edge_detect_1 \
-	    --use-cpu=$processor_type \
-	    --map-file=$map_filename \
-	    --vmlinux=$kernel_filename  \
-	    --ignore-myself=$ignore_myself \
-	    --kernel-only=$kernel_only \
-	    --pid-filter=$pid_filter \
-	    --pgrp-filter=$pgrp_filter \
-	    --base-dir=$base_dir \
-	    --samples-dir=$base_dir/$samples_dir \
-	    --device-file=$base_dir/$device_filename \
-	    --hash-map-device-file=$base_dir/$hashmap_device_file \
-	    --log-file=$base_dir/$log_filename]\n\
-            or to use the Flush profile data button"
+    # If args is empty this means there is no counter enabled.
+    if { [string length $args] == 0 } then {
+ 	tk_messageBox -message "you must enable at least one of the counter"
+ 	return
     }
+
+    append args " --use-cpu=$processor_type"
+    append args " --map-file=$map_filename"
+    append args " --vmlinux=$kernel_filename"
+    append args " --kernel-only=$kernel_only"
+    append args " --pid-filter=$pid_filter"
+    append args " --pgrp-filter=$pgrp_filter"
+    append args " --base-dir=$base_dir"
+    append args " --samples-dir=$base_dir/$samples_dir"
+    append args " --device-file=$base_dir/$device_filename"
+    append args " --hash-map-device-file=$base_dir/$hashmap_device_file"
+    append args " --log-file=$base_dir/$log_filename"
+
+    # "uplevel ..." is the right way in tcl/tk to separate arguments in an exec command.
+    tk_messageBox -message "[uplevel exec op_start [lrange $args 0 end]]\n\
+               or to use the Flush profile data button"
 }
 
 # Stop the profiling.
 proc onStopProfiling {} {
-    onFlushData
 
-    tk_messageBox -message [exec op_stop]
+    if { [is_profiler_started] == 1 } then {
+	onFlushData
+	tk_messageBox -message [exec op_stop]
+    } else {
+	tk_messageBox -message "profiler already stopped"
+    }
 }
 
 # Flush the profiling data.
@@ -453,15 +437,15 @@ proc save_setup { filename destroy_old_file } {
 	puts $fd "# Defaults configuration of start profiler's gui"
 	puts $fd "# Do not add comment this file, comment will be lost"
 
-	set var_list { event_type_0 event_type_1 unit_mask_0 unit_mask_1
-	    counter_0 counter_1 usr_count_0 kernel_count_0 
-	    usr_count_1 kernel_count_1 ctr_edge_detect_0 ctr_edge_detect_1
-	}
+	global max_counter_number
+	global counter_setup_var
 
-	foreach i $var_list {
-	    global $i
+	for { set i 0 } { $i < $max_counter_number } { incr i } {
+	    foreach item $counter_setup_var {
+		global [set item]_$i
 
-	    puts $fd "$i=[set $i]"
+		puts $fd "[set item]_$i=[set [set item]_$i]"
+	    }
 	}
 
 	close $fd
@@ -472,16 +456,16 @@ proc save_setup { filename destroy_old_file } {
     }
 }
 
-# load the the setup and conditionnaly the advanced setup.
+# load the setup and conditionally the advanced setup.
 # force_advanced_setup_load :
 # 0 : check than the user wants to reload from the defaults.
-# 1 : unconditionnaly reload from the current setup
-proc load_setup { force_advanced_setup_load } {
+# 1 : unconditionally reload from the current setup
+proc load_setup { filename force_advanced_setup_load } {
     save_setup gui_setup.defaults 0
 
     copy_file_if_not_exist gui_setup
 
-    set fd [open ~/.oprofile/gui_setup r]
+    set fd [open ~/.oprofile/$filename r]
 
     while { [gets $fd temp] != -1 } {
 	if { [string first "\#" $temp ] != 0 } then {
@@ -511,17 +495,21 @@ proc load_setup { force_advanced_setup_load } {
 	    load_advanced_setup gui_advanced_setup
 	}
     }
+
+    # this is needed to enable/disable the unit_mask option and to
+    # ensure than the unit_mask is correctly setup.
+    onRadiobuttonChange 0 0
+    onRadiobuttonChange 1 0
 }
 
-# return an empty string if the range is ok else return 
-# "\n\n$prefix not in range :\n$value"
-# Note than allowed range is (min, max) and not (min, max( to be coherent with 
+# return an empty string if the range is ok.
+# Note than allowed range is (min, max) and not (min, max( to be coherent with
 # the op_check_range() macro in oprofile.h
 proc op_check_range { value min max } {
 
     global $value
 
-    # this is to be coherent with op_check_range() macro in oprofile.h
+    # this is coherent with op_check_range() macro in oprofile.h
     if { [set $value] < $min || [set $value] > $max } then {
 	return "\n\n$value is not in the allowed range ($min, $max) :\n[set $value]"
     }
@@ -533,11 +521,12 @@ proc op_check_range { value min max } {
 # 0 : ok, 
 # 1 some problem occur but the user request to ignore it
 # 2 some problem occur and the user request a cancel operation.
-# For now I disallow the user to try with really invalidate value.
+# For now I allow the user to try with really invalidate value.
 proc validate_advanced_setup {} {
     global kernel_filename map_filename
     global buffer_size hash_size
-    # TODO : some of this need validation?
+    # TODO : some of this need validation. Perhaps warn if directory does
+    # not exist to avoid some common pitfall ?
 #    global kernel_only ignore_myself
 #    global pid_filter pgrp_filter
 #    global base_dir samples_dir
@@ -546,18 +535,18 @@ proc validate_advanced_setup {} {
     set message ""
 
     if { [file isfile $kernel_filename] == 0 } then {
-	set message "\n\nvmlinux does not exist :\n$kernel_filename"
+	append message "\n\nvmlinux does not exist :\n$kernel_filename"
     }
 
     if { [file isfile $map_filename] == 0 } then {
-	set message "$message\n\nSystem.map does not exist :\n$map_filename"
+	append message "\n\nSystem.map does not exist :\n$map_filename"
     }
 
-    set message "$message[op_check_range hash_size 256 262144]"
-    set message "$message[op_check_range buffer_size 1024 1048576]"
+    append message "[op_check_range hash_size 256 262144]"
+    append message "[op_check_range buffer_size 1024 1048576]"
 
     if { [string length $message] != 0 } then {
-        set answer [tk_messageBox -type yesnocancel -message "these paramaters are not correct apply anyway ? :$message"]
+        set answer [tk_messageBox -type yesnocancel -message "these parameters are not correct apply anyway ? :$message"]
               case $answer {
                   yes { return 0 }
                   no { return 1 }
@@ -627,8 +616,8 @@ proc onDefaultAdvancedSetup {} {
 
     load_advanced_setup gui_advanced_setup.defaults
 
-    # it is normal than kernel_only and ignore_myself are omitted here, they
-    # are treated separately in the code.
+    # kernel_only and ignore_myself are omitted here, they are treated
+    # separately in the code.
     set var_list { kernel_filename map_filename buffer_size hash_size
 	pid_filter pgrp_filter base_dir samples_dir device_filename
 	hashmap_device_file log_filename
@@ -647,13 +636,13 @@ proc onDefaultAdvancedSetup {} {
 }
 
 # not reusable : dedicated to be called from onAdvancedSetup proc.
-proc create_entry { name value label label_name width } {
+proc create_entry { name label label_name width } {
     global $name
 
     set f .f_advanced_setup
 
     entry $f.$name -width $width
-    $f.$name insert end $value
+    $f.$name insert end [set $name]
     label $f.$label_name -text $label
 
     pack $f.$label_name $f.$name -side top
@@ -675,17 +664,23 @@ proc onAdvancedSetup {} {
 
     wm title $f "Advanced setup"
 
-    create_entry kernel_filename $kernel_filename "kernel filename" l1 $width
-    create_entry map_filename $map_filename "System.map" l2 $width
-    create_entry buffer_size $buffer_size "buffer size" l3 $width
-    create_entry hash_size $hash_size "hash size" l4 $width
-    create_entry pid_filter $pid_filter "pid filter (if compiled in)" l5 $width
-    create_entry pgrp_filter $pgrp_filter "pgrp filter (if compiled in)" l6 $width
-    create_entry base_dir $base_dir "base dir of daemon" l7 $width
-    create_entry samples_dir $samples_dir "samples dir file" l8 $width
-    create_entry device_filename $device_filename "device file" l9 $width
-    create_entry hashmap_device_file $hashmap_device_file "hash map device" l10 $width
-    create_entry log_filename $log_filename "daemon log file" l11 $width
+    create_entry kernel_filename "kernel filename" l1 $width
+    create_entry map_filename "System.map" l2 $width
+    create_entry buffer_size "buffer size" l3 $width
+    create_entry hash_size "hash size" l4 $width
+    create_entry pid_filter "pid filter (if compiled in)" l5 $width
+    create_entry pgrp_filter "pgrp filter (if compiled in)" l6 $width
+    create_entry base_dir "base dir of daemon" l7 $width
+    create_entry samples_dir "samples dir file" l8 $width
+    create_entry device_filename "device file" l9 $width
+    create_entry hashmap_device_file "hash map device" l10 $width
+    create_entry log_filename "daemon log file" l11 $width
+
+    # these field are integer only.
+    bind $f.buffer_size <Key> { onValidateKey "0123456789" %A }
+    bind $f.hash_size <Key> { onValidateKey "0123456789" %A }
+    bind $f.pid_filter <Key> { onValidateKey "0123456789" %A }
+    bind $f.pgrp_filter <Key> { onValidateKey "0123456789" %A }
 
     frame $f.cb
     pack $f.cb -side top -fill x
@@ -725,9 +720,7 @@ proc set_default_help_string { hint } {
 }
 
 #  Called on mouse motion on the main form to handle the setup of the help
-# string in the status bar. Unhopefully this proc is not called if the user
-# scroll with the keyboard and the mouse pointer is inside a radiobutton.
-#  Perhaps an event such as onActivate will work better.
+# string in the status bar.
 proc onMouseMotion { w } {
 
     switch -regexp "$w" {
@@ -740,32 +733,56 @@ proc onMouseMotion { w } {
     }
 }
 
+# TODO : This is probably not the right thing to do, particullary
+# constant \x7f is probably a bad thing.
+proc onValidateKey { allow a } {
+#    tk_messageBox -message "\"$a\""
+
+    if { [string first $a $allow] != -1 } then {
+	return
+    }
+
+    # back space
+    if { $a == "\b" } then {
+	return
+    }
+
+    # accept hard tab
+    if { $a  == "	" } then {
+	return
+    }
+
+    # suppr key : really not cleanly handled.
+    if { $a == "\x7f" } then {
+	return
+    }
+
+    # something like an arrow key, modifier key etc
+    if { [string length $a] == 0 } then {
+	return
+    }
+
+#    tk_messageBox -message "\"$a\""
+
+    return -code break
+}
+
 # Called when the user request ok in the f_unit_mask_option form.
-#  The main purpose of this proc is to update the global unit_mask_[0|1]
+#  The main purpose of this proc is to update the global unit_mask
 # with the user input into the f_unit_mask_option frame.
 proc onOptionMaskOk { counter } {
     global event_type_$counter unit_mask_$counter
 
-    set i [search_event [set event_type_$counter]]
-
-    set type_u_mask [lindex $i 4]
-    set default_value [lindex $i 5]
-    set list [lindex $i 6]
-
-    set temp 0
-
     if { [need_unit_mask [set event_type_$counter]] } then {
+
+	set i [search_event [set event_type_$counter]]
 
 	set type_u_mask [lindex $i 4]
 
 	# for exclusive mode, the variable is setup directly by tcl/tk
-	if { [string compare $type_u_mask exclusive ] } then  {
+	if { [str_eq $type_u_mask exclusive]  == 0 } then  {
 	    # assert type_u_mask == bit_mask
 	    set list [lindex $i 6]
-
-	    # need a two pass algorithm, the first ensure than the umask is ok, then
-	    # if ok the second pass destroy global var. For now i do not delete global
-	    # var
 
 	    set button_order 1
 	    set temp 0
@@ -781,10 +798,9 @@ proc onOptionMaskOk { counter } {
 		set temp [expr [set $var] | $temp]
 
 		# The form will be closed : clean up global var.
-		# Phe : the dialog is not neccessarily closed so we need to not
-		# destroy the global var. This leads to a minor memory leaks but
-		# it can occur only one time by oprofile gui session, so don't worry
-		# me about that.
+		# The dialog is not necessarily closed so we need not to destroy
+		# the global var. This leads to a minor memory leaks but it can occur
+		# only one time by oprofile gui session, so don't worry me about that.
 #		unset b$button_order
 
 		incr button_order
@@ -801,15 +817,14 @@ proc onOptionMaskOk { counter } {
     } else {
 	# maintainers : this means than event_type_list is bad or a bug in
 	# the function which translate the event_list.
-	tk_messageBox \
-	    -message \
-	    "Internal error [set event_type_$counter] do not require unit mask"
+	tk_messageBox -message \
+	    "Internal error [set event_type_$counter] does not require unit mask"
     }
 
     destroy .f_unit_mask_option
 }
 
-# Create the f_unit_mask_option form. Carefull this create some global variable
+# Create the f_unit_mask_option form. Careful this create some global variable
 # destroyed by the onOptionMaskOk proc
 proc onUnitMaskClick { counter } {
 
@@ -822,23 +837,23 @@ proc onUnitMaskClick { counter } {
 
 	toplevel .f_unit_mask_option
 
-	wm title .f_unit_mask_option \
-	    "unit mask option ([lindex $i 0]-Counter $counter)"
+	wm title .f_unit_mask_option "unit mask option ([lindex $i 0]-Counter $counter)"
 
 	set type_u_mask [lindex $i 4]
 	set default_value [lindex $i 5]
 	set list [lindex $i 6]
 
-	global unit_mask_$counter
-
 	# if radiobutton are created this setup the default checked radiobutton
 	# here we try to keep the old value of the unit mask as restored from
 	# the configuration file.
-	if { [set unit_mask_$counter] == 0 } then {
+
+	# -1 means unit mask has not been set, so in this case we need to put the
+	# default value.
+	if { [set unit_mask_$counter] == -1 } then {
 	    set unit_mask_$counter $default_value
 	}
 
-	if { [string compare $type_u_mask exclusive] } then {
+	if { [str_eq $type_u_mask exclusive] == 0 } then {
 	    # checkbutton to implement bit_mask
 	    set button_order 1
 	    foreach j $list {
@@ -891,8 +906,7 @@ proc onUnitMaskClick { counter } {
 		incr button_order
 	    }
 
-	    create_radiobutton_group .f_unit_mask_option. \
-		unit_mask_option_$counter top $temp_list
+	    create_radiobutton_group .f_unit_mask_option. unit_mask_$counter top $temp_list
 	}
 
 	# now create the ok cancel button
@@ -911,8 +925,7 @@ proc onUnitMaskClick { counter } {
 	# maintainers : this means than event_type_list is bad or a bug in
 	# the function which translate the event_list.
 	tk_messageBox \
-	    -message \
-	    "Internal error [set event_type_$counter] do not require unit mask"
+	    -message "Internal error [set event_type_$counter] do not require unit mask"
     }
 }
 
@@ -927,14 +940,14 @@ proc onRadiobuttonChange { counter reset_unit_mask } {
 
     set i [search_event [set event_type_$counter]]
 
-    # This test is needed to avoid unecessary reset of the unit_mask
-    # Note than the unit_mask is never saved in the config file neither
-    # saved here : setting the masking, changing the event, reputting the old
-    # event then the mask is reseted. TODO : fix this
-    if { [string compare [set old_event_type_$counter] \
-	      [set event_type_$counter]] } then {
+    # Note than unit_mask is saved in the config file only once and not for
+    # each event type so, changing the event and reputing the old event lose
+    # the mask. TODO : fix this ?
+
+    # This test is needed to avoid unnecessary reset of the unit_mask
+    if { [str_eq [set old_event_type_$counter] [set event_type_$counter]] == 0 } then {
 	if { [expr [ llength $i ] > 4] } {
-	    if { [string compare [lindex $i 4] mandatory] } then {
+	    if { [str_eq [lindex $i 4] mandatory] == 0 } then {
 		$button_path configure -state normal
 	    } else {
 		$button_path configure -state disabled
@@ -943,7 +956,13 @@ proc onRadiobuttonChange { counter reset_unit_mask } {
 	    set default_value [lindex $i 5]
 
 	    if { $reset_unit_mask } then {
-		set unit_mask_$counter $default_value
+		# For exclusive mode we need to set the unit_mask to -1 to really
+		# mark than the unit mask has been not set. See also onUnitMaskClick
+		if { [str_eq [lindex $i 4] exclusive] == 1 } then {
+		    set unit_mask_$counter -1
+		} else {
+		    set unit_mask_$counter $default_value
+		}
 	    }
 	} else {
 	    $button_path configure -state disabled
@@ -956,39 +975,30 @@ proc onRadiobuttonChange { counter reset_unit_mask } {
 }
 
 # Setup all the stuff needed by one counter
-proc create_event_frame { parent counter processor_type } {
+proc create_event_frame { parent counter } {
     set w $parent._$counter
-
-    set counter_mask [expr 1 << $counter ]
-    set processor_mask [expr 1 << $processor_type]
 
     frame $w
     pack $w -side left
     scrollbar $w.sb1 -command "$w.canvas yview"
     pack $w.sb1 -side right -fill y
     canvas $w.canvas -yscrollcommand "$w.sb1 set"
-    frame  $w.f
     pack $w.canvas
+    frame $w.f
 
     # create the event list.
-    set temp_list [create_event_list $processor_mask $counter_mask]
+    set temp_list [create_event_list $counter]
     create_radiobutton_group $w.f. event_type_$counter top $temp_list
 
-    # configure the cmd for checkbutton
-    foreach i $temp_list  {
-	set button $w.f.[lindex $i 0]
-	$button configure -command "onRadiobuttonChange $counter 1"
-	# TODO : button are not correctly expanded
-#	pack $button -side top -fill x -anchor w -expand yes
-    }
-
-    # TODO how to constrain editable text to be an integer ?
     set f_counter .f_counter.f_counter_$counter
 
     frame $f_counter
     pack $f_counter -side left
     entry $f_counter.counter_$counter -width 12 -textvariable counter_$counter
     pack $f_counter.counter_$counter -anchor w
+
+    # This field is integer only.
+    bind $f_counter.counter_$counter <Key> { onValidateKey "0123456789" %A }
 
     if { $counter == 1 } then {
 	place $f_counter -relx 0.5
@@ -1005,8 +1015,6 @@ proc create_event_frame { parent counter processor_type } {
 	{ usr_count "USR ring count" }
     }
 
-    global usr_count_$counter kernel_count_$counter ctr_edge_detect_$counter
-
     $f_counter.kernel_count configure -variable kernel_count_$counter
     $f_counter.usr_count configure -variable usr_count_$counter
     $f_counter.edge_detect configure -variable ctr_edge_detect_$counter
@@ -1019,16 +1027,15 @@ proc create_event_frame { parent counter processor_type } {
 	place $f_unit_mask -relx 0.5
     }
 
-    button $f_unit_mask.btn_unit_mask -text "Unit Mask" -state disabled \
-	-command "onUnitMaskClick $counter"
+    button $f_unit_mask.btn_unit_mask -text "Unit Mask" -command "onUnitMaskClick $counter"
     pack $f_unit_mask.btn_unit_mask
 }
 
 # The main procedure.
-proc setup_event_frame { processor } {
+proc setup_event_frame { } {
 
-    create_event_frame .f_event_type 0 $processor
-    create_event_frame .f_event_type 1 $processor
+    create_event_frame .f_event_type 0
+    create_event_frame .f_event_type 1
 
     # Avoid some screen flick but some wm cannot handle properly this
     #  If you experiment some problem try to comment this line and the 
@@ -1064,7 +1071,7 @@ proc setup_event_frame { processor } {
 # create and layout the frame container.
 
 # TODO : put all this code in setup_event_frame
-load_setup 1
+#load_setup gui_setup 1
 
 # TODO : how to get dynamically the correct width ?
 wm geometry . 576x600
@@ -1089,7 +1096,6 @@ pack $f.f_start_stop $f.f_config -side top -fill x -expand yes
 
 set f .f_config_and_start_stop.f_start_stop
 
-# TODO : check if profiling is already started ?
 button $f.b_start -text "Start profiler" -command onStartProfiling -width 16
 button $f.b_stop -text "Stop profiler" -command onStopProfiling -width 16
 button $f.b_flush -text "Flush profile data" -command onFlushData -width 16
@@ -1099,7 +1105,7 @@ pack $f.b_start $f.b_stop $f.b_flush -side left -expand yes
 set f .f_config_and_start_stop.f_config
 
 button $f.b_advanced_setup -text "Advanced setup" -command onAdvancedSetup -width 16
-button $f.b_default_setup -text "Load default setup" -command "load_setup 0" -width 16
+button $f.b_default_setup -text "Load default setup" -command "load_setup gui_setup.defaults 0" -width 16
 button $f.b_quit_and_save_setup -text "Quit and save setup" -command "save_setup gui_setup 1\ndestroy ." -width 16
 
 pack $f.b_advanced_setup $f.b_default_setup $f.b_quit_and_save_setup \
@@ -1107,6 +1113,9 @@ pack $f.b_advanced_setup $f.b_default_setup $f.b_quit_and_save_setup \
 
 set processor_type -1
 set title ""
+
+# Fixme : Celeron Copermine string ?, how to != between a celeron with
+# a PII core and a PIII core ? TODO look into the core source file.
 
 set cpuinfo_file [open /proc/cpuinfo r]
 while { [gets $cpuinfo_file var] != -1 } {
@@ -1149,20 +1158,21 @@ wm title . "Profiling option for $title processor"
 #  1 : avail for PPro
 #  2 : avail for P2
 #  4 : avail for P3
-#  8 : avail fo P4  currently not supported.
+#  8 : avail for P4  currently not supported.
 # 3 bit mask
 #  1 : available for counter 0
 #  2 : available for counter 1
+#  4 : and so on...
 # 4 help string displayed in the status bar.
-# optionnal args follow :
+# optional args follow :
 # 5 a string in { mandatory bit_mask exclusive }
 #  mandatory entry are event that need this particular value for this event
 #  bit_mask means the different value can be or'ed
-#  exclusive means than only one of ths value can be passed to thep profiler.
+#  exclusive means than only one of the value can be passed to the profiler.
 # 6 the default value
 # 7 a list of  : { unit_bit_mask_or_value string }+
 set event_type_list {
-    { DISABLED 255 255 "Select it to disable this counter" }
+    { DISABLED -1 -1 "Select it to disable this counter" }
     { CPU_CLK_UNHALTED 7 3 "Clock processor not halted" }
     { DATA_MEM_REFS 7 3 "All memory reference, cachable and non" }
     { DCU_LINES_IN  7 3 "Total line allocated in DCU" }
@@ -1278,7 +1288,7 @@ set event_type_list {
 	    { 32 "any transitions" }
 	}
     }
-    { BUS_TRANS_P 7 3 "Number of parial transactions"
+    { BUS_TRANS_P 7 3 "Number of partial transactions"
 	exclusive 32
 	{
 	    { 0 "self-generated transactions" }
@@ -1325,11 +1335,11 @@ set event_type_list {
     { BUS_HIT_DRV 7 3 "bus cycles this processor is driving HIT pin" }
     { BUS_HITM_DRV 7 3 "bus cycles this processor is driving HITM pin" }
     { BUS_SNOOP_STALL 7 3 "cycles during bus snoop stall" }
-    { COMP_FLOP_RET 7 1 \
+    { COMP_FLOP_RET 7 1
 	  "Number of computational FP operations retired - Counter 0 only" }
-    { FLOPS 7 1 \
+    { FLOPS 7 1
 	  "Number of computational FP operations executed - Counter 0 only" }
-    { FP_ASSIST 7 2 \
+    { FP_ASSIST 7 2
 	"Number of exceptions handled by microcode - Counter 1 only" }
     { MUL 7 2 "Number of multiplies - Counter 1 only" }
     { DIV 7 2 "Number of divides - Counter 1 only" }
@@ -1421,7 +1431,7 @@ set event_type_list {
     }
     { MMX_ASSIST 6 3 "Number of EMMS instructions executed - P2/P3 only" }
     { MMX_INSTR_RET 2 3 "Number of MMX instructions retired - P2 only" }
-    { SEG_RENAME_STALLS 6 3 \
+    { SEG_RENAME_STALLS 6 3
 	  "Number of segment register renaming stalls - P2/P3 only" 
 	bit_mask 15
 	{
@@ -1442,15 +1452,22 @@ set event_type_list {
 	    { 15 "ES, DS, FS, GS register" }
 	}
     }
-    { RET_SEG_RENAMES 6 3 \
+    { RET_SEG_RENAMES 6 3
 	  "Number of segment register rename events retired - P2/P3 only" }
 }
 
-setup_event_frame $processor_type
+setup_event_frame
 
-# this is needed to enable/disable the unit_mask option and to ensure than
-# the unit_mask_option is correctly setup.
-onRadiobuttonChange 0 0
-onRadiobuttonChange 1 0
+load_setup gui_setup 1
 
 set_default_help_string $event_type_0
+
+# debug : list all the widgets from the desired root.
+# proc list_widgets {w {depth 0}} {
+#     puts [format "%*s %s is a %s" $depth "" $w [winfo class $w]]
+#     foreach child [winfo children $w] {
+#         list_widgets $child [expr $depth + 4]
+#     }
+# }
+
+# list_widgets .

@@ -8,16 +8,8 @@
 // The maximum number of counter. Would be a parameter coming from configure.
 static const size_t max_counter_number = 2;
 
-//
-// I don't like 
-// #ifdef TEST ... code ... #endif features I use rather
-// if (sanity_check)  { ... code  ... } and I rely on the dead code
-// elimination's algotithm of compilers for efficiency.
-//
+// Add run-time checking if true.
 static const bool sanity_check = true;
-
-//---------------------------------------------------------------------------
-// Forward declaration.
 
 //---------------------------------------------------------------------------
 // A simple container of counter to give independency on the number of hardware counters.
@@ -51,8 +43,8 @@ struct file_location {
 
 //---------------------------------------------------------------------------
 // associate vma address with (filename linenr counter[])
-// The public derivation do not express an Is-A relation.
-struct sample_entry : public file_location {
+struct sample_entry {
+	file_location file_loc;
 	unsigned long vma;        // would be bfd_vma but avoid depend on bfd.h
 	counter_array_t counter;
 
@@ -63,10 +55,10 @@ struct sample_entry : public file_location {
 
 //---------------------------------------------------------------------------
 // stored as a vector<symbol_entry> sorted by increased vma.
-// The public derivation do not express an Is-A relation
-struct symbol_entry : public sample_entry {
+struct symbol_entry {
+	sample_entry sample;
 	string name;
-	// [first, last[ index inside the vector<sample_entry>
+	// [first, last[ index inside the container of sample_entry.
 	size_t first;
 	size_t last;
 
@@ -111,13 +103,13 @@ class sample_container_t {
 
 	const sample_entry & operator[](size_t index) const;
 
-	bool cumulate_samples_for_file(counter_array_t & counter, 
-				       const string & filename) const;
+	bool accumulate_samples_for_file(counter_array_t & counter, 
+					 const string & filename) const;
 
 	const sample_entry * find_by_vma(unsigned long vma) const;
 
-	bool cumulate_samples(counter_array_t &, const string & filename, 
-			      size_t linenr) const;
+	bool accumulate_samples(counter_array_t &, const string & filename, 
+				size_t linenr) const;
 
 	void flush_input_counter();
 

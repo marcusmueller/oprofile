@@ -1,3 +1,20 @@
+2001-07-15  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/oprofiled.c: fix oprofiled --version to work even if the
+	  profiler is not already started.
+
+	* gui/oprofile: many cleanup. Fix bug track #435248. Make the gui more
+	  independant on the number of counter.
+
+	* pp/op_to_source: fix bug in command line arguments handling.
+	
+	* pp/opf_filter.h:
+	* pp/opf_filter.cpp:
+	* pp/opf_container.cpp: Apply some cleanup suggested by John, principally
+	  change few inheritance to composition.
+
+	* pp/oprof_convert.c: fix --version.
+
 2001-07-14  Philippe Elie  <ph_e@club-internet.fr>
 
 	* doc/oprofile.sgml:

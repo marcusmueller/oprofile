@@ -10,7 +10,7 @@ do_to_asm=false
 seen_sample_file=false
 
 # TODO : fix the problem : bash sequeeze repeated blank char so
-# echo "see $0 --help" do not wok correctly with bash, same problem in op_start
+# $0 --help does not work correctly with bash. The same problem exist in op_start.
 help_string='op-to-source usage: op-to-source [option] [image-file]$
   -a --assembly                    output assembly code$
   -s --source-with-assembly        mix asm with source file (imply --assembly)$
@@ -19,7 +19,7 @@ help_string='op-to-source usage: op-to-source [option] [image-file]$
   -u --until-more-than-samples     show all source files until the threshold specified is reached (0-100 allowed)$
 --with-more-than-samples and --until-more-samples can not be specified together$
   -f --samples-file                specify the samples file$
-  -I --image-file                  specify the image file$
+  -i --image-file                  specify the image file$
   -d --demangle                    demangle symbol name$
   -h --help                        this message$
 at least one of the image-file or the sample-file must be given$'
@@ -36,7 +36,7 @@ do
 			;;
 		-c|--sort-by-counter)
 			shift
-			if [ x$1 == x"" ]; then
+			if [ "$1" == "" ]; then
 				echo "Missing counter argument to --sort-by-counter option"
 				echo "see $0 --help"
 				exit 1
@@ -51,18 +51,18 @@ do
 			;;
 		-f|--samples-file)
 			shift
-			if [ x$1 == x"" ]; then
-				echo "Missing sample-file to -f option"
+			if [ "$1" == "" ]; then
+				echo "Missing sample-file to --samples-file option"
 				echo "see $0 --help"
 				exit 1
 			fi
 			oprofpp_option="$oprofpp_option -f $1"
 			seen_sample_file=true
 			;;
-		-I|--image-file)
+		-i|--image-file)
 			shift
-			if [ x$1 == x"" ]; then
-				echo "Missing image-file to -I option"
+			if [ "$1" == "" ]; then
+				echo "Missing image-file to --image-file option"
 				echo "see $0 --help"
 				exit 1
 			fi
@@ -74,8 +74,8 @@ do
 			;;
 		-w|--with-more-than-samples)
 			shift
-			if [ x$1 == x"" ]; then
-				echo "Missing percent argument to -w option"
+			if [ "$1" == "" ]; then
+				echo "Missing percent argument to --with-more-than-samples option"
 				echo "see $0 --help"
 				exit 1
 			fi
@@ -83,15 +83,15 @@ do
 			;;
 		-u|--until-more-than-samples)
 			shift
-			if [ x$1 == x"" ]; then
-				echo "Missing percent argument to -u option"
+			if [ "x$1" == "" ]; then
+				echo "Missing percent argument to --until-more-than-samples option"
 				echo "see $0 --help"
 				exit 1
 			fi
 			op_filter_option="$op_filter_option --until-more-than-samples $1"
 			;;
 		*)
-			echo "Unknown option \"$arg\". See $0 --help"
+			echo "Unknown option \"$1\". See $0 --help"
 			echo "$#"
 			exit 1
 			;; 
@@ -100,30 +100,30 @@ do
 done
 
 # Check than enough option has been given.
-if [ $object_file == "" -a x$seen_sample_file == x"false" ]; then
+if [ "$object_file" == "" -a "$seen_sample_file" == "false" ]; then
 	echo "You need to give at least an object-file or a sample-file"
 	echo "see $0 --help"
 	exit 1
 fi
 
-# TODO : this is not sufficient, we need also to handle relative path name,
-# but oprofpp needs an absolute pathname. Gcc tree source contains somewhere
-# the neccessary code. Perhaps fix that in oprofpp.c ?
-case $object_file in
-	/*)
-		;;
-	*)
-		object_file=$PWD/$object_file
-		;;
-esac
+if [ "$object_file" != "" ]; then
+	# TODO : this is not sufficient, we need also to handle relative path name,
+	# but oprofpp needs an absolute pathname. Gcc tree source contains somewhere
+	# the neccessary code. Fix that in oprofpp.c.
+	case $object_file in
+		/*)
+			;;
+		*)
+			object_file=$PWD/$object_file
+			;;
+	esac
 
-if [ x$object_file != x"" ]; then
 	oprofpp_option="$oprofpp_option -L $object_file"
 fi
 
 #echo "option : $op_filter_option"
 
-if [ x$do_to_asm == x"true" ]; then
+if [ "$do_to_asm" == "true" ]; then
 	# TODO : how to break the pipe if the first part of a pipeline loss ?
 	(oprofpp $oprofpp_option && echo "DISASSEMBLY_MARKER" && \
 		objdump $object_file $objdump_option) | opf_filter $op_filter_option
