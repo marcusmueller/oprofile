@@ -993,8 +993,9 @@ do_dump() {
 #tell daemon to re-open the sample files
 hup_daemon() {
 	if test -f "$LOCK_FILE"; then
-		echo "Signalling daemon..."
+		echo -n "Signalling daemon... "
 		kill -HUP `cat $LOCK_FILE` 
+		echo "done"
 	fi
 }
  

@@ -1,3 +1,8 @@
+2003-09-04  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/opcontrol: tweak "signalling daemon " message as suggested
+	  by Carlo Wood
+
 2003-09-04  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: mention --reset in
