@@ -8,6 +8,9 @@
  not accounted for any symbols this can be implemented through special symbol
  name so all utilities including op_time will handle them w/o any modification
  (symbols named xxxx-section_name xxxx = ?)
+ o handle demangle in op_time, and show image name before the symbol too
+ 
+ o get symbol size via elf instead of bfd
  
 Before 1.0
 ----------
@@ -34,7 +37,6 @@ Before 1.0
  o improve format of oprofpp output etc.
  o profile the NMI handler code
  o verify builds (modversions, kernel versions, athlon etc.)
- o post-prof GUI ? (big job)
  o use a filelock rather a sleep to synchronize op_start and daemon.
  o check chroot() processes and the path hash stuff
  o use nm and a little script to track unused function.
@@ -42,6 +44,8 @@ Before 1.0
 Later
 -----
 
+o post-prof GUI ? (big job)
+ 
 o merge sample files into one big report (like vtune can do repeated runs)
  
 ? o move .oprofile to name=value pairs to avoid conflicts on change.

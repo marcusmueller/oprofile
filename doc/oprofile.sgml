@@ -1082,7 +1082,7 @@ is to merge samples files created by profiling with &mdash;separate-samples. So 
 file containing all samples for a shared libs:
 <command>op_merge</command><filename>/usr/lib/ld-2.1.2.so</filename> will create a samples file named
 <filename>}usr}lib}ld-2.1.2.so</filename> ready to use with <command>oprofpp</command> or other post-profiling tools.
-Additionnaly you can merge a subset of samples files inside one sample file by specifying explicitly the samples files name to merge.
+Additionally you can merge a subset of samples files inside one sample file by specifying explicitly the samples files name to merge.
 This allows to use post-profile tools on shared libs for a subset of applications.
 </para>
 <para>
