@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.21 2000/08/25 03:53:13 moz Exp $ */
+/* $Id: oprofile.c,v 1.22 2000/08/25 20:24:59 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 
@@ -538,14 +538,15 @@ void oprof_stop_thread(void)
 
 spinlock_t note_lock __cacheline_aligned = SPIN_LOCK_UNLOCKED;
 
-void oprof_out8(void *buf)
+void oprof_out8(struct op_sample *ops)
 {
 	struct _oprof_data *data = &oprof_data[0];
 
+	/* FIXME: IPIs are expensive */
 	spin_lock(&note_lock);
 	pmc_select_stop(0);
 
-	memcpy(&data->buffer[data->nextbuf],buf,8);
+	memcpy(&data->buffer[data->nextbuf],ops,8);
 	if (++data->nextbuf==(data->buf_size-OP_PRE_WATERMARK)) {
 		oprof_ready[0] = 1;
 		wake_up(&oprof_wait);
@@ -636,6 +637,7 @@ again:
 
 doit:
 	pmc_select_stop(i);
+	spin_lock(&note_lock);
 
 	num = oprof_data[i].nextbuf;
 	/* might have overflowed */
@@ -645,10 +647,11 @@ doit:
 
 	mybuf->count = mybuf->pid = 0;
 	mybuf->eip = num;
-	memcpy(mybuf+sizeof(struct op_sample),oprof_data[i].buffer,max);
+	memcpy(mybuf+1,oprof_data[i].buffer,max);
+	spin_unlock(&note_lock);
 	pmc_select_start(i);
 
-	if (copy_to_user(buf,mybuf, count))
+	if (copy_to_user(buf, mybuf, count))
 		count = -EFAULT;
 
 	kfree(mybuf);

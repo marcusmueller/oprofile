@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.10 2000/08/25 03:49:52 moz Exp $ */
+/* $Id: oprofile.h,v 1.11 2000/08/25 20:24:59 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -50,7 +50,7 @@ struct _oprof_data {
 /* oprof_data->ready will be set this many samples
  * before the end of the eviction buffer
  */
-#define OP_PRE_WATERMARK 10
+#define OP_PRE_WATERMARK 50
 
 #define OP_BITS 2
 /* 1==mapping info, 0 otherwise */
