@@ -1,3 +1,8 @@
+2003-08-08  Will Cohen  <wcohen@redhat.com>
+	* dae/Makefile.am:
+	* daemon/Makefile.am: Correct library linking order.
+	* daemon/opd_util.c: Add needed include files.
+
 2003-08-08  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* utils/opcontrol: move_and_remove() do nothing if source doesn't exist

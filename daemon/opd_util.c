@@ -13,6 +13,8 @@
  
 #include "opd_util.h"
 #include "op_config.h"
+#include "op_libiberty.h"
+#include "op_abi.h"
 
 #include <sys/types.h>
 #include <stdlib.h>

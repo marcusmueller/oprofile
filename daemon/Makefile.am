@@ -37,8 +37,8 @@ oprofiled_SOURCES = $(dist_sources)
 
 if enable_abi
 oprofiled_LDADD = \
-	../libabi/libabi.a \
 	libdaemon.a \
+	../libabi/libabi.a \
 	../libdb/libodb.a \
 	../libop/libop.a \
 	../libutil/libutil.a
