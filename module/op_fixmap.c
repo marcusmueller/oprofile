@@ -18,6 +18,7 @@ unsigned long virt_apic_base;
 /* some static commented out to avoid warning, trying to figure out
  * in exactly which circumstances we need this function is too prone
  * error to be made w/o a full rebuild of supported kernel version */
+/* how about __attribute__(__unused__) then ? */
 
 /*static*/ void set_pte_phys(ulong vaddr, ulong phys)
 {

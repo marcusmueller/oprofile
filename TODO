@@ -2,18 +2,17 @@
 ---------------
 
  o review free_fixmap (already tested)
- o get symbol size via elf instead of bfd
- o add support for samples not belonging to any symbols probably through
-   artificially created symbols
-   these two todo are perhaps worthwhile to implement now. The new filtering
-   of symbols make them less interesting.
- o should we pin rather than loop sample buffer overflow too ?
  o check oprofpp output/op_time format
- o test note_lock changes
  
 Before 1.0
 ----------
 
+ o get symbol size via elf instead of bfd
+ o add support for samples not belonging to any symbols probably through
+   artificially created symbols
+   these two todo are perhaps worthwhile to implement now. The new filtering
+   of symbols make them less interesting. - let's wait - john
+ o should we pin rather than loop sample buffer overflow too ?
  o coherent naming class conventions
  o use standard C integer type <stdint.h> int32_t int16_t etc.
 	- but they are so ugly ...
@@ -24,7 +23,6 @@ Before 1.0
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o test it to hell and back
  o compile all C++ programs with STL_port and test them
- o check documentation
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level.
  o verify builds (modversions, kernel versions, athlon etc.). I have the
@@ -38,7 +36,10 @@ Before 1.0
   first from where come the overhead (read/write RTC CMOS is costly)
  o gcc 3.0/3.1 compile. (3.1 is not stable currently but I follow it, Phil)
  o determine where we need preempt_disable/enable to prevent pre-emption + test
- o thread profiling in the old and new flavour (2.5 introduce a new thread handling)
+ o thread profiling in the old and new flavour (2.5 introduce a new thread handling) (also
+   see NGPT bug on sf)
+ o split documentation into tutorial + ref. Include /everything/ in the ref: sample format,
+   logfile meanings etc. 
 
 Later
 -----
