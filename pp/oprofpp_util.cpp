@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.47 2002/04/24 17:59:31 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.48 2002/04/30 20:42:15 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -341,8 +341,6 @@ opp_bfd::opp_bfd(const opd_header* header, const std::string & filename)
 	}
 
 	nr_samples = opd_get_fsize(filename.c_str(), 0);
-	if (header->is_kernel)
-		nr_samples += OPD_KERNEL_OFFSET;
 
 	open_bfd_image(filename, header->is_kernel);
 
@@ -363,7 +361,7 @@ opp_bfd::~opp_bfd()
 /**
  * open_bfd_image - opp_bfd ctor helper
  * \param file name of a valid image file
- * \param is_kernel true if the image is the kernel (FIXME or a module ?)
+ * \param is_kernel true if the image is the kernel or a module
  *
  * This function will open a bfd image and process symbols
  * within this image file
@@ -387,11 +385,15 @@ void opp_bfd::open_bfd_image(const std::string & filename, bool is_kernel)
 		exit(EXIT_FAILURE);
 	}
 
+	/* Kernel / kernel modules are calculated as offsets against 
+	 * the .text section, so they need special handling
+	 */
 	if (is_kernel) {
 		asection *sect;
 		sect = bfd_get_section_by_name(ibfd, ".text");
-		sect_offset = OPD_KERNEL_OFFSET - sect->filepos;
-		verbprintf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n", sect_offset, sect->filepos); 
+		sect_offset = sect->filepos;
+		verbprintf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n", 
+			sect_offset, sect->filepos); 
 	}
 
 	get_symbols();
@@ -507,13 +509,6 @@ bool opp_bfd::get_symbols()
 
 u32 opp_bfd::sym_offset(uint sym_index, u32 num) const
 {
-	if (num - sect_offset > num) {
-		fprintf(stderr,"oprofpp: less than zero offset ? \n");
-		exit(EXIT_FAILURE); 
-	}
-
-	/* adjust for kernel images */
-	num -= sect_offset;
 	/* take off section offset */
 	num -= syms[sym_index]->section->filepos;
 	/* and take off symbol offset from section */
@@ -650,7 +645,7 @@ size_t opp_bfd::symbol_size(uint sym_idx) const
 
 	next = (sym_idx == syms.size() - 1) ? NULL : syms[sym_idx + 1];
 
-	u32 start = sym->section->filepos + sym->value + sect_offset;
+	u32 start = (sym->section->filepos - sect_offset) + sym->value;
 	size_t length;
 
 #ifndef USE_ELF_INTERNAL
@@ -658,9 +653,7 @@ size_t opp_bfd::symbol_size(uint sym_idx) const
 	if (next) {
 		end = next->value;
 		/* offset of section */
-		end += next->section->filepos;
-		/* adjust for kernel image */
-		end += sect_offset;
+		end += (next->section->filepos - sect_offset);
 	} else
 		end = nr_samples;
 
@@ -676,7 +669,7 @@ size_t opp_bfd::symbol_size(uint sym_idx) const
 		u32 next_offset = start;
 		if (next) {
 			next_offset = next->value +
-				next->section->filepos + sect_offset;
+				(next->section->filepos - sect_offset);
 		} else {
 			next_offset = nr_samples;
 		}
@@ -697,10 +690,8 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 	verbprintf("Symbol %s, value 0x%lx\n", sym->name, sym->value); 
 	start = sym->value;
 	/* offset of section */
-	start += sym->section->filepos;
+	start += (sym->section->filepos - sect_offset);
 	verbprintf("in section %s, filepos 0x%lx\n", sym->section->name, sym->section->filepos);
-	/* adjust for kernel image */
-	start += sect_offset;
 
 	if (is_excluded_symbol(sym->name)) {
 		end = start;

@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.21 2002/03/22 21:18:43 phil_e Exp $ */
+/* $Id: op_user.h,v 1.22 2002/04/30 20:42:15 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -109,9 +109,6 @@ typedef enum {
 #define OP_MIN_RTC_COUNT	2
 
 /*@}*/
-
-/** kernel image entries are offset by this many entries */
-#define OPD_KERNEL_OFFSET 524288
 
 /** maximum number of counters, up to 4 for Athlon (18 for P4). The primary
  * use of this variable is for static/local array dimension. Never use it in 

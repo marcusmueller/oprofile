@@ -1,5 +1,12 @@
 2002-04-30  John Levon  <moz@compsoc.man.ac.uk>
 
+	* op_user.h:
+	* dae/opd_proc.c:
+	* pp/oprofpp_util.cpp: first part of removing
+	  OPD_KERNEL_OFFSET
+
+2002-04-30  John Levon  <moz@compsoc.man.ac.uk>
+
 	* module/op_nmi.c: also allow user to see 0/ 1/ contents
  
 2002-04-30  William Cohen  <wcohen@nc.rr.com>

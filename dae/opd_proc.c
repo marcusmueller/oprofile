@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.110 2002/04/24 17:59:30 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.111 2002/04/30 20:42:15 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -397,9 +397,6 @@ static void opd_check_image_mtime(struct opd_image * image)
  * image file. Overflow pins the count at the maximum
  * value.
  *
- * If the image is a kernel or module image, the position
- * is further offset by %OPD_KERNEL_OFFSET.
- *
  * @count is the raw value passed from the kernel.
  */
 void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count)
@@ -417,10 +414,6 @@ void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count)
 			return;
 		}
 	}
-
-	/* FIXME: this is no longer required ? */
-	if (image->kernel)
-		offset += OPD_KERNEL_OFFSET;
 
 	db_insert(&sample_file->tree, offset, opd_get_count(count));
 }
