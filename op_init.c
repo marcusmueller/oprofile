@@ -1,4 +1,4 @@
-/* $Id: op_init.c,v 1.7 2001/09/06 18:13:28 movement Exp $ */
+/* $Id: op_init.c,v 1.8 2001/09/08 21:46:03 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -18,6 +18,10 @@
 #include "oprofile.h"
 
 EXPORT_NO_SYMBOLS;
+
+MODULE_PARM(expected_cpu_type, "i");
+MODULE_PARM_DESC(expected_cpu_type, "Allow checking of detected hardware from the user space");
+static int expected_cpu_type = -1;
 
 extern int cpu_type;
 extern uint op_nr_counters;
@@ -46,6 +50,21 @@ static int __init hw_ok(void)
 	if (cpu_type == CPU_ATHLON) {
 		op_nr_counters = 4;
 		separate_running_bit = 1;
+	}
+
+	if (expected_cpu_type != -1 && expected_cpu_type != cpu_type) {
+
+		printk("oprofile: user space/module cpu detection mismatch\n");
+
+		/* FIXME: oprofile list */
+		printk("please send the next line and your /proc/cpuinfo to moz@compsoc.man.ac.uk\n");
+
+		printk("vendor %d step %d model %d, expected_cpu_type %d, cpu_type %d\n",
+		       current_cpu_data.x86_vendor, current_cpu_data.x86,
+		       current_cpu_data.x86_model, expected_cpu_type,
+		       cpu_type);
+
+		return CPU_NO_GOOD;
 	}
 	return cpu_type;
 }

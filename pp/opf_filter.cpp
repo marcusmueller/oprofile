@@ -45,7 +45,7 @@ ostream & operator<<(ostream & out, const counter_setup &);
 
 double do_ratio(size_t a, size_t total);
 
-// FIXME: must change this
+// The correct value is passed by oprofpp on standard input.
 uint op_nr_counters = 2;
 }
 
@@ -174,6 +174,8 @@ class output {
 
 	// sort source by this counter.
 	size_t sort_by_counter;
+
+	int cpu_type;
 
 	bool until_more_than_samples;
 
@@ -345,6 +347,7 @@ output::output(ostream & out_, int argc_, char const * argv_[],
 	cpu_speed(0.0),
 	threshold_percent(threshold_percent_),
 	sort_by_counter(sort_by_counter_),
+	cpu_type(-1),
 	until_more_than_samples(until_more_than_samples_),
 	have_linenr_info(have_linenr_info_)
 {
@@ -908,6 +911,8 @@ void output::output_command_line() const {
 		// assembly ?
 	}
 
+	out << "Cpu type: " << cpu_type << endl;
+
 	out << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
 
 	out << endl;
@@ -919,6 +924,17 @@ bool output::treat_input(input & in) {
 	setup_counter_param(in);
 
 	string str;
+	in.read_line(str);
+
+	if (sscanf(str.c_str(), "Cpu type: %d", &cpu_type) != 1) {
+		cerr << "unable to read cpu_type\n";
+
+		return false;
+	}
+
+	if (cpu_type == CPU_ATHLON)
+		op_nr_counters = 4;
+
 	in.read_line(str);
 
 	if (sscanf(str.c_str(), "Cpu speed was (MHz estimation) : %lf", &cpu_speed) != 1) {

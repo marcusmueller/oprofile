@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.22 2001/09/06 18:13:28 movement Exp $ */
+/* $Id: op_events.c,v 1.23 2001/09/08 21:46:03 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -429,6 +429,81 @@ const char* op_get_cpu_type_str(int cpu_type)
 	return cpu_type_str[cpu_type];
 }
 
+
+/* module have its own stuff to detect cpu type */
+#ifndef MODULE
+
+struct op_cpu_type {
+	const char *cpu_name;
+	int cpu_type;
+};
+
+/* string must be in the correct order to not hide a forward string eg.
+ * order "Pentium II" "Pentium III" is bad because the first hide the second */
+static struct op_cpu_type op_cpu_types[] = {
+	{ "PentiumPro", CPU_PPRO },
+	{ "Pentium III",CPU_PIII },
+	{ "Pentium II", CPU_PII },
+	{ "Pentium III",CPU_PIII },
+	{ "Athlon",	CPU_ATHLON },
+	{ "Duron",	CPU_ATHLON },
+	{ "K7",		CPU_ATHLON },
+	{ "Celeron",	CPU_PII },
+	{ "Coppermine", CPU_PIII },
+};
+
+#define OP_CPU_TYPES_NR (sizeof(op_cpu_types) / sizeof(op_cpu_types[0]))
+
+/**
+ * op_get_cpu_type - get from /proc/cpuinfo the cpu type
+ *
+ * return DEFAULT_CPU_TYPE if the cpu type is un-recognizable
+ * FIXME: return -1
+ */
+int op_get_cpu_type(void)
+{
+	int cpu_type;
+	char line[256];
+	char *model_name;
+	FILE* fp;
+	uint i;
+	int found = 0;
+
+	cpu_type = DEFAULT_CPU_TYPE;
+
+	fp = fopen("/proc/cpuinfo", "r");
+	if (!fp) {
+		fprintf(stderr, "Unable to open /proc/cpuinfo for reading\n");
+
+		return cpu_type;
+	}
+
+	while (fgets(line, sizeof(line) - 1, fp)) {
+		if (strncmp(line, "model name\t: ", strlen("model name\t: ")) == 0) {
+			model_name = line + strlen("model name\t: ");
+
+			for (i = 0; i < OP_CPU_TYPES_NR; i++) {
+				if (strncmp(model_name, op_cpu_types[i].cpu_name, strlen(op_cpu_types[i].cpu_name)) == 0) {
+					cpu_type = op_cpu_types[i].cpu_type;
+
+					found = 1;
+				}
+			}
+		}
+	}
+
+	if (!found) {
+		/* FIXME: use oprofile mail list adress here ? */
+		fprintf(stderr, "Unknown CPU type. Please send /proc/cpuinfo to moz@compsoc.man.ac.uk\n");
+	}
+
+	return cpu_type;
+}
+
+#undef OP_CPU_TYPES_NR
+
+#endif
+
 #ifdef OP_EVENTS_DESC
 struct op_unit_desc {
 	char *desc[7];
@@ -795,6 +870,8 @@ int main(int argc, char *argv[])
 	int cpu_type_mask;
 	int for_gui;
 
+	cpu_type = op_get_cpu_type();
+
 	for_gui = 0;
 	for (i = 1 ; i < argc ; ++i) {
 		if (!strcmp(argv[i], "--version")) {
@@ -810,7 +887,11 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "invalid cpu type %d, default to to %s\n", cpu_type, cpu_type_str[DEFAULT_CPU_TYPE]);
 				cpu_type = DEFAULT_CPU_TYPE;
 			}
-		}  else if (!strcmp(argv[1], "--gui-description")) {
+		} else if (!strncmp(argv[i], "--get-cpu-type", 11)) {
+			printf("%d\n", cpu_type);
+
+			exit(EXIT_SUCCESS);
+		} else if (!strcmp(argv[1], "--gui-description")) {
 			for_gui = 1;
 		} else {
 			cpu_type_mask = 1 << cpu_type;

@@ -207,7 +207,11 @@ static void do_mapping_transfer(uint nr_samples, int counter,
 	int dirty;
 
 	if (cpu_type == -1 || cpu_type < 0 || cpu_type > 3) {
+		/* do not default it to allow tricky user to convert on a
+		 * hardware that is not the harware used to generate the sample
+		 * file */
 		fprintf(stderr, "converting %s to new file format require option --cpu-type=[0|1|2|3]\n", filename);
+		fprintf(stderr, "use \"op_help --get-cpu-type\" to get your cpu type or specify the cpu type used to generate this samples file\n");
 		return;
 	}
 

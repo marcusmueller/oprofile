@@ -93,10 +93,6 @@ Only profile process pid (if compiled in)
 Only profile process group pgrp (if compiled in)
 .br
 .TP
-.I "--use-cpu"
-0 or PPro, 1 for PII, 2 for PIII
-.br
-.TP
 .I "--ignore-myself"
 ignore samples for oprofiled
 .br

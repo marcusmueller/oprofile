@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.38 2001/09/06 18:13:28 movement Exp $ */
+/* $Id: oprofpp.c,v 1.39 2001/09/08 21:46:04 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1051,16 +1051,19 @@ int main(int argc, char const *argv[])
  
 	get_options(argc, argv);
 
-	// FIXME: we must discover op_nr_counters from cpu_type of sample
-	// file or something
-	for (i = 0; i < op_nr_counters ; ++i) {
+	/* op_nr_counters is discovered from the samples itself, until we
+	 * have opened the samples file(s) we must loop over all the possible
+	 * available counters. This is a little what ugly but it allows
+	 * to interpret samples files on a different hardware where the
+	 * the profiler has run */
+	for (i = 0; i < OP_MAX_COUNTERS; ++i) {
 		fd[i] = -1;
 		size[i] = 0;
 		samples[i] = NULL;
 		footer[i] = NULL;
 	}
 
-	for (i = 0; i < op_nr_counters ; ++i) {
+	for (i = 0; i < OP_MAX_COUNTERS ; ++i) {
 		if (ctr == -1 || ctr == (int)i)
 			/* if ctr == i, this means than we open only one
 			 * samples file so don't allow opening failure to get
@@ -1068,23 +1071,23 @@ int main(int argc, char const *argv[])
 			fd[i] = open_samples_file(i, &size[i], ctr != (int)i);
 	}
 
-	for (i = 0; i < op_nr_counters ; ++i) {
+	for (i = 0; i < OP_MAX_COUNTERS ; ++i) {
 		if (fd[i] != -1)
 			break;
 	}
 
-	if (i == op_nr_counters) {
+	if (i == OP_MAX_COUNTERS) {
 		fprintf(stderr, "Can not open any samples files for %s last error %s\n", samplefile, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
 	/* sanity check between the different samples files */
-	for (i = 0 ; i < op_nr_counters; ++i) {
+	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
 		if (fd[i] != -1)
 			break;
 	}
 
-	for (j = i + 1; j < op_nr_counters ; ++j) {
+	for (j = i + 1; j < OP_MAX_COUNTERS; ++j) {
 		if (fd[j] != -1) {
 			if (size[i] != size[j]) {
 				fprintf(stderr, "oprofpp: mapping file size "
@@ -1099,7 +1102,7 @@ int main(int argc, char const *argv[])
 	}
 
 	/* output and sanity check on ctr_um, ctr_event and cpu_type */
-	for (i = 0 ; i < op_nr_counters ; ++i) {
+	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
 		if (fd[i] != -1) {
 			check_and_output_event(i);
 
@@ -1122,10 +1125,15 @@ int main(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	for (i = 0; i < op_nr_counters ; ++i) {
+	for (i = 0; i < OP_MAX_COUNTERS; ++i) {
 		if (fd[i] != -1)
 			break;
 	}
+
+	if (footer[i]->cpu_type == CPU_ATHLON)
+		op_nr_counters = 4;
+
+	printf("Cpu type: %d\n", footer[i]->cpu_type);
 
 	printf("Cpu speed was (MHz estimation) : %f\n", footer[i]->cpu_speed);
 

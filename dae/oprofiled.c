@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.41 2001/09/06 18:13:28 movement Exp $ */
+/* $Id: oprofiled.c,v 1.42 2001/09/08 21:46:04 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -419,7 +419,7 @@ int main(int argc, char const *argv[])
 	struct sigaction act;
 	int i;
 
-	cpu_type = opd_read_int_from_file("/proc/sys/dev/oprofile/cpu_type");
+	cpu_type = op_get_cpu_type();
 	if (cpu_type == CPU_ATHLON)
 		op_nr_counters = 4;
 

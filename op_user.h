@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.5 2001/09/06 18:13:28 movement Exp $ */
+/* $Id: op_user.h,v 1.6 2001/09/08 21:46:03 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -169,5 +169,6 @@ const char* op_get_cpu_type_str(int cpu_type);
 /* not used currently */
 int op_check_events_str(int ctr, char *ctr_type, u8 ctr_um, int cpu_type, u8 *ctr_t);
 void op_get_event_desc(int cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
+int op_get_cpu_type(void);
 
 #endif /* OP_USER_H */

@@ -503,8 +503,8 @@ The following files will be present :
 		<listitem><para>
 		The numeric event value. You can convert from symbolic event names to numeric values like so :
 		</para><para><command>echo `op_help CPU_CLK_UNHALTED` &gt;/proc/sys/dev/oprofile/0/0/event</command>
-		Note that if you are using an Athlon, Duron, etc. you must use 
-		<command>op_help --cpu-type=3 RETIRED_INSNS</command> (for example) to use Athlon events.
+		You can override the detection of your cpu type with:
+		<command>op_help --cpu-type=3 RETIRED_INSNS</command> (for example) to see Athlon events on a PII.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

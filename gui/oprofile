@@ -427,7 +427,6 @@ proc onStartProfiling {} {
  	return
     }
 
-    append args " --use-cpu=$processor_type"
     append args " --map-file=$map_filename"
     append args " --vmlinux=$kernel_filename"
     append args " --kernel-only=$kernel_only"

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.82 2001/09/06 18:13:28 movement Exp $ */
+/* $Id: oprofile.c,v 1.83 2001/09/08 21:46:03 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1153,7 +1153,7 @@ out:
 	return err;
 }
 
-static int nr_oprof_static = 7;
+static int nr_oprof_static = 6;
 
 static ctl_table oprof_table[] = {
 	{ 1, "bufsize", &op_buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
@@ -1162,7 +1162,6 @@ static ctl_table oprof_table[] = {
 	{ 1, "kernel_only", &kernel_only, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pid_filter", &pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pgrp_filter", &pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
-	{ 1, "cpu_type", &cpu_type, sizeof(int), 0400, NULL, &lproc_dointvec, NULL, },
 	{ 0, }, { 0, }, { 0, }, { 0, }, 
 	{ 0, }, 
 };
