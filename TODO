@@ -32,9 +32,6 @@ Before 1.0 little stuff
  o improve --smart-demangle
 	o allow user to add it's own pattern in user.pat, document it.
 	o hard code ${typename} regular definition to remove all current limitations (difficult, perhaps after 1.0 ?).
-	o other platform: currently we assume than ptrdiff_t is int and size_t
-	 unsigned int, this is probably false on other arch, need configury
-	magic and a libregex/stl.pat.in file.
  o oprof_start: check lib samples when kernel samples checkbox is checked
  o "op_time" doesn't have a header !
  o document that even with the in_interrupt trick in 2.5, you can still get a few

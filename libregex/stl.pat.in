@@ -16,9 +16,6 @@
 
 # man regex is a friend, is it your ?
 
-# FIXME bug: this work well on x86 but their is a dependencies on
-# ptrdiff_t and size_t, I assume here there are int and unsigned
-
 $integer = "\<[0-9]+"
 $identifier = "\<[_a-zA-Z][_a-zA-Z0-9]*"
 $typename = "${identifier}(::${identifier})*"
@@ -46,6 +43,9 @@ $typename = "(${typename}[ ]*\**|unsigned short[ ]**\**|unsigned int[ ]*\**|unsi
 "\<(multi)?map<${typename}, ${typename}, ${typename}, allocator<\8>>" = "\1map<\2, \8, \e>"
 "\<(multi)?map<${typename}, ${typename}, less<\2>>" = "\1map<\2, \8>"
 
+"\<bitset<(${integer}), unsigned long>" = "bitset<\1>"
+"\<([io]stream_iterator)<char, @PTRDIFF_T_TYPE@>" = "\1<char>"
+
 # common to all supported gcc version.
 "\<deque<${typename}, allocator<\1>, 0>" = "deque<\1>"
 "\<(stack|queue)<${typename}, deque<\2>>" = "\1<\2>"
@@ -56,9 +56,6 @@ $typename = "(${typename}[ ]*\**|unsigned short[ ]**\**|unsigned int[ ]*\**|unsi
 # comparator
 "\<(multi)?set<${typename}, ${typename}, allocator<\2>>" = "\1set<\2, \8>"
 "\<(multi)?set<${typename}, less<\2>>" = "\1set<\2>"
-
-"\<bitset<(${integer}), unsigned long>" = "bitset<\1>"
-"\<([io]stream_iterator)<char, int>" = "\1<char>"
 
 # get ride of _Rb_tree iterator typedef, these are also mapped by map/set but
 # we can't distinguish a set<pair<int, int>>::iterator and a
@@ -97,13 +94,11 @@ $typename = "(${typename}[ ]*\**|unsigned short[ ]**\**|unsigned int[ ]*\**|unsi
 # form for 2.95/3.2
 # "\<(multi)?map<${typename}, ${typename}, less<\2>>" = "\1map<\2, \8>"
 
-"\<bitset<\(unsigned\)(${integer})>" = "bitset<\1>"
+"\<bitset<\(@SIZE_T_TYPE@\)(${integer})>" = "bitset<\1>"
 
 # iterator
-# FIXME: 3rd params is ptrdiff_t
-"\<iterator<(input|output|forward|bidirectional|random)_iterator_tag, ${typename}, int, \2\*, \2&>" = "iterator<\1_iterator_tag, \2>"
-# FIXME: 4th parms is ptrdiff_t
-"\<([io]stream_iterator)<${typename}, char, char_traits<char>, int>" = "\1<\2>"
+"\<iterator<(input|output|forward|bidirectional|random)_iterator_tag, ${typename}, @PTRDIFF_T_TYPE@, \2\*, \2&>" = "iterator<\1_iterator_tag, \2>"
+"\<([io]stream_iterator)<${typename}, char, char_traits<char>, @PTRDIFF_T_TYPE@>" = "\1<\2>"
 
 # __gnu_cxx::__normal_iterator are used in two context: basic_string<> and
 # vector<T> we decay them to string::iterator, vector<T>::iterator

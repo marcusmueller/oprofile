@@ -1,3 +1,18 @@
+2003-03-23  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
+	* m4/Makefile.am:
+	* m4/typedef.m4: new file to get underlined type for a typedef.
+	
+	* configure.in: get at configure time the real underlined type
+	  for size_t and ptrdiff_t
+
+	* libregex/stl.pat: move to ...
+	* libregex/stl.pat.in: here. Use @SIZE_T_TYPE@ ans @PTRDIFF_T_TYPE@
+	* libregex/Makefile.am: update according
+	* libregex/.cvsignore: ingre stl.pat
+
 2003-03-22  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* utils/opcontrol: use $OP_HELP not op_help

@@ -16,6 +16,6 @@ regex_test_LDADD = \
 	../libutil++/libutil++.a
 
 datadir = $(prefix)/share/oprofile
-dist_data_DATA = stl.pat
+nodist_data_DATA = stl.pat
 
 EXTRA_DIST = mangled-name.txt
