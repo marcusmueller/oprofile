@@ -317,6 +317,20 @@ output::output(ostream & out_, int argc_, char const * argv_[],
 	until_more_than_samples(until_more_than_samples_),
 	have_linenr_info(have_linenr_info_)
 {
+	if (have_linenr_info) {
+		sec* section;
+		for (section = abfd.ibfd->sections; section; section = section->next)
+			if (section->flags & SEC_DEBUGGING)
+				break;
+
+		if (section == NULL) {
+			std:: cerr << "Request for source file annotated "
+				   << "with sample but no debug info available"
+				   << std::endl;
+
+			exit(EXIT_FAILURE);
+		}
+	}
 }
 
 void output::debug_dump_vector() const

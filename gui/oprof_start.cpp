@@ -66,37 +66,9 @@ oprof_start::oprof_start()
 
 	int cpu_mask = 1 << cpu_type;
 
-	load_config_file();
-
-	// setup the configuration page.
-	kernel_filename_edit->setText(config.kernel_filename.c_str());
-	map_filename_edit->setText(config.map_filename.c_str());
-
-	buffer_size_edit->setText(QString().setNum(config.buffer_size));
-	hash_table_size_edit->setText(QString().setNum(config.hash_table_size));
-	if (config.pid_filter)
-		pid_filter_edit->setText(QString().setNum(config.pid_filter));
-	else
-		pid_filter_edit->setText("");
-	if (config.pgrp_filter) 
-		pgrp_filter_edit->setText(QString().setNum(config.pgrp_filter));
-	else
-		pgrp_filter_edit->setText("");
-	base_opd_dir_edit->setText(config.base_opd_dir.c_str());
-	ignore_daemon_samples_cb->setChecked(config.ignore_daemon_samples);
-	verbose->setChecked(config.verbose); 
-	kernel_only_cb->setChecked(config.kernel_only);
-
-	// the unit mask check boxes
-	check0->hide();
-	check1->hide();
-	check2->hide();
-	check3->hide();
-	check4->hide();
-	check5->hide();
-	check6->hide(); 
- 
-	// build from stuff in op_events.c the description of events.
+	// we need to build the event descr stuff before loading the
+	// configuration because we use locate_events to get an event descr
+	// from its name.
 	for (uint i = 0 ; i < op_nr_events ; ++i) {
 		if (!(op_events[i].cpu_mask & cpu_mask))
 			continue;
@@ -140,6 +112,30 @@ oprof_start::oprof_start()
 		v_events.push_back(descr);
 	}
 
+	load_config_file();
+
+	// setup the configuration page.
+	kernel_filename_edit->setText(config.kernel_filename.c_str());
+	map_filename_edit->setText(config.map_filename.c_str());
+
+	buffer_size_edit->setText(QString().setNum(config.buffer_size));
+	hash_table_size_edit->setText(QString().setNum(config.hash_table_size));
+	if (config.pid_filter)
+		pid_filter_edit->setText(QString().setNum(config.pid_filter));
+	else
+		pid_filter_edit->setText("");
+	if (config.pgrp_filter) 
+		pgrp_filter_edit->setText(QString().setNum(config.pgrp_filter));
+	else
+		pgrp_filter_edit->setText("");
+	base_opd_dir_edit->setText(config.base_opd_dir.c_str());
+	ignore_daemon_samples_cb->setChecked(config.ignore_daemon_samples);
+	verbose->setChecked(config.verbose); 
+	kernel_only_cb->setChecked(config.kernel_only);
+
+	// the unit mask check boxes
+	hide_masks();
+ 
 	event_count_edit->setValidator(event_count_validator); 
 	QIntValidator * iv;
 	iv = new QIntValidator(OP_MIN_BUFFER_SIZE, OP_MAX_BUFFER_SIZE, buffer_size_edit);
@@ -153,18 +149,21 @@ oprof_start::oprof_start()
 
 	events_list->setSorting(-1);
  
-	for (uint i = 0; i < op_nr_counters; ++i) {
+	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr) {
+		load_event_config_file(ctr);
 		counter_combo->insertItem("");
-		set_counter_combo(i);
+		set_counter_combo(ctr);
 	}
+
+	// re-init event stuff
+	enabled_toggled(ctr_enabled[current_ctr]); 
+	display_event(current_event[current_ctr]);
+
+	counter_selected(0);
 
 	// daemon status timer 
 	startTimer(5000);
 	timerEvent(0);
- 
-	load_event_config_file();
-
-	counter_selected(0);
 }
 
 // load the configuration, if the configuration file does not exist create it.
@@ -172,6 +171,7 @@ oprof_start::oprof_start()
 // save_config_file().
 void oprof_start::load_config_file()
 {
+retry:;
 	std::string name = get_user_filename(".oprofile/oprof_start_config");
 
 	{
@@ -188,6 +188,35 @@ void oprof_start::load_config_file()
 		return;
 	}
 
+	int tmp_cpu_type;
+
+	// FIXME: handle this CPU type being different from the saved CPU type 
+	in >> tmp_cpu_type;
+	if (tmp_cpu_type != cpu_type) {
+		int user_choice = 
+			QMessageBox::warning(this, 0, 
+					     "The cpu type in your configuration mismatch the current cpu core:\n\n"
+					     "Delete the configuration or abort oprof_start?", 
+					     "&Delete", "&Quit", 0, 0, 1);
+
+		if (user_choice == 1)
+			exit(1);
+
+		save_config_file();
+
+		goto retry;
+	}
+ 
+	for (uint i = 0; i < op_nr_counters; ++i) {
+		in >> ctr_enabled[i];
+		std::string ev;
+		in >> ev;
+		if (ev == "none")
+			current_event[i] = 0;
+		else
+			current_event[i] = &locate_event(ev);
+	}
+
 	in >> config;
 }
 
@@ -201,69 +230,6 @@ bool oprof_start::save_config_file()
 	std::string name = get_user_filename(".oprofile/oprof_start_config");
 
 	std::ofstream out(name.c_str());
-	
-	out << config;
-
-	return true;
-}
-
-// this work as load_config_file()/save_config_file()
-void oprof_start::load_event_config_file()
-{
-	std::string name = get_user_filename(".oprofile/oprof_start_event");
-
-	{
-		std::ifstream in(name.c_str());
-		// this creates the config directory if necessary
-		if (!in)
-			save_event_config_file();
-	}
-
-	std::ifstream in(name.c_str());
-	if (!in) {
-		QMessageBox::warning(this, 0, "Unable to open configuration "
-				     "~/.oprofile/oprof_start_event");
-		return;
-	}
-
-	int tmp_cpu_type;
-
-	// FIXME: handle this CPU type being different from the saved CPU type 
-	in >> tmp_cpu_type;
- 
-	for (uint i = 0; i < op_nr_counters; ++i) {
-		in >> ctr_enabled[i];
-		std::string ev;
-		in >> ev;
-		if (ev == "none")
-			current_event[i] = 0;
-		else
-			current_event[i] = &locate_event(ev);
-		set_counter_combo(i); 
-	}
- 
-	// need checking on the key validity :(
-	for (uint i = 0; i < op_nr_counters; ++i)
-		in >> event_cfgs[i];
-
-	// re-init event stuff
-	enabled_toggled(ctr_enabled[current_ctr]); 
-	display_event(current_event[current_ctr]);
- 
-	event_cfgs[0].set_dirty(false);
-}
-
-// this work as load_config_file()/save_config_file()
-bool oprof_start::save_event_config_file()
-{
-	if (check_and_create_config_dir() == false)
-		return false;
-
-	std::string name = get_user_filename(".oprofile/oprof_start_event");
-
-	std::ofstream out(name.c_str());
-	if (!out)
-		return false;
 
 	out << cpu_type << " ";
  
@@ -275,29 +241,67 @@ bool oprof_start::save_event_config_file()
 			out << " " << current_event[i]->name + " ";
 	}
 	out << std::endl;
- 
-	for (uint i = 0; i < op_nr_counters; ++i)
-		out << event_cfgs[i];
 
-	event_cfgs[0].set_dirty(false);
+	out << config;
 
 	return true;
 }
 
-// user is happy and want to quit in the normal way, so save the config file.
+// this work as load_config_file()/save_config_file()
+void oprof_start::load_event_config_file(uint ctr)
+{
+	ostringstream name;
+
+	name << get_user_filename(".oprofile/oprof_start_event");
+	name << "#" << ctr;
+
+	{
+		std::ifstream in(name.str().c_str());
+		// this creates the config directory if necessary
+		if (!in)
+			save_event_config_file(ctr);
+	}
+
+	std::ifstream in(name.str().c_str());
+	if (!in) {
+		QMessageBox::warning(this, 0, "Unable to open configuration "
+				     "~/.oprofile/oprof_start_event");
+		return;
+	}
+
+	// need checking on the key validity :(
+	in >> event_cfgs[ctr];
+}
+
+// this work as load_config_file()/save_config_file()
+bool oprof_start::save_event_config_file(uint ctr)
+{
+	if (check_and_create_config_dir() == false)
+		return false;
+
+	ostringstream name;
+
+	name << get_user_filename(".oprofile/oprof_start_event");
+	name << "#" << ctr;
+
+	std::ofstream out(name.str().c_str());
+	if (!out)
+		return false;
+
+	out << event_cfgs[ctr];
+
+	return true;
+}
+
+// user request a "normal" exit so save the config file.
 void oprof_start::accept()
 {
 	// record the previous settings
 	record_selected_event_config();
 
-	uint i; 
-	for (i = 0; i < op_nr_counters; ++i) {
-		if (event_cfgs[0].dirty())
-			break;
-	}
 	// FIXME: check and warn about return code.
-	if (i != op_nr_counters)
-		save_event_config_file();
+	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr)
+		save_event_config_file(ctr);
  
 	record_config();
 
@@ -429,7 +433,6 @@ void oprof_start::event_selected(QListViewItem * item)
 
 	display_event(&descr);
 	current_event[current_ctr] = &descr;
-	event_cfgs[current_ctr].set_dirty(true);
  
 	set_counter_combo(current_ctr);
 }
@@ -453,8 +456,6 @@ void oprof_start::enabled_toggled(bool en)
 	events_list->setEnabled(en);
 
 	display_event(current_event[current_ctr]);
-
-	event_cfgs[current_ctr].set_dirty(true);
 }
 
 
@@ -513,46 +514,34 @@ void oprof_start::on_choose_file_or_dir()
 	}
 }
 
-// this record the curernt selected event setting in the event_cfg[] stuff.
-// event_cfg->dirty is set only if change is recorded.
+// this record the current selected event setting in the event_cfg[] stuff.
 // FIXME: need validation?
 void oprof_start::record_selected_event_config()
 {
-	// saving must be made only if a change occur to avoid setting the
-	// dirty flag in event_cfg. For the same reason we can not use a
-	// temporay to an 'event_setting&' to clarify the code.
-	// This come from:
-	// if (event_cfg[name].xxx == yyyy) 
-	// call the non const operator [] ofevent_cfg. We can probably do
-	// better in event_cfg stuff but it need a proxy return from []. 
-	// See persistent_config_t doc
-
 	struct op_event_descr const * curr = current_event[current_ctr];
 
 	if (!curr)
 		return;
  
-	const persistent_config_t<event_setting>& cfg = event_cfgs[current_ctr];
+	persistent_config_t<event_setting>& cfg = event_cfgs[current_ctr];
 	std::string name(curr->name);
 
 	uint count = event_count_edit->text().toUInt();
 
 	if (cfg[name].count != count)
-		event_cfgs[current_ctr][name].count = count;
+		cfg[name].count = count;
 
 	if (cfg[name].os_ring_count != os_ring_count_cb->isChecked())
-		event_cfgs[current_ctr][name].os_ring_count = os_ring_count_cb->isChecked();
+		cfg[name].os_ring_count = os_ring_count_cb->isChecked();
 	
 	if (cfg[name].user_ring_count != user_ring_count_cb->isChecked())
-		event_cfgs[current_ctr][name].user_ring_count = user_ring_count_cb->isChecked();
+		cfg[name].user_ring_count = user_ring_count_cb->isChecked();
 
 	if (cfg[name].umask != get_unit_mask(*curr))
-		event_cfgs[current_ctr][name].umask = get_unit_mask(*curr);
+		cfg[name].umask = get_unit_mask(*curr);
 }
 
-// same design as record_selected_event_config without trying to not dirties
-// the config.dirty() flag, so config is always saved when user quit. This
-// function also validate the result (The actual qt validator installed
+// validate and save the configuration (The qt validator installed
 // are not sufficient to do the validation)
 bool oprof_start::record_config()
 {
@@ -663,7 +652,6 @@ void oprof_start::setup_unit_masks(const op_event_descr & descr)
 	if (!um || um->unit_type_mask == utm_mandatory)
 		return;
 
-	// we need const access. see record_selected_event_config()
 	const persistent_config_t<event_setting>& cfg = event_cfgs[current_ctr];
 
 	unit_mask_group->setExclusive(um->unit_type_mask == utm_exclusive);

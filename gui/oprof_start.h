@@ -106,9 +106,9 @@ private:
 	void set_counter_combo(uint);
  
 	/// load the event config file
-	void load_event_config_file();
+	void load_event_config_file(uint ctr);
 	/// save the event config file 
-	bool save_event_config_file();
+	bool save_event_config_file(uint ctr);
 	/// load the extra config file
 	void load_config_file();
 	/// save the extra config file

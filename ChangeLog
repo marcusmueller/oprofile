@@ -1,3 +1,14 @@
+2001-09-29  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/opf_filter.cpp: check if we need debug info to work.
+
+	* gui/oprof_start.cpp: use one config file by counter. Store
+	  selected counter in oprof_start_config
+
+	* gui/oprof_start.cpp:
+	* gui/persistent_config.h: remove dirty flag in 
+	  persistent_config_t template class
+
 2001-09-29  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update

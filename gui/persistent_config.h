@@ -21,8 +21,7 @@
 #include <string>
 #include <map>
 
-// a simple association between a string and a type T. try to handle
-// also a dirty flag to track non const access. a typical use:
+// a simple association between a string and a type T. a typical use:
 // define a struct T:
 //
 // persistent_cfg_t<T> cfg;
@@ -37,20 +36,12 @@ template <typename T>
 class persistent_config_t
 {
 public:
-	persistent_config_t() : is_dirty(false) {}
+	persistent_config_t() {}
 
-	bool dirty() const { return is_dirty; }
-	void set_dirty(bool dirty) { is_dirty = dirty; }
-
-	// set dirty flag
 	T& operator[](const std::string& key);
-	// does not change dirty flag.
-	// if you try to:
-	// if (cfg[string].member == xxxx) you call the non-const [] operator
 	const T& operator[](const std::string& key) const;
 
-	// these two function reset the dirty flag
-	// save and load use the folloing file format
+	// save and load using the file format
 	// key value1 value2 value3 ... valueN through the overload of
 	// operator>> [<<] (ostream&[istream&], [const] T&);
 	void save(std::ostream& out) const;
@@ -62,14 +53,11 @@ private:
 	typedef std::map<std::string, T> map_t;
 	
 	map_t map;
-	bool is_dirty;
 };
 
 template <typename T>
 T& persistent_config_t<T>::operator[](const std::string& key)
 {
-	is_dirty = true;
-
 	return map[key];
 }
 
