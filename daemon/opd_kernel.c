@@ -458,7 +458,7 @@ static void opd_handle_module_sample(vma_t eip, u32 counter)
  */
 void opd_handle_kernel_sample(vma_t eip, u32 counter)
 {
-	if (eip < kernel_end) {
+	if (eip >= kernel_start && eip < kernel_end) {
 		opd_stats[OPD_KERNEL]++;
 		opd_put_image_sample(kernel_image, eip - kernel_start, counter);
 		return;

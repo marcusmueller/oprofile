@@ -1,3 +1,14 @@
+2003-01-23   Randolph Chung  <tausq@debian.org>
+
+	Added minor change: backward compatibility, u_int to uint, fix
+	32/64 bits escape code marker comparison. Phil
+
+	* libop/op_interface_25.h:
+	* daemon/opd_kernel.c:
+	* daemon/opd_image.c: new scheme to recognize kernel or user space
+	  eip, now kernel module pass the relevent information through
+	  escape sequence.
+
 2003-01-21  Dave Jones <davej@codemonkey.org.uk>
 
 	* libop/op_events.c: Add unit mask for Hypertransport events.

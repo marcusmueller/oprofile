@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 extern uint op_nr_counters;
 extern int separate_samples;
@@ -345,32 +346,49 @@ struct opd_image * opd_get_kernel_image(char const * name)
 	return opd_add_kernel_image(name);
 }
 
- 
-static u_int64_t get_buffer_value(void const * buffer, size_t index)
+
+static inline int is_escape_code(uint64_t code)
+{
+	return kernel_pointer_size == 4 ? code == ~0LU : code == ~0LLU;
+}
+
+
+static uint64_t get_buffer_value(void const * buffer, size_t index)
 {
 	if (kernel_pointer_size == 4) {
-		u_int32_t const * lbuf = buffer;
+		uint32_t const * lbuf = buffer;
 		return lbuf[index];
 	} else {
-		u_int64_t const * lbuf = buffer;
+		uint64_t const * lbuf = buffer;
 		return lbuf[index];
 	}
 }
 
 
-static void opd_put_sample(struct opd_image * image, char const * buffer, size_t index)
+static void opd_put_sample(struct opd_image * image, int in_kernel, 
+	char const * buffer, size_t index)
 {
 	vma_t eip = get_buffer_value(buffer, index);
 	unsigned long event = get_buffer_value(buffer, index + 1);
+
+	/* backward compatiblity, FIXME remove it later */
+	if (in_kernel == -1) {
+		in_kernel = opd_eip_is_kernel(eip);
+	}
  
-	if (opd_eip_is_kernel(eip)) {
+	if (in_kernel > 0) {
 		verbprintf("Kernel sample 0x%llx, counter %lu\n",
 			eip, event);
 		opd_handle_kernel_sample(eip, event);
+	} else if (in_kernel == 0) {
+		if (image != NULL) {
+			verbprintf("Image (%s) offset 0x%llx, counter %lu\n",
+				image->name, eip, event);
+			opd_put_image_sample(image, eip, event);
+		}
 	} else {
-		verbprintf("Image (%s) offset 0x%llx, counter %lu\n",
-			image->name, eip, event);
-		opd_put_image_sample(image, eip, event);
+		fprintf(stderr, "Cannot determine if we are in kernel mode or not\n");
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -383,13 +401,14 @@ void opd_process_samples(char const * buffer, size_t count)
 	unsigned long code, pid;
 	cookie_t cookie, app_cookie = 0;
 	struct opd_image * image = NULL;
+	static int in_kernel = -1;
 
 	while (i < count) {
-		if (get_buffer_value(buffer, i) != ESCAPE_CODE) {
+		if (!is_escape_code(get_buffer_value(buffer, i))) {
 			if (i + 1 == count)
 				return;
 
-			opd_put_sample(image, buffer, i);
+			opd_put_sample(image, in_kernel, buffer, i);
 			i += 2;
 			continue;
 		}
@@ -424,6 +443,19 @@ void opd_process_samples(char const * buffer, size_t count)
 				if (++i == count)
 					break;
 				app_cookie = get_buffer_value(buffer, i);
+				++i;
+				break;
+
+			case KERNEL_ENTER_SWITCH_CODE:
+				in_kernel = 1;
+				break;
+
+			case KERNEL_EXIT_SWITCH_CODE:
+				in_kernel = 0;
+				break;
+
+			default:
+				verbprintf("Unknown code %lx\n", code);
 				++i;
 				break;
 		}

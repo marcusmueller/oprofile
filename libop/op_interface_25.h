@@ -16,9 +16,10 @@
 #include "op_config.h"
 #include "op_types.h"
 
-#define ESCAPE_CODE		~0UL
-#define CTX_SWITCH_CODE		1
-#define CPU_SWITCH_CODE		2
-#define COOKIE_SWITCH_CODE	3
+#define CTX_SWITCH_CODE			1
+#define CPU_SWITCH_CODE			2
+#define COOKIE_SWITCH_CODE		3
+#define KERNEL_ENTER_SWITCH_CODE	4
+#define KERNEL_EXIT_SWITCH_CODE		5
  
 #endif /* OP_INTERFACE_25_H */
