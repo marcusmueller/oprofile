@@ -1,4 +1,7 @@
+.deps
 configure
+Rules.make
+cvs.log
 Makefile
 version.h
 a.diff

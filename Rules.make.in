@@ -16,15 +16,18 @@ INCLUDES=@extra_includes@
 # autodeps rules. These are modified from an example in the make info page.
 CPPFLAGS_DEPS = -I@KINC@ @extra_includes@
 
-%.cpp.d: %.cpp
+.deps/%.cpp.d: %.cpp
+	@$(MKDIR_P) .deps
 	@set -e; \
 	$(CXX) $(CPPFLAGS_DEPS) -MM $< | sed 's|\($*\)\.o[ :]*|\1.o $@ : |g' > $@; \
-	[ -s $@ ] || rm -f $@
+	[ -s $@ ] || rm -f $@ ;
 
-%.c.d: %.c
+.deps/%.c.d: %.c
+	@$(MKDIR_P) .deps
 	@set -e; \
 	$(CC) $(CPPFLAGS_DEPS) -MM $< | sed 's|\($*\)\.o[ :]*|\1.o $@ : |g' > $@; \
-	[ -s $@ ] || rm -f $@
+	[ -s $@ ] || rm -f $@ ;
 
-# a gnu make extension :/
--include $(ALL_SOURCES:=.d)
+# include the dependency files
+DEPFILES=$(ALL_SOURCES:=.d)
+-include $(DEPFILES:%=.deps/%)

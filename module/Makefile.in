@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.4 2001/12/05 21:25:26 phil_e Exp $
+# $Id: Makefile.in,v 1.5 2001/12/31 06:37:27 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -22,7 +22,7 @@ uninstall:
 	depmod -a
 
 clean:
-	rm -f *.o *.d
+	rm -rf *.o .deps
 
 oprofile.o: op_init.o op_util.o oprofile_c.o oprofile_nmi.o op_syscalls.o op_events_module.o op_x86.o
 	$(LD) -r -o $@ $^

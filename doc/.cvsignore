@@ -1,4 +1,6 @@
 *.*~
+.deps
+html
 guide.tex
 index.html
 labels.pl 

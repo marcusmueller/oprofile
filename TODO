@@ -4,7 +4,9 @@
 o add docs for separate samples in extra features (more depth on
 	how to use it ...)
  
-o move the .d files out of the way !! (and add them to the .cvsignore files)
+o clean shutdown via SIGUSR1
+ 
+o test test test
  
 Later
 -----

@@ -6,7 +6,7 @@ CFLAGS=-pedantic -Wall -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-
 all: string_manip.o child_reader.o file_manip.o op_popt.o misc.o
 
 clean: 
-	rm -f *.o *.d
+	rm -fr *.o .deps
 
 install: all
 

@@ -11,7 +11,7 @@ all: $(INSTALL_LIST)
 .PHONY: all clean srcdoc install uninstall
 
 clean: 
-	rm -f *.o *.d oprofpp-src.html $(INSTALL_LIST)
+	rm -rf *.o .deps oprofpp-src.html $(INSTALL_LIST)
 
 install: all
 	-$(MKDIR_P) $(BINDIR)

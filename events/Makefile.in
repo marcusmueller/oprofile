@@ -12,7 +12,7 @@ uninstall:
 	rm -f $(BINDIR)/op_help
 
 clean:
-	rm -f *.o *.d op_help
+	rm -rf *.o .deps op_help
 
 op_help: op_events.o op_events_desc.o op_help.o ../util/op_popt.o
 	$(CC) $(CFLAGS) $(INCLUDES) $^ -o $@ -lpopt -liberty

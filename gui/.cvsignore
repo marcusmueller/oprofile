@@ -1,3 +1,4 @@
+.deps
 oprof_start
 oprof_start.moc.cpp
 Makefile

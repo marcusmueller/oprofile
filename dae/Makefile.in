@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.24 2001/12/12 02:27:27 phil_e Exp $
+# $Id: Makefile.in,v 1.25 2001/12/31 06:37:26 movement Exp $
 
 INSTALL_LIST=oprofiled op_start op_dump op_stop
 
@@ -24,7 +24,7 @@ uninstall:
 	done
 
 clean:
-	rm -f oprofiled *.o *.d oprofiled-src.html 
+	rm -rf oprofiled *.o .deps oprofiled-src.html 
 
 srcdoc: oprofiled-src.html
 

@@ -3,8 +3,6 @@ UIC=@UIC@
 
 CXXFLAGS=-ansi -Wall -pedantic -W @CXXFLAGS@ -I@KINC@ @QT2_INCLUDES@
 
-# be warned: there is kludge here for auto-deps
-
 .PHONY: all clean install uninstall
 .SUFFIXES:
 
@@ -13,7 +11,7 @@ all: oprof_start
 
 clean:
 	$(MAKE) -C ui clean
-	rm -f *.o *.d *.moc.* oprof_start
+	rm -rf *.o .deps *.moc.* oprof_start
 
 install: all oprof_start
 	-$(MKDIR_P) $(BINDIR)
@@ -58,6 +56,7 @@ oprof_start.moc.cpp: oprof_start.h  ui/oprof_start.base.h
 
 ALL_SOURCES = oprof_start_util.cpp oprof_start_config.cpp oprof_start_main.cpp oprof_start.cpp oprof_start.moc.cpp
 
+# FIXME kludge
 # Makefile depends on included .d file which needs ui/oprof_start.base.h to be
 # created so add an explicit rules to create it, I see no way to avoid it.
 oprof_start.cpp.d: ui/oprof_start.base.h

@@ -1,5 +1,11 @@
 2001-12-31  John Levon  <moz@compsoc.man.ac.uk>
 
+	* all .cvsignore:
+	* Rules.make.in:
+	* all Makefile.in: hide .d files in .deps directories
+
+2001-12-31  John Levon  <moz@compsoc.man.ac.uk>
+
 	* Makefile.in: move config.h.in to maintainerclean - it is included
 	in a tarball so a distclean shouldn't remove it
  

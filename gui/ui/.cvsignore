@@ -1,3 +1,4 @@
+.deps
 oprof_start.base.cpp
 oprof_start.base.moc.cpp
 oprof_start.base.h
