@@ -55,12 +55,6 @@ void counter_profile_t::check_headers(counter_profile_t const & rhs) const
 		exit(EXIT_FAILURE);
 	}
 
-	if (f1.cpu_speed != f2.cpu_speed) {
-		cerr << "oprofpp: header cpu speeds are different ("
-		     << f1.cpu_speed << ", " << f2.cpu_speed << ")\n";
-		exit(EXIT_FAILURE);
-	}
-
 	if (f1.separate_lib_samples != f2.separate_lib_samples) {
 		cerr << "oprofpp: header separate_lib_samples are different ("
 		     << f1.separate_lib_samples << ", " 
