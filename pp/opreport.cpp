@@ -16,6 +16,7 @@
 #include <sstream>
 #include <numeric>
 
+#include "op_exception.h"
 #include "op_header.h"
 #include "string_manip.h"
 #include "file_manip.h"
@@ -288,6 +289,64 @@ void output_summaries(summary_container const & summaries)
 
 
 /**
+ * load all samples for one given binary
+ */
+void populate_profile(profile_container & samples, size_t count_group,
+                      image_set::const_iterator first,
+                      image_set::const_iterator last)
+{
+	image_set::const_iterator it = first;
+
+	try {
+		op_bfd abfd(it->first, options::symbol_filter);
+
+		// we can optimize by cumulating samples to this binary in
+		// a profile_t only if we merge by lib since for non merging
+		// case application name change and must be recorded
+		if (options::merge_by.lib) {
+			string app_name = it->first;
+
+			profile_t profile;
+
+			for (;  it != last; ++it) {
+				profile.add_sample_file(
+					it->second.sample_filename,
+					abfd.get_start_offset());
+			}
+
+			check_mtime(abfd.get_filename(), profile.get_header());
+	
+			samples.add(profile, abfd, app_name, count_group);
+		} else {
+			for (; it != last; ++it) {
+				string app_name = it->second.image;
+
+				profile_t profile;
+				profile.add_sample_file(
+					it->second.sample_filename,
+					abfd.get_start_offset());
+
+				check_mtime(abfd.get_filename(),
+					    profile.get_header());
+	
+				samples.add(profile, abfd,
+					    app_name, count_group);
+			}
+		}
+	}
+	catch (op_runtime_error const & e) {
+		static bool first_error = true;
+		if (first_error) {
+			cerr << "warning: some binary images could not be "
+			     << "read, and will be ignored in the results"
+			     << endl;
+		}
+		cerr << "op_bfd: " << e.what() << endl;
+	}
+}
+
+
+/**
  * Load the given samples container with the profile data from
  * the files container, merging as appropriate.
  */
@@ -301,41 +360,10 @@ void populate_profiles(partition_files const & files,
 		pair<image_set::const_iterator, image_set::const_iterator>
 			p_it = images.equal_range(it->first);
 
-		op_bfd abfd(it->first, options::symbol_filter);
+		populate_profile(samples, count_group,
+		                 p_it.first, p_it.second);
 
-		// we can optimize by cumulating samples to this binary in
-		// a profile_t only if we merge by lib since for non merging
-		// case application name change and must be recorded
-		if (options::merge_by.lib) {
-			string app_name = p_it.first->first;
-
-			profile_t profile;
-
-			for (;  it != p_it.second; ++it) {
-				profile.add_sample_file(
-					it->second.sample_filename,
-					abfd.get_start_offset());
-			}
-
-			check_mtime(abfd.get_filename(), profile.get_header());
-	
-			samples.add(profile, abfd, app_name, count_group);
-		} else {
-			for (; it != p_it.second; ++it) {
-				string app_name = it->second.image;
-
-				profile_t profile;
-				profile.add_sample_file(
-					it->second.sample_filename,
-					abfd.get_start_offset());
-
-				check_mtime(abfd.get_filename(),
-					    profile.get_header());
-	
-				samples.add(profile, abfd,
-				            app_name, count_group);
-			}
-		}
+		it = p_it.second;
 	}
 }
 

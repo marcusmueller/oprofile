@@ -16,6 +16,7 @@
 #include <fstream>
 #include <utility>
 
+#include "op_exception.h"
 #include "op_header.h"
 #include "profile.h"
 #include "op_sample_file.h"
@@ -56,6 +57,41 @@ string const end_comment(" */");
 /// field width for the sample count
 unsigned int const count_width = 6;
 
+/// record samples for one binary
+void populate_samples(profile_container & samples, bool merge_lib,
+                      size_t count_group, image_set::const_iterator first,
+                      image_set::const_iterator last)
+{
+	image_set::const_iterator it = first;
+	try {
+		op_bfd abfd(it->first, symbol_filter);
+		profile_t profile;
+
+		string app_name = it->second.image;
+		if (merge_lib) {
+			app_name = it->first;
+		}
+
+		for (; it != last; ++it) {
+			profile.add_sample_file(it->second.sample_filename,
+						abfd.get_start_offset());
+		}
+
+		check_mtime(abfd.get_filename(), profile.get_header());
+	
+		samples.add(profile, abfd, app_name, count_group);
+	}
+	catch (op_runtime_error const & e) {
+		static bool first_error = true;
+		if (first_error) {
+			cerr << "warning: some binary images could not be "
+			     << "read, and will be ignored in the results"
+			     << endl;
+		}
+		cerr << "op_bfd: " << e.what() << endl;
+	}
+}
+
 
 // FIXME share with opgprof.cpp and opreport.cpp
 image_set populate_samples(profile_container & samples,
@@ -69,22 +105,9 @@ image_set populate_samples(profile_container & samples,
 		pair<image_set::const_iterator, image_set::const_iterator>
 			p_it = images.equal_range(it->first);
 
-		op_bfd abfd(p_it.first->first, symbol_filter);
-		profile_t profile;
-
-		string app_name = p_it.first->second.image;
-		if (merge_lib) {
-			app_name = p_it.first->first;
-		}
-
-		for (; it != p_it.second; ++it) {
-			profile.add_sample_file(it->second.sample_filename,
-						abfd.get_start_offset());
-		}
-
-		check_mtime(abfd.get_filename(), profile.get_header());
-	
-		samples.add(profile, abfd, app_name, count_group);
+		populate_samples(samples, merge_lib, count_group,
+		                 p_it.first, p_it.second);
+		it = p_it.second;
 	}
 
 	return images;
