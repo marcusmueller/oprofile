@@ -244,7 +244,56 @@ remove all installed files except your configuration file in the directory <file
 </chapter>
 
 <chapter id="overview"> 
-<title>Overview of OProfile tools</title>
+<title>Overview</title>
+
+<sect1 id="getting-started">
+<title>Getting started</title>
+<para>
+Before you can use OProfile, you must set it up. The minimum setup required for this
+is to tell OProfile where the <filename>vmlinux</filename> file corresponding to the
+running kernel is, for example :
+</para>
+<para>
+<command>opcontrol --setup --vmlinux=/boot/vmlinux-`uname -r`</command>
+</para>
+<para>
+Now we are ready to start the daemon (<command>oprofiled</command>) which collects
+the profile data :
+</para>
+<para>
+<command>opcontrol --start</command>
+</para>
+<para>
+When I want to stop profiling, I can do so with :
+</para>
+<para>
+<command>opcontrol --shutdown</command>
+</para>
+<para>
+Note that unlike <command>gprof</command>, no instrumentation (<option>-pg</option>
+and <option>-a</option> options to <command>gcc</command>)
+is necessary.
+</para>
+<para>
+Periodically (or on <command>opcontrol --shutdown</command> or <command>opcontrol --dump</command>)
+the profile data is written out into the <filename>/var/lib/oprofile/samples</filename> directory.
+These profile files cover shared libraries, applications, the kernel (vmlinux), and kernel modules.
+You can get summaries of this data in a number of ways at any time. To get a summary of
+data across the entire system for all of these profiles, you can do :
+</para>
+<para><command>op_time</command></para>
+<para>
+Or to get a more detailed summary, for a particular image, you can do something like :
+</para>
+<para><command>oprofpp -l /boot/vmlinux-`uname -r`</command></para>
+<para>
+There are also a number of other ways of presenting the data, as described later in this manual.
+</para>
+
+</sect1>
+
+<sect1 id="tools-overview">
+<title>Tools summary</title>
 <para>
 This section gives a brief description of the available OProfile utilities and their purpose.
 </para>
@@ -312,75 +361,12 @@ This section gives a brief description of the available OProfile utilities and t
 </varlistentry>
 
 </variablelist>
+</sect1>
 	
 </chapter>
  
 <chapter id="usage">
 <title>Usage</title>
-
-<sect1 id="typical">
-<title>A typical session</title>
-<para>
-Before getting into detail about usage, it's probably a good idea to have a quick stroll through an example
-session.
-</para>
-<para>
-First we need to start the profiler running in the background. We need to specify the correct
-<filename>vmlinux</filename> file (to allow kernel profiling), and then we're ready to go.
-</para>
-<para>
-<command>opcontrol --setup --vmlinux=/boot/2.4.0ac12/vmlinux</command>
-</para><para>
-<command>opcontrol --start</command>
-</para>
-<para>
-Note that OProfile will pick a default event for you, if OProfile is using the hardware performance counters.
-The event chosen roughly corresponds to measuring CPU time spent in code.
-</para>
-<para>
-A quick <command>ps ax</command> confirms that the daemon (<command>oprofiled</command>) has started.
-Data is now being collected in the kernel. Now we can do whatever we like ... although in this case I'm profiling the C++ application
-<ulink url="http://www.lyx.org/">LyX</ulink>.
-Note that unlike <command>gprof</command>, no instrumentation (<option>-pg</option> and <option>-a</option> options to <command>gcc</command>)
-is necessary. This is major factor in achieving the low overhead of OProfile. Compiling with debug symbols (the <option>-g</option>
-option) is not necessary to get a basic function-based profile listing, but it must be used in order to retrieve line number
-information and create annotated source. See the FAQ <xref linkend="symbol-and-debug-info" /> about debug information vs symbol information.
-</para>
-<para>
-Rather than wait for the buffers to fill up, I now force the profiling data to be processed with :
-</para>
-<para><command>opcontrol --dump</command></para>
-<para>
-which will ask the kernel module to dump as much data as it can to the daemon.
-</para>
-<note>
-<para>Forcing a dump like this can cause the daemon to become very busy, especially the first time it is done. Don't worry,
-that's not normal behaviour; so if you are profiling over a larger period of time, such spikes won't appear.
-</para>
-</note>
-<para>
-I can now ask for a symbol-based summary of the sample profile :
-</para>
-<para><command>oprofpp --demangle -l ./lyx &gt;oprof.out</command></para>
-<para>
-This can be quite slow on large binaries, so sit tight. 
-As it's a C++ program, I asked for the symbols to be demangled to a readable form. Examining
-the output will give the symbols against which the most hits were registered. In this case I got :
-</para>
-<screen>
-...
-Row::par(void)[0x0813ab54]: 5.4079% (472 samples)
-LyXText::GetRow(LyXParagraph *, int, int &amp;) const[0x08170a4c]: 5.5683% (486 samples)
-LyXParagraph::GetFontSettings(BufferParams const &amp;, int) const[0x08145420]: 5.7516% (502 samples)
-Row::next(void) const[0x0813ac24]: 15.4904% (1352 samples)
-</screen> 
-<para>
-at the top. I could also  have used <command>op_time</command> or <command>op_time -dnl</command> to
-get a summary of the entire system profile (try it !). When I'm done, I can shut down the 
-profile with <command>opcontrol --shutdown</command>.
-</para>
-
-</sect1>
 
 <sect1 id="controlling-daemon">
 <title>Controlling OProfile data collection with the <command>opcontrol</command> script</title>

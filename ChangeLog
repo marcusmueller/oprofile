@@ -1,5 +1,9 @@
 2003-03-02  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml: more re-workings prodded by aeb
+
+2003-03-02  John Levon  <levon@movementarian.org>
+
 	* daemon/opd_kernel.c: remove /proc/ksyms reading
 
 2003-03-02  John Levon  <levon@movementarian.org>
