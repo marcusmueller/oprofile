@@ -1,5 +1,12 @@
 2002-06-01  John Levon  <moz@compsoc.man.ac.uk>
 
+	* libutil++/file_manip.h:
+	* libutil++/file_manip.cpp: clarify API
+ 
+	* pp/oprofpp.cpp: fix bug 563324 resulting from above
+
+2002-06-01  John Levon  <moz@compsoc.man.ac.uk>
+
 	* make.common.in: make --with-extra-lib work again
 
 	* dae/opd_image.h:

@@ -84,6 +84,8 @@ std::string extract_app_name(std::string const & name, std::string & lib_name);
  * handle this problems. e.g. if the samples dir contains foo#1 and bar#0
  * the list will contain { "foo", "bar" } and if the caller want to work
  * only on counter #0 it must refilter the filelist created
+ *
+ * The returned filenames are relative to the base_dir
  */
 void get_sample_file_list(std::list<std::string> & file_list,
 			  std::string const & base_dir,

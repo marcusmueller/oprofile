@@ -253,19 +253,6 @@ string strip_filename_suffix(string const & filename)
 }
 
 // FIXME: a libop++ kind of thing
- 
-/**
- * get_sample_file_list - create a file list of base samples filename
- * @param file_list  where to put the results
- * @param base_dir  base directory
- * @param filter  a file filter name.
- *
- * fill file_list with a list of base samples
- * filename where a base sample filename is a
- * samples filename without #nr suffix. Even if the call
- * pass "*" as filter only valid samples filename are
- * returned (ie string like base/dir/session-xxx are filtered)
- */
 void get_sample_file_list(list<string> & file_list,
 			  string const & base_dir,
 			  string const & filter)

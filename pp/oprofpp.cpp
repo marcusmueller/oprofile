@@ -281,8 +281,9 @@ static void do_dump_gprof(op_bfd & abfd,
 	free(hist);
 }
 
+// FIXME: move to util++... 
 /**
- * samples_file_exist - test for a samples file existence
+ * file_exist - test for a samples file existence
  * @param filename the base samples filename
  *
  * return true if filename exist
@@ -345,56 +346,55 @@ int main(int argc, char const *argv[])
 	list<string>::const_iterator it;
 	for (it = filelist.begin() ; it != filelist.end() ; ++it) {
 		string const dir = dirname(sample_file);
-		// the file list is created with /base_dir/* pattern but with
-		// the lazilly samples creation it is perfectly correct for one
-		// samples file belonging to counter 0 exist and not exist for
-		// counter 1, so we must filter them. It is also valid when
-		// profiling with --separate-samples to get samples from
-		// shared libs but to do not get samples for the app itself
+
+		// shared libraries are added to the file list as relative paths
+		// so we fix that up here
+		string file = relative_to_absolute_path(*it, dir);
+		 
 		int i;
 		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
 			if ((counter & (1 << i)) != 0) {
 				ostringstream s;
-				s << *it << '#' << i;
-				if (file_exist(s.str()) == true) {
+				s << file << "#" << i;
+				if (file_exist(s.str()) == true)
 					break;
-				}
 			}
 		}
 
-		if (i < OP_MAX_COUNTERS) {
-			opp_samples_files samples_files(*it, counter);
+		// no profiles found
+		if (i == OP_MAX_COUNTERS)
+			continue;
 
+		opp_samples_files samples_files(file, counter);
 
-			// the first opened file is treated specially because
-			// user can specify the image name for this sample
-			// file on command line else must deduce the image
-			// name from the samples file name
-			if (it == filelist.begin()) {
-				check_mtime(samples_files, image_file);
+		// the first opened file is treated specially because
+		// user can specify the image name for this sample
+		// file on command line else must deduce the image
+		// name from the samples file name
+		if (it == filelist.begin()) {
+			check_mtime(samples_files, image_file);
 
-				op_bfd abfd(samples_files.is_kernel(), image_file);
+			op_bfd abfd(samples_files.is_kernel(), image_file);
 
-				samples_files.set_start_offset(abfd.get_start_offset());
+			samples_files.set_start_offset(abfd.get_start_offset());
 
-				samples.add(samples_files, abfd);
-			} else {
-				string app_name;
-				string lib_name;
-				app_name = extract_app_name(*it, lib_name);
+			samples.add(samples_files, abfd);
+		} else {
+			string app_name;
+			string lib_name;
+			app_name = extract_app_name(file, lib_name);
 
-				check_mtime(samples_files, image_file);
+			check_mtime(samples_files, image_file);
 
-				op_bfd abfd(samples_files.is_kernel(), demangle_filename(lib_name));
-				samples_files.set_start_offset(abfd.get_start_offset());
+			op_bfd abfd(samples_files.is_kernel(), demangle_filename(lib_name));
+			samples_files.set_start_offset(abfd.get_start_offset());
 
-				samples.add(samples_files, abfd);
-			}
+			samples.add(samples_files, abfd);
+		}
 
-			if (first_file == true) {
-				samples_files.output_header();
-				first_file = false;
-			}
+		if (first_file == true) {
+			samples_files.output_header();
+			first_file = false;
 		}
 	}
 
