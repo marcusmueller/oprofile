@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.73 2001/08/19 20:09:17 movement Exp $ */
+/* $Id: oprofile.c,v 1.74 2001/08/20 19:46:13 davej Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -39,16 +39,16 @@ pid_t pid_filter;
 pid_t pgrp_filter;
 
 /* the MSRs we need */
-uint ctrlreg0 = MSR_IA32_EVNTSEL0;
-uint ctrlreg1 = MSR_IA32_EVNTSEL1;
-uint ctrlreg2 = MSR_K7_PERFCTL2;
-uint ctrlreg3 = MSR_K7_PERFCTL3;
-uint ctrreg0  = MSR_IA32_PERFCTR0;
-uint ctrreg1  = MSR_IA32_PERFCTR1;
-uint ctrreg2  = MSR_K7_PERFCTR2;
-uint ctrreg3  = MSR_K7_PERFCTR3;
+static u32 ctrlreg0 = MSR_IA32_EVNTSEL0;
+static u32 ctrlreg1 = MSR_IA32_EVNTSEL1;
+static u32 ctrlreg2 = MSR_K7_PERFCTL2;
+static u32 ctrlreg3 = MSR_K7_PERFCTL3;
+static u32 ctrreg0  = MSR_IA32_PERFCTR0;
+static u32 ctrreg1  = MSR_IA32_PERFCTR1;
+static u32 ctrreg2  = MSR_K7_PERFCTR2;
+static u32 ctrreg3  = MSR_K7_PERFCTR3;
 
-u32 prof_on __cacheline_aligned;
+static u32 prof_on __cacheline_aligned;
 
 static int op_major;
 int cpu_type;
@@ -60,15 +60,6 @@ u32 oprof_ready[NR_CPUS] __cacheline_aligned;
 static struct _oprof_data oprof_data[NR_CPUS];
 
 extern spinlock_t map_lock;
-
-extern unsigned int ctrlreg0;
-extern unsigned int ctrlreg1;
-extern unsigned int ctrlreg2;
-extern unsigned int ctrlreg3;
-extern unsigned int ctrreg0;
-extern unsigned int ctrreg1;
-extern unsigned int ctrreg2;
-extern unsigned int ctrreg3;
 
 /* ---------------- NMI handler ------------------ */
 
@@ -152,14 +143,14 @@ static ulong lvtpc_masked;
 /* this masking code is unsafe and nasty but might deal with the small
  * race when installing the NMI entry into the IDT
  */
-void mask_lvtpc(void * e)
+static void mask_lvtpc(void * e)
 {
 	ulong v = apic_read(APIC_LVTPC);
 	lvtpc_masked = v & APIC_LVT_MASKED;
         apic_write(APIC_LVTPC, v | APIC_LVT_MASKED);
 }
 
-void unmask_lvtpc(void * e)
+static void unmask_lvtpc(void * e)
 {
 	if (!lvtpc_masked)
 		apic_write(APIC_LVTPC, apic_read(APIC_LVTPC) & ~APIC_LVT_MASKED);
@@ -560,7 +551,7 @@ DECLARE_COMPLETION(threadstop);
 /* we have to have another thread because we can't
  * do wake_up() from NMI due to no locking
  */
-int oprof_thread(void *arg)
+static int oprof_thread(void *arg)
 {
 	int i;
 
@@ -592,7 +583,7 @@ int oprof_thread(void *arg)
 	return 0;
 }
 
-void oprof_start_thread(void)
+static void oprof_start_thread(void)
 {
 	init_completion(&threadstop);
 	diethreaddie = 0;
@@ -600,7 +591,7 @@ void oprof_start_thread(void)
 		printk(KERN_ERR "oprofile: couldn't spawn wakeup thread.\n");
 }
 
-void oprof_stop_thread(void)
+static void oprof_stop_thread(void)
 {
 	diethreaddie = 1;
 	kill_proc(SIGKILL, threadpid, 1);
@@ -1124,7 +1115,7 @@ static struct ctl_table_header *sysctl_header;
 
 /* NOTE: we do *not* support sysctl() syscall */
 
-int __init init_sysctl(void)
+static int __init init_sysctl(void)
 {
 	ctl_table *next = &oprof_table[nr_oprof_static];
 	ctl_table *counter_table[OP_MAX_COUNTERS + 1];
@@ -1166,7 +1157,7 @@ cleanup:
 	return -EFAULT;
 }
 
-void __exit cleanup_sysctl(void)
+static void __exit cleanup_sysctl(void)
 {
 	int i;
 	ctl_table *next = &oprof_table[nr_oprof_static];

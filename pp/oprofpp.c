@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.35 2001/07/25 03:51:33 movement Exp $ */
+/* $Id: oprofpp.c,v 1.36 2001/08/20 19:46:13 davej Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -120,19 +120,19 @@ static void get_options(int argc, char const *argv[])
 	                poptBadOption(optcon, POPT_BADOPTION_NOALIAS),
 	                poptStrerror(c));
 	        poptPrintHelp(optcon, stderr, 0);
-	        exit(1);
+	        exit(EXIT_FAILURE);
 	}
 
 	if (showvers) {
 		printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
-		exit(0);
+		exit(EXIT_SUCCESS);
 	}
  
 	if (!list_all_symbols_details && !list_symbols && 
 	    !gproffile && !symbol) {
 		fprintf(stderr, "oprofpp: no mode specified. What do you want from me ?\n");
 		poptPrintHelp(optcon, stderr, 0);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	/* non-option file, either a sample or binary image file */
@@ -159,7 +159,7 @@ static void get_options(int argc, char const *argv[])
 		if (!imagefile) { 
 			fprintf(stderr, "oprofpp: no samples file specified.\n");
 			poptPrintHelp(optcon, stderr, 0);
-			exit(1);
+			exit(EXIT_FAILURE);
 		} else {
 			/* we'll "leak" this memory */
 			samplefile = remangle(imagefile);
@@ -264,19 +264,19 @@ bfd *open_image_file(char const * mangled, time_t mtime)
 		fprintf(stderr, "oprofpp: the last modified time of the binary file %s does not match "
 			"that of the sample file. Either this is the wrong binary or the binary "
 			"has been modified since the sample file was created.\n", file);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 			 
 	ibfd = bfd_openr(file, NULL);
  
 	if (!ibfd) {
 		fprintf(stderr,"oprofpp: bfd_openr of %s failed.\n", file);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	 
 	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) { 
 		fprintf(stderr,"oprofpp: BFD format failure for %s.\n", file);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
  
  	if (!imagefile)
@@ -305,7 +305,7 @@ u32 sym_offset(asymbol *sym, u32 num)
 {
 	if (num - sect_offset > num) {
 		fprintf(stderr,"oprofpp: less than zero offset ? \n");
-		exit(1); 
+		exit(EXIT_FAILURE); 
 	}
 	 
 	/* adjust for kernel images */
@@ -476,7 +476,7 @@ void do_list_symbols(bfd * ibfd)
 
 	if (!num) {
 		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	 
 
@@ -487,11 +487,11 @@ void do_list_symbols(bfd * ibfd)
 		get_symbol_range(syms[i], (i == num-1) ? NULL : syms[i+1], &start, &end); 
 		if (start >= nr_samples) {
 			fprintf(stderr,"oprofpp: start 0x%x out of range (max 0x%x)\n", start, nr_samples);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 		if (end > nr_samples) {
 			fprintf(stderr,"oprofpp: end 0x%x out of range (max 0x%x)\n", end, nr_samples);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		for (j = start; j < end; j++) {
@@ -542,7 +542,7 @@ void do_list_symbol(bfd * ibfd)
 
 	if (!num) {
 		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	for (i=0; i < num; i++) {
@@ -599,7 +599,7 @@ void do_dump_gprof(bfd * ibfd)
 
 	if (!num) {
 		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	 
 	fp=opd_open_file(gproffile, "w");
@@ -727,7 +727,7 @@ void do_list_all_symbols_details(bfd* ibfd) {
 
 	if (!num) {
 		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	for (i = 0 ; i < num ; ++i) {
@@ -797,28 +797,28 @@ int main(int argc, char const *argv[])
 	fp = fopen(samplefile,"r");
 	if (!fp) {
 		fprintf(stderr, "oprofpp: fopen of %s failed. %s\n", samplefile, strerror(errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
  
 	if (fseek(fp, -sizeof(struct opd_footer), SEEK_END) == -1) {
 		fprintf(stderr, "oprofpp: fseek of %s failed. %s\n", samplefile, strerror(errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	 
 	if (fread(&footer, sizeof(struct opd_footer), 1, fp) != 1) {
 		fprintf(stderr, "oprofpp: fread of %s failed. %s\n", samplefile, strerror(errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	fclose(fp);
 
 	if (footer.magic != OPD_MAGIC) {
 		fprintf(stderr, "oprofpp: wrong magic 0x%x, expected 0x%x.\n", footer.magic, OPD_MAGIC);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
  
 	if (footer.version != OPD_VERSION) {
 		fprintf(stderr, "oprofpp: wrong version 0x%x, expected 0x%x.\n", footer.version, OPD_VERSION);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
  
 	if (footer.ctr0_type_val) {
@@ -839,7 +839,7 @@ int main(int argc, char const *argv[])
 
 	if (fd == -1) {
 		fprintf(stderr, "oprofpp: Opening %s failed. %s\n", samplefile, strerror(errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	size = opd_get_fsize(samplefile, 1) - sizeof(struct opd_footer); 
@@ -847,7 +847,7 @@ int main(int argc, char const *argv[])
 
 	if (samples == (void *)-1) {
 		fprintf(stderr, "oprofpp: mmap of %s failed. %s\n", samplefile, strerror(errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	nr_samples = size/sizeof(struct opd_fentry);

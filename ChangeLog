@@ -1,3 +1,10 @@
+2001-08-20  Dave Jones  <davej@suse.de>
+
+	* pp/oprofpp.c: use EXIT_FAILURE | EXIT_SUCCESS
+	  in exit() calls.
+	* oprofile.c: Make non-exported functions static
+	  and remove duplicate definitions.
+
 2001-08-19  John Levon  <moz@compsoc.man.ac.uk>
 
 	* dae/op_start: handle celeries in cpu type
