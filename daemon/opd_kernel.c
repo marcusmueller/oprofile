@@ -110,7 +110,6 @@ static void opd_clear_module_info(void)
 	struct list_head * pos2;
 	struct opd_module * module;
 
-	printf("Removing module list\n");
 	list_for_each_safe(pos, pos2, &opd_modules) {
 		module = list_entry(pos, struct opd_module, module_list);
 		if (module->name)
@@ -153,7 +152,7 @@ void opd_reread_module_info(void)
 
 	opd_clear_module_info();
 
-	verbprintf("Reading module info.\n");
+	printf("Reading module info.\n");
 
 	fp = op_try_open_file("/proc/modules", "r");
 
@@ -311,6 +310,8 @@ opd_find_app_kernel_image(vma_t * eip, struct opd_image * app_image)
 	module = opd_find_module_by_eip(*eip);
 
 	if (!module) {
+		verbprintf("No module found for PC %llx\n",
+		           (unsigned long long)*eip);
 		opd_stats[OPD_LOST_MODULE]++;
 		return 0;
 	}
@@ -360,6 +361,8 @@ opd_find_kernel_image(vma_t * eip, struct opd_image * app_image)
 	module = opd_find_module_by_eip(*eip);
 
 	if (!module) {
+		verbprintf("No module found for PC %llx\n",
+		           (unsigned long long)*eip);
 		opd_stats[OPD_LOST_MODULE]++;
 		return 0;
 	}
