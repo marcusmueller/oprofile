@@ -456,7 +456,7 @@ static void opd_do_samples(unsigned long * opd_buf, ssize_t count)
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
-	verbprintf("Read buffer of %d entries.\n", num);
+	verbprintf("Read buffer of %d entries.\n", (unsigned int) num);
  
 	opd_process_samples(opd_buf, num);
 

@@ -1,3 +1,8 @@
+2003-01-03  Will Cohen  <wcohen@redhat.com>
+
+	* daemon/oprofiled.c (opd_do_samples): Typecast to match
+	  arguments.
+
 2002-12-21  John Levon  <levon@movementarian.org>
 
 	* Makefile.am: list module files explicitly, needed
