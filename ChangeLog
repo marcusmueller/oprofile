@@ -1,5 +1,9 @@
 2003-02-23  John Levon  <levon@movementarian.org>
 
+	* autogen.sh: error out if options passed
+
+2003-02-23  John Levon  <levon@movementarian.org>
+
 	* libregex/op_regex.h:
 	* libregex/regex_test.cpp: fix std::
 

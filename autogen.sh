@@ -30,6 +30,11 @@ if $AUTOMAKE --version | grep -q 1.4
 	exit 1
 fi
 
+if test -n "$1"; then
+	echo "autogen.sh doesn't take any options" >&2
+	exit 1
+fi
+
 run $ACLOCAL
 run $AUTOHEADER
 run "$AUTOMAKE --foreign --add-missing --copy"
