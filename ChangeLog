@@ -1,3 +1,17 @@
+2003-07-12  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* from BRANCH_CALLGRAPH:
+	* daemon/opd_image.c: printf -> verbprintf, fix comment
+	* daemon/opd_kernel.c: kernel/module samples statistics was wrong
+
+	* daemon/opd_image.c:
+	* daemon/opd_image.h:
+	* daemon/opd_kernel.c:
+	* daemon/opd_kernel.h: import cleanup from branch, mainly don't handle
+	  samples in opd_kernel.c but return (creating if neccessary) an
+	  opd_image struct where the sample must go and let opd_image caller
+	  in opd_image.c do sample insertion
+
 2003-07-11  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* utils/opcontrol: shows basename $0 with --version

@@ -250,6 +250,24 @@ void opd_reread_module_info(void)
 }
 
 
+void opd_delete_modules(struct opd_image * image)
+{
+	struct list_head * pos;
+	struct list_head * pos2;
+	struct opd_module * module;
+
+	verbprintf("Removing image module list for image %p\n", image);
+	list_for_each_safe(pos, pos2, &image->module_list) {
+		module = list_entry(pos, struct opd_module, module_list);
+		if (module->name)
+			free(module->name);
+		free(module);
+	}
+
+	list_init(&image->module_list);
+}
+
+
 /**
  * opd_find_module_by_eip - find a module by its eip
  * @param eip  EIP value
@@ -271,48 +289,8 @@ static struct opd_module * opd_find_module_by_eip(vma_t eip)
 }
 
 
-/**
- * opd_handle_module_sample - process a module sample
- * @param eip  EIP value
- * @param counter  counter number
- *
- * Process a sample in module address space. The sample eip
- * is matched against module information. If the search was
- * successful, the sample is output to the relevant file.
- *
- * Note that for modules and the kernel, the offset will be
- * wrong in the file, as it is not a file offset, but the offset
- * from the text section. This is fixed up in pp.
- *
- * If the sample could not be located in a module, it is treated
- * as a kernel sample. This function is never called when
- * separate_kernel_samples != 0
- */
-static void opd_handle_module_sample(vma_t eip, u32 counter)
-{
-	struct opd_module * module;
-
-	module = opd_find_module_by_eip(eip);
-
-	if (!module) {
-		opd_stats[OPD_LOST_MODULE]++;
-		return;
-	}
-
-	if (module->image != NULL) {
-		opd_stats[OPD_MODULE]++;
-		opd_put_image_sample(module->image,
-				     eip - module->start, counter);
-	} else {
-		opd_stats[OPD_LOST_MODULE]++;
-		verbprintf("No image for sampled module %s\n",
-			   module->name);
-	}
-}
-
-
 static struct opd_module *
-opd_find_module(struct opd_image const * app_image, vma_t eip)
+opd_find_module(vma_t eip, struct opd_image const * app_image)
 {
 	struct list_head * pos;
 	struct opd_module * module;
@@ -330,21 +308,9 @@ opd_find_module(struct opd_image const * app_image, vma_t eip)
 }
 
 
-/**
- * opd_setup_kernel_sample
- * @param eip  EIP value of sample
- * @param counter  counter number
- * @param app_image  owning application of this sample
- * @param name  module name
- * @param start  module start address
- * @param end  module end address
- *
- * create an opd_module and associated opd_image then put a kernel module
- * sample in the newly created image
- */
-static void
-opd_setup_kernel_sample(vma_t eip, u32 counter, struct opd_image * app_image,
-                        char const * name, vma_t start, vma_t end)
+static struct opd_image *
+opd_create_app_kernel_image(struct opd_image * app_image,
+                            char const * name, vma_t start, vma_t end)
 {
 	struct opd_image * image;
 	struct opd_module * new_module;
@@ -353,52 +319,47 @@ opd_setup_kernel_sample(vma_t eip, u32 counter, struct opd_image * app_image,
 	if (!image) {
 		verbprintf("Can't create image for %s %s\n",
 			   name, app_image->app_name);
-		return;
+		return 0;
 	}
 
 	new_module = opd_create_module(name, start, end);
 	new_module->image = image;
 	list_add(&new_module->module_list, &app_image->module_list);
-
-	verbprintf("Putting image kernel sample (%s) offset 0x%llx, counter %u\n",
-		   new_module->image->name, eip, counter);
-	opd_put_image_sample(image, eip - new_module->start, counter);
+	return image;
 }
 
 
 /**
- * opd_put_kernel_sample - process a kernel sample when
- *   separate_kernel_samples != 0
- * @param eip  EIP value of sample
- * @param counter  counter number
- * @param app_image  owning application of this sample
+ * opd_get_app_kernel_image - find the image for a kernel sample for an app
  *
- * Handle a sample in kernel address space or in a module. The sample is
- * output to the relevant image file.
+ * This adjusts the given PC value to be an offset against
+ * the returned image.
  */
-static void
-opd_put_kernel_sample(vma_t eip, u32 counter, struct opd_image * app_image)
+static struct opd_image *
+opd_find_app_kernel_image(vma_t * eip, struct opd_image * app_image)
 {
-	struct opd_module * module = opd_find_module(app_image, eip);
+	struct opd_module * module = opd_find_module(*eip, app_image);
+	struct opd_image * image;
+
 	if (module) {
-		verbprintf("Putting image kernel sample (%s) offset 0x%llx, counter %u\n",
-			   module->image->name, eip, counter);
-		opd_put_image_sample(module->image, eip - module->start,
-				     counter);
-		return;
+		opd_stats[OPD_MODULE]++;
+		*eip -= module->start;
+		return module->image;
 	}
 
-	if (eip >= kernel_start && eip < kernel_end) {
-		opd_setup_kernel_sample(eip, counter, app_image, vmlinux,
-					kernel_start, kernel_end);
-		return;
+	if (*eip >= kernel_start && *eip < kernel_end) {
+		image = opd_create_app_kernel_image(app_image, vmlinux,
+		                                    kernel_start, kernel_end);
+		opd_stats[OPD_KERNEL]++;
+		*eip -= kernel_start;
+		return image;
 	}
 
-	module = opd_find_module_by_eip(eip);
+	module = opd_find_module_by_eip(*eip);
 
 	if (!module) {
 		opd_stats[OPD_LOST_MODULE]++;
-		return;
+		return 0;
 	}
 
 	assert(module->image);
@@ -407,62 +368,55 @@ opd_put_kernel_sample(vma_t eip, u32 counter, struct opd_image * app_image)
 		opd_stats[OPD_LOST_MODULE]++;
 		verbprintf("unable to get path name for module %s\n",
 			   module->name);
-		return;
+		return 0;
 	}
 
-	opd_setup_kernel_sample(eip, counter, app_image, module->image->name,
-	                        module->start, module->end);
+	opd_stats[OPD_MODULE]++;
+	*eip -= module->start;
+	return opd_create_app_kernel_image(app_image, module->image->name,
+	                                   module->start, module->end);
 }
 
 
 /**
- * opd_handle_kernel_sample - process a kernel sample
- * @param eip  EIP value of sample
- * @param counter  counter number
- * @param app_image  owning application of this sample or 0 when
- *   !separate_kernel_samples
+ * opd_find_kernel_image - find the image for a kernel sample
  *
- * Handle a sample in kernel address space or in a module. The sample is
- * output to the relevant image file.
+ * This adjusts the given PC value to be an offset against
+ * the returned image.
  */
-void
-opd_handle_kernel_sample(vma_t eip, u32 counter, struct opd_image * app_image)
+struct opd_image *
+opd_find_kernel_image(vma_t * eip, struct opd_image * app_image)
 {
 	if (no_vmlinux) {
 		opd_stats[OPD_KERNEL]++;
-		opd_put_image_sample(kernel_image, eip, counter);
-		return;
+		return kernel_image;
 	}
 
 	if (!app_image) {
-		if (eip >= kernel_start && eip < kernel_end) {
+		struct opd_module * module;
+
+		if (*eip >= kernel_start && *eip < kernel_end) {
 			opd_stats[OPD_KERNEL]++;
-			opd_put_image_sample(kernel_image, eip - kernel_start,
-			                     counter);
-			return;
+			*eip -= kernel_start;
+			return kernel_image;
 		}
 
-		/* in a module */
-		opd_handle_module_sample(eip, counter);
-	} else {
-		opd_put_kernel_sample(eip, counter, app_image);
-	}
-}
- 
+		module = opd_find_module_by_eip(*eip);
 
-void opd_delete_modules(struct opd_image * image)
-{
-	struct list_head * pos;
-	struct list_head * pos2;
-	struct opd_module * module;
+		if (!module) {
+			opd_stats[OPD_LOST_MODULE]++;
+			return 0;
+		}
 
-	verbprintf("Removing image module list for image %p\n", image);
-	list_for_each_safe(pos, pos2, &image->module_list) {
-		module = list_entry(pos, struct opd_module, module_list);
-		if (module->name)
-			free(module->name);
-		free(module);
+		if (module->image) {
+			opd_stats[OPD_MODULE]++;
+			*eip -= module->start;
+			return module->image;
+		}
+
+		opd_stats[OPD_LOST_MODULE]++;
+		verbprintf("No image for sampled module %s\n", module->name);
 	}
 
-	list_init(&image->module_list);
+	return opd_find_app_kernel_image(eip, app_image);
 }

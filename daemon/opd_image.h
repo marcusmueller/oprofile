@@ -50,8 +50,6 @@ struct opd_image {
 typedef void (*opd_image_cb)(struct opd_image *);
 void opd_for_each_image(opd_image_cb imagecb);
 
-void opd_put_image_sample(struct opd_image * image, vma_t offset, int counter);
- 
 void opd_image_cleanup(void);
 
 void opd_init_images(void);

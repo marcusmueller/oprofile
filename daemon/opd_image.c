@@ -448,19 +448,26 @@ static void opd_put_sample(struct transient * trans, vma_t eip)
 
 	if (trans->in_kernel > 0) {
 		struct opd_image * app_image = 0;
+		struct opd_image * kernel_image;
 
 		/* We can get a NULL image if it's a kernel thread */
 		if (separate_kernel_samples && trans->image)
 			app_image = trans->image->app_image;
-		verbprintf("Putting kernel sample 0x%llx, counter %lu - application %s\n",
-			eip, event, app_image ? app_image->name : "kernel");
-		opd_handle_kernel_sample(eip, event, app_image);
+
+		/* This fixes up eip into an offset too and increase stats */
+		kernel_image = opd_find_kernel_image(&eip, app_image);
+
+		if (kernel_image) {
+			verbprintf("Putting kernel sample 0x%llx - application %s\n",
+				eip, app_image ? app_image->name : "kernel");
+			opd_put_image_sample(kernel_image, eip, event);
+		}
 		return;
 	}
 
 	/* It's a user-space sample ... */
 
-	if (trans->image != NULL) {
+	if (trans->image) {
 		verbprintf("Putting image sample (%s) offset 0x%llx, counter %lu\n",
 			trans->image->name, eip, event);
 		opd_put_image_sample(trans->image, eip, event);
@@ -557,6 +564,7 @@ static void code_cookie_switch(struct transient * trans)
 
 	trans->cookie = pop_buffer_value(trans);
 	trans->image = opd_get_image(trans->cookie, trans->app_cookie);
+
 	verbprintf("COOKIE_SWITCH to cookie %llx (%s)\n",
 	           trans->cookie, trans->image->name); 
 }
@@ -617,7 +625,7 @@ void opd_process_samples(char const * buffer, size_t count)
 	 */
 	unsigned long long code;
 
-	printf("Reading sample buffer.\n");
+	verbprintf("Reading sample buffer.\n");
 
 	while (trans.remaining) {
 		code = pop_buffer_value(&trans);
