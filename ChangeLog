@@ -1,7 +1,7 @@
 2001-10-18  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: workaround #2, hopefully fixing
-	  Mandarke (bug #471448)
+	  Mandrake (bug #471448)
  
 2001-10-17  John Levon  <moz@compsoc.man.ac.uk>
 
