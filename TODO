@@ -6,13 +6,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7.1 release
 -------------
 
- o two event and separate=thread
-  opreport error: Already displaying results for parameter event with values:
-  CPU_CLK_UNHALTED:10000,DATA_MEM_REFS:10000,CPU_CLK_UNHALTED:10000,CPU_CLK_UNHALTED:10000,CPU_CLK_UNHALTED:10000, and 64 more,
-  which conflicts with parameter tgid.
-  Suggestion: specify event: or count:
-   why events name are repeated?
-
 0.8 release
 -----------
 

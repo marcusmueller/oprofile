@@ -62,11 +62,17 @@ void report_error(profile_classes const & classes,
 	vector<profile_class>::const_iterator it = classes.v.begin();
 	vector<profile_class>::const_iterator const end = classes.v.end();
 
+	// We show error for the first conflicting axis but on this
+	// axis we can get only a few different it->name, we display only
+	// these different name.
+	set <string> name_seen;
 	size_t i = 5;
-
 	for (; it != end && i; ++it) {
-		str += it->name + ",";
-		--i;
+		if (name_seen.find(it->name) == name_seen.end()) {
+			name_seen.insert(it->name);
+			str += it->name + ",";
+			--i;
+		}
 	}
 
 	if (!i) {

@@ -1,3 +1,8 @@
+2003-11-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/arrange_profiles.cpp: report_error() shows only distinct
+	  conflicting name.
+
 2003-11-10  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/opcontrol.1.in: reverse kernel:user in event setting description.
