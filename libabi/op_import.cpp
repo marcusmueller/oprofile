@@ -42,6 +42,7 @@ struct Extractor
 		}
 	}
 
+	// FIXME: deinline, bloat ! 
 	void extract(void * targ_, void const * src_, 
 		     const char * sz, const char * off) throw (Abi_exception)
 	{
