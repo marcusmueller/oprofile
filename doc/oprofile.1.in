@@ -1,7 +1,7 @@
 .TH OPROFILE 1 "@DATE@" "oprofile @VERSION@"
 .UC 4
 .SH NAME
-oprofile \- a sytem-wide profiler
+oprofile \- a system-wide profiler
 .SH SYNOPSIS
 .br
 .B opcontrol

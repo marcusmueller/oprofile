@@ -1,3 +1,8 @@
+2003-10-28  Jason Lunz  <lunz@falooley.org>
+
+	* doc/opcontrol.1.in: better wording for --separate=
+	* doc/oprofile.1.in: typo
+
 2003-10-28  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/liblegacy/init.c:
