@@ -35,7 +35,6 @@ op_bfd::op_bfd(string const & filename, vector<string> exclude_symbols)
 	:
 	file_size(0),
 	ibfd(0),
-	bfd_syms(0),
 	text_offset(0)
 {
 	if (filename.empty()) {
@@ -81,7 +80,6 @@ op_bfd::op_bfd(string const & filename, vector<string> exclude_symbols)
 op_bfd::~op_bfd()
 {
 	bfd_close(ibfd);
-	delete [] bfd_syms;
 }
 
 
@@ -156,8 +154,8 @@ bool op_bfd::get_symbols(vector<string> excluded)
 	if (size < 1)
 		return false;
 
-	bfd_syms = new asymbol * [size];
-	nr_all_syms = bfd_canonicalize_symtab(ibfd, bfd_syms);
+	bfd_syms.reset(new asymbol*[size]);
+	nr_all_syms = bfd_canonicalize_symtab(ibfd, bfd_syms.get());
 	if (nr_all_syms < 1)
 		return false;
 
@@ -260,7 +258,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 	if (pc >= bfd_section_size(ibfd, section))
 		return false;
 
-	bool ret = bfd_find_nearest_line(ibfd, section, bfd_syms, pc,
+	bool ret = bfd_find_nearest_line(ibfd, section, bfd_syms.get(), pc,
 					 &cfilename, &functionname, &linenr);
 
 	if (cfilename == 0 || ret == false) {
@@ -303,7 +301,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 
 		for (size_t i = 1 ; i < max_search ; ++i) {
 			bool ret = bfd_find_nearest_line(ibfd, section,
-							 bfd_syms, pc+i,
+							 bfd_syms.get(), pc+i,
 							 &cfilename,
 							 &functionname,
 							 &linenr);
@@ -321,7 +319,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, uint offset,
 		// multiple calls. The more easy way to recover is to reissue
 		// the first call, we don't need to recheck return value, we
 		// know that the call will succeed.
-		bfd_find_nearest_line(ibfd, section, bfd_syms, pc,
+		bfd_find_nearest_line(ibfd, section, bfd_syms.get(), pc,
 				      &cfilename, &functionname, &linenr);
 	}
 

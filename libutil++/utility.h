@@ -39,8 +39,8 @@ public:
 	explicit scoped_ptr(T * p = 0) : p_(p) {}
 	~scoped_ptr() { delete p_; }
 
-	void reset(T * p) {
-		if (p != p_)
+	void reset(T * p = 0) {
+		if (p == p_)
 			return;
 		delete p_;
 		p_ = p;
@@ -57,12 +57,39 @@ public:
 	}
  
 private:
-	scoped_ptr & operator=(scoped_ptr const &) {}
-	scoped_ptr(scoped_ptr const &) {}
+	scoped_ptr & operator=(scoped_ptr const &);
+	scoped_ptr(scoped_ptr const &);
 	T * p_;
 };
 
-// the class noncopyable get this copyright :
+template<typename T> class scoped_array {
+public:
+	explicit scoped_array(T * p = 0) : p_(p) {}
+	~scoped_array() { delete [] p_; }
+
+	void reset(T * p = 0) {
+		if (p == p_)
+			return;
+		delete [] p_;
+		p_ = p;
+	}
+ 
+	T & operator[](std::ptrdiff_t i) const { return p_[i]; }
+	T * get() const { return p_; }
+ 
+	void swap(scoped_array & sp) {
+		T * tmp = sp.p_;
+		sp.p_ = p_;
+		p_ = tmp;
+	}
+ 
+private:
+	scoped_array & operator=(scoped_array const &);
+	scoped_array(scoped_array const &);
+	T * p_;
+};
+ 
+// Part copyright:
 //  (C) Copyright boost.org 1999. Permission to copy, use, modify, sell
 //  and distribute this software is granted provided this copyright
 //  notice appears in all copies. This software is provided "as is" without

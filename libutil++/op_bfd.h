@@ -17,6 +17,7 @@
 #include <vector>
 #include <string>
 
+#include "utility.h"
 #include "op_types.h"
 
 class op_bfd;
@@ -156,7 +157,7 @@ private:
 	bfd * ibfd;
 
 	// vector of symbol filled by the bfd lib.
-	asymbol ** bfd_syms;
+	scoped_array<asymbol*> bfd_syms;
 	// image file such the linux kernel need than all vma are offset
 	// by this value.
 	u32 text_offset;

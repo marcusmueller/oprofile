@@ -1,5 +1,14 @@
 2002-06-07  John Levon  <moz@compsoc.man.ac.uk>
 
+	* TODO: update
+
+	* libutil++/utility.h: fix stupid bug, add scoped_array
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: use it
+
+2002-06-07  John Levon  <moz@compsoc.man.ac.uk>
+
 	* libutil++/utility.h: add a scoped_ptr
 
 	* pp/op_to_source.cpp:

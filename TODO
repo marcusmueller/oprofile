@@ -25,6 +25,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
  
+ o dependencies are broke for .a libraries
  o make sure we behave sensibly in all places following symlinks etc. 
  o debian - libiberty is in "binutils-dev" package 
  o oprof_report/Makefile.in etc. 
@@ -48,7 +49,7 @@ General checks to make
 ----------------------
  
  o rgrep FIXME
- o valgrind
+ o valgrind (--show-reachable=yes --leak-check=yes)
  o audit to track unnecessary include <>
  o gcc 3.0/3.1 compile
  o Qt2/3 check, no Qt check
