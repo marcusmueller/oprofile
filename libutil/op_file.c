@@ -70,13 +70,13 @@ time_t op_get_mtime(char const * file)
  * move the file @old_dir/@name to @new_dir/@name iff
  * @old_dir/@name is a regular file
  *
- * if renaming succeed zero or the file is not 
- * a regular file is returned
+ * return > 0 if the file is not a regular file, == 0 if the
+ * file is successfully moved and < 0 on error 
  */ 
 int op_move_regular_file(char const *new_dir, 
 	char const *old_dir, char const *name)
 {
-	int ret = 0;
+	int ret = 1;
 	struct stat stat_buf;
 
 	char * src = xmalloc(strlen(old_dir) + strlen(name) + 2);

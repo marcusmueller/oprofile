@@ -1,5 +1,23 @@
 2002-05-22  John Levon  <moz@compsoc.man.ac.uk>
 
+	* lib/util/op_file.c:
+	* utils/op_session.c: restore accidentally lost
+	  commits :
+
+	2002-05-05  Philippe Elie  <phil.el@wanadoo.fr>
+
+		* dae/op_session.c: tweak error message when session already
+		  exist. Avoid to op_dump when profiler is not started.
+
+	2002-05-05  Philippe Elie  <phil.el@wanadoo.fr>
+
+		* dae/op_session.c: do not create empty session directory
+		  and backup oprofileg.log too
+		* dae/opd_util.c:
+		* op_user.h: minor related change
+
+2002-05-22  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/*: complete re-organisation of files
  
 	* libop/op_config.h: add VMA_OFFSET and MAX_MODULES

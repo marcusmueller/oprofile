@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <dirent.h> 
+#include <errno.h> 
  
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,14 +80,18 @@ static void op_move_files(char const * sname)
 	char * dir_name;
 	DIR * dir;
 	struct dirent * dirent;
+	int is_dir_empty = 1;
 
 	dir_name = xmalloc(strlen(OP_SAMPLES_DIR) + strlen(sname) + 1);
 	strcpy(dir_name, OP_SAMPLES_DIR);
 	strcat(dir_name, sname);
 
-	/* FIXME: graceful handling of EEXIST */
 	if (mkdir(dir_name, 0755)) {
-		fprintf(stderr, "unable to create directory %s\n", dir_name);
+		if (errno == EEXIST) {
+			fprintf(stderr, "session \"%s\" already exists\n", dir_name);
+		} else {
+			fprintf(stderr, "unable to create directory \"%s\"\n", dir_name);
+		}
 		exit(EXIT_FAILURE);
 	}
 
@@ -96,15 +101,29 @@ static void op_move_files(char const * sname)
 	}
 
 	while ((dirent = readdir(dir)) != 0) {
-		if (op_move_regular_file(dir_name, OP_SAMPLES_DIR, dirent->d_name)) {
+ 		int ret;
+ 		ret = op_move_regular_file(dir_name, OP_SAMPLES_DIR, dirent->d_name);
+ 		if (ret < 0) {
 			fprintf(stderr, "unable to backup %s/%s to directory %s\n",
 			       OP_SAMPLES_DIR, dirent->d_name, dir_name);
 			exit(EXIT_FAILURE);
+		} else if (ret == 0) {
+			is_dir_empty = 0;
 		}
 	}
 
 	closedir(dir);
 
+ 	if (!is_dir_empty) {
+ 		op_move_regular_file(dir_name, OP_BASE_DIR, OP_LOG_FILE);
+ 	} else {
+ 		rmdir(dir_name);
+ 
+ 		fprintf(stderr, "no samples files to save, session %s not created\n",
+ 			sname);
+ 		exit(EXIT_FAILURE);
+ 	}
+ 
 	free(dir_name);
 }
 
@@ -124,6 +143,8 @@ static void op_signal_daemon(void)
  
 int main(int argc, char const *argv[])
 {
+	pid_t pid;
+ 
 	op_options(argc, argv);
 	
 	/* not ideal, but OK for now. The sleep hopefully
@@ -131,9 +152,12 @@ int main(int argc, char const *argv[])
 	 * is delivered, so it will finish reading, *then*
 	 * handle the SIGHUP. Hack !
 	 */
-	system("op_dump");
-	sleep(2);
- 
+ 	pid = op_read_lock_file(OP_LOCK_FILE);
+ 	if (pid) {
+ 		system("op_dump");
+ 		sleep(2);
+ 	}
+
 	op_move_files(sessionname);
 	op_signal_daemon();
 	return 0;
