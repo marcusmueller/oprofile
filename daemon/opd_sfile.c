@@ -14,12 +14,10 @@
 #include "opd_trans.h"
 #include "opd_kernel.h"
 #include "opd_mangling.h"
-#include "opd_interface.h"
 #include "opd_printf.h"
 #include "opd_stats.h"
 
 #include "op_libiberty.h"
-#include "odb_hash.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -12,12 +12,10 @@
 #include <config.h>
  
 #include "opd_stats.h"
-#include "opd_cookie.h"
 #include "opd_sfile.h"
-#include "opd_trans.h"
-#include "opd_kernel.h"
-#include "opd_printf.h"
 #include "opd_util.h"
+#include "opd_kernel.h"
+#include "opd_trans.h"
 
 #include "op_version.h"
 #include "op_config.h"
@@ -27,10 +25,8 @@
 #include "op_deviceio.h"
 #include "op_lockfile.h"
 #include "op_get_time.h"
-#include "op_sample_file.h"
-#include "op_events.h"
 #include "op_libiberty.h"
-#include "op_hw_config.h"
+#include "op_events.h"
 #ifdef OPROF_ABI
 #include "op_abi.h"
 #endif
@@ -321,8 +317,9 @@ static void opd_do_read(char * buf, size_t size)
 		while (count < 0) {
 			count = op_read_device(devfd, buf, size);
 
-			// we can lost a signal alarm or a signal hup but we
-			// don't take care.
+			/* we can lose an alarm or a hup but
+			 * we don't care.
+			 */
 			if (signal_alarm) {
 				signal_alarm = 0;
 				opd_alarm();

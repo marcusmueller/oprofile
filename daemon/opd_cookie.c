@@ -9,7 +9,6 @@
  */
 
 #include "opd_cookie.h"
-#include "opd_printf.h"
 
 #include "op_list.h"
 #include "op_libiberty.h"

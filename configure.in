@@ -153,20 +153,22 @@ AC_SUBST(OP_CXXFLAGS)
 
 # fixups for config.h
 if test "$prefix" = "NONE"; then
-	prefix="$ac_default_prefix"
+	my_op_prefix="$ac_default_prefix"
+else
+	my_op_prefix="$prefix"
 fi
+my_op_datadir="$my_op_prefix/share"
+
 if test "$exec_prefix" = "NONE"; then
-	exec_prefix="$prefix"
+	my_op_exec_prefix="$my_op_prefix"
+else
+	my_op_exec_prefix="$exec_prefix"
 fi
-if test "$bindir" = "NONE"; then
-	bindir="$prefix/bin"
-fi
-if test "$datadir" = "NONE"; then
-	datadir="$prefix/share"
-fi
-OP_DATADIR=`eval echo "$datadir/$PACKAGE/"`
+my_op_bindir="$my_op_exec_prefix/bin"
+
+OP_DATADIR=`eval echo "$my_op_datadir/$PACKAGE/"`
 AC_DEFINE_UNQUOTED(OP_DATADIR, "$OP_DATADIR", [package data directory])
-OP_BINDIR=`eval echo "$bindir/"`
+OP_BINDIR=`eval echo "$my_op_bindir/"`
 AC_DEFINE_UNQUOTED(OP_BINDIR, "$OP_BINDIR", [package binary directory])
 
 AC_OUTPUT(Makefile \

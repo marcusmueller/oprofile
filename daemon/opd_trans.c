@@ -11,18 +11,17 @@
 
 #include "opd_trans.h"
 #include "opd_kernel.h"
-#include "opd_cookie.h"
 #include "opd_sfile.h"
 #include "opd_stats.h"
 #include "opd_printf.h"
 #include "opd_interface.h"
  
-#include <errno.h>
 #include <limits.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <errno.h>
 
 extern size_t kernel_pointer_size;
 extern int verbose;

@@ -24,9 +24,7 @@
 #include <errno.h>
 #include <assert.h>
 
-extern int verbose;
 extern int no_vmlinux;
-extern unsigned long opd_stats[];
 
 static LIST_HEAD(modules);
 
@@ -48,12 +46,11 @@ void opd_create_vmlinux(char const * name, char const * arg)
 	sscanf(arg, "%llx,%llx", &vmlinux_image.start, &vmlinux_image.end);
 
 	verbprintf("kernel_start = %llx, kernel_end = %llx\n",
-		   vmlinux_image.start, vmlinux_image.end);
+	           vmlinux_image.start, vmlinux_image.end);
 
 	if (vmlinux_image.start == 0x0 || vmlinux_image.end == 0x0) {
-		fprintf(stderr,
-			"error: mis-parsed kernel range: %llx-%llx\n",
-			vmlinux_image.start, vmlinux_image.end);
+		fprintf(stderr, "error: mis-parsed kernel range: %llx-%llx\n",
+		        vmlinux_image.start, vmlinux_image.end);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -159,7 +156,7 @@ void opd_reread_module_info(void)
 		}
 
 		image = opd_create_module(module_name, start_address,
-		                          start_address  + module_size);
+		                          start_address + module_size);
 
 		verbprintf("module %s start %llx end %llx\n",
 			   image->name, image->start, image->end);
@@ -173,7 +170,7 @@ void opd_reread_module_info(void)
 
 /**
  * find a kernel image by PC value
- * @param trans  hold PC value to lok up
+ * @param trans holds PC value to look up
  *
  * find the kernel image which contains this PC.
  *

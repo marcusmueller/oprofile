@@ -1,3 +1,16 @@
+2003-09-25  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_cookie.c:
+	* daemon/opd_kernel.c:
+	* daemon/opd_sfile.c:
+	* daemon/opd_trans.c:
+	* daemon/oprofiled.c: trivial cleanups
+
+2003-09-25  Marc Herbert  <marc.herbert@ens-lyon.fr>
+
+	* configure.in: fix prefix stuff to allow stow
+	to work
+
 2003-09-25  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pch-c++.h: remove
