@@ -226,7 +226,6 @@ static void touint_tests()
 static input_output<char const*, bool> expect_from_str_to_bool[] =
 {
 	{ "0", false },
-	{ "33", true },
 	{ "1", true },
 	{ 0, 0 }
 };

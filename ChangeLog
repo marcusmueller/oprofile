@@ -1,3 +1,8 @@
+2003-10-30  John Levon  <levon@movementarian.org>
+
+	* libutil++/tests/string_manip_tests.cpp: fix tobool test
+	("33" is not castable to boool)
+
 2003-10-30  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/string_manip.cpp:
