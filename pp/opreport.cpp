@@ -28,6 +28,7 @@
 
 using namespace std;
 
+/* FIXME */
 size_t pp_nr_counters;
 
 namespace {
@@ -89,7 +90,7 @@ struct group_summary {
 };
 
 
-/// all group_summary belonging to a counter
+/// all group_summary belonging to a count group
 struct event_group_summary {
 	event_group_summary() : total_count(0.0) {}
 
@@ -98,7 +99,7 @@ struct event_group_summary {
 	}
 
 	vector<group_summary> groups;
-	/// total count of samples for this counter
+	/// total count of samples for this count group
 	double total_count;
 
 	index_mapper_t index_mapper;
@@ -136,7 +137,7 @@ string get_filename(string const & filename)
 
 
 /// Output a count and a percentage
-void output_counter(double total_count, size_t count)
+void output_count(double total_count, size_t count)
 {
 	cout << setw(9) << count << " ";
 	double ratio = op_ratio(count, total_count);
@@ -195,7 +196,7 @@ output_deps(vector<event_group_summary> const & summaries,
 			double tot_count = options::global_percent
 				? summaries[i].total_count : group.count;
 
-			output_counter(tot_count, file.count);
+			output_count(tot_count, file.count);
 		}
 
 		summary const & file = event_group[0].file(j);
@@ -288,9 +289,9 @@ index_mapper_t create_index_mapper(vector<group_summary> const & summaries)
  * the added items contain zero samples.
  *
  * @internal a multimap<name, <data, vector entry index>> is used to partition
- * the input data (coming from all counter). Then we iterate over equivalence
- * class, each class contain item for an unique name and associated info
- * contains the counter nr for this data.
+ * the input data (coming from all count groups). Then we iterate over
+ * equivalence class, each class contain item for an unique name and
+ * associated info contains the counter nr for this data.
  */
 vector<group_summary>
 populate_summaries(vector<event_group_summary> const & unfilled, size_t index)
@@ -364,7 +365,7 @@ void output_summaries(vector<event_group_summary> const & summaries)
 
 		for (size_t j = 0; j < summaries.size(); ++j) {
 			group_summary const & group = summaries[j].group(i);
-			output_counter(summaries[j].total_count, group.count);
+			output_count(summaries[j].total_count, group.count);
 		}
 
 		string image = group.image_name;
@@ -439,7 +440,7 @@ create_index_mapper(vector<event_group_summary> const & summaries)
  * the added items contain zero samples.
  *
  * @internal a multimap<name, <data, vector entry index>> is used to partition
- * the input data (coming from all counter). Then we iterate over equivalence
+ * the input data (coming from all count groups). Then we iterate over equivalence
  * class, each class contain item for an unique name and associated info
  * contains the counter nr for this data.
  */
@@ -507,6 +508,9 @@ vector<event_group_summary> populate_group_summaries()
 /**
  * Load the given samples container with the profile data from
  * the files container, merging as appropriate.
+ *
+ * FIXME: these references to "counter" need to be about "count groups"
+ * for proper generality (beyond just comparing events)
  */
 void populate_profiles(partition_files const & files, profile_container & samples, size_t counter)
 {
@@ -606,6 +610,8 @@ int opreport(vector<string> const & non_options)
 {
 	handle_options(non_options);
 
+	/* FIXME: this belongs as a parameter given to
+	 * formatter, not this ugly global */
 	pp_nr_counters = sample_file_partition.size();
 
 	output_header();

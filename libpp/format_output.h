@@ -55,11 +55,11 @@ private:
 	struct field_datum {
 		field_datum(symbol_entry const & sym,
 		            sample_entry const & s,
-			    size_t counter_)
-			: symbol(sym), sample(s), counter(counter_) {}
+			    size_t group)
+			: symbol(sym), sample(s), count_group(group) {}
 		symbol_entry const & symbol;
 		sample_entry const & sample;
-		size_t counter;
+		size_t count_group;
 	};
  
 	/// format callback type
@@ -128,15 +128,15 @@ private:
 	profile_container const & profile;
  
 	/// total sample count
-	counter_array_t total_count;
+	count_array_t total_count;
 	/// samples so far
-	counter_array_t cumulated_samples;
+	count_array_t cumulated_samples;
 	/// percentage so far
-	counter_array_t cumulated_percent;
+	count_array_t cumulated_percent;
 	/// detailed total count
-	counter_array_t total_count_details;
+	count_array_t total_count_details;
 	/// detailed percentage so far
-	counter_array_t cumulated_percent_details;
+	count_array_t cumulated_percent_details;
 	/// used for outputting header
 	bool first_output;
 	/// true if we need to format as 64 bits quantities

@@ -45,10 +45,10 @@ public:
 	void insert(symbol_entry const * symbol, sample_entry const &);
 
 	/// return nr of samples in the given filename
-	counter_array_t accumulate_samples(debug_name_id filename_id) const;
+	count_array_t accumulate_samples(debug_name_id filename_id) const;
 
 	/// return nr of samples at the given line nr in the given file
-	counter_array_t accumulate_samples(debug_name_id, size_t linenr) const;
+	count_array_t accumulate_samples(debug_name_id, size_t linenr) const;
 
 	/// return the sample entry for the given image_name and vma if any
 	sample_entry const * find_by_vma(symbol_entry const * symbol,

@@ -1,12 +1,37 @@
+2003-08-11  John Levon  <levon@movementarian.org>
+
+	* libpp/Makefile.am:
+	* libpp/counter_array.cpp:
+	* libpp/counter_array.h: rename to ...
+
+	* libpp/count_array.h:
+	* libpp/count_array.cpp: ... this ...
+
+	* libpp/format_output.cpp:
+	* libpp/format_output.h:
+	* libpp/profile.cpp:
+	* libpp/profile.h:
+	* libpp/profile_container.cpp:
+	* libpp/profile_container.h:
+	* libpp/sample_container.cpp:
+	* libpp/sample_container.h:
+	* libpp/symbol.h:
+	* pp/opannotate.cpp:
+	* pp/opgprof.cpp:
+	* pp/opreport.cpp: ... and several renamings to starting
+	change the notion from "counters" to the more general notion
+	of "count groups"
+
 2003-08-10  Philippe Elie  <phil.el@wanadoo.fr>
 
-	multiple counter support for pp tools.
+	Multiple counter support for pp tools.
+
 	* libpp/counter_array.h:
 	* libpp/counter_array.cpp: resurected from pp-interface-branch, for now
-	 memory use is inneficient.
+	 memory use is inefficient.
 	* libpp/Makefile.am: add counter_array.cpp .h
 	* libpp/format_out.h:
-	* libpp/format_out.cpp: handle mutliple counter + a general tidy
+	* libpp/format_out.cpp: handle multiple counter + a general tidy
 	* libpp/format_flags.h: remove ff_immutable_mask and some nasty
 	  requisite on flags value
 	* libpp/profile_container.h:
@@ -17,10 +42,9 @@
 	* libpp/symbol_container.cpp:
 	* libpp/symbol_sort.cpp:
 	* pp/opreport.cpp: handle multiple counter
-	* pp/opannotate.cpp: partial handling of multipel counter
+	* pp/opannotate.cpp: partial handling of multiple counter
 	* pp/opgprof.cpp:
 	* pp/opreport.cpp: minor bits
-	
 
 2003-08-08  Will Cohen  <wcohen@redhat.com>
 

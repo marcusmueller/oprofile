@@ -1,7 +1,7 @@
 /**
  * @file profile.cpp
- * Encapsulation for samples files over all counter belonging to the
- * same binary image
+ * Encapsulation for samples files over all count groups
+ * belonging to the same binary image
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

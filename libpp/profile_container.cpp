@@ -26,6 +26,7 @@
 #include "sample_container.h"
 #include "symbol_container.h"
 
+/* FIXME: counters -> count_group everywhere and related */
 extern size_t pp_nr_counters;
 
 using namespace std;
@@ -238,7 +239,7 @@ profile_container::select_filename(double threshold) const
 	set<debug_name_id>::const_iterator const end = filename_set.end();
 	for (; it != end; ++it) {
 		// FIXME: is samples_count() the right interface now ?
-		counter_array_t counts = samples_count(*it);
+		count_array_t counts = samples_count(*it);
 
 		filename_by_samples f(*it, op_ratio(counts[0], total_count[0]));
 
@@ -264,7 +265,7 @@ profile_container::select_filename(double threshold) const
 }
 
 
-counter_array_t profile_container::samples_count() const
+count_array_t profile_container::samples_count() const
 {
 	return total_count;
 }
@@ -293,13 +294,13 @@ profile_container::find_sample(symbol_entry const * symbol, bfd_vma vma) const
 }
 
 
-counter_array_t profile_container::samples_count(debug_name_id filename_id) const
+count_array_t profile_container::samples_count(debug_name_id filename_id) const
 {
 	return samples->accumulate_samples(filename_id);
 }
 
 
-counter_array_t profile_container::samples_count(debug_name_id filename,
+count_array_t profile_container::samples_count(debug_name_id filename,
 				    size_t linenr) const
 {
 	return samples->accumulate_samples(filename, linenr);

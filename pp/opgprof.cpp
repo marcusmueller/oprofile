@@ -25,6 +25,7 @@
 
 using namespace std;
 
+// FIXME
 size_t pp_nr_counters = 1;
 
 namespace {

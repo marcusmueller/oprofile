@@ -1,5 +1,5 @@
 /**
- * @file counter_array.cpp
+ * @file count_array.cpp
  * Container for holding sample counts
  *
  * @remark Copyright 2002 OProfile authors
@@ -12,16 +12,17 @@
 #include <algorithm>
 #include <functional>
 
-#include "counter_array.h"
+#include "count_array.h"
 
 using namespace std;
  
-counter_array_t::counter_array_t()
+count_array_t::count_array_t()
 {
 	fill_n(value, OP_MAX_COUNTERS, 0);
 }
 
-counter_array_t & counter_array_t::operator+=(counter_array_t const & rhs)
+
+count_array_t & count_array_t::operator+=(count_array_t const & rhs)
 {
 	for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i)
 		value[i] += rhs.value[i];
@@ -29,7 +30,8 @@ counter_array_t & counter_array_t::operator+=(counter_array_t const & rhs)
 	return *this;
 }
 
-counter_array_t & counter_array_t::operator-=(counter_array_t const & rhs)
+
+count_array_t & count_array_t::operator-=(count_array_t const & rhs)
 {
 	for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i)
 		value[i] -= rhs.value[i];
@@ -37,7 +39,8 @@ counter_array_t & counter_array_t::operator-=(counter_array_t const & rhs)
 	return *this;
 }
 
-bool counter_array_t::empty() const
+
+bool count_array_t::empty() const
 {
 	u32 const * first = value;
 	u32 const * last  = value + OP_MAX_COUNTERS;

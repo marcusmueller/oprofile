@@ -14,7 +14,7 @@
 
 #include "config.h"
 #include "name_storage.h"
-#include "counter_array.h"
+#include "count_array.h"
 
 #include <string>
 #include <iostream>
@@ -45,7 +45,7 @@ struct sample_entry {
 	/// From where virtual memory address comes the samples
 	bfd_vma vma;
 	/// the samples count
-	counter_array_t counts;
+	count_array_t counts;
 };
 
 

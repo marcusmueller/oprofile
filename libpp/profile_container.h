@@ -110,14 +110,14 @@ public:
 	std::vector<debug_name_id> const select_filename(double threshold) const;
 
 	/// return the total number of samples
-	counter_array_t samples_count() const;
+	count_array_t samples_count() const;
 
 	/// Get the samples count which belongs to filename. Return 0 if
 	/// no samples found.
-	counter_array_t samples_count(debug_name_id filename_id) const;
+	count_array_t samples_count(debug_name_id filename_id) const;
 	/// Get the samples count which belongs to filename, linenr. Return
 	/// 0 if no samples found.
-	counter_array_t samples_count(debug_name_id filename,
+	count_array_t samples_count(debug_name_id filename,
 			   size_t linenr) const;
 
 	/// return iterator to the first samples
@@ -160,7 +160,7 @@ private:
 	scoped_ptr<sample_container> samples;
 	/// build() must count samples count for each counter so cache it here
 	/// since user of profile_container often need it later.
-	counter_array_t total_count;
+	count_array_t total_count;
 
 	/**
 	 * Optimization hints for what information we are going to need,

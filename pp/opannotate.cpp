@@ -58,7 +58,8 @@ string const end_comment(" */");
 unsigned int const count_width = 6;
 
 
-// FIXME share with opgprof.cpp and opreport.cpp
+// FIXME share with opgprof.cpp and opreport.cpp, get rid of
+// "counter" reliance in favour of count groups
 image_set populate_samples(profile_container & samples,
 			   partition_files const & files,
 			   bool merge_lib, size_t counter)
@@ -190,14 +191,14 @@ void output_info(ostream & out)
 }
 
 
-string counter_str(counter_array_t const & counter,
-		   counter_array_t const & total)
+string count_str(count_array_t const & count,
+		   count_array_t const & total)
 {
 	ostringstream os;
-	os << setw(count_width) << counter[0] << ' ';
+	os << setw(count_width) << count[0] << ' ';
 
-	// FIXME: multiple counter
-	os << format_double(op_ratio(counter[0], total[0]) * 100.0,
+	// FIXME: multiple counts
+	os << format_double(op_ratio(count[0], total[0]) * 100.0,
 			    percent_int_width, percent_fract_width);
 	return os.str();
 }
@@ -217,7 +218,7 @@ string asm_line_annotation(symbol_entry const * last_symbol,
 
 	sample_entry const * sample = samples->find_sample(last_symbol, vma);
 	if (sample)
-		str += counter_str(sample->counts, samples->samples_count());
+		str += count_str(sample->counts, samples->samples_count());
 
 	if (str.empty())
 		str = annotation_fill;
@@ -232,16 +233,16 @@ string symbol_annotation(symbol_entry const * symbol)
 	if (!symbol)
 		return string();
 
-	string annot = counter_str(symbol->sample.counts,
-				   samples->samples_count());
+	string annot = count_str(symbol->sample.counts,
+	                         samples->samples_count());
 	if (annot.empty())
-		return  string();
+		return string();
 
 	string const & symname = symbol_names.demangle(symbol->name);
 
 	string str = " ";
 	str += begin_comment + symname + " total: ";
-	str += counter_str(symbol->sample.counts, samples->samples_count());
+	str += count_str(symbol->sample.counts, samples->samples_count());
 	str += end_comment;
 	return str;
 }
@@ -439,9 +440,9 @@ string const source_line_annotation(debug_name_id filename, size_t linenr)
 {
 	string str;
 
-	counter_array_t counts = samples->samples_count(filename, linenr);
+	count_array_t counts = samples->samples_count(filename, linenr);
 	if (!counts.empty())
-		str += counter_str(counts, samples->samples_count());
+		str += count_str(counts, samples->samples_count());
 
 	if (str.empty())
 		str = annotation_fill;
@@ -460,14 +461,14 @@ string source_symbol_annotation(debug_name_id filename, size_t linenr)
 
 
 void output_per_file_info(ostream & out, debug_name_id filename,
-			  counter_array_t const & total_count_for_file)
+			  count_array_t const & total_file_count)
 {
 	out << begin_comment << '\n'
 	     << in_comment << "Total samples for file : "
 	     << '"' << debug_names.name(filename) << '"'
 	     << '\n';
 	out << in_comment << '\n' << in_comment
-	    << counter_str(total_count_for_file, samples->samples_count())
+	    << count_str(total_file_count, samples->samples_count())
 	    << '\n';
 	out << end_comment << '\n' << '\n';
 }
@@ -486,9 +487,9 @@ string const line0_info(debug_name_id filename)
 
 
 void do_output_one_file(ostream & out, istream & in, debug_name_id filename,
-			bool header)
+                        bool header)
 {
-	counter_array_t count = samples->samples_count(filename);
+	count_array_t count = samples->samples_count(filename);
 
 	if (header) {
 		output_per_file_info(out, filename, count);
