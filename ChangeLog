@@ -1,5 +1,10 @@
 2004-08-12  John Levon  <levon@movementarian.org>
 
+	* libutil++/op_bfd.cpp: we need to verify
+	functionname is non-NULL in *both* places
+
+2004-08-12  John Levon  <levon@movementarian.org>
+
 	* libutil++/op_bfd.cpp: add a hack to support
 	Objective C
 

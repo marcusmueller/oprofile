@@ -696,7 +696,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 							 &functionname,
 							 &linenr);
 
-			if (ret && linenr != 0
+			if (ret && functionname && linenr != 0
 				&& sym.name() == string(functionname)) {
 				return true;
 			}
