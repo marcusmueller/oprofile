@@ -1068,13 +1068,14 @@ do_start()
 # do_dump_data
 # returns 0 if successful
 # returns 1 if the daemon is unable to dump data
+# exit 1 if we need to be root to dump
 do_dump_data()
 {
 	# make sure that the daemon is not dead and gone
 	if test -e "$DIR/lock"; then
 		OPROFILED_PID=`cat $DIR/lock`
 		if test ! -d "/proc/$OPROFILED_PID"; then
-			echo "dump fail: either daemon died during last run or dies during dump" >&2
+			echo "dump fail: daemon died during last run ?" >&2
 			return 1;
 		fi
 	else
@@ -1084,11 +1085,13 @@ do_dump_data()
 	if test "$KERNEL_SUPPORT" = "yes"; then
 		# find current time
 		TMPFILE=`mktemp /tmp/oprofile.XXXXXX` || exit 1
-		echo 1 > $MOUNT/dump
-		if test "$?" -ne 0; then
-			echo "Unable to write to $MOUNT/dump" >&2
-			return 1
+		if ! test -w $MOUNT/dump; then
+			if test "$UID" != "0"; then
+				echo "You must be root to dump with this kernel version"
+				exit 1
+			fi
 		fi
+		echo 1 > $MOUNT/dump
 		# loop until there is a file to check and 
 		# the modification data of $MOUNT/dump after TMPFILE
 		while [ \( ! -e "$DIR/complete_dump" \) -o \( "$TMPFILE" -nt "$DIR/complete_dump" \) ]

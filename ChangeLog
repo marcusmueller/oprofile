@@ -1,3 +1,7 @@
+2004-03-04  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/opcontrol: tweak a bit error message.
+
 2004-03-03  Will Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol: Support --dump for normal users.
