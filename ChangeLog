@@ -1,3 +1,17 @@
+2003-08-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/opcontrol: move_and_remove() do nothing if source doesn't exist
+
+2003-08-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	revert the previous patch
+	* dae/Makefile.am:
+	* dae/opd_sample_files.h:
+	* dae/opd_sample_files.c:
+	* daemon/Makefile.am:
+	* daemon/opd_sample_files.c: un-share opd_sample_files
+	code
+
 2003-08-08  John Levon  <levon@movementarian.org>
 
 	* dae/Makefile.am:

@@ -7,7 +7,9 @@ dist_sources = \
 	opd_printf.h \
 	opd_stats.h \
 	opd_kernel.h \
-	opd_cookie.h
+	opd_cookie.h \
+	opd_sample_files.c \
+	opd_sample_files.h
 
 EXTRA_DIST = $(dist_sources)
 
@@ -25,9 +27,7 @@ AM_CFLAGS = @OP_CFLAGS@
 noinst_LIBRARIES = libdaemon.a
 libdaemon_a_SOURCES = \
 	opd_util.h \
-	opd_util.c \
-	opd_sample_files.c \
-	opd_sample_files.h
+	opd_util.c
 
 if kernel_support
 

@@ -12,7 +12,9 @@ dist_sources = \
 	opd_kernel.h \
 	opd_parse_proc.h \
 	opd_proc.h \
-	opd_stats.h
+	opd_stats.h \
+	opd_sample_files.c \
+	opd_sample_files.h
 
 EXTRA_DIST = $(dist_sources)
 
