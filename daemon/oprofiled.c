@@ -43,6 +43,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <elf.h>
 
 // GNU libc bug
 pid_t getpgid(pid_t pid);
@@ -599,14 +600,10 @@ static void write_abi(void)
 }
  
 
-#define EI_CLASS 4
-#define ELFCLASS32 1
-#define ELFCLASS64 2
-
 static size_t opd_pointer_size(void)
 {
 	size_t size;
-	char elf_header[16];
+	char elf_header[EI_NIDENT];
 	FILE * fp;
 
 	if (!op_file_readable("/proc/kcore")) {
@@ -619,7 +616,7 @@ static size_t opd_pointer_size(void)
 	op_close_file(fp);
 
 	/* CONFIG_KCORE_AOUT exists alas */
-	if (strncmp(elf_header, "ELF", 3)) {
+	if (memcmp(elf_header, ELFMAG, SELFMAG) != 0) {
 		fprintf(stderr, "oprofiled: /proc/kcore not in ELF format.");
 		goto guess;
 	}

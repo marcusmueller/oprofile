@@ -1,3 +1,7 @@
+2003-01-11   Randolph Chung  <tausq@debian.org>
+
+	* daemon/oprofiled.c: fix ELF sniff
+
 2003-01-11  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_image.c: bail out immediately on dcookie
