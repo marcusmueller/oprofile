@@ -74,3 +74,5 @@ Use the standard comments + include guards for headers.
 Do not inline unless you have good reason.
 
 Use anon namespaces for static variables.
+
+"nr_doobries" not "no_doobries" - disambiguates between "number" and "negative"
