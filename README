@@ -3,7 +3,7 @@ low-overhead system-wide profiler.
 
 You can find some minimal documentation in the doc/ directory.
 
-The homepage is at FIXME.
+Please visit the oprofile website at : http://oprofile.sourceforge.net/ 
 
 For more information, email John Levon <moz@compsoc.man.ac.uk>
 or write to :
