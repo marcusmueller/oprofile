@@ -58,30 +58,29 @@ static unsigned int tables_size(samples_odb_t const * hash, odb_node_nr_t node_n
 }
 
 
-/* FIXME: should encode an errno-style response */
 odb_index_t odb_hash_add_node(samples_odb_t * hash)
 {
 	if (hash->descr->current_size >= hash->descr->size) {
 		unsigned int old_file_size;
 		unsigned int new_file_size;
 		unsigned int pos;
+		void * new_map;
 
 		old_file_size = tables_size(hash, hash->descr->size);
-
-		hash->descr->size *= 2;
-
-		new_file_size = tables_size(hash, hash->descr->size);
+		new_file_size = tables_size(hash, hash->descr->size * 2);
 
 		if (ftruncate(hash->fd, new_file_size))
 			return ODB_NODE_NR_INVALID;
 
-		hash->base_memory = mremap(hash->base_memory,
+		new_map = mremap(hash->base_memory,
 				old_file_size, new_file_size, MREMAP_MAYMOVE);
 
-		if (hash->base_memory == MAP_FAILED)
+		if (new_map == MAP_FAILED)
 			return ODB_NODE_NR_INVALID;
 
+		hash->base_memory = new_map;
 		hash->descr = odb_to_descr(hash);
+		hash->descr->size *= 2;
 		hash->node_base = odb_to_node_base(hash);
 		hash->hash_base = odb_to_hash_base(hash);
 		hash->hash_mask = (hash->descr->size * BUCKET_FACTOR) - 1;

@@ -121,7 +121,9 @@ void odb_sync(samples_odb_t const * hash);
 /** add a page returning its index. Take care all page pointer can be
  * invalidated by this call !
  * returns the index of the created node on success or
- * ODB_NODE_NR_INVALID on failure
+ * ODB_NODE_NR_INVALID on failure, in this case this function do nothing
+ * and errno is set by the first libc call failure allowing to retry after
+ * cleanup some program resource.
  */
 odb_node_nr_t odb_hash_add_node(samples_odb_t * hash);
 

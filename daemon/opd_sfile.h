@@ -65,6 +65,12 @@ void sfile_close_files(void);
  * return non-zero if the lru is already empty */
 int sfile_lru_clear(void);
 
+/** remove a sfile from the lru list, protecting it from sfile_lru_clear() */
+void sfile_get(struct sfile * sf);
+
+/** add this sfile to lru list */
+void sfile_put(struct sfile * sf);
+
 /**
  * Find the sfile for the current parameters. Note that is required
  * that the PC value be set appropriately (needed for kernel images)

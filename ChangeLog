@@ -1,3 +1,14 @@
+2003-10-14  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_mangling.c:
+	* daemon/opd_sfile.c:
+	* daemon/opd_sfile.h: protect the sfile we are acting on to be freed
+	  by sfile_lru_clear()
+
+	* libdb/db_manage.c:
+	* libdb/odb_hash.h: Do not put hash->descr in an inconsistent state
+	  when a failure occur.
+
 2003-10-13  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* module/oprofile.c: don't restore syscall and stop counter twice

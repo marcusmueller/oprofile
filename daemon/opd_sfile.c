@@ -197,7 +197,7 @@ static samples_odb_t * get_file(struct sfile * sf, uint counter)
 	if (!sf->files[counter].base_memory)
 		opd_open_sample_file(sf, counter);
 
-	/* FIXME: log? */
+	/* Error is logged by opd_open_sample_file */
 	if (!sf->files[counter].base_memory)
 		return NULL;
 
@@ -316,6 +316,18 @@ int sfile_lru_clear(void)
 	}
 
 	return 0;
+}
+
+
+void sfile_get(struct sfile * sf)
+{
+	list_del(&sf->lru);
+}
+
+
+void sfile_put(struct sfile * sf)
+{
+	list_add_tail(&sf->lru, &lru_list);
 }
 
 

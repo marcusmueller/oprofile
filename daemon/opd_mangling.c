@@ -132,6 +132,8 @@ int opd_open_sample_file(struct sfile * sf, int counter)
 
 	create_path(mangled);
 
+	sfile_get(sf);
+
 retry:
 	err = odb_open(file, mangled, ODB_RDWR, sizeof(struct opd_header));
 
@@ -173,6 +175,7 @@ retry:
 	/* FIXME: separate_thread/cpu ? */
 
 out:
+	sfile_put(sf);
 	free(mangled);
 	return err;
 }
