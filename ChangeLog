@@ -1,3 +1,23 @@
+2003-02-12  Will Cohen  <wcohen@redhat.com>
+
+	* gui/oprof_start.cpp (oprof_start::oprof_start,
+	    oprof_start::on_flush_profiler_data,
+	    oprof_start::on_start_profiler,
+	    oprof_start::on_stop_profiler): Use opcontrol.
+	* gui/oprof_start_util.cpp (daemon_status::daemon_status):
+	    Allow reading interrupt info from new kernel interface.
+	* libop/op_get_interface.c: New.
+	* libop/Makefile.am: Add libop/op_get_interface.c.
+	* libop/op_cpu_type.h: Add enum op_interface.
+
+	I Added some bits. Phil
+	* gui/oprof_start.cpp: correct --separate= handling
+	* gui/oprof_start_util.cpp: read only the real number of interrupts
+
+2003-02-12  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/opcontrol: handle --note-table-size --kernel-only (2.4 kernel)
+
 2003-02-12  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* utils/op_start: map --separate-samples to daemon option

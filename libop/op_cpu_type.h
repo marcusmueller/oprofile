@@ -64,6 +64,21 @@ char const * op_get_cpu_type_str(op_cpu cpu_type);
  */
 int op_get_nr_counters(op_cpu cpu_type);
 
+typedef enum {
+	OP_INTERFACE_NO_GOOD = -1,
+	OP_INTERFACE_24,
+	OP_INTERFACE_25
+} op_interface;
+
+/**
+ * get the INTERFACE used to communicate between daemon and the kernel
+ *
+ * returns OP_INTERFACE_NO_GOOD if the INTERFACE could not be identified.
+ * This function will identify the interface as OP_INTERFACE_NO_GOOD if
+ * the module is not loaded.
+ */
+op_interface op_get_interface(void);
+
 #ifdef __cplusplus
 }
 #endif

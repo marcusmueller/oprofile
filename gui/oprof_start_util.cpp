@@ -11,6 +11,7 @@
 
 #include <dirent.h>
 #include <unistd.h>
+#include <glob.h>
 
 #include <cerrno>
 #include <vector>
@@ -27,6 +28,7 @@
 #include "file_manip.h"
 #include "child_reader.h"
 
+#include "oprof_start.h"
 #include "oprof_start_util.h"
 
 using namespace std;
@@ -129,11 +131,42 @@ daemon_status::daemon_status()
 
 	uint diff_mins = (uptime - starttime / HZ) / 60;
 
-	ifstream ifs3("/proc/sys/dev/oprofile/nr_interrupts");
-	if (!ifs3)
-		return;
+	nr_interrupts = 0;
 
-	ifs3 >> nr_interrupts;
+	switch (op_get_interface()){
+	case OP_INTERFACE_24:
+		{
+			ifstream ifs3("/proc/sys/dev/oprofile/nr_interrupts");
+			if (ifs3)
+				ifs3 >> nr_interrupts;
+		}
+		break;
+	case OP_INTERFACE_25:
+		{
+			static unsigned int old_sum_interrupts;
+			unsigned int sum_interrupts = 0;
+			glob_t file_names;
+
+			file_names.gl_offs = 0;
+			glob("/dev/oprofile/stats/cpu*/sample_received",
+			     GLOB_DOOFFS, NULL, &file_names);
+
+			for (size_t i = 0; i < file_names.gl_pathc; ++i) {
+				ifstream ifs3(file_names.gl_pathv[i]);
+				if (ifs3){
+					unsigned int file_interrupts;
+					ifs3 >> file_interrupts;
+					sum_interrupts += file_interrupts;
+				}
+			}
+			nr_interrupts = sum_interrupts - old_sum_interrupts;
+			old_sum_interrupts = sum_interrupts;
+			globfree(&file_names);
+		}
+		break;
+	default:
+		break;
+	}
 
 	runtime = tostr(diff_mins / 60) + " hours, " +
 		tostr(diff_mins % 60) + " mins";

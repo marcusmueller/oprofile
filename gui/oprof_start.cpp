@@ -63,9 +63,9 @@ oprof_start::oprof_start()
 	}
 
 	vector<string> args;
-	args.push_back("oprofile");
+	args.push_back("--init");
 
-	if (do_exec_command("/sbin/modprobe", args))
+	if (do_exec_command(BINDIR "/opcontrol", args))
 		exit(EXIT_FAILURE);
 
 	cpu_type = op_get_cpu_type();
@@ -716,8 +716,11 @@ uint oprof_start::max_perf_count() const
 
 void oprof_start::on_flush_profiler_data()
 {
+	vector<string> args;
+	args.push_back("--dump");
+
 	if (daemon_status().running)
-		do_exec_command(BINDIR "/op_dump");
+		do_exec_command(BINDIR "/opcontrol", args);
 	else
 		QMessageBox::warning(this, 0, "The profiler is not started.");
 }
@@ -827,20 +830,26 @@ void oprof_start::on_start_profiler()
 		}
 	}
 
+	args.push_back("--setup");
 	args.push_back("--vmlinux=" + config.kernel_filename);
-	args.push_back("--kernel-only=" + tostr(config.kernel_only));
-	args.push_back("--pid-filter=" + tostr(config.pid_filter));
-	args.push_back("--pgrp-filter=" + tostr(config.pgrp_filter));
-	args.push_back("--buffer-size=" + tostr(config.buffer_size));
-	args.push_back("--note-table-size=" + tostr(config.note_table_size));
+	if (op_get_interface() == OP_INTERFACE_24) {
+		args.push_back("--kernel-only=" + tostr(config.kernel_only));
+		args.push_back("--pid-filter=" + tostr(config.pid_filter));
+		args.push_back("--pgrp-filter=" + tostr(config.pgrp_filter));
+		args.push_back("--buffer-size=" + tostr(config.buffer_size));
+		args.push_back("--note-table-size=" +
+			       tostr(config.note_table_size));
+	}
+	// opcontrol allow multiple setting of --separate option
 	if (config.separate_lib_samples)
-		args.push_back("--separate-lib-samples=1");
+		args.push_back("--separate=library");
 	if (config.separate_kernel_samples)
-		args.push_back("--separate-kernel-samples=1");
+		args.push_back("--separate=kernel");
 	if (config.verbose)
 		args.push_back("--verbose");
+	args.push_back("--start");
 
-	do_exec_command(BINDIR "/op_start", args);
+	do_exec_command(BINDIR "/opcontrol", args);
 	total_nr_interrupts = 0;
 	timerEvent(0);
 }
@@ -848,8 +857,11 @@ void oprof_start::on_start_profiler()
 // flush and stop the profiler if it was started.
 void oprof_start::on_stop_profiler()
 {
+	vector<string> args;
+	args.push_back("--shutdown");
+
 	if (daemon_status().running)
-		do_exec_command(BINDIR "/op_stop");
+		do_exec_command(BINDIR "/opcontrol", args);
 	else
 		QMessageBox::warning(this, 0, "The profiler is already stopped.");
 
