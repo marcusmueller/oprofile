@@ -15,6 +15,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -22,66 +23,80 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-#define MAX_ENDIAN_CHUNK_SIZE 8
-
 using namespace std;
+
+namespace {
+	string output_filename;
+	string abi_filename;
+	bool verbose;
+	bool force;
+};
+
+popt::option options_array[] = {
+	popt::option(verbose, "verbose", 'V', "verbose output"),
+	popt::option(output_filename, "output", 'o', "output to file", "filename"),
+	popt::option(abi_filename, "abi", 'a', "abi description", "filename"),
+	popt::option(force, "force", 'f', "force conversion, even if identical")
+};
  
 struct Extractor 
 {
 	Abi const & abi;
-	unsigned char const * first;
-	unsigned char const * last;
-	int endian[MAX_ENDIAN_CHUNK_SIZE];
+
+	unsigned char const * begin;
+	unsigned char const * end;
+	bool little_endian;
 
 	explicit Extractor(Abi const & a, unsigned char const * src, size_t len) : 
 		abi(a), 
-		first(src),
-		last(src + len) 
+		begin(src),
+		end(src + len) 
 	{
-		for (int i = 0; i < 8; ++i) {
-			string key("endian_byte_");
-			key += ('0' + i);
-			endian[i] = abi.need(key);
+		little_endian = abi.need(string("little_endian")) == 1;
+		if (verbose) {
+			cerr << "source byte order is: " 
+			     << string(little_endian ? "little" : "big")
+			     << " endian" << endl;
 		}
 	}
 
-	void extract(void * targ_, void const * src_, 
-		     const char * sz, const char * off) throw (Abi_exception);
+	template <typename T>
+	void extract(T & targ, void const * src_, const char * sz, const char * off);
 };
 
 
-void Extractor::extract(void * targ_, void const * src_, 
-	const char * sz, const char * off) throw (Abi_exception)
+
+template <typename T>
+void Extractor::extract(T & targ, void const * src_, const char * sz, const char * off)
 {
-	unsigned char * targ = static_cast<unsigned char *>(targ_);
-	unsigned char const * src = static_cast<unsigned char const *>(src_);
-		
-	int offset = abi.need(off);
-	int count = abi.need(sz);
-
-	if (count == 0) 
+	unsigned char const * src = static_cast<unsigned char const *>(src_) + abi.need(off);
+	size_t nbytes = abi.need(sz);
+	
+	if (nbytes == 0) 
 		return;
+	
+	assert(nbytes <= sizeof(T));
+	assert(src >= begin);
+	assert(src + nbytes <= end);
+	
+	if (verbose)
+		cerr << hex << "get " << sz << " = " << nbytes 
+		     << " bytes @ " << off << " = " << (src - begin)
+		     << " : ";
 
-	if (src + offset + count > last) {
-		throw Abi_exception("input file too short");
-	} 
-		
-	int chunk = (count < MAX_ENDIAN_CHUNK_SIZE 
-		     ? count 
-		     : MAX_ENDIAN_CHUNK_SIZE);
-	src += offset;
- 
-	for (; count > 0; count -= chunk) {
-		int k = (src-first) % chunk;
-		for (int i = 0; i < chunk; i++) {
-			targ[i] = src[endian[k] % chunk];
-			k = (k + 1) % chunk;
-		}
-		targ += chunk;
-		src += chunk;
-	}
+	targ = 0;
+	if (little_endian)
+		while(nbytes--)
+			targ = (targ << 8) | src[nbytes];
+	else
+		for(size_t i = 0; i < nbytes; ++i)
+			targ = (targ << 8) | src[i];
+	
+	if (verbose)
+		cerr << " = " << targ << endl;
 }
- 
+
+
 
 void import_from_abi(Abi const & abi, 
 		     void const * srcv, 
@@ -91,27 +106,28 @@ void import_from_abi(Abi const & abi,
 	struct opd_header * head;
 	head = static_cast<opd_header *>(dest->base_memory);	
 	unsigned char const * src = static_cast<unsigned char const *>(srcv);
+	unsigned char const * const begin = src;
 	Extractor ext(abi, src, len);	
 
 	memcpy(head->magic, src + abi.need("offsetof_header_magic"), 4);
 
 	// begin extracting opd header
-	ext.extract(&head->version, src, "sizeof_u32", "offsetof_header_version");
-	ext.extract(&head->is_kernel, src, "sizeof_u8", "offsetof_header_is_kernel");
-	ext.extract(&head->ctr_event, src, "sizeof_u32", "offsetof_header_ctr_event");
-	ext.extract(&head->ctr_um, src, "sizeof_u32", "offsetof_header_ctr_um");
-	ext.extract(&head->ctr, src, "sizeof_u32", "offsetof_header_ctr");
-	ext.extract(&head->cpu_type, src, "sizeof_u32", "offsetof_header_cpu_type");
-	ext.extract(&head->ctr_count, src, "sizeof_u32", "offsetof_header_ctr_count");
-	ext.extract(&head->cpu_speed, src, "sizeof_double", "offsetof_header_cpu_speed");
-	ext.extract(&head->mtime, src, "sizeof_time_t", "offsetof_header_mtime");
-	ext.extract(&head->separate_samples, src, "sizeof_int", "offsetof_header_separate_samples");
+	ext.extract(head->version, src, "sizeof_u32", "offsetof_header_version");
+	ext.extract(head->is_kernel, src, "sizeof_u8", "offsetof_header_is_kernel");
+	ext.extract(head->ctr_event, src, "sizeof_u32", "offsetof_header_ctr_event");
+	ext.extract(head->ctr_um, src, "sizeof_u32", "offsetof_header_ctr_um");
+	ext.extract(head->ctr, src, "sizeof_u32", "offsetof_header_ctr");
+	ext.extract(head->cpu_type, src, "sizeof_u32", "offsetof_header_cpu_type");
+	ext.extract(head->ctr_count, src, "sizeof_u32", "offsetof_header_ctr_count");
+	head->cpu_speed = 0.; // "double" extraction is unlikely to work
+	ext.extract(head->mtime, src, "sizeof_time_t", "offsetof_header_mtime");
+	ext.extract(head->separate_samples, src, "sizeof_int", "offsetof_header_separate_samples");
 	src += abi.need("sizeof_struct_opd_header");
 	// done extracting opd header
 
 	// begin extracting necessary parts of descr
 	db_node_nr_t node_nr;
-	ext.extract(&node_nr, src, "sizeof_db_node_nr_t", "offsetof_descr_current_size");
+	ext.extract(node_nr, src, "sizeof_db_node_nr_t", "offsetof_descr_current_size");
 	src += abi.need("sizeof_db_descr_t");
 	// done extracting descr
 
@@ -119,30 +135,22 @@ void import_from_abi(Abi const & abi,
 	src += abi.need("sizeof_db_node_t");
 
 	// begin extracting nodes
-	for (db_node_nr_t i = 1 ; i < node_nr ; ++i) {
+	unsigned int step = abi.need("sizeof_db_node_t");
+	if (verbose)
+		cerr << "extracting " << node_nr << " nodes of " << step << " bytes each " << endl;
+
+	assert(src + (node_nr * step) <= begin + len);
+
+	for (db_node_nr_t i = 1 ; i < node_nr ; ++i, src += step) {
 		db_key_t key;
 		db_value_t val;
-		ext.extract(&key, src, "sizeof_db_key_t", "offsetof_node_key");
-		ext.extract(&val, src, "sizeof_db_value_t", "offsetof_node_value");
+		ext.extract(key, src, "sizeof_db_key_t", "offsetof_node_key");
+		ext.extract(val, src, "sizeof_db_value_t", "offsetof_node_value");
 		db_insert(dest, key, val);
-
-		src += abi.need("sizeof_db_node_t");
 	}
 	// done extracting nodes
 }
 
-
-namespace {
-	string output_filename;
-	string abi_filename;
-	bool verbose;
-};
-
-popt::option options_array[] = {
-	popt::option(verbose, "verbose", 'V', "verbose output"),
-	popt::option(output_filename, "output", 'o', "output to file", "filename"),
-	popt::option(abi_filename, "abi", 'a', "abi description", "filename")
-};
 
 
 int 
@@ -168,7 +176,7 @@ main(int argc, char const ** argv)
 		abi_file >> input_abi;
 	}
 
-	if (current_abi == input_abi) {
+	if (!force && current_abi == input_abi) {
 		cerr << "input abi is identical to native. "
 		     << "no conversion necessary." << endl;
 		exit(1);

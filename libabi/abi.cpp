@@ -16,15 +16,11 @@
 
 using namespace std;
 
-typedef unsigned char byte;
-typedef byte * bytep;
-typedef unsigned long long octobyte;
 typedef map<string,int> abi_map;
 typedef map<string,int>::const_iterator abi_iter;
 
-#define byte_addr(x) ((bytep)(&(x)))
+#define byte_addr(x) (reinterpret_cast<unsigned char *>(&(x)))
 #define field_offset(s,f) (byte_addr(s.f) - byte_addr(s))
-
 
 Abi_exception::Abi_exception(string const d) : desc(d) {}
 
@@ -68,23 +64,16 @@ Abi::Abi()
 	slots["offsetof_header_cpu_speed"] = field_offset(header, cpu_speed);
 	slots["offsetof_header_mtime"] = field_offset(header, mtime);
 	slots["offsetof_header_separate_samples"] = field_offset(header, separate_samples);
-	
-	for (int i = 0; i < 8; ++i) {
-		octobyte probe = 0LL;
-		bytep probe_byte = static_cast<bytep>(static_cast<void *>(&probe));
-		probe |= 0xff;
-		probe <<= (i*8);
-		int j = 0;
-		for (j = 0; j < 8; ++j) {
-			if (probe_byte[j] == 0xff) {
-				string key("endian_byte_");
-				key += ('0' + i);
-				slots[key] = j;
-				break;
-			}
-		}
-		assert(j < 8);
-	}
+
+	// determine endianness
+	unsigned int probe = 0xff;
+	size_t sz = sizeof(unsigned int);
+	unsigned char * probe_byte = reinterpret_cast<unsigned char *>(&probe);
+	assert(probe_byte[0] == 0xff || probe_byte[sz - 1] == 0xff);
+	if (probe_byte[0] == 0xff)
+		slots["little_endian"] = 1;
+	else
+		slots["little_endian"] = 0;
 }
 
 

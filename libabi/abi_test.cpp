@@ -64,12 +64,12 @@ int main(int argc, char const ** argv)
 		header->ctr = 0x0; 
 		header->cpu_type = CPU_ATHLON;
 		header->ctr_count = 0xdeadbeef;
-		header->cpu_speed = 1500.0;
+		header->cpu_speed = 0;
 		header->mtime = 1034790063;
 		header->separate_samples = 0;
 
     
-		for(int i = 0; i < 76543; ++i) {
+		for(int i = 0; i < 3793; ++i) {
 			db_insert(&dest, ((i*i) ^ (i+i)), ((i*i) ^ i));
 		}
 		db_close(&dest);
