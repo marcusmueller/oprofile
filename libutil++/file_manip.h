@@ -15,6 +15,10 @@
 #include <string>
 #include <list>
 
+
+/// return true if dir is an existing directory
+bool is_directory(string const & dirname);
+
 /// return true if the two files are the same file
 bool is_files_identical(std::string const & file1, std::string const & file2);
 /// return the contents of a symbolic link or an empty string on failure

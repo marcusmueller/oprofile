@@ -1,3 +1,10 @@
+2003-08-23  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/file_manip.h:
+	* libutil++/file_manip.cpp: is_directory(dirname): return true if
+	  dirname exists
+	* pp/common_option.cpp: validate --image-path parameters
+
 2003-08-22  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* events/i386.p4.events: clarify than 128BIT_MMX_UOP count only integer

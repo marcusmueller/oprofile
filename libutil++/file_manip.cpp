@@ -27,6 +27,15 @@
 
 using namespace std;
 
+
+bool is_directory(string const & dirname)
+{
+	struct stat st;
+
+	return !stat(dirname.c_str(), &st) && S_ISDIR(st.st_mode);
+}
+
+
 /**
  * is_file_identical - check for identical files
  * @param file1  first filename

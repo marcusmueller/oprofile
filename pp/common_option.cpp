@@ -16,6 +16,7 @@
 #include "popt_options.h"
 #include "cverb.h"
 #include "common_option.h"
+#include "file_manip.h"
 
 using namespace std;
 
@@ -75,6 +76,18 @@ vector<string> get_options(int argc, char const * argv[])
 		options::threshold = handle_threshold(::threshold);
 
 	set_verbose(options::verbose);
+
+	bool ok = true;
+	vector<string>::const_iterator it;
+	for (it = image_path.begin(); it != image_path.end(); ++it) {
+		if (!is_directory(*it)) {
+			cerr << *it << " isn't a valid directory\n";
+			ok = false;
+		}
+	}
+
+	if (!ok)
+		throw op_runtime_error("invalid --image-path= options");
 
 	options::extra_found_images.populate(image_path);
 
