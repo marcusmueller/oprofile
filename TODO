@@ -51,6 +51,7 @@ Before 1.0 little stuff
   by the kernel itself ?
  o allow --ctr0-event to take event numbers. (is it worth ?)
  o when we dump stats for oprofiled, dump kernel-side values too (for 2.5)
+ o lookup_dcookie can return ENAMETOOLONG but we can't hack it
 
 Documentation
 -------------
