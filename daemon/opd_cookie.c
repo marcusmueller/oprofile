@@ -79,6 +79,7 @@ static struct cookie_entry * create_cookie(cookie_t cookie)
 	entry->name = xmalloc(PATH_MAX + 1);
 
 	err = lookup_dcookie(cookie, entry->name, PATH_MAX);
+
 	if (err < 0) {
 		fprintf(stderr, "Lookup of cookie %llx failed, errno=%d\n",
 		       cookie, errno); 

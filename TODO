@@ -6,7 +6,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
- o test dcookie failure with random injection
  o add separate_thread to opd_header or remove all separate from opd_header
  o thread separate GUI + docs
  o we need to handle thread separate without needing a useless -m tid
@@ -15,7 +14,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
    classes on a merge failure so user can get help specifying tgid where
    relevant
  o IA64: we free twice time profiling interrupt at shutdown
- o x86_64 and 2.4 kernel: commit and test the needed change
+ o x86_64 and 2.4 kernel: test the needed change
 
 0.8 release
 -----------
