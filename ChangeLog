@@ -1,5 +1,15 @@
 2003-10-17  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/arrange_profiles.cpp: clarify suggestion.
+	* pp/opreport_options.cpp: update options help string for --merge.
+
+	* libpp/profile_container.cpp:
+	* libpp/profile_spec.cpp:
+	* pp/common_option.cpp:
+	* pp/populate.cpp: ';' are not neccessary to end namespace
+
+2003-10-17  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libpp/arrange_profiles.cpp: use a set<profile_classes> instead
 	  of a vector<...> to replace a O(N*M) by a O(N*log(M)) behavior.
 	  (N number of samples files, M number of class).

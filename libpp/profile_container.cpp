@@ -46,7 +46,7 @@ struct filename_by_samples {
 	double percent;
 };
 
-}
+}  // anon namespace
 
 
 profile_container::profile_container(bool debug_info_, bool need_details_)

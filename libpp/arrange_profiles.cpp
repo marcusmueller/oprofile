@@ -46,9 +46,9 @@ struct axis_t {
 } axes[AXIS_MAX] = {
 	{ "event", "specify event: or count:" },
 	{ "unitmask", "specify unitmask: or -m unitmask" },
-	{ "tgid", "specify tgid: or -m tgid" },
-	{ "tid", "specify tid: or -m tid" },
-	{ "cpu", "specify cpu: or -m cpu" },
+	{ "tgid", "specify tgid: or --merge tgid" },
+	{ "tid", "specify tid: or --merge tid" },
+	{ "cpu", "specify cpu: or --merge cpu" },
 };
 
 /**
@@ -317,7 +317,7 @@ int numeric_compare(string const & lhs, string const & rhs)
 	return 1;
 }
 
-};
+}  // anon namespace
 
 
 bool operator<(profile_class const & lhs,
@@ -437,7 +437,7 @@ verify_and_fill(app_map_t & app_map, list<inverted_profile> & plist,
 	}
 }
 
-};
+} // anon namespace
 
 
 list<inverted_profile> const

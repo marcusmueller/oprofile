@@ -79,7 +79,7 @@ popt::option options_array[] = {
 	popt::option(include_symbols, "include-symbols", 'i',
 		     "include these comma separated symbols", "symbols"),
 	popt::option(mergespec, "merge", 'm',
-		     "comma separated list", "cpu,pid,lib"),
+		     "comma separated list", "cpu,lib,tid,tgid,unitmask,all"),
 	popt::option(options::show_header, "no-header", 'n',
 		     "remove all headers from output"),
 	popt::option(options::show_address, "show-address", 'w',

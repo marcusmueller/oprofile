@@ -38,7 +38,7 @@ populate_from_files(profile_t & profile, list<string> const & files, u32 offset)
 		profile.add_sample_file(*it, offset);
 }
 
-};
+}  // anon namespace
 
 
 void

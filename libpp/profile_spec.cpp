@@ -47,7 +47,7 @@ void fixup_image_spec(vector<string> & images, extra_images const & extra)
 	}
 }
 
-}
+}  // anon namespace
 
 
 profile_spec::profile_spec(extra_images const & extra)

@@ -14,6 +14,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
    classes on a merge failure so user can get help specifying tgid where
    relevant
  o x86_64 and 2.4 kernel: test the needed change
+ o opannotate_options.cpp: we should accept merge options for tid/tgid/cpu and
+  not merge automatically.
 
 0.8 release
 -----------

@@ -94,7 +94,7 @@ vector<string> get_options(int argc, char const * argv[])
 	return non_options;
 }
 
-}
+}  // anon namespace
 
 
 int run_pp_tool(int argc, char const * argv[], pp_fct_run_t fct)
