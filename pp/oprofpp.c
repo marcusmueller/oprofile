@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.28 2001/06/01 22:57:07 movement Exp $ */
+/* $Id: oprofpp.c,v 1.29 2001/06/09 02:27:59 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -39,6 +39,8 @@ static char *gproffile;
 static char *symbol;
 static int list_symbols;
 static int demangle;
+static int list_all_symbols_details;
+static int output_linenr_info;
 
 static struct opd_fentry *samples;
 static uint nr_samples; 
@@ -63,6 +65,8 @@ static struct poptOption options[] = {
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
 	{ "base-dir", 'b', POPT_ARG_STRING, &basedir, 0, "base directory of profile daemon", NULL, }, 
+	{ "list-all-symbols-details", 'L', POPT_ARG_NONE, &list_all_symbols_details, 0, "list samples for all symbols", NULL, },
+	{ "output-linenr-info", 'o', POPT_ARG_NONE, &output_linenr_info, 0, "output filename:linenr info", NULL },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
@@ -125,7 +129,8 @@ static void get_options(int argc, char const *argv[])
 		exit(0);
 	}
  
-	if (!list_symbols && !gproffile && !symbol) {
+	if (!list_all_symbols_details && !list_symbols && 
+	    !gproffile && !symbol) {
 		fprintf(stderr, "oprofpp: no mode specified. What do you want from me ?\n");
 		poptPrintHelp(optcon, stderr, 0);
 		exit(1);
@@ -523,7 +528,7 @@ void do_list_symbols(bfd * ibfd)
  
 /**
  * do_list_symbol - list detailed samples for a symbol
- * @ibfd: the bfd 
+ * @ibfd: the bfd
  *
  * Lists all the samples for the symbol specified by symbol, from the image 
  * specified by @samplefile, in decreasing sample count order, to standard out.
@@ -665,7 +670,122 @@ void do_dump_gprof(bfd * ibfd)
 	bfd_close(ibfd);
 }
 
- 
+/**
+ * translate_address - lookup and output linenr info from a vma address
+ * in a given section to standard output.
+ * @ibfd: the bfd
+ * @syms: pointer to array of symbol pointers
+ * @section: the section containing the vma
+ * @pc: the virtual memory address
+ *
+ * Do not change output format without changing the corresponding tools
+ * that work with output from oprofpp.
+ */
+static void
+translate_address (bfd* ibfd, asymbol** syms, asection* section, bfd_vma pc)
+{
+	int found;
+	bfd_vma vma;
+
+	const char *filename;
+	const char *functionname;
+	unsigned int line;
+
+	if ((bfd_get_section_flags (ibfd, section) & SEC_ALLOC) == 0)
+		return;
+
+	vma = bfd_get_section_vma (ibfd, section);
+	if (pc < vma)
+		return;
+
+	found = bfd_find_nearest_line (ibfd, section, syms, pc - vma,
+				       &filename, &functionname, &line);
+
+	if (!found) {
+		printf ("??:0");
+	}
+	else {
+		printf ("%s:%u", filename, line);
+	}
+}
+
+/**
+ * do_list_all_symbols_details - list all samples for all symbols.
+ * @ibfd: the bfd
+ *
+ * Lists all the samples for all the symbols, from the image specified by
+ * @samplefile, in increasing order of vma, to standard out.
+ *
+ * Do not change output format without changing the corresponding tools
+ * that work with output from oprofpp
+ */
+void do_list_all_symbols_details(bfd* ibfd) {
+	uint num, i, j;
+	u32 start, end;
+	asymbol **syms;
+
+	num = get_symbols(ibfd,&syms);
+
+	if (!num) {
+		fprintf(stderr, "oprofpp: couldn't get any symbols from image file.\n");
+		exit(1);
+	}
+
+	for (i = 0 ; i < num ; ++i) {
+		u32 ctr0, ctr1;
+
+		get_symbol_range(syms[i], (i==num-1) ? NULL : syms[i+1], 
+				 &start, &end);
+
+		/* To avoid outputing 0 samples symbols */
+		ctr0 = ctr1 = 0;
+		for (j=start; j < end; j++) { 
+			ctr0 += samples[j].count0;
+			ctr1 += samples[j].count1;
+		}
+
+		if (ctr0 || ctr1) {
+			bfd_vma vma, base_vma;
+
+			base_vma = syms[i]->value + syms[i]->section->vma;
+
+			vma = sym_offset(syms[i], start) + base_vma;
+
+			if (output_linenr_info)	{
+				translate_address(ibfd, syms, syms[i]->section,
+						  vma);
+
+				printf(" ");
+			}
+
+			printf("%.8lx %u %u ", base_vma, ctr0, ctr1);
+			printf_symbol(syms[i]->name);
+			printf("\n");
+
+			for (j=start; j < end; j++) { 
+				if (samples[j].count0 || samples[j].count1) {
+					vma = sym_offset(syms[i], j) + 
+						base_vma;
+
+					if (output_linenr_info)	{
+						printf(" ");
+
+						translate_address(ibfd, syms,
+								  syms[i]->section,
+								  vma);
+					}
+					printf(" %.8lx %u %u\n",
+					       vma, samples[j].count0,
+					       samples[j].count1);
+				}
+			}
+		}
+	}
+
+	opd_free(syms);
+	bfd_close(ibfd);
+}
+
 int main(int argc, char const *argv[])
 {
 	fd_t fd;
@@ -739,6 +859,8 @@ int main(int argc, char const *argv[])
 		do_list_symbol(ibfd);
 	} else if (gproffile) {
 		do_dump_gprof(ibfd);
+	} else if (list_all_symbols_details) {
+		do_list_all_symbols_details(ibfd);
 	}
  
 	munmap(samples, size);

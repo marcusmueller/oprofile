@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.26 2001/06/01 22:57:07 movement Exp $
+# $Id: op_start,v 1.27 2001/06/09 02:27:59 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -19,7 +19,7 @@
 # quick and ugly interface
 # op_start --help and op_start --list-events have info
 
-SYSCTL=sysctl
+SYSCTL=do_sysctl
 
 BUF_SIZE=262144
 HASH_SIZE=65536
@@ -78,6 +78,33 @@ $
 General options$
   --list-events                list event types and unit masks$
   --help                       this message$'
+
+# utilities functions.
+
+#  A replacement function for the sysctl (procps package) utility which is
+# missing on some distribution (e.g. slack 7.0). 
+#  Handle only the -w option of sysctl.
+do_sysctl()
+{
+	if [ x$1 != x"-w" ]; then
+		echo "$0 unknown option"
+		exit 1
+	fi
+
+	shift
+
+	arg=`echo $1 | awk -F= '{print $1}'`
+	val=`echo $1 | awk -F= '{print $2}'`
+
+	dev_name=`echo $arg | tr . /`
+
+	if [ ! -f /proc/sys/$dev_name ]; then
+		echo "/proc/sys/$dev_name does not exist or is not a regular file"
+		exit 1
+	fi
+
+	echo $val > /proc/sys/$dev_name
+}
 
 LOG_FILE=
 SAMPLES_DIR=
@@ -234,7 +261,7 @@ if [ ! -d "$DIR" ]; then
                echo "Couldn't mkdir -p $DIR"
                exit 1
        fi
-       chmod 700 "$SAMPLES_DIR"
+       chmod 755 "$DIR"
 fi
 
 if [ "$LOG_FILE" = "" ]; then
@@ -319,7 +346,7 @@ if [ ! -d "$SAMPLES_DIR" ]; then
 		echo "Couldn't mkdir -p $SAMPLES_DIR"
 		exit 1
 	fi
-	chmod 700 "$SAMPLES_DIR"
+	chmod 755 "$SAMPLES_DIR"
 fi
 
 MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`

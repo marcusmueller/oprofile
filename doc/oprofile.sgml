@@ -565,6 +565,18 @@ Some interesting options of the post-processor :
 		you can then call <command>gprof -p &lt;binary&gt;</command>. 
 		</para></listitem> 
 	</varlistentry> 
+	<varlistentry>
+		<term><option>--list-all-symbols-details</option></term>
+		<listitem><para>
+		Provide a detailed listing for all symbols.
+		</para></listitem> 
+	</varlistentry> 
+	<varlistentry>
+		<term><option>--output-linenr-info</option></term>
+		<listitem><para>
+		Add filename::linenr info for all samples, usable only with --list-all-symbols-details.
+		</para></listitem> 
+	</varlistentry> 
 </variablelist> 
 </para> 
  

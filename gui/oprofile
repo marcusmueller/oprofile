@@ -1,4 +1,5 @@
 #!/bin/sh
+# -*- TCL -*-
 # the next line restarts using wish \
 exec wish "$0" "$@"
 
@@ -7,19 +8,28 @@ exec wish "$0" "$@"
 # documentation failure and/or my poor knowledge of tcl/tk, but the 
 # script work fine ;), I would clean up later.
 
-# parent_name name width height { item_list*  }
+# global var
+global event_type_0 event_type_1
+global old_event_type_0 old_event_type_1
+global event_type_list
+global bit_mask_option_0 bit_mask_option_1
+global counter_0 counter_1
+global usr_count_0 kernel_count_0 usr_count_1 kernel_count 1
+global vmlinux map_file
+
+set bit_mask_option_0 0
+set bit_mask_option_1 0
+set vmlinux "/boot/vmlinuz-2.4.3"
+set map_file "/boot/System-2.4.3.map"
+
+# utilities proc
+
+# item_list: { name text }*
 proc create_checkbutton_group { parent_name side width item_list } {
     foreach i $item_list {
 	set button_name $parent_name[lindex $i 0]
 	set button_text [lindex $i 1]
 	checkbutton $button_name -text $button_text -width $width
-	# This do not work.
-#	if [ expr [ expr [ llength $i] >= 3 ] ] then {
-#	    tk_messageBox -message [lindex $i 2]
-#	    $button_name configure -variable [lindex $i 2]
-#	} else {
-#	    tk_messageBox -message "argh"
-#	}
 
 	if { $side == "top" || $side == "bottom" } then {
 	    pack $button_name -side $side -pady 2 -anchor w
@@ -28,7 +38,6 @@ proc create_checkbutton_group { parent_name side width item_list } {
 	}
     }
 }
-
 
 proc create_text { parent_name name height read_only text } {
 
@@ -52,14 +61,14 @@ proc create_text { parent_name name height read_only text } {
 }
 
 
-# parent_name var_name { { button_name value text [ { optional_cmd }* ] }* }
-proc create_radiobutton_group { parent_name var_name side radiobutton_pair } {
+# item_list: { name value text [ { command value }* ] }*
+proc create_radiobutton_group { parent_name var_name side item_list } {
 
-    foreach i $radiobutton_pair {
+    foreach i $item_list {
 
+	set name $parent_name[lindex $i 0]
 	set value [lindex $i 1]
 	set text [lindex $i 2]
-	set name $parent_name[lindex $i 0]
 
 	radiobutton $name -text $text -variable $var_name -value $value
 
@@ -68,7 +77,6 @@ proc create_radiobutton_group { parent_name var_name side radiobutton_pair } {
 	    # and correctly interpret it here.
 	    set cmd [lindex $i 3]
 	    $name configure [lindex $cmd 0] [lindex $cmd 1]
-#	    $name configure [set cmd]
 	}
 
 	if { $side == "top" || $side == "bottom" } then {
@@ -80,21 +88,7 @@ proc create_radiobutton_group { parent_name var_name side radiobutton_pair } {
 }
 
 
-# global var
-global event_type_0 event_type_1
-global old_event_type_0 old_event_type_1
-global event_type_list
-global bit_mask_option_0 bit_mask_option_1
-global counter_0 counter_1
-global usr_count_0 kernel_count_0 usr_count_1 kernel_count 1
-
-set bit_mask_option_0 0
-set bit_mask_option_1 0
-
-# utilities proc
-
-# Return the event entry list for event name hint, return an empty list
-# if not found.
+# Return the event entry list for event name hint else an empty list.
 proc search_event { hint } {
     global event_type_list
 
@@ -108,7 +102,7 @@ proc search_event { hint } {
 }
 
 # Return 1 if the event named hint need a (non-mandatory) unit mask option, 
-# 0 else
+# else return 0.
 proc need_unit_mask { hint } {
     set i [search_event $hint]
 
@@ -120,9 +114,7 @@ proc need_unit_mask { hint } {
     }
 }
 
-# return from a list of triplet { event_name/type proc_mask counter_mask 
-# { cmd } }
-# usable as the list of event for the proc create_radiobutton_group
+# return a list usable as the param item_list of create_radiobutton_group.
 proc create_event_list { processor_mask counter_mask } {
 
     global event_type_list
@@ -136,8 +128,8 @@ proc create_event_list { processor_mask counter_mask } {
 
 	if { ! ( ( [ lindex $i 1 ] & $processor_mask) &&
 	     ( [ lindex $i 2 ] & $counter_mask) )  } then {
-	    # TODO : see comment in create_radiobutton_group : it will better
-	    # to "lappend entry "-state disabled"
+	    # TODO : see comment in create_radiobutton_group : it is better
+	    # to: lappend entry "-state disabled" but it do not work
 	    lappend entry { -state disabled }
 	}
 
@@ -148,29 +140,6 @@ proc create_event_list { processor_mask counter_mask } {
     return $temp_list;
 }
 
-# See below why this is not used
-# proc build_command_line { counter } {
-#     global event_type_$counter
-#     global counter_$counter
-#     global kernel_count_$counter usr_count_$counter
-#     global bit_mask_option_$counter
-
-#     set temp ""
-
-#     if { [expr [string compare [set event_type_$counter] DISABLED] != 0] } {
-# 	set temp [concat $temp \
-# 		      " --ctr$counter-event=[set event_type_$counter]"]
-# 	set temp [concat $temp " --ctr$counter-count=[set counter_$counter]"]
-# 	set temp [concat $temp \
-# 		      " --ctr$counter-kernel=[set kernel_count_$counter]"]
-# 	set temp [concat $temp " --ctr$counter-usr=[set usr_count_$counter]"]
-# 	set temp [concat $temp \
-# 	      " --ctr$counter-unit_mask=[set bit_mask_option_$counter]"]
-#     }
-
-#     return $temp
-# }
-
 # Start the profiling.
 # Some dirty fix in this proc : building completly the command line do not work
 # it seems than tcl/tk interpret a var containing  
@@ -178,57 +147,26 @@ proc create_event_list { processor_mask counter_mask } {
 # as the argument "--map-file=map_file --ctr0-count" and "=10000".
 # Workaround is to build the cmd line separatly
 proc onStartProfiling {} {
-
-# see comment at function header
-#     set temp1 [build_command_line 0]
-#     set temp2 [build_command_line 1]
-
-#     if { ! [expr [string compare $temp1 ""]] && \
-# 	 ! [expr [string compare $temp2 ""]] } then {
-# 	tk_messageBox -message "you must enable at least one of the counter"
-# 	return;
-#     }
-
-#     set cmd ""
-
-#     # TODO : build the advanced setting cmd line
-#     set advanced_setting ""
-
-#     if { [string compare $advanced_setting ""] } then {
-# 	set cmd [concat $cmd $advanced_setting]
-#     }
-
-#     if { [string compare $temp1 ""] } then {
-# 	set cmd [concat $cmd $temp1]
-#     }
-
-#     if { [string compare $temp2 ""] } then {
-# 	set cmd [concat $cmd $temp2]
-#     }
-
-#     # TODO : this must be setup.
-#     set temp3 " --map-file=/boot/System-2.4.3.map"
-#     set cmd [concat $cmd "$temp3"]
-#     set temp4 " --vmlinux=/boot/vmlinuz-2.4.3"
-#     set cmd [concat $cmd "$temp4"]
-
-#     exec op_start $cmd > /dev/stdout
-
     global event_type_0 event_type_1
     global counter_0 counter_1
     global kernel_count_0 usr_count_0 kernel_count_1 usr_count_1
     global bit_mask_option_0 bit_mask_option_1
     global processor_type
+    global vmlinux map_file
 
-    if { [expr [string compare [set event_type_0] DISABLED] == 0] && 
-	 [expr [string compare [set event_type_1] DISABLED] == 0] } then {
+    if { [string compare [set event_type_0] DISABLED] == 0 && 
+	 [string compare [set event_type_1] DISABLED] == 0 } then {
  	tk_messageBox -message "you must enable at least one of the counter"
  	return;
     }
 
+    # TODO : do we need more check or lets the op_start/daemon making the 
+    # check, the problem is that the op_start/daemon are a little too verbose.
+    # tcl/tk handle the error message not really cleanly.
+
     # :( redundant code we must separate all case
-    if { [expr [string compare [set event_type_0] DISABLED] != 0] && 
-	 [expr [string compare [set event_type_1] DISABLED] != 0] } then {
+    if { [string compare [set event_type_0] DISABLED] && 
+	 [string compare [set event_type_1] DISABLED] } then {
 	# counter 0 / 1 enabled
 	exec op_start --ctr0-event=$event_type_0 \
 	    --ctr0-count=$counter_0 \
@@ -241,8 +179,8 @@ proc onStartProfiling {} {
 	    --ctr1-user=$usr_count_1 \
 	    --ctr1-unit-mask=$bit_mask_option_1 \
 	    --use-cpu=$processor_type \
-	    --map-file=/boot/System-2.4.3.map \
-	    --vmlinux=/boot/vmlinuz-2.4.3 > /dev/stdout
+	    --map-file=$map_file \
+	    --vmlinux=$vmlinux > /dev/stdout
     } elseif { [string compare [set event_type_0] DISABLED] != 0 } then {
 	# counter 0 only
 	exec op_start --ctr0-event=$event_type_0 \
@@ -251,8 +189,8 @@ proc onStartProfiling {} {
 	    --ctr0-user=$usr_count_0 \
 	    --ctr0-unit-mask=$bit_mask_option_0 \
 	    --use-cpu=$processor_type \
-	    --map-file=/boot/System-2.4.3.map \
-	    --vmlinux=/boot/vmlinuz-2.4.3 > /dev/stdout
+	    --map-file=$map_file \
+	    --vmlinux=$vmlinux > /dev/stdout
     } else {
 	# counter 1 only
 	exec op_start --ctr1-event=$event_type_1 \
@@ -261,28 +199,37 @@ proc onStartProfiling {} {
 	    --ctr1-user=$usr_count_1 \
 	    --ctr1-unit-mask=$bit_mask_option_1 \
 	    --use-cpu=$processor_type \
-	    --map-file=/boot/System-2.4.3.map \
-	    --vmlinux=/boot/vmlinuz-2.4.3 > /dev/stdout
+	    --map-file=$map_file \
+	    --vmlinux=$vmlinux > /dev/stdout
     }
 }
 
 # Stop the profiling.
 proc onStopProfiling {} {
-    # TODO : Is this required ?
+    # FIXME : Flushing data is required (or better) ?
 #    onFlushData
-    exec op_stop
+    exec op_stop > /dev/stdout
 }
 
 # Flush the profiling data.
 proc onFlushData {} {
-    # TODO : this do not work message is "echo writing to the standard output
-    # parameter invalid" probably a quoting problem ?
-#    exec echo 1 > /proc/sys/dev/oprofile/dump
-    tk_messageBox \
-	-message "sorry you must 'echo 1 > /proc/sys/dev/oprofile/dump' manually "
+
+    # FIXME : apparently there is no way actually to check if dumping has
+    # been done correctly.
+
+    set fd [open /proc/sys/dev/oprofile/dump w]
+    puts $fd "1"
+
+    #  Must be enclosed in a catch clause because the driver return a zero
+    # file length write (or an error ?), wish interpret this as a write error.
+    # Take care if you catch { close $fd } instead of catch { flush } / close
+    # the tcl/tk runtime leaks a file descriptor each time this function is 
+    # called.
+    catch { flush $fd }
+    close $fd
 }
 
-#  Called on mouse move ont the main form to handle the setup of the help
+#  Called on mouse motion on the main form to handle the setup of the help
 # string in the status bar. Unhopefully this proc is not called if the user
 # scroll with the keyboard and the mouse pointer is inside a radiobutton.
 #  Perhaps an event such as onActivate will work better.
@@ -352,8 +299,11 @@ proc onOptionMaskOk { counter } {
 	    set bit_mask_option_$counter $temp
 	}
     } else {
-	# an internal error
-	tk_messageBox -message "onOptionMaskOk : internal error"
+	# maintainers : this means than event_type_list is bad or a bug in
+	# the function which translate the event_list.
+	tk_messageBox \
+	    -message \
+	    "Internal error [set event_type_$counter] do not require unit mask"
     }
 
     destroy .f_unit_mask_option
@@ -384,7 +334,6 @@ proc onUnitMaskClick { counter } {
 	# if radiobutton are created this setup the default checked radiobutton
 	set bit_mask_option_$counter $default_value
 
-	# TODO : avoid code duplication ? hum no worthwhile probably
 	if { [string compare $type_u_mask exclusive] } then {
 	    # checkbutton to implement bit_mask
 	    set button_order 1
@@ -458,6 +407,8 @@ proc onUnitMaskClick { counter } {
 
 	grab .f_unit_mask_option
     } else {
+	# maintainers : this means than event_type_list is bad or a bug in
+	# the function which translate the event_list.
 	tk_messageBox \
 	    -message \
 	    "Internal error [set event_type_$counter] do not require unit mask"
@@ -531,6 +482,7 @@ proc create_event_frame { parent counter processor_type } {
     # TODO width = 12 is bad ?
     # TODO limit the range of edit ?
     set f_counter .f_counter.f_counter_$counter
+
     global counter_$counter
     set counter_$counter 100000
 
@@ -547,14 +499,11 @@ proc create_event_frame { parent counter processor_type } {
     set event_type_$counter DISABLED
     set old_event_type_$counter ""
 
-    # passing args kernel_count_$counter do not work see : 
-    # create_checkbutton_group
     create_checkbutton_group  $f_counter. left 0 {
-	{ kernel_count "OS ring count" kernel_count_$counter }
-	{ usr_count "USR ring count" usr_count_$counter }
+	{ kernel_count "OS ring count"  }
+	{ usr_count "USR ring count" }
     }
 
-    # see last comment.
     global usr_count_$counter kernel_count_$counter
     set usr_count_$counter 1
     set kernel_count_$counter 0
@@ -581,7 +530,7 @@ proc setup_event_frame { processor } {
     create_event_frame .f_event_type 0 $processor
     create_event_frame .f_event_type 1 $processor
 
-    # To avoid some screen flick but some wm cannot handle properly this
+    # Avoid some screen flick but some wm cannot handle properly this
     #  If you experiment some problem try to comment this line and the 
     # wm deiconify . line
     wm withdraw .
@@ -983,4 +932,3 @@ set event_type_list {
 }
 
 setup_event_frame $processor_type
-

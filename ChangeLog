@@ -1,3 +1,18 @@
+2001-06-09  Philippe Elie  <ph_e@club-internet.fr>
+
+	* op_start: avoid chmod to a non existing directory and setup access
+	  mode from 700 to 755. Replace use of the sysctl utility by a
+	  do_sysctl() function.
+
+	* gui/oprofile: some cleanup and bugfix.
+
+	* pp/oprofpp.c: add new output options --list-all-symbols-details,
+	  --output-linenr-info
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.sgml: update documentation about the new oprofpp
+	  option
+
 2001-06-09  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: fix build with CONFIG_MODVERSIONS

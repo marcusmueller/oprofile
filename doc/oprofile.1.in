@@ -145,6 +145,17 @@ dump gprof format file
 give detailed samples for a symbol
 .br
 .TP
+.I "--base-dir"
+.br
+.TP
+.I "--list-all-symbols-details"
+give detailed samples for all symbols
+.br
+.TP
+.I "--output-linenr-info"
+output filename:linenr info for all samples, usable only with --list-all-symbols-details
+.br
+.TP
 .I "--demangle"
 demangle GNU C++ symbol names
 .br
