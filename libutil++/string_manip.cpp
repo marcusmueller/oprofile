@@ -165,7 +165,9 @@ unsigned int lexical_cast_no_ws<unsigned int>(std::string const & str)
 {
 	char* endptr;
 
-	unsigned long ret = strtoul(str.c_str(), &endptr, 0);
+	// 2.91.66 fix
+	unsigned long ret = 0;
+	ret = strtoul(str.c_str(), &endptr, 0);
 	if (*endptr) {
 		throw std::invalid_argument("lexical_cast_no_ws<T>(\""+ str +"\")");
 	}

@@ -245,9 +245,10 @@ profile_container::select_filename(double threshold) const
 	// now sort the file_by_samples entry.
 	sort(file_by_samples.begin(), file_by_samples.end());
 
-	vector<filename_by_samples>::const_reverse_iterator cit
+	// 2.91.66 doesn't like const_reverse_iterator in this context
+	vector<filename_by_samples>::reverse_iterator cit
 		= file_by_samples.rbegin();
-	vector<filename_by_samples>::const_reverse_iterator const cend
+	vector<filename_by_samples>::reverse_iterator const cend
 		= file_by_samples.rend();
 
 	vector<debug_name_id> result;
