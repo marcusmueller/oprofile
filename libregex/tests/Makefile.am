@@ -11,8 +11,6 @@ regex_test_LDADD = \
 	../libop_regex.a \
 	../../libutil++/libutil++.a
 
-nodist_data_DATA = mangled-name
-
 EXTRA_DIST = mangled-name.in
 
 TESTS = ${check_PROGRAMS}

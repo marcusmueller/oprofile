@@ -1,3 +1,11 @@
+2003-12-16  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/opcontrol: error message rewording
+
+2003-12-16  Carlo Wood  <unknown@unknown.nl>
+
+	* libregex/tests/Makefile.am: avoid to install mangled-name test file
+
 2003-11-20  John Levon  <levon@movementarian.org>
 
 	* libregex/op_regex.cpp: move global ctor out of namespace

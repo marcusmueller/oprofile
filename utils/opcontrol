@@ -942,7 +942,7 @@ do_start_daemon()
 		COUNT=`expr $COUNT + 1`
 		if test "$COUNT" -eq 10; then
 			echo "Couldn't start oprofiled." >&2
-			echo "Check the log file \"$LOG_FILE\" and /var/log/messages" >&2
+			echo "Check the log file \"$LOG_FILE\" and kernel syslog" >&2
 			exit 1
 		fi
 	done
