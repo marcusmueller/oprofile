@@ -38,12 +38,14 @@ oprofiled_SOURCES = $(dist_sources)
 if enable_abi
 oprofiled_LDADD = \
 	../libabi/libabi.a \
+	libdaemon.a \
 	../libdb/libodb.a \
 	../libop/libop.a \
 	../libutil/libutil.a
 LINKER=$(CXX)
 else
 oprofiled_LDADD = \
+	libdaemon.a \
 	../libdb/libodb.a \
 	../libop/libop.a \
 	../libutil/libutil.a
