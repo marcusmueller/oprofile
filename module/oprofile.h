@@ -136,17 +136,11 @@ struct op_int_operations {
 /* is the count at maximal value ? */
 #define op_full_count(c) (((c) & OP_COUNT_MASK) == OP_COUNT_MASK)
 
-/* no check for ctr needed as one of the three will differ in the hash */
-#define op_miss(ops)  \
-	((ops).eip != regs->eip || \
-	(ops).pid != current->pid || \
-	op_full_count((ops).count))
-
 /* the ctr bit is used to separate the two counters.
  * Simple and effective hash. If you can do better, prove it ...
  */
 #define op_hash(eip, pid, ctr) \
-	(((eip ) + (pid << 5) + (ctr)) & (data->hash_size - 1))
+	((eip + (pid << 5) + (ctr)) & (data->hash_size - 1))
 
 /* oprof_start() copy here the sysctl settable parameters */
 extern struct oprof_sysctl sysctl;

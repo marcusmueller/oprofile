@@ -17,7 +17,7 @@ endif
  
 O_TARGET := oprofile-module.o
  
-obj-y := compat.o op_events_module.o op_init.o op_rtc.o op_util.o op_dname.o oprofile.o arch/arch.o
+obj-y := compat.o op_init.o op_rtc.o op_util.o op_dname.o oprofile.o arch/arch.o $(OPROFILE_DIR)/libop/libop.a
 obj-m := $(O_TARGET)
 O_OBJS := $(obj-y)
 M_OBJS := $(O_TARGET)
@@ -42,9 +42,6 @@ clean:
 	$(MAKE) -C arch clean
 	rm -rf $(O_TARGET) $(obj-y) .deps .*.flags
 
-op_events_module.o: $(OPROFILE_DIR)/libop/op_events.c
-	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c -o $@ $<
- 
 TOPDIR := $(KSRC)
 CONFIG_SHELL := TOPDIR=$(KSRC) /bin/bash
 include $(KSRC)/Rules.make

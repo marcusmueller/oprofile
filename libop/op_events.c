@@ -13,6 +13,11 @@
 
 /* See IA32 Vol. 3 Appendix A + Athlon optimization manual */
 
+/*
+ * WARNING: this code is also included in the kernel module,
+ * so no silliness
+ */ 
+ 
 #include "op_events.h"
 
 struct op_unit_mask op_unit_masks[] = {
