@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.6 2002/07/12 18:30:37 movement Exp $
+# $Id: op_start,v 1.7 2002/07/26 16:19:45 phil_e Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -225,18 +225,23 @@ do_options() {
 				;;
 			--ctr*-unit-mask)
 				CTR_UM[`extract_int $arg`]=$val
+				if (($? != 0)); then exit 1; fi
 				;;
 			--ctr*-event)
 				CTR_EVENT[`extract_int $arg`]=$val
+				if (($? != 0)); then exit 1; fi
 				;;
 			--ctr*-count)
 				CTR_COUNT[`extract_int $arg`]=$val
+				if (($? != 0)); then exit 1; fi
 				;;
 			--ctr*-user)
 				CTR_USER[`extract_int $arg`]=$val
+				if (($? != 0)); then exit 1; fi
 				;;
 			--ctr*-kernel)
 				CTR_KERNEL[`extract_int $arg`]=$val
+				if (($? != 0)); then exit 1; fi
 				;;
 			--rtc-value)
 				RTC_VALUE=$val

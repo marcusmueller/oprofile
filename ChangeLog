@@ -1,5 +1,12 @@
 2002-07-26  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* TODO: update
+
+	* utils/op_start: fix #587093, some option of op_start
+	  was incorrectly checked
+
+2002-07-26  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/op_time_options.cpp:
 	* pp/oprofpp_options.cpp: output format header or details are illegal
 	  if not combined with other output format flag
