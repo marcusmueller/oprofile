@@ -45,8 +45,7 @@ using namespace std;
 
 static bool has_unique_event(op_cpu cpu_type)
 {
-	return cpu_type == CPU_TIMER_INT == OP_INTERFACE_25
-		|| cpu_type == CPU_RTC;
+	return cpu_type == CPU_TIMER_INT || cpu_type == CPU_RTC;
 }
 
 op_event_descr::op_event_descr()
