@@ -1,3 +1,9 @@
+2001-10-08  John Levon  <moz@compsoc.man.ac.uk>
+
+	* acinclude.m4:
+	* configure.in:
+	* gui/Makefile.in: fix idiot config bug of mine
+ 
 2001-10-06  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/opf_filter.cpp:

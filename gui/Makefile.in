@@ -16,7 +16,7 @@ CXXFLAGS=-Wall -W @CXXFLAGS@ -I@KINC@ -DOP_EVENTS_DESC @QT2_INCLUDES@
 .PHONY: all clean install uninstall
 .SUFFIXES:
 
-ifeq "@HAVE_QT2@" "1"
+ifeq "@have_qt2@" "1"
 all: oprof_start
 
 clean:

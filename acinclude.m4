@@ -334,6 +334,7 @@ ac_qt2_ok=no
 test "$ac_qt2_ok" = no && AC_MSG_ERROR([Found an earlier version of Qt - you must specify the path to Qt2])
 CXXFLAGS="$SAVE_CXXFLAGS"
 
+AC_SUBST(have_qt2) 
 AC_SUBST(qt2_libraries)
 AC_SUBST(qt2_includes)
 
