@@ -80,7 +80,7 @@ struct group_summary {
 	bool operator<(group_summary const & rhs) const {
 		return options::reverse_sort 
 			? count < rhs.count : rhs.count < count;
-		}
+	}
 
 	/// return true if the deps should not be output
 	bool should_hide_deps() const;
@@ -173,7 +173,7 @@ bool group_summary::should_hide_deps() const
 
 void
 output_deps(vector<event_group_summary> const & summaries,
-	    vector<group_summary> event_group)
+	    vector<group_summary> const & event_group)
 {
 	bool should_hide_deps = true;
 	for (size_t i = 0 ; i < event_group.size(); ++i) {
@@ -379,104 +379,6 @@ void output_summaries(vector<event_group_summary> const & summaries)
 }
 
 
-/**
- * Load the given samples container with the profile data from
- * the files container, merging as appropriate.
- */
-void populate_profiles(partition_files const & files, profile_container & samples)
-{
-	image_set images = sort_by_image(files, options::extra_found_images);
-
-	image_set::const_iterator it;
-	for (it = images.begin(); it != images.end(); ) {
-		pair<image_set::const_iterator, image_set::const_iterator>
-			p_it = images.equal_range(it->first);
-
-		op_bfd abfd(it->first, options::symbol_filter);
-
-		// we can optimize by cumulating samples to this binary in
-		// a profile_t only if we merge by lib since for non merging
-		// case application name change and must be recorded
-		if (options::merge_by.lib) {
-			string app_name = p_it.first->first;
-
-			profile_t profile;
-
-			for (;  it != p_it.second; ++it) {
-				profile.add_sample_file(
-					it->second.sample_filename,
-					abfd.get_start_offset());
-			}
-
-			check_mtime(abfd.get_filename(), profile.get_header());
-	
-			samples.add(profile, abfd, app_name);
-		} else {
-			for (; it != p_it.second; ++it) {
-				string app_name = it->second.image;
-
-				profile_t profile;
-				profile.add_sample_file(
-					it->second.sample_filename,
-					abfd.get_start_offset());
-
-				check_mtime(abfd.get_filename(),
-					    profile.get_header());
-	
-				samples.add(profile, abfd, app_name);
-			}
-		}
-	}
-}
-
-
-format_flags const get_format_flags(column_flags const & cf)
-{
-	format_flags flags(ff_none);
-	flags = format_flags(flags | ff_vma | ff_nr_samples);
-	flags = format_flags(flags | ff_percent | ff_symb_name);
-
-	if (cf & cf_multiple_apps)
-		flags = format_flags(flags | ff_app_name);
-	if (options::debug_info)
-		flags = format_flags(flags | ff_linenr_info);
-
-	if (options::accumulated) {
-		flags = format_flags(flags | ff_nr_samples_cumulated);
-		flags = format_flags(flags | ff_percent_cumulated);
-	}
-
-	if (cf & cf_image_name)
-		flags = format_flags(flags | ff_image_name);
-
-	return flags;
-}
-
-
-void output_symbols(profile_container const & samples)
-{
-	profile_container::symbol_choice choice;
-	choice.threshold = options::threshold;
-	symbol_collection symbols = samples.select_symbols(choice);
-	options::sort_by.sort(symbols, options::reverse_sort,
-	                      options::long_filenames);
-
-	format_output::formatter out(samples);
-
-	if (options::details)
-		out.show_details();
-	if (options::long_filenames)
-		out.show_long_filenames();
-	if (!options::show_header)
-		out.hide_header();
-	if (choice.hints & cf_64bit_vma)
-		out.vma_format_64bit();
-
-	out.add_format(get_format_flags(choice.hints));
-	out.output(cout, symbols);
-}
-
-
 /// comparator used to sort a vector<group_summary> through a mapping index
 class build_group_summary_index {
 public:
@@ -597,6 +499,104 @@ vector<event_group_summary> populate_group_summaries()
 	}
 
 	return result;
+}
+
+
+/**
+ * Load the given samples container with the profile data from
+ * the files container, merging as appropriate.
+ */
+void populate_profiles(partition_files const & files, profile_container & samples)
+{
+	image_set images = sort_by_image(files, options::extra_found_images);
+
+	image_set::const_iterator it;
+	for (it = images.begin(); it != images.end(); ) {
+		pair<image_set::const_iterator, image_set::const_iterator>
+			p_it = images.equal_range(it->first);
+
+		op_bfd abfd(it->first, options::symbol_filter);
+
+		// we can optimize by cumulating samples to this binary in
+		// a profile_t only if we merge by lib since for non merging
+		// case application name change and must be recorded
+		if (options::merge_by.lib) {
+			string app_name = p_it.first->first;
+
+			profile_t profile;
+
+			for (;  it != p_it.second; ++it) {
+				profile.add_sample_file(
+					it->second.sample_filename,
+					abfd.get_start_offset());
+			}
+
+			check_mtime(abfd.get_filename(), profile.get_header());
+	
+			samples.add(profile, abfd, app_name);
+		} else {
+			for (; it != p_it.second; ++it) {
+				string app_name = it->second.image;
+
+				profile_t profile;
+				profile.add_sample_file(
+					it->second.sample_filename,
+					abfd.get_start_offset());
+
+				check_mtime(abfd.get_filename(),
+					    profile.get_header());
+	
+				samples.add(profile, abfd, app_name);
+			}
+		}
+	}
+}
+
+
+format_flags const get_format_flags(column_flags const & cf)
+{
+	format_flags flags(ff_none);
+	flags = format_flags(flags | ff_vma | ff_nr_samples);
+	flags = format_flags(flags | ff_percent | ff_symb_name);
+
+	if (cf & cf_multiple_apps)
+		flags = format_flags(flags | ff_app_name);
+	if (options::debug_info)
+		flags = format_flags(flags | ff_linenr_info);
+
+	if (options::accumulated) {
+		flags = format_flags(flags | ff_nr_samples_cumulated);
+		flags = format_flags(flags | ff_percent_cumulated);
+	}
+
+	if (cf & cf_image_name)
+		flags = format_flags(flags | ff_image_name);
+
+	return flags;
+}
+
+
+void output_symbols(profile_container const & samples)
+{
+	profile_container::symbol_choice choice;
+	choice.threshold = options::threshold;
+	symbol_collection symbols = samples.select_symbols(choice);
+	options::sort_by.sort(symbols, options::reverse_sort,
+	                      options::long_filenames);
+
+	format_output::formatter out(samples);
+
+	if (options::details)
+		out.show_details();
+	if (options::long_filenames)
+		out.show_long_filenames();
+	if (!options::show_header)
+		out.hide_header();
+	if (choice.hints & cf_64bit_vma)
+		out.vma_format_64bit();
+
+	out.add_format(get_format_flags(choice.hints));
+	out.output(cout, symbols);
 }
 
 
