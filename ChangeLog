@@ -1,5 +1,47 @@
 2002-10-02  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libdb/db-*.c/*.h: typedef tweaking for 64 bits arch
+	* remove libdb/ChangeLog put, old entries are:
+
+	2002-04-20  Philippe Elie  <phil.el@wanadoo.fr>
+	* db-insert.c: check for count overflow
+
+	2002-04-20  Philippe Elie  <phil.el@wanadoo.fr>
+	* db-manage.c: properly handle already existing db file
+	* db.h: extern "C" wrapper
+
+	2002-04-19  Philippe Elie  <phil.el@wanadoo.fr>
+	* *.c;*.h: make plugin db in oprofile more easy.
+
+	2002-04-18  Philippe Elie  <phil.el@wanadoo.fr>
+	* *.c;*.h: prefix all public identifier with db_.
+	  Use typedef as much I can rather than plain unsigned int.
+
+	2002-04-17  Philippe Elie  <phil.el@wanadoo.fr>
+	* db-debug.c:
+	* db-insert.c:
+	* db-manage.c:
+	* dbtest.c:
+	* db-travel.c:
+	* db.h: add file locking and necessary stuff to allow
+	  plugging db in an imbedded file format like oprofile
+	  samples files.
+
+	2002-04-16  Philippe Elie  <phil.el@wanadoo.fr>
+	* db-manage.c: silly bug fix, db works now with
+	  malloc/realloc or mmap/mremap memory allocation
+	  selected at compile time.
+
+	2002-04-14  Philippe Elie  <phil.el@wanadoo.fr>
+	* first import standalone code to test btree samples files
+
+2002-10-02  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* module/x86/op_msr.h: Hyper threading #define
+	* module/x86/cpu_type.c: include op_msr.h
+
+2002-10-02  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* */*.cpp: using std::xxx; --> using namespace std;
 
 2002-10-01  Will Cohen  <wcohen@redhat.com>

@@ -32,6 +32,7 @@ typedef unsigned int db_value_t;
 #define DB_MAX_PAGE DB_MIN_PAGE*2
 
 typedef unsigned int db_page_idx_t;
+typedef unsigned int db_page_count_t;
 
 #define db_nil_page	(db_page_idx_t)~0
 
@@ -44,7 +45,7 @@ typedef struct {
 
 /** a page of item */
 typedef struct {
-	size_t  count;			/**< nr entry used in page_table */
+	unsigned int count;		/**< nr entry used in page_table */
 	db_page_idx_t p0;		/**< left page index */
 	db_item_t page_table[DB_MAX_PAGE]; /**< key, data and child index */
 } db_page_t;
@@ -52,8 +53,8 @@ typedef struct {
 /** the minimal information which must be stored in the file to reload
  * properly the data base */
 typedef struct {
-	size_t size;			/**< in page nr */
-	size_t current_size;		/**< nr used page */
+	db_page_count_t size;		/**< in page nr */
+	db_page_count_t current_size;	/**< nr used page */
 	db_page_idx_t root_idx;		/**< the root page index */
 	int padding[5];			/**< for padding and future use */
 } db_descr_t;
@@ -73,9 +74,9 @@ typedef struct {
 	int fd;				/**< file descriptor of the maped mem */
 	void * base_memory;		/**< base memory of the maped memory */
 	db_descr_t * descr;		/**< the current state of database */
-	size_t sizeof_header;		/**< from base_memory to descr */
-	size_t offset_page;		/**< from base_memory to page_base */
-	size_t is_locked;		/**< is fd already locked */
+	unsigned int sizeof_header;	/**< from base_memory to descr */
+	unsigned int offset_page;	/**< from base_memory to page_base */
+	int is_locked;			/**< is fd already locked */
 } db_tree_t;
 
 #ifdef __cplusplus

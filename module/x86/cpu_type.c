@@ -10,6 +10,7 @@
  */
 
 #include "oprofile.h"
+#include "op_msr.h"
 
 EXPORT_NO_SYMBOLS;
 

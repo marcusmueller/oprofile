@@ -30,14 +30,15 @@ static __inline db_page_t * db_to_page(db_tree_t * tree)
 	return (db_page_t *)(((char *)tree->base_memory) + tree->offset_page);
 }
 
-static void db_init_page(db_tree_t * tree, size_t from, size_t to)
+static void db_init_page(db_tree_t * tree, db_page_count_t from,
+			 db_page_count_t to)
 {
 	/* FIXME: db_nil_page is not currently a zero value so we need
 	 * to initialize it explicitely: perhaps we can consider to
 	 * not use the zero page and to use zero as db_nil_page value
 	 * avoiding to touch memory of the mmaped file */
 	for ( ; from != to ; ++from) {
-		size_t count;
+		db_page_count_t count;
 		db_page_t * page;
 
 		/* we can't use page_nr_to_page_ptr here because
@@ -53,8 +54,8 @@ static void db_init_page(db_tree_t * tree, size_t from, size_t to)
 db_page_idx_t db_add_page(db_tree_t * tree)
 {
 	if (tree->descr->current_size >= tree->descr->size) {
-		size_t old_size = tree->descr->size;
-		size_t new_file_size;
+		db_page_count_t old_size = tree->descr->size;
+		db_page_count_t new_file_size;
 
 		tree->descr->size *= 2;
 
@@ -92,10 +93,11 @@ db_page_idx_t db_add_page(db_tree_t * tree)
 	(4096 - offset_page) / sizeof(db_page_t) ?		\
 	(4096 - offset_page) / sizeof(db_page_t) : 1
 
-void db_open(db_tree_t * tree, char const * filename, enum db_rw rw, size_t sizeof_header)
+void db_open(db_tree_t * tree, char const * filename, enum db_rw rw,
+	     unsigned int sizeof_header)
 {
 	struct stat stat_buf;
-	size_t nr_page;
+	db_page_count_t nr_page;
 	int flags = (rw == DB_RDWR) ? (O_CREAT | O_RDWR) : O_RDONLY;
 	int mmflags = (rw == DB_RDWR) ? (PROT_READ | PROT_WRITE) : PROT_READ;
 
@@ -127,9 +129,9 @@ void db_open(db_tree_t * tree, char const * filename, enum db_rw rw, size_t size
 
 		file_size = tree->offset_page + (nr_page * sizeof(db_page_t));
 		if (ftruncate(tree->fd, file_size)) {
-			fprintf(stderr, "unable to resize file %s to %d "
+			fprintf(stderr, "unable to resize file %s to %ld "
 				"length, cause : %s\n",
-				filename, file_size, strerror(errno));
+				filename, (unsigned long)file_size, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 	} else {

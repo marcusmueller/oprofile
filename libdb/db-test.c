@@ -29,9 +29,9 @@ static double user_time(void)
 }
 
 /* create nr item randomly created with nr_unique_item distinct items */
-static void speed_test(size_t nr_item, size_t nr_unique_item)
+static void speed_test(int nr_item, int nr_unique_item)
 {
-	size_t i;
+	int i;
 	double begin, end;
 	db_tree_t tree;
 
@@ -60,9 +60,9 @@ static void do_speed_test(void)
 	}
 }
 
-static int test(size_t nr_item, size_t nr_unique_item)
+static int test(int nr_item, int nr_unique_item)
 {
-	size_t i;
+	int i;
 	db_tree_t tree;
 	int ret;
 
@@ -119,9 +119,9 @@ static void call_back(db_key_t key, db_value_t info, void * data)
 	last_key_found = key;
 }
 
-static int callback_test(size_t nr_item, size_t nr_unique_item)
+static int callback_test(int nr_item, int nr_unique_item)
 {
-	size_t i;
+	int i;
 	db_tree_t tree;
 	db_key_t first_key, last_key;
 	int old_nr_error = nr_error;

@@ -30,18 +30,18 @@ static void unlock_db(db_tree_t * tree)
 }
 
 static void copy_item(db_item_t * dest, db_item_t const * src,
-		      size_t nr_item)
+		      unsigned int nr_item)
 {
-	size_t i;
+	unsigned int i;
 	for (i = 0 ; i < nr_item ; ++i) {
 		dest[i] = src[i];
 	}
 }
 
 static void copy_item_backward(db_item_t * dest, db_item_t * src,
-			       size_t nr_item)
+			       unsigned int nr_item)
 {
-	size_t i;
+	unsigned int i;
 	for (i = nr_item ; i-- > 0 ; ) {
 		dest[i] = src[i];
 	}
@@ -50,7 +50,7 @@ static void copy_item_backward(db_item_t * dest, db_item_t * src,
 static void split_page(db_tree_t * tree,  db_page_idx_t page_idx,
 		       db_page_idx_t new_page_idx,
 		       db_item_t * value, db_item_t * excess_elt,
-		       size_t pos)
+		       unsigned int pos)
 {
 	db_page_t * page, * new_page;
 
@@ -113,7 +113,7 @@ static void split_page(db_tree_t * tree,  db_page_idx_t page_idx,
 	excess_elt->child_page = new_page_idx;
 }
 
-static int do_reorg(db_tree_t * tree, db_page_idx_t page_idx, size_t pos,
+static int do_reorg(db_tree_t * tree, db_page_idx_t page_idx, unsigned int pos,
 		    db_item_t * excess_elt, db_item_t * value)
 {
 	int need_reorg;
@@ -227,7 +227,7 @@ static int do_insert(db_tree_t * tree, db_page_idx_t page_idx,
 		     db_item_t * excess_elt, db_item_t * value)
 {
 	int need_reorg;
-	size_t pos;
+	unsigned int pos;
 	db_page_idx_t child_page_idx;
 	db_page_t * page;
 

@@ -327,4 +327,8 @@
 #define MSR_P4_U2L_ESCR1 0x3b1
 #endif
 
+#ifndef X86_FEATURE_HT
+#define X86_FEATURE_HT		(0*32+28) /* Hyper-Threading */
+#endif
+
 #endif /* OP_MSR_H */
