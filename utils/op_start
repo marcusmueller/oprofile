@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.8 2002/07/29 23:40:23 phil_e Exp $
+# $Id: op_start,v 1.9 2002/08/08 20:51:52 phil_e Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -60,7 +60,7 @@ extract_int()
 		echo "Invalid option \"$1\"" >&2
 		exit 1
 	fi
-	if (($val >= $OP_MAX_COUNTERS || $val < 0)); then
+	if [ ! -d /proc/sys/dev/oprofile/$val ]; then
 		echo "invalid argument $1: bad counter number" >&2
 		exit 1
 	fi
@@ -88,7 +88,7 @@ do_help() {
 	  --ctrN-unit-mask=val         unit mask for ctr N
 	  --ctrN-kernel=[0|1]          whether to count kernel events for ctr N
 	  --ctrN-user=[0|1]            whether to count user events for ctr N
-	Allowed range for N is [0-$MAX_COUNTER]
+	Allowed counter for N are [$OP_COUNTERS]
 	  --rtc-value=val              RTC value (only if RTC is being used)
 	  --pid-filter=pid             Only profile process pid 
 	  --pgrp-filter=pgrp           Only profile process tty group pgrp
@@ -145,33 +145,20 @@ do_init() {
 	HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
 
 	CPUTYPE=`cat /proc/sys/dev/oprofile/cpu_type`
+	OP_COUNTERS=`ls /proc/sys/dev/oprofile/ | grep "^[0-9]\+\$" | tr "\n" " "`
 
 	IS_RTC=0
  
 	case "$CPUTYPE" in
-		0|1|2)
-			OP_MAX_COUNTERS=2
-			MAX_COUNTER=1
-			;;
-		3)
-			OP_MAX_COUNTERS=4
-			MAX_COUNTER=3
-			;;
 		4) 	IS_RTC=1
-			;;
-		*)
-			echo "Unknown cpu type \"$CPUTYPE\"" >&2
-			exit 1
 			;;
 	esac
 
 	if test "$IS_RTC" -ne 1; then
 		# we can now default define individual counter setup variable.
-		f=0
-		while (( $f < $OP_MAX_COUNTERS )); do
+		for f in $OP_COUNTERS ; do
 			CTR_USER[$f]=1
 			CTR_KERNEL[$f]=1
-			f=$(($f+1))
 		done
 	fi
 } 
@@ -285,8 +272,7 @@ do_options() {
 
 	if test "$IS_RTC" -ne 1; then
 		one_enabled=0
-		f=0
-		while (( $f < $OP_MAX_COUNTERS )); do
+		for f in $OP_COUNTERS ; do
 			if [[ ${#CTR_EVENT[$f]} != 0 ]]; then
 				CTR_EVENT_VAL[$f]=`op_help ${CTR_EVENT[$f]}`
 				if [ "$?" != 0 ] || [ -z "${CTR_EVENT_VAL[$f]}" -a ! -z "${CTR_EVENT[$f]}" ]; then
@@ -304,7 +290,6 @@ do_options() {
 					exit 1
 				fi
 			fi
-			f=$(($f+1))
 		done
 	 
 		if [ "$one_enabled" == "0" ]; then
@@ -352,14 +337,12 @@ do_options() {
 		vecho "NOTE_SIZE default value"
 	fi;
 	if test "$IS_RTC" -ne 1; then
-		f=0
-		while (( $f < $OP_MAX_COUNTERS )); do
+		for f in $OP_COUNTERS ; do
 			vecho "CTR${f}_EVENT ${CTR_EVENT[$f]}"
 			vecho "CTR${f}_COUNT ${CTR_COUNT[$f]}"
 			vecho "CTR${f}_UM ${CTR_UM[$f]}"
 			vecho "CTR${f}_USER ${CTR_USER[$f]}"
 			vecho "CTR${f}_KERNEL ${CTR_KERNEL[$f]}"
-			f=$(($f+1))
 		done
 	else
 		vecho "RTC_VALUE $RTC_VALUE"
@@ -456,15 +439,12 @@ do_sysctl_setup() {
 	if test "$IS_RTC" -ne 1; then
 		# Necessary in this case :
 		# op_start ctr0-on ctr1-on then op_start ctr0-on
-		f=0
-		while (( $f < $OP_MAX_COUNTERS )); do
+		for f in $OP_COUNTERS ; do
 			$SYSCTL -w dev.oprofile.$f.enabled=0 >/dev/null
 			$SYSCTL -w dev.oprofile.$f.event=0 >/dev/null
-			f=$(($f+1))
 		done
 
-		f=0
-		while (( $f < $OP_MAX_COUNTERS )); do
+		for f in $OP_COUNTERS ; do
 			if [ "${CTR_EVENT[$f]}" != "" ]; then
 				$SYSCTL -w dev.oprofile.$f.enabled=1
 				$SYSCTL -w dev.oprofile.$f.count=${CTR_COUNT[$f]}
@@ -473,7 +453,6 @@ do_sysctl_setup() {
 				$SYSCTL -w dev.oprofile.$f.unit_mask=${CTR_UM[$f]} 
 				$SYSCTL -w dev.oprofile.$f.event=${CTR_EVENT_VAL[$f]}
 			fi
-			f=$(($f+1))
 		done
 	else
 		$SYSCTL -w dev.oprofile.rtc_value=$RTC_VALUE
