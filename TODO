@@ -27,13 +27,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.9 release
 -----------
 
- o better --verbose, roughly, if possible:
-   class verbose { enum verbose_mode { stats, bfd_debug, ... }; }
-   verbose stats; verbose bfd_debug;
-   cverb << stats << "foo\n";
-   cverb << (stats|bfd_debug) << "bar\n";
-   cverb << bfd_debug << "bar\n";
-   opreport --verbose=stats; opreport --verbose=stats,bfd_debug;
  o opdiff
  o add event aliases for common things like icache misses
 
