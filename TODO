@@ -3,15 +3,17 @@ This is an (incomplete) list of some of the stuff we want to look at doing.
 If you're interested in hacking on any of these, please contact the list first
 for some pointers and/or read HACKING and doc/CodingStyle.
 
-0.8.2 release
--------------
+0.9 release
+-----------
 
+ o Java stuff
  o amd64 32 bit build needs a sys32_lookup_dcookie() translator in the
    kernel
  o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
   outside .text section get a wrong offset
  o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.
- o need --callgraph in oprof_start
+ o opstack output needs to be reworked to be more readable (see
+   "callgraph support comments" on mailing list with Eric Sharkey)
  o with opstack I can get "warning: /no-vmlinux could not be found.".
    Should be smarter ?
  o opstack gives weird output for an image with no symbols:
@@ -27,13 +29,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 
  o stress test opstack: compile a Big Application w/o frame pointer and look
    how driver and opstack react.
-
-0.9 release
------------
-
- o opstack output needs to be reworked to be more readable (see
-   "callgraph support comments" on mailing list with Eric Sharkey)
- o opdiff
+ o consider generic anon mapping support
 
 Before 1.0 little stuff
 -----------------------
@@ -59,8 +55,6 @@ Before 1.0 little stuff
   to parse a file and report correct line number error because skip_ws skip
   \n (so op_events.c report correct line number only if there is no empty
   line in the events files)
- o document OPROFILE_EVENT_FILES_DIR (isn't it for test purpose only ? need
-   documentations ?)
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
   try to recover gracefully.
  o output column shortname headers for opreport -l
@@ -74,6 +68,7 @@ Before 1.0 little stuff
   binary on a bigger box for analysis. There is also a problem in oparchive
   you can use session: to get the right path to samples files but oprofiled.log
   and abi files path are hardcoded to /var/lib/oprofile.
+ o remove oprof_start, or add call graph option
 
 Documentation
 -------------
@@ -81,7 +76,6 @@ Documentation
  o the docs should mention the default event for each arch somewhere
  o more discussion of problematic code needs to go in the "interpreting" section. 
  o document gcc 2.95 and linenr info problems especially for inline functions
- o audit oprof_start for security + then document sudo
  o finish the internals manual
 
 General checks to make
@@ -102,6 +96,8 @@ General checks to make
 
 Later
 -----
+
+ o opdiff
  o zwane problem with wrong text offset showed an interesting problem: if
   op_bfd.cpp get any symbol below text offset for vmlinux or a module then
   profile_t::sample_range() return a pair of iterator with first > second
