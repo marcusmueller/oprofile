@@ -28,8 +28,8 @@
 struct opd_module {
 	char * name;
 	struct opd_image * image;
-	u32 start;
-	u32 end;
+	unsigned long start;
+	unsigned long end;
 };
 
 extern char * vmlinux;
@@ -39,8 +39,8 @@ extern unsigned long opd_stats[];
 extern struct opd_image * kernel_image;
 
 /* kernel and module support */
-static u32 kernel_start;
-static u32 kernel_end;
+static unsigned long kernel_start;
+static unsigned long kernel_end;
 static struct opd_module opd_modules[OPD_MAX_MODULES];
 static unsigned int nr_modules=0;
 
@@ -58,11 +58,14 @@ void opd_init_kernel_image(void)
  */
 void opd_parse_kernel_range(char const * arg)
 {
-	sscanf(arg, "%x,%x", &kernel_start, &kernel_end);
+	sscanf(arg, "%lx,%lx", &kernel_start, &kernel_end);
+
+	verbprintf("OPD_PARSE_KERNEL_RANGE: kernel_start = %lx, kernel_end = %lx\n",
+		   kernel_start, kernel_end);
 
 	if (kernel_start == 0x0 || kernel_end == 0x0) {
 		fprintf(stderr,
-			"Warning: mis-parsed kernel range: %x-%x\n",
+			"Warning: mis-parsed kernel range: %lx-%lx\n",
 			kernel_start, kernel_end);
 		fprintf(stderr, "kernel profiles will be wrong.\n");
 	}
@@ -238,8 +241,8 @@ static void opd_get_module_info(void)
 				}
 
 				cp2 += 7;
-				sscanf(line,"%x", &mod->start);
-				sscanf(cp2,"%u", &mod->end);
+				sscanf(line,"%lx", &mod->start);
+				sscanf(cp2,"%lu", &mod->end);
 				mod->end += mod->start;
 				break;
 		}
@@ -256,7 +259,7 @@ failure:
  * opd_drop_module_sample - drop a module sample efficiently
  * @param eip  eip of sample
  */
-static void opd_drop_module_sample(u32 eip)
+static void opd_drop_module_sample(unsigned long eip)
 {
 	char * module_names;
 	char * name;
@@ -302,7 +305,7 @@ out:
  * contain this @eip return %NULL if not found.
  * caller must check than the module image is valid
  */
-static struct opd_module * opd_find_module_by_eip(u32 eip)
+static struct opd_module * opd_find_module_by_eip(unsigned long eip)
 {
 	uint i;
 	for (i = 0; i < nr_modules; i++) {
@@ -330,7 +333,7 @@ static struct opd_module * opd_find_module_by_eip(u32 eip)
  * If the sample could not be located in a module, it is treated
  * as a kernel sample.
  */
-static void opd_handle_module_sample(u32 eip, u32 count, u32 counter)
+static void opd_handle_module_sample(unsigned long eip, u32 count, u32 counter)
 {
 	struct opd_module * module;
 
@@ -376,7 +379,7 @@ static void opd_handle_module_sample(u32 eip, u32 count, u32 counter)
  * Handle a sample in kernel address space or in a module. The sample is
  * output to the relevant image file.
  */
-void opd_handle_kernel_sample(u32 eip, u32 count, u32 counter)
+void opd_handle_kernel_sample(unsigned long eip, u32 count, u32 counter)
 {
 	if (eip < kernel_end) {
 		opd_stats[OPD_KERNEL]++;
@@ -395,7 +398,7 @@ void opd_handle_kernel_sample(u32 eip, u32 count, u32 counter)
  * Returns %1 if @eip is in the address space starting at
  * kernel_start, %0 otherwise.
  */
-int opd_eip_is_kernel(u32 eip)
+int opd_eip_is_kernel(unsigned long eip)
 {
 	return (eip >= kernel_start);
 }

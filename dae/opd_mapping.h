@@ -20,9 +20,9 @@ struct op_note;
 
 struct opd_map {
 	struct opd_image * image;
-	u32 start;
-	u32 offset;
-	u32 end;
+	unsigned long start;
+	unsigned long offset;
+	unsigned long end;
 };
 
 void opd_init_hash_map(void);
@@ -39,7 +39,7 @@ void opd_kill_maps(struct opd_proc * proc);
  * Return %1 if the EIP value @eip is within the boundaries
  * of the map @map, %0 otherwise.
  */
-inline static int opd_is_in_map(struct opd_map * map, u32 eip)
+inline static int opd_is_in_map(struct opd_map * map, unsigned long eip)
 {
 	return (eip >= map->start && eip < map->end);
 }
@@ -54,7 +54,8 @@ inline static int opd_is_in_map(struct opd_map * map, u32 eip)
  * the map @map, which is the same as the file offset
  * for the relevant binary image.
  */
-inline static u32 opd_map_offset(struct opd_map * map, u32 eip)
+inline static unsigned long opd_map_offset(struct opd_map * map,
+					   unsigned long eip)
 {
 	return (eip - map->start) + map->offset;
 }

@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.100 2002/07/25 00:17:34 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.101 2002/09/10 20:01:00 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(libop/op_config.h)
 
@@ -239,7 +239,7 @@ AC_CHECK_HEADERS(libiberty.h)
 AC_CHECK_FUNCS(xcalloc)
 
 dnl bfd.h pre 1998 check only for gnu 2.xx series, so gcc 3.0 can't compile it
-AC_MSG_CHECKING("whether bfd define bool")
+AC_MSG_CHECKING("whether bfd defines bool")
 AC_TRY_COMPILE([#include <bfd.h>], [], 
 AC_MSG_RESULT([no]);,
 AC_MSG_RESULT([yes]); BFD_CXXFLAGS="-DTRUE_FALSE_ALREADY_DEFINED")

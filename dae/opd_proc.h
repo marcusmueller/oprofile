@@ -34,7 +34,7 @@ struct opd_proc {
 };
 
 void opd_put_sample(struct op_sample const * sample);
-void opd_put_image_sample(struct opd_image * image, u32 offset, u32 count, u32 counter);
+void opd_put_image_sample(struct opd_image * image, unsigned long offset, u32 count, u32 counter);
 void opd_handle_fork(struct op_note const * note);
 void opd_handle_exit(struct op_note const * note);
 void opd_handle_exec(u16 pid);

@@ -1,3 +1,25 @@
+2002-09-09  Will Cohen  <wcohen@redhat.com>
+
+	* dae/opd_kernel.c (struct opd_module): 
+	  (kernel_start, kernel_end):
+	  (opd_parse_kernel_range):
+	  (opd_drop_module_sample):
+	  (opd_find_module_by_eip):
+	  (opd_handle_module_sample):
+	  (opd_handle_kernel_sample):
+	  (opd_eip_is_kernel):
+	* dae/opd_kernel.h (opd_handle_kernel_sample):
+	  (opd_eip_is_kernel):
+	* dae/opd_mapping.c (opd_put_mapping):
+	* dae/opd_mapping.h (struct opd_map):
+	  (opd_is_in_map):
+	  (opd_map_offset):
+	* dae/opd_parse_proc.c (opd_add_ascii_map):
+	* dae/opd_proc.c(verb_show_sample):
+	  (opd_put_image_sample):
+	* dae/opd_proc.h (opd_put_image_sample): Change things referring
+	  to addresses to unsigned long for operation on 64-bit machines.
+ 
 2002-09-07  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* all source file : remove email address from @author
@@ -9,7 +31,6 @@
 	* dae/opd_proc.c: (opd_put_sample): Adjust verbprintf arguments.
 	  (opd_handle_fork): Ditto.
 	* dae/oprofiled.c: (opd_do_samples): Ditto.
-
 
 2002-09-04    Will Cohen  <wcohen@redhat.com>
 

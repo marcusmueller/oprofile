@@ -102,9 +102,9 @@ void opd_kill_maps(struct opd_proc * proc)
  * Add the mapping specified to the process @proc.
  */
 static void opd_put_mapping(struct opd_proc * proc, struct opd_image * image,
-	u32 start, u32 offset, u32 end)
+	unsigned long start, unsigned long offset, unsigned long end)
 {
-	verbprintf("Placing mapping for process %d: 0x%.8x-0x%.8x, off 0x%.8x, \"%s\" at maps pos %d\n",
+	verbprintf("Placing mapping for process %d: 0x%.8lx-0x%.8lx, off 0x%.8lx, \"%s\" at maps pos %d\n",
 		proc->pid, start, end, offset, image->name, proc->nr_maps);
 
 	opd_check_image_mtime(image);

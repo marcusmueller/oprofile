@@ -246,11 +246,13 @@ struct opd_proc * opd_get_proc(u16 pid)
  * @param map  map to print
  * @param last_map  previous map used
  */
-inline static void verb_show_sample(u32 offset, struct opd_map * map, char const * last_map)
+inline static void verb_show_sample(unsigned long offset, struct opd_map * map,
+				    char const * last_map)
 {
-	verbprintf("DO_PUT_SAMPLE %s: calc offset 0x%.8x, map start 0x%.8x,"
-		" end 0x%.8x, offset 0x%.8x, name \"%s\"\n",
-		last_map, offset, map->start, map->end, map->offset, map->image->name);
+	verbprintf("DO_PUT_SAMPLE %s: calc offset 0x%.8lx, map start 0x%.8lx,"
+		" end 0x%.8lx, offset 0x%.8lx, name \"%s\"\n",
+		   last_map, offset, map->start, map->end, map->offset,
+		   map->image->name);
 }
 
 
@@ -266,7 +268,8 @@ inline static void verb_show_sample(u32 offset, struct opd_map * map, char const
  *
  * @count is the raw value passed from the kernel.
  */
-void opd_put_image_sample(struct opd_image * image, u32 offset, u32 count, u32 counter)
+void opd_put_image_sample(struct opd_image * image, unsigned long offset,
+			  u32 count, u32 counter)
 {
 	db_tree_t * sample_file;
 
@@ -347,7 +350,7 @@ void opd_put_sample(struct op_sample const * sample)
 	for (i=proc->nr_maps; i > 0; i--) {
 		int const map = i - 1;
 		if (opd_is_in_map(&proc->maps[map], sample->eip)) {
-			u32 offset = opd_map_offset(&proc->maps[map], sample->eip);
+			unsigned long offset = opd_map_offset(&proc->maps[map], sample->eip);
 			if (proc->maps[map].image != NULL) {
 				verb_show_sample(offset, &proc->maps[map], "");
 				opd_put_image_sample(proc->maps[map].image, offset, sample->count, sample->counter);

@@ -18,6 +18,7 @@ Before 1.0 big stuff
    - what is different ?? 
  o CPU-specific sample files option ?
  o split doc into user's manual and hacking manual, document much more 
+ o auto-generate the event C files. They're too ugly. 
  
 Before 1.0 little stuff
 -----------------------

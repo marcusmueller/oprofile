@@ -165,7 +165,7 @@ extern struct oprof_sysctl sysctl_parms;
 extern int nr_oprof_static;
 extern int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp);
 
-/* functionnality provided by the architecture dependant file */
+/* functionality provided by the architecture dependent file */
 /* must return OP_RTC if the hardware doesn't support something like
  * perf counter */
 op_cpu get_cpu_type(void);
