@@ -1,3 +1,12 @@
+2002-07-12  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* Makefile.in: typo in clean target
+
+	* module/compat.h:
+	* module/compat24.h:
+	* module/oprofile.c:
+	* module/x86/op_nmi.c: support for online/offline cpu for 2.5.23+
+
 2002-07-11  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* Makefile.in:
