@@ -1,3 +1,15 @@
+2002-04-07  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/oprofpp.h:
+	* oprof_report/oprof_report.cpp:
+	* pp/op_time.cpp:
+	* pp/opf_container.cpp:
+	* pp/opf_filter.cpp:
+	* pp/oprofpp_util.cpp:
+	* pp/oprofpp.cpp: use samples_file_t as internal implementation
+	  of opp_samples_files. Now all samples files read are made
+	  through samples_file_t object.
+
 2002-04-04  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* dae/op_start: fix bash1 detection

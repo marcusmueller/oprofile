@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.49 2002/04/02 14:36:11 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.50 2002/04/07 16:14:18 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -155,6 +155,14 @@ bool is_excluded_symbol(const std::string & symbol);
 void check_headers(const opd_header * f1, const opd_header * f2);
 
 /**
+ * sanity check of a struct opd_header *
+ * \param header a pointer to header to check
+ *
+ * all error are fatal
+ */
+void check_event(const opd_header * header);
+
+/**
  * validate the counter number
  * \param counter_mask bit mask specifying the counter nr to use
  * \param sort_by the counter nr from which we sort
@@ -179,7 +187,7 @@ extern int demangle;
 extern char const *samplefile;
 /** command line option specifying an image filename */
 extern const char *imagefile;
-/** command line option which specify the base directory of samples files */
+/** command line option specifying the base directory of samples files */
 extern char *basedir;
 /** command line option specifying the set of symbols to ignore */
 extern const char * exclude_symbols_str;
@@ -309,6 +317,10 @@ struct samples_file_t
 
 	bool check_headers(const samples_file_t & headers) const;
 
+	u32 count(uint start) const { 
+		return  samples[start].count;
+	}
+
 	u32 count(uint start, uint end) const;
 
 	// probably needs to be private and create the neccessary member
@@ -328,8 +340,7 @@ private:
 };
 
 /** Store multiple samples files belonging to the same image and the same
- * session */
-/* I think this would be rewritten to use an array of samples_file_t */
+ * sessionn can hold OP_MAX_COUNTERS sampels files */
 struct opp_samples_files {
 	/**
 	 * \param sample_file name of sample file to open w/o the #nr suffix
@@ -362,7 +373,7 @@ struct opp_samples_files {
 	 * samples at position sample_nr
 	 */
 	uint samples_count(int index, int sample_nr) const {
-		return is_open(index) ? samples[index][sample_nr].count : 0;
+		return is_open(index) ? samples[index]->count(sample_nr) : 0;
 	}
 
 	/**
@@ -386,18 +397,14 @@ struct opp_samples_files {
 	// this look like a free fun
 	void output_header() const;
 
+	/// return a struct opd_header * of the first openened samples file
+	const struct opd_header * first_header() const {
+		return samples[first_file]->header;
+	}
+
 	// TODO privatisze as we can.
-	/* if entry i is invalid all members are set to zero except fd[i]
-	 * set to -1 */
-	opd_fentry *samples[OP_MAX_COUNTERS];	// header + sizeof(header)
-	opd_header *header[OP_MAX_COUNTERS];	// mapping begin here
-	fd_t fd[OP_MAX_COUNTERS];
-	// This do not include the header size
-	size_t size[OP_MAX_COUNTERS];
+	samples_file_t * samples[OP_MAX_COUNTERS];
 	uint nr_counters;
-	// cached value: index to the first opened file, setup as nearly as we
-	// can in ctor.
-	int first_file;
 	uint nr_samples;
 	std::string sample_filename;
 
@@ -405,9 +412,12 @@ struct opp_samples_files {
 	size_t counter_mask;
 
 private:
+	// cached value: index to the first opened file, setup as nearly as we
+	// can in ctor.
+	int first_file;
+
 	// ctor helper
 	void open_samples_file(u32 counter, bool can_fail);
-	void check_event(int i);
 };
 
 #endif /* OPROFPP_H */

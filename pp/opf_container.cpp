@@ -379,7 +379,7 @@ add(const opp_samples_files & samples_files, const opp_bfd & abfd)
 		extract_app_name(*it, lib_name);
 
 		opp_samples_files samples_files(dir + "/" + *it, counter_mask);
-		opp_bfd abfd(samples_files.header[samples_files.first_file],
+		opp_bfd abfd(samples_files.first_header(),
 			     samples_files.nr_samples,
 			     demangle_filename(lib_name));
 

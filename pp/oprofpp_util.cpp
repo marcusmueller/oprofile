@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.44 2002/04/02 14:36:11 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.45 2002/04/07 16:14:18 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -802,6 +802,17 @@ void check_headers(const opd_header * f1, const opd_header * f2)
 	}
 }
 
+void check_event(const struct opd_header * header)
+{
+	char * ctr_name;
+	char * ctr_desc;
+	char * ctr_um_desc;
+
+	op_cpu cpu = static_cast<op_cpu>(header->cpu_type);
+	op_get_event_desc(cpu, header->ctr_event, header->ctr_um,
+			  &ctr_name, &ctr_desc, &ctr_um_desc);
+}
+
 /**
  * opp_samples_files - construct an opp_samples_files object
  * \param sample_file the base name of sample file
@@ -829,9 +840,6 @@ opp_samples_files::opp_samples_files(const std::string & sample_file,
 	/* no samplefiles open initially */
 	for (i = 0; i < OP_MAX_COUNTERS; ++i) {
 		samples[i] = 0;
-		header[i] = 0;
-		fd[i] = -1;
-		size[i] = 0;
 	}
 
 	for (i = 0; i < OP_MAX_COUNTERS ; ++i) {
@@ -845,7 +853,7 @@ opp_samples_files::opp_samples_files(const std::string & sample_file,
 
 	/* find first open file */
 	for (first_file = 0; first_file < OP_MAX_COUNTERS ; ++first_file) {
-		if (fd[first_file] != -1)
+		if (samples[first_file] != 0)
 			break;
 	}
 
@@ -854,31 +862,25 @@ opp_samples_files::opp_samples_files(const std::string & sample_file,
 		exit(EXIT_FAILURE);
 	}
 
-	nr_samples = size[first_file] / sizeof(opd_fentry);
-	mtime = header[first_file]->mtime;
+	const struct opd_header * header = samples[first_file]->header;
+	nr_samples = samples[first_file]->nr_samples;
+	mtime = header->mtime;
 
 	/* determine how many counters are possible via the sample file */
-	op_cpu cpu = static_cast<op_cpu>(header[first_file]->cpu_type);
+	op_cpu cpu = static_cast<op_cpu>(header->cpu_type);
 	nr_counters = op_get_cpu_nr_counters(cpu);
 
 	/* check sample files match */
 	for (j = first_file + 1; j < OP_MAX_COUNTERS; ++j) {
-		if (fd[j] == -1)
+		if (samples[j] == 0)
 			continue;
-		if (size[first_file] != size[j]) {
-			fprintf(stderr, "oprofpp: mapping file size for ctr "
-				"(%d, %d) are different (%d, %d)\n", 
-				first_file, j, size[first_file], size[j]);
-
-			exit(EXIT_FAILURE);
-		}
-		check_headers(header[first_file], header[j]);
+		samples[first_file]->check_headers(*samples[j]);
 	}
 
 	/* sanity check on ctr_um, ctr_event and cpu_type */
 	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
-		if (fd[i] != -1)
-			check_event(i);
+		if (samples[i] != 0)
+			check_event(samples[i]->header);
 	}
 
 	verbprintf("nr_samples %d\n", nr_samples); 
@@ -894,10 +896,7 @@ opp_samples_files::~opp_samples_files()
 	uint i;
 
 	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
-		if (header[i]) {
-			munmap(header[i], size[i] + sizeof(opd_header));
-			close(fd[i]);
-		}
+		delete samples[i];
 	}
 }
 
@@ -965,41 +964,16 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 	filename << sample_filename << "#" << counter;
 	std::string temp = filename.str();
 
-	fd[counter] = open(temp.c_str(), O_RDONLY);
-	if (fd[counter] == -1) {
-		if (can_fail == false)	{
+	if (access(temp.c_str(), R_OK) == 0) {
+		samples[counter] = new samples_file_t(temp);
+	}
+	else {
+		if (can_fail == false) {
 			/* FIXME: nicer message if e.g. wrong counter */ 
 			fprintf(stderr, "oprofpp: Opening %s failed. %s\n", temp.c_str(), strerror(errno));
 			exit(EXIT_FAILURE);
 		}
-		header[counter] = NULL;
-		samples[counter] = NULL;
-		size[counter] = 0;
-		return;
 	}
-
-	::open_samples_file(fd[counter], size[counter],
-			    samples[counter], header[counter], temp);
-}
-
-/**
- * check_event - check and translate an event
- * \param i counter number
- *
- * the member variable describing the event are
- * updated.
- *
- * all error are fatal
- */
-void opp_samples_files::check_event(int i)
-{
-	char * ctr_name;
-	char * ctr_desc;
-	char * ctr_um_desc;
-
-	op_cpu cpu = static_cast<op_cpu>(header[i]->cpu_type);
-	op_get_event_desc(cpu, header[i]->ctr_event, header[i]->ctr_um,
-			  &ctr_name, &ctr_desc, &ctr_um_desc);
 }
 
 /**
@@ -1038,12 +1012,9 @@ bool opp_samples_files::accumulate_samples(counter_array_t& counter,
 
 	for (uint k = 0; k < nr_counters; ++k) {
 		if (is_open(k)) {
-			for (uint j = start ; j < end; ++j) {
-				if (samples[k][j].count) {
-					counter[k] += samples[k][j].count;
-					found_samples = true;
-				}
-			}
+			counter[k] += samples[k]->count(start, end);
+			if (counter[k])
+				found_samples = true;
 		}
 	}
 
