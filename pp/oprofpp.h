@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.6 2000/12/06 20:39:58 moz Exp $ */
+/* $Id: oprofpp.h,v 1.7 2001/01/19 00:49:45 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -54,6 +54,12 @@ void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char 
 #define u32 u_int32_t
 #define fd_t int
 #define streq(a,b) (!strcmp((a),(b)))
+
+#define verbprintf(args...) \
+	do { \
+		if (verbose) \
+			printf(args); \
+	} while (0)
 
 /* kernel image entries are offset by this many entries */
 #define OPD_KERNEL_OFFSET 524288

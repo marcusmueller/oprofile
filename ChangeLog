@@ -1,3 +1,26 @@
+2000-01-18  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in: add comment
+	
+	* oprofile.c: get along with the new UP APIC stuff in 2.4.0ac9
+		remove extraneous lock_kernel()
+
+	* oprofile.h: add __ok_unused for the future
+		
+	* dae/op_start: hide confusing output of op_stop
+		--verbose option
+
+	* dae/opd_proc.c:
+	* dae/oprofiled.h:
+	* dae/oprofiled.c: add --verbose option (very verbose !)
+
+	* doc/guide.html:
+	* doc/guide.lyx: some small updates
+
+	* pp/oprofpp.c: fix segfault on failure to open binary.
+		add --verbose option
+	* pp/oprofpp.h: add --verbose option
+
 2000-01-12  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.c: use standard kernel names for MSRs.

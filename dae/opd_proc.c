@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.45 2000/12/12 02:55:35 moz Exp $ */
+/* $Id: opd_proc.c,v 1.46 2001/01/19 00:49:43 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -26,6 +26,7 @@
 /* kernel image entries are offset by this many entries */
 #define OPD_KERNEL_OFFSET 524288
 
+extern int verbose;
 extern unsigned long opd_stats[];
 extern fd_t mapdevfd;
 extern char *vmlinux;
@@ -212,13 +213,13 @@ static void opd_open_image(struct opd_image *image)
 	} while (*++c2);
 	*c = '\0';
 
-	dprintf("Statting $%s$\n", image->name);
+	verbprintf("Statting $%s$\n", image->name);
 
 	/* for each byte in original, two u32 counters */
 	image->len = opd_get_fsize(image->name)*sizeof(u32)*2;
 	
 	if (!image->len) {
-		dprintf("Length zero for %s\n",image->name);
+		verbprintf("Length zero for %s\n",image->name);
 		image->fd = -1;
 		opd_free(mangled);
 		return;
@@ -231,7 +232,7 @@ static void opd_open_image(struct opd_image *image)
 	if (image->kernel)
 		image->len += OPD_KERNEL_OFFSET*sizeof(struct opd_fentry)*2;
 
-	dprintf("Opening $%s$\n",mangled);
+	verbprintf("Opening $%s$\n",mangled);
 
 	image->fd = open(mangled, O_CREAT|O_EXCL|O_RDWR,0644);
 	if (image->fd==-1) {
@@ -915,7 +916,7 @@ void opd_put_sample(const struct op_sample *sample)
 
 	opd_stats[OPD_SAMPLES]++;
 
-	dprintf("DO_PUT_SAMPLE: EIP 0x%.8x, pid %.6d, count %.6d\n",sample->eip,sample->pid,sample->count);
+	verbprintf("DO_PUT_SAMPLE: EIP 0x%.8x, pid %.6d, count %.6d\n",sample->eip,sample->pid,sample->count);
 
 	if (opd_eip_is_kernel(sample->eip)) {
 		opd_handle_kernel_sample(sample->eip,sample->count);
@@ -934,7 +935,7 @@ void opd_put_sample(const struct op_sample *sample)
 	if (opd_is_in_map(&proc->maps[proc->last_map],sample->eip)) {
 		i = proc->last_map;
 		if (proc->maps[i].image!=-1) {
-		dprintf("DO_PUT_SAMPLE (LAST_MAP): calc offset 0x%.8x, map start 0x%.8x, end 0x%.8x, offset 0x%.8x, name $%s$\n",
+		verbprintf("DO_PUT_SAMPLE (LAST_MAP): calc offset 0x%.8x, map start 0x%.8x, end 0x%.8x, offset 0x%.8x, name $%s$\n",
 			opd_map_offset(&proc->maps[i],sample->eip), proc->maps[i].start, proc->maps[i].end, proc->maps[i].offset, opd_images[proc->maps[i].image].name);
 			opd_put_image_sample(&opd_images[proc->maps[i].image],opd_map_offset(&proc->maps[i],sample->eip),sample->count);
 		}
@@ -947,7 +948,7 @@ void opd_put_sample(const struct op_sample *sample)
 		if (opd_is_in_map(&proc->maps[i],sample->eip)) {
 			u32 offset = opd_map_offset(&proc->maps[i],sample->eip);
 			if (proc->maps[i].image!=-1) {
-			dprintf("DO_PUT_SAMPLE: calc offset 0x%.8x, map start 0x%.8x, end 0x%.8x, offset 0x%.8x, name $%s$\n",
+			verbprintf("DO_PUT_SAMPLE: calc offset 0x%.8x, map start 0x%.8x, end 0x%.8x, offset 0x%.8x, name $%s$\n",
 				offset, proc->maps[i].start, proc->maps[i].end, proc->maps[i].offset, opd_images[proc->maps[i].image].name);
 				opd_put_image_sample(&opd_images[proc->maps[i].image],offset,sample->count);
 			}
@@ -975,7 +976,7 @@ void opd_put_sample(const struct op_sample *sample)
  */
 void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset, u32 end)
 {
-	dprintf("Placing mapping for process %d: 0x%.8x-0x%.8x, off 0x%.8x, $%s$\n",
+	verbprintf("Placing mapping for process %d: 0x%.8x-0x%.8x, off 0x%.8x, $%s$\n",
 		proc->pid, start, end, offset, opd_images[image_nr].name);
 
 	proc->maps[proc->nr_maps].image = image_nr;
@@ -1002,7 +1003,7 @@ void opd_handle_fork(const struct op_sample *sample)
 	struct opd_proc *old;
 	struct opd_proc *proc;
 
-	dprintf("DO_FORK: from %d to %d\n", sample->pid, sample->eip);
+	verbprintf("DO_FORK: from %d to %d\n", sample->pid, sample->eip);
 
 	old = opd_get_proc(sample->pid);
 
@@ -1042,13 +1043,13 @@ void opd_handle_exit(const struct op_sample *sample)
 {
 	struct opd_proc *proc;
 
-	dprintf("DO_EXIT: process %d\n",sample->pid);
+	verbprintf("DO_EXIT: process %d\n",sample->pid);
 
 	proc = opd_get_proc(sample->pid);
 	if (proc)
 		proc->dead = 1;
 	else {
-		dprintf("unknown proc %u just exited.\n",sample->pid);
+		verbprintf("unknown proc %u just exited.\n",sample->pid);
 	}
 }
 
@@ -1085,12 +1086,12 @@ void opd_handle_mapping(const struct op_sample *sample)
 	ssize_t size;
 
 
-	dprintf("DO_MAPPING: pid %u, bytes %d\n",sample->pid,sample->eip);
+	verbprintf("DO_MAPPING: pid %u, bytes %d\n",sample->pid,sample->eip);
 
 	proc = opd_get_proc(sample->pid);
 
 	if (!proc) {
-		dprintf("Told about mapping for non-existent process %u.\n",sample->pid);
+		verbprintf("Told about mapping for non-existent process %u.\n",sample->pid);
 		proc = opd_add_proc(sample->pid);
 	}
 
@@ -1111,7 +1112,7 @@ void opd_handle_mapping(const struct op_sample *sample)
 		pos += 4;
 
 		if (!mapping->num) {
-			dprintf("Mapping of deleted file.\n");
+			verbprintf("Mapping of deleted file.\n");
 			/* this can happen when the file has been deleted */
 			continue;
 		}
@@ -1163,7 +1164,7 @@ void opd_handle_exec(const struct op_sample *sample)
 {
 	struct opd_proc *proc;
 
-	dprintf("DO_EXEC: pid %u\n",sample->pid);
+	verbprintf("DO_EXEC: pid %u\n",sample->pid);
 
 	proc = opd_get_proc(sample->pid);
 	if (proc)
@@ -1281,7 +1282,7 @@ void opd_get_ascii_procs(void)
 
 	while ((dirent = readdir(dir))) {
 		if (sscanf(dirent->d_name, "%hu", &pid)==1) {
-			dprintf("ASCII added %u\n",pid);
+			verbprintf("ASCII added %u\n",pid);
 			proc = opd_add_proc(pid);
 			opd_get_ascii_maps(proc);
 		}

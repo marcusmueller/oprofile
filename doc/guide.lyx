@@ -1,5 +1,5 @@
 #LyX 1.1 created this file. For more info see http://www.lyx.org/
-\lyxformat 2.17
+\lyxformat 2.15
 \textclass book
 \language english
 \inputencoding latin1
@@ -95,6 +95,7 @@ The module will refuse to load if the correct processor type is not found.
  and support is not complete.
  If you are using the kernel debugging patchset, it should still work but
  might not as it plays with the APIC set up and PM counters.
+ There is no Pentium IV support as of yet.
 \layout Standard
 
 You must have the following libraries installed : 
@@ -139,7 +140,12 @@ Download
 
 Visit the web page and download the tarball : 
 \family typewriter 
-http://oprofile.sourceforge.net/
+
+\begin_inset LatexCommand \htmlurl[oprofile]{http://oprofile.sourceforge.net/}
+
+\end_inset 
+
+
 \family default 
 .
  There is also a CVS tree at sourceforge.
@@ -169,6 +175,19 @@ CONFIG_MODULES
 gcc
 \family default 
 .
+ It is important that you enable either the "APIC and IO-APIC support on
+ uniprocessors"or "APIC support on uniprocessors" option (also known as
+ 
+\family typewriter 
+CONFIG_X86_UP_IOAPIC
+\family default 
+ and 
+\family typewriter 
+CONFIG_X86_UP_APIC
+\family default 
+).
+ Which is available is kernel-version dependent (and they do very different
+ things).
  As usual you can get a summary of options with 
 \family typewriter 
 ./configure ---help
@@ -241,18 +260,16 @@ do_nmi
  symbol.
  If it has been patched then the SMP NMI oopser can still provide useful
  stack traces if a fatal error happens during a profiling run.
- This is not useful for stable systems so it is OK for it to be left unpatched.
- This will probably change if the uniprocessor NMI oopser makes it into
- the mainline kernel.
+ This is not particularly useful for stable systems with a stable kernel
+ so it is OK for it to be left unpatched.
 \layout Standard
 
-Note the 
-\family typewriter 
-upapic
-\family default 
- patch to enable an NMI oopser on UP machines conflicts to some degree with
- this module.
- It hasn't been tested or investigated yet.
+Some kernel versions include extra support for the local APIC on uniprocessors
+ (e.g.
+ 2.4.0ac9).
+ This replaces the old partial support, and must be selected.
+ It will also allow a UP NMI watchdog facility, although this can't be used
+ in conjunction with this module yet.
 \layout Standard
 
 If the 
@@ -467,6 +484,13 @@ collect profile data for the specified process id only
 ---pgrp-filter 
 \family default 
 collect profile data for the specified process group only
+\layout Description
+
+
+\family typewriter 
+---verbose 
+\family default 
+makes the daemon be much more verbose in the log file
 \layout Standard
 
 The script will insert the kernel module and start the kernel daemon and
@@ -485,6 +509,15 @@ The script will insert the kernel module and start the kernel daemon and
 /var/opd/samples
 \family default 
 .
+\layout Standard
+
+You might prefer to echo values into the sysctl proc interface, and start
+ up the daemon manually (it also has a 
+\family typewriter 
+---help
+\family default 
+ option).
+ In the future a GUI interface to the parameters will be made available.
 \layout Section
 
 Stopping profiling
@@ -608,6 +641,13 @@ oprofpp
  uses the image encoded into the sample file's filename.
 \layout Standard
 
+You can more detailed output via the 
+\family typewriter 
+---verbose
+\family default 
+ option.
+\layout Standard
+
 The 
 \family typewriter 
 -g
@@ -617,6 +657,7 @@ The
 gprof
 \family default 
  format sample file, is not currently working ...
+ sorry.
 \layout Section
 
 
@@ -794,8 +835,6 @@ echo 1 >enabled
 \layout LyX-Code
 
 oprofiled -b 65536 -u 0 -0 CPU_CLK_UNHALTED
-\layout LyX-Code
-
 \layout Section
 
 Statistical profiling
@@ -960,13 +999,18 @@ OP_MAP_BUF_WATERMARK
  buffer or the map buffer.
 \layout Standard
 
-etc.
+In fact the hash table is pretty bogus - there is a much nicer way of using
+ it by linking entries to each other, that Alex Brown suggested.
+ This should be implemented soon.
 \layout Chapter
 
 Under the hood
 \layout Section
 
 Kernel module
+\layout Standard
+
+FIXME: the info below is slightly out of date ...
 \layout Standard
 
 The local APIC is used to generate NMI interrupts.

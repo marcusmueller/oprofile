@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.19 2000/12/12 02:55:36 moz Exp $ */
+/* $Id: oprofiled.h,v 1.20 2001/01/19 00:49:43 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -50,6 +50,12 @@
 #else
 #define dprintf(args...)
 #endif
+
+#define verbprintf(args...) \
+        do { \
+		if (verbose) \
+			printf(args); \
+	} while (0)
 
 #define streq(a,b) (!strcmp((a),(b)))
 #define streqn(a,b,n) (!strncmp((a),(b),(n)))

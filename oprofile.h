@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.28 2001/01/12 21:28:44 moz Exp $ */
+/* $Id: oprofile.h,v 1.29 2001/01/19 00:49:42 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -77,6 +77,10 @@ struct _oprof_data {
 
 #ifndef APIC_SPIV_APIC_ENABLED
 #define APIC_SPIV_APIC_ENABLED (1<<8)
+#endif
+
+#ifndef __ok_unused
+#define __ok_unused __attribute((__unused))
 #endif
 
 /* oprof_data->ready will be set this many samples

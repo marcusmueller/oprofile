@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.47 2001/01/12 21:28:43 moz Exp $ */
+/* $Id: oprofile.c,v 1.48 2001/01/19 00:49:41 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -229,8 +229,10 @@ static void restore_nmi(void)
 
 static void disable_local_P6_APIC(void *dummy)
 {
+#ifndef CONFIG_X86_UP_APIC
 	ulong v;
-	uint l,h;
+	uint l;
+	uint h;
 
 	/* FIXME: maybe this should go at end of function ? */
 	/* first disable via MSR */
@@ -267,6 +269,7 @@ static void disable_local_P6_APIC(void *dummy)
 	apic_write(APIC_SPIV, v);
 
 	printk(KERN_INFO "oprofile: disabled local APIC.\n");
+#endif
 }
 
 static void __init smp_apic_setup(void *dummy)
@@ -287,9 +290,6 @@ static void __init smp_apic_setup(void *dummy)
 
 static int __init apic_setup(void)
 {
-	uint msr_low, msr_high;
-	uint val;
-
 	/* FIXME: davej says it might be possible to use PCI to find
 	   SMP systems with one CPU */
 	if (smp_num_cpus>1) {
@@ -297,11 +297,17 @@ static int __init apic_setup(void)
 		return 0;
 	}
 
-	/* map the real local APIC back in */
-	/* current kernels fake this on boot setup for UP */
-#ifndef CONFIG_X86_UP_APIC
+/* if enabled, the kernel has already set it up */
+#ifdef CONFIG_X86_UP_APIC
+	smp_apic_setup(NULL);
+	return 0;
+#else
+	{
+	uint msr_low, msr_high;
+	uint val;
+
+	/* ugly hack */
 	my_set_fixmap();
-#endif
 
 	/* FIXME: NMI delivery for SMP ? */
 
@@ -353,11 +359,17 @@ static int __init apic_setup(void)
 	val = APIC_TDR_DIV_1;
 	apic_write(APIC_TDCR, val);
 
-	smp_apic_setup(NULL);
 
 	__sti();
 
+
+	/* If the local APIC NMI watchdog has been disabled, we'll need
+	 * to set up NMI delivery anyway ...
+	 */
+	smp_apic_setup(NULL);
+
 	printk(KERN_INFO "oprofile: enabled local APIC\n");
+
 	return 0;
 
 not_local_p6_apic:
@@ -366,6 +378,8 @@ not_local_p6_apic:
 	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
 	wrmsr(MSR_IA32_APICBASE, msr_low&~(1<<11), msr_high);
 	return -ENODEV;
+	}
+#endif /* CONFIG_X86_UP_APIC */
 }
 
 /* ---------------- PMC setup ------------------ */
@@ -478,16 +492,14 @@ int oprof_thread(void *arg)
 
 	threadpid = current->pid;
 
-	lock_kernel();
 	daemonize();
 	sprintf(current->comm, "oprof-thread");
 	siginitsetinv(&current->blocked, sigmask(SIGKILL));
-        spin_lock(&current->sigmask_lock);
-        flush_signals(current);
-        spin_unlock(&current->sigmask_lock);
+	spin_lock(&current->sigmask_lock);
+	flush_signals(current);
+	spin_unlock(&current->sigmask_lock);
 	current->policy = SCHED_OTHER;
 	current->nice = -20;
-	unlock_kernel();
 
 	for (;;) {
 		for (i=0; i<smp_num_cpus; i++) {
@@ -514,6 +526,7 @@ void oprof_start_thread(void)
 
 void oprof_stop_thread(void)
 {
+	printk("stopping thread.\n"); 
 	diethreaddie = 1;
 	kill_proc(SIGKILL, threadpid, 1);
 	down(&threadstopsem);
@@ -906,9 +919,6 @@ int __init oprof_init(void)
 {
 	int err;
 
-	if ((err = init_sysctl()))
-		return err;
-
 	if (!hw_ok())
 		return -EINVAL;
 
@@ -916,6 +926,9 @@ int __init oprof_init(void)
 
 	if ((err = apic_setup()))
 		return err;
+
+	if ((err = init_sysctl()))
+		goto out_err;
 
 	if ((err = smp_call_function(smp_apic_setup,NULL,0,1)))
 		goto out_err;

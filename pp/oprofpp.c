@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.21 2000/12/15 02:52:13 moz Exp $ */
+/* $Id: oprofpp.c,v 1.22 2001/01/19 00:49:45 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -28,6 +28,7 @@
 #include "oprofpp.h"
  
 static int showvers;
+static int verbose; 
  
 static char const *samplefile;
 static char *basedir="/var/opd";
@@ -58,6 +59,7 @@ static struct poptOption options[] = {
 	{ "gcc-demangle", 'd', POPT_ARG_NONE, &demangle, 0, "demangle GNU C++ symbol names", NULL, },
 	{ "counter", 'c', POPT_ARG_INT, &ctr, 0, "which counter to use", "0|1", }, 
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
+	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
 	{ "base-dir", 'b', POPT_ARG_STRING, &basedir, 0, "base directory of profile daemon", NULL, }, 
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
@@ -253,7 +255,6 @@ bfd *open_image_file(char const *mangled)
 	}
 	 
 	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) { 
-		free(matching); 
 		fprintf(stderr,"oprofpp: BFD format failure for %s.\n",file);
 		exit(1);
 	}
@@ -266,7 +267,7 @@ bfd *open_image_file(char const *mangled)
  
 		sect = bfd_get_section_by_name(ibfd, ".text");
 		sect_offset = OPD_KERNEL_OFFSET - sect->filepos;
-		printf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n",sect_offset,sect->filepos); 
+		verbprintf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n",sect_offset,sect->filepos); 
 	}
  
 	return ibfd; 
@@ -397,11 +398,11 @@ uint get_symbols(bfd *ibfd, asymbol ***symsp)
  */
 void get_symbol_range(asymbol *sym, asymbol *next, u32 *start, u32 *end)
 {
-	printf("Symbol %s, value 0x%lx\n",sym->name, sym->value); 
+	verbprintf("Symbol %s, value 0x%lx\n",sym->name, sym->value); 
 	*start = sym->value;
 	/* offset of section */
 	*start += sym->section->filepos;
-	printf("in section %s, filepos 0x%lx\n",sym->section->name, sym->section->filepos);
+	verbprintf("in section %s, filepos 0x%lx\n",sym->section->name, sym->section->filepos);
 	/* adjust for kernel image */
 	*start += sect_offset;
 	if (next) {
@@ -412,7 +413,7 @@ void get_symbol_range(asymbol *sym, asymbol *next, u32 *start, u32 *end)
 		*end += sect_offset;
 	} else
 		*end = nr_samples;
-	printf("start 0x%x, end 0x%x\n",*start,*end); 
+	verbprintf("start 0x%x, end 0x%x\n",*start,*end); 
 }
  
 struct opp_count {
@@ -476,7 +477,7 @@ void do_list_symbols(void)
 
 		for (j=start; j < end; j++) {
 			if (samples[j].count0)
-				printf("Adding %u samples for symbol $%s$ at pos j 0x%x\n",samples[j].count0,syms[i]->name,j);
+				verbprintf("Adding %u samples for symbol $%s$ at pos j 0x%x\n",samples[j].count0,syms[i]->name,j);
 			scounts[i].count0 += samples[j].count0;
 			scounts[i].count1 += samples[j].count1;
 			tot0 += samples[j].count0;

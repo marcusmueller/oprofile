@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.15 2001/01/12 21:28:43 moz Exp $)
+AC_REVISION($Id: configure.in,v 1.16 2001/01/19 00:49:41 moz Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -106,10 +106,16 @@ MODVERSIONS=""
 test "$mv" = 1 && MODVERSIONS="-DMODVERSIONS"
 AC_SUBST(MODVERSIONS)
 
-AC_MSG_CHECKING(for local APIC)
-AX_COMPILE_OPTION(CONFIG_X86_LOCAL_APIC,apic=1,apic=0)
-AX_MSG_RESULT_YN($apic)
-test "$apic" = 0 && AC_MSG_ERROR(local APIC not configured)
+# this serves to ensure that CONFIG_X86_UP_IOAPIC *or* CONFIG_X86_UP_APIC
+# have been selected. The first case means we have to do APIC setup ourselves,
+# the second case, it is important NOT to do it !
+# in SMP, I have NO idea... 
+if test "$smp" = 0; then 
+  AC_MSG_CHECKING(for local APIC)
+  AX_COMPILE_OPTION(CONFIG_X86_LOCAL_APIC,apic=1,apic=0)
+  AX_MSG_RESULT_YN($apic)
+  test "$apic" = 0 && AC_MSG_ERROR(local APIC not configured)
+fi
 
 AC_MSG_CHECKING(for do_nmi patch)
 nmipatch=0

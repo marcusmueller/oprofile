@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.16 2000/12/12 02:55:35 moz Exp $
+# $Id: op_start,v 1.17 2001/01/19 00:49:43 moz Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -40,6 +40,7 @@ MAP_FILE=
 VMLINUX=
 PID_FILTER=0
 PGRP_FILTER=0
+VERBOSE=0 
 
 help_string='op_start: usage:$
 Module options$
@@ -71,6 +72,7 @@ Daemon options$
   --hash-map-device-file=file  profile hash map device file$
   --map-file=file              System.map for running kernel file$
   --vmlinux=file               vmlinux kernel image$
+  --verbose                    be verbose in the daemon log$
 $
 General options$
   --list-events                list event types and unit masks$
@@ -165,6 +167,9 @@ do
 		--pgrp-filter)
 			PGRP_FILTER=$val
 			;;
+		--verbose)
+			VERBOSE=1
+			;;
 		--help)
 			echo $help_string | tr \$ '\n'
 			exit 0
@@ -221,26 +226,28 @@ if [ "$HASH_MAP_DEVICE_FILE" = "" ]; then
 	HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
 fi
 
-echo "Parameters used:"
-echo "BUF_SIZE $BUF_SIZE"
-echo "HASH_SIZE $HASH_SIZE"
-echo "CTR0_EVENT $CTR0_EVENT"
-echo "CTR1_EVENT $CTR1_EVENT"
-echo "CTR0_UM $CTR0_UM"
-echo "CTR1_UM $CTR1_UM"
-echo "CTR0_COUNT $CTR0_COUNT"
-echo "CTR1_COUNT $CTR1_COUNT"
-echo "CTR0_OSUSR $CTR0_OSUSR"
-echo "CTR1_OSUSR $CTR1_OSUSR"
-echo "USE_PII $USE_PII"
-echo "IGNORE_MYSELF $IGNORE_MYSELF"
-echo "DIR $DIR"
-echo "LOG_FILE $LOG_FILE"
-echo "SAMPLES_DIR $SAMPLES_DIR"
-echo "DEVICE_FILE $DEVICE_FILE"
-echo "MAP_DEVICE_FILE $MAP_DEVICE_FILE"
-echo "MAP_FILE $MAP_FILE"
-echo "VMLINUX $VMLINUX"
+if [ "$VERBOSE" = "1" ]; then 
+  echo "Parameters used:"
+  echo "BUF_SIZE $BUF_SIZE"
+  echo "HASH_SIZE $HASH_SIZE"
+  echo "CTR0_EVENT $CTR0_EVENT"
+  echo "CTR1_EVENT $CTR1_EVENT"
+  echo "CTR0_UM $CTR0_UM"
+  echo "CTR1_UM $CTR1_UM"
+  echo "CTR0_COUNT $CTR0_COUNT"
+  echo "CTR1_COUNT $CTR1_COUNT"
+  echo "CTR0_OSUSR $CTR0_OSUSR"
+  echo "CTR1_OSUSR $CTR1_OSUSR"
+  echo "USE_PII $USE_PII"
+  echo "IGNORE_MYSELF $IGNORE_MYSELF"
+  echo "DIR $DIR"
+  echo "LOG_FILE $LOG_FILE"
+  echo "SAMPLES_DIR $SAMPLES_DIR"
+  echo "DEVICE_FILE $DEVICE_FILE"
+  echo "MAP_DEVICE_FILE $MAP_DEVICE_FILE"
+  echo "MAP_FILE $MAP_FILE"
+  echo "VMLINUX $VMLINUX"
+fi
 
 >$LOG_FILE
 
@@ -260,19 +267,25 @@ fi
 
 if [ -c "$DEVICE_FILE" ]
 then
+	if [ "$VERBOSE" = "1" ]; then 
 	echo "Removing $DEVICE_FILE"
+	fi 
 	rm "$DEVICE_FILE"
 fi
 
 if [ -c "$MAP_DEVICE_FILE" ]
 then
+	if [ "$VERBOSE" = "1" ]; then 
 	echo "Removing $MAP_DEVICE_FILE"
+	fi 
 	rm "$MAP_DEVICE_FILE"
 fi
 
 if [ -c "$HASH_MAP_DEVICE_FILE" ]
 then
+	if [ "$VERBOSE" = "1" ]; then 
 	echo "Removing $HASH_MAP_DEVICE_FILE"
+	fi 
 	rm "$HASH_MAP_DEVICE_FILE"
 fi
 
@@ -292,7 +305,9 @@ fi
 
 MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
 
+if [ "$VERBOSE" = "1" ]; then 
 echo "Doing mknod $DEVICE_FILE"
+fi 
 mknod "$DEVICE_FILE" c $MAJOR_NR 0
 if [ "$?" != "0" ]
 then
@@ -301,7 +316,9 @@ then
 fi
 chmod 700 "$DEVICE_FILE"
  
+if [ "$VERBOSE" = "1" ]; then 
 echo "Doing mknod $HASH_MAP_DEVICE_FILE"
+fi 
 mknod "$HASH_MAP_DEVICE_FILE" c $MAJOR_NR 1
 if [ "$?" != "0" ]
 then
@@ -310,7 +327,9 @@ then
 fi
 chmod 700 "$HASH_MAP_DEVICE_FILE"
 
+if [ "$VERBOSE" = "1" ]; then 
 echo "Doing mknod $MAP_DEVICE_FILE"
+fi 
 mknod "$MAP_DEVICE_FILE" c $MAJOR_NR 2
 if [ "$?" != "0" ]
 then
@@ -319,7 +338,9 @@ then
 fi
 chmod 700 "$MAP_DEVICE_FILE"
 
-op_stop
+# stop any existing daemon
+
+op_stop >/dev/null
 
 $SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE
 $SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE
@@ -358,6 +379,10 @@ if [ "$CTR1_EVENT" != "" ]; then
 fi
 if [ "$MAP_FILE" != "" ]; then
 	OPD_ARGS="$OPD_ARGS --map-file=$MAP_FILE"
+fi
+
+if [ "$VERBOSE" = "1" ]; then
+	OPD_ARGS="$OPD_ARGS --verbose"
 fi
 
 oprofiled $OPD_ARGS

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.21 2000/12/12 02:55:35 moz Exp $ */
+/* $Id: oprofiled.c,v 1.22 2001/01/19 00:49:43 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -20,6 +20,7 @@
 extern struct opd_footer footer;
 
 static int showvers;
+int verbose; 
 
 static u8 ctr0_type_val;
 static u8 ctr1_type_val;
@@ -67,6 +68,7 @@ static struct poptOption options[] = {
 	{ "map-file", 'f', POPT_ARG_STRING, &systemmapfilename, 0, "System.map for running kernel file", "file", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
+	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
@@ -303,7 +305,7 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 	opd_stats[OPD_DUMP_COUNT]++;
 
 	for (i=0; i < count/sizeof(struct op_sample); i++) {
-		dprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n", i, opd_buf[i].eip, opd_buf[i].pid, opd_buf[i].count);
+		verbprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n", i, opd_buf[i].eip, opd_buf[i].pid, opd_buf[i].count);
 
 		if (ignore_myself && opd_buf[i].pid==mypid)
 			continue;
