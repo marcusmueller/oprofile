@@ -16,57 +16,75 @@
 
 #include "apic_compat.h"
 
-/* see sect 5.10, intel x86 system programming manual */
-/* and sect 4.8.4, pg 112, amd x86-64 system programming manual */
-
 #define NMI_GATE_TYPE 14
 #define NMI_VECTOR_NUM 2
+
+
+#ifndef CONFIG_X86_64
+
+#define NMI_DPL_LEVEL 0
+
+/* copied from kernel 2.4.19 : arch/i386/traps.c */
 
 struct gate_struct {
 	u32 a;
 	u32 b;
-#ifdef CONFIG_X86_64
-	u32 c;
-	u32 d;
-#endif /* CONFIG_X86_64 */
-} __attribute__((__packed__));
+} __attribute__((packed));
 
-#define SET_BITS(dest,val,mask) ((dest) = ((dest) & ~(mask)) | ((val) & (mask)))
+#define _set_gate(gate_addr,type,dpl,addr) \
+do { \
+  int __d0, __d1; \
+  __asm__ __volatile__ ("movw %%dx,%%ax\n\t" \
+	"movw %4,%%dx\n\t" \
+	"movl %%eax,%0\n\t" \
+	"movl %%edx,%1" \
+	:"=m" (*((long *) (gate_addr))), \
+	 "=m" (*(1+(long *) (gate_addr))), "=&a" (__d0), "=&d" (__d1) \
+	:"i" ((short) (0x8000+(dpl<<13)+(type<<8))), \
+	 "3" ((char *) (addr)),"2" (__KERNEL_CS << 16)); \
+} while (0)
 
-#define SET_GATE_SELECTOR(gate,sel)     SET_BITS((gate).a, ((sel) << 16), 0xffff0000)
-#define SET_GATE_TARGET_LOW(gate,targ)  SET_BITS((gate).a, (targ), 0x0000ffff)
-#define SET_GATE_TARGET_MID(gate,targ)  SET_BITS((gate).b, (targ), 0xffff0000)
-#define SET_GATE_ZERO1(gate,val)        SET_BITS((gate).b, ((val) << 5), 0xe0)
-#define SET_GATE_S(gate,s)              SET_BITS((gate).b, ((s) << 12), 0x1000)
-#define SET_GATE_DPL(gate,dpl)          SET_BITS((gate).b, ((dpl) << 13), 0x6000)
-#define SET_GATE_P(gate,p)              SET_BITS((gate).b, ((p) << 15), 0x8000)
-#define SET_GATE_TYPE(gate,type)        SET_BITS((gate).b, ((type) << 8), 0xf00)
-#define SET_GATE_TARGET_HIGH(gate,targ) SET_BITS((gate).c, ((targ) >> 32), 0xffffffff)
-#define SET_GATE_CONSTANT_BITS(gate)    SET_BITS((gate).d, 0, 0x1f00) 
-
-static inline void _set_gate(struct gate_struct * adr, void * fnptr)
-{
-	unsigned long fn = (unsigned long)fnptr;
-	struct gate_struct tmp = *adr;
-
-#ifndef CONFIG_X86_64
-	SET_GATE_DPL(tmp, 0);
 #else /* CONFIG_X86_64 */
-	SET_GATE_DPL(tmp, 3);
-	SET_GATE_TARGET_HIGH(tmp, fn);
-	SET_GATE_CONSTANT_BITS(tmp);
+
+/* 
+ * copied + modified slightly from x86-64.org kernel 
+ * 2.1.19 : include/asm-x86_64/desc.h 
+*/
+
+#define NMI_DPL_LEVEL 3
+
+struct gate_struct {          
+	u16 offset_low;
+	u16 segment; 
+	unsigned ist : 3, zero0 : 5, type : 5, dpl : 2, p : 1;
+	u16 offset_middle;
+	u32 offset_high;
+	u32 zero1; 
+} __attribute__((packed));
+
+#define PTR_LOW(x) ((unsigned long)(x) & 0xFFFF) 
+#define PTR_MIDDLE(x) (((unsigned long)(x) >> 16) & 0xFFFF)
+#define PTR_HIGH(x) ((unsigned long)(x) >> 32)
+
+static inline void _set_gate(void * adr, unsigned type, unsigned dpl, void * fn)
+{
+	struct gate_struct s;
+	unsigned long func = (unsigned long)fn;
+	s.offset_low = PTR_LOW(func);
+	s.segment = __KERNEL_CS;
+	s.ist = 0;
+	s.p = 1;
+	s.dpl = dpl;
+	s.zero0 = 0;
+	s.zero1 = 0;
+	s.type = type;
+	s.offset_middle = PTR_MIDDLE(func);
+	s.offset_high = PTR_HIGH(func);
+	/* does not need to be atomic because it is only done once at setup time */ 
+	memcpy(adr, &s, 16); 
+} 
+
 #endif /* CONFIG_X86_64 */
-
-	SET_GATE_TARGET_LOW(tmp, fn);
-	SET_GATE_TARGET_MID(tmp, fn);
-	SET_GATE_ZERO1(tmp, 0);
-	SET_GATE_S(tmp, 0);
-	SET_GATE_TYPE(tmp, NMI_GATE_TYPE);
-	SET_GATE_P(tmp, 1);
-	SET_GATE_SELECTOR(tmp, __KERNEL_CS);
-
-	*adr = tmp;
-};
 	
 #define store_idt(addr) \
 	do { \
@@ -79,11 +97,6 @@ struct _descr {
 	u16 limit; 
 	struct gate_struct * base; 
 } __attribute__((__packed__));
-
-/* read/write of perf counters */
-#define get_perfctr(l,h,c) do { rdmsr(perfctr_msr[(c)], (l), (h)); } while (0)
-#define set_perfctr(l,c) do { wrmsr(perfctr_msr[(c)], -(u32)(l), -1); } while (0)
-#define ctr_overflowed(n) (!((n) & (1U<<31)))
 
 void lvtpc_apic_setup(void *dummy);
 void lvtpc_apic_restore(void *dummy);

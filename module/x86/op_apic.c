@@ -54,7 +54,7 @@ void install_nmi(void)
 
 	store_idt(descr);
 	kernel_nmi = descr.base[NMI_VECTOR_NUM];
-	_set_gate(&descr.base[NMI_VECTOR_NUM], &op_nmi);
+	_set_gate(&descr.base[NMI_VECTOR_NUM], NMI_GATE_TYPE, NMI_DPL_LEVEL, &op_nmi);
 
 	smp_call_function(unmask_lvtpc, NULL, 0, 1);
 	unmask_lvtpc(NULL);
