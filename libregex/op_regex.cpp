@@ -272,34 +272,33 @@ void setup_regex(regular_expression_replace & regex,
 			continue;
 		string temp = str;
 		var_name.execute(temp);
-		if (temp != str) {
+		if (temp == str) {
+			temp = str;
+			left_rule.execute(temp);
+			if (temp == str) {
+				throw bad_regex("invalid input file: " +
+						'"' + str + '"');
+			}
+
+			string left = temp;
+			temp = str;
+			right_rule.execute(temp);
+			if (temp == str) {
+				throw bad_regex("invalid input file: "
+						+ '"' + str + '"');
+			}
+
+			regex.add_pattern(left, temp);
+		} else {
 			string name = temp;
 			temp = str;
 			var_value.execute(temp);
-			if (temp != str) {
-				regex.add_definition(name, temp);
-			} else {
+			if (temp == str) {
 				throw bad_regex("invalid input file: " +
 						'"' + str + '"');
 			}
-		} else {
-			temp = str;
-			left_rule.execute(temp);
-			if (temp != str) {
-				string left = temp;
-				temp = str;
-				right_rule.execute(temp);
-				if (temp != str) {
-					regex.add_pattern(left, temp);
-				} else {
-					throw bad_regex("invalid input file: "
-							+ '"' + str + '"');
-				}
-			} else {
-				throw bad_regex("invalid input file: " +
-						'"' + str + '"');
-			}
+
+			regex.add_definition(name, temp);
 		}
 	}
 }
-

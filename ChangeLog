@@ -1,5 +1,9 @@
 2003-04-06  John Levon  <levon@movementarian.org>
 
+	* libregex/op_regexp.cpp: re-arrange a bit
+
+2003-04-06  John Levon  <levon@movementarian.org>
+
 	* configure.in:
 	* all Makefile.am: don't blindly set $LIBS, use
 	explicit mention of which libs are needed.
