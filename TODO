@@ -12,9 +12,6 @@ o determine where we need ctx_sw_on/off to prevent pre-emption + test
  
 o move .oprofile to name=value pairs to avoid conflicts on change.
  
-o support for ignore list for all symbol post-prof stuff. This is especially
-  useful for oprofpp -l vmlinux, where we want to ignore default_idle and cpu_idle
- 
 Later
 -----
 

@@ -1,22 +1,22 @@
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
 
-/* Define if you have the `bfd' library (-lbfd). */
-#undef HAVE_LIBBFD
+/* Define if the X Window System is missing or not being used.  */
+#undef X_DISPLAY_MISSING
 
-/* Define if you have the `dl' library (-ldl). */
-#undef HAVE_LIBDL
-
-/* Define if you have the `iberty' library (-liberty). */
-#undef HAVE_LIBIBERTY
-
-/* Define if you have the <libiberty.h> header file. */
-#undef HAVE_LIBIBERTY_H
-
-/* Define if you have the `popt' library (-lpopt). */
-#undef HAVE_LIBPOPT
-
-/* Define if you have the `xcalloc' function. */
+/* Define if you have the xcalloc function.  */
 #undef HAVE_XCALLOC
 
-/* Define if the X Window System is missing or not being used. */
-#undef X_DISPLAY_MISSING
+/* Define if you have the <libiberty.h> header file.  */
+#undef HAVE_LIBIBERTY_H
+
+/* Define if you have the bfd library (-lbfd).  */
+#undef HAVE_LIBBFD
+
+/* Define if you have the dl library (-ldl).  */
+#undef HAVE_LIBDL
+
+/* Define if you have the iberty library (-liberty).  */
+#undef HAVE_LIBIBERTY
+
+/* Define if you have the popt library (-lpopt).  */
+#undef HAVE_LIBPOPT

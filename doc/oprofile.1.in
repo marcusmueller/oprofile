@@ -192,6 +192,10 @@ show version
 verbose output
 .br
 .TP
+.BI "--exclude-symbol " symbol ", -e "symbol
+exclude list of comma separated symbol
+.br
+.TP
 .BI "--base-dir " dir_name ", -b "dirname
 base directory of profile daemon
 .PP
@@ -260,6 +264,10 @@ show version
 .TP
 .BI "--verbose -V"
 verbose output
+.br
+.TP
+.BI "--exclude-symbol " symbol ", -e "symbol
+exclude list of comma separated symbol
 .br
 .TP
 .BI "--base-dir " dirname ", -b "dirname

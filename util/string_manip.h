@@ -20,6 +20,7 @@
 #define STRING_MANIP_H
 
 #include <string>
+#include <vector>
 
 string erase_from_last_of(string const & str, char ch);
 string erase_to_last_of(string const & str, char ch);
@@ -28,5 +29,9 @@ std::string rtrim(std::string const & str, char ch);
 
 /// conversion to std::string
 std::string tostr(unsigned int i);
+
+/// separate_token - separate a list of token
+void separate_token(std::vector<std::string> & result, const string & str,
+		    char sep);
 
 #endif /* !STRING_MANIP_H */

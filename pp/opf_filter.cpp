@@ -90,10 +90,6 @@ class filename_match {
 	bool match(const string & filename);
 
  private:
-	/// ctor helper.
-	static void build_pattern(vector<string> & result,
-				  const string & patterns);
-
 	/// match helper
 	static bool match(const vector<string> & patterns,
 			  const string & filename);
@@ -285,8 +281,8 @@ inline double do_ratio(size_t counter, size_t total)
 filename_match::filename_match(const string & include_patterns,
 			       const string & exclude_patterns)
 {
-	build_pattern(include_pattern, include_patterns);
-	build_pattern(exclude_pattern, exclude_patterns);
+	separate_token(include_pattern, include_patterns, ',');
+	separate_token(exclude_pattern, exclude_patterns, ',');
 }
 
 bool filename_match::match(const string & filename)
@@ -335,28 +331,6 @@ bool filename_match::match(const vector<string> & patterns,
 	}
 
 	return ok;
-}
-
-void filename_match::build_pattern(vector<string> & result,
-				   const string & patterns)
-{
-	string temp = patterns;
-
-	// separate the patterns
-	size_t last_pos = 0;
-	for (size_t pos = 0 ; pos != temp.length() ; ) {
-		pos = temp.find_first_of(',', last_pos);
-		if (pos == string::npos)
-			pos = temp.length();
-
-		string pat = temp.substr(last_pos, pos - last_pos);
-
-		// Do we need to strip leading/trailing blank in pat ?
-		result.push_back(pat);
-
-		if (pos != temp.length())
-			last_pos = pos + 1;
-	}
 }
 
 //--------------------------------------------------------------------------
@@ -1088,6 +1062,7 @@ static struct poptOption options[] = {
         { "no-output", 0, POPT_ARG_STRING, &no_output_filter, 0, "no output filename filter", "filter string" },
 	{ "assembly", 'a', POPT_ARG_NONE, &assembly, 0, "output assembly code", NULL },
 	{ "source-with-assembly", 's', POPT_ARG_NONE, &source_with_assembly, 0, "output assembly code mixed with source", NULL },
+	{ "--exclude-symbol", 'e', POPT_ARG_STRING, &exclude_symbols_str, 0, "exclude these comma separated symbols", "symbol_name" },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },

@@ -780,6 +780,13 @@ Some interesting options of the post-processor :
 		Add filename::linenr info for all samples, usable only with &mdash;list-all-symbols-details, &mdash;list-symbol and &mdash;list-symbols.
 		</para></listitem>
 	</varlistentry>
+	<varlistentry>
+		<term><option>&mdash;exclude-symbol</option> symbol[,symbol]</term>
+		<term><option>-e</option> symbol[,symbol]</term>
+		<listitem><para>
+		exclude list of comma separated symbol
+		</para></listitem>
+	</varlistentry>
 </variablelist>
 </para>
 
@@ -903,6 +910,13 @@ The options allowed are :
 		<term><option>-i </option>  <filename>filename</filename></term>
 		<listitem><para>
 		Specify the image file.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>&mdash;exclude-symbol</option> symbol[,symbol]</term>
+		<term><option>-e</option> symbol[,symbol]</term>
+		<listitem><para>
+		exclude list of comma separated symbol
 		</para></listitem>
 	</varlistentry>
 </variablelist>

@@ -21,6 +21,7 @@
 #include "string_manip.h"
 
 using std::string;
+using std::vector;
 
 
 /**
@@ -94,4 +95,30 @@ string tostr(unsigned int i)
 	std::ostringstream ss(str);
 	ss << i;
 	return ss.str(); 
+}
+
+/**
+ * separate_token - separate a list of token
+ * @result: where to put results
+ * @str: the string to tokenize
+ * @ch: the separator_char
+ *
+ */
+void separate_token(vector<string> & result, const string & str, char sep)
+{
+	string temp = str;
+
+	size_t last_pos = 0;
+	for (size_t pos = 0 ; pos != temp.length() ; ) {
+		pos = temp.find_first_of(sep, last_pos);
+		if (pos == string::npos)
+			pos = temp.length();
+
+		string token = temp.substr(last_pos, pos - last_pos);
+
+		result.push_back(token);
+
+		if (pos != temp.length())
+			last_pos = pos + 1;
+	}
 }

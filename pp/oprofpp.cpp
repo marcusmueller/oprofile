@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.15 2001/12/05 21:25:26 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.16 2001/12/23 21:15:10 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -41,6 +41,7 @@ static poptOption options[] = {
 	{ "base-dir", 'b', POPT_ARG_STRING, &basedir, 0, "base directory of profile daemon", NULL, }, 
 	{ "list-all-symbols-details", 'L', POPT_ARG_NONE, &list_all_symbols_details, 0, "list samples for all symbols", NULL, },
 	{ "output-linenr-info", 'o', POPT_ARG_NONE, &output_linenr_info, 0, "output filename:linenr info", NULL },
+	{ "--exclude-symbol", 'e', POPT_ARG_STRING, &exclude_symbols_str, 0, "exclude these comma separated symbols", "symbol_name" },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
@@ -258,6 +259,9 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd) const
 	opd_write_u8(fp, GMON_TAG_TIME_HIST);
 
 	for (i = 0; i < abfd.syms.size(); i++) {
+		if (is_excluded_symbol(abfd.syms[i]->name))
+			continue;
+
 		start = abfd.syms[i]->value + abfd.syms[i]->section->vma;
 		if (i == abfd.syms.size() - 1) {
 			abfd.get_symbol_range(i, start, end);

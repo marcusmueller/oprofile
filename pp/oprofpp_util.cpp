@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.12 2001/12/22 18:01:52 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.13 2001/12/23 21:15:10 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -21,6 +21,7 @@
 
 #include "oprofpp.h"
 #include "../util/file_manip.h"
+#include "../util/string_manip.h"
  
 int verbose;
 char const *samplefile;
@@ -31,6 +32,8 @@ int list_all_symbols_details;
 /* counter k is selected if (ctr == -1 || ctr == k), if ctr == -1 counter 0
  * is used for sort purpose */
 int ctr = -1;
+const char * exclude_symbols_str;
+static std::vector<std::string> exclude_symbols;
 
 /**
  * remangle - convert a filename into the related sample file name
@@ -83,6 +86,18 @@ std::string demangle_filename(const std::string & samples_filename)
 }
 
 /**
+ * is_excluded_symbol - check if the symbol is in the exclude list
+ * @symbol: symbol name to check
+ *
+ * return true if @symbol is in the list of excluded symbol
+ */
+bool is_excluded_symbol(const std::string & symbol)
+{
+	return std::find(exclude_symbols.begin(), exclude_symbols.end(),
+			 symbol) != exclude_symbols.end();
+}
+
+/**
  * quit_error - quit with error
  * @err: error to show
  *
@@ -122,6 +137,11 @@ void opp_treat_options(const char* file, poptContext optcon)
 {
 	char *file_ctr_str;
 	int counter;
+
+	/* add to the exclude symbol list the symbols contained in the comma
+	 * separated list of symbols */
+	if (exclude_symbols_str)
+		separate_token(exclude_symbols, exclude_symbols_str, ',');
 
 	/* some minor memory leak from the next calls */
 	if (imagefile)
@@ -536,14 +556,19 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 	verbprintf("in section %s, filepos 0x%lx\n", sym->section->name, sym->section->filepos);
 	/* adjust for kernel image */
 	start += sect_offset;
-	if (next) {
-		end = next->value;
-		/* offset of section */
-		end += next->section->filepos;
-		/* adjust for kernel image */
-		end += sect_offset;
-	} else
-		end = nr_samples;
+
+	if (is_excluded_symbol(sym->name)) {
+		end = start;
+	} else {
+		if (next) {
+			end = next->value;
+			/* offset of section */
+			end += next->section->filepos;
+			/* adjust for kernel image */
+			end += sect_offset;
+		} else
+			end = nr_samples;
+	}
 	verbprintf("start 0x%x, end 0x%x\n", start, end); 
 
 	if (start >= nr_samples) {

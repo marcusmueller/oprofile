@@ -1,3 +1,17 @@
+2001-12-23  Philippe Elie  <ph_e@club-internet.fr>
+
+	* util/string_manip.h:
+	* util/string_manip.cpp: separate_token() new function
+
+	* pp/opf_filter.cpp:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp:
+	* doc/oprofil.1.in:
+	* doc/oprofile.sgml: add support for --exclude-symbol
+
+	* TODO: update
+
 2001-12-22  Philippe Elie  <ph_e@club-internet.fr>
 
 	* dae/op_start: add --separate-samples
