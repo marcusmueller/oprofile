@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.86 2001/09/12 05:21:57 movement Exp $ */
+/* $Id: oprofile.c,v 1.87 2001/09/12 14:30:20 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -721,11 +721,12 @@ out:
 static int oprof_stop(void)
 {
 	uint i;
-
-	if (!prof_on)
-		return -EINVAL;
+	int err = -EINVAL;
 
 	down(&sysctlsem);
+
+	if (!prof_on)
+		goto out;
 
 	/* here we need to :
 	 * bring back the old system calls
@@ -760,9 +761,11 @@ static int oprof_stop(void)
 
 	spin_unlock(&note_lock);
 	spin_unlock(&map_lock);
+	err = 0; 
 
+out:
 	up(&sysctlsem);
-	return 0;
+	return err;
 }
 
 static struct file_operations oprof_fops = {
@@ -831,11 +834,11 @@ static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *
 	int err = -EINVAL;
 	int i,j;
 
-	if (!prof_on)
-		return err;
-
 	down(&sysctlsem);
 	
+	if (!prof_on)
+		goto out;
+
 	for (cpu=0; cpu < smp_num_cpus; cpu++)
 		printk("oprofile: CPU%u: %u interrupts\n", cpu, op_irq_stats[cpu]);
  
@@ -843,8 +846,6 @@ static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *
 		err = proc_dointvec(table, write, filp, buffer, lenp);
 		goto out;
 	}
- 
-	err = 0;
  
 	/* clean out the hash table as far as possible */
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
@@ -860,7 +861,7 @@ static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *
 		pmc_select_start(cpu);
 	}
 	wake_up(&oprof_wait);
-	
+	err = 0;
 out:
 	up(&sysctlsem);
 	return err;

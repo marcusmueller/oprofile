@@ -1,5 +1,10 @@
 2001-09-12  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprofile.c: fix small but triggerable
+	  SMP dump race
+ 
+2001-09-12  John Levon  <moz@compsoc.man.ac.uk>
+
 	* oprofile.h:
 	* oprofile.c:
 	* op_x86.c: move some code about
