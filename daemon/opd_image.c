@@ -144,7 +144,7 @@ static void opd_init_image(struct opd_image * image, cookie_t cookie,
 	/* FIXME: if dcookie lookup fail we will re open multiple time the
 	 * same db which doesn't work */
 	if (lookup_dcookie(cookie, buf, PATH_MAX) <= 0) {
-		fprintf(stderr, "Lookup of cookie %Lx failed, errno=%d\n",
+		fprintf(stderr, "Lookup of cookie %llx failed, errno=%d\n",
 		       cookie, errno); 
 		exit(EXIT_FAILURE);
 	}
@@ -152,7 +152,7 @@ static void opd_init_image(struct opd_image * image, cookie_t cookie,
 	image->name = xstrdup(buf);
  
 	if (lookup_dcookie(app_cookie, buf, PATH_MAX) <= 0) {
-		fprintf(stderr, "Lookup of cookie %Lx failed, errno=%d\n",
+		fprintf(stderr, "Lookup of cookie %llx failed, errno=%d\n",
 			cookie, errno); 
 		exit(EXIT_FAILURE);
 	}
@@ -364,12 +364,12 @@ static void opd_put_sample(struct opd_image * image, char const * buffer, size_t
 	unsigned long event = get_buffer_value(buffer, index + 1);
  
 	if (opd_eip_is_kernel(eip)) {
-		verbprintf("Kernel sample 0x%Lx, counter %Lu\n",
-			(u_int64_t)eip, (u_int64_t)event);
+		verbprintf("Kernel sample 0x%llx, counter %lu\n",
+			eip, event);
 		opd_handle_kernel_sample(eip, event);
 	} else {
-		verbprintf("Image (%s) offset 0x%Lx, counter %Lu\n",
-			image->name, (u_int64_t)eip, (u_int64_t)event);
+		verbprintf("Image (%s) offset 0x%llx, counter %lu\n",
+			image->name, eip, event);
 		opd_put_image_sample(image, eip, event);
 	}
 }
@@ -414,7 +414,7 @@ void opd_process_samples(char const * buffer, size_t count)
 			case COOKIE_SWITCH_CODE:
 				cookie = get_buffer_value(buffer, i);
 				image = opd_get_image(cookie, app_cookie);
-				verbprintf("COOKIE_SWITCH to cookie %Lx (%s)\n", cookie, image->name); 
+				verbprintf("COOKIE_SWITCH to cookie %llx (%s)\n", cookie, image->name); 
 				++i;
 				break;
  

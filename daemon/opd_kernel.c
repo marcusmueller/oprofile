@@ -56,14 +56,14 @@ void opd_init_kernel_image(void)
  */
 void opd_parse_kernel_range(char const * arg)
 {
-	sscanf(arg, "%Lx,%Lx", &kernel_start, &kernel_end);
+	sscanf(arg, "%llx,%llx", &kernel_start, &kernel_end);
 
-	verbprintf("OPD_PARSE_KERNEL_RANGE: kernel_start = %Lx, kernel_end = %Lx\n",
+	verbprintf("OPD_PARSE_KERNEL_RANGE: kernel_start = %llx, kernel_end = %llx\n",
 		   kernel_start, kernel_end);
 
 	if (kernel_start == 0x0 || kernel_end == 0x0) {
 		fprintf(stderr,
-			"Warning: mis-parsed kernel range: %Lx-%Lx\n",
+			"Warning: mis-parsed kernel range: %llx-%llx\n",
 			kernel_start, kernel_end);
 		fprintf(stderr, "kernel profiles will be wrong.\n");
 	}
@@ -239,8 +239,8 @@ static void opd_get_module_info(void)
 				}
 
 				cp2 += 7;
-				sscanf(line,"%Lx", &mod->start);
-				sscanf(cp2,"%Lu", &mod->end);
+				sscanf(line,"%llx", &mod->start);
+				sscanf(cp2,"%llu", &mod->end);
 				mod->end += mod->start;
 				break;
 		}

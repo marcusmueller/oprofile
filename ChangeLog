@@ -1,5 +1,13 @@
 2003-01-18  Falk Hueffner  <falk@debian.org>
 
+	I added to the original patch all %L to %ll, Phil
+
+	* daemon/opd_image.c:
+	* daemon/opd_kernel.c:
+	* libutil/op_types.h: 64 bits printf/scanf safety.
+
+2003-01-18  Falk Hueffner  <falk@debian.org>
+
 	* libop/op_cpu_type.h:
 	* libop/op_cpu_type.c: add Alpha CPU families.
 	* libop/op_events.h: make op_event.cpu_mask u32, since we now have

@@ -24,10 +24,10 @@ typedef int fd_t;
 /*@}*/
 
 /** generic type for holding addresses */
-typedef u_int64_t vma_t;
+typedef unsigned long long vma_t;
 
 /** dcookie value */
-typedef u_int64_t cookie_t;
+typedef unsigned long long cookie_t;
 
 #else
 #include <linux/types.h>
