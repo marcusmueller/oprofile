@@ -122,7 +122,8 @@ parsed_filename parse_filename(string const & filename)
 				       filename);
 	}
 
-	++i;	// skip "{dep}"
+	// skip "{dep}"
+	++i;
 
 	// PP:3.19 {dep}/ must be followed by {kern}/ or {root}/
 	if (path[i] != "{kern}" && path[i] != "{root}") {
@@ -130,7 +131,8 @@ parsed_filename parse_filename(string const & filename)
 				       filename);
 	}
 
-	++i;   // skip "{root}" or "{kern}"
+	// skip "{root}" or "{kern}"
+	++i;
 
 	for (; i < path.size(); ++i) {
 		if (path[i] == "{cg}")
@@ -139,14 +141,16 @@ parsed_filename parse_filename(string const & filename)
 	}
 
 	if (i != path.size()) {
-		++i;  // skip "{cg}"
+		// skip "{cg}"
+		++i;
 		if (i == path.size() ||
 		    (path[i] != "{kern}" && path[i] != "{root}")) {
 			throw invalid_argument(
 				"parse_filename() invalid filename: " +
 				filename);
 		}
-		++i; // skip "{root}" or "{kern}"
+		// skip "{root}" or "{kern}"
+		++i;
 	}
 	for (; i < path.size(); ++i) {
 		result.cg_image += "/" + path[i];

@@ -1,3 +1,14 @@
+2004-01-19  John Levon  <levon@movementarian.org>
+
+	* libpp/callgraph_container.h:
+	* libpp/callgraph_container.cpp: rename caller_callee_recorder
+	to arc_recorder.
+
+	* doc/CodingStyle: mention trailing comments
+
+	* utils/opcontrol: fix formatting. Error if --note-table-size
+	is passed on 2.6 kernels.
+
 2004-01-18  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libdb/db_debug.c: fix build on alpha

@@ -134,7 +134,8 @@ do_help()
        cpu:      per CPU profiles
        all:      all of the above
 
-   -c/--callgraph=#depth         enable callgraph sample collection with a maximum depth. Use 0 to disable callgraph. This option is ignored with 2.2/2.4 or 2.6 kernel w/o the callgraph support patch (x86 only).
+   -c/--callgraph=#depth         enable callgraph sample collection with a maximum depth.
+                                 Use 0 to disable callgraph profiling.
 
    -i/--image=name[,names]       list of binaries to profile (default is "all")
    --vmlinux=file                vmlinux kernel image
@@ -511,7 +512,7 @@ do_options()
 
 			--start-daemon)
 				if test "$KERNEL_SUPPORT" != "yes"; then
-					echo "$arg unsupported. use \"--start\"" >& 2
+					echo "$arg unsupported. use \"--start\"" >&2
 					exit 1
 				fi
 				START_DAEMON=yes
@@ -534,7 +535,7 @@ do_options()
 
 			-t|--stop)
 				if test "$KERNEL_SUPPORT" != "yes"; then
-					echo "$arg unsupported. use \"--shutdown\"" >& 2
+					echo "$arg unsupported. use \"--shutdown\"" >&2
 					exit 1
 				fi
 				DUMP=yes
@@ -606,6 +607,10 @@ do_options()
 				;;
 			-c|--callgraph)
 				error_if_empty $arg $val
+				if test ! -f $MOUNT/backtrace_depth; then
+					echo "Call-graph profiling unsupported on this kernel/hardware" >&2
+					exit 1
+				fi
 				CALLGRAPH=$val
 				DO_SETUP=yes
 				;;
@@ -628,7 +633,8 @@ do_options()
 			--note-table-size)
 				error_if_empty $arg $val
 				if test $"KERNEL_SUPPORT" = "yes"; then
-					echo "\"$arg\" ignored. " >& 2
+					echo "\"$arg\" meaningless on this kernel" >&2
+					exit 1
 				else
 					NOTE_SIZE=$val
 				fi
@@ -849,7 +855,7 @@ do_param_setup()
 	if test "$KERNEL_SUPPORT" = "yes" -a -f $MOUNT/backtrace_depth; then
 		set_param backtrace_depth $CALLGRAPH
 	elif test "$CALLGRAPH" != "0"; then
-		echo "CALLGRAPH not supported with this kernel"
+		echo "Call-graph profiling not supported - ignored" >&2
 	fi
 
 	if test "$IS_TIMER" = 1; then

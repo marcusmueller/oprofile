@@ -33,7 +33,7 @@ using namespace std;
 namespace {
 
 /// this comparator is used to partition cg filename by identical caller
-/// allowing to avoid (partially) some redudant bfd open
+/// allowing to avoid (partially) some redundant bfd open
 /// \sa callgrap_container::populate()
 struct compare_cg_filename {
 	bool operator()(string const & lhs, string const & rhs) const;
@@ -50,11 +50,11 @@ compare_cg_filename::operator()(string const & lhs, string const & rhs) const
 }
 
 /**
- * We need 3 comparator for callgraph, the arc are sorted by self_count,
- * the caller are sorted by callee_counts in reverse order, the callee
- * by callee_counts in "direct" order, these comparator are used by
- * caller_callee_recorder::get_arc(), get_caller(), get_callee().
- * These various order are used to order in this way:
+ * We need 3 comparators for callgraph, the arcs are sorted by self_count,
+ * the callers are sorted by callee_counts in reverse order, the callees
+ * by callee_counts in "direct" order, these comparators are used by
+ * arc_recorder::get_arc(), get_caller(), get_callee(); giving ordering
+ * like:
  *
  *	caller_with_few_callee_samples
  *	caller_with_many_callee_samples
@@ -87,7 +87,7 @@ compare_cg_symbol_by_callee_count2(cg_symbol const & lhs,
 } // anonymous namespace
 
 
-caller_callee_recorder::~caller_callee_recorder()
+arc_recorder::~arc_recorder()
 {
 	map_t::iterator end = caller_callee.end();
 	for (map_t::iterator it = caller_callee.begin(); it != end; ++it) {
@@ -101,7 +101,7 @@ caller_callee_recorder::~caller_callee_recorder()
 }
 
 
-void caller_callee_recorder::fixup_callee_counts()
+void arc_recorder::fixup_callee_counts()
 {
 	// FIXME: can be optimized easily
 	iterator end = caller_callee.end();
@@ -112,14 +112,13 @@ void caller_callee_recorder::fixup_callee_counts()
 		for (; p_it.first != p_it.second; ++p_it.first) {
 			counts += p_it.first->first.sample.counts;
 		}
-		cg_symbol & symbol = const_cast<cg_symbol&>(it->first);
+		cg_symbol & symbol = const_cast<cg_symbol &>(it->first);
 		symbol.callee_counts = counts;
 	}
 }
 
 
-void caller_callee_recorder::
-add_arc(cg_symbol const & caller, cg_symbol const * callee)
+void arc_recorder::add_arc(cg_symbol const & caller, cg_symbol const * callee)
 {
 	if (callee)
 		callee = new cg_symbol(*callee);
@@ -131,7 +130,7 @@ add_arc(cg_symbol const & caller, cg_symbol const * callee)
 }
 
 
-vector<cg_symbol> caller_callee_recorder::get_arc() const
+vector<cg_symbol> arc_recorder::get_arc() const
 {
 	vector<cg_symbol> result;
 
@@ -147,7 +146,7 @@ vector<cg_symbol> caller_callee_recorder::get_arc() const
 }
 
 
-vector<cg_symbol> caller_callee_recorder::
+vector<cg_symbol> arc_recorder::
 get_callee(cg_symbol const & symbol) const
 {
 	vector<cg_symbol> result;
@@ -171,8 +170,7 @@ get_callee(cg_symbol const & symbol) const
 }
 
 
-vector<cg_symbol> caller_callee_recorder::
-get_caller(cg_symbol const & symbol) const
+vector<cg_symbol> arc_recorder::get_caller(cg_symbol const & symbol) const
 {
 	vector<cg_symbol> result;
 
@@ -195,16 +193,14 @@ get_caller(cg_symbol const & symbol) const
 }
 
 
-cg_symbol const * caller_callee_recorder::
-find_caller(cg_symbol const & symbol) const
+cg_symbol const * arc_recorder::find_caller(cg_symbol const & symbol) const
 {
 	map_t::const_iterator it = caller_callee.find(symbol);
 	return it == caller_callee.end() ? 0 : &it->first;
 }
 
 
-void callgraph_container::
-populate(list<inverted_profile> const & iprofiles)
+void callgraph_container::populate(list<inverted_profile> const & iprofiles)
 {
 	/// Normal (i.e non callgraph) samples container, we record sample
 	/// at symbol level, not at vma level.
@@ -213,7 +209,7 @@ populate(list<inverted_profile> const & iprofiles)
 	list<inverted_profile>::const_iterator it;
 	list<inverted_profile>::const_iterator const end = iprofiles.end();
 	for (it = iprofiles.begin(); it != end; ++it) {
-		// populate_caller_image take care about empty sample filename
+		// populate_caller_image is careful about empty sample filename
 		populate_for_image(symbols, *it, string_filter());
 	}
 
@@ -251,7 +247,7 @@ populate(list<inverted_profile> const & iprofiles)
 
 		// FIXME: there is some error checking needed here.
 		bool ok = true;
-		op_bfd bfd_caller(caller_file.lib_image, string_filter(), ok);
+		op_bfd caller_bfd(caller_file.lib_image, string_filter(), ok);
 		cverb << "cg subset caller: "
 		      << caller_file.lib_image  << "\n";
 
@@ -261,14 +257,14 @@ populate(list<inverted_profile> const & iprofiles)
 			cverb << "adding: " << callee_file.cg_image << endl;
 
 			// FIXME: there is some error checking needed here.
-			op_bfd bfd_callee(callee_file.cg_image,
-					  string_filter(), ok);
+			op_bfd callee_bfd(callee_file.cg_image,
+			                  string_filter(), ok);
 
 			profile_t profile;
 			// We can't use start_offset support in profile_t, give
 			// it a zero offset and we will fix that in add()
 			profile.add_sample_file(*cit, 0);
-			add(profile, bfd_caller, bfd_callee,
+			add(profile, caller_bfd, callee_bfd,
 			    app_name, symbols);
 		}
 	}
@@ -321,7 +317,7 @@ add(profile_t const & profile, op_bfd const & caller, op_bfd const & callee,
 			symb_caller.self_counts = self->sample.counts;
 
 		// Our odb_key_t contain (from_eip << 32 | to_eip), the range
-		// of key we slected above can contain different callee but
+		// of key we selected above can contain different callee but
 		// due to the ordering this callee are consecutive so we
 		// iterate over the range, then iterate over the sub-range
 		// for each distinct callee symbol.

@@ -94,8 +94,8 @@ options and 'none' turns off separation.
 .TP
 .BI "--callgraph=#depth"
 Enable callgraph sample collection with a maximum depth. Use 0 to disable
-callgraph. This option is ignored with 2.2/2.4 or 2.6 kernel w/o the
-callgraph support patch (x86 only).
+callgraph profiling. This option is currently only usable on x86, using a
+2.6+ kernel with callgraph support enabled.
 .br
 .TP
 .BI "--image="[name,name...|"all"]

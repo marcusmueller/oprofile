@@ -598,9 +598,9 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 	<varlistentry>
 		<term><option>--callgraph=</option>#depth</term>
 		<listitem><para>
-		Enable callgraph sample collection with a maximum depth. Use 0
-		to disable callgraph. This option is ignored with 2.2/2.4 or
-		2.6 kernel w/o the callgraph support patch (x86 only).
+		Enable callgraph sample collection with a maximum depth. Use 0 to disable
+		callgraph profiling. This option is currently only usable on x86, using a
+		2.6+ kernel with callgraph support enabled.
 		</para></listitem>
 	</varlistentry>
 	</varlistentry>

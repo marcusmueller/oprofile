@@ -82,7 +82,7 @@ public:
 	sample_entry const * find_sample(symbol_entry const * symbol,
 					 bfd_vma vma) const;
 
-	/// Search a symbol. Return NULL if not found.
+	/// Find a symbol. Return NULL if not found.
 	symbol_entry const * find(symbol_entry const & symbol) const;
 
 	/// used for select_symbols()

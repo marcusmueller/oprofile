@@ -25,10 +25,9 @@
 class inverted_profile;
 
 /**
- * Yes this look like weird since we store a callee_counts w/o knowning the
- * callee. It's designed in this way because it allows symetric map in
- * callee_caller_recorder, cg_symbol can be get only through public interface
- * of callee_caller_recorder which hide potential misuse of this struct.
+ * Yes, this looks like weird since we store callee_counts w/o knowing the
+ * callee. It's designed in this way because it allows symmetric map in
+ * arc_recorder. Mis-use is protected by the arc_recorder interface.
  */
 struct cg_symbol : public symbol_entry {
 	cg_symbol(symbol_entry const & symb) : symbol_entry(symb) {}
@@ -38,22 +37,30 @@ struct cg_symbol : public symbol_entry {
 };
 
 
-/// During building a callgraph_container we store all caller/callee
-/// relationship in this container.
-class caller_callee_recorder {
+/**
+ * During building a callgraph_container we store all caller/callee
+ * relationship in this container.
+ *
+ * An "arc" is simply a description of a call from one function to
+ * another.
+ */
+class arc_recorder {
 public:
-	~caller_callee_recorder();
+	~arc_recorder();
 
 	void add_arc(cg_symbol const & caller, cg_symbol const * callee);
 
-	/// Finalize the recording after all arc has been added to propagate
-	/// callee counts.
+	/**
+	 * Finalize the recording after all arcs have been added
+	 * to propagate callee counts.
+	 */
 	void fixup_callee_counts();
 
 	// sorted sequence of cg_symbol.
 	std::vector<cg_symbol> get_arc() const;
 	std::vector<cg_symbol> get_callee(cg_symbol const &) const;
 	std::vector<cg_symbol> get_caller(cg_symbol const &) const;
+
 private:
 	cg_symbol const * find_caller(cg_symbol const &) const;
 
@@ -64,39 +71,44 @@ private:
 };
 
 
+/**
+ * FIXME
+ */
 class callgraph_container {
 public:
 	/**
-	 * populate the container, must be called one time only.
+	 * Populate the container, must be called once only.
 	 * @param iprofiles  sample file list including callgraph files.
 	 *
-	 * Currently all error core dump.
+	 * Currently all errors core dump.
+	 * FIXME: consider if this should be a ctor
 	 */
 	void populate(std::list<inverted_profile> const & iprofiles);
 
-	/// These just dispatch to callee_caller_recorder. It's the way client
-	/// code acquire results.
+	/// These just dispatch to arc_recorder. It's the way client
+	/// code acquires results.
 	std::vector<cg_symbol> get_arc() const;
 	std::vector<cg_symbol> get_callee(cg_symbol const &) const;
 	std::vector<cg_symbol> get_caller(cg_symbol const &) const;
 
 private:
-	/** Record caller/callee for one cg file
+	/**
+	 * Record caller/callee for one cg file
 	 * @param profile  one callgraph file stored in a profile_t
-	 * @param bfd_caller  the caller bfd
-	 * @param bfd_callee  the callee bfd
+	 * @param caller_bfd  the caller bfd
+	 * @param callee_bfd  the callee bfd
 	 * @param app_name  the owning application
 	 * @param symbols  the profile_container holding all non cg samples.
 	 */
-	void add(profile_t const & profile, op_bfd const & bfd_caller,
-		 op_bfd const & bfd_callee, std::string const & app_name,
-		 profile_container const & symbols);
+	void add(profile_t const & profile, op_bfd const & caller_bfd,
+	         op_bfd const & callee_bfd, std::string const & app_name,
+	         profile_container const & symbols);
 
 	/// add fake arc <from, NULL> to record leaf symbols.
 	void add_leaf_arc(profile_container const & symbols);
 
 	/// A structured representation of the callgraph.
-	caller_callee_recorder recorder;
+	arc_recorder recorder;
 };
 
 #endif /* !CALLGRAPH_CONTAINER_H */
