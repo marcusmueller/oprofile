@@ -20,6 +20,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o oprof_start should use the same config file as opcontrol ...
  o opcontrol -- need a way to turn OFF a counter now after setting one up
  o oprofpp needs -P too
  o "op_time" doesn't have a header !
