@@ -369,7 +369,7 @@ static int do_oprofpp(int argc, char const * argv[])
 				// user is already warned this file has been
 				// ignored, we continue in case this is a
 				// spurious error e.g. user didn't specify
-				// the right -p/-P options
+				// the right -p options
 				continue;
 			}
 			add_samples(samples, file, options::counter_mask,

@@ -151,6 +151,11 @@ string check_image_name(alt_filename_t const & alternate_filename,
 	pair<it_t, it_t> p_it =
 		alternate_filename.equal_range(basename(image_name));
 
+	// Special handling for 2.5, retry with .ko suffix
+	if (p_it.first == p_it.second) {
+		p_it = alternate_filename.equal_range(basename(image_name + ".ko"));
+	}
+
 	if (p_it.first == p_it.second) {
 
 		static bool first_warn = true;
@@ -158,7 +163,7 @@ string check_image_name(alt_filename_t const & alternate_filename,
 			cerr << "I can't locate some binary image file, all\n"
 			     << "of this file(s) will be ignored in statistics"
 			     << endl
-			     << "Have you provided the right -p/-P option ?"
+			     << "Have you provided the right -p option ?"
 			     << endl;
 			first_warn = false;
 		}

@@ -39,7 +39,6 @@ Before 1.0 little stuff
    samples in the wrong place - interrupt code outside of the irq_enter/exit
  o look oprofiled.log statitistics if 'Nr. lost userspace samples (nil image)'
   is non-zero invetigate why.
- o fix the 2.5 module-finding problem as best as Rusty will let us
  o implement module-drop event in 2.5 kernel
  o fix /dev/null mappings (see sf)
  o mask SIGTERM over critical daemon operations that could corrupt sample files
