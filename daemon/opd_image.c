@@ -435,6 +435,8 @@ void opd_process_samples(char const * buffer, size_t count)
 	struct opd_image * image = NULL;
 	static int in_kernel = -1;
 
+	printf("Reading sample buffer.\n");
+
 	while (i < count) {
 		if (!is_escape_code(get_buffer_value(buffer, i))) {
 			if (i + 1 == count)

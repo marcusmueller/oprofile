@@ -1148,7 +1148,8 @@ do_operations() {
 	fi
 
 	if test "$DUMP" = "yes"; then
-		if test ! do_dump -a "$ONLY_DUMP" = "yes"; then
+		do_dump
+		if test $? -ne 0 -a "$ONLY_DUMP" = "yes"; then
 			echo "No daemon running" >& 2
 			exit 1;
 		fi

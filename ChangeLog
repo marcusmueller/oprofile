@@ -1,3 +1,9 @@
+2003-03-20  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: fix opcontrol --dump to do something
+
+	* daemon/opd_image.c: give a printf when reading the buffer.
+
 2003-03-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/op_bfd.cpp: correct get_vma_range()
