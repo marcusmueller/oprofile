@@ -1,3 +1,12 @@
+2002-01-05  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/opd_kernel.c:
+	* dae/opd_proc.c:
+	* dae/opd_proc.h:
+	* dae/opd_util.c:
+	* dae/oprofiled.c: 
+	* dae/oprofiled.h: further minor cleanups
+
 2002-01-04  John Levon  <moz@compsoc.man.ac.uk>
 
 	* module/oprofile.c: change last change to have an
