@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.58 2002/01/02 00:57:34 movement Exp $ */
+/* $Id: oprofiled.c,v 1.59 2002/01/02 01:57:16 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -488,6 +488,8 @@ static void opd_do_read(struct op_sample *buf, size_t size, struct op_note *nbuf
 				goto out;
 			}
 		}
+		opd_do_notes(nbuf, ncount);
+		opd_do_samples(buf, count);
 	}
  
 out:

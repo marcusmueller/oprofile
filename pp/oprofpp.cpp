@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.20 2001/12/31 22:56:40 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.21 2002/01/02 01:57:16 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -48,7 +48,7 @@ static poptOption options[] = {
 	{ "base-dir", 'b', POPT_ARG_STRING, &basedir, 0, "base directory of profile daemon", NULL, }, 
 	{ "list-all-symbols-details", 'L', POPT_ARG_NONE, &list_all_symbols_details, 0, "list samples for all symbols", NULL, },
 	{ "output-linenr-info", 'o', POPT_ARG_NONE, &output_linenr_info, 0, "output filename:linenr info", NULL },
-	{ "--exclude-symbol", 'e', POPT_ARG_STRING, &exclude_symbols_str, 0, "exclude these comma separated symbols", "symbol_name" },
+	{ "exclude-symbol", 'e', POPT_ARG_STRING, &exclude_symbols_str, 0, "exclude these comma separated symbols", "symbol_name" },
 	{ "show-shared-libs", 'h', POPT_ARG_NONE, &show_shared_libs, 0,
 	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
 	POPT_AUTOHELP
