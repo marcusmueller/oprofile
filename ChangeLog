@@ -1,3 +1,7 @@
+2003-06-18  John Levon  <levon@movementarian.org>
+
+	* pp/Makefile.am: don't build opdiff
+
 2003-06-17  Will Cohen  <wcohen@redhat.com>
 
 	* daemon/opd_cookie.h: Add s390 syscall value.
