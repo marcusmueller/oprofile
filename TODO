@@ -60,7 +60,6 @@ Before 1.0 little stuff
  o fix /dev/null mappings (see sf) (I've seen this once - john)
  o mask SIGTERM over critical daemon operations that could corrupt sample files
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
- o verify if we can remove the ELF-based symbol size code
  o must we do setrlimit(RLIMIT_NOFILE, ...) for daemon ? Isn't already limited
   by the kernel itself ? - we must do this
  o when we dump stats for oprofiled, dump kernel-side values too (for 2.5)
