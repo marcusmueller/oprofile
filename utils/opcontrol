@@ -607,6 +607,7 @@ do_options() {
 			--ctr*-event)
 				if test "$val" = "none"; then
 					CTR_EVENT[`extract_int $arg`]=
+					if (($? != 0)); then exit 1; fi
 					CTR_COUNT[`extract_int $arg`]=
 					CTR_USER[`extract_int $arg`]=1
 					CTR_KERNEL[`extract_int $arg`]=1
