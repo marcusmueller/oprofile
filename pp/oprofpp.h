@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.45 2002/03/19 21:15:15 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.46 2002/03/20 21:19:43 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -42,46 +42,133 @@
 class symbol_entry;
 
 /* missing from libiberty.h */
+/*@{\name demangle option parameter */
 #ifndef DMGL_PARAMS
-# define DMGL_PARAMS     (1 << 0)        /* Include function args */
+# define DMGL_PARAMS     (1 << 0)        /**< Include function args */
 #endif 
 #ifndef DMGL_ANSI 
-# define DMGL_ANSI       (1 << 1)        /* Include const, volatile, etc */
+# define DMGL_ANSI       (1 << 1)        /**< Include const, volatile, etc */
 #endif
+/*@}*/
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/** return a dynamically allocated string containing the demangled name */
 char *cplus_demangle (const char *mangled, int options);
 
 #ifdef __cplusplus
 }
 #endif
 
-void verbprintf(const char* args, ...) __attribute__((format (printf, 1, 2)));
+// To avoid doxygen warning
+#define OP_VERBPRINTF_FORMAT __attribute__((format (printf, 1, 2)))
+
+/* oprofpp_util.cpp */
+
+/** like printf but only output the message if the global variable vebose
+ * is non-zero */
+void verbprintf(const char* args, ...) OP_VERBPRINTF_FORMAT;
+
+/**
+ * process command line options
+ * \param file a filename passed on the command line, can be NULL
+ * \param optcon poptContext to allow better message handling
+ * \param image_file where to store the image file name
+ * \param sample_file ditto for sample filename
+ * \param counter where to put the counter command line argument
+ *
+ * Process the arguments, fatally complaining on error. 
+ *
+ * file is considered as a sample file if it contains at least one
+ * OPD_MANGLE_CHAR else it is an image file. If no image file is given
+ * on command line the sample file name is un-mangled -after- stripping
+ * the optionnal "\#nr" suffixe. This give some limitations on the image
+ * filename.
+ *
+ * all filename checking is made here only with a syntactical approch. (ie
+ * existence of filename is not tested)
+ *
+ * post-condition: sample_file and image_file are setup
+ */
 void opp_treat_options(const char * filename, poptContext optcon,
 		       std::string & image_file, std::string & sample_file,
 		       int & counter, int & sort_by_counter);
+
+/**
+ * \param symbol: the symbol name to demangle
+ *
+ * demangle the symbol name if the global global variable demangle is true.
+ * else return the name w/o demangling. The demangled name lists the parameters
+ * and type qualifiers such as "const". Return the un-mangled name
+ */
 std::string demangle_symbol(const char* symbol);
+
+/**
+ * quit with error
+ * \param err error to show
+ *
+ * err may be NULL
+ */
 void quit_error(poptContext optcon, char const *err);
+
+/**
+ * convert a sample filenames into the related image file name
+ * \param sample_filename the samples image filename
+ *
+ * if samples_filename does not contain any %OPD_MANGLE_CHAR
+ * the string samples_filename itself is returned.
+ */
 std::string demangle_filename(const std::string & samples_filename);
+
+/**
+ * check if the symbol is in the exclude list
+ * \param symbol symbol name to check
+ *
+ * return true if symbol is in the list of excluded symbol
+ */
 bool is_excluded_symbol(const std::string & symbol);
+
+/**
+ * check coherence between two headers.
+ * \param f1 first header
+ * \param f2 second header
+ *
+ * verify that header f1 and f2 are coherent.
+ * all error are fatal
+ */
 void check_headers(const opd_header * f1, const opd_header * f2);
+
+/**
+ * validate the counter number
+ * \param counter_mask bit mask specifying the counter nr to use
+ * \param sort_by the counter nr from which we sort
+ *
+ * all error are fatal
+ */
 void validate_counter(int counter_mask, int & sort_by);
 
-/// given a --counter=0,1,..., option parameter return a mask representing
-/// each counter. Bit i is on if counter i was specified in the option string
+/**
+ * given a --counter=0,1,..., option parameter return a mask
+ * representing each counter. Bit i is on if counter i was specified.
+ * So we allow up to sizeof(uint) * CHAR_BIT different counter
+ */
 uint counter_mask(const std::string &);
 
-// defined in oprofpp_util.cpp
+/** control the behavior of verbprintf() */
 extern int verbose;
+/** control the behavior of demangle_symbol() */
 extern int demangle;
+
+/** command line option specifying a sample filename */
 extern char const *samplefile;
-extern char *basedir;
+/** command line option specifying an image filename */
 extern const char *imagefile;
+/** command line option which specify the base directory of samples files */
+extern char *basedir;
+/** command line option specifying the set of symbols to ignore */
 extern const char * exclude_symbols_str;
-extern int list_all_symbols_details;
 
 //---------------------------------------------------------------------------
 /** A simple container of counter. Can hold OP_MAX_COUNTERS counters */
@@ -108,7 +195,6 @@ public:
 private:
 	u32 value[OP_MAX_COUNTERS];
 };
-
 
 /** Encapsulation of a bfd object. Simplify open/close of bfd, enumerating
  * symbols and retrieving informations for symbols or vma. */

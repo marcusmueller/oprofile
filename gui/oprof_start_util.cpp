@@ -90,7 +90,7 @@ daemon_status::daemon_status()
 
 		if (!(dir = opendir("/proc"))) {
 			perror("oprofiled: /proc directory could not be opened. ");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		while ((dirent = readdir(dir))) {

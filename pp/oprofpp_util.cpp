@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.40 2002/03/19 05:41:25 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.41 2002/03/20 21:19:43 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -32,10 +32,9 @@ using std::vector;
 
 int verbose;
 char const *samplefile;
-char *basedir="/var/opd";
 const char *imagefile;
+char *basedir="/var/opd";
 int demangle;
-int list_all_symbols_details;
 const char * exclude_symbols_str;
 static vector<string> exclude_symbols;
 
@@ -131,7 +130,6 @@ void quit_error(poptContext optcon, char const *err)
 }
 
 /**
- * \internal
  * validate_counter - validate the counter nr
  * \param counter_mask bit mask specifying the counter nr to use
  * \param sort_by the counter nr from which we sort
@@ -303,7 +301,7 @@ std::string demangle_symbol(const char* name)
 	return name;
 }
 
-/** \internal
+/**
  * counter_mask -  given a --counter=0,1,..., option parameter return a mask
  * representing each counter. Bit i is on if counter i was specified.
  * So we allow up to sizeof(uint) * CHAR_BIT different counter

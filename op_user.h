@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.19 2002/03/19 21:15:14 phil_e Exp $ */
+/* $Id: op_user.h,v 1.20 2002/03/20 21:19:42 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,6 +22,7 @@
 
 #include "version.h"
 
+/*@{\name miscellaneous types */
 #ifndef u8
 #define u8 unsigned char
 #endif
@@ -40,12 +41,9 @@
 #ifndef fd_t
 #define fd_t int
 #endif
+/*@}*/
 
-
-/* FIXME: must we use group command, I show this as an example and
- * do not group other things */
-/** \defgroup op_check_events_evt_code op_check_events() return code */
-/*@{*/
+/*@{\name op_check_events() return code */
 #define OP_EVENTS_OK		0x0
 /** The event number is invalid */
 #define OP_EVT_NOT_FOUND	0x1
@@ -67,6 +65,7 @@ typedef enum {
 } op_cpu;
 
 #ifndef NR_CPUS
+/** maximum number of cpus present in the box */
 #define NR_CPUS 32
 #endif 
 
@@ -83,10 +82,10 @@ typedef enum {
 /** kernel image entries are offset by this many entries */
 #define OPD_KERNEL_OFFSET 524288
 
-/** maximum nr. of counters, up to 4 for Athlon (18 for P4). The primary use
- * of this variable is for static/local array dimension. Never use it in loop
- * or in array index access/index checking. Don't change it without updating
- * OP_BITS_CTR! */
+/** maximum number of counters, up to 4 for Athlon (18 for P4). The primary
+ * use of this variable is for static/local array dimension. Never use it in 
+ * loop or in array index access/index checking unless you know what you
+ * made. Don't change it without updating OP_BITS_CTR! */
 #define OP_MAX_COUNTERS	4
 
 /** the number of bits neccessary to store OP_MAX_COUNTERS values */
@@ -99,13 +98,12 @@ typedef enum {
 /** counter nr mask */
 #define OP_CTR_MASK	((~0U << (OP_BITS_COUNT + 1)) >> 1)
 
-/** top OP_BITS bits of count are used as follows: */
-/* which perf counter the sample is from */
+/** top OP_BITS bits of count are used to store counter number */
 #define OP_COUNTER(x)	(((x) & OP_CTR_MASK) >> OP_BITS_COUNT)
-
+/** low bits store the counter value */
 #define OP_COUNT_MASK	((1U << OP_BITS_COUNT) - 1U)
 
-/* notifications types encoded in op_note::type */
+/*@{\name notifications types encoded in op_note::type */
 /** fork(),vfork(),clone() */
 #define OP_FORK 1
 /** mapping */
@@ -116,6 +114,7 @@ typedef enum {
 #define OP_DROP_MODULES 8
 /** exit() */
 #define OP_EXIT 16
+/*@}*/
 
 /** Data type to transfer samples counts from the module to the daemon */
 struct op_sample {
@@ -126,7 +125,8 @@ struct op_sample {
 } __attribute__((__packed__, __aligned__(8)));
 
 /** Data type used by the module to notify daemon of fork/exit/mapping etc.
- * Meanings of fields depend on the type of notification
+ * Meanings of fields depend on the type of notification encoded in the type
+ * field.
  * \sa OP_FORK, OP_EXEC, OP_MAP, OP_DROP_MODULES and OP_EXIT */
 struct op_note {
 	u32 addr;
@@ -134,10 +134,10 @@ struct op_note {
 	u32 offset;
 	uint hash;
 	u16 pid;
-	u16 type;
+	u16 type;  /* FIXME how to put a see also to the group OP_FORK etc.*/
 };
 
-/** nr. entries in hash map. This is the maximum number of name components
+/** nr entries in hash map. This is the maximum number of name components
  * allowed. Must be a prime number */
 #define OP_HASH_MAP_NR 4093
 
@@ -197,25 +197,115 @@ extern "C" {
 #endif
 
 /* op_events.c */
+/**
+ * \param ctr_type event value
+ * \param cpu_type cpu type
+ *
+ * The function returns > 0 if the event is found 0 otherwise
+ */
 int op_min_count(u8 ctr_type, op_cpu cpu_type);
+
+/**
+ * sanity check event values
+ * \param ctr counter number
+ * \param ctr_type event value for counter 0
+ * \param ctr_um unit mask for counter 0
+ * \param cpu_type processor type
+ *
+ * Check that the counter event and unit mask values are allowed.
+ *
+ * Don't fail if ctr_type == 0. (FIXME why, this seems insane)
+ *
+ * The function returns bitmask of failure cause 0 otherwise
+ *
+ * \sa op_cpu, OP_EVENTS_OK
+ */
 int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type);
+
+/**
+ * get the cpu string.
+ * \param cpu_type the cpu type identifier
+ *
+ * The function always return a valid const char* the core cpu denomination
+ * or "invalid cpu type" if cpu_type is not valid.
+ */
 const char* op_get_cpu_type_str(op_cpu cpu_type);
+
+/**
+ * get the number of counter available for this cpu
+ * \param cpu_type the cpu type identifier
+ *
+ * The function return the number of counter available for this
+ * cpu type. return (uint)-1 if the cpu type is nopt recognized
+ */
 uint op_get_cpu_nr_counters(op_cpu cpu_type);
-void op_get_event_desc(op_cpu cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
-op_cpu op_get_cpu_type(void);
+
+/**
+ * sanity check unit mask value
+ * \param allow allowed unit mask array
+ * \param um unit mask value to check
+ *
+ * Verify that a unit mask value is within the allowed array.
+ *
+ * The function returns:
+ * -1  if the value is not allowed,
+ * 0   if the value is allowed and represent multiple units,
+ * > 0 otherwise.
+ *
+ * if the return value is > 0 caller can access to the description of
+ * the unit_mask through op_unit_descs
+ * \sa op_unit_descs
+ */
 int op_check_unit_mask(struct op_unit_mask *allow, u8 um);
+
+/* op_events_desc.c */
+
+/**
+ * get event name and description
+ * \param cpu_type the cpu_type
+ * \param type event value
+ * \param um unit mask
+ * \param typenamep returned event name string
+ * \param typedescp returned event description string
+ * \param umdescp returned unit mask description string
+ *
+ * Get the associated event name and descriptions given
+ * the cpu type, event value and unit mask value. It is a fatal error
+ * to supply a non-valid type value, but an invalid um will not exit.
+ *
+ * typenamep, typedescp, umdescp are filled in with pointers
+ * to the relevant name and descriptions. umdescp can be set to
+ * NULL when um is invalid for the given type value.
+ * These strings are static and should not be freed.
+ */
+void op_get_event_desc(op_cpu cpu_type, u8 type, u8 um,
+		       char **typenamep, char **typedescp, char **umdescp);
+
+/**
+ * get from /proc/sys/dev/oprofile/cpu_type the cpu type
+ *
+ * returns CPU_NO_GOOD if the CPU could not be identified.
+ * This function can not work if the module is not loaded
+ */
+op_cpu op_get_cpu_type(void);
 
 #ifdef __cplusplus
 }
 #endif
 
+/** unit mask description */
 extern struct op_unit_mask op_unit_masks[];
+/** unit mask string description */
 extern struct op_unit_desc op_unit_descs[];
+/** events string description */
 extern char *op_event_descs[];
+/** description of events for all processor type */
 extern struct op_event op_events[];
-/* the total number of events for all processor type */
+/** the total number of events for all processor type, allowing to iterate
+ * on the op_events[] decription */
 extern uint op_nr_events;
 
+/** a special constant meanings, this events is available for all counters */
 #define CTR_ALL		(~0u)
 
 #endif /* OP_USER_H */

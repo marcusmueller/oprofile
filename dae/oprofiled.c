@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.70 2002/03/15 04:22:20 phil_e Exp $ */
+/* $Id: oprofiled.c,v 1.71 2002/03/20 21:19:42 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -81,12 +81,12 @@ static void opd_open_logfile(void)
 {
 	if (open(logfilename, O_WRONLY|O_CREAT|O_NOCTTY|O_APPEND, 0755) == -1) {
 		perror("oprofiled: couldn't re-open stdout: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (dup2(1,2) == -1) {
 		perror("oprofiled: couldn't dup stdout to stderr: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -104,7 +104,7 @@ static void opd_open_files(void)
 	hashmapdevfd = opd_open_device(devhashmapfilename, 0);
 	if (hashmapdevfd == -1) {
 		perror("Failed to open hash map device: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
  
 	notedevfd = opd_open_device(notedevfilename, 0);
@@ -114,7 +114,7 @@ static void opd_open_files(void)
 				"parameters. Check /var/log/messages.");
 		else
 			perror("Failed to open note device: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
  
 	devfd = opd_open_device(devfilename, 0);
@@ -124,13 +124,13 @@ static void opd_open_files(void)
 				"parameters. Check /var/log/messages.");
 		else
 			perror("Failed to open profile device: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	} 
  
 	hashmap = mmap(0, OP_HASH_MAP_SIZE, PROT_READ, MAP_SHARED, hashmapdevfd, 0);
 	if ((long)hashmap == -1) {
 		perror("oprofiled: couldn't mmap hash map: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	/* give output before re-opening stdout as the logfile */
@@ -142,7 +142,7 @@ static void opd_open_files(void)
 
 	if (open("/dev/null",O_RDONLY) == -1) {
 		perror("oprofiled: couldn't re-open stdin as /dev/null: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	opd_open_logfile();
@@ -177,12 +177,12 @@ static void opd_backup_samples_files(void)
 		/* That's a severe problem: if we continue we can overwrite
 		 * samples files and produce wrong result. FIXME */
 		printf("unable to create directory %s\n", dir_name);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (!(dir = opendir(smpdir))) {
 		printf("unable to open directory %s\n", smpdir);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	printf("Backing up samples file to directory %s\n", dir_name);
@@ -223,7 +223,7 @@ static int opd_need_backup_samples_files(void)
 	if (!(dir = opendir(smpdir))) {
 		printf("unable to open directory %s\n", smpdir);
 
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	counter_set = old_counter_set = 0;
@@ -318,7 +318,7 @@ static void opd_pmc_options(void)
 				i, ctr_count[i]);
 
 		if (ret != OP_EVENTS_OK)
-			exit(1);
+			exit(EXIT_FAILURE);
 	}
 } 
  
@@ -364,13 +364,13 @@ static void opd_options(int argc, char const *argv[])
 	if (!vmlinux || streq("", vmlinux)) {
 		fprintf(stderr, "oprofiled: no vmlinux specified.\n");
 		poptPrintHelp(optcon, stderr, 0);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (!systemmapfilename || streq("", systemmapfilename)) {
 		fprintf(stderr, "oprofiled: no System.map specified.\n");
 		poptPrintHelp(optcon, stderr, 0);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	opd_buf_size = opd_read_int_from_file("/proc/sys/dev/oprofile/bufsize");
@@ -400,13 +400,13 @@ static void opd_fork(void)
 	switch (fork()) {
 		case -1:
 			perror("oprofiled: fork() failed: ");
-			exit(1);
+			exit(EXIT_FAILURE);
 			break;
 		case 0:
 			break;
 		default:
 			/* parent */
-			_exit(0);
+			_exit(EXIT_SUCCESS);
 			break;
 	}
 }
@@ -427,12 +427,12 @@ static void opd_go_daemon(void)
 
 	if (chdir(opd_dir)) {
 		fprintf(stderr,"oprofiled: opd_go_daemon: couldn't chdir to %s: %s", opd_dir, strerror(errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (setsid() < 0) {
 		perror("oprofiled: opd_go_daemon: couldn't setsid: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	opd_fork();
@@ -458,7 +458,7 @@ static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbu
 	 * non-blocking */
 	if (fcntl(devfd, F_SETFL, fcntl(devfd, F_GETFL) | O_NONBLOCK) < 0) {
 		perror("Failed to set non-blocking read for device: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	/* it's always OK to read the note device */
@@ -570,7 +570,7 @@ void opd_do_notes(struct op_note *opd_buf, size_t count)
 
 			default:
 				fprintf(stderr, "Received unknown notification type %u\n", note->type);
-				exit(1);
+				exit(EXIT_FAILURE);
 				break;
 		}
 	}
@@ -661,7 +661,7 @@ int main(int argc, char const *argv[])
 
 	if (sigaction(SIGALRM, &act, NULL)) {
 		perror("oprofiled: install of SIGALRM handler failed: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	act.sa_handler = opd_sighup;
@@ -671,7 +671,7 @@ int main(int argc, char const *argv[])
 
 	if (sigaction(SIGHUP, &act, NULL)) {
 		perror("oprofiled: install of SIGHUP handler failed: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	sigemptyset(&maskset);

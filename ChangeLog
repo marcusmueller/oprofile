@@ -1,3 +1,15 @@
+2002-03-21  Philippe Elie  <ph_e@club-internet.fr>
+
+	* op_user.h:
+	* pp/oprofpp.h: more doxygen comments
+
+	* dae/opd_kernel.c:
+	* dae/opd_proc.c:
+	* dae/opd_util.c:
+	* dae/oprofiled.c:
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_util.cpp: exit(): use {EXIT_FAILURE|EXIT_SUCCESS}
+
 2002-03-20  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/opf_filter.h: simplify slightly interface of samples_files_t
@@ -11,7 +23,7 @@
 	  OutputSymbol ...
 
 	* pp/opp_symbol.h:
-	* util/file_manip.h!
+	* util/file_manip.h:
 	* util/string_manip.h: doxygen comments
 
 2002-03-19  Philippe Elie  <ph_e@club-internet.fr>

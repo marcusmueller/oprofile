@@ -1,4 +1,4 @@
-/* $Id: op_events_desc.c,v 1.7 2002/02/10 20:22:56 movement Exp $ */
+/* $Id: op_events_desc.c,v 1.8 2002/03/20 21:19:42 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -27,7 +27,7 @@
 #include "../op_user.h"
 
 /**
- * op_get_cpu_type - get from /proc/cpuinfo the cpu type
+ * op_get_cpu_type - get from /proc/sys/dev/oprofile/cpu_type the cpu type
  *
  * returns CPU_NO_GOOD if the CPU could not be identified
  */
@@ -290,6 +290,6 @@ void op_get_event_desc(op_cpu cpu_type, u8 type, u8 um, char **typenamep, char *
 
 	if (!*typenamep) {
 		fprintf(stderr,"op_get_event_desc: no such event 0x%.2x\n",type);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }

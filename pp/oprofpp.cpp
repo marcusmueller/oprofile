@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.34 2002/03/20 05:42:36 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.35 2002/03/20 21:19:43 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -39,6 +39,7 @@ static int list_symbols;
 static int output_linenr_info;
 static int show_shared_libs;
 static char * output_format;
+static int list_all_symbols_details;
 
 static OutSymbFlag output_format_flags;
 

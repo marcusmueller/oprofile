@@ -70,7 +70,7 @@ oprof_start::oprof_start()
 	args.push_back("oprofile");
  
 	if (do_exec_command("/sbin/modprobe", args))
-		exit(1);
+		exit(EXIT_FAILURE);
  
 	cpu_type = op_get_cpu_type();
  
@@ -266,7 +266,7 @@ void oprof_start::load_config_file()
 				     "mismatch the current cpu core:\n\n"
 				     "Delete manually the configuration file");
 
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
  
 	for (uint i = 0; i < op_nr_counters; ++i) {

@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.35 2002/03/01 19:23:20 movement Exp $ */
+/* $Id: opd_util.c,v 1.36 2002/03/20 21:19:42 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -89,7 +89,7 @@ FILE *opd_do_open_file(const char *name, const char *mode, int fatal)
 	if (!fp) {
 		if (fatal) { 
 			fprintf(stderr,"oprofiled:opd_do_open_file: %s: %s", name, strerror(errno)); 
-			exit(1);
+			exit(EXIT_FAILURE);
 		} 
 	}
 
@@ -132,7 +132,7 @@ void opd_do_read_file(FILE *fp, void *buf, size_t size, int fatal)
 			fprintf(stderr,"oprofiled:opd_read_file: read less than expected %d bytes\n", size);
 		else
 			fprintf(stderr,"oprofiled:opd_read_file: error reading\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
  
@@ -201,7 +201,7 @@ void opd_write_file(FILE *fp, const void *buf, size_t size)
 
 	if (written != 1) {
 		fprintf(stderr,"oprofiled:opd_write_file: wrote less than expected: %d bytes.\n", size);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
  
@@ -264,13 +264,13 @@ u32 opd_read_int_from_file(const char *filename)
 	fp = fopen(filename, "r");
 	if (fp == NULL) {
 		fprintf(stderr, "opd_read_int_from_file: Failed to open %s, reason %s\n", filename, strerror(errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (fscanf(fp, "%u", &value) != 1) {
 		fclose(fp);
 		fprintf(stderr, "opd_read_int_from_file: Failed to convert contents of file %s to integer\n", filename);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	fclose(fp);
@@ -295,7 +295,7 @@ off_t opd_get_fsize(const char *file, int fatal)
 			return 0;
 		 
 		fprintf(stderr,"opd_get_fsize: stat failed\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	/* PHE FIXME caller can not make any difference between failure and
@@ -402,7 +402,7 @@ fd_t opd_open_device(const char *name, int fatal)
 	fd = open(name, O_RDONLY);
 	if (fatal && fd == -1) {
 		fprintf(stderr,"oprofiled:opd_open_device: %s: %s\n", name, strerror(errno)); 
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	return fd;
@@ -418,7 +418,7 @@ void opd_close_device(fd_t devfd)
 {
 	if (close(devfd)) {
 		perror("oprofiled:opd_close_device: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}	
 } 
  
@@ -454,7 +454,7 @@ ssize_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
 
 	if (count < 0 && errno != EINTR && errno != EAGAIN) {
 		perror("oprofiled:opd_read_device: ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
  
 	return count;

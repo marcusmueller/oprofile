@@ -127,7 +127,7 @@ static struct opd_module *opd_get_module(char *name)
 	nr_modules++;
 	if (nr_modules == OPD_MAX_MODULES) {
 		fprintf(stderr, "Exceeded %u kernel modules !\n", OPD_MAX_MODULES);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	return &opd_modules[nr_modules-1];
@@ -264,7 +264,7 @@ static void opd_enter_invalid_module(char const * name, struct module_info * inf
 	nr_modules++;
 	if (nr_modules == OPD_MAX_MODULES) {
 		fprintf(stderr, "Exceeded %u kernel modules !\n", OPD_MAX_MODULES);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 

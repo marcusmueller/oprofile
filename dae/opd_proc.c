@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.107 2002/03/01 21:30:02 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.108 2002/03/20 21:19:42 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1197,7 +1197,7 @@ static struct opd_image * opd_handle_hashmap(int hash, const char * app_name)
  
 		if (strlen(name) + 1 + strlen(c) >= PATH_MAX) {
 			fprintf(stderr,"String \"%s\" too large.\n", c);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		c -= strlen(name) + 1;
@@ -1392,7 +1392,7 @@ void opd_get_ascii_procs(void)
 
 	if (!(dir = opendir("/proc"))) {
 		perror("oprofiled: /proc directory could not be opened. ");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	while ((dirent = readdir(dir))) {
