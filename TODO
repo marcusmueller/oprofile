@@ -21,6 +21,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o oprofpp needs -P too
  o decide on -d vs. -D by default for demangle etc.
  o document that even with the in_interrupt trick in 2.5, you can still get a few
    samples in the wrong place - interrupt code outside of the irq_enter/exit
