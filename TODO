@@ -1,6 +1,11 @@
 0.3 Release
 -----------
 
+ o failure to open image can be due to EPERM problem, we must check it and printf nicer
+  message. There is probably other part of post profile tools where looking at errno sould give better messages
+ o oprofpp -s is especially slow, we need to take care of that, probably by passing a
+hint to samples_containert_t::add to collect samples only for the selected symbols
+ o configure: at least --with-extra-libs and --with-extra-includes do not work
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level. Important.
  o better support in post-prof for session names. Consistent cmd line interfaces - 
