@@ -6,6 +6,9 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8 release
 -----------
 
+ o with callgraph the min count are too low. opcontrol must check callgraph is
+  on (/dev/oprofile/callgraph_depth) and pass it to op_help etc. so we scale
+  min count by ten (at least).
  o TRACE_END is no longer sent by the driver, keep it a bit for compatibility
  o I don't receive any SIGALRM with 2.6.1 (phe)
  o  op_help --cpu-type=9 > /dev/null generate some warning (itanium2)
