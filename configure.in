@@ -9,7 +9,6 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.127 2002/12/01 03:53:10 movement Exp $)
 AC_PREREQ(2.13)
 
 AC_INIT(libop/op_config.h)

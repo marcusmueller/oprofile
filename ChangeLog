@@ -1,5 +1,9 @@
 2002-12-02  John Levon  <levon@movementarian.org>
 
+	* configure.in: remove annoying AC_REVISION()
+ 
+2002-12-02  John Levon  <levon@movementarian.org>
+
 	* utils/opcontrol: couple of minor cleanups
  
 2002-12-02  John Levon  <levon@movementarian.org>
