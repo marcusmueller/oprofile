@@ -316,7 +316,7 @@ This option can be used only with --assembly or --source-with-assembly.
 .B op_time options [image_name [image_names]]
 .br
 .TP
-.BI "--use-counter " counter_nr ", -c "counter_nr
+.BI "--counter " counter_nr ", -c "counter_nr
 Sort on counter_nr.
 .TP
 .br
@@ -362,7 +362,7 @@ where samples reside or a session name relative to samples files base directory
 .B op_merge options
 .br
 .TP
-.BI "--use-counter " counter_nr ", -c "counter_nr
+.BI "--counter " counter_nr ", -c "counter_nr
 Select sample files for counter_nr rather than the default 0.
 
 .SH USAGE

@@ -39,7 +39,7 @@ namespace {
 
 popt::option options_array[] = {
 	popt::option(verbose, "verbose", 'V', "verbose output"),
-	popt::option(counter, "use-counter", 'c', "use counter", "counter nr")
+	popt::option(counter, "counter", 'c', "use counter", "counter nr")
 };
 
 /**

@@ -1,5 +1,13 @@
 2003-03-03  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: another round of cleanups
+
+	* pp/op_merge.cpp: --counter not --use-counter,
+	  for consistency
+
+2003-03-03  John Levon  <levon@movementarian.org>
+
 	Patch from Chris Moller, modified.
 
 	* dae/opd_proc.c:

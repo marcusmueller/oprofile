@@ -36,10 +36,12 @@ features make it ideal for profiling entire systems to determine bottle necks in
 </para>
 <para>
 Many CPUs provide "performance counters", hardware registers that can count "events"; for example,
-cache misses, or CPU cycles. OProfile provides access to these counters, so they may be used to
-provide profiles of code based on the number of these occurring events. Some hardware setups do
-not allow OProfile to use performance counters: in these cases, no events are available, and
-OProfile operates in timer/RTC mode, as described in later chapters.
+cache misses, or CPU cycles. OProfile provides profiles of code based on the number of these occurring events:
+repeatedly, every time a certain (configurable) number of events has occurred, the PC value is recorded.
+This information is aggregated into profiles for each binary image.</para>
+<para>
+Some hardware setups do not allow OProfile to use performance counters: in these cases, no
+events are available, and OProfile operates in timer/RTC mode, as described in later chapters.
 </para>
 
 <sect1 id="requirements">
@@ -400,9 +402,6 @@ The event types and unit masks for your CPU are listed by <command>opcontrol
 --list-events</command>.
 </para>
 <para>
-If performance counters are not available, OProfile uses either RTC
-</para>
-<para>
 The <command>opcontrol</command> script provides the following actions :
 </para>
 <variablelist>
@@ -489,7 +488,9 @@ The <command>opcontrol</command> script provides the following actions :
 </variablelist>
 
 <para>
-Possible settings  for the <option>--setup</option> option :
+There are a number of possible settings, of which, only
+<option>--vmlinux</option> is required. These settings are
+stored in <filename>~/.oprofile/daemon</filename>.
 </para>
 <variablelist>
 	<varlistentry>
@@ -590,13 +591,32 @@ Possible settings  for the <option>--setup</option> option :
 		</para></listitem>
 	</varlistentry>
 </variablelist>
+<sect2 id="sessions">
+<title>Profiling sessions</title>
+<para>
+It can often be useful to split up profiling data into several different
+time periods. For example, you may want to collect data on an application's
+startup separately from the normal runtime data. You can use the simple
+command <command>opcontrol --save</command> to do this. For example :
+</para>
+<screen>
+opcontrol --save=blah
+</screen>
+<para>
+will create a sub-directory in <filename>/var/lib/oprofile/samples</filename> containing the samples
+up to that point (the current session's sample files are moved into this
+directory). You can then pass this name as, for example, a parameter to
+<command>op_time</command> to only get data up to the point you named the
+session. If you do not want to save a session, you can do
+<command>rm -rf /var/lib/oprofile/samples/blah</command> or, for the
+current session, <command>opcontrol --reset</command>.
+</para>
+</sect2>
+ 
 </sect1>
  
 <sect1 id="oprofile-gui">
 <title>Starting profiling from the <command>OProfile</command> GUI</title>
-<para>
-This section describes the <command>OProfile</command> Qt-based interface.
-</para>
 <para>
 The <command>oprof_start</command> application provides a convenient way to start the profiler.
 Note that <command>oprof_start</command> is just a wrapper around the <command>opcontrol</command> script,
@@ -615,33 +635,14 @@ number of interrupts received per second and the total, over all processors.
 Note that quitting <command>oprof_start</command> does not stop the profiler.
 </para>
 <para>
-Your configuration is saved when you quit the gui in two files in ~/.oprofile directory :
+Your configuration is saved when you quit <command>oprof_start</command> in two files in the
+<filename>~/.oprofile</filename> directory :
 <filename>oprof_start_config</filename> and <filename>oprof_start_event</filename>. These
-contain the general configuration, and event/counter setup, respectively.
+contain the general configuration, and the event/counter setup, respectively.
 </para>
 
 </sect1>
 
-<sect1 id="sessions">
-<title>Profiling sessions</title>
-<para>
-It can often be useful to split up profiling data into several different
-time periods. For example, you may want to collect data on an application's
-startup separately from the normal runtime data. You can use the simple
-command <command>opcontrol --save</command> to do this. For example :
-</para>
-<screen>
-opcontrol --save=blah
-</screen>
-<para>
-will create a sub-directory in <filename>/var/lib/oprofile/samples</filename> containing the samples
-up to that point (the current session's sample files are moved into this
-directory). You can then pass this name as, for example, a parameter to
-<command>op_time</command> to only get data up to the point you named the
-session.
-</para>
-</sect1>
- 
 <sect1 id="detailed-parameters">
 <title>Configuration details</title>
 
@@ -660,15 +661,12 @@ The hardware performance counters are detailed in the Intel IA-32 Architecture M
 from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>. The AMD Athlon/Duron
 implementation is detailed in <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/pdf/22007.pdf">
 http://www.amd.com/products/cpg/athlon/techdocs/pdf/22007.pdf</ulink>.
-These processors are capable of delivering an interrupt to the local <acronym>APIC</acronym> <acronym>LVTPC</acronym>
-vector when a counter overflows. This is the basic mechanism on which OProfile is based. The kernel module
-installs an interrupt handler for this vector. The delivery mode is set to <acronym>NMI</acronym> so that
-blocking interrupts in the kernel does not prevent profiling. When the interrupt handler is called,
-the current <acronym>EIP</acronym> <acronym>PC</acronym> value, process id, and counter
-are recorded into the profiling structure. This allows the overflow event to be attached
-to a specific assembly instruction in a binary image. The daemon is necessary to transform these recorded
-values into a count against a file offset for a given binary image, in order to produce profile data off-line
-at a later time.
+These processors are capable of delivering an interrupt when a counter overflows.
+This is the basic mechanism on which OProfile is based. The delivery mode is <acronym>NMI</acronym>,
+so blocking interrupts in the kernel does not prevent profiling. When the interrupt handler is called,
+the current <acronym>PC</acronym> value and the current task are recorded into the profiling structure.
+This allows the overflow event to be attached to a specific assembly instruction in a binary image.
+The daemon receives this data from the kernel, and writes it to the sample files.
 </para>
 <para>
 If we use an event such as <constant>CPU_CLK_UNHALTED</constant> or <constant>INST_RETIRED</constant>
@@ -677,40 +675,32 @@ use the overflow counts as an estimate of actual time spent in each part of code
 data such as the cache behaviour of routines with the other available counters.
 </para>
 <para>
-However there are several caveats. Firstly there are those issues listed in the Intel manual. There is a delay
+However there are several caveats. First, there are those issues listed in the Intel manual. There is a delay
 between the counter overflow and the interrupt delivery that can skew results on a small scale - this means
-you cannot rely on the profiles at the instruction level, except as a binary was/wasn't executed indicator.
+you cannot rely on the profiles at the instruction level as being perfectly accurate.
 If you are using an "event-mode" counter such as the cache counters, a count registered against it doesn't mean
 that it is responsible for that event. However, it implies that the counter overflowed in the dynamic
 vicinity of that instruction, to within a few instructions. Further details on this problem can be found in 
-<xref linkend="interpreting" /> and also in
-the Digital paper "ProfileMe: A Hardware Performance Counter". Also note that a very high number of interrupts
-can have a large performance effect, and even overflow the profiling data structures. This can lead to mapping information
-getting overwritten, and loss of respect from boxing promoter (don't worry, an obscure reference). The system
-stability will never be affected, but profiling may not be able to work properly. An error message from the
-kernel module will appear in your system log files if this situation occurs.
+<xref linkend="interpreting" /> and also in the Digital paper "ProfileMe: A Hardware Performance Counter".
 </para>
 <para>
-As described in the Intel manual, each counter, as well as being configured to count an event type, has several
-more configuration parameters. First, there is the unit mask: this simply further specifies what to count.
+Each counter has several configuration parameters.
+First, there is the unit mask: this simply further specifies what to count.
 Second, there is the counter value, discussed below. Third, there is a parameter whether to increment counts
 whilst in kernel or user space. You can configure these separately for each counter.
 </para>
 <para>
-So you must specify a counter value with the <option>--ctrX-count</option> option, where <option>X</option>
-is the logical counter number in the range 0 to 3 fro AMD Athlon processors, 0 to 1 for
-Intel P6 generation procecessors, and 0 to 7 for Intel Pentium 4 processors.
+A counter value with the <option>--ctrX-count</option> option, where <option>X</option>
+is the logical counter number (which differs between architectures - <command>opcontrol --help</command>
+tells you the maximum counter number).
 Using multiple counters is useful for profiling several aspects of the same running program.
 After each overflow event, the counter will be re-initialized
 such that another overflow will occur after this many events have been counted. Picking a good value for this
-parameter is, unfortunately, somewhat of a grey art (not quite black). It is of course dependent on the event
-you have chosen. For basic time-based profiling, you will probably use <constant>CPU_CLK_UNHALTED</constant>
-(on Intel P6 generation processors). 
-You can estimate how many interrupts this value will generate per second with this event by dividing your CPU
-clock rate by the chosen value. I have a 600MHz Celeron, so specifying an overflow value of 100,000 will generate
-around 6000 interrupts per second. Specifying too large a value will mean not enough interrupts are generated
+parameter is, unfortunately, somewhat of a black art. It is of course dependent on the event
+you have chosen.
+Specifying too large a value will mean not enough interrupts are generated
 to give a realistic profile (though this problem can be ameliorated by profiling for <emphasis>longer</emphasis>).
-Specifying too small a value can lead to overflow problems discussed previously.
+Specifying too small a value can lead to higher performance overhead.
 </para>
 
 </sect2>
@@ -740,11 +730,6 @@ Setting the value from the GUI should be straightforward. On the command line, y
 <option>--rtc-value</option> option to <command>opcontrol</command>, e.g. :
 </para>
 <para><command>opcontrol --setup --vmlinux=/boot/2.4.0ac12/vmlinux --rtc-value=256</command></para>
-<para>
-Note the sysctl tree described in the next section is different when the RTC is being used.  In particular,
-the file <filename>/proc/sys/dev/oprofile/rtc_value</filename> is used by the tools to set the desired RTC 
-sampling rate, and will reflect the actual sampling rate after profiling has started.
-</para>
 </sect2>
 
 <sect2 id="timer">
@@ -756,7 +741,7 @@ This section applies to 2.5 kernels only.
 In 2.5 kernels on CPUs without OProfile support for the hardware performance counters, the driver
 falls back to using the timer interrupt for profiling. Like the RTC mode in 2.4 kernels, this is not able to
 profile code that has interrupts disabled. Note that there are no configuration parameters for
-setting this, unlike RTC and hardware performance counter setup.
+setting this, unlike the RTC and hardware performance counter setup.
 </para>
 </sect2>
 
@@ -768,14 +753,15 @@ selection control registers (ESCRs), 18 counter configuration control registers 
 particular set of events which are to be recorded, and CCCRs bind ESCRs to counters and configure their
 operation. Unfortunately the relationship between these registers is quite complex; they cannot all be used with one
 another at any time. There is, however, a subset of 8 counters, 8 ESCRs, and 8 CCCRs which can be used independently of
-one another, so the Oprofile module only accesses those registers, treating them as a bank of 8 "normal" counters, similar
+one another, so OProfile only accesses those registers, treating them as a bank of 8 "normal" counters, similar
 to those in the P6 or Athlon families of CPU.
 </para>
 <para>
 There is currently no support for Precision Event-Based Sampling (PEBS), nor any advanced uses of the Debug Store
-(DS). Current support is limited to the conservative extension of Oprofile's existing interrupt-based model described
+(DS). Current support is limited to the conservative extension of OProfile's existing interrupt-based model described
 above.  Performance monitoring hardware on Pentium 4 / Xeon processors with Hyperthreading enabled (multiple logical
-processors on a single die) is not supported either.
+processors on a single die) is not supported in 2.4 kernels (you can use OProfile if you disable hyper-threading,
+though).
 </para>
 </sect2>
 
@@ -799,12 +785,12 @@ existing interrupt-based model to the PMU hardware.
 </sect2>
 
 <sect2 id="misuse">
-<title>Misuse of <command>OProfile</command> and stability of system</title>
+<title>Dangerous counter settings</title>
 <para>
 OProfile is a low-level profiler which allow continuous profiling with a low-overhead cost.
-If not used carefully, this can affect the stability of the system.
 If too low a count reset value is set for a counter, the system can become overloaded with counter
-interrupts, and seem as if the system has frozen.
+interrupts, and seem as if the system has frozen. Whilst some validation is done, it
+is not foolproof.
 </para>
 <note><para>
 This can happen as follows: When the profiler count
@@ -820,14 +806,9 @@ for the counter reset. For example, setting <constant>CPU_CLK_UNHALTED</constant
 is likely to freeze the system.
 </para>
 <para>
-In short : <command>Don't try a foolish sample count value.</command> Unfortunately the definition of a foolish value
+In short : <command>Don't try a foolish sample count value</command>. Unfortunately the definition of a foolish value
 is really dependent on the event type - if ever in doubt, e-mail </para>
 <address><email>oprofile-list@lists.sf.net</email>.</address>
-<para>Do I hear you shout "but my event value is low, but not stupid !" ? Yes, this can be the case. In these
-circumstances, a simple solution is to disable kernel profiling by turning off the kernel option for
-each enabled counter. As the NMI handler is in-kernel, this avoids the problem.
-</para>
-
 </sect2>
 
 </sect1>
@@ -841,7 +822,7 @@ each enabled counter. As the NMI handler is in-kernel, this avoids the problem.
 running process, or process tty group. You can set
 the pid/pgrp values via the <filename>--pid-filter</filename> and <filename>--pgrp-filter</filename>
 options to <command>opcontrol --setup</command>, which will make the daemon ignore samples for processes
-that don't match the filter.
+that don't match the filter. These options are not available in 2.5 kernels.
 </para>
 </sect2>
 
@@ -880,56 +861,29 @@ the profiler. This can happen on lightly-loaded machines. Remember you can force
 </para>
 <para><command>opcontrol --dump</command></para>
 <para>Remember to do this before complaining there is no profiling data !
-Now that we've got some data, it has to be processed. That's the job of <command>oprofpp</command> or <command>op_to_source</command>.
-This works on a sample file in the <filename>/var/lib/oprofile/samples/</filename> directory,
-along with the binary file being profiled, to produce human-readable data. Note that if the binary file changes
+Now that we've got some data, it has to be processed. That's the job of <command>oprofpp</command>,
+<command>op_time</command>, or <command>op_to_source</command>.
+These work on sample files in the <filename>/var/lib/oprofile/samples/</filename> directory,
+along with the binary files being profiled, to produce human-readable data. Note that if the binary file changes
 after the sample file was created, you won't be able to get useful data out. This situation is detected for you.
-Note that several instances of a binary are merged into one sample file. By default, all samples from a dynamically linked library
+Several instances of a binary are merged into one sample file. By default, all samples from a dynamically linked library
 are merged into one sample file as well.
 </para>
 <para>
 A different scenario happen when re-starting profiling with different parameters, as the old sample files from previous sessions don't
 get deleted (allowing you to build profiles over many distinct profiling sessions).
 If the last session is determined to be out of date due to the use of different profiling parameters, all the samples files are
-backed up in a sub-directory name session-#nr.
-If during profiling the daemon detects a change to a binary image and a samples file belonging to this binary exists, the samples file is silently deleted.
-So if during profiling you change a binary it is your responsibility to save the binary image <emphasis>and</emphasis> the samples files, if 
+backed up in a sub-directory named session-#nr.
+If during profiling the daemon detects a change to a binary image and a sample file belonging to this binary exists, the sample file is silently deleted.
+So if during profiling, you change a binary, it is your responsibility to save the binary image <emphasis>and</emphasis> the sample files, if 
 you need it.
 </para>
-<para>
-Note that kernel modules without symbol data (this can happen with some initrd setups) cannot be profiled (modules
-with symbols show up in <filename>/proc/ksyms</filename>).
-</para>
-
-<sect1 id="post-profile-tools-common-options">
-<title>common options to post-profile tools</title>
-<para>
-All post profile tools accept the following options
-</para>
-<variablelist>
-	<varlistentry>
-		<term><option>--help</option></term>
-		<term><option>--usage</option></term>
-		<term><option>-?</option></term>
-		<listitem><para>
-		Show the command line options.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--version</option></term>
-		<term><option>-v</option></term>
-		<listitem><para>
-		Show the version number of OProfile.
-		</para>
-		</listitem>
-	</varlistentry>
-</variablelist>
-</sect1>
 
 <sect1 id="post-profiler">
 <title><command>oprofpp</command> usage</title>
 <para>
-Oprofpp can be used in three major modes; list symbol mode, detailed symbol mode, or <command>gprof</command> mode.
+The <command>oprofpp</command> utility can be used in three major modes; list symbol mode, detailed symbol mode,
+or <command>gprof</command> mode.
 The first gives sorted histogram output of sample counts against functions as shown in the walkthrough. The second
 can show individual sample counts against instructions inside a function, useful for detailed profiling, whilst the
 third mode is handy if you're used to <command>gprof</command> style output. Note that only flat <command>gprof</command>
@@ -943,7 +897,7 @@ Some interesting options of the post-processor :
 		<term><option>--samples-file</option> <filename>filename</filename></term>
 		<term><option>-f</option> <filename>filename</filename></term>
 		<listitem><para>
-		The samples file to use. By default, the current samples file for the given binary is used;
+		The sample file to use. By default, the current sample file for the given binary is used;
 		this option can be used to examine older sample files.
 		</para></listitem>
 	</varlistentry>
@@ -951,7 +905,7 @@ Some interesting options of the post-processor :
 		<term><option>--image-file</option> <filename>filename</filename></term>
 		<term><option>-i</option> <filename>filename</filename></term>
 		<listitem><para>
-		The binary image (shared library, kernel vmlinux, or program) to produce data for.
+		The binary image (shared library, kernel vmlinux, or application) to produce data for.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1022,7 +976,7 @@ Some interesting options of the post-processor :
 		<term><option>--show-shared-libs</option></term>
 		<term><option>-k</option></term>
 		<listitem><para>
-		Show the details for each shared lib which belongs to the given application. This option is useful only
+		Show the details of shared library and kernel profiles specific to this application. This option is useful only
 		if you have profiled with the <option>--separate</option> option and you don't specify on
 		the oprofpp command line <option>--dump-gprof-file</option>.
 		</para></listitem>
@@ -1036,11 +990,11 @@ Some interesting options of the post-processor :
 		<tbody>
 		<row><entry><option>v</option></entry><entry>VMA (symbol address)</entry></row>
 		<row><entry><option>s</option></entry><entry>Sample count</entry></row>
-		<row><entry><option>S</option></entry><entry>Cumulative sample count</entry></row>
+		<row><entry><option>S</option></entry><entry>Accumulative sample count</entry></row>
 		<row><entry><option>p</option></entry><entry>Sample percentage relative to image</entry></row>
-		<row><entry><option>P</option></entry><entry>Cumulative sample percentage relative to image</entry></row>
+		<row><entry><option>P</option></entry><entry>Accumulative sample percentage relative to image</entry></row>
 		<row><entry><option>q</option></entry><entry>Sample percentage relative to all images</entry></row>
-		<row><entry><option>Q</option></entry><entry>Cumulative sample percentage relative to all images</entry></row>
+		<row><entry><option>Q</option></entry><entry>Accumulative sample percentage relative to all images</entry></row>
 		<row><entry><option>n</option></entry><entry>Name of symbol</entry></row>
 		<row><entry><option>l</option></entry><entry>Source filename and line number</entry></row>
 		<row><entry><option>L</option></entry><entry>Short source filename and line number</entry></row>
@@ -1052,33 +1006,169 @@ Some interesting options of the post-processor :
 		</tgroup>
 		</informaltable>
 		<para>
-		This option is not available with -dump-gprof-file.
+		This option is not relevant to --dump-gprof-file.
 		</para>
 		</listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--session</option> session-name</term>
 		<listitem><para>
-		Specify the session name you want to use, session-name can be an absolute path
-		where samples reside or a session name relative to samples files base directory.
-		If you specify a samples filename with an absolute path this option is ignored
+		Specify the session name you want to use. The session name can be an absolute path
+		where samples reside, or a session name relative to the sample files base directory.
+		If you specify a samples filename with an absolute path this option is ignored.
 		</para></listitem>
 	</varlistentry>
 </variablelist>
 
 </sect1>
 
-<sect1 id="op-to-source">
-<title><command>op_to_source</command>: Outputting annotated source</title>
+<sect1 id="op-time">
+<title><command>op_time</command>: Overall view of all system binaries</title>
 <para>
-<command>op_to_source</command> generates annotated source files or assembly listings optionally mixed with source.
-If you want to see the source file the profiled application needs to have debug information and the source
-must be available through this debug information e.g. compile the application with <option>-g</option> for 
-<command>gcc</command>. If the binary don't contain sufficient debug info you can use <command>op_to_source <option>--assembly</option></command> to get assembly annotation. See the FAQ <xref linkend="symbol-and-debug-info" /> about debug information vs symbol information.
+You can get an overall summary of relative binary profiles using <command>op_time</command>. This utility displays
+the relative amount of samples for each application profiled sorted by decreasing order of samples count. So
+with <command>op_time [<option>--option</option>] [<filename>image_name[,image_names]</filename>]</command> you can get :
+</para>
+<screen>
+/lib/libc-2.1.2.so 19 32.7586%
+/usr/X11R6/bin/XF86_SVGA 13 22.4138%
+...
+/usr/bin/grep 1 1.72414%
+/usr/X11R6/lib/libXt.so.6.0 1 1.72414%
+</screen>
+<para>
+If you don't specify any image names on the command line op_time reports information
+about all profiled binary images.
+You can use shell wildcards like :
+<command>op_time <filename>/usr/bin/*</filename></command>
 </para>
 <para>
-Note that for the reason explained in <xref linkend="hardware-counters" /> the results can show some
-inaccuracy. The debug info itself can add other problems; for example, the line number for a symbol can be
+Options allowed are :
+</para> 
+<variablelist>
+	<varlistentry>
+		<term><option>--counter</option> nr</term>
+		<term><option>-c</option></term>
+		<listitem><para>
+		Use counter <option>nr</option> for sorting samples count.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--show-shared-libs</option></term>
+		<term><option>-k</option></term>
+		<listitem><para>
+		Show the details for the shared libraries/kernel for each application. This option is
+		useful only if you have profiled with the <option>--separate</option> option.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--list-symbols</option></term>
+		<term><option>-l</option></term>
+		<listitem><para>
+		Show details for each symbol in each profiled file.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--demangle</option></term>
+		<term><option>-d</option></term>
+		<listitem><para>
+		Demangle GNU C++ symbol names.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--show-image-name</option></term>
+		<term><option>-n</option></term>
+		<listitem><para>
+		Show the image name when using <option>--list-symbols</option>.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--reverse</option></term>
+		<term><option>-r</option></term>
+		<listitem><para>
+		Sort by decreasing sample count instead of increasing count.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--path</option> path list ',' separated</term>
+		<term><option>-p</option> path list ',' separated</term>
+		<listitem><para>
+		Specify an alternate list of pathnames to locate image files. This is useful if your sample filenames
+		does not match the image file name, such as a kernel module loaded at boot time through initrd.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--recursive-path</option> path list ',' separated</term>
+		<term><option>-P</option> path list ',' separated</term>
+		<listitem><para>
+		Specify an alternate list of pathnames to locate image files. This is useful if your sample filenames
+		does not match the image file name, such as a kernel module loaded at boot time through initrd.
+		This searches recursively in the given paths.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--output-format</option> vsSpPnlLiIeEh</term>
+		<term><option>-t</option> vsSpPnlLiIeEh</term>
+		<listitem><para>Specify the outputs and formatting, as given in this table :</para>
+		<informaltable frame="all">
+		<tgroup cols='2'> 
+		<tbody>
+		<row><entry><option>v</option></entry><entry>VMA (symbol address)</entry></row>
+		<row><entry><option>s</option></entry><entry>Sample count</entry></row>
+		<row><entry><option>S</option></entry><entry>Accumulative sample count</entry></row>
+		<row><entry><option>p</option></entry><entry>Sample percentage relative to image</entry></row>
+		<row><entry><option>P</option></entry><entry>Accumulative sample percentage relative to image</entry></row>
+		<row><entry><option>n</option></entry><entry>Name of symbol</entry></row>
+		<row><entry><option>l</option></entry><entry>Source filename and line number</entry></row>
+		<row><entry><option>L</option></entry><entry>Short source filename and line number</entry></row>
+		<row><entry><option>i</option></entry><entry>Image name</entry></row>
+		<row><entry><option>I</option></entry><entry>Short image name</entry></row>
+		<row><entry><option>e</option></entry><entry>Application name</entry></row>
+		<row><entry><option>E</option></entry><entry>Basename of application</entry></row>
+		<row><entry><option>d</option></entry><entry>Detailed sample results</entry></row>
+		<row><entry><option>h</option></entry><entry>Print a columns header</entry></row>
+		</tbody></tgroup>
+		</informaltable>
+		<para>
+		Options <option>e</option> and <option>E</option> are useless unless you profile with
+		<option>--separate=library</option>.
+		</para>
+		<para>
+		These options can only be used in conjunction with <option>--list-symbols</option>. 
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--exclude-symbol</option> symbol[,symbol]</term>
+		<term><option>-e</option> symbol[,symbol]</term>
+		<listitem><para>
+		Comma-separated list of symbols to ignore. This can be useful to ignore the leading contributors
+		to the sample histogram, as the percentage values are re-calculated.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--session</option> session-name</term>
+		<listitem><para>
+		Specify the session name you want to use. The session name can be an absolute path
+		where samples reside, or a session name relative to the sample files base directory.
+		</para></listitem>
+	</varlistentry>
+</variablelist>
+</sect1>
+</chapter>
+
+<sect1 id="op-to-source">
+<title><command>op_to_source</command>: outputting annotated source</title>
+<para>
+<command>op_to_source</command> generates annotated source files or assembly listings, optionally mixed with source.
+If you want to see the source file, the profiled application needs to have debug information, and the source
+must be available through this debug information. For GCC, you must use the <option>-g</option> when you are
+compiling.
+If the binary doesn't contain sufficient debug information, you can still use <command>op_to_source <option>--assembly</option></command>
+to get annotated assembly. See the FAQ <xref linkend="symbol-and-debug-info" /> about debug information vs symbol information.
+</para>
+<para>
+Note that for the reason explained in <xref linkend="hardware-counters" /> the results can be
+inaccurate. The debug information itself can add other problems; for example, the line number for a symbol can be
 incorrect. Assembly instructions can be re-ordered and moved by the compiler, and this can lead to
 crediting source lines with samples not really "owned" by this line. Also see
 <xref linkend="interpreting" />.
@@ -1092,7 +1182,7 @@ The options allowed are :
 		<term><option>-a</option></term>
 		<listitem><para>
 		<!-- FIXME: update if this changes -->
-		Output assembly code. Currently the assembly code is sorted in increasing order on the vma
+		Output assembly code. Currently the assembly code is sorted in increasing order of the <acronym>VMA</acronym> 
 		address. The <option>--sort-by-counter</option>, <option>--with-more-than-samples percent_nr</option> and
 		<option>--until-more-than-samples percent_nr</option> options can also be used with this
 		option to provide filtering capabilities.
@@ -1145,15 +1235,16 @@ The options allowed are :
 		<term><option>--source-with-assembly</option></term>
 		<term><option>-s</option></term>
 		<listitem><para>
-		Output assembly code mixed with the source file, implies <option>--assembly</option>.
+		Output assembly code mixed with the source file. Implies <option>--assembly</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--objdump-params</option></term>
 		<term><option>-o</option></term>
 		<listitem><para>
-		Pass the comma separated additional parameters to objdump. Check the objdump man page
-		to see what options objdump accept e.g. <option>-o '--disassembler-options=intel'</option>
+		Pass the given, comma-separated, additional parameters to <command>objdump</command>.
+		Check the <command>objdump</command> man page
+		to see what options objdump accepts; e.g. <option>-o '--disassembler-options=intel'</option>
 		to get Intel assembly syntax instead of att syntax. This option can be used only with
 		<option>--assembly</option> or <option>--source-with-assembly</option>
 		</para></listitem>
@@ -1163,7 +1254,7 @@ The options allowed are :
 		<term><option>-c counter_nr</option></term>
 		<listitem><para>
 		Sort by decreasing number of samples on counter_nr. For assembly output this option provides only
-		a filtering and not a sort order.
+		filtering and not a sort order.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1171,7 +1262,7 @@ The options allowed are :
 		<term><option>-w percent_nr</option></term>
 		<listitem><para>
 		Output source file which contains at least <option>percent_nr</option> samples.
-		Can not be combined with <option>--until-more-than-samples</option>.
+		Cannot be combined with <option>--until-more-than-samples</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1179,7 +1270,7 @@ The options allowed are :
 		<term><option>-m percent_nr</option></term>
 		<listitem><para>
 		Output source files until the amount of samples in these files reach percent_nr samples.
-		Can not be combined with <option>--with-more-than-samples</option>.
+		Cannot be combined with <option>--with-more-than-samples</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1191,7 +1282,7 @@ The options allowed are :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--image-file</option>  <filename>filename</filename></term>
+		<term><option>--image-file</option> <filename>filename</filename></term>
 		<term><option>-i </option>  <filename>filename</filename></term>
 		<listitem><para>
 		Specify the image file.
@@ -1216,9 +1307,9 @@ The options allowed are :
 	<varlistentry>
 		<term><option>--session</option> session-name</term>
 		<listitem><para>
-		Specify the session name you want to use, session-name can be an absolute path
-		where samples reside or a session name relative to samples files base directory.
-		If you specify a samples filename with an absolute path this option is ignored
+		Specify the session name you want to use. The session name can be an absolute path
+		where samples reside, or a session name relative to the sample files base directory.
+		If you specify a samples filename with an absolute path this option is ignored.
 		</para></listitem>
 	</varlistentry>
 </variablelist>
@@ -1240,7 +1331,7 @@ The options allowed are :
 </para>
 <variablelist>
 	<varlistentry>
-		<term><option>--use-counter</option> nr</term>
+		<term><option>--counter</option> nr</term>
 		<term><option>-c</option></term>
 		<listitem><para>
 		use the given counter number to select the appropriate samples files
@@ -1249,145 +1340,14 @@ The options allowed are :
 </variablelist>
 </sect1>
 
-<sect1 id="op-time">
-<title><command>op_time</command>: Overall view of all system binaries</title>
-<para>
-You can get a quick look at an overall summary of relative binary profiles using <command>op_time</command>. This utility displays
-the relative amount of samples for each application profiled sorted by decreasing order of samples count. So
-with <command>op_time [<option>--option</option>] [<filename>image_name[,image_names]</filename>]</command> you can get :
-</para>
-<screen>
-/lib/libc-2.1.2.so 19 32.7586%
-/usr/X11R6/bin/XF86_SVGA 13 22.4138%
-...
-/usr/bin/grep 1 1.72414%
-/usr/X11R6/lib/libXt.so.6.0 1 1.72414%
-</screen>
-<para>
-If you don't specify any image_name on command line op_time report information about all profiled binary image.
-You can use shell wildcards like :
-<command>op_time <filename>/usr/bin/*</filename></command>
-</para>
-<para>
-Options allowed are :
-</para> 
-<variablelist>
-	<varlistentry>
-		<term><option>--use-counter</option> nr</term>
-		<term><option>-c</option></term>
-		<listitem><para>
-		use counter nr for sorting samples count
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--show-shared-libs</option></term>
-		<term><option>-k</option></term>
-		<listitem><para>
-		Show the details for each shared lib which belongs to one application. This option is
-		useful only if you have profiled with the <option>--separate=library</option> option.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--list-symbols</option></term>
-		<term><option>-l</option></term>
-		<listitem><para>
-		Show details for each symbols in each profiled files
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--demangle</option></term>
-		<term><option>-d</option></term>
-		<listitem><para>
-		demangle GNU C++ symbol names
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--show-image-name</option></term>
-		<term><option>-n</option></term>
-		<listitem><para>
-		show the image name when specifying <option>--list-symbols</option>
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--reverse</option></term>
-		<term><option>-r</option></term>
-		<listitem><para>
-		Sort by decreasing samples count instead of increasing count.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--path</option> path list ',' separated</term>
-		<term><option>-p</option> path list ',' separated</term>
-		<listitem><para>
-		Specify an alternate list of pathname to locate image file. This is usefull if your samples files
-		name does not match the image file name such as module loaded at boot time through a ram disk
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--recursive-path</option> path list ',' separated</term>
-		<term><option>-P</option> path list ',' separated</term>
-		<listitem><para>
-		Same as <option>mdash;</option> but retrieve recursively the image file name in the path list
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--output-format</option> vsSpPnlLiIeEh</term>
-		<term><option>-t</option> vsSpPnlLiIeEh</term>
-		<listitem><para>Specify the output and formatting, as given in this table :</para>
-		<informaltable frame="all">
-		<tgroup cols='2'> 
-		<tbody>
-		<row><entry><option>v</option></entry><entry>VMA (symbol address)</entry></row>
-		<row><entry><option>s</option></entry><entry>Sample count</entry></row>
-		<row><entry><option>S</option></entry><entry>Cumulative sample count</entry></row>
-		<row><entry><option>p</option></entry><entry>Sample percentage relative to image</entry></row>
-		<row><entry><option>P</option></entry><entry>Cumulative sample percentage relative to image</entry></row>
-		<row><entry><option>n</option></entry><entry>Name of symbol</entry></row>
-		<row><entry><option>l</option></entry><entry>Source filename and line number</entry></row>
-		<row><entry><option>L</option></entry><entry>Short source filename and line number</entry></row>
-		<row><entry><option>i</option></entry><entry>Image name</entry></row>
-		<row><entry><option>I</option></entry><entry>Short image name</entry></row>
-		<row><entry><option>e</option></entry><entry>Application name</entry></row>
-		<row><entry><option>E</option></entry><entry>Basename of application</entry></row>
-		<row><entry><option>d</option></entry><entry>Detailed sample results</entry></row>
-		<row><entry><option>h</option></entry><entry>Print a columns header</entry></row>
-		</tbody></tgroup>
-		</informaltable>
-		<para>
-		<option>e</option> and <option>E</option> are useless unless you profile with
-		<option>--separate=library</option>.
-		</para>
-		<para>
-		These options can only be used in conjunction with <option>--list-symbols</option>. 
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--exclude-symbol</option> symbol[,symbol]</term>
-		<term><option>-e</option> symbol[,symbol]</term>
-		<listitem><para>
-		Comma-separated list of symbols to ignore. This can be useful to ignore the leading contributors
-		to the sample histogram, as the percentage values are re-calculated.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--session</option> session-name</term>
-		<listitem><para>
-		Specify the session name you want to use, session-name can be an absolute path
-		where samples reside or a session name relative to samples files base directory.
-		</para></listitem>
-	</varlistentry>
-</variablelist>
-</sect1>
-</chapter>
-
 <chapter id="interpreting">
 <title>Interpreting profiling results</title>
 <para>
-Another grey art. The standard caveats of profiling come
-to mind: profile realistic situations, profile different scenarios, profile
+The standard caveats of profiling apply in interpreting the results from OProfile:
+profile realistic situations, profile different scenarios, profile
 for as long as a time as possible, avoid system-specific artifacts, don't trust
 the profile data too much. Also bear in mind the comments on the performance
-counters above - you can <emphasis>not</emphasis> rely on totally accurate
+counters above - you <emphasis>cannot</emphasis> rely on totally accurate
 instruction-level profiling.  However, for almost all circumstances the data
 can be useful. Ideally a utility such as Intel's VTUNE would be available to
 allow careful instruction-level analysis; go hassle Intel for this, not me ;)
@@ -1430,13 +1390,12 @@ $ op_to_source -a -w 10
  804839b:       jns    8048394
 </screen>
 <para>
-The problem comes from the x86 hardware; when the counter overflows the IRQ line
-is asserted but the hardware have features that can delay the NMI interrupt:
-x86 hardware is synchronous (e.g. can not interrupt during an instruction but
-interrupt at the end of instruction), there is also a latency when the IRQ
-line is asserted the hardware can take some cycles to get account; the multiple
-execution unit and the out of order model of modern x86 family also causes
-problems. The following shows the same function at source level
+The problem comes from the x86 hardware; when the counter overflows the IRQ
+is asserted but the hardware has features that can delay the NMI interrupt:
+x86 hardware is synchronous (i.e. cannot interrupt during an instruction);
+there is also a latency when the IRQ is asserted, and the multiple
+execution units and the out-of-order model of modern x86 CPUs also causes
+problems. This is the same function, with annotation :
 </para>
 <screen>
 $op_to_source -a -w 10 show
@@ -1461,10 +1420,10 @@ double fun(double a, double b, double c)
 }
 </screen>
 <para>
-So the conclusion: don't trust samples coming at the end of a loop,
-particularly if the last instruction generated by the compiler is costly, this
-case can occur also for each branch in your program. Always bear in mind that samples
-can be often delayed by a few cycles from its real position. That's a hardware
+The conclusion: don't trust samples coming at the end of a loop,
+particularly if the last instruction generated by the compiler is costly. This
+case can also occur for branches. Always bear in mind that samples
+can be delayed by a few cycles from its real position. That's a hardware
 problem and OProfile can do nothing about it.
 </para>
 </sect1>
@@ -1611,40 +1570,40 @@ int main()
  80484f5:       ret
 </screen>
 <para>
-So here it's clear than copying is correctly credited with of all the samples, but the
-line number info are misplaced. <command>objdump -dS</command> exposes the
-same problem. Note that maintaining accurate debug info for compilers when optimizing is difficult so this problem is not suprising. The problem of debug info
+So here it's clear that copying is correctly credited with of all the samples, but the
+line number information is misplaced. <command>objdump -dS</command> exposes the
+same problem. Note that maintaining accurate debug information for compilers when optimizing is difficult, so this problem is not suprising.
+The problem of debug information
 accuracy is also dependent on the binutils version used; some BFD library versions
-contain a work-around for known problems of gcc, some others do not. This is unfortunate but we must live with that,
-since profiling is pointless when you disable optimisation (which would give better debug info entries).
+contain a work-around for known problems of <command>gcc</command>, some others do not. This is unfortunate but we must live with that,
+since profiling is pointless when you disable optimisation (which would give better debugging entries).
 </para>
 </sect2>
 </sect1>
 <sect1 id="symbol-without-debug-info">
-<title>Assembly function</title>
+<title>Assembly functions</title>
 <para>
-Often the assembler can not generate debug information automatically. Such example of commonly used assembler is
-<command>gas</command> and <command>nasm</command>. This means than you can not get a source report unless 
+Often the assembler cannot generate debug information automatically.
+This means that you cannot get a source report unless 
 you manually define the neccessary debug information; read your assembler documentation for how you might
 do that. The only
-debugging info needed currently by OProfile is the linenr/filename-VMA association. When profiling assembly
-without debugging info you can always get report for symbol, and optionally for VMA, through <command>oprofpp -l</command>
-or <command>oprofpp -L</command> but this works only for symbol with the right attributes.
-For gas you can get this by
+debugging info needed currently by OProfile is the line-number/filename-VMA association. When profiling assembly
+without debugging info you can always get report for symbols, and optionally for VMA, through <command>oprofpp -l</command>
+or <command>oprofpp -L</command>, but this works only for symbol with the right attributes.
+For <command>gas</command> you can get this by
 </para>
 <screen>
 .globl foo
 	.type	foo,@function
 </screen>
 <para> 
-while for nasm you must use
+whilst for <command>nasm</command> you must use
 </para>
 <screen>
 	  GLOBAL foo:function		; [1]
 </screen>
 <para>
-Note than OProfile does not need the global attribute, but only the function attribute. Users of gas and nasm
-must find the right way to not declare the foo symbol global if necessary.
+Note that OProfile does not need the global attribute, only the function attribute.
 </para>
 </sect1>
 <!-- 
@@ -1665,9 +1624,9 @@ show such example
 <title>Other discrepancies</title>
 <para>
 Another cause of apparent problems is the hidden cost of instructions. A very
-common example is two memory reads: one from L1 cache and the other from memory.
-It's clear for all people than the second memory read will show more samples
-but there are many other causes of hidden cost of instructions. A non-exhaustive
+common example is two memory reads: one from L1 cache and the other from memory:
+the second memory read is likely to have more samples.
+There are many other causes of hidden cost of instructions. A non-exhaustive
 list: mis-predicted branch, TLB cache miss, partial register stall,
 partial register dependencies, memory mismatch stall, re-executed µops. If you want to write
 programs at the assembly level, be sure to take a look at the Intel and
@@ -1705,10 +1664,10 @@ o more ...
 <chapter id="overhead">
 <title>Profiling overhead</title>
 <para>
-One of the major design criterion for OProfile was low overhead. In many cases
+One of the major design criteria for OProfile was low overhead. In many cases
 profiling is hardly noticeable in terms of overhead (I regularly leave it turned on
 all the time). It achieves this by judicious use of kernel-side data structures
-to reduce the analysis overhead to a bare runtime minimum. There are several things
+to reduce the collection overhead to a bare runtime minimum. There are several things
 that unfortunately complicate the issue, so there are cases where the overhead is
 noticeable.
 </para>
@@ -1717,7 +1676,7 @@ The worst-case scenario is where there are many short-lived processes. This can 
 in a kernel compile, for instance. Even in this worst case overhead
 is low compared to other profilers; only very detailed profiling of these workloads
 has an overhead of higher than 5%. Actual performance
-data is presented in the CVS tree. In fact most situations have much fewer
+data is presented in CVS. In fact most situations have much fewer
 numbers of processes, leading to far better performance.
 </para>
 <para>Some graphs of performance characteristics of OProfile are available on the website
@@ -1742,7 +1701,7 @@ is showed as "See section 1" ...
 <sect1 id="symbol-and-debug-info">
 <title>Why do I see (no symbol) in profiling report ?</title>
 <para>
-Some post-profile tools need only symbol information like basic use of <command>oprofpp</command>, whilst
+Some post-profile tools need only symbol information like the basic use of <command>oprofpp</command>, whilst
 others need debugging information, like <command>op_to_source</command>. The notions of debugging information and symbol
 information are orthogonal. <command>gcc</command> always creates symbol information even without <option>-g</option>.
 You should be aware that <command>strip</command> by default remove debug <emphasis>and</emphasis> symbol information. You must use
@@ -1751,7 +1710,7 @@ without symbol information leads to a lot of (no symbol) reported by <command>op
 </para>
 <para>
 Note that the post-profile tools do not use dynamic symbols for shared libraries in the absence of
-symbol information. These symbol are never stripped but
+symbol information. These symbols are never stripped, but
 using them has a risk of a misleading profile. Dynamic symbols don't provide enough information to create accurate
 profiling report, because the symbol size information is lost, and we don't know if a sample is from an exported
 function or from a static function which come immediately after this exported symbol.

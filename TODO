@@ -20,6 +20,8 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o --smart-demangle is not documented
+ o Add something  to op_help so user can see if they're using timer/rtc mode or not
  o oprof_start should use the same config file as opcontrol ...
  o opcontrol -- need a way to turn OFF a counter now after setting one up
  o oprofpp needs -P too
