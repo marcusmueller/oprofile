@@ -1025,8 +1025,10 @@ do_save_session () {
 
 
 move_and_remove() {
-	mv $1 $SAMPLES_DIR/.tmp_reset.$$
-	rm -rf $SAMPLES_DIR/.tmp_reset.$$
+	if test -e $1; then
+		mv $1 $SAMPLES_DIR/.tmp_reset.$$
+		rm -rf $SAMPLES_DIR/.tmp_reset.$$
+	fi
 }
 
 #remove all the sample files
