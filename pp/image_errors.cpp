@@ -12,6 +12,8 @@
 
 #include "arrange_profiles.h"
 
+#include <iostream>
+
 using namespace std;
 
 
