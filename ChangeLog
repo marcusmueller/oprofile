@@ -1,5 +1,9 @@
 2003-03-14  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* gui/oprof_start.cpp: gcc 2.91 warning work around
+
+2003-03-14  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libop/op_events.c: fix a daemon segfault depending on the used
 	  libc version, added 2003-03-04 (0.5.1 is ok)
 
