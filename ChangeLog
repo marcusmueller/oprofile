@@ -1,5 +1,9 @@
 2003-07-08  Will Cohen  <wcohen@redhat.com>
 
+        * daemon/opd_kernel.c: Handle /proc/modules format.
+	
+2003-07-08  Will Cohen  <wcohen@redhat.com>
+
 	* doc/oprofile.xml:
 	* configure.in: --enable-gcov option and documentation.
 

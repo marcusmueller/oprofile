@@ -192,7 +192,7 @@ void opd_reread_module_info(void)
 	char * line;
 	struct opd_module * mod;
 	int module_size;
-	int ref_count;
+	char ref_count[32];
 	int ret;
 	char module_name[256+1];
 	char live_info[32];
@@ -225,8 +225,8 @@ void opd_reread_module_info(void)
 			continue;
 		}
 
-		ret = sscanf(line, "%256s %u %u %4096s %32s %llx",
-			     module_name, &module_size, &ref_count,
+		ret = sscanf(line, "%256s %u %32s %4096s %32s %llx",
+			     module_name, &module_size, ref_count,
 			     dependencies, live_info, &start_address);
 		if (ret != 6) {
 			printf("bad /proc/modules entry: %s\n", line);
