@@ -4,6 +4,8 @@ if have_qt
 
 AM_CPPFLAGS = @QT_INCLUDES@
 
+AM_CXXFLAGS = @OP_CXXFLAGS@
+
 noinst_LIBRARIES = liboprof_start.a
 nodist_liboprof_start_a_SOURCES = oprof_start.base.cpp oprof_start.base.moc.cpp
 

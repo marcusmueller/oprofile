@@ -1,4 +1,5 @@
 AM_CPPFLAGS = -I ${top_srcdir}/libutil++
+AM_CXXFLAGS = @OP_CXXFLAGS@
 
 noinst_LIBRARIES = libop_regex.a
 

@@ -7,6 +7,8 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop++ \
 	-I ${top_srcdir}/libregex
 
+AM_CXXFLAGS = @OP_CXXFLAGS@
+
 noinst_LIBRARIES = libpp.a
 libpp_a_SOURCES = \
 	format_output.cpp \

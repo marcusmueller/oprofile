@@ -1,3 +1,5 @@
+AM_CFLAGS = @OP_CFLAGS@
+
 noinst_LIBRARIES = libutil.a
 libutil_a_SOURCES = \
 	op_deviceio.c \

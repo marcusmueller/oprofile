@@ -24,6 +24,8 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libdb
 
+AM_CFLAGS = @OP_CFLAGS@
+
 bin_PROGRAMS = oprofiled
 
 oprofiled_SOURCES = $(dist_sources)

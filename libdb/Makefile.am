@@ -2,6 +2,8 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libutil
 
+AM_CFLAGS = @OP_CFLAGS@
+
 noinst_LIBRARIES = libodb.a
 
 libodb_a_SOURCES = \

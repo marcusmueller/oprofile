@@ -1,3 +1,9 @@
+2003-05-21  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* */Makefile.am:
+	* configure.in: handle our own OP_CFLAGS, OP_CXXFLAGS to let user
+	  free to use make CFLAGS=
+
 2003-05-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libregex/mangled-name.txt:

@@ -1,4 +1,5 @@
 AM_CPPFLAGS=-I ${top_srcdir}/libop -I ${top_srcdir}/libutil
+AM_CFLAGS = @OP_CFLAGS@
 
 LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
 

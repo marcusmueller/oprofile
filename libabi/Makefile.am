@@ -18,6 +18,8 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libdb \
 	-I ${top_srcdir}/libopt++
 
+AM_CXXFLAGS = @OP_CXXFLAGS@
+
 noinst_LIBRARIES = libabi.a
 libabi_a_SOURCES = abi.cpp op_abi.cpp
 

@@ -1,4 +1,5 @@
 AM_CPPFLAGS=-I${top_srcdir}/libutil
+AM_CFLAGS = @OP_CFLAGS@
 
 noinst_LIBRARIES = libop.a
 libop_a_SOURCES = \
