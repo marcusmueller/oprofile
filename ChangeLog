@@ -1,5 +1,11 @@
 2001-10-17  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprofile.c: don't mask when restoring MSR values
+ 
+	* doc/Makefile.in: don't use man symlinks
+ 
+2001-10-17  John Levon  <moz@compsoc.man.ac.uk>
+
 	* oprofile.c: save original counter setup
 	  and restore on unload (bug #464094)
 

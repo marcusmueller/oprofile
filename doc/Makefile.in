@@ -1,10 +1,11 @@
-# $Id: Makefile.in,v 1.7 2001/10/12 19:22:43 movement Exp $
+# $Id: Makefile.in,v 1.8 2001/10/16 23:35:52 movement Exp $
 
 prefix=@prefix@
 MANDIR=@mandir@/man1
 CATDIR=@mandir@/cat1
 LN_SF=ln -sf
 RM=rm
+CP=cp
 MKDIR=mkdir
 MKDIR_P=$(MKDIR) -p
 DB2HTML=db2html
@@ -24,9 +25,9 @@ all:
 install:
 	-$(MKDIR_P) $(MANDIR)
 	cp oprofile.1 $(MANDIR)/oprofile.1
-	# FIXME: use .so not soft link ! 
 	@for f in $(LINK_LIST); do				\
-		$(LN_SF) $(MANDIR)/oprofile.1 $(MANDIR)/$$f;	\
+		$(RM) -f $(MANDIR)/$$f;				\
+		$(CP) -f $$f $(MANDIR)/$$f;			\
 	done
 
 uninstall:
