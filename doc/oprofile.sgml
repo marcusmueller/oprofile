@@ -16,7 +16,7 @@
 
 	<copyright>
 		<year>2000-2001</year>
-		<holder>Victoria University of Manchester and John Levon</holder>
+		<holder>Victoria University of Manchester, John Levon and others</holder>
 	</copyright>
 
 </bookinfo>
@@ -67,6 +67,7 @@ necks in real-world systems.
 		<listitem><para>
 			<!-- FIXME: alter this later -->
 			<acronym>SMP</acronym> machines are supported, but performance is currently worse than the UP case.
+			This include SMP Athlon type machines.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.36 2001/09/26 02:42:30 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.37 2001/09/26 14:03:43 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -194,7 +194,6 @@ poptGetContext(0, c, v, 0, 0);
 ],
 AC_MSG_RESULT([takes char **]) CXXFLAGS="$SAVE_CXXFLAGS";,
 AC_MSG_RESULT([takes const char **]); CFLAGS="$CFLAGS -DCONST_POPT"; CXXFLAGS="$SAVE_CXXFLAGS -DCONST_POPT")
-CXXFLAGS=$SAVE_CXXFLAGS 
 
 AC_MSG_CHECKING("whether to use included sstream")
 AC_TRY_COMPILE([#include <sstream>], [], 

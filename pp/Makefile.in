@@ -25,8 +25,8 @@ uninstall:
 
 CC=@CC@
 CXX=@CXX@
-CFLAGS=@CFLAGS@ -Wall -W -Wstrict-prototypes -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline -DOP_EVENTS_DESC
-CXXFLAGS=@CXXFLAGS@ -Wall -W -Wstrict-prototypes -Wstrict-prototypes -Wunused -Wmissing-prototypes -DOP_EVENTS_DESC
+CFLAGS=@CFLAGS@ -Wall -W -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline -DOP_EVENTS_DESC
+CXXFLAGS=@CXXFLAGS@ -Wall -W -Wunused -Wmissing-prototypes -DOP_EVENTS_DESC
 LIBS=-lpopt -lbfd -liberty -ldl
 INCLUDES=@extra_includes@
 HEADERS=oprofpp.h ../dae/opd_util.h ../op_user.h
