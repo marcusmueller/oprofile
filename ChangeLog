@@ -1,3 +1,7 @@
+2003-10-26  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: remove some outdated stuff
+
 2003-10-25  John Levon  <levon@movementarian.org>
 
 	* doc/internals.xml: more docs

@@ -2001,73 +2001,6 @@ and <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/">http://www.amd
 </sect1>
 </chapter>
 
-<chapter id="overhead">
-<title>Profiling overhead</title>
-<para>
-One of the major design criteria for OProfile was low overhead. In many cases
-profiling is hardly noticeable in terms of overhead (I regularly leave it turned on
-all the time). It achieves this by judicious use of kernel-side data structures
-to reduce the collection overhead to a bare runtime minimum. There are several things
-that unfortunately complicate the issue, so there are cases where the overhead is
-noticeable.
-</para>
-<para>
-The worst-case scenario is where there are many short-lived processes. This can be seen
-in a kernel compile, for instance. Even in this worst case overhead
-is low compared to other profilers; only very detailed profiling of these workloads
-has an overhead of higher than 5%. Actual performance
-data is presented in CVS. In fact most situations have much fewer
-numbers of processes, leading to far better performance.
-</para>
-<para>Some graphs of performance characteristics of OProfile are available on the website
- - see <xref linkend="resources" />.
-</para>
-</chapter>
-
-<!--
-
-Commented out until we  have some more stuff here, maybe junk it ...
-
-<chapter id="FAQ">
-<title>FAQ</title>
-
-
-FIXME: I tried to use <sect1>...<sect2> to ensure sourceforge FAQ will go on
-only one html page but <xref linkend="symbol-and-debug-info" /> are showed as: 
-"See Section 1.1"  whilst I expected "See Section 7.1.1" or 
-"See Chapter 7 section 1.1"
-And currently I get the same problem <xref linkend="symbol-and-debug-info" />
-is showed as "See section 1" ...
-
-
-<sect1 id="symbol-and-debug-info">
-<title>Why do I see (no symbol) in profiling report ?</title>
-<para>
-Some post-profile tools need only symbol information like the basic use of <command>oprofpp</command>, whilst
-others need debugging information, like <command>opannoate</command>. The notions of debugging information and symbol
-information are orthogonal. <command>gcc</command> always creates symbol information even without <option>-g</option>.
-You should be aware that <command>strip</command> by default remove debug <emphasis>and</emphasis> symbol information. You must use
-<command>strip <option>-d</option></command> to strip only debug information. Profiling binaries
-without symbol information leads to a lot of (no symbol) reported by <command>oprofpp</command>.
-</para>
-<para>
-Note that the post-profile tools do not use dynamic symbols for shared libraries in the absence of
-symbol information. These symbols are never stripped, but
-using them has a risk of a misleading profile. Dynamic symbols don't provide enough information to create accurate
-profiling report, because the symbol size information is lost, and we don't know if a sample is from an exported
-function or from a static function which come immediately after this exported symbol.
-</para>
-<para>
-In short, if you want to profile already installed binaries on your system, reinstall them with the proper information,
-at least with symbol information for basic <command>oprofpp</command> and <command>opreport <option>-l</option></command> or with full
-debug information to get annotated source. Unfortunately debug information can be very voluminous. The neeeded debug
-information for annotated source, line numbers, is only generated at <option>-g2</option> level.
-</para>
-</sect1>
-
-</chapter>
--->
-
 <chapter id="ack">
 <title>Acknowledgments</title>
 <para>
@@ -2075,7 +2008,7 @@ Thanks to (in no particular order) : Arjan van de Ven, Rik van Riel, Juan Quinte
 Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne, Bob Montgomery, Ray Bryant, H.J. Lu,
 Jeff Esper, Will Cohen, Graydon Hoare, Cliff Woolley, Alex Tsariounov, Al Stone, Jason Yeh,
 Randolph Chung, Anton Blanchard, Richard Henderson, Andries Brouwer, Bryan Rittmeyer,
-Richard Reich (rreich@rdrtech.com), Dave Jones, Charles Filtness; and finally Pulp, for "Intro".
+Richard Reich (rreich@rdrtech.com), Zwane Mwaikambo, Dave Jones, Charles Filtness; and finally Pulp, for "Intro".
 </para>
 </chapter>
 
