@@ -528,7 +528,7 @@ The <command>opcontrol</command> script options used with the
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--separate=</option>[library][,][kernel][,][all]</term>
+		<term><option>--separate=</option>[library,kernel,all]</term>
 		<listitem><para>
 		Separate samples using the separator given.
 		</para>
@@ -541,6 +541,13 @@ The <command>opcontrol</command> script options used with the
 		</tbody>
 		</tgroup>
 		</informaltable>
+		<para>
+		<!-- FIXME: update if this change -->
+		The following restriction apply to <option>--separate=kernel</option> option. For all kernel version
+		hardware interrupt are credited to the current task. On 2.2/2.4 only kernel thread already started at
+		profiling start are correctly profiled, newly started kernel thread samples are credited to vmlinux file.
+		On 2.5 there is no kernel thread profiling, all these sample are credited to vmlinux file.
+		</para>
 		</listitem>
 	</varlistentry>
 	<varlistentry>

@@ -1,3 +1,11 @@
+2003-02-12  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: enhance doc about --separate=kernel
+
+	* utils/opcontrol: handle gracefully opcontrol --deinit if profiler
+	  was already shutdown. Avoid wrong warning when umount /dev/oprofile
+
 2003-02-12  Will Cohen  <wcohen@redhat.com>
 
 	* gui/oprof_start.cpp (oprof_start::oprof_start,

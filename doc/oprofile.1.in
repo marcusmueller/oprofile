@@ -141,11 +141,10 @@ Only profile process pid  (only available for 2.4 version).
 Only profile process tty group pgrp (only available for 2.4 version).
 .br
 .TP
-.BI "--separate="[library][,][kernel][,][all]
+.BI "--separate="[library,kernel,all]
 Separate samples based on the given separator. 'library' per-application
 dynamically linked libraries samples files. 'kernel' per-application modules
-and kernel samples files, 'kernel' imply 'library' samples separation. 'all'
-imply all above options.
+and kernel samples files, 'kernel' imply 'library'. 'all' imply all above options.
 .br
 .TP
 .BI "--vmlinux=" file

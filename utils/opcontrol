@@ -626,7 +626,7 @@ do_options() {
 do_stop() {
 	if test ! -f "$LOCK_FILE"; then
 		echo "Daemon not running" >&2
-		exit 1
+		return
 	fi
 
 	kill -s 0 `cat $LOCK_FILE` 2>/dev/null
@@ -645,8 +645,9 @@ do_stop() {
 
 do_kill_daemon() {
 	if test ! -f "$LOCK_FILE"; then
-		echo "Daemon not running" >&2
-		exit 1
+		# no error message, do_kill_deamon imply stop and stop already
+		# output "Daemon not running"
+		return
 	fi
 
 	kill -s 0 `cat $LOCK_FILE` 2>/dev/null
@@ -951,8 +952,8 @@ do_reset() {
 
 
 do_deinit() {
-	#unmount /dev/oprofile if it is around
-	if test -d /dev/oprofile; then
+	#unmount /dev/oprofile if it is mounted
+	if grep /dev/oprofile /etc/mtab /dev/oprofile; then
 		umount /dev/oprofile
 	fi
 	#unload the oprofile module if it is around
