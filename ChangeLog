@@ -2,6 +2,8 @@
 
 	* dae/op_start: fix bash1 detection
 
+	* doc/Makefile.in: fix install target
+
 2002-03-25  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: some preliminary stuff for NGPT
@@ -18,8 +20,8 @@
  
 2002-04-02  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* oprofpp.cpp:
-	* oprofp_util.cpp: debug and use opp_bfd::symbol_size()
+	* pp/oprofpp.cpp:
+	* pp/oprofp_util.cpp: debug and use opp_bfd::symbol_size()
 
 2002-03-30  Philippe Elie  <phil.el@wanadoo.fr>
 
