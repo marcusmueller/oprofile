@@ -12,9 +12,8 @@ opstack \- produce callgraph symbol summaries
 .SH DESCRIPTION
 
 .B opstack
-outputs binary callgraph symbol summaries. This require an x86 based box
-and a 2.6 kernel patch see http://perso.wanadoo.fr/phil.el/. Note this tools
-is actively developped, don't report glitch for now please.
+outputs binary callgraph symbol summaries. Currently, this requires an
+x86-based box and a 2.6 kernel patch; see http://oprofile.sf.net/patches/.
 
 .SH OPTIONS
 .TP
@@ -55,7 +54,7 @@ Give verbose debugging output.
 Show version.
 
 .SH ENVIRONMENT
-No special environment variables are recognised by opstack
+No special environment variables are recognised by opstack.
 
 .SH FILES
 .TP

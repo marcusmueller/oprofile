@@ -380,7 +380,7 @@ static void load_events(op_cpu cpu_type)
 	if (!list_empty(&events_list))
 		return;
 
-	dir = getenv("OPROFILE_EVENTS_FILE_DIR");
+	dir = getenv("OPROFILE_EVENTS_DIR");
 	if (dir == NULL)
 		dir = OP_DATADIR;
 

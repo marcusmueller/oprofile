@@ -33,6 +33,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 Before 1.0 little stuff
 -----------------------
 
+ o document OPROFILE_EVENT_FILES_DIR
  o depedencies between profile_container.h symbol_container.h and
   sample_container.h become more and more ugly, I needed to include them
   in a specific order in some source.

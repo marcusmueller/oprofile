@@ -291,9 +291,9 @@ add(profile_t const & profile, op_bfd const & caller, op_bfd const & callee,
 		u32 start, end;
 		caller.get_symbol_range(i, start, end);
 
-		profile_t::iterator_pair p_it =
-		  profile.samples_range(odb_key_t(start - caller_offset) << 32,
-					odb_key_t(end - caller_offset) << 32);
+		profile_t::iterator_pair p_it = profile.samples_range(
+			odb_key_t(start - caller_offset) << 32,
+			odb_key_t(end - caller_offset) << 32);
 
 		cg_symbol symb_caller;
 		symb_caller.sample.counts[0] = 0;
@@ -328,7 +328,7 @@ add(profile_t const & profile, op_bfd const & caller, op_bfd const & callee,
 
 			op_bfd_symbol symb(callee_vma, 0, string());
 			vector<op_bfd_symbol>::const_iterator bfd_symb_callee =
-			    upper_bound(callee.syms.begin(),
+				upper_bound(callee.syms.begin(),
 					callee.syms.end(), symb);
 			// ugly but upper_bound() work in this way.
 			if (bfd_symb_callee != callee.syms.begin())

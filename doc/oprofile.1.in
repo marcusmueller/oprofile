@@ -15,6 +15,12 @@ oprofile \- a system-wide profiler
 ]
 [ profile specification ]
 .br
+.B opstack
+[
+.I options
+]
+[ profile specification ]
+.br
 .B opannotate
 [
 .I options
@@ -46,6 +52,10 @@ parameters.
 .B opreport
 gives image and symbol-based profile summaries for the whole system or
 a subset of binary images.
+.SH OPSTACK
+.B opstack
+reports call-graph profile summaries, if call-graph profiling is
+enabled.
 .SH OPANNOTATE
 .B opannotate
 can produce annotated source or mixed source and assembly output.

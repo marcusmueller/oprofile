@@ -1,3 +1,12 @@
+2004-01-24  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.1.in:
+	* doc/opstack.1.in: some cleanups
+
+	* libop/tests/load_events_files_tests.c:
+	* libop/tests/alloc_counter_tests.c:
+	* libop/op_events.c: rename env var to OPROFILE_EVENTS_DIR
+
 2004-01-20  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_sfile.c: (getfile()) avoid out of bound sf->files[] access
