@@ -1,4 +1,4 @@
-/* $Id: op_init.c,v 1.9 2002/02/28 03:33:49 movement Exp $ */
+/* $Id: op_init.c,v 1.10 2002/02/28 03:39:18 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -21,7 +21,7 @@
  
 EXPORT_NO_SYMBOLS;
 
-static void __init set_cpu_type(void)
+static __init op_cpu get_cpu_type(void)
 {
 	__u8 vendor = current_cpu_data.x86_vendor;
 	__u8 family = current_cpu_data.x86;
@@ -29,28 +29,27 @@ static void __init set_cpu_type(void)
 
 	/* unknown vendor */
 	if (vendor != X86_VENDOR_INTEL && vendor != X86_VENDOR_AMD) {
-		sysctl.cpu_type = CPU_RTC;
-		return;
+		return CPU_RTC;
 	}
 
 	/* not a P6-class processor */
-	if (family != 6) {
-		sysctl.cpu_type = CPU_RTC;
-		return;
-	}
-	 
-	/* 0 if PPro, 1 if PII, 2 if PIII, 3 if Athlon */
-	if (current_cpu_data.x86_vendor == X86_VENDOR_AMD) {
-		sysctl.cpu_type = CPU_ATHLON;
-	} else {
-		sysctl.cpu_type = (current_cpu_data.x86_model > 5) ? CPU_PIII :
-			(current_cpu_data.x86_model > 2);
-	}
+	if (family != 6)
+		return CPU_RTC;
+
+	if (vendor == X86_VENDOR_AMD)
+		return CPU_ATHLON;
+ 
+	if (model > 5)
+		return CPU_PIII;
+	else if (model > 2)
+		return CPU_PII; 
+
+	return CPU_PPRO;
 }
 
 int __init stub_init(void)
 {
-	set_cpu_type();
+	sysctl.cpu_type = get_cpu_type();
 	return oprof_init();
 }
 
