@@ -1,3 +1,7 @@
+2003-05-30  Dan Zink  <Dan.Zink@hp.com>
+
+	* module/x86/op_apic.c: really disable the apic if it was disabled
+
 2003-05-29  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol: don't allow --rtc-value if not RTC mode

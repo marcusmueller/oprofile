@@ -140,7 +140,6 @@ static int __init enable_apic(void)
 	return !!(val & APIC_SPIV_APIC_ENABLED);
 
 not_local_apic:
-	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
 	/* disable the apic only if it was disabled */
 	if ((msr_low & (1 << 11)) == 0)
 		wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
