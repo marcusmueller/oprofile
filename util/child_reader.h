@@ -26,6 +26,12 @@
 
 /**
  * a class to read stdout / stderr from a child process.
+ *
+ * two interfaces are provided. read line by line: getline() or read all data 
+ * in one : get_data(). In all case get_data() must be called once to flush the
+ * stderr child output
+ */
+/*
  * FIXME: code review is needed:
  *  - check the getline()/get_data()/block_read() interface.
  *  the expected behavior is:
@@ -39,47 +45,44 @@
  */
 class ChildReader {
 public:
-	/// fork a process. use error() to get error code. Do not try to
-	/// use other public member interface if error() return non-zero
+	/** fork a process. use error() to get error code. Do not try to
+	 * use other public member interface if error() return non-zero */
 	ChildReader(std::string const & cmd,
 		    std::vector<std::string> const & args);
 
-	/// wait for the termination of the child process if this have not
-	/// occur. In this case return code of the child process is not
-	/// available.
+	/** wait for the termination of the child process if this have not
+	 * occur. In this case return code of the child process is not 
+	 * available. */
 	~ChildReader();
 
-	/// two interface are possible. read line by line or read in one block.
-	/// getline only read from stdout of the child. get_data() must be
-	/// called to flush the input from the stderr child.
-	
-	/// fill result from on line of stdout of the child process.
-	/// must be used as:
-	/// ChildReader reader(...);
-	/// while (reader.getline(line)) ....
+	/** fill result from on line of stdout of the child process.
+	 * must be used as:
+	 * ChildReader reader(...);
+	 * while (reader.getline(line)) .... */
 	bool getline(std::string & result);
 
-	/// fill out / err with the stdout / stderr of the child process.
-	/// You can call this after calling one or more time getline(...). This
-	/// call is blocking until the child die.
+	/** fill out / err with the stdout / stderr of the child process.
+	 * You can call this after calling one or more time getline(...). This
+	 * call is blocking until the child die and so on all subsequent
+	 * call will fail */
 	bool get_data(std::ostream & out, std::ostream & err);
 
-	/// rather to rely on dtor to wait for the termination of the child you
-	/// can use terminate_process() to get the return code of the child
-	/// process
+	/** rather to rely on dtor to wait for the termination of the child you
+	 * can use terminate_process() to get the return code of the child
+	 * process */
 	int terminate_process();
 
-	/// return the status of the first error encoutered
-	/// < 0 : the child process can not be child
-	/// > 0 : the child process have return a non zero value
+	/** return the status of the first error encoutered
+	 * < 0 : the child process can not be forked
+	 * > 0 : the child process have return a non zero value */
 	int error() const { return first_error; }
  
 private:
-	/// ctor helper: create the child process.
+	// ctor helper: create the child process.
 	void exec_command(std::string const & cmd,
 			  std::vector<std::string> const & args);
-	/// return false when eof condition is reached on fd1. fd2 can have
-	/// already input in the pipe buffer or in buf2.
+	// return false when eof condition is reached on fd1. fd2 can have
+	// already input in the pipe buffer or in buf2.
 	bool block_read();
 
 	fd_t fd1;

@@ -1,5 +1,13 @@
 2002-03-19  Philippe Elie  <ph_e@club-internet.fr>
 
+	* scripts/Doxyfile: small tweak
+	* op_user.h:
+	* pp/opp_symbol.h:
+	* pp/oprofpp.h:
+	* util/child_reader.h: doxygen comments.
+
+2002-03-19  Philippe Elie  <ph_e@club-internet.fr>
+
 	* pp/opf_filter.h:
 	* pp/opf_container.cpp: remove delegation
 	  {symbol|samples}_container_t -> xxx_impl, no functionnal change

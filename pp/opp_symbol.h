@@ -30,7 +30,7 @@ class samples_files_t;
 class field_description;
 
 //---------------------------------------------------------------------------
-/// A simple container for a fileno:linr location
+/// A simple container for a fileno:linr location.
 struct file_location {
 	/// From where image come this file location
 	std::string image_name;

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.44 2002/03/19 05:41:25 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.45 2002/03/19 21:15:15 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -84,7 +84,7 @@ extern const char * exclude_symbols_str;
 extern int list_all_symbols_details;
 
 //---------------------------------------------------------------------------
-/** A simple container of counter, holding OP_MAX_COUNTERS counter */
+/** A simple container of counter. Can hold OP_MAX_COUNTERS counters */
 class counter_array_t {
 public:
 	/** counter_array_t ctor, all counter are initialized to zero */
@@ -109,8 +109,9 @@ private:
 	u32 value[OP_MAX_COUNTERS];
 };
 
-/** encapsulation of a bfd object, simplifying open/close of bfd, enumerating
- * symbols and retrieving informations on symbols or vma. */
+
+/** Encapsulation of a bfd object. Simplify open/close of bfd, enumerating
+ * symbols and retrieving informations for symbols or vma. */
 class opp_bfd {
 public:
 	/**
@@ -175,7 +176,7 @@ public:
 	/** Returns true if the underlined bfd object contains debug info */
 	bool have_debug_info() const;
 
-	// TODO: avoid this two pulbic data members
+	// TODO: avoid this two public data members
 	bfd *ibfd;
 	// sorted vector of interesting symbol.
 	std::vector<asymbol*> syms;
@@ -193,9 +194,8 @@ private:
 	bool get_symbols();
 };
 
-/**
- * A class to store one samples file
- */
+/** A class to store one samples file */
+/* TODO: misnamed, it exist a samples_files_t class which is very confusing */
 struct samples_file_t
 {
 	samples_file_t(const std::string & filename);
@@ -223,13 +223,23 @@ private:
 	samples_file_t& operator=(const samples_file_t &);
 };
 
-/* if entry i is invalid all members are set to zero except fd[i] set to -1 */
-/* It will be nice if someone redesign this to use samples_file_t for the
- * internal implementation of opp_samples_files */
+/** Store multiple samples files belonging to the same image and the same
+ * session */
+/* I think this would be rewritten to use an array of samples_file_t */
 struct opp_samples_files {
+	/**
+	 * \param sample_file name of sample file to open w/o the #nr suffix
+	 * \param counter a bit mask specifying which sample file to open
+	 *
+	 * Open all samples files specified through sample_file and counter.
+	 * Currently all error are fatal
+	 */
 	opp_samples_files(const std::string & sample_file, int counter);
+	/** Close all opened samples files and free all related resource. */
 	~opp_samples_files();
 
+	// TODO: this class make too many things, this interface is clearly
+	// not a part of opp_samples_files, this look like rather free fun.
 	void do_list_symbols_details(opp_bfd & abfd, int sort_by_ctr) const;
 	void do_dump_gprof(opp_bfd & abfd, int sort_by_ctr) const;
 	void do_list_symbols(opp_bfd & abfd, int sort_by_ctr) const;
@@ -246,24 +256,41 @@ struct opp_samples_files {
 	}
  
 	/**
-	 * samples_count - check if samples are available
 	 * \param index index of the samples files
-	 * \param samples_nr number of the samples to test.
+	 * \param sample_nr number of the samples to test.
 	 *
-	 * return the number of samples for samples file index
-	 * at position sample_nr. return 0 if the samples file
-	 * is close
+	 * return the number of samples for samples file index at position
+	 * sample_nr. return 0 if the samples file is close or there is no
+	 * samples at position sample_nr
 	 */
 	uint samples_count(int index, int sample_nr) const {
 		return is_open(index) ? samples[index][sample_nr].count : 0;
 	}
- 
+
+	/**
+	 * \param counter where to accumulate the samples
+	 * \param index index of the samples.
+	 *
+	 * return false if no samples has been found
+	 */
+
 	bool accumulate_samples(counter_array_t& counter, uint vma) const;
+	/**
+	 * \param counter where to accumulate the samples
+	 * \param start start index of the samples.
+	 * \param end end index of the samples.
+	 *
+	 * return false if no samples has been found
+	 */
 	bool accumulate_samples(counter_array_t& counter,
 				uint start, uint end) const;
 
+	// this look like a free fun
 	void output_header() const;
 
+	// TODO privatisze as we can.
+	/* if entry i is invalid all members are set to zero except fd[i]
+	 * set to -1 */
 	opd_fentry *samples[OP_MAX_COUNTERS];	// header + sizeof(header)
 	opd_header *header[OP_MAX_COUNTERS];	// mapping begin here
 	char *ctr_name[OP_MAX_COUNTERS];
