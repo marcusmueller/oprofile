@@ -88,6 +88,9 @@ op_cpu op_get_cpu_number(char *cpu_string)
 	/* Attempt to convert into a number */
 	if (cpu_type == CPU_NO_GOOD)
 		sscanf(cpu_string, "%d\n", &cpu_type);
+	
+	if (cpu_type <= CPU_NO_GOOD || cpu_type >= MAX_CPU_TYPE)
+		cpu_type = CPU_NO_GOOD;
 
 	return cpu_type;
 }

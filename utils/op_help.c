@@ -288,7 +288,7 @@ int main(int argc, char const *argv[])
 		cpu_type = op_get_cpu_type();
 	}
 
-	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
+	if (cpu_type <= CPU_NO_GOOD || cpu_type >= MAX_CPU_TYPE) {
 		fprintf(stderr, "cpu_type '%s' is not valid\n", cpu_string);
 		exit(EXIT_FAILURE);
 	}

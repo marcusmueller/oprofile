@@ -1,5 +1,11 @@
 2003-10-10  Will Cohen  <wcohen@redhat.com>
 
+	* libop/op_cpu_type.h (op_get_cpu_number): Clarify comment.
+	* libop/op_cpu_type.c (op_get_cpu_number): Check number.
+	* utils/op_help.c (main): Make check with CPU_NO_GOOD.
+
+2003-10-10  Will Cohen  <wcohen@redhat.com>
+
 	* libop/op_cpu_type.h (op_get_cpu_number): Declare.
 	* libop/op_cpu_type.c (op_get_cpu_number): New.
 	  (op_get_cpu_type): Use op_get_cpu_number.

@@ -49,7 +49,7 @@ op_cpu op_get_cpu_type(void);
 
 /**
  * get the cpu number based on string
- * @param cpu_string the cpu type identifier
+ * @param cpu_string with either the cpu type identifier or cpu type number
  *
  * The function returns CPU_NO_GOOD if no matching string was found.
  */
