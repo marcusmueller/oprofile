@@ -80,6 +80,17 @@ Before 1.0 little stuff
  o sample-file: / binary: don't work in any useful way - can we fix this
    by peeking at binary: value and faking the split_sample_file somehow ?
 
+Kernel
+------
+ o error out of the vma list search early if we go past the EIP - list is
+   vma-start-ordered I think
+ o move the unmap hook to the callers and do a check before unmapping to avoid
+   losing samples - a bit more expensive but saves on lots of lost samples.
+   this would move the hint hook up into sys_munmap, sys_mremap and maybe
+   other places ?
+ o replace the exit hook crap with pinning the task struct in place with a
+   two-list destruction of task_struct
+
 Documentation
 -------------
 
