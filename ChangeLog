@@ -1,3 +1,8 @@
+2005-04-04 Maynard Johnson  <maynardj@us.ibm.com>
+
+	* configure.in: further check for bfd synthesised
+	  symbols support
+
 2005-04-04  John Levon  <levon@movementarian.org>
 
 	* libpp/callgraph_container.cpp:

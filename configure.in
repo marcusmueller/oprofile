@@ -197,9 +197,13 @@ if test "$OS" = "Linux"; then
 	AC_LANG_CONFTEST(
 		[AC_LANG_PROGRAM([[#include <bfd.h>]],
 			[[asymbol * synthsyms;	bfd * ibfd = 0; 
-			long synth_count = bfd_get_synthetic_symtab(ibfd, 0, 0, 0, 0, &synthsyms);]])
+			long synth_count = bfd_get_synthetic_symtab(ibfd, 0, 0, 0, 0, &synthsyms);
+			extern const bfd_target bfd_elf64_powerpc_vec;
+			extern const bfd_target bfd_elf64_powerpcle_vec;
+			char * ppc_name = bfd_elf64_powerpc_vec.name;
+			char * ppcle_name = bfd_elf64_powerpcle_vec.name;]])
 		])
-	gcc conftest.$ac_ext -o  test-for-synth > /dev/null 2>&1
+	gcc conftest.$ac_ext -lbfd -liberty -o  test-for-synth > /dev/null 2>&1
 	if test -f test-for-synth; then
 		echo "yes"
 		SYNTHESIZE_SYMBOLS='1'
