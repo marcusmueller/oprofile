@@ -41,9 +41,18 @@ public:
 	 * accumulate_samples - lookup samples from a vma address
 	 * @param vma index of the samples.
 	 *
-	 * return zero if no samples has been found
+	 * return zero if no samples has been found, input parameter vma
+	 * is updated to the next available vma with samples or uint(-1)
+	 * if no such sample exists. This means than caller must use
+	 *  for (start = .. ; start < end; ) {
+	 *    uint old_pos = start;
+	 *    accumulate_samples(start);
+	 * to walk through samples.
+	 *
+	 * FIXME: providing an iterator api will be perhaps better, like
+	 * pair_iterator<..., ...> get_samples(uint start, uint end);
 	 */
-	unsigned int accumulate_samples(uint vma) const;
+	unsigned int accumulate_samples(uint & vma) const;
 
 	/**
 	 * accumulate_samples - lookup samples from a range of vma address
@@ -51,6 +60,8 @@ public:
 	 * @param end end index of the samples.
 	 *
 	 * return zero if no samples has been found
+	 * FIXME: providing an iterator api will be perhaps better, like
+	 * pair_iterator<..., ...> get_samples(uint start, uint end);
 	 */
 	unsigned int accumulate_samples(uint start, uint end) const;
 

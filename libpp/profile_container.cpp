@@ -130,9 +130,10 @@ profile_container::add_samples(profile_t const & profile,
                                symbol_entry const * symbol)
 {
 
-	for (u32 pos = start; pos < end ; ++pos) {
+	for (u32 pos = start; pos < end ; ) {
 		sample_entry sample;
 
+		u32 old_pos = pos;
 		sample.count = profile.accumulate_samples(pos);
 		if (!sample.count)
 			continue;
@@ -140,7 +141,7 @@ profile_container::add_samples(profile_t const & profile,
 		sample.file_loc.linenr = 0;
 		if (debug_info && sym_index != nil_symbol_index) {
 			string filename;
-			if (abfd.get_linenr(sym_index, pos, filename,
+			if (abfd.get_linenr(sym_index, old_pos, filename,
 					    sample.file_loc.linenr)) {
 				sample.file_loc.filename =
 					debug_names.create(filename);
@@ -148,8 +149,8 @@ profile_container::add_samples(profile_t const & profile,
 		}
 
 		sample.vma = (sym_index != nil_symbol_index)
-			? abfd.sym_offset(sym_index, pos) + base_vma
-			: pos;
+			? abfd.sym_offset(sym_index, old_pos) + base_vma
+			: old_pos;
 
 		samples->insert(symbol, sample);
 	}

@@ -36,9 +36,29 @@ profile_t::~profile_t()
 }
 
 
-unsigned int profile_t::accumulate_samples(uint index) const
+unsigned int profile_t::accumulate_samples(uint & index) const
 {
-	return accumulate_samples(index, index + 1);
+	unsigned int count = 0;
+
+	ordered_samples_t::const_iterator it;
+	// FIXME: would we special if index == 0 or index == ~0 ?
+	index -= start_offset;
+	it = ordered_samples.lower_bound(index);
+	if (it != ordered_samples.end()) {
+		if (it->first <= index) {
+			if (it->first == index)
+				count = it->second;
+			++it;
+		}
+	}
+
+	if (it == ordered_samples.end()) {
+		index = uint(-1);
+	} else {
+		index = it->first + start_offset;
+	}
+
+	return count;
 }
 
 
