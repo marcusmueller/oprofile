@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.6 2000/08/03 03:19:05 moz Exp $ */
+/* $Id: oprofiled.h,v 1.7 2000/08/16 20:16:52 moz Exp $ */
 
 #ifndef OPROFILED_H
 #define OPROFILED_H
@@ -117,9 +117,9 @@ struct opd_footer {
 /* note that pid_t is 32 bits, but only 16 are used
    currently, so to save cache, we use u16 */
 struct op_sample {
-        u32 eip;
-        u16 pid;
         u16 count;
+        u16 pid;
+        u32 eip;
 } __attribute__((__packed__,__aligned__(8)));
 
 struct opd_image {
