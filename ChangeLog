@@ -1,3 +1,10 @@
+2002-09-12  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/child_reader.cpp:
+	* libutil++/child_reader.h: fix for child terminated by a signal
+	* gui/oprof_start_util.cpp:
+	* pp/op_to_source.cpp: use the the new child_reader interface
+
 2002-09-11  John Levon  <levon@movementarian.org>
 
 	* acinclude.m4:

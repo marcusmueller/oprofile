@@ -67,9 +67,20 @@ public:
 	int terminate_process();
 
 	/** return the status of the first error encoutered
-	 * < 0 : the child process can not be forked
-	 * > 0 : the child process have return a non zero value */
+	 * != 0 : something feel wrong, use error_str() to get an error
+	 * message */
 	int error() const { return first_error; }
+
+	/**
+	 * return an error message if appropriate, if the process has
+	 * been successfully exec'ed and is not terminate the error message
+	 * is always empty. Error message is also empty if the child process
+	 * terminate successfully. Else three type of error message exist:
+	 *  - "unable to fork" followed by sterror(errno)
+	 *  - "process_name return xxx"  xxx is return code
+	 *  - "process_name terminated by signal xxx" xxx is signal number
+	 */
+	std::string error_str() const;
 
 private:
 	// ctor helper: create the child process.
@@ -79,8 +90,8 @@ private:
 	// already input in the pipe buffer or in buf2.
 	bool block_read();
 
-	fd_t fd1;
-	fd_t fd2;
+	int fd1;
+	int fd2;
 	ssize_t pos1;
 	ssize_t end1;
 	ssize_t pos2;
@@ -92,7 +103,10 @@ private:
 	char * buf2;
 	ssize_t sz_buf2;
 	char * buf1;
+	string process_name;
 	bool is_terminated;
+	bool terminate_on_exception;
+	bool forked;
 };
 
 #endif // CHILD_READER_H

@@ -16,8 +16,8 @@
 #include <sstream>
 #include <iostream>
 
-#include "child_reader.h"
 #include "op_libiberty.h"
+#include "child_reader.h"
 
 using std::string;
 using std::vector;
@@ -39,7 +39,10 @@ child_reader::child_reader(string const & cmd, vector<string> const & args)
 	buf2(0),
 	sz_buf2(0),
 	buf1(new char [PIPE_BUF]),
-	is_terminated(true)
+	process_name(cmd),
+	is_terminated(true),
+	terminate_on_exception(false),
+	forked(false)
 {
 	exec_command(cmd, args);
 }
@@ -61,7 +64,6 @@ void child_reader::exec_command(string const & cmd, vector<string> const & args)
 
 	if (pipe(pstdout) == -1 || pipe(pstderr) == -1) {
 		first_error = errno;
-		cerr << "Couldn't create pipes !" << endl;
 		return;
 	}
 
@@ -69,7 +71,6 @@ void child_reader::exec_command(string const & cmd, vector<string> const & args)
 	switch (pid) {
 		case -1:
 			first_error = errno;
-			cerr << "Couldn't fork !" << endl;
 			return;
 
 		case 0: {
@@ -109,6 +110,8 @@ void child_reader::exec_command(string const & cmd, vector<string> const & args)
 			// parent: we do not write on these fd.
 			close(pstdout[1]);
 			close(pstderr[1]);
+			forked = true;
+			break;
 	}
 
 	fd1 = pstdout[0];
@@ -199,19 +202,57 @@ bool child_reader::get_data(ostream & out, ostream & err)
 	return first_error == 0;
 }
 
+// can be called explicitely or by dtor, we must protect against multiple call
 int child_reader::terminate_process()
 {
 	if (!is_terminated) {
 		int ret;
 		waitpid(pid, &ret, 0);
 
-		first_error = WEXITSTATUS(ret);
+		is_terminated = true;
+
+		if (WIFEXITED(ret)) {
+			first_error = WEXITSTATUS(ret) | WIFSIGNALED(ret);
+		} else if (WIFSIGNALED(ret)) {
+			terminate_on_exception = true;
+			first_error = WTERMSIG(ret);
+		} else {
+			// FIXME: this seems impossible, waitpid *must* wait
+			// and either the process terminate normally or through
+			// a signal.
+			first_error = -1;
+		}
 	}
 
-	if (fd1 != -1)
+	if (fd1 != -1) {
 		close(fd1);
-	if (fd2 != -1)
+		fd1 = -1;
+	}
+	if (fd2 != -1) {
 		close(fd2);
+		fd2 = -1;
+	}
 
 	return first_error;
+}
+
+std::string child_reader::error_str() const
+{
+	ostringstream err;
+	if (!forked) {
+		err << string("unable to fork, error: ")
+		    << strerror(first_error);
+	} else if (is_terminated) {
+		if (first_error) {
+			if (terminate_on_exception) {
+				err << process_name << " terminated by signal "
+				    << first_error;
+			} else {
+				err << process_name << " return "
+				    << first_error;
+			}
+		}
+	}
+
+	return err.str();
 }

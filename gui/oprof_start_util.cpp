@@ -302,7 +302,8 @@ int do_exec_command(string const & cmd, vector<string> const & args)
 
 	int ret = reader.terminate_process();
 	if (ret) {
-		string error = "Failed: \n" + err.str() + "\n";
+		string error = reader.error_str() + "\n";
+		error += "Failed: \n" + err.str() + "\n";
 		string cmdline = cmd;
 		for (vector<string>::const_iterator cit = args.begin();
 			cit != args.end(); ++cit) {

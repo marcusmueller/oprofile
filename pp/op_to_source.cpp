@@ -560,10 +560,11 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 
 	args.push_back(app_name);
 	child_reader reader("objdump", args);
-	if (reader.error())
-		// child_reader output an error message, the only way I see to
-		// go here is a failure to exec objdump.
+	if (reader.error()) {
+		cerr << "An error occur during the execution of objdump:\n\n";
+		cerr << reader.error_str() << endl;
 		return;
+	}
 
 	// to filter output of symbols (filter based on command line options)
 	bool do_output = true;
@@ -584,6 +585,17 @@ void output_objdump_asm(vector<symbol_entry const *> const & output_symbols,
 	if (std_err.str().length()) {
 		cerr << "An error occur during the execution of objdump:\n\n";
 		cerr << std_err.str() << endl;
+		return ;
+	}
+
+	reader.terminate_process();  // force error code to be acquired
+
+	// required because if objdump stop by signal all above things suceeed
+	// (signal error message are not output through stdout/stderr)
+	if (reader.error()) {
+		cerr << "An error occur during the execution of objdump:\n\n";
+		cerr << reader.error_str() << endl;
+		return;
 	}
 }
 
