@@ -154,8 +154,11 @@ static void separate_token_tests()
 				     << "input:\n"
 				     << cur->input << endl;
 				cerr << "expect:\n";
-				copy(cur->output, cur->output+max_token,
-				     ostream_iterator<char const *>(cerr, "\n"));
+				for (size_t i = 0; i < max_token; ++i) {
+					if (!cur->output[i])
+						break;
+					cerr << cur->output[i] << endl;
+				}
 				cerr << "output:\n";
 				copy(result.begin(), result.end(),
 				     ostream_iterator<string>(cerr, "\n"));

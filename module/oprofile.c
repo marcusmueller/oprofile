@@ -176,6 +176,7 @@ inline static void up_and_check_note(void)
 			       "oprofile with a larger note buffer.\n");
 			warned = 1;
 		}
+		sysctl.nr_note_buffer_overflow++;
 		note_pos = sysctl.note_size - 1;
 	}
 
@@ -263,6 +264,7 @@ static int check_buffer_amount(int cpu_nr)
 		       "You must increase the module buffer size with\n"
 		       "opcontrol --setup --bufer-size= or reduce the "
 		       "interrupt frequency\n", num);
+		data->nr_buffer_overflow += num;
 		num = size;
 	} else
 		data->nextbuf = 0;
@@ -432,6 +434,7 @@ static int oprof_init_data(void)
 	ulong buf_size;
 	struct _oprof_data * data;
 
+	sysctl.nr_note_buffer_overflow = 0;
 	notebufsize = sizeof(struct op_note) * sysctl.note_size;
 	note_buffer = vmalloc(notebufsize);
  	if (!note_buffer) {
@@ -447,6 +450,7 @@ static int oprof_init_data(void)
 		data->buf_size = 0;
 		data->buffer = 0;
 		data->buf_watermark = 0;
+		data->nr_buffer_overflow = 0;
 	}
  
 	buf_size = (sizeof(struct op_sample) * sysctl.buf_size);
@@ -654,6 +658,27 @@ out:
 	return ret;
 }
 
+static int get_nr_buffer_overflow(ctl_table * table, int write, struct file * filp, void * buffer, size_t * lenp)
+{
+	uint cpu;
+	int ret = -EINVAL;
+
+	lock_sysctl();
+
+	if (write)
+		goto out;
+
+	for (cpu = 0 ; cpu < smp_num_cpus; cpu++) {
+		sysctl.nr_buffer_overflow += oprof_data[cpu].nr_buffer_overflow;
+		oprof_data[cpu].nr_buffer_overflow = 0;
+	}
+
+	ret =  proc_dointvec(table, write, filp, buffer, lenp);
+out:
+	unlock_sysctl();
+	return ret;
+}
+
 int lproc_dointvec(ctl_table * table, int write, struct file * filp, void * buffer, size_t * lenp)
 {
 	int err;
@@ -722,7 +747,7 @@ out:
 	return err;
 }
 
-static int const nr_oprof_static = 6;
+static int const nr_oprof_static = 8;
 
 static ctl_table oprof_table[] = {
 	{ 1, "bufsize", &sysctl_parms.buf_size, sizeof(int), 0644, NULL, &lproc_dointvec, NULL, },
@@ -731,6 +756,8 @@ static ctl_table oprof_table[] = {
 	{ 1, "nr_interrupts", &sysctl.nr_interrupts, sizeof(int), 0444, NULL, &get_nr_interrupts, NULL, },
 	{ 1, "notesize", &sysctl_parms.note_size, sizeof(int), 0644, NULL, &lproc_dointvec, NULL, },
 	{ 1, "cpu_type", &sysctl.cpu_type, sizeof(int), 0444, NULL, &lproc_dointvec, NULL, },
+	{ 1, "note_buffer_overflow", &sysctl.nr_note_buffer_overflow, sizeof(int), 0444, NULL, &lproc_dointvec, NULL, },
+	{ 1, "buffer_overflow", &sysctl.nr_buffer_overflow, sizeof(int), 0444, NULL, &get_nr_buffer_overflow, NULL, },
 	{ 0, }, { 0, }, { 0, }, { 0, }, { 0, }, { 0, }, { 0, }, { 0, },
 	{ 0, },
 };

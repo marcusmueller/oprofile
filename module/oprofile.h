@@ -50,6 +50,8 @@ struct _oprof_data {
 	uint nextbuf;
 	/* number of IRQs for this CPU */
 	uint nr_irq;
+	/* buffer overflow cumulated size */
+	uint nr_buffer_overflow;
 	/* reset counter values */
 	uint ctr_count[OP_MAX_COUNTERS];
 };
@@ -78,6 +80,10 @@ struct oprof_sysctl {
 	int nr_interrupts;
 	/* the cpu core type: CPU_PPRO, CPU_PII ... */
 	int cpu_type;
+	/* nr note buffer overflow */
+	int nr_note_buffer_overflow;
+	/* nr buffer overflow */
+	int nr_buffer_overflow;
 	/* counter setup */
 	struct oprof_counter ctr[OP_MAX_COUNTERS];
 };

@@ -1,7 +1,14 @@
 2003-11-01  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/tests/string_manip_tests.cpp: ehance output on failure
+	* module/oprofile.h:
+	* module/oprofile.c: two new read-only sysctl: nr_buffer_overflow and
+	  nr_note_buffer_overflow
+
+2003-11-01  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/tests/Makefile.am:
-	* libutil++/tests/file_manip_tests.cpp; don't use getcwd nor __FILE__
+	* libutil++/tests/file_manip_tests.cpp: don't use getcwd nor __FILE__
 	  but ${topdir} and hard coded filename
 
 2003-11-01  John Levon  <levon@movementarian.org>
