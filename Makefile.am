@@ -1,5 +1,5 @@
-SUBDIRS = libutil libop libutil++ libopt++ libop++ libdb libabi daemon dae \
- utils pp gui oprof_report doc
+SUBDIRS = libutil libop libutil++ libopt++ libop++ libdb libabi \
+	daemon dae utils pp gui doc
 
 all-local: kernel_module
 install-exec-local: install.kernel

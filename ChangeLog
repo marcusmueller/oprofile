@@ -1,5 +1,10 @@
 2002-11-10  John Levon  <levon@movementarian.org>
 
+	* Makefile.am: remove oprof_report from SUBDIRS to
+	  avoid separate objdir problem
+ 
+2002-11-10  John Levon  <levon@movementarian.org>
+
 	* most Makefile.am: do the dist_sources trick
 	  properly
  
