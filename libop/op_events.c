@@ -771,7 +771,7 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type)
  * @param cpu_type  processor type
  *
  * Check that the counter event and unit mask values
- * are allowed. @cpu_type should be set as follows :
+ * are allowed. cpu_type should be set as follows :
  *
  * 0 Pentium Pro
  *

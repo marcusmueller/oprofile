@@ -1,3 +1,25 @@
+2002-09-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_image.c:
+	* dae/opd_kernel.c:
+	* dae/opd_parse_proc.c:
+	* dae/opd_parse_parse.h:
+	* dae/opd_proc.c:
+	* dae/opd_sample_files.c:
+	* daemon/opd_image.c:
+	* daemon/opd_kernel.c:
+	* daemon/opd_sample_files.c:
+	* libop/op_cpu_type.c:
+	* libop/op_events.c:
+	* libop/op_events_desc.c:
+	* libopt++/popt_options.cpp:
+	* libutil/op_deviceio.c:
+	* libutil/op_file.c:
+	* libutil++/file_manip.cpp:
+	* libutil++/file_manip.h:
+	* libutil++/string_manip.h:
+	* pp/op_to_source.cpp: doxygen fix
+
 2002-09-27  John Levon  <levon@movementarian.org>
 
 	* configure.in: add --with-kernel-support for 2.5

@@ -61,12 +61,12 @@ static const char * op_get_um_desc(u32 op_events_index, u8 um)
  *
  * Get the associated event name and descriptions given
  * the cpu type, event value and unit mask value. It is a fatal error
- * to supply a non-valid @type value, but an invalid @um
+ * to supply a non-valid type value, but an invalid um
  * will not exit.
  *
- * @typenamep, @typedescp, @umdescp are filled in with pointers
- * to the relevant name and descriptions. @umdescp can be set to
- * NULL when @um is invalid for the given @type value.
+ * typenamep, typedescp, umdescp are filled in with pointers
+ * to the relevant name and descriptions. umdescp can be set to
+ * NULL when um is invalid for the given type value.
  * These strings are in text section so should not be freed.
  */
 void op_get_event_desc(op_cpu cpu_type, u8 type, u8 um,

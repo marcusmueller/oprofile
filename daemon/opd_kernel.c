@@ -375,7 +375,7 @@ static void opd_handle_module_sample(unsigned long eip, u32 counter)
 /**
  * opd_handle_kernel_sample - process a kernel sample
  * @param eip  EIP value of sample
- * @param count  count value of sample
+ * @param counter  counter number
  *
  * Handle a sample in kernel address space or in a module. The sample is
  * output to the relevant image file.

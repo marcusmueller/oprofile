@@ -55,7 +55,7 @@ bool is_files_identical(string const & file1, string const & file2)
  * create_dir - create a directory
  * @param dir  the directory name to create
  *
- * return false if the directory @dir does not exist
+ * return false if the directory dir does not exist
  * and cannot be created
  */
 bool create_dir(string const & dir)
@@ -71,7 +71,7 @@ bool create_dir(string const & dir)
  * create_path - create a path
  * @param path  the path to create
  *
- * create directory for each dir components in @path
+ * create directory for each dir components in path
  * return false if one of the path cannot be created.
  */
 bool create_path(string const & path)

@@ -41,7 +41,7 @@ int op_file_readable(char const * file)
  *
  * Returns the size of the named file in bytes
  * into the pointer given. Returns non-zero
- * on failure, in which case @size is not changed.
+ * on failure, in which case size is not changed.
  */
 int op_get_fsize(char const * file, off_t * size)
 {
@@ -78,8 +78,8 @@ time_t op_get_mtime(char const * file)
  * @param old_dir  the source directory
  * @param name  the filename
  *
- * move the file @old_dir/@name to @new_dir/@name iff
- * @old_dir/@name is a regular file
+ * move the file old_dir/name to new_dir/name iff
+ * old_dir/name is a regular file
  *
  * return > 0 if the file is not a regular file, == 0 if the
  * file is successfully moved and < 0 on error
@@ -154,7 +154,7 @@ static int remove_component_p(char const * path)
  *  //quux		//quux  (POSIX allows leading // as a namespace escape)
  *
  *  Guarantees no trailing slashes.  All transforms reduce the length
- *  of the string.  Returns @path.  errno is 0 if no error occurred;
+ *  of the string.  Returns path.  errno is 0 if no error occurred;
  *  nonzero if an error occurred when using stat().
  */
 static char * op_simplify_pathname(char * path)
@@ -254,7 +254,7 @@ static char * op_simplify_pathname(char * path)
  * @param base_dir  optionnal base directory, if %NULL getcwd() is used
  * to get the base directory.
  *
- * prepend @base_dir or the result of getcwd if the path is not absolute.
+ * prepend base_dir or the result of getcwd if the path is not absolute.
  * The returned string is dynamic allocated, caller must free it. if
  * base_dir == NULL this function use getcwd to translate the path.
  *

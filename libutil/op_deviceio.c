@@ -24,7 +24,7 @@
  * @param name  file name of device file
  * @param fatal  fatal or not
  *
- * Open the special file @name. Returns the file descriptor
+ * Open the special file name. Returns the file descriptor
  * for the file or -1 on error.
  */
 fd_t op_open_device(char const * name, int fatal)
@@ -61,9 +61,9 @@ void op_close_device(fd_t devfd)
  * @param buf  buffer
  * @param size  size of buffer
  *
- * Read @size bytes from a device into buffer @buf.
+ * Read size bytes from a device into buffer buf.
  * A seek to the start of the device file is done first
- * then a read is requested in one go of @size bytes.
+ * then a read is requested in one go of size bytes.
  *
  * It is the caller's responsibility to do further op_read_device()
  * calls if the number of bytes read is not what is requested

@@ -1,6 +1,6 @@
 /**
  * @file opd_parse_proc.c
- * Parsing of /proc/<pid>
+ * Parsing of /proc/#pid
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING

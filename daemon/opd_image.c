@@ -133,11 +133,11 @@ static void opd_init_image(struct opd_image * image, unsigned long cookie,
  * opd_open_image - open an image sample file
  * @param image  image to open file for
  *
- * @image at function entry is partially initialized by opd_init_image()
+ * image at function entry is partially initialized by opd_init_image()
  *
- * Initialise an opd_image struct for the image @image
+ * Initialise an opd_image struct for the image image
  * without opening the associated samples files. At return
- * the @image is fully initialized.
+ * the image is fully initialized.
  */
 static void opd_open_image(struct opd_image * image)
 {

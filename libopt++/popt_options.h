@@ -64,7 +64,7 @@ void parse_options(int argc, char const ** argv,
  *
  * Parse the given command line with the previous
  * options created. Multiple additional arguments
- * that are not recognised will be added to the @additional_params
+ * that are not recognised will be added to the additional_params
  * vector.
  */
 void parse_options(int argc, char const ** argv,

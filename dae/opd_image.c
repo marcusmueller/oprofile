@@ -95,13 +95,13 @@ void opd_for_each_image(opd_image_cb image_cb)
  * @param name  name of the image to add
  * @param kernel  is the image a kernel/module image
  *
- * @image at funtion entry is uninitialised
- * @name is copied i.e. should be GC'd separately from the
+ * image at funtion entry is uninitialised
+ * name is copied i.e. should be GC'd separately from the
  * image structure if appropriate.
  *
- * Initialise an opd_image struct for the image @image
+ * Initialise an opd_image struct for the image image
  * without opening the associated samples files. At return
- * the @image is partially initialized.
+ * the image is partially initialized.
  */
 static void opd_init_image(struct opd_image * image, char const * name,
 			   int hash, char const * app_name, int kernel)
@@ -119,11 +119,11 @@ static void opd_init_image(struct opd_image * image, char const * name,
  * opd_open_image - open an image sample file
  * @param image  image to open file for
  *
- * @image at function entry is partially initialized by opd_init_image()
+ * image at function entry is partially initialized by opd_init_image()
  *
- * Initialise an opd_image struct for the image @image
+ * Initialise an opd_image struct for the image image
  * without opening the associated samples files. At return
- * the @image is fully initialized.
+ * the image is fully initialized.
  */
 static void opd_open_image(struct opd_image * image)
 {
@@ -205,9 +205,9 @@ struct opd_image * opd_create_image(char const * name)
  * @param app_name  the application name where belongs this image
  * @param kernel  is the image a kernel/module image
  *
- * Add an image to the image structure with name @name.
+ * Add an image to the image structure named name.
  *
- * @name is copied i.e. should be GC'd separately from the
+ * name is copied i.e. should be GC'd separately from the
  * image structure if appropriate.
  *
  * The new image pointer is returned.
@@ -240,7 +240,7 @@ static struct opd_image * opd_add_image(char const * name, int hash, char const 
  * @param app_name image must belong to this application name
  *
  * on entry caller have checked than strcmp(image->name, name) == 0
- * return 0 if the couple @name, @app_name refers to same image as @image
+ * return 0 if the couple (name, app_name) refers to same image
  */
 static int is_same_image(struct opd_image const * image, char const * app_name)
 {
@@ -275,7 +275,7 @@ static int is_same_image(struct opd_image const * image, char const * app_name)
  * @param hash  hash of image to find
  * @param app_name  the application name where belongs this image
  *
- * Returns the image pointer for the file specified by @name, or %NULL.
+ * Returns the image pointer for the file specified by name, or %NULL.
  */
 static struct opd_image * opd_find_image(char const * name, int hash, char const * app_name)
 {
@@ -324,7 +324,7 @@ static struct opd_image * opd_find_image(char const * name, int hash, char const
  * @param hash  hash of the image to get
  * @param app_name  the application name where belongs this image
  *
- * Get the image specified by @hash and @app_name
+ * Get the image specified by hash and app_name
  * if present, else return %NULL
  */
 struct opd_image * opd_get_image_by_hash(int hash, char const * app_name)
@@ -346,7 +346,7 @@ struct opd_image * opd_get_image_by_hash(int hash, char const * app_name)
  * @param app_name  the application name where belongs this image
  * @param kernel  is the image a kernel/module image
  *
- * Get the image specified by the file name @name from the
+ * Get the image specified by the file name name from the
  * image structure. If it is not present, the image is
  * added to the structure. In either case, the image number
  * is returned.

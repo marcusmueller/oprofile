@@ -119,8 +119,8 @@ void opd_handle_old_sample_files(struct opd_image const * image)
  * @param image  image to open file for
  * @param counter  counter number
  *
- * Open image sample file for the image @image, counter
- * @counter and set up memory mappings for it.
+ * Open image sample file for the image, counter
+ * counter and set up memory mappings for it.
  * image->kernel and image->name must have meaningful
  * values.
  */

@@ -261,6 +261,7 @@ inline static void verb_show_sample(unsigned long offset, struct opd_map * map,
  * @param image  image for sample
  * @param offset  (file) offset to write to
  * @param count  raw counter value
+ * @param counter  counter number
  *
  * Add to the count stored at position @offset in the
  * image file. Overflow pins the count at the maximum

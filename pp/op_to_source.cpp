@@ -117,7 +117,7 @@ double do_ratio(size_t count, size_t total);
 
 /**
  * @param image_name the samples owner image name
- * @param sample_file the sample file base name (w/o # suffix)
+ * @param sample_file the sample file base name (w/o counter nr suffix)
  * @param fn_match only source filename which match this filter will be output
  * @param argc command line number of argument
  * @param argv command line argument array
@@ -268,7 +268,7 @@ symbol_entry const * find_symbol(string const & str_vma);
 /**
  * @param out output stream
  * @param str an objdump output string on the form hexa_number: or
- *   hexa_number <smbol_name>:
+ *   hexa_number <symbol_name>:
  * @param blank a string containing a certain amount of space/tabulation
  *   character allowing the output to be aligned with the previous line
  *
