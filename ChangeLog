@@ -1,3 +1,8 @@
+2002-11-14  Will Cohen  <wcohen@redhat.com>
+
+	* gui/Makefile.am: Use $(bindir).
+	* oprof_report/Makefile.am: Use $(bindir).
+
 2002-11-15  Dave Jones <davej@suse.de>
 
 	* module/x86/cputype.c: Make the AMD case a bit simpler.

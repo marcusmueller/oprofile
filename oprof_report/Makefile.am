@@ -9,7 +9,7 @@ if have_qt
 
 SUBDIRS = ui
 
-AM_CPPFLAGS = @QT_INCLUDES@ -I ${top_srcdir}/libop -I ${top_srcdir}/libutil++ -I ${top_srcdir}/libutil -DBINDIR=\"$(BINDIR)\" -DKVERSION=\"@KVERS@\"
+AM_CPPFLAGS = @QT_INCLUDES@ -I ${top_srcdir}/libop -I ${top_srcdir}/libutil++ -I ${top_srcdir}/libutil -DBINDIR=\"$(bindir)\" -DKVERSION=\"@KVERS@\"
 
 bin_PROGRAMS = oprof_report
 
