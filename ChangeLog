@@ -1,3 +1,9 @@
+2003-09-18  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/format_output.cpp: use 9 not 12 for % field width
+	* libutil++/string_manip.cpp: shrink 100.0000 to 100.000
+	* pp/opreport.cpp: s/" "/' '
+
 2003-09-18  John Levon  <levon@movementarian.org>
 
 	* pp/opannotate_options.cpp:
