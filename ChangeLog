@@ -1,5 +1,12 @@
 2003-10-26  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_cookie.c: make sure to create the
+	cookie for the ignore value if it's not found
+
+	* daemon/opd_sfile.c: simplify ignored logic
+
+2003-10-26  John Levon  <levon@movementarian.org>
+
 	* doc/internals.xml:
 	* doc/buffers.png: add a diagram
 

@@ -117,6 +117,7 @@ char const * find_cookie(cookie_t cookie)
 			goto out;
 	}
 
+	/* not sure this can ever happen due to is_cookie_ignored */
 	entry = create_cookie(cookie);
 	list_add(&entry->list, &hashes[hash]);
 out:
@@ -136,8 +137,10 @@ int is_cookie_ignored(cookie_t cookie)
 			goto out;
 	}
 
-	/* The cookie isn't found. We assume it's ignored. */
-	return 1;
+	entry = create_cookie(cookie);
+	list_add(&entry->list, &hashes[hash]);
+	return entry->ignored;
+ 
 out:
 	return entry->ignored;
 }
