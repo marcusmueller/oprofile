@@ -23,7 +23,7 @@
 
 
 /**
- * exception base class
+ * exception abstract base class
  */
 class op_exception : public std::exception {
 public:
@@ -53,7 +53,7 @@ struct op_runtime_error : std::runtime_error
 {
 	explicit op_runtime_error(std::string const & err);
 	op_runtime_error(std::string const & err, int cerrno);
-	~op_runtime_error() throw() = 0;
+	~op_runtime_error() throw();
 };
 
 

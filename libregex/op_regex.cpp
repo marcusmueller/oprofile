@@ -23,21 +23,12 @@ using namespace std;
 
 namespace {
 
-struct regex_runtime_error : op_runtime_error {
-	regex_runtime_error(std::string const & pattern, int cerrno);
-};
-
 bad_regex::bad_regex(string const & pattern)
 	:
 	op_exception(pattern)
 {
 }
 
-regex_runtime_error::regex_runtime_error(string const & pattern, int cerrno)
-	:
-	op_runtime_error(pattern, cerrno)
-{
-}
 
 string op_regerror(int err, regex_t const & regexp)
 {
@@ -48,6 +39,7 @@ string op_regerror(int err, regex_t const & regexp)
 	return buffer;
 }
 
+
 void op_regcomp(regex_t & regexp, string const & pattern)
 {
 	int err = regcomp(&regexp, pattern.c_str(), REG_EXTENDED);
@@ -57,15 +49,29 @@ void op_regcomp(regex_t & regexp, string const & pattern)
 	}
 }
 
+
 bool op_regexec(regex_t const & regex, char const * str, regmatch_t * match,
 	       size_t nmatch)
 {
 	return regexec(&regex, str, nmatch, match, 0) != REG_NOMATCH;
 }
 
+
 void op_regfree(regex_t & regexp)
 {
 	regfree(&regexp);
+}
+
+
+// return the index number associated with a char seen in a "\x".
+// Allowed range are for x is [0-9a-z] return size_t(-1) if x is not in
+// these ranges.
+size_t subexpr_index(char ch)
+{
+	if (!isdigit(ch) && !(ch >='a' && ch <= 'z'))
+		return size_t(-1);
+
+	return ch >= 'a' ? ch - 'a' + 10  : ch - '0';
 }
 
 }  // anonymous namespace
@@ -79,38 +85,38 @@ regular_expression_replace::regular_expression_replace(size_t limit_,
 {
 }
 
+
 regular_expression_replace::~regular_expression_replace()
 {
 	for (size_t i = 0 ; i < v_regexp.size() ; ++i)
 		op_regfree(v_regexp[i]);
 }
 
+
 void regular_expression_replace::add_definition(string const & name,
 						string const & definition)
 {
 	string expanded_definition;
-	if (expand_string(definition, expanded_definition) == false)
-		return;
+	expand_string(definition, expanded_definition);
 
 	defs[name] = expanded_definition;
 }
 
-bool regular_expression_replace::add_pattern(string const & pattern,
+
+void regular_expression_replace::add_pattern(string const & pattern,
 					     string const & replace)
 {
 	string expanded_pattern;
-	if (expand_string(pattern, expanded_pattern) == false)
-		return false;
+	expand_string(pattern, expanded_pattern);
 
 	regex_t regexp;
 	op_regcomp(regexp, expanded_pattern);
 	v_regexp.push_back(regexp);
 	v_replace.push_back(replace);
-
-	return true;
 }
 
-bool regular_expression_replace::expand_string(string const & input,
+
+void regular_expression_replace::expand_string(string const & input,
 					       string & result)
 {
 	string last, expanded(input);
@@ -124,14 +130,12 @@ bool regular_expression_replace::expand_string(string const & input,
 	}
 
 	if (i == limit_defs_expansion) {
-		cerr << "too many substitution for: " << input << endl;
-		return false;
+		throw bad_regex("too many substitution for: + input");
 	}
 
 	result = last;
-
-	return true;
 }
+
 
 string regular_expression_replace::substitute_definition(string const & pattern)
 {
@@ -167,6 +171,7 @@ string regular_expression_replace::substitute_definition(string const & pattern)
 	return result;
 }
 
+
 // FIXME limit output string size ? (cause we can have exponential growing
 // of output string through a rule "a" = "aa")
 bool regular_expression_replace::execute(string & str) const
@@ -181,8 +186,11 @@ bool regular_expression_replace::execute(string & str) const
 		}
 	}
 
+	// this don't return if the input string has been changed but if
+	// we reach the limit number of iteration.
 	return changed == false;
 }
+
 
 bool regular_expression_replace::do_execute(string & str,
 					    regex_t const & regexp,
@@ -203,6 +211,7 @@ bool regular_expression_replace::do_execute(string & str,
 	return changed;
 }
 
+
 void regular_expression_replace::do_replace(string & str, size_t start_pos,
 					    string const & replace,
 					    regmatch_t const * match) const
@@ -216,11 +225,8 @@ void regular_expression_replace::do_replace(string & str, size_t start_pos,
 			++i;
 			if (replace[i] == '\\') {
 				inserted += '\\';
-			}  else if (isdigit(replace[i]) ||
-				    (replace[i] >='a' && replace[i] <= 'z')) {
-				size_t sub_expr = replace[i] >= 'a'
-				  ? replace[i] - 'a' + 10 
-				  : replace[i] - '0';
+			}  else if (subexpr_index(replace[i]) != size_t(-1)) {
+				size_t sub_expr = subexpr_index(replace[i]);
 				if (sub_expr >= max_match) {
 					throw bad_regex("illegal group index :" + replace);
 				} else if (match[sub_expr].rm_so == -1 &&
@@ -246,59 +252,61 @@ void regular_expression_replace::do_replace(string & str, size_t start_pos,
 	str.replace(first, count, inserted);
 }
 
+
 void setup_regex(regular_expression_replace & regex,
                  string const & filename)
 {
 	ifstream in(filename.c_str());
 	if (!in) {
-		throw regex_runtime_error("Can't open file " + filename +
-					  " for reading", errno);
+		throw op_runtime_error("Can't open file " + filename +
+				       " for reading", errno);
 	}
 
-	regular_expression_replace var_name;
-	var_name.add_pattern("^\\$([_a-zA-Z][_a-zA-Z0-9]*)[ ]*=.*", "\\1");
-	regular_expression_replace var_value;
-	var_value.add_pattern(".*=[ ]*\"(.*)\"", "\\1");
+	regular_expression_replace var_name_rule;
+	var_name_rule.add_pattern("^\\$([_a-zA-Z][_a-zA-Z0-9]*)[ ]*=.*", "\\1");
+	regular_expression_replace var_value_rule;
+	var_value_rule.add_pattern(".*=[ ]*\"(.*)\"", "\\1");
 
 	regular_expression_replace left_rule;
 	left_rule.add_pattern("[ ]*\"(.*)\"[ ]*=.*", "\\1");
 	regular_expression_replace right_rule;
 	right_rule.add_pattern(".*=[ ]*\"(.*)\"", "\\1");
 
-	string str;
-	while (getline(in, str)) {
-		str = trim(str);
-		if (str.length() == 0 || str[0] == '#')
+	string line;
+	while (getline(in, line)) {
+		line = trim(line);
+		if (line.empty() || line[0] == '#')
 			continue;
-		string temp = str;
-		var_name.execute(temp);
-		if (temp == str) {
-			temp = str;
-			left_rule.execute(temp);
-			if (temp == str) {
+		string temp = line;
+		var_name_rule.execute(temp);
+		if (temp == line) {
+			string left = line;
+			left_rule.execute(left);
+			if (left == line) {
 				throw bad_regex("invalid input file: " +
-						'"' + str + '"');
+						'"' + line + '"');
 			}
 
-			string left = temp;
-			temp = str;
-			right_rule.execute(temp);
-			if (temp == str) {
+			string right = line;
+			right_rule.execute(right);
+			if (right == line) {
 				throw bad_regex("invalid input file: "
-						+ '"' + str + '"');
+						+ '"' + line + '"');
 			}
 
-			regex.add_pattern(left, temp);
+			regex.add_pattern(left, right);
 		} else {
-			string name = temp;
-			temp = str;
-			var_value.execute(temp);
-			if (temp == str) {
+			// temp != line ==> var_name_rule succeed to substitute
+			// into temp the var_name present in line
+			string var_name = temp;
+			string var_value = line;
+			var_value_rule.execute(var_value);
+			if (var_value == line) {
 				throw bad_regex("invalid input file: " +
-						'"' + str + '"');
+						'"' + line + '"');
 			}
 
-			regex.add_definition(name, temp);
+			regex.add_definition(var_name, var_value);
 		}
 	}
 }

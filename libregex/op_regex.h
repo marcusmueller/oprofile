@@ -32,18 +32,53 @@ struct bad_regex : op_exception {
 
 /**
  * lightweight encapsulation of regex lib search and replace
+ *
+ * See stl.pat for further details and examples of used syntax.
  */
 class regular_expression_replace {
 public:
+	/**
+	 * @param limit limit on number of search and replace done
+	 * @param limit_defs_expansion limit on number of expansion done
+	 *  during replacement of regular definition name by their expansion
+	 *
+	 * build an object holding regular defintion and regular expression
+	 * & replace, preparing it for substitution ala sed
+	 */
 	regular_expression_replace(size_t limit = 100,
 				   size_t limit_defs_expansion = 100);
 	~regular_expression_replace();
 
+	/**
+	 * @param name a regular definition name
+	 * @param replace the string to subsitute in other regular definition
+	 * or regular exepression when this regular defintion name is
+	 * encoutered.
+	 */
 	void add_definition(std::string const & name,
 			    std::string const & replace);
-	bool add_pattern(std::string const & pattern,
+	/**
+	 * @param pattern a regular expression pattern, POSIX extended notation
+	 * @param replace the replace string to use when this regular
+	 *  expression is matched
+	 *
+	 * You can imbed regular definition in pattern but not in replace.
+	 */
+	void add_pattern(std::string const & pattern,
 			 std::string const & replace);
 
+	/**
+	 * @param str the input/output string where we search pattern and
+	 * replace them.
+	 *
+	 * Execute loop at max limit time on the set of regular expression
+	 *
+	 * Return true if too many match occur and replacing has been stopped
+	 * due to reach limit_defs_expansion. You can test if some pattern has
+	 * been matched by saving the input string and comparing it to the new
+	 * value. There is no way to detect s/a/a because the output string
+	 * will be identical to the input string.
+	 */
 	bool execute(std::string & str) const;
 private:
 	// helper to execute
@@ -53,12 +88,17 @@ private:
 			std::string const & replace,
 			regmatch_t const * match) const;
 
-	bool expand_string(std::string const & input, std::string & result);
+	// helper to add_definition() and add_pattern()
+	void expand_string(std::string const & input, std::string & result);
 
 	// helper to add_pattern
 	std::string substitute_definition(std::string const & pattern);
 
-	// don't increase too, it have direct impact on performance
+	// don't increase too, it have direct impact on performance. This limit
+	// the number of grouping expression allowed in a regular expression
+	// Note than you can use grouping match operator > 9 only in the
+	// replace rule not in match regular expression since POSIX don't allow
+	// more than \9 in matching sequence.
 	static const size_t max_match = 16;
 
 	size_t limit;
