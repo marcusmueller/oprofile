@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.7 2000/08/31 23:16:40 moz Exp $ */
+/* $Id: oprofpp.c,v 1.8 2000/08/31 23:38:36 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -538,18 +538,16 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
  
-	// FIXME: null um_desc etc. in printf
-	printf("val 0 %d, val 1,%d\n",footer.ctr0_type_val,footer.ctr1_type_val);
 	if (footer.ctr0_type_val) {
 		op_get_event_desc(footer.ctr0_type_val, footer.ctr0_um, &ctr0_name, &ctr0_desc, &ctr0_um_desc);
 		printf("Counter 0 counted %s events (%s) with a unit mask of 0x%.2x (%s)\n",ctr0_name, ctr0_desc, 
-			 footer.ctr0_um, ctr0_um_desc);
+			 footer.ctr0_um, ctr0_um_desc ? ctr0_um_desc : "Not set");
 	}
 
 	if (footer.ctr1_type_val) {
 		op_get_event_desc(footer.ctr1_type_val, footer.ctr1_um, &ctr1_name, &ctr1_desc, &ctr1_um_desc);
 		printf("Counter 1 counted %s events (%s) with a unit mask of 0x%.2x (%s)\n",ctr1_name, ctr1_desc, 
-			 footer.ctr1_um, ctr1_um_desc);
+			 footer.ctr1_um, ctr1_um_desc ? ctr1_um_desc : "Not set");
 	}
  
 	fd = open(samplefile, O_RDONLY);
