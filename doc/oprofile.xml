@@ -1226,6 +1226,14 @@ Options allowed are :
 		This option is available only with --list-symbols
 		</para></listitem>
 	</varlistentry>
+	<varlistentry>
+		<term><option>--exclude-symbol</option> symbol[,symbol]</term>
+		<term><option>-e</option> symbol[,symbol]</term>
+		<listitem><para>
+		Comma-separated list of symbols to ignore. This can be useful to ignore the leading contributors
+		to the sample histogram, as the percentage values are re-calculated.
+		</para></listitem>
+	</varlistentry>
 </variablelist>
 </sect1>
 </chapter>
