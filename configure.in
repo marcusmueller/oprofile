@@ -9,10 +9,16 @@
 #   2 of the License, or (at your option) any later version.
 #
 
+AC_REVISION($Id: configure.in,v 1.9 2000/08/08 03:21:05 moz Exp $)
+AC_PREREQ(2.13)
+AC_INIT(./oprofile.c)
+
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 PACKAGE=oprofile
 VERSION=0.0.1
+
+dnl -- local macros -- 
  
 dnl AX_MSG_RESULT_YN(a)
 dnl results "yes" iff a==1, "no" else
@@ -32,14 +38,20 @@ ifelse([$4], , , [else
 ])dnl
 fi
 ])
- 
- 
-AC_REVISION($Id: configure.in,v 1.8 2000/08/08 00:12:33 moz Exp $)
-dnl
-dnl Process this file with autoconf to produce a configure script.
-dnl
-AC_PREREQ(2.13)
-AC_INIT(./oprofile.c)
+
+dnl AX_COMPILE_OPTION(option, action-if-found, action-if-not-found)
+dnl see if autoconf.h defines the option
+AC_DEFUN(AX_COMPILE_OPTION, [
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$KCFLAGS -I$KINC -O2 -D__KERNEL__"
+AC_TRY_COMPILE( [#include <linux/config.h>],
+[
+#ifndef $1
+break_me_hard(\\\);
+#endif
+],[$2],[$3],)
+CFLAGS=$SAVE_CFLAGS
+])
 
 AC_PROG_CC
 test "$GCC" || AC_ERROR(You would not have much luck compiling kernel code with non-gcc...)
@@ -48,25 +60,16 @@ AC_CHECK_PROG(LD,ld,ld,)
 test "$LD" || AC_ERROR(ld not found)
 
 dnl  --- Find the Linux kernel, at least the headers ---
+ 
 AC_SUBST(KSRC)
 KSRC=/usr/src/linux
-AC_ARG_WITH(linux,
-[  --with-linux=dir        Path to Linux source tree], KSRC=$withval)
+AC_ARG_WITH(linux, [  --with-linux=dir             Path to Linux source tree], KSRC=$withval)
 AC_SUBST(KINC)
-AC_ARG_WITH(linux-include,
-[  --with-linux-include=dir
-                          Path to Linux include tree], KINC=$withval)
-if test -d $KSRC -a -f $KSRC/include/linux/autoconf.h ; then
-  KINC=$KSRC/include
-fi
-if test ! -d $KSRC; then
-  if test -f $KINC/include/linux/autoconf.h; then
-    KINC=$KINC/include; dnl test for obvious mis-specification
-  elif test -f $KINC/linux/autoconf.h; then
-    KSRC=;
-  else
-    AC_MSG_ERROR(no suitable configured kernel include tree found)
-  fi
+
+KINC=$KSRC/include
+ 
+if test ! -f $KINC/linux/autoconf.h; then
+  AC_MSG_ERROR(no suitably configured kernel include tree found)
 fi
 
 dnl  --- Get Linux kernel version and compile parameters ---
@@ -80,64 +83,51 @@ case "$KVERS" in
 *) AC_MSG_ERROR(Unsupported kernel version)
 esac
 
+AC_MSG_CHECKING("whether $CC accepts -mpreferred-stack-boundary=2")
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="-mpreferred-stack-boundary=2 $CFLAGS"
+AC_TRY_COMPILE(,,AC_MSG_RESULT("yes");KCFLAGS="-mpreferred-stack-boundary=2 $KCFLAGS",AC_MSG_RESULT("no"))
+CFLAGS=$SAVE_CFLAGS
+
 AC_MSG_CHECKING(for x86 architecture)
-x86=0 
-AX_EGREP([^ *\#define  *CONFIG_X86 ], $KINC/linux/autoconf.h, x86=1) 
+AX_COMPILE_OPTION(CONFIG_X86,x86=1,x86=0)
 AX_MSG_RESULT_YN($x86)
 test "$x86" = 1 || AC_MSG_ERROR(Unsupported architecture)
 
 AC_MSG_CHECKING(for SMP)
-smp=0
-AX_EGREP([^ *\#define  *CONFIG_SMP], $KINC/linux/autoconf.h, smp=1)
+AX_COMPILE_OPTION(CONFIG_SMP,smp=1,smp=0)
 AX_MSG_RESULT_YN($smp)
 test "$smp" = 1 && echo "Warning: SMP totally untested !"
 
 AC_MSG_CHECKING(for versioned modules)
 mv=0
-AX_EGREP([^ *\#define  *CONFIG_MODVERSIONS], $KINC/linux/autoconf.h, mv=1)
+AX_COMPILE_OPTION(CONFIG_MODVERSIONS,mv=1,mv=0)
 AX_MSG_RESULT_YN($mv)
 test "$mv" = 1 && AC_DEFINE(MODVERSIONS)
 
-AC_MSG_CHECKING(for do_nmi patch) 
-nmipatch=0
-AX_EGREP([^ *EXPORT_SYMBOL *\( *do_nmi *\) *], $KSRC/arch/i386/kernel/i386_ksyms.c, nmipatch=1)
-AX_MSG_RESULT_YN($nmipatch)
-test "$nmipatch" = 1 && KCPPFLAGS="$KCPPFLAGS -DOP_EXPORTED_DO_NMI"
- 
-dnl --- Configuration parameters ---
-
-AC_MSG_CHECKING("whether $CC accepts -mpreferred-stack-boundary=2")
-SAVE_CFLAGS=$CFLAGS
-CFLAGS="-mpreferred-stack-boundary=2 $CFLAGS"
-AC_TRY_COMPILE(,,AC_MSG_RESULT("yes");KCPPFLAGS="-mpreferred-stack-boundary=2 $KCPPFLAGS",AC_MSG_RESULT("no"))
-CFLAGS=$SAVE_CFLAGS
- 
 AC_MSG_CHECKING(for local APIC)
-apic=0
-AX_EGREP([^ *\#define  *CONFIG_X86_LOCAL_APIC], $KINC/linux/autoconf.h, apic=1)
+AX_COMPILE_OPTION(CONFIG_X86_LOCAL_APIC,apic=1,apic=0)
 AX_MSG_RESULT_YN($apic)
 test "$apic" = 0 && AC_MSG_ERROR(local APIC not configured)
 
-KCPPFLAGS="-I$KINC $KCPPFLAGS"
-AC_SUBST(KCPPFLAGS) 
+AC_MSG_CHECKING(for do_nmi patch)
+nmipatch=0
+AX_EGREP([^ *EXPORT_SYMBOL *\( *do_nmi *\) *], $KSRC/arch/i386/kernel/i386_ksyms.c, nmipatch=1)
+AX_MSG_RESULT_YN($nmipatch)
+test "$nmipatch" = 1 && KCFLAGS="$KCFLAGS -DOP_EXPORTED_DO_NMI"
 
-AC_TRY_COMPILE( [#include <linux/config.h>],
-[main() {
-#ifndef CONFIG_X86_LOCAL_APIC
-break_me_hard();
-#endif 
-}],AC_MSG_ERROR(CONFIG_X86_LOCAL_APIC not selected.),,)
- 
+KCFLAGS="-I$KINC $KCFLAGS"
+AC_SUBST(KCFLAGS)
+
 MODINSTALLDIR=/lib/modules/$KVERS/misc
 AC_ARG_WITH(module-dir,
 [  --with-module-dir=dir        Path to module installation directory], MODINSTALLDIR=$withval)
-AC_SUBST(MODINSTALLDIR) 
+AC_SUBST(MODINSTALLDIR)
 
 dnl --- user space configuration ---
 
 AC_ARG_WITH(extra-includes,
-[  --with-extra-includes=DIR
-                          add extra include paths],
+[  --with-extra-includes=DIR    add extra include paths],
   use_extra_includes="$withval",
   use_extra_includes=NO
 )
@@ -153,7 +143,7 @@ if test -n "$use_extra_includes" && \
 fi
 
 AC_ARG_WITH(extra-libs,
-[  --with-extra-libs=DIR   add extra library paths],
+[  --with-extra-libs=DIR        add extra library paths],
   use_extra_libs=$withval,
   use_extra_libs=NO
 )
@@ -172,7 +162,7 @@ AC_SUBST(extra_libraries)
 
 AC_CHECK_LIB(popt, poptGetContext,, AC_MSG_ERROR(popt library not found))
 AC_CHECK_LIB(iberty, cplus_demangle,, AC_MSG_ERROR(liberty library not found))
-AC_CHECK_LIB(dl, dlopen,, AC_MSG_ERROR(dl library not found)) 
+AC_CHECK_LIB(dl, dlopen,, AC_MSG_ERROR(dl library not found))
 AC_CHECK_LIB(bfd, bfd_openr,, AC_MSG_ERROR(bfd library not found))
- 
+
 AC_OUTPUT(Makefile dae/Makefile pp/Makefile version.h)
