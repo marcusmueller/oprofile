@@ -9,41 +9,52 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
+#include "op_file.h"
+ 
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 #include <string>
 
-#include "op_file.h"
-#include "oprofpp.h"
-
+#include <cstdlib>
+ 
+#include "verbose_ostream.h"
+ 
+#include "op_bfd.h"
+ 
+using std::find;
+using std::vector;
 using std::string;
 using std::cout;
+using std::cerr;
+using std::hex;
+using std::dec;
 using std::endl;
 
-op_bfd::op_bfd(string const & filename)
+op_bfd::op_bfd(string const & filename, vector<string> exclude_symbols)
 	:
 	ibfd(0),
 	bfd_syms(0),
 	text_offset(0)
 {
-	if (filename.length() == 0) {
-		fprintf(stderr,"oprofpp: oppp_bfd() empty image filename.\n");
+	if (filename.empty()) {
+		cerr << "op_bfd() empty image filename." << endl;
 		exit(EXIT_FAILURE);
 	}
 
-	nr_samples = op_get_fsize(filename.c_str(), 0);
+	file_size = op_get_fsize(filename.c_str(), 0);
 
 	ibfd = bfd_openr(filename.c_str(), NULL);
  
 	if (!ibfd) {
-		fprintf(stderr,"oprofpp: bfd_openr of %s failed.\n", filename.c_str());
+		cerr << "bfd_openr of " << filename << " failed." << endl;
 		exit(EXIT_FAILURE);
 	}
 	 
 	char ** matching;
 
-	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) { 
-		fprintf(stderr,"oprofpp: BFD format failure for %s.\n", filename.c_str());
+	if (!bfd_check_format_matches(ibfd, bfd_object, &matching)) {
+		cerr << "BFD format failure for " << filename << endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -53,10 +64,10 @@ op_bfd::op_bfd(string const & filename)
 	asection * sect = bfd_get_section_by_name(ibfd, ".text");
 	if (sect) {
 		text_offset = sect->filepos;
-		verbprintf(".text filepos 0x%lx\n", text_offset); 
+		cverb << ".text filepos " << hex << text_offset << endl;
 	}
 
-	get_symbols();
+	get_symbols(exclude_symbols);
 
 	if (syms.size() == 0) {
 		u32 start, end;
@@ -129,7 +140,7 @@ static bool interesting_symbol(asymbol *sym)
  * the interesting_symbol() predicate and sorted
  * with the symcomp() comparator.
  */
-bool op_bfd::get_symbols()
+bool op_bfd::get_symbols(vector<string> excluded)
 {
 	uint nr_all_syms;
 	symbol_index_t i; 
@@ -186,11 +197,13 @@ bool op_bfd::get_symbols()
 		}
 	}
 
-	verbprintf("nr symbols before excluding symbols%u\n", syms.size());
+	cverb << "number of symbols before excluding " << dec << syms.size() << endl;
 
-	// it's time to remove the excluded symbol.
+	// it's time to remove the excluded symbols
 	for (i = 0 ; i < syms.size() ; ) {
-		if (is_excluded_symbol(syms[i].name())) {
+		vector<string>::const_iterator it =
+			find(excluded.begin(), excluded.end(), syms[i].name());
+		if (it != excluded.end()) {
 			cout << "excluding symbol " << syms[i].name() << endl;
 			syms.erase(syms.begin() + i);
 		} else {
@@ -198,13 +211,14 @@ bool op_bfd::get_symbols()
 		}
 	}
 
-	verbprintf("nr symbols %u\n", syms.size());
+	cverb << "number of symbols now " << dec << syms.size() << endl;
 
 	if (syms.empty())
 		return false;
 
 	return true;
 }
+ 
 
 u32 op_bfd::sym_offset(symbol_index_t sym_index, u32 num) const
 {
@@ -354,7 +368,7 @@ size_t op_bfd::symbol_size(symbol_index_t sym_idx) const
 	if (next) {
 		end = next->filepos();
 	} else
-		end = nr_samples;
+		end = file_size;
 
 	length = end - start;
 #else /* !USE_ELF_INTERNAL */
@@ -369,7 +383,7 @@ size_t op_bfd::symbol_size(symbol_index_t sym_idx) const
 		if (next) {
 			next_offset = next->filepos();
 		} else {
-			next_offset = nr_samples;
+			next_offset = file_size;
 		}
 		length = next_offset - start;
 	}
@@ -383,27 +397,32 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 {
 	op_bfd_symbol const & sym = syms[sym_idx];
 
-	verbprintf("Symbol %s, value 0x%x\n", sym.name().c_str(), sym.value()); 
+	cverb << "symbol " << sym.name() << ", value " << hex << sym.value() << endl;
+ 
 	start = sym.filepos();
 	if (sym.symbol()) {
-		verbprintf("in section %s, filepos 0x%lx\n", sym.symbol()->section->name, sym.symbol()->section->filepos);
+		cverb << "in section " << sym.symbol()->section->name
+			<< ", filepos " << hex << sym.symbol()->section->filepos << endl;
 	}
 
 	end = start + syms[sym_idx].size();
-	verbprintf("start 0x%x, end 0x%x\n", start, end); 
+	cverb << "start " << hex << start << ", end " << end << endl;
 
-	if (start >= nr_samples + text_offset) {
-		fprintf(stderr,"oprofpp: start 0x%x out of range (max 0x%x)\n", start, nr_samples);
+	if (start >= file_size + text_offset) {
+		cerr << "start " << hex << start
+			<< " out of range (max " << file_size << ")" << endl;
 		exit(EXIT_FAILURE);
 	}
 
-	if (end > nr_samples + text_offset) {
-		fprintf(stderr,"oprofpp: end 0x%x out of range (max 0x%x)\n", end, nr_samples);
+	if (end > file_size + text_offset) {
+		cerr << "end " << hex << end
+			<< " out of range (max " << file_size << ")" << endl;
 		exit(EXIT_FAILURE);
 	}
 
 	if (start > end) {
-		fprintf(stderr,"oprofpp: start 0x%x overflow or end 0x%x underflow\n", start, end);
+		cerr << "start " << hex << start
+			<< " is more than end " << end << endl;
 		exit(EXIT_FAILURE);
 	}
 }
@@ -418,7 +437,7 @@ void op_bfd::get_vma_range(u32 & start, u32 & end) const
 		end = last_symb.vma() + last_symb.size();
 	} else {
 		start = 0;
-		end = nr_samples;
+		end = file_size;
 	}
 }
 

@@ -48,11 +48,6 @@
 
  */
 
-/** like printf but only output the message if the global variable vebose
- * is non-zero */
-void verbprintf(char const * args, ...) OP_VERBPRINTF_FORMAT;
-
- 
 /**
  * quit with error
  * @param err error to show

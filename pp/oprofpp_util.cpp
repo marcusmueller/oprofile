@@ -42,34 +42,6 @@ using std::endl;
 
 
 /**
- * verbprintf
- */
-void verbprintf(char const * fmt, ...)
-{
-	if (options::verbose) {
-		va_list va;
-		va_start(va, fmt);
-
-		vprintf(fmt, va);
-
-		va_end(va);
-	}
-}
-
-
-/**
- * is_excluded_symbol - check if the symbol is in the exclude list
- * @param symbol symbol name to check
- *
- * return true if symbol is in the list of excluded symbol
- */
-bool is_excluded_symbol(string const & symbol)
-{
-	return std::find(options::exclude_symbols.begin(), options::exclude_symbols.end(),
-			 symbol) != options::exclude_symbols.end();
-}
-
-/**
  * quit_error - quit with error
  * @param err error to show
  *

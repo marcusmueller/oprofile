@@ -28,8 +28,6 @@ namespace options {
 	extern std::string no_output_filter;
 	extern bool assembly;
 	extern bool source_with_assembly;
-	/** control the behavior of verbprintf() */
-	extern bool verbose;
 	/** control the behavior of demangle_symbol() */
 	extern bool demangle;
 	/** a sample filename */

@@ -1,6 +1,42 @@
 2002-06-05  John Levon  <moz@compsoc.man.ac.uk>
 
 	* libutil++/file_manip.h:
+	* libutil++/file_manip.cpp: move oprofile specific stuff
+	  to ...
+ 
+	* libop++/op_mangling.h:
+	* libop++/op_mangling.cpp: ... here
+
+	* pp/Makefile.in:
+	* pp/op_bfd.h:
+	* pp/op_bfd.cpp: move to ...
+ 
+	* libutil++/Makefile.in:
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: ... here 
+ 
+	* libutil++/verbose_ostream.h: add
+ 
+	* pp/op_merge.cpp:
+	* pp/op_time.cpp: 
+	* pp/op_time_options.h:
+	* pp/op_time_options.cpp:
+	* pp/op_to_source.cpp: 
+	* pp/op_to_source_options.h:
+	* pp/op_to_source_options.cpp:
+	* pp/oprofpp.h: 
+	* pp/oprofpp.cpp: 
+	* pp/oprofpp_options.h:
+	* pp/oprofpp_options.cpp:
+	* pp/oprofpp_util.cpp:
+	* pp/samples_file.h: various changes and
+	  cleanups from above
+ 
+	* pp/derive_files.cpp: remove now duplicate code
+ 
+2002-06-05  John Levon  <moz@compsoc.man.ac.uk>
+
+	* libutil++/file_manip.h:
 	* libutil++/file_manip.cpp: simplify but don't
 	  break already absolute paths, remove dead code
  

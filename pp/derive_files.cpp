@@ -42,12 +42,6 @@ void set_counter_from_filename(string const & name, int & counter)
 	is >> counter;
 }
  
-void strip_counter_suffix(string & name)
-{
-	size_t pos = name.find_last_of('#');
-	name = name.substr(0, pos);
-}
- 
 }
  
  

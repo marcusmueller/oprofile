@@ -13,8 +13,11 @@
 #include "oprofpp.h"
 #include "opp_symbol.h"
  
+#include "verbose_ostream.h"
+ 
 using std::string;
 using std::vector;
+using std::ostream;
 using namespace options;
  
 namespace options {
@@ -31,12 +34,13 @@ namespace options {
 	string sample_file;
 	string image_file;
 	bool demangle;
-	bool verbose;
 	vector<string> exclude_symbols;
 };
  
 namespace {
  
+bool verbose;
+
 string output_format;
  
 option options_array[] = {
@@ -54,10 +58,12 @@ option options_array[] = {
 	option(options::show_shared_libs, "show-shared-libs", 'k', "show details for shared libraries"),
 	option(options::list_all_symbols_details, "list-all-symbols-details", 'L', "list samples for all symbols"),
 	option(output_format, "output-format", 't', "choose the output format", "output-format strings"),
-	option(options::verbose, "verbose", 'V', "verbose output"),
+	option(verbose, "verbose", 'V', "verbose output"),
 };
  
 } // namespace anon
+ 
+verbose_ostream cverb(std::cout);
  
 string const get_options(int argc, char const **argv)
 {
@@ -66,6 +72,9 @@ string const get_options(int argc, char const **argv)
 	
 	parse_options(argc, argv, arg);
 
+	if (!verbose)
+		cverb.go_silent();
+ 
 	if (!list_all_symbols_details && !list_symbols && 
 	    gprof_file.empty() && symbol.empty())
 		quit_error("oprofpp: no mode specified. What do you want from me ?\n");

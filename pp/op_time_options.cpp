@@ -16,6 +16,7 @@
 
 #include "popt_options.h"
 #include "file_manip.h"
+#include "verbose_ostream.h"
  
 #include <list>
  
@@ -25,7 +26,6 @@ using std::list;
 using std::cerr;
  
 namespace options {
-	bool verbose;
 	string session;
 	string counter_str("0");
 	string output_format;
@@ -45,7 +45,10 @@ namespace options {
 
 namespace {
 
+bool verbose;
+ 
 option options_array[] = {
+	option(verbose, "verbose", 'V', "verbose output"),
 	option(options::session, "session", 's', "session to use", "name"),
 	option(options::counter_str, "counter", 'c', "which counter to use", "counter_nr[,counter_nr]"),
 	option(options::output_format, "output-format", 't', "choose the output format", "output-format strings"),
@@ -120,6 +123,8 @@ void handle_session_options(void)
 
 } // namespace anon
  
+verbose_ostream cverb(std::cout);
+ 
 /**
  * get_options - process command line
  * @param argc program arg count
@@ -134,6 +139,9 @@ void get_options(int argc, char const * argv[])
 	string file;
 	parse_options(argc, argv, file);
 
+	if (!verbose)
+		cverb.go_silent();
+ 
 	if (file.length())
 		session = file;
 

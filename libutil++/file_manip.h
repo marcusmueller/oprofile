@@ -34,7 +34,7 @@ std::string op_read_link(std::string const & name);
  * looking in sub-directory. If we look in sub-directory only sub-directory
  * which match filter are traversed.
  */
-bool create_file_list(std::list<std::string>& file_list,
+bool create_file_list(std::list<std::string> & file_list,
 		      std::string const & base_dir,
 		      std::string const & filter = "*",
 		      bool recursive = false);
@@ -54,45 +54,5 @@ std::string relative_to_absolute_path(std::string const & path,
 std::string dirname(std::string const & file_name);
 /** return the dir name of path_name as dirname(1) */
 std::string basename(std::string const & path_name);
-
-/**
- * extract_app_name - extract the mangled name of an application
- * @param name the mangled name
- * @param lib_name where to store the shared lib name if relevant
- *
- * if name is: }usr}sbin}syslogd}}}lib}libc-2.1.2.so (shared lib)
- * we return }usr}sbin}syslogd and }lib}libc-2.1.2.so in lib_name
- *
- * if name is: }bin}bash (application)
- *  we return }bin}bash and an empty name in lib_name
- */
-// TODO: can we demangle filename before returning it to simplify caller code ?
-std::string extract_app_name(std::string const & name, std::string & lib_name);
-
-/**
- * get_sample_file_list - create a file list of base samples filename
- * @param file_list: where to store the results
- * @param base_dir: base directory
- * @param filter: a file filter name.
- *
- * fill file_list with a list of base samples filename where a base sample
- * filename is a samples filename without #nr suffix. Even if the call
- * pass "*" as filter only valid samples filename are returned (filename
- * containing at least on mangled char)
- *
- * Note than the returned list can contains filename where some samples
- * exist for one counter but does not exist for other counter. Caller must
- * handle this problems. e.g. if the samples dir contains foo#1 and bar#0
- * the list will contain { "foo", "bar" } and if the caller want to work
- * only on counter #0 it must refilter the filelist created
- *
- * The returned filenames are relative to the base_dir
- */
-void get_sample_file_list(std::list<std::string> & file_list,
-			  std::string const & base_dir,
-			  std::string const & filter);
-
-/** strip the #nr suffix of a samples filename */
-std::string strip_filename_suffix(std::string const & filename);
 
 #endif /* !FILE_MANIP_H */

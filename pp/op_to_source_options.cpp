@@ -11,6 +11,7 @@
 
 #include "op_to_source_options.h"
 #include "popt_options.h"
+#include "verbose_ostream.h"
 
 #include <iostream>
  
@@ -31,17 +32,18 @@ namespace options {
 	bool source_with_assembly;
 	string sample_file;
 	string image_file;
-	bool verbose;
 	bool demangle;
 	vector<string> exclude_symbols;
 };
 
 namespace {
  
+bool verbose;
+ 
 option options_array[] = {
+	option(verbose, "verbose", 'V', "verbose output"),
 	option(options::sample_file, "samples-file", 'f', "image sample file", "file"),
 	option(options::image_file, "image-file", 'i', "image file", "file"),
-	option(options::verbose, "verbose", 'V', "verbose output"),
 	option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names"),
 	option(options::with_more_than_samples, "with-more-than-samples", 'w',
 		"show all source file if the percent of samples in this file is more than argument", "[0-100]"),
@@ -59,6 +61,8 @@ option options_array[] = {
 
 }
 
+verbose_ostream cverb(std::cout);
+
 /**
  * get_options - process command line
  * @param argc program arg count
@@ -72,6 +76,9 @@ string const get_options(int argc, char const * argv[])
 
 	parse_options(argc, argv, arg);
 
+	if (!verbose)
+		cverb.go_silent();
+ 
 	if (options::with_more_than_samples
 		&& options::until_more_than_samples) {
 		cerr << "op_to_source: --with-more-than-samples and "

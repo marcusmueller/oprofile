@@ -31,7 +31,6 @@ namespace options {
 	extern bool list_all_symbols_details;
 	/** control the behavior of demangle_symbol() */
 	extern bool demangle;
-	extern bool verbose;
 	/** a sample filename */
 	extern std::string sample_file;
 	/** an image filename */

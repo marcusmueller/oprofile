@@ -9,33 +9,23 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
 
-// FIXME: still some work to do here ...
- 
-// FIXME: check these headers are needed 
-#include <sys/stat.h>
 #include <unistd.h>
-#include <stdio.h>	// for FILENAME_MAX
+#include <sys/stat.h>
 #include <dirent.h>
 #include <errno.h>
 #include <fnmatch.h>
-
-#include <vector>
+ 
 #include <iostream>
-#include <string>
-#include <algorithm>
-
+#include <vector>
+ 
 #include "op_file.h"
  
 #include "file_manip.h"
 #include "string_manip.h"
 
-// FIXME: nope !
-#define OPD_MANGLE_CHAR '}'
-
 using std::vector;
 using std::string;
 using std::list;
-using std::find;
 using std::cerr;
 using std::endl;
 
@@ -135,9 +125,8 @@ inline static bool is_directory_name(char const * name)
 		 (name[1] == '.' && name[2] == '\0'));
 }
 
-/// return false if base_dir can't be accessed.
-bool create_file_list(list<string>& file_list, const string & base_dir,
-		      const string & filter, bool recursive)
+bool create_file_list(list<string> & file_list, string const & base_dir,
+		      string const & filter, bool recursive)
 {
 	DIR *dir;
 	struct dirent * ent;
@@ -215,62 +204,4 @@ string basename(string const & path_name)
 	string result = rtrim(path_name, '/');
 
 	return erase_to_last_of(result, '/');
-}
-
-/**
- * extract_app_name - extract the mangled name of an application
- * @name the mangled name
- *
- * if @name is: }usr}sbin}syslogd}}}lib}libc-2.1.2.so (shared lib)
- * will return }usr}sbin}syslogd and }lib}libc-2.1.2.so in
- * @lib_name
- *
- * if @name is: }bin}bash (application)
- *  will return }bin}bash and an empty name in @lib_name
- */
-string extract_app_name(const string & name, string & lib_name)
-{
-	string result(name);
-	lib_name = string();
-
-	size_t pos = result.find("}}");
-	if (pos != string::npos) {
-		result.erase(pos, result.length() - pos);
-		lib_name = name.substr(pos + 2);
-	}
-
-	return result;
-}
-
-
-// FIXME: a libop++ kind of thing
-void get_sample_file_list(list<string> & file_list,
-			  string const & base_dir,
-			  string const & filter)
-{
-	file_list.clear();
-
-	list <string> files;
-	if (create_file_list(files, base_dir, filter) == false) {
-		cerr << "Can't open directory \"" << base_dir << "\": "
-		     << strerror(errno) << endl;
-		exit(EXIT_FAILURE);
-	}
-
-	list<string>::iterator it;
-	for (it = files.begin(); it != files.end(); ++it) {
-
-		// even if caller specify "*" as filter we avoid to get
-		// invalid filename
-		if (it->find_first_of(OPD_MANGLE_CHAR) == string::npos)
-			continue;
-
-		string filename = strip_filename_suffix(*it);
-
-		// After stripping the # suffix multiples identicals filenames
-		// can exist.
-		if (find(file_list.begin(), file_list.end(), filename) == 
-		    file_list.end())
-			file_list.push_back(filename);
-	}
 }

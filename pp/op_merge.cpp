@@ -19,13 +19,16 @@
 #include <fstream>
 #include <algorithm>
 
-#include "oprofpp.h"
- 
 #include "version.h"
 #include "popt_options.h"
 #include "file_manip.h"
-#include "op_mangling.h"
+#include "verbose_ostream.h"
+ 
 #include "db.h"
+#include "op_config.h"
+#include "op_mangling.h"
+#include "op_sample_file.h"
+#include "samples_file.h"
 
 using std::string;
 using std::vector;
@@ -37,17 +40,18 @@ using std::cerr;
 using std::endl;
 using std::ifstream;
 
-/// FIXME: gross hack for now. not used
-namespace options {
+namespace {
+	int counter;
 	bool verbose;
-	string samplefile;
-	string imagefile;
-	vector<string> exclude_symbols;
 }
- 
-static int counter;
-static option counter_opt(counter, "use-counter", 'c', "use counter", "counter nr");
 
+option options_array[] = {
+	option(verbose, "verbose", 'V', "verbose output"),
+	option(counter, "use-counter", 'c', "use counter", "counter nr")
+};
+
+verbose_ostream cverb(std::cout);
+ 
 /**
  * get_options - process command line
  * @param argc program arg count
@@ -60,6 +64,9 @@ static void get_options(int argc, char const * argv[], vector<string> & images)
 {
 	parse_options(argc, argv, images);
 
+	if (!verbose)
+		cverb.go_silent();
+ 
 	if (images.size() == 0) {
 		cerr << "Neither samples filename or image filename"
 		     <<	" given on command line\n\n";

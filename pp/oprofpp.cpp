@@ -26,13 +26,13 @@
 
 using std::string;
 using std::vector;
+using std::list;
 using std::cout;
 using std::cerr;
 using std::ifstream;
-using std::list;
+using std::ostream;
 using std::ostringstream;
  
-
 /**
  * do_list_symbols - list symbol samples for an image
  * @param abfd the bfd object from where come the samples
@@ -215,7 +215,7 @@ int main(int argc, char const *argv[])
 		opp_samples_files samples_files(options::sample_file, ctr_mask);
 		check_mtime(samples_files, options::image_file);
 
-		op_bfd abfd(options::image_file);
+		op_bfd abfd(options::image_file, options::exclude_symbols);
 		samples_files.set_start_offset(abfd.get_start_offset());
 		do_dump_gprof(abfd, samples_files, options::sort_by_counter);
 		return 0;
@@ -277,7 +277,7 @@ int main(int argc, char const *argv[])
 		if (it == filelist.begin()) {
 			check_mtime(samples_files, options::image_file);
 
-			op_bfd abfd(options::image_file);
+			op_bfd abfd(options::image_file, options::exclude_symbols);
 
 			samples_files.set_start_offset(abfd.get_start_offset());
 
@@ -289,7 +289,7 @@ int main(int argc, char const *argv[])
 
 			check_mtime(samples_files, options::image_file);
 
-			op_bfd abfd(demangle_filename(lib_name));
+			op_bfd abfd(demangle_filename(lib_name), options::exclude_symbols);
 			samples_files.set_start_offset(abfd.get_start_offset());
 
 			samples.add(samples_files, abfd);

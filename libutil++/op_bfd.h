@@ -76,10 +76,11 @@ class op_bfd {
 public:
 	/**
 	 * @param filename the name of the image file
+	 * @param excluded symbol names to exclude
 	 *
 	 * All errors are fatal.
 	 */
-	op_bfd(std::string const & filename);
+	op_bfd(std::string const & filename, std::vector<std::string> excluded);
 
 	/// close an opened bfd image and free all related resources
 	~op_bfd();
@@ -108,7 +109,7 @@ public:
 	 * in symbol table, all entries up to the end of the sample file will
 	 * be used.  After calculating start and end they are sanitized
 	 *
-	 * All error are fatal.
+	 * All errors are fatal.
 	 */
 	void get_symbol_range(symbol_index_t sym_idx,
 			      u32 & start, u32 & end) const;
@@ -136,28 +137,30 @@ public:
 	 * image or a module image, else return 0 */
 	u32 const get_start_offset() const { return text_offset; }
 
-	/** Returns true if the underlined bfd object contains debug info */
+	/// returns true if the underlying bfd object contains debug info
 	bool have_debug_info() const;
 
-	/** return the image name of the underlined binary image */
+	/// return the image name of the underlying binary image
 	std::string get_filename() const;
 
-	// sorted vector by vma of interesting symbol.
+	/// sorted vector by vma of interesting symbol.
 	std::vector<op_bfd_symbol> syms;
 
-	// nr of samples.
-	uint nr_samples;
 private:
+	/// file size in bytes
+	uint file_size;
+
 	// the bfd object.
 	bfd * ibfd;
 
 	// vector of symbol filled by the bfd lib.
-	asymbol **bfd_syms;
+	asymbol ** bfd_syms;
 	// image file such the linux kernel need than all vma are offset
 	// by this value.
 	u32 text_offset;
  
-	bool get_symbols();
+	/// collect the symbols excluding any in the given vector
+	bool get_symbols(std::vector<std::string> excluded);
 
 	/**
 	 * symbol_size - return the size of a symbol

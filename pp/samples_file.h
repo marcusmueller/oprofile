@@ -16,9 +16,11 @@
 
 #include "db.h"
 #include "op_types.h"
+#include "op_hw_config.h"
 #include "utility.h"
 
 class counter_array_t;
+class opd_header;
 
 /** A class to store one samples file */
 struct samples_file_t /*:*/ noncopyable
