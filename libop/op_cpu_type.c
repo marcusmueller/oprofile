@@ -15,6 +15,27 @@
 
 #include "op_cpu_type.h"
 
+struct cpu_descr {
+	char const * pretty;
+	char const * name;
+	op_cpu cpu;
+	unsigned int nr_counters;
+} cpu_descrs[MAX_CPU_TYPE] = {
+	{ "Pentium Pro", "i386/ppro", CPU_PPRO, 2 },
+	{ "PII", "i386/pii", CPU_PII, 2 },
+	{ "PIII", "i386/piii", CPU_PIII, 2 },
+	{ "Athlon", "i386/athlon", CPU_ATHLON, 4 },
+	{ "CPU with timer interrupt", "timer", CPU_TIMER_INT, 1 },
+	{ "CPU with RTC device", "rtc", CPU_RTC, 1 },
+	{ "P4 / Xeon", "i386/p4", CPU_P4, 8 },
+	{ "IA64", "ia64/ia64", CPU_IA64, 4 },
+	{ "Itanium", "ia64/itanium", CPU_IA64_1, 4 },
+	{ "Itanium 2", "ia64/itanium2", CPU_IA64_2, 4 },
+	{ "Hammer", "x86-64/hammer", CPU_HAMMER, 4 },
+};
+ 
+static size_t nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
+
 /**
  * op_get_cpu_type - get the cpu type from the kernel
  *
@@ -23,8 +44,8 @@
 op_cpu op_get_cpu_type(void)
 {
 	int cpu_type = CPU_NO_GOOD;
-	char str[10];
-
+	char str[100];
+	size_t i;
 	FILE * fp;
 
 	fp = fopen("/proc/sys/dev/oprofile/cpu_type", "r");
@@ -37,9 +58,20 @@ op_cpu op_get_cpu_type(void)
 		}
 	}
 
-	fgets(str, 9, fp);
+	if (!fgets(str, 99, fp)) {
+		fprintf(stderr, "Could not read cpu type.\n");
+		return CPU_NO_GOOD;
+	}
 
-	sscanf(str, "%d\n", &cpu_type);
+	for (i = 0; i < nr_cpu_descrs; ++i) {
+		if (!strcmp(cpu_descrs[i].name, str)) {
+			cpu_type = cpu_descrs[i].cpu;
+			break;
+		}
+	}
+
+	if (i == nr_cpu_descrs)
+		sscanf(str, "%d\n", &cpu_type);
 
 	fclose(fp);
 
@@ -47,21 +79,6 @@ op_cpu op_get_cpu_type(void)
 }
 
  
-static char const * cpu_names[MAX_CPU_TYPE] = {
-	"Pentium Pro",
-	"PII",
-	"PIII",
-	"Athlon",
-	"CPU with timer interrupt",
-	"CPU with RTC device",
-	"P4 / Xeon",
-	"IA64",
-	"Itanium",
-	"Itanium 2",
-	"Hammer"
-};
- 
-
 /**
  * op_get_cpu_type_str - get the cpu string.
  * @param cpu_type  the cpu type identifier
@@ -76,22 +93,9 @@ char const * op_get_cpu_type_str(op_cpu cpu_type)
 		return "invalid cpu type";
 	}
 
-	return cpu_names[cpu_type];
+	return cpu_descrs[cpu_type].pretty;
 }
 
-static int cpu_nr_counters[MAX_CPU_TYPE] = {
-	2, /* PPro */
-	2, /* PII */
-	2, /* PIII */
-	4, /* Athlon */
-	1, /* Timer interrupt */
-	1, /* RTC */
-	8, /* P4 / Xeon */
-	4, /* IA64 */
-	4, /* IA64 (Merced) */
-	4, /* IA64 (McKinley) */
-	4  /* Hammer */
-};
 
 /**
  * compute the number of counters available
@@ -104,5 +108,5 @@ int op_get_nr_counters(op_cpu cpu_type)
 	if (cpu_type < 0 || cpu_type > MAX_CPU_TYPE)
 		return 0;
 
-	return cpu_nr_counters[cpu_type];
+	return cpu_descrs[cpu_type].nr_counters;
 }
