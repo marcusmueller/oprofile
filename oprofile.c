@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.49 2001/01/21 01:11:55 moz Exp $ */
+/* $Id: oprofile.c,v 1.50 2001/01/21 12:57:39 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -766,7 +766,7 @@ static int parms_ok(void)
 	struct _oprof_data *data;
 
 	op_check_range(op_hash_size,256,262144,"op_hash_size value %d not in range\n");
-	op_check_range(op_buf_size,512,1048576,"op_buf_size value %d not in range\n");
+	op_check_range(op_buf_size,1024,1048576,"op_buf_size value %d not in range\n");
 
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		data = &oprof_data[cpu];

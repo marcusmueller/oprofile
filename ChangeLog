@@ -31,6 +31,7 @@
 		we weren't turning OFF kernel/user counting when asked to
 
 	* oprofile.h: move shared stuff to op_user.h
+		increase the watermark to a much safer 768
 
 	* dae/Makefile.in: dependencies on op_user.h and version.h 
 

@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.30 2001/01/21 01:11:55 moz Exp $ */
+/* $Id: oprofile.h,v 1.31 2001/01/21 12:57:39 moz Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -77,9 +77,12 @@ struct _oprof_data {
 #define streqn(a, b, len) (!strncmp((a), (b), (len)))
 
 /* oprof_data->ready will be set this many samples
- * before the end of the eviction buffer
+ * before the end of the eviction buffer.
+ * The purpose of this is to avoid overflowing the sample
+ * buffer - though if we do overflow, nothing too bad will
+ * happen.
  */
-#define OP_PRE_WATERMARK 256
+#define OP_PRE_WATERMARK 768
 
 /* maximal value before eviction */
 #define OP_MAX_COUNT ((1U<<(16U-OP_BITS))-1U)
