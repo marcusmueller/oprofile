@@ -1,7 +1,7 @@
 0.3 Release
 -----------
 
- o module/Makefile.in
+ o verify 2.2/modversions etc. module build
  * oprof_report/Makefile.in etc. 
  o difference between two profile session. Difference must be made at source level. 
    (This is a part of post-prof). Difference can be made also at symbols level. Important.

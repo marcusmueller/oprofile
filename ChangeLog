@@ -1,5 +1,13 @@
 2002-05-06  John Levon  <moz@compsoc.man.ac.uk>
 
+	* configure.in: don't add KINC to BKCFLAGS directly
+ 
+	* module/Makefile.in: re-write
+ 
+	* TODO: update
+ 
+2002-05-06  John Levon  <moz@compsoc.man.ac.uk>
+
 	Massive re-organisation of code + build. Most
 	files have been changed. Some small cosmetic
 	changes.
