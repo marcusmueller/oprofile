@@ -14,7 +14,7 @@ install: oprofpp
 	cp oprofpp $(BINDIR)/oprofpp
 	cd $(BINDIR) && chmod 755 oprofpp
  
-CFLAGS=-Wall -Wstrict-prototypes -W -O2 -pipe -DOP_EVENTS_DESC -L/usr/lib @CFLAGS@
+CFLAGS=-Wall -Wstrict-prototypes -W -pipe -DOP_EVENTS_DESC -L/usr/lib @CFLAGS@
 LIBS=-lpopt -lbfd -liberty -ldl
 INCLUDES=@extra_includes@
 HEADERS=oprofpp.h ../dae/opd_util.h
@@ -27,4 +27,4 @@ oprofpp-src.html: $(MY_SOURCES)
 	../scripts/dodoc -html $(MY_SOURCES) >oprofpp-src.html
  
 oprofpp: $(SOURCES) $(HEADERS)
-	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $(SOURCES) $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $(SOURCES) $(LIBS)
