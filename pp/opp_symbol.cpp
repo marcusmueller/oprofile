@@ -1,3 +1,21 @@
+/* COPYRIGHT (C) 2002 Philippe Elie
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * first write by P.Elie.
+ */
+
 #include <sstream>
 #include <iomanip>
 
@@ -147,7 +165,7 @@ void OutputSymbol::SetFlag(OutSymbFlag flag)
 	flags = static_cast<OutSymbFlag>(flags | flag);
 }
 
-size_t OutputSymbol::OutputField(ostream & out, const string & name,
+size_t OutputSymbol::OutputField(std::ostream & out, const std::string & name,
 			       const sample_entry & sample,
 			       OutSymbFlag fl, size_t ctr)
 {
@@ -180,7 +198,7 @@ size_t OutputSymbol::OutputHeaderField(std::ostream & out, OutSymbFlag fl)
 	return sz;
 }
 
-void OutputSymbol::Output(ostream & out, const symbol_entry * symb)
+void OutputSymbol::Output(std::ostream & out, const symbol_entry * symb)
 {
 	DoOutput(out, symb->name, symb->sample, flags);
 
@@ -189,7 +207,7 @@ void OutputSymbol::Output(ostream & out, const symbol_entry * symb)
 	}
 }
 
-void OutputSymbol::OutputDetails(ostream & out, const symbol_entry * symb)
+void OutputSymbol::OutputDetails(std::ostream & out, const symbol_entry * symb)
 {
 	// We need to save the accumulated count and to restore it on
 	// exit so global cumulation and detailed cumulation are separate
@@ -221,7 +239,7 @@ void OutputSymbol::OutputDetails(ostream & out, const symbol_entry * symb)
 	}
 }
 
-void OutputSymbol::DoOutput(std::ostream & out, const string & name,
+void OutputSymbol::DoOutput(std::ostream & out, const std::string & name,
 			    const sample_entry & sample, OutSymbFlag flag)
 {
 	OutputHeader(out);
@@ -266,7 +284,7 @@ void OutputSymbol::DoOutput(std::ostream & out, const string & name,
 	out << "\n";
 }
 
-void OutputSymbol::OutputHeader(ostream & out)
+void OutputSymbol::OutputHeader(std::ostream & out)
 {
 	if (first_output == false) {
 		return;

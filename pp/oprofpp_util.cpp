@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.39 2002/03/17 18:27:23 movement Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.40 2002/03/19 05:41:25 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -56,7 +56,7 @@ void verbprintf(const char * fmt, ...)
 
 /**
  * remangle - convert a filename into the related sample file name
- * @image: the image filename
+ * \param image the image filename
  */
 static char *remangle(const char *image)
 {
@@ -87,7 +87,7 @@ static char *remangle(const char *image)
 /**
  * demangle_filename - convert a sample filenames into the related
  * image file name
- * @sample_filename: the samples image filename
+ * \param sample_filename the samples image filename
  *
  * if samples_filename does not contain any %OPD_MANGLE_CHAR
  * the string samples_filename itself is returned.
@@ -106,9 +106,9 @@ std::string demangle_filename(const std::string & samples_filename)
 
 /**
  * is_excluded_symbol - check if the symbol is in the exclude list
- * @symbol: symbol name to check
+ * \param symbol symbol name to check
  *
- * return true if @symbol is in the list of excluded symbol
+ * return true if symbol is in the list of excluded symbol
  */
 bool is_excluded_symbol(const std::string & symbol)
 {
@@ -118,7 +118,7 @@ bool is_excluded_symbol(const std::string & symbol)
 
 /**
  * quit_error - quit with error
- * @err: error to show
+ * \param err error to show
  *
  * err may be NULL
  */
@@ -131,9 +131,10 @@ void quit_error(poptContext optcon, char const *err)
 }
 
 /**
+ * \internal
  * validate_counter - validate the counter nr
- * @counter_mask: bit mask specifying the counter nr to use
- * @sort_by: the counter nr from which we sort
+ * \param counter_mask bit mask specifying the counter nr to use
+ * \param sort_by the counter nr from which we sort
  *
  * all error are fatal
  */
@@ -160,17 +161,17 @@ void validate_counter(int counter_mask, int & sort_by_counter)
  
 /**
  * opp_treat_options - process command line options
- * @file: a filename passed on the command line, can be %NULL
- * @optcon: poptContext to allow better message handling
- * @image_file: where to store the image file name
- * @sample_file: ditto for sample filename
- * @counter: where to put the counter command line argument
+ * \param file a filename passed on the command line, can be %NULL
+ * \param optcon poptContext to allow better message handling
+ * \param image_file where to store the image file name
+ * \param sample_file ditto for sample filename
+ * \param counter where to put the counter command line argument
  *
  * Process the arguments, fatally complaining on
  * error. 
  *
  * Most of the complexity here is to process
- * filename. @file is considered as a sample file
+ * filename. file is considered as a sample file
  * if it contains at least one OPD_MANGLE_CHAR else
  * it is an image file. If no image file is given
  * on command line the sample file name is un-mangled
@@ -181,7 +182,7 @@ void validate_counter(int counter_mask, int & sort_by_counter)
  * syntactical approch. (ie existence of filename is
  * not tested)
  *
- * post-condition: @sample_file and @image_file are setup
+ * post-condition: sample_file and image_file are setup
  */
 void opp_treat_options(const char* file, poptContext optcon,
 		       string & image_file, string & sample_file,
@@ -275,10 +276,10 @@ void opp_treat_options(const char* file, poptContext optcon,
 
 /**
  * demangle_symbol - demangle a symbol
- * @symbol: the symbol name
+ * \param symbol: the symbol name
  *
- * demangle the symbol name @name. if the global
- * global variable demangle is %TRUE. No error can
+ * demangle the symbol name. if the global
+ * global variable demangle is true. No error can
  * occur.
  *
  * The demangled name lists the parameters and type
@@ -302,10 +303,10 @@ std::string demangle_symbol(const char* name)
 	return name;
 }
 
-/**
+/** \internal
  * counter_mask -  given a --counter=0,1,..., option parameter return a mask
- * representing each counter. Bit i is oon if counter i was specified.
- * we allow up to sizeof(uint) * CHAR_BIT different counter
+ * representing each counter. Bit i is on if counter i was specified.
+ * So we allow up to sizeof(uint) * CHAR_BIT different counter
  */
 uint counter_mask(const std::string & str)
 {
@@ -323,22 +324,12 @@ uint counter_mask(const std::string & str)
 	return mask;
 }
 
-/**
- * counter_array_t - construct a counter_array_t
- *
- * set count to zero for all counter
- */
 counter_array_t::counter_array_t()
 {
 	for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i)
 		value[i] = 0;
 }
 
-/**
- * operator+= - vectorized += operator
- *
- * accumulate samples in this object
- */
 counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
 {
 	for (size_t i = 0 ; i < OP_MAX_COUNTERS ; ++i)
@@ -347,18 +338,8 @@ counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
 	return *this;
 }
 
-/**
- * opp_bfd - construct an opp_bfd object
- * @header: a valid samples file opd_header
- * @nr_samples: the number of samples location for
- * this image ie the number of bytes memory mapped
- * for this image with EXEC right
- * @image_file: the name of the image file
- *
- * All error are fatal.
- *
- */
-opp_bfd::opp_bfd(const opd_header* header, uint nr_samples_, const string & filename)
+opp_bfd::opp_bfd(const opd_header* header, uint nr_samples_,
+		 const std::string & filename)
 	:
 	ibfd(0),
 	bfd_syms(0),
@@ -380,12 +361,6 @@ opp_bfd::opp_bfd(const opd_header* header, uint nr_samples_, const string & file
 	}
 }
 
-/**
- * close_bfd_image - open a bfd image
- *
- * This function will close an opended a bfd image
- * and free all related resource.
- */
 opp_bfd::~opp_bfd()
 {
 	if (bfd_syms) free(bfd_syms);
@@ -394,20 +369,16 @@ opp_bfd::~opp_bfd()
 
 /**
  * open_bfd_image - opp_bfd ctor helper
- * @file: name of image file
- * @is_kernel: true if the image is the kernel
+ * \param file name of a valid image file
+ * \param is_kernel true if the image is the kernel (FIXME or a module ?)
  *
  * This function will open a bfd image and process symbols
  * within this image file
  *
- * @file mut be a valid image filename
- * @is_kernel must be true if the image is
- * the linux kernel.
- *
  * Failure to open the image a fatal
  * gettings zero symbols from the image is not an error
  */
-void opp_bfd::open_bfd_image(const string & filename, bool is_kernel)
+void opp_bfd::open_bfd_image(const std::string & filename, bool is_kernel)
 {
 	char **matching;
 
@@ -451,7 +422,8 @@ static const char *boring_symbols[] = {
 	"_init"
 };
 
-static const size_t nr_boring_symbols = sizeof(boring_symbols) / sizeof(char *);
+static const size_t nr_boring_symbols =
+			sizeof(boring_symbols) / sizeof(boring_symbols[0]);
  
 /**
  * Return true if the symbol is worth looking at
@@ -482,7 +454,7 @@ static bool interesting_symbol(asymbol *sym)
  * get_symbols - opp_bfd ctor helper
  *
  * Parse and sort in ascending order all symbols
- * in the file pointed to by @abfd that reside in
+ * in the file pointed to by abfd that reside in
  * a %SEC_CODE section. Returns true if symbol(s)
  * are found. The symbols are filtered through
  * the interesting_symbol() predicate and sorted
@@ -540,14 +512,6 @@ bool opp_bfd::get_symbols()
 	return true;
 }
 
-/**
- * sym_offset - return offset from a symbol's start
- * @sym_index: symbol number
- * @num: number of fentry
- *
- * Returns the offset of a sample at position @num
- * in the samples file from the start of symbol @sym_idx.
- */
 u32 opp_bfd::sym_offset(uint sym_index, u32 num) const
 {
 	if (num - sect_offset > num) {
@@ -565,11 +529,6 @@ u32 opp_bfd::sym_offset(uint sym_index, u32 num) const
 	return num;
 }
 
-/**
- * have_debug_info - check if the ibfd object contains debug info
- *
- * Returns true if the underlined bfd object contains debug info
- */
 bool opp_bfd::have_debug_info() const
 {
 	sec* section;
@@ -580,18 +539,6 @@ bool opp_bfd::have_debug_info() const
 	return section != NULL;
 }
  
-/**
- * get_linenr - lookup linenr info from a vma address
- * @sym_idx: the symbol number
- * @offset: the offset
- * @filename: source filename from where come the vma
- * @linenr: linenr corresponding to this vma
- *
- * lookup for for filename::linenr info from a @sym_idx
- * symbol at offset @offset.
- * return true if the lookup succeed. In any case @filename
- * is never set to NULL.
- */
 bool opp_bfd::get_linenr(uint sym_idx, uint offset, 
 			const char*& filename, unsigned int& linenr) const
 {
@@ -703,20 +650,6 @@ typedef struct
 
 #endif /* USE_ELF_INTERNAL */
 
-/**
- * get_symbol_range - get range of symbol
- * @sym_idx: symbol index
- * @start: pointer to start var
- * @end: pointer to end var
- *
- * Calculates the range of sample file entries covered
- * by @sym. @start and @end will be filled in appropriately.
- * If index is the last entry in symbol table, all entries up
- * to the end of the sample file will be used.  After
- * calculating @start and @end they are sanitized
- *
- * All error are fatal.
- */
 void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 {
 	asymbol *sym, *next;
@@ -784,10 +717,10 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 
 /**
  * symbol_index - find a symbol
- * @name: the symbol name
+ * \param name the symbol name
  *
  * find and return the index of a symbol.
- * if the @name is not found -1 is returned
+ * if the name is not found -1 is returned
  */
 int opp_bfd::symbol_index(const char* symbol) const
 {
@@ -801,10 +734,10 @@ int opp_bfd::symbol_index(const char* symbol) const
 
 /**
  * check_headers - check coherence between two headers.
- * @f1: first header
- * @f2: second header
+ * \param f1 first header
+ * \param f2 second header
  *
- * verify that header @f1 and @f2 are coherent.
+ * verify that header f1 and f2 are coherent.
  * all error are fatal
  */
 void check_headers(const opd_header * f1, const opd_header * f2)
@@ -834,11 +767,11 @@ void check_headers(const opd_header * f1, const opd_header * f2)
 
 /**
  * opp_samples_files - construct an opp_samples_files object
- * @sample_file: the base name of sample file
- * @counter: which samples files to open, -1 means try to open
+ * \param sample_file the base name of sample file
+ * \param counter which samples files to open, -1 means try to open
  * all samples files.
  *
- * at least one sample file (based on @sample_file name)
+ * at least one sample file (based on sample_file name)
  * must be opened. If more than one sample file is open
  * their header must be coherent. Each header is also
  * sanitized.
@@ -936,14 +869,14 @@ opp_samples_files::~opp_samples_files()
 
 /**
  * open_samples_file - helper function to open a samples files
- * @fd: the file descriptor of file to mmap
- * @size: where to store the samples files size not counting the header
- * @fentry: where to store the opd_fentry pointer
- * @header: where to store the opd_header pointer
- * @filename: the filename of fd used for error message only
+ * \param fd the file descriptor of file to mmap
+ * \param size where to store the samples files size not counting the header
+ * \param fentry where to store the opd_fentry pointer
+ * \param header where to store the opd_header pointer
+ * \param filename the filename of fd used for error message only
  *
  * open and mmap the given samples files,
- * the param @samples, @header[@counter]
+ * the param samples, header[counter]
  * etc. are updated.
  * all error are fatal
  */
@@ -982,16 +915,16 @@ static void open_samples_file(fd_t fd, size_t & size, opd_fentry * & fentry,
 
 /**
  * open_samples_file - ctor helper
- * @counter: the counter number
- * @can_fail: allow to fail gracefully
+ * \param counter the counter number
+ * \param can_fail allow to fail gracefully
  *
  * open and mmap the given samples files,
- * the member var samples[@counter], header[@counter]
+ * the member var samples[counter], header[counter]
  * etc. are updated in case of success.
  * The header is checked but coherence between
  * header can not be sanitized at this point.
  *
- * if @can_fail == false all error are fatal.
+ * if can_fail == false all error are fatal.
  */
 void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 {
@@ -1018,7 +951,7 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 
 /**
  * check_event - check and translate an event
- * @i: counter number
+ * \param i counter number
  *
  * the member variable describing the event are
  * updated.
@@ -1035,8 +968,8 @@ void opp_samples_files::check_event(int i)
 
 /**
  * accumulate_samples - lookup samples from a vma address
- * @counter: where to accumulate the samples
- * @index: index of the samples.
+ * \param counter where to accumulate the samples
+ * \param index index of the samples.
  *
  * return false if no samples has been found
  */
@@ -1056,9 +989,9 @@ bool opp_samples_files::accumulate_samples(counter_array_t& counter, uint index)
 
 /**
  * accumulate_samples - lookup samples from a range of vma address
- * @counter: where to accumulate the samples
- * @start: start index of the samples.
- * @end: end index of the samples.
+ * \param counter where to accumulate the samples
+ * \param start start index of the samples.
+ * \param end end index of the samples.
  *
  * return false if no samples has been found
  */
@@ -1083,15 +1016,15 @@ bool opp_samples_files::accumulate_samples(counter_array_t& counter,
 
 /**
  * samples_file_t - construct a samples_file_t object
- * @filename: the full path of sample file
+ * \param filename the full path of sample file
  *
- * open and mmap the samples file specified by @filename
- * samples file header is checked
+ * open and mmap the samples file specified by filename
+ * samples file header coherence are checked
  *
  * all error are fatal
  *
  */
-samples_file_t::samples_file_t(const string & filename)
+samples_file_t::samples_file_t(const std::string & filename)
 	:
 	samples(0),
 	header(0),
@@ -1126,7 +1059,7 @@ samples_file_t::~samples_file_t()
 /**
  * check_headers - check than the lhs and rhs headers are
  * coherent (same size, same mtime etc.)
- * @rhs: the other samples_file_t
+ * \param rhs the other samples_file_t
  *
  * all error are fatal
  *
@@ -1146,10 +1079,10 @@ bool samples_file_t::check_headers(const samples_file_t & rhs) const
 
 /**
  * count - return the number of samples in given range
- * @start: start samples nr of range
- * @end: end samples br of range
+ * \param start start samples nr of range
+ * \param end end samples br of range
  *
- * return the number of samples in the the range [@start, @end]
+ * return the number of samples in the the range [start, end]
  * no range checking is performed.
  *
  * This actually code duplicate partially accumulate member of

@@ -18,79 +18,13 @@
 #ifndef OPF_FILTER_H
 #define OPF_FILTER_H
 
-#include <stddef.h>
-#include <iostream>
 #include <string>
 
 #include "oprofpp.h"
 #include "opp_symbol.h"
 
-//---------------------------------------------------------------------------
-class symbol_container_impl;
-
-/// a container of symbols: member function dispatch to symbol_container_impl
-class symbol_container_t {
-public:
-	 symbol_container_t();
-	~symbol_container_t();
-
-	/// add a symbol to the underlined container. No attempt to detect
-	/// duplicate symbol is made
-	void push_back(const symbol_entry &);
-
-	/// return the number of symbols in the underlined container
-	size_t size() const;
-	/// return the symbol at index. Index range checking is not performed
-	const symbol_entry & operator[](size_t index) const;
-	/// find the symbol at filename / linenr location
-	const symbol_entry * find(std::string filename, size_t linenr) const;
-	/// find the symbol at vma
-	const symbol_entry * find_by_vma(bfd_vma vma) const;
-
-	/// get a vector of symbol_entry sorted by increased count of samples
-	void get_symbols_by_count(size_t counter, 
-				  std::vector<const symbol_entry*>& v) const;
-
-private:
-	/// member function of this class are delegated to this implementation
-	symbol_container_impl * impl;
-};
-
-//---------------------------------------------------------------------------
-
-class sample_container_impl;
-
-/// a container of samples: member function dispatch to sample_container_impl
-class sample_container_t {
-public:
-	sample_container_t();
-	~sample_container_t();
-
-	/// add a sample to the underlined container. No attempt to detect
-	/// duplicate sample is made
-	void push_back(const sample_entry &);
-
-	/// return the number of samples in the underlined container
-	size_t size() const;
-	/// return the sample at index. Index range checking is not performed
-	const sample_entry & operator[](size_t index) const;
-	/// calculate the total number of samples for a file. Return false
-	/// if there is no sample for this file
-	bool accumulate_samples(counter_array_t & counter, 
-				const std::string & filename,
-				uint max_counters) const;
-	/// calculate the total number of samples for a file/linenr. Return
-	/// false if there is no sample for this file
-	bool accumulate_samples(counter_array_t &, const std::string & filename, 
-				size_t linenr, uint max_counters) const;
-	/// find a sample from a vma. Return NULL if no samples are available
-	/// at this vma.
-	const sample_entry * find_by_vma(bfd_vma vma) const;
-
-private:
-	/// member function of this class are delegated to this implementation
-	sample_container_impl * impl;
-};
+class sample_container_t;
+class symbol_container_t;
 
 //---------------------------------------------------------------------------
 /// A container to store symbol/sample from samples files/image file
@@ -101,17 +35,17 @@ public:
 
 	/**
 	 * add() -  record symbols/samples in the underlined container
-	 * @samples_files: the samples files container
-	 * @abf: the associated bfd object
-	 * @add_zero_samples_symbols: must we add to the symbol container
-	 *   symbols with zero samples count
-	 * @flags: optimize hint to add samples. The flags is a promise on what
-	 * will be required as information in future. Avoid to pass
+	 * \param samples_files the samples files container
+	 * \param abf the associated bfd object
+	 * \param add_zero_samples_symbols must we add to the symbol container
+	 * symbols with zero samples count
+	 * \param flags optimize hint to add samples. The flags is a promise
+	 * on what will be required as information in future. Avoid to pass
 	 * osf_linenr_info greatly improve performance of add. Avoiding
 	 * osf_details is also an improvement.
-	 * @add_shared_libs: add to the set of symbols/samples shared libs
-	 *  which belongs to this image, only meaningfull if samples come from
-	 *  a --separate-samples session
+	 * \param add_shared_libs add to the set of symbols/samples shared
+	 * libs which belongs to this image, only meaningfull if samples come
+	 * from a --separate-samples session
 	 *
 	 * add() is an helper for delayed ctor. Take care you can't safely
 	 * make any call to add after any other member function call.
@@ -138,18 +72,20 @@ public:
 
 	/**
 	 * select_symbols - create a set of symbols sorted by sample count
-	 * @result: where to put result
-	 * @threshold: the filter threshold
-	 * @until_threshold: rather to get symbols with more than
-	 * @threshold percent of samples get symbols until the amount
-	 *   of samples reach @threshold
-	 * @sort_by_vma: rather to sort symbols by samples count
+	 * \param result where to put result
+	 * \param ctr on what counter sorting must be made and threshold
+	 *   selection must be made
+	 * \param threshold select symbols which contains more than
+	 *   threshold percent of samples
+	 * \param until_threshold rather to get symbols with more than
+	 *   percent threshold samples select symbols until the cumulated
+	 *   count of samples reach threshold percent
+	 * \param sort_by_vma rather to sort symbols by samples count
 	 *   sort them by vma
 	 *
-	 * @until_threshold and @threshold acts like the -w and -u options
-	 * of op_to_source
-	 * if you need to get all symbols call it with @threshold == 0.0
-	 * and @until_threshold == false
+	 * until_threshold and threshold acts like the -w and -u options
+	 * of op_to_source. If you need to get all symbols call it with
+	 * threshold == 0.0 and until_threshold == false
 	 */
 	void select_symbols(std::vector<const symbol_entry*> & result,
 			    size_t ctr, double threshold,
@@ -199,17 +135,21 @@ private:
 	 * The rationale here is to try to create symbols for alignment between
 	 * function as little as possible and to create meaningfull symbols
 	 * for special case such image w/o symbol.
-	 * I am no longer convinced we really need that.
 	 */
 	std::string create_artificial_symbol(const opp_bfd & abfd, u32 start,
 					     u32 & end, size_t & order);
 
+	/// not copy-constructible
+	samples_files_t(const samples_files_t&);
+	/// not copy-able
+	samples_files_t& operator=(const samples_files_t&);
+
 	/// The symbols collected by oprofpp sorted by increased vma, provide
 	/// also a sort order on samples count for each counter.
-	symbol_container_t symbols;
+	symbol_container_t * symbols;
 	/// The samples count collected by oprofpp sorted by increased vma,
 	/// provide also a sort order on (filename, linenr)
-	sample_container_t samples;
+	sample_container_t * samples;
 	/// build() must count samples count for each counter so cache it here
 	/// since user of samples_files_t often need it later.
 	counter_array_t counter;

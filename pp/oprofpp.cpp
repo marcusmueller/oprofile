@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.32 2002/03/15 04:22:20 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.33 2002/03/19 05:41:25 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -68,11 +68,11 @@ static poptOption options[] = {
 
 /**
  * get_options - process command line
- * @argc: program arg count
- * @argv: program arg array
- * @image_file: where to store the image filename
- * @sample_file: ditto for sample filename
- * @counter: where to put the counter command line argument
+ * \param argc program arg count
+ * \param argv program arg array
+ * \param image_file where to store the image filename
+ * \param sample_file ditto for sample filename
+ * \param counter where to put the counter command line argument
  *
  * Process the arguments, fatally complaining on
  * error. Only a part of arguments analysing is
@@ -143,7 +143,7 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 
 /**
  * printf_symbol - output a symbol name
- * @name: verbatim symbol name
+ * \param name verbatim symbol name
  *
  * Print the symbol name to stdout, demangling
  * if if necessary.
@@ -156,29 +156,8 @@ void printf_symbol(const char *name)
 }
 
 /**
- * ouput_linenr - lookup and output linenr info from a vma address
- * in a given section to standard output.
- * @sym_idx: the symbol number
- * @offset: offset
- *
- */
-void opp_bfd::output_linenr(uint sym_idx, uint offset) const
-{
-	const char *filename;
-	unsigned int line;
-
-	if (!output_linenr_info)
-		return;
-
-	if (get_linenr(sym_idx, offset, filename, line))
-		printf ("%s:%u ", filename, line);
-	else
-		printf ("??:0 ");
-}
-
-/**
  * do_list_symbols - list symbol samples for an image
- * @abfd: the bfd object from where come the samples
+ * \param abfd the bfd object from where come the samples
  *
  * Lists all the symbols in decreasing sample count
  * order, to standard out.
@@ -204,11 +183,11 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd, int sort_by_ctr) const
  
 /**
  * do_list_symbol - list detailed samples for a symbol
- * @abfd: the bfd object from where come the samples
+ * \param abfd the bfd object from where come the samples
  *
- * the global variable @symbol is used to list all
+ * the global variable symbol is used to list all
  * the samples for this symbol from the image 
- * specified by @abfd.
+ * specified by abfd.
  */
 void opp_samples_files::do_list_symbol(opp_bfd & abfd) const
 {
@@ -253,7 +232,7 @@ struct gmon_hdr {
  
 /**
  * do_dump_gprof - produce gprof sample output
- * @abfd: the bfd object from where come the samples
+ * \param abfd the bfd object from where come the samples
  *
  * Dump gprof-format samples for this sample file and
  * counter specified ctr to the file specified by gproffile.
@@ -344,10 +323,10 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd, int sort_by_ctr) const
 
 /**
  * do_list_symbols_details - list all samples for all symbols.
- * @abfd: the bfd object from where come the samples
+ * \param abfd the bfd object from where come the samples
  *
  * Lists all the samples for all the symbols, from the image specified by
- * @abfd, in increasing order of vma, to standard out.
+ * abfd, in increasing order of vma, to standard out.
  */
 void opp_samples_files::do_list_symbols_details(opp_bfd & abfd,
 						int sort_by_ctr) const
@@ -376,7 +355,7 @@ void opp_samples_files::do_list_symbols_details(opp_bfd & abfd,
 
 /**
  * output_event - output a counter setup
- * @i: counter number
+ * \param i counter number
  *
  * output to stdout a description of an event.
  */

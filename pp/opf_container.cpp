@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <numeric>
 #include <string>
-#include <iostream>
+#include <list>
 
 #include <limits.h>
 
@@ -96,10 +96,8 @@ struct less_by_file_loc {
 
 //---------------------------------------------------------------------------
 /// implementation of symbol_container_t
-class symbol_container_impl {
+class symbol_container_t {
  public:
-	symbol_container_impl();
-
 	size_t size() const;
 	const symbol_entry & operator[](size_t index) const;
 	void push_back(const symbol_entry &);
@@ -120,41 +118,32 @@ class symbol_container_impl {
 	typedef multiset<const symbol_entry *, less_by_file_loc>
 		set_symbol_by_file_loc;
 
-	// Carefull : this *MUST* be declared after the vector to ensure
-	// a correct life-time.
-	// symbol_entry sorted by decreasing samples number.
-	// symbol_entry_by_samples_nr[0] is sorted from counter0 etc.
-	// This allow easy acccess to (at a samples numbers point of view) :
-	//  the nth first symbols.
-	//  the nth first symbols that accumulate a certain amount of samples.
+	// must be declared after the vector to ensure a correct life-time.
 
-	// lazily build when necessary from const function so mutable
+	// symbol_entry sorted by location order lazily build when necessary
+	// from const function so mutable
 	mutable set_symbol_by_file_loc symbol_entry_by_file_loc;
 };
 
 //---------------------------------------------------------------------------
 
-symbol_container_impl::symbol_container_impl()
-{
-}
-
-inline size_t symbol_container_impl::size() const
+inline size_t symbol_container_t::size() const
 {
 	return symbols.size();
 }
 
-inline const symbol_entry & symbol_container_impl::operator[](size_t index) const
+inline const symbol_entry & symbol_container_t::operator[](size_t index) const
 {
 	return symbols[index];
 }
 
-inline void symbol_container_impl::push_back(const symbol_entry & symbol)
+inline void symbol_container_t::push_back(const symbol_entry & symbol)
 {
 	symbols.push_back(symbol);
 }
 
 const symbol_entry *
-symbol_container_impl::find(string filename, size_t linenr) const
+symbol_container_t::find(string filename, size_t linenr) const
 {
 	build_by_file_loc();
 
@@ -171,7 +160,7 @@ symbol_container_impl::find(string filename, size_t linenr) const
 	return 0;
 }
 
-void  symbol_container_impl::build_by_file_loc() const
+void  symbol_container_t::build_by_file_loc() const
 {
 	if (symbols.size() && symbol_entry_by_file_loc.empty()) {
 		for (size_t i = 0 ; i < symbols.size() ; ++i)
@@ -179,7 +168,7 @@ void  symbol_container_impl::build_by_file_loc() const
 	}
 }
 
-const symbol_entry * symbol_container_impl::find_by_vma(bfd_vma vma) const
+const symbol_entry * symbol_container_t::find_by_vma(bfd_vma vma) const
 {
 	symbol_entry value;
 
@@ -196,7 +185,7 @@ const symbol_entry * symbol_container_impl::find_by_vma(bfd_vma vma) const
 }
 
 // get a vector of symbols sorted by increased count.
-void symbol_container_impl::get_symbols_by_count(size_t counter, vector<const symbol_entry*> & v) const
+void symbol_container_t::get_symbols_by_count(size_t counter, vector<const symbol_entry*> & v) const
 {
 	for (size_t i = 0 ; i < symbols.size() ; ++i)
 		v.push_back(&symbols[i]);
@@ -209,55 +198,8 @@ void symbol_container_impl::get_symbols_by_count(size_t counter, vector<const sy
 }
 
 //---------------------------------------------------------------------------
-// Visible user interface implementation, just dispatch to the implementation.
-
-symbol_container_t::symbol_container_t()
-	:
-	impl(new symbol_container_impl())
-{
-}
-
-symbol_container_t::~symbol_container_t()
-{
-	delete impl;
-}
-
-size_t symbol_container_t::size() const
-{
-	return impl->size();
-}
-
-const symbol_entry &
-symbol_container_t::operator[](size_t index) const
-{
-	return (*impl)[index];
-}
-
-void symbol_container_t::push_back(const symbol_entry & symbol)
-{
-	impl->push_back(symbol);
-}
-
-const symbol_entry *
-symbol_container_t::find(string filename, size_t linenr) const
-{
-	return impl->find(filename, linenr);
-}
-
-const symbol_entry * symbol_container_t::find_by_vma(bfd_vma vma) const
-{
-	return impl->find_by_vma(vma);
-}
-
-// get a vector of symbols sorted by increased count.
-void symbol_container_t::get_symbols_by_count(size_t counter, vector<const symbol_entry*>& v) const
-{
-	return impl->get_symbols_by_count(counter, v);
-}
-
-//---------------------------------------------------------------------------
 /// implementation of sample_container_t
-class sample_container_impl {
+class sample_container_t {
  public:
 
 	const sample_entry & operator[](size_t index) const;
@@ -275,31 +217,31 @@ class sample_container_impl {
  private:
 	void flush_input_counter() const;
 
-	vector<sample_entry> v;
+	vector<sample_entry> samples;
 
 	typedef multiset<const sample_entry *, less_by_file_loc> set_sample_entry_t;
 
-	// Carefull : these *MUST* be declared after the vector to ensure
-	// a correct life-time.
+	// must be declared after the vector to ensure a correct life-time.
 	// sample_entry sorted by increasing (filename, linenr).
 	// lazily build when necessary from const function so mutable
 	mutable set_sample_entry_t samples_by_file_loc;
 };
 
 //---------------------------------------------------------------------------
-inline const sample_entry & sample_container_impl::operator[](size_t index) const
+
+inline const sample_entry & sample_container_t::operator[](size_t index) const
 {
-	return v[index];
+	return samples[index];
 }
 
-inline size_t sample_container_impl::size() const
+inline size_t sample_container_t::size() const
 {
-	return v.size();
+	return samples.size();
 }
 
-inline void sample_container_impl::push_back(const sample_entry & sample)
+inline void sample_container_t::push_back(const sample_entry & sample)
 {
-	v.push_back(sample);
+	samples.push_back(sample);
 }
 
 namespace {
@@ -311,9 +253,9 @@ inline counter_array_t & add_counts(counter_array_t & arr, const sample_entry * 
 
 } // namespace anon
 
-bool sample_container_impl::accumulate_samples(counter_array_t & counter,
-					       const string & filename,
-					       uint max_counters) const
+bool sample_container_t::accumulate_samples(counter_array_t & counter,
+					    const string & filename,
+					    uint max_counters) const
 {
 	flush_input_counter();
 
@@ -337,22 +279,23 @@ bool sample_container_impl::accumulate_samples(counter_array_t & counter,
 	return false;
 }
 
-const sample_entry * sample_container_impl::find_by_vma(bfd_vma vma) const
+const sample_entry * sample_container_t::find_by_vma(bfd_vma vma) const
 {
 	sample_entry value;
 
 	value.vma = vma;
 
 	vector<sample_entry>::const_iterator it =
-		lower_bound(v.begin(), v.end(), value, less_sample_entry_by_vma());
+		lower_bound(samples.begin(), samples.end(), value,
+			    less_sample_entry_by_vma());
 
-	if (it != v.end() && it->vma == vma)
+	if (it != samples.end() && it->vma == vma)
 		return &(*it);
 
 	return 0;
 }
 
-bool sample_container_impl::accumulate_samples(counter_array_t & counter,
+bool sample_container_t::accumulate_samples(counter_array_t & counter,
 	const string & filename, size_t linenr, uint max_counters) const
 {
 	flush_input_counter();
@@ -377,76 +320,31 @@ bool sample_container_impl::accumulate_samples(counter_array_t & counter,
 	return false;
 }
 
-void sample_container_impl::flush_input_counter() const
+void sample_container_t::flush_input_counter() const
 {
-	if (!v.size() || !samples_by_file_loc.empty())
+	if (!samples.size() || !samples_by_file_loc.empty())
 		return;
 
-	for (size_t i = 0 ; i < v.size() ; ++i) {
-		samples_by_file_loc.insert(&v[i]);
+	for (size_t i = 0 ; i < samples.size() ; ++i) {
+		samples_by_file_loc.insert(&samples[i]);
 	}
 }
-
-//---------------------------------------------------------------------------
-// Visible user interface implementation, just dispatch to the implementation.
-
-sample_container_t::sample_container_t()
-	:
-	impl(new sample_container_impl())
-{
-}
-
-sample_container_t::~sample_container_t()
-{
-	delete impl;
-}
-
-const sample_entry & sample_container_t::operator[](size_t index) const {
-	return (*impl)[index];
-}
-
-size_t sample_container_t::size() const {
-	return impl->size();
-}
-
-bool sample_container_t::accumulate_samples(counter_array_t & counter,
-					    const string & filename,
-					    uint max_counters) const
-{
-	return impl->accumulate_samples(counter, filename, max_counters);
-}
-
-const sample_entry * sample_container_t::find_by_vma(bfd_vma vma) const
-{
-	return impl->find_by_vma(vma);
-}
-
-bool sample_container_t::accumulate_samples(counter_array_t & counter,
-					    const string & filename,
-					    size_t linenr,
-					    uint max_counters) const
-{
-	return impl->accumulate_samples(counter, filename,
-					linenr, max_counters);
-}
-
-void sample_container_t::push_back(const sample_entry & sample)
-{
-	impl->push_back(sample);
-}
-
 
 //---------------------------------------------------------------------------
 // implementation of samples_files_t
 
 samples_files_t::samples_files_t()
 	:
+	symbols(new symbol_container_t),
+	samples(new sample_container_t),
 	nr_counters(static_cast<uint>(-1))
 {
 }
 
 samples_files_t::~samples_files_t()
 {
+	delete symbols;
+	delete samples;
 }
 
 // Post condition:
@@ -534,8 +432,8 @@ do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 				    record_linenr_info);
 		}
 
-		symb_entry.last = samples.size();
-		symbols.push_back(symb_entry);
+		symb_entry.last = samples->size();
+		symbols->push_back(symb_entry);
 	} /* kludgy block */
 
 	for (size_t i = 0 ; i < abfd.syms.size(); ++i) {
@@ -571,22 +469,22 @@ do_add(const opp_samples_files & samples_files, const opp_bfd & abfd,
 
 		symb_entry.sample.vma = abfd.sym_offset(i, start) + base_vma;
 
-		symb_entry.first = samples.size();
+		symb_entry.first = samples->size();
 
 		if (build_samples_by_vma)
 			add_samples(samples_files, abfd, i, start, end,
 				    base_vma, image_name, record_linenr_info);
 
-		symb_entry.last = samples.size();
+		symb_entry.last = samples->size();
 
-		symbols.push_back(symb_entry);
+		symbols->push_back(symb_entry);
 	}
 }
 
 void samples_files_t::add_samples(const opp_samples_files& samples_files,
 				  const opp_bfd& abfd, size_t sym_index,
 				  u32 start, u32 end, bfd_vma base_vma,
-				  const string & image_name,
+				  const std::string & image_name,
 				  bool record_linenr_info)
 {
 	for (u32 pos = start; pos < end ; ++pos) {
@@ -612,24 +510,24 @@ void samples_files_t::add_samples(const opp_samples_files& samples_files,
 			? abfd.sym_offset(sym_index, pos) + base_vma 
 			: pos;
 
-		samples.push_back(sample);
+		samples->push_back(sample);
 	}
 }
 
 const symbol_entry* samples_files_t::find_symbol(bfd_vma vma) const
 {
-	return symbols.find_by_vma(vma);
+	return symbols->find_by_vma(vma);
 }
 
-const symbol_entry* samples_files_t::find_symbol(const string & filename,
+const symbol_entry* samples_files_t::find_symbol(const std::string & filename,
 						 size_t linenr) const
 {
-	return symbols.find(filename, linenr);
+	return symbols->find(filename, linenr);
 }
 
 const sample_entry * samples_files_t::find_sample(bfd_vma vma) const
 { 
-	return samples.find_by_vma(vma);
+	return samples->find_by_vma(vma);
 }
 
 u32 samples_files_t::samples_count(size_t counter_nr) const
@@ -637,14 +535,14 @@ u32 samples_files_t::samples_count(size_t counter_nr) const
 	return counter[counter_nr];
 }
 
-void samples_files_t::select_symbols(vector<const symbol_entry*> & result,
+void samples_files_t::select_symbols(std::vector<const symbol_entry*> & result,
 				     size_t ctr, double threshold,
 				     bool until_threshold,
 				     bool sort_by_vma) const
 {
 	vector<const symbol_entry *> v;
 
-	symbols.get_symbols_by_count(ctr , v);
+	symbols->get_symbols_by_count(ctr , v);
 
 	u32 total_count = samples_count(ctr);
 
@@ -684,8 +582,8 @@ struct filename_by_samples {
 
 }
 
-void samples_files_t::select_filename(vector<string> & result, size_t ctr,
-				      double threshold,
+void samples_files_t::select_filename(std::vector<std::string> & result,
+				      size_t ctr, double threshold,
 				      bool until_threshold) const
 {
 	set<string> filename_set;
@@ -694,8 +592,8 @@ void samples_files_t::select_filename(vector<string> & result, size_t ctr,
 	// contain sample does not work: a symbol can contain samples and this
 	// symbol is in a source file that contain zero sample because only
 	// inline function in this source file contains samples.
-	for (size_t i = 0 ; i < samples.size() ; ++i) {
-		filename_set.insert(samples[i].file_loc.filename);
+	for (size_t i = 0 ; i < samples->size() ; ++i) {
+		filename_set.insert((*samples)[i].file_loc.filename);
 	}
 
 	// Give a sort order on filename for the selected counter.
@@ -731,21 +629,21 @@ void samples_files_t::select_filename(vector<string> & result, size_t ctr,
 }
 
 bool samples_files_t::samples_count(counter_array_t & result,
-				    const string & filename) const
+				    const std::string & filename) const
 {
-	return samples.accumulate_samples(result, filename, nr_counters);
+	return samples->accumulate_samples(result, filename, nr_counters);
 }
 
 bool samples_files_t::samples_count(counter_array_t & result,
-				    const string & filename, 
+				    const std::string & filename, 
 				    size_t linenr) const
 {
-	return samples.accumulate_samples(result, filename, linenr,
+	return samples->accumulate_samples(result, filename, linenr,
 					  nr_counters);
 }
 
 const sample_entry & samples_files_t::get_samples(size_t idx) const
 {
-	return samples[idx];
+	return (*samples)[idx];
 
 }

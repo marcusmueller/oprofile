@@ -56,9 +56,9 @@ static struct poptOption options[] = {
 
 /**
  * get_options - process command line
- * @argc: program arg count
- * @argv: program arg array
- * @images: where to store the images filename
+ * \param argc program arg count
+ * \param argv program arg array
+ * \param image: where to store the images filename
  *
  * Process the arguments, fatally complaining on error.
  */
@@ -103,15 +103,15 @@ static string mangle_filename(const string & filename)
 /**
  * create_file_list - create the file list based
  *  on the command line file list
- * @result: where to store the created file list
- * @images_filename: the input file list contains either a binary
+ * \param result where to store the created file list
+ * \param images_filename the input file list contains either a binary
  * image name or a list of samples filenames
  *
- * if @images_filename contain only one file it is assumed to be
+ * if images_filename contain only one file it is assumed to be
  * the name of binary image and the created file list will
  * contain all samples file name related to this image
  * else the result contains only filename explicitly
- * specified in @images_filename
+ * specified in images_filename
  *
  * all error are fatal.
  */
@@ -165,7 +165,7 @@ static void create_file_list(list<string> & result,
 
 /**
  * create_samples_files_list - create a collection of opened samples files
- * @filenames: the filenames list from which we open samples files
+ * \param filenames: the filenames list from which we open samples files
  *
  * from a collection of filenameswe create a collection of opened
  * samples files
@@ -191,8 +191,8 @@ create_samples_files_list(vector< SharedPtr<samples_file_t> > & samples_files,
 /**
  * output_files - create a samples file by merging (cumulating samples count)
  *  from a collection of samples files
- * @filename: the output filename
- * @samples_files: a collection of opened samples files
+ * \param filename the output filename
+ * \param samples_files a collection of opened samples files
  *
  * all error are fatal
  */

@@ -1,3 +1,14 @@
+2002-03-19  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/opf_filter.h:
+	* pp/opf_container.cpp: remove delegation
+	  {symbol|samples}_container_t -> xxx_impl, no functionnal change
+
+	* pp/*: start a more serious doxygenization. first step
+	  include fixing prototype and a client documentation for
+ 	  opp_bfd
+	* script/Doxyfile: doxygen script for pp/*.h, util/*.h
+	
 2002-03-19  John Levon  <moz@compsoc.man.ac.uk>
 
 	* module/op_fixmap.c: include pagemap.h, so
