@@ -1,15 +1,11 @@
-0.2
----
- 
- o fix kernel/module problem 
- o - disable oprof_report for now by default
-
 Before 1.0
 ----------
 
  o document gcc 2.95 and linenr info problems especially for inline functions
  o document somewhere that oprofpp -s blah will only find the first symbol
    called "blah" (not worth fixing) 
+ o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
+   will fail because the ~ is not expanded (no space around it) 
  o get symbol size via elf instead of bfd ?
  o add support for samples not belonging to any symbols probably through
    artificially created symbols

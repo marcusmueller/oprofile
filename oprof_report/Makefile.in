@@ -6,6 +6,10 @@ CXXFLAGS=-ansi -Wall -pedantic -W @CXXFLAGS@ @QT2_INCLUDES@
 .PHONY: all clean install uninstall
 .SUFFIXES:
 
+# disable for now
+ 
+ifeq "yin" "yang"
+ 
 ifeq "@have_qt2@" "yes"
 
 INSTALL_LIST=oprof_report
@@ -74,6 +78,13 @@ ALL_SOURCES = oprof_report_main.cpp oprof_report.cpp oprof_report.moc.cpp oprofp
 include ../Rules.make
 
 CPPFLAGS_DEPS += @QT2_INCLUDES@
+
+else
+all:
+clean:
+install:
+uninstall:
+endif
 
 else
 all:

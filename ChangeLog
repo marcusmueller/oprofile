@@ -1,5 +1,9 @@
 2002-05-02  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprof_report/Makefile.in: disable for release
+ 
+2002-05-02  John Levon  <moz@compsoc.man.ac.uk>
+
 	* results/: nuke this in favour of oprofile-tests
 	  module
  
