@@ -98,6 +98,12 @@ Use "using namespace std;" in .cpp files. Use std:: qualification in .h files.
 
 Avoid do { } while(). Avoid defines.
 
+Single-line for/while/if blocks should generally not use containing
+braces. Never use the comma operator to avoid braces. If there is more
+than one visual line (regardless of number of statements), you need
+braces. If there is an else clause, you should probably use braces; if
+any of the branches in an if/else if change has braces, they all should.
+
 Spacing :
 
 	if (blah) {
