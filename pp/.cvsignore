@@ -2,3 +2,4 @@ Makefile
 oprofpp
 oprof_convert
 opf_filter
+op_to_source
