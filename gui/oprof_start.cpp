@@ -337,8 +337,11 @@ bool oprof_start::save_event_config_file(uint ctr)
 	name << "#" << ctr;
 
 	ofstream out(name.str().c_str());
-	if (!out)
+	if (!out) {
+		QMessageBox::warning(this, 0, "Unable to save configuration "
+				     "~/.oprofile/oprof_start_event");
 		return false;
+	}
 
 	out << event_cfgs[ctr];
 
@@ -351,7 +354,6 @@ void oprof_start::accept()
 	// record the previous settings
 	record_selected_event_config();
 
-	// FIXME: check and warn about return code.
 	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr)
 		save_event_config_file(ctr);
 

@@ -34,7 +34,8 @@ typedef unsigned int db_value_t;
 typedef unsigned int db_page_idx_t;
 typedef unsigned int db_page_count_t;
 
-#define db_nil_page	(db_page_idx_t)~0
+/** page zero is never used avoiding to touch the maped file when growing it */
+#define db_nil_page	(db_page_idx_t)0
 
 /** an item */
 typedef struct {
@@ -54,7 +55,7 @@ typedef struct {
  * properly the data base */
 typedef struct {
 	db_page_count_t size;		/**< in page nr */
-	db_page_count_t current_size;	/**< nr used page */
+	db_page_count_t current_size;	/**< nr used page + 1 (page zero is never used)  */
 	db_page_idx_t root_idx;		/**< the root page index */
 	int padding[5];			/**< for padding and future use */
 } db_descr_t;

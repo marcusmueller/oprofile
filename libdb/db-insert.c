@@ -194,8 +194,8 @@ static int do_insert(db_tree_t * tree, db_page_idx_t page_idx,
 		    page->page_table[pos].info)
 			page->page_table[pos].info += value->info;
 		else
-			/* FIXME: post profile must handle that */
-			page->page_table[pos].info += (db_value_t)-1;
+			/* post profile must handle overflow */
+			page->page_table[pos].info = ~(db_value_t)0;
 		return 0;
 	}
 
@@ -248,8 +248,8 @@ static int do_insert(db_tree_t * tree, db_page_idx_t page_idx,
 		    page->page_table[pos].info)
 			page->page_table[pos].info += value->info;
 		else
-			/* FIXME: post profile must handle that */
-			page->page_table[pos].info += (db_value_t)-1;
+			/* post profile must handle overflow */
+			page->page_table[pos].info = ~(db_value_t)0;
 		return 0;
 	}
 

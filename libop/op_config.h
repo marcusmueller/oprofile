@@ -21,7 +21,7 @@
 #define OP_LOG_FILE OP_BASE_DIR "oprofiled.log"
 
 #define OPD_MAGIC "DAE\n"
-#define OPD_VERSION 0x6
+#define OPD_VERSION 0x7
 
 #ifndef NR_CPUS
 /** maximum number of cpus present in the box */

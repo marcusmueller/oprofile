@@ -30,27 +30,6 @@ static __inline db_page_t * db_to_page(db_tree_t * tree)
 	return (db_page_t *)(((char *)tree->base_memory) + tree->offset_page);
 }
 
-static void db_init_page(db_tree_t * tree, db_page_count_t from,
-			 db_page_count_t to)
-{
-	/* FIXME: db_nil_page is not currently a zero value so we need
-	 * to initialize it explicitely: perhaps we can consider to
-	 * not use the zero page and to use zero as db_nil_page value
-	 * avoiding to touch memory of the mmaped file */
-	for ( ; from != to ; ++from) {
-		db_page_count_t count;
-		db_page_t * page;
-
-		/* we can't use page_nr_to_page_ptr here because
-		 * page_nr_to_page_ptr can trigger an assertion ! */
-		page = &tree->page_base[from];
-		page->p0 = db_nil_page;
-		for (count = 0 ; count < DB_MAX_PAGE ; ++count) {
-			page->page_table[count].child_page = db_nil_page;
-		}
-	}
-}
-
 db_page_idx_t db_add_page(db_tree_t * tree)
 {
 	if (tree->descr->current_size >= tree->descr->size) {
@@ -81,8 +60,6 @@ db_page_idx_t db_add_page(db_tree_t * tree)
 
 		tree->descr = db_to_descr(tree);
 		tree->page_base = db_to_page(tree);
-
-		db_init_page(tree, old_size, tree->descr->size);
 	}
 
 	return (db_page_idx_t)tree->descr->current_size++;
@@ -90,8 +67,8 @@ db_page_idx_t db_add_page(db_tree_t * tree)
 
 /* the default number of page, calculated to fit in 4096 bytes */
 #define DEFAULT_PAGE_NR(offset_page)			\
-	(4096 - offset_page) / sizeof(db_page_t) ?		\
-	(4096 - offset_page) / sizeof(db_page_t) : 1
+	(4096 - offset_page) / sizeof(db_page_t) ?	\
+	(4096 - offset_page) / sizeof(db_page_t) : 2
 
 void db_open(db_tree_t * tree, char const * filename, enum db_rw rw,
 	     size_t sizeof_header)
@@ -154,10 +131,9 @@ void db_open(db_tree_t * tree, char const * filename, enum db_rw rw,
 
 	if (stat_buf.st_size == 0) {
 		tree->descr->size = nr_page;
-		tree->descr->current_size = 0;
+		/* page zero is not used */
+		tree->descr->current_size = 1;
 		tree->descr->root_idx = db_nil_page;
-
-		db_init_page(tree, 0, tree->descr->size);
 	} else {
 		if (nr_page != tree->descr->size) {
 			fprintf(stderr, "nr_page != tree->descr->size\n");

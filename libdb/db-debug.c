@@ -41,7 +41,7 @@ void db_raw_display_tree(db_tree_t const * tree)
 {
 	db_page_count_t i;
 	printf("tree root %d\n", tree->descr->root_idx);
-	for (i = 0 ; i < tree->descr->current_size ; ++i) {
+	for (i = 1 ; i < tree->descr->current_size ; ++i) {
 		db_page_t * page;
 		db_page_count_t j;
 
