@@ -31,6 +31,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.9 release
 -----------
 
+ o opstack output needs to be reworked to be more readable (see
+   "callgraph support comments" on mailing list with Eric Sharkey)
  o opdiff
 
 Before 1.0 little stuff
@@ -71,7 +73,7 @@ Before 1.0 little stuff
   on a small box, nfs mount / to another box and transfer sample file and
   binary on a bigger box for analysis. There is also a problem in oparchive
   you can use session: to get the right path to samples files but oprofiled.log
-  and abi files parth are hardcoded to /var/lib/oprofile.
+  and abi files path are hardcoded to /var/lib/oprofile.
 
 Documentation
 -------------
