@@ -33,6 +33,16 @@
 	#include "compat24.h"
 #endif
 
+/* 2.5.3 change prototype of remap_page_range */
+#if V_BEFORE(2,5,3)
+#define REMAP_PAGE_RANGE(vma, start, page, page_size, flags) \
+		remap_page_range((start), (page), (page_size), (flags))
+#else
+#define REMAP_PAGE_RANGE(vma, start, page, page_size, flags) \
+		remap_page_range((vma), (start), (page), (page_size), (flags))
+#endif
+
+
 /* 2.5.2 change the dev_t definition */
 #if V_BEFORE(2,5,2)
 #define minor(dev)	MINOR(dev)

@@ -1,3 +1,8 @@
+2002-02-01  Philippe Elie  <ph_e@club-internet.fr>
+
+	* module/compat.h: define REMAP_PAGE_RANGE
+	* module/op_syscalls.c: use it (2.5.3 support)
+
 2002-01-30  Philippe Elie  <ph_e@club-internet.fr>
 
 	* module/compat.h:

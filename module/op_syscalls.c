@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.9 2002/01/20 12:33:47 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.10 2002/02/01 21:15:42 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -134,7 +134,7 @@ int oprof_hash_map_mmap(struct file *file, struct vm_area_struct *vma)
 	pos = (ulong)hash_map;
 	while (size > 0) {
 		page = kvirt_to_pa(pos);
-		if (remap_page_range(start, page, PAGE_SIZE, PAGE_SHARED))
+		if (REMAP_PAGE_RANGE(vma, start, page, PAGE_SIZE, PAGE_SHARED))
 			return -EAGAIN;
 		start += PAGE_SIZE;
 		pos += PAGE_SIZE;
