@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.8 2000/08/31 23:38:36 moz Exp $ */
+/* $Id: oprofpp.c,v 1.9 2000/09/01 00:23:38 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -349,7 +349,7 @@ void do_list_symbols(void)
 	num = get_symbols(ibfd,&syms);
 
 	for (i=0; i < nr_samples; i++) {
-		printf("%d: %d %d\n",i,samples[i].count0,samples[i].count1);
+		printf("0x%x: %d %d\n",i,samples[i].count0,samples[i].count1);
 	}
 
 	if (!num) {
