@@ -33,7 +33,6 @@ namespace {
  */
 enum axis_types {
 	AXIS_EVENT,
-	AXIS_UNITMASK,
 	AXIS_TGID,
 	AXIS_TID,
 	AXIS_CPU,
@@ -44,8 +43,7 @@ struct axis_t {
 	string name;
 	string suggestion;
 } axes[AXIS_MAX] = {
-	{ "event", "specify event: or count:" },
-	{ "unitmask", "specify unitmask: or --merge unitmask" },
+	{ "event", "specify event:, count: or unitmask: (see also --merge=unitmask)" },
 	{ "tgid", "specify tgid: or --merge tgid" },
 	{ "tid", "specify tid: or --merge tid" },
 	{ "cpu", "specify cpu: or --merge cpu" },
@@ -174,11 +172,6 @@ void name_classes(profile_classes & classes, axis_types axis)
 				+ ":" + it->ptemplate.count;
 			it->longname = get_event_info(*it);
 			break;
-		case AXIS_UNITMASK:
-			it->name += it->ptemplate.unitmask;
-			it->longname = "Samples matching a unit mask of ";
-			it->longname += it->ptemplate.unitmask;
-			break;
 		case AXIS_TGID:
 			it->name += it->ptemplate.tgid;
 			it->longname = "Processes with a thread group ID of ";
@@ -219,18 +212,16 @@ void identify_classes(profile_classes & classes,
 
 	for (; it != end; ++it) {
 		if (it->ptemplate.event != ptemplate.event
-		    ||  it->ptemplate.count != ptemplate.count)
+		    ||  it->ptemplate.count != ptemplate.count
+		    // unit mask are mergeable
+		    || (!merge_by.unitmask
+			&& it->ptemplate.unitmask != ptemplate.unitmask))
 			changed[AXIS_EVENT] = true;
 
 		// we need the merge checks here because each
 		// template is filled in from the first non
 		// matching profile, so just because they differ
 		// doesn't mean it's the axis we care about
-
-		if (!merge_by.unitmask
-		    && it->ptemplate.unitmask != ptemplate.unitmask)
-			changed[AXIS_UNITMASK] = true;
-
 		if (!merge_by.tgid && it->ptemplate.tgid != ptemplate.tgid)
 			changed[AXIS_TGID] = true;
 

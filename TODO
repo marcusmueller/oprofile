@@ -17,8 +17,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 Before 1.0 little stuff
 -----------------------
 
- o we should try and resolve each path component for symlinks too
-  (/lib/modules/foo/build/vmlinux)
  o x86_64 and 2.4 kernel: it's apparently broken
  o Alpha ev67 events are broken
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't

@@ -1,3 +1,9 @@
+2003-11-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/arrange_profiles.cpp: put unitmask in the same axis as
+	  event:count, meaning than unitmask is now a part of the event
+	  specification.
+
 2003-11-15  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/liblegacy/opd_parse_proc.c: always provide an image name
