@@ -466,12 +466,15 @@ static int parms_check(void)
 	uint cpu;
 	struct _oprof_data *data;
 
-	check_range(sysctl.hash_size, 256, 262144,
-		"sysctl.hash_size value %d not in range (%d %d)\n");
-	check_range(sysctl.buf_size, OP_PRE_WATERMARK + 1024, 1048576,
-		"sysctl.buf_size value %d not in range (%d %d)\n");
-	check_range(sysctl.note_size, OP_PRE_NOTE_WATERMARK + 1024, 1048576,
-		"sysctl.note_size value %d not in range (%d %d)\n");
+	if (check_range(sysctl.hash_size, 256, 262144,
+		"sysctl.hash_size value %d not in range (%d %d)\n"))
+		return 0;
+	if (check_range(sysctl.buf_size, OP_PRE_WATERMARK + 1024, 1048576,
+		"sysctl.buf_size value %d not in range (%d %d)\n"))
+		return 0;
+	if (check_range(sysctl.note_size, OP_PRE_NOTE_WATERMARK + 1024, 1048576,
+		"sysctl.note_size value %d not in range (%d %d)\n"))
+		return 0;
 
 	if ((err = int_ops->check_params()))
 		return err;

@@ -248,9 +248,10 @@ static int pmc_check_params(void)
 					"set for counter %d\n", i);
 				return 0;
 			}
-			check_range(sysctl.ctr[i].count, min_count,
+			if (check_range(sysctl.ctr[i].count, min_count,
 				OP_MAX_PERF_COUNT,
-				"ctr count value %d not in range (%d %ld)\n");
+				"ctr count value %d not in range (%d %ld)\n"))
+				return 0;
 
 			enabled = 1;
 		}
