@@ -266,7 +266,7 @@ void oprof_start::set_counter_combo(uint ctr)
 	std::string ctrstr("Counter ");
 	char c = '0' + ctr;
 	ctrstr += c;
-	ctrstr += string(": ");
+	ctrstr += std::string(": ");
 	if (current_event[ctr])
 		ctrstr += current_event[ctr]->name;
 	else

@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.47 2001/09/24 14:34:27 movement Exp $
+# $Id: op_start,v 1.48 2001/09/25 14:14:28 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -237,7 +237,7 @@ do_options() {
 	while (( $f < $OP_MAX_COUNTERS )); do
 		if [[ ${#CTR_EVENT[$f]} != 0 ]]; then
 			CTR_EVENT_VAL[$f]=`op_help ${CTR_EVENT[$f]}`
-			if [ -z "${CTR_EVENT_VAL[$f]}" -a ! -z "${CTR_EVENT[$f]}" ]; then
+			if [ "$?" != 0 ] || [ -z "${CTR_EVENT_VAL[$f]}" -a ! -z "${CTR_EVENT[$f]}" ]; then
 				echo "Unknown event \"${CTR_EVENT[$f]}\"" >&2
 				exit 1
 			fi

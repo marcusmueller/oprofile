@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.27 2001/09/24 02:18:28 movement Exp $ */
+/* $Id: op_events.c,v 1.28 2001/09/25 14:14:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -863,7 +863,10 @@ int main(int argc, char *argv[])
 				if (!strcmp(op_events[j].name, argv[i]) && 
 				    (op_events[j].cpu_mask & cpu_type_mask)) {
 					printf("%d\n", op_events[j].val);
+					return 0;
 				}
+			fprintf(stderr, "No such event \"%s\"\n", argv[i]);
+			return 1;
 			}
 		return 0;
 		}

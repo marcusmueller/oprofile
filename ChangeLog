@@ -1,5 +1,12 @@
 2001-09-25  John Levon  <moz@compsoc.man.ac.uk>
 
+	* gui/oprof_start.cpp: std:: fix
+ 
+	* dae/op_start:
+	* op_events.c: robustness fix
+
+2001-09-25  John Levon  <moz@compsoc.man.ac.uk>
+
 	* gui/oprof_start.cpp: fix silly bug
  
 2001-09-24  John Levon  <moz@compsoc.man.ac.uk>
