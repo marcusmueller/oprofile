@@ -37,8 +37,6 @@ struct op_event_descr {
 	u8 val;
 	/// unit mask values if applicable
 	op_unit_mask const * unit;
-	/// unit mask descriptions if applicable
-	op_unit_desc const * um_desc;
 	/// name of event
 	std::string name;
 	/// description of event

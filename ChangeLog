@@ -1,3 +1,17 @@
+2002-09-19  Graydon Hoare  <graydon@redhat.com>
+
+	* libop/op_events.h:
+	* libop/op_events_desc.c: Move descriptions from here.
+	* libop/op_events_desc.h:
+	* libop/op_events.c: To here.
+	(um_*): Add new static unit masks.
+	(op_events): Use pointers to static unit masks.	
+	* libop++/op_print_event.h:
+	* libop++/op_print_event.cpp:
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp: 
+	* utils/op_help.c: Make compatible with struct changes.
+
 2002-09-18  John Levon  <levon@movementarian.org>
 
 	* utils/op_start: give an example for unit mask.

@@ -44,7 +44,6 @@ op_event_descr::op_event_descr()
 	counter_mask(0),
 	val(0),
 	unit(0),
-	um_desc(0),
 	min_count(0)
 {
 }
@@ -125,16 +124,14 @@ oprof_start::oprof_start()
 
 		descr.counter_mask = op_events[i].counter_mask;
 		descr.val = op_events[i].val;
-		if (op_events[i].unit) {
-			descr.unit = &op_unit_masks[op_events[i].unit];
-			descr.um_desc = &op_unit_descs[op_events[i].unit];
+		if (op_events[i].unit->num) {
+			descr.unit = op_events[i].unit;
 		} else {
 			descr.unit = 0;
-			descr.um_desc = 0;
 		}
 
 		descr.name = op_events[i].name;
-		descr.help_str = op_event_descs[i];
+		descr.help_str = op_events[i].desc;
 		descr.min_count = op_events[i].min_count;
 
 		for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
@@ -616,9 +613,9 @@ void oprof_start::get_unit_mask_part(op_event_descr const & descr, uint num, boo
 		return;
 
 	if (descr.unit->unit_type_mask == utm_bitmask)
-		mask |= descr.unit->um[num];
+		mask |= descr.unit->um[num].value;
 	else
-		mask = descr.unit->um[num];
+		mask = descr.unit->um[num].value;
 }
 
 // return the unit mask selected through the unit mask check box
@@ -659,7 +656,6 @@ void oprof_start::hide_masks()
 void oprof_start::setup_unit_masks(op_event_descr const & descr)
 {
 	op_unit_mask const * um = descr.unit;
-	op_unit_desc const * um_desc = descr.um_desc;
 
 	hide_masks();
 
@@ -681,17 +677,17 @@ void oprof_start::setup_unit_masks(op_event_descr const & descr)
 			case 5: check = check5; break;
 			case 6: check = check6; break;
 		}
-		check->setText(um_desc->desc[i]);
+		check->setText(um->um[i].desc);
 		if (um->unit_type_mask == utm_exclusive) {
-			check->setChecked(cfg[descr.name].umask == um->um[i]);
+			check->setChecked(cfg[descr.name].umask == um->um[i].value);
 		} else {
 			// The last descriptor contains a mask that enable all
 			// value so we must enable the last check box only if
 			// all bits are on.
 			if (i == um->num - 1) {
-				check->setChecked(cfg[descr.name].umask == um->um[i]);
+				check->setChecked(cfg[descr.name].umask == um->um[i].value);
 			} else {
-				check->setChecked(cfg[descr.name].umask & um->um[i]);
+				check->setChecked(cfg[descr.name].umask & um->um[i].value);
 			}
 		}
 		check->show();
@@ -813,7 +809,7 @@ void oprof_start::on_start_profiler()
 			args.push_back("--ctr" + tostr(ctr) + "-kernel=" + tostr(cfg[descr->name].os_ring_count));
 			args.push_back("--ctr" + tostr(ctr) + "-user=" + tostr(cfg[descr->name].user_ring_count));
 
-			if (descr->um_desc)
+			if (descr->unit)
 				args.push_back("--ctr" + tostr(ctr) + "-unit-mask=" + tostr(cfg[descr->name].umask));
 		}
 	}

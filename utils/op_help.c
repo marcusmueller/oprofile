@@ -62,18 +62,17 @@ static void help_for_event(int i)
 		}
 	}
 
-	printf(")\n\t%s (min count: %d)\n", op_event_descs[i], op_events[i].min_count);
+	printf(")\n\t%s (min count: %d)\n", op_events[i].desc, op_events[i].min_count);
 
-	if (op_events[i].unit) {
-		int unit_idx = op_events[i].unit;
+	if (op_events[i].unit->num) {
 
 		printf("\tUnit masks\n");
 		printf("\t----------\n");
 
-		for (j=0; j < op_unit_masks[unit_idx].num; j++) {
+		for (j=0; j < op_events[i].unit->num; j++) {
 			printf("\t%.2x: %s\n",
-			       op_unit_masks[unit_idx].um[j],
-			       op_unit_descs[unit_idx].desc[j]);
+			       op_events[i].unit->um[j].value,
+			       op_events[i].unit->um[j].desc);
 		}
 	}
 }

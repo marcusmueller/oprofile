@@ -17,11 +17,6 @@ extern "C" {
 #endif
 
 #include "op_cpu_type.h"
- 
-/** Human readable description for an unit mask. */
-struct op_unit_desc {
-	char * desc[7];
-};
 
 /**
  * get event name and description
@@ -42,14 +37,10 @@ struct op_unit_desc {
  * These strings are static and should not be freed.
  */
 void op_get_event_desc(op_cpu cpu_type, u8 type, u8 um,
-	char ** typenamep, char ** typedescp, char ** umdescp);
+		       char const ** typenamep, 
+		       char const ** typedescp, 
+		       char const ** umdescp);
 
-/** unit mask description */
-extern struct op_unit_mask op_unit_masks[];
-/** unit mask string description */
-extern struct op_unit_desc op_unit_descs[];
-/** events string description */
-extern char * op_event_descs[];
 /** description of events for all processor type */
 extern struct op_event op_events[];
 /** the total number of events for all processor type, allowing to iterate

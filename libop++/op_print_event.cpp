@@ -25,9 +25,9 @@ using std::setfill;
 void op_print_event(ostream & out, int counter_nr, op_cpu cpu_type,
 		    u8 type, u8 um, u32 count)
 {
-	char * typenamep;
-	char * typedescp;
-	char * umdescp;
+	char const * typenamep;
+	char const * typedescp;
+	char const * umdescp;
 
 	op_get_event_desc(cpu_type, type, um,
 			  &typenamep, &typedescp, &umdescp);
