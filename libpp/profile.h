@@ -54,7 +54,7 @@ public:
 	void add_sample_file(std::string const & filename, u32 offset);
 
 	class const_iterator;
-	typedef pair<const_iterator, const_iterator> iterator_pair;
+	typedef std::pair<const_iterator, const_iterator> iterator_pair;
 
 	/**
 	 * @param start  start offset
@@ -113,6 +113,7 @@ public:
 	bool operator!=(const_iterator const & rhs) const {
 		return it != rhs.it;
 	}
+
 private:
 	iterator_t it;
 	u32 start_offset;
