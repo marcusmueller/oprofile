@@ -17,7 +17,8 @@ endif
 
 O_TARGET := arch.o
 
-obj-y := cpu_type.o op_apic.o op_fixmap.o op_nmi.o op_syscalls.o oprofile_nmi.o
+obj-y := cpu_type.o op_apic.o op_fixmap.o op_rtc.o op_nmi.o \
+	 op_syscalls.o oprofile_nmi.o
 obj-m := $(O_TARGET)
 O_OBJS := $(obj-y)
 M_OBJS := $(O_TARGET)

@@ -15,7 +15,7 @@ endif
  
 O_TARGET := oprofile-module.o
  
-obj-y := compat.o op_init.o op_rtc.o op_util.o op_dname.o oprofile.o arch/arch.o $(OPROFILE_DIR)/libop/libop.a
+obj-y := compat.o op_init.o op_util.o op_dname.o oprofile.o arch/arch.o $(OPROFILE_DIR)/libop/libop.a
 obj-m := $(O_TARGET)
 O_OBJS := $(obj-y)
 M_OBJS := $(O_TARGET)

@@ -1,3 +1,10 @@
+2002-09-04    Will Cohen  <wcohen@redhat.com>
+
+	* module/op_rtc.c: move to ...
+	* module/x86/op_rtc.c: here
+	* module/Makefile.in:
+	* module/x86/Makefile.in: reflect file move
+
 2002-09-03  Will Cohen  <wcohen@redhat.com>
 
 	* module/oprofile.h: (regparm3): remove, use FASTCALL instead.
