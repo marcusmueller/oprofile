@@ -1,5 +1,10 @@
 2003-11-15  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* daemon/liblegacy/opd_parse_proc.c: always provide an image name
+	  for parsed process in /proc
+
+2003-11-15  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* doc/oprofile.xml:
 	* libop/op_cpu_type.c: s/hammer/AMD64 processors/ for user visible
 	  name.

@@ -111,7 +111,8 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 	strcat(exe_name, "/exe");
 	image_name = xmalloc(PATH_MAX);
 	if (!realpath(exe_name, image_name))
-		image_name[0] = '\0';
+		/* kernel thread are invalid symlink */
+		strcpy(image_name, exe_name);
 
 	verbprintf("image name %s for pid %u %u\n", image_name, proc->tid, proc->tgid);
 
