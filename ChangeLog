@@ -1,3 +1,13 @@
+2002-01-11  Philippe Elie  <ph_e@club-internet.fr>
+
+	* module/compat.h: many change, can be used down to 2.2.8
+	* module/oprofile.h: move #ifdef on kernel version to compat.h
+	* module/op_util.c:
+	* module/op_syscalls.c: minor change
+	* configure.in: comment unnecessary stuf.
+
+	* module/Makefile.in: missing include path for oprofile.s
+
 2002-01-10  John Levon  <moz@compsoc.man.ac.uk>
 
 	* Makefile.in: update checklist for dist
@@ -12,7 +22,10 @@
 
 	* module/compat.h: use correct smp_call_function
  
-PHIL: add changelog here :))
+2002-01-10  Philippe Elie  <ph_e@club-internet.fr>
+
+	* module/compat.h: new file include backward compatibility
+	  stuff
 
 2002-01-09  John Levon  <moz@compsoc.man.ac.uk>
 
