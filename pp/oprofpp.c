@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.54 2001/09/24 18:14:57 movement Exp $ */
+/* $Id: oprofpp.c,v 1.55 2001/09/26 02:42:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -442,12 +442,10 @@ void opp_bfd::open_bfd_image(const char* file, bool is_kernel)
 /**
  * symcomp - comparator
  *
- * FIXME: this is not sufficient because it compare
- * incorrectly symbol coming from different section
  */
 static bool symcomp(const asymbol * a, const asymbol * b)
 {
-	return a->value <= b->value;
+	return a->value + a->section->vma <= b->value + b->section->vma;
 }
 
 /* need a better filter, but only this gets rid of _start
@@ -553,10 +551,8 @@ u32 opp_bfd::sym_offset(uint sym_index, u32 num) const
  *
  * lookup for for filename::linenr info from a @sym_idx
  * symbol at offset @offset.
- * if the lookup success return 0. in this case filename
- * and/or linenr can be set to NULL/0 if debug info are
- * not available in the image file. If lookup fail @filename
- * and @linenr have undefined value.
+ * return true if the lookup succeed. In any case @filename
+ * is never set to NULL.
  */
 bool opp_bfd::get_linenr(uint sym_idx, uint offset, 
 			const char** filename, unsigned int* linenr)
@@ -574,8 +570,18 @@ bool opp_bfd::get_linenr(uint sym_idx, uint offset,
 	if (pc >= bfd_section_size(ibfd, section))
 		return false;
 
-	return bfd_find_nearest_line(ibfd, section, &syms[0], pc,
-				     filename, &functionname, linenr);
+	bool ret = bfd_find_nearest_line(ibfd, section, &syms[0], pc,
+					 filename, &functionname, linenr);
+
+	if (*filename == NULL)
+		*filename = "";
+
+	if (ret == false) {
+		*filename = "";
+		*linenr = 0;
+	}
+
+	return ret;
 }
 
 /**
@@ -648,13 +654,10 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 *start, u32 *end) const
 		exit(EXIT_FAILURE);
 	}
 
-	/* FIXME: this do not work */
-#if 0
 	if (*start > *end) {
 		fprintf(stderr,"oprofpp: start 0x%x overflow or end 0x%x underflow\n", *start, *end);
 		exit(EXIT_FAILURE);
 	}
-#endif
 }
 
 /**

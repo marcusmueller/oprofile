@@ -36,9 +36,6 @@
 
 #include "oprof_start.h"
 
-// FIXME: some ~0u here for CRT_ALL
-// jbl: what does this mean ?
-
 op_event_descr::op_event_descr()
 	: 
 	counter_mask(0),

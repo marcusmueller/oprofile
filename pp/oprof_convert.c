@@ -193,7 +193,6 @@ static int cpu_type = -1;
  * me at <phe@club-internet.fr> */
 /* create one row file during translate from colum to row format v4 --> v5 */
 static void do_mapping_transfer(uint nr_samples, int counter, 
-				const char* filename,
 				const struct opd_footer_v4* footer_v4, 
 				const struct old_opd_fentry* old_samples,
 				int session_number)
@@ -325,12 +324,12 @@ static void v4_to_v5(FILE* fp)
 
 	session_str = strrchr(filename, '-');
 	if (session_str) {
-		int read = 0;
-		if (sscanf(session_str + 1, "%d%n", &session_number, &read) == 1) {
+		int bytes_read = 0;
+		if (sscanf(session_str + 1, "%d%n", &session_number, &bytes_read) == 1) {
 
 			/* Dangerous if the bin filename end with "-%d" I
 			 * prefer reject this corner case */
-			ok = session_str[read] && !session_str[read + 1];
+			ok = session_str[bytes_read] && !session_str[bytes_read + 1];
 		}
 	}
 
@@ -366,7 +365,7 @@ static void v4_to_v5(FILE* fp)
 	//strcpy(out_filename, filename);
 
 	for (counter = 0; counter < 2 ; ++counter) {
-		do_mapping_transfer(nr_samples, counter, filename,
+		do_mapping_transfer(nr_samples, counter,
 				    &footer_v4, old_samples,
 				    session_number);
 	}

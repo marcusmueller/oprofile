@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.22 2001/09/22 23:05:11 movement Exp $ */
+/* $Id: opd_util.c,v 1.23 2001/09/26 02:42:30 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -805,6 +805,6 @@ poptContext opd_poptGetContext(const char * name,
 #ifdef CONST_POPT
 	return poptGetContext(name, argc, argv, options, flags); 
 #else
-	return poptGetContext(name, argc, (char **)argv, options, flags); 
+	return poptGetContext((char *)name, argc, (char **)argv, options, flags); 
 #endif
 }
