@@ -1,5 +1,9 @@
 2004-02-05  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/callgraph_container.cpp: tweak computation of callee_counts
+
+2004-02-05  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libpp/callgraph_container.cpp: Big Thinko (tm), callee samples offset
 	  are unordered
 

@@ -128,34 +128,34 @@ void arc_recorder::
 fixup_callee_counts(double threshold, count_array_t & totals)
 {
 	double percent = threshold / 100.0;
-	// while (list of leafs not statisfying the threshold is not empty)
-	//     remove and propagate the removal to both map
 
-	// iterate biggest callgraph depth at most.
+	// loop iteration number is bounded by biggest callgraph depth.
 	while (true) {
 		vector<map_t::iterator> leafs = select_leaf(percent, totals);
 		if (leafs.empty())
 			break;
 
 		for (size_t i = 0; i < leafs.size(); ++i) {
-			cg_symbol const & caller = leafs[i]->first;
-
-			remove(caller);
+			remove(leafs[i]->first);
 
 			caller_callee.erase(leafs[i]);
 		}
 	}
 
-	// FIXME: can be optimized easily
 	iterator end = caller_callee.end();
-	for (iterator it = caller_callee.begin(); it != end; ++it) {
-		cg_symbol & symb = const_cast<cg_symbol &>(it->first);
-
+	for (iterator it = caller_callee.begin(); it != end; ) {
 		pair<iterator, iterator> p_it =
 			caller_callee.equal_range(it->first);
-		for (; p_it.first != p_it.second; ++p_it.first) {
-			symb.callee_counts += p_it.first->first.sample.counts;
+		count_array_t counts;
+		for (iterator tit = p_it.first; tit != p_it.second; ++tit) {
+			counts += tit->first.callee_counts;
 		}
+
+		for (iterator tit = p_it.first; tit != p_it.second; ++tit) {
+			cg_symbol & symb = const_cast<cg_symbol &>(tit->first);
+			symb.callee_counts = counts;
+		}
+		it = p_it.second;
 	}
 }
 
@@ -199,8 +199,8 @@ add_arc(cg_symbol const & caller, cg_symbol const * cg_callee)
 				it->first.self_counts);
 			self += caller.self_counts;
 			count_array_t & counts = const_cast<count_array_t &>(
-				it->first.sample.counts);
-			counts += caller.sample.counts;
+				it->first.callee_counts);
+			counts += caller.callee_counts;
 			count_array_t & callee = const_cast<count_array_t &>(
 				it->second->self_counts);
 			callee += cg_callee->self_counts;
@@ -291,8 +291,8 @@ cg_symbol const * arc_recorder::find_caller(cg_symbol const & symbol) const
 void callgraph_container::populate(list<inverted_profile> const & iprofiles,
    extra_images const & extra, bool debug_info, double threshold)
 {
-	/// Normal (i.e non callgraph) samples container, we record sample
-	/// at symbol level, not at vma level.
+	/// non callgraph samples container, we record sample at symbol level
+	/// not at vma level.
 	profile_container symbols(debug_info, false);
 
 	list<inverted_profile>::const_iterator it;
@@ -516,7 +516,7 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 				abort();
 			}
 
-			symb_caller.sample.counts[pclass] = caller_callee_count;
+			symb_caller.callee_counts[pclass] = caller_callee_count;
 
 			cverb << vdebug
 			      << caller.syms[i].name() << " "
