@@ -124,6 +124,17 @@ AX_CXXFLAGS_OPTION(OP_CXXFLAGS,[-Wall])
 AX_CFLAGS_OPTION(OP_CFLAGS,[-fno-common])
 AX_CXXFLAGS_OPTION(OP_CXXFLAGS,[-fno-common])
 
+dnl enable option to use GCC test coverage
+AC_ARG_ENABLE(gcov,
+	[  --enable-gcov                enable option for gcov coverage testing (default is disabled)],
+	enable_gcov=$enableval, enable_gcov=no)
+if test "$enable_gcov" = yes; then
+	AX_CFLAGS_OPTION(OP_CFLAGS,[-fprofile-arcs])
+	AX_CXXFLAGS_OPTION(OP_CXXFLAGS,[-fprofile-arcs])
+	AX_CFLAGS_OPTION(OP_CFLAGS,[-ftest-coverage])
+	AX_CXXFLAGS_OPTION(OP_CXXFLAGS,[-ftest-coverage])
+fi
+
 # enable -Werror for non-release versions.
 if echo "$VERSION" | grep cvs >/dev/null; then
 	AX_CFLAGS_OPTION(OP_CFLAGS,[-Werror])
