@@ -1,3 +1,7 @@
+2004-03-03  Will Cohen  <wcohen@redhat.com>
+
+	* utils/opcontrol: Support --dump for normal users.
+
 2004-02-29  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/callgraph_container.cpp: make g++ -D_GLIBCXX_DEBUG happy, see

@@ -211,6 +211,30 @@ load_module()
 	fi
 }
 
+# setup variables related to daemon
+do_init_daemon_vars()
+{
+	# as in op_user.h
+	DIR="/var/lib/oprofile"
+	LOCK_FILE="/var/lib/oprofile/lock"
+	LOG_FILE="$DIR/oprofiled.log"
+	SAMPLES_DIR="$DIR/samples"
+	CURRENT_SAMPLES_DIR=${SAMPLES_DIR}/current
+}
+
+# pick the appropriate locations device for oprofile based on kernel
+decide_oprofile_device()
+{
+	if test "$KERNEL_SUPPORT" = "yes"; then
+		MOUNT="/dev/oprofile"
+		DEVICE_FILE="$MOUNT/buffer"
+	else
+		MOUNT="/proc/sys/dev/oprofile"
+		DEVICE_FILE="$DIR/opdev"
+		NOTE_DEVICE_FILE="$DIR/opnotedev"
+		HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
+	fi
+}
 
 # initialise parameters
 do_init()
@@ -233,22 +257,9 @@ do_init()
 	# location for daemon setup information
 	SETUP_DIR="/root/.oprofile"
 	SETUP_FILE="$SETUP_DIR/daemonrc"
- 
-	# as in op_user.h
-	DIR="/var/lib/oprofile"
-	LOCK_FILE="/var/lib/oprofile/lock"
-	LOG_FILE="$DIR/oprofiled.log"
-	SAMPLES_DIR="$DIR/samples"
-	CURRENT_SAMPLES_DIR=${SAMPLES_DIR}/current
-	if test "$KERNEL_SUPPORT" = "yes"; then
-		MOUNT="/dev/oprofile"
-		DEVICE_FILE="$MOUNT/buffer"
-	else
-		MOUNT="/proc/sys/dev/oprofile"
-		DEVICE_FILE="$DIR/opdev"
-		NOTE_DEVICE_FILE="$DIR/opnotedev"
-		HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
-	fi
+
+	do_init_daemon_vars
+	decide_oprofile_device
 
 	CPUTYPE=`cat $MOUNT/cpu_type`
 	OP_COUNTERS=`ls $MOUNT/ | grep "^[0-9]\+\$" | tr "\n" " "`
@@ -1054,15 +1065,16 @@ do_start()
 }
 
 
-# do_dump
+# do_dump_data
 # returns 0 if successful
-# returns 1 if the daemon is not running
-do_dump()
+# returns 1 if the daemon is unable to dump data
+do_dump_data()
 {
-	# make sure that the daemon is running
+	# make sure that the daemon is not dead and gone
 	if test -e "$DIR/lock"; then
 		OPROFILED_PID=`cat $DIR/lock`
 		if test ! -d "/proc/$OPROFILED_PID"; then
+			echo "dump fail: either daemon died during last run or dies during dump" >&2
 			return 1;
 		fi
 	else
@@ -1073,14 +1085,19 @@ do_dump()
 		# find current time
 		TMPFILE=`mktemp /tmp/oprofile.XXXXXX` || exit 1
 		echo 1 > $MOUNT/dump
-		# loop until there is a file to check
-		while [ ! -e "$DIR/complete_dump" ]
+		if test "$?" -ne 0; then
+			echo "Unable to write to $MOUNT/dump" >&2
+			return 1
+		fi
+		# loop until there is a file to check and 
+		# the modification data of $MOUNT/dump after TMPFILE
+		while [ \( ! -e "$DIR/complete_dump" \) -o \( "$TMPFILE" -nt "$DIR/complete_dump" \) ]
 		do
-			sleep 1;
-		done
-		# loop until modification data of $MOUNT/dump after TMPFILE
-		while [ "$TMPFILE" -nt "$DIR/complete_dump" ]
-		do
+			if test ! -d "/proc/$OPROFILED_PID"; then
+				rm $TMPFILE
+				echo "dump fail: either daemon died during last run or dies during dump" >&2
+				return 1
+			fi
 			sleep 1;
 		done
 		rm $TMPFILE
@@ -1092,6 +1109,18 @@ do_dump()
 	return 0;
 }
 
+# do_dump
+# returns 0 if successful
+# exits if unsuccessful
+do_dump()
+{
+	do_dump_data
+	if test $? -ne 0 -a "$ONLY_DUMP" = "yes"; then
+		echo "Unable to complete dump of oprofile data: is the oprofile daemon running?" >& 2
+		exit 1;
+	fi
+	return 0;
+}
 
 # tell daemon to re-open the sample files
 hup_daemon()
@@ -1185,10 +1214,6 @@ do_operations()
 
 	if test "$DUMP" = "yes"; then
 		do_dump
-		if test $? -ne 0 -a "$ONLY_DUMP" = "yes"; then
-			echo "No daemon running" >& 2
-			exit 1;
-		fi
 	fi
 
 	if test "$SAVE_SESSION" = "yes"; then
@@ -1236,6 +1261,27 @@ check_version_help()
 }
 
 
+#determine which module is loaded
+check_version()
+{
+	OPROFILE_AVAILABLE=no
+	grep oprofilefs /etc/mtab >/dev/null
+	if test "$?" -eq 0; then
+		# need to have oprofilefs mounted for this to work on 2.6
+		KERNEL_SUPPORT=yes
+		OPROFILE_AVAILABLE=yes
+		return
+	fi
+	# need to have /proc/oprof available for this to work on 2.4
+	grep oprof /proc/devices >/dev/null
+	if test "$?" -eq 0; then
+		KERNEL_SUPPORT=no
+		OPROFILE_AVAILABLE=yes
+		return
+	fi
+}
+
+
 # main
 
 # determine the location of opcontrol and related programs
@@ -1252,8 +1298,17 @@ if test -z "$1"; then
 fi
 
 if test "$UID" != "0"; then
-	echo "Must be root to use oprofile." >&2
+    if test "$1" = "--dump" -a -z "$2"; then
+	check_version
+	do_init_daemon_vars
+	decide_oprofile_device
+	ONLY_DUMP=yes
+	do_dump
+	exit 0;
+    else
+	echo "Normal users are limited to '--dump'." >&2
 	exit 1
+    fi
 fi
 
 load_module
