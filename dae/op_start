@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.37 2001/09/01 02:03:34 movement Exp $
+# $Id: op_start,v 1.38 2001/09/04 17:30:12 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -272,7 +272,7 @@ fi
 f=0
 while (( $f < $OP_MAX_COUNTERS )); do
 	if [[ ${#CTR_EVENT[$f]} != 0 ]]; then
-		CTR_EVENT_VAL[$f]=`op_help --cpu-type=$CPU_TYPE ${CTR_EVENT[$f]}`
+		CTR_EVENT_VAL[$f]=`op_help --cpu-type=$CPUTYPE ${CTR_EVENT[$f]}`
 		if [ -z "${CTR_EVENT_VAL[$f]}" -a ! -z "${CTR_EVENT[$f]}" ]; then
 			echo "Unknown event \"${CTR_EVENT[$f]}\""
 			exit 1

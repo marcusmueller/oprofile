@@ -1,5 +1,9 @@
 2001-09-04  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/op_start: fix typo bug
+ 
+2001-09-04  John Levon  <moz@compsoc.man.ac.uk>
+
 	* doc/oprofile.sgml: some small tidies
  
 2001-09-04  John Levon  <moz@compsoc.man.ac.uk>
