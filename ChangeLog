@@ -1,8 +1,12 @@
 2003-08-14  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/string_manip.cpp: erase_to_last_of() is not a ltrim()
+
+2003-08-14  Philippe Elie  <phil.el@wanadoo.fr>
+
 	Dave Jones suggested this change.
 
-	* module/x86/opr_model_p4.c: remove superflous ';' at end of some macro
+	* module/x86/op_model_p4.c: remove superflous ';' at end of some macro
 
 2003-08-14  Philippe Elie  <phil.el@wanadoo.fr>
 

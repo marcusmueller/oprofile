@@ -22,8 +22,11 @@ using namespace std;
 string erase_to_last_of(string const & str, char ch)
 {
 	string result = str;
+	string::size_type pos = result.find_last_of(ch);
+	if (pos != string::npos)
+		result.erase(0, pos + 1);
 
-	return result.erase(0, result.find_first_not_of(ch));
+	return result;
 }
 
 
