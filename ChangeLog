@@ -1,3 +1,18 @@
+2002-06-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
+	* configure.in: new AX_KERNEL_VERSION()  to allow kernel version check,
+	  use it to check minimal kernel version and fix 2.5.19 breakage
+	* module/.cvsignore:
+	* module/x86/.cvsignore: add .*.cmd
+	* module/Makefile.in:
+	* module/x86/Makefile.in: fix 2.5.19 make through EXTRA_CFLAGS_MODULE
+	* module/compat22.h: fix missing BUG() definition in 2.2 kernel
+	* module/x86/oprofile_nmi.S: fix minor 2.2 compile problem
+
+	* pp/op_to_source.cpp: minor comment fix
+
 2002-06-18  John Levon  <moz@compsoc.man.ac.uk>
 
 	* utils/op_start:

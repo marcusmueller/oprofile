@@ -372,6 +372,10 @@ void output::find_and_output_symbol(ostream & out, string const & str, string co
 // Complexity: log(nr samples))
 void output::find_and_output_counter(ostream & out, string const & str, string const & blank) const
 {
+	// do not use the bfd equivalent:
+	//  - it does not skip space at begin
+	//  - we does not need cross architecture compile so the native
+	// strtoul must work (assuming unsigned long can contain a vma)
 	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
 	sample_entry const * sample = samples->find_sample(vma);
@@ -438,10 +442,6 @@ output_objdump_asm_line(string const & str,
 		return;
 
 	if (str[pos] != ':') {  // is the line contain a symbol
-		// do not use the bfd equivalent:
-		//  - it does not skip space at begin
-		//  - we does not need cross architecture compile so the native
-		// strtoul must work (assuming unsigned long can contain a vma)
 		symbol_entry const * symbol = find_symbol(str);
 
 		// ! complexity: linear in number of symbol must use sorted

@@ -111,6 +111,10 @@ void *compat_request_region (unsigned long start, unsigned long n, char const * 
 	/* 2.2.18 add THIS_MODULE */
 	#define THIS_MODULE (&__this_module)
 
+	/* 2.2.18 add BUG() FIXME: this is arch dependant would must use
+	 * *(char *)0 = 0 instead ? */
+	#define BUG() __asm__ __volatile__("ud2\n");
+
 #endif /* V_BEFORE(2,2,18) */
 
 /* 2.2.18 introduced the rtc lock */

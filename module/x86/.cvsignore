@@ -2,3 +2,4 @@
 .*.flags
 Makefile
 oprofile.s
+.*.cmd

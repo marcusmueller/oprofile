@@ -1,3 +1,6 @@
+#ifndef __ASSEMBLY__
+#define __ASSEMBLY__  /* for some 2.2 kernel */
+#endif
 #include <linux/sys.h>
 #include <linux/linkage.h>
 #include <asm/segment.h>
