@@ -302,3 +302,5 @@
 
 	* oprofile.sgml: clarify that -g is not necessary for
 	  basic profiling (reported by Jeff Epler <jepler@inetnebr.com>)
+
+See ChangeLog-2001 for earlier changelogs.
