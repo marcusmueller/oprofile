@@ -212,7 +212,7 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 	#define lock_rtc(f) spin_lock_irqsave(&rtc_lock, f)
 	#define unlock_rtc(f) spin_unlock_irqrestore(&rtc_lock, f)
 #else
-	#define lock_rtc(f) save_flags(f)
+	#define lock_rtc(f) do { save_flags(f); cli(); } while (0)
 	#define unlock_rtc(f) restore_flags(f)
 #endif /* RTC_LOCK */
  

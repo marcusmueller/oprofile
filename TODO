@@ -1,8 +1,6 @@
 0.0.9 task list
 ---------------
 
- o fix waitqueue_lock
-
  o check UP kernel on SMP hardware with and without APIC config options 
  
  o 	./module/compat22.h:26:/* FIXME: didn't this change in 2.2.21 ? */  
@@ -11,7 +9,7 @@
  
  o NEED_MPTABLE check should die - replace with MSR read ?
 
- o stress test, finish clean of 2.2 backport
+ o stress test
 
  o user request: op_time that shows /all/ available symbols (with correct %age).
   This must handle images with no symbols, so container must contain either a symbol + values,
