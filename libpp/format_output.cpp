@@ -579,7 +579,7 @@ void cg_formatter::output(std::ostream & out)
 		cumulated_samples_callee = count_array_t();
 		cumulated_percent_callee = count_array_t();
 
-		cg_collection callee_arcs = profile.get_callee(arcs[i]);
+		cg_collection callee_arcs = profile.get_caller(arcs[i]);
 
 		for (size_t j = 0; j < callee_arcs.size(); ++j) {
 			total_count_self += callee_arcs[j].self_counts;
@@ -614,7 +614,7 @@ void cg_formatter::output(std::ostream & out)
 		cumulated_samples_callee = count_array_t();
 		cumulated_percent_callee = count_array_t();
 
-		cg_collection caller_arcs = profile.get_caller(arcs[i]);
+		cg_collection caller_arcs = profile.get_callee(arcs[i]);
 
 		for (size_t j = 0; j < caller_arcs.size(); ++j) {
 			total_count_self += caller_arcs[j].self_counts;

@@ -1,3 +1,9 @@
+2004-02-04  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/callgraph_container.cpp:
+	* libpp/format_output.cpp: arc_recorder::get_caller()/get_callee() name
+	  was reversed (catched by Will Cohen)
+
 2004-02-02  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/callgraph_container.cpp:

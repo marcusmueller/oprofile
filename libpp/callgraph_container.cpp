@@ -98,6 +98,7 @@ arc_recorder::~arc_recorder()
 	}
 }
 
+
 vector<arc_recorder::map_t::iterator>
 arc_recorder::select_leaf(double threshold, count_array_t & totals)
 {
@@ -114,6 +115,7 @@ arc_recorder::select_leaf(double threshold, count_array_t & totals)
 	}
 	return result;
 }
+
 
 void arc_recorder::
 fixup_callee_counts(double threshold, count_array_t & totals)
@@ -225,7 +227,7 @@ cg_collection arc_recorder::get_arc() const
 }
 
 
-cg_collection arc_recorder::get_callee(cg_symbol const & symbol) const
+cg_collection arc_recorder::get_caller(cg_symbol const & symbol) const
 {
 	cg_collection result;
 
@@ -248,7 +250,7 @@ cg_collection arc_recorder::get_callee(cg_symbol const & symbol) const
 }
 
 
-cg_collection arc_recorder::get_caller(cg_symbol const & symbol) const
+cg_collection arc_recorder::get_callee(cg_symbol const & symbol) const
 {
 	cg_collection result;
 
