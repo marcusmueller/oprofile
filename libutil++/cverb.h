@@ -74,7 +74,6 @@ private:
  * predefined general purpose verbose object, comment give their names
  */
 extern verbose vlevel1; /**< named "level1" */
-extern verbose vlevel2; /**< named "level2" */
 extern verbose vdebug;  /**< named "debug"  */
 extern verbose vstats;  /**< named "stats"  */
 // all sample filename manipulation.

@@ -25,7 +25,7 @@ Show help message.
 Show version.
 .br
 .TP
-.BI "--verbose / -V"
+.BI "--verbose / -V [options]"
 Give verbose debugging output.
 .br
 .TP

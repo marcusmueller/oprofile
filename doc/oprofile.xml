@@ -1631,7 +1631,7 @@ List per-symbol information instead of a binary image summary.
 Only output data for symbols that have more than the given percentage
 of total samples.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--verbose / -V</option></term><listitem><para>
+<varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
 Give verbose debugging output.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--version / -v</option></term><listitem><para>
@@ -1705,7 +1705,7 @@ for the binaries.
 Only output data for symbols that have more than the given percentage
 of total samples.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--verbose / -V</option></term><listitem><para>
+<varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
 Give verbose debugging output.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--version / -v</option></term><listitem><para>
@@ -1741,7 +1741,7 @@ This is needed to find modules in kernels 2.6 and upwards.
 Only output data for symbols that have more than the given percentage
 of total samples.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--verbose / -V</option></term><listitem><para>
+<varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
 Give verbose debugging output.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--version / -v</option></term><listitem><para>
@@ -1762,7 +1762,7 @@ Show help message.
 <varlistentry><term><option>--version / -v</option></term><listitem><para>
 Show version.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--verbose / -V</option></term><listitem><para>
+<varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
 Give verbose debugging output.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--image-path / -p [paths]</option></term><listitem><para>

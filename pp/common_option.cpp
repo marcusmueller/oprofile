@@ -35,7 +35,7 @@ vector<string> verbose_strings;
 popt::option common_options_array[] = {
 	popt::option(verbose_strings, "verbose", 'V',
 		     // FIXME help string for verbose level
-		     "verbose output", "all,debug,level1,level2,bfd,sfile,stats"),
+		     "verbose output", "all,debug,level1,sfile,stats"),
 	popt::option(image_path, "image-path", 'p',
 		     "comma-separated path to search missing binaries","path"),
 	popt::option(threshold, "threshold", 't',

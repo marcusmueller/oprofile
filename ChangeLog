@@ -1,5 +1,16 @@
 2004-01-20  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* doc/opannotate.1.in:
+	* doc/opgprof.1.in:
+	* doc/opreport.1.in:
+	* doc/oprofile.xml:
+	* doc/opstack.1.in: document --verbose options a bit
+	* libutil++/cverb.cpp:
+	* libutil++/cverb.h:
+	* pp/common_option.cpp: remove vstats and vlevel2 verbose objects
+
+2004-01-20  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/cverb.h:
 	* libutil++/cverb.cpp: new cverb handling. most interresting are
 	  --verbose=sfile,bfd,level1 resp. sample filename handling bfd

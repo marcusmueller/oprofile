@@ -47,7 +47,7 @@ Only output data for symbols that have more than the given percentage
 of total samples.
 .br
 .TP
-.BI "--verbose / -V"
+.BI "--verbose / -V [options]"
 Give verbose debugging output.
 .br
 .TP

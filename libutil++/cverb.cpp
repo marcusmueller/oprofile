@@ -20,7 +20,6 @@ using namespace std;
 
 cverb_object cverb;
 verbose vlevel1("level1");
-verbose vlevel2("level2");
 verbose vdebug("debug");
 verbose vstats("stats");
 verbose vsfile("sfile");
