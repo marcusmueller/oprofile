@@ -26,6 +26,7 @@
  
 #include "apic_up_compat.h"
  
+#define oprof_wake_up(w) wake_up(w)
 #define lock_rtc(f) spin_lock_irqsave(&rtc_lock, f)
 #define unlock_rtc(f) spin_unlock_irqrestore(&rtc_lock, f)
 #define wind_dentries(d, v, r, m) wind_dentries_2_4(d, v, r, m)

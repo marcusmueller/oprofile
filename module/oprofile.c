@@ -106,9 +106,11 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data, const str
 	 * data->nextbuf, preventing multiple wakeups.
 	 *
 	 * On 2.2, a global waitqueue_lock is used, so we must check it's not held
-	 * by the current CPU. This is done in a lossy way via spin_trylock()
+	 * by the current CPU. We make sure that any users of the wait queue (i.e.
+	 * us and the code for wait_event_interruptible()) disable interrupts so it's
+	 * still safe to check IF_MASK.
 	 */
-	if (likely(regs->eflags & IF_MASK) && wq_is_lockable()) {
+	if (likely(regs->eflags & IF_MASK)) {
 		oprof_ready[cpu] = 1;
 		wake_up(&oprof_wait);
 	}
@@ -176,7 +178,8 @@ inline static void up_and_check_note(void)
 	if (unlikely(note_pos == sysctl.note_size)) {
 		static int warned;
 		if (!warned) {
-			printk("note buffer overflow: consider to restart profiler with increased size of note buffer");
+			printk(KERN_WARNING "note buffer overflow: restart oprofile 
+				with a larger note buffer.\n");
 			warned = 1;
 		}
 		note_pos = sysctl.note_size - 1;
@@ -184,7 +187,7 @@ inline static void up_and_check_note(void)
  
 	/* we just use cpu 0 as a convenient one to wake up */
 	oprof_ready[0] = 2;
-	wake_up(&oprof_wait);
+	oprof_wake_up(&oprof_wait);
 }
 
 void oprof_put_note(struct op_note *onote)
@@ -256,9 +259,8 @@ static int check_buffer_amount(struct _oprof_data * data)
 	int size = data->buf_size;
 	int num = data->nextbuf;
 	if (num < size - OP_PRE_WATERMARK && oprof_ready[cpu_num] != 2) {
-		printk(KERN_ERR "oprofile: Detected overflow of size %d. You must increase the "
-				"hash table size or reduce the interrupt frequency (%d)\n",
-				num, oprof_ready[cpu_num]);
+		printk(KERN_WARNING "oprofile: Detected overflow of size %d. You must increase "
+			"the hash table size or reduce the interrupt frequency\n", num);
 		num = size;
 	} else
 		data->nextbuf=0;
@@ -688,7 +690,7 @@ static void do_actual_dump(void)
 		oprof_ready[cpu] = 2;
 		int_ops->start_cpu(cpu);
 	}
-	wake_up(&oprof_wait);
+	oprof_wake_up(&oprof_wait);
 }
  
 static int sysctl_do_dump(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
@@ -817,8 +819,6 @@ int __init oprof_init(void)
 {
 	int err = 0;
 
-	printk(KERN_INFO "%s\n", op_version);
-
 	if (sysctl.cpu_type != CPU_RTC) {
 		int_ops = &op_nmi_ops;
  
@@ -846,7 +846,7 @@ int __init oprof_init(void)
 
 	err = oprof_init_hashmap();
 	if (err < 0) {
-		printk("oprofile: couldn't allocate hash map !\n");
+		printk(KERN_ERR "oprofile: couldn't allocate hash map !\n");
 		unregister_chrdev(op_major, "oprof");
 		goto out_err2;
 	}
@@ -857,7 +857,7 @@ int __init oprof_init(void)
 	/* do this now so we don't have to track save/restores later */
 	op_save_syscalls();
 
-	printk("oprofile: oprofile loaded, major %u\n", op_major);
+	printk(KERN_INFO "oprofile: oprofile %s loaded, major %u\n", op_version, op_major);
 	return 0;
 
 out_err2:

@@ -40,18 +40,18 @@
 #define lock_mmap(mm) do {} while (0)
 #define unlock_mmap(mm) do {} while (0)
  
-// FIXME: THOROUGHLY BROKEN !
-static inline int wq_is_lockable(void)
+/* the wake_up path doesn't disable interrupts for wait queue
+ * manipulation. So let's force it to.
+ */
+static inline void oprof_wake_up(struct wait_queue **q)
 {
-	/* 
-	if (spin_trylock(&waitqueue_lock)) {
-		spin_unlock(&waitqueue_lock);
-		return 1;
-	}
-	*/
-	return 0;
+	unsigned long flags;
+	save_flags(flags);
+	cli();
+	wake_up(q);
+	restore_flags(flags);
 }
- 
+
 extern int wind_dentries_2_2(struct dentry *dentry);
 extern uint do_path_hash_2_2(struct dentry *dentry);
 #define wind_dentries(d, v, r, m) wind_dentries_2_2(d)
@@ -79,7 +79,6 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 
 /* 2.2 has no cpu_number_map on UP */
 #ifdef CONFIG_SMP
-	#error sorry, it will crash your machine right now 
 	#define op_cpu_id() cpu_number_map[smp_processor_id()]
 #else
 	#define op_cpu_id() smp_processor_id()

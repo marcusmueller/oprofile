@@ -53,7 +53,7 @@ inline static void push_dname(struct qstr *dname)
 	if (dname_top != DNAME_STACK_MAX)
 		dname_top++;
 	else
-		printk("oprofile: overflowed dname stack !\n");
+		printk(KERN_ERR "oprofile: overflowed dname stack !\n");
 }
 
 inline static struct qstr *pop_dname(void)

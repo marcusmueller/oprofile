@@ -101,11 +101,7 @@ void lvtpc_apic_restore(void *dummy)
 }
 
 /*
- * This logic is unfortunately horrendous. We are trying to
- * determine if the kernel has set up the APIC or not.
- *
- * It doesn't even work if there are BIOS problems or the like :(
- *
+ * FIXME: UP kernel on SMP hardware ??
  * FIXME:
  * This just need to get the case where we really can't setup the apic.
  * On other case we rely on the robusteness of code.
@@ -153,7 +149,7 @@ not_local_p6_apic:
 	if ((msr_low & (1 << 11)) == 0)
 		wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
 
-	printk(KERN_ERR "oprofile: no local P6 APIC. Your laptop doesn't have one !\n");
+	printk(KERN_ERR "oprofile: no local P6 APIC. Falling back to RTC mode.\n");
 	return 0;
 }
 
@@ -169,6 +165,48 @@ static int __init check_p6_ok(void)
 	return 1;
 }
  
+void __init do_apic_setup(void)
+{
+	uint val;
+ 
+	__cli();
+ 
+	apic_write(APIC_SPIV, apic_read(APIC_SPIV) | APIC_SPIV_APIC_ENABLED);
+
+	val = APIC_LVT_LEVEL_TRIGGER;
+	val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_EXINT);
+	apic_write(APIC_LVT0, val);
+
+	/* edge triggered, IA 7.4.11 */
+	val = SET_APIC_DELIVERY_MODE(0, APIC_MODE_NMI);
+	apic_write(APIC_LVT1, val);
+
+	/* clear error register */
+	/* IA32 V3, 7.4.17 */
+	/* PHE must be cleared after unmasking by a back-to-back write,
+	 * but it is probably ok because we mask only, the ESR is not
+	 * updated is this a real problem ? */
+	apic_write(APIC_ESR, 0);
+
+	/* mask error interrupt */
+	/* IA32 V3, Figure 7.8 */
+	val = apic_read(APIC_LVTERR);
+	val |= APIC_LVT_MASKED;
+	apic_write(APIC_LVTERR, val);
+
+	/* setup timer vector */
+	/* IA32 V3, 7.4.8 */
+	apic_write(APIC_LVTT, APIC_SEND_PENDING | 0x31);
+
+	/* Divide configuration register */
+	/* PHE the apic clock is based on the FSB. This should only
+	 * changed with a calibration method.  */
+	val = APIC_TDR_DIV_1;
+	apic_write(APIC_TDCR, val);
+
+	__sti();
+}
+ 
 int __init apic_setup(void)
 {
 	uint val;
@@ -176,15 +214,14 @@ int __init apic_setup(void)
 
 	/* paranoid checking */
 	if (!check_p6_ok()) {
-		printk("Your CPU does not have a local APIC, e.g. "
-		       "mogile P6. No profiling can be done.\n");
+		printk(KERN_WARNING "Your CPU does not have a local APIC, e.g. "
+		       "mobile P6. Falling back to RTC mode.\n");
 		return -ENODEV;
 	}
 
 	if (!apic_needs_setup()) {
 		printk(KERN_INFO "oprofile: no APIC setup needed.\n");
-		lvtpc_apic_setup(NULL);
-		return 0;
+		goto lvtpc;
 	}
 
 	printk(KERN_INFO "oprofile: setting up APIC.\n");
@@ -199,50 +236,15 @@ int __init apic_setup(void)
 
 	/* we blindly assume than if apic is up is state is ok */
 	if (!apic_was_enabled) {
-		__cli();
-		apic_write(APIC_SPIV, val | APIC_SPIV_APIC_ENABLED);
-
-		val = APIC_LVT_LEVEL_TRIGGER;
-		val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_EXINT);
-		apic_write(APIC_LVT0, val);
-
-		/* edge triggered, IA 7.4.11 */
-		val = SET_APIC_DELIVERY_MODE(0, APIC_MODE_NMI);
-		apic_write(APIC_LVT1, val);
-
-		/* clear error register */
-		/* IA32 V3, 7.4.17 */
-		/* PHE must be cleared after unmasking by a back-to-back write,
-		 * but it is probably ok because we mask only, the ESR is not
-		 * updated is this a real problem ? */
-		apic_write(APIC_ESR, 0);
-
-		/* mask error interrupt */
-		/* IA32 V3, Figure 7.8 */
-		val = apic_read(APIC_LVTERR);
-		val |= APIC_LVT_MASKED;
-		apic_write(APIC_LVTERR, val);
-
-		/* setup timer vector */
-		/* IA32 V3, 7.4.8 */
-		apic_write(APIC_LVTT, APIC_SEND_PENDING | 0x31);
-
-		/* Divide configuration register */
-		/* PHE the apic clock is based on the FSB. This should only
-		 * changed with a calibration method.  */
-		val = APIC_TDR_DIV_1;
-		apic_write(APIC_TDCR, val);
-
-		__sti();
-
+		do_apic_setup(); 
 		val = apic_read(APIC_ESR);
 		printk(KERN_INFO "oprofile: enabled local APIC err code %.08x\n", val);
 	} else {
-		printk(KERN_INFO "oprofile: APIC was already ebabled\n");
+		printk(KERN_INFO "oprofile: APIC was already enabled\n");
 	}
 
+lvtpc:
 	lvtpc_apic_setup(NULL);
-
 	return 0;
 }
 
@@ -282,9 +284,11 @@ void my_set_fixmap(void)
 #ifdef CONFIG_X86_LOCAL_APIC
 	ulong address = __fix_to_virt(FIX_APIC_BASE);
 
-	set_pte_phys (address, APIC_DEFAULT_PHYS_BASE);
+	set_pte_phys(address, APIC_DEFAULT_PHYS_BASE);
 #else
-	/* dirty hack :/ and memory leak at unload ... */
+	/* dirty hack :/ */
+
+	/* FIXME: memory leak at unload ... */
 	virt_apic_base = (unsigned long)vmalloc(4096);
 
 	set_pte_phys(virt_apic_base, APIC_DEFAULT_PHYS_BASE);
