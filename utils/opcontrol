@@ -1,0 +1,845 @@
+#!/bin/bash
+# COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# opcontrol is a script to control OProfile
+# opcontrol --help and opcontrol --list-events have info
+
+# ensure bash2
+if [ "`echo $BASH_VERSION | cut -b1`" -lt 2 ]; then
+	exec /bin/bash2 $0 $@
+fi
+ 
+
+SYSCTL=do_sysctl
+
+#  A replacement function for the sysctl (procps package) utility which is
+# missing on some distribution (e.g. slack 7.0). 
+#  Handle only the -w option of sysctl.
+do_sysctl()
+{
+	if [ x$1 != x"-w" ]; then
+		echo "$0 unknown option" >&2
+		exit 1
+	fi
+
+	shift
+
+	arg=`echo $1 | awk -F= '{print $1}'`
+	val=`echo $1 | awk -F= '{print $2}'`
+
+	dev_name=`echo $arg | tr . /`
+
+	if [ ! -f /proc/sys/$dev_name ]; then
+		echo "/proc/sys/$dev_name does not exist or is not a regular file" >&2
+		exit 1
+	fi
+	echo $val > /proc/sys/$dev_name
+}
+
+# extract the integer field N from --ctr[N]-xxxxxxx
+extract_int()
+{
+	local val=`echo $1 | sed 's,--ctr\([0-9]*\)[-A-Za-z]*,\1,'`
+
+	if test -z "$val"; then 
+		echo "Invalid option \"$1\"" >&2
+		exit 1
+	fi
+	if [ ! -d $MOUNT/$val ]; then
+		echo "invalid argument $1: bad counter number" >&2
+		exit 1
+	fi
+	echo $val
+}
+
+# verbose echo
+vecho() {
+	if [ "$VERBOSE" == "0" ]; then 
+		return;
+	fi
+	echo $@
+}
+ 
+# print help message
+do_help() { 
+	echo "opcontrol: usage:
+	--init			loads the oprofile module and oprofilefs
+	--setup			list arguments for profiling
+	--start			start data collection
+	--dump			flushed the collected profiling data
+	--stop			stop data collection
+	--shutdown		stop data collection and remove daemon
+	--reset			clears out data from current session
+	--save=session_name	save data from current session to session_name
+	--deinit		unload the oprofile module and oprofilefs
+
+	--setup options
+	  --buffer-size=num            number of samples in kernel buffer
+	  --ctrN-event=name            symbolic event name for ctr N
+	  --ctrN-count=val             number of events between samples for ctr N
+	  --ctrN-unit-mask=val         unit mask for ctr N (e.g. --ctr0-unit-mask=0xf)
+	  --ctrN-kernel=[0|1]          whether to count kernel events for ctr N
+	  --ctrN-user=[0|1]            whether to count user events for ctr N
+	Allowed counters for N are [$OP_COUNTERS]
+	  --pid-filter=pid             Only profile process pid  (2.4 version)
+	  --pgrp-filter=pgrp           Only profile process tty group pgrp (2.4 version)
+
+	  --separate-samples           separate samples for each distinct application
+	  --vmlinux=file               vmlinux kernel image
+	  --verbose                    be verbose in the daemon log
+	  --kernel-range=start,end     kernel range vma address in hexadecimal
+
+	General options
+	  --list-events                list event types and unit masks
+	  --help                       this message" >&2
+}
+
+determine_version(){
+	# figure out which version of the kernel is being used
+	# FIXME this isn't really right there are version of
+	# 2.5 kernel that do not have oprofile support
+
+	kern_release=`uname -r`
+	case "$kern_release" in
+		2.5.*)
+			KERNEL_SUPPORT=yes
+			;;
+		2.6.*)
+			KERNEL_SUPPORT=yes
+			;;
+		2.4.*)
+			KERNEL_SUPPORT=no
+			;;
+		2.3.*)
+			KERNEL_SUPPORT=no
+			;;
+	esac
+}
+
+load_module_25() {
+	grep oprofilefs /proc/filesystems >/dev/null
+	if [ "$?" -ne 0 ]; then
+		modprobe oprofile
+		if [ "$?" != "0" ]; then
+			echo "Couldn't load oprofile.o module" >&2
+			exit 1
+		fi
+		grep oprofile /proc/modules >/dev/null
+		if [ "$?" != "0" ]; then
+			echo "Couldn't load oprofile.o module" >&2
+			exit 1
+		fi
+	fi
+	mkdir /dev/oprofile >/dev/null 2>&1
+	grep oprofilefs /etc/mtab >/dev/null
+	if test "$?" -ne 0; then
+		mount -t oprofilefs nodev /dev/oprofile >/dev/null
+	fi
+}
+
+load_module_24() {
+	grep oprof /proc/devices >/dev/null
+	if [ "$?" -ne 0 ]; then
+		modprobe oprofile
+		if [ "$?" != "0" ]; then
+			echo "Couldn't load oprofile.o module" >&2
+			exit 1
+		fi
+		grep oprofile /proc/modules >/dev/null
+		if [ "$?" != "0" ]; then
+			echo "Couldn't load oprofile.o module" >&2
+			exit 1
+		fi
+	fi
+} 
+
+
+load_module()
+{
+	if test "$KERNEL_SUPPORT" = "yes"; then
+		load_module_25
+	else
+		load_module_24
+	fi
+}
+
+# initialise parameters
+do_init() {
+	# for these three buffer size == 0 means use the default value
+	# hard-coded in op_user.h
+	BUF_SIZE=0
+	HASH_SIZE=0
+	NOTE_SIZE=0
+	IGNORE_MYSELF=0
+	VMLINUX=
+	PID_FILTER=0
+	PGRP_FILTER=0
+	VERBOSE=0
+	SEPARATE_SAMPLES=0
+
+	# location for daemon setup information
+	SETUP_DIR="/root/.oprofile"
+	SETUP_FILE="$SETUP_DIR/daemonrc"
+ 
+	# as in op_user.h
+	DIR="/var/lib/oprofile"
+	LOCK_FILE="/var/lib/oprofile/lock"
+	LOG_FILE="$DIR/oprofiled.log"
+	SAMPLES_DIR="$DIR/samples"
+	if test "$KERNEL_SUPPORT" = "yes"; then
+		MOUNT="/dev/oprofile"
+		DEVICE_FILE="$MOUNT/buffer"
+	else
+		MOUNT="/proc/sys/dev/oprofile"
+		SAMPLES_DIR="$DIR/samples/"
+		DEVICE_FILE="$DIR/opdev"
+		NOTE_DEVICE_FILE="$DIR/opnotedev"
+		HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
+	fi
+
+	CPUTYPE=`cat $MOUNT/cpu_type`
+	OP_COUNTERS=`ls $MOUNT/ | grep "^[0-9]\+\$" | tr "\n" " "`
+
+	IS_TIMER=0
+ 
+	case "$CPUTYPE" in
+		4) 	IS_TIMER=1
+			;;
+	esac
+
+	if test "$IS_TIMER" -ne 1; then
+		# we can now default define individual counter setup variable.
+		for f in $OP_COUNTERS ; do
+			CTR_USER[$f]=1
+			CTR_KERNEL[$f]=1
+			CTR_UM[$f]=0
+		done
+	fi
+}
+
+function create_dir {
+	if [ ! -d "$1" ]; then
+	       mkdir -p "$1"
+	       if [ "$?" != "0" ]; then
+		       echo "Couldn't mkdir -p $1" >&2
+		       exit 1
+	       fi
+	       chmod 755 "$1"
+	fi
+}
+
+#save all the setup related information
+do_save_setup() {
+	create_dir "$SETUP_DIR"
+
+	rm $SETUP_FILE
+	touch $SETUP_FILE
+	chmod 644 $SETUP_FILE
+
+	#write the actual information to file
+	if [ $BUF_SIZE != 0 ]; then
+		echo "BUF_SIZE=$BUF_SIZE" > $SETUP_FILE
+	fi;
+	if test "$IS_TIMER" -ne 1; then
+		for f in $OP_COUNTERS ; do
+			echo "CTR_EVENT[${f}]=${CTR_EVENT[$f]}"  >> $SETUP_FILE
+			echo "CTR_COUNT[${f}]=${CTR_COUNT[$f]}" >> $SETUP_FILE
+			echo "CTR_KERNEL[${f}]=${CTR_KERNEL[$f]}" >> $SETUP_FILE
+			echo "CTR_USER[${f}]=${CTR_USER[$f]}" >> $SETUP_FILE
+			echo "CTR_UM[${f}]=${CTR_UM[$f]}" >> $SETUP_FILE
+			echo "CTR_EVENT_VAL[${f}]=${CTR_EVENT_VAL[$f]}"  >> $SETUP_FILE
+		done
+	fi
+ 
+	echo "IGNORE_MYSELF=$IGNORE_MYSELF" >> $SETUP_FILE
+	echo "SEPARATE_SAMPLES=$SEPARATE_SAMPLES" >> $SETUP_FILE
+	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
+	echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
+	if test "$KERNEL_SUPPORT" != "yes"; then
+		echo "HASH_SIZE=$HASH_SIZE" >> $SETUP_FILE
+		echo "NOTE_SIZE=$NOTE_SIZE" >> $SETUP_FILE
+		echo "PID_FILTER=$PID_FILTER" >> $SETUP_FILE
+		echo "PGRP_FILTER=$PGRP_FILTER" >> $SETUP_FILE
+	fi
+	echo "one_enabled=$one_enabled" >> $SETUP_FILE
+}
+
+#reload all the setup releated information
+do_load_setup() {
+	if test ! -f "$SETUP_FILE"; then
+		echo "$SETUP_FILE does not exist" >& 2
+		exit 1
+	fi
+
+	# load the actual information from file
+	# FIXME this is insecure, arbitrary commands could be added to
+	# $SETUP_FILE and be executed as root
+	source $SETUP_FILE
+}
+
+check_valid_args() {
+	if [ "$one_enabled" == "0" ]; then
+		echo "You need at least one event to count, e.g." >&2
+		echo "opcontrol --setup ... --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000" >&2
+		echo "Enter opcontrol --help for full options" >&2
+		exit 1
+	fi
+
+	if [ -z "$VMLINUX" ]; then
+		echo "No vmlinux file specified. You must specify the correct vmlinux file, e.g." >&2
+		echo "opcontrol --vmlinux=/path/to/vmlinux" >&2
+		echo "Enter opcontrol --help for full options" >&2
+		exit 1
+	fi
+
+	if [ ! -f "$VMLINUX" ]; then
+		echo "The specified vmlinux file \"$VMLINUX\" doesn't exist." >&2
+		exit 1
+	fi
+
+}
+
+# get start and end points of the kernel
+get_kernel_range() {
+	if test ! -z $KERNEL_RANGE; then
+		return;
+	fi
+	tmp1=`nm $VMLINUX | grep ' A _text'`
+	tmp2=`nm $VMLINUX | grep ' A _end'`
+	if test -z "$tmp1" -o -z "$tmp2"; then
+		echo "Couldn't determine kernel start/end" >&2
+		echo "Perhaps $VMLINUX is not a proper vmlinux file ?" >&2
+		echo "found start as \"$tmp1\", end as \"$tmp2\"" >&2
+		exit 1
+	fi
+	KERNEL_RANGE="`echo $tmp1 | cut -d" " -f 1`,`echo $tmp2 | cut -d" " -f 1`"
+	vecho "KERNEL_RANGE $KERNEL_RANGE"
+}
+ 
+# get and check specified options
+do_options() {
+	while [ "$#" -ne 0 ]
+	do
+		arg=`echo $1 | awk -F= '{print $1}'`
+		val=`echo $1 | awk -F= '{print $2}'`
+ 
+		if test "$IS_TIMER" -eq 1; then
+			case "$arg" in
+				--ctr*-unit-mask|--ctr*-event|--ctr*-count|--ctr*-user|--ctr*-kernel)
+					echo "Cannot use option $arg in timer mode."
+					exit 1;
+					;;
+			esac
+		fi
+ 
+		case "$arg" in
+
+			--init)
+				# this is already done in load_module
+				# because need to know the processor type
+				# and number of registers
+				INIT=yes;
+				;;
+
+			--setup)
+				SETUP=yes
+				;;
+
+			--start)
+				START=yes
+				;;
+
+			--dump)
+				DUMP=yes
+				;;
+
+			--stop)
+				if test "$KERNEL_SUPPORT" != "yes"; then
+					echo "$arg unsupported. use \"--shutdown\"" >& 2
+				else
+					DUMP=yes
+					STOP=yes
+				fi
+				;;
+
+			--shutdown)
+				DUMP=yes
+				STOP=yes
+				KILL_DAEMON=yes
+				;;
+
+			--reset)
+				DUMP=yes
+				STOP=yes
+				KILL_DAEMON=yes
+				RESET=yes
+				;;
+
+			--save)
+				DUMP=yes
+				SAVE_SESSION=yes
+				SAVE_NAME=$val
+				;;
+
+			--deinit)
+				DUMP=yes
+				STOP=yes
+				KILL_DAEMON=yes
+				DEINIT=yes
+				;;
+
+			# --setup options
+
+			--buffer-size)
+				BUF_SIZE=$val
+				;;
+			--ctr*-unit-mask)
+				CTR_UM[`extract_int $arg`]=$val
+				if (($? != 0)); then exit 1; fi
+				;;
+			--ctr*-event)
+				CTR_EVENT[`extract_int $arg`]=$val
+				if (($? != 0)); then exit 1; fi
+				;;
+			--ctr*-count)
+				CTR_COUNT[`extract_int $arg`]=$val
+				if (($? != 0)); then exit 1; fi
+				;;
+			--ctr*-user)
+				CTR_USER[`extract_int $arg`]=$val
+				if (($? != 0)); then exit 1; fi
+				;;
+			--ctr*-kernel)
+				CTR_KERNEL[`extract_int $arg`]=$val
+				if (($? != 0)); then exit 1; fi
+				;;
+			--separate-samples)
+				SEPARATE_SAMPLES=1
+				;;
+			--vmlinux)
+				VMLINUX=$val
+				;;
+			--kernel-range)
+				KERNEL_RANGE=$val
+				;;
+			--pid-filter)
+				if "$KERNEL_SUPPORT" = "yes"; then
+					echo "\"$arg\" ignored" >& 2
+				else
+					PID_FILTER=$val
+				fi
+				;;
+			--pgrp-filter)
+				if "$KERNEL_SUPPORT" = "yes"; then
+					echo "\"$arg\" ignored" >& 2
+				else
+					PGRP_FILTER=$val
+				fi
+				;;
+			--verbose)
+				VERBOSE=1
+				;;
+			--help)
+				do_help
+				exit 0
+				;;
+
+			--list-events)
+				exec op_help
+				;;
+			*)
+				echo "Unknown option \"$arg\". See opcontrol --help" >&2
+				exit 1
+				;; 
+		esac
+		shift
+	done
+
+	if test "$IS_TIMER" -ne 1; then
+		one_enabled=0
+		for f in $OP_COUNTERS ; do
+			if [[ ${#CTR_EVENT[$f]} != 0 ]]; then
+				CTR_EVENT_VAL[$f]=`op_help ${CTR_EVENT[$f]}`
+				if [ "$?" != 0 ] || [ -z "${CTR_EVENT_VAL[$f]}" -a ! -z "${CTR_EVENT[$f]}" ]; then
+					echo "Unknown event \"${CTR_EVENT[$f]}\"" >&2
+					exit 1
+				fi
+				if [ -z "${CTR_COUNT[$f]}" ]; then
+					echo "Event but no count specified for counter $f" >&2
+					exit 1
+				fi
+				one_enabled=1
+			else 
+				if [ ! -z "${CTR_COUNT[$f]}" ]; then
+					echo "Count but no event specified for counter $f" >&2
+					exit 1
+				fi
+			fi
+		done
+	 
+	fi
+
+ 
+	vecho "Parameters used:"
+	vecho "CPUTYPE $CPUTYPE"
+	if [ $BUF_SIZE != 0 ]; then
+		vecho "BUF_SIZE $BUF_SIZE"
+	else
+		vecho "BUF_SIZE default value"
+	fi;
+	if test "$IS_TIMER" -ne 1; then
+		for f in $OP_COUNTERS ; do
+			vecho "CTR_EVENT[${f}] ${CTR_EVENT[$f]}"
+			vecho "CTR_COUNT[${f}] ${CTR_COUNT[$f]}"
+			vecho "CTR_UM[${f}] ${CTR_UM[$f]}"
+			vecho "CTR_USER[${f}] ${CTR_USER[$f]}"
+			vecho "CTR_KERNEL[${f}] ${CTR_KERNEL[$f]}"
+		done
+	fi
+ 
+	vecho "IGNORE_MYSELF $IGNORE_MYSELF"
+	vecho "SEPARATE_SAMPLES $SEPARATE_SAMPLES"
+	vecho "VMLINUX $VMLINUX"
+}
+
+# stop any existing daemon
+do_stop() {
+	if test $KERNEL_SUPPORT = "yes"; then
+		if test -f /var/lib/oprofile/lock; then
+			echo "Stopping profiling."
+			echo 0 >/dev/oprofile/enable
+		fi
+	fi
+}
+
+do_kill_daemon() {
+	if test -f /var/lib/oprofile/lock; then
+		echo "Stopping profiling and killing daemon"
+		if test $KERNEL_SUPPORT = "yes"; then
+			kill -TERM `cat /var/lib/oprofile/lock`
+		else
+			echo 1 >/proc/sys/dev/oprofile/dump_stop
+		fi
+	fi
+
+	COUNT=0
+	while test `pidof oprofiled`
+	do
+		sleep 1 
+
+		COUNT=`expr $COUNT + 1`
+		if [ "$COUNT" -eq 15 ]; then
+			echo "Daemon stuck shutting down; killing !"
+			kill -9 `pidof oprofiled`
+		fi
+	done
+	rm -f /var/lib/oprofile/lock
+}
+
+# rm_device arguments $1=file_name
+function rm_device {
+	if [ -c "$1" ]; then
+		vecho "Removing $1"
+		rm "$1"
+	fi
+}
+
+rm_devices_24() {
+	rm_device "$DEVICE_FILE"
+	rm_device "$NOTE_DEVICE_FILE"
+	rm_device "$HASH_MAP_DEVICE_FILE"
+}
+
+# create_device arguments $1=file_name $2=MAJOR_NR $3=MINOR_NR
+function create_device {
+	vecho "Doing mknod $1"
+	mknod "$1" c $2 $3
+	if [ "$?" != "0" ]; then
+		echo "Couldn't mknod $1" >&2
+		exit 1
+	fi
+	chmod 700 "$1"
+}
+
+create_devices_24() {
+	MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
+
+	create_device $DEVICE_FILE $MAJOR_NR 0
+	create_device $NOTE_DEVICE_FILE $MAJOR_NR 2
+	create_device $HASH_MAP_DEVICE_FILE $MAJOR_NR 1
+}
+
+# setup and start module
+do_setup() {
+	create_dir "$DIR"
+
+	>$LOG_FILE
+
+	if test "$KERNEL_SUPPORT" != "yes"; then
+		rm_devices_24
+		create_devices_24
+	fi
+
+	create_dir "$SAMPLES_DIR"
+}
+
+# initialise sysctl parameters
+do_sysctl_setup_24() {
+	if [ $HASH_SIZE != 0 ]; then
+		$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE
+	fi
+	if [ $BUF_SIZE != 0 ]; then
+		$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE
+	fi
+	if [ $NOTE_SIZE != 0 ]; then
+		$SYSCTL -w dev.oprofile.notesize=$NOTE_SIZE
+	fi
+	$SYSCTL -w dev.oprofile.kernel_only=$KERNEL_ONLY
+
+	if test "$IS_TIMER" -ne 1; then
+		# Necessary in this case :
+		# op_start ctr0-on ctr1-on then op_start ctr0-on
+		for f in $OP_COUNTERS ; do
+			$SYSCTL -w dev.oprofile.$f.enabled=0 >/dev/null
+			$SYSCTL -w dev.oprofile.$f.event=0 >/dev/null
+		done
+
+		for f in $OP_COUNTERS ; do
+			if [ "${CTR_EVENT[$f]}" != "" ]; then
+				$SYSCTL -w dev.oprofile.$f.enabled=1
+				$SYSCTL -w dev.oprofile.$f.count=${CTR_COUNT[$f]}
+				$SYSCTL -w dev.oprofile.$f.kernel=${CTR_KERNEL[$f]}
+				$SYSCTL -w dev.oprofile.$f.user=${CTR_USER[$f]} 
+				$SYSCTL -w dev.oprofile.$f.unit_mask=${CTR_UM[$f]} 
+				$SYSCTL -w dev.oprofile.$f.event=${CTR_EVENT_VAL[$f]}
+			fi
+		done
+	else
+		$SYSCTL -w dev.oprofile.rtc_value=$RTC_VALUE
+	fi
+}
+
+# initialise sysctl parameters
+do_sysctl_setup_25() {
+	if [ $BUF_SIZE != 0 ]; then
+		echo $BUF_SIZE >$MOUNT/buffer_size
+	fi
+
+	if test "$IS_TIMER" -ne 1; then
+		# Necessary in this case :
+		# opcontrol ctr0-on ctr1-on then opcontrol ctr0-on
+		for f in $OP_COUNTERS ; do
+			echo 0 >$MOUNT/$f/enabled
+			echo 0 >$MOUNT/$f/event
+			echo 0 >$MOUNT/$f/count
+		done
+
+		for f in $OP_COUNTERS ; do
+			echo "CTR_EVENT${f}=${CTR_EVENT[$f]}" >& 2
+			echo "CTR_COUNT${f}=${CTR_COUNT[$f]}" >& 2 
+			if test "${CTR_EVENT[$f]}" != ""; then
+				echo 1 >$MOUNT/$f/enabled
+				echo ${CTR_COUNT[$f]} >$MOUNT/$f/count
+				echo ${CTR_KERNEL[$f]} >$MOUNT/$f/kernel
+				echo ${CTR_USER[$f]} >$MOUNT/$f/user
+				echo ${CTR_UM[$f]} >$MOUNT/$f/unit_mask
+				echo ${CTR_EVENT_VAL[$f]} >$MOUNT/$f/event
+			fi
+		done
+	fi
+}
+
+do_sysctl_setup() {
+	if test "$KERNEL_SUPPORT" = "yes"; then
+		do_sysctl_setup_25
+	else
+		do_sysctl_setup_24
+	fi
+}
+
+
+ 
+# start the daemon
+do_start() {
+ 
+	if test -f $LOCK_FILE; then
+		kill -s 0 `cat $LOCK_FILE` 2>/dev/null
+		if test "$?" -eq 0; then
+			echo "oprofiled appears to be running already." >&2
+			echo "delete $LOCK_FILE if this is not the case." >&2
+		fi
+	fi
+ 
+	OPD_ARGS="--vmlinux=$VMLINUX --kernel-range=$KERNEL_RANGE \
+		--separate-samples=$SEPARATE_SAMPLES \
+		--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
+
+	if [ "$VERBOSE" = "1" ]; then
+		OPD_ARGS="$OPD_ARGS --verbose"
+	fi
+
+	cpu_speed=`grep "cpu MHz" /proc/cpuinfo | tail -1 | awk -F": " '{print $2}'`
+	OPD_ARGS="$OPD_ARGS --cpu-speed=$cpu_speed"
+
+	vecho "cpu speed (estimation) : $cpu_speed"
+
+	if test ! -f $LOCK_FILE; then
+		vecho "executing oprofiled $OPD_ARGS"
+		oprofiled $OPD_ARGS
+	 
+		COUNT=0
+		while ! test -f "$DIR/lock"
+		do
+			sleep 1
+			COUNT=`expr $COUNT + 1`
+			if [ "$COUNT" -eq 30 ]; then
+				echo "Couldn't start oprofiled." >&2
+				echo "Check the log file \"$LOG_FILE\" and /var/log/messages" >&2
+				exit 1
+			fi
+		done
+	fi
+
+	if test "$KERNEL_SUPPORT" = "yes"; then
+		echo 1 >$MOUNT/enable
+	fi
+ 
+	echo "Profiler running."
+}
+
+do_dump() {
+	if test "$KERNEL_SUPPORT" = "yes"; then
+		# FIXME the 2.5 version really should be able to dump data
+		echo "No dumps for 2.5 version." >& 2
+		# exit 1
+	else
+		if [ ! -w $MOUNT/dump ]; then
+			echo "Cannot initiate dump." >&2
+			exit 1
+		fi
+ 
+		echo 1 >/proc/sys/dev/oprofile/dump
+	fi
+}
+
+#move all the sample files to a sample directory
+do_save_session () {
+	SAVE_DIR="${SAMPLES_DIR}${SAVE_NAME}"
+
+	if test ! -e $SAVE_DIR; then
+		
+		#create directory
+		mkdir -p "$SAVE_DIR"
+		if [ "$?" != "0" ]; then
+			echo "Couldn't mkdir -p $SAVE_DIR" >&2
+			exit 1
+		fi
+
+		#move all the sample files to the directory
+		SAMPLE_FILES=`ls $SAMPLES_DIR`
+		for f in $SAMPLE_FILES; do
+			if test -f "${SAMPLES_DIR}${f}"; then
+				mv ${SAMPLES_DIR}${f} $SAVE_DIR
+			fi
+		done
+	else
+		#warn if directory (or file) already there
+		echo "session $SAVE_DIR already exists\n" >& 2
+		exit 1
+	fi
+}
+
+#remove all the sample files, but leave the session directories alone
+do_reset() {
+	SAVE_DIR="$SAMPLES_DIR/$SAVE_NAME"
+	SAMPLE_FILES=`ls $SAMPLES_DIR`
+	for f in $SAMPLE_FILES; do
+		if test -f "${SAMPLES_DIR}${f}"; then
+			rm ${SAMPLES_DIR}${f}
+		fi
+	done
+}
+
+do_deinit() {
+	#unmount /dev/oprofile if it is around
+	if test -d /dev/oprofile; then
+		umount /dev/oprofile
+	fi
+	#unload the oprofile module if it is around
+	OPROF_MOD = `lsmod | grep oprofile`
+	if test -n $OPROF_MOD; then
+		echo "Unloading oprofile module" >& 2
+		rmmod oprofile
+	fi
+}
+
+# The function that calls the appropriate operations
+do_operations() {
+	#INIT always done by load_module to get access to cputype
+	#thus INIT is a noop
+
+	if test "$SETUP" = "yes"; then
+		do_save_setup
+		check_valid_args
+	fi
+
+	#FIXME handle things correctly when daemon already running
+	if test "$START" = "yes"; then
+		do_setup
+		do_load_setup
+		check_valid_args
+		get_kernel_range
+		do_sysctl_setup
+		do_start
+	fi
+
+	if test "$DUMP" = "yes"; then
+		do_dump
+	fi
+
+	if test "$SAVE_SESSION" = "yes"; then
+		do_save_session
+	fi
+
+	if test "$STOP" = "yes"; then
+		do_stop
+	fi
+
+	if test "$KILL_DAEMON" = "yes"; then
+		do_kill_daemon
+	fi
+
+	if test "$RESET" = "yes"; then
+		do_reset
+	fi
+
+	if test "$DEINIT" = "yes"; then
+		do_deinit
+	fi
+}
+ 
+# main
+
+if [ "$UID" != "0" ]; then
+	echo "Must be root to start oprofile." >&2
+	exit 1
+fi
+
+determine_version 
+load_module
+do_init
+do_options $@
+do_operations

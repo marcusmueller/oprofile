@@ -1,7 +1,7 @@
 AM_CPPFLAGS=-I ${top_srcdir}/libop -I ${top_srcdir}/libutil
 
 bin_PROGRAMS = op_session op_help
-bin_SCRIPTS = $(OP_START) $(OP_STOP) $(OP_DUMP)
+bin_SCRIPTS = $(OP_START) $(OP_STOP) $(OP_DUMP) opcontrol
 
 op_session_SOURCES = op_session.c
 op_session_LDADD = ../libutil/libutil.a
@@ -20,4 +20,4 @@ OP_DUMP=op_dump
 endif
 
 # make sure everything gets distributed...
-EXTRA_DIST = op_dump op_start_25 op_stop_25 op_start op_stop
+EXTRA_DIST = op_dump op_start_25 op_stop_25 op_start op_stop opcontrol

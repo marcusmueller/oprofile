@@ -1,3 +1,8 @@
+2002-12-01  Will Cohen  <wcohen@redhat.com>
+
+	* utils/Makefile.am: Add opcontrol.
+	* utils/opcontrol: New.
+
 2002-12-01  John Levon  <levon@movementarian.org>
 
 	* various files: don't use db_tree name outside of libdb,
