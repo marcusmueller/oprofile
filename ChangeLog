@@ -1,5 +1,10 @@
 2003-03-03  Will Cohen  <wcohen@redhat.com>
 
+    * events/ia64.itanium2.events:
+    * events/ia64.itanium2.unit_masks: Add Itanium 2 events.
+
+2003-03-03  Will Cohen  <wcohen@redhat.com>
+
     * libop/op_events.h:
     * libop/op_events.c: Correct checking for the number of unit
       masks.
