@@ -14,12 +14,12 @@
 #include "opd_sample_files.h"
 #include "opd_image.h"
 #include "opd_printf.h"
+#include "opd_events.h"
 #include "oprofiled.h"
 
 #include "op_sample_file.h"
 #include "op_file.h"
 #include "op_config.h"
-#include "op_cpu_type.h"
 #include "op_mangle.h"
 #include "op_events.h"
 
@@ -64,28 +64,13 @@ void opd_24_sfile_lru(struct opd_24_sfile * sfile)
 }
 
 
-static struct opd_event * find_event(unsigned long counter)
-{
-	size_t i;
-
-	for (i = 0; i < op_nr_counters && opd_events[i].name; ++i) {
-		if (counter == opd_events[i].counter)
-			return &opd_events[i];
-	}
-
-	fprintf(stderr, "Unknown event for counter %lu\n", counter);
-	abort();
-	return NULL;
-}
-
-
 static char * opd_mangle_filename(struct opd_image const * image, int counter,
                                   int cpu_nr)
 {
 	char * mangled;
 	char const * dep_name = separate_lib ? image->app_name : NULL;
 	struct mangle_values values;
-	struct opd_event * event = find_event(counter);
+	struct opd_event * event = find_counter_event(counter);
 
 	values.flags = 0;
 	if (image->kernel)
@@ -134,8 +119,6 @@ int opd_open_24_sample_file(struct opd_image * image, int counter, int cpu_nr)
 {
 	char * mangled;
 	struct opd_24_sfile * sfile;
-	struct opd_header * header;
-	struct opd_event * event = find_event(counter);
 	int err;
 
 	mangled = opd_mangle_filename(image, counter, cpu_nr);
@@ -174,18 +157,8 @@ retry:
 		goto out;
 	}
 
-	header = sfile->sample_file.base_memory;
-
-	memset(header, '\0', sizeof(struct opd_header));
-	header->version = OPD_VERSION;
-	memcpy(header->magic, OPD_MAGIC, sizeof(header->magic));
-	header->cpu_type = cpu_type;
-	header->ctr_event = event->value;
-	header->ctr_count = event->count;
-	header->ctr_um = event->um;
-	header->is_kernel = image->kernel;
-	header->cpu_speed = cpu_speed;
-	header->mtime = image->mtime;
+	fill_header(sfile->sample_file.base_memory, counter,
+	            image->kernel, image->mtime);
 
 out:
 	free(mangled);

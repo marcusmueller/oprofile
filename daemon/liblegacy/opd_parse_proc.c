@@ -164,6 +164,7 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 	op_close_file(fp);
 }
 
+
 static u32 read_tgid(u32 tid)
 {
 	char status_file[30] = "/proc/";
@@ -196,6 +197,7 @@ static u32 read_tgid(u32 tid)
 
 	return 0;
 }
+
 
 /**
  * opd_get_ascii_procs - read process and mapping information from /proc

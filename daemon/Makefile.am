@@ -15,6 +15,8 @@ oprofiled_SOURCES = \
 	opd_stats.h \
 	opd_cookie.c \
 	opd_cookie.h \
+	opd_events.c \
+	opd_events.h \
 	opd_interface.h \
 	opd_mangling.c \
 	opd_mangling.h \

@@ -12,7 +12,9 @@
 
 #include "oprofiled.h"
 #include "opd_perfmon.h"
+#include "opd_events.h"
 
+#include "op_cpu_type.h"
 #include "op_libiberty.h"
 #include "op_hw_config.h"
 
@@ -25,6 +27,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+
+extern op_cpu op_cpu_type;
 
 /* many glibc's are not yet up to date */
 #ifndef __NR_sched_setaffinity

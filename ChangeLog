@@ -1,5 +1,20 @@
 2003-10-27  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_events.h:
+	* daemon/opd_events.c: move code for handling
+	event descriptions here, and share find_counter_event(),
+	plus fill_header()
+
+	* daemon/opd_mangling.c:
+	* daemon/opd_perfmon.c:
+	* daemon/oprofiled.c:
+	* daemon/oprofiled.h:
+	* daemon/liblegacy/opd_proc.c:
+	* daemon/liblegacy/opd_sample_files.c: changes from
+	above
+
+2003-10-27  John Levon  <levon@movementarian.org>
+
 	* daemon/oprofiled.c: fix help text
 
 	* daemon/liblegacy/init.c:

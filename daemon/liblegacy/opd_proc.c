@@ -19,7 +19,6 @@
 #include "oprofiled.h"
 
 #include "op_interface.h"
-#include "op_cpu_type.h"
 #include "op_libiberty.h"
 
 #include <sys/types.h>

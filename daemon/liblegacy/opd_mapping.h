@@ -63,4 +63,4 @@ inline static unsigned long opd_map_offset(struct opd_map * map,
 	return (eip - map->start) + map->offset;
 }
 
-#endif /* OPD_MAPPING */
+#endif /* OPD_MAPPING_H */

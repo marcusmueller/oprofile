@@ -11,8 +11,6 @@
 
 #ifndef OPROFILED_H
 
-#include "op_cpu_type.h"
-
 #include <signal.h>
 
 struct oprofiled_ops {
@@ -59,23 +57,8 @@ extern sig_atomic_t signal_term;
 extern sig_atomic_t signal_usr1;
 extern sig_atomic_t signal_usr2;
 
-/** event description for setup (perfmon) and mangling */
-struct opd_event {
-	char * name;
-	unsigned long value;
-	unsigned long counter;
-	unsigned long count;
-	unsigned long um;
-	unsigned long kernel;
-	unsigned long user;
-};
-
-extern struct opd_event opd_events[];
-
-extern double cpu_speed;
 extern unsigned int op_nr_counters;
 extern int verbose;
-extern op_cpu cpu_type;
 extern int separate_lib;
 extern int separate_kernel;
 extern int separate_thread;

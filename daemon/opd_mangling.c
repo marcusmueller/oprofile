@@ -16,12 +16,12 @@
 #include "opd_cookie.h"
 #include "opd_sfile.h"
 #include "opd_printf.h"
+#include "opd_events.h"
 #include "oprofiled.h"
 
 #include "op_file.h"
 #include "op_sample_file.h"
 #include "op_config.h"
-#include "op_cpu_type.h"
 #include "op_mangle.h"
 #include "op_events.h"
 
@@ -48,26 +48,11 @@ static char const * get_dep_name(struct sfile const * sf)
 }
 
 
-static struct opd_event * find_event(unsigned long counter)
-{
-	size_t i;
-
-	for (i = 0; i < op_nr_counters && opd_events[i].name; ++i) {
-		if (counter == opd_events[i].counter)
-			return &opd_events[i];
-	}
-
-	fprintf(stderr, "Unknown event for counter %lu\n", counter);
-	abort();
-	return NULL;
-}
-
-
 static char * mangle_filename(struct sfile const * sf, int counter)
 {
 	char * mangled;
 	struct mangle_values values;
-	struct opd_event * event = find_event(counter);
+	struct opd_event * event = find_counter_event(counter);
 
 	values.flags = 0;
 	if (sf->kernel) {
@@ -110,8 +95,6 @@ int opd_open_sample_file(struct sfile * sf, int counter)
 {
 	char * mangled;
 	samples_odb_t * file;
-	struct opd_header * header;
-	struct opd_event * event = find_event(counter);
 	char const * binary;
 	int err;
 
@@ -146,23 +129,13 @@ retry:
 		goto out;
 	}
 
-	header = file->base_memory;
-
 	if (!sf->kernel)
 		binary = find_cookie(sf->cookie);
 	else
 		binary = sf->kernel->name;
 
-	memset(header, '\0', sizeof(struct opd_header));
-	header->version = OPD_VERSION;
-	memcpy(header->magic, OPD_MAGIC, sizeof(header->magic));
-	header->cpu_type = cpu_type;
-	header->ctr_event = event->value;
-	header->ctr_count = event->count;
-	header->ctr_um = event->um;
-	header->is_kernel = !!sf->kernel;
-	header->cpu_speed = cpu_speed;
-	header->mtime = binary ? op_get_mtime(binary) : 0;
+	fill_header(file->base_memory, counter, !!sf->kernel,
+	            binary ? op_get_mtime(binary) : 0);
 
 out:
 	sfile_put(sf);
