@@ -10,6 +10,7 @@
 
 #ifdef __ia64__
 
+#define _GNU_SOURCE /* need this for sched_setaffinity() in <sched.h> */
 #include "oprofiled.h"
 #include "opd_perfmon.h"
 #include "opd_events.h"
@@ -27,22 +28,39 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#ifdef HAVE_SCHED_SETAFFINITY
+#include <sched.h>
+#endif
 
 extern op_cpu cpu_type;
 
-/* FIXME: should autoconf these */
+#ifndef HAVE_SCHED_SETAFFINITY
 
 /* many glibc's are not yet up to date */
 #ifndef __NR_sched_setaffinity
 #define __NR_sched_setaffinity 1231
 #endif
 
-static int sched_setaffinity(pid_t pid, unsigned int len, unsigned long * mask)
+/* Copied from glibc's <sched.h> and <bits/sched.h> and munged */
+#define CPU_SETSIZE	1024
+# define __NCPUBITS     (8 * sizeof (unsigned long))
+typedef struct
 {
-	return syscall(__NR_sched_setaffinity, pid, len, mask);
+	unsigned long __bits[CPU_SETSIZE / __NCPUBITS];
+} cpu_set_t;
+
+#define CPU_SET(cpu, cpusetp) \
+  ((cpusetp)->__bits[(cpu)/__NCPUBITS] |= (1UL << ((cpu) % __NCPUBITS)))
+#define CPU_ZERO(cpusetp)       memset((cpusetp), 0, sizeof(cpu_set_t))
+
+static int sched_setaffinity(pid_t pid, size_t len, const cpu_set_t *cpusetp)
+{
+	return syscall(__NR_sched_setaffinity, pid, len, cpusetp);
 }
+#endif
 
 
+#ifndef HAVE_PERFMONCTL
 #ifndef __NR_perfmonctl
 #define __NR_perfmonctl 1175
 #endif
@@ -51,6 +69,7 @@ static int perfmonctl(int fd, int cmd, void * arg, int narg)
 {
 	return syscall(__NR_perfmonctl, fd, cmd, arg, narg);
 }
+#endif
 
 
 static unsigned char uuid[16] = {
@@ -125,12 +144,16 @@ static void child_sigterm(int val __attribute__((unused)))
 
 static void set_affinity(size_t cpu)
 {
-	unsigned long mask = 1UL << cpu;
+	cpu_set_t set;
 
-	int err = sched_setaffinity(getpid(), sizeof(unsigned long), &mask);
+	CPU_ZERO(&set);
+	CPU_SET(cpu, &set);
+
+	int err = sched_setaffinity(getpid(), sizeof(set), &set);
 
 	if (err == -1) {
-		fprintf(stderr, "Failed to set affinity\n");
+		fprintf(stderr, "Failed to set affinity: %s\n",
+			    strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 }

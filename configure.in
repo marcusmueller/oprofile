@@ -56,6 +56,8 @@ AC_CHECK_HEADERS(libiberty.h)
 AC_CHECK_LIB(iberty, cplus_demangle,, AC_MSG_ERROR([liberty library not found]))
 AC_CHECK_FUNCS(xcalloc)
 AC_CHECK_FUNCS(xmemdup)
+dnl advanced glibc features which we need but may not be present
+AC_CHECK_FUNCS(sched_setaffinity perfmonctl)
 
 ORIG_SAVE_LIBS="$LIBS"
 AC_CHECK_LIB(popt, poptGetContext,, AC_MSG_ERROR([popt library not found]))

@@ -1,3 +1,10 @@
+2004-10-14  Greg Banks  <gnb@melbourne.sgi.com>
+
+	* configure.in:
+	* daemon/opd_perfmon.c: autoconf for sched_setaffinity
+	  and perfmonctl, fix sched_setaffinity call for early
+	  2.6 kernels
+
 2004-10-07  Will Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol: Correct ppc64 check that events are in same group.
