@@ -1,0 +1,11 @@
+#define OP_BINDIR "@OP_BINDIR@"
+#define OP_PKGDATADIR "@OP_PKGDATADIR@"
+
+#define VERSION_STRING "@PACKAGE@ @VERSION@"
+
+/* Do not change the version format: it is documented in html doc */
+#define show_version(app_name) do {				\
+		printf("%s: " VERSION_STRING " compiled on "	\
+			__DATE__ " " __TIME__ "\n", app_name);	\
+			exit(EXIT_SUCCESS);			\
+	} while (0)
