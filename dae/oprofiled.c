@@ -89,6 +89,7 @@ static struct poptOption options[] = {
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
+ 
 
 /**
  * opd_open_logfile - open the log file
@@ -105,11 +106,12 @@ static void opd_open_logfile(void)
 		exit(EXIT_FAILURE);
 	}
 
-	if (dup2(1,2) == -1) {
+	if (dup2(1, 2) == -1) {
 		perror("oprofiled: couldn't dup stdout to stderr: ");
 		exit(EXIT_FAILURE);
 	}
 }
+ 
 
 /**
  * op_open_files - open necessary files
@@ -164,6 +166,7 @@ static void op_open_files(void)
 	printf("oprofiled started %s", op_get_time());
 	fflush(stdout);
 }
+ 
 
 /**
  * opd_backup_samples_files - back up all the samples file
@@ -354,6 +357,7 @@ static void opd_rtc_options(void)
 	/* FIXME ugly ... */
 	ctr_event[0] = 0xff;
 }
+ 
 
 /**
  * opd_options - parse command line options
@@ -406,6 +410,7 @@ static void opd_options(int argc, char const * argv[])
 	poptFreeContext(optcon);
 }
 
+ 
 /**
  * opd_fork - fork and return as child
  *
@@ -428,6 +433,7 @@ static void opd_fork(void)
 	}
 }
 
+ 
 /**
  * opd_go_daemon - become daemon process
  *
@@ -634,6 +640,7 @@ void opd_do_samples(struct op_buffer_head const * opd_buf)
 	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
 }
 
+
 /**
  * opd_alarm - clean up old procs, msync, and report stats
  */
@@ -647,6 +654,7 @@ static void opd_alarm(int val __attribute__((unused)))
 
 	alarm(60*10);
 }
+ 
 
 /* re-open logfile for logrotate */
 static void opd_sighup(int val __attribute__((unused)))
@@ -670,6 +678,7 @@ static void opd_sigterm(int val __attribute__((unused)))
 	clean_exit();
 	exit(EXIT_FAILURE);
 }
+ 
 
 static void setup_signals(void)
 {

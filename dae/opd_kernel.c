@@ -110,7 +110,7 @@ static struct opd_module * new_module(char * name,
 	}
 	return &opd_modules[nr_modules-1];
 }
-	
+
 /**
  * opd_get_module - get module structure
  * @param name  name of module image
@@ -254,6 +254,7 @@ failure:
 	free(line);
 	op_close_file(fp);
 }
+ 
 
 /**
  * opd_drop_module_sample - drop a module sample efficiently
@@ -297,6 +298,7 @@ out:
 	if (module_names) free(module_names);
 }
 
+
 /**
  * opd_find_module_by_eip - find a module by its eip
  * @param eip  EIP value
@@ -316,6 +318,7 @@ static struct opd_module * opd_find_module_by_eip(unsigned long eip)
 
 	return NULL;
 }
+
 
 /**
  * opd_handle_module_sample - process a module sample

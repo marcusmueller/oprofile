@@ -1,3 +1,16 @@
+2002-09-24  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_image.c:
+	* dae/opd_image.h:
+	* dae/opd_kernel.c:
+	* dae/oprofiled.c:
+	* dae/p_module.h:
+	* dae/opd_image.c:
+	* dae/opd_kernel.c:
+	* dae/oprofiled.c:
+	* dae/p_module.h: small blank/comment change to minimize
+	  diff between daemon and dae dir.
+
 2002-09-23  John Levon  <levon@movementarian.org>
 
 	* configure.in: fix for 2.5 patch to build

@@ -430,7 +430,6 @@ static void opd_go_daemon(void)
 	mypid = getpid();
 }
 
-
 /**
  * opd_do_samples - process a sample buffer
  * @param opd_buf  buffer to process

@@ -51,6 +51,7 @@ static void opd_delete_image(struct opd_image * image)
 	free(image);
 }
 
+
 /**
  * opd_image_cleanup - clean up images structures
  */
@@ -61,8 +62,9 @@ void opd_image_cleanup(void)
 	opd_for_each_image(opd_delete_image);
 }
 
+
 /**
- * @param image_cb callback to apply onto each exisitng image struct
+ * @param image_cb callback to apply onto each existing image struct
  *
  * the callback receive a struct opd_image * (not a const struct) and is
  * allowed to freeze the image struct itself.
@@ -117,7 +119,7 @@ static void opd_init_image(struct opd_image * image, char const * name,
  * opd_open_image - open an image sample file
  * @param image  image to open file for
  *
- * @image at funtion entry is partially initialized by opd_init_image()
+ * @image at function entry is partially initialized by opd_init_image()
  *
  * Initialise an opd_image struct for the image @image
  * without opening the associated samples files. At return
@@ -230,6 +232,7 @@ static struct opd_image * opd_add_image(char const * name, int hash, char const 
 
 	return image;
 }
+
 
 /**
  * opd_find_image - find an image

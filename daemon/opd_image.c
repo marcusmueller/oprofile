@@ -49,8 +49,8 @@ void opd_init_images(void)
 		list_init(&opd_images[i]);
 	}
 }
- 
- 
+
+
 /**
  * @param image  the image pointer
  *
@@ -66,7 +66,7 @@ static void opd_delete_image(struct opd_image * image)
 	free(image);
 }
 
- 
+
 /**
  * opd_image_cleanup - clean up images structures
  */
@@ -76,7 +76,7 @@ void opd_image_cleanup(void)
 	opd_for_each_image(opd_close_image_samples_files);
 	opd_for_each_image(opd_delete_image);
 }
- 
+
 
 /**
  * @param image_cb callback to apply onto each existing image struct

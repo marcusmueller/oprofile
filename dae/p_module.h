@@ -22,8 +22,6 @@
 #ifndef MODUTILS_MODULE_H
 #define MODUTILS_MODULE_H 1
 
-#ident "$Id: p_module.h,v 1.3 2002/05/07 01:34:04 movement Exp $"
-
 /* This file contains the structures used by the 2.0 and 2.1 kernels.
    We do not use the kernel headers directly because we do not wish
    to be dependant on a particular kernel version to compile insmod.  */

@@ -109,7 +109,6 @@ static struct opd_module * new_module(char * name,
 	return &opd_modules[nr_modules-1];
 }
 
-	
 /**
  * opd_get_module - get module structure
  * @param name  name of module image
@@ -136,7 +135,6 @@ static struct opd_module * opd_get_module(char * name)
 
 	return new_module(name, 0, 0);
 }
- 
 
 /**
  * opd_get_module_info - parse mapping information for kernel modules
@@ -374,7 +372,6 @@ static void opd_handle_module_sample(unsigned long eip, u32 counter)
 	}
 }
 
- 
 /**
  * opd_handle_kernel_sample - process a kernel sample
  * @param eip  EIP value of sample

@@ -19,6 +19,10 @@
 
 #include <time.h>
 
+/**
+ * A binary (library, application, kernel or module)
+ * is represented by a struct opd_image.
+ */
 struct opd_image {
 	/* all image image are linked in a list through this member */
 	struct list_head list_node;
@@ -27,12 +31,15 @@ struct opd_image {
 	struct opd_image * hash_next;
 	db_tree_t sample_files[OP_MAX_COUNTERS];
 	int hash;
+	/* name of this image */
+	char * name;
 	/* the application name where belongs this image, NULL if image has
 	 * no owner (such as vmlinux or module) */
 	char const * app_name;
+	/* time of last modification */
 	time_t mtime;
-	u8 kernel;
-	char * name;
+	/* kernel image or not */
+	int kernel;
 };
 
 typedef void (*opd_image_cb)(struct opd_image *);
