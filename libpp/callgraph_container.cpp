@@ -130,7 +130,9 @@ void arc_recorder::process_children(cg_symbol & sym, double threshold)
 }
 
 
-void arc_recorder::process(count_array_t total, double threshold)
+void arc_recorder::
+process(count_array_t total, double threshold,
+        string_filter const & sym_filter)
 {
 	map_t::const_iterator it;
 	map_t::const_iterator end = sym_map.end();
@@ -141,6 +143,10 @@ void arc_recorder::process(count_array_t total, double threshold)
 
 		// threshold out the main symbol if needed
 		if (op_ratio(sym.sample.counts[0], total[0]) < threshold)
+			continue;
+
+		// FIXME: slow?
+		if (!sym_filter.match(symbol_names.demangle(sym.name)))
 			continue;
 
 		cg_data::children::const_iterator cit;
@@ -178,7 +184,7 @@ cg_collection arc_recorder::get_symbols() const
 void callgraph_container::populate(string const & archive_path, 
    list<inverted_profile> const & iprofiles,
    extra_images const & extra, bool debug_info, double threshold,
-   bool merge_lib)
+   bool merge_lib, string_filter const & sym_filter)
 {
 	// non callgraph samples container, we record sample at symbol level
 	// not at vma level.
@@ -189,7 +195,7 @@ void callgraph_container::populate(string const & archive_path,
 	for (it = iprofiles.begin(); it != end; ++it) {
 		// populate_caller_image take care about empty sample filename
 		populate_for_image(archive_path, pc, *it,
-			string_filter());
+			sym_filter);
 	}
 
 	add_symbols(pc);
@@ -203,7 +209,7 @@ void callgraph_container::populate(string const & archive_path,
 		}
 	}
 
-	recorder.process(total_count, threshold / 100.0);
+	recorder.process(total_count, threshold / 100.0, sym_filter);
 }
 
 

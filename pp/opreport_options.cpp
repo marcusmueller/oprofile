@@ -153,18 +153,6 @@ void check_options()
 			cerr << "--callgraph is incompatible with --details" << endl;
 			do_exit = true;
 		}
-
-		if (!include_symbols.empty()) {
-			cerr << "--include-symbols is incompatible with "
- 			        "--callgraph" << endl;
-			do_exit = true;
-		}
-
-		if (!exclude_symbols.empty()) {
-			cerr << "--exclude-symbols is incompatible with "
- 			        "--callgraph" << endl;
-			do_exit = true;
-		}
 	}
 
 	if (!symbols) {

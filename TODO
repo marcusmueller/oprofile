@@ -25,7 +25,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 
  o consider tagging opreport -c entries with a number like gprof
  o optimise opreport -c
- o -i, -e, for opreport -c  (--details too ?)
+ o --details for opreport -c ?
  o should [self] entries be ommitted if 0 ??
  o stress test opreport -c: compile a Big Application w/o frame pointer and look
    how driver and opreport -c react.

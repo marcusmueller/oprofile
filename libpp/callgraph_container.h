@@ -18,6 +18,7 @@
 
 #include "symbol.h"
 #include "symbol_functors.h"
+#include "string_filter.h"
 
 class profile_container;
 class inverted_profile;
@@ -58,7 +59,8 @@ public:
 	 * After population, build the final output, and do
 	 * thresholding.
 	 */
-	void process(count_array_t total, double threshold);
+	void process(count_array_t total, double threshold,
+	             string_filter const & filter);
 
 private:
 	/**
@@ -106,6 +108,7 @@ public:
 	 * @param debug_info  true if we must record linenr information
 	 * @param threshold  ignore sample percent below this threshold
 	 * @param merge_lib  merge library samples
+	 * @param sym_filter  symbol filter
 	 *
 	 * Currently all errors core dump.
 	 * FIXME: consider if this should be a ctor
@@ -113,7 +116,8 @@ public:
 	void populate(std::string const & archive_path,
 		      std::list<inverted_profile> const & iprofiles,
 		      extra_images const & extra, bool debug_info,
-		      double threshold, bool merge_lib);
+		      double threshold, bool merge_lib,
+		      string_filter const & sym_filter);
 
 	/// return hint on how data must be displayed.
 	column_flags output_hint() const;
