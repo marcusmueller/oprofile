@@ -36,13 +36,6 @@ bool is_directory(string const & dirname)
 }
 
 
-/**
- * is_file_identical - check for identical files
- * @param file1  first filename
- * @param file2  scond filename
- *
- * return true if the two filenames belong to the same file
- */
 bool is_files_identical(string const & file1, string const & file2)
 {
 	struct stat st1;
@@ -56,21 +49,26 @@ bool is_files_identical(string const & file1, string const & file2)
 	return false;
 }
 
-/**
- * op_read_link - read the contents of a symbolic link file
- * @param name  the file name
- *
- * return an empty string on failure
- */
-string op_read_link(string const & name)
-{
-	char * linkbuff = op_get_link(name.c_str());
-	if (linkbuff == NULL)
-		return string();
 
-	string result(linkbuff);
-	free(linkbuff);
-	return result;
+string const op_follow_link(string const & name)
+{
+	string tmp = name;
+	int iterate = 20;
+
+	while (iterate--) {
+		char * linkbuf = op_get_link(tmp.c_str());
+		if (linkbuf == NULL)
+			return tmp;
+		string base;
+		if (is_directory(tmp))
+			base = tmp;
+		else
+			base = dirname(tmp);
+		tmp = relative_to_absolute_path(linkbuf, base);
+		free(linkbuf);
+	}
+
+	return name;
 }
 
 

@@ -33,7 +33,14 @@ void op_write_u32(FILE * fp, u32 val);
 void op_write_u64(FILE * fp, u64 val);
 void op_write_u8(FILE * fp, u8 val);
 
-/* from a symlink filename get the pointed filename */
+/**
+ * Follow exactly one level of symbolic link.
+ * Returns NULL if it's not a symlink or on error,
+ * or a string that caller must free.
+ *
+ * This does not re-seat any returned relative
+ * symbolic links.
+ */
 char * op_get_link(char const * filename);
 
 #ifdef __cplusplus

@@ -1,3 +1,16 @@
+2003-09-22  John Levon  <levon@movementarian.org>
+
+	* libutil/op_fileio.h:
+	* libutil/op_fileio.c: warn about op_get_link()
+	restrictions
+
+	* libutil++/file_manip.h:
+	* libutil++/file_manip.cpp: s/op_read_link/op_follow_link,
+	and behaviour change to match
+
+	* libpp/profile_spec.cpp:
+	* gui/oprof_start_util.cpp: use op_follow_link
+
 2003-09-22  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* dae/makefile.am: missing AM_CFLAGS setting

@@ -343,13 +343,10 @@ profile_spec profile_spec::create(vector<string> const & args,
 		if (spec.is_valid_tag(args[i])) {
 			spec.parse(args[i]);
 		} else if (!substitute_alias(spec, args[i])) {
-			char * filename = op_get_link(args[i].c_str());
-			string file = filename ? filename : args[i].c_str();
+			string file = op_follow_link(args[i]);
 			file = relative_to_absolute_path(file,
 			                                 dirname(args[i]));
 			spec.set_image_or_lib_name(file);
-			if (filename)
-				free(filename);
 		}
 	}
 

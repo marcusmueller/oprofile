@@ -19,10 +19,24 @@
 /// return true if dir is an existing directory
 bool is_directory(std::string const & dirname);
 
-/// return true if the two files are the same file
+/**
+ * is_file_identical - check for identical files
+ * @param file1  first filename
+ * @param file2  scond filename
+ *
+ * return true if the two filenames belong to the same file
+ */
 bool is_files_identical(std::string const & file1, std::string const & file2);
-/// return the contents of a symbolic link or an empty string on failure
-std::string op_read_link(std::string const & name);
+
+/**
+ * op_follow_link - follow a symbolic link
+ * @param name the file name
+ *
+ * Resolve a symbolic link as far as possible.
+ * Returns the original string on failure.
+ */
+std::string const op_follow_link(std::string const & name);
+
 /// return true if the given file is readable
 bool op_file_readable(std::string const & file);
 

@@ -256,14 +256,6 @@ char *op_get_line(FILE * fp)
 }
 
 
-/**
- * from a symlink filename get the pointed filename
- * @param filename the symlink filename
- *
- *  On error the returned string is NULL else the returned pointer
- * is dynamically allocated.
- *
- */
 char * op_get_link(char const * filename)
 {
 	char  * linkbuf;
