@@ -1,5 +1,12 @@
 2002-05-23  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* doc/srcdoc/Doxyfile:
+	* libopt++/popt_options.cpp:
+	* libopt++/popt_options.h:
+	* pp/symbol_container_impl.h: small doxygen tweak.
+
+2002-05-23  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* dae/oprofiled.c: minor bug when backing up samples dir
 
 	* libopt++/popt_options.h:

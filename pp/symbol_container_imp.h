@@ -15,6 +15,8 @@
 #include <vector>
 #include <string>
 #include <set>
+
+#include "samples_container.h"
  
 class symbol_container_imp_t {
 public:
@@ -30,7 +32,7 @@ public:
  
 	symbol_entry const * find_by_vma(bfd_vma vma) const;
 
-	void get_symbols_by_count(size_t counter, std::vector<symbol_entry const *>& v) const;
+	void get_symbols_by_count(size_t counter, samples_container_t::symbol_collection& v) const;
  
 private:
 	void build_by_file_loc() const;

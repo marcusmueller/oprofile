@@ -146,37 +146,37 @@ public:
 };
 
 /**
- * option<std::string> - a string option
+ * option<string> - a string option
  *
  * Use this for options taking a string e.g. --frob parsley
  */
-template <> class option_imp<std::string> : public option_base {
+template <> class option_imp<string> : public option_base {
 public:
-	option_imp(std::string & value,char const * option_name,
+	option_imp(string & value,char const * option_name,
 		   char short_name, char const * help_str,
 		   char const * arg_help_str);
 	void post_process();
 private:
 	// we need an intermediate char array to pass to popt libs
 	char * popt_value;
-	std::string & value;
+	string & value;
 };
 
 /**
- * option< std::vector<std::string> > - a string vector option
+ * option< vector<string> > - a string vector option
  *
  * Use this for options taking a number of string arguments,
  * separated by the given separator.
  */
-template <> class option_imp< std::vector<std::string> > : public option_base {
+template <> class option_imp< vector<string> > : public option_base {
 public:
-	option_imp(std::vector<std::string> & value,
+	option_imp(vector<string> & value,
 		   char const * option_name, char short_name,
 		   char const * help_str, char const * arg_help_str,
 		   char separator = ',');
 	void post_process();
 private:
-	std::vector<std::string> & value;
+	vector<string> & value;
 	// we need an intermediate char array to pass to popt libs
 	char * popt_value;
 	char const separator;
@@ -214,7 +214,7 @@ option::option(string & value, char const * option_name,
 
 /** specialization of option ctor for vector<string> option */
 template <>
-option::option(std::vector<std::string> & value,
+option::option(vector<string> & value,
 	       char const * option_name, char short_name,
 	       char const * help_str, char const * arg_help_str)
 	: the_option(new option_imp< vector<string> >(value, option_name,

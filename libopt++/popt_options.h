@@ -9,7 +9,6 @@
  * to process them, for example :
  *
  * \code
- *
  * bool allow_frob;
  * string frob;
  * static option allow_frob_opt(allow_frob, "allow-frob", 'a', "allow frobs");
@@ -17,13 +16,14 @@
  *
  * ...
  * parse_options(argc, argv, add_params);
+ * \endcode
  *
  * Note than if you try to implement an option for an unsupported type  like :
+ * \code
  * static unsigned int i;
  * static option i_opt(i, ....);
- * you don't get a compile time error but a link time error.
- *
  * \endcode
+ * you don't get a compile time error but a link time error.
  *
  * The call to parse_options() will fill in allow_frob and frob, if they
  * are passed to the program (myfrobber --allow-frob --frob foo), and place
