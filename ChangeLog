@@ -1,3 +1,13 @@
+2002-01-10  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in: fix accidental trashing of BKCFLAGS
+
+	* module/op_util.c: include right header
+
+	* module/compat.h: use correct smp_call_function
+ 
+PHIL: add changelog here :))
+
 2002-01-09  John Levon  <moz@compsoc.man.ac.uk>
 
 	* doc/oprofile.sgml: update infodragon's email

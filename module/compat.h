@@ -48,11 +48,15 @@
 #endif
 #endif
 
-/* some old 2.2 have SMP and no smp_call_function, for now just define it
- * as success ==> oprofile for kernel 2.2 must be compiled with SMP but does
- * not support SMP :/ FIXME */
-#if defined(CONFIG_SMP) && !defined(smp_call_function)
-#define smp_call_function(func,info,retry,wait)  (0 == 1)
+// 2.2's UP version of this is broken
+#ifndef CONFIG_SMP
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,1)
+#undef smp_call_function
+inline int smp_call_function(void (*f)(void *in), void *i, int n, int w)
+{
+	return 0; 
+}
+#endif
 #endif
 
 /* PHE: TODO, cleanup the following, keep only the necessary things for

@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.65 2002/01/10 03:47:12 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.66 2002/01/10 04:22:57 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -286,7 +286,7 @@ CFLAGS="$BKCFLAGS -I$KINC -O2 -D__KERNEL__ -Werror -Wall"
 AC_TRY_COMPILE( 
   [ #include <linux/cache.h> ],
   [ static int a __cacheline_aligned = 0; if (a) {} ],
-  AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_CACHE_LINE_ALIGNED",
+  AC_MSG_RESULT("yes");BKCFLAGS="-DHAVE_CACHE_LINE_ALIGNED $BKCFLAGS",
   AC_MSG_RESULT("no"))
 CFLAGS=$SAVE_CFLAGS
 

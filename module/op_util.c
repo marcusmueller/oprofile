@@ -18,7 +18,7 @@
 #include <linux/wrapper.h>
 #include <linux/pagemap.h>
 
-#include "kcompat24.h"
+#include "compat.h"
 
 // FIXME: check this code works in 2.2
  
