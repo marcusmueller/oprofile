@@ -1,3 +1,9 @@
+2002-11-06  John Levon  <levon@movementarian.org>
+
+	* configure.in: 0.5cvs
+
+	* Makefile.in: mention doxyfile in release steps
+ 
 2002-11-06  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/op_to_source.cpp: op_to_source --source-with-assembly: avoid

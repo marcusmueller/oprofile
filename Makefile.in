@@ -94,7 +94,7 @@ tags:
 
 # broken 
 # dist check list:
-# 1. change version to non-cvs and commit
+# 1. change version to non-cvs and commit, update Doxyfile
 # 2. make dist (with doopr) 
 # 3. upload to sf
 # 4. add release
