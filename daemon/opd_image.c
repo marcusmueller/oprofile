@@ -490,7 +490,7 @@ static void get_tgid(struct transient * trans)
 	if (!escape || code != CTX_TGID_CODE)
 		return;
 
-	if (trans->remaining == 3) {
+	if (trans->remaining >= 3) {
 		verbprintf("CTX_TGID_CODE\n");
 		pop_buffer_value(trans);
 		pop_buffer_value(trans);

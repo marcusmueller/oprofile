@@ -24,6 +24,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o we should document somewhere in the code that the db can only handle 32 bit offsets
  o thread profiling - kernel change in 2.5 to export task->tgid
  o per-cpu profiling
  o test opannotate -s -a on an application containing relative path debug

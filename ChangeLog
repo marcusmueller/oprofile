@@ -1,3 +1,7 @@
+2003-06-14  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_image.c: fix a stupid error in my previous TGID patch
+
 2003-06-12  Graydon Hoare  <graydon@redhat.com>
 
 	* libop/op_events.c (op_check_events): Check bitmasks as well as 
