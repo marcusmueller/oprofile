@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.77 2002/03/09 00:48:44 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.78 2002/04/03 17:50:06 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -129,6 +129,20 @@ else
   AC_MSG_RESULT(no);
 fi
  
+dnl Check for tgid
+AC_MSG_CHECKING(task_struct.tgid)
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$BKCFLAGS -I$KINC -D__KERNEL__ -Werror"
+AC_TRY_COMPILE(
+  [
+  #include <linux/config.h>
+  #include <linux/sched.h>
+  ],
+  [
+  int main() { task_struct t; t->tgid = 4; return 0; }
+  ], AC_MSG_RESULT("yes") BKCFLAGS="-DTGID $BKCFLAGS", AC_MSG_RESULT("no"))
+CFLAGS=$SAVE_CFLAGS
+
 AC_MSG_CHECKING(for hard_get_current())
 HARD_GET_CURRENT=`gcc -I$KINC -E $KINC/asm/current.h | grep hard_get_current`
 if test -z "$HARD_GET_CURRENT"; then

@@ -33,6 +33,8 @@ oprof_report:
 Before 1.0
 ----------
 
+ o op_time for only some specified files... 
+ o cache some stuff / nr. samples - op_time is horrendously slow
  o coherent naming class conventions
  o use standard C integer type <stdint.h> int32_t int16_t etc.
 	- but they are so ugly ...

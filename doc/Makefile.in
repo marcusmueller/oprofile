@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.14 2002/01/23 21:16:54 phil_e Exp $
+# $Id: Makefile.in,v 1.15 2002/04/03 17:50:06 movement Exp $
 
 RM=rm
 CP=cp
@@ -9,22 +9,19 @@ DOCDIR=$(prefix)/doc/oprofile-@VERSION@
 LN_SF=ln -sf
 MKDIR=mkdir
 MKDIR_P=mkdir -p
-DB2HTML=db2html
+XSLTPROC=xsltproc
+# You can over-ride this with a locally installed docbook.xsl
+# (see packages at http://docbook.sf.net)
+STYLESHEET=http://docbook.sourceforge.net/release/xsl/current/xhtml/docbook.xsl
 LINK_LIST=oprofiled.1 op_start.1 op_stop.1 op_help.1 oprofpp.1 op_time.1 op_to_source.1 op_merge.1
 
 .PHONY: all clean install uninstall
 
-all: html/install.html
+all: oprofile.html
 
-html/install.html: oprofile.sgml
-	-$(RM) -rf oprofile.junk
-	-$(DB2HTML) oprofile.sgml
-	-$(MKDIR) html
-	-$(MKDIR) html/stylesheet-images/ 
-	-mv oprofile/* html/
-	-mv oprofile/stylesheet-images/* html/stylesheet-images/
-	-$(RM) -rf oprofile 
-
+oprofile.html: oprofile.xml
+	$(XSLTPROC) $(STYLESHEET) $< > $@
+ 
 install: all
 	-$(MKDIR_P) $(MANDIR)
 	cp oprofile.1 $(MANDIR)/oprofile.1

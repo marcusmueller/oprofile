@@ -1,3 +1,17 @@
+2002-03-25  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in: some preliminary stuff for NGPT
+
+	* TODO: update
+
+	* doc/Makefile.in:
+	* doc/oprofile.sgml:
+	* doc/oprofile.xml: move to DocBook/XML
+
+	* doc/oprofile.xml: document Bash 2 dependency
+ 
+	* dae/op_start: fix for /bin/bash being bash v1 - untested
+ 
 2002-04-02  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* oprofpp.cpp:
