@@ -96,96 +96,96 @@ static struct op_unit_mask const um_moesi =
 /* AMD Hammer events */
 static struct op_unit_mask const um_fpu_ops = 
 	{ 6, utm_exclusive, 0x0, 
-	  { {0x0, "Add pipe ops excluding junk ops"},
-	    {0x1, "Multiply pipe ops excluding junk ops"},
-	    {0x2, "Store pipe ops excluding junk ops"},
-	    {0x3, "Add pipe junk ops"},
-	    {0x4, "Multiple pipe ops"},
-	    {0x5, "Store pipe junk ops"} } };
+	  { {1<<0, "Add pipe ops excluding junk ops"},
+	    {1<<1, "Multiply pipe ops excluding junk ops"},
+	    {1<<2, "Store pipe ops excluding junk ops"},
+	    {1<<3, "Add pipe junk ops"},
+	    {1<<4, "Multiple pipe ops"},
+	    {1<<5, "Store pipe junk ops"} } };
 
 static struct op_unit_mask const um_segregload = 
 	{ 7, utm_exclusive, 0x0, 
-	  { {0x0, "ES register"},
-	    {0x1, "CS register"},
-	    {0x2, "SS register"},
-	    {0x3, "DS register"},
-	    {0x4, "FS register"},
-		{0x5, "GS register"},
-	    {0x6, "HS register"} } };
+	  { {1<<0, "ES register"},
+	    {1<<1, "CS register"},
+	    {1<<2, "SS register"},
+	    {1<<3, "DS register"},
+	    {1<<4, "FS register"},
+		{1<<5, "GS register"},
+	    {1<<6, "HS register"} } };
 
 static struct op_unit_mask const um_ecc =
 	{ 2, utm_exclusive, 0x0,
-	  { {0x0, "Scrubber error"},
-	    {0x1, "Piggyback scrubber errors"} } };
+	  { {1<<0, "Scrubber error"},
+	    {1<<1, "Piggyback scrubber errors"} } };
 
 static struct op_unit_mask const um_prefetch =
 	{ 3, utm_exclusive, 0x0,
-	  { {0x0, "Load"},
-	    {0x1, "Store"},
-	    {0x2, "NTA"} } };
+	  { {1<<0, "Load"},
+	    {1<<1, "Store"},
+	    {1<<2, "NTA"} } };
 
 static struct op_unit_mask const um_fpu_instr = 
 	{ 4, utm_exclusive, 0x0, 
-	  { {0x0, "x87 instructions"},
-	    {0x1, "Combined MMX & 3DNow instructions"},
-	    {0x2, "Combined packed SSE and SSE2 instructions"},
-	    {0x3, "Combined packed scalar SSE and SSE2 instructions"} } };
+	  { {1<<0, "x87 instructions"},
+	    {1<<1, "Combined MMX & 3DNow instructions"},
+	    {1<<2, "Combined packed SSE and SSE2 instructions"},
+	    {1<<3, "Combined packed scalar SSE and SSE2 instructions"} } };
 
 static struct op_unit_mask const um_fpu_fastpath = 
 	{ 3, utm_exclusive, 0x0, 
-	  { {0x0, "With low op in position 0"},
-	    {0x1, "With low op in position 1"},
-	    {0x2, "With low op in position 2"} } };
+	  { {1<<0, "With low op in position 0"},
+	    {1<<1, "With low op in position 1"},
+	    {1<<2, "With low op in position 2"} } };
 
 static struct op_unit_mask const um_fpu_exceptions = 
 	{ 4, utm_exclusive, 0x0, 
-	  { {0x0, "x87 reclass microfaults"},
-	    {0x1, "SSE retype microfaults"},
-	    {0x2, "SSE reclass microfaults"},
-	    {0x3, "SSE and x87 microtraps"} } };
+	  { {1<<0, "x87 reclass microfaults"},
+	    {1<<1, "SSE retype microfaults"},
+	    {1<<2, "SSE reclass microfaults"},
+	    {1<<3, "SSE and x87 microtraps"} } };
 
 static struct op_unit_mask const um_page_access = 
 	{ 3, utm_exclusive, 0x0, 
-	  { {0x0, "Page hit"},
-	    {0x1, "Page miss"},
-	    {0x2, "Page conflict"} } };
+	  { {1<<0, "Page hit"},
+	    {1<<1, "Page miss"},
+	    {1<<2, "Page conflict"} } };
 
 static struct op_unit_mask const um_turnaround = 
 	{ 3, utm_exclusive, 0x0, 
-	  { {0x0, "DIMM turnaround"},
-	    {0x1, "Read to write turnaround"},
-	    {0x2, "Write to read turnaround"} } };
+	  { {1<<0, "DIMM turnaround"},
+	    {1<<1, "Read to write turnaround"},
+	    {1<<2, "Write to read turnaround"} } };
 
 static struct op_unit_mask const um_saturation = 
 	{ 4, utm_exclusive, 0x0, 
-	  { {0x0, "Memory controller high priority bypass"},
-	    {0x1, "Memory controller low priority bypass"},
-	    {0x2, "DRAM controller interface bypass"},
-	    {0x3, "DRAM controlller queue bypass"} } };
+	  { {1<<0, "Memory controller high priority bypass"},
+	    {1<<1, "Memory controller low priority bypass"},
+	    {1<<2, "DRAM controller interface bypass"},
+	    {1<<3, "DRAM controlller queue bypass"} } };
 
 static struct op_unit_mask const um_sizecmds = 
 	{ 7, utm_exclusive, 0x0, 
-	  { {0x0, "NonPostWrSzByte"},
-	    {0x1, "NonPostWrSzDword"},
-	    {0x2, "PostWrSzByte"},
-	    {0x3, "PostWrSzDword"},
-	    {0x4, "RdSzByte"},
-	    {0x5, "RdSzDword"},
-	    {0x6, "RdModWr"} } };
+	  { {1<<0, "NonPostWrSzByte"},
+	    {1<<1, "NonPostWrSzDword"},
+	    {1<<2, "PostWrSzByte"},
+	    {1<<3, "PostWrSzDword"},
+	    {1<<4, "RdSzByte"},
+	    {1<<5, "RdSzDword"},
+	    {1<<6, "RdModWr"} } };
 
 static struct op_unit_mask const um_probe = 
 	{ 4, utm_exclusive, 0x0, 
-	  { {0x0, "Probe miss"},
-	    {0x1, "Probe hit"},
-	    {0x2, "Probe hit dirty without memory cancel"},
-	    {0x3, "Probe hit dirty with memory cancel"} } };
+	  { {1<<0, "Probe miss"},
+	    {1<<1, "Probe hit"},
+	    {1<<2, "Probe hit dirty without memory cancel"},
+	    {1<<3, "Probe hit dirty with memory cancel"} } };
 
 static struct op_unit_mask const um_ht =
 	{ 4, utm_exclusive, 0x7,
-	  { {0x0, "Command sent"},
-	    {0x1, "Data sent"},
-	    {0x2, "Buffer release sent"},
-	    {0x3, "Nop sent"} } };
+	  { {1<<0, "Command sent"},
+	    {1<<1, "Data sent"},
+	    {1<<2, "Buffer release sent"},
+	    {1<<3, "Nop sent"} } };
 
 /* pentium 4 events */
 
