@@ -51,7 +51,9 @@ std::string tostr(unsigned int i);
  * @param sep the separator_char
  *
  * separate fild in a string in a list of token; field are
- * separated by the sep character
+ * separated by the sep character, sep char can be escaped
+ * by '\' to specify a spe char in a token, '\' not followed
+ * by a sep is taken as it e.g. "\,\a" --> ",\a"
  */
 void separate_token(std::vector<std::string> & result, std::string const & str,
 		    char sep);

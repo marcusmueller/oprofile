@@ -37,7 +37,6 @@ string erase_to_last_of(string const & str, char ch)
 	return result;
 }
 
-
 string rtrim(string const & str, char ch)
 {
 	string result = str;
@@ -60,19 +59,26 @@ string tostr(unsigned int i)
 
 void separate_token(vector<string> & result, const string & str, char sep)
 {
-	string const temp = str;
+	char last_ch = '\0';
+	string next;
 
-	size_t last_pos = 0;
-	for (size_t pos = 0 ; pos != temp.length() ; ) {
-		pos = temp.find_first_of(sep, last_pos);
-		if (pos == string::npos)
-			pos = temp.length();
-
-		string token = temp.substr(last_pos, pos - last_pos);
-
-		result.push_back(token);
-
-		if (pos != temp.length())
-			last_pos = pos + 1;
+	for (size_t pos = 0 ; pos != str.length() ; ++pos) {
+		char ch = str[pos];
+		if (last_ch == '\\') {
+			if (ch != sep)
+				// '\' not followed by ',' are taken as it
+				next += last_ch;
+			next += ch;
+		} else if (ch == sep) {
+			result.push_back(next);
+			// some stl lacks string::clear()
+			next.erase(next.begin(), next.end());
+		} else {
+			next += ch;
+		}
+		last_ch = ch;
 	}
+
+	if (!next.empty())
+		result.push_back(next);
 }

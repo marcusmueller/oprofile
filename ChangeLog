@@ -1,3 +1,8 @@
+2002-08-03  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/string_manip.h:
+	* libutil++/string_manip.cpp: separate_token() treat escape sequence
+
 2002-07-30  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* gui/oprof_start.cpp: apply misssing part from this patch
