@@ -1,31 +1,36 @@
-all: oprofpp
- 
-.PHONY: all clean srcdoc 
- 
+all: oprofpp oprof_convert
+
+.PHONY: all clean srcdoc
+
 clean: 
-	rm -f oprofpp *.o oprofpp-src.html
- 
+	rm -f oprofpp *.o oprofpp-src.html oprof_convert
+
 CC=@CC@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 BINDIR=@bindir@
 MANDIR=@mandir@
 
-install: oprofpp
+install: oprofpp oprof_convert
 	cp oprofpp $(BINDIR)/oprofpp
-	cd $(BINDIR) && chmod 755 oprofpp
- 
+	chmod 755 $(BINDIR)/oprofpp
+	cp oprof_convert $(BINDIR)/oprof_convert
+	chmod 755 $(BINDIR)/oprof_convert
+
 CFLAGS=-Wall -Wstrict-prototypes -W -pipe -DOP_EVENTS_DESC -L/usr/lib @CFLAGS@
 LIBS=-lpopt -lbfd -liberty -ldl
 INCLUDES=@extra_includes@
 HEADERS=oprofpp.h ../dae/opd_util.h ../dae/md5.h
 MY_SOURCES=oprofpp.c
 SOURCES=$(MY_SOURCES) ../dae/opd_util.c ../op_events.c ../dae/md5.c
- 
+
 srcdoc: oprofpp-src.html
 
 oprofpp-src.html: $(MY_SOURCES)
 	../scripts/dodoc -html $(MY_SOURCES) >oprofpp-src.html
- 
+
 oprofpp: $(SOURCES) $(HEADERS)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $(SOURCES) $(LIBS)
+
+oprof_convert: oprof_convert.c
+	$(CC) $< -Wall -o $@

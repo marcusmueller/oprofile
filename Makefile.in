@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.17 2001/06/03 19:20:28 movement Exp $
+# $Id: Makefile.in,v 1.18 2001/06/22 23:05:56 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -14,7 +14,7 @@ all: oprofile.o
 
 maintainerclean: distclean
 	rm -f configure
- 
+
 distclean: clean
 	rm -f Makefile dae/Makefile pp/Makefile tags
 
@@ -32,7 +32,7 @@ dist:
 	rm -rf oprofile-@VERSION@ ; \
 	cd ..  ; \
 	rm -rf tmpdist \
-	
+
 tags:
 	ctags -R
 
@@ -64,7 +64,7 @@ oprofile.h: op_user.h version.h
 
 op_init.o: op_init.c oprofile.h
 	$(CC) $(BKCFLAGS) -c -o $@ $<
- 
+
 oprofile_c.o: oprofile.c oprofile.h
 	$(CC) $(KCFLAGS) -c -o $@ $<
 
