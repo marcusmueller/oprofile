@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.19 2001/07/21 22:53:38 movement Exp $ */
+/* $Id: op_events.c,v 1.20 2001/08/19 20:09:17 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -26,6 +26,7 @@
 #define OP_PII_PIII	3
 #define OP_PII_ONLY	4
 #define OP_PIII_ONLY	5
+#define OP_ATHLON_ONLY	6
 
 #ifdef __KERNEL__
 #include <linux/string.h>
@@ -87,13 +88,39 @@ static struct op_unit_mask op_unit_masks[] = {
 	{ 2, utm_bitmask, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
 };
 
+/* Allowed, Event #, unit mask, name, minimum event value */
 static struct op_event op_events[] = {
   /* Data Cache Unit (DCU) */
+  {OP_ATHLON_ONLY,0x40,0,"DATA_CACHE_ACCESSES", 500,},
+  {OP_ATHLON_ONLY,0x41,0,"DATA_CACHE_MISSES", 500,},
+  {OP_ATHLON_ONLY,0x42,0,"DATA_CACHE_REFILLS_FROM_L2", 500,},
+  {OP_ATHLON_ONLY,0x43,0,"DATA_CACHE_REFILLS_FROM_SYSTEM", 500,},
+  {OP_ATHLON_ONLY,0x44,0,"DATA_CACHE_WRITEBACKS", 500,},
+  {OP_ATHLON_ONLY,0x45,0,"L1_DTLB_MISSES_L2_DTLD_HITS", 500,},
+  {OP_ATHLON_ONLY,0x46,0,"L1_AND_L2_DTLB_MISSES", 500,},
+  {OP_ATHLON_ONLY,0x47,0,"MISALIGNED_DATA_REFS", 500,},
+  {OP_ATHLON_ONLY,0x80,0,"ICACHE_FETCHES", 500,},
+  {OP_ATHLON_ONLY,0x81,0,"ICACHE_MISSES", 500,},
+  {OP_ATHLON_ONLY,0x84,0,"L1_ITLB_MISSES_L2_ITLB_HITS", 500,},
+  {OP_ATHLON_ONLY,0x85,0,"L1_AND_L2_ITLB_MISSES", 500,},
+  {OP_ATHLON_ONLY,0xc0,0,"RETIRED_INSNS", 500,},
+  {OP_ATHLON_ONLY,0xc1,0,"RETIRED_OPS", 500,},
+  {OP_ATHLON_ONLY,0xc2,0,"RETIRED_BRANCHES", 500,},
+  {OP_ATHLON_ONLY,0xc3,0,"RETIRED_BRANCHES_MISPREDICTED", 500,},
+  {OP_ATHLON_ONLY,0xc4,0,"RETIRED_TAKEN_BRANCHES", 500,},
+  {OP_ATHLON_ONLY,0xc5,0,"RETIRED_TAKEN_BRANCHES_MISPREDICTED", 500,},
+  {OP_ATHLON_ONLY,0xc6,0,"RETIRED_FAR_CONTROL_TRANSFERS", 500,},
+  {OP_ATHLON_ONLY,0xc7,0,"RETIRED_RESYNC_BRANCHES", 500,},
+  {OP_ATHLON_ONLY,0xcd,0,"INTERRUPTS_MASKED", 500,},
+  {OP_ATHLON_ONLY,0xce,0,"INTERRUPTS_MASKED_PENDING", 500,},
+  {OP_ATHLON_ONLY,0xcf,0,"HARDWARE_INTERRUPTS", 500,},
+
   {OP_ANY,0x43,0,"DATA_MEM_REFS", 500 },
   {OP_ANY,0x45,0,"DCU_LINES_IN", 500 },
   {OP_ANY,0x46,0,"DCU_M_LINES_IN", 500 },
   {OP_ANY,0x47,0,"DCU_M_LINES_OUT", 500},
   {OP_ANY,0x48,0,"DCU_MISS_OUTSTANDING", 500 },
+
   /* Intruction Fetch Unit (IFU) */
   {OP_ANY,0x80,0,"IFU_IFETCH", 500 },
   {OP_ANY,0x81,0,"IFU_IFETCH_MISS", 500 },
@@ -201,6 +228,8 @@ uint op_nr_events = sizeof(op_events)/sizeof(struct op_event);
 #define OP_CTR1_PII_EVENT	0x80
 #define OP_CTR0_PIII_EVENT	0x100
 #define OP_CTR1_PIII_EVENT	0x200
+#define OP_CTR0_ATHLON_EVENT	0x400
+#define OP_CTR1_ATHLON_EVENT	0x800
 
 /**
  * op_check_unit_mask - sanity check unit mask value
@@ -291,6 +320,8 @@ int op_min_count(u8 ctr_type) {
  *
  * 2 Pentium III
  *
+ * 3 AMD Athlon
+ *
  * Use 0 values for @ctr0_type and @ctr1_type if the
  * counter is not used.
  *
@@ -324,6 +355,11 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
 					case OP_PII_PIII:
 						if (!proc)
 							ret |= OP_CTR0_PII_EVENT;
+						break;
+
+					case OP_ATHLON_ONLY:
+						if (proc != 3)
+							ret |= OP_CTR0_ATHLON_EVENT;
 						break;
 					default:
 						break;
@@ -359,6 +395,12 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
 						if (!proc)
 							ret |= OP_CTR1_PII_EVENT;
 						break;
+
+					case OP_ATHLON_ONLY:
+						if (proc != 3)
+							ret |= OP_CTR1_ATHLON_EVENT;
+						break;
+
 					default:
 						break;
 				}
@@ -396,6 +438,8 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
  * 1 Pentium II
  *
  * 2 Pentium III
+ *
+ * 3 AMD Athlon
  *
  * Use "" strings for @ctr0_type and @ctr1_type if the
  * counter is not used.
@@ -702,6 +746,7 @@ int main(int argc, char *argv[])
 			case 3: printf("- Pentium II/III only\n"); break;
 			case 4: printf("- Pentium II only\n"); break;
 			case 5: printf("- Pentium III only\n"); break;
+			case 6: printf("- AMD Athlon only\n"); break;
 			default: printf("\n"); break;
 		}
 		if (op_events[i].unit) {

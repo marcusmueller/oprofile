@@ -2,8 +2,7 @@ Correctness
 -----------
 
 o Save counter state and restore on a finish
-o Athlon: values in oprofile.c not op_init.c, bit 22 is per-counter, determine working event types,
-  fix ctr_overflowed(), fix set_perfctr to set high to -1
+o Athlon: bit 22 is per-counter, determine working event types, support 4 counters, documentation
 o SMP mappings - place in all buffers perhaps ?
 o check chroot() processes and the path hash stuff
 o There is no need for the daemon to run as root as long as every binary image

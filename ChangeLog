@@ -1,3 +1,19 @@
+2001-08-19  John Levon  <moz@compsoc.man.ac.uk>
+
+	* op_init.c:
+	* oprofile.h:
+	* oprofile.c: small tidies of the Athlon support
+
+2001-08-19  Dave Jones  <davej@suse.de>
+
+	* op_events.c:
+	* op_init.c: 
+	* oprofile.h:
+	* oprofile.c:
+	* dae/op_start:
+	* dae/oprofiled.h:
+	* dae/oprofiled.c: initial Athlon support
+
 2001-08-19  Philippe Elie  <ph_e@club-internet.fr>
 
 	* oprofile.c: use symbolic constant for all apic setup, no generated

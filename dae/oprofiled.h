@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.29 2001/08/10 13:36:37 movement Exp $ */
+/* $Id: oprofiled.h,v 1.30 2001/08/19 20:09:17 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -96,6 +96,8 @@ enum {  OPD_KERNEL, /* nr. kernel samples */
 #define OP_CTR1_PII_EVENT       0x80
 #define OP_CTR0_PIII_EVENT     0x100
 #define OP_CTR1_PIII_EVENT     0x200
+#define OP_CTR0_ATHLON_EVENT   0x400
+#define OP_CTR1_ATHLON_EVENT   0x800
 
 /* FIXME : Carefull these are also present in pp/oprofpp.h */
 #define OPD_MAGIC 0xdeb6

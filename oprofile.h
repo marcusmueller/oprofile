@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.45 2001/08/11 12:37:56 movement Exp $ */
+/* $Id: oprofile.h,v 1.46 2001/08/19 20:09:17 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -53,6 +53,12 @@ struct _oprof_data {
 #define OP_CTR_0 0x1
 #define OP_CTR_1 0x2
 
+#define CPU_NO_GOOD -1
+#define CPU_PPRO 0
+#define CPU_PII 1
+#define CPU_PIII 2
+#define CPU_ATHLON 3
+ 
 /* MSRs */
 #ifndef MSR_IA32_PERFCTR0
 #define MSR_IA32_PERFCTR0 0xc1
@@ -68,6 +74,30 @@ struct _oprof_data {
 #endif
 #ifndef MSR_IA32_APICBASE
 #define MSR_IA32_APICBASE 0x1B
+#endif
+#ifndef MSR_K7_PERFCTL0
+#define MSR_K7_PERFCTL0 0xc0010000
+#endif
+#ifndef MSR_K7_PERFCTL1
+#define MSR_K7_PERFCTL1 0xc0010001
+#endif
+#ifndef MSR_K7_PERFCTL2
+#define MSR_K7_PERFCTL2 0xc0010002
+#endif
+#ifndef MSR_K7_PERFCTL3
+#define MSR_K7_PERFCTL3 0xc0010003
+#endif
+#ifndef MSR_K7_PERFCTR0
+#define MSR_K7_PERFCTR0 0xc0010004
+#endif
+#ifndef MSR_K7_PERFCTR1
+#define MSR_K7_PERFCTR1 0xc0010005
+#endif
+#ifndef MSR_K7_PERFCTR2
+#define MSR_K7_PERFCTR2 0xc0010006
+#endif
+#ifndef MSR_K7_PERFCTR3
+#define MSR_K7_PERFCTR3 0xc0010007
 #endif
 
 #ifndef APIC_SPIV_APIC_ENABLED
@@ -114,8 +144,8 @@ struct _oprof_data {
 	^ (ctr<<8)) & (data->hash_size - 1)
 
 /* relying on MSR numbers being neighbours */
-#define get_perfctr(l,h,c) do { rdmsr(MSR_IA32_PERFCTR0 + c, (l), (h)); } while (0)
-#define set_perfctr(l,c) do { wrmsr(MSR_IA32_PERFCTR0 + c, -(u32)(l), 0); } while (0)
+#define get_perfctr(l,h,c) do { rdmsr(ctrreg0 + c, (l), (h)); } while (0)
+#define set_perfctr(l,c) do { wrmsr(ctrreg0 + c, -(u32)(l), -1); } while (0)
 #define ctr_overflowed(n) (!((n) & (1U<<31)))
 
 #define OP_EVENTS_OK            0x0
@@ -129,6 +159,8 @@ struct _oprof_data {
 #define OP_CTR1_PII_EVENT       0x80
 #define OP_CTR0_PIII_EVENT      0x100
 #define OP_CTR1_PIII_EVENT      0x200
+#define OP_CTR0_ATHLON_EVENT    0x400
+#define OP_CTR1_ATHLON_EVENT    0x800
 
 #define op_check_range(val,l,h,str) do { \
         if ((val) < (l) || (val) > (h)) { \
@@ -182,6 +214,16 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #else
 #include <linux/completion.h>
 #endif
+
+// FIXME: these names are too easy to mis-type !
+extern uint ctrlreg0;
+extern uint ctrlreg1;
+extern uint ctrlreg2;
+extern uint ctrlreg3;
+extern uint ctrreg0;
+extern uint ctrreg1;
+extern uint ctrreg2;
+extern uint ctrreg3;
 
 int oprof_init(void);
 void oprof_exit(void);

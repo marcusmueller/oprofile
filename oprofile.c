@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.72 2001/08/19 18:50:54 movement Exp $ */
+/* $Id: oprofile.c,v 1.73 2001/08/19 20:09:17 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -34,8 +34,19 @@ static int op_ctr_count[OP_MAX_COUNTERS];
 static int op_ctr_val[OP_MAX_COUNTERS];
 static int op_ctr_kernel[OP_MAX_COUNTERS];
 static int op_ctr_user[OP_MAX_COUNTERS];
+
 pid_t pid_filter;
 pid_t pgrp_filter;
+
+/* the MSRs we need */
+uint ctrlreg0 = MSR_IA32_EVNTSEL0;
+uint ctrlreg1 = MSR_IA32_EVNTSEL1;
+uint ctrlreg2 = MSR_K7_PERFCTL2;
+uint ctrlreg3 = MSR_K7_PERFCTL3;
+uint ctrreg0  = MSR_IA32_PERFCTR0;
+uint ctrreg1  = MSR_IA32_PERFCTR1;
+uint ctrreg2  = MSR_K7_PERFCTR2;
+uint ctrreg3  = MSR_K7_PERFCTR3;
 
 u32 prof_on __cacheline_aligned;
 
@@ -49,6 +60,15 @@ u32 oprof_ready[NR_CPUS] __cacheline_aligned;
 static struct _oprof_data oprof_data[NR_CPUS];
 
 extern spinlock_t map_lock;
+
+extern unsigned int ctrlreg0;
+extern unsigned int ctrlreg1;
+extern unsigned int ctrlreg2;
+extern unsigned int ctrlreg3;
+extern unsigned int ctrreg0;
+extern unsigned int ctrreg1;
+extern unsigned int ctrreg2;
+extern unsigned int ctrreg3;
 
 /* ---------------- NMI handler ------------------ */
 
@@ -313,6 +333,7 @@ static int __init apic_setup(void)
 		return 0;
 	}
 
+
 	/* ugly hack */
 	/* PHE : the memory must be uncachable! this is perhaps more a
 	 * problem for Athlon than for PII.
@@ -409,7 +430,7 @@ static int __init apic_setup(void)
 	return 0;
 
 not_local_p6_apic:
-	printk(KERN_ERR "oprofile: no local P6 APIC\n");
+	printk(KERN_ERR "oprofile: no local P6 APIC. Your laptop doesn't have one !\n");
 	/* IA32 V3, 7.4.2 */
 	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
 	wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
@@ -438,12 +459,24 @@ static void pmc_setup(void *dummy)
 {
 	uint low, high;
 
-	rdmsr(MSR_IA32_EVNTSEL0, low, high);
-	wrmsr(MSR_IA32_EVNTSEL0, low & ~(1<<22), high);
+	// first, let's use the right MSRs
+	switch (cpu_type) {
+		case CPU_ATHLON:
+			ctrlreg0 = MSR_K7_PERFCTL0;
+			ctrlreg1 = MSR_K7_PERFCTL1;
+			ctrreg0  = MSR_K7_PERFCTR0;
+			ctrreg1  = MSR_K7_PERFCTR1;
+			break;
+		default:;
+	}
+ 
+	rdmsr(ctrlreg0, low, high);
+	// FIXME: enable bit is per-counter on athlon
+	wrmsr(ctrlreg0, low & ~(1<<22), high);
 
 	/* IA Vol. 3 Figure 15-3 */
 
-	rdmsr(MSR_IA32_EVNTSEL0, low, high);
+	rdmsr(ctrlreg0, low, high);
 	/* clear */
 	low &= (1<<21);
 
@@ -452,24 +485,26 @@ static void pmc_setup(void *dummy)
 		pmc_fill_in(&low, op_ctr_kernel[0], op_ctr_user[0], op_ctr_val[0], op_ctr_um[0]);
 	}
 
-	wrmsr(MSR_IA32_EVNTSEL0, low, 0);
+	wrmsr(ctrlreg0, low, 0);
 
-	rdmsr(MSR_IA32_EVNTSEL1, low, high);
+	rdmsr(ctrlreg1, low, high);
 	/* clear */
 	low &= (3<<21);
 
 	if (op_ctr_val[1]) {
 		set_perfctr(op_ctr_count[1], 1);
 		pmc_fill_in(&low, op_ctr_kernel[1], op_ctr_user[1], op_ctr_val[1], op_ctr_um[1]);
-		wrmsr(MSR_IA32_EVNTSEL1, low, high);
+		wrmsr(ctrlreg1, low, high);
 	}
 
 	/* disable ctr1 if the UP oopser might be on, but we can't do anything
 	 * interesting with the NMIs
 	 */
 	/* PHE FIXME Have always a meaning ? */
+	/* this is pretty bogus really. especially as we don't re-enable it.
+	 * Instead, save state set up, and restore with pmc_unsetup or similar */
 #if !defined(CONFIG_X86_UP_APIC) || !defined(OP_EXPORTED_DO_NMI)
-	wrmsr(MSR_IA32_EVNTSEL1, low, high);
+	wrmsr(ctrlreg1, low, high);
 #endif
 }
 
@@ -481,8 +516,9 @@ static void pmc_start(void *info)
 		return;
 
  	/* enable counters */
-	rdmsr(MSR_IA32_EVNTSEL0, low, high);
-	wrmsr(MSR_IA32_EVNTSEL0, low | (1<<22), high);
+	rdmsr(ctrlreg0, low, high);
+	// FIXME: bit 22 per-counter on athlon
+	wrmsr(ctrlreg0, low | (1<<22), high);
 }
 
 static void pmc_stop(void *info)
@@ -493,8 +529,9 @@ static void pmc_stop(void *info)
 		return;
 
 	/* disable counters */
-	rdmsr(MSR_IA32_EVNTSEL0, low, high);
-	wrmsr(MSR_IA32_EVNTSEL0, low & ~(1<<22), high);
+	rdmsr(ctrlreg0, low, high);
+	// FIXME: bit 22 per-counter on athlon
+	wrmsr(ctrlreg0, low & ~(1<<22), high);
 }
 
 inline static void pmc_select_start(uint cpu)
@@ -847,6 +884,8 @@ static int parms_ok(void)
 	if (ret & OP_CTR1_PII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PII\n");
 	if (ret & OP_CTR0_PIII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PIII\n");
 	if (ret & OP_CTR1_PIII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PIII\n");
+	if (ret & OP_CTR0_ATHLON_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on Athlon\n");
+	if (ret & OP_CTR1_ATHLON_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on Athlon\n");
 
 	if (ret)
 		return 0;
@@ -874,7 +913,7 @@ DECLARE_MUTEX(sysctlsem);
 static int oprof_start(void)
 {
 	int err = 0;
-	
+
 	down(&sysctlsem);
 
 	if ((err = oprof_init_data()))
@@ -885,7 +924,7 @@ static int oprof_start(void)
 		err = -EINVAL;
 		goto out;
 	}
-		
+
 	if ((smp_call_function(pmc_setup, NULL, 0, 1))) {
 		oprof_free_mem(smp_num_cpus);
 		err = -EINVAL;
@@ -893,7 +932,7 @@ static int oprof_start(void)
 	}
 
 	pmc_setup(NULL);
-	
+
 	install_nmi();
 
 	if (!kernel_only)
@@ -905,7 +944,7 @@ static int oprof_start(void)
 	pmc_start(NULL);
  
 	prof_on = 1;
-	
+
 out:
 	up(&sysctlsem);
 	return err;

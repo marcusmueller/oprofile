@@ -11,5 +11,6 @@ Philippe Elie <ph_e@club-internet.fr> contributed many bug fixes,
 wrote the tcl/tk oprofile interface and the source annotation facility,
 and more.
 
-Dave Jones <davej@suse.de> and Bob Montgomery <bobm@fc.hp.com> provided 
-bug fixes and useful testing.
+Dave Jones <davej@suse.de> provided bug fixes and the Athlon support.
+
+Bob Montgomery <bobm@fc.hp.com> provided bug fixes and useful testing.

@@ -1,4 +1,4 @@
-/* $Id: op_init.c,v 1.5 2001/06/22 00:19:31 movement Exp $ */
+/* $Id: op_init.c,v 1.6 2001/08/19 20:09:17 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -26,21 +26,26 @@ static int __init hw_ok(void)
 	/* we want to include all P6 processors (i.e. > Pentium Classic,
 	 * < Pentium IV
 	 */
-	if (current_cpu_data.x86_vendor != X86_VENDOR_INTEL ||
-	    current_cpu_data.x86 != 6) {
-		printk(KERN_ERR "oprofile: not an Intel P6 processor. Sorry.\n");
-		return 0;
+	if ((current_cpu_data.x86_vendor != X86_VENDOR_INTEL &&
+	    current_cpu_data.x86 != 6) ||
+		(current_cpu_data.x86_vendor != X86_VENDOR_AMD &&
+		 current_cpu_data.x86 != 6)) {
+		printk(KERN_ERR "oprofile: not an Intel P6 or AMD Athlon processor. Sorry.\n");
+		return CPU_NO_GOOD;
 	}
 
-	/* 0 if PPro, 1 if PII, 2 if PIII */
-	cpu_type = (current_cpu_data.x86_model > 5) ? 2 :
-		(current_cpu_data.x86_model > 2);
-	return 1;
+	/* 0 if PPro, 1 if PII, 2 if PIII, 3 if Athlon */
+	if (current_cpu_data.x86_vendor == X86_VENDOR_AMD)
+		cpu_type = CPU_ATHLON;
+	else
+		cpu_type = (current_cpu_data.x86_model > 5) ? CPU_PIII :
+			(current_cpu_data.x86_model > 2);
+	return cpu_type;
 }
 
 int __init stub_init(void)
 {
-	if (!hw_ok())
+	if (hw_ok() == CPU_NO_GOOD)
 		return -EINVAL;
 
 	return oprof_init();
