@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.39 2000/09/23 02:41:02 moz Exp $ */
+/* $Id: opd_proc.c,v 1.40 2000/09/27 23:47:26 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -8,8 +8,8 @@
 #define OPD_DEFAULT_MAPS 16
 #define OPD_MAP_INC 8
 
-/* kernel image entries are offset by this much */
-#define OPD_KERNEL_OFFSET 1000000
+/* kernel image entries are offset by this many entries */
+#define OPD_KERNEL_OFFSET 524288
 
 extern unsigned long opd_stats[];
 extern fd_t mapdevfd;
@@ -158,6 +158,11 @@ void opd_read_system_map(const char *filename)
 	opd_close_file(fp);
 }
 
+struct opd_fentry {
+	u32 count0;
+	u32 count1;
+};
+
 /**
  * opd_open_image - open an image sample file
  * @image: image to open file for
@@ -196,7 +201,7 @@ static void opd_open_image(struct opd_image *image)
 	 * a sample could be before our nominal start of image, or
 	 * after the start */
 	if (image->kernel)
-		image->len += OPD_KERNEL_OFFSET*2;
+		image->len += OPD_KERNEL_OFFSET*sizeof(struct opd_fentry)*2;
 
 	dprintf("Opening $%s$\n",mangled);
 
@@ -255,11 +260,6 @@ inline static u16 opd_get_counter(const u16 count)
 	return (count & OP_COUNTER);
 }
 
-struct opd_fentry {
-	u32 count0;
-	u32 count1;
-};
-
 /**
  * opd_put_image_sample - write sample to file
  * @image: image for sample
@@ -292,7 +292,7 @@ inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16
 	fentry = image->start + (offset*sizeof(struct opd_fentry));
 
 	if (image->kernel)
-		fentry += OPD_KERNEL_OFFSET/sizeof(struct opd_fentry);
+		fentry += OPD_KERNEL_OFFSET;
 
 	if (opd_get_counter(count)) {
 		if (fentry->count1 + count < fentry->count1)
