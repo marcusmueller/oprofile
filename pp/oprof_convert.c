@@ -195,7 +195,7 @@ static int cpu_type = -1;
 static void do_mapping_transfer(uint nr_samples, int counter, 
 				const struct opd_header_v4* header_v4, 
 				const struct old_opd_fentry* old_samples,
-				int session_number)
+				int backup_number)
 {
 	char* out_filename;
 	int out_fd;
@@ -226,9 +226,9 @@ static void do_mapping_transfer(uint nr_samples, int counter,
 
 	if ((counter == 0 && header_v4->v2.ctr0_type_val) ||
 	    (counter == 1 && header_v4->v2.ctr1_type_val)) {
-		if (session_number != -1)
+		if (backup_number != -1)
 			sprintf(out_filename + strlen(filename), "-%d",
-				session_number);
+				backup_number);
 
 		unlink(out_filename);
 
@@ -307,8 +307,8 @@ err1:;
 static void v4_to_v5(FILE* fp)
 {
 	struct opd_header_v4 header_v4;
-	char *session_str;
-	int session_number;
+	char *backup_str;
+	int backup_number;
 	int ok;
 	int counter;
 	int old_size, old_fd, nr_samples;
@@ -318,23 +318,23 @@ static void v4_to_v5(FILE* fp)
 	fread(&header_v4, sizeof(header_v4), 1, fp);
 
 	ok = 1;
-	session_number = -1;
+	backup_number = -1;
 
-	session_str = strrchr(filename, '-');
-	if (session_str) {
+	backup_str = strrchr(filename, '-');
+	if (backup_str) {
 		int bytes_read = 0;
-		if (sscanf(session_str + 1, "%d%n", &session_number, &bytes_read) == 1) {
+		if (sscanf(backup_str + 1, "%d%n", &backup_number, &bytes_read) == 1) {
 
 			/* Dangerous if the bin filename end with "-%d" I
 			 * prefer reject this corner case */
-			ok = session_str[bytes_read] && !session_str[bytes_read + 1];
+			ok = backup_str[bytes_read] && !backup_str[bytes_read + 1];
 		}
 	}
 
 	if (ok == 0) {
 		/* PHE FIXME: probably needs to remove this warning */
 //		fprintf(stderr, "Bad file naming scheme %s\n", filename);
-		session_number = -1;
+		backup_number = -1;
 	}
 
 	old_fd = open(filename, O_RDONLY);
@@ -365,7 +365,7 @@ static void v4_to_v5(FILE* fp)
 	for (counter = 0; counter < 2 ; ++counter) {
 		do_mapping_transfer(nr_samples, counter,
 				    &header_v4, old_samples,
-				    session_number);
+				    backup_number);
 	}
 
 	munmap(old_samples, old_size);

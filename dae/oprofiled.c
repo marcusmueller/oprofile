@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.48 2001/10/14 19:35:14 movement Exp $ */
+/* $Id: oprofiled.c,v 1.49 2001/11/14 21:19:01 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -54,8 +54,6 @@ static void opd_open_logfile(void);
 unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 
 static struct poptOption options[] = {
-	{ "buffer-size", 'b', POPT_ARG_INT, &opd_buf_size, 0, "nr. of entries in kernel buffer", "num", },
-	{ "note-buffer-size", 'n', POPT_ARG_INT, &opd_note_buf_size, 0, "nr. of entries in kernel note buffer", "num", },
 	{ "ignore-myself", 'm', POPT_ARG_INT, &ignore_myself, 0, "ignore samples of oprofile driver", "[0|1]"},
 	{ "log-file", 'l', POPT_ARG_STRING, &logfilename, 0, "log file", "file", },
 	{ "base-dir", 'd', POPT_ARG_STRING, &opd_dir, 0, "base directory of daemon", "dir", },
@@ -65,7 +63,6 @@ static struct poptOption options[] = {
 	{ "hash-map-device-file", 'h', POPT_ARG_STRING, &devhashmapfilename, 0, "profile hashmap device file", "file", },
 	{ "map-file", 'f', POPT_ARG_STRING, &systemmapfilename, 0, "System.map for running kernel file", "file", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
-	{ "kernel-only", 'o', POPT_ARG_INT, &kernel_only, 0, "profile only kernel", "file", },
 	{ "cpu-speed", 0, POPT_ARG_STRING, &cpu_speed_str, 0, "cpu speed (MHz)", "cpu_mhz", },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
@@ -170,7 +167,6 @@ static void opd_options(int argc, char const *argv[])
 	poptContext optcon;
 	int ret;
 	uint i;
-	int ok;
 	char c;
 	/* should be sufficient to hold /proc/sys/dev/oprofile/%d/yyyy */
 	char filename[PATH_MAX + 1];
@@ -204,6 +200,10 @@ static void opd_options(int argc, char const *argv[])
 		exit(1);
 	}
 
+	opd_buf_size = opd_read_int_from_file("/proc/sys/dev/oprofile/bufsize");
+	opd_note_buf_size = opd_read_int_from_file("/proc/sys/dev/oprofile/notesize");
+	kernel_only = opd_read_int_from_file("/proc/sys/dev/oprofile/kernel_only");
+
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		sprintf(filename, "/proc/sys/dev/oprofile/%d/event", i);
 		ctr_event[i]= opd_read_int_from_file(filename);
@@ -215,7 +215,6 @@ static void opd_options(int argc, char const *argv[])
 		ctr_um[i]= opd_read_int_from_file(filename);
 	}
 
-	ok = 1;
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		ret = op_check_events(i, ctr_event[i], ctr_um[i], cpu_type);
 
@@ -235,14 +234,8 @@ static void opd_options(int argc, char const *argv[])
 			exit(1);
 	}
 
-	if (!ok) {
-		poptPrintHelp(optcon, stderr, 0);
-		exit(1);
-	}
-
-	if (cpu_speed_str && strlen(cpu_speed_str)) {
+	if (cpu_speed_str && strlen(cpu_speed_str))
 		sscanf(cpu_speed_str, "%lf", &cpu_speed);
-	}
 }
 
 /**

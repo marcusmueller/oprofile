@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.13 2001/11/13 21:21:01 phil_e Exp $ */
+/* $Id: oprofile.c,v 1.14 2001/11/14 21:19:01 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -36,7 +36,7 @@ static int allow_unload = 1;
 static struct oprof_sysctl sysctl_parms;
 /* some of the sys ctl settable variable needs to be copied to protect
  * against user that try to change through /proc/sys/dev/oprofile/ * running
- * parameters during a profiling session */
+ * parameters during profiling */
 struct oprof_sysctl sysctl;
 
 /* the MSRs we need */

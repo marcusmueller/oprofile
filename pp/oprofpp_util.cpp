@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.2 2001/11/13 21:21:01 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.3 2001/11/14 21:19:01 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -33,7 +33,7 @@ int ctr = -1;
 
 static uint nr_samples; 
 /* if != -1 appended to samples files with "-%d" format */
-static int session_number = -1;
+static int backup_number = -1;
 
 /**
  * remangle - convert a filename into the related sample file name
@@ -103,7 +103,7 @@ void quit_error(poptContext * optcon, char const *err)
  */
 void opp_treat_options(const char* file, poptContext * optcon)
 {
-	const char *file_session_str;
+	const char *file_backup_str;
 	char *file_ctr_str;
 	int counter;
 
@@ -165,11 +165,11 @@ void opp_treat_options(const char* file, poptContext * optcon)
 			ctr = 0;
 	}
 
-	/* Now record the session number */
+	/* Now record the backup number */
 	if (file_ctr_str) {
-		file_session_str = strchr(file_ctr_str, '-');
-		if (file_session_str) {
-			sscanf(file_session_str + 1, "%d", &session_number);
+		file_backup_str = strchr(file_ctr_str, '-');
+		if (file_backup_str) {
+			sscanf(file_backup_str + 1, "%d", &backup_number);
 		}
 	}
 
@@ -741,8 +741,8 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 {
 	std::ostringstream filename;
 	filename << samplefile << "#" << counter;
-	if (session_number != -1)
-		filename << "-" << session_number;
+	if (backup_number != -1)
+		filename << "-" << backup_number;
 	std::string temp = filename.str();
 
 	fd[counter] = open(temp.c_str(), O_RDONLY);

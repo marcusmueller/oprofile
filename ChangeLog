@@ -1,3 +1,19 @@
+2001-11-14  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/op_start: do not pass bufsize, note_bufsize and
+	  kernel_only as option to the daemon but ...
+	* dae/oprofiled.c: read them from sysctl
+
+	* dae/opd_proc.c: in opd_handle_old_sample_file() do not
+	  delete sample file if mtime differ but backup it.
+
+	* doc/oprofile.sgml:
+	* pp/oprof_convert.c:
+	* pp/oprofpp_util.cpp: replace session number by
+	  backup number
+
+	* util/string_manip.cpp: fix stupid bug in rtrim()
+
 2001-11-13  Philippe Elie  <ph_e@club-internet.fr>
 
 	* gui/oprof_start.h:
