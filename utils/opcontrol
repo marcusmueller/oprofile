@@ -73,17 +73,17 @@ do_help() {
 	--init			loads the oprofile module and oprofilefs
 	--setup			give setup arguments
 	--start-daemon          start daemon without starting profiling
-	--start			start data collection
-	--dump			flush the collected profiling data
+	-s/--start		start data collection
+	-d/--dump		flush the collected profiling data
 	--stop			stop data collection
-	--shutdown		stop data collection and kill daemon
-	--reset			clears out data from current session
+	-h/--shutdown		stop data collection and kill daemon
+	-r/--reset		clears out data from current session
 	--save=session_name	save data from current session to session_name
 	--deinit		unload the oprofile module and oprofilefs
 
 	--setup options
 	  --buffer-size=num            number of samples in kernel buffer
-	  --event=[eventspec]          choose an event and values or "default". Of the form
+	  -e/--event=[eventspec]       choose an event and values or "default". Of the form
 	                               name:count:unitmask:kernel:user
                 name:                  symbolic event name, e.g. CPU_CLK_UNHALTED or RTC
 	        count:                 reset counter value e.g. 100000
@@ -94,16 +94,16 @@ do_help() {
 	  --pgrp-filter=[pgrp|none]    Only profile process tty group pgrp (2.4 version)
 	  --kernel-only=[0|1]	       profile only the kernel (2.4 version)
 	  --note-table-size	       number of notes in kernel notes buffer (2.4 version)
-	  --separate=[none,library,kernel,all]         separate samples as given
+	  -p/--separate=[none,library,kernel,all]     separate samples as given
 	  --vmlinux=file               vmlinux kernel image
 	  --no-vmlinux                 no vmlinux image available (no kernel vmlinux image available)
-	  --verbose                    be verbose in the daemon log
+	  -V/--verbose                 be verbose in the daemon log
 	  --kernel-range=start,end     kernel range vma address in hexadecimal
 
 	General options
-	  --list-events                list event types and unit masks
-	  --help                       this message
-	  --version                    show version" >&2
+	  -l/--list-events             list event types and unit masks
+	  -?/--help                    this message
+	  -v/--version                 show version" >&2
 }
 
 
@@ -458,7 +458,7 @@ do_options() {
 		shift
 		if test -z "$val"; then
 			local possibleval=$1
-			echo "$possibleval" | grep ^-- >/dev/null 2>&1
+			echo "$possibleval" | grep ^- >/dev/null 2>&1
 			if test "$?" != "0"; then
 				val=$possibleval
 				shift
@@ -490,13 +490,13 @@ do_options() {
 				EXCLUSIVE_ARGV="$arg"
 				;;
 
-			--start)
+			-s|--start)
 				START=yes
 				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
 				EXCLUSIVE_ARGV="$arg"
 				;;
 
-			--dump)
+			-d|--dump)
 				DUMP=yes
 				ONLY_DUMP=yes
 				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
@@ -514,7 +514,7 @@ do_options() {
 				EXCLUSIVE_ARGV="$arg"
 				;;
 
-			--shutdown)
+			-h|--shutdown)
 				DUMP=yes
 				STOP=yes
 				KILL_DAEMON=yes
@@ -522,7 +522,7 @@ do_options() {
 				EXCLUSIVE_ARGV="$arg"
 				;;
 
-			--reset)
+			-r|--reset)
 				DUMP=yes
 				RESET=yes
 				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
@@ -554,7 +554,7 @@ do_options() {
 				BUF_SIZE=$val
 				DO_SETUP=yes
 				;;
-			--event)
+			-e|--event)
 				error_if_empty $arg $val
 				# reset any read-in defaults from daemonrc
 				if test "$SEEN_EVENT" = "0"; then
@@ -568,7 +568,7 @@ do_options() {
 				NR_CHOSEN=`expr $NR_CHOSEN + 1`
 				DO_SETUP=yes
 				;;
-			--separate)
+			-p|--separate)
 				OLD_IFS=$IFS
 				IFS=,
 				validate_separate_args $arg $val
@@ -632,11 +632,11 @@ do_options() {
 				DO_SETUP=yes
 				;;
 
-			--verbose)
+			-V|--verbose)
 				VERBOSE=1
 				;;
 
-			--list-events)
+			-l|--list-events)
 				EXCLUSIVE_ARGC=`expr $EXCLUSIVE_ARGC + 1`
 				EXCLUSIVE_ARGV="$arg"
 				exec $OP_HELP
@@ -1135,12 +1135,12 @@ check_version_help() {
 
 	for i in $@; do
 		case "$i" in
-			--help)
+			-\?|--help)
 				do_help
 				exit 0
 				;;
 
-			--version)
+			-v|--version)
 				$OP_HELP --version | cut -d' ' -f2-
 				exit 0
 				;;

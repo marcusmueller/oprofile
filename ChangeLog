@@ -1,5 +1,10 @@
 2003-06-17  John Levon  <levon@movementarian.org>
 
+	* utils/opcontrol: accept some short forms for common
+	operations
+
+2003-06-17  John Levon  <levon@movementarian.org>
+
 	* utils/opcontrol: accept --foo blah as well as
 	--foo=blah
 
