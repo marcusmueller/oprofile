@@ -173,11 +173,8 @@ int main(int argc, char * argv[1])
 
 	do_speed_test();
 
-	if (nr_error) {
+	if (nr_error)
 		printf("%d error occured\n", nr_error);
-	} else {
-		printf("no error occur\n");
-	}
 
 	return nr_error ? EXIT_FAILURE : EXIT_SUCCESS;
 }

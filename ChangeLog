@@ -1,5 +1,6 @@
 2003-09-26  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libdb/tests/db_test.c: success must be silent
 	* dae/oprofiled.c:
 	* daemon/oprofiled.c:
 	* libutil/op_deviceio.c:
