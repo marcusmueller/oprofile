@@ -1,3 +1,10 @@
+2002-05-12  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/oprofiled.c: delete lockfile on SIGTERM
+ 
+	* pp/samples_file.h:
+	* pp/samples_file.cpp: minor changes
+
 2002-05-11  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/op_bfd.cpp:

@@ -629,6 +629,13 @@ static void clean_exit(void)
 }
  
  
+static void opd_sigterm(int val __attribute__((unused)))
+{
+	clean_exit();
+	exit(EXIT_FAILURE);
+}
+
+ 
 int main(int argc, char const *argv[])
 {
 	struct op_sample *sbuf;
@@ -689,6 +696,16 @@ int main(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	act.sa_handler = opd_sigterm;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SIGTERM);
+	
+	if (sigaction(SIGTERM, &act, NULL)) {
+		perror("oprofiled: install of SIGTERM handler failed: ");
+		exit(EXIT_FAILURE);
+	}
+ 
 	sigemptyset(&maskset);
 	sigaddset(&maskset, SIGALRM);
 	sigaddset(&maskset, SIGHUP);
