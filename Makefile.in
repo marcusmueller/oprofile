@@ -18,9 +18,9 @@ install.kernel: all
 
 install.user: all
 	for i in $(USER_SUBDIRS) ; \
-	do
+	do \
 		(cd $$i && $(MAKE) install) || exit 1 ; \
-	done 
+	done
 
 uninstall:
 	for i in $(SUBDIRS) ; \
@@ -58,7 +58,7 @@ tags:
 # 6. send release email
 # 7. update freshmeat
 # 8. cvs tag RELEASE_0_0_8
-# 9. update webpage release-notes/, index, download
+# 9. update webpage release-notes/, index, download, srcdoc/
 dist:
 	mkdir tmpdist ; \
 	cd tmpdist ; \
