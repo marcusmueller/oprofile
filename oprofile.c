@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.15 2000/08/18 00:31:15 moz Exp $ */
+/* $Id: oprofile.c,v 1.16 2000/08/18 00:34:50 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 
@@ -51,7 +51,7 @@ static u8 op_ctr1_osusr[NR_CPUS];
 static int op_major;
 static int cpu_type;
 
-static u32 oprof_opened;
+static u32 oprof_opened __cacheline_aligned;
 DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
 /* this array is scanned by read() so we don't
  * want it in the oprof_data cacheline. Access
