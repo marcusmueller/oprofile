@@ -111,6 +111,13 @@ static int oprof_output_maps(struct task_struct *task)
 
 		oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
 			GET_VM_OFFSET(map), map->vm_file, 1);
+
+		/* FIXME: 32 bits application contains two maps with
+		 * VM_EXECUTABLE bits, from daemon point of view the second
+		 * is not distinguishable from a real exec so we ignore the
+		 * second.
+		 */
+		break;
 	}
 	for (map = mm->mmap; map; map = map->vm_next) {
 		if (!(map->vm_flags & VM_EXEC) || !map->vm_file)

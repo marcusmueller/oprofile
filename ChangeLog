@@ -1,5 +1,12 @@
 2004-03-22  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* module/x86/hammer_op_syscalls.c: use the first map with VM_EXECUTABLE
+	  bit to do the exec notification, this fix a 32 bits application
+	  profiling regression. We dunno exactly what is this second mmap ...
+	  but we must ignore one of these. Fix #921243
+
+2004-03-22  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* module/ia64/op_pmu.c: the way to set pfm_syst_wide and
 	  pfm_dcr_pp changed between 2.4.19 and 2.4.20
 
