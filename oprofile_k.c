@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.8 2000/08/03 21:35:27 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.9 2000/08/03 22:30:35 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -246,9 +246,7 @@ inline static char *oprof_outstr(char *buf, char *str, int bytes)
 
 #define map_round(v) (((v)+(sizeof(struct op_map)/2))/sizeof(struct op_map)) 
 
-spinlock_t map_lock __cacheline_aligned = SPIN_LOCK_UNLOCKED;
- 
-/* buf must be PAGE_SIZE bytes large */
+/* buf must be PAGE_SIZE bytes large, mmap_sem must be held */
 static int oprof_output_map(ulong addr, ulong len,
 	ulong pgoff, struct file *file, char *buf)
 {
@@ -257,8 +255,6 @@ static int oprof_output_map(ulong addr, ulong len,
  
 	if (!file)
 		return 0;
- 
-	spin_lock(&map_lock);
  
 	map_buf[nextmapbuf].addr = addr;
 	map_buf[nextmapbuf].len = len;
@@ -283,8 +279,6 @@ static int oprof_output_map(ulong addr, ulong len,
 
 	if (nextmapbuf==OP_MAX_MAP_BUF)
 		nextmapbuf=0;
-
-	spin_unlock(&map_lock);
  
 	return size;
 }
@@ -305,15 +299,10 @@ static int oprof_output_maps(struct task_struct *task)
 	   mm, then mm_users must be at least 2, so we should never have to
 	   mmput() here. */
  
-	task_lock(task);
-	mm=task->mm;
-	task_unlock(task);
- 
-	if (!mm)
-		goto out; 
+	if (!(mm=task->mm))
+		goto out;
 
 	down(&mm->mmap_sem);
- 
 	for (map=mm->mmap; map; map=map->vm_next) {
 		if (!(map->vm_flags&VM_EXEC))
 			continue;
@@ -321,9 +310,7 @@ static int oprof_output_maps(struct task_struct *task)
 		size += oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
 				map->vm_pgoff, map->vm_file, buffer);
 	}
-
 	up(&mm->mmap_sem);
- 
 	/* FIXME: remove */
 	if (!atomic_read(&mm->mm_users))
 		printk(KERN_ERR "Huh ? mm_users is 0\n");
@@ -335,13 +322,12 @@ out:
  
 asmlinkage static int my_sys_execve(struct pt_regs regs)
 {
-	char *filename; 
+	char *filename;
 	int ret;
  
-	filename = getname((char *)regs.ebx); 
-	ret = PTR_ERR(filename); 
+	filename = getname((char *)regs.ebx);
 	if (IS_ERR(filename))
-		goto out; 
+		return PTR_ERR(filename);
 	ret = do_execve(filename, (char **)regs.ecx, (char **)regs.edx, &regs);
 	if (!ret) {
 		struct op_sample samp;
@@ -358,7 +344,6 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 		printk(KERN_ERR "huh ? %d\n",ret); 
  
 	putname(filename);
-out:
         return ret;
 }
 
@@ -389,7 +374,10 @@ asmlinkage static int my_sys_mmap2(ulong addr, ulong len,
 		samp.count = OP_MAP;
 		samp.pid = current->pid;
 		/* how many bytes to read from buffer */
+		down(&current->mm->mmap_sem);
 		samp.eip = oprof_output_map(ret,len,pgoff,file,buffer);
+		up(&current->mm->mmap_sem);
+ 
 		fput(file);
 		free_page((ulong)buffer);
 		oprof_out8(&samp);
