@@ -14,12 +14,6 @@
 
 #include <linux/version.h>
 
-#include <asm/apic.h>
-#include <asm/apicdef.h>
-#include <asm/mpspec.h>
-
-#include "apic_up_compat.h"
-
 #define pte_page_address(a) page_address(pte_page(a))
 #define oprof_wake_up(w) wake_up(w)
 #define lock_rtc(f) spin_lock_irqsave(&rtc_lock, f)

@@ -27,6 +27,8 @@
 	#include "compat24.h"
 #endif
 
+#include "arch/arch_compat.h"
+ 
 #include "op_cache.h"
 
 #if V_BEFORE(2, 5, 14)
@@ -76,17 +78,6 @@
 
 /* Compiler work-around */
 
-/* work-around compiler bug in gcc 2.91.66, just mark all input register as
- * magically cloberred by wrmsr */
-#if __GNUC__ == 2 && __GNUC_MINOR__ == 91
-	#undef wrmsr
-	#define wrmsr(msr,val1,val2)					\
-	     __asm__ __volatile__("wrmsr"				\
-				  : /* no outputs */			\
-				  : "c" (msr), "a" (val1), "d" (val2)	\
-				  : "ecx", "eax", "edx")
-#endif
-
 /* branch prediction */
 #ifndef likely
 	#ifdef EXPECT_OK
@@ -101,55 +92,6 @@
 	#else
 		#define unlikely(a) (a)
 	#endif
-#endif
-
-/* MSRs */
-#ifndef MSR_P6_PERFCTR0
-#define MSR_P6_PERFCTR0 0xc1
-#endif
-#ifndef MSR_P6_PERFCTR1
-#define MSR_P6_PERFCTR1 0xc2
-#endif
-#ifndef MSR_P6_EVNTSEL0
-#define MSR_P6_EVNTSEL0 0x186
-#endif
-#ifndef MSR_P6_EVNTSEL1
-#define MSR_P6_EVNTSEL1 0x187
-#endif
-#ifndef MSR_IA32_APICBASE
-#define MSR_IA32_APICBASE 0x1B
-#endif
-#ifndef MSR_K7_PERFCTL0
-#define MSR_K7_PERFCTL0 0xc0010000
-#endif
-#ifndef MSR_K7_PERFCTL1
-#define MSR_K7_PERFCTL1 0xc0010001
-#endif
-#ifndef MSR_K7_PERFCTL2
-#define MSR_K7_PERFCTL2 0xc0010002
-#endif
-#ifndef MSR_K7_PERFCTL3
-#define MSR_K7_PERFCTL3 0xc0010003
-#endif
-#ifndef MSR_K7_PERFCTR0
-#define MSR_K7_PERFCTR0 0xc0010004
-#endif
-#ifndef MSR_K7_PERFCTR1
-#define MSR_K7_PERFCTR1 0xc0010005
-#endif
-#ifndef MSR_K7_PERFCTR2
-#define MSR_K7_PERFCTR2 0xc0010006
-#endif
-#ifndef MSR_K7_PERFCTR3
-#define MSR_K7_PERFCTR3 0xc0010007
-#endif
-
-#ifndef APIC_SPIV_APIC_ENABLED
-#define APIC_SPIV_APIC_ENABLED (1<<8)
-#endif
-
-#ifndef APIC_DEFAULT_PHYS_BASE
-#define APIC_DEFAULT_PHYS_BASE 0xfee00000
 #endif
 
 #endif /* COMPAT_H */

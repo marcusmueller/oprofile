@@ -1,3 +1,19 @@
+2002-06-06  John Levon  <moz@compsoc.man.ac.uk>
+
+	* module/x86/Makefile.in:
+	* module/Makefile.in: remove 2.91 check, add 2.5 check
+ 
+	* module/compat22.h:
+	* module/compat24.h:
+	* module/apic_up_compat.h: move to ...
+
+	* module/x86/op_apic.h:
+	* module/x86/apic_compat.h: ... here
+ 
+	* module/compat.h: move arch stuff to ...
+
+	* module/x86/arch_compat.h: ... here
+ 
 2002-06-06  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* configure.in: remove gcc 2.91 check

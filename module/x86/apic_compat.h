@@ -20,6 +20,22 @@
 #define GET_APIC_VERSION(x)	((x)&0xFF)
 #define GET_APIC_MAXLVT(x)	(((x)>>16)&0xFF)
 #define APIC_INTEGRATED(x)	((x)&0xF0)
+#else
+#include <asm/apic.h>
+#include <asm/apicdef.h>
+#include <asm/mpspec.h>
+#endif
+
+#ifndef MSR_IA32_APICBASE
+#define MSR_IA32_APICBASE 0x1B
+#endif
+ 
+#ifndef APIC_SPIV_APIC_ENABLED
+#define APIC_SPIV_APIC_ENABLED (1<<8)
+#endif
+
+#ifndef APIC_DEFAULT_PHYS_BASE
+#define APIC_DEFAULT_PHYS_BASE 0xfee00000
 #endif
 
 #if !defined(CONFIG_X86_LOCAL_APIC)

@@ -9,9 +9,9 @@ BASIC_KCFLAGS = $(ARCH_CFLAGS) -pipe -O2 -fno-strict-aliasing -Wall -Wstrict-pro
 BASIC_KCFLAGS += $(INCLUDES) -D__KERNEL__ -DMODULE @BKCFLAGS@ @MODVERSIONS@
 KCFLAGS = $(BASIC_KCFLAGS) @NO_MODULE_VERSION@
 
-# enable -Werror for non-release versions except for gcc 2.91
+# enable -Werror for non-release versions except for on 2.5 kernels
 ifneq (,$(findstring cvs,@VERSION@))
-ifneq (yes,@GCC_2_91@)
+ifneq (,$(findstring 2.5,@KVERS@))
 KCFLAGS += -Werror
 endif
 endif

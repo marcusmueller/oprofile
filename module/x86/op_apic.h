@@ -12,6 +12,8 @@
 #ifndef OP_APIC_H
 #define OP_APIC_H
 
+#include "apic_compat.h"
+ 
 /* for installing and restoring the NMI handler */
 
 #define store_idt(addr) \

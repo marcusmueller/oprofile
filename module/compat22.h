@@ -12,8 +12,6 @@
 #ifndef COMPAT22_H
 #define COMPAT22_H
 
-#include "apic_up_compat.h"
-
 #include <linux/smp_lock.h>
 
 #define pte_page_address(a) pte_page(a)
