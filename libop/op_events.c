@@ -104,13 +104,13 @@ static struct op_unit_mask const um_fpu_ops =
 	    {1<<5, "Store pipe junk ops"} } };
 
 static struct op_unit_mask const um_segregload = 
-	{ 7, utm_exclusive, 0x0, 
+	{ 7, utm_bitmask, 0x0, 
 	  { {1<<0, "ES register"},
 	    {1<<1, "CS register"},
 	    {1<<2, "SS register"},
 	    {1<<3, "DS register"},
 	    {1<<4, "FS register"},
-		{1<<5, "GS register"},
+	    {1<<5, "GS register"},
 	    {1<<6, "HS register"} } };
 
 static struct op_unit_mask const um_ecc =

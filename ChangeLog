@@ -1,3 +1,7 @@
+2003-02-22  Dave Jones <davej@codemonkey.org.uk>
+
+	* libop/op_events.c: segregload is utm_mask not utm_exclusive
+
 2003-02-20  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update
