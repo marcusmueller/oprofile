@@ -11,7 +11,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>571</width>
+            <width>567</width>
             <height>536</height>
         </rect>
     </property>
@@ -310,15 +310,15 @@
                                                     <cstring>unit_mask_group</cstring>
                                                 </property>
                                                 <property stdset="1">
+                                                    <name>title</name>
+                                                    <string>Unit mask</string>
+                                                </property>
+                                                <property stdset="1">
                                                     <name>sizePolicy</name>
                                                     <sizepolicy>
                                                         <hsizetype>1</hsizetype>
                                                         <vsizetype>5</vsizetype>
                                                     </sizepolicy>
-                                                </property>
-                                                <property stdset="1">
-                                                    <name>title</name>
-                                                    <string>Unit mask</string>
                                                 </property>
                                                 <property>
                                                     <name>toolTip</name>
@@ -636,7 +636,7 @@
                                         </property>
                                         <property stdset="1">
                                             <name>text</name>
-                                            <string>&amp;Daemon directory</string>
+                                            <string>Daemon directory</string>
                                         </property>
                                         <property>
                                             <name>buddy</name>
@@ -853,7 +853,7 @@
                         <class>QLayoutWidget</class>
                         <property stdset="1">
                             <name>name</name>
-                            <cstring>Layout27</cstring>
+                            <cstring>Layout16</cstring>
                         </property>
                         <hbox>
                             <property stdset="1">
@@ -868,7 +868,7 @@
                                 <class>QLayoutWidget</class>
                                 <property stdset="1">
                                     <name>name</name>
-                                    <cstring>Layout26</cstring>
+                                    <cstring>Layout15</cstring>
                                 </property>
                                 <vbox>
                                     <property stdset="1">
@@ -907,6 +907,21 @@
                                         <property>
                                             <name>toolTip</name>
                                             <string>Don't profile profiler daemon</string>
+                                        </property>
+                                    </widget>
+                                    <widget>
+                                        <class>QCheckBox</class>
+                                        <property stdset="1">
+                                            <name>name</name>
+                                            <cstring>verbose</cstring>
+                                        </property>
+                                        <property stdset="1">
+                                            <name>text</name>
+                                            <string>&amp;Verbose</string>
+                                        </property>
+                                        <property>
+                                            <name>toolTip</name>
+                                            <string>Very verbose output in log file</string>
                                         </property>
                                     </widget>
                                 </vbox>

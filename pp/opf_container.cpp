@@ -22,6 +22,7 @@
 
 #include <limits.h>
 
+// FIXME: prefer using std::endl; etc. 
 using namespace std;
 
 #include "opf_filter.h"
@@ -135,7 +136,7 @@ class symbol_container_impl {
 symbol_container_impl::symbol_container_impl()
 {
 	// symbol_entry_by_samples_nr has been setup by the default ctr, we
-	// need to rebuild it. do not assume than index 0 is correctly build
+	// need to rebuild it. do not assume that index 0 is correctly built
 	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
 		less_sample_entry_by_samples_nr compare(i);
 		symbol_entry_by_samples_nr[i] =

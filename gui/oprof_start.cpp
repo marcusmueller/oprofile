@@ -84,6 +84,7 @@ oprof_start::oprof_start()
 		pgrp_filter_edit->setText("");
 	base_opd_dir_edit->setText(config.base_opd_dir.c_str());
 	ignore_daemon_samples_cb->setChecked(config.ignore_daemon_samples);
+	verbose->setChecked(config.verbose); 
 	kernel_only_cb->setChecked(config.kernel_only);
 
 	// the unit mask check boxes
@@ -593,6 +594,7 @@ bool oprof_start::record_config()
 	config.base_opd_dir = base_opd_dir_edit->text().latin1();
 	config.ignore_daemon_samples = ignore_daemon_samples_cb->isChecked();
 	config.kernel_only = kernel_only_cb->isChecked();
+	config.verbose = verbose->isChecked();
 
 	if (config.base_opd_dir.length() && 
 	    config.base_opd_dir[config.base_opd_dir.length()-1] != '/')
@@ -818,6 +820,8 @@ void oprof_start::on_start_profiler()
 	args.push_back("--ignore-myself=" + tostr(config.ignore_daemon_samples));
 	args.push_back("--buffer-size=" + tostr(config.buffer_size));
 	args.push_back("--hash-table-size=" + tostr(config.hash_table_size));
+	if (config.verbose)
+		args.push_back("--verbose");
 
 	do_exec_command("op_start", args);
 	timerEvent(0);

@@ -1,17 +1,11 @@
 0.0.5 task list
 ---------------
 
-o get opf_filter and friends working OK
+o fix opf_filter crash
  
-o fix showing all counters for oprofpp -s
- 
-o finish clean up starting GUI
-
-o check documentation
+o finish GUI unit masks
 
 o re-do performance tests
- 
-o bug list (except nosmp)
  
 0.0.6 task list
 ---------------

@@ -93,6 +93,7 @@ config_setting::config_setting()
 	map_filename(BUILD_DIR "System.map"),
 	kernel_only(0),
 	ignore_daemon_samples(0),
+	verbose(0),
 	pgrp_filter(0),
 	pid_filter(0)
 {
@@ -112,6 +113,7 @@ void config_setting::load(std::istream& in)
 	in >> map_filename;
 	in >> kernel_only;
 	in >> ignore_daemon_samples;
+	in >> verbose;
 	in >> pgrp_filter;
 }
 
@@ -142,6 +144,7 @@ void config_setting::save(std::ostream& out) const
 
 	out << kernel_only << std::endl;
 	out << ignore_daemon_samples << std::endl;
+	out << verbose << std::endl;
 	out << pgrp_filter << std::endl;
 }
 

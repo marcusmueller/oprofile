@@ -81,6 +81,7 @@ struct config_setting {
 	std::string map_filename;
 	int kernel_only;
 	int ignore_daemon_samples;
+	int verbose;
 	// as string to allow symbolic group name ?
 	int pgrp_filter;
 	// not persistent, no interest to save from one session to another?

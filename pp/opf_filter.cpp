@@ -486,7 +486,7 @@ void output::output_asm(input & in)
 	double threshold = threshold_percent / 100.0;
 
 	for (size_t i = 0 ; i < v.size() && threshold >= 0 ; ++i) {
-		double percent = do_ratio(v[i]->sample.counter[index],
+		double const percent = do_ratio(v[i]->sample.counter[index],
 					  counter_info[index].total_samples);
 
 		if (until_more_than_samples || percent >= threshold) {
@@ -683,30 +683,22 @@ void output::output_source()
 	double threshold = threshold_percent / 100.0;
 
 	for (size_t i = 0 ; i < file_by_samples.size() && threshold >= 0 ; ++i) {
-		ifstream in(file_by_samples[i].filename.c_str());
+		filename_by_samples & s = file_by_samples[i];
+		ifstream in(s.filename.c_str());
 
 		if (!in) {
 			cerr << "opf_filter (warning): unable to open for reading: " << file_by_samples[i].filename << endl;
 		} else {
-			if (until_more_than_samples) {
-				do_output_one_file(in, file_by_samples[i].filename, 
-						   file_by_samples[i].counter);
-			} else {
-				if (do_ratio(file_by_samples[i].counter[index],
-					     counter_info[index].total_samples) >= threshold) {
-					do_output_one_file(in, file_by_samples[i].filename, 
-							   file_by_samples[i].counter);
-				}
-
-			}
+			if (until_more_than_samples ||
+				(do_ratio(s.counter[index], counter_info[index].total_samples) >= threshold))
+				do_output_one_file(in, s.filename, s.counter);
 		}
 
 		// Always decrease the threshold if needed, even if the file has not
 		// been found to avoid in pathalogical case the output of many files
 		// which contains low counter value.
-		if (until_more_than_samples) {
-			threshold -=  file_by_samples[i].percent;
-		}
+		if (until_more_than_samples)
+			threshold -=  s.percent;
 	}
 }
 
@@ -732,6 +724,7 @@ size_t output::get_sort_counter_nr() const
 	return index;
 }
 
+// FIXME: is this going to be removed when you're sure it's stable ???
 bool output::sanity_check_symbol_entry(size_t index) const
 {
 	if (index == 0) {
@@ -746,7 +739,7 @@ bool output::sanity_check_symbol_entry(size_t index) const
 		}
 	} else {
 		if (symbols[index-1].last != symbols[index].first) {
-			cerr << "opf_filter: symbole[" << index - 1
+			cerr << "opf_filter: symbols[" << index - 1
 			     << "].last != symbols[" << index
 			     << "].first" << endl;
 			return false;
@@ -979,8 +972,6 @@ static void get_options(int argc, char const * argv[])
 
 	// FIXME : too tricky: use popt sub-table capacity?
 
-	// FIXME: this is no good, see argv2 below (gcc 3.0.1) 
- 
 	// separate the option into two set, one for opp_get_options
 	// and the other for opf_filter
 	std::vector<char const*> oprofpp_opt;
@@ -1001,6 +992,9 @@ static void get_options(int argc, char const * argv[])
 
 	opp_get_options(oprofpp_opt.size(), &oprofpp_opt[0]);
 
+	// FIXME: std::vector<char const*> is not necessarily a const char * array !
+	// why did you not change this ? 
+	// I guess you need a vector_to_c_array template or something
 	optcon = opd_poptGetContext(NULL, opf_opt.size(), &opf_opt[0],
 				options, 0);
 
@@ -1032,7 +1026,7 @@ static void get_options(int argc, char const * argv[])
 int main(int argc, char const * argv[]) {
 
 #if (__GNUC__ >= 3)
-	// this improve a little what performance with gcc 3.0.
+	// this improves performance with gcc 3.x a bit
 	std::ios_base::sync_with_stdio(false);
 #endif
 
