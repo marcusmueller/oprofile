@@ -489,6 +489,7 @@ build(const opp_samples_files & samples_files, const opp_bfd & abfd,
 	for (it = file_list.begin() ; it != file_list.end(); ++it) {
 		string lib_name;
 		// FIXME: phil, image_name is for what ???
+		// FIXME: need to print out lib name not app name ... 
 		string image_name = extract_app_name(*it, lib_name);
 
 		opp_samples_files samples_files(dir + "/" + *it);

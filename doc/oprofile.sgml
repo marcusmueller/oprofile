@@ -133,6 +133,13 @@ necks in real-world systems.
 			<ulink url="http://sf.net/tracker/?group_id=16191&amp;atid=116191">http://sf.net/tracker/?group_id=16191&amp;atid=116191</ulink>.
 		</para></listitem>
 	</varlistentry>
+	<varlistentry>
+		<term>IRC channel</term>
+		<listitem><para>
+			Several oprofile developers and users sometimes hang out on channel <command>#oprofile</command>
+			at <ulink url="http://www.openprojects.net/">openprojects.net</ulink>. 
+		</para></listitem>
+	</varlistentry>
 </variablelist>
 </para>
 
@@ -141,8 +148,7 @@ necks in real-world systems.
 <sect1 id="install">
 <title>Installation</title>
 <para>
-First you need to build <filename>oprofile</filename> and install it. <command>./autogen</command>,
-<command>./configure</command>, <command>make</command>, <command>make install</command>
+First you need to build <filename>oprofile</filename> and install it. <command>./configure</command>, <command>make</command>, <command>make install</command>
 is all you need, but note these arguments to <command>./configure</command> :
 <variablelist>
 	<varlistentry>
@@ -248,7 +254,6 @@ I can now ask for a symbol-based summary of the sample profile :
 </para>
 <para><command>oprofpp &mdash;demangle -l ./lyx &gt;oprof.out</command></para>
 <para>
-You can also pass the full absoluate path of the binary to example. 
 This can be quite slow on large binaries, so sit tight. 
 As it's a C++ program, I asked for the symbols to be demangled to a readable form. Examining
 the output will give the symbols against which the most hits were registered. In this case I got :
@@ -364,7 +369,7 @@ options, only interesting ones are listed here :
 		<listitem><para>
 		separate samples for each distinct application. With this option, samples
 		in shared libraries are stored in a separate sample file specific to the
-		primate binary image (e.g. /bin/cp) that the code is mapped into. This feature
+		primary binary image (e.g. /bin/cp) that the code is mapped into. This feature
 		is not supported for process-context kernel samples, and incurs a performance
 		penalty.
 		</para></listitem>
@@ -418,15 +423,15 @@ Note that <command>oprof_start</command> is just a wrapper around the <command>o
 so it does not provide more services than the script itself.
 </para>
 <para>
-After <command>oprof_start</command> is started you can select the event type for each counter,
-the sampling rate and other related parameters as explained in <xref linkend="starting-daemon">.
+After <command>oprof_start</command> is started you can select the event type for each counter;
+the sampling rate and other related parameters are explained in <xref linkend="starting-daemon">.
 The "Configuration" section allows you to set general parameters such as the buffer size, kernel filename
 etc. The counter setup interface should be self-explanatory; <xref linkend="hardware-counters"> and related 
 links contain information on using unit masks.
 </para>
 <para>
 A status line shows the current status of the profiler: how long it has been running, and the average
-number of interrupts received per second, over all processors.
+number of interrupts received per second and the total, over all processors.
 Note that quitting <command>oprof_start</command> does not stop the profiler.
 </para>
 <para>
@@ -584,9 +589,7 @@ The following files will be present :
 		<term><filename>event</filename></term>
 		<listitem><para>
 		The numeric event value. You can convert from symbolic event names to numeric values like so :
-		</para><para><command>echo `op_help CPU_CLK_UNHALTED` &gt;/proc/sys/dev/oprofile/0/0/event</command>
-		You can override the detection of your cpu type with:
-		<command>op_help &mdash;cpu-type=3 RETIRED_INSNS</command> (for example) to see Athlon events on a PII.
+		</para><para><command>echo `op_help CPU_CLK_UNHALTED` &gt;/proc/sys/dev/oprofile/0/0/event</command>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -659,7 +662,7 @@ options to <command>op_start</command>, or by setting the relevant sysctls as me
 </sect2>
 
 <sect2 id="unloadable">
-<title>Unloadable kernel module</title>
+<title>Unloading the kernel module</title>
 <para>
 The kernel module can be unloaded, but is designed to take very little memory when profiling is not underway.
 There is no need to unload the module between profiler runs.
@@ -681,7 +684,70 @@ re-enable the module unload by specifying the "allow_unload" parameter to the mo
  
 </chapter>
 
+<chapter id="overview"> 
+<title>Overview of oprofile tools</title>
+<para>
+This section gives a brief description of the available oprofile utilities and their purpose.
+</para>
+<variablelist>
+<varlistentry>
+	<term><filename>op_help</filename></term>
+	<listitem><para>
+		This utility lists the availabe events and short descriptions.
+	</para></listitem>
+</varlistentry>
+	
+<varlistentry>
+	<term><filename>op_start</filename>, <filename>oprof_start</filename></term>
+	<listitem><para>
+		Used for starting profiling, discussed in <xref linkend="usage">.
+	</para></listitem>
+</varlistentry>
 
+<varlistentry>
+	<term><filename>op_stop</filename></term>
+	<listitem><para>
+		You should stop the profiler using this script. The profiler will collect
+		all the data remaining to be processed, and quit.
+	</para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><filename>op_dump</filename></term>
+	<listitem><para>
+		This causes the profiler to process all pending information.
+	</para></listitem> 
+</varlistentry>
+ 
+<varlistentry>
+	<term><filename>oprofpp</filename></term>
+	<listitem><para>
+		This is the main tool for retrieving useful profile data, described in
+		<xref linkend="results">.
+	</para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><filename>op_time</filename></term>
+	<listitem><para>
+		This utility is useful for examining the relative profile values for
+		all images on the system to determine the applications with the largest
+		impact on system performance.
+	</para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><filename>op_to_source</filename>, <filename>opf_filter</filename></term>
+	<listitem><para>
+		This utility can be used to produce annotated source, if the application
+		was compiled with debugging symbols. <filename>opf_filter</filename> is used
+		internally by oprofile.
+	</para></listitem>
+</varlistentry>
+</variablelist>
+	
+</chapter>
+ 
 <chapter id="results">
 <title>Obtaining and interpreting results</title>
 <para>
@@ -695,14 +761,17 @@ Now that we've got some data, it has to be processed. That's the job of <command
 This works on a sample file in the <filename>/var/opd/samples/</filename> directory,
 along with the binary file being profiled, to produce human-readable data. Note that if the binary file changes
 after the sample file was created, you won't be able to get useful data out. This situation is detected for you.
+Note that several instances of a binary are merged into one sample file. By default, all samples from a dynamically linked library
+are merged into one sample file as well.
 </para>
 <para>
 A different scenario happen when re-starting profiling with different parameters, as the old sample files from previous sessions don't
 get deleted (allowing you to build profiles over many distinct profiling sessions).
 If the last session is determined to be out of date due to the use of different profiling parameters, all the samples files are
 backed up in a sub-directory name session-#nr.
-If during profiling the daemon detect a change to a binary image and a  samples file belonging to this binary exist, the samples file is silently deleted.
-So if during profiling you change a binary he is your responsability to save the binary image <emphasis>and</emphasis> the samples files.
+If during profiling the daemon detects a change to a binary image and a samples file belonging to this binary exists, the samples file is silently deleted.
+So if during profiling you change a binary it is your responsibility to save the binary image <emphasis>and</emphasis> the samples files, if 
+you need it.
 </para>
 <para>
 Note that kernel modules without symbol data (this can happen with some initrd setups) cannot be profiled (modules
@@ -724,8 +793,8 @@ Some interesting options of the post-processor :
 		<term><option>&mdash;samples-file</option> <filename>filename</filename></term>
 		<term><option>-f</option> <filename>filename</filename></term>
 		<listitem><para>
-		The samples file to use. This is not necessary, as it can be derived from the filename of the
-		absolute-path-specified binary image.
+		The samples file to use. By default, the current samples file for the given binary is used;
+		this option can be used to examine older sample files.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -745,21 +814,24 @@ Some interesting options of the post-processor :
 	<varlistentry>
 		<term><option>&mdash;counter</option> nr</term>
 		<listitem><para>
-		Which counter (0 - N) to extract information for. N is dependant of your cpu type 1 for Intel P2 core based cpu, 3 for Athlon based cpu.
+		Which counter (0 - N) to extract information for. N is dependent on your cpu type: 1 for Intel CPUs, 3 for Athlon based CPUs.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;list-symbols</option></term>
 		<term><option>-l</option></term>
 		<listitem><para>
-		List a histogram of sample counts against symbols.
+		List a histogram of sample counts against symbols. Each line shows the function name,
+		its starting address, the relative percentage of hits across that image, and the absolute
+		number of samples in this function.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;list-symbol</option> name</term>
 		<term><option>-s</option> name</term>
 		<listitem><para>
-		Provide a detailed listing for the specified symbol name.
+		Provide a detailed listing for the specified symbol name. This shows, for each sample,
+		the position of the address, and the number of samples.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -774,29 +846,33 @@ Some interesting options of the post-processor :
 		<term><option>&mdash;list-all-symbols-details</option></term>
 		<term><option>-L</option></term>
 		<listitem><para>
-		Provide a detailed listing for all symbols.
+		Provide a detailed listing for all symbols. Each line shows number of samples at the given
+		address for all counters.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;output-linenr-info</option></term>
 		<term><option>-o</option></term>
 		<listitem><para>
-		Add filename::linenr info for all samples, usable only with &mdash;list-all-symbols-details, &mdash;list-symbol and &mdash;list-symbols.
+		Show the function and line number for all samples. This requires that the image was compiled
+		with debug symbols (<option>-g</option>), and is
+		usable only with &mdash;list-all-symbols-details, &mdash;list-symbol and &mdash;list-symbols.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;exclude-symbol</option> symbol[,symbol]</term>
 		<term><option>-e</option> symbol[,symbol]</term>
 		<listitem><para>
-		exclude list of comma separated symbol
+		Comma-separated list of symbols to ignore. This can be useful to ignore the leading contributors
+		to the sample histogram, as the percentage values are re-calculated.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;show-shared-libs</option></term>
 		<term><option>-h</option></term>
 		<listitem><para>
-		Show the details for each shared lib which belongs to one application. This option is useful only
-		if you have profiled with <option>&mdash;separate-samples</option> option and you specify on the
+		Show the details for each shared lib which belongs to the given application. This option is useful only
+		if you have profiled with the <option>&mdash;separate-samples</option> option and you specify on the
 		oprofpp command line either <option>&mdash;list-symbols</option> or 
 		<option>&mdash;list-all-symbols-details</option>.
 		</para></listitem>
@@ -905,8 +981,6 @@ The options allowed are :
 		<term><option>&mdash;until-more-than-samples percent_nr</option></term>
 		<term><option>-m percent_nr</option></term>
 		<listitem><para>
-		<!-- FIXME: it's unclear what this means exactly ? -->
-		<!-- FIXME: John is it enough clear now ? -->
 		Output source files until the amount of samples in these files reach percent_nr samples.
 		Can not be combined with <option>&mdash;with-more-than-samples</option>.
 		</para></listitem>
@@ -916,7 +990,7 @@ The options allowed are :
 		<term><option>-f</option> <filename>filename</filename></term>
 		<listitem><para>
 		Specify the samples file. At least one of the <option>&mdash;samples-file</option> or
-<option>&mdash;image-file</option> must be specifed.
+		<option>&mdash;image-file</option> must be specifed.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -930,7 +1004,8 @@ The options allowed are :
 		<term><option>&mdash;exclude-symbol</option> symbol[,symbol]</term>
 		<term><option>-e</option> symbol[,symbol]</term>
 		<listitem><para>
-		exclude list of comma separated symbol
+		Comma-separated list of symbols to ignore. This can be useful to ignore the leading contributors
+		to the sample histogram, as the percentage values are re-calculated.
 		</para></listitem>
 	</varlistentry>
 </variablelist>
@@ -938,9 +1013,9 @@ The options allowed are :
 </sect1>
 
 <sect1 id="op-time">
-<title><command>op_time</command>: Overall of resultats</title>
+<title><command>op_time</command>: Overall of all system binaries</title>
 <para>
-You can get a quick look at an overall of resultats by using <command>op_time</command>. This utility display
+You can get a quick look at an overall summary of relative binary profiles using <command>op_time</command>. This utility displays
 the relative amount of samples for each application profiled sorted by decreasing order of samples count. So
 with <command>op_time [<option>&mdash;option</option>] [<filename>samples_dir</filename>]</command> you can get :
 </para>
@@ -968,14 +1043,14 @@ Options allowed are :
 		<term><option>-h</option></term>
 		<listitem><para>
 		Show the details for each shared lib which belongs to one application. This option is
-		usefull only if you have profiled with <option>&mdash;separate-samples</option> option
+		useful only if you have profiled with the <option>&mdash;separate-samples</option> option.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>&mdash;reverse</option></term>
 		<term><option>-r</option></term>
 		<listitem><para>
-		Sort by decreasing samples count rather
+		Sort by decreasing samples count instead of increasing count.
 		</para></listitem>
 	</varlistentry>
 </variablelist>
@@ -994,13 +1069,16 @@ instruction-level profiling.  However, for almost all circumstances the data
 can be useful. Ideally a utility such as Intel's VTUNE would be available to
 allow careful instruction-level analysis; go hassle Intel for this, not me ;)
 </para>
+<para>
+FIXME: document various examples where oprofile can give misleading results (small functions etc.).
+</para>
 </sect1>
 </chapter>
 
 <chapter id="overhead">
 <title>Profiling overhead</title>
 <para>
-One of the major design criteria for OProfile was low overhead. In many cases
+One of the major design criterions for OProfile was low overhead. In many cases
 profiling is hardly noticeable in terms of overhead (I regularly leave it turned on
 all the time). It achieves this by judicious use of kernel-side data structures
 to reduce the analysis overhead to a bare runtime minimum. There are several things
@@ -1026,6 +1104,7 @@ numbers of processes, leading to far better performance.
 <para>
 Thanks to (in no particular order) : Arjan van de Ven, Rik van Riel, Juan Quintela, Philippe Elie,
 Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne, Bob Montgomery, Ray Bryant, H.J. Lu,
+Jeff Esper,
 Richard Reich (rreich@shadowtechllc.com), Dave Jones, Charles Filtness; and finally Pulp, for "Intro".
 </para>
 </chapter>
