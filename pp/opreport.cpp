@@ -14,6 +14,7 @@
 #include <vector>
 #include <algorithm>
 #include <sstream>
+#include <numeric>
 
 #include "op_header.h"
 #include "string_manip.h"
@@ -190,7 +191,10 @@ group_summary summarize(partition_files::filename_set const & files)
 		summary dep_summary;
 		dep_summary.image_name = it->image;
 		dep_summary.lib_image  = it->lib_image;
-		dep_summary.count = samples.accumulate_samples(0, ~0);
+
+		profile_t::iterator_pair p_it =
+			samples.samples_range(0, ~0);
+		dep_summary.count = accumulate(p_it.first, p_it.second, 0);  
 
 		group.count += dep_summary.count;
 		group.files.push_back(dep_summary);

@@ -37,34 +37,6 @@ public:
 
 	~profile_t();
  
-	/**
-	 * accumulate_samples - lookup samples from a vma address
-	 * @param vma index of the samples.
-	 *
-	 * return zero if no samples has been found, input parameter vma
-	 * is updated to the next available vma with samples or uint(-1)
-	 * if no such sample exists. This means than caller must use
-	 *  for (start = .. ; start < end; ) {
-	 *    uint old_pos = start;
-	 *    accumulate_samples(start);
-	 * to walk through samples.
-	 *
-	 * FIXME: providing an iterator api will be perhaps better, like
-	 * pair_iterator<..., ...> get_samples(uint start, uint end);
-	 */
-	unsigned int accumulate_samples(uint & vma) const;
-
-	/**
-	 * accumulate_samples - lookup samples from a range of vma address
-	 * @param start start index of the samples.
-	 * @param end end index of the samples.
-	 *
-	 * return zero if no samples has been found
-	 * FIXME: providing an iterator api will be perhaps better, like
-	 * pair_iterator<..., ...> get_samples(uint start, uint end);
-	 */
-	unsigned int accumulate_samples(uint start, uint end) const;
-
 	/// return the header of the last opened samples file
 	opd_header const & get_header() const {
 		return *file_header;
@@ -80,6 +52,11 @@ public:
 	 * all error are fatal
 	 */
 	void add_sample_file(std::string const & filename, u32 offset);
+
+	class const_iterator;
+	typedef pair<const_iterator, const_iterator> iterator_pair;
+
+	iterator_pair samples_range(unsigned int start, unsigned int end) const;
 
 private:
 
@@ -107,6 +84,27 @@ private:
 	 * samples, the sample offset is from the start of the mapped
 	 * file, as seen in /proc/pid/maps).
 	 */
+	u32 start_offset;
+};
+
+class profile_t::const_iterator {
+	typedef ordered_samples_t::const_iterator iterator_t;
+public:
+	const_iterator() : start_offset(0) {}
+	const_iterator(iterator_t it_, u32 start_offset_)
+		: it(it_), start_offset(start_offset_) {}
+
+	unsigned int operator*() const { return it->second; }
+	const_iterator & operator++() { ++it; return *this; }
+
+	unsigned int vma() const { return it->first + start_offset; }
+	unsigned int count() const { return **this; }
+
+	bool operator!=(const_iterator const & rhs) const {
+		return it != rhs.it;
+	}
+private:
+	iterator_t it;
 	u32 start_offset;
 };
 

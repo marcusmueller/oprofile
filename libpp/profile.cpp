@@ -36,50 +36,6 @@ profile_t::~profile_t()
 }
 
 
-unsigned int profile_t::accumulate_samples(uint & index) const
-{
-	unsigned int count = 0;
-
-	ordered_samples_t::const_iterator it;
-	// FIXME: would we special if index == 0 or index == ~0 ?
-	index -= start_offset;
-	it = ordered_samples.lower_bound(index);
-	if (it != ordered_samples.end()) {
-		if (it->first <= index) {
-			if (it->first == index)
-				count = it->second;
-			++it;
-		}
-	}
-
-	if (it == ordered_samples.end()) {
-		index = uint(-1);
-	} else {
-		index = it->first + start_offset;
-	}
-
-	return count;
-}
-
-
-unsigned int profile_t::accumulate_samples(uint start, uint end) const
-{
-	unsigned int count = 0;
-
-	ordered_samples_t::const_iterator first, last;
-	// FIXME: this is wrong since we use accumulate_samples(0, ~0);
-	// as special constant to get the whole sample count. Fix here or
-	// caller ?
-	first = ordered_samples.lower_bound(start - start_offset);
-	last = ordered_samples.lower_bound(end - start_offset);
-	for ( ; first != last ; ++first) {
-		count += first->second;
-	}
-
-	return count;
-}
-
-
 void profile_t::add_sample_file(string const & filename, u32 offset)
 {
 	samples_odb_t samples_db;
@@ -131,4 +87,20 @@ void profile_t::add_sample_file(string const & filename, u32 offset)
 		return;
 
 	start_offset = offset;
+}
+
+
+profile_t::iterator_pair
+profile_t::samples_range(unsigned int start, unsigned int end) const
+{
+	// FIXME: this is wrong since we use samples_range(0, ~0);
+	// as special constant to get the whole sample count. Fix here or
+	// caller ?
+	ordered_samples_t::const_iterator first =
+		ordered_samples.lower_bound(start - start_offset);
+	ordered_samples_t::const_iterator last =
+		last = ordered_samples.lower_bound(end - start_offset);
+
+	return make_pair(const_iterator(first, start_offset),
+		const_iterator(last, start_offset));
 }

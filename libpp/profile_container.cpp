@@ -14,6 +14,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <numeric>
 
 #include "string_filter.h"
 
@@ -82,8 +83,10 @@ void profile_container::add(profile_t const & profile,
 
 		abfd.get_symbol_range(i, start, end);
 
+		profile_t::iterator_pair p_it =
+			profile.samples_range(start, end);
 		symb_entry.sample.count =
-			profile.accumulate_samples(start, end);
+			accumulate(p_it.first, p_it.second, 0);
 
 		if (symb_entry.sample.count == 0 && !add_zero_samples_symbols)
 			continue;
@@ -114,34 +117,27 @@ void profile_container::add(profile_t const & profile,
 		symbol_entry const * symbol = symbols->insert(symb_entry);
 
 		if (need_details) {
-			add_samples(profile, abfd, i, start, end,
-			            base_vma, symbol);
+			add_samples(abfd, i, p_it, base_vma, symbol);
 		}
 	}
 }
 
 
-// FIXME: far too many args etc.
 void
-profile_container::add_samples(profile_t const & profile,
-                               op_bfd const & abfd,
-                               symbol_index_t sym_index,
-                               u32 start, u32 end, bfd_vma base_vma,
-                               symbol_entry const * symbol)
+profile_container::add_samples(op_bfd const & abfd, symbol_index_t sym_index,
+                               profile_t::iterator_pair const & p_it,
+			       bfd_vma base_vma, symbol_entry const * symbol)
 {
-
-	for (u32 pos = start; pos < end ; ) {
+	profile_t::const_iterator it;
+	for (it = p_it.first; it != p_it.second ; ++it) {
 		sample_entry sample;
 
-		u32 old_pos = pos;
-		sample.count = profile.accumulate_samples(pos);
-		if (!sample.count)
-			continue;
+		sample.count = it.count();
 
 		sample.file_loc.linenr = 0;
 		if (debug_info && sym_index != nil_symbol_index) {
 			string filename;
-			if (abfd.get_linenr(sym_index, old_pos, filename,
+			if (abfd.get_linenr(sym_index, it.vma(), filename,
 					    sample.file_loc.linenr)) {
 				sample.file_loc.filename =
 					debug_names.create(filename);
@@ -149,8 +145,8 @@ profile_container::add_samples(profile_t const & profile,
 		}
 
 		sample.vma = (sym_index != nil_symbol_index)
-			? abfd.sym_offset(sym_index, old_pos) + base_vma
-			: old_pos;
+			? abfd.sym_offset(sym_index, it.vma()) + base_vma
+			: it.vma();
 
 		samples->insert(symbol, sample);
 	}
