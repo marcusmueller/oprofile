@@ -23,10 +23,11 @@
 #include "op_string.h"
 #include "op_alloc_counter.h"
 #include "op_parse_event.h"
+#include "op_libiberty.h"
 
 static char const ** chosen_events;
 
-struct parsed_event parsed_events[OP_MAX_COUNTERS];
+struct parsed_event * parsed_events;
 
 static op_cpu cpu_type = CPU_NO_GOOD;
 static char * cpu_string;
@@ -128,9 +129,9 @@ static void resolve_events(void)
 	size_t i, j;
 	size_t * counter_map;
 	size_t nr_counters = op_get_nr_counters(cpu_type);
-	struct op_event const * selected_events[OP_MAX_COUNTERS];
+	struct op_event const * selected_events[nr_counters];
 
-	count = parse_events(parsed_events, OP_MAX_COUNTERS, chosen_events);
+	count = parse_events(parsed_events, nr_counters, chosen_events);
 	if (count > nr_counters) {
 		fprintf(stderr, "Not enough hardware counters.\n");
 		exit(EXIT_FAILURE);
@@ -180,8 +181,9 @@ static void show_unit_mask(void)
 {
 	struct op_event * event;
 	size_t count;
+	size_t nr_counter = op_get_nr_counters(cpu_type);
 
-	count = parse_events(parsed_events, OP_MAX_COUNTERS, chosen_events);
+	count = parse_events(parsed_events, nr_counter, chosen_events);
 	if (count > 1) {
 		fprintf(stderr, "More than one event specified.\n");
 		exit(EXIT_FAILURE);
@@ -267,6 +269,8 @@ static void cleanup(void)
 	op_free_events();
 	if (optcon)
 		poptFreeContext(optcon);
+	if (parsed_events)
+		free(parsed_events);
 }
 
 
@@ -275,6 +279,7 @@ int main(int argc, char const *argv[])
 	struct list_head * events;
 	struct list_head * pos;
 	char const * pretty;
+	size_t nr_counter;
 
 	atexit(cleanup);
 
@@ -292,6 +297,9 @@ int main(int argc, char const *argv[])
 		fprintf(stderr, "cpu_type '%s' is not valid\n", cpu_string);
 		exit(EXIT_FAILURE);
 	}
+
+	nr_counter = op_get_nr_counters(cpu_type);
+	parsed_events = xcalloc(nr_counter, sizeof(struct parsed_event));
 
 	pretty = op_get_cpu_type_str(cpu_type);
 

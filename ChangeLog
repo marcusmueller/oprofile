@@ -1,5 +1,10 @@
 2003-11-09  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* utils/op_help.c: do not use OP_MAX_COUNTERS but get counter number
+	  at runtime
+
+2003-11-09  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/tests/string_manip_tests.cpp: rtrim/ltrim/trim tests
 
 2003-11-08  Philippe Elie  <phil.el@wanadoo.fr>
