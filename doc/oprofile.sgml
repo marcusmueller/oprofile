@@ -27,7 +27,7 @@
 <title>Introduction</title>
 
 <para>
-OProfile is a profiling system for Linux 2.4 systems on P6 processors. It is capable of profiling
+OProfile is a profiling system for Linux 2.4 systems on most x86 processors. It is capable of profiling
 all parts of a running system, from the kernel (including modules and interrupt handlers) to shared libraries
 to binaries. It runs transparently in the background collecting information at a low overhead. These
 features make it ideal for profiling entire systems in production environments to determine bottle

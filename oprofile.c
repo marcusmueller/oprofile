@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.80 2001/09/04 12:50:10 movement Exp $ */
+/* $Id: oprofile.c,v 1.81 2001/09/04 21:11:00 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -263,7 +263,8 @@ static void __init lvtpc_apic_setup(void *dummy)
 static void __exit lvtpc_apic_restore(void *dummy)
 {
 	uint val = apic_read(APIC_LVTPC);
-	val = SET_APIC_DELIVERY_MODE(val, lvtpc_old_mode[smp_processor_id()]);
+	// FIXME: this gives APIC errors on SMP hardware.
+	// val = SET_APIC_DELIVERY_MODE(val, lvtpc_old_mode[smp_processor_id()]);
 	if (lvtpc_old_mask[smp_processor_id()])
 		val |= APIC_LVT_MASKED;
 	else
@@ -1226,13 +1227,7 @@ static int can_unload(void)
 	int can = -EBUSY;
 	down(&sysctlsem);
 
-/* the module unload race can currently only happen on SMP */
-#ifdef CONFIG_SMP
-	if (!allow_unload)
-		return -EBUSY;
-#endif
- 
-	if (!prof_on && !GET_USE_COUNT(THIS_MODULE))
+	if (smp_can_unload() && !prof_on && !GET_USE_COUNT(THIS_MODULE))
 		can = 0;
 	up(&sysctlsem);
 	return can;

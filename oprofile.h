@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.48 2001/09/01 02:03:34 movement Exp $ */
+/* $Id: oprofile.h,v 1.49 2001/09/04 21:11:00 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -172,6 +172,13 @@ asmlinkage void op_nmi(void);
 struct _descr { u16 limit; u32 base; } __attribute__((__packed__));
 struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 
+/* we can't unload safely on SMP */
+#ifdef CONFIG_SMP
+#define smp_can_unload() (allow_unload)
+#else
+#define smp_can_unload() 1
+#endif
+ 
 // 2.4.3 introduced rw mmap semaphore 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,3)
 #define take_mmap_sem(mm) down(&mm->mmap_sem)

@@ -1,5 +1,11 @@
 2001-09-04  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprofile.h:
+	* oprofile.c: don't restore delivery mode to LVTPC (causes
+	APIC error on SMP). Fix for silly sem hang with do_dump
+ 
+2001-09-04  John Levon  <moz@compsoc.man.ac.uk>
+
 	* dae/op_start: fix typo bug
  
 2001-09-04  John Levon  <moz@compsoc.man.ac.uk>
