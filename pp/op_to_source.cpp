@@ -907,7 +907,7 @@ size_t get_sort_counter_nr()
 
 } // op_to_source namespace
 
-static int do_it(int argc, char const * argv[])
+static int do_op_to_source(int argc, char const * argv[])
 {
 #if (__GNUC__ >= 3)
 	// this improves performance with gcc 3.x a bit
@@ -965,7 +965,7 @@ static int do_it(int argc, char const * argv[])
 int main(int argc, char const * argv[])
 {
 	try {
-		return do_it(argc, argv);
+		return do_op_to_source(argc, argv);
 	}
 	catch (op_runtime_error const & e) {
 		cerr << "op_runtime_error:" << e.what() << endl;

@@ -39,6 +39,7 @@ namespace options {
 	bool demangle;
 	bool demangle_and_shrink;
 	vector<string> exclude_symbols;
+	alt_filename_t alternate_filename;
 };
 
 namespace {
@@ -46,6 +47,7 @@ namespace {
 bool verbose;
 string output_format;
 string counter_str;
+vector<string> path;
 
 popt::option options_array[] = {
 	popt::option(options::sample_file, "samples-file", 'f', "image sample file", "file"),
@@ -64,6 +66,7 @@ popt::option options_array[] = {
 	popt::option(counter_str, "counter", 'c', "which counter to display", "counter number[,counter nr]"),
 	popt::option(output_format, "output-format", 't', "choose the output format", "output-format strings"),
 	popt::option(verbose, "verbose", 'V', "verbose output"),
+	popt::option(path, "path", 'p', "add path for retrieving image", "path_name[,path_name]"),
 };
 
 /**
@@ -142,6 +145,8 @@ string const get_options(int argc, char const **argv)
 
 		output_format_flags = static_cast<outsymbflag>(output_format_flags | fl);
 	}
+
+	add_to_alternate_filename(alternate_filename, path);
 
 	return arg;
 }

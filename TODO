@@ -28,7 +28,6 @@ Before 1.0 little stuff
 	 unsigned int, this is probably false on other arch, need configury
 	magic and a libregex/stl.pat.in file.
  o oprof_start: check lib samples when kernel samples checkbox is checked
- o oprofpp needs -P too
  o "op_time" doesn't have a header !
  o document that even with the in_interrupt trick in 2.5, you can still get a few
    samples in the wrong place - interrupt code outside of the irq_enter/exit

@@ -16,6 +16,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
+#include <cerrno>
 
 using namespace std;
 
@@ -106,4 +107,74 @@ void derive_files(string const & argument,
 			app_name = lib_name;
 		image_file = demangle_filename(app_name);
 	}
+}
+
+
+void add_to_alternate_filename(alt_filename_t & alternate_filename,
+			       vector<string> const & path_names)
+{
+	vector<string>::const_iterator path;
+	for (path = path_names.begin() ; path != path_names.end() ; ++path) {
+		list<string> file_list;
+		create_file_list(file_list, *path, "*", true);
+		list<string>::const_iterator it;
+		for (it = file_list.begin() ; it != file_list.end() ; ++it) {
+			typedef alt_filename_t::value_type value_t;
+			value_t value(basename(*it), dirname(*it));
+			alternate_filename.insert(value);
+		}
+	}
+}
+
+
+string check_image_name(alt_filename_t const & alternate_filename,
+			string const & image_name,
+			string const & samples_filename)
+{
+	if (op_file_readable(image_name))
+		return image_name;
+
+	if (errno == EACCES) {
+		static bool first_warn = true;
+		if (first_warn) {
+			cerr << "you have not read access to some binary image"
+			     << ", all\nof this file(s) will be ignored in"
+			     << " statistics\n";
+			first_warn = false;
+		}
+		cerr << "access denied for : " << image_name << endl;
+
+		return string(); 
+	}
+
+	typedef alt_filename_t::const_iterator it_t;
+	pair<it_t, it_t> p_it =
+		alternate_filename.equal_range(basename(image_name));
+
+	if (p_it.first == p_it.second) {
+
+		static bool first_warn = true;
+		if (first_warn) {
+			cerr << "I can't locate some binary image file, all\n"
+			     << "of this file(s) will be ignored in statistics"
+			     << endl
+			     << "Have you provided the right -p/-P option ?"
+			     << endl;
+			first_warn = false;
+		}
+
+		cerr << "warning: can't locate image file for samples files : "
+		     << samples_filename << endl;
+
+		return string();
+	}
+
+	if (distance(p_it.first, p_it.second) != 1) {
+		cerr << "the image name for samples files : "
+		     << samples_filename << " is ambiguous\n"
+		     << "so this file file will be ignored" << endl;
+		return string();
+	}
+
+	return p_it.first->second + '/' + p_it.first->first;
 }

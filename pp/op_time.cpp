@@ -11,7 +11,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <errno.h>
 
 #include <string>
 #include <list>
@@ -385,62 +384,6 @@ static void output_files_count(map_t & files)
 
 
 /**
- * check_image_name - check than image_name belonging to samples_filename
- * exist. If not it try to retrieve it through the alternate_filename
- * location.
- */
-static string check_image_name(string const & image_name,
-			       string const & samples_filename)
-{
-	if (op_file_readable(image_name))
-		return image_name;
-
-	if (errno == EACCES) {
-		static bool first_warn = true;
-		if (first_warn) {
-			cerr << "you have not read access to some binary image"
-			     << ", all\nof this file(s) will be ignored in"
-			     << " statistics\n";
-			first_warn = false;
-		}
-		cerr << "access denied for : " << image_name << endl;
-
-		return string(); 
-	}
-
-	typedef alt_filename_t::const_iterator it_t;
-	pair<it_t, it_t> p_it =
-		options::alternate_filename.equal_range(basename(image_name));
-
-	if (p_it.first == p_it.second) {
-
-		static bool first_warn = true;
-		if (first_warn) {
-			cerr << "I can't locate some binary image file, all\n"
-			     << "of this file(s) will be ignored in statistics"
-			     << endl
-			     << "Have you provided the right -p/-P option ?"
-			     << endl;
-			first_warn = false;
-		}
-
-		cerr << "warning: can't locate image file for samples files : "
-		     << samples_filename << endl;
-
-		return string();
-	}
-
-	if (distance(p_it.first, p_it.second) != 1) {
-		cerr << "the image name for samples files : "
-		     << samples_filename << " is ambiguous\n"
-		     << "so this file file will be ignored" << endl;
-		return string();
-	}
-
-	return p_it.first->second + '/' + p_it.first->first;
-}
-
-/**
  * output_symbols_count - open each samples file to cumulate samples count
  * and display a sorted list of symbols and samples ratio
  * @param files the file list to treat.
@@ -471,7 +414,7 @@ static void output_symbols_count(map_t& files, int counter)
 		image_name = demangle_filename(image_name);
 
 		// if the image files does not exist try to retrieve it
-		image_name = check_image_name(image_name, samples_filename);
+		image_name = check_image_name(options::alternate_filename, image_name, samples_filename);
 
 		// check_image_name have already warned the user if something
 		// feel bad.
@@ -506,7 +449,7 @@ static void output_symbols_count(map_t& files, int counter)
 	out.output(cout, symbols, !options::reverse_sort, need_vma64);
 }
 
-static int do_it(int argc, char const * argv[])
+static int do_op_time(int argc, char const * argv[])
 {
 	get_options(argc, argv);
 
@@ -544,7 +487,7 @@ int main(int argc, char const * argv[])
 	// FIXME : same piece of code in all pp tools, we must add
 	// do_it(ptr_to_function_to_exec, argc, argv); and share this code ?
 	try {
-		return do_it(argc, argv);
+		return do_op_time(argc, argv);
 	}
 	catch (op_runtime_error const & e) {
 		cerr << "op_runtime_error:" << e.what() << endl;

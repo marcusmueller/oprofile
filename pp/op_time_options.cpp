@@ -47,7 +47,6 @@ namespace {
 
 string output_format;
 vector<string> path;
-vector<string> recursive_path;
 /// selected counters (comma-separated)
 string counter_str("0");
 
@@ -57,9 +56,7 @@ popt::option options_array[] = {
 	popt::option(counter_str, "counter", 'c', "which counter to use", "counter_nr[,counter_nr]"),
 	popt::option(options::list_symbols, "list-symbols", 'l', "list samples by symbol"),
 	popt::option(options::show_image_name, "show-image-name", 'n', "show the image name from where come symbols"),
-	popt::option(path, "path", 'p', "add path for retrieving image", "path_name[,path_name]"),
-	popt::option(recursive_path, "recursive-path", 'P',
-		"add path for retrieving image recursively", "path_name[,path_name]"),
+	popt::option(path, "path", 'p', "add path for retrieving image recursively", "path_name[,path_name]"),
 	popt::option(options::reverse_sort, "reverse", 'r', "reverse sort order"),
 	popt::option(options::show_shared_libs, "show-shared-libs", 'k', "show details for shared libraries."),
 	popt::option(options::sort_by_counter, "sort", 'C', "which counter to use for sampels sort", "counter nr"),
@@ -67,33 +64,6 @@ popt::option options_array[] = {
 	popt::option(options::demangle, "demangle", 'd', "demangle GNU C++ symbol names"),
 	popt::option(options::demangle_and_shrink, "smart-demangle", 'D', "demangle GNU C++ symbol names then pass them through regular expression to shrink them")
 };
-
-/**
- * add_to_alternate_filename -
- * add all file name below path_name, optionally recursively, to the
- * the set of alternative filename used to retrieve image name when
- * a samples image name directory is not accurate
- */
-void add_to_alternate_filename(vector<string> const & path_names,
-			       bool recursive)
-{
-	vector<string>::const_iterator path;
-	for (path = path_names.begin() ; path != path_names.end() ; ++path) {
-		list<string> file_list;
-		create_file_list(file_list, *path, "*", recursive);
-		list<string>::const_iterator it;
-		for (it = file_list.begin() ; it != file_list.end() ; ++it) {
-			typedef alt_filename_t::value_type value_t;
-			if (recursive) {
-				value_t value(basename(*it), dirname(*it));
-				options::alternate_filename.insert(value);
-			} else {
-				value_t value(*it, *path);
-				options::alternate_filename.insert(value);
-			}
-		}
-	}
-}
 
 } // namespace anon
 
@@ -156,9 +126,7 @@ void get_options(int argc, char const * argv[])
 	if (show_image_name)
 		output_format_flags = static_cast<outsymbflag>(output_format_flags | osf_image_name);
 
-	add_to_alternate_filename(path, false);
-
-	add_to_alternate_filename(recursive_path, true);
+	add_to_alternate_filename(alternate_filename, path);
 
 	options::counter = parse_counter_mask(counter_str);
 

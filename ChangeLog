@@ -1,3 +1,24 @@
+2003-03-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: remove documentaton about -P, update doc about -p
+
+	* pp/derive_files.h:
+	* pp/derive_files.cpp: check_image_name(), add_to_alternate_filename()
+	  functions moved from op_time.cpp
+
+	* pp/op_time_options.h:
+	* pp/op_time_options.cpp:
+	* pp/op_time.cpp: remove -P option, minor cleanup
+
+	* pp/oprofpp_options.h:
+	* pp/oprofpp_options.cpp:
+	* pp/oprofpp.cpp: add -p option, minor cleanup
+	
+	* pp/op_to_source.cpp: minor cleanup
+
 2003-03-16  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* utils/opcontrol: check return code for --ctr??-event=none

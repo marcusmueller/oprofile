@@ -239,6 +239,11 @@ Specify the output format where a single format char is a field intended for: 'v
 .BI "--session " session-name
 Specify the session name you want to use, session-name can be an absolute path
 where samples reside or a session name relative to samples files base directory. If you specify a samples filename with an absolute path this option is ignored
+.br
+.TP
+.BI "--path " path_list ", -p " path_list
+Specify an alternate list of pathname to locate image file. Use if the samples files name does not match the image file name, e.g. modules loaded at boot time through a RAM disk.
+The path_list is a comma separated list of directories, each directory and sub-directories are candidate to retrieve the image file.
 .TP
 .br
 .B op_to_source options
@@ -367,14 +372,9 @@ Sort output from largest to smallest count.
 .TP
 .BI "--path " path_list ", -p " path_list
 Specify an alternate list of pathname to locate image file. Use if the samples files name does not match the image file name, e.g. modules loaded at boot time through a RAM disk.
-The path_list is a comma separated list of directories.
+The path_list is a comma separated list of directories, each directory and sub-directories are candidate to retrieve the image file.
 .br
 .TP
-.BI "--recursive-path " path_list ", -P " path_list
-Same as --path but retrieve recursively the image file name in the path list.
-The path_list is a comma separated list of directories.
-.TP
-.br
 .BI "--session " session-name
 Specify the session name you want to use, session-name can be an absolute path
 where samples reside or a session name relative to samples files base directory

@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "outsymbflag.h"
+#include "derive_files.h"
 
 namespace options {
 	/// sample file to work on
@@ -46,6 +47,8 @@ namespace options {
 	extern outsymbflag output_format_flags;
 	/// symbols to exclude
 	extern std::vector<std::string> exclude_symbols;
+	/// container of alternate filename location
+	extern alt_filename_t alternate_filename;
 };
 
 /**

@@ -1049,6 +1049,15 @@ Some interesting options of the post-processor :
 		If you specify a samples filename with an absolute path this option is ignored.
 		</para></listitem>
 	</varlistentry>
+	<varlistentry>
+		<term><option>--path</option> path list ',' separated</term>
+		<term><option>-p</option> path list ',' separated</term>
+		<listitem><para>
+		Specify an alternate list of pathnames to locate image files. This is useful if your sample filenames
+		does not match the image file name, such as a kernel module loaded at boot time through initrd.
+		The path_list is a comma separated list of directories, each directory and sub-directories are candidate to retrieve the image file.
+		</para></listitem>
+	</varlistentry>
 </variablelist>
 
 </sect1>
@@ -1136,15 +1145,7 @@ Options allowed are :
 		<listitem><para>
 		Specify an alternate list of pathnames to locate image files. This is useful if your sample filenames
 		does not match the image file name, such as a kernel module loaded at boot time through initrd.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--recursive-path</option> path list ',' separated</term>
-		<term><option>-P</option> path list ',' separated</term>
-		<listitem><para>
-		Specify an alternate list of pathnames to locate image files. This is useful if your sample filenames
-		does not match the image file name, such as a kernel module loaded at boot time through initrd.
-		This searches recursively in the given paths.
+		The path_list is a comma separated list of directories, each directory and sub-directories are candidate to retrieve the image file.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

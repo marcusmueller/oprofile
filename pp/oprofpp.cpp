@@ -184,8 +184,7 @@ static void do_dump_gprof(op_bfd & abfd,
 }
 
 
-// FIXME:  do *what* !?!
-static int do_it(int argc, char const * argv[])
+static int do_oprofpp(int argc, char const * argv[])
 {
 	string const arg = get_options(argc, argv);
 
@@ -260,12 +259,24 @@ static int do_it(int argc, char const * argv[])
 		// we must deduce the image name from the samples file name
 		if (it == filelist.begin()) {
 			profile_t profile(file, options::counter_mask);
-			op_bfd abfd(options::image_file,
+
+			string image_name =
+			  check_image_name(options::alternate_filename,
+					   options::image_file, file);
+			if (image_name.empty()) {
+				// check_image_name() already output a warning
+				// we exit() because we can't accept the
+				// primary image can't be found
+				exit(EXIT_FAILURE);
+			}
+
+			op_bfd abfd(image_name,
 				    options::exclude_symbols,
 				    vector<string>());
-			profile.check_mtime(options::image_file);
+
+			profile.check_mtime(image_name);
 			profile.set_start_offset(abfd.get_start_offset());
-			samples.add(profile, abfd, options::image_file,
+			samples.add(profile, abfd, image_name,
 				    options::symbol);
 
 			profile.output_header();
@@ -274,7 +285,24 @@ static int do_it(int argc, char const * argv[])
 			string lib_name;
 			app_name = extract_app_name(file, lib_name);
 			app_name = demangle_filename(app_name);
+			app_name =
+				check_image_name(options::alternate_filename,
+						 app_name, file);
+			if (app_name.empty()) {
+				// we can't accept app_name is not found (imho)
+				exit(EXIT_FAILURE);
+			}
 			lib_name = demangle_filename(lib_name);
+			lib_name =
+				check_image_name(options::alternate_filename,
+						 lib_name, file);
+			if (lib_name.empty()) {
+				// user is already warned this file has been
+				// ignored, we continue in case this is a
+				// spurious error e.g. user didn't specify
+				// the right -p/-P options
+				continue;
+			}
 			add_samples(samples, file, options::counter_mask,
 			  lib_name, app_name, options::exclude_symbols,
 				    options::symbol);
@@ -306,7 +334,7 @@ static int do_it(int argc, char const * argv[])
 int main(int argc, char const * argv[])
 {
 	try {
-		return do_it(argc, argv);
+		return do_oprofpp(argc, argv);
 	}
 	catch (op_runtime_error const & e) {
 		cerr << "op_runtime_error:" << e.what() << endl;
