@@ -19,10 +19,6 @@ static ulong idt_addr;
 static ulong kernel_nmi;
 static ulong lvtpc_masked;
 
-#ifdef NEED_VIRT_APIC_BASE
-unsigned long virt_apic_base;
-#endif
-
 /* this masking code is unsafe and nasty but might deal with the small
  * race when installing the NMI entry into the IDT
  */
@@ -275,15 +271,21 @@ static void set_pte_phys(ulong vaddr, ulong phys)
 	pmd = pmd_offset(pgd, vaddr);
 	pte = pte_offset(pmd, vaddr);
 	prot = PAGE_KERNEL;
+	/* when !CONFIG_X86_LOCAL_APIC we can't rely on no cache flag set */
+	pgprot_val(prot) |= _PAGE_PCD;
 	if (test_bit(X86_FEATURE_PGE, &boot_cpu_data.x86_capability))
 		pgprot_val(prot) |= _PAGE_GLOBAL;
 	set_pte(pte, mk_pte_phys(phys, prot));
 	__flush_tlb_one(vaddr);
 }
 
+#ifndef CONFIG_X86_LOCAL_APIC
+unsigned long virt_apic_base;
+#endif
+
 void my_set_fixmap(void)
 {
-#ifndef NEED_VIRT_APIC_BASE
+#ifdef CONFIG_X86_LOCAL_APIC
 	ulong address = __fix_to_virt(FIX_APIC_BASE);
 
 	set_pte_phys (address, APIC_DEFAULT_PHYS_BASE);

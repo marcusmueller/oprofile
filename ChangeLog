@@ -1,3 +1,11 @@
+2002-01-13  Philippe Elie  <ph_e@club-internet.fr>
+
+	* configure.in: reject unsupported kernel version
+	* module/apic_up_compat.h:
+	* module/compat.h: small cleanup
+	* module/op_x86.c: ditto, always put apic memory page as
+	  non cachable
+
 2002-01-12  John Levon  <moz@compsoc.man.ac.uk>
 
 	* gui/oprof_start_util.h:

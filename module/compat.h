@@ -49,12 +49,6 @@ static int inline smp_call_function (void (*func) (void *info), void *info,
 
 #endif /* < 2.2.8 || (!SMP && <= 2.2.20) */
 
-/* FIXME: the right place to abort compilation or in configure.in ? */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,8) && defined(CONFIG_SMP)
-/* Note than theorically we can support SMP when < 2.2.8 but that's worthwhile,
- * we need a working smp_call_function() which is not obvious to provide */
-#error "unsupported configuration: kernel < 2.2.8 must be compiled as UP to create a working oprofile"
-#endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,2)
 
@@ -133,7 +127,7 @@ do {							\
 
 #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,2,18) */
 
-/* replacement of d_covers: version is a guess */
+/* replacement of d_covers */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
 #define NEED_2_2_DENTRIES
 extern int wind_dentries_2_2(struct dentry *dentry);
@@ -148,6 +142,7 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
 
 /* on 2.2, the APIC is never enabled on UP */
+/* FIXME: what about smp running on an UP kernel */
 #define NO_MPTABLE_CHECK_NEEDED
  
 /* 2.2 has no cpu_number_map on UP */

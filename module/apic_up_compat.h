@@ -19,12 +19,12 @@
 
 /* when !CONFIG_X86_LOCAL_APIC we need to provide a valid va to map the
  * the pa of APIC onto. This va must be un-cachable/un-swapable*/
-/*#define APIC_BASE (fix_to_virt(FIX_APIC_BASE)) */
 #ifndef CONFIG_X86_LOCAL_APIC
-#define NEED_VIRT_APIC_BASE
-#endif
 extern unsigned long virt_apic_base;
-#define		APIC_BASE	virt_apic_base
+#define	APIC_BASE	virt_apic_base
+#else
+#define APIC_BASE (fix_to_virt(FIX_APIC_BASE))
+#endif
 
 static __inline void apic_write(unsigned long reg, unsigned long v)
 {

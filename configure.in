@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.68 2002/01/11 05:24:07 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.69 2002/01/13 21:33:38 phil_e Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -81,6 +81,23 @@ case "$KVERS" in
 *) AC_MSG_ERROR(Unsupported kernel version)
 esac
 
+dnl FIXME can we use this to also reject ac with get_hard_current() ?
+dnl but how to cleanly add rejected version or range of rejected version ?
+AC_MSG_CHECKING(kernel version)
+SAVE_CFLAGS=$CFLAGS
+CFLAGS="$BKCFLAGS -I$KINC -D__KERNEL__ -Werror"
+AC_TRY_COMPILE( 
+  [
+  #include <linux/version.h>
+  #include <linux/config.h>
+  ],
+  [
+  #if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,8) && defined(CONFIG_SMP)
+  break_me_hard(\\\);
+  #endif
+  ], AC_MSG_RESULT("ok"), AC_MSG_ERROR("check html documentation install section"))
+CFLAGS=$SAVE_CFLAGS
+
 AC_MSG_CHECKING("whether $CC accepts -mpreferred-stack-boundary=2")
 SAVE_CFLAGS=$CFLAGS
 CFLAGS="-mpreferred-stack-boundary=2 $CFLAGS"
@@ -135,18 +152,6 @@ MODVERSIONS=""
 test "$mv" = 1 && MODVERSIONS="-DMODVERSIONS -include $KINC/linux/modversions.h"
 AC_SUBST(MODVERSIONS)
 
-dnl when CONFIG_X86_LOCAL_APIC undef we miss many apic prototype. Unhopefully
-dnl apic_read/write implementation have changed through kernel version. We must
-dnl check before removing this stuff than taking impl from one kernel work
-dnl also for the other
-dnl if test "$smp" = 0; then 
-dnl   AC_MSG_CHECKING(for local APIC)
-dnl   AX_COMPILE_OPTION(CONFIG_X86_LOCAL_APIC,apic=1,apic=0)
-dnl   AX_MSG_RESULT_YN($apic)
-dnl   dnl try to figure out when we really need that, if ever
-dnl   #test "$apic" = 0 && AC_MSG_ERROR(local APIC not configured)
-dnl fi
-
 dnl linux 2.2 need -D__SMP__, preferable to pass as compile option, so we
 dnl include <linux/smp.h> without worrying to include the compat file first
 if test "$smp" = 1; then
@@ -178,10 +183,6 @@ else
   AC_MSG_RESULT("no")
 fi
 AC_SUBST(NO_MODULE_VERSION)
-
-dnl if some 2.2 can be supported w/o CONFIG_SMP we need to take care about 
-dnl smp_call_function expanded to empty, workaround is
-dnl #ifdef CONFIG_SMP #undef smp_call_function #define smp_call_function 0
 
 AC_SUBST(KINC)
 BKCFLAGS="-I$KINC $BKCFLAGS"
