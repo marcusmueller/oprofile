@@ -54,6 +54,9 @@ Before 1.0 little stuff
    enough - you can't get "cpu:0"
  o we're not following symlinks for opreport etc. binary resolving. FIXED 
  in pp/profile_spec.cpp, I'm unsure if it remains some other place to fix
+
+   - this isn't fixed AFAICS - we only follow one level of symbolic link ?
+
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
  o create_path API is weird
  o opannotate should error out with a msg if no debug symbols are found at all
