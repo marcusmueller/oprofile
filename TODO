@@ -20,6 +20,12 @@ Before 1.0 big stuff
  
 Before 1.0 little stuff
 -----------------------
+ o do something about this :
+
+[root@lambent oprofile]# oprofpp -kDl /usr/local/oprofile/bin/op_time  | tail -30 | grep strlen
+4207a4c0 1629     1.81701     strlen                  /lib/i686/libc-2.2.93.so
+[root@lambent oprofile]# oprofpp -kDs strlen /usr/local/oprofile/bin/op_time | grep strlen
+0000e470 0        0           strlen                  /lib/ld-2.2.93.so
 
  o oprofpp needs -P too
  o decide on -d vs. -D by default for demangle etc.
@@ -28,7 +34,6 @@ Before 1.0 little stuff
  o daemon/opd_image.c:opd_put_sample() if (image != NULL) { ... }
   *else verbrintf(SAMPLE LOST)* the else is missing, if log file show such
   message track the cause
- o fix the numerous bizarre problems with --separate=kernel
  o fix the 2.5 module-finding problem as best as Rusty will let us
  o implement module-drop event in 2.5 kernel
  o lockless patch to fix UP 2.5
