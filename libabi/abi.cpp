@@ -13,6 +13,7 @@
 #include "op_sample_file.h"
 
 #include <iostream>
+#include <cassert>
 
 using namespace std;
 

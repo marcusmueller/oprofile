@@ -16,6 +16,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 #include <sys/types.h>
 #include <sys/stat.h>
