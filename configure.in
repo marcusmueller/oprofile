@@ -315,9 +315,9 @@ AM_CONDITIONAL(enable_abi, test "$enable_abi" = yes)
 
 # try to find the docbook stylesheets
 if test -e /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/xhtml/docbook.xsl; then
-	db_xsl=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/xhtml/docbook.xsl
+	db_xsl=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/xhtml/
 else
-	db_xsl=/usr/share/sgml/docbook/xsl-stylesheets/xhtml/docbook.xsl
+	db_xsl=/usr/share/sgml/docbook/xsl-stylesheets/xhtml/
 fi
 AC_SUBST(db_xsl)
  
@@ -371,6 +371,7 @@ AC_OUTPUT(Makefile \
 	utils/Makefile \
 	doc/Makefile \
 	doc/xsl/xhtml.xsl \
+	doc/xsl/xhtml-chunk.xsl \
 	doc/oprofile.1 \
 	pp/Makefile \
 	gui/Makefile \

@@ -16,7 +16,7 @@
 	</authorgroup>
 
 	<copyright>
-		<year>2000-2002</year>
+		<year>2000-2003</year>
 		<holder>Victoria University of Manchester, John Levon and others</holder>
 	</copyright>
 
@@ -28,6 +28,7 @@
 <title>Introduction</title>
 
 <para>
+This manual applies to OProfile version <oprofileversion />.
 OProfile is a profiling system for Linux 2.2/2.4/2.6 systems on a number of architectures. It is capable of profiling
 all parts of a running system, from the kernel (including modules and interrupt handlers) to shared libraries
 to binaries. It runs transparently in the background collecting information at a low overhead. These
@@ -146,7 +147,7 @@ OProfile operates in timer/RTC mode, as described in later chapters.
 	<varlistentry>
 		<term>Mailing list</term>
 		<listitem>
-			There is a very low-traffic OProfile-specific mailing list, details at
+			There is a low-traffic OProfile-specific mailing list, details at
 			<ulink url="http://sf.net/mail/?group_id=16191">http://sf.net/mail/?group_id=16191</ulink>.
 		</listitem>
 	</varlistentry>
@@ -172,7 +173,7 @@ OProfile operates in timer/RTC mode, as described in later chapters.
 <title>Installation</title>
 
 First you need to build OProfile and install it. <command>./configure</command>, <command>make</command>, <command>make install</command>
-is all you need, but note these arguments to <command>./configure</command> :
+is often all you need, but note these arguments to <command>./configure</command> :
 <variablelist>
 	<varlistentry>
 		<term><option>--with-linux</option></term>
@@ -291,6 +292,9 @@ Or to get a more detailed summary, for a particular image, you can do something 
 <para><command>oprofpp -l /boot/vmlinux-`uname -r`</command></para>
 <para>
 There are also a number of other ways of presenting the data, as described later in this manual.
+Note that OProfile will choose a default profiling setup for you. However, there are a number
+of options you can pass to <command>opcontrol --setup</command> if you need to change something,
+also detailed later.
 </para>
 
 </sect1>
@@ -319,7 +323,7 @@ This section gives a brief description of the available OProfile utilities and t
 	<term><filename>oprofpp</filename></term>
 	<listitem><para>
 		This is the main tool for retrieving useful profile data, described in
-		<xref linkend="results" />.
+		<xref linkend="post-profiler" />.
 	</para></listitem>
 </varlistentry>
 
@@ -328,7 +332,7 @@ This section gives a brief description of the available OProfile utilities and t
 	<listitem><para>
 		This utility is useful for examining the relative profile values for
 		all images on the system to determine the applications with the largest
-		impact on system performance.
+		impact on system performance, described in <xref linkend="op-time" />.
 	</para></listitem>
 </varlistentry>
 
@@ -374,10 +378,32 @@ This section gives a brief description of the available OProfile utilities and t
 <sect1 id="controlling-daemon">
 <title>Controlling OProfile data collection with the <command>opcontrol</command> script</title>
 <para>
-In this section we describe the configuration and control of the profiling system with opcontrol in more depth.
+In this section we describe the configuration and control of the profiling system
+with opcontrol in more depth.
+The <command>opcontrol</command> script has a default setup, but you
+can alter this with the <option>--setup</option> option. In particular,
+if your hardware supports performance counters, you can configure them.
+There are a number of counters (for example, counter 0 and counter 1
+on the Pentium III). Each of these counters can be programmed with
+an event to count, such as cache misses or MMX operations. The event
+chosen for each counter is reflected in the profile data collected
+by OProfile: functions and binaries at the top of the profiles reflect
+that most of the chosen events happened within that code.
 </para>
 <para>
-The <command>opcontrol</command> script provides the following options :
+Additionally, each counter has a "count" value: this corresponds to how
+detailed the profile is. The lower the value, the more frequently profile
+samples are taken. A counter can choose to sample only kernel code, user-space code,
+or both (both is the default). Finally, some events have a "unit mask"
+- this is a value that further restricts the types of event that are counted. 
+The event types and unit masks for your CPU are listed by <command>opcontrol
+--list-events</command>.
+</para>
+<para>
+If performance counters are not available, OProfile uses either RTC
+</para>
+<para>
+The <command>opcontrol</command> script provides the following actions :
 </para>
 <variablelist>
 	<varlistentry>
@@ -463,8 +489,7 @@ The <command>opcontrol</command> script provides the following options :
 </variablelist>
 
 <para>
-The <command>opcontrol</command> script options used with the
-	<option>--setup</option> option :
+Possible settings  for the <option>--setup</option> option :
 </para>
 <variablelist>
 	<varlistentry>
@@ -518,28 +543,34 @@ The <command>opcontrol</command> script options used with the
 	<varlistentry>
 		<term><option>--separate=</option>[library,kernel,all]</term>
 		<listitem><para>
-		Separate samples using the separator given.
+		By default, every profile is stored in a single file. Thus, for example,
+		samples in the C library are all accredited to the <filename>/lib/libc.o</filename>
+		profile. However, you choose to create separate sample files by specifying
+		one of the below options.
 		</para>
 		<informaltable frame="all">
 		<tgroup cols='2'> 
 		<tbody>
-		<row><entry><option>library</option></entry><entry>per-application dynamically linked libraries samples files</entry></row>
-		<row><entry><option>kernel</option></entry><entry>per-application modules and kernel samples files, kernel implies library samples separation</entry></row>
-		<row><entry><option>all</option></entry><entry>implies all above options</entry></row>
+		<row><entry><option>library</option></entry><entry>Create per-application profiles for libraries</entry></row>
+		<row><entry><option>kernel</option></entry><entry>Create per-application profiles for the kernel and kernel modules</entry></row>
+		<row><entry><option>all</option></entry><entry>Both of the above options</entry></row>
 		</tbody>
 		</tgroup>
 		</informaltable>
 		<para>
+		Note  that <option>--separate=kernel</option> also turns on <option>--separate=library</option>.
 		<!-- FIXME: update if this change -->
 		When using <option>--separate=kernel</option>, samples in hardware interrupts, soft-irqs, or other
-		asynchronous kernel contexts, are credited to the task currently running. This means you will see
+		asynchronous kernel contexts are credited to the task currently running. This means you will see
 		seemingly nonsense profiles such as <filename>/bin/bash</filename> showing samples for the PPP modules,
 		etc.
 		</para>
 		<para>
 		On 2.2/2.4 only kernel threads already started when profiling begins are correctly profiled;
-		newly started kernel thread samples are credited to vmlinux file.
-		On 2.5 there is no kernel thread profiling, all these samples are credited to vmlinux file.
+		newly started kernel thread samples are credited to the vmlinux (kernel) profile.
+		On 2.5 there is no kernel thread profiling, all these samples are credited to the vmlinux profile.
+		The <option>-k</option> option to <command>op_time</command> or <command>oprofpp</command>
+		will show these per-application profiles.
 		</para>
 		</listitem>
 	</varlistentry>
@@ -552,19 +583,10 @@ The <command>opcontrol</command> script options used with the
 	<varlistentry>
 		<term><option>--kernel-range=</option>start,end</term>
 		<listitem><para>
-		kernel range vma address in hexadecimal.
+		kernel range vma address in hexadecimal. You should not need to specify this yourself.
 		</para></listitem>
 	</varlistentry>
 </variablelist>
-<note>
-<para>
-If you are using a 2.5 kernel in timer interrupt mode (i.e. no hardware
-performance counters are supported for your CPU type), you do not need
-to specify any counter parameters, because there aren't any (see
-<xref linkend="timer" />).
-</para>
-</note>
-
 </sect1>
  
 <sect1 id="oprofile-gui">
@@ -791,7 +813,7 @@ In this way the system seems to be frozen.
 </para></note>
 <para>If this happens, it will be impossible to bring the system back to a workable state.
 There is no way to provide real security against this happening, other than making sure to use a reasonable value
-for the counter reset. For example, setting CPU_CLK_UNHALTED event type with a ridiculously low reset count (e.g. 500)
+for the counter reset. For example, setting <constant>CPU_CLK_UNHALTED</constant> event type with a ridiculously low reset count (e.g. 500)
 is likely to freeze the system.
 </para>
 <para>
@@ -1443,7 +1465,9 @@ can be often delayed by a few cycles from its real position. That's a hardware
 problem and OProfile can do nothing about it.
 </para>
 </sect1>
-<sect1 id="irq-masking">
+<sect1 id="kernel-profiling">
+<title>Kernel profiling</title>
+<sect2 id="irq-masking">
 <title>Interrupt Masking</title>
 <para>
 OProfile uses non-maskable interrupts (NMI) on the P6 generation, Pentium 4,
@@ -1454,7 +1478,27 @@ use maskable interrupts. Thus, the RTC and Itanium 2 data collection mechanism h
 shadows", or blind spots: regions where no samples will be collected. Typically, the samples
 will be attributed to the code immediately after the interrupts are re-enabled.
 </para>
+</sect2>
+<sect2 id="idle">
+<title>Idle time</title>
+<para>
+Your kernel is likely to support halting the processor when a CPU is idle. As
+the typical hardware events like <constant>CPU_CLK_UNHALTED</constant> do not
+count when the CPU is halted, the kernel profile will not reflect the actual
+amount of time spent idle. You can change this behaviour by booting with
+the <option>idle=poll</option> option, which uses a different idle routine. This
+will appear as <function>poll_idle()</function> in your kernel profile.
+</para>
+</sect2>
+<sect2 id="Exiting tasks">
+<title>Exiting tasks</title>
+<para>
+The internal implementation of the 2.5 OProfile code means that tasks that
+within the kernel <function>do_exit()</function> routine cannot be profiled.
+</para>
+</sect2>
 </sect1>
+
 <sect1 id="debug-info">
 <title>Inaccuracies in annotated source</title>
 <sect2 id="effect-of-optimizations">
@@ -1725,6 +1769,7 @@ information for annotated source, line numbers, is only generated at <option>-g2
 Thanks to (in no particular order) : Arjan van de Ven, Rik van Riel, Juan Quintela, Philippe Elie,
 Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne, Bob Montgomery, Ray Bryant, H.J. Lu,
 Jeff Esper, Will Cohen, Graydon Hoare, Cliff Woolley, Alex Tsariounov, Al Stone,
+Randolph Chung, Anton Blanchard, Richard Henderson, Andries Brouwer,
 Richard Reich (rreich@rdrtech.com), Dave Jones, Charles Filtness; and finally Pulp, for "Intro".
 </para>
 </chapter>

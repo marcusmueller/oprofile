@@ -6,6 +6,11 @@
 <xsl:param name="chapter.autolabel" select="1"/>
 <xsl:param name="ulink.target" select="''"/>
  
+<xsl:param name="version"/>
+<xsl:template match="oprofileversion">
+  <xsl:value-of select="$version"/>
+</xsl:template>
+
 <!-- Custom template for programlisting, screen and synopsis to generate a gray
      background to the item. -->
 <xsl:template match="programlisting|screen|synopsis">

@@ -1,3 +1,13 @@
+2003-03-03  John Levon  <levon@movementarian.org>
+
+	* configure.in:
+	* doc/Makefile.am:
+	* doc/oprofile.xml:
+	* doc/xsl/xhtml-chunk.xsl.in:
+	* doc/xsl/xhtml.xsl.in:
+	* doc/xsl/xhtml-common.xsl: Add version to the
+	  docs. Some doc cleanups
+
 2003-03-02  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol: --separate=library should turn kernel off
