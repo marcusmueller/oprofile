@@ -57,7 +57,8 @@ Before 1.0 little stuff
   to parse a file and report correct line number error because skip_ws skip
   \n (so op_events.c report correct line number only if there is no empty
   line in the events files)
- o document OPROFILE_EVENT_FILES_DIR
+ o document OPROFILE_EVENT_FILES_DIR (isn't it for test purpose only ? need
+   documentations ?)
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
   try to recover gracefully.
  o output column shortname headers for opreport -l
@@ -93,7 +94,8 @@ General checks to make
   necessary stuff to check kernel versions/configurations on PIII core (Phil)
  o use nm and a little script to track unused function
  o test it to hell and back
- o compile all C++ programs with STL_port and test them
+ o compile all C++ programs with STL_port and test them (gcc 3.4 contain a
+   debug mode too but std::string iterator are not checked)
  o There is probably place of post profile tools where looking at errno will give better error messages.
 
 Later
@@ -106,7 +108,7 @@ Later
   opreport "lib-image:*libc*" --merge=lib works but not
   opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
   --separate==none. Must we take care ?
- o depedencies between profile_container.h symbol_container.h and
+ o dependencies between profile_container.h symbol_container.h and
   sample_container.h become more and more ugly, I needed to include them
   in a specific order in some source.
  o add event aliases for common things like icache misses, we must start to 
@@ -150,7 +152,9 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
    will fail because the ~ is not expanded (no space around it) (popt bug I say)
  o cpu names instead of numbers in 2.4 module/ ?
  o remove 1 and 2 magic numbers for oprof_ready
- o adapt Anton's patch for handling non-symbolled libraries ?
+ o adapt Anton's patch for handling non-symbolled libraries ? (nowaday C++
+  anon namespace symbol are static, 3.4 iirc, so with recent distro we are
+  more likely to get problems with a "fallback to dynamic symbols" approch)
  o use standard C integer type <stdint.h> int32_t int16_t etc.
  o event multiplexing for real
  o XML output
