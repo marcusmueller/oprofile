@@ -48,21 +48,6 @@ int op_get_fsize(char const * file, off_t * size);
 time_t op_get_mtime(char const * file);
 
 /**
- * op_relative_to_absolute_path - translate relative path to absolute path.
- * @param path  path name
- * @param base_dir  optional base directory, if %NULL getcwd() is used
- * to get the base directory.
- *
- * prepend base_dir or the result of getcwd if the path is not absolute.
- * The returned string is dynamic allocated, caller must free it. if
- * base_dir == NULL this function use getcwd to translate the path.
- *
- * Returns the translated path.
- */
-char * op_relative_to_absolute_path(
-	char const * path, char const * base_dir);
-
-/**
  * create_dir - create a directory
  * @param dir  the directory name to create
  *
@@ -82,34 +67,6 @@ int create_dir(char const * dir);
  * Returns 0 on success.
  */
 int create_path(char const * path);
-
-/**
- * op_is_directory - check if a name is directory
- * @param path  directory name to check
- *
- * return non-zero if name is a directory
- */
-int op_is_directory(char const * path);
-
-/**
- * op_c_dirname - get the path component of a filename
- * @param file_name  filename
- *
- * Returns the path name of a filename with trailing '/' removed.
- * caller must free() the returned string.
- */
-char * op_c_dirname(char const * file_name);
-
-/**
- * op_follow_link - follow a symbolic link
- * @param name the file name
- *
- * Resolve a symbolic link as far as possible.
- * caller must free() the returned string.
- * Duplicates and returns the original string on failure.
- */
-char * op_follow_link(char const * name);
-
 
 #ifdef __cplusplus
 }

@@ -491,7 +491,7 @@ void output_one_file(istream & in, debug_name_id filename,
 		return;
 	}
 
-	string const out_file = relative_to_absolute_path(output_dir + source);
+	string const out_file = op_realpath(output_dir + source);
 
 	/* Just because you're paranoid doesn't mean they're not out to
 	 * get you ... */
@@ -532,7 +532,7 @@ string const locate_source_file(debug_name_id filename_id)
 		vector<string>::const_iterator cit = base_dirs.begin();
 		vector<string>::const_iterator end = base_dirs.end();
 		for (; cit != end; ++cit) {
-			string path = relative_to_absolute_path(*cit);
+			string path = op_realpath(*cit);
 
 			if (is_prefix(file, path)) {
 				file = file.substr(path.length());
@@ -545,8 +545,7 @@ string const locate_source_file(debug_name_id filename_id)
 	vector<string>::const_iterator end = search_dirs.end();
 
 	for (; cit != end; ++cit) {
-		string const absfile =
-			relative_to_absolute_path(*cit + "/" + file);
+		string const absfile = op_realpath(*cit + "/" + file);
 
 		if (op_file_readable(absfile)) {
 			return absfile;
@@ -601,7 +600,7 @@ bool annotate_source(list<string> const & images)
 
 	if (!output_dir.empty()) {
 
-		output_dir = relative_to_absolute_path(output_dir);
+		output_dir = op_realpath(output_dir);
 		if (output_dir.length() &&
 		    output_dir[output_dir.length() - 1] != '/')
 			output_dir += '/';

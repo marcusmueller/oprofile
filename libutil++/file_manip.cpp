@@ -29,7 +29,8 @@ using namespace std;
 
 bool is_directory(string const & dirname)
 {
-	return op_is_directory(dirname.c_str());
+	struct stat st;
+	return !stat(dirname.c_str(), &st) && S_ISDIR(st.st_mode);
 }
 
 
@@ -47,12 +48,12 @@ bool is_files_identical(string const & file1, string const & file2)
 }
 
 
-string const follow_link(string const & name)
+string const op_realpath(string const & name)
 {
-	char * tmp = op_follow_link(name.c_str());
-	string tmp2(tmp);
-	free(tmp);
-	return tmp2;
+	static char tmp[PATH_MAX];
+	if (!realpath(name.c_str(), tmp))
+		return name;
+	return string(tmp);
 }
 
 
@@ -108,24 +109,6 @@ bool create_file_list(list<string> & file_list, string const & base_dir,
 }
 
 
-string relative_to_absolute_path(string const & path, string const & base_dir)
-{
-	char const * dir = 0;
-
-	// don't screw up on already absolute paths
-	if ((path.empty() || path[0] != '/') && !base_dir.empty())
-		dir = base_dir.c_str();
-
-	char * result = op_relative_to_absolute_path(path.c_str(), dir);
-
-	string res(result);
-
-	free(result);
-
-	return res;
-}
-
-
 /**
  * @param path_name the path where we remove trailing '/'
  *
@@ -147,10 +130,24 @@ static string erase_trailing_path_separator(string const & path_name)
 
 string op_dirname(string const & file_name)
 {
-	char * temp = op_c_dirname(file_name.c_str());
-	string result(temp);
-	free(temp);
-	return result;
+	string result = erase_trailing_path_separator(file_name);
+	if (result.find_first_of('/') == string::npos)
+		return "."; 	 
+  	 
+	// catch result == "/" 	 
+	if (result.length() == 1) 	 
+		return result;
+
+	size_t pos = result.find_last_of('/'); 	 
+
+	// "/usr" must return "/" 	 
+	if (pos == 0) 	 
+		pos = 1; 	 
+
+	result.erase(pos, result.length() - pos); 	 
+
+	// "////usr" must return "/" 	 
+	return erase_trailing_path_separator(result);
 }
 
 

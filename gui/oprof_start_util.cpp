@@ -66,7 +66,7 @@ daemon_status::daemon_status()
 	int HZ;
 	if (!daemon_pid.empty()) {
 		string const exec =
-			follow_link(string("/proc/") + daemon_pid + "/exe");
+			op_realpath(string("/proc/") + daemon_pid + "/exe");
 		if (exec.empty())
 			daemon_pid.erase();
 		else
@@ -84,7 +84,7 @@ daemon_status::daemon_status()
 
 		while ((dirent = readdir(dir))) {
 			string const exec =
-				follow_link(string("/proc/")
+				op_realpath(string("/proc/")
 				               + dirent->d_name + "/exe");
 			string const name = op_basename(exec);
 			if (name != "oprofiled")

@@ -1,3 +1,26 @@
+2003-11-13  John Levon  <levon@movementarian.org>
+
+	* libutil/op_file.h:
+	* libutil/op_file.c: remove op_c_dirname(),
+	op_relative_to_absolute_path(), op_is_directory(),
+	op_follow_link(), in favour of using realpath(3)
+
+	* libutil/tests/file_tests.c: fixes for above changes
+
+	* libutil++/file_manip.h:
+	* libutil++/file_manip.cpp: changes from above. Add
+	op_realpath().
+
+	* libutil++/tests/file_manip_tests.cpp: changes from 
+	above.
+
+	* daemon/oprofiled.c:
+	* daemon/liblegacy/opd_parse_proc.c:
+	* gui/oprof_start_util.cpp:
+	* libpp/locate_images.cpp:
+	* libpp/profile_spec.cpp:
+	* pp/opannotate.cpp: changes from above
+
 2003-11-12  John Levon  <levon@movementarian.org>
 
 	* configure.in: bump to 0.8cvs

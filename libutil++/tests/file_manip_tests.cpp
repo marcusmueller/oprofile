@@ -185,28 +185,29 @@ static void op_file_readable_tests()
 }
 
 
-static input_output<string, string> expect_relative_to_absolute_path[] =
+static input_output<string, string> expect_realpath[] =
 {
 	{ "file_manip_tests.cpp", "file_manip_tests.cpp" },
 	{ "../tests/" "file_manip_tests.cpp", "file_manip_tests.cpp" },
 	{ ".//.//" "file_manip_tests.cpp", "file_manip_tests.cpp" },
-	// Posix says this is valid
-	{ "//", "//" },
-	{ "//usr", "//usr" },
-	// but our implementation stolen from gcc treat this as "/"
+	// POSIX namespaces ignored by realpath(3)
+	{ "//", "/" },
+	{ "//usr", "/usr" },
 	{ "///", "/" },
 	{ "", "" }
 };
 
-static void relative_to_absolute_path_tests()
+
+// FIXME: useful to test symlinks too
+static void realpath_tests()
 {
 	input_output<string, string> const * cur;
-	for (cur = expect_relative_to_absolute_path; !cur->input.empty(); ++cur) {
-		string result = relative_to_absolute_path(cur->input);
+	for (cur = expect_realpath; !cur->input.empty(); ++cur) {
+		string result = op_realpath(cur->input);
 		string expect = cur->output;
 		if (cur->input[0] != '/')
 			expect = SRCDIR + expect;
-		check_result("relative_to_absolute_path", cur->input,
+		check_result("op_realpath", cur->input,
 		            expect, result);
 	}
 }
@@ -226,9 +227,6 @@ void create_file_list_tests()
 }
 
 
-// FIXME: op_follow_link: useful to test it but need to create various symlink
-
-
 int main(int, char * argv[])
 {
 	dirname_tests();
@@ -236,7 +234,7 @@ int main(int, char * argv[])
 	is_directory_tests();
 	is_files_identical_tests(argv[0]);
 	op_file_readable_tests();
-	relative_to_absolute_path_tests();
+	realpath_tests();
 	create_file_list_tests();
 	return EXIT_SUCCESS;
 }

@@ -11,18 +11,20 @@
 #include "op_file.h"
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 static char * tests[][2] = {
 	{ "/usr/bin/../bin", "/usr/bin" },
-	{ "/../foo/bar/", "/foo/bar" },
-	{ "/../../foo/bar/", "/foo/bar" },
-	{ "/../../foo/bar/.", "/foo/bar" },
-	{ "/../../foo/bar/./", "/foo/bar" },
-	{ "/foo/./bar", "/foo/bar" },
-	{ "/foo/././bar", "/foo/bar" },
-	{ "/foo///", "/foo" },
+	{ "/../usr/bin/", "/usr/bin" },
+	{ "/../../usr/bin/", "/usr/bin" },
+	{ "/../../usr/bin/.", "/usr/bin" },
+	{ "/../../usr/bin/./", "/usr/bin" },
+	{ "/usr/./bin", "/usr/bin" },
+	{ "/usr/././bin", "/usr/bin" },
+	{ "/usr///", "/usr" },
 	{ "../", "/" },
 	{ "./", "/usr" },
 	{ ".", "/usr" },
@@ -32,31 +34,31 @@ static char * tests[][2] = {
 	{ "/usr/bin/../../..", "/" },
 	{ "/usr/bin/../../../", "/" },
 	{ "././.", "/usr" },
-	/* Posix says this is valid */
-	{ "//", "//" },
-	{ "//usr", "//usr" },
-	/* but our implementation stolen from gcc treat this as "/" */
+	/* POSIX namespace ignored by realpath(3) */
+	{ "//", "/" },
+	{ "//usr", "/usr" },
 	{ "///", "/" },
 	{ NULL, NULL },
 };
 
 int main(void)
 {
+	char tmp[PATH_MAX];
 	size_t i = 0;
 
+	chdir("/usr");
+
 	while (tests[i][0]) {
-		char * res = op_relative_to_absolute_path(tests[i][0], "/usr");
-		if (!res) {
+		if (!realpath(tests[i][0], tmp)) {
 			fprintf(stderr, "NULL return for %s\n", tests[i][0]);
 			exit(EXIT_FAILURE);
 		}
 
-		if (strcmp(res, tests[i][1])) {
+		if (strcmp(tmp, tests[i][1])) {
 			fprintf(stderr, "%s does not match %s given %s\n",
-			        res, tests[i][1], tests[i][0]);
+			        tmp, tests[i][1], tests[i][0]);
 			exit(EXIT_FAILURE);
 		}
-		free(res);
 		++i;
 	}
 

@@ -29,13 +29,13 @@ bool is_directory(std::string const & dirname);
 bool is_files_identical(std::string const & file1, std::string const & file2);
 
 /**
- * follow_link - follow a symbolic link
+ * op_realpath - resolve symlinks etc.
  * @param name the file name
  *
  * Resolve a symbolic link as far as possible.
  * Returns the original string on failure.
  */
-std::string const follow_link(std::string const & name);
+std::string const op_realpath(std::string const & name);
 
 /// return true if the given file is readable
 bool op_file_readable(std::string const & file);
@@ -54,17 +54,6 @@ bool create_file_list(std::list<std::string> & file_list,
 		      std::string const & base_dir,
 		      std::string const & filter = "*",
 		      bool recursive = false);
-
-/**
- * @param path path name to translate
- * @param base_dir base directory from where the path name is relative
- * if base_dir is empty $PWD is used as base directory
- *
- * translate a relative path to an absolute path. If the path is
- * already absolute, no change is made.
- */
-std::string relative_to_absolute_path(std::string const & path,
-				std::string const & base_dir = std::string());
 
 /**
  * op_dirname - get the path component of a filename

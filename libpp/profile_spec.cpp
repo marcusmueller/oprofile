@@ -357,8 +357,7 @@ profile_spec profile_spec::create(vector<string> const & args,
 			tag_seen.insert(args[i]);
 			spec.parse(args[i]);
 		} else {
-			string file = follow_link(args[i]);
-			file = relative_to_absolute_path(file);
+			string const file = op_realpath(args[i]);
 			spec.set_image_or_lib_name(file);
 		}
 	}
@@ -443,7 +442,7 @@ list<string> profile_spec::generate_file_list(bool exclude_dependent) const
 			base_dir = OP_SAMPLES_DIR;
 		base_dir += *cit;
 
-		base_dir = relative_to_absolute_path(base_dir);
+		base_dir = op_realpath(base_dir);
 
 		list<string> files;
 		create_file_list(files, base_dir, "*", true);

@@ -38,6 +38,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <dirent.h>
+#include <limits.h>
 
 sig_atomic_t signal_alarm;
 sig_atomic_t signal_hup;
@@ -262,7 +263,12 @@ static void add_image_filter(char const * name)
 {
 	size_t hash;
 	struct opd_hashed_name * elt = xmalloc(sizeof(struct opd_hashed_name));
-	elt->name = op_follow_link(name);
+	elt->name = xmalloc(PATH_MAX);
+	if (!realpath(name, elt->name)) {
+		free(elt->name);
+		free(elt);
+		return;
+	}
 	hash = opd_hash_name(elt->name);
 	verbprintf("Adding to image filter: \"%s\"\n", elt->name);
 	list_add(&elt->next,&images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]);
@@ -323,6 +329,7 @@ int opd_read_fs_int(char const * path, char const * name)
 static void opd_options(int argc, char const * argv[])
 {
 	poptContext optcon;
+	char * tmp;
 
 	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
 
@@ -343,7 +350,11 @@ static void opd_options(int argc, char const * argv[])
 		}
 
 		/* canonicalise vmlinux filename. fix #637805 */
-		vmlinux = op_relative_to_absolute_path(vmlinux, NULL);
+		tmp = xmalloc(PATH_MAX);
+		if (realpath(vmlinux, tmp))
+			vmlinux = tmp;
+		else
+			free(tmp);
 
 		if (!kernel_range || !strcmp("", kernel_range)) {
 			fprintf(stderr, "oprofiled: no kernel VMA range specified.\n");

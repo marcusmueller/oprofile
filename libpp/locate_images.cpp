@@ -26,7 +26,7 @@ void extra_images::populate(vector<string> const & paths)
 	vector<string>::const_iterator cit = paths.begin();
 	vector<string>::const_iterator end = paths.end();
 	for (; cit != end; ++cit) {
-		string const path = relative_to_absolute_path(*cit);
+		string const path = op_realpath(*cit);
 		list<string> file_list;
 		create_file_list(file_list, path, "*", true);
 		list<string>::const_iterator lit = file_list.begin();
@@ -98,7 +98,7 @@ string const find_image_path(string const & image_name,
                              extra_images const & extra_images,
                              image_error & error)
 {
-	string const image = relative_to_absolute_path(image_name);
+	string const image = op_realpath(image_name);
 
 	// simplest case
 	if (op_file_readable(image)) {
