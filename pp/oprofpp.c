@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.16 2000/09/28 21:34:31 moz Exp $ */
+/* $Id: oprofpp.c,v 1.17 2000/10/05 02:01:12 moz Exp $ */
 
 #include "oprofpp.h"
  
@@ -452,7 +452,7 @@ found:
 	get_symbol_range(syms[i], (i==num-1) ? NULL : syms[i+1], &start, &end);
 	for (j=start; j < end; j++) { 
 		if (samples[j].count0 || samples[j].count1) { 
-			printf("+0x%.8x: %s:%u %s:%u\n", sym_offset(syms[i], j),
+			printf("%s+%x/%x: %s:%u %s:%u\n", symbol, sym_offset(syms[i], j), end-start,
 				ctr0_name, samples[j].count0, ctr1_name, samples[j].count1);
 		}
 	}
