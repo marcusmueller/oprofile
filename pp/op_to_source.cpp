@@ -809,7 +809,7 @@ void output_per_file_info(ostream & out, string const & filename,
 string const counter_str(size_t counter, size_t total)
 {
 	ostringstream os;
-	os << setw(count_width) << tostr(counter) << ' ';
+	os << setw(count_width) << counter << ' ';
 
 	os << format_percent(op_ratio(counter, total) * 100.0, percent_width);
 	return os.str();

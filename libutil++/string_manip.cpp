@@ -154,7 +154,9 @@ string trim(string const & str, string const & totrim)
 string const format_percent(double value, unsigned int width)
 {
 	ostringstream os;
-	os << fixed << value;
+	// we don't use os << fixed << value; to support gcc 2.95
+	os.setf(ios::fixed, ios::floatfield);
+	os << value;
 	string const orig = os.str();
 	if (orig.length() < width) {
 		string pad = string(width - (orig.length() + 1), ' ');
