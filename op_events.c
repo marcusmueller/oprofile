@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.21 2001/09/01 02:03:34 movement Exp $ */
+/* $Id: op_events.c,v 1.22 2001/09/06 18:13:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -56,6 +56,13 @@ struct op_unit_mask {
 	u8 default_mask;
 	/* up to seven allowed unit masks */
 	u8 um[7];
+};
+
+static const char* cpu_type_str[MAX_CPU_TYPE] = {
+	"Pentium Pro",
+	"PII",
+	"PIII",
+	"Athlon"
 };
 
 static struct op_unit_mask op_unit_masks[] = {
@@ -405,6 +412,23 @@ int op_check_events_str(int ctr, char *ctr_type, u8 ctr_um, int cpu_type, u8 *ct
 	return op_check_events(ctr, *ctr_t, ctr_um, cpu_type);
 }
 
+/**
+ * op_get_cpu_type_str - get the cpu string.
+ * @cpu_type: the cpu type identifier
+ *
+ * The function always return a valid const char*
+ * the core cpu denomination or "invalid cpu type" if
+ * @cpu_type is not valid.
+ */
+const char* op_get_cpu_type_str(int cpu_type)
+{
+	if (cpu_type < 0 || cpu_type > MAX_CPU_TYPE) {
+		return "invalid cpu type";
+	}
+
+	return cpu_type_str[cpu_type];
+}
+
 #ifdef OP_EVENTS_DESC
 struct op_unit_desc {
 	char *desc[7];
@@ -659,13 +683,6 @@ void op_get_event_desc(int cpu_type, u8 type, u8 um, char **typenamep, char **ty
 
 static int cpu_type = DEFAULT_CPU_TYPE;
 
-static const char* cpu_type_str[MAX_CPU_TYPE] = {
-	"Pentium Pro",
-	"PII",
-	"PIII",
-	"Athlon"
-};
-
 /**
  * help_for_event - output event name and description
  * @i: event number
@@ -784,7 +801,7 @@ int main(int argc, char *argv[])
 			printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
 			return 0;
 		} else if (!strcmp(argv[i], "--help")) {
-			printf("op_help [--version|--cpu-type] event_name");
+			printf("op_help [--version|--cpu-type] event_name\n");
 
 			return 0;
 		} else if (!strncmp(argv[i], "--cpu-type=", 11)) {

@@ -63,9 +63,10 @@ necks in real-world systems.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term>Uniprocessor</term>
+		<term>Uniprocessor or SMP</term>
 		<listitem><para>
-			<acronym>SMP</acronym> is currently broken as I don't have a machine to test on ... sorry.
+			<!-- FIXME: alter this later -->
+			<acronym>SMP</acronym> machines are supported, but performance is currently worse than the UP case.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -78,6 +79,7 @@ necks in real-world systems.
 	<varlistentry>
 		<term>OProfile GUI</term>
 		<listitem><para>
+			<!-- FIXME: change this if we change to Qt -->
 			The use of the GUI to start the profiler requires : <filename>wish</filename> from the tk package.
 		</para></listitem>
 	</varlistentry>
@@ -180,8 +182,7 @@ nothing (successfully).
 <para>
 Will convert from your version to the current version.
 </para>
-<para>Be warned than you cannot convert from new version to old version. If you convert to new version
-you cannot reverse the conversion.
+<para>Be warned than you cannot convert from the new version to the old version.</para>
 </sect1>
 
 <sect1 id="uninstall">
@@ -331,13 +332,6 @@ all the options, only interesting ones are listed here :
 		the running kernel if you expect meaningful profiles of the kernel. Note that this is separate file
 		from your kernel image (<filename>vmlinuz</filename>); you must specify the <filename>vmlinux</filename>
 		file created during the kernel build in order to profile the kernel.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--use-cpu</option></term>
-		<listitem><para>
-		Specify 0 for Pentium Pros, 1 for Pentium II, 2 for Pentium III and 3 for AMD Athlon/Duron.
-		<!-- FIXME: is this option necessary ?? -->
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -509,6 +503,8 @@ The following files will be present :
 		<listitem><para>
 		The numeric event value. You can convert from symbolic event names to numeric values like so :
 		</para><para><command>echo `op_help CPU_CLK_UNHALTED` &gt;/proc/sys/dev/oprofile/0/0/event</command>
+		Note that if you are using an Athlon, Duron, etc. you must use 
+		<command>op_help --cpu-type=3 RETIRED_INSNS</command> (for example) to use Athlon events.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -640,6 +636,13 @@ There is no need to unload the module between profiler runs.
 <command>lsmod</command> and similar utilties will still show the module's use count as <constant>-1</constant>.
 However, this is not to be relied on - the module will become unloadable some short time after stopping profiling.
 </para>
+<para>
+Note that by default module unloading is disabled when used on SMP systems. This is because of a small
+chance of a module unload race crashing the kernel. As the race is very small, it is allowed to
+re-enable the module unload by specifying the "allow_unload" parameter to the module :
+</para>
+<para><command>modprobe oprofile allow_unload=1</command></para>
+<para>This option can be <emphasis>DANGEROUS</emphasis> and should only be used on non-production systems.</para> 
 </sect1>
 
 </chapter>
@@ -699,7 +702,7 @@ Some interesting options of the post-processor :
 	<varlistentry>
 		<term><option>--counter</option></term>
 		<listitem><para>
-		Which counter (0 or 1) to extract information for.
+		Which counter (0 - 3) to extract information for.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>

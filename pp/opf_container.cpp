@@ -25,6 +25,11 @@ using namespace std;
 
 #include "opf_filter.h"
 
+namespace {
+	// FIXME ! 
+	uint op_nr_counters = 2;
+}
+ 
 //---------------------------------------------------------------------------
 // Functors used as predicate for vma comparison.
 struct less_sample_entry_by_vma {

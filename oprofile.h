@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.49 2001/09/04 21:11:00 movement Exp $ */
+/* $Id: oprofile.h,v 1.50 2001/09/06 18:13:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -198,6 +198,11 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #include <linux/completion.h>
 #endif
 
+// 2.4.10 introduced MODULE_LICENSE
+#ifndef MODULE_LICENSE
+#define MODULE_LICENSE(x)
+#endif
+ 
 /* These arrays are filled by hw_ok() */
 extern uint perfctr_msr[OP_MAX_COUNTERS];
 extern uint eventsel_msr[OP_MAX_COUNTERS];

@@ -1,4 +1,4 @@
-/* $Id: op_init.c,v 1.6 2001/08/19 20:09:17 movement Exp $ */
+/* $Id: op_init.c,v 1.7 2001/09/06 18:13:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -20,6 +20,8 @@
 EXPORT_NO_SYMBOLS;
 
 extern int cpu_type;
+extern uint op_nr_counters;
+extern int separate_running_bit;
 
 static int __init hw_ok(void)
 {
@@ -40,6 +42,11 @@ static int __init hw_ok(void)
 	else
 		cpu_type = (current_cpu_data.x86_model > 5) ? CPU_PIII :
 			(current_cpu_data.x86_model > 2);
+ 
+	if (cpu_type == CPU_ATHLON) {
+		op_nr_counters = 4;
+		separate_running_bit = 1;
+	}
 	return cpu_type;
 }
 

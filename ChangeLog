@@ -1,3 +1,38 @@
+2001-09-06  John Levon  <moz@compsoc.man.ac.uk>
+
+	* doc/oprofile.sgml: update a bit
+ 
+2001-09-06  John Levon  <moz@compsoc.man.ac.uk>
+
+	* <most files>: make op_nr_counters a var (no pp support for > 2 yet)
+	 
+	* dae/oprofiled.c: don't print help when counter event etc. are wrong
+ 
+2001-09-06  John Levon  <moz@compsoc.man.ac.uk>
+
+	* oprofile.h:
+	* oprofile.c: use MODULE_LICENSE
+ 
+2001-09-06  John Levon  <moz@compsoc.man.ac.uk>
+
+	* op_user.h: add missing prototype
+
+	* dae/op_start: fix counter extraction
+ 
+2001-09-05  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/oprofpp.c: fix a few corner case, cleanup.
+	* dae/opd_proc: ditto.	
+
+	* dae/op_start: better handling of counter number
+
+	* dae/opd_proc: minor change.
+
+	* op_user.h: enable support for four counters
+	* oprofile.c: ditto. Split functions
+
+	* op_events.c: expose op_get_cpu_type_str(int) to world.
+
 2001-09-04  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.h:

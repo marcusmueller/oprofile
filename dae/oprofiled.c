@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.40 2001/09/01 02:03:34 movement Exp $ */
+/* $Id: oprofiled.c,v 1.41 2001/09/06 18:13:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -21,6 +21,7 @@ extern double cpu_speed;
 extern u32 ctr_count[OP_MAX_COUNTERS];
 extern u8 ctr_event[OP_MAX_COUNTERS];
 extern u8 ctr_um[OP_MAX_COUNTERS];
+uint op_nr_counters = 2;
 
 static int showvers;
 int verbose;
@@ -51,7 +52,6 @@ unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 
 static struct poptOption options[] = {
 	{ "buffer-size", 'b', POPT_ARG_INT, &opd_buf_size, 0, "nr. of entries in kernel buffer", "num", },
-	{ "use-cpu", 'p', POPT_ARG_INT, &cpu_type, 0, "0 for PPro, 1 for PII, 2 for PIII, 3 for Athlon", "[0|1|2|3]" },
 	{ "ignore-myself", 'm', POPT_ARG_INT, &ignore_myself, 0, "ignore samples of oprofile driver", "[0|1]"},
 	{ "log-file", 'l', POPT_ARG_STRING, &logfilename, 0, "log file", "file", },
 	{ "base-dir", 'd', POPT_ARG_STRING, &opd_dir, 0, "base directory of daemon", "dir", },
@@ -155,7 +155,8 @@ static void opd_options(int argc, char const *argv[])
 {
 	poptContext optcon;
 	int ret;
-	int i, ok;
+	uint i;
+	int ok;
 	char c;
 	/* should be sufficient to hold /proc/sys/dev/oprofile/%d/yyyy */
 	char filename[PATH_MAX + 1];
@@ -165,7 +166,7 @@ static void opd_options(int argc, char const *argv[])
 
 	c=poptGetNextOpt(optcon);
 
-	if (c<-1) {
+	if (c < -1) {
 		fprintf(stderr, "oprofiled: %s: %s\n",
 			poptBadOption(optcon, POPT_BADOPTION_NOALIAS),
 			poptStrerror(c));
@@ -201,29 +202,24 @@ static void opd_options(int argc, char const *argv[])
 		ctr_um[i]= opd_read_int_from_file(filename);
 	}
 
-	cpu_type = opd_read_int_from_file("/proc/sys/dev/oprofile/cpu_type");
-
-
 	ok = 1;
-	/* PHE FIXME : We need to translate cpu_type to a string, see 
-	 * cpu_typ_str in op_events.c */
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		ret = op_check_events(i, ctr_event[i], ctr_um[i], cpu_type);
 
 		if (ret & OP_EVT_NOT_FOUND)
-			fprintf(stderr, "oprofiled: ctr%d: %d: no such event for cpu %d\n",
-				i, ctr_event[i], cpu_type);
+			fprintf(stderr, "oprofiled: ctr%d: %d: no such event for cpu %s\n",
+				i, ctr_event[i], op_get_cpu_type_str(cpu_type));
 
 		if (ret & OP_EVT_NO_UM) 
-			fprintf(stderr, "oprofiled: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n",
-				i, ctr_um[i], cpu_type);
+			fprintf(stderr, "oprofiled: ctr%d: 0x%.2x: invalid unit mask for cpu %s\n",
+				i, ctr_um[i], op_get_cpu_type_str(cpu_type));
 
 		if (ret & OP_EVT_CTR_NOT_ALLOWED)
 			fprintf(stderr, "oprofiled: ctr%d: %d: can't count event for this counter\n",
 				i, ctr_count[i]);
 
 		if (ret != OP_EVENTS_OK)
-			ok = 0;
+			exit(1);
 	}
 
 	if (!ok) {
@@ -422,6 +418,10 @@ int main(int argc, char const *argv[])
 	size_t opd_buf_bytesize;
 	struct sigaction act;
 	int i;
+
+	cpu_type = opd_read_int_from_file("/proc/sys/dev/oprofile/cpu_type");
+	if (cpu_type == CPU_ATHLON)
+		op_nr_counters = 4;
 
 	opd_options(argc, argv);
 

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.67 2001/09/04 12:50:10 movement Exp $ */
+/* $Id: opd_proc.c,v 1.68 2001/09/06 18:13:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -25,6 +25,7 @@
 
 extern int kernel_only;
 extern int verbose;
+extern uint op_nr_counters; 
 extern unsigned long opd_stats[];
 extern char *vmlinux;
 extern char *smpdir;
@@ -74,7 +75,7 @@ void opd_alarm(int val __attribute__((unused)))
 	struct opd_proc *proc;
 	struct opd_proc *next;
 	uint i;
-	int j;
+	uint j;
 
 	for (i = 0; i < nr_images; i++) {
 		struct opd_image* image = &opd_images[i];
@@ -265,7 +266,7 @@ del:
  */
 static void opd_handle_old_sample_files(const char *image_name, time_t mtime)
 {
-	int i;
+	uint i;
 	char *mangled;
 
 	mangled = opd_mangle_filename(smpdir, image_name);
@@ -295,9 +296,8 @@ static void opd_handle_old_sample_files(const char *image_name, time_t mtime)
  */
 static void opd_open_image(struct opd_image *image, const char *name, int kernel)
 {
-	int i;
+	uint i;
 
-	/* PHE FIXME : store the mangled name ? */
 	image->name = opd_strdup(name);
 	image->kernel = kernel;
 	image->len = 0;
@@ -387,34 +387,13 @@ static void opd_open_sample_file(struct opd_image *image, int counter)
 		goto err1;
 	}
 
-	/* PHE FIXME: keep it, I need opinion on the two manner to do the job
-	 * I am unsure if there is no a thrid way to make this */
-#if 0
-	/* ugly: mmap needs than fd size is sufficient, bugs in this area
-	 * is difficult to understand, mmap sucess but the returned pointer
-	 * cause a segfault, then the daemon is killed without coredump nor
-	 * message error. PHE FIXME: why this mmap behavior, and why daemon die
-	 * silently ? */
-	if (lseek(sample_file->fd, image->len + sizeof(struct opd_footer) - 1, SEEK_SET) == -1) {
-		fprintf(stderr, "oprofiled: seek failed for \"%s\". %s\n", mangled, strerror(errno));
-		goto err2;
-	}
-
-	/* PHE FIXME: this unsparse the file by one memory page size at the
-	 * end of file :( An another way to grow the file ?, 0 write size do
-	 * not work. try a write from the zero page? */
-	if (write(sample_file->fd, "", 1) != 1) {
-		perror("oprofiled: cannot grow sample file. ");
-		goto err2;
-	}
-#else
-	/* PHE FIXME: perhaps this is equivalent to the code above other #if
-	 * alternative */
+	/* truncate to grow the file is ok on linux, and probably ok in POSIX.
+	 * I am unsure than don't touch the last page and un-sparse a little
+	 * what the samples file */
 	if (ftruncate(sample_file->fd, image->len + sizeof(struct opd_footer) - 1) == -1) {
 		fprintf(stderr, "oprofiled: ftruncate failed for \"%s\". %s\n", mangled, strerror(errno));
 		goto err2;
 	}
-#endif
 
 	sample_file->footer = mmap(0, image->len + sizeof(struct opd_footer),
 			PROT_READ|PROT_WRITE, MAP_SHARED, sample_file->fd, 0);
@@ -1163,7 +1142,8 @@ void opd_put_sample(const struct op_sample *sample)
 
 	opd_stats[OPD_SAMPLES]++;
 
-	verbprintf("DO_PUT_SAMPLE: EIP 0x%.8x, pid %.6d, count %.6d\n", sample->eip, sample->pid, sample->count);
+	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8x, pid %.6d, count %.6d\n", 
+		opd_get_counter(sample->count), sample->eip, sample->pid, sample->count);
 
 	if (opd_eip_is_kernel(sample->eip)) {
 		opd_handle_kernel_sample(sample->eip, sample->count);

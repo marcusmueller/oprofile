@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.4 2001/09/01 02:03:34 movement Exp $ */
+/* $Id: op_user.h,v 1.5 2001/09/06 18:13:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,13 +22,24 @@
 
 #include "version.h"
 
-/* PHE FIXME: op_config.h, typedef it and prefix by op_ ? */
+#ifndef u8
 #define u8 unsigned char
+#endif
+#ifndef u16
 #define u16 unsigned short
+#endif
+#ifndef u32
 #define u32 unsigned int
+#endif
+#ifndef uint
 #define uint unsigned int
+#endif
+#ifndef ulong
 #define ulong unsigned long
+#endif
+#ifndef fd_t
 #define fd_t int
+#endif
 
 /* event check returns */
 #define OP_EVENTS_OK		0x0
@@ -69,20 +80,10 @@
  * of this variable is for static/local array dimension. Never use it in loop
  * or in array index acccess/index checking. Don't change it without updating
  * OP_BITS_CTR! */
-#define OP_MAX_COUNTERS	2
-
-/* The real number of counters supported for the running cpu, I define it
- * separately to allow using a variable rather a constant so distribution can
- * provide a generic binary for oprofile. This need also a few additional
- * fixes */
-#define op_nr_counters	2
-
-/* IA32 have only one bit to start/stop all counter, AMD have separate bit
- * inside each event select MSR */
-#define separate_running_bit	0
+#define OP_MAX_COUNTERS	4
 
 /* the number of bits neccessary to store OP_MAX_COUNTERS values */
-#define OP_BITS_CTR	1
+#define OP_BITS_CTR	2
 
 /* the number of reserved bits in count, + 1 is for the notification bit */
 #define OP_BITS (OP_BITS_CTR + 1)
@@ -91,7 +92,7 @@
 #define OP_BITS_COUNT	(16 - OP_BITS)
 
 /* counter nr mask */
-#define OP_CTR_MASK	((~0U << OP_BITS_COUNT) >> 1)
+#define OP_CTR_MASK	((~0U << (OP_BITS_COUNT + 1)) >> 1)
 
 /* top OP_BITS bits of count are used as follows: */
 /* is this actually a notification ? */
@@ -164,6 +165,7 @@ struct op_mapping {
 /* op_events.c */
 int op_min_count(u8 ctr_type, int cpu_type);
 int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, int cpu_type);
+const char* op_get_cpu_type_str(int cpu_type);
 /* not used currently */
 int op_check_events_str(int ctr, char *ctr_type, u8 ctr_um, int cpu_type, u8 *ctr_t);
 void op_get_event_desc(int cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);

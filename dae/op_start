@@ -1,5 +1,5 @@
-#!/bin/sh
-# $Id: op_start,v 1.38 2001/09/04 17:30:12 movement Exp $
+#!/bin/bash
+# $Id: op_start,v 1.39 2001/09/06 18:13:28 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -31,18 +31,6 @@ VMLINUX=
 PID_FILTER=0
 PGRP_FILTER=0
 VERBOSE=0
-
-# PHE FIXME: too many changes needs a redesign. Proposition:
-# 1) check for a cpu_type switch, 
-# 2) stop the daemon
-# 3) modprobe oprofile [cpu_type=xx]
-# 4) if --cpu-type not given get it from /proc/sys/dev/oprofile/cpu_type
-# 5) default init
-# 6) parse parameter
-# 7) launch the daemon
-# this avoid passing cpu_type in the common case and allow in case or module
-# misdetect the used core to overwrite it through an init parameters to the
-# module
 
 if test -f /proc/cpuinfo; then
 	modelname=`cat /proc/cpuinfo | grep "model\ name\	:" | sed -e 's/ //g' | cut -d':' -f2`
@@ -110,7 +98,6 @@ Allowed range for N is [0-$OP_MAX_COUNTERS[
   --pgrp-filter=pgrp           Only profile process group pgrp
 
 Daemon options
-  --use-cpu=[0|1|2|3]          0: PPro, 1: PII, 2: PIII, 3: AMD Athlon.
   --ignore-myself=[0|1]        ignore samples for oprofiled
   --log-file=file              log file
   --base-dir=dir               base directory of daemon
@@ -152,12 +139,15 @@ do_sysctl()
 	echo $val > /proc/sys/$dev_name
 }
 
-# PHE FIXME: assume ctr < 9, how from an awk expr extract the int field? 
-# probably needs to use bash string manipulation.
-# extract the field N from --ctrN-xxxxxx
+# extract the integer field N from --ctr[N]-xxxxxxx
 extract_int()
 {
-    echo $1 | awk '{print substr($0, 6, 1)}'
+	local val=`echo $1 | sed 's,--ctr\([0-9]*\)[-A-Za-z]*,\1,'`
+
+	if (($val >= $OP_MAX_COUNTERS || $val < 0)); then
+		echo "invalid argument $1: bad counter number"
+	fi
+	echo $val
 }
 
 LOG_FILE=
@@ -171,15 +161,6 @@ do
 	arg=`echo $1 | awk -F= '{print $1}'`
 	val=`echo $1 | awk -F= '{print $2}'`
 	case "$arg" in
-		# PHE FIXME: this work actually but if the forced cpu type have
-		# more counter than OP_MAX_COUNTERS only OP_NR_MAX_COUNTERS
-		# can be used. if less the script do not work and you can
-		# get many trouble.
-		--use-cpu)
-			if [ "$val" != "" ]; then
-				CPUTYPE=$val
-			fi
-			;;
 		--ignore-myself)
 			if [ "$val" != "" ]; then
 				IGNORE_MYSELF=$val
@@ -200,21 +181,20 @@ do
 				KERNEL_ONLY=1
 			fi
 			;;
-		# PHE FIXME: see comment at extract_int
 		--ctr*-unit-mask)
-			CTR_UM[`extract_int $1`]=$val
+			CTR_UM[`extract_int $arg`]=$val
 			;;
 		--ctr*-event)
-			CTR_EVENT[`extract_int $1`]=$val
+			CTR_EVENT[`extract_int $arg`]=$val
 			;;
 		--ctr*-count)
-			CTR_COUNT[`extract_int $1`]=$val
+			CTR_COUNT[`extract_int $arg`]=$val
 			;;
 		--ctr*-user)
-			CTR_USER[`extract_int $1`]=$val
+			CTR_USER[`extract_int $arg`]=$val
 			;;
 		--ctr*-kernel)
-			CTR_KERNEL[`extract_int $1`]=$val
+			CTR_KERNEL[`extract_int $arg`]=$val
 			;;
 		--base-dir)
 			DIR=$val
@@ -449,7 +429,7 @@ while (( $f < $OP_MAX_COUNTERS )); do
 	f=$(($f+1))
 done
  
-OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$CPUTYPE --ignore-myself=$IGNORE_MYSELF \
+OPD_ARGS="--buffer-size=$BUF_SIZE --ignore-myself=$IGNORE_MYSELF \
 	--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
 	--device-file=$DEVICE_FILE --kernel-only=$KERNEL_ONLY \
 	--hash-map-device-file=$HASH_MAP_DEVICE_FILE --vmlinux=$VMLINUX"

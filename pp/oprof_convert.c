@@ -235,26 +235,13 @@ static void do_mapping_transfer(uint nr_samples, int counter,
 			goto err1;
 		}
 
-		/* PHE FIXME: same issue in opd_proc.c with more comments */
-#if 0
-		/* ugly: mmap needs than fd size is sufficient. */
-		if (lseek(out_fd, size - 1, SEEK_SET) == -1) {
-			fprintf(stderr, "oprofiled: seek failed for \"%s\". %s\n", out_filename, strerror(errno));
-			goto err2;
-		}
-
-		/* PHE FIXME: this unsparse the file by one memory page
-		 * size at the end file :( An another way to grow a file ? */
-		if (write(out_fd, "", 1) != 1) {
-			perror("oprof_convert: cannot grow sample file. ");
-			goto err2;
-		}
-#else
+		/* truncate to grow the file is ok on linux, and probably ok
+		 * in POSIX. I am unsure than don't touch the last page
+		 * and unsparse a little what the samples file */
 		if (ftruncate(out_fd, size) == -1) {
-		  fprintf(stderr, "oprof_convert: ftruncate failed for \"%s\". %s\n", out_filename, strerror(errno));
-		  goto err2;
-	}
-#endif
+			fprintf(stderr, "oprof_convert: ftruncate failed for \"%s\". %s\n", out_filename, strerror(errno));
+			goto err2;
+		}
 
 		footer = mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, out_fd, 0);
 

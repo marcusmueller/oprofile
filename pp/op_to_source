@@ -101,9 +101,6 @@ do
 	shift
 done
 
-# PHE FIXME : this checking need to be remade with the new samples files naming
-# scheme
-
 # Check than enough option has been given.
 if [ "$object_file" == "" -a "$sample_file" == "" ]; then
 	echo "You need to give at least an object-file or a sample-file"
@@ -116,12 +113,15 @@ if [ "$object_file" != "" -a ! -f "$object_file" ]; then
 	exit 1
 fi
 
-# PHE FIXME: bogus here is case of passing sample_filename without the #x
-# prefix. Should be rewrite perhaps.
-#if [ "$sample_file" != "" -a ! -f "$sample_file" ]; then
-#	echo "sample file $sample_file does not exist"
-#	exit 1
-#fi
+if [ "$object_file" == "" -a "$do_to_asm" == "true" ]; then
+	echo "you must give an object filename if assembly output is required"
+	exit 1
+fi
+
+# we don't check existence of sample file because oprofpp can use it
+# as a base filename. FIXME: we need to make the check here to avoid breaking
+# the pipe used to generate the report, else if sample file do not exist we
+# get an ugly message error
 
 if [ "$sample_file" != "" ]; then
 	oprofpp_option="$oprofpp_option -f $sample_file"

@@ -45,6 +45,8 @@ ostream & operator<<(ostream & out, const counter_setup &);
 
 double do_ratio(size_t a, size_t total);
 
+// FIXME: must change this
+uint op_nr_counters = 2;
 }
 
 //---------------------------------------------------------------------------

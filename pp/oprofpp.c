@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.37 2001/09/01 02:03:34 movement Exp $ */
+/* $Id: oprofpp.c,v 1.38 2001/09/06 18:13:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -29,6 +29,7 @@
  
 static int showvers;
 static int verbose; 
+static uint op_nr_counters = 2;
  
 static char const *samplefile;
 static char *basedir="/var/opd";
@@ -55,6 +56,8 @@ static int session_number = -1;
  * is used for sort purpose */
 static int ctr = -1;
 static u32 sect_offset; 
+
+static int accumulate_samples(u32 counter[OP_MAX_COUNTERS], int index);
 
 static struct poptOption options[] = {
 	{ "samples-file", 'f', POPT_ARG_STRING, &samplefile, 0, "image sample file", "file", },
@@ -186,16 +189,16 @@ static void get_options(int argc, char const *argv[])
 	}
 
 	if (ctr != counter) {
-		/* PHE FIXME documentation of this behavior */
 		/* a --counter=x have priority on the # suffixe of filename */
 		if (ctr != -1 && counter != -1) {
 			/* conflict between #%d and --ctr option */
 			fprintf(stderr, "oprofpp: conflict between %s filename counter nr and --ctr %d option, using --ctr option %d\n", file_ctr_str, ctr, ctr);
+			counter = ctr;
 		}
-
 	}
 
-	counter = ctr;
+	if (ctr == -1)
+		ctr = counter;
 
 	if (ctr == -1) {
 		/* list_all_symbols_details always output all counter and do
@@ -216,7 +219,7 @@ static void get_options(int argc, char const *argv[])
 	if (file_ctr_str)
 		file_ctr_str[0] = '\0';
 
-	if (ctr != -1 && (ctr < 0 || ctr >= op_nr_counters)) {
+	if (ctr != -1 && (ctr < 0 || ctr >= (int)op_nr_counters)) {
 		ctr = 0;
 
 		fprintf(stderr, "oprofpp: invalid counter number, using %d\n", ctr);
@@ -284,6 +287,7 @@ bfd *open_image_file(char const * mangled, time_t mtime)
 	char **matching;
 	time_t newmtime;
 	bfd *ibfd;
+	uint i;
 	 
 	file = (char *)imagefile;
 
@@ -338,9 +342,18 @@ bfd *open_image_file(char const * mangled, time_t mtime)
  	if (!imagefile)
 		free(file);
 
-	/* PHE FIXME: this is broken, should search for a opended sample file
-	 * */
-	if (footer[ctr == -1 ? 0 : ctr]->is_kernel) {
+	for (i = 0; i < op_nr_counters; ++i) {
+		if (footer[i])
+			break;
+	}
+
+	/* should never happens */
+	if (i == op_nr_counters) {
+		fprintf(stderr,"oprofpp: open_image_file() no samples file open for %s.\n", file);
+		exit(EXIT_FAILURE);
+	}
+
+	if (footer[i]->is_kernel) {
 		asection *sect; 
  
 		sect = bfd_get_section_by_name(ibfd, ".text");
@@ -504,12 +517,10 @@ int countcomp(const void *a, const void *b)
 	struct opp_count *ca= (struct opp_count *)a;	 
 	struct opp_count *cb= (struct opp_count *)b;	 
 
-	/* PHE FIXME: I think it is correct... */
-	int counter = ctr == -1 ? 0 : ctr;
-
-	if (ca->count[counter] < cb->count[counter])
+	/* note than ctr must be sanitized before calling qsort */
+	if (ca->count[ctr] < cb->count[ctr])
 		return -1;
-	return (ca->count[counter] > cb->count[counter]);
+	return (ca->count[ctr] > cb->count[ctr]);
 }
  
 /**
@@ -524,9 +535,10 @@ void do_list_symbols(asymbol **syms, uint num)
 	struct opp_count *scounts;
 	u32 start, end;
 	uint tot[OP_MAX_COUNTERS],i,j;
-	int found_samples, k;
+	int found_samples;
+	uint k;
 
-	for (i = 0 ; i < op_nr_counters ; ++i) {
+	for (i = 0; i < op_nr_counters; ++i) {
 		tot[i] = 0;
 	}
 
@@ -547,16 +559,17 @@ void do_list_symbols(asymbol **syms, uint num)
 		}
 
 		for (j = start; j < end; j++) {
-			/* PHE FIXME too imbrication level */
-			for (k = 0 ; k < op_nr_counters ; ++k) {
-				if (samples[k] && samples[k][j].count) {
-					verbprintf("Adding %u 0-samples for symbol $%s$ at pos j 0x%x\n", 
-						   samples[k][j].count, syms[i]->name, j);
-					scounts[i].count[k] += samples[k][j].count;
-					tot[k] += samples[k][j].count;
-				}
-			}
+			accumulate_samples(scounts[i].count, j);
 		}
+
+		for (k = 0 ; k < op_nr_counters ; ++k) {
+			tot[k] += scounts[i].count[k];
+		}
+	}
+
+	if (ctr == -1 || samples[ctr] == NULL) {
+		fprintf(stderr, " oprofpp: invalid counter %d before sort by count\n", ctr); 
+		exit(EXIT_FAILURE);
 	}
 
 	qsort(scounts, num, sizeof(struct opp_count), countcomp);
@@ -564,7 +577,6 @@ void do_list_symbols(asymbol **syms, uint num)
 	for (i=0; i < num; i++) {
 		printf_symbol(scounts[i].sym->name);
 
-		/* PHE FIXME too imbrication level */
 		found_samples = 0;
 		for (k = 0; k < op_nr_counters ; ++k) {
 			if (scounts[i].count[k]) {
@@ -593,7 +605,7 @@ void do_list_symbol(bfd * ibfd, asymbol **syms, uint num)
 {
 	u32 start, end;
 	u32 i, j;
-	int k;
+	uint k;
 
 	for (i=0; i < num; i++) {
 		if (streq(syms[i]->name, symbol))
@@ -762,24 +774,20 @@ translate_address (bfd* ibfd, asymbol **syms, asection *section, bfd_vma pc)
 /**
  * accumulate_samples - lookup and output linenr info from a vma address
  * in a given section to standard output.
- * @counter: where to accumulate the samples, can be %NULL
+ * @counter: where to accumulate the samples
  * @index: index number of the samples.
  *
- * if @counter != %NULL accumulate samples count in @counter
- * else just return 0/1 if they exist samples at @index
- *
- * return non-zero if samples has been found
+ * return 0 if no samples has been found else return 1
  */
 static int accumulate_samples(u32 counter[OP_MAX_COUNTERS], int index)
 {
-	int k;
+	uint k;
 	int found_samples = 0;
 
 	for (k = 0; k < op_nr_counters; ++k) {
 		if (samples[k] && samples[k][index].count) {
 			found_samples = 1;
-			if (counter)
-				counter[k] += samples[k][index].count;
+			counter[k] += samples[k][index].count;
 		}
 	}
 
@@ -803,7 +811,7 @@ void do_list_all_symbols_details(bfd *ibfd, asymbol **syms, uint num)
 
 	for (i = 0 ; i < num ; ++i) {
 		u32 counter[OP_MAX_COUNTERS];
-		int k;
+		uint k;
 		int found_samples;
 
 		get_symbol_range(syms[i], (i == num-1) ? NULL : syms[i+1], 
@@ -1035,7 +1043,7 @@ int main(int argc, char const *argv[])
 {
 	bfd *ibfd; 
 	asymbol **syms;
-	int i, j;
+	uint i, j;
 	fd_t fd[OP_MAX_COUNTERS];
 	size_t size[OP_MAX_COUNTERS];
 	uint num;
@@ -1043,6 +1051,8 @@ int main(int argc, char const *argv[])
  
 	get_options(argc, argv);
 
+	// FIXME: we must discover op_nr_counters from cpu_type of sample
+	// file or something
 	for (i = 0; i < op_nr_counters ; ++i) {
 		fd[i] = -1;
 		size[i] = 0;
@@ -1051,10 +1061,11 @@ int main(int argc, char const *argv[])
 	}
 
 	for (i = 0; i < op_nr_counters ; ++i) {
-		if (ctr == -1 || ctr == i)
-			/* PHE FIXME: in some case we can pass 0 as can_fail
-			 * to get better error message */
-			fd[i] = open_samples_file(i, &size[i], 1);
+		if (ctr == -1 || ctr == (int)i)
+			/* if ctr == i, this means than we open only one
+			 * samples file so don't allow opening failure to get
+			 * a more precise error message */
+			fd[i] = open_samples_file(i, &size[i], ctr != (int)i);
 	}
 
 	for (i = 0; i < op_nr_counters ; ++i) {
@@ -1111,8 +1122,12 @@ int main(int argc, char const *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	printf("Cpu speed was (MHz estimation) : %f\n",
-	       footer[ctr == -1 ? 0 : ctr]->cpu_speed);
+	for (i = 0; i < op_nr_counters ; ++i) {
+		if (fd[i] != -1)
+			break;
+	}
+
+	printf("Cpu speed was (MHz estimation) : %f\n", footer[i]->cpu_speed);
 
 	if (list_symbols) {
 		do_list_symbols(syms, num);

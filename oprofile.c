@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.81 2001/09/04 21:11:00 movement Exp $ */
+/* $Id: oprofile.c,v 1.82 2001/09/06 18:13:28 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,6 +22,7 @@ EXPORT_NO_SYMBOLS;
 static char *op_version = VERSION_STRING;
 MODULE_AUTHOR("John Levon (moz@compsoc.man.ac.uk)");
 MODULE_DESCRIPTION("Continuous Profiling Module");
+MODULE_LICENSE("GPL");
 
 #ifdef CONFIG_SMP
 MODULE_PARM(allow_unload, "i");
@@ -48,6 +49,12 @@ pid_t pgrp_filter;
 static uint perfctr_msr[OP_MAX_COUNTERS];
 static uint eventsel_msr[OP_MAX_COUNTERS];
 
+/* number of counters physically present */
+uint op_nr_counters = 2;
+
+/* whether we enable for each counter (athlon) or globally (intel) */
+int separate_running_bit;
+ 
 static u32 prof_on __cacheline_aligned;
 
 static int smp_hardware;
@@ -308,8 +315,6 @@ static int __init apic_setup(void)
 	/* ugly hack */
 	my_set_fixmap();
 
-	/* FIXME: NMI delivery for SMP ? */
-
 	/* enable local APIC via MSR. Forgetting this is a fun way to
 	   lock the box */
 	/* IA32 V3, 7.4.2 */
@@ -430,16 +435,12 @@ static void pmc_setup(void *dummy)
 		case CPU_ATHLON:
 			eventsel_msr[0] = MSR_K7_PERFCTL0;
 			eventsel_msr[1] = MSR_K7_PERFCTL1;
-/* FIXME ATHLON enable only with OP_MAX_COUNTERS 4 and an athlon to test this
 			eventsel_msr[2] = MSR_K7_PERFCTL2;
 			eventsel_msr[3] = MSR_K7_PERFCTL3;
-*/
 			perfctr_msr[0] = MSR_K7_PERFCTR0;
 			perfctr_msr[1] = MSR_K7_PERFCTR1;
-/* FIXME ATHLON ditto
 			perfctr_msr[2] = MSR_K7_PERFCTR2;
 			perfctr_msr[3] = MSR_K7_PERFCTR3;
-*/
 			break;
 		default:
 			eventsel_msr[0] = MSR_IA32_EVNTSEL0;
@@ -460,7 +461,7 @@ static void pmc_setup(void *dummy)
 	 * all bits are cleared except the reserved bits 21 */
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		rdmsr(eventsel_msr[i], low, high);
-		wrmsr(eventsel_msr[i], low & (1 << 22), high);
+		wrmsr(eventsel_msr[i], low & (1 << 21), high);
 
 		/* avoid a false detection of ctr overflow in NMI handler */
 		wrmsr(perfctr_msr[i], -1, -1);
@@ -513,52 +514,74 @@ static void pmc_setup(void *dummy)
 #endif
 }
 
-static void pmc_start(void *info)
+inline static void pmc_start_P6(void)
+{
+	uint low,high;
+
+	rdmsr(eventsel_msr[0], low, high);
+	wrmsr(eventsel_msr[0], low | (1 << 22), high);
+}
+
+inline static void pmc_start_Athlon(void)
 {
 	uint low,high;
 	int i;
 
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		if (op_ctr_count[i]) {
+			rdmsr(eventsel_msr[i], low, high);
+			wrmsr(eventsel_msr[i], low | (1 << 22), high);
+		}
+	}
+}
+
+static void pmc_start(void *info)
+{
 	if (info && (*((uint *)info) != smp_processor_id()))
 		return;
 
 	/* assert: all enable counter are setup except the bit start/stop,
 	 * all counter disable contains zeroes (except perhaps the reserved
-	 * bit 21) */
+	 * bit 21), counter disable contains -1 sign extended in msr count */
 
 	/* enable all needed counter */
-	if (separate_running_bit == 0) {
-		rdmsr(eventsel_msr[0], low, high);
-		wrmsr(eventsel_msr[0], low | (1 << 22), high);
-	} else {
-		for (i = 0 ; i < op_nr_counters ; ++i) {
-			if (op_ctr_count[i]) {
-				rdmsr(eventsel_msr[i], low, high);
-				wrmsr(eventsel_msr[i], low | (1 << 22), high);
-			}
+	if (separate_running_bit == 0)
+		pmc_start_P6();
+	else
+		pmc_start_Athlon();
+}
+
+inline static void pmc_stop_P6(void)
+{
+	uint low,high;
+
+	rdmsr(eventsel_msr[0], low, high);
+	wrmsr(eventsel_msr[0], low & ~(1 << 22), high);
+}
+
+inline static void pmc_stop_Athlon(void)
+{
+	uint low,high;
+	int i;
+
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		if (op_ctr_count[i]) {
+			rdmsr(eventsel_msr[i], low, high);
+			wrmsr(eventsel_msr[i], low & ~(1 << 22), high);
 		}
 	}
 }
 
 static void pmc_stop(void *info)
 {
-	uint low,high;
-	int i;
-
 	if (info && (*((uint *)info) != smp_processor_id()))
 		return;
 
 	/* disable counters */
-	if (separate_running_bit == 0) {
-		rdmsr(eventsel_msr[0], low, high);
-		wrmsr(eventsel_msr[0], low & ~(1 << 22), high);
-	} else {
-		for (i = 0 ; i < op_nr_counters ; ++i) {
-			if (op_ctr_count[i]) {
-				rdmsr(eventsel_msr[i], low, high);
-				wrmsr(eventsel_msr[i], low & ~(1 << 22), high);
-			}
-		}
-	}
+	if (separate_running_bit == 0)
+		pmc_stop_P6();
+	else
+		pmc_stop_Athlon();
 }
 
 inline static void pmc_select_start(uint cpu)
@@ -850,11 +873,6 @@ static int oprof_init_data(void)
 			return -EFAULT;
 		}
 
-		/* PHE FIXME: this is inefficient if only few counter are
-		 * enable. Some other place in the code must be fixed if we
-		 * allocate only on demand, take care than note currently are
-		 * always put in data[0]->buffer even if the counter 0 is
-		 * disable */
 		data->buffer = vmalloc(buf_size);
 		if (!data->buffer) {
 			printk(KERN_ERR "oprofile: failed to allocate eviction buffer of %lu bytes\n",buf_size);
@@ -880,12 +898,11 @@ static int parms_ok(void)
 	uint cpu;
 	int ok;
 	struct _oprof_data *data;
-	int enabled;
+	int enabled = 0;
 
 	op_check_range(op_hash_size, 256, 262144, "op_hash_size value %d not in range (%d %d)\n");
 	op_check_range(op_buf_size, 1024, 1048576, "op_buf_size value %d not in range (%d %d)\n");
 
-	enabled = 0;
 	for (i = 0; i < op_nr_counters ; i++) {
 		if (op_ctr_on[i]) {
 			int min_count = op_min_count(op_ctr_val[i], cpu_type);
@@ -901,7 +918,7 @@ static int parms_ok(void)
 	}
 
 	if (!enabled) {
-		printk(KERN_ERR "oprofile: neither counter enabled.\n");
+		printk(KERN_ERR "oprofile: no counters have been enabled.\n");
 		return 0;
 	}
 
@@ -1170,7 +1187,6 @@ static struct ctl_table_header *sysctl_header;
 static int __init init_sysctl(void)
 {
 	ctl_table *next = &oprof_table[nr_oprof_static];
-	ctl_table *counter_table[op_nr_counters + 1];
 	ctl_table *tab;
 	int i,j;
 
@@ -1192,7 +1208,6 @@ static int __init init_sysctl(void)
 		tab[3] = ((ctl_table){ 1, "unit_mask", &op_ctr_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[4] = ((ctl_table){ 1, "kernel", &op_ctr_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		tab[5] = ((ctl_table){ 1, "user", &op_ctr_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		counter_table[i] = tab;
 		next++;
 	}
 
