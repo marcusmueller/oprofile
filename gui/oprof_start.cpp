@@ -282,6 +282,10 @@ void oprof_start::setup_default_event()
 	event_cfgs[descr.name].count = descr.count;
 	event_cfgs[descr.name].user_ring_count = 1;
 	event_cfgs[descr.name].os_ring_count = 1;
+
+	QListViewItem * item = events_list->findItem(descr.name, 0);
+	if (item)
+		item->setSelected(true);
 }
 
 

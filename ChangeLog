@@ -1,5 +1,10 @@
 2003-07-26  John Levon  <levon@movementarian.org>
 
+	* gui/oprof_start.cpp: actually select and show the default
+	event
+
+2003-07-26  John Levon  <levon@movementarian.org>
+
 	* gui/oprof_start.cpp: small string tweak, show "conflicts"
 	message consistently
 
