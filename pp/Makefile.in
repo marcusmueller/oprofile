@@ -15,19 +15,19 @@ INSTALL_LIST=oprofpp oprof_convert opf_filter op_to_source
 
 install: $(INSTALL_LIST)
 	-$(MKDIR_P) $(BINDIR)
-	@for f in $(INSTALL_LIST); do				 \
+	for f in $(INSTALL_LIST); do \
 		cp $$f $(BINDIR)/$$f && chmod 755 $(BINDIR)/$$f; \
 	done
 
 uninstall:
-	@for f in $(INSTALL_LIST); do	\
-		rm -f $(BINDIR)/$$f;	\
+	for f in $(INSTALL_LIST); do \
+		-rm -f $(BINDIR)/$$f; \
 	done
 
 CFLAGS=-Wall -Wstrict-prototypes -W -pipe -DOP_EVENTS_DESC -L/usr/lib @CFLAGS@
 LIBS=-lpopt -lbfd -liberty -ldl
 INCLUDES=@extra_includes@
-HEADERS=oprofpp.h ../dae/opd_util.h
+HEADERS=oprofpp.h ../dae/opd_util.h ../op_user.h
 MY_SOURCES=oprofpp.c
 SOURCES=$(MY_SOURCES) ../dae/opd_util.c ../op_events.c
 
@@ -40,17 +40,17 @@ oprofpp: $(SOURCES) $(HEADERS)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $(SOURCES) $(LIBS)
 
 oprof_convert: oprof_convert.c ../dae/opd_util.c ../dae/opd_util.h
-	$(CC) oprof_convert.c ../dae/opd_util.c -Wall -o $@
+	$(CC) -Wall oprof_convert.c ../dae/opd_util.c -o $@
 
 #CXX_DEBUG_LIBS = -L/usr/src/STLport-4.0/lib -lm -lstlport_gcc_stldebug
 #CXXFLAGS_DEBUG_STL = -D__STL_DEBUG -I/usr/src/STLport-4.0/stlport -Wno-long-long
 
 OPF_CXXFLAGS=-Wall -pedantic -O2 -g $(CXXFLAGS_DEBUG_STL)
 
-opf_container.o: opf_container.cpp opf_filter.h
+opf_container.o: opf_container.cpp opf_filter.h ../op_user.h
 	g++ -c $(OPF_CXXFLAGS) $< -o $@
 
-opf_filter.o : opf_filter.cpp opf_filter.h
+opf_filter.o : opf_filter.cpp opf_filter.h ../op_user.h
 	g++ -c $(OPF_CXXFLAGS) $< -o $@
 
 opf_filter: opf_filter.o opf_container.o

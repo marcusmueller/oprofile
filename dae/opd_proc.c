@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.64 2001/08/18 15:58:31 movement Exp $ */
+/* $Id: opd_proc.c,v 1.65 2001/09/01 02:03:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -23,9 +23,6 @@
 #define OPD_DEFAULT_MAPS 16
 #define OPD_MAP_INC 8
 
-/* kernel image entries are offset by this many entries */
-#define OPD_KERNEL_OFFSET 524288
-
 extern int kernel_only;
 extern int verbose;
 extern unsigned long opd_stats[];
@@ -36,7 +33,11 @@ extern struct op_hash *hashmap;
 /* hash of process lists */
 static struct opd_proc *opd_procs[OPD_MAX_PROC_HASH];
 
-struct opd_footer footer;
+u32 ctr_count[OP_MAX_COUNTERS];
+u8 ctr_event[OP_MAX_COUNTERS];
+u8 ctr_um[OP_MAX_COUNTERS];
+extern u32 cpu_type;
+double cpu_speed;
 
 /* image structure */
 static struct opd_image *opd_images;
@@ -52,7 +53,8 @@ static unsigned int nr_modules=0;
 
 static struct opd_proc *opd_add_proc(u16 pid);
 static void opd_grow_images(void);
-static void opd_open_image(struct opd_image *image);
+static void opd_open_sample_file(struct opd_image *image, int counter);
+static void opd_open_image(struct opd_image *image, const char *name, int kernl);
 static int opd_find_image(const char *name);
 static int opd_add_image(const char *name, int kernel);
 static int opd_get_image(const char *name, int kernel);
@@ -62,7 +64,8 @@ static void opd_kill_maps(struct opd_proc *proc);
 static void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset, u32 end);
 static struct opd_proc *opd_get_proc(u16 pid);
 static void opd_delete_proc(struct opd_proc *proc);
-static void opd_handle_old_sample_file(char * mangled, time_t mtime);
+static void opd_handle_old_sample_file(int counter, const char * mangled, time_t mtime);
+static void opd_handle_old_sample_files(const char * mangled, time_t mtime);
 
 /* every so many minutes, clean up old procs, msync mmaps, and
    report stats */
@@ -71,10 +74,14 @@ void opd_alarm(int val __attribute__((unused)))
 	struct opd_proc *proc;
 	struct opd_proc *next;
 	uint i;
+	int j;
 
-	for (i=0; i < nr_images; i++) {
-		if (opd_images[i].fd != -1)
-			msync(opd_images[i].start, opd_images[i].len, MS_ASYNC);
+	for (i = 0; i < nr_images; i++) {
+		struct opd_image* image = &opd_images[i];
+		for (j = 0 ; j < op_nr_counters ; ++j) {
+			if (image->sample_files[j].fd > 1)
+				msync(image->sample_files[i].start, image->len + sizeof(struct opd_footer), MS_ASYNC);
+		}
 	}
 
 	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
@@ -169,19 +176,13 @@ void opd_read_system_map(const char *filename)
 	opd_close_file(fp);
 }
 
-struct opd_fentry {
-	u32 count0;
-	u32 count1;
-};
-
- 
 /**
  * opd_save_old_sample_file - back up the sample file
  * @file: the file name of the sample
  *
  * Back up a sample file.
  */
-static void opd_save_old_sample_file(char * file)
+static void opd_save_old_sample_file(const char *file)
 {
 	char * savename;
 	int gen = 0;
@@ -199,8 +200,7 @@ static void opd_save_old_sample_file(char * file)
 
 	opd_free(savename);
 }
-  
- 
+
 /**
  * opd_handle_old_sample_file - deal with old sample file
  * @mangled: the sample file name
@@ -209,11 +209,11 @@ static void opd_save_old_sample_file(char * file)
  * If an old sample file exists, verify it is usable.
  * If not, move or delete it.
  */
-static void opd_handle_old_sample_file(char * mangled, time_t mtime)
+static void opd_handle_old_sample_file(int counter, const char * mangled, time_t mtime)
 {
 	struct opd_footer oldfooter; 
 	FILE * fp;
- 
+
 	if (!opd_get_fsize(mangled, 0))
 		return;
 
@@ -221,25 +221,20 @@ static void opd_handle_old_sample_file(char * mangled, time_t mtime)
 	if (!fp)
 		goto del;
 
-	if (fseek(fp, -sizeof(struct opd_footer), SEEK_END) == -1)
-		goto closedel;
- 
 	if (fread(&oldfooter, sizeof(struct opd_footer), 1, fp) != 1)
 		goto closedel;
 
-	if (oldfooter.magic != OPD_MAGIC || oldfooter.version != OPD_VERSION)
-		goto closedel; 
+	if (memcmp(&oldfooter.magic, OPD_MAGIC, sizeof(oldfooter.magic)) || oldfooter.version != OPD_VERSION)
+		goto closedel;
 
 	if (difftime(mtime, oldfooter.mtime))
 		goto closedel;
 
 	/* versions match, but we might be using different values */
-	if (oldfooter.ctr0_type_val != footer.ctr0_type_val ||
-		oldfooter.ctr1_type_val != footer.ctr1_type_val ||
-		oldfooter.ctr0_um != footer.ctr0_um ||
-		oldfooter.ctr1_um != footer.ctr1_um ||
-		oldfooter.ctr0_count != footer.ctr0_count ||
-		oldfooter.ctr1_count != footer.ctr1_count) {
+	if (oldfooter.ctr_event != ctr_event[counter] ||
+	    oldfooter.ctr_um != ctr_um[counter] ||
+	    oldfooter.ctr_count != ctr_count[counter] ||
+	    oldfooter.cpu_type != cpu_type) {
 		fclose(fp);
 		opd_save_old_sample_file(mangled);
 		return;
@@ -255,91 +250,86 @@ del:
 	verbprintf("Deleting old sample file \"%s\".\n", mangled);
 	unlink(mangled);
 }
+  
+ 
+/**
+ * opd_handle_old_sample_files - deal with old sample file
+ * @image_name: image to open file for
+ * @mtime: the new mtime of the binary
+ *
+ * to simplify admin of sample file we rename or remove sample
+ * files for each counter.
+ *
+ * If an old sample file exists, verify it is usable.
+ * If not, move or delete it.
+ */
+static void opd_handle_old_sample_files(const char *image_name, time_t mtime)
+{
+	int i;
+	char *mangled;
+
+	mangled = opd_mangle_filename(smpdir, image_name);
+
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		sprintf(mangled + strlen(mangled), "#%d", i);
+
+		opd_handle_old_sample_file(i, mangled,  mtime);
+	}
+
+	free(mangled);
+}
  
 /**
  * opd_open_image - open an image sample file
  * @image: image to open file for
+ * @name: name of the image to add
+ * @kernel: is the image a kernel/module image
  *
- * Open and initialise an image sample file for
- * the image @image and set up memory mappings for
- * it. image->kernel and image->name must have meaningful
- * values.
+ * @image at funtion entry is uninitialised
+ * @name is copied i.e. should be GC'd separately from the
+ * image structure if appropriate.
+ *
+ * Initialise an opd_image struct for the image @image
+ * without opening the associated samples files. At return
+ * the @image is fully initialized.
  */
-static void opd_open_image(struct opd_image *image)
+static void opd_open_image(struct opd_image *image, const char *name, int kernel)
 {
-	char *mangled;
-	char *c;
-	char *c2;
+	int i;
 
-	mangled = opd_malloc(strlen(smpdir) + 2 + strlen(image->name));
-	strcpy(mangled, smpdir);
-	strcat(mangled, "/");
-	c = mangled + strlen(smpdir) + 1;
-	c2 = image->name;
-	do {
-		if (*c2 == '/')
-			*c++ = OPD_MANGLE_CHAR;
-		else
-			*c++ = *c2;
-	} while (*++c2);
-	*c = '\0';
+	/* PHE FIXME : store the mangled name ? */
+	image->name = opd_strdup(name);
+	image->kernel = kernel;
+	image->len = 0;
 
-	verbprintf("Statting $%s$\n", image->name);
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		image->sample_files[i].fd = -1;
+		image->sample_files[i].start = (void *)-1;
+		image->sample_files[i].footer = (void *)-1;
+	}
 
-	/* for each byte in original, two u32 counters */
-	image->len = opd_get_fsize(image->name, 0) * sizeof(u32) * 2;
+	verbprintf("Statting \"%s\"\n", name);
+
+	/* for each byte in original one counter */
+	image->len = opd_get_fsize(name, 0) * sizeof(struct opd_fentry);
 	
 	if (!image->len) {
-		fprintf(stderr, "stat failed for %s\n", image->name);
-		image->fd = -1;
-		opd_free(mangled);
+		fprintf(stderr, "stat failed for %s\n", name);
 		return;
 	}
 
-	footer.mtime = opd_get_mtime(image->name);
+	image->mtime = opd_get_mtime(name);
  
 	/* give space for "negative" entries. This is because we
 	 * don't know about kernel/module sections other than .text so
 	 * a sample could be before our nominal start of image, or
 	 * after the start */
 	if (image->kernel)
-		image->len += OPD_KERNEL_OFFSET * sizeof(struct opd_fentry) * 2;
+		image->len += OPD_KERNEL_OFFSET * sizeof(struct opd_fentry);
 
-	opd_handle_old_sample_file(mangled, footer.mtime);
- 
-	verbprintf("Opening $%s$\n", mangled);
+	opd_handle_old_sample_files(name, image->mtime);
 
-	image->fd = open(mangled, O_CREAT|O_RDWR, 0644);
-	if (image->fd == -1) {
-		fprintf(stderr,"oprofiled: open of image sample file \"%s\" failed: %s\n", mangled, strerror(errno));
-		goto out;
-	}
-
-	if (lseek(image->fd, image->len, SEEK_SET) == -1) {
-		fprintf(stderr, "oprofiled: seek failed for \"%s\". %s\n", mangled, strerror(errno));
-		goto err;
-	}
-
-	footer.is_kernel = image->kernel;
-	
-	if ((write(image->fd, &footer, sizeof(struct opd_footer))) < (int)sizeof(struct opd_footer)) {
-		perror("oprofiled: wrote less than expected opd_footer. ");
-		goto err;
-	}
-
-	image->start = mmap(0, image->len, PROT_READ|PROT_WRITE, MAP_SHARED, image->fd, 0);
-
-	if (image->start == (void *)-1) {
-		perror("oprofiled: mmap() failed. ");
-		goto err;
-	}
-out:
-	opd_free(mangled);
-	return;
-err:
-	close(image->fd);
-	image->fd=-1;
-	goto out;
+	/* samples files are lazilly openeded */
 }
 
 /**
@@ -361,7 +351,101 @@ inline static u16 opd_get_count(const u16 count)
  */
 inline static u16 opd_get_counter(const u16 count)
 {
-	return (count & OP_COUNTER);
+	return OP_COUNTER(count);
+}
+
+/*
+ * opd_open_sample_file - open an image sample file
+ * @image: image to open file for
+ * @counter: counter number
+ *
+ * Open image sample file for the image @image, counter
+ * @counter and set up memory mappings for it.
+ * image->kernel and image->name must have meaningful
+ * values.
+ */
+static void opd_open_sample_file(struct opd_image *image, int counter)
+{
+	char* mangled;
+	struct opd_sample_file *sample_file;
+
+	sample_file = &image->sample_files[counter];
+
+	/* avoid flood of error messages */
+	if (sample_file->fd == -2)
+		return;
+
+	mangled = opd_mangle_filename(smpdir, image->name);
+
+	sprintf(mangled + strlen(mangled), "#%d", counter);
+
+	verbprintf("Opening \"%s\"\n", mangled);
+
+	sample_file->fd = open(mangled, O_CREAT|O_RDWR, 0644);
+	if (sample_file->fd == -1) {
+		fprintf(stderr,"oprofiled: open of image sample file \"%s\" failed: %s\n", mangled, strerror(errno));
+		goto err1;
+	}
+
+	/* PHE FIXME: keep it, I need opinion on the two manner to do the job
+	 * I am unsure if there is no a thrid way to make this */
+#if 0
+	/* ugly: mmap needs than fd size is sufficient, bugs in this area
+	 * is difficult to understand, mmap sucess but the returned pointer
+	 * cause a segfault, then the daemon is killed without coredump nor
+	 * message error. PHE FIXME: why this mmap behavior, and why daemon die
+	 * silently ? */
+	if (lseek(sample_file->fd, image->len + sizeof(struct opd_footer) - 1, SEEK_SET) == -1) {
+		fprintf(stderr, "oprofiled: seek failed for \"%s\". %s\n", mangled, strerror(errno));
+		goto err2;
+	}
+
+	/* PHE FIXME: this unsparse the file by one memory page size at the
+	 * end of file :( An another way to grow the file ?, 0 write size do
+	 * not work. try a write from the zero page? */
+	if (write(sample_file->fd, "", 1) != 1) {
+		perror("oprofiled: cannot grow sample file. ");
+		goto err2;
+	}
+#else
+	/* PHE FIXME: perhaps this is equivalent to the code above other #if
+	 * alternative */
+	if (ftruncate(sample_file->fd, image->len + sizeof(struct opd_footer) - 1) == -1) {
+		fprintf(stderr, "oprofiled: ftruncate failed for \"%s\". %s\n", mangled, strerror(errno));
+		goto err2;
+	}
+#endif
+
+	sample_file->footer = mmap(0, image->len + sizeof(struct opd_footer),
+			PROT_READ|PROT_WRITE, MAP_SHARED, sample_file->fd, 0);
+
+	if (sample_file->footer == (void *)-1) {
+		fprintf(stderr,"oprofiled: mmap of image sample file \"%s\" failed: %s\n", mangled, strerror(errno));
+		goto err2;
+	}
+
+	sample_file->start = sample_file->footer + 1;
+
+	memset(sample_file->footer, '\0', sizeof(struct opd_footer));
+	sample_file->footer->version = OPD_VERSION;
+	memcpy(&sample_file->footer->magic, OPD_MAGIC, sizeof(sample_file->footer->magic));
+	sample_file->footer->is_kernel = image->kernel;
+	sample_file->footer->ctr_event = ctr_event[counter];
+	sample_file->footer->ctr_um = ctr_um[counter];
+	sample_file->footer->ctr = counter;
+	sample_file->footer->cpu_type = cpu_type;
+	sample_file->footer->ctr_count = ctr_count[counter];
+	sample_file->footer->cpu_speed = cpu_speed;
+	sample_file->footer->mtime = image->mtime;
+out:
+	opd_free(mangled);
+	return;
+err2:
+	close(sample_file->fd);
+err1:
+	/* avoid flood of error messages */
+	sample_file->fd = -2;
+	goto out;
 }
 
 /**
@@ -382,35 +466,36 @@ inline static u16 opd_get_counter(const u16 count)
 inline static void opd_put_image_sample(struct opd_image *image, u32 offset, u16 count)
 {
 	struct opd_fentry *fentry;
+	struct opd_sample_file* sample_file;
+	int counter;
 
-	if (image->fd < 1) {
-		verbprintf("Trying to write to non-opened image %s\n", image->name);
-		return;
+	counter = opd_get_counter(count);
+	sample_file = &image->sample_files[counter];
+
+	if (sample_file->fd < 1) {
+		opd_open_sample_file(image, counter);
+		if (sample_file->fd < 1) {
+			/* opd_open_sample_file output an error message */
+			return;
+		}
 	}
 
-	fentry = image->start + (offset*sizeof(struct opd_fentry));
+	fentry = sample_file->start + (offset*sizeof(struct opd_fentry));
 
 	if (image->kernel)
 		fentry += OPD_KERNEL_OFFSET;
 
-	if (((u32)fentry) > ((u32)(image->start + image->len))) {
+	if (((u32)fentry) > ((u32)(sample_file->start + image->len))) {
 		fprintf(stderr, "fentry %p out of bounds for \"%s\" (start %p, len 0x%.8lx, "
-			"end %p, orig offset 0x%.8x, kernel %d)\n", fentry, image->name, image->start,
-			image->len, image->start + image->len, offset, image->kernel);
+			"end %p, orig offset 0x%.8x, kernel %d)\n", fentry, image->name, sample_file->start,
+			image->len, sample_file->start + image->len, offset, image->kernel);
 		return;
 	}
 
-	if (opd_get_counter(count)) {
-		if (fentry->count1 + opd_get_count(count) < fentry->count1)
-			fentry->count1 = (u32)-1;
-		else
-			fentry->count1 += opd_get_count(count);
-	} else {
-		if (fentry->count0 + opd_get_count(count) < fentry->count0)
-			fentry->count0 = (u32)-1;
-		else
-			fentry->count0 += opd_get_count(count);
-	}
+	if (fentry->count + opd_get_count(count) < fentry->count)
+		fentry->count = (u32)-1;
+	else
+		fentry->count += opd_get_count(count);
 }
 
 
@@ -424,11 +509,11 @@ void opd_init_images(void)
 {
 	/* 0 is reserved for the kernel image */
 	opd_images = opd_calloc0(sizeof(struct opd_image), OPD_DEFAULT_IMAGES);
-	opd_images[0].name = opd_malloc(strlen(vmlinux) + 1);
-	strncpy(opd_images[0].name,vmlinux,strlen(vmlinux) + 1);
-	
+
+	opd_images[0].name = opd_strdup(vmlinux);
 	opd_images[0].kernel = 1;
-	opd_open_image(&opd_images[0]);
+
+	opd_open_image(&opd_images[0], vmlinux, 1);
 	nr_images = 1;
 }
 
@@ -502,11 +587,7 @@ static int opd_find_image(const char *name)
  */
 static int opd_add_image(const char *name, int kernel)
 {
-	opd_images[nr_images].name = opd_malloc(strlen(name)+1);
-	strncpy(opd_images[nr_images].name, name, strlen(name)+1);
-
-	opd_images[nr_images].kernel = kernel;
-	opd_open_image(&opd_images[nr_images]);
+	opd_open_image(&opd_images[nr_images], name, kernel);
 	nr_images++;
 
 	if (nr_images == max_nr_images)
@@ -1050,7 +1131,7 @@ inline static void verb_show_sample(u32 offset, struct opd_map *map)
 		return;
 
 	printf("DO_PUT_SAMPLE (LAST_MAP): calc offset 0x%.8x, map start 0x%.8x,"
-		" end 0x%.8x, offset 0x%.8x, name $%s$\n",
+		" end 0x%.8x, offset 0x%.8x, name \"%s\"\n",
 		offset, map->start, map->end, map->offset, opd_images[map->image].name);
 }
 
@@ -1145,7 +1226,7 @@ void opd_put_sample(const struct op_sample *sample)
  */
 void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset, u32 end)
 {
-	verbprintf("Placing mapping for process %d: 0x%.8x-0x%.8x, off 0x%.8x, $%s$\n",
+	verbprintf("Placing mapping for process %d: 0x%.8x-0x%.8x, off 0x%.8x, \"%s\"\n",
 		proc->pid, start, end, offset, opd_images[image_nr].name);
 
 	proc->maps[proc->nr_maps].image = image_nr;

@@ -41,7 +41,7 @@ struct less_sample_entry_by_vma {
 // Functors used as predicate for less than comparison of counter_array_t. There is no
 //  multi-sort choice, ie the the counter number used is statically set at ctr time.
 struct less_sample_entry_by_samples_nr {
-	// Precondition: index < max_counter_number. Used also as default ctr.
+	// Precondition: index < op_nr_counters. Used also as default ctr.
 	less_sample_entry_by_samples_nr(size_t index_ = 0) : index(index_) {}
 
 	bool operator()(const sample_entry * lhs, const sample_entry * rhs) const {
@@ -120,7 +120,7 @@ class symbol_container_impl {
 	//  the nth first symbols.
 	//  the nth first symbols that accumulate a certain amount of samples.
 	std::multiset<const symbol_entry *, less_sample_entry_by_samples_nr>
-		symbol_entry_by_samples_nr[max_counter_number];
+		symbol_entry_by_samples_nr[OP_MAX_COUNTERS];
 
 	std::set<const symbol_entry *, less_by_file_loc> symbol_entry_by_file_loc;
 };
@@ -128,7 +128,7 @@ class symbol_container_impl {
 symbol_container_impl::symbol_container_impl() {
 	// symbol_entry_by_samples_nr has been setup by the default ctr, we need to
 	// rebuild it. do not assume than index 0 is correctly build
-	for (size_t i = 0 ; i < max_counter_number ; ++i) {
+	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
 		less_sample_entry_by_samples_nr compare(i);
 		symbol_entry_by_samples_nr[i] =
 			multiset<const symbol_entry *, less_sample_entry_by_samples_nr>(compare);
@@ -172,7 +172,7 @@ void symbol_container_impl::flush_input_symbol() {
 	// Update the sets of symbols entries sorted by samples count and the set of
 	// symbol entries sorted by file location.
 	for (size_t i = 0 ; i < v.size() ; ++i) {
-		for (size_t counter = 0 ; counter < max_counter_number ; ++counter)
+		for (size_t counter = 0 ; counter < op_nr_counters ; ++counter)
 			symbol_entry_by_samples_nr[counter].insert(&v[i]);
 		
 		symbol_entry_by_file_loc.insert(&v[i]);
@@ -204,7 +204,7 @@ const symbol_entry * symbol_container_impl::find_by_vma(unsigned long vma) const
 
 // get a vector of symbols sorted by increased count.
 void symbol_container_impl::get_symbols_by_count(size_t counter, vector<const symbol_entry*>& v) const {
-	if (counter >= max_counter_number) {
+	if (counter >= op_nr_counters) {
 		throw "symbol_container_impl::get_symbols_by_count() : invalid counter number";
 	}
 
@@ -321,7 +321,7 @@ bool sample_container_impl::accumulate_samples_for_file(counter_array_t & counte
 		counter += (*it1)->counter;
 	}
 
-	for (size_t i = 0 ; i < max_counter_number ; ++i)
+	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		if (counter[i] != 0)
 			return true;
 

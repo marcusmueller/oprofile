@@ -5,8 +5,7 @@
 #include <iostream>
 #include <string>
 
-// The maximum number of counter. Would be a parameter coming from configure.
-static const size_t max_counter_number = 2;
+#include "../op_user.h"
 
 // Add run-time checking if true.
 static const bool sanity_check = true;
@@ -30,7 +29,7 @@ class counter_array_t {
 	counter_array_t & operator+=(const counter_array_t &);
 
  private:
-	size_t value[max_counter_number];
+	size_t value[OP_MAX_COUNTERS];
 };
 
 //---------------------------------------------------------------------------

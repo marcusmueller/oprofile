@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.47 2001/08/31 17:16:35 movement Exp $ */
+/* $Id: oprofile.h,v 1.48 2001/09/01 02:03:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -47,21 +47,11 @@ struct _oprof_data {
 	struct op_sample *buffer; /* eviction buffer */
 	uint hash_size; /* nr. in hash table */
 	uint buf_size; /* nr. in buffer */
-	uint ctr_count[2]; /* reset counter values */
 	uint nextbuf; /* next in buffer (atomic) */
-	u16 next; /* next sample in entry */
-	u16 ctrs; /* which counters are set */
+	uint next; /* next sample in entry */
+	uint ctr_count[OP_MAX_COUNTERS]; /* reset counter values */
 } __attribute__((__aligned__(SMP_CACHE_BYTES)));
 
-#define OP_CTR_0 0x1
-#define OP_CTR_1 0x2
-
-#define CPU_NO_GOOD -1
-#define CPU_PPRO 0
-#define CPU_PII 1
-#define CPU_PIII 2
-#define CPU_ATHLON 3
- 
 /* MSRs */
 #ifndef MSR_IA32_PERFCTR0
 #define MSR_IA32_PERFCTR0 0xc1
@@ -109,9 +99,6 @@ struct _oprof_data {
 
 #define streqn(a, b, len) (!strncmp((a), (b), (len)))
 
-/* maximum nr. of counters, up to 4 for Athlon (18 for P4) */
-#define OP_MAX_COUNTERS 4
- 
 /* oprof_data->ready will be set this many samples
  * before the end of the eviction buffer.
  * The purpose of this is to avoid overflowing the sample
@@ -146,24 +133,10 @@ struct _oprof_data {
 	((((((eip&0xff000)>>3) ^ eip) ^ (pid&0xff)) ^ (eip<<9)) \
 	^ (ctr<<8)) & (data->hash_size - 1)
 
-/* relying on MSR numbers being neighbours */
-#define get_perfctr(l,h,c) do { rdmsr(ctrreg0 + c, (l), (h)); } while (0)
-#define set_perfctr(l,c) do { wrmsr(ctrreg0 + c, -(u32)(l), -1); } while (0)
+/* do not rely on MSR numbers being neighbours */
+#define get_perfctr(l,h,c) do { rdmsr(perfctr_msr[(c)], (l), (h)); } while (0)
+#define set_perfctr(l,c) do { wrmsr(perfctr_msr[(c)], -(u32)(l), -1); } while (0)
 #define ctr_overflowed(n) (!((n) & (1U<<31)))
-
-#define OP_EVENTS_OK            0x0
-#define OP_CTR0_NOT_FOUND       0x1
-#define OP_CTR1_NOT_FOUND       0x2
-#define OP_CTR0_NO_UM           0x4
-#define OP_CTR1_NO_UM           0x8
-#define OP_CTR0_NOT_ALLOWED     0x10
-#define OP_CTR1_NOT_ALLOWED     0x20
-#define OP_CTR0_PII_EVENT       0x40
-#define OP_CTR1_PII_EVENT       0x80
-#define OP_CTR0_PIII_EVENT      0x100
-#define OP_CTR1_PIII_EVENT      0x200
-#define OP_CTR0_ATHLON_EVENT    0x400
-#define OP_CTR1_ATHLON_EVENT    0x800
 
 #define op_check_range(val,l,h,str) do { \
         if ((val) < (l) || (val) > (h)) { \
@@ -218,22 +191,14 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #include <linux/completion.h>
 #endif
 
-// FIXME: these names are too easy to mis-type !
-extern uint ctrlreg0;
-extern uint ctrlreg1;
-extern uint ctrlreg2;
-extern uint ctrlreg3;
-extern uint ctrreg0;
-extern uint ctrreg1;
-extern uint ctrreg2;
-extern uint ctrreg3;
+/* These arrays are filled by hw_ok() */
+extern uint perfctr_msr[OP_MAX_COUNTERS];
+extern uint eventsel_msr[OP_MAX_COUNTERS];
 
 int oprof_init(void);
 int find_intel_smp(void);
 void oprof_exit(void);
 void my_set_fixmap(void);
-int op_min_count(u8 ctr_type);
-int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc);
 void op_intercept_syscalls(void);
 void op_replace_syscalls(void);
 void op_save_syscalls(void);

@@ -1,5 +1,63 @@
-2001-08-31  John Levon  <moz@compsoc.man.ac.uk>
+2001-08-31  Philippe Elie  <ph_e@club-internet.fr>
 
+	* oprofile.h:
+	* dae/oprofiled.h:
+	* op_user.h:
+	* oprofpp.h:
+	* dae/opd_util.h: share commmon declarations, put it in
+	  op_user.h, include op_user.h in other .h when necessary.
+	* op_events.c:
+	* all Makefile.in: update dependancies.
+ 
+2001-08-30  Philippe Elie  <ph_e@club-internet.fr>
+
+	* oprofile.c: use loop instead of fixed counter number
+ 
+2001-08-26  Philippe Elie  <ph_e@club-internet.fr>
+
+	* op_events.c: add option to op_help for the gui
+	* gui/oprofile: use op_help to build description
+	  of events, accept Athlon (only 2 counters)
+ 
+2001-08-25  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/oprofpp.c:
+	* dae/op_start: use loop instead of fixed number of counter.
+ 
+2001-08-24  Philippe Elie  <ph_e@club-internet.fr>
+
+	* pp/oprof_convert.c: add v4 --> v5 conversion
+ 
+2001-08-23  Philippe Elie  <ph_e@club-internet.fr>
+
+	* oprofile.c: correct some comment.
+ 
+2001-08-22  Philippe Elie  <ph_e@club-internet.fr>
+
+	* op_user.h:
+	* dae/opd_proc.c:
+	* dae/opd_util.c:
+	* dae/opd_util.h:
+	* dae/oprofiled.h:
+	* dae/oprofiled.c:
+	* dae/oprofiled.c: row to column file format, lot of changes.
+ 
+2001-08-21  Philippe Elie  <ph_e@club-internet.fr>
+
+	* op_events.c: Add Athlon string/unit maks description
+ 
+2001-08-20  Philippe Elie  <ph_e@club-internet.fr>
+
+	* op_events.c: change in handling of search/check events
+	* dae/oprofiled.c:
+	* dae/oprofiled.h:
+	* oprofile.c:
+	* oprofile.h:
+	* pp/oprofpp.c:
+	* pp/oprofpp.h:	reflects caller/prototype, lot of changes.
+ 
+2001-08-31  John Levon  <moz@compsoc.man.ac.uk>
+  
 	* Makefile.in:
 	* op_x86.c:
 	* oprofile.h:

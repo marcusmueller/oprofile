@@ -14,18 +14,24 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/* Do not touch this file, the v5 samples files format make it easier to
+ * convert but the method used here is not adapated. This utilities can convert
+ * from version 2,3,4 to 5 newer version should use a new stuff */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 
 #include "../version.h"
 #include "../dae/opd_util.h"
 
 static char * filename;
  
-#define OPD_MANGLE_CHAR '}'
- 
-#define OPD_MAGIC 0xdeb6
+/* magic number <= v4 */
+#define OPD_MAGIC_V4 0xdeb6
+
+#define OPD_MAGIC_V5 "DAE\n"
 
 /* at the end of the sample files */
 struct opd_footer_v2 {
@@ -60,6 +66,23 @@ struct opd_footer_v4 {
 	u32  reserved[31];
 };
 
+/* At the begin of samples files */
+struct opd_footer_v5 {
+	u8  magic[4];
+	u32 version;
+	u8 is_kernel;
+	u32 ctr_event;
+	u32 ctr_um;
+	/* ctr number, used for sanity checking */
+	u32 ctr;
+	u32 cpu_type;
+	u32 ctr_count;
+	double cpu_speed;
+	time_t mtime;
+	/* binary compatibility reserve */
+	u32  reserved2[21];
+};
+
 /*
  * Precondition : fp is seeked on the begin of an opd_footer_vn, it is always ok to
  * read an opd_footer_v2 at the begin of function but the version number field is not
@@ -92,6 +115,15 @@ static void v2_to_v3(FILE* fp) {
 	fwrite(&footer_v3, sizeof(footer_v3), 1, fp);
 }
 
+/* this function is used only between conversion from v3 to v4, (ChangeLog
+ * 2001-07-25), but backup of samples file has been added at 2001-07-15 (no
+ * release between this two date). This means than cvs between this can have
+ * backup and this files are mishandled by this function du the "-%d" suffix
+ * It is a don't take care case.
+ *
+ * Symptom is mtime checking loss (mtime is set to 0), people who have
+ * this problem have tried to use a cvs alpha version as a production tool
+ * let's fix themself the problem */
 static char * get_binary_name(void)
 {
 	char *file; 
@@ -149,72 +181,234 @@ static void v3_to_v4(FILE* fp) {
 	fwrite(&footer_v4, sizeof(footer_v4), 1, fp);
 }
  
-/* provide a default conversion function which just increase the version number, It may
- * be used when a reserved field is used without changing the total sizeof of opd_footer
- * *and* the zero value in the reserve work correctly with your new code */
-/* Not used for now so no static to avoid warning. This code has not been tested */
-/*static*/ void bump_version(FILE* fp) 
+/* the "old" samples file format */
+struct old_opd_fentry {
+	u32 count0;
+	u32 count1;
+};
+
+static int cpu_type = -1;
+
+/* PHE FIXME: really a fucking function, if you have problem with it flame
+ * me at <phe@club-internet.fr> */
+/* create one row file during translate from colum to row format v4 --> v5 */
+static void do_mapping_transfer(uint nr_samples, int counter, 
+				const char* filename,
+				const struct opd_footer_v4* footer_v4, 
+				const struct old_opd_fentry* old_samples,
+				int session_number)
 {
-	struct opd_footer_v2 footer_v2;
+	char* out_filename;
+	int out_fd;
+	struct opd_footer_v5* footer;
+	u32* samples;
+	uint k;
+	u32 size;
+	int dirty;
 
-	fread(&footer_v2, sizeof(footer_v2), 1, fp);
+	if (cpu_type == -1 || cpu_type < 0 || cpu_type > 3) {
+		fprintf(stderr, "converting %s to new file format require option --cpu-type=[0|1|2|3]\n", filename);
+		return;
+	}
 
-	footer_v2.version++;
+	out_filename = opd_malloc(strlen(filename) + 32);
+	strcpy(out_filename, filename);
+	sprintf(out_filename + strlen(out_filename), "#%d", counter);
 
-	fseek(fp, -sizeof(footer_v2), SEEK_CUR);
+	size = (nr_samples * sizeof(u32)) + sizeof(struct opd_footer_v5);
 
-	fwrite(&footer_v2, sizeof(footer_v2), 1, fp);
+	/* New samples files are lazilly created, respect this behavior
+	 * by not creating file with no valid ctr_type_val */
+	dirty = 0;
+
+	if ((counter == 0 && footer_v4->v2.ctr0_type_val) ||
+	    (counter == 1 && footer_v4->v2.ctr1_type_val)) {
+		if (session_number != -1)
+			sprintf(out_filename + strlen(filename), "-%d",
+				session_number);
+
+		unlink(out_filename);
+
+		out_fd = open(out_filename, O_CREAT|O_RDWR, 0644);
+		if (out_fd == -1) {
+			fprintf(stderr,"oprofiled: open of image sample file \"%s\" failed: %s\n", out_filename, strerror(errno));
+			goto err1;
+		}
+
+		/* PHE FIXME: same issue in opd_proc.c with more comments */
+#if 0
+		/* ugly: mmap needs than fd size is sufficient. */
+		if (lseek(out_fd, size - 1, SEEK_SET) == -1) {
+			fprintf(stderr, "oprofiled: seek failed for \"%s\". %s\n", out_filename, strerror(errno));
+			goto err2;
+		}
+
+		/* PHE FIXME: this unsparse the file by one memory page
+		 * size at the end file :( An another way to grow a file ? */
+		if (write(out_fd, "", 1) != 1) {
+			perror("oprof_convert: cannot grow sample file. ");
+			goto err2;
+		}
+#else
+		if (ftruncate(out_fd, size) == -1) {
+		  fprintf(stderr, "oprof_convert: ftruncate failed for \"%s\". %s\n", out_filename, strerror(errno));
+		  goto err2;
+	}
+#endif
+
+		footer = mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, out_fd, 0);
+
+		if (footer == (void *)-1) {
+			fprintf(stderr,"oprof_convert: mmap of output sample file \"%s\" failed: %s\n", out_filename, strerror(errno));
+			goto err2;
+		}
+
+		samples = (void *)(footer + 1);
+
+		memset(footer, '\0', sizeof(struct opd_footer_v5));
+		memcpy(footer->magic, OPD_MAGIC_V5, sizeof(footer->magic));
+		footer->version = 5;
+		footer->is_kernel = footer_v4->v2.is_kernel;
+		footer->ctr_event = (counter == 0)
+			? footer_v4->v2.ctr0_type_val 
+			: footer_v4->v2.ctr1_type_val;
+		
+		footer->ctr_um =  (counter == 0)
+			? footer_v4->v2.ctr0_um 
+			: footer_v4->v2.ctr1_um;
+
+		footer->ctr_count = (counter == 0)
+			? footer_v4->ctr0_count 
+			: footer_v4->ctr1_count;
+
+		footer->ctr = counter;
+
+		footer->cpu_type = cpu_type;
+		footer->cpu_speed = footer_v4->cpu_speed;
+		footer->mtime = footer_v4->mtime;
+
+		for (k = 0 ; k < nr_samples ; ++k) {
+			u32 sample = counter
+				? old_samples[k].count1
+				: old_samples[k].count0;
+
+			/* keep the sparse of the file */
+			if (sample) {
+				samples[k] = sample;
+				dirty = 1;
+			}
+		}
+
+		munmap(footer, size);
+
+err2:
+		close(out_fd);
+err1:
+	}
+
+	/* respect the new lazilly file creation behavior of the daemon */
+	if (dirty == 0) {
+		unlink(out_filename);
+	}
+
+	opd_free(out_filename);
+}
+
+/* PHE FIXME: really a fucking function, if you have problem with it flame
+ * me at <phe@club-internet.fr> */
+static void v4_to_v5(FILE* fp)
+{
+	struct opd_footer_v4 footer_v4;
+	char *out_filename;
+	char *session_str;
+	int session_number;
+	int ok;
+	int counter;
+	int old_size, old_fd, nr_samples;
+	size_t len_filename;
+	struct old_opd_fentry *old_samples;
+
+	fread(&footer_v4, sizeof(footer_v4), 1, fp);
+
+	ok = 1;
+	session_number = -1;
+
+	session_str = strrchr(filename, '-');
+	if (session_str) {
+		int read = 0;
+		if (sscanf(session_str + 1, "%d%n", &session_number, &read) == 1) {
+
+			/* Dangerous if the bin filename end with "-%d" I
+			 * prefer reject this corner case */
+			ok = session_str[read] && !session_str[read + 1];
+		}
+	}
+
+	if (ok == 0) {
+		/* PHE FIXME: probably needs to remove this warning */
+//		fprintf(stderr, "Bad file naming scheme %s\n", filename);
+		session_number = -1;
+	}
+
+	old_fd = open(filename, O_RDONLY);
+	if (old_fd == -1) {
+		fprintf(stderr, "oprof_convert: Opening %s failed. %s\n", filename, strerror(errno));
+		goto out;
+	}
+
+	old_size = opd_get_fsize(filename, 1);
+	if (old_size < sizeof(struct opd_footer_v4)) {
+		fprintf(stderr, "oprof_convert: sample file %s not enough big %d, expected %d\n", filename, old_size, sizeof(struct opd_footer_v4));
+		goto err1;
+	}
+
+	old_samples = mmap(0, old_size, PROT_READ, MAP_PRIVATE, old_fd, 0);
+	if (old_samples == (void *)-1) {
+		fprintf(stderr, "oprof_convert: mmap of %s failed. %s\n", filename, strerror(errno));
+		goto err1;
+	}
+
+	nr_samples = (old_size - sizeof(struct opd_footer_v4)) / sizeof(struct old_opd_fentry);
+
+	len_filename = strlen(filename);
+	out_filename = opd_malloc(len_filename + 32);
+	strcpy(out_filename, filename);
+
+	for (counter = 0; counter < 2 ; ++counter) {
+		do_mapping_transfer(nr_samples, counter, filename,
+				    &footer_v4, old_samples,
+				    session_number);
+	}
+
+	munmap(old_samples, old_size);
+
+err1:
+	close(old_fd);
+out:
+	opd_free(out_filename);
 }
 
 static struct converter converter_array[] = {
 	{ v2_to_v3, sizeof(struct opd_footer_v2), 2 },
 	{ v3_to_v4, sizeof(struct opd_footer_v3), 3 }, 
+	{ v4_to_v5, sizeof(struct opd_footer_v4), 4 }, 
 };
-
-/* This acts as a samples of how to add new conversion from version N to M :
-
-  define a  :
-
-struct opd_footer_vM 
-  { 
-  struct opd_footer_v2 v2; 
-  // additionnal field
-
-  };
-
- define a function :
-void vN_to_vM(FILE* fp) {
-  // get inspiration from v2_to_v3 code ...
-}
-
-  add the following entry at the end of converter_array:
-
-	{ vN_to_vM, sizeof(struct opd_footer_vN), N },
-
-  Note than if you use the reserved field to add additionnal field *and* the 0 binary
-  value of the reserve acts as a default value for the new code which  use this new
-  field then you do not have to write a converter, simply add the following line to the 
-  conversion array:
-     { bump_version, sizeof(struct opd_footer_vN), N },
-
-  PHIL 20010623 : these features has not been tested.
-*/
 
 #define nr_converter (signed int)((sizeof(converter_array) / sizeof(converter_array[0])))
 
 /* return -1 if no converter are available, else return the index of the first
  * converter  */
-static int get_converter_index(FILE* fp) 
+static int get_converter_index(FILE* fp, int last_index) 
 {
 	struct opd_footer_v2 footer_v2;
 	int i;
 
-	for (i = 0 ; i < nr_converter ; ++i) {
+	for (i = last_index ; i < nr_converter ; ++i) {
 
 		fseek(fp, -converter_array[i].sizeof_struct, SEEK_END);
 		fread(&footer_v2, sizeof(footer_v2), 1, fp);
 
-		if (footer_v2.magic == OPD_MAGIC && 
+		if (footer_v2.magic == OPD_MAGIC_V4 && 
 		    footer_v2.version == converter_array[i].version) {
 
 			fseek(fp, -converter_array[i].sizeof_struct, SEEK_END);
@@ -253,7 +447,15 @@ int main(int argc, char* argv[])
 		exit(EXIT_SUCCESS);
 	}
 
-	for (i = 1 ; i < argc ; ++i) {
+	i = 1;
+
+	/* for v4 --> v5 */
+	if (strncmp(argv[i], "--cpu-type", strlen("--cpu-type")) == 0) {
+		sscanf(argv[i] + strlen("--cpu-type="), "%d", &cpu_type);
+		++i;
+	}
+
+	for ( ; i < argc ; ++i) {
 		// used in v3 conversion
 		filename = argv[i];
  
@@ -265,13 +467,16 @@ int main(int argc, char* argv[])
 		}
 
 		converted = 0;
-		while ((converter_index = get_converter_index(fp)) != -1) {
+		converter_index = 0;
+		while ((converter_index = get_converter_index(fp, converter_index)) != -1) {
 			converter_array[converter_index].convert(fp);
+			converter_index++;
 			converted = 1;
 		}
 
 		if (converted == 0) {
 			fprintf(stderr, "no converter found for %s (file already converted ?)\n", argv[i]);
+
 			err++;
 		}
 

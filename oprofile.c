@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.75 2001/08/31 17:16:35 movement Exp $ */
+/* $Id: oprofile.c,v 1.76 2001/09/01 02:03:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -39,14 +39,8 @@ pid_t pid_filter;
 pid_t pgrp_filter;
 
 /* the MSRs we need */
-static u32 ctrlreg0 = MSR_IA32_EVNTSEL0;
-static u32 ctrlreg1 = MSR_IA32_EVNTSEL1;
-static u32 ctrlreg2 = MSR_K7_PERFCTL2;
-static u32 ctrlreg3 = MSR_K7_PERFCTL3;
-static u32 ctrreg0  = MSR_IA32_PERFCTR0;
-static u32 ctrreg1  = MSR_IA32_PERFCTR1;
-static u32 ctrreg2  = MSR_K7_PERFCTR2;
-static u32 ctrreg3  = MSR_K7_PERFCTR3;
+static uint perfctr_msr[OP_MAX_COUNTERS];
+static uint eventsel_msr[OP_MAX_COUNTERS];
 
 static u32 prof_on __cacheline_aligned;
 
@@ -80,7 +74,7 @@ inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, in
 {
 	ops->eip = regs->eip;
 	ops->pid = current->pid;
-	ops->count = OP_COUNTER*ctr + 1;
+	ops->count = (1U << OP_BITS_COUNT)*ctr + 1;
 }
 
 inline static void op_do_profile(struct _oprof_data *data, struct pt_regs *regs, int ctr)
@@ -123,16 +117,16 @@ static void op_check_ctr(struct _oprof_data *data, struct pt_regs *regs, int ctr
 asmlinkage void op_do_nmi(struct pt_regs *regs)
 {
 	struct _oprof_data *data = &oprof_data[smp_processor_id()];
+	int i;
 
 	if (pid_filter && current->pid != pid_filter)
 		return;
 	if (pgrp_filter && current->pgrp != pgrp_filter)
 		return;
 
-	if (data->ctrs & OP_CTR_0)
-		op_check_ctr(data, regs, 0);
-	if (data->ctrs & OP_CTR_1)
-		op_check_ctr(data, regs, 1);
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		op_check_ctr(data, regs, i);
+	}
 }
 
 /* ---------------- NMI handler setup ------------ */
@@ -202,7 +196,7 @@ static void disable_local_P6_APIC(void *dummy)
 	/* PHE I think  when the doc says : -if you disable the apic the bits 
 	 * of LVT cannot be reset- it talk about the SW disable through bit 8
 	 * of SPIV see 7.4.14 (7.5.14) not the hardware disable, so it is ok
-	 * but I perhaps we need a software disable of the APIC at the end 
+	 * but perhaps we need a software disable of the APIC at the end 
 	 */
 	/* first disable via MSR */
 	/* IA32 V3, 7.4.2 */
@@ -296,12 +290,6 @@ static int __init apic_setup(void)
 	printk(KERN_INFO "oprofile: setting up APIC.\n");
 
 	/* ugly hack */
-	/* PHE : the memory must be uncachable! this is perhaps more a
-	 * problem for Athlon than for PII.
-	 * Also this stuff probably mishandled SMP ?
-	 * The _PAGE_GLOBAL attribute should be probably avoided but make 
-	 * this later 
-	 */
 	my_set_fixmap();
 
 	/* FIXME: NMI delivery for SMP ? */
@@ -419,80 +407,150 @@ static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um)
 static void pmc_setup(void *dummy)
 {
 	uint low, high;
+	int i;
 
 	// first, let's use the right MSRs
 	switch (cpu_type) {
 		case CPU_ATHLON:
-			ctrlreg0 = MSR_K7_PERFCTL0;
-			ctrlreg1 = MSR_K7_PERFCTL1;
-			ctrreg0  = MSR_K7_PERFCTR0;
-			ctrreg1  = MSR_K7_PERFCTR1;
+			eventsel_msr[0] = MSR_K7_PERFCTL0;
+			eventsel_msr[1] = MSR_K7_PERFCTL1;
+/* FIXME ATHLON enable only with OP_MAX_COUNTERS 4 and an athlon to test this
+			eventsel_msr[2] = MSR_K7_PERFCTL2;
+			eventsel_msr[3] = MSR_K7_PERFCTL3;
+*/
+			perfctr_msr[0] = MSR_K7_PERFCTR0;
+			perfctr_msr[1] = MSR_K7_PERFCTR1;
+/* FIXME ATHLON ditto
+			perfctr_msr[2] = MSR_K7_PERFCTR2;
+			perfctr_msr[3] = MSR_K7_PERFCTR3;
+*/
 			break;
-		default:;
+		default:
+			eventsel_msr[0] = MSR_IA32_EVNTSEL0;
+			eventsel_msr[1] = MSR_IA32_EVNTSEL1;
+			perfctr_msr[0] = MSR_IA32_PERFCTR0;
+			perfctr_msr[1] = MSR_IA32_PERFCTR1;
+			break;
 	}
- 
-	rdmsr(ctrlreg0, low, high);
-	// FIXME: enable bit is per-counter on athlon
-	wrmsr(ctrlreg0, low & ~(1<<22), high);
 
+	/* FIXME ATHLON: use #if 0 to get the old code, which would work on
+	 * athlon. The new code would work but I had get a painfull debug so
+	 * I prefer to keep the old code until Athlon tests are available. */
+#if 1
 	/* IA Vol. 3 Figure 15-3 */
 
-	rdmsr(ctrlreg0, low, high);
+	/* Stop and clear all counter: IA32 use bit 22 of eventsel_msr0 to
+	 * enable/disable all counter, AMD use separate bit 22 in each msr,
+	 * all other bits are cleared except the reserved bits 21 */
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		rdmsr(eventsel_msr[i], low, high);
+		wrmsr(eventsel_msr[i], low & ~(3 << 22), high);
+	}
+
+	/* setup each counter */
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		if (op_ctr_val[i]) {
+			rdmsr(eventsel_msr[i], low, high);
+
+			low &= 1 << 21;  /* do not touch the reserved bit */
+			set_perfctr(op_ctr_count[i], i);
+
+			pmc_fill_in(&low, op_ctr_kernel[i], op_ctr_user[i], 
+				    op_ctr_val[i], op_ctr_um[i]);
+
+			wrmsr(eventsel_msr[i], low, high);
+		}
+	}
+	
+	/* Here all setup is made except the start/stop bit 21), counter
+	 * disabled contains zeros in the eventsel msr except the reserved bit
+	 * 21 */
+#else
+	rdmsr(eventsel_msr[0], low, high);
+	// FIXME: enable bit is per-counter on athlon
+	wrmsr(eventsel_msr[0], low & ~(1<<22), high);
 	/* clear */
 	low &= (1<<21);
+
+	/* IA Vol. 3 Figure 15-3 */
 
 	if (op_ctr_val[0]) {
 		set_perfctr(op_ctr_count[0], 0);
 		pmc_fill_in(&low, op_ctr_kernel[0], op_ctr_user[0], op_ctr_val[0], op_ctr_um[0]);
 	}
 
-	wrmsr(ctrlreg0, low, 0);
+	wrmsr(eventsel_msr[0], low, 0);
 
-	rdmsr(ctrlreg1, low, high);
+	rdmsr(eventsel_msr[1], low, high);
 	/* clear */
 	low &= (3<<21);
 
 	if (op_ctr_val[1]) {
 		set_perfctr(op_ctr_count[1], 1);
 		pmc_fill_in(&low, op_ctr_kernel[1], op_ctr_user[1], op_ctr_val[1], op_ctr_um[1]);
-		wrmsr(ctrlreg1, low, high);
+
+		wrmsr(eventsel_msr[1], low, high);
 	}
+#endif
 
 	/* disable ctr1 if the UP oopser might be on, but we can't do anything
 	 * interesting with the NMIs
 	 */
-	/* PHE FIXME Have always a meaning ? */
+	/* PHE FIXME ATHLON bugged if running 3/4 counters ?, I really don't
+	 * understand when and why this is executed */
 	/* this is pretty bogus really. especially as we don't re-enable it.
 	 * Instead, save state set up, and restore with pmc_unsetup or similar */
 #if !defined(CONFIG_X86_UP_APIC) || !defined(OP_EXPORTED_DO_NMI)
-	wrmsr(ctrlreg1, low, high);
+	wrmsr(eventsel_msr[1], low, high);
 #endif
 }
 
 static void pmc_start(void *info)
 {
 	uint low,high;
+	int i;
 
 	if (info && (*((uint *)info) != smp_processor_id()))
 		return;
 
- 	/* enable counters */
-	rdmsr(ctrlreg0, low, high);
-	// FIXME: bit 22 per-counter on athlon
-	wrmsr(ctrlreg0, low | (1<<22), high);
+	/* assert: all enable counter are setup except the bit start/stop,
+	 * all counter disable contains zeroes (except perhaps the reserved
+	 * bit 21) */
+
+	/* enable all needed counter */
+	if (separate_running_bit == 0) {
+		rdmsr(eventsel_msr[0], low, high);
+		wrmsr(eventsel_msr[0], low | (1 << 22), high);
+	} else {
+		for (i = 0 ; i < op_nr_counters ; ++i) {
+			if (op_ctr_count[i]) {
+				rdmsr(eventsel_msr[i], low, high);
+				wrmsr(eventsel_msr[i], low | (1 << 22), high);
+			}
+		}
+	}
 }
 
 static void pmc_stop(void *info)
 {
 	uint low,high;
+	int i;
 
 	if (info && (*((uint *)info) != smp_processor_id()))
 		return;
 
 	/* disable counters */
-	rdmsr(ctrlreg0, low, high);
-	// FIXME: bit 22 per-counter on athlon
-	wrmsr(ctrlreg0, low & ~(1<<22), high);
+	if (separate_running_bit == 0) {
+		rdmsr(eventsel_msr[0], low, high);
+		wrmsr(eventsel_msr[0], low & ~(1 << 22), high);
+	} else {
+		for (i = 0 ; i < op_nr_counters ; ++i) {
+			if (op_ctr_count[i]) {
+				rdmsr(eventsel_msr[i], low, high);
+				wrmsr(eventsel_msr[i], low & ~(1 << 22), high);
+			}
+		}
+	}
 }
 
 inline static void pmc_select_start(uint cpu)
@@ -784,6 +842,11 @@ static int oprof_init_data(void)
 			return -EFAULT;
 		}
 
+		/* PHE FIXME: this is inefficient if only few counter are
+		 * enable. Some other place in the code must be fixed if we
+		 * allocate only on demand, take care than note currently are
+		 * always put in data[0]->buffer even if the counter 0 is
+		 * disable */
 		data->buffer = vmalloc(buf_size);
 		if (!data->buffer) {
 			printk(KERN_ERR "oprofile: failed to allocate eviction buffer of %lu bytes\n",buf_size);
@@ -807,61 +870,71 @@ static int parms_ok(void)
 	int ret;
 	int i;
 	uint cpu;
+	int ok;
 	struct _oprof_data *data;
+	int enabled;
 
 	op_check_range(op_hash_size, 256, 262144, "op_hash_size value %d not in range (%d %d)\n");
 	op_check_range(op_buf_size, 1024, 1048576, "op_buf_size value %d not in range (%d %d)\n");
 
-	/* FIXME: hardcoded 2 counters */
-	for (i = 0; i < 2; i++) {
+	enabled = 0;
+	for (i = 0; i < op_nr_counters ; i++) {
 		if (op_ctr_on[i]) {
-			int min_count = op_min_count(op_ctr_val[i]);
+			int min_count = op_min_count(op_ctr_val[i], cpu_type);
 
 			if (!op_ctr_user[i] && !op_ctr_kernel[i]) {
 				printk(KERN_ERR "oprofile: neither kernel nor user set for counter %d\n", i);
 				return 0;
 			}
 			op_check_range(op_ctr_count[i], min_count, OP_MAX_PERF_COUNT, "ctr count value %d not in range (%d %ld)\n");
+
+			enabled = 1;
 		}
 	}
 
-	/* FIXME: below needs generalising for multiple counters */
-
-	if (!op_ctr_on[0] && !op_ctr_on[1]) {
+	if (!enabled) {
 		printk(KERN_ERR "oprofile: neither counter enabled.\n");
 		return 0;
 	}
 
 	/* hw_ok() has set cpu_type */
-	ret = op_check_events(op_ctr_val[0], op_ctr_val[1], op_ctr_um[0], op_ctr_um[1], cpu_type);
+	ok = 1;
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		ret = op_check_events(i, op_ctr_val[i], op_ctr_um[i], cpu_type);
 
-	if (ret & OP_CTR0_NOT_FOUND) printk(KERN_ERR "oprofile: ctr0: no such event\n");
-	if (ret & OP_CTR1_NOT_FOUND) printk(KERN_ERR "oprofile: ctr1: no such event\n");
-	if (ret & OP_CTR0_NO_UM) printk(KERN_ERR "oprofile: ctr0: invalid unit mask\n");
-	if (ret & OP_CTR1_NO_UM) printk(KERN_ERR "oprofile: ctr1: invalid unit mask\n");
-	if (ret & OP_CTR0_NOT_ALLOWED) printk(KERN_ERR "oprofile: ctr0 can't count this event\n");
-	if (ret & OP_CTR1_NOT_ALLOWED) printk(KERN_ERR "oprofile: ctr1 can't count this event\n");
-	if (ret & OP_CTR0_PII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PII\n");
-	if (ret & OP_CTR1_PII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PII\n");
-	if (ret & OP_CTR0_PIII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PIII\n");
-	if (ret & OP_CTR1_PIII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PIII\n");
-	if (ret & OP_CTR0_ATHLON_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on Athlon\n");
-	if (ret & OP_CTR1_ATHLON_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on Athlon\n");
+		if (ret & OP_EVT_NOT_FOUND)
+			printk(KERN_ERR "oprofile: ctr%d: %d: no such event for cpu %d\n",
+			       i, op_ctr_val[i], cpu_type);
 
-	if (ret)
+		if (ret & OP_EVT_NO_UM)
+			printk(KERN_ERR "oprofile: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n",
+			       i, op_ctr_um[i], cpu_type);
+
+		if (ret & OP_EVT_CTR_NOT_ALLOWED)
+			printk(KERN_ERR "oprofile: ctr%d: %d: can't count event for this counter\n",
+			       i, op_ctr_val[i]);
+
+		if (ret != OP_EVENTS_OK)
+			ok = 0;
+	}
+	
+	if (!ok)
 		return 0;
 
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		data = &oprof_data[cpu];
-		data->ctrs |= OP_CTR_0 * (!!op_ctr_on[0]);
-		data->ctrs |= OP_CTR_1 * (!!op_ctr_on[1]);
 
 		/* make sure the buffer and hash table have been set up */
 		if (!data->buffer || !data->entries)
 			return 0;
 
-		data->ctr_count[0] = op_ctr_count[0];
-		data->ctr_count[1] = op_ctr_count[1];
+		for (i = 0 ; i < op_nr_counters ; ++i) {
+			if (op_ctr_on[i]) {
+				data->ctr_count[i] = op_ctr_count[i];
+			} else {
+				data->ctr_count[i] = 0;
+			}
+		}
 	}
 
 	return 1;
@@ -1055,7 +1128,7 @@ out:
 	return err;
 }
 
-static int nr_oprof_static = 6;
+static int nr_oprof_static = 7;
 
 static ctl_table oprof_table[] = {
 	{ 1, "bufsize", &op_buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
@@ -1064,6 +1137,7 @@ static ctl_table oprof_table[] = {
 	{ 1, "kernel_only", &kernel_only, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pid_filter", &pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pgrp_filter", &pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
+	{ 1, "cpu_type", &cpu_type, sizeof(int), 0400, NULL, &lproc_dointvec, NULL, },
 	{ 0, }, { 0, }, { 0, }, { 0, }, 
 	{ 0, }, 
 };
@@ -1088,14 +1162,13 @@ static struct ctl_table_header *sysctl_header;
 static int __init init_sysctl(void)
 {
 	ctl_table *next = &oprof_table[nr_oprof_static];
-	ctl_table *counter_table[OP_MAX_COUNTERS + 1];
+	ctl_table *counter_table[op_nr_counters + 1];
 	ctl_table *tab;
 	int i,j;
 
 	/* FIXME: no proper numbers, or verifiers (where possible) */
 
-	/* for each counter - FIXME: hardcoded to 2 counters currently */
-	for (i=0; i < 2; i++) {
+	for (i=0; i < op_nr_counters; i++) {
 		next->ctl_name = 1;
 		next->procname = names[i];
 		next->mode = 0700;

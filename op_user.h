@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.3 2001/06/22 03:16:24 movement Exp $ */
+/* $Id: op_user.h,v 1.4 2001/09/01 02:03:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -22,6 +22,31 @@
 
 #include "version.h"
 
+/* PHE FIXME: op_config.h, typedef it and prefix by op_ ? */
+#define u8 unsigned char
+#define u16 unsigned short
+#define u32 unsigned int
+#define uint unsigned int
+#define ulong unsigned long
+#define fd_t int
+
+/* event check returns */
+#define OP_EVENTS_OK		0x0
+#define OP_EVT_NOT_FOUND	0x1
+#define OP_EVT_NO_UM		0x2
+#define OP_EVT_CTR_NOT_ALLOWED	0x4
+
+/* supported cpu type */
+#define CPU_NO_GOOD	-1
+#define CPU_PPRO	0
+#define CPU_PII		1
+#define CPU_PIII	2
+#define CPU_ATHLON	3
+#define MAX_CPU_TYPE	4
+
+/* default value must be set by configure */
+#define DEFAULT_CPU_TYPE CPU_PII
+
 #ifndef NR_CPUS 
 #define NR_CPUS 32
 #endif 
@@ -34,15 +59,47 @@
 /* 65536 * 32 = 2097152 bytes default */
 #define OP_DEFAULT_HASH_SIZE 65536
 
-#define OP_BITS 2
+/* kernel image entries are offset by this many entries */
+#define OPD_KERNEL_OFFSET 524288
+
+/* FIXME ATHLON: four next #define can be tuned for full support to Athlon */
+/* PHE: I don't fix the problem "is these should be autoconf and/or runtime
+ * settings" so hack it at hand for now */
+/* maximum nr. of counters, up to 4 for Athlon (18 for P4). The primary use
+ * of this variable is for static/local array dimension. Never use it in loop
+ * or in array index acccess/index checking. Don't change it without updating
+ * OP_BITS_CTR! */
+#define OP_MAX_COUNTERS	2
+
+/* The real number of counters supported for the running cpu, I define it
+ * separately to allow using a variable rather a constant so distribution can
+ * provide a generic binary for oprofile. This need also a few additional
+ * fixes */
+#define op_nr_counters	2
+
+/* IA32 have only one bit to start/stop all counter, AMD have separate bit
+ * inside each event select MSR */
+#define separate_running_bit	0
+
+/* the number of bits neccessary to store OP_MAX_COUNTERS values */
+#define OP_BITS_CTR	1
+
+/* the number of reserved bits in count, + 1 is for the notification bit */
+#define OP_BITS (OP_BITS_CTR + 1)
+
+/* The number of bits available to store count */
+#define OP_BITS_COUNT	(16 - OP_BITS)
+
+/* counter nr mask */
+#define OP_CTR_MASK	((~0U << OP_BITS_COUNT) >> 1)
 
 /* top OP_BITS bits of count are used as follows: */
 /* is this actually a notification ? */
-#define OP_NOTE (1U<<15)
+#define OP_NOTE		(1U << (OP_BITS_COUNT + OP_BITS_CTR))
 /* which perf counter the sample is from */
-#define OP_COUNTER (1U<<14)
+#define OP_COUNTER(x)	(((x) & OP_CTR_MASK) >> OP_BITS_COUNT)
 
-#define OP_COUNT_MASK ((1U << (16 - OP_BITS)) - 1U)
+#define OP_COUNT_MASK	((1U << OP_BITS_COUNT) - 1U)
 
 /* mapping notification types */
 /* fork(),vfork(),clone() */
@@ -103,5 +160,12 @@ struct op_mapping {
 
 /* size of hash map in bytes */
 #define OP_HASH_MAP_SIZE (OP_HASH_MAP_NR * sizeof(struct op_hash))
+
+/* op_events.c */
+int op_min_count(u8 ctr_type, int cpu_type);
+int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, int cpu_type);
+/* not used currently */
+int op_check_events_str(int ctr, char *ctr_type, u8 ctr_um, int cpu_type, u8 *ctr_t);
+void op_get_event_desc(int cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
 
 #endif /* OP_USER_H */

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.36 2001/08/19 20:23:02 movement Exp $
+# $Id: op_start,v 1.37 2001/09/01 02:03:34 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -23,17 +23,7 @@ SYSCTL=do_sysctl
 
 BUF_SIZE=262144
 HASH_SIZE=65536
-CTR0_EVENT=
-CTR1_EVENT=
 KERNEL_ONLY=0
-CTR0_UM=0
-CTR1_UM=0
-CTR0_COUNT=600000
-CTR1_COUNT=600000
-CTR0_USER=1
-CTR0_KERNEL=1
-CTR1_USER=1
-CTR1_KERNEL=1
 IGNORE_MYSELF=0
 DIR="/var/opd"
 MAP_FILE=
@@ -41,6 +31,18 @@ VMLINUX=
 PID_FILTER=0
 PGRP_FILTER=0
 VERBOSE=0
+
+# PHE FIXME: too many changes needs a redesign. Proposition:
+# 1) check for a cpu_type switch, 
+# 2) stop the daemon
+# 3) modprobe oprofile [cpu_type=xx]
+# 4) if --cpu-type not given get it from /proc/sys/dev/oprofile/cpu_type
+# 5) default init
+# 6) parse parameter
+# 7) launch the daemon
+# this avoid passing cpu_type in the common case and allow in case or module
+# misdetect the used core to overwrite it through an init parameters to the
+# module
 
 if test -f /proc/cpuinfo; then
 	modelname=`cat /proc/cpuinfo | grep "model\ name\	:" | sed -e 's/ //g' | cut -d':' -f2`
@@ -74,29 +76,41 @@ else
 	CPUTYPE=0
 fi
 
-# FIXME: needs to be generalised for more counters (e.g. athlon) 
+case $CPUTYPE in
+	0|1|2)
+		OP_MAX_COUNTERS=2
+		;;
+	3)
+		OP_MAX_COUNTERS=4
+		;;
+esac
+
+# we can now default define individual counter setup variable.
+f=0
+while (( $f < $OP_MAX_COUNTERS )); do
+	CTR_COUNT[$f]=600000
+	CTR_USER[$f]=1
+	CTR_KERNEL[$f]=1
+	f=$(($f+1))
+done
 
 do_help() { 
-echo 'op_start: usage:
+echo "op_start: usage:
 Module options
   --buffer-size=num            number of samples in kernel buffer
   --hash-table-size=num        number of entries in kernel hash table
   --kernel-only=[0|1]          profile only the kernel
-  --ctr0-event=name            symbolic event name for ctr0
-  --ctr1-event=name            symbolic event name for ctr1
-  --ctr0-count=val             number of events between samples for ctr0
-  --ctr1-count=val             number of events between samples for ctr1
-  --ctr0-unit-mask=val         unit mask for ctr0
-  --ctr1-unit-mask=val         unit mask for ctr1
-  --ctr0-kernel=[0|1]          whether to count kernel events for ctr 0
-  --ctr0-user=[0|1]            whether to count user events for ctr 0
-  --ctr1-kernel=[0|1]          whether to count kernel events for ctr 1
-  --ctr1-user=[0|1]            whether to count user events for ctr1
-  --pid-filter=pid             Only profile process pid (if compiled in)
-  --pgrp-filter=pgrp           Only profile process group pgrp (if compiled in)
+  --ctrN-event=name            symbolic event name for ctr N
+  --ctrN-count=val             number of events between samples for ctr N
+  --ctrN-unit-mask=val         unit mask for ctr N
+  --ctrN-kernel=[0|1]          whether to count kernel events for ctr N
+  --ctrN-user=[0|1]            whether to count user events for ctr N
+Allowed range for N is [0-$OP_MAX_COUNTERS[
+  --pid-filter=pid             Only profile process pid 
+  --pgrp-filter=pgrp           Only profile process group pgrp
 
 Daemon options
-  --use-cpu=[0|1|2|3]          0 or PPro, 1 for PII, 2 for PIII, 3 for AMD Athlon.
+  --use-cpu=[0|1|2|3]          0: PPro, 1: PII, 2: PIII, 3: AMD Athlon.
   --ignore-myself=[0|1]        ignore samples for oprofiled
   --log-file=file              log file
   --base-dir=dir               base directory of daemon
@@ -109,7 +123,7 @@ Daemon options
 
 General options
   --list-events                list event types and unit masks
-  --help                       this message'
+  --help                       this message"
 }
 
 # utilities functions.
@@ -135,8 +149,15 @@ do_sysctl()
 		echo "/proc/sys/$dev_name does not exist or is not a regular file" >&2
 		exit 1
 	fi
-
 	echo $val > /proc/sys/$dev_name
+}
+
+# PHE FIXME: assume ctr < 9, how from an awk expr extract the int field? 
+# probably needs to use bash string manipulation.
+# extract the field N from --ctrN-xxxxxx
+extract_int()
+{
+    echo $1 | awk '{print substr($0, 6, 1)}'
 }
 
 LOG_FILE=
@@ -150,6 +171,10 @@ do
 	arg=`echo $1 | awk -F= '{print $1}'`
 	val=`echo $1 | awk -F= '{print $2}'`
 	case "$arg" in
+		# PHE FIXME: this work actually but if the forced cpu type have
+		# more counter than OP_MAX_COUNTERS only OP_NR_MAX_COUNTERS
+		# can be used. if less the script do not work and you can
+		# get many trouble.
 		--use-cpu)
 			if [ "$val" != "" ]; then
 				CPUTYPE=$val
@@ -175,35 +200,21 @@ do
 				KERNEL_ONLY=1
 			fi
 			;;
-		--ctr0-unit-mask)
-			CTR0_UM=$val
+		# PHE FIXME: see comment at extract_int
+		--ctr*-unit-mask)
+			CTR_UM[`extract_int $1`]=$val
 			;;
-		--ctr1-unit-mask)
-			CTR1_UM=$val
+		--ctr*-event)
+			CTR_EVENT[`extract_int $1`]=$val
 			;;
-		--ctr0-event)
-			CTR0_EVENT=$val
+		--ctr*-count)
+			CTR_COUNT[`extract_int $1`]=$val
 			;;
-		--ctr1-event)
-			CTR1_EVENT=$val
+		--ctr*-user)
+			CTR_USER[`extract_int $1`]=$val
 			;;
-		--ctr0-count)
-			CTR0_COUNT=$val
-			;;
-		--ctr1-count)
-			CTR1_COUNT=$val
-			;;
-		--ctr0-user)
-			CTR0_USER=$val
-			;;
-		--ctr0-kernel)
-			CTR0_KERNEL=$val
-			;;
-		--ctr1-user)
-			CTR1_USER=$val
-			;;
-		--ctr1-kernel)
-			CTR1_KERNEL=$val
+		--ctr*-kernel)
+			CTR_KERNEL[`extract_int $1`]=$val
 			;;
 		--base-dir)
 			DIR=$val
@@ -251,33 +262,24 @@ do
 	shift
 done
 
-if [ -z "$CTR0_EVENT" -a -z "$CTR1_EVENT" ]; then
+if [[ ${#CTR_EVENT[*]} == 0 ]]; then
 	echo "You haven't specified what events you would like to count, e.g."
 	echo "op_start ... --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000"
 	echo "Enter op_start --help for full options"
 	exit 1
 fi
- 
- 
-CTR0_EVENT_VAL=
-if [ ! -z "$CTR0_EVENT" ]; then
-	CTR0_EVENT_VAL=`op_help $CTR0_EVENT`
-fi
- 
-CTR1_EVENT_VAL=
-if [ ! -z "$CTR1_EVENT" ]; then
-	CTR1_EVENT_VAL=`op_help $CTR1_EVENT`
-fi
 
-if [ -z "$CTR0_EVENT_VAL" -a ! -z "$CTR0_EVENT" ]; then
-	echo "Unknown event \"$CTR0_EVENT\""
-	exit 1
-fi
-
-if [ -z "$CTR1_EVENT_VAL" -a ! -z "$CTR1_EVENT" ]; then
-	echo "Unknown event \"$CTR1_EVENT\""
-	exit 1
-fi
+f=0
+while (( $f < $OP_MAX_COUNTERS )); do
+	if [[ ${#CTR_EVENT[$f]} != 0 ]]; then
+		CTR_EVENT_VAL[$f]=`op_help --cpu-type=$CPU_TYPE ${CTR_EVENT[$f]}`
+		if [ -z "${CTR_EVENT_VAL[$f]}" -a ! -z "${CTR_EVENT[$f]}" ]; then
+			echo "Unknown event \"${CTR_EVENT[$f]}\""
+			exit 1
+		fi
+	fi
+	f=$(($f+1))
+done
 
 # stop any existing daemon
 
@@ -326,14 +328,15 @@ if [ "$VERBOSE" = "1" ]; then
   echo "Parameters used:"
   echo "BUF_SIZE $BUF_SIZE"
   echo "HASH_SIZE $HASH_SIZE"
-  echo "CTR0_EVENT $CTR0_EVENT"
-  echo "CTR1_EVENT $CTR1_EVENT"
-  echo "CTR0_UM $CTR0_UM"
-  echo "CTR1_UM $CTR1_UM"
-  echo "CTR0_COUNT $CTR0_COUNT"
-  echo "CTR1_COUNT $CTR1_COUNT"
-  echo "CTR0_OSUSR $CTR0_OSUSR"
-  echo "CTR1_OSUSR $CTR1_OSUSR"
+  f=0
+  while (( $f < $OP_MAX_COUNTERS )); do
+	echo "CTR${f}_EVENT ${CTR_EVENT[$f]}"
+	echo "CTR${f}_COUNT ${CTR_COUNT[$f]}"
+	echo "CTR${f}_UM ${CTR_UM[$f]}"
+	echo "CTR${f}_USER ${CTR_USER[$f]}"
+	echo "CTR${f}_KERNEL ${CTR_KERNEL[$f]}"
+	f=$(($f+1))
+  done
   echo "CPUTYPE $CPUTYPE"
   echo "IGNORE_MYSELF $IGNORE_MYSELF"
   echo "DIR $DIR"
@@ -365,8 +368,8 @@ if [ ! -f "$MAP_FILE" ]; then
 	exit 1
 fi
 
-if [ ! -f "$MAP_FILE" ]; then
-	echo "The specified map file \"$MAP_FILE\" doesn't exist."
+if [ ! -f "$VMLINUX" ]; then
+	echo "The specified vmlinux file \"$VMLINUX\" doesn't exist."
 	exit 1
 fi
 
@@ -419,36 +422,32 @@ fi
 chmod 700 "$HASH_MAP_DEVICE_FILE"
 
 # Necessary in this case :
-# op_start ctr0-on ctr1-on
-# op_start ctr0-on
-$SYSCTL -w dev.oprofile.0.enabled=0 >/dev/null
-$SYSCTL -w dev.oprofile.1.enabled=0 >/dev/null
-$SYSCTL -w dev.oprofile.0.event=0 >/dev/null
-$SYSCTL -w dev.oprofile.1.event=0 >/dev/null
+# op_start ctr0-on ctr1-on then op_start ctr0-on
+f=0
+while (( $f < $OP_MAX_COUNTERS )); do
+	$SYSCTL -w dev.oprofile.$f.enabled=0 >/dev/null
+	$SYSCTL -w dev.oprofile.$f.event=0 >/dev/null
+	f=$(($f+1))
+done
 
-$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE >/dev/null
-$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE >/dev/null
-$SYSCTL -w dev.oprofile.kernel_only=$KERNEL_ONLY >/dev/null
-$SYSCTL -w dev.oprofile.pid_filter=$PID_FILTER >/dev/null
-$SYSCTL -w dev.oprofile.pgrp_filter=$PGRP_FILTER >/dev/null
+$SYSCTL -w dev.oprofile.hashsize=$HASH_SIZE
+$SYSCTL -w dev.oprofile.bufsize=$BUF_SIZE
+$SYSCTL -w dev.oprofile.kernel_only=$KERNEL_ONLY
+$SYSCTL -w dev.oprofile.pid_filter=$PID_FILTER
+$SYSCTL -w dev.oprofile.pgrp_filter=$PGRP_FILTER
 
-# FIXME do something for all CPUs 
-if [ "$CTR0_EVENT" != "" ]; then
-	$SYSCTL -w dev.oprofile.0.enabled=1 >/dev/null
-	$SYSCTL -w dev.oprofile.0.count=$CTR0_COUNT >/dev/null
-	$SYSCTL -w dev.oprofile.0.kernel=$CTR0_KERNEL >/dev/null
-	$SYSCTL -w dev.oprofile.0.user=$CTR0_USER >/dev/null
-	$SYSCTL -w dev.oprofile.0.unit_mask=$CTR0_UM >/dev/null
-	$SYSCTL -w dev.oprofile.0.event=$CTR0_EVENT_VAL >/dev/null
-fi
-if [ "$CTR1_EVENT" != "" ]; then
-	$SYSCTL -w dev.oprofile.1.enabled=1 >/dev/null
-	$SYSCTL -w dev.oprofile.1.count=$CTR1_COUNT >/dev/null
-	$SYSCTL -w dev.oprofile.1.kernel=$CTR1_KERNEL >/dev/null
-	$SYSCTL -w dev.oprofile.1.user=$CTR1_USER >/dev/null
-	$SYSCTL -w dev.oprofile.1.unit_mask=$CTR1_UM >/dev/null
-	$SYSCTL -w dev.oprofile.1.event=$CTR1_EVENT_VAL >/dev/null
-fi
+f=0
+while (( $f < $OP_MAX_COUNTERS )); do
+	if [ "${CTR_EVENT[$f]}" != "" ]; then
+		$SYSCTL -w dev.oprofile.$f.enabled=1
+		$SYSCTL -w dev.oprofile.$f.count=${CTR_COUNT[$f]}
+		$SYSCTL -w dev.oprofile.$f.kernel=${CTR_KERNEL[$f]}
+		$SYSCTL -w dev.oprofile.$f.user=${CTR_USER[$f]} 
+		$SYSCTL -w dev.oprofile.$f.unit_mask=${CTR_UM[$f]} 
+		$SYSCTL -w dev.oprofile.$f.event=${CTR_EVENT_VAL[$f]}
+	fi
+	f=$(($f+1))
+done
  
 OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$CPUTYPE --ignore-myself=$IGNORE_MYSELF \
 	--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \

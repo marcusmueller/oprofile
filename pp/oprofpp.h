@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.14 2001/07/25 16:43:30 movement Exp $ */
+/* $Id: oprofpp.h,v 1.15 2001/09/01 02:03:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -30,6 +30,7 @@
 #include <sys/mman.h>
 
 #include "../dae/opd_util.h"
+#include "../op_user.h"
 #include "../version.h"
 
 /* missing from libiberty.h */
@@ -40,18 +41,6 @@
 # define DMGL_ANSI       (1 << 1)        /* Include const, volatile, etc */
 #endif
 char *cplus_demangle (const char *mangled, int options);
- 
-void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
- 
-
-#define FALSE 0
-#define TRUE 1
-#define uint unsigned int
-#define ulong unsigned long 
-#define u8  unsigned char
-#define u16 u_int16_t
-#define u32 u_int32_t
-#define fd_t int
 
 #define verbprintf(args...) \
 	do { \
@@ -59,36 +48,5 @@ void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char 
 			printf(args); \
 	} while (0)
 
-/* kernel image entries are offset by this many entries */
-#define OPD_KERNEL_OFFSET 524288
- 
-/* this char replaces '/' in sample filenames */
-#define OPD_MANGLE_CHAR '}'
- 
-struct opd_fentry {
-        u32 count0;
-        u32 count1;
-};
 
-/* FIXME : Carefull these are also present in dae/oprofiled.h */
-#define OPD_MAGIC 0xdeb6
-#define OPD_VERSION 0x4
 
-/* at the end of the sample files */
-struct opd_footer {
-        u16 magic;
-        u16 version;
-        u8 is_kernel;
-        u8 ctr0_type_val;
-        u8 ctr1_type_val;
-        u8 ctr0_um;
-        u8 ctr1_um;
-	u8 reserved1[16];
-	u32 ctr0_count;
-	u32 ctr1_count;
-	/* Set to 0.0 if not available */
-	double cpu_speed;
-	time_t mtime;
-	/* binary compatibility reserve */
-	u32  reserved2[31];
-};

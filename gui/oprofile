@@ -18,20 +18,55 @@ set max_counter_number 2
 # To manipulate the global var needed by each counter.
 set counter_setup_var { event_type counter unit_mask usr_count kernel_count }
 
-#  This list is here to avoid maintaining separate list for each processor
-# type / counter number. It is the main data structure which describe all
-# counter event. When adding new processor/event/counter only this data
-# structure need update (adding counter require also work in the code).
+set processor_type -1
+set title ""
 
-# TODO : this must be shared in some way with op_events.c
+# Fixme : Celeron Copermine string ?, how to != between a celeron with
+# a PII core and a PIII core ? TODO look into the core source file.
 
+set cpuinfo_file [open /proc/cpuinfo r]
+while { [gets $cpuinfo_file var] != -1 } {
+
+    switch -regexp "$var" {
+	".*Pentium Pro.*|.*PentiumPro.*" { set processor_type 0; set title "Pentium Pro" }
+	".*Athlon.*|.*Duron.*|.*K7.*" { set processor_type 3; set title "K7/TB core" }
+	".*Pentium III.*" { set processor_type 2; set title "Pentium III" }
+	".*Coppermine.*" { set processor_type 2; set title "Pentium III (Coppermine)"  }
+	".*Celeron.*" { set processsor_type 2; set title "Pentium III (Coppermine)"  }
+	".*Pentium II.*" { set processor_type 1; set title "Pentium II"  }
+	".*Celeron.*" { set processor_type 1; set title "Celeron"     }
+    }
+}
+
+# Add this line later when the profiler core support the P4.
+#       ".*Pentium IV.*" { set processor_type 4; set title "Pentium IV" }
+
+close $cpuinfo_file
+
+if { [expr $processor_type == -1] } then {
+    set answer [tk_messageBox \
+	    -message "Cannot detect processor : default to P2" -type okcancel]
+    switch $answer {
+	cancel { exit 1 }
+    }
+    set processor_type 1
+    set title "Pentium II"
+}
+
+#  This list is the main data structure which describe all events available
+# for this cpu_type. The list is build from the output of:
+# op_help --gui-description
+# When adding new processor/event/counter only data struct in op_events.c
+# needs to be updated.
+#
 # list entry item :
 # 1 event type/name
 # 2 bit mask 
 #  1 : avail for PPro
 #  2 : avail for P2
 #  4 : avail for P3
-#  8 : avail for P4  currently not supported.
+#  8 : AMD K7/Duron
+# 16 : avail for P4  currently not supported.
 # 3 bit mask
 #  1 : available for counter 0
 #  2 : available for counter 1
@@ -45,290 +80,12 @@ set counter_setup_var { event_type counter unit_mask usr_count kernel_count }
 #  exclusive means than only one of the value can be passed to the profiler.
 # 7 the default value
 # 8 a list of  : { unit_bit_mask_or_value string }+
-set event_type_list {
-    { DISABLED -1 -1 "Select it to disable this counter" 0 }
-    { CPU_CLK_UNHALTED 7 3 "Clock processor not halted" 6000 }
-    { DATA_MEM_REFS 7 3 "All memory reference, cachable and non" 500 }
-    { DCU_LINES_IN  7 3 "Total line allocated in DCU" 500 }
-    { DCU_M_LINES_IN  7 3 "Number of M state lines allocated in DCU" 500 }
-    { DCU_M_LINES_OUT  7 3 "Number of M lines evicted from the DCU" 500 }
-    { DCU_MISS_OUTSTANDING 7 3 "Number of cycles while DCU miss outstanding" 500 }
-    { IFU_IFETCH 7 3 "Number of non/cachable instruction fetches" 500 }
-    { IFU_IFETCH_MISS 7 3 "Number of instruction fetch misses" 500 }
-    { ITLB_MISS 7 3 "Number of ITLB misses" 500 }
-    { IFU_MEM_STALL 7 3 "Cycles instruction fetch pipe is stalled" 500 }
-    { ILD_STALL 7 3 "Cycles instruction length decoder is stalled" 500 }
-    { L2_IFETCH 7 3 "Number of L2 instruction fetches" 500
-	bit_mask 15
-	{ 
-	    { 1 "(I)nvalid cache state" }
-	    { 2 "(S)hared cache state" }
-	    { 4 "(E)xclusive cache state" }
-	    { 8 "(M)odified cache state" }
-	    { 15 "MESI cache state" }
-	} 
-    }
-    { L2_LD 7 3 "Number of L2 data load" 500
-	bit_mask 15
-	{ 
-	    { 1 "(I)nvalid cache state" }
-	    { 2 "(S)hared cache state" }
-	    { 4 "(E)xclusive cache state" }
-	    { 8 "(M)odified cache state" }
-	    { 15 "MESI cache state" }
-	} 
-    }
-    { L2_ST 7 3 "Number of L2 data stores" 500
-	bit_mask 15
-	{ 
-	    { 1 "(I)nvalid cache state" }
-	    { 2 "(S)hared cache state" }
-	    { 4 "(E)xclusive cache state" }
-	    { 8 "(M)odified cache state" }
-	    { 15 "MESI cache state" }
-	}
-    }
-    { L2_LINES_IN 7 3 "Number of allocated lines in L2" 500 }
-    { L2_LINES_OUT 7 3 "Number of recovered lines from L2" 500 }
-    { L2_M_LINES_INM 7 3 "Number of modified lines allocated in L2" 500 }
-    { L2_M_LINES_OUTM 7 3 "Number of modified lines removed from L2" 500 }
-    { L2_RQSTS 7 3 "Number of L2 requests" 500
-	bit_mask 15
-	{ 
-	    { 1 "(I)nvalid cache state" }
-	    { 2 "(S)hared cache state" }
-	    { 4 "(E)xclusive cache state" }
-	    { 8 "(M)odified cache state" }
-	    { 15 "MESI cache state" }
-	}
-    }
-    { L2_ADS 7 3 "Number of L2 address strobes" 500 }
-    { L2_DBUS_BUSY 7 3 "Number of cycles data bus was busy" 500 }
-    { L2_DMUS_BUSY_RD 7 3 "Cycles data bus was busy in xfer from L2 to cpu" 500 }
-    { BUS_DRDY_CLOCKS 7 3 "Number of clocks DRDY is asserted" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_LOCK_CLOCKS 7 3 "Number of clocks LOCK is asserted" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_REQ_OUTSTANDING 7 3 "Number of outstanding bus request" 500 }
-    { BUS_TRAN_BRD 7 3 "Number of burst read transactions" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRAN_RFO 7 3 "Number of read for ownership transactions" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRANS_WB 7 3 "Number of write back transactions" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRAN_IFETCH 7 3 "Number of instruction fetch transactions" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRAN_INVAL 7 3 "Number of invalid transactions" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRAN_PWR 7 3 "Number of partial write transactions" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRANS_P 7 3 "Number of partial transactions" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRANS_IO 7 3 "Number of I/O transactions" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRANS_DEF 7 3 "Number of deferred transactions" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}    
-    }
-    { BUS_TRAN_BURST 7 3 "Number of burst transactions" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRAN_ANY 7 3 "Number of all transactions" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_TRAN_MEM 7 3 "Number of memory transactions" 500
-	exclusive 32
-	{
-	    { 0 "self-generated transactions" }
-	    { 32 "any transitions" }
-	}
-    }
-    { BUS_DATA_RCV 7 3 "Bus cycles this processor is receiving data" 500 }
-    { BUS_BNR_DRV 7 3 "bus cycles this processor is driving BNR pin" 500 }
-    { BUS_HIT_DRV 7 3 "bus cycles this processor is driving HIT pin" 500 }
-    { BUS_HITM_DRV 7 3 "bus cycles this processor is driving HITM pin" 500 }
-    { BUS_SNOOP_STALL 7 3 "cycles during bus snoop stall" 500 }
-    { COMP_FLOP_RET 7 1
-	  "Number of computational FP operations retired - Counter 0 only" 3000 }
-    { FLOPS 7 1
-	  "Number of computational FP operations executed - Counter 0 only" 3000 }
-    { FP_ASSIST 7 2
-	"Number of exceptions handled by microcode - Counter 1 only" 500 }
-    { MUL 7 2 "Number of multiplies - Counter 1 only" 1000 }
-    { DIV 7 2 "Number of divides - Counter 1 only" 500 }
-    { CYCLES_DIV_BUSY 7 1 "Cycles divider is busy - Counter 0 only" 1000 }
-    { LD_BLOCKS 7 3 "Number of store blocks" 500 }
-    { SB_DRAINS 7 3 "Number of store buffer drain cycles" 500 }
-    { MISALIGN_MEM_REF 7 3 "Number of misaligned data memory references" 500 }
-    { EMON_KNI_PREF_DISPATCHED 4 3
-	  "Number KNI pre-fetch/weakly ordered insns dispatch - P3 only" 500
-	exclusive 0
-	{ 
-	    { 0 "Prefecth NTA" }
-	    { 1 "Prefetch T1" }
-	    { 2 "Prefetch T2" }
-	    { 3 "weakly ordered stores" }
-	} 
-    }
-    { EMON_KNI_PREF_MISS 4 3
-      "Number KNI pre-fetch/weakly ordered insns that miss all cache - P3 only" 500
-	exclusive 0
-	{
-	    { 0 "Prefecth NTA" }
-	    { 1 "Prefetch T1" }
-	    { 2 "Prefetch T2" }
-	    { 3 "weakly ordered stores" }
-	}
-    }
-    { INST_RETIRED 7 3 "Number of instructions retired" 6000 }
-    { UOPS_RETIRED 7 3 "Number of UOPs retired" 6000 }
-    { INST_DECODED 7 3 "Number of instructions decoded" 6000 }
-    { EMON_KNI_INST_RETIRED 4 3 "Number of KNI instructions retired - P3 only" 3000
-	exclusive 0
-	{
-	    { 0 "Packed and scalar" }
-	    { 1 "Packed" }
-	}
-    }
-    { EMON_KNI_COMP_INST_RET 4 3 
-	"Number of KNI instructions computation retired - P3 only" 3000
-	exclusive 0
-	{ 
-	    { 0 "Packed and scalar" }
-	    { 1 "Packed" }
-	} 
-    }
-    { HW_INT_RX 7 3 "Number of hardware interrupts received" 500 }
-    { CYCLES_INT_MASKED 7 3 "Cycles interrupt are disabled" 500 }
-    { CYCLES_INT_PENDING_AND_MASKED 7 3 
-	"Cycles interrupts are disabled with pending interrupts" 500 }
-    { BR_INST_RETIRED 7 3 "Number of branch instructions retired" 500 }
-    { BR_MISS_PRED_RETIRED 7 3 "Number of mispredicted branches retired" 500 }
-    { BR_TAKEN_RETIRED 7 3 "Number of taken branches retired" 500 }
-    { BR_MISS_PRED_TAKEN_RET 7 3 
-	"Number of taken mispredictions branches retired" 500 }
-    { BR_INST_DECODED 7 3 "Number of branches instructions decoded" 500 }
-    { BTB_MISSES 7 3 "Number of branches that miss the BTB" 500 }
-    { BR_BOGUS 7 3 "Number of bogus branches" 500 }
-    { BACLEARS 7 3 "Number of times BACLEAR is asserted" 500 }
-    { RESOURCE_STALLS 7 3 "Cycles during resource related stalls" 500 }
-    { PARTIAL_RAT_STALLS 7 3 "cycles or event for partial stalls" 500 }
-    { SEGMENT_REG_LOADS 7 3 "Number of segment register loads" 500 }
-    { MMX_INSTR_EXEC 2 3 "Number of MMX instructions executed - P2 only" 3000 }
-    { MMX_SAT_INSTR_EXEC 6 3 
-	"Number of MMX saturating instructions executed - P2/P3 only" 3000 }
-    { MMX_UOPS_EXEC 6 3 "Number of MMX UOPs executed - P2/P3 only" 3000
-	mandatory 15
-	{
-	    { 15 "Mandatory" }
-	}
-    }
-    { MMX_INSTR_TYPE_EXEC 6 3 "Number of MMX packing instructions - P2/P3 only" 3000
-	bit_mask 63
-	{
-	    { 1 "MMX packed multiplies" }
-	    { 2 "MMX packed shifts" }
-	    { 4 "MMX pack operations" }
-	    { 8 "MMX unpack operations" }
-	    { 16 "MMX packed logical" }
-	    { 32 "MMX packed arithmetic" }
-	    { 63 "MMX pack/unpack and all operations" }
-	}
-    }
-    { FP_MMX_TRANS 6 3 "MMX-floating point transitions - P2/P3 only" 3000
-	exclusive 0
-	{
-	    { 0 "Transitions from MMX to floating point" }
-	    { 1 "Transitions from floating point to MMX" }
-	}
-    }
-    { MMX_ASSIST 6 3 "Number of EMMS instructions executed - P2/P3 only" 500 }
-    { MMX_INSTR_RET 2 3 "Number of MMX instructions retired - P2 only" 3000 }
-    { SEG_RENAME_STALLS 6 3
-	  "Number of segment register renaming stalls - P2/P3 only" 3000
-	bit_mask 15
-	{
-	    { 1 "ES register" }
-	    { 2 "DS register" }
-	    { 4 "FS register" }
-	    { 8 "GS register" }
-	    { 15 "ES, DS, FS, GS register" }
-	}
-    }
-    { SEG_REG_RENAMES 6 3  "Number of segment register renames - P2/P3 only" 3000
-	bit_mask 15
-	{
-	    { 1 "ES register" }
-	    { 2 "DS register" }
-	    { 4 "FS register" }
-	    { 8 "GS register" }
-	    { 15 "ES, DS, FS, GS register" }
-	}
-    }
-    { RET_SEG_RENAMES 6 3
-	  "Number of segment register rename events retired - P2/P3 only" 3000 }
-}
+#
+# use op_help --gui-description to see the exact format
+
+#set processor_type 3
+
+set event_type_list [exec op_help --gui-description --cpu-type=$processor_type]
 
 # This is defined in oprofile.h
 set OP_MAX_PERF_COUNT 2147483647
@@ -357,8 +114,6 @@ for { set i 0 } { $i < $max_counter_number } { incr i } {
 	set new_kernel_count_[set i]([lindex $j 0]) 1
     }
 }
-
-set event_type_0 "CPU_CLK_UNHALTED"
 
 # In some situation it is incorrect to get the System.map and kernel
 # filename from here but this provide a correct default value in many case.
@@ -1408,7 +1163,6 @@ proc create_event_frame { parent counter } {
 
 # The main procedure.
 proc setup_event_frame { } {
-
     create_event_frame .f_event_type 0
     create_event_frame .f_event_type 1
 
@@ -1439,6 +1193,10 @@ proc setup_event_frame { } {
 	}
     }
 
+    set width [expr ([winfo reqw $f.f] + [winfo reqw $f.sb1] + 4) * 2]
+    set height [expr [winfo screenh .] * 3 / 4]
+    wm geometry . ${width}x${height}
+
     # see comment on wm withdraw and update idletasks
     wm deiconify .
 }
@@ -1452,9 +1210,6 @@ for { set i 0 } { $i < $max_counter_number } { incr i } {
 
 # TODO : put all this code in setup_event_frame
 
-# TODO : how to get dynamically the correct width ?
-wm geometry . 576x600
-
 frame .f_config_and_start_stop
 
 set f .f_config_and_start_stop
@@ -1466,7 +1221,7 @@ frame .f_counter -borderwidth 2 -relief sunken
 frame .f_unit_mask -borderwidth 2 -relief sunken
 
 create_text . status_bar 1 1
-pack .status_bar -side bottom -anchor w -fill y -expand yes
+pack .status_bar -side bottom -anchor w -fill both -expand yes
 
 bind . <Motion> { onMouseMotion %W }
 
@@ -1489,38 +1244,6 @@ button $f.b_quit_and_save_setup -text "Quit and save setup" -command "save_setup
 
 pack $f.b_advanced_setup $f.b_default_setup $f.b_quit_and_save_setup \
     -side left -expand yes
-
-set processor_type -1
-set title ""
-
-# Fixme : Celeron Copermine string ?, how to != between a celeron with
-# a PII core and a PIII core ? TODO look into the core source file.
-
-set cpuinfo_file [open /proc/cpuinfo r]
-while { [gets $cpuinfo_file var] != -1 } {
-
-    switch -regexp "$var" {
-	".*Pentium Pro .*" { set processor_type 0; set title "Pentium Pro" }
-	".*Pentium II .*"  { set processor_type 1; set title "Pentium II"  }
-	".*Celeron .*"     { set processor_type 1; set title "Celeron"     }
-	".*Pentium III .*" { set processor_type 2; set title "Pentium III" }
-    }
-}
-
-# Add this line later when the profiler core support the P4.
-#       ".*Pentium IV .*" { set processor_type 3; set title "Pentium IV" }
-
-close $cpuinfo_file
-
-if { [expr $processor_type == -1] } then {
-    set answer [tk_messageBox \
-	    -message "Cannot detect processor : default to P2" -type okcancel]
-    switch $answer {
-	cancel { exit 1 }
-    }
-    set processor_type 1
-    set title "Pentium II"
-}
 
 wm title . "Profiling option for $title processor"
 

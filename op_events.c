@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.20 2001/08/19 20:09:17 movement Exp $ */
+/* $Id: op_events.c,v 1.21 2001/09/01 02:03:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -19,15 +19,6 @@
 
 /* See IA32 Vol. 3 Appendix A */
 
-/* for allowed */
-#define OP_0_ONLY 	0
-#define OP_1_ONLY 	1
-#define OP_ANY	 	2
-#define OP_PII_PIII	3
-#define OP_PII_ONLY	4
-#define OP_PIII_ONLY	5
-#define OP_ATHLON_ONLY	6
-
 #ifdef __KERNEL__
 #include <linux/string.h>
 #define strcmp(a,b) strnicmp((a),(b),strlen((b)))
@@ -35,10 +26,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #endif
 
-#define u8 unsigned char
-#define uint unsigned int
+#include "op_user.h"
 
 enum unit_mask_type {
 	/* useless but required by the hardware */
@@ -50,186 +41,186 @@ enum unit_mask_type {
 };
 
 struct op_event {
-	uint allowed;
-	u8 val; /* event number */
-	u8 unit; /* which unit mask if any allowed */
+	uint counter_mask; /* bitmask of allowed counter  */
+	u16  cpu_mask;     /* bitmask of allowed cpu_type */
+	u8 val;            /* event number */
+	u8 unit;           /* which unit mask if any allowed */
 	const char *name;
-	int min_count; /* minimum counter value allowed */
+	int min_count;     /* minimum counter value allowed */
 };
 
 struct op_unit_mask {
 	uint num; /* number of possible unit masks */
 	enum unit_mask_type unit_type_mask;
+	/* only the gui use it */
+	u8 default_mask;
 	/* up to seven allowed unit masks */
 	u8 um[7];
 };
 
-int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um, int p2, u8 *ctr0_t, u8 *ctr1_t);
-int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc);
-int op_min_count(u8 ctr_type);
-#ifdef OP_EVENTS_DESC
-void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp);
-#endif
-
 static struct op_unit_mask op_unit_masks[] = {
-	/* not used */
-	{ 1, utm_mandatory, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
+	/* use by the gui */
+	{ 1, utm_mandatory, 0x0f, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
 	/* MESI counters */
-	{ 5, utm_bitmask, { 0x1, 0x2, 0x4, 0x8, 0xf, 0x0, 0x0 }, },
-	/* EBL self/any */
-	{ 2, utm_exclusive, { 0x0, 0x20, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 5, utm_bitmask, 0x0f, { 0x8, 0x4, 0x2, 0x1, 0xf, 0x0, 0x0 }, },
+	/* EBL self/any default to any transitions */
+	{ 2, utm_exclusive, 0x20, { 0x0, 0x20, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
 	/* MMX PII events */
-	{ 1, utm_mandatory, { 0xf, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
-	{ 7, utm_bitmask, { 0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x3f }, },
-	{ 2, utm_exclusive, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
-	{ 5, utm_bitmask, { 0x1, 0x2, 0x4, 0x8, 0xf, 0x0, 0x0 }, },
+	{ 1, utm_mandatory, 0xf, { 0xf, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 7, utm_bitmask, 0x3f, { 0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x3f }, },
+	{ 2, utm_exclusive, 0x0, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 5, utm_bitmask, 0x0f, { 0x1, 0x2, 0x4, 0x8, 0xf, 0x0, 0x0 }, },
 	/* KNI PIII events */
-	{ 4, utm_exclusive, { 0x0, 0x1, 0x2, 0x3, 0x0, 0x0, 0x0 }, },
-	{ 2, utm_bitmask, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
+	{ 4, utm_exclusive, 0x0, { 0x0, 0x1, 0x2, 0x3, 0x0, 0x0, 0x0 }, },
+	{ 2, utm_bitmask, 0x1, { 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0 }, },
+	/* Athlon MOESI cache events */
+	{ 6, utm_bitmask, 0x1f, { 0x10, 0x8, 0x4, 0x2, 0x1, 0x1f }, }
 };
+
+/* the following are just short cut for filling the table of event */
+#define OP_ATHLON	(1 << CPU_ATHLON)
+#define OP_PPRO		(1 << CPU_PPRO)
+#define OP_PII		(1 << CPU_PII)
+#define OP_PIII		(1 << CPU_PIII)
+#define OP_PII_PIII	(OP_PII | OP_PIII)
+#define OP_IA_ALL	(OP_PII_PIII | OP_PPRO)
+
+#define CTR_ALL		(~0u)
+#define CTR_0		(1 << 0)
+#define CTR_1		(1 << 1)
 
 /* Allowed, Event #, unit mask, name, minimum event value */
 static struct op_event op_events[] = {
-  /* Data Cache Unit (DCU) */
-  {OP_ATHLON_ONLY,0x40,0,"DATA_CACHE_ACCESSES", 500,},
-  {OP_ATHLON_ONLY,0x41,0,"DATA_CACHE_MISSES", 500,},
-  {OP_ATHLON_ONLY,0x42,0,"DATA_CACHE_REFILLS_FROM_L2", 500,},
-  {OP_ATHLON_ONLY,0x43,0,"DATA_CACHE_REFILLS_FROM_SYSTEM", 500,},
-  {OP_ATHLON_ONLY,0x44,0,"DATA_CACHE_WRITEBACKS", 500,},
-  {OP_ATHLON_ONLY,0x45,0,"L1_DTLB_MISSES_L2_DTLD_HITS", 500,},
-  {OP_ATHLON_ONLY,0x46,0,"L1_AND_L2_DTLB_MISSES", 500,},
-  {OP_ATHLON_ONLY,0x47,0,"MISALIGNED_DATA_REFS", 500,},
-  {OP_ATHLON_ONLY,0x80,0,"ICACHE_FETCHES", 500,},
-  {OP_ATHLON_ONLY,0x81,0,"ICACHE_MISSES", 500,},
-  {OP_ATHLON_ONLY,0x84,0,"L1_ITLB_MISSES_L2_ITLB_HITS", 500,},
-  {OP_ATHLON_ONLY,0x85,0,"L1_AND_L2_ITLB_MISSES", 500,},
-  {OP_ATHLON_ONLY,0xc0,0,"RETIRED_INSNS", 500,},
-  {OP_ATHLON_ONLY,0xc1,0,"RETIRED_OPS", 500,},
-  {OP_ATHLON_ONLY,0xc2,0,"RETIRED_BRANCHES", 500,},
-  {OP_ATHLON_ONLY,0xc3,0,"RETIRED_BRANCHES_MISPREDICTED", 500,},
-  {OP_ATHLON_ONLY,0xc4,0,"RETIRED_TAKEN_BRANCHES", 500,},
-  {OP_ATHLON_ONLY,0xc5,0,"RETIRED_TAKEN_BRANCHES_MISPREDICTED", 500,},
-  {OP_ATHLON_ONLY,0xc6,0,"RETIRED_FAR_CONTROL_TRANSFERS", 500,},
-  {OP_ATHLON_ONLY,0xc7,0,"RETIRED_RESYNC_BRANCHES", 500,},
-  {OP_ATHLON_ONLY,0xcd,0,"INTERRUPTS_MASKED", 500,},
-  {OP_ATHLON_ONLY,0xce,0,"INTERRUPTS_MASKED_PENDING", 500,},
-  {OP_ATHLON_ONLY,0xcf,0,"HARDWARE_INTERRUPTS", 500,},
-
-  {OP_ANY,0x43,0,"DATA_MEM_REFS", 500 },
-  {OP_ANY,0x45,0,"DCU_LINES_IN", 500 },
-  {OP_ANY,0x46,0,"DCU_M_LINES_IN", 500 },
-  {OP_ANY,0x47,0,"DCU_M_LINES_OUT", 500},
-  {OP_ANY,0x48,0,"DCU_MISS_OUTSTANDING", 500 },
-
-  /* Intruction Fetch Unit (IFU) */
-  {OP_ANY,0x80,0,"IFU_IFETCH", 500 },
-  {OP_ANY,0x81,0,"IFU_IFETCH_MISS", 500 },
-  {OP_ANY,0x85,0,"ITLB_MISS", 500},
-  {OP_ANY,0x86,0,"IFU_MEM_STALL", 500 },
-  {OP_ANY,0x87,0,"ILD_STALL", 500 },
-  /* L2 Cache */
-  {OP_ANY,0x28,1,"L2_IFETCH", 500 },
-  {OP_ANY,0x29,1,"L2_LD", 500 },
-  {OP_ANY,0x2a,1,"L2_ST", 500 },
-  {OP_ANY,0x24,0,"L2_LINES_IN", 500 },
-  {OP_ANY,0x26,0,"L2_LINES_OUT", 500 },
-  {OP_ANY,0x25,0,"L2_M_LINES_INM", 500 },
-  {OP_ANY,0x27,0,"L2_M_LINES_OUTM", 500 },
-  {OP_ANY,0x2e,1,"L2_RQSTS", 500 },
-  {OP_ANY,0x21,0,"L2_ADS", 500 },
-  {OP_ANY,0x22,0,"L2_DBUS_BUSY", 500 },
-  {OP_ANY,0x23,0,"L2_DMUS_BUSY_RD", 500 },
-  /* External Bus Logic (EBL) */
-  {OP_ANY,0x62,2,"BUS_DRDY_CLOCKS", 500 },
-  {OP_ANY,0x63,2,"BUS_LOCK_CLOCKS", 500 },
-  {OP_ANY,0x60,0,"BUS_REQ_OUTSTANDING", 500 },
-  {OP_ANY,0x65,2,"BUS_TRAN_BRD", 500 },
-  {OP_ANY,0x66,2,"BUS_TRAN_RFO", 500 },
-  {OP_ANY,0x67,2,"BUS_TRANS_WB", 500 },
-  {OP_ANY,0x68,2,"BUS_TRAN_IFETCH", 500 },
-  {OP_ANY,0x69,2,"BUS_TRAN_INVAL", 500 },
-  {OP_ANY,0x6a,2,"BUS_TRAN_PWR", 500 },
-  {OP_ANY,0x6b,2,"BUS_TRANS_P", 500 },
-  {OP_ANY,0x6c,2,"BUS_TRANS_IO", 500 },
-  {OP_ANY,0x6d,2,"BUS_TRANS_DEF", 500 },
-  {OP_ANY,0x6e,2,"BUS_TRAN_BURST", 500 },
-  {OP_ANY,0x70,2,"BUS_TRAN_ANY", 500 },
-  {OP_ANY,0x6f,2,"BUS_TRAN_MEM", 500 },
-  {OP_ANY,0x64,0,"BUS_DATA_RCV", 500 },
-  {OP_ANY,0x61,0,"BUS_BNR_DRV", 500 },
-  {OP_ANY,0x7a,0,"BUS_HIT_DRV", 500 },
-  {OP_ANY,0x7b,0,"BUS_HITM_DRV", 500 },
-  {OP_ANY,0x7e,0,"BUS_SNOOP_STALL", 500 },
-  /* Floating Point Unit (FPU) */
-  {OP_0_ONLY,0xc1,0,"COMP_FLOP_RET", 3000 },
-  {OP_0_ONLY,0x10,0,"FLOPS", 3000 },
-  {OP_1_ONLY,0x11,0,"FP_ASSIST", 500 },
-  {OP_1_ONLY,0x12,0,"MUL", 1000 },
-  {OP_1_ONLY,0x13,0,"DIV", 500 },
-  {OP_0_ONLY,0x14,0,"CYCLES_DIV_BUSY", 1000 },
-  /* Memory Ordering */
-  {OP_ANY,0x03,0,"LD_BLOCKS", 500 },
-  {OP_ANY,0x04,0,"SB_DRAINS", 500 },
-  {OP_ANY,0x05,0,"MISALIGN_MEM_REF", 500 },
-  /* PIII KNI */
-  {OP_PIII_ONLY,0x07,7,"EMON_KNI_PREF_DISPATCHED", 500 },
-  {OP_PIII_ONLY,0x4b,7,"EMON_KNI_PREF_MISS", 500 },
-  /* Instruction Decoding and Retirement */
-  {OP_ANY,0xc0,0,"INST_RETIRED", 6000 },
-  {OP_ANY,0xc2,0,"UOPS_RETIRED", 6000 },
-  {OP_ANY,0xd0,0,"INST_DECODED", 6000 },
-  /* PIII KNI */
-  {OP_PIII_ONLY,0xd8,8,"EMON_KNI_INST_RETIRED", 3000 },
-  {OP_PIII_ONLY,0xd9,8,"EMON_KNI_COMP_INST_RET", 3000 },
-  /* Interrupts */
-  {OP_ANY,0xc8,0,"HW_INT_RX", 500 },
-  {OP_ANY,0xc6,0,"CYCLES_INT_MASKED", 500 },
-  {OP_ANY,0xc7,0,"CYCLES_INT_PENDING_AND_MASKED", 500 },
-  /* Branches */
-  {OP_ANY,0xc4,0,"BR_INST_RETIRED", 500 },
-  {OP_ANY,0xc5,0,"BR_MISS_PRED_RETIRED", 500 },
-  {OP_ANY,0xc9,0,"BR_TAKEN_RETIRED", 500 },
-  {OP_ANY,0xca,0,"BR_MISS_PRED_TAKEN_RET", 500 },
-  {OP_ANY,0xe0,0,"BR_INST_DECODED", 500 },
-  {OP_ANY,0xe2,0,"BTB_MISSES", 500 },
-  {OP_ANY,0xe4,0,"BR_BOGUS", 500 },
-  {OP_ANY,0xe6,0,"BACLEARS", 500 },
-  /* Stalls */
-  {OP_ANY,0xa2,0,"RESOURCE_STALLS", 500 },
-  {OP_ANY,0xd2,0,"PARTIAL_RAT_STALLS", 500 },
-  /* Segment Register Loads */
-  {OP_ANY,0x06,0,"SEGMENT_REG_LOADS", 500 },
   /* Clocks */
-  {OP_ANY,0x79,0,"CPU_CLK_UNHALTED", 6000 },
+  { CTR_ALL, OP_IA_ALL, 0x79, 0, "CPU_CLK_UNHALTED", 6000 },
+  /* Data Cache Unit (DCU) */
+  { CTR_ALL, OP_IA_ALL, 0x43, 0, "DATA_MEM_REFS", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x45, 0, "DCU_LINES_IN", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x46, 0, "DCU_M_LINES_IN", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x47, 0, "DCU_M_LINES_OUT", 500},
+  { CTR_ALL, OP_IA_ALL, 0x48, 0, "DCU_MISS_OUTSTANDING", 500 },
+  /* Intruction Fetch Unit (IFU) */
+  { CTR_ALL, OP_IA_ALL, 0x80, 0, "IFU_IFETCH", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x81, 0, "IFU_IFETCH_MISS", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x85, 0, "ITLB_MISS", 500},
+  { CTR_ALL, OP_IA_ALL, 0x86, 0, "IFU_MEM_STALL", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x87, 0, "ILD_STALL", 500 },
+  /* L2 Cache */
+  { CTR_ALL, OP_IA_ALL, 0x28, 1, "L2_IFETCH", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x29, 1, "L2_LD", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x2a, 1, "L2_ST", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x24, 0, "L2_LINES_IN", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x26, 0, "L2_LINES_OUT", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x25, 0, "L2_M_LINES_INM", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x27, 0, "L2_M_LINES_OUTM", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x2e, 1, "L2_RQSTS", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x21, 0, "L2_ADS", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x22, 0, "L2_DBUS_BUSY", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x23, 0, "L2_DMUS_BUSY_RD", 500 },
+  /* External Bus Logic (EBL) */
+  { CTR_ALL, OP_IA_ALL, 0x62, 2, "BUS_DRDY_CLOCKS", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x63, 2, "BUS_LOCK_CLOCKS", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x60, 0, "BUS_REQ_OUTSTANDING", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x65, 2, "BUS_TRAN_BRD", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x66, 2, "BUS_TRAN_RFO", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x67, 2, "BUS_TRANS_WB", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x68, 2, "BUS_TRAN_IFETCH", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x69, 2, "BUS_TRAN_INVAL", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x6a, 2, "BUS_TRAN_PWR", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x6b, 2, "BUS_TRANS_P", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x6c, 2, "BUS_TRANS_IO", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x6d, 2, "BUS_TRANS_DEF", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x6e, 2, "BUS_TRAN_BURST", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x70, 2, "BUS_TRAN_ANY", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x6f, 2, "BUS_TRAN_MEM", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x64, 0, "BUS_DATA_RCV", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x61, 0, "BUS_BNR_DRV", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x7a, 0, "BUS_HIT_DRV", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x7b, 0, "BUS_HITM_DRV", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x7e, 0, "BUS_SNOOP_STALL", 500 },
+  /* Floating Point Unit (FPU) */
+  { CTR_0, OP_IA_ALL, 0xc1, 0, "COMP_FLOP_RET", 3000 },
+  { CTR_0, OP_IA_ALL, 0x10, 0, "FLOPS", 3000 },
+  { CTR_1, OP_IA_ALL, 0x11, 0, "FP_ASSIST", 500 },
+  { CTR_1, OP_IA_ALL, 0x12, 0, "MUL", 1000 },
+  { CTR_1, OP_IA_ALL, 0x13, 0, "DIV", 500 },
+  { CTR_0, OP_IA_ALL, 0x14, 0, "CYCLES_DIV_BUSY", 1000 },
+  /* Memory Ordering */
+  { CTR_ALL, OP_IA_ALL, 0x03, 0, "LD_BLOCKS", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x04, 0, "SB_DRAINS", 500 },
+  { CTR_ALL, OP_IA_ALL, 0x05, 0, "MISALIGN_MEM_REF", 500 },
+  /* PIII KNI */
+  { CTR_ALL, OP_PIII, 0x07, 7, "EMON_KNI_PREF_DISPATCHED", 500 },
+  { CTR_ALL, OP_PIII, 0x4b, 7, "EMON_KNI_PREF_MISS", 500 },
+  /* Instruction Decoding and Retirement */
+  { CTR_ALL, OP_IA_ALL, 0xc0, 0, "INST_RETIRED", 6000 },
+  { CTR_ALL, OP_IA_ALL, 0xc2, 0, "UOPS_RETIRED", 6000 },
+  { CTR_ALL, OP_IA_ALL, 0xd0, 0, "INST_DECODED", 6000 },
+  /* PIII KNI */
+  { CTR_ALL, OP_PIII, 0xd8, 8, "EMON_KNI_INST_RETIRED", 3000 },
+  { CTR_ALL, OP_PIII, 0xd9, 8, "EMON_KNI_COMP_INST_RET", 3000 },
+  /* Interrupts */
+  { CTR_ALL, OP_IA_ALL, 0xc8, 0, "HW_INT_RX", 500 },
+  { CTR_ALL, OP_IA_ALL, 0xc6, 0, "CYCLES_INT_MASKED", 500 },
+  { CTR_ALL, OP_IA_ALL, 0xc7, 0, "CYCLES_INT_PENDING_AND_MASKED", 500 },
+  /* Branches */
+  { CTR_ALL, OP_IA_ALL, 0xc4, 0, "BR_INST_RETIRED", 500 },
+  { CTR_ALL, OP_IA_ALL, 0xc5, 0, "BR_MISS_PRED_RETIRED", 500 },
+  { CTR_ALL, OP_IA_ALL, 0xc9, 0, "BR_TAKEN_RETIRED", 500 },
+  { CTR_ALL, OP_IA_ALL, 0xca, 0, "BR_MISS_PRED_TAKEN_RET", 500 },
+  { CTR_ALL, OP_IA_ALL, 0xe0, 0, "BR_INST_DECODED", 500 },
+  { CTR_ALL, OP_IA_ALL, 0xe2, 0, "BTB_MISSES", 500 },
+  { CTR_ALL, OP_IA_ALL, 0xe4, 0, "BR_BOGUS", 500 },
+  { CTR_ALL, OP_IA_ALL, 0xe6, 0, "BACLEARS", 500 },
+  /* Stalls */
+  { CTR_ALL, OP_IA_ALL, 0xa2, 0, "RESOURCE_STALLS", 500 },
+  { CTR_ALL, OP_IA_ALL, 0xd2, 0, "PARTIAL_RAT_STALLS", 500 },
+  /* Segment Register Loads */
+  { CTR_ALL, OP_IA_ALL, 0x06, 0, "SEGMENT_REG_LOADS", 500 },
   /* MMX (Pentium II only) */
-  {OP_PII_ONLY,0xb0,0,"MMX_INSTR_EXEC", 3000 },
-  {OP_PII_PIII,0xb1,0,"MMX_SAT_INSTR_EXEC", 3000 },
-  {OP_PII_PIII,0xb2,3,"MMX_UOPS_EXEC", 3000 },
-  {OP_PII_PIII,0xb3,4,"MMX_INSTR_TYPE_EXEC", 3000 },
-  {OP_PII_PIII,0xcc,5,"FP_MMX_TRANS", 3000 },
-  {OP_PII_PIII,0xcd,0,"MMX_ASSIST", 500 },
-  {OP_PII_ONLY,0xce,0,"MMX_INSTR_RET", 3000 },
+  { CTR_ALL, OP_PII, 0xb0, 0, "MMX_INSTR_EXEC", 3000 },
+  { CTR_ALL, OP_PII_PIII, 0xb1, 0, "MMX_SAT_INSTR_EXEC", 3000 },
+  { CTR_ALL, OP_PII_PIII, 0xb2, 3, "MMX_UOPS_EXEC", 3000 },
+  { CTR_ALL, OP_PII_PIII, 0xb3, 4, "MMX_INSTR_TYPE_EXEC", 3000 },
+  { CTR_ALL, OP_PII_PIII, 0xcc, 5, "FP_MMX_TRANS", 3000 },
+  { CTR_ALL, OP_PII_PIII, 0xcd, 0, "MMX_ASSIST", 500 },
+  { CTR_ALL, OP_PII_PIII, 0xce, 0, "MMX_INSTR_RET", 3000 },
   /* segment renaming (Pentium II only) */
-  {OP_PII_PIII,0xd4,6,"SEG_RENAME_STALLS", 500 },
-  {OP_PII_PIII,0xd5,6,"SEG_REG_RENAMES", 500 },
-  {OP_PII_PIII,0xd6,0,"RET_SEG_RENAMES", 500 },
+  { CTR_ALL, OP_PII, 0xd4, 6, "SEG_RENAME_STALLS", 500 },
+  { CTR_ALL, OP_PII, 0xd5, 6, "SEG_REG_RENAMES", 500 },
+  { CTR_ALL, OP_PII, 0xd6, 0, "RET_SEG_RENAMES", 500 },
+
+  /* Data Cache Unit (DCU) */
+  /* PHE FIXME : for athlon check the op_min count */
+  /* PHE FIXME: Athlon put the most used entry at begin and update the
+   * description string, this is needed for the gui to display the most
+   * common used event first. */
+  { CTR_ALL, OP_ATHLON, 0x40, 0, "DATA_CACHE_ACCESSES", 500,},
+  { CTR_ALL, OP_ATHLON, 0x41, 0, "DATA_CACHE_MISSES", 500,},
+  { CTR_ALL, OP_ATHLON, 0x42, 9, "DATA_CACHE_REFILLS_FROM_L2", 500,},
+  { CTR_ALL, OP_ATHLON, 0x43, 9, "DATA_CACHE_REFILLS_FROM_SYSTEM", 500,},
+  { CTR_ALL, OP_ATHLON, 0x44, 9, "DATA_CACHE_WRITEBACKS", 500,},
+  { CTR_ALL, OP_ATHLON, 0x45, 0, "L1_DTLB_MISSES_L2_DTLD_HITS", 500,},
+  { CTR_ALL, OP_ATHLON, 0x46, 0, "L1_AND_L2_DTLB_MISSES", 500,},
+  { CTR_ALL, OP_ATHLON, 0x47, 0, "MISALIGNED_DATA_REFS", 500,},
+  { CTR_ALL, OP_ATHLON, 0x80, 0, "ICACHE_FETCHES", 500,},
+  { CTR_ALL, OP_ATHLON, 0x81, 0, "ICACHE_MISSES", 500,},
+  { CTR_ALL, OP_ATHLON, 0x84, 0, "L1_ITLB_MISSES_L2_ITLB_HITS", 500,},
+  { CTR_ALL, OP_ATHLON, 0x85, 0, "L1_AND_L2_ITLB_MISSES", 500,},
+  { CTR_ALL, OP_ATHLON, 0xc0, 0, "RETIRED_INSNS", 500,},
+  { CTR_ALL, OP_ATHLON, 0xc1, 0, "RETIRED_OPS", 500,},
+  { CTR_ALL, OP_ATHLON, 0xc2, 0, "RETIRED_BRANCHES", 500,},
+  { CTR_ALL, OP_ATHLON, 0xc3, 0, "RETIRED_BRANCHES_MISPREDICTED", 500,},
+  { CTR_ALL, OP_ATHLON, 0xc4, 0, "RETIRED_TAKEN_BRANCHES", 500,},
+  { CTR_ALL, OP_ATHLON, 0xc5, 0, "RETIRED_TAKEN_BRANCHES_MISPREDICTED", 500,},
+  { CTR_ALL, OP_ATHLON, 0xc6, 0, "RETIRED_FAR_CONTROL_TRANSFERS", 500,},
+  { CTR_ALL, OP_ATHLON, 0xc7, 0, "RETIRED_RESYNC_BRANCHES", 500,},
+  { CTR_ALL, OP_ATHLON, 0xcd, 0, "INTERRUPTS_MASKED", 500,},
+  { CTR_ALL, OP_ATHLON, 0xce, 0, "INTERRUPTS_MASKED_PENDING", 500,},
+  { CTR_ALL, OP_ATHLON, 0xcf, 0, "HARDWARE_INTERRUPTS", 500,},
 };
 
-uint op_nr_events = sizeof(op_events)/sizeof(struct op_event);
-
-#define OP_EVENTS_OK 		0x0
-#define OP_CTR0_NOT_FOUND 	0x1
-#define OP_CTR1_NOT_FOUND 	0x2
-#define OP_CTR0_NO_UM 		0x4
-#define OP_CTR1_NO_UM 		0x8
-#define OP_CTR0_NOT_ALLOWED 	0x10
-#define OP_CTR1_NOT_ALLOWED 	0x20
-#define OP_CTR0_PII_EVENT	0x40
-#define OP_CTR1_PII_EVENT	0x80
-#define OP_CTR0_PIII_EVENT	0x100
-#define OP_CTR1_PIII_EVENT	0x200
-#define OP_CTR0_ATHLON_EVENT	0x400
-#define OP_CTR1_ATHLON_EVENT	0x800
+#define op_nr_events (sizeof(op_events)/sizeof(op_events[0]))
 
 /**
  * op_check_unit_mask - sanity check unit mask value
@@ -279,24 +270,32 @@ static int op_check_unit_mask(struct op_unit_mask *allow, u8 um)
 	return -1;
 }
 
-
-
 /**
  * op_min_count - get the minimum count value.
  * @ctr_type: event value
+ * @cpu_type: 
+ *
+ * 0 Pentium Pro
+ *
+ * 1 Pentium II
+ *
+ * 2 Pentium III
+ *
+ * 3 AMD Athlon
  *
  * The function returns > 0 if the event is found
  * 0 otherwise
  */
-int op_min_count(u8 ctr_type) {
+int op_min_count(u8 ctr_type, int cpu_type)
+{
 	int ret = 0;
-	int ctr_e = 0;
 	uint i;
+	int cpu_mask = 1 << cpu_type;
 
-	for (i = 0; i < op_nr_events && !ctr_e; i++) {
-		if (op_events[i].val == ctr_type) {
+	for (i = 0; i < op_nr_events; i++) {
+		if (op_events[i].val == ctr_type && (op_events[i].cpu_mask & cpu_mask)) {
 			ret = op_events[i].min_count;
-			ctr_e = 1;
+			break;
 		}
 	}
 
@@ -305,14 +304,13 @@ int op_min_count(u8 ctr_type) {
 
 /**
  * op_check_events - sanity check event values
- * @ctr0_type: event value for counter 0
- * @ctr1_type: event value for counter 1
- * @ctr0_um: unit mask for counter 0
- * @ctr1_um: unit mask for counter 1
- * @proc: processor type
+ * @ctr: counter number
+ * @ctr_type: event value for counter 0
+ * @ctr_um: unit mask for counter 0
+ * @cpu_type: processor type
  *
  * Check that the counter event and unit mask values
- * are allowed. @proc should be set as follows :
+ * are allowed. @cpu_type should be set as follows :
  *
  * 0 Pentium Pro
  *
@@ -322,116 +320,48 @@ int op_min_count(u8 ctr_type) {
  *
  * 3 AMD Athlon
  *
- * Use 0 values for @ctr0_type and @ctr1_type if the
- * counter is not used.
+ * Don't fail if ctr_type == 0.
  *
- * The function returns 1 if the values are allowed,
+ * The function returns bitmask of failure cause
  * 0 otherwise
  */
-int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc)
+int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, int cpu_type)
 {
 	int ret = 0x0;
-	uint i;
-	int ctr0_e=0,ctr1_e=0;
+	uint i = 0;
+	uint cpu_mask = 1 << cpu_type;
+	uint ctr_mask = 1 << ctr;
 
-	if (ctr0_type) { 
-		for (i=0; i < op_nr_events && !ctr0_e; i++) {
-			if (op_events[i].val == ctr0_type) {
-				switch (op_events[i].allowed) {
-					case OP_1_ONLY:
-						ret |= OP_CTR0_NOT_ALLOWED;
-						break;
+	if (ctr_type != 0) {
+		for ( ; i < op_nr_events; i++) {
+			if (op_events[i].val == ctr_type && (op_events[i].cpu_mask & cpu_mask)) {
+				if ((op_events[i].counter_mask & ctr_mask) == 0)
+					ret |= OP_EVT_CTR_NOT_ALLOWED;
 
-					case OP_PII_ONLY:
-						if (proc != 1)
-							ret |= OP_CTR0_PII_EVENT;
-						break;
-	
-					case OP_PIII_ONLY:
-						if (proc != 2)
-							ret |= OP_CTR0_PIII_EVENT;
-						break;
-
-					case OP_PII_PIII:
-						if (!proc)
-							ret |= OP_CTR0_PII_EVENT;
-						break;
-
-					case OP_ATHLON_ONLY:
-						if (proc != 3)
-							ret |= OP_CTR0_ATHLON_EVENT;
-						break;
-					default:
-						break;
-				}
 				if (op_events[i].unit && 
-				    op_check_unit_mask(&op_unit_masks[op_events[i].unit], ctr0_um) < 0)
-					ret |= OP_CTR0_NO_UM;
-				ctr0_e=1;
+				    op_check_unit_mask(&op_unit_masks[op_events[i].unit], ctr_um) < 0)
+					ret |= OP_EVT_NO_UM;
 				break;
 			}
 		}
 	}
 
-	if (ctr1_type) {
-		for (i=0; i<op_nr_events && !ctr1_e; i++) {
-			if (op_events[i].val == ctr1_type) {
-				switch (op_events[i].allowed) {
-					case OP_0_ONLY:
-						ret |= OP_CTR1_NOT_ALLOWED;
-						break;
-				
-					case OP_PII_ONLY:
-						if (proc != 1)
-							ret |= OP_CTR1_PII_EVENT;
-						break;
-		
-					case OP_PIII_ONLY:
-						if (proc != 2)
-							ret |= OP_CTR1_PIII_EVENT;
-						break;
-
-					case OP_PII_PIII:
-						if (!proc)
-							ret |= OP_CTR1_PII_EVENT;
-						break;
-
-					case OP_ATHLON_ONLY:
-						if (proc != 3)
-							ret |= OP_CTR1_ATHLON_EVENT;
-						break;
-
-					default:
-						break;
-				}
-				if (op_events[i].unit && 
-				    op_check_unit_mask(&op_unit_masks[op_events[i].unit], ctr1_um) < 0)
-					ret |= OP_CTR1_NO_UM;
-				ctr1_e=1;
-			}
-		}
-	}
-
-	if (!ctr0_e && ctr0_type)
-		ret |= OP_CTR0_NOT_FOUND;
-	if (!ctr1_e && ctr1_type)
-		ret |= OP_CTR1_NOT_FOUND;
+	if (i == op_nr_events)
+		ret |= OP_EVT_NOT_FOUND;
 
 	return ret;
 }
 
 /**
  * op_check_events_str - sanity check event strings and unit masks
- * @ctr0_type: event name for counter 0
- * @ctr1_type: event name for counter 1
- * @ctr0_um: unit mask for counter 0
- * @ctr1_um: unit mask for counter 1
- * @p2: processor type
- * @ctr0_t: event value for counter 0
- * @ctr1_t: event value for counter 1
+ * @ctr: ctr number
+ * @ctr_type: event name for counter
+ * @ctr_um: unit mask for counter
+ * @cpu_type: processor type
+ * @ctr_t: event value for counter
  *
  * Check that the counter event and unit mask values
- * are allowed. @p2 should be set as follows :
+ * are allowed. @cpu_type should be set as follows :
  *
  * 0 Pentium Pro
  *
@@ -441,54 +371,38 @@ int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc
  *
  * 3 AMD Athlon
  *
- * Use "" strings for @ctr0_type and @ctr1_type if the
- * counter is not used.
+ * Use "" strings for @ctr_type if the counter is not used.
  *
- * On successful return, @ctr0_t and @ctr1_t will contain
- * the event values for counters 0 and 1 respectively
+ * On successful return, @ctr_t will contain
+ * the event values for counters ctr
  *
  * The function returns 1 if the values are allowed,
  * 0 otherwise
  */
-int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um, int p2, u8 *ctr0_t, u8 *ctr1_t)
+int op_check_events_str(int ctr, char *ctr_type, u8 ctr_um, int cpu_type, u8 *ctr_t)
 {
 	uint i;
-	int ctr0_e=0;
-	int ctr1_e=0;
+	int ctr_found = 0;
+	uint cpu_mask = 1 << cpu_type;
 
-	if (!ctr0_type)
-		ctr0_type="";
+	if (!ctr_type)
+		ctr_type="";
 
-	if (!ctr1_type)
-		ctr1_type="";
-
-	if (strcmp(ctr0_type,"")) {
-		for (i=0; i < op_nr_events && !ctr0_e; i++) {
-			if (!strcmp(ctr0_type, op_events[i].name)) {
-				ctr0_e = 1;
-				*ctr0_t = op_events[i].val;
+	if (strcmp(ctr_type,"")) {
+		for (i=0; i < op_nr_events; i++) {
+			if (!strcmp(ctr_type, op_events[i].name) && 
+			    (op_events[i].cpu_mask & cpu_mask)) {
+				*ctr_t = op_events[i].val;
+				ctr_found = 1;
 				break;
 			}
 		}
 	}
 
-	if (strcmp(ctr1_type,"")) {
-		for (i=0; i < op_nr_events && !ctr1_e; i++) {
-			if (!strcmp(ctr1_type, op_events[i].name)) {
-				ctr1_e = 1;
-				*ctr1_t = op_events[i].val;
-				break;
-			}
-		}
-	}
+	if (strcmp(ctr_type,"") && !ctr_found)
+		return OP_EVT_NOT_FOUND;
 
-	if (strcmp(ctr0_type,"") && !ctr0_e)
-		return OP_CTR0_NOT_FOUND;
-
-	if (strcmp(ctr1_type,"") && !ctr1_e)
-		return OP_CTR1_NOT_FOUND;
-
-	return op_check_events(*ctr0_t, *ctr1_t, ctr0_um, ctr1_um, p2);
+	return op_check_events(ctr, *ctr_t, ctr_um, cpu_type);
 }
 
 #ifdef OP_EVENTS_DESC
@@ -498,11 +412,11 @@ struct op_unit_desc {
 
 static struct op_unit_desc op_unit_descs[] = {
 	{ { NULL, NULL, NULL, NULL, NULL, NULL, NULL, }, },
-	{ { "(I)nvalid cache state",
-	  "(S)hared cache state",
+	{ { "(M)odified cache state",
 	  "(E)xclusive cache state",
-	  "(M)odified cache state",
-	  "MESI cache state", NULL, NULL, }, },
+	  "(S)hared cache state",
+	  "(I)nvalid cache state",
+	  "all MESI cache state", NULL, NULL, }, },
 	{ { "self-generated transactions",
 	  "any transactions", NULL, NULL, NULL, NULL, NULL, }, },
 	{ { "mandatory", NULL, NULL, NULL, NULL, NULL, NULL, }, },
@@ -528,10 +442,16 @@ static struct op_unit_desc op_unit_descs[] = {
 	  "prefetch T2",
 	  "weakly ordered stores", NULL, NULL, NULL, }, },
 	{ { "packed and scalar", "packed", NULL, NULL, NULL, NULL, NULL, }, },
-
+	{ { "(M)odified cache state",
+	  "(O)wner cache state",
+	  "(E)xclusive cache state",
+	  "(S)hared cache state",
+	  "(I)nvalid cache state",
+	  "all MOESI cache state", NULL, }, },
 };
 
 static char *op_event_descs[] = {
+  "clocks processor is not halted",
   /* Data Cache Unit (DCU) */
   "all memory references, cachable and non",
   "total lines allocated in the DCU",
@@ -616,7 +536,6 @@ static char *op_event_descs[] = {
   "cycles or events for partial stalls",
   /* Segment Register Loads */
   "number of segment register loads",
-  "clocks processor is not halted",
   /* MMX (Pentium II only) */
   "number of MMX instructions executed",
   "number of MMX saturating instructions executed",
@@ -629,6 +548,31 @@ static char *op_event_descs[] = {
   "number of segment register renaming stalls",
   "number of segment register renames",
   "number of segment register rename events retired",
+  /* Athlon/Duron */
+  /* Cache */
+  "Data cache accesses",
+  "Data cache misses",
+  "Data cache refills from L2",
+  "Data cache refills from system",
+  "Data cache write backs",
+  "L1 DTLB misses and L2 DTLB hits",
+  "L1 and L2 DTLB misses",
+  "Misaligned data references",
+  "Instruction cache fetches)",
+  "Instruction cache misses)",
+  "L1 ITLB misses (and L2 ITLB hits)",
+  "(L1 and) L2 ITLB misses",
+  "Retired instructions (includes exceptions, interrupts, resyncs)",
+  "Retired Ops",
+  "Retired branches (conditional, unconditional, exceptions, interrupts)",
+  "Retired branches mispredicted",
+  "Retired taken branches",
+  "Retired taken branches mispredicted",
+  "Retired far control transfers",
+  "Retired resync branches (only non-control transfer branches counted)",
+  "Interrupts masked cycles (IF=0)",
+  "Interrupts masked while pending cycles (INTR while IF=0)",
+  "Number of taken hardware interrupts",
 };
 
 /**
@@ -658,9 +602,7 @@ static char *op_get_um_desc(uint op_events_index, u8 um)
 	if (um_mask_desc_index == -1)
 		return NULL;
 	else if (um_mask_desc_index == 0) {
-		/* FIXME: Perhaps needs to combine the different string? (this
-		 * needs dynamic alloc and updating the code/comment of callers)
-		 */
+		/* avoid dynamic alloc to simplify caller's life */
 		return "set with multiple units, check the documentation";
 	}
 
@@ -669,6 +611,7 @@ static char *op_get_um_desc(uint op_events_index, u8 um)
 
 /**
  * op_get_event_desc - get event name and description
+ * @cpu_type: the cpu_type
  * @type: event value
  * @um: unit mask
  * @typenamep: returned event name string
@@ -676,7 +619,7 @@ static char *op_get_um_desc(uint op_events_index, u8 um)
  * @umdescp: returned unit mask description string
  *
  * Get the associated event name and descriptions given
- * the event value and unit mask value. It is a fatal error
+ * the cpu type, event value and unit mask value. It is a fatal error
  * to supply a non-valid @type value, but an invalid @um
  * will not exit.
  *
@@ -685,14 +628,15 @@ static char *op_get_um_desc(uint op_events_index, u8 um)
  * NULL when @um is invalid for the given @type value.
  * These strings are in text section so should not be freed.
  */
-void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp)
+void op_get_event_desc(int cpu_type, u8 type, u8 um, char **typenamep, char **typedescp, char **umdescp)
 {
 	uint i;
+	int cpu_mask = 1 << cpu_type;
 
 	*typenamep = *typedescp = *umdescp = NULL;
 
 	for (i=0; i < op_nr_events; i++) {
-		if (op_events[i].val == type) {
+		if (op_events[i].val == type && (op_events[i].cpu_mask & cpu_mask)) {
 			*typenamep = (char *)op_events[i].name;
 			*typedescp = op_event_descs[i];
 			
@@ -713,49 +657,171 @@ void op_get_event_desc(u8 type, u8 um, char **typenamep, char **typedescp, char 
 
 #include "version.h"
 
-int main(int argc, char *argv[])
+static int cpu_type = DEFAULT_CPU_TYPE;
+
+static const char* cpu_type_str[MAX_CPU_TYPE] = {
+	"Pentium Pro",
+	"PII",
+	"PIII",
+	"Athlon"
+};
+
+/**
+ * help_for_event - output event name and description
+ * @i: event number
+ *
+ * output an help string for the event @i
+ */
+static void help_for_event(int i)
 {
-	uint i;
-	uint j;
+	uint k, j;
+	uint mask;
 
-	if (argc>1) {
-		if ((!strcmp(argv[1],"--version") || !strcmp(argv[1],"-v"))) {
-			printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
-			exit(0);
+	printf("%s", op_events[i].name);
+
+	printf(": (counter: ");
+	if (op_events[i].counter_mask == CTR_ALL) {
+		printf("all");
+	} else {
+		mask = op_events[i].counter_mask;
+		for (k = 0; k < CHAR_BIT * sizeof(op_events[i].counter_mask); ++k) {
+			if (mask & (1 << k)) {
+				printf("%d", k);
+				mask &= ~(1 << k);
+				if (mask)
+					printf(", ");
+			}
 		}
+	}
+	printf(")");
 
-		/* interpret given string */
-
-		for (i=0; i < op_nr_events; i++) {
-			if (!strcmp(op_events[i].name, argv[1]))
-				printf("%d\n", op_events[i].val);
+	printf(" (supported cpu: ");
+	mask = op_events[i].cpu_mask;
+	for (k = 0; k < MAX_CPU_TYPE; ++k) {
+		if (mask & (1 << k)) {
+			printf("%s", cpu_type_str[k]);
+			mask &= ~(1 << k);
+			if (mask)
+				printf(", ");
 		}
-		return 0;
 	}
 
-	printf("oprofile: available events\n");
-	printf("--------------------------\n\n");
-	printf("See Intel Architecture Developer's Manual\nVol. 3, Appendix A\n\n");
+	printf(")\n\t%s (min count: %d)\n", op_event_descs[i], op_events[i].min_count);
 
-	for (i=0; i < op_nr_events; i++) {
-		printf("%s:", op_events[i].name);
-		printf("\n\t%s ", op_event_descs[i]);
-		switch (op_events[i].allowed) {
-			case 0: printf("- counter 0 only\n"); break;
-			case 1: printf("- counter 1 only\n"); break;
-			case 3: printf("- Pentium II/III only\n"); break;
-			case 4: printf("- Pentium II only\n"); break;
-			case 5: printf("- Pentium III only\n"); break;
-			case 6: printf("- AMD Athlon only\n"); break;
-			default: printf("\n"); break;
+	if (op_events[i].unit) {
+		int unit_idx = op_events[i].unit;
+
+		printf("\tUnit masks\n");
+		printf("\t----------\n");
+
+		for (j=0; j < op_unit_masks[unit_idx].num; j++) {
+			printf("\t%.2x: %s\n",
+			       op_unit_masks[unit_idx].um[j],
+			       op_unit_descs[unit_idx].desc[j]);
 		}
-		if (op_events[i].unit) {
-			printf("\tUnit masks\n");
-			printf("\t----------\n");
-			for (j=0; j < op_unit_masks[op_events[i].unit].num; j++) {
-				printf("\t%.2x: %s\n",
-					op_unit_masks[op_events[i].unit].um[j],
-					op_unit_descs[op_events[i].unit].desc[j]);
+	}
+}
+
+/**
+ * help_event_for_gui - output event name and description
+ * @i: event number
+ *
+ * output an help string for the event @i, in
+ * a manner adapted for use by the oprofile gui
+ */
+static void help_event_for_gui(int i)
+{
+	uint j;
+
+	printf("{ %s", op_events[i].name);
+
+	printf(" %d %d", op_events[i].cpu_mask, op_events[i].counter_mask);
+
+	printf(" \"%s\" %d", op_event_descs[i], op_events[i].min_count);
+
+	if (op_events[i].unit) {
+		int unit_idx = op_events[i].unit;
+
+		printf("\n");
+
+		switch (op_unit_masks[unit_idx].unit_type_mask) {
+			case utm_mandatory:
+				printf("\tmandatory ");
+				break;
+			case utm_exclusive:
+				printf("\texclusive ");
+				break;
+			case utm_bitmask:
+				printf("\tbitmask ");
+				break;
+		}
+
+		printf("%d\n", op_unit_masks[unit_idx].default_mask);
+		printf("\t{\n");
+
+		for (j=0; j < op_unit_masks[unit_idx].num; j++) {
+			printf("\t    { %d \"%s\" }\n",
+			       op_unit_masks[unit_idx].um[j],
+			       op_unit_descs[unit_idx].desc[j]);
+			}
+
+		printf("\t}\n");
+	}
+
+	printf(" }\n");
+}
+
+int main(int argc, char *argv[])
+{
+	int i;
+	uint j;
+	int cpu_type_mask;
+	int for_gui;
+
+	for_gui = 0;
+	for (i = 1 ; i < argc ; ++i) {
+		if (!strcmp(argv[i], "--version")) {
+			printf(VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n");
+			return 0;
+		} else if (!strcmp(argv[i], "--help")) {
+			printf("op_help [--version|--cpu-type] event_name");
+
+			return 0;
+		} else if (!strncmp(argv[i], "--cpu-type=", 11)) {
+			sscanf(argv[i] + 11, "%d", &cpu_type);
+			if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
+				fprintf(stderr, "invalid cpu type %d, default to to %s\n", cpu_type, cpu_type_str[DEFAULT_CPU_TYPE]);
+				cpu_type = DEFAULT_CPU_TYPE;
+			}
+		}  else if (!strcmp(argv[1], "--gui-description")) {
+			for_gui = 1;
+		} else {
+			cpu_type_mask = 1 << cpu_type;
+			for (j=0; j < op_nr_events; j++) {
+				if (!strcmp(op_events[j].name, argv[i]) && 
+				    (op_events[j].cpu_mask & cpu_type_mask)) {
+					printf("%d\n", op_events[j].val);
+				}
+			}
+		return 0;
+		}
+	}
+
+	if (for_gui == 0) {
+		printf("oprofile: available events\n");
+		printf("--------------------------\n\n");
+		printf("See Intel Architecture Developer's Manual\nVol. 3, Appendix A\n\n");
+	} else {
+		printf("{ DISABLED -1 -1 \"Select it to disable this counter\" 0 }\n");
+	}
+
+	cpu_type_mask = 1 << cpu_type;
+	for (j=0; j < op_nr_events; j++) {
+		if ((op_events[j].cpu_mask & cpu_type_mask) != 0) {
+			if (for_gui) {
+				help_event_for_gui(j);
+			} else {
+				help_for_event(j);
 			}
 		}
 	}

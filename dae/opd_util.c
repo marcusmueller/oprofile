@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.18 2001/07/27 00:28:44 movement Exp $ */
+/* $Id: opd_util.c,v 1.19 2001/09/01 02:03:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -143,13 +143,51 @@ void *opd_realloc(void *buf, size_t size)
  *
  * Returns a char* pointer to the duplicated string.
  */
-char *opd_strdup(const char* str) 
+char *opd_strdup(const char *str) 
 {
 	char *temp = opd_malloc(strlen(str) + 1);
 	memcpy(temp, str, strlen(str) + 1);
 
 	return temp;
 }
+
+/**
+ * opd_mangle_filename - mangle a file filename
+ * @smpdir: base directory name
+ * @image_name: a path name to the image file
+ * @extra_size: an extra size to allocate
+ *
+ * allocate memory of size strlen(@image_name) + 
+ * strlen(@smpdir) + 2 + 32 then concat
+ * @smpdir and the mangled name of @filename
+ * the 32 bytes added are assumed to concat
+ * something like "-%d"
+ *
+ * Returns a char* pointer to the mangled string.
+ *
+ */
+char* opd_mangle_filename(const char *smpdir, const char* image_name)
+{
+	char *mangled;
+	char *c;
+	const char *c2;
+
+	mangled = opd_malloc(strlen(smpdir) + 2 + strlen(image_name) + 32);
+	strcpy(mangled, smpdir);
+	strcat(mangled, "/");
+	c = mangled + strlen(smpdir) + 1;
+	c2 = image_name;
+	do {
+		if (*c2 == '/')
+			*c++ = OPD_MANGLE_CHAR;
+		else
+			*c++ = *c2;
+	} while (*++c2);
+	*c = '\0';
+
+	return mangled;
+}
+
 
 /* remove_component_p() and op_simlify_pathname() comes from the gcc
  preprocessor */
@@ -582,13 +620,15 @@ off_t opd_get_fsize(const char *file, int fatal)
 	struct stat st;
 
 	if (stat(file, &st)) {
-		if (!fatal)
+		if (!fatal) 
 			return 0;
 		 
 		fprintf(stderr,"opd_get_fsize: stat failed\n");
 		exit(1);
 	}
 
+	/* PHE FIXME caller can not make any difference between failure and
+	 * zero file size when fatal != 0 */
 	return st.st_size;
 }
 

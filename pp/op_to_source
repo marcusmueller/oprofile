@@ -59,7 +59,6 @@ do
 				echo "see $0 --help"
 				exit 1
 			fi
-			oprofpp_option="$oprofpp_option -f $1"
 			sample_file=$1
 			;;
 		-i|--image-file)
@@ -69,7 +68,6 @@ do
 				echo "see $0 --help"
 				exit 1
 			fi
-			oprofpp_option="$oprofpp_option -i $1"
 			object_file=$1
 			;;
 		-h|--help)
@@ -103,6 +101,9 @@ do
 	shift
 done
 
+# PHE FIXME : this checking need to be remade with the new samples files naming
+# scheme
+
 # Check than enough option has been given.
 if [ "$object_file" == "" -a "$sample_file" == "" ]; then
 	echo "You need to give at least an object-file or a sample-file"
@@ -115,9 +116,19 @@ if [ "$object_file" != "" -a ! -f "$object_file" ]; then
 	exit 1
 fi
 
-if [ "$sample_file" != "" -a ! -f "$sample_file" ]; then
-	echo "sample file $sample_file does not exist"
-	exit 1
+# PHE FIXME: bogus here is case of passing sample_filename without the #x
+# prefix. Should be rewrite perhaps.
+#if [ "$sample_file" != "" -a ! -f "$sample_file" ]; then
+#	echo "sample file $sample_file does not exist"
+#	exit 1
+#fi
+
+if [ "$sample_file" != "" ]; then
+	oprofpp_option="$oprofpp_option -f $sample_file"
+fi
+
+if [ "$object_file" != "" ]; then
+	oprofpp_option="$oprofpp_option -i $object_file"
 fi
 
 #echo "option : $op_filter_option"

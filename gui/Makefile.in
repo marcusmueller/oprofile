@@ -15,7 +15,7 @@ install: oprofile
 	cd $(BINDIR) && chmod 755 oprofile
 
 uninstall:
-	rm -f $(BINDIR)/oprofile
+	-rm -f $(BINDIR)/oprofile
 	@echo "---------------------------------------------------------------"
 	@echo "The uninstall target does not remove your ~/.oprofile directory"
 	@echo "---------------------------------------------------------------"

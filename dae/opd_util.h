@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.13 2001/07/27 00:28:44 movement Exp $ */
+/* $Id: opd_util.h,v 1.14 2001/09/01 02:03:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -27,14 +27,39 @@
 #include <time.h> 
 #include <fcntl.h> 
 
+#include "../op_user.h"
+
+/* this char replaces '/' in sample filenames */
+#define OPD_MANGLE_CHAR '}'
+
 #define FALSE 0
 #define TRUE 1
 
-#define u8  unsigned char
-#define u16 u_int16_t
-#define u32 u_int32_t
-#define fd_t int
 #define streq(a,b) (!strcmp((a), (b)))
+
+#define OPD_MAGIC "DAE\n"
+#define OPD_VERSION 0x5
+
+/* header of the sample files */
+struct opd_footer {
+	u8  magic[4];
+	u32 version;
+	u8 is_kernel;
+	u32 ctr_event;
+	u32 ctr_um;
+	/* ctr number, used for sanity checking */
+	u32 ctr;
+	u32 cpu_type;
+	u32 ctr_count;
+	double cpu_speed;
+	time_t mtime;
+	/* binary compatibility reserve */
+	u32  reserved2[21];
+};
+
+struct opd_fentry {
+	u32 count;
+};
 
 /* utility functions */
 #define opd_calloc(memb, size) opd_malloc(memb*size)
@@ -50,6 +75,7 @@ void *opd_malloc0(size_t size);
 void *opd_realloc(void *buf, size_t size);
 void opd_free(void *p);
 char *opd_strdup(const char* str);
+char* opd_mangle_filename(const char *smpdir, const char* filename);
 
 char *opd_simplify_pathname(char *path);
 char *opd_relative_to_absolute_path(const char *path, const char *base_dir);

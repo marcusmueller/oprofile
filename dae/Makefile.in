@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.14 2001/08/18 16:11:17 movement Exp $
+# $Id: Makefile.in,v 1.15 2001/09/01 02:03:34 movement Exp $
 
 .PHONY: all clean srcdoc install uninstall
 
@@ -14,13 +14,13 @@ INSTALL_LIST=oprofiled op_start op_dump op_stop op_help
 
 install: $(INSTALL_LIST)
 	-$(MKDIR_P) $(BINDIR)
-	@for f in $(INSTALL_LIST); do				 \
+	for f in $(INSTALL_LIST); do \
 		cp $$f $(BINDIR)/$$f && chmod 755 $(BINDIR)/$$f; \
 	done
 
 uninstall:
-	@for f in $(INSTALL_LIST); do	\
-		rm -f $(BINDIR)/$$f;	\
+	for f in $(INSTALL_LIST); do \
+		-rm -f $(BINDIR)/$$f; \
 	done
 
 clean:

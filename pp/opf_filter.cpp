@@ -155,7 +155,7 @@ class output {
 
 	// oprofpp give some info on the setting of the counters. These
 	// are stored here.
-	counter_setup counter_info[max_counter_number];
+	counter_setup counter_info[OP_MAX_COUNTERS];
 
 	// TODO : begin_comment, end_comment must be based on the current 
 	// extension and must be properties of source_file.
@@ -223,13 +223,13 @@ inline double do_ratio(size_t counter, size_t total) {
 
 counter_array_t::counter_array_t()
 {
-	for (size_t i = 0 ; i < max_counter_number ; ++i)
+	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		value[i] = 0;
 }
 
 counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
 {
-	for (size_t i = 0 ; i < max_counter_number ; ++i)
+	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		value[i] += rhs.value[i];
 
 	return *this;
@@ -243,7 +243,7 @@ void sample_entry::debug_dump(ostream & out) const {
 
 	out << hex << vma << dec << " ";
 
-	for (size_t i = 0 ; i < max_counter_number ; ++i)
+	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		out << counter[i] << " ";
 }
 
@@ -265,7 +265,7 @@ size_t sample_entry::build(const string& str, size_t pos, bool have_linenr_info)
 
 	sscanf(str.c_str() + pos, "%lx%n", &vma, &number_of_char_read);
 
-	for (size_t i = 0 ; i < max_counter_number ; ++i) {
+	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
 		int temp;
 
 		sscanf(str.c_str() + pos + number_of_char_read, "%u%n", &counter[i], &temp);
@@ -352,7 +352,7 @@ void output::debug_dump_vector(ostream & out) const {
 
 	out << "total samples :";
 
-	for (size_t i = 0 ; i < max_counter_number ; ++i)
+	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		cout << " " << counter_info[i].total_samples;
 	
 	cout << endl;
@@ -382,7 +382,7 @@ void output::setup_counter_param(input & in) {
 	if (pos == 0) {
 		size_t counter_number;
 		if (sscanf(str.c_str(), "Counter %u", &counter_number) == 1 &&
-		    counter_number < max_counter_number) {
+		    counter_number < op_nr_counters) {
 			counter_info[counter_number].enabled = true;
 
 			size_t pos = str.find("counted ");
@@ -439,11 +439,11 @@ void output::setup_counter_param(input & in) {
 
 bool output::calc_total_samples() {
 
-	for (size_t i = 0 ; i < max_counter_number ; ++i)
+	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		counter_info[i].total_samples = 0;
 
 	for (size_t i = 0 ; i < symbols.size() ; ++i) {
-		for (size_t j = 0 ; j < max_counter_number ; ++j)
+		for (size_t j = 0 ; j < op_nr_counters ; ++j)
 			counter_info[j].total_samples += symbols[i].sample.counter[j];
 	}
 
@@ -454,18 +454,19 @@ bool output::calc_total_samples() {
 			total_counter += samples[i].counter;
 		}
 
-		for (size_t i = 0 ; i < max_counter_number ; ++i) {
+		for (size_t i = 0 ; i < op_nr_counters ; ++i) {
 			if (total_counter[i] != counter_info[i].total_samples) {
 				cerr << "output::calc_total_samples() : "
 				     << "bad counter accumulation"
 				     << " " << total_counter[i] 
-				     << " " << counter_info[i].total_samples;
+				     << " " << counter_info[i].total_samples
+				     << endl;
 				exit(1);
 			}
 		}
 	}
 
-	for (size_t i = 0 ; i < max_counter_number ; ++i)
+	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		if (counter_info[i].total_samples != 0)
 			return true;
 
@@ -491,7 +492,7 @@ output_counter(const counter_array_t & counter, bool comment,
 	if (prefix.length())
 		out << " " << prefix;
 
-	for (size_t i = 0 ; i < max_counter_number ; ++i)
+	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		if (counter_info[i].enabled)
 			output_one_counter(counter[i], counter_info[i].total_samples);
 
@@ -754,18 +755,18 @@ void output::output_source(input & /*in*/) {
 
 size_t output::get_sort_counter_nr() const {
 	size_t index = sort_by_counter;
-	if (index >= max_counter_number || counter_info[index].enabled == false) {
-		cerr << "sort_by_counter invalid or counter[sort_by_counter] disabled : switch "
-		     << "to the first valid counter" << endl;
-
-		for (index = 0 ; index < max_counter_number ; ++index) {
+	if (index >= size_t(op_nr_counters) || counter_info[index].enabled == false) {
+		for (index = 0 ; index < op_nr_counters ; ++index) {
 			if (counter_info[index].enabled)
 				break;
 		}
+
+		cerr << "sort_by_counter invalid or counter[sort_by_counter] disabled : switch "
+		     << "to the first valid counter " << index << endl;
 	}
 
 	// paranoid checking.
-	if (index == max_counter_number)
+	if (index == op_nr_counters)
 		throw "output::output_source(input &) cannot find a counter enabled";
 
 	return index;
@@ -925,7 +926,7 @@ bool output::treat_input(input & in) {
 	}
 
 	bool have_counter_info = false;
-	for (size_t i = 0 ; i < max_counter_number && !have_counter_info ; ++i) {
+	for (size_t i = 0 ; i < op_nr_counters && !have_counter_info ; ++i) {
 		if (counter_info[i].enabled)
 			have_counter_info = true;
 	}
@@ -938,6 +939,8 @@ bool output::treat_input(input & in) {
 
 	read_input(in);
 
+//	debug_dump_vector(out);
+
 	if (calc_total_samples() == false) {
 		cerr << "The input contains zero samples" << endl;
 
@@ -948,7 +951,7 @@ bool output::treat_input(input & in) {
 
 	output_command_line();
 
-	for (size_t i = 0 ; i < max_counter_number ; ++i) {
+	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
 		if (i != 0)
 			out << endl;
 
@@ -1002,7 +1005,6 @@ static void get_options(int argc, char const * argv[])
 	poptContext optcon;
 	char c; 
 	
-	// The cast to (char **) is neccessary on some version of popt.
 	optcon = poptGetContext(NULL, argc, argv, options, 0);
 
 	c=poptGetNextOpt(optcon);

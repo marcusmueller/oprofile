@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.30 2001/08/19 20:09:17 movement Exp $ */
+/* $Id: oprofiled.h,v 1.31 2001/09/01 02:03:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -61,9 +61,6 @@
 #define streq(a,b) (!strcmp((a), (b)))
 #define streqn(a,b,n) (!strncmp((a), (b), (n)))
 
-/* this char replaces '/' in sample filenames */
-#define OPD_MANGLE_CHAR '}'
-
 /* maximum nr. of kernel modules */
 #define OPD_MAX_MODULES 64
 
@@ -84,48 +81,20 @@ enum {  OPD_KERNEL, /* nr. kernel samples */
 	OPD_MAX_STATS /* end of stats */
 	};
 
-/* event check returns */
-#define OP_EVENTS_OK            0x0
-#define OP_CTR0_NOT_FOUND       0x1
-#define OP_CTR1_NOT_FOUND       0x2
-#define OP_CTR0_NO_UM           0x4
-#define OP_CTR1_NO_UM           0x8
-#define OP_CTR0_NOT_ALLOWED     0x10
-#define OP_CTR1_NOT_ALLOWED     0x20
-#define OP_CTR0_PII_EVENT       0x40
-#define OP_CTR1_PII_EVENT       0x80
-#define OP_CTR0_PIII_EVENT     0x100
-#define OP_CTR1_PIII_EVENT     0x200
-#define OP_CTR0_ATHLON_EVENT   0x400
-#define OP_CTR1_ATHLON_EVENT   0x800
-
-/* FIXME : Carefull these are also present in pp/oprofpp.h */
-#define OPD_MAGIC 0xdeb6
-#define OPD_VERSION 0x4
-
-/* at the end of the sample files */
-struct opd_footer {
-	u16 magic;
-	u16 version;
-	u8 is_kernel;
-	u8 ctr0_type_val;
-	u8 ctr1_type_val;
-	u8 ctr0_um;
-	u8 ctr1_um;
-	u8 reserved1[16];
-	u32 ctr0_count;
-	u32 ctr1_count;
-	/* Set to 0.0 if not available */
-	double cpu_speed;
-	time_t mtime;
-	/* binary compatibility reserve */
-	u32  reserved2[31];
+struct opd_sample_file {
+	fd_t fd;
+	/* mapped memory begin here */
+	struct opd_footer *footer;
+	/* start + sizeof(footer) ie. begin of map of samples */
+	void *start;
+	/* the size of mapped memory comes from the opd_image */
 };
 
 struct opd_image {
-	fd_t fd;
-	void *start;
+	struct opd_sample_file sample_files[OP_MAX_COUNTERS];
+	/* NOT counted the size of footer, to allow quick access check  */
 	off_t len;
+	time_t mtime;	/* image file mtime */
 	u8 kernel;
 	char *name;
 };
@@ -155,8 +124,6 @@ struct opd_proc {
 	struct opd_proc *prev;
 	struct opd_proc *next;
 };
-
-int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc);
 
 void opd_get_ascii_procs(void);
 void opd_init_images(void);

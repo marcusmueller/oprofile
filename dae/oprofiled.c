@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.39 2001/08/19 20:09:17 movement Exp $ */
+/* $Id: oprofiled.c,v 1.40 2001/09/01 02:03:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -17,7 +17,10 @@
 
 #include "oprofiled.h"
 
-extern struct opd_footer footer;
+extern double cpu_speed;
+extern u32 ctr_count[OP_MAX_COUNTERS];
+extern u8 ctr_event[OP_MAX_COUNTERS];
+extern u8 ctr_um[OP_MAX_COUNTERS];
 
 static int showvers;
 int verbose;
@@ -26,7 +29,7 @@ int kernel_only;
 /* Unfortunately popt does not have, on many versions, the POPT_ARG_DOUBLE type
  * so I must first store it as a string. */
 static const char *cpu_speed_str;
-static int cpu_type;
+u32 cpu_type;
 static int ignore_myself;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static char *opd_dir="/var/opd/";
@@ -48,7 +51,7 @@ unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 
 static struct poptOption options[] = {
 	{ "buffer-size", 'b', POPT_ARG_INT, &opd_buf_size, 0, "nr. of entries in kernel buffer", "num", },
-	{ "use-cpu", 'p', POPT_ARG_INT, &cpu_type, 0, "0 for PPro, 1 for PII, 2 for PIII", "[0|1|2]" },
+	{ "use-cpu", 'p', POPT_ARG_INT, &cpu_type, 0, "0 for PPro, 1 for PII, 2 for PIII, 3 for Athlon", "[0|1|2|3]" },
 	{ "ignore-myself", 'm', POPT_ARG_INT, &ignore_myself, 0, "ignore samples of oprofile driver", "[0|1]"},
 	{ "log-file", 'l', POPT_ARG_STRING, &logfilename, 0, "log file", "file", },
 	{ "base-dir", 'd', POPT_ARG_STRING, &opd_dir, 0, "base directory of daemon", "dir", },
@@ -152,7 +155,10 @@ static void opd_options(int argc, char const *argv[])
 {
 	poptContext optcon;
 	int ret;
+	int i, ok;
 	char c;
+	/* should be sufficient to hold /proc/sys/dev/oprofile/%d/yyyy */
+	char filename[PATH_MAX + 1];
 
 	/* Some old version of popt need the cast to char ** */
 	optcon = poptGetContext(NULL, argc, (char **)argv, options, 0);
@@ -184,38 +190,49 @@ static void opd_options(int argc, char const *argv[])
 		exit(1);
 	}
 
-	footer.magic = OPD_MAGIC;
-	footer.version = OPD_VERSION;
-	footer.ctr0_type_val = opd_read_int_from_file("/proc/sys/dev/oprofile/0/event");
-	footer.ctr0_um = (u8) opd_read_int_from_file("/proc/sys/dev/oprofile/0/unit_mask");
-	footer.ctr1_type_val = opd_read_int_from_file("/proc/sys/dev/oprofile/1/event");
-	footer.ctr1_um = (u8) opd_read_int_from_file("/proc/sys/dev/oprofile/1/unit_mask");
-	
-	footer.ctr0_count = opd_read_int_from_file("/proc/sys/dev/oprofile/0/count");
-	footer.ctr1_count = opd_read_int_from_file("/proc/sys/dev/oprofile/1/count");
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		sprintf(filename, "/proc/sys/dev/oprofile/%d/event", i);
+		ctr_event[i]= opd_read_int_from_file(filename);
 
-	ret = op_check_events(footer.ctr0_type_val, footer.ctr1_type_val, footer.ctr0_um, footer.ctr1_um, cpu_type);
+		sprintf(filename, "/proc/sys/dev/oprofile/%d/count", i);
+		ctr_count[i]= opd_read_int_from_file(filename);
 
-        if (ret & OP_CTR0_NOT_FOUND) fprintf(stderr, "oprofiled: ctr0: %d: no such event\n",footer. ctr0_type_val);
-        if (ret & OP_CTR1_NOT_FOUND) fprintf(stderr, "oprofiled: ctr1: %d: no such event\n", footer.ctr1_type_val);
-        if (ret & OP_CTR0_NO_UM) fprintf(stderr, "oprofiled: ctr0: 0x%.2x: invalid unit mask\n", footer.ctr0_um);
-        if (ret & OP_CTR1_NO_UM) fprintf(stderr, "oprofiled: ctr1: 0x%.2x: invalid unit mask\n", footer.ctr1_um);
-        if (ret & OP_CTR0_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr0: %d: can't count event\n", footer.ctr0_type_val);
-        if (ret & OP_CTR1_NOT_ALLOWED) fprintf(stderr, "oprofiled: ctr1: %d: can't count event\n", footer.ctr1_type_val);
-        if (ret & OP_CTR0_PII_EVENT) fprintf(stderr, "oprofiled: ctr0: %d: event only available on PII\n", footer.ctr0_type_val);
-        if (ret & OP_CTR1_PII_EVENT) fprintf(stderr, "oprofiled: ctr1: %d: event only available on PII\n", footer.ctr1_type_val);
-        if (ret & OP_CTR0_PIII_EVENT) fprintf(stderr, "oprofiled: ctr0: %d: event only available on PIII\n", footer.ctr0_type_val);
-        if (ret & OP_CTR1_PIII_EVENT) fprintf(stderr, "oprofiled: ctr1: %d: event only available on PIII\n", footer.ctr1_type_val);
-        if (ret & OP_CTR0_ATHLON_EVENT) fprintf(stderr, "oprofiled: ctr0: %d: event only available on AMD Athlon\n", footer.ctr0_type_val);
-        if (ret & OP_CTR1_ATHLON_EVENT) fprintf(stderr, "oprofiled: ctr1: %d: event only available on AMD Athlon\n", footer.ctr1_type_val);
+		sprintf(filename, "/proc/sys/dev/oprofile/%d/unit_mask", i);
+		ctr_um[i]= opd_read_int_from_file(filename);
+	}
 
-	if (ret != OP_EVENTS_OK) {
+	cpu_type = opd_read_int_from_file("/proc/sys/dev/oprofile/cpu_type");
+
+
+	ok = 1;
+	/* PHE FIXME : We need to translate cpu_type to a string, see 
+	 * cpu_typ_str in op_events.c */
+	for (i = 0 ; i < op_nr_counters ; ++i) {
+		ret = op_check_events(i, ctr_event[i], ctr_um[i], cpu_type);
+
+		if (ret & OP_EVT_NOT_FOUND)
+			fprintf(stderr, "oprofiled: ctr%d: %d: no such event for cpu %d\n",
+				i, ctr_event[i], cpu_type);
+
+		if (ret & OP_EVT_NO_UM) 
+			fprintf(stderr, "oprofiled: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n",
+				i, ctr_um[i], cpu_type);
+
+		if (ret & OP_EVT_CTR_NOT_ALLOWED)
+			fprintf(stderr, "oprofiled: ctr%d: %d: can't count event for this counter\n",
+				i, ctr_count[i]);
+
+		if (ret != OP_EVENTS_OK)
+			ok = 0;
+	}
+
+	if (!ok) {
 		poptPrintHelp(optcon, stderr, 0);
 		exit(1);
 	}
 
 	if (cpu_speed_str && strlen(cpu_speed_str)) {
-		sscanf(cpu_speed_str, "%lf", &footer.cpu_speed);
+		sscanf(cpu_speed_str, "%lf", &cpu_speed);
 	}
 }
 
@@ -339,7 +356,7 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 	struct op_mapping mapping; 
 
 	/* prevent signals from messing us up */
-	sigprocmask(SIG_BLOCK, &maskset, NULL);
+	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
