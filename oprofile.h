@@ -13,6 +13,9 @@
 #include <asm/smplock.h> 
 #include <asm/apic.h>
  
+#define uint uint 
+#define ulong ulong
+ 
 struct op_sample {
 	u16 count;
 	u16 pid;
@@ -29,10 +32,11 @@ struct op_entry {
 struct _oprof_data {
 	struct op_entry *entries;
 	struct op_sample *buffer;
-	unsigned int hash_size;
-	unsigned int buf_size;
-	unsigned int ctr_count[2];
-	unsigned int nextbuf;
+	uint hash_size;
+	uint buf_size;
+	uint ctr_count[2];
+	/* note this is treated as atomic */ 
+	uint nextbuf;
 	u8 next;
 	u8 ctrs;
 } __attribute__((__aligned__(SMP_CACHE_BYTES)));
@@ -91,8 +95,8 @@ struct op_map {
 #define ctr_overflowed(n) (!((n) & (1U<<31)))                                                                                                
  
 asmlinkage void op_nmi(void);
-unsigned long idt_addr; 
-unsigned long kernel_nmi; 
+ulong idt_addr; 
+ulong kernel_nmi; 
  
 /* If the do_nmi() patch has been applied, we can use the NMI watchdog */ 
 #ifdef OP_EXPORTED_DO_NMI
