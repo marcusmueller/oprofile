@@ -1,5 +1,5 @@
-#LyX 1.1 created this file. For more info see http://www.lyx.org/
-\lyxformat 2.15
+#LyX 1.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 218
 \textclass book
 \language english
 \inputencoding latin1
@@ -28,7 +28,7 @@
 \family typewriter 
 oprofile
 \family default 
-: Continuous Statistical Profiler
+: A Continuous Statistical Profiler
 \layout Author
 
 John Levon
@@ -68,6 +68,14 @@ oprofile
  operation of the compiler, only with the output.
  An interface to the more specialised event monitoring facilities provided
  by the hardware performance counters is also provided.
+ 
+\layout Standard
+
+
+\family typewriter 
+oprofile 
+\family default 
+runs under Linux systems running a 2.4 kernel.
  The package is licensed under the GNU General Public License, version 2
  or later.
 \layout Section
@@ -79,8 +87,8 @@ Currently
 \family typewriter 
 oprofile
 \family default 
- requires a Linux 2.4.0test12 or later kernel running on Intel hardware with
- a P6 core processor.
+ requires a Linux 2.4.0 or later kernel running on Intel hardware with a P6
+ core processor.
  This translates to the Pentium Pro, Pentium II, Pentium III or any of their
  brethren such as Celerons
 \begin_float footnote 
@@ -93,8 +101,6 @@ The module will refuse to load if the correct processor type is not found.
  this facility if needed).
  SMP systems are theoretically supported, but have not been tested at all,
  and support is not complete.
- If you are using the kernel debugging patchset, it should still work but
- might not as it plays with the APIC set up and PM counters.
  There is no Pentium IV support as of yet.
 \layout Standard
 
@@ -115,40 +121,29 @@ liberty
 dl
 \family default 
 .
+\layout Section
+
+Internet resources
 \layout Standard
 
-At least version 2.3.22 of 
+There is a webpage at 
 \family typewriter 
-modutils
+http://oprofile.sourceforge.net/
 \family default 
- is required (if you upgrade, you might need to play with any 
+.
+ The sourceforge pages linked from there provides a bug tracker, CVS access,
+ download, and access to the 
 \family typewriter 
-path=
+oprofile
 \family default 
- directives you have in 
+ mailing list, 
 \family typewriter 
-/etc/modules.conf
+oprofile-list@lists.sourceforge.net
 \family default 
-).
+.
 \layout Chapter
 
 Build & Install
-\layout Section
-
-Download
-\layout Standard
-
-Visit the web page and download the tarball : 
-\family typewriter 
-
-\begin_inset LatexCommand \htmlurl[oprofile]{http://oprofile.sourceforge.net/}
-
-\end_inset 
-
-
-\family default 
-.
- There is also a CVS tree at sourceforge.
 \layout Section
 
 Configuration
@@ -165,19 +160,37 @@ autoconf
 \family default 
 .
  The configure script will attempt to find your kernel source tree which
- must be configured and built (specifically enabling 
-\family typewriter 
-CONFIG_MODULES
-\family default 
-, obviously).
- As with the kernel, you must compile using (the same version of) 
+ must be configured and built.
+ It is important you use the same 
 \family typewriter 
 gcc
 \family default 
-.
- It is important that you enable either the "APIC and IO-APIC support on
- uniprocessors"or "APIC support on uniprocessors" option (also known as
- 
+ version to compile 
+\family typewriter 
+oprofile
+\family default 
+ as you compiled your kernel with.
+\layout Standard
+
+On a uniprocessor system, you must enable the local APIC support, known
+ as 
+\begin_inset Quotes eld
+\end_inset 
+
+APIC and IO-APIC support on uniprocessors
+\begin_inset Quotes erd
+\end_inset 
+
+ or 
+\begin_inset Quotes eld
+\end_inset 
+
+APIC support on uniprocessors
+\begin_inset Quotes erd
+\end_inset 
+
+, depending on kernel version.
+ These options are 
 \family typewriter 
 CONFIG_X86_UP_IOAPIC
 \family default 
@@ -185,10 +198,10 @@ CONFIG_X86_UP_IOAPIC
 \family typewriter 
 CONFIG_X86_UP_APIC
 \family default 
-).
- Which is available is kernel-version dependent (and they do very different
- things).
- As usual you can get a summary of options with 
+ in the configuration.
+\layout Standard
+
+As usual you can get a summary of options with 
 \family typewriter 
 ./configure ---help
 \family default 
@@ -198,9 +211,19 @@ CONFIG_X86_UP_APIC
 
 
 \family typewriter 
+---with-prefix 
+\family default 
+where to install to
+\layout Description
+
+
+\family typewriter 
 ---with-module-dir
 \family default 
- specify the path to install the module to
+ specify the path to install the module to.
+ If nothing is specified, the module will be installed in the standard modules
+ directory of the kernel you are compiling against (not necessarily the
+ running kernel)
 \layout Description
 
 
@@ -260,8 +283,7 @@ do_nmi
  symbol.
  If it has been patched then the SMP NMI oopser can still provide useful
  stack traces if a fatal error happens during a profiling run.
- This is not particularly useful for stable systems with a stable kernel
- so it is OK for it to be left unpatched.
+ 
 \layout Standard
 
 Some kernel versions include extra support for the local APIC on uniprocessors
@@ -364,7 +386,7 @@ INST_RETIRED
  The size of the eviction buffer in number of samples.
  Each sample takes up 8 bytes, and the size should be a power of two.
  The best value depends on available memory, but a typically good value
- is 131072 (one megabyte of memory).
+ is 262144 (two megabytes of memory).
 \layout Description
 
 
@@ -425,23 +447,26 @@ The unit mask for the counter
 \family typewriter 
 ---ctr0-kernel
 \family default 
-Whether the counter should count in kernel space (1) or not (0). Note that due
-to interrupt delivery delays, a small number of samples may still be taken in
-kernel space even if disabled (rarely more than 1% of total samples).
+ Whether the counter should count in kernel space (1) or not (0).
+ Note that due to interrupt delivery delays, a small number of samples may
+ still be taken inkernel space even if disabled (rarely more than 1% of
+ total samples).
 \layout Description
 
 
 \family typewriter 
 ---ctr0-user
 \family default 
-Whether the counter should count in user space (1) or not (0). Note that due
-to interrupt delivery delays, a small number of samples may still be taken in
-user space even if disabled (rarely more than 1% of total samples).
+ Whether the counter should count in user space (1) or not (0).
+ Note that due to interrupt delivery delays, a small number of samples may
+ still be taken inuser space even if disabled (rarely more than 1% of total
+ samples).
 \layout Description
 
 
 \family typewriter 
----ctr1-event,---ctr1-count,---ctr1-unit-mask,---ctr1-kernel,---ctr1-user 
+---ctr1-event,---ctr1-count,---ctr1-unit-mask,---ctr1-kernel,---ctr1-user
+ 
 \family default 
 The same options for the second counter
 \layout Description
@@ -603,6 +628,19 @@ oprofpp -l <samplefile>
 oprofpp -l /lib/libc-2.1.3.so
 \family default 
 ).
+ To read kernel-based profiling data, specify the vmlinux file you specified
+ to 
+\family typewriter 
+op_start
+\family default 
+.
+ Similarly for kernel modules, specify the full absolute path to that module,
+ e.g.
+ 
+\family typewriter 
+oprofpp -l /lib/modules/2.4.0ac9/kernel/fs/fat.o
+\family default 
+.
 \layout Standard
 
 This will give a list of symbols, ordered by the number of samples registered
@@ -817,19 +855,19 @@ dump
 cd /proc/sys/dev/oprofile
 \layout LyX-Code
 
-echo 65536 >bufsize
+echo 262144 >bufsize
 \layout LyX-Code
 
-echo 384 >hashsize
+echo 16384 >hashsize
 \layout LyX-Code
 
 cd 0/0/
 \layout LyX-Code
 
-echo `op_help CPU_CLK_UNHALTED` >event
+op_help CPU_CLK_UNHALTED >event
 \layout LyX-Code
 
-echo 10000 >count
+echo 200000 >count
 \layout LyX-Code
 
 echo 0 >unit_mask
@@ -844,7 +882,7 @@ echo 1 >user
 echo 1 >enabled
 \layout LyX-Code
 
-oprofiled -b 65536 -u 0 -0 CPU_CLK_UNHALTED
+oprofiled -b 262144 -u 0 -0 CPU_CLK_UNHALTED
 \layout Section
 
 Statistical profiling
@@ -965,31 +1003,24 @@ Features & Misfeatures
 \layout Standard
 
 The worst-case scenario is that of many separate processes being created.
- This can overflow the map buffer, leading to mysterious failures of the
- daemon.
- You can increase the map buffer size in the file 
+ Unlike previous versions, the profiler should remain stable and useful
+ if the buffer is overflowed, although some data wiill inevitably be lost.
+ Check your syslog file, and the 
 \family typewriter 
-oprofile.h
+oprofile
 \family default 
- by setting the define 
-\family typewriter 
-OP_MAX_MAP_BUF
-\family default 
- to a larger value.
+ log file.
 \layout Standard
 
-It is possible for the hash table to fill up, in which case you must increase
- the define 
-\family typewriter 
-OP_HASH_MAP_NR
-\family default 
- (additionally if you have a pathname component larger than 127 characters,
- you must increase 
+If you have a pathname component larger than 127 characters, you must increase
+ 
 \family typewriter 
 OP_HASH_LINE
 \family default 
-).
- There are two 
+.
+ Note due to the lack of available bits in the representation, it is not
+ possible to increase the number of entries in the path component hash table.
+ There is a 
 \begin_inset Quotes eld
 \end_inset 
 
@@ -997,30 +1028,27 @@ watermark
 \begin_inset Quotes erd
 \end_inset 
 
- parameters, 
+ parameter, 
 \family typewriter 
 OP_PRE_WATERMARK
 \family default 
- and 
-\family typewriter 
-OP_MAP_BUF_WATERMARK
-\family default 
- you may want to decrease if you have trouble with overflow in the eviction
- buffer or the map buffer.
-\layout Standard
+, which specifies how 
+\begin_inset Quotes eld
+\end_inset 
 
-In fact the hash table is pretty bogus - there is a much nicer way of using
- it by linking entries to each other, that Alex Brown suggested.
- This should be implemented soon.
+early
+\begin_inset Quotes erd
+\end_inset 
+
+ the daemon should be woken up.
+ If you have problems with an overflowing buffer, you might want to increase
+ this value.
 \layout Chapter
 
 Under the hood
 \layout Section
 
 Kernel module
-\layout Standard
-
-FIXME: the info below is slightly out of date ...
 \layout Standard
 
 The local APIC is used to generate NMI interrupts.
@@ -1031,7 +1059,8 @@ The local APIC is used to generate NMI interrupts.
  Otherwise, one of the existing samples is chosen for eviction to the map
  buffer, and the new sample replaces it.
  Thus the hash table is the primary method of defence against the sample
- onslaught.
+ onslaught (at 10,000 int/sec, without the hash table, we would have to
+ deal with nearly half a megabyte of samples in need of resolving per second).
 \layout Standard
 
 The eviction buffer will gradually fill up.
@@ -1041,7 +1070,7 @@ The eviction buffer will gradually fill up.
 
 At the same time as this goes on, system calls are being traced (see 
 \family typewriter 
-oprofile_k.c
+op_syscalls.c
 \family default 
 ).
  Each system call places some kind of notification into the eviction buffer
@@ -1051,31 +1080,24 @@ CP_MAP
 \family default 
  and friends in 
 \family typewriter 
-oprofile.h
+op_user.h
 \family default 
 ).
  This notification takes different forms depending on the recorded system
- call event, but it may indicate an amount to read from the map buffer.
- The idea is that the daemon takes note of this notification of pending
- data, and reads from the map buffer in order.
- The map buffer contains information on memory maps that have been added
- to the process, namely the start, end, file offset, and the numeric path
- sequence.
- The numeric path sequence is converted into a character string by lookup
- in the component hash table (in the daemon code, the relevant function
- is 
-\family typewriter 
-opd_handle_mapping()
-\family default 
-, and the hash table is mapped in at an address pointed to by 
-\family typewriter 
-hashmap
-\family default 
-, accessed with 
-\family typewriter 
-hash_access()
-\family default 
-).
+ call event.
+ Of particular interest are mapping notifications.
+ These specify code sections mapped into processes.
+ A numeric ID gives the daemon the entry point for reconstructing the mapped
+ file's name.
+ This is done via a hash table where each entry has a 
+\begin_inset Quotes eld
+\end_inset 
+
+parent
+\begin_inset Quotes erd
+\end_inset 
+
+ link, indicating the hash entry of the parent directory.
 \layout Standard
 
 So the eviction buffer contains either samples are special notification
@@ -1204,6 +1226,14 @@ oprof_mmap()
 
 
 \family typewriter 
+op_start(),op_stop() 
+\family default 
+These routines start and stop the actual profiling when the daemon opens
+ the devices.
+\layout Description
+
+
+\family typewriter 
 parms_ok(),oprof_init_data(),hw_ok(),oprof_init()
 \family default 
  self-explanatory initialisation stuff
@@ -1217,6 +1247,19 @@ Follow your nose from
 opd_do_samples()
 \family default 
 , it should hopefully be fairly obvious.
+ The crucial aspect of the daemon design is the output sample files.
+ They are 
+\family typewriter 
+mmap()
+\family default 
+ed into the daemon process space.
+ This simplifies the sample output procedure, and also enables us to make
+ use of the VM subsystem's paging and memory management to keep the most
+ frequently-referenced parts of the sample files in core.
+ Note that this technique relies on spatial locality of reference in the
+ binaries.
+ Tests indicate that the locality is generally very good, so very little
+ memory and disk space is used by the daemon.
 \layout Chapter
 
 Credits

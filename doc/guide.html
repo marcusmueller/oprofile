@@ -7,8 +7,8 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
   Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
 <HTML>
 <HEAD>
-<TITLE>oprofile: Continuous Statistical Profiler</TITLE>
-<META NAME="description" CONTENT="oprofile: Continuous Statistical Profiler">
+<TITLE>oprofile: A Continuous Statistical Profiler</TITLE>
+<META NAME="description" CONTENT="oprofile: A Continuous Statistical Profiler">
 <META NAME="keywords" CONTENT="guide">
 <META NAME="resource-type" CONTENT="document">
 <META NAME="distribution" CONTENT="global">
@@ -40,9 +40,9 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 <P>
 
 <P>
-<H1 ALIGN="CENTER"><TT>oprofile</TT>: Continuous Statistical Profiler</H1>
+<H1 ALIGN="CENTER"><TT>oprofile</TT>: A Continuous Statistical Profiler</H1>
 <P ALIGN="CENTER"><STRONG>John Levon</STRONG></P>
-<P ALIGN="CENTER"><STRONG>19 January 2001</STRONG></P>
+<P ALIGN="CENTER"><STRONG>22 January 2001</STRONG></P>
 
 <P>
 
@@ -57,19 +57,24 @@ original version by:  Nikos Drakos, CBLU, University of Leeds
 </H1>
 
 <P>
-<TT>oprofile</TT> is a statistical profiler that is intended for use on production
-systems, for the profiling of the entire dynamic system, including the kernel,
-kernel modules, interrupt handlers, shared libraries, and user-space binaries.
-It makes use of the facilities provided by Intel P6 core processors such as
-the Pentium Pro to generate statistical execution profiles transparently. The
-profiler requires no instrumentation of either source of binaries at all, and
-commonly has a very low overhead. The design is similar to that of DCPI[<A
- HREF="guide.html#DCPI">1</A>],
-with some differences. However the typical developer need not concern themselves
-with the internal operation of the compiler, only with the output. An interface
-to the more specialised event monitoring facilities provided by the hardware
-performance counters is also provided. The package is licensed under the GNU
-General Public License, version 2 or later.
+<TT>oprofile</TT> is a statistical profiler that is intended for use
+on production systems, for the profiling of the entire dynamic system,
+including the kernel, kernel modules, interrupt handlers, shared libraries,
+and user-space binaries. It makes use of the facilities provided by
+Intel P6 core processors such as the Pentium Pro to generate statistical
+execution profiles transparently. The profiler requires no instrumentation
+of either source of binaries at all, and commonly has a very low overhead.
+The design is similar to that of DCPI[<A
+ HREF="guide.html#DCPI">1</A>], with some differences.
+However the typical developer need not concern themselves with the
+internal operation of the compiler, only with the output. An interface
+to the more specialised event monitoring facilities provided by the
+hardware performance counters is also provided. 
+
+<P>
+<TT>oprofile</TT> runs under Linux systems running a 2.4 kernel. The
+package is licensed under the GNU General Public License, version
+2 or later.
 
 <P>
 
@@ -78,22 +83,29 @@ General Public License, version 2 or later.
 </H1>
 
 <P>
-Currently <TT>oprofile</TT> requires a Linux 2.4.0test12 or later kernel running
-on Intel hardware with a P6 core processor. This translates to the Pentium Pro,
-Pentium II, Pentium III or any of their brethren such as Celerons<A NAME="tex2html1"
-  HREF="#foot31"><SUP>1.1</SUP></A>. Older A.OUT based systems are not supported (it is probably trivial to add
-this facility if needed). SMP systems are theoretically supported, but have
-not been tested at all, and support is not complete. If you are using the kernel
-debugging patchset, it should still work but might not as it plays with the
-APIC set up and PM counters. There is no Pentium IV support as of yet.
+Currently <TT>oprofile</TT> requires a Linux 2.4.0 or later kernel
+running on Intel hardware with a P6 core processor. This translates
+to the Pentium Pro, Pentium II, Pentium III or any of their brethren
+such as Celerons<A NAME="tex2html1"
+  HREF="#foot33"><SUP>1.1</SUP></A>. Older A.OUT based systems are not supported (it is probably trivial
+to add this facility if needed). SMP systems are theoretically supported,
+but have not been tested at all, and support is not complete. There
+is no Pentium IV support as of yet.
 
 <P>
 You must have the following libraries installed : <TT>popt</TT>, <TT>bfd</TT>,
 <TT>liberty</TT>, <TT>dl</TT>.
 
 <P>
-At least version 2.3.22 of <TT>modutils</TT> is required (if you upgrade, you
-might need to play with any <TT>path=</TT> directives you have in <TT>/etc/modules.conf</TT>).
+
+<H1><A NAME="SECTION00130000000000000000">
+1.3 Internet resources</A>
+</H1>
+
+<P>
+There is a webpage at <TT>http://oprofile.sourceforge.net/</TT>. The
+sourceforge pages linked from there provides a bug tracker, CVS access,
+download, and access to the <TT>oprofile</TT> mailing list, <TT>oprofile-list@lists.sourceforge.net</TT>.
 
 <P>
 
@@ -104,79 +116,81 @@ might need to play with any <TT>path=</TT> directives you have in <TT>/etc/modul
 <P>
 
 <H1><A NAME="SECTION00210000000000000000">
-2.1 Download</A>
-</H1>
-
-<P>
-Visit the web page and download the tarball : <TT>oprofile http://oprofile.sourceforge.net/</TT>.
-There is also a CVS tree at sourceforge.
-
-<P>
-
-<H1><A NAME="SECTION00220000000000000000">
-2.2 Configuration</A>
+2.1 Configuration</A>
 </H1>
 
 <P>
 An <TT>autoconf</TT> configure script is provided, and normally configuration
-is simply a matter of running <TT>./configure</TT>. The configure script will
-attempt to find your kernel source tree which must be configured and built (specifically
-enabling <TT>CONFIG_MODULES</TT>, obviously). As with the kernel, you must
-compile using (the same version of) <TT>gcc</TT>. It is important that you enable
-either the &#34;APIC and IO-APIC support on uniprocessors&#34;or &#34;APIC
-support on uniprocessors&#34; option (also known as <TT>CONFIG_X86_UP_IOAPIC</TT>
-and <TT>CONFIG_X86_UP_APIC</TT>). Which is available is kernel-version dependent
-(and they do very different things). As usual you can get a summary of options
-with <TT>./configure --help</TT>. The ones of note are :
+is simply a matter of running <TT>./configure</TT>. The configure
+script will attempt to find your kernel source tree which must be
+configured and built. It is important you use the same <TT>gcc</TT>
+version to compile <TT>oprofile</TT> as you compiled your kernel with.
+
+<P>
+On a uniprocessor system, you must enable the local APIC support,
+known as ``APIC and IO-APIC support on uniprocessors'' or ``APIC
+support on uniprocessors'', depending on kernel version. These
+options are <TT>CONFIG_X86_UP_IOAPIC</TT> and <TT>CONFIG_X86_UP_APIC</TT>
+in the configuration.
+
+<P>
+As usual you can get a summary of options with <TT>./configure
+--help</TT>. The ones of note are :
 
 <P>
 <DL>
+<DT><STRONG><TT>--with-prefix</TT></STRONG></DT>
+<DD>where to install to
+</DD>
 <DT><STRONG><TT>--with-module-dir</TT></STRONG></DT>
-<DD>specify the path to install the module to
+<DD>specify the path to install the module
+to. If nothing is specified, the module will be installed in the standard
+modules directory of the kernel you are compiling against (not necessarily
+the running kernel)
 </DD>
 <DT><STRONG><TT>--with-linux</TT></STRONG></DT>
-<DD>specify the path to the kernel source (if you are
-compiling for a kernel different to one you are running)
+<DD>specify the path to the kernel source
+(if you are compiling for a kernel different to one you are running)
 </DD>
 <DT><STRONG><TT>--with-extra-libs</TT></STRONG></DT>
-<DD>extra directories to look for the required
-userspace libraries in
+<DD>extra directories to look for the
+required userspace libraries in
 </DD>
 <DT><STRONG><TT>--with-extra-includes</TT></STRONG></DT>
-<DD>extra directories to look for the required
-userspace headers in
+<DD>extra directories to look for
+the required userspace headers in
 </DD>
 <DT><STRONG><TT>--enable-filter</TT></STRONG></DT>
-<DD>compile in the facility to only profile a particular
-process or process group
+<DD>compile in the facility to only profile
+a particular process or process group
 </DD>
 </DL>
-Don't enable <TT>--enable-filter</TT> unless you only want to profile a
-selected set of processes. This option includes code that can harm performance
-in the general case.
+Don't enable <TT>--enable-filter</TT> unless you only want to
+profile a selected set of processes. This option includes code that
+can harm performance in the general case.
 
 <P>
-The configure script will check if a small patch has been applied to 
+The configure script will check if a small patch has been applied
+to 
 <BR><TT>linux/arch/i386/kernel/i386_ksyms.c</TT> &nbsp;
-<BR>to export the <TT>do_nmi</TT> symbol. If it has been patched then the SMP NMI
-oopser can still provide useful stack traces if a fatal error happens during
-a profiling run. This is not particularly useful for stable systems with a stable
-kernel so it is OK for it to be left unpatched.
+<BR>to export the <TT>do_nmi</TT> symbol. If it has been patched then
+the SMP NMI oopser can still provide useful stack traces if a fatal
+error happens during a profiling run. 
 
 <P>
 Some kernel versions include extra support for the local APIC on uniprocessors
-(e.g. 2.4.0ac9). This replaces the old partial support, and must be selected.
-It will also allow a UP NMI watchdog facility, although this can't be used in
-conjunction with this module yet.
+(e.g. 2.4.0ac9). This replaces the old partial support, and must be
+selected. It will also allow a UP NMI watchdog facility, although
+this can't be used in conjunction with this module yet.
 
 <P>
-If the <TT>configure</TT> script can locate everything successfully, then the
-package is ready to build.
+If the <TT>configure</TT> script can locate everything successfully,
+then the package is ready to build.
 
 <P>
 
-<H1><A NAME="SECTION00230000000000000000">
-2.3 Build</A>
+<H1><A NAME="SECTION00220000000000000000">
+2.2 Build</A>
 </H1>
 
 <P>
@@ -184,16 +198,16 @@ Type <TT>make</TT>.
 
 <P>
 
-<H1><A NAME="SECTION00240000000000000000">
-2.4 Install</A>
+<H1><A NAME="SECTION00230000000000000000">
+2.3 Install</A>
 </H1>
 
 <P>
-Type <TT>make install</TT>. The module should install itself in the modules
-directory and run <TT>depmod</TT>, and the user space utilities will be installed
-in (by default) <TT>/usr/local/bin</TT>. You will need to be root to do this
-of course (currently the daemon also runs as root, but this is not necessary,
-and will be fixed).
+Type <TT>make install</TT>. The module should install itself in the
+modules directory and run <TT>depmod</TT>, and the user space utilities
+will be installed in (by default) <TT>/usr/local/bin</TT>. You will
+need to be root to do this of course (currently the daemon also runs
+as root, but this is not necessary, and will be fixed).
 
 <P>
 
@@ -208,55 +222,65 @@ and will be fixed).
 </H1>
 
 <P>
-A shell script <TT>op_start</TT> is provided for the simple startup of a profiling
-run. It has several different options controlling the configuration of the kernel
-module and the daemon; a summary can be found by doing <TT>op_start --help</TT>.
-Some of the interesting options are :
+A shell script <TT>op_start</TT> is provided for the simple startup
+of a profiling run. It has several different options controlling the
+configuration of the kernel module and the daemon; a summary can be
+found by doing <TT>op_start --help</TT>. Some of the interesting
+options are :
 
 <P>
 <DL>
 <DT><STRONG><TT>--list-events</TT></STRONG></DT>
-<DD>Print out a short list of the available events
-for the event counters. Some events are only available on the PII or PIII processor,
-and some require a specific counter to be used. The available unit masks are
-also listed here. Note that you should read the relevant Appendix of the Intel
-manual[<A
- HREF="guide.html#IAMan">2</A>], as there are further descriptions and several important
-caveats there. For general statistical profiling use, there is no need to consider
-events other than <TT>CPU_CLK_UNHALTED</TT> or <TT>INST_RETIRED</TT>.
+<DD>Print out a short list of the available
+events for the event counters. Some events are only available on the
+PII or PIII processor, and some require a specific counter to be used.
+The available unit masks are also listed here. Note that you should
+read the relevant Appendix of the Intel manual[<A
+ HREF="guide.html#IAMan">2</A>], as there
+are further descriptions and several important caveats there. For
+general statistical profiling use, there is no need to consider events
+other than <TT>CPU_CLK_UNHALTED</TT> or <TT>INST_RETIRED</TT>.
 </DD>
 <DT><STRONG><TT>--buffer-size</TT></STRONG></DT>
-<DD>The size of the eviction buffer in number of samples.
-Each sample takes up 8 bytes, and the size should be a power of two. The best
-value depends on available memory, but a typically good value is 131072 (one
-megabyte of memory).
+<DD>The size of the eviction buffer in number
+of samples. Each sample takes up 8 bytes, and the size should be a
+power of two. The best value depends on available memory, but a typically
+good value is 262144 (two megabytes of memory).
 </DD>
 <DT><STRONG><TT>--hash-table-size</TT></STRONG></DT>
-<DD>The size of the hash table in entries. Each
-entry contains 4 samples (so is 32 bytes in size). The size must be a power
-of two. Once again, the best value depends on the machine configuration and
-the expected workload, but aim as high as possible. An example value would be
-65536, giving a hash table size of two megabytes.
+<DD>The size of the hash table in entries.
+Each entry contains 4 samples (so is 32 bytes in size). The size must
+be a power of two. Once again, the best value depends on the machine
+configuration and the expected workload, but aim as high as possible.
+An example value would be 65536, giving a hash table size of two megabytes.
 </DD>
 <DT><STRONG><TT>--ctr0-event</TT></STRONG></DT>
-<DD>A list of the symbol event names for counter 0 on
-each CPU. For example on a two CPU box, we might call <TT>./op_start -ctr0-event=INST_RETIRED,INST_RETIRED
-...</TT>
+<DD>A list of the symbol event names for counter
+0 on each CPU. For example on a two CPU box, we might call <TT>./op_start
+-ctr0-event=INST_RETIRED,INST_RETIRED ...</TT>
 </DD>
 <DT><STRONG><TT>--ctr0-count</TT></STRONG></DT>
-<DD>The number of events between interrupt delivery.
-For the ``statistical'' counters <TT>CPU_CLK_UNHALTED</TT> and <TT>INST_RETIRED</TT>
-this will partly define the granularity of the profiling (i.e. how often the
-profiling interrupt is generated).
+<DD>The number of events between interrupt
+delivery. For the ``statistical'' counters <TT>CPU_CLK_UNHALTED</TT>
+and <TT>INST_RETIRED</TT> this will partly define the granularity
+of the profiling (i.e. how often the profiling interrupt is generated).
 </DD>
 <DT><STRONG><TT>--ctr0-unit-mask</TT></STRONG></DT>
 <DD>The unit mask for the counter
 </DD>
-<DT><STRONG><TT>--ctr0-os-usr</TT></STRONG></DT>
-<DD>Whether the counter should count both userspace
-and kernel execution (0), just kernel (1), or just userspace (2).
+<DT><STRONG><TT>--ctr0-kernel</TT></STRONG></DT>
+<DD>Whether the counter should count in kernel
+space (1) or not (0). Note that due to interrupt delivery delays,
+a small number of samples may still be taken inkernel space even if
+disabled (rarely more than 1% of total samples).
 </DD>
-<DT><STRONG><TT>--ctr1-event,--ctr1-count,--ctr1-unit-mask,--ctr1-os-usr</TT></STRONG></DT>
+<DT><STRONG><TT>--ctr0-user</TT></STRONG></DT>
+<DD>Whether the counter should count in user
+space (1) or not (0). Note that due to interrupt delivery delays,
+a small number of samples may still be taken inuser space even if
+disabled (rarely more than 1% of total samples).
+</DD>
+<DT><STRONG><TT>--ctr1-event,--ctr1-count,--ctr1-unit-mask,--ctr1-kernel,--ctr1-user</TT></STRONG></DT>
 <DD>The
 same options for the second counter
 </DD>
@@ -264,38 +288,40 @@ same options for the second counter
 <DD>specify CPU type
 </DD>
 <DT><STRONG><TT>--map-file</TT></STRONG></DT>
-<DD>The location of the <TT>System.map</TT> file for the
-running kernel (required)
+<DD>The location of the <TT>System.map</TT>
+file for the running kernel (required)
 </DD>
 <DT><STRONG><TT>--vmlinux</TT></STRONG></DT>
-<DD>The location of the <TT>vmlinux</TT> file for the running
-kernel (required)
+<DD>The location of the <TT>vmlinux</TT> file
+for the running kernel (required)
 </DD>
 <DT><STRONG><TT>--ignore-myself</TT></STRONG></DT>
-<DD>don't collect profile information for the daemon
-itself
+<DD>don't collect profile information for
+the daemon itself
 </DD>
 <DT><STRONG><TT>--pid-filter</TT></STRONG></DT>
-<DD>collect profile data for the specified process id
-only
+<DD>collect profile data for the specified
+process id only
 </DD>
 <DT><STRONG><TT>--pgrp-filter</TT></STRONG></DT>
-<DD>collect profile data for the specified process
-group only
+<DD>collect profile data for the specified
+process group only
 </DD>
 <DT><STRONG><TT>--verbose</TT></STRONG></DT>
-<DD>makes the daemon be much more verbose in the log file
+<DD>makes the daemon be much more verbose in
+the log file
 </DD>
 </DL>
-The script will insert the kernel module and start the kernel daemon and profiling
-will begin. The files used by the daemon are (by default) stored under the <TT>/var/opd</TT>
-directory. Of particular interest is the daemon log file <TT>/var/opd/oprofiled.log</TT>,
-and the directory containing the actual samples, <TT>/var/opd/samples</TT>.
+The script will insert the kernel module and start the kernel daemon
+and profiling will begin. The files used by the daemon are (by default)
+stored under the <TT>/var/opd</TT> directory. Of particular interest
+is the daemon log file <TT>/var/opd/oprofiled.log</TT>, and the directory
+containing the actual samples, <TT>/var/opd/samples</TT>.
 
 <P>
-You might prefer to echo values into the sysctl proc interface, and start up
-the daemon manually (it also has a <TT>--help</TT> option). In the future
-a GUI interface to the parameters will be made available.
+You might prefer to echo values into the sysctl proc interface, and
+start up the daemon manually (it also has a <TT>--help</TT> option).
+In the future a GUI interface to the parameters will be made available.
 
 <P>
 
@@ -304,9 +330,9 @@ a GUI interface to the parameters will be made available.
 </H1>
 
 <P>
-The shell script <TT>op_stop</TT> will stop the daemon. Note that the kernel
-module is not unloadable (though it takes up very little memory when not in
-use).
+The shell script <TT>op_stop</TT> will stop the daemon. Note that
+the kernel module is not unloadable (though it takes up very little
+memory when not in use).
 
 <P>
 
@@ -315,63 +341,70 @@ use).
 </H1>
 
 <P>
-After profiling, there will be execution profiles for each binary image available
-in the directory <TT>/var/opd/samples</TT>. The file name encodes the full path
-to the binary image profiled, so for example the sample file <TT>/var/opd/samples/}bin}ps</TT>
-contains profile data against the <TT>/bin/ps</TT> binary image. Any shared
-libraries used are to be found in their own sample files; any process using
-that shared library writes to that sample file. Additionally the kernel samples
-are in a separate file specified by the path to the <TT>vmlinux</TT> file specified.
-Kernel module sample files are also found in this directory.
+After profiling, there will be execution profiles for each binary
+image available in the directory <TT>/var/opd/samples</TT>. The file
+name encodes the full path to the binary image profiled, so for example
+the sample file <TT>/var/opd/samples/}bin}ps</TT> contains profile
+data against the <TT>/bin/ps</TT> binary image. Any shared libraries
+used are to be found in their own sample files; any process using
+that shared library writes to that sample file. Additionally the kernel
+samples are in a separate file specified by the path to the <TT>vmlinux</TT>
+file specified. Kernel module sample files are also found in this
+directory.
 
 <P>
-A simplistic program called <TT>oprofpp</TT> is provided to extract information
-from these sample files. It requires that the binary image has been compiled
-with (and still contains) symbol information (e.g. <TT>-g</TT> option in <TT>gcc</TT>).
-You can request a summary of sample counts registered against different symbols
-like so : 
+A simplistic program called <TT>oprofpp</TT> is provided to extract
+information from these sample files. It requires that the binary image
+has been compiled with (and still contains) symbol information (e.g.
+<TT>-g</TT> option in <TT>gcc</TT>). You can request a summary of
+sample counts registered against different symbols like so : 
 
 <P>
 <TT>oprofpp -l &lt;samplefile&gt;</TT>
 
 <P>
-(You can also simply specify the binary you want profile data for, e.g. <TT>oprofpp
--l /lib/libc-2.1.3.so</TT>).
+(You can also simply specify the binary you want profile data for,
+e.g. <TT>oprofpp -l /lib/libc-2.1.3.so</TT>). To read kernel-based
+profiling data, specify the vmlinux file you specified to <TT>op_start</TT>.
+Similarly for kernel modules, specify the full absolute path to that
+module, e.g. <TT>oprofpp -l /lib/modules/2.4.0ac9/kernel/fs/fat.o</TT>.
 
 <P>
-This will give a list of symbols, ordered by the number of samples registered
-against them. If the profiler is being used in a statistical execution profile
-manner, this list is the statistical representation of the execution frequencies
-of each function, and can be expected to bear some resemblance to the relevant
-amount of time spent in each function (the characteristics can be slightly different
-for the two main statistical profiling events, <TT>CPU_CLK_UNHALTED</TT> and
+This will give a list of symbols, ordered by the number of samples
+registered against them. If the profiler is being used in a statistical
+execution profile manner, this list is the statistical representation
+of the execution frequencies of each function, and can be expected
+to bear some resemblance to the relevant amount of time spent in each
+function (the characteristics can be slightly different for the two
+main statistical profiling events, <TT>CPU_CLK_UNHALTED</TT> and
 <TT>INST_RETIRED</TT>).
 
 <P>
-It is possible to retrieve a more detailed histogram for a single symbol with
-an invocation such as :
+It is possible to retrieve a more detailed histogram for a single
+symbol with an invocation such as :
 
 <P>
 <TT>oprofpp -s main &lt;samplefile&gt;</TT>
 
 <P>
-This will show each sample on a byte-by-byte level. Bear in mind this is a statistical
-method only, and for short runs will not accurately represent the execution
-profile of a routine. Artefacts of the hardware provisions can also affect the
-interpretation of these results (FIXME: should expand on this).
+This will show each sample on a byte-by-byte level. Bear in mind this
+is a statistical method only, and for short runs will not accurately
+represent the execution profile of a routine. Artefacts of the hardware
+provisions can also affect the interpretation of these results (FIXME:
+should expand on this).
 
 <P>
-If you are examining the data on another machine, perhaps, you can specify the
-binary image file to read with the <TT>-i</TT> option. If there is no image
-file specified, then <TT>oprofpp</TT> uses the image encoded into the sample
-file's filename.
+If you are examining the data on another machine, perhaps, you can
+specify the binary image file to read with the <TT>-i</TT> option.
+If there is no image file specified, then <TT>oprofpp</TT> uses the
+image encoded into the sample file's filename.
 
 <P>
 You can more detailed output via the <TT>--verbose</TT> option.
 
 <P>
-The <TT>-g</TT> option, to dump a <TT>gprof</TT> format sample file, is not
-currently working ... sorry.
+The <TT>-g</TT> option, to dump a <TT>gprof</TT> format sample file,
+is not currently working ... sorry.
 
 <P>
 
@@ -380,60 +413,66 @@ currently working ... sorry.
 </H1>
 
 <P>
-The module also provides <TT>sysctl</TT> files for modifying the counters and
-parameters. The use should be fairly trivial, as follows :
+The module also provides <TT>sysctl</TT> files for modifying the counters
+and parameters. The use should be fairly trivial, as follows :
 
 <P>
 <DL>
 <DT><STRONG><TT>.../oprofile/bufsize</TT></STRONG></DT>
-<DD><B>The size of the kernel buffer. The byte
-size is this value multiplied by 8.</B>
+<DD><B>The size of the kernel buffer.
+The byte size is this value multiplied by 8.</B>
 </DD>
 <DT><STRONG><TT>.../oprofile/hashsize</TT></STRONG></DT>
-<DD><B>The size of the hash table. The byte
-size is this value multiplied by 32.</B>
+<DD><B>The size of the hash table.
+The byte size is this value multiplied by 32.</B>
 </DD>
 <DT><STRONG><TT>.../oprofile/pid_filter</TT></STRONG></DT>
-<DD><B>The pid to filter on, if this feature
-is enabled.</B>
+<DD><B>The pid to filter on, if
+this feature is enabled.</B>
 </DD>
 <DT><STRONG><TT>.../oprofile/pgrp_filter</TT></STRONG></DT>
-<DD><B>The process group to filter on,
-if this feature is enabled.</B>
+<DD><B>The process group to filter
+on, if this feature is enabled.</B>
 </DD>
 <DT><STRONG><TT>.../oprofile/dump</TT></STRONG></DT>
-<DD><B>Tell the profiler to perform a partial data
-dump</B>
+<DD><B>Tell the profiler to perform a
+partial data dump</B>
 </DD>
 <DT><STRONG><TT>.../oprofile/0/</TT></STRONG></DT>
 <DD><B>The counters for CPU#0</B>
 </DD>
 <DT><STRONG><TT>.../oprofile/0/0/</TT></STRONG></DT>
-<DD><B>The parameters for counter 0 on CPU#0</B>
+<DD><B>The parameters for counter 0 on
+CPU#0</B>
 </DD>
 <DT><STRONG><TT>.../0/0/event</TT></STRONG></DT>
-<DD><B>The event value of the counter. You can convert
-from names to values with e.g.</B> <TT><B>op_help INST_RETIRED</B></TT>
+<DD><B>The event value of the counter. You
+can convert from names to values with e.g.</B> <TT><B>op_help
+INST_RETIRED</B></TT>
 </DD>
 <DT><STRONG><TT>.../0/0/count</TT></STRONG></DT>
 <DD><B>The counter reset value for this counter.</B>
 </DD>
 <DT><STRONG><TT>.../0/0/unit_mask</TT></STRONG></DT>
-<DD><B>The numeric unit mask for this counter.</B>
+<DD><B>The numeric unit mask for this
+counter.</B>
 </DD>
 <DT><STRONG><TT>.../0/0/kernel</TT></STRONG></DT>
-<DD><B>Whether to profile in ring 0 (kernel mode).</B>
+<DD><B>Whether to profile in ring 0 (kernel
+mode).</B>
 </DD>
 <DT><STRONG><TT>.../0/0/user</TT></STRONG></DT>
-<DD><B>Whether to profile in ring 3 (user mode).</B>
+<DD><B>Whether to profile in ring 3 (user
+mode).</B>
 </DD>
 <DT><STRONG><TT>.../0/0/enabled</TT></STRONG></DT>
 <DD><B>Whether this counter is enabled.</B>
 </DD>
 </DL>
-As standard sysctl files, each file takes a single number. Changes to every
-value except <TT>dump</TT> only take effect when the daemon is re-started (i.e.
-profiling is re-started). A typical session might look like this :
+As standard sysctl files, each file takes a single number. Changes
+to every value except <TT>dump</TT> only take effect when the daemon
+is re-started (i.e. profiling is re-started). A typical session might
+look like this :
 
 <P>
 
@@ -442,19 +481,19 @@ profiling is re-started). A typical session might look like this :
 <DD>cd&nbsp;/proc/sys/dev/oprofile
 
 <P>
-echo&nbsp;65536&nbsp;&gt;bufsize
+echo&nbsp;262144&nbsp;&gt;bufsize
 
 <P>
-echo&nbsp;384&nbsp;&gt;hashsize
+echo&nbsp;16384&nbsp;&gt;hashsize
 
 <P>
 cd&nbsp;0/0/
 
 <P>
-echo&nbsp;`op_help&nbsp;CPU_CLK_UNHALTED`&nbsp;&gt;event
+op_help&nbsp;CPU_CLK_UNHALTED&nbsp;&gt;event
 
 <P>
-echo&nbsp;10000&nbsp;&gt;count
+echo&nbsp;200000&nbsp;&gt;count
 
 <P>
 echo&nbsp;0&nbsp;&gt;unit_mask
@@ -469,7 +508,7 @@ echo&nbsp;1&nbsp;&gt;user
 echo&nbsp;1&nbsp;&gt;enabled
 
 <P>
-oprofiled&nbsp;-b&nbsp;65536&nbsp;-u&nbsp;0&nbsp;-0&nbsp;CPU_CLK_UNHALTED
+oprofiled&nbsp;-b&nbsp;262144&nbsp;-u&nbsp;0&nbsp;-0&nbsp;CPU_CLK_UNHALTED
 </DD>
 </DL>
 <P>
@@ -479,40 +518,44 @@ oprofiled&nbsp;-b&nbsp;65536&nbsp;-u&nbsp;0&nbsp;-0&nbsp;CPU_CLK_UNHALTED
 </H1>
 
 <P>
-You can use the profiler in the usual statistical <TT>gprof</TT>-style way by
-using one of the events <TT>CPU_CLK_UNHALTED</TT> or <TT>INST_RETIRED</TT>.
-<TT>CPU_CLK_UNHALTED</TT> is a counter that increments every clock cycle the
-processor is not in a halted state. The kernel idle loop by default calls the
-<TT>hlt</TT> instruction when there is nothing else to do. If you want interrupts
-to be generated at a more constant rate, you should boot the machine with the
-<TT>nohlt</TT> option. This way you can have a good idea of how many interrupts
-are generated per second (each interrupt corresponds to one sample). For example
-an a Pentium II 350MHz, there are 350,000,000 cycles per second. If we specify
-an interval count of 35,000 (<TT>-ctr0-count=35000</TT>), there will be 10,000
-samples per second.
+You can use the profiler in the usual statistical <TT>gprof</TT>-style
+way by using one of the events <TT>CPU_CLK_UNHALTED</TT> or <TT>INST_RETIRED</TT>.
+<TT>CPU_CLK_UNHALTED</TT> is a counter that increments every clock
+cycle the processor is not in a halted state. The kernel idle loop
+by default calls the <TT>hlt</TT> instruction when there is nothing
+else to do. If you want interrupts to be generated at a more constant
+rate, you should boot the machine with the <TT>nohlt</TT> option.
+This way you can have a good idea of how many interrupts are generated
+per second (each interrupt corresponds to one sample). For example
+an a Pentium II 350MHz, there are 350,000,000 cycles per second. If
+we specify an interval count of 35,000 (<TT>-ctr0-count=35000</TT>),
+there will be 10,000 samples per second.
 
 <P>
-The <TT>INST_RETIRED</TT> counter provides a more randomised statistical interval
-which can prove more suitable. This counter is the number of instructions that
-reach the retire stage of the processor's pipeline, namely the instructions
-which are executed. Instructions are obviously not consumed at a constant rate,
-so this randomises the interval reasonably well, which is good for avoiding
-lock-step problems with subsystems such as the kernel timer interrupt. Once
-again the value chosen for the interval defines the resolution of the sampling
-(and as a result, the overhead). Currently only experimentation with your expected
-workload can decide a good value for this interval.
+The <TT>INST_RETIRED</TT> counter provides a more randomised statistical
+interval which can prove more suitable. This counter is the number
+of instructions that reach the retire stage of the processor's pipeline,
+namely the instructions which are executed. Instructions are obviously
+not consumed at a constant rate, so this randomises the interval reasonably
+well, which is good for avoiding lock-step problems with subsystems
+such as the kernel timer interrupt. Once again the value chosen for
+the interval defines the resolution of the sampling (and as a result,
+the overhead). Currently only experimentation with your expected workload
+can decide a good value for this interval.
 
 <P>
-The resolution of the profiling is an important factor. Ideally it would be
-good to have as many interrupts per second as is possible, but this can increase
-the overhead. The actual characteristics of the overhead/resolution curve is
-workload-dependent. A rate of 10,000 samples per second can cause an overhead
-of less than 2% in some workloads; in contrast a worst-case situation such
-as a kernel compile (described later) can lead to 8% overhead with only 5,000
-samples per second. A lower sampling rate reduces the accuracy of any profiles,
-unless the profiling run is extended. It is important that the run lasts long
-enough to form a statistically meaningful execution profile of the binaries.
-There is thus a trade-off between these elements of profiling.
+The resolution of the profiling is an important factor. Ideally it
+would be good to have as many interrupts per second as is possible,
+but this can increase the overhead. The actual characteristics of
+the overhead/resolution curve is workload-dependent. A rate of 10,000
+samples per second can cause an overhead of less than 2% in some
+workloads; in contrast a worst-case situation such as a kernel compile
+(described later) can lead to 8% overhead with only 5,000 samples
+per second. A lower sampling rate reduces the accuracy of any profiles,
+unless the profiling run is extended. It is important that the run
+lasts long enough to form a statistically meaningful execution profile
+of the binaries. There is thus a trade-off between these elements
+of profiling.
 
 <P>
 
@@ -521,21 +564,23 @@ There is thus a trade-off between these elements of profiling.
 </H1>
 
 <P>
-The hardware counters also provide facilities for measuring several different
-aspects of the hardware system, such as cache behaviour. However, care must
-be taken with the generated profiles in these cases. It is not as simple as
-setting the interval count to 1, and then expecting each profiled event to be
-associated with the ``guilty'' instruction. This is partly due to the interrupt
-delivery delay, but the real killer is the out-of-order nature of the processor
-- as P6 cores have instruction level parallelism facilities, the PC value at
-the time of the delivery of the interrupt after an event can be as much as tens
-of instructions away from the ``guilty'' instruction.
+The hardware counters also provide facilities for measuring several
+different aspects of the hardware system, such as cache behaviour.
+However, care must be taken with the generated profiles in these cases.
+It is not as simple as setting the interval count to 1, and then expecting
+each profiled event to be associated with the ``guilty'' instruction.
+This is partly due to the interrupt delivery delay, but the real killer
+is the out-of-order nature of the processor - as P6 cores have instruction
+level parallelism facilities, the PC value at the time of the delivery
+of the interrupt after an event can be as much as tens of instructions
+away from the ``guilty'' instruction.
 
 <P>
-This problem limits the use of the profiler in this way. However, it can still
-be used at a larger granularity, and often results can be trusted at the basic
-block or at least the function level. Care must be taken, however, to consider
-the dynamic behaviour of the code, and not to take the results at face value.
+This problem limits the use of the profiler in this way. However,
+it can still be used at a larger granularity, and often results can
+be trusted at the basic block or at least the function level. Care
+must be taken, however, to consider the dynamic behaviour of the code,
+and not to take the results at face value.
 
 <P>
 
@@ -544,23 +589,19 @@ the dynamic behaviour of the code, and not to take the results at face value.
 </H1>
 
 <P>
-The worst-case scenario is that of many separate processes being created. This
-can overflow the map buffer, leading to mysterious failures of the daemon. You
-can increase the map buffer size in the file <TT>oprofile.h</TT> by setting
-the define <TT>OP_MAX_MAP_BUF</TT> to a larger value.
+The worst-case scenario is that of many separate processes being created.
+Unlike previous versions, the profiler should remain stable and useful
+if the buffer is overflowed, although some data wiill inevitably be
+lost. Check your syslog file, and the <TT>oprofile</TT> log file.
 
 <P>
-It is possible for the hash table to fill up, in which case you must increase
-the define <TT>OP_HASH_MAP_NR</TT> (additionally if you have a pathname component
-larger than 127 characters, you must increase <TT>OP_HASH_LINE</TT>). There
-are two ``watermark'' parameters, <TT>OP_PRE_WATERMARK</TT> and <TT>OP_MAP_BUF_WATERMARK</TT>
-you may want to decrease if you have trouble with overflow in the eviction buffer
-or the map buffer.
-
-<P>
-In fact the hash table is pretty bogus - there is a much nicer way of using
-it by linking entries to each other, that Alex Brown suggested. This should
-be implemented soon.
+If you have a pathname component larger than 127 characters, you must
+increase <TT>OP_HASH_LINE</TT>. Note due to the lack of available
+bits in the representation, it is not possible to increase the number
+of entries in the path component hash table. There is a ``watermark''
+parameter, <TT>OP_PRE_WATERMARK</TT>, which specifies how ``early''
+the daemon should be woken up. If you have problems with an overflowing
+buffer, you might want to increase this value.
 
 <P>
 
@@ -575,98 +616,106 @@ be implemented soon.
 </H1>
 
 <P>
-FIXME: the info below is slightly out of date ...
+The local APIC is used to generate NMI interrupts. At each interrupt
+delivery, the task state at the bottom of the stack is examined to
+determine the process id, and the saved EIP is hashed with it to work
+out the hash table entry. Each entry has 4 samples, and if a match
+is found, the counter is incremented. Otherwise, one of the existing
+samples is chosen for eviction to the map buffer, and the new sample
+replaces it. Thus the hash table is the primary method of defence
+against the sample onslaught (at 10,000 int/sec, without the hash
+table, we would have to deal with nearly half a megabyte of samples
+in need of resolving per second).
 
 <P>
-The local APIC is used to generate NMI interrupts. At each interrupt delivery,
-the task state at the bottom of the stack is examined to determine the process
-id, and the saved EIP is hashed with it to work out the hash table entry. Each
-entry has 4 samples, and if a match is found, the counter is incremented. Otherwise,
-one of the existing samples is chosen for eviction to the map buffer, and the
-new sample replaces it. Thus the hash table is the primary method of defence
-against the sample onslaught.
+The eviction buffer will gradually fill up. Sooner or later, the sleeping
+daemon process is woken up and told to read the existing sample data
+from the eviction buffer, and the buffer is emptied.
 
 <P>
-The eviction buffer will gradually fill up. Sooner or later, the sleeping daemon
-process is woken up and told to read the existing sample data from the eviction
-buffer, and the buffer is emptied.
+At the same time as this goes on, system calls are being traced (see
+<TT>op_syscalls.c</TT>). Each system call places some kind of notification
+into the eviction buffer (see the defines <TT>CP_MAP</TT> and friends
+in <TT>op_user.h</TT>). This notification takes different forms depending
+on the recorded system call event. Of particular interest are mapping
+notifications. These specify code sections mapped into processes.
+A numeric ID gives the daemon the entry point for reconstructing the
+mapped file's name. This is done via a hash table where each entry
+has a ``parent'' link, indicating the hash entry of the parent
+directory.
 
 <P>
-At the same time as this goes on, system calls are being traced (see <TT>oprofile_k.c</TT>).
-Each system call places some kind of notification into the eviction buffer (see
-the defines <TT>CP_MAP</TT> and friends in <TT>oprofile.h</TT>). This notification
-takes different forms depending on the recorded system call event, but it may
-indicate an amount to read from the map buffer. The idea is that the daemon
-takes note of this notification of pending data, and reads from the map buffer
-in order. The map buffer contains information on memory maps that have been
-added to the process, namely the start, end, file offset, and the numeric path
-sequence. The numeric path sequence is converted into a character string by
-lookup in the component hash table (in the daemon code, the relevant function
-is <TT>opd_handle_mapping()</TT>, and the hash table is mapped in at an address
-pointed to by <TT>hashmap</TT>, accessed with <TT>hash_access()</TT>).
-
-<P>
-So the eviction buffer contains either samples are special notification tokens
-indicating some special operation. These are decoded in userspace in the <TT>opd_do_samples()</TT>
-routine.
+So the eviction buffer contains either samples are special notification
+tokens indicating some special operation. These are decoded in userspace
+in the <TT>opd_do_samples()</TT> routine.
 
 <P>
 <DL>
 <DT><STRONG><TT>op_do_nmi()</TT></STRONG></DT>
-<DD>The NMI routine that deals with an overflow interrupt
+<DD>The NMI routine that deals with an overflow
+interrupt
 </DD>
 <DT><STRONG><TT>op_check_ctr(),op_do_profile(),fill_op_entry(),evict_op_entry()</TT></STRONG></DT>
 <DD>These
 are routines for dealing with the samples at an interrupt
 </DD>
 <DT><STRONG><TT>mask_LVT_NMIs()</TT></STRONG></DT>
-<DD>attempt to prevent an NMI from arriving at a nasty
-time
+<DD>attempt to prevent an NMI from arriving
+at a nasty time
 </DD>
 <DT><STRONG><TT>install_nmi()</TT></STRONG></DT>
-<DD>This sets up our NMI interrupt handler by resetting
-the vector in position 2 of the IDT, so all NMIs are routed through to the assembly
-header in <TT>oprofile_nmi.S</TT>
+<DD>This sets up our NMI interrupt handler by
+resetting the vector in position 2 of the IDT, so all NMIs are routed
+through to the assembly header in <TT>oprofile_nmi.S</TT>
 </DD>
 <DT><STRONG><TT>restore_nmi()</TT></STRONG></DT>
 <DD>puts back the old NMI handler
 </DD>
 <DT><STRONG><TT>disable_local_P6_APIC()</TT></STRONG></DT>
-<DD>turns off the local APIC on unload. This
-will be disappearing soon ...
+<DD>turns off the local APIC on unload.
+This will be disappearing soon ...
 </DD>
 <DT><STRONG><TT>smp_apic_setup()</TT></STRONG></DT>
-<DD>my guess at what needs setting up on SMP machines
+<DD>my guess at what needs setting up on
+SMP machines
 </DD>
 <DT><STRONG><TT>apic_setup()</TT></STRONG></DT>
-<DD>initialise the necessary local APIC stuff for interrupt
-delivery
+<DD>initialise the necessary local APIC stuff
+for interrupt delivery
 </DD>
 <DT><STRONG><TT>pmc_fill_in(),pmc_setup()</TT></STRONG></DT>
-<DD>set up the hardware counters as specified
-by the module parameters
+<DD>set up the hardware counters
+as specified by the module parameters
 </DD>
 <DT><STRONG><TT>pmc_start/stop()</TT>+friends</STRONG></DT>
-<DD>this will disable counting temporarily during
-critical sections
+<DD>this will disable counting temporarily
+during critical sections
 </DD>
 <DT><STRONG><TT>oprof_thread()</TT></STRONG></DT>
-<DD>this is the wake-up thread. It is needed because the
-NMI needs to wake things up, but cannot do so in a race-free way.
+<DD>this is the wake-up thread. It is needed
+because the NMI needs to wake things up, but cannot do so in a race-free
+way.
 </DD>
 <DT><STRONG><TT>oprof_put_note()</TT></STRONG></DT>
-<DD>This adds a notification to the eviction buffer
+<DD>This adds a notification to the eviction
+buffer
 </DD>
 <DT><STRONG><TT>oprof_open/release()</TT></STRONG></DT>
-<DD>frontispieces for the special device files (there
-are three: eviction buffer, map buffer, and component hash table)
+<DD>frontispieces for the special device
+files (there are three: eviction buffer, map buffer, and component
+hash table)
 </DD>
 <DT><STRONG><TT>oprof_read()</TT></STRONG></DT>
-<DD>used to read the eviction or map buffer. The eviction
-logic is mildly hairy to avoid races, for example needed an extra buffer copy
+<DD>used to read the eviction or map buffer. The
+eviction logic is mildly hairy to avoid races, for example needed
+an extra buffer copy
 </DD>
 <DT><STRONG><TT>oprof_mmap()</TT></STRONG></DT>
 <DD>for access to the hash table
+</DD>
+<DT><STRONG><TT>op_start(),op_stop()</TT></STRONG></DT>
+<DD>These routines start and stop the
+actual profiling when the daemon opens the devices.
 </DD>
 <DT><STRONG><TT>parms_ok(),oprof_init_data(),hw_ok(),oprof_init()</TT></STRONG></DT>
 <DD>self-explanatory
@@ -681,8 +730,15 @@ initialisation stuff
 </H1>
 
 <P>
-Follow your nose from <TT>opd_do_samples()</TT>, it should hopefully be fairly
-obvious.
+Follow your nose from <TT>opd_do_samples()</TT>, it should hopefully
+be fairly obvious. The crucial aspect of the daemon design is the
+output sample files. They are <TT>mmap()</TT>ed into the daemon process
+space. This simplifies the sample output procedure, and also enables
+us to make use of the VM subsystem's paging and memory management
+to keep the most frequently-referenced parts of the sample files in
+core. Note that this technique relies on spatial locality of reference
+in the binaries. Tests indicate that the locality is generally very
+good, so very little memory and disk space is used by the daemon.
 
 <P>
 
@@ -691,10 +747,11 @@ obvious.
 </H1>
 
 <P>
-<TT>oprofile</TT> was written by John Levon. The following people have been
-helpful in the design and/or coding of this package (in no particular order)
-: Arjan van de Ven, Rik van Riel, Juan Quintela, Phillipp Rumpf, Tigran Aivazian,
-Alex Brown, Alisdair Rawsthorne, Dave Jones, Charles Filtness.
+<TT>oprofile</TT> was written by John Levon. The following people
+have been helpful in the design and/or coding of this package (in
+no particular order) : Arjan van de Ven, Rik van Riel, Juan Quintela,
+Phillipp Rumpf, Tigran Aivazian, Alex Brown, Alisdair Rawsthorne,
+Dave Jones, Charles Filtness.
 
 <P>
  
@@ -703,12 +760,14 @@ Bibliography</A>
 </H2><DL COMPACT><DD><P></P><DT><A NAME="DCPI">1</A>
 <DD>FIXME: DCPI
 <P></P><DT><A NAME="IAMan">2</A>
-<DD>Intel Architecture Developer's Manual Volume 3 (Developer's Centre http://developer.intel.com/).
-</DL>
+<DD>Intel Architecture Developer's Manual Volume 3 (Developer's Centre http://developer.intel.com/).</DL>
+
+<P>
+
 <H1><A NAME="SECTION00800000000000000000">
 About this document ...</A>
 </H1>
- <STRONG><TT>oprofile</TT>: Continuous Statistical Profiler</STRONG><P>
+ <STRONG><TT>oprofile</TT>: A Continuous Statistical Profiler</STRONG><P>
 This document was generated using the
 <A HREF="http://www-dsed.llnl.gov/files/programs/unix/latex2html/manual/"><STRONG>LaTeX</STRONG>2<tt>HTML</tt></A> translator Version 99.2beta6 (1.42)
 <P>
@@ -720,13 +779,14 @@ Computer Based Learning Unit, University of Leeds.
 Mathematics Department, Macquarie University, Sydney.
 <P>
 The command line arguments were: <BR>
- <STRONG>latex2html</STRONG> <TT>-no_subdir -split 0 -show_section_numbers /home/moz/oprofile/doc/guide.tex</TT>
+ <STRONG>latex2html</STRONG> <TT>-no_subdir -split 0 -show_section_numbers /tmp/lyx_tmpdir8060D5Hv6a/lyx_tmpbuf8060MArZBc/guide.tex</TT>
 <P>
-The translation was initiated by John Levon on 2001-01-19<BR><HR><H4>Footnotes</H4>
+The translation was initiated by John Levon on 2001-01-22<BR><HR><H4>Footnotes</H4>
 <DL>
-<DT><A NAME="foot31">... Celerons</A><A NAME="foot31"
+<DT><A NAME="foot33">... Celerons</A><A NAME="foot33"
  HREF="guide.html#tex2html1"><SUP>1.1</SUP></A>
-<DD>The module will refuse to load if the correct processor type is not found.
+<DD>The module will refuse to load if the correct processor type is not
+found.
 
 
 </DL><HR>
@@ -741,7 +801,7 @@ The translation was initiated by John Levon on 2001-01-19<BR><HR><H4>Footnotes</
 <!--End of Navigation Panel-->
 <ADDRESS>
 John Levon
-2001-01-19
+2001-01-22
 </ADDRESS>
 </BODY>
 </HTML>
