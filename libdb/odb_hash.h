@@ -30,7 +30,7 @@ typedef odb_index_t odb_hash_mask_t;
  * goal is to get a O(1) amortized insert time. bucket factor must be a
  * power of two. FIXME: see big comment in odb_hash_add_node, you must
  * re-enable zeroing hash table if BUCKET_FACTOR > 2 (roughly exact, you
- * want to read the comment in odb_add_hash_node() if you tune this define)
+ * want to read the comment in odb_hash_add_node() if you tune this define)
  */
 #define BUCKET_FACTOR 1
 

@@ -43,8 +43,14 @@ char * opd_mangle_filename(struct opd_image const * image, int counter)
 	struct op_event * event = NULL;
 	struct mangle_values values;
 
-	if (cpu_type != CPU_TIMER_INT)
+	if (cpu_type != CPU_TIMER_INT) {
 		event = op_find_event(cpu_type, ctr_event[counter]); 
+		if (!event) {
+			fprintf(stderr, "Unknown event %u for counter %u\n",
+				ctr_event[counter], counter);
+			abort();
+		}
+	}
 
 	/* Here we can add TGID, TID, CPU, later.  */
 	values.flags = 0;

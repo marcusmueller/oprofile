@@ -61,7 +61,7 @@ struct op_event {
 /** Return the known events list. Idempotent */
 struct list_head * op_events(op_cpu cpu_type);
 
-/** Find a given event */
+/** Find a given event, returns NULL on error */
 struct op_event * op_find_event(op_cpu cpu_type, u8 nr);
 
 /** Find a given event by name */

@@ -138,6 +138,11 @@ void op_print_event(ostream & out, op_cpu cpu_type, u8 type, u16 um, u32 count)
 
 	struct op_event * event = op_find_event(cpu_type, type);
 
+	if (!event) {
+		cerr << "Could not locate event " << type << endl;
+		return;
+	}
+
 	char const * um_desc = 0;
 
 	for (size_t i = 0; i < event->unit->num; ++i) {

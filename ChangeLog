@@ -1,3 +1,16 @@
+2003-09-03  John Levon  <levon@movementarian.org>
+
+	* libop/op_events.c:
+	* libpp/op_header.cpp:
+	* dae/opd_sample_files.c:
+	* daemon/opd_sample_files.c: propogate event
+	error back up to caller
+
+	* libdb/odb_hash.h: fix comment
+
+2003-09-03  John Levon  <levon@movementarian.org>
+
+
 2003-09-02  John Levon  <levon@movementarian.org>
 
 	* dae/opd_image.c:

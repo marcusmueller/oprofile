@@ -486,11 +486,7 @@ struct op_event * op_find_event(op_cpu cpu_type, u8 nr)
 
 	event = find_event(nr);
 
-	if (event)
-		return event;
-
-	fprintf(stderr, "oprofile: could not find event %d\n", nr);
-	exit(EXIT_FAILURE);
+	return event;
 }
 
 
