@@ -37,6 +37,16 @@ std::string erase_to_last_of(std::string const & str, char ch);
 /// conversion to std::string
 std::string tostr(unsigned int i);
 
+/// conversion to uint
+unsigned int touint(std::string const & s);
+
+/// conversion to bool
+bool tobool(std::string const & s);
+
+/// split string s by first occurence of char c, returning the second part.
+/// s is set to the first part. Neither include the split character
+std::string split(std::string & s, char c);
+
 /**
  * @param result where to put results
  * @param str the string to tokenize

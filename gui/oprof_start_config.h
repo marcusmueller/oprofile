@@ -16,15 +16,15 @@
 #include <string>
 #include <iostream>
 
-#include "persistent_config.h"
+//#include "persistent_config.h"
 
-// Store the setup of one events.
+/// Store the setup of one event
 struct event_setting {
 
 	event_setting();
 
-	void save(std::ostream& out) const;
-	void load(std::istream& in);
+	void save(std::ostream & out) const;
+	void load(std::istream & in);
 
 	uint count;
 	uint umask;
@@ -32,35 +32,30 @@ struct event_setting {
 	int user_ring_count;
 };
 
-std::ostream& operator<<(std::ostream& out, event_setting const & object);
-std::istream& operator>>(std::istream& in, event_setting & object);
+std::ostream & operator<<(std::ostream & out, event_setting const & object);
+std::istream & operator>>(std::istream & in, event_setting & object);
 
-// Store the general  configuration of the profiler. File/path name buffer
-// size ETC.
-// You can add field here at any position but you must add them to
-// load()/save() at the end of loading/saving to ensure compatibility with
-// previous version of config file. If you remove field you must preserve
-// dummy read/write in load()/save() for the same reason. Obviously you must
-// also provide sensible value in the ctor.
+/**
+ * Store the general  configuration of the profiler.
+ * There is no save(), instead opcontrol --setup must be
+ * called. This uses opcontrol's daemonrc file.
+ */
 struct config_setting {
 	config_setting();
 
-	void load(std::istream& in);
-	void save(std::ostream& out) const;
+	void load(std::istream & in);
 
 	uint buffer_size;
 	uint note_table_size;
 	std::string kernel_filename;
-	int kernel_only;
-	int verbose;
+	bool kernel_only;
+	bool verbose;
 	pid_t pgrp_filter;
-	// not persistent, no interest to save from one session to another
 	pid_t pid_filter;
-	int separate_lib_samples;
-	int separate_kernel_samples;
+	bool separate_lib_samples;
+	bool separate_kernel_samples;
 };
 
-std::ostream& operator<<(std::ostream& out, const config_setting& object);
-std::istream& operator>>(std::istream& in, config_setting& object);
+std::istream & operator>>(std::istream & in, config_setting & object);
 
 #endif // ! OPROF_START_CONFIG_H

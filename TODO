@@ -21,10 +21,9 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
- o oprof_start does not start with the default events like opcontrol does
  o --smart-demangle is not documented
  o Add something  to op_help so user can see if they're using timer/rtc mode or not
- o oprof_start should use the same config file as opcontrol ...
+ o oprof_start: check lib samples when kernel samples checkbox is checked
  o oprofpp needs -P too
  o "op_time" doesn't have a header !
  o document that even with the in_interrupt trick in 2.5, you can still get a few

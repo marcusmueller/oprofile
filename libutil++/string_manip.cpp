@@ -26,6 +26,7 @@ string erase_from_last_of(string const & str, char ch)
 	return result;
 }
 
+
 string erase_to_last_of(string const & str, char ch)
 {
 	string result = str;
@@ -36,12 +37,42 @@ string erase_to_last_of(string const & str, char ch)
 	return result;
 }
 
+
 string tostr(unsigned int i)
 {
 	ostringstream ss;
 	ss << i;
 	return ss.str();
 }
+
+
+unsigned int touint(string const & s)
+{
+	unsigned int i;
+	istringstream ss(s);
+	ss >> i;
+	return i;
+}
+
+
+bool tobool(string const & s)
+{
+	return touint(s);
+}
+
+
+/// split string s by first occurence of char c, returning the second part
+string split(string & s, char c)
+{
+	string::size_type i = s.find_first_of(c);
+	if (i == string::npos)
+		return string();
+
+	string const tail = s.substr(i + 1);
+	s = s.substr(0, i);
+	return tail;
+}
+
 
 void separate_token(vector<string> & result, const string & str, char sep)
 {
@@ -69,6 +100,7 @@ void separate_token(vector<string> & result, const string & str, char sep)
 		result.push_back(next);
 }
 
+
 string sample_filename(string const& sample_dir,
 			string const& sample_filename, int counter)
 {
@@ -82,25 +114,28 @@ string sample_filename(string const& sample_dir,
 	return s.str();
 }
 
+
 string ltrim(string const & str)
 {
 	string result;
-	size_t pos = str.find_first_not_of(" \t");
+	string::size_type pos = str.find_first_not_of(" \t");
 	if (pos != string::npos) {
-		result = str.substr(pos );
+		result = str.substr(pos);
 	}
 	return result;
 }
 
+
 string rtrim(string const & str)
 {
 	string result(str);
-	size_t pos = str.find_last_not_of(" \t");
+	string::size_type pos = str.find_last_not_of(" \t");
 	if (pos != string::npos) {
-		result = str.substr(0, pos  + 1);
+		result = str.substr(0, pos + 1);
 	}
 	return result;
 }
+
 
 string trim(string const & str)
 {

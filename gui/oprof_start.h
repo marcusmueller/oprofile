@@ -112,8 +112,8 @@ private:
 	bool save_event_config_file(uint ctr);
 	/// load the extra config file
 	void load_config_file();
-	/// save the extra config file
-	bool save_config_file();
+	/// save the config
+	bool save_config();
 
 	/// validator for event count
 	QIntValidator* event_count_validator;

@@ -1,3 +1,17 @@
+2003-03-04  John Levon  <levon@movementarian.org>
+
+	* gui/oprof_start.cpp:
+	* gui/oprof_start.h:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_config.h:
+	* gui/persistent_config.h:
+
+	* libutil++/string_manip.h:
+	* libutil++/string_manip.cpp: add split(), tobool(), touint()
+
+	* utils/opcontrol: don't write BUF_SIZE twice. Write
+	  RTC_VALUE properly. Write KERNEL_ONLY
+
 2003-03-03  John Levon  <levon@movementarian.org>
 
 	* gui/oprof_start.cpp: use --ctrX-event=none,

@@ -39,10 +39,10 @@ public:
 	// save and load using the file format
 	// key value1 value2 value3 ... valueN through the overload of
 	// operator>> [<<] (ostream&[istream&], [const] T&);
-	void save(std::ostream& out) const;
+	void save(std::ostream & out) const;
 	// take care: this do not reset the current recorded value. It only
 	// override or create new key/value.
-	void load(std::istream& out);
+	void load(std::istream & out);
 
 private:
 	typedef std::map<std::string, T> map_t;
@@ -63,7 +63,7 @@ T const & persistent_config_t<T>::operator[](std::string const & key) const
 }
 
 template <typename T>
-void persistent_config_t<T>::save(std::ostream& out) const
+void persistent_config_t<T>::save(std::ostream & out) const
 {
 	typename map_t::const_iterator it;
 	for (it = map.begin() ; it != map.end() ; ++it) {
@@ -74,7 +74,7 @@ void persistent_config_t<T>::save(std::ostream& out) const
 }
 
 template <typename T>
-void persistent_config_t<T>::load(std::istream& in)
+void persistent_config_t<T>::load(std::istream & in)
 {
 	typename map_t::const_iterator it;
 	for (it = map.begin() ; it != map.end() ; ++it) {
@@ -86,7 +86,7 @@ void persistent_config_t<T>::load(std::istream& in)
 }
 
 template <typename T>
-std::istream& operator>>(std::istream& in, persistent_config_t<T>& cfg)
+std::istream & operator>>(std::istream & in, persistent_config_t<T> & cfg)
 {
 	cfg.load(in);
 
@@ -94,7 +94,7 @@ std::istream& operator>>(std::istream& in, persistent_config_t<T>& cfg)
 }
 
 template <typename T>
-std::ostream& operator<<(std::ostream& out, persistent_config_t<T> const & cfg)
+std::ostream & operator<<(std::ostream & out, persistent_config_t<T> const & cfg)
 {
 	cfg.save(out);
 

@@ -80,39 +80,6 @@ oprof_start::oprof_start()
 		unit_mask_group->hide();
 	}
 
-	// check if our cpu type match with the cpu type in config file, if we
-	// mismatch just delete all the oprof_start config file else we
-	// confuse later code.
-	string config_dir = get_user_filename(".oprofile");
-	string config_name = config_dir + "/oprof_start_config";
-
-	ifstream in(config_name.c_str());
-
-	bool delete_all_config_file = !in;
-
-	if (in) {
-		int tmp;
-		in >> tmp;
-		op_cpu tmp_cpu_type = static_cast<op_cpu>(tmp);
-
-		if (tmp_cpu_type != cpu_type) {
-			remove(config_name.c_str());
-
-			delete_all_config_file = true;
-		}
-	}
-
-	if (delete_all_config_file) {
-		for (uint ctr = 0 ; ctr < OP_MAX_COUNTERS ; ++ctr) {
-			ostringstream name;
-
-			name << config_dir << "/oprof_start_event"
-			     << "#" << ctr;
-
-			remove(name.str().c_str());
-		}
-	}
-
 	// we need to build the event descr stuff before loading the
 	// configuration because we use locate_events to get an event descr
 	// from its name.
@@ -241,99 +208,50 @@ oprof_start::oprof_start()
 
 // load the configuration, if the configuration file does not exist create it.
 // the parent directory of the config file is created if necessary through
-// save_config_file().
+// save_config().
 void oprof_start::load_config_file()
 {
-	string name = get_user_filename(".oprofile/oprof_start_config");
-
-	{
-		ifstream in(name.c_str());
-		// this creates the config directory if necessary
-		if (!in)
-			save_config_file();
-	}
+	string name = get_user_filename(".oprofile/daemonrc");
 
 	ifstream in(name.c_str());
 	if (!in) {
-		QMessageBox::warning(this, 0, "Unable to open configuration "
-				     "~/.oprofile/oprof_start_config");
+		if (!check_and_create_config_dir())
+			return;
+
+		ofstream out(name.c_str());
+		if (!out) {
+			QMessageBox::warning(this, 0, "Unable to open configuration "
+				"file ~/.oprofile/daemonrc");
+			return;
+		}
 		return;
-	}
-
-	int tmp;
-	in >> tmp;
-	op_cpu tmp_cpu_type = static_cast<op_cpu>(tmp);
-
-	if (tmp_cpu_type != cpu_type) {
-		/* can never happen, if cpu type mismatch the file should be
-		 * already deleted */
-		QMessageBox::warning(this, 0,
-				     "The cpu type in your configuration "
-				     "mismatch the current cpu core:\n\n"
-				     "Delete manually the configuration file");
-
-		exit(EXIT_FAILURE);
-	}
-
-	for (uint i = 0; i < op_nr_counters; ++i) {
-		in >> ctr_enabled[i];
-		string ev;
-		in >> ev;
-		if (ev == "none")
-			current_event[i] = 0;
-		else
-			current_event[i] = &locate_event(ev);
 	}
 
 	in >> config;
 }
 
-// save the configuration by overwritting the configuration file if it exist or
-// create it. The parent directory of the config file is created if necessary
-bool oprof_start::save_config_file()
-{
-	if (!check_and_create_config_dir())
-		return false;
 
-	string name = get_user_filename(".oprofile/oprof_start_config");
-
-	ofstream out(name.c_str());
-
-	out << static_cast<int>(cpu_type) << " ";
-
-	for (uint i = 0; i < op_nr_counters; ++i) {
-		out << ctr_enabled[i];
-		if (current_event[i] == 0)
-			out << " none ";
-		else
-			out << " " << current_event[i]->name + " ";
-	}
-	out << endl;
-
-	out << config;
-
-	return true;
-}
-
-// this work as load_config_file()/save_config_file()
 void oprof_start::load_event_config_file(uint ctr)
 {
-	ostringstream name;
+	ostringstream ss;
 
-	name << get_user_filename(".oprofile/oprof_start_event");
-	name << "#" << ctr;
+	ss << get_user_filename(".oprofile/oprof_start_event");
+	ss << "#" << ctr;
 
-	{
-		ifstream in(name.str().c_str());
-		// this creates the config directory if necessary
-		if (!in)
-			save_event_config_file(ctr);
-	}
+	string const name = ss.str();
 
-	ifstream in(name.str().c_str());
+	ifstream in(name.c_str());
 	if (!in) {
-		QMessageBox::warning(this, 0, "Unable to open configuration "
-				     "~/.oprofile/oprof_start_event");
+		if (!check_and_create_config_dir())
+			return;
+
+		ofstream out(name.c_str());
+		if (!out) {
+			string msg = "Unable to open configuration file ";
+			msg += name;
+			QMessageBox::warning(this, 0, msg.c_str());
+			return;
+		}
 		return;
 	}
 
@@ -341,21 +259,24 @@ void oprof_start::load_event_config_file(uint ctr)
 	in >> event_cfgs[ctr];
 }
 
-// this work as load_config_file()/save_config_file()
+
 bool oprof_start::save_event_config_file(uint ctr)
 {
 	if (!check_and_create_config_dir())
 		return false;
 
-	ostringstream name;
+	ostringstream ss;
 
-	name << get_user_filename(".oprofile/oprof_start_event");
-	name << "#" << ctr;
+	ss << get_user_filename(".oprofile/oprof_start_event");
+	ss << "#" << ctr;
 
-	ofstream out(name.str().c_str());
+	string const name = ss.str();
+
+	ofstream out(name.c_str());
 	if (!out) {
-		QMessageBox::warning(this, 0, "Unable to save configuration "
-				     "~/.oprofile/oprof_start_event");
+		string msg = "Unable to save configuration file ";
+		msg += name;
+		QMessageBox::warning(this, 0, msg.c_str());
 		return false;
 	}
 
@@ -363,6 +284,7 @@ bool oprof_start::save_event_config_file(uint ctr)
 
 	return true;
 }
+
 
 // user request a "normal" exit so save the config file.
 void oprof_start::accept()
@@ -373,10 +295,7 @@ void oprof_start::accept()
 	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr)
 		save_event_config_file(ctr);
 
-	if (!record_config())
-		return;
-
-	save_config_file();
+	save_config();
 
 	QDialog::accept();
 }
@@ -439,8 +358,7 @@ void oprof_start::counter_selected(int ctr)
 	setUpdatesEnabled(false);
 	events_list->clear();
 
-	if (current_event[current_ctr])
-		record_selected_event_config();
+	record_selected_event_config();
 
 	current_ctr = ctr;
 
@@ -506,8 +424,7 @@ void oprof_start::event_selected(QListViewItem * item)
 {
 	op_event_descr const & descr = locate_event(item->text(0).latin1());
 
-	if (current_event[current_ctr])
-		record_selected_event_config();
+	record_selected_event_config();
 
 	display_event(&descr);
 	current_event[current_ctr] = &descr;
@@ -547,6 +464,7 @@ void oprof_start::choose_kernel_filename()
 		kernel_filename_edit->setText(result.c_str());
 }
 
+
 // this record the current selected event setting in the event_cfg[] stuff.
 // FIXME: need validation?
 void oprof_start::record_selected_event_config()
@@ -556,7 +474,7 @@ void oprof_start::record_selected_event_config()
 	if (!curr)
 		return;
 
-	persistent_config_t<event_setting>& cfg = event_cfgs[current_ctr];
+	persistent_config_t<event_setting> & cfg = event_cfgs[current_ctr];
 	string name(curr->name);
 
 	cfg[name].count = event_count_edit->text().toUInt();
@@ -564,6 +482,7 @@ void oprof_start::record_selected_event_config()
 	cfg[name].user_ring_count = user_ring_count_cb->isChecked();
 	cfg[name].umask = get_unit_mask(*curr);
 }
+
 
 // validate and save the configuration (The qt validator installed
 // are not sufficient to do the validation)
@@ -818,38 +737,69 @@ void oprof_start::on_start_profiler()
 		on_stop_profiler();
 	}
 
-	// record_config validate the config
+	vector<string> args;
+
+	// save_config validate the config
+	if (!save_config())
+		goto out;
+
+	// now actually start
+	args.push_back("--start");
+	if (config.verbose)
+		args.push_back("--verbose");
+	do_exec_command(OP_BINDIR "/opcontrol", args);
+
+out:
+	total_nr_interrupts = 0;
+	timerEvent(0);
+}
+
+
+bool oprof_start::save_config()
+{
 	if (!record_config())
-		return;
+		return false;
 
 	vector<string> args;
+
+	args.push_back("--setup");
 
 	if (cpu_type == CPU_RTC) {
 		persistent_config_t<event_setting> const & cfg = event_cfgs[0];
 		op_event_descr const * descr = current_event[0];
 		args.push_back("--rtc-value=" + tostr(cfg[descr->name].count));
 	} else {
+		bool one_enabled = false;
+
+		vector<string> tmpargs;
+		tmpargs.push_back("--setup");
+
 		for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
 			if (!current_event[ctr] || !ctr_enabled[ctr]) {
-				args.push_back("--ctr" + tostr(ctr) + "-event=none");
+				tmpargs.push_back("--ctr" + tostr(ctr) + "-event=none");
 				continue;
 			}
+
+			one_enabled = true;
 
 			persistent_config_t<event_setting> const & cfg = event_cfgs[ctr];
 
 			op_event_descr const * descr = current_event[ctr];
 
-			args.push_back("--ctr" + tostr(ctr) + "-event=" + descr->name);
-			args.push_back("--ctr" + tostr(ctr) + "-count=" + tostr(cfg[descr->name].count));
-			args.push_back("--ctr" + tostr(ctr) + "-kernel=" + tostr(cfg[descr->name].os_ring_count));
-			args.push_back("--ctr" + tostr(ctr) + "-user=" + tostr(cfg[descr->name].user_ring_count));
+			tmpargs.push_back("--ctr" + tostr(ctr) + "-event=" + descr->name);
+			tmpargs.push_back("--ctr" + tostr(ctr) + "-count=" + tostr(cfg[descr->name].count));
+			tmpargs.push_back("--ctr" + tostr(ctr) + "-kernel=" + tostr(cfg[descr->name].os_ring_count));
+			tmpargs.push_back("--ctr" + tostr(ctr) + "-user=" + tostr(cfg[descr->name].user_ring_count));
 
 			if (descr->unit)
-				args.push_back("--ctr" + tostr(ctr) + "-unit-mask=" + tostr(cfg[descr->name].umask));
+				tmpargs.push_back("--ctr" + tostr(ctr) + "-unit-mask=" + tostr(cfg[descr->name].umask));
 		}
+
+		// only set counters if at leat one is enabled
+		if (one_enabled)
+			args = tmpargs;
 	}
 
-	args.push_back("--setup");
 	args.push_back("--vmlinux=" + config.kernel_filename);
 	if (op_get_interface() == OP_INTERFACE_24) {
 		args.push_back("--kernel-only=" + tostr(config.kernel_only));
@@ -867,20 +817,9 @@ void oprof_start::on_start_profiler()
 	else
 		args.push_back("--separate=none");
 
-	if (do_exec_command(OP_BINDIR "/opcontrol", args))
-		goto out;
-
-	// now actually start
-	args.clear();
-	args.push_back("--start");
-	if (config.verbose)
-		args.push_back("--verbose");
-	do_exec_command(OP_BINDIR "/opcontrol", args);
-
-out:
-	total_nr_interrupts = 0;
-	timerEvent(0);
+	return !do_exec_command(OP_BINDIR "/opcontrol", args);
 }
+
 
 // flush and stop the profiler if it was started.
 void oprof_start::on_stop_profiler()

@@ -283,10 +283,6 @@ do_save_setup() {
 	chmod 644 $SETUP_FILE
 	>$SETUP_FILE
 
-	#write the actual information to file
-	if [ $BUF_SIZE != 0 ]; then
-		echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
-	fi;
 	if test "$IS_TIMER" -ne 1; then
 		for f in $OP_COUNTERS ; do
 			echo "CTR_EVENT[${f}]=${CTR_EVENT[$f]}"  >> $SETUP_FILE
@@ -298,7 +294,7 @@ do_save_setup() {
 		done
 	else
 		if test "$KERNEL_SUPPORT" != "yes"; then
-			echo "RTC_VALUE $RTC_VALUE" >> $SETUP_FILE
+			echo "RTC_VALUE=$RTC_VALUE" >> $SETUP_FILE
 		fi
 	fi
  
@@ -306,8 +302,12 @@ do_save_setup() {
 	echo "SEPARATE_LIB_SAMPLES=$SEPARATE_LIB_SAMPLES" >> $SETUP_FILE
 	echo "SEPARATE_KERNEL_SAMPLES=$SEPARATE_KERNEL_SAMPLES" >> $SETUP_FILE
 	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
-	echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
+	#write the actual information to file
+	if [ "$BUF_SIZE" != 0 ]; then
+		echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
+	fi;
 	if test "$KERNEL_SUPPORT" != "yes"; then
+		echo "KERNEL_ONLY=$KERNEL_ONLY" >> $SETUP_FILE
 		echo "NOTE_SIZE=$NOTE_SIZE" >> $SETUP_FILE
 		echo "PID_FILTER=$PID_FILTER" >> $SETUP_FILE
 		echo "PGRP_FILTER=$PGRP_FILTER" >> $SETUP_FILE
@@ -358,6 +358,7 @@ do_load_setup() {
 		vecho "RTC_VALUE $RTC_VALUE"
 	fi
 
+	vecho "KERNEL_ONLY $KERNEL_ONLY"
 	vecho "SEPARATE_LIB_SAMPLES $SEPARATE_LIB_SAMPLES"
 	vecho "SEPARATE_KERNEL_SAMPLES $SEPARATE_KERNEL_SAMPLES"
 	vecho "VMLINUX $VMLINUX"
