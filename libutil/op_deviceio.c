@@ -19,18 +19,9 @@
 #include <string.h>
 #include <errno.h>
 
-fd_t op_open_device(char const * name, int fatal)
+fd_t op_open_device(char const * name)
 {
-	fd_t fd;
-
-	fd = open(name, O_RDONLY);
-	if (fatal && fd == -1) {
-		fprintf(stderr, "oprofiled:op_open_device: %s: %s\n",
-			name, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	return fd;
+	return open(name, O_RDONLY);
 }
 
 

@@ -97,7 +97,7 @@ static struct poptOption options[] = {
  */
 static void opd_open_files(void)
 {
-	devfd = op_open_device("/dev/oprofile/buffer", 0);
+	devfd = op_open_device("/dev/oprofile/buffer");
 	if (devfd == -1) {
 		if (errno == EINVAL)
 			fprintf(stderr, "Failed to open device. Possibly you have passed incorrect\n"

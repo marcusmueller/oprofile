@@ -108,13 +108,13 @@ static struct poptOption options[] = {
  */
 static void op_open_files(void)
 {
-	hashmapdevfd = op_open_device(OP_HASH_DEVICE, 0);
+	hashmapdevfd = op_open_device(OP_HASH_DEVICE);
 	if (hashmapdevfd == -1) {
 		perror("Failed to open hash map device");
 		exit(EXIT_FAILURE);
 	}
 
-	notedevfd = op_open_device(OP_NOTE_DEVICE, 0);
+	notedevfd = op_open_device(OP_NOTE_DEVICE);
 	if (notedevfd == -1) {
 		if (errno == EINVAL)
 			fprintf(stderr, "Failed to open note device. Possibly you have passed incorrect\n"
@@ -124,7 +124,7 @@ static void op_open_files(void)
 		exit(EXIT_FAILURE);
 	}
 
-	devfd = op_open_device(OP_DEVICE, 0);
+	devfd = op_open_device(OP_DEVICE);
 	if (devfd == -1) {
 		if (errno == EINVAL)
 			fprintf(stderr, "Failed to open device. Possibly you have passed incorrect\n"

@@ -23,12 +23,11 @@ extern "C" {
 /**
  * op_open_device - open a special char device for reading
  * @param name  file name of device file
- * @param fatal  fatal or not
  *
  * Open the special file name. Returns the file descriptor
  * for the file or -1 on error.
  */
-fd_t op_open_device(char const * name, int fatal);
+fd_t op_open_device(char const * name);
 
 /**
  * op_close_device - close a special char device

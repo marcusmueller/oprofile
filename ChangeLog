@@ -1,5 +1,13 @@
 2003-09-26  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* dae/oprofiled.c:
+	* daemon/oprofiled.c:
+	* libutil/op_deviceio.c:
+	* libutil/op_deviceio.h: op_open_device(): remove unused parameter
+	  fatal
+
+2003-09-26  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil/tests/file_tests.c: Fix some test: in some case the pathname
 	  component must be valid since we lstat() them. Fix a segfault due
 	  to missing ',' 
