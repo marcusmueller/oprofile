@@ -108,29 +108,21 @@ void lvtpc_apic_restore(void *dummy)
  */
 static int __init apic_needs_setup(void)
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
-#ifdef __SMP__
+#ifdef CONFIG_X86_UP_APIC
 	return 0;
 #else
-	return 1;
-#endif /* __SMP__ */
-#else
-	#ifdef CONFIG_X86_UP_APIC
-		return 0;
-	#else
-		#ifdef CONFIG_X86_LOCAL_APIC
-			/* 2.4.10 has UP APIC setup code too, but no extra
-			 * config option */
-			#if LINUX_VERSION_CODE == KERNEL_VERSION(2,4,10)
-				return 0;
-			#else
-				return !smp_hardware;
-			#endif /* LINUX_VERSION_CODE == KERNEL_VERSION(2,4,10) */
+	#ifdef CONFIG_X86_LOCAL_APIC
+		/* 2.4.10 has UP APIC setup code too, but no extra 
+		 * config option */
+		#if LINUX_VERSION_CODE == KERNEL_VERSION(2,4,10)
+			return 0;
 		#else
-			return 1;
-		#endif /* CONFIG_X86_LOCAL_APIC */
-	#endif /* CONFIG_X86_UP_APIC */
-#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0) */
+			return !smp_hardware;
+		#endif /* LINUX_VERSION_CODE == KERNEL_VERSION(2,4,10) */
+	#else
+		return 1;
+	#endif /* CONFIG_X86_LOCAL_APIC */
+#endif /* CONFIG_X86_UP_APIC */
 }
 
 static int __init enable_apic(void)

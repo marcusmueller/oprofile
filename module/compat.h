@@ -23,12 +23,6 @@
 
 #include <linux/version.h>
 
-/* FIXME: John you use 2.3.21, I prefer 2.2.20, it is worthwhile to try to
- * support obsolete development kernel, from now just support the 2.5 and drop
- * the 2.3 support ?. The state is actually we compile from 2.2.0 to 2.2.20 UP
- * and from 2.2.8 to 2.2.20. !CONFIG_X86_LOCAL_APIC do not compile see later
- * in this file*/
-
 /* You want to keep this sorted by increasing linux version. Prefer checking
  * against linux version rather existence of macro */
 
@@ -140,7 +134,7 @@ do {							\
 #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,2,18) */
 
 /* replacement of d_covers: version is a guess */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,3,21)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
 #define NEED_2_2_DENTRIES
 extern int wind_dentries_2_2(struct dentry *dentry);
 extern uint do_path_hash_2_2(struct dentry *dentry);
@@ -149,7 +143,7 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 #else
 #define wind_dentries(d, v, r, m) wind_dentries_2_4(d, v, r, m)
 #define hash_path(f) do_path_hash_2_4((f)->f_dentry, (f)->f_vfsmnt)
-#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,3,21) */
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0) */
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
 
@@ -157,13 +151,16 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 #define NO_MPTABLE_CHECK_NEEDED
  
 /* 2.2 has no cpu_number_map on UP */
-#ifdef __SMP__
+#ifdef CONFIG_SMP
 #define op_cpu_id() cpu_number_map[smp_processor_id()]
 #else
 #define op_cpu_id() smp_processor_id()
-#endif /* __SMP__ */
+#endif /* CONFIG_SMP */
+
 #else
+
 #define op_cpu_id() cpu_number_map(smp_processor_id())
+
 #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0) */
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
@@ -198,10 +195,7 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 #define __exit
 #define __init
 
-/* FIXME: John, the intent of __SMP__ is to pass it to kernel header not
- * to use it, 2.2 always declare correctly CONFIG_SMP but the 2.2 headers are
- * broken and in a few place use __SMP__. Replace this by CONFIG_SMP ? */
-#ifndef __SMP__
+#ifndef CONFIG_SMP
 #include "apic_up_compat.h"
 #else
 /* even on SMP, some defines are missing in 2.2 */
@@ -211,7 +205,7 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 #define	GET_APIC_VERSION(x)	((x)&0xFF)
 #define	GET_APIC_MAXLVT(x)	(((x)>>16)&0xFF)
 #define	APIC_INTEGRATED(x)	((x)&0xF0)
-#endif /* !__SMP__ */
+#endif /* !CONFIG_SMP */
 
 /* 2.4.0 introduce virt_to_page */
 #define virt_to_page(va) MAP_NR(va)
@@ -234,19 +228,14 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0) */
 
-/*****************************************************************************/
-/* FIXME PHE to myself I suspect something wrong here look bttv.c */
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
-/* 2.4.0 change proto of pte_page and make it unusable param to page_address */
+/* 2.4.0 change proto of pte_page */
 #define pte_page_address(x) page_address(pte_page(x))
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,2,0)
-/* 2.2.? to 2.2.20 make pte_page_address and pte_page equivalent */
-#define pte_page_address(x) pte_page(pte)
-#else /* urks, unreachable but previous test shows that's was used */
-/* < 2.2.7 use MAP_NR(x) as arg of page_address() */
-#define pte_page_address(x) page_address(MAP_NR(x))
+#else
+/* 2.2.? to 2.2.20 make page_address(pte_page(x) and pte_page(x) equivalent */
+#define pte_page_address(x) pte_page(x)
 #endif
-/*****************************************************************************/
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
 #define GET_VM_OFFSET(v) ((v)->vm_pgoff << PAGE_SHIFT)
@@ -282,10 +271,7 @@ extern uint do_path_hash_2_2(struct dentry *dentry);
 
 /* 2.4.10 introduced APIC setup under normal APIC config */
 #ifndef CONFIG_X86_UP_APIC
-/* no fixmapping is done in UP 2.2 */
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,4,0)
 #define NEED_FIXMAP_HACK
-#endif
 #endif
 
 #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,4,10) */

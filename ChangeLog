@@ -1,3 +1,8 @@
+2002-01-12  Philippe Elie  <ph_e@club-internet.fr>
+
+	* module/compat.h: fix some FIXME
+	* module/op_x86.c: do not hang SMP kernel UP box with 2.2.x
+
 2002-01-11  Philippe Elie  <ph_e@club-internet.fr>
 
 	* module/compat.h: support for UP from 2.2.0, for SMP
