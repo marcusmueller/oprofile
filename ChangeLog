@@ -1,3 +1,9 @@
+2003-09-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_alloc_counter.h:
+	* libop/op_alloc_counter.c: change allocator by a backtracking
+	  algorithm walking only through possible solution.
+
 2003-09-26  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libdb/tests/db_test.c: success must be silent
