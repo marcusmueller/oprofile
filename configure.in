@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.45 2001/10/16 21:31:03 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.46 2001/10/18 00:01:13 movement Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./oprofile.c)
 
@@ -71,7 +71,15 @@ dnl  --- Get Linux kernel version and compile parameters ---
 
 AC_SUBST(KVERS)
 AC_MSG_CHECKING(for kernel version)
-KVERS=`sed -n 's:^#define  *UTS_RELEASE  *\"\([^"]*\).*$:\1:p' $KINC/linux/version.h`
+dnl it's like this to handle mandrake's fubar version.h - bug #471448
+ac_clean_files="$ac_clean_files tmp tmp.c"
+cat >tmp.c << EOF
+#include <linux/version.h>
+int main() { printf(UTS_RELEASE); }
+EOF
+$CC -I$KINC -o tmp tmp.c
+KVERS=`./tmp`
+rm -f tmp tmp.c
 AC_MSG_RESULT($KVERS)
 case "$KVERS" in
 2.4.*|2.5.*) ;;

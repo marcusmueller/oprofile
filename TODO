@@ -1,17 +1,15 @@
 0.0.7 task list
 ---------------
 
-o Bob's rtc patch
- 
-o Save counter state and restore on a finish
- 
 o I'm sick of these crappy makefiles. Let's see if we can use automake as well
   as autoconf.
  
-o determine where we need ctx_sw_on/off to prevent pre-emption
+o determine where we need ctx_sw_on/off to prevent pre-emption + test
  
 o make/get rid of op_to_source to have similar interface to other utils
 
+o Bob's rtc patch ?
+ 
 0.0.8 task list
 ---------------
  
