@@ -1,5 +1,9 @@
 2002-06-01  John Levon  <moz@compsoc.man.ac.uk>
 
+	* doc/Makefile.in: fix DOCDIR (from Al Stone)
+ 
+2002-06-01  John Levon  <moz@compsoc.man.ac.uk>
+
 	* libutil++/file_manip.h:
 	* libutil++/file_manip.cpp: clarify API
  
