@@ -118,18 +118,9 @@ op_bfd::~op_bfd()
 }
 
 
-/**
- * symcomp - comparator
- *
- */
-static bool symcomp(op_bfd_symbol const & a, op_bfd_symbol const & b)
+bool op_bfd_symbol::operator<(op_bfd_symbol const& rhs) const
 {
-	return a.filepos() < b.filepos();
-}
-
-bool op_bfd_symbol::operator<(op_bfd_symbol const& lhs) const
-{
-	return symcomp(*this,  lhs);
+	return filepos() < rhs.filepos();
 }
 
 namespace {
@@ -213,7 +204,7 @@ struct remove_filter {
  *
  * The symbols are filtered through
  * the interesting_symbol() predicate and sorted
- * with the symcomp() comparator.
+ * with op_bfd_symbol::operator<() comparator.
  */
 void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 {
@@ -314,16 +305,18 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 	char const * cfilename = "";
 	bfd_vma pc;
 
+	op_bfd_symbol const & sym = syms[sym_idx];
+
 	// take care about artificial symbol
-	if (syms[sym_idx].symbol() == 0)
+	if (sym.symbol() == 0)
 		return false;
 
-	asection* section = syms[sym_idx].symbol()->section;
+	asection* section = sym.symbol()->section;
 
 	if ((bfd_get_section_flags (ibfd, section) & SEC_ALLOC) == 0)
 		return false;
 
-	pc = sym_offset(sym_idx, offset) + syms[sym_idx].value();
+	pc = sym_offset(sym_idx, offset) + sym.value();
 
 	if (pc >= bfd_section_size(ibfd, section))
 		return false;
@@ -337,10 +330,29 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 		ret = false;
 	}
 
-	// functioname and symbol name can be different if we query linenr info
-	// if we accept it we can get samples for the wrong symbol (#484660)
-	if (ret && functionname && syms[sym_idx].name() != string(functionname)) {
-		ret = false;
+	// functionname and symbol name can be different if we accept it we
+	// can get samples for the wrong symbol (#484660)
+	// Note this break static inline function, since for these functions we
+	// get a different symbol name than symbol name but we recover later.
+	if (ret && functionname && sym.name() != string(functionname)) {
+		// gcc doesn't emit mangled name for C++ static function so we
+		// try to recover by accepting this linenr info if functionname
+		// is a substring of sym.name, this is not a bug see gcc
+		// bugzilla #11774. Check agaisnt the filename part of the
+		// is error prone error (e.g. namespace A { static int f1(); })
+		// so we check only for a substring and warn the user.
+		static bool warned = false;
+		if (!warned) {
+			// FIXME: enough precise message ? We will get this
+			// message for static C++ function too, must we
+			// warn only if the following check fails ?
+			cerr << "warning: some functions compiled without "
+			     << "debug information may have incorrect source "
+			     << "line attributions" << endl;
+			warned = true;
+		}
+		if (sym.name().find(functionname) == string::npos)
+			ret = false;
 	}
 
 	/* binutils 2.12 and below have a small bug where functions without a
@@ -358,8 +370,8 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 	if (linenr == 0) {
 		// FIXME: looking at debug info for all gcc version shows
 		// than the same problems can -perhaps- occur for epilog code:
-		// find a samples files with samples in epilog and try oprofpp
-		// -L -o on it, check it also with op_to_source.
+		// find a samples files with samples in epilog and try oreport
+		// -l -g on it, check it also with opannotate.
 
 		// first restrict the search on a sensible range of vma,
 		// 16 is an intuitive value based on epilog code look
@@ -376,7 +388,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 							 &linenr);
 
 			if (ret && linenr != 0
-				&& syms[sym_idx].name() == string(functionname)) {
+				&& sym.name() == string(functionname)) {
 				return true;
 			}
 		}
@@ -388,6 +400,9 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 		// multiple calls. The more easy way to recover is to reissue
 		// the first call, we don't need to recheck return value, we
 		// know that the call will succeed.
+		// As mentionned above a previous work-around break static
+		// inline function. We recover here by not checking than
+		// functionname == sym.name
 		bfd_find_nearest_line(ibfd, section, bfd_syms.get(), pc,
 				      &cfilename, &functionname, &linenr);
 	}

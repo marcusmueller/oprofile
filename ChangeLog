@@ -1,3 +1,9 @@
+2003-08-03  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/op_bfd.cpp: c++ static function doesn't get a mangled name
+	  in debug info (see gcc #11774). Try to recover through a not
+	  completely reliable mechanism but better than ignoring the problem
+
 2003-08-02  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opreport.cpp: minor: more consistency about function ordering
