@@ -757,34 +757,35 @@ The option allowed are :
 		<listitem><para>
 		<!-- FIXME: update if this changes -->
 		Output assembly code. Currently the assembly code is sorted by increasing order on the vma
-address of code and no sort order option is provided.
+		address but the <option>--sort-by-counter</option> provide a filtering option for assembly output.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--source-with-assembly</option></term>
 		<listitem><para>
-		Output assembly code mixed with the source file.
+		Output assembly code mixed with the source file, imply <option>--assembly</option>.
 		</para></listitem> 
 	</varlistentry>
 	<varlistentry>
 		<term><option>--sort-by-counter counter_nr</option></term>
 		<listitem><para>
-		Sort by decreasing number of samples on counter_nr.
+		Sort by decreasing number of samples on counter_nr. For assembly output this option provide only
+		a filtering and not a sort order.
 		</para></listitem> 
 	</varlistentry>
 	<varlistentry>
-		<term><option>--with-more-samples percent_nr</option></term>
+		<term><option>--with-more-than-samples percent_samples</option></term>
 		<listitem><para>
-		Output source file which contains at least percent_nr of samples. Note that you can only
+		Output source file or assembly symbol which contains at least percent_samples. Note that you can only
 output one complete source file, there is no way to select only certain symbols in the source file. Can
 not be combined with <option>--with-more-samples</option>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--until-more-samples percent_nr</option></term>
+		<term><option>--until-more-than-samples percent_samples</option></term>
 		<listitem><para>
-		Output source file until the amount of samples outputted reach percent_nr. See the note
-above. Can not be combined with <option>--with-more-samples</option>.
+		Output source file or assembly symbol until the amount of samples outputted reach percent_samples. See the note
+above. Can not be combined with <option>--with-more-than-samples</option>.
 		</para></listitem> 
 	</varlistentry>
 	<varlistentry>

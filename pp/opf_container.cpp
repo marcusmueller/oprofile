@@ -45,7 +45,7 @@ struct less_sample_entry_by_samples_nr {
 	less_sample_entry_by_samples_nr(size_t index_ = 0) : index(index_) {}
 
 	bool operator()(const sample_entry * lhs, const sample_entry * rhs) const {
-		return lhs->counter[index] < rhs->counter[index];
+		return lhs->counter[index] > rhs->counter[index];
 	}
 
 	bool operator()(const symbol_entry * lhs, const symbol_entry * rhs) const {
@@ -106,6 +106,9 @@ class symbol_container_impl {
 	const symbol_entry * find(string filename, size_t linenr) const;
 	void flush_input_symbol();
 	const symbol_entry * find_by_vma(unsigned long vma) const;
+
+	// get a vector of symbols sorted by increased count.
+	void get_symbols_by_count(size_t counter, vector<const symbol_entry*>& v) const;
  private:
 	std::vector<symbol_entry> v;
 
@@ -199,6 +202,23 @@ const symbol_entry * symbol_container_impl::find_by_vma(unsigned long vma) const
 	return 0;
 }
 
+// get a vector of symbols sorted by increased count.
+void symbol_container_impl::get_symbols_by_count(size_t counter, vector<const symbol_entry*>& v) const {
+	if (counter >= max_counter_number) {
+		throw "symbol_container_impl::get_symbols_by_count() : invalid counter number";
+	}
+
+	v.clear();
+
+	const std::multiset<const symbol_entry *, less_sample_entry_by_samples_nr>& temp =
+		symbol_entry_by_samples_nr[counter];
+
+	std::multiset<const symbol_entry *, less_sample_entry_by_samples_nr>::const_iterator it;
+	for (it = temp.begin() ; it != temp.end(); ++it) {
+		v.push_back(*it);
+	}
+}
+
 //---------------------------------------------------------------------------
 // Visible user interface implementation, just dispatch to the implementation.
 
@@ -241,6 +261,11 @@ void symbol_container_t::flush_input_symbol() {
 
 const symbol_entry * symbol_container_t::find_by_vma(unsigned long vma) const {
 	return impl->find_by_vma(vma);
+}
+
+// get a vector of symbols sorted by increased count.
+void symbol_container_t::get_symbols_by_count(size_t counter, vector<const symbol_entry*>& v) const {
+	return impl->get_symbols_by_count(counter, v);
 }
 
 //---------------------------------------------------------------------------

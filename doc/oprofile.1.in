@@ -210,12 +210,12 @@ output assembly code
 output assembly mixed with source file
 .br
 .TP
-.I "--until-more-than-samples percent_nr"
-output source until percent_nr samples are reached
+.I "--until-more-than-samples percent_samples"
+output source or assembly symbol until percent_samples are reached
 .br
 .TP
-.I "--with-more-than-samples percent_nr"
-output source with more than percent_nr samples
+.I "--with-more-than-samples percent_samples"
+output source or assembly symbol with more than percent_samples
 .br
 .TP
 .I "--sort-by-counter"

@@ -48,7 +48,7 @@ struct sample_entry {
 	unsigned long vma;        // would be bfd_vma but avoid depend on bfd.h
 	counter_array_t counter;
 
-	size_t build(string str, size_t pos, bool have_linenr_info);
+	size_t build(const string& str, size_t pos, bool have_linenr_info);
 
 	void debug_dump(ostream & out) const;
 };
@@ -86,6 +86,9 @@ class symbol_container_t {
 	void flush_input_symbol();
 
 	const symbol_entry * find_by_vma(unsigned long vma) const;
+
+	// get a vector of symbols sorted by increased count.
+	void get_symbols_by_count(size_t counter, vector<const symbol_entry*>& v) const;
  private:
 	symbol_container_impl * impl;
 };

@@ -84,7 +84,7 @@ struct counter_setup {
 	string help_string;
 	string unit_mask;
 	string unit_mask_help;     // The string help for the unit mask
-	size_t event_count_sample; // TODO NA for now see opropfpp.
+	size_t event_count_sample;
 	// would be double?
 	size_t total_samples;
 };
@@ -127,11 +127,13 @@ class output {
 			    bool comment, const string & prefix) const;
 	void output_one_counter(size_t counter, size_t total) const;
 
-	void find_and_output_symbol(string str, const char * blank) const;
-	void find_and_output_counter(string str, const char * blank) const;
+	void find_and_output_symbol(const string& str, const char * blank) const;
+	void find_and_output_counter(const string& str, const char * blank) const;
 
 	void find_and_output_counter(const string & filename,
 				     size_t linenr) const;
+
+	size_t get_sort_counter_nr() const;
 
 	// debug.
 	bool sanity_check_symbol_entry(size_t index) const;
@@ -245,7 +247,7 @@ void sample_entry::debug_dump(ostream & out) const {
 		out << counter[i] << " ";
 }
 
-size_t sample_entry::build(string str, size_t pos, bool have_linenr_info) {
+size_t sample_entry::build(const string& str, size_t pos, bool have_linenr_info) {
 
 	int number_of_char_read;
 	if (have_linenr_info) {
@@ -502,7 +504,7 @@ output_counter(const counter_array_t & counter, bool comment,
 }
 
 // Complexity: log(container.size())
-void output::find_and_output_symbol(string str, const char * blank) const {
+void output::find_and_output_symbol(const string& str, const char * blank) const {
 	unsigned long vma;
 
 	sscanf(str.c_str(), "%lx",  &vma);
@@ -517,7 +519,7 @@ void output::find_and_output_symbol(string str, const char * blank) const {
 }
 
 // Complexity: log(samples.size())
-void output::find_and_output_counter(string str, const char * blank) const {
+void output::find_and_output_counter(const string& str, const char * blank) const {
 	unsigned long vma;
 
 	sscanf(str.c_str(), "%lx",  &vma);
@@ -539,20 +541,70 @@ void output::find_and_output_counter(const string & filename, size_t linenr) con
 }
 
 void output::output_asm(input & in) {
+	size_t index = get_sort_counter_nr();
+
+	vector<const symbol_entry*> v;
+	symbols.get_symbols_by_count(index , v);
+
+	vector<const symbol_entry*> output_symbols;
+
+	// select the subset of symbols which statisfy the threshold condition.
+	double threshold = threshold_percent / 100.0;
+
+	for (size_t i = 0 ; i < v.size() && threshold >= 0 ; ++i) {
+		double percent = do_ratio(v[i]->sample.counter[index],
+					  counter_info[index].total_samples);
+
+		if (until_more_than_samples || percent >= threshold) {
+			output_symbols.push_back(v[i]);
+		}
+
+		if (until_more_than_samples) {
+			threshold -=  percent;
+		}
+	}
+
+	bool do_output = true;
+
 	string str;
 	while (in.read_line(str)) {
 		if (str.length()) {
 			// line of interest begins with a space (disam line) 
 			// or a '0' (symbol line)
 			if (str[0] == '0') {
-				find_and_output_symbol(str, "");
+				unsigned long vma;
+
+				sscanf(str.c_str(), "%lx",  &vma);
+
+				const symbol_entry* symbol = symbols.find_by_vma(vma);
+
+				// Note this use a pointer comparison. It work because symbols 
+				// container warranty than symbol pointer are unique.
+				if (find(output_symbols.begin(), output_symbols.end(), symbol) !=
+				    output_symbols.end()) {
+					do_output = true;
+				} else if (threshold_percent == 0) {
+					// if the user have not requested threshold we must output
+					// all symbols even if it contains no samples.
+					do_output = true;
+				} else {
+					do_output = false;
+				}
+
+				if (do_output) {
+					find_and_output_symbol(str, "");
+				}
+				
 			// Fix this test : first non blank is a digit
 			} else if (str[0] == ' ' && str.length() > 1 && 
-				   isdigit(str[1])) {
+				   isdigit(str[1]) && do_output) {
 				find_and_output_counter(str, " ");
 			}
 		}
-		out << str << '\n';
+
+		if (do_output) {
+			out << str << '\n';
+		}
 	}
 }
 
@@ -631,52 +683,76 @@ void output::output_source(input & /*in*/) {
 		filename_set.insert(samples[i].file_loc.filename);
 	}
 
-	// Give a sort order on filename for each counter.
-	vector<filename_by_samples> file_by_samples[max_counter_number];
+	size_t index = get_sort_counter_nr();
 
-	for (size_t i = 0 ; i < max_counter_number ; ++i) {
+	// Give a sort order on filename for the selected sort counter.
+	vector<filename_by_samples> file_by_samples;
 
-		set<string>::const_iterator it;
-		for (it = filename_set.begin() ; it != filename_set.end() ;  ++it) {
-			double percent = 0.0;
+	set<string>::const_iterator it;
+	for (it = filename_set.begin() ; it != filename_set.end() ;  ++it) {
+		double percent = 0.0;
 
-			counter_array_t total_count_for_file;
+		counter_array_t total_count_for_file;
 
-			samples.accumulate_samples_for_file(total_count_for_file, *it);
+		samples.accumulate_samples_for_file(total_count_for_file, *it);
 			
-			if (counter_info[i].enabled) {
-				percent = do_ratio(total_count_for_file[i],
-						   counter_info[i].total_samples);
-			}
-
-			filename_by_samples f(*it, percent, total_count_for_file);
-
-			file_by_samples[i].push_back(f);
+		if (counter_info[index].enabled) {
+			percent = do_ratio(total_count_for_file[index],
+					   counter_info[index].total_samples);
 		}
+
+		filename_by_samples f(*it, percent, total_count_for_file);
+
+		file_by_samples.push_back(f);
 	}
 
-	// now sort all of the file_by_samples entry.
-	for (size_t i = 0 ; i < max_counter_number ; ++i) {
-		sort(file_by_samples[i].begin(), file_by_samples[i].end());
-	}
+	// now sort the file_by_samples entry.
+	sort(file_by_samples.begin(), file_by_samples.end());
 
 	// please do not delete this portion of debug code for now. (phe 2001/06/15)
 #if 0
-	// At this point file_by_samples[index] is a sorted array of filename sorted
-	// by increasing value of counter number index.
-	for (size_t i = 0 ; i < max_counter_number ; ++i) {
-		out << "sorted order for counter " << i << endl;
+	{
+		// At this point file_by_samples is a sorted array of filename sorted
+		// by increasing value of counter number index.
+		out << "sorted order for counter " << index << endl;
 		vector<filename_by_samples>::const_iterator it;
-		for (it = file_by_samples[i].begin() ; it != file_by_samples[i].end() ; ++it) {
+		for (it = file_by_samples.begin() ; it != file_by_samples.end() ; ++it) {
 			out << it->filename << " " << it->percent << endl;
 		}
-
-		out << endl;
 	}
 #endif
 
 	double threshold = threshold_percent / 100.0;
 
+	for (size_t i = 0 ; i < file_by_samples.size() && threshold >= 0 ; ++i) {
+		ifstream in(file_by_samples[i].filename.c_str());
+
+		if (!in) {
+			cerr << "unable to open for reading: " << file_by_samples[i].filename << endl;
+		} else {
+			if (until_more_than_samples) {
+				do_output_one_file(in, file_by_samples[i].filename, 
+						   file_by_samples[i].counter);
+			} else {
+				if (do_ratio(file_by_samples[i].counter[index],
+					     counter_info[index].total_samples) >= threshold) {
+					do_output_one_file(in, file_by_samples[i].filename, 
+							   file_by_samples[i].counter);
+				}
+
+			}
+		}
+
+		// Always decrease the threshold if needed, even if the file has not
+		// been found to avoid in pathalogical case the output of many files
+		// which contains low counter value.
+		if (until_more_than_samples) {
+			threshold -=  file_by_samples[i].percent;
+		}
+	}
+}
+
+size_t output::get_sort_counter_nr() const {
 	size_t index = sort_by_counter;
 	if (index >= max_counter_number || counter_info[index].enabled == false) {
 		cerr << "sort_by_counter invalid or counter[sort_by_counter] disabled : switch "
@@ -692,32 +768,7 @@ void output::output_source(input & /*in*/) {
 	if (index == max_counter_number)
 		throw "output::output_source(input &) cannot find a counter enabled";
 
-	const vector<filename_by_samples> & v = file_by_samples[index];
-
-	for (size_t i = 0 ; i < v.size() && threshold >= 0 ; ++i) {
-		ifstream in(v[i].filename.c_str());
-
-		if (!in) {
-			cerr << "unable to open for reading: " << v[i].filename << endl;
-		} else {
-			if (until_more_than_samples) {
-				do_output_one_file(in, v[i].filename, v[i].counter);
-			} else {
-				if (do_ratio(v[i].counter[index],
-					     counter_info[index].total_samples) >= threshold) {
-					do_output_one_file(in, v[i].filename, v[i].counter);
-				}
-
-			}
-		}
-
-		// Always decrease the threshold if needed, even if the file has not
-		// been found to avoid in pathalogical case the output of many files
-		// which contains low counter value.
-		if (until_more_than_samples) {
-			threshold -=  v[i].percent;
-		}
-	}
+	return index;
 }
 
 bool output::sanity_check_symbol_entry(size_t index) const

@@ -1,3 +1,12 @@
+2001-07-22  Philippe Elie  <ph_e@club-internet.fr>
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.sgml:
+	* pp/opf_filter.h:
+	* pp/opf_filter.cpp:
+	* pp/opf_container.cpp: implement and document filtering for assembly
+	  output.
+
 2001-07-21  Philippe Elie  <ph_e@club-internet.fr>
  
  	* doc/oprofile.sgml:
