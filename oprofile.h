@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.43 2001/08/11 01:38:29 movement Exp $ */
+/* $Id: oprofile.h,v 1.44 2001/08/11 02:00:05 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -15,9 +15,9 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <linux/module.h>
 #include <linux/config.h>
 #include <linux/kernel.h>
-#include <linux/module.h>
 #include <linux/init.h>
 #include <linux/slab.h>
 #include <linux/delay.h>
@@ -174,11 +174,13 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 #endif
 
 // 2.4.7 introduced completions.
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,7)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,8)
 #define DECLARE_COMPLETION(x)	DECLARE_MUTEX_LOCKED(x)
 #define init_completion(x)
 #define complete_and_exit(x, y) up_and_exit((x), (y))
 #define wait_for_completion(x) down(x)
+#else
+#include <linux/completion.h>
 #endif
 
 int oprof_init(void);
