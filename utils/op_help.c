@@ -301,7 +301,8 @@ int main(int argc, char const *argv[])
 	}
 
 	if (cpu_type == CPU_NO_GOOD) {
-		fprintf(stderr, "cpu_type '%s' is not valid\n", cpu_string);
+		fprintf(stderr, "cpu_type '%s' is not valid\n",
+		        cpu_string ? cpu_string : "unset");
 		exit(EXIT_FAILURE);
 	}
 

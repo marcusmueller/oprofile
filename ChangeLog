@@ -1,3 +1,8 @@
+2004-09-17  John Levon  <levon@movementarian.org>
+
+	* utils/op_help.c: don't deref a NULL pointer
+	  on failure to read /dev/oprofile/cpu_type
+
 2004-09-17  Anton Blanchard  <anton@samba.org>
 
 	* libop/op_events.c: fix compile warnings
