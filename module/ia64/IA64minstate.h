@@ -1,3 +1,11 @@
+/**
+ * @file IA64minstate.h
+ *
+ * @remark Copy of source code from linux kernel
+ * @remark linux/arch/ia64/kernel/minstate.h
+ *
+ */
+
 #include <linux/config.h>
 
 #include "IA64entry.h"

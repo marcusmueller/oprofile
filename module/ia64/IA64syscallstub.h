@@ -1,5 +1,14 @@
-/* Assembly language file macros */
-/* $Id: IA64syscallstub.h,v 1.1 2002/11/06 23:50:19 movement Exp $ */
+/**
+ * @file IA64syscallstub.h
+ * Assembly language file macros
+ *
+ * @remark Copyright 2002 OProfile authors
+ * @remark Read the file COPYING
+ *
+ * @author Bob Montgomery
+ */
+
+/* $Id: IA64syscallstub.h,v 1.2 2002/11/09 01:11:55 phil_e Exp $ */
 
 #define SYSCALLSTUB_POST(name)		\
 	.sbss;				\
