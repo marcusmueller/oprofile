@@ -186,18 +186,6 @@ static void do_dump_gprof(op_bfd & abfd,
 	free(hist);
 }
 
-// FIXME: move to util++... 
-/**
- * file_exist - test for a samples file existence
- * @param filename the base samples filename
- *
- * return true if filename exist
- */
-static bool file_exist(string const & filename)
-{
-	return ifstream(filename.c_str());
-}
-
 /**
  * main
  */
@@ -261,7 +249,7 @@ int main(int argc, char const *argv[])
 			if ((options::counter_mask & (1 << i)) != 0) {
 				ostringstream s;
 				s << file << "#" << i;
-				if (file_exist(s.str()) == true)
+				if (op_file_readable(s.str()))
 					break;
 			}
 		}

@@ -15,14 +15,16 @@
 #include <string>
 #include <list>
 
-/** return true if the two files are identical */
+/// return true if the two files are the same file
 bool is_files_identical(std::string const & file1, std::string const & file2);
-/** create a directory, return false on failure */
+///  create a directory, return false on failure
 bool create_dir(std::string const & dir);
-/** create each component of the path, return false o, failure */
+/// create each component of the path, return false on failure
 bool create_path(std::string const & path);
-/** return the contents of a symbolic link or an empty string on failure */
+/// return the contents of a symbolic link or an empty string on failure
 std::string op_read_link(std::string const & name);
+/// return true if the given file is readable 
+bool op_file_readable(std::string const & file);
 
 /** 
  * @param file_list where to store result

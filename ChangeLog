@@ -1,5 +1,26 @@
 2002-06-06  John Levon  <moz@compsoc.man.ac.uk>
 
+	* make.common.in: enable -Werror for CVS builds
+	(not in module/)
+ 
+	* dae/opd_image.c:
+	* dae/oprofiled.c:
+	* libutil/op_deviceio.h:
+	* libutil/op_deviceio.c: API fixes
+
+	* libutil++/file_manip.h:
+	* libutil++/file_manip.cpp: 
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp:
+	* pp/op_time.cpp:
+	* pp/oprofpp.cpp: 
+	* libutil/op_lockfile.c: 
+	* libutil/op_file.h:
+	* libutil/op_file.c: add op_file_readable(),
+	  API fixes 
+ 
+2002-06-06  John Levon  <moz@compsoc.man.ac.uk>
+
 	* utils/op_stop: fail early if ! root
  
 2002-06-05  John Levon  <moz@compsoc.man.ac.uk>

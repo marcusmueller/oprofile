@@ -16,6 +16,7 @@
  
 #include <sys/unistd.h>
 #include <sys/types.h>
+#include <stdio.h>
 #include <signal.h>
  
 /**
@@ -55,7 +56,7 @@ int op_write_lock_file(char const * file)
 {
 	FILE * fp;
 
-	if (op_get_fsize(file, 0) != 0) {
+	if (op_file_readable(file)) {
 		pid_t pid = op_read_lock_file(file);
  
 		/* FIXME: ESRCH vs. EPERM */

@@ -2,16 +2,12 @@
  * @file op_help.c
  * Print out PMC event information
  *
- * Adapted from libpperf 0.5 by M. Patrick Goda and Michael S. Warren
- *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
  * 
  * @author John Levon <moz@compsoc.man.ac.uk>
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
-
-/* See IA32 Vol. 3 Appendix A */
 
 #include <stdio.h>
 #include <stdlib.h>

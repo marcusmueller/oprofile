@@ -17,7 +17,6 @@
 
 #include "config.h"
 
-// FIXME: take elsewhere ...
 #ifdef MALLOC_OK
 #define OP_ATTRIB_MALLOC	__attribute__((malloc))
 #else

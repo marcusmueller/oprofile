@@ -64,8 +64,7 @@ void op_close_device(fd_t devfd)
  *
  * Read @size bytes from a device into buffer @buf.
  * A seek to the start of the device file is done first
- * if @seek is non-zero, then a read is requested in one 
- * go of @size bytes.
+ * then a read is requested in one go of @size bytes.
  *
  * It is the caller's responsibility to do further op_read_device()
  * calls if the number of bytes read is not what is requested
@@ -76,12 +75,11 @@ void op_close_device(fd_t devfd)
  * interrupted, then errno will be EINTR, and the client should
  * arrange for re-starting the read if necessary.
  */ 
-ssize_t op_read_device(fd_t devfd, void * buf, size_t size, int seek)
+ssize_t op_read_device(fd_t devfd, void * buf, size_t size)
 {
 	ssize_t count;
 	
-	if (seek)
-		lseek(devfd,0,SEEK_SET);
+	lseek(devfd, 0, SEEK_SET);
  
 	count = read(devfd, buf, size);
 

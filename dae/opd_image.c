@@ -20,6 +20,8 @@
 #include "db.h"
  
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
  
 extern uint op_nr_counters;
 extern int separate_samples;

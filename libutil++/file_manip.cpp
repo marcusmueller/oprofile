@@ -118,6 +118,12 @@ string op_read_link(string const & name)
 	return linkbuf;
 }
 
+
+bool op_file_readable(string const & file)
+{
+	return op_file_readable(file.c_str());
+}
+ 
 inline static bool is_directory_name(char const * name)
 {
 	return name[0] == '.' && 
@@ -125,6 +131,7 @@ inline static bool is_directory_name(char const * name)
 		 (name[1] == '.' && name[2] == '\0'));
 }
 
+ 
 bool create_file_list(list<string> & file_list, string const & base_dir,
 		      string const & filter, bool recursive)
 {

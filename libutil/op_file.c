@@ -12,6 +12,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
  
+#include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <limits.h>
@@ -20,28 +22,37 @@
 #include "op_libiberty.h" 
  
 /**
- * op_get_fsize - get size of file
- * @param file  file name
- * @param fatal  exit on error
+ * op_file_readable - is a file readable
+ * @param file file name
  *
- * Returns the size of the named file in bytes.
- * Failure is fatal if @fatal is %TRUE.
+ * Return true if the given file is readable.
+ *
+ * Beware of race conditions !
+ */
+int op_file_readable(char const * file)
+{
+	return !access(file, R_OK);
+}
+ 
+/**
+ * op_get_fsize - get size of file
+ * @param file file name
+ * @param size size parameter to fill
+ *
+ * Returns the size of the named file in bytes
+ * into the pointer given. Returns non-zero
+ * on failure, in which case @size is not changed.
  */ 
-off_t op_get_fsize(char const * file, int fatal)
+int op_get_fsize(char const * file, off_t * size)
 {
 	struct stat st;
 
-	if (stat(file, &st)) {
-		if (!fatal) 
-			return 0;
-		 
-		fprintf(stderr, "op_get_fsize: stat failed\n");
-		exit(EXIT_FAILURE);
-	}
+	int err = stat(file, &st);
+	if (err)
+		return err;
 
-	/* PHE FIXME caller can not make any difference between failure and
-	 * zero file size when fatal != 0 */
-	return st.st_size;
+	*size = st.st_size;
+	return 0;
 }
 
 /**

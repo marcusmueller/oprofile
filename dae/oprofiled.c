@@ -38,6 +38,10 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
+ 
+// GNU libc bug
+pid_t getpgid(pid_t pid);
  
 u32 ctr_count[OP_MAX_COUNTERS];
 u8 ctr_event[OP_MAX_COUNTERS];
@@ -472,7 +476,7 @@ static void opd_shutdown(struct op_sample * buf, size_t size, struct op_note * n
 
 	/* it's always OK to read the note device */
 	while (ncount < 0) {
-		ncount = op_read_device(notedevfd, nbuf, nsize, 1);
+		ncount = op_read_device(notedevfd, nbuf, nsize);
 	}
  
 	if (ncount > 0) {
@@ -488,7 +492,7 @@ static void opd_shutdown(struct op_sample * buf, size_t size, struct op_note * n
 	 * would be a livelock, but it requires root to send stops constantly
 	 * and never lose the race. */
 	while (1) {
-		count = op_read_device(devfd, buf, size, 1);
+		count = op_read_device(devfd, buf, size);
 		if (count < 0 && errno == EAGAIN) {
 			break;
 		} else if (count > 0) {
@@ -517,7 +521,7 @@ static void opd_do_read(struct op_sample * buf, size_t size, struct op_note * nb
  
 		/* loop to handle EINTR */
 		while (count < 0) {
-			count = op_read_device(devfd, buf, size, 1);
+			count = op_read_device(devfd, buf, size);
  
 			/* if count == 0, that means we need to stop ! */
 			if (count == 0) {
@@ -527,7 +531,7 @@ static void opd_do_read(struct op_sample * buf, size_t size, struct op_note * nb
 		}
 
 		while (ncount < 0) {
-			ncount = op_read_device(notedevfd, nbuf, nsize, 1);
+			ncount = op_read_device(notedevfd, nbuf, nsize);
 		}
  
 		opd_do_notes(nbuf, ncount);

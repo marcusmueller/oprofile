@@ -15,14 +15,22 @@ BINDIR=@bindir@
  
 # config
 INCLUDES=-I$(TOPDIR)/  -I$(TOPDIR)/libutil  -I$(TOPDIR)/libop -I$(TOPDIR)/libdb @extra_includes@
-CXXINCLUDES=-I$(TOPDIR)/libopt++ -I$(TOPDIR)/libutil++ -I$(TOPDIR)/libop++ @QT2_INCLUDES@
+ 
 CFLAGS += $(INCLUDES)
 CFLAGS += -W -Wall -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline 
 CFLAGS += -pipe -g -O2 @CFLAGS@
+ 
+CXXINCLUDES=-I$(TOPDIR)/libopt++ -I$(TOPDIR)/libutil++ -I$(TOPDIR)/libop++ @QT2_INCLUDES@
 CXXFLAGS += $(INCLUDES) $(CXXINCLUDES)
 CXXFLAGS += -W -Wall -Wunused -Wmissing-prototypes
 CXXFLAGS += -pipe -g -O2 @CXXFLAGS@
 
+# enable -Werror for non-release versions
+ifneq (,$(findstring cvs,@VERSION@))
+CFLAGS += -Werror
+CXXFLAGS += -Werror
+endif 
+ 
 LDFLAGS += -L$(TOPDIR)/libutil++ -L$(TOPDIR)/libutil -L$(TOPDIR)/libop++ -L$(TOPDIR)/libop \
 	-L$(TOPDIR)/libdb -L$(TOPDIR)/libopt++ @extra_libraries@
  

@@ -20,10 +20,9 @@ extern "C" {
  
 #include <unistd.h>
  
-#define op_try_open_device(n) op_open_device((n), 0)
 fd_t op_open_device(char const * name, int fatal);
 void op_close_device(fd_t devfd);
-ssize_t op_read_device(fd_t devfd, void * buf, size_t size, int seek);
+ssize_t op_read_device(fd_t devfd, void * buf, size_t size);
 
 #ifdef __cplusplus
 }

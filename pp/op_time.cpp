@@ -107,19 +107,6 @@ image_name::image_name(string const & samplefile_name)
 }
 
 /**
- * file_exist - test for a samples file existence
- * @param filename the base samples filename
- *
- * return true if filename exist
- */
-static bool file_exist(string const & filename)
-{
-	ifstream in(filename.c_str());
-
-	return in;
-}
-
-/**
  * sort_file_list_by_name - insert in result a file list sorted by app name
  * @param result where to put result
  * @param file_list a list of string which must be insert in result
@@ -158,7 +145,7 @@ static void sort_file_list_by_name(map_t & result,
 				ostringstream s;
 				s << string(options::samples_dir) << "/" << *it 
 				  << '#' << i;
-				if (file_exist(s.str()) == true) {
+				if (op_file_readable(s.str())) {
 					break;
 				}
 			}
@@ -289,7 +276,7 @@ static void output_files_count(map_t& files)
 				s << string(options::samples_dir) << "/"
 				  << p_it.first->second.samplefile_name
 				  << "#" << i;
-				if (file_exist(s.str()) == false)
+				if (!op_file_readable(s.str()))
 					continue;
 
 				samples_file_t samples(s.str());
@@ -399,7 +386,7 @@ string check_image_name(string const & image_name,
 			string const & samples_filename)
 {
 	// FIXME: this isn't polite enough for a permissions problem. 
-	if (file_exist(image_name))
+	if (op_file_readable(image_name))
 		return image_name;
 
 	typedef alt_filename_t::const_iterator it_t;
@@ -468,7 +455,7 @@ static void output_symbols_count(map_t& files, int counter)
 
 		// check_image_name have already warned the user if something
 		// feel bad.
-		if (file_exist(image_name)) {
+		if (op_file_readable(image_name)) {
 			opp_samples_files samples_file(samples_filename,
 						       counter);
 			samples_file.check_mtime(image_name);

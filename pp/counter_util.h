@@ -26,7 +26,7 @@ int parse_counter_mask(std::string const & str);
  * @param counter_mask bit mask specifying the counter nr to use
  * @param sort_by_counter the counter nr from which we sort
  *
- * all error are fatal
+ * All errors are fatal.
  */
 void validate_counter(int counter_mask, int & sort_by_counter);
 

@@ -148,7 +148,7 @@ public:
 
 private:
 	/// file size in bytes
-	uint file_size;
+	off_t file_size;
 
 	// the bfd object.
 	bfd * ibfd;

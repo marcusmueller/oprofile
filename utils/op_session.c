@@ -73,7 +73,6 @@ static void op_options(int argc, char const *argv[])
 /**
  * op_move_files - move all the sample files
  * @param sname name of session directory 
- *
  */
 static void op_move_files(char const * sname)
 {
@@ -135,9 +134,8 @@ static void op_signal_daemon(void)
 {
 	pid_t pid = op_read_lock_file(OP_LOCK_FILE);
  
-	if (pid) {
+	if (pid)
 		kill(pid, SIGHUP);
-	}
 }
 
  
@@ -150,8 +148,8 @@ int main(int argc, char const *argv[])
 	/* not ideal, but OK for now. The sleep hopefully
 	 * means the daemon starts reading before the signal
 	 * is delivered, so it will finish reading, *then*
-	 * handle the SIGHUP. Hack !
-	 */
+	 * handle the SIGHUP. Hack ! FIXME
+ 	 */
  	pid = op_read_lock_file(OP_LOCK_FILE);
  	if (pid) {
  		system("op_dump");

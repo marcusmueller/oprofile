@@ -18,10 +18,8 @@ extern "C" {
 
 #include <sys/types.h>
  
-#include <stdio.h>
-#include <stdlib.h>
- 
-off_t op_get_fsize(char const * file, int fatal);
+int op_file_readable(char const * file);
+int op_get_fsize(char const * file, off_t * size);
 time_t op_get_mtime(char const * file);
 int op_move_regular_file(char const * new_dir, 
 	char const * old_dir, char const * name);

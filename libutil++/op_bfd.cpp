@@ -33,6 +33,7 @@ using std::endl;
 
 op_bfd::op_bfd(string const & filename, vector<string> exclude_symbols)
 	:
+	file_size(0),
 	ibfd(0),
 	bfd_syms(0),
 	text_offset(0)
@@ -42,7 +43,7 @@ op_bfd::op_bfd(string const & filename, vector<string> exclude_symbols)
 		exit(EXIT_FAILURE);
 	}
 
-	file_size = op_get_fsize(filename.c_str(), 0);
+	op_get_fsize(filename.c_str(), &file_size);
 
 	ibfd = bfd_openr(filename.c_str(), NULL);
  
