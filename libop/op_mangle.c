@@ -40,15 +40,16 @@ char * op_mangle_filename(struct mangle_values const * values)
 	char const * dep_name = values->image_name;
 
 	len = strlen(OP_SAMPLES_CURRENT_DIR) + strlen(values->image_name)
-	      + 1 + strlen(values->event_name) 
-	      + 1 + strlen(values->dep_name) + 1;
+		+ 1 + strlen(values->event_name) 
+		+ 1 + strlen(values->dep_name) + 1;
 
 	if (values->flags & MANGLE_CALLGRAPH)
 		len += strlen(values->cg_image_name) + 1;
 
 	/* provision for tgid, tid, unit_mask, cpu and some {root}, {dep},
 	 * {kern} and {cg} marker */
-	len += 256;	/* FIXME: too ugly */
+	/* FIXME: too ugly */
+	len += 256;
 
 	mangled = xmalloc(len);
 

@@ -399,8 +399,8 @@ void sfile_sync_files(void)
 		for (i = 0 ; i < CG_HASH_TABLE_SIZE; ++i) {
 			struct list_head * pos;
 			list_for_each(pos, &sf->cg_files[i]) {
-				struct cg_hash_entry * temp = 
-				   list_entry(pos, struct cg_hash_entry, next);
+				struct cg_hash_entry * temp = list_entry(pos,
+					struct cg_hash_entry, next);
 				odb_sync(&temp->file);
 			}
 		}
@@ -420,10 +420,9 @@ void sfile_close_files(void)
 			odb_close(&sf->files[i]);
 
 		for (i = 0 ; i < CG_HASH_TABLE_SIZE; ++i) {
-			struct list_head * pos;
 			list_for_each(pos, &sf->cg_files[i]) {
-				struct cg_hash_entry * temp = 
-				   list_entry(pos, struct cg_hash_entry, next);
+				struct cg_hash_entry * temp = list_entry(pos,
+					struct cg_hash_entry, next);
 				odb_close(&temp->file);
 			}
 		}

@@ -122,7 +122,7 @@ bool verbose::setup(vector<string> const & names)
  * ofstream fout("logfile");
  * fout << debug << "foo";
  */
-ostream& operator<<(cverb_object & /*out*/, verbose const & v)
+ostream& operator<<(cverb_object &, verbose const & v)
 {
 	return v.set ? cout : null_stream;
 }

@@ -21,7 +21,7 @@ using namespace std;
 
 template <typename Input, typename Output>
 struct input_output {
-	Input  input;
+	Input input;
 	Output output;
 };
 

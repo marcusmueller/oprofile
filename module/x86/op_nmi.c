@@ -50,9 +50,9 @@ static void find_tss(int cpu)
 
 	asm volatile("str %0 ; sgdt %1" : "=r" (tr), "=m" (d));	
 	ld = (struct ldttss_desc *)(d.address + tr);
-	per_cpu_tss[cpu] = (void *)(ld->base0 | ((u64)ld->base1 << 16) |
-			   ((u64)ld->base2 << 24) | 
-			   ((u64)ld->base3 << 32));
+	per_cpu_tss[cpu] =
+		(void *)(ld->base0 | ((u64)ld->base1 << 16) |
+		((u64)ld->base2 << 24) | ((u64)ld->base3 << 32));
 } 
 
 asmlinkage void op_do_nmi(struct pt_regs * regs)

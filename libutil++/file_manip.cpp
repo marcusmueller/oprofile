@@ -146,7 +146,7 @@ string op_dirname(string const & file_name)
 
 	result.erase(pos, result.length() - pos); 	 
 
-	// "////usr" must return "/" 	 
+	// "////usr" must return "/"
 	return erase_trailing_path_separator(result);
 }
 

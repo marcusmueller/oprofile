@@ -164,7 +164,7 @@ my_sys_execve (char *filename, char **argv, char **envp, struct pt_regs *regs)
 	filename = getname(filename);
 	error = PTR_ERR(filename);
 	if (IS_ERR(filename))
-	        goto out;
+		goto out;
 	error = do_execve(filename, argv, envp, regs);
 
 	if (!error) {

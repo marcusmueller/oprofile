@@ -60,7 +60,7 @@ void check_mtime(string const & file, opd_header const & header)
 	time_t const newmtime = op_get_mtime(file.c_str());
 
 	if (newmtime == header.mtime)
-	       return;
+		return;
 
 	if (warned_files.find(file) != warned_files.end())
 		return;

@@ -27,11 +27,11 @@ struct p4_counter_binding {
 };
 
 struct p4_event_binding {
-	int escr_select;  /* value to put in CCCR */
-	int event_select; /* value to put in ESCR */
+	int escr_select;  /**< value to put in CCCR */
+	int event_select; /**< value to put in ESCR */
 	struct {
-		int virt_counter; /* for this counter... */
-		int escr_address; /* use this ESCR       */
+		int virt_counter; /**< for this counter... */
+		int escr_address; /**< use this ESCR       */
 	} bindings[2];
 };
 
@@ -63,73 +63,73 @@ static struct p4_counter_binding p4_counters[NUM_COUNTERS] = {
 
 static struct p4_event_binding p4_events[NUM_EVENTS] = {
 	
-	{ /* BRANCH_RETIRED */
+	/* BRANCH_RETIRED */ {
 		0x05, 0x06, 
 		{ {CTR_IQ_4, MSR_P4_CRU_ESCR2},
 		  {CTR_IQ_5, MSR_P4_CRU_ESCR3} }
 	},
 	
-	{ /* MISPRED_BRANCH_RETIRED */
+	/* MISPRED_BRANCH_RETIRED */ {
 		0x04, 0x03, 
 		{ { CTR_IQ_4, MSR_P4_CRU_ESCR0},
 		  { CTR_IQ_5, MSR_P4_CRU_ESCR1} }
 	},
 	
-	{ /* TC_DELIVER_MODE */
+	/* TC_DELIVER_MODE */ {
 		0x01, 0x01,
 		{ { CTR_MS_0, MSR_P4_TC_ESCR0},  
 		  { CTR_MS_2, MSR_P4_TC_ESCR1} }
 	},
 	
-	{ /* BPU_FETCH_REQUEST */
+	/* BPU_FETCH_REQUEST */ {
 		0x00, 0x03, 
 		{ { CTR_BPU_0, MSR_P4_BPU_ESCR0},
 		  { CTR_BPU_2, MSR_P4_BPU_ESCR1} }
 	},
 
-	{ /* ITLB_REFERENCE */
+	/* ITLB_REFERENCE */ {
 		0x03, 0x18,
 		{ { CTR_BPU_0, MSR_P4_ITLB_ESCR0},
 		  { CTR_BPU_2, MSR_P4_ITLB_ESCR1} }
 	},
 
-	{ /* MEMORY_CANCEL */
+	/* MEMORY_CANCEL */ {
 		0x05, 0x02,
 		{ { CTR_FLAME_0, MSR_P4_DAC_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_DAC_ESCR1} }
 	},
 
-	{ /* MEMORY_COMPLETE */
+	/* MEMORY_COMPLETE */ {
 		0x02, 0x08,
 		{ { CTR_FLAME_0, MSR_P4_SAAT_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_SAAT_ESCR1} }
 	},
 
-	{ /* LOAD_PORT_REPLAY */
+	/* LOAD_PORT_REPLAY */ {
 		0x02, 0x04, 
 		{ { CTR_FLAME_0, MSR_P4_SAAT_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_SAAT_ESCR1} }
 	},
 
-	{ /* STORE_PORT_REPLAY */
+	/* STORE_PORT_REPLAY */ {
 		0x02, 0x05,
 		{ { CTR_FLAME_0, MSR_P4_SAAT_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_SAAT_ESCR1} }
 	},
 
-	{ /* MOB_LOAD_REPLAY */
+	/* MOB_LOAD_REPLAY */ {
 		0x02, 0x03,
 		{ { CTR_BPU_0, MSR_P4_MOB_ESCR0},
 		  { CTR_BPU_2, MSR_P4_MOB_ESCR1} }
 	},
 
-	{ /* PAGE_WALK_TYPE */
+	/* PAGE_WALK_TYPE */ {
 		0x04, 0x01,
 		{ { CTR_BPU_0, MSR_P4_PMH_ESCR0},
 		  { CTR_BPU_2, MSR_P4_PMH_ESCR1} }
 	},
 
-	{ /* BSQ_CACHE_REFERENCE */
+	/* BSQ_CACHE_REFERENCE */ {
 		0x07, 0x0c, 
 		{ { CTR_BPU_0, MSR_P4_BSU_ESCR0},
 		  { CTR_BPU_2, MSR_P4_BSU_ESCR1} }
@@ -137,31 +137,31 @@ static struct p4_event_binding p4_events[NUM_EVENTS] = {
 
 	/* intel doc vol 3 table A-1: P4 and xeon with cpuid signature < 0xf27
 	 * doen't allow MSR_FSB_ESCR1 so only counter 0 is available */
-	{ /* IOQ_ALLOCATION */
+	/* IOQ_ALLOCATION */ {
 		0x06, 0x03, 
 		{ { CTR_BPU_0, MSR_P4_FSB_ESCR0},
 		  { 0, 0 } }
 	},
 
-	{ /* IOQ_ACTIVE_ENTRIES */
+	/* IOQ_ACTIVE_ENTRIES */ {
 		0x06, 0x1a, 
 		{ { CTR_BPU_2, MSR_P4_FSB_ESCR1},
 		  { 0, 0 } }
 	},
 
-	{ /* FSB_DATA_ACTIVITY */
+	/* FSB_DATA_ACTIVITY */ {
 		0x06, 0x17, 
 		{ { CTR_BPU_0, MSR_P4_FSB_ESCR0},
 		  { CTR_BPU_2, MSR_P4_FSB_ESCR1} }
 	},
 
-	{ /* BSQ_ALLOCATION */
+	/* BSQ_ALLOCATION */ {
 		0x07, 0x05, 
 		{ { CTR_BPU_0, MSR_P4_BSU_ESCR0},
 		  { 0, 0 } }
 	},
 
-	{ /* BSQ_ACTIVE_ENTRIES */
+	/* BSQ_ACTIVE_ENTRIES */ {
 		0x07, 0x06,
 		/* FIXME intel doc don't say which ESCR1 to use, using
 		   BSU_ESCR1 is a sensible guess but will need validation */
@@ -169,133 +169,134 @@ static struct p4_event_binding p4_events[NUM_EVENTS] = {
 		  { 0, 0 } }
 	},
 
-	{ /* X87_ASSIST */
+	/* X87_ASSIST */ {
 		0x05, 0x03, 
 		{ { CTR_IQ_4, MSR_P4_CRU_ESCR2},
 		  { CTR_IQ_5, MSR_P4_CRU_ESCR3} }
 	},
 
-	{ /* SSE_INPUT_ASSIST */
+	/* SSE_INPUT_ASSIST */ {
 		0x01, 0x34,
 		{ { CTR_FLAME_0, MSR_P4_FIRM_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_FIRM_ESCR1} }
 	},
   
-	{ /* PACKED_SP_UOP */
+	/* PACKED_SP_UOP */ {
 		0x01, 0x08, 
 		{ { CTR_FLAME_0, MSR_P4_FIRM_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_FIRM_ESCR1} }
 	},
   
-	{ /* PACKED_DP_UOP */
+	/* PACKED_DP_UOP */ {
 		0x01, 0x0c, 
 		{ { CTR_FLAME_0, MSR_P4_FIRM_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_FIRM_ESCR1} }
 	},
 
-	{ /* SCALAR_SP_UOP */
+	/* SCALAR_SP_UOP */ {
 		0x01, 0x0a, 
 		{ { CTR_FLAME_0, MSR_P4_FIRM_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_FIRM_ESCR1} }
 	},
 
-	{ /* SCALAR_DP_UOP */
+	/* SCALAR_DP_UOP */ {
 		0x01, 0x0e,
 		{ { CTR_FLAME_0, MSR_P4_FIRM_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_FIRM_ESCR1} }
 	},
 
-	{ /* 64BIT_MMX_UOP */
+	/* 64BIT_MMX_UOP */ {
 		0x01, 0x02, 
 		{ { CTR_FLAME_0, MSR_P4_FIRM_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_FIRM_ESCR1} }
 	},
   
-	{ /* 128BIT_MMX_UOP */
+	/* 128BIT_MMX_UOP */ {
 		0x01, 0x1a, 
 		{ { CTR_FLAME_0, MSR_P4_FIRM_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_FIRM_ESCR1} }
 	},
 
-	{ /* X87_FP_UOP */
+	/* X87_FP_UOP */ {
 		0x01, 0x04, 
 		{ { CTR_FLAME_0, MSR_P4_FIRM_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_FIRM_ESCR1} }
 	},
   
-	{ /* X87_SIMD_MOVES_UOP */
+	/* X87_SIMD_MOVES_UOP */ {
 		0x01, 0x2e, 
 		{ { CTR_FLAME_0, MSR_P4_FIRM_ESCR0},
 		  { CTR_FLAME_2, MSR_P4_FIRM_ESCR1} }
 	},
   
-	{ /* MACHINE_CLEAR */
+	/* MACHINE_CLEAR */ {
 		0x05, 0x02, 
 		{ { CTR_IQ_4, MSR_P4_CRU_ESCR2},
 		  { CTR_IQ_5, MSR_P4_CRU_ESCR3} }
 	},
 
-	{ /* GLOBAL_POWER_EVENTS */
-		0x06, 0x13 /* older manual says 0x05, newer 0x13 */,
+	/* GLOBAL_POWER_EVENTS */ {
+		/* older manual says 0x05, newer 0x13 */
+		0x06, 0x13,
 		{ { CTR_BPU_0, MSR_P4_FSB_ESCR0},
 		  { CTR_BPU_2, MSR_P4_FSB_ESCR1} }
 	},
   
-	{ /* TC_MS_XFER */
+	/* TC_MS_XFER */ {
 		0x00, 0x05, 
 		{ { CTR_MS_0, MSR_P4_MS_ESCR0},
 		  { CTR_MS_2, MSR_P4_MS_ESCR1} }
 	},
 
-	{ /* UOP_QUEUE_WRITES */
+	/* UOP_QUEUE_WRITES */ {
 		0x00, 0x09,
 		{ { CTR_MS_0, MSR_P4_MS_ESCR0},
 		  { CTR_MS_2, MSR_P4_MS_ESCR1} }
 	},
 
-	{ /* FRONT_END_EVENT */
+	/* FRONT_END_EVENT */ {
 		0x05, 0x08,
 		{ { CTR_IQ_4, MSR_P4_CRU_ESCR2},
 		  { CTR_IQ_5, MSR_P4_CRU_ESCR3} }
 	},
 
-	{ /* EXECUTION_EVENT */
+	/* EXECUTION_EVENT */ {
 		0x05, 0x0c,
 		{ { CTR_IQ_4, MSR_P4_CRU_ESCR2},
 		  { CTR_IQ_5, MSR_P4_CRU_ESCR3} }
 	},
 
-	{ /* REPLAY_EVENT */
+	/* REPLAY_EVENT */ {
 		0x05, 0x09,
 		{ { CTR_IQ_4, MSR_P4_CRU_ESCR2},
 		  { CTR_IQ_5, MSR_P4_CRU_ESCR3} }
 	},
 
-	{ /* INSTR_RETIRED */
+	/* INSTR_RETIRED */ {
 		0x04, 0x02, 
 		{ { CTR_IQ_4, MSR_P4_CRU_ESCR0},
 		  { CTR_IQ_5, MSR_P4_CRU_ESCR1} }
 	},
 
-	{ /* UOPS_RETIRED */
+	/* UOPS_RETIRED */ {
 		0x04, 0x01,
 		{ { CTR_IQ_4, MSR_P4_CRU_ESCR0},
 		  { CTR_IQ_5, MSR_P4_CRU_ESCR1} }
 	},
 
-	{ /* UOP_TYPE */    
+	/* UOP_TYPE */     {
 		0x02, 0x02, 
 		{ { CTR_IQ_4, MSR_P4_RAT_ESCR0},
 		  { CTR_IQ_5, MSR_P4_RAT_ESCR1} }
 	},
 
-	{ /* RETIRED_MISPRED_BRANCH_TYPE */
+	/* RETIRED_MISPRED_BRANCH_TYPE */ {
 		0x02, 0x05, 
 		{ { CTR_MS_0, MSR_P4_TBPU_ESCR0},
 		  { CTR_MS_2, MSR_P4_TBPU_ESCR1} }
 	},
 
-	{ /* RETIRED_BRANCH_TYPE */
+	/* RETIRED_BRANCH_TYPE */ {
 		0x02, 0x04,
 		{ { CTR_MS_0, MSR_P4_TBPU_ESCR0},
 		  { CTR_MS_2, MSR_P4_TBPU_ESCR1} }

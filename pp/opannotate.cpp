@@ -333,7 +333,8 @@ void do_one_output_objdump(symbol_collection const & symbols,
 		return ;
 	}
 
-	reader.terminate_process();  // force error code to be acquired
+	// force error code to be acquired
+	reader.terminate_process();
 
 	// required because if objdump stop by signal all above things suceeed
 	// (signal error message are not output through stdout/stderr)

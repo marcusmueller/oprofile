@@ -136,7 +136,7 @@ opd_header const get_first_header(profile_class const & pclass)
 			file = *sample_files.cg_files.begin();
 	} else {
 		profile_sample_files const & sample_files 
-		  = *(profile.files.begin());
+			= *(profile.files.begin());
 		if (!sample_files.sample_filename.empty())
 			file = sample_files.sample_filename;
 		else

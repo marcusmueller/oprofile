@@ -210,7 +210,8 @@ disable_psr(void *dummy)
 	regs = (struct pt_regs *)((unsigned long) current + IA64_STK_OFFSET);
 	regs--;
 	ia64_psr(regs)->pp = 0;
-	ia64_psr(regs)->up = 0; /* shouldn't need to */
+	/* shouldn't need to */
+	ia64_psr(regs)->up = 0;
 
 	/* disable profiling for my current state */
 	__asm__ __volatile__ ("rsm psr.pp;;"::: "memory");
@@ -281,12 +282,10 @@ op_tasklist_toggle_pp(unsigned int val)
 	struct task_struct *p;
 	struct pt_regs *regs;
 
-	DBprintk(("invoked by [%d] pp=%u\n", current->pid, val));
-
 	read_lock(&tasklist_lock);
 
 	for_each_task(p) {
-       		regs = (struct pt_regs *)((unsigned long) p + IA64_STK_OFFSET);
+		regs = (struct pt_regs *)((unsigned long) p + IA64_STK_OFFSET);
 
 		/*
 		 * position on pt_regs saved on stack on 1st entry into the kernel
@@ -527,14 +526,14 @@ pmu_init(void)
 
 	/* figure out processor type configure number of bits in pmd
 	   and number of counters */
-	switch(get_cpu_type()){
+	switch (get_cpu_type()) {
 	case CPU_IA64_1:
-	  pmd_mask = IA64_1_PMD_MASK_VAL; break;
+		pmd_mask = IA64_1_PMD_MASK_VAL; break;
 	case CPU_IA64_2:
 	case CPU_IA64:
-	  pmd_mask = IA64_2_PMD_MASK_VAL; break;
+		pmd_mask = IA64_2_PMD_MASK_VAL; break;
 	default:
-	  err = -EIO; break;
+		err = -EIO; break;
 	}
 
 	op_nr_counters = 4;

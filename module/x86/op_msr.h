@@ -306,8 +306,9 @@
 #ifndef MSR_P4_SSU_ESCR0
 #define MSR_P4_SSU_ESCR0 0x3be
 #endif
+/* guess: not defined in manual */
 #ifndef MSR_P4_SSU_ESCR1
-#define MSR_P4_SSU_ESCR1 0x3bf    /* guess: not defined in manual */
+#define MSR_P4_SSU_ESCR1 0x3bf
 #endif
 #ifndef MSR_P4_TBPU_ESCR0
 #define MSR_P4_TBPU_ESCR0 0x3c2
@@ -328,8 +329,9 @@
 #define MSR_P4_U2L_ESCR1 0x3b1
 #endif
 
+/* Hyper-Threading */
 #ifndef X86_FEATURE_HT
-#define X86_FEATURE_HT		(0*32+28) /* Hyper-Threading */
+#define X86_FEATURE_HT		(0*32+28)
 #endif
 
 #endif /* OP_MSR_H */

@@ -118,7 +118,8 @@ int opd_open_sample_file(samples_odb_t * file, struct sfile * last,
 
 	create_path(mangled);
 
-	sfile_get(sf);	/* locking sf will lock associated cg files too */
+	/* locking sf will lock associated cg files too */
+	sfile_get(sf);
 
 retry:
 	err = odb_open(file, mangled, ODB_RDWR, sizeof(struct opd_header));

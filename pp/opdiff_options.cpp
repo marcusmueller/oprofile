@@ -25,7 +25,7 @@ namespace {
 }  // anonymous namespace
 
 
-void handle_options(vector<string> const & /*non_options*/)
+void handle_options(vector<string> const &)
 {
 	using namespace options;
 }

@@ -390,7 +390,7 @@ This section gives a brief description of the available OProfile utilities and t
 	<term><filename>opstack</filename></term>
 	<listitem><para>
 		This utility can output callgraph profiles. This require an x86
-		based box and a 2.6 box with this <ulink url="http://perso.wanadoo.fr/phil.el/">patch</ulink>.
+		based box and a 2.6 box with the <ulink url="http://oprofile.sf.net/patches/">call-graph patch</ulink>.
 		Note this tools is actively developped, don't report glitch for now please.
 		 See <xref linkend="opstack" />.
 	</para></listitem>
