@@ -3,12 +3,10 @@ dist_sources = \
 	opd_stats.c \
 	opd_kernel.c \
 	opd_image.c \
-	opd_sample_files.c \
 	opd_image.h \
 	opd_printf.h \
 	opd_stats.h \
 	opd_kernel.h \
-	opd_sample_files.h \
 	opd_cookie.h
 
 EXTRA_DIST = $(dist_sources)
@@ -27,7 +25,9 @@ AM_CFLAGS = @OP_CFLAGS@
 noinst_LIBRARIES = libdaemon.a
 libdaemon_a_SOURCES = \
 	opd_util.h \
-	opd_util.c
+	opd_util.c \
+	opd_sample_files.c \
+	opd_sample_files.h
 
 if kernel_support
 

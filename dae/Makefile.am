@@ -5,12 +5,10 @@ dist_sources = \
 	opd_image.c \
 	opd_mapping.c \
 	opd_parse_proc.c \
-	opd_sample_files.c \
 	oprofiled.c \
 	opd_image.h \
 	opd_mapping.h \
 	opd_printf.h \
-	opd_sample_files.h \
 	p_module.h \
 	opd_kernel.h \
 	opd_parse_proc.h \

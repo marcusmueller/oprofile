@@ -1,5 +1,14 @@
 2003-08-08  John Levon  <levon@movementarian.org>
 
+	* dae/Makefile.am:
+	* dae/opd_sample_files.h:
+	* dae/opd_sample_files.c:
+	* daemon/Makefile.am:
+	* daemon/opd_sample_files.c: share opd_sample_files
+	code
+
+2003-08-08  John Levon  <levon@movementarian.org>
+
 	* dae/oprofiled.c:
 	* daemon/oprofiled.c:
 	* daemon/opd_util.h:
