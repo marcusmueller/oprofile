@@ -43,7 +43,7 @@ extern cverb_object cverb;
  * cout << stats << "foo";
  *
  * In critical code path cverb can be used in the more efficient way:
- * if (cerb << vdebug)
+ * if (cverb << vdebug)
  *    cverb << vdebug << "foo" << "bar";
  * the condition test the fails bit for the returned stream while the later
  * build a sentry object for each << (more efficient even with one level of <<)

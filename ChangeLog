@@ -1,3 +1,8 @@
+2005-04-07  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_bfd.cpp: performance improvements with handling
+	  symbols
+
 2005-04-06  John Levon  <levon@movementarian.org>
 
 	* libpp/populate.h:

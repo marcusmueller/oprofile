@@ -547,7 +547,7 @@ void op_bfd::get_symbols_from_file(bfd * ibfd, size_t start,
 	if (nr_all_syms < 1)
 		return;
 
-	for (symbol_index_t i = start; i < start+nr_all_syms; i++) {
+	for (symbol_index_t i = start; i < start + nr_all_syms; i++) {
 		if (interesting_symbol(bfd_syms[i])) {
 			// need to use filepos of original file for debug
 			// file symbs
@@ -637,16 +637,16 @@ void op_bfd::add_symbols(op_bfd::symbols_found_t & symbols,
 		symbols.push_back(create_artificial_symbol());
 
 	cverb << vbfd << "number of symbols before filtering "
-	      << symbols.size() << endl;
+	      << dec << symbols.size() << hex << endl;
 
 	symbols_found_t::iterator it;
 	it = remove_if(symbols.begin(), symbols.end(),
 	               remove_filter(symbol_filter));
-	symbols.erase(it, symbols.end());
 
-	copy(symbols.begin(), symbols.end(), back_inserter(syms));
+	copy(symbols.begin(), it, back_inserter(syms));
 
-	cverb << vbfd << "number of symbols now " << syms.size() << endl;
+	cverb << vbfd << "number of symbols now "
+	      << dec << syms.size() << hex << endl;
 }
 
 
@@ -856,21 +856,25 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 {
 	op_bfd_symbol const & sym = syms[sym_idx];
 
-	io_state state(cverb << (vbfd&vlevel1));
-
-	cverb << (vbfd & vlevel1) << "symbol " << sym.name()
-	      << ", value " << hex << sym.value() << endl;
+	bool const verbose = cverb << (vbfd & vlevel1);
 
 	start = sym.filepos();
-	if (sym.symbol()) {
-		cverb << (vbfd & vlevel1) << "in section "
-		      << sym.symbol()->section->name << ", filepos "
-		      << hex << sym.symbol()->section->filepos << endl;
-	}
+	end = start + sym.size();
 
-	end = start + syms[sym_idx].size();
-	cverb << (vbfd & vlevel1)
-	      << "start " << hex << start << ", end " << end << endl;
+	if (verbose) {
+		io_state state(cverb << (vbfd & vlevel1));
+
+		cverb << (vbfd & vlevel1) << "symbol " << sym.name()
+		      << ", value " << hex << sym.value() << endl;
+		cverb << (vbfd & vlevel1)
+		      << "start " << hex << start << ", end " << end << endl;
+
+		if (sym.symbol()) {
+			cverb << (vbfd & vlevel1) << "in section "
+			      << sym.symbol()->section->name << ", filepos "
+			      << hex << sym.symbol()->section->filepos << endl;
+		}
+	}
 
 	if (start >= file_size + text_offset) {
 		ostringstream os;
