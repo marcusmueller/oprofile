@@ -58,50 +58,11 @@ protected:
 static vector<poptOption> popt_options;
 static vector<option_base *> options_list;
 
-/// user can specify and additional help string
-static string user_help_str;
-
-
-static void help_callback(poptContext con,  enum poptCallbackReason reason,
-			  struct poptOption const * opt,
-			  char const *, void const *)
-{
-	if (reason != POPT_CALLBACK_REASON_OPTION)
-		return;
-
-	if (!strcmp(opt->longName, "help")) {
-		poptPrintHelp(con, stdout, 0);
-		cout << user_help_str;
-	} else if (!strcmp(opt->longName, "usage")) {
-		poptPrintUsage(con, stdout, 0);
-	} else {
-		cerr << "popt_options.cpp: help_callback called called for "
-		     << "unknown option: " << opt->longName << endl;
-		poptPrintHelp(con, stdout, 0);
-		exit(EXIT_FAILURE);
-	}
-
-	exit(EXIT_SUCCESS);
-}
-
-
 static int showvers;
-
-// we need a separate table since, when a callback is specified, popt use this
-// callback for all table entries and we don't want than top level table entry
-// use the callback
-static struct poptOption help_options[] = {
-  // C cast needed, pointer to function to void *
-  { 0, '\0', POPT_ARG_CALLBACK, (void*)help_callback, 0, 0, 0L, },
-  { "help", '?', POPT_ARG_NONE, 0, 0, "Show this help message", 0L },
-  { "usage", '\0', POPT_ARG_NONE, 0, 0, "Display brief usage message", 0L },
-  POPT_TABLEEND
-};
-
 
 static struct poptOption appended_options[] = {
   { "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
-  { NULL, '\0', POPT_ARG_INCLUDE_TABLE, help_options, 0, "Help options:", 0 },
+  POPT_AUTOHELP
   POPT_TABLEEND
   };
 
@@ -140,11 +101,8 @@ static poptContext do_parse_options(int argc, char const ** argv,
 
 
 void parse_options(int argc, char const ** argv,
-                   vector<string> & additional_params,
-                   string const & additional_help)
+                   vector<string> & additional_params)
 {
-	user_help_str = additional_help;
-
 	vector<poptOption> options;
 
 	poptContext con =

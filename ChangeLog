@@ -1,3 +1,9 @@
+2003-09-19  John Levon  <levon@movementarian.org>
+
+	* libopt++/popt_options.h:
+	* libopt++/popt_options.cpp: remove additional_help
+	stuff, unused for some time
+
 2003-09-18  John Levon  <levon@movementarian.org>
 
 	* libutil++/Makefile.am:

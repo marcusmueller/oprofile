@@ -59,8 +59,6 @@ namespace popt {
  * @param argc like the parameter of main()
  * @param argv like the parameter of main()
  * @param additional_params additional options are stored here
- * @param additional_help if user invoke --help this string is displayed
- *  after the automatic help displayed by popt lib
  *
  * Parse the given command line with the previous
  * options created. Multiple additional arguments
@@ -68,8 +66,7 @@ namespace popt {
  * vector.
  */
 void parse_options(int argc, char const ** argv,
-                   std::vector<std::string> & additional_params,
-                   std::string const & additional_help = std::string());
+                   std::vector<std::string> & additional_params);
 
 class option_base;
 
