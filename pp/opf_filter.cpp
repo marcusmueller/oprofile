@@ -20,7 +20,6 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
-#include <set>
 #include <algorithm>
 #include <string>
 #include <sstream>
@@ -31,7 +30,6 @@
 #include "../util/op_popt.h"
 
 using std::vector;
-using std::set;
 using std::string;
 using std::ostream;
 using std::ofstream;
@@ -99,15 +97,6 @@ class filename_match {
 };
 
 //---------------------------------------------------------------------------
-// store a complete source file.
-struct source_file {
-	source_file();
-	source_file(istream & in);
-
-	vector<string> file_line;
-};
-
-//---------------------------------------------------------------------------
 /// Store the configuration of one counter. Construct from an opd_header
 struct counter_setup {
 	counter_setup() :
@@ -139,19 +128,19 @@ class output {
 	       bool assembly,
 	       bool source_with_assembly);
 
-	bool treat_input(const string & image_file, const string & sample_file);
+	bool treat_input(const string & image_name, const string & sample_file);
 
  private:
 	/// this output a comment containaing the counter setup and command
 	/// the line.
 	void output_header(ostream & out) const;
 
-	void output_asm(const opp_bfd & abfd);
+	void output_asm(const string & image_name);
 	void output_objdump_asm_line(const std::string & str,
 		     const vector<const symbol_entry *> & output_symbols,
 		     bool & do_output);
-	void output_objdump_asm(const vector<const symbol_entry *> & output_symbols, const opp_bfd & abfd);
-	void output_dasm_asm(const vector<const symbol_entry *> & output_symbols, const opp_bfd & abfd);
+	void output_objdump_asm(const vector<const symbol_entry *> & output_symbols, const string & app_name);
+	void output_dasm_asm(const vector<const symbol_entry *> & output_symbols, const string & image_name);
 	void output_source();
 
 	// output one file unconditionally.
@@ -159,12 +148,6 @@ class output {
 		const counter_array_t & total_samples_for_file);
 	void do_output_one_file(ostream & out, istream & in, const string & filename,
 		const counter_array_t & total_samples_for_file);
-
-	// accumulate counter for a given (filename, linenr).
-	void accumulate_and_output_counter(ostream& out, const string & filename,
-		size_t linenr, const string & blank);
-
-	void build_samples_containers(opp_samples_files & samples_files, const opp_bfd & abfd);
 
 	bool setup_counter_param(const opp_samples_files & samples_files);
 	bool calc_total_samples();
@@ -181,7 +164,7 @@ class output {
 		const string & blank) const;
 
 	void find_and_output_counter(ostream & out, const string & filename,
-		size_t linenr) const;
+		size_t linenr, const string & blank) const;
 
 	size_t get_sort_counter_nr() const;
 
@@ -189,19 +172,14 @@ class output {
 	int argc;
 	char const ** argv;
 
-	// The symbols collected by oprofpp sorted by increased vma, provide
-	// also a sort order on samples count for each counter.
-	symbol_container_t symbols;
-
-	// The samples count collected by oprofpp sorted by increased vma,
-	// provide also a sort order on (filename, linenr)
-	sample_container_t samples;
+	// hold all info for samples
+	samples_files_t samples;
 
 	// samples files header are stored here
 	counter_setup counter_info[OP_MAX_COUNTERS];
 
 	// FIXME : begin_comment, end_comment must be based on the current
-	// extension and must be properties of source_file.
+	// extension and must be properties of source filename.
 	string begin_comment;
 	string end_comment;
 
@@ -329,19 +307,6 @@ bool filename_match::match(const vector<string> & patterns,
 	return ok;
 }
 
-//--------------------------------------------------------------------------
-
-source_file::source_file()
-{
-}
-
-source_file::source_file(istream & in)
-{
-	string str;
-	while (getline(in, str))
-		file_line.push_back(str);
-}
-
 //---------------------------------------------------------------------------
 
 output::output(int argc_, char const * argv_[],
@@ -432,12 +397,7 @@ bool output::setup_counter_param(const opp_samples_files & samples_files)
 bool output::calc_total_samples()
 {
 	for (size_t i = 0 ; i < op_nr_counters ; ++i)
-		counter_info[i].total_samples = 0;
-
-	for (size_t i = 0 ; i < symbols.size() ; ++i) {
-		for (size_t j = 0 ; j < op_nr_counters ; ++j)
-			counter_info[j].total_samples += symbols[i].sample.counter[j];
-	}
+		counter_info[i].total_samples = samples.samples_count(i);
 
 	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		if (counter_info[i].total_samples != 0)
@@ -474,12 +434,12 @@ void output::output_counter(ostream & out, const counter_array_t & counter,
 	out << '\n';
 }
 
-// Complexity: log(container.size())
+// Complexity: log(nr symbols)
 void output::find_and_output_symbol(ostream & out, const string & str, const string & blank) const
 {
 	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
-	const symbol_entry* symbol = symbols.find_by_vma(vma);
+	const symbol_entry* symbol = samples.find_symbol(vma);
 
 	if (symbol) {
 		out << blank;
@@ -487,24 +447,30 @@ void output::find_and_output_symbol(ostream & out, const string & str, const str
 	}
 }
 
-// Complexity: log(samples.size())
+// Complexity: log(nr samples))
 void output::find_and_output_counter(ostream & out, const string & str, const string & blank) const
 {
 	bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
-	const sample_entry * sample = samples.find_by_vma(vma);
+	const sample_entry * sample = samples.find_sample(vma);
 	if (sample) {
 		out << blank;
 		output_counter(out, sample->counter, true, string());
 	}
 }
 
-// Complexity: log(symbols.size())
-void output::find_and_output_counter(ostream & out, const string & filename, size_t linenr) const
+// Complexity: log(nr symbols) + log(nr filename/linenr)
+void output::find_and_output_counter(ostream & out, const string & filename, size_t linenr, const string & blank) const
 {
-	const symbol_entry * symbol = symbols.find(filename, linenr);
+	const symbol_entry * symbol = samples.find_symbol(filename, linenr);
 	if (symbol)
 		output_counter(out, symbol->sample.counter, true, symbol->name);
+
+	counter_array_t counter;
+	if (samples.samples_count(counter, filename, linenr)) {
+		out << blank;
+		output_counter(out, counter, true, string());
+	}
 }
 
 /**
@@ -551,7 +517,7 @@ output_objdump_asm_line(const std::string & str,
 		// strtoul must work (assuming unsigned long can contain a vma)
 		bfd_vma vma = strtoul(str.c_str(), NULL, 16);
 
-		const symbol_entry* symbol = symbols.find_by_vma(vma);
+		const symbol_entry* symbol = samples.find_symbol(vma);
 
 		// ! complexity: linear in number of symbol must use sorted
 		// by address vector and lower_bound ?
@@ -589,7 +555,7 @@ output_objdump_asm_line(const std::string & str,
  * This is the generic implementation if our own disassembler
  * do not work for this architecture.
  */
-void output::output_objdump_asm(const vector<const symbol_entry *> & output_symbols, const opp_bfd & abfd)
+void output::output_objdump_asm(const vector<const symbol_entry *> & output_symbols, const string & app_name)
 {
 	vector<string> args;
 	args.push_back("-d");
@@ -597,7 +563,7 @@ void output::output_objdump_asm(const vector<const symbol_entry *> & output_symb
 	if (source_with_assembly)
 		args.push_back("-S");
 
-	args.push_back(bfd_get_filename(abfd.ibfd));
+	args.push_back(app_name);
 	ChildReader reader("objdump", args);
 	if (reader.error())
 		// ChildReader output an error message, the only way I see to
@@ -633,47 +599,26 @@ void output::output_objdump_asm(const vector<const symbol_entry *> & output_symb
  * Output asm (optionnaly mixed with source) annotated
  * with samples using dasm as external disassembler.
  */
-void output::output_dasm_asm(const vector<const symbol_entry *> & /*output_symbols*/, const opp_bfd & /*abfd*/)
+void output::output_dasm_asm(const vector<const symbol_entry *> & /*output_symbols*/, const string  & /*image_name*/)
 {
 	// Not yet implemented :/
 }
 
-void output::output_asm(const opp_bfd & abfd)
+void output::output_asm(const string & image_name)
 {
 	// select the subset of symbols which statisfy the user requests
 	size_t index = get_sort_counter_nr();
-
-	vector<const symbol_entry *> v;
-	symbols.get_symbols_by_count(index , v);
 
 	vector<const symbol_entry *> output_symbols;
 
 	double threshold = threshold_percent / 100.0;
 
-	for (size_t i = 0 ; i < v.size() && threshold >= 0 ; ++i) {
-		double const percent = do_ratio(v[i]->sample.counter[index],
-					  counter_info[index].total_samples);
-
-		if (until_more_than_samples || percent >= threshold)
-			output_symbols.push_back(v[i]);
-
-		if (until_more_than_samples)
-			threshold -=  percent;
-	}
+	samples.select_symbols(output_symbols, index,
+			       threshold, until_more_than_samples);
 
 	output_header(cout);
 
-	output_objdump_asm(output_symbols, abfd);
-}
-
-void output::accumulate_and_output_counter(ostream & out, const string & filename, 
-	size_t linenr, const string & blank)
-{
-	counter_array_t counter;
-	if (samples.accumulate_samples(counter, filename, linenr)) {
-		out << blank;
-		output_counter(out, counter, true, string());
-	}
+	output_objdump_asm(output_symbols, image_name);
 }
 
 void output::output_counter_for_file(ostream& out, const string & filename,
@@ -755,109 +700,47 @@ void output::do_output_one_file(ostream& out, istream & in,
 {
 	output_counter_for_file(out, filename, total_count_for_file);
 
-	source_file source(in);
+	find_and_output_counter(out, filename, 0, string());
 
-	// This is a simple heuristic, we probably need another output format
-	for (size_t linenr = 0; linenr <= source.file_line.size(); ++linenr) {
-		string blank;
-		string str;
+	string str;
+	for (size_t linenr = 1 ; getline(in, str) ; ++linenr) {
+		string blank = extract_blank_at_begin(str);
 
-		if (linenr != 0) {
-			str = source.file_line[linenr-1];
-			blank = extract_blank_at_begin(str);
-		}
+		find_and_output_counter(out, filename, linenr, blank);
 
-		find_and_output_counter(out, filename, linenr);
-
-		accumulate_and_output_counter(out, filename, linenr, blank);
-
-		if (linenr != 0)
-			out << str << '\n';
+		out << str << '\n';
 	}
 }
 
-struct filename_by_samples {
-	filename_by_samples(string filename_, double percent_,
-		const counter_array_t & counter_)
-		: filename(filename_), percent(percent_), counter(counter_) 
-		{}
-
-	bool operator<(const filename_by_samples & lhs) const {
-		return percent > lhs.percent;
-	}
-
-	string filename;
-	// -- ugly: this info is valid only for one of the counter. The 
-	// information: from which counter this percentage is valid is not 
-	// self contained in this structure.
-	double percent;
-	counter_array_t counter;
-};
-
 void output::output_source()
 {
-	set<string> filename_set;
-
-	// Trying to iterate on symbols to create the set of filename which
-	// contain sample do not work: a symbol can contain samples and this
-	// symbol is in a source file that contain zero sample because only
-	// inline function in this source file contains samples.
-	for (size_t i = 0 ; i < samples.size() ; ++i)
-		filename_set.insert(samples[i].file_loc.filename);
-
 	size_t index = get_sort_counter_nr();
 
-	// Give a sort order on filename for the selected sort counter.
-	vector<filename_by_samples> file_by_samples;
-
-	set<string>::const_iterator it;
-	for (it = filename_set.begin() ; it != filename_set.end() ;  ++it) {
-		double percent = 0.0;
-
-		counter_array_t total_count_for_file;
-
-		samples.accumulate_samples_for_file(total_count_for_file, *it);
-			
-		percent = do_ratio(total_count_for_file[index],
-				   counter_info[index].total_samples);
-
-		filename_by_samples f(*it, percent, total_count_for_file);
-
-		file_by_samples.push_back(f);
-	}
-
-	// now sort the file_by_samples entry.
-	sort(file_by_samples.begin(), file_by_samples.end());
-
-	double threshold = threshold_percent / 100.0;
+	vector<string> filenames;
+	samples.select_filename(filenames, index, threshold_percent / 100.0,
+				until_more_than_samples);
 
 	if (output_separate_file == false)
 		output_header(cout);
 
-	for (size_t i = 0 ; i < file_by_samples.size() && threshold >= 0 ; ++i) {
-		filename_by_samples & s = file_by_samples[i];
-		ifstream in(s.filename.c_str());
+	for (size_t i = 0 ; i < filenames.size() ; ++i) {
+		ifstream in(filenames[i].c_str());
 
 		if (!in) {
 			// it is common to have empty filename due to the lack
 			// of debug info (eg _init function) so warn only
 			// if the filename is non empty. The case: no debug
 			// info at all has already been checked.
-			if (s.filename.length())
+			if (filenames[i].length())
 				cerr << "opf_filter (warning): unable to open "
 				     << "for reading: "
-				     << file_by_samples[i].filename << endl;
+				     << filenames[i] << endl;
 		} else {
-			if (until_more_than_samples ||
-				(do_ratio(s.counter[index], counter_info[index].total_samples) >= threshold))
-				output_one_file(in, s.filename, s.counter);
-		}
+			counter_array_t count;
+			samples.samples_count(count, filenames[i]);
 
-		// Always decrease the threshold if needed, even if the file has not
-		// been found to avoid in pathalogical case the output of many files
-		// which contains low counter value.
-		if (until_more_than_samples)
-			threshold -=  s.percent;
+			output_one_file(in, filenames[i], count);
+		}
 	}
 }
 
@@ -865,7 +748,7 @@ size_t output::get_sort_counter_nr() const
 {
 	size_t index = sort_by_counter;
 
-	if (index >= size_t(op_nr_counters) || counter_info[index].enabled == false) {
+	if (index >= size_t(op_nr_counters) || !counter_info[index].enabled) {
 		for (index = 0 ; index < op_nr_counters ; ++index) {
 			if (counter_info[index].enabled)
 				break;
@@ -883,74 +766,8 @@ size_t output::get_sort_counter_nr() const
 	return index;
 }
 
-// Post condition:
-//  the symbols/samples are sorted by increasing vma.
-//  the range of sample_entry inside each symbol entry are valid
-//  the samples_by_file_loc member var is correctly setup.
-void output::build_samples_containers(opp_samples_files & samples_files, const opp_bfd & abfd)
-{
-	string image_name = bfd_get_filename(abfd.ibfd);
-
-	// fill the symbol table.
-	for (size_t i = 0 ; i < abfd.syms.size(); ++i) {
-		u32 start, end;
-		const char* filename;
-		uint linenr;
-		symbol_entry symb_entry;
-
-		abfd.get_symbol_range(i, start, end);
-
-		bool found_samples = false;
-		for (uint j = start; j < end; ++j)
-			found_samples |= samples_files.accumulate_samples(symb_entry.sample.counter, j);
-
-		if (found_samples == 0)
-			continue;
-		
-		symb_entry.name = demangle_symbol(abfd.syms[i]->name);
-		symb_entry.first = samples.size();
-
-		if (abfd.get_linenr(i, start, filename, linenr)) {
-			symb_entry.sample.file_loc.filename = filename;
-			symb_entry.sample.file_loc.linenr = linenr;
-		} else {
-			symb_entry.sample.file_loc.filename = string();
-			symb_entry.sample.file_loc.linenr = 0;
-		}
-
-		symb_entry.sample.file_loc.image_name = image_name;
-
-		bfd_vma base_vma = abfd.syms[i]->value + abfd.syms[i]->section->vma;
-		symb_entry.sample.vma = abfd.sym_offset(i, start) + base_vma;
-
-		for (u32 pos = start; pos < end ; ++pos) {
-			sample_entry sample;
-
-			if (samples_files.accumulate_samples(sample.counter, pos) == false)
-				continue;
-
-			if (abfd.get_linenr(i, pos, filename, linenr)) {
-				sample.file_loc.filename = filename;
-				sample.file_loc.linenr = linenr;
-			} else {
-				sample.file_loc.filename = string();
-				sample.file_loc.linenr = 0;
-			}
-
-			sample.file_loc.image_name = image_name;
-
-			sample.vma = abfd.sym_offset(i, pos) + base_vma;
-
-			samples.push_back(sample);
-		}
-
-		symb_entry.last = samples.size();
-
-		symbols.push_back(symb_entry);
-	}
-}
-
-// this output a comment containaing the counter setup and command the line.
+// this output a comment containing the counter setup and command line. It can
+// be usefull for beginners to understand how the command line is interpreted.
 void output::output_header(ostream& out) const
 {
 	out << begin_comment << endl;
@@ -985,25 +802,26 @@ void output::output_header(ostream& out) const
 	out << endl;
 	out << "Cpu type: " << op_get_cpu_type_str(cpu_type) << endl;
 	out << "Cpu speed (MHz estimation) : " << cpu_speed << endl;
-	out << endl;
 
 	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
-		if (i != 0)
-			out << endl;
-		out << "Counter " << i << " " << counter_info[i] << endl;
+		out << endl << "Counter " << i << " " 
+		    << counter_info[i] << endl;
 	}
 
 	out << end_comment << endl;
 	out << endl;
 }
 
-bool output::treat_input(const string & image_file, const string & sample_file)
+bool output::treat_input(const string & image_name, const string & sample_file)
 {
+	// this lexcical scope just optimize the memory use by relaxing
+	// the opp_bfd and opp_samples_files as short as we can.
+	{
 	// this order of declaration is required to ensure proper
 	// initialisation of oprofpp
 	opp_samples_files samples_files(sample_file);
 	opp_bfd abfd(samples_files.header[samples_files.first_file],
-		     samples_files.nr_samples, image_file);
+		     samples_files.nr_samples, image_name);
 
 	if (!assembly && !abfd.have_debug_info()) {
 		cerr << "Request for source file annotated "
@@ -1021,7 +839,8 @@ bool output::treat_input(const string & image_file, const string & sample_file)
 	if (!setup_counter_param(samples_files))
 		return false;
 
-	build_samples_containers(samples_files, abfd);
+	samples.build(samples_files, abfd);
+	}
 
 	if (!calc_total_samples()) {
 		cerr << "opf_filter: the input contains zero samples" << endl;
@@ -1029,7 +848,7 @@ bool output::treat_input(const string & image_file, const string & sample_file)
 	}
 
 	if (assembly)
-		output_asm(abfd);
+		output_asm(image_name);
 	else
 		output_source();
 
@@ -1077,13 +896,13 @@ static struct poptOption options[] = {
  * get_options - process command line
  * @argc: program arg count
  * @argv: program arg array
- * @image_file: where to store the image filename
+ * @image_name: where to store the image filename
  * @sample_file: ditto for sample filename
  *
  * Process the arguments, fatally complaining on error.
  */
 static void get_options(int argc, char const * argv[],
-			string & image_file, string & sample_file)
+			string & image_name, string & sample_file)
 {
 	poptContext optcon;
 
@@ -1104,7 +923,7 @@ static void get_options(int argc, char const * argv[],
 
 	list_all_symbols_details = 1;
 
-	opp_treat_options(file, optcon, image_file, sample_file);
+	opp_treat_options(file, optcon, image_name, sample_file);
 
 	poptFreeContext(optcon);
 }
@@ -1118,10 +937,10 @@ int main(int argc, char const * argv[])
 	std::ios_base::sync_with_stdio(false);
 #endif
 
-	string image_file;
+	string image_name;
 	string sample_file;
 
-	get_options(argc, argv, image_file, sample_file);
+	get_options(argc, argv, image_name, sample_file);
 
 	try {
 		bool do_until_more_than_samples = false;
@@ -1144,7 +963,7 @@ int main(int argc, char const * argv[])
 			      no_output_filter ? no_output_filter : "",
 			      assembly, source_with_assembly);
 
-		if (output.treat_input(image_file, sample_file) == false)
+		if (output.treat_input(image_name, sample_file) == false)
 			return EXIT_FAILURE;
 	}
 

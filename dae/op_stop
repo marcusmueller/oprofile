@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_stop,v 1.12 2001/09/25 17:14:06 movement Exp $ 
+# $Id: op_stop,v 1.13 2001/12/29 23:51:24 phil_e Exp $ 
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -18,7 +18,9 @@
 
 if test `pidof oprofiled`
 then
+	op_dump
 	echo "Stopping profiling and killing daemon"
+	sleep 1
 	kill `pidof oprofiled`
 	exit
 fi

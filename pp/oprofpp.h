@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.32 2001/12/27 21:16:09 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.33 2001/12/29 23:51:25 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -166,6 +166,8 @@ struct opp_samples_files {
 	}
  
 	bool accumulate_samples(counter_array_t& counter, uint vma) const;
+	bool accumulate_samples(counter_array_t& counter,
+				uint start, uint end) const;
 
 	void output_header() const;
 
@@ -182,13 +184,13 @@ struct opp_samples_files {
 	// can in ctor.
 	int first_file;
 	uint nr_samples;
+	string sample_filename;
 
 private:
 	void output_event(int i) const;
 
 	// ctor helper
-	void open_samples_file(const string & sample_file, u32 counter,
-			       bool can_fail);
+	void open_samples_file(u32 counter, bool can_fail);
 	void check_event(int i);
 };
 

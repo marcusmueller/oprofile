@@ -1,3 +1,40 @@
+2001-12-29  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/oprofiled.c:
+	* dae/op_start: --separate-samples is working
+
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_config.h:
+	* gui/ui/oprof_start.base.ui: handle separating for
+	  shared libs, off by default.
+
+	* doc/oprofile.sgml:
+	* doc/oprofile.1.in: document --show-shared-libs
+
+	* pp/opf_filter.h:
+	* pp/opf_container.cpp: new class samples_files_t
+	  to easier access to subset of symbols/samples or
+	  source filename from multiple image
+
+	* pp/Makefile.in:
+	* pp/op_time.cpp:
+	* pp/opf_filter.cpp:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp: implement --show-shared-libs except
+	  for opf_filter
+
+	* util/file_manip.h:
+	* util/file_manip.cpp: new function to manipulate sample
+	  file name and list of sample file name.
+
+2001-12-27  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/op_stop: always do an op_dump before stopping
+	* gui/oprof_start.cpp: op_dump before op_stop
+	  no longer required
+
 2001-12-26  Philippe Elie  <ph_e@club-internet.fr>
 
 	* pp/opf_filter.cpp:

@@ -96,7 +96,8 @@ config_setting::config_setting()
 	ignore_daemon_samples(0),
 	verbose(0),
 	pgrp_filter(0),
-	pid_filter(0)
+	pid_filter(0),
+	separate_samples(0)
 {
 }
 
@@ -118,6 +119,7 @@ void config_setting::load(std::istream& in)
 	in >> verbose;
 	in >> pgrp_filter;
 	in >> note_table_size;
+	in >> separate_samples;
 }
 
 // sanitize needed ?
@@ -152,6 +154,7 @@ void config_setting::save(std::ostream& out) const
 	out << verbose << std::endl;
 	out << pgrp_filter << std::endl;
 	out << note_table_size << std::endl;
+	out << separate_samples << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& out, const config_setting& object)

@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.14 2001/12/27 21:16:09 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.15 2001/12/29 23:51:25 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -656,7 +656,8 @@ static void check_headers(const opd_header * f1, const opd_header * f2)
 opp_samples_files::opp_samples_files(const std::string & sample_file)
 	:
 	nr_counters(2),
-	first_file(-1)
+	first_file(-1),
+	sample_filename(sample_file)
 {
 	uint i, j;
 	time_t mtime = 0;
@@ -677,7 +678,7 @@ opp_samples_files::opp_samples_files(const std::string & sample_file)
 			/* if ctr == i, this means than we open only one
 			 * samples file so don't allow opening failure to get
 			 * a more precise error message */
-			open_samples_file(sample_file, i, ctr != (int)i);
+			open_samples_file(i, ctr != (int)i);
 		}
 	}
 
@@ -688,7 +689,7 @@ opp_samples_files::opp_samples_files(const std::string & sample_file)
 	}
 
 	if (first_file == OP_MAX_COUNTERS) {
-		fprintf(stderr, "Can not open any samples files for %s last error %s\n", sample_file.c_str(), strerror(errno));
+		fprintf(stderr, "Can not open any samples files for %s last error %s\n", sample_filename.c_str(), strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -743,7 +744,6 @@ opp_samples_files::~opp_samples_files()
 
 /**
  * open_samples_file - ctor helper
- * @sample_file: the base name of sample file
  * @counter: the counter number
  * @can_fail: allow to fail gracefully
  *
@@ -755,11 +755,10 @@ opp_samples_files::~opp_samples_files()
  *
  * if @can_fail == false all error are fatal.
  */
-void opp_samples_files::open_samples_file(const string & sample_file,
-					  u32 counter, bool can_fail)
+void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 {
 	std::ostringstream filename;
-	filename << sample_file << "#" << counter;
+	filename << sample_filename << "#" << counter;
 	std::string temp = filename.str();
 
 	fd[counter] = open(temp.c_str(), O_RDONLY);
@@ -835,13 +834,39 @@ void opp_samples_files::check_event(int i)
  */
 bool opp_samples_files::accumulate_samples(counter_array_t& counter, uint index) const
 {
-	uint k;
 	bool found_samples = false;
 
-	for (k = 0; k < nr_counters; ++k) {
+	for (uint k = 0; k < nr_counters; ++k) {
 		if (samples_count(k, index)) {
 			found_samples = true;
 			counter[k] += samples_count(k, index);
+		}
+	}
+
+	return found_samples;
+}
+
+/**
+ * accumulate_samples - lookup samples from a range of vma address
+ * @counter: where to accumulate the samples
+ * @start: start index of the samples.
+ * @end: end index of the samples.
+ *
+ * return false if no samples has been found
+ */
+bool opp_samples_files::accumulate_samples(counter_array_t& counter,
+					   uint start, uint end) const
+{
+	bool found_samples = false;
+
+	for (uint k = 0; k < nr_counters; ++k) {
+		if (is_open(k)) {
+			for (uint j = start ; j < end; ++j) {
+				if (samples[k][j].count) {
+					counter[k] += samples[k][j].count;
+					found_samples = true;
+				}
+			}
 		}
 	}
 

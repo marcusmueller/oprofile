@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.17 2001/12/27 21:16:09 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.18 2001/12/29 23:51:25 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -18,15 +18,22 @@
 // FIXME: printf -> ostream (and elsewhere) 
 #include <algorithm>
 #include <sstream>
+#include <list>
 
 #include "oprofpp.h"
 #include "../util/op_popt.h"
+#include "../util/file_manip.h"
+#include "opf_filter.h"
+
+// ugly global var for opf_container.cpp
+uint op_nr_counters;
  
 static int showvers;
 static char *gproffile;
 static char *symbol;
 static int list_symbols;
 static int output_linenr_info;
+static int show_shared_libs;
 
 static poptOption options[] = {
 	{ "samples-file", 'f', POPT_ARG_STRING, &samplefile, 0, "image sample file", "file", },
@@ -42,6 +49,8 @@ static poptOption options[] = {
 	{ "list-all-symbols-details", 'L', POPT_ARG_NONE, &list_all_symbols_details, 0, "list samples for all symbols", NULL, },
 	{ "output-linenr-info", 'o', POPT_ARG_NONE, &output_linenr_info, 0, "output filename:linenr info", NULL },
 	{ "--exclude-symbol", 'e', POPT_ARG_STRING, &exclude_symbols_str, 0, "exclude these comma separated symbols", "symbol_name" },
+	{ "show-shared-libs", 'h', POPT_ARG_NONE, &show_shared_libs, 0,
+	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
 	POPT_AUTOHELP
 	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
 };
@@ -126,6 +135,7 @@ void opp_bfd::output_linenr(uint sym_idx, uint offset) const
 		printf ("??:0 ");
 }
 
+#if 0
 struct opp_count {
 	asymbol *sym;
 	counter_array_t count;
@@ -155,7 +165,7 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 {
 	u32 start, end;
 	counter_array_t tot;
-	uint i,j;
+	uint i;
 
 	std::vector<opp_count> scounts(abfd.syms.size());
 
@@ -163,8 +173,8 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 		scounts[i].sym = abfd.syms[i];
 
 		abfd.get_symbol_range(i, start, end); 
-		for (j = start; j < end; j++)
-			accumulate_samples(scounts[i].count, j);
+
+ 		accumulate_samples(scounts[i].count, start, end);
 
 		scounts[i].start = start;
 		scounts[i].sym_idx = i;
@@ -191,6 +201,53 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 		}
 	}
 }
+#else
+/**
+ * do_list_symbols - list symbol samples for an image
+ * @abfd: the bfd object from where come the samples
+ *
+ * Lists all the symbols in decreasing sample count
+ * order, to standard out.
+ */
+void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
+{
+	// TODO avoid that: set the ugly global var for opf_container.cpp
+	op_nr_counters = nr_counters;
+	samples_files_t samples;
+
+	samples.build(*this, abfd, true, false, show_shared_libs);
+
+	vector<const symbol_entry *> symbols;
+
+	samples.select_symbols(symbols, ctr, 0.0, false);
+
+	u32 total_count = samples.samples_count(ctr);
+
+	// const_reverse_iterator can't work :/
+	vector<const symbol_entry*>::reverse_iterator it;
+	for (it = symbols.rbegin(); it != symbols.rend(); ++it) {
+		if (show_shared_libs)
+			printf("%s ", (*it)->sample.file_loc.image_name.c_str());
+		if (output_linenr_info)
+			printf("%s:%u ",
+			       (*it)->sample.file_loc.filename.c_str(),
+			       (*it)->sample.file_loc.linenr);
+
+		printf("%s", (*it)->name.c_str());
+
+		u32 count = (*it)->sample.counter[ctr];
+
+		if (count) {
+			printf("[0x%.8lx]: %2.4f%% (%u samples)\n", 
+			       (*it)->sample.vma,
+			       (((double)count) / total_count)*100.0, 
+			       count);
+		} else {
+			printf(" (0 samples)\n");
+		}
+	}
+}
+#endif
  
 /**
  * do_list_symbol - list detailed samples for a symbol
@@ -326,6 +383,7 @@ void opp_samples_files::do_dump_gprof(opp_bfd & abfd) const
 	free(hist);
 }
 
+#if 0
 /**
  * do_list_symbol_details - list all samples for a given symbol
  * @abfd: the bfd object from where come the samples
@@ -339,7 +397,6 @@ void opp_samples_files::do_list_symbol_details(opp_bfd & abfd, uint sym_idx) con
 {
 	counter_array_t counter;
 	uint j, k;
-	bool found_samples;
 	bfd_vma vma, base_vma;
 	u32 start, end;
 	asymbol * sym;
@@ -348,12 +405,7 @@ void opp_samples_files::do_list_symbol_details(opp_bfd & abfd, uint sym_idx) con
 
 	abfd.get_symbol_range(sym_idx, start, end);
 
-	/* To avoid outputing 0 samples symbols */
-	found_samples = false;
-	for (j = start; j < end; ++j)
-		found_samples |= accumulate_samples(counter, j);
-
-	if (found_samples == false)
+	if (accumulate_samples(counter, start, end) == false)
 		return;
 
 	base_vma = sym->value + sym->section->vma;
@@ -369,7 +421,7 @@ void opp_samples_files::do_list_symbol_details(opp_bfd & abfd, uint sym_idx) con
 	for (j = start; j < end; j++) {
 		counter_array_t counter;
 
-		found_samples = accumulate_samples(counter, j);
+		bool found_samples = accumulate_samples(counter, j);
 		if (found_samples == false)
 			continue;
 
@@ -397,6 +449,62 @@ void opp_samples_files::do_list_all_symbols_details(opp_bfd & abfd) const
 	for (size_t i = 0 ; i < abfd.syms.size(); ++i)
 		do_list_symbol_details(abfd, i);
 }
+#else
+/**
+ * do_list_all_symbols_details - list all samples for all symbols.
+ * @abfd: the bfd object from where come the samples
+ *
+ * Lists all the samples for all the symbols, from the image specified by
+ * @abfd, in increasing order of vma, to standard out.
+ */
+void opp_samples_files::do_list_all_symbols_details(opp_bfd & abfd) const
+{
+	// TODO avoid that: set the ugly global var for opf_container.cpp
+	op_nr_counters = nr_counters;
+
+	samples_files_t samples;
+
+	samples.build(*this, abfd, false, true, show_shared_libs);
+
+	vector<const symbol_entry *> symbols;
+
+	samples.select_symbols(symbols, first_file, 0.0, false, true);
+
+	vector<const symbol_entry*>::const_iterator it;
+	for (it = symbols.begin(); it != symbols.end(); ++it) {
+
+		if (show_shared_libs)
+			printf("%s ", (*it)->sample.file_loc.image_name.c_str());
+
+		if (output_linenr_info)
+			printf("%s:%u ",
+			       (*it)->sample.file_loc.filename.c_str(),
+			       (*it)->sample.file_loc.linenr);
+
+		printf("%.8lx ", (*it)->sample.vma);
+		for (uint k = 0 ; k < nr_counters ; ++k)
+			printf("%u ", (*it)->sample.counter[k]);
+
+		printf("%s\n", (*it)->name.c_str());
+
+		for (size_t cur = (*it)->first ; cur != (*it)->last ; ++cur) {
+			const sample_entry & sample = samples.get_samples(cur);
+
+			printf(" ");
+
+			if (output_linenr_info)
+				printf("%s:%u ",
+				       sample.file_loc.filename.c_str(),
+				       sample.file_loc.linenr);
+			printf("%.8lx", sample.vma);
+
+			for (uint k = 0; k < nr_counters; ++k)
+				printf(" %u", sample.counter[k]);
+			printf("\n");
+		}
+	}
+}
+#endif
 
 /**
  * output_event - output a counter setup
@@ -421,13 +529,11 @@ void opp_samples_files::output_event(int i) const
  */
 void opp_samples_files::output_header() const
 {
-	uint i;
-
 	printf("Cpu type: %s\n", op_get_cpu_type_str(header[first_file]->cpu_type));
 
 	printf("Cpu speed was (MHz estimation) : %f\n", header[first_file]->cpu_speed);
 
-	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
+	for (uint i = 0 ; i < OP_MAX_COUNTERS; ++i) {
 		if (fd[i] != -1)
 			output_event(i);
 	}

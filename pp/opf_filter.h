@@ -10,12 +10,17 @@
 //---------------------------------------------------------------------------
 /// A simple container for a fileno:linr location
 struct file_location {
-	/// the image name from where come the samples or the symbol
+	/// From where image come this file location
 	string image_name;
 	/// empty if not valid.
 	string filename;
 	/// 0 means invalid or code is generated internally by the compiler
 	int linenr;
+
+	bool operator <(const file_location & rhs) const {
+		return filename < rhs.filename ||
+			(filename == rhs.filename && linenr < rhs.linenr);
+	}
 };
 
 //---------------------------------------------------------------------------
@@ -92,8 +97,8 @@ public:
 	const sample_entry & operator[](size_t index) const;
 	/// calculate the total number of samples for a file. Return false
 	/// if there is no sample for this file
-	bool accumulate_samples_for_file(counter_array_t & counter, 
-					 const string & filename) const;
+	bool accumulate_samples(counter_array_t & counter, 
+				const string & filename) const;
 	/// calculate the total number of samples for a file/linenr. Return
 	/// false if there is no sample for this file
 	bool accumulate_samples(counter_array_t &, const string & filename, 
@@ -105,6 +110,118 @@ public:
 private:
 	/// member function of this class are delegated to this implementation
 	sample_container_impl * impl;
+};
+
+//---------------------------------------------------------------------------
+/// A container to store symbol/sample from samples files/image file
+class samples_files_t {
+public:
+	 samples_files_t();
+	~samples_files_t();
+
+	/**
+	 * build() -  record symbols/samples in the underlined container
+	 * @samples_files: the samples files container
+	 * @abf: the associatde bfd object
+	 * @add_zero_samples_symbols: must we had to the symbol container
+	 *   symbols with zero samples count
+	 * @build_samples_by_vma: must we record also individual samples
+	 *  passing false as this parameter speed up the build time, in this
+	 *  case all functions that acts on samples or return sample_entry
+	 *  will fail.
+	 * @add_shared_libs: add to the set of symbols/samples shared which
+	 *  belongs to this image, only meaningfull if samples come from
+	 *  a --separate-samples session
+	 *
+	 * build() is a delayed ctor and must be called once.
+	 */
+	void build(const opp_samples_files& samples_files,
+		   const opp_bfd& abfd, bool add_zero_samples_symbols = false,
+		   bool build_samples_by_vma = true, 
+		   bool add_shared_libs = false);
+
+	/// Find a symbol from its vma, return zero if no symbol at this vma
+	const symbol_entry* find_symbol(bfd_vma vma) const;
+	/// Find a symbol from its filename, linenr, return zero if no symbol
+	/// at this location
+	const symbol_entry* find_symbol(const string & filename,
+					size_t linenr) const;
+
+	/// Find a sample by its vma, return zero if no sample at this vma
+	const sample_entry * find_sample(bfd_vma vma) const;
+
+	/// Return a sample_entry by its index, index must be valid
+	const sample_entry & get_samples(size_t idx) const;
+
+	/**
+	 * select_symbols - create a set of symbols sorted by sample count
+	 * @result: where to put result
+	 * @threshold: the filter threshold
+	 * @until_threshold: rather to get symbols with more than
+	 * @threshold percent of samples get symbols until the amount
+	 *   of samples reach @threshold
+	 * @sort_by_vma: rather to sort symbols by samples count
+	 *   sort them by vma
+	 *
+	 * @until_threshold and @threshold acts like the -w and -u options
+	 * of opf_filter
+	 * if you need to get all symbols call it with @threshold == 0.0
+	 * and @until_threshold == false
+	 */
+	void select_symbols(vector<const symbol_entry*> & result, size_t ctr,
+			    double threshold,
+			    bool until_threshold, bool sort_by_vma = false) const;
+	/// Like select_symbols for filename without allowing sort by vma.
+	void select_filename(vector<string> & result, size_t ctr,
+			     double threshold,
+			     bool until_threshold) const;
+
+	/// return the total number of samples for counter_nr
+	u32 samples_count(size_t counter_nr) const;
+
+	/// Get the samples count which belongs to filename. Return false if
+	/// no samples found.
+	bool samples_count(counter_array_t & result,
+			   const string & filename) const;
+	/// Get the samples count which belongs to filename, linenr. Return
+	/// false if no samples found.
+	bool samples_count(counter_array_t & result, const string & filename,
+			   size_t linenr) const;
+private:
+	/// helper for build();
+	void do_build(const opp_samples_files& samples_files,
+		      const opp_bfd& abfd,
+		      bool add_zero_samples_symbols = false,
+		      bool build_samples_by_vma = true);
+	/// helper for do_build()
+	void add_samples(const opp_samples_files& samples_files, 
+			 const opp_bfd& abfd, size_t sym_index,
+			 u32 start, u32 end, bfd_vma base_vma,
+			 const string& image_name);
+#if 0
+	/// We use a set of container_t to store information for each image
+	struct container_t {
+		/// The symbols collected by oprofpp sorted by increased vma,
+		/// provide also a sort order on samples count for each counter
+		symbol_container_t symbols;
+		/// The samples count collected by oprofpp sorted by increased
+		/// vma, provide also a sort order on (filename, linenr)
+		sample_container_t samples;
+	};
+
+	/// Indexed by an image name.
+	set<string, container_t> image_samples;
+#else
+	/// The symbols collected by oprofpp sorted by increased vma, provide
+	/// also a sort order on samples count for each counter.
+	symbol_container_t symbols;
+	/// The samples count collected by oprofpp sorted by increased vma,
+	/// provide also a sort order on (filename, linenr)
+	sample_container_t samples;
+#endif
+	/// build() must count samples count for each counter so cache it here
+	/// since user of samples_files_t often need it later.
+	counter_array_t counter;
 };
 
 #endif /* !OPF_FILTER_H */

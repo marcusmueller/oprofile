@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.54 2001/12/22 18:01:52 phil_e Exp $ */
+/* $Id: oprofiled.c,v 1.55 2001/12/29 23:51:24 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -67,7 +67,7 @@ static struct poptOption options[] = {
 	{ "map-file", 'f', POPT_ARG_STRING, &systemmapfilename, 0, "System.map for running kernel file", "file", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "cpu-speed", 0, POPT_ARG_STRING, &cpu_speed_str, 0, "cpu speed (MHz)", "cpu_mhz", },
-	{ "separate-samples", 0, POPT_ARG_INT, &separate_samples, 0, "separate samples for each distinct application (DO NOT USE experimental)", "[0|1]", },
+	{ "separate-samples", 0, POPT_ARG_INT, &separate_samples, 0, "separate samples for each distinct application", "[0|1]", },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
 	POPT_AUTOHELP

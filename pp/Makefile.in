@@ -29,7 +29,7 @@ srcdoc: oprofpp-src.html
 oprofpp-src.html: $(MY_SOURCES)
 	../scripts/dodoc -html $(MY_SOURCES) >oprofpp-src.html
 
-oprofpp: oprofpp.o $(OBJS)
+oprofpp: oprofpp.o $(OBJS) opf_container.o
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
 oprof_convert: oprof_convert.o ../dae/opd_util.o ../util/misc.o ../util/file_manip.o  ../util/string_manip.o

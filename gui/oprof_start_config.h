@@ -98,6 +98,7 @@ struct config_setting {
 	int pgrp_filter;
 	// not persistent, no interest to save from one session to another
 	int pid_filter;
+	int separate_samples;
 };
 
 std::ostream& operator<<(std::ostream& out, const config_setting& object);

@@ -21,16 +21,21 @@
 #include <stdio.h>	// for FILENAME_MAX
 #include <dirent.h>
 #include <errno.h>
+#include <fnmatch.h>
 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include "file_manip.h"
 #include "string_manip.h"
 
+#define OPD_MANGLE_CHAR '}'
+
 using std::vector;
 using std::string;
 using std::list;
+using std::find;
 
 /**
  * is_file_identical - check for identical files
@@ -129,7 +134,8 @@ inline static bool is_directory_name(const char * name)
 }
 
 /// return false if base_dir can't be accessed.
-bool create_file_list(list<string>& file_list, const string & base_dir)
+bool create_file_list(list<string>& file_list, const string & base_dir,
+		      const string & filter)
 {
 	DIR *dir;
 	struct dirent *dirent;
@@ -138,7 +144,8 @@ bool create_file_list(list<string>& file_list, const string & base_dir)
 		return false;
 
 	while ((dirent = readdir(dir)) != 0) {
-		if (!is_directory_name(dirent->d_name))
+		if (!is_directory_name(dirent->d_name) &&
+		    fnmatch(filter.c_str(), dirent->d_name, 0) != FNM_NOMATCH)
 			file_list.push_back(dirent->d_name);
 	}
 
@@ -365,4 +372,86 @@ string basename(string const & path_name)
 	string result = rtrim(path_name, '/');
 
 	return erase_to_last_of(result, '/');
+}
+
+/**
+ * extract_app_name - extract the mangled name of an application
+ * @name the mangled name
+ *
+ * if @name is: }usr}sbin}syslogd}}}lib}libc-2.1.2.so (shared lib)
+ * will return }usr}sbin}syslogd and }lib}libc-2.1.2.so in
+ * @lib_name
+ *
+ * if @name is: }bin}bash (application)
+ *  will return }bin}bash and an empty name in @lib_name
+ */
+string extract_app_name(const string & name, string & lib_name)
+{
+	string result(name);
+	lib_name = string();
+
+	size_t pos = result.find("}}");
+	if (pos != string::npos) {
+		result.erase(pos, result.length() - pos);
+		lib_name = name.substr(pos + 2);
+	}
+
+	return result;
+}
+
+/**
+ * strip_filename_suffix - strip the #nr suffix of a samples filename
+ */
+string strip_filename_suffix(const std::string & filename)
+{
+	std::string result(filename);
+
+	size_t pos = result.find_last_of('#');
+	if (pos != string::npos)
+		result.erase(pos, result.length() - pos);
+
+	return result;
+}
+
+/**
+ * get_sample_file_list - create a file list of base samples filename
+ * @file_list: where to put the results
+ * @base_dir: base directory
+ * @filter: a file filter name.
+ *
+ * fill @file_list with a list of base samples
+ * filename where a base sample filename is a
+ * samples filename without #nr suffix. Even if the call
+ * pass "*" as filter only valid samples filename are
+ * returned (ie string like base/dir/session-xxx are filtered)
+ */
+void get_sample_file_list(list<string> & file_list,
+			  const std::string & base_dir,
+			  const std::string & filter)
+{
+	file_list.clear();
+
+	list <string> files;
+	if (create_file_list(files, base_dir, filter) == false) {
+		cerr << "Can't open directory \"" << base_dir << "\": "
+		     << strerror(errno) << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	list<string>::iterator it;
+	for (it = files.begin(); it != files.end(); ++it) {
+
+		// even if caller specify "*" as filter we avoid to get
+		// invalid filename
+		if (it->find_first_of(OPD_MANGLE_CHAR) == string::npos)
+			continue;
+
+		string filename = strip_filename_suffix(*it);
+
+		// After stripping the # suffix multiples identicals filenames
+		// can exist.
+		if (find(file_list.begin(), file_list.end(), filename) == 
+		    file_list.end())
+			file_list.push_back(filename);
+	}
 }

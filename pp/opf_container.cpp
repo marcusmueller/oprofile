@@ -23,6 +23,8 @@
 
 #include <limits.h>
 
+#include "../util/file_manip.h"
+
 using std::string;
 using std::cerr;
 using std::endl;
@@ -31,10 +33,20 @@ using std::set;
 using std::accumulate;
 using std::vector;
 using std::pair;
+using std::sort;
 
 #include "opf_filter.h"
 
 extern uint op_nr_counters;
+
+namespace {
+
+inline double do_ratio(size_t counter, size_t total)
+{
+	return total == 0 ? 1.0 : ((double)counter / total);
+}
+
+}
 
 //---------------------------------------------------------------------------
 // Functors used as predicate for vma comparison.
@@ -46,17 +58,23 @@ struct less_sample_entry_by_vma {
 	bool operator()(const symbol_entry & lhs, const symbol_entry & rhs) const {
 		return (*this)(lhs.sample, rhs.sample);
 	}
+	bool operator()(const symbol_entry * lhs, const symbol_entry * rhs) const {
+		return (*this)(lhs->sample, rhs->sample);
+	}
 };
 
 //---------------------------------------------------------------------------
-// Functors used as predicate for less than comparison of counter_array_t. There is no
-//  multi-sort choice, ie the the counter number used is statically set at ctr time.
+// Functors used as predicate for less than comparison of counter_array_t.
 struct less_symbol_entry_by_samples_nr {
 	// Precondition: index < op_nr_counters. Used also as default ctr.
 	less_symbol_entry_by_samples_nr(size_t index_ = 0) : index(index_) {}
 
 	bool operator()(const symbol_entry * lhs, const symbol_entry * rhs) const {
-		return lhs->sample.counter[index] > rhs->sample.counter[index];
+		// sorting by vma when samples count are identical is better
+		if (lhs->sample.counter[index] != rhs->sample.counter[index])
+			return lhs->sample.counter[index] > rhs->sample.counter[index];
+
+		return lhs->sample.vma > rhs->sample.vma;
 	}
 
 	size_t index;
@@ -65,20 +83,14 @@ struct less_symbol_entry_by_samples_nr {
 //---------------------------------------------------------------------------
 // Functors used as predicate for filename::linenr less than comparison.
 struct less_by_file_loc {
-	bool operator()(const file_location &lhs,
-			const file_location &rhs) const {
-		return lhs.filename < rhs.filename ||
-			(lhs.filename == rhs.filename && lhs.linenr < rhs.linenr);
-	}
-
-	bool operator()(const sample_entry *lhs,
+	bool operator()(const sample_entry *lhs, 
 			const sample_entry *rhs) const {
-		return (*this)(lhs->file_loc, rhs->file_loc);
+		return lhs->file_loc < rhs->file_loc;
 	}
 
 	bool operator()(const symbol_entry *lhs,
 			const symbol_entry *rhs) const {
-		return (*this)(&lhs->sample, &rhs->sample);
+		return lhs->sample.file_loc < rhs->sample.file_loc;
 	}
 };
 
@@ -275,7 +287,7 @@ class sample_container_impl {
 
 	size_t size() const;
 
-	bool accumulate_samples_for_file(counter_array_t & counter, const string & filename) const;
+	bool accumulate_samples(counter_array_t & counter, const string & filename) const;
 
 	const sample_entry * find_by_vma(bfd_vma vma) const;
 	bool accumulate_samples(counter_array_t &, const string & filename, size_t linenr) const;
@@ -312,15 +324,15 @@ inline void sample_container_impl::push_back(const sample_entry & sample)
 
 namespace {
 
-counter_array_t & add_counts(counter_array_t & arr, const sample_entry * s)
+inline counter_array_t & add_counts(counter_array_t & arr, const sample_entry * s)
 {
 	return arr += s->counter;
 }
 
 } // namespace anon
 
-bool sample_container_impl::accumulate_samples_for_file(counter_array_t & counter,
-	const string & filename) const
+bool sample_container_impl::accumulate_samples(counter_array_t & counter,
+					       const string & filename) const
 {
 	flush_input_counter();
 
@@ -374,7 +386,7 @@ bool sample_container_impl::accumulate_samples(counter_array_t & counter,
 
 	p_it_t p_it = samples_by_file_loc.equal_range(&sample);
 
-	counter += std::accumulate(p_it.first, p_it.second, counter, add_counts);
+	counter += accumulate(p_it.first, p_it.second, counter, add_counts);
 
 	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		if (counter[i] != 0)
@@ -413,10 +425,10 @@ size_t sample_container_t::size() const {
 	return impl->size();
 }
 
-bool sample_container_t::accumulate_samples_for_file(counter_array_t & counter,
-						     const string & filename) const
+bool sample_container_t::accumulate_samples(counter_array_t & counter,
+					    const string & filename) const
 {
-	return impl->accumulate_samples_for_file(counter, filename);
+	return impl->accumulate_samples(counter, filename);
 }
 
 const sample_entry * sample_container_t::find_by_vma(bfd_vma vma) const
@@ -433,4 +445,262 @@ bool sample_container_t::accumulate_samples(counter_array_t & counter,
 void sample_container_t::push_back(const sample_entry & sample)
 {
 	impl->push_back(sample);
+}
+
+
+//---------------------------------------------------------------------------
+// implementation of samples_files_t
+
+samples_files_t::samples_files_t()
+{
+}
+
+samples_files_t::~samples_files_t()
+{
+}
+
+// Post condition:
+//  the symbols/samples are sorted by increasing vma.
+//  the range of sample_entry inside each symbol entry are valid
+//  the samples_by_file_loc member var is correctly setup.
+void samples_files_t::
+build(const opp_samples_files& samples_files, const opp_bfd& abfd,
+      bool add_zero_samples_symbols, bool build_samples_by_vma,
+      bool add_shared_libs)
+{
+	do_build(samples_files, abfd, add_zero_samples_symbols,
+		 build_samples_by_vma);
+
+	if (add_shared_libs) {
+		string dir = dirname(samples_files.sample_filename);
+		string name = basename(samples_files.sample_filename);
+
+		list<string> file_list;
+		get_sample_file_list(file_list, dir, name + "}}}*");
+
+		list<string>::const_iterator it;
+		for (it = file_list.begin() ; it != file_list.end(); ++it) {
+			string lib_name;
+			string image_name = extract_app_name(*it, lib_name);
+
+			opp_samples_files samples_files(dir + "/" + *it);
+			opp_bfd abfd(samples_files.header[samples_files.first_file],
+				     samples_files.nr_samples,
+				     demangle_filename(lib_name));
+
+			do_build(samples_files, abfd, false, true);
+		}
+	}
+}
+
+// Post condition:
+//  the symbols/samples are sorted by increasing vma.
+//  the range of sample_entry inside each symbol entry are valid
+//  the samples_by_file_loc member var is correctly setup.
+void samples_files_t::
+do_build(const opp_samples_files& samples_files, const opp_bfd& abfd,
+	 bool add_zero_samples_symbols, bool build_samples_by_vma)
+{
+	string image_name = bfd_get_filename(abfd.ibfd);
+
+	for (size_t i = 0 ; i < abfd.syms.size(); ++i) {
+		u32 start, end;
+		const char* filename;
+		uint linenr;
+		symbol_entry symb_entry;
+
+		abfd.get_symbol_range(i, start, end);
+
+		bool found_samples =
+		  samples_files.accumulate_samples(symb_entry.sample.counter,
+						   start, end);
+
+		if (found_samples == 0 && !add_zero_samples_symbols)
+			continue;
+
+		counter += symb_entry.sample.counter;
+
+		symb_entry.name = demangle_symbol(abfd.syms[i]->name);
+
+		if (abfd.get_linenr(i, start, filename, linenr)) {
+			symb_entry.sample.file_loc.filename = filename;
+			symb_entry.sample.file_loc.linenr = linenr;
+		} else {
+			symb_entry.sample.file_loc.filename = string();
+			symb_entry.sample.file_loc.linenr = 0;
+		}
+
+		symb_entry.sample.file_loc.image_name = image_name;
+
+		bfd_vma base_vma = abfd.syms[i]->value + abfd.syms[i]->section->vma;
+
+		symb_entry.sample.vma = abfd.sym_offset(i, start) + base_vma;
+
+		symb_entry.first = samples.size();
+
+		if (build_samples_by_vma)
+			add_samples(samples_files, abfd, i, start, end,
+				    base_vma, image_name);
+
+		symb_entry.last = samples.size();
+
+		symbols.push_back(symb_entry);
+	}
+}
+
+void samples_files_t::add_samples(const opp_samples_files& samples_files,
+				  const opp_bfd& abfd, size_t sym_index,
+				  u32 start, u32 end, bfd_vma base_vma,
+				  const string & image_name)
+{
+	for (u32 pos = start; pos < end ; ++pos) {
+		const char * filename;
+		sample_entry sample;
+		uint linenr;
+
+		if (!samples_files.accumulate_samples(sample.counter, pos))
+			continue;
+
+		if (abfd.get_linenr(sym_index, pos, filename, linenr)) {
+			sample.file_loc.filename = filename;
+			sample.file_loc.linenr = linenr;
+		} else {
+			sample.file_loc.filename = string();
+			sample.file_loc.linenr = 0;
+		}
+
+		sample.file_loc.image_name = image_name;
+
+		sample.vma = abfd.sym_offset(sym_index, pos) + base_vma;
+
+		samples.push_back(sample);
+	}
+}
+
+const symbol_entry* samples_files_t::find_symbol(bfd_vma vma) const
+{
+	return symbols.find_by_vma(vma);
+}
+
+const symbol_entry* samples_files_t::find_symbol(const string & filename,
+						size_t linenr) const
+{ 
+	return symbols.find(filename, linenr);
+}
+
+const sample_entry * samples_files_t::find_sample(bfd_vma vma) const
+{ 
+	return samples.find_by_vma(vma);
+}
+
+u32 samples_files_t::samples_count(size_t counter_nr) const
+{
+	return counter[counter_nr];
+}
+
+void samples_files_t::select_symbols(vector<const symbol_entry*> & result,
+				     size_t ctr, double threshold,
+				     bool until_threshold,
+				     bool sort_by_vma) const
+{
+	vector<const symbol_entry *> v;
+	symbols.get_symbols_by_count(ctr , v);
+
+	u32 total_count = samples_count(ctr);
+
+	for (size_t i = 0 ; i < v.size() && threshold >= 0 ; ++i) {
+		double percent = do_ratio(v[i]->sample.counter[ctr], 
+					  total_count);
+
+		if (until_threshold || percent >= threshold)
+			result.push_back(v[i]);
+
+		if (until_threshold)
+			threshold -=  percent;
+	}
+
+	if (sort_by_vma)
+		sort(result.begin(), result.end(), less_sample_entry_by_vma());
+}
+
+
+namespace {
+
+struct filename_by_samples {
+	filename_by_samples(string filename_, double percent_)
+		: filename(filename_), percent(percent_)
+		{}
+
+	bool operator<(const filename_by_samples & lhs) const {
+		return percent > lhs.percent;
+	}
+
+	string filename;
+	// ratio of samples which belongs to this filename.
+	double percent;
+};
+
+}
+
+void samples_files_t::select_filename(vector<string> & result, size_t ctr,
+				      double threshold,
+				      bool until_threshold) const
+{
+	set<string> filename_set;
+
+	// Trying to iterate on symbols to create the set of filename which
+	// contain sample do not work: a symbol can contain samples and this
+	// symbol is in a source file that contain zero sample because only
+	// inline function in this source file contains samples.
+	for (size_t i = 0 ; i < samples.size() ; ++i)
+		filename_set.insert(samples[i].file_loc.filename);
+
+	// Give a sort order on filename for the selected counter.
+	vector<filename_by_samples> file_by_samples;
+
+	u32 total_count = samples_count(ctr);
+
+	set<string>::const_iterator it;
+	for (it = filename_set.begin() ; it != filename_set.end() ;  ++it) {
+		counter_array_t counter;
+
+		samples_count(counter, *it);
+			
+		double percent = do_ratio(counter[ctr], total_count);
+
+		filename_by_samples f(*it, percent);
+
+		file_by_samples.push_back(f);
+	}
+
+	// now sort the file_by_samples entry.
+	sort(file_by_samples.begin(), file_by_samples.end());
+
+	for (size_t i = 0 ; i < file_by_samples.size() && threshold >= 0 ; ++i) {
+		filename_by_samples & s = file_by_samples[i];
+
+		if (until_threshold || s.percent >= threshold)
+			result.push_back(s.filename);
+
+		if (until_threshold)
+			threshold -=  s.percent;
+	}
+}
+
+bool samples_files_t::samples_count(counter_array_t & result,
+				    const string & filename) const
+{
+	return samples.accumulate_samples(result, filename);
+}
+
+bool samples_files_t::samples_count(counter_array_t & result,
+				    const string & filename, 
+				    size_t linenr) const
+{
+	return samples.accumulate_samples(result, filename, linenr);
+}
+
+const sample_entry & samples_files_t::get_samples(size_t idx) const
+{
+	return samples[idx];
 }

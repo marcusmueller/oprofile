@@ -200,6 +200,10 @@ exclude list of comma separated symbol
 base directory of profile daemon
 .PP
 .br
+.BI "--show-shared-libs -h"
+Show the details for each shared lib which belongs to one application. This option is usefull only if you have profiled with --separate-samples option and you specify on the oprofpp command line either --list-symbols either --list-all-symbols-details
+.TP
+.br
 .B op_to_source options
 .br
 .TP
@@ -285,7 +289,7 @@ Show help message
 which counter to use for sorting purposes
 .TP
 .br
-.BI "--show-details -s"
+.BI "--show-shared-libs -h"
 Show the details for each shared lib which belongs to one application. This option is usefull only if you have profiled with --separate-samples option
 .TP
 .br

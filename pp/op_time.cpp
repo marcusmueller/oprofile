@@ -73,14 +73,14 @@ typedef multimap<u32, map_t::const_iterator> sorted_map_t;
 
 static int showvers;
 static int reverse_sort;
-static int show_details;
+static int show_shared_libs;
 static const char * base_dir = "/var/opd/samples";
 
 static struct poptOption options[] = {
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
 	{ "use-counter", 'c', POPT_ARG_INT, &ctr, 0,
 	  "use counter", "counter nr", },
-	{ "show-details", 's', POPT_ARG_NONE, &show_details, 0,
+	{ "show-shared-libs", 'h', POPT_ARG_NONE, &show_shared_libs, 0,
 	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
 	{ "reverse", 'r', POPT_ARG_NONE, &reverse_sort, 0,
 	  "reverse sort order", NULL, },
@@ -121,33 +121,7 @@ static void get_options(int argc, char const * argv[])
 }
 
 /**
- * extract_app_name - extract the mangled name of an application
- * @name the mangled name on the form of
- *   }usr}sbin}syslogd}}}lib}libc-2.1.2.so (shared lib
- *     which belong to app /usr/sbin/syslogd)
- *  or
- *   }bin}bash (application)
- *
- * which return }usr}sbin}syslogd and }lib}libc-2.1.2.so
- * or }bin}bash
- */
-static string extract_app_name(const string & name, string & lib_name)
-{
-	string result(name);
-	lib_name = string();
-
-	size_t pos = result.find("}}");
-	if (pos != string::npos) {
-		result.erase(pos, result.length() - pos);
-		lib_name = name.substr(pos + 2);
-	}
-
-	return result;
-}
-
-/**
  * image_name - ctor from an already parsed name
- *
  */
 image_name::image_name(const string& samplefile_name_, const string& app_name_,
 		       const string& lib_name_, u32 count_ = 0)
@@ -171,21 +145,6 @@ image_name::image_name(const string& samplefile_name, u32 count_ = 0)
 }
 
 /**
- * strip_filename_suffix - strip the #nr suffix of a samples
- * filename
- */
-static string strip_filename_suffix(const std::string & filename)
-{
-	std::string result(filename);
-
-	size_t pos = result.find_last_of('#');
-	if (pos != string::npos)
-		result.erase(pos, result.length() - pos);
-
-	return result;
-}
-
-/**
  * samples_file_exist - test for a samples file existence
  * @filename: the base samples filename
  *
@@ -200,41 +159,6 @@ static bool samples_file_exist(const std::string & filename)
 	ifstream in(s.str().c_str());
 
 	return in;
-}
-
-/**
- * get_file_list - create a file list of base samples filename
- * @file_list: where to put the results
- *
- * fill @file_list with a list of base samples
- * filename where a base sample filename is a
- * samples filename without #nr suffix
- */
-static void get_file_list(list<string> & file_list)
-{
-	file_list.clear();
-
-	list <string> files;
-	if (create_file_list(files, base_dir) == false) {
-		cerr << "Can't open directory \"" << base_dir << "\": "
-		     << strerror(errno) << endl;
-		exit(EXIT_FAILURE);
-	}
-
-	list<string>::iterator it;
-	for (it = files.begin(); it != files.end(); ++it) {
-
-		if (it->find_first_of(OPD_MANGLE_CHAR) == string::npos)
-			continue;
-
-		string filename = strip_filename_suffix(*it);
-
-		// After stripping the # suffix multiples identicals filenames
-		// can exist.
-		if (find(file_list.begin(), file_list.end(), filename) == 
-		    file_list.end())
-			file_list.push_back(filename);
-	}
 }
 
 /**
@@ -401,7 +325,7 @@ static void treat_file_list(map_t& files)
 			out_filename(it->first, size_t(-1), s_it->first,
 				     total_count);
 
-			if (show_details) {
+			if (show_shared_libs) {
 				pair_it_t p_it = files.equal_range(it->first);
 				sorted_map_t temp_map;
 
@@ -421,7 +345,7 @@ static void treat_file_list(map_t& files)
 			out_filename(it->first, size_t(-1), s_it->first,
 				     total_count);
 
-			if (show_details) {
+			if (show_shared_libs) {
 				pair_it_t p_it = files.equal_range(it->first);
 				sorted_map_t temp_map;
 
@@ -444,7 +368,7 @@ int main(int argc, char const * argv[])
 	get_options(argc, argv);
 
 	list<string> file_list;
-	get_file_list(file_list);
+	get_sample_file_list(file_list, base_dir, "*");
 
 	map_t file_map;
 	sort_file_list(file_map, file_list);

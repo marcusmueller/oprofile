@@ -136,6 +136,7 @@ oprof_start::oprof_start()
 	ignore_daemon_samples_cb->setChecked(config.ignore_daemon_samples);
 	verbose->setChecked(config.verbose); 
 	kernel_only_cb->setChecked(config.kernel_only);
+	separate_samples_cb->setChecked(config.separate_samples);
 
 	// the unit mask check boxes
 	hide_masks();
@@ -568,6 +569,7 @@ bool oprof_start::record_config()
 	config.ignore_daemon_samples = ignore_daemon_samples_cb->isChecked();
 	config.kernel_only = kernel_only_cb->isChecked();
 	config.verbose = verbose->isChecked();
+	config.separate_samples = separate_samples_cb->isChecked();
 
 	if (config.base_opd_dir.length() && 
 	    config.base_opd_dir[config.base_opd_dir.length()-1] != '/')
@@ -790,6 +792,8 @@ void oprof_start::on_start_profiler()
 	args.push_back("--buffer-size=" + tostr(config.buffer_size));
 	args.push_back("--hash-table-size=" + tostr(config.hash_table_size));
 	args.push_back("--note-table-size=" + tostr(config.note_table_size));
+	if (config.separate_samples)
+	args.push_back("--separate-samples");
 	if (config.verbose)
 		args.push_back("--verbose");
 
@@ -800,13 +804,11 @@ void oprof_start::on_start_profiler()
 // flush and stop the profiler if it was started.
 void oprof_start::on_stop_profiler()
 {
-	if (daemon_status().running) {
-		if (do_exec_command("op_dump") == 0) {
-			do_exec_command("op_stop");
-		}
-	} else {
+	if (daemon_status().running)
+		do_exec_command("op_stop");
+	else
 		QMessageBox::warning(this, 0, "The profiler is already stopped.");
-	}
+
 	timerEvent(0);
 }
 
