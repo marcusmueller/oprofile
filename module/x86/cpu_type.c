@@ -13,11 +13,19 @@
 
 EXPORT_NO_SYMBOLS;
 
+MODULE_PARM(force_rtc, "i");
+MODULE_PARM_DESC(force_rtc, "force RTC mode.");
+static int force_rtc;
+
 __init op_cpu get_cpu_type(void)
 {
 	__u8 vendor = current_cpu_data.x86_vendor;
 	__u8 family = current_cpu_data.x86;
 	__u8 model = current_cpu_data.x86_model;
+
+	if (force_rtc) {
+		return CPU_RTC;
+	}
 
 	switch (vendor) {
 		case X86_VENDOR_AMD:

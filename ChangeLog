@@ -1,3 +1,9 @@
+2002-09-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* module/x86/cpu_type.c: allow to force RTC mode.
+	* dae/oprofiled.c: checking when we need to backup samples
+	  dir in RTC mode was broken.
+
 2002-09-14  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_config.h: remove OP_MIN/MAX_PID, OP_MIN/MAX_PGRP

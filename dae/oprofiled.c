@@ -261,6 +261,7 @@ static int opd_need_backup_samples_files(void)
 			    header.ctr_count != ctr_count[header.ctr] ||
 			    header.cpu_type != (u32)cpu_type ||
 			    header.separate_samples != separate_samples) {
+				verbprintf("Samples files header differ from last session\n");
 				need_backup = 1;
 			}
 
@@ -280,8 +281,10 @@ static int opd_need_backup_samples_files(void)
 
 	/* old_counter_set == 0 means there is no samples file in the sample
 	 * dir, so avoid to try to backup else we get an empty backup dir */
-	if (old_counter_set && old_counter_set != counter_set)
+	if (old_counter_set && old_counter_set != counter_set) {
+		verbprintf("Counter set differ from last session %x %x\n", old_counter_set, counter_set);
 		need_backup = 1;
+	}
 
 	closedir(dir);
 
@@ -345,6 +348,8 @@ static void opd_rtc_options(void)
 	}
 
 	ctr_count[0] = op_read_int_from_file("/proc/sys/dev/oprofile/rtc_value");
+	ctr_enabled[0] = 1;
+
 	/* FIXME ugly ... */
 	ctr_event[0] = 0xff;
 }
