@@ -1,5 +1,8 @@
 2002-04-09  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* dae/oprofiled.h: move definition of linked list to ...
+	* dae/opd_list.h: this new file
+	
 	* dae/opd_proc.c: iterate on opened sample file
 	  rather on image list to sync mmap'ed file
 
