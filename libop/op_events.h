@@ -32,7 +32,6 @@ struct op_event {
 	u32 counter_mask;	/**< bitmask of allowed counter  */
 	u16 cpu_mask;		/**< bitmask of allowed cpu_type */
 	u8 val;			/**< event number */
-	/* FIXME, is u8 really sufficient ? */
 	u8 unit;		/**< which unit mask if any allowed */
 	char const * name;	/**< the event name */
 	int min_count;		/**< minimum counter value allowed */
@@ -51,7 +50,6 @@ struct op_unit_mask {
 	u32 num;		/**< number of possible unit masks */
 	enum unit_mask_type unit_type_mask;
 	u8 default_mask;	/**< only the gui use it */
-	/* FIXME, is u8 really sufficient ? */
 	u8 um[7];		/**< up to seven allowed unit masks */
 };
 
@@ -71,8 +69,6 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type);
  * @param cpu_type processor type
  *
  * Check that the counter event and unit mask values are allowed.
- *
- * Don't fail if ctr_type == 0. (FIXME why, this seems insane)
  *
  * The function returns bitmask of failure cause 0 otherwise
  *

@@ -94,9 +94,10 @@ public:
 	 * output_symbol::ShowHelp() to notify user on available options */
 	static outsymbflag ParseOutputOption(std::string const & option);
 
-	/** @defgroup format The set of formatting functions, used internally
-	 * by Output(). Exposed as public because we need to use them in an
-	 * array of pointer to member function
+	/** @name format functions.
+	 * The set of formatting functions, used internally by Output().
+	 * Exposed as public because we need to use them in an array of
+	 * pointer to member function
 	 */
 	//@{
 	std::string format_vma(std::string const & name,
@@ -141,8 +142,6 @@ private:
 	u32 total_count[OP_MAX_COUNTERS];
 	u32 cumulated_samples[OP_MAX_COUNTERS];
 	u32 cumulated_percent[OP_MAX_COUNTERS];
-	// probably not an u32 ...
-//	u32 time_cumulated[OP_MAX_COUNTERS];
 	int counter;
 	bool first_output;
 };

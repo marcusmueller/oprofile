@@ -105,7 +105,6 @@ class output {
 		     vector<symbol_entry const *> const & output_symbols,
 		     bool & do_output);
 	void output_objdump_asm(vector<const symbol_entry *> const & output_symbols, string const & app_name);
-	void output_dasm_asm(vector<const symbol_entry *> const & output_symbols, string const & image_name);
 	void output_source();
 
 	// output one file unconditionally.
@@ -487,6 +486,8 @@ void output::output_objdump_asm(vector<symbol_entry const *> const & output_symb
 	args.push_back("--no-show-raw-insn");
 	if (source_with_assembly)
 		args.push_back("-S");
+	if (!options::objdump_params.empty())
+		args.push_back(options::objdump_params);
 
 	args.push_back(app_name);
 	child_reader reader("objdump", args);
@@ -515,18 +516,6 @@ void output::output_objdump_asm(vector<symbol_entry const *> const & output_symb
 		cerr << "An error occur during the execution of objdump:\n\n";
 		cerr << std_err.str() << endl;
 	}
-}
-
-/**
- * output::output_dasm_asm - output asm disassembly
- * @param output_symbols the set of symbols to output
- *
- * Output asm (optionnaly mixed with source) annotated
- * with samples using dasm as external disassembler.
- */
-void output::output_dasm_asm(vector<symbol_entry const *> const & /*output_symbols*/, string  const & /*image_name*/)
-{
-	// Not yet implemented :/
 }
 
 void output::output_asm(string const & image_name)
@@ -824,6 +813,11 @@ int main(int argc, char const * argv[])
 
 		if (options::source_with_assembly)
 			options::assembly = true;
+
+		if (!options::objdump_params.empty() && !options::assembly) {
+			cerr << "You can't specificy --objdump-params= without assembly output" << endl;
+			exit(EXIT_FAILURE);
+		}
 
 		output output(argc, argv,
 			      threshold_percent,

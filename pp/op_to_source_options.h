@@ -44,6 +44,8 @@ namespace options {
 	extern bool source_with_assembly;
 	/// whether to demangle
 	extern bool demangle;
+	/// additional parameter to pass to objdump
+	extern std::string objdump_params;
 };
 
 /**

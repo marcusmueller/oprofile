@@ -1,3 +1,23 @@
+2002-07-04  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_events.cpp:
+	* libop/op_events.h:
+	* module/x86/op_nmi.c:
+	* dae/oprofiled.c: op_check_events() no longer accept 0 as valid events
+
+	* pp/opp_symbol.cpp: small dead code removal
+	* pp/opp_symbol.h: doxygen comment fix
+
+	* configure.in: do not use AC_CHECK_FILE: this macro generate
+	  spurious warning with autoconf 2.2.13
+
+	* pp/op_to_source_options.h:
+	* pp/op_to_source_options.cpp:
+	* pp/op_to_source.cpp:
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: implement --objdump-params='params_strings'
+	  allowing to pass additional parameters to objdump.
+
 2002-07-03  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil/op_fileio.c: remove a FIXME, it's worthwhile to try to

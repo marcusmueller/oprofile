@@ -27,7 +27,6 @@
 #include "op_get_time.h"
 #include "op_sample_file.h"
 #include "op_events.h"
-#include "op_events_desc.h"
 #include "op_libiberty.h"
 #include "op_interface.h"
 #include "op_hw_config.h"
@@ -311,9 +310,10 @@ static void opd_pmc_options(void)
 
 		sprintf(filename, "/proc/sys/dev/oprofile/%d/enabled", i);
 		ctr_enabled[i]= op_read_int_from_file(filename);
-	}
 
-	for (i = 0 ; i < op_nr_counters ; ++i) {
+		if (!ctr_enabled[i])
+			continue;
+
 		ret = op_check_events(i, ctr_event[i], ctr_um[i], cpu_type);
 
 		if (ret & OP_INVALID_EVENT)

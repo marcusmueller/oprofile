@@ -264,31 +264,27 @@ static int pmc_check_params(void)
 	int ok = 0;
 
 	for (i = 0; i < op_nr_counters ; i++) {
+		int min_count;
+		int ret;
 
-		if (sysctl.ctr[i].enabled) {
-			int min_count = op_min_count(sysctl.ctr[i].event, sysctl.cpu_type);
+		if (!sysctl.ctr[i].enabled)
+			continue;
 
-			if (!sysctl.ctr[i].user && !sysctl.ctr[i].kernel) {
-				printk(KERN_ERR "oprofile: neither kernel nor user "
-					"set for counter %d\n", i);
-				return 0;
-			}
-			if (check_range(sysctl.ctr[i].count, min_count,
+		enabled = 1;
+
+		if (!sysctl.ctr[i].user && !sysctl.ctr[i].kernel) {
+			printk(KERN_ERR "oprofile: neither kernel nor user "
+			       "set for counter %d\n", i);
+			return -EINVAL;
+		}
+
+		min_count = op_min_count(sysctl.ctr[i].event, sysctl.cpu_type);
+		if (check_range(sysctl.ctr[i].count, min_count,
 				OP_MAX_PERF_COUNT,
 				"ctr count value %d not in range (%d %ld)\n"))
-				return 0;
+			return -EINVAL;
 
-			enabled = 1;
-		}
-	}
-
-	if (!enabled) {
-		printk(KERN_ERR "oprofile: no counters have been enabled.\n");
-		return -EINVAL;
-	}
-
-	for (i = 0 ; i < op_nr_counters ; ++i) {
-		int ret = op_check_events(i, sysctl.ctr[i].event, sysctl.ctr[i].unit_mask, sysctl.cpu_type);
+		ret = op_check_events(i, sysctl.ctr[i].event, sysctl.ctr[i].unit_mask, sysctl.cpu_type);
 
 		if (ret & OP_INVALID_EVENT) {
 			printk(KERN_ERR "oprofile: ctr%d: %d: no such event for cpu %d\n", i,
@@ -305,6 +301,11 @@ static int pmc_check_params(void)
 
 		if (ret != OP_OK_EVENT)
 			ok = -EINVAL;
+	}
+
+	if (!enabled) {
+		printk(KERN_ERR "oprofile: no counters have been enabled.\n");
+		return -EINVAL;
 	}
 
 	return ok;

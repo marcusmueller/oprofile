@@ -1056,6 +1056,16 @@ The options allowed are :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>--objdump-params</option></term>
+		<term><option>-o</option></term>
+		<listitem><para>
+		pass the params strings directly to objdump allowing to pass additional parameters to objdump.
+		Check the objdump man page to see what options objdump accept e.g. <option>-o '--disassembler-options=intel'</option>
+		to get Intel assembly syntax instead of att syntax. This option can be used only with
+		<option>--assembly</option> or <option>--source-with-assembly</option>
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>--sort-by-counter counter_nr</option></term>
 		<term><option>-c counter_nr</option></term>
 		<listitem><para>

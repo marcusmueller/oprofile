@@ -275,29 +275,25 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type)
  *
  * 3 AMD Athlon
  *
- * Don't fail if ctr_type == 0.
- *
  * The function returns bitmask of failure cause
  * 0 otherwise
  */
 int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type)
 {
 	int ret = OP_OK_EVENT;
-	u32 i = 0;
+	u32 i;
 	u32 cpu_mask = 1 << cpu_type;
 	u32 ctr_mask = 1 << ctr;
 
-	if (ctr_type != 0) {
-		for ( ; i < op_nr_events; i++) {
-			if (op_events[i].val == ctr_type && (op_events[i].cpu_mask & cpu_mask)) {
-				if ((op_events[i].counter_mask & ctr_mask) == 0)
-					ret |= OP_INVALID_COUNTER;
+	for (i = 0 ; i < op_nr_events; i++) {
+		if (op_events[i].val == ctr_type && (op_events[i].cpu_mask & cpu_mask)) {
+			if ((op_events[i].counter_mask & ctr_mask) == 0)
+				ret |= OP_INVALID_COUNTER;
 
-				if (op_events[i].unit &&
-				    op_check_unit_mask(&op_unit_masks[op_events[i].unit], ctr_um) < 0)
-					ret |= OP_INVALID_UM;
-				break;
-			}
+			if (op_events[i].unit &&
+			    op_check_unit_mask(&op_unit_masks[op_events[i].unit], ctr_um) < 0)
+				ret |= OP_INVALID_UM;
+			break;
 		}
 	}
 

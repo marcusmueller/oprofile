@@ -36,6 +36,7 @@ namespace options {
 	string image_file;
 	bool demangle;
 	vector<string> exclude_symbols;
+	string objdump_params;
 };
 
 namespace {
@@ -59,6 +60,7 @@ option options_array[] = {
 	option(options::assembly, "assembly", 'a', "output assembly code"),
 	option(options::source_with_assembly, "source-with-assembly", 's', "output assembly code mixed with source"),
 	option(options::exclude_symbols, "exclude-symbol", 'e', "exclude these comma separated symbols", "symbol_name"),
+	option(options::objdump_params, "objdump-params", 'o', "additional parameters to pass to objdump", "objdump argument(s)")
 };
 
 }
