@@ -1,3 +1,8 @@
+2003-06-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* include/sstream: replace old version by the once shipped with
+	  2.95.3, seekg() in the old was not working
+
 2003-06-08  John Levon  <levon@movementarian.org>
 
 	* libpp/name_storage.h: don't need to define the tag structs
