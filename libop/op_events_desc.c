@@ -20,58 +20,6 @@
 #include "op_events.h"
 #include "op_events_desc.h"
 
-/**
- * op_get_cpu_type - get from /proc/sys/dev/oprofile/cpu_type the cpu type
- *
- * returns %CPU_NO_GOOD if the CPU could not be identified
- */
-op_cpu op_get_cpu_type(void)
-{
-	int cpu_type = CPU_NO_GOOD;
-	char str[10];
-
-	FILE * fp;
-
-	fp = fopen("/proc/sys/dev/oprofile/cpu_type", "r");
-	if (!fp) {
-		fprintf(stderr, "Unable to open /proc/sys/dev/oprofile/cpu_type for reading\n");
-		return cpu_type;
-	}
-
-	fgets(str, 9, fp);
-
-	sscanf(str, "%d\n", &cpu_type);
-
-	fclose(fp);
-
-	return cpu_type;
-}
-
-static char const * cpu_names[MAX_CPU_TYPE] = {
-	"Pentium Pro",
-	"PII",
-	"PIII",
-	"Athlon",
-	"CPU with RTC device"
-};
-
-/**
- * op_get_cpu_type_str - get the cpu string.
- * @param cpu_type  the cpu type identifier
- *
- * The function always return a valid char const *
- * the core cpu denomination or "invalid cpu type" if
- * @cpu_type is not valid.
- */
-char const * op_get_cpu_type_str(op_cpu cpu_type)
-{
-	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
-		return "invalid cpu type";
-	}
-
-	return cpu_names[cpu_type];
-}
-
 struct op_unit_desc op_unit_descs[] = {
 	{ { NULL, NULL, NULL, NULL, NULL, NULL, NULL, }, },
 	{ { "(M)odified cache state",

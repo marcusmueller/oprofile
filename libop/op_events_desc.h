@@ -16,8 +16,8 @@
 extern "C" {
 #endif
 
-#include "op_interface.h"
-
+#include "op_cpu_type.h"
+ 
 /** Human readable description for an unit mask. */
 struct op_unit_desc {
 	char * desc[7];
@@ -55,23 +55,6 @@ extern struct op_event op_events[];
 /** the total number of events for all processor type, allowing to iterate
  * on the op_events[] decription */
 extern u32 op_nr_events;
-
-/**
- * get from /proc/sys/dev/oprofile/cpu_type the cpu type
- *
- * returns CPU_NO_GOOD if the CPU could not be identified.
- * This function can not work if the module is not loaded
- */
-op_cpu op_get_cpu_type(void);
-
-/**
- * get the cpu string.
- * @param cpu_type the cpu type identifier
- *
- * The function always return a valid char const * the core cpu denomination
- * or "invalid cpu type" if cpu_type is not valid.
- */
-char const * op_get_cpu_type_str(op_cpu cpu_type);
 
 #ifdef __cplusplus
 }

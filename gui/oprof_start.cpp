@@ -33,6 +33,7 @@
 #include <qpushbutton.h>
 
 #include "oprof_start.h"
+#include "op_config.h"
 #include "string_manip.h"
 
 using std::string;

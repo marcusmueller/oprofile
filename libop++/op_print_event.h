@@ -16,6 +16,7 @@
 
 #include "op_types.h"
 #include "op_interface.h"
+#include "op_cpu_type.h"
 
 /**
  * Output a description of the given event paramters

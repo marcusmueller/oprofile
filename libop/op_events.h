@@ -16,7 +16,16 @@
 extern "C" {
 #endif
 
-#include "op_interface.h"
+#include "op_types.h"
+#include "op_cpu_type.h"
+
+/** op_check_events() return code */
+enum op_event_check {
+	OP_OK_EVENT = 0, /**< event is valid and allowed */
+	OP_INVALID_EVENT = 1, /**< event number is invalid */
+	OP_INVALID_UM = 2, /**< unit mask is invalid */
+	OP_INVALID_COUNTER = 4, /**< event is not allowed for the given counter */
+};
 
 /** Describe an event. */
 struct op_event {
@@ -46,7 +55,6 @@ struct op_unit_mask {
 	u8 um[7];		/**< up to seven allowed unit masks */
 };
 
-/* op_events.c */
 /**
  * @param ctr_type event value
  * @param cpu_type cpu type

@@ -1,5 +1,25 @@
 2002-06-15  John Levon  <moz@compsoc.man.ac.uk>
 
+	* libop/Makefile.in:
+	* libop/op_cpu_type.h:
+	* libop/op_cpu_type.c: new files split out, defines
+	  changed
+
+	* dae/opd_proc.c:
+	* dae/opd_sample_files.c:
+	* dae/oprofiled.c:
+	* gui/oprof_start.cpp:
+	* libop/op_events.h: 
+	* libop/op_events.c: 
+	* libop/op_events_desc.h:
+	* libop/op_events_desc.c: 
+	* libop/op_interface.h:
+	* libop++/op_print_event.h: 
+	* module/oprofile.h:
+	* module/x86/op_nmi.c: changes from above
+ 
+2002-06-15  John Levon  <moz@compsoc.man.ac.uk>
+
 	* Makefile.in: compile module early as it's most
 	  likely to fail
  

@@ -266,16 +266,20 @@ static int pmc_check_params(void)
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		int ret = op_check_events(i, sysctl.ctr[i].event, sysctl.ctr[i].unit_mask, sysctl.cpu_type);
 
-		if (ret & OP_EVT_NOT_FOUND)
-			printk(KERN_ERR "oprofile: ctr%d: %d: no such event for cpu %d\n", i, sysctl.ctr[i].event, sysctl.cpu_type);
+		if (ret & OP_INVALID_EVENT) {
+			printk(KERN_ERR "oprofile: ctr%d: %d: no such event for cpu %d\n", i,
+				sysctl.ctr[i].event, sysctl.cpu_type);
+		}
+		if (ret & OP_INVALID_UM) {
+			printk(KERN_ERR "oprofile: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n", i,
+				sysctl.ctr[i].unit_mask, sysctl.cpu_type);
+		}
+		if (ret & OP_INVALID_COUNTER) {
+			printk(KERN_ERR "oprofile: ctr%d: %d: can't count event for this counter\n", i,
+				sysctl.ctr[i].event);
+		}
 
-		if (ret & OP_EVT_NO_UM)
-			printk(KERN_ERR "oprofile: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n", i, sysctl.ctr[i].unit_mask, sysctl.cpu_type);
-
-		if (ret & OP_EVT_CTR_NOT_ALLOWED)
-			printk(KERN_ERR "oprofile: ctr%d: %d: can't count event for this counter\n", i, sysctl.ctr[i].event);
-
-		if (ret != OP_EVENTS_OK)
+		if (ret != OP_OK_EVENT)
 			ok = -EINVAL;
 	}
 

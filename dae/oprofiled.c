@@ -28,6 +28,7 @@
 #include "op_events.h"
 #include "op_events_desc.h"
 #include "op_libiberty.h"
+#include "op_interface.h"
 #include "op_hw_config.h"
 
 #include <unistd.h>
@@ -317,19 +318,19 @@ static void opd_pmc_options(void)
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		ret = op_check_events(i, ctr_event[i], ctr_um[i], cpu_type);
 
-		if (ret & OP_EVT_NOT_FOUND)
+		if (ret & OP_INVALID_EVENT)
 			fprintf(stderr, "oprofiled: ctr%d: %d: no such event for cpu %s\n",
 				i, ctr_event[i], op_get_cpu_type_str(cpu_type));
 
-		if (ret & OP_EVT_NO_UM)
+		if (ret & OP_INVALID_UM)
 			fprintf(stderr, "oprofiled: ctr%d: 0x%.2x: invalid unit mask for cpu %s\n",
 				i, ctr_um[i], op_get_cpu_type_str(cpu_type));
 
-		if (ret & OP_EVT_CTR_NOT_ALLOWED)
+		if (ret & OP_INVALID_COUNTER)
 			fprintf(stderr, "oprofiled: ctr%d: %d: can't count event for this counter\n",
 				i, ctr_count[i]);
 
-		if (ret != OP_EVENTS_OK)
+		if (ret != OP_OK_EVENT)
 			exit(EXIT_FAILURE);
 	}
 }

@@ -16,27 +16,6 @@
 #include "op_config.h"
 #include "op_types.h"
 
-/*@{\name op_check_events() return code */
-#define OP_EVENTS_OK		0x0
-/** The event number is invalid */
-#define OP_EVT_NOT_FOUND	0x1
-/** The event have no unit mask */
-#define OP_EVT_NO_UM		0x2
-/** The event is not available for the selected counter */
-#define OP_EVT_CTR_NOT_ALLOWED	0x4
-/*@}*/
-
-/** supported cpu type */
-typedef enum {
-	CPU_NO_GOOD = -1,
-	CPU_PPRO,
-	CPU_PII,
-	CPU_PIII,
-	CPU_ATHLON,
-	CPU_RTC,
-	MAX_CPU_TYPE
-} op_cpu;
-
 /*@{\name notifications types encoded in op_note::type */
 /** fork(),vfork(),clone() */
 #define OP_FORK 1
@@ -58,21 +37,25 @@ struct op_sample {
 	u32 eip;	/**< eip value where occur interrupt */
 } __attribute__((__packed__, __aligned__(8)));
 
-/** Data type used by the module to notify daemon of fork/exit/mapping etc.
+/**
+ * Data type used by the module to notify daemon of fork/exit/mapping etc.
  * Meanings of fields depend on the type of notification encoded in the type
  * field.
- * \sa OP_FORK, OP_EXEC, OP_MAP, OP_DROP_MODULES and OP_EXIT */
+ * \sa OP_FORK, OP_EXEC, OP_MAP, OP_DROP_MODULES and OP_EXIT
+ */
 struct op_note {
 	u32 addr;
 	u32 len;
 	u32 offset;
 	u32 hash;
 	u16 pid;
-	u16 type;  /* FIXME how to put a see also to the group OP_FORK etc.*/
+	u16 type;
 };
 
-/** A path component. Directory name are stored as a stack of path component.
- * Note than the name index acts also as an unique identifier */
+/**
+ * A path component. Directory name are stored as a stack of path components.
+ * Note than the name index acts also as an unique identifier
+ */
 struct op_hash_index {
 	/** index inside the string pool */
 	u32 name;

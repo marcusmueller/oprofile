@@ -194,7 +194,7 @@ u32 op_nr_events = (sizeof(op_events)/sizeof(op_events[0]));
  *
  * The function returns:
  * -1  if the value is not allowed,
- * 0   if the value is allowed and represent multiple units,
+ * 0   if the value is allowed and represents multiple units,
  * > 0 otherwise, in this case allow->um[return value - 1] == um so the
  * caller can access to the description of the unit_mask.
  */
@@ -282,7 +282,7 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type)
  */
 int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type)
 {
-	int ret = 0x0;
+	int ret = OP_OK_EVENT;
 	u32 i = 0;
 	u32 cpu_mask = 1 << cpu_type;
 	u32 ctr_mask = 1 << ctr;
@@ -291,18 +291,18 @@ int op_check_events(int ctr, u8 ctr_type, u8 ctr_um, op_cpu cpu_type)
 		for ( ; i < op_nr_events; i++) {
 			if (op_events[i].val == ctr_type && (op_events[i].cpu_mask & cpu_mask)) {
 				if ((op_events[i].counter_mask & ctr_mask) == 0)
-					ret |= OP_EVT_CTR_NOT_ALLOWED;
+					ret |= OP_INVALID_COUNTER;
 
 				if (op_events[i].unit &&
 				    op_check_unit_mask(&op_unit_masks[op_events[i].unit], ctr_um) < 0)
-					ret |= OP_EVT_NO_UM;
+					ret |= OP_INVALID_UM;
 				break;
 			}
 		}
 	}
 
 	if (i == op_nr_events)
-		ret |= OP_EVT_NOT_FOUND;
+		ret |= OP_INVALID_EVENT;
 
 	return ret;
 }

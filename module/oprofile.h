@@ -31,6 +31,7 @@
 #include "op_config.h"
 #include "op_hw_config.h"
 #include "op_interface.h"
+#include "op_cpu_type.h"
 
 #undef min
 #undef max
