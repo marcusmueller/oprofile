@@ -1,3 +1,14 @@
+2002-07-22  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil/op_fileio.c:
+	* libutil/op_fileio.h: opd_get_link() new, read a symlink filename
+	* libutil++/file_manip.cpp:
+	* libutil++/file_manip.h: opd_read_link() use the above function
+
+	* dae/opd_image.c:
+	* dae/opd_parse_proc.c: fix #584723 we can not assume than the first
+	  map in /proc/pid/maps is the the map for the binary image
+
 2002-07-21  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: bump to 0.3

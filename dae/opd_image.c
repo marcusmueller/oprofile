@@ -45,6 +45,7 @@ static struct opd_image * images_with_hash[OP_HASH_MAP_NR];
  */
 static void opd_delete_image(struct opd_image * image)
 {
+	/* FIXME : must we free image->app_name ? */
 	if (image->name)
 		free(image->name);
 	free(image);

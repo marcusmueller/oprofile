@@ -23,6 +23,7 @@
 
 #include "file_manip.h"
 #include "string_manip.h"
+#include "op_fileio.h"
 
 using std::vector;
 using std::string;
@@ -104,19 +105,13 @@ bool create_path(string const & path)
  */
 string op_read_link(string const & name)
 {
-	char linkbuf[FILENAME_MAX];
-	int c;
-
-	c = readlink(name.c_str(), linkbuf, FILENAME_MAX);
-
-	if (c == -1)
+	char * linkbuff = op_get_link(name.c_str());
+	if (linkbuff == NULL)
 		return string();
 
-	if (c == FILENAME_MAX)
-		linkbuf[FILENAME_MAX-1] = '\0';
-	else
-		linkbuf[c] = '\0';
-	return linkbuf;
+	string result(linkbuff);
+	free(linkbuff);
+	return result;
 }
 
 

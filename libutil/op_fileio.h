@@ -32,6 +32,9 @@ void op_write_file(FILE * fp, void const * buf, size_t size);
 void op_write_u32(FILE * fp, u32 val);
 void op_write_u8(FILE * fp, u8 val);
 
+/* from a symlink filename get the pointed filename */
+char * op_get_link(char const * filename);
+
 #ifdef __cplusplus
 }
 #endif

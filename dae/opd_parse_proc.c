@@ -9,6 +9,8 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
+#include "op_libiberty.h"
+
 #include "opd_parse_proc.h"
 #include "opd_proc.h"
 #include "opd_mapping.h"
@@ -27,6 +29,7 @@
  * opd_add_ascii_map - parse an ASCII map string for a process
  * @param proc  process to add map to
  * @param line  0-terminated ASCII string
+ * @param image_name the binary application name
  *
  * Attempt to parse the string @line for map information
  * and add the info to the process @proc. Returns %1
@@ -37,7 +40,8 @@
  * 4001e000-400fc000 r-xp 00000000 03:04 31011      /lib/libc-2.1.2.so
  */
 /* FIXME: handle (deleted) */
-static int opd_add_ascii_map(struct opd_proc * proc, char const * line)
+static int opd_add_ascii_map(struct opd_proc * proc, char const * line,
+			     char * const image_name)
 {
 	struct opd_map * map = &proc->maps[proc->nr_maps];
 	char const * cp = line;
@@ -67,7 +71,7 @@ static int opd_add_ascii_map(struct opd_proc * proc, char const * line)
 	if (!*cp)
 		return 0;
 
-	map->image = opd_get_image(cp, -1, opd_app_name(proc), 0);
+	map->image = opd_get_image(cp, -1, image_name, 0);
 
 	if (!map->image)
 		return 0;
@@ -91,13 +95,28 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 	FILE * fp;
 	char mapsfile[20] = "/proc/";
 	char * line;
+	char exe_name[20];
+	char * image_name;
 
 	snprintf(mapsfile + 6, 6, "%hu", proc->pid);
+
+	strcpy(exe_name, mapsfile);
+
 	strcat(mapsfile,"/maps");
 
 	fp = op_try_open_file(mapsfile, "r");
 	if (!fp)
 		return;
+
+	strcat(exe_name, "/exe");
+	image_name = op_get_link(exe_name);
+	if (!image_name)
+		/* FIXME likely to be kernel thread, actually we don't use them
+		 * because samples go to vmlinux samples file but for
+		 * completeness we record them in proc struct */
+		image_name = xstrdup(exe_name);
+
+	verbprintf("image name %s for pid %u\n", image_name, proc->pid);
 
 	while (1) {
 		line = op_get_line(fp);
@@ -105,10 +124,13 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 			free(line);
 			break;
 		} else {
-			opd_add_ascii_map(proc, line);
+			opd_add_ascii_map(proc, line, image_name);
 			free(line);
 		}
 	}
+
+	/* we can't free image_name because opd_add_ascii_map assume than
+	 * image_name remains valid */
 
 	op_close_file(fp);
 }

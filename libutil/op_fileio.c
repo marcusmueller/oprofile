@@ -9,6 +9,8 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
+#include <unistd.h>
+
 #include "op_fileio.h"
 
 #include "op_libiberty.h"
@@ -236,4 +238,34 @@ char *op_get_line(FILE * fp)
 				break;
 		}
 	}
+}
+
+
+/**
+ * from a symlink filename get the pointed filename
+ * @param filename the symlink filename
+ *
+ *  On error the returned string is NULL else the returned pointer
+ * is dynamically allocated.
+ *
+ */
+char * op_get_link(char const * filename)
+{
+	char  * linkbuf;
+	int c;
+
+	linkbuf = xmalloc(FILENAME_MAX);
+
+	c = readlink(filename, linkbuf, FILENAME_MAX);
+
+	if (c == -1) {
+		free(linkbuf);
+		return NULL;
+	}
+
+	if (c == FILENAME_MAX)
+		linkbuf[FILENAME_MAX-1] = '\0';
+	else
+		linkbuf[c] = '\0';
+	return linkbuf;
 }
