@@ -1,3 +1,14 @@
+2002-11-07  John Levon  <levon@movementarian.org>
+
+	* configure.in:
+	* module/compat.h: 
+	* module/compat24.h:
+	* module/op_dname.c: 
+	* module/oprofile.c: 
+	* module/x86/op_fixmap.c: 
+	* module/x86/op_nmi.c: remove 2.5 support from old
+	  module code
+ 
 2002-11-06  Will Cohen  <wcohen@redhat.com>
 
 	* configure.in: Tests for ia64 architecture.

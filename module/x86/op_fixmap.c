@@ -21,7 +21,7 @@
 
 #if V_BEFORE(2, 4, 0)
 #define cpu_has_pge (test_bit(X86_FEATURE_PGE, &boot_cpu_data.x86_capability)) 
-#elif V_BEFORE(2, 5, 0)
+#else
 #define cpu_has_pge (test_bit(X86_FEATURE_PGE, boot_cpu_data.x86_capability))
 #endif
 
@@ -51,7 +51,7 @@ unsigned long virt_apic_base;
 	pgprot_val(prot) |= _PAGE_PCD;
 	if (cpu_has_pge)
 		pgprot_val(prot) |= _PAGE_GLOBAL;
-	set_pte(pte, op_pfn_pte(phys, prot));
+	set_pte(pte, mk_pte_phys(phys, prot));
 	__flush_tlb_one(vaddr);
 }
 

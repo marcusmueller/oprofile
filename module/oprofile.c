@@ -170,7 +170,7 @@ int cpu_buffer_waiting;
 static int is_ready(void)
 {
 	uint cpu_nr;
-	for (cpu_nr = 0 ; cpu_nr < OP_MAX_CPUS; cpu_nr++) {
+	for (cpu_nr = 0 ; cpu_nr < smp_num_cpus; cpu_nr++) {
 		if (oprof_ready[cpu_nr]) {
 			cpu_buffer_waiting = cpu_nr;
 			return 1;
@@ -324,7 +324,7 @@ static ssize_t oprof_read(struct file * file, char * buf, size_t count, loff_t *
 	if (!capable(CAP_SYS_PTRACE))
 		return -EPERM;
 
-	switch (minor(file->f_dentry->d_inode->i_rdev)) {
+	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
 		case 2: return oprof_note_read(buf, count, ppos);
 		case 0: break;
 		default: return -EINVAL;
@@ -355,7 +355,7 @@ static ssize_t oprof_read(struct file * file, char * buf, size_t count, loff_t *
 			if (!(file->f_flags & O_NONBLOCK))
 				break;
 
-			for (cpu = 0; cpu < OP_MAX_CPUS; ++cpu) {
+			for (cpu = 0; cpu < smp_num_cpus; ++cpu) {
 				if (oprof_data[cpu].nextbuf) {
 					cpu_buffer_waiting = cpu;
 					oprof_ready[cpu] = 2;
@@ -363,7 +363,7 @@ static ssize_t oprof_read(struct file * file, char * buf, size_t count, loff_t *
 				}
 			}
  
-			if (cpu == OP_MAX_CPUS)
+			if (cpu == smp_num_cpus)
 				return -EAGAIN;
  
 		}
@@ -386,7 +386,7 @@ static int oprof_open(struct inode * ino, struct file * file)
 	if (!capable(CAP_SYS_PTRACE))
 		return -EPERM;
 
-	switch (minor(file->f_dentry->d_inode->i_rdev)) {
+	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
 		case 1: return oprof_hash_map_open();
 		case 2: return oprof_note_open();
 		case 0:
@@ -408,7 +408,7 @@ static int oprof_open(struct inode * ino, struct file * file)
 
 static int oprof_release(struct inode * ino, struct file * file)
 {
-	switch (minor(file->f_dentry->d_inode->i_rdev)) {
+	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
 		case 1: return oprof_hash_map_release();
 		case 2: return oprof_note_release();
 		case 0: break;
@@ -425,7 +425,7 @@ static int oprof_release(struct inode * ino, struct file * file)
 
 static int oprof_mmap(struct file * file, struct vm_area_struct * vma)
 {
-	if (minor(file->f_dentry->d_inode->i_rdev) == 1)
+	if (MINOR(file->f_dentry->d_inode->i_rdev) == 1)
 		return oprof_hash_map_mmap(file, vma);
 	return -EINVAL;
 }
@@ -462,7 +462,7 @@ static int oprof_init_data(void)
 	note_pos = 0;
 
 	// safe init
-	for (i = 0; i < OP_MAX_CPUS; ++i) {
+	for (i = 0; i < smp_num_cpus; ++i) {
 		data = &oprof_data[i];
 		data->hash_size = data->buf_size = 0;
 		data->entries = 0;
@@ -472,10 +472,7 @@ static int oprof_init_data(void)
 	hash_size = (sizeof(struct op_entry) * sysctl.hash_size);
 	buf_size = (sizeof(struct op_sample) * sysctl.buf_size);
 
-	// There might be a race here, if we end up enabling perfctr's via smp_call_function,
-	// but we didn't allocate the hashtable or buffer ?
-	// to fix we should use cpu_possible() when it exists. 
-	for_each_online_cpu(i) {
+	for (i = 0 ; i < smp_num_cpus ; ++i) {
 		data = &oprof_data[i];
 
 		data->entries = vmalloc(hash_size);
@@ -542,12 +539,12 @@ static int oprof_start(void)
 		goto out;
 
 	if ((err = parms_check())) {
-		oprof_free_mem(OP_MAX_CPUS);
+		oprof_free_mem(smp_num_cpus);
 		goto out;
 	}
 
 	if ((err = int_ops->setup())) {
-		oprof_free_mem(OP_MAX_CPUS);
+		oprof_free_mem(smp_num_cpus);
 		goto out;
 	}
 
@@ -602,13 +599,13 @@ static int oprof_stop(void)
 
 	spin_lock(&note_lock);
 
-	for (i = 0 ; i < OP_MAX_CPUS; i++) {
+	for (i = 0 ; i < smp_num_cpus; i++) {
 		struct _oprof_data * data = &oprof_data[i];
 		oprof_ready[i] = 0;
 		data->nextbuf = data->next = 0;
 	}
 
-	oprof_free_mem(OP_MAX_CPUS);
+	oprof_free_mem(smp_num_cpus);
 
 	spin_unlock(&note_lock);
 	err = 0;
@@ -680,7 +677,7 @@ static int get_nr_interrupts(ctl_table * table, int write, struct file * filp, v
 
 	sysctl.nr_interrupts = 0;
 
-	for (cpu = 0 ; cpu < OP_MAX_CPUS; cpu++) {
+	for (cpu = 0 ; cpu < smp_num_cpus; cpu++) {
 		sysctl.nr_interrupts += oprof_data[cpu].nr_irq;
 		oprof_data[cpu].nr_irq = 0;
 	}
@@ -723,7 +720,7 @@ static void do_actual_dump(void)
 	int i,j;
 
 	/* clean out the hash table as far as possible */
-	for (cpu = 0 ; cpu < OP_MAX_CPUS; cpu++) {
+	for (cpu = 0 ; cpu < smp_num_cpus; cpu++) {
 		struct _oprof_data * data = &oprof_data[cpu];
 		spin_lock(&note_lock);
 		stop_cpu_perfctr(cpu);

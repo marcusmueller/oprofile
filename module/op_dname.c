@@ -101,7 +101,7 @@ int oprof_hash_map_mmap(struct file * file, struct vm_area_struct * vma)
 	pos = (ulong)hash_map;
 	while (size > 0) {
 		page = kvirt_to_pa(pos);
-		if (REMAP_PAGE_RANGE(vma, start, page, PAGE_SIZE, PAGE_SHARED))
+		if (remap_page_range(start, page, PAGE_SIZE, PAGE_SHARED))
 			return -EAGAIN;
 		start += PAGE_SIZE;
 		pos += PAGE_SIZE;

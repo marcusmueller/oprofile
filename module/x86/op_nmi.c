@@ -39,8 +39,6 @@ static struct op_x86_model_spec const * get_model(void)
 }
 
 
-/* preempt: all things inside the interrupt handler are preempt safe : we
- * never reenable interrupt */
 asmlinkage void op_do_nmi(struct pt_regs * regs)
 {
 	uint const cpu = op_cpu_id();
@@ -114,7 +112,7 @@ static void pmc_start_all(void)
 {
 	int cpu, i;
 
-	for (cpu = 0 ; cpu < OP_MAX_CPUS; cpu++) {
+	for (cpu = 0 ; cpu < smp_num_cpus; cpu++) {
 		struct _oprof_data * data = &oprof_data[cpu];
 
 		for (i = 0 ; i < get_model()->num_counters ; ++i) {
