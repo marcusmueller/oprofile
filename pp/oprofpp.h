@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.1 2000/08/03 02:38:29 moz Exp $ */
+/* $Id: oprofpp.h,v 1.2 2000/08/03 02:41:59 moz Exp $ */
 
 #include <libiberty.h>
 #include <bfd.h>
@@ -15,7 +15,7 @@
 #include <sys/stat.h> 
 #include <sys/mman.h>
 
-#include "../opd_util.h"
+#include "../dae/opd_util.h"
 
 /* missing from libiberty.h */
 #define DMGL_PARAMS     (1 << 0)        /* Include function args */
