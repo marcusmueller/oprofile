@@ -446,7 +446,7 @@ The <command>opcontrol</command> script provides the following actions :
 		<term><option>--setup</option></term>
 		<listitem><para>
 		    Followed by list arguments for profiling set up. List of arguments
-		    saved in <filename>/home/root/.oprofile/daemonrc</filename>.
+		    saved in <filename>/root/.oprofile/daemonrc</filename>.
 		    Giving this option is not necessary; you can just directly pass one
 		    of the setup options, e.g. <command>opcontrol --no-vmlinux</command>.
 		  </para></listitem>
@@ -464,7 +464,7 @@ The <command>opcontrol</command> script provides the following actions :
 		<term><option>--start</option></term>
 		<listitem><para>
 		    Start data collection with either arguments provided by <option>--setup</option>
-		or information saved in <filename>/home/root/.oprofile/daemonrc</filename>. Specifying
+		or information saved in <filename>/root/.oprofile/daemonrc</filename>. Specifying
 		the addition <option>--verbose</option> makes the daemon generate lots of debug data
 		whilst it is running.
 		</para></listitem>

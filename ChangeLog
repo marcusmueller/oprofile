@@ -1,3 +1,9 @@
+2003-08-15  William Cohen  <wcohen@redhat.com>
+
+	* doc/opcontrol.1.in:
+	* doc/oprofile.1.in:
+	* doc/oprofile.xml: Correct path to /root/.oprofile/daemonrc.
+
 2003-08-15  Thomas Spatzier  <TSPAT@de.ibm.com>
 
 	* daemon/opd_cookie.h: fix s390 syscall

@@ -118,7 +118,7 @@ No special environment variables are recognised by oprofile.
 .I $HOME/.oprofile/
 Configuration files
 .TP
-.I /home/root/.oprofile/daemonrc
+.I /root/.oprofile/daemonrc
 Configuration file for opcontrol
 .TP
 .I $prefix/share/oprofile/

@@ -121,7 +121,7 @@ No special environment variables are recognised by opreport.
 
 .SH FILES
 .TP
-.I /home/root/.oprofile/daemonrc
+.I /root/.oprofile/daemonrc
 Configuration file for opcontrol
 .TP
 .I /var/lib/oprofile/samples/
