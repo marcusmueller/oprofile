@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.84 2001/12/09 21:16:10 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.85 2001/12/14 21:33:02 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -511,9 +511,6 @@ void opd_init_images(void)
 {
 	/* 0 is reserved for the kernel image */
 	opd_images = xcalloc(sizeof(struct opd_image), OPD_DEFAULT_IMAGES);
-
-	opd_images[0].name = xstrdup(vmlinux);
-	opd_images[0].kernel = 1;
 
 	opd_open_image(&opd_images[0], -1, vmlinux, 1);
 	nr_images = 1;
