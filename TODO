@@ -2,7 +2,7 @@
 ---------------
 
  o ./dae/opd_proc.c:1094:/* FIXME: what if we are remapping over an old mapping - we want to find this one first ! */ 
-	- I suppose we need to trace munmap too :(
+	- I suppose we need to trace munmap too. And the mappings must become a linked list.
  
  o stress test
 
@@ -10,19 +10,16 @@
   This must handle images with no symbols, so container must contain either a symbol + values,
   or a file.
  
- o little output things (e.g. don't print unit mask) RTC
-
- o add option like opf_filer -u -m to oprofpp -l|-L on a symbol basis.
-
- o --help --version in a common options section in .sgml ?
-   same thing for all common options between oprofpp/opf_filter ?
- 
 Before 1.0
 ----------
 
+ o pp rewrite !
+ o little output things (e.g. don't print unit mask) RTC
+ o add option like opf_filer -u -m to oprofpp -l|-L on a symbol basis.
+ o --help --version in a common options section in .sgml ?
+   same thing for all common options between oprofpp/opf_filter ?
  o audit oprof_start for security...
  o review the exception table of the nmi handler (at least stop oprofile)
-	- why would we stop oprofile ? what am I missing ? 
  o oprofile_nmi22.S and oprofile24.S can use the same code.
  o remove note lock (and rename map lock) ... I think
  o should we pin rather than loop sample buffer overflow too ?
