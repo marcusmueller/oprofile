@@ -447,8 +447,6 @@ void oprof_start::display_event(op_event_descr const & descr)
 	event_count_edit->setText(count_text);
 	event_count_validator->setRange(descr.min_count, max_perf_count());
 
-	event_help_label->setText(descr.help_str.c_str());
-
 	setUpdatesEnabled(true);
 	update();
 }
@@ -554,7 +552,7 @@ void oprof_start::event_over(QListViewItem * item)
 
 	string help_str = descr.help_str.c_str();
 	if (!is_selectable_event(item)) {
-		help_str += " Conflict with:";
+		help_str += " conflicts with:";
 
 		set<QListViewItem *>::const_iterator it;
 		for (it = selected_events.begin(); 
