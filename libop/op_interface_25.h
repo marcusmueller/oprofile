@@ -16,19 +16,17 @@
 #include "op_config.h"
 #include "op_types.h"
 
-/** Data type to transfer samples counts from the module to the daemon */
-struct op_sample {
-	unsigned long cookie;
-	off_t offset;
-	unsigned long event;
-} __attribute__((__packed__));
-
+#define ESCAPE_CODE		~0UL
+#define CTX_SWITCH_CODE		1
+#define CPU_SWITCH_CODE		2
+#define COOKIE_SWITCH_CODE	3
+ 
 /**
  * The head structure of a kernel sample buffer.
  */
 struct op_buffer_head {
 	size_t count; /**< number of samples in this buffer */
-	struct op_sample buffer[0]; /**< the sample buffer */
+	unsigned long buffer[0]; /**< the sample buffer */
 } __attribute__((__packed__));
 	 
 #endif /* OP_INTERFACE_25_H */
