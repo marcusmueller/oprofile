@@ -1,32 +1,38 @@
 include ../make.common
 
-OPROFPP_SOURCES=counter_array.cpp samples_container.cpp sample_container_imp.cpp symbol_container_imp.cpp \
-	derive_files.cpp oprofpp.cpp oprofpp_options.cpp counter_util.cpp opp_symbol.cpp samples_file.cpp opp_samples_files.cpp session.cpp
-OP_TO_SOURCE_SOURCES=op_to_source_options.cpp derive_files.cpp op_to_source.cpp samples_file.cpp opp_samples_files.cpp session.cpp
-OP_TIME_SOURCES=op_time_options.cpp op_time.cpp samples_file.cpp session.cpp
-OP_MERGE_SOURCES=op_merge.cpp samples_file.cpp
-SOURCES=$(OPROFPP_SOURCES) $(OP_TO_SOURCE_SOURCES) $(OP_TIME_SOURCES) $(OP_MERGE_SOURCES)
+LIBPP_SOURCES=opp_symbol.cpp samples_container.cpp sample_container_imp.cpp \
+counter_array.cpp symbol_container_imp.cpp derive_files.cpp counter_util.cpp \
+opp_symbol.cpp samples_file.cpp opp_samples_files.cpp session.cpp
 
-COMMON_OBJECTS=counter_array.o samples_container.o sample_container_imp.o symbol_container_imp.o \
-	counter_util.o samples_file.o opp_samples_files.o session.o
-OPROFPP_OBJECTS=oprofpp_options.o oprofpp.o derive_files.o opp_symbol.o $(COMMON_OBJECTS)
-OP_TO_SOURCE_OBJECTS=op_to_source_options.o op_to_source.o derive_files.o $(COMMON_OBJECTS)
-OP_TIME_OBJECTS=op_time_options.o op_time.o opp_symbol.o $(COMMON_OBJECTS)
-OP_MERGE_OBJECTS=op_merge.o samples_file.o
-OBJECTS=$(OPROFPP_OBJECTS) $(OP_TO_SOURCE_OBJECTS) $(OP_TIME_OBJECTS) $(OP_MERGE_OBJECTS)
+OPROFPP_SOURCES=oprofpp.cpp oprofpp_options.cpp
+OP_TO_SOURCE_SOURCES=op_to_source_options.cpp op_to_source.cpp
+OP_TIME_SOURCES=op_time_options.cpp op_time.cpp
+OP_MERGE_SOURCES=op_merge.cpp
+SOURCES=$(OPROFPP_SOURCES) $(OP_TO_SOURCE_SOURCES) $(OP_TIME_SOURCES) $(OP_MERGE_SOURCES) $(LIBPP_SOURCES)
 
+LIBPP_OBJECTS:=$(LIBPP_SOURCES:.cpp=.o)
+
+OPROFPP_OBJECTS=oprofpp_options.o oprofpp.o
+OP_TO_SOURCE_OBJECTS=op_to_source_options.o op_to_source.o
+OP_TIME_OBJECTS=op_time_options.o op_time.o
+OP_MERGE_OBJECTS=op_merge.o
+OBJECTS=$(OPROFPP_OBJECTS) $(OP_TO_SOURCE_OBJECTS) $(OP_TIME_OBJECTS) $(OP_MERGE_OBJECTS) $(LIBPP_OBJECTS)
+
+LIBPP_TARGET=libpp.a
 OPROFPP_TARGET=oprofpp
 OP_TO_SOURCE_TARGET=op_to_source
 OP_TIME_TARGET=op_time
 OP_MERGE_TARGET=op_merge
-TARGET=$(OPROFPP_TARGET) $(OP_TO_SOURCE_TARGET) $(OP_TIME_TARGET) $(OP_MERGE_TARGET)
+TARGET=$(LIBPP_TARGET) $(OPROFPP_TARGET) $(OP_TO_SOURCE_TARGET) $(OP_TIME_TARGET) $(OP_MERGE_TARGET)
 
-OPROFPP_LIBS=-lopt++ -lop++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
-OP_TO_SOURCE_LIBS=-lopt++ -lop++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
-OP_TIME_LIBS=-lopt++ -lop++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
-OP_MERGE_LIBS=-lopt++ -lop++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
+PPLIB=-L. -lpp
 
-PP_LIBDEPS=../libopt++/libopt++.a ../libop++/libop++.a ../libop/libop.a ../libutil++/libutil++.a ../libutil/libutil.a ../libdb/libdb.a
+OPROFPP_LIBS=$(PPLIB) -lopt++ -lop++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
+OP_TO_SOURCE_LIBS=$(PPLIB) -lopt++ -lop++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
+OP_TIME_LIBS=$(PPLIB) -lopt++ -lop++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
+OP_MERGE_LIBS=$(PPLIB) -lopt++ -lop++ -lop -lutil++ -lutil -ldb -lpopt -lbfd -liberty -ldl
+
+PP_LIBDEPS=$(LIBPP_TARGET) ../libopt++/libopt++.a ../libop++/libop++.a ../libop/libop.a ../libutil++/libutil++.a ../libutil/libutil.a ../libdb/libdb.a
 
 all: $(TARGET)
 
@@ -39,6 +45,9 @@ uninstall:
 
 clean:
 	rm -rf .deps $(OBJECTS) $(TARGET) 
+
+$(LIBPP_TARGET): $(LIBPP_OBJECTS)
+	$(AR) cr $@ $^
 
 $(OPROFPP_TARGET): $(OPROFPP_OBJECTS) $(PP_LIBDEPS)
 	$(CXX) -o $@ $(OPROFPP_OBJECTS) $(LDFLAGS) $(OPROFPP_LIBS)
