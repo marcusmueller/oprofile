@@ -327,8 +327,9 @@ get_kernel_range() {
 		return;
 	fi
 	range_info=`objdump -h $VMLINUX | grep ".text "`
-	tmp1=`perl -le '($a, $b, $c, $d) = @ARGV; printf "%x\n", (hex($d))' $range_info`
-	tmp2=`perl -le '($a, $b, $c, $d) = @ARGV; printf "%x\n", (hex($c) + hex($d))' $range_info`
+	tmp1=`echo $range_info | awk '{print $4}'`
+	tmp_length=`echo $range_info | awk  '{print $3}'`
+	tmp2=`objdump -h $VMLINUX --adjust-vma=0x$tmp_length | grep ".text " | awk  '{print $4}'`
 
 	if test -z "$tmp1" -o -z "$tmp2"; then
 		echo "Couldn't determine kernel start/end" >&2

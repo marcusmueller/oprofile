@@ -1,3 +1,7 @@
+2003-01-30  Will Cohen  <wcohen@redhat.com>
+
+	* utils/opcontrol(get_kernel_range): Avoid using perl arithmetic.
+
 2003-01-29  Dave Jones <davej@codemonkey.org.uk>
 
 	* utils/opcontrol: Trying to use the options --pid-filter=pid and
