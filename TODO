@@ -1,0 +1,24 @@
+Todo list
+---------
+
+Correctness
+-----------
+ 
+o The module must not be unloadable.
+o SMP mappings - place in all buffers perhaps ? 
+o check chroot() processes and do_d_path() 
+ 
+Performance
+----------- 
+ 
+o The note spinlock and stop/start should be grouped into one for multiple map adding.
+o investigate eviction strategy
+o the interrupt handler code could probably be improved by moving into asm, and using arch=ppro 
+o can we fold in the "untouched sample entry" case in hash table to another case ? 
+o would query_module() be faster ? do we care ? 
+
+WBNI
+----
+
+o Other x86 processors, and maybe other archs.
+o gprof output from post-profiler
