@@ -37,7 +37,7 @@ HotspotView::HotspotView(QWidget * parent)
  * for now a simple and inneficient algorithm is used
  * all things are redrawn and we don't try to cache them
  */
-/* TODO: axis painting, check why two paintEvent occur sometimes */
+/* FIXME: axis painting, check why two paintEvent occur sometimes */
 void HotspotView::paintEvent(QPaintEvent *)
 {
 	if (symbols.size() == 0)

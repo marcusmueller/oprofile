@@ -726,7 +726,7 @@ void do_output_one_file(ostream & out, istream & in, string const & filename)
 			out << str << '\n';
 		}
 	} else {
-		// TODO : we have no input file : for now we just output header
+		// FIXME : we have no input file : for now we just output header
 		// so on user can known total nr of samples for this source
 		// later we must add code that iterate through symbol in this
 		// file to output one annotation for each symbol. To do this we

@@ -51,7 +51,6 @@ struct config_setting {
 	uint buffer_size;
 	uint note_table_size;
 	std::string kernel_filename;
-	// FIXME: unsuported for 2.5
 	int kernel_only;
 	int verbose;
 	pid_t pgrp_filter;

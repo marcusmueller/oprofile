@@ -192,7 +192,7 @@ bool op_bfd::get_symbols(vector<string> const & excluded,
 		list<op_bfd_symbol>::iterator temp = it;
 		++temp;
 		if (temp != symbols.end() && (it->vma() == temp->vma())) {
-			// TODO: choose more carefully the symbol we drop.
+			// FIXME: choose more carefully the symbol we drop.
 			// If once have FUNCTION flag and not the other keep
 			// it etc.
 			symbols.erase(temp);

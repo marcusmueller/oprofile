@@ -7,14 +7,14 @@ Before 1.0 big stuff
 --------------------
 
  o implement new pp spec (see specification)
- o difference between two profile session. Difference must be made at source level. 
-   (This is a part of post-prof). Difference can be made also at symbols level. Important.
- o real call graph profiling. Do try locks in NMI handler to track backwards then
-   dump the trace in the logs + new sample file format
+	o thread profiling - kernel change in 2.5 to export task->tgid
+	o per-cpu profiling
+	o difference between two profile session. Difference must be made at source level. 
+	   (This is a part of post-prof). Difference can be made also at symbols level. Important.
+	o real call graph profiling. Do try locks in NMI handler to track backwards then
+	   dump the trace in the logs + new sample file format
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
- o thread profiling
- o per-cpu profiling
  o implement --no-vmlinux
  
 Before 1.0 little stuff
@@ -24,7 +24,6 @@ Before 1.0 little stuff
  o opcontrol -- need a way to turn OFF a counter now after setting one up
  o oprofpp needs -P too
  o "op_time" doesn't have a header !
- o decide on -d vs. -D by default for demangle etc.
  o document that even with the in_interrupt trick in 2.5, you can still get a few
    samples in the wrong place - interrupt code outside of the irq_enter/exit
  o daemon/opd_image.c:opd_put_sample() if (image != NULL) { ... }
@@ -32,17 +31,10 @@ Before 1.0 little stuff
   message track the cause
  o fix the 2.5 module-finding problem as best as Rusty will let us
  o implement module-drop event in 2.5 kernel
- o lockless patch to fix UP 2.5
  o fix /dev/null mappings (see sf)
  o mask SIGTERM over critical daemon operations that could corrupt sample files
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
- o op_session should allow to backup binary, see subject "features to make oprofile easier to use" on mail list
- o remove 1 and 2 magic numbers for oprof_ready
- o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
-   will fail because the ~ is not expanded (no space around it) (popt bug I say)
- o use standard C integer type <stdint.h> int32_t int16_t etc.
  o verify if we can remove the ELF-based symbol size code
- o adapt Anton's patch for handling non-symbolled libraries ?
  o must we do setrlimit(RLIMIT_NOFILE, ...) for daemon ? Isn't already limited
   by the kernel itself ?
 
@@ -79,8 +71,18 @@ General checks to make
 Later
 -----
  
+ o op_to_source --source-dir=~moz/src/oprofile/ --output-dir=op /usr/bin/oprofiled
+   will fail because the ~ is not expanded (no space around it) (popt bug I say)
+ o remove 1 and 2 magic numbers for oprof_ready
+ o adapt Anton's patch for handling non-symbolled libraries ?
+ o use standard C integer type <stdint.h> int32_t int16_t etc.
+ o op_session should allow to backup binary, see subject "features to make oprofile easier to use" on mail list
  o event multiplexing for real
  
+o profile the NMI handler code
+ 
+o merge sample files into one big report (like vtune can do repeated runs)
+
 oprof_report:
 
 IMHO this app isn't near what we really want. There's no point doing this
@@ -91,6 +93,3 @@ command-line tools as good as possible first.
 - tune and test hotspot
 - source (later ?)
  
-o profile the NMI handler code
- 
-o merge sample files into one big report (like vtune can do repeated runs)

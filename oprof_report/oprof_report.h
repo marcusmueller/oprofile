@@ -29,7 +29,7 @@ class HotspotView;
  * the design is basic, view are handled through separate class derived from
  * from op_view. see op_view.h.
  */
-/* TODO: right click on view dispatching it to the relevant view */
+/* FIXME: right click on view dispatching it to the relevant view */
 class oprof_report : public oprof_report_base
 {
 	Q_OBJECT

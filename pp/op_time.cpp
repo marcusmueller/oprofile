@@ -37,7 +37,7 @@
 
 using namespace std;
 
-/* TODO: if we have a quick read samples files format we can handle a great
+/* FIXME: if we have a quick read samples files format we can handle a great
  * part of complexity here by using profile_container_t to handle straight
  * op_time. Just create an artificial symbol that cover the whole samples
  * files with the name of the application this allow to remove image_name
@@ -516,7 +516,7 @@ static int do_it(int argc, char const * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	/* TODO: allow as op_merge to specify explicitly name of samples
+	/* FIXME: allow as op_merge to specify explicitly name of samples
 	 * files rather getting the whole directory. Code in op_merge can
 	 * be probably re-used */
 	list<string> file_list;

@@ -55,12 +55,12 @@ void oprof_report::load_samples_files(string const & filename)
 	if (lib_name.length())
 		app_name = lib_name;
 
-	/* TODO: on which counter we want to work must be user selectable.
+	/* FIXME: on which counter we want to work must be user selectable.
 	 * for now let's as it but do not worry me about zero samples
 	 * details bug. */
 	int counter = -1;
 
-	/* TODO: oprofpp_util.cpp, opf_container.cpp: handle all error
+	/* FIXME: oprofpp_util.cpp, opf_container.cpp: handle all error
 	 * through exception */
 	try {
 		opp_samples_files samples_file(temp_filename, counter);
@@ -76,13 +76,13 @@ void oprof_report::load_samples_files(string const & filename)
 							    true, counter);
 
 		// we filter nothing here to allow changing filtering later
-		// w/o reloading the whole samples files (TODO)
+		// w/o reloading the whole samples files (FIXME)
 		samples_container->add(samples_file, abfd);
 	}
 
-	/* ... TODO and handle the relevant exception here ... */
+	/* ... FIXME and handle the relevant exception here ... */
 	catch (...) {
-		// TODO QMessageBox ...
+		// FIXME QMessageBox ...
 		cerr << "unknown exception ..." << endl;
 	}
 }
@@ -104,7 +104,7 @@ void oprof_report::mark_all_view_changed()
  *
  * Select a file or directory. The selection is returned;
  * an empty string if the selection was cancelled.
- * TODO: this must become a samples files folder
+ * FIXME: this must become a samples files folder
  */
 static string const do_open_file_or_dir(string const & base_dir, bool dir_only)
 {

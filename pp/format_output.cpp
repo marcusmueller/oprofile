@@ -132,7 +132,7 @@ void formatter::add_format(outsymbflag flag)
 
 /// describe each possible field of colummned output.
 // FIXME: some field have header_name too long (> field_description::width)
-// TODO: use % of the screen width here. sum of % equal to 100, then calculate
+// FIXME: use % of the screen width here. sum of % equal to 100, then calculate
 // ratio between 100 and the selected % to grow non fixed field use also
 // lib[n?]curses to get the console width (look info source) (so on add a fixed
 // field flags)

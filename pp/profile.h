@@ -107,7 +107,7 @@ public:
 	 */
 	void set_start_offset(u32 start_offset);
 
-	// TODO privatize when we can
+	// FIXME privatize when we can
 	scoped_ptr<counter_profile_t> samples[OP_MAX_COUNTERS];
 	uint nr_counters;
 private:
