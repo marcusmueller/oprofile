@@ -29,7 +29,7 @@ void op_print_event(ostream & out, int counter_nr, op_cpu cpu_type,
 
 	out << "Counter " << counter_nr << " counted "
 	    << typenamep << " events (" << typedescp << ")";
-	if (cpu_type != CPU_RTC) {
+	if (cpu_type != CPU_RTC && cpu_type != CPU_TIMER_INT) {
 		out << " with a unit mask of 0x"
 		    << hex << setw(2) << setfill('0') << unsigned(um) << " ("
 		    << (umdescp ? umdescp : "Not set") << ")";

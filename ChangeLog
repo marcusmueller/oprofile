@@ -1,3 +1,8 @@
+2003-01-12  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop++/op_print_event.cpp: no event,nor unit mask for CPU_TIMER_INT,
+	  problem reported by Ka Fai Lu.
+
 2003-01-12  John Levon  <levon@movementarian.org>
 
 	From Graydon Hoare
