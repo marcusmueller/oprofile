@@ -1,3 +1,10 @@
+2003-07-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_util.cpp: re-enable partially the gui, sorta of
+	  working if cautioulsy used
+
 2003-07-15  John Levon  <levon@movementarian.org>
 
 	* gui/ui/oprof_start_base.ui:

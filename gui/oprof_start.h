@@ -82,7 +82,7 @@ protected slots:
 
 private:
 	/// find an event description by name
-	op_event_descr const & locate_event(std::string const & name);
+	op_event_descr const & locate_event(std::string const & name) const;
 
 	/// update config on user change
 	void record_selected_event_config();

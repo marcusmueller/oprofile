@@ -197,9 +197,10 @@ bool check_and_create_config_dir()
 
 	char * name = xstrdup(dir.c_str());
 
-	if (!create_dir(name)) {
+	if (create_dir(name)) {
 		ostringstream out;
-		out << "unable to create " << dir << " directory: ";
+		out << "unable to create " << dir << " directory ";
+		out << "cause: " << strerror(errno);
 		QMessageBox::warning(0, 0, out.str().c_str());
 
 		free(name);
