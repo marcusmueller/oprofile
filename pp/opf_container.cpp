@@ -453,7 +453,6 @@ void sample_container_t::push_back(const sample_entry & sample)
 
 //---------------------------------------------------------------------------
 // implementation of samples_files_t
-// FIXME: why here not opf_filter.cpp ?? 
 
 samples_files_t::samples_files_t()
 {
@@ -488,9 +487,7 @@ build(const opp_samples_files & samples_files, const opp_bfd & abfd,
 	list<string>::const_iterator it;
 	for (it = file_list.begin() ; it != file_list.end(); ++it) {
 		string lib_name;
-		// FIXME: phil, image_name is for what ???
-		// FIXME: need to print out lib name not app name ... 
-		string image_name = extract_app_name(*it, lib_name);
+		extract_app_name(*it, lib_name);
 
 		opp_samples_files samples_files(dir + "/" + *it);
 		opp_bfd abfd(samples_files.header[samples_files.first_file],

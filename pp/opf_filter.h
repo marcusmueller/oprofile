@@ -198,29 +198,13 @@ private:
 			 const opp_bfd& abfd, size_t sym_index,
 			 u32 start, u32 end, bfd_vma base_vma,
 			 const string& image_name);
-// FIXME: please, if you #if 0 something leave a comment so I can know what
-// you are planning :) 
-#if 0
-	/// We use a set of container_t to store information for each image
-	struct container_t {
-		/// The symbols collected by oprofpp sorted by increased vma,
-		/// provide also a sort order on samples count for each counter
-		symbol_container_t symbols;
-		/// The samples count collected by oprofpp sorted by increased
-		/// vma, provide also a sort order on (filename, linenr)
-		sample_container_t samples;
-	};
 
-	/// Indexed by an image name.
-	set<string, container_t> image_samples;
-#else
 	/// The symbols collected by oprofpp sorted by increased vma, provide
 	/// also a sort order on samples count for each counter.
 	symbol_container_t symbols;
 	/// The samples count collected by oprofpp sorted by increased vma,
 	/// provide also a sort order on (filename, linenr)
 	sample_container_t samples;
-#endif
 	/// build() must count samples count for each counter so cache it here
 	/// since user of samples_files_t often need it later.
 	counter_array_t counter;
