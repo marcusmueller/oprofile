@@ -89,6 +89,16 @@ enum op_event_check {
 int op_check_events(int ctr, u8 event, u16 um, op_cpu cpu_type);
 
 /**
+ * op_min_count - get the minimum count value.
+ * @param ctr_type  event value
+ * @param cpu_type  cpu type
+ *
+ * The function returns > 0 if the event is found
+ * 0 otherwise
+ */
+unsigned int op_min_count(u8 ctr_type, op_cpu cpu_type);
+
+/**
  * free memory used by any call to above function. Need to be called only once
  */
 void op_free_events(void);

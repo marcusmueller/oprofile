@@ -1,3 +1,11 @@
+2003-04-05  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_events.h:
+	* libop/op_events.c: re-add op_min_count();
+
+	* dae/oprofiled.c:
+	* daemon/oprofiled.c: use op_min_count() fixing #715923
+
 2003-04-01  John Levon  <levon@movementarian.org>
 
 	* libdb/Makefile.am: fix make dist

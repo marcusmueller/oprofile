@@ -327,6 +327,7 @@ static void opd_pmc_options(void)
 {
 	int ret;
 	uint i;
+	unsigned int min_count;
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		ctr_event[i] = opd_read_fs_int_pmc(i, "event");
@@ -353,6 +354,13 @@ static void opd_pmc_options(void)
 
 		if (ret != OP_OK_EVENT)
 			exit(EXIT_FAILURE);
+
+		min_count = op_min_count(ctr_event[i], cpu_type);
+		if (ctr_count[i] < min_count) {
+			fprintf(stderr, "oprofiled: ctr%d: count is too low: %d, minimum is %d\n",
+				i, ctr_count[i], min_count);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	op_free_events();
