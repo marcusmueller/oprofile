@@ -12,7 +12,7 @@
 
 	* libpp/parse_filename.h:
 	* libpp/parse_filename.cpp: profile_spec_equal() new predicate
-	* libpp/arrange_profiles.cpp: use it to ensure we cerate a new
+	* libpp/arrange_profiles.cpp: use it to ensure we create a new
 	  profile_samples_file when needed.
 
 2004-01-24  John Levon  <levon@movementarian.org>

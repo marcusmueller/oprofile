@@ -28,7 +28,13 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 -----------
 
  o opdiff
- o add event aliases for common things like icache misses
+ o add event aliases for common things like icache misses, we must start to 
+  think about metrics including simple like event alias mapped to two or more
+  events and intepreted specially by user space tools like using the ratio
+  of samples; more tricky will be to select an event used as call count (no
+  cg on it) and  used to emulate the call count field in gprof. I think this is
+  a after 1.0 thing but event aliases must be specified in a way allowing such
+  extension
 
 Before 1.0 little stuff
 -----------------------
@@ -37,7 +43,7 @@ Before 1.0 little stuff
  o depedencies between profile_container.h symbol_container.h and
   sample_container.h become more and more ugly, I needed to include them
   in a specific order in some source.
- o test and fix p4 support both for 2.4/2.6, merge HT support for 2.4 to 2.6
+ o test and fix p4 support both for 2.4/2.6, merge HT support from 2.6 to 2.4
   (if I can get a P4 HT box ...)
  o x86_64 and 2.4 kernel: it's apparently broken
  o Alpha ev67 events are broken
@@ -54,7 +60,6 @@ Before 1.0 little stuff
   --separate==none. Must we take care ?
  o --buffer-size is useless on 2.5 without tuning of watershed
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
- o when we dump stats for oprofiled, dump kernel-side values too (for 2.5)
  o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
  o sample-file: / binary: don't work in any useful way - can we fix this
    by peeking at binary: value and faking the split_sample_file somehow ?
