@@ -484,6 +484,10 @@ verify_counters()
 # setup any needed default value in chosen events
 normalise_events()
 {
+	if test "$NR_CHOSEN" -le 0; then
+		return
+	fi
+
 	for f in `seq 0 $((NR_CHOSEN - 1))`; do
 		if test "${CHOSEN_EVENTS[$f]}" != ""; then
 			EVENT=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $1}'`

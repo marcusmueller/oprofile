@@ -1,3 +1,7 @@
+2004-02-11  Will Cohen  <wcohen@redhat.com>
+
+	* utils/opcontrol: fix normalise_events for default event.
+
 2004-02-10  Will Cohen  <wcohen@redhat.com>
 
 	* events/i386/p6_mobile/events:
