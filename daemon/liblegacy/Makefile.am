@@ -1,6 +1,7 @@
 noinst_LIBRARIES = liblegacy.a
 
-AM_CFLAGS = @OP_CFLAGS@
+# -fno-omit-frame-pointer needed for daemon build: see ChangeLog 2004-02-23
+AM_CFLAGS = @OP_CFLAGS@ -fno-omit-frame-pointer
 
 AM_CPPFLAGS = \
 	-I ${top_srcdir}/libutil \

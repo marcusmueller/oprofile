@@ -1,3 +1,16 @@
+2004-02-23  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/Makefile.am:
+	* daemon/liblegacy/Makefile.am: force daemon build with frame pointer.
+	  If daemon is built w/o frame pointer we get random arc, some of them
+	  go in the vma used by an existing mmaped sample file, so cookie
+	  lookup return a sample filename which is used as a from or to
+	  component, this break pptools by creating invalid filename.  Note
+	  this doesn't protect agaisnt a make CFLAGS=-fomit-frame-pointer.
+
+	* libpp/callgraph_container.cpp: use the right {cg_}image_name for
+	  verbose output.
+
 2004-02-21  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/format_flags.h:

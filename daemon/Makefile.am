@@ -31,7 +31,8 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libdb
 
-AM_CFLAGS = @OP_CFLAGS@
+# -fno-omit-frame-pointer needed for daemon build: see ChangeLog 2004-02-23
+AM_CFLAGS = @OP_CFLAGS@ -fno-omit-frame-pointer
 
 bin_PROGRAMS = oprofiled
 

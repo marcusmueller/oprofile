@@ -330,7 +330,7 @@ void callgraph_container::populate(list<string> const & cg_files,
 		string caller_binary = find_image_path(caller_file.lib_image,
 		                                       extra, error);
 		if (error != image_ok)
-			report_image_error(caller_binary, error, false);
+			report_image_error(caller_file.lib_image, error, false);
 
 		cverb << vdebug << "caller binary name: "
 		      << caller_binary  << "\n";
@@ -348,7 +348,7 @@ void callgraph_container::populate(list<string> const & cg_files,
 			find_image_path(callee_file.cg_image,
 					extra, error);
 		if (error != image_ok)
-			report_image_error(callee_binary, error, false);
+			report_image_error(callee_file.cg_image, error, false);
 
 		cverb << vdebug << "cg binary callee name: "
 		      << callee_binary << endl;
