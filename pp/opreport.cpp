@@ -69,46 +69,13 @@ struct app_summary {
 };
 
 
-/// All image summaries to be output are contained here.
-struct summary_container {
-	summary_container(vector<partition_files> const & sample_files);
-	/// all app summaries
-	vector<app_summary> apps;
-	/// total count of samples for all summaries
-	count_array_t total_counts;
-};
-
-
-void output_header()
-{
-	if (!options::show_header)
-		return;
-
-	bool first_output = true;
-	for (vector<partition_files const *>::size_type i = 0;
-	     i < sample_file_partition.size(); ++i) {
-		if (sample_file_partition[i].nr_set()) {
-			partition_files::filename_set const & file_set =
-				sample_file_partition[i].set(0);
-			opd_header header =
-				read_header(file_set.begin()->sample_filename);
-
-			if (first_output) {
-				output_cpu_info(cout, header);
-				first_output = false;
-			}
-			cout << header;
-		}
-	}
-}
-
-
 size_t app_summary::
 add_samples(split_sample_filename const & split, size_t count_group)
 {
 	// FIXME: linear search inefficient ?
-	vector<summary>::iterator it;
-	for (it = files.begin(); it != files.end(); ++it) {
+	vector<summary>::iterator it = files.begin();
+	vector<summary>::iterator const end = files.end();
+	for (; it != end; ++it) {
 		if (it->image == split.image && 
 		    it->lib_image == split.lib_image)
 			break;
@@ -116,7 +83,7 @@ add_samples(split_sample_filename const & split, size_t count_group)
 
 	size_t nr_samples = profile_t::sample_count(split.sample_filename);
 
-	if (it == files.end()) {
+	if (it == end) {
 		summary summary;
 		summary.image = split.image;
 		summary.lib_image = split.lib_image;
@@ -160,6 +127,16 @@ bool app_summary::should_hide_deps() const
 	hidedep |= files.size() == 1 && dep_image == image;
 	return hidedep;
 }
+
+
+/// All image summaries to be output are contained here.
+struct summary_container {
+	summary_container(vector<partition_files> const & sample_files);
+	/// all app summaries
+	vector<app_summary> apps;
+	/// total count of samples for all summaries
+	count_array_t total_counts;
+};
 
 
 summary_container::
@@ -210,6 +187,34 @@ summary_container(vector<partition_files> const & sample_files)
 }
 
 
+void output_header()
+{
+	if (!options::show_header)
+		return;
+
+	bool first_output = true;
+
+	for (vector<partition_files const *>::size_type i = 0;
+	     i < sample_file_partition.size(); ++i) {
+
+		if (!sample_file_partition[i].nr_set())
+			continue;
+
+		partition_files::filename_set const & file_set =
+			sample_file_partition[i].set(0);
+		opd_header const & header =
+			read_header(file_set.begin()->sample_filename);
+
+		if (first_output) {
+			output_cpu_info(cout, header);
+			first_output = false;
+		}
+
+		cout << header;
+	}
+}
+
+
 string get_filename(string const & filename)
 {
 	return options::long_filenames ? filename : basename(filename);
@@ -257,14 +262,14 @@ void output_summaries(summary_container const & summaries)
 	for (size_t i = 0; i < summaries.apps.size(); ++i) {
 		app_summary const & app = summaries.apps[i];
 
-		if ((app.counts[0] * 100.0) / summaries.total_counts[0] <
-		    options::threshold) {
+		if ((app.counts[0] * 100.0) / summaries.total_counts[0]
+		    < options::threshold) {
 			continue;
 		}
 
 		for (size_t j = 0; j < nr_groups; ++j) {
 			output_count(summaries.total_counts[j],
-				     app.counts[j]);
+			             app.counts[j]);
 		}
 
 		cout << get_filename(app.image) << '\n';
