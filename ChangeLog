@@ -1,3 +1,8 @@
+2002-11-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* configure.in: add -W -Wall and optionnaly -Werror to user space
+	  compilation
+
 2002-11-11  John Levon  <levon@movementarian.org>
 
 	* dae/Makefile.am:
