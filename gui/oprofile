@@ -16,17 +16,12 @@ global bit_mask_option_0 bit_mask_option_1
 global counter_0 counter_1
 global usr_count_0 kernel_count_0 usr_count_1 kernel_count 1
 global ctr_edge_detect_0 ctr_edge_detect_1
-global vmlinux map_file
+global kernel_filename map_filename
 global buffer_size hash_size
-global kernel_only
-global ignore_myself
-global pid_filter
-global pgrp_filter
-global base_dir
-global samples_dir
-global device_file
-global hash_map_device_file
-global log_file
+global kernel_only ignore_myself
+global pid_filter pgrp_filter
+global base_dir samples_dir
+global device_filename hashmap_device_file log_filename
 
 set bit_mask_option_0 0
 set bit_mask_option_1 0
@@ -37,8 +32,8 @@ set ctr_edge_detect_1 0
 # filename from here but this provide a correct default value in many case.
 set build_dir [concat /lib/modules/[exec uname -r]/build]
 
-set vmlinux [concat $build_dir/vmlinux]
-set map_file [concat $build_dir/System.map]
+set kernel_filename [concat $build_dir/vmlinux]
+set map_filename [concat $build_dir/System.map]
 
 # must be coherent with op_start (not strongly required, this is just required
 # to not confuse the user).
@@ -51,15 +46,15 @@ set pgrp_filter 0
 
 set base_dir "/var/opd"
 set samples_dir "samples"
-set device_file "opdev"
-set hash_map_device_file "ophashmapdev"
-set log_file "oprofiled.log"
+set device_filename "opdev"
+set hashmap_device_file "ophashmapdev"
+set log_filename "oprofiled.log"
 
 # utilities proc
 
 # item_list: { name text }*
 proc create_checkbutton_group { parent_name side width item_list } {
-foreach i $item_list {
+    foreach i $item_list {
 	set button_name $parent_name[lindex $i 0]
 	set button_text [lindex $i 1]
 	checkbutton $button_name -text $button_text -width $width
@@ -175,8 +170,8 @@ proc create_event_list { processor_mask counter_mask } {
 # Start the profiling.
 # Some dirty fix in this proc : building completly the command line do not work
 # it seems than tcl/tk interpret a var containing  
-# --map-file=map_file --ctr0-count=100000
-# as the argument "--map-file=map_file --ctr0-count" and "=10000".
+# --map-file=map_filename --ctr0-count=100000
+# as the argument "--map-file=map_filename --ctr0-count" and "=10000".
 # Workaround is to build the cmd line separatly
 proc onStartProfiling {} {
     global event_type_0 event_type_1
@@ -185,23 +180,41 @@ proc onStartProfiling {} {
     global ctr_edge_detect_0 ctr_edge_detect_1
     global bit_mask_option_0 bit_mask_option_1
     global processor_type
-    global vmlinux map_file
+    global kernel_filename map_filename
     global buffer_size hash_size
-    global kernel_only
-    global ignore_myself
-    global pid_filter
-    global pgrp_filter
-    global base_dir
-    global samples_dir
-    global device_file
-    global hash_map_device_file
-    global log_file
+    global kernel_only ignore_myself
+    global pid_filter pgrp_filter
+    global base_dir samples_dir
+    global device_filename hashmap_device_file log_filename
 
-    if { [string compare [set event_type_0] DISABLED] == 0 && 
-	 [string compare [set event_type_1] DISABLED] == 0 } then {
+    if { [string compare $event_type_0 DISABLED] == 0 && 
+	 [string compare $event_type_1 DISABLED] == 0 } then {
  	tk_messageBox -message "you must enable at least one of the counter"
- 	return;
+ 	return
     }
+
+    # This can be redundant some times and give twice time the warning message to 
+    # the user. Keep it in this way because it is the correct way to encourage user to
+    # correctly make the setup :)
+    if { [validate_advanced_setup] != 0 } then {
+	return
+    }
+
+    if { [string compare [set event_type_0] DISABLED] != 0 } then {
+	if { $usr_count_0 == 0 && $kernel_count_0 == 0 } then {
+	    tk_messageBox -message "counter 0 enable but you must enable at least one of the USR ring count/OS ring count"
+	    return
+	}
+    }
+
+    if { [string compare [set event_type_1] DISABLED] != 0 } then {
+	if { $usr_count_1 == 0 && $kernel_count_1 == 0 } then {
+	    tk_messageBox -message "counter 1 enable but you must enable at least one of the USR ring count/OS ring count"
+	    return
+	}
+    }
+
+    # Some validation needed here.
 
     # TODO : do we need more check or lets the op_start/daemon making the 
     # check, the problem is that the op_start/daemon are a little too verbose.
@@ -224,17 +237,17 @@ proc onStartProfiling {} {
 	    --ctr1-unit-mask=$bit_mask_option_1 \
 	    --ctr1-edge-detect=$ctr_edge_detect_1 \
 	    --use-cpu=$processor_type \
-	    --map-file=$map_file \
-	    --vmlinux=$vmlinux \
+	    --map-file=$map_filename \
+	    --vmlinux=$kernel_filename \
 	    --ignore-myself=$ignore_myself \
 	    --kernel-only=$kernel_only \
 	    --pid-filter=$pid_filter \
 	    --pgrp-filter=$pgrp_filter \
 	    --base-dir=$base_dir \
 	    --samples-dir=$base_dir/$samples_dir \
-	    --device-file=$base_dir/$device_file \
-	    --hash-map-device-file=$base_dir/$hash_map_device_file \
-	    --log-file=$base_dir/$log_file > /dev/stdout
+	    --device-file=$base_dir/$device_filename \
+	    --hash-map-device-file=$base_dir/$hashmap_device_file \
+	    --log-file=$base_dir/$log_filename > /dev/stdout
     } elseif { [string compare [set event_type_0] DISABLED] != 0 } then {
 	# counter 0 only
 	exec op_start --ctr0-event=$event_type_0 \
@@ -244,17 +257,17 @@ proc onStartProfiling {} {
 	    --ctr0-unit-mask=$bit_mask_option_0 \
 	    --ctr0-edge-detect=$ctr_edge_detect_0 \
 	    --use-cpu=$processor_type \
-	    --map-file=$map_file \
-	    --vmlinux=$vmlinux  \
+	    --map-file=$map_filename \
+	    --vmlinux=$kernel_filename  \
 	    --ignore-myself=$ignore_myself \
 	    --kernel-only=$kernel_only \
 	    --pid-filter=$pid_filter \
 	    --pgrp-filter=$pgrp_filter \
 	    --base-dir=$base_dir \
 	    --samples-dir=$base_dir/$samples_dir \
-	    --device-file=$base_dir/$device_file \
-	    --hash-map-device-file=$base_dir/$hash_map_device_file \
-	    --log-file=$base_dir/$log_file > /dev/stdout
+	    --device-file=$base_dir/$device_filename \
+	    --hash-map-device-file=$base_dir/$hashmap_device_file \
+	    --log-file=$base_dir/$log_filename > /dev/stdout
     } else {
 	# counter 1 only
 	exec op_start --ctr1-event=$event_type_1 \
@@ -264,17 +277,17 @@ proc onStartProfiling {} {
 	    --ctr1-unit-mask=$bit_mask_option_1 \
 	    --ctr1-edge-detect=$ctr_edge_detect_1 \
 	    --use-cpu=$processor_type \
-	    --map-file=$map_file \
-	    --vmlinux=$vmlinux  \
+	    --map-file=$map_filename \
+	    --vmlinux=$kernel_filename  \
 	    --ignore-myself=$ignore_myself \
 	    --kernel-only=$kernel_only \
 	    --pid-filter=$pid_filter \
 	    --pgrp-filter=$pgrp_filter \
 	    --base-dir=$base_dir \
 	    --samples-dir=$base_dir/$samples_dir \
-	    --device-file=$base_dir/$device_file \
-	    --hash-map-device-file=$base_dir/$hash_map_device_file \
-	    --log-file=$base_dir/$log_file > /dev/stdout
+	    --device-file=$base_dir/$device_filename \
+	    --hash-map-device-file=$base_dir/$hashmap_device_file \
+	    --log-file=$base_dir/$log_filename > /dev/stdout
     }
 }
 
@@ -310,65 +323,278 @@ proc onFlushData {} {
     }
 }
 
+# create the ~/.oprofile dir if it is not exist.
+proc auto_create_config_directory {} {
+    if { [file isdirectory ~/.oprofile] == 0 } then {
+	file mkdir ~/.oprofile
+    }
+}
+
+# copy filename.defaults to filename if filename does not exist.
+proc copy_file_if_not_exist { filename } {
+
+   if { [file exists ~/.oprofile/$filename] == 0 } then {
+       # make an "exec cp xxx.defaults xxxx" ?
+       set input [open ~/.oprofile/$filename.defaults r]
+       set output [open ~/.oprofile/$filename w]
+
+       fcopy $input $output
+
+       close $input
+       close $output
+    }
+}
+
+# auto-create and save the setup file.
+proc save_advanced_setup { filename destroy_old_file } {
+    auto_create_config_directory
+
+    if { $destroy_old_file == 1 } then {
+	file delete ~/.oprofile/$filename
+    }
+
+    if { [file exists ~/.oprofile/$filename] == 0 } then {
+	set fd [open ~/.oprofile/$filename w]
+
+	puts $fd "# Defaults configuration of start profiler's gui"
+
+	set var_list { kernel_filename map_filename buffer_size hash_size
+	    pid_filter pgrp_filter base_dir samples_dir device_filename
+	    hashmap_device_file log_filename kernel_only ignore_myself
+	}
+
+	foreach i $var_list {
+	    global $i
+
+	    puts $fd "$i=[set $i]"
+	}
+
+	close $fd
+    }
+}
+
+# load all the stuff that can be found in the advanced setup form.
+proc load_advanced_setup {} {
+
+    save_advanced_setup gui_advanced_setup.defaults 0
+
+    copy_file_if_not_exist gui_advanced_setup
+
+    set fd [open ~/.oprofile/gui_advanced_setup r]
+
+    while { [gets $fd temp] != -1 } {
+	if { [string first "\#" $temp ] != 0 } then {
+	    set list [split $temp "="]
+
+	    set key [lindex $list 0]
+	    set value [lindex $list 1]
+
+	    global $key
+	    set $key $value
+	}
+    }
+
+    close $fd
+}
+
+# return an empty string if the range is ok else return 
+# "\n\n$prefix not in range :\n$value"
+# Note than allowed range is (min, max) and not (min, max( to be coherent with 
+# the op_check_range() macro in oprofile.h
+proc op_check_range { value min max } {
+
+    global $value
+
+    # this is to be coherent with op_check_range() macro in oprofile.h
+    if { [set $value] < $min || [set $value] > $max } then {
+	return "\n\n$value not int range :\n[set $value]"
+    }
+
+    return ""
+}
+
+# return 
+# 0 : ok, 
+# 1 some problem occur but the user request to ignore it
+# 2 some problem occur and the user request a cancel operation.
+# For now I disallow the user to try with really invalidate value.
+proc validate_advanced_setup {} {
+    global kernel_filename map_filename
+    global buffer_size hash_size
+#    global kernel_only ignore_myself
+#    global pid_filter pgrp_filter
+#    global base_dir samples_dir
+#    global device_filename hashmap_device_file log_filename
+
+    set message ""
+
+    # TODO : test if isfile work even if the filename is a link to another file
+    if { [file isfile $kernel_filename] == 0 } then {
+	set message "\n\nvmlinux does not exist :\n$kernel_filename"
+    }
+
+    # TODO as above
+    if { [file isfile $map_filename] == 0 } then {
+	set message "$message\n\nSystem.map does not exist :\n$map_filename"
+    }
+
+    set message "$message[op_check_range hash_size 256 262144]"
+    set message "$message[op_check_range buffer_size 1024 1048576]"
+
+    if { [string length $message] != 0 } then {
+        set answer [tk_messageBox -type yesnocancel -message "these paramaters are not correct apply anyway ? :$message"]
+              case $answer {
+                  yes { return 0 }
+                  no { return 1 }
+		  cancel { return 2 }
+              }
+
+
+    } else {
+	return 0
+    }
+}
+
+# when the form advanced setup is close by an ok we need to validate/save
+# the new contents of this form in the global variable. We also need to save
+# here the new settings to persistent storage.
+proc onAdvancedSetupOK {} {
+
+    # it is normal than kernel_only and ignore_myself are omitted here, they are
+    # treated separately in the code.
+    set var_list { kernel_filename map_filename buffer_size hash_size
+	pid_filter pgrp_filter base_dir samples_dir device_filename
+	hashmap_device_file log_filename
+    }
+
+    global temp_kernel_only temp_ignore_myself kernel_only ignore_myself
+
+    # save locally the change
+    foreach i $var_list {
+	global $i
+
+	set temp_$i [set $i]
+
+	set $i [.f_advanced_setup.$i get]
+    }
+
+    set temp_temp_kernel_only $kernel_only
+    set temp_temp_ignore_myself $ignore_myself
+    set kernel_only $temp_kernel_only
+    set ignore_myself $temp_ignore_myself
+
+    # the state of global var is setup we can validate the data
+    set valid [validate_advanced_setup]
+
+    if { $valid >= 1 } then {
+
+	# The validation have lose : cancel all the change
+	foreach i $var_list {
+	    set $i [set temp_$i]
+	}
+
+	set kernel_only $temp_temp_kernel_only
+	set ignore_myself $temp_temp_ignore_myself
+	if { $valid == 1 } then {
+	    # user have said cancel
+	    destroy .f_advanced_setup
+	}
+    } else {
+	# validation is ok or user have request to ignore error : save the
+	# the setup to the configuration file.
+	save_advanced_setup gui_advanced_setup 1
+
+	destroy .f_advanced_setup
+    }
+}
+
+proc onDefaultAdvancedSetup {} {
+
+    file delete ~/.oprofile/gui_advanced_setup
+
+    load_advanced_setup
+
+    # it is normal than kernel_only and ignore_myself are omitted here, they are
+    # treated separately in the code.
+    set var_list { kernel_filename map_filename buffer_size hash_size
+	pid_filter pgrp_filter base_dir samples_dir device_filename
+	hashmap_device_file log_filename
+    }
+
+    foreach i $var_list {
+	global $i
+	.f_advanced_setup.$i delete 0 end
+	.f_advanced_setup.$i insert end [set $i]
+    }
+
+    global temp_kernel_only kernel_only
+    set temp_kernel_only $kernel_only
+    global temp_ignore_myself ignore_myself
+    set temp_ignore_myself $ignore_myself
+}
+
+# not reusable : dedicated to be called from onAdvancedSetup proc.
+proc create_entry { name value label label_name width } {
+    global $name
+
+    set f .f_advanced_setup
+
+    entry $f.$name -width $width
+    $f.$name insert end $value
+    label $f.$label_name -text $label
+
+    pack $f.$label_name $f.$name -side top
+}
+
 # show the advanced setup form
 proc onAdvancedSetup {} {
 
-    set f ._f_advanced_setup
+    global kernel_filename map_filename buffer_size hash_size
+    global pid_filter pgrp_filter
+    global base_dir samples_dir 
+    global device_filename hashmap_device_file log_filename
+    global kernel_only ignore_myself
+
+    set f .f_advanced_setup
     set width 32
 
     toplevel $f
 
     wm title $f "Advanced setup"
 
-    entry $f.kernel_filename -textvariable vmlinux -width $width
-    label $f.l1 -text "kernel"
+    create_entry kernel_filename $kernel_filename "kernel filename" l1 $width
+    create_entry map_filename $map_filename "System.map" l2 $width
+    create_entry buffer_size $buffer_size "buffer size" l3 $width
+    create_entry hash_size $hash_size "hash size" l4 $width
+    create_entry pid_filter $pid_filter "pid filter (if compiled in)" l5 $width
+    create_entry pgrp_filter $pgrp_filter "pgrp filter (if compiled in)" l6 $width
+    create_entry base_dir $base_dir "base dir of daemon" l7 $width
+    create_entry samples_dir $samples_dir "samples dir file" l8 $width
+    create_entry device_filename $device_filename "device file" l9 $width
+    create_entry hashmap_device_file $hashmap_device_file "hash map device" l10 $width
+    create_entry log_filename $log_filename "daemon log file" l11 $width
 
-    entry $f.map_filename -textvariable map_file -width $width
-    label $f.l2 -text "System.map"
+    frame $f.cb
+    pack $f.cb -side top -fill x
 
-    entry $f.buffer_size -textvariable buffer_size -width $width
-    label $f.l3 -text "buffer size"
+    # -- must use global temporary variable.
+    global temp_kernel_only temp_ignore_myself
+    set temp_kernel_only $kernel_only
+    set temp_ignore_myself $ignore_myself
 
-    entry $f.hash_size -textvariable hash_size -width $width
-    label $f.l4 -text "hash size"
+    checkbutton $f.cb.kernel_only -text "kernel only" -variable temp_kernel_only
+    checkbutton $f.cb.ignore_myself -text "ignore myself" -variable temp_ignore_myself
 
-    entry $f.pid_filter -textvariable pid_filter -width $width
-    label $f.l5 -text "pid_filter"
+    pack $f.cb.kernel_only $f.cb.ignore_myself -side left
 
-    entry $f.pgrp_filter -textvariable pgrp_filter -width $width
-    label $f.l6 -text "pgrp filter"
+    frame $f.f_btn -borderwidth 1 -relief sunken
+    pack $f.f_btn -side top -fill x
 
-    entry $f.base_dir -textvariable base_dir -width $width
-    label $f.l7 -text "base directory of daemon"
+    button $f.f_btn.b_ok -text Ok -command "onAdvancedSetupOK"
+    button $f.f_btn.b_cancel -text Cancel -command "destroy .f_advanced_setup"
+    button $f.f_btn.b_defaults -text Defaults -command "onDefaultAdvancedSetup"
 
-    entry $f.samples_dir -textvariable samples_dir -width $width
-    label $f.l8 -text "samples dir file"
-
-    entry $f.device_file -textvariable device_file -width $width
-    label $f.l9 -text "device file"
-
-    entry $f.hash_map_device_file -textvariable hash_map_device_file -width $width
-    label $f.l10 -text "hasm map device"
-
-    entry $f.log_file -textvariable log_file -width $width
-    label $f.l11 -text "daemon log file"
-
-    checkbutton $f.kernel_only -text "kernel only" -variable kernel_only
-    checkbutton $f.ignore_myself -text "ignore myself" -variable ignore_myself
-
-    pack $f.l1 $f.kernel_filename -side top
-    pack $f.l2 $f.map_filename -side top
-    pack $f.l3 $f.buffer_size -side top
-    pack $f.l4 $f.hash_size -side top
-    pack $f.l5 $f.pid_filter -side top
-    pack $f.l6 $f.pgrp_filter -side top
-    pack $f.l7 $f.base_dir -side top
-    pack $f.l8 $f.samples_dir -side top
-    pack $f.l9 $f.device_file -side top
-    pack $f.l10 $f.hash_map_device_file -side top
-    pack $f.l11 $f.log_file -side top
-
-    pack $f.kernel_only $f.ignore_myself -side left
+    pack $f.f_btn.b_ok $f.f_btn.b_cancel $f.f_btn.b_defaults -side left -expand yes
 
     grab $f
 }
@@ -411,8 +637,7 @@ proc onOptionMaskOk { counter } {
 
     set temp 0
 
-    if { [expr [ llength $i ] > 4] && \
-	     [string compare [lindex $i 4] mandatory] } then {
+    if { [need_unit_mask [set event_type_$counter]] } then {
 
 	set type_u_mask [lindex $i 4]
 
@@ -420,6 +645,10 @@ proc onOptionMaskOk { counter } {
 	if { [string compare $type_u_mask exclusive ] } then  {
 	    # assert type_u_mask == bit_mask
 	    set list [lindex $i 6]
+
+	    # need a two pass algorithm, the first ensure than the umask is ok, then
+	    # if ok the second pass destroy global var. For now i do not delete global
+	    # var
 
 	    set button_order 1
 	    set temp 0
@@ -435,9 +664,19 @@ proc onOptionMaskOk { counter } {
 		set temp [expr [set $var] | $temp]
 
 		# The form will be closed : clean up global var.
-		unset b$button_order
+		# Phe : the dialog is not neccessarily closed so we need to not
+		# destroy the global var. This leads to a minor memory leaks but
+		# it can occur only one time by oprofile gui session, so don't worry
+		# me about that.
+#		unset b$button_order
 
 		incr button_order
+	    }
+
+	    if { $temp == 0 } then {
+		tk_messageBox -message "unit mask invalid, you must select at least one item for this event type"
+
+		return
 	    }
 	    
 	    set bit_mask_option_$counter $temp
@@ -461,8 +700,7 @@ proc onUnitMaskClick { counter } {
 
     set i [search_event [set event_type_$counter]]
 
-    if { [expr [ llength $i ] > 4] && \
-	     [string compare [lindex $i 4] mandatory] } then {
+    if { [need_unit_mask [set event_type_$counter]] } then {
 
 	toplevel .f_unit_mask_option
 
@@ -566,8 +804,8 @@ proc onRadiobuttonChange { button counter } {
     global old_event_type_$counter
     global bit_mask_option_$counter
 
-    # TODO : must recall the last button change to avoid resetting the
-    # unit mask option.
+    # TODO : must remember the last button change to avoid resetting the
+    # unit mask option ?.
 
     set button_path .f_unit_mask.f_unit_mask_$counter.btn_unit_mask
 
@@ -716,6 +954,7 @@ proc setup_event_frame { processor } {
 # create and layout the frame container.
 
 # TODO : put all this code in setup_event_frame
+load_advanced_setup
 
 # TODO : how to get dynamically the correct width ?
 wm geometry . 576x600
@@ -725,7 +964,7 @@ frame .f_event_type -borderwidth 2 -relief sunken
 frame .f_counter -borderwidth 2 -relief sunken
 frame .f_unit_mask -borderwidth 2 -relief sunken
 
-create_text . status_bar 2 1 { }
+create_text . status_bar 1 1 { }
 pack .status_bar -side bottom -anchor w -fill y -expand yes
 
 bind . <Motion> { onMouseMotion %W }

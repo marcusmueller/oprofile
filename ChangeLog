@@ -1,3 +1,14 @@
+2001-06-27  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/opd_util.c: document get_line() restriction
+ 
+2001-06-27  Philippe Elie  <ph_e@club-internet.fr>
+
+	* dae/oprofiled.c: fix cpu_speed_str/cpu_speed variable setup logic.
+
+	* gui/oprofile: save setup of advanced setup form to persistent storage.
+	  Add many validation.
+
 2001-06-25  John Levon  <moz@compsoc.man.ac.uk>
 
 	* op_events.c:

@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.13 2001/06/22 03:16:24 movement Exp $ */
+/* $Id: opd_util.c,v 1.14 2001/06/27 20:55:53 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -418,6 +418,8 @@ char *opd_get_time(void)
  * Get a line of ASCII text from a file. The file is read
  * up to the first \0 or \n. A trailing \n is deleted.
  * 
+ * Empty lines are not handled.
+ *
  * Returns the dynamically-allocated string containing
  * that line. At the end of a file a string "" will
  * be returned.

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.33 2001/06/24 23:52:47 movement Exp $ */
+/* $Id: oprofiled.c,v 1.34 2001/06/27 20:55:53 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -26,7 +26,6 @@ int kernel_only;
 /* Unfortunately popt does not have, on many versions, the POPT_ARG_DOUBLE type
  * so I must first store it as a string. */
 static const char *cpu_speed_str;
-static double cpu_speed;
 static int cpu_type;
 static int ignore_myself;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
@@ -204,7 +203,7 @@ static void opd_options(int argc, char const *argv[])
 	}
 
 	if (cpu_speed_str && strlen(cpu_speed_str)) {
-		sscanf(cpu_speed_str, "%lf", &cpu_speed);
+		sscanf(cpu_speed_str, "%lf", &footer.cpu_speed);
 	}
 }
 
@@ -400,8 +399,6 @@ int main(int argc, char const *argv[])
 	footer.ctr1_type_val = opd_read_int_from_file("/proc/sys/dev/oprofile/0/1/event");
 	footer.ctr1_um = (u8) opd_read_int_from_file("/proc/sys/dev/oprofile/0/1/unit_mask");
 	
-	footer.cpu_speed = cpu_speed;
-
 	footer.ctr0_count = opd_read_int_from_file("/proc/sys/dev/oprofile/0/0/count");
 	footer.ctr1_count = opd_read_int_from_file("/proc/sys/dev/oprofile/0/1/count");
 
