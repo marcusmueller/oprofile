@@ -359,7 +359,7 @@ struct remove_filter {
 } // namespace anon
 
 void op_bfd::get_symbols_from_file(bfd * ibfd, size_t start,
-                                   op_bfd::symbols_found_t & symbols)
+   op_bfd::symbols_found_t & symbols, bool debug_file)
 {
 	uint nr_all_syms;
 
