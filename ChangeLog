@@ -1,3 +1,8 @@
+2003-09-21  John Levon  <levon@movementarian.org>
+
+	* doc/Makefile.am:
+	* doc/internals.xml: start an internals manual ...
+
 2003-09-19  John Levon  <levon@movementarian.org>
 
 	* pp/image_errors.cpp: missing include

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding='ISO-8859-1'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+
+<book id="oprofile-internals">
+<bookinfo>
+	<title>OProfile Internals</title>
+ 
+	<authorgroup>
+		<author>
+			<firstname>John</firstname>
+			<surname>Levon</surname>
+			<affiliation>
+				<address><email>levon@movementarian.org</email></address>
+			</affiliation>
+		</author>
+	</authorgroup>
+
+	<copyright>
+		<year>2003</year>
+		<holder>John Levon</holder>
+	</copyright>
+</bookinfo>
+
+<toc></toc>
+
+<chapter id="introduction">
+<title>Introduction</title>
+
+<para>
+This document is current for OProfile version <oprofileversion />.
+This document provides some details on the internal workings of OProfile for the
+interested hacker. This document assumes strong C, working C++, plus some knowledge of
+kernel internals and CPU hardware.
+</para>
+<note>
+<para>
+Only the "new" implementation associated with kernel 2.6 and above is covered here. 2.4
+uses a very different kernel module implementation and daemon to produce the sample files.
+</para>
+</note>
+
+<sect1 id="overview">
+<title>Overview</title>
+
+</sect1>
+
+<sect1 id="components">
+<title>Components of the OProfile system</title>
+
+<sect2 id="arch-specific-components">
+<title>Architecture-specific components</title>
+<para>
+If OProfile supports the hardware performance counters found on
+a particular architecture, code for managing the details of setting
+up and managing these counters can be found in the kernel source
+tree in the relevant <filename>arch/<emphasis>arch</emphasis>/oprofile/</filename>
+directory. The architecture-specific implementation works via
+filling in the oprofile_operations structure at init time. This
+provides a set of operations such as <function>setup()</function>,
+<function>start()</function>, <function>stop()</function>, etc.
+that manage the hardware-specific details of fiddling with the
+performance counter registers.
+</para>
+<para>
+The other important facility available to the architecture code is
+<function>oprofile_add_sample()</function>.  This is where a particular sample
+taken at interrupt time is fed into the generic OProfile driver code.
+</para>
+</sect2>
+
+<sect2 id="filesystem">
+<title>oprofilefs</title>
+<para>
+OProfile implements a pseudo-filesystem known as "oprofilefs", mounted from
+userspace at <filename>/dev/oprofile</filename>. This consists of small
+files for reporting and receiving configuration from userspace, as well
+as the actual character device that the OProfile userspace receives samples
+from. At <function>setup()</function> time, the architecture-specific may
+add further configuration files related to the details of the performance
+counters. For example, on x86, one numbered directory for each hardware
+performance counter is added, with files in each for the event type,
+reset value, etc.
+</para>
+<para>
+The filesystem also contains a <filename>stats</filename> directory with
+a number of useful counters for various OProfile events.
+</para>
+</sect2>
+
+<sect2 id="driver">
+<title>Generic kernel driver</title>
+<para>
+This lives in <filename>drivers/oprofile/</filename>, and forms the core of
+how OProfile works in the kernel. Its job is to take samples delivered
+from the architecture-specific code (via <function>oprofile_add_sample()</function>),
+and buffer this data, in a transformed form as described later, until releasing
+the data to the userspace daemon via the <filename>/dev/oprofile/buffer</filename>
+character device.
+</para>
+</sect2>
+
+<sect2 id="daemon">
+<title>The OProfile daemon</title>
+<para>
+The OProfile userspace daemon's job is to take the raw data provided by the
+kernel and write it to the disk. It takes the single data stream from the
+kernel and logs sample data against a number of sample files (found in
+<filename>/var/lib/oprofile/samples/current/</filename>. For the benefit
+of the "separate" functionality, the names/paths of these sample files
+are mangled to reflect where the samples were from: this can include
+thread IDs, the binary file path, the event type used, and more.
+</para>
+<para>
+After this final step from interrupt to disk file, the data is now
+persistent (that is, changes in the running of the system do not invalidate
+stored data). So the post-profiling tools can run on this data at any
+time (assuming the original binary files are still available and unchanged,
+naturally).
+</para>
+</sect2>
+
+<sect2 id="post-profiling">
+<title>Post-profiling tools</title>
+So far, we've collected data, but we've yet to present it in a useful form
+to the user. This is the job of the post-profiling tools. In general form,
+they collate a subset of the available sample files, load and process each one
+correlated against the relevant binary file, and finally produce user-readable
+information.
+</sect2>
+
+</sect1>
+
+</chapter>
+
+<chapter id="performance-counters">
+<title>Performance counter management</title>
+
+</chapter>
+
+<chapter id="collecting-samples">
+<title>Collecting and processing samples</title>
+
+</chapter>
+
+<chapter id="sample-files">
+<title>Generating sample files</title>
+
+</chapter>
+
+<chapter id="output">
+<title>Generating useful output</title>
+
+</chapter>
+
+</book>

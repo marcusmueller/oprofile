@@ -57,8 +57,6 @@ Before 1.0 little stuff
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
  o create_path API is weird
  o opannotate should error out with a msg if no debug symbols are found at all
- o oprof_start dialog size is too small initially
- o oprof_start key movement through events doesn't change help text
  o GUI still has a physical-counter interface, should have a general one
    like opcontrol --event
  o move oprofiled.log to OP_SAMPLE_DIR/current ?
@@ -124,6 +122,8 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
  o improve --smart-demangle
 	o allow user to add it's own pattern in user.pat, document it.
 	o hard code ${typename} regular definition to remove all current limitations (difficult, perhaps after 1.0 ?).
+ o oprof_start dialog size is too small initially
+ o oprof_start key movement through events doesn't change help text
  o allow --event to take event numbers. (is it worth ?)
  o i18n. We need a good formatter, and also remember format_percent()
  o opannotate --source --output-dir=~moz/op/ /usr/bin/oprofiled

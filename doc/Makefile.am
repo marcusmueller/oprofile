@@ -11,20 +11,31 @@ STYLESHEETS=$(CHUNK_XHTML_STYLESHEET) $(srcdir)/xsl/xhtml-common.xsl
 man_MANS = oprofile.1 opcontrol.1 opreport.1 opannotate.1 opgprof.1 op_help.1
 
 htmldir = $(prefix)/share/doc/oprofile
-dist_html_DATA = oprofile.html
+dist_html_DATA = oprofile.html internals.html
 
 if have_xsltproc
 
 oprofile.html: ${top_srcdir}/doc/oprofile.xml
 	XML_CATALOG_FILES=$(XML_CATALOG_FILES) $(XSLTPROC) $(XSLTPROC_FLAGS) -o $@ --stringparam version @VERSION@ $(XHTML_STYLESHEET) $<
 
+internals.html: ${top_srcdir}/doc/internals.xml
+	XML_CATALOG_FILES=$(XML_CATALOG_FILES) $(XSLTPROC) $(XSLTPROC_FLAGS) -o $@ --stringparam version @VERSION@ $(XHTML_STYLESHEET) $<
+
 # rules to generate oprofile.sf.net/doc files
-chunk: ${top_srcdir}/doc/oprofile.xml
+chunk: oprofile-chunk
+
+oprofile-chunk: ${top_srcdir}/doc/oprofile.xml
+	$(XSLTPROC) $(XSLTPROC_FLAGS) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
+
+internals-chunk: ${top_srcdir}/doc/internals.xml
 	$(XSLTPROC) $(XSLTPROC_FLAGS) --stringparam version @VERSION@ $(CHUNK_XHTML_STYLESHEET) $<
 
 else
 
 oprofile.html:
+	touch $@
+
+internals.html:
 	touch $@
 
 chunk:
@@ -48,6 +59,7 @@ EXTRA_DIST = \
 	oprofile.1 \
 	oprofile.1.in \
 	oprofile.xml \
+	internals.xml \
 	xsl/catalog-1.xml.in \
 	xsl/xhtml.xsl \
 	xsl/xhtml-common.xsl \
