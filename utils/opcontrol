@@ -94,7 +94,7 @@ do_help() {
 	  --pgrp-filter=[pgrp|none]    Only profile process tty group pgrp (2.4 version)
 	  --kernel-only=[0|1]	       profile only the kernel (2.4 version)
 	  --note-table-size	       number of notes in kernel notes buffer (2.4 version)
-	  -p/--separate=[none,library,kernel,all]     separate samples as given
+	  -p/--separate=[none,library,kernel,thread,all]     separate samples as given
 	  --vmlinux=file               vmlinux kernel image
 	  --no-vmlinux                 no vmlinux image available (no kernel vmlinux image available)
 	  -V/--verbose                 be verbose in the daemon log
@@ -181,6 +181,7 @@ do_init() {
 	VERBOSE=0
 	SEPARATE_LIB_SAMPLES=0
 	SEPARATE_KERNEL_SAMPLES=0
+	THREAD_PROFILING=0
 	KERNEL_ONLY=0 # 2.2/2.4 kernel
 
 	OPROFILED="$OPDIR/oprofiled"
@@ -248,6 +249,7 @@ do_save_setup() {
 
 	echo "SEPARATE_LIB_SAMPLES=$SEPARATE_LIB_SAMPLES" >> $SETUP_FILE
 	echo "SEPARATE_KERNEL_SAMPLES=$SEPARATE_KERNEL_SAMPLES" >> $SETUP_FILE
+	echo "THREAD_PROFILING=$THREAD_PROFILING" >> $SETUP_FILE
 	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
 	#write the actual information to file
 	if [ "$BUF_SIZE" != 0 ]; then
@@ -362,13 +364,18 @@ validate_separate_args() {
 				SEPARATE_LIB_SAMPLES=1 
 				SEPARATE_KERNEL_SAMPLES=1
 				;;
+			thread)
+				THREAD_PROFILING=1
+				;;
 			all)
 				SEPARATE_LIB_SAMPLES=1
 				SEPARATE_KERNEL_SAMPLES=1
+				THREAD_PROFILING=1
 				;;
 			none)
 				SEPARATE_LIB_SAMPLES=0
 				SEPARATE_KERNEL_SAMPLES=0
+				THREAD_PROFILING=0
 				;;
 			*)
 				echo "invalid --separate= argument: $1"
@@ -911,7 +918,8 @@ do_start_daemon() {
 
 	OPD_ARGS=" \
 		--separate-lib-samples=$SEPARATE_LIB_SAMPLES \
-		--separate-kernel-samples=$SEPARATE_KERNEL_SAMPLES"
+		--separate-kernel-samples=$SEPARATE_KERNEL_SAMPLES \
+		--thread-profiling=$THREAD_PROFILING"
 
 	if [ "$KERNEL_SUPPORT" != "yes" ]; then
 		OPD_ARGS="$OPD_ARGS \

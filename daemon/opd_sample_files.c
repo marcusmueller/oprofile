@@ -30,6 +30,7 @@
 extern uint op_nr_counters;
 extern int separate_lib_samples;
 extern int separate_kernel_samples;
+extern int thread_profiling;
 extern u32 ctr_count[OP_MAX_COUNTERS];
 extern u8 ctr_event[OP_MAX_COUNTERS];
 extern u16 ctr_um[OP_MAX_COUNTERS];
@@ -58,7 +59,12 @@ char * opd_mangle_filename(struct opd_image const * image, int counter)
 		values.flags |= MANGLE_KERNEL;
 	if (dep_name && strcmp(dep_name, image->name))
 		values.flags |= MANGLE_DEP_NAME;
-
+	if (thread_profiling) {
+		values.flags |= MANGLE_TGID | MANGLE_TID;
+		values.tid = image->tid;
+		values.tgid = image->tgid;
+	}
+ 
 	if (cpu_type != CPU_TIMER_INT)
 		values.event_name = event->name;
 	else

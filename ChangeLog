@@ -1,3 +1,13 @@
+2003-09-17 Ka Fai Lu  <kafai0928@yahoo.com>
+
+	I adapted slightly this patch Phil.
+	* daemon/opd_image.c:
+	* daemon/opd_image.h:
+	* daemon/opd_kernel.c:
+	* daemon/opd_sample_files.c:
+	* daemon/oprofiled.c:
+	* utils/opcontrol: implement per thread profling
+
 2003-09-16  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libopt++/popt_options.h:

@@ -29,9 +29,29 @@
 #include <string.h>
 #include <stdint.h>
 
+/**
+ * Transient values used for parsing the event buffer.
+ * Note that these are reset for each buffer read, but
+ * that should be ok as in the kernel, cpu_buffer_reset()
+ * ensures that a correct context starts off the buffer.
+ */
+struct transient {
+	char const * buffer;
+	size_t remaining;
+	cookie_t cookie;
+	cookie_t app_cookie;
+	struct opd_image * image;
+	struct opd_image * app_image;
+	int in_kernel;
+	unsigned long cpu;
+	pid_t tid;
+	pid_t tgid;
+};
+
 extern uint op_nr_counters;
 extern int separate_lib_samples;
 extern int separate_kernel_samples;
+extern int thread_profiling;
 extern size_t kernel_pointer_size;
 
 /* maintained for statistics purpose only */
@@ -120,6 +140,8 @@ static struct opd_image * opd_create_image(unsigned long hash)
 	image->app_image = 0;
 	image->mtime = 0;
 	image->kernel = 0;
+	image->tgid = -1;
+	image->tid = -1;
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		odb_init(&image->sample_files[i]);
@@ -136,7 +158,7 @@ static struct opd_image * opd_create_image(unsigned long hash)
 
 /** opd_init_image - init an image sample file */
 static void opd_init_image(struct opd_image * image, cookie_t cookie,
-	cookie_t app_cookie)
+                           struct transient const * trans)
 {
 	char buf[PATH_MAX + 1];
  
@@ -150,7 +172,7 @@ static void opd_init_image(struct opd_image * image, cookie_t cookie,
 
 	image->name = xstrdup(buf);
  
-	if (lookup_dcookie(app_cookie, buf, PATH_MAX) <= 0) {
+	if (lookup_dcookie(trans->app_cookie, buf, PATH_MAX) <= 0) {
 		fprintf(stderr, "Lookup of cookie %llx failed, errno=%d\n",
 			cookie, errno); 
 		abort();
@@ -159,7 +181,9 @@ static void opd_init_image(struct opd_image * image, cookie_t cookie,
 	image->app_name = xstrdup(buf);
 
 	image->cookie = cookie;
-	image->app_cookie = app_cookie;
+	image->app_cookie = trans->app_cookie;
+	image->tgid = trans->tgid;
+	image->tid = trans->tid;
 }
 
 
@@ -262,7 +286,8 @@ static unsigned long opd_hash_cookie(cookie_t cookie)
  
 
 /** opd_find_image - find an image */
-static struct opd_image * opd_find_image(cookie_t cookie, cookie_t app_cookie)
+static struct opd_image * opd_find_image(cookie_t cookie,
+                                         struct transient const * trans)
 {
 	unsigned long hash = opd_hash_cookie(cookie);
 	struct opd_image * image = 0;
@@ -274,11 +299,18 @@ static struct opd_image * opd_find_image(cookie_t cookie, cookie_t app_cookie)
 		/* without this check !separate_lib_samples will open the
 		 * same sample file multiple times
 		 */
-		if (separate_lib_samples && image->app_cookie != app_cookie)
+		if (separate_lib_samples &&
+		    image->app_cookie != trans->app_cookie)
 			continue;
  
 		if (image->cookie == cookie)
 			return image;
+
+		if (thread_profiling) {
+			if (image->tgid != trans->tgid ||
+			    image->tid != trans->tid)
+				continue;
+		}
 	}
 	return NULL;
 }
@@ -287,18 +319,19 @@ static struct opd_image * opd_find_image(cookie_t cookie, cookie_t app_cookie)
 /**
  * opd_add_image - add an image to the image hashlist
  */
-static struct opd_image * opd_add_image(cookie_t cookie, cookie_t app_cookie)
+static struct opd_image * opd_add_image(cookie_t cookie,
+                                        struct transient const * trans)
 {
 	unsigned long hash = opd_hash_cookie(cookie);
 	struct opd_image * image = opd_create_image(hash);
 
-	opd_init_image(image, cookie, app_cookie);
+	opd_init_image(image, cookie, trans);
 
 	if (separate_lib_samples) {
-		image->app_image = opd_find_image(app_cookie, app_cookie);
+		image->app_image = opd_find_image(trans->app_cookie, trans);
 		if (!image->app_image) {
 			verbprintf("NULL image->app_image for cookie %llx\n",
-				   app_cookie);
+				   trans->app_cookie);
 		}
 	}
 
@@ -311,20 +344,38 @@ static struct opd_image * opd_add_image(cookie_t cookie, cookie_t app_cookie)
 /**
  * opd_get_image - get an image from the image structure
  */
-static struct opd_image * opd_get_image(cookie_t cookie, cookie_t app_cookie)
+static struct opd_image * opd_get_image(cookie_t cookie,
+                                        struct transient const * trans)
 {
 	struct opd_image * image;
-	if ((image = opd_find_image(cookie, app_cookie)) == NULL)
-		image = opd_add_image(cookie, app_cookie);
+	if ((image = opd_find_image(cookie, trans)) == NULL)
+		image = opd_add_image(cookie, trans);
 
 	return image;
 }
 
 
 struct opd_image *
-opd_add_kernel_image(char const * name, char const * app_name)
+opd_add_kernel_image(char const * name, struct opd_image const * app_image)
 {
 	struct opd_image * image = opd_create_image(HASH_KERNEL);
+	char const * app_name = NULL;
+ 
+	if (app_image) {
+		app_name = app_image->name;
+		image->tgid = app_image->tgid;
+		image->tid = app_image->tid;
+	} else {
+		/* 
+		 * FIXME: handle kernel thread. i.e. app_image is NULL
+		 *  how about passing in the struct transients or even make
+		 * global and refactor some members from struct opd_image to
+		 * struct transients?
+		 * PHE: what does this meean ?
+		 */
+		image->tgid = -1;
+		image->tid = -1;
+	}
 
 	image->name = xstrdup(name);
 	image->app_name = app_name ? xstrdup(app_name) : NULL;
@@ -336,10 +387,15 @@ opd_add_kernel_image(char const * name, char const * app_name)
 
  
 struct opd_image *
-opd_get_kernel_image(char const * name, char const * app_name)
+opd_get_kernel_image(char const * name, struct opd_image const * app_image)
 {
 	struct list_head * pos;
 	struct opd_image * image;
+	char const * app_name = NULL;
+
+	if (app_image)
+		app_name = app_image->name;
+
  
 	list_for_each(pos, &opd_images[HASH_KERNEL]) {
 		image = list_entry(pos, struct opd_image, hash_list);
@@ -354,7 +410,7 @@ opd_get_kernel_image(char const * name, char const * app_name)
 			return image;
 	}
 
-	return opd_add_kernel_image(name, app_name);
+	return opd_add_kernel_image(name, app_image);
 }
 
 
@@ -362,25 +418,6 @@ static inline int is_escape_code(uint64_t code)
 {
 	return kernel_pointer_size == 4 ? code == ~0LU : code == ~0LLU;
 }
-
-
-/**
- * Transient values used for parsing the event buffer.
- * Note that these are reset for each buffer read, but
- * that should be ok as in the kernel, cpu_buffer_reset()
- * ensures that a correct context starts off the buffer.
- */
-struct transient {
-	char const * buffer;
-	size_t remaining;
-	cookie_t cookie;
-	cookie_t app_cookie;
-	struct opd_image * image;
-	int in_kernel;
-	unsigned long cpu;
-	pid_t pid;
-	pid_t tgid;
-};
 
 
 static inline uint64_t get_buffer_value(void const * buffer, size_t pos)
@@ -451,6 +488,7 @@ static void opd_put_sample(struct transient * trans, vma_t eip)
 
 		/* We can get a NULL image if it's a kernel thread */
 		if (separate_kernel_samples && trans->image)
+			/* FIXME: can we use trans->app_image ? */
 			app_image = trans->image->app_image;
 
 		/* This fixes up eip into an offset too and increase stats */
@@ -539,7 +577,7 @@ static void ctx_switch_set_image(struct transient * trans)
 	if (!cookie)
 		cookie = trans->app_cookie;
 
-	trans->image = opd_get_image(cookie, trans->app_cookie);
+	trans->image = opd_get_image(cookie, trans);
 }
 
 
@@ -550,16 +588,16 @@ static void code_ctx_switch(struct transient * trans)
 		return;
 	}
 
-	trans->pid = pop_buffer_value(trans);
+	trans->tid = pop_buffer_value(trans);
 	trans->app_cookie = pop_buffer_value(trans);
-
-	ctx_switch_set_image(trans);
 
 	/* Look for a possible tgid postscript */
 	get_tgid(trans);
 
-	verbprintf("CTX_SWITCH to pid %lu, tgid %lu, cookie %llx, app %s\n",
-		(unsigned long)trans->pid, (unsigned long)trans->tgid,
+	ctx_switch_set_image(trans);
+
+	verbprintf("CTX_SWITCH to tid %lu, tgid %lu, cookie %llx, app %s\n",
+		(unsigned long)trans->tid, (unsigned long)trans->tgid,
 		trans->app_cookie,
 		trans->image ? trans->image->name : "kernel");
 }
@@ -585,7 +623,7 @@ static void code_cookie_switch(struct transient * trans)
 	}
 
 	trans->cookie = pop_buffer_value(trans);
-	trans->image = opd_get_image(trans->cookie, trans->app_cookie);
+	trans->image = opd_get_image(trans->cookie, trans);
 
 	verbprintf("COOKIE_SWITCH to cookie %llx (%s)\n",
 	           trans->cookie, trans->image->name); 
@@ -635,9 +673,10 @@ void opd_process_samples(char const * buffer, size_t count)
 		.cookie = 0,
 		.app_cookie = 0,
 		.image = NULL,
+		.app_image = NULL,
 		.in_kernel = -1,
 		.cpu = -1,
-		.pid = -1,
+		.tid = -1,
 		.tgid = -1
 	};
 

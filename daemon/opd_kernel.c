@@ -315,7 +315,7 @@ opd_create_app_kernel_image(struct opd_image * app_image,
 	struct opd_image * image;
 	struct opd_module * new_module;
 
-	image = opd_get_kernel_image(name, app_image->app_name);
+	image = opd_get_kernel_image(name, app_image);
 	if (!image) {
 		verbprintf("Can't create image for %s %s\n",
 			   name, app_image->app_name);

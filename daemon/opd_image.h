@@ -32,6 +32,10 @@ struct opd_image {
 	cookie_t cookie;
 	/* cookie value of the owning app or 0 */
 	cookie_t app_cookie;
+	/* thread group id */
+	pid_t tgid;
+	/* thread id */
+	pid_t tid;
 	/* hash table link */
 	struct list_head hash_list;
 	/* opened sample files */
@@ -53,8 +57,8 @@ void opd_for_each_image(opd_image_cb imagecb);
 void opd_image_cleanup(void);
 
 void opd_init_images(void);
-struct opd_image * opd_add_kernel_image(char const * name, char const * app_name);
-struct opd_image * opd_get_kernel_image(char const * name, char const * app_name);
+struct opd_image * opd_add_kernel_image(char const * name, struct opd_image const * app_image);
+struct opd_image * opd_get_kernel_image(char const * name, struct opd_image const * app_image);
  
 struct op_sample;
  
