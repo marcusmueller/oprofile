@@ -22,8 +22,8 @@
 #include "string_manip.h"
 
 #include "op_mangling.h"
-#include "samples_container.h"
-#include "opp_samples_files.h"
+#include "profile_container.h"
+#include "profile.h"
 #include "counter_util.h"
 #include "derive_files.h"
 #include "format_output.h"
@@ -39,7 +39,7 @@ using namespace std;
  *
  * Lists all the symbols in decreasing sample count order, to standard out.
  */
-static void do_list_symbols(samples_container_t & samples,
+static void do_list_symbols(profile_container_t const & samples,
 			    format_output::formatter & out, int sort_by_ctr)
 {
 	vector<symbol_entry const *> symbols =
@@ -58,7 +58,7 @@ static void do_list_symbols(samples_container_t & samples,
  * Lists all the samples for all the symbols, from the image specified by
  * abfd, in increasing order of vma, to standard out.
  */
-static void do_list_symbols_details(samples_container_t & samples,
+static void do_list_symbols_details(profile_container_t const & samples,
 				    format_output::formatter & out, int sort_by_ctr)
 {
 	vector<symbol_entry const *> symbols =
@@ -77,7 +77,7 @@ static void do_list_symbols_details(samples_container_t & samples,
  * the samples for this symbol from the image
  * specified by abfd.
  */
-static void do_list_symbol(samples_container_t & samples, format_output::formatter & out)
+static void do_list_symbol(profile_container_t const & samples, format_output::formatter & out)
 {
 	symbol_entry const * symb = samples.find_symbol(options::symbol);
 	if (symb == 0) {
@@ -111,7 +111,7 @@ struct gmon_hdr {
  * this use the grpof format <= gcc 3.0
  */
 static void do_dump_gprof(op_bfd & abfd,
-			  opp_samples_files const & samples_files,
+			  profile_t const & samples_files,
 			  int sort_by_ctr)
 {
 	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},};
@@ -196,13 +196,13 @@ int main(int argc, char const *argv[])
 		relative_to_absolute_path(options::sample_file, samples_dir);
 
 	if (!options::gprof_file.empty()) {
-		opp_samples_files samples_files(options::sample_file, options::counter_mask);
-		samples_files.check_mtime(options::image_file);
+		profile_t profile(options::sample_file, options::counter_mask);
+		profile.check_mtime(options::image_file);
 
 		op_bfd abfd(options::image_file, options::exclude_symbols,
 			    vector<string>());
-		samples_files.set_start_offset(abfd.get_start_offset());
-		do_dump_gprof(abfd, samples_files, options::sort_by_counter);
+		profile.set_start_offset(abfd.get_start_offset());
+		do_dump_gprof(abfd, profile, options::sort_by_counter);
 		return 0;
 	}
 
@@ -220,7 +220,7 @@ int main(int argc, char const *argv[])
 		get_sample_file_list(filelist, dir, name + "}}}*");
 	}
 
-	samples_container_t samples(!options::list_all_symbols_details,
+	profile_container_t samples(!options::list_all_symbols_details,
 				    options::output_format_flags, options::counter_mask);
 
 	filelist.push_front(options::sample_file);
@@ -249,21 +249,21 @@ int main(int argc, char const *argv[])
 		if (i == OP_MAX_COUNTERS)
 			continue;
 
-		opp_samples_files samples_files(file, options::counter_mask);
+		profile_t profile(file, options::counter_mask);
 
 		// the first opened file is treated specially because user can
 		// specify the image name for this sample file on command line
 		// we must deduce the image name from the samples file name
 		if (it == filelist.begin()) {
-			opp_samples_files samples_files(file, options::counter_mask);
+			profile_t profile(file, options::counter_mask);
 			op_bfd abfd(options::image_file,
 				    options::exclude_symbols,
 				    vector<string>());
-			samples_files.check_mtime(options::image_file);
-			samples_files.set_start_offset(abfd.get_start_offset());
-			samples.add(samples_files, abfd, options::symbol);
+			profile.check_mtime(options::image_file);
+			profile.set_start_offset(abfd.get_start_offset());
+			samples.add(profile, abfd, options::symbol);
 
-			samples_files.output_header();
+			profile.output_header();
 			first_file = false;
 		} else {
 			string app_name;

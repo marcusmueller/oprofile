@@ -1,3 +1,25 @@
+2002-12-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/opp_samples_files.cpp:
+	* pp/opp_samples_files.h:
+	* pp/samples_container.cpp:
+	* pp/samples_container.h:
+	* pp/samples_file.cpp:
+	* pp/samples_file.h: rename class samples_file_t to counter_profile_t
+	  rename class opp_samples_files to profile_t
+	  rename class samples_container_t to profile_container_t
+	  rename file using the new class name as filename w/o _t suffix
+
+	* pp/format_output.cpp:
+	* pp/format_output.h:
+	* pp/op_merge.cpp:
+	* pp/op_time.cpp:
+	* pp/op_to_source.cpp:
+	* pp/oprofpp.cpp:
+	* pp/symbol_container_imp.cpp:
+	* pp/symbol_container_imp.h:
+	* pp/Makefile.am: reflect above class/file name change
+
 2002-12-06  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libdb/db_manage.c:

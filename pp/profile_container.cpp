@@ -1,6 +1,6 @@
 /**
- * @file samples_container.cpp
- * Sample file container
+ * @file profile_container.cpp
+ * profile file container
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -16,8 +16,8 @@
 #include <algorithm>
 
 #include "symbol_functors.h"
-#include "samples_container.h"
-#include "opp_samples_files.h"
+#include "profile_container.h"
+#include "profile.h"
 #include "sample_container_imp.h"
 #include "symbol_container_imp.h"
 
@@ -43,7 +43,7 @@ struct filename_by_samples {
 
 }
 
-samples_container_t::samples_container_t(bool add_zero_samples_symbols_,
+profile_container_t::profile_container_t(bool add_zero_samples_symbols_,
 					 outsymbflag flags_,
 					 int counter_mask_)
 	:
@@ -56,7 +56,7 @@ samples_container_t::samples_container_t(bool add_zero_samples_symbols_,
 {
 }
 
-samples_container_t::~samples_container_t()
+profile_container_t::~profile_container_t()
 {
 }
  
@@ -64,19 +64,19 @@ samples_container_t::~samples_container_t()
 //  the symbols/samples are sorted by increasing vma.
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
-void samples_container_t::
-add(opp_samples_files const & samples_files, op_bfd const & abfd,
+void profile_container_t::
+add(profile_t const & profile, op_bfd const & abfd,
     string const & symbol_name)
 {
 	// paranoid checking
 	if (nr_counters != static_cast<uint>(-1) &&
-	    nr_counters != samples_files.nr_counters) {
-		cerr << "Fatal: samples_container_t::do_add(): mismatch"
-		     << "between nr_counters and samples_files.nr_counters\n";
+	    nr_counters != profile.nr_counters) {
+		cerr << "Fatal: profile_container_t::do_add(): mismatch"
+		     << "between nr_counters and profile.nr_counters\n";
 		exit(EXIT_FAILURE);
 	}
 
-	nr_counters = samples_files.nr_counters;
+	nr_counters = profile.nr_counters;
 
 	string const image_name = abfd.get_filename();
 	bool const need_linenr = (flags & (osf_linenr_info | osf_short_linenr_info));
@@ -95,7 +95,7 @@ add(opp_samples_files const & samples_files, op_bfd const & abfd,
 		abfd.get_symbol_range(i, start, end);
 
 		bool const found_samples =
-			samples_files.accumulate_samples(symb_entry.sample.counter,
+			profile.accumulate_samples(symb_entry.sample.counter,
 				start, end);
 
 		if (found_samples == 0 && !add_zero_samples_symbols)
@@ -123,7 +123,7 @@ add(opp_samples_files const & samples_files, op_bfd const & abfd,
 		symb_entry.first = samples->size();
 
 		if (need_details) {
-			add_samples(samples_files, abfd, i, start, end,
+			add_samples(profile, abfd, i, start, end,
 				    base_vma, image_name);
 		}
 
@@ -133,7 +133,7 @@ add(opp_samples_files const & samples_files, op_bfd const & abfd,
 	}
 }
 
-void samples_container_t::add_samples(opp_samples_files const & samples_files,
+void profile_container_t::add_samples(profile_t const & profile,
 				      op_bfd const & abfd,
 				      symbol_index_t sym_index,
 				      u32 start, u32 end, bfd_vma base_vma,
@@ -146,7 +146,7 @@ void samples_container_t::add_samples(opp_samples_files const & samples_files,
 		sample_entry sample;
 		uint linenr;
 
-		if (!samples_files.accumulate_samples(sample.counter, pos))
+		if (!profile.accumulate_samples(sample.counter, pos))
 			continue;
 
 		if (need_linenr && sym_index != size_t(-1) &&
@@ -167,8 +167,8 @@ void samples_container_t::add_samples(opp_samples_files const & samples_files,
 	}
 }
 
-samples_container_t::symbol_collection const
-samples_container_t::select_symbols(size_t ctr, double threshold,
+profile_container_t::symbol_collection const
+profile_container_t::select_symbols(size_t ctr, double threshold,
 				    bool until_threshold,
 				    bool sort_by_vma) const
 {
@@ -201,7 +201,7 @@ samples_container_t::select_symbols(size_t ctr, double threshold,
 }
 
 
-vector<string> const samples_container_t::select_filename(
+vector<string> const profile_container_t::select_filename(
 	size_t ctr, double threshold,
 	bool until_threshold) const
 {
@@ -253,39 +253,39 @@ vector<string> const samples_container_t::select_filename(
 
 // Rest here are delegated to our private implementation.
 
-symbol_entry const * samples_container_t::find_symbol(bfd_vma vma) const
+symbol_entry const * profile_container_t::find_symbol(bfd_vma vma) const
 {
 	return symbols->find_by_vma(vma);
 }
 
-symbol_entry const * samples_container_t::find_symbol(string const & filename,
+symbol_entry const * profile_container_t::find_symbol(string const & filename,
 						     size_t linenr) const
 {
 	return symbols->find(filename, linenr);
 }
 
-symbol_entry const * samples_container_t::find_symbol(string const & name) const {
+symbol_entry const * profile_container_t::find_symbol(string const & name) const {
 	return symbols->find(name);
 }
 
-sample_entry const * samples_container_t::find_sample(bfd_vma vma) const
+sample_entry const * profile_container_t::find_sample(bfd_vma vma) const
 {
 	return samples->find_by_vma(vma);
 }
 
-u32 samples_container_t::samples_count(size_t counter_nr) const
+u32 profile_container_t::samples_count(size_t counter_nr) const
 {
 	return counter[counter_nr];
 }
 
-bool samples_container_t::samples_count(counter_array_t & result,
+bool profile_container_t::samples_count(counter_array_t & result,
 					string const & filename) const
 {
 	return samples->accumulate_samples(result, filename,
 					   get_nr_counters());
 }
 
-bool samples_container_t::samples_count(counter_array_t & result,
+bool profile_container_t::samples_count(counter_array_t & result,
 				    string const & filename,
 				    size_t linenr) const
 {
@@ -293,35 +293,35 @@ bool samples_container_t::samples_count(counter_array_t & result,
 		filename, linenr, get_nr_counters());
 }
 
-sample_entry const & samples_container_t::get_samples(sample_index_t idx) const
+sample_entry const & profile_container_t::get_samples(sample_index_t idx) const
 {
 	return (*samples)[idx];
 }
 
-uint samples_container_t::get_nr_counters() const
+uint profile_container_t::get_nr_counters() const
 {
 	if (nr_counters != static_cast<uint>(-1))
 		return nr_counters;
 
-	cerr << "Fatal: samples_container_t::get_nr_counters() attempt to\n"
+	cerr << "Fatal: profile_container_t::get_nr_counters() attempt to\n"
 	     << "access a samples container w/o any samples files. Please\n"
 	     << "report this bug to <oprofile-list@lists.sourceforge.net>\n";
 	exit(EXIT_FAILURE);
 }
 
-bool add_samples(samples_container_t & samples, string sample_filename,
+bool add_samples(profile_container_t & samples, string sample_filename,
 		 size_t counter_mask, string image_name,
 		 vector<string> const & excluded_symbols,
 		 string symbol)
 {
-	opp_samples_files samples_files(sample_filename, counter_mask);
+	profile_t profile(sample_filename, counter_mask);
 
 	op_bfd abfd(image_name, excluded_symbols, vector<string>());
 
-	samples_files.check_mtime(image_name);
-	samples_files.set_start_offset(abfd.get_start_offset());
+	profile.check_mtime(image_name);
+	profile.set_start_offset(abfd.get_start_offset());
 	
-	samples.add(samples_files, abfd, symbol);
+	samples.add(profile, abfd, symbol);
 
 	return abfd.have_debug_info();
 }

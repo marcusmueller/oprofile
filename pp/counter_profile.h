@@ -1,6 +1,6 @@
 /**
- * @file samples_file.h
- * Encapsulation of samples files
+ * @file counter_profile.h
+ * Encapsulation of one samples file
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -9,8 +9,8 @@
  * @author John Levon
  */
 
-#ifndef SAMPLES_FILE_H
-#define SAMPLES_FILE_H
+#ifndef COUNTER_PROFILE_H
+#define COUNTER_PROFILE_H
 
 #include <string>
 #include <map>
@@ -23,11 +23,12 @@
 class counter_array_t;
 class opd_header;
 
-/** A class to store one samples file */
-struct samples_file_t /*:*/ noncopyable
+/** A class to store a sample file for one counter */
+class counter_profile_t /*:*/ noncopyable
 {
+public:
 	/**
-	 * samples_file_t - construct a samples_file_t object
+	 * counter_profile_t - construct a counter_profile_t object
 	 * @param filename the full path of sample file
 	 *
 	 * open and mmap the samples file specified by filename
@@ -35,23 +36,23 @@ struct samples_file_t /*:*/ noncopyable
 	 *
 	 * all error are fatal
 	 */
-	samples_file_t(std::string const & filename);
+	counter_profile_t(std::string const & filename);
 
 	/**
-	 * ~samples_file_t - destroy a samples_file_t object
+	 * ~counter_profile_t - destroy a counter_profile_t object
 	 *
 	 * close and unmap the samples file
 	 */
-	~samples_file_t();
+	~counter_profile_t();
 
 	/**
 	 * check_headers - check that the lhs and rhs headers are
 	 * coherent (same size, same mtime etc.)
-	 * @param headers the other samples_file_t
+	 * @param headers the other counter_profile_t
 	 *
 	 * all errors are fatal
 	 */
-	void check_headers(samples_file_t const & headers) const;
+	void check_headers(counter_profile_t const & headers) const;
 
 	/// return the sample count at the given position
 	u32 count(uint start) const {
@@ -65,10 +66,6 @@ struct samples_file_t /*:*/ noncopyable
 	 *
 	 * return the number of samples in the the range [start, end)
 	 * no range checking is performed.
-	 *
-	 * This actually code duplicate partially accumulate member of
-	 * opp_samples_files which in future must use this as it internal
-	 * implementation
 	 */
 	u32 count(uint start, uint end) const;
 
@@ -112,4 +109,4 @@ private:
 	u32 start_offset;
 };
 
-#endif /* !SAMPLES_FILE_H */
+#endif /* !COUNTER_PROFILE_H */

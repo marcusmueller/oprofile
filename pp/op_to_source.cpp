@@ -19,8 +19,8 @@
 
 #include <stdio.h>
 
-#include "samples_container.h"
-#include "opp_samples_files.h"
+#include "profile_container.h"
+#include "profile.h"
 #include "demangle_symbol.h"
 #include "derive_files.h"
 #include "counter_util.h"
@@ -84,7 +84,7 @@ bool do_until_more_than_samples;
 /// the cpu type, we fill this var from the header of samples files
 op_cpu cpu_type = CPU_NO_GOOD;
 /// hold all info for samples
-scoped_ptr<samples_container_t> samples(0);
+scoped_ptr<profile_container_t> samples(0);
 
 /**
  * @param str the input string
@@ -207,7 +207,7 @@ void output_one_file(istream & in, string const & filename,
 void do_output_one_file(ostream & out, istream & in, string const & filename);
 
 /**
- * @param samples_files storage container for openeded samples files
+ * @param profile storage container for openeded samples files
  *
  * store opd_header information from the samples to the global
  * var counter_info. Caculate the total amount of samples for these samples
@@ -216,7 +216,7 @@ void do_output_one_file(ostream & out, istream & in, string const & filename);
  * return false if no samples are openeded or if no cumulated count of
  * samples is zero
  */
-bool setup_counter_param(opp_samples_files const & samples_files);
+bool setup_counter_param(profile_t const & profile);
 
 /**
  * @param out output stream
@@ -374,17 +374,17 @@ bool annotate_source(string const & image_name, string const & sample_file,
 	if (!assembly)
 		flag = static_cast<outsymbflag>(flag | osf_linenr_info);
  
-	samples.reset(new samples_container_t(false, flag, -1));
+	samples.reset(new profile_container_t(false, flag, -1));
 
 	// this lexical scope just optimize the memory use by relaxing
-	// the op_bfd and opp_samples_files as short as we can.
+	// the op_bfd and profile_t as short as we can.
 	{
-		opp_samples_files samples_files(sample_file, -1);
-		samples_files.check_mtime(image_name);
+		profile_t profile(sample_file, -1);
+		profile.check_mtime(image_name);
 
 		op_bfd abfd(image_name, exclude_symbols, include_symbols);
 
-		samples_files.set_start_offset(abfd.get_start_offset());
+		profile.set_start_offset(abfd.get_start_offset());
 
 		if (!assembly && !abfd.have_debug_info()) {
 			cerr << "Request for source file annotated "
@@ -393,13 +393,13 @@ bool annotate_source(string const & image_name, string const & sample_file,
 			return false;
 		}
 
-		cpu_speed = samples_files.first_header().cpu_speed;
-		uint tmp = samples_files.first_header().cpu_type;
+		cpu_speed = profile.first_header().cpu_speed;
+		uint tmp = profile.first_header().cpu_type;
 		cpu_type = static_cast<op_cpu>(tmp);
 
-		samples->add(samples_files, abfd);
+		samples->add(profile, abfd);
 
-		if (!setup_counter_param(samples_files))
+		if (!setup_counter_param(profile))
 			return false;
 	}
 
@@ -725,24 +725,24 @@ void do_output_one_file(ostream & out, istream & in, string const & filename)
 		// so on user can known total nr of samples for this source
 		// later we must add code that iterate through symbol in this
 		// file to output one annotation for each symbol. To do this we
-		// need a select_symbol(filename); in samples_container_t which
+		// need a select_symbol(filename); in profile_container_t which
 		// fall back to the implementation in symbol_container_imp_t
 		// using a lazilly build symbol_map sorted by filename
 		// (necessary functors already exist in symbol_functors.h)
 	}
 }
 
-bool setup_counter_param(opp_samples_files const & samples_files)
+bool setup_counter_param(profile_t const & profile)
 {
 	bool have_counter_info = false;
 
-	for (size_t i = 0 ; i < samples_files.nr_counters ; ++i) {
-		if (!samples_files.is_open(i))
+	for (size_t i = 0 ; i < profile.nr_counters ; ++i) {
+		if (!profile.is_open(i))
 			continue;
 
 		counter_info[i].enabled = true;
 
-		opd_header const & header = samples_files.samples[i]->header();
+		opd_header const & header = profile.samples[i]->header();
 		counter_info[i].ctr_event = header.ctr_event;
 		counter_info[i].unit_mask = header.ctr_um;
 		counter_info[i].event_count_sample = header.ctr_count;

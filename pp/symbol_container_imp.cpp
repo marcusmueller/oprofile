@@ -16,7 +16,7 @@
 
 #include "symbol_functors.h"
 #include "symbol_container_imp.h"
-#include "samples_container.h"
+#include "profile_container.h"
 
 using namespace std;
 
@@ -91,7 +91,7 @@ symbol_entry const * symbol_container_imp_t::find_by_vma(bfd_vma vma) const
 }
 
 void symbol_container_imp_t::get_symbols_by_count(size_t counter,
-	samples_container_t::symbol_collection & v) const
+	profile_container_t::symbol_collection & v) const
 {
 	for (symbol_index_t i = 0 ; i < symbols.size() ; ++i)
 		v.push_back(&symbols[i]);

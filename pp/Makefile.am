@@ -2,11 +2,11 @@ AM_CPPFLAGS=-I ${top_srcdir}/libop -I ${top_srcdir}/libutil -I ${top_srcdir}/lib
 	-I ${top_srcdir}/libopt++ -I ${top_srcdir}/libutil++ -I ${top_srcdir}/libop++
 
 noinst_LIBRARIES = libpp.a
-libpp_a_SOURCES = format_output.cpp samples_container.cpp \
+libpp_a_SOURCES = format_output.cpp profile_container.cpp \
 	sample_container_imp.cpp counter_array.cpp symbol_container_imp.cpp \
-	derive_files.cpp counter_util.cpp samples_file.cpp \
-	opp_samples_files.cpp session.cpp counter_array.h opp_samples_files.h \
-	samples_container.h counter_util.h opp_symbol.h format_output.h samples_file.h \
+	derive_files.cpp counter_util.cpp counter_profile.cpp \
+	profile.cpp session.cpp counter_array.h profile.h profile_container.h \
+	counter_util.h opp_symbol.h format_output.h counter_profile.h \
 	derive_files.h oprofpp_options.h session.h op_time_options.h \
 	outsymbflag.h symbol_container_imp.h op_to_source_options.h \
 	sample_container_imp.h symbol_functors.h

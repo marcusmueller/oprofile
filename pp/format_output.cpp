@@ -16,7 +16,7 @@
 
 #include "opp_symbol.h"
 #include "format_output.h"
-#include "samples_container.h"
+#include "profile_container.h"
 #include "demangle_symbol.h"
 
 using namespace std;
@@ -90,13 +90,13 @@ void show_help()
 }
 
 
-formatter::formatter(samples_container_t const & samples_container_, int counter_)
-	: flags(osf_none), samples_container(samples_container_),
+formatter::formatter(profile_container_t const & profile_container_, int counter_)
+	: flags(osf_none), profile_container(profile_container_),
 	  counter(counter_), first_output(true)
 {
-	for (size_t i = 0 ; i < samples_container.get_nr_counters() ; ++i) {
-		total_count[i] = samples_container.samples_count(i);
-		total_count_details[i] = samples_container.samples_count(i);
+	for (size_t i = 0 ; i < profile_container.get_nr_counters() ; ++i) {
+		total_count[i] = profile_container.samples_count(i);
+		total_count_details[i] = profile_container.samples_count(i);
 		cumulated_samples[i] = 0;
 		cumulated_percent[i] = 0;
 		cumulated_percent_details[i] = 0;
@@ -185,7 +185,7 @@ void formatter::output_details(ostream & out, symbol_entry const * symb)
 	u32 temp_cumulated_samples[OP_MAX_COUNTERS];
 	u32 temp_cumulated_percent[OP_MAX_COUNTERS];
 
-	for (size_t i = 0 ; i < samples_container.get_nr_counters() ; ++i) {
+	for (size_t i = 0 ; i < profile_container.get_nr_counters() ; ++i) {
 		temp_total_count[i] = total_count[i];
 		temp_cumulated_samples[i] = cumulated_samples[i];
 		temp_cumulated_percent[i] = cumulated_percent[i];
@@ -199,11 +199,11 @@ void formatter::output_details(ostream & out, symbol_entry const * symb)
 	for (sample_index_t cur = symb->first ; cur != symb->last ; ++cur) {
 		out << ' ';
 
-		do_output(out, symb->name, samples_container.get_samples(cur),
+		do_output(out, symb->name, profile_container.get_samples(cur),
 			 static_cast<outsymbflag>(flags & osf_details_mask));
 	}
 
-	for (size_t i = 0 ; i < samples_container.get_nr_counters() ; ++i) {
+	for (size_t i = 0 ; i < profile_container.get_nr_counters() ; ++i) {
 		total_count[i] = temp_total_count[i];
 		cumulated_samples[i] = temp_cumulated_samples[i];
 		cumulated_percent[i] = temp_cumulated_percent[i];
@@ -224,7 +224,7 @@ void formatter::do_output(ostream & out, string const & name,
 	}
 
 	// now the repeated field.
-	for (size_t ctr = 0 ; ctr < samples_container.get_nr_counters(); ++ctr) {
+	for (size_t ctr = 0 ; ctr < profile_container.get_nr_counters(); ++ctr) {
 		if ((counter & (1 << ctr)) != 0) {
 			size_t repeated_flag = (flag & osf_repeat_mask);
 			for (size_t i = 1 ; repeated_flag != 0 ; i <<= 1) {
@@ -277,7 +277,7 @@ void formatter::output_header(ostream & out)
 	}
 
 	// now the repeated field.
-	for (size_t ctr = 0 ; ctr < samples_container.get_nr_counters(); ++ctr) {
+	for (size_t ctr = 0 ; ctr < profile_container.get_nr_counters(); ++ctr) {
 		if ((counter & (1 << ctr)) != 0) {
 			size_t repeated_flag = (flags & osf_repeat_mask);
 			for (size_t i = 1 ; repeated_flag != 0 ; i <<= 1) {

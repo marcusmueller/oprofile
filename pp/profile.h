@@ -1,6 +1,7 @@
 /**
  * @file opp_samples_files.h
- * Encapsulation of samples files belonging to the same image and same session
+ * Encapsulation for samples files over all counter belonging to the
+ * same binary image
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -17,13 +18,13 @@
 #include "op_types.h"
 #include "op_hw_config.h"
 #include "utility.h"
-#include "samples_file.h"
+#include "counter_profile.h"
 
-/** Store multiple samples files belonging to the same image and the same
- * session can hold OP_MAX_COUNTERS samples files */
-struct opp_samples_files /*:*/  noncopyable {
+/** A class to store sample files over all counters */
+class profile_t /*:*/  noncopyable {
+public:
 	/**
-	 * opp_samples_files - construct an opp_samples_files object
+	 * profile_t - construct an profile_t object
 	 * @param sample_file the base name of sample file
 	 * @param counter which samples files to open, -1 means try to open
 	 * all samples files.
@@ -35,9 +36,9 @@ struct opp_samples_files /*:*/  noncopyable {
 	 *
 	 * all error are fatal
 	 */
-	opp_samples_files(std::string const & sample_file, int counter);
+	profile_t(std::string const & sample_file, int counter);
 
-	~opp_samples_files();
+	~profile_t();
  
 	/**
 	 * check_mtime - check mtime of samples file against file
@@ -107,7 +108,7 @@ struct opp_samples_files /*:*/  noncopyable {
 	void set_start_offset(u32 start_offset);
 
 	// TODO privatize when we can
-	samples_file_t * samples[OP_MAX_COUNTERS];
+	counter_profile_t * samples[OP_MAX_COUNTERS];
 	uint nr_counters;
 private:
 	std::string sample_filename;

@@ -22,7 +22,7 @@
 #include "counter_array.h"
 #include "outsymbflag.h"
 
-class samples_container_t;
+class profile_container_t;
 class field_description;
 class symbol_entry;
 
@@ -38,9 +38,9 @@ outsymbflag parse_format(std::string const & option);
 /// class to output in a columned format symbols and associated samples
 class formatter {
 public:
-	/// build an output_symbol object, the samples_container_t life time
+	/// build an output_symbol object, the profile_container_t life time
 	/// object must be > of the life time of the output_symbol object.
-	formatter(samples_container_t const & samples_container, int counter);
+	formatter(profile_container_t const & profile_container, int counter);
 
 	/// convenience to set output options flags w/o worrying about cast
 	void set_format(outsymbflag flag);
@@ -126,7 +126,7 @@ private:
 	outsymbflag flags;
  
 	/// container we work from
-	samples_container_t const & samples_container;
+	profile_container_t const & profile_container;
  
 	/// total sample count
 	u32 total_count[OP_MAX_COUNTERS];

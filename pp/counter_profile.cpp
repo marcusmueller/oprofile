@@ -1,6 +1,6 @@
 /**
- * @file samples_file.cpp
- * Encapsulation for samples files
+ * @file counter_profile.cpp
+ * Encapsulation of one samples files
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -19,7 +19,7 @@
 
 #include "counter_array.h"
 
-#include "samples_file.h"
+#include "counter_profile.h"
 
 #include <cerrno>
 #include <unistd.h>
@@ -28,7 +28,7 @@
 
 using namespace std;
 
-samples_file_t::samples_file_t(string const & filename)
+counter_profile_t::counter_profile_t(string const & filename)
 	: start_offset(0)
 {
 	db_open(&samples_db, filename.c_str(), DB_RDONLY, sizeof(struct opd_header));
@@ -44,12 +44,12 @@ samples_file_t::samples_file_t(string const & filename)
 	build_ordered_samples();
 }
 
-samples_file_t::~samples_file_t()
+counter_profile_t::~counter_profile_t()
 {
 	db_close(&samples_db);
 }
 
-void samples_file_t::check_headers(samples_file_t const & rhs) const
+void counter_profile_t::check_headers(counter_profile_t const & rhs) const
 {
 	opd_header const & f1 = header();
 	opd_header const & f2 = rhs.header();
@@ -78,7 +78,7 @@ void samples_file_t::check_headers(samples_file_t const & rhs) const
 	}
 }
 
-void samples_file_t::build_ordered_samples()
+void counter_profile_t::build_ordered_samples()
 {
 	db_node_nr_t node_nr, pos;
 	db_node_t * node = db_get_iterator(&samples_db, &node_nr);
@@ -92,7 +92,7 @@ void samples_file_t::build_ordered_samples()
 	}
 }
 
-u32 samples_file_t::count(uint start, uint end) const
+u32 counter_profile_t::count(uint start, uint end) const
 {
 	u32 count = 0;
 

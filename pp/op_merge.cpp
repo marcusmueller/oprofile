@@ -28,7 +28,7 @@
 #include "op_config.h"
 #include "op_mangling.h"
 #include "op_sample_file.h"
-#include "samples_file.h"
+#include "counter_profile.h"
 
 using namespace std;
 
@@ -136,11 +136,11 @@ static void check_samples_files_list(list<string> const & filenames)
 	if (filenames.empty())
 		return;
 
-	samples_file_t first(*filenames.begin());
+	counter_profile_t first(*filenames.begin());
 
 	list<string>::const_iterator it;
 	for (it = filenames.begin(); ++it != filenames.end(); ) {
-		samples_file_t next(*it);
+		counter_profile_t next(*it);
 
 		first.check_headers(next);
 	}

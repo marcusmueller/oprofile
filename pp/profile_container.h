@@ -1,6 +1,6 @@
 /**
- * @file samples_container.h
- * Container for associating symbols and samples
+ * @file profile_container.h
+ * Container associating symbols and samples
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -9,8 +9,8 @@
  * @author John Levon
  */
 
-#ifndef SAMPLES_CONTAINER_H
-#define SAMPLES_CONTAINER_H
+#ifndef PROFILE_CONTAINER_H
+#define PROFILE_CONTAINER_H
 
 #include <string>
 #include <vector>
@@ -22,10 +22,11 @@
 
 class sample_container_imp_t;
 class symbol_container_imp_t;
-class opp_samples_files;
+class profile_t;
 
-/// A container to store symbol/sample from samples files/image file
-class samples_container_t /*:*/ noncopyable {
+/** store multiple samples files belonging to the same profling session.
+ * So on can hold samples files for arbitrary counter and binary image */
+class profile_container_t /*:*/ noncopyable {
 public:
 	/**
 	 * Build an object to store information on samples. All parameters
@@ -39,14 +40,14 @@ public:
 	 * osf_details is also an improvement.
 	 * @param counter_mask which counter we must record
 	 */
-	samples_container_t(bool add_zero_samples_symbols, outsymbflag flags,
+	profile_container_t(bool add_zero_samples_symbols, outsymbflag flags,
 			     int counter_mask);
 
-	~samples_container_t();
+	~profile_container_t();
  
 	/**
 	 * add() -  record symbols/samples in the underlined container
-	 * @param samples_files the samples files container
+	 * @param profile the samples files container
 	 * @param abfd the associated bfd object
 	 * @param symbol_name if non empty add will record samples only
 	 * for this symbol name else all samples will be recorded
@@ -56,7 +57,7 @@ public:
 	 * Obviously you can add only samples files which are coherent (same
 	 * sampling rate, same events etc.)
 	 */
-	void add(opp_samples_files const & samples_files, op_bfd const & abfd,
+	void add(profile_t const & profile, op_bfd const & abfd,
 		 std::string const & symbol_name = std::string());
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
@@ -122,7 +123,7 @@ public:
 
 private:
 	/// helper for do_add()
-	void add_samples(opp_samples_files const & samples_files,
+	void add_samples(profile_t const & profile,
 			 op_bfd const & abfd, symbol_index_t sym_index,
 			 u32 start, u32 end, bfd_vma base_vma,
 			 std::string const & image_name);
@@ -149,7 +150,7 @@ private:
 	/// provide also a sort order on (filename, linenr)
 	scoped_ptr<sample_container_imp_t> samples;
 	/// build() must count samples count for each counter so cache it here
-	/// since user of samples_container_t often need it later.
+	/// since user of profile_container_t often need it later.
 	counter_array_t counter;
 	/// maximum number of counter available
 	uint nr_counters;
@@ -173,10 +174,10 @@ private:
  * open a bfd object getting symbols name, then populate samples with the
  * relevant samples
  */
-bool add_samples(samples_container_t & samples, std::string sample_filename,
+bool add_samples(profile_container_t & samples, std::string sample_filename,
 		 size_t counter_mask, std::string binary_name,
 		 std::vector<std::string> const & excluded_symbols =
 		 	std::vector<std::string>(),
 		 std::string symbol = std::string());
 
-#endif /* !SAMPLES_CONTAINER_H */
+#endif /* !PROFILE_CONTAINER_H */

@@ -1,6 +1,7 @@
 /**
- * @file opp_samples_files.cpp
- * Encapsulation for samples files
+ * @file profile.cpp
+ * Encapsulation for samples files over all counter belonging to the
+ * same binary image
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -23,11 +24,11 @@
 #include "string_manip.h"
 #include "op_print_event.h"
 
-#include "opp_samples_files.h"
+#include "profile.h"
 
 using namespace std;
 
-opp_samples_files::opp_samples_files(string const & sample_file, int counter_)
+profile_t::profile_t(string const & sample_file, int counter_)
 	:
 	nr_counters(2),
 	sample_filename(sample_file),
@@ -78,7 +79,7 @@ opp_samples_files::opp_samples_files(string const & sample_file, int counter_)
 	}
 }
 
-opp_samples_files::~opp_samples_files()
+profile_t::~profile_t()
 {
 	uint i;
 
@@ -87,7 +88,7 @@ opp_samples_files::~opp_samples_files()
 	}
 }
 
-void opp_samples_files::check_mtime(string const & file) const
+void profile_t::check_mtime(string const & file) const
 {
 	time_t const newmtime = op_get_mtime(file.c_str());
 	if (newmtime != first_header().mtime) {
@@ -99,12 +100,12 @@ void opp_samples_files::check_mtime(string const & file) const
 }
 
 
-void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
+void profile_t::open_samples_file(u32 counter, bool can_fail)
 {
 	string filename = ::sample_filename(string(), sample_filename, counter);
 
 	if (access(filename.c_str(), R_OK) == 0) {
-		samples[counter] = new samples_file_t(filename);
+		samples[counter] = new counter_profile_t(filename);
 	} else {
 		if (!can_fail) {
 			cerr << "oprofpp: Opening " << filename <<  "failed."
@@ -114,7 +115,7 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 	}
 }
 
-bool opp_samples_files::accumulate_samples(counter_array_t & counter, uint index) const
+bool profile_t::accumulate_samples(counter_array_t & counter, uint index) const
 {
 	bool found_samples = false;
 
@@ -129,7 +130,7 @@ bool opp_samples_files::accumulate_samples(counter_array_t & counter, uint index
 	return found_samples;
 }
 
-bool opp_samples_files::accumulate_samples(counter_array_t & counter,
+bool profile_t::accumulate_samples(counter_array_t & counter,
 	uint start, uint end) const
 {
 	bool found_samples = false;
@@ -145,7 +146,7 @@ bool opp_samples_files::accumulate_samples(counter_array_t & counter,
 	return found_samples;
 }
 
-void opp_samples_files::set_start_offset(u32 start_offset)
+void profile_t::set_start_offset(u32 start_offset)
 {
 	if (!first_header().is_kernel)
 		return;
@@ -162,7 +163,7 @@ void opp_samples_files::set_start_offset(u32 start_offset)
  * output to stdout the cpu type, cpu speed
  * and all counter description available
  */
-void opp_samples_files::output_header() const
+void profile_t::output_header() const
 {
 	opd_header const & header = first_header();
 
