@@ -9,7 +9,7 @@
  */
  
 #include "abi.h"
-#include "db-hash.h"
+#include "db_hash.h"
 #include "op_sample_file.h"
 
 #include <iostream>

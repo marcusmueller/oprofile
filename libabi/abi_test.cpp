@@ -9,7 +9,7 @@
  */
 
 #include "abi.h"
-#include "db-hash.h"
+#include "db_hash.h"
 #include "popt_options.h"
 #include "op_sample_file.h"
 #include "op_cpu_type.h"

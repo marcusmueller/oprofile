@@ -9,7 +9,7 @@
  */
 
 #include "abi.h"
-#include "db-hash.h"
+#include "db_hash.h"
 #include "popt_options.h"
 #include "op_sample_file.h"
 
@@ -118,7 +118,7 @@ void import_from_abi(Abi const & abi,
 	// skip node zero, it is reserved and contains nothing usefull
 	src += abi.need("sizeof_db_node_nr_t");
 
-	// begin extracting node
+	// begin extracting nodes
 	for (db_node_nr_t i = 1 ; i < node_nr ; ++i) {
 		db_key_t key;
 		db_value_t val;
@@ -128,7 +128,7 @@ void import_from_abi(Abi const & abi,
 
 		src += abi.need("sizeof_db_node_nr_t");
 	}
-	// done extracting pages
+	// done extracting nodes
 }
 
 

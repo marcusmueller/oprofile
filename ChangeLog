@@ -15,6 +15,15 @@
  
 2002-12-03  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* daemon/opd_kernel.c:
+	* daemon/opd_kernel.h: minor cleanup
+
+	* libabi/abi.cpp:
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp: fix bad include filename.
+
+2002-12-03  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libdb/.cvsignore:
 	* libdb/Makefile.am:
 	* libdb/*.c --> db-hash-name.c to db_name.c
