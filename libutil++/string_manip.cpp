@@ -50,8 +50,9 @@ bool is_prefix(string const & s, string const & prefix)
 }
 
 
-void separate_token(vector<string> & result, const string & str, char sep)
+vector<string> separate_token(const string & str, char sep)
 {
+	vector<string> result;
 	string next;
 
 	for (size_t pos = 0 ; pos != str.length() ; ++pos) {
@@ -74,6 +75,8 @@ void separate_token(vector<string> & result, const string & str, char sep)
 
 	if (!next.empty())
 		result.push_back(next);
+
+	return result;
 }
 
 

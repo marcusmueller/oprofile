@@ -96,8 +96,6 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
 
   Note the ellipsis
  o should we make the sighup handler re-read counter config and re-start profiling too ?
- o implement pp_interface alias (is it worth it ?). After choosing that we
-  can probably simplify comma_list<>, and separate_token().
  o improve --smart-demangle
 	o allow user to add it's own pattern in user.pat, document it.
 	o hard code ${typename} regular definition to remove all current limitations (difficult, perhaps after 1.0 ?).

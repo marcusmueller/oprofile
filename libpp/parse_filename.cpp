@@ -28,8 +28,7 @@ parsed_filename parse_event_spec(string const & event_spec)
 
 	size_type const nr_parts = 6;
 
-	parts_type parts;
-	separate_token(parts, event_spec, '.');
+	parts_type parts = separate_token(event_spec, '.');
 
 	if (parts.size() != nr_parts) {
 		throw invalid_argument("parse_event_spec(): bad event specification: " + event_spec);
@@ -98,8 +97,7 @@ parsed_filename parse_filename(string const & filename)
 
 	result.filename = filename;
 
-	vector<string> path;
-	separate_token(path, filename_spec, '/');
+	vector<string> path = separate_token(filename_spec, '/');
 
 	remove_base_dir(path);
 

@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "string_manip.h"
+#include "op_exception.h"
 
 /**
  * hold a list of item of type T, tracking also if item has been set.
@@ -27,14 +28,12 @@ public:
 
 	/**
 	 * @param str  list of comma separated item
-	 * @param cumulative  must be true if item are cumulated through
-	 * multiple call to this function else item are overwritten
 	 *
 	 * setup items array according to str parameters. Implement PP:3.17
 	 * w/o restriction on charset and with the special string all which
 	 * match anything.
 	 */
-	void set(std::string const & str, bool cumulative);
+	void set(std::string const & str);
 
 	/// return true if a specific value is held by this container
 	bool is_set() const {
@@ -68,22 +67,14 @@ comma_list<T>::comma_list()
 
 
 template <class T>
-void comma_list<T>::set(std::string const & str, bool cumulative)
+void comma_list<T>::set(std::string const & str)
 {
-	if (!cumulative)
-		items.clear();
-
-	// if we already set items and we cumulate item and we seen an "all"
-	// item we must bailout to avoid to overwrite is_all member
-	if (set_p && cumulative && is_all) {
-		return;
-	}
+	items.clear();
 
 	is_all = false;
 	set_p = true;
 
-	std::vector<std::string> result;
-	separate_token(result, str, ',');
+	std::vector<std::string> result = separate_token(str, ',');
 	for (size_t i = 0 ; i < result.size() ; ++i) {
 		if (result[i] == "all") {
 			is_all = true;

@@ -306,8 +306,7 @@ void oprof_start::read_set_events()
 		one_enabled = true;
 
 		// CHOSEN_EVENTS[0]=CPU_CLK_UNHALTED:10000:0:1:1
-		vector<string> parts;
-		separate_token(parts, val, ':');
+		vector<string> parts = separate_token(val, ':');
 
 		if (parts.size() != 5 && parts.size() != 2) {
 			cerr << "invalid configuration file\n";

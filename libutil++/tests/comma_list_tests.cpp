@@ -29,23 +29,23 @@ int main()
 
 	check(c1, 1, true);
 
-	c1.set("2", false);
+	c1.set("2");
 
 	check(c1, 2, true);
 	check(c1, 3, false);
 
-	c1.set("3", false);
+	c1.set("3");
 
 	check(c1, 2, false);
 	check(c1, 3, true);
 
-	c1.set("2", true);
+	c1.set("2,3");
 
 	check(c1, 2, true);
 	check(c1, 3, true);
 	check(c1, 4, false);
 
-	c1.set("all", false);
+	c1.set("all");
 
 	check(c1, 2, true);
 	check(c1, 4, true);
@@ -53,14 +53,18 @@ int main()
 
 	comma_list<int> c2;
 
-	c2.set("6", true);
-	c2.set("all", true);
+	c2.set("6,all");
 
 	check(c2, 4, true);
 	check(c2, 0, true);
 
-	c2.set("10", true);
+	c2.set("all,6");
+
+	check(c2, 4, true);
+	check(c2, 0, true);
+
+	c2.set("10");
 	check(c2, 10, true);
-	check(c2, 11, true);
+	check(c2, 11, false);
 	return EXIT_SUCCESS;
 }

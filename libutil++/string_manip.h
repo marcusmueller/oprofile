@@ -35,7 +35,6 @@ std::string split(std::string & s, char c);
 bool is_prefix(std::string const & s, std::string const & prefix);
 
 /**
- * @param result where to put results
  * @param str the string to tokenize
  * @param sep the separator_char
  *
@@ -44,8 +43,7 @@ bool is_prefix(std::string const & s, std::string const & prefix);
  * by '\\' to specify a sep char in a token, '\\' not followed
  * by a sep is taken as it e.g. "\,\a" --> ",\a"
  */
-void separate_token(std::vector<std::string> & result,
-                    std::string const & str, char sep);
+std::vector<std::string> separate_token(std::string const & str, char sep);
 
 /// remove trim chars from start of input string return the new string
 std::string ltrim(std::string const & str, std::string const & totrim = "\t ");

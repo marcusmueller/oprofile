@@ -137,21 +137,21 @@ void profile_spec::parse_binary(string const & str)
 void profile_spec::parse_session(string const & str)
 {
 	normal_tag_set = true;
-	separate_token(session, str, ',');
+	session = separate_token(str, ',');
 }
 
 
 void profile_spec::parse_session_exclude(string const & str)
 {
 	normal_tag_set = true;
-	separate_token(session_exclude, str, ',');
+	session_exclude = separate_token(str, ',');
 }
 
 
 void profile_spec::parse_image(string const & str)
 {
 	normal_tag_set = true;
-	separate_token(image, str, ',');
+	image = separate_token(str, ',');
 	fixup_image_spec(image, extra);
 }
 
@@ -159,14 +159,14 @@ void profile_spec::parse_image(string const & str)
 void profile_spec::parse_image_exclude(string const & str)
 {
 	normal_tag_set = true;
-	separate_token(image_exclude, str, ',');
+	image_exclude = separate_token(str, ',');
 }
 
 
 void profile_spec::parse_lib_image(string const & str)
 {
 	normal_tag_set = true;
-	separate_token(lib_image, str, ',');
+	lib_image = separate_token(str, ',');
 	fixup_image_spec(image, extra);
 }
 
@@ -174,42 +174,42 @@ void profile_spec::parse_lib_image(string const & str)
 void profile_spec::parse_event(string const & str)
 {
 	normal_tag_set = true;
-	event.set(str, false);
+	event.set(str);
 }
 
 
 void profile_spec::parse_count(string const & str)
 {
 	normal_tag_set = true;
-	count.set(str, false);
+	count.set(str);
 }
 
 
 void profile_spec::parse_unitmask(string const & str)
 {
 	normal_tag_set = true;
-	unitmask.set(str, false);
+	unitmask.set(str);
 }
 
 
 void profile_spec::parse_tid(string const & str)
 {
 	normal_tag_set = true;
-	tid.set(str, false);
+	tid.set(str);
 }
 
 
 void profile_spec::parse_tgid(string const & str)
 {
 	normal_tag_set = true;
-	tgid.set(str, false);
+	tgid.set(str);
 }
 
 
 void profile_spec::parse_cpu(string const & str)
 {
 	normal_tag_set = true;
-	cpu.set(str, false);
+	cpu.set(str);
 }
 
 
@@ -342,14 +342,6 @@ bool profile_spec::match(string const & filename) const
 }
 
 
-/* TODO */
-static bool substitute_alias(profile_spec & /*parser*/,
-			     string const & /*arg*/)
-{
-	return false;
-}
-
-
 profile_spec profile_spec::create(vector<string> const & args,
                                   extra_images const & extra)
 {
@@ -364,7 +356,7 @@ profile_spec profile_spec::create(vector<string> const & args,
 			}
 			tag_seen.insert(args[i]);
 			spec.parse(args[i]);
-		} else if (!substitute_alias(spec, args[i])) {
+		} else {
 			string file = follow_link(args[i]);
 			file = relative_to_absolute_path(file);
 			spec.set_image_or_lib_name(file);

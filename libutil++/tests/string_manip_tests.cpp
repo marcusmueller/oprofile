@@ -137,8 +137,7 @@ static void separate_token_tests()
 {
 	input_output<char const *, char const * [max_token] > const * cur;
 	for (cur = expect_separate_token; cur->input; ++cur) {
-		vector<string> result;
-		separate_token(result, cur->input, ';');
+		vector<string> result = separate_token(cur->input, ';');
 		if (result.size() > max_token) {
 			cerr << "separate_token(): too many token\n" 
 			     << "input:\n"

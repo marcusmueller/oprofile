@@ -19,9 +19,9 @@ using namespace std;
 
 string_filter::string_filter(string const & include_patterns,
                              string const & exclude_patterns)
+	: include(separate_token(include_patterns, ',')),
+	  exclude(separate_token(exclude_patterns, ','))
 {
-	separate_token(include, include_patterns, ',');
-	separate_token(exclude, exclude_patterns, ',');
 }
 
 

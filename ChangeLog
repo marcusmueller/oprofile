@@ -1,5 +1,21 @@
 2003-11-04  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/comma_list.h: don't accept cumulative behavior
+	* libutil++/string_manip.cpp: separate_token() return by value
+	* gui/oprof_start.cpp:
+	* libopt++/popt_options.cpp:
+	* libpp/parse_filename.cpp:
+	* libpp/profile_spec.cpp:
+	* libutil++/comma_list.h:
+	* libutil++/string_filter.cpp:
+	* libutil++/string_manip.cpp:
+	* libutil++/string_manip.h:
+	* libutil++/tests/comma_list_tests.cpp:
+	* libutil++/tests/string_manip_tests.cpp: update according
+	* libpp/profile_spec.cpp: remove all trace of defunct op_alias
+
+2003-11-04  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* daemon/liblegacy/opd_image.c:
 	* daemon/liblegacy/opd_image.h:
 	* daemon/liblegacy/opd_mapping.c:

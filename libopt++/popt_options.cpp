@@ -312,7 +312,7 @@ option_imp< vector<string> >::option_imp(vector<string> & val,
 void option_imp< vector<string> >::post_process()
 {
 	if (popt_value) {
-		separate_token(value, popt_value, separator);
+		value = separate_token(popt_value, separator);
 
 		popt_value = 0;
 	}
