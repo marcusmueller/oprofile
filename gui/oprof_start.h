@@ -106,6 +106,8 @@ private:
 	/// update the counter combo at given position
 	void set_counter_combo(uint);
 
+	/// read the events set in daemonrc
+	void read_set_events();
 	/// load the event config file
 	void load_event_config_file(uint ctr);
 	/// save the event config file

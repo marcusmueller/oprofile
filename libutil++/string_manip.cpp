@@ -74,6 +74,12 @@ string split(string & s, char c)
 }
 
 
+bool is_prefix(std::string const & s1, std::string const &  s2)
+{
+	return s1.compare(0, s2.length(), s2) == 0;
+}
+
+
 void separate_token(vector<string> & result, const string & str, char sep)
 {
 	char last_ch = '\0';
@@ -115,10 +121,10 @@ string sample_filename(string const& sample_dir,
 }
 
 
-string ltrim(string const & str)
+string ltrim(string const & str, string const & totrim)
 {
 	string result;
-	string::size_type pos = str.find_first_not_of(" \t");
+	string::size_type pos = str.find_first_not_of(totrim);
 	if (pos != string::npos) {
 		result = str.substr(pos);
 	}
@@ -126,10 +132,10 @@ string ltrim(string const & str)
 }
 
 
-string rtrim(string const & str)
+string rtrim(string const & str, string const & totrim)
 {
 	string result(str);
-	string::size_type pos = str.find_last_not_of(" \t");
+	string::size_type pos = str.find_last_not_of(totrim);
 	if (pos != string::npos) {
 		result = str.substr(0, pos + 1);
 	}
@@ -137,7 +143,7 @@ string rtrim(string const & str)
 }
 
 
-string trim(string const & str)
+string trim(string const & str, string const & totrim)
 {
-	return rtrim(ltrim(str));
+	return rtrim(ltrim(str, totrim), totrim);
 }

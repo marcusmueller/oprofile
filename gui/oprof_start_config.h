@@ -28,8 +28,8 @@ struct event_setting {
 
 	uint count;
 	uint umask;
-	int os_ring_count;
-	int user_ring_count;
+	bool os_ring_count;
+	bool user_ring_count;
 };
 
 std::ostream & operator<<(std::ostream & out, event_setting const & object);

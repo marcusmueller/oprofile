@@ -185,13 +185,18 @@ oprof_start::oprof_start()
 
 	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr) {
 		load_event_config_file(ctr);
-		counter_combo->insertItem("");
-		set_counter_combo(ctr);
 	}
+
+	read_set_events();
 
 	// re-init event stuff
 	enabled_toggled(ctr_enabled[current_ctr]);
 	display_event(current_event[current_ctr]);
+
+	for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr) {
+		counter_combo->insertItem("");
+		set_counter_combo(ctr);
+	}
 
 	counter_selected(0);
 
@@ -206,9 +211,68 @@ oprof_start::oprof_start()
 }
 
 
-// load the configuration, if the configuration file does not exist create it.
-// the parent directory of the config file is created if necessary through
-// save_config().
+void oprof_start::read_set_events()
+{
+	string name = get_user_filename(".oprofile/daemonrc");
+
+	ifstream in(name.c_str());
+
+	if (!in)
+		return;
+
+	string str;
+	unsigned int ctr = 0;
+	string evname;
+
+	while (getline(in, str)) {
+		string val = split(str, '=');
+		if (str == "RTC_VALUE" && cpu_type == CPU_RTC) {
+			current_event[0] = &locate_event("RTC_INTERRUPTS");
+			event_cfgs[ctr]["RTC_INTERRUPTS"].count = touint(val);
+			return;
+		}
+		
+		if (!is_prefix(str, "CTR_"))
+	       		continue;
+	
+		// CTR_EVENT[0]
+		str = split(str, '_');
+		// EVENT[0]
+		string num = split(str, '[');
+		string const type = str;
+		// num == "0]", type == "EVENT"
+
+		num = rtrim(num, "]");
+		ctr = touint(num);
+
+		if (type == "EVENT") {
+			evname = val;
+			ctr_enabled[ctr] = evname.length();
+			if (evname.length()) {
+				current_event[ctr] = &locate_event(evname);
+			} else {
+				current_event[ctr] = 0;
+			}
+			continue;
+
+		}
+
+		if (!ctr_enabled[ctr])
+			continue;
+
+		if (type == "COUNT") {
+			event_cfgs[ctr][evname].count = touint(val);
+		} else if  (type == "KERNEL") {
+			event_cfgs[ctr][evname].os_ring_count = tobool(val);
+		} else if  (type == "USER") {
+			event_cfgs[ctr][evname].user_ring_count = tobool(val);
+		} else if (type == "UM") {
+			event_cfgs[ctr][evname].umask = touint(val);
+		}
+	}
+}
+
+
 void oprof_start::load_config_file()
 {
 	string name = get_user_filename(".oprofile/daemonrc");

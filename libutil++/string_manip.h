@@ -47,6 +47,9 @@ bool tobool(std::string const & s);
 /// s is set to the first part. Neither include the split character
 std::string split(std::string & s, char c);
 
+/// return true if s2 is a prefix of s1
+bool is_prefix(std::string const & s1, std::string const &  s2);
+
 /**
  * @param result where to put results
  * @param str the string to tokenize
@@ -74,11 +77,11 @@ void separate_token(std::vector<std::string> & result, std::string const & str,
 std::string sample_filename(std::string const& sample_dir,
 			    std::string const& sample_filename, int counter);
 
-/// remove space and tabulation at left of input string return the new string
-std::string ltrim(std::string const & str);
-/// remove space and tabulation at right of input string, return the new string
-std::string rtrim(std::string const & str);
-/// return ltrim(rtrim(str)
-std::string trim(std::string const & str);
+/// remove trim chars from start of input string return the new string
+std::string ltrim(std::string const & str, std::string const & totrim = "\t ");
+/// remove trim chars from end of input string return the new string
+std::string rtrim(std::string const & str, std::string const & totrim = "\t ");
+/// ltrim(rtrim(str))
+std::string trim(std::string const & str, std::string const & totrim = "\t ");
 
 #endif /* !STRING_MANIP_H */

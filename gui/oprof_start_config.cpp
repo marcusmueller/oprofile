@@ -119,11 +119,7 @@ void config_setting::load(istream & in)
 			separate_kernel_samples = tobool(val);
 		} else if (str == "KERNEL_ONLY") {
 			kernel_only = tobool(str);
-		} else if (str == "RTC_VALUE") {
-			// FIXME: we should read these values
-		} /*  else if (str == "CTR_*") {
-			FIXME: we should read these values
-		} */
+		}
 	}
 }
 
