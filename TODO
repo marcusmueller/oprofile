@@ -7,7 +7,7 @@ o no CONFIG_X86_LOCAL_APIC on 2.4 ?
  
 o user request: op_time that shows /all/ available symbols (with correct %age).
   This must handle images with no symbols, so container must contain either a symbol + values,
-or a file.
+  or a file.
  
 o more discussion of problematic code needs to go in the "interpreting" section. 
   Maybe you should add the nasm tricks somewhere Phil ?
