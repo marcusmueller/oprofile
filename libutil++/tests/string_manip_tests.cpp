@@ -217,7 +217,7 @@ static void touint_tests()
 	for (cur = expect_from_str_to_uint; cur->output; ++cur) {
 		unsigned int result =
 		        op_lexical_cast<unsigned int>(cur->output);
-		check_result("op_lexical_casr()", cur->output, cur->input,
+		check_result("op_lexical_cast()", cur->output, cur->input,
 		     result);
 	}
 }
