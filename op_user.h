@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.16 2002/01/14 06:01:45 movement Exp $ */
+/* $Id: op_user.h,v 1.17 2002/01/17 08:42:56 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -72,7 +72,7 @@ typedef enum op_cpu_ op_cpu;
 /* 16384 * 8 = 131072 bytes default */
 #define OP_DEFAULT_BUF_SIZE 16384
 /* note buffer size */
-#define OP_DEFAULT_NOTE_SIZE 8192
+#define OP_DEFAULT_NOTE_SIZE 16384
 
 /* kernel image entries are offset by this many entries */
 #define OPD_KERNEL_OFFSET 524288

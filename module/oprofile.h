@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.18 2002/01/17 02:33:05 movement Exp $ */
+/* $Id: oprofile.h,v 1.19 2002/01/17 08:42:56 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -144,7 +144,7 @@ struct op_int_operations {
 /* ready will be set this many notes before the end of the 
  * note buffer.
  */
-#define OP_PRE_NOTE_WATERMARK 64
+#define OP_PRE_NOTE_WATERMARK 512
 
 /* maximum depth of dname trees - this is just a page */
 #define DNAME_STACK_MAX 1024
