@@ -17,7 +17,7 @@ struct db_hash_stat_t {
 	db_node_nr_t node_nr;
 	db_node_nr_t used_node_nr;
 	db_index_t   hash_table_size;
-	size_t       max_list_length;		/**< worst case   */
+	db_node_nr_t max_list_length;		/**< worst case   */
 	double       average_list_length;	/**< average case */
 	/* do we need variance ? */
 };

@@ -1,3 +1,9 @@
+2002-12-03  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libdb/db_stat.c:
+	* libdb/db_debug.c: Alex whisp me than a few code was not 64 bits
+	  size_t safe.
+
 2002-12-03  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml:

@@ -29,7 +29,7 @@ void db_display_hash(samples_db_t const * hash)
 
 void db_raw_display_hash(samples_db_t const * hash)
 {
-	size_t pos;
+	db_node_nr_t pos;
 	for (pos = 1 ; pos < hash->descr->current_size ; ++pos) {
 		db_node_t const * node = &hash->node_base[pos];
 		printf("%x %d %d\n", node->key, node->value, node->next);
@@ -38,14 +38,14 @@ void db_raw_display_hash(samples_db_t const * hash)
 
 static int check_circular_list(samples_db_t const * hash)
 {
-	size_t pos;
+	db_node_nr_t pos;
 	int do_abort = 0;
 	unsigned char * bitmap = malloc(hash->descr->current_size);
 	memset(bitmap, '\0', hash->descr->current_size);
 
 	for (pos = 0 ; pos < hash->descr->size*BUCKET_FACTOR ; ++pos) {
 
-		size_t index = hash->hash_base[pos];
+		db_index_t index = hash->hash_base[pos];
 		if (index && !do_abort) {
 			while (index) {
 				if (bitmap[index]) {
@@ -90,7 +90,7 @@ static int check_circular_list(samples_db_t const * hash)
 
 static int check_redundant_key(samples_db_t const * hash, db_key_t max)
 {
-	size_t pos;
+	db_node_nr_t pos;
 
 	unsigned char * bitmap = malloc(max + 1);
 	memset(bitmap, '\0', max + 1);
@@ -110,14 +110,14 @@ static int check_redundant_key(samples_db_t const * hash, db_key_t max)
 
 int db_check_hash(samples_db_t const * hash)
 {
-	size_t pos;
-	size_t nr_node = 0;
-	size_t nr_node_out_of_bound = 0;
+	db_node_nr_t pos;
+	db_node_nr_t nr_node = 0;
+	db_node_nr_t nr_node_out_of_bound = 0;
 	int ret = 0;
 	db_key_t max = 0;
 
 	for (pos = 0 ; pos < hash->descr->size * BUCKET_FACTOR ; ++pos) {
-		size_t index = hash->hash_base[pos];
+		db_index_t index = hash->hash_base[pos];
 		while (index) {
 			if (index >= hash->descr->current_size) {
 				nr_node_out_of_bound++;
