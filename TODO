@@ -3,12 +3,6 @@ This is an (incomplete) list of some of the stuff we want to look at doing.
 If you're interested in hacking on any of these, please contact the list first
 for some pointers and/or read HACKING and doc/CodingStyle.
 
-0.6 release
------------
-
- o gui: need testing, some remaining glitch. Dialog box is not the right size,
-  bitmap used to mark selectable events are bad etc...
-
 0.7 release
 -----------
 
@@ -38,6 +32,8 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o oprof_start dialog size is too small initially
+ o oprof_start key movement through events doesn't change help text
  o add -Wdeclaration-after-statement for $CC
  o GUI still has a physical-counter interface, should have a general one
    like opcontrol --event
