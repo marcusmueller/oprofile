@@ -1,3 +1,7 @@
+2005-03-31  John Levon  <levon@movementarian.org>
+
+	* doc/internals.xml: more internals docs
+
 2005-03-29  John Levon  <levon@movementarian.org>
 
 	* libpp/callgraph_container.h:

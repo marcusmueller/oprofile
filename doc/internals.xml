@@ -791,10 +791,85 @@ once, when we process the list of inverted profiles.
 
 <sect1 id="generating-profile-data">
 <title>Generating profile data</title>
+
+<para>
+Things don't get any simpler at this point, unfortunately. At this point
+we've collected and classified the sample files into the set of inverted
+profiles, as described in the previous section. Now we need to process
+each inverted profile and make something of the data. The entry point
+for this is <function>populate_for_image()</function>.
+</para>
+
+<sect2 id="bfd">
+<title>Processing the binary image</title>
+<para>
+The first thing we do with an inverted profile is attempt to open the
+binary image (remember each inverted profile set is only for one binary
+image, but may have many sample files to process). The
+<varname>op_bfd</varname> class provides an abstracted interface to
+this; internally it uses <filename>libbfd</filename>. The main purpose
+of this class is to process the symbols for the binary image; this is
+also where symbol filtering happens. This is actually quite tricky, but
+should be clear from the source.
+</para>
+</sect2>
+
+<sect2 id="processing-sample-files">
+<title>Processing the sample files</title>
+<para>
+The class <varname>profile_container</varname> is a hold-all that
+contains all the processed results. It is a container of
+<varname>profile_t</varname> objects. The
+<function>add_sample_files()</function> method uses
+<filename>libdb</filename> to open the given sample file and add the
+key/value types to the <varname>profile_t</varname>. Once this has been
+done, <function>profile_container::add()</function> is passed the
+<varname>profile_t</varname> plus the <varname>op_bfd</varname> for
+processing.
+</para>
+<para>
+<function>profile_container::add()</function> walks through the symbols
+collected in the <varname>op_bfd</varname>.
+<function>op_bfd::get_symbol_range()</function> gives us the start and
+end of the symbol as an offset from the start of the binary image,
+then we interrogate the <varname>profile_t</varname> for the relevant samples
+for that offset range. We create a <varname>symbol_entry</varname>
+object for this symbol and fill it in. If needed, here we also collect
+debug information from the <varname>op_bfd</varname>, and possibly
+record the detailed sample information (as used by <command>opreport
+-d</command> and <command>opannotate</command>).
+Finally the <varname>symbol_entry</varname> is added to
+a private container of <varname>profile_container</varname> - this
+<varname>symbol_container</varname> holds all such processed symbols.
+</para>
+</sect2>
+
 </sect1>
 
 <sect1 id="generating-output">
 <title>Generating output</title>
+
+<para>
+After the processing described in the previous section, we've now got
+full details of what we need to output stored in the
+<varname>profile_container</varname> on a symbol-by-symbol basis. To
+produce output, we need to replay that data and format it suitably.
+</para>
+<para>
+<command>opreport</command> first asks the
+<varname>profile_container</varname> for a
+<varname>symbol_collection</varname> (this is also where thresholding
+happens).
+This is sorted, then a
+<varname>opreport_formatter</varname> is initialised.
+This object initialises a set of field formatters as requested. Then
+<function>opreport_formatter::output()</function> is called. This
+iterates through the (sorted) <varname>symbol_collection</varname>;
+for each entry, the selected fields (as set by the
+<varname>format_flags</varname> options) are output by calling the
+field formatters, with the <varname>symbol_entry</varname> passed in.
+</para>
+
 </sect1>
 
 </chapter>
