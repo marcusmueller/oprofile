@@ -40,6 +40,7 @@ do_sysctl()
 	echo $val > /proc/sys/$dev_name
 }
 
+
 # extract the integer field N from --ctr[N]-xxxxxxx
 extract_int()
 {
@@ -56,6 +57,7 @@ extract_int()
 	echo $val
 }
 
+
 # verbose echo
 vecho() {
 	if [ "$VERBOSE" == "0" ]; then 
@@ -63,12 +65,14 @@ vecho() {
 	fi
 	echo $@
 }
+
  
 # print help message
 do_help() { 
 	echo "opcontrol: usage:
 	--init			loads the oprofile module and oprofilefs
 	--setup			list arguments for profiling
+	--start-daemon          start daemon without starting profiling
 	--start			start data collection
 	--dump			flushed the collected profiling data
 	--stop			stop data collection
@@ -99,6 +103,7 @@ do_help() {
 	  --version                    show version" >&2
 }
 
+
 load_module_25() {
 	grep oprofilefs /proc/filesystems >/dev/null
 	if [ "$?" -ne 0 ]; then
@@ -126,6 +131,7 @@ load_module_25() {
 	KERNEL_SUPPORT=yes
 	OPROFILE_AVAILABLE=yes
 }
+
 
 load_module_24() {
 	grep oprof /proc/devices >/dev/null
@@ -159,6 +165,7 @@ load_module()
 	fi
 }
 
+
 # initialise parameters
 do_init() {
 	# for these three buffer size == 0 means use the default value
@@ -181,7 +188,7 @@ do_init() {
 	DIR="/var/lib/oprofile"
 	LOCK_FILE="/var/lib/oprofile/lock"
 	LOG_FILE="$DIR/oprofiled.log"
-	SAMPLES_DIR="$DIR/samples"
+	SAMPLES_DIR="$DIR/samples/"
 	if test "$KERNEL_SUPPORT" = "yes"; then
 		MOUNT="/dev/oprofile"
 		DEVICE_FILE="$MOUNT/buffer"
@@ -213,6 +220,7 @@ do_init() {
 	fi
 }
 
+
 function create_dir {
 	if [ ! -d "$1" ]; then
 	       mkdir -p "$1"
@@ -223,6 +231,7 @@ function create_dir {
 	       chmod 755 "$1"
 	fi
 }
+
 
 #save all the setup related information
 do_save_setup() {
@@ -263,6 +272,7 @@ do_save_setup() {
 	echo "one_enabled=$one_enabled" >> $SETUP_FILE
 }
 
+
 #reload all the setup releated information
 do_load_setup() {
 	if test ! -f "$SETUP_FILE"; then
@@ -275,6 +285,7 @@ do_load_setup() {
 	# $SETUP_FILE and be executed as root
 	source $SETUP_FILE
 }
+
 
 check_valid_args() {
 	if [ "$one_enabled" = "0" ]; then
@@ -297,6 +308,7 @@ check_valid_args() {
 	fi
 
 }
+
 
 # get start and end points of the kernel
 get_kernel_range() {
@@ -327,6 +339,7 @@ error_if_empty() {
 	fi
 }
 
+
 # get and check specified options
 do_options() {
 	while [ "$#" -ne 0 ]
@@ -356,6 +369,14 @@ do_options() {
 				SETUP=yes
 				;;
 
+			--start-daemon)
+				if test "$KERNEL_SUPPORT" != "yes"; then
+					echo "$arg unsupported. use \"--start\"" >& 2
+					exit 1
+				fi
+				START_DAEMON=yes
+				;;
+
 			--start)
 				START=yes
 				;;
@@ -368,10 +389,9 @@ do_options() {
 				if test "$KERNEL_SUPPORT" != "yes"; then
 					echo "$arg unsupported. use \"--shutdown\"" >& 2
 					exit 1
-				else
-					DUMP=yes
-					STOP=yes
 				fi
+				DUMP=yes
+				STOP=yes
 				;;
 
 			--shutdown)
@@ -522,6 +542,7 @@ do_options() {
 	vecho "VMLINUX $VMLINUX"
 }
 
+
 # stop any existing daemon
 do_stop() {
 	if test $KERNEL_SUPPORT = "yes"; then
@@ -532,9 +553,10 @@ do_stop() {
 	fi
 }
 
+
 do_kill_daemon() {
 	if test -f "$LOCK_FILE"; then
-		echo "Stopping profiling and killing daemon"
+		echo "Killing daemon."
 		if test $KERNEL_SUPPORT = "yes"; then
 			kill -TERM `cat $LOCK_FILE`
 		else
@@ -556,6 +578,7 @@ do_kill_daemon() {
 	rm -f /var/lib/oprofile/lock
 }
 
+
 # rm_device arguments $1=file_name
 function rm_device {
 	if [ -c "$1" ]; then
@@ -564,11 +587,13 @@ function rm_device {
 	fi
 }
 
+
 rm_devices_24() {
 	rm_device "$DEVICE_FILE"
 	rm_device "$NOTE_DEVICE_FILE"
 	rm_device "$HASH_MAP_DEVICE_FILE"
 }
+
 
 # create_device arguments $1=file_name $2=MAJOR_NR $3=MINOR_NR
 function create_device {
@@ -581,6 +606,7 @@ function create_device {
 	chmod 700 "$1"
 }
 
+
 create_devices_24() {
 	MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
 
@@ -588,6 +614,7 @@ create_devices_24() {
 	create_device $NOTE_DEVICE_FILE $MAJOR_NR 2
 	create_device $HASH_MAP_DEVICE_FILE $MAJOR_NR 1
 }
+
 
 # setup and start module
 do_setup() {
@@ -602,6 +629,7 @@ do_setup() {
 
 	create_dir "$SAMPLES_DIR"
 }
+
 
 # initialise sysctl parameters
 do_sysctl_setup_24() {
@@ -639,6 +667,7 @@ do_sysctl_setup_24() {
 	fi
 }
 
+
 # initialise sysctl parameters
 do_sysctl_setup_25() {
 	if [ $BUF_SIZE != 0 ]; then
@@ -655,8 +684,6 @@ do_sysctl_setup_25() {
 		done
 
 		for f in $OP_COUNTERS ; do
-			echo "CTR_EVENT${f}=${CTR_EVENT[$f]}" >& 2
-			echo "CTR_COUNT${f}=${CTR_COUNT[$f]}" >& 2 
 			if test "${CTR_EVENT[$f]}" != ""; then
 				echo 1 >$MOUNT/$f/enabled
 				echo ${CTR_COUNT[$f]} >$MOUNT/$f/count
@@ -669,6 +696,7 @@ do_sysctl_setup_25() {
 	fi
 }
 
+
 do_sysctl_setup() {
 	if test "$KERNEL_SUPPORT" = "yes"; then
 		do_sysctl_setup_25
@@ -677,17 +705,22 @@ do_sysctl_setup() {
 	fi
 }
 
+ 
+do_start_daemon() {
+ 
+	do_setup
+	do_load_setup
+	check_valid_args
+	get_kernel_range
+	do_sysctl_setup
 
- 
-# start the daemon
-do_start() {
- 
 	if test -f "$LOCK_FILE"; then
 		kill -s 0 `cat $LOCK_FILE` 2>/dev/null
 		if test "$?" -eq 0; then
 			echo "oprofiled appears to be running already." >&2
 			echo "delete $LOCK_FILE if this is not the case." >&2
 		fi
+		exit 1
 	fi
  
 	OPD_ARGS="--vmlinux=$VMLINUX --kernel-range=$KERNEL_RANGE \
@@ -702,30 +735,33 @@ do_start() {
 	OPD_ARGS="$OPD_ARGS --cpu-speed=$cpu_speed"
 
 	vecho "cpu speed (estimation) : $cpu_speed"
+	vecho "executing oprofiled $OPD_ARGS"
 
-	if test ! -f $LOCK_FILE; then
-		vecho "executing oprofiled $OPD_ARGS"
-		oprofiled $OPD_ARGS
-	 
-		COUNT=0
-		while ! test -f "$DIR/lock"
-		do
-			sleep 1
-			COUNT=`expr $COUNT + 1`
-			if [ "$COUNT" -eq 30 ]; then
-				echo "Couldn't start oprofiled." >&2
-				echo "Check the log file \"$LOG_FILE\" and /var/log/messages" >&2
-				exit 1
-			fi
-		done
-	fi
+	oprofiled $OPD_ARGS
+ 
+	COUNT=0
+	while ! test -f "$DIR/lock"
+	do
+		sleep 1
+		COUNT=`expr $COUNT + 1`
+		if [ "$COUNT" -eq 30 ]; then
+			echo "Couldn't start oprofiled." >&2
+			echo "Check the log file \"$LOG_FILE\" and /var/log/messages" >&2
+			exit 1
+		fi
+	done
 
+	echo "Daemon started."
+}
+
+
+do_start() {
 	if test "$KERNEL_SUPPORT" = "yes"; then
 		echo 1 >$MOUNT/enable
 	fi
- 
 	echo "Profiler running."
 }
+
 
 do_dump() {
 	#make sure that the daemon is running
@@ -762,6 +798,7 @@ do_dump() {
 	fi
 }
 
+
 #tell daemon to re-open the sample files
 hup_daemon() {
 	if test -f "$LOCK_FILE"; then
@@ -770,38 +807,37 @@ hup_daemon() {
 	fi
 }
  
+
 #move all the sample files to a sample directory
 do_save_session () {
 	SAVE_DIR="${SAMPLES_DIR}${SAVE_NAME}"
 
-	if test ! -e "$SAVE_DIR"; then
-		
-		#create directory
-		mkdir -p "$SAVE_DIR"
-		if [ "$?" != "0" ]; then
-			echo "Couldn't mkdir -p $SAVE_DIR" >&2
-			exit 1
-		fi
-
-		#move all the sample files to the directory
-		SAMPLE_FILES=`ls $SAMPLES_DIR`
-		for f in $SAMPLE_FILES; do
-			if test -f "${SAMPLES_DIR}${f}"; then
-				mv ${SAMPLES_DIR}${f} $SAVE_DIR
-			fi
-		done
-	else
-		#warn if directory (or file) already there
+	if test -e "$SAVE_DIR"; then
 		echo "session $SAVE_DIR already exists\n" >& 2
 		exit 1
 	fi
+		
+	#create directory
+	mkdir -p "$SAVE_DIR"
+	if [ "$?" != "0" ]; then
+		echo "Couldn't mkdir -p $SAVE_DIR" >&2
+		exit 1
+	fi
+
+	#move all the sample files to the directory
+	SAMPLE_FILES=`ls $SAMPLES_DIR`
+	for f in $SAMPLE_FILES; do
+		if test -f "${SAMPLES_DIR}${f}"; then
+			mv ${SAMPLES_DIR}${f} $SAVE_DIR
+		fi
+	done
 
 	hup_daemon
 }
 
+
 #remove all the sample files, but leave the session directories alone
 do_reset() {
-	SAVE_DIR="$SAMPLES_DIR/$SAVE_NAME"
 	SAMPLE_FILES=`ls $SAMPLES_DIR`
 	for f in $SAMPLE_FILES; do
 		if test -f "${SAMPLES_DIR}${f}"; then
@@ -811,6 +847,7 @@ do_reset() {
 
 	hup_daemon
 }
+
 
 do_deinit() {
 	#unmount /dev/oprofile if it is around
@@ -825,6 +862,7 @@ do_deinit() {
 	fi
 }
 
+
 # The function that calls the appropriate operations
 do_operations() {
 	#INIT always done by load_module to get access to cputype
@@ -835,13 +873,14 @@ do_operations() {
 		check_valid_args
 	fi
 
-	#FIXME handle things correctly when daemon already running
+	if test "$START_DAEMON" = "yes"; then
+		do_start_daemon
+	fi
+
 	if test "$START" = "yes"; then
-		do_setup
-		do_load_setup
-		check_valid_args
-		get_kernel_range
-		do_sysctl_setup
+		if ! test -f "$LOCK_FILE"; then
+			do_start_daemon
+		fi
 		do_start
 	fi
 

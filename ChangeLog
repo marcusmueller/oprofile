@@ -1,3 +1,13 @@
+2003-01-04  John Levon  <levon@movementarian.org>
+
+	* pp/op_time.cpp: suggest opcontrol --dump instead
+
+	* utils/opcontrol: implement --start-daemon. Fix a number
+	  of bugs
+
+	* doc/oprofile.xml:
+	* doc/oprofile.1.in: document --start-daemon
+
 2003-01-03  Will Cohen  <wcohen@redhat.com>
 
 	* daemon/oprofiled.c (opd_do_samples): Typecast to match

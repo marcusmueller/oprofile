@@ -75,6 +75,11 @@ Followed by list options for profiling set up. List of options
 saved in /home/root/.oprofile/daemonrc.
 .br
 .TP
+.BI "--start-daemon"
+Start the oprofile daemon without starting profiling. Not available
+in 2.2/2.4 kernels.
+.br
+.TP
 .BI "--start"
 Start data collection with either arguments provided by --setup
 of information saved in /home/root/.oprofile/daemonrc.

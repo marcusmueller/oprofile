@@ -305,7 +305,7 @@ static void output_files_count(map_t& files)
 	// samples files in samples dir but all of them are for a different
 	// counter than the selected once
 	if (empty) {
-		cerr << "no samples files found for the slected counter(s) (try running op_dump ?)\n";
+		cerr << "no samples files found for the slected counter(s) (try running opcontrol --dump ?)\n";
 		return;	// Would exit(EXIT_FAILURE); perhaps
 	}
 
@@ -523,7 +523,7 @@ int main(int argc, char const * argv[])
 	sort_file_list_by_name(file_map, file_list);
 
 	if (file_map.empty()) {
-		cerr << "no samples files found (try running op_dump ?)\n";
+		cerr << "no samples files found (try running opcontrol --dump ?)\n";
 		exit(EXIT_FAILURE);
 	}
 

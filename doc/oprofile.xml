@@ -407,6 +407,15 @@ The <command>opcontrol</command> script provides the following options :
 		  </para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>--start-daemon</option></term>
+		<listitem><para>
+		    Start the oprofile daemon without starting actual profiling. The profiling
+		can then be started using <option>--start</option>. This is useful for avoiding
+		measuring the cost of daemon startup, as <option>--start</option> is a simple
+		write to a file in oprofilefs. Not available in 2.2/2.4 kernels.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>--start</option></term>
 		<listitem><para>
 		    Start data collection with either arguments provided by <option>--setup</option>

@@ -1,0 +1,4 @@
+.deps
+.*.flags
+Makefile
+.*.cmd
