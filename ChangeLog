@@ -1,3 +1,8 @@
+2003-01-11  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_image.c: bail out immediately on dcookie
+	  lookup failure.
+
 2003-01-10  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_cookie.h: insulate against missing arch support

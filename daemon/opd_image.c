@@ -144,20 +144,20 @@ static void opd_init_image(struct opd_image * image, cookie_t cookie,
 	/* FIXME: if dcookie lookup fail we will re open multiple time the
 	 * same db which doesn't work */
 	if (lookup_dcookie(cookie, buf, PATH_MAX) <= 0) {
-		printf("Lookup of cookie %Lx failed, errno=%d\n",
+		fprintf(stderr, "Lookup of cookie %Lx failed, errno=%d\n",
 		       cookie, errno); 
-		image->name = xstrdup("");
-	} else {
-		image->name = xstrdup(buf);
+		exit(EXIT_FAILURE);
 	}
+
+	image->name = xstrdup(buf);
  
 	if (lookup_dcookie(app_cookie, buf, PATH_MAX) <= 0) {
-		printf("Lookup of cookie %Lx failed, errno=%d\n",
+		fprintf(stderr, "Lookup of cookie %Lx failed, errno=%d\n",
 			cookie, errno); 
-		image->app_name = xstrdup("");
-	} else {
-		image->app_name = xstrdup(buf);
+		exit(EXIT_FAILURE);
 	}
+
+	image->app_name = xstrdup(buf);
 
 	image->cookie = cookie;
 	image->app_cookie = app_cookie;
