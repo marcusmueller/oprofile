@@ -1,3 +1,7 @@
+2003-07-28  John Levon  <levon@movementarian.org>
+
+	* configure.in: bump to 0.7cvs
+
 2003-07-26  John Levon  <levon@movementarian.org>
 
 	* configure.in: bump to 0.6
