@@ -23,12 +23,6 @@ using namespace std;
 
 namespace {
 
-bad_regex::bad_regex(string const & pattern)
-	: op_exception(pattern)
-{
-}
-
-
 string op_regerror(int err, regex_t const & regexp)
 {
 	size_t needed_size = regerror(err, &regexp, 0, 0);
@@ -74,6 +68,12 @@ size_t subexpr_index(char ch)
 }
 
 }  // anonymous namespace
+
+
+bad_regex::bad_regex(string const & pattern)
+	: op_exception(pattern)
+{
+}
 
 
 regular_expression_replace::regular_expression_replace(size_t limit_,
