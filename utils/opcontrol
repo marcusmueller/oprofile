@@ -395,6 +395,7 @@ do_options() {
 
 			--dump)
 				DUMP=yes
+				ONLY_DUMP=yes
 				;;
 
 			--stop)
@@ -781,18 +782,19 @@ do_start() {
 }
 
 
+# do_dump
+# returns 0 if successful
+# returns 1 if the daemon is not running
 do_dump() {
 	#make sure that the daemon is running
 	if test -e "$DIR/lock"; then
 		OPROFILED_PID=`cat $DIR/lock`
 		ps -p $OPROFILED_PID | grep $OPROFILED_PID > /dev/null
 		if [ "$?" -ne 0 ]; then
-			echo "No daemon running" >& 2
-			exit 1
+			return 1;
 		fi
 	else
-		echo "No daemon running" >& 2
-		exit 1
+		return 1;
 	fi
 
 	if test "$KERNEL_SUPPORT" = "yes"; then
@@ -814,6 +816,7 @@ do_dump() {
 
 		echo 1 > $MOUNT/dump
 	fi
+	return 0;
 }
 
 
@@ -903,7 +906,10 @@ do_operations() {
 	fi
 
 	if test "$DUMP" = "yes"; then
-		do_dump
+		if ! do_dump && test "$ONLY_DUMP" = "yes"; then
+			echo "No daemon running" >& 2
+			exit 1;
+		fi
 	fi
 
 	#FIXME this is a hack :(
