@@ -940,8 +940,10 @@ Some interesting options of the post-processor :
 		<term><option>--smart-demangle</option></term>
 		<term><option>-D</option></term>
 		<listitem><para>
-		Demangle GNU C++ symbol names then apply a set of regular expression to
-		simplify stl library demangled name.
+		Demangle GNU C++ symbol names, then apply a set of regular expressions to
+		simplify STL library demangled names. For example,
+		<function>foo(std::list&lt;std::string, std::allocator&lt;std::string&gt;&gt; &amp;)</function>
+		becomes <function>foo(list&lt;string&gt; &amp;)</function>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1108,8 +1110,10 @@ Options allowed are :
 		<term><option>--smart-demangle</option></term>
 		<term><option>-D</option></term>
 		<listitem><para>
-		Demangle GNU C++ symbol names then apply a set of regular expression to
-		simplify stl library demangled name.
+		Demangle GNU C++ symbol names, then apply a set of regular expressions to
+		simplify STL library demangled names. For example,
+		<function>foo(std::list&lt;std::string, std::allocator&lt;std::string&gt;&gt; &amp;)</function>
+		becomes <function>foo(list&lt;string&gt; &amp;)</function>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -1235,8 +1239,10 @@ The options allowed are :
 		<term><option>--smart-demangle</option></term>
 		<term><option>-D</option></term>
 		<listitem><para>
-		Demangle GNU C++ symbol names then apply a set of regular expression to
-		simplify stl library demangled name.
+		Demangle GNU C++ symbol names, then apply a set of regular expressions to
+		simplify STL library demangled names. For example,
+		<function>foo(std::list&lt;std::string, std::allocator&lt;std::string&gt;&gt; &amp;)</function>
+		becomes <function>foo(list&lt;string&gt; &amp;)</function>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
