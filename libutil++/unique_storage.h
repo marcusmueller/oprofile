@@ -78,12 +78,12 @@ public:
 
 	/// ensure this value is available
 	id_value const create(V const & value) {
-		typename id_map::const_iterator cit = ids.find(value);
+		typename id_map::iterator cit = ids.lower_bound(value);
 
-		if (cit == ids.end()) {
+		if (cit == ids.end() || value < cit->first) {
 			id_value const id(values.size());
 			values.push_back(value);
-			ids[value] = id;
+			ids.insert(cit, id_map::value_type(value, id));
 			return id;
 		}
 

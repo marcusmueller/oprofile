@@ -31,9 +31,7 @@ struct stored_name {
 
 
 /// partial specialization for unique storage of names
-template<typename I> class name_storage
-	: public unique_storage<I, stored_name> {
-public:
+template <typename I> struct name_storage : unique_storage<I, stored_name> {
 
 	typedef typename unique_storage<I, stored_name>::id_value id_value;
 
@@ -43,37 +41,34 @@ public:
 };
 
 
-struct debug_name_tag;
+class debug_name_tag;
 /// a debug filename
 typedef name_storage<debug_name_tag>::id_value debug_name_id;
 
 /// class storing a set of shared debug name (source filename)
-class debug_name_storage : public name_storage<debug_name_tag> {
-public:
+struct debug_name_storage : name_storage<debug_name_tag> {
 	/// return the basename for the given ID
 	std::string const & basename(debug_name_id id) const;
 };
 
 
-struct image_name_tag;
+class image_name_tag;
 /// an image name
 typedef name_storage<image_name_tag>::id_value image_name_id;
 
 /// class storing a set of shared image name
-class image_name_storage : public name_storage<image_name_tag> {
-public:
+struct image_name_storage : name_storage<image_name_tag> {
 	/// return the basename name for the given ID
 	std::string const & basename(image_name_id) const;
 };
 
 
-struct symbol_name_tag;
+class symbol_name_tag;
 /// a (demangled) symbol
 typedef name_storage<symbol_name_tag>::id_value symbol_name_id;
 
 /// class storing a set of shared symbol name
-class symbol_name_storage : public name_storage<symbol_name_tag> {
-public:
+struct symbol_name_storage : name_storage<symbol_name_tag> {
 	/// return the demangled name for the given ID
 	std::string const & demangle(symbol_name_id id) const;
 };
