@@ -1,3 +1,9 @@
+2003-05-26  John Levon  <levon@movementarian.org>
+
+	* libutil++/utility.h: fix typo
+
+	* utils/opcontrol: fix typo
+
 2003-05-25  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* events/i386.piii.unit_masks: tweak comment, change default unit mask

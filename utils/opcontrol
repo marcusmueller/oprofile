@@ -74,7 +74,7 @@ do_help() {
 	--setup			give setup arguments
 	--start-daemon          start daemon without starting profiling
 	--start			start data collection
-	--dump			flushed the collected profiling data
+	--dump			flush the collected profiling data
 	--stop			stop data collection
 	--shutdown		stop data collection and remove daemon
 	--reset			clears out data from current session

@@ -12,8 +12,8 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
-/** notcopyable : object of class derived from this class can't be copyed
- * neither copy-constructible */
+/** noncopyable : object of class derived from this class can't be copied
+ * and isn't copy-constructible */
 class noncopyable {
 protected:
 	noncopyable() {}
