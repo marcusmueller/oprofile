@@ -1,5 +1,9 @@
 2004-01-16  Will Cohen  <wcohen@redhat.com>
 
+	* libutil++/op_bfd.cpp: Always use filepos of original file.
+
+2004-01-16  Will Cohen  <wcohen@redhat.com>
+
 	* libop/op_config.h (DEBUGDIR): New.
 	* libutil/op_fileio.h:
 	* libutil/op_fileio.c: New function calc_crc32

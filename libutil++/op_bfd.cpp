@@ -369,6 +369,8 @@ void op_bfd::get_symbols_from_file(bfd * ibfd, size_t start,
 
 	for (symbol_index_t i = start; i < start+nr_all_syms; i++) {
 		if (interesting_symbol(bfd_syms[i])) {
+			// need to use filepos of original file
+			bfd_syms[i]->section->filepos = text_offset;
 			symbols.push_back(op_bfd_symbol(bfd_syms[i]));
 		}
 	}
