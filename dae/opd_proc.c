@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.9 2000/08/01 23:00:17 moz Exp $ */
+/* $Id: opd_proc.c,v 1.10 2000/08/02 21:40:54 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -188,9 +188,10 @@ static void opd_open_image(struct opd_image *image)
 	
 	/* give space for "negative" entries. This is because we
 	 * don't know about kernel/module sections other than .text so
-	 * a sample could be before our nominal start of image */
+	 * a sample could be before our nominal start of image, or 
+	 * after the start */
 	if (image->kernel)
-		image->len += OPD_KERNEL_OFFSET;
+		image->len += OPD_KERNEL_OFFSET*2;
  
 	printf("Trying to open %s.\n",mangled);
 	image->fd = open(mangled, O_CREAT|O_EXCL|O_RDWR,0644);
@@ -846,6 +847,7 @@ void opd_put_sample(const struct op_sample *sample)
 	}
 		 
 	if (!(proc=opd_get_proc(sample->pid))) {
+		fprintf(stderr,"Couldn't find process %u\n",sample->pid); 
 		opd_stats[OPD_LOST_PROCESS]++;
 		return;
 	}
