@@ -17,7 +17,8 @@
 #include <linux/version.h>
 #include <linux/module.h>
 #ifdef HAVE_LINUX_SPINLOCK_HEADER
-#include <linux/spinlock.h> /* FIXME do we need this still ? */
+/* FIXME do we need this still ? */
+#include <linux/spinlock.h>
 #endif
 
 #define V_BEFORE(a,b,c) (LINUX_VERSION_CODE < KERNEL_VERSION(a,b,c))

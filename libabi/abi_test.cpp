@@ -70,7 +70,8 @@ int main(int argc, char const ** argv)
 		header->version = OPD_VERSION;
 		memcpy(header->magic, OPD_MAGIC, sizeof(header->magic));
 		header->is_kernel = 1;
-		header->ctr_event = 0x80; /* ICACHE_FETCHES */
+		/* ICACHE_FETCHES */
+		header->ctr_event = 0x80;
 		header->ctr_um = 0x0;
 		header->cpu_type = CPU_ATHLON;
 		header->ctr_count = 0xdeadbeef;

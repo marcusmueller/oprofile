@@ -282,9 +282,8 @@ void opd_handle_fork(struct op_note const * note)
 			 * image e.g. pid re-use, multiple mapping with the
 			 * same mapping name etc. */
 			struct opd_image * image = 
-			   opd_get_image(map->image->name, old->name,
-			                 map->image->kernel, note->addr,
-			                 note->len);
+				opd_get_image(map->image->name, old->name,
+				map->image->kernel, note->addr, note->len);
 			opd_add_mapping(proc, image, map->start, map->offset,
 			                map->end);
 		}
@@ -300,10 +299,10 @@ void opd_handle_exec(pid_t tid, pid_t tgid)
 
 	/* There is a race for samples received between fork/exec sequence.
 	 * These samples belong to the old mapping but we can not say if
-	 * samples has been received before the exec or after. This explain
+	 * samples has been received before the exec or after. This explains
 	 * the message "Couldn't find map for ..." in verbose mode.
 	 *
-	 * Unhopefully it is difficult to get an estimation of these misplaced
+	 * Unhappily, it is difficult to get an estimation of these misplaced
 	 * samples, the error message can count only out of mapping samples but
 	 * not samples between the race and inside the mapping of the exec'ed
 	 * process :/.

@@ -125,7 +125,7 @@ string const find_image_path(string const & image_name,
 
 	if (result.size() > 1) {
 		error = image_multiple_match;
-	        return image_name;
+		return image_name;
 	}
 
 	return result[0];

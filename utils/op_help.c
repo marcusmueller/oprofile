@@ -287,7 +287,7 @@ int main(int argc, char const *argv[])
 
 	/* usefull for testing purpose to allow to force the cpu type
 	 * with --cpu-type */
-	if (cpu_string){
+	if (cpu_string) {
 		cpu_type = op_get_cpu_number(cpu_string);
 	} else {
 		cpu_type = op_get_cpu_type();

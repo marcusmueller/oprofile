@@ -57,7 +57,7 @@ asmlinkage int my_stub32_clone(ulong, ulong, struct pt_regs);
 asmlinkage int my_stub32_execve(char *, char **, char **, struct pt_regs);
 asmlinkage static int (*old_sys32_mmap2)(uint, uint, uint, uint, uint, uint);
 
-asmlinkage static long (*old_sys_init_module)(const char *, struct module *);
+asmlinkage static long (*old_sys_init_module)(char const *, struct module *);
 asmlinkage static long (*old_sys_exit)(int);
 
 /* called with note_lock held */
@@ -155,7 +155,7 @@ asmlinkage long my_sys_execve(char *name, char **argv,char **envp, struct pt_reg
 out:
 	unlock_execve();
 	MOD_DEC_USE_COUNT;
-        return ret;
+	return ret;
 }
 
 static int nargs(u32 src, char **dst) 

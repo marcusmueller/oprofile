@@ -97,17 +97,12 @@ void *compat_request_region (unsigned long start, unsigned long n, char const * 
 
 	/* 2.2.18 introduced module_init */
 	/* Not sure what version aliases were introduced in, but certainly in 2.91.66.  */
-	#ifdef MODULE
-	  #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 91)
-	    #define module_init(x)	int init_module(void) __attribute__((alias(#x)));
-	    #define module_exit(x)	void cleanup_module(void) __attribute__((alias(#x)));
-	  #else
-	    #define module_init(x)	int init_module(void) { return x(); }
-	    #define module_exit(x)	void cleanup_module(void) { x(); }
-	  #endif
+	#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 91)
+		#define module_init(x)	int init_module(void) __attribute__((alias(#x)));
+		#define module_exit(x)	void cleanup_module(void) __attribute__((alias(#x)));
 	#else
-	  #define module_init(x)
-	  #define module_exit(x)
+		#define module_init(x)	int init_module(void) { return x(); }
+		#define module_exit(x)	void cleanup_module(void) { x(); }
 	#endif
 
 	/* 2.2.18 introduced vmalloc_32 */

@@ -63,13 +63,13 @@ struct extractor {
 
 	template <typename T>
 	void extract(T & targ, void const * src_,
-	             const char * sz, const char * off);
+	             char const * sz, char const * off);
 };
 
 
 template <typename T>
 void extractor::extract(T & targ, void const * src_,
-                        const char * sz, const char * off)
+                        char const * sz, char const * off)
 {
 	unsigned char const * src = static_cast<unsigned char const *>(src_)
 		+ theabi.need(off);

@@ -50,7 +50,7 @@ bool is_prefix(string const & s, string const & prefix)
 }
 
 
-vector<string> separate_token(const string & str, char sep)
+vector<string> separate_token(string const & str, char sep)
 {
 	vector<string> result;
 	string next;

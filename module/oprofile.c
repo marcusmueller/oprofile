@@ -839,7 +839,7 @@ int __init oprof_init(void)
 	if ((err = init_sysctl()))
 		goto out_err;
 
- 	err = op_major = register_chrdev(0, "oprof", &oprof_fops);
+	err = op_major = register_chrdev(0, "oprof", &oprof_fops);
 	if (err < 0)
 		goto out_err2;
 

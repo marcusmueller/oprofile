@@ -26,7 +26,7 @@ static int nr_error;
 static int verbose = 0;
 
 #define verbprintf(args...) \
-        do { \
+	do { \
 		if (verbose) \
 			printf(args); \
 	} while (0)
@@ -38,7 +38,7 @@ static double used_time(void)
 	getrusage(RUSAGE_SELF, &usage);
 
 	return usage.ru_utime.tv_sec + usage.ru_stime.tv_sec + 
-	   ((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0);
+		((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0);
 }
 
 

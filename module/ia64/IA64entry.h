@@ -12,10 +12,11 @@
  * Preserved registers that are shared between code in ivt.S and entry.S.  Be
  * careful not to step on these!
  */
-#define pKern		p2	/* will leave_kernel return to kernel-mode? */
-#define pUser		p3	/* will leave_kernel return to user-mode? */
-#define pSys		p4	/* are we processing a (synchronous) system call? */
-#define pNonSys		p5	/* complement of pSys */
+
+#define pKern		p2 /**< will leave_kernel return to kernel-mode? */
+#define pUser		p3 /**< will leave_kernel return to user-mode? */
+#define pSys		p4 /**< are we processing a (synchronous) system call? */
+#define pNonSys		p5 /**< complement of pSys */
 
 #define PT(f)		(IA64_PT_REGS_##f##_OFFSET)
 #define SW(f)		(IA64_SWITCH_STACK_##f##_OFFSET)

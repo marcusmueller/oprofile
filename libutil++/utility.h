@@ -21,8 +21,8 @@ protected:
 	noncopyable() {}
 	~noncopyable() {}
 private:
-        noncopyable(noncopyable const &);
-        noncopyable const & operator=(noncopyable const &);
+	noncopyable(noncopyable const &);
+	noncopyable const & operator=(noncopyable const &);
 };
 
 

@@ -128,7 +128,7 @@ daemon_status::daemon_status()
 
 			for (size_t i = 0; i < file_names.gl_pathc; ++i) {
 				ifstream ifs3(file_names.gl_pathv[i]);
-				if (ifs3){
+				if (ifs3) {
 					unsigned int file_interrupts;
 					ifs3 >> file_interrupts;
 					sum_interrupts += file_interrupts;

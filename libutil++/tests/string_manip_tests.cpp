@@ -117,7 +117,7 @@ static void is_prefix_tests()
 
 
 static const size_t max_token = 8;
-static input_output<char const *, char const * [max_token]> expect_separate_token[] =
+static input_output<char const *, char const *[max_token]> expect_separate_token[] =
 {
 	{ "aa", { "aa" } },
 	{ "a\\c", { "a\\c" } },
@@ -135,7 +135,7 @@ static input_output<char const *, char const * [max_token]> expect_separate_toke
 
 static void separate_token_tests()
 {
-	input_output<char const *, char const * [max_token] > const * cur;
+	input_output<char const *, char const *[max_token]> const * cur;
 	for (cur = expect_separate_token; cur->input; ++cur) {
 		vector<string> result = separate_token(cur->input, ';');
 		if (result.size() > max_token) {
@@ -282,7 +282,7 @@ static void touint_tests()
 	input_output<unsigned int, char const *> const * cur;
 	for (cur = expect_from_str_to_uint; cur->output; ++cur) {
 		unsigned int result =
-		        op_lexical_cast<unsigned int>(cur->output);
+			op_lexical_cast<unsigned int>(cur->output);
 		check_result("op_lexical_cast()", cur->output, cur->input,
 		     result);
 	}

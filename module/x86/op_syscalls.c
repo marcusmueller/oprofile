@@ -24,7 +24,7 @@ extern spinlock_t note_lock;
 /* ------------ system calls --------------- */
 
 struct mmap_arg_struct {
-        unsigned long addr;
+	unsigned long addr;
         unsigned long len;
         unsigned long prot;
         unsigned long flags;
@@ -40,7 +40,7 @@ asmlinkage static int (*old_old_mmap)(struct mmap_arg_struct *);
 #ifdef HAVE_MMAP2
 asmlinkage static long (*old_sys_mmap2)(ulong, ulong, ulong, ulong, ulong, ulong);
 #endif
-asmlinkage static long (*old_sys_init_module)(const char *, struct module *);
+asmlinkage static long (*old_sys_init_module)(char const *, struct module *);
 asmlinkage static long (*old_sys_exit)(int);
 
 /* called with note_lock held */

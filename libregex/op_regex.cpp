@@ -26,7 +26,7 @@ namespace {
 string op_regerror(int err, regex_t const & regexp)
 {
 	size_t needed_size = regerror(err, &regexp, 0, 0);
-	char * buffer = new char [needed_size];
+	char * buffer = new char[needed_size];
 	regerror(err, &regexp, buffer, needed_size);
 
 	return buffer;

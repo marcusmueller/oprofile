@@ -16,11 +16,12 @@
  * magically cloberred by wrmsr */
 #if __GNUC__ == 2 && __GNUC_MINOR__ == 91
 	#undef wrmsr
-	#define wrmsr(msr,val1,val2)					\
-	     __asm__ __volatile__("wrmsr"				\
-				  : /* no outputs */			\
-				  : "c" (msr), "a" (val1), "d" (val2)	\
-				  : "ecx", "eax", "edx")
+	#define wrmsr(msr,val1,val2)				\
+		__asm__ __volatile__("wrmsr"			\
+			/* no outputs */			\
+			:					\
+			: "c" (msr), "a" (val1), "d" (val2)	\
+			: "ecx", "eax", "edx")
 #endif
 
 #ifndef MSR_IA32_MISC_ENABLE 

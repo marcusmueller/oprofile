@@ -128,7 +128,8 @@ size_t formatter::output_field(ostream & out, field_datum const & datum,
 		string str = (this->*field.formatter)(datum);
 		out << str;
 
-		padding = 1;	// at least one separator char
+		// at least one separator char
+		padding = 1;
 		if (str.length() < field.width)
 			padding = field.width - str.length();
 	} else {
@@ -148,7 +149,8 @@ size_t formatter::output_header_field(ostream & out, format_flags fl,
 	field_description const & field(format_map[fl]);
 	out << field.header_name;
 
-	padding = 1;	// at least one separator char
+	// at least one separator char
+	padding = 1;
 	if (field.header_name.length() < field.width)
 		padding = field.width - field.header_name.length();
 

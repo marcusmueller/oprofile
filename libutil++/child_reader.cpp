@@ -29,7 +29,7 @@ child_reader::child_reader(string const & cmd, vector<string> const & args)
 	pid(0),
 	first_error(0),
 	buf2(0), sz_buf2(0),
-	buf1(new char [PIPE_BUF]),
+	buf1(new char[PIPE_BUF]),
 	process_name(cmd),
 	is_terminated(true),
 	terminate_on_exception(false),
@@ -67,7 +67,7 @@ void child_reader::exec_command(string const & cmd, vector<string> const & args)
 			return;
 
 		case 0: {
-			char const ** argv = new char const * [args.size() + 2];
+			char const ** argv = new char const *[args.size() + 2];
 			size_t i;
 			argv[0] = cmd.c_str();
 

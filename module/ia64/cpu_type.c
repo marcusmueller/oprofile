@@ -20,10 +20,12 @@ __init op_cpu get_cpu_type(void)
 
 	/* FIXME: There should be a bit more checking here. */
 	switch (family) {
-	case 0x07: /* Itanium */
+	/* Itanium */
+	case 0x07:
 		return CPU_IA64_1;
 		break;
-	case 0x1f: /* Itanium 2 */
+	/* Itanium 2 */
+	case 0x1f:
 		return CPU_IA64_2;
 		break;
 	}

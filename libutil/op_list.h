@@ -172,7 +172,6 @@ static __inline__ void list_splice(struct list_head * list, struct list_head * h
 
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 
-#define LIST_HEAD(name) \
-	        struct list_head name = LIST_HEAD_INIT(name)
+#define LIST_HEAD(name) struct list_head name = LIST_HEAD_INIT(name)
 
 #endif /* OP_LIST_H */

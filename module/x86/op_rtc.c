@@ -60,7 +60,7 @@ static int rtc_setup(void)
 	unsigned long target;
 	unsigned int exp, freq;
 
- 	lock_rtc(flags);
+	lock_rtc(flags);
 
 	/* disable periodic interrupts */
 	tmp_control = CMOS_READ(RTC_CONTROL);
@@ -171,7 +171,7 @@ static void rtc_deinit(void)
 
 static int rtc_add_sysctls(ctl_table * next)
 {
-	*next = ((ctl_table){ 1, "rtc_value", &sysctl_parms.ctr[0].count, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+	*next = ((ctl_table) { 1, "rtc_value", &sysctl_parms.ctr[0].count, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 	return 0;
 }
 

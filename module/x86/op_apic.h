@@ -32,8 +32,8 @@ struct gate_struct {
 
 #define _set_gate(gate_addr,type,dpl,addr) \
 do { \
-  int __d0, __d1; \
-  __asm__ __volatile__ ("movw %%dx,%%ax\n\t" \
+	int __d0, __d1; \
+	__asm__ __volatile__ ("movw %%dx,%%ax\n\t" \
 	"movw %4,%%dx\n\t" \
 	"movl %%eax,%0\n\t" \
 	"movl %%edx,%1" \
@@ -56,9 +56,9 @@ do { \
 	
 #define store_idt(addr) \
 	do { \
-		__asm__ __volatile__ ( "sidt %0" \
+		__asm__ __volatile__ ("sidt %0" \
 			: "=m" (addr) \
-			: : "memory" ); \
+			: : "memory"); \
 	} while (0)
  
 struct _descr { 

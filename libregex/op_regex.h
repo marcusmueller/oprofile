@@ -14,7 +14,8 @@
 #ifndef OP_REGEX_H
 #define OP_REGEX_H
 
-#include <sys/types.h>  // required by posix before including regex.h
+// required by posix before including regex.h
+#include <sys/types.h>
 #include <regex.h>
 
 #include <string>

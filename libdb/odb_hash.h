@@ -133,7 +133,7 @@ odb_node_nr_t odb_hash_add_node(samples_odb_t * hash);
 
 /* db_debug.c */
 /** check than the hash is well build */
-int odb_check_hash(const samples_odb_t * hash);
+int odb_check_hash(samples_odb_t const * hash);
 
 /* db_stat.c */
 typedef struct odb_hash_stat_t odb_hash_stat_t;

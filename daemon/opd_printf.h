@@ -15,7 +15,7 @@
 extern int verbose;
 
 #define verbprintf(args...) \
-        do { \
+	do { \
 		if (verbose) \
 			printf(args); \
 	} while (0)

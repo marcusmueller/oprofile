@@ -340,7 +340,7 @@ static void opd_24_init(void)
 
 	s_buf_bytesize = sizeof(struct op_buffer_head) + opd_buf_size * sizeof(struct op_sample);
 
- 	sbuf = xmalloc(s_buf_bytesize);
+	sbuf = xmalloc(s_buf_bytesize);
 
 	n_buf_bytesize = opd_note_buf_size * sizeof(struct op_note);
 	nbuf = xmalloc(n_buf_bytesize);

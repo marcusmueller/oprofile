@@ -61,10 +61,10 @@ static vector<option_base *> options_list;
 static int showvers;
 
 static struct poptOption appended_options[] = {
-  { "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
-  POPT_AUTOHELP
-  POPT_TABLEEND
-  };
+	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
+	POPT_AUTOHELP
+	POPT_TABLEEND
+	};
 
 
 /* options parameter can't be a local variable because caller can use the

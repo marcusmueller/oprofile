@@ -31,7 +31,7 @@ void oprof_put_note(struct op_note *samp);
 /* ------------ system calls --------------- */
 
 struct mmap_arg_struct {
-        unsigned long addr;
+	unsigned long addr;
         unsigned long len;
         unsigned long prot;
         unsigned long flags;
@@ -47,7 +47,7 @@ asmlinkage static unsigned long (*old_sys_mmap)(unsigned long,
 				unsigned long, int, int, int, long);
 asmlinkage static unsigned long (*old_sys_mmap2)(unsigned long,
 				unsigned long, int, int, int, long);
-asmlinkage static long (*old_sys_init_module)(const char *, struct module *);
+asmlinkage static long (*old_sys_init_module)(char const *, struct module *);
 asmlinkage static long (*old_sys_exit)(int);
 
 /* --------- declarations of interception stubs for IA64  ------ */
@@ -58,7 +58,7 @@ asmlinkage unsigned long post_stub_mmap(unsigned long,
 					unsigned long, int, int, int, long);
 asmlinkage unsigned long post_stub_mmap2(unsigned long,
 					unsigned long, int, int, int, long);
-asmlinkage long post_stub_init_module(const char *, struct module *);
+asmlinkage long post_stub_init_module(char const *, struct module *);
 asmlinkage long pre_stub_exit(int);
 
 /* IA64 system call table doesn't use function pointers, it uses
@@ -280,7 +280,9 @@ asmlinkage void post_sys_clone2(long ret, long arg0, long arg1, long arg2)
 	MOD_DEC_USE_COUNT;
 }
 
-asmlinkage void post_sys_init_module(long ret, const char *name_user, struct module *mod_user)
+asmlinkage void
+post_sys_init_module(long ret, char const * name_user,
+                     struct module * mod_user)
 {
 	/* FIXME: This should be done in the ASM stub. */
 	MOD_INC_USE_COUNT;

@@ -308,7 +308,7 @@ int is_image_ignored(char const * name)
 
 	list_for_each(pos, &images_filter[hash % OPD_IMAGE_FILTER_HASH_SIZE]) {
 		struct opd_hashed_name * hashed_name =
-		     list_entry(pos, struct opd_hashed_name, next);
+			list_entry(pos, struct opd_hashed_name, next);
 		if (!strcmp(hashed_name->name, name))
 			return 0;
 	}

@@ -846,7 +846,8 @@ void oprof_start::on_start_profiler()
 	}
 
 	if (daemon_status().running) {
-		int user_choice = 0;	// gcc 2.91 work around
+		// gcc 2.91 work around
+		int user_choice = 0;
 		user_choice =
 			QMessageBox::warning(this, 0,
 					     "Profiler already started:\n\n"

@@ -86,7 +86,7 @@ static void complete_dump(void)
 	FILE * status_file;
 
 retry:
-       	status_file = fopen(OP_DUMP_STATUS, "w");
+	status_file = fopen(OP_DUMP_STATUS, "w");
 
 	if (!status_file && errno == EMFILE) {
 		if (sfile_lru_clear()) {
@@ -102,8 +102,8 @@ retry:
 		return;
 	}
 
-        fprintf(status_file, "1\n");
-        fclose(status_file);
+	fprintf(status_file, "1\n");
+	fclose(status_file);
 }
 
  
@@ -227,7 +227,7 @@ static void opd_26_init(void)
 
 	s_buf_bytesize = opd_buf_size * kernel_pointer_size;
 
- 	sbuf = xmalloc(s_buf_bytesize);
+	sbuf = xmalloc(s_buf_bytesize);
 
 	opd_reread_module_info();
 

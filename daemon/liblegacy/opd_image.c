@@ -221,7 +221,8 @@ static int is_same_image(struct opd_image const * image, char const * app_name,
 static struct opd_image * opd_find_image(char const * name, 
                                 char const * app_name, pid_t tid, pid_t tgid)
 {
-	struct opd_image * image = 0; /* supress warn non initialized use */
+	/* suppress uninitialized use warning */
+	struct opd_image * image = 0;
 	struct list_head * pos;
 	size_t bucket;
 

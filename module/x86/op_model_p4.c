@@ -48,7 +48,7 @@ struct p4_event_binding {
 #define CTR_FLAME_2    (1 << 6)
 #define CTR_IQ_5       (1 << 7)
 
-static struct p4_counter_binding p4_counters [NUM_COUNTERS] = {
+static struct p4_counter_binding p4_counters[NUM_COUNTERS] = {
 	{ CTR_BPU_0,   MSR_P4_BPU_PERFCTR0,   MSR_P4_BPU_CCCR0 },
 	{ CTR_MS_0,    MSR_P4_MS_PERFCTR0,    MSR_P4_MS_CCCR0 },
 	{ CTR_FLAME_0, MSR_P4_FLAME_PERFCTR0, MSR_P4_FLAME_CCCR0 },
@@ -347,17 +347,17 @@ static void p4_fill_in_addresses(struct op_msrs * const msrs)
 	
 	/* 43 ESCR registers in three discontiguous group */
 	for (addr = MSR_P4_BSU_ESCR0;
-	     addr <= MSR_P4_SSU_ESCR0; ++addr, ++i){ 
+	     addr <= MSR_P4_SSU_ESCR0; ++addr, ++i) { 
 		msrs->controls.addrs[i] = addr;
 	}
 	
 	for (addr = MSR_P4_MS_ESCR0;
-	     addr <= MSR_P4_TC_ESCR1; ++addr, ++i){ 
+	     addr <= MSR_P4_TC_ESCR1; ++addr, ++i) {
 		msrs->controls.addrs[i] = addr;
 	}
 	
 	for (addr = MSR_P4_IX_ESCR0;
-	     addr <= MSR_P4_CRU_ESCR3; ++addr, ++i){ 
+	     addr <= MSR_P4_CRU_ESCR3; ++addr, ++i) {
 		msrs->controls.addrs[i] = addr;
 	}
 	
@@ -426,7 +426,7 @@ static void p4_setup_ctrs(struct op_msrs const * const msrs)
 	unsigned int addr;
 
 	rdmsr(MSR_IA32_MISC_ENABLE, low, high);
-	if (! MISC_PMC_ENABLED_P(low)) {
+	if (!MISC_PMC_ENABLED_P(low)) {
 		printk(KERN_ERR "oprofile: P4 PMC not available\n");
 		return;
 	}
@@ -441,17 +441,17 @@ static void p4_setup_ctrs(struct op_msrs const * const msrs)
 
 	/* clear all escrs (including those outside out concern) */
 	for (addr = MSR_P4_BSU_ESCR0;
-	     addr <= MSR_P4_SSU_ESCR0; ++addr){ 
+	     addr <= MSR_P4_SSU_ESCR0; ++addr) {
 		wrmsr(addr, 0, 0);
 	}
 	
 	for (addr = MSR_P4_MS_ESCR0;
-	     addr <= MSR_P4_TC_ESCR1; ++addr){ 
+	     addr <= MSR_P4_TC_ESCR1; ++addr) { 
 		wrmsr(addr, 0, 0);
 	}
 	
 	for (addr = MSR_P4_IX_ESCR0;
-	     addr <= MSR_P4_CRU_ESCR3; ++addr){ 
+	     addr <= MSR_P4_CRU_ESCR3; ++addr) {
 		wrmsr(addr, 0, 0);
 	}
 	

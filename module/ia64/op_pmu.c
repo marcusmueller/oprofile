@@ -347,10 +347,10 @@ pmu_stop(void *info)
 		return;
 
 	/* stop in my current state */
-	 __asm__ __volatile__ ("rsm psr.pp;;"::: "memory");
+	__asm__ __volatile__ ("rsm psr.pp;;"::: "memory");
 
-	 /* disable the dcr pp */
-	 ia64_set_dcr(ia64_get_dcr() & ~IA64_DCR_PP);
+	/* disable the dcr pp */
+	ia64_set_dcr(ia64_get_dcr() & ~IA64_DCR_PP);
 
 #ifdef CONFIG_PERFMON
 #ifdef CONFIG_SMP
@@ -365,7 +365,6 @@ pmu_stop(void *info)
 	regs = (struct pt_regs *)((unsigned long) current + IA64_STK_OFFSET);
 	regs--;
 	ia64_psr(regs)->pp = 0;
-
 }
 
 
@@ -579,12 +578,12 @@ pmu_add_sysctls(ctl_table * next)
 		next->child = tab;
 
 		memset(tab, 0, sizeof(ctl_table)*7);
-		tab[0] = ((ctl_table){ 1, "enabled", &sysctl_parms.ctr[i].enabled, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[1] = ((ctl_table){ 1, "event", &sysctl_parms.ctr[i].event, sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
-		tab[2] = ((ctl_table){ 1, "count", &sysctl_parms.ctr[i].count, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[3] = ((ctl_table){ 1, "unit_mask", &sysctl_parms.ctr[i].unit_mask, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[4] = ((ctl_table){ 1, "kernel", &sysctl_parms.ctr[i].kernel, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[5] = ((ctl_table){ 1, "user", &sysctl_parms.ctr[i].user, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[0] = ((ctl_table) { 1, "enabled", &sysctl_parms.ctr[i].enabled, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[1] = ((ctl_table) { 1, "event", &sysctl_parms.ctr[i].event, sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
+		tab[2] = ((ctl_table) { 1, "count", &sysctl_parms.ctr[i].count, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[3] = ((ctl_table) { 1, "unit_mask", &sysctl_parms.ctr[i].unit_mask, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[4] = ((ctl_table) { 1, "kernel", &sysctl_parms.ctr[i].kernel, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[5] = ((ctl_table) { 1, "user", &sysctl_parms.ctr[i].user, sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
 		next++;
 	}
 

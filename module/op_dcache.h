@@ -77,7 +77,7 @@ inline static char * get_from_pool(uint index)
 
 inline static int add_hash_entry(struct op_hash_index * entry, uint parent, char const * name, uint len)
 {
-  	entry->name = alloc_in_pool(name, len);
+	entry->name = alloc_in_pool(name, len);
 	if (!entry->name)
 		return -1;
 	entry->parent = parent;

@@ -19,9 +19,9 @@
  * actually care about the return value */
 void * compat_request_region(unsigned long start, unsigned long n, char const * name)
 {
-        if (check_region(start, n) != 0)
-                return NULL;
-        request_region(start, n, name);
+	if (check_region(start, n) != 0)
+		return NULL;
+	request_region(start, n, name);
         return (void *)1;
 }
 
