@@ -152,8 +152,8 @@ void op_print_event(ostream & out, op_cpu cpu_type, u8 type, u16 um, u32 count)
 		out << " with a unit mask of 0x"
 		    << hex << setw(2) << setfill('0') << unsigned(um) << " ("
 		    << (um_desc ? um_desc : "multiple flags") << ")";
-
 	}
+
 	out << " count " << count << endl;
 }
 

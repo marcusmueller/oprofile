@@ -1,5 +1,10 @@
 2003-07-11  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* utils/opcontrol: shows basename $0 with --version
+	* libpp/op_header.cpp: formating
+	
+2003-07-11  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* utils/opcontrol: don't try to save current if the directory doesn't
 	  exist
 

@@ -1148,6 +1148,7 @@ check_version_help() {
 				;;
 
 			-v|--version)
+				echo -n "`basename $0`: "
 				$OP_HELP --version | cut -d' ' -f2-
 				exit 0
 				;;
