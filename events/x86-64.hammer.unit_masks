@@ -89,3 +89,16 @@ name:ht type:exclusive default:0x7
 	0x02 Data sent
 	0x04 Buffer release sent
 	0x08 NOP sent
+name:l2_internal type:bitmask default:0x1f
+	0x01 IC fill
+	0x02 DC fill
+	0x04 TLB reload
+	0x08 Tag snoop request
+	0x10 Canceled request
+name:l2_req_miss type:bitmask default:0x07
+	0x01 IC fill
+	0x02 DC fill
+	0x03 TLB reload
+name:l2_fill type:bitmask default:0x03
+	0x01 Dirty L2 victim
+	0x02 Victim from L1

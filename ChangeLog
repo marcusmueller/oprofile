@@ -1,3 +1,8 @@
+2003-04-24  Dave Jones <davej@codemonkey.org.uk>
+
+	* events/x86-64.hammer.events:
+	* events/x86-64.hammer.unit_masks: typo fixes from AMD.
+
 2003-04-15  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* events/i386-ht.events: all events allow only one counter, remove

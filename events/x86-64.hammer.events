@@ -13,7 +13,7 @@ event:0xc2 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_BRANCHES : Retired 
 event:0xc3 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_BRANCHES_MISPREDICTED : Retired branches mispredicted
 event:0xc4 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_TAKEN_BRANCHES : Retired taken branches
 event:0xc5 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_TAKEN_BRANCHES_MISPREDICTED : Retired taken branches mispredicted
-event:0x45 counters:0,1,2,3 um:zero minimum:500 name:L1_DTLB_MISSES_L2_DTLD_HITS : L1 DTLB misses and L2 DTLB hits
+event:0x45 counters:0,1,2,3 um:zero minimum:500 name:L1_DTLB_MISSES_L2_DTLB_HITS : L1 DTLB misses and L2 DTLB hits
 event:0x46 counters:0,1,2,3 um:zero minimum:500 name:L1_AND_L2_DTLB_MISSES : L1 and L2 DTLB misses
 event:0x47 counters:0,1,2,3 um:zero minimum:500 name:MISALIGNED_DATA_REFS : Misaligned data references
 event:0x84 counters:0,1,2,3 um:zero minimum:500 name:L1_ITLB_MISSES_L2_ITLB_HITS : L1 ITLB misses (and L2 ITLB hits)
@@ -27,7 +27,7 @@ event:0x00 counters:0,1,2,3 um:fpu_ops minimum:500 name:DISPATCHED_FPU_OPS : Dis
 event:0x01 counters:0,1,2,3 um:zero minimum:500 name:NO_FPU_OPS : Cycles with no FPU ops retured
 event:0x02 counters:0,1,2,3 um:zero minimum:500 name:FAST_FPU_OPS : Dispatched FPU ops that use the fast flag interface
 event:0x20 counters:0,1,2,3 um:segregload minimum:500 name:SEG_REG_LOAD : Segment register load
-event:0x21 counters:0,1,2,3 um:zero minimum:500 name:SELF_MODIFY_RESNYC : Microarchitectural resync caused by self modifying code
+event:0x21 counters:0,1,2,3 um:zero minimum:500 name:SELF_MODIFY_RESYNC : Microarchitectural resync caused by self modifying code
 event:0x22 counters:0,1,2,3 um:zero minimum:500 name:SNOOP_RESYNC : Microarchitectural resync caused by snoop
 event:0x23 counters:0,1,2,3 um:zero minimum:500 name:LS_BUFFER_FULL : LS Buffer 2 Full
 event:0x24 counters:0,1,2,3 um:zero minimum:500 name:LOCKED_OP : Locked operation
@@ -38,9 +38,9 @@ event:0x48 counters:0,1,2,3 um:zero minimum:500 name:ACCESS_CANCEL_LATE : Microa
 event:0x49 counters:0,1,2,3 um:zero minimum:500 name:ACCESS_CANCEL_EARLY : Microarchitectural early cancel of an access
 event:0x4A counters:0,1,2,3 um:ecc minimum:500 name:ECC_BIT_ERR : One bit ECC error recorded by scrubber
 event:0x4B counters:0,1,2,3 um:prefetch minimum:500 name:DISPATCHED_PRE_INSTRS : Dispatched prefetch instructions
-event:0x7D counters:0,1,2,3 um:moesi minimum:500 name:BU_INT_L2_REQ : Internal L2 request
-event:0x7E counters:0,1,2,3 um:moesi minimum:500 name:BU_FILL_REQ : Fill request that missed in L2
-event:0x7F counters:0,1,2,3 um:moesi minimum:500 name:BU_FILL_L2 : Fill into L2
+event:0x7D counters:0,1,2,3 um:l2_internal minimum:500 name:BU_INT_L2_REQ : Internal L2 request
+event:0x7E counters:0,1,2,3 um:l2_req_miss minimum:500 name:BU_FILL_REQ : Fill request that missed in L2
+event:0x7F counters:0,1,2,3 um:l2_fill minimum:500 name:BU_FILL_L2 : Fill into L2
 event:0x82 counters:0,1,2,3 um:zero minimum:500 name:IC_REFILL_FROM_L2 : Refill from L2
 event:0x83 counters:0,1,2,3 um:zero minimum:500 name:IC_REFILL_FROM_SYS : Refill from system
 event:0x86 counters:0,1,2,3 um:zero minimum:500 name:IC_RESYNC_BY_SNOOP : Microarchitectural resync caused by snoop
