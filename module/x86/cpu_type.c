@@ -9,6 +9,9 @@
  * @author Philippe Elie
  */
 
+#include <asm/smpboot.h>
+#include <linux/smp.h>
+
 #include "oprofile.h"
 #include "op_msr.h"
 
@@ -38,6 +41,72 @@ static int p4_threads(void)
 #endif /* CONFIG_SMP */
 
 	return processor_threads;
+}
+
+#ifdef CONFIG_SMP
+/**
+ * do_cpu_id - Call the cpuid instruction and fill in data at passed address
+ *
+ * We expect that data is pointing to an array of unsigned chars as big as there
+ * are cpus in an smp system.
+ */
+static void do_cpu_id(void *data)
+{
+	int eax, ebx, ecx, edx;
+	unsigned char * ptr = (unsigned char *) data;
+
+	cpuid(1, &eax, &ebx, &ecx, &edx);
+
+	/* bits EBX[31:24] define APIC ID */
+	ptr[smp_processor_id()] = (unsigned char) ((ebx & 0xff000000) >> 24);
+}
+#endif
+
+/**
+ * p4_ht_enabled - Determines if Hyper Threading is enabled or not.
+ *
+ * A P4 can be capable of HT, but not enabled via BIOS.  The check for 
+ * this is unfortunately not simple and involves running cpuid on all 
+ * logical processors and checking for bits in the APIC_ID fields. 
+ * As per Intel docs.  Returns 1 if enabled, 0 otherwise.
+ *
+ */
+static int p4_ht_enabled(void)
+{
+#ifndef CONFIG_SMP
+	return 0;
+#else
+	int enabled, threads, i;
+	unsigned char mask;
+	unsigned char apic_id[smp_num_cpus];
+	unsigned int cpu;
+
+	/* First check for capability */
+	threads = p4_threads();
+	if (threads == 1) return 0;
+	/* Create mask for low order bits */
+	mask = 0xff;
+	i = 1;
+	while (i < threads) {
+		i *= 2;
+		mask <<= 1;
+	}
+	/* Get APIC_ID from all logial procs and self */
+	smp_call_function(do_cpu_id, apic_id, 1, 1);
+	do_cpu_id(apic_id);
+	/* If the low order bits are on, then HT is enabled */
+	enabled = 0;
+	cpu = 0;
+	do {
+		if (apic_id[cpu] & ~mask) {
+			enabled = 1;
+			break;
+		}
+		cpu++;
+	} while (cpu < smp_num_cpus);
+
+	return enabled;
+#endif /* CONFIG_SMP */
 }
 
 __init op_cpu get_cpu_type(void)
@@ -71,11 +140,14 @@ __init op_cpu get_cpu_type(void)
 				return CPU_PPRO;
 			case 0xf:
 				if (model <= 3) {
-					/* Cannot handle HT P4 hardware */
-					if (p4_threads()>1 )
+					/* Cannot handle enabled HT P4 hardware */
+					if ((p4_threads() > 1) && p4_ht_enabled()) {
+						printk(KERN_INFO 
+							"oprofile: P4 HT enabled, reverting to RTC\n");
 						return CPU_RTC;
+					}
 					else
-				  		return CPU_P4;
+						return CPU_P4;
 				} else
 					/* Do not know what it is */
 					return CPU_RTC;

@@ -1,3 +1,8 @@
+2002-11-06  John Levon  <levon@movementarian.org>
+
+	* module/x86/cpu_type.c: detect if we actually are
+	  using HT (from Alex T)
+ 
 2002-11-05  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: manual fixes from Will Cohen
