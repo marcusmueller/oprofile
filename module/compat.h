@@ -34,6 +34,8 @@
 #include <asm/mpspec.h>
 #endif
 
+#include "apic_up_compat.h"
+
 /* provide a working smp_call_function when: < 2.2.8 || (!SMP && <= 2.2.20),
  * this means than we support all UP kernel from 2.2.0 and all SMP kernel from
  * 2.2.8 */
@@ -173,6 +175,7 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,0)
 
+/* TODO: add __cache_line_aligned_in_smp and put this stuff in its own file */
 /* 2.4.0 have introduced __cacheline_aligned */
 
 #include <asm/cache.h>
@@ -202,22 +205,6 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 /* 2.4.0 introduced __exit, __init */
 #define __exit
 #define __init
-
-/* APIC Stuff, TODO put all of them in apic_up_compat.h */
-
-/* even on SMP, some defines are missing in 2.2 */
-#define	APIC_LVR		0x30
-#define	APIC_LVTPC		0x340
-#define	APIC_LVTERR		0x370
-#define	GET_APIC_VERSION(x)	((x)&0xFF)
-#define	GET_APIC_MAXLVT(x)	(((x)>>16)&0xFF)
-#define	APIC_INTEGRATED(x)	((x)&0xF0)
-
-/* TODO: misplaced, for now we don't allow for
- * !CONFIG_X86_LOCAL_APIC on 2.4 PHE I fix that later */
-#ifndef CONFIG_SMP
-#include "apic_up_compat.h"
-#endif /* !CONFIG_SMP */
 
 /* 2.4.0 introduce virt_to_page */
 #define virt_to_page(va) MAP_NR(va)

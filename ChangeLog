@@ -1,3 +1,10 @@
+2002-01-16  Philippe Elie  <ph_e@club-internet.fr>
+
+	* module/compat.h:
+	* module/apic_up_compat.h: cleanup + allow compile
+	  !CONFIG_X86_LOCAL_APIC on 2.4/2.5. (only compile
+	  tested)
+
 2002-01-15  Philippe Elie  <ph_e@club-internet.fr>
 
 	* events/op_events.c: avoid gui crash: event name must
