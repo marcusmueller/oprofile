@@ -377,7 +377,7 @@ static void pmc_setup_one_p4_counter(uint ctr)
 	counter_bit = 1 << ctr;
 	
 	/* find our event binding structure. */
-	if (sysctl.ctr[ctr].event < 0 || sysctl.ctr[ctr].event > NUM_EVENTS) {
+	if (sysctl.ctr[ctr].event <= 0 || sysctl.ctr[ctr].event > NUM_EVENTS) {
 		printk(KERN_ERR 
 		       "oprofile: P4 event code 0x%x out of range\n", 
 		       sysctl.ctr[ctr].event);

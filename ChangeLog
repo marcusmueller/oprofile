@@ -1,3 +1,8 @@
+2003-01-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* module/x86/op_model_p4.c: pmc_setup_one_p4_counter() show clearly
+	  than event == 0 is an error
+
 2003-01-15  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol: prefer oprofiled/op_help binaries in the same
