@@ -412,7 +412,7 @@ This section gives a brief description of the available OProfile utilities and t
 	<listitem><para>
 		This utility can be used to collect executables, debuginfo,
 		and sample files and copy the files into an archive.
-		The archive is self-contained and can be move to another
+		The archive is self-contained and can be moved to another
 		machine for further analysis.
 		See <xref linkend="oparchive" />.
 	</para></listitem>
