@@ -34,9 +34,10 @@ char * op_mangle_filename(char const * image_name, char const * app_name)
 	char * mangled;
 	char * c;
 	size_t len;
+	int shared_lib = app_name && strcmp(app_name, image_name);
 
 	len = strlen(OP_SAMPLES_DIR) + 2 + strlen(image_name) + 32;
-	if (app_name) {
+	if (shared_lib) {
 		len += strlen(app_name) + 2;
 	}
 
@@ -47,7 +48,7 @@ char * op_mangle_filename(char const * image_name, char const * app_name)
 
 	c = mangled + strlen(mangled);
 
-	if (app_name) {
+	if (shared_lib) {
 		strcat(mangled, app_name);
 		/* a double OPD_MANGLE_CHAR used as marker ? */
 		strcat(mangled, "//");

@@ -1,3 +1,8 @@
+2002-09-18  Will Cohen  <wcohen@redhat.com>
+
+	* libop/op_mangle.c: (op_mangle_filename): Correct logic for
+	  generating mangled name. Fix #611107
+	
 2002-09-15  John Levon  <levon@movementarian.org>
 
 	* libop/op_event.c: fix comment
