@@ -453,7 +453,7 @@ static void opd_go_daemon(void)
 	mypid = getpid();
 }
 
-void opd_do_samples(struct op_sample const * opd_buf, size_t count);
+void opd_do_samples(struct op_buffer_head const * buf);
 void opd_do_notes(struct op_note const * opd_buf, size_t count);
 
 /**
@@ -463,7 +463,7 @@ void opd_do_notes(struct op_note const * opd_buf, size_t count);
  * @param nbuf  note buffer area
  * @param nsize  size of note buffer
  */
-static void opd_shutdown(struct op_sample * buf, size_t size, struct op_note * nbuf, size_t nsize)
+static void opd_shutdown(struct op_buffer_head * buf, size_t size, struct op_note * nbuf, size_t nsize)
 {
 	ssize_t count = -1;
 	ssize_t ncount = -1;
@@ -497,7 +497,7 @@ static void opd_shutdown(struct op_sample * buf, size_t size, struct op_note * n
 		if (count < 0 && errno == EAGAIN) {
 			break;
 		} else if (count > 0) {
-			opd_do_samples(buf, count);
+			opd_do_samples(buf);
 		}
 	}
 }
@@ -514,7 +514,7 @@ static void opd_shutdown(struct op_sample * buf, size_t size, struct op_note * n
  *
  * Never returns.
  */
-static void opd_do_read(struct op_sample * buf, size_t size, struct op_note * nbuf, size_t nsize)
+static void opd_do_read(struct op_buffer_head * buf, size_t size, struct op_note * nbuf, size_t nsize)
 {
 	while (1) {
 		ssize_t count = -1;
@@ -536,7 +536,7 @@ static void opd_do_read(struct op_sample * buf, size_t size, struct op_note * nb
 		}
 
 		opd_do_notes(nbuf, ncount);
-		opd_do_samples(buf, count);
+		opd_do_samples(buf);
 	}
 }
 
@@ -592,7 +592,6 @@ void opd_do_notes(struct op_note const * opd_buf, size_t count)
 /**
  * opd_do_samples - process a sample buffer
  * @param opd_buf  buffer to process
- * @param count  number of bytes in buffer
  *
  * Process a buffer of samples.
  * The signals specified by the global variable maskset are
@@ -602,31 +601,32 @@ void opd_do_notes(struct op_note const * opd_buf, size_t count)
  * to the relevant sample file. Additionally mapping and
  * process notifications are handled here.
  */
-void opd_do_samples(struct op_sample const * opd_buf, size_t count)
+void opd_do_samples(struct op_buffer_head const * opd_buf)
 {
 	uint i;
+	struct op_sample const * buffer = opd_buf->buffer; 
 
 	/* prevent signals from messing us up */
 	sigprocmask(SIG_BLOCK, &maskset, NULL);
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
-	for (i=0; i < count/sizeof(struct op_sample); i++) {
+	for (i=0; i < opd_buf->count; i++) {
 		verbprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n",
-			i, opd_buf[i].eip, opd_buf[i].pid, opd_buf[i].count);
+			i, buffer[i].eip, buffer[i].pid, buffer[i].count);
 
 		/* happens during initial startup whilst the
 		 * hash table is being filled
 		 */
-		if (opd_buf[i].eip == 0)
+		if (buffer[i].eip == 0)
 			continue;
 
-		if (pid_filter && pid_filter != opd_buf[i].pid)
+		if (pid_filter && pid_filter != buffer[i].pid)
 			continue;
-		if (pgrp_filter && pgrp_filter != getpgid(opd_buf[i].pid))
+		if (pgrp_filter && pgrp_filter != getpgid(buffer[i].pid))
 			continue;
 
-		opd_put_sample(&opd_buf[i]);
+		opd_put_sample(&buffer[i]);
 	}
 
 	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
@@ -667,48 +667,10 @@ static void opd_sigterm(int val __attribute__((unused)))
 	exit(EXIT_FAILURE);
 }
 
-
-int main(int argc, char const * argv[])
+static void setup_signals(void)
 {
-	struct op_sample * sbuf;
-	size_t s_buf_bytesize;
-	struct op_note * nbuf;
-	size_t n_buf_bytesize;
 	struct sigaction act;
-	int i;
-
-	opd_options(argc, argv);
-
-	s_buf_bytesize = opd_buf_size * sizeof(struct op_sample);
-
- 	sbuf = xmalloc(s_buf_bytesize);
-
-	n_buf_bytesize = opd_note_buf_size * sizeof(struct op_note);
-	nbuf = xmalloc(n_buf_bytesize);
-
-	opd_init_kernel_image();
-
-	if (atexit(clean_exit)) {
-		fprintf(stderr, "Couldn't set exit cleanup !\n");
-		unlink(OP_LOCK_FILE);
-		exit(EXIT_FAILURE);
-	}
-
-	opd_go_daemon();
-
-	if (opd_need_backup_samples_files()) {
-		opd_backup_samples_files();
-	}
-
-	op_open_files();
-
-	/* yes, this is racey. */
-	opd_get_ascii_procs();
-
-	for (i=0; i< OPD_MAX_STATS; i++) {
-		opd_stats[i] = 0;
-	}
-
+ 
 	act.sa_handler = opd_alarm;
 	act.sa_flags = 0;
 	sigemptyset(&act.sa_mask);
@@ -744,7 +706,51 @@ int main(int argc, char const * argv[])
 
 	/* clean up every 10 minutes */
 	alarm(60*10);
+}
 
+
+int main(int argc, char const * argv[])
+{
+	struct op_buffer_head * sbuf;
+	size_t s_buf_bytesize;
+	struct op_note * nbuf;
+	size_t n_buf_bytesize;
+	int i;
+
+	opd_options(argc, argv);
+
+	s_buf_bytesize = sizeof(struct op_buffer_head) + opd_buf_size * sizeof(struct op_sample);
+
+ 	sbuf = xmalloc(s_buf_bytesize);
+
+	n_buf_bytesize = opd_note_buf_size * sizeof(struct op_note);
+	nbuf = xmalloc(n_buf_bytesize);
+
+	opd_init_kernel_image();
+
+	if (atexit(clean_exit)) {
+		fprintf(stderr, "Couldn't set exit cleanup !\n");
+		unlink(OP_LOCK_FILE);
+		exit(EXIT_FAILURE);
+	}
+
+	opd_go_daemon();
+
+	if (opd_need_backup_samples_files()) {
+		opd_backup_samples_files();
+	}
+
+	op_open_files();
+
+	/* yes, this is racey. */
+	opd_get_ascii_procs();
+
+	for (i=0; i< OPD_MAX_STATS; i++) {
+		opd_stats[i] = 0;
+	}
+
+	setup_signals();
+ 
 	if (op_write_lock_file(OP_LOCK_FILE)) {
 		fprintf(stderr,
 			"oprofiled: could not create lock file "

@@ -1,5 +1,15 @@
 2002-06-15  John Levon  <moz@compsoc.man.ac.uk>
 
+	* dae/oprofiled.c:
+	* libop/op_interface.h:
+	* libop++/op_print_event.h:
+	* module/oprofile.c: define a buffer head for the module
+	  buffer interface, and use it
+ 
+	* module/Makefile.in: oops, install the module properly
+ 
+2002-06-15  John Levon  <moz@compsoc.man.ac.uk>
+
 	* libop/Makefile.in:
 	* libop/op_cpu_type.h:
 	* libop/op_cpu_type.c: new files split out, defines

@@ -13,6 +13,7 @@
 #define OP_PRINT_EVENT_H
 
 #include <iosfwd>
+#include <cstddef>
 
 #include "op_types.h"
 #include "op_interface.h"

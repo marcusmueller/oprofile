@@ -149,13 +149,17 @@ void regparm3 op_do_profile(uint cpu, struct pt_regs * regs, int ctr)
 /* ---------------- driver routines ------------------ */
 
 spinlock_t note_lock __cacheline_aligned_in_smp = SPIN_LOCK_UNLOCKED;
-uint cpu_num;
-
+/* which buffer nr. is waiting to be read ? */
+int cpu_buffer_waiting;
+ 
 static int is_ready(void)
 {
-	for (cpu_num=0; cpu_num < smp_num_cpus; cpu_num++) {
-		if (oprof_ready[cpu_num])
+	uint cpu_nr;
+	for (cpu_nr=0; cpu_nr < smp_num_cpus; cpu_nr++) {
+		if (oprof_ready[cpu_nr]) {
+			cpu_buffer_waiting = cpu_nr;
 			return 1;
+		}
 	}
 	return 0;
 }
@@ -252,22 +256,53 @@ static int oprof_note_release(void)
 	return 0;
 }
 
-static int check_buffer_amount(struct _oprof_data * data)
+static int check_buffer_amount(int cpu_nr)
 {
+	struct _oprof_data * data = &oprof_data[cpu_nr]; 
 	int size = data->buf_size;
 	int num = data->nextbuf;
-	if (num < size - OP_PRE_WATERMARK && oprof_ready[cpu_num] != 2) {
+	if (num < size - OP_PRE_WATERMARK && oprof_ready[cpu_nr] != 2) {
 		printk(KERN_WARNING "oprofile: Detected overflow of size %d. You must increase "
 			"the hash table size or reduce the interrupt frequency\n", num);
 		num = size;
 	} else
-		data->nextbuf=0;
+		data->nextbuf = 0;
 	return num;
 }
 
+static int copy_buffer(char * buf, int cpu_nr)
+{
+	struct op_buffer_head head;
+	int ret = -EFAULT;
+
+	int_ops->stop_cpu(cpu_nr);
+ 
+	head.cpu_nr = cpu_nr;
+	head.count = check_buffer_amount(cpu_nr);
+
+	oprof_ready[cpu_nr] = 0;
+
+	if (copy_to_user(buf, &head, sizeof(struct op_buffer_head)))
+		goto out;
+ 
+	if (head.count) {
+		size_t const size = head.count * sizeof(struct op_sample);
+		if (copy_to_user(buf + sizeof(struct op_buffer_head),
+			oprof_data[cpu_nr].buffer, size))
+			goto out;
+		ret = size + sizeof(struct op_buffer_head);
+	} else {
+		ret = sizeof(struct op_buffer_head);
+	}
+ 
+out:
+	int_ops->start_cpu(cpu_nr);
+	return ret;
+}
+ 
+ 
 static int oprof_read(struct file * file, char * buf, size_t count, loff_t * ppos)
 {
-	uint num;
 	ssize_t max;
 
 	if (!capable(CAP_SYS_PTRACE))
@@ -284,7 +319,7 @@ static int oprof_read(struct file * file, char * buf, size_t count, loff_t * ppo
 		default: return -EINVAL;
 	}
 
-	max = sizeof(struct op_sample) * sysctl.buf_size;
+	max = sizeof(struct op_buffer_head) + sizeof(struct op_sample) * sysctl.buf_size;
 
 	if (*ppos || count != max)
 		return -EINVAL;
@@ -293,8 +328,8 @@ static int oprof_read(struct file * file, char * buf, size_t count, loff_t * ppo
 		uint cpu;
 		for (cpu = 0; cpu < smp_num_cpus; ++cpu) {
 			if (oprof_data[cpu].nextbuf) {
-				cpu_num = cpu;
-				oprof_ready[cpu_num] = 2;
+				cpu_buffer_waiting = cpu;
+				oprof_ready[cpu] = 2;
 				break;
 			}
 		}
@@ -309,9 +344,9 @@ static int oprof_read(struct file * file, char * buf, size_t count, loff_t * ppo
 		wait_event_interruptible(oprof_wait, is_ready());
 	}
 
-	/* on SMP, we may have already dealt with the signal between
-	 * the wake up from the signal and this point, this point,
-	 * so we might go on to copy some data. But that's OK.
+	/* on SMP, we may have already dealt with the signal between the wake
+	 * up from the signal and this point, so we might go on to copy
+	 * some data. But that's OK.
 	 */
 	if (signal_pending(current))
 		return -EINTR;
@@ -322,25 +357,9 @@ static int oprof_read(struct file * file, char * buf, size_t count, loff_t * ppo
 		return 0;
 	}
 
-	int_ops->stop_cpu(cpu_num);
-
-	/* buffer might have overflowed */
-	num = check_buffer_amount(&oprof_data[cpu_num]);
-
-	oprof_ready[cpu_num] = 0;
-
-	count = num * sizeof(struct op_sample);
-
-	if (count && copy_to_user(buf, oprof_data[cpu_num].buffer, count))
-		count = -EFAULT;
-
-	int_ops->start_cpu(cpu_num);
-
-	/* 0 is a special case for us, prefer -EINTR instead. Ugly. */
-	if (!count)
-		return -EINTR;
-	return count;
+	return copy_buffer(buf, cpu_buffer_waiting);
 }
+
 
 static int oprof_start(void);
 static int oprof_stop(void);

@@ -2,7 +2,7 @@ OPROFILE_DIR=@OPROFILE_DIR@
 VERSION=@VERSION@
 KVERS=@KVERS@
 KSRC=@KSRC@
-MODINSTALLDIR=@MODINSTALLDIR@
+MODINSTALLDIR=@MODINSTALLDIR@/oprofile
 MKDIR_P=mkdir -p
  
 EXTRA_CFLAGS=@EXTRA_CFLAGS@ -D__NO_VERSION__ \
@@ -30,7 +30,7 @@ all:
 
 install: all
 	-$(MKDIR_P) $(MODINSTALLDIR)
-	cp oprofile-module.o $(MODINSTALLDIR)
+	cp oprofile-module.o $(MODINSTALLDIR)/oprofile.o
 	if test $(KVERS) = "`uname -r`"; then depmod -a ; fi
  
 uninstall:
