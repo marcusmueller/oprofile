@@ -6,11 +6,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8 release
 -----------
 
- o zwane problem with wrong text offset showed an interesting problem: if
-  op_bfd.cpp get any symbol below text offset for vmlinux or a module then
-  profile_t::sample_range() return a pair of iterator with first > second
-  and we enter in an infinite loop when iterating through first to second.
-
  o print "0" not "0.0e+00". should we consider reworking opstack output
 format? make the headers more explanative
  o TRACE_END is no longer sent by the driver, keep it a bit for compatibility
@@ -43,8 +38,10 @@ format? make the headers more explanative
 Before 1.0 little stuff
 -----------------------
 
- o opcontrol --reset do a dump even if the module is not loaded, we should
-  avoid to load the module.
+ o zwane problem with wrong text offset showed an interesting problem: if
+  op_bfd.cpp get any symbol below text offset for vmlinux or a module then
+  profile_t::sample_range() return a pair of iterator with first > second
+  and we throw
  o oprofiled.log now contains various statistics about lost sample etc. from
   the driver. Post profile tools must parse that and warn eventually, warning
   must include a proposed work around. User need this: if nothing seems wrong

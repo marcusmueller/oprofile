@@ -126,6 +126,14 @@ profile_t::samples_range(odb_key_t start, odb_key_t end) const
 
 	end -= start_offset;
 
+	// sanity check if start > end caller will enter into an infinite loop
+	if (start > end) {
+		throw op_fatal_error("profile_t::samples_range(): start > end"
+			" something wrong with kernel or module layout ?\n"
+			"please report problem to "
+			"oprofile-list@lists.sourceforge.net");
+	}
+
 	ordered_samples_t::const_iterator first = 
 		ordered_samples.lower_bound(start);
 	ordered_samples_t::const_iterator last =
