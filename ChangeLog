@@ -1,3 +1,8 @@
+2003-10-26  John Levon  <levon@movementarian.org>
+
+	* doc/internals.xml:
+	* doc/buffers.png: add a diagram
+
 2003-10-26  Philippe Elie  <phil.el@wanadoo.fr>
 
 	implement image filtering:

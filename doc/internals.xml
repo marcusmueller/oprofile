@@ -375,6 +375,9 @@ point from which the CPU may be read, up to the position of the "head"
 iterator. This provides an entirely lock-free method for extracting data
 from the CPU buffers. This process is described in detail later in this chapter.
 </para>
+<figure title="The OProfile buffers">
+<graphic fileref="buffers.png" />
+</figure>
 </sect1>
 
 <sect1 id="logging-sample">
