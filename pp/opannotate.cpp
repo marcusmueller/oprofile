@@ -128,16 +128,16 @@ symbol_entry const * find_symbol(string const & image_name,
 
 void output_info(ostream & out)
 {
-	out << begin_comment << endl;
+	out << begin_comment << '\n';
 
-	out << in_comment << "Command line: " << cmdline << endl
-	    << in_comment << endl;
+	out << in_comment << "Command line: " << cmdline << '\n'
+	    << in_comment << '\n';
 
-	out << in_comment << "Interpretation of command line:" << endl;
+	out << in_comment << "Interpretation of command line:" << '\n';
 
 	if (!assembly) {
 		out << in_comment
-		    << "Output annotated source file with samples" << endl;
+		    << "Output annotated source file with samples" << '\n';
 
 		// FIXME: re-add this
 #if 0
@@ -146,33 +146,33 @@ void output_info(ostream & out)
 				out << in_comment
 				    << "Output files where the selected counter reach "
 				    << threshold_percent << "% of the samples"
-				    << endl;
+				    << '\n';
 			} else {
 				out << in_comment << "output files until "
 				    << threshold_percent
 				    << "% of the samples is reached on the selected counter"
-				    << endl;
+				    << '\n';
 			}
 		} else
 #endif
 		{
-			out << in_comment << "Output all files" << endl;
+			out << in_comment << "Output all files" << '\n';
 		}
 	} else {
 		out << in_comment
 		    << "Output annotated assembly listing with samples"
-		    << endl;
+		    << '\n';
 
 		if (!objdump_params.empty()) {
 			out << in_comment << "Passing the following "
 				"additional arguments to objdump ; \"";
 			for (size_t i = 0 ; i < objdump_params.size() ; ++i)
 				out << objdump_params[i] << " ";
-			out << "\"" << endl;
+			out << "\"" << '\n';
 		}
 	}
 
-	out << in_comment << endl;
+	out << in_comment << '\n';
 
 	stringstream stream;
 
@@ -181,10 +181,10 @@ void output_info(ostream & out)
 
 	string line;
 	while (getline(stream, line)) {
-		out << in_comment << line << endl;
+		out << in_comment << line << '\n';
 	}
 
-	out << end_comment << endl;
+	out << end_comment << '\n';
 }
 
 
@@ -279,7 +279,7 @@ symbol_entry const * output_objdump_asm_line(symbol_entry const * last_symbol,
 
 	if (pos == str.length() || !isxdigit(str[pos])) {
 		if (do_output) {
-			cout << annotation_fill << " :" << str << endl;
+			cout << annotation_fill << " :" << str << '\n';
 			return last_symbol;
 		}
 	}
@@ -289,7 +289,7 @@ symbol_entry const * output_objdump_asm_line(symbol_entry const * last_symbol,
 
 	if (pos == str.length() || (!isspace(str[pos]) && str[pos] != ':')) {
 		if (do_output) {
-			cout << annotation_fill << " :" << str << endl;
+			cout << annotation_fill << " :" << str << '\n';
 			return last_symbol;
 		}
 	}
@@ -309,13 +309,13 @@ symbol_entry const * output_objdump_asm_line(symbol_entry const * last_symbol,
 		}
 
 		if (do_output)
-			cout << str << symbol_annotation(last_symbol) << endl;
+			cout << str << symbol_annotation(last_symbol) << '\n';
 
 	} else {
 		// not a symbol, probably an asm line.
 		if (do_output)
 			cout << asm_line_annotation(last_symbol, str)
-			     << str << endl;
+			     << str << '\n';
 	}
 
 	return last_symbol;
@@ -456,14 +456,14 @@ string source_symbol_annotation(string const & filename, size_t linenr)
 void output_per_file_info(ostream & out, string const & filename,
 			  u32 total_count_for_file)
 {
-	out << begin_comment << endl
+	out << begin_comment << '\n'
 	     << in_comment << "Total samples for file : "
 	     << '"' << filename << '"'
-	     << endl;
-	out << in_comment << endl << in_comment
+	     << '\n';
+	out << in_comment << '\n' << in_comment
 	    << counter_str(total_count_for_file, samples->samples_count())
-	    << endl;
-	out << end_comment << endl << endl;
+	    << '\n';
+	out << end_comment << '\n' << '\n';
 }
 
 
@@ -486,7 +486,7 @@ void do_output_one_file(ostream & out, istream & in, string const & filename,
 
 	if (header) {
 		output_per_file_info(out, filename, count);
-		out << line0_info(filename) << endl;
+		out << line0_info(filename) << '\n';
 	}
 
 
@@ -512,7 +512,7 @@ void do_output_one_file(ostream & out, istream & in, string const & filename,
 
 	if (!header) {
 		output_per_file_info(out, filename, count);
-		out << line0_info(filename) << endl;
+		out << line0_info(filename) << '\n';
 	}
 }
 

@@ -126,7 +126,7 @@ void group_summary::output_deps(double total) const
 			cout << " " << get_filename(cit->image_name);
 		else
 			cout << " " << get_filename(cit->lib_image);
-		cout << endl;
+		cout << '\n';
 	}
 }
 
@@ -161,7 +161,7 @@ void group_summary::output(double total) const
 	if (options::merge_by.lib && !lib_image.empty())
 		image = lib_image;
 
-	cout << get_filename(image) << endl;
+	cout << get_filename(image) << '\n';
 
 	output_deps(total);
 }
@@ -371,5 +371,6 @@ int opreport(vector<string> const & non_options)
 
 int main(int argc, char const * argv[])
 {
+	cout.tie(0);
 	return run_pp_tool(argc, argv, opreport);
 }
