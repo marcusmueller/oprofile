@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.60 2001/06/22 17:29:39 movement Exp $ */
+/* $Id: oprofile.c,v 1.61 2001/07/15 16:25:06 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -28,20 +28,13 @@ static int op_hash_size=OP_DEFAULT_HASH_SIZE;
 static int op_buf_size=OP_DEFAULT_BUF_SIZE;
 static int sysctl_dump;
 static int kernel_only;
-static int op_ctr0_on[NR_CPUS];
-static int op_ctr1_on[NR_CPUS];
-static int op_ctr0_um[NR_CPUS];
-static int op_ctr1_um[NR_CPUS];
-static int op_ctr0_count[NR_CPUS];
-static int op_ctr1_count[NR_CPUS];
-static int op_ctr0_val[NR_CPUS];
-static int op_ctr1_val[NR_CPUS];
-static int op_ctr0_kernel[NR_CPUS];
-static int op_ctr0_user[NR_CPUS];
-static int op_ctr1_kernel[NR_CPUS];
-static int op_ctr1_user[NR_CPUS];
-static int op_ctr0_edge_detect[NR_CPUS];
-static int op_ctr1_edge_detect[NR_CPUS];
+static int op_ctr_on[OP_MAX_COUNTERS];
+static int op_ctr_um[OP_MAX_COUNTERS];
+static int op_ctr_count[OP_MAX_COUNTERS];
+static int op_ctr_val[OP_MAX_COUNTERS];
+static int op_ctr_kernel[OP_MAX_COUNTERS];
+static int op_ctr_user[OP_MAX_COUNTERS];
+static int op_ctr_edge_detect[OP_MAX_COUNTERS];
 pid_t pid_filter;
 pid_t pgrp_filter;
 
@@ -378,7 +371,6 @@ static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um, u8 edge_
 static void pmc_setup(void *dummy)
 {
 	uint low, high;
-	uint cpu = smp_processor_id();
 
 	rdmsr(MSR_IA32_EVNTSEL0, low, high);
 	wrmsr(MSR_IA32_EVNTSEL0, low & ~(1<<22), high);
@@ -389,9 +381,9 @@ static void pmc_setup(void *dummy)
 	/* clear */
 	low &= (1<<21);
 
-	if (op_ctr0_val[cpu]) {
-		set_perfctr(op_ctr0_count[cpu], 0);
-		pmc_fill_in(&low, op_ctr0_kernel[cpu], op_ctr0_user[cpu], op_ctr0_val[cpu], op_ctr0_um[cpu], op_ctr0_edge_detect[cpu]);
+	if (op_ctr_val[0]) {
+		set_perfctr(op_ctr_count[0], 0);
+		pmc_fill_in(&low, op_ctr_kernel[0], op_ctr_user[0], op_ctr_val[0], op_ctr_um[0], op_ctr_edge_detect[0]);
 	}
 
 	wrmsr(MSR_IA32_EVNTSEL0, low, 0);
@@ -400,9 +392,9 @@ static void pmc_setup(void *dummy)
 	/* clear */
 	low &= (3<<21);
 
-	if (op_ctr1_val[cpu]) {
-		set_perfctr(op_ctr1_count[cpu], 1);
-		pmc_fill_in(&low, op_ctr1_kernel[cpu], op_ctr1_user[cpu], op_ctr1_val[cpu], op_ctr1_um[cpu], op_ctr1_edge_detect[cpu]);
+	if (op_ctr_val[1]) {
+		set_perfctr(op_ctr_count[1], 1);
+		pmc_fill_in(&low, op_ctr_kernel[1], op_ctr_user[1], op_ctr_val[1], op_ctr_um[1], op_ctr_edge_detect[1]);
 		wrmsr(MSR_IA32_EVNTSEL1, low, high);
 	}
 
@@ -746,66 +738,67 @@ static int oprof_init_data(void)
 static int parms_ok(void)
 {
 	int ret;
+	int i;
 	uint cpu;
 	struct _oprof_data *data;
 
 	op_check_range(op_hash_size, 256, 262144, "op_hash_size value %d not in range\n");
 	op_check_range(op_buf_size, 1024, 1048576, "op_buf_size value %d not in range\n");
 
+	/* FIXME: hardcoded 2 counters */
+	for (i = 0; i < 2; i++) {
+		if (op_ctr_on[i]) {
+			if (!op_ctr_user[i] && !op_ctr_kernel[i]) {
+				printk(KERN_ERR "oprofile: neither kernel nor user set for counter %d\n", i);
+				return 0;
+			}
+			op_check_range(op_ctr_count[i], 500, OP_MAX_PERF_COUNT, "ctr count value %d not in range\n");
+		}
+	}
+ 
+	/* FIXME: below needs generalising for multiple counters */
+ 
+	if (!op_ctr_on[0] && !op_ctr_on[1]) {
+		printk(KERN_ERR "oprofile: neither counter enabled.\n");
+		return 0;
+	}
+ 
+	/* hw_ok() has set cpu_type */
+	ret = op_check_events(op_ctr_val[0], op_ctr_val[1], op_ctr_um[0], op_ctr_um[1], cpu_type);
+
+	if (ret & OP_CTR0_NOT_FOUND) printk(KERN_ERR "oprofile: ctr0: no such event\n");
+	if (ret & OP_CTR1_NOT_FOUND) printk(KERN_ERR "oprofile: ctr1: no such event\n");
+	if (ret & OP_CTR0_NO_UM) printk(KERN_ERR "oprofile: ctr0: invalid unit mask\n");
+	if (ret & OP_CTR1_NO_UM) printk(KERN_ERR "oprofile: ctr1: invalid unit mask\n");
+	if (ret & OP_CTR0_NOT_ALLOWED) printk(KERN_ERR "oprofile: ctr0 can't count this event\n");
+	if (ret & OP_CTR1_NOT_ALLOWED) printk(KERN_ERR "oprofile: ctr1 can't count this event\n");
+	if (ret & OP_CTR0_PII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PII\n");
+	if (ret & OP_CTR1_PII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PII\n");
+	if (ret & OP_CTR0_PIII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PIII\n");
+	if (ret & OP_CTR1_PIII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PIII\n");
+
+	if (ret)
+		return 0;
+ 
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		data = &oprof_data[cpu];
-		data->ctrs |= OP_CTR_0 * (!!op_ctr0_on[cpu]);
-		data->ctrs |= OP_CTR_1 * (!!op_ctr1_on[cpu]);
-
-		/* FIXME: maybe we should allow no set on a CPU ? */
-		if (!data->ctrs) {
-			printk(KERN_ERR "oprofile: neither counter enabled for CPU%d\n",cpu);
-			return 0;
-		}
+		data->ctrs |= OP_CTR_0 * (!!op_ctr_on[0]);
+		data->ctrs |= OP_CTR_1 * (!!op_ctr_on[1]);
 
 		/* make sure the buffer and hash table have been set up */
 		if (!data->buffer || !data->entries)
 			return 0;
 
-		if (data->ctrs&OP_CTR_0) {
-			if (!op_ctr0_user[cpu] && !op_ctr0_kernel[cpu]) {
-				printk(KERN_ERR "oprofile: neither kernel nor user set for enabled counter 0 on CPU %d\n", cpu);
-				return 0;
-			}
-			op_check_range(op_ctr0_count[cpu], 500, OP_MAX_PERF_COUNT, "ctr0 count value %d not in range\n");
-			data->ctr_count[0] = op_ctr0_count[cpu];
-		}
-		if (data->ctrs&OP_CTR_1) {
-			if (!op_ctr1_user[cpu] && !op_ctr1_kernel[cpu]) {
-				printk(KERN_ERR "oprofile: neither kernel nor user set for enabled counter 1 on CPU %d\n", cpu);
-				return 0;
-			}
-			op_check_range(op_ctr1_count[cpu], 500, OP_MAX_PERF_COUNT, "ctr1 count value %d not in range\n");
-			data->ctr_count[1] = op_ctr1_count[cpu];
-		}
-
-		/* hw_ok() has set cpu_type */
-		ret = op_check_events(op_ctr0_val[cpu], op_ctr1_val[cpu], op_ctr0_um[cpu], op_ctr1_um[cpu], cpu_type);
-
-		if (ret & OP_CTR0_NOT_FOUND) printk(KERN_ERR "oprofile: ctr0: no such event\n");
-		if (ret & OP_CTR1_NOT_FOUND) printk(KERN_ERR "oprofile: ctr1: no such event\n");
-		if (ret & OP_CTR0_NO_UM) printk(KERN_ERR "oprofile: ctr0: invalid unit mask\n");
-		if (ret & OP_CTR1_NO_UM) printk(KERN_ERR "oprofile: ctr1: invalid unit mask\n");
-		if (ret & OP_CTR0_NOT_ALLOWED) printk(KERN_ERR "oprofile: ctr0 can't count this event\n");
-		if (ret & OP_CTR1_NOT_ALLOWED) printk(KERN_ERR "oprofile: ctr1 can't count this event\n");
-		if (ret & OP_CTR0_PII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PII\n");
-		if (ret & OP_CTR1_PII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PII\n");
-		if (ret & OP_CTR0_PIII_EVENT) printk(KERN_ERR "oprofile: ctr0: event only available on PIII\n");
-		if (ret & OP_CTR1_PIII_EVENT) printk(KERN_ERR "oprofile: ctr1: event only available on PIII\n");
-
-		if (ret)
-			return 0;
+		data->ctr_count[0] = op_ctr_count[0];
+		data->ctr_count[1] = op_ctr_count[1];
 	}
 
 	return 1;
 }
 
+ 
 DECLARE_MUTEX(sysctlsem);
+
 
 static int oprof_start(void)
 {
@@ -910,24 +903,21 @@ static struct file_operations oprof_fops = {
  *                    pid_filter
  *                    pgrp_filter
  *                    0/
- *                      0/
- *                        event
- *                        enabled
- *                        count
- *                        unit_mask
- *                        kernel
- *                        user
- *                        edge_detect
- *                      1/
- *                        event
- *                        enabled
- *                        count
- *                        unit_mask
- *                        kernel
- *                        user
- *                        edge_detect
+ *                      event
+ *                      enabled
+ *                      count
+ *                      unit_mask
+ *                      kernel
+ *                      user
+ *                      edge_detect
  *                    1/
- *                    ...
+ *                      event
+ *                      enabled
+ *                      count
+ *                      unit_mask
+ *                      kernel
+ *                      user
+ *                      edge_detect
  */
 
 static int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
@@ -950,7 +940,7 @@ static void dump_one(struct _oprof_data *data, struct op_sample *ops, uint cpu)
 
 	ops->count = 0;
 
-	if (++data->nextbuf != (data->buf_size-OP_PRE_WATERMARK)) {
+	if (++data->nextbuf != (data->buf_size - OP_PRE_WATERMARK)) {
 		if (data->nextbuf == data->buf_size)
 			data->nextbuf=0;
 		return;
@@ -996,6 +986,7 @@ out:
 }
 
 static int nr_oprof_static = 6;
+ 
 static ctl_table oprof_table[] = {
 	{ 1, "bufsize", &op_buf_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "hashsize", &op_hash_size, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
@@ -1003,8 +994,7 @@ static ctl_table oprof_table[] = {
 	{ 1, "kernel_only", &kernel_only, sizeof(int), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pid_filter", &pid_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
 	{ 1, "pgrp_filter", &pgrp_filter, sizeof(pid_t), 0600, NULL, &lproc_dointvec, NULL, },
-	{0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,},
-	{0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,}, {0,},
+	{0,}, {0,}, {0,}, {0,},
 	{0,},
 };
 
@@ -1019,8 +1009,7 @@ static ctl_table dev_root[] = {
 	{0,},
 };
 
-static char *names[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
-	"15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", };
+static char *names[] = { "0", "1", "2", "3", "4", };
 
 static struct ctl_table_header *sysctl_header;
 
@@ -1029,66 +1018,43 @@ static struct ctl_table_header *sysctl_header;
 int __init init_sysctl(void)
 {
 	ctl_table *next = &oprof_table[nr_oprof_static];
-	ctl_table *cpu_table[smp_num_cpus];
-	ctl_table *tab;
-	ctl_table *tab2;
+	ctl_table *counter_table[OP_MAX_COUNTERS];
+	ctl_table *tab; 
 	int i,j;
 
 	/* FIXME: no proper numbers, or verifiers (where possible) */
 
-	/* iterate over each CPU */
-	for (i=0; i < smp_num_cpus; i++) {
+	/* for each counter - FIXME: hardcoded to 2 counters currently */
+	for (i=0; i < 2; i++) {
 		next->ctl_name = 1;
 		next->procname = names[i];
 		next->mode = 0700;
 
-		if (!(cpu_table[i] = kmalloc(sizeof(ctl_table)*3, GFP_KERNEL)))
+		if (!(counter_table[i] = kmalloc(sizeof(ctl_table)*8, GFP_KERNEL)))
 			goto cleanup;
-		memset(cpu_table[i], 0, sizeof(ctl_table)*3);
-		cpu_table[i][0] = ((ctl_table){ 1, "0", NULL, 0, 0700, NULL, NULL, NULL, });
-		cpu_table[i][1] = ((ctl_table){ 1, "1", NULL, 0, 0700, NULL, NULL, NULL, });
-		next->child = cpu_table[i];
+		next->child = counter_table[i];
 
-		/* counter 0 */
-		if (!(tab = kmalloc(sizeof(ctl_table)*8, GFP_KERNEL)))
-			goto cleanup1;
+		tab = counter_table[i];
+ 
 		memset(tab, 0, sizeof(ctl_table)*8);
-		tab[0] = ((ctl_table){ 1, "enabled", &op_ctr0_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[1] = ((ctl_table){ 1, "event", &op_ctr0_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
-		tab[2] = ((ctl_table){ 1, "count", &op_ctr0_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[3] = ((ctl_table){ 1, "unit_mask", &op_ctr0_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[4] = ((ctl_table){ 1, "kernel", &op_ctr0_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[5] = ((ctl_table){ 1, "user", &op_ctr0_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab[6] = ((ctl_table){ 1, "edge_detect", &op_ctr0_edge_detect[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, }); 
-		cpu_table[i][0].child = tab;
-		
-		/* counter 1 */
-		if (!(tab2 = kmalloc(sizeof(ctl_table)*8, GFP_KERNEL)))
-			goto cleanup2;
-		memset(tab2, 0, sizeof(ctl_table)*8);
-		tab2[0] = ((ctl_table){ 1, "enabled", &op_ctr1_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab2[1] = ((ctl_table){ 1, "event", &op_ctr1_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
-		tab2[2] = ((ctl_table){ 1, "count", &op_ctr1_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab2[3] = ((ctl_table){ 1, "unit_mask", &op_ctr1_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab2[4] = ((ctl_table){ 1, "kernel", &op_ctr1_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab2[5] = ((ctl_table){ 1, "user", &op_ctr1_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
-		tab2[6] = ((ctl_table){ 1, "edge_detect", &op_ctr1_edge_detect[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, }); 
-		cpu_table[i][1].child = tab2;
+		tab[0] = ((ctl_table){ 1, "enabled", &op_ctr_on[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[1] = ((ctl_table){ 1, "event", &op_ctr_val[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL,  });
+		tab[2] = ((ctl_table){ 1, "count", &op_ctr_count[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[3] = ((ctl_table){ 1, "unit_mask", &op_ctr_um[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[4] = ((ctl_table){ 1, "kernel", &op_ctr_kernel[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[5] = ((ctl_table){ 1, "user", &op_ctr_user[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, });
+		tab[6] = ((ctl_table){ 1, "edge_detect", &op_ctr_edge_detect[i], sizeof(int), 0600, NULL, lproc_dointvec, NULL, }); 
 		next++;
 	}
 
 	sysctl_header = register_sysctl_table(dev_root, 0);
 	return 0;
  
-cleanup2:
-	kfree(cpu_table[i][0].child);
-cleanup1:
-	kfree(cpu_table[i]);
 cleanup:
-	for (j=0; j < i; j++) {
-		kfree(cpu_table[j][1].child);
-		kfree(cpu_table[j][0].child);
-		kfree(cpu_table[j]);
+	next = &oprof_table[nr_oprof_static];
+	for (j = 0; j < i; j++) {
+		kfree(next->child);
+		next++;
 	}
 	return -EFAULT;
 }
@@ -1101,8 +1067,6 @@ void __exit cleanup_sysctl(void)
 	
 	i = smp_num_cpus;
 	while (i-- > 0) {
-		kfree(next->child[0].child);
-		kfree(next->child[1].child);
 		kfree(next->child);
 		next++;
 	}

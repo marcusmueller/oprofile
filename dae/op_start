@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.29 2001/06/24 23:52:47 movement Exp $
+# $Id: op_start,v 1.30 2001/07/15 16:25:06 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -45,13 +45,13 @@ PID_FILTER=0
 PGRP_FILTER=0
 VERBOSE=0
 
+# FIXME: needs to be generalised for more counters (e.g. athlon) 
+ 
 help_string='op_start: usage:$
 Module options$
   --buffer-size=num            number of samples in kernel buffer$
   --hash-table-size=num        number of entries in kernel hash table$
   --kernel-only=[0|1]          profile only the kernel$
-$
-Module per-cpu options. Specify comma-separated values for each CPU$
   --ctr0-event=name            symbolic event name for ctr0$
   --ctr1-event=name            symbolic event name for ctr1$
   --ctr0-count=val             number of events between samples for ctr0$
@@ -405,22 +405,22 @@ $SYSCTL -w dev.oprofile.pgrp_filter=$PGRP_FILTER >/dev/null
 
 # FIXME do something for all CPUs 
 if [ "$CTR0_EVENT" != "" ]; then
-	$SYSCTL -w dev.oprofile.0.0.enabled=1 >/dev/null
-	$SYSCTL -w dev.oprofile.0.0.count=$CTR0_COUNT >/dev/null
-	$SYSCTL -w dev.oprofile.0.0.kernel=$CTR0_KERNEL >/dev/null
-	$SYSCTL -w dev.oprofile.0.0.user=$CTR0_USER >/dev/null
-	$SYSCTL -w dev.oprofile.0.0.edge_detect=$CTR0_EDGE_DETECT >/dev/null
-	$SYSCTL -w dev.oprofile.0.0.unit_mask=$CTR0_UM >/dev/null
-	$SYSCTL -w dev.oprofile.0.0.event=$CTR0_EVENT_VAL >/dev/null
+	$SYSCTL -w dev.oprofile.0.enabled=1 >/dev/null
+	$SYSCTL -w dev.oprofile.0.count=$CTR0_COUNT >/dev/null
+	$SYSCTL -w dev.oprofile.0.kernel=$CTR0_KERNEL >/dev/null
+	$SYSCTL -w dev.oprofile.0.user=$CTR0_USER >/dev/null
+	$SYSCTL -w dev.oprofile.0.edge_detect=$CTR0_EDGE_DETECT >/dev/null
+	$SYSCTL -w dev.oprofile.0.unit_mask=$CTR0_UM >/dev/null
+	$SYSCTL -w dev.oprofile.0.event=$CTR0_EVENT_VAL >/dev/null
 fi
 if [ "$CTR1_EVENT" != "" ]; then
-	$SYSCTL -w dev.oprofile.0.1.enabled=1 >/dev/null
-	$SYSCTL -w dev.oprofile.0.1.count=$CTR1_COUNT >/dev/null
-	$SYSCTL -w dev.oprofile.0.1.kernel=$CTR1_KERNEL >/dev/null
-	$SYSCTL -w dev.oprofile.0.1.user=$CTR1_USER >/dev/null
-	$SYSCTL -w dev.oprofile.0.1.edge_detect=$CTR1_EDGE_DETECT >/dev/null
-	$SYSCTL -w dev.oprofile.0.1.unit_mask=$CTR1_UM >/dev/null
-	$SYSCTL -w dev.oprofile.0.1.event=$CTR1_EVENT_VAL >/dev/null
+	$SYSCTL -w dev.oprofile.1.enabled=1 >/dev/null
+	$SYSCTL -w dev.oprofile.1.count=$CTR1_COUNT >/dev/null
+	$SYSCTL -w dev.oprofile.1.kernel=$CTR1_KERNEL >/dev/null
+	$SYSCTL -w dev.oprofile.1.user=$CTR1_USER >/dev/null
+	$SYSCTL -w dev.oprofile.1.edge_detect=$CTR1_EDGE_DETECT >/dev/null
+	$SYSCTL -w dev.oprofile.1.unit_mask=$CTR1_UM >/dev/null
+	$SYSCTL -w dev.oprofile.1.event=$CTR1_EVENT_VAL >/dev/null
 fi
  
 OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$USE_PII --ignore-myself=$IGNORE_MYSELF \

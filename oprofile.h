@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.38 2001/06/22 03:16:24 movement Exp $ */
+/* $Id: oprofile.h,v 1.39 2001/07/15 16:25:06 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -84,6 +84,9 @@ struct _oprof_data {
  
 #define streqn(a, b, len) (!strncmp((a), (b), (len)))
 
+/* maximum nr. of counters, up to 4 for Athlon (18 for P4) */
+#define OP_MAX_COUNTERS 4
+ 
 /* oprof_data->ready will be set this many samples
  * before the end of the eviction buffer.
  * The purpose of this is to avoid overflowing the sample

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.36 2001/07/15 14:51:17 movement Exp $ */
+/* $Id: oprofiled.c,v 1.37 2001/07/15 16:25:06 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -184,13 +184,13 @@ static void opd_options(int argc, char const *argv[])
 		exit(1);
 	}
 
-	footer.ctr0_type_val = opd_read_int_from_file("/proc/sys/dev/oprofile/0/0/event");
-	footer.ctr0_um = (u8) opd_read_int_from_file("/proc/sys/dev/oprofile/0/0/unit_mask");
-	footer.ctr1_type_val = opd_read_int_from_file("/proc/sys/dev/oprofile/0/1/event");
-	footer.ctr1_um = (u8) opd_read_int_from_file("/proc/sys/dev/oprofile/0/1/unit_mask");
+	footer.ctr0_type_val = opd_read_int_from_file("/proc/sys/dev/oprofile/0/event");
+	footer.ctr0_um = (u8) opd_read_int_from_file("/proc/sys/dev/oprofile/0/unit_mask");
+	footer.ctr1_type_val = opd_read_int_from_file("/proc/sys/dev/oprofile/1/event");
+	footer.ctr1_um = (u8) opd_read_int_from_file("/proc/sys/dev/oprofile/1/unit_mask");
 	
-	footer.ctr0_count = opd_read_int_from_file("/proc/sys/dev/oprofile/0/0/count");
-	footer.ctr1_count = opd_read_int_from_file("/proc/sys/dev/oprofile/0/1/count");
+	footer.ctr0_count = opd_read_int_from_file("/proc/sys/dev/oprofile/0/count");
+	footer.ctr1_count = opd_read_int_from_file("/proc/sys/dev/oprofile/1/count");
 
 	ret = op_check_events(footer.ctr0_type_val, footer.ctr1_type_val, footer.ctr0_um, footer.ctr1_um, cpu_type);
 

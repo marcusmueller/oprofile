@@ -1,5 +1,14 @@
 2001-07-15  John Levon  <moz@compsoc.man.ac.uk>
 
+	* oprofile.c:
+	* oprofile.h:
+	* dae/op_start:
+	* dae/oprofiled.c:
+	* doc/oprofile.sgml: remove ability to set different values on
+	  different CPUs
+ 
+2001-07-15  John Levon  <moz@compsoc.man.ac.uk>
+
 	* TODO: remove done thing
  
 2001-07-15  John Levon  <moz@compsoc.man.ac.uk>

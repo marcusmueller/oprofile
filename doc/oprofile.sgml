@@ -146,6 +146,12 @@ is all you need, but note these arguments to <command>./configure</command> :
 			Enable process id and process group filtering, as discussed in <xref linkend="pidpgrpfilter">
 		</para></listitem>
 	</varlistentry>
+	<varlistentry>
+		<term><option>--enable-unload</option></term>
+		<listitem><para>
+			Allow the kernel module to be unloaded, see <xref linkend="unloadable">
+		</para></listitem>
+	</varlistentry>
 </variablelist>
 </para>
 <para>
@@ -476,8 +482,8 @@ The following files will be present :
 	<varlistentry>
 		<term><filename>0, 1, ...</filename></term>
 		<listitem><para>
-		Each <acronym>CPU</acronym> will have a directory containing two child directories,
-		one for each counter. The rest of the files described here are per-counter. 
+		Each counter will have a directory containing files for that counter's settings.
+		The rest of the files described here are per-counter. 
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
