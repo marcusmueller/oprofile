@@ -194,10 +194,15 @@ static void sort_file_list(map_t & result,
 static void out_filename(const string& app_name, size_t app_count,
 			 u32 count, double total_count)
 {
-	cout << demangle_filename(app_name) << " " << count  << " "
-	     << (count / total_count) * 100 << "%";
+	cout << demangle_filename(app_name) << " " << count  << " ";
 
-	if (app_count != size_t(-1))
+	if (total_count > 1) {
+		cout << (count / total_count) * 100 << "%";
+	} else {
+		cout << "0%";
+	}
+
+	if (app_count != size_t(-1) && (app_count!=0))
 		cout << " (" << (count / double(app_count)) * 100 << "%)";
 
 	cout << endl;
