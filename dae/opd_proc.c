@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.69 2001/09/06 20:41:48 movement Exp $ */
+/* $Id: opd_proc.c,v 1.70 2001/09/12 01:22:41 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -96,7 +96,7 @@ void opd_alarm(int val __attribute__((unused)))
 		}
 	}
 
-	printf("%s stats:\n", opd_get_time());
+	printf("%s\n", opd_get_time());
 	printf("Nr. kernel samples: %lu\n", opd_stats[OPD_KERNEL]);
 	printf("Nr. samples lost due to no process information: %lu\n", opd_stats[OPD_LOST_PROCESS]);
 	printf("Nr. process samples in user-space: %lu\n", opd_stats[OPD_PROCESS]);

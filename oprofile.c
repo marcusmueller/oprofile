@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.83 2001/09/08 21:46:03 phil_e Exp $ */
+/* $Id: oprofile.c,v 1.84 2001/09/12 01:22:40 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -80,7 +80,7 @@ static void evict_op_entry(struct _oprof_data *data, struct op_sample *ops)
 			data->nextbuf = 0;
 		return;
 	}
-	oprof_ready[smp_processor_id()] = 1;
+	oprof_ready[op_cpu_id()] = 1;
 }
 
 inline static void fill_op_entry(struct op_sample *ops, struct pt_regs *regs, int ctr)
@@ -129,7 +129,7 @@ static void op_check_ctr(struct _oprof_data *data, struct pt_regs *regs, int ctr
 
 asmlinkage void op_do_nmi(struct pt_regs *regs)
 {
-	struct _oprof_data *data = &oprof_data[smp_processor_id()];
+	struct _oprof_data *data = &oprof_data[op_cpu_id()];
 	int i;
 
 	if (pid_filter && current->pid != pid_filter)
@@ -258,11 +258,11 @@ static void __init lvtpc_apic_setup(void *dummy)
 	/* set up LVTPC as we need it */
 	/* IA32 V3, Figure 7.8 */
 	val = apic_read(APIC_LVTPC);
-	lvtpc_old_mask[smp_processor_id()] = val & APIC_LVT_MASKED;
+	lvtpc_old_mask[op_cpu_id()] = val & APIC_LVT_MASKED;
 	/* allow PC overflow interrupts */
 	val &= ~APIC_LVT_MASKED;
 	/* set delivery to NMI */
-	lvtpc_old_mode[smp_processor_id()] = GET_APIC_DELIVERY_MODE(val);
+	lvtpc_old_mode[op_cpu_id()] = GET_APIC_DELIVERY_MODE(val);
 	val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_NMI);
 	apic_write(APIC_LVTPC, val);
 }
@@ -271,8 +271,8 @@ static void __exit lvtpc_apic_restore(void *dummy)
 {
 	uint val = apic_read(APIC_LVTPC);
 	// FIXME: this gives APIC errors on SMP hardware.
-	// val = SET_APIC_DELIVERY_MODE(val, lvtpc_old_mode[smp_processor_id()]);
-	if (lvtpc_old_mask[smp_processor_id()])
+	// val = SET_APIC_DELIVERY_MODE(val, lvtpc_old_mode[op_cpu_id()]);
+	if (lvtpc_old_mask[op_cpu_id()])
 		val |= APIC_LVT_MASKED;
 	else
 		val &= ~APIC_LVT_MASKED;
@@ -537,7 +537,7 @@ inline static void pmc_start_Athlon(void)
 
 static void pmc_start(void *info)
 {
-	if (info && (*((uint *)info) != smp_processor_id()))
+	if (info && (*((uint *)info) != op_cpu_id()))
 		return;
 
 	/* assert: all enable counter are setup except the bit start/stop,
@@ -574,7 +574,7 @@ inline static void pmc_stop_Athlon(void)
 
 static void pmc_stop(void *info)
 {
-	if (info && (*((uint *)info) != smp_processor_id()))
+	if (info && (*((uint *)info) != op_cpu_id()))
 		return;
 
 	/* disable counters */
@@ -586,7 +586,7 @@ static void pmc_stop(void *info)
 
 inline static void pmc_select_start(uint cpu)
 {
-	if (cpu==smp_processor_id())
+	if (cpu == op_cpu_id())
 		pmc_start(NULL);
 	else
 		smp_call_function(pmc_start, &cpu, 0, 1);
@@ -594,7 +594,7 @@ inline static void pmc_select_start(uint cpu)
 
 inline static void pmc_select_stop(uint cpu)
 {
-	if (cpu==smp_processor_id())
+	if (cpu==op_cpu_id())
 		pmc_stop(NULL);
 	else
 		smp_call_function(pmc_stop, &cpu, 0, 1);

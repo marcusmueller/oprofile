@@ -1,3 +1,8 @@
+2001-09-12  John Levon  <moz@compsoc.man.ac.uk>
+
+	* oprofile.h:
+	* oprofile.c: use cpu_number_map (pedantry thing)
+ 
 2001-09-07  Philippe Elie  <ph_e@club-internet.fr>
 
 	* oprofile.c: remove /proc/.../cpu_type. Check if user
