@@ -112,14 +112,11 @@ asmlinkage void my_do_nmi(struct pt_regs * regs, long error_code)
 /* we're ok to fill up one entry (8 bytes) in the buffer.
  * Any more (i.e. all mapping info) goes in the map buffer;
  * the daemon knows how many entries to read depending on
- * the value in the main buffer entry. FIXME: all entries
- * go into CPU#0 buffer. This is a big problem in SMP !
- *
- * We also have plenty of races involving out-of-date samples
- * loitering in the hash table. There seems to be no nice
- * way round it though, so we forget about it. These can happen
- * on fork()/exec() pair, or when executable sections are
- * remapped
+ * the value in the main buffer entry. All entries go into 
+ * CPU#0 buffer. Yes, this means we can have "broken" samples
+ * in the other buffers. But we can also have them in the
+ * hash table anyway, by similar mapping races involving
+ * fork()/execve() and re-mapping. 
  */
     
 /* each entry is 16-byte aligned */
@@ -129,14 +126,14 @@ static unsigned int map_open;
  
 void oprof_out8(void *buf);
  
-static int (*old_sys_fork)(struct pt_regs);
-static int (*old_sys_vfork)(struct pt_regs);
-static int (*old_sys_clone)(struct pt_regs);
-static int (*old_sys_execve)(struct pt_regs);
-static long (*old_sys_mmap2)(unsigned long, unsigned long, unsigned long,
+asmlinkage static int (*old_sys_fork)(struct pt_regs);
+asmlinkage static int (*old_sys_vfork)(struct pt_regs);
+asmlinkage static int (*old_sys_clone)(struct pt_regs);
+asmlinkage static int (*old_sys_execve)(struct pt_regs);
+asmlinkage static long (*old_sys_mmap2)(unsigned long, unsigned long, unsigned long,
 	unsigned long, unsigned long, unsigned long);
-static long (*old_sys_init_module)(const char *, struct module *); 
-static long (*old_sys_exit)(int);
+asmlinkage static long (*old_sys_init_module)(const char *, struct module *); 
+asmlinkage static long (*old_sys_exit)(int);
  
 inline static void oprof_report_fork(u16 oldpid, pid_t newpid)
 {
@@ -148,7 +145,7 @@ inline static void oprof_report_fork(u16 oldpid, pid_t newpid)
 	oprof_out8(&samp);
 }
  
-static int my_sys_fork(struct pt_regs regs)
+asmlinkage static int my_sys_fork(struct pt_regs regs)
 {
 	u16 pid = (u16)current->pid;
 	int ret;
@@ -159,7 +156,7 @@ static int my_sys_fork(struct pt_regs regs)
 	return ret;
 }
 
-static int my_sys_vfork(struct pt_regs regs)
+asmlinkage static int my_sys_vfork(struct pt_regs regs)
 {
 	u16 pid = (u16)current->pid;
 	int ret;
@@ -170,7 +167,7 @@ static int my_sys_vfork(struct pt_regs regs)
 	return ret;
 }
 
-static int my_sys_clone(struct pt_regs regs)
+asmlinkage static int my_sys_clone(struct pt_regs regs)
 {
 	u16 pid = (u16)current->pid;
 	int ret;
@@ -209,8 +206,21 @@ int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 	if (!count)
 		return 0;
  
-	if (*ppos + count > max)
+	if (*ppos >= max)
 		return -EINVAL;
+ 
+	if (*ppos + count > max) {
+		size_t firstcount = max - *ppos;
+
+		if (copy_to_user(buf, data+*ppos, firstcount))
+			return -EFAULT;
+
+		count -= firstcount;
+		*ppos = 0;
+	} 
+	
+	if (count > max)
+		return -EINVAL; 
 
 	data += *ppos;
  
@@ -221,21 +231,30 @@ int oprof_map_read(char *buf, size_t count, loff_t *ppos)
 
 	/* wrap around */ 
 	if (*ppos==max)
-		*ppos = 0; 
+		*ppos = 0;
 
 	return count;
-} 
+}
  
+inline static char *oprof_outstr(char *buf, char *str, int bytes)
+{
+	while (bytes-- && *str)
+		*buf++ = *str++; 
+
+	while (bytes--)
+		*buf++ = '\0';
+
+	return str; 
+}
+
 #define map_round(v) (((v)+(sizeof(struct op_map)/2))/sizeof(struct op_map)) 
  
 /* buf must be PAGE_SIZE bytes large */
 static int oprof_output_map(unsigned long addr, unsigned long len,
 	unsigned long pgoff, struct file *file, char *buf)
 {
-	char *str = ((char *)&map_buf[nextmapbuf])+12; 
-	char *start = (char *)map_buf; 
 	char *line;
-	unsigned long sizemap;
+	unsigned long size=16;
  
 	if (!file)
 		return 0;
@@ -243,34 +262,33 @@ static int oprof_output_map(unsigned long addr, unsigned long len,
 	map_buf[nextmapbuf].addr = addr;
 	map_buf[nextmapbuf].len = len;
 	map_buf[nextmapbuf].offset = pgoff<<PAGE_SHIFT;
-	memset(str,0,4);
  
 	line = d_path(file->f_dentry, file->f_vfsmnt, buf, PAGE_SIZE);
+	printk("size %u\n",strlen(line));
 	printk("line %s\n",line);
-	printk("size %u\n",strlen(line)); 
 
-	if (str+strlen(line)+1 >= (OP_MAX_MAP_BUF*sizeof(struct op_map))+start) {
-		printk(KERN_ERR "oprofile: exceeded map buffer !!!\n");
-		return 0;
+	line = oprof_outstr(map_buf[nextmapbuf].path,line,4);
+
+	nextmapbuf++;
+ 
+	/* output in 16-byte chunks, wrapping round */
+	while (*line) {
+		if (nextmapbuf==OP_MAX_MAP_BUF)
+			nextmapbuf=0;
+
+		line = oprof_outstr((char *)&map_buf[nextmapbuf], line, 16);
+		size += 16; 
 	}
 
-	strncpy(str,line,strlen(line));
-	*(str+strlen(line)) = '\0';
+	if (nextmapbuf==OP_MAX_MAP_BUF)
+		nextmapbuf=0;
 
-	sizemap = (unsigned long)(map_round(strlen(line)+1+12));
-
-	if (nextmapbuf+sizemap >= OP_MAX_MAP_BUF) {
-		printk(KERN_ERR "oprofile: nextmapbuf,sizemap %lu,%lu !!!\n",nextmapbuf,sizemap); 
-		return 0;
-	}
-
-	nextmapbuf += sizemap;
-	return sizemap;
+	return size;
 }
 
 static int oprof_output_maps(struct task_struct *task)
 {
-	int sizemap=0;
+	int size=0;
 	char *buffer;
 	struct mm_struct *mm;
 	struct vm_area_struct *map;
@@ -293,19 +311,21 @@ static int oprof_output_maps(struct task_struct *task)
 		if (!(map->vm_flags&VM_EXEC))
 			continue;
 
-		sizemap += oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
+		size += oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
 				map->vm_pgoff, map->vm_file, buffer);
 	}
 
 	up(&mm->mmap_sem);
  
-	mmput(mm);
+	/* FIXME: we need to lock before so we don't have to GC the mm (not exported) */ 
+	atomic_dec_and_test(&mm->mm_users);
+
 out:
 	free_page((unsigned long)buffer);
-	return sizemap;
+	return size;
 }
  
-static int my_sys_execve(struct pt_regs regs)
+asmlinkage static int my_sys_execve(struct pt_regs regs)
 {
 	struct task_struct *task = current;
 	int ret;
@@ -323,7 +343,7 @@ static int my_sys_execve(struct pt_regs regs)
 	return ret;
 }
 
-static int my_sys_mmap2(unsigned long addr, unsigned long len,
+asmlinkage static int my_sys_mmap2(unsigned long addr, unsigned long len,
 	unsigned long prot, unsigned long flags,
 	unsigned long fd, unsigned long pgoff)
 {
@@ -358,7 +378,7 @@ static int my_sys_mmap2(unsigned long addr, unsigned long len,
 	return ret;
 }
 
-static long my_sys_init_module(const char *name_user, struct module *mod_user)
+asmlinkage static long my_sys_init_module(const char *name_user, struct module *mod_user)
 {
 	long ret; 
 	ret = old_sys_init_module(name_user, mod_user);
@@ -374,7 +394,7 @@ static long my_sys_init_module(const char *name_user, struct module *mod_user)
 	return ret;
 }
 
-static long my_sys_exit(int error_code)
+asmlinkage static long my_sys_exit(int error_code)
 {
 	struct op_sample samp;
 

@@ -512,23 +512,27 @@ inline static void pmc_select_stop(unsigned int cpu)
 }
 
 /* ---------------- driver routines ------------------ */ 
+
+u32 diethreaddie; 
+pid_t threadpid; 
  
 /* we have to have another thread because we can't
  * do wake_up() from NMI due to no locking
- * FIXME: how long should we sleep ?
  */
-int oprof_daemon(void *arg)
+/* FIXME: need exit semaphore for race in module unload/thread exit */ 
+int oprof_thread(void *arg)
 {
 	int i;
-	extern asmlinkage long sys_setsid(void);
  
-	/* from md.c */
+	threadpid = current->pid;
+ 
 	lock_kernel();
 	exit_mm(current);
+	current->session = 1;
+	current->pgrp = 1; 
 	exit_files(current);
 	exit_fs(current);
-	sys_setsid();
-	sprintf(current->comm, "oprofilewud");
+	sprintf(current->comm, "oprof-thread");
 	siginitsetinv(&current->blocked, sigmask(SIGKILL));
         spin_lock(&current->sigmask_lock);
         flush_signals(current);
@@ -542,19 +546,26 @@ int oprof_daemon(void *arg)
 			if (oprof_ready[i])
 				wake_up(&oprof_wait);
 		}
-		schedule_timeout(HZ/2);
+		current->state = TASK_INTERRUPTIBLE;
+		/* FIXME: determine best value here */
+		schedule_timeout(HZ/20);
+
+		if (diethreaddie)
+			break;
 	}
+	return 0; 
 }
  
-void oprof_start_daemon(void)
+void oprof_start_thread(void)
 {
-	if (kernel_thread(oprof_daemon, NULL, 0)<0)
+	if (kernel_thread(oprof_thread, NULL, 0)<0)
 		printk(KERN_ERR "oprofile: couldn't spawn wakeup thread.\n"); 
 }
 
-void oprof_stop_daemon(void)
+void oprof_stop_thread(void)
 {
-	/* FIXME */
+	diethreaddie = 1;
+	kill_proc(SIGKILL, threadpid, 1);
 }
  
 void oprof_out8(void *buf)
@@ -580,7 +591,7 @@ static int oprof_open(struct inode *ino, struct file *file)
 	if (oprof_opened)
 		return -EBUSY;
  
-	oprof_start_daemon();
+	oprof_start_thread();
  
 	oprof_opened=1; 
 	smp_call_function(pmc_start,NULL,0,1);
@@ -596,7 +607,7 @@ static int oprof_release(struct inode *ino, struct file *file)
 	if (!oprof_opened)
 		return -EFAULT;
  
-	oprof_stop_daemon();
+	oprof_stop_thread();
  
 	smp_call_function(pmc_stop,NULL,0,1);
 	pmc_stop(NULL);
