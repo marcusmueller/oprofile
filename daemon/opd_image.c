@@ -260,7 +260,10 @@ void opd_put_image_sample(struct opd_image * image,
 	}
  
 	/* Possible narrowing to 32-bit value only. */
-	db_insert(sample_file, (unsigned long)offset, 1);
+	if (db_insert(sample_file, (unsigned long)offset, 1) != EXIT_SUCCESS) {
+		fprintf(stderr, "db_insert() index out of range\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 

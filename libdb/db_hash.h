@@ -106,8 +106,10 @@ void db_init(samples_db_t * hash);
  * The sizeof_header parameter allows the data file to have a header
  * at the start of the file which is skipped.
  * db_open() always preallocate a few number of pages.
- */
-void db_open(samples_db_t * hash, char const * filename, enum db_rw rw, size_t sizeof_header);
+ * returns EXIT_SUCCESS on success, EXIT_FAILURE on failure
+ * on failure *err_msg contains a pointer to an asprintf-alloced string
+ * containing an error message.  the string should be freed using free() */
+ int db_open(samples_db_t * hash, char const * filename, enum db_rw rw, size_t sizeof_header, char ** err_msg);
 
 /** Close the given DB hash */
 void db_close(samples_db_t * hash);
@@ -116,8 +118,15 @@ void db_close(samples_db_t * hash);
 void db_sync(samples_db_t const * hash);
 
 /** add a page returning its index. Take care all page pointer can be
- * invalidated by this call ! */
-db_node_nr_t db_hash_add_node(samples_db_t * hash);
+ * invalidated by this call !
+ * returns the index of the created node on success or
+ * DB_NODE_NR_INVALID on failure
+ * on failure *err_msg contains a pointer to an asprintf-alloced string
+ * containing an error message.  the string should be freed using free() */
+db_node_nr_t db_hash_add_node(samples_db_t * hash, char ** err_msg);
+
+/** "immpossible" node number to indicate an error from db_hash_add_node() */
+#define DB_NODE_NR_INVALID ((db_node_nr_t)-1)
 
 /* db-hash-debug.c */
 /** check than the hash is well build */
@@ -135,8 +144,9 @@ void db_hash_free_stat(db_hash_stat_t * stats);
 
 /* db-hash-insert.c */
 /** insert info at key, if key already exist the info is added to the
- * existing samples */
-void db_insert(samples_db_t * hash, db_key_t key, db_value_t value);
+ * existing samples
+ * returns EXIT_SUCCESS on success, EXIT_FAILURE on failure */
+int db_insert(samples_db_t * hash, db_key_t key, db_value_t value);
 
 /* db-hash-travel.c */
 /** the call back type to pass to travel() */

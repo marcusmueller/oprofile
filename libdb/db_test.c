@@ -11,6 +11,7 @@
 #include <sys/resource.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <fcntl.h>
 
 #include "op_sample_file.h"
@@ -36,11 +37,23 @@ static void speed_test(int nr_item, int nr_unique_item)
 	int i;
 	double begin, end;
 	samples_db_t hash;
+	int rc;
+	char * err_msg;
 
-	db_open(&hash, TEST_FILENAME, DB_RDWR, sizeof(struct opd_header));
+	rc = db_open(&hash, TEST_FILENAME, DB_RDWR, sizeof(struct opd_header),
+		&err_msg);
+	if (rc != EXIT_SUCCESS) {
+		fprintf(stderr, "%s", err_msg);
+		free(err_msg);
+		exit(EXIT_FAILURE);
+	}
 	begin = used_time();
 	for (i = 0 ; i < nr_item ; ++i) {
-		db_insert(&hash, (random() % nr_unique_item) + 1, 1);
+		rc = db_insert(&hash, (random() % nr_unique_item) + 1, 1);
+		if (rc != EXIT_SUCCESS) {
+			fprintf(stderr, "db_insert() failed !\n");
+			exit(EXIT_FAILURE);
+		}
 	}
 	end = used_time();
 	db_close(&hash);
@@ -67,13 +80,25 @@ static int test(int nr_item, int nr_unique_item)
 	int i;
 	samples_db_t hash;
 	int ret;
+	int rc;
+	char * err_msg;
 
-	db_open(&hash, TEST_FILENAME, DB_RDWR, sizeof(struct opd_header));
+	rc = db_open(&hash, TEST_FILENAME, DB_RDWR, sizeof(struct opd_header),
+		&err_msg);
+	if (rc != EXIT_SUCCESS) {
+		fprintf(stderr, "%s", err_msg);
+		free(err_msg);
+		exit(EXIT_FAILURE);
+	}
 
 
 	for (i = 0 ; i < nr_item ; ++i) {
 		db_key_t key = (random() % nr_unique_item) + 1;
-		db_insert(&hash, key, 1);
+		rc = db_insert(&hash, key, 1);
+		if (rc != EXIT_SUCCESS) {
+			fprintf(stderr, "db_insert() failed !\n");
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	ret = db_check_hash(&hash);
@@ -120,13 +145,24 @@ static int callback_test(int nr_item, int nr_unique_item)
 	samples_db_t tree;
 	db_key_t first_key, last_key;
 	int old_nr_error = nr_error;
+	int rc;
+	char * err_msg;
 
-	db_open(&tree, TEST_FILENAME, DB_RDWR, sizeof(struct opd_header));
-
-	for (i = 0 ; i < nr_item ; ++i) {
-		db_insert(&tree, (random() % nr_unique_item) + 1, 1);
+	rc = db_open(&tree, TEST_FILENAME, DB_RDWR, sizeof(struct opd_header),
+		     &err_msg);
+	if (EXIT_SUCCESS != rc) {
+		fprintf(stderr, "%s", err_msg);
+	        free(err_msg);
+	        exit(EXIT_FAILURE);
 	}
 
+	for (i = 0 ; i < nr_item ; ++i) {
+		rc = db_insert(&tree, (random() % nr_unique_item) + 1, 1);
+		if (rc != EXIT_SUCCESS) {
+			fprintf(stderr, "db_insert() failed !\n");
+			exit(EXIT_FAILURE);
+		}
+	}
 
 	last_key = (db_key_t)-1;
 	first_key = 0;
@@ -166,8 +202,16 @@ static void do_callback_test(void)
 static void sanity_check(char const * filename)
 {
 	samples_db_t hash;
+	int rc;
+	char * err_msg;
 
-	db_open(&hash, filename, DB_RDONLY, sizeof(struct opd_header));
+	rc = db_open(&hash, filename, DB_RDONLY, sizeof(struct opd_header),
+		     &err_msg);
+	if (EXIT_SUCCESS != rc) {
+		fprintf(stderr, "%s", err_msg);
+	        free(err_msg);
+	        exit(EXIT_FAILURE);
+	}
 
 	if (db_check_hash(&hash)) {
 		printf("checking file %s FAIL\n", filename);

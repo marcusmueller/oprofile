@@ -56,7 +56,7 @@ static unsigned int tables_size(samples_db_t const * hash, db_node_nr_t node_nr)
 }
 
 
-db_index_t db_hash_add_node(samples_db_t * hash)
+db_index_t db_hash_add_node(samples_db_t * hash, char ** err_msg)
 {
 	if (hash->descr->current_size >= hash->descr->size) {
 		unsigned int old_file_size;
@@ -70,19 +70,19 @@ db_index_t db_hash_add_node(samples_db_t * hash)
 		new_file_size = tables_size(hash, hash->descr->size);
 
 		if (ftruncate(hash->fd, new_file_size)) {
-			fprintf(stderr, "unable to resize file to %d "
+			asprintf(err_msg, "unable to resize file to %d "
 				"length, cause : %s\n",
 				new_file_size, strerror(errno));
-			exit(EXIT_FAILURE);
+			return DB_NODE_NR_INVALID;
 		}
 
 		hash->base_memory = mremap(hash->base_memory,
 				old_file_size, new_file_size, MREMAP_MAYMOVE);
 
 		if (hash->base_memory == MAP_FAILED) {
-			fprintf(stderr, "db_hash_add_page() mremap failure "
+			asprintf(err_msg, "db_hash_add_page() mremap failure "
 				"cause: %s\n", strerror(errno));
-			exit(EXIT_FAILURE);
+			return DB_NODE_NR_INVALID;
 		}
 
 		hash->descr = db_to_descr(hash);
@@ -131,8 +131,8 @@ void db_init(samples_db_t * hash)
 /* the default number of page, calculated to fit in 4096 bytes */
 #define DEFAULT_NODE_NR(offset_node)	128
 
-void db_open(samples_db_t * hash, char const * filename, enum db_rw rw,
-	     size_t sizeof_header)
+int db_open(samples_db_t * hash, char const * filename, enum db_rw rw,
+	size_t sizeof_header, char ** err_msg)
 {
 	struct stat stat_buf;
 	db_node_nr_t nr_node;
@@ -146,15 +146,15 @@ void db_open(samples_db_t * hash, char const * filename, enum db_rw rw,
 
 	hash->fd = open(filename, flags, 0644);
 	if (hash->fd < 0) {
-		fprintf(stderr, "db_open(): fail to open %s cause: %s\n",
+		asprintf(err_msg, "db_open(): fail to open %s cause: %s\n",
 			filename, strerror(errno));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	if (fstat(hash->fd, &stat_buf)) {
-		fprintf(stderr, "db_open(): unable to stat %s cause %s\n",
+		asprintf(err_msg, "db_open(): unable to stat %s cause %s\n",
 			filename, strerror(errno));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	if (stat_buf.st_size == 0) {
@@ -164,11 +164,11 @@ void db_open(samples_db_t * hash, char const * filename, enum db_rw rw,
 
 		file_size = tables_size(hash, nr_node);
 		if (ftruncate(hash->fd, file_size)) {
-			fprintf(stderr, "db_open() unable to resize file "
+			asprintf(err_msg, "db_open() unable to resize file "
 				"%s to %ld length, cause : %s\n",
 				filename, (unsigned long)file_size,
 				strerror(errno));
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 	} else {
 		/* Calculate nr node allowing a sanity check later */
@@ -180,9 +180,9 @@ void db_open(samples_db_t * hash, char const * filename, enum db_rw rw,
 				MAP_SHARED, hash->fd, 0);
 
 	if (hash->base_memory == MAP_FAILED) {
-		fprintf(stderr, "db_open() mmap failure cause: %s\n",
+		asprintf(err_msg, "db_open() mmap failure cause: %s\n",
 			strerror(errno));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	hash->descr = db_to_descr(hash);
@@ -194,15 +194,17 @@ void db_open(samples_db_t * hash, char const * filename, enum db_rw rw,
 	} else {
 		/* file already exist, sanity check nr node */
 		if (nr_node != hash->descr->size) {
-			fprintf(stderr, "db_open(): nr_node != "
+			asprintf(err_msg, "db_open(): nr_node != "
 				"hash->descr->size\n");
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 	}
 
 	hash->hash_base = db_to_hash_base(hash);
 	hash->node_base = db_to_node_base(hash);
 	hash->hash_mask = (hash->descr->size * BUCKET_FACTOR) - 1;
+
+	return EXIT_SUCCESS;
 }
 
 

@@ -79,8 +79,16 @@ void counter_profile_t::check_headers(counter_profile_t const & rhs) const
 void counter_profile_t::build_ordered_samples(string const & filename)
 {
 	samples_db_t samples_db;
+	char * err_msg;
 
-	db_open(&samples_db, filename.c_str(), DB_RDONLY, sizeof(struct opd_header));
+	int rc = db_open(&samples_db, filename.c_str(), DB_RDONLY,
+		sizeof(struct opd_header), &err_msg);
+
+	if (rc != EXIT_SUCCESS) {
+		cerr << err_msg << endl;
+		free(err_msg);
+		exit(EXIT_FAILURE);
+	}
 
 	opd_header const & head = *static_cast<opd_header *>(samples_db.base_memory);
 

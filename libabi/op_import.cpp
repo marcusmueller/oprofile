@@ -147,7 +147,8 @@ void import_from_abi(Abi const & abi,
 		db_value_t val;
 		ext.extract(key, src, "sizeof_db_key_t", "offsetof_node_key");
 		ext.extract(val, src, "sizeof_db_value_t", "offsetof_node_value");
-		db_insert(dest, key, val);
+		int rc = db_insert(dest, key, val);
+		assert(rc == EXIT_SUCCESS);
 	}
 	// done extracting nodes
 }

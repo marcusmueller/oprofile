@@ -1,5 +1,23 @@
 2003-03-03  John Levon  <levon@movementarian.org>
 
+	Patch from Chris Moller, modified.
+
+	* dae/opd_proc.c:
+	* dae/opd_sample_files.c:
+	* daemon/opd_image.c:
+	* daemon/opd_sample_files.c:
+	* libabi/abi_test.cpp:
+	* libabi/op_import.cpp:
+	* libdb/db_hash.h:
+	* libdb/db_insert.c:
+	* libdb/db_manage.c:
+	* libdb/db_test.c:
+	* pp/counter_profile.cpp:
+	* pp/op_merge.cpp: push asserts in libdb down into
+	  the clients.
+
+2003-03-03  John Levon  <levon@movementarian.org>
+
 	* doc/oprofile.xml:
 	* doc/oprofile.1.in:
 	* utils/opcontrol: add --separate=none, --pid/pgrp-filter=non

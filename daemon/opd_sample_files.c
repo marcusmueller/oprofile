@@ -135,6 +135,8 @@ void opd_open_sample_file(struct opd_image * image, int counter)
 	samples_db_t * sample_file;
 	struct opd_header * header;
 	char const * app_name;
+	char * err_msg;
+	int rc;
 
 	sample_file = &image->sample_files[counter];
 
@@ -145,7 +147,13 @@ void opd_open_sample_file(struct opd_image * image, int counter)
 
 	verbprintf("Opening \"%s\"\n", mangled);
 
-	db_open(sample_file, mangled, DB_RDWR, sizeof(struct opd_header));
+	rc = db_open(sample_file, mangled, DB_RDWR, sizeof(struct opd_header),
+		&err_msg);
+	if (rc != EXIT_SUCCESS) {
+		fprintf(stderr, "%s", err_msg);
+		free(err_msg);
+		exit(EXIT_FAILURE);
+	}
 	if (!sample_file->base_memory) {
 		fprintf(stderr,
 			"oprofiled: db_open() of image sample file \"%s\" failed: %s\n",

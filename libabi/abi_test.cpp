@@ -70,11 +70,15 @@ int main(int argc, char const ** argv)
 		header->separate_kernel_samples = 0;
 
     
-		for(int i = 0; i < 3793; ++i) {
-			db_insert(&dest, ((i*i) ^ (i+i)), ((i*i) ^ i));
+		for (int i = 0; i < 3793; ++i) {
+			int rc = db_insert(&dest, ((i*i) ^ (i+i)), ((i*i) ^ i));
+			if (rc != EXIT_SUCCESS)
+				break;
 		}
 		db_close(&dest);
 		file_processed = true;
+		if (rc != EXIT_SUCCESS)
+			cerr << "db_insert() failure" << endl;
 	}
 
 	if (!file_processed) {

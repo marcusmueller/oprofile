@@ -157,7 +157,11 @@ static void copy_callback(db_key_t key, db_value_t value, void * data)
 {
 	samples_db_t * dest = (samples_db_t *)data;
 
-	db_insert(dest, key, value);
+	int rc = db_insert(dest, key, value);
+	if (rc != EXIT_SUCCESS) {
+		cerr << "db_insert() failure !" << endl;
+		exit(EXIT_FAILURE);
+	}
 }
 
 /**
@@ -185,15 +189,26 @@ static void output_files(string const & filename,
 	}
 
 	samples_db_t dest;
+	char * err_msg;
 
-	db_open(&dest, filename.c_str(), DB_RDWR,
-		     sizeof(struct opd_header));
+	int rc = db_open(&dest, filename.c_str(), DB_RDWR,
+		     sizeof(struct opd_header), &err_msg);
+	if (rc != EXIT_SUCCESS) {
+		cerr << err_msg << endl;
+		free(err_msg);
+		exit(EXIT_FAILURE);
+	}
 
 	for (++it ; it != filenames.end() ; ++it) {
 		samples_db_t src;
 
-		db_open(&src, it->c_str(), DB_RDONLY,
-			     sizeof(struct opd_header));
+		rc = db_open(&src, it->c_str(), DB_RDONLY,
+			sizeof(struct opd_header), &err_msg);
+		if (rc != EXIT_SUCCESS) {
+			cerr << err_msg << endl;
+			free(err_msg);
+			exit(EXIT_FAILURE);
+		}
 
 		samples_db_travel(&src, 0, ~0, copy_callback, &dest);
 
