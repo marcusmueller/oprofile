@@ -7,6 +7,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 -------------
 
  o image filtering needs to resolve symlinks
+ o need a way to reset image filter
 
 0.8 release
 -----------
@@ -24,7 +25,7 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
- o x86_64 and 2.4 kernel: test the needed change
+ o x86_64 and 2.4 kernel: it's apparently broken
  o odb_insert() can fail on ftruncate or mremap() in db_manage.c but we don't
   try to recover gracefully.
  o dae/opd_image.h: struct opd_sfile * sfiles[OP_MAX_COUNTERS][NR_CPUS]; 
@@ -40,10 +41,10 @@ Before 1.0 little stuff
   /{root}/path/to/appli/anon_mapping-0B8000-0BA0000/...
  o why rel_to_abs_path in locate_images ??
  o we can add lots more unit tests yet
- o output column shortname headers for opreport -l
  o better sharing of dae daemon: share dae /daemon need to create a libdaemon/
    subdir and this lib must be self contained (not include anything in dae/*.h
    daemon/*.h) (<movewent> not really worth a whole new lib dir imho)
+ o output column shortname headers for opreport -l
  o separate debug info stuff
  o opgprof/opannotate always merges even if we provide a profile spec that's
    minimal enough - you can't get "cpu:0"
@@ -62,7 +63,6 @@ Before 1.0 little stuff
  o oprof_start: check lib samples when kernel samples checkbox is checked
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
  o when we dump stats for oprofiled, dump kernel-side values too (for 2.5)
- o lookup_dcookie can return ENAMETOOLONG but we can't hack it
  o remove 2.2 / gcc 2.91 support ?
  o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
  o sample-file: / binary: don't work in any useful way - can we fix this
