@@ -209,6 +209,7 @@ void oprof_start::fill_events()
 
 	counter_selected(current_event);
 
+	// FIXME: why this ?
 	if (cpu_type == CPU_RTC)
 		events_list->setCurrentItem(events_list->firstChild());
 
@@ -759,43 +760,33 @@ bool oprof_start::save_config()
 
 	args.push_back("--setup");
 
-	if (cpu_type == CPU_RTC) {
-		// FIXME: obsolete ?
-		event_setting_map & cfg = event_cfgs[0];
-		op_event_descr const * descr = current_events[0];
-		args.push_back("--rtc-value=" + tostr(cfg[descr->name].count));
-	} else {
-		// FIXME: usefull ?
-		bool one_enabled = false;
+	bool one_enabled = false;
 
-		vector<string> tmpargs;
-		tmpargs.push_back("--setup");
+	vector<string> tmpargs;
+	tmpargs.push_back("--setup");
 
-		for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
-			if (!current_events[ctr]) {
-				continue;
-			}
+	for (uint ctr = 0; ctr < op_nr_counters; ++ctr) {
+		if (!current_events[ctr])
+			continue;
 
+		one_enabled = true;
 
-			one_enabled = true;
+		event_setting_map & cfg = event_cfgs[ctr];
 
-			event_setting_map & cfg = event_cfgs[ctr];
+		op_event_descr const * descr = current_events[ctr];
 
-			op_event_descr const * descr = current_events[ctr];
+		string arg = "--event=" + descr->name;
+		arg += ":" + tostr(cfg[descr->name].count);
+		arg += ":" + tostr(cfg[descr->name].umask);
+		arg += ":" + tostr(cfg[descr->name].os_ring_count);
+		arg += ":" + tostr(cfg[descr->name].user_ring_count);
 
-			string arg = "--event=" + descr->name;
-			arg += ":" + tostr(cfg[descr->name].count);
-			arg += ":" + tostr(cfg[descr->name].umask);
-			arg += ":" + tostr(cfg[descr->name].os_ring_count);
-			arg += ":" + tostr(cfg[descr->name].user_ring_count);
-
-			tmpargs.push_back(arg);
-		}
-
-		// only set counters if at leat one is enabled
-		if (one_enabled)
-			args = tmpargs;
+		tmpargs.push_back(arg);
 	}
+
+	// only set counters if at leat one is enabled
+	if (one_enabled)
+		args = tmpargs;
 
 	if (config.no_kernel) {
 		args.push_back("--no-vmlinux");
