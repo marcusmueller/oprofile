@@ -31,7 +31,7 @@ using namespace std;
 samples_file_t::samples_file_t(string const & filename)
 	: start_offset(0)
 {
-	db_open(&db_tree, filename.c_str(), DB_RDONLY, sizeof(struct opd_header));
+	db_open(&samples_db, filename.c_str(), DB_RDONLY, sizeof(struct opd_header));
 
 	opd_header const & head = header();
 	if (head.version != OPD_VERSION) {
@@ -44,7 +44,7 @@ samples_file_t::samples_file_t(string const & filename)
 
 samples_file_t::~samples_file_t()
 {
-	db_close(&db_tree);
+	db_close(&samples_db);
 }
 
 void samples_file_t::check_headers(samples_file_t const & rhs) const
@@ -76,7 +76,7 @@ void samples_file_t::check_headers(samples_file_t const & rhs) const
 	}
 }
 
-static void db_tree_callback(db_key_t, db_value_t value, void * data)
+static void samples_db_callback(db_key_t, db_value_t value, void * data)
 {
 	u32 * count = (u32 *)data;
 
@@ -87,8 +87,8 @@ u32 samples_file_t::count(uint start, uint end) const
 {
 	u32 count = 0;
 
-	db_travel(&db_tree, start - start_offset, end - start_offset,
-		  db_tree_callback, &count);
+	db_travel(&samples_db, start - start_offset, end - start_offset,
+		  samples_db_callback, &count);
 
 	return count;
 }

@@ -151,11 +151,11 @@ static void check_samples_files_list(list<string> const & filenames)
  *
  * @param key
  * @param value
- * @param data is a pointer to the destination db_tree_t object
+ * @param data is a pointer to the destination samples_db_t object
  */
 static void copy_callback(db_key_t key, db_value_t value, void * data)
 {
-	db_tree_t * dest = (db_tree_t *)data;
+	samples_db_t * dest = (samples_db_t *)data;
 
 	db_insert(dest, key, value);
 }
@@ -184,12 +184,12 @@ static void output_files(string const & filename,
 		out << in.rdbuf();
 	}
 
-	db_tree_t dest;
+	samples_db_t dest;
 
 	db_open(&dest, filename.c_str(), DB_RDWR, sizeof(struct opd_header));
 
 	for (++it ; it != filenames.end() ; ++it) {
-		db_tree_t src;
+		samples_db_t src;
 
 		db_open(&src, it->c_str(), DB_RDONLY, sizeof(struct opd_header));
 

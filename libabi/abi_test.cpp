@@ -40,7 +40,7 @@ int main(int argc, char const ** argv)
 	}
 
 	if (db_filename.size() > 0) {
-		db_tree_t dest;
+		samples_db_t dest;
 		db_open(&dest, db_filename.c_str(), DB_RDWR, sizeof(struct opd_header));
 
 		struct opd_header * header;

@@ -73,7 +73,7 @@ struct samples_file_t /*:*/ noncopyable
 
 	/// return the header of this sample file
 	opd_header const & header() const {
-		return *static_cast<opd_header *>(db_tree.base_memory);
+		return *static_cast<opd_header *>(samples_db.base_memory);
 	}
 
 	/// see member variable start_offset
@@ -82,7 +82,7 @@ struct samples_file_t /*:*/ noncopyable
 	}
 private:
 	/// the underlying db object
-	db_tree_t db_tree;
+	samples_db_t samples_db;
 
 	/**
 	 * For the kernel and kernel modules, this value is non-zero and

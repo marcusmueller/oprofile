@@ -86,7 +86,7 @@ void Extractor::extract(void * targ_, void const * src_,
 void import_from_abi(Abi const & abi, 
 		     void const * srcv, 
 		     size_t len, 
-		     db_tree_t * dest) throw (Abi_exception)
+		     samples_db_t * dest) throw (Abi_exception)
 {
 	struct opd_header * head;
 	head = static_cast<opd_header *>(dest->base_memory);	
@@ -176,7 +176,7 @@ main(int argc, char const ** argv)
 		int in_fd;
 		struct stat statb;
 		void * in;
-		db_tree_t dest;
+		samples_db_t dest;
 
 		assert((in_fd = open(inputs[0].c_str(), O_RDONLY)) > 0);		
 		assert(fstat(in_fd, &statb)==0);

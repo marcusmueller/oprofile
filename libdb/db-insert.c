@@ -13,7 +13,7 @@
 
 #include "db.h"
 
-static void lock_db(db_tree_t * tree)
+static void lock_db(samples_db_t * tree)
 {
 	if (tree->is_locked == 0) {
 		flock(tree->fd, LOCK_EX);
@@ -21,7 +21,7 @@ static void lock_db(db_tree_t * tree)
 	}
 }
 
-static void unlock_db(db_tree_t * tree)
+static void unlock_db(samples_db_t * tree)
 {
 	if (tree->is_locked) {
 		flock(tree->fd, LOCK_UN);
@@ -47,7 +47,7 @@ static void copy_item_backward(db_item_t * dest, db_item_t * src,
 	}
 }
 
-static void split_page(db_tree_t * tree,  db_page_idx_t page_idx,
+static void split_page(samples_db_t * tree,  db_page_idx_t page_idx,
 		       db_page_idx_t new_page_idx,
 		       db_item_t * value, db_item_t * excess_elt,
 		       unsigned int pos)
@@ -113,7 +113,7 @@ static void split_page(db_tree_t * tree,  db_page_idx_t page_idx,
 	excess_elt->child_page = new_page_idx;
 }
 
-static int do_reorg(db_tree_t * tree, db_page_idx_t page_idx, unsigned int pos,
+static int do_reorg(samples_db_t * tree, db_page_idx_t page_idx, unsigned int pos,
 		    db_item_t * excess_elt, db_item_t * value)
 {
 	int need_reorg;
@@ -156,7 +156,7 @@ static int do_reorg(db_tree_t * tree, db_page_idx_t page_idx, unsigned int pos,
 }
 
 #if DB_MIN_PAGE > 6
-static int do_insert(db_tree_t * tree, db_page_idx_t page_idx,
+static int do_insert(samples_db_t * tree, db_page_idx_t page_idx,
 		     db_item_t * excess_elt, db_item_t * value)
 {
 	int need_reorg;
@@ -223,7 +223,7 @@ static int do_insert(db_tree_t * tree, db_page_idx_t page_idx,
 	return need_reorg;
 }
 #else
-static int do_insert(db_tree_t * tree, db_page_idx_t page_idx,
+static int do_insert(samples_db_t * tree, db_page_idx_t page_idx,
 		     db_item_t * excess_elt, db_item_t * value)
 {
 	int need_reorg;
@@ -278,7 +278,7 @@ static int do_insert(db_tree_t * tree, db_page_idx_t page_idx,
 }
 #endif
 
-void db_insert(db_tree_t * tree, db_key_t key, db_value_t info)
+void db_insert(samples_db_t * tree, db_key_t key, db_value_t info)
 {
 	db_item_t excess_elt;
 	db_item_t value;

@@ -272,7 +272,7 @@ inline static void verb_show_sample(unsigned long offset, struct opd_map * map,
 void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 			  u32 count, u32 counter)
 {
-	db_tree_t * sample_file;
+	samples_db_t * sample_file;
 
 	sample_file = &image->sample_files[counter];
 

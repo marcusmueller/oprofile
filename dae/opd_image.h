@@ -29,7 +29,7 @@ struct opd_image {
 	/* used to link image with a valid hash, we never destroy image so a
 	 * simple link is necessary */
 	struct opd_image * hash_next;
-	db_tree_t sample_files[OP_MAX_COUNTERS];
+	samples_db_t sample_files[OP_MAX_COUNTERS];
 	int hash;
 	/* name of this image */
 	char * name;

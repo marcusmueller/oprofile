@@ -1,3 +1,8 @@
+2002-12-01  John Levon  <levon@movementarian.org>
+
+	* various files: don't use db_tree name outside of libdb,
+	  it's implementation detail for most case
+ 
 2002-11-29  Graydon Hoare  <graydon@redhat.com>
 
 	* module/x86/op_model_p4.c: fix dropped overflows.

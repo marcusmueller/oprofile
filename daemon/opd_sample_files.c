@@ -126,7 +126,7 @@ void opd_handle_old_sample_files(struct opd_image const * image)
 void opd_open_sample_file(struct opd_image * image, int counter)
 {
 	char * mangled;
-	db_tree_t * sample_file;
+	samples_db_t * sample_file;
 	struct opd_header * header;
 	char const * app_name;
 

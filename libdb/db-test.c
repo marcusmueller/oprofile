@@ -33,7 +33,7 @@ static void speed_test(int nr_item, int nr_unique_item)
 {
 	int i;
 	double begin, end;
-	db_tree_t tree;
+	samples_db_t tree;
 
 	db_open(&tree, TEST_FILENAME, DB_RDWR, 128);
 	begin = user_time();
@@ -63,7 +63,7 @@ static void do_speed_test(void)
 static int test(int nr_item, int nr_unique_item)
 {
 	int i;
-	db_tree_t tree;
+	samples_db_t tree;
 	int ret;
 
 	db_open(&tree, TEST_FILENAME, DB_RDWR, 128);
@@ -122,7 +122,7 @@ static void call_back(db_key_t key, db_value_t info, void * data)
 static int callback_test(int nr_item, int nr_unique_item)
 {
 	int i;
-	db_tree_t tree;
+	samples_db_t tree;
 	db_key_t first_key, last_key;
 	int old_nr_error = nr_error;
 
@@ -171,7 +171,7 @@ static void do_callback_test(void)
 
 static void sanity_check(char const * filename)
 {
-	db_tree_t tree;
+	samples_db_t tree;
 
 	db_open(&tree, filename, DB_RDONLY, 128);
 

@@ -161,7 +161,7 @@ static void opd_open_image(struct opd_image * image)
 		   image->name, image->app_name ? image->app_name : "none");
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
-		memset(&image->sample_files[i], '\0', sizeof(db_tree_t));
+		memset(&image->sample_files[i], '\0', sizeof(samples_db_t));
 	}
 
 	image->mtime = op_get_mtime(image->name);
@@ -197,9 +197,9 @@ void opd_check_image_mtime(struct opd_image * image)
 	len = strlen(mangled);
 
 	for (i = 0; i < op_nr_counters; i++) {
-		db_tree_t * tree = &image->sample_files[i];
-		if (tree->base_memory) {
-			db_close(tree);
+		samples_db_t * db = &image->sample_files[i];
+		if (db->base_memory) {
+			db_close(db);
 		}
 		sprintf(mangled + len, "#%d", i);
 		verbprintf("Deleting out of date \"%s\"\n", mangled);
@@ -227,7 +227,7 @@ void opd_check_image_mtime(struct opd_image * image)
 void opd_put_image_sample(struct opd_image * image,
 	unsigned long offset, int counter)
 {
-	db_tree_t * sample_file;
+	samples_db_t * sample_file;
 
 	sample_file = &image->sample_files[counter];
  

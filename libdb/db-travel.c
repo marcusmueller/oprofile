@@ -12,7 +12,7 @@
 
 #include "db.h"
 
-static void do_travel(db_tree_t const * tree, db_page_idx_t page_idx,
+static void do_travel(samples_db_t const * tree, db_page_idx_t page_idx,
 		      db_key_t first, db_key_t last,
 		      db_travel_callback callback, void * data)
 {
@@ -52,7 +52,7 @@ static void do_travel(db_tree_t const * tree, db_page_idx_t page_idx,
 	}
 }
 
-void db_travel(db_tree_t const * tree, db_key_t first, db_key_t last,
+void db_travel(samples_db_t const * tree, db_key_t first, db_key_t last,
 	    db_travel_callback callback, void * data)
 {
 	do_travel(tree, tree->descr->root_idx, first, last, callback, data);

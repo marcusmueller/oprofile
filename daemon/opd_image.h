@@ -35,7 +35,7 @@ struct opd_image {
 	/* hash table link */
 	struct list_head hash_list;
 	/* opened sample files */
-	db_tree_t sample_files[OP_MAX_COUNTERS];
+	samples_db_t sample_files[OP_MAX_COUNTERS];
 	/* time of last modification */
 	time_t mtime;
 	/* kernel image or not */

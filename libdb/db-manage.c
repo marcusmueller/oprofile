@@ -20,17 +20,17 @@
 
 #include "db.h"
 
-static __inline db_descr_t * db_to_descr(db_tree_t * tree)
+static __inline db_descr_t * db_to_descr(samples_db_t * tree)
 {
 	return (db_descr_t*)(((char*)tree->base_memory) + tree->sizeof_header);
 }
 
-static __inline db_page_t * db_to_page(db_tree_t * tree)
+static __inline db_page_t * db_to_page(samples_db_t * tree)
 {
 	return (db_page_t *)(((char *)tree->base_memory) + tree->offset_page);
 }
 
-db_page_idx_t db_add_page(db_tree_t * tree)
+db_page_idx_t db_add_page(samples_db_t * tree)
 {
 	if (tree->descr->current_size >= tree->descr->size) {
 		db_page_count_t old_size = tree->descr->size;
@@ -70,7 +70,7 @@ db_page_idx_t db_add_page(db_tree_t * tree)
 	(4096 - offset_page) / sizeof(db_page_t) ?	\
 	(4096 - offset_page) / sizeof(db_page_t) : 2
 
-void db_open(db_tree_t * tree, char const * filename, enum db_rw rw,
+void db_open(samples_db_t * tree, char const * filename, enum db_rw rw,
 	     size_t sizeof_header)
 {
 	struct stat stat_buf;
@@ -78,7 +78,7 @@ void db_open(db_tree_t * tree, char const * filename, enum db_rw rw,
 	int flags = (rw == DB_RDWR) ? (O_CREAT | O_RDWR) : O_RDONLY;
 	int mmflags = (rw == DB_RDWR) ? (PROT_READ | PROT_WRITE) : PROT_READ;
 
-	memset(tree, '\0', sizeof(db_tree_t));
+	memset(tree, '\0', sizeof(samples_db_t));
 
 	tree->offset_page = sizeof_header + sizeof(db_descr_t);
 	tree->sizeof_header = sizeof_header;
@@ -143,7 +143,7 @@ void db_open(db_tree_t * tree, char const * filename, enum db_rw rw,
 
 }
 
-void db_close(db_tree_t * tree)
+void db_close(samples_db_t * tree)
 {
 	if (tree->base_memory) {
 		size_t size = (tree->descr->size * sizeof(db_page_t));
@@ -159,7 +159,7 @@ void db_close(db_tree_t * tree)
 	}
 }
 
-void db_sync(db_tree_t const * tree)
+void db_sync(samples_db_t const * tree)
 {
 	size_t size;
 

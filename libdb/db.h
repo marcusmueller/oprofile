@@ -78,7 +78,7 @@ typedef struct {
 	unsigned int sizeof_header;	/**< from base_memory to descr */
 	unsigned int offset_page;	/**< from base_memory to page_base */
 	int is_locked;			/**< is fd already locked */
-} db_tree_t;
+} samples_db_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -103,44 +103,44 @@ enum db_rw {
  * at the start of the file which is skipped.
  * db_open() always preallocate a few number of pages.
  */
-void db_open(db_tree_t * tree, char const * filename, enum db_rw rw, size_t sizeof_header);
+void db_open(samples_db_t * tree, char const * filename, enum db_rw rw, size_t sizeof_header);
 
 /** Close the given DB tree */
-void db_close(db_tree_t * tree);
+void db_close(samples_db_t * tree);
 
 /** issue a msync on the used size of the mmaped file */
-void db_sync(db_tree_t const * tree);
+void db_sync(samples_db_t const * tree);
 
 /** add a page returning its index. Take care all page pointer can be
  * invalidated by this call ! */
-db_page_idx_t db_add_page(db_tree_t * tree);
+db_page_idx_t db_add_page(samples_db_t * tree);
 
 /** db-debug.c */
 /** check than the tree is well build by making a db_check_page_pointer() then
  * checking than item are correctly sorted */
-int db_check_tree(const db_tree_t * tree);
+int db_check_tree(const samples_db_t * tree);
 /** check than child page nr are coherent */
-int db_check_page_pointer(db_tree_t const * tree);
+int db_check_page_pointer(samples_db_t const * tree);
 /** display the item in tree */
-void db_display_tree(db_tree_t const * tree);
+void db_display_tree(samples_db_t const * tree);
 /** same as above but do not travel through the tree, just display raw page */
-void db_raw_display_tree(db_tree_t const * tree);
+void db_raw_display_tree(samples_db_t const * tree);
 
 /* db-insert.c */
 /** insert info at key, if key already exist the info is added to the
  * existing samples */
-void db_insert(db_tree_t * tree, db_key_t key, db_value_t info);
+void db_insert(samples_db_t * tree, db_key_t key, db_value_t info);
 
 /* db-travel.c */
 /** the call back type to pass to travel() */
 typedef void (*db_travel_callback)(db_key_t key, db_value_t info, void * data);
 /** iterate through key in rang [first, last[ passing it to callback,
  * data is optional user data to pass to the callback */
-void db_travel(db_tree_t const * tree, db_key_t first, db_key_t last,
+void db_travel(samples_db_t const * tree, db_key_t first, db_key_t last,
 	       db_travel_callback callback, void * data);
 
 /** from a page index return a page pointer */
-static __inline db_page_t * page_nr_to_page_ptr(db_tree_t const * tree,
+static __inline db_page_t * page_nr_to_page_ptr(samples_db_t const * tree,
 						db_page_idx_t page_nr)
 {
 	assert(page_nr < tree->descr->current_size);
