@@ -454,11 +454,22 @@ static void opd_options(int argc, char const * argv[])
 /* determine what kernel we're running and which daemon
  * to use
  */
-static void fill_ops(void)
+static struct oprofiled_ops * get_ops(void)
 {
-	opd_ops = &opd_24_ops;
-	if (op_file_readable("/dev/oprofile/cpu_type"))
-		opd_ops = &opd_26_ops;
+	switch (op_get_interface()) {
+		case OP_INTERFACE_24:
+			printf("Using 2.4 OProfile kernel interface.\n");
+			return &opd_24_ops;
+		case OP_INTERFACE_26:
+			printf("Using 2.6+ OProfile kernel interface.\n");
+			return &opd_26_ops;
+		default:
+			break;
+	}
+
+	fprintf(stderr, "Couldn't determine kernel version.\n");
+	exit(EXIT_FAILURE);
+	return NULL;
 }
 
 
@@ -474,7 +485,7 @@ int main(int argc, char const * argv[])
 
 	opd_setup_signals();
 
-	fill_ops();
+	opd_ops = get_ops();
 
 	opd_options(argc, argv);
 
