@@ -50,7 +50,7 @@ static unsigned int nr_modules=0;
  */
 void opd_init_kernel_image(void)
 {
-	kernel_image = opd_get_kernel_image(vmlinux);
+	kernel_image = opd_get_kernel_image(vmlinux, NULL);
 }
 
 /**
@@ -230,7 +230,7 @@ static void opd_get_module_info(void)
 				strncpy(filename, cp2, (size_t)(cp3 - cp2));
 				filename[cp3-cp2] = '\0';
 
-				mod->image = opd_get_kernel_image(filename);
+				mod->image = opd_get_kernel_image(filename, NULL);
 				free(filename);
 				break;
 
@@ -261,6 +261,15 @@ failure:
 /**
  * opd_drop_module_sample - drop a module sample efficiently
  * @param eip  eip of sample
+ *
+ * This function is called to recover from failing to put a samples even
+ * after re-reading /proc/ksyms. It's either a rogue sample, or from a module
+ * that didn't create symbols (like in some initrd setups). So we check with
+ * query_module() if we can place it in a symbol-less module, and if so create
+ * a negative entry for it, to quickly ignore future samples.
+ *
+ * Problem uncovered by Bob Montgomery <bobm@fc.hp.com>
+ *
  */
 static void opd_drop_module_sample(unsigned long eip)
 {
@@ -270,6 +279,8 @@ static void opd_drop_module_sample(unsigned long eip)
 	size_t ret;
 	uint nr_mods;
 	uint mod = 0;
+
+	opd_stats[OPD_LOST_MODULE]++;
 
 	module_names = xmalloc(size);
 	while (query_module(NULL, QM_MODULES, module_names, size, &ret)) {
@@ -363,16 +374,6 @@ static void opd_handle_module_sample(unsigned long eip, u32 counter)
 				   module->name);
 		}
 	} else {
-		/* ok, we failed to place the sample even after re-reading
-		 * /proc/ksyms. It's either a rogue sample, or from a module
-		 * that didn't create symbols (like in some initrd setups).
-		 * So we check with query_module() if we can place it in a
-		 * symbol-less module, and if so create a negative entry for
-		 * it, to quickly ignore future samples.
-		 *
-		 * Problem uncovered by Bob Montgomery <bobm@fc.hp.com>
-		 */
-		opd_stats[OPD_LOST_MODULE]++;
 		opd_drop_module_sample(eip);
 	}
 }
@@ -432,7 +433,7 @@ void opd_add_kernel_map(struct opd_proc * proc, unsigned long eip)
 
 
 	if (eip < kernel_end) {
-		image = opd_get_image(vmlinux, -1, app_name, 1);
+		image = opd_get_kernel_image(vmlinux, app_name);
 		if (!image) {
 			verbprintf("Can't create image for %s %s\n", vmlinux, app_name);
 			return;
@@ -461,7 +462,7 @@ void opd_add_kernel_map(struct opd_proc * proc, unsigned long eip)
 			       module->name);
 			module_name = module->name;
 		}
-		image = opd_get_image(module_name, -1, app_name, 1);
+		image = opd_get_kernel_image(module_name, app_name);
 		if (!image) {
 			verbprintf("Can't create image for %s %s\n",
 			       module->name, app_name);
@@ -469,16 +470,6 @@ void opd_add_kernel_map(struct opd_proc * proc, unsigned long eip)
 		}
 		opd_add_mapping(proc, image, module->start, 0, module->end);
 	} else {
-		/* ok, we failed to place the sample even after re-reading
-		 * /proc/ksyms. It's either a rogue sample, or from a module
-		 * that didn't create symbols (like in some initrd setups).
-		 * So we check with query_module() if we can place it in a
-		 * symbol-less module, and if so create a negative entry for
-		 * it, to quickly ignore future samples.
-		 *
-		 * Problem uncovered by Bob Montgomery <bobm@fc.hp.com>
-		 */
-		opd_stats[OPD_LOST_MODULE]++;
 		opd_drop_module_sample(eip);
 	}
 }

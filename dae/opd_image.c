@@ -28,9 +28,6 @@ extern int separate_lib_samples;
 /* maintained for statistics purpose only */
 unsigned int nr_images=0;
 
-/* module never return a 0 hash name, we use it for kernel and module name */
-#define HASH_KERNEL 0
-
 /* list of images */
 static struct list_head opd_images = { &opd_images, &opd_images };
 
@@ -354,12 +351,17 @@ struct opd_image * opd_get_image(char const * name, int hash, char const * app_n
 /**
  * opd_get_kernel_image - get a kernel image
  * @param name of image
+ * @param app_name application owner of this kernel image. non-null only
+ *  when separate_kernel_sample != 0
  *
  * Create and initialise an image adding it
  * to the image lists and to image hash list
  * entry HASH_KERNEL
  */
-struct opd_image * opd_get_kernel_image(char const * name)
+struct opd_image * opd_get_kernel_image(char const * name, char const * app_name)
 {
-	return opd_get_image(name, HASH_KERNEL, NULL, 1);
+	/* FIXME: images_with_hash[0] is never used, can we use it and firstly
+	 * do opd_get_image_by_hash() here ? Take care such change needs
+	 * carefull test, think to --separate and initrd */
+	return opd_get_image(name, -1, app_name, 1);
 }
