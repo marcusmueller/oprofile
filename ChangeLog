@@ -1,3 +1,7 @@
+2003-08-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* events/alpha.ev6.events: fix duplicate um tag
+
 2003-08-28  John Levon  <levon@movementarian.org>
 
 	* events/i386.athlon.events: fix duplicate minimum tag
