@@ -825,7 +825,6 @@ inline static u32 opd_map_offset(struct opd_map *map, u32 eip)
 void opd_put_sample(const struct op_sample *sample)
 {
 	unsigned int i; 
-	unsigned int count; 
 	struct opd_proc *proc; 
 
 	if (!sample->pid) {
@@ -878,6 +877,7 @@ void opd_put_sample(const struct op_sample *sample)
  */
 void opd_put_mapping(struct opd_proc *proc, struct opd_image *image, u32 start, u32 offset, u32 end)
 {
+	/* note we can have duplicate maps due to binary handler kludge. so what ? */
 	proc->maps[proc->nr_maps].image = image;
 	proc->maps[proc->nr_maps].start = start; 
 	proc->maps[proc->nr_maps].offset = offset; 
@@ -989,6 +989,8 @@ void opd_handle_mapping(const struct op_sample *sample)
 	opd_free(mapping); 
 }
  
+static void opd_get_ascii_maps(struct opd_proc *proc);
+ 
 /**
  * opd_handle_drop_mappings - deal with notification of dropped mappings
  * @sample: sample structure from kernel
@@ -1002,9 +1004,11 @@ void opd_handle_drop_mappings(const struct op_sample *sample)
 	struct opd_proc *proc;
 
 	proc = opd_get_proc(sample->pid);
-	if (proc)
+	if (proc) {
 		opd_kill_maps(proc);
-	else
+	 	/* FIXME: if we can't fix execve(), must read as ascii */
+		opd_get_ascii_maps(proc);
+	} else
 		printf("Told to drop mappings for a non-existent process %u.\n",sample->pid);
 }
 
