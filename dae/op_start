@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.42 2001/09/12 17:10:50 movement Exp $
+# $Id: op_start,v 1.43 2001/09/13 16:02:53 davej Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -77,7 +77,7 @@ do_help() {
 	  --ctrN-unit-mask=val         unit mask for ctr N
 	  --ctrN-kernel=[0|1]          whether to count kernel events for ctr N
 	  --ctrN-user=[0|1]            whether to count user events for ctr N
-	Allowed range for N is [0-$OP_MAX_COUNTERS[
+	Allowed range for N is [0-$MAX_COUNTER]
 	  --pid-filter=pid             Only profile process pid 
 	  --pgrp-filter=pgrp           Only profile process group pgrp
 
@@ -118,9 +118,11 @@ do_init() {
 	case "$CPUTYPE" in
 		0|1|2)
 			OP_MAX_COUNTERS=2
+			MAX_COUNTER=1
 			;;
 		3)
 			OP_MAX_COUNTERS=4
+			MAX_COUNTER=3
 			;;
 		*)
 			echo "Unknown cpu type \"$CPUTYPE\""
