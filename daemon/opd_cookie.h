@@ -18,7 +18,7 @@
 #if defined(__i386__)
 #define opd_nr_lookup_dcookie 253
 #elif defined(__x86_64__)
-#define opd_nr_lookup_dcookie 253
+#define opd_nr_lookup_dcookie 212
 #elif defined(__powerpc__)
 #define opd_nr_lookup_dcookie 235
 #elif defined(__alpha__)
