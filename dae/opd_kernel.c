@@ -424,7 +424,6 @@ static void opd_handle_module_sample(u32 eip, u16 count)
  */
 void opd_handle_kernel_sample(u32 eip, u16 count)
 {
-	printf("start is %x, end is %x, eip is %x\n", kernel_start, kernel_end, eip); 
 	if (eip < kernel_end) {
 		opd_stats[OPD_KERNEL]++;
 		opd_put_image_sample(kernel_image, eip - kernel_start, count);
