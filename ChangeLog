@@ -1,3 +1,7 @@
+2002-03-30  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* ChangeLog: change my email address
+
 2002-03-22  Philippe Elie  <ph_e@club-internet.fr>
 
 	* dae/op_start: default buffer size to zero and let module
