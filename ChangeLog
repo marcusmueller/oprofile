@@ -1,5 +1,9 @@
 2002-02-02  John Levon  <moz@compsoc.man.ac.uk>
 
+	* configure.in: bump to 0.0.9
+ 
+2002-02-02  John Levon  <moz@compsoc.man.ac.uk>
+
 	* module/op_nmi.c: fix stupid bug spotted by Bob
 	  Montgomery
  
