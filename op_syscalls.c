@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.18 2001/09/18 01:00:33 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.19 2001/09/18 10:00:07 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -19,92 +19,12 @@
 #include <linux/unistd.h>
 #include <linux/mman.h>
 #include <linux/file.h>
-#include <linux/wrapper.h>
-
-#include <asm/io.h>
 
 #include "oprofile.h"
 
-extern u32 oprof_ready[NR_CPUS];
-extern wait_queue_head_t oprof_wait;
 extern pid_t pid_filter;
 extern pid_t pgrp_filter;
 extern u32 prof_on;
-
-/* Given PGD from the address space's page table, return the kernel
- * virtual mapping of the physical memory mapped at ADR.
- */
-static inline unsigned long uvirt_to_kva(pgd_t *pgd, unsigned long adr)
-{
-	unsigned long ret = 0UL;
-	pmd_t *pmd;
-	pte_t *ptep, pte;
-
-	if (!pgd_none(*pgd)) {
-		pmd = pmd_offset(pgd, adr);
-		if (!pmd_none(*pmd)) {
-			ptep = pte_offset(pmd, adr);
-			pte = *ptep;
-			if(pte_present(pte)) {
-				ret = (unsigned long) page_address(pte_page(pte));
-				ret |= (adr & (PAGE_SIZE - 1));
-			}
-		}
-	}
-	return ret;
-}
-
-/* Here we want the physical address of the memory.
- * This is used when initializing the contents of the
- * area and marking the pages as reserved.
- */
-static inline unsigned long kvirt_to_pa(unsigned long adr)
-{
-	unsigned long va, kva, ret;
-
-	va = VMALLOC_VMADDR(adr);
-	kva = uvirt_to_kva(pgd_offset_k(va), va);
-	ret = __pa(kva);
-	return ret;
-}
-
-static void * rvmalloc(signed long size)
-{
-	void * mem;
-	unsigned long adr, page;
-
-	mem=vmalloc_32(size);
-	if (!mem)
-		return NULL;
-
-	memset(mem, 0, size);
-	
-	adr=(unsigned long) mem;
-	while (size > 0) {
-		page = kvirt_to_pa(adr);
-		mem_map_reserve(virt_to_page(__va(page)));
-		adr += PAGE_SIZE;
-		size -= PAGE_SIZE;
-	}
-	return mem;
-}
-
-static void rvfree(void * mem, signed long size)
-{
-	unsigned long adr, page;
-
-	if (!mem)
-		return;
-		
-	adr=(unsigned long) mem;
-	while (size > 0) {
-		page = kvirt_to_pa(adr);
-		mem_map_unreserve(virt_to_page(__va(page)));
-		adr += PAGE_SIZE;
-		size -= PAGE_SIZE;
-	}
-	vfree(mem);
-}
 
 static uint dname_top;
 static struct qstr **dname_stack;
@@ -443,7 +363,7 @@ asmlinkage static int my_sys_mmap2(ulong addr, ulong len,
 	    (pgrp_filter && current->pgrp != pgrp_filter))
 		goto out;
 
-	if ((prot&PROT_EXEC) && ret >= 0)
+	if ((prot & PROT_EXEC) && ret >= 0)
 		out_mmap(ret, len, prot, flags, fd, pgoff << PAGE_SHIFT);
 	goto out;
 out:

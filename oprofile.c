@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.89 2001/09/18 01:00:33 movement Exp $ */
+/* $Id: oprofile.c,v 1.90 2001/09/18 10:00:07 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -429,6 +429,20 @@ static int is_ready(void)
 	return 0;
 }
 
+static int check_buffer_amount(struct _oprof_data * data)
+{
+	int size = data->buf_size; 
+	int num = data->nextbuf;
+	if (num < size - OP_PRE_WATERMARK && oprof_ready[cpu_num] != 2) {
+		printk(KERN_ERR "oprofile: Detected overflow of size %d. You must increase the "
+				"hash table size or reduce the interrupt frequency (%d)\n",
+				num, oprof_ready[cpu_num]);
+		num = size;
+	} else
+		data->nextbuf=0;
+	return num;
+}
+
 static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 {
 	struct op_sample *mybuf;
@@ -451,7 +465,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	if (*ppos || count != sizeof(struct op_sample) + max)
 		return -EINVAL;
 
-	mybuf = vmalloc(sizeof(struct op_sample) + max);
+	mybuf = vmalloc(max);
 	if (!mybuf)
 		return -EFAULT;
 
@@ -469,20 +483,14 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	pmc_select_stop(cpu_num);
 	spin_lock(&note_lock);
 
-	num = oprof_data[cpu_num].nextbuf;
-	/* might have overflowed from map buffer or ejection buffer */
-	if (num < oprof_data[cpu_num].buf_size-OP_PRE_WATERMARK && oprof_ready[cpu_num] != 2) {
-		printk(KERN_ERR "oprofile: Detected overflow of size %d. You must increase the "
-				"hash table size or reduce the interrupt frequency (%d)\n",
-				num, oprof_ready[cpu_num]);
-		num = oprof_data[cpu_num].buf_size;
-	} else
-		oprof_data[cpu_num].nextbuf=0;
-
+	/* buffer might have overflowed */
+	num = check_buffer_amount(&oprof_data[cpu_num]);
+ 
 	oprof_ready[cpu_num] = 0;
 
 	count = num * sizeof(struct op_sample);
 
+	/* FIXME: can eliminate this bounce buffer when note_lock dies */
 	if (count)
 		memcpy(mybuf, oprof_data[cpu_num].buffer, count);
 

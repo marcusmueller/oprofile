@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.53 2001/09/18 01:00:33 movement Exp $ */
+/* $Id: oprofile.h,v 1.54 2001/09/18 10:00:07 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -209,6 +209,9 @@ struct _idt_descr { u32 a; u32 b; } __attribute__((__packed__));
 extern uint perfctr_msr[OP_MAX_COUNTERS];
 extern uint eventsel_msr[OP_MAX_COUNTERS];
 
+void * rvmalloc(signed long size); 
+void rvfree(void * mem, signed long size);
+unsigned long kvirt_to_pa(unsigned long adr); 
 int oprof_init(void);
 void oprof_exit(void);
 void my_set_fixmap(void);

@@ -5,6 +5,8 @@ MKDIR_P=mkdir -p
 MOC=@MOC@
 UIC=@UIC@
 
+# FIXME: dependencies are fucked ... my fault (john)
+ 
 .PHONY: all clean install uninstall
 .SUFFIXES:
 
