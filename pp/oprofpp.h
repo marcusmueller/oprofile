@@ -148,6 +148,15 @@ void validate_counter(int counter_mask, int & sort_by);
  */
 uint counter_mask(const std::string &);
 
+/**
+ * @param samples_file the samples files
+ * @param image_name the image filename
+ *
+ * check than the modification time of image_name is the same as provided
+ * in the samples file header
+ */
+void check_mtime(opp_samples_files const & samples, std::string image_name);
+
 /** control the behavior of verbprintf() */
 extern int verbose;
 /** control the behavior of demangle_symbol() */

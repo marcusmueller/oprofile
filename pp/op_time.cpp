@@ -647,8 +647,11 @@ static void output_symbols_count(map_t& files, int counter)
 		if (file_exist(image_name)) {
 			opp_samples_files samples_file(samples_filename,
 						       counter);
+			check_mtime(samples_file, image_name);
 
-			op_bfd abfd(samples_file, image_name);
+			op_bfd abfd(samples_file.is_kernel(), image_name);
+
+			samples_file.set_start_offset(abfd.get_start_offset());
 
 			samples.add(samples_file, abfd);
 		}

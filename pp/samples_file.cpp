@@ -133,11 +133,11 @@ bool opp_samples_files::accumulate_samples(counter_array_t & counter,
 	return found_samples;
 }
 
-void opp_samples_files::set_sect_offset(u32 sect_offset)
+void opp_samples_files::set_start_offset(u32 start_offset)
 {
 	for (uint k = 0; k < nr_counters; ++k) {
 		if (is_open(k)) {
-			samples[k]->sect_offset = sect_offset;
+			samples[k]->start_offset = start_offset;
 		}
 	}
 }
@@ -150,7 +150,7 @@ void opp_samples_files::set_sect_offset(u32 sect_offset)
  */
 void opp_samples_files::output_header() const
 {
-	const opd_header & header = first_header();
+	opd_header const & header = first_header();
 
 	op_cpu cpu = static_cast<op_cpu>(header.cpu_type);
  
@@ -167,7 +167,7 @@ void opp_samples_files::output_header() const
 }
 
 samples_file_t::samples_file_t(string const & filename)
-	: sect_offset(0)
+	: start_offset(0)
 {
 	db_open(&db_tree, filename.c_str(), DB_RDONLY, sizeof(struct opd_header));
 }
@@ -216,7 +216,7 @@ u32 samples_file_t::count(uint start, uint end) const
 {
 	u32 count = 0;
 
-	db_travel(&db_tree, start - sect_offset, end - sect_offset,
+	db_travel(&db_tree, start - start_offset, end - start_offset,
 		  db_tree_callback, &count);
 
 	return count;

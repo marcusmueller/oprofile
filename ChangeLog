@@ -1,3 +1,24 @@
+2002-05-16  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/opd_proc.c: close samples files at cleanup
+
+	* libdb/db-insert.cpp: if we don't lock the file when creating
+	  the root we must ensure than initialization is atomic
+
+	* pp/op_bfd.cpp:
+	* pp/op_bfd.h:
+	* pp/op_time.cpp:
+	* pp/op_to_source.cpp:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp:
+	* pp/samples_file.cpp:
+	* pp/samples_file.h: move all coherency check between a op_bfd and
+	  it's related opp_samples_files outside these class
+
+	* pp/samples_container.cpp: small modification allowing to privatize
+	  op_bfd::ibfd pointer.
+
 2002-05-16  John Levon  <moz@compsoc.man.ac.uk>
 
 	* libutil/op_lockfile.c: detect and remove stale

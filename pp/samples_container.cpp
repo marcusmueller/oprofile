@@ -82,7 +82,7 @@ add(opp_samples_files const & samples_files, op_bfd const & abfd)
  
 	nr_counters = samples_files.nr_counters;
 
-	string const image_name = bfd_get_filename(abfd.ibfd);
+	string const image_name = abfd.get_filename();
 	bool const need_linenr = (flags & (osf_linenr_info | osf_short_linenr_info));
 	bool const need_details = (flags & osf_details);
 

@@ -78,7 +78,7 @@ public:
 	 * All error are fatal.
 	 *
 	 */
-	op_bfd(opp_samples_files & samples, const std::string & filename);
+	op_bfd(bool is_kernel, const std::string & filename);
 
 	/** close an opended bfd image and free all related resource. */
 	~op_bfd();
@@ -137,22 +137,31 @@ public:
 	 */
 	void get_vma_range(u32 & start, u32 & end) const;
 
+	/**
+	 * return the text section filepos if the bfd object is the kernel
+	 * image or a module image, else return 0 */
+	const u32 get_start_offset() const { return text_offset; }
+
 	/** Returns true if the underlined bfd object contains debug info */
 	bool have_debug_info() const;
 
-	// TODO: avoid this two public data members
-	bfd *ibfd;
+	/** return the image name of the underlined binary image */
+	std::string get_filename() const;
+
 	// sorted vector by vma of interesting symbol.
 	std::vector<op_bfd_symbol> syms;
 
 	// nr of samples.
 	uint nr_samples;
 private:
+	// the bfd object.
+	bfd *ibfd;
+
 	// vector of symbol filled by the bfd lib.
 	asymbol **bfd_syms;
 	// image file such the linux kernel need than all vma are offset
 	// by this value.
-	u32 sect_offset;
+	u32 text_offset;
 	// ctor helper
 	void open_bfd_image(const std::string & file_name, bool is_kernel);
 	bool get_symbols();

@@ -91,7 +91,7 @@ struct samples_file_t /*:*/ noncopyable
 	 * samples, the sample offset is from the start of the mapped
 	 * file, as seen in /proc/pid/maps).
 	 */
-	u32 sect_offset;
+	u32 start_offset;
 };
 
 // FIXME: can we split this file in two again ? I might want a samples_file_t
@@ -177,7 +177,14 @@ struct opp_samples_files /*:*/  noncopyable {
 		return samples[first_file]->header();
 	}
 
-	void set_sect_offset(u32 sect_offset);
+	/// return true if the samples file comes from the kernel or a module
+	bool is_kernel() const { return first_header().is_kernel; }
+
+	/** set the start offset ofthe underlined samples files. Depending
+	 * if the samples file is the kernel [module] or an user space
+	 * application the start_offset is the text section filepos or zero
+	 */
+	void set_start_offset(u32 start_offset);
 
 	// TODO privatize when we can
 	samples_file_t * samples[OP_MAX_COUNTERS];

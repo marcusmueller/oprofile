@@ -1298,6 +1298,14 @@ void opd_proc_cleanup(void)
 
 	list_for_each_safe(pos, pos2, &opd_images) {
 		image = list_entry(pos, struct opd_image, list_node);
+
+		for (i=0; i < op_nr_counters; i++) {
+			struct opd_sample_file * file = &image->sample_files[i]; 
+			if (file->tree.base_memory) {
+				db_close(&file->tree);
+			}
+		}
+
 		if (image->name)
 			free(image->name);
 		free(image);

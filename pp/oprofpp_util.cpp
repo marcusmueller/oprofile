@@ -29,6 +29,7 @@ using std::string;
 using std::vector;
 using std::ostream;
 using std::cerr;
+using std::endl;
 
 int verbose;
 char const *samplefile;
@@ -340,4 +341,14 @@ void check_event(const struct opd_header * header)
 	op_cpu cpu = static_cast<op_cpu>(header->cpu_type);
 	op_get_event_desc(cpu, header->ctr_event, header->ctr_um,
 			  &ctr_name, &ctr_desc, &ctr_um_desc);
+}
+
+void check_mtime(opp_samples_files const & samples, string image_name)
+{
+	time_t newmtime = op_get_mtime(image_name.c_str());
+	if (newmtime != samples.first_header().mtime) {
+		cerr << "oprofpp: WARNING: the last modified time of the binary file " << image_name << " does not match\n"
+		     << "that of the sample file. Either this is the wrong binary or the binary\n"
+		     << "has been modified since the sample file was created.\n";
+	}
 }

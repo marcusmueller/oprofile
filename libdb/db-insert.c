@@ -286,14 +286,17 @@ void db_insert(db_tree_t * tree, db_key_t key, db_value_t info)
 		/* create the root. */
 		db_page_t * page;
 
-		/* we don't need to lock_db() here */
+		/* we don't need to lock_db() here because we init
+		 * the root index after all proper initializations */
 
-		tree->descr->root_idx = db_add_page(tree);
+		db_page_idx_t root_idx = db_add_page(tree);
 
-		page = page_nr_to_page_ptr(tree, tree->descr->root_idx);
+		page = page_nr_to_page_ptr(tree, root_idx);
 
 		page->page_table[0] = value;
 		page->count = 1;
+
+		tree->descr->root_idx = root_idx;
 		return;
 	}
 

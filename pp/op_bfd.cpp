@@ -14,11 +14,11 @@
 #include "op_file.h"
 #include "oprofpp.h"
 
-op_bfd::op_bfd(opp_samples_files& samples, const std::string & filename)
+op_bfd::op_bfd(bool is_kernel, const std::string & filename)
 	:
 	ibfd(0),
 	bfd_syms(0),
-	sect_offset(0)
+	text_offset(0)
 {
 	if (filename.length() == 0) {
 		fprintf(stderr,"oprofpp: oppp_bfd() empty image filename.\n");
@@ -27,16 +27,7 @@ op_bfd::op_bfd(opp_samples_files& samples, const std::string & filename)
 
 	nr_samples = op_get_fsize(filename.c_str(), 0);
 
-	open_bfd_image(filename, samples.first_header().is_kernel);
-
-	time_t newmtime = op_get_mtime(filename.c_str());
-	if (newmtime != samples.first_header().mtime) {
-		fprintf(stderr, "oprofpp: WARNING: the last modified time of the binary file %s does not match\n"
-			"that of the sample file. Either this is the wrong binary or the binary\n"
-			"has been modified since the sample file was created.\n", filename.c_str());
-	}
-
-	samples.set_sect_offset(sect_offset);
+	open_bfd_image(filename, is_kernel);
 }
 
 op_bfd::~op_bfd()
@@ -78,9 +69,9 @@ void op_bfd::open_bfd_image(const std::string & filename, bool is_kernel)
 	if (is_kernel) {
 		asection *sect;
 		sect = bfd_get_section_by_name(ibfd, ".text");
-		sect_offset = sect->filepos;
+		text_offset = sect->filepos;
 		verbprintf("Adjusting kernel samples by 0x%x, .text filepos 0x%lx\n", 
-			sect_offset, sect->filepos); 
+			text_offset, sect->filepos); 
 	}
 
 	get_symbols();
@@ -412,12 +403,12 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 	end = start + syms[sym_idx].size();
 	verbprintf("start 0x%x, end 0x%x\n", start, end); 
 
-	if (start >= nr_samples + sect_offset) {
+	if (start >= nr_samples + text_offset) {
 		fprintf(stderr,"oprofpp: start 0x%x out of range (max 0x%x)\n", start, nr_samples);
 		exit(EXIT_FAILURE);
 	}
 
-	if (end > nr_samples + sect_offset) {
+	if (end > nr_samples + text_offset) {
 		fprintf(stderr,"oprofpp: end 0x%x out of range (max 0x%x)\n", end, nr_samples);
 		exit(EXIT_FAILURE);
 	}
@@ -471,4 +462,9 @@ void op_bfd::create_artificial_symbol(u32 start, u32 end)
 	op_bfd_symbol symbol(0, 0, start, 0, end - start, name);
 
 	syms.push_back(symbol);
+}
+
+string op_bfd::get_filename() const
+{
+	return bfd_get_filename(ibfd);;
 }

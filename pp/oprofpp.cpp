@@ -325,8 +325,10 @@ int main(int argc, char const *argv[])
 
 	if (gproffile) {
 		opp_samples_files samples_files(sample_file, counter);
-		op_bfd abfd(samples_files, image_file);
+		check_mtime(samples_files, image_file);
 
+		op_bfd abfd(samples_files.is_kernel(), image_file);
+		samples_files.set_start_offset(abfd.get_start_offset());
 		do_dump_gprof(abfd, samples_files, sort_by_counter);
 		return 0;
 	}
@@ -378,19 +380,28 @@ int main(int argc, char const *argv[])
 		if (i < OP_MAX_COUNTERS) {
 			opp_samples_files samples_files(*it, counter);
 
+
 			// the first opened file is treated specially because
 			// user can specify the image name for this sample
 			// file on command line else must deduce the image
 			// name from the samples file name
 			if (it == filelist.begin()) {
-				op_bfd abfd(samples_files, image_file);
+				check_mtime(samples_files, image_file);
+
+				op_bfd abfd(samples_files.is_kernel(), image_file);
+
+				samples_files.set_start_offset(abfd.get_start_offset());
 
 				samples.add(samples_files, abfd);
 			} else {
 				string app_name;
 				string lib_name;
 				app_name = extract_app_name(*it, lib_name);
-				op_bfd abfd(samples_files, demangle_filename(lib_name));
+
+				check_mtime(samples_files, image_file);
+
+				op_bfd abfd(samples_files.is_kernel(), demangle_filename(lib_name));
+				samples_files.set_start_offset(abfd.get_start_offset());
 
 				samples.add(samples_files, abfd);
 			}
