@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.14 2000/08/08 01:58:15 moz Exp $ */
+/* $Id: oprofile.c,v 1.15 2000/08/18 00:31:15 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 
@@ -508,7 +508,7 @@ int oprof_thread(void *arg)
 		}
 		current->state = TASK_INTERRUPTIBLE;
 		/* FIXME: determine best value here */
-		schedule_timeout(HZ/20);
+		schedule_timeout(HZ/40);
 
 		if (diethreaddie)
 			break;
@@ -555,8 +555,11 @@ void oprof_out8(void *buf)
 
 static int oprof_open(struct inode *ino, struct file *file)
 {
-	if (MINOR(file->f_dentry->d_inode->i_rdev)==2)
-		return oprof_map_open();
+	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
+		case 2: return oprof_map_open();
+		case 1: return oprof_hash_map_open();
+		default:
+	}
 
 	if (oprof_opened)
 		return -EBUSY;
@@ -571,8 +574,11 @@ static int oprof_open(struct inode *ino, struct file *file)
 
 static int oprof_release(struct inode *ino, struct file *file)
 {
-	if (MINOR(file->f_dentry->d_inode->i_rdev)==2)
-		return oprof_map_release();
+	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
+		case 2: return oprof_map_release();
+		case 1: return oprof_hash_map_release();
+		default:
+	}
 
 	if (!oprof_opened)
 		return -EFAULT;
@@ -591,8 +597,11 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	uint i;
 	ssize_t max;
 
-	if (MINOR(file->f_dentry->d_inode->i_rdev==2))
-		return oprof_map_read(buf,count,ppos);
+	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
+		case 2: return oprof_map_read(buf,count,ppos);
+		case 1: return -EINVAL;
+		default:
+	}
 
 	max = sizeof(struct op_sample)*op_buf_size;
 
@@ -621,6 +630,7 @@ again:
 
 doit:
 	pmc_select_stop(i);
+
 	if (oprof_data[i].nextbuf) /* FIXME: remove */
 		printk("oprofile: lost %u samples waking up.\n",oprof_data[i].nextbuf);
 
@@ -636,11 +646,19 @@ doit:
 	return count;
 }
 
+static int oprof_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	if (MINOR(file->f_dentry->d_inode->i_rdev)==1)
+		return oprof_hash_map_mmap(file,vma);
+	return -EINVAL;
+}
+
 static struct file_operations oprof_fops = {
 	owner: THIS_MODULE,
 	open: oprof_open,
 	release: oprof_release,
 	read: oprof_read,
+	mmap: oprof_mmap,
 };
 
 /* ---------------- general setup ------------------------- */
