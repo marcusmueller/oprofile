@@ -1,3 +1,8 @@
+2003-03-10  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* configure.in: remove unsupported --warnnet, fix docbook root dir test
+	* doc/oprofile.xml: typo
+
 2003-03-10  John Levon  <levon@movementarian.org>
 
 	* doc/Makefile.am:

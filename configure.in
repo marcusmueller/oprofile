@@ -89,14 +89,14 @@ DOCBOOK_ROOT=
 if test ! -f /etc/xml/catalog; then
 	for i in /usr/share/sgml/docbook/stylesheet/xsl/nwalsh /usr/share/sgml/docbook/xsl-stylesheets/;
 	do
-		if test -f "$i"; then
+		if test -d "$i"; then
 			DOCBOOK_ROOT=$i
 		fi
 	done
 
 	# Last resort - try net
 	if test -z "$DOCBOOK_ROOT"; then
-		XSLTPROC_FLAGS==--warnnet
+		XSLTPROC_FLAGS=
 	fi
 else
 	CAT_ENTRY_START='<!--'
