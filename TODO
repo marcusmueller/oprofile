@@ -17,6 +17,10 @@ format? make the headers more explanative
  o review opstack documentation, improve it by giving examples of output and
   how to interpret it.
  o finish opstack: various --separate= --merge= handling,
+ o opstack --acumulate (fix it or inhibit) ?
+
+ o callgraph patch: better way to skip ignored backtrace ?
+ o can daemon avoid to hack about last_is_kernel ?
 
 0.9 release
 -----------
