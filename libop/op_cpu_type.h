@@ -76,7 +76,7 @@ int op_get_nr_counters(op_cpu cpu_type);
 typedef enum {
 	OP_INTERFACE_NO_GOOD = -1,
 	OP_INTERFACE_24,
-	OP_INTERFACE_25
+	OP_INTERFACE_26
 } op_interface;
 
 /**

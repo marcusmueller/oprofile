@@ -125,9 +125,9 @@ oprof_start::oprof_start()
 		fill_events();
 	}
 
-	bool is_25 = op_get_interface() == OP_INTERFACE_25;
+	bool is_26 = op_get_interface() == OP_INTERFACE_26;
 
-	if (is_25) {
+	if (is_26) {
 		pid_filter_label->hide();
 		pid_filter_edit->hide();
 		pgrp_filter_label->hide();

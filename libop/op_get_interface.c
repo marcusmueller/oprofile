@@ -39,7 +39,7 @@ op_interface op_get_interface(void)
 	fp = fopen("/dev/oprofile/cpu_type", "r");
 	if (fp) {
 		fclose (fp);
-		current_interface = OP_INTERFACE_25;
+		current_interface = OP_INTERFACE_26;
 		return current_interface;
 	}
 

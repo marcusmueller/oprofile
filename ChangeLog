@@ -20,6 +20,7 @@
 	* configure.in: use -Wdeclaration-after-statement
 	if available
 
+	* README:
 	* daemon/opd_util.c:
 	* daemon/opd_util.h:
 	* doc/opannotate.1.in:
@@ -28,7 +29,10 @@
 	* doc/oprofile.1.in:
 	* doc/oprofile.xml:
 	* gui/oprof_start.cpp:
+	* gui/oprof_start_util.cpp:
 	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_get_interface.c:
 	* libpp/locate_images.cpp: remove references to
 	2.5, replaced with 2.6
 

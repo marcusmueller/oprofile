@@ -114,7 +114,7 @@ daemon_status::daemon_status()
 				ifs3 >> nr_interrupts;
 		}
 		break;
-	case OP_INTERFACE_25:
+	case OP_INTERFACE_26:
 		{
 			static unsigned int old_sum_interrupts;
 			unsigned int sum_interrupts = 0;
