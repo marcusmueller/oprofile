@@ -55,7 +55,6 @@ oprof_start::oprof_start()
 	event_count_validator(new QIntValidator(event_count_edit)),
 	current_ctr(0),
 	cpu_speed(get_cpu_speed()),
-	op_nr_counters(2),
 	total_nr_interrupts(0)
 {
 	for (uint i = 0; i < OP_MAX_COUNTERS; ++i) {
@@ -70,11 +69,9 @@ oprof_start::oprof_start()
 		exit(EXIT_FAILURE);
 
 	cpu_type = op_get_cpu_type();
+	op_nr_counters = op_get_nr_counters(cpu_type);
 
-	if (cpu_type == CPU_ATHLON)
-		op_nr_counters = 4;
-	else if (cpu_type == CPU_RTC) {
-		op_nr_counters = 1;
+	if (cpu_type == CPU_RTC) {
 		current_ctr = 0;
 		enabled_toggled(1);
 		enabled->hide();

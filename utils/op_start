@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.7 2002/07/26 16:19:45 phil_e Exp $
+# $Id: op_start,v 1.8 2002/07/29 23:40:23 phil_e Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -91,7 +91,7 @@ do_help() {
 	Allowed range for N is [0-$MAX_COUNTER]
 	  --rtc-value=val              RTC value (only if RTC is being used)
 	  --pid-filter=pid             Only profile process pid 
-	  --pgrp-filter=pgrp           Only profile process group pgrp
+	  --pgrp-filter=pgrp           Only profile process tty group pgrp
 
 	Daemon options
 	  --separate-samples           separate samples for each distinct application

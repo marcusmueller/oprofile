@@ -437,7 +437,7 @@ options, only interesting ones are listed here :
 	<varlistentry>
 		<term><option>--pgrp-filter=</option>pgpr</term>
 		<listitem><para>
-		Only samples of this process group id will be collected (including any kernel-side samples when this process is in
+		Only samples of this process tty group id will be collected (including any kernel-side samples when this process is in
 		the kernel).
 		</para></listitem>
 	</varlistentry>
@@ -764,7 +764,7 @@ each enabled counter. As the NMI handler is in-kernel, this avoids the problem.
 <sect2 id="pidpgrpfilter">
 <title>pid/pgrp filter</title>
 <para>There are situations where you are only interested in the profiling results of a particular
-running process, or process group. You can set
+running process, or process tty group. You can set
 the pid/pgrp values via the <filename>--pid-filter</filename> and <filename>--pgrp-filter</filename>
 options to <command>op_start</command>, which will make the daemon ignore samples for processes
 that don't match the filter.

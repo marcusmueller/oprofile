@@ -115,7 +115,7 @@ Only profile process pid
 .br
 .TP
 .BI "--pgrp-filter=" pgrp
-Only profile process group pgrp
+Only profile process tty group pgrp
 .br
 .TP
 .BI "--separate-samples"
