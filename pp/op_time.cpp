@@ -307,8 +307,7 @@ static void output_files_count(map_t& files)
 
 				samples_file_t samples(s.str());
 
-				u32 count =
-					samples.count(0, ~0);
+				u32 count = samples.count(0, ~0);
 
 				p_it.first->second.count[i] = count;
 				total_count[i] += count;
@@ -325,8 +324,11 @@ static void output_files_count(map_t& files)
 		}
 	}
 
+	// already checked by caller but we must recheck it now, we can have
+	// samples files in samples dir but all of them are for a different
+	// counter than the selected once
 	if (empty) {
-		cerr << "no samples files found (try running op_dump ?)\n";
+		cerr << "no samples files found for the slected counter(s) (try running op_dump ?)\n";
 		return;	// Would exit(EXIT_FAILURE); perhaps
 	}
 
@@ -536,6 +538,11 @@ int main(int argc, char const * argv[])
 
 	map_t file_map;
 	sort_file_list_by_name(file_map, file_list);
+
+	if (file_map.empty()) {
+		cerr << "no samples files found (try running op_dump ?)\n";
+		exit(EXIT_FAILURE);
+	}
 
 	if (options::list_symbols) {
 		output_symbols_count(file_map, options::counter);

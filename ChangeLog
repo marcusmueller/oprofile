@@ -1,3 +1,8 @@
+2002-09-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/op_time.cpp: exit sooner when no samples files are available.
+	  This also work around some obscure problem with gcc >= 3.0
+
 2002-09-09  Will Cohen  <wcohen@redhat.com>
 
 	* dae/opd_kernel.c (struct opd_module): 
