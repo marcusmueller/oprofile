@@ -77,7 +77,7 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 <variablelist>
 	<varlistentry>
 		<term>Linux kernel 2.2/2.4</term>
-		<listitem>
+		<listitem><para>
 			OProfile uses a kernel module that can be compiled for
 			2.2.11 or later and 2.4. Versions 2.4.10 or above are recommended, and required if you use the
 			boot-time kernel option <option>nosmp</option>. AMD Hammer support requires a recent (&gt;= 2.4.19) kernel
@@ -85,18 +85,18 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 			Such a kernel is present in the <ulink url="http://www.x86-64.org">x86-64.org</ulink> CVS repository.
 			2.5 kernels are supported with the in-kernel OProfile driver.
 <!-- FIXME: do we require always gte 2.4.10 for nosmp ? -->
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>modutils 2.4.6 or above</term>
-		<listitem>
+		<listitem><para>
 			You should have installed modutils 2.4.6 or higher (in fact earlier versions work well in almost all
 			cases).
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Supported architecture</term>
-		<listitem>
+		<listitem><para>
 			For Intel IA32, a CPU with either a P6 generation or Pentium 4 core is
 			required. In marketing terms this translates to anything
 			between an Intel Pentium Pro (not Pentium Classics) and
@@ -108,47 +108,47 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 			IA-64 CPUs are also supported. For 2.5 kernels, there is additionally
 			support for Alpha processors, and sparc64, ppc64, and PA-RISC in
 			timer mode.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Uniprocessor or SMP</term>
-		<listitem>
+		<listitem><para>
 			SMP machines are fully supported.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Required libraries</term>
-		<listitem>
+		<listitem><para>
 			These libraries are required : <filename>popt</filename>, <filename>bfd</filename>,
 			<filename>liberty</filename> (debian users: libiberty is provided in binutils-dev package), <filename>dl</filename>,
 			plus the standard C++ libraries.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Bash version 2</term>
-		<listitem>
+		<listitem><para>
 			The <command>opcontrol</command> script requires bash version 2 at least to be installed
 			as <filename>/bin/bash</filename> or <filename>/bin/bash2</filename>
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>OProfile GUI</term>
-		<listitem>
+		<listitem><para>
 			The use of the GUI to start the profiler requires the <filename>Qt 2</filename> library. <filename>Qt 3</filename> should
 			also work.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
  		<term><acronym>ELF</acronym></term>
-		<listitem>
+		<listitem><para>
 			Probably not too strenuous a requirement, but older <acronym>A.OUT</acronym> binaries/libraries are not supported.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>K&amp;R coding style</term>
-		<listitem>
+		<listitem><para>
 			OK, so it's not really a requirement, but I wish it was...
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 </variablelist>
 
@@ -161,38 +161,38 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 <variablelist>
 	<varlistentry>
 		<term>Web page</term>
-		<listitem>
+		<listitem><para>
 			There is a web page (which you may be reading now) at
 			<ulink url="http://oprofile.sf.net/">http://oprofile.sf.net/</ulink>.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Download</term>
-		<listitem>
+		<listitem><para>
 			You can download a source tarball or get anonymous CVS at the sourceforge page,
 			<ulink url="http://sf.net/projects/oprofile/">http://sf.net/projects/oprofile/</ulink>.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Mailing list</term>
-		<listitem>
+		<listitem><para>
 			There is a low-traffic OProfile-specific mailing list, details at
 			<ulink url="http://sf.net/mail/?group_id=16191">http://sf.net/mail/?group_id=16191</ulink>.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>Bug tracker</term>
-		<listitem>
+		<listitem><para>
 			There is a bug tracker for OProfile at SourceForge,
 			<ulink url="http://sf.net/tracker/?group_id=16191&amp;atid=116191">http://sf.net/tracker/?group_id=16191&amp;atid=116191</ulink>.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term>IRC channel</term>
-		<listitem>
+		<listitem><para>
 			Several OProfile developers and users sometimes hang out on channel <command>#oprofile</command>
 			on the <ulink url="http://freenode.info">freenode</ulink> network. 
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 </variablelist>
 
@@ -201,36 +201,38 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 <sect1 id="install">
 <title>Installation</title>
 
+<para>
 First you need to build OProfile and install it. <command>./configure</command>, <command>make</command>, <command>make install</command>
 is often all you need, but note these arguments to <command>./configure</command> :
+</para>
 <variablelist>
 	<varlistentry>
 		<term><option>--with-linux</option></term>
-		<listitem>
+		<listitem><para>
 			Use this option to specify the location of the kernel source tree you wish
 			to compile against. The kernel module is built against this source and
 			will only work with a running kernel built from the same source with
 			similar options, so it is important you specify this option if you need
 			to.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--with-kernel-support</option></term>
-		<listitem>
+		<listitem><para>
 			Use this option with 2.5 and above kernels to indicate the 
 	    		kernel provides the OProfile device driver.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry>
 		<term><option>--with-qt-dir/includes/libraries</option></term>
-		<listitem>
+		<listitem><para>
 			Specify the location of Qt headers and libraries. It defaults to searching in
 			<constant>$QTDIR</constant> if these are not specified.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 	<varlistentry id="enable-abi">
 		<term><option>--enable-abi</option></term>
-		<listitem>
+		<listitem><para>
 			Activate code within the OProfile sample collection daemon
 			<command>oprofiled</command> which records information about the binary
 			format of sample files in <filename>/var/lib/oprofile/abi</filename>, to
@@ -240,7 +242,7 @@ is often all you need, but note these arguments to <command>./configure</command
 			systems or remote analysis of production machines; if you will be
 			performing all sample analysis on the same machine as you are profiling,
 			it is safe to omit this option.
-		</listitem>
+		</para></listitem>
 	</varlistentry>
 </variablelist>
 <para>

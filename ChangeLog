@@ -1,3 +1,7 @@
+2003-05-04  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: fix validation errors from xmllint --valid
+
 2003-04-28  Alex Tsariounov  <alext@fc.hp.com>
 
 	* module/ia64/op_pmu.c: fix compile
