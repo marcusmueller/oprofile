@@ -36,9 +36,18 @@ extern int separate_kernel;
 extern int no_vmlinux;
 
 /* hash of process lists */
-static struct opd_proc * opd_procs[OPD_MAX_PROC_HASH];
+static struct list_head opd_procs[OPD_MAX_PROC_HASH];
 
 static void opd_delete_proc(struct opd_proc * proc);
+
+
+void opd_proc_init(void)
+{
+	int i;
+
+	for (i = 0; i < OPD_MAX_PROC_HASH; i++)
+		list_init(&opd_procs[i]);
+}
 
 
 /**
@@ -46,18 +55,15 @@ static void opd_delete_proc(struct opd_proc * proc);
  */
 int opd_get_nr_procs(void)
 {
-	struct opd_proc * proc;
-	int i,j = 0;
+	int i, count = 0;
 
-	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
-		proc = opd_procs[i];
-
-		while (proc) {
-			++j;
-			proc = proc->next;
+	for (i = 0; i < OPD_MAX_PROC_HASH; i++) {
+		struct list_head * pos;
+		list_for_each(pos, &opd_procs[i]) {
+			++count;
 		}
 	}
-	return j;
+	return count;
 }
 
 
@@ -70,13 +76,11 @@ void opd_age_procs(void)
 {
 	uint i;
 	struct opd_proc * proc;
-	struct opd_proc * next;
 
-	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
-		proc = opd_procs[i];
-
-		while (proc) {
-			next = proc->next;
+	for (i = 0; i < OPD_MAX_PROC_HASH; i++) {
+		struct list_head * pos, * pos2;
+		list_for_each_safe(pos, pos2, &opd_procs[i]) {
+			proc = list_entry(pos, struct opd_proc, next);
 			// delay death whilst its still being accessed
 			if (proc->dead) {
 				proc->dead += proc->accessed;
@@ -84,7 +88,6 @@ void opd_age_procs(void)
 				if (--proc->dead == 0)
 					opd_delete_proc(proc);
 			}
-			proc=next;
 		}
 	}
 }
@@ -113,32 +116,6 @@ char const * opd_app_name(struct opd_proc const * proc)
 
 
 /**
- * opd_new_proc - create a new process structure
- * @param prev  previous list entry
- * @param next  next list entry
- *
- * Allocate and initialise a process structure and insert
- * it into the the list point specified by prev and next.
- */
-static struct opd_proc * opd_new_proc(struct opd_proc * prev, struct opd_proc * next)
-{
-	struct opd_proc * proc;
-
-	proc = xmalloc(sizeof(struct opd_proc));
-	proc->maps = NULL;
-	proc->pid = 0;
-	proc->nr_maps = 0;
-	proc->max_nr_maps = 0;
-	proc->last_map = 0;
-	proc->dead = 0;
-	proc->accessed = 0;
-	proc->prev = prev;
-	proc->next = next;
-	return proc;
-}
-
-
-/**
  * proc_hash - hash pid value
  * @param pid  pid value to hash
  *
@@ -146,6 +123,30 @@ static struct opd_proc * opd_new_proc(struct opd_proc * prev, struct opd_proc * 
 inline static uint proc_hash(u32 pid)
 {
 	return ((pid>>4) ^ (pid)) % OPD_MAX_PROC_HASH;
+}
+
+
+/**
+ * opd_new_proc - create a new process structure
+ * @param pid  pid for this process
+ *
+ * Allocate and initialise a process structure and insert
+ * it into the procs hash table.
+ */
+static struct opd_proc * opd_new_proc(u32 pid)
+{
+	struct opd_proc * proc;
+
+	proc = xmalloc(sizeof(struct opd_proc));
+	proc->maps = NULL;
+	proc->pid = pid;
+	proc->nr_maps = 0;
+	proc->max_nr_maps = 0;
+	proc->last_map = 0;
+	proc->dead = 0;
+	proc->accessed = 0;
+	list_add(&proc->next, &opd_procs[proc_hash(pid)]);
+	return proc;
 }
 
 
@@ -158,13 +159,7 @@ inline static uint proc_hash(u32 pid)
  */
 static void opd_delete_proc(struct opd_proc * proc)
 {
-	if (!proc->prev)
-		opd_procs[proc_hash(proc->pid)] = proc->next;
-	else
-		proc->prev->next = proc->next;
-
-	if (proc->next)
-		proc->next->prev = proc->prev;
+	list_del(&proc->next);
 
 	if (proc->maps) free(proc->maps);
 	free(proc);
@@ -183,41 +178,12 @@ static void opd_delete_proc(struct opd_proc * proc)
 struct opd_proc * opd_add_proc(u32 pid)
 {
 	struct opd_proc * proc;
-	uint hash = proc_hash(pid);
 
-	proc=opd_new_proc(NULL, opd_procs[hash]);
-	if (opd_procs[hash])
-		opd_procs[hash]->prev = proc;
-
-	opd_procs[hash] = proc;
+	proc = opd_new_proc(pid);
 
 	opd_init_maps(proc);
-	proc->pid = pid;
 
 	return proc;
-}
-
-
-/**
- * opd_do_proc_lru - rework process list
- * @param head  head of process list
- * @param proc  process to move
- *
- * Perform LRU on the process list by moving it to
- * the head of the process list.
- */
-inline static void
-opd_do_proc_lru(struct opd_proc ** head, struct opd_proc * proc)
-{
-	if (proc->prev) {
-		proc->prev->next = proc->next;
-		if (proc->next)
-			proc->next->prev = proc->prev;
-		(*head)->prev = proc;
-		proc->prev = NULL;
-		proc->next = *head;
-		(*head) = proc;
-	}
 }
 
 
@@ -232,17 +198,19 @@ opd_do_proc_lru(struct opd_proc ** head, struct opd_proc * proc)
 struct opd_proc * opd_get_proc(u32 pid)
 {
 	struct opd_proc * proc;
-
-	proc = opd_procs[proc_hash(pid)];
+	uint hash = proc_hash(pid);
+	struct list_head * pos, *pos2;
 
 	opd_stats[OPD_PROC_QUEUE_ACCESS]++;
-	while (proc) {
+	list_for_each_safe(pos, pos2, &opd_procs[hash]) {
+		opd_stats[OPD_PROC_QUEUE_DEPTH]++;
+		proc = list_entry(pos, struct opd_proc, next);
 		if (pid == proc->pid) {
-			opd_do_proc_lru(&opd_procs[proc_hash(pid)],proc);
+			/* LRU to head */
+			list_del(&proc->next);
+			list_add(&proc->next, &opd_procs[hash]);
 			return proc;
 		}
-		opd_stats[OPD_PROC_QUEUE_DEPTH]++;
-		proc = proc->next;
 	}
 
 	return NULL;
@@ -317,9 +285,9 @@ static int opd_lookup_maps(struct opd_proc * proc,
 	if (!proc->nr_maps)
 		return 0;
 
-	/* proc->last_map is always safe as mappings are never deleted except by
-	 * things which reset last_map. If last map is the primary image, we use it
-	 * anyway (last_map == 0).
+	/* proc->last_map is always safe as mappings are never deleted except
+	 * by things which reset last_map. If last map is the primary image,
+	 * we use it anyway (last_map == 0).
 	 */
 	opd_stats[OPD_MAP_ARRAY_ACCESS]++;
 	if (opd_is_in_map(&proc->maps[proc->last_map], sample->eip)) {
@@ -335,8 +303,9 @@ static int opd_lookup_maps(struct opd_proc * proc,
 		return 1;
 	}
 
-	/* look for which map and find offset. We search backwards in order to prefer
-	 * more recent mappings (which means we don't need to intercept munmap)
+	/* look for which map and find offset. We search backwards in order to
+	 * prefer more recent mappings (which means we don't need to intercept
+	 * munmap)
 	 */
 	for (i=proc->nr_maps; i > 0; i--) {
 		int const map = i - 1;
@@ -445,9 +414,10 @@ void opd_handle_fork(struct op_note const * note)
 
 	old = opd_get_proc(note->pid);
 
-	/* we can quite easily get a fork() after the execve() because the notifications
-	 * are racy. In particular, the fork notification is done on parent return (so we
-	 * know the pid), but this will often be after the execve is done by the child.
+	/* we can quite easily get a fork() after the execve() because the
+	 * notifications are racy. In particular, the fork notification is
+	 * done on parent return (so we know the pid), but this will often be
+	 * after the execve is done by the child.
 	 *
 	 * So we only create a new setup if it doesn't exist already, allowing
 	 * both the clone() and the execve() cases to work.
@@ -537,14 +507,13 @@ void opd_proc_cleanup(void)
 {
 	uint i;
 
-	for (i=0; i < OPD_MAX_PROC_HASH; i++) {
-		struct opd_proc * proc = opd_procs[i];
-		struct opd_proc * next;
+	for (i = 0; i < OPD_MAX_PROC_HASH; i++) {
+		struct opd_proc * proc;
+		struct list_head * pos, *pos2;
 
-		while (proc) {
-			next = proc->next;
+		list_for_each_safe(pos, pos2, &opd_procs[i]) {
+			proc = list_entry(pos, struct opd_proc, next);
 			opd_delete_proc(proc);
-			proc=next;
 		}
 	}
 }
@@ -587,8 +556,11 @@ void opd_clear_kernel_mapping(void)
 	uint i;
 
 	for (i = 0; i < OPD_MAX_PROC_HASH; i++) {
-		struct opd_proc * proc = opd_procs[i];
-		for ( ; proc ; proc = proc->next) {
+		struct opd_proc * proc;
+		struct list_head * pos;
+
+		list_for_each(pos, &opd_procs[i]) {
+			proc = list_entry(pos, struct opd_proc, next);
 			opd_remove_kernel_mapping(proc);
 		}
 	}

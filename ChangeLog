@@ -1,3 +1,12 @@
+2003-10-06  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* dae/oprofiled.c:
+	* dae/opd_proc.h:
+	* dae/opd_proc.c: use struct list_head to chain opd_proc struct in hash
+	  table
+
+	* utils/op_help.c: comment fix
+
 2003-10-06  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol: work around 2.6 daemon's signal

@@ -13,6 +13,7 @@
 #define OPD_PROC_H
 
 #include "op_types.h"
+#include "op_list.h"
 
 struct opd_map;
 struct opd_image;
@@ -29,9 +30,10 @@ struct opd_proc {
 	u32 pid;
 	int accessed;
 	int dead;
-	struct opd_proc * prev;
-	struct opd_proc * next;
+	struct list_head next;
 };
+
+void opd_proc_init(void);
 
 void opd_put_sample(struct op_sample const * sample);
 void opd_put_image_sample(struct opd_image * image, unsigned long offset, u32 counter);

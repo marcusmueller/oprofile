@@ -32,9 +32,9 @@ static op_cpu cpu_type = CPU_NO_GOOD;
 
 static poptContext optcon;
 
+
 /**
- * return the number a non zero bit in mask
- *
+ * return the number of bit set in mask
  */
 static size_t bit_count(size_t mask)
 {
@@ -47,6 +47,7 @@ static size_t bit_count(size_t mask)
 
 	return count;
 }
+
 
 /**
  * help_for_event - output event name and description

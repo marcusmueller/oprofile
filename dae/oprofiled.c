@@ -543,6 +543,8 @@ int main(int argc, char const * argv[])
 	n_buf_bytesize = opd_note_buf_size * sizeof(struct op_note);
 	nbuf = xmalloc(n_buf_bytesize);
 
+	opd_proc_init();
+
 	opd_init_kernel_image();
 
 	opd_write_abi();
