@@ -234,6 +234,29 @@ profile_spec::get_handler(string const & tag_value, string & value)
 }
 
 
+namespace {
+
+/// return true if the value from the profile spec may match the comma
+/// list
+template<typename T>
+bool comma_match(comma_list<T> const & cl, generic_spec<T> const & value)
+{
+	// if the profile spec is "all" we match the sample file
+	if (!cl.is_set())
+		return true;
+	
+	// an "all" sample file should never match specified profile
+	// spec values
+	if (!value.is_set())
+		return false;
+
+	// now match each profile spec value against the sample file
+	return cl.match(value.value());
+}
+
+}
+
+
 bool profile_spec::match(string const & filename) const
 {
 	filename_spec spec(filename);
@@ -298,35 +321,23 @@ bool profile_spec::match(string const & filename) const
 		}
 	}
 
-	if (!event.match(spec.event)) {
+	if (!event.match(spec.event))
 		return false;
-	}
 
-	if (!count.match(spec.count)) {
+	if (!count.match(spec.count))
 		return false;
-	}
 
-	if (!unitmask.match(spec.unitmask)) {
+	if (!unitmask.match(spec.unitmask))
 		return false;
-	}
 
-	// Logic for these next three: tgid:454 in profile spec
-	// should not match sample file with tgid:all
-
-	if ((spec.cpu.is_set() && !cpu.match(spec.cpu.value())) || 
-	    (!spec.cpu.is_set() && cpu.is_set())) {
+	if (!comma_match(cpu, spec.cpu))
 		return false;
-	}
 
-	if ((spec.tid.is_set() && !tid.match(spec.tid.value())) ||
-	    (!spec.tid.is_set() && tid.is_set())) {
+	if (!comma_match(tid, spec.tid))
 		return false;
-	}
 
-	if ((spec.tgid.is_set() && !tgid.match(spec.tgid.value())) ||
-	    (!spec.tgid.is_set() && tgid.is_set())) {
+	if (!comma_match(tgid, spec.tgid))
 		return false;
-	}
 
 	return true;
 }
