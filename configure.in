@@ -388,8 +388,8 @@ AC_OUTPUT(Makefile \
 	events/Makefile \
 	utils/Makefile \
 	doc/Makefile \
-	doc/xsl/xhtml.xsl \
-	doc/xsl/xhtml-chunk.xsl \
+	doc/xsl/xhtml-1.xsl \
+	doc/xsl/xhtml-chunk-1.xsl \
 	doc/oprofile.1 \
 	pp/Makefile \
 	gui/Makefile \
@@ -400,6 +400,8 @@ AC_OUTPUT(Makefile \
 	version-1.h)
 
 AX_COPY_IF_CHANGE(version-1.h, version.h)
+AX_COPY_IF_CHANGE(doc/xsl/xhtml-1.xsl, doc/xsl/xhtml.xsl)
+AX_COPY_IF_CHANGE(doc/xsl/xhtml-chunk-1.xsl, doc/xsl/xhtml-chunk.xsl)
 
 if test -z "$QT_LIB"; then
 	echo "Warning: a working Qt not found; no GUI will be built"

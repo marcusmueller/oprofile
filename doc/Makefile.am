@@ -44,5 +44,5 @@ uninstall-local:
 		rm -f $(CATDIR)/cat1/$$f.gz;	\
 	done
 
-EXTRA_DIST = oprofile.1 oprofile.1.in oprofile.xml xsl/xhtml-chunk.xsl.in xsl/xhtml-chunk.xsl xsl/xhtml-common.xsl xsl/xhtml.xsl xsl/xhtml.xsl.in srcdoc/Doxyfile srcdoc/Makefile
+EXTRA_DIST = oprofile.1 oprofile.1.in oprofile.xml xsl/xhtml-chunk-1.xsl.in xsl/xhtml-chunk.xsl xsl/xhtml-common.xsl xsl/xhtml.xsl xsl/xhtml-1.xsl.in srcdoc/Doxyfile srcdoc/Makefile
 
