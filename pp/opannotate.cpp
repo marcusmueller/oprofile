@@ -502,7 +502,7 @@ void output_one_file(istream & in, debug_name_id filename,
 	 * can't escape from the output dir. We can't use op_realpath()
 	 * alone as that needs the file to exist already.
 	 */
-	if (out_file.find("/..") != string::npos) {
+	if (out_file.find("/../") != string::npos) {
 		cerr << "refusing to create non-canonical filename "
 			<< out_file  << endl;
 		return;
