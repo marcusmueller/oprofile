@@ -256,12 +256,14 @@ static void run_child(size_t cpu)
 
 		if (self->sigusr1) {
 			printf("PFM_START on CPU%d\n", (int)cpu);
+			fflush(stdout);
 			perfmon_start_child(self->ctx_fd);
 			self->sigusr1 = 0;
 		}
 
 		if (self->sigusr2) {
 			printf("PFM_STOP on CPU%d\n", (int)cpu);
+			fflush(stdout);
 			perfmon_stop_child(self->ctx_fd);
 			self->sigusr2 = 0;
 		}
@@ -281,6 +283,7 @@ static void wait_for_child(struct child * child)
 			break;
 	}
 	printf("Perfmon child up on CPU%d\n", (int)tmp);
+	fflush(stdout);
 
 	close(child->up_pipe[0]);
 	close(child->up_pipe[1]);
@@ -316,6 +319,7 @@ void perfmon_init(void)
 			exit(EXIT_FAILURE);
 		} else if (ret == 0) {
 			printf("Running perfmon child on CPU%d.\n", (int)i);
+			fflush(stdout);
 			run_child(i);
 		} else {
 			children[i].pid = ret;

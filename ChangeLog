@@ -1,5 +1,10 @@
 2003-10-15  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_perfmon.c: fflushes to improve
+	order of debug log
+
+2003-10-15  John Levon  <levon@movementarian.org>
+
 	* daemon/opd_perfmon.c: fix dumb allocation typo;
 	handle signals correctly; wait for children to
 	come up before returning
