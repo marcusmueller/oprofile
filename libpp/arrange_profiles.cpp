@@ -351,9 +351,8 @@ add_to_profile_sample_files(profile_sample_files & sample_files,
     parsed_filename const & parsed)
 {
 	if (parsed.cg_image.empty()) {
-		// FIXME: is it worth (for now yes I expect bugs ...)
+		// We can't allow to overwrite sample_filename.
 		if (!sample_files.sample_filename.empty()) {
-			// FIXME: humm ?
 			ostringstream out;
 			out << "add_to_profile_sample_files(): sample file "
 			    << "parsed twice ?\nsample_filename:\n"
