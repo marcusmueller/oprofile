@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.15 2000/08/18 01:12:47 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.16 2000/08/18 01:19:07 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -330,7 +330,7 @@ static int output_path_hash(const char *name, uint len)
 /* called with map_lock held */
 inline static u32 *map_out32(u32 val)
 {
-	u32 * pos=nextmapbuf;
+	u32 * pos=&map_buf[nextmapbuf];
 	map_buf[nextmapbuf++] = val;
 	if (nextmapbuf==OP_MAX_MAP_BUF)
 		nextmapbuf=0;
