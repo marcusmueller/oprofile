@@ -954,11 +954,11 @@ do_start() {
 # returns 0 if successful
 # returns 1 if the daemon is not running
 do_dump() {
-	#make sure that the daemon is running
+	# make sure that the daemon is running
 	if test -e "$DIR/lock"; then
 		OPROFILED_PID=`cat $DIR/lock`
-		ps -p $OPROFILED_PID | grep $OPROFILED_PID > /dev/null
-		if [ "$?" -ne 0 ]; then
+		if test ! -d "/proc/$OPROFILED_PID"; then
+			echo "Don't exist"
 			return 1;
 		fi
 	else
