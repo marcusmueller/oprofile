@@ -211,11 +211,11 @@ output assembly mixed with source file
 .br
 .TP
 .I "--until-more-than-samples percent_nr"
-output source with more than percent_nr samples
+output source until percent_nr samples are reached
 .br
 .TP
 .I "--with-more-than-samples percent_nr"
-output source until percent_nr samples are reached
+output source with more than percent_nr samples
 .br
 .TP
 .I "--sort-by-counter"

@@ -56,7 +56,7 @@ necks in real-world systems.
 	<varlistentry>
 		<term>Uniprocessor</term>
 		<listitem><para>
-			<acronym>SMP</acronym> is currently b0rken as I don't have a machine to test on ... sorry.
+			<acronym>SMP</acronym> is currently broken as I don't have a machine to test on ... sorry.
 		</para></listitem> 
 	</varlistentry>
 	<varlistentry>
@@ -64,6 +64,12 @@ necks in real-world systems.
 		<listitem><para>
 			These libraries are required : <filename>popt</filename>, <filename>bfd</filename>,
 			<filename>liberty</filename>, <filename>dl</filename> 
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>OProfile GUI</term>
+		<listitem><para>
+			The use of the GUI to start the profiler requires : <filename>wish</filename> from the tk package.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
