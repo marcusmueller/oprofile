@@ -1,5 +1,11 @@
 2003-02-17  Philippe Elie  <phil.el@wanadoo.fr>
 
+	From Anton Blanchard :
+
+	* daemon/opd_image.c: cookie_t fix for 64 bits
+
+2003-02-17  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* TODO: update
 
 	* libopt++/popt_options.cpp:
@@ -30,7 +36,7 @@
 
 	* dae/opd_kernel.h:
 	* dae/opd_image.h:
-	* dae/opd_image.c: don't use hash entry zeo for kernel image
+	* dae/opd_image.c: don't use hash entry zero for kernel image
 	 fix #686175
 
 2003-02-13  Will Cohen  <wcohen@redhat.com>

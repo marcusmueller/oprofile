@@ -299,7 +299,7 @@ static struct opd_image * opd_find_image(cookie_t cookie, cookie_t app_cookie)
 /**
  * opd_add_image - add an image to the image hashlist
  */
-static struct opd_image * opd_add_image(unsigned long cookie, unsigned long app_cookie)
+static struct opd_image * opd_add_image(cookie_t cookie, cookie_t app_cookie)
 {
 	unsigned long hash = opd_hash_cookie(cookie);
 	struct opd_image * image = opd_create_image(hash);
@@ -309,7 +309,7 @@ static struct opd_image * opd_add_image(unsigned long cookie, unsigned long app_
 	if (separate_lib_samples) {
 		image->app_image = opd_find_image(app_cookie, app_cookie);
 		if (!image->app_image) {
-			verbprintf("image->app_image %p for cookie %lu\n",
+			verbprintf("image->app_image %p for cookie %llx\n",
 				   image->app_image, app_cookie);
 		}
 	}
