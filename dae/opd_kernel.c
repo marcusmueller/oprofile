@@ -482,5 +482,3 @@ void opd_add_kernel_map(struct opd_proc * proc, unsigned long eip)
 		opd_drop_module_sample(eip);
 	}
 }
-
-

@@ -387,6 +387,8 @@ opd_find_app_kernel_image(vma_t * eip, struct opd_image * app_image)
 struct opd_image *
 opd_find_kernel_image(vma_t * eip, struct opd_image * app_image)
 {
+	struct opd_module * module;
+
 	if (no_vmlinux) {
 		opd_stats[OPD_KERNEL]++;
 		return kernel_image;
@@ -395,8 +397,6 @@ opd_find_kernel_image(vma_t * eip, struct opd_image * app_image)
 	if (app_image) {
 		return opd_find_app_kernel_image(eip, app_image);
 	}
-
-	struct opd_module * module;
 
 	if (*eip >= kernel_start && *eip < kernel_end) {
 		opd_stats[OPD_KERNEL]++;
