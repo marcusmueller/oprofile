@@ -16,6 +16,7 @@
 
 #include "oprofpp.h"
 #include "op_events.h"
+#include "op_events_desc.h"
 
 using std::string;
  
@@ -55,11 +56,11 @@ opp_samples_files::opp_samples_files(string const & sample_file,
 		exit(EXIT_FAILURE);
 	}
 
-	struct opd_header const * header = samples[first_file]->header();
-	mtime = header->mtime;
+	opd_header const & header = samples[first_file]->header();
+	mtime = header.mtime;
 
 	/* determine how many counters are possible via the sample file */
-	op_cpu cpu = static_cast<op_cpu>(header->cpu_type);
+	op_cpu cpu = static_cast<op_cpu>(header.cpu_type);
 	nr_counters = op_get_cpu_nr_counters(cpu);
 
 	/* check sample files match */
@@ -72,7 +73,7 @@ opp_samples_files::opp_samples_files(string const & sample_file,
 	/* sanity check on ctr_um, ctr_event and cpu_type */
 	for (i = 0 ; i < OP_MAX_COUNTERS; ++i) {
 		if (samples[i] != 0)
-			check_event(samples[i]->header());
+			check_event(&samples[i]->header());
 	}
 }
 
@@ -142,6 +143,30 @@ void opp_samples_files::set_sect_offset(u32 sect_offset)
 	}
 }
 
+/**
+ * output_header() - output counter setup
+ *
+ * output to stdout the cpu type, cpu speed
+ * and all counter description available
+ */
+void opp_samples_files::output_header() const
+{
+	const opd_header & header = first_header();
+
+	op_cpu cpu = static_cast<op_cpu>(header.cpu_type);
+ 
+	cout << "Cpu type: " << op_get_cpu_type_str(cpu) << endl;
+
+	cout << "Cpu speed was (MHz estimation) : " << header.cpu_speed << endl;
+
+	for (uint i = 0 ; i < OP_MAX_COUNTERS; ++i) {
+		if (samples[i] != 0) {
+			op_print_event(cout, i, cpu, header.ctr_event,
+				       header.ctr_um, header.ctr_count);
+		}
+	}
+}
+
 samples_file_t::samples_file_t(string const & filename)
 	: sect_offset(0)
 {
@@ -154,15 +179,31 @@ samples_file_t::~samples_file_t()
 		db_close(&db_tree);
 }
 
-bool samples_file_t::check_headers(samples_file_t const & rhs) const
+void samples_file_t::check_headers(samples_file_t const & rhs) const
 {
-/* 
- * FIXME: is this going to be changed to have a meaning to
- * the return value ? (and get rid of the global check_headers() ?) 
- */
-	::check_headers(header(), rhs.header());
+	opd_header const & f1 = header();
+	opd_header const & f2 = rhs.header();
+	if (f1.mtime != f2.mtime) {
+		fprintf(stderr, "oprofpp: header timestamps are different (%ld, %ld)\n", f1.mtime, f2.mtime);
+		exit(EXIT_FAILURE);
+	}
 
-	return true;
+	if (f1.is_kernel != f2.is_kernel) {
+		fprintf(stderr, "oprofpp: header is_kernel flags are different\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (f1.cpu_speed != f2.cpu_speed) {
+		fprintf(stderr, "oprofpp: header cpu speeds are different (%f, %f)",
+			f2.cpu_speed, f2.cpu_speed);
+		exit(EXIT_FAILURE);
+	}
+
+	if (f1.separate_samples != f2.separate_samples) {
+		fprintf(stderr, "oprofpp: header separate_samples are different (%d, %d)",
+			f2.separate_samples, f2.separate_samples);
+		exit(EXIT_FAILURE);
+	}
 }
 
 static void db_tree_callback(db_key_t, db_value_t value, void * data)

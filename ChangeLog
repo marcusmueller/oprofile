@@ -1,3 +1,18 @@
+2002-05-12  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_events_desc.c:
+	* libop/op_events_desc.h:
+
+	* pp/op_bfd.h:
+	* pp/op_bfd.cpp:
+	* pp/op_to_source.cpp:
+	* pp/oprofpp.h:
+	* pp/oprofpp.cpp:
+	* pp/oprofpp_util.cpp:
+	* pp/samples_file.cpp:
+	* pp/samples_file.h:
+	* pp/samplesfile.h: fix some FIXME
+
 2002-05-12  John Levon  <moz@compsoc.man.ac.uk>
 
 	* dae/oprofiled.c: delete lockfile on SIGTERM

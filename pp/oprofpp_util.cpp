@@ -28,6 +28,7 @@
 using std::string;
 using std::vector;
 using std::ostream;
+using std::cerr;
 
 int verbose;
 char const *samplefile;
@@ -36,7 +37,7 @@ int demangle;
 char const * exclude_symbols_str;
 static vector<string> exclude_symbols;
 
-void op_print_event(ostream & out, int i, op_cpu cpu_type,
+void op_print_event(ostream & out, int counter_nr, op_cpu cpu_type,
 		    u8 type, u8 um, u32 count)
 {
 	char * typenamep;
@@ -46,8 +47,8 @@ void op_print_event(ostream & out, int i, op_cpu cpu_type,
 	op_get_event_desc(cpu_type, type, um, 
 			  &typenamep, &typedescp, &umdescp);
 
-	out << "Counter " << i << " counted " << typenamep << " events ("
-	    << typedescp << ")";
+	out << "Counter " << counter_nr << " counted "
+	    << typenamep << " events (" << typedescp << ")";
 	if (cpu_type != CPU_RTC) {
 		out << " with a unit mask of 0x"
 		    << hex << setw(2) << setfill('0') << unsigned(um) << " ("
@@ -137,7 +138,7 @@ bool is_excluded_symbol(const std::string & symbol)
 void quit_error(poptContext optcon, char const *err)
 {
 	if (err)
-		fprintf(stderr, err); 
+		cerr << err; 
 	poptPrintHelp(optcon, stderr, 0);
 	exit(EXIT_FAILURE);
 }
@@ -187,7 +188,7 @@ void handle_exclude_symbol_option()
  * @param image_file where to store the image file name
  * @param sample_file ditto for sample filename
  * @param counter where to put the counter command line argument
- * @param sort_by_counter FIXME
+ * @param sort_by_counter which counter usefor sort purpose
  *
  * Process the arguments, fatally complaining on
  * error. 
@@ -328,39 +329,6 @@ counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
 		value[i] += rhs.value[i];
 
 	return *this;
-}
-
-/**
- * check_headers - check coherence between two headers.
- * @param f1 first header
- * @param f2 second header
- *
- * verify that header f1 and f2 are coherent.
- * all error are fatal
- */
-void check_headers(opd_header const * f1, opd_header const * f2)
-{
-	if (f1->mtime != f2->mtime) {
-		fprintf(stderr, "oprofpp: header timestamps are different (%ld, %ld)\n", f1->mtime, f2->mtime);
-		exit(EXIT_FAILURE);
-	}
-
-	if (f1->is_kernel != f2->is_kernel) {
-		fprintf(stderr, "oprofpp: header is_kernel flags are different\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if (f1->cpu_speed != f2->cpu_speed) {
-		fprintf(stderr, "oprofpp: header cpu speeds are different (%f, %f)",
-			f2->cpu_speed, f2->cpu_speed);
-		exit(EXIT_FAILURE);
-	}
-
-	if (f1->separate_samples != f2->separate_samples) {
-		fprintf(stderr, "oprofpp: header separate_samples are different (%d, %d)",
-			f2->separate_samples, f2->separate_samples);
-		exit(EXIT_FAILURE);
-	}
 }
 
 void check_event(const struct opd_header * header)

@@ -55,7 +55,7 @@ void verbprintf(char const * args, ...) OP_VERBPRINTF_FORMAT;
 
 /**
  * @param out output to this ostream
- * @param i FIXME
+ * @param counter_nr counter number
  * @param cpu_type the cpu_type
  * @param type event type
  * @param um the unit mask
@@ -63,7 +63,7 @@ void verbprintf(char const * args, ...) OP_VERBPRINTF_FORMAT;
  *
  * output a human readable form of an event setting
  */
-void op_print_event(std::ostream & out, int i, op_cpu cpu_type,
+void op_print_event(std::ostream & out, int counter_nr, op_cpu cpu_type,
 		    u8 type, u8 um, u32 count);
 
 /**
@@ -79,7 +79,7 @@ void handle_exclude_symbol_option();
  * @param image_file where to store the image file name
  * @param sample_file ditto for sample filename
  * @param counter where to put the counter command line argument
- * @param sort_by_counter FIXME
+ * @param sort_by_counter counter nr used for sort purpose
  *
  * Process the arguments, fatally complaining on error. 
  *
@@ -123,16 +123,6 @@ std::string demangle_filename(const std::string & samples_filename);
  * return true if symbol is in the list of excluded symbol
  */
 bool is_excluded_symbol(const std::string & symbol);
-
-/**
- * check coherence between two headers.
- * @param f1 first header
- * @param f2 second header
- *
- * verify that header f1 and f2 are coherent.
- * all error are fatal
- */
-void check_headers(const opd_header * f1, const opd_header * f2);
 
 /**
  * sanity check of a struct opd_header *

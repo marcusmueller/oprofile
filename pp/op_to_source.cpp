@@ -291,11 +291,10 @@ bool output::setup_counter_param(const opp_samples_files & samples_files)
 
 		counter_info[i].enabled = true;
 
-		const struct opd_header * header =
-			samples_files.samples[i]->header();
-		counter_info[i].ctr_event = header->ctr_event;
-		counter_info[i].unit_mask = header->ctr_um;
-		counter_info[i].event_count_sample = header->ctr_count;
+		opd_header const & header = samples_files.samples[i]->header();
+		counter_info[i].ctr_event = header.ctr_event;
+		counter_info[i].unit_mask = header.ctr_um;
+		counter_info[i].event_count_sample = header.ctr_count;
 
 		have_counter_info = true;
 	}
@@ -744,8 +743,8 @@ bool output::treat_input(const string & image_name, const string & sample_file)
 		exit(EXIT_FAILURE);
 	}
 
-	cpu_speed = samples_files.first_header()->cpu_speed;
-	uint tmp = samples_files.first_header()->cpu_type;
+	cpu_speed = samples_files.first_header().cpu_speed;
+	uint tmp = samples_files.first_header().cpu_type;
 	cpu_type = static_cast<op_cpu>(tmp);
 
 	samples->add(samples_files, abfd);

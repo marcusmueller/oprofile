@@ -27,10 +27,10 @@ op_bfd::op_bfd(opp_samples_files& samples, const std::string & filename)
 
 	nr_samples = op_get_fsize(filename.c_str(), 0);
 
-	open_bfd_image(filename, samples.first_header()->is_kernel);
+	open_bfd_image(filename, samples.first_header().is_kernel);
 
 	time_t newmtime = op_get_mtime(filename.c_str());
-	if (newmtime != samples.first_header()->mtime) {
+	if (newmtime != samples.first_header().mtime) {
 		fprintf(stderr, "oprofpp: WARNING: the last modified time of the binary file %s does not match\n"
 			"that of the sample file. Either this is the wrong binary or the binary\n"
 			"has been modified since the sample file was created.\n", filename.c_str());

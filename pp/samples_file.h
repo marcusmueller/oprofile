@@ -47,7 +47,7 @@ struct samples_file_t
 	 *
 	 * all error are fatal
 	 */
-	bool check_headers(samples_file_t const & headers) const;
+	void check_headers(samples_file_t const & headers) const;
 
 	/// return the sample count at the given position
 	u32 count(uint start) const { 
@@ -68,10 +68,9 @@ struct samples_file_t
 	 */
 	u32 count(uint start, uint end) const;
 
-	// FIXME: return struct opd_header const & ??
 	/// return the header of this sample file
-	struct opd_header const * header() const {
-		return static_cast<opd_header *>(db_tree.base_memory);
+	opd_header const & header() const {
+		return *static_cast<opd_header *>(db_tree.base_memory);
 	}
 
 	// probably needs to be private and create the neccessary member
@@ -170,12 +169,16 @@ struct opp_samples_files {
 	bool accumulate_samples(counter_array_t & counter,
 				uint start, uint end) const;
 
-	// this look like a free fun
-	// FIXME: so what's it doing in oprofpp_util.cpp ??? 
+	/**
+	 * output_header() - output counter setup
+	 *
+	 * output to stdout the cpu type, cpu speed
+	 * and all counter description available
+	 */
 	void output_header() const;
 
 	/// return the header of the first opened samples file
-	struct opd_header const * first_header() const {
+	struct opd_header const & first_header() const {
 		return samples[first_file]->header();
 	}
 

@@ -65,7 +65,7 @@ static char const * cpu_names[MAX_CPU_TYPE] = {
  */
 char const * op_get_cpu_type_str(op_cpu cpu_type)
 {
-	if (cpu_type < 0 || cpu_type > MAX_CPU_TYPE) {
+	if (cpu_type < 0 || cpu_type >= MAX_CPU_TYPE) {
 		return "invalid cpu type";
 	}
 

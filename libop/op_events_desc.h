@@ -17,7 +17,6 @@ extern "C" {
 #endif
 
 #include "op_interface.h"
-#include "op_events_desc.h"
  
 /** Human readable description for an unit mask. */
 struct op_unit_desc {

@@ -9,7 +9,6 @@
  * @author Philippe Elie <phil_el@wanadoo.fr>
  */
 
-// FIXME: printf -> ostream (and elsewhere) 
 #include <algorithm>
 #include <sstream>
 #include <list>
@@ -18,7 +17,6 @@
 #include "oprofpp.h"
 #include "op_popt.h"
 #include "op_libiberty.h"
-#include "op_events_desc.h"
 #include "op_fileio.h"
 #include "file_manip.h"
 #include "samples_container.h"
@@ -282,15 +280,17 @@ static void do_dump_gprof(op_bfd & abfd,
 			count = samples_files.samples_count(sort_by_ctr, j);
 
 			if (pos >= histsize) {
-				fprintf(stderr, "Bogus histogram bin %u, larger than %u !\n", pos, histsize);
+				cerr << "Bogus histogram bin " << pos 
+				     << ", larger than " << pos << " !\n";
 				continue;
 			}
 
 			if (hist[pos] + count > (u16)-1) {
-				printf("Warning: capping sample count by %u samples for "
-					"symbol \"%s\"\n", hist[pos] + count - ((u16)-1),
-					abfd.syms[i].name());
-				hist[pos] = (u16)-1;
+				// FIXME cout or cerr ?
+				cout <<	"Warning: capping sample count by "
+				     << hist[pos] + count - ((u16)-1) 
+				     << "samples for symbol \""
+				     << abfd.syms[i].name() << "\"\n";
 			} else {
 				hist[pos] += (u16)count;
 			}
@@ -337,30 +337,6 @@ static void do_list_symbols_details(op_bfd & abfd,
 	out.SetFlag(osf_show_all_counters);
 
 	out.Output(cout, symbols, false);
-}
-
-/**
- * output_header() - output counter setup
- *
- * output to stdout the cpu type, cpu speed
- * and all counter description available
- */
-void opp_samples_files::output_header() const
-{
-	const struct opd_header * header = first_header();
-
-	op_cpu cpu = static_cast<op_cpu>(header->cpu_type);
- 
-	printf("Cpu type: %s\n", op_get_cpu_type_str(cpu));
-
-	printf("Cpu speed was (MHz estimation) : %f\n", header->cpu_speed);
-
-	for (uint i = 0 ; i < OP_MAX_COUNTERS; ++i) {
-		if (samples[i] != 0) {
-			op_print_event(cout, i, cpu, header->ctr_event,
-				       header->ctr_um, header->ctr_count);
-		}
-	}
 }
 
 /**
