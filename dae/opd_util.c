@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.19 2001/09/01 02:03:34 movement Exp $ */
+/* $Id: opd_util.c,v 1.20 2001/09/19 19:15:54 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -221,7 +221,7 @@ static int remove_component_p (const char *path)
  * @path: string pointer to the path.
  *
  *  Simplify a path name in place, deleting redundant components.  This
- * reduces OS overhead and guarantees that equivalent paths compare
+ *  reduces OS overhead and guarantees that equivalent paths compare
  *  the same (modulo symlinks).
  *
  *  Transforms made:

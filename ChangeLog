@@ -1,3 +1,9 @@
+2001-09-19  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/oprofiled.c: fix little bug, tidy a bit
+
+	* TODO: update
+ 
 2001-09-18  John Levon  <moz@compsoc.man.ac.uk>
 
 	* Makefile.in:

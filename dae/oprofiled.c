@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.42 2001/09/08 21:46:04 phil_e Exp $ */
+/* $Id: oprofiled.c,v 1.43 2001/09/19 19:15:54 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -362,43 +362,45 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 		if (ignore_myself && opd_buf[i].pid == mypid)
 			continue;
 
-		if (opd_is_notification(&opd_buf[i])) {
-			opd_stats[OPD_NOTIFICATIONS]++;
-			 
-			/* is a mapping type notification ? */
-			if (IS_OP_MAP(opd_buf[i].count)) {
-				if (IS_OP_EXEC(opd_buf[i].count))
-					opd_handle_exec(opd_buf[i].pid);
-
-				if (i + 2 > count / sizeof(struct op_sample)) {
-					verbprintf("Partial mapping ignored.\n");
-					i = count / sizeof(struct op_sample);
-					break;
-				}
-
-				opd_unpack_mapping(&mapping, &opd_buf[i]);
-				opd_handle_mapping(&mapping);
-				i++;
-			} else switch (opd_buf[i].count) {
-				case OP_FORK:
-					opd_handle_fork(&opd_buf[i]);
-					break;
-
-				case OP_DROP_MODULES:
-					opd_clear_module_info();
-					break;
-
-				case OP_EXIT:
-					opd_handle_exit(&opd_buf[i]);
-					break;
-
-				default:
-					fprintf(stderr, "Received unknown notification type %u\n",opd_buf[i].count);
-					exit(1);
-					break;
-			}
-		} else
+		if (!opd_is_notification(&opd_buf[i])) {
 			opd_put_sample(&opd_buf[i]);
+			continue;
+		}
+ 
+		opd_stats[OPD_NOTIFICATIONS]++;
+		 
+		/* is a mapping type notification ? */
+		if (IS_OP_MAP(opd_buf[i].count)) {
+			if (IS_OP_EXEC(opd_buf[i].count))
+				opd_handle_exec(opd_buf[i].pid);
+
+			if (i + 2 > count / sizeof(struct op_sample)) {
+				verbprintf("Partial mapping ignored.\n");
+				i = count / sizeof(struct op_sample);
+				break;
+			}
+
+			opd_unpack_mapping(&mapping, &opd_buf[i]);
+			opd_handle_mapping(&mapping);
+			i++;
+		} else switch (opd_buf[i].count) {
+			case OP_FORK:
+				opd_handle_fork(&opd_buf[i]);
+				break;
+
+			case OP_DROP_MODULES:
+				opd_clear_module_info();
+				break;
+
+			case OP_EXIT:
+				opd_handle_exit(&opd_buf[i]);
+				break;
+
+			default:
+				fprintf(stderr, "Received unknown notification type %u\n",opd_buf[i].count);
+				exit(1);
+				break;
+		}
 	}
 
 	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
@@ -425,8 +427,7 @@ int main(int argc, char const *argv[])
 
 	opd_options(argc, argv);
 
-	/* one extra for the "how many" header */
-	opd_buf_bytesize = (opd_buf_size + 1) * sizeof(struct op_sample);
+	opd_buf_bytesize = opd_buf_size * sizeof(struct op_sample);
 
  	opd_buf = opd_malloc(opd_buf_bytesize);
 

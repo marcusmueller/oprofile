@@ -40,6 +40,9 @@ o negative process entries in the daemon - a fork() into the pid would always su
   in the meantime count the missed samples, possibly try to get info via /proc again ...
 o why the overflow message at 12k ints/sec on do_dump() ? 
 
+o maybe we should support a CPU mask for enabling counters (useful with
+  processor pinning ?) 
+
 Performance
 -----------
 
