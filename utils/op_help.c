@@ -414,10 +414,8 @@ int main(int argc, char const *argv[])
 	case CPU_PPC64_POWER4:
 	case CPU_PPC64_POWER5:
 	case CPU_PPC64_970:
-		/*
-		 * I have discovered a truly remarkable URL
-		 * which this editor is too small to contain.
-		 */
+		printf("Obtain PowerPC64 processor documentation at:\n"
+			"http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC\n");
 		break;
 
 	case CPU_MIPS_R10000:

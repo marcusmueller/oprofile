@@ -1,3 +1,14 @@
+2005-03-14  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* utils/op_help.c:
+	* doc/oprofile.xml: 
+	  Update PPC64-related documentation to include URL links to
+	  IBM publications.
+
+2005-03-22  John Levon  <levon@movementarian.org>
+
+	* configure.in: bump to 0.9cvs
+
 2005-03-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* configure.in: bump to 0.8.2
