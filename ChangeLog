@@ -1,5 +1,9 @@
 2002-11-01  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* module/x86/op_apic.c: restore correctly the lvtpc register
+
+2002-11-01  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libop/op_hw_config.h: define DCOOKIE_SHIFT
 	* daemon/opd_image.c: use it
 
