@@ -116,27 +116,28 @@ static void child_sigterm(int val __attribute__((unused)))
 }
 
 
-static void run_child(size_t cpu)
+static void set_affinity(size_t cpu)
 {
-	struct child * self = &children[cpu];
-	unsigned long affinity_mask = 1UL << cpu;
+	unsigned long mask = 1UL << cpu;
+
+	int err = sched_setaffinity(getpid(), sizeof(unsigned long), &mask);
+
+	if (err == -1) {
+		fprintf(stderr, "Failed to set affinity\n");
+		exit(EXIT_FAILURE);
+	}
+}
+
+
+static void setup_signals(void)
+{
 	struct sigaction act;
-	pfarg_reg_t pc[OP_MAX_COUNTERS];
-	pfarg_reg_t pd[OP_MAX_COUNTERS];
-	pfarg_context_t ctx;
-	pfarg_load_t load_args;
 	sigset_t mask;
-	size_t i;
-	int err;
 
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGUSR1);
 	sigaddset(&mask, SIGUSR2);
 	sigprocmask(SIG_BLOCK, &mask, NULL);
-	self->pid = getpid();
-	self->sigusr1 = 0;
-	self->sigusr2 = 0;
-	self->sigterm = 0;
 
 	act.sa_handler = child_sigusr1;
 	act.sa_flags = 0;
@@ -165,13 +166,14 @@ static void run_child(size_t cpu)
 		exit(EXIT_FAILURE);
 	}
 
-	err = sched_setaffinity(self->pid, sizeof(unsigned long),
-	                        &affinity_mask);
+}
 
-	if (err == -1) {
-		fprintf(stderr, "Failed to set affinity\n");
-		exit(EXIT_FAILURE);
-	}
+
+/** create the per-cpu context */
+static void create_context(struct child * self)
+{
+	pfarg_context_t ctx;
+	int err;
 
 	memset(&ctx, 0, sizeof(pfarg_context_t));
 	memcpy(&ctx.ctx_smpl_buf_id, &uuid, 16);
@@ -185,6 +187,16 @@ static void run_child(size_t cpu)
 	}
 
 	self->ctx_fd = ctx.ctx_fd;
+}
+
+
+/** program the perfmon counters */
+static void write_pmu(struct child * self)
+{
+	pfarg_reg_t pc[OP_MAX_COUNTERS];
+	pfarg_reg_t pd[OP_MAX_COUNTERS];
+	int err;
+	size_t i;
 
 	memset(pc, 0, sizeof(pc));
 	memset(pd, 0, sizeof(pd));
@@ -232,7 +244,15 @@ static void run_child(size_t cpu)
 		perror("Couldn't write PMDs: ");
 		exit(EXIT_FAILURE);
 	}
+}
 
+
+static void load_context(struct child * self)
+{
+	pfarg_load_t load_args;
+	int err;
+
+	memset(load_args, 0, sizeof(load_args));
 	load_args.load_pid = self->pid;
 
 	err = perfmonctl(self->ctx_fd, PFM_LOAD_CONTEXT, &load_args, 1);
@@ -240,7 +260,11 @@ static void run_child(size_t cpu)
 		perror("Couldn't load context: ");
 		exit(EXIT_FAILURE);
 	}
+}
 
+
+static void notify_parent(struct child * self, size_t cpu)
+{
 	for (;;) {
 		ssize_t ret;
 		ret = write(self->up_pipe[1], &cpu, sizeof(size_t));
@@ -252,6 +276,29 @@ static void run_child(size_t cpu)
 			exit(EXIT_FAILURE);
 		}
 	}
+}
+
+
+static void run_child(size_t cpu)
+{
+	struct child * self = &children[cpu];
+
+	self->pid = getpid();
+	self->sigusr1 = 0;
+	self->sigusr2 = 0;
+	self->sigterm = 0;
+
+	setup_signals();
+
+	set_affinity(cpu);
+
+	create_context(self);
+
+	write_pmu(self);
+
+	load_context(self);
+
+	notify_parent(self, cpu);
 
 	for (;;) {
 		sigset_t sigmask;
