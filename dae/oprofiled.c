@@ -527,7 +527,7 @@ static void opd_do_samples(struct op_buffer_head const * opd_buf)
 	opd_stats[OPD_DUMP_COUNT]++;
 
 	verbprintf("Read buffer of %d entries.\n",
-		   (unsigned int) opd_buf->count);
+		   (unsigned int)opd_buf->count);
  
 	for (i = 0; i < opd_buf->count; i++) {
 		verbprintf("%.6u: EIP: 0x%.8lx pid: %.6d\n",
@@ -668,7 +668,6 @@ int main(int argc, char const * argv[])
 
 	if (atexit(clean_exit)) {
 		fprintf(stderr, "Couldn't set exit cleanup !\n");
-		unlink(OP_LOCK_FILE);
 		exit(EXIT_FAILURE);
 	}
 

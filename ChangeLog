@@ -1,5 +1,14 @@
 2003-07-23  John Levon  <levon@movementarian.org>
 
+	* dae/oprofiled.c:
+	* daemon/oprofiled.c: don't uselessly try to unlink
+	non-existent lockfile
+
+	* daemon/opd_image.c:
+	* daemon/oprofiled.c: clean up buffer read messages
+
+2003-07-23  John Levon  <levon@movementarian.org>
+
 	* utils/opcontrol: error out at --setup time if vmlinux is not
 	valid. Cleanup the error message if so
 

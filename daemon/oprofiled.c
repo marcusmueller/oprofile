@@ -362,7 +362,7 @@ static void opd_do_samples(char const * opd_buf, ssize_t count)
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
-	verbprintf("Read buffer of %d entries.\n", (unsigned int) num);
+	printf("Read buffer of %d entries.\n", (unsigned int)num);
  
 	opd_process_samples(opd_buf, num);
 
@@ -548,7 +548,6 @@ int main(int argc, char const * argv[])
 
 	if (atexit(clean_exit)) {
 		fprintf(stderr, "Couldn't set exit cleanup !\n");
-		unlink(OP_LOCK_FILE);
 		exit(EXIT_FAILURE);
 	}
 
@@ -556,7 +555,7 @@ int main(int argc, char const * argv[])
 
 	opd_open_files();
 
-	for (i=0; i< OPD_MAX_STATS; i++) {
+	for (i = 0; i < OPD_MAX_STATS; i++) {
 		opd_stats[i] = 0;
 	}
 

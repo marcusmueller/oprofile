@@ -625,8 +625,6 @@ void opd_process_samples(char const * buffer, size_t count)
 	 */
 	unsigned long long code;
 
-	printf("Reading sample buffer.\n");
-
 	while (trans.remaining) {
 		code = pop_buffer_value(&trans);
 
