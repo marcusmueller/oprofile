@@ -46,8 +46,7 @@ class oprof_start : public oprof_start_base
 	Q_OBJECT
 
 public:
-	oprof_start( QWidget* parent = 0, const char* name = 0, bool modal = FALSE, WFlags fl = 0 );
-	~oprof_start();
+	oprof_start();
 
 protected:
 	void on_choose_file_or_dir();
@@ -61,8 +60,6 @@ protected:
 	void accept();
 
 private:
-	void init();
-
 	// return 0 if not found
 	const op_event_descr* locate_event(const char* name);
 
