@@ -6,6 +6,15 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.8.1 release
 -------------
 
+[moz@lambent moz]$ opreport -m lib -l /boot/2.6.8-rc1/vmlinux | more
+opreport error: add_to_profile_sample_files(): sample file parsed twice
+?
+sample_filename:
+/var/lib/oprofile/samples/current/{root}/boot/2.6.8-rc1/vmlinux/{dep}/{root}/boot/2.6.8-rc1/vmlinux/CPU_CLK_UNHALTED.300000.0.all.all.all
+/var/lib/oprofile/samples/current/{root}/sbin/consoletype/{dep}/{root}/boot/2.6.8-rc1/vmlinux/CPU_CLK_UNHALTED.300000.0.all.all.all
+/boot/2.6.8-rc1/vmlinux /boot/2.6.8-rc1/vmlinux CPU_CLK_UNHALTED 300000
+0 all all all
+
  o IA64 and maybe others do not properly disable a counter if it's been
    used previously. Needs audit! (see bug 964097 report on sf). Needs
    2.6 patch at least.
@@ -63,7 +72,6 @@ Before 1.0 little stuff
   try to recover gracefully.
  o output column shortname headers for opreport -l
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
- o create_path API is weird
  o move oprofiled.log to OP_SAMPLE_DIR/current ?
  o --buffer-size is useless on 2.5 without tuning of watershed
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
