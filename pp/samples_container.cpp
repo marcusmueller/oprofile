@@ -1,5 +1,5 @@
 /**
- * @file opf_container.cpp
+ * @file samples_container.cpp
  * Sample file container
  *
  * @remark Copyright 2002 OProfile authors
@@ -433,7 +433,7 @@ void samples_container_t::do_add(const opp_samples_files & samples_files,
 
 	for (size_t i = 0 ; i < abfd.syms.size(); ++i) {
 		u32 start, end;
-		const char* filename;
+		char const * filename;
 		uint linenr;
 		symbol_entry symb_entry;
 

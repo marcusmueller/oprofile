@@ -54,7 +54,7 @@ class opp_samples_files;
 
 /** like printf but only output the message if the global variable vebose
  * is non-zero */
-void verbprintf(const char* args, ...) OP_VERBPRINTF_FORMAT;
+void verbprintf(char const * args, ...) OP_VERBPRINTF_FORMAT;
 
 /**
  * @param out output to this ostream

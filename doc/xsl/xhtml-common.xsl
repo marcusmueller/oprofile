@@ -4,6 +4,7 @@
 <xsl:param name="use.id.as.filename" select="1"/>
 <xsl:param name="section.autolabel" select="1"/>
 <xsl:param name="chapter.autolabel" select="1"/>
+<xsl:param name="ulink.target" select="''"/>
  
 <!-- Custom template for programlisting, screen and synopsis to generate a gray
      background to the item. -->
@@ -24,8 +25,8 @@
       <xsl:variable name="rtf">
         <xsl:apply-templates/>
       </xsl:variable>
-      <!-- Change the color bacground color in the line below. -->
-      <table border="0" bgcolor="#E0E0E0" width="90%">
+      <!-- Change the color background color in the line below. -->
+      <table border="0" style="background: #E0E0E0;" width="90%">
       <tr><td>
       <pre class="{name(.)}">
         <xsl:call-template name="number.rtf.lines">
@@ -35,8 +36,8 @@
       </td></tr></table>
     </xsl:when>
     <xsl:otherwise>
-      <!-- Change the color bacground color in the line below. -->
-      <table border="0" bgcolor="#E0E0E0" width="90%">
+      <!-- Change the color background color in the line below. -->
+      <table border="0" style="background: #E0E0E0;" width="90%">
       <tr><td>
       <pre class="{name(.)}">
         <xsl:apply-templates/>

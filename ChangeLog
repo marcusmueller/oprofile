@@ -1,3 +1,24 @@
+2002-05-09  John Levon  <moz@compsoc.man.ac.uk>
+
+	* doc/xhtml-chunk.xsl:
+	* doc/xhtml-common.xsl:
+	* doc/xhtml.xsl:
+	* doc/Makefile.in: some small improvements
+ 
+	* doc/src/doc/Doyxfile: add FIXME
+
+	* gui/oprof_start.cpp:
+	* libop/op_events_desc.h:
+	* libop/op_events_desc.c:
+	* libutil/filename_match.h: 
+	* oprof_report/oprofpp_view.h: 
+	* pp/op_time.cpp: 
+	* pp/opp_symbol.h:
+	* pp/oprofpp.h:
+	* pp/oprofpp_util.cpp:
+	* pp/samples_container.cpp: 
+	* pp/samples_container.h: more doxygen etc. fixes
+ 
 2002-05-08  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update

@@ -666,7 +666,7 @@ void oprof_start::hide_masks()
 	check6->hide(); 
 } 
  
-void oprof_start::setup_unit_masks(const op_event_descr & descr)
+void oprof_start::setup_unit_masks(op_event_descr const & descr)
 {
 	const op_unit_mask* um = descr.unit;
 	const op_unit_desc* um_desc = descr.um_desc;

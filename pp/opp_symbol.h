@@ -106,6 +106,7 @@ enum OutSymbFlag {
 /**
  * class to output in a columned format symbols and associated samples
  */
+/// FIXME: output_symbol not OutputSymbol ?? consistency ... 
 class OutputSymbol {
 public:
 	/// build an OutputSymbol object, the samples_container_t life time
@@ -130,10 +131,9 @@ public:
 	 * OutputSymbol::ShowHelp() to notify user on available options */
 	static OutSymbFlag ParseOutputOption(const std::string & option);
 
-	// FIXME, this does not work as expected in doxygen (member group
-	// comment)
-	/// the set of formating function, used internally by Output(). exposed
-	/// as public member for the future oprofpp GUI.
+	/** @defgroup format The set of formatting functions, used internally by Output().
+	 * Exposed as public members for the future oprofpp GUI.
+	 */
 	//@{
 	std::string format_vma(const std::string & name,
 			       const sample_entry & sample, size_t);

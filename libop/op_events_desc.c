@@ -59,7 +59,7 @@ static char const * cpu_names[MAX_CPU_TYPE] = {
  * op_get_cpu_type_str - get the cpu string.
  * @param cpu_type  the cpu type identifier
  *
- * The function always return a valid const char*
+ * The function always return a valid char const *
  * the core cpu denomination or "invalid cpu type" if
  * @cpu_type is not valid.
  */

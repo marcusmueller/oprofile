@@ -523,7 +523,7 @@ bool opp_bfd::have_debug_info() const
 }
  
 bool opp_bfd::get_linenr(uint sym_idx, uint offset, 
-			const char*& filename, unsigned int& linenr) const
+			char const * & filename, unsigned int & linenr) const
 {
 	char const * functionname;
 	bfd_vma pc;
@@ -717,7 +717,7 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
  * find and return the index of a symbol.
  * if the name is not found -1 is returned
  */
-int opp_bfd::symbol_index(const char* symbol) const
+int opp_bfd::symbol_index(char const * symbol) const
 {
 	for (size_t i = 0; i < syms.size(); i++) {
 		if (!strcmp(syms[i]->name, symbol))

@@ -92,7 +92,7 @@ struct sort_by_counter_t {
 typedef multimap<counter_array_t, map_t::const_iterator, sort_by_counter_t>
   sorted_map_t;
 
-static const char* counter_str;
+static char const * counter_str;
 static int counter;
 static int sort_by_counter = -1;
 static int showvers;

@@ -9,8 +9,8 @@
  * @author John Levon <moz@compsoc.man.ac.uk>
  */
  
-#ifndef OPF_FILTER_H
-#define OPF_FILTER_H
+#ifndef SAMPLES_CONTAINER_H
+#define SAMPLES_CONTAINER_H
 
 #include <string>
 
@@ -157,4 +157,4 @@ private:
 	int counter_mask;
 };
 
-#endif /* !OPF_FILTER_H */
+#endif /* !SAMPLES_CONTAINER_H */

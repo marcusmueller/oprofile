@@ -4,12 +4,6 @@
 <xsl:import href="/usr/share/sgml/docbook/xsl-stylesheets/xhtml/chunk.xsl"/>
 <xsl:import href="xhtml-common.xsl"/>
  
-<xsl:output method="xml" encoding="ISO-8859-1" indent="yes"
- doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
- doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" /> 
- 
-<!-- FIXME: indent ??? -->
- 
 <xsl:template name="process-chunk">
   <xsl:param name="prev" select="."/>
   <xsl:param name="next" select="."/>
@@ -39,7 +33,8 @@
     </xsl:call-template>
   </xsl:variable>
  
-<!-- This adds the XHTML DOCTYPE declaration-->
+<!-- FIXME: use Strict when the problems with width on td/th are
+  sorted out. Not yet. -->
   <xsl:call-template name="write.chunk.with.doctype">
     <xsl:with-param name="filename" select="$filename"/>
     <xsl:with-param name="indent" select="'yes'"/>

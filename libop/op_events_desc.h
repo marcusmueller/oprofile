@@ -69,7 +69,7 @@ op_cpu op_get_cpu_type(void);
  * get the cpu string.
  * @param cpu_type the cpu type identifier
  *
- * The function always return a valid const char* the core cpu denomination
+ * The function always return a valid char const * the core cpu denomination
  * or "invalid cpu type" if cpu_type is not valid.
  */
 char const * op_get_cpu_type_str(op_cpu cpu_type);

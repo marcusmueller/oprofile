@@ -25,7 +25,7 @@ class filename_match {
 
 	/// return if true filename match include_pattern and does not match
 	/// exclude_pattern
-	bool match(const std::string & filename);
+	bool match(std::string const & filename);
 
  private:
 	// match helper

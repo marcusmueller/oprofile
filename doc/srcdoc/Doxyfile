@@ -55,7 +55,8 @@ WARN_LOGFILE           =
 INPUT                  = ../../
 FILE_PATTERNS          = *.cpp *.c *.h
 RECURSIVE              = YES
-EXCLUDE                = 
+# FIXME: this just doesn't work !
+EXCLUDE                = module *.moc.cpp *.moc.h oprof_start.base.h oprof_start.base.cpp
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = 
 EXAMPLE_PATH           = 

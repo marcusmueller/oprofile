@@ -7,8 +7,8 @@ xmlns:doc="http://nwalsh.com/xsl/documentation/1.0" version="1.0">
  
 <!-- this will give you the doctype on your chunks -->
 <xsl:output method="xml" encoding="ISO-8859-1" indent="yes"
-doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
-doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
+doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
 />
  
 </xsl:stylesheet>
