@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.24 2000/08/26 21:45:25 moz Exp $ */
+/* $Id: oprofile.c,v 1.25 2000/08/26 22:09:47 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 
@@ -641,10 +641,12 @@ doit:
 	spin_lock(&note_lock);
 
 	num = oprof_data[i].nextbuf;
-	/* might have overflowed */
+	printk("oprofile: num %u, nextbuf %u\n",num,oprof_data[i].nextbuf);
+	/* might have overflowed. If not, set the buffer back to the start. */
 	if (num < oprof_data[i].buf_size/2)
 		num = oprof_data[i].buf_size;
-	printk("oprofile: num %u, nextbuf %u\n",num,oprof_data[i].nextbuf);
+	else
+		oprof_data[i].nextbuf=0;
 
 	mybuf->count = mybuf->pid = 0;
 	mybuf->eip = num;
