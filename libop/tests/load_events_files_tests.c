@@ -18,7 +18,7 @@ int main(void)
 {
 	op_cpu cpu_type;
 
-	setenv("OPROFILE_EVENTS_FILE_DIR", "../../events", 1);
+	setenv("OPROFILE_EVENTS_FILE_DIR", OPROFILE_SRCDIR "/events", 1);
 
 	for (cpu_type = CPU_NO_GOOD + 1; cpu_type < MAX_CPU_TYPE; ++cpu_type) {
 		if (cpu_type != CPU_TIMER_INT) {

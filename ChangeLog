@@ -1,5 +1,14 @@
 2003-10-22  John Levon  <levon@movementarian.org>
 
+	* libop/tests/Makefile.am:
+	* libop/tests/load_events_files_tests.c:
+	* libop/tests/alloc_counter_tests.c: fix
+	make distcheck
+
+	* configure.in: bump to 0.7
+ 
+2003-10-22  John Levon  <levon@movementarian.org>
+
 	* daemon/Makefile.am:
 	* daemon/opd_perfmon.h:
 	* daemon/opd_perfmon.c: re-enable. Wait for children.

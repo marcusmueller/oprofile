@@ -2,7 +2,7 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libutil \
 	-I ${top_srcdir}/libop
 
-AM_CFLAGS = @OP_CFLAGS@
+AM_CFLAGS = @OP_CFLAGS@ -DOPROFILE_SRCDIR=\"@top_srcdir@\"
 
 check_PROGRAMS = \
 	cpu_type_tests \
