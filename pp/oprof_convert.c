@@ -237,20 +237,20 @@ int main(int argc, char* argv[])
 	if (argc <= 1) {
 		fprintf(stderr, "Syntax: %s filename [filenames]\n", argv[0]);
 
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	/* Should use popt in future if new options are added */
 	if (strcmp(argv[1], "--version") == 0 || strcmp(argv[1], "-v") == 0) {
 		printf("%s : " VERSION_STRING " compiled on " __DATE__ " " __TIME__ "\n", argv[0]);
 
-		exit(0);
+		exit(EXIT_SUCCESS);
 	}
 
 	if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
 		printf("Syntax : %s filename [filenames]\n", argv[0]);
 
-		exit(0);
+		exit(EXIT_SUCCESS);
 	}
 
 	for (i = 1 ; i < argc ; ++i) {
