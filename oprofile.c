@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.17 2000/08/21 19:23:01 moz Exp $ */
+/* $Id: oprofile.c,v 1.18 2000/08/24 17:47:09 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 
@@ -329,6 +329,8 @@ static int __init apic_setup(void)
 	if (GET_APIC_MAXLVT(apic_read(APIC_LVR))!=4)
 		goto not_local_p6_apic;
 
+	__cli();
+
 	/* enable APIC locally */
 	/* IA32 V3, 7.4.14.1 */
 	val = apic_read(APIC_SPIV);
@@ -361,6 +363,8 @@ static int __init apic_setup(void)
 	apic_write(APIC_TDCR, val);
 
 	smp_apic_setup(NULL);
+
+	__sti();
 
 	printk(KERN_INFO "oprofile: enabled local APIC\n");
 	return 0;
