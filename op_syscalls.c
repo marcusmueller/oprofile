@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.15 2001/08/14 02:38:29 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.16 2001/08/14 18:02:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -169,6 +169,7 @@ int oprof_init_hashmap(void)
 	hash_map = rvmalloc(PAGE_ALIGN(OP_HASH_MAP_SIZE));
 	if (!hash_map)
 		return -EFAULT;
+
 	return 0;
 }
 
@@ -238,14 +239,14 @@ asmlinkage static long (*old_sys_exit)(int);
 
 spinlock_t map_lock = SPIN_LOCK_UNLOCKED;
 
-inline static uint name_hash(const char *name, uint len)
+inline static short name_hash(const char *name, uint len)
 {
-	uint hash=0;
+	short hash=0;
 
 	while (len--)
-		hash = ((hash << 4) | (hash >> 28)) ^ name[len];
+		hash = (hash + (name[len] << 4) + (name[len] >> 4)) * 11;
 
-	return hash % OP_HASH_MAP_NR;
+	return abs(hash % OP_HASH_MAP_NR);
 }
 
 /* empty ascending dname stack */
@@ -279,7 +280,7 @@ static short do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dent
 
 	/* wind the dentries onto the stack pages */
 	for (;;) {
-		if (d->d_name.len >= OP_HASH_LINE)
+		if (d->d_name.len > OP_HASH_LINE)
 			goto too_large;
 
 		/* deleted ? */
@@ -322,7 +323,7 @@ static short do_hash(struct dentry *dentry, struct vfsmount *vfsmnt, struct dent
 			goto next;
 
 		/* nope, find another place in the table */
-		value = (value + probe) % OP_HASH_MAP_NR;
+		value = abs((value + probe) % OP_HASH_MAP_NR);
 		probe *= probe;
 		if (value == firsthash)
 			goto fulltable;

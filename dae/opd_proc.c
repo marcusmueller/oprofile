@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.60 2001/07/28 19:20:26 movement Exp $ */
+/* $Id: opd_proc.c,v 1.61 2001/08/14 18:02:33 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1235,12 +1235,12 @@ void opd_handle_mapping(const struct op_mapping *mapping)
 	hash = mapping->hash;
 
 	while (hash) {
-		if (hash==-1) {
+		if (hash == -1) {
 			/* possibly deleted file */
 			return;
 		}
 
-		if (hash >= OP_HASH_MAP_NR) {
+		if (hash < 0 || hash >= OP_HASH_MAP_NR) {
 			fprintf(stderr,"hash value %u out of range.\n",hash);
 			return;
 		}

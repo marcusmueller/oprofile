@@ -1,5 +1,13 @@
 2001-08-14  John Levon  <moz@compsoc.man.ac.uk>
 
+	* op_syscalls.c: don't return negative hashes !
+	  revert dname len "fix"
+	  use a much better hash function
+
+	* dae/opd_proc.c: protect against negative hashes
+ 
+2001-08-14  John Levon  <moz@compsoc.man.ac.uk>
+
 	* op_syscalls.c: some small fixes
 
 	* oprofile.c: add back unmasking code during set_gate, but only
