@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.49 2002/05/01 19:56:18 movement Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.50 2002/05/02 01:12:32 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -329,7 +329,7 @@ counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
 	return *this;
 }
 
-opp_bfd::opp_bfd(const opd_header* header, const std::string & filename)
+opp_bfd::opp_bfd(opp_samples_files& samples, const std::string & filename)
 	:
 	ibfd(0),
 	bfd_syms(0),
@@ -342,14 +342,16 @@ opp_bfd::opp_bfd(const opd_header* header, const std::string & filename)
 
 	nr_samples = opd_get_fsize(filename.c_str(), 0);
 
-	open_bfd_image(filename, header->is_kernel);
+	open_bfd_image(filename, samples.first_header()->is_kernel);
 
 	time_t newmtime = opd_get_mtime(filename.c_str());
-	if (newmtime != header->mtime) {
+	if (newmtime != samples.first_header()->mtime) {
 		fprintf(stderr, "oprofpp: WARNING: the last modified time of the binary file %s does not match\n"
 			"that of the sample file. Either this is the wrong binary or the binary\n"
 			"has been modified since the sample file was created.\n", filename.c_str());
 	}
+
+	samples.set_sect_offset(sect_offset);
 }
 
 opp_bfd::~opp_bfd()
@@ -645,7 +647,7 @@ size_t opp_bfd::symbol_size(uint sym_idx) const
 
 	next = (sym_idx == syms.size() - 1) ? NULL : syms[sym_idx + 1];
 
-	u32 start = (sym->section->filepos - sect_offset) + sym->value;
+	u32 start = sym->section->filepos + sym->value;
 	size_t length;
 
 #ifndef USE_ELF_INTERNAL
@@ -653,7 +655,7 @@ size_t opp_bfd::symbol_size(uint sym_idx) const
 	if (next) {
 		end = next->value;
 		/* offset of section */
-		end += (next->section->filepos - sect_offset);
+		end += next->section->filepos;
 	} else
 		end = nr_samples;
 
@@ -668,8 +670,7 @@ size_t opp_bfd::symbol_size(uint sym_idx) const
 	if (length == 0) {
 		u32 next_offset = start;
 		if (next) {
-			next_offset = next->value +
-				(next->section->filepos - sect_offset);
+			next_offset = next->value + next->section->filepos;
 		} else {
 			next_offset = nr_samples;
 		}
@@ -690,7 +691,7 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 	verbprintf("Symbol %s, value 0x%lx\n", sym->name, sym->value); 
 	start = sym->value;
 	/* offset of section */
-	start += (sym->section->filepos - sect_offset);
+	start += sym->section->filepos;
 	verbprintf("in section %s, filepos 0x%lx\n", sym->section->name, sym->section->filepos);
 
 	if (is_excluded_symbol(sym->name)) {
@@ -700,12 +701,12 @@ void opp_bfd::get_symbol_range(uint sym_idx, u32 & start, u32 & end) const
 	}
 	verbprintf("start 0x%x, end 0x%x\n", start, end); 
 
-	if (start >= nr_samples) {
+	if (start >= nr_samples + sect_offset) {
 		fprintf(stderr,"oprofpp: start 0x%x out of range (max 0x%x)\n", start, nr_samples);
 		exit(EXIT_FAILURE);
 	}
 
-	if (end > nr_samples) {
+	if (end > nr_samples + sect_offset) {
 		fprintf(stderr,"oprofpp: end 0x%x out of range (max 0x%x)\n", end, nr_samples);
 		exit(EXIT_FAILURE);
 	}
@@ -937,6 +938,15 @@ bool opp_samples_files::accumulate_samples(counter_array_t& counter,
 	return found_samples;
 }
 
+void opp_samples_files::set_sect_offset(u32 sect_offset)
+{
+	for (uint k = 0; k < nr_counters; ++k) {
+		if (is_open(k)) {
+			samples[k]->sect_offset = sect_offset;
+		}
+	}
+}
+
 /**
  * samples_file_t - construct a samples_file_t object
  * \param filename the full path of sample file
@@ -948,6 +958,8 @@ bool opp_samples_files::accumulate_samples(counter_array_t& counter,
  *
  */
 samples_file_t::samples_file_t(const std::string & filename)
+	:
+	sect_offset(0)
 {
 	db_open(&db_tree, filename.c_str(), DB_RDONLY, sizeof(struct opd_header));
 }
@@ -1002,7 +1014,8 @@ u32 samples_file_t::count(uint start, uint end) const
 {
 	u32 count = 0;
 
-	db_travel(&db_tree, start, end, db_tree_callback, &count);
+	db_travel(&db_tree, start - sect_offset, end - sect_offset,
+		  db_tree_callback, &count);
 
 	return count;
 }

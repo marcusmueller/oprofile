@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.40 2002/04/24 17:59:31 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.41 2002/05/02 01:12:32 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -388,7 +388,7 @@ int main(int argc, char const *argv[])
 	opp_get_options(argc, argv, image_file, sample_file, counter);
 
 	opp_samples_files samples_files(sample_file, counter);
-	opp_bfd abfd(samples_files.first_header(), image_file);
+	opp_bfd abfd(samples_files, image_file);
 
 	if (!gproffile)
 		samples_files.output_header();

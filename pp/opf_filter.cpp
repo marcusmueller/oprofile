@@ -824,7 +824,7 @@ bool output::treat_input(const string & image_name, const string & sample_file)
 	// this order of declaration is required to ensure proper
 	// initialisation of oprofpp
 	opp_samples_files samples_files(sample_file, counter_mask);
-	opp_bfd abfd(samples_files.first_header(), image_name);
+	opp_bfd abfd(samples_files, image_name);
 
 	if (!assembly && !abfd.have_debug_info()) {
 		cerr << "Request for source file annotated "

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.52 2002/04/24 17:59:31 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.53 2002/05/02 01:12:32 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -42,6 +42,7 @@
 #include "../version.h"
 
 class symbol_entry;
+class opp_samples_files;
 
 // To avoid doxygen warning
 #define OP_VERBPRINTF_FORMAT __attribute__((format (printf, 1, 2)))
@@ -203,13 +204,13 @@ private:
 class opp_bfd {
 public:
 	/**
-	 * \param header a valid samples file opd_header
+	 * \param samples a valid samples file associated with this image
 	 * \param image_file the name of the image file
 	 *
 	 * All error are fatal.
 	 *
 	 */
-	opp_bfd(const opd_header * header, const std::string & filename);
+	opp_bfd(opp_samples_files& samples, const std::string & filename);
 
 	/** close an opended bfd image and free all related resource. */
 	~opp_bfd();
@@ -311,6 +312,10 @@ struct samples_file_t
 //private:
 	db_tree_t db_tree;
 
+	// this offset is zero for user space application and the file pos
+	// of text section for kernel and module.
+	u32 sect_offset;
+
 private:
 	// neither copy-able or copy constructible
 	samples_file_t(const samples_file_t &);
@@ -379,6 +384,8 @@ struct opp_samples_files {
 	const struct opd_header * first_header() const {
 		return samples[first_file]->header();
 	}
+
+	void set_sect_offset(u32 sect_offset);
 
 	// TODO privatisze as we can.
 	samples_file_t * samples[OP_MAX_COUNTERS];

@@ -381,8 +381,7 @@ add(const opp_samples_files & samples_files, const opp_bfd & abfd)
 		extract_app_name(*it, lib_name);
 
 		opp_samples_files samples_files(dir + "/" + *it, counter_mask);
-		opp_bfd abfd(samples_files.first_header(), 
-			     demangle_filename(lib_name));
+		opp_bfd abfd(samples_files, demangle_filename(lib_name));
 
 		// TODO: check if third params must be add_zero_samples_symbols
 		do_add(samples_files, abfd, false);

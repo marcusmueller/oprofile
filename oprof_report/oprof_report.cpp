@@ -72,8 +72,7 @@ void oprof_report::load_samples_files(const string & filename)
 	try {
 		opp_samples_files samples_file(temp_filename, counter);
 
-		opp_bfd abfd(samples_file.first_header(), 
-			     demangle_filename(app_name));
+		opp_bfd abfd(samples_file, demangle_filename(app_name));
 
 		// we defer clearing the view after ensuring than nothing
 		// bad occur (through exception) in file loading.
