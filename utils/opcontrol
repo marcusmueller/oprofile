@@ -891,11 +891,22 @@ get_events() {
 			EVENT_VAL=`$OP_HELP $EVENT`
 			COUNT=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $2}'`
 			UNIT_MASK=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $3}'`
+			KERNEL=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $4}'`
+			USER=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $5}'`
+			CTR=`echo $HW_CTRS | awk "{print \\$$((f + 1))}"`
 			if test -z "$UNIT_MASK"; then
 				TMPEVENT="$EVENT:$COUNT"
 				UNIT_MASK=`$OP_HELP --unit-mask $TMPEVENT`
 			fi
-			OPROFILED_EVENTS=${OPROFILED_EVENTS}$EVENT:$EVENT_VAL:$COUNT:$UNIT_MASK,
+			if test -z "$KERNEL"; then
+				KERNEL=1
+			fi
+			if test -z "$USER"; then
+				USER=1
+			fi
+			OPROFILED_EVENTS=${OPROFILED_EVENTS}$EVENT:$EVENT_VAL:
+			OPROFILED_EVENTS=${OPROFILED_EVENTS}$CTR:$COUNT:$UNIT_MASK:
+			OPROFILED_EVENTS=${OPROFILED_EVENTS}$KERNEL:$USER,
 		fi
 	done
 }

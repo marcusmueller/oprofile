@@ -13,9 +13,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o when --separate=thread, we really need to show the list of current
    classes on a merge failure so user can get help specifying tgid where
    relevant
- o IA64: we free twice time profiling interrupt at shutdown
  o x86_64 and 2.4 kernel: test the needed change
- o perfmon: error out if pfmlib not found but needed
  o perfmon: fix signal race in opd_perfmon.c
 
 0.8 release

@@ -47,16 +47,14 @@ oprofiled_LDADD = \
 	../libabi/libabi.a \
 	../libdb/libodb.a \
 	../libop/libop.a \
-	../libutil/libutil.a \
-	@PFM_LIBS@
+	../libutil/libutil.a
 LINKER=$(CXX)
 else
 oprofiled_LDADD = \
 	libdaemon.a \
 	../libdb/libodb.a \
 	../libop/libop.a \
-	../libutil/libutil.a \
-	@PFM_LIBS@
+	../libutil/libutil.a
 LINKER=$(CC)
 endif
 

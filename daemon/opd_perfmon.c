@@ -10,8 +10,12 @@
 
 #ifdef __ia64__
 
-#include <perfmon/perfmon.h>
-#include <perfmon/pfmlib.h>
+#include "opd_util.h"
+#include "opd_perfmon.h"
+
+#include "op_libiberty.h"
+#include "op_hw_config.h"
+
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <limits.h>
@@ -21,21 +25,25 @@
 #include <string.h>
 #include <errno.h>
 
-#include "op_libiberty.h"
-#include "op_hw_config.h"
-
-extern char * event_name[OP_MAX_COUNTERS];
-extern char * event_count[OP_MAX_COUNTERS];
-extern char * event_um[OP_MAX_COUNTERS];
-
 /* many glibc's are not yet up to date */
 #ifndef __NR_sched_setaffinity
 #define __NR_sched_setaffinity 1231
-int sched_setaffinity(pid_t pid, unsigned int len, unsigned long * mask)
+static int sched_setaffinity(pid_t pid, unsigned int len, unsigned long * mask)
 {
 	return syscall(__NR_sched_setaffinity, pid, len, mask);
 }
 #endif
+
+
+#ifndef __NR_perfmonctl
+#define __NR_perfmonctl 1175
+#endif
+
+static int perfmonctl(int fd, int cmd, void * arg, int narg)
+{
+	return syscall(__NR_perfmonctl, fd, cmd, arg, narg);
+}
+
 
 static unsigned char uuid[16] = {
 	0x77, 0x7a, 0x6e, 0x61, 0x20, 0x65, 0x73, 0x69,
@@ -107,9 +115,7 @@ static void run_child(size_t cpu)
 	pfarg_reg_t pd[OP_MAX_COUNTERS];
 	pfarg_context_t ctx;
 	pfarg_load_t load_args;
-	pfmlib_input_param_t inp;
-	pfmlib_output_param_t outp;
-	unsigned int i;
+	size_t i;
 	int err;
 
 	self->pid = getpid();
@@ -159,55 +165,46 @@ static void run_child(size_t cpu)
 
 	memset(pc, 0, sizeof(pc));
 	memset(pd, 0, sizeof(pd));
-	memset(&inp,0, sizeof(inp));
-	memset(&outp,0, sizeof(outp));
 
-	for (i = 0; event_name[i]; ++i) {
-		err = pfm_find_event(event_name[i], &inp.pfp_events[i].event);
-		if (err != PFMLIB_SUCCESS) {
-			fprintf(stderr, "Couldn't find event %s\n",
-			        event_name[i]);
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	inp.pfp_dfl_plm = PFM_PLM3 | PFM_PLM0; 
-	inp.pfp_event_count = i;
-	inp.pfp_flags = PFMLIB_PFP_SYSTEMWIDE;
-
-	err = pfm_dispatch_events(&inp, NULL, &outp, NULL);
-	if (err != PFMLIB_SUCCESS) {
-		fprintf(stderr, "Couldn't configure events: %s\n",
-		        pfm_strerror(err));
-		exit(EXIT_FAILURE);
-	}
-
-	/* FIXME: perfmon has a weird-ass way of doing unit masks,
-	 * we will probably have to dump using it.
-	 */
-	for (i = 0; i < outp.pfp_pmc_count; i++) {
-		pc[i].reg_num   = outp.pfp_pmcs[i].reg_num;
-		pc[i].reg_value = outp.pfp_pmcs[i].reg_value;
-		/* FIXME: not sure that 'i' is right here ? */
+#define PMC_GEN_INTERRUPT (1UL << 5)
+#define PMC_PRIV_MONITOR (1UL << 6)
+/* McKinley requires pmc4 to have bit 23 set (enable PMU).
+ * It is supposedly ignored in other pmc registers.
+ */
+#define PMC_MANDATORY (1UL << 23)
+#define PMC_USER (1UL << 3)
+#define PMC_KERNEL (1UL << 0)
+	for (i = 0; opd_events[i].name; ++i) {
+		struct opd_event * event = &opd_events[i];
+		pc[i].reg_num = event->counter + 4;
+		pc[i].reg_value = PMC_GEN_INTERRUPT;
+		pc[i].reg_value |= PMC_PRIV_MONITOR;
+		pc[i].reg_value |= PMC_MANDATORY;
+		(event->user) ? (pc[i].reg_value |= PMC_USER)
+		              : (pc[i].reg_value &= ~PMC_USER);
+		(event->kernel) ? (pc[i].reg_value |= PMC_KERNEL)
+		                : (pc[i].reg_value &= ~PMC_KERNEL);
+		pc[i].reg_value &= ~(0x7f << 8);
+		pc[i].reg_value |= ((event->value & 0x7f) << 8);
+		pc[i].reg_value &= ~(0xf << 16);
+		pc[i].reg_value |= ((event->um & 0xf) << 16);
 		pc[i].reg_smpl_eventid = i;
 	}
 
-	for (i=0; i < inp.pfp_event_count; i++) {
-		int count;
-		/* i might be wrong here */
-		sscanf(event_count[i], "%d", &count);
-		pd[i].reg_value = ~0UL - count + 1;
-		pd[i].reg_short_reset = ~0UL - count + 1;
-		pd[i].reg_num = outp.pfp_pmcs[i].reg_num;
+	for (i = 0; opd_events[i].name; ++i) {
+		struct opd_event * event = &opd_events[i];
+		pd[i].reg_value = ~0UL - event->count + 1;
+		pd[i].reg_short_reset = ~0UL - event->count + 1;
+		pd[i].reg_num = event->counter + 4;
 	}
 
-	err = perfmonctl(self->ctx_fd, PFM_WRITE_PMCS, pc, outp.pfp_pmc_count);
+	err = perfmonctl(self->ctx_fd, PFM_WRITE_PMCS, pc, i);
 	if (err == -1) {
 		perror("Couldn't write PMCs: ");
 		exit(EXIT_FAILURE);
 	}
 
-	err = perfmonctl(self->ctx_fd, PFM_WRITE_PMDS, pd, inp.pfp_event_count);
+	err = perfmonctl(self->ctx_fd, PFM_WRITE_PMDS, pd, i);
 	if (err == -1) {
 		perror("Couldn't write PMDs: ");
 		exit(EXIT_FAILURE);
@@ -243,11 +240,6 @@ void perfmon_init(void)
 {
 	size_t i;
 	long nr;
-
-	if (pfm_initialize() != PFMLIB_SUCCESS) {
-		fprintf(stderr, "Can't initialize libpfm.\n");
-		exit(EXIT_FAILURE);
-	}
 
 	nr = sysconf(_SC_NPROCESSORS_ONLN);
 	if (nr == -1) {

@@ -54,4 +54,20 @@ extern sig_atomic_t signal_term;
 extern sig_atomic_t signal_usr1;
 extern sig_atomic_t signal_usr2;
 
+/** event description for setup (perfmon) and mangling */
+struct opd_event {
+	char * name;
+	unsigned long value;
+	unsigned long counter;
+	unsigned long count;
+	unsigned long um;
+	unsigned long kernel;
+	unsigned long user;
+};
+
+extern struct opd_event opd_events[];
+
+/** parse command line events */
+void opd_parse_events(char const * events);
+
 #endif /* OPD_UTIL_H */

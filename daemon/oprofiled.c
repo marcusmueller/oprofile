@@ -51,11 +51,6 @@
 // GNU libc bug
 pid_t getpgid(pid_t pid);
 
-static char * events;
-char * event_name[OP_MAX_COUNTERS];
-char * event_val[OP_MAX_COUNTERS];
-char * event_count[OP_MAX_COUNTERS];
-char * event_um[OP_MAX_COUNTERS];
 double cpu_speed;
 
 uint op_nr_counters;
@@ -69,6 +64,7 @@ int no_vmlinux;
 char * vmlinux;
 size_t kernel_pointer_size;
 
+static char * events;
 static char * kernel_range;
 static int showvers;
 static int opd_buf_size;
@@ -142,84 +138,6 @@ static int opd_read_fs_int(char const * name)
 }
 
 
-static void malformed_events(void)
-{
-	fprintf(stderr, "oprofiled: malformed events %s\n", events);
-	exit(EXIT_FAILURE);
-}
-
-
-static char * copy_token(char ** c, char delim)
-{
-	char * tmp = *c;
-	char * tmp2 = *c;
-	char * str;
-
-	if (!**c)
-		return NULL;
-
-	while (*tmp2 && *tmp2 != delim)
-		++tmp2;
-
-	if (tmp2 == tmp)
-		return NULL;
-
-	str = op_xstrndup(tmp, tmp2 - tmp);
-	*c = tmp2;
-	if (**c)
-		++*c;
-	return str;
-}
-
-
-/**
- * opd_parse_events - parse the events list
- */
-static void opd_parse_events(void)
-{
-	char * ev = xstrdup(events);
-	char * c;
-	size_t cur = 0;
-
-	if (cpu_type == CPU_TIMER_INT) {
-		event_name[0] = xstrdup("TIMER");
-		event_val[0] = xstrdup("0");
-		event_count[0] = xstrdup("0");
-		event_um[0] = xstrdup("0");
-		return;
-	}
-
-	if (!ev || !strlen(ev)) {
-		fprintf(stderr, "oprofiled: no events passed.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	verbprintf("Events: %s\n", ev);
-
-	c = ev;
-
-	while (*c) {
-		event_name[cur] = copy_token(&c, ':');
-		if (!event_name[cur])
-			malformed_events();
-		event_val[cur] = copy_token(&c, ':');
-		if (!event_val[cur])
-			malformed_events();
-		event_count[cur] = copy_token(&c, ':');
-		if (!event_count[cur])
-			malformed_events();
-		event_um[cur] = copy_token(&c, ',');
-		if (!event_um[cur])
-			malformed_events();
-		++cur;
-	}
-
-	free(ev);
-
-	/* FIXME: validation ? */
-}
-
-
 /**
  * opd_options - parse command line options
  * @param argc  argc
@@ -267,7 +185,7 @@ static void opd_options(int argc, char const * argv[])
 
 	opd_buf_size = opd_read_fs_int("buffer_size");
 
-	opd_parse_events();
+	opd_parse_events(events);
 
 	cpu_speed = op_cpu_frequency();
 

@@ -16,8 +16,9 @@
 #include "opd_cookie.h"
 #include "opd_sfile.h"
 #include "opd_printf.h"
-#include "op_file.h"
+#include "opd_util.h"
 
+#include "op_file.h"
 #include "op_sample_file.h"
 #include "op_config.h"
 #include "op_cpu_type.h"
@@ -33,10 +34,6 @@ extern int separate_lib;
 extern int separate_kernel;
 extern int separate_thread;
 extern int separate_cpu;
-extern char * event_name[OP_MAX_COUNTERS];
-extern char * event_val[OP_MAX_COUNTERS];
-extern char * event_count[OP_MAX_COUNTERS];
-extern char * event_um[OP_MAX_COUNTERS];
 extern double cpu_speed;
 extern op_cpu cpu_type;
 
@@ -63,7 +60,7 @@ static char * mangle_filename(struct sfile const * sf, int counter)
 	char * mangled;
 	struct mangle_values values;
 
-	if (!event_name[counter]) {
+	if (!opd_events[counter].name) {
 		fprintf(stderr, "Unknown event for counter %u\n",
 		        counter);
 		abort();
@@ -96,9 +93,9 @@ static char * mangle_filename(struct sfile const * sf, int counter)
 		values.cpu = sf->cpu;
 	}
 
-	values.event_name = event_name[counter];
-	sscanf(event_count[counter], "%d", &values.count);
-	sscanf(event_um[counter], "%u", &values.unit_mask);
+	values.event_name = opd_events[counter].name;
+	values.count = opd_events[counter].count;
+	values.unit_mask = opd_events[counter].um;
 
 	mangled = op_mangle_filename(&values);
 
@@ -112,7 +109,6 @@ int opd_open_sample_file(struct sfile * sf, int counter)
 	samples_odb_t * file;
 	struct opd_header * header;
 	char const * binary;
-	int tmp;
 	int err;
 
 	file = &sf->files[counter];
@@ -157,12 +153,9 @@ retry:
 	header->version = OPD_VERSION;
 	memcpy(header->magic, OPD_MAGIC, sizeof(header->magic));
 	header->is_kernel = !!sf->kernel;
-	sscanf(event_val[counter], "%d", &tmp);
-	header->ctr_event = tmp;
-	sscanf(event_count[counter], "%d", &tmp);
-	header->ctr_count = tmp;
-	sscanf(event_um[counter], "%d", &tmp);
-	header->ctr_um = tmp;
+	header->ctr_event = opd_events[counter].value;
+	header->ctr_count = opd_events[counter].count;
+	header->ctr_um = opd_events[counter].um;
 	header->ctr = counter;
 	header->cpu_type = cpu_type;
 	header->cpu_speed = cpu_speed;

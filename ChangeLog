@@ -1,6 +1,24 @@
 2003-10-14  John Levon  <levon@movementarian.org>
 
 	* m4/perfmon.m4:
+	* configure.in: remove pfmlib checks
+
+	* daemon/opd_util.h:
+	* daemon/opd_util.c:
+	* daemon/opd_mangling.c:
+	* daemon/oprofiled.c: parse more detailed events
+	passed on command line
+
+	* daemon/opd_perfmon.h:
+	* daemon/opd_perfmon.c: don't use libpfm at all,
+	do it ourselves.
+
+	* utils/opcontrol: pass more of the events info to
+	the daemon
+
+2003-10-14  John Levon  <levon@movementarian.org>
+
+	* m4/perfmon.m4:
 	* configure.in: look for pfmlib 3
 
 	* daemon/Makefile.am:
