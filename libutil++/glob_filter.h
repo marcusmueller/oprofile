@@ -26,8 +26,7 @@ class glob_filter : public string_filter {
 public:
 	/**
 	 * Initialise the filter with the include and exclude list, 
-	 * comma-separated. Trailing and heading whitespace in each pattern are
-	 * stripped.
+	 * comma-separated.
 	 */
 	glob_filter(std::string const & include_patterns,
 	            std::string const & exclude_patterns)

@@ -29,8 +29,7 @@ public:
 
 	/**
 	 * Initialise the filter with the include and exclude list,
-	 * comma-separated. Trailing and heading whitespace in each pattern are
-	 * stripped.
+	 * comma-separated.
 	 */
 	string_filter(std::string const & include_patterns,
 	              std::string const & exclude_patterns);

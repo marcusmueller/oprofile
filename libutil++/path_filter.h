@@ -26,8 +26,8 @@
 class path_filter : public glob_filter {
 public:
 	/**
-	 * Initialise the filter with the include and exclude list, comma-separated.
-	 * Whitespace in each pattern is stripped.
+	 * Initialise the filter with the include and exclude list,
+	 * comma-separated.
 	 */
 	path_filter(std::string const & include_patterns = std::string(),
 	            std::string const & exclude_patterns = std::string())

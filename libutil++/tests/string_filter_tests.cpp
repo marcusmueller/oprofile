@@ -80,5 +80,11 @@ int main()
 	check(f9, "ok", true);
 	check(f9, "no2", false);
 
+	string_filter f10(" foo ", "");
+	check(f10, " foo ", true);
+	check(f10, " foo", false);
+	check(f10, "foo ", false);
+	check(f10, "foo", false);
+
 	return EXIT_SUCCESS;
 }

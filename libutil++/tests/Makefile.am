@@ -10,7 +10,8 @@ check_PROGRAMS = \
 	string_filter_tests \
 	comma_list_tests \
 	file_manip_tests \
-	glob_filter_tests
+	glob_filter_tests \
+	path_filter_tests
 
 string_manip_tests_SOURCES = string_manip_tests.cpp
 string_manip_tests_LDADD = ${COMMON_LIBS}
@@ -20,6 +21,9 @@ string_filter_tests_LDADD = ${COMMON_LIBS}
 
 glob_filter_tests_SOURCES = glob_filter_tests.cpp
 glob_filter_tests_LDADD = ${COMMON_LIBS}
+
+path_filter_tests_SOURCES = path_filter_tests.cpp
+path_filter_tests_LDADD = ${COMMON_LIBS}
 
 comma_list_tests_SOURCES = comma_list_tests.cpp
 comma_list_tests_LDADD = ${COMMON_LIBS}

@@ -1,5 +1,15 @@
 2003-11-02  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/glob_filter.h:
+	* libutil++/path_filter.h:
+	* libutil++/string_filter.h: comment fix to match implementation
+	* libutil++/tests/path_filter_tests.cpp: new file test
+	* libutil++/tests/Makefile.am: upate build
+	* libutil++/tests/string_filter_tests.cpp: test white space at start
+	  of pattern
+
+2003-11-02  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/string_manip.cpp: format_double can only format percent
 	* libutil++/string_manip.h:
 	* libpp/format_output.cpp:
