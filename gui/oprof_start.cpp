@@ -891,7 +891,9 @@ bool oprof_start::save_config()
 	else
 		args.push_back("--separate=none");
 
-	return !do_exec_command(OP_BINDIR "/opcontrol", args);
+	// 2.95 work-around, it didn't like return !do_exec_command() 
+	bool ret = !do_exec_command(OP_BINDIR "/opcontrol", args);
+	return ret;
 }
 
 
