@@ -31,10 +31,10 @@
 
 /** Data type to transfer samples counts from the module to the daemon */
 struct op_sample {
+	unsigned long eip; /**< eip value where occur interrupt */
 	u32 count; /**< samples count */
 	u32 counter; /**< counter nr */
 	u32 pid; /**< 32 bits can hold any pid */
-	u32 eip; /**< eip value where occur interrupt */
 } __attribute__((__packed__, __aligned__(16)));
 
 /** the current kernel-side profiler state */
@@ -61,12 +61,12 @@ struct op_buffer_head {
  * \sa OP_FORK, OP_EXEC, OP_MAP, OP_DROP_MODULES and OP_EXIT
  */
 struct op_note {
-	u32 addr;
-	u32 len;
-	u32 offset;
-	u32 hash;
-	u32 pid;
-	u32 type;
+	unsigned long   addr;
+	unsigned long   len;
+	unsigned long   offset;
+	unsigned int    hash;
+	unsigned int	pid;
+	unsigned short	type;
 };
 
 /**

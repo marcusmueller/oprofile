@@ -301,7 +301,7 @@ void opd_put_sample(struct op_sample const * sample)
 	opd_stats[OPD_SAMPLES]++;
 	opd_stats[OPD_SAMPLE_COUNTS] += sample->count;
 
-	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8x, pid %.6d, count %.6d\n",
+	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8lx, pid %.6d, count %.6d\n",
 		sample->counter, sample->eip, sample->pid, sample->count);
 
 	if (opd_eip_is_kernel(sample->eip)) {
@@ -361,7 +361,8 @@ void opd_put_sample(struct op_sample const * sample)
 
 out:
 	/* couldn't locate it */
-	verbprintf("Couldn't find map for pid %.6d, EIP 0x%.8x.\n", sample->pid, sample->eip);
+	verbprintf("Couldn't find map for pid %.6d, EIP 0x%.8lx.\n",
+		   sample->pid, sample->eip);
 	opd_stats[OPD_LOST_MAP_PROCESS]++;
 	return;
 }
@@ -382,7 +383,7 @@ void opd_handle_fork(struct op_note const * note)
 	struct opd_proc * old;
 	struct opd_proc * proc;
 
-	verbprintf("DO_FORK: from %d to %d\n", note->pid, note->addr);
+	verbprintf("DO_FORK: from %d to %ld\n", note->pid, note->addr);
 
 	old = opd_get_proc(note->pid);
 

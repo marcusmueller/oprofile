@@ -1,3 +1,12 @@
+2002-09-05  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_interface.h: (op_sample, op_note): Make compatible with
+	  64-bit targets.
+	* dae/opd_proc.c: (opd_put_sample): Adjust verbprintf arguments.
+	  (opd_handle_fork): Ditto.
+	* dae/oprofiled.c: (opd_do_samples): Ditto.
+
+
 2002-09-04    Will Cohen  <wcohen@redhat.com>
 
 	* module/op_rtc.c: move to ...

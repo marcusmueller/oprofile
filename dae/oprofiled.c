@@ -611,7 +611,7 @@ void opd_do_samples(struct op_buffer_head const * opd_buf)
 	verbprintf("Read buffer of %d entries.\n", opd_buf->count);
  
 	for (i = 0; i < opd_buf->count; i++) {
-		verbprintf("%.6u: EIP: 0x%.8x pid: %.6d count: %.6d\n",
+		verbprintf("%.6u: EIP: 0x%.8lx pid: %.6d count: %.6d\n",
 			i, buffer[i].eip, buffer[i].pid, buffer[i].count);
 
 		/* FIXME : we can try to remove cast by using in module pid_t

@@ -55,7 +55,9 @@ General checks to make
  o use nm and a little script to track unused function
  o test it to hell and back
  o compile all C++ programs with STL_port and test them
- 
+ o tune memory use for module hash table use for 64 bits architecture, perhaps
+  making the hash table size independant of the cache line size 
+
 Later
 -----
  
