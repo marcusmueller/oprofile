@@ -27,7 +27,8 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libabi \
 	-I ${top_srcdir}/libutil \
 	-I ${top_srcdir}/libop \
-	-I ${top_srcdir}/libdb
+	-I ${top_srcdir}/libdb \
+	-I ${top_srcdir}/daemon
 
 bin_PROGRAMS = oprofiled
 
