@@ -1,5 +1,11 @@
 2002-05-08  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* TODO: update
+
+	* pp/op_symbol.cpp: better column handling with oprofpp -L
+
+2002-05-08  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* dae/Makefile.in:
 	* gui/Makefile.in:
 	* pp/Makefile.in:

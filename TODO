@@ -20,8 +20,6 @@ Before 1.0 big stuff
  o get symbol size via elf instead of bfd ?
  o add support for samples not belonging to any symbols probably through
    artificially created symbols
-   these two todo are perhaps worthwhile to implement now. The new filtering
-   of symbols make them less interesting. - let's wait - john
  o thread profiling in the old and new flavour (2.5 introduce a new thread handling)
    (how important is this one ?)
  

@@ -265,12 +265,18 @@ void OutputSymbol::DoOutput(std::ostream & out, const std::string & name,
 
 	// now the remaining field
 	size_t temp_flag = flag & ~(osf_vma|osf_repeat_mask|osf_details|osf_show_all_counters|osf_header);
+	size_t true_flags = flags & ~(osf_vma|osf_repeat_mask|/*osf_details|*/osf_show_all_counters|osf_header);
 	for (size_t i = 0 ; temp_flag != 0 ; ++i) {
-		if ((temp_flag & (1 << i)) != 0) {
+		OutSymbFlag fl = static_cast<OutSymbFlag>(1 << i);
+		if ((temp_flag & fl) != 0) {
 			out << string(last_field_pad, ' ');
-			OutSymbFlag fl = static_cast<OutSymbFlag>(1 << i);
 			last_field_pad = OutputField(out, name, sample, fl, 0);
 			temp_flag &= ~(1 << i);
+		} else if ((true_flags & fl) != 0) {
+			const field_description * field = GetFieldDescr(fl);
+			if (field) {
+				last_field_pad += field->width;
+			}
 		}
 	}
 
