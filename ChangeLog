@@ -1,5 +1,34 @@
 2003-09-22  John Levon  <levon@movementarian.org>
 
+	* doc/CodingStyle: document doxygen placing rule
+
+	* libop/op_alloc_counter.h:
+	* libop/op_get_interface.c:
+	* libutil++/file_manip.cpp:
+	* libutil++/file_manip.h:
+	* libutil++/op_bfd.cpp:
+	* libutil++/op_bfd.h:
+	* libutil/op_deviceio.c:
+	* libutil/op_deviceio.h:
+	* libutil/op_get_time.c:
+	* libutil/op_get_time.h:
+	* libutil/op_libiberty.c:
+	* libutil/op_libiberty.h:
+	* libutil/op_lockfile.c:
+	* libutil/op_lockfile.h:
+	* libutil/op_popt.c:
+	* libutil/op_popt.h: follow the above
+
+	* libutil/op_file.c:
+	* libutil/op_file.h:
+	* libutil/op_fileio.c:
+	* libutil/op_fileio.h:
+	* dae/opd_parse_proc.c:
+	* libutil++/string_manip.cpp: move op_get_link to
+	op_file
+
+2003-09-22  John Levon  <levon@movementarian.org>
+
 	* libutil/op_fileio.h:
 	* libutil/op_fileio.c: warn about op_get_link()
 	restrictions

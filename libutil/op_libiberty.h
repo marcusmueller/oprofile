@@ -53,7 +53,12 @@ void * xcalloc(size_t, size_t) OP_ATTRIB_MALLOC;
 /* Copy a string into a memory buffer without fail.  */
 char * xstrdup(char const *) OP_ATTRIB_MALLOC;
 
-/* Copy an existing memory buffer to a new memory buffer without fail.  */
+/**
+ * Duplicates a region of memory without fail.  First, alloc_size bytes
+ * are allocated, then copy_size bytes from input are copied into
+ * it, and the new memory is returned.  If fewer bytes are copied than were
+ * allocated, the remaining memory is zeroed.
+ */
 void * xmemdup(void const *, size_t, size_t) OP_ATTRIB_MALLOC;
 
 #endif	/* !HAVE_LIBIBERTY_H */

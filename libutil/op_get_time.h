@@ -16,6 +16,14 @@
 extern "C" {
 #endif
 
+/**
+ * op_get_time - get current date and time
+ *
+ * Returns a string representing the current date
+ * and time, or an empty string on error.
+ *
+ * The string is statically allocated and should not be freed.
+ */
 char * op_get_time(void);
 
 #ifdef __cplusplus

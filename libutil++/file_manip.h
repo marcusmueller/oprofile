@@ -66,9 +66,20 @@ bool create_file_list(std::list<std::string> & file_list,
 std::string relative_to_absolute_path(std::string const & path,
 				std::string const & base_dir = std::string());
 
-/** return the base name of file_name as basename(1) */
+/**
+ * dirname - get the path component of a filename
+ * @param file_name  filename
+ *
+ * Returns the path name of a filename with trailing '/' removed.
+ */
 std::string dirname(std::string const & file_name);
-/** return the dir name of path_name as dirname(1) */
+
+/**
+ * basename - get the basename of a path
+ * @param path_name  path
+ *
+ * Returns the basename of a path with trailing '/' removed.
+ */
 std::string basename(std::string const & path_name);
 
 #endif /* !FILE_MANIP_H */

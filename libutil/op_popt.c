@@ -14,13 +14,6 @@
 #include "op_libiberty.h"
 #include "op_popt.h"
 
-/**
- * op_poptGetContext - wrapper for popt
- *
- * Use this instead of poptGetContext to cope with
- * different popt versions. This also handle unrecognized
- * options. All error are fatal.
- */
 poptContext op_poptGetContext(char const * name,
 		int argc, char const ** argv,
 		struct poptOption const * options, int flags)

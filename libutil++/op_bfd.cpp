@@ -209,17 +209,6 @@ struct remove_filter {
 } // namespace anon
 
 
-/**
- * get_symbols - op_bfd ctor helper
- *
- * Parse and sort in ascending order all symbols
- * in the file pointed to by abfd that reside in
- * a %SEC_CODE section.
- *
- * The symbols are filtered through
- * the interesting_symbol() predicate and sorted
- * with op_bfd_symbol::operator<() comparator.
- */
 void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 {
 	uint nr_all_syms;

@@ -23,7 +23,6 @@
 
 #include "file_manip.h"
 #include "string_manip.h"
-#include "op_fileio.h"
 
 using namespace std;
 
@@ -161,12 +160,6 @@ static string erase_trailing_path_separator(string const & path_name)
 }
 
 
-/**
- * dirname - get the path component of a filename
- * @param file_name  filename
- *
- * Returns the path name of a filename with trailing '/' removed.
- */
 string dirname(string const & file_name)
 {
 	string result = erase_trailing_path_separator(file_name);
@@ -190,12 +183,6 @@ string dirname(string const & file_name)
 }
 
 
-/**
- * basename - get the basename of a path
- * @param path_name  path
- *
- * Returns the basename of a path with trailing '/' removed.
- */
 string basename(string const & path_name)
 {
 	string result = erase_trailing_path_separator(path_name);

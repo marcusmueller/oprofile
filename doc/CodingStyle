@@ -25,7 +25,8 @@ Avoid ifdefs: prefer configure options / build trickery.
 
 Use Doxygen comments judiciously. Actual source code should generally
 only document the unexpected. Comments should not duplicate what the code
-says (this means variable/function naming is uber-important).
+says (this means variable/function naming is uber-important). The Doxygen
+function comments go in the header (except for static functions obviously).
 
 Makefile.am: prefer using
 LIST = \

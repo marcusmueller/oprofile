@@ -22,6 +22,7 @@
 extern "C" {
 #endif
 
+/// FIXME: doc
 size_t * map_event_to_counter(struct op_event const * pev[], int nr_events,
                               op_cpu cpu_type);
 

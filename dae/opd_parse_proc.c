@@ -18,7 +18,6 @@
 #include "opd_printf.h"
 
 #include "op_file.h"
-#include "op_fileio.h"
 
 #include <dirent.h>
 #include <stdio.h>

@@ -53,7 +53,6 @@ bool tobool(string const & s)
 }
 
 
-/// split string s by first occurence of char c, returning the second part
 string split(string & s, char c)
 {
 	string::size_type i = s.find_first_of(c);

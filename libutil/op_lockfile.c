@@ -19,12 +19,6 @@
 #include <signal.h>
 #include <unistd.h>
 
-/**
- * op_read_lock_file - read a lock file
- *
- * Return the pid written in the given lock file,
- * or 0 if it doesn't exist.
- */
 pid_t op_read_lock_file(char const * file)
 {
 	FILE * fp;
@@ -45,13 +39,6 @@ pid_t op_read_lock_file(char const * file)
 }
 
 
-/**
- * op_write_lock_file - write a lock file
- * \return errno on failure, or 0 on success
- *
- * Write the pid into the given lock file. Stale
- * lock files are detected and reset.
- */
 int op_write_lock_file(char const * file)
 {
 	FILE * fp;

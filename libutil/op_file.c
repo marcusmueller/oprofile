@@ -21,28 +21,12 @@
 #include "op_file.h"
 #include "op_libiberty.h"
 
-/**
- * op_file_readable - is a file readable
- * @param file file name
- *
- * Return true if the given file is readable.
- *
- * Beware of race conditions !
- */
 int op_file_readable(char const * file)
 {
 	return !access(file, R_OK);
 }
 
-/**
- * op_get_fsize - get size of file
- * @param file file name
- * @param size size parameter to fill
- *
- * Returns the size of the named file in bytes
- * into the pointer given. Returns non-zero
- * on failure, in which case size is not changed.
- */
+
 int op_get_fsize(char const * file, off_t * size)
 {
 	struct stat st;
@@ -55,12 +39,7 @@ int op_get_fsize(char const * file, off_t * size)
 	return 0;
 }
 
-/**
- * op_get_mtime - get mtime of file
- * @param file  file name
- *
- * Returns the mtime of the given file or 0 on failure
- */
+
 time_t op_get_mtime(char const * file)
 {
 	struct stat st;
@@ -69,6 +48,25 @@ time_t op_get_mtime(char const * file)
 		return 0;
 
 	return st.st_mtime;
+}
+
+
+char * op_get_link(char const * filename)
+{
+	char  * linkbuf;
+	int c;
+
+	linkbuf = xmalloc(FILENAME_MAX+1);
+
+	c = readlink(filename, linkbuf, FILENAME_MAX);
+
+	if (c == -1) {
+		free(linkbuf);
+		return NULL;
+	}
+
+	linkbuf[c] = '\0';
+	return linkbuf;
 }
 
 
@@ -98,6 +96,7 @@ static int remove_component_p(char const * path)
 
 	return result == 0 && S_ISDIR (s.st_mode);
 }
+
 
 /**
  * op_simplify_path_name - simplify a path name in place
@@ -203,18 +202,7 @@ static char * op_simplify_pathname(char * path)
 	return path;
 }
 
-/**
- * op_relative_to_absolute_path - translate relative path to absolute path.
- * @param path  path name
- * @param base_dir  optional base directory, if %NULL getcwd() is used
- * to get the base directory.
- *
- * prepend base_dir or the result of getcwd if the path is not absolute.
- * The returned string is dynamic allocated, caller must free it. if
- * base_dir == NULL this function use getcwd to translate the path.
- *
- * Returns the translated path.
- */
+
 char * op_relative_to_absolute_path(char const * path, char const * base_dir)
 {
 	char dir[PATH_MAX + 1];

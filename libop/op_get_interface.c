@@ -14,11 +14,6 @@
 
 #include "op_cpu_type.h"
 
-/**
- * op_get_interface - determine which kernel interface used
- *
- * returns %OP_INTERFACE_NO_GOOD if the interface could not be identified
- */
 op_interface op_get_interface(void)
 {
 	static op_interface current_interface = OP_INTERFACE_NO_GOOD;
