@@ -1,5 +1,10 @@
 2003-01-10  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_image.c:
+	* daemon/oprofiled.c: move complete_dump to a better place
+
+2003-01-10  John Levon  <levon@movementarian.org>
+
 	* libutil/op_types.h: add cookie_t and vma_t
 
 	* daemon/opd_image.c:

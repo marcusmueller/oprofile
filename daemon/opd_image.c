@@ -381,21 +381,6 @@ static void opd_put_sample(struct opd_image * image, char const * buffer, size_t
 }
 
 
-static void complete_dump()
-{
-	FILE *status_file;
-
-	/* Done writing out the samples, indicate with complete_dump file */
-	status_file = fopen(OP_DUMP_STATUS, "w");
-	if (!status_file) {
-		fprintf(stderr, "Couldn't set %s !\n", OP_DUMP_STATUS);
-		exit(EXIT_FAILURE);
-	}
-        fprintf(status_file, "1\n");
-        fclose(status_file);
-}
-
- 
 // FIXME: pid/pgrp filter ?
 void opd_process_samples(char const * buffer, size_t count)
 {
@@ -449,7 +434,4 @@ void opd_process_samples(char const * buffer, size_t count)
 				break;
 		}
 	}
-
-	// FIXME: this should be done by the caller I think
-	complete_dump();
 }

@@ -437,6 +437,22 @@ static void opd_go_daemon(void)
 	mypid = getpid();
 }
 
+
+/** Done writing out the samples, indicate with complete_dump file */
+static void complete_dump()
+{
+	FILE * status_file = fopen(OP_DUMP_STATUS, "w");
+
+	if (!status_file) {
+		fprintf(stderr, "Couldn't set %s !\n", OP_DUMP_STATUS);
+		exit(EXIT_FAILURE);
+	}
+
+        fprintf(status_file, "1\n");
+        fclose(status_file);
+}
+
+ 
 /**
  * opd_do_samples - process a sample buffer
  * @param opd_buf  buffer to process
@@ -460,6 +476,8 @@ static void opd_do_samples(char const * opd_buf, ssize_t count)
 	verbprintf("Read buffer of %d entries.\n", (unsigned int) num);
  
 	opd_process_samples(opd_buf, num);
+
+	complete_dump();
 
 	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
 }
