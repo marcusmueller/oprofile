@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.24 2001/11/13 21:21:01 phil_e Exp $ */
+/* $Id: opd_util.c,v 1.25 2001/11/30 23:37:59 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -789,6 +789,42 @@ size_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
 	return count;
 }
 
+/**
+ * opd_move_regular_file - move file between directory
+ * @new_dir: the destination directory
+ * @old_dir: the source directory
+ *
+ * move the file @old_dir/@name to @new_dir/@name iff
+ * @old_dir/@name is a regular file
+ *
+ * if renaming succeed zero or the file is not 
+ * a regular file is returned
+ */ 
+int opd_move_regular_file(const char *new_dir, 
+			  const char *old_dir, const char *name)
+{
+	int ret = 0;
+	struct stat stat_buf;
+
+	char * src = opd_malloc(strlen(old_dir) + strlen(name) + 2);
+	char * dest = opd_malloc(strlen(new_dir) + strlen(name) + 2);
+
+	strcpy(src, old_dir);
+	strcat(src, "/");
+	strcat(src, name);
+
+	strcpy(dest, new_dir);
+	strcat(dest, "/");
+	strcat(dest, name);
+
+	if (!stat(src, &stat_buf) && S_ISREG(stat_buf.st_mode))
+		ret = rename(src, dest);
+
+	opd_free(src);
+	opd_free(dest);
+
+	return ret;
+}
  
 /**
  * opd_poptGetContext - wrapper for popt

@@ -19,6 +19,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>	// for FILENAME_MAX
+#include <dirent.h>
 
 #include <vector>
 #include <string>
@@ -27,6 +28,7 @@
 
 using std::vector;
 using std::string;
+using std::list;
 
 /**
  * is_file_identical - check for identical files
@@ -115,4 +117,30 @@ string opd_read_link(string const & name)
 	else
 		linkbuf[c] = '\0';
 	return linkbuf;
+}
+
+inline static bool is_directory_name(const char * name)
+{
+	return name[0] == '.' && 
+		(name[1] == '\0' || 
+		 (name[1] == '.' && name[2] == '\0'));
+}
+
+/// return false if base_dir can't be accessed.
+bool create_file_list(list<string>& file_list, const string & base_dir)
+{
+	DIR *dir;
+	struct dirent *dirent;
+
+	if (!(dir = opendir(base_dir.c_str())))
+		return false;
+
+	while ((dirent = readdir(dir)) != 0) {
+		if (!is_directory_name(dirent->d_name))
+			file_list.push_back(dirent->d_name);
+	}
+
+	closedir(dir);
+
+	return true;
 }

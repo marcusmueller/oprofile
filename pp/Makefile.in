@@ -1,4 +1,4 @@
-INSTALL_LIST=oprofpp oprof_convert op_to_source
+INSTALL_LIST=oprofpp oprof_convert op_to_source op_time
 
 CFLAGS=@CFLAGS@ -Wall -W -Wstrict-prototypes -Wunused -Wshadow -Wmissing-prototypes -Winline
 CXXFLAGS=@CXXFLAGS@ @BFD_CXXFLAGS@ -Wall -W -Wunused -Wmissing-prototypes
@@ -11,7 +11,7 @@ all: $(INSTALL_LIST)
 .PHONY: all clean srcdoc install uninstall
 
 clean: 
-	rm -f oprofpp *.o *.d oprofpp-src.html oprof_convert op_to_source
+	rm -f *.o *.d oprofpp-src.html $(INSTALL_LIST)
 
 install: all
 	-$(MKDIR_P) $(BINDIR)
@@ -39,12 +39,15 @@ op_to_source: opf_filter.o opf_container.o ../util/child_reader.o $(OBJS) \
  ../util/string_manip.o ../util/file_manip.o $(LIBS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
+op_time: op_time.o ../util/file_manip.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
+
 %.o: %c
 	$(CC) -c $(CFLAGS) $(INCLUDES) -g $< -o $@
 
 %.o: %cpp
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -g $< -o $@
 
-ALL_SOURCES = oprofpp.cpp oprofpp_util.cpp opf_container.cpp opf_filter.cpp oprof_convert.c
+ALL_SOURCES = oprofpp.cpp oprofpp_util.cpp opf_container.cpp opf_filter.cpp oprof_convert.c op_time.cpp
 
 include ../Rules.make

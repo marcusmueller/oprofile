@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.49 2001/11/14 21:19:01 phil_e Exp $ */
+/* $Id: oprofiled.c,v 1.50 2001/11/30 23:38:00 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -21,6 +21,7 @@ extern double cpu_speed;
 extern u32 ctr_count[OP_MAX_COUNTERS];
 extern u8 ctr_event[OP_MAX_COUNTERS];
 extern u8 ctr_um[OP_MAX_COUNTERS];
+static u32 ctr_enabled[OP_MAX_COUNTERS];
 uint op_nr_counters = 2;
 
 static int showvers;
@@ -154,6 +155,133 @@ static void opd_open_files(void)
 }
 
 /**
+ * opd_backup_samples_files - back up all the samples file
+ *
+ * move all files in dir @smpdir to directory
+ * @smdir/session-#nr
+ */
+static void opd_backup_samples_files(void)
+{
+	char * dir_name;
+	int gen = 0;
+	struct stat stat_buf;
+	DIR *dir;
+	struct dirent *dirent;
+
+	dir_name = opd_malloc(strlen(smpdir) + strlen("session-") + 10);
+	strcpy(dir_name, smpdir);
+
+	do {
+		sprintf(dir_name + strlen(smpdir), "/session-%d", ++gen);
+	} while (stat(dir_name, &stat_buf) == 0);
+
+	if (mkdir(dir_name, 0755)) {
+		/* That's a severe problem: if we continue we can overwrite
+		 * samples files and produce wrong result. FIXME */
+		printf("unable to create directory %s\n", dir_name);
+
+		exit(1);
+	}
+
+	if (!(dir = opendir(smpdir))) {
+		printf("unable to open directory %s\n", smpdir);
+
+		exit(1);
+	}
+
+	printf("Backing up samples file to directory %s\n", dir_name);
+
+	while ((dirent = readdir(dir)) != 0) {
+		if (opd_move_regular_file(dir_name, smpdir, dirent->d_name)) {
+			printf("unable to backup %s/%s to directory %s\n",
+			       smpdir, dirent->d_name, dir_name);
+		}
+	}
+
+	closedir(dir);
+
+	opd_free(dir_name);
+}
+
+/**
+ * opd_need_backup_samples_files - test if we need to 
+ * backup samples files
+ *
+ * We can't backup lazilly samples files else it can
+ * leads to detect than backup is needed after some
+ * samples has been written (e.g. ctr 1 have the same
+ * setting from the previous runs, ctr 0 have different
+ * setting and the first samples output come from ctr1)
+ *
+ */
+static int opd_need_backup_samples_files(void)
+{
+	DIR * dir;
+	struct dirent * dirent;
+	struct stat stat_buf;
+	int need_backup;
+	/* bitmaps: bit i is on if counter i is enabled */
+	int counter_set, old_counter_set;
+	uint i;
+
+	if (!(dir = opendir(smpdir))) {
+		printf("unable to open directory %s\n", smpdir);
+
+		exit(1);
+	}
+
+	counter_set = old_counter_set = 0;
+	need_backup = 0;
+
+	while ((dirent = readdir(dir)) != 0 && need_backup == 0) {
+		char * file = opd_malloc(strlen(smpdir) + strlen(dirent->d_name) + 2);
+		strcpy(file, smpdir);
+		strcat(file, "/");
+		strcat(file, dirent->d_name);
+		if (!stat(file, &stat_buf) && S_ISREG(stat_buf.st_mode)) {
+			struct opd_header header;
+			FILE * fp = fopen(file, "r"); 
+			if (!fp)
+				continue;
+
+			if (fread(&header, sizeof( header), 1, fp) != 1)
+				goto close;
+
+			if (memcmp(&header.magic, OPD_MAGIC, sizeof(header.magic)) || header.version != OPD_VERSION)
+				goto close;
+
+			if (header.ctr_event != ctr_event[header.ctr] ||
+			    header.ctr_um != ctr_um[header.ctr] ||
+			    header.ctr_count != ctr_count[header.ctr] ||
+			    header.cpu_type != cpu_type) {
+				need_backup = 1;
+			}
+
+			old_counter_set |= 1 << header.ctr;
+
+		close:
+			fclose(fp);
+		}
+
+		opd_free(file);
+	}
+
+	for (i = 0 ; i < op_nr_counters; ++i) {
+		if (ctr_enabled[i])
+			counter_set |= 1 << i;
+	}
+
+	/* old_counter_set == 0 means there is no samples file in the sample
+	 * dir, so avoid to try to backup else whe get empty backup dir */
+	if (old_counter_set && old_counter_set != counter_set)
+		need_backup = 1;
+
+	closedir(dir);
+
+	return need_backup;
+}
+
+/**
  * opd_options - parse command line options
  * @argc: argc
  * @argv: argv array
@@ -213,6 +341,9 @@ static void opd_options(int argc, char const *argv[])
 
 		sprintf(filename, "/proc/sys/dev/oprofile/%d/unit_mask", i);
 		ctr_um[i]= opd_read_int_from_file(filename);
+
+		sprintf(filename, "/proc/sys/dev/oprofile/%d/enabled", i);
+		ctr_enabled[i]= opd_read_int_from_file(filename);
 	}
 
 	for (i = 0 ; i < op_nr_counters ; ++i) {
@@ -433,6 +564,10 @@ int main(int argc, char const *argv[])
 	opd_init_images();
 
 	opd_go_daemon();
+
+	if (opd_need_backup_samples_files()) {
+		opd_backup_samples_files();
+	}
 
 	opd_open_files();
 

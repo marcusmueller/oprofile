@@ -20,10 +20,15 @@
 #define FILE_MANIP_H
 
 #include <string>
+#include <list>
 
 bool is_files_identical(std::string const & file1, std::string const & file2);
 bool create_dir(std::string const & dir);
 bool create_path(std::string const & path);
 std::string opd_read_link(std::string const & name);
+
+/// return false if base_dir is not a valid directory.
+bool create_file_list(std::list<std::string>& file_list,
+		      const std::string & base_dir);
 
 #endif /* !FILE_MANIP_H */

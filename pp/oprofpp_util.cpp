@@ -1,4 +1,4 @@
-/* $Id: oprofpp_util.cpp,v 1.5 2001/11/28 23:35:01 phil_e Exp $ */
+/* $Id: oprofpp_util.cpp,v 1.6 2001/11/30 23:38:03 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -33,7 +33,7 @@ int ctr = -1;
 
 static uint nr_samples; 
 /* if != -1 appended to samples files with "-%d" format */
-static int backup_number = -1;
+int backup_number = -1;
 
 /**
  * remangle - convert a filename into the related sample file name
@@ -63,6 +63,26 @@ static char *remangle(const char *image)
 	}
 	
 	return file;
+}
+
+/**
+ * demangle_filename - convert a sample filenames into the related
+ * image file name
+ * @sample_filename: the samples image filename
+ *
+ * if samples_filename does not contain any %OPD_MANGLE_CHAR
+ * the string samples_filename itself is returned.
+ */
+std::string demangle_filename(const std::string & samples_filename)
+{
+	std::string result(samples_filename);
+	size_t pos = samples_filename.find_first_of(OPD_MANGLE_CHAR);
+	if (pos != std::string::npos) {
+		result.erase(0, pos);
+		std::replace(result.begin(), result.end(), OPD_MANGLE_CHAR, '/');
+	}
+
+	return result;
 }
 
 /**
@@ -183,34 +203,10 @@ void opp_treat_options(const char* file, poptContext * optcon)
 		exit(EXIT_FAILURE);
 	}
 
-	/* memory leak */
 	if (!imagefile) {
-		char *mang;
-		char *c;
-		char *file;
-
-		mang = opd_strdup(samplefile); 
-		 
-		c = &mang[strlen(mang)];
-		/* strip leading dirs */
-		while (c != mang && *c != '/')
-			c--;
-
-		c++;
-
-		file = opd_strdup(c);
-
-		c=file;
-
-		while (*c) {
-			if (*c == OPD_MANGLE_CHAR)
-				*c='/';
-			c++;
-		}
-
-		free(mang);
-
-		imagefile = file;
+		std::string temp = demangle_filename(samplefile);
+		/* memory leak */
+		imagefile = opd_strdup(temp.c_str());
 	}
 }
 
@@ -223,7 +219,7 @@ void opp_treat_options(const char* file, poptContext * optcon)
  *
  * demangle the symbol name @name. if the global
  * global variable demangle is %TRUE. No error can
- * occur. Caller must deallocate returned pointer
+ * occur.
  *
  * The demangled name lists the parameters and type
  * qualifiers such as "const".
@@ -232,20 +228,14 @@ void opp_treat_options(const char* file, poptContext * optcon)
  */
 std::string demangle_symbol(const char* name)
 {
-	if (demangle) {
-		const char * cp = name;
-
+	if (demangle && *name) {
 		// Do not try to strip leading underscore, this leads to many
 		// C++ demangling failure.
-		if (*cp) {
-			char *unmangled = cplus_demangle(cp, DMGL_PARAMS | DMGL_ANSI);
-			if (unmangled) {
-				std::string result(unmangled);
-
-				opd_free(unmangled);
-
-				return result;
-			}
+		char *unmangled = cplus_demangle(name, DMGL_PARAMS | DMGL_ANSI);
+		if (unmangled) {
+			std::string result(unmangled);
+			opd_free(unmangled);
+			return result;
 		}
 	}
 
@@ -762,15 +752,16 @@ void opp_samples_files::open_samples_file(u32 counter, bool can_fail)
 		return;
 	}
 
-	size[counter] = opd_get_fsize(temp.c_str(), 1) - sizeof(opd_header); 
-	if (size[counter] < sizeof(opd_header)) {
+	size_t sz_file = opd_get_fsize(temp.c_str(), 1);
+	if (sz_file < sizeof(opd_header)) {
 		fprintf(stderr, "oprofpp: sample file %s is not the right "
-			"size: got %d, expected %d\n", 
-			temp.c_str(), size[counter], sizeof(opd_header));
+			"size: got %d, expect at least %d\n", 
+			temp.c_str(), sz_file, sizeof(opd_header));
 		exit(EXIT_FAILURE);
 	}
+	size[counter] = sz_file - sizeof(opd_header); 
 
-	header[counter] = (opd_header*)mmap(0, size[counter] + sizeof(opd_header), 
+	header[counter] = (opd_header*)mmap(0, sz_file, 
 				      PROT_READ, MAP_PRIVATE, fd[counter], 0);
 	if (header[counter] == (void *)-1) {
 		fprintf(stderr, "oprofpp: mmap of %s failed. %s\n", temp.c_str(), strerror(errno));

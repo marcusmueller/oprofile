@@ -1,4 +1,4 @@
-/* $Id: oprofpp.cpp,v 1.10 2001/11/12 14:05:35 phil_e Exp $ */
+/* $Id: oprofpp.cpp,v 1.11 2001/11/30 23:38:02 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -189,7 +189,7 @@ void opp_samples_files::do_list_symbols(opp_bfd & abfd) const
 /**
  * do_list_symbol - list detailed samples for a symbol
  * @abfd: the bfd object from where come the samples
-  *
+ *
  * the global variable @symbol is used to list all
  * the samples for this symbol from the image 
  * specified by @abfd.

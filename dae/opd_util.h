@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.18 2001/11/13 21:21:01 phil_e Exp $ */
+/* $Id: opd_util.h,v 1.19 2001/11/30 23:38:00 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -119,6 +119,9 @@ time_t opd_get_mtime(const char *file);
 
 char *opd_get_time(void);
 char *opd_get_line(FILE *fp);
+
+int opd_move_regular_file(const char *new_dir, const char *old_dir, 
+			  const char *name);
 
 #ifdef __cplusplus
 }

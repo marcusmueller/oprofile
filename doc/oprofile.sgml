@@ -141,8 +141,8 @@ necks in real-world systems.
 <sect1 id="install">
 <title>Installation</title>
 <para>
-First you need to build <filename>oprofile</filename> and install it. The holy trinity
-of <command>./configure</command>, <command>make</command>, <command>make install</command>
+First you need to build <filename>oprofile</filename> and install it. <ommand>./autogen</command>,
+<command>./configure</command>, <command>make</command>, <command>make install</command>
 is all you need, but note these arguments to <command>./configure</command> :
 <variablelist>
 	<varlistentry>

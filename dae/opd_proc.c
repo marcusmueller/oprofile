@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.79 2001/11/14 21:19:01 phil_e Exp $ */
+/* $Id: opd_proc.c,v 1.80 2001/11/30 23:37:59 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -66,7 +66,7 @@ static void opd_kill_maps(struct opd_proc *proc);
 static void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset, u32 end);
 static struct opd_proc *opd_get_proc(u16 pid);
 static void opd_delete_proc(struct opd_proc *proc);
-static void opd_handle_old_sample_file(int counter, const char * mangled, time_t mtime);
+static void opd_handle_old_sample_file(const char * mangled, time_t mtime);
 static void opd_handle_old_sample_files(const char * mangled, time_t mtime);
 
 /* every so many minutes, clean up old procs, msync mmaps, and
@@ -179,39 +179,16 @@ void opd_read_system_map(const char *filename)
 }
 
 /**
- * opd_save_old_sample_file - back up the sample file
- * @file: the file name of the sample
- *
- * Back up a sample file.
- */
-static void opd_save_old_sample_file(const char *file)
-{
-	char * savename;
-	int gen = 0;
-
-	savename = opd_malloc(strlen(file) + 1 + 10);
-	strcpy(savename, file);
-	do { 
-		sprintf(savename + strlen(file), "-%d", gen++);
-	} while (opd_get_fsize(savename, 0));
-
-	printf("Renaming old sample file as \"%s\"\n", savename);
-
-	if (rename(file, savename))
-		perror("Couldn't rename : ");
-
-	opd_free(savename);
-}
-
-/**
  * opd_handle_old_sample_file - deal with old sample file
  * @mangled: the sample file name
  * @mtime: the new mtime of the binary
  *
  * If an old sample file exists, verify it is usable.
- * If not, move or delete it.
+ * If not, move or delete it. Note than at startup the daemon
+ * check than the last (session) events settings match the
+ * currents
  */
-static void opd_handle_old_sample_file(int counter, const char * mangled, time_t mtime)
+static void opd_handle_old_sample_file(const char * mangled, time_t mtime)
 {
 	struct opd_header oldheader; 
 	FILE * fp;
@@ -226,16 +203,8 @@ static void opd_handle_old_sample_file(int counter, const char * mangled, time_t
 	if (memcmp(&oldheader.magic, OPD_MAGIC, sizeof(oldheader.magic)) || oldheader.version != OPD_VERSION)
 		goto closedel;
 
-	/* versions match, but we might be using different values */
-	if (difftime(mtime, oldheader.mtime) ||
-	    oldheader.ctr_event != ctr_event[counter] ||
-	    oldheader.ctr_um != ctr_um[counter] ||
-	    oldheader.ctr_count != ctr_count[counter] ||
-	    oldheader.cpu_type != cpu_type) {
-		fclose(fp);
-		opd_save_old_sample_file(mangled);
-		return;
-	}
+	if (difftime(mtime, oldheader.mtime))
+		goto closedel;
 
 	fclose(fp);
 	verbprintf("Re-using old sample file \"%s\".\n", mangled);
@@ -272,7 +241,7 @@ static void opd_handle_old_sample_files(const char *image_name, time_t mtime)
  
 	for (i = 0 ; i < op_nr_counters ; ++i) {
 		sprintf(mangled + len, "#%d", i);
-		opd_handle_old_sample_file(i, mangled,  mtime);
+		opd_handle_old_sample_file(mangled,  mtime);
 	}
 
 	free(mangled);
