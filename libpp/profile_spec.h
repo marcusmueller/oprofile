@@ -127,9 +127,9 @@ private:
 	std::vector<std::string> image;
 	std::vector<std::string> image_exclude;
 	std::vector<std::string> lib_image;
-	generic_spec<std::string> event;
-	generic_spec<int> count;
-	generic_spec<unsigned int> unitmask;
+	comma_list<std::string> event;
+	comma_list<int> count;
+	comma_list<unsigned int> unitmask;
 	comma_list<pid_t> tid;
 	comma_list<pid_t> tgid;
 	comma_list<int> cpu;

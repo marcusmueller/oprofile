@@ -43,7 +43,7 @@ public:
 	 *
 	 * return true if value match one the stored value in items
 	 */
-	bool match(T value) const;
+	bool match(T const & value) const;
 
 	/**
 	 * @param value  the value to test
@@ -97,6 +97,24 @@ void comma_list<T>::set(std::string const & str, bool cumulative)
 		}
 		items.push_back(lexical_cast_no_ws<T>(result[i]));
 	}
+}
+
+
+template <class T>
+bool comma_list<T>::match(T const & value) const
+{
+	if (is_all)
+		return true;
+
+	const_iterator cit = items.begin();
+	const_iterator const end = items.end();
+
+	for (; cit != end; ++cit) {
+		if (value == *cit)
+			return true;
+	}
+
+	return false;
 }
 
 

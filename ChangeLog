@@ -1,5 +1,14 @@
 2003-08-11  John Levon  <levon@movementarian.org>
 
+	* libpp/filename_spec.h:
+	* libpp/profile_spec.cpp:
+	* libpp/profile_spec.h: add comments, allow comma lists
+	for event, count, and unit mask
+
+	* libutil++/comma_list.h: implement missing method
+
+2003-08-11  John Levon  <levon@movementarian.org>
+
 	* libpp/format_output.cpp:
 	* libpp/format_output.h: add set_nr_groups(), remove
 	pp_nr_counters.

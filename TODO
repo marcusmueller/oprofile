@@ -6,10 +6,10 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
- o s/counter_array/count_array (filename too)
  o event:xxxx,yyyy is interpreted as event name "xxx,yyy", need to update
  o pp_interface too
- o sample-file: / binary: don't work in any useful way
+ o sample-file: / binary: don't work in any useful way - can we fix this
+   by peeking at binary: value and faking the split_sample_file somehow ?
  o separate debug info stuff
  o debian build stuff
  o side-by-side opreport output (--compare - needs UI spec)

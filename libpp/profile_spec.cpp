@@ -116,6 +116,8 @@ void profile_spec::validate()
 void profile_spec::set_image_or_lib_name(string const & str)
 {
 	normal_tag_set = true;
+	/* FIXME: what does spec say about this being allowed to be
+	 * a comma list or not ? */
 	image_or_lib_image.push_back(fixup_image_spec(str, extra));
 }
 
@@ -173,21 +175,21 @@ void profile_spec::parse_lib_image(string const & str)
 void profile_spec::parse_event(string const & str)
 {
 	normal_tag_set = true;
-	event.set(str);
-}
-
-
-void profile_spec::parse_unitmask(string const & str)
-{
-	normal_tag_set = true;
-	unitmask.set(str);
+	event.set(str, false);
 }
 
 
 void profile_spec::parse_count(string const & str)
 {
 	normal_tag_set = true;
-	count.set(str);
+	count.set(str, false);
+}
+
+
+void profile_spec::parse_unitmask(string const & str)
+{
+	normal_tag_set = true;
+	unitmask.set(str, false);
 }
 
 

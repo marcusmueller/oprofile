@@ -19,7 +19,9 @@
 class profile_spec;
 
 /**
- * a class to split and store components of a sample filename.
+ * A class to split and store components of a sample filename.
+ * These derived values are then used to match against a
+ * profile_spec as given by the user.
  */
 class filename_spec
 {
