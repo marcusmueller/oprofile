@@ -14,6 +14,7 @@
 #include "opd_trans.h"
 #include "opd_printf.h"
 #include "opd_stats.h"
+#include "opd_util.h"
 
 #include "op_fileio.h"
 #include "op_config.h"
@@ -23,8 +24,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
-
-extern int no_vmlinux;
 
 static LIST_HEAD(modules);
 

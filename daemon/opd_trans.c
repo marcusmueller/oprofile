@@ -24,7 +24,6 @@
 #include <errno.h>
 
 extern size_t kernel_pointer_size;
-extern int verbose;
 
 static inline int is_escape_code(uint64_t code)
 {

@@ -16,6 +16,7 @@
 #include "opd_kernel.h"
 #include "opd_stats.h"
 #include "opd_printf.h"
+#include "opd_util.h"
 
 #include "op_interface.h"
 #include "op_cpu_type.h"
@@ -29,10 +30,6 @@
 /* size of process hash table */
 #define OPD_MAX_PROC_HASH 1024
 
-extern int separate_lib;
-extern int separate_kernel;
-extern int separate_thread;
-extern int no_vmlinux;
 extern int cpu_number;
 
 /* hash of process lists */

@@ -12,20 +12,17 @@
 #include "opd_image.h"
 #include "opd_printf.h"
 #include "opd_sample_files.h"
+#include "opd_stats.h"
+#include "opd_util.h"
 
 #include "op_file.h"
 #include "op_config_24.h"
 #include "op_mangle.h"
 #include "op_libiberty.h"
-#include "opd_stats.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-extern uint op_nr_counters;
-extern int separate_lib;
-extern int separate_thread;
 
 /* maintained for statistics purpose only */
 unsigned int nr_images=0;

@@ -15,11 +15,15 @@
 #include "opd_printf.h"
 
 #include "op_config.h"
+#include "op_version.h"
 #include "op_hw_config.h"
 #include "op_libiberty.h"
+#include "op_file.h"
 #include "op_abi.h"
 #include "op_string.h"
 #include "op_cpu_type.h"
+#include "op_cpufreq.h"
+#include "op_popt.h"
 
 #include <sys/types.h>
 #include <stdlib.h>
@@ -29,8 +33,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-extern op_cpu cpu_type;
-
 sig_atomic_t signal_alarm;
 sig_atomic_t signal_hup;
 sig_atomic_t signal_term;
@@ -38,6 +40,36 @@ sig_atomic_t signal_usr1;
 sig_atomic_t signal_usr2;
 
 struct opd_event opd_events[OP_MAX_COUNTERS];
+
+double cpu_speed;
+uint op_nr_counters;
+int verbose;
+op_cpu cpu_type;
+int separate_lib;
+int separate_kernel;
+int separate_thread;
+int separate_cpu;
+int no_vmlinux;
+char * vmlinux;
+char * kernel_range;
+static char * events;
+static int showvers;
+
+static struct poptOption options[] = {
+	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
+	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
+	{ "no-vmlinux", 0, POPT_ARG_NONE, &no_vmlinux, 0, "vmlinux kernel image file not available", NULL, },
+	{ "separate-lib", 0, POPT_ARG_INT, &separate_lib, 0, "separate library samples for each distinct application", "[0|1]", },
+	{ "separate-kernel", 0, POPT_ARG_INT, &separate_kernel, 0, "separate kernel samples for each distinct application", "[0|1]", },
+	{ "separate-thread", 0, POPT_ARG_INT, &separate_thread, 0, "thread-profiling mode", "[0|1]" },
+	{ "separate-cpu", 0, POPT_ARG_INT, &separate_cpu, 0, "separate samples for each CPU", "[0|1]" },
+	{ "events", 'e', POPT_ARG_STRING, &events, 0, "events list", "[0|1]" },
+	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
+	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
+	POPT_AUTOHELP
+	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
+};
+ 
 
 void opd_open_logfile(void)
 {
@@ -246,7 +278,7 @@ static unsigned long copy_ulong(char ** c, char delim)
 
 
 /** opd_parse_events - parse the events list */
-void opd_parse_events(char const * events)
+static void opd_parse_events(char const * events)
 {
 	char * ev = xstrdup(events);
 	char * c;
@@ -288,4 +320,44 @@ void opd_parse_events(char const * events)
 	free(ev);
 
 	/* FIXME: validation ? */
+}
+
+
+void opd_options(int argc, char const * argv[])
+{
+	poptContext optcon;
+
+	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
+
+	if (showvers)
+		show_version(argv[0]);
+
+	if (separate_kernel)
+		separate_lib = 1;
+
+	cpu_type = op_get_cpu_type();
+	op_nr_counters = op_get_nr_counters(cpu_type);
+
+	if (!no_vmlinux) {
+		if (!vmlinux || !strcmp("", vmlinux)) {
+			fprintf(stderr, "oprofiled: no vmlinux specified.\n");
+			poptPrintHelp(optcon, stderr, 0);
+			exit(EXIT_FAILURE);
+		}
+
+		/* canonicalise vmlinux filename. fix #637805 */
+		vmlinux = op_relative_to_absolute_path(vmlinux, NULL);
+
+		if (!kernel_range || !strcmp("", kernel_range)) {
+			fprintf(stderr, "oprofiled: no kernel VMA range specified.\n");
+			poptPrintHelp(optcon, stderr, 0);
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	opd_parse_events(events);
+
+	cpu_speed = op_cpu_frequency();
+
+	poptFreeContext(optcon);
 }

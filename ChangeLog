@@ -1,3 +1,19 @@
+2003-10-15  John Levon  <levon@movementarian.org>
+
+	* dae/opd_image.c:
+	* dae/opd_kernel.c:
+	* dae/opd_proc.c:
+	* dae/opd_sample_files.c:
+	* dae/oprofiled.c:
+	* daemon/opd_kernel.c:
+	* daemon/opd_mangling.c:
+	* daemon/opd_sfile.c:
+	* daemon/opd_trans.c:
+	* daemon/opd_util.c:
+	* daemon/opd_util.h:
+	* daemon/oprofiled.c: merge the options handling
+	for dae and daemon
+
 2003-10-15  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_perfmon.c:

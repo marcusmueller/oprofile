@@ -11,7 +11,21 @@
 
 #ifndef OPD_UTIL_H
 
+#include "op_cpu_type.h"
+
 #include <signal.h>
+
+/**
+ * opd_options - parse command line options
+ * @param argc  argc
+ * @param argv  argv array
+ *
+ * Parse all command line arguments, and sanity
+ * check what the user passed. Incorrect arguments
+ * are a fatal error.
+ */
+void opd_options(int argc, char const * argv[]);
+
 
 /**
  * opd_open_logfile - open the log file
@@ -67,7 +81,16 @@ struct opd_event {
 
 extern struct opd_event opd_events[];
 
-/** parse command line events */
-void opd_parse_events(char const * events);
+extern double cpu_speed;
+extern unsigned int op_nr_counters;
+extern int verbose;
+extern op_cpu cpu_type;
+extern int separate_lib;
+extern int separate_kernel;
+extern int separate_thread;
+extern int separate_cpu;
+extern int no_vmlinux;
+extern char * vmlinux;
+extern char * kernel_range;
 
 #endif /* OPD_UTIL_H */

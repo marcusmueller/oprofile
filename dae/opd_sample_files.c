@@ -28,14 +28,6 @@
 #include <string.h>
 #include <errno.h>
 
-extern uint op_nr_counters;
-extern int separate_lib;
-extern int separate_kernel;
-extern int separate_thread;
-extern int separate_cpu;
-extern double cpu_speed;
-extern op_cpu cpu_type;
-
 /** All sfiles are on this list. */
 static LIST_HEAD(lru_list);
 

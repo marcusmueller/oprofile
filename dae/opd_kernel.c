@@ -15,6 +15,7 @@
 #include "opd_mapping.h"
 #include "opd_printf.h"
 #include "opd_stats.h"
+#include "opd_util.h"
 
 #include "op_fileio.h"
 #include "op_config_24.h"
@@ -33,11 +34,6 @@ struct opd_module {
 	unsigned long end;
 	struct list_head module_list;
 };
-
-extern char * vmlinux;
-extern int verbose;
-extern int no_vmlinux;
-extern unsigned long opd_stats[];
 
 static struct opd_image * kernel_image;
 

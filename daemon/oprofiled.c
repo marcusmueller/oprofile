@@ -21,7 +21,6 @@
 
 #include "op_version.h"
 #include "op_config.h"
-#include "op_popt.h"
 #include "op_file.h"
 #include "op_fileio.h"
 #include "op_string.h"
@@ -33,7 +32,6 @@
 #ifdef OPROF_ABI
 #include "op_abi.h"
 #endif
-#include "op_cpufreq.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -48,47 +46,13 @@
 #include <stdlib.h>
 #include <limits.h>
 
-// GNU libc bug
-pid_t getpgid(pid_t pid);
-
-double cpu_speed;
-
-uint op_nr_counters;
-int verbose;
-op_cpu cpu_type;
-int separate_lib;
-int separate_kernel;
-int separate_thread;
-int separate_cpu;
-int no_vmlinux;
-char * vmlinux;
 size_t kernel_pointer_size;
 
-static char * events;
-static char * kernel_range;
-static int showvers;
-static int opd_buf_size;
 static fd_t devfd;
 
 static void opd_sighup(void);
 static void opd_alarm(void);
 static void opd_sigterm(void);
-
-static struct poptOption options[] = {
-	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
-	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
-	{ "no-vmlinux", 0, POPT_ARG_NONE, &no_vmlinux, 0, "vmlinux kernel image file not available", NULL, },
-	{ "separate-lib", 0, POPT_ARG_INT, &separate_lib, 0, "separate library samples for each distinct application", "[0|1]", },
-	{ "separate-kernel", 0, POPT_ARG_INT, &separate_kernel, 0, "separate kernel samples for each distinct application", "[0|1]", },
-	{ "separate-thread", 0, POPT_ARG_INT, &separate_thread, 0, "thread-profiling mode", "[0|1]" },
-	{ "separate-cpu", 0, POPT_ARG_INT, &separate_cpu, 0, "separate samples for each CPU", "[0|1]" },
-	{ "events", 'e', POPT_ARG_STRING, &events, 0, "events list", "[0|1]" },
-	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
-	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
-	POPT_AUTOHELP
-	{ NULL, 0, 0, NULL, 0, NULL, NULL, },
-};
- 
 
 /**
  * opd_open_files - open necessary files
@@ -138,61 +102,6 @@ static int opd_read_fs_int(char const * name)
 }
 
 
-/**
- * opd_options - parse command line options
- * @param argc  argc
- * @param argv  argv array
- *
- * Parse all command line arguments, and sanity
- * check what the user passed. Incorrect arguments
- * are a fatal error.
- */
-static void opd_options(int argc, char const * argv[])
-{
-	poptContext optcon;
-
-	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
-
-	if (showvers) {
-		show_version(argv[0]);
-	}
-
-	if (separate_kernel) {
-		separate_lib = 1;
-	}
-
-	cpu_type = op_get_cpu_type();
-	op_nr_counters = op_get_nr_counters(cpu_type);
-
-	if (!no_vmlinux) {
-		if (!vmlinux || !strcmp("", vmlinux)) {
-			fprintf(stderr, "oprofiled: no vmlinux specified.\n");
-			poptPrintHelp(optcon, stderr, 0);
-			exit(EXIT_FAILURE);
-		}
-
-		/* canonicalise vmlinux filename. fix #637805 */
-		vmlinux = op_relative_to_absolute_path(vmlinux, NULL);
-
-		if (!kernel_range || !strcmp("", kernel_range)) {
-			fprintf(stderr, "oprofiled: no kernel VMA range specified.\n");
-			poptPrintHelp(optcon, stderr, 0);
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	opd_create_vmlinux(vmlinux, kernel_range);
-
-	opd_buf_size = opd_read_fs_int("buffer_size");
-
-	opd_parse_events(events);
-
-	cpu_speed = op_cpu_frequency();
-
-	poptFreeContext(optcon);
-}
-
- 
 /** Done writing out the samples, indicate with complete_dump file */
 static void complete_dump(void)
 {
@@ -328,47 +237,21 @@ static void opd_sigterm(void)
 }
  
 
-static size_t opd_pointer_size(void)
-{
-	unsigned long val = 0;
-	FILE * fp;
-
-	if (!op_file_readable("/dev/oprofile/pointer_size")) {
-		fprintf(stderr, "/dev/oprofile/pointer_size not readable\n");
-		exit(EXIT_FAILURE);
-	}
-
-
-	fp = op_open_file("/dev/oprofile/pointer_size", "r");
-	if (!fp) {
-		fprintf(stderr, "oprofiled: couldn't open "
-			"/dev/oprofile/pointer_size.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	fscanf(fp, "%lu\n", &val);
-	if (!val) {
-		fprintf(stderr, "oprofiled: couldn't read "
-			"/dev/oprofile/pointer_size.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	op_close_file(fp);
-	return val;
-}
-
-
 int main(int argc, char const * argv[])
 {
 	char * sbuf;
 	size_t s_buf_bytesize;
+	int opd_buf_size;
 	int i;
 	int err;
 	struct rlimit rlim = { 2048, 2048 };
 
 	opd_options(argc, argv);
 
-	kernel_pointer_size = opd_pointer_size();
+	opd_create_vmlinux(vmlinux, kernel_range);
+
+	opd_buf_size = opd_read_fs_int("buffer_size");
+	kernel_pointer_size = opd_read_fs_int("pointer_size");
 
 	s_buf_bytesize = opd_buf_size * kernel_pointer_size;
 

@@ -16,18 +16,13 @@
 #include "opd_mangling.h"
 #include "opd_printf.h"
 #include "opd_stats.h"
+#include "opd_util.h"
 
 #include "op_libiberty.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-extern int separate_lib;
-extern int separate_kernel;
-extern int separate_thread;
-extern int separate_cpu;
-extern uint op_nr_counters;
 
 #define HASH_SIZE 2048
 #define HASH_BITS (HASH_SIZE - 1)
