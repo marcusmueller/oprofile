@@ -98,6 +98,8 @@ string const find_image_path(string const & archive_path,
                              extra_images const & extra_images,
                              image_error & error)
 {
+	error = image_ok;
+
 	string const image = op_realpath(archive_path + image_name);
 
 	// simplest case

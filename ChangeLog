@@ -1,5 +1,10 @@
 2004-11-17  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/locate_images.cpp: ensure error is always set,
+	  callgraph_container was using an uninitialized value.
+
+2004-11-17  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/op_bfd.cpp: improve a bit the symbol chosen when
 	  multiple symbol live at same vma
 
