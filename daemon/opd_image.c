@@ -400,16 +400,16 @@ static void opd_put_sample(struct opd_image * image, int in_kernel,
  
 	if (in_kernel > 0) {
 		struct opd_image * app_image = 0;
-		verbprintf("Kernel sample 0x%llx, counter %lu\n",
-			eip, event);
 
 		/* FIXME: in what case can we get nil image ? */
 		if (separate_kernel_samples && image)
 			app_image = image->app_image;
+		verbprintf("Putting kernel sample 0x%llx, counter %lu - application %s\n",
+			eip, event, app_image ? app_image->name : "kernel");
 		opd_handle_kernel_sample(eip, event, app_image);
 	} else if (in_kernel == 0) {
 		if (image != NULL) {
-			verbprintf("Image (%s) offset 0x%llx, counter %lu\n",
+			verbprintf("Putting image sample (%s) offset 0x%llx, counter %lu\n",
 				image->name, eip, event);
 			opd_put_image_sample(image, eip, event);
 		}
@@ -471,6 +471,7 @@ void opd_process_samples(char const * buffer, size_t count)
 					break;
 				app_cookie = get_buffer_value(buffer, i);
 				++i;
+				verbprintf("CTX_SWITCH to pid %lu, app cookie %llx\n", pid, app_cookie);
 				break;
 
 			case KERNEL_ENTER_SWITCH_CODE:
@@ -481,8 +482,9 @@ void opd_process_samples(char const * buffer, size_t count)
 				in_kernel = 0;
 				break;
 
-			case KERNEL_DROP_MODULES_CODE:
-				/* FIXME: add support */
+			case DROP_MODULES_CODE:
+				verbprintf("dropping modules\n");
+				opd_clear_module_info();
 				break;
 
 			default:

@@ -89,6 +89,8 @@ void opd_clear_module_info(void)
 		opd_modules[i].end = 0;
 		list_init(&opd_modules[i].module_list);
 	}
+
+	opd_for_each_image(opd_delete_modules);
 }
 
 /**
@@ -523,7 +525,7 @@ static void opd_setup_kernel_sample(vma_t eip, u32 counter,
 	new_module->image = image;
 	list_add(&new_module->module_list, &app_image->module_list);
 
-	verbprintf("Image (%s) offset 0x%llx, counter %u\n",
+	verbprintf("Putting image kernel sample (%s) offset 0x%llx, counter %u\n",
 		   new_module->image->name, eip, counter);
 	opd_put_image_sample(image, eip - new_module->start, counter);
 }
@@ -543,7 +545,7 @@ static void opd_put_kernel_sample(vma_t eip, u32 counter,
 {
 	struct opd_module * module = opd_find_module(app_image, eip);
 	if (module) {
-		verbprintf("Image (%s) offset 0x%llx, counter %u\n",
+		verbprintf("Putting image kernel sample (%s) offset 0x%llx, counter %u\n",
 			   module->image->name, eip, counter);
 		opd_put_image_sample(module->image, eip - module->start,
 				     counter);
@@ -561,9 +563,6 @@ static void opd_put_kernel_sample(vma_t eip, u32 counter,
 		/* not found in known modules, re-read and retry */
 		opd_clear_module_info();
 		opd_get_module_info();
-
-		/* FIXME: test this */
-		opd_for_each_image(opd_delete_modules);
 
 		module = opd_find_module_by_eip(eip);
 	}
