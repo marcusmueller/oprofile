@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.9 2000/08/01 20:36:01 moz Exp $ */
+/* $Id: oprofile.c,v 1.10 2000/08/02 21:40:11 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
  
@@ -556,7 +556,7 @@ int oprof_thread(void *arg)
  
 void oprof_start_thread(void)
 {
-	if (kernel_thread(oprof_thread, NULL, 0)<0)
+	if (kernel_thread(oprof_thread, NULL, CLONE_FS|CLONE_FILES|CLONE_SIGHAND)<0)
 		printk(KERN_ERR "oprofile: couldn't spawn wakeup thread.\n"); 
 }
 
