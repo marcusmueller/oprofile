@@ -78,7 +78,7 @@ struct profile_set {
 struct profile_class {
 	std::list<profile_set> profiles;
 
-	/// FIXME: for later
+	/// human-readable name
 	std::string name;
 
 	/// merging matches against this

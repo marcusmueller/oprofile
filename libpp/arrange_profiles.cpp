@@ -10,6 +10,8 @@
  */
 
 #include <algorithm>
+#include <cstdlib>
+#include <iostream>
 
 #include "string_manip.h"
 
@@ -19,6 +21,116 @@
 using namespace std;
 
 namespace {
+
+/**
+ * Make sure that if we have classes, that only one equivalence
+ * relation has been triggered - for example, we can't have
+ * both CPU and tgid varying - how would it be labelled ?
+ */
+void verify_one_dimension(vector<profile_class> const &, bool const *)
+{
+}
+
+
+/**
+ * Give human-readable names to each class.
+ */
+void name_classes(vector<profile_class> & classes, int axis)
+{
+	vector<profile_class>::iterator it = classes.begin();
+	vector<profile_class>::iterator const end = classes.end();
+
+	// FIXME: add long name, lookup event etc.
+
+	for (; it != end; ++it) {
+		switch (axis) {
+		case 0:
+			it->name = it->ptemplate.event
+				+ ":" + it->ptemplate.count;
+			break;
+		case 1:
+			it->name = "unitmask:";
+			it->name += it->ptemplate.unitmask;
+			break;
+		case 2:
+			it->name = "tgid:";
+			it->name += it->ptemplate.tgid;
+			break;
+		case 3:
+			it->name = "tid:";
+			it->name += it->ptemplate.tid;
+			break;
+		case 4:
+			it->name = "cpu:";
+			it->name += it->ptemplate.cpu;
+			break;
+		}
+		cerr << "Class name: " <<  it->name << endl;
+	}
+}
+
+
+/**
+ * Name and verify classes.
+ */
+void identify_classes(vector<profile_class> & classes,
+                      merge_option const & merge_by)
+{
+	profile_template & ptemplate = classes[0].ptemplate;
+	bool changed[5] = { false, };
+
+	vector<profile_class>::iterator it = classes.begin();
+	++it;
+	vector<profile_class>::iterator end = classes.end();
+
+	// only one class, name it after the event
+	if (it == end) {
+		changed[0] = true;
+	}
+
+	for (; it != end; ++it) {
+		if (it->ptemplate.event != ptemplate.event
+		    ||  it->ptemplate.count != ptemplate.count)
+			changed[0] = true;
+
+		// we need the merge checks here because each
+		// template is filled in from the first non
+		// matching profile, so just because they differ
+		// doesn't mean it's the axis we care about
+
+		if (!merge_by.unitmask
+		    && it->ptemplate.unitmask != ptemplate.unitmask)
+			changed[1] = true;
+
+		if (!merge_by.tgid && it->ptemplate.tgid != ptemplate.tgid)
+			changed[2] = true;
+
+		if (!merge_by.tid && it->ptemplate.tid != ptemplate.tid)
+			changed[3] = true;
+
+		if (!merge_by.cpu && it->ptemplate.cpu != ptemplate.cpu)
+			changed[4] = true;
+	}
+
+	verify_one_dimension(classes, changed);
+
+	int axis = -1;
+
+	for (size_t i = 0; i < 5; ++i) {
+		if (changed[i]) {
+			axis = i;
+			break;
+		}
+	}
+
+	if (axis == -1) {
+		cerr << "Internal error - no equivalence class axis" << endl;
+		abort();
+	}
+
+	name_classes(classes, axis);
+}
+
 
 /**
  * Check if a profile can fit into an equivalence class.
@@ -84,8 +196,6 @@ profile_class & find_class(vector<profile_class> & classes,
 			return *it;
 	}
 
-	// FIXME: here we must verify new classes match only one axis
-	// of difference - opreport is not n-dimensional for n > 1
 	profile_class pclass;
 	pclass.ptemplate = template_from_profile(parsed, merge_by);
 	classes.push_back(pclass);
@@ -218,6 +328,9 @@ arrange_profiles(list<string> const & files, merge_option const & merge_by)
 
 	// sort by template for nicely ordered columns
 	stable_sort(classes.begin(), classes.end());
+
+	// name and check
+	identify_classes(classes, merge_by);
 
 	return classes;
 }
