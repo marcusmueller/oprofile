@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start_25,v 1.3 2002/10/01 00:32:49 movement Exp $
+# $Id: op_start_25,v 1.4 2002/10/16 22:25:44 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -89,7 +89,10 @@ load_module() {
 			exit 1
 		fi
 	fi
-	mount -t oprofilefs nodev /dev/oprofile >/dev/null
+	mkdir /dev/oprofile >/dev/null 2>&1
+	if test ! `grep -o oprofilefs /etc/mtab`; then
+		mount -t oprofilefs nodev /dev/oprofile >/dev/null
+	fi
 }
 
 # initialise parameters

@@ -1,3 +1,8 @@
+2002-10-16  John Levon  <levon@movementarian.org>
+
+	* utils/op_start_25: check if mounted, from Will Cohen
+	Also mkdir the mountpoint 
+ 
 2002-10-16  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* configure.in: get linux include path earlier
