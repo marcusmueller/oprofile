@@ -50,7 +50,7 @@ do { \
 #include <asm/desc.h>
 
 #define SET_NMI_GATE	\
-	_set_gate(&descr.base[NMI_VECTOR_NUM], NMI_GATE_TYPE, (unsigned long) &op_nmi, NMI_DPL_LEVEL, 0);
+	_set_gate(&descr.base[NMI_VECTOR_NUM], NMI_GATE_TYPE, (unsigned long) &op_nmi, NMI_DPL_LEVEL, NMI_STACK);
 
 #endif /* CONFIG_X86_64 */
 	

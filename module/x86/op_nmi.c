@@ -38,6 +38,40 @@ static struct op_x86_model_spec const * get_model(void)
 	return model;
 }
 
+#ifdef CONFIG_X86_64
+
+static struct tss_struct *per_cpu_tss[NR_CPUS];
+unsigned long orig_ist[NR_CPUS];
+
+static void find_tss(int cpu)
+{ 
+	short tr;
+	struct desc_ptr d;
+	struct ldttss_desc *ld;
+
+	asm volatile("str %0 ; sgdt %1" : "=r" (tr), "=m" (d));	
+	ld = (struct ldttss_desc *)(d.address + tr);
+	per_cpu_tss[cpu] = (void *)(ld->base0 | ((u64)ld->base1 << 16) |
+			   ((u64)ld->base2 << 24) | 
+			   ((u64)ld->base3 << 32)); 		
+	orig_ist[cpu] = per_cpu_tss[cpu]->ist[NMI_STACK];
+} 
+
+asmlinkage void op_do_nmi(struct pt_regs * regs)
+{
+	uint const cpu = op_cpu_id();
+
+	struct tss_struct *tss = per_cpu_tss[cpu];
+	/* still racy, but should decrease the race window significantly */
+	tss->ist[NMI_STACK] -= 256;
+
+	struct op_msrs const * const msrs = &cpu_msrs[cpu];
+	model->check_ctrs(cpu, msrs, regs);
+
+	tss->ist[NMI_STACK] += 256;
+}
+
+#else
 
 asmlinkage void op_do_nmi(struct pt_regs * regs)
 {
@@ -46,6 +80,7 @@ asmlinkage void op_do_nmi(struct pt_regs * regs)
 
 	model->check_ctrs(cpu, msrs, regs);
 }
+#endif
 
 /* ---------------- PMC setup ------------------ */
 
@@ -53,6 +88,9 @@ static void pmc_setup_ctr(void * dummy)
 {
 	uint const cpu = op_cpu_id();
 	struct op_msrs const * const msrs = &cpu_msrs[cpu];
+#ifdef CONFIG_X86_64
+	find_tss(cpu);	
+#endif
 	get_model()->setup_ctrs(msrs);
 }
 
