@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.73 2002/02/03 22:38:30 movement Exp $)
+AC_REVISION($Id: configure.in,v 1.74 2002/02/12 21:26:53 phil_e Exp $)
 AC_PREREQ(2.13)
 AC_INIT(./op_user.h)
 
@@ -141,7 +141,6 @@ fi
 
 AC_MSG_CHECKING(for x86 architecture)
 AX_COMPILE_OPTION(CONFIG_X86,x86=1,x86=0)
-# FIXME, recheck later needed for 2.2
 AX_COMPILE_OPTION(CONFIG_X86_WP_WORKS_OK,x86=1,x86=x86)
 AX_MSG_RESULT_YN($x86)
 test "$x86" = 1 || AC_MSG_ERROR(Unsupported architecture)
@@ -150,7 +149,6 @@ AC_MSG_CHECKING(for SMP)
 AX_COMPILE_OPTION(CONFIG_SMP,smp=1,smp=0)
 AX_MSG_RESULT_YN($smp)
 
-# FIXME 2.2 not already tested with modules version
 AC_MSG_CHECKING(for versioned modules)
 mv=0
 AX_COMPILE_OPTION(CONFIG_MODVERSIONS,mv=1,mv=0)
@@ -158,6 +156,12 @@ AX_MSG_RESULT_YN($mv)
 MODVERSIONS=""
 test "$mv" = 1 && MODVERSIONS="-DMODVERSIONS -include $KINC/linux/modversions.h"
 AC_SUBST(MODVERSIONS)
+
+dnl for now we do not support PREEMPT patch
+AC_MSG_CHECKING(for preempt patch)
+AX_COMPILE_OPTION(CONFIG_PREEMPT,preempt=1,preempt=0)
+AX_MSG_RESULT_YN($preempt)
+test "$preempt" = 0 || AC_MSG_ERROR(unsupported kernel configuration : CONFIG_PREEMPT)
 
 dnl linux 2.2 need -D__SMP__, preferable to pass as compile option, so we
 dnl include <linux/smp.h> without worrying to include the compat file first

@@ -804,7 +804,6 @@ void output::output_header(ostream& out) const
 	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
 		out << endl << "Counter " << i << " ";
 		counter_info[i].print(out, cpu_type);
-		out << endl;
 	}
 
 	out << end_comment << endl;

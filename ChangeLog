@@ -1,3 +1,16 @@
+2002-02-12  Philippe Elie  <ph_e@club-internet.fr>
+
+	* TODO: update
+
+	* pp/oprofpp_util.cpp: use stable sort and correct the comparison
+	  function on symbol vma
+	* pp/opf_filter.cpp: remove a boring new line in output
+
+	* module/makefile.in: optimize for 686 but do not use any specific
+	  686 insn.
+
+	* configure.in: check against CONFIG_PREEMPT
+
 2002-02-10  John Levon  <moz@compsoc.man.ac.uk>
 
 	* events/op_events_desc.c: remove dead code

@@ -44,6 +44,7 @@ Before 1.0
   the kernel service. The overhead for RTC is very big actually. Take care
   first from where come the overhead (read/write RTC CMOS is costly)
  o gcc 3.0/3.1 compile. (3.1 is not stable currently but I follow it, Phil)
+ o determine where we need preempt_disable/enable to prevent pre-emption + test
 
 Later
 -----
@@ -54,8 +55,6 @@ o merge sample files into one big report (like vtune can do repeated runs)
  
 ? o move .oprofile to name=value pairs to avoid conflicts on change.
 
-o determine where we need preempt_disable/enable to prevent pre-emption + test
- 
 o move from racy sysctl to procfs, if it can be done nicely
 
 o pentium 4 patches ?
