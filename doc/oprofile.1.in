@@ -34,6 +34,10 @@ data can be collected at any time. OProfile makes use of the hardware
 performance counters provided on Intel, AMD, and other processors,
 and uses a timer-interrupt based mechanism on CPUs without counters.
 OProfile can profile the whole system in high detail.
+.br
+For a gentle guide to using OProfile, please read the HTML documentation
+listed in SEE ALSO.
+.br
 .SH OPCONTROL
 .B opcontrol
 is used for starting and stopping the OProfile daemon, and providing set-up
@@ -159,6 +163,7 @@ The location of the generated sample files.
 This man page is current for @PACKAGE@-@VERSION@.
 
 .SH SEE ALSO
+.BR @OP_DOCDIR@,
 .BR opcontrol(1),
 .BR opreport(1),
 .BR opannotate(1),

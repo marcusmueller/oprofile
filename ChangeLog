@@ -1,5 +1,10 @@
 2003-12-29  John Levon  <levon@movementarian.org>
 
+	* configure.in:
+	* doc/*.1.in: add HTML docs to SEE ALSO
+
+2003-12-29  John Levon  <levon@movementarian.org>
+
 	* doc/opcontrol.1.in:
 	* doc/oprofile.xml: minor language cleanups
 

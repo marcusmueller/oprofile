@@ -55,4 +55,5 @@ The location of the generated sample files.
 This man page is current for @PACKAGE@-@VERSION@.
 
 .SH SEE ALSO
+.BR @OP_DOCDIR@,
 .BR oprofile(1)
