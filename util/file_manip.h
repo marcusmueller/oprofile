@@ -1,4 +1,4 @@
-/* COPYRIGHT (C) 2001 by ?
+/* COPYRIGHT (C) 2001 by various authors
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -13,17 +13,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * first written by John Levon and P. Elie
+ * Part written by John Levon and P. Elie
  */
 
 #ifndef FILE_MANIP_H
 #define FILE_MANIP_H
-
-/* FIXME: I really do not like this __cplusplus thing.
- * either it is a C header or it isn't. C headers shouldn't
- * be including C++ headers - please split this out.
- */ 
-#ifdef __cplusplus
 
 #include <string>
 #include <list>
@@ -39,17 +33,9 @@ bool create_file_list(std::list<std::string>& file_list,
 
 std::string relative_to_absolute_path(const std::string & path,
 				const std::string & base_dir = std::string());
-#endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-char *opd_simplify_pathname(char *path);
-char *opd_relative_to_absolute_path(const char *path, const char *base_dir);
-
-#ifdef __cplusplus
-}
-#endif
+// filename handling.
+std::string dirname(std::string const & file_name);
+std::string basename(std::string const & path_name);
 
 #endif /* !FILE_MANIP_H */

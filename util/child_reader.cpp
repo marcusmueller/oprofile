@@ -36,7 +36,6 @@ using std::vector;
 using std::cerr;
 using std::endl;
 
-/// ctor: fork a process. use int error() to get error code.
 ChildReader::ChildReader(string const & cmd, vector<string> const & args)
 	:
 	fd1(-1),
@@ -55,7 +54,6 @@ ChildReader::ChildReader(string const & cmd, vector<string> const & args)
 	exec_command(cmd, args);
 }
 
-/// dtor: terminate the child process if neccessary
 ChildReader::~ChildReader()
 {
 	terminate_process();
@@ -63,10 +61,6 @@ ChildReader::~ChildReader()
 	if (buf2) free(buf2);	// allocated through C alloc
 }
 
-// FIXME: why duplicate the comments in .h ... you should be able
-// to read the doxygen output ...
-// ctor helper: fork the child process cmd passing it the vector of arguments
-// args. first_error is set to errno if something feel bad
 void ChildReader::exec_command(string const & cmd, vector<string> const & args)
 {
 	int pstdout[2];
@@ -109,7 +103,7 @@ void ChildReader::exec_command(string const & cmd, vector<string> const & args)
 
 			// we can communicate with parent by writing to stderr
 			// and by returning a non zero error code. Setting
-			// first_error is the child is a non-sense
+			// first_error in the child is a non-sense
 
 			// we are in the child process: so this error message
 			// is redirect to the parent process
@@ -132,8 +126,6 @@ void ChildReader::exec_command(string const & cmd, vector<string> const & args)
 	return;
 }
 
-/// return false when eof condition is reached on fd1. fd2 can have
-/// already input in the pipe buffer or in buf2.
 bool ChildReader::block_read()
 {
 	fd_set read_fs;
@@ -168,8 +160,6 @@ bool ChildReader::block_read()
 	return ret;
 }
 
-/// read a line from the stdandard output of the child process. Return false
-/// when eof condition is reached on the stdout and stderr of the child
 bool ChildReader::getline(string & result)
 {
 	// some stl lacks string::clear()

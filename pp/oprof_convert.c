@@ -25,7 +25,7 @@
 
 #include "../version.h"
 #include "../dae/opd_util.h"
-#include "../util/file_manip.h"
+#include "../util/misc.h"
 
 static char * filename;
  

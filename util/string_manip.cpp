@@ -23,38 +23,41 @@
 using std::string;
 
 
-// FIXME: ick no, dirname has bugger all to do with "string_manip"
-// please move ;)
 /**
- * dirname - get the path component of a filename
- * @file_name: filename
+ * erase_from_last_of - erase a sequence from the last occurence
+ * of a given char to the end of string
+ * @str: string
+ * @ch: the char from where we erase character
  *
- * Returns the path name of a filename with trailing '/' removed.
+ * erase char from the last occurence of @ch to the
+ * end of @str and return the string
  */
-string dirname(string const & file_name)
+string erase_from_last_of(string const & str, char ch)
 {
-	string result = file_name;
+	string result = str;
 
-	string::size_type slash = result.find_last_of('/');
-	if (slash != string::npos)
-		result.erase(slash, result.length() - slash);
+	string::size_type pos = result.find_last_of(ch);
+	if (pos != string::npos)
+		result.erase(pos, result.length() - pos);
 
 	return result;
 }
 
 /**
- * basename - get the basename of a path
- * @path_name: path
+ * erase to_last_of - erase a sequence of character from
+ * the begining of string to the last occurence of a given char
+ * @str: string
+ * @ch: the characterto search
  *
- * Returns the basename of a path with trailing '/' removed.
+ * erase char from the begin of @str to the last
+ * occurence of @ch from and return the string
  */
-string basename(string const & path_name)
+string erase_to_last_of(string const & str, char ch)
 {
-	string result = rtrim(path_name, '/');
-
-	string::size_type slash = result.find_last_of('/');
-	if (slash != string::npos)
-		result.erase(0, slash + 1);
+	string result = str;
+	string::size_type pos = result.find_last_of(ch);
+	if (pos != string::npos)
+		result.erase(0, pos + 1);
 
 	return result;
 }

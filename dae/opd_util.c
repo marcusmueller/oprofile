@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.28 2001/12/05 04:31:17 phil_e Exp $ */
+/* $Id: opd_util.c,v 1.29 2001/12/12 02:27:27 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -21,19 +21,6 @@
  
 #include "opd_util.h"
 #include "../config.h"
-
-#ifndef HAVE_XCALLOC
-/* some system have a valid libiberty without xcalloc */
-void * xcalloc(size_t n_elem, size_t sz)
-{
-	void * ptr = xmalloc(n_elem * sz);
-
-	memset(ptr, '\0', n_elem * sz);
-
-	return ptr;
-}
-#endif
-
 
 /**
  * opd_mangle_filename - mangle a file filename

@@ -13,140 +13,34 @@
  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * Part written by John Levon and P. Elie
+ * Part written by John Levon, P. Elie and the gcc team
  */
 
+#include <stdio.h>
+#include <string.h> 
 #include <sys/stat.h>
-#include <unistd.h>
-#include <stdio.h>	// for FILENAME_MAX
-#include <dirent.h>
-#include <errno.h>
+#include <unistd.h> 
+#include <sys/types.h>
+#include <errno.h> 
+#include <fcntl.h> 
+#include <stdlib.h> 
 
-#include <vector>
-#include <string>
+#include "../config.h"
+#include "../op_user.h"
+#include "../dae/opd_util.h"
+#include "misc.h"
 
-#include "file_manip.h"
-#include "string_manip.h"
-
-using std::vector;
-using std::string;
-using std::list;
-
-/**
- * is_file_identical - check for identical files
- * @file1: first filename
- * @file2: scond filename
- *
- * return true if the two filenames belong to the same file
- */
-bool is_files_identical(string const & file1, string const & file2)
+#ifndef HAVE_XCALLOC
+/* some system have a valid libiberty without xcalloc */
+void * xcalloc(size_t n_elem, size_t sz)
 {
-	struct stat st1;
-	struct stat st2;
+	void * ptr = xmalloc(n_elem * sz);
 
-	if (stat(file1.c_str(), &st1) == 0 && stat(file2.c_str(), &st2) == 0) {
-		if (st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino)
-			return true;
-	}
+	memset(ptr, '\0', n_elem * sz);
 
-	return false;
+	return ptr;
 }
-
-/**
- * create_dir - create a directory
- * @dir: the directory name to create
- *
- * return false if the directory @dir does not exist
- * and cannot be created
- */
-bool create_dir(string const & dir)
-{
-	if (access(dir.c_str(), F_OK)) {
-		if (mkdir(dir.c_str(), 0700))
-			return false;
-	}
-	return true;
-}
-
-/**
- * create_path - create a path
- * @dir: the path to create
- *
- * create directory for each dir components in @path
- * return false if one of the path cannot be created.
- */
-bool create_path(string const & path)
-{
-	vector<string> path_component;
-
-	size_t slash = 0;
-	while (slash < path.length()) {
-		size_t new_pos = path.find_first_of('/', slash);
-		if (new_pos == string::npos)
-			new_pos = path.length();
-
-		path_component.push_back(path.substr(slash, (new_pos - slash) + 1));
-		slash = new_pos + 1;
-	}
-
-	string dir_name;
-	for (size_t i = 0 ; i < path_component.size() ; ++i) {
-		dir_name += '/' + path_component[i];
-		if (!create_dir(dir_name))
-			return false;
-	}
-	return true;
-}
-
-/**
- * opd_read_link - read the contents of a symbolic link file
- * @name: the file name
- *
- * return an empty string on failure
- */
-string opd_read_link(string const & name)
-{
-	char linkbuf[FILENAME_MAX];
-	int c;
-
-	c = readlink(name.c_str(), linkbuf, FILENAME_MAX);
- 
-	if (c == -1)
-		return string();
- 
-	if (c == FILENAME_MAX)
-		linkbuf[FILENAME_MAX-1] = '\0';
-	else
-		linkbuf[c] = '\0';
-	return linkbuf;
-}
-
-inline static bool is_directory_name(const char * name)
-{
-	return name[0] == '.' && 
-		(name[1] == '\0' || 
-		 (name[1] == '.' && name[2] == '\0'));
-}
-
-/// return false if base_dir can't be accessed.
-bool create_file_list(list<string>& file_list, const string & base_dir)
-{
-	DIR *dir;
-	struct dirent *dirent;
-
-	if (!(dir = opendir(base_dir.c_str())))
-		return false;
-
-	while ((dirent = readdir(dir)) != 0) {
-		if (!is_directory_name(dirent->d_name))
-			file_list.push_back(dirent->d_name);
-	}
-
-	closedir(dir);
-
-	return true;
-}
-
+#endif
 
 /* remove_component_p() and op_simlify_pathname() comes from the gcc
  preprocessor */
@@ -295,25 +189,21 @@ char *opd_simplify_pathname (char *path)
  *
  * Returns the translated path.
  */
-/* FIXME: from libiberty: a hack until we need a C version of this or opd_malloc 
- * and related are put in the util dir */
-extern "C" char * xstrdup(const char *);
- 
 char *opd_relative_to_absolute_path(const char *path, const char *base_dir)
 {
-	char dir[PATH_MAX + 1];
+	char dir[FILENAME_MAX + 1];
 	char *temp_path = NULL;
 
 	if (path && path[0] != '/') {
 		if (base_dir == NULL) {
-			if (getcwd(dir, PATH_MAX) != NULL) {
+			if (getcwd(dir, FILENAME_MAX) != NULL) {
 				base_dir = dir;
 			}
 
 		}
 
 		if (base_dir != NULL) {
-			temp_path = new char [strlen(path) + strlen(base_dir) + 2];
+			temp_path = xmalloc(strlen(path) + strlen(base_dir) + 2);
 			strcpy(temp_path, base_dir);
 			strcat(temp_path, "/");
 			strcat(temp_path, path);
@@ -326,43 +216,4 @@ char *opd_relative_to_absolute_path(const char *path, const char *base_dir)
 		temp_path = xstrdup(path);
 
 	return opd_simplify_pathname(temp_path);
-}
-
-
-std::string relative_to_absolute_path(const std::string & path,
-				      const std::string & base_dir)
-{
-	const char * dir = base_dir.length() ? base_dir.c_str() : NULL;
-
-	char * result = opd_relative_to_absolute_path(path.c_str(), dir);
-
-	std::string res(result);
-
-	free(result);
-
-	return res;
-}
-
-/**
- * dirname - get the path component of a filename
- * @file_name: filename
- *
- * Returns the path name of a filename with trailing '/' removed.
- */
-string dirname(string const & file_name)
-{
-	return erase_from_last_of(file_name, '/');
-}
-
-/**
- * basename - get the basename of a path
- * @path_name: path
- *
- * Returns the basename of a path with trailing '/' removed.
- */
-string basename(string const & path_name)
-{
-	string result = rtrim(path_name, '/');
-
-	return erase_to_last_of(result, '/');
 }

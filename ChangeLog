@@ -1,3 +1,24 @@
+2001-12-12  Philippe Elie  <ph_e@club-internet.fr>
+
+	* module/oprofile.h: change slightly op_hash()
+
+	* util/file_manip.h:
+	* util/file_manip.cpp:
+	* util/string_manip.h:
+	* util/string_manip.cpp:
+	* util/child_reader.h:
+	* util/child_reader.cpp: cleanup John's FIXME
+
+	* dae/opd_util.h:
+	* dae/opd_util.c: move libiberty things to ...
+	* util/misc.h:
+	* util/misc.c: here
+	* util/Makefile.in: update
+	* dae/Makefile.in:
+	* pp/Makefile.in:
+
+	* doc/Makefile.in: install the html doc
+
 2001-12-10  John Levon  <moz@compsoc.man.ac.uk>
 
 	* dae/oprofiled.c: fix sigprocmask() blooper

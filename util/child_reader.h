@@ -27,11 +27,11 @@
 /**
  * a class to read stdout / stderr from a child process.
  * FIXME: code review is needed:
- *  - check the getline()/get_block()/read_block() interface.
+ *  - check the getline()/get_data()/block_read() interface.
  *  the expected behavior is:
  *  caller can call getline until nothing is available from the stdout of the
  * child. in this case child stderr is acumulated in buf2 and can be read
- * through get_block(). get_block() is blocking until the child close stderr /
+ * through get_data(). get_data() is blocking until the child close stderr /
  * stdout (even if the child die by a signal ?). The following corner case must
  * work but I'm unsure if the code reflect this behavior: the last line of the
  * child stdout have not necessarilly a LF terminator. the child can output any
@@ -45,21 +45,23 @@ public:
 		    std::vector<std::string> const & args);
 
 	/// wait for the termination of the child process if this have not
-	/// occur. In this cas return code of the child process is not
+	/// occur. In this case return code of the child process is not
 	/// available.
 	~ChildReader();
 
 	/// two interface are possible. read line by line or read in one block.
-	/// getline only read from stdout of the child. get_block() must be
+	/// getline only read from stdout of the child. get_data() must be
 	/// called to flush the input from the stderr child.
 	
 	/// fill result from on line of stdout of the child process.
 	/// must be used as:
 	/// ChildReader reader(...);
-	/// while (reader.getline(line) ....
+	/// while (reader.getline(line)) ....
 	bool getline(std::string & result);
 
 	/// fill out / err with the stdout / stderr of the child process.
+	/// You can call this after calling one or more time getline(...). This
+	/// call is blocking until the child die.
 	bool get_data(std::ostream & out, std::ostream & err);
 
 	/// rather to rely on dtor to wait for the termination of the child you

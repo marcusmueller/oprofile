@@ -1,13 +1,14 @@
-# $Id: Makefile.in,v 1.10 2001/10/25 18:37:09 movement Exp $
+# $Id: Makefile.in,v 1.11 2001/12/12 02:27:27 phil_e Exp $
 
+RM=rm
+CP=cp
 prefix=$(DESTDIR)@prefix@
 MANDIR=@mandir@/man1
 CATDIR=@mandir@/cat1
+DOCDIR=$(prefix)/doc/oprofile-@VERSION@
 LN_SF=ln -sf
-RM=rm
-CP=cp
 MKDIR=mkdir
-MKDIR_P=$(MKDIR) -p
+MKDIR_P=mkdir -p
 DB2HTML=db2html
 LINK_LIST=oprofiled.1 op_start.1 op_stop.1 op_help.1 oprofpp.1
 
@@ -21,14 +22,17 @@ all:
 	-mv oprofile/* html/
 	-mv oprofile/stylesheet-images/* html/stylesheet-images/
 	-$(RM) -rf oprofile 
- 
+
 install:
 	-$(MKDIR_P) $(MANDIR)
 	cp oprofile.1 $(MANDIR)/oprofile.1
 	@for f in $(LINK_LIST); do				\
 		$(RM) -f $(MANDIR)/$$f;				\
- 		echo ".so man1/oprofile.1" > $(MANDIR)/$$f;	\
+		echo ".so man1/oprofile.1" > $(MANDIR)/$$f;	\
 	done
+	@echo "Installing html doc in $(DOCDIR)"
+	@$(MKDIR_P) $(DOCDIR)
+	@cp -R html/* $(DOCDIR)
 
 uninstall:
 	rm -f $(MANDIR)/oprofile.1
@@ -37,5 +41,8 @@ uninstall:
 		rm -f $(MANDIR)/$$f;		\
 		rm -f $(CATDIR)/cat1/$$f.gz;	\
 	done
+	-$(RM) -rf $(DOCDIR)
 
 clean:
+
+

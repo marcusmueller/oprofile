@@ -8,8 +8,6 @@ o prepare for rtc:
 	- probe module on start to get proc type
 	- generalise module start/stop/interrupt code (code move)
 
-o investigate our op_hash: hit/miss distributions etc.
- 
 o determine where we need ctx_sw_on/off to prevent pre-emption + test
  
 o move .oprofile to name=value pairs to avoid conflicts on change.
@@ -56,7 +54,6 @@ o maybe we should support a CPU mask for enabling counters (useful with
 Performance
 -----------
 
-o investigate eviction strategy
 o the interrupt handler code could probably be improved by moving into asm
 o can we fold in the "untouched sample entry" case in hash table to another case ?
 
