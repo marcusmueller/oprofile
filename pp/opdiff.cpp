@@ -15,6 +15,7 @@
 
 using namespace std;
 
+namespace {
 
 int opdiff(vector<string> const & non_options)
 {
@@ -23,6 +24,8 @@ int opdiff(vector<string> const & non_options)
 	cerr << "N/A\n";
 	return 0;
 }
+
+}  // anonymous namespace
 
 
 int main(int argc, char const * argv[])

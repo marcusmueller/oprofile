@@ -20,7 +20,9 @@ struct cpu_descr {
 	char const * name;
 	op_cpu cpu;
 	unsigned int nr_counters;
-} cpu_descrs[MAX_CPU_TYPE] = {
+};
+
+static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "Pentium Pro", "i386/ppro", CPU_PPRO, 2 },
 	{ "PII", "i386/pii", CPU_PII, 2 },
 	{ "PIII", "i386/piii", CPU_PIII, 2 },
@@ -40,7 +42,7 @@ struct cpu_descr {
 	{ "Alpha EV67", "alpha/ev67", CPU_AXP_EV67, 20 },
 };
  
-static size_t nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
+static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);
 
 op_cpu op_get_cpu_type(void)
 {

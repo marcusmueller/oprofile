@@ -370,8 +370,8 @@ static void opd_go_daemon(void)
 	mypid = getpid();
 }
 
-void opd_do_samples(struct op_buffer_head const * buf);
-void opd_do_notes(struct op_note const * opd_buf, size_t count);
+static void opd_do_samples(struct op_buffer_head const * buf);
+static void opd_do_notes(struct op_note const * opd_buf, size_t count);
 
 /**
  * do_shutdown - shutdown cleanly, reading as much remaining data as possible.
@@ -462,7 +462,7 @@ static void opd_do_read(struct op_buffer_head * buf, size_t size, struct op_note
  *
  * Process a buffer of notes.
  */
-void opd_do_notes(struct op_note const * opd_buf, size_t count)
+static void opd_do_notes(struct op_note const * opd_buf, size_t count)
 {
 	uint i;
 	struct op_note const * note;
@@ -516,7 +516,7 @@ void opd_do_notes(struct op_note const * opd_buf, size_t count)
  * to the relevant sample file. Additionally mapping and
  * process notifications are handled here.
  */
-void opd_do_samples(struct op_buffer_head const * opd_buf)
+static void opd_do_samples(struct op_buffer_head const * opd_buf)
 {
 	uint i;
 	struct op_sample const * buffer = opd_buf->buffer; 

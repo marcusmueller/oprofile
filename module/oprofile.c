@@ -34,7 +34,7 @@ struct oprof_sysctl sysctl_parms;
  * parameters during profiling */
 struct oprof_sysctl sysctl;
 
-enum oprof_state state __cacheline_aligned_in_smp = STOPPED;
+static enum oprof_state state __cacheline_aligned_in_smp = STOPPED;
 	 
 static int op_major;
 
@@ -486,7 +486,7 @@ static int parms_check(void)
 }
 
 
-DECLARE_MUTEX(sysctlsem);
+static DECLARE_MUTEX(sysctlsem);
 
 
 static int oprof_start(void)
@@ -720,7 +720,7 @@ out:
 	return err;
 }
 
-int nr_oprof_static = 7;
+static int const nr_oprof_static = 7;
 
 static ctl_table oprof_table[] = {
 	{ 1, "bufsize", &sysctl_parms.buf_size, sizeof(int), 0644, NULL, &lproc_dointvec, NULL, },
