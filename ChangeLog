@@ -1,7 +1,13 @@
+2004-02-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/liblegacy/opd_sample_files.c: op_mangle_filename() presume
+	  mangle_values::dep_name is never NULL, this fix a daemon segfault
+	  with 2.4 kernel
+
 2004-02-07  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* events/i386/p4/unit_masks:
-	* events/i386/p4-ht/unit_masks: global_power_events use mandatory
+	* events/i386/p4-ht/unit_masks: global_power_events need mandatory
 	 unit mask
 
 2004-02-07  Philippe Elie  <phil.el@wanadoo.fr>

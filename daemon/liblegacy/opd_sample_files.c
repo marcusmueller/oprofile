@@ -91,7 +91,8 @@ static char * opd_mangle_filename(struct opd_image const * image, int counter,
 	values.unit_mask = event->um;
 
 	values.image_name = image->name;
-	values.dep_name = separate_lib ? image->app_name : image->name;
+	values.dep_name = separate_lib && image->app_name
+		? image->app_name : image->name;
 
 	mangled = op_mangle_filename(&values);
 
