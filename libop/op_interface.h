@@ -35,7 +35,7 @@ struct op_sample {
 	u32 counter; /**< counter nr */
 	u32 pid; /**< 32 bits can hold any pid */
 	u32 tgid; /**< always equal to pid for kernel < 2.4.0 */
-} __attribute__((__packed__));
+};
 
 /** the current kernel-side profiler state */
 enum oprof_state {

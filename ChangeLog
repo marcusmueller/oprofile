@@ -1,5 +1,9 @@
 2003-10-11  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libop/op_interface.h: struct op_sample: remove packed attribute
+
+2003-10-11  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* dae/opd_image.c:
 	* dae/opd_image.h: reference count opd_image. Remove modification time
 	  checking. Remove hash field. Tidy
