@@ -1,0 +1,5 @@
+configure
+Makefile
+version.h
+a.diff
+oprofile.s
