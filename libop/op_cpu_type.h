@@ -30,7 +30,7 @@ typedef enum {
 } op_cpu;
 
 /**
- * get from /proc/sys/dev/oprofile/cpu_type the cpu type
+ * get the CPU type from the kernel
  *
  * returns CPU_NO_GOOD if the CPU could not be identified.
  * This function can not work if the module is not loaded

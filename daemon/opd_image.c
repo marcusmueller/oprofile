@@ -367,7 +367,7 @@ void opd_process_samples(unsigned long const * buffer, unsigned long count)
 				verbprintf("CPU_SWITCH to %lu\n", cpu);
 				++i;
 				break;
-				 
+
 			case COOKIE_SWITCH_CODE:
 				cookie = buffer[i];
 				image = opd_get_image(cookie, app_cookie);

@@ -16,7 +16,7 @@
 #include "op_cpu_type.h"
 
 /**
- * op_get_cpu_type - get from /proc/sys/dev/oprofile/cpu_type the cpu type
+ * op_get_cpu_type - get the cpu type from the kernel
  *
  * returns %CPU_NO_GOOD if the CPU could not be identified
  */
@@ -29,8 +29,12 @@ op_cpu op_get_cpu_type(void)
 
 	fp = fopen("/proc/sys/dev/oprofile/cpu_type", "r");
 	if (!fp) {
-		fprintf(stderr, "Unable to open /proc/sys/dev/oprofile/cpu_type for reading\n");
-		return cpu_type;
+		/* Hmm. Not there. Try 2.5's oprofilefs one instead. */
+		fp = fopen("/dev/oprofile/cpu_type", "r");
+		if (!fp) {
+			fprintf(stderr, "Unable to open cpu_type file for reading\n");
+			return cpu_type;
+		}
 	}
 
 	fgets(str, 9, fp);
