@@ -1,3 +1,12 @@
+2003-10-27  John Levon  <levon@movementarian.org>
+
+	* daemon/oprofiled.c: fix help text
+
+	* daemon/liblegacy/init.c:
+	* daemon/liblegacy/opd_proc.h:
+	* daemon/liblegacy/opd_proc.c: clean up headers
+	a bit
+
 2003-10-27  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* gui/oprof_start.cpp: check we can get kernel interface

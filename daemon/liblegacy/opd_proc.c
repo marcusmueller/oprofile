@@ -98,64 +98,6 @@ struct opd_proc * opd_new_proc(pid_t tid, pid_t tgid)
 
 
 /**
- * opd_delete_proc - delete a process
- * @param proc  process to delete
- *
- * Remove the process proc from the process list and free
- * the associated structures.
- */
-static void opd_delete_proc(struct opd_proc * proc)
-{
-	--nr_procs;
-	list_del(&proc->next);
-	opd_kill_maps(proc);
-	if (proc->name)
-		free((char *)proc->name);
-	free(proc);
-}
-
-
-/**
- * opd_age_proc - age a struct opd_proc
- * @param  proc proc to age
- *
- * age dead proc in such way if a proc doesn't receive any samples
- * between two age_proc the opd_proc struct is deleted
- */
-void opd_age_proc(struct opd_proc * proc)
-{
-	// delay death whilst its still being accessed
-	if (proc->dead) {
-		proc->dead += proc->accessed;
-		proc->accessed = 0;
-		if (--proc->dead == 0)
-			opd_delete_proc(proc);
-	}
-}
-
-/**
- * @param proc_cb callback to apply onto each existing proc struct
- *
- * the callback receive a struct opd_proc * (not a const struct) and is
- * allowed to freeze the proc struct itself.
- */
-void opd_for_each_proc(opd_proc_cb proc_cb)
-{
-	struct list_head * pos;
-	struct list_head * pos2;
-	int i;
-
-	for (i = 0; i < OPD_MAX_PROC_HASH; ++i) {
-		list_for_each_safe(pos, pos2, &opd_procs[i]) {
-			struct opd_proc * proc =
-				list_entry(pos, struct opd_proc, next);
-			proc_cb(proc);
-		}
-	}
-}
-
-
-/**
  * opd_get_proc - get process from process list
  * @param tid  tid for this process
  * @param tgid  tgid for this process
@@ -460,12 +402,76 @@ void opd_handle_exit(struct op_note const * note)
 }
 
 
+typedef void (*opd_proc_cb)(struct opd_proc *);
+
 /**
- * opd_proc_cleanup - clean up on exit
+ * @param proc_cb callback to apply onto each existing proc struct
+ *
+ * the callback receive a struct opd_proc * (not a const struct) and is
+ * allowed to freeze the proc struct itself.
  */
+static void opd_for_each_proc(opd_proc_cb proc_cb)
+{
+	struct list_head * pos;
+	struct list_head * pos2;
+	int i;
+
+	for (i = 0; i < OPD_MAX_PROC_HASH; ++i) {
+		list_for_each_safe(pos, pos2, &opd_procs[i]) {
+			struct opd_proc * proc =
+				list_entry(pos, struct opd_proc, next);
+			proc_cb(proc);
+		}
+	}
+}
+
+
+/**
+ * opd_delete_proc - delete a process
+ * @param proc  process to delete
+ *
+ * Remove the process proc from the process list and free
+ * the associated structures.
+ */
+static void opd_delete_proc(struct opd_proc * proc)
+{
+	--nr_procs;
+	list_del(&proc->next);
+	opd_kill_maps(proc);
+	if (proc->name)
+		free((char *)proc->name);
+	free(proc);
+}
+
+
 void opd_proc_cleanup(void)
 {
 	opd_for_each_proc(opd_delete_proc);
+}
+
+
+/**
+ * opd_age_proc - age a struct opd_proc
+ * @param  proc proc to age
+ *
+ * age dead proc in such way if a proc doesn't receive any samples
+ * between two age_proc the opd_proc struct is deleted
+ */
+static void opd_age_proc(struct opd_proc * proc)
+{
+	// delay death whilst its still being accessed
+	if (proc->dead) {
+		proc->dead += proc->accessed;
+		proc->accessed = 0;
+		if (--proc->dead == 0)
+			opd_delete_proc(proc);
+	}
+}
+
+
+void opd_age_procs(void)
+{
+	opd_for_each_proc(opd_age_proc);
 }
 
 

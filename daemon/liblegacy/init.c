@@ -301,7 +301,7 @@ static void opd_alarm(void)
 {
 	opd_sync_samples_files();
 
-	opd_for_each_proc(opd_age_proc);
+	opd_age_procs();
 
 	opd_print_24_stats();
 

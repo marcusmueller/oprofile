@@ -75,7 +75,7 @@ static struct poptOption options[] = {
 	{ "separate-kernel", 0, POPT_ARG_INT, &separate_kernel, 0, "separate kernel samples for each distinct application", "[0|1]", },
 	{ "separate-thread", 0, POPT_ARG_INT, &separate_thread, 0, "thread-profiling mode", "[0|1]" },
 	{ "separate-cpu", 0, POPT_ARG_INT, &separate_cpu, 0, "separate samples for each CPU", "[0|1]" },
-	{ "events", 'e', POPT_ARG_STRING, &events, 0, "events list", "[0|1]" },
+	{ "events", 'e', POPT_ARG_STRING, &events, 0, "events list", "[events]" },
 	{ "version", 'v', POPT_ARG_NONE, &showvers, 0, "show version", NULL, },
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "be verbose in log file", NULL, },
 	POPT_AUTOHELP
@@ -241,7 +241,7 @@ static void opd_setup_signals(void)
 	}
 
 	/* clean up every 10 minutes */
-	alarm(60*10);
+	alarm(60 * 10);
 }
 
 

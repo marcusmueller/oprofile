@@ -33,9 +33,6 @@ struct opd_proc {
 	struct list_head next;
 };
 
-typedef void (*opd_proc_cb)(struct opd_proc *);
-void opd_for_each_proc(opd_proc_cb proccb);
-
 void opd_init_proc(void);
 void opd_put_sample(struct op_sample const * sample);
 void opd_put_image_sample(struct opd_image * image, unsigned long offset, u32 counter);
@@ -46,7 +43,7 @@ struct opd_proc * opd_get_proc(pid_t tid, pid_t tgid);
 struct opd_proc * opd_new_proc(pid_t tid, pid_t tgid);
 
 int opd_get_nr_procs(void);
-void opd_age_proc(struct opd_proc * proc);
+void opd_age_procs(void);
 void opd_proc_cleanup(void);
 void opd_clear_kernel_mapping(void);
 
