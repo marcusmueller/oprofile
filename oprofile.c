@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.31 2000/09/04 22:53:40 moz Exp $ */
+/* $Id: oprofile.c,v 1.32 2000/09/05 07:18:01 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -628,6 +628,9 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	uint i;
 	uint num;
 	ssize_t max;
+
+	if (!capable(CAP_SYS_PTRACE))
+		return -EPERM;
 
 	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
 		case 2: return oprof_map_read(buf,count,ppos);
