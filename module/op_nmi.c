@@ -316,19 +316,19 @@ static int pmc_init(void)
 	switch (sysctl.cpu_type) {
 		case CPU_ATHLON:
 			eventsel_msr[0] = MSR_K7_PERFCTL0;
-			eventsel_msr[1] = MSR_K7_PERFCTL0 + 1;
-			eventsel_msr[2] = MSR_K7_PERFCTL0 + 2;
-			eventsel_msr[3] = MSR_K7_PERFCTL0 + 3;
+			eventsel_msr[1] = MSR_K7_PERFCTL1;
+			eventsel_msr[2] = MSR_K7_PERFCTL2;
+			eventsel_msr[3] = MSR_K7_PERFCTL3;
 			perfctr_msr[0] = MSR_K7_PERFCTR0;
-			perfctr_msr[1] = MSR_K7_PERFCTR0 + 1;
-			perfctr_msr[2] = MSR_K7_PERFCTR0 + 2;
-			perfctr_msr[3] = MSR_K7_PERFCTR0 + 3;
+			perfctr_msr[1] = MSR_K7_PERFCTR1;
+			perfctr_msr[2] = MSR_K7_PERFCTR2;
+			perfctr_msr[3] = MSR_K7_PERFCTR3;
 			break;
 		default:
 			eventsel_msr[0] = MSR_P6_EVNTSEL0;
-			eventsel_msr[1] = MSR_P6_EVNTSEL0 + 1;
+			eventsel_msr[1] = MSR_P6_EVNTSEL1;
 			perfctr_msr[0] = MSR_P6_PERFCTR0;
-			perfctr_msr[1] = MSR_P6_PERFCTR0 + 1;
+			perfctr_msr[1] = MSR_P6_PERFCTR1;
 			break;
 	}
 

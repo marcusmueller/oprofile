@@ -1,5 +1,11 @@
 2002-01-30  Philippe Elie  <ph_e@club-internet.fr>
 
+	* module/compat.h:
+	* module/op_nmi.c: re-add explicit constant for all MSR_
+	  constants.
+
+2002-01-30  Philippe Elie  <ph_e@club-internet.fr>
+
 	* configure.in:
 	* doc/oprofile.sgml:
 	* module/compat22.h: remove support for kernel version
