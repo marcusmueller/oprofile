@@ -1,5 +1,5 @@
 /**
- * @file cverb.h
+ * @file cverb.cpp
  * verbose output stream
  *
  * @remark Copyright 2002 OProfile authors

@@ -54,7 +54,7 @@ void opd_init_hash_map(void)
  * opd_init_maps - initialise map structure for a process
  * @param proc  process to work on
  *
- * Initialise the mapping info structure for process @proc.
+ * Initialise the mapping info structure for process proc.
  */
 void opd_init_maps(struct opd_proc * proc)
 {

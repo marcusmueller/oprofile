@@ -140,6 +140,7 @@ void db_open(db_tree_t * tree, char const * filename, enum db_rw rw,
 			exit(EXIT_FAILURE);
 		}
 	}
+
 }
 
 void db_close(db_tree_t * tree)

@@ -90,7 +90,7 @@ void opd_age_procs(void)
  * opd_app_name - get the application name or %NULL if irrelevant
  * @param proc  the process to examine
  *
- * Returns the app_name for the given @proc or %NULL if
+ * Returns the app_name for the given proc or %NULL if
  * it does not exist any mapping for this proc (which is
  * true for the first mapping at exec time)
  */
@@ -113,7 +113,7 @@ char const * opd_app_name(struct opd_proc const * proc)
  * @param next  next list entry
  *
  * Allocate and initialise a process structure and insert
- * it into the the list point specified by @prev and @next.
+ * it into the the list point specified by prev and next.
  */
 static struct opd_proc * opd_new_proc(struct opd_proc * prev, struct opd_proc * next)
 {
@@ -146,7 +146,7 @@ inline static uint proc_hash(u16 pid)
  * opd_delete_proc - delete a process
  * @param proc  process to delete
  *
- * Remove the process @proc from the process list and free
+ * Remove the process proc from the process list and free
  * the associated structures.
  */
 static void opd_delete_proc(struct opd_proc * proc)
@@ -216,7 +216,7 @@ inline static void opd_do_proc_lru(struct opd_proc ** head, struct opd_proc * pr
  * opd_get_proc - get process from process list
  * @param pid  pid to search for
  *
- * A process with pid @pid is searched on the process list,
+ * A process with pid pid is searched on the process list,
  * maintaining LRU order. If it is not found, %NULL is returned,
  * otherwise the process structure is returned.
  */
@@ -263,11 +263,11 @@ inline static void verb_show_sample(unsigned long offset, struct opd_map * map,
  * @param count  raw counter value
  * @param counter  counter number
  *
- * Add to the count stored at position @offset in the
+ * Add to the count stored at position offset in the
  * image file. Overflow pins the count at the maximum
  * value.
  *
- * @count is the raw value passed from the kernel.
+ * count is the raw value passed from the kernel.
  */
 void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 			  u32 count, u32 counter)

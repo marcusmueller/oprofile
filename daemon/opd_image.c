@@ -218,11 +218,11 @@ void opd_check_image_mtime(struct opd_image * image)
  * @param offset  (file) offset to write to
  * @param counter counter number
  *
- * Add to the count stored at position @offset in the
+ * Add to the count stored at position offset in the
  * image file. Overflow pins the count at the maximum
  * value.
  *
- * @count is the raw value passed from the kernel.
+ * count is the raw value passed from the kernel.
  */
 void opd_put_image_sample(struct opd_image * image,
 	unsigned long offset, int counter)

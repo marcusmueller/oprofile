@@ -113,11 +113,11 @@ static struct opd_module * new_module(char * name,
  * opd_get_module - get module structure
  * @param name  name of module image
  *
- * Find the module structure for module image @name.
+ * Find the module structure for module image name.
  * If it could not be found, add the module to
  * the global module structure.
  *
- * If an existing module is found, @name is free()d.
+ * If an existing module is found, name is free()d.
  * Otherwise it must be freed when the module structure
  * is removed (i.e. in opd_clear_module_info()).
  */
@@ -303,7 +303,7 @@ out:
  * @param eip  EIP value
  *
  * find in the modules container the module which
- * contain this @eip return %NULL if not found.
+ * contain this eip return %NULL if not found.
  * caller must check than the module image is valid
  */
 static struct opd_module * opd_find_module_by_eip(unsigned long eip)
@@ -324,7 +324,7 @@ static struct opd_module * opd_find_module_by_eip(unsigned long eip)
  * @param eip  EIP value
  * @param count  count value of sample
  *
- * Process a sample in module address space. The sample @eip
+ * Process a sample in module address space. The sample eip
  * is matched against module information. If the search was
  * successful, the sample is output to the relevant file.
  *
@@ -396,7 +396,7 @@ void opd_handle_kernel_sample(unsigned long eip, int counter)
  * opd_eip_is_kernel - is the sample from kernel/module space
  * @param eip  EIP value
  *
- * Returns %1 if @eip is in the address space starting at
+ * Returns %1 if eip is in the address space starting at
  * kernel_start, %0 otherwise.
  */
 int opd_eip_is_kernel(unsigned long eip)

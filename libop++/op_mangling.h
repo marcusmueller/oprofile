@@ -38,14 +38,14 @@ std::string demangle_filename(std::string const & samples_filename);
 
 /**
  * extract_app_name - extract the mangled name of an application
- * @name the mangled name
+ * @param name the mangled name
+ * @param lib_name where to store shared lib name if relevant
  *
- * if @name is: }usr}sbin}syslogd}}}lib}libc-2.1.2.so (shared lib)
- * will return }usr}sbin}syslogd and }lib}libc-2.1.2.so in
- * @lib_name
+ * if name is: }usr}sbin}syslogd}}}lib}libc-2.1.2.so (shared lib)
+ * will return }usr}sbin}syslogd and }lib}libc-2.1.2.so in lib_name
  *
- * if @name is: }bin}bash (application)
- *  will return }bin}bash and an empty name in @lib_name
+ * if name is: }bin}bash (application)
+ *  will return }bin}bash and an empty name in lib_name
  */
 std::string extract_app_name(std::string const & name, std::string & lib_name);
 

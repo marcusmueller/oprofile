@@ -1,5 +1,5 @@
 /**
- * @file samples_file.h
+ * @file samples_file.cpp
  * Encapsulation for samples files
  *
  * @remark Copyright 2002 OProfile authors
