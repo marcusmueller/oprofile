@@ -1,0 +1,5 @@
+.deps
+Makefile.in
+Makefile
+file_tests
+string_tests

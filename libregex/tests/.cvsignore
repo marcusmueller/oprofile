@@ -1,4 +1,4 @@
 .deps
-regexp_test
+regex_test
 Makefile
 Makefile.in

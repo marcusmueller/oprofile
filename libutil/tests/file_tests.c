@@ -15,7 +15,7 @@
 #include <string.h>
 
 static char * tests[][2] = {
-	{ "/foo/bar/../quux", "/foo/quux" },
+	{ "/usr/bin/../bin", "/usr/bin" },
 	{ "/../foo/bar/", "/foo/bar" },
 	{ "/../../foo/bar/", "/foo/bar" },
 	{ "/../../foo/bar/.", "/foo/bar" },
@@ -24,19 +24,19 @@ static char * tests[][2] = {
 	{ "/foo/././bar", "/foo/bar" },
 	{ "/foo///", "/foo" },
 	{ "../", "/" },
-	{ "./", "/fakebase" },
+	{ "./", "/usr" },
 	{ "./../", "/" },
-	{ "foo/../bar/../" , "/fakebase" },
-	{ "../../../../../" "/" },
+	{ "bin/../bin/../" , "/usr" },
+	{ "../../../../../", "/" },
 	{ NULL, NULL },
 };
 
-int main()
+int main(void)
 {
 	size_t i = 0;
 
 	while (tests[i][0]) {
-		char * res = op_relative_to_absolute_path(tests[i][0], "/fakebase");
+		char * res = op_relative_to_absolute_path(tests[i][0], "/usr");
 		if (!res) {
 			fprintf(stderr, "NULL return for %s\n", tests[i][0]);
 			exit(EXIT_FAILURE);
