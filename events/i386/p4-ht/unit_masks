@@ -7,7 +7,9 @@ name:branch_retired type:bitmask default:0x0c
 	0x08 branch taken mispredicted
 name:mispred_branch_retired type:bitmask default:0x01
 	0x01 retired instruction is non-bogus
-name:bpu_fetch_request type:bitmask default:0x00
+# FIXME: 0 count nothing, 0xff count more than 0x01, docs says it's a bitmask:
+# something wrong in documentation ?
+name:bpu_fetch_request type:bitmask default:0x01
 	0x01 trace cache lookup miss
 name:itlb_reference type:bitmask default:0x07
 	0x01 ITLB hit
@@ -19,6 +21,8 @@ name:memory_cancel type:bitmask default:0x08
 name:memory_complete type:bitmask default:0x03
 	0x01 load split completed, excluding UC/WC loads
 	0x02 any split stores completed
+	0x04 uncacheable load split completed
+	0x08 uncacheable store split complete
 name:load_port_replay type:mandatory default:0x02
 	0x02 split load
 name:store_port_replay type:mandatory default:0x02

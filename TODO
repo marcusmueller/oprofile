@@ -9,11 +9,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o print "0" not "0.0e+00". should we consider reworking opstack output
 format? make the headers more explanative
  o TRACE_END is no longer sent by the driver, keep it a bit for compatibility
-
- o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.
- o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
-  outside .text section get a wrong offset
-
  o callgraph_container.cpp: the inner loop in add() is very fragile!
  o We must define and choose the meaning of output
  o recursive call count are wrong. FIXME: unsure but now I think it comes from
@@ -34,10 +29,14 @@ format? make the headers more explanative
   cg on it) and  used to emulate the call count field in gprof. I think this is
   a after 1.0 thing but event aliases must be specified in a way allowing such
   extension
+ o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.
+ o op_bfd.cpp and separate debuginfo file: get_symbols_from_file() symbols
+  outside .text section get a wrong offset
 
 Before 1.0 little stuff
 -----------------------
 
+ o opcontrol --reset should avoid to reload the module if it's unloaded
  o zwane problem with wrong text offset showed an interesting problem: if
   op_bfd.cpp get any symbol below text offset for vmlinux or a module then
   profile_t::sample_range() return a pair of iterator with first > second

@@ -6,7 +6,7 @@ event:0x02 counters:3 um:mispred_branch_retired minimum:6000 name:MISPRED_BRANCH
 event:0x04 counters:0 um:bpu_fetch_request minimum:6000 name:BPU_FETCH_REQUEST : instruction fetch requests from the branch predict unit
 event:0x05 counters:0 um:itlb_reference minimum:6000 name:ITLB_REFERENCE : translations using the instruction translation lookaside buffer
 event:0x06 counters:2 um:memory_cancel minimum:6000 name:MEMORY_CANCEL : cancelled requesets in data cache address control unit
-event:0x07 counters:2 um:memory_complete minimum:6000 name:MEMORY_COMPLETE : completed load split, store split, uncacheable split, uncacheable load
+event:0x07 counters:2 um:memory_complete minimum:6000 name:MEMORY_COMPLETE : completed split
 event:0x08 counters:2 um:load_port_replay minimum:6000 name:LOAD_PORT_REPLAY : replayed events at the load port
 event:0x09 counters:2 um:store_port_replay minimum:6000 name:STORE_PORT_REPLAY : replayed events at the store port
 event:0x0a counters:0 um:mob_load_replay minimum:6000 name:MOB_LOAD_REPLAY : replayed loads from the memory order buffer

@@ -1,6 +1,13 @@
+2004-02-16  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* events/i386/p4/events:
+	* events/i386/p4/unit_masks:
+	* events/i386/p4-ht/events:
+	* events/i386/p4-ht/unit_masks: fix MEMORY_COMPLETE unit mask
+
 2004-02-15  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* libpp/profile.cpp:
+	* libpp/profile.cpp: samples_range() throw if start > end
 
 2004-02-15  Philippe Elie  <phil.el@wanadoo.fr>
 
