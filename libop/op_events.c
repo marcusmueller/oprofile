@@ -93,7 +93,93 @@ static struct op_unit_mask const um_moesi =
 	    {0x1, "(I)nvalid cache state"},
 	    {0x1f, "all MOESI cache state"} } };
 
-/* Hammer HT events */
+/* AMD Hammer events */
+static struct op_unit_mask const um_fpu_ops = 
+	{ 6, utm_exclusive, 0x0, 
+	  { {0x0, "Add pipe ops excluding junk ops"},
+	    {0x1, "Multiply pipe ops excluding junk ops"},
+	    {0x2, "Store pipe ops excluding junk ops"},
+	    {0x3, "Add pipe junk ops"},
+	    {0x4, "Multiple pipe ops"},
+	    {0x5, "Store pipe junk ops"} } };
+
+static struct op_unit_mask const um_segregload = 
+	{ 7, utm_exclusive, 0x0, 
+	  { {0x0, "ES register"},
+	    {0x1, "CS register"},
+	    {0x2, "SS register"},
+	    {0x3, "DS register"},
+	    {0x4, "FS register"},
+		{0x5, "GS register"},
+	    {0x6, "HS register"} } };
+
+static struct op_unit_mask const um_ecc =
+	{ 2, utm_exclusive, 0x0,
+	  { {0x0, "Scrubber error"},
+	    {0x1, "Piggyback scrubber errors"} } };
+
+static struct op_unit_mask const um_prefetch =
+	{ 3, utm_exclusive, 0x0,
+	  { {0x0, "Load"},
+	    {0x1, "Store"},
+	    {0x2, "NTA"} } };
+
+static struct op_unit_mask const um_fpu_instr = 
+	{ 4, utm_exclusive, 0x0, 
+	  { {0x0, "x87 instructions"},
+	    {0x1, "Combined MMX & 3DNow instructions"},
+	    {0x2, "Combined packed SSE and SSE2 instructions"},
+	    {0x3, "Combined packed scalar SSE and SSE2 instructions"} } };
+
+static struct op_unit_mask const um_fpu_fastpath = 
+	{ 3, utm_exclusive, 0x0, 
+	  { {0x0, "With low op in position 0"},
+	    {0x1, "With low op in position 1"},
+	    {0x2, "With low op in position 2"} } };
+
+static struct op_unit_mask const um_fpu_exceptions = 
+	{ 4, utm_exclusive, 0x0, 
+	  { {0x0, "x87 reclass microfaults"},
+	    {0x1, "SSE retype microfaults"},
+	    {0x2, "SSE reclass microfaults"},
+	    {0x3, "SSE and x87 microtraps"} } };
+
+static struct op_unit_mask const um_page_access = 
+	{ 3, utm_exclusive, 0x0, 
+	  { {0x0, "Page hit"},
+	    {0x1, "Page miss"},
+	    {0x2, "Page conflict"} } };
+
+static struct op_unit_mask const um_turnaround = 
+	{ 3, utm_exclusive, 0x0, 
+	  { {0x0, "DIMM turnaround"},
+	    {0x1, "Read to write turnaround"},
+	    {0x2, "Write to read turnaround"} } };
+
+static struct op_unit_mask const um_saturation = 
+	{ 4, utm_exclusive, 0x0, 
+	  { {0x0, "Memory controller high priority bypass"},
+	    {0x1, "Memory controller low priority bypass"},
+	    {0x2, "DRAM controller interface bypass"},
+	    {0x3, "DRAM controlller queue bypass"} } };
+
+static struct op_unit_mask const um_sizecmds = 
+	{ 7, utm_exclusive, 0x0, 
+	  { {0x0, "NonPostWrSzByte"},
+	    {0x1, "NonPostWrSzDword"},
+	    {0x2, "PostWrSzByte"},
+	    {0x3, "PostWrSzDword"},
+	    {0x4, "RdSzByte"},
+	    {0x5, "RdSzDword"},
+	    {0x6, "RdModWr"} } };
+
+static struct op_unit_mask const um_probe = 
+	{ 4, utm_exclusive, 0x0, 
+	  { {0x0, "Probe miss"},
+	    {0x1, "Probe hit"},
+	    {0x2, "Probe hit dirty without memory cancel"},
+	    {0x3, "Probe hit dirty with memory cancel"} } };
+
 static struct op_unit_mask const um_ht =
 	{ 4, utm_exclusive, 0x7,
 	  { {0x0, "Command sent"},
@@ -635,13 +721,13 @@ struct op_event const op_events[] = {
     "Number of taken hardware interrupts", 10,},
 
   /* K8 events */
-  { CTR_ALL, OP_HAMMER, 0x00, &um_moesi, "DISPATCHED_FPU_OPS",
+  { CTR_ALL, OP_HAMMER, 0x00, &um_fpu_ops, "DISPATCHED_FPU_OPS",
     "Dispatched FPU ops", 500,}, 
   { CTR_ALL, OP_HAMMER, 0x01, &um_empty, "NO_FPU_OPS",
     "Cycles with no FPU ops retured", 500,},
   { CTR_ALL, OP_HAMMER, 0x02, &um_empty, "FAST_FPU_OPS",
     "Dispatched FPU ops that use the fast flag interface", 500, },
-  { CTR_ALL, OP_HAMMER, 0x20, &um_moesi, "SEG_REG_LOAD",
+  { CTR_ALL, OP_HAMMER, 0x20, &um_segregload, "SEG_REG_LOAD",
     "Segment register load", 500,},
   { CTR_ALL, OP_HAMMER, 0x21, &um_empty, "SELF_MODIFY_RESNYC",
     "Microarchitectural resync caused by self modifying code", 500,},
@@ -661,9 +747,9 @@ struct op_event const op_events[] = {
     "Microarchitectural late cancel of an access", 500,},
   { CTR_ALL, OP_HAMMER, 0x49, &um_empty, "ACCESS_CANCEL_EARLY",
     "Microarchitectural early cancel of an access", 500,},
-  { CTR_ALL, OP_HAMMER, 0x4A, &um_moesi, "ECC_BIT_ERR",
+  { CTR_ALL, OP_HAMMER, 0x4A, &um_ecc, "ECC_BIT_ERR",
     "One bit ECC error recorded by scrubber", 500,},
-  { CTR_ALL, OP_HAMMER, 0x4B, &um_moesi, "DISPATCHED_PRE_INSTRS",
+  { CTR_ALL, OP_HAMMER, 0x4B, &um_prefetch, "DISPATCHED_PRE_INSTRS",
     "Dispatched prefetch instructions", 500,},
   { CTR_ALL, OP_HAMMER, 0x7D, &um_moesi, "BU_INT_L2_REQ",
     "Internal L2 request", 500,},
@@ -689,9 +775,9 @@ struct op_event const op_events[] = {
     "Retired near returns mispredicted", 500,},
   { CTR_ALL, OP_HAMMER, 0xca, &um_empty, "RETIRED_BRANCH_MISCOMPARE",
     "Returned taken branches mispredicted due to address miscompare", 500,},
-  { CTR_ALL, OP_HAMMER, 0xcb, &um_moesi, "RETIRED_FPU_INSTRS",
+  { CTR_ALL, OP_HAMMER, 0xcb, &um_fpu_instr, "RETIRED_FPU_INSTRS",
     "Retired FPU instructions", 500,},
-  { CTR_ALL, OP_HAMMER, 0xcc, &um_moesi, "RETIRED_FASTPATH_INSTRS",
+  { CTR_ALL, OP_HAMMER, 0xcc, &um_fpu_fastpath, "RETIRED_FASTPATH_INSTRS",
     "Retired fastpath double op instructions", 500,},
   { CTR_ALL, OP_HAMMER, 0xd0, &um_empty, "DECODER_EMPTY",
     "Nothing to dispatch (decoder empty)", 500,},
@@ -715,7 +801,7 @@ struct op_event const op_events[] = {
     "Dispatch stall when waiting for all to be quiet", 500,},
   { CTR_ALL, OP_HAMMER, 0xda, &um_empty, "DISPATCH_STALL_PENDING",
     "Dispatch stall when far control transfer or resync branch is pending", 500,},
-  { CTR_ALL, OP_HAMMER, 0xdb, &um_moesi, "FPU_EXCEPTIONS",
+  { CTR_ALL, OP_HAMMER, 0xdb, &um_fpu_exceptions, "FPU_EXCEPTIONS",
     "FPU exceptions", 500,},
   { CTR_ALL, OP_HAMMER, 0xdc, &um_empty, "DR0_BREAKPOINTS",
     "Number of breakpoints for DR0", 500,},
@@ -725,19 +811,19 @@ struct op_event const op_events[] = {
     "Number of breakpoints for DR2", 500,},
   { CTR_ALL, OP_HAMMER, 0xdf, &um_empty, "DR3_BREAKPOINTS",
     "Number of breakpoints for DR3", 500,},
-  { CTR_ALL, OP_HAMMER, 0xe0, &um_moesi, "MEM_PAGE_ACCESS",
+  { CTR_ALL, OP_HAMMER, 0xe0, &um_page_access, "MEM_PAGE_ACCESS",
     "Memory controller page access", 500,},
   { CTR_ALL, OP_HAMMER, 0xe1, &um_empty, "MEM_PAGE_TBL_OVERFLOW",
     "Memory controller page table overlow", 500,},
   { CTR_ALL, OP_HAMMER, 0xe2, &um_empty, "DRAM_SLOTS_MISSED",
     "Memory controller DRAM command slots missed in MemClks", 500,},
-  { CTR_ALL, OP_HAMMER, 0xe3, &um_moesi, "MEM_TURNAROUND",
+  { CTR_ALL, OP_HAMMER, 0xe3, &um_turnaround, "MEM_TURNAROUND",
     "Memory controller turnaround", 500,},
-  { CTR_ALL, OP_HAMMER, 0xe4, &um_moesi, "MEM_BYPASS_SAT",
+  { CTR_ALL, OP_HAMMER, 0xe4, &um_saturation, "MEM_BYPASS_SAT",
     "Memory controller bypass saturation", 500,},
-  { CTR_ALL, OP_HAMMER, 0xeb, &um_moesi, "SIZED_COMMANDS",
+  { CTR_ALL, OP_HAMMER, 0xeb, &um_sizecmds, "SIZED_COMMANDS",
     "Sized Commands", 500,},
-  { CTR_ALL, OP_HAMMER, 0xec, &um_moesi, "PROBE_RESULT",
+  { CTR_ALL, OP_HAMMER, 0xec, &um_probe, "PROBE_RESULT",
     "Probe Result", 500,},
   { CTR_ALL, OP_HAMMER, 0xf6, &um_ht, "HYPERTRANSPORT_BUS0_WIDTH",
     "HyperTransport (tm) bus 0 bandwidth", 500,},
