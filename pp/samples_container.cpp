@@ -20,7 +20,7 @@
 
 #include "file_manip.h"
 
-#include "demangle_symbol.h"
+//#include "demangle_symbol.h"
 
 using std::string;
 using std::cout;
@@ -77,6 +77,16 @@ struct less_symbol_entry_by_samples_nr {
 	size_t index;
 };
 
+struct equal_symbol_by_name {
+	equal_symbol_by_name(string const & name_) : name(name_) {}
+
+	bool operator()(const symbol_entry & entry) const {
+		return name == entry.name;
+	}
+
+	string name;
+};
+
 //---------------------------------------------------------------------------
 // Functors used as predicate for filename::linenr less than comparison.
 struct less_by_file_loc {
@@ -99,6 +109,7 @@ class symbol_container_imp_t {
 	const symbol_entry & operator[](symbol_index_t index) const;
 	void push_back(const symbol_entry &);
 	const symbol_entry * find(string filename, size_t linenr) const;
+	const symbol_entry * find(string name) const;
 	const symbol_entry * find_by_vma(bfd_vma vma) const;
 
 	// get a vector of symbols sorted by increased count.
@@ -153,6 +164,19 @@ symbol_container_imp_t::find(string filename, size_t linenr) const
 
 	if (it != symbol_entry_by_file_loc.end())
 		return *it;
+
+	return 0;
+}
+
+const symbol_entry *
+symbol_container_imp_t::find(string name) const
+{
+	vector<symbol_entry>::const_iterator it =
+		std::find_if(symbols.begin(), symbols.end(), 
+			  equal_symbol_by_name(name));
+
+	if (it != symbols.end() && it->name == name)
+		return &(*it);
 
 	return 0;
 }
@@ -332,7 +356,6 @@ void sample_container_imp_t::flush_input_counter() const
 
 samples_container_t::samples_container_t(bool add_zero_samples_symbols_,
 					 OutSymbFlag flags_,
-					 bool add_shared_libs_, 
 					 int counter_mask_)
 	:
 	symbols(new symbol_container_imp_t),
@@ -340,7 +363,6 @@ samples_container_t::samples_container_t(bool add_zero_samples_symbols_,
 	nr_counters(static_cast<uint>(-1)),
 	add_zero_samples_symbols(add_zero_samples_symbols_),
 	flags(flags_),
-	add_shared_lib(add_shared_libs_),
 	counter_mask(counter_mask_)
 {
 }
@@ -357,39 +379,6 @@ samples_container_t::~samples_container_t()
 //  the samples_by_file_loc member var is correctly setup.
 void samples_container_t::
 add(const opp_samples_files & samples_files, const op_bfd & abfd)
-{
-	do_add(samples_files, abfd, add_zero_samples_symbols);
-
-	if (!add_shared_lib)
-		return;
- 
-	string const dir = dirname(samples_files.sample_filename);
-	string name = basename(samples_files.sample_filename);
- 
-	list<string> file_list;
- 
-	get_sample_file_list(file_list, dir, name + "}}}*");
-
-	list<string>::const_iterator it;
-	for (it = file_list.begin() ; it != file_list.end(); ++it) {
-		string lib_name;
-		extract_app_name(*it, lib_name);
-
-		opp_samples_files samples_files(dir + "/" + *it, counter_mask);
-		op_bfd abfd(samples_files, demangle_filename(lib_name));
-
-		// TODO: check if third params must be add_zero_samples_symbols
-		do_add(samples_files, abfd, false);
-	}
-}
-
-// Post condition:
-//  the symbols/samples are sorted by increasing vma.
-//  the range of sample_entry inside each symbol entry are valid
-//  the samples_by_file_loc member var is correctly setup.
-void samples_container_t::do_add(const opp_samples_files & samples_files,
-				 const op_bfd & abfd, 
-				 bool add_zero_samples_symbols)
 {
 	// paranoiad checking
 	if (nr_counters != static_cast<uint>(-1) && 
@@ -420,8 +409,9 @@ void samples_container_t::do_add(const opp_samples_files & samples_files,
 		counter += symb_entry.sample.counter;
 
 		// FIXME - kill char * !!!
-		char const * symname = abfd.syms[i].name();
-		symb_entry.name = symname ? demangle_symbol(symname) : "";
+//		char const * symname = abfd.syms[i].name();
+//		symb_entry.name = symname ? demangle_symbol(symname) : "";
+		symb_entry.name = abfd.syms[i].name();
 
 		if ((flags & (osf_linenr_info | osf_short_linenr_info)) != 0 &&
 		    abfd.get_linenr(i, start, filename, linenr)) {
@@ -491,6 +481,10 @@ const symbol_entry* samples_container_t::find_symbol(const std::string & filenam
 						     size_t linenr) const
 {
 	return symbols->find(filename, linenr);
+}
+
+const symbol_entry* samples_container_t::find_symbol(std::string const & name) const {
+	return symbols->find(name);
 }
 
 const sample_entry * samples_container_t::find_sample(bfd_vma vma) const

@@ -36,6 +36,7 @@ using std::ostringstream;
 
 #include "samples_container.h"
 #include "oprofpp.h"
+#include "demangle_symbol.h"
 
 #include "child_reader.h"
 #include "string_manip.h"
@@ -272,7 +273,7 @@ output::output(int argc_, char const * argv_[],
 	OutSymbFlag flag = osf_details;
 	if (!assembly)
 		flag = static_cast<OutSymbFlag>(flag | osf_linenr_info);
-	samples = new samples_container_t(false, flag, false, counter_mask);
+	samples = new samples_container_t(false, flag, counter_mask);
 }
 
 output::~output()
@@ -376,7 +377,8 @@ void output::find_and_output_counter(ostream & out, const string & filename, siz
 {
 	const symbol_entry * symbol = samples->find_symbol(filename, linenr);
 	if (symbol)
-		output_counter(out, symbol->sample.counter, true, symbol->name);
+		output_counter(out, symbol->sample.counter, true,
+			       demangle_symbol(symbol->name));
 
 	counter_array_t counter;
 	if (samples->samples_count(counter, filename, linenr)) {

@@ -283,7 +283,7 @@ image_name::image_name(const string& samplefile_name)
 }
 
 /**
- * samples_file_exist - test for a samples file existence
+ * file_exist - test for a samples file existence
  * @param filename the base samples filename
  *
  * return true if filename exist
@@ -621,7 +621,7 @@ string check_image_name(const string & image_name,
  */
 static void output_symbols_count(map_t& files, int counter)
 {
-	samples_container_t samples(false, output_format_flags, false, counter);
+	samples_container_t samples(false, output_format_flags, counter);
 
 	map_t::iterator it_f;
 	for (it_f = files.begin() ; it_f != files.end() ; ++it_f) {

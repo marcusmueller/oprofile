@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <sstream>
 #include <list>
+#include <fstream>
 
 #include "version.h"
 #include "oprofpp.h"
@@ -98,6 +99,10 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
 
 	if (output_linenr_info && !list_all_symbols_details && !symbol && !list_symbols)
 		quit_error(optcon, "oprofpp: cannot list debug info without -L or -s option.\n");
+
+	if (show_shared_libs && (symbol || gproffile)) {
+		quit_error(optcon, "oprofpp: you cannot specify --show-shared-libs with --dump-gprof-file or --list-symbol output type.\n");
+	}
  
 	/* non-option file, either a sample or binary image file */
 	file = poptGetArg(optcon);
@@ -148,25 +153,34 @@ static void opp_get_options(int argc, const char **argv, string & image_file,
  *
  * Lists all the symbols in decreasing sample count order, to standard out.
  */
-static void do_list_symbols(op_bfd & abfd,
-			    const opp_samples_files & samples_files,
-			    size_t cmask, int sort_by_ctr)
+static void do_list_symbols(samples_container_t & samples,
+			    OutputSymbol & out, int sort_by_ctr)
 {
-	samples_container_t samples(true, output_format_flags,
-				    show_shared_libs, cmask);
-
-	samples.add(samples_files, abfd);
-
 	vector<const symbol_entry *> symbols;
 
 	samples.select_symbols(symbols, sort_by_ctr, 0.0, false);
 
-	OutputSymbol out(samples, cmask);
-
-	out.SetFlag(output_format_flags);
-	out.SetFlag(osf_show_all_counters);
-
 	out.Output(cout, symbols, true);
+}
+
+/**
+ * do_list_symbols_details - list all samples for all symbols.
+ * @param abfd the bfd object from where come the samples
+ * @param samples_files the samples files where are stored samples
+ * @param cmask on what counters we work
+ * @param sort_by_ctr the counter number used for sort purpose
+ *
+ * Lists all the samples for all the symbols, from the image specified by
+ * abfd, in increasing order of vma, to standard out.
+ */
+static void do_list_symbols_details(samples_container_t & samples,
+				    OutputSymbol & out, int sort_by_ctr)
+{
+	vector<const symbol_entry *> symbols;
+
+	samples.select_symbols(symbols, sort_by_ctr, 0.0, false, true);
+
+	out.Output(cout, symbols, false);
 }
  
 /**
@@ -179,35 +193,14 @@ static void do_list_symbols(op_bfd & abfd,
  * the samples for this symbol from the image 
  * specified by abfd.
  */
-static void do_list_symbol(op_bfd & abfd,
-			   const opp_samples_files & samples_files,
-			   size_t cmask)
+static void do_list_symbol(samples_container_t & samples, OutputSymbol & out)
 {
-	symbol_index_t i = abfd.symbol_index(symbol);
-	if (i == nil_symbol_index) {
-		cerr << "oprofpp: symbol \"" << symbol
-		     << "\" not found in image file.\n";
-		return;
-	}
-
-	output_format_flags = 
-	  static_cast<OutSymbFlag>(output_format_flags | osf_details | osf_show_all_counters);
-
-	samples_container_t samples(true, output_format_flags,
-				    false, cmask);
-
-	samples.add(samples_files, abfd);
-
-	const symbol_entry * symb = samples.find_symbol(abfd.syms[i].vma());
+	const symbol_entry * symb = samples.find_symbol(symbol);
 	if (symb == 0) {
 		cerr << "oprofpp: symbol \"" << symbol
 		     << "\" not found in samples container file.\n";
 		return;
 	}
-
-	OutputSymbol out(samples, cmask);
-
-	out.SetFlag(output_format_flags);
 
 	out.Output(cout, symb);
 }
@@ -304,39 +297,16 @@ static void do_dump_gprof(op_bfd & abfd,
 }
 
 /**
- * do_list_symbols_details - list all samples for all symbols.
- * @param abfd the bfd object from where come the samples
- * @param samples_files the samples files where are stored samples
- * @param cmask on what counters we work
- * @param sort_by_ctr the counter number used for sort purpose
+ * samples_file_exist - test for a samples file existence
+ * @param filename the base samples filename
  *
- * Lists all the samples for all the symbols, from the image specified by
- * abfd, in increasing order of vma, to standard out.
+ * return true if filename exist
  */
-static void do_list_symbols_details(op_bfd & abfd,
-				    const opp_samples_files & samples_files,
-				    size_t cmask, int sort_by_ctr)
+static bool file_exist(const std::string & filename)
 {
-	output_format_flags =
-	  static_cast<OutSymbFlag>(output_format_flags | osf_details);
+	ifstream in(filename.c_str());
 
-	samples_container_t samples(false, output_format_flags,
-				    show_shared_libs, cmask);
-
-	samples.add(samples_files, abfd);
-
-	vector<const symbol_entry *> symbols;
-
-	samples.select_symbols(symbols, sort_by_ctr, 0.0, false, true);
-
-	OutputSymbol out(samples, cmask);
-
-	out.SetFlag(output_format_flags);
-
-	// this flag are implicit for oprofpp -L
-	out.SetFlag(osf_show_all_counters);
-
-	out.Output(cout, symbols, false);
+	return in;
 }
 
 /**
@@ -347,23 +317,102 @@ int main(int argc, char const *argv[])
 	string image_file;
 	string sample_file;
 	int counter = 0;
+
 	opp_get_options(argc, argv, image_file, sample_file, counter);
 
-	opp_samples_files samples_files(sample_file, counter);
-	op_bfd abfd(samples_files, image_file);
+	if (gproffile) {
+		opp_samples_files samples_files(sample_file, counter);
+		op_bfd abfd(samples_files, image_file);
 
-	if (!gproffile)
-		samples_files.output_header();
+		do_dump_gprof(abfd, samples_files, sort_by_counter);
+		return 0;
+	}
+
+	bool add_zero_sample_symbols = list_all_symbols_details == 0;
+	output_format_flags = 
+		static_cast<OutSymbFlag>(output_format_flags | osf_show_all_counters);
+	if (symbol || list_all_symbols_details)
+		output_format_flags = 
+			static_cast<OutSymbFlag>(output_format_flags | osf_details);
+
+	/* create the file list of samples files we will use (w/o the
+	 * #counter_nr suffix) */
+	list<string> filelist;
+	if (show_shared_libs) {
+		string const dir = dirname(sample_file);
+		string const name = basename(sample_file);
+ 
+		get_sample_file_list(filelist, dir, name + "}}}*");
+	}
+
+	samples_container_t samples(add_zero_sample_symbols,
+				    output_format_flags, counter);
+
+	filelist.push_front(sample_file);
+
+	bool first_file = true;
+
+	list<string>::const_iterator it;
+	for (it = filelist.begin() ; it != filelist.end() ; ++it) {
+		string const dir = dirname(sample_file);
+		// the file list is created with /base_dir/* pattern but with
+		// the lazilly samples creation it is perfectly correct for one
+		// samples file belonging to counter 0 exist and not exist for
+		// counter 1, so we must filter them. It is also valid when
+		// profiling with --separate-samples to get samples from
+		// shared libs but to do not get samples for the app itself
+		int i;
+		for (i = 0 ; i < OP_MAX_COUNTERS ; ++i) {
+			if ((counter & (1 << i)) != 0) {
+				std::ostringstream s;
+				s << *it << '#' << i;
+				if (file_exist(s.str()) == true) {
+					break;
+				}
+			}
+		}
+
+		if (i < OP_MAX_COUNTERS) {
+			opp_samples_files samples_files(*it, counter);
+
+			// the first opened file is treated specially because
+			// user can specify the image name for this sample
+			// file on command line else must deduce the image
+			// name from the samples file name
+			if (it == filelist.begin()) {
+				op_bfd abfd(samples_files, image_file);
+
+				samples.add(samples_files, abfd);
+			} else {
+				string app_name;
+				string lib_name;
+				app_name = extract_app_name(*it, lib_name);
+				op_bfd abfd(samples_files, demangle_filename(lib_name));
+
+				samples.add(samples_files, abfd);
+			}
+
+			if (first_file == true) {
+				samples_files.output_header();
+				first_file = false;
+			}
+		}
+	}
+
+	if (first_file == true) {
+		cerr << "oprofpp: Cannot locate any samples file.\n";
+		exit(EXIT_FAILURE);
+	}
+
+	OutputSymbol out(samples, counter);
+	out.SetFlag(output_format_flags);
 
 	if (list_symbols)
-		do_list_symbols(abfd, samples_files, counter, sort_by_counter);
+		do_list_symbols(samples, out, sort_by_counter);
 	else if (symbol)
-		do_list_symbol(abfd, samples_files, counter);
-	else if (gproffile)
-		do_dump_gprof(abfd, samples_files, sort_by_counter);
+		do_list_symbol(samples, out);
 	else if (list_all_symbols_details)
-		do_list_symbols_details(abfd, samples_files,
-					counter, sort_by_counter);
+		do_list_symbols_details(samples, out, sort_by_counter);
 
 	return 0;
 }

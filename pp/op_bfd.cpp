@@ -41,7 +41,7 @@ op_bfd::op_bfd(opp_samples_files& samples, const std::string & filename)
 
 op_bfd::~op_bfd()
 {
-	delete bfd_syms;
+	delete [] bfd_syms;
 	bfd_close(ibfd);
 }
 

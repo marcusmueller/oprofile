@@ -21,7 +21,7 @@
 class counter_array_t;
 
 /** A class to store one samples file */
-struct samples_file_t : notcopyable
+struct samples_file_t /*:*/ noncopyable
 {
 	/**
 	 * samples_file_t - construct a samples_file_t object
@@ -99,7 +99,7 @@ struct samples_file_t : notcopyable
  
 /** Store multiple samples files belonging to the same image and the same
  * session can hold OP_MAX_COUNTERS samples files */
-struct opp_samples_files /* : notcopyable FIXME bug gcc 2.91 */ {
+struct opp_samples_files /*:*/  noncopyable {
 	/**
 	 * opp_samples_files - construct an opp_samples_files object
 	 * @param sample_file the base name of sample file

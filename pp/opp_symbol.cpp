@@ -16,6 +16,7 @@
 
 #include "opp_symbol.h"
 #include "samples_container.h"
+#include "demangle_symbol.h"
 
 using std::string;
 using std::cout;
@@ -366,7 +367,7 @@ string OutputSymbol::format_symb_name(const std::string & name,
 {
 	int const is_anon = name[0] == '?';
 
-	return is_anon ? string("(no symbol)") : name;
+	return is_anon ? string("(no symbol)") : demangle_symbol(name);
 }
 
 string OutputSymbol::format_image_name(const std::string &,

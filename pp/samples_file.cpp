@@ -20,8 +20,7 @@
 
 using std::string;
  
-opp_samples_files::opp_samples_files(string const & sample_file,
-	int counter_)
+opp_samples_files::opp_samples_files(string const & sample_file, int counter_)
 	:
 	nr_counters(2),
 	sample_filename(sample_file),

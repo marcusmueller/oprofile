@@ -1,3 +1,28 @@
+2002-05-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/utility.h: fix a copyright problem, work-around
+	  a (probable) gcc 2.91 bug.
+
+	* pp/op_bfd.cpp: valgrind exposed a delete problem.
+
+	* pp/op_time.cpp:
+	* pp/op_to_source.cpp:
+	* pp/oprofpp.cpp:
+	* pp/samples_container.cpp:
+	* pp/samples_container.h:
+	* pp/samples_container.cpp:
+	* pp/samples_container.h: change the handling of shared lib,
+	  we no longer allow samples_container_t to auto load related
+	  samples files belonging to a shared lib but we create at a higher
+	  level an explicit list of samples files : fix #555276
+
+
+	* pp/op_to_source.cpp:
+	* pp/sample_container.cpp:
+	* pp/opp_symbol.cpp: demangle symbol only when we output
+	  symbol name, not when we store symbol name in internal
+	  representation of symbol.
+
 2002-05-14  Cliff Woolley  <jwoolley@apache.org>
 
 	* gui/oprof_start.cpp: allow Qt3 compilation
@@ -12,7 +37,7 @@
 	* module/Makefile.in: fix #555304, a non-native compiler can
 	  fail to compile oprofile
 
-	* libutil/utility.h: class notcopyable
+	* libutil++/utility.h: class noncopyable
 	* pp/samples_file.h: use it
 
 2002-05-12  Philippe Elie  <phil.el@wanadoo.fr>

@@ -39,7 +39,7 @@ public:
 	 * @param counter_mask which counter we must record
 	 */
 	 samples_container_t(bool add_zero_samples_symbols, OutSymbFlag flags,
-			     bool add_shared_libs, int counter_mask);
+			     int counter_mask);
 	~samples_container_t();
 
 	/**
@@ -56,6 +56,8 @@ public:
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
 	const symbol_entry* find_symbol(bfd_vma vma) const;
+	/// Find a symbol from its name, return zero if no symbol found
+	const symbol_entry* find_symbol(std::string const & name) const;
 	/// Find a symbol from its filename, linenr, return zero if no symbol
 	/// at this location
 	const symbol_entry* find_symbol(const std::string & filename,
@@ -108,10 +110,6 @@ public:
 	/// you can call this *after* the first call to add()
 	uint get_nr_counters() const { return nr_counters; }
 private:
-	/// helper for add();
-	void do_add(const opp_samples_files & samples_files,
-		    const op_bfd & abfd,
-		    bool add_zero_samples_symbols);
 	/// helper for do_add()
 	void add_samples(const opp_samples_files& samples_files, 
 			 const op_bfd & abfd, symbol_index_t sym_index,
@@ -153,7 +151,6 @@ private:
 	/// parameters passed to ctor
 	bool add_zero_samples_symbols;
 	OutSymbFlag flags;
-	bool add_shared_lib;
 	int counter_mask;
 };
 
