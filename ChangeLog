@@ -1,3 +1,8 @@
+2001-10-12  Philippe Elie  <ph_e@club-internet.fr>
+
+	* gui/oprof_start_util.cpp: use select() rather non-blocking
+	  mode to read output from the child process
+
 2001-10-11  Philippe Elie  <ph_e@club-internet.fr>
 
 	* doc/oprofile.sgml

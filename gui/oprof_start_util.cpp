@@ -58,45 +58,50 @@ std::string const get_user_dir()
 }
 
 /**
- * fill_from_fd - output fd to a stream
- * @stream: the stream to output to
- * @fd: the fd to read from
+ * pipe_read - output fd to a stream
+ * @out: the stream to output from the stdout child
+ * @fd_out: the fd to read from
+ * @err: the stream to output from the stderr child
+ * @fd_err: the fd to read from
  *
  * Read from @fd until a read would block and write
  * the output to @stream.
  */
-static void fill_from_fd(std::ostream & stream, fd_t fd)
+static void pipe_read(std::ostream & out, fd_t fd_out, 
+		      std::ostream & err, fd_t fd_err)
 {
-	// FIXME: there might be a better way than this; suggestions welcome 
-	fd_t fd_out; 
-	char templ[] = "/tmp/op_XXXXXX";
-	char buf[4096]; 
-	
-	if ((fd_out = mkstemp(templ) == -1)) {
-		// *sigh*
-		//stream.set(ios_base::failbit); 
-		return;
-	}
+	ssize_t out_read, err_read;
 
-	ssize_t count;
-	fcntl(fd, F_SETFL, O_NONBLOCK);
-	while ((count = read(fd, buf, 4096)) != -1)
-		write(fd_out, buf, count);
+	fd_set read_fs;
 
-	close(fd_out);
+	FD_ZERO(&read_fs);
+	FD_SET(fd_out, &read_fs);
+	FD_SET(fd_err, &read_fs);
 
-	std::ifstream in(templ);
-	std::string str;
+	do {
+		err_read = out_read = 0;
 
-	while (getline(in, str))
-		stream << str;
- 
-	unlink(templ);
+		if (select(max(fd_out, fd_err) + 1, &read_fs, 0, 0, 0) >= 0) {
+			char buf[4096];
+
+			if (FD_ISSET(fd_out, &read_fs)) {
+				out_read = read(fd_out, buf, sizeof(buf));
+				if (out_read > 0)
+					out.write(buf, out_read);
+			}
+
+			if (FD_ISSET(fd_err, &read_fs)) {
+				err_read = read(fd_err, buf, sizeof(buf));
+				if (err_read > 0)
+					err.write(buf, err_read);
+			}
+		}
+	} while (err_read || out_read);
 }
 
  
 static int exec_command(std::string const & cmd, std::ostream & out, 
-		 std::ostream & err, std::vector<std::string> args)
+			std::ostream & err, std::vector<std::string> args)
 {
 	int pstdout[2];
 	int pstderr[2];
@@ -105,7 +110,7 @@ static int exec_command(std::string const & cmd, std::ostream & out,
 		err << "Couldn't create pipes !" << std::endl;
 		return -1;
 	}
- 
+
 	pid_t pid = fork();
 	switch (pid) {
 		case -1:
@@ -121,28 +126,38 @@ static int exec_command(std::string const & cmd, std::ostream & out,
 				argv[i++] = cit->c_str();
 			}
 			argv[i] = 0;
-		 
-			// child
+
+			// child: we can cleanup a few fd
+			close(pstdout[0]);
 			dup2(pstdout[1], STDOUT_FILENO);
+			close(pstdout[1]);
+			close(pstderr[0]);
 			dup2(pstderr[1], STDERR_FILENO);
+			close(pstderr[1]);
  
 			execvp(cmd.c_str(), (char * const *)argv);
- 
-			err << "Couldn't exec !" << std::endl;
+
+			// parent have redirect this, we must use cerr ?
+			cerr << "Couldn't exec !" << std::endl;
 			return -1;
 		}
 
 		default:;
+			close(pstdout[1]);
+			close(pstderr[1]);
+		  break;
 	}
 
 	// parent
- 
+
+	pipe_read(out, pstdout[0], err, pstderr[0]);
+
 	int ret;
 	waitpid(pid, &ret, 0);
- 
-	fill_from_fd(out, pstdout[0]);
-	fill_from_fd(err, pstderr[0]);
- 
+
+	close(pstdout[0]);
+	close(pstderr[0]);
+
 	return WEXITSTATUS(ret);
 }
 
@@ -374,10 +389,11 @@ std::string const format(std::string const & orig, uint const maxlen)
  */
 int do_exec_command(std::string const & cmd, std::vector<std::string> args)
 {
-	std::ostringstream out;
 	std::ostringstream err;
 
-	int ret = exec_command(cmd, out, err, args);
+	// For now I pass cout to see output if oprof_start is launched from
+	// a console. FIXME later we need a log windows?
+	int ret = exec_command(cmd, cout, err, args);
 
 	if (ret) {
 		std::string error = "Failed: \n" + err.str() + "\n";
