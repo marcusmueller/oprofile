@@ -1,6 +1,6 @@
 # Hammer events
 #
-event:0xc0 counters:0,1,2,3 um:zero minimum:3000 minimum:500 name:RETIRED_INSNS : Retired instructions (includes exceptions, interrupts, resyncs)
+event:0xc0 counters:0,1,2,3 um:zero minimum:3000 name:RETIRED_INSNS : Retired instructions (includes exceptions, interrupts, resyncs)
 event:0xc1 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_OPS : Retired Ops
 event:0x80 counters:0,1,2,3 um:zero minimum:500 name:ICACHE_FETCHES : Instruction cache fetches
 event:0x81 counters:0,1,2,3 um:zero minimum:500 name:ICACHE_MISSES : Instruction cache misses

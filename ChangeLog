@@ -1,3 +1,8 @@
+2003-03-13  Dave Jones <davej@codmeonkey.org.uk>
+
+	* events/x86-64.hammer.events: Remove duplicate minimum tag
+	  from RETIRED_INSNS counter.
+
 2003-03-11  John Levon  <levon@movementarian.org>
 
 	* module/ia64/op_pmu.c: include op_arch.h not arch.h
