@@ -35,6 +35,7 @@ namespace options {
 	int counter;
 	string samples_dir;
 	outsymbflag output_format_flags;
+	bool output_format_specified;
 	alt_filename_t alternate_filename;
 	vector<string> filename_filters;
 	bool verbose;
@@ -110,8 +111,11 @@ void get_options(int argc, char const * argv[])
 
 	options::samples_dir = handle_session_options();
 
+	output_format_specified = true;
+
 	if (output_format.empty()) {
 		output_format = "hvspni";
+		output_format_specified = false;
 	} else {
 		if (!list_symbols) {
 			cerr << "op_time: --output-format can be used only with --list-symbols." << endl;

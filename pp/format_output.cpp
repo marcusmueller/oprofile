@@ -44,6 +44,8 @@ static output_option const output_options[] = {
 	{ 'L', osf_short_linenr_info, "base name of source file and line nr" },
 	{ 'i', osf_image_name, "image name" },
 	{ 'I', osf_short_image_name, "base name of image name" },
+	{ 'e', osf_app_name, "owning application name" },
+	{ 'E', osf_short_app_name, "base name of owning application" },
 	{ 'h', osf_header, "header" },
 	{ 'd', osf_details, "detailed samples for each selected symbol" }
 };
@@ -116,6 +118,8 @@ formatter::formatter(profile_container_t const & profile_container_, int counter
 	format_map[osf_percent_cumulated] = field_description(10, "cum %-age", &formatter::format_cumulated_percent);
 	format_map[osf_percent_details] = field_description(12, "%-age", &formatter::format_percent_details);
 	format_map[osf_percent_cumulated_details] =field_description(10, "cum %-age", &formatter::format_cumulated_percent_details);
+	format_map[osf_app_name] = field_description(24, "app name", &formatter::format_app_name);
+	format_map[osf_short_app_name] = field_description(16, "app name", &formatter::format_short_app_name);
 }
 
  
@@ -353,6 +357,16 @@ string formatter::format_short_image_name(field_datum const & f)
 	return basename(f.sample.file_loc.image_name);
 }
 
+string formatter::format_app_name(field_datum const & f)
+{
+	return f.sample.file_loc.app_name;
+}
+
+ 
+string formatter::format_short_app_name(field_datum const & f)
+{
+	return basename(f.sample.file_loc.app_name);
+}
  
 string formatter::format_linenr_info(field_datum const & f)
 {

@@ -261,7 +261,8 @@ int main(int argc, char const *argv[])
 				    vector<string>());
 			profile.check_mtime(options::image_file);
 			profile.set_start_offset(abfd.get_start_offset());
-			samples.add(profile, abfd, options::symbol);
+			samples.add(profile, abfd, options::image_file,
+				    options::symbol);
 
 			profile.output_header();
 			first_file = false;
@@ -269,9 +270,11 @@ int main(int argc, char const *argv[])
 			string app_name;
 			string lib_name;
 			app_name = extract_app_name(file, lib_name);
+			app_name = demangle_filename(app_name);
 			lib_name = demangle_filename(lib_name);
 			add_samples(samples, file, options::counter_mask,
-			  lib_name, options::exclude_symbols, options::symbol);
+			  lib_name, app_name, options::exclude_symbols,
+				    options::symbol);
 		}
 	}
 

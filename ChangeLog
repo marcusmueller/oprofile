@@ -1,3 +1,21 @@
+2002-12-14  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/format_output.cpp:
+	* pp/format_output.h:
+	* pp/outsymbflag.h:
+	* pp/opp_symbol.h: : add an app_name field in file_location and
+	  formater options for this field.
+
+	* pp/profile_container.cpp:
+	* pp/profile_container.h: add_samples() add app_name parameter
+
+	* pp/oprofpp.cpp:
+	* pp/op_to_source.cpp:
+	* pp/op_time.cpp:
+	* pp/op_time_options.cpp:
+	* pp/op_time_options.h: honor app_name parameter. No user visible
+	  change except for op_time -l when profiling with --separate-samples
+
 2002-12-13  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: lots of fixes. Remove sysctl documentation

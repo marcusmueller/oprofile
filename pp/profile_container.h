@@ -49,6 +49,7 @@ public:
 	 * add() -  record symbols/samples in the underlined container
 	 * @param profile the samples files container
 	 * @param abfd the associated bfd object
+	 * @param app_name the owning application name of sample
 	 * @param symbol_name if non empty add will record samples only
 	 * for this symbol name else all samples will be recorded
 	 *
@@ -58,6 +59,7 @@ public:
 	 * sampling rate, same events etc.)
 	 */
 	void add(profile_t const & profile, op_bfd const & abfd,
+		 std::string const & app_name,
 		 std::string const & symbol_name = std::string());
 
 	/// Find a symbol from its vma, return zero if no symbol at this vma
@@ -126,7 +128,8 @@ private:
 	void add_samples(profile_t const & profile,
 			 op_bfd const & abfd, symbol_index_t sym_index,
 			 u32 start, u32 end, bfd_vma base_vma,
-			 std::string const & image_name);
+			 std::string const & image_name,
+			 std::string const & app_name);
 
 	/**
 	 * create an unique artificial symbol for an offset range. The range
@@ -168,6 +171,9 @@ private:
  * @param counter_mask the counter nr mask each bit at pos i on mean open
  *  this samples files nr i
  * @param binary_name the name of the binary image
+ * @param app_name the owning application of these samples, identical to binary
+ *  name if profiling session did not separate samples for shared libs or
+ *  if binary name is not a shared libs
  * @param excluded_symbols a vector of symbol name to ignore
  * @param symbol if non empty record only samples for this symbol
  *
@@ -175,7 +181,8 @@ private:
  * relevant samples
  */
 bool add_samples(profile_container_t & samples, std::string sample_filename,
-		 size_t counter_mask, std::string binary_name,
+		 size_t counter_mask, std::string const & binary_name,
+		 std::string const & app_name,
 		 std::vector<std::string> const & excluded_symbols =
 		 	std::vector<std::string>(),
 		 std::string symbol = std::string());

@@ -32,6 +32,8 @@ namespace options {
 	extern int counter;
 	/// output format to use
 	extern outsymbflag output_format_flags;
+	/// is output_format specified through command line
+	extern bool output_format_specified;
 	/// which symbols to exclude
 	extern std::vector<std::string> exclude_symbols;
 	/// filled through the --path or --recursive-path allowing to specify

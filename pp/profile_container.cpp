@@ -66,7 +66,7 @@ profile_container_t::~profile_container_t()
 //  the samples_by_file_loc member var is correctly setup.
 void profile_container_t::
 add(profile_t const & profile, op_bfd const & abfd,
-    string const & symbol_name)
+    string const & app_name, string const & symbol_name)
 {
 	// paranoid checking
 	if (nr_counters != static_cast<uint>(-1) &&
@@ -115,6 +115,7 @@ add(profile_t const & profile, op_bfd const & abfd,
 		}
 
 		symb_entry.sample.file_loc.image_name = image_name;
+		symb_entry.sample.file_loc.app_name = app_name;
 
 		bfd_vma base_vma = abfd.syms[i].vma();
 
@@ -124,7 +125,7 @@ add(profile_t const & profile, op_bfd const & abfd,
 
 		if (need_details) {
 			add_samples(profile, abfd, i, start, end,
-				    base_vma, image_name);
+				    base_vma, image_name, app_name);
 		}
 
 		symb_entry.last = samples->size();
@@ -137,7 +138,8 @@ void profile_container_t::add_samples(profile_t const & profile,
 				      op_bfd const & abfd,
 				      symbol_index_t sym_index,
 				      u32 start, u32 end, bfd_vma base_vma,
-				      string const & image_name)
+				      string const & image_name,
+				      string const & app_name)
 {
 	bool const need_linenr = (flags & (osf_linenr_info | osf_short_linenr_info));
 
@@ -158,6 +160,7 @@ void profile_container_t::add_samples(profile_t const & profile,
 		}
 
 		sample.file_loc.image_name = image_name;
+		sample.file_loc.app_name = app_name;
 
 		sample.vma = (sym_index != nil_symbol_index)
 			? abfd.sym_offset(sym_index, pos) + base_vma
@@ -310,7 +313,8 @@ uint profile_container_t::get_nr_counters() const
 }
 
 bool add_samples(profile_container_t & samples, string sample_filename,
-		 size_t counter_mask, string image_name,
+		 size_t counter_mask, string const & image_name,
+		 string const & app_name,
 		 vector<string> const & excluded_symbols,
 		 string symbol)
 {
@@ -321,7 +325,7 @@ bool add_samples(profile_container_t & samples, string sample_filename,
 	profile.check_mtime(image_name);
 	profile.set_start_offset(abfd.get_start_offset());
 	
-	samples.add(profile, abfd, symbol);
+	samples.add(profile, abfd, app_name, symbol);
 
 	return abfd.have_debug_info();
 }

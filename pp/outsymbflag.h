@@ -46,6 +46,9 @@ enum outsymbflag {
 	osf_percent_details = 1 << 12,
 	osf_percent_cumulated_details = 1 << 13,
 
+	osf_app_name = 1 << 14,		// owning application
+	osf_short_app_name = 1 << 15,	// basename of owning application
+
 	/// used internally
 	osf_repeat_mask = osf_nr_samples + osf_nr_samples_cumulated +
                          osf_percent + osf_percent_cumulated +

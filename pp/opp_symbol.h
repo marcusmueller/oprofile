@@ -28,6 +28,10 @@ typedef size_t sample_index_t;
 struct file_location {
 	/// From where image come this file location
 	std::string image_name;
+	/// owning application name: identical to image name if profiling
+	/// session did not separate samples for shared libs or if image_name
+	// is not a shared libs
+	std::string app_name;
 	/// empty if not valid.
 	std::string filename;
 	/// 0 means invalid or code is generated internally by the compiler

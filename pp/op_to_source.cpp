@@ -395,7 +395,7 @@ bool annotate_source(string const & image_name, string const & sample_file,
 		uint tmp = profile.first_header().cpu_type;
 		cpu_type = static_cast<op_cpu>(tmp);
 
-		samples->add(profile, abfd);
+		samples->add(profile, abfd, image_name);
 
 		if (!setup_counter_param(profile))
 			return false;

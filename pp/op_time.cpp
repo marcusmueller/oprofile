@@ -460,6 +460,7 @@ static void output_symbols_count(map_t& files, int counter)
 
 		string lib_name;
 		string image_name = extract_app_name(filename, lib_name);
+		string app_name = demangle_filename(image_name);
 
 		// if the samples file belongs to a shared lib we need to get
 		// the right binary name
@@ -475,13 +476,27 @@ static void output_symbols_count(map_t& files, int counter)
 		// feel bad.
 		if (op_file_readable(image_name)) {
 			add_samples(samples, samples_filename, counter,
-				    image_name, options::exclude_symbols);
+				    image_name, app_name,
+				    options::exclude_symbols);
 		}
 	}
 
 	// select the symbols
 	vector<symbol_entry const *> symbols =
 		samples.select_symbols(options::sort_by_counter, 0.0, false);
+
+	// check if the profiling session separate samples for shared libs
+	// if yes change the output format to add owning app name unless
+	// user specify explicitely through command line the output format.
+	if (options::output_format_specified == false) {
+		for (size_t i = 0 ; i < symbols.size() ; ++i) {
+			if (symbols[i]->sample.file_loc.app_name !=
+			    symbols[i]->sample.file_loc.image_name) {
+				options::output_format_flags = static_cast<outsymbflag>(options::output_format_flags | osf_app_name);
+				break;
+			}
+		}
+	}
 
 	format_output::formatter out(samples, counter);
 	out.set_format(options::output_format_flags);

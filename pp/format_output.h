@@ -75,6 +75,8 @@ private:
 	std::string format_symb_name(field_datum const &);
 	std::string format_image_name(field_datum const &);
 	std::string format_short_image_name(field_datum const &);
+	std::string format_app_name(field_datum const &);
+	std::string format_short_app_name(field_datum const &);
 	std::string format_linenr_info(field_datum const &);
 	std::string format_short_linenr_info(field_datum const &);
 	std::string format_nr_samples(field_datum const &);
