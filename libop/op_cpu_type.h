@@ -36,6 +36,7 @@ typedef enum {
 	CPU_AXP_PCA56, /**< Alpha PCA56 family */
 	CPU_AXP_EV6, /**< Alpha EV6 family */
 	CPU_AXP_EV67, /**< Alpha EV67 family */
+	CPU_P6_MOBILE, /**< Pentium M series */
 	MAX_CPU_TYPE
 } op_cpu;
 

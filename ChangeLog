@@ -1,3 +1,13 @@
+2004-02-10  Will Cohen  <wcohen@redhat.com>
+
+	* events/i386/p6_mobile/events:
+	* events/i386/p6_mobile/unit_masks:
+	* events/Makefile.am:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/op_help.c: Add support for Pentium M (Centrino).
+
 2004-02-10  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* events/i386/p4/events: s/instructions/uops/ when appropriate

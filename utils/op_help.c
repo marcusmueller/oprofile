@@ -367,6 +367,7 @@ int main(int argc, char const *argv[])
 	case CPU_PPRO:
 	case CPU_PII:
 	case CPU_PIII:
+	case CPU_P6_MOBILE:
 	case CPU_P4:
 	case CPU_P4_HT2:
 		printf("See Intel Architecture Developer's Manual Volume 3, Appendix A and\n"

@@ -575,6 +575,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_PPRO:
 		case CPU_PII:
 		case CPU_PIII:
+		case CPU_P6_MOBILE:
 		case CPU_ATHLON:
 		case CPU_HAMMER:
 			descr->name = "CPU_CLK_UNHALTED";
