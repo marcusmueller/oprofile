@@ -1,5 +1,9 @@
 2003-03-20  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml: doc some 2.5 module stuff
+
+2003-03-20  John Levon  <levon@movementarian.org>
+
 	* utils/opcontrol: fix opcontrol --dump to do something
 
 	* daemon/opd_image.c: give a printf when reading the buffer.

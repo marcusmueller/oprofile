@@ -1518,6 +1518,32 @@ The internal implementation of the 2.5 OProfile code means that tasks that
 within the kernel <function>do_exit()</function> routine cannot be profiled.
 </para>
 </sect2>
+<sect2 id="kernel-modules">
+<title>Profiling kernel modules</title>
+<para>
+OProfile profiles kernel modules by default. However, there are a couple of problems
+you may have when trying to get results. First, you may have booted via an initrd;
+this means that the actual path for the module binaries cannot be determined automatically.
+To get around this, you can use the <option>-p</option> option to the profiling tools
+to specify where to look for the kernel modules.
+</para>
+<para>
+In 2.5, the information on where kernel module binaries are located has been removed.
+This means OProfile needs guiding with the <option>-p</option> option to find your
+modules. Normally, you can just use your standard module top-level directory for this.
+Note that due to this problem, OProfile cannot check that the modification times match;
+it is your responsibility to make sure you do not modify a binary after a profile
+has been created.
+</para>
+<para>
+If you have run <command>insmod</command> or <command>modprobe</command> to insert a module
+in a particular directory, it is important that you specify this directory with the 
+<option>-p</option> option first, so that it over-rides an older module binary that might
+exist in other directories you've specified with <option>-p</option>. It is up to you
+to make sure that these values are correct: 2.5 kernels simply do not provide enough
+information for OProfile to get this information.
+</para>
+</sect2>
 </sect1>
 
 <sect1 id="debug-info">
