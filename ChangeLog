@@ -3,6 +3,15 @@
 	* doc/oprofile.xml:
 	* doc/opannotate.1.in:
 	* pp/opannotate.cpp:
+	* pp/opannotate_options.h:
+	* pp/opannotate_options.cpp: add --search-dirs
+
+2003-08-04  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml:
+	* doc/opannotate.1.in:
+	* pp/opannotate.cpp:
+	* pp/opannotate_options.h:
 	* pp/opannotate_options.cpp: remove --source-dir and --base-dir,
 	  they're confusing and not useful in the current form
 

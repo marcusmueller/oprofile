@@ -519,20 +519,18 @@ void do_output_one_file(ostream & out, istream & in, debug_name_id filename,
 
 
 void output_one_file(istream & in, debug_name_id filename,
-		     bool output_separate_file)
+                     string const & source)
 {
-	if (!output_separate_file) {
+	if (output_dir.empty()) {
 		do_output_one_file(cout, in, filename, true);
 		return;
 	}
 
-	string const source_file = debug_names.name(filename);
-	string const out_file =
-		relative_to_absolute_path(output_dir + source_file);
+	string const out_file = relative_to_absolute_path(output_dir + source);
 
 	/* Just because you're paranoid doesn't mean they're not out to
 	 * get you ... */
-	if (is_files_identical(out_file, source_file)) {
+	if (is_files_identical(out_file, source)) {
 		cerr << "input and output files are identical: "
 		     << out_file << endl;
 		return;
@@ -555,34 +553,61 @@ void output_one_file(istream & in, debug_name_id filename,
 }
 
 
-void output_source(path_filter const & filter, bool output_separate_file)
+/* Locate a source file from debug info, which may be relative */
+string const locate_source_file(debug_name_id filename_id)
 {
-	if (!output_separate_file)
+	string const & relfile = debug_names.name(filename_id);
+
+	if (op_file_readable(relfile))
+		return relfile;
+
+	vector<string>::const_iterator cit = search_dirs.begin();
+	vector<string>::const_iterator end = search_dirs.end();
+
+	for (; cit != end; ++cit) {
+		string const file =
+			relative_to_absolute_path(*cit + "/" + relfile);
+
+		if (op_file_readable(file)) {
+			return file;
+		}
+	}
+
+	return relfile;
+}
+
+
+void output_source(path_filter const & filter)
+{
+	bool const separate_file = !output_dir.empty();
+
+	if (!separate_file)
 		output_info(cout);
 
 	vector<debug_name_id> filenames =
 		samples->select_filename(options::threshold);
 
 	for (size_t i = 0 ; i < filenames.size() ; ++i) {
-		string filename = debug_names.name(filenames[i]);
-		if (!filter.match(filename))
+		string const & source = locate_source_file(filenames[i]);
+
+		if (!filter.match(source))
 			continue;
 
-		ifstream in(filename.c_str());
+		ifstream in(source.c_str());
 
 		if (!in) {
 			// it is common to have empty filename due to the lack
 			// of debug info (eg _init function) so warn only
 			// if the filename is non empty. The case: no debug
 			// info at all has already been checked.
-			if (filename.length())
+			if (source.length())
 				cerr << "opannotate (warning): unable to "
 				     << "open for reading: "
-				     << filename << endl;
-		} 
+				     << source << endl;
+		}
 
-		if (filename.length()) {
-			output_one_file(in, filenames[i], output_separate_file);
+		if (source.length()) {
+			output_one_file(in, filenames[i], source);
 		}
 	}
 }
@@ -592,10 +617,7 @@ bool annotate_source(image_set const & images)
 {
 	annotation_fill = get_annotation_fill();
 
-	bool output_separate_file = false;
-
 	if (!output_dir.empty()) {
-		output_separate_file = true;
 
 		output_dir = relative_to_absolute_path(output_dir);
 		if (output_dir.length() &&
@@ -634,7 +656,7 @@ bool annotate_source(image_set const & images)
 			     << "the selected symbol\n";
 		}
 	} else {
-		output_source(file_filter, output_separate_file);
+		output_source(file_filter);
 	}
 
 	return true;

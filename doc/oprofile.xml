@@ -1501,6 +1501,10 @@ Pass the given parameters as extra values when calling objdump.
 Output directory. This makes opannotate output one annotated file for each
 source file.
 </para></listitem></varlistentry>
+<varlistentry><term><option>--search-dirs / -d [paths]</option></term><listitem><para>
+Comma-separated list of paths to search for source files. This is useful to find
+source files when the debug information only contains relative paths.
+</para></listitem></varlistentry>
 <varlistentry><term><option>--source / -s</option></term><listitem><para>
 Output annotated source. This requires debugging information to be available
 for the binaries.

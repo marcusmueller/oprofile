@@ -28,6 +28,7 @@ namespace options {
 	bool demangle = true;
 	bool smart_demangle;
 	string output_dir;
+	vector<string> search_dirs;
 	path_filter file_filter;
 	string_filter symbol_filter;
 	bool source;
@@ -53,6 +54,8 @@ popt::option options_array[] = {
 		     "demangle GNU C++ symbol names and shrink them"),
 	popt::option(options::output_dir, "output-dir", 'o',
 		     "output directory", "directory name"),
+	popt::option(options::search_dirs, "search-dirs", 'd',
+	             "directories to look for source files", "comma-separated paths"),
 	popt::option(include_file, "include-file", '\0',
 		     "include these comma separated filename", "filenames"),
 	popt::option(exclude_file, "exclude-file", '\0',

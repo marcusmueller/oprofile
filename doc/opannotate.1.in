@@ -66,6 +66,11 @@ Output directory. This makes opannotate output one annotated file for each
 source file.
 .br
 .TP
+.BI "--search-dirs / -d [paths]"
+Comma-separated list of paths to search for source files. You may need to use
+this option when the debug information for an image contains relative paths.
+.br
+.TP
 .BI "--source / -s"
 Output annotated source. This requires debugging information to be available
 for the binaries.
