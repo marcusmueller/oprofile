@@ -1,4 +1,4 @@
-/* $Id: op_events.c,v 1.32 2001/09/28 13:34:22 movement Exp $ */
+/* $Id: op_events.c,v 1.33 2001/10/22 16:14:16 davej Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -194,6 +194,7 @@ struct op_event op_events[] = {
   { CTR_ALL, OP_ATHLON, 0xcd, 0, "INTERRUPTS_MASKED", 500,},
   { CTR_ALL, OP_ATHLON, 0xce, 0, "INTERRUPTS_MASKED_PENDING", 500,},
   { CTR_ALL, OP_ATHLON, 0xcf, 0, "HARDWARE_INTERRUPTS", 10,},
+  { CTR_ALL, OP_ATHLON, 0xd3, 0, "SERIALISE", 10,},
 };
 
 /* the total number of events for all processor type */
@@ -638,6 +639,7 @@ char *op_event_descs[] = {
   "Interrupts masked cycles (IF=0)",
   "Interrupts masked while pending cycles (INTR while IF=0)",
   "Number of taken hardware interrupts",
+  "Serialise",
 };
 
 /**
@@ -823,7 +825,10 @@ int main(int argc, char *argv[])
 
 	printf("oprofile: available events\n");
 	printf("--------------------------\n\n");
-	printf("See Intel Architecture Developer's Manual\nVol. 3, Appendix A\n\n");
+	if (cpu_type == CPU_ATHLON)
+		printf ("See AMD document x86 optimisation guide (22007.pdf), Appendix D\n\n");
+	else
+		printf("See Intel Architecture Developer's Manual\nVol. 3, Appendix A\n\n");
 
 	cpu_type_mask = 1 << cpu_type;
 	for (j=0; j < op_nr_events; j++) {
