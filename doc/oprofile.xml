@@ -185,7 +185,10 @@ your kernel (this is automatically enabled for SMP kernels).  On
 machines with power management, such as laptops, the power management
 must be turned off when using OProfile. The power management software
 in the BIOS cannot handle the non-maskable interrupts (NMIs) used by
-OProfile for data collection.
+OProfile for data collection. If you use the nmi watchdog be warned than
+watchdog is disable when profiling start and not re-enabled until the
+oprofile module is removed. So on op_stop does not re-enable the watchdog
+nmi because op_stop doesn't remove the module.
 </para>
 
 </sect1>

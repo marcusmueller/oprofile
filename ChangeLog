@@ -1,3 +1,8 @@
+2002-09-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/xsl/.cvsignore: new
+	* doc/oprofile.xml: document watchdog problem
+
 2002-09-25  John Levon  <levon@movementarian.org>
 
 	* module/x86/op_nmi.c: OP_MAX_CPUS is not necessarily
