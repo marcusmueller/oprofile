@@ -32,6 +32,9 @@ http://oprofile.sourceforge.net/doc/install.html.
 
 Quick start :
 
+(If using CVS: ./autogen.sh first. You need automake 1.5 or higher. You
+can specify a different version, e.g. ./autogen.sh AUTOMAKE=automake1.5)
+
 2.4 kernels
 
 	./configure --with-linux=/path/to/kernel/source
