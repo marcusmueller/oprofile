@@ -57,7 +57,6 @@ int verbose;
 op_cpu cpu_type;
 int separate_samples;
 char * vmlinux;
-int kernel_only;
 unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 
 static char * kernel_range;
@@ -374,7 +373,6 @@ static void opd_options(int argc, char const * argv[])
 	opd_buf_size = opd_read_fs_int("buffer_size");
 
 	if (cpu_type != CPU_TIMER_INT) {
-		kernel_only = opd_read_fs_int("kernel_only");
 		opd_pmc_options();
 	}
 

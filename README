@@ -5,7 +5,7 @@ You can find some documentation in the doc/ directory.
 
 Please visit the oprofile website at : http://oprofile.sf.net/ 
 
-oprofile was written by John Levon <moz@compsoc.man.ac.uk>.
+oprofile was written by John Levon <levon@movementarian.org>.
 
 Philippe Elie <phil.el@wanadoo.fr> contributed many bug fixes,
 started the Qt2 oprofile interface, wrote the source annotation facility,
@@ -18,9 +18,7 @@ Bob Montgomery <bobm@fc.hp.com> provided bug fixes, the initial RTC
 driver and the initial ia64 driver.
 
 Will Cohen <wcohen@redhat.com> integrated the ia64 driver into the
-oprofile release.
-
-Will Cohen <wcohen@redhat.com> contributed bug fixes and several cleanups.
+oprofile release, and contributed bug fixes and several cleanups.
 
 Graydon Hoare <graydon@redhat.com> provided P4 port, bug fixes and cleanups.
  

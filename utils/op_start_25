@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start_25,v 1.6 2002/11/14 08:57:26 phil_e Exp $
+# $Id: op_start_25,v 1.7 2002/11/20 19:48:52 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -54,7 +54,6 @@ do_help() {
 	echo "op_start: usage:
 	Module options
 	  --buffer-size=num            number of samples in kernel buffer
-	  --kernel-only=[0|1]          profile only the kernel
 	  --ctrN-event=name            symbolic event name for ctr N
 	  --ctrN-count=val             number of events between samples for ctr N
 	  --ctrN-unit-mask=val         unit mask for ctr N (e.g. --ctr0-unit-mask=0xf)
@@ -101,7 +100,6 @@ do_init() {
 	# for these three buffer size == 0 means use the default value
 	# hard-coded in op_user.h
 	BUF_SIZE=0
-	KERNEL_ONLY=0
 	IGNORE_MYSELF=0
 	VMLINUX=
 	PID_FILTER=0
@@ -162,7 +160,7 @@ do_options() {
  
 		if test "$IS_TIMER" -eq 1; then
 			case "$arg" in
-				--kernel-only|--ctr*-unit-mask|--ctr*-event|--ctr*-count|--ctr*-user|--ctr*-kernel)
+				--ctr*-unit-mask|--ctr*-event|--ctr*-count|--ctr*-user|--ctr*-kernel)
 					echo "Cannot use option $arg in timer mode."
 					exit 1;
 					;;
@@ -172,13 +170,6 @@ do_options() {
 		case "$arg" in
 			--buffer-size)
 				BUF_SIZE=$val
-				;;
-			--kernel-only)
-				if [ "$val" != "" ]; then
-					KERNEL_ONLY=$val
-				else
-					KERNEL_ONLY=1
-				fi
 				;;
 			--ctr*-unit-mask)
 				CTR_UM[`extract_int $arg`]=$val
@@ -343,8 +334,6 @@ do_sysctl_setup() {
 			echo 0 >$MOUNT/$f/event
 			echo 0 >$MOUNT/$f/count
 		done
-
-		echo $KERNEL_ONLY >$MOUNT/kernel_only
 
 		for f in $OP_COUNTERS ; do
 			if [ "${CTR_EVENT[$f]}" != "" ]; then
