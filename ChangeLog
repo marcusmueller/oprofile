@@ -1,3 +1,58 @@
+2001-04-05  John Levon  <moz@compsoc.man.ac.uk>
+
+	* pp/oprofpp.c: fix gprof output bug. It works OK now,
+	  but MULTIPLIER == 1 will break for some reason
+
+2001-04-05  John Levon  <moz@compsoc.man.ac.uk>
+
+	* doc/oprofile.sgml:
+	* doc/html/: finish SGML documentation (for now)
+
+2001-04-04  John Levon  <moz@compsoc.man.ac.uk>
+
+	* doc/Makefile.in:
+	* doc/oprofile.sgml:
+	* doc/oprofile: start SGML documentation
+
+2001-04-04  John Levon  <moz@compsoc.man.ac.uk>
+
+	* configure.in:
+	* Makefile.in:
+	* doc/Makefile.in:
+	* doc/oprofile.1.in: add a manpage
+ 
+2001-04-04  John Levon  <moz@compsoc.man.ac.uk>
+
+	* pp/oprofpp.c: get some sort of half-working output
+	in gprof format. Currently the numbers are screwed up,
+	need a major trawl through gprof source to see what's
+	going on. 
+
+2001-04-04  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/Makefile.in:
+	* dae/md5.c:
+	* dae/md5.h:
+	* dae/opd_proc.c:
+	* dae/oprofiled.h:
+	* pp/Makefile.in:
+	* pp/oprofpp.c:
+	* pp/oprofpp.h: use md5sums to verify sample file
+  	  integrity. Stored in each sample file footer are
+	  md5sums of the binary. These are checked by the daemon
+	  when re-using an old file, and by the post-processor.
+	  Bump OPD_VERSION to reflect the file format change.
+
+	* dae/oprofiled.c: make start up more friendly 
+	
+	* dae/op_start: make script more friendly
+
+2001-03-10  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/opd_proc.c: fixed some error messages
+
+	* results/kernel-compile/raw/ccu.gnuplot: add
+ 
 2001-02-05  John Levon  <moz@compsoc.man.ac.uk>
 
 	* TODO: update

@@ -1,0 +1,212 @@
+.TH OPROFILE 1 "@DATE@" "oprofile @VERSION@"
+.UC 4
+.SH NAME
+oprofile \- a sytem-wide profiler
+.SH SYNOPSIS
+.B op_start
+[
+.I options
+]
+.br
+.B op_stop
+.br
+.B oprofpp
+[
+.I options
+]
+[ sample-file ] [ binary ]
+.br
+.B op_help
+[ event-name ]
+.br
+.SH DESCRIPTION
+oprofile is a profiling system for Intel x86 systems running Linux 2.4. Profiling runs
+transparently during the background, and profile data can be collected at any time. oprofile
+makes use of the hardware performance counters provided on Intel P6 processors. See the HTML
+documentation for further details.
+
+.SH OPTIONS
+.br
+.B op_start options
+.br
+.TP
+.I "--help"
+List help
+.br
+.TP
+.I "--list-events"
+Show available events for the hardware counters
+.br
+.TP
+.I "--map-file"
+specify System.map for running kernel
+.br
+.TP
+.I "--vmlinux"
+specify vmlinux kernel image
+.br
+.TP
+.I "--ctr0-event --ctr1-event"
+symbolic event name for ctr0/1
+.br
+.TP
+.I "--ctr0-count --ctr1-count"
+number of events between samples for ctr0/1
+.br
+.TP
+.I "--ctr0-unit-mask --ctr1-unit-mask"
+unit mask for ctr0/1
+.br
+.TP
+.I "--ctr0-kernel --ctr1-kernel"
+whether to count kernel events for ctr 0/1
+.br
+.TP
+.I "--ctr0-user --ctr1-user"
+whether to count user events for ctr 0/1
+.br
+.TP
+.I "--buffer-size"
+number of samples in kernel buffer
+.br
+.TP
+.I "--hash-table-size"
+number of entries in kernel hash table
+.br
+.TP
+.I "--kernel-only"
+profile only the kernel
+.br
+.TP
+.I "--pid-filter"
+Only profile process pid (if compiled in)
+.br
+.TP
+.I "--pgrp-filter"
+Only profile process group pgrp (if compiled in)
+.br
+.TP
+.I "--use-cpu"
+0 or PPro, 1 for PII, 2 for PIII
+.br
+.TP
+.I "--ignore-myself"
+ignore samples for oprofiled
+.br
+.TP
+.I "--log-file"
+specify log file
+.br
+.TP
+.I "--base-dir"
+base directory of daemon
+.br
+.TP
+.I "--samples-dir"
+output samples directory
+.br
+.TP
+.I "--device-file"
+profile device file
+.br
+.TP
+.I "--hash-map-device-file"
+profile hash map device file
+.br
+.TP
+.I "--verbose"
+be verbose in the daemon log
+.PP
+.br
+.B oprofpp options
+.br
+.TP
+.I "--help"
+Show help message
+.br
+.TP
+.I "--samples-file"
+image sample file
+.br
+.TP
+.I "--image-file"
+image file
+.br
+.TP
+.I "--list-symbols"
+list samples by symbol
+.br
+.TP
+.I "--dump-gprof-file"
+dump gprof format file
+.br
+.TP
+.I "--list-symbol"
+give detailed samples for a symbol
+.br
+.TP
+.I "--demangle"
+demangle GNU C++ symbol names
+.br
+.TP
+.I "--counter"
+which counter to use
+.br
+.TP
+.I "--version"
+show version
+.br
+.TP
+.I "--verbose"
+verbose output
+.br
+.TP
+.I "--base-dir"
+base directory of profile daemon
+
+.SH USAGE
+Start the profiler with the provided
+.B op_start
+shell script. You are required to specify vmlinux and System.map, as well as specify a counter event and value, e.g. :
+.PP
+.I op_start --vmlinux=/sys/vmlinux --map-file=/sys/System.map --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000
+.PP
+Profiles will be collected every ten minutes. You can force a collection at any time :
+.PP
+.I echo 1 >/proc/sys/dev/oprofile/dump
+.PP
+You can then collect profiles for any binary or shared library by using
+.B oprofpp
+to read the sample file :
+.PP
+.I oprofpp -l /lib/libc-2.1.92.so
+.PP
+.SH ENVIRONMENT
+No environment variables are recognised by oprofile.
+
+.SH FILES
+.TP
+.I /var/opd/oprofiled.log
+The user-space daemon logfile.
+.TP
+.I /var/opd/opdev, /var/opd/ophashmapdev
+The device files for communication with the kernel module.
+.TP
+.I /var/opd/samples/
+The location of the generated sample files.
+
+.SH VERSION
+.TP
+This man page is current for @PACKAGE@-@VERSION@.
+
+.SH SEE ALSO
+.BR gprof(1),
+.BR readprofile(1),
+.BR "Intel IA32 Architecture Developer's Manual, Volume 3"
+
+.SH COPYRIGHT
+oprofile is Copyright (C) 1998-2001 University of Manchester, UK and John Levon.
+figurine is released under the GNU General Public License, Version 2,
+or (at your option) any later version.
+.SH AUTHORS
+John Levon <moz@compsoc.man.ac.uk>

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.25 2001/02/05 11:37:59 movement Exp $ */
+/* $Id: oprofpp.c,v 1.26 2001/04/05 13:24:42 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -26,6 +26,8 @@
  */
 
 #include "oprofpp.h"
+ 
+#include "../dae/md5.h"
  
 static int showvers;
 static int verbose; 
@@ -186,6 +188,7 @@ void printf_symbol(const char *name)
 /**
  * open_image_file - open associated binary image
  * @mangled: name of samples file
+ * @sum: md5sum from sample file
  *
  * This function will open and process the binary
  * image associated with the samples file @mangled,
@@ -204,10 +207,11 @@ void printf_symbol(const char *name)
  * The global struct footer must be valid. sect_offset
  * will be set as appropriate.
  */
-bfd *open_image_file(char const *mangled)
+bfd *open_image_file(char const * mangled, char * sum)
 {
 	char *file;
 	char **matching;
+	char newsum[16]; 
 	bfd *ibfd;
 	 
 	file = (char *)imagefile;
@@ -247,6 +251,18 @@ bfd *open_image_file(char const *mangled)
 		free(mang);
 	}
 
+	if (md5_file(file, newsum)) {
+		fprintf(stderr, "oprofpp: couldn't md5sum the binary file %s.\n", file);
+		exit(1);
+	}
+ 
+	if (memcmp(sum, newsum, 16)) {
+		fprintf(stderr, "oprofpp: the md5sum of the binary file %s does not match "
+			"that of the sample file. Either this is the wrong binary or the binary "
+			"has been modified since the sample file was created.\n", file);
+		exit(1);
+	}
+			 
 	ibfd = bfd_openr(file, NULL);
  
 	if (!ibfd) {
@@ -440,19 +456,18 @@ int countcomp(const void *a, const void *b)
  
 /**
  * do_list_symbols - list symbol samples for an image
+ * @ibfd: the bfd 
  *
  * Lists all the symbols from the image specified by samplefile,
  * in decreasing sample count order, to standard out.
  */
-void do_list_symbols(void)
-{	
-	bfd *ibfd; 
+void do_list_symbols(bfd * ibfd)
+{
 	asymbol **syms;
 	struct opp_count *scounts;
 	u32 start, end;
 	uint num,tot0=0,tot1=0,i,j;
  
-	ibfd = open_image_file(samplefile);
 	num = get_symbols(ibfd,&syms);
 
 	if (!num) {
@@ -506,18 +521,17 @@ void do_list_symbols(void)
  
 /**
  * do_list_symbol - list detailed samples for a symbol
+ * @ibfd: the bfd 
  *
  * Lists all the samples for the symbol specified by symbol, from the image 
  * specified by @samplefile, in decreasing sample count order, to standard out.
  */
-void do_list_symbol(void)
+void do_list_symbol(bfd * ibfd)
 {
-	bfd *ibfd;
 	asymbol **syms;
 	u32 start, end;
 	u32 num,i,j;
 
-	ibfd = open_image_file(samplefile);
 	num = get_symbols(ibfd,&syms);
 
 	if (!num) {
@@ -547,7 +561,8 @@ found:
 }
 
 #define GMON_VERSION 1
-#define GMON_TAG_BB_COUNT 2
+#define GMON_TAG_TIME_HIST 0
+#define MULTIPLIER 2
 
 struct gmon_hdr {
 	char cookie[4];
@@ -557,23 +572,23 @@ struct gmon_hdr {
  
 /**
  * do_dump_gprof - produce gprof sample output
+ * @ibfd: the bfd 
  *
  * Dump gprof-format samples for the image specified by samplefile to
  * the file specified by gproffile.
- *
- * FIXME: this is totally broken (and never worked or was tested)
  */
-void do_dump_gprof(void)
+void do_dump_gprof(bfd * ibfd)
 {
 	static struct gmon_hdr hdr = { "gmon", GMON_VERSION, {0,0,0,},}; 
 	FILE *fp; 
-	bfd *ibfd; 
 	asymbol **syms;
-	u32 start, end; 
-	uint nblocks=0;
+	u32 start, end;
 	uint num,i,j;
+	u32 low_pc = (u32)-1;
+	u32 high_pc = 0;
+	u16 * hist;
+	u32 histsize;
  
-	ibfd = open_image_file(samplefile);
 	num = get_symbols(ibfd,&syms);
 
 	if (!num) {
@@ -585,34 +600,65 @@ void do_dump_gprof(void)
 
 	opd_write_file(fp,&hdr, sizeof(struct gmon_hdr));
 
-	opd_write_u8(fp, GMON_TAG_BB_COUNT);
+	opd_write_u8(fp, GMON_TAG_TIME_HIST);
 
 	for (i=0; i < num; i++) {
-		get_symbol_range(syms[i], (i==num-1) ? NULL : syms[i+1], &start, &end); 
-		for (j=start; j < end; j++) {
-			if (ctr && samples[j].count1)
-				nblocks++; 
-			else if (samples[j].count0)
-				nblocks++;
-		}
-	}
+		start = syms[i]->value + syms[i]->section->vma;
+		if (i == num - 1) {
+			get_symbol_range(syms[i], NULL, &start, &end);
+			end -= start;
+			start = syms[i]->value + syms[i]->section->vma;
+			end += start;
+		} else
+			end = syms[i+1]->value + syms[i+1]->section->vma;
  
-	opd_write_u32_he(fp,nblocks);
+		if (start < low_pc)
+			low_pc = start;
+		if (end > high_pc)
+			high_pc = end;
+	}
 
+	histsize = ((high_pc - low_pc) / MULTIPLIER) + 1; 
+ 
+	opd_write_u32_he(fp, low_pc);
+	opd_write_u32_he(fp, high_pc);
+	/* size of histogram */
+	opd_write_u32_he(fp, histsize);
+	/* profiling rate */
+	opd_write_u32_he(fp, 1);
+	opd_write_file(fp, "samples\0\0\0\0\0\0\0\0", 15); 
+	/* abbreviation */
+	opd_write_u8(fp, '1');
+	
+	hist = opd_malloc(sizeof(u16)*histsize); 
+	memset(hist, 0, histsize*sizeof(u16));
+ 
 	for (i=0; i < num; i++) {
 		get_symbol_range(syms[i], (i==num-1) ? NULL : syms[i+1], &start, &end); 
 		for (j=start; j < end; j++) {
-			if (ctr && samples[j].count1) { 
-				opd_write_u32_he(fp, sym_offset(syms[i],j) + syms[i]->value);
-				opd_write_u32_he(fp, samples[j].count1);
-			} else if (samples[j].count0) {
-				opd_write_u32_he(fp, sym_offset(syms[i],j) + syms[i]->value);
-				opd_write_u32_he(fp, samples[j].count0);
+			u32 count;
+			u32 pos;
+			pos = (sym_offset(syms[i],j) + syms[i]->value + syms[i]->section->vma - low_pc) / MULTIPLIER; 
+
+			if (ctr)
+				count = samples[j].count1;
+			else
+				count = samples[j].count0;
+
+			if (count > (u16)-1) {
+				printf("Warning: capping sample count !\n");
+				count = (u16)-1;
 			}
+			if (pos >= histsize) {
+				fprintf(stderr, "Bogus histogram bin %u, larger than %u !", pos, histsize);
+				continue;
+			}
+			hist[pos] += (u16)count;
 		}
 	}
 	 
-	opd_close_file(fp); 
+	opd_write_file(fp, hist, histsize * sizeof(u16));
+	opd_close_file(fp);
 	opd_free(syms);
 	bfd_close(ibfd);
 }
@@ -623,6 +669,7 @@ int main(int argc, char const *argv[])
 	fd_t fd;
 	FILE *fp;
 	size_t size;
+	bfd *ibfd; 
  
 	get_options(argc, argv);
 
@@ -682,12 +729,14 @@ int main(int argc, char const *argv[])
 
 	nr_samples = size/sizeof(struct opd_fentry);
 
+	ibfd = open_image_file(samplefile, footer.md5sum);
+ 
 	if (list_symbols) {
-		do_list_symbols();
+		do_list_symbols(ibfd);
 	} else if (symbol) {
-		do_list_symbol();
+		do_list_symbol(ibfd);
 	} else if (gproffile) {
-		do_dump_gprof();
+		do_dump_gprof(ibfd);
 	}
  
 	munmap(samples, size);

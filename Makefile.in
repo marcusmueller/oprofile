@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.14 2001/02/05 11:37:59 movement Exp $
+# $Id: Makefile.in,v 1.15 2001/04/05 13:24:42 movement Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -41,6 +41,7 @@ install: oprofile.o
 	depmod -a
 	$(MAKE) -C dae install
 	$(MAKE) -C pp install
+	$(MAKE) -C doc install 
 
 clean:
 	rm -f *.o config.status config.log config.cache

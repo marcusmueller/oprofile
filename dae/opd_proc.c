@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.49 2001/02/05 11:37:59 movement Exp $ */
+/* $Id: opd_proc.c,v 1.50 2001/04/05 13:24:42 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -16,6 +16,8 @@
  */
 
 #include "oprofiled.h"
+
+#include "md5.h" 
 
 #define OPD_DEFAULT_IMAGES 32
 #define OPD_IMAGE_INC 16
@@ -40,7 +42,8 @@ extern struct op_hash *hashmap;
 /* hash of process lists */
 static struct opd_proc *opd_procs[OPD_MAX_PROC_HASH];
 
-struct opd_footer footer = { OPD_MAGIC, OPD_VERSION, 0, 0, 0, 0, 0, };
+struct opd_footer footer = { OPD_MAGIC, OPD_VERSION, 
+	0, 0, 0, 0, 0, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0} };
 
 /* image structure */
 static struct opd_image *opd_images;
@@ -66,6 +69,7 @@ static void opd_kill_maps(struct opd_proc *proc);
 static void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset, u32 end);
 static struct opd_proc *opd_get_proc(u16 pid);
 static void opd_delete_proc(struct opd_proc *proc);
+static void opd_handle_old_sample_file(char * mangled, char * sum);
 
 /* every so many minutes, clean up old procs, msync mmaps, and
    report stats */
@@ -186,6 +190,49 @@ struct opd_fentry {
 };
 
 /**
+ * opd_handle_old_sample_file - deal with old sample file
+ * @mangled: the sample file name
+ * @sum: the new md5sum
+ *
+ * If an old sample file exists, verify it has the correct md5sum.
+ * If not, remove it.
+ */
+static void opd_handle_old_sample_file(char * mangled, char * sum)
+{
+	struct opd_footer oldfooter; 
+	FILE * fp;
+ 
+	if (!opd_get_fsize(mangled, 0))
+		return;
+
+	fp = fopen(mangled, "r"); 
+	if (!fp)
+		goto del;
+
+	if (fseek(fp, -sizeof(struct opd_footer), SEEK_END) == -1)
+		goto closedel;
+ 
+	if (fread(&oldfooter, sizeof(struct opd_footer), 1, fp) != 1)
+		goto closedel;
+
+	if (oldfooter.magic != OPD_MAGIC || oldfooter.version != OPD_VERSION)
+		goto closedel; 
+
+	if (memcmp(sum, oldfooter.md5sum, 16))
+		goto closedel;
+
+	fclose(fp);
+	verbprintf("Re-using old sample file \"%s\".\n", mangled);
+	return;
+ 
+closedel:
+	fclose(fp);
+del:
+	verbprintf("Deleting old sample file \"%s\".\n", mangled);
+	unlink(mangled);
+}
+ 
+/**
  * opd_open_image - open an image sample file
  * @image: image to open file for
  *
@@ -225,6 +272,11 @@ static void opd_open_image(struct opd_image *image)
 		return;
 	}
 
+	if (md5_file(image->name, footer.md5sum)) {
+		fprintf(stderr, "Warning: md5sum failed for %s\n", image->name);
+		memset(&footer.md5sum, 0, 16);
+	} 
+ 
 	/* give space for "negative" entries. This is because we
 	 * don't know about kernel/module sections other than .text so
 	 * a sample could be before our nominal start of image, or
@@ -232,22 +284,24 @@ static void opd_open_image(struct opd_image *image)
 	if (image->kernel)
 		image->len += OPD_KERNEL_OFFSET*sizeof(struct opd_fentry)*2;
 
+	opd_handle_old_sample_file(mangled, footer.md5sum);
+ 
 	verbprintf("Opening $%s$\n",mangled);
 
 	image->fd = open(mangled, O_CREAT|O_RDWR, 0644);
 	if (image->fd==-1) {
-		fprintf(stderr,"oprofiled: open of image sample file \"%s\" failed: %s", mangled,strerror(errno));
+		fprintf(stderr,"oprofiled: open of image sample file \"%s\" failed: %s\n", mangled,strerror(errno));
 		goto out;
 	}
 
 	if (lseek(image->fd, image->len, SEEK_SET)==-1) {
-		fprintf(stderr, "oprofiled: seek failed for \"%s\". %s",mangled,strerror(errno));
+		fprintf(stderr, "oprofiled: seek failed for \"%s\". %s\n",mangled,strerror(errno));
 		goto err;
 	}
 
 	footer.is_kernel = image->kernel;
 	
-	if ((write(image->fd, &footer, sizeof(struct opd_footer)))<(signed)sizeof(struct opd_footer)) {
+	if ((write(image->fd, &footer, sizeof(struct opd_footer)))<(int)sizeof(struct opd_footer)) {
 		perror("oprofiled: wrote less than expected opd_footer. ");
 		goto err;
 	}

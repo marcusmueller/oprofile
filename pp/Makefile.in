@@ -18,9 +18,9 @@ install: oprofpp
 CFLAGS=-Wall -Wstrict-prototypes -W -pipe -DOP_EVENTS_DESC -L/usr/lib @CFLAGS@
 LIBS=-lpopt -lbfd -liberty -ldl
 INCLUDES=@extra_includes@
-HEADERS=oprofpp.h ../dae/opd_util.h
+HEADERS=oprofpp.h ../dae/opd_util.h ../dae/md5.h
 MY_SOURCES=oprofpp.c
-SOURCES=$(MY_SOURCES) ../dae/opd_util.c ../op_events.c
+SOURCES=$(MY_SOURCES) ../dae/opd_util.c ../op_events.c ../dae/md5.c
  
 srcdoc: oprofpp-src.html
 

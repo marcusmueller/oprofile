@@ -1,12 +1,8 @@
 This is a very much alpha pre-release version of oprofile, a transparent
 low-overhead system-wide profiler.
 
-You can find some minimal documentation in the doc/ directory.
+You can find some documentation in the doc/oprofile/ directory.
 
 Please visit the oprofile website at : http://oprofile.sourceforge.net/ 
 
-For more information, email John Levon <moz@compsoc.man.ac.uk>
-or write to :
-
-John Levon, Department of Computer Science, Manchester University, Oxford Road,
-Manchester, UK
+For more information, email John Levon, <moz@compsoc.man.ac.uk>

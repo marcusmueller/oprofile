@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.21 2001/01/21 01:11:57 moz Exp $ */
+/* $Id: oprofiled.h,v 1.22 2001/04/05 13:24:42 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -97,7 +97,7 @@ enum {  OPD_KERNEL, /* nr. kernel samples */
 #define OP_CTR1_PIII_EVENT     0x200
 
 #define OPD_MAGIC 0xdeb6
-#define OPD_VERSION 0x1
+#define OPD_VERSION 0x2
 
 /* at the end of the sample files */
 struct opd_footer {
@@ -108,6 +108,7 @@ struct opd_footer {
 	u8 ctr1_type_val;
 	u8 ctr0_um;
 	u8 ctr1_um;
+	char md5sum[16];
 };
 
 struct opd_image {

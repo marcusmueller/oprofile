@@ -1,0 +1,26 @@
+# $Id: Makefile.in,v 1.1 2001/04/05 13:24:42 movement Exp $
+
+prefix=@prefix@
+MANDIR=@mandir@
+LN_S=ln -s
+RM=rm
+DB2HTML=db2html
+
+.PHONY: all clean install
+ 
+all:
+	-$(RM) -rf oprofile.junk
+	$(DB2HTML) oprofile.sgml
+	-mv oprofile/* html/
+	-mv oprofile/stylesheet-images/* html/stylesheet-images/
+	-$(RM) -rf oprofile 
+ 
+install:
+	cp oprofile.1 $(MANDIR)/man1/oprofile.1
+	-$(LN_S) $(MANDIR)/man1/oprofile.1 $(MANDIR)/man1/oprofiled.1
+	-$(LN_S) $(MANDIR)/man1/oprofile.1 $(MANDIR)/man1/op_start.1
+	-$(LN_S) $(MANDIR)/man1/oprofile.1 $(MANDIR)/man1/op_stop.1
+	-$(LN_S) $(MANDIR)/man1/oprofile.1 $(MANDIR)/man1/op_help.1
+	-$(LN_S) $(MANDIR)/man1/oprofile.1 $(MANDIR)/man1/oprofpp.1
+ 
+clean:

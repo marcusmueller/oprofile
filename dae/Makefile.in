@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.7 2001/01/21 01:11:56 moz Exp $
+# $Id: Makefile.in,v 1.8 2001/04/05 13:24:42 movement Exp $
 
 .PHONY: all clean srcdoc install
  
@@ -14,7 +14,7 @@ install: oprofiled op_start op_stop op_help
 	cp oprofiled $(BINDIR)/oprofiled
 	cp op_start $(BINDIR)/op_start
 	cp op_stop $(BINDIR)/op_stop
-	cp op_help $(BINDIR)/op_help 
+	cp op_help $(BINDIR)/op_help
 	cd $(BINDIR) && chmod 755 oprofiled op_start op_stop op_help
  
 clean:
@@ -23,8 +23,8 @@ clean:
 CFLAGS=-Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
 LIBS=@extra_libraries@ -lpopt
 INCLUDES=@extra_includes@
-HEADERS=oprofiled.h opd_util.h ../op_user.h ../version.h
-SOURCES=oprofiled.c opd_util.c opd_proc.c ../op_events.c
+HEADERS=oprofiled.h opd_util.h ../op_user.h ../version.h md5.h
+SOURCES=oprofiled.c opd_util.c opd_proc.c ../op_events.c md5.c
  
 srcdoc: oprofiled-src.html
 

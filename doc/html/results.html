@@ -1,0 +1,277 @@
+<HTML
+><HEAD
+><TITLE
+>Obtaining and interpreting results</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.54"><LINK
+REL="HOME"
+TITLE="OProfile manual"
+HREF="oprofile-guide.html"><LINK
+REL="PREVIOUS"
+TITLE="Starting profiling"
+HREF="starting-daemon.html"><LINK
+REL="NEXT"
+TITLE="Interpreting profiling results"
+HREF="interpreting.html"></HEAD
+><BODY
+CLASS="CHAPTER"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>OProfile manual</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="starting-daemon.html"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="interpreting.html"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="RESULTS"
+>Chapter 3. Obtaining and interpreting results</A
+></H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+><A
+HREF="results.html#POST-PROFILER"
+><B
+CLASS="COMMAND"
+>oprofpp</B
+> usage</A
+></DT
+><DT
+><A
+HREF="interpreting.html"
+>Interpreting profiling results</A
+></DT
+></DL
+></DIV
+><P
+>OK, so the profiler has been running, but it's not much use unless we can get some data out. That's the job of
+<B
+CLASS="COMMAND"
+>oprofpp</B
+>. This works on a sample file in the <TT
+CLASS="FILENAME"
+>/var/opd/samples/</TT
+> directory,
+along with the binary file being profiled, to produce human-readable data. Note that if the binary file changes
+after the sample file was created, you won't be able to get useful data out. This situation is detected for you.
+A similar scenario can happen when re-starting profiling, as the old sample files from previous sessions don't
+get deleted (allowing you to build profiles over many distinct profiling sessions). However in this case, if the
+binary has changed, the old sample file is automatically deleted for you.</P
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="POST-PROFILER"
+><B
+CLASS="COMMAND"
+>oprofpp</B
+> usage</A
+></H1
+><P
+>Oprofpp can be used in three major modes; list symbol mode, detailed symbol mode, or <B
+CLASS="COMMAND"
+>gprof</B
+> mode.
+The first gives sorted histogram output of sample counts against functions as shown in the walkthrough. The second
+can show individual sample counts against instructions inside a function, useful for detailed profiling, whilst the
+third mode is handy if you're used to <B
+CLASS="COMMAND"
+>gprof</B
+> style output. Note that only flat <B
+CLASS="COMMAND"
+>gprof</B
+>
+profiles are supported, however. </P
+><P
+>Some interesting options of the post-processor :
+<P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="OPTION"
+>--samples-file</TT
+></DT
+><DD
+><P
+>		The samples file to use. This is not necessary, as it can be derived from the filename of the
+		absolute-path-specified binary image. 
+		</P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--image-file</TT
+></DT
+><DD
+><P
+>		The binary image (shared library, kernel vmlinux, or program) to produce data for. 
+		</P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--demangle</TT
+></DT
+><DD
+><P
+>		Demangle C++ symbol names.
+		</P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--counter</TT
+></DT
+><DD
+><P
+>		Which counter (0 or 1) to extract information for. 
+		</P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--list-symbols</TT
+></DT
+><DD
+><P
+>		List a histogram of sample counts against symbols.
+		</P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--list-symbol</TT
+></DT
+><DD
+><P
+>		Provide a detailed listing for the specified symbol. A future release should allow a full source annotation facility, but not now, Bernard. 
+		</P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--dump-gprof-file</TT
+></DT
+><DD
+><P
+>		Dump output to the specified file in <B
+CLASS="COMMAND"
+>gprof</B
+> format. If you specify <TT
+CLASS="FILENAME"
+>gmon.out</TT
+>,
+		you can then call <B
+CLASS="COMMAND"
+>gprof -p &#60;binary&#62;</B
+>. 
+		</P
+></DD
+></DL
+></DIV
+> </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="starting-daemon.html"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="oprofile-guide.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="interpreting.html"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Starting profiling</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Interpreting profiling results</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.22 2001/02/05 11:37:59 movement Exp $
+# $Id: op_start,v 1.23 2001/04/05 13:24:42 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -28,8 +28,8 @@ CTR1_EVENT=
 KERNEL_ONLY=0
 CTR0_UM=0
 CTR1_UM=0
-CTR0_COUNT=
-CTR1_COUNT=
+CTR0_COUNT=600000
+CTR1_COUNT=600000
 CTR0_USER=1
 CTR0_KERNEL=1
 CTR1_USER=1
@@ -41,7 +41,7 @@ MAP_FILE=
 VMLINUX=
 PID_FILTER=0
 PGRP_FILTER=0
-VERBOSE=0 
+VERBOSE=0
 
 help_string='op_start: usage:$
 Module options$
@@ -193,8 +193,7 @@ CTR0_EVENT_VAL=`op_help $CTR0_EVENT`
 CTR1_EVENT_VAL=`op_help $CTR1_EVENT`
 
 grep oprof /proc/devices >/dev/null
-if [ "$?" -ne 0 ]
-then
+if [ "$?" -ne 0 ]; then
 	modprobe oprofile
 	if [ "$?" != "0" ]
 	then
@@ -203,8 +202,7 @@ then
 	fi
 fi
 
-if [ ! -d "$DIR" ]
-then
+if [ ! -d "$DIR" ]; then
        mkdir -p "$DIR"
        if [ "$?" != "0" ]
        then
@@ -251,38 +249,52 @@ fi
 
 >$LOG_FILE
 
-if [ -z "$MAP_FILE" ]
-then
-	echo "No map file specified."
-	echo $help_string | tr \$ '\n'
+if [ -z "$MAP_FILE" ]; then
+	echo "No map file specified. You must specify the correct System.map and vmlinux files, e.g."
+	echo "op_start --map-file=/path/to/System.map --vmlinux=/path/to/vmlinux"
+	echo "Enter op_start --help for full options"
 	exit 1
 fi
 
-if [ -z "$VMLINUX" ]
-then
-	echo "No vmlinux file specified."
-	echo $help_string | tr \$ '\n'
+if [ -z "$VMLINUX" ]; then
+	echo "No vmlinux file specified. You must specify the correct System.map and vmlinux files, e.g."
+	echo "op_start --map-file=/path/to/System.map --vmlinux=/path/to/vmlinux"
+	echo "Enter op_start --help for full options"
 	exit 1
 fi
 
-if [ -c "$DEVICE_FILE" ]
-then
+if [ ! -f "$MAP_FILE" ]; then
+	echo "The specified map file \"$MAP_FILE\" doesn't exist."
+	exit 1
+fi
+
+if [ ! -f "$MAP_FILE" ]; then
+	echo "The specified map file \"$MAP_FILE\" doesn't exist."
+	exit 1
+fi
+
+if [ -z "$CTR0_EVENT" -a -z "$CTR1_EVENT" ]; then
+	echo "You haven't specified what events you would like to count, e.g."
+	echo "op_start ... --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=600000"
+	echo "Enter op_start --help for full options"
+	exit 1
+fi
+ 
+if [ -c "$DEVICE_FILE" ]; then
 	if [ "$VERBOSE" = "1" ]; then 
 	echo "Removing $DEVICE_FILE"
 	fi 
 	rm "$DEVICE_FILE"
 fi
 
-if [ -c "$HASH_MAP_DEVICE_FILE" ]
-then
+if [ -c "$HASH_MAP_DEVICE_FILE" ]; then
 	if [ "$VERBOSE" = "1" ]; then 
 	echo "Removing $HASH_MAP_DEVICE_FILE"
 	fi 
 	rm "$HASH_MAP_DEVICE_FILE"
 fi
 
-if [ ! -d "$SAMPLES_DIR" ]
-then
+if [ ! -d "$SAMPLES_DIR" ]; then
 	mkdir -p "$SAMPLES_DIR"
 	if [ "$?" != "0" ]
 	then
@@ -365,10 +377,11 @@ if [ "$VERBOSE" = "1" ]; then
 fi
 
 oprofiled $OPD_ARGS
-sleep 2
+sleep 4
 PID=`ps x | grep oprofiled | grep -v grep | awk '{print $1}'`
 if [ "$PID" = "" ]
 then
 	echo "Couldn't start oprofiled."
+	echo "Check the log file \"$LOG_FILE\" and /var/log/messages"
 	exit 1
 fi
