@@ -33,7 +33,7 @@ test "$LD" || AC_ERROR(ld not found)
 
 AX_FIND_KERNEL
 
-if test "$OPROFILE_25" = "no"; then
+if test "$OPROFILE_26" = "no"; then
 	AX_CONFIG_MODULE
 fi
 

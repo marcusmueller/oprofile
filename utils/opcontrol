@@ -104,7 +104,7 @@ do_help() {
 }
 
 
-load_module_25() {
+load_module_26() {
 	grep oprofilefs /proc/filesystems >/dev/null
 	if [ "$?" -ne 0 ]; then
 		modprobe oprofile
@@ -155,7 +155,7 @@ load_module_24() {
 load_module()
 {
 	OPROFILE_AVAILABLE=no
-	load_module_25
+	load_module_26
 	if test "$OPROFILE_AVAILABLE" != "yes"; then
 		load_module_24
 	fi

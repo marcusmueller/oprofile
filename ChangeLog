@@ -1,6 +1,12 @@
 2003-10-14  John Levon  <levon@movementarian.org>
 
-	* utils/opcontrol: merge some 2.4/5 code
+	* configure.in:
+	* m4/findkernel.m4:
+	* utils/opcontrol: 2.5 refs -> 2.6
+
+2003-10-14  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: merge some 2.4/6 code
 
 2003-10-14  John Levon  <levon@movementarian.org>
 
