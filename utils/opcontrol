@@ -817,6 +817,15 @@ do_sysctl_setup_24() {
 			KERNEL=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $4}'`
 			USER=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $5}'`
 			CTR=`echo $HW_CTRS | awk "{print \\$$((f + 1))}"`
+			if test -z "$UNIT_MASK"; then
+				UNIT_MASK=0
+			fi
+			if test -z "$KERNEL"; then
+				KERNEL=1
+			fi
+			if test -z "$USER"; then
+				USER=1
+			fi
 			if test "$EVENT" = "RTC"; then
 				$SYSCTL -w dev.oprofile.rtc_value=$COUNT
 			else
@@ -869,6 +878,15 @@ do_sysctl_setup_25() {
 			KERNEL=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $4}'`
 			USER=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $5}'`
 			CTR=`echo $HW_CTRS | awk "{print \\$$((f + 1))}"`
+			if test -z "$UNIT_MASK"; then
+				UNIT_MASK=0
+			fi
+			if test -z "$KERNEL"; then
+				KERNEL=1
+			fi
+			if test -z "$USER"; then
+				USER=1
+			fi
 			if test "$EVENT" = "RTC"; then
 				echo $COUNT >$MOUNT/rtc_value
 			else

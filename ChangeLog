@@ -1,5 +1,13 @@
 2003-06-15  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml: document --event
+
+	* utils/opcontrol:
+	* utils/op_help.c: allow unit mask, kernel, user to be
+	optional. Verify not too many events are passed.
+
+2003-06-15  John Levon  <levon@movementarian.org>
+
 	* libop/op_cpu_type.c: fix nr_counters cpu type check
 
 	* utils/op_help: implement --check_events, event validation

@@ -111,6 +111,14 @@ static int parse_events(void)
 	int i = 0;
 
 	while (chosen_events[i]) {
+		int nr_counters = op_get_nr_counters(cpu_type);
+
+		if (i >= nr_counters) {
+			fprintf(stderr, "Too many events specified: CPU "
+			        "only has %d counters.\n", nr_counters);
+			exit(EXIT_FAILURE);
+		}
+
 		char const * cp = chosen_events[i];
 		char * part = next_part(&cp);
 
@@ -135,27 +143,12 @@ static int parse_events(void)
 		parsed_events[i].count = strtoul(part, NULL, 0);
 		free(part);
 
+		parsed_events[i].unit_mask = 0;
 		part = next_part(&cp);
 
-		if (!part) {
-			fprintf(stderr, "Invalid event %s\n",
-			        chosen_events[i]);
-			exit(EXIT_FAILURE);
-		}
-
-		parsed_events[i].unit_mask = strtoul(part, NULL, 0);
-		free(part);
-
-		/* check kernel:user are present */
-		part = next_part(&cp);
 		if (part) {
+			parsed_events[i].unit_mask = strtoul(part, NULL, 0);
 			free(part);
-			part = next_part(&cp);
-		}
-		if (!part) {
-			fprintf(stderr, "Invalid event %s\n",
-			        chosen_events[i]);
-			exit(EXIT_FAILURE);
 		}
 	
 		++i;
