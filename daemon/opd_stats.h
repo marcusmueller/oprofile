@@ -21,6 +21,7 @@ enum {  OPD_KERNEL, /* nr. kernel samples */
 	OPD_PROCESS, /* nr. userspace samples */
 	OPD_DUMP_COUNT, /* nr. of times buffer is read */
 	OPD_SAMPLES, /* nr. samples */
+	OPD_NIL_IMAGE, /* nr. samples lost due to nil image and sample in user space */
 	OPD_MAX_STATS /* end of stats */
 	};
 

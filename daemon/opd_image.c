@@ -414,6 +414,9 @@ static void opd_put_sample(struct opd_image * image, int in_kernel,
 			verbprintf("Putting image sample (%s) offset 0x%llx, counter %lu\n",
 				image->name, eip, event);
 			opd_put_image_sample(image, eip, event);
+		} else {
+			verbprintf("opd_put_sample() nil image, sample lost\n");
+			opd_stats[OPD_NIL_IMAGE]++;
 		}
 	} else {
 		fprintf(stderr, "Cannot determine if we are in kernel mode or not\n");

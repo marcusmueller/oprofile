@@ -30,9 +30,8 @@ Before 1.0 little stuff
  o "op_time" doesn't have a header !
  o document that even with the in_interrupt trick in 2.5, you can still get a few
    samples in the wrong place - interrupt code outside of the irq_enter/exit
- o daemon/opd_image.c:opd_put_sample() if (image != NULL) { ... }
-  *else verbrintf(SAMPLE LOST)* the else is missing, if log file show such
-  message track the cause
+ o look oprofiled.log statitistics if 'Nr. lost userspace samples (nil image)'
+  is non-zero invetigate why.
  o fix the 2.5 module-finding problem as best as Rusty will let us
  o implement module-drop event in 2.5 kernel
  o fix /dev/null mappings (see sf)

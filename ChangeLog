@@ -1,3 +1,12 @@
+2003-03-07  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
+	* daemon/opd_image.c:
+	* daemon/op_stats.c:
+	* daemon/opd_stats.h: add statistics for nil image whilst receiveing
+	  user space samples.
+
 2003-03-06  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* TODO: update
