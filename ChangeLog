@@ -1,4 +1,10 @@
+2003-06-16  John Levon  <levon@movementarian.org>
+
+	* utils/opcontrol: "opcontrol" will show usage
+	instead of doing nothing
+
 2003-06-16  Will Cohen  <wcohen@nc.rr.com>
+
 	* libabi/abi.cpp:
 	* libabi/op_import.cpp: Add required include for cassert.
 

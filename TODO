@@ -48,7 +48,6 @@ Before 1.0 little stuff
  o implement pp_interface alias
   --separate==none. Must we take care ?
  o look if we must remove help_str support from libopt++
- o just running "opcontrol" does nothing, should error
  o option xxx and negated option --no-xxx: we can hide them in --help and
   mention in the xxx option help string than the --no-xxx is allowed. Not
   really usefull if we have a little number of --no.

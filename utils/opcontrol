@@ -1145,6 +1145,11 @@ check_version_help() {
 
 check_version_help $@
 
+if test -z "$1"; then
+	do_help
+	exit 0
+fi
+
 if [ "$UID" != "0" ]; then
 	echo "Must be root to use oprofile." >&2
 	exit 1
