@@ -1,3 +1,9 @@
+2003-07-21  John Levon  <levon@movementarian.org>
+
+	* gui/oprof_start.h:
+	* gui/oprof_start.cpp: use a default event if no
+	events are set yet
+
 2003-07-20  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* m4/compileroption.m4: fix for autoconf 2.13

@@ -109,6 +109,8 @@ private:
 
 	/// read the events set in daemonrc
 	void read_set_events();
+	/// use the default event
+	void setup_default_event();
 	/// load the extra config file
 	void load_config_file();
 	/// save the config
@@ -122,8 +124,10 @@ private:
 
 	/// the current event in the GUI
 	uint current_event;
+
+	typedef std::vector<op_event_descr const *> current_events_t;
 	/// current event selections
-	std::vector<op_event_descr const *> current_events;
+	current_events_t current_events;
 
 	/// current event configs for each counter
 	typedef std::map<std::string, event_setting> event_setting_map;

@@ -215,14 +215,29 @@ void oprof_start::fill_events()
 }
 
 
+void oprof_start::setup_default_event()
+{
+	struct op_default_event_descr descr;
+	op_default_event(cpu_type, &descr);
+
+	current_events[0] = &locate_event(descr.name);
+	event_cfgs[0][descr.name].umask = descr.um;
+	event_cfgs[0][descr.name].count = descr.count;
+	event_cfgs[0][descr.name].user_ring_count = 1;
+	event_cfgs[0][descr.name].os_ring_count = 1;
+}
+
+
 void oprof_start::read_set_events()
 {
 	string name = get_user_filename(".oprofile/daemonrc");
 
 	ifstream in(name.c_str());
 
-	if (!in)
+	if (!in) {
+		setup_default_event();
 		return;
+	}
 
 	string str;
 
@@ -263,8 +278,18 @@ void oprof_start::read_set_events()
 		current_events[ctr] = &locate_event(ev_name);
 	}
 
-	// FIXME what about if ctr 0 is not set ?
 	current_event = 0;
+
+	/* use default event if none set */
+
+	current_events_t::const_iterator cit = current_events.begin();
+	current_events_t::const_iterator end = current_events.end();
+	for (; cit != end; ++cit) {
+		if (*cit)
+			return;
+	}
+
+	setup_default_event();
 }
 
 

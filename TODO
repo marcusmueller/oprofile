@@ -6,7 +6,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.6 release
 -----------
 
- o gui: show default event if none selected, fix counter allocation stuff.
+ o gui: fix counter allocation stuff.
    We must allow to de-select a counter (via "No event" entry in listbox)
 
 0.7 release
