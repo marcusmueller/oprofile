@@ -1,3 +1,7 @@
+2003-11-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* module/x86/op_syscalls.c: fix build with 2.2 kernel
+
 2003-11-06  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* Makefile.am: use .PHONY for module goal to not statisfy this goal

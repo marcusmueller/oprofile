@@ -256,9 +256,11 @@ asmlinkage static int my_sys_clone(struct pt_regs regs)
 	MOD_INC_USE_COUNT;
 	ret = old_sys_clone(regs);
 	if (ret) {
+#if V_AT_LEAST(2, 4, 0)
 		if (clone_flags & CLONE_THREAD)
 			oprof_report_fork(pid, ret, tgid, tgid);
 		else
+#endif
 			oprof_report_fork(pid, ret, tgid, ret);
 	}
 	MOD_DEC_USE_COUNT;
