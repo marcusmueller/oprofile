@@ -1,5 +1,9 @@
-dist_sources = \
+SUBDIRS = liblegacy .
+
+oprofiled_SOURCES = \
+	init.c \
 	oprofiled.c \
+	oprofiled.h \
 	opd_stats.c \
 	opd_sfile.c \
 	opd_sfile.h \
@@ -17,8 +21,6 @@ dist_sources = \
 	opd_perfmon.h \
 	opd_perfmon.c
 
-EXTRA_DIST = $(dist_sources)
-
 LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
 
 AM_CPPFLAGS = \
@@ -29,21 +31,11 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = @OP_CFLAGS@
 
-# code shared with 2.4 daemon
-noinst_LIBRARIES = libdaemon.a
-libdaemon_a_SOURCES = \
-	opd_util.h \
-	opd_util.c
-
-if kernel_support
-
 bin_PROGRAMS = oprofiled
-
-oprofiled_SOURCES = $(dist_sources)
 
 if enable_abi
 oprofiled_LDADD = \
-	libdaemon.a \
+	liblegacy/liblegacy.a \
 	../libabi/libabi.a \
 	../libdb/libodb.a \
 	../libop/libop.a \
@@ -51,7 +43,7 @@ oprofiled_LDADD = \
 LINKER=$(CXX)
 else
 oprofiled_LDADD = \
-	libdaemon.a \
+	liblegacy/liblegacy.a \
 	../libdb/libodb.a \
 	../libop/libop.a \
 	../libutil/libutil.a
@@ -59,5 +51,3 @@ LINKER=$(CC)
 endif
 
 oprofiled_LINK = $(LINKER) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-
-endif

@@ -14,9 +14,9 @@
 #include "opd_mapping.h"
 #include "opd_sample_files.h"
 #include "opd_kernel.h"
-#include "opd_stats.h"
+#include "opd_24_stats.h"
 #include "opd_printf.h"
-#include "opd_util.h"
+#include "oprofiled.h"
 
 #include "op_interface.h"
 #include "op_cpu_type.h"
@@ -169,9 +169,9 @@ struct opd_proc * opd_get_proc(pid_t tid, pid_t tgid)
 	uint hash = proc_hash(tid);
 	struct list_head * pos, *pos2;
 
-	opd_stats[OPD_PROC_QUEUE_ACCESS]++;
+	opd_24_stats[OPD_PROC_QUEUE_ACCESS]++;
 	list_for_each_safe(pos, pos2, &opd_procs[hash]) {
-		opd_stats[OPD_PROC_QUEUE_DEPTH]++;
+		opd_24_stats[OPD_PROC_QUEUE_DEPTH]++;
 		proc = list_entry(pos, struct opd_proc, next);
 		if (tid == proc->tid && tgid == proc->tgid) {
 			/* LRU to head */
@@ -213,7 +213,7 @@ verb_show_sample(unsigned long offset, struct opd_map * map)
 void opd_put_image_sample(struct opd_image * image, unsigned long offset,
                           u32 counter)
 {
-	struct opd_sfile * sfile;
+	struct opd_24_sfile * sfile;
 	int err;
 
 	if (image->ignored)
@@ -222,8 +222,8 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 	sfile = image->sfiles[counter][cpu_number];
 
 	if (!sfile || !sfile->sample_file.base_memory) {
-		if (opd_open_sample_file(image, counter, cpu_number)) {
-			/* opd_open_sample_file output an error message */
+		if (opd_open_24_sample_file(image, counter, cpu_number)) {
+			/* opd_open_24_sample_file output an error message */
 			return;
 		}
 		sfile = image->sfiles[counter][cpu_number];
@@ -235,7 +235,7 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 		abort();
 	}
 
-	opd_sfile_lru(sfile);
+	opd_24_sfile_lru(sfile);
 }
 
 
@@ -254,7 +254,7 @@ static int opd_lookup_maps(struct opd_proc * proc,
 
 	proc->accessed = 1;
 
-	opd_stats[OPD_MAP_ARRAY_ACCESS]++;
+	opd_24_stats[OPD_MAP_ARRAY_ACCESS]++;
 	list_for_each(pos, &proc->maps) {
 		struct opd_map * map = list_entry(pos, struct opd_map, next);
 		if (opd_is_in_map(map, sample->eip)) {
@@ -263,10 +263,10 @@ static int opd_lookup_maps(struct opd_proc * proc,
 				verb_show_sample(offset, map);
 				opd_put_image_sample(map->image, offset, sample->counter);
 			}
-			opd_stats[OPD_PROCESS]++;
+			opd_24_stats[OPD_PROCESS]++;
 			return 1;
 		}
-		opd_stats[OPD_MAP_ARRAY_DEPTH]++;
+		opd_24_stats[OPD_MAP_ARRAY_DEPTH]++;
 	}
 
 	return 0;
@@ -285,7 +285,7 @@ void opd_put_sample(struct op_sample const * sample)
 	struct opd_proc * proc;
 	int in_kernel_eip = opd_eip_is_kernel(sample->eip);
 
-	opd_stats[OPD_SAMPLES]++;
+	opd_24_stats[OPD_SAMPLES]++;
 
 	verbprintf("DO_PUT_SAMPLE: c%d, EIP 0x%.8lx, tgid %.6d pid %.6d\n",
 		sample->counter, sample->eip, sample->tgid, sample->pid);
@@ -307,7 +307,7 @@ void opd_put_sample(struct op_sample const * sample)
 		} else {
 			verbprintf("No proc info for tgid %.6d pid %.6d.\n",
                                    sample->tgid, sample->pid);
-			opd_stats[OPD_LOST_PROCESS]++;
+			opd_24_stats[OPD_LOST_PROCESS]++;
 		}
 		return;
 	}
@@ -332,7 +332,7 @@ void opd_put_sample(struct op_sample const * sample)
 	/* couldn't locate it */
 	verbprintf("Couldn't find map for pid %.6d, EIP 0x%.8lx.\n",
 		   sample->pid, sample->eip);
-	opd_stats[OPD_LOST_MAP_PROCESS]++;
+	opd_24_stats[OPD_LOST_MAP_PROCESS]++;
 }
 
 

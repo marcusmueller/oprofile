@@ -19,13 +19,9 @@ module/
 
 	The 2.4 module code. Sub-directories contain architecture-specific code.
 
-dae/
-
-	The 2.4 daemon which writes the kernel data to the sample files.
-
 daemon/
 
-	The 2.5+ daemon
+	The daemon. liblegacy/ contains the daemon core for 2.4
 
 utils/
 

@@ -14,7 +14,7 @@
 #include "opd_trans.h"
 #include "opd_printf.h"
 #include "opd_stats.h"
-#include "opd_util.h"
+#include "oprofiled.h"
 
 #include "op_fileio.h"
 #include "op_config.h"

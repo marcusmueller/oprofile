@@ -20,7 +20,7 @@
 
 #include <time.h>
 
-struct opd_sfile;
+struct opd_24_sfile;
 
 /**
  * A binary (library, application, kernel or module)
@@ -31,7 +31,7 @@ struct opd_image {
 	struct list_head hash_next;
 	/* how many time this opd_image is referenced */
 	int ref_count;
-	struct opd_sfile * sfiles[OP_MAX_COUNTERS][NR_CPUS];
+	struct opd_24_sfile * sfiles[OP_MAX_COUNTERS][NR_CPUS];
 	/* name of this image */
 	char * name;
 	/* the application name where belongs this image, NULL if image has

@@ -14,8 +14,8 @@
 #include "opd_image.h"
 #include "opd_mapping.h"
 #include "opd_printf.h"
-#include "opd_stats.h"
-#include "opd_util.h"
+#include "opd_24_stats.h"
+#include "oprofiled.h"
 
 #include "op_fileio.h"
 #include "op_config_24.h"
@@ -289,7 +289,7 @@ static void opd_drop_module_sample(unsigned long eip)
 	uint nr_mods;
 	uint mod = 0;
 
-	opd_stats[OPD_LOST_MODULE]++;
+	opd_24_stats[OPD_LOST_MODULE]++;
 
 	module_names = xmalloc(size);
 	while (query_module(NULL, QM_MODULES, module_names, size, &ret)) {
@@ -377,11 +377,11 @@ static void opd_handle_module_sample(unsigned long eip, u32 counter)
 
 	if (module) {
 		if (module->image != NULL) {
-			opd_stats[OPD_MODULE]++;
+			opd_24_stats[OPD_MODULE]++;
 			opd_put_image_sample(module->image,
 					     eip - module->start, counter);
 		} else {
-			opd_stats[OPD_LOST_MODULE]++;
+			opd_24_stats[OPD_LOST_MODULE]++;
 			verbprintf("No image for sampled module %s\n",
 				   module->name);
 		}
@@ -402,7 +402,7 @@ static void opd_handle_module_sample(unsigned long eip, u32 counter)
 void opd_handle_kernel_sample(unsigned long eip, u32 counter)
 {
 	if (no_vmlinux || eip < kernel_end) {
-		opd_stats[OPD_KERNEL]++;
+		opd_24_stats[OPD_KERNEL]++;
 		opd_put_image_sample(kernel_image, eip - kernel_start, counter);
 		return;
 	}

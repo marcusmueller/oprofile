@@ -10,7 +10,7 @@
 
 #ifdef __ia64__
 
-#include "opd_util.h"
+#include "oprofiled.h"
 #include "opd_perfmon.h"
 
 #include "op_libiberty.h"

@@ -9,7 +9,6 @@ SUBDIRS = \
 	libabi \
 	libregex \
 	daemon \
-	dae \
 	utils \
 	libpp \
 	pp \

@@ -1,6 +1,6 @@
 /**
- * @file daemon/opd_util.h
- * Code shared between 2.4 and 2.6 daemons
+ * @file daemon/oprofiled.h
+ * Initialisation and setup
  *
  * @remark Copyright 2002, 2003 OProfile authors
  * @remark Read the file COPYING
@@ -9,22 +9,17 @@
  * @author Philippe Elie
  */
 
-#ifndef OPD_UTIL_H
+#ifndef OPROFILED_H
 
 #include "op_cpu_type.h"
 
 #include <signal.h>
 
-/**
- * opd_options - parse command line options
- * @param argc  argc
- * @param argv  argv array
- *
- * Parse all command line arguments, and sanity
- * check what the user passed. Incorrect arguments
- * are a fatal error.
- */
-void opd_options(int argc, char const * argv[]);
+struct oprofiled_ops {
+	void (*init)(void);
+	void (*start)(void);
+	void (*exit)(void);
+};
 
 
 /**
@@ -38,23 +33,6 @@ void opd_options(int argc, char const * argv[]);
 void opd_open_logfile(void);
 
  
-/**
- * opd_go_daemon - become daemon process
- *
- * Become an un-attached daemon in the standard
- * way (fork(),chdir(),setsid(),fork()).
- * Parents perform _exit().
- *
- * Any failure is fatal.
- */
-void opd_go_daemon(void);
-
-
-/**
- * opd_write_abi - write out the ABI description if needed
- */
-void opd_write_abi(void);
-
 /**
  * opd_hash_name - hash a name
  * @param name  name to hash
@@ -73,11 +51,6 @@ size_t opd_hash_name(char const * name);
  */
 int is_image_ignored(char const * name);
 
-
-/**
- * opd_setup_signals - setup signal handler
- */
-void opd_setup_signals(void);
 
 /** global variable positioned by signal handler */
 extern sig_atomic_t signal_alarm;
@@ -111,4 +84,4 @@ extern int no_vmlinux;
 extern char * vmlinux;
 extern char * kernel_range;
 
-#endif /* OPD_UTIL_H */
+#endif /* OPROFILED_H */

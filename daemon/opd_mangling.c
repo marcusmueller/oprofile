@@ -16,7 +16,7 @@
 #include "opd_cookie.h"
 #include "opd_sfile.h"
 #include "opd_printf.h"
-#include "opd_util.h"
+#include "oprofiled.h"
 
 #include "op_file.h"
 #include "op_sample_file.h"

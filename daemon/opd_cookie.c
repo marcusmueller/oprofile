@@ -9,7 +9,7 @@
  */
 
 #include "opd_cookie.h"
-#include "opd_util.h"
+#include "oprofiled.h"
 #include "op_list.h"
 #include "op_libiberty.h"
 

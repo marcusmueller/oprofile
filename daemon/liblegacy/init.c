@@ -1,6 +1,6 @@
 /**
- * @file dae/oprofiled.c
- * Daemon set up and main loop
+ * @file daemon/liblegacy/init.c
+ * Daemon set up and main loop for 2.4
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -13,50 +13,40 @@
  
 #include "opd_proc.h"
 #include "opd_mapping.h"
-#include "opd_stats.h"
+#include "opd_24_stats.h"
 #include "opd_sample_files.h"
 #include "opd_image.h"
 #include "opd_parse_proc.h"
 #include "opd_kernel.h"
 #include "opd_printf.h"
-#include "opd_util.h"
+#include "oprofiled.h"
 
-#include "op_version.h"
-#include "op_file.h"
-#include "op_fileio.h"
-#include "op_deviceio.h"
-#include "op_lockfile.h"
-#include "op_get_time.h"
 #include "op_sample_file.h"
-#include "op_events.h"
-#include "op_libiberty.h"
-#include "op_interface.h"
-#include "op_hw_config.h"
 #include "op_config_24.h"
-#ifdef OPROF_ABI
-#include "op_abi.h"
-#endif
+#include "op_interface.h"
+#include "op_libiberty.h"
+#include "op_deviceio.h"
+#include "op_events.h"
+#include "op_get_time.h"
+#include "op_fileio.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <unistd.h>
-#include <signal.h>
 #include <dirent.h>
-#include <fcntl.h>
+#include <stdio.h>
 #include <errno.h>
-#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdlib.h>
-#include <limits.h>
 
 fd_t hashmapdevfd;
 
 int cpu_number;
 
-static char const * mount = OP_MOUNT;
 static fd_t devfd;
 static fd_t notedevfd;
+static struct op_buffer_head * sbuf;
+static size_t s_buf_bytesize;
+static struct op_note * nbuf;
+static size_t n_buf_bytesize;
 
 static void opd_sighup(void);
 static void opd_alarm(void);
@@ -122,7 +112,7 @@ static void op_open_files(void)
 static int opd_read_fs_int(char const * name)
 {
 	char filename[PATH_MAX + 1];
-	snprintf(filename, PATH_MAX, "%s/%s", mount, name);
+	snprintf(filename, PATH_MAX, "%s/%s", OP_MOUNT, name);
 	return op_read_int_from_file(filename);
 }
 
@@ -242,7 +232,7 @@ static void opd_do_notes(struct op_note const * opd_buf, size_t count)
 	for (i = 0; i < count/sizeof(struct op_note); i++) {
 		note = &opd_buf[i];
 
-		opd_stats[OPD_NOTIFICATIONS]++;
+		opd_24_stats[OPD_NOTIFICATIONS]++;
 
 		switch (note->type) {
 			case OP_MAP:
@@ -289,7 +279,7 @@ static void opd_do_samples(struct op_buffer_head const * opd_buf)
 	uint i;
 	struct op_sample const * buffer = opd_buf->buffer; 
 
-	opd_stats[OPD_DUMP_COUNT]++;
+	opd_24_stats[OPD_DUMP_COUNT]++;
 
 	verbprintf("Read buffer of %d entries for cpu %d.\n",
 		   (unsigned int)opd_buf->count, opd_buf->cpu_nr);
@@ -313,7 +303,7 @@ static void opd_alarm(void)
 
 	opd_for_each_proc(opd_age_proc);
 
-	opd_print_stats();
+	opd_print_24_stats();
 
 	alarm(60*10);
 }
@@ -341,25 +331,17 @@ static void clean_exit(void)
 
 static void opd_sigterm(void)
 {
-	opd_print_stats();
+	opd_print_24_stats();
 	printf("oprofiled stopped %s", op_get_time());
 	exit(EXIT_FAILURE);
 }
  
 
-int main(int argc, char const * argv[])
+static void opd_24_init(void)
 {
-	struct op_buffer_head * sbuf;
-	size_t s_buf_bytesize;
-	struct op_note * nbuf;
-	size_t n_buf_bytesize;
+	size_t i;
 	int opd_buf_size = OP_DEFAULT_BUF_SIZE;
 	int opd_note_buf_size = OP_DEFAULT_NOTE_SIZE;
-	int i;
-	int err;
-	struct rlimit rlim = { 2048, 2048 };
-
-	opd_options(argc, argv);
 
 	opd_parse_kernel_range(kernel_range);
 	opd_buf_size = opd_read_fs_int("bufsize");
@@ -376,40 +358,31 @@ int main(int argc, char const * argv[])
 	opd_init_proc();
 	opd_init_kernel_image();
 
-	opd_write_abi();
+	for (i = 0; i < OPD_MAX_STATS; i++)
+		opd_24_stats[i] = 0;
 
 	if (atexit(clean_exit)) {
 		perror("oprofiled: couldn't set exit cleanup: ");
 		exit(EXIT_FAILURE);
 	}
+}
 
-	opd_go_daemon();
 
+static void opd_24_start(void)
+{
 	op_open_files();
 
 	/* yes, this is racey. */
 	opd_get_ascii_procs();
 
-	for (i = 0; i< OPD_MAX_STATS; i++)
-		opd_stats[i] = 0;
-
-	opd_setup_signals();
- 
-	err = setrlimit(RLIMIT_NOFILE, &rlim);
-	if (err) {
-		perror("warning: could not set RLIMIT_NOFILE to 2048: ");
-	}
-
-	if (op_write_lock_file(OP_LOCK_FILE)) {
-		fprintf(stderr, "oprofiled: could not create lock file "
-			OP_LOCK_FILE "\n");
-		exit(EXIT_FAILURE);
-	}
-
 	/* simple sleep-then-process loop */
 	opd_do_read(sbuf, s_buf_bytesize, nbuf, n_buf_bytesize);
+}
 
-	opd_print_stats();
+
+static void opd_24_exit(void)
+{
+	opd_print_24_stats();
 	printf("oprofiled stopped %s", op_get_time());
 
 	free(sbuf);
@@ -418,7 +391,11 @@ int main(int argc, char const * argv[])
 	opd_proc_cleanup();
 	/* kernel/module image are not owned by a proc, we must cleanup them */
 	opd_for_each_image(opd_delete_image);
-	free(vmlinux);
-
-	return 0;
 }
+
+
+struct oprofiled_ops opd_24_ops = {
+	.init = opd_24_init,
+	.start = opd_24_start,
+	.exit = opd_24_exit
+};

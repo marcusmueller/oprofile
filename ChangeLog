@@ -1,5 +1,25 @@
 2003-10-26  John Levon  <levon@movementarian.org>
 
+	* HACKING:
+	* configure.in:
+	* Makefile.am:
+	* dae/: move all of 2.4 daemon code to ...
+
+	* daemon/liblegacy/: here
+
+	* daemon/Makefile.am:
+	* daemon/opd_util.h:
+	* daemon/opd_util.c: move to ...
+
+	* daemon/oprofiled.h:
+	* daemon/oprofiled.c: here, and call the right operations
+	depending upon oprofile kernel version.
+
+	* daemon/init.c:
+	* daemon/liblegacy/init.c: init and running for each version
+
+2003-10-26  John Levon  <levon@movementarian.org>
+
 	* daemon/opd_cookie.c: make sure to create the
 	cookie for the ignore value if it's not found
 

@@ -186,8 +186,8 @@ AC_OUTPUT(Makefile \
 	libregex/tests/Makefile \
 	libregex/stl.pat \
 	libregex/tests/mangled-name \
-	dae/Makefile \
 	daemon/Makefile \
+	daemon/liblegacy/Makefile \
 	events/Makefile \
 	utils/Makefile \
 	doc/Makefile \

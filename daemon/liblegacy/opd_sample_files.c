@@ -14,7 +14,7 @@
 #include "opd_sample_files.h"
 #include "opd_image.h"
 #include "opd_printf.h"
-#include "opd_util.h"
+#include "oprofiled.h"
 
 #include "op_sample_file.h"
 #include "op_file.h"
@@ -33,11 +33,11 @@ static LIST_HEAD(lru_list);
 
 /* this value probably doesn't matter too much */
 #define LRU_AMOUNT 1000
-static int opd_sfile_lru_clear(void)
+static int opd_24_sfile_lru_clear(void)
 {
 	struct list_head * pos;
 	struct list_head * pos2;
-	struct opd_sfile * sfile;
+	struct opd_24_sfile * sfile;
 	int amount = LRU_AMOUNT;
 
 	verbprintf("image lru clear\n");
@@ -48,7 +48,7 @@ static int opd_sfile_lru_clear(void)
 	list_for_each_safe(pos, pos2, &lru_list) {
 		if (!--amount)
 			break;
-		sfile = list_entry(pos, struct opd_sfile, lru_next);
+		sfile = list_entry(pos, struct opd_24_sfile, lru_next);
 		odb_close(&sfile->sample_file);
 		list_del_init(&sfile->lru_next);
 	}
@@ -57,7 +57,7 @@ static int opd_sfile_lru_clear(void)
 }
 
 
-void opd_sfile_lru(struct opd_sfile * sfile)
+void opd_24_sfile_lru(struct opd_24_sfile * sfile)
 {
 	list_del(&sfile->lru_next);
 	list_add_tail(&sfile->lru_next, &lru_list);
@@ -118,7 +118,7 @@ static char * opd_mangle_filename(struct opd_image const * image, int counter,
 
 
 /*
- * opd_open_sample_file - open an image sample file
+ * opd_open_24_sample_file - open an image sample file
  * @param image  image to open file for
  * @param counter  counter number
  * @param cpu_nr  cpu number
@@ -130,10 +130,10 @@ static char * opd_mangle_filename(struct opd_image const * image, int counter,
  *
  * Returns 0 on success.
  */
-int opd_open_sample_file(struct opd_image * image, int counter, int cpu_nr)
+int opd_open_24_sample_file(struct opd_image * image, int counter, int cpu_nr)
 {
 	char * mangled;
-	struct opd_sfile * sfile;
+	struct opd_24_sfile * sfile;
 	struct opd_header * header;
 	struct opd_event * event = find_event(counter);
 	int err;
@@ -146,7 +146,7 @@ int opd_open_sample_file(struct opd_image * image, int counter, int cpu_nr)
 
 	sfile = image->sfiles[counter][cpu_nr];
 	if (!sfile) {
-		sfile = malloc(sizeof(struct opd_sfile));
+		sfile = malloc(sizeof(struct opd_24_sfile));
 		list_init(&sfile->lru_next);
 		odb_init(&sfile->sample_file);
 		image->sfiles[counter][cpu_nr] = sfile;
@@ -162,7 +162,7 @@ retry:
 	/* This can naturally happen when racing against opcontrol --reset. */
 	if (err) {
 		if (err == EMFILE) {
-			if (opd_sfile_lru_clear()) {
+			if (opd_24_sfile_lru_clear()) {
 				printf("LRU cleared but odb_open() fails for %s.\n", mangled);
 				abort();
 			}
@@ -199,10 +199,10 @@ out:
 void opd_sync_samples_files(void)
 {
 	struct list_head * pos;
-	struct opd_sfile * sfile;
+	struct opd_24_sfile * sfile;
 
 	list_for_each(pos, &lru_list) {
-		sfile = list_entry(pos, struct opd_sfile, lru_next);
+		sfile = list_entry(pos, struct opd_24_sfile, lru_next);
 		odb_sync(&sfile->sample_file);
 	}
 }

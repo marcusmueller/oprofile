@@ -12,8 +12,8 @@
 #include "opd_image.h"
 #include "opd_printf.h"
 #include "opd_sample_files.h"
-#include "opd_stats.h"
-#include "opd_util.h"
+#include "opd_24_stats.h"
+#include "oprofiled.h"
 
 #include "op_file.h"
 #include "op_config_24.h"
@@ -163,7 +163,7 @@ opd_new_image(char const * name, char const * app_name, int kernel,
 		image->ignored = is_image_ignored(name);
 
 	memset(image->sfiles, '\0',
-	       OP_MAX_COUNTERS * NR_CPUS * sizeof(struct opd_sfile *));
+	       OP_MAX_COUNTERS * NR_CPUS * sizeof(struct opd_24_sfile *));
 
 	hash_image = opd_hash_image(name, tid, tgid);
 	list_add(&image->hash_next, &opd_images[hash_image]);
@@ -236,10 +236,10 @@ static struct opd_image * opd_find_image(char const * name,
 	struct list_head * pos;
 	size_t bucket;
 
-	opd_stats[OPD_IMAGE_HASH_ACCESS]++;
+	opd_24_stats[OPD_IMAGE_HASH_ACCESS]++;
 	bucket = opd_hash_image(name, tid, tgid);
 	list_for_each(pos, &opd_images[bucket]) {
-		opd_stats[OPD_IMAGE_HASH_DEPTH]++;
+		opd_24_stats[OPD_IMAGE_HASH_DEPTH]++;
 		image = list_entry(pos, struct opd_image, hash_next);
 
 		if (!strcmp(image->name, name)) {

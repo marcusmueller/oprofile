@@ -1,5 +1,5 @@
 /**
- * @file dae/opd_stats.h
+ * @file dae/opd_24_stats.h
  * Management of daemon statistics
  *
  * @remark Copyright 2002 OProfile authors
@@ -9,10 +9,10 @@
  * @author Philippe Elie
  */
 
-#ifndef OPD_STATS_H
-#define OPD_STATS_H
+#ifndef OPD_24_STATS_H
+#define OPD_24_STATS_H
 
-extern unsigned long opd_stats[];
+extern unsigned long opd_24_stats[];
 
 enum {  OPD_KERNEL, /* nr. kernel samples */
 	OPD_MODULE, /* nr. module samples */
@@ -32,6 +32,6 @@ enum {  OPD_KERNEL, /* nr. kernel samples */
 	OPD_MAX_STATS /* end of stats */
 	};
 
-void opd_print_stats(void);
+void opd_print_24_stats(void);
 
-#endif /* OPD_STATS_H */
+#endif /* OPD_24_STATS_H */
