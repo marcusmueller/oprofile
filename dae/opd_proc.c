@@ -1023,11 +1023,9 @@ void opd_handle_drop_mappings(const struct op_sample *sample)
 	struct opd_proc *proc;
 
 	proc = opd_get_proc(sample->pid);
-	if (proc) {
+	if (proc)
 		opd_kill_maps(proc);
-	 	/* FIXME: if we can't fix execve(), must read as ascii */
-		opd_get_ascii_maps(proc);
-	} else
+	else
 		printf("Told to drop mappings for a non-existent process %u.\n",sample->pid);
 }
 
