@@ -52,7 +52,7 @@
 	* libregex/op_regex.cpp:
 	* libpp/profile.cpp: compile fix, tree was broken by my previous patch
 
-2003-06-11  Jason Yeh  <levon@movementarian.org>
+2003-06-11  Jason Yeh  <jason.yeh@amd.com>
 
 	* events/i386.athlon.events: add CPU_CLK_UNHALTED
 
