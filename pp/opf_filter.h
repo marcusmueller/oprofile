@@ -16,23 +16,18 @@ class counter_array_t {
  public:
 	counter_array_t();
 
-	size_t operator[](size_t index) const {
+	u32 operator[](size_t index) const {
 		return value[index];
 	}
 
-	// This can be avoided if counter_array_t have a build_from_string
-	// member function.
-	size_t & operator[](size_t index) {
+	u32 & operator[](size_t index) {
 		return value[index];
 	}
 
 	counter_array_t & operator+=(const counter_array_t &);
 
  private:
-	// for now we avoid dyn alloc here by allowing OP_MAX_COUNTERS rather
-	// than op_nr_counters. This is probably the bad way if the number of
-	// counters available becomes great.
-	size_t value[OP_MAX_COUNTERS];
+	u32 value[OP_MAX_COUNTERS];
 };
 
 //---------------------------------------------------------------------------
@@ -70,25 +65,22 @@ struct symbol_entry {
 class symbol_container_impl;
 
 class symbol_container_t {
- public:
+public:
 	 symbol_container_t();
 	~symbol_container_t();
 
-	size_t size() const;
-
-	const symbol_entry & operator[](size_t index) const;
-
 	void push_back(const symbol_entry &);
 
+	size_t size() const;
+	const symbol_entry & operator[](size_t index) const;
 	const symbol_entry * find(string filename, size_t linenr) const;
-
-	void flush_input_symbol();
-
 	const symbol_entry * find_by_vma(unsigned long vma) const;
 
-	// get a vector of symbols sorted by increased count.
-	void get_symbols_by_count(size_t counter, vector<const symbol_entry*>& v) const;
- private:
+	/// get a vector of symbol_entry sorted by increased count.
+	void get_symbols_by_count(size_t counter, 
+				  vector<const symbol_entry*>& v) const;
+
+private:
 	symbol_container_impl * impl;
 };
 
@@ -97,26 +89,21 @@ class symbol_container_t {
 class sample_container_impl;
 
 class sample_container_t {
- public:
+public:
 	sample_container_t();
 	~sample_container_t();
 
+	void push_back(const sample_entry &);
+
 	size_t size() const;
-
 	const sample_entry & operator[](size_t index) const;
-
 	bool accumulate_samples_for_file(counter_array_t & counter, 
 					 const string & filename) const;
-
-	const sample_entry * find_by_vma(unsigned long vma) const;
-
 	bool accumulate_samples(counter_array_t &, const string & filename, 
 				size_t linenr) const;
+	const sample_entry * find_by_vma(unsigned long vma) const;
 
-	void flush_input_counter();
-
-	void push_back(const sample_entry &);
- private:
+private:
 	sample_container_impl * impl;
 };
 

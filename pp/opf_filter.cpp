@@ -71,9 +71,8 @@ class input {
 // store a complete source file.
 struct source_file {
 	source_file();
-	source_file(istream & in, const string & filename);
+	source_file(istream & in);
 
-	string filename;
 	vector<string> file_line;
 };
 
@@ -112,7 +111,7 @@ class output {
 	void output_command_line() const;
 
 	void output_asm(input & in);
-	void output_source(input & in);
+	void output_source();
 
 	// output one file unconditionally.
 	void do_output_one_file(istream & in, const string & filename, 
@@ -124,7 +123,7 @@ class output {
 
 	void build_samples_containers();
 
-	bool setup_counter_param(input & in);
+	bool setup_counter_param();
 	bool calc_total_samples();
 
 	void output_counter(const counter_array_t & counter, 
@@ -193,8 +192,8 @@ class output {
 namespace {
 
 // Return the substring at beginning of str which is only made of blank or tabulation.
-string extract_blank_at_begin(const string & str) {
-
+string extract_blank_at_begin(const string & str)
+{
 	size_t end_pos = str.find_first_not_of(" \t");
 	if (end_pos == string::npos)
 		end_pos = 0;
@@ -203,8 +202,8 @@ string extract_blank_at_begin(const string & str) {
 }
 
 // Convenience function : just output the setup of one counter.
-ostream & operator<<(ostream & out, const counter_setup & rhs) {
-
+ostream & operator<<(ostream & out, const counter_setup & rhs)
+{
 	out << (rhs.enabled ? "enabled" : "disabled")  << " :";
 
 	if (rhs.enabled) {
@@ -225,7 +224,8 @@ ostream & operator<<(ostream & out, const counter_setup & rhs) {
 	return out;
 }
 
-inline double do_ratio(size_t counter, size_t total) {
+inline double do_ratio(size_t counter, size_t total)
+{
 	return total == 0 ? 1.0 : ((double)counter / total);
 }
 
@@ -249,7 +249,8 @@ counter_array_t & counter_array_t::operator+=(const counter_array_t & rhs)
 
 //--------------------------------------------------------------------------
 
-void sample_entry::debug_dump(ostream & out) const {
+void sample_entry::debug_dump(ostream & out) const 
+{
 	if (file_loc.filename.length())
 		out << file_loc.filename << ":" << file_loc.linenr << " ";
 
@@ -261,7 +262,8 @@ void sample_entry::debug_dump(ostream & out) const {
 
 //--------------------------------------------------------------------------
 
-void symbol_entry::debug_dump(ostream & out) const {
+void symbol_entry::debug_dump(ostream & out) const
+{
 
 	out << "[" << name << "]" << endl;
 
@@ -272,8 +274,8 @@ void symbol_entry::debug_dump(ostream & out) const {
 
 //---------------------------------------------------------------------------
 
-bool input::read_line(string & str) {
-
+bool input::read_line(string & str)
+{
 	if (put_back_area_valid) {
 		put_back_area_valid = false;
 
@@ -285,7 +287,8 @@ bool input::read_line(string & str) {
 	return getline(in, str);
 }
 
-void input::put_back(const string & str) {
+void input::put_back(const string & str)
+{
 	if (put_back_area_valid) {
 		throw "attempt to put_back() but put_back area full";
 	}
@@ -301,9 +304,7 @@ source_file::source_file()
 {
 }
  
-source_file::source_file(istream & in, const string & filename)
-	:
-	filename(filename)
+source_file::source_file(istream & in)
 {
 	string str;
 	while (getline(in, str))
@@ -334,8 +335,8 @@ output::output(ostream & out_, int argc_, char const * argv_[],
 {
 }
 
-void output::debug_dump_vector() const {
-
+void output::debug_dump_vector() const
+{
 	cerr << "total samples :";
 
 	for (size_t i = 0 ; i < op_nr_counters ; ++i)
@@ -355,8 +356,8 @@ void output::debug_dump_vector() const {
 	}
 }
 
-// With the new oproffp stuff this can be simplified
-bool output::setup_counter_param(input & in)
+// build a counter_setup from a footer.
+bool output::setup_counter_param()
 {
 	bool have_counter_info = false;
 
@@ -383,8 +384,8 @@ bool output::setup_counter_param(input & in)
 	return true;
 }
 
-bool output::calc_total_samples() {
-
+bool output::calc_total_samples()
+{
 	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		counter_info[i].total_samples = 0;
 
@@ -418,7 +419,8 @@ bool output::calc_total_samples() {
 	return false;
 }
 
-void output::output_one_counter(size_t counter, size_t total) const {
+void output::output_one_counter(size_t counter, size_t total) const
+{
 
 	out << " ";
 
@@ -450,7 +452,8 @@ output_counter(const counter_array_t & counter, bool comment,
 }
 
 // Complexity: log(container.size())
-void output::find_and_output_symbol(const string& str, const char * blank) const {
+void output::find_and_output_symbol(const string& str, const char * blank) const
+{
 	unsigned long vma;
 
 	sscanf(str.c_str(), "%lx",  &vma);
@@ -556,7 +559,8 @@ void output::output_asm(input & in)
 }
 
 void output::accumulate_and_output_counter(const string & filename, size_t linenr,
-					   const string & blank) {
+					   const string & blank)
+{
 	counter_array_t counter;
 	if (samples.accumulate_samples(counter, filename, linenr)) {
 		out << blank;
@@ -572,8 +576,8 @@ void output::accumulate_and_output_counter(const string & filename, size_t linen
 //  the entire file source and the associated samples has been output to
 //  the standard output.
 void output::do_output_one_file(istream & in, const string & filename, 
-				const counter_array_t & total_count_for_file) {
-	
+				const counter_array_t & total_count_for_file)
+{
 	out << begin_comment << endl;
 
 	out << " Total samples for file : " << endl;
@@ -584,7 +588,7 @@ void output::do_output_one_file(istream & in, const string & filename,
 
 	out << end_comment << endl;
 
-	source_file source(in, filename);
+	source_file source(in);
 
 	//   This is a simple heuristic, we probably need another output format.
 	for (size_t linenr = 0; linenr <= source.file_line.size(); ++linenr) {
@@ -622,7 +626,7 @@ struct filename_by_samples {
 	counter_array_t counter;
 };
 
-void output::output_source(input & /*in*/)
+void output::output_source()
 {
 	set<string> filename_set;
 
@@ -643,10 +647,8 @@ void output::output_source(input & /*in*/)
 
 		samples.accumulate_samples_for_file(total_count_for_file, *it);
 			
-		if (counter_info[index].enabled) {
-			percent = do_ratio(total_count_for_file[index],
-					   counter_info[index].total_samples);
-		}
+		percent = do_ratio(total_count_for_file[index],
+				   counter_info[index].total_samples);
 
 		filename_by_samples f(*it, percent, total_count_for_file);
 
@@ -751,26 +753,16 @@ void output::build_samples_containers()
 		u32 start, end;
 		const char* filename;
 		uint linenr;
+		symbol_entry symb_entry;
 
 		abfd.get_symbol_range(i, &start, &end);
 
-		/* To avoid outputing 0 samples symbols */
-		u32 counter[OP_MAX_COUNTERS];
-
-		for (uint k = 0; k < op_nr_counters; ++k)
-			counter[k] = 0;
-
 		bool found_samples = false;
 		for (uint j = start; j < end; ++j)
-			found_samples |= samples_files.accumulate_samples(counter, j);
+			found_samples |= samples_files.accumulate_samples(&symb_entry.sample.counter[0], j);
 
 		if (found_samples == 0)
 			continue;
-
-		symbol_entry symb_entry;
-
-		for (uint k = 0; k < op_nr_counters; ++k)
-			symb_entry.sample.counter[k] = counter[k];
 		
 		char* temp = demangle_symbol(abfd.syms[i]->name);
 		symb_entry.name = temp;
@@ -789,14 +781,10 @@ void output::build_samples_containers()
 		symb_entry.sample.vma = abfd.sym_offset(i, start) + base_vma;
 
 		for (u32 pos = start; pos < end ; ++pos) {
-			for (uint k = 0; k < op_nr_counters; ++k)
-				counter[k] = 0;
-
-			found_samples = samples_files.accumulate_samples(counter, pos);
-			if (found_samples == false)
-				continue;
-
 			sample_entry sample;
+
+			if (samples_files.accumulate_samples(&sample.counter[0], pos) == false)
+				continue;
 
 			if (abfd.get_linenr(i, pos, &filename, &linenr)) {
 				sample.file_loc.filename = filename;
@@ -805,9 +793,6 @@ void output::build_samples_containers()
 				sample.file_loc.filename = std::string();
 				sample.file_loc.linenr = 0;
 			}
-
-			for (uint ctr = 0 ; ctr < op_nr_counters ; ++ctr)
-				sample.counter[ctr] = samples_files.samples_count(ctr, pos);
 
 			sample.vma = abfd.sym_offset(i, pos) + base_vma;
 
@@ -818,12 +803,6 @@ void output::build_samples_containers()
 
 		symbols.push_back(symb_entry);
 	}
-
-	// and the set of symbol entry sorted by samples count.
-	symbols.flush_input_symbol();
-
-	// Now we can update the set of sample_entry sorted by file_loc
-	samples.flush_input_counter();
 
 	if (sanity_check) {
 		// All the range in the symbol vector must be valid.
@@ -885,7 +864,7 @@ bool output::treat_input(input & in)
 
 	cpu_speed = samples_files.footer[samples_files.first_file]->cpu_speed;
 
-	if (setup_counter_param(in) == false)
+	if (setup_counter_param() == false)
 		return false;
 
 	build_samples_containers();
@@ -916,7 +895,7 @@ bool output::treat_input(input & in)
 	if (have_linenr_info == false)
 		output_asm(in);
 	else
-		output_source(in);
+		output_source();
 
 	return true;
 }

@@ -106,13 +106,15 @@ class symbol_container_impl {
 	const symbol_entry & operator[](size_t index) const;
 	void push_back(const symbol_entry &);
 	const symbol_entry * find(string filename, size_t linenr) const;
-	void flush_input_symbol();
 	const symbol_entry * find_by_vma(unsigned long vma) const;
 
 	// get a vector of symbols sorted by increased count.
 	void get_symbols_by_count(size_t counter, vector<const symbol_entry*>& v) const;
  private:
-	std::vector<symbol_entry> v;
+	void flush_input_symbol(size_t counter) const;
+	void build_by_file_loc() const;
+
+	vector<symbol_entry> v;
 
 	// Carefull : these *MUST* be declared after the vector to ensure
 	// a correct life-time.
@@ -121,10 +123,12 @@ class symbol_container_impl {
 	// This allow easy acccess to (at a samples numbers point of view) :
 	//  the nth first symbols.
 	//  the nth first symbols that accumulate a certain amount of samples.
-	std::multiset<const symbol_entry *, less_sample_entry_by_samples_nr>
+
+	// lazily build when necessary from const function so mutable
+	mutable multiset<const symbol_entry *, less_sample_entry_by_samples_nr>
 		symbol_entry_by_samples_nr[OP_MAX_COUNTERS];
 
-	std::set<const symbol_entry *, less_by_file_loc> symbol_entry_by_file_loc;
+	mutable set<const symbol_entry *, less_by_file_loc> symbol_entry_by_file_loc;
 };
 
 symbol_container_impl::symbol_container_impl()
@@ -158,11 +162,13 @@ void symbol_container_impl::push_back(const symbol_entry & symbol)
 const symbol_entry * 
 symbol_container_impl::find(string filename, size_t linenr) const
 {
+	build_by_file_loc();
+
 	symbol_entry symbol;
 	symbol.sample.file_loc.filename = filename;
 	symbol.sample.file_loc.linenr = linenr;
 
-	std::set<const symbol_entry *, less_by_file_loc>::const_iterator it =
+	set<const symbol_entry *, less_by_file_loc>::const_iterator it =
 		symbol_entry_by_file_loc.find(&symbol);
 
 	if (it != symbol_entry_by_file_loc.end())
@@ -171,29 +177,35 @@ symbol_container_impl::find(string filename, size_t linenr) const
 	return 0;
 }
 
-void symbol_container_impl::flush_input_symbol()
+void symbol_container_impl::flush_input_symbol(size_t counter) const
 {
 	// Update the sets of symbols entries sorted by samples count and the
 	// set of symbol entries sorted by file location.
-	for (size_t i = 0 ; i < v.size() ; ++i) {
-		for (size_t counter = 0 ; counter < op_nr_counters ; ++counter)
+	if (v.size() && symbol_entry_by_samples_nr[counter].empty()) {
+		for (size_t i = 0 ; i < v.size() ; ++i)
 			symbol_entry_by_samples_nr[counter].insert(&v[i]);
-		
-		symbol_entry_by_file_loc.insert(&v[i]);
 	}
+}
 
-	if (range_iterator_sorted_p(v.begin(), v.end(), 
+void  symbol_container_impl::build_by_file_loc() const
+{
+	if (v.size() && symbol_entry_by_file_loc.empty()) {
+		if (range_iterator_sorted_p(v.begin(), v.end(), 
 				    less_sample_entry_by_vma()) == false) {
-		cerr << "opf_filter: post condition fail : symbol_vector not "
-		     << "sorted by increased vma" << endl;
+			cerr << "opf_filter: post condition fail : "
+			     << "symbol_vector not sorted by increased vma"
+			     << endl;
 
-		exit(EXIT_FAILURE);
+			exit(EXIT_FAILURE);
+		}
+
+		for (size_t i = 0 ; i < v.size() ; ++i)
+			symbol_entry_by_file_loc.insert(&v[i]);
 	}
 }
 
 const symbol_entry * symbol_container_impl::find_by_vma(unsigned long vma) const
 {
-
 	symbol_entry value;
 
 	value.sample.vma = vma;
@@ -214,12 +226,14 @@ void symbol_container_impl::get_symbols_by_count(size_t counter, vector<const sy
 		throw "symbol_container_impl::get_symbols_by_count() : invalid counter number";
 	}
 
+	flush_input_symbol(counter);
+
 	v.clear();
 
-	const std::multiset<const symbol_entry *, less_sample_entry_by_samples_nr>& temp =
+	const multiset<const symbol_entry *, less_sample_entry_by_samples_nr>& temp =
 		symbol_entry_by_samples_nr[counter];
 
-	std::multiset<const symbol_entry *, less_sample_entry_by_samples_nr>::const_iterator it;
+	multiset<const symbol_entry *, less_sample_entry_by_samples_nr>::const_iterator it;
 	for (it = temp.begin() ; it != temp.end(); ++it) {
 		v.push_back(*it);
 	}
@@ -261,11 +275,6 @@ symbol_container_t::find(string filename, size_t linenr) const
 	return impl->find(filename, linenr);
 }
 
-void symbol_container_t::flush_input_symbol()
-{
-	impl->flush_input_symbol();
-}
-
 const symbol_entry * symbol_container_t::find_by_vma(unsigned long vma) const
 {
 	return impl->find_by_vma(vma);
@@ -290,15 +299,17 @@ class sample_container_impl {
 
 	const sample_entry * find_by_vma(unsigned long vma) const;
 	bool accumulate_samples(counter_array_t &, const string & filename, size_t linenr) const;
-	void flush_input_counter();
 	void push_back(const sample_entry &);
  private:
+	void flush_input_counter() const;
+
 	vector<sample_entry> v;
 
 	// Carefull : these *MUST* be declared after the vector to ensure
 	// a correct life-time.
-	// sample_entry sorted by increasing (filename, linenr).
-	multiset<const sample_entry *, less_by_file_loc> samples_by_file_loc;
+	// sample_entry sorted by increasing (filename, linenr). 
+	// lazily build when necessary from const function so mutable
+	mutable multiset<const sample_entry *, less_by_file_loc> samples_by_file_loc;
 };
 
 //---------------------------------------------------------------------------
@@ -316,6 +327,8 @@ size_t sample_container_impl::size() const
 bool sample_container_impl::accumulate_samples_for_file(counter_array_t & counter, 
 							const string & filename) const
 {
+	flush_input_counter();
+
 	sample_entry lower, upper;
 
 	lower.file_loc.filename = upper.file_loc.filename = filename;
@@ -329,9 +342,8 @@ bool sample_container_impl::accumulate_samples_for_file(counter_array_t & counte
 	iterator it1 = samples_by_file_loc.lower_bound(&lower);
 	iterator it2 = samples_by_file_loc.upper_bound(&upper);
 
-	for ( ; it1 != it2 ; ++it1) 	{
+	for ( ; it1 != it2 ; ++it1)
 		counter += (*it1)->counter;
-	}
 
 	for (size_t i = 0 ; i < op_nr_counters ; ++i)
 		if (counter[i] != 0)
@@ -349,9 +361,8 @@ const sample_entry * sample_container_impl::find_by_vma(unsigned long vma) const
 	vector<sample_entry>::const_iterator it =
 		lower_bound(v.begin(), v.end(), value, less_sample_entry_by_vma());
 
-	if (it != v.end() && it->vma == vma) {
+	if (it != v.end() && it->vma == vma)
 		return &(*it);
-	}
 
 	return 0;
 }
@@ -359,6 +370,8 @@ const sample_entry * sample_container_impl::find_by_vma(unsigned long vma) const
 bool sample_container_impl::accumulate_samples(counter_array_t & counter,
 					       const string & filename, size_t linenr) const
 {
+	flush_input_counter();
+
 	sample_entry sample;
 
 	sample.file_loc.filename = filename;
@@ -383,17 +396,20 @@ bool sample_container_impl::accumulate_samples(counter_array_t & counter,
 	return false;
 }
 
-void sample_container_impl::flush_input_counter() 
+void sample_container_impl::flush_input_counter() const
 {
-	for (size_t i = 0 ; i < v.size() ; ++i)
-		samples_by_file_loc.insert(&v[i]);
+	if (v.size() && samples_by_file_loc.empty()) {
+		for (size_t i = 0 ; i < v.size() ; ++i)
+			samples_by_file_loc.insert(&v[i]);
 
-	if (range_iterator_sorted_p(v.begin(), v.end(), 
-				    less_sample_entry_by_vma()) == false) {
-		cerr << "opf_filter: post condition fail : counter_vector not "
-		     << "sorted by increased vma" << endl;
+		if (range_iterator_sorted_p(v.begin(), v.end(), 
+					less_sample_entry_by_vma()) == false) {
+			cerr << "opf_filter: post condition fail : "
+			     << "counter_vector not sorted by increased vma"
+			     << endl;
 
-		exit(EXIT_FAILURE);
+			exit(EXIT_FAILURE);
+		}
 	}
 }
 
@@ -439,10 +455,7 @@ bool sample_container_t::accumulate_samples(counter_array_t & counter,
 	return impl->accumulate_samples(counter, filename, linenr);
 }
 
-void sample_container_t::flush_input_counter() {
-	impl->flush_input_counter();
-}
-
-void sample_container_t::push_back(const sample_entry & sample) {
+void sample_container_t::push_back(const sample_entry & sample)
+{
 	impl->push_back(sample);
 }

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.h,v 1.16 2001/09/20 03:20:36 phil_e Exp $ */
+/* $Id: oprofpp.h,v 1.17 2001/09/21 02:52:37 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -126,15 +126,6 @@ private:
 	void check_event(int i);
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void opp_get_options(int argc, char const *argv[]);
-
-#ifdef __cplusplus
-}
-#endif
-
 
 #endif /* OPROFPP_H */

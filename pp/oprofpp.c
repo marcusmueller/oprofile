@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.47 2001/09/20 03:20:36 phil_e Exp $ */
+/* $Id: oprofpp.c,v 1.48 2001/09/21 02:52:37 phil_e Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -480,7 +480,7 @@ bool opp_bfd::get_symbols()
 		}
 	}
 
-	std::sort(&syms[0], &syms[syms.size()], symcomp);
+	std::sort(syms.begin(), syms.end(), symcomp);
 
 	verbprintf("nr symbols %u\n", syms.size());
 
@@ -782,7 +782,7 @@ opp_samples_files::~opp_samples_files()
  * the member var samples[@counter], footer[@counter]
  * etc. are updated in case of success.
  * The footer is checked but coherence between
- * footer can not be snatized at this point.
+ * footer can not be sanitized at this point.
  *
  * if @can_fail == false all error are fatal.
  */
@@ -867,7 +867,7 @@ void opp_samples_files::check_event(int i)
  * is_open - test if a samples file is open
  * @index: index of the samples file to check.
  *
- * return true if teh samples file @index is open
+ * return true if the samples file @index is open
  */ 
 bool opp_samples_files::is_open(int index) const
 {

@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.29 2001/09/20 03:20:36 phil_e Exp $
+# $Id: Makefile.in,v 1.30 2001/09/21 02:52:37 phil_e Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -19,7 +19,7 @@ maintainerclean: distclean
 	rm -f configure doc/Makefile
 
 distclean: clean
-	rm -f Makefile dae/Makefile pp/Makefile gui/Makefile tags
+	rm -f Makefile dae/Makefile pp/Makefile gui/Makefile tags aclocal.m4
 
 # broken 
 dist:
@@ -63,7 +63,7 @@ uninstall:
 	@echo "Goodbye."
 
 clean:
-	rm -f *.o config.status config.log config.cache aclocal.m4
+	rm -f *.o config.status config.log config.cache
 	$(MAKE) -C dae clean
 	$(MAKE) -C pp clean
 	$(MAKE) -C doc clean

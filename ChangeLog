@@ -1,3 +1,14 @@
+2001-09-21  Philippe Elie  <ph_e@club-internet.fr>
+
+	* Makefile.in: remove aclocal.m4 in distclean
+	* pp/Makefile.in: use $(CXX) and $(CXXFLAGS)
+
+	* pp/opf_container.cpp:
+	* pp/opf_filter.cpp:
+	* pp/opf_filter.h:
+	* pp/oprofpp.c:
+	* pp/oprofpp.h: cleanup
+
 2001-09-20  Philippe Elie  <ph_e@club-internet.fr>
 
 	* Makefile.in: minor change in module building
@@ -376,11 +387,11 @@
 
 2001-08-18  Philippe Elie  <ph_e@club-internet.fr>
  
- 	* Makefile.in:
+	* Makefile.in:
 	* dae/Makefile.in:
 	* pp/Makefile.in:
 	* doc/Makefile.in:
- 	* gui/Makefile.in: add uninstall target
+	* gui/Makefile.in: add uninstall target
  
 2001-08-18  John Levon  <moz@compsoc.man.ac.uk>
 
@@ -947,7 +958,7 @@
 	* pp/Makefile.in:
 	* pp/oprofpp.c:
 	* pp/oprofpp.h: use md5sums to verify sample file
-  	  integrity. Stored in each sample file footer are
+	  integrity. Stored in each sample file footer are
 	  md5sums of the binary. These are checked by the daemon
 	  when re-using an old file, and by the post-processor.
 	  Bump OPD_VERSION to reflect the file format change.
