@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.61 2001/10/16 21:31:03 movement Exp $ */
+/* $Id: oprofile.h,v 1.1 2001/10/30 17:32:14 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -30,7 +30,7 @@
 #include <asm/apic.h>
 
 /* userspace/module interface */
-#include "op_user.h"
+#include "../op_user.h"
 
 #undef min
 #undef max

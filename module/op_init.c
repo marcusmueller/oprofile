@@ -1,4 +1,4 @@
-/* $Id: op_init.c,v 1.10 2001/09/18 01:00:33 movement Exp $ */
+/* $Id: op_init.c,v 1.1 2001/10/30 17:32:14 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free

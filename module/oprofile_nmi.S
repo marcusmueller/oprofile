@@ -1,4 +1,4 @@
-/* $Id: oprofile_nmi.S,v 1.2 2000/08/01 20:36:01 moz Exp $ */
+/* $Id: oprofile_nmi.S,v 1.1 2001/10/30 17:32:14 movement Exp $ */
 
 #include <linux/sys.h>
 #include <linux/linkage.h>

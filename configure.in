@@ -9,9 +9,9 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.48 2001/10/25 22:14:32 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.49 2001/10/30 17:32:13 movement Exp $)
 AC_PREREQ(2.13)
-AC_INIT(./oprofile.c)
+AC_INIT(./op_user.h)
 
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
@@ -208,7 +208,7 @@ AC_TRY_COMPILE([#include <sstream>], [],
 AC_MSG_RESULT([no]);,
 AC_MSG_RESULT([yes]); CXXFLAGS="$CXXFLAGS -I../include")
  
-AC_OUTPUT(Makefile dae/Makefile doc/Makefile doc/oprofile.1 pp/Makefile gui/Makefile gui/ui/Makefile version.h)
+AC_OUTPUT(Makefile module/Makefile dae/Makefile doc/Makefile doc/oprofile.1 pp/Makefile gui/Makefile gui/ui/Makefile version.h)
 
 if test "$have_qt2" != "yes"; then
 	echo "Warning: Qt2 not found; no GUI will be built"

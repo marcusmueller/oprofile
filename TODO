@@ -3,13 +3,13 @@
 
 o move module code into module/ subdir
 
+0.0.8 task list
+---------------
+ 
 o I'm sick of these crappy makefiles. Let's see if we can use automake as well
   as autoconf.
  
 o determine where we need ctx_sw_on/off to prevent pre-emption + test
- 
-0.0.8 task list
----------------
  
 o implement proc->old_exec
  
