@@ -24,8 +24,7 @@ using namespace std;
 namespace {
 
 bad_regex::bad_regex(string const & pattern)
-	:
-	op_exception(pattern)
+	: op_exception(pattern)
 {
 }
 
