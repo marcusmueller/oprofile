@@ -85,6 +85,14 @@ $typename = "(${typename}[ ]*\**|unsigned short[ ]**\**|unsigned int[ ]*\**|unsi
 
 "\<_List_base<${typename}, allocator<\1>>" = "_List_base<\1>"
 
+# 2.95 templatized operator<< and >> exist only for std::string
+"\<ostream & operator<<<char, string_char_traits<char>, __default_alloc_template<true, 0>>\(ostream &, string const &\)" = "ostream & operator<<(ostream &, string const &)"
+"\<istream & (operator>>|getline)<char, string_char_traits<char>, __default_alloc_template<true, 0>>\(istream &, string &\)" = "istream & \1(istream &, string &)"
+
+# 3.0 templatized operator<< and >> exist only for std::string
+"\<ostream& operator<< <char, char_traits<char>, allocator<char>>\(ostream&, string const&\)" = "ostream & operator<<(ostream &, string const &)"
+"\<istream& (operator>>|getline) <char, char_traits<char>, allocator<char>>\(istream&, string&\)" = "istream & \1(istream &, string &)"
+
 # 2.95/3.2 algorithm
 "\<(${typename}( const)?) \* find<\1 \*, ${typename}>\(\1 \*, \1 \*, \9 const &, ${typename}\)" = "\1 * find(\1 *, \1 *, \9 const &, \f)"
 

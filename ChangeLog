@@ -1,5 +1,11 @@
 2003-11-02  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/parse_filename.cpp: avoid repetitive vector::erase(v.begin())
+	* libregex/stl.pat.in:
+	* libregex/tests/mangled-name.in: add (i|o)stream operator(>>|<<)
+
+2003-11-02  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* daemon/liblegacy/opd_image.h:
 	* daemon/liblegacy/opd_image.c:
 	* daemon/liblegacy/opd_proc.c:

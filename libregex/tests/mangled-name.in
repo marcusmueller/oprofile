@@ -433,3 +433,21 @@ string::const_iterator find_if(string::const_iterator, string::const_iterator, c
 
 vector<int>::iterator find_if<vector<int>::iterator, compare>(vector<int>::iterator, vector<int>::iterator, compare, random_access_iterator_tag)
 vector<int>::iterator find_if(vector<int>::iterator, vector<int>::iterator, compare, random_access_iterator_tag)
+
+ostream & operator<<<char, string_char_traits<char>, __default_alloc_template<true, 0>>(ostream &, string const &)
+ostream & operator<<(ostream &, string const &)
+
+istream & operator>><char, string_char_traits<char>, __default_alloc_template<true, 0>>(istream &, string &)
+istream & operator>>(istream &, string &)
+
+istream & getline<char, string_char_traits<char>, __default_alloc_template<true, 0>>(istream &, string &)
+istream & getline(istream &, string &)
+
+ostream& operator<< <char, char_traits<char>, allocator<char>>(ostream&, string const&)
+ostream & operator<<(ostream &, string const &)
+
+istream& operator>> <char, char_traits<char>, allocator<char>>(istream&, string&)
+istream & operator>>(istream &, string &)
+
+std::basic_ostream<char, std::char_traits<char> >::operator<<(long)
+ostream::operator<<(long)
