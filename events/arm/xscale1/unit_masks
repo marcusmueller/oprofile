@@ -1,0 +1,4 @@
+# XScale 1 possible unit masks
+#
+name:zero type:mandatory default:0xff
+	0xff No unit mask
