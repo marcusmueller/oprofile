@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.16 2001/08/14 18:02:33 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.17 2001/09/12 05:21:57 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -604,6 +604,10 @@ asmlinkage static long my_sys_exit(int error_code)
 
 	goto out;
 out:
+	/* this looks UP-dangerous, as the exit sleeps and we don't
+	 * have a use count, but in fact its ok as sys_exit is noreturn,
+	 * so we can never come back to this non-existent exec page
+	 */
 	MOD_DEC_USE_COUNT;
 	return old_sys_exit(error_code);
 }

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.85 2001/09/12 02:54:30 movement Exp $ */
+/* $Id: oprofile.c,v 1.86 2001/09/12 05:21:57 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -57,7 +57,6 @@ int separate_running_bit;
  
 static u32 prof_on __cacheline_aligned;
 
-static int smp_hardware;
 static int op_major;
 int cpu_type;
 
@@ -145,271 +144,6 @@ asmlinkage void op_do_nmi(struct pt_regs *regs)
 	}
 }
 
-/* ---------------- NMI handler setup ------------ */
-
-static ulong idt_addr;
-static ulong kernel_nmi;
-static ulong lvtpc_masked;
-
-/* this masking code is unsafe and nasty but might deal with the small
- * race when installing the NMI entry into the IDT
- */
-static void mask_lvtpc(void * e)
-{
-	ulong v = apic_read(APIC_LVTPC);
-	lvtpc_masked = v & APIC_LVT_MASKED;
-        apic_write(APIC_LVTPC, v | APIC_LVT_MASKED);
-}
-
-static void unmask_lvtpc(void * e)
-{
-	if (!lvtpc_masked)
-		apic_write(APIC_LVTPC, apic_read(APIC_LVTPC) & ~APIC_LVT_MASKED);
-}
- 
-static void install_nmi(void)
-{
-	volatile struct _descr descr = { 0, 0,};
-	volatile struct _idt_descr *de;
-
-	store_idt(descr);
-	idt_addr = descr.base;
-	de = (struct _idt_descr *)idt_addr;
-	/* NMI handler is at idt_table[2] */
-	de += 2;
-	/* see Intel Vol.3 Figure 5-2, interrupt gate */
-	kernel_nmi = (de->a & 0xffff) | (de->b & 0xffff0000);
-
-	smp_call_function(mask_lvtpc, NULL, 0, 1);
-	mask_lvtpc(NULL);
-	_set_gate(de, 14, 0, &op_nmi);
-	smp_call_function(unmask_lvtpc, NULL, 0, 1);
-	unmask_lvtpc(NULL);
-}
-
-static void restore_nmi(void)
-{
-	smp_call_function(mask_lvtpc, NULL, 0, 1);
-	mask_lvtpc(NULL);
-	_set_gate(((char *)(idt_addr)) + 16, 14, 0, kernel_nmi);
-	smp_call_function(unmask_lvtpc, NULL, 0, 1);
-	unmask_lvtpc(NULL);
-}
-
-/* ---------------- APIC setup ------------------ */
-
-/* PHE : this would be probably an unconditionnaly restore state from a saved
- *state 
- */
-static void disable_local_P6_APIC(void *dummy)
-{
-#ifndef CONFIG_X86_UP_APIC
-	ulong v;
-	uint l;
-	uint h;
-
-	/* FIXME: maybe this should go at end of function ? */
-	/* PHE I think  when the doc says : -if you disable the apic the bits 
-	 * of LVT cannot be reset- it talk about the SW disable through bit 8
-	 * of SPIV see 7.4.14 (7.5.14) not the hardware disable, so it is ok
-	 * but perhaps we need a software disable of the APIC at the end 
-	 */
-	/* first disable via MSR */
-	/* IA32 V3, 7.4.2 */
-	rdmsr(MSR_IA32_APICBASE, l, h);
-	wrmsr(MSR_IA32_APICBASE, l & ~(1<<11), h);
-
-	/*
-	 * Careful: we have to set masks only first to deassert
-	 * any level-triggered sources.
-	 */
-	v = apic_read(APIC_LVTT);
-	apic_write(APIC_LVTT, v | APIC_LVT_MASKED);
-	v = apic_read(APIC_LVT0);
-	apic_write(APIC_LVT0, v | APIC_LVT_MASKED);
-	v = apic_read(APIC_LVT1);
-	apic_write(APIC_LVT1, v | APIC_LVT_MASKED);
-	v = apic_read(APIC_LVTERR);
-	apic_write(APIC_LVTERR, v | APIC_LVT_MASKED);
-        v = apic_read(APIC_LVTPC);
-        apic_write(APIC_LVTPC, v | APIC_LVT_MASKED);
-
-	/*
-	 * Clean APIC state for other OSs:
-	 */
-	apic_write(APIC_LVTT, APIC_LVT_MASKED);
-	apic_write(APIC_LVT0, APIC_LVT_MASKED);
-	apic_write(APIC_LVT1, APIC_LVT_MASKED);
-	apic_write(APIC_LVTERR, APIC_LVT_MASKED);
-        apic_write(APIC_LVTPC, APIC_LVT_MASKED);
-
-	v = apic_read(APIC_SPIV);
-	v &= ~APIC_SPIV_APIC_ENABLED;
-	apic_write(APIC_SPIV, v);
-
-	printk(KERN_INFO "oprofile: disabled local APIC.\n");
-#endif
-}
-
-static uint lvtpc_old_mask[NR_CPUS];
-static uint lvtpc_old_mode[NR_CPUS];
-
-static void __init lvtpc_apic_setup(void *dummy)
-{
-	uint val;
-
-	/* set up LVTPC as we need it */
-	/* IA32 V3, Figure 7.8 */
-	val = apic_read(APIC_LVTPC);
-	lvtpc_old_mask[op_cpu_id()] = val & APIC_LVT_MASKED;
-	/* allow PC overflow interrupts */
-	val &= ~APIC_LVT_MASKED;
-	/* set delivery to NMI */
-	lvtpc_old_mode[op_cpu_id()] = GET_APIC_DELIVERY_MODE(val);
-	val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_NMI);
-	apic_write(APIC_LVTPC, val);
-}
-
-static void __exit lvtpc_apic_restore(void *dummy)
-{
-	uint val = apic_read(APIC_LVTPC);
-	// FIXME: this gives APIC errors on SMP hardware.
-	// val = SET_APIC_DELIVERY_MODE(val, lvtpc_old_mode[op_cpu_id()]);
-	if (lvtpc_old_mask[op_cpu_id()])
-		val |= APIC_LVT_MASKED;
-	else
-		val &= ~APIC_LVT_MASKED;
-	apic_write(APIC_LVTPC, val);
-}
-
-static int __init apic_needs_setup(void)
-{
-	return 
-/* if enabled, the kernel has already set it up */
-#ifdef CONFIG_X86_UP_APIC
-	0 &&
-#else
-/* otherwise, we detect SMP hardware via the MP table */
-	!smp_hardware &&
-#endif
-	smp_num_cpus == 1;
-}
-
-/* PHE, would : save all state change for later restoration, minimalise the
- * amount of change. Basically we need to test if apic is HW disable, SW 
- * disable, and change only the LVTPC setup, all other must be keep as it
- * (except the LINT1 for bsp ?) We must rely on the kernel to setup all things.
- * also : do we need  write_apic --> write_apic_around to support
- * GOOD_APIC/BAD_APIC ?
- */
-static int __init apic_setup(void)
-{
-	uint msr_low, msr_high;
-	uint val;
-
-	if (!apic_needs_setup()) {
-		printk(KERN_INFO "oprofile: no APIC setup needed.\n");
-		lvtpc_apic_setup(NULL);
-		return 0;
-	}
-
-	printk(KERN_INFO "oprofile: setting up APIC.\n");
-
-	/* ugly hack */
-	my_set_fixmap();
-
-	/* enable local APIC via MSR. Forgetting this is a fun way to
-	   lock the box */
-	/* IA32 V3, 7.4.2 */
-	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
-	wrmsr(MSR_IA32_APICBASE, msr_low | (1<<11), msr_high);
-
-	/* check for a good APIC */
-	/* IA32 V3, 7.4.15 */
-	val = apic_read(APIC_LVR);
-	if (!APIC_INTEGRATED(GET_APIC_VERSION(val)))	
-		goto not_local_p6_apic;
-
-	/* LVT0,LVT1,LVTT,LVTPC */
-	if (GET_APIC_MAXLVT(apic_read(APIC_LVR)) != 4)
-		goto not_local_p6_apic;
-
-	/* __global_cli(); ? an IPI can occur inside this stuff ? */
-	__cli();
-
-	/* enable APIC locally */
-	/* IA32 V3, 7.4.14.1 */
-	val = apic_read(APIC_SPIV);
-	apic_write(APIC_SPIV, val | APIC_SPIV_APIC_ENABLED);
-
-	/* FIXME: examine this stuff */
-	val = APIC_LVT_LEVEL_TRIGGER;
-	val = SET_APIC_DELIVERY_MODE(val, APIC_MODE_EXINT);
-	apic_write(APIC_LVT0, val);
-
-	/* edge triggered, IA 7.4.11 */
-	/* PHE SMP: only the BSP must see the LINT1 IRQ (from kernel source) 
-	 * recheck this later
-	 */
-	val = SET_APIC_DELIVERY_MODE(0, APIC_MODE_NMI);
-	apic_write(APIC_LVT1, val);
-
-	/* clear error register */
-	/* IA32 V3, 7.4.17 */
-	/* PHE must be cleared after unmasking by a back-to-back write,
-	 * but it is probably ok because we mask only, the ESR is not updated
-	 * is this a real problem ?
-	 */
-	apic_write(APIC_ESR, 0);
-
-	/* mask error interrupt */
-	/* IA32 V3, Figure 7.8 */
-	val = apic_read(APIC_LVTERR);
-	val |= APIC_LVT_MASKED;
-	apic_write(APIC_LVTERR, val);
-
-	/* setup timer vector */
-	/* IA32 V3, 7.4.8 */
-	/* PHE actually it is ok but kernel change can hang up the machine
-	 * after this point.
-	 */
-	apic_write(APIC_LVTT, APIC_SEND_PENDING | 0x31);
-
-	/* Divide configuration register */
-	/* PHE the apic clock is based on the FSB. This should only changed
-	 * with a calibration method.
-	 */
-	val = APIC_TDR_DIV_1;
-	apic_write(APIC_TDCR, val);
-
-
-	/* PHE __global_sti() probably */
-	__sti();
-
-	/* If the local APIC NMI watchdog has been disabled, we'll need
-	 * to set up NMI delivery anyway ...
-	 */
-	/* PHE : ? why not use a FixedMode rather than NMI mode for profiling,
-	 * this avoid all problem with parity error nmi and watchdog, but this
-	 * implies than the actual nmi handler must be hardware interruptible,
-	 * basically this is better at my eyes but there is a few visible
-	 * (and hidden) problem with this issue. This can probably wait unless
-	 * hidden problem occur on SMP, recheck doc about NMI
-	 */
-	lvtpc_apic_setup(NULL);
-
-	printk(KERN_INFO "oprofile: enabled local APIC\n");
-
-	return 0;
-
-not_local_p6_apic:
-	printk(KERN_ERR "oprofile: no local P6 APIC. Your laptop doesn't have one !\n");
-	/* IA32 V3, 7.4.2 */
-	rdmsr(MSR_IA32_APICBASE, msr_low, msr_high);
-	wrmsr(MSR_IA32_APICBASE, msr_low & ~(1<<11), msr_high);
-	return -ENODEV;
-}
-
 /* ---------------- PMC setup ------------------ */
 
 static void pmc_fill_in(uint *val, u8 kernel, u8 user, u8 event, u8 um)
@@ -453,10 +187,6 @@ static void pmc_setup(void *dummy)
 			break;
 	}
 
-	/* FIXME ATHLON: use #if 0 to get the old code, which would work on
-	 * athlon. The new code would work but I had get a painfull debug so
-	 * I prefer to keep the old code until Athlon tests are available. */
-#if 1
 	/* IA Vol. 3 Figure 15-3 */
 
 	/* Stop and clear all counter: IA32 use bit 22 of eventsel_msr0 to
@@ -479,7 +209,7 @@ static void pmc_setup(void *dummy)
 			set_perfctr(op_ctr_count[i], i);
 
 			pmc_fill_in(&low, op_ctr_kernel[i], op_ctr_user[i], 
-				    op_ctr_val[i], op_ctr_um[i]);
+				op_ctr_val[i], op_ctr_um[i]);
 
 			wrmsr(eventsel_msr[i], low, high);
 		}
@@ -488,33 +218,6 @@ static void pmc_setup(void *dummy)
 	/* Here all setup is made except the start/stop bit 21), counter
 	 * disabled contains zeros in the eventsel msr except the reserved bit
 	 * 21 */
-#else
-	rdmsr(eventsel_msr[0], low, high);
-	// FIXME: enable bit is per-counter on athlon
-	wrmsr(eventsel_msr[0], low & ~(1<<22), high);
-	/* clear */
-	low &= (1<<21);
-
-	/* IA Vol. 3 Figure 15-3 */
-
-	if (op_ctr_val[0]) {
-		set_perfctr(op_ctr_count[0], 0);
-		pmc_fill_in(&low, op_ctr_kernel[0], op_ctr_user[0], op_ctr_val[0], op_ctr_um[0]);
-	}
-
-	wrmsr(eventsel_msr[0], low, 0);
-
-	rdmsr(eventsel_msr[1], low, high);
-	/* clear */
-	low &= (3<<21);
-
-	if (op_ctr_val[1]) {
-		set_perfctr(op_ctr_count[1], 1);
-		pmc_fill_in(&low, op_ctr_kernel[1], op_ctr_user[1], op_ctr_val[1], op_ctr_um[1]);
-
-		wrmsr(eventsel_msr[1], low, high);
-	}
-#endif
 }
 
 inline static void pmc_start_P6(void)
@@ -605,8 +308,8 @@ inline static void pmc_select_stop(uint cpu)
 
 /* ---------------- driver routines ------------------ */
 
-u32 diethreaddie;
-pid_t threadpid;
+static u32 diethreaddie;
+static pid_t threadpid;
 
 DECLARE_COMPLETION(threadstop);
 
@@ -617,7 +320,6 @@ static int oprof_thread(void *arg)
 {
 	int i;
 
-	// FIXME: kernel lock ? 
 	daemonize();
 	sprintf(current->comm, "oprof-thread");
 	siginitsetinv(&current->blocked, sigmask(SIGKILL));
@@ -636,7 +338,6 @@ static int oprof_thread(void *arg)
 		/* FIXME: determine best value here */
 		schedule_timeout(HZ/10);
 
-		// FIXME: signal pending 
 		if (diethreaddie)
 			break;
 	}
@@ -649,8 +350,11 @@ static void oprof_start_thread(void)
 {
 	init_completion(&threadstop);
 	diethreaddie = 0;
-	if ((threadpid = kernel_thread(oprof_thread, NULL, CLONE_FS|CLONE_FILES|CLONE_SIGHAND)) < 0)
+	threadpid = kernel_thread(oprof_thread, NULL, CLONE_FS|CLONE_FILES|CLONE_SIGHAND);
+	if (threadpid < 0) {
 		printk(KERN_ERR "oprofile: couldn't spawn wakeup thread.\n");
+		threadpid = 0;
+	}
 }
 
 static void oprof_stop_thread(void)
@@ -903,19 +607,24 @@ static int parms_ok(void)
 	struct _oprof_data *data;
 	int enabled = 0;
 
-	op_check_range(op_hash_size, 256, 262144, "op_hash_size value %d not in range (%d %d)\n");
-	op_check_range(op_buf_size, 1024, 1048576, "op_buf_size value %d not in range (%d %d)\n");
+	op_check_range(op_hash_size, 256, 262144, 
+		"op_hash_size value %d not in range (%d %d)\n");
+	op_check_range(op_buf_size, 1024, 1048576, 
+		"op_buf_size value %d not in range (%d %d)\n");
 
 	for (i = 0; i < op_nr_counters ; i++) {
 		if (op_ctr_on[i]) {
 			int min_count = op_min_count(op_ctr_val[i], cpu_type);
 
 			if (!op_ctr_user[i] && !op_ctr_kernel[i]) {
-				printk(KERN_ERR "oprofile: neither kernel nor user set for counter %d\n", i);
+				printk(KERN_ERR "oprofile: neither kernel nor user "
+					"set for counter %d\n", i);
 				return 0;
 			}
-			op_check_range(op_ctr_count[i], min_count, OP_MAX_PERF_COUNT, "ctr count value %d not in range (%d %ld)\n");
-
+			op_check_range(op_ctr_count[i], min_count, 
+				OP_MAX_PERF_COUNT, 
+				"ctr count value %d not in range (%d %ld)\n");
+ 
 			enabled = 1;
 		}
 	}
@@ -931,16 +640,13 @@ static int parms_ok(void)
 		ret = op_check_events(i, op_ctr_val[i], op_ctr_um[i], cpu_type);
 
 		if (ret & OP_EVT_NOT_FOUND)
-			printk(KERN_ERR "oprofile: ctr%d: %d: no such event for cpu %d\n",
-			       i, op_ctr_val[i], cpu_type);
+			printk(KERN_ERR "oprofile: ctr%d: %d: no such event for cpu %d\n", i, op_ctr_val[i], cpu_type);
 
 		if (ret & OP_EVT_NO_UM)
-			printk(KERN_ERR "oprofile: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n",
-			       i, op_ctr_um[i], cpu_type);
+			printk(KERN_ERR "oprofile: ctr%d: 0x%.2x: invalid unit mask for cpu %d\n", i, op_ctr_um[i], cpu_type);
 
 		if (ret & OP_EVT_CTR_NOT_ALLOWED)
-			printk(KERN_ERR "oprofile: ctr%d: %d: can't count event for this counter\n",
-			       i, op_ctr_val[i]);
+			printk(KERN_ERR "oprofile: ctr%d: %d: can't count event for this counter\n", i, op_ctr_val[i]);
 
 		if (ret != OP_EVENTS_OK)
 			ok = 0;
@@ -1069,26 +775,26 @@ static struct file_operations oprof_fops = {
 
 /*
  * /proc/sys/dev/oprofile/
- *                    bufsize
- *                    hashsize
- *                    dump
- *                    kernel_only
- *                    pid_filter
- *                    pgrp_filter
- *                    0/
- *                      event
- *                      enabled
- *                      count
- *                      unit_mask
- *                      kernel
- *                      user
- *                    1/
- *                      event
- *                      enabled
- *                      count
- *                      unit_mask
- *                      kernel
- *                      user
+ *                        bufsize
+ *                        hashsize
+ *                        dump
+ *                        kernel_only
+ *                        pid_filter
+ *                        pgrp_filter
+ *                        0/
+ *                          event
+ *                          enabled
+ *                          count
+ *                          unit_mask
+ *                          kernel
+ *                          user
+ *                        1/
+ *                          event
+ *                          enabled
+ *                          count
+ *                          unit_mask
+ *                          kernel
+ *                          user
  */
 
 static int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp)
@@ -1261,8 +967,8 @@ int __init oprof_init(void)
 
 	/* FIXME: we should save out the old values for the pmcs, then put them back
 	 * upon exit. This way the NMI oopser can work after unloading oprofile */ 
-
-	smp_hardware = find_intel_smp();
+ 
+	find_intel_smp();
 
 	if ((err = apic_setup()))
 		return err;
