@@ -12,6 +12,7 @@
 #include "oprofile.h"
 #include "op_util.h"
 #include "version.h"
+#include "arch/arch.h"
 
 EXPORT_NO_SYMBOLS;
  
@@ -105,7 +106,7 @@ inline static void evict_op_entry(uint cpu, struct _oprof_data * data,
 	 * us and the code for wait_event_interruptible()) disable interrupts so it's
 	 * still safe to check IF_MASK.
 	 */
-	if (likely(eflags & IF_MASK)) {
+	if (likely(IRQ_ENABLED(eflags))) {
 		oprof_ready[cpu] = 1;
 		wake_up(&oprof_wait);
 	}
@@ -123,7 +124,7 @@ void op_do_profile(uint cpu, struct pt_regs * regs, int ctr)
 {
 	struct _oprof_data * data = &oprof_data[cpu];
 	pid_t const pid = current->pid;
-	long const eip = regs->eip;
+	long const eip = INST_PTR(regs);
 	struct op_sample * samples = data->entries[op_hash(eip, pid, ctr)].samples;
 	uint i;
 
@@ -139,8 +140,8 @@ void op_do_profile(uint cpu, struct pt_regs * regs, int ctr)
 		return;
 	}
 
-	evict_op_entry(cpu, data, &samples[data->next], regs->eflags);
-	fill_op_entry(&samples[data->next], regs->eip, pid, ctr);
+	evict_op_entry(cpu, data, &samples[data->next], STATUS(regs));
+	fill_op_entry(&samples[data->next], eip, pid, ctr);
 	data->next = (data->next + 1) % OP_NR_ENTRY;
 	return;
 }
@@ -447,14 +448,15 @@ static void oprof_free_mem(uint num)
 
 static int oprof_init_data(void)
 {
-	uint i;
+	uint i, notebufsize;
 	ulong hash_size, buf_size;
 	struct _oprof_data * data;
 
-	note_buffer = vmalloc(sizeof(struct op_note) * sysctl.note_size);
+	notebufsize = sizeof(struct op_note) * sysctl.note_size;
+	note_buffer = vmalloc(notebufsize);
  	if (!note_buffer) {
-		printk(KERN_ERR "oprofile: failed to allocate not buffer of %u bytes\n",
-			sizeof(struct op_note) * sysctl.note_size);
+		printk(KERN_ERR "oprofile: failed to allocate note buffer of %u bytes\n",
+			notebufsize);
 		return -EFAULT;
 	}
 	note_pos = 0;

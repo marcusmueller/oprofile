@@ -26,6 +26,9 @@ typedef enum {
 	CPU_TIMER_INT, /**< CPU using the timer interrupt */
 	CPU_RTC, /**< other CPU to use the RTC */
 	CPU_P4,  /**< Pentium 4 / Xeon series */
+	CPU_IA64, /**< Generic IA64 */
+	CPU_IA64_1, /**< IA64 Merced */
+	CPU_IA64_2, /**< IA64 McKinley */
 	MAX_CPU_TYPE
 } op_cpu;
 

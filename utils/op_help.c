@@ -148,10 +148,31 @@ int main(int argc, char const *argv[])
 
 	printf("oprofile: available events\n");
 	printf("--------------------------\n\n");
-	if (cpu_type == CPU_ATHLON)
+	switch (cpu_type){
+	case CPU_ATHLON:
 		printf ("See AMD document x86 optimisation guide (22007.pdf), Appendix D\n\n");
-	else
-		printf("See Intel Architecture Developer's Manual\nVol. 3 (), Appendix A\n\n");
+		break;
+	case CPU_PPRO:
+	case CPU_PII:
+	case CPU_PIII:
+		printf("See Intel Architecture Developer's Manual Vol. 3 (), Appendix A and\n"
+		"Intel Architecture Optimization Reference Manual (730795-001)\n\n");
+		break;
+	case CPU_IA64:
+	case CPU_IA64_1:
+	case CPU_IA64_2:
+		printf("See Intel Itanium Processor Reference Manual\n"
+		       "for Software Development (Document 245320-003),\n"
+		       "Intel Itanium Processor Reference Manual\n"
+		       "for Software Optimization (Document 245473-003),\n"
+		       "Intel Itanium 2 Processor Reference Manual\n"
+		       "for Software Development and Optimization (Document 251110-001),\n\n");
+		break;
+	case CPU_RTC:
+		break;
+	default:
+		printf("%d is not a valid processor type,\n", cpu_type);
+	}
 
 	cpu_type_mask = 1 << cpu_type;
 	for (j = 0; j < op_nr_events; j++) {

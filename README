@@ -13,7 +13,11 @@ and much more.
 
 Dave Jones <davej@suse.de> provided bug fixes and the Athlon support.
 
-Bob Montgomery <bobm@fc.hp.com> provided bug fixes, and the initial RTC driver.
+Bob Montgomery <bobm@fc.hp.com> provided bug fixes, the initial RTC
+driver and the initial ia64 driver.
+
+Will Cohen <wcohen@redhat.com> integrated the ia64 driver into the
+oprofile release.
 
 Will Cohen <wcohen@redhat.com> contributed bug fixes and several cleanups.
 

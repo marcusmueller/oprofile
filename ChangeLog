@@ -1,5 +1,34 @@
-2002-11-06  John Levon  <levon@movementarian.org>
+2002-11-06  Will Cohen  <wcohen@redhat.com>
 
+	* configure.in: Tests for ia64 architecture.
+	* dae/opd_mapping.c: Added includes.
+	* oprofile/dae/oprofiled.c (opd_do_samples): Typecast.
+	* libop/op_cpu_type.c (cpu_names, cpu_nr_counters): Add IA64 info.
+	* libop/op_cpu_type.h (op_cpu): Add IA64 enums.
+	* libop/op_events.c: Add defines for IA64 and IA64 events.
+	* libop++/op_print_event.cpp: Change include order to work on IA64.
+	* module/oprofile.c: Include "arch.h" file.
+	(evict_op_entry): Use IRQ_ENABLED macro.
+	(op_do_profile): Use INST_PTR and STATUS macros.
+	(oprof_init_data): Factor out computation.
+	* module/op_util.c (rvmalloc, rvfree): Typecasts.
+	* module/x86/arch.h: New.
+	* README: Update.
+	* utils/op_help.c (main): Add IA64 information.
+
+	* module/ia64/arch.h:
+	* module/ia64/cpu_type.c:
+	* module/ia64/IA64entry.h:
+	* module/ia64/IA64minstate.h:
+	* module/ia64/IA64syscallstub.h:
+	* module/ia64/Makefile.in:
+	* module/ia64/op_ia64_model.h: 
+	* module/ia64/op_pmu.c:
+	* module/ia64/oprofile_stubs.S:
+	* module/ia64/op_syscalls.c: New.
+
+2002-11-06  John Levon  <levon@movementarian.org>
+ 
 	* configure.in: 0.5cvs
 
 	* Makefile.in: mention doxyfile in release steps

@@ -9,11 +9,11 @@
  * @author Philippe Elie
  */
 
-#include "op_print_event.h"
-#include "op_events_desc.h"
-
 #include <iostream>
 #include <iomanip>
+
+#include "op_print_event.h"
+#include "op_events_desc.h"
 
 using namespace std;
 

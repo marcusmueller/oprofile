@@ -342,6 +342,11 @@ static struct op_unit_mask um_branch_type =
 
 #define OP_P4           (1 << CPU_P4)
 
+#define OP_IA64		(1 << CPU_IA64)
+#define OP_IA64_1	(1 << CPU_IA64_1)
+#define OP_IA64_2	(1 << CPU_IA64_2)
+#define OP_IA64_ALL	(OP_IA64 | OP_IA64_1 | OP_IA64_2)
+
 #define CTR_0		(1 << 0)
 #define CTR_1		(1 << 1)
 
@@ -366,6 +371,13 @@ static struct op_unit_mask um_branch_type =
 #define CTR_IQ_4       (1 << 6)    /* #4 for compatibility with PEBS */
 #define CTR_IQ_5       (1 << 7)
 #define CTR_IQ_ALL     (CTR_IQ_4 | CTR_IQ_5)
+
+#define CTR_4		(1 << 4)
+#define CTR_5		(1 << 5)
+#define CTR_4_5		(CTR_4 | CTR_5)
+#define CTR_6		(1 << 6)
+#define CTR_7		(1 << 7)
+#define CTR_6_7		(CTR_6 | CTR_7)
 
 /* ctr allowed, allowed cpus, Event #, unit mask, name, min event value */
 
@@ -685,6 +697,14 @@ struct op_event const op_events[] = {
   /* other CPUs */
   { CTR_0, OP_RTC, 0xff, &um_empty, "RTC_Interrupts", 
     "RTC interrupts/sec (rounded up to power of two)", 2,},
+
+  /* IA64 */
+  { CTR_ALL, OP_IA64_ALL, 0x12, &um_empty, "CPU_CYCLES", 
+    "CPU Cycles", 500,},
+  { CTR_ALL, OP_IA64_ALL, 0x08, &um_empty, "IA64_INST_RETIRED",
+    "IA-64 Instructions Retired", 500,},
+  { CTR_4_5, OP_IA64_1, 0x15, &um_empty, "IA32_INST_RETIRED",
+    "IA-32 Instructions Retired", 500,},
 };
 
 
@@ -782,6 +802,14 @@ int op_min_count(u8 ctr_type, op_cpu cpu_type)
  * 3 AMD Athlon
  *
  * 6 Pentium 4 / Xeon
+ *
+ * 4 RTC
+ *
+ * 5 Generic IA64
+ *
+ * 6 Itanium (Merced)
+ *
+ * 7 Itanium 2 (McKinley)
  *
  * The function returns bitmask of failure cause
  * 0 otherwise

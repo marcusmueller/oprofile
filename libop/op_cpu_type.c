@@ -54,7 +54,10 @@ static char const * cpu_names[MAX_CPU_TYPE] = {
 	"Athlon",
 	"CPU with timer interrupt",
 	"CPU with RTC device",
-	"P4 / Xeon"
+	"P4 / Xeon",
+	"IA64",
+	"Itanium",
+	"Itanium 2"
 };
  
 
@@ -82,7 +85,10 @@ static int cpu_nr_counters[MAX_CPU_TYPE] = {
 	4, /* Athlon */
 	1, /* Timer interrupt */
 	1, /* RTC */
-	8  /* P4 / Xeon */
+	8, /* P4 / Xeon */
+	4, /* IA64 */
+	4, /* IA64 (Merced) */
+	4  /* IA64 (McKinley) */
 };
 
 /**

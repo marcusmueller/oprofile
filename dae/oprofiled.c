@@ -633,7 +633,8 @@ void opd_do_samples(struct op_buffer_head const * opd_buf)
 
 	opd_stats[OPD_DUMP_COUNT]++;
 
-	verbprintf("Read buffer of %d entries.\n", opd_buf->count);
+	verbprintf("Read buffer of %d entries.\n",
+		   (unsigned int) opd_buf->count);
  
 	for (i = 0; i < opd_buf->count; i++) {
 		verbprintf("%.6u: EIP: 0x%.8lx pid: %.6d count: %.6d\n",
