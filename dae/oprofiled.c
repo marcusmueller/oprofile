@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.57 2001/12/31 14:51:45 movement Exp $ */
+/* $Id: oprofiled.c,v 1.58 2002/01/02 00:57:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -50,6 +50,7 @@ static sigset_t maskset;
 static fd_t devfd;
 static fd_t notedevfd;
 struct op_hash_index *hashmap;
+volatile sig_atomic_t shutdown_requested; 
 
 static void opd_sighup(int val);
 static void opd_open_logfile(void);
@@ -182,13 +183,11 @@ static void opd_backup_samples_files(void)
 		/* That's a severe problem: if we continue we can overwrite
 		 * samples files and produce wrong result. FIXME */
 		printf("unable to create directory %s\n", dir_name);
-
 		exit(1);
 	}
 
 	if (!(dir = opendir(smpdir))) {
 		printf("unable to open directory %s\n", smpdir);
-
 		exit(1);
 	}
 
@@ -418,6 +417,42 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count);
 void opd_do_notes(struct op_note *opd_buf, size_t count);
 
 /**
+ * do_shutdown - shutdown cleanly, reading as much
+ * remaining data as possible.
+ */
+static void opd_shutdown(struct op_sample *buf, size_t size, struct op_note *nbuf, size_t nsize)
+{
+	ssize_t count = -1;
+	ssize_t ncount = -1;
+ 
+	system("op_dump");
+ 
+	// the dump may have added no samples, so we must set
+	// non-blocking
+	if (fcntl(devfd, F_SETFL, fcntl(devfd, F_GETFL) | O_NONBLOCK) < 0) {
+		perror("Failed to set non-blocking read for device: ");
+		exit(1);
+	}
+
+	// it's always OK to read the note device
+	while (ncount < 0) {
+		ncount = opd_read_device(notedevfd, nbuf, nsize, TRUE);
+	}
+ 
+	if (ncount > 0) {
+		opd_do_notes(nbuf, ncount);
+	}
+ 
+	// read as much as we can until we have exhausted the data
+	while (errno != EAGAIN) {
+		count = opd_read_device(devfd, buf, size, TRUE);
+		if (count > 0) {
+			opd_do_samples(buf, count);
+		}
+	}
+}
+
+/**
  * opd_do_read - enter processing loop
  * @buf: buffer to read into
  * @size: size of buffer
@@ -429,15 +464,34 @@ void opd_do_notes(struct op_note *opd_buf, size_t count);
  */
 static void opd_do_read(struct op_sample *buf, size_t size, struct op_note *nbuf, size_t nsize)
 {
-	size_t count;
-	size_t ncount;
- 
 	while (1) {
-		count = opd_read_device(devfd, buf, size, TRUE);
-		ncount = opd_read_device(notedevfd, nbuf, nsize, TRUE);
-		opd_do_notes(nbuf, ncount);
-		opd_do_samples(buf, count);
+		ssize_t count = -1;
+		ssize_t ncount = -1;
+ 
+		if (shutdown_requested)
+			break;
+ 
+		/* loop to handle EINTR */
+		while (count < 0) {
+			count = opd_read_device(devfd, buf, size, TRUE);
+ 
+			if (count < 0 && shutdown_requested)
+				goto out;
+		}
+
+		while (ncount < 0) {
+			ncount = opd_read_device(notedevfd, nbuf, nsize, TRUE);
+ 
+			if (count < 0 && shutdown_requested) {
+				// handle previously read data
+				opd_do_samples(buf, size);
+				goto out;
+			}
+		}
 	}
+ 
+out:
+	opd_shutdown(buf, size, nbuf, nsize);
 }
 
 /**
@@ -534,6 +588,12 @@ static void opd_sighup(int val __attribute__((unused)))
 	opd_open_logfile();
 }
 
+/* handle clean shutdown */
+static void opd_sigusr1(int val __attribute__((unused)))
+{
+	shutdown_requested = 1;
+}
+
 int main(int argc, char const *argv[])
 {
 	struct op_sample *sbuf;
@@ -592,6 +652,16 @@ int main(int argc, char const *argv[])
 		exit(1);
 	}
 
+	act.sa_handler = opd_sigusr1;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SIGUSR1);
+
+	if (sigaction(SIGUSR1, &act, NULL)) {
+		perror("oprofiled: install of SIGUSR1 handler failed: ");
+		exit(1);
+	}
+ 
 	sigemptyset(&maskset);
 	sigaddset(&maskset, SIGALRM);
 	sigaddset(&maskset, SIGHUP);

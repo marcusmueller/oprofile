@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.87 2001/12/31 14:45:32 movement Exp $ */
+/* $Id: opd_proc.c,v 1.88 2002/01/02 00:57:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -103,6 +103,7 @@ void opd_alarm(int val __attribute__((unused)))
 		while (proc) {
 			++j;
 			next = proc->next;
+			// delay death whilst its still being accessed
 			if (proc->dead) {
 				proc->dead += proc->accessed;
 				proc->accessed = 0;
@@ -123,12 +124,14 @@ void opd_alarm(int val __attribute__((unused)))
 	printf("Nr. process samples in user-space: %lu\n", opd_stats[OPD_PROCESS]);
 	printf("Nr. samples lost due to no map information: %lu\n", opd_stats[OPD_LOST_MAP_PROCESS]);
 	if (opd_stats[OPD_PROC_QUEUE_ACCESS]) {
-	printf("Average depth of search of proc queue: %f\n",
-		(double)opd_stats[OPD_PROC_QUEUE_DEPTH] / (double)opd_stats[OPD_PROC_QUEUE_ACCESS]);
+		printf("Average depth of search of proc queue: %f\n",
+			(double)opd_stats[OPD_PROC_QUEUE_DEPTH] 
+			/ (double)opd_stats[OPD_PROC_QUEUE_ACCESS]);
 	}
 	if (opd_stats[OPD_MAP_ARRAY_ACCESS]) {
-	printf("Average depth of iteration through mapping array: %f\n",
-		(double)opd_stats[OPD_MAP_ARRAY_DEPTH] / (double)opd_stats[OPD_MAP_ARRAY_ACCESS]);
+		printf("Average depth of iteration through mapping array: %f\n",
+			(double)opd_stats[OPD_MAP_ARRAY_DEPTH] 
+			/ (double)opd_stats[OPD_MAP_ARRAY_ACCESS]);
 	}
 	printf("Nr. mapping: %lu\n", opd_stats[OPD_MAPPING]);
 	printf("Nr. mapping tried: %lu\n", opd_stats[OPD_TRY_MAPPING]);
@@ -236,7 +239,7 @@ static void opd_handle_old_sample_file(const char * mangled, time_t mtime)
 	}
 
 	if (difftime(mtime, oldheader.mtime)) {
-		verbprintf("mtime differ for %s\n", mangled);
+		verbprintf("mtime differs for %s\n", mangled);
 		goto closedel;
 	}
 

@@ -796,7 +796,7 @@ void oprof_start::on_start_profiler()
 	args.push_back("--hash-table-size=" + tostr(config.hash_table_size));
 	args.push_back("--note-table-size=" + tostr(config.note_table_size));
 	if (config.separate_samples)
-	args.push_back("--separate-samples");
+		args.push_back("--separate-samples");
 	if (config.verbose)
 		args.push_back("--verbose");
 

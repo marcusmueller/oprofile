@@ -1,3 +1,21 @@
+2002-01-02  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/op_stop: send SIGUSR1 to stop profiler
+ 
+	* dae/opd_proc.c: reformat a little
+ 
+	* dae/opd_util.h:
+	* dae/opd_util.c: change opd_read_device semantics
+ 
+	* dae/oprofiled.c: clean shutdown from SIGUSR1
+ 
+	* module/oprofile.c: handle non-blocking reads
+ 
+	* pp/opf_filter.h:
+	* pp/opf_filter.cpp: slight cleanups
+ 
+	* TODO: update
+ 
 2002-01-01  John Levon  <moz@compsoc.man.ac.uk>
 
 	* oprofile.sgml: clarify that -g is not necessary for

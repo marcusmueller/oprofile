@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.31 2001/12/31 14:45:32 movement Exp $ */
+/* $Id: opd_util.c,v 1.32 2002/01/02 00:57:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -434,31 +434,29 @@ void opd_close_device(fd_t devfd)
  * if @seek is non-zero, then a read is requested in one 
  * go of @size bytes.
  *
- * The driver returning %EINTR is handled to allow signals.
- * Any other error return is fatal.
- *
  * It is the caller's responsibility to do further opd_read_device()
  * calls if the number of bytes read is not what is requested
  * (where this is applicable).
  *
- * The number of bytes read is returned.
+ * The number of bytes read is returned, or a negative number
+ * on failure (in which case errno will be set). If the call is
+ * interrupted, then errno will be EINTR, and the client should
+ * arrange for re-starting the read if necessary.
  */ 
-size_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
+ssize_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek)
 {
 	ssize_t count;
+	
+	if (seek) 
+		lseek(devfd,0,SEEK_SET);
  
-	do {
-		if (seek) 
-			lseek(devfd,0,SEEK_SET);
- 
-		count = read(devfd, buf, size);
+	count = read(devfd, buf, size);
 
-		if (count<0 && errno != EINTR) {
-			perror("oprofiled:opd_read_device: ");
-			exit(1);
-		}
+	if (count < 0 && errno != EINTR) {
+		perror("oprofiled:opd_read_device: ");
+		exit(1);
+	}
  
-	} while (count < 0);
 	return count;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: opd_util.h,v 1.24 2001/12/22 18:01:52 phil_e Exp $ */
+/* $Id: opd_util.h,v 1.25 2002/01/02 00:57:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -90,7 +90,7 @@ void opd_write_u32_he(FILE *fp, u32 val);
 #define opd_try_open_device(n) opd_open_device((n), 0)
 fd_t opd_open_device(const char *name, int fatal);
 void opd_close_device(fd_t devfd);
-size_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek);
+ssize_t opd_read_device(fd_t devfd, void *buf, size_t size, int seek);
 off_t opd_get_fsize(const char *file, int fatal);
 time_t opd_get_mtime(const char *file);
 

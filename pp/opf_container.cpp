@@ -388,18 +388,21 @@ bool sample_container_impl::accumulate_samples(counter_array_t & counter,
 
 	counter += accumulate(p_it.first, p_it.second, counter, add_counts);
 
-	for (size_t i = 0 ; i < op_nr_counters ; ++i)
+	for (size_t i = 0 ; i < op_nr_counters ; ++i) {
 		if (counter[i] != 0)
 			return true;
+	}
 
 	return false;
 }
 
 void sample_container_impl::flush_input_counter() const
 {
-	if (v.size() && samples_by_file_loc.empty()) {
-		for (size_t i = 0 ; i < v.size() ; ++i)
-			samples_by_file_loc.insert(&v[i]);
+	if (!v.size() || !samples_by_file_loc.empty())
+		return;
+
+	for (size_t i = 0 ; i < v.size() ; ++i) {
+		samples_by_file_loc.insert(&v[i]);
 	}
 }
 
@@ -450,6 +453,7 @@ void sample_container_t::push_back(const sample_entry & sample)
 
 //---------------------------------------------------------------------------
 // implementation of samples_files_t
+// FIXME: why here not opf_filter.cpp ?? 
 
 samples_files_t::samples_files_t()
 {
@@ -464,32 +468,35 @@ samples_files_t::~samples_files_t()
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
 void samples_files_t::
-build(const opp_samples_files& samples_files, const opp_bfd& abfd,
+build(const opp_samples_files & samples_files, const opp_bfd & abfd,
       bool add_zero_samples_symbols, bool build_samples_by_vma,
       bool add_shared_libs)
 {
 	do_build(samples_files, abfd, add_zero_samples_symbols,
 		 build_samples_by_vma);
 
-	if (add_shared_libs) {
-		string dir = dirname(samples_files.sample_filename);
-		string name = basename(samples_files.sample_filename);
+	if (!add_shared_libs)
+		return;
+ 
+	string const dir = dirname(samples_files.sample_filename);
+	string name = basename(samples_files.sample_filename);
+ 
+	list<string> file_list;
+ 
+	get_sample_file_list(file_list, dir, name + "}}}*");
 
-		list<string> file_list;
-		get_sample_file_list(file_list, dir, name + "}}}*");
+	list<string>::const_iterator it;
+	for (it = file_list.begin() ; it != file_list.end(); ++it) {
+		string lib_name;
+		// FIXME: phil, image_name is for what ???
+		string image_name = extract_app_name(*it, lib_name);
 
-		list<string>::const_iterator it;
-		for (it = file_list.begin() ; it != file_list.end(); ++it) {
-			string lib_name;
-			string image_name = extract_app_name(*it, lib_name);
+		opp_samples_files samples_files(dir + "/" + *it);
+		opp_bfd abfd(samples_files.header[samples_files.first_file],
+			     samples_files.nr_samples,
+			     demangle_filename(lib_name));
 
-			opp_samples_files samples_files(dir + "/" + *it);
-			opp_bfd abfd(samples_files.header[samples_files.first_file],
-				     samples_files.nr_samples,
-				     demangle_filename(lib_name));
-
-			do_build(samples_files, abfd, false, true);
-		}
+		do_build(samples_files, abfd, false, true);
 	}
 }
 
@@ -498,7 +505,7 @@ build(const opp_samples_files& samples_files, const opp_bfd& abfd,
 //  the range of sample_entry inside each symbol entry are valid
 //  the samples_by_file_loc member var is correctly setup.
 void samples_files_t::
-do_build(const opp_samples_files& samples_files, const opp_bfd& abfd,
+do_build(const opp_samples_files & samples_files, const opp_bfd & abfd,
 	 bool add_zero_samples_symbols, bool build_samples_by_vma)
 {
 	string image_name = bfd_get_filename(abfd.ibfd);
@@ -648,12 +655,13 @@ void samples_files_t::select_filename(vector<string> & result, size_t ctr,
 {
 	set<string> filename_set;
 
-	// Trying to iterate on symbols to create the set of filename which
-	// contain sample do not work: a symbol can contain samples and this
+	// Trying to iterate on symbols to create the set of filenames which
+	// contain sample does not work: a symbol can contain samples and this
 	// symbol is in a source file that contain zero sample because only
 	// inline function in this source file contains samples.
-	for (size_t i = 0 ; i < samples.size() ; ++i)
+	for (size_t i = 0 ; i < samples.size() ; ++i) {
 		filename_set.insert(samples[i].file_loc.filename);
+	}
 
 	// Give a sort order on filename for the selected counter.
 	vector<filename_by_samples> file_by_samples;

@@ -198,6 +198,8 @@ private:
 			 const opp_bfd& abfd, size_t sym_index,
 			 u32 start, u32 end, bfd_vma base_vma,
 			 const string& image_name);
+// FIXME: please, if you #if 0 something leave a comment so I can know what
+// you are planning :) 
 #if 0
 	/// We use a set of container_t to store information for each image
 	struct container_t {

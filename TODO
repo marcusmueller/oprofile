@@ -1,10 +1,9 @@
 0.0.8 task list
 ---------------
  
-o add docs for separate samples in extra features (more depth on
-	how to use it ...)
- 
-o clean shutdown via SIGUSR1
+o we need an overhaul of the docs. An overview of the tools section is needed.
+  Discussion of problematic code needs to go in the "interpreting" section. Maybe
+  you should add the nasm tricks somewhere Phil ?
  
 o test test test
  

@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.17 2001/12/31 22:56:40 phil_e Exp $ */
+/* $Id: oprofile.c,v 1.18 2002/01/02 00:57:34 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -450,7 +450,20 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	if (*ppos || count != max)
 		return -EINVAL;
 
-	wait_event_interruptible(oprof_wait, is_ready());
+	if (file->f_flags & O_NONBLOCK) {
+		uint cpu;
+		for (cpu = 0; cpu < smp_num_cpus; ++cpu) {
+			if (oprof_data[cpu].nextbuf) {
+				cpu_num = cpu;
+				oprof_ready[cpu_num] = 2;
+				break;
+			}
+		}
+		if (cpu == smp_num_cpus)
+			return -EAGAIN;
+	} else {
+		wait_event_interruptible(oprof_wait, is_ready());
+	}
 
 	if (signal_pending(current))
 		return -EINTR;
