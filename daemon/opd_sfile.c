@@ -210,7 +210,8 @@ static samples_odb_t * get_file(struct sfile * sf, struct sfile * last,
 	samples_odb_t * file;
 
 	if (counter >= op_nr_counters) {
-		fprintf(stderr, "Invalid counter %u\n", counter);
+		fprintf(stderr, "%s: Invalid counter %u\n", __FUNCTION__,
+			counter);
 		abort();
 	}
 
@@ -300,7 +301,7 @@ static void sfile_log_arc(struct transient const * trans)
 
 	err = odb_insert(file, key, 1);
 	if (err) {
-		fprintf(stderr, "%s\n", strerror(err));
+		fprintf(stderr, "%s: %s\n", __FUNCTION__, strerror(err));
 		abort();
 	}
 }
@@ -339,7 +340,7 @@ void sfile_log_sample(struct transient const * trans)
 
 	err = odb_insert(file, (uint64_t)pc, 1);
 	if (err) {
-		fprintf(stderr, "%s\n", strerror(err));
+		fprintf(stderr, "%s: %s\n", __FUNCTION__, strerror(err));
 		abort();
 	}
 }
