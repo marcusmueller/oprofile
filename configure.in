@@ -111,7 +111,7 @@ if test -n "$XSLTPROC"; then
 	if test -n "$XML_CATALOG"; then
 		DB_FILE="http://docbook.sourceforge.net/release/xsl/current/xhtml/docbook.xsl"
 	else
-		DB_FILE="$DOCBOOK_ROOT/doocbook.xsl"
+		DB_FILE="$DOCBOOK_ROOT/docbook.xsl"
 	fi
 
 	$XSLTPROC $XSLTPROC_FLAGS $DB_FILE >/dev/null 2>&1 << END
