@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.24 2001/04/06 14:16:46 movement Exp $
+# $Id: op_start,v 1.25 2001/04/29 23:01:56 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -191,6 +191,16 @@ done
 
 CTR0_EVENT_VAL=`op_help $CTR0_EVENT`
 CTR1_EVENT_VAL=`op_help $CTR1_EVENT`
+
+if [ -z "$CTR0_EVENT_VAL" && ! -z "$CTR0_EVENT" ]; then
+	echo "Unknown event \"$CTR0_EVENT\""
+	exit 1
+fi
+
+if [ -z "$CTR1_EVENT_VAL" && ! -z "$CTR1_EVENT" ]; then
+	echo "Unknown event \"$CTR1_EVENT\""
+	exit 1
+fi
 
 grep oprof /proc/devices >/dev/null
 if [ "$?" -ne 0 ]; then

@@ -1,3 +1,9 @@
+2001-04-30  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/op_start: better error reporting
+
+	* dae/opd_proc.c: fix indentation
+ 
 2001-04-08  John Levon  <moz@compsoc.man.ac.uk>
 
 	* configure.in: 0.0.3 has been released. Bump cvs version

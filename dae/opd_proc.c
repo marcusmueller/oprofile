@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.51 2001/04/06 14:16:46 movement Exp $ */
+/* $Id: opd_proc.c,v 1.52 2001/04/29 23:01:56 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -151,12 +151,12 @@ void opd_read_system_map(const char *filename)
 
 	fp = opd_open_file(filename,"r");
 
-        do {
-                line = opd_get_line(fp);
-                if (streq(line,"")) {
-                        opd_free(line);
-                        break;
-                } else {
+	do {
+		line = opd_get_line(fp);
+		if (streq(line,"")) {
+			opd_free(line);
+			break;
+		} else {
 			if (strlen(line)<11) {
 				opd_free(line);
 				continue;
@@ -166,9 +166,9 @@ void opd_read_system_map(const char *filename)
 				sscanf(line,"%x",&kernel_start);
 			else if (streq("_end",cp))
 				sscanf(line,"%x",&kernel_end);
-                        opd_free(line);
-                }
-        } while (1);
+			opd_free(line);
+		}
+	} while (1);
 
 	if (kernel_start && kernel_end)
 		got_system_map=TRUE;
@@ -519,7 +519,7 @@ static struct opd_proc * opd_new_proc(struct opd_proc *prev, struct opd_proc *ne
 	struct opd_proc *proc;
 
 	proc = opd_malloc(sizeof(struct opd_proc));
-        proc->maps=NULL;
+	proc->maps=NULL;
 	proc->pid=0;
 	proc->nr_maps=0;
 	proc->max_nr_maps=0;
@@ -887,8 +887,8 @@ static void opd_handle_module_sample(u32 eip, u16 count)
 retry:
 	for (i=0; i < nr_modules; i++) {
 		if (opd_modules[i].image!=-1 && opd_modules[i].start && opd_modules[i].end &&
-	            opd_modules[i].start <= eip &&
-	            opd_modules[i].end > eip) {
+			opd_modules[i].start <= eip &&
+			opd_modules[i].end > eip) {
 			opd_put_image_sample(&opd_images[opd_modules[i].image], eip - opd_modules[i].start, count);
 			return;
 		}
