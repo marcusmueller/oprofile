@@ -1,0 +1,43 @@
+# $Id: Makefile.in,v 1.1 2000/08/03 02:39:33 moz Exp $
+ 
+KCPPFLAGS=@KCPPFLAGS@
+MODINSTALLDIR=@MODINSTALLDIR@
+ 
+.PHONY: all install clean
+ 
+all: oprofile.o
+	$(MAKE) -C dae
+	$(MAKE) -C pp
+
+install: oprofile.o
+	cp oprofile.o $(MODINSTALLDIR)
+	$(MAKE) -C dae install 
+	$(MAKE) -C pp install 
+ 
+clean:
+	rm -f *.o config.status config.log config.cache
+	$(MAKE) -C dae clean
+	$(MAKE) -C pp clean 
+ 
+# FIXME: move NMI code into separate to allow -march=ppro for that
+KCFLAGS:=-D__KERNEL__ -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe  -mpreferred-stack-boundary=2 -march=i586 -fno-strict-aliasing -DMODULE -Wunused $(KCPPFLAGS) $(KCFLAGS)
+ 
+ASMFLAGS=-D__ASSEMBLY__ -D__KERNEL__ -traditional
+ 
+oprofile.o: oprofile_c.o oprofile_nmi.o oprofile_k.o op_events.o 
+	ld -r -o $(G) $@ oprofile_c.o oprofile_nmi.o oprofile_k.o op_events.o
+
+oprofile_c.o: oprofile.c oprofile.h
+	gcc $(KCFLAGS) $(G) -c -o $@ $< 
+
+oprofile_k.o: oprofile_k.c oprofile.h
+	gcc $(KCFLAGS) $(G) -c -o $@ $< 
+
+oprofile.s: oprofile.c oprofile.h
+	gcc $(KCFLAGS) $(G) -S $<
+ 
+op_events.o: op_events.c
+	gcc $(KCFLAGS) $(G) -c -o $@ $< 
+ 
+oprofile_nmi.o: oprofile_nmi.S
+	gcc $(ASMFLAGS) -c -o $@ $<
