@@ -281,7 +281,7 @@ static void cleanup(void)
 }
 
 
-int main(int argc, char const *argv[])
+int main(int argc, char const * argv[])
 {
 	struct list_head * events;
 	struct list_head * pos;

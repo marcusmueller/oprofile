@@ -184,7 +184,7 @@ static void opd_alarm(void)
 {
 	sfile_sync_files();
 	opd_print_stats();
-	alarm(60*10);
+	alarm(60 * 10);
 }
  
 

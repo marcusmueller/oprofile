@@ -295,7 +295,7 @@ static void opd_alarm(void)
 
 	opd_print_24_stats();
 
-	alarm(60*10);
+	alarm(60 * 10);
 }
  
 

@@ -772,7 +772,7 @@ string cg_formatter::format_percent_self_cumulated(field_datum const & f)
 }
 
 
-string cg_formatter::format_nr_samples_child_cumulated(field_datum const &f)
+string cg_formatter::format_nr_samples_child_cumulated(field_datum const & f)
 {
 	ostringstream out;
 	cumulated_samples_callee[f.pclass] += f.symbol.callee_counts[f.pclass];

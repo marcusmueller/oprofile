@@ -87,7 +87,7 @@ inline static bool is_directory_name(char const * name)
 bool create_file_list(list<string> & file_list, string const & base_dir,
 		      string const & filter, bool recursive)
 {
-	DIR *dir;
+	DIR * dir;
 	struct dirent * ent;
 
 	if (!(dir = opendir(base_dir.c_str())))

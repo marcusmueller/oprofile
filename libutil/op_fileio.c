@@ -143,7 +143,7 @@ u32 op_read_int_from_file(char const * filename, int fatal)
 }
 
 
-char *op_get_line(FILE * fp)
+char * op_get_line(FILE * fp)
 {
 	char * buf;
 	char * cp;

@@ -169,7 +169,7 @@ int odb_open(odb_t * odb, char const * filename, enum odb_rw rw,
 {
 	struct stat stat_buf;
 	odb_node_nr_t nr_node;
-	odb_data_t *data;
+	odb_data_t * data;
 	size_t hash;
 	int err = 0;
 

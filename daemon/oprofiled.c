@@ -461,7 +461,7 @@ int main(int argc, char const * argv[])
 	opd_go_daemon();
 
 	/* clean up every 10 minutes */
-	alarm(60*10);
+	alarm(60 * 10);
 
 	if (op_write_lock_file(OP_LOCK_FILE)) {
 		fprintf(stderr, "oprofiled: could not create lock file "

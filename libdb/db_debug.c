@@ -21,7 +21,7 @@ static int check_circular_list(odb_data_t const * data)
 	unsigned char * bitmap = malloc(data->descr->current_size);
 	memset(bitmap, '\0', data->descr->current_size);
 
-	for (pos = 0 ; pos < data->descr->size*BUCKET_FACTOR ; ++pos) {
+	for (pos = 0 ; pos < data->descr->size * BUCKET_FACTOR ; ++pos) {
 
 		odb_index_t index = data->hash_base[pos];
 		if (index && !do_abort) {

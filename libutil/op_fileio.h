@@ -143,7 +143,7 @@ char * op_get_line(FILE * fp);
  * Returns current crc computed from the crc argument and the
  * characters in len characters in buf.
  */
-unsigned long calc_crc32(unsigned long crc, unsigned char *buf, size_t len);
+unsigned long calc_crc32(unsigned long crc, unsigned char * buf, size_t len);
 
 #ifdef __cplusplus
 }
