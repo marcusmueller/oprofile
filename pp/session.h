@@ -20,6 +20,6 @@
  * return the samples directory derived from the session name or
  * OP_SAMPLES_DIR if no session name has been specified
  */
-std::string handle_session_options(void);
+std::string handle_session_options();
 
 #endif /* !SESSION_H */

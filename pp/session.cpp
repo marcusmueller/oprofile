@@ -21,7 +21,7 @@ namespace {
 	popt::option opt_session(session, "session", '\0', "session to use", "name");
 };
 
-string handle_session_options(void)
+string handle_session_options()
 {
 	if (session.empty()) {
 		return OP_SAMPLES_DIR;

@@ -16,6 +16,7 @@
 #include "opp_symbol.h"
 #include "counter_util.h"
 #include "cverb.h"
+#include "format_output.h"
 
 #include <sstream>
 
@@ -119,11 +120,11 @@ string const get_options(int argc, char const **argv)
 
 	if (list_symbols || list_all_symbols_details || !symbol.empty()) {
 		outsymbflag fl =
-			output_symbol::ParseOutputOption(output_format);
+			format_output::parse_format(output_format);
 
 		if (fl == osf_none || (fl & ~(osf_header|osf_details)) == 0) {
 			cerr << "oprofpp: invalid --output-format flags.\n";
-			output_symbol::ShowHelp();
+			format_output::show_help();
 			exit(EXIT_FAILURE);
 		}
 

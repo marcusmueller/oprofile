@@ -29,6 +29,7 @@
 
 #include "samples_container.h"
 #include "samples_file.h"
+#include "format_output.h"
 
 #include "file_manip.h"
 #include "string_manip.h"
@@ -482,10 +483,8 @@ static void output_symbols_count(map_t& files, int counter)
 	vector<symbol_entry const *> symbols =
 		samples.select_symbols(options::sort_by_counter, 0.0, false);
 
-	output_symbol out(samples, counter);
-
-	out.SetFlag(options::output_format_flags);
-
+	format_output::formatter out(samples, counter);
+	out.set_format(options::output_format_flags);
 	out.Output(cout, symbols, !options::reverse_sort);
 }
 

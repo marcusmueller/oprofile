@@ -1,6 +1,6 @@
 /**
- * @file opp_symbol.cpp
- * Symbol and sample management
+ * @file format_output.cpp
+ * Outputting format for symbol lists
  *
  * @remark Copyright 2002 OProfile authors
  * @remark Read the file COPYING
@@ -15,6 +15,7 @@
 #include "file_manip.h"
 
 #include "opp_symbol.h"
+#include "format_output.h"
 #include "samples_container.h"
 #include "demangle_symbol.h"
 
@@ -49,7 +50,9 @@ static output_option const output_options[] = {
 
 size_t const nr_output_option = sizeof(output_options) / sizeof(output_options[0]);
 
-static output_option const * find_option(char ch)
+namespace {
+
+output_option const * find_option(char ch)
 {
 	for (size_t i = 0 ; i < nr_output_option ; ++i) {
 		if (ch == output_options[i].option) {
@@ -60,7 +63,12 @@ static output_option const * find_option(char ch)
 	return 0;
 }
 
-outsymbflag output_symbol::ParseOutputOption(string const & option)
+}
+
+ 
+namespace format_output {
+ 
+outsymbflag parse_format(string const & option)
 {
 	size_t flag = 0;
 	for (size_t i = 0 ; i < option.length() ; ++i) {
@@ -73,7 +81,7 @@ outsymbflag output_symbol::ParseOutputOption(string const & option)
 	return static_cast<outsymbflag>(flag);
 }
 
-void output_symbol::ShowHelp()
+void show_help()
 {
 	for (size_t i = 0 ; i < nr_output_option ; ++i) {
 		cerr << output_options[i].option << "\t"
@@ -81,7 +89,7 @@ void output_symbol::ShowHelp()
 	}
 }
 
-typedef string (output_symbol::*fct_format)(string const & symb_name,
+typedef string (formatter::*fct_format)(string const & symb_name,
 					   sample_entry const & symb,
 					   size_t ctr);
 
@@ -93,52 +101,62 @@ struct field_description {
 	fct_format formater;
 };
 
+// FIXME: can't we make this a private std::map member, avoiding need
+// for public members ? 
+ 
 /// describe each possible field of colummned output.
 // FIXME: some field have header_name too long (> field_description::width)
 // TODO: use % of the screen width here. sum of % equal to 100, then calculate
 // ratio between 100 and the selected % to grow non fixed field use also
 // lib[n?]curses to get the console width (look info source) (so on add a fixed
 // field flags)
-static field_description const field_descr[] = {
+field_description const field_descr[] = {
 	{ osf_vma, 9,
-	  "vma", &output_symbol::format_vma },
+	  "vma", &formatter::format_vma },
 	{ osf_nr_samples, 9,
-	  "samples", &output_symbol::format_nr_samples },
+	  "samples", &formatter::format_nr_samples },
 	{ osf_nr_samples_cumulated, 9,
-	  "cum. samples", &output_symbol::format_nr_cumulated_samples },
+	  "cum. samples", &formatter::format_nr_cumulated_samples },
 	{ osf_percent, 12,
-	  "%-age", &output_symbol::format_percent },
+	  "%-age", &formatter::format_percent },
 	{ osf_percent_cumulated, 10,
-	  "cum %-age", &output_symbol::format_cumulated_percent },
+	  "cum %-age", &formatter::format_cumulated_percent },
 	{ osf_symb_name, 24,
-	  "symbol name", &output_symbol::format_symb_name },
+	  "symbol name", &formatter::format_symb_name },
 	{ osf_linenr_info, 28, "linenr info",
-	  &output_symbol::format_linenr_info },
+	  &formatter::format_linenr_info },
 	{ osf_short_linenr_info, 20, "linenr info",
-	  &output_symbol::format_short_linenr_info },
+	  &formatter::format_short_linenr_info },
 	{ osf_image_name, 24, "image name",
-	  &output_symbol::format_image_name },
+	  &formatter::format_image_name },
 	{ osf_short_image_name, 16, "image name",
-	  &output_symbol::format_short_image_name },
+	  &formatter::format_short_image_name },
 	{ osf_percent, 12,
-	  "%-age", &output_symbol::format_percent },
+	  "%-age", &formatter::format_percent },
 	{ osf_percent_cumulated, 10,
-	  "cum %-age", &output_symbol::format_cumulated_percent },
+	  "cum %-age", &formatter::format_cumulated_percent },
 	{ osf_percent_details, 12,
-	  "%-age", &output_symbol::format_percent_details },
+	  "%-age", &formatter::format_percent_details },
 	{ osf_percent_cumulated_details, 10,
-	  "cum %-age", &output_symbol::format_cumulated_percent_details },
+	  "cum %-age", &formatter::format_cumulated_percent_details },
 };
 
 size_t const nr_field_descr = sizeof(field_descr) / sizeof(field_descr[0]);
 
-output_symbol::output_symbol(samples_container_t const & samples_container_,
-			   int counter_)
-	:
-	flags(osf_none),
-	samples_container(samples_container_),
-	counter(counter_),
-	first_output(true)
+field_description const * get_field_descr(outsymbflag flag)
+{
+	for (size_t i = 0 ; i < nr_field_descr ; ++i) {
+		if (flag == field_descr[i].flag)
+			return &field_descr[i];
+	}
+
+	return 0;
+}
+ 
+
+formatter::formatter(samples_container_t const & samples_container_, int counter_)
+	: flags(osf_none), samples_container(samples_container_),
+	  counter(counter_), first_output(true)
 {
 	for (size_t i = 0 ; i < samples_container.get_nr_counters() ; ++i) {
 		total_count[i] = samples_container.samples_count(i);
@@ -149,29 +167,21 @@ output_symbol::output_symbol(samples_container_t const & samples_container_,
 	}
 }
 
-field_description const * output_symbol::GetFieldDescr(outsymbflag flag)
-{
-	for (size_t i = 0 ; i < nr_field_descr ; ++i) {
-		if (flag == field_descr[i].flag)
-			return &field_descr[i];
-	}
-
-	return 0;
-}
-
-void output_symbol::SetFlag(outsymbflag flag)
+ 
+void formatter::set_format(outsymbflag flag)
 {
 	flags = static_cast<outsymbflag>(flags | flag);
 }
+ 
 
-size_t output_symbol::OutputField(ostream & out, string const & name,
+size_t formatter::OutputField(ostream & out, string const & name,
 				 sample_entry const & sample,
 				 outsymbflag fl, size_t ctr, size_t padding)
 {
 	out << string(padding, ' ');
 	padding = 0;
 
-	field_description const * field = GetFieldDescr(fl);
+	field_description const * field = get_field_descr(fl);
 	if (field) {
 		string str = (this->*field->formater)(name, sample, ctr);
 		out << str;
@@ -184,13 +194,14 @@ size_t output_symbol::OutputField(ostream & out, string const & name,
 	return padding;
 }
 
-size_t output_symbol::OutputHeaderField(ostream & out, outsymbflag fl,
+ 
+size_t formatter::OutputHeaderField(ostream & out, outsymbflag fl,
 					size_t padding)
 {
 	out << string(padding, ' ');
 	padding = 0;
 
-	field_description const * field = GetFieldDescr(fl);
+	field_description const * field = get_field_descr(fl);
 	if (field) {
 		out << field->header_name;
 
@@ -201,8 +212,9 @@ size_t output_symbol::OutputHeaderField(ostream & out, outsymbflag fl,
 
 	return padding;
 }
+ 
 
-void output_symbol::Output(ostream & out, symbol_entry const * symb)
+void formatter::Output(ostream & out, symbol_entry const * symb)
 {
 	DoOutput(out, symb->name, symb->sample, flags);
 
@@ -210,8 +222,9 @@ void output_symbol::Output(ostream & out, symbol_entry const * symb)
 		OutputDetails(out, symb);
 	}
 }
+ 
 
-void output_symbol::OutputDetails(ostream & out, symbol_entry const * symb)
+void formatter::OutputDetails(ostream & out, symbol_entry const * symb)
 {
 	// We need to save the accumulated count and to restore it on
 	// exit so global cumulation and detailed cumulation are separate
@@ -244,7 +257,8 @@ void output_symbol::OutputDetails(ostream & out, symbol_entry const * symb)
 	}
 }
 
-void output_symbol::DoOutput(ostream & out, string const & name,
+ 
+void formatter::DoOutput(ostream & out, string const & name,
 			    sample_entry const & sample, outsymbflag flag)
 {
 	OutputHeader(out);
@@ -281,7 +295,7 @@ void output_symbol::DoOutput(ostream & out, string const & name,
 			padding = OutputField(out, name, sample, fl, 0, padding);
 			temp_flag &= ~i;
 		} else if ((true_flags & fl) != 0) {
-			field_description const * field = GetFieldDescr(fl);
+			field_description const * field = get_field_descr(fl);
 			if (field) {
 				padding += field->width;
 			}
@@ -290,8 +304,9 @@ void output_symbol::DoOutput(ostream & out, string const & name,
 
 	out << "\n";
 }
+ 
 
-void output_symbol::OutputHeader(ostream & out)
+void formatter::OutputHeader(ostream & out)
 {
 	if (!first_output) {
 		return;
@@ -339,7 +354,8 @@ void output_symbol::OutputHeader(ostream & out)
 	out << "\n";
 }
 
-void output_symbol::Output(ostream & out,
+ 
+void formatter::Output(ostream & out,
 			  vector<symbol_entry const *> const & symbols,
 			  bool reverse)
 {
@@ -356,7 +372,8 @@ void output_symbol::Output(ostream & out,
 	}
 }
 
-string output_symbol::format_vma(string const &,
+ 
+string formatter::format_vma(string const &,
 				sample_entry const & sample, size_t)
 {
 	ostringstream out;
@@ -366,7 +383,8 @@ string output_symbol::format_vma(string const &,
 	return out.str();
 }
 
-string output_symbol::format_symb_name(string const & name,
+ 
+string formatter::format_symb_name(string const & name,
 				      sample_entry const &, size_t)
 {
 	if (name[0] == '?')
@@ -374,20 +392,23 @@ string output_symbol::format_symb_name(string const & name,
 	return options::demangle ? demangle_symbol(name) : name;
 }
 
-string output_symbol::format_image_name(string const &,
+ 
+string formatter::format_image_name(string const &,
 				       sample_entry const & sample, size_t)
 {
 	return sample.file_loc.image_name;
 }
 
-string output_symbol::format_short_image_name(string const &,
+ 
+string formatter::format_short_image_name(string const &,
 					     sample_entry const & sample,
 					     size_t)
 {
 	return basename(sample.file_loc.image_name);
 }
 
-string output_symbol::format_linenr_info(string const &,
+ 
+string formatter::format_linenr_info(string const &,
 					sample_entry const & sample, size_t)
 {
 	ostringstream out;
@@ -402,7 +423,8 @@ string output_symbol::format_linenr_info(string const &,
 	return out.str();
 }
 
-string output_symbol::format_short_linenr_info(string const &,
+ 
+string formatter::format_short_linenr_info(string const &,
 					      sample_entry const & sample,
 					      size_t)
 {
@@ -418,7 +440,8 @@ string output_symbol::format_short_linenr_info(string const &,
 	return out.str();
 }
 
-string output_symbol::format_nr_samples(string const &,
+ 
+string formatter::format_nr_samples(string const &,
 				       sample_entry const & sample, size_t ctr)
 {
 	ostringstream out;
@@ -428,7 +451,8 @@ string output_symbol::format_nr_samples(string const &,
 	return out.str();
 }
 
-string output_symbol::format_nr_cumulated_samples(string const &,
+ 
+string formatter::format_nr_cumulated_samples(string const &,
 						 sample_entry const & sample,
 						 size_t ctr)
 {
@@ -441,7 +465,8 @@ string output_symbol::format_nr_cumulated_samples(string const &,
 	return out.str();
 }
 
-string output_symbol::format_percent(string const &,
+ 
+string formatter::format_percent(string const &,
 				    sample_entry const & sample, size_t ctr)
 {
 	ostringstream out;
@@ -453,7 +478,8 @@ string output_symbol::format_percent(string const &,
 	return out.str();
 }
 
-string output_symbol::format_cumulated_percent(string const &,
+ 
+string formatter::format_cumulated_percent(string const &,
 					      sample_entry const & sample,
 					      size_t ctr)
 {
@@ -468,7 +494,8 @@ string output_symbol::format_cumulated_percent(string const &,
 	return out.str();
 }
 
-string output_symbol::format_percent_details(string const &,
+ 
+string formatter::format_percent_details(string const &,
 				    sample_entry const & sample, size_t ctr)
 {
 	ostringstream out;
@@ -480,7 +507,8 @@ string output_symbol::format_percent_details(string const &,
 	return out.str();
 }
 
-string output_symbol::format_cumulated_percent_details(string const &,
+ 
+string formatter::format_cumulated_percent_details(string const &,
 					      sample_entry const & sample,
 					      size_t ctr)
 {
@@ -495,3 +523,5 @@ string output_symbol::format_cumulated_percent_details(string const &,
 
 	return out.str();
 }
+
+}; // namespace format_output

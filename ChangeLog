@@ -1,3 +1,12 @@
+2002-12-04  John Levon  <levon@movementarian.org>
+
+	* pp/opp_symbol.h:
+	* pp/opp_symbol.cpp:
+	* pp/format_output.h:
+	* pp/format_output.cpp:
+	* others from above: create format_output namespace, some
+	  clean up
+ 
 2002-12-04  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_image.c: revert last change, it break daemon...
