@@ -498,9 +498,11 @@ static void output_symbols_count(map_t& files, int counter)
 		}
 	}
 
+	bool need_vma64 = vma64_p(symbols.begin(), symbols.end());
+
 	format_output::formatter out(samples, counter);
-	out.set_format(options::output_format_flags);
-	out.output(cout, symbols, !options::reverse_sort);
+	out.add_format(options::output_format_flags);
+	out.output(cout, symbols, !options::reverse_sort, need_vma64);
 }
 
 int main(int argc, char const * argv[])

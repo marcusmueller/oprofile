@@ -45,7 +45,8 @@ static void do_list_symbols(profile_container_t const & samples,
 	vector<symbol_entry const *> symbols =
 		samples.select_symbols(sort_by_ctr, 0.0, false);
 
-	out.output(cout, symbols, !options::reverse_sort);
+	bool need_vma64 = vma64_p(symbols.begin(), symbols.end());
+	out.output(cout, symbols, !options::reverse_sort, need_vma64);
 }
 
 /**
@@ -64,7 +65,8 @@ static void do_list_symbols_details(profile_container_t const & samples,
 	vector<symbol_entry const *> symbols =
 		samples.select_symbols(sort_by_ctr, 0.0, false, true);
 
-	out.output(cout, symbols, false);
+	bool need_vma64 = vma64_p(symbols.begin(), symbols.end());
+	out.output(cout, symbols, false, need_vma64);
 }
 
 /**
@@ -86,7 +88,8 @@ static void do_list_symbol(profile_container_t const & samples, format_output::f
 		return;
 	}
 
-	out.output(cout, symb);
+	bool need_vma64 = vma64_p(&symb, &symb + 1);
+	out.output(cout, symb, need_vma64);
 }
 
 #define GMON_VERSION 1
@@ -284,7 +287,7 @@ int main(int argc, char const * argv[])
 	}
 
 	format_output::formatter out(samples, options::counter_mask);
-	out.set_format(options::output_format_flags);
+	out.add_format(options::output_format_flags);
 
 	if (options::list_symbols)
 		do_list_symbols(samples, out, options::sort_by_counter);

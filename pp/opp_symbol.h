@@ -68,4 +68,26 @@ struct symbol_entry {
 	size_t size;
 };
 
+
+/**
+ * Taking two opp_symbol* input iterator return true if we need to format
+ * vma as 64 bits value else false.
+ */
+template <class InputIterator>
+bool vma64_p(InputIterator first_symbol, InputIterator last_symbol)
+{
+	if (sizeof(bfd_vma) == 4) {
+		return false;
+	}
+
+	// slow way, check all address
+	for ( ; first_symbol != last_symbol ; ++first_symbol) {
+		if ((*first_symbol)->sample.vma & ~0xffffffffLLU) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 #endif /* !OPP_SYMBOL_H */

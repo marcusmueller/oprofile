@@ -35,8 +35,6 @@ Before 1.0 little stuff
  o use standard C integer type <stdint.h> int32_t int16_t etc.
  o verify if we can remove the ELF-based symbol size code
  o adapt Anton's patch for handling non-symbolled libraries ?
- o correct 64 bits vma output in output_format.cpp, if possible don't use
-   sizeof(bfd_vma) == 8 to check 64 bits format.
  o must we do setrlimit(RLIMIT_NOFILE, ...) for daemon ? Isn't already limited
   by the kernel itself ?
 

@@ -1,3 +1,14 @@
+2003-02-20  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* TODO: update
+
+	* pp/output_format.h:
+	* pp/output_format.cpp:
+	* pp/op_time.cpp:
+	* pp/oprofpp.cpp:
+	* pp/opp_symbol.h: better handling of 64/32 bits bfd_vma
+	  in output
+
 2003-02-20  John Levon  <levon@movementarian.org>
 
 	* libutil++/op_exception.h:

@@ -95,7 +95,7 @@ void show_help(ostream & out)
 
 formatter::formatter(profile_container_t const & profile_container_, int counter_)
 	: flags(osf_none), profile_container(profile_container_),
-	  counter(counter_), first_output(true)
+	  counter(counter_), first_output(true), vma_64(false)
 {
 	for (size_t i = 0 ; i < profile_container.get_nr_counters() ; ++i) {
 		total_count[i] = profile_container.samples_count(i);
@@ -124,7 +124,7 @@ formatter::formatter(profile_container_t const & profile_container_, int counter
 }
 
  
-void formatter::set_format(outsymbflag flag)
+void formatter::add_format(outsymbflag flag)
 {
 	flags = static_cast<outsymbflag>(flags | flag);
 }
@@ -144,7 +144,7 @@ size_t formatter::output_field(ostream & out, string const & name,
 	padding = 0;
 
 	field_description const & field(format_map[fl]);
-	string str = (this->*field.formatter)(field_datum(name, sample, ctr));
+	string str = (this->*field.formatter)(field_datum(name, sample, ctr, vma_64));
 	out << str;
 
 	padding = 1;	// at least one separator char
@@ -172,8 +172,9 @@ size_t formatter::output_header_field(ostream & out, outsymbflag fl,
 }
  
 
-void formatter::output(ostream & out, symbol_entry const * symb)
+void formatter::output(ostream & out, symbol_entry const * symb, bool vma_64_)
 {
+	vma_64 = vma_64_;
 	do_output(out, symb->name, symb->sample, flags);
 
 	if (flags & osf_details) {
@@ -327,17 +328,17 @@ void formatter::output_header(ostream & out)
  
 void formatter::output(ostream & out,
 			  vector<symbol_entry const *> const & symbols,
-			  bool reverse)
+			  bool reverse, bool vma_64_)
 {
 	if (reverse) {
 		vector<symbol_entry const *>::const_reverse_iterator it;
 		for (it = symbols.rbegin(); it != symbols.rend(); ++it) {
-			output(out, *it);
+			output(out, *it, vma_64_);
 		}
 	} else {
 		vector<symbol_entry const *>::const_iterator it;
 		for (it = symbols.begin(); it != symbols.end(); ++it) {
-			output(out, *it);
+			output(out, *it, vma_64_);
 		}
 	}
 }
@@ -346,8 +347,9 @@ void formatter::output(ostream & out,
 string formatter::format_vma(field_datum const & f)
 {
 	ostringstream out;
+	int width = f.vma_64 ? 16 : 8;
 
-	out << hex << setw(8) << setfill('0') << f.sample.vma;
+	out << hex << setw(width) << setfill('0') << f.sample.vma;
 
 	return out.str();
 }

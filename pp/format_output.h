@@ -41,26 +41,28 @@ public:
 	/// object must be > of the life time of the output_symbol object.
 	formatter(profile_container_t const & profile_container, int counter);
 
-	/// convenience to set output options flags w/o worrying about cast
-	void set_format(outsymbflag flag);
+	/// convenience to add output options flags w/o worrying about cast
+	void add_format(outsymbflag flag);
 
 	/** output one symbol symb to out according to the output format
-	 * specifier previously set by call(s) to set_format() */
-	void output(std::ostream & out, symbol_entry const * symb);
+	 * specifier previously set by call(s) to add_format() */
+	void output(std::ostream & out, symbol_entry const * symb,bool vma_64);
 	/** output a vector of symbols to out according to the output format
-	 * specifier previously set by call(s) to set_format() */
+	 * specifier previously set by call(s) to add_format() */
 	void output(std::ostream & out,
-		    std::vector<symbol_entry const *> const & v, bool reverse);
+		    std::vector<symbol_entry const *> const & v, bool reverse,
+		    bool vma_64);
 
 private:
 
 	/// data passed for output
 	struct field_datum {
-		field_datum(std::string const & n, sample_entry const & s, size_t c)
-			: name(n), sample(s), ctr(c) {}
+		field_datum(std::string const & n, sample_entry const & s, size_t c, bool vma_64_)
+			: name(n), sample(s), ctr(c), vma_64(vma_64_) {}
 		std::string const & name;
 		sample_entry const & sample;
 		size_t ctr;
+		bool vma_64;
 	};
  
 	/// format callback type
@@ -141,6 +143,8 @@ private:
 	int counter;
 	/// used for outputting header
 	bool first_output;
+	/// true if we need to format as 64 bits quantities
+	bool vma_64;
 };
 
 }; // namespace format_output 
