@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.57 2001/10/14 16:37:19 movement Exp $ */
+/* $Id: oprofile.h,v 1.58 2001/10/14 19:35:13 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -100,13 +100,18 @@ struct _oprof_data {
 #define streq(a, b) (!strcmp((a), (b)))
 #define streqn(a, b, len) (!strncmp((a), (b), (len)))
 
-/* oprof_data->ready will be set this many samples
- * before the end of the eviction buffer.
+/* ready will be set this many samples before the end of the 
+ * eviction buffer.
  * The purpose of this is to avoid overflowing the sample
  * buffer - though if we do overflow, nothing too bad will
  * happen.
  */
-#define OP_PRE_WATERMARK 768
+#define OP_PRE_WATERMARK 2048
+
+/* ready will be set this many notes before the end of the 
+ * note buffer.
+ */
+#define OP_PRE_NOTE_WATERMARK 64
 
 /* maximum depth of dname trees - this is just a page */
 #define DNAME_STACK_MAX 1024

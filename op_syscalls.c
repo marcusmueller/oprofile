@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.20 2001/10/14 16:37:19 movement Exp $ */
+/* $Id: op_syscalls.c,v 1.21 2001/10/14 19:35:13 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -34,8 +34,7 @@ char * pool_pos;
 char * pool_start;
 char * pool_end;
 
-void oprof_put_note(struct op_sample *samp);
-void oprof_put_mapping(struct op_mapping *mapping);
+void oprof_put_note(struct op_note *samp);
 inline static uint alloc_in_pool(char const * str, uint len);
 inline static int add_hash_entry(struct op_hash_index * entry, uint parent, char const * name, uint len);
 inline static uint name_hash(const char *name, uint len, uint parent);
@@ -324,7 +323,7 @@ static uint do_path_hash(struct dentry *dentry, struct vfsmount *vfsmnt)
 static void oprof_output_map(ulong addr, ulong len,
 	ulong offset, struct file *file, int is_execve)
 {
-	struct op_mapping mapping;
+	struct op_note note;
 
 	if (!prof_on)
 		return;
@@ -333,15 +332,15 @@ static void oprof_output_map(ulong addr, ulong len,
 	if (!len)
 		return;
 
-	mapping.pid = current->pid;
-	mapping.addr = addr;
-	mapping.len = len;
-	mapping.offset = offset;
-	mapping.is_execve = is_execve;
-	mapping.hash = do_path_hash(file->f_dentry, file->f_vfsmnt);
-	if (mapping.hash == -1)
+	note.pid = current->pid;
+	note.addr = addr;
+	note.len = len;
+	note.offset = offset;
+	note.type = is_execve ? OP_EXEC : OP_MAP;
+	note.hash = do_path_hash(file->f_dentry, file->f_vfsmnt);
+	if (note.hash == -1)
 		return;
-	oprof_put_mapping(&mapping);
+	oprof_put_note(&note);
 }
 
 static int oprof_output_maps(struct task_struct *task)
@@ -468,15 +467,15 @@ out:
 
 inline static void oprof_report_fork(u16 old, u32 new)
 {
-	struct op_sample samp;
+	struct op_note note;
 
 	if (pgrp_filter && pgrp_filter != current->pgrp)
 		return;
 
-	samp.count = OP_FORK;
-	samp.pid = old;
-	samp.eip = new;
-	oprof_put_note(&samp);
+	note.type = OP_FORK;
+	note.pid = old;
+	note.addr = new;
+	oprof_put_note(&note);
 }
 
 asmlinkage static int my_sys_fork(struct pt_regs regs)
@@ -528,12 +527,10 @@ asmlinkage static long my_sys_init_module(const char *name_user, struct module *
 	ret = old_sys_init_module(name_user, mod_user);
 
 	if (ret >= 0) {
-		struct op_sample samp;
+		struct op_note note;
 
-		samp.count = OP_DROP_MODULES;
-		samp.pid = 0;
-		samp.eip = 0;
-		oprof_put_note(&samp);
+		note.type = OP_DROP_MODULES;
+		oprof_put_note(&note);
 	}
 	MOD_DEC_USE_COUNT;
 	return ret;
@@ -541,7 +538,7 @@ asmlinkage static long my_sys_init_module(const char *name_user, struct module *
 
 asmlinkage static long my_sys_exit(int error_code)
 {
-	struct op_sample samp;
+	struct op_note note;
 
 	MOD_INC_USE_COUNT;
 
@@ -549,10 +546,9 @@ asmlinkage static long my_sys_exit(int error_code)
 	    (pgrp_filter && current->pgrp != pgrp_filter))
 		goto out;
 
-	samp.count = OP_EXIT;
-	samp.pid = current->pid;
-	samp.eip = 0;
-	oprof_put_note(&samp);
+	note.type = OP_EXIT;
+	note.pid = current->pid;
+	oprof_put_note(&note);
 
 	goto out;
 out:

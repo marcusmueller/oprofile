@@ -39,18 +39,6 @@ do
 done
 ])
  
-AC_DEFUN(QT2_MOC_ERROR_MESSAGE,
-[
-    AC_MSG_ERROR([No Qt meta object compiler (moc) found!
-Please check whether you installed Qt correctly.
-You need to have a running moc binary.
-configure tried to run $ac_cv_path_qt2moc and the test didn't
-succeed. If configure shouldn't have tried this one, set
-the environment variable MOC to the right one before running
-configure.
-])
-])
-
 AC_DEFUN(QT2_FIND_PATH,
 [
    AC_MSG_CHECKING([for $1])
@@ -134,9 +122,6 @@ AC_DEFUN(QT2_AC_PATH_MOC,
      echo "configure:__oline__: tried to call $ac_cv_path_qt2moc --help 2>&1 | sed -e '1q' | grep Qt" >&AC_FD_CC
      echo "configure:__oline__: moc output: $output" >&AC_FD_CC
 
-     if test -z "$output"; then
-       QT2_MOC_ERROR_MESSAGE
-    fi
    fi
 
    AC_SUBST(MOC)

@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.76 2001/10/14 16:37:20 movement Exp $ */
+/* $Id: opd_proc.c,v 1.77 2001/10/14 19:35:14 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1290,7 +1290,7 @@ void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset,
 
 /**
  * opd_handle_fork - deal with fork notification
- * @sample: sample structure from kernel
+ * @note: note to handle
  *
  * Deal with a fork() notification by creating a new process
  * structure, and copying mapping information from the old process.
@@ -1298,24 +1298,24 @@ void opd_put_mapping(struct opd_proc *proc, int image_nr, u32 start, u32 offset,
  * sample->pid contains the process id of the old process.
  * sample->eip contains the process id of the new process.
  */
-void opd_handle_fork(const struct op_sample *sample)
+void opd_handle_fork(const struct op_note *note)
 {
 	struct opd_proc *old;
 	struct opd_proc *proc;
 
-	verbprintf("DO_FORK: from %d to %d\n", sample->pid, sample->eip);
+	verbprintf("DO_FORK: from %d to %d\n", note->pid, note->addr);
 
-	old = opd_get_proc(sample->pid);
+	old = opd_get_proc(note->pid);
 
 	/* we can quite easily get a fork() after the execve() because the notifications
 	 * are racy. So we only create a new setup if it doesn't exist already, allowing
 	 * both the clone() and the execve() cases to work.
 	 */
-	if (opd_get_proc((u16)sample->eip))
+	if (opd_get_proc((u16)note->addr))
 		return;
 
 	/* eip is actually pid of new process */
-	proc = opd_add_proc((u16)sample->eip);
+	proc = opd_add_proc((u16)note->addr);
 
 	if (!old)
 		return;
@@ -1331,7 +1331,7 @@ void opd_handle_fork(const struct op_sample *sample)
 
 /**
  * opd_handle_exit - deal with exit notification
- * @sample: sample structure from kernel
+ * @note: note to handle
  *
  * Deal with an exit() notification by setting the flag "dead"
  * on a process. These will be later cleaned up by the %SIGALRM
@@ -1339,17 +1339,17 @@ void opd_handle_fork(const struct op_sample *sample)
  *
  * sample->pid contains the process id of the exited process.
  */
-void opd_handle_exit(const struct op_sample *sample)
+void opd_handle_exit(const struct op_note *note)
 {
 	struct opd_proc *proc;
 
-	verbprintf("DO_EXIT: process %d\n", sample->pid);
+	verbprintf("DO_EXIT: process %d\n", note->pid);
 
-	proc = opd_get_proc(sample->pid);
+	proc = opd_get_proc(note->pid);
 	if (proc)
 		proc->dead = 1;
 	else {
-		verbprintf("unknown proc %u just exited.\n",sample->pid);
+		verbprintf("unknown proc %u just exited.\n", note->pid);
 	}
 }
 
@@ -1403,7 +1403,7 @@ static int opd_handle_hashmap(int hash, char **c)
  * in a new executable file. The mapping information is
  * added to the process structure.
  */
-void opd_handle_mapping(const struct op_mapping *mapping)
+void opd_handle_mapping(const struct op_note *note)
 {
 	static char file[PATH_MAX];
 	char *c=&file[PATH_MAX-1];
@@ -1411,16 +1411,16 @@ void opd_handle_mapping(const struct op_mapping *mapping)
 	int hash;
 	int im_nr;
 
-	proc = opd_get_proc(mapping->pid);
+	proc = opd_get_proc(note->pid);
 
 	if (!proc) {
-		verbprintf("Told about mapping for non-existent process %u.\n", mapping->pid);
-		proc = opd_add_proc(mapping->pid);
+		verbprintf("Told about mapping for non-existent process %u.\n", note->pid);
+		proc = opd_add_proc(note->pid);
 	}
 
 	*c = '\0';
 
-	hash = mapping->hash;
+	hash = note->hash;
 
 	if (hash == -1) {
 		/* possibly deleted file */
@@ -1436,7 +1436,7 @@ void opd_handle_mapping(const struct op_mapping *mapping)
 	if (im_nr == -1)
 		im_nr = opd_handle_hashmap(hash, &c);
 
-	opd_put_mapping(proc, im_nr, mapping->addr, mapping->offset, mapping->addr + mapping->len);
+	opd_put_mapping(proc, im_nr, note->addr, note->offset, note->addr + note->len);
 }
 
 /**

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.33 2001/09/28 13:34:22 movement Exp $ */
+/* $Id: oprofiled.h,v 1.34 2001/10/14 19:35:14 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -132,10 +132,10 @@ void opd_put_sample(const struct op_sample *sample);
 void opd_read_system_map(const char *filename);
 void opd_alarm(int val);
 
-void opd_handle_fork(const struct op_sample *sample);
+void opd_handle_fork(const struct op_note *note);
 void opd_handle_exec(u16 pid);
-void opd_handle_exit(const struct op_sample *sample);
-void opd_handle_mapping(const struct op_mapping *mapping);
+void opd_handle_exit(const struct op_note *note);
+void opd_handle_mapping(const struct op_note *note);
 void opd_clear_module_info(void);
 
 #endif /* OPROFILED_H */

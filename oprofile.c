@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.95 2001/10/14 17:06:33 movement Exp $ */
+/* $Id: oprofile.c,v 1.96 2001/10/14 19:35:13 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -33,6 +33,8 @@ static int allow_unload;
 /* sysctl settables */
 static int op_hash_size=OP_DEFAULT_HASH_SIZE;
 static int op_buf_size=OP_DEFAULT_BUF_SIZE;
+// FIXME: make sysctl settable !! 
+static int op_note_size=OP_DEFAULT_NOTE_SIZE;
 static int sysctl_dump;
 static int kernel_only;
 static int op_ctr_on[OP_MAX_COUNTERS];
@@ -61,11 +63,15 @@ static int op_major;
 int cpu_type;
 
 static volatile uint oprof_opened __cacheline_aligned;
+static volatile uint oprof_note_opened __cacheline_aligned;
 static DECLARE_WAIT_QUEUE_HEAD(oprof_wait);
 
 u32 oprof_ready[NR_CPUS] __cacheline_aligned;
 static struct _oprof_data oprof_data[NR_CPUS];
 static uint op_irq_stats[NR_CPUS] __cacheline_aligned;
+
+struct op_note * note_buffer __cacheline_aligned;
+u32 note_pos __cacheline_aligned;
 
 extern spinlock_t map_lock;
 
@@ -338,60 +344,6 @@ inline static void pmc_select_stop(uint cpu)
 /* ---------------- driver routines ------------------ */
 
 spinlock_t note_lock __cacheline_aligned = SPIN_LOCK_UNLOCKED;
-
-inline static void oprof_wrap_buf(struct _oprof_data * data)
-{
-	next_sample(data);
-	if (likely(!need_wakeup(0, data)))
-		return;
-	oprof_ready[0] = 1;
-	wake_up(&oprof_wait);
-}
-
-void oprof_put_mapping(struct op_mapping *map)
-{
-	struct _oprof_data *data = &oprof_data[0];
-
-	if (!prof_on)
-		return;
-
-	/* FIXME: IPI :( */
-	spin_lock(&note_lock);
-	pmc_select_stop(0);
-
-	data->buffer[data->nextbuf].eip = map->addr;
-	data->buffer[data->nextbuf].pid = map->pid;
-	data->buffer[data->nextbuf].count =
-		((map->is_execve) ? OP_EXEC : OP_MAP)
-		| map->hash;
-	oprof_wrap_buf(data);
-	data->buffer[data->nextbuf].eip = map->len;
-	data->buffer[data->nextbuf].pid = map->offset & 0xffff;
-	data->buffer[data->nextbuf].count = map->offset >> 16;
-	oprof_wrap_buf(data);
-	
-	pmc_select_start(0);
-	spin_unlock(&note_lock);
-}
-
-void oprof_put_note(struct op_sample *samp)
-{
-	struct _oprof_data *data = &oprof_data[0];
-
-	if (!prof_on)
-		return;
-
-	/* FIXME: IPIs are expensive */
-	spin_lock(&note_lock);
-	pmc_select_stop(0);
-
-	memcpy(&data->buffer[data->nextbuf], samp, sizeof(struct op_sample));
-	oprof_wrap_buf(data);
-
-	pmc_select_start(0);
-	spin_unlock(&note_lock);
-}
-
 uint cpu_num;
 
 static int is_ready(void)
@@ -403,6 +355,78 @@ static int is_ready(void)
 	return 0;
 }
 
+inline static void up_and_check_note(void)
+{
+	note_pos++;
+	if (likely(note_pos < (op_note_size - OP_PRE_NOTE_WATERMARK) && !is_ready()))
+		return;
+	/* we just use cpu 0 as a convenient one to wake up */
+	oprof_ready[0] = 2;
+	wake_up(&oprof_wait);
+}
+
+void oprof_put_note(struct op_note *onote)
+{
+	if (!prof_on)
+		return;
+
+	spin_lock(&note_lock);
+	memcpy(&note_buffer[note_pos], onote, sizeof(struct op_note));
+	up_and_check_note();
+	spin_unlock(&note_lock);
+}
+
+static int oprof_note_read(char *buf, size_t count, loff_t *ppos)
+{
+	struct op_note *mybuf;
+	uint num;
+	ssize_t max;
+
+	max = sizeof(struct op_note) * op_note_size;
+
+	if (*ppos || count != max)
+		return -EINVAL;
+
+	mybuf = vmalloc(max);
+	if (!mybuf)
+		return -EFAULT;
+
+	spin_lock(&note_lock);
+
+	num = note_pos;
+ 
+	count = note_pos * sizeof(struct op_note);
+
+	if (count)
+		memcpy(mybuf, note_buffer, count);
+
+	note_pos = 0;
+ 
+	spin_unlock(&note_lock);
+
+	if (count && copy_to_user(buf, mybuf, count))
+		count = -EFAULT;
+
+	vfree(mybuf);
+	return count;
+}
+
+static int oprof_note_open(void)
+{
+	if (test_and_set_bit(0, &oprof_note_opened))
+		return -EBUSY;
+	return 0;
+}
+
+static int oprof_note_release(void)
+{
+	if (!oprof_note_opened)
+		return -EFAULT;
+
+	clear_bit(0, &oprof_note_opened);
+	return 0;
+}
+ 
 static int check_buffer_amount(struct _oprof_data * data)
 {
 	int size = data->buf_size; 
@@ -419,7 +443,6 @@ static int check_buffer_amount(struct _oprof_data * data)
 
 static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 {
-	struct op_sample *mybuf;
 	uint num;
 	ssize_t max;
 
@@ -431,31 +454,27 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 		return -EINTR;
 	}
 
-	if (MINOR(file->f_dentry->d_inode->i_rdev) != 0)
-		return -EINVAL;
+	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
+		case 2: return oprof_note_read(buf, count, ppos);
+		case 0: break;
+		default: return -EINVAL;
+	}
 
 	max = sizeof(struct op_sample) * op_buf_size;
 
 	if (*ppos || count != max)
 		return -EINVAL;
 
-	mybuf = vmalloc(max);
-	if (!mybuf)
-		return -EFAULT;
-
 	wait_event_interruptible(oprof_wait, is_ready());
 
-	if (signal_pending(current)) {
-		vfree(mybuf);
+	if (signal_pending(current))
 		return -EINTR;
-	}
 
 	/* FIXME: what if a signal occurs now ? What is returned to
 	 * the read() routine ?
 	 */
 
 	pmc_select_stop(cpu_num);
-	spin_lock(&note_lock);
 
 	/* buffer might have overflowed */
 	num = check_buffer_amount(&oprof_data[cpu_num]);
@@ -464,17 +483,11 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 
 	count = num * sizeof(struct op_sample);
 
-	/* FIXME: can eliminate this bounce buffer when note_lock dies */
-	if (count)
-		memcpy(mybuf, oprof_data[cpu_num].buffer, count);
-
-	spin_unlock(&note_lock);
-	pmc_select_start(cpu_num);
-
-	if (count && copy_to_user(buf, mybuf, count))
+	if (count && copy_to_user(buf, oprof_data[cpu_num].buffer, count))
 		count = -EFAULT;
 
-	vfree(mybuf);
+	pmc_select_start(cpu_num);
+
 	return count;
 }
 
@@ -490,6 +503,7 @@ static int oprof_open(struct inode *ino, struct file *file)
 
 	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
 		case 1: return oprof_hash_map_open();
+		case 2: return oprof_note_open();
 		case 0:
 			/* make sure the other devices are open */
 			if (is_map_ready())
@@ -511,6 +525,7 @@ static int oprof_release(struct inode *ino, struct file *file)
 {
 	switch (MINOR(file->f_dentry->d_inode->i_rdev)) {
 		case 1: return oprof_hash_map_release();
+		case 2: return oprof_note_release();
 		case 0: break;
 		default: return -EINVAL;
 	}
@@ -542,6 +557,8 @@ static void oprof_free_mem(uint num)
 		oprof_data[i].entries = NULL;
 		oprof_data[i].buffer = NULL;
 	}
+	vfree(note_buffer);
+	note_buffer = NULL;
 }
 
 static int oprof_init_data(void)
@@ -549,6 +566,14 @@ static int oprof_init_data(void)
 	uint i;
 	ulong hash_size,buf_size;
 	struct _oprof_data *data;
+
+	note_buffer = vmalloc(sizeof(struct op_note) * op_note_size);
+ 	if (!note_buffer) {
+		printk(KERN_ERR "oprofile: failed to allocate not buffer of %u bytes\n",
+			sizeof(struct op_note) * op_note_size);
+		return -EFAULT;
+	}
+	note_pos = 0;
 
 	for (i=0; i < smp_num_cpus; i++) {
 		data = &oprof_data[i];
@@ -591,8 +616,10 @@ static int parms_ok(void)
 
 	op_check_range(op_hash_size, 256, 262144, 
 		"op_hash_size value %d not in range (%d %d)\n");
-	op_check_range(op_buf_size, 1024, 1048576, 
+	op_check_range(op_buf_size, OP_PRE_WATERMARK + 1024, 1048576, 
 		"op_buf_size value %d not in range (%d %d)\n");
+	op_check_range(op_note_size, OP_PRE_NOTE_WATERMARK + 1024, 1048576,
+		"op_note_size value %d not in range (%d %d)\n");
 
 	for (i = 0; i < op_nr_counters ; i++) {
 		if (op_ctr_on[i]) {

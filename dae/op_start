@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.49 2001/09/25 15:49:59 movement Exp $
+# $Id: op_start,v 1.50 2001/10/14 19:35:13 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -91,6 +91,7 @@ do_help() {
 	  --base-dir=dir               base directory of daemon
 	  --samples-dir=file           output samples directory
 	  --device-file=file           profile device file
+	  --note-device-file=file      note device file
 	  --hash-map-device-file=file  profile hash map device file
 	  --map-file=file              System.map for running kernel file
 	  --vmlinux=file               vmlinux kernel image
@@ -106,6 +107,8 @@ do_init() {
 	LOG_FILE=
 	SAMPLES_DIR=
 	DEVICE_FILE=
+	NOTE_DEVICE_FILE=
+	HASH_MAP_DEVICE_FILE=
 	BUF_SIZE=262144
 	HASH_SIZE=65536
 	KERNEL_ONLY=0
@@ -198,6 +201,9 @@ do_options() {
 			--device-file)
 				DEVICE_FILE=$val
 				;;
+			--note-device-file)
+				NOTE_DEVICE_FILE=$val
+				;;
 			--hash-map-device-file)
 				HASH_MAP_DEVICE_FILE=$val
 				;;
@@ -271,6 +277,9 @@ do_options() {
 	if [ "$DEVICE_FILE" = "" ]; then
 		DEVICE_FILE="$DIR/opdev"
 	fi
+	if [ "$NOTE_DEVICE_FILE" = "" ]; then
+		NOTE_DEVICE_FILE="$DIR/opnotedev"
+	fi
 	if [ "$HASH_MAP_DEVICE_FILE" = "" ]; then
 		HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
 	fi
@@ -293,6 +302,8 @@ do_options() {
 	vecho "LOG_FILE $LOG_FILE"
 	vecho "SAMPLES_DIR $SAMPLES_DIR"
 	vecho "DEVICE_FILE $DEVICE_FILE"
+	vecho "NOTE_DEVICE_FILE $NOTE_DEVICE_FILE"
+	vecho "HASH_MAP_DEVICE_FILE $HASH_MAP_DEVICE_FILE"
 	vecho "MAP_FILE $MAP_FILE"
 	vecho "VMLINUX $VMLINUX"
 
@@ -358,6 +369,11 @@ do_setup() {
 		rm "$DEVICE_FILE"
 	fi
 
+	if [ -c "$NOTE_DEVICE_FILE" ]; then
+		vecho "Removing $NOTE_DEVICE_FILE"
+		rm "$NOTE_DEVICE_FILE"
+	fi
+ 
 	if [ -c "$HASH_MAP_DEVICE_FILE" ]; then
 		vecho "Removing $HASH_MAP_DEVICE_FILE"
 		rm "$HASH_MAP_DEVICE_FILE"
@@ -382,6 +398,14 @@ do_setup() {
 	fi
 	chmod 700 "$DEVICE_FILE"
 	 
+	vecho "Doing mknod $NOTE_DEVICE_FILE"
+	mknod "$NOTE_DEVICE_FILE" c $MAJOR_NR 2
+	if [ "$?" != "0" ]; then
+		echo "Couldn't mknod $NOTE_DEVICE_FILE" >&2
+		exit 1
+	fi
+	chmod 700 "$NOTE_DEVICE_FILE"
+ 
 	vecho "Doing mknod $HASH_MAP_DEVICE_FILE"
 	mknod "$HASH_MAP_DEVICE_FILE" c $MAJOR_NR 1
 	if [ "$?" != "0" ]; then
@@ -426,7 +450,8 @@ do_sysctl_setup() {
 do_start() {
 	OPD_ARGS="--buffer-size=$BUF_SIZE --ignore-myself=$IGNORE_MYSELF \
 		--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
-		--device-file=$DEVICE_FILE --kernel-only=$KERNEL_ONLY \
+		--device-file=$DEVICE_FILE --note-device-file=$NOTE_DEVICE_FILE \
+		--kernel-only=$KERNEL_ONLY \
 		--hash-map-device-file=$HASH_MAP_DEVICE_FILE --vmlinux=$VMLINUX \
 		--map-file=$MAP_FILE"
 

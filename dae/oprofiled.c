@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.47 2001/10/14 16:37:20 movement Exp $ */
+/* $Id: oprofiled.c,v 1.48 2001/10/14 19:35:14 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -33,16 +33,19 @@ static const char *cpu_speed_str;
 u32 cpu_type;
 static int ignore_myself;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
+static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
 static char *opd_dir="/var/opd/";
 static char *logfilename="oprofiled.log";
 char *smpdir="/var/opd/samples/";
 static char *devfilename="opdev";
+static char *notedevfilename="opnotedev";
 static char *devhashmapfilename="ophashmapdev";
 char *vmlinux;
 static char *systemmapfilename;
 static pid_t mypid;
 static sigset_t maskset;
 static fd_t devfd;
+static fd_t notedevfd;
 struct op_hash_index *hashmap;
 
 static void opd_sighup(int val);
@@ -52,11 +55,13 @@ unsigned long opd_stats[OPD_MAX_STATS] = { 0, };
 
 static struct poptOption options[] = {
 	{ "buffer-size", 'b', POPT_ARG_INT, &opd_buf_size, 0, "nr. of entries in kernel buffer", "num", },
+	{ "note-buffer-size", 'n', POPT_ARG_INT, &opd_note_buf_size, 0, "nr. of entries in kernel note buffer", "num", },
 	{ "ignore-myself", 'm', POPT_ARG_INT, &ignore_myself, 0, "ignore samples of oprofile driver", "[0|1]"},
 	{ "log-file", 'l', POPT_ARG_STRING, &logfilename, 0, "log file", "file", },
 	{ "base-dir", 'd', POPT_ARG_STRING, &opd_dir, 0, "base directory of daemon", "dir", },
 	{ "samples-dir", 's', POPT_ARG_STRING, &smpdir, 0, "output samples dir", "file", },
 	{ "device-file", 'd', POPT_ARG_STRING, &devfilename, 0, "profile device file", "file", },
+	{ "note-device-file", 'p', POPT_ARG_STRING, &notedevfilename, 0, "note device file", "file", },
 	{ "hash-map-device-file", 'h', POPT_ARG_STRING, &devhashmapfilename, 0, "profile hashmap device file", "file", },
 	{ "map-file", 'f', POPT_ARG_STRING, &systemmapfilename, 0, "System.map for running kernel file", "file", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
@@ -103,6 +108,16 @@ static void opd_open_files(void)
 	hashmapdevfd = opd_open_device(devhashmapfilename, 0);
 	if (hashmapdevfd == -1) {
 		perror("Failed to open hash map device: ");
+		exit(1);
+	}
+ 
+	notedevfd = opd_open_device(notedevfilename, 0);
+	if (notedevfd == -1) {
+		if (errno == EINVAL)
+			fprintf(stderr, "Failed to open note device. Possibly you have passed incorrect\n"
+				"parameters. Check /var/log/messages.");
+		else
+			perror("Failed to open note device: ");
 		exit(1);
 	}
  
@@ -281,6 +296,7 @@ static void opd_go_daemon(void)
 }
 
 void opd_do_samples(const struct op_sample *opd_buf, size_t count);
+void opd_do_notes(struct op_note *opd_buf, size_t count);
 
 /**
  * opd_do_read - enter processing loop
@@ -292,44 +308,70 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count);
  *
  * Never returns.
  */
-static void opd_do_read(struct op_sample *buf, size_t size)
+static void opd_do_read(struct op_sample *buf, size_t size, struct op_note *nbuf, size_t nsize)
 {
 	size_t count;
+	size_t ncount;
  
 	while (1) {
 		count = opd_read_device(devfd, buf, size, TRUE);
+		ncount = opd_read_device(notedevfd, nbuf, nsize, TRUE);
+		opd_do_notes(nbuf, ncount);
 		opd_do_samples(buf, count);
 	}
 }
 
 /**
- * opd_is_mapping - is the entry a notification
- * @sample: sample to use
+ * opd_do_notes - process a notes buffer
+ * @opd_buf: buffer to process
+ * @count: number of bytes in buffer
  *
- * Returns positive if the sample is actually a notification,
- * zero otherwise.
+ * Process a buffer of notes.
  */
-inline static u16 opd_is_notification(const struct op_sample *sample)
+void opd_do_notes(struct op_note *opd_buf, size_t count)
 {
-	return (sample->count & OP_NOTE);
+	uint i; 
+	struct op_note * note;
+ 
+	/* prevent signals from messing us up */
+	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
+
+	for (i = 0; i < count/sizeof(struct op_note); i++) {
+		note = &opd_buf[i];
+		if (ignore_myself && note->pid == mypid)
+			continue;
+ 
+		opd_stats[OPD_NOTIFICATIONS]++;
+
+		switch (note->type) {
+			case OP_MAP:
+			case OP_EXEC: 
+				if (note->type == OP_EXEC)
+					opd_handle_exec(note->pid);
+				opd_handle_mapping(note);
+				break;
+
+			case OP_FORK:
+				opd_handle_fork(note);
+				break;
+
+			case OP_DROP_MODULES:
+				opd_clear_module_info();
+				break;
+
+			case OP_EXIT:
+				opd_handle_exit(note);
+				break;
+
+			default:
+				fprintf(stderr, "Received unknown notification type %u\n", note->type);
+				exit(1);
+				break;
+		}
+	}
+	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
 }
 
-/**
- *  opd_unpack_mapping - unpack a mapping notification
- *  @mapping: map structure to fill in
- *  @samples: two contiguous samples containing the packed data
- *
- * Unpacks two samples into the map structure for further processing.
- */ 
-static void opd_unpack_mapping(struct op_mapping *map, const struct op_sample *samples)
-{
-	map->addr = samples[0].eip;
-	map->pid = samples[0].pid;
-	map->hash = samples[0].count & ~OP_EXEC;
-	map->len = samples[1].eip;
-	map->offset = samples[1].pid | (((u32)samples[1].count) << 16);
-}
- 
 /**
  * opd_do_samples - process a sample buffer
  * @opd_buf: buffer to process
@@ -347,7 +389,6 @@ static void opd_unpack_mapping(struct op_mapping *map, const struct op_sample *s
 void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 {
 	uint i;
-	struct op_mapping mapping; 
 
 	/* prevent signals from messing us up */
 	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
@@ -360,45 +401,7 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 		if (ignore_myself && opd_buf[i].pid == mypid)
 			continue;
 
-		if (!opd_is_notification(&opd_buf[i])) {
-			opd_put_sample(&opd_buf[i]);
-			continue;
-		}
- 
-		opd_stats[OPD_NOTIFICATIONS]++;
-
-		/* is a mapping type notification ? */
-		if (IS_OP_MAP(opd_buf[i].count)) {
-			if (IS_OP_EXEC(opd_buf[i].count))
-				opd_handle_exec(opd_buf[i].pid);
-
-			if (i + 2 > count / sizeof(struct op_sample)) {
-				verbprintf("Partial mapping ignored.\n");
-				i = count / sizeof(struct op_sample);
-				break;
-			}
-
-			opd_unpack_mapping(&mapping, &opd_buf[i]);
-			opd_handle_mapping(&mapping);
-			i++;
-		} else switch (opd_buf[i].count) {
-			case OP_FORK:
-				opd_handle_fork(&opd_buf[i]);
-				break;
-
-			case OP_DROP_MODULES:
-				opd_clear_module_info();
-				break;
-
-			case OP_EXIT:
-				opd_handle_exit(&opd_buf[i]);
-				break;
-
-			default:
-				fprintf(stderr, "Received unknown notification type %u\n",opd_buf[i].count);
-				exit(1);
-				break;
-		}
+		opd_put_sample(&opd_buf[i]);
 	}
 
 	sigprocmask(SIG_UNBLOCK, &maskset, NULL);
@@ -414,8 +417,10 @@ static void opd_sighup(int val __attribute__((unused)))
 
 int main(int argc, char const *argv[])
 {
-	struct op_sample *opd_buf;
-	size_t opd_buf_bytesize;
+	struct op_sample *sbuf;
+	size_t s_buf_bytesize;
+	struct op_note *nbuf;
+	size_t n_buf_bytesize;
 	struct sigaction act;
 	int i;
 
@@ -425,10 +430,13 @@ int main(int argc, char const *argv[])
 
 	opd_options(argc, argv);
 
-	opd_buf_bytesize = opd_buf_size * sizeof(struct op_sample);
+	s_buf_bytesize = opd_buf_size * sizeof(struct op_sample);
 
- 	opd_buf = opd_malloc(opd_buf_bytesize);
+ 	sbuf = opd_malloc(s_buf_bytesize);
 
+	n_buf_bytesize = opd_note_buf_size * sizeof(struct op_note);
+	nbuf = opd_malloc(n_buf_bytesize);
+ 
 	opd_init_images();
 
 	opd_go_daemon();
@@ -469,7 +477,7 @@ int main(int argc, char const *argv[])
 	alarm(60*10);
 
 	/* simple sleep-then-process loop */
-	opd_do_read(opd_buf, opd_buf_bytesize);
+	opd_do_read(sbuf, s_buf_bytesize, nbuf, n_buf_bytesize);
 
 	return 0;
 }

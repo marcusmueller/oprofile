@@ -1,4 +1,4 @@
-/* $Id: op_user.h,v 1.10 2001/10/14 16:37:19 movement Exp $ */
+/* $Id: op_user.h,v 1.11 2001/10/14 19:35:13 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -62,10 +62,12 @@
 /* change these, you change them in op_start as well,
  * you hear ?
  */
-/* 262144 * 8 = 2097152 bytes default */
-#define OP_DEFAULT_BUF_SIZE 262144
 /* 65536 * 32 = 2097152 bytes default */
 #define OP_DEFAULT_HASH_SIZE 65536
+/* 16384 * 8 = 131072 bytes default */
+#define OP_DEFAULT_BUF_SIZE 16384
+/* note buffer size */
+#define OP_DEFAULT_NOTE_SIZE 8192
 
 /* kernel image entries are offset by this many entries */
 #define OPD_KERNEL_OFFSET 524288
@@ -77,10 +79,7 @@
 #define OP_MAX_COUNTERS	4
 
 /* the number of bits neccessary to store OP_MAX_COUNTERS values */
-#define OP_BITS_CTR	2
-
-/* the number of reserved bits in count, + 1 is for the notification bit */
-#define OP_BITS (OP_BITS_CTR + 1)
+#define OP_BITS	2
 
 /* The number of bits available to store count */
 #define OP_BITS_COUNT	(16 - OP_BITS)
@@ -89,8 +88,6 @@
 #define OP_CTR_MASK	((~0U << (OP_BITS_COUNT + 1)) >> 1)
 
 /* top OP_BITS bits of count are used as follows: */
-/* is this actually a notification ? */
-#define OP_NOTE		(1U << (OP_BITS_COUNT + OP_BITS_CTR))
 /* which perf counter the sample is from */
 #define OP_COUNTER(x)	(((x) & OP_CTR_MASK) >> OP_BITS_COUNT)
 
@@ -98,24 +95,15 @@
 
 /* mapping notification types */
 /* fork(),vfork(),clone() */
-#define OP_FORK (OP_NOTE|(1U<<0))
+#define OP_FORK 1
 /* mapping */
-#define OP_MAP (OP_NOTE|(1U<<14))
+#define OP_MAP 2
 /* execve() */
-#define OP_EXEC (OP_NOTE|(1U<<14) | (1U<<13))
+#define OP_EXEC 4
 /* init_module() */
-#define OP_DROP_MODULES (OP_NOTE | (1U<<1))
+#define OP_DROP_MODULES 8
 /* exit() */
-#define OP_EXIT (OP_NOTE | (1U<<2))
-
-#define IS_OP_MAP(v) ( \
-	((v) & OP_NOTE) && \
-	((v) & (1U<<14)) )
-
-#define IS_OP_EXEC(v) ( \
-	((v) & OP_NOTE) && \
-	((v) & (1U<<14)) && \
-	((v) & (1U<<13)) )
+#define OP_EXIT 16
 
 /* note that pid_t is 32 bits, but only 16 are used
    currently, so to save cache, we use u16 */
@@ -125,9 +113,15 @@ struct op_sample {
 	u32 eip;
 } __attribute__((__packed__, __aligned__(8)));
 
-#ifndef __ok_unused
-#define __ok_unused __attribute((__unused))
-#endif
+/* note structure */
+struct op_note {
+	u32 addr;
+	u32 len;
+	u32 offset;
+	uint hash;
+	u16 pid;
+	u16 type;
+};
 
 /* nr. entries in hash map, prime
  * this is the maximum number of name components allowed
@@ -142,16 +136,6 @@ struct op_hash_index {
 	uint name;
 	uint parent;
 } __attribute__((__packed__));
-
-/* temporary mapping structure */
-struct op_mapping {
-	u16 pid;
-	u32 addr;
-	u32 len;
-	u32 offset;
-	short hash;
-	int is_execve; 
-};
 
 /* size of hash map in bytes */
 #define OP_HASH_MAP_SIZE (OP_HASH_MAP_NR * sizeof(struct op_hash_index) + POOL_SIZE)

@@ -1,5 +1,22 @@
 2001-10-14  John Levon  <moz@compsoc.man.ac.uk>
 
+	* TODO: update
+ 
+	* op_syscalls.c:
+	* op_user.h:
+	* oprofile.h:
+	* oprofile.c:
+	* dae/op_start:
+	* dae/opd_proc.c:
+	* dae/oprofiled.h:
+	* dae/oprofiled.c: use a separate map buffer.
+ 
+2001-10-14  John Levon  <moz@compsoc.man.ac.uk>
+
+	* acinclude.m4: don't give up if we can't find moc
+ 
+2001-10-14  John Levon  <moz@compsoc.man.ac.uk>
+
 	* oprofile.c: merge no-thread code
  
 2001-10-14  John Levon  <moz@compsoc.man.ac.uk>

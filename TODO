@@ -8,19 +8,7 @@ o Save counter state and restore on a finish
 o I'm sick of these crappy makefiles. Let's see if we can use automake as well
   as autoconf.
  
-o remove oprofile thread. already exists in CVS branch BRANCH_NO_THREAD. This provides
-  little performance advantage (even a pessimization on SMP) but removes code. 
-
 o determine where we need ctx_sw_on/off to prevent pre-emption
- 
-o modify mapping to queue maps on a separate device. the daemon always
-  apply all maps immediately before doing the samples
-
-o incrementalise the daemon processing to smooth load and reduce mem usage
- 
-o make hashmap use string pool method
- 
-o fix zero component hash problem 
  
 o make/get rid of op_to_source to have similar interface to other utils
 
@@ -34,6 +22,8 @@ o can we provide a small setuid helper for starting/stopping/flushing the profil
 Later
 -----
 
+o pentium 4 patches ?
+ 
 o post-prof GUI ? (big job)
 
 Correctness
