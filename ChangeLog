@@ -1,3 +1,10 @@
+2003-10-08  John Levon  <levon@movementarian.org>
+
+	* utils/op_help.c: standardise name
+
+	* gui/oprof_start.cpp: Qt 2.3.1 compile fix
+	(bug 819943)
+
 2003-10-07  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* dae/opd_kernel.c: memory leak

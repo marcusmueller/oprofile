@@ -33,10 +33,8 @@ static op_cpu cpu_type = CPU_NO_GOOD;
 static poptContext optcon;
 
 
-/**
- * return the number of bit set in mask
- */
-static size_t bit_count(size_t mask)
+/// return the Hamming weight (number of set bits)
+static size_t hweight(size_t mask)
 {
 	size_t count = 0;
 
@@ -67,7 +65,7 @@ static void help_for_event(struct op_event * event)
 	printf(": (counter: ");
 
 	mask = event->counter_mask;
-	if (bit_count(mask) == nr_counters) {
+	if (hweight(mask) == nr_counters) {
 		printf("all");
 	} else {
 		for (i = 0; i < CHAR_BIT * sizeof(event->counter_mask); ++i) {

@@ -254,6 +254,24 @@ void oprof_start::fill_events()
 }
 
 
+namespace {
+
+/// find the first item with the given text in column 0 or return NULL
+QListViewItem * findItem(QListView * view, char const * name)
+{
+	// Qt 2.3.1 does not have QListView::findItem()
+	QListViewItem * item = view->firstChild();
+
+	while (item && strcmp(item->text(0).latin1(), name)) {
+		item = item->nextSibling();
+	}
+
+	return item;
+}
+
+};
+
+
 void oprof_start::setup_default_event()
 {
 	struct op_default_event_descr descr;
@@ -264,7 +282,7 @@ void oprof_start::setup_default_event()
 	event_cfgs[descr.name].user_ring_count = 1;
 	event_cfgs[descr.name].os_ring_count = 1;
 
-	QListViewItem * item = events_list->findItem(descr.name, 0);
+	QListViewItem * item = findItem(events_list, descr.name);
 	if (item)
 		item->setSelected(true);
 }
@@ -318,8 +336,7 @@ void oprof_start::read_set_events()
 			event_cfgs[ev_name].os_ring_count = 1;
 		}
 
-		QListViewItem * item =
-			events_list->findItem(ev_name.c_str(), 0);
+		QListViewItem * item = findItem(events_list, ev_name.c_str());
 		if (item)
 			item->setSelected(true);
 	}
