@@ -40,8 +40,7 @@ Exclude all the symbols in the given comma-separated list.
 .br
 .TP
 .BI "--global-percent"
-Make dependent image summary percentages relative to the whole profile,
-not just the application image.
+Make all percentages relative to the whole profile.
 .br
 .TP
 .BI "--help / -? / --usage"

@@ -369,14 +369,11 @@ void output_symbols(profile_container const & samples, bool multiple_apps)
 
 	out.set_nr_classes(nr_classes);
 
-	if (options::details)
-		out.show_details();
-	if (options::long_filenames)
-		out.show_long_filenames();
-	if (!options::show_header)
-		out.hide_header();
-	if (choice.hints & cf_64bit_vma)
-		out.vma_format_64bit();
+	out.show_details(options::details);
+	out.show_long_filenames(options::long_filenames);
+	out.hide_header(!options::show_header);
+	out.vma_format_64bit(choice.hints & cf_64bit_vma);
+	out.show_global_percent(options::global_percent);
 
 	format_flags flags = get_format_flags(choice.hints);
 	if (multiple_apps)

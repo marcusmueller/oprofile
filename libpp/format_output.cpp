@@ -51,27 +51,33 @@ formatter::formatter(profile_container const & profile_)
 }
 
  
-void formatter::show_details()
+void formatter::show_details(bool on_off)
 {
-	need_details = true;
+	need_details = on_off;
 }
 
 
-void formatter::hide_header()
+void formatter::hide_header(bool on_off)
 {
-	need_header = false;
+	need_header = on_off;
 }
 
 
-void formatter::show_long_filenames()
+void formatter::show_long_filenames(bool on_off)
 {
-	long_filenames = true;
+	long_filenames = on_off;
 }
  
 
-void formatter::vma_format_64bit()
+void formatter::vma_format_64bit(bool on_off)
 {
-	vma_64 = true;
+	vma_64 = on_off;
+}
+
+
+void formatter::show_global_percent(bool on_off)
+{
+	global_percent = on_off;
 }
 
 
@@ -164,9 +170,10 @@ void formatter::output_details(ostream & out, symbol_entry const * symb)
 	temp_cumulated_samples = cumulated_samples;
 	temp_cumulated_percent = cumulated_percent;
 
-	total_count = symb->sample.counts;
+	if (!global_percent)
+		total_count = symb->sample.counts;
 	cumulated_percent_details -= symb->sample.counts;
-	// FIXME: need a .reset() member or is it enough understandable ?
+	// cumulated percent are relative to current symbol.
 	cumulated_samples = count_array_t();
 	cumulated_percent = count_array_t();
 

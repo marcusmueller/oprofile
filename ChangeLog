@@ -1,3 +1,12 @@
+2003-09-21  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/opreport.1.in:
+	* doc/oprofile.xml:
+	* libpp/format_output.h:
+	* libpp/format_output.cpp:
+	* pp/opreport.cpp: --global_percent must be  effective for detailed
+	  output too
+
 2003-09-21  John Levon  <levon@movementarian.org>
 
 	* pp/opreport_options.cpp: prevent --global-percent

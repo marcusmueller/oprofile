@@ -6,7 +6,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7 release
 -----------
 
- o --global-percent doesn't affect --details output
  o why rel_to_abs_path in locate_images ??
  o add separate_thread to opd_header or remove all separate from opd_header
  o thread separate GUI + docs

@@ -50,13 +50,15 @@ public:
 	void output(std::ostream & out, symbol_collection const & v);
 
 	/// set the output_details boolean
-	void show_details();
+	void show_details(bool);
 	/// set the need_header boolean to false
-	void hide_header();
+	void hide_header(bool);
 	/// show long (full path) filenames
-	void show_long_filenames();
+	void show_long_filenames(bool);
 	/// format for 64 bit wide VMAs
-	void vma_format_64bit();
+	void vma_format_64bit(bool);
+	/// use global count rather symbol count for details percent
+	void show_global_percent(bool);
 
 private:
 
@@ -159,6 +161,9 @@ private:
 	bool need_header;
 	/// false if we use basename(filename) in output rather filename
 	bool long_filenames;
+	/// bool if details percentage are relative to total count rather to
+	/// symbol count
+	bool global_percent;
 };
 
 } // namespace format_output 

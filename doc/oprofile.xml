@@ -1430,8 +1430,7 @@ used --separate.
 Exclude all the symbols in the given comma-separated list.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--global-percent</option></term><listitem><para>
-Make dependent image summary percentages relative to the whole profile,
-not just the application image.
+Make all percentages relative to the whole profile.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
 Show help message.
