@@ -1,5 +1,9 @@
 2004-07-21  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libdb/db_manage.c: thinko in #931871 bug fix.
+
+2004-07-21  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libpp/arrange_profiles.cpp: fix opreport -m lib, broken in 0.8
 	  when using opcontrol --separate=kernel with message
 	  "add_to_profile_sample_files(): sample file parsed twice"
@@ -94,7 +98,7 @@
 
 	* libdb/tests/Makefile.am: fix build
 
- 	* daemon/opd_mangling.c:
+	* daemon/opd_mangling.c:
 	* daemon/opd_mangling.h:
 	* daemon/opd_sfile.c:
 	* daemon/opd_sfile.h:

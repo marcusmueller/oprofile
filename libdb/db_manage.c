@@ -179,6 +179,7 @@ int odb_open(odb_t * odb, char const * filename, enum odb_rw rw,
 	hash = op_hash_string(filename) % FILES_HASH_SIZE;
 	data = find_samples_data(hash, filename);
 	if (data) {
+		odb->data = data;
 		data->ref_count++;
 		return 0;
 	}
