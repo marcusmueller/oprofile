@@ -36,6 +36,17 @@ Before 1.0 big stuff
 Before 1.0 little stuff
 -----------------------
 
+ o 2.4 daemon suppose we get this situation:
+   we have a mapping m1, unmapped and a new mapping m2 occur at the same
+   address but the aera covered is shorter than m1, it remains samples to the
+   area covered by m1 but not m2. This mean last_map will be set to m1 mapping
+   and m2 will never get samples until last_map is reseted or changed again.
+   2 known work-around for now:
+      - remove last_map and always do a linear search from end to begin
+      - re write add map to be more clever, lookup if another mapping
+    exist at this area and shrink or delete the old one (this one is a bit
+    flawed, we need to keep the start area of old mapping to ensure we
+    calculate correctly offset into m1). Try the first way and bench!
  o can we log samples going to anonymous mapping by using
   - 2.6 one fake sample for all anonymous sample, cookie == 0 mean use this
   special sample file. (cookie == -1 or -2 as magic value ?)
