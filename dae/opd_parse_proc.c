@@ -67,8 +67,6 @@ static int opd_add_ascii_map(struct opd_proc * proc, char const * line)
 	if (!*cp)
 		return 0;
 
-	/* FIXME: we should verify this is indeed the primary
-	 * app image by readlinking /proc/pid/exe */
 	map->image = opd_get_image(cp, -1, opd_app_name(proc), 0);
 
 	if (!map->image)
