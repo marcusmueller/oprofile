@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.15 2000/08/18 01:20:12 moz Exp $ */
+/* $Id: opd_proc.c,v 1.16 2000/08/22 13:41:10 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -19,7 +19,7 @@ extern u8 ctr0_type_val;
 extern u8 ctr1_type_val;
 extern int ctr0_um;
 extern int ctr1_um;
-extern char **hashmap;
+extern char *hashmap;
  
 /* LRU list of processes */ 
 static struct opd_proc *opd_procs;
