@@ -1,4 +1,4 @@
-/* $Id: oprofile.c,v 1.32 2000/09/05 07:18:01 moz Exp $ */
+/* $Id: oprofile.c,v 1.33 2000/09/06 12:18:34 moz Exp $ */
 
 /* FIXME: data->next rotation ? */
 /* FIXME: with generation numbers we can place mappings in
@@ -537,7 +537,7 @@ int oprof_thread(void *arg)
 		}
 		current->state = TASK_INTERRUPTIBLE;
 		/* FIXME: determine best value here */
-		schedule_timeout(HZ/10);
+		schedule_timeout(HZ/20);
 
 		if (diethreaddie)
 			break;
@@ -562,7 +562,7 @@ void oprof_stop_thread(void)
 
 spinlock_t note_lock __cacheline_aligned = SPIN_LOCK_UNLOCKED;
 
-void oprof_out8(struct op_sample *ops)
+void oprof_put_note(struct op_sample *samp)
 {
 	struct _oprof_data *data = &oprof_data[0];
 
@@ -570,7 +570,7 @@ void oprof_out8(struct op_sample *ops)
 	spin_lock(&note_lock);
 	pmc_select_stop(0);
 
-	memcpy(&data->buffer[data->nextbuf],ops,8);
+	memcpy(&data->buffer[data->nextbuf],samp,sizeof(struct op_sample));
 	if (++data->nextbuf==(data->buf_size-OP_PRE_WATERMARK)) {
 		oprof_ready[0] = 1;
 		wake_up(&oprof_wait);
@@ -579,8 +579,6 @@ void oprof_out8(struct op_sample *ops)
 
 	pmc_select_start(0);
 	spin_unlock(&note_lock);
-
-	return;
 }
 
 static int oprof_open(struct inode *ino, struct file *file)
@@ -643,7 +641,7 @@ static int oprof_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	if (*ppos || count!=sizeof(struct op_sample)+max)
 		return -EINVAL;
 
-	mybuf = kmalloc(sizeof(struct op_sample)+max,GFP_KERNEL);
+	mybuf = vmalloc(sizeof(struct op_sample)+max);
 	if (!mybuf)
 		return -EFAULT;
 
@@ -657,7 +655,7 @@ again:
 
 	interruptible_sleep_on(&oprof_wait);
 	if (signal_pending(current)) {
-		kfree(mybuf);
+		vfree(mybuf);
 		return -EAGAIN;
 	}
 	goto again;
@@ -667,12 +665,13 @@ doit:
 	spin_lock(&note_lock);
 
 	num = oprof_data[i].nextbuf;
-	/* might have overflowed. If not, set the buffer back to the start. */
-	if (num < oprof_data[i].buf_size/2)
+	/* might have overflowed */
+	if (num < oprof_data[i].buf_size-OP_PRE_WATERMARK) {
+		printk(KERN_ERR "oprofile: Detected overflow of size %d. You must increase the "
+				"hash table or buffer size, or reduce the interrupt frequency\n", num);
 		num = oprof_data[i].buf_size;
-	else
+	} else
 		oprof_data[i].nextbuf=0;
-	printk("oprofile: num %u, nextbuf %u\n",num,oprof_data[i].nextbuf);
 
 	mybuf->count = mybuf->pid = 0;
 	mybuf->eip = num;
@@ -683,7 +682,7 @@ doit:
 	if (copy_to_user(buf, mybuf, count))
 		count = -EFAULT;
 
-	kfree(mybuf);
+	vfree(mybuf);
 	return count;
 }
 
@@ -788,8 +787,8 @@ static void oprof_free_mem(uint num)
 {
 	uint i;
 	for (i=0; i < num; i++) {
-		kfree(oprof_data[i].entries);
-		kfree(oprof_data[i].buffer);
+		vfree(oprof_data[i].entries);
+		vfree(oprof_data[i].buffer);
 	}
 }
 
@@ -804,17 +803,17 @@ static int __init oprof_init_data(void)
 		hash_size = (sizeof(struct op_entry)*op_hash_size);
 		buf_size = (sizeof(struct op_sample)*op_buf_size);
 
-		data->entries = kmalloc(hash_size,GFP_KERNEL);
+		data->entries = vmalloc(hash_size);
 		if (!data->entries) {
 			printk("oprofile: failed to allocate hash table of %lu bytes\n",hash_size);
 			oprof_free_mem(i);
 			return -EFAULT;
 		}
 
-		data->buffer = kmalloc(buf_size,GFP_KERNEL);
+		data->buffer = vmalloc(buf_size);
 		if (!data->buffer) {
 			printk("oprofile: failed to allocate eviction buffer of %lu bytes\n",buf_size);
-			kfree(data->entries);
+			vfree(data->entries);
 			oprof_free_mem(i);
 			return -EFAULT;
 		}
