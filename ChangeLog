@@ -1,5 +1,9 @@
 2003-07-26  John Levon  <levon@movementarian.org>
 
+	* configure.in: bump to 0.6
+
+2003-07-26  John Levon  <levon@movementarian.org>
+
 	* utils/opcontrol: fix call of op_help
 
 2003-07-26  John Levon  <levon@movementarian.org>
