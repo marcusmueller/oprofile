@@ -1,3 +1,8 @@
+2002-11-26  Graydon Hoare  <graydon@redhat.com>
+
+	* module/x86/op_model_p4.c: fix CCCR-clearing logic.
+	* module/x86/cpu_type.c: re-enable Pentium IV.
+
 2002-11-25  John Levon  <levon@movementarian.org>
 
 	* module/x86/cpu_type.c: disable Pentium IV till it works

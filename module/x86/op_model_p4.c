@@ -323,6 +323,9 @@ struct p4_event_binding p4_events[NUM_EVENTS] = {
 #define CTR_READ(l,h,i) do {rdmsr(p4_counters[(i)].counter_address, (l), (h));} while (0);
 #define CTR_WRITE(l,i) do {wrmsr(p4_counters[(i)].counter_address, -(u32)(l), -1);} while (0);
 
+/* these access the underlying cccrs 1-18, not the subset of 8 bound to "virtual counters" */
+#define RAW_CCCR_READ(low, high, i) do {rdmsr (MSR_P4_BPU_CCCR0 + (i), (low), (high));} while (0);
+#define RAW_CCCR_WRITE(low, high, i) do {wrmsr (MSR_P4_BPU_CCCR0 + (i), (low), (high));} while (0);
 
 static void p4_fill_in_addresses(struct op_msrs * const msrs)
 {
@@ -418,12 +421,12 @@ static void p4_setup_ctrs(struct op_msrs const * const msrs)
 		return;
 	}
 
-	/* clear all cccrs */
-	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
-		CCCR_READ(low, high, i);
+	/* clear all cccrs (including those outside our concern) */
+	for (i = 0 ; i < NUM_CCCRS ; ++i) {
+		RAW_CCCR_READ(low, high, i);
 		CCCR_CLEAR(low);
 		CCCR_SET_REQUIRED_BITS(low);
-		CCCR_WRITE(low, high, i);
+		RAW_CCCR_WRITE(low, high, i);
 	}
 
 	/* setup all counters */
