@@ -261,7 +261,7 @@ is to tell OProfile where the <filename>vmlinux</filename> file corresponding to
 running kernel is, for example :
 </para>
 <para>
-<command>opcontrol --setup --vmlinux=/boot/vmlinux-`uname -r`</command>
+<command>opcontrol --vmlinux=/boot/vmlinux-`uname -r`</command>
 </para>
 <para>
 <!-- FIXME on change ... -->
@@ -269,7 +269,7 @@ If you're running a 2.5 kernel, and you don't want to profile the kernel itself,
 you can tell OProfile you don't have a <filename>vmlinux</filename> file :
 </para>
 <para>
-<command>opcontrol --setup --no-vmlinux</command>
+<command>opcontrol --no-vmlinux</command>
 </para>
 <para>
 Now we are ready to start the daemon (<command>oprofiled</command>) which collects
@@ -304,7 +304,7 @@ Or to get a more detailed summary, for a particular image, you can do something 
 <para>
 There are also a number of other ways of presenting the data, as described later in this manual.
 Note that OProfile will choose a default profiling setup for you. However, there are a number
-of options you can pass to <command>opcontrol --setup</command> if you need to change something,
+of options you can pass to <command>opcontrol</command> if you need to change something,
 also detailed later.
 </para>
 
@@ -392,7 +392,7 @@ This section gives a brief description of the available OProfile utilities and t
 In this section we describe the configuration and control of the profiling system
 with opcontrol in more depth.
 The <command>opcontrol</command> script has a default setup, but you
-can alter this with the <option>--setup</option> option. In particular,
+can alter this with the options given below. In particular,
 if your hardware supports performance counters, you can configure them.
 There are a number of counters (for example, counter 0 and counter 1
 on the Pentium III). Each of these counters can be programmed with
@@ -426,6 +426,8 @@ The <command>opcontrol</command> script provides the following actions :
 		<listitem><para>
 		    Followed by list arguments for profiling set up. List of arguments
 		    saved in <filename>/home/root/.oprofile/daemonrc</filename>.
+		    Giving this option is not necessary; you can just directly pass one
+		    of the setup options, e.g. <command>opcontrol --no-vmlinux</command>.
 		  </para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -441,7 +443,7 @@ The <command>opcontrol</command> script provides the following actions :
 		<term><option>--start</option></term>
 		<listitem><para>
 		    Start data collection with either arguments provided by <option>--setup</option>
-		of information saved in <filename>/home/root/.oprofile/daemonrc</filename>. Specifying
+		or information saved in <filename>/home/root/.oprofile/daemonrc</filename>. Specifying
 		the addition <option>--verbose</option> makes the daemon generate lots of debug data
 		whilst it is running.
 		</para></listitem>
@@ -748,7 +750,7 @@ two.
 Setting the value from the GUI should be straightforward. On the command line, you need to specify the
 <option>--rtc-value</option> option to <command>opcontrol</command>, e.g. :
 </para>
-<para><command>opcontrol --setup --rtc-value=256</command></para>
+<para><command>opcontrol --rtc-value=256</command></para>
 </sect2>
 
 <sect2 id="timer">
@@ -840,7 +842,7 @@ is really dependent on the event type - if ever in doubt, e-mail </para>
 <para>There are situations where you are only interested in the profiling results of a particular
 running process, or process tty group. You can set
 the pid/pgrp values via the <filename>--pid-filter</filename> and <filename>--pgrp-filter</filename>
-options to <command>opcontrol --setup</command>, which will make the daemon ignore samples for processes
+options to <command>opcontrol</command>, which will make the daemon ignore samples for processes
 that don't match the filter. These options are not available in 2.5 kernels.
 </para>
 </sect2>

@@ -1,5 +1,13 @@
 2003-03-05  John Levon  <levon@movementarian.org>
 
+	* utils/opcontrol: Make --setup optional (e.g.
+	  opcontrol --no-vmlinux). Fix a bug in the --setup
+	  exclusive arg testing.
+
+	* doc/oprofile.xml: reflect the above
+
+2003-03-05  John Levon  <levon@movementarian.org>
+
 	* libutil++/string_manip.h:
 	* libutil++/string_manip.cpp: cleanup, use s.find
 	  because older gcc's don't have the right s.compare

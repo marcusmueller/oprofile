@@ -71,7 +71,7 @@ vecho() {
 do_help() { 
 	echo "opcontrol: usage:
 	--init			loads the oprofile module and oprofilefs
-	--setup			list arguments for profiling
+	--setup			give setup arguments
 	--start-daemon          start daemon without starting profiling
 	--start			start data collection
 	--dump			flushed the collected profiling data
@@ -597,12 +597,12 @@ do_options() {
 			--buffer-size)
 				error_if_empty $arg $val
 				BUF_SIZE=$val
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--ctr*-unit-mask)
 				CTR_UM[`extract_int $arg`]=$val
 				if (($? != 0)); then exit 1; fi
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--ctr*-event)
 				if test "$val" = "none"; then
@@ -616,23 +616,23 @@ do_options() {
 				else
 					CTR_EVENT[`extract_int $arg`]=$val
 					if (($? != 0)); then exit 1; fi
-					NEED_SETUP=yes
+					DO_SETUP=yes
 				fi
 				;;
 			--ctr*-count)
 				CTR_COUNT[`extract_int $arg`]=$val
 				if (($? != 0)); then exit 1; fi
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--ctr*-user)
 				CTR_USER[`extract_int $arg`]=$val
 				if (($? != 0)); then exit 1; fi
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--ctr*-kernel)
 				CTR_KERNEL[`extract_int $arg`]=$val
 				if (($? != 0)); then exit 1; fi
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--rtc-value)
 				if test "$KERNEL_SUPPORT" = "yes"; then
@@ -640,19 +640,19 @@ do_options() {
 					exit 1
 				fi
 				RTC_VALUE=$val
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--separate)
 				OLD_IFS=$IFS
 				IFS=,
 				validate_separate_args $arg $val
 				IFS=$OLD_IFS
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--vmlinux)
 				error_if_empty $arg $val
 				VMLINUX=$val
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--no-vmlinux)
 				if test "$KERNEL_SUPPORT" != "yes"; then
@@ -660,12 +660,12 @@ do_options() {
 					exit 1
 				fi
 				VMLINUX=none
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--kernel-range)
 				error_if_empty $arg $val
 				KERNEL_RANGE=$val
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--pid-filter)
 				if test "$KERNEL_SUPPORT" = "yes"; then
@@ -676,7 +676,7 @@ do_options() {
 					fi
 					PID_FILTER=$val
 				fi
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--pgrp-filter)
 				if test "$KERNEL_SUPPORT" = "yes"; then
@@ -687,7 +687,7 @@ do_options() {
 					fi
 					PGRP_FILTER=$val
 				fi
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--kernel-only)
 				if test $"KERNEL_SUPPORT" = "yes"; then
@@ -699,7 +699,7 @@ do_options() {
 						KERNEL_ONLY=1
 					fi
 				fi
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 			--note-table-size)
 				if test $"KERNEL_SUPPORT" = "yes"; then
@@ -707,7 +707,7 @@ do_options() {
 				else
 					NOTE_SIZE=$val
 				fi
-				NEED_SETUP=yes
+				DO_SETUP=yes
 				;;
 
 			--verbose)
@@ -758,12 +758,18 @@ do_options() {
 		echo "Option \"$EXCLUSIVE_ARGV\" not valid with other options." >&2
 		exit 1
 	fi
-	if test "$NEED_SETUP" = "yes" && test "$SETUP" != "yes"; then
-		echo "Setup options require \"--setup\"." >&2
+
+	if test "$SETUP" = "yes" -a "$DO_SETUP" != "yes"; then
+		echo "No options specified for --setup." >&2
 		exit 1
 	fi
-	if test "$EXCLUSIVE_ARGC" -eq 1 && test "$SETUP" = "yes"; then
-	    if test "EXCLUSIVE_ARGV" != "--start-daemon" && test "EXCLUSIVE_ARGV" != "--start"; then
+
+	if test "$DO_SETUP" = "yes"; then
+		SETUP="$DO_SETUP"
+	fi
+
+	if test "$EXCLUSIVE_ARGC" -eq 1 -a "$SETUP" = "yes"; then
+		if test "$EXCLUSIVE_ARGV" != "--start-daemon" -a "$EXCLUSIVE_ARGV" != "--start"; then
 			echo "Option \"--setup\" not valid with \"$EXCLUSIVE_ARGV\"." >&2
 			exit 1
 		fi
@@ -1141,7 +1147,7 @@ do_operations() {
 	fi
 
 	if test "$DUMP" = "yes"; then
-		if ! do_dump && test "$ONLY_DUMP" = "yes"; then
+		if test ! do_dump -a "$ONLY_DUMP" = "yes"; then
 			echo "No daemon running" >& 2
 			exit 1;
 		fi
