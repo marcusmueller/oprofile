@@ -55,6 +55,7 @@ static size_t nr_cpus;
 
 struct child {
 	pid_t pid;
+	int up_pipe[2];
 	int ctx_fd;
 	sig_atomic_t sigusr1;
 	sig_atomic_t sigusr2;
@@ -123,15 +124,18 @@ static void run_child(size_t cpu)
 	pfarg_reg_t pd[OP_MAX_COUNTERS];
 	pfarg_context_t ctx;
 	pfarg_load_t load_args;
+	sigset_t mask;
 	size_t i;
 	int err;
 
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGUSR1);
+	sigaddset(&mask, SIGUSR2);
+	sigprocmask(SIG_BLOCK, &mask, NULL);
 	self->pid = getpid();
 	self->sigusr1 = 0;
 	self->sigusr2 = 0;
 	self->sigterm = 0;
-
-	/* FIXME: we can still get a signal before this, it's racy. */
 
 	act.sa_handler = child_sigusr1;
 	act.sa_flags = 0;
@@ -236,21 +240,50 @@ static void run_child(size_t cpu)
 		exit(EXIT_FAILURE);
 	}
 
-	printf("Perfmon child up on CPU%d\n", (int)cpu);
+	for (;;) {
+		ssize_t ret;
+		ret = write(self->up_pipe[1], &cpu, sizeof(size_t));
+		if (ret > 0 || (ret == -1 && errno != EINTR))
+			break;
+	}
 
 	for (;;) {
-		pause();
+		sigset_t sigmask;
+		sigfillset(&sigmask);
+		sigdelset(&sigmask, SIGUSR1);
+		sigdelset(&sigmask, SIGUSR2);
+		sigdelset(&sigmask, SIGTERM);
 
 		if (self->sigusr1) {
+			printf("PFM_START on CPU%d\n", (int)cpu);
 			perfmon_start_child(self->ctx_fd);
 			self->sigusr1 = 0;
 		}
 
 		if (self->sigusr2) {
+			printf("PFM_STOP on CPU%d\n", (int)cpu);
 			perfmon_stop_child(self->ctx_fd);
 			self->sigusr2 = 0;
 		}
+
+		sigsuspend(&sigmask);
 	}
+}
+
+
+static void wait_for_child(struct child * child)
+{
+	size_t tmp;
+	for (;;) {
+		ssize_t ret;
+		ret = read(child->up_pipe[0], &tmp, sizeof(size_t));
+		if (ret > 0 || (ret == -1 && errno != EINTR))
+			break;
+	}
+	printf("Perfmon child up on CPU%d\n", (int)tmp);
+
+	close(child->up_pipe[0]);
+	close(child->up_pipe[1]);
 }
 
 
@@ -265,12 +298,19 @@ void perfmon_init(void)
 		exit(EXIT_FAILURE);
 	}
 
-	children = xmalloc(sizeof(struct child) * nr_cpus);
-
 	nr_cpus = nr;
 
+	children = xmalloc(sizeof(struct child) * nr_cpus);
+
 	for (i = 0; i < nr_cpus; ++i) {
-		int ret = fork();
+		int ret;
+
+		if (pipe(children[i].up_pipe)) {
+			perror("Couldn't create child pipe.\n");
+			exit(EXIT_FAILURE);
+		}
+
+		ret = fork();
 		if (ret == -1) {
 			fprintf(stderr, "Couldn't fork perfmon child.\n");
 			exit(EXIT_FAILURE);
@@ -279,6 +319,8 @@ void perfmon_init(void)
 			run_child(i);
 		} else {
 			children[i].pid = ret;
+			printf("Waiting on CPU%d\n", (int)i);
+			wait_for_child(&children[i]);
 		}
 	}
 }
