@@ -196,7 +196,7 @@ void *compat_request_region (unsigned long start, unsigned long n, const char *n
 	  #define module_exit(x)
 	#endif
 
-	/* 2.2.18 introduced vmalloc_32, FIXME is old vmalloc equivalent */
+	/* 2.2.18 introduced vmalloc_32 */
 	#define vmalloc_32 vmalloc
 
 	/* 2.2.18 add doubled linked list wait_queue and mutex */

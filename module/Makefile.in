@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.12 2002/01/20 23:08:30 phil_e Exp $
+# $Id: Makefile.in,v 1.13 2002/01/21 02:47:27 phil_e Exp $
 
 BKCFLAGS=@BKCFLAGS@ @MODVERSIONS@
 MODINSTALLDIR=@MODINSTALLDIR@/oprofile
@@ -72,7 +72,7 @@ oprofile_nmi24.o: oprofile_nmi24.S
 	$(CC) $(ASMFLAGS) -c -o $@ $<
 
 # not all object files can use auto deps in this directory
-ALL_SOURCES = op_nmi.c op_rtc.c op_init.c op_util.c op_x86.c op_syscall.c
+ALL_SOURCES = compat.c op_nmi.c op_rtc.c op_init.c op_util.c op_x86.c op_syscall.c
 
 include ../Rules.make
 

@@ -81,7 +81,7 @@ static struct poptOption options[] = {
 	{ "verbose", 'V', POPT_ARG_NONE, &verbose, 0, "verbose output", NULL, },
 	{ "use-counter", 'c', POPT_ARG_INT, &ctr, 0,
 	  "use counter", "counter nr", },
-	{ "show-shared-libs", 'h', POPT_ARG_NONE, &show_shared_libs, 0,
+	{ "show-shared-libs", 'k', POPT_ARG_NONE, &show_shared_libs, 0,
 	  "show details for shared libs. Only meaningfull if you have profiled with --separate-samples", NULL, },
 	{ "reverse", 'r', POPT_ARG_NONE, &reverse_sort, 0,
 	  "reverse sort order", NULL, },

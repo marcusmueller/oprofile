@@ -1,3 +1,15 @@
+2002-01-21  Philippe Elie  <ph_e@club-internet.fr>
+
+	* TODO: update
+
+	* doc/oprofile.1.in:
+	* doc/oprofile.sgml: minor change
+
+	* module/Makefile.in: auto-dependencies for compat.c
+
+	* module/compat.c:
+	* module/compat22.h: FIXME remove for vmalloc_32
+
 2002-01-20  Philippe Elie  <ph_e@club-internet.fr>
 
 	* gui/oprof_start.cpp: fix configuration saving when

@@ -868,6 +868,7 @@ static const char * output_dir;
 static const char * output_filter;
 static const char * no_output_filter;
 
+/* -k is reserved for --show-shared-libs */
 static struct poptOption options[] = {
 	{ "samples-file", 'f', POPT_ARG_STRING, &samplefile, 0, "image sample file", "file", },
 	{ "image-file", 'i', POPT_ARG_STRING, &imagefile, 0, "image file", "file", },

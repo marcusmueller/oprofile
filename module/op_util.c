@@ -65,8 +65,7 @@ void * rvmalloc(signed long size)
 	void * mem;
 	unsigned long adr, page;
 
-	// FIXME: no vmalloc_32 on 2.2 
-	mem=vmalloc_32(size);
+	mem = vmalloc_32(size);
 	if (!mem)
 		return NULL;
 
