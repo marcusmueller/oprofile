@@ -7,7 +7,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 -----------
 
  o Timer/rtc is buggered - event file reading in opd_sample_files.c
- o update opcontrol --events stuff: docs, rtc, gui
+ o update opcontrol --events stuff: rtc, gui
  o opannotate unhandled option (probably not exhaustive) 
    --base-dir - possibly remove this at least temporarily
  o I'm seeing dazed and confuseds

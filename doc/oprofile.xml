@@ -522,36 +522,10 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><option>--ctrN-event=</option>[none,name]</term>
+		<term><option>--event=</option>[eventspec]</term>
 		<listitem><para>
-		Set counter N to measure symbolic event name, or "none"
-		to disable this counter. The event names are listed by
-		<option>--list-events</option>.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--ctrN-count=</option>val</term>
-		<listitem><para>
-		Number of events between samples for counter N.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--ctrN-unit-mask=</option>val</term>
-		<listitem><para>
-		Set unit mask for counter N (e.g. --ctr0-unit-mask=0xf). The
-		possible unit mask values are listed by <option>--list-events</option>.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--ctrN-kernel=</option>[0|1]</term>
-		<listitem><para>
-		Whether to count kernel events for counter N.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><option>--rtc-value=</option>val</term>
-		<listitem><para>
-		Set RTC counter value (see <xref linkend="rtc" />).
+		Use the given performance counter event to profile.
+		See <xref linkend="eventspec" /> below.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -627,8 +601,7 @@ Here, we have a Pentium III running at 800MHz, and we want to look at where data
 references are happening most, and also get results for CPU time.
 </para>
 <screen>
-# opcontrol --ctr0-event=CPU_CLK_UNHALTED --ctr0-count=400000
-# opcontrol --ctr1-event=DATA_MEM_REFS --ctr1-count=10000
+# opcontrol --event=CPU_CLK_UNHALTED:400000:0:1:1 --event=DATA_MEM_REFS:10000:0:1:1
 # opcontrol --vmlinux=/boot/2.5.66/vmlinux
 # opcontrol --start
 </screen>
@@ -642,7 +615,7 @@ Here, we have an Intel laptop without support for performance counters, running 
 <screen>
 # op_help -r
 CPU with RTC device
-# opcontrol --vmlinux=/boot/2.5.66/vmlinux --rtc-value=1024
+# opcontrol --vmlinux=/boot/2.5.66/vmlinux --event=RTC:1024:0:1:1
 # opcontrol --start
 </screen>
 </sect3>
@@ -698,6 +671,42 @@ current session, <command>opcontrol --reset</command>.
 </para>
 </sect3>
 </sect2> 
+
+<sect2 id="eventspec">
+<title>Specifying performance counter events</title>
+<para>
+The <option>--event</option> option to <command>opcontrol</command>
+takes a specification that indicates how the details of each
+hardware performance counter should be setup. If you want to
+revert to OProfile's default setting (<option>--event</option>
+is strictly optional), use <option>--event=default</option>.
+</para>
+<para>
+You can pass multiple event specifications. OProfile will allocate
+hardware counters as necessary. Note that some combinations are not
+allowed by the CPU; running <command>opcontrol --list-events</command> gives the details
+of each event. The event specification is a colon-separated string
+of the form <option><emphasis>name</emphasis>:<emphasis>count</emphasis>:<emphasis>unit mask</emphasis>:<emphasis>kernel</emphasis>:<emphasis>user</emphasis></option> as described in this table:
+</para>
+<informaltable frame="all">
+<tgroup cols='2'> 
+<tbody>
+<row><entry><option>name</option></entry><entry>The symbolic event name, e.g. <constant>CPU_CLK_UNHALTED</constant></entry></row>
+<row><entry><option>count</option></entry><entry>The counter reset value, e.g. 100000</entry></row>
+<row><entry><option>unit mask</option></entry><entry>The unit mask, as given in the events list, e.g. 0x0f</entry></row>
+<row><entry><option>kernel</option></entry><entry>Whether to profile kernel code</entry></row>
+<row><entry><option>user</option></entry><entry>Whether to profile userspace code</entry></row>
+</tbody>
+</tgroup>
+</informaltable>
+<para>
+If OProfile is using RTC mode, and you want to alter the default counter value,
+you can use something like <option>--event=RTC:2048:0:1:1</option>. Note the last
+three values here are ignored.
+If OProfile is using timer-interrupt mode, there is no configuration possible.
+</para>
+</sect2>
+
 </sect1>
  
 <sect1 id="oprofile-gui">
@@ -774,12 +783,10 @@ Second, there is the counter value, discussed below. Third, there is a parameter
 whilst in kernel or user space. You can configure these separately for each counter.
 </para>
 <para>
-A counter value with the <option>--ctrX-count</option> option, where <option>X</option>
-is the logical counter number (which differs between architectures - <command>opcontrol --help</command>
-tells you the maximum counter number).
-Using multiple counters is useful for profiling several aspects of the same running program.
 After each overflow event, the counter will be re-initialized
-such that another overflow will occur after this many events have been counted. Picking a good value for this
+such that another overflow will occur after this many events have been counted. Thus, higher
+values mean less-detailed profiling, and lower values mean more detail, but higher overhead.
+Picking a good value for this
 parameter is, unfortunately, somewhat of a black art. It is of course dependent on the event
 you have chosen.
 Specifying too large a value will mean not enough interrupts are generated
@@ -811,9 +818,9 @@ two.
 </para>
 <para>
 Setting the value from the GUI should be straightforward. On the command line, you need to specify the
-<option>--rtc-value</option> option to <command>opcontrol</command>, e.g. :
+event to <command>opcontrol</command>, e.g. :
 </para>
-<para><command>opcontrol --rtc-value=256</command></para>
+<para><command>opcontrol --event=RTC:256:0:1:1</command></para>
 </sect2>
 
 <sect2 id="timer">

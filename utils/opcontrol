@@ -859,11 +859,9 @@ do_sysctl_setup_25() {
 	done
 
 	verify_counters
-	echo "hw is $HW_CTRS"
 
 	for f in `seq 0 $((NR_CHOSEN - 1))`; do
 		if test "${CHOSEN_EVENTS[$f]}" != ""; then
-			echo "f is $f"
 			EVENT=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $1}'`
 			EVENT_VAL=`op_help $EVENT`
 			COUNT=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $2}'`
@@ -871,7 +869,6 @@ do_sysctl_setup_25() {
 			KERNEL=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $4}'`
 			USER=`echo ${CHOSEN_EVENTS[$f]} | awk -F: '{print $5}'`
 			CTR=`echo $HW_CTRS | awk "{print \\$$((f + 1))}"`
-			echo "CTR is $CTR"
 			if test "$EVENT" = "RTC"; then
 				echo $COUNT >$MOUNT/rtc_value
 			else
