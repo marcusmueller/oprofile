@@ -1,5 +1,11 @@
 2004-02-01  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/callgraph_container.cpp: get correct source filenname liner
+	* libpp/format_output.cpp: re-factorize a bit by moving anon
+	  namespace from format_output:: to ::
+
+2004-02-01  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* doc/oprofile.xml:
 	* doc/opstack.1.in: document new options
 

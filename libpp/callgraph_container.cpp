@@ -348,10 +348,9 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 			odb_key_t(end - caller_start_offset) << 32);
 
 		cg_symbol symb_caller;
-		symb_caller.sample.counts[0] = 0;
+
 		symb_caller.size = end - start;
 		symb_caller.name = symbol_names.create(caller.syms[i].name());
-		symb_caller.sample.file_loc.linenr = 0;
 		symb_caller.image_name = image_names.create(image_name);
 		symb_caller.app_name = image_names.create(app_name);
 		symb_caller.sample.vma = caller.sym_offset(i, start) +
@@ -434,11 +433,10 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 			      << caller_callee_count << endl;
 
 			cg_symbol symb_callee;
-			symb_callee.sample.counts[0] = 0;
+
 			symb_callee.size = bfd_symb_callee->size();
 			symb_callee.name =
 				symbol_names.create(bfd_symb_callee->name());
-			symb_callee.sample.file_loc.linenr = 0;
 			symb_callee.image_name =
 				image_names.create(callee.get_filename());
 			symb_callee.app_name = image_names.create(app_name);
@@ -449,17 +447,18 @@ add(profile_t const & profile, op_bfd const & caller, bool bfd_caller_ok,
 				symb_callee.self_counts = self->sample.counts;
 
 			if (debug_info) {
+				symbol_index_t index =
+					distance(callee.syms.begin(),
+						 bfd_symb_callee);
+				u32 start, end;
+				callee.get_symbol_range(index, start, end);
+
 				string filename;
-				// FIXME: wrong we need index and offset
-				// of the callee symbols, op_bfd interface
-				// is not nice to retrieve symb index.
-#if 0
-				if (callee.get_linenr(i, start, filename,
+				if (callee.get_linenr(index, start, filename,
 					symb_callee.sample.file_loc.linenr)) {
 					symb_callee.sample.file_loc.filename =
 						debug_names.create(filename);
 				}
-#endif
 			}
 
 			recorder.add_arc(symb_caller, &symb_callee);

@@ -21,6 +21,52 @@
 
 using namespace std;
 
+
+namespace {
+
+string const & get_image_name(image_name_id id, bool lf)
+{
+	return lf ? image_names.name(id) : image_names.basename(id);
+}
+
+string const get_linenr_info(file_location const floc, bool lf)
+{
+	ostringstream out;
+
+	string const & filename = lf
+		? debug_names.name(floc.filename)
+		: debug_names.basename(floc.filename);
+
+	if (!filename.empty()) {
+		out << filename << ":" << floc.linenr;
+	} else {
+		out << "(no location information)";
+	}
+
+	return out.str();
+}
+
+string get_vma(bfd_vma vma, bool vma_64)
+{
+	ostringstream out;
+	int width = vma_64 ? 16 : 8;
+
+	out << hex << setw(width) << setfill('0') << vma;
+
+	return out.str();
+}
+
+string get_percent(size_t dividend, size_t divisor)
+{
+	double ratio = op_ratio(dividend, divisor);
+
+	return ::format_percent(ratio * 100, percent_int_width,
+	                     percent_fract_width);
+}
+
+} // anonymous namespace
+
+
 namespace format_output {
 
 
@@ -122,50 +168,6 @@ void formatter::output_header(ostream & out)
 
 	out << "\n";
 }
-
-namespace {
-
-string const & get_image_name(image_name_id id, bool lf)
-{
-	return lf ? image_names.name(id) : image_names.basename(id);
-}
-
-string const format_linenr_info(file_location const floc, bool lf)
-{
-	ostringstream out;
-
-	string const & filename = lf
-		? debug_names.name(floc.filename)
-		: debug_names.basename(floc.filename);
-
-	if (!filename.empty()) {
-		out << filename << ":" << floc.linenr;
-	} else {
-		out << "(no location information)";
-	}
-
-	return out.str();
-}
-
-string format_vma(bfd_vma vma, bool vma_64)
-{
-	ostringstream out;
-	int width = vma_64 ? 16 : 8;
-
-	out << hex << setw(width) << setfill('0') << vma;
-
-	return out.str();
-}
-
-string format_percent(size_t dividend, size_t divisor)
-{
-	double ratio = op_ratio(dividend, divisor);
-
-	return ::format_percent(ratio * 100, percent_int_width,
-	                     percent_fract_width);
-}
-
-} // anonymous namespace
 
 
 opreport_formatter::opreport_formatter(profile_container const & profile_)
@@ -366,7 +368,7 @@ void opreport_formatter::do_output(ostream & out, symbol_entry const & symb,
 
 string opreport_formatter::format_vma(field_datum const & f)
 {
-	return format_output::format_vma(f.sample.vma, vma_64);
+	return get_vma(f.sample.vma, vma_64);
 }
 
  
@@ -390,8 +392,7 @@ string opreport_formatter::format_app_name(field_datum const & f)
  
 string opreport_formatter::format_linenr_info(field_datum const & f)
 {
-	return format_output::format_linenr_info(f.sample.file_loc,
-		long_filenames);
+	return get_linenr_info(f.sample.file_loc, long_filenames);
 }
 
  
@@ -414,8 +415,7 @@ string opreport_formatter::format_nr_cumulated_samples(field_datum const & f)
  
 string opreport_formatter::format_percent(field_datum const & f)
 {
-	return format_output::format_percent(f.sample.counts[f.pclass],
-		total_count[f.pclass]);
+	return get_percent(f.sample.counts[f.pclass], total_count[f.pclass]);
 }
 
  
@@ -423,14 +423,13 @@ string opreport_formatter::format_cumulated_percent(field_datum const & f)
 {
 	cumulated_percent[f.pclass] += f.sample.counts[f.pclass];
 
-	return format_output::format_percent(cumulated_percent[f.pclass],
-		total_count[f.pclass]);
+	return get_percent(cumulated_percent[f.pclass], total_count[f.pclass]);
 }
 
  
 string opreport_formatter::format_percent_details(field_datum const & f)
 {
-	return format_output::format_percent(f.sample.counts[f.pclass],
+	return get_percent(f.sample.counts[f.pclass],
 		total_count_details[f.pclass]);
 }
 
@@ -440,8 +439,7 @@ format_cumulated_percent_details(field_datum const & f)
 {
 	cumulated_percent_details[f.pclass] += f.sample.counts[f.pclass];
 
-	return format_output::format_percent(
-		cumulated_percent_details[f.pclass],
+	return get_percent(cumulated_percent_details[f.pclass],
 		total_count_details[f.pclass]);
 }
 
@@ -627,7 +625,7 @@ void cg_formatter::output(std::ostream & out)
 
 string cg_formatter::format_vma(field_datum const & f)
 {
-	return format_output::format_vma(f.symbol.sample.vma, vma_64);
+	return get_vma(f.symbol.sample.vma, vma_64);
 }
 
  
@@ -651,8 +649,7 @@ string cg_formatter::format_app_name(field_datum const & f)
 
 string cg_formatter::format_linenr_info(field_datum const & f)
 {
-	return format_output::format_linenr_info(f.symbol.sample.file_loc,
-		long_filenames);
+	return get_linenr_info(f.symbol.sample.file_loc, long_filenames);
 }
 
 
@@ -678,9 +675,9 @@ string cg_formatter::format_nr_cumulated_samples(field_datum const & f)
  
 string cg_formatter::format_percent(field_datum const & f)
 {
-	return format_output::format_percent(f.symbol.self_counts[f.pclass],
+	return get_percent(f.symbol.self_counts[f.pclass],
 			total_count_self[f.pclass]) + "/" +
-		format_output::format_percent(f.symbol.callee_counts[f.pclass],
+		get_percent(f.symbol.callee_counts[f.pclass],
 			total_count_self[f.pclass]);
 }
 
@@ -690,9 +687,9 @@ string cg_formatter::format_cumulated_percent(field_datum const & f)
 	cumulated_percent_self[f.pclass] += f.symbol.self_counts[f.pclass];
 	cumulated_percent_callee[f.pclass] += f.symbol.callee_counts[f.pclass];
 
-	return format_output::format_percent(cumulated_percent_self[f.pclass],
+	return get_percent(cumulated_percent_self[f.pclass],
 			total_count_self[f.pclass]) + "/" +
-	   format_output::format_percent(cumulated_percent_callee[f.pclass],
+		get_percent(cumulated_percent_callee[f.pclass],
 			total_count_callee[f.pclass]);
 }
 

@@ -13,7 +13,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o callgraph_container.cpp: the inner loop in add() is very fragile!
  o opstack -c gives wrong resultat for self symbol cumulated count/percent i.e
   non indented output line.
- o See FIXME in callgraph_container::add() about linenr info for callee symbol
  o opstack  -t is not implemented, can we ?
  o Test all other opstack options.
  o improve and put somewhere on the net the opstack application test.
