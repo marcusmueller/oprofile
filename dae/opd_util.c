@@ -1,4 +1,4 @@
-/* $Id: opd_util.c,v 1.4 2000/08/01 21:10:20 moz Exp $ */
+/* $Id: opd_util.c,v 1.5 2000/08/16 20:14:49 moz Exp $ */
 
 /* for hton */ 
 #include <netinet/in.h> 
@@ -554,22 +554,13 @@ char *opd_get_time(void)
  */ 
 char *opd_get_line(FILE *fp)
 {
-#ifdef OPD_DEBUG
-	static int cum_size=0;
-	static int nr_calls=0;
-	int size=0;
-#endif
 	char *buf;
 	char *cp;
 	int c;
+	/* average allocation is about 31, so 64 should be good */
 	size_t max=64;
 
-#ifdef OPD_DEBUG
-	nr_calls++;
-	if (!(nr_calls%100))
-		printf("opd_get_line: average %f\n",(double)cum_size/(double)nr_calls);
-#endif 
-	buf = opd_malloc(64);
+	buf = opd_malloc(max);
 	cp = buf; 
 
 	do {
@@ -578,25 +569,16 @@ char *opd_get_line(FILE *fp)
 			case '\n':
 			case '\0':
 				*cp='\0';
-#ifdef OPD_DEBUG
-				cum_size+=size;
-#endif
 				return buf;
 				break;
 
 			default:
 				*cp=(char)c;
 				cp++;
-#ifdef OPD_DEBUG
-				size++;
-#endif
 				if (((size_t)(cp-buf))==max) {
 					buf = opd_realloc(buf,max+64);
 					cp = buf+max;
 					max+=64;
-#ifdef OPD_DEBUG
-					size+=64;
-#endif
 				}
 				break;
 		}
