@@ -1,5 +1,9 @@
 2001-09-24  John Levon  <moz@compsoc.man.ac.uk>
 
+	* pp/opf_filter.cpp: "fix" compile error
+ 
+2001-09-24  John Levon  <moz@compsoc.man.ac.uk>
+
 	* gui/oprofile:
 	* gui/Makefile.in: remove old gui
  

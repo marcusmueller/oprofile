@@ -943,6 +943,8 @@ static void get_options(int argc, char const * argv[])
 
 	// FIXME : too tricky: use popt sub-table capacity?
 
+	// FIXME: this is no good, see argv2 below (gcc 3.0.1) 
+ 
 	// separate the option into two set, one for opp_get_options
 	// and the other for opf_filter
 	std::vector<char const*> oprofpp_opt;
@@ -961,9 +963,15 @@ static void get_options(int argc, char const * argv[])
 			oprofpp_opt.push_back(argv[i++]);
 	}
 
-	opp_get_options(oprofpp_opt.size(), oprofpp_opt.begin());
+	char const *argv2[oprofpp_opt.size()];
+	for (uint i = 0; i < oprofpp_opt.size(); ++i)
+		argv2[i] = oprofpp_opt[i];
+	opp_get_options(oprofpp_opt.size(), argv2);
 
-	optcon = opd_poptGetContext(NULL, opf_opt.size(), opf_opt.begin(), 
+	char const *argv3[opf_opt.size()];
+	for (uint i = 0; i < opf_opt.size(); ++i)
+		argv3[i] = opf_opt[i];
+	optcon = opd_poptGetContext(NULL, opf_opt.size(), argv3,
 				options, 0);
 
 	c = poptGetNextOpt(optcon);

@@ -1,4 +1,4 @@
-/* $Id: oprofpp.c,v 1.53 2001/09/24 02:18:28 movement Exp $ */
+/* $Id: oprofpp.c,v 1.54 2001/09/24 18:14:57 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -1064,6 +1064,7 @@ struct gmon_hdr {
  * Dump gprof-format samples for the image specified by samplefile to
  * the file specified by gproffile.
  */
+// FIXME: too slow (and others) 
 void opp_samples_files::do_dump_gprof(struct opp_bfd* abfd) const
 {
 	static gmon_hdr hdr = { { 'g', 'm', 'o', 'n' }, GMON_VERSION, {0,0,0,},}; 
