@@ -342,7 +342,6 @@ void oprof_start::load_config_file()
 		if (!out) {
 			QMessageBox::warning(this, 0, "Unable to open configuration "
 				"file ~/.oprofile/daemonrc");
-			return;
 		}
 		return;
 	}
