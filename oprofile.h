@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.13 2000/08/27 04:43:21 moz Exp $ */
+/* $Id: oprofile.h,v 1.14 2000/08/31 23:44:16 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -61,7 +61,7 @@ struct _oprof_data {
 /* fork(),vfork(),clone() */
 #define OP_FORK ((1U<<15)|(1U<<0))
 /* execve() */
-#define OP_DROP ((1U<<15)|(1U<<1))
+#define OP_EXEC ((1U<<15)|(1U<<1))
 /* mapping */
 #define OP_MAP ((1U<<15)|(1U<<2))
 /* init_module() */

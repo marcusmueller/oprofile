@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.25 2000/08/31 23:08:50 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.26 2000/08/31 23:44:16 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -497,7 +497,7 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 
 		if ((!pid_filter || pid_filter==current->pid) &&
 		    (!pgrp_filter || pgrp_filter==current->pgrp)) {
-			samp.count = OP_DROP;
+			samp.count = OP_EXEC;
 			samp.pid = current->pid;
 			/* how many bytes to read from map buffer */
 			samp.eip = oprof_output_maps(current);
@@ -510,7 +510,7 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 
 		current->ptrace &= ~PT_DTRACE;
 
-		samp.count = OP_DROP;
+		samp.count = OP_EXEC;
 		samp.pid = current->pid;
 		/* how many bytes to read from map buffer */
 		samp.eip = oprof_output_maps(current);

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.h,v 1.11 2000/08/31 23:13:44 moz Exp $ */
+/* $Id: oprofiled.h,v 1.12 2000/08/31 23:44:18 moz Exp $ */
 
 #ifndef OPROFILED_H
 #define OPROFILED_H
@@ -88,7 +88,7 @@
 /* fork(),vfork(),clone() */
 #define OP_FORK ((1U<<15)|(1U<<0))
 /* execve() */
-#define OP_DROP ((1U<<15)|(1U<<1))
+#define OP_EXEC ((1U<<15)|(1U<<1))
 /* mapping */
 #define OP_MAP ((1U<<15)|(1U<<2))
 /* init_module() */
@@ -172,9 +172,9 @@ void opd_read_system_map(const char *filename);
 void opd_alarm(int val); 
  
 void opd_handle_fork(const struct op_sample *sample);
+void opd_handle_exec(const struct op_sample *sample);
 void opd_handle_exit(const struct op_sample *sample);
 void opd_handle_mapping(const struct op_sample *sample);
-void opd_handle_drop_mappings(const struct op_sample *sample);
 void opd_clear_module_info(void);
  
 #endif /* OPROFILED_H */

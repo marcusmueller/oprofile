@@ -1,4 +1,4 @@
-/* $Id: opd_proc.c,v 1.26 2000/08/31 23:13:44 moz Exp $ */
+/* $Id: opd_proc.c,v 1.27 2000/08/31 23:44:18 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -1081,14 +1081,14 @@ void opd_handle_mapping(const struct op_sample *sample)
 }
 
 /**
- * opd_handle_drop_mappings - deal with notification of dropped mappings
+ * opd_handle_exec - deal with notification of execve()
  * @sample: sample structure from kernel
  *
  * Drop all mapping information for the process.
  *
  * sample->pid contains the process id of the process.
  */
-void opd_handle_drop_mappings(const struct op_sample *sample)
+void opd_handle_exec(const struct op_sample *sample)
 {
 	struct opd_proc *proc;
 

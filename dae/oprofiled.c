@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.11 2000/08/26 22:19:27 moz Exp $ */
+/* $Id: oprofiled.c,v 1.12 2000/08/31 23:44:18 moz Exp $ */
 
 #include "oprofiled.h"
 
@@ -294,8 +294,8 @@ void opd_do_samples(const struct op_sample *opd_buf)
 					opd_handle_fork(&opd_buf[i]);
 					break;
 
-				case OP_DROP:
-					opd_handle_drop_mappings(&opd_buf[i]);
+				case OP_EXEC:
+					opd_handle_exec(&opd_buf[i]);
 					break;
 
 				case OP_MAP:
