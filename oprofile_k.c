@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.9 2000/08/03 22:30:35 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.10 2000/08/06 23:30:47 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -124,10 +124,20 @@ static uint map_open;
  
 void oprof_out8(void *buf);
  
+struct mmap_arg_struct {
+        unsigned long addr;
+        unsigned long len;
+        unsigned long prot;
+        unsigned long flags;
+        unsigned long fd;
+        unsigned long offset;
+};
+ 
 asmlinkage static int (*old_sys_fork)(struct pt_regs);
 asmlinkage static int (*old_sys_vfork)(struct pt_regs);
 asmlinkage static int (*old_sys_clone)(struct pt_regs);
 asmlinkage static int (*old_sys_execve)(struct pt_regs);
+asmlinkage static int (*old_old_mmap)(struct mmap_arg_struct *);
 asmlinkage static long (*old_sys_mmap2)(ulong, ulong, ulong, ulong, ulong, ulong);
 asmlinkage static long (*old_sys_init_module)(const char *, struct module *); 
 asmlinkage static long (*old_sys_exit)(int);
@@ -248,7 +258,7 @@ inline static char *oprof_outstr(char *buf, char *str, int bytes)
 
 /* buf must be PAGE_SIZE bytes large, mmap_sem must be held */
 static int oprof_output_map(ulong addr, ulong len,
-	ulong pgoff, struct file *file, char *buf)
+	ulong offset, struct file *file, char *buf)
 {
 	char *line;
 	ulong size=16;
@@ -258,7 +268,7 @@ static int oprof_output_map(ulong addr, ulong len,
  
 	map_buf[nextmapbuf].addr = addr;
 	map_buf[nextmapbuf].len = len;
-	map_buf[nextmapbuf].offset = pgoff<<PAGE_SHIFT;
+	map_buf[nextmapbuf].offset = offset;
  
 	line = d_path(file->f_dentry, file->f_vfsmnt, buf, PAGE_SIZE);
 	printk("size %u\n",strlen(line));
@@ -308,7 +318,7 @@ static int oprof_output_maps(struct task_struct *task)
 			continue;
 
 		size += oprof_output_map(map->vm_start, map->vm_end-map->vm_start,
-				map->vm_pgoff, map->vm_file, buffer);
+				map->vm_pgoff<<PAGE_SHIFT, map->vm_file, buffer);
 	}
 	up(&mm->mmap_sem);
 	/* FIXME: remove */
@@ -347,44 +357,67 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
         return ret;
 }
 
+static void out_mmap(ulong addr, ulong len, ulong prot, ulong flags,
+	ulong fd, ulong offset)
+{
+	struct op_sample samp;
+	struct file *file;
+	char *buffer;
+
+	buffer = (char *) __get_free_page(GFP_KERNEL);
+	if (!buffer)
+		return;
+
+	file = fget(fd);
+	if (!file) {
+		free_page((ulong)buffer);
+		return;
+	}
+
+	samp.count = OP_MAP;
+	samp.pid = current->pid;
+	/* how many bytes to read from buffer */
+	down(&current->mm->mmap_sem);
+	samp.eip = oprof_output_map(addr,len,offset,file,buffer);
+	up(&current->mm->mmap_sem);
+
+	fput(file);
+	free_page((ulong)buffer);
+	oprof_out8(&samp);
+}
+
 asmlinkage static int my_sys_mmap2(ulong addr, ulong len,
-	ulong prot, ulong flags,
-	ulong fd, ulong pgoff)
+	ulong prot, ulong flags, ulong fd, ulong pgoff)
 {
 	int ret;
-
  
 	ret = old_sys_mmap2(addr,len,prot,flags,fd,pgoff);
 
-	if ((prot&PROT_EXEC) && ret >= 0) {
-		struct op_sample samp;
-		struct file *file;
-		char *buffer;
-
-		buffer = (char *) __get_free_page(GFP_KERNEL);
-		if (!buffer)
-			return ret;
-
-		file = fget(fd);
-		if (!file) {
-			free_page((ulong)buffer);
-			return ret;
-		}
-
-		samp.count = OP_MAP;
-		samp.pid = current->pid;
-		/* how many bytes to read from buffer */
-		down(&current->mm->mmap_sem);
-		samp.eip = oprof_output_map(ret,len,pgoff,file,buffer);
-		up(&current->mm->mmap_sem);
- 
-		fput(file);
-		free_page((ulong)buffer);
-		oprof_out8(&samp);
-	}
+	if ((prot&PROT_EXEC) && ret >= 0)
+		out_mmap(ret,len,prot,flags,fd,pgoff<<PAGE_SHIFT);
 	return ret;
 }
 
+asmlinkage static int my_old_mmap(struct mmap_arg_struct *arg)
+{
+	int ret;
+
+	ret = old_old_mmap(arg);
+
+	if (ret>=0) {
+		struct mmap_arg_struct a;
+
+		if (copy_from_user(&a, arg, sizeof(a)))
+			goto out;
+		
+		if (a.prot&PROT_EXEC)
+			out_mmap(ret, a.len, a.prot, a.flags, a.fd, a.offset);
+			 
+	} 
+out:
+	return ret; 
+}
+ 
 asmlinkage static long my_sys_init_module(const char *name_user, struct module *mod_user)
 {
 	long ret; 
@@ -433,19 +466,21 @@ struct linux_binfmt oprof_binfmt = { NULL, THIS_MODULE, oprof_binary, NULL, NULL
  
 void __init op_intercept_syscalls(void)
 {
-	old_sys_fork = sys_call_table[__NR_fork]; 
+	old_sys_fork = sys_call_table[__NR_fork];
 	old_sys_vfork = sys_call_table[__NR_vfork];
 	old_sys_clone = sys_call_table[__NR_clone];
 	old_sys_execve = sys_call_table[__NR_execve];
+	old_old_mmap = sys_call_table[__NR_mmap];
 	old_sys_mmap2 = sys_call_table[__NR_mmap2];
 	old_sys_init_module = sys_call_table[__NR_init_module];
-	old_sys_exit = sys_call_table[__NR_exit]; 
+	old_sys_exit = sys_call_table[__NR_exit];
 
 	sys_call_table[__NR_fork] = my_sys_fork;
 	sys_call_table[__NR_vfork] = my_sys_vfork;
 	sys_call_table[__NR_clone] = my_sys_clone;
 	sys_call_table[__NR_execve] = my_sys_execve;
-	sys_call_table[__NR_mmap2] = my_sys_mmap2; 
+	sys_call_table[__NR_mmap] = my_old_mmap;
+	sys_call_table[__NR_mmap2] = my_sys_mmap2;
 	sys_call_table[__NR_init_module] = my_sys_init_module;
 	sys_call_table[__NR_exit] = my_sys_exit;
 
@@ -460,7 +495,8 @@ void __exit op_replace_syscalls(void)
 	sys_call_table[__NR_vfork] = old_sys_vfork;
 	sys_call_table[__NR_clone] = old_sys_clone;
 	sys_call_table[__NR_execve] = old_sys_execve;
-	sys_call_table[__NR_mmap2] = old_sys_mmap2; 
+	sys_call_table[__NR_mmap] = old_old_mmap;
+	sys_call_table[__NR_mmap2] = old_sys_mmap2;
 	sys_call_table[__NR_init_module] = old_sys_init_module;
 	sys_call_table[__NR_exit] = old_sys_exit;
 }
