@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.1 2002/05/06 18:00:35 movement Exp $
+# $Id: op_start,v 1.2 2002/05/16 02:47:21 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -474,8 +474,11 @@ do_sysctl_setup() {
 do_start() {
  
 	if test -f $LOCK_FILE; then
-		echo "lock file $LOCK_FILE still present." >&2
-		exit 1
+		kill -s 0 `cat $LOCK_FILE` 2>/dev/null
+		if test "$?" -eq 0; then
+			echo "oprofiled appears to be running already." >&2
+			echo "delete $LOCK_FILE if this is not the case." >&2
+			exit 1
 	fi
  
 	OPD_ARGS="--vmlinux=$VMLINUX --map-file=$MAP_FILE \
