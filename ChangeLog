@@ -1,5 +1,9 @@
 2003-10-14  John Levon  <levon@movementarian.org>
 
+	* configure.in: xmemdup not xmemdump
+
+2003-10-14  John Levon  <levon@movementarian.org>
+
 	* daemon/opd_perfmon.c: propagate a SIGTERM
 	up to the parent.
 
