@@ -376,7 +376,6 @@ bool filename_match::match(const std::string & filename)
 	// note that the include pattern defaults to '*' 
 	std::string compi = dirname(filename);
 	while (!compi.empty() && compi != "/") {
-		std::cerr << "Looking at \"" << compi << "\"" << std::endl; 
 		if (match(include_pattern, basename(compi)))
 			return true;
 		if (compi == dirname(compi))
