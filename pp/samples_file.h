@@ -15,7 +15,7 @@
 #include <string>
 #include <map>
 
-#include "db-hash.h"
+#include "db_hash.h"
 #include "op_types.h"
 #include "op_hw_config.h"
 #include "utility.h"

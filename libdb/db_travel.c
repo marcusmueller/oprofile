@@ -8,7 +8,7 @@
  * @author Philippe Elie
  */
 
-#include "db-hash.h"
+#include "db_hash.h"
 
 static void do_travel(samples_db_t const * hash, db_key_t first, db_key_t last,
 		samples_db_travel_callback callback, void * data)

@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "db-hash.h"
+#include "db_hash.h"
 
 struct db_hash_stat_t {
 	db_node_nr_t node_nr;

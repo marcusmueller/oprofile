@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "db-hash.h"
+#include "db_hash.h"
 
 static void display_callback(db_key_t key, db_value_t value, void * data)
 {

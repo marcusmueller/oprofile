@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-#include "db-hash.h"
+#include "db_hash.h"
 
 #define TEST_FILENAME "test-hash-db.dat"
 

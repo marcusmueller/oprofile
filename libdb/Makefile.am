@@ -1,8 +1,8 @@
 noinst_LIBRARIES = libdb.a
 
-libdb_a_SOURCES = db-hash-manage.c db-hash-insert.c db-hash-travel.c db-hash-debug.c db-hash-stat.c db-hash.h
+libdb_a_SOURCES = db_manage.c db_insert.c db_travel.c db_debug.c db_stat.c db_hash.h
 
-noinst_PROGRAMS = db-hash-test
+noinst_PROGRAMS = db_test
 
-db_hash_test_SOURCES = db-hash-test.c
-db_hash_test_LDADD = libdb.a
+db_test_SOURCES = db_test.c
+db_test_LDADD = libdb.a

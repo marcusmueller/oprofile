@@ -15,7 +15,7 @@
 #include "op_list.h"
 #include "op_hw_config.h"
 #include "op_types.h"
-#include "db-hash.h"
+#include "db_hash.h"
 
 #include <time.h>
 

@@ -1,5 +1,15 @@
 2002-12-03  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libdb/.cvsignore:
+	* libdb/Makefile.am:
+	* libdb/*.c --> db-hash-name.c to db_name.c
+
+	* dae/opd_image.h:
+	* daemon/opd_image.h:
+	* pp/samples_file.h: include db_hash.h
+
+2002-12-03  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* gui/oprof_start_config.cpp: allow default value change w/o
 	  breaking actual user.
 

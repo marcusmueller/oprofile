@@ -11,7 +11,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "db-hash.h"
+#include "db_hash.h"
 
 void db_insert(samples_db_t * hash, db_key_t key, db_value_t value)
 {

@@ -1,5 +1,4 @@
 .deps
-db-test
-db-hash-test
+db_test
 Makefile
 Makefile.in

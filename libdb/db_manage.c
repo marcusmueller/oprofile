@@ -18,7 +18,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "db-hash.h"
+#include "db_hash.h"
 
  
 static inline db_descr_t * db_to_descr(samples_db_t * hash)
