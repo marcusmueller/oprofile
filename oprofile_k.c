@@ -1,4 +1,4 @@
-/* $Id: oprofile_k.c,v 1.31 2000/09/28 21:33:11 moz Exp $ */
+/* $Id: oprofile_k.c,v 1.32 2000/11/14 00:46:28 moz Exp $ */
 
 #include <linux/sched.h>
 #include <linux/unistd.h>
@@ -14,7 +14,13 @@
 
 #define APIC_DEFAULT_PHYS_BASE 0xfee00000
 
-/* FIXME: not up to date */
+extern u32 oprof_ready[NR_CPUS];
+extern wait_queue_head_t oprof_wait;
+extern pid_t pid_filter;
+extern pid_t pgrp_filter;
+extern u32 prof_on;
+
+/* FIXME: this needs removing if UP oopser gets into mainline */
 static void set_pte_phys(ulong vaddr, ulong phys)
 {
 	pgprot_t prot;
@@ -113,7 +119,7 @@ void oprof_put_note(struct op_sample *samp);
 
 /* --------- device routines ------------- */
 
-static int output_path_hash(const char *name, uint len);
+static u32 output_path_hash(const char *name, uint len);
 
 int oprof_init_hashmap(void)
 {
@@ -256,9 +262,6 @@ asmlinkage static long (*old_sys_mmap2)(ulong, ulong, ulong, ulong, ulong, ulong
 asmlinkage static long (*old_sys_init_module)(const char *, struct module *);
 asmlinkage static long (*old_sys_exit)(int);
 
-extern pid_t pid_filter;
-extern pid_t pgrp_filter;
-
 inline static void oprof_report_fork(u16 old, u32 new)
 {
 	struct op_sample samp;
@@ -323,10 +326,10 @@ inline static uint name_hash(const char *name, uint len)
 #define hash_access(hash) (&hash_map[hash*OP_HASH_LINE])
 
 /* called with map_lock, VFS locks as below */
-static int output_path_hash(const char *name, uint len)
+static u32 output_path_hash(const char *name, uint len)
 {
 	uint firsthash;
-	uint hash;
+	u32 hash;
 	uint probe=1;
 
 	if (len>=OP_HASH_LINE) {
@@ -351,9 +354,6 @@ static int output_path_hash(const char *name, uint len)
 	printk(KERN_ERR "oprofile: hash map is full !\n");
 	return -1;
 }
-
-extern u32 oprof_ready[NR_CPUS];
-extern wait_queue_head_t oprof_wait;
 
 /* called with map_lock held */
 inline static u32 *map_out32(u32 val)
@@ -429,6 +429,9 @@ static int oprof_output_map(ulong addr, ulong len,
 	ulong offset, struct file *file, char *buf)
 {
 	u32 *tot;
+
+	if (!prof_on)
+		return 0;
 
 	map_out32(addr);
 	map_out32(len);
@@ -617,7 +620,7 @@ asmlinkage static long my_sys_exit(int error_code)
 
 extern void *sys_call_table[];
 
-void __init op_intercept_syscalls(void)
+void op_intercept_syscalls(void)
 {
 	old_sys_fork = sys_call_table[__NR_fork];
 	old_sys_vfork = sys_call_table[__NR_vfork];
@@ -638,8 +641,7 @@ void __init op_intercept_syscalls(void)
 	sys_call_table[__NR_exit] = my_sys_exit;
 }
 
-/* FIXME: er, this can't work, can it ? */
-void __exit op_replace_syscalls(void)
+void op_replace_syscalls(void)
 {
 	sys_call_table[__NR_fork] = old_sys_fork;
 	sys_call_table[__NR_vfork] = old_sys_vfork;

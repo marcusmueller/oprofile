@@ -1,8 +1,8 @@
-# $Id: Makefile.in,v 1.4 2000/08/04 02:15:38 moz Exp $
+# $Id: Makefile.in,v 1.5 2000/11/14 00:46:30 moz Exp $
 
 .PHONY: all clean srcdoc install
  
-all: oprofiled op_help
+all: oprofiled op_help oprofctl
  
 prefix=@prefix@
 exec_prefix=@exec_prefix@
@@ -12,18 +12,19 @@ CC=@CC@
 
 install: oprofiled op_start op_stop op_help
 	cp oprofiled $(BINDIR)/oprofiled
+	cp oprofctl $(BINDIR)/oprofctl
 	cp op_start $(BINDIR)/op_start
 	cp op_stop $(BINDIR)/op_stop
 	cp op_help $(BINDIR)/op_help 
-	cd $(BINDIR) && chmod 755 oprofiled op_start op_stop op_help
+	cd $(BINDIR) && chmod 755 oprofiled oprofctl op_start op_stop op_help
  
 clean:
-	rm -f oprofiled op_help *.o oprofiled-src.html
+	rm -f oprofiled oprofctl op_help *.o oprofiled-src.html 
  
 CFLAGS=-Wall -Wstrict-prototypes -O2 -pipe -Wstrict-prototypes -Wunused -W -Wshadow -Wmissing-prototypes -Winline @CFLAGS@
 LIBS=@extra_libraries@ -lpopt
 INCLUDES=@extra_includes@
-HEADERS=oprofiled.h
+HEADERS=oprofiled.h opd_util.h
 SOURCES=oprofiled.c opd_util.c opd_proc.c ../op_events.c
  
 srcdoc: oprofiled-src.html
@@ -34,6 +35,10 @@ oprofiled-src.html: $(SOURCES)
 oprofiled: $(SOURCES) $(HEADERS) 
 	rm -f ../op_events.o 
 	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ $(SOURCES) $(LIBS)
+
+oprofctl: oprofctl.c opd_util.c oprofctl.h opd_util.h ../op_ioctl.h
+	rm -f ../op_events.o
+	$(CC) $(CFLAGS) $(INCLUDES) -g -o $@ oprofctl.c opd_util.c $(LIBS)
 
 op_help: ../op_events.c
 	rm -f ../op_events.o

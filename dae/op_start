@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: op_start,v 1.13 2000/09/28 21:33:26 moz Exp $
+# $Id: op_start,v 1.14 2000/11/14 00:46:30 moz Exp $
 
 # quick and ugly interface
 # op_start --help and op_start --list-events have info
@@ -81,7 +81,7 @@ do
 				IGNORE_MYSELF=1
 			fi
 			;;
-		--buffer-size) 
+		--buffer-size)
 			BUF_SIZE=$val
 			;;
 		--hash-table-size)
@@ -154,10 +154,14 @@ do
 done
 
 grep oprof /proc/devices >/dev/null
-if [ "$?" -eq 0 ]
+if [ "$?" -ne 0 ]
 then
-	echo "Stopping profiling."
-	op_stop
+	modprobe oprofile
+	if [ "$?" != "0" ]
+	then
+		echo "Couldn't load oprofile.o module"
+		exit 1
+	fi
 fi
 
 if [ "$LOG_FILE" = "" ]; then
@@ -245,29 +249,6 @@ else
 	rm -rf *
 fi
 
-MOD_ARGS="op_hash_size=$HASH_SIZE op_buf_size=$BUF_SIZE"
-if [ "$CTR0_TYPE" != "" ]; then
-	MOD_ARGS="$MOD_ARGS op_ctr0_on=1 op_ctr0_type=$CTR0_TYPE op_ctr0_um=$CTR0_UM op_ctr0_count=$CTR0_COUNT op_ctr0_osusr=$CTR0_OSUSR"
-fi
-if [ "$CTR1_TYPE" != "" ]; then
-	MOD_ARGS="$MOD_ARGS op_ctr1_on=1 op_ctr1_type=$CTR1_TYPE op_ctr1_um=$CTR1_UM op_ctr1_count=$CTR1_COUNT op_ctr1_osusr=$CTR1_OSUSR"
-fi
-if [ "$PID_FILTER" != "0" ]; then
-	MOD_ARGS="$MOD_ARGS pid_filter=$PID_FILTER"
-fi 
-if [ "$PGRP_FILTER" != "0" ]; then
-	MOD_ARGS="$MOD_ARGS pgrp_filter=$PGRP_FILTER"
-fi 
-
-MODPROBECMD="modprobe oprofile $MOD_ARGS"
-echo "Loading module with: $MODPROBECMD"
-$MODPROBECMD
-if [ "$?" != "0" ]
-then
-	echo "Couldn't load oprofile.o module"
-	exit 1
-fi
-
 MAJOR_NR=`grep oprof /proc/devices | awk '{print $1}'`
 
 echo "Doing mknod $DEVICE_FILE"
@@ -297,6 +278,27 @@ then
 fi
 chmod 700 "$MAP_DEVICE_FILE"
 
+oprofctl --device-file="$DEVICE_FILE" --stop >/dev/null 2>&1
+
+oprofctl --device-file="$DEVICE_FILE" --hash-size=$HASH_SIZE --buf-size=$BUF_SIZE
+# FIXME: enable SMP setup ...
+if [ "$CTR0_TYPE" != "" ]; then
+	oprofctl --device-file="$DEVICE_FILE" --cpu=0 --counter=0 --event=$CTR0_TYPE --unit-mask=$CTR0_UM --value=$CTR0_COUNT --os-usr=$CTR0_OSUSR
+	if [ "$?" != "0" ]; then echo "oprofctl failed."; exit 1; fi
+fi
+if [ "$CTR1_TYPE" != "" ]; then
+	oprofctl --device-file="$DEVICE_FILE" --cpu=0 --counter=1 --event=$CTR1_TYPE --unit-mask=$CTR1_UM --value=$CTR1_COUNT --os-usr=$CTR1_OSUSR
+	if [ "$?" != "0" ]; then echo "oprofctl failed."; exit 1; fi
+fi
+if [ "$PID_FILTER" != "0" ]; then
+	oprofctl --device-file="$DEVICE_FILE" --pid-filter=$PID_FILTER 
+	if [ "$?" != "0" ]; then echo "oprofctl failed."; exit 1; fi
+fi 
+if [ "$PGRP_FILTER" != "0" ]; then
+	oprofctl --device-file="$DEVICE_FILE" --pgrp-filter=$PGRP_FILTER 
+	if [ "$?" != "0" ]; then echo "oprofctl failed."; exit 1; fi
+fi 
+
 OPD_ARGS="--buffer-size=$BUF_SIZE --use-cpu=$USE_PII --ignore-myself=$IGNORE_MYSELF \
 	--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
 	--device-file=$DEVICE_FILE --map-device-file=$MAP_DEVICE_FILE \
@@ -313,12 +315,14 @@ if [ "$MAP_FILE" != "" ]; then
 	OPD_ARGS="$OPD_ARGS --map-file=$MAP_FILE"
 fi
 
+oprofctl --device-file="$DEVICE_FILE" --start
+if [ "$?" != "0" ]; then echo "oprofctl --start failed."; exit 1; fi
+
 oprofiled $OPD_ARGS
 sleep 2
 PID=`ps x | grep oprofiled | grep -v grep | awk '{print $1}'`
 if [ "$PID" = "" ]
 then
 	echo "Couldn't start oprofiled."
-	rmmod oprofile
 	exit 1
 fi

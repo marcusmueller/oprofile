@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.23 2000/09/28 21:33:10 moz Exp $ */
+/* $Id: oprofile.h,v 1.24 2000/11/14 00:46:28 moz Exp $ */
 
 #include <linux/config.h>
 #include <linux/kernel.h>
@@ -7,12 +7,14 @@
 #include <linux/malloc.h>
 #include <linux/delay.h>
 #include <linux/vmalloc.h>
+#include <linux/sched.h> 
 
 #include <asm/uaccess.h>
 #include <asm/smplock.h>
 #include <asm/apic.h>
 
 #include "version.h"
+#include "op_ioctl.h"
 
 struct op_sample {
 	u16 count;
@@ -108,6 +110,24 @@ struct _oprof_data {
 #define set_perfctr(l,c) do { wrmsr(P6_MSR_PERFCTR0+c, -(u32)(l), 0); } while (0)
 #define ctr_overflowed(n) (!((n) & (1U<<31)))
 
+#define OP_EVENTS_OK            0x0
+#define OP_CTR0_NOT_FOUND       0x1
+#define OP_CTR1_NOT_FOUND       0x2
+#define OP_CTR0_NO_UM           0x4
+#define OP_CTR1_NO_UM           0x8
+#define OP_CTR0_NOT_ALLOWED     0x10
+#define OP_CTR1_NOT_ALLOWED     0x20
+#define OP_CTR0_PII_EVENT       0x40
+#define OP_CTR1_PII_EVENT       0x80
+#define OP_CTR0_PIII_EVENT      0x100
+#define OP_CTR1_PIII_EVENT      0x200
+
+#define op_check_range(val,l,h,str) do { \
+        if ((val) < (l) || (val) > (h)) { \
+                printk(str,(val)); \
+                return 0; \
+        } } while (0);
+
 asmlinkage void op_nmi(void);
 
 /* If the do_nmi() patch has been applied, we can use the NMI watchdog */
@@ -120,7 +140,7 @@ void my_do_nmi(struct pt_regs * regs, long error_code);
 #endif
 
 void my_set_fixmap(void);
-int op_check_events_str(char *ctr0_type, char *ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc, u8 *ctr0_t, u8 *ctr1_t);
+int op_check_events(u8 ctr0_type, u8 ctr1_type, u8 ctr0_um, u8 ctr1_um, int proc);
 void op_intercept_syscalls(void);
 void op_replace_syscalls(void);
 int oprof_hash_map_open(void);

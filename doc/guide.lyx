@@ -77,7 +77,7 @@ Currently
 \family typewriter 
 oprofile
 \family default 
- requires a Linux 2.4 kernel running on Intel hardware with a P6 core processor.
+ requires a Linux 2.4.0test11 or later kernel running on Intel hardware with a P6 core processor.
  This translates to the Pentium Pro, Pentium II, Pentium III or any of their
  brethren such as Celerons
 \begin_float footnote 
@@ -88,7 +88,9 @@ The module will refuse to load if the correct processor type is not found.
 .
  Older A.OUT based systems are not supported (it is probably trivial to add
  this facility if needed).
- SMP systems are theoretically supported, but have not been tested at all.
+ SMP systems are theoretically supported, but have not been tested at all, and support is not
+ complete. If you are using the kernel debugging patchset, it should still work but might not
+ as it plays with the APIC set up and PM counters.
 \layout Standard
 
 You must have the following libraries installed : 

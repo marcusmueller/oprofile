@@ -6,7 +6,6 @@ o we don't really need a vmlinux file during profiling ...
 Correctness
 -----------
  
-o The module must not be unloadable.
 o SMP mappings - place in all buffers perhaps ? 
 o check chroot() processes and do_d_path() 
 o There is no need for the daemon to run as root as long as every binary image
@@ -17,7 +16,7 @@ Performance
  
 o The note spinlock and stop/start should be grouped into one for multiple map adding.
 o investigate eviction strategy
-o the interrupt handler code could probably be improved by moving into asm, and using arch=ppro 
+o the interrupt handler code could probably be improved by moving into asm
 o can we fold in the "untouched sample entry" case in hash table to another case ? 
 o would query_module() be faster ? do we care ? 
 o investigate whether it would be better to have abb's linked component hash table
