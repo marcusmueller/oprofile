@@ -1,6 +1,0 @@
-.deps
-oprof_report.base.cpp
-oprof_report.base.moc.cpp
-oprof_report.base.h
-Makefile
-Makefile.in

@@ -116,14 +116,3 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
 o profile the NMI handler code
  
 o merge sample files into one big report (like vtune can do repeated runs)
-
-oprof_report:
-
-IMHO this app isn't near what we really want. There's no point doing this
-GUI until we can give it some real power. Let's concentrate on making the
-command-line tools as good as possible first. 
-- folderview of sample files + sessions in the gui itself (later ?)
-- disassembly. form "+0x8b" for intra-symbol samples optionally, on by default?
-- tune and test hotspot
-- source (later ?)
- 

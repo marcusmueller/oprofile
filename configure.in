@@ -114,9 +114,6 @@ AC_SUBST(POPT_LIBS)
  
 AM_CONDITIONAL(have_qt, test -n "$QT_LIB")
 
-# inihibited for now
-AM_CONDITIONAL(build_oprof_report, false)
-
 AX_CFLAGS_OPTION(OP_CFLAGS,[-W])
 AX_CXXFLAGS_OPTION(OP_CXXFLAGS,[-W])
 AX_CFLAGS_OPTION(OP_CFLAGS,[-Wall])
