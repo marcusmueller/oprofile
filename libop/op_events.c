@@ -47,7 +47,7 @@ static int parse_int(char const * str)
 }
 
 
-static int parse_hexa(char const * str)
+static int parse_hex(char const * str)
 {
 	int value;
 	if (sscanf(str, "%x", &value) != 1) {
@@ -67,6 +67,7 @@ static struct op_unit_mask * new_unit_mask(void)
 	return um;
 }
 
+
 static void delete_unit_mask(struct op_unit_mask * unit)
 {
 	u32 cur;
@@ -78,6 +79,7 @@ static void delete_unit_mask(struct op_unit_mask * unit)
 	if (unit->name)
 		free(unit->name);
 
+	list_del(&unit->um_next);
 	free(unit);
 }
 
@@ -99,6 +101,7 @@ static void delete_event(struct op_event * event)
 	if (event->desc)
 		free(event->desc);
 
+	list_del(&event->event_next);
 	free(event);
 }
 
@@ -119,6 +122,9 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 		if (valueend == tagend)
 			break;
 
+		if (!*tagend)
+			parse_error("parse_um() expected :value");
+
 		++tagend;
 
 		if (strisprefix(start, "name")) {
@@ -134,7 +140,7 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 				parse_error("invalid unit mask type");
 			}
 		} else if (strisprefix(start, "default")) {
-			um->default_mask = parse_hexa(tagend);
+			um->default_mask = parse_hex(tagend);
 		} else {
 			parse_error("invalid unit mask tag");
 		}
@@ -152,7 +158,7 @@ static void parse_um_entry(struct op_described_um * entry, char const * line)
 	char const * c = line;
 
 	c = skip_ws(c);
-	entry->value = parse_hexa(c);
+	entry->value = parse_hex(c);
 	c = skip_nonws(c);
 
 	if (!*c)
@@ -329,7 +335,7 @@ static void read_events(char const * file)
 			if (strcmp(name, "name") == 0) {
 				event->name = value;
 			} else if (strcmp(name, "event") == 0) {
-				event->val = parse_hexa(value);
+				event->val = parse_hex(value);
 				free(value);
 			} else if (strcmp(name, "counters") == 0) {
 				event->counter_mask = parse_counter_mask(value);
@@ -401,16 +407,11 @@ void op_free_events(void)
 	struct list_head * pos, * pos2;
 	list_for_each_safe(pos, pos2, &events_list) {
 		struct op_event * event = list_entry(pos, struct op_event, event_next);
-		/* FIXME: how in delete_event I can move lis_del(pos) in
-		 * delete_event() w/o passing the pos parameters ? */
-		list_del(pos);
 		delete_event(event);
 	}
 
 	list_for_each_safe(pos, pos2, &um_list) {
 		struct op_unit_mask * unit = list_entry(pos, struct op_unit_mask, um_next);
-		/* FIXME: ditto as above */
-		list_del(pos);
 		delete_unit_mask(unit);
 	}
 }

@@ -1,3 +1,7 @@
+2003-03-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_events.c: minor cleanup
+
 2003-03-15  Dave Jones <davej@codemonkey.org.uk>
 
 	* module/x86/op_nmi.c: Remove stale debug code from yesterdays commit.
