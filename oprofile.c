@@ -619,7 +619,7 @@ static __init int parms_ok(void)
  
 	/* FIXME: change max when vmalloc */ 
 	op_check_range(op_hash_size,256,4096,"op_hash_size value %d not in range\n");
-	op_check_range(op_buf_size,512,4096,"op_buf_size value %d not in range\n");
+	op_check_range(op_buf_size,512,16384,"op_buf_size value %d not in range\n");
  
 	for (cpu=0; cpu < smp_num_cpus; cpu++) {
 		data = &oprof_data[cpu]; 
