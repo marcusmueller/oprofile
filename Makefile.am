@@ -21,30 +21,28 @@ ACLOCAL_AMFLAGS = -I m4
 # The module will not build under distcheck
 DISTCHECK_CONFIGURE_FLAGS = --with-kernel-support
 
-all-local: kernel_module
-install-exec-local: install.kernel
+if !kernel_support
 
-if kernel_support
-kernel_module:
-install.kernel:
-else
+all-local: module
+
 # This must use a fully-qualified SUBDIRS path, so we can't use ${top_srcdir}
-kernel_module:
+module:
 	make -C libutil
 	make -C libop
 	(cd $(KSRC) && $(MAKE) SUBDIRS=$(OPROFILE_DIR)/module/@OPROFILE_MODULE_ARCH@ modules) || exit 1 ;
 	(cd $(KSRC) && $(MAKE) SUBDIRS=$(OPROFILE_DIR)/module modules) || exit 1 ;
 
-install.kernel: kernel_module
+install-exec-local:
 	-mkdir -p $(MODINSTALLDIR)/oprofile
 	cp module/oprofile-module.o $(MODINSTALLDIR)/oprofile/oprofile.o
 	if test $(KVERS) = "`uname -r`"; then depmod -a ; fi
-endif
 
 clean-local:
 	rm -f module/*.o module/@OPROFILE_MODULE_ARCH@/*.o \
 	module/.*.o.cmd module/.*.o.flags \
 	module/@OPROFILE_MODULE_ARCH@/.*.o.cmd module/@OPROFILE_MODULE_ARCH@/.*.o.flags
+
+endif
 
 EXTRA_DIST = \
 	ChangeLog-2001 \
