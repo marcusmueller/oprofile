@@ -18,26 +18,12 @@
 
 using namespace std;
 
-string erase_from_last_of(string const & str, char ch)
-{
-	string result = str;
-
-	string::size_type pos = result.find_last_of(ch);
-	if (pos != string::npos)
-		result.erase(pos, result.length() - pos);
-
-	return result;
-}
-
 
 string erase_to_last_of(string const & str, char ch)
 {
 	string result = str;
-	string::size_type pos = result.find_last_of(ch);
-	if (pos != string::npos)
-		result.erase(0, pos + 1);
 
-	return result;
+	return result.erase(0, result.find_first_not_of(ch));
 }
 
 
@@ -114,23 +100,17 @@ void separate_token(vector<string> & result, const string & str, char sep)
 
 string ltrim(string const & str, string const & totrim)
 {
-	string result;
-	string::size_type pos = str.find_first_not_of(totrim);
-	if (pos != string::npos) {
-		result = str.substr(pos);
-	}
-	return result;
+	string result(str);
+
+	return result.erase(0, result.find_first_not_of(totrim));
 }
 
 
 string rtrim(string const & str, string const & totrim)
 {
 	string result(str);
-	string::size_type pos = str.find_last_not_of(totrim);
-	if (pos != string::npos) {
-		result = str.substr(0, pos + 1);
-	}
-	return result;
+
+	return result.erase(result.find_last_not_of(totrim) + 1);
 }
 
 

@@ -1,3 +1,9 @@
+2003-08-14  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/string_manip.h: remove erase_from_last_of()
+	* libutil++/string_manip.cpp: and tidy erase_to_last_of(), rtrim() and
+	  ltrim()
+
 2003-08-13  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/op_bfd.h:

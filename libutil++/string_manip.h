@@ -19,15 +19,6 @@
 
 /**
  * @param str string
- * @param ch the char from where we erase character
- *
- * erase char from the last occurence of ch to the end of str and return
- * the string
- */
-std::string erase_from_last_of(std::string const & str, char ch);
-
-/**
- * @param str string
  * @param ch the characterto search
  *
  * erase char from the begin of str to the last
