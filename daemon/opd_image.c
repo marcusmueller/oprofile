@@ -14,6 +14,7 @@
 #include "opd_stats.h"
 #include "opd_sample_files.h"
 #include "opd_printf.h"
+#include "opd_cookie.h"
  
 #include "op_types.h" 
 #include "op_libiberty.h"
@@ -22,7 +23,6 @@
 #include "op_mangle.h"
  
 #include <errno.h>
-#include <unistd.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -132,12 +132,6 @@ static struct opd_image * opd_create_image(unsigned long hash)
 	return image;
 }
 
-static int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
-{
-	// FIXME
-	return syscall(253, cookie, buf, size);
-}
- 
 
 /**
  * opd_init_image - init an image sample file
