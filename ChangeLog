@@ -1,5 +1,16 @@
 2003-03-22  Philippe Elie  <phil.el@wanadoo.fr>
 
+	  Suggested by John
+
+	* libutil/op_cpufreq.c: typo in comment
+
+	* utils/op_help.c: add --get-cpu-frequency, intentionnaly not
+	  documented.
+	* utils/opcontrol: use op_help --get-cpu-frequency and remove
+	  ugly shell script doing the same thing.
+
+2003-03-22  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil/op_cpufreq.h:
 	* libutil/op_cpufreq.c: new file exporting op_cpu_frequency()
 	* libutil/Makefile.am: update according
