@@ -239,8 +239,8 @@ public:
 
 	/**
 	 * @param sym_idx symbol index
-	 * @param start pointer to start var
-	 * @param end pointer to end var
+	 * @param start reference to start var
+	 * @param end reference to end var
 	 *
 	 * Calculates the range of sample file entries covered by sym. start
 	 * and end will be filled in appropriately. If index is the last entry
@@ -279,8 +279,7 @@ public:
 	// nr of samples.
 	uint nr_samples;
 private:
-	// vector of symbol filled by the bfd lib. Call to bfd lib must use
-	// this instead of the syms vector.
+	// vector of symbol filled by the bfd lib.
 	asymbol **bfd_syms;
 	// image file such the linux kernel need than all vma are offset
 	// by this value.
@@ -396,7 +395,7 @@ struct opp_samples_files {
 
 	void set_sect_offset(u32 sect_offset);
 
-	// TODO privatisze as we can.
+	// TODO privatize as we can.
 	samples_file_t * samples[OP_MAX_COUNTERS];
 	uint nr_counters;
 	std::string sample_filename;

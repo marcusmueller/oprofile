@@ -1,5 +1,12 @@
 2002-05-10  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* doc/srcdoc/Makefile: always clean before building
+	* doc/srcdoc/Doxyfile: ehance file filtering
+
+	* pp/oprofpp.h: small typo fix
+
+2002-05-10  Philippe Elie  <phil.el@wanadoo.fr>	
+
 	* pp/oprofpp.h:
 	* pp/oprofpp.cpp:
 	* pp/oprofpp_util.cpp:

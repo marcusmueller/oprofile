@@ -1,6 +1,8 @@
 DOXYGEN=doxygen
 
-all:
+.PHONY: clean
+
+all: clean
 	doxygen Doxyfile
 
 clean:
