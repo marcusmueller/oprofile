@@ -16,18 +16,12 @@ endif
 endif
 
 O_TARGET := arch.o
- 
+
 obj-y := cpu_type.o op_apic.o op_fixmap.o op_nmi.o op_syscalls.o oprofile_nmi.o
 obj-m := $(O_TARGET)
 O_OBJS := $(obj-y)
 M_OBJS := $(O_TARGET)
 
-all:
-	(cd $(KSRC) && $(MAKE) SUBDIRS=$(OPROFILE_DIR)/module/x86 modules)
-
-clean:
-	rm -rf $(O_TARGET) $(obj-y) .*.flags .*.cmd
- 
 TOPDIR := $(KSRC)
 CONFIG_SHELL := TOPDIR=$(KSRC) /bin/bash
 include $(KSRC)/Rules.make

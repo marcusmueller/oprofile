@@ -2,9 +2,7 @@ OPROFILE_DIR=@OPROFILE_DIR@
 VERSION=@VERSION@
 KVERS=@KVERS@
 KSRC=@KSRC@
-MODINSTALLDIR=@MODINSTALLDIR@/oprofile
-MKDIR_P=mkdir -p
- 
+
 EXTRA_CFLAGS=@EXTRA_CFLAGS_MODULE@ @EXTRA_CFLAGS@ -D__NO_VERSION__ \
 	-I$(OPROFILE_DIR) -I$(OPROFILE_DIR)/libutil -I$(OPROFILE_DIR)/libop
 
@@ -21,26 +19,6 @@ obj-y := compat.o op_init.o op_rtc.o op_util.o op_dname.o oprofile.o arch/arch.o
 obj-m := $(O_TARGET)
 O_OBJS := $(obj-y)
 M_OBJS := $(O_TARGET)
-
-.PHONY: install clean uninstall
- 
-all:
-	$(MAKE) -C arch all
-	(cd $(KSRC) && $(MAKE) SUBDIRS=$(OPROFILE_DIR)/module modules)
-
-install: all
-	-$(MKDIR_P) $(MODINSTALLDIR)
-	cp oprofile-module.o $(MODINSTALLDIR)/oprofile.o
-	if test $(KVERS) = "`uname -r`"; then depmod -a ; fi
- 
-uninstall:
-	-rm -f $(MODINSTALLDIR)/oprofile.o
-	-rmdir --ignore-fail-on-non-empty  $(MODINSTALLDIR)
-	if test $(KVERS) = "`uname -r`"; then depmod -a ; fi
- 
-clean:
-	$(MAKE) -C arch clean
-	rm -rf $(O_TARGET) $(obj-y) .*.flags .*.cmd
 
 TOPDIR := $(KSRC)
 CONFIG_SHELL := TOPDIR=$(KSRC) /bin/bash
