@@ -91,7 +91,6 @@ static void ppro_check_ctrs(uint const cpu,
 			CTR_WRITE(oprof_data[cpu].ctr_count[i], msrs, i);
 		}
 	}
-	
 }
 
  

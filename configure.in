@@ -9,7 +9,7 @@
 #   2 of the License, or (at your option) any later version.
 #
 
-AC_REVISION($Id: configure.in,v 1.124 2002/11/11 10:55:42 phil_e Exp $)
+AC_REVISION($Id: configure.in,v 1.125 2002/11/14 00:56:02 movement Exp $)
 AC_PREREQ(2.13)
 
 AC_INIT(libop/op_config.h)
@@ -151,7 +151,6 @@ if test "$OPROFILE_25" = "no"; then
 
 	test "$arch" = "unknown" && AC_MSG_ERROR(Unsupported architecture)
 	(cd ${srcdir}/module/ && rm -f arch/ && ln -s $arch arch)
-	ARCH_MAKEFILE=module/arch/Makefile
 
 	dnl check to see if kernel verion appropriate for arch
 	AC_MSG_CHECKING(arch/kernel version combination)
@@ -171,6 +170,9 @@ if test "$OPROFILE_25" = "no"; then
 	AC_SUBST(KINC)
 
 	MODINSTALLDIR=/lib/modules/$KVERS
+else
+	# needed for clean build --with-kernel-support. Hack !
+	(cd ${srcdir}/module/ && rm -f arch/ && ln -s x86 arch) 
 fi
  
 AC_ARG_WITH(module-dir,

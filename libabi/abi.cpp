@@ -138,6 +138,3 @@ istream & operator>>(istream & i, Abi & abi)
 	}
 	return i;
 }
-
-
-
