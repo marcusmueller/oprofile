@@ -28,20 +28,6 @@
 #endif
  
 /* ---------------- RTC handler ------------------ */
- 
-// FIXME: share 
-inline static int op_check_pid(void)
-{
-	if (unlikely(sysctl.pid_filter) && 
-	    likely(current->pid != sysctl.pid_filter))
-		return 1;
-
-	if (unlikely(sysctl.pgrp_filter) && 
-	    likely(current->pgrp != sysctl.pgrp_filter))
-		return 1;
-		
-	return 0;
-}
 
 static void do_rtc_interrupt(int irq, void *dev_id, struct pt_regs *regs)
 {
@@ -60,8 +46,7 @@ static void do_rtc_interrupt(int irq, void *dev_id, struct pt_regs *regs)
 	intr_flags = CMOS_READ(RTC_INTR_FLAGS);
 	/* Is this my type of interrupt? */
 	if (intr_flags & RTC_PF) {
-		if (likely(!op_check_pid()))
-			op_do_profile(cpu, regs, 0);
+		op_do_profile(cpu, regs, 0);
 	}
  
 	unlock_rtc(flags);

@@ -1,3 +1,17 @@
+2002-05-01  John Levon  <moz@compsoc.man.ac.uk>
+
+	* dae/op_start:
+	* dae/oprofiled.c:
+	* doc/oprofile.1.in: 
+	* doc/oprofile.xml: 
+	* gui/oprof_start.cpp: 
+	* module/op_nmi.c:
+	* module/op_rtc.c:
+	* module/op_syscalls.c: 
+	* module/oprofile.h:
+	* module/oprofile.c: move pid/pgrp filter into
+	  userspace only. Remove --ignore-myself
+ 
 2002-04-30  John Levon  <moz@compsoc.man.ac.uk>
 
 	* op_user.h:

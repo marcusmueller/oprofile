@@ -1,4 +1,4 @@
-/* $Id: oprofile.h,v 1.23 2002/04/30 18:57:55 movement Exp $ */
+/* $Id: oprofile.h,v 1.24 2002/05/01 19:03:43 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -99,10 +99,6 @@ struct oprof_sysctl {
 	int nr_interrupts; 
 	/* the cpu core type: CPU_PPRO, CPU_PII ... */
 	int cpu_type; 
-	/* pid filter value */
-	pid_t pid_filter;
-	/* pgrp filter value */
-	pid_t pgrp_filter;
 	/* counter setup */
 	struct oprof_counter ctr[OP_MAX_COUNTERS];
 };

@@ -862,7 +862,6 @@ void oprof_start::on_start_profiler()
 	args.push_back("--note-device-file=" + config.base_opd_dir + config.note_device_file);
 	args.push_back("--hash-map-device-file=" + config.base_opd_dir + config.hash_map_device);
 	args.push_back("--log-file=" + config.base_opd_dir + config.daemon_log_file);
-	args.push_back("--ignore-myself=" + tostr(config.ignore_daemon_samples));
 	args.push_back("--buffer-size=" + tostr(config.buffer_size));
 	args.push_back("--hash-table-size=" + tostr(config.hash_table_size));
 	args.push_back("--note-table-size=" + tostr(config.note_table_size));

@@ -642,18 +642,6 @@ The following files will be present :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term><filename>pgrp_filter</filename></term>
-		<listitem><para>
-		Corresponding to the <option>--pgrp-filter</option> option.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term><filename>pid_filter</filename></term>
-		<listitem><para>
-		Corresponding to the <option>--pid-filter</option> option.
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
 		<term><filename>dump</filename></term>
 		<listitem><para>
 		Writing <acronym>ASCII</acronym> "1" to the file will initiate a sample data dump. Note: ignore
@@ -770,7 +758,8 @@ each enabled counter. As the NMI handler is in-kernel, this avoids the problem.
 <para>There are situations where you are only interested in the profiling results of a particular
 running process, or process group. You can set
 the pid/pgrp values via the <filename>--pid-filter</filename> and <filename>--pgrp-filter</filename>
-options to <command>op_start</command>, or by setting the relevant sysctls as mentioned in <xref linkend="sysctl" />.
+options to <command>op_start</command>, which will make the daemon ignore samples for processes
+that don't match the filter.
 </para>
 </sect2>
 

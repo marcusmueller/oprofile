@@ -122,10 +122,6 @@ Only profile process pid
 Only profile process group pgrp
 .br
 .TP
-.BI "--ignore-myself "
-ignore samples for oprofiled
-.br
-.TP
 .BI "--log-file " filename
 specify log file
 .br

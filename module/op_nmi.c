@@ -28,27 +28,12 @@ static int separate_running_bit;
 
 /* ---------------- NMI handler ------------------ */
 
-inline static int op_check_pid(void)
-{
-	if (unlikely(sysctl.pid_filter) && 
-	    likely(current->pid != sysctl.pid_filter))
-		return 1;
-
-	if (unlikely(sysctl.pgrp_filter) && 
-	    likely(current->pgrp != sysctl.pgrp_filter))
-		return 1;
-		
-	return 0;
-}
-
 static void op_check_ctr(uint cpu, struct pt_regs *regs, int ctr)
 {
 	ulong l,h;
 	get_perfctr(l, h, ctr);
-	if (likely(ctr_overflowed(l))) {
-		if (!op_check_pid())
-			op_do_profile(cpu, regs, ctr);
-
+	if (ctr_overflowed(l)) {
+		op_do_profile(cpu, regs, ctr);
 		set_perfctr(oprof_data[cpu].ctr_count[ctr], ctr);
 	}
 }

@@ -1,4 +1,4 @@
-/* $Id: oprofiled.c,v 1.72 2002/04/30 18:57:54 movement Exp $ */
+/* $Id: oprofiled.c,v 1.73 2002/05/01 19:03:43 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -19,6 +19,9 @@
 #include "opd_proc.h"
 #include "../util/op_popt.h"
 
+/* FIXME - how to get getpgid() defined ? */ 
+#include <unistd.h>
+ 
 uint op_nr_counters = 2;
 int verbose;
 op_cpu cpu_type;
@@ -34,7 +37,6 @@ static u32 ctr_enabled[OP_MAX_COUNTERS];
 /* Unfortunately popt does not have, on many versions, the POPT_ARG_DOUBLE type
  * so I must first store it as a string. */
 static const char *cpu_speed_str;
-static int ignore_myself;
 static int opd_buf_size=OP_DEFAULT_BUF_SIZE;
 static int opd_note_buf_size=OP_DEFAULT_NOTE_SIZE;
 static char *opd_dir="/var/opd/";
@@ -44,6 +46,8 @@ static char *notedevfilename="opnotedev";
 static char *devhashmapfilename="ophashmapdev";
 static char *systemmapfilename;
 static pid_t mypid;
+static pid_t pid_filter;
+static pid_t pgrp_filter;
 static sigset_t maskset;
 static fd_t devfd;
 static fd_t notedevfd;
@@ -52,7 +56,8 @@ static void opd_sighup(int val);
 static void opd_open_logfile(void);
 
 static struct poptOption options[] = {
-	{ "ignore-myself", 'm', POPT_ARG_INT, &ignore_myself, 0, "ignore samples of oprofile driver", "[0|1]"},
+	{ "pid-filter", 0, POPT_ARG_INT, &pid_filter, 0, "only profile the given process ID", "pid" },
+	{ "pgrp-filter", 0, POPT_ARG_INT, &pgrp_filter, 0, "only profile the given process group", "pgrp" },
 	{ "log-file", 'l', POPT_ARG_STRING, &logfilename, 0, "log file", "file", },
 	{ "base-dir", 'd', POPT_ARG_STRING, &opd_dir, 0, "base directory of daemon", "dir", },
 	{ "samples-dir", 's', POPT_ARG_STRING, &smpdir, 0, "output samples dir", "file", },
@@ -543,8 +548,6 @@ void opd_do_notes(struct op_note *opd_buf, size_t count)
 
 	for (i = 0; i < count/sizeof(struct op_note); i++) {
 		note = &opd_buf[i];
-		if (ignore_myself && note->pid == mypid)
-			continue;
  
 		opd_stats[OPD_NOTIFICATIONS]++;
 
@@ -584,8 +587,7 @@ void opd_do_notes(struct op_note *opd_buf, size_t count)
  *
  * Process a buffer of samples.
  * The signals specified by the global variable maskset are
- * masked. Samples for oprofiled are ignored if the global
- * variable ignore_myself is set.
+ * masked.
  *
  * If the sample could be processed correctly, it is written
  * to the relevant sample file. Additionally mapping and
@@ -608,7 +610,9 @@ void opd_do_samples(const struct op_sample *opd_buf, size_t count)
 		if (opd_buf[i].eip == 0)
 			continue;
  
-		if (ignore_myself && opd_buf[i].pid == mypid)
+		if (pid_filter && pid_filter != opd_buf[i].pid)
+			continue;
+		if (pgrp_filter && pgrp_filter != getpgid(opd_buf[i].pid))
 			continue;
 
 		opd_put_sample(&opd_buf[i]);

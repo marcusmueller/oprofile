@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: op_start,v 1.63 2002/04/04 02:08:50 phil_e Exp $
+# $Id: op_start,v 1.64 2002/05/01 19:03:43 movement Exp $
 # COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -94,7 +94,6 @@ do_help() {
 	  --pgrp-filter=pgrp           Only profile process group pgrp
 
 	Daemon options
-	  --ignore-myself=[0|1]        ignore samples for oprofiled
 	  --log-file=file              log file
 	  --base-dir=dir               base directory of daemon
 	  --samples-dir=file           output samples directory
@@ -199,13 +198,6 @@ do_options() {
 		fi
  
 		case "$arg" in
-			--ignore-myself)
-				if [ "$val" != "" ]; then
-					IGNORE_MYSELF=$val
-				else
-					IGNORE_MYSELF=1
-				fi
-				;;
 			--buffer-size)
 				BUF_SIZE=$val
 				;;
@@ -492,8 +484,6 @@ do_sysctl_setup() {
 		$SYSCTL -w dev.oprofile.notesize=$NOTE_SIZE
 	fi
 	$SYSCTL -w dev.oprofile.kernel_only=$KERNEL_ONLY
-	$SYSCTL -w dev.oprofile.pid_filter=$PID_FILTER
-	$SYSCTL -w dev.oprofile.pgrp_filter=$PGRP_FILTER
 
 	if test "$IS_RTC" -ne 1; then
 		# Necessary in this case :
@@ -524,11 +514,12 @@ do_sysctl_setup() {
  
 # start the daemon
 do_start() {
-	OPD_ARGS="--ignore-myself=$IGNORE_MYSELF \
+	OPD_ARGS=" \
 		--log-file=$LOG_FILE --base-dir=$DIR --samples-dir=$SAMPLES_DIR \
 		--device-file=$DEVICE_FILE --note-device-file=$NOTE_DEVICE_FILE \
 		--hash-map-device-file=$HASH_MAP_DEVICE_FILE --vmlinux=$VMLINUX \
-		--map-file=$MAP_FILE --separate-samples=$SEPARATE_SAMPLES"
+		--map-file=$MAP_FILE --separate-samples=$SEPARATE_SAMPLES \
+		--pid-filter=$PID_FILTER --pgrp-filter=$PGRP_FILTER"
 
 	if [ "$VERBOSE" = "1" ]; then
 		OPD_ARGS="$OPD_ARGS --verbose"

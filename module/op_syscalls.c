@@ -1,4 +1,4 @@
-/* $Id: op_syscalls.c,v 1.13 2002/03/02 01:25:18 phil_e Exp $ */
+/* $Id: op_syscalls.c,v 1.14 2002/05/01 19:03:43 movement Exp $ */
 /* COPYRIGHT (C) 2000 THE VICTORIA UNIVERSITY OF MANCHESTER and John Levon
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -334,10 +334,7 @@ asmlinkage static int my_sys_execve(struct pt_regs regs)
 
 	if (!ret) {
 		PTRACE_OFF(current);
-
-		if ((!sysctl.pid_filter || sysctl.pid_filter == current->pid) &&
-		    (!sysctl.pgrp_filter || sysctl.pgrp_filter == current->pgrp))
-			oprof_output_maps(current);
+		oprof_output_maps(current);
 	}
  
 	putname(filename);
@@ -379,14 +376,9 @@ asmlinkage static int my_sys_mmap2(ulong addr, ulong len,
 
 	ret = old_sys_mmap2(addr, len, prot, flags, fd, pgoff);
 
-	if ((sysctl.pid_filter && current->pid != sysctl.pid_filter) ||
-	    (sysctl.pgrp_filter && current->pgrp != sysctl.pgrp_filter))
-		goto out;
-
 	if ((prot & PROT_EXEC) && ret >= 0)
 		out_mmap(ret, len, prot, flags, fd, pgoff << PAGE_SHIFT);
-	goto out;
-out:
+ 
 	MOD_DEC_USE_COUNT;
 	return ret;
 }
@@ -400,11 +392,7 @@ asmlinkage static int my_old_mmap(struct mmap_arg_struct *arg)
 
 	ret = old_old_mmap(arg);
 
-	if ((sysctl.pid_filter && current->pid != sysctl.pid_filter) ||
-	    (sysctl.pgrp_filter && current->pgrp != sysctl.pgrp_filter))
-		goto out;
-
-	if (ret>=0) {
+	if (ret >= 0) {
 		struct mmap_arg_struct a;
 
 		if (copy_from_user(&a, arg, sizeof(a))) {
@@ -415,6 +403,7 @@ asmlinkage static int my_old_mmap(struct mmap_arg_struct *arg)
 		if (a.prot&PROT_EXEC)
 			out_mmap(ret, a.len, a.prot, a.flags, a.fd, a.offset);
 	}
+
 out:
 	MOD_DEC_USE_COUNT;
 	return ret;
@@ -423,9 +412,6 @@ out:
 inline static void oprof_report_fork(u16 old, u32 new)
 {
 	struct op_note note;
-
-	if (sysctl.pgrp_filter && sysctl.pgrp_filter != current->pgrp)
-		return;
 
 	note.type = OP_FORK;
 	note.pid = old;
@@ -497,16 +483,10 @@ asmlinkage static long my_sys_exit(int error_code)
 
 	MOD_INC_USE_COUNT;
 
-	if ((sysctl.pid_filter && current->pid != sysctl.pid_filter) ||
-	    (sysctl.pgrp_filter && current->pgrp != sysctl.pgrp_filter))
-		goto out;
-
 	note.type = OP_EXIT;
 	note.pid = current->pid;
 	oprof_put_note(&note);
 
-	goto out;
-out:
 	/* this looks UP-dangerous, as the exit sleeps and we don't
 	 * have a use count, but in fact its ok as sys_exit is noreturn,
 	 * so we can never come back to this non-existent exec page
