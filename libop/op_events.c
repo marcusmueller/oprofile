@@ -61,6 +61,9 @@ static int parse_hex(char const * str)
 /* name:MESI type:bitmask default:0x0f */
 static void parse_um(struct op_unit_mask * um, char const * line)
 {
+	int seen_name = 0;
+	int seen_type = 0;
+       	int seen_default = 0;
 	char const * valueend = line + 1;
        	char const * tagend = line + 1;
 	char const * start = line;
@@ -80,8 +83,14 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 		++tagend;
 
 		if (strisprefix(start, "name")) {
+			if (seen_name)
+				parse_error("duplicate name: tag");
+			seen_name = 1;
 			um->name = op_xstrndup(tagend, valueend - tagend);
 		} else if (strisprefix(start, "type")) {
+			if (seen_type)
+				parse_error("duplicate type: tag");
+			seen_type = 1;
 			if (strisprefix(tagend, "mandatory")) {
 				um->unit_type_mask = utm_mandatory;
 			} else if (strisprefix(tagend, "bitmask")) {
@@ -92,6 +101,9 @@ static void parse_um(struct op_unit_mask * um, char const * line)
 				parse_error("invalid unit mask type");
 			}
 		} else if (strisprefix(start, "default")) {
+			if (seen_default)
+				parse_error("duplicate default: tag");
+			seen_default = 1;
 			um->default_mask = parse_hex(tagend);
 		} else {
 			parse_error("invalid unit mask tag");
@@ -284,6 +296,7 @@ static void read_events(char const * file)
 	char * name;
 	char * value;
 	char const * c;
+	int seen_event, seen_counters, seen_um, seen_minimum, seen_name;
 	FILE * fp = fopen(file, "r");
 
 	if (!fp) {
@@ -300,22 +313,42 @@ static void read_events(char const * file)
 		if (empty_line(line) || comment_line(line))
 			goto next;
 
+		seen_name = 0;
+		seen_event = 0;
+		seen_counters = 0;
+		seen_um = 0;
+		seen_minimum = 0;
 		event = new_event();
 
 		c = line;
 		while (next_token(&c, &name, &value)) {
 			if (strcmp(name, "name") == 0) {
+				if (seen_name)
+					parse_error("duplicate name: tag");
+				seen_name = 1;
 				event->name = value;
 			} else if (strcmp(name, "event") == 0) {
+				if (seen_event)
+					parse_error("duplicate event: tag");
+				seen_event = 1;
 				event->val = parse_hex(value);
 				free(value);
 			} else if (strcmp(name, "counters") == 0) {
+				if (seen_counters)
+					parse_error("duplicate counters: tag");
+				seen_counters = 1;
 				event->counter_mask = parse_counter_mask(value);
 				free(value);
 			} else if (strcmp(name, "um") == 0) {
+				if (seen_um)
+					parse_error("duplicate um: tag");
+				seen_um = 1;
 				event->unit = find_um(value);
 				free(value);
 			} else if (strcmp(name, "minimum") == 0) {
+				if (seen_minimum)
+					parse_error("duplicate minimum: tag");
+				seen_minimum = 1;
 				event->min_count = parse_int(value);
 				free(value);
 			} else if (strcmp(name, "desc") == 0) {

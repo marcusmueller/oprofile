@@ -297,8 +297,8 @@ static struct opd_image * opd_add_image(cookie_t cookie, cookie_t app_cookie)
 	if (separate_lib_samples) {
 		image->app_image = opd_find_image(app_cookie, app_cookie);
 		if (!image->app_image) {
-			verbprintf("image->app_image %p for cookie %llx\n",
-				   image->app_image, app_cookie);
+			verbprintf("NULL image->app_image for cookie %llx\n",
+				   app_cookie);
 		}
 	}
 

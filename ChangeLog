@@ -1,3 +1,13 @@
+2003-08-28  John Levon  <levon@movementarian.org>
+
+	* events/i386.athlon.events: fix duplicate minimum tag
+
+	* daemon/opd_image.c:
+	* libop/op_events.c: check for duplicate tags
+
+2003-08-28  John Levon  <levon@movementarian.org>
+
+
 2003-08-27  Will Cohen  <wcohen@redhat.com>
 
 	* utils/op_help.c (resolve_events): Typecast printf argument.
