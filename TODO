@@ -6,8 +6,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.7.1 release
 -------------
 
- o image filtering: --image /foo/bar/myapp (needs UI spec). For -s thread
-  test it, tune it for 2.6 (linear search of name instead of hashed name ?)
+ o image filtering needs to resolve symlinks
 
 0.8 release
 -----------
