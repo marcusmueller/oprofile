@@ -101,8 +101,9 @@ parsed_filename parse_filename(string const & filename)
 	remove_base_dir(path);
 
 	// pp_interface PP:3.19 to PP:3.23 path must start either with {root}
-	// or {kern} and we must found at least 2 component
-	if (path.size() < 2 || (path[0] != "{root}" && path[0] != "{kern}")) {
+	// or {kern} and we must found at least 2 component, remove_base_dir()
+	// return an empty path if {root} or {kern} are not found
+	if (path.size() < 2) {
 		throw invalid_argument("parse_filename() invalid filename: " +
 				       filename);
 	}

@@ -33,11 +33,6 @@ profile_t::profile_t()
 }
 
 
-profile_t::~profile_t()
-{
-}
-
-
 // static member
 unsigned int profile_t::sample_count(string const & filename)
 {
@@ -126,9 +121,9 @@ profile_t::samples_range(unsigned int start, unsigned int end) const
 	// if the image contains no symbol the vma range is [0 - filesize]
 	// in this case we can't substract start_offset else we will underflow
 	// and the iterator range will be empty.
-	if (start) {
+	if (start)
 		start -= start_offset;
-	}
+
 	end -= start_offset;
 
 	ordered_samples_t::const_iterator first = 

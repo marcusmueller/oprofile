@@ -23,9 +23,6 @@
  */
 class count_array_t {
 public:
-	/// all counts are intialized to zero
-	count_array_t();
-
 	typedef std::vector<u32> container_type;
 	typedef container_type::size_type size_type;
 

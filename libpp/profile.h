@@ -35,8 +35,6 @@ public:
 	 * profile_t - construct an empty  profile_t object
 	 */
 	profile_t();
-
-	~profile_t();
  
 	/// return the header of the last opened samples file
 	opd_header const & get_header() const {

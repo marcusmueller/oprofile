@@ -405,11 +405,11 @@ list<string> profile_spec::generate_file_list(bool exclude_dependent) const
 
 	if (sessions.empty()) {
 		ostringstream os;
-		os << "No session given" << endl;
-		os << "included session was:" << endl;
+		os << "No session given\n"
+		   << "included session was:\n";
 		copy(session.begin(), session.end(),
 		     ostream_iterator<string>(os, "\n"));
-		os << "excluded session was:" << endl;
+		os << "excluded session was:\n";
 		copy(session_exclude.begin(), session_exclude.end(),
 		     ostream_iterator<string>(os, "\n"));
 		throw invalid_argument(os.str());

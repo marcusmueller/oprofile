@@ -16,11 +16,6 @@
 
 using namespace std;
  
-count_array_t::count_array_t()
-{
-}
-
-
 u32 count_array_t::operator[](size_type index) const
 {
 	if (index >= container.size())
@@ -42,7 +37,8 @@ count_array_t & count_array_t::operator+=(count_array_t const & rhs)
 	if (rhs.container.size() > container.size())
 		container.resize(rhs.container.size());
 
-	for (size_type i = 0 ; i < min(container.size(), rhs.container.size()); ++i)
+	size_type min_size = min(container.size(), rhs.container.size());
+	for (size_type i = 0 ; i < min_size; ++i)
 		container[i] += rhs.container[i];
 
 	return *this;
@@ -54,7 +50,8 @@ count_array_t & count_array_t::operator-=(count_array_t const & rhs)
 	if (rhs.container.size() > container.size())
 		container.resize(rhs.container.size());
 
-	for (size_type i = 0 ; i < min(container.size(), rhs.container.size()); ++i)
+	size_type min_size = min(container.size(), rhs.container.size());
+	for (size_type i = 0 ; i < min_size; ++i)
 		container[i] -= rhs.container[i];
 
 	return *this;
