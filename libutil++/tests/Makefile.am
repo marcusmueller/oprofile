@@ -3,6 +3,8 @@ AM_CPPFLAGS = \
 
 COMMON_LIBS = ../libutil++.a ../../libutil/libutil.a
 
+LIBS = @LIBERTY_LIBS@
+
 AM_CXXFLAGS = @OP_CXXFLAGS@
 
 check_PROGRAMS = \

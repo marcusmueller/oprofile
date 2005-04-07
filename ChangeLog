@@ -1,5 +1,12 @@
 2005-04-07  John Levon  <levon@movementarian.org>
 
+	* libutil/tests/Makefile.am:
+	* libutil++/tests/Makefile.am:
+	* libdb/tests/Makefile.am:
+	* libop/tests/Makefile.am: fix tests build
+
+2005-04-07  John Levon  <levon@movementarian.org>
+
 	* m4/Makefile.am:
 	* m4/binutils.m4:
 	* configure.in: move binutils stuff into a macro

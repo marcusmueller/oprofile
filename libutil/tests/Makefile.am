@@ -3,6 +3,8 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = @OP_CFLAGS@
 
+LIBS = @LIBERTY_LIBS@
+
 check_PROGRAMS = file_tests string_tests
 
 file_tests_SOURCES = file_tests.c

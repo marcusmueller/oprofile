@@ -5,6 +5,8 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = @OP_CFLAGS@
 
+LIBS = @LIBERTY_LIBS@
+
 check_PROGRAMS = db_test
 
 db_test_SOURCES = db_test.c

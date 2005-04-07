@@ -6,6 +6,8 @@ AM_CFLAGS = @OP_CFLAGS@ -DOPROFILE_SRCDIR=\"@top_srcdir@\"
 
 COMMON_LIBS = ../libop.a ../../libutil/libutil.a
 
+LIBS = @LIBERTY_LIBS@
+
 check_PROGRAMS = \
 	cpu_type_tests \
 	parse_event_tests \
