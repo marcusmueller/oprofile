@@ -1,5 +1,10 @@
 2005-04-07  John Levon  <levon@movementarian.org>
 
+	* libpp/callgraph_container.cpp: hoist image/app name lookup
+	  outside of the loop
+
+2005-04-07  John Levon  <levon@movementarian.org>
+
 	* libutil++/op_bfd.cpp: performance improvements with handling
 	  symbols
 

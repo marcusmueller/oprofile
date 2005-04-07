@@ -322,6 +322,10 @@ add(profile_t const & profile, op_bfd const & caller_bfd, bool caller_bfd_ok,
 	      << "caller_bfd_start_offset: " << caller_start_offset << endl
 	      << "callee_bfd_start_offset: " << callee_offset << dec << endl;
 
+	image_name_id image_id = image_names.create(image_name);
+	image_name_id callee_image_id = image_names.create(callee_bfd.get_filename());
+	image_name_id app_id = image_names.create(app_name);
+
 	for (symbol_index_t i = 0; i < caller_bfd.syms.size(); ++i) {
 		unsigned long start, end;
 		caller_bfd.get_symbol_range(i, start, end);
@@ -334,8 +338,8 @@ add(profile_t const & profile, op_bfd const & caller_bfd, bool caller_bfd_ok,
 
 		caller.size = end - start;
 		caller.name = symbol_names.create(caller_bfd.syms[i].name());
-		caller.image_name = image_names.create(image_name);
-		caller.app_name = image_names.create(app_name);
+		caller.image_name = image_id;
+		caller.app_name = app_id;
 		caller.sample.vma = caller_bfd.sym_offset(i, start) +
 			caller_bfd.syms[i].vma();
 
@@ -404,9 +408,8 @@ add(profile_t const & profile, op_bfd const & caller_bfd, bool caller_bfd_ok,
 			callee.size = bfd_symb_callee->size();
 			callee.name =
 				symbol_names.create(bfd_symb_callee->name());
-			callee.image_name =
-				image_names.create(callee_bfd.get_filename());
-			callee.app_name = image_names.create(app_name);
+			callee.image_name = callee_image_id;
+			callee.app_name = app_id;
 			callee.sample.vma = bfd_symb_callee->vma();
 
 			self = pc.find(callee);
