@@ -672,7 +672,7 @@ Here, we have an Intel laptop without support for performance counters, running 
 <screen>
 # ophelp -r
 CPU with RTC device
-# opcontrol --vmlinux=/boot/2.6.0/vmlinux --event=RTC_INTERRUPTS:1024
+# opcontrol --vmlinux=/boot/2.4.13/vmlinux --event=RTC_INTERRUPTS:1024
 # opcontrol --start
 </screen>
 </sect3>
@@ -1020,43 +1020,6 @@ is likely to freeze the system.
 In short : <command>Don't try a foolish sample count value</command>. Unfortunately the definition of a foolish value
 is really dependent on the event type - if ever in doubt, e-mail </para>
 <address><email>oprofile-list@lists.sf.net</email>.</address>
-</sect2>
-
-</sect1>
- 
-<sect1 id="other-features">
-<title>Other features</title>
-
-<sect2 id="pidpgrpfilter">
-<title>pid/pgrp filter</title>
-<para>There are situations where you are only interested in the profiling results of a particular
-running process, or process tty group. You can set
-the pid/pgrp values via the <filename>--pid-filter</filename> and <filename>--pgrp-filter</filename>
-options to <command>opcontrol</command>, which will make the daemon ignore samples for processes
-that don't match the filter. These options are not available in 2.6 and above kernels.
-</para>
-</sect2>
-
-<sect2 id="unloadable">
-<title>Unloading the kernel module</title>
-<note><para>
-This section applies to 2.2/2.4 kernels only, OProfile in 2.6 can be unloaded safely.
-</para></note>
-<para>
-The kernel module can be unloaded, but is designed to take very little memory when profiling is not underway.
-There is no need to unload the module between profiler runs.
-</para>
-<para>
-<command>lsmod</command> and similar utilities will still show the module's use count as <constant>-1</constant>.
-However, this is not to be relied on - the module will become unloadable some short time after stopping profiling.
-</para>
-<para>
-Note that by default module unloading is disabled when used on SMP systems. This is because of a small
-chance of a module unload race crashing the kernel. As the race is very small, it is allowed to
-re-enable the module unload by specifying the "allow_unload" parameter to the module :
-</para>
-<para><command>modprobe oprofile allow_unload=1</command></para>
-<para>This option can be <emphasis>DANGEROUS</emphasis> and should only be used on non-production systems.</para> 
 </sect2>
 
 </sect1>
@@ -1421,7 +1384,7 @@ You can restrict which events to list by appropriate use of the
 <sect3 id="opreport-callgraph">
 <title>Callgraph output</title>
 <para>
-When using the <option>opcontrol --callgraph</option>, you can see what
+When using the <option>opcontrol --callgraph</option> option, you can see what
 functions are calling other functions in the output. Consider the
 following program:
 </para>
@@ -1481,7 +1444,7 @@ output.
 </para>
 <para>
 Above the non-indented line we find the functions that called this
-function (for example, <function>repeat()</function> calls
+function (for example, <function>repeat()</function>) calls
 <function>strfry()</function>. The samples and percentage values here
 refer to the number of times we took a sample where this call was found
 in the stack; the percentage is relative to all other callers of the
@@ -1492,7 +1455,7 @@ at the time of a sample, it is recorded in this count.
 </para>
 <para>
 Below the line are functions that are called by
-<function>random_r()</function> (called <emphasis>callees</emphasis>).
+<function>strfry()</function> (called <emphasis>callees</emphasis>).
 It's clear here that <function>strfry()</function> calls
 <function>random_r()</function>. We also see a special entry with a
 "[self]" marker. This records the normal samples for the function, but
@@ -1518,6 +1481,9 @@ linkend="interpreting-callgraph" /> for an explanation.
 <varlistentry><term><option>--accumulated / -a</option></term><listitem><para>
 Accumulate sample and percentage counts in the symbol list.
 </para></listitem></varlistentry>
+<varlistentry><term><option>--callgraph / -c</option></term><listitem><para>
+Show callgraph information.
+</para></listitem></varlistentry>
 <varlistentry><term><option>--debug-info / -g</option></term><listitem><para>
 Show source file and line for each symbol.
 </para></listitem></varlistentry>
@@ -1529,9 +1495,6 @@ pattern-matching to make C++ symbol demangling more readable.
 Show per-instruction details for all selected symbols. Note that, for
 binaries without symbol information, the VMA values shown are raw file
 offsets for the image binary.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--callgraph / -c</option></term><listitem><para>
-Show callgraph information.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
 Do not include application-specific images for libraries, kernel modules
@@ -1696,6 +1659,13 @@ You can specify multiple (comma-separated) paths to both options.
 Output annotated assembly. If this is combined with --source, then mixed
 source / assembly annotations are output.
 </para></listitem></varlistentry>
+<varlistentry><term><option>--base-dirs / -b [paths]/</option></term><listitem><para>
+Comma-separated list of path prefixes. This can be used to point OProfile to a
+different location for source files when the debug information specifies an
+absolute path on your system for the source that does not exist. The prefix
+is stripped from the debug source file paths, then searched in the search dirs
+specified by <option>--search-dirs</option>.
+</para></listitem></varlistentry>
 <varlistentry><term><option>--demangle none|normal|smart</option></term><listitem><para>
 none: no demangling. normal: use default demangler (default) smart: use
 pattern-matching to make C++ symbol demangling more readable.
@@ -1734,13 +1704,6 @@ source file.
 <varlistentry><term><option>--search-dirs / -d [paths]</option></term><listitem><para>
 Comma-separated list of paths to search for source files. This is useful to find
 source files when the debug information only contains relative paths.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--base-dirs / -b [paths]/</option></term><listitem><para>
-Comma-separated list of path prefixes. This can be used to point OProfile to a
-different location for source files when the debug information specifies an
-absolute path on your system for the source that does not exist. The prefix
-is stripped from the debug source file paths, then searched in the search dirs
-specified by <option>--search-dirs</option>.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--source / -s</option></term><listitem><para>
 Output annotated source. This requires debugging information to be available
@@ -1794,22 +1757,22 @@ Each sample counts as 1 samples.
 <varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
 Show help message.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--version / -v</option></term><listitem><para>
-Show version.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
-Give verbose debugging output.
-</para></listitem></varlistentry>
 <varlistentry><term><option>--image-path / -p [paths]</option></term><listitem><para>
 Comma-separated list of additional paths to search for binaries.
 This is needed to find modules in kernels 2.6 and upwards.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--output-filename / -o [file]</option></term><listitem><para>
+Output to the given file instead of the default, gmon.out
 </para></listitem></varlistentry>
 <varlistentry><term><option>--threshold / -t [percentage]</option></term><listitem><para>
 Only output data for symbols that have more than the given percentage
 of total samples.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--output-filename / -o [file]</option></term><listitem><para>
-Output to the given file instead of the default, gmon.out
+<varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
+Give verbose debugging output.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--version / -v</option></term><listitem><para>
+Show version.
 </para></listitem></varlistentry>
 </variablelist>
 
@@ -1822,8 +1785,8 @@ Output to the given file instead of the default, gmon.out
 <para>
 	The <command>oparchive</command> utility generates a directory populated
 	with executable, debug, and oprofile sample files. This directory can be
-	move to another machine via tar and analyzed without further use of the
-	data collection machine.
+	moved to another machine via <command>tar</command> and analyzed without
+	further use of the data collection machine.
 </para>
 
 <para>
@@ -1844,11 +1807,10 @@ Output to the given file instead of the default, gmon.out
 <varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
 Show help message.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--version / -v</option></term><listitem><para>
-Show version.
-</para></listitem></varlistentry>
-<varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
-Give verbose debugging output.
+<varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
+Do not include application-specific images for libraries, kernel modules
+and the kernel. This option only makes sense if the profile session
+used --separate.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--image-path / -p [paths]</option></term><listitem><para>
 Comma-separated list of additional paths to search for binaries.
@@ -1857,10 +1819,11 @@ This is needed to find modules in kernels 2.6 and upwards.
 <varlistentry><term><option>--output-directory / -o [directory]</option></term><listitem><para>
 Output to the given directory. There is no default. This must be specified.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--exclude-dependent / -x</option></term><listitem><para>
-Do not include application-specific images for libraries, kernel modules
-and the kernel. This option only makes sense if the profile session
-used --separate.
+<varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
+Give verbose debugging output.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--version / -v</option></term><listitem><para>
+Show version.
 </para></listitem></varlistentry>
 </variablelist>
 

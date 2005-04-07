@@ -97,7 +97,7 @@ To op_lexical_cast(From const & src)
 	return value;
 }
 
-// specialization accepting hexadecimal and octal number in input. Note than
+// specialization accepting hexadecimal and octal number in input. Note that
 // op_lexical_cast<unsigned int>("0x23"); will fail because it call the
 // non specialized template.
 template <>

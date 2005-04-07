@@ -1,5 +1,13 @@
 2005-04-07  John Levon  <levon@movementarian.org>
 
+	* m4/Makefile.am:
+	* m4/binutils.m4:
+	* configure.in: move binutils stuff into a macro
+
+	* doc/oprofile.xml: fixes and improvements
+
+2005-04-07  John Levon  <levon@movementarian.org>
+
 	* libpp/callgraph_container.cpp: hoist image/app name lookup
 	  outside of the loop
 

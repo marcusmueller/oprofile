@@ -18,7 +18,7 @@
 
 /* header of the sample files */
 struct opd_header {
-	u8  magic[4];
+	u8 magic[4];
 	u32 version;
 	u32 cpu_type;
 	u32 ctr_event;

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-io_state::io_state(ios& stream_)
+io_state::io_state(ios & stream_)
 	:
 	stream(stream_),
 	format(stream.flags()),

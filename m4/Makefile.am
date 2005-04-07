@@ -2,6 +2,7 @@
 # You will need to run autogen.sh after adding something here manually
 
 EXTRA_DIST = \
+	binutils.m4 \
 	builtinexpect.m4 \
 	compileroption.m4 \
 	configmodule.m4 \
