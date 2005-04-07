@@ -1,5 +1,5 @@
 /**
- * @file cached_value.h
+ * @file cached_value_tests.cpp
  * tests cached_value.h
  *
  * @remark Copyright 2005 OProfile authors
