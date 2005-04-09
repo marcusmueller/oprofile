@@ -183,7 +183,7 @@ private:
 	/// file size in bytes
 	off_t file_size;
 
-	// the bfd object.
+	// the bfd object, NULL if the binary file can't be accessed.
 	bfd * ibfd;
 
 	// The following member variables: debug_filename and dbfd are

@@ -677,6 +677,9 @@ bool op_bfd::has_debug_info() const
 	if (debug_info.cached())
 		return debug_info.get();
 
+	if (!ibfd)
+		return debug_info.reset(true);
+
 	asection const * sect;
 
 	for (sect = ibfd->sections; sect; sect = sect->next) {
