@@ -327,7 +327,7 @@ op_bfd::op_bfd(string const & archive, string const & fname,
 		goto out_fail;
 	}
 
-	// find the first text section as use that as text_offset
+	// find the first text section and use that as text_offset
 	for (sect = ibfd->sections; sect; sect = sect->next) {
 		if (sect->flags & SEC_CODE) {
 			text_offset = sect->filepos;
@@ -729,9 +729,9 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 	if (sym.symbol() == 0)
 		return false;
 
-	asection* section = sym.symbol()->section;
+	asection * section = sym.symbol()->section;
 
-	if ((bfd_get_section_flags (ibfd, section) & SEC_ALLOC) == 0)
+	if ((bfd_get_section_flags(ibfd, section) & SEC_ALLOC) == 0)
 		return false;
 
 	pc = sym_offset(sym_idx, offset) + sym.value();
@@ -826,7 +826,7 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 		// multiple calls. The more easy way to recover is to reissue
 		// the first call, we don't need to recheck return value, we
 		// know that the call will succeed.
-		// As mentionned above a previous work-around break static
+		// As mentioned above a previous work-around break static
 		// inline function. We recover here by not checking than
 		// functionname == sym.name
 		bfd_find_nearest_line(abfd, section, bfd_syms.get(), pc,
