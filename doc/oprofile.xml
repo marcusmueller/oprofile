@@ -1487,7 +1487,7 @@ Show callgraph information.
 <varlistentry><term><option>--debug-info / -g</option></term><listitem><para>
 Show source file and line for each symbol.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--demangle none|normal|smart</option></term><listitem><para>
+<varlistentry><term><option>--demangle / -D none|normal|smart</option></term><listitem><para>
 none: no demangling. normal: use default demangler (default) smart: use
 pattern-matching to make C++ symbol demangling more readable.
 </para></listitem></varlistentry>
@@ -1504,7 +1504,7 @@ used --separate.
 <varlistentry><term><option>--exclude-symbols / -e [symbols]</option></term><listitem><para>
 Exclude all the symbols in the given comma-separated list.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--global-percent</option></term><listitem><para>
+<varlistentry><term><option>--global-percent / -%</option></term><listitem><para>
 Make all percentages relative to the whole profile.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
@@ -1666,7 +1666,7 @@ absolute path on your system for the source that does not exist. The prefix
 is stripped from the debug source file paths, then searched in the search dirs
 specified by <option>--search-dirs</option>.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--demangle none|normal|smart</option></term><listitem><para>
+<varlistentry><term><option>--demangle / -D none|normal|smart</option></term><listitem><para>
 none: no demangling. normal: use default demangler (default) smart: use
 pattern-matching to make C++ symbol demangling more readable.
 </para></listitem></varlistentry>

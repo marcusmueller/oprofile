@@ -51,7 +51,7 @@ string demangle_option = "normal";
 vector<string> mergespec;
 
 popt::option options_array[] = {
-	popt::option(demangle_option, "demangle", '\0',
+	popt::option(demangle_option, "demangle", 'D',
 		     "demangle GNU C++ symbol names (default normal)",
 	             "none|normal|smart"),
 	popt::option(options::output_dir, "output-dir", 'o',
@@ -69,7 +69,7 @@ popt::option options_array[] = {
 	popt::option(exclude_symbols, "exclude-symbols", 'e',
 		     "exclude these comma separated symbols", "symbols"),
 	popt::option(options::objdump_params, "objdump-params", '\0',
-		     "additionnal params to pass to objdump", "parameters"),
+		     "additional params to pass to objdump", "parameters"),
 	popt::option(options::exclude_dependent, "exclude-dependent", 'x',
 		     "exclude libs, kernel, and module samples for applications"),
 	popt::option(mergespec, "merge", 'm',

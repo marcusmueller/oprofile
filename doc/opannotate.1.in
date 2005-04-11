@@ -22,7 +22,7 @@ Output annotated assembly. If this is combined with --source, then mixed
 source / assembly annotations are output.
 .br
 .TP
-.BI "--demangle none|smart|normal"
+.BI "--demangle / -D none|smart|normal"
 none: no demangling. normal: use default demangler (default) smart: use
 pattern-matching to make C++ symbol demangling more readable.
 .br

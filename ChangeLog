@@ -1,5 +1,13 @@
 2005-04-11  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml:
+	* doc/opreport.1.in:
+	* doc/opannotate.1.in:
+	* pp/opreport_options.cpp:
+	* pp/opannotate_options.cpp: add -D and -%
+
+2005-04-11  John Levon  <levon@movementarian.org>
+
 	* pp/opannotate.cpp: fix opannotate matching several binaries
 
 2005-04-09  Philippe Elie  <phil.el@wanadoo.fr>

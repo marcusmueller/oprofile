@@ -84,7 +84,7 @@ popt::option options_array[] = {
 		     "minimum percentage needed to produce output",
 		     "percent"),
 
-	popt::option(demangle_option, "demangle", '\0',
+	popt::option(demangle_option, "demangle", 'D',
 		     "demangle GNU C++ symbol names (default normal)",
 	             "none|normal|smart"),
 	// PP:5
@@ -98,7 +98,7 @@ popt::option options_array[] = {
 		     "show the full path of filenames"),
 	popt::option(options::accumulated, "accumulated", 'a',
 		     "percentage field show accumulated count"),
-	popt::option(options::global_percent, "global-percent", '\0',
+	popt::option(options::global_percent, "global-percent", '%',
 		     "percentage are not relative to symbol count or image "
 		     "count but total sample count"),
 };

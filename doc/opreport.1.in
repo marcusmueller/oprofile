@@ -25,7 +25,7 @@ Accumulate sample and percentage counts in the symbol list.
 Show source file and line for each symbol.
 .br
 .TP
-.BI "--demangle=none|smart|normal"
+.BI "--demangle / -D none|smart|normal"
 none: no demangling. normal: use default demangler (default) smart: use
 pattern-matching to make C++ symbol demangling more readable.
 .br
@@ -48,7 +48,7 @@ used --separate.
 Exclude all the symbols in the given comma-separated list.
 .br
 .TP
-.BI "--global-percent"
+.BI "--global-percent / -%"
 Make all percentages relative to the whole profile.
 .br
 .TP
