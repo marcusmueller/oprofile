@@ -35,6 +35,7 @@ Before 1.0 little stuff
 -----------------------
 
  o if ev67 is not fixed, back it out
+ o opannotate is silent about symbols missing debug info
  o TRACE_END is no longer sent by the driver, keep it a bit for compatibility
  o callgraph patch: better way to skip ignored backtrace ?
  o child sample count for recursive function is not a bug but a feature, it

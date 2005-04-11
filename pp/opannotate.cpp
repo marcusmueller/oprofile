@@ -679,9 +679,12 @@ int opannotate(vector<string> const & non_options)
 
 	bool debug_info = false;
 	for (; it != end; ++it) {
+		bool tmp = false;
 		populate_for_image(options::archive_path, *samples, *it,
-		                   options::symbol_filter, &debug_info);
+		                   options::symbol_filter, &tmp);
 		images.push_back(it->image);
+		if (tmp)
+			debug_info = true;
 	}
 
 	if (!debug_info && !options::assembly) {
