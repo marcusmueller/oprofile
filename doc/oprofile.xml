@@ -1068,6 +1068,13 @@ binaries profiled in <filename>/usr/bin/</filename>, I could do
 <command>opreport image:/usr/bin/\*</command>. Note the necessity
 to escape the special character from the shell.
 </para>
+<para>
+For <command>opreport</command>, profile specifications can be used to
+define two profiles, giving differential output. This is done by
+enclosing each of the two specifications within curly braces, as shown
+in the examples below. Any specifications outside of curly braces are
+shared across both.
+</para>
 
 <sect2 id="profile-spec-examples">
 <title>Examples</title>
@@ -1094,6 +1101,20 @@ excepting <filename>boring-test</filename> :
 </para>
 <screen>
 # opreport image:./test/\* image-exclude:./test/boring-test
+</screen>
+
+<para>
+Differential profile of a binary stored in two archives :
+</para>
+<screen>
+# opreport -l /bin/bash { archive:./orig } { archive:./new }
+</screen>
+
+<para>
+Differential profile of an archived binary with the current session :
+</para>
+<screen>
+# opreport -l /bin/bash { archive:./orig } { }
 </screen>
 
 </sect2> <!-- profile spec examples -->
@@ -1472,7 +1493,85 @@ that this doesn't actually happen. See <xref
 linkend="interpreting-callgraph" /> for an explanation.
 </para>
 
-</sect3>
+</sect3> <!-- opreport-callgraph -->
+
+<sect3 id="opreport-diff">
+<title>Differential profiles with <command>opreport</command></title>
+
+<para>
+Often, we'd like to be able to compare two profiles. For example, when
+analysing the performance of an application, we'd like to make code
+changes and examine the effect of the change. This is supported in
+<command>opreport</command> by giving a profile specification that
+identifies two different profiles. The general form is of:
+</para>
+<screen>
+$ opreport &lt;shared-spec&gt; { &lt;first-profile&gt; } { &lt;second-profile&gt; }
+</screen>
+<para>
+For each of the profiles, the shared section is prefixed, and then the
+specification is analysed. The usual parameters work both within the
+shared section, and in the sub-specification within the curly braces.
+</para>
+<para>
+A typical way to use this feature is with archives created with
+<command>oparchive</command>. Let's look at an example:
+</para>
+<screen>
+$ ./a
+$ oparchive -o orig ./a
+$ opcontrol --reset
+  # edit and recompile a
+$ ./a
+  # now compare the current profile of a with the archived profile
+$ opreport -xl ./a { archive:./orig } { }
+CPU: PIII, speed 863.233 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (clocks processor is not halted) with a
+unit mask of 0x00 (No unit mask) count 100000
+samples  %        diff %    symbol name
+92435    48.5366  +0.4999   a
+54226    ---      ---       c
+49222    25.8459  +++       d
+48787    25.6175  -2.2e-01  b
+</screen>
+<para>
+Note that we specified an empty second profile in the curly braces, as
+we wanted to use the current session; alternatively, we could
+have specified another archive, or a tgid etc. We specified the binary
+<command>a</command> in the shared section, so we matched that in both
+the profiles we're diffing.
+</para>
+<para>
+As in the normal output, the results are sorted by the number of
+samples, and the percentage field represents the relative percentage of
+the symbol's samples in the second profile.
+</para>
+<para>
+Notice the new column in the output. This value represents the
+percentage change of the relative percent between the first and the
+second profile: roughly, "how much more important this symbol is".
+Looking at the symbol <function>a()</function>, we can see that it took
+roughly the same amount of the total profile in both the first and the
+second profile. The function <function>c()</function> was not in the new
+profile, so has been marked with <function>---</function>. Note that the
+sample value is the number of samples in the first profile; since we're
+displaying results for the second profile, we don't list a percentage
+value for it, as it would be meaningless. <function>d()</function> is
+new in the second profile, and consequently marked with
+<function>+++</function>.
+</para>
+<para>
+When comparing profiles between different binaries, it should be clear
+that functions can change in terms of VMA and size. To avoid this
+problem, <command>opreport</command> considers a symbol to be the same
+if the symbol name, image name, and owning application name all match;
+any other factors are ignored. Note that the check for application name
+means that trying to compare library profiles between two different
+applications will not work as you might expect: each symbol will be
+considered different.
+</para>
+
+</sect3> <!-- opreport-diff -->
 
 <sect3 id="opreport-options">
 <title>Options for <command>opreport</command></title>

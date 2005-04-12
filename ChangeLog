@@ -1,5 +1,10 @@
 2005-04-12  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml:
+	* doc/oprofile.1.in: document diff profiles
+
+2005-04-12  John Levon  <levon@movementarian.org>
+
 	* libpp/diff_container.cpp: fix duplicate syms in output
 
 	* pp/opreport.cpp:

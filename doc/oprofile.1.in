@@ -64,7 +64,11 @@ can produce a gprof-format profile for a single binary.
 
 .SH PROFILE SPECIFICATIONS
 All of the post-profiling tools can take profile specifications,
-which is some combination of the following parameters.
+which is some combination of the following parameters. Enclosing
+part of a profile specification in curly braces { } can be used
+for differential profiles with
+.B opreport
+.
 
 .TP
 .BI "session:"sessionlist
