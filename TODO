@@ -13,6 +13,17 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 	- sanity check profile classes etc.
 	- docs
 
+<movement> [moz@lambent pp]$ ./opreport -lf lib-image:/lib/tls/libc-2.3.2.so /bin/bash | grep vfprintf
+<movement> 14        0.1301  6         0.0102  /lib/tls/libc-2.3.2.so   vfprintf
+<movement> [moz@lambent pp]$ ./opreport -lf lib-image:/lib/tls/libc-2.3.2.so /usr/bin/vim | grep vfprintf
+<movement> 176       2.0927  349       1.2552  /lib/tls/libc-2.3.2.so   vfprintf
+<movement> [moz@lambent pp]$ ./opreport -lf lib-image:/lib/tls/libc-2.3.2.so { image:/bin/bash } { image:/usr/bin/vim } | grep vfprintf
+<movement> 176      10.9657  +++       349       7.8888  +++       vfprintf
+<movement> 14       ---      ---       6        ---      ---       vfprintf
+<movement> it seems them as two separate symbols
+<movement> but can we remove the app_name from rough_less and still be able to walk the two lists?
+<movement> even if we could, it would still go wrong when we're profiling multiple apps
+
  o Java stuff
  o amd64 32 bit build needs a sys32_lookup_dcookie() translator in the
    kernel
