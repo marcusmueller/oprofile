@@ -116,6 +116,19 @@ struct profile_class {
 };
 
 
+/**
+ * The "axis" says what we've used to split the sample
+ * files into the classes. Only one is allowed.
+ */
+enum axis_types {
+	AXIS_EVENT,
+	AXIS_TGID,
+	AXIS_TID,
+	AXIS_CPU,
+	AXIS_MAX
+};
+
+
 struct profile_classes {
 	/**
 	 * This is only set if we're not classifying on event/count
@@ -132,6 +145,12 @@ struct profile_classes {
 
 	/// the actual classes
 	std::vector<profile_class> v;
+
+	/// the axis of the classes
+	axis_types axis;
+
+	/// is this class set comparable with another?
+	bool matches(profile_classes const & classes);
 };
 
 

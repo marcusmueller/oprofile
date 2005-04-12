@@ -115,6 +115,9 @@ options::spec const parse_spec(vector<string> const & non_options)
 	if (in_first || in_second || (first && !second))
 		goto fail;
 
+	if (pspec.first.empty() && pspec.second.size())
+		goto fail;
+
 	if (first && second) {
 		pspec.first.insert(pspec.first.begin(), pspec.common.begin(),
 		                   pspec.common.end());

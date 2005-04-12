@@ -1,5 +1,12 @@
 2005-04-12  John Levon  <levon@movementarian.org>
 
+	* libpp/arrange_profiles.h:
+	* libpp/arrange_profiles.cpp:
+	* pp/opreport_options.cpp:
+	* pp/common_option.cpp: verify diff profile classes match
+
+2005-04-12  John Levon  <levon@movementarian.org>
+
 	* doc/oprofile.xml:
 	* doc/oprofile.1.in: document diff profiles
 

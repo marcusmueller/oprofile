@@ -9,7 +9,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o opdiff:
 	- consider a sort option for diff %
 	- test it, profile it
-	- sanity check profile classes etc.
 
 <movement> [moz@lambent pp]$ ./opreport -lf lib-image:/lib/tls/libc-2.3.2.so /bin/bash | grep vfprintf
 <movement> 14        0.1301  6         0.0102  /lib/tls/libc-2.3.2.so   vfprintf

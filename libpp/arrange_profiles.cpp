@@ -79,18 +79,6 @@ bool operator<(profile_class const & lhs,
 
 namespace {
 
-/**
- * The "axis" says what we've used to split the sample
- * files into the classes. Only one is allowed.
- */
-enum axis_types {
-	AXIS_EVENT,
-	AXIS_TGID,
-	AXIS_TID,
-	AXIS_CPU,
-	AXIS_MAX
-};
-
 struct axis_t {
 	string name;
 	string suggestion;
@@ -102,12 +90,51 @@ struct axis_t {
 };
 
 
+bool profile_classes::matches(profile_classes const & classes)
+{
+	if (v.size() != classes.v.size())
+		return false;
+
+	axis_types const axis2 = classes.axis;
+
+	switch (axis) {
+		case AXIS_EVENT:
+			break;
+		case AXIS_TGID:
+		case AXIS_TID:
+			return axis2 == AXIS_TID || axis2 == AXIS_TGID;
+		case AXIS_CPU:
+			return axis2 == AXIS_CPU;
+		case AXIS_MAX:
+			return false;
+	}
+
+	// check that the events match (same event, count)
+
+	std::vector<profile_class>::const_iterator it1 = v.begin();
+	std::vector<profile_class>::const_iterator end1 = v.end();
+	std::vector<profile_class>::const_iterator it2 = classes.v.begin();
+	std::vector<profile_class>::const_iterator end2 = classes.v.end();
+
+	while (it1 != end1) {
+		if (it1->ptemplate.event != it2->ptemplate.event)
+			return false;
+		if (it1->ptemplate.count != it2->ptemplate.count)
+			return false;
+		// differing unit mask is considered comparable
+		++it1;
+		++it2;
+	}
+
+	return true;
+}
+
+
 /// We have more than one axis of classification, tell the user.
-void report_error(profile_classes const & classes,
-                  axis_types axis, axis_types newaxis)
+void report_error(profile_classes const & classes, axis_types newaxis)
 {
 	string str = "Already displaying results for parameter ";
-	str += axes[axis].name;
+	str += axes[classes.axis].name;
 	str += " with values:\n";
 	vector<profile_class>::const_iterator it = classes.v.begin();
 	vector<profile_class>::const_iterator const end = classes.v.end();
@@ -134,7 +161,7 @@ void report_error(profile_classes const & classes,
 	str += "\nwhich conflicts with parameter ";
 	str += axes[newaxis].name += ".\n";
 	str += "Suggestion: ";
-	str += axes[axis].suggestion;
+	str += axes[classes.axis].suggestion;
 	throw op_fatal_error(str);
 }
 
@@ -144,14 +171,13 @@ void report_error(profile_classes const & classes,
  * allowed if they are TGID,TID and for each class,
  * tid == tgid
  */
-bool allow_axes(profile_classes const & classes,
-                axis_types oldaxis, axis_types newaxis)
+bool allow_axes(profile_classes const & classes, axis_types newaxis)
 {
 	// No previous axis - OK
-	if (oldaxis == AXIS_MAX)
+	if (classes.axis == AXIS_MAX)
 		return true;
 
-	if (oldaxis != AXIS_TID && oldaxis != AXIS_TGID)
+	if (classes.axis != AXIS_TID && classes.axis != AXIS_TGID)
 		return false;
 
 	if (newaxis != AXIS_TID && newaxis != AXIS_TGID)
@@ -247,8 +273,7 @@ opd_header const get_header(profile_class const & pclass,
 
 
 /// Give human-readable names to each class.
-void name_classes(profile_classes & classes, axis_types axis,
-                  merge_option const & merge_by)
+void name_classes(profile_classes & classes, merge_option const & merge_by)
 {
 	opd_header header = get_header(classes.v[0], merge_by);
 
@@ -257,15 +282,15 @@ void name_classes(profile_classes & classes, axis_types axis,
 
 	// If we're splitting on event anyway, clear out the
 	// global event name
-	if (axis == 0)
+	if (classes.axis == AXIS_EVENT)
 		classes.event.erase();
 
 	vector<profile_class>::iterator it = classes.v.begin();
 	vector<profile_class>::iterator const end = classes.v.end();
 
 	for (; it != end; ++it) {
-		it->name = axes[axis].name + ":";
-		switch (axis) {
+		it->name = axes[classes.axis].name + ":";
+		switch (classes.axis) {
 		case AXIS_EVENT:
 			it->name = it->ptemplate.event
 				+ ":" + it->ptemplate.count;
@@ -332,20 +357,20 @@ void identify_classes(profile_classes & classes,
 			changed[AXIS_CPU] = true;
 	}
 
-	axis_types axis = AXIS_MAX;
+	classes.axis = AXIS_MAX;
 
 	for (size_t i = 0; i < AXIS_MAX; ++i) {
 		if (!changed[i])
 			continue;
 
-		if (!allow_axes(classes, axis, axis_types(i)))
-			report_error(classes, axis, axis_types(i));
-		axis = axis_types(i);
+		if (!allow_axes(classes, axis_types(i)))
+			report_error(classes, axis_types(i));
+		classes.axis = axis_types(i);
 		/* do this early for report_error */
-		name_classes(classes, axis, merge_by);
+		name_classes(classes, merge_by);
 	}
 
-	if (axis == AXIS_MAX) {
+	if (classes.axis == AXIS_MAX) {
 		cerr << "Internal error - no equivalence class axis" << endl;
 		abort();
 	}

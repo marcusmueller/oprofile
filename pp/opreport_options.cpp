@@ -270,11 +270,10 @@ void handle_options(options::spec const & spec)
 		archive_path = process_spec(classes, spec.first);
 		cverb << vsfile << "profile spec 2:" << endl;
 		archive_path2 = process_spec(classes2, spec.second);
-#if 0 // FIXME
-		if (classes != classes2) {
+
+		if (!classes.matches(classes2)) {
 			cerr << "profile classes are incompatible" << endl;
 			exit(EXIT_FAILURE);
 		}
-#endif
 	}
 }
