@@ -150,8 +150,10 @@ void check_options(bool diff)
 		if (details) {
 			cerr << "--callgraph is incompatible with --details" << endl;
 			do_exit = true;
-		} else if (diff) {
-			cerr << "differential profiles are incompatible with --details" << endl;
+		}
+
+		if (diff) {
+			cerr << "differential profiles are incompatible with --callgraph" << endl;
 			do_exit = true;
 		}
 	}
