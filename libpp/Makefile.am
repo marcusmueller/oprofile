@@ -15,8 +15,8 @@ libpp_a_SOURCES = \
 	arrange_profiles.h \
 	callgraph_container.h \
 	callgraph_container.cpp \
-	count_array.cpp \
-	count_array.h \
+	diff_container.cpp \
+	diff_container.h \
 	filename_spec.cpp \
 	filename_spec.h \
 	format_flags.h \

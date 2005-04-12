@@ -13,12 +13,18 @@
 #define SYMBOL_H
 
 #include "name_storage.h"
-#include "count_array.h"
+#include "growable_vector.h"
 #include "format_flags.h"
+#include "op_types.h"
 
 #include <bfd.h>
 
 #include <list>
+
+
+/// for storing sample counts
+typedef growable_vector<u32> count_array_t;
+
 
 /// A simple container for a fileno:linenr location.
 struct file_location {
@@ -103,6 +109,25 @@ struct cg_symbol : public symbol_entry {
 
 /// a collection of sorted callgraph symbols
 typedef std::vector<cg_symbol> cg_collection;
+
+
+/// for storing diff %ages
+typedef growable_vector<double> diff_array_t;
+
+
+/**
+ * Data for a diffed symbol.
+ */
+struct diff_symbol : public symbol_entry  {
+	diff_symbol(symbol_entry const & sym) : symbol_entry(sym) {}
+
+	/// diff %age values for each profile class
+	diff_array_t diffs;
+};
+
+
+/// a collection of diffed symbols
+typedef std::vector<diff_symbol> diff_collection;
 
 
 #endif /* !SYMBOL_H */

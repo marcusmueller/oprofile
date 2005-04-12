@@ -30,7 +30,7 @@ enum format_flags {
 	/// output the (demangled) symbol name
 	ff_symb_name = 1 << 5,
 
-	/** @name subset of flags used by opreport_formater */
+	/** @name subset of flags used by opreport_formatter */
 	//@{
 	/// number of samples
 	ff_nr_samples = 1 << 6,
@@ -40,7 +40,6 @@ enum format_flags {
 	ff_percent = 1 << 8,
 	/// relative percentage of samples accumulated
 	ff_percent_cumulated = 1 << 9,
-	/// output debug filename and line nr.
 	/**
 	 * Output percentage for details, not relative
 	 * to symbol but relative to the total nr of samples
@@ -52,6 +51,8 @@ enum format_flags {
 	 * accumulated
 	 */
 	ff_percent_cumulated_details = 1 << 11,
+	/// output diff value
+	ff_diff = 1 << 12,
 	//@}
 };
 

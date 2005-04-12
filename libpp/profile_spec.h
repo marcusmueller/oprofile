@@ -39,7 +39,7 @@ public:
 	 * substitution, non-valid tag:value options are considered
 	 * as image:value
 	 */
-	static profile_spec create(std::vector<std::string> const & args,
+	static profile_spec create(std::list<std::string> const & args,
 	                           extra_images const & extra);
 
 	/**

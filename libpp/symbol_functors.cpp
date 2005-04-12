@@ -20,11 +20,11 @@ bool less_symbol::operator()(symbol_entry const & lhs,
 	if (lhs.app_name != rhs.app_name)
 		return lhs.app_name < rhs.app_name;
 
-	if (lhs.sample.vma != rhs.sample.vma)
-		return lhs.sample.vma < rhs.sample.vma;
-
 	if (lhs.name != rhs.name)
 		return lhs.name < rhs.name;
+
+	if (lhs.sample.vma != rhs.sample.vma)
+		return lhs.sample.vma < rhs.sample.vma;
 
 	return lhs.size < rhs.size;
 }

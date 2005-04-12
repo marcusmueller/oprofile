@@ -1,3 +1,42 @@
+2005-04-12  John Levon  <levon@movementarian.org>
+
+	* libpp/Makefile.am:
+	* libpp/count_array.cpp:
+	* libpp/count_array.h:
+	* libpp/diff_container.cpp:
+	* libpp/diff_container.h:
+	* libpp/format_flags.h:
+	* libpp/format_output.cpp:
+	* libpp/format_output.h:
+	* libpp/profile_spec.cpp:
+	* libpp/profile_spec.h:
+	* libpp/symbol.h:
+	* libpp/symbol_functors.cpp:
+	* libpp/symbol_sort.cpp:
+	* libpp/symbol_sort.h:
+	* libutil++/Makefile.am:
+	* libutil++/growable_vector.h:
+	* libutil++/string_manip.cpp:
+	* libutil++/string_manip.h:
+	* pp/common_option.cpp:
+	* pp/common_option.h:
+	* pp/opannotate.cpp:
+	* pp/opannotate_options.cpp:
+	* pp/opannotate_options.h:
+	* pp/oparchive.cpp:
+	* pp/oparchive_options.cpp:
+	* pp/oparchive_options.h:
+	* pp/opdiff.cpp:
+	* pp/opdiff_options.cpp:
+	* pp/opdiff_options.h:
+	* pp/opgprof.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opgprof_options.h:
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp:
+	* pp/opreport_options.h: implement an initial version of diff
+	  profiling
+
 2005-04-11  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml:

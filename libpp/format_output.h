@@ -25,6 +25,7 @@ class symbol_entry;
 class sample_entry;
 class callgraph_container;
 class profile_container;
+class diff_container;
 
 namespace format_output {
 
@@ -75,12 +76,14 @@ protected:
 	struct field_datum {
 		field_datum(symbol_entry const & sym,
 		            sample_entry const & s,
-			    size_t pc, counts_t & c)
-			: symbol(sym), sample(s), pclass(pc), counts(c) {}
+			    size_t pc, counts_t & c, double d = 0.0)
+			: symbol(sym), sample(s), pclass(pc),
+			  counts(c), diff(d) {}
 		symbol_entry const & symbol;
 		sample_entry const & sample;
 		size_t pclass;
 		mutable counts_t & counts;
+		double diff;
 	};
  
 	/// format callback type
@@ -101,6 +104,7 @@ protected:
 	std::string format_cumulated_percent(field_datum const &);
 	std::string format_percent_details(field_datum const &);
 	std::string format_cumulated_percent_details(field_datum const &);
+	std::string format_diff(field_datum const &);
 	//@}
  
 	/// decribe one field of the colummned output.
@@ -119,6 +123,7 @@ protected:
 	/// actually do output
 	void do_output(std::ostream & out, symbol_entry const & symbol,
 		      sample_entry const & sample, counts_t & c,
+	              diff_array_t const & = diff_array_t(),
 	              bool hide_immutable_field = false);
  
 	/// returns the nr of char needed to pad this field
@@ -192,6 +197,24 @@ public:
 	/** output callgraph information according to the previously format
 	 * specifier set by call(s) to add_format() */
 	void output(std::ostream & out, cg_collection const & syms);
+};
+
+/// class to output a columned format symbols plus diff values
+class diff_formatter : public formatter {
+public:
+	/// build a ready to use formatter
+	diff_formatter(diff_container const & profile);
+
+	/**
+	 * Output a vector of symbols to out according to the output
+	 * format specifier previously set by call(s) to add_format()
+	 */
+	void output(std::ostream & out, diff_collection const & syms);
+
+private:
+	/// output a single symbol
+	void output(std::ostream & out, diff_symbol const & sym);
+
 };
 
 } // namespace format_output 

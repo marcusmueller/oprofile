@@ -27,6 +27,7 @@
 #include "arrange_profiles.h"
 #include "profile_container.h"
 #include "callgraph_container.h"
+#include "diff_container.h"
 #include "symbol_sort.h"
 #include "format_output.h"
 #include "image_errors.h"
@@ -359,6 +360,9 @@ format_flags const get_format_flags(column_flags const & cf)
 		flags = format_flags(flags | ff_percent_cumulated);
 	}
 
+	if (classes2.v.size())
+		flags = format_flags(flags | ff_diff);
+
 	if (cf & cf_image_name)
 		flags = format_flags(flags | ff_image_name);
 
@@ -392,11 +396,41 @@ void output_symbols(profile_container const & pc, bool multiple_apps)
 }
 
 
+void output_diff_symbols(profile_container const & pc1,
+                         profile_container const & pc2, bool multiple_apps)
+{
+	profile_container::symbol_choice choice;
+	choice.threshold = options::threshold;
+#if 0 // FIXME
+	symbol_collection symbols = pc.select_symbols(choice);
+#endif
+
+	diff_container dc(pc1, pc2);
+
+	format_output::diff_formatter out(dc);
+
+	out.set_nr_classes(nr_classes);
+	out.show_long_filenames(options::long_filenames);
+	out.show_header(options::show_header);
+	out.vma_format_64bit(choice.hints & cf_64bit_vma);
+	out.show_global_percent(options::global_percent);
+
+	format_flags flags = get_format_flags(choice.hints);
+	if (multiple_apps)
+		flags = format_flags(flags | ff_app_name);
+
+	out.add_format(flags);
+	diff_collection symbols = dc.get_symbols();
+	options::sort_by.sort(symbols, options::reverse_sort,
+	                      options::long_filenames);
+	out.output(cout, symbols);
+}
+
+
 void output_cg_symbols(callgraph_container const & cg, bool multiple_apps)
 {
 	column_flags output_hints = cg.output_hint();
 
-	// FIXME: -i, -e
 	cg_collection symbols = cg.get_symbols();
 	options::sort_by.sort(symbols, options::reverse_sort,
 	                      options::long_filenames);
@@ -419,9 +453,9 @@ void output_cg_symbols(callgraph_container const & cg, bool multiple_apps)
 }
 
 
-int opreport(vector<string> const & non_options)
+int opreport(options::spec const & spec)
 {
-	handle_options(non_options);
+	handle_options(spec);
 
 	nr_classes = classes.v.size();
 
@@ -447,7 +481,33 @@ int opreport(vector<string> const & non_options)
 
 	output_header();
 
-	if (options::callgraph) {
+	if (classes2.v.size()) {
+		profile_container pc1(options::debug_info, options::details);
+
+		list<inverted_profile>::iterator it = iprofiles.begin();
+		list<inverted_profile>::iterator const end = iprofiles.end();
+
+		for (; it != end; ++it)
+			populate_for_image(options::archive_path, pc1,
+				*it, options::symbol_filter, 0);
+
+		list<inverted_profile> iprofiles2
+			= invert_profiles(options::archive_path2, classes2,
+				  options::extra_found_images);
+
+		report_image_errors(iprofiles2);
+
+		profile_container pc2(options::debug_info, options::details);
+
+		list<inverted_profile>::iterator it2 = iprofiles2.begin();
+		list<inverted_profile>::iterator const end2 = iprofiles2.end();
+
+		for (; it2 != end2; ++it2)
+			populate_for_image(options::archive_path2, pc2,
+				*it2, options::symbol_filter, 0);
+
+		output_diff_symbols(pc1, pc2, multiple_apps);
+	} else if (options::callgraph) {
 		callgraph_container cg_container;
 		cg_container.populate(options::archive_path, iprofiles,
 			options::extra_found_images,

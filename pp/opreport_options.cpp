@@ -27,9 +27,11 @@
 using namespace std;
 
 profile_classes classes;
+profile_classes classes2;
 
 namespace options {
 	string archive_path;
+	string archive_path2;
 	demangle_type demangle = dmt_normal;
 	bool symbols;
 	bool callgraph;
@@ -104,7 +106,6 @@ popt::option options_array[] = {
 };
 
 
-// FIXME: separate file if reused
 void handle_sort_option()
 {
 	if (sort.empty()) {
@@ -121,7 +122,6 @@ void handle_sort_option()
 }
 
 
-// FIXME: separate file if reused
 void handle_output_file()
 {
 	if (outfile.empty())
@@ -137,11 +137,9 @@ void handle_output_file()
 	cout.rdbuf(os.rdbuf());
 }
 
-/**
- * check incompatible or meaningless options
- *
- */
-void check_options()
+
+///  Check incompatible or meaningless options.
+void check_options(bool diff)
 {
 	using namespace options;
 
@@ -152,10 +150,24 @@ void check_options()
 		if (details) {
 			cerr << "--callgraph is incompatible with --details" << endl;
 			do_exit = true;
+		} else if (diff) {
+			cerr << "--callgraph is incompatible with --details" << endl;
+			do_exit = true;
 		}
 	}
 
+	if (details && diff) {
+		cerr << "differential profiles are incompatible with --details" << endl;
+		do_exit = true;
+	}
+
 	if (!symbols) {
+		if (diff) {
+			cerr << "different profiles are meaningless "
+				"without --symbols" << endl;
+			do_exit = true;
+		}
+
 		if (show_address) {
 			cerr << "--show-address is meaningless "
 				"without --symbols" << endl;
@@ -192,34 +204,23 @@ void check_options()
 		exit(EXIT_FAILURE);
 }
 
-} // namespace anon
 
-
-void handle_options(vector<string> const & non_options)
+/// process a spec into classes
+string process_spec(profile_classes & classes, list<string> const & spec)
 {
 	using namespace options;
 
-	if (details) {
-		symbols = true;
-		show_address = true;
-	}
+	copy(spec.begin(), spec.end(),
+	     ostream_iterator<string>(cverb << vsfile, " "));
+	cverb << vsfile << "\n\n";
 
-	handle_sort_option();
-	merge_by = handle_merge_option(mergespec, true, exclude_dependent);
-	handle_output_file();
-	demangle = handle_demangle_option(demangle_option);
-	check_options();
+	profile_spec const pspec =
+		profile_spec::create(spec, extra_found_images);
 
-	symbol_filter = string_filter(include_symbols, exclude_symbols);
+	list<string> sample_files = pspec.generate_file_list(exclude_dependent,
+	                                                     !options::callgraph);
 
-	profile_spec const spec =
-		profile_spec::create(non_options, extra_found_images);
-
-	list<string> sample_files = spec.generate_file_list(exclude_dependent,
-	                                                    !options::callgraph);
-
-	archive_path = spec.get_archive_path();
-	cverb << vsfile << "Archive: " << archive_path << endl;
+	cverb << vsfile << "Archive: " << pspec.get_archive_path() << endl;
 
 	cverb << vsfile << "Matched sample files: " << sample_files.size()
 	      << endl;
@@ -234,5 +235,44 @@ void handle_options(vector<string> const & non_options)
 		cerr << "error: no sample files found: profile specification "
 		     "too strict ?" << endl;
 		exit(EXIT_FAILURE);
+	}
+
+	return pspec.get_archive_path();
+}
+
+
+} // namespace anon
+
+
+void handle_options(options::spec const & spec)
+{
+	using namespace options;
+
+	if (details) {
+		symbols = true;
+		show_address = true;
+	}
+
+	handle_sort_option();
+	merge_by = handle_merge_option(mergespec, true, exclude_dependent);
+	handle_output_file();
+	demangle = handle_demangle_option(demangle_option);
+	check_options(spec.first.size());
+
+	symbol_filter = string_filter(include_symbols, exclude_symbols);
+
+	if (!spec.first.size()) {
+		archive_path = process_spec(classes, spec.common);
+	} else {
+		cverb << vsfile << "profile spec 1:" << endl;
+		archive_path = process_spec(classes, spec.first);
+		cverb << vsfile << "profile spec 2:" << endl;
+		archive_path2 = process_spec(classes2, spec.second);
+#if 0 // FIXME
+		if (classes != classes2) {
+			cerr << "profile classes are incompatible" << endl;
+			exit(EXIT_FAILURE);
+		}
+#endif
 	}
 }

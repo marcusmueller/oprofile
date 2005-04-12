@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <iterator>
 
 #include "locate_images.h"
 #include "op_exception.h"
@@ -66,7 +67,72 @@ double handle_threshold(string threshold)
 }
 
 
-vector<string> get_options(int argc, char const * argv[])
+options::spec const parse_spec(vector<string> const & non_options)
+{
+	bool in_first = false;
+	bool in_second = false;
+	bool first = false;
+	bool second = false;
+	options::spec pspec;
+
+	vector<string>::const_iterator it = non_options.begin();
+	vector<string>::const_iterator end = non_options.end();
+
+	for (; it != end; ++it) {
+		if (*it == "{") {
+			if (in_first || in_second || second)
+				goto fail;
+			if (first) {
+				in_second = true;
+				second = true;
+			} else {
+				in_first = true;
+				first = true;
+			}
+			continue;
+		} 
+
+		if (*it == "}") {
+			if (in_first) {
+				in_first = false;
+			} else if (in_second) {
+				in_second = false;
+			} else {
+				goto fail;
+			}
+			continue;
+		}
+
+		if (in_first) {
+			pspec.first.push_back(*it);
+		} else if (in_second) {
+			pspec.second.push_back(*it);
+		} else {
+			pspec.common.push_back(*it);
+		}
+	}
+
+	if (in_first || in_second || (first && !second))
+		goto fail;
+
+	if (first && second) {
+		pspec.first.insert(pspec.first.begin(), pspec.common.begin(),
+		                   pspec.common.end());
+		pspec.second.insert(pspec.second.begin(), pspec.common.begin(),
+		                   pspec.common.end());
+	}
+
+	return pspec;
+fail:
+	cerr << "invalid profile specification ";
+	copy(non_options.begin(), non_options.end(),
+	     ostream_iterator<string>(cerr, " "));
+	cerr << endl;
+	exit(EXIT_FAILURE);
+}
+
+
+options::spec get_options(int argc, char const * argv[])
 {
 	vector<string> non_options;
 	popt::parse_options(argc, argv, non_options);
@@ -93,7 +159,7 @@ vector<string> get_options(int argc, char const * argv[])
 
 	options::extra_found_images.populate(image_path);
 
-	return non_options;
+	return parse_spec(non_options);
 }
 
 }  // anon namespace
@@ -102,9 +168,7 @@ vector<string> get_options(int argc, char const * argv[])
 int run_pp_tool(int argc, char const * argv[], pp_fct_run_t fct)
 {
 	try {
-		vector<string> non_options = get_options(argc, argv);
-
-		return fct(non_options);
+		return fct(get_options(argc, argv));
 	}
 	catch (op_runtime_error const & e) {
 		cerr << argv[0] << " error: " << e.what() << endl;

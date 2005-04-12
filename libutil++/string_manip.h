@@ -57,6 +57,7 @@ std::string trim(std::string const & str, std::string const & totrim = "\t ");
  * @param value - the value
  * @param int_width - the maximum integer integer width default to 2
  * @param frac_width - the fractionnary width default to 4
+ * @param showpos - show + sign for positive values
  *
  * This formats a percentage into exactly the given width and returns
  * it. If the integer part is larger than the given int_width, the
@@ -65,7 +66,8 @@ std::string trim(std::string const & str, std::string const & totrim = "\t ");
  *
  */
 std::string const
-format_percent(double value, size_t int_width, size_t frac_width);
+format_percent(double value, size_t int_width,
+               size_t frac_width, bool showpos = false);
 
 /// prefered width to format percentage
 static unsigned int const percent_int_width = 2;

@@ -101,12 +101,17 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 }  // anonymous namespace
 
 
-void handle_options(vector<string> const & non_options)
+void handle_options(options::spec const & spec)
 {
-	profile_spec const spec =
-		profile_spec::create(non_options, options::extra_found_images);
+	if (spec.first.size()) {
+		cerr << "differential profiles not allowed" << endl;
+		exit(EXIT_FAILURE);
+	}
 
-	options::archive_path = spec.get_archive_path();
+	profile_spec const pspec =
+		profile_spec::create(spec.common, options::extra_found_images);
+
+	options::archive_path = pspec.get_archive_path();
 	cverb << vsfile << "Archive: " << options::archive_path << endl;
 
 	cverb << vsfile << "output filename: " << options::gmon_filename
@@ -115,7 +120,7 @@ void handle_options(vector<string> const & non_options)
 	// we do a first try with exclude-dependent if it fails we include
 	// dependent. First try should catch "opgrof /usr/bin/make" whilst
 	// the second catch "opgprof /lib/libc-2.2.5.so"
-	if (!try_merge_profiles(spec, true)) {
-		try_merge_profiles(spec, false);
+	if (!try_merge_profiles(pspec, true)) {
+		try_merge_profiles(pspec, false);
 	}
 }

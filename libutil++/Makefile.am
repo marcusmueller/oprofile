@@ -13,6 +13,7 @@ libutil___a_SOURCES = \
 	string_filter.h \
 	glob_filter.cpp \
 	glob_filter.h \
+	growable_vector.h \
 	path_filter.cpp \
 	path_filter.h \
 	file_manip.cpp \

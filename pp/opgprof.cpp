@@ -267,9 +267,9 @@ void load_cg(profile_t & cg_db, list<profile_sample_files> const & files)
 }
 
 
-int opgprof(vector<string> const & non_options)
+int opgprof(options::spec const & spec)
 {
-	handle_options(non_options);
+	handle_options(spec);
 
 	profile_container samples(false, true);
 

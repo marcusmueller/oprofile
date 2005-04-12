@@ -14,6 +14,7 @@
 #define COMMON_OPTION_H
 
 #include <vector>
+#include <list>
 
 #include "arrange_profiles.h"
 #include "demangle_symbol.h"
@@ -23,13 +24,19 @@ namespace options {
 	extern extra_images extra_found_images;
 	extern double threshold;
 	extern std::string threshold_opt;
+
+	struct spec {
+		std::list<std::string> common;
+		std::list<std::string> first;
+		std::list<std::string> second;
+	};
 };
 
 /**
  * prototype of a pp tool entry point. This entry point is called
  * by run_pp_tool
  */
-typedef int (*pp_fct_run_t)(std::vector<std::string> const & non_options);
+typedef int (*pp_fct_run_t)(options::spec const & spec);
 
 /**
  * @param argc  command line number of argument

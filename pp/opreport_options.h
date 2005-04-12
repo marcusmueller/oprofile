@@ -25,6 +25,7 @@ class merge_option;
 
 namespace options {
 	extern std::string archive_path;
+	extern std::string archive_path2;
 	extern demangle_type demangle;
 	extern bool symbols;
 	extern bool callgraph;
@@ -44,13 +45,14 @@ namespace options {
 
 /// All the chosen sample files.
 extern profile_classes classes;
+extern profile_classes classes2;
 
 /**
- * get_options - process command line
- * @param non_options vector of non options string
+ * handle_options - process command line
+ * @param spec  profile specification
  *
- * Process the arguments, fatally complaining on error.
+ * Process the spec, fatally complaining on error.
  */
-void handle_options(std::vector<std::string> const & non_options);
+void handle_options(options::spec const & spec);
 
 #endif // OPREPORT_OPTIONS_H

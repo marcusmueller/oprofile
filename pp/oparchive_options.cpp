@@ -68,19 +68,24 @@ void check_options()
 }  // anonymous namespace
 
 
-void handle_options(vector<string> const & non_options)
+void handle_options(options::spec const & spec)
 {
 	using namespace options;
+
+	if (spec.first.size()) {
+		cerr << "differential profiles not allowed" << endl;
+		exit(EXIT_FAILURE);
+	}
 
 	merge_by = handle_merge_option(mergespec, true, exclude_dependent);
 	check_options();
 
-	profile_spec const spec =
-		profile_spec::create(non_options, extra_found_images);
+	profile_spec const pspec =
+		profile_spec::create(spec.common, extra_found_images);
 
-	sample_files = spec.generate_file_list(exclude_dependent, false);
+	sample_files = pspec.generate_file_list(exclude_dependent, false);
 
-	archive_path = spec.get_archive_path();
+	archive_path = pspec.get_archive_path();
 	cverb << vsfile << "Archive: " << archive_path << endl;
 
 	cverb << vsfile << "Matched sample files: " << sample_files.size()

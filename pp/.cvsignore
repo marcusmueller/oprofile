@@ -3,6 +3,5 @@ Makefile
 Makefile.in
 opannotate
 oparchive
-opdiff
 opgprof
 opreport

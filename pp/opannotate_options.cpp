@@ -84,9 +84,14 @@ popt::option options_array[] = {
 }  // anonymous namespace
 
 
-void handle_options(vector<string> const & non_options)
+void handle_options(options::spec const & spec)
 {
 	using namespace options;
+
+	if (spec.first.size()) {
+		cerr << "differential profiles not allowed" << endl;
+		exit(EXIT_FAILURE);
+	}
 
 	if (!assembly && !source) {
 		cerr <<	"you must specify at least --source or --assembly\n";
@@ -109,12 +114,12 @@ void handle_options(vector<string> const & non_options)
 
 	options::file_filter = path_filter(include_file, exclude_file);
 
-	profile_spec const spec =
-		profile_spec::create(non_options, options::extra_found_images);
+	profile_spec const pspec =
+		profile_spec::create(spec.common, options::extra_found_images);
 
-	list<string> sample_files = spec.generate_file_list(exclude_dependent, true);
+	list<string> sample_files = pspec.generate_file_list(exclude_dependent, true);
 
-	archive_path = spec.get_archive_path();
+	archive_path = pspec.get_archive_path();
 	cverb << vsfile << "Archive: " << archive_path << endl;
 
 	cverb << vsfile << "Matched sample files: " << sample_files.size()

@@ -299,22 +299,25 @@ bool profile_spec::match(filename_spec const & spec) const
 }
 
 
-profile_spec profile_spec::create(vector<string> const & args,
+profile_spec profile_spec::create(list<string> const & args,
                                   extra_images const & extra)
 {
 	profile_spec spec(extra);
 	set<string> tag_seen;
 
-	for (size_t i = 0 ; i < args.size() ; ++i) {
-		if (spec.is_valid_tag(args[i])) {
-			if (tag_seen.find(args[i]) != tag_seen.end()) {
+	list<string>::const_iterator it = args.begin();
+	list<string>::const_iterator end = args.end();
+
+	for (; it != end; ++it) {
+		if (spec.is_valid_tag(*it)) {
+			if (tag_seen.find(*it) != tag_seen.end()) {
 				throw op_runtime_error("tag specified "
-				       "more than once: " + args[i]);
+				       "more than once: " + *it);
 			}
-			tag_seen.insert(args[i]);
-			spec.parse(args[i]);
+			tag_seen.insert(*it);
+			spec.parse(*it);
 		} else {
-			string const file = op_realpath(args[i]);
+			string const file = op_realpath(*it);
 			spec.set_image_or_lib_name(file);
 		}
 	}

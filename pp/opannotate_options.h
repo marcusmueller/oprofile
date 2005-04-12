@@ -39,10 +39,10 @@ extern profile_classes classes;
 
 /**
  * handle_options - process command line
- * @param non_options vector of non options string
+ * @param spec  profile specification
  *
- * Process the arguments, fatally complaining on error.
+ * Process the spec, fatally complaining on error.
  */
-void handle_options(std::vector<std::string> const & non_options);
+void handle_options(options::spec const & spec);
 
 #endif // OPANNOTATE_OPTIONS_H

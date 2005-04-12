@@ -28,9 +28,9 @@ using namespace std;
 
 namespace {
 
-int oparchive(vector<string> const & non_options)
+int oparchive(options::spec const & spec)
 {
-	handle_options(non_options);
+	handle_options(spec);
 
 	/* Check to see if directory can be created */
 	if (create_path(options::outdirectory.c_str())) {

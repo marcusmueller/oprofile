@@ -658,9 +658,9 @@ bool annotate_source(list<string> const & images)
 }
 
 
-int opannotate(vector<string> const & non_options)
+int opannotate(options::spec const & spec)
 {
-	handle_options(non_options);
+	handle_options(spec);
 
 	nr_events = classes.v.size();
 

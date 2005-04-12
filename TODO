@@ -6,6 +6,13 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.9 release
 -----------
 
+ o opdiff:
+	- allow sym filtering, set column flags properly
+	- consider a sort option for diff %
+	- test it, profile it
+	- sanity check profile classes etc.
+	- docs
+
  o Java stuff
  o amd64 32 bit build needs a sys32_lookup_dcookie() translator in the
    kernel
@@ -25,7 +32,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 
  o consider tagging opreport -c entries with a number like gprof
  o optimise opreport -c
- o --details for opreport -c ?
+ o --details for opreport -c, or diff??
  o should [self] entries be ommitted if 0 ??
  o stress test opreport -c: compile a Big Application w/o frame pointer and look
    how driver and opreport -c react.
@@ -95,7 +102,6 @@ General checks to make
 Later
 -----
 
- o opdiff
  o zwane problem with wrong text offset showed an interesting problem: if
   op_bfd.cpp get any symbol below text offset for vmlinux or a module then
   profile_t::sample_range() return a pair of iterator with first > second
