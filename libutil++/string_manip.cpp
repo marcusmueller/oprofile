@@ -113,7 +113,7 @@ format_percent(double value, size_t int_width, size_t fract_width, bool showpos)
 	if (showpos)
 		os.setf(ios::showpos);
 
-	if (value > .001) {
+	if (fabs(value) > .001) {
 		// os << fixed << value unsupported by gcc 2.95
 		os.setf(ios::fixed, ios::floatfield);
 		os << setw(int_width + fract_width + 1)
