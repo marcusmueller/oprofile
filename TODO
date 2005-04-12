@@ -32,6 +32,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o op_bfd.cpp:get_linenr() see FIXME about the use of ibfd/dbfd, needs test.
  o with opreport -c I can get "warning: /no-vmlinux could not be found.".
    Should be smarter ?
+ o consider an opcontrol --status
  o opreport -c gives weird output for an image with no symbols:
 
     samples  %        symbol name

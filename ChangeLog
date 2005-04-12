@@ -1,5 +1,13 @@
 2005-04-12  John Levon  <levon@movementarian.org>
 
+	* libpp/diff_container.cpp: fix duplicate syms in output
+
+	* pp/opreport.cpp:
+	* libpp/diff_container.h:
+	* libpp/diff_container.cpp: implement thresholding etc.
+
+2005-04-12  John Levon  <levon@movementarian.org>
+
 	* libpp/Makefile.am:
 	* libpp/count_array.cpp:
 	* libpp/count_array.h:

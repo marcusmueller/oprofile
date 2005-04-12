@@ -399,30 +399,29 @@ void output_symbols(profile_container const & pc, bool multiple_apps)
 void output_diff_symbols(profile_container const & pc1,
                          profile_container const & pc2, bool multiple_apps)
 {
+	diff_container dc(pc1, pc2);
+
 	profile_container::symbol_choice choice;
 	choice.threshold = options::threshold;
-#if 0 // FIXME
-	symbol_collection symbols = pc.select_symbols(choice);
-#endif
 
-	diff_container dc(pc1, pc2);
+	diff_collection symbols = dc.get_symbols(choice);
+
+	format_flags flags = get_format_flags(choice.hints);
+	if (multiple_apps)
+		flags = format_flags(flags | ff_app_name);
 
 	format_output::diff_formatter out(dc);
 
 	out.set_nr_classes(nr_classes);
 	out.show_long_filenames(options::long_filenames);
 	out.show_header(options::show_header);
-	out.vma_format_64bit(choice.hints & cf_64bit_vma);
 	out.show_global_percent(options::global_percent);
-
-	format_flags flags = get_format_flags(choice.hints);
-	if (multiple_apps)
-		flags = format_flags(flags | ff_app_name);
-
+	out.vma_format_64bit(choice.hints & cf_64bit_vma);
 	out.add_format(flags);
-	diff_collection symbols = dc.get_symbols();
+
 	options::sort_by.sort(symbols, options::reverse_sort,
 	                      options::long_filenames);
+
 	out.output(cout, symbols);
 }
 

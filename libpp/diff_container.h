@@ -15,6 +15,7 @@
 #include "profile_container.h"
 #include "symbol.h"
 
+
 /**
  * Store two profiles for diffing.
  */
@@ -27,14 +28,21 @@ public:
 	~diff_container() {}
  
 	/// return a collection of diffed symbols
-	diff_collection const get_symbols() const;
+	diff_collection const
+		get_symbols(profile_container::symbol_choice & choice) const;
 
 	/// total count for 'new' profile
 	count_array_t const samples_count() const;
 
 private:
+	/// first profile
+	profile_container const & pc1;
+
+	/// second profile
+	profile_container const & pc2;
+
 	/// the diffed symbols
-	diff_collection syms;
+	mutable diff_collection syms;
 
 	/// samples count for pc1
 	count_array_t total1;

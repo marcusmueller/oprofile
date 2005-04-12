@@ -35,8 +35,27 @@ bool rough_less(symbol_entry const & lhs, symbol_entry const & rhs)
 }
 
 
+/// possibly add a diff sym
+void
+add_sym(diff_collection & syms, diff_symbol const & sym,
+        profile_container::symbol_choice & choice)
+{
+	if (choice.match_image
+	    && (image_names.name(sym.image_name) != choice.image_name))
+		return;
+
+	if (fabs(sym.diffs[0]) < choice.threshold)
+		return;
+
+	choice.hints = sym.output_hint(choice.hints);
+	syms.push_back(sym);
+}
+
+
 /// add a symbol not present in the new profile
-void symbol_old(diff_collection & syms, symbol_entry const & sym)
+void
+symbol_old(diff_collection & syms, symbol_entry const & sym,
+           profile_container::symbol_choice & choice)
 {
 	diff_symbol symbol(sym);
 	size_t size = sym.sample.counts.size();
@@ -44,12 +63,14 @@ void symbol_old(diff_collection & syms, symbol_entry const & sym)
 	for (size_t i = 0; i != size; ++i)
 		symbol.diffs[i] = -INFINITY;
 
-	syms.push_back(symbol);
+	add_sym(syms, symbol, choice);
 }
 
 
 /// add a symbol not present in the old profile
-void symbol_new(diff_collection & syms, symbol_entry const & sym)
+void
+symbol_new(diff_collection & syms, symbol_entry const & sym,
+           profile_container::symbol_choice & choice)
 {
 	diff_symbol symbol(sym);
 	size_t size = sym.sample.counts.size();
@@ -57,14 +78,15 @@ void symbol_new(diff_collection & syms, symbol_entry const & sym)
 	for (size_t i = 0; i != size; ++i)
 		symbol.diffs[i] = INFINITY;
 
-	syms.push_back(symbol);
+	add_sym(syms, symbol, choice);
 }
 
 
 /// add a diffed symbol
 void symbol_diff(diff_collection & syms,
                  symbol_entry const & sym1, count_array_t const & total1,
-                 symbol_entry const & sym2, count_array_t const & total2)
+                 symbol_entry const & sym2, count_array_t const & total2,
+                 profile_container::symbol_choice & choice)
 {
 	diff_symbol symbol(sym2);
 
@@ -77,19 +99,24 @@ void symbol_diff(diff_collection & syms,
 		symbol.diffs[i] = op_ratio(percent2 - percent1, percent1);
 	}
 
-	syms.push_back(symbol);
+	add_sym(syms, symbol, choice);
 }
 
 
 }; // namespace anon
 
 
-diff_container::diff_container(profile_container const & pc1,
-                               profile_container const & pc2)
+diff_container::diff_container(profile_container const & c1,
+                               profile_container const & c2)
+	: pc1(c1), pc2(c2),
+	  total1(pc1.samples_count()), total2(pc2.samples_count())
 {
-	total1 = pc1.samples_count();
-	total2 = pc2.samples_count();
+}
 
+
+diff_collection const
+diff_container::get_symbols(profile_container::symbol_choice & choice) const
+{
 	symbol_container::symbols_t::iterator it1 = pc1.begin_symbol();
 	symbol_container::symbols_t::iterator end1 = pc1.end_symbol();
 	symbol_container::symbols_t::iterator it2 = pc2.begin_symbol();
@@ -97,28 +124,24 @@ diff_container::diff_container(profile_container const & pc1,
 
 	while (it1 != end1 && it2 != end2) {
 		if (rough_less(*it1, *it2)) {
-			symbol_old(syms, *it1);
+			symbol_old(syms, *it1, choice);
 			++it1;
 		} else if (rough_less(*it2, *it1)) {
-			symbol_new(syms, *it1);
+			symbol_new(syms, *it2, choice);
 			++it2;
 		} else {
-			symbol_diff(syms, *it1, total1, *it2, total2);
+			symbol_diff(syms, *it1, total1, *it2, total2, choice);
 			++it1;
 			++it2;
 		}
 	}
 
 	for (; it1 != end1; ++it1)
-		symbol_old(syms, *it1);
+		symbol_old(syms, *it1, choice);
 
 	for (; it2 != end2; ++it2)
-		symbol_new(syms, *it2);
-}
+		symbol_new(syms, *it2, choice);
 
-
-diff_collection const diff_container::get_symbols() const
-{
 	return syms;
 }
 
