@@ -13,6 +13,7 @@
 #include <iomanip>
 
 #include <cstdlib>
+#include <cmath>
 
 #include "string_manip.h"
 
