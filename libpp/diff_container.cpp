@@ -58,11 +58,7 @@ symbol_old(diff_collection & syms, symbol_entry const & sym,
            profile_container::symbol_choice & choice)
 {
 	diff_symbol symbol(sym);
-	size_t size = sym.sample.counts.size();
-
-	for (size_t i = 0; i != size; ++i)
-		symbol.diffs[i] = -INFINITY;
-
+	symbol.diffs.fill(-INFINITY);
 	add_sym(syms, symbol, choice);
 }
 
@@ -73,11 +69,7 @@ symbol_new(diff_collection & syms, symbol_entry const & sym,
            profile_container::symbol_choice & choice)
 {
 	diff_symbol symbol(sym);
-	size_t size = sym.sample.counts.size();
-
-	for (size_t i = 0; i != size; ++i)
-		symbol.diffs[i] = INFINITY;
-
+	symbol.diffs.fill(INFINITY);
 	add_sym(syms, symbol, choice);
 }
 
@@ -118,6 +110,13 @@ diff_collection const
 diff_container::get_symbols(profile_container::symbol_choice & choice) const
 {
 	diff_collection syms;
+
+	/*
+	 * Do a pairwise comparison of the two symbol sets. We're
+	 * relying here on the symbol container being sorted such
+	 * that rough_less() is suitable for iterating through the
+	 * two lists (see less_symbol).
+	 */
 
 	symbol_container::symbols_t::iterator it1 = pc1.begin_symbol();
 	symbol_container::symbols_t::iterator end1 = pc1.end_symbol();

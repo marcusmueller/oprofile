@@ -24,10 +24,6 @@ public:
 	typedef std::vector<T> container_type;
 	typedef typename container_type::size_type size_type;
 
-	/// return current size of vector
-	size_type size() const {
-		return container.size();
-	}
 
 	/**
 	 * Index into the vector for a value. An out of
@@ -39,6 +35,7 @@ public:
 		return container[index];
 	}
 
+
 	/**
 	 * Index into the vector for a value. If the index is larger than
 	 * the current max index, the array is expanded, default-filling
@@ -49,6 +46,7 @@ public:
 			container.resize(index + 1);
 		return container[index];
 	}
+
 
 	/**
 	 * vectorized += operator
@@ -64,6 +62,7 @@ public:
 		return *this;
 	}
 
+
 	/**
 	 * vectorized -= operator, overflow shouldn't occur during substraction
 	 * (iow: for each components lhs[i] >= rhs[i]
@@ -78,6 +77,22 @@ public:
 
 		return *this;
 	}
+
+
+	/// return current size of vector
+	size_type size() const {
+		return container.size();
+	}
+
+
+	/// fill container with given value
+	void fill(T const & value) {
+		typename container_type::iterator it = container.begin();
+		typename container_type::iterator const end = container.end();
+		for (; it != end; ++it)
+			*it = value;
+	}
+
 
 	/// return true if all elements have the default constructed value
 	bool zero() const {

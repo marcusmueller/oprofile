@@ -41,36 +41,36 @@ int debug_compare(debug_name_id l, debug_name_id r)
 
 
 int compare_by(sort_options::sort_order order,
-               symbol_entry const * lhs, symbol_entry const * rhs)
+               symbol_entry const & lhs, symbol_entry const & rhs)
 {
 	switch (order) {
 		case sort_options::sample:
-			if (lhs->sample.counts[0] < rhs->sample.counts[0])
+			if (lhs.sample.counts[0] < rhs.sample.counts[0])
 				return 1;
-			if (lhs->sample.counts[0] > rhs->sample.counts[0])
+			if (lhs.sample.counts[0] > rhs.sample.counts[0])
 				return -1;
 			return 0;
 
 		case sort_options::symbol:
-			return symbol_names.demangle(lhs->name).compare(
-				symbol_names.demangle(rhs->name));
+			return symbol_names.demangle(lhs.name).compare(
+				symbol_names.demangle(rhs.name));
 
 		case sort_options::image:
-			return image_compare(lhs->image_name, rhs->image_name);
+			return image_compare(lhs.image_name, rhs.image_name);
 
 		case sort_options::app_name:
-			return image_compare(lhs->app_name, rhs->app_name);
+			return image_compare(lhs.app_name, rhs.app_name);
 
 		case sort_options::vma:
-			if (lhs->sample.vma < rhs->sample.vma)
+			if (lhs.sample.vma < rhs.sample.vma)
 				return -1;
-			if (lhs->sample.vma > rhs->sample.vma)
+			if (lhs.sample.vma > rhs.sample.vma)
 				return 1;
 			return 0;
 
 		case sort_options::debug: {
-			file_location const & f1 = lhs->sample.file_loc;
-			file_location const & f2 = rhs->sample.file_loc;
+			file_location const & f1 = lhs.sample.file_loc;
+			file_location const & f2 = rhs.sample.file_loc;
 			int ret = debug_compare(f1.filename, f2.filename);
 			if (ret == 0)
 				ret = f1.linenr - f2.linenr;
@@ -97,7 +97,12 @@ struct symbol_compare {
 		: compare_order(order), reverse_sort(reverse) {}
 
 	bool operator()(symbol_entry const * lhs,
-			symbol_entry const * rhs) const;
+			symbol_entry const * rhs) const {
+		return operator()(*lhs, *rhs);
+	}
+
+	bool operator()(symbol_entry const & lhs,
+			symbol_entry const & rhs) const;
 
 protected:
 	vector<sort_options::sort_order> const & compare_order;
@@ -105,63 +110,11 @@ protected:
 };
 
 
-bool symbol_compare::operator()(symbol_entry const * lhs,
-				symbol_entry const * rhs) const
+bool symbol_compare::operator()(symbol_entry const & lhs,
+				symbol_entry const & rhs) const
 {
 	for (size_t i = 0; i < compare_order.size(); ++i) {
 		int ret = compare_by(compare_order[i], lhs, rhs);
-
-		if (reverse_sort)
-			ret = -ret;
-		if (ret != 0)
-			return ret < 0;
-	}
-	return false;
-}
-
-
-struct cg_symbol_compare : public symbol_compare {
-	cg_symbol_compare(vector<sort_options::sort_order> const & order,
-	                  bool reverse)
-		: symbol_compare(order, reverse) {}
-
-	bool operator()(symbol_entry const & lhs,
-			symbol_entry const & rhs) const;
-};
-
-
-// FIXME: why do we need this
-bool cg_symbol_compare::operator()(symbol_entry const & lhs,
-				   symbol_entry const & rhs) const
-{
-	for (size_t i = 0; i < compare_order.size(); ++i) {
-		int ret = compare_by(compare_order[i], &lhs, &rhs);
-
-		if (reverse_sort)
-			ret = -ret;
-		if (ret != 0)
-			return ret < 0;
-	}
-	return false;
-}
-
-
-struct diff_symbol_compare : public symbol_compare {
-	diff_symbol_compare(vector<sort_options::sort_order> const & order,
-	                    bool reverse)
-		: symbol_compare(order, reverse) {}
-
-	bool operator()(symbol_entry const & lhs,
-			symbol_entry const & rhs) const;
-};
-
-
-// FIXME: why do we need this
-bool diff_symbol_compare::operator()(symbol_entry const & lhs,
-                                     symbol_entry const & rhs) const
-{
-	for (size_t i = 0; i < compare_order.size(); ++i) {
-		int ret = compare_by(compare_order[i], &lhs, &rhs);
 
 		if (reverse_sort)
 			ret = -ret;
@@ -205,7 +158,7 @@ sort(cg_collection & syms, bool reverse_sort, bool lf) const
 	}
 
 	stable_sort(syms.begin(), syms.end(),
-	            cg_symbol_compare(sort_option, reverse_sort));
+	            symbol_compare(sort_option, reverse_sort));
 }
 
 
@@ -222,7 +175,7 @@ sort(diff_collection & syms, bool reverse_sort, bool lf) const
 	}
 
 	stable_sort(syms.begin(), syms.end(),
-	            diff_symbol_compare(sort_option, reverse_sort));
+	            symbol_compare(sort_option, reverse_sort));
 }
 
 
