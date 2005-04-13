@@ -1,3 +1,8 @@
+2005-04-13  John Levon  <levon@movementarian.org>
+
+	* libpp/diff_container.h:
+	* libpp/diff_container.cpp: syms doesn't need to be a member
+
 2005-04-13  Nathan Tallent  <eraxxon@cs.rice.edu>
 
 	* utils/opcontrol: fix unquoted variable references in 'test'
@@ -5,7 +10,7 @@
 
 2005-04-13  Maynard Johnson  <maynardj@us.ibm.com>
 
-	* op_bfd.cpp: skip null-name section symbols
+	* libutil++/op_bfd.cpp: skip null-name section symbols
 
 2005-04-12  Philippe Elie  <phil.el@wanadoo.fr>
 

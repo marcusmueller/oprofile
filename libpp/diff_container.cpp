@@ -117,6 +117,8 @@ diff_container::diff_container(profile_container const & c1,
 diff_collection const
 diff_container::get_symbols(profile_container::symbol_choice & choice) const
 {
+	diff_collection syms;
+
 	symbol_container::symbols_t::iterator it1 = pc1.begin_symbol();
 	symbol_container::symbols_t::iterator end1 = pc1.end_symbol();
 	symbol_container::symbols_t::iterator it2 = pc2.begin_symbol();

@@ -13,7 +13,6 @@
 #define DIFF_CONTAINER_H
 
 #include "profile_container.h"
-#include "symbol.h"
 
 
 /**
@@ -40,9 +39,6 @@ private:
 
 	/// second profile
 	profile_container const & pc2;
-
-	/// the diffed symbols
-	mutable diff_collection syms;
 
 	/// samples count for pc1
 	count_array_t total1;
