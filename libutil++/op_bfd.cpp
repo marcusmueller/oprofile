@@ -729,6 +729,13 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 	if (sym.symbol() == 0)
 		return false;
 
+	// Section symbols with no name are problematic for
+	// some versions of BFD, so we'll skip the unnecessary
+	// attempt to find a line number for a section symbol
+	if ((sym.name().substr(0,2) == "??") && 
+	    (sym.symbol()->flags & BSF_SECTION_SYM))
+		return false;
+
 	asection * section = sym.symbol()->section;
 
 	if ((bfd_get_section_flags(ibfd, section) & SEC_ALLOC) == 0)

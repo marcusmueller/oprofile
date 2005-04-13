@@ -46,6 +46,7 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o stress test opreport -c: compile a Big Application w/o frame pointer and look
    how driver and opreport -c react.
  o consider generic anon mapping support
+ o oparchive could fix up {kern} paths with -p
 
 Before 1.0 little stuff
 -----------------------

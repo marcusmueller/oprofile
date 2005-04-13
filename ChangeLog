@@ -1,3 +1,7 @@
+2005-04-13  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* op_bfd.cpp: skip null-name section symbols
+
 2005-04-12  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/string_manip.cpp: fix double formating when value are

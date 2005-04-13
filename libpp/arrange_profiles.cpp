@@ -111,10 +111,9 @@ bool profile_classes::matches(profile_classes const & classes)
 
 	// check that the events match (same event, count)
 
-	std::vector<profile_class>::const_iterator it1 = v.begin();
-	std::vector<profile_class>::const_iterator end1 = v.end();
-	std::vector<profile_class>::const_iterator it2 = classes.v.begin();
-	std::vector<profile_class>::const_iterator end2 = classes.v.end();
+	vector<profile_class>::const_iterator it1 = v.begin();
+	vector<profile_class>::const_iterator end1 = v.end();
+	vector<profile_class>::const_iterator it2 = classes.v.begin();
 
 	while (it1 != end1) {
 		if (it1->ptemplate.event != it2->ptemplate.event)
