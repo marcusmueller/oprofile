@@ -1,3 +1,8 @@
+2005-04-13  Nathan Tallent  <eraxxon@cs.rice.edu>
+
+	* utils/opcontrol: fix unquoted variable references in 'test'
+ 	  expressions
+
 2005-04-13  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* op_bfd.cpp: skip null-name section symbols

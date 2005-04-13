@@ -300,7 +300,7 @@ do_save_setup()
 	chmod 644 $SETUP_FILE
 	>$SETUP_FILE
 
-	if test "$NR_CHOSEN" != 0; then
+	if test "$NR_CHOSEN" != "0"; then
 		for f in `seq 0 $((NR_CHOSEN - 1))`; do
 			echo "CHOSEN_EVENTS[${f}]=${CHOSEN_EVENTS[$f]}" >>$SETUP_FILE
 		done
@@ -315,7 +315,7 @@ do_save_setup()
 	echo "VMLINUX=$VMLINUX" >> $SETUP_FILE
 	echo "IMAGE_FILTER=$IMAGE_FILTER" >> $SETUP_FILE
 	# write the actual information to file
-	if test "$BUF_SIZE" != 0; then
+	if test "$BUF_SIZE" != "0"; then
 		echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
 	fi;
 	if test "$KERNEL_SUPPORT" = "yes"; then
@@ -340,13 +340,13 @@ do_load_setup()
 
 	vecho "Parameters used:"
 	vecho "CPUTYPE $CPUTYPE"
-	if test $BUF_SIZE != 0; then
+	if test "$BUF_SIZE" != "0"; then
 		vecho "BUF_SIZE $BUF_SIZE"
 	else
 		vecho "BUF_SIZE default value"
 	fi;
 	if test "$KERNEL_SUPPORT" = "yes"; then
-		if test $CPU_BUF_SIZE != 0; then
+		if test "$CPU_BUF_SIZE" != "0"; then
 			vecho "CPU_BUF_SIZE $CPU_BUF_SIZE"
 		else
 		    vecho "CPU_BUF_SIZE default value"
