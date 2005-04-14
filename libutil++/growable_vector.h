@@ -86,11 +86,8 @@ public:
 
 
 	/// fill container with given value
-	void fill(T const & value) {
-		typename container_type::iterator it = container.begin();
-		typename container_type::iterator const end = container.end();
-		for (; it != end; ++it)
-			*it = value;
+	void fill(size_type size, T const & value) {
+		container.resize(size, value);
 	}
 
 

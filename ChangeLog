@@ -1,5 +1,12 @@
 2005-04-14  John Levon  <levon@movementarian.org>
 
+	* libutil++/growable_vector.h:
+	* libpp/diff_container.cpp: fix fill()
+
+	* pp/opreport.cpp: fix multiple apps for diff output
+
+2005-04-14  John Levon  <levon@movementarian.org>
+
 	* daemon/opd_interface.h:
 	* daemon/opd_trans.c: remove legacy TRACE_END
 

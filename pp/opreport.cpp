@@ -481,6 +481,11 @@ int opreport(options::spec const & spec)
 	output_header();
 
 	if (classes2.v.size()) {
+		for (size_t i = 0; i < classes2.v.size(); ++i) {
+			if (classes2.v[i].profiles.size() > 1)
+				multiple_apps |= true;
+		}
+
 		profile_container pc1(options::debug_info, options::details);
 
 		list<inverted_profile>::iterator it = iprofiles.begin();

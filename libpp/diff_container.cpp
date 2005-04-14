@@ -58,7 +58,7 @@ symbol_old(diff_collection & syms, symbol_entry const & sym,
            profile_container::symbol_choice & choice)
 {
 	diff_symbol symbol(sym);
-	symbol.diffs.fill(-INFINITY);
+	symbol.diffs.fill(sym.sample.counts.size(), -INFINITY);
 	add_sym(syms, symbol, choice);
 }
 
@@ -69,7 +69,7 @@ symbol_new(diff_collection & syms, symbol_entry const & sym,
            profile_container::symbol_choice & choice)
 {
 	diff_symbol symbol(sym);
-	symbol.diffs.fill(INFINITY);
+	symbol.diffs.fill(sym.sample.counts.size(), INFINITY);
 	add_sym(syms, symbol, choice);
 }
 
