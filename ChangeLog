@@ -1,3 +1,12 @@
+2005-04-14  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_interface.h:
+	* daemon/opd_trans.c: remove legacy TRACE_END
+
+	* daemon/liblegacy/opd_kernel.c:
+	* daemon/liblegacy/opd_proc.c: avoid attributing "no mapping"
+	  samples to vmlinux when using --no-vmlinux via a sick hack
+
 2005-04-13  John Levon  <levon@movementarian.org>
 
 	* libutil++/growable_vector.h: add fill()

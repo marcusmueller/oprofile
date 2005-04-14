@@ -205,17 +205,15 @@ static void code_module_loaded(struct transient * trans __attribute__((unused)))
 }
 
 
+/*
+ * This also implicitly signals the end of the previous
+ * trace, so we never explicitly set TRACING_OFF when
+ * processing a buffer.
+ */
 static void code_trace_begin(struct transient * trans)
 {
 	verbprintf(varcs, "TRACE_BEGIN\n");
 	trans->tracing = TRACING_START;
-}
-
-
-static void code_trace_end(struct transient * trans)
-{
-	verbprintf(varcs, "TRACE_END\n");
-	trans->tracing = TRACING_OFF;
 }
 
 
@@ -232,7 +230,6 @@ static handler_t handlers[LAST_CODE + 1] = {
 	/* tgid handled differently */
 	&code_unknown,
 	&code_trace_begin,
-	&code_trace_end,
 };
 
 

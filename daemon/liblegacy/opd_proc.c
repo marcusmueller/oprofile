@@ -223,17 +223,9 @@ void opd_put_sample(struct op_sample const * sample)
 		return;
 
 	if (in_kernel_eip) {
-		/* assert: separate_kernel || no_vmlinux == 0 */
 		opd_add_kernel_map(proc, sample->eip);
 		if (opd_lookup_maps(proc, sample))
 			return;
-	}
-
-	if (no_vmlinux) {
-		/* in_kernel_eip can't be true when no_vmlinux != 0, we handle
-		 * now all unknown samples and they go blindly to no-vmlinux */
-		opd_handle_kernel_sample(sample->eip, sample->counter);
-		return;
 	}
 
 	/* couldn't locate it */

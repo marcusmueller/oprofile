@@ -6,10 +6,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 0.9 release
 -----------
 
- o opdiff:
-	- consider a sort option for diff %
-	- test it, profile it
-
 <movement> [moz@lambent pp]$ ./opreport -lf lib-image:/lib/tls/libc-2.3.2.so /bin/bash | grep vfprintf
 <movement> 14        0.1301  6         0.0102  /lib/tls/libc-2.3.2.so   vfprintf
 <movement> [moz@lambent pp]$ ./opreport -lf lib-image:/lib/tls/libc-2.3.2.so /usr/bin/vim | grep vfprintf
@@ -40,7 +36,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 -------------------------------------------------------------------------------
 
  o consider tagging opreport -c entries with a number like gprof
- o optimise opreport -c
  o --details for opreport -c, or diff??
  o should [self] entries be ommitted if 0 ??
  o stress test opreport -c: compile a Big Application w/o frame pointer and look
@@ -51,12 +46,9 @@ for some pointers and/or read HACKING and doc/CodingStyle.
 Before 1.0 little stuff
 -----------------------
 
+ o consider a sort option for diff %
  o if ev67 is not fixed, back it out
  o opannotate is silent about symbols missing debug info
- o TRACE_END is no longer sent by the driver, keep it a bit for compatibility
- o callgraph patch: better way to skip ignored backtrace ?
- o child sample count for recursive function is not a bug but a feature, it
-  needs documentation. (What does this refer to exactly?)
  o callgraph_container.cpp: the inner loop in add() is very fragile!
  o opcontrol --reset should avoid to reload the module if it's unloaded
  o oprofiled.log now contains various statistics about lost sample etc. from
@@ -112,6 +104,7 @@ General checks to make
 Later
 -----
 
+ o callgraph patch: better way to skip ignored backtrace ?
  o zwane problem with wrong text offset showed an interesting problem: if
   op_bfd.cpp get any symbol below text offset for vmlinux or a module then
   profile_t::sample_range() return a pair of iterator with first > second
