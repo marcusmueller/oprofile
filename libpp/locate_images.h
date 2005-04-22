@@ -36,6 +36,7 @@ public:
 		std::string const & value;
 	public:
 		explicit matcher(std::string const & v) : value(v) {}
+		virtual ~matcher() {}
 		/// default functor allowing trivial match
 		virtual bool operator()(std::string const & str) const {
 			return str == value;

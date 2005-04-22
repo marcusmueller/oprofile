@@ -1,3 +1,7 @@
+2005-04-22  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/locate_images.h: add a virtual dtor to extra_images::matcher
+
 2005-04-22  John Levon  <levon@movementarian.org>
 
 	* doc/internals.xml: some paragraphs on call graphs
