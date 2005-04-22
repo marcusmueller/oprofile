@@ -1,3 +1,30 @@
+2005-04-22  John Levon  <levon@movementarian.org>
+
+	* doc/internals.xml: some paragraphs on call graphs
+
+	* libop/op_events.h:
+	* libop/op_events.c:
+	* libutil/op_deviceio.h:
+	* libutil/op_deviceio.c:
+	* libutil/op_fileio.h:
+	* libutil/op_fileio.c: remove dead code
+
+	* libutil/op_lock_file.h:
+	* libutil/op_lock_file.c: make a function static
+
+	* libutil++/Makefile.am:
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp:
+	* libutil++/bfd_support.h:
+	* libutil++/bfd_support.cpp: move lots of BFD gunk into
+	  a separate file. Fix synth symbols support, with lots of
+	  testing by Maynard.
+
+	* libutil++/comma_list.h: remove unused set_p
+
+	* pp/opannotate.cpp: complain less verbosely if the input file
+	  couldn't be found
+
 2005-04-14  John Levon  <levon@movementarian.org>
 
 	* libutil++/growable_vector.h:

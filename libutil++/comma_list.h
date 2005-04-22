@@ -51,16 +51,13 @@ private:
 	typedef std::vector<value_type> container_type;
 	typedef typename container_type::const_iterator const_iterator;
 	bool is_all;
-	bool set_p;
 	container_type items;
 };
 
 
 template <class T>
 comma_list<T>::comma_list()
-	:
-	is_all(true),
-	set_p(false)
+	: is_all(true)
 {
 }
 
@@ -71,7 +68,6 @@ void comma_list<T>::set(std::string const & str)
 	items.clear();
 
 	is_all = false;
-	set_p = true;
 
 	std::vector<std::string> result = separate_token(str, ',');
 	for (size_t i = 0 ; i < result.size() ; ++i) {

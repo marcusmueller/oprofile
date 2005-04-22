@@ -56,26 +56,6 @@ void op_close_file(FILE * fp)
 }
 
 
-void op_read_file(FILE * fp, void * buf, size_t size)
-{
-	size_t count;
-
-	count = fread(buf, size, 1, fp);
-
-	if (count != 1) {
-		if (feof(fp)) {
-			fprintf(stderr,
-				"oprofiled:op_read_file: read less than expected %lu bytes\n",
-				(unsigned long)size);
-		} else {
-			fprintf(stderr,
-				"oprofiled:op_read_file: error reading\n");
-		}
-		exit(EXIT_FAILURE);
-	}
-}
-
-
 void op_write_file(FILE * fp, void const * buf, size_t size)
 {
 	size_t written;

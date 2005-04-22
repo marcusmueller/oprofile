@@ -9,6 +9,8 @@ noinst_LIBRARIES = libutil++.a
 libutil___a_SOURCES = \
 	op_bfd.cpp \
 	op_bfd.h \
+	bfd_support.cpp \
+	bfd_support.h \
 	string_filter.cpp \
 	string_filter.h \
 	glob_filter.cpp \

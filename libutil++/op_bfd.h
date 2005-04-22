@@ -14,12 +14,11 @@
 
 #include "config.h"
 
-#include <bfd.h>
-
 #include <vector>
 #include <string>
 #include <list>
 
+#include "bfd_support.h"
 #include "utility.h"
 #include "cached_value.h"
 #include "op_types.h"
@@ -174,48 +173,8 @@ public:
 	bool has_debug_info() const;
 
 private:
-	/// filename we open (not including archive path)
-	std::string filename;
-
-	/// path to archive
-	std::string archive_path;
-
-	/// file size in bytes
-	off_t file_size;
-
-	// the bfd object, NULL if the binary file can't be accessed.
-	bfd * ibfd;
-
-	// The following member variables: debug_filename and dbfd are
-	// used to access the optional debugging information file. See
-	// the comment for find_separate_debug_file() for additional
-	// information.
-
-	// corresponding debug file name
-	mutable std::string debug_filename;
-
-	// corresponding debug bfd object.
-	mutable bfd * dbfd;
-
-	// vector of symbol filled by the bfd lib.
-	scoped_array<asymbol*> bfd_syms;
-	// image file such the linux kernel need than all vma are offset
-	// by this value.
-	unsigned long text_offset;
-
-	/// true if at least one section has (flags & SEC_DEBUGGING) != 0
-	mutable cached_value<bool> debug_info;
-
-	/// temporary container for getting symbols
+	/// temporary container type for getting symbols
 	typedef std::list<op_bfd_symbol> symbols_found_t;
-
-	/**
-	 * Helper function for get_symbols.
-	 * Populates bfd_syms and extracts the "interesting_symbol"s.
-	 */
-	void get_symbols_from_file(bfd * ibfd, size_t start,
-				   op_bfd::symbols_found_t & symbols,
-				   bool debug_file);
 
 	/**
 	 * Parse and sort in ascending order all symbols
@@ -229,8 +188,16 @@ private:
 	void get_symbols(symbols_found_t & symbols);
 
 	/**
+	 * Helper function for get_symbols.
+	 * Populates bfd_syms and extracts the "interesting_symbol"s.
+	 */
+	void get_symbols_from_file(bfd_info & bfd, size_t start,
+				   op_bfd::symbols_found_t & symbols,
+				   bool debug_file);
+
+	/**
 	 * Add the symbols in the binary, applying filtering,
-	 * and handling artificial symbol.
+	 * and handling artificial symbols.
 	 */
 	void add_symbols(symbols_found_t & symbols,
 	                 string_filter const & symbol_filter);
@@ -238,7 +205,7 @@ private:
 	/**
 	 * symbol_size - return the size of a symbol
 	 * @param sym  symbol to get size
-	 * @param next  next symbol in vma roder if any
+	 * @param next  next symbol in vma order if any
 	 */
 	size_t symbol_size(op_bfd_symbol const & sym,
 			   op_bfd_symbol const * next) const;
@@ -249,41 +216,33 @@ private:
         /* Generate symbols using bfd functions for
 	 * the image file associated with the ibfd arg.
 	 */
-	uint process_symtab(bfd * ibfd, size_t start);
+	uint process_symtab(bfd_info * bfd, uint start);
 
-	/* Since process_symtab may occur twice for a given image file,
-	 * this instance variable may be used as needed to keep track
-	 * of the number of symbols generated in the previous call.
-	 */
-	uint prev_total_symcount;
+	/// filename we open (not including archive path)
+	std::string filename;
 
+	/// path to archive
+	std::string archive_path;
+
+	/// file size in bytes
+	off_t file_size;
+
+	/// corresponding debug file name
+	mutable std::string debug_filename;
+
+	/// true if at least one section has (flags & SEC_DEBUGGING) != 0
+	mutable cached_value<bool> debug_info;
+
+	/// our main bfd object: .bfd may be NULL
+	bfd_info ibfd;
+
+	// corresponding debug bfd object, if one is found
+	mutable bfd_info dbfd;
+
+	// image file such the linux kernel need than all vma are offset
+	// by this value.
+	unsigned long text_offset;
 };
 
-/*
- * find_separate_debug_file - return true if a valid separate debug file found
- * @param ibfd binary file
- * @param dir_in directory holding the binary file
- * @param global_in
- * @param filename path to valid debug file
- *
- * Search order for debug file and use first one found:
- * 1) dir_in directory
- * 2) dir_in/.debug directory
- * 3) global_in/dir_in directory
- *
- * Newer binutils and Linux distributions (e.g. Fedora) allow the
- * creation of debug files that are separate from the binary. The
- * debugging information is stripped out of the binary file, placed in
- * this separate file, and a link to the new file is placed in the
- * binary. The debug files hold the information needed by the debugger
- * (and OProfile) to map machine instructions back to source code.
- */
 
-extern bool
-find_separate_debug_file(bfd * ibfd, 
-                         std::string const & dir_in,
-                         std::string const & global_in,
-                         std::string & filename);
-
-extern bfd * open_bfd(std::string const & file);
 #endif /* !OP_BFD_H */

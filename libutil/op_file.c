@@ -27,19 +27,6 @@ int op_file_readable(char const * file)
 }
 
 
-int op_get_fsize(char const * file, off_t * size)
-{
-	struct stat st;
-
-	int err = stat(file, &st);
-	if (err)
-		return err;
-
-	*size = st.st_size;
-	return 0;
-}
-
-
 time_t op_get_mtime(char const * file)
 {
 	struct stat st;

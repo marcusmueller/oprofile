@@ -69,7 +69,7 @@ int empty_line(char const * c);
 /**
  * @param c: input string
  *
- * return non zero is c string is a comment. Comment are lines with optional
+ * return non zero if c string is a comment. Comment are lines with optional
  * blank space at left then a '#' character. Blank space are in " \t\n"
  */
 int comment_line(char const * c);

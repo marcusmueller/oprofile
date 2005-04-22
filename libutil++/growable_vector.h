@@ -94,8 +94,8 @@ public:
 	/// return true if all elements have the default constructed value
 	bool zero() const {
 		return std::find_if(container.begin(), container.end(),
-	                            std::bind2nd(std::not_equal_to<T>(), T( )))
-                	== container.end();
+	                            std::bind2nd(std::not_equal_to<T>(), T()))
+					== container.end();
 	}
 
 private:

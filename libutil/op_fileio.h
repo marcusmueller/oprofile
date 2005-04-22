@@ -41,18 +41,6 @@ FILE * op_try_open_file(char const * name, char const * mode);
 FILE * op_open_file(char const * name, char const * mode);
 
 /**
- * op_read_file - read a file
- * @param fp  file pointer
- * @param buf  buffer
- * @param size  size in bytes to read
- *
- * Read from a file. It is considered an error
- * if anything less than size bytes is read.
- * Failure is fatal.
- */
-void op_read_file(FILE * fp, void * buf, size_t size);
-
-/**
  * op_read_int_from_file - parse an ASCII value from a file into an integer
  * @param filename  name of file to parse integer value from
  * @param fatal  non-zero if any error must be fatal

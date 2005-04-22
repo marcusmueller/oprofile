@@ -19,7 +19,7 @@
 #include <signal.h>
 #include <unistd.h>
 
-pid_t op_read_lock_file(char const * file)
+static pid_t op_read_lock_file(char const * file)
 {
 	FILE * fp;
 	pid_t value;

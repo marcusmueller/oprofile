@@ -30,14 +30,6 @@ extern "C" {
 fd_t op_open_device(char const * name);
 
 /**
- * op_close_device - close a special char device
- * @param devfd  file descriptor of device
- *
- * Close a special file. Failure is fatal.
- */
-void op_close_device(fd_t devfd);
-
-/**
  * op_read_device - read from a special char device
  * @param devfd  file descriptor of device
  * @param buf  buffer

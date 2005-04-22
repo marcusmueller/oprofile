@@ -406,6 +406,24 @@ reset when the CPU buffer is read.
 </para>
 </sect1>
 
+<sect1 id="logging-stack">
+<title>Logging stack traces</title>
+<para>
+OProfile can also provide statistical samples of call chains (on x86). To
+do this, at sample time, the frame pointer chain is traversed, recording
+the return address for each stack frame. This will only work if the code
+was compiled with frame pointers, but we're careful to abort the
+traversal if the frame pointer appears bad. We store the set of return
+addresses straight into the CPU buffer. Note that, since this traversal
+is keyed off the standard sample interrupt, the number of times a
+function appears in a stack trace is not an indicator of how many times
+the call site was executed: rather, it's related to the number of
+samples we took where that call site was involved. Thus, the results for
+stack traces are not necessarily proportional to the call counts:
+typical programs will have many <function>main()</function> samples.
+</para>
+</sect1>
+
 <sect1 id="synchronising-buffers">
 <title>Synchronising the CPU buffers to the event buffer</title>
 <!-- FIXME: update when percpu patch goes in -->
@@ -635,6 +653,12 @@ samples recorded against that offset. The files are
 <function>mmap()</function>ed into the daemon's memory space. The code
 to actually log the write against the sample file can be found in
 <filename>libdb/</filename>.
+</para>
+<para>
+For recording stack traces, we have a more complicated sample filename
+mangling scheme that allows us to identify cross-binary calls. We use
+the same sample file format, where the key is a 64-bit value composed
+from the from,to pair of offsets.
 </para>
 
 </sect1>

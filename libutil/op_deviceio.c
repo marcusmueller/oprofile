@@ -25,15 +25,6 @@ fd_t op_open_device(char const * name)
 }
 
 
-void op_close_device(fd_t devfd)
-{
-	if (close(devfd)) {
-		perror("oprofiled:op_close_device: ");
-		exit(EXIT_FAILURE);
-	}
-}
-
-
 ssize_t op_read_device(fd_t devfd, void * buf, size_t size)
 {
 	ssize_t count;

@@ -493,15 +493,21 @@ void output_one_file(istream & in, debug_name_id filename,
 	 * source, then "source" should be canonical already, and
 	 * can't escape from the output dir. We can't use op_realpath()
 	 * alone as that needs the file to exist already.
+	 *
+	 * Let's not complain again if we couldn't find the file anyway.
 	 */
 	if (out_file.find("/../") != string::npos) {
-		cerr << "refusing to create non-canonical filename "
-			<< out_file  << endl;
+		if (in) {
+		 	cerr << "refusing to create non-canonical filename "
+			     << out_file  << endl;
+		}
 		return;
 	} else if (!is_prefix(out_file, output_dir)) {
-		cerr << "refusing to create file " << out_file
-		     << " outside of output directory " << output_dir
-		     << endl;
+		if (in) {
+			cerr << "refusing to create file " << out_file
+			     << " outside of output directory " << output_dir
+			     << endl;
+		}
 		return;
 	}
 
@@ -588,15 +594,13 @@ void output_source(path_filter const & filter)
 
 		ifstream in(source.c_str());
 
-		if (!in) {
-			// it is common to have empty filename due to the lack
-			// of debug info (eg _init function) so warn only
-			// if the filename is non empty. The case: no debug
-			// info at all has already been checked.
-			if (source.length())
-				cerr << "opannotate (warning): unable to "
-				     << "open for reading: "
-				     << source << endl;
+		// it is common to have empty filename due to the lack
+		// of debug info (eg _init function) so warn only
+		// if the filename is non empty. The case: no debug
+		// info at all has already been checked.
+		if ((!in) && source.length()) {
+			cerr << "opannotate (warning): unable to open for "
+			     "reading: " << source << endl;
 		}
 
 		if (source.length()) {

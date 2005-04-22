@@ -13,239 +13,41 @@
 #include "op_config.h"
 #include "config.h"
 
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <fcntl.h>
 
-#include <cerrno>
-#include <cstring>
 #include <cstdlib>
 
-#include <algorithm>
 #include <iostream>
-#include <fstream>
 #include <iomanip>
 #include <sstream>
 
-#include "op_exception.h"
 #include "op_bfd.h"
-#include "string_manip.h"
 #include "string_filter.h"
 #include "stream_util.h"
 #include "cverb.h"
-#include "op_fileio.h"
 
 using namespace std;
 
-namespace {
 
 verbose vbfd("bfd");
 
-void check_format(string const & file, bfd ** ibfd)
-{
-	if (!bfd_check_format_matches(*ibfd, bfd_object, NULL)) {
-		cverb << vbfd << "BFD format failure for " << file << endl;
-		bfd_close(*ibfd);
-		*ibfd = NULL;
-	}
-}
-
-/**
- * With Objective C, we'll get strings like:
- *
- * _i_GSUnicodeString__rangeOfCharacterSetFromSet_options_range
- *
- * for the symbol name, and:
- * -[GSUnicodeString rangeOfCharacterFromSet:options:range:]
- *
- * for the function name, so we have to do some looser matching
- * than for other languages (unfortunately, it's not possible
- * to demangle Objective C symbols).
- */
-bool objc_match(string const & sym, string const & method)
-{
-	if (method.length() < 3)
-		return false;
-
-	string mangled;
-
-	if (is_prefix(method, "-[")) {
-		mangled += "_i_";
-	} else if (is_prefix(method, "+[")) {
-		mangled += "_c_";
-	} else {
-		return false;
-	}
-
-	string::const_iterator it = method.begin() + 2;
-	string::const_iterator const end = method.end();
-
-	bool found_paren = false;
-
-	for (; it != end; ++it) {
-		switch (*it) {
-		case ' ':
-			mangled += '_';
-			if (!found_paren)
-				mangled += '_';
-			break;
-		case ':':
-			mangled += '_';
-			break;
-		case ')':
-		case ']':
-			break;
-		case '(':
-			found_paren = true;
-			mangled += '_';
-			break;
-		default:
-			mangled += *it;	
-		}
-	}
-
-	return sym == mangled;
-}
-
-} // namespace anon
-
-bfd * open_bfd(string const & file)
-{
-	/* bfd keeps its own reference to the filename char *,
-	 * so it must have a lifetime longer than the ibfd */
-	bfd * ibfd = bfd_openr(file.c_str(), NULL);
-	if (!ibfd) {
-		cverb << vbfd << "bfd_openr failed for " << file << endl;
-		return NULL;
-	}
-
-	check_format(file, &ibfd);
-
-	return ibfd;
-}
-
 
 namespace {
 
-bfd * fdopen_bfd(string const & file, int fd)
-{
-	/* bfd keeps its own reference to the filename char *,
-	 * so it must have a lifetime longer than the ibfd */
-	bfd * ibfd = bfd_fdopenr(file.c_str(), NULL, fd);
-	if (!ibfd) {
-		cverb << vbfd << "bfd_openr failed for " << file << endl;
-		return NULL;
+/// function object for filtering symbols to remove
+struct remove_filter {
+	remove_filter(string_filter const & filter)
+		: filter_(filter) {}
+
+	bool operator()(op_bfd_symbol const & symbol) {
+		return !filter_.match(symbol.name());
 	}
 
-	check_format(file, &ibfd);
+	string_filter filter_;
+};
 
-	return ibfd;
-}
-
-
-bool
-separate_debug_file_exists(string const & name, 
-                           unsigned long const crc)
-{
-	unsigned long file_crc = 0;
-	// The size of 8*1024 element for the buffer is arbitrary.
-	char buffer[2*1024];
-	
-	ifstream file(name.c_str());
-	if (!file)
-		return false;
-
-	cverb << vbfd << "found " << name;
-	while (file) {
-		file.read(buffer, sizeof(buffer));
-		file_crc = calc_crc32(file_crc, 
-				      reinterpret_cast<unsigned char *>(&buffer[0]),
-				      file.gcount());
-	}
-	cverb << vbfd << " with crc32 = " << hex << file_crc << endl;
-	return crc == file_crc;
-}
-
-
-bool
-get_debug_link_info(bfd * ibfd, 
-                    string & filename,
-                    unsigned long & crc32)
-{
-	asection * sect;
-
-	cverb << vbfd << "fetching .gnu_debuglink section" << endl;
-	sect = bfd_get_section_by_name(ibfd, ".gnu_debuglink");
-	
-	if (sect == NULL)
-		return false;
-	
-	bfd_size_type debuglink_size = bfd_section_size(ibfd, sect);  
-	char contents[debuglink_size];
-	cverb << vbfd
-	      << ".gnu_debuglink section has size " << debuglink_size << endl;
-	
-	bfd_get_section_contents(ibfd, sect, 
-				 reinterpret_cast<unsigned char *>(contents), 
-				 static_cast<file_ptr>(0), debuglink_size);
-	
-	/* CRC value is stored after the filename, aligned up to 4 bytes. */
-	size_t filename_len = strlen(contents);
-	size_t crc_offset = filename_len + 1;
-	crc_offset = (crc_offset + 3) & ~3;
-	
-	crc32 = bfd_get_32(ibfd, 
-			       reinterpret_cast<bfd_byte *>(contents + crc_offset));
-	filename = string(contents, filename_len);
-	cverb << vbfd << ".gnu_debuglink filename is " << filename << endl;
-	return true;
-}
 
 } // namespace anon
-
-
-bool
-find_separate_debug_file(bfd * ibfd, 
-                         string const & dir_in,
-                         string const & global_in,
-                         string & filename)
-{
-	string dir(dir_in);
-	string global(global_in);
-	string basename;
-	unsigned long crc32;
-	
-	if (!get_debug_link_info(ibfd, basename, crc32))
-		return false;
-	
-	if (dir.size() > 0 && dir.at(dir.size() - 1) != '/')
-		dir += '/';
-	
-	if (global.size() > 0 && global.at(global.size() - 1) != '/')
-		global += '/';
-
-	cverb << vbfd << "looking for debugging file " << basename 
-	      << " with crc32 = " << hex << crc32 << endl;
-	
-	string first_try(dir + basename);
-	string second_try(dir + ".debug/" + basename);
-
-	if (dir.size() > 0 && dir[0] == '/')
-		dir = dir.substr(1);
-
-	string third_try(global + dir + basename);
-	
-	if (separate_debug_file_exists(first_try, crc32)) 
-		filename = first_try; 
-	else if (separate_debug_file_exists(second_try, crc32))
-		filename = second_try;
-	else if (separate_debug_file_exists(third_try, crc32))
-		filename = third_try;
-	else
-		return false;
-	
-	return true;
-}
 
 
 op_bfd_symbol::op_bfd_symbol(asymbol const * a)
@@ -277,16 +79,19 @@ op_bfd_symbol::op_bfd_symbol(bfd_vma vma, size_t size, string const & name)
 }
 
 
+bool op_bfd_symbol::operator<(op_bfd_symbol const & rhs) const
+{
+	return filepos() < rhs.filepos();
+}
+
+
 op_bfd::op_bfd(string const & archive, string const & fname,
 	       string_filter const & symbol_filter, bool & ok)
 	:
 	filename(fname),
 	archive_path(archive),
 	file_size(-1),
-	ibfd(0),
-	dbfd(0),
-	text_offset(0),
-	prev_total_symcount(0)
+	text_offset(0)
 {
 	int fd;
 	struct stat st;
@@ -319,16 +124,16 @@ op_bfd::op_bfd(string const & archive, string const & fname,
 
 	file_size = st.st_size;
 
-	ibfd = fdopen_bfd(image_path, fd);
+	ibfd.abfd = fdopen_bfd(image_path, fd);
 
-	if (!ibfd) {
+	if (!ibfd.valid()) {
 		cverb << vbfd << "fdopen_bfd failed for " << image_path << endl;
 		ok = false;
 		goto out_fail;
 	}
 
 	// find the first text section and use that as text_offset
-	for (sect = ibfd->sections; sect; sect = sect->next) {
+	for (sect = ibfd.abfd->sections; sect; sect = sect->next) {
 		if (sect->flags & SEC_CODE) {
 			text_offset = sect->filepos;
 			io_state state(cverb << vbfd);
@@ -344,12 +149,8 @@ out:
 	add_symbols(symbols, symbol_filter);
 	return;
 out_fail:
-	if (ibfd)
-		bfd_close(ibfd);
-	ibfd = NULL;
-	if (dbfd)
-		bfd_close(dbfd);
-	dbfd = NULL;
+	ibfd.close();
+	dbfd.close();
 	// make the fake symbol fit within the fake file
 	file_size = -1;
 	goto out;
@@ -358,219 +159,12 @@ out_fail:
 
 op_bfd::~op_bfd()
 {
-	if (ibfd)
-		bfd_close(ibfd);
-	if (dbfd)
-		bfd_close(dbfd);
-}
-
-
-bool op_bfd_symbol::operator<(op_bfd_symbol const & rhs) const
-{
-	return filepos() < rhs.filepos();
-}
-
-namespace {
-
-/**
- * Return true if the symbol is worth looking at
- */
-bool interesting_symbol(asymbol * sym)
-{
-	// #717720 some binutils are miscompiled by gcc 2.95, one of the
-	// typical symptom can be catched here.
-	if (!sym->section) {
-		ostringstream os;
-		os << "Your version of binutils seems to have a bug.\n"
-		   << "Read http://oprofile.sf.net/faq/#binutilsbug\n";
-		throw op_runtime_error(os.str());
-	}
-
-	if (!(sym->section->flags & SEC_CODE))
-		return false;
-
-	// returning true for fix up in op_bfd_symbol()
-	if (!sym->name || sym->name[0] == '\0')
-		return true;
-
-	// C++ exception stuff
-	if (sym->name[0] == '.' && sym->name[1] == 'L')
-		return false;
-
-	/* This case cannot be moved to boring_symbol(),
-	 * because that's only used for duplicate VMAs,
-	 * and sometimes this symbol appears at an address
-	 * different from all other symbols.
-	 */
-	if (!strcmp("gcc2_compiled.", sym->name))
-		return false;
-
-	return true;
-}
-
-/**
- * return true if the first symbol is less interesting than the second symbol
- * boring symbol are eliminated when multiple symbol exist at the same vma
- */
-bool boring_symbol(op_bfd_symbol const & first, op_bfd_symbol const & second)
-{
-	if (first.name() == "Letext")
-		return true;
-	else if (second.name() == "Letext")
-		return false;
-
-	if (first.name().substr(0, 2) == "??")
-		return true;
-	else if (second.name().substr(0, 2) == "??")
-		return false;
-
-	if (first.hidden() && !second.hidden())
-		return true;
-	else if (!first.hidden() && second.hidden())
-		return false;
-
-	if (first.name()[0] == '_' && second.name()[0] != '_')
-		return true;
-	else if (first.name()[0] != '_' && second.name()[0] == '_')
-		return false;
-
-	if (first.weak() && !second.weak())
-		return true;
-	else if (!first.weak() && second.weak())
-		return false;
-
-	return false;
-}
-
-
-/// function object for filtering symbols to remove
-struct remove_filter {
-	remove_filter(string_filter const & filter)
-		: filter_(filter) {}
-
-	bool operator()(op_bfd_symbol const & symbol) {
-		return !filter_.match(symbol.name());
-	}
-
-	string_filter filter_;
-};
-
-
-} // namespace anon
-
-
-#if SYNTHESIZE_SYMBOLS
-
-uint op_bfd::process_symtab(bfd * ibfd, size_t start) 
-{
-	extern const bfd_target bfd_elf64_powerpc_vec;
-	extern const bfd_target bfd_elf64_powerpcle_vec;
-	bool is_elf64_powerpc_target = (ibfd->xvec == &bfd_elf64_powerpc_vec)
-		|| (ibfd->xvec == &bfd_elf64_powerpcle_vec);
-
-	if (!is_elf64_powerpc_target)
-		return bfd_canonicalize_symtab(ibfd, bfd_syms.get() + start);
-
-	void * minisyms;
-	uint minisym_count = 0;
-	uint size;
-
-	minisym_count = bfd_read_minisymbols(ibfd, 0, &minisyms, &size);
-	if (minisym_count < 1)
-		return 0;
-	
-	asymbol ** mysyms;
-	asymbol * synthsyms;
-	long synth_count;
-
-	mysyms = (asymbol **)minisyms;
-	synth_count = bfd_get_synthetic_symtab(ibfd, minisym_count, mysyms,
-	                                       0, NULL, &synthsyms);
-
-	/* synth_count will be zero for binaries that already have
-	 * dot symbols, so that's a valid return value that's handled
-	 * by the code below,  But if synth_count is < 0, this indicates
-	 * an error, so we return immediately.
-	 */
-	if (synth_count < 0)
-		return 0;
-
-	uint cur_symcount = (uint) synth_count + minisym_count;
-
-	asymbol ** symp;
-	asymbol ** new_mini;
-	    
-	new_mini = (asymbol **) malloc((cur_symcount + 1) * sizeof(*symp));
-	symp = new_mini;
-	memcpy(symp, minisyms, minisym_count * sizeof(*symp));
-	symp += minisym_count;
-
-	for (long i = 0; i < synth_count; i++)
-		*symp++ = synthsyms + i;
-	    
-	scoped_array<asymbol *> synth_syms;
-	synth_syms.reset(new asymbol * [cur_symcount + start]);
-
-	for (symbol_index_t i = 0; i < start; i++)
-		synth_syms[i + cur_symcount] = bfd_syms[i];
-	
-	for (symbol_index_t i = start; i < start + cur_symcount; i++)
-		synth_syms[i] = new_mini[i];
-   
-	bfd_syms.swap(synth_syms);
-	free(new_mini);
-
-	free(minisyms);
-
-	prev_total_symcount = cur_symcount;
-
-	return cur_symcount;
-
-}
-
-#else
-uint op_bfd::process_symtab(bfd * ibfd, size_t start) 
-{
-	return bfd_canonicalize_symtab(ibfd, bfd_syms.get() + start);
-}
-#endif
-
-
-void op_bfd::get_symbols_from_file(bfd * ibfd, size_t start,
-   op_bfd::symbols_found_t & symbols, bool debug_file)
-{
-	uint nr_all_syms;
-
-	if (prev_total_symcount) 
-		start = prev_total_symcount;
-	nr_all_syms = process_symtab(ibfd, start);
-	if (nr_all_syms < 1)
-		return;
-
-	for (symbol_index_t i = start; i < start + nr_all_syms; i++) {
-		if (interesting_symbol(bfd_syms[i])) {
-			// need to use filepos of original file for debug
-			// file symbs
-			if (debug_file)
-				// FIXME: this is not enough, we must get the
-				// offset where this symbol live in the
-				// original file.
-				bfd_syms[i]->section->filepos = text_offset;
-			symbols.push_back(op_bfd_symbol(bfd_syms[i]));
-		}
-	}
-
 }
 
 
 void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 {
-	size_t size;
-	size_t size_binary = 0;
-	size_t size_debug = 0;
-
-	if (bfd_get_file_flags(ibfd) & HAS_SYMS)
-		size_binary = bfd_get_symtab_upper_bound(ibfd);
+	ibfd.get_symbols();
 
 	// On separate debug file systems, the main bfd has no symbols,
 	// so even for non -g reports, we want to process the dbfd.
@@ -578,22 +172,26 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 	// have much choice at the moment.
 	has_debug_info();
 
-	if (dbfd && (bfd_get_file_flags(dbfd) & HAS_SYMS))
-		size_debug += bfd_get_symtab_upper_bound(dbfd);
+	dbfd.get_symbols();
 
-	size = size_binary + size_debug;
+	size_t i;
+	for (i = 0; i < ibfd.nr_syms; ++i) {
+		if (interesting_symbol(ibfd.syms[i]))
+			symbols.push_back(op_bfd_symbol(ibfd.syms[i]));
+	}
 
-	/* HAS_SYMS can be set with no symbols */
-	if (size < 1)
-		return;
+	for (i = 0; i < dbfd.nr_syms; ++i) {
+		if (!interesting_symbol(dbfd.syms[i]))
+			continue;
 
-	bfd_syms.reset(new asymbol *[size]);
-
-	if (size_binary > 0)
-		get_symbols_from_file(ibfd, 0, symbols, false);
-
-	if (size_debug > 0)
-		get_symbols_from_file(dbfd, size_binary, symbols, true);
+		// need to use filepos of original file for debug file
+		// symbols. FIXME: this is not enough, we must get the
+		// offset where this symbol live in the original file.
+		// Also, we probably need to be more careful for special
+		// symbols which have ->section from .rodata like *ABS*
+		dbfd.syms[i]->section->filepos = text_offset;
+		symbols.push_back(op_bfd_symbol(dbfd.syms[i]));
+	}
 
 	symbols.sort();
 
@@ -659,7 +257,7 @@ unsigned long op_bfd::sym_offset(symbol_index_t sym_index, u32 num) const
 
 bfd_vma op_bfd::offset_to_pc(bfd_vma offset) const
 {
-	asection const * sect = ibfd->sections;
+	asection const * sect = ibfd.abfd->sections;
 
 	for (; sect; sect = sect->next) {
 		if (offset >= bfd_vma(sect->filepos) &&
@@ -677,30 +275,22 @@ bool op_bfd::has_debug_info() const
 	if (debug_info.cached())
 		return debug_info.get();
 
-	if (!ibfd)
+	if (!ibfd.valid())
+		return debug_info.reset(false);
+
+	if (ibfd.has_debug_info())
 		return debug_info.reset(true);
-
-	asection const * sect;
-
-	for (sect = ibfd->sections; sect; sect = sect->next) {
-		if (sect->flags & SEC_DEBUGGING)
-			return debug_info.reset(true);
-	}
 
 	// check to see if there is an .debug file
 	string const global(archive_path + DEBUGDIR);
 	string const image_path = archive_path + filename;
 	string const dirname(image_path.substr(0, image_path.rfind('/')));
 
-	if (find_separate_debug_file(ibfd, dirname, global, debug_filename)) {
+	if (find_separate_debug_file(ibfd.abfd, dirname, global, debug_filename)) {
 		cverb << vbfd << "now loading: " << debug_filename << endl;
-		dbfd = open_bfd(debug_filename);
-		if (dbfd) {
-			for (sect = dbfd->sections; sect; sect = sect->next) {
-				if (sect->flags & SEC_DEBUGGING)
-					return debug_info.reset(true);
-			}
-		}
+		dbfd.abfd = open_bfd(debug_filename);
+		if (dbfd.has_debug_info())
+			return debug_info.reset(true);
 	}
 
 	// .debug is optional, so will not fail if there's a problem
@@ -714,140 +304,22 @@ bool op_bfd::has_debug_info() const
 bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 			string & source_filename, unsigned int & linenr) const
 {
-	linenr = 0;
-
 	if (!has_debug_info())
 		return false;
-
-	char const * functionname;
-	char const * cfilename = "";
-	bfd_vma pc;
-
-	op_bfd_symbol const & sym = syms[sym_idx];
-
-	// take care about artificial symbol
-	if (sym.symbol() == 0)
-		return false;
-
-	// Section symbols with no name are problematic for
-	// some versions of BFD, so we'll skip the unnecessary
-	// attempt to find a line number for a section symbol
-	if ((sym.name().substr(0,2) == "??") && 
-	    (sym.symbol()->flags & BSF_SECTION_SYM))
-		return false;
-
-	asection * section = sym.symbol()->section;
-
-	if ((bfd_get_section_flags(ibfd, section) & SEC_ALLOC) == 0)
-		return false;
-
-	pc = sym_offset(sym_idx, offset) + sym.value();
 
 	// FIXME: to test, I'm unsure if from this point we must use abfd
 	// or the check if (pc >= bfd_section_size(abfd, section)) must be done
 	// with ibfd.
-	bfd * abfd = dbfd ? dbfd : ibfd;
+	bfd_info const & b = dbfd.valid() ? dbfd : ibfd;
 
-	if (pc >= bfd_section_size(abfd, section))
+	linenr_info const info = find_nearest_line(b, syms[sym_idx], offset);
+
+	if (!info.found)
 		return false;
 
-	bool ret = bfd_find_nearest_line(abfd, section, bfd_syms.get(), pc,
-					 &cfilename, &functionname, &linenr);
-
-	if (cfilename == 0 || !ret) {
-		cfilename = "";
-		linenr = 0;
-		ret = false;
-	}
-
-	// functionname and symbol name can be different if we accept it we
-	// can get samples for the wrong symbol (#484660)
-	// Note this break static inline function, since for these functions we
-	// get a different symbol name than symbol name but we recover later.
-	if (ret && functionname && sym.name() != string(functionname)) {
-		// gcc doesn't emit mangled name for C++ static function so we
-		// try to recover by accepting this linenr info if functionname
-		// is a substring of sym.name, this is not a bug see gcc
-		// bugzilla #11774. Check against the filename part of the
-		// is error prone error (e.g. namespace A { static int f1(); })
-		// so we check only for a substring and warn the user.
-		static bool warned = false;
-		if (!warned) {
-			// FIXME: enough precise message ? We will get this
-			// message for static C++ function too, must we
-			// warn only if the following check fails ?
-			cerr << "warning: \"" << get_filename() << "\" some "
-			     << "functions compiled without debug information "
-			     << "may have incorrect source line attributions"
-			     << endl;
-			warned = true;
-		}
-		if (sym.name().find(functionname) == string::npos)
-			ret = false;
-		if (!ret)
-			ret = objc_match(sym.name(), functionname);
-	}
-
-	/* binutils 2.12 and below have a small bug where functions without a
-	 * debug entry at the prologue start do not give a useful line number
-	 * from bfd_find_nearest_line(). This can happen with certain gcc
-	 * versions such as 2.95.
-	 *
-	 * We work around this problem by scanning forward for a vma with
-	 * valid linenr info, if we can't get a valid line number.
-	 * Problem uncovered by Norbert Kaufmann. The work-around decreases,
-	 * on the tincas application, the number of failure to retrieve linenr
-	 * info from 835 to 173. Most of the remaining are c++ inline functions
-	 * mainly from the STL library. Fix #529622
-	 */
-	if (linenr == 0) {
-		// FIXME: looking at debug info for all gcc version shows
-		// than the same problems can -perhaps- occur for epilog code:
-		// find a samples files with samples in epilog and try oreport
-		// -l -g on it, check it also with opannotate.
-
-		// first restrict the search on a sensible range of vma,
-		// 16 is an intuitive value based on epilog code look
-		size_t max_search = 16;
-		size_t section_size = bfd_section_size(abfd, section);
-		if (pc + max_search > section_size)
-			max_search = section_size - pc;
-
-		for (size_t i = 1 ; i < max_search ; ++i) {
-			bool ret = bfd_find_nearest_line(abfd, section,
-							 bfd_syms.get(), pc+i,
-							 &cfilename,
-							 &functionname,
-							 &linenr);
-
-			if (ret && functionname && linenr != 0
-				&& sym.name() == string(functionname)) {
-				return true;
-			}
-		}
-
-		// We lose it's pointless to try more.
-
-		// bfd_find_nearest_line clobber the memory pointed by filename
-		// from a previous call when the filename change across
-		// multiple calls. The more easy way to recover is to reissue
-		// the first call, we don't need to recheck return value, we
-		// know that the call will succeed.
-		// As mentioned above a previous work-around break static
-		// inline function. We recover here by not checking than
-		// functionname == sym.name
-		bfd_find_nearest_line(abfd, section, bfd_syms.get(), pc,
-				      &cfilename, &functionname, &linenr);
-	}
-
-	if (cfilename) {
-		source_filename = cfilename;
-	} else {
-		source_filename = "";
-		linenr = 0;
-	}
-
-	return ret;
+	source_filename = info.filename;
+	linenr = info.line;
+	return true;
 }
 
 
@@ -946,8 +418,8 @@ string op_bfd::get_filename() const
 
 size_t op_bfd::bfd_arch_bits_per_address() const
 {
-	if (ibfd)
-		return ::bfd_arch_bits_per_address(ibfd);
+	if (ibfd.valid())
+		return ::bfd_arch_bits_per_address(ibfd.abfd);
 	// FIXME: this function should be called only if the underlined ibfd
 	// is ok, must we throw ?
 	return sizeof(bfd_vma);

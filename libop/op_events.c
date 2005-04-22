@@ -520,7 +520,7 @@ void op_free_events(void)
 }
 
 
-struct op_event * find_event(u8 nr)
+static struct op_event * find_event(u8 nr)
 {
 	struct list_head * pos;
 
@@ -730,18 +730,6 @@ int op_check_events(int ctr, u8 nr, u16 um, op_cpu cpu_type)
 	}
 
 	return ret;
-}
-
-
-unsigned int op_min_count(u8 ctr_type, op_cpu cpu_type)
-{
-	struct op_event * event;
-
-	load_events(cpu_type);
-
-	event = find_event(ctr_type);
-	
-	return event ? event->min_count : 0;
 }
 
 

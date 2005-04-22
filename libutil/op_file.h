@@ -29,17 +29,6 @@ extern "C" {
 int op_file_readable(char const * file);
 
 /**
- * op_get_fsize - get size of file
- * @param file file name
- * @param size size parameter to fill
- *
- * Returns the size of the named file in bytes
- * into the pointer given. Returns non-zero
- * on failure, in which case size is not changed.
- */
-int op_get_fsize(char const * file, off_t * size);
-
-/**
  * op_get_mtime - get mtime of file
  * @param file  file name
  *
