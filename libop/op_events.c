@@ -463,7 +463,6 @@ static void load_events(op_cpu cpu_type)
 		check_unit_mask(um, cpu_name);
 	}
 	
-
 	free(um_file);
 	free(event_file);
 	free(event_dir);

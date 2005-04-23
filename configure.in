@@ -25,6 +25,29 @@ dnl needed for module build
 OPROFILE_DIR=`pwd`
 AC_SUBST(OPROFILE_DIR)
  
+# this needs to come before --with-gcc so we link with binutil's version
+# of libiberty ... sigh
+AC_ARG_WITH(binutils,
+[  --with-binutils=dir		Path to binutils installation to use], BINUTILSDIR=$withval)
+
+if test "$BINUTILSDIR" != ""; then
+	LD="$BINUTILSDIR/ld"
+	CFLAGS="$CFLAGS -I $BINUTILSDIR/include"
+	CXXFLAGS="$CXXFLAGS -I $BINUTILSDIR/include"
+	LDFLAGS="$LDFLAGS -L $BINUTILSDIR/lib -Xlinker -R -Xlinker $BINUTILSDIR/lib"
+fi
+
+AC_ARG_WITH(gcc,
+[  --with-gcc=dir		Path to GCC installation to use], GCCDIR=$withval)
+
+if test "$GCCDIR" != ""; then
+	CC="$GCCDIR/bin/gcc"
+	CXX="$GCCDIR/bin/g++"
+	CFLAGS="$CFLAGS -I $GCCDIR/include"
+	CXXFLAGS="$CXXFLAGS -I $GCCDIR/include"
+	LDFLAGS="$LDFLAGS -L $GCCDIR/lib -Xlinker -R -Xlinker $GCCDIR/lib"
+fi
+
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX

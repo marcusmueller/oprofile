@@ -1,3 +1,8 @@
+2005-04-23  John Levon  <levon@movementarian.org>
+
+	* configure.in: add --with-gcc, --with-binutils (for
+	  development use only, undocumented)
+
 2005-04-22  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libpp/locate_images.h: add a virtual dtor to extra_images::matcher
