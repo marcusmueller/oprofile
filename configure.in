@@ -32,6 +32,12 @@ AC_ARG_WITH(binutils,
 
 if test "$BINUTILSDIR" != ""; then
 	LD="$BINUTILSDIR/ld"
+	if test "$CFLAGS" = ""; then
+		CFLAGS="-g -O2"
+	fi
+	if test "$CXXFLAGS" = ""; then
+		CXXFLAGS="-g -O2"
+	fi
 	CFLAGS="$CFLAGS -I $BINUTILSDIR/include"
 	CXXFLAGS="$CXXFLAGS -I $BINUTILSDIR/include"
 	LDFLAGS="$LDFLAGS -L $BINUTILSDIR/lib -Xlinker -R -Xlinker $BINUTILSDIR/lib"
@@ -43,8 +49,6 @@ AC_ARG_WITH(gcc,
 if test "$GCCDIR" != ""; then
 	CC="$GCCDIR/bin/gcc"
 	CXX="$GCCDIR/bin/g++"
-	CFLAGS="$CFLAGS -I $GCCDIR/include"
-	CXXFLAGS="$CXXFLAGS -I $GCCDIR/include"
 	LDFLAGS="$LDFLAGS -L $GCCDIR/lib -Xlinker -R -Xlinker $GCCDIR/lib"
 fi
 

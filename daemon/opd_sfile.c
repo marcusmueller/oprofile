@@ -2,7 +2,7 @@
  * @file daemon/opd_sfile.c
  * Management of sample files
  *
- * @remark Copyright 2002 OProfile authors
+ * @remark Copyright 2002, 2005 OProfile authors
  * @remark Read the file COPYING
  *
  * @author John Levon
@@ -159,6 +159,11 @@ struct sfile * sfile_find(struct transient const * trans)
 	struct kernel_image * ki = NULL;
 	unsigned long hash;
 
+	if (trans->tracing != TRACING_ON) {
+		opd_stats[OPD_SAMPLES]++;
+		opd_stats[trans->in_kernel == 1 ? OPD_KERNEL : OPD_PROCESS]++;
+	}
+
 	/* There is a small race where this *can* happen, see
 	 * caller of cpu_buffer_reset() in the kernel
 	 */
@@ -178,7 +183,14 @@ struct sfile * sfile_find(struct transient const * trans)
 			return NULL;
 		}
 	}
-		
+
+	if (trans->cookie == NO_COOKIE) {
+		verbprintf(vsamples, "No permanent mapping for pc 0x%llx.\n",
+		           trans->pc);
+		opd_stats[OPD_LOST_NO_MAPPING]++;
+		return NULL;
+	}
+
 	hash = sfile_hash(trans, ki);
 	list_for_each(pos, &hashes[hash]) {
 		sf = list_entry(pos, struct sfile, hash);
@@ -307,11 +319,6 @@ static void sfile_log_arc(struct transient const * trans)
 		return;
 	}
 
-#if 0
-	opd_stats[OPD_SAMPLES]++;
-	opd_stats[sf->kernel ? OPD_KERNEL : OPD_PROCESS]++;
-#endif
-
 	/* Possible narrowings to 32-bit value only. */
 	key = to & (0xffffffff);
 	key |= ((uint64_t)from) << 32;
@@ -351,9 +358,6 @@ void sfile_log_sample(struct transient const * trans)
 		opd_stats[OPD_LOST_SAMPLEFILE]++;
 		return;
 	}
-
-	opd_stats[OPD_SAMPLES]++;
-	opd_stats[trans->current->kernel ? OPD_KERNEL : OPD_PROCESS]++;
 
 	err = odb_insert(file, (uint64_t)pc, 1);
 	if (err) {

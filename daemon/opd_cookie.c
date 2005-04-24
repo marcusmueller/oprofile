@@ -2,7 +2,7 @@
  * @file opd_cookie.c
  * cookie -> name cache
  *
- * @remark Copyright 2002 OProfile authors
+ * @remark Copyright 2002, 2005 OProfile authors
  * @remark Read the file COPYING
  *
  * @author John Levon
@@ -124,7 +124,7 @@ char const * find_cookie(cookie_t cookie)
 	struct list_head * pos;
 	struct cookie_entry * entry;
 
-	if (cookie == INVALID_COOKIE)
+	if (cookie == INVALID_COOKIE || cookie == NO_COOKIE)
 		return NULL;
 
 	list_for_each(pos, &hashes[hash]) {
@@ -168,6 +168,9 @@ char const * verbose_cookie(cookie_t cookie)
 
 	if (cookie == INVALID_COOKIE)
 		return "invalid";
+
+	if (cookie == NO_COOKIE)
+		return "anonymous";
 
 	list_for_each(pos, &hashes[hash]) {
 		entry = list_entry(pos, struct cookie_entry, list);

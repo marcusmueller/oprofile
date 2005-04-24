@@ -2,7 +2,7 @@
  * @file opd_cookie.h
  * cookie -> name cache
  *
- * @remark Copyright 2002 OProfile authors
+ * @remark Copyright 2002, 2005 OProfile authors
  * @remark Read the file COPYING
  *
  * @author John Levon
@@ -14,6 +14,7 @@
 typedef unsigned long long cookie_t;
 
 #define INVALID_COOKIE ~0LLU
+#define NO_COOKIE 0LLU
 
 /**
  * Shift value to remove trailing zero on a dcookie value, 7 is sufficient

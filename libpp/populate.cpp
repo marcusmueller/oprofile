@@ -33,7 +33,7 @@ populate_from_files(profile_t & profile,
 	bool found = false;
 	// we can't handle cg files here obviously
 	for (; it != end; ++it) {
-		// A bit ugly but we must acept silently empty sample filename
+		// A bit ugly but we must accept silently empty sample filename
 		// since we can create a profile_sample_files for cg file only
 		// (i.e no sample to the binary)
 		if (!it->sample_filename.empty()) {

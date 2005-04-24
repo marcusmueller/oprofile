@@ -41,21 +41,22 @@ void opd_print_stats(void)
 
 	printf("\n%s\n", op_get_time());
 	printf("Nr. sample dumps: %lu\n", opd_stats[OPD_DUMP_COUNT]);
-	printf("Nr. samples total: %lu\n", opd_stats[OPD_SAMPLES]);
+	printf("Nr. non-backtrace samples: %lu\n", opd_stats[OPD_SAMPLES]);
 	printf("Nr. kernel samples: %lu\n", opd_stats[OPD_KERNEL]);
 	printf("Nr. lost samples (no kernel/user): %lu\n", opd_stats[OPD_NO_CTX]);
 	printf("Nr. lost kernel samples: %lu\n", opd_stats[OPD_LOST_KERNEL]);
+	printf("Nr. incomplete code structs: %lu\n", opd_stats[OPD_DANGLING_CODE]);
 	printf("Nr. samples lost due to sample file open failure: %lu\n",
 		opd_stats[OPD_LOST_SAMPLEFILE]);
-	printf("Nr. incomplete code structs: %lu\n", opd_stats[OPD_DANGLING_CODE]);
-
+	printf("Nr. samples lost due to no permanent mapping: %lu\n",
+		opd_stats[OPD_LOST_NO_MAPPING]);
 	print_if("Nr. event lost due to buffer overflow: %u\n",
 	       "/dev/oprofile/stats", "event_lost_overflow", 1);
-	print_if("Nr. samples without file mapping: %u\n",
+	print_if("Nr. samples lost due to no mapping: %u\n",
 	       "/dev/oprofile/stats", "sample_lost_no_mapping", 1);
-	print_if("Nr. backtrace skipped due to no file mapping: %u\n",
+	print_if("Nr. backtraces skipped due to no file mapping: %u\n",
 	       "/dev/oprofile/stats", "bt_lost_no_mapping", 0);
-	print_if("Nr. samples without mm: %u\n",
+	print_if("Nr. samples lost due to no mm: %u\n",
 	       "/dev/oprofile/stats", "sample_lost_no_mm", 1);
 
 	if (!(dir = opendir("/dev/oprofile/stats/")))

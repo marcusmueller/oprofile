@@ -59,6 +59,7 @@ static int enough_remaining(struct transient * trans, size_t size)
 	if (trans->remaining >= size)
 		return 1;
 
+	verbprintf(vmisc, "Dangling ESCAPE_CODE.\n");
 	opd_stats[OPD_DANGLING_CODE]++;
 	return 0;
 }
@@ -88,7 +89,10 @@ static void opd_put_sample(struct transient * trans, unsigned long long pc)
 	if (!trans->current)
 		trans->current = sfile_find(trans);
 
-	/* can happen if kernel sample falls through the cracks */
+	/*
+	 * can happen if kernel sample falls through the cracks, or if
+	 * it's a sample from an anon region
+	 */
 	if (!trans->current)
 		goto out;
 

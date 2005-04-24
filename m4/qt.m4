@@ -191,7 +191,7 @@ AC_DEFUN([QT_DO_IT_ALL],
 	QT_INCLUDES=
 	QT_LDFLAGS=
 	if test -n "$qt_cv_includes"; then
-		QT_INCLUDES="-I$qt_cv_includes"
+		QT_INCLUDES="-isystem $qt_cv_includes"
 	fi
 	if test -n "$qt_cv_libraries"; then
 		QT_LDFLAGS="-L$qt_cv_libraries"

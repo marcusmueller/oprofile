@@ -1,3 +1,15 @@
+2005-04-24  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_cookie.h:
+	* daemon/opd_cookie.c:
+	* daemon/opd_trans.c:
+	* daemon/opd_sfile.c:
+	* daemon/opd_stats.h:
+	* daemon/opd_stats.c: handle NO_COOKIE (drop on the floor)
+
+	* m4/qt.m4: allow gcc 4.0 compile with Qt headers
+	  by using -isystem
+
 2005-04-23  John Levon  <levon@movementarian.org>
 
 	* configure.in: add --with-gcc, --with-binutils (for
