@@ -1,3 +1,8 @@
+2005-04-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_mangling.c: protect last against sfile lru deletion
+	* daemon/opd_sfile.c: allow null sfile to sfile_get(), sfile_put()
+
 2005-04-24  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_cookie.h:

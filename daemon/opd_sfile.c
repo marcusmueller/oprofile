@@ -496,13 +496,15 @@ int sfile_lru_clear(void)
 
 void sfile_get(struct sfile * sf)
 {
-	list_del(&sf->lru);
+	if (sf)
+		list_del(&sf->lru);
 }
 
 
 void sfile_put(struct sfile * sf)
 {
-	list_add_tail(&sf->lru, &lru_list);
+	if (sf)
+		list_add_tail(&sf->lru, &lru_list);
 }
 
 
