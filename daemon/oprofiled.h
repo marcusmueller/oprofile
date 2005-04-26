@@ -32,16 +32,6 @@ void opd_open_logfile(void);
 
  
 /**
- * opd_hash_name - hash a name
- * @param name  name to hash
- *
- * return the hash code for the passed parameter name. FIXME: in libop/ or
- *  libutil/ ?
- */
-size_t opd_hash_name(char const * name);
-
-
-/**
  * is_image_ignored - check if we must ignore this image
  * @param name the name to check
  *

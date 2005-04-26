@@ -1,3 +1,7 @@
+2005-04-27  John Levon  <levon@movementarian.org>
+
+	* daemon/oprofiled.h: remove dead prototype
+
 2005-04-25  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_mangling.c: protect last against sfile lru deletion
