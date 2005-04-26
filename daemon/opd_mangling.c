@@ -120,7 +120,8 @@ int opd_open_sample_file(odb_t * file, struct sfile * last,
 
 	/* locking sf will lock associated cg files too */
 	sfile_get(sf);
-	sfile_get(last);
+	if (sf != last)
+		sfile_get(last);
 
 retry:
 	err = odb_open(file, mangled, ODB_RDWR, sizeof(struct opd_header));
@@ -150,8 +151,9 @@ retry:
 	            binary ? op_get_mtime(binary) : 0);
 
 out:
-	sfile_put(last);
 	sfile_put(sf);
+	if (sf != last)
+		sfile_put(last);
 	free(mangled);
 	return err;
 }
