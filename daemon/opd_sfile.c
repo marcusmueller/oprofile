@@ -33,6 +33,7 @@ static struct list_head hashes[HASH_SIZE];
 /** All sfiles are on this list. */
 static LIST_HEAD(lru_list);
 
+
 /* FIXME: can undoubtedly improve this hashing */
 /** Hash the transient parameters for lookup. */
 static unsigned long
@@ -40,14 +41,6 @@ sfile_hash(struct transient const * trans, struct kernel_image * ki)
 {
 	unsigned long val = 0;
 	
-	/* cookie meaningless for kernel, shouldn't hash */
-	if (trans->in_kernel) {
-		val ^= ki->start >> 14;
-		val ^= ki->end >> 7;
-	} else {
-		val ^= trans->cookie >> DCOOKIE_SHIFT;
-	}
-
 	if (separate_thread) {
 		val ^= trans->tid << 2;
 		val ^= trans->tgid << 2;
@@ -59,58 +52,90 @@ sfile_hash(struct transient const * trans, struct kernel_image * ki)
 	if (separate_cpu)
 		val ^= trans->cpu;
 
+	/* cookie meaningless for kernel, shouldn't hash */
+	if (trans->in_kernel) {
+		val ^= ki->start >> 14;
+		val ^= ki->end >> 7;
+		return val & HASH_BITS;
+	}
+
+	if (trans->cookie != NO_COOKIE) {
+		val ^= trans->cookie >> DCOOKIE_SHIFT;
+		return val & HASH_BITS;
+	}
+
+	if (!separate_thread)
+		val ^= trans->tgid << 2;
+
 	return val & HASH_BITS;
 }
 
 
-/**
- * Return true if the given sfile matches the current transient
- * parameters.
- */
 static int
-sfile_match(struct transient const * trans, struct sfile const * sfile,
-            struct kernel_image const * ki)
+do_match(struct sfile const * sf, cookie_t cookie, cookie_t app_cookie,
+         struct kernel_image const * ki, pid_t tgid, pid_t tid,
+         unsigned int cpu)
 {
 	/* this is a simplified check for "is a kernel image" AND
 	 * "is the right kernel image". Also handles no-vmlinux
 	 * correctly.
 	 */
-	if (sfile->kernel != ki)
+	if (sf->kernel != ki)
 		return 0;
 
 	if (separate_thread) {
-		if (trans->tid != sfile->tid || trans->tgid != sfile->tgid)
+		if (sf->tid != tid || sf->tgid != tgid)
 			return 0;
 	}
 
 	if (separate_cpu) {
-		if (trans->cpu != sfile->cpu)
+		if (sf->cpu != cpu)
 			return 0;
 	}
 
 	if (separate_kernel || (separate_lib && !ki)) {
-		if (trans->app_cookie != sfile->app_cookie)
+		if (sf->app_cookie != app_cookie)
 			return 0;
 	}
 
 	/* ignore the cached trans->cookie for kernel images,
 	 * it's meaningless and we checked all others already
 	 */
-	if (trans->in_kernel)
+	if (ki)
 		return 1;
 
-	return trans->cookie == sfile->cookie;
+	return sf->cookie == cookie;
+}
+
+
+static int
+trans_match(struct transient const * trans, struct sfile const * sfile,
+            struct kernel_image const * ki)
+{
+	return do_match(sfile, trans->cookie, trans->app_cookie, ki,
+	                trans->tgid, trans->tid, trans->cpu);
+}
+
+
+static int
+sfile_equal(struct sfile const * sf, struct sfile const * sf2)
+{
+	return do_match(sf, sf2->cookie, sf2->app_cookie, sf2->kernel,
+	                sf2->tgid, sf2->tid, sf2->cpu);
 }
 
 
 /** create a new sfile matching the current transient parameters */
 static struct sfile *
-create_sfile(struct transient const * trans, struct kernel_image * ki)
+create_sfile(unsigned long hash, struct transient const * trans,
+             struct kernel_image * ki)
 {
 	size_t i;
 	struct sfile * sf;
 
 	sf = xmalloc(sizeof(struct sfile));
+
+	sf->hashval = hash;
 
 	/* The logic here: if we're in the kernel, the cached cookie is
 	 * meaningless (though not the app_cookie if separate_kernel)
@@ -125,13 +150,13 @@ create_sfile(struct transient const * trans, struct kernel_image * ki)
 	for (i = 0 ; i < op_nr_counters ; ++i)
 		odb_init(&sf->files[i]);
 
-	for (i = 0; i < CG_HASH_TABLE_SIZE; ++i)
-		list_init(&sf->cg_files[i]);
+	for (i = 0; i < CG_HASH_SIZE; ++i)
+		list_init(&sf->cg_hash[i]);
 
-	if (separate_thread) {
+	if (separate_thread)
 		sf->tid = trans->tid;
+	if (separate_thread || trans->cookie == NO_COOKIE)
 		sf->tgid = trans->tgid;
-	}
 
 	if (separate_cpu)
 		sf->cpu = trans->cpu;
@@ -182,11 +207,12 @@ struct sfile * sfile_find(struct transient const * trans)
 			opd_stats[OPD_LOST_KERNEL]++;
 			return NULL;
 		}
-	}
-
-	if (trans->cookie == NO_COOKIE) {
-		verbprintf(vsamples, "No permanent mapping for pc 0x%llx.\n",
-		           trans->pc);
+	} else if (trans->cookie == NO_COOKIE) {
+		if (vsamples) {
+			char const * app = verbose_cookie(trans->app_cookie);
+			printf("No permanent mapping for pc %llx, app %s.\n",
+			       trans->pc, app);
+		}
 		opd_stats[OPD_LOST_NO_MAPPING]++;
 		return NULL;
 	}
@@ -194,13 +220,13 @@ struct sfile * sfile_find(struct transient const * trans)
 	hash = sfile_hash(trans, ki);
 	list_for_each(pos, &hashes[hash]) {
 		sf = list_entry(pos, struct sfile, hash);
-		if (sfile_match(trans, sf, ki)) {
+		if (trans_match(trans, sf, ki)) {
 			sfile_get(sf);
 			goto lru;
 		}
 	}
 
-	sf = create_sfile(trans, ki);
+	sf = create_sfile(hash, trans, ki);
 	list_add(&sf->hash, &hashes[hash]);
 
 lru:
@@ -208,72 +234,65 @@ lru:
 	return sf;
 }
 
-static void init_cg_id(cg_id * id, struct sfile const * sf)
+
+static void sfile_dup(struct sfile * to, struct sfile * from)
 {
-	id->cookie = sf->cookie;
-	id->start = 0;
-	id->end = (vma_t)-1;
-	if (sf->kernel) {
-		id->start = sf->kernel->start;
-		id->end = sf->kernel->end;
-	}
+	size_t i;
+
+	memcpy(to, from, sizeof (struct sfile));
+
+	for (i = 0 ; i < op_nr_counters ; ++i)
+		odb_init(&to->files[i]);
+
+	for (i = 0; i < CG_HASH_SIZE; ++i)
+		list_init(&to->cg_hash[i]);
+
+	list_init(&to->hash);
+	list_init(&to->lru);
 }
 
 
-static size_t cg_hash(cookie_t from, cookie_t to, size_t counter)
+static odb_t * get_file(struct transient const * trans, int is_cg)
 {
-	/* FIXME: better hash ? */
-	return ((from >> 32) ^ from ^ (to >> 32) ^ to ^ counter) % CG_HASH_TABLE_SIZE;
-}
-
-
-static odb_t *
-get_file(struct sfile * sf, struct sfile * last, uint counter, int cg,
-   vma_t from, vma_t to)
-{
+	struct sfile * sf = trans->current;
+	struct sfile * last = trans->last;
+	struct cg_entry * cg;
+	struct list_head * pos;
+	unsigned long hash;
 	odb_t * file;
 
-	if (counter >= op_nr_counters) {
-		fprintf(stderr, "%s: Invalid counter %u\n", __FUNCTION__,
-			counter);
+	if (trans->event >= op_nr_counters) {
+		fprintf(stderr, "%s: Invalid counter %lu\n", __FUNCTION__,
+			trans->event);
 		abort();
 	}
 
-	file = &sf->files[counter];
+	file = &sf->files[trans->event];
 
-	if (cg) {
-		struct cg_hash_entry * temp;
-		size_t hash = cg_hash(last->cookie, sf->cookie, counter);
-		struct list_head * pos;
-		list_for_each(pos, &sf->cg_files[hash]) {
-			temp = list_entry(pos, struct cg_hash_entry, next);
-			if (temp->from.cookie == sf->cookie &&
-			    temp->to.cookie == last->cookie &&
-			    from >= temp->from.start && from < temp->from.end &&
-			    to >= temp->to.start && to < temp->to.end &&
-			    temp->counter == counter)
-				break;
+	if (!is_cg)
+		goto open;
+
+	hash = last->hashval & (CG_HASH_SIZE - 1);
+
+	/* Need to look for the right 'to'. Since we're looking for
+	 * 'last', we use its hash.
+	 */
+	list_for_each(pos, &sf->cg_hash[hash]) {
+		cg = list_entry(pos, struct cg_entry, hash);
+		if (sfile_equal(last, &cg->to)) {
+			file = &cg->to.files[trans->event];
+			goto open;
 		}
-
-		if (pos == &sf->cg_files[hash]) {
-			temp = xmalloc(sizeof(struct cg_hash_entry));
-			odb_init(&temp->file);
-			init_cg_id(&temp->from, sf);
-			init_cg_id(&temp->to, last);
-			verbprintf(vsamples, "new cg : (%llx, %llx) --> (%llx, %llx) %llx --> %llx, (%llx %llx)\n",
-			       temp->from.start, temp->from.end, temp->to.start, temp->to.end,
-			       from, to, temp->from.cookie, temp->to.cookie);
-			temp->counter = counter;
-			list_add(&temp->next, &sf->cg_files[hash]);
-		} else {
-			temp = list_entry(pos, struct cg_hash_entry, next);
-		}
-
-		file = &temp->file;
 	}
 
+	cg = xmalloc(sizeof(struct cg_entry));
+	sfile_dup(&cg->to, last);
+	list_add(&cg->hash, &sf->cg_hash[hash]);
+	file = &cg->to.files[trans->event];
+
+open:
 	if (!odb_open_count(file))
-		opd_open_sample_file(file, last, sf, counter, cg);
+		opd_open_sample_file(file, last, sf, trans->event, is_cg);
 
 	/* Error is logged by opd_open_sample_file */
 	if (!odb_open_count(file))
@@ -283,14 +302,35 @@ get_file(struct sfile * sf, struct sfile * last, uint counter, int cg,
 }
 
 
-static void
-verbose_sample(char const * prefix, struct sfile * sf, vma_t pc, uint counter)
+static void verbose_print_sample(struct sfile * sf, vma_t pc, uint counter)
 {
-	char const * name = verbose_cookie(sf->cookie);
 	char const * app = verbose_cookie(sf->app_cookie);
-	printf("%s at 0x%llx(%u): %s(%llx), app %s(%llx), kernel %s\n",
-	       prefix, pc, counter, name, sf->cookie, app, sf->app_cookie,
-	       sf->kernel ? sf->kernel->name : "no");
+	printf("0x%llx(%u): ", pc, counter);
+	if (sf->kernel) {
+		printf("kern (name %s, 0x%llx-0x%llx), ", sf->kernel->name,
+		       sf->kernel->start, sf->kernel->end);
+	} else {
+		printf("%s(%llx), ", verbose_cookie(sf->cookie),  sf->cookie);
+	}
+	printf("app %s(%llx)", app, sf->app_cookie);
+}
+
+
+static void verbose_sample(struct transient const * trans, vma_t pc)
+{
+	printf("Sample ");
+	verbose_print_sample(trans->current, pc, trans->event);
+	printf("\n");
+}
+
+
+static void
+verbose_arc(struct transient const * trans, vma_t from, vma_t to)
+{
+	printf("Arc ");
+	verbose_print_sample(trans->current, from, trans->event);
+	printf(" -> 0x%llx", to);
+	printf("\n");
 }
 
 
@@ -302,7 +342,7 @@ static void sfile_log_arc(struct transient const * trans)
 	uint64_t key;
 	odb_t * file;
 
-	file = get_file(trans->current, trans->last, trans->event, 1, from, to);
+	file = get_file(trans, 1);
 
 	/* absolute value -> offset */
 	if (trans->current->kernel)
@@ -312,7 +352,7 @@ static void sfile_log_arc(struct transient const * trans)
 		to -= trans->last->kernel->start;
 
 	if (varcs)
-		verbose_sample("Arc", trans->current, to, 0);
+		verbose_arc(trans, from, to);
 
 	if (!file) {
 		opd_stats[OPD_LOST_SAMPLEFILE]++;
@@ -345,14 +385,14 @@ void sfile_log_sample(struct transient const * trans)
 		return;
 	}
 
-	file = get_file(trans->current, trans->last, trans->event, 0, 0, 0);
+	file = get_file(trans, 0);
 
 	/* absolute value -> offset */
 	if (trans->current->kernel)
 		pc -= trans->current->kernel->start;
 
 	if (vsamples)
-		verbose_sample("Sample", trans->current, pc, trans->event);
+		verbose_sample(trans, pc);
 
 	if (!file) {
 		opd_stats[OPD_LOST_SAMPLEFILE]++;
@@ -367,15 +407,7 @@ void sfile_log_sample(struct transient const * trans)
 }
 
 
-static void kill_cg_file(struct cg_hash_entry * cg)
-{
-	odb_close(&cg->file);
-	list_del(&cg->next);
-	free(cg);
-}
-
-
-static void kill_sfile(struct sfile * sf)
+static int close_sfile(struct sfile * sf)
 {
 	size_t i;
 
@@ -383,101 +415,108 @@ static void kill_sfile(struct sfile * sf)
 	for (i = 0; i < op_nr_counters; ++i)
 		odb_close(&sf->files[i]);
 
-	for (i = 0 ; i < CG_HASH_TABLE_SIZE; ++i) {
-		struct list_head * pos, * pos2;
-		list_for_each_safe(pos, pos2, &sf->cg_files[i]) {
-			struct cg_hash_entry * cg = 
-				list_entry(pos, struct cg_hash_entry, next);
-			kill_cg_file(cg);
-		}
-	}
-
-	list_del(&sf->lru);
-	list_del(&sf->hash);
-	free(sf);
+	return 0;
 }
 
 
-void sfile_clear_kernel(void)
+static void kill_sfile(struct sfile * sf)
+{
+	close_sfile(sf);
+	list_del(&sf->hash);
+	list_del(&sf->lru);
+}
+
+
+static int sync_sfile(struct sfile * sf)
+{
+	size_t i;
+
+	for (i = 0; i < op_nr_counters; ++i)
+		odb_sync(&sf->files[i]);
+
+	return 0;
+}
+
+
+static int is_sfile_kernel(struct sfile * sf)
+{
+	return !!sf->kernel;
+}
+
+
+static void for_one_sfile(struct sfile * sf, int (*func)(struct sfile *))
+{
+	size_t i;
+	int free_sf = func(sf);
+
+	for (i = 0; i < CG_HASH_SIZE; ++i) {
+		struct list_head * pos;
+		struct list_head * pos2;
+		list_for_each_safe(pos, pos2, &sf->cg_hash[i]) {
+			struct cg_entry * cg =
+				list_entry(pos, struct cg_entry, hash);
+			if (free_sf || func(&cg->to)) {
+				kill_sfile(&cg->to);
+				list_del(&cg->hash);
+				free(cg);
+			}
+		}
+	}
+
+	if (free_sf) {
+		kill_sfile(sf);
+		free(sf);
+	}
+}
+
+
+static void for_each_sfile(int (*func)(struct sfile *))
 {
 	struct list_head * pos;
 	struct list_head * pos2;
 
 	list_for_each_safe(pos, pos2, &lru_list) {
-		size_t i;
 		struct sfile * sf = list_entry(pos, struct sfile, lru);
-		if (sf->kernel) {
-			kill_sfile(sf);
-			continue;
-		}
-
-		for (i = 0 ; i < CG_HASH_TABLE_SIZE; ++i) {
-			struct list_head * pos, * pos2;
-			list_for_each_safe(pos, pos2, &sf->cg_files[i]) {
-				struct cg_hash_entry * cg = list_entry(pos,
-					struct cg_hash_entry, next);
-				if (cg->from.start || cg->to.start)
-					kill_cg_file(cg);
-			}
-		}
+		for_one_sfile(sf, func);
 	}
+}
+
+
+void sfile_clear_kernel(void)
+{
+	for_each_sfile(is_sfile_kernel);
 }
 
 
 void sfile_sync_files(void)
 {
-	struct list_head * pos;
-	struct sfile * sf;
-	size_t i;
-
-	list_for_each(pos, &lru_list) {
-		sf = list_entry(pos, struct sfile, lru);
-		for (i = 0; i < op_nr_counters; ++i)
-			odb_sync(&sf->files[i]);
-
-		for (i = 0 ; i < CG_HASH_TABLE_SIZE; ++i) {
-			struct list_head * pos;
-			list_for_each(pos, &sf->cg_files[i]) {
-				struct cg_hash_entry * temp = list_entry(pos,
-					struct cg_hash_entry, next);
-				odb_sync(&temp->file);
-			}
-		}
-	}
+	for_each_sfile(sync_sfile);
 }
 
 
 void sfile_close_files(void)
 {
-	struct list_head * pos;
-	struct sfile * sf;
-	size_t i;
-
-	list_for_each(pos, &lru_list) {
-		sf = list_entry(pos, struct sfile, lru);
-		for (i = 0; i < op_nr_counters; ++i) {
-			odb_close(&sf->files[i]);
-		}
-
-		for (i = 0 ; i < CG_HASH_TABLE_SIZE; ++i) {
-			struct list_head * pos;
-			list_for_each(pos, &sf->cg_files[i]) {
-				struct cg_hash_entry * temp = list_entry(pos,
-					struct cg_hash_entry, next);
-				odb_close(&temp->file);
-			}
-		}
-	}
+	for_each_sfile(close_sfile);
 }
 
 
-/* this value probably doesn't matter too much */
+static int always_true(void)
+{
+	return 1;
+}
+
+
 #define LRU_AMOUNT 1000
+
+/*
+ * Clear out older sfiles. Note the current sfiles we're using
+ * will not be present in this list, due to sfile_get/put() pairs
+ * around the caller of this.
+ */
 int sfile_lru_clear(void)
 {
 	struct list_head * pos;
 	struct list_head * pos2;
-	struct sfile * sf;
 	int amount = LRU_AMOUNT;
 
 	if (list_empty(&lru_list))
@@ -486,8 +525,8 @@ int sfile_lru_clear(void)
 	list_for_each_safe(pos, pos2, &lru_list) {
 		if (!--amount)
 			break;
-		sf = list_entry(pos, struct sfile, lru);
-		kill_sfile(sf);
+		struct sfile * sf = list_entry(pos, struct sfile, lru);
+		for_one_sfile(sf, (int (*)(struct sfile *))always_true);
 	}
 
 	return 0;

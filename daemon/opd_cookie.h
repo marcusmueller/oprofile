@@ -20,7 +20,7 @@ typedef unsigned long long cookie_t;
  * Shift value to remove trailing zero on a dcookie value, 7 is sufficient
  * for most architecture
  */
-#define DCOOKIE_SHIFT	7
+#define DCOOKIE_SHIFT 7
 
 /**
  * Return the name of the given dcookie. May return

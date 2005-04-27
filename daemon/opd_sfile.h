@@ -24,34 +24,18 @@
 struct kernel_image;
 struct transient;
 
-#define CG_HASH_TABLE_SIZE 16
-
-typedef struct {
-	/* cookie or INVALID_COOKIE */
-	cookie_t cookie;
-	/* 0 if cookie is valid or module start address */
-	vma_t start;
-	/* (vma_t)-1 if cookie is valid or module end address */
-	vma_t end;
-} cg_id;
-
-struct cg_hash_entry {
-	/** cg are indexable by { from, to, counter } */
-	cg_id from;
-	cg_id to;
-	unsigned int counter;
-	/** next in the hash slot */
-	struct list_head next;
-	odb_t file;
-};
+#define CG_HASH_SIZE 16
 
 /**
- * Each set of sample files (where a set is over the
- * physical counter types) will have one of these
- * for it. We match against the descriptions here to
- * find which sample DB file we need to modify.
+ * Each set of sample files (where a set is over the physical counter
+ * types) will have one of these for it. We match against the
+ * descriptions here to find which sample DB file we need to modify.
+ *
+ * cg files are stored in the hash.
  */
 struct sfile {
+	/** hash value for this sfile */
+	unsigned long hashval;
 	/** cookie value for the binary profiled */
 	cookie_t cookie;
 	/** cookie value for the application owner, INVALID_COOKIE if not set */
@@ -73,9 +57,16 @@ struct sfile {
 	int ignored;
 	/** opened sample files */
 	odb_t files[OP_MAX_COUNTERS];
-	/** hash table of opened cg sample files, this table is hashed
-	 * on counter nr, from cookie and to cookie */
-	struct list_head cg_files[CG_HASH_TABLE_SIZE];
+	/** hash table of opened cg sample files */
+	struct list_head cg_hash[CG_HASH_SIZE];
+};
+
+/** a call-graph entry */
+struct cg_entry {
+	/** where arc is to */
+	struct sfile to;
+	/** next in the hash slot */
+	struct list_head hash;
 };
 
 /** clear any sfiles that are for the kernel */

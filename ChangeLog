@@ -6,6 +6,12 @@
 
 2005-04-27  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_sfile.h:
+	* daemon/opd_sfile.c: rewrite. Fix --no-vmlinux taking up
+	  CPU when using call graph profiling
+
+2005-04-27  John Levon  <levon@movementarian.org>
+
 	* daemon/oprofiled.h: remove dead prototype
 
 2005-04-25  Philippe Elie  <phil.el@wanadoo.fr>
