@@ -22,7 +22,7 @@ extern "C" {
  * op_file_readable - is a file readable
  * @param file file name
  *
- * Return true if the given file is readable.
+ * Return true if the given file is readable and regular.
  *
  * Beware of race conditions !
  */

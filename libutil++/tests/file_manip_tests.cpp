@@ -165,12 +165,12 @@ static input_output<char const *, bool> expect_op_file_readable[] =
 {
 	{ __FILE__, true },
 	{ "./" __FILE__, true },
-	{ ".", true },
-	{ "/.", true },
-	{ "./", true },
-	{ "/", true },
-	{ "../", true },
-	{ "../.", true },
+	{ ".", false },
+	{ "/.", false },
+	{ "./", false },
+	{ "/", false },
+	{ "../", false },
+	{ "../.", false },
 	{ "non_existing_file", false },
 	{ 0, 0 }
 };

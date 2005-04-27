@@ -23,7 +23,8 @@
 
 int op_file_readable(char const * file)
 {
-	return !access(file, R_OK);
+	struct stat st;
+	return !stat(file, &st) && S_ISREG(st.st_mode) && !access(file, R_OK);
 }
 
 
