@@ -62,6 +62,8 @@ abi::abi()
 	slots["offsetof_header_is_kernel"] = field_offset(header, is_kernel);
 	slots["offsetof_header_cpu_speed"] = field_offset(header, cpu_speed);
 	slots["offsetof_header_mtime"] = field_offset(header, mtime);
+	slots["offsetof_header_cg_to_is_kernel"] = field_offset(header,
+		cg_to_is_kernel);
 
 	// determine endianness
 

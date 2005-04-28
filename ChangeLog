@@ -1,3 +1,12 @@
+2005-04-28  John Levon  <levon@movementarian.org>
+
+	* libabi/abi.cpp:
+	* libabi/op_import.cpp: add cg_to_is_kernel to abi
+
+	* configure.in:
+	* libabi/tests/Makefile.am:
+	* libabi/tests/abi_test.cpp: move test to subdir
+
 2005-04-28  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* module/ia64/op_pmu.c: compile fix, pfm_syst_info has been added

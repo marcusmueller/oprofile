@@ -1,10 +1,11 @@
+SUBDIRS=. tests
+
 dist_sources = \
 	abi.cpp \
 	op_abi.cpp \
 	abi.h \
 	op_abi.h \
-	opimport.cpp \
-	abi_test.cpp
+	opimport.cpp
 
 EXTRA_DIST = $(dist_sources)
 
@@ -27,16 +28,6 @@ bin_PROGRAMS = opimport
 
 opimport_SOURCES = opimport.cpp
 opimport_LDADD = \
-	libabi.a \
-	../libdb/libodb.a \
-	../libopt++/libopt++.a \
-	../libutil++/libutil++.a \
-	../libutil/libutil.a
-
-check_PROGRAMS = abi_test
-
-abi_test_SOURCES = abi_test.cpp
-abi_test_LDADD = \
 	libabi.a \
 	../libdb/libodb.a \
 	../libopt++/libopt++.a \

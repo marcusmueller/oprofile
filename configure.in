@@ -222,6 +222,7 @@ AC_OUTPUT(Makefile \
 	libdb/Makefile \
 	libdb/tests/Makefile \
 	libabi/Makefile \
+	libabi/tests/Makefile \
 	libregex/Makefile \
 	libregex/tests/Makefile \
 	libregex/stl.pat \

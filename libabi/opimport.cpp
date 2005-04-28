@@ -121,6 +121,8 @@ void import_from_abi(abi const & abi, void const * srcv,
 	// "double" extraction is unlikely to work
 	head->cpu_speed = 0.0;
 	ext.extract(head->mtime, src, "sizeof_time_t", "offsetof_header_mtime");
+	ext.extract(head->cg_to_is_kernel, src, "sizeof_u32",
+		"offsetof_header_cg_to_is_kernel");
 	src += abi.need("sizeof_struct_opd_header");
 	// done extracting opd header
 

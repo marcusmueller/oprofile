@@ -77,6 +77,7 @@ int main(int argc, char const ** argv)
 		header->ctr_count = 0xdeadbeef;
 		header->cpu_speed = 0;
 		header->mtime = 1034790063;
+		header->cg_to_is_kernel = 1;
     
 		for (int i = 0; i < 3793; ++i) {
 			int rc = odb_insert(&dest, ((i * i) ^ (i + i)),
