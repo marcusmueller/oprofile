@@ -1,3 +1,7 @@
+2005-04-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/opd_sfile.c: clear only 256 entry in the sfile lru list
+
 2005-04-28  John Levon  <levon@movementarian.org>
 
 	* libabi/abi.cpp:

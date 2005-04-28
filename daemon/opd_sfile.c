@@ -506,7 +506,7 @@ static int always_true(void)
 }
 
 
-#define LRU_AMOUNT 1000
+#define LRU_AMOUNT 256
 
 /*
  * Clear out older sfiles. Note the current sfiles we're using
