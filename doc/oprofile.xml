@@ -476,6 +476,12 @@ The <command>opcontrol</command> script provides the following actions :
 		  </para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>--status</option></term>
+		<listitem><para>
+		Show configuration information.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>--start-daemon</option></term>
 		<listitem><para>
 		    Start the oprofile daemon without starting actual profiling. The profiling

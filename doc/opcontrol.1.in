@@ -37,6 +37,10 @@ Followed by list options for profiling setup. Store setup
 in ~root/.oprofile/daemonrc. Optional.
 .br
 .TP
+.BI "--status"
+Show configuration information.
+.br
+.TP
 .BI "--start-daemon"
 Start the oprofile daemon without starting profiling. Not available
 in 2.2/2.4 kernels.

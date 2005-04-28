@@ -101,6 +101,7 @@ do_help()
    -v/--version     show version
    --init           loads the oprofile module and oprofilefs
    --setup          give setup arguments (may be omitted)
+   --status         show configuration
    --start-daemon   start daemon without starting profiling
    -s/--start       start data collection
    -d/--dump        flush the collected profiling data
@@ -612,6 +613,10 @@ do_options()
 				EXCLUSIVE_ARGV="$arg"
 				;;
 
+			--status)
+				STATUS=yes
+				;;
+
 			--reset)
 				DUMP=yes
 				RESET=yes
@@ -1118,6 +1123,67 @@ do_start()
 }
 
 
+# print status
+do_status()
+{
+	OPROFILED_PID=`cat $DIR/lock 2>/dev/null`
+	if test -n "$OPROFILED_PID" -a -d "/proc/$OPROFILED_PID"; then
+		echo "Daemon running: pid $OPROFILED_PID"
+	else
+		echo "Daemon not running"
+	fi
+
+	if test "$NR_CHOSEN" != "0"; then
+		for f in `seq 0 $((NR_CHOSEN - 1))`; do
+			echo "Event 0: ${CHOSEN_EVENTS[$f]}"
+		done
+	fi
+ 
+	SEPARATE=""
+	if test "$SEPARATE_LIB" = "1"; then
+		SEPARATE="library";
+	fi
+	if test "$SEPARATE_KERNEL" = "1"; then
+		SEPARATE="$SEPARATE kernel";
+	fi
+	if test "$SEPARATE_THREAD" = "1"; then
+		SEPARATE="$SEPARATE thread";
+	fi
+	if test "$SEPARATE_CPU" = "1"; then
+		SEPARATE="$SEPARATE cpu";
+	fi
+
+	if test -z "$SEPARATE"; then
+		SEPARATE=none
+	fi
+
+	echo "Separate options: $SEPARATE"
+	echo "vmlinux file: $VMLINUX"
+
+	if test -z "$IMAGE_FILTER"; then
+		echo "Image filter: none"
+	else
+		echo "Image filter: $IMAGE_FILTER"
+	fi
+
+	echo "Call-graph depth: $CALLGRAPH"
+	if test "$BUF_SIZE" != "0"; then
+		echo "Buffer size: $BUF_SIZE"
+	fi;
+	if test "$KERNEL_SUPPORT" != "yes"; then
+		if test "$NOTE_SIZE" != "0"; then
+			echo "Note buffer size: $NOTE_SIZE"
+		fi
+	else
+		if test "$CPU_BUF_SIZE" != "0"; then
+			echo "CPU buffer size: $CPU_BUF_SIZE"
+		fi
+	fi
+
+	exit 0
+}
+
+
 # do_dump_data
 # returns 0 if successful
 # returns 1 if the daemon is unable to dump data
@@ -1254,6 +1320,10 @@ do_operations()
 	# INIT always done by load_module to get access to cputype
 	# thus INIT is a noop
 
+	if test "$STATUS" = "yes"; then
+		do_status
+	fi
+ 
 	if test "$SETUP" = "yes"; then
 		check_valid_args
 		do_save_setup
