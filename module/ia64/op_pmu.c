@@ -217,7 +217,7 @@ disable_psr(void *dummy)
 	__asm__ __volatile__ ("rsm psr.pp;;"::: "memory");
 
 #if defined(CONFIG_PERFMON) && defined(CONFIG_SMP)
-#if V_AT_LEAST(2, 4, 20)
+#if V_AT_LEAST(2, 4, 21)
 	local_cpu_data->pfm_syst_info |=  PFM_CPUINFO_SYST_WIDE;
 	local_cpu_data->pfm_syst_info &= ~PFM_CPUINFO_DCR_PP;
 	/* FIXME: what todo with the 3rd flags PFM_CPUINFO_EXCL_IDLE 0x4 */
@@ -326,7 +326,7 @@ pmu_start(void *info)
 
 #ifdef CONFIG_PERFMON
 #ifdef CONFIG_SMP
-#if V_AT_LEAST(2, 4, 20)
+#if V_AT_LEAST(2, 4, 21)
 	local_cpu_data->pfm_syst_info |= PFM_CPUINFO_SYST_WIDE;
 	local_cpu_data->pfm_syst_info |= PFM_CPUINFO_DCR_PP;
 	/* FIXME: what todo with the 3rd flags PFM_CPUINFO_EXCL_IDLE 0x4 */
@@ -365,7 +365,7 @@ pmu_stop(void *info)
 
 #ifdef CONFIG_PERFMON
 #ifdef CONFIG_SMP
-#if V_AT_LEAST(2, 4, 20)
+#if V_AT_LEAST(2, 4, 21)
 	local_cpu_data->pfm_syst_info &= ~PFM_CPUINFO_SYST_WIDE;
 	local_cpu_data->pfm_syst_info &= ~PFM_CPUINFO_DCR_PP;
 	/* FIXME: what todo with the 3rd flags PFM_CPUINFO_EXCL_IDLE 0x4 */

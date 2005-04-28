@@ -1,3 +1,8 @@
+2005-04-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* module/ia64/op_pmu.c: compile fix, pfm_syst_info has been added
+	  between 2.4.20 and 2.4.21
+
 2005-04-27  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil/op_file.h: op_file_readable() accept only regular file
