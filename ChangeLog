@@ -1,5 +1,9 @@
 2005-05-02  John Levon  <levon@movementarian.org>
 
+	* doc/oprofile.xml: small change
+
+2005-05-02  John Levon  <levon@movementarian.org>
+
 	* daemon/Makefile.am:
 	* daemon/opd_anon.h:
 	* daemon/opd_anon.c:

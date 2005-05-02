@@ -1380,13 +1380,10 @@ c01daea0 6113     11.5144     vmlinux                  __copy_to_user_ll
 
 <para>
 These are the two basic ways you are most likely to use regularly, but <command>opreport</command>
-can do a lot more than that. For more details, see <xref linkend="opreport-details" />.
+can do a lot more than that, as described below.
 </para>
 
-<sect2 id="opreport-details">
-<title>Usage of <command>opreport</command></title>
-
-<sect3 id="opreport-merging">
+<sect2 id="opreport-merging">
 <title>Merging separate profiles</title>
 
 If you have used one of the <option>--separate=</option> options
@@ -1398,17 +1395,17 @@ when using <option>--separate=lib</option>).
 Sometimes it can be useful to merge these results back together
 before getting results. The <option>--merge</option> option allows
 you to do that.
-</sect3>
+</sect2>
 
-<sect3 id="opreport-comparison">
+<sect2 id="opreport-comparison">
 <title>Side-by-side multiple results</title>
 If you have used multiple events when profiling, by default you get
 side-by-side results of each event's sample values from <command>opreport</command>.
 You can restrict which events to list by appropriate use of the
 <option>event:</option> profile specifications, etc.
-</sect3>
+</sect2>
 
-<sect3 id="opreport-callgraph">
+<sect2 id="opreport-callgraph">
 <title>Callgraph output</title>
 <para>
 When using the <option>opcontrol --callgraph</option> option, you can see what
@@ -1499,9 +1496,9 @@ that this doesn't actually happen. See <xref
 linkend="interpreting-callgraph" /> for an explanation.
 </para>
 
-</sect3> <!-- opreport-callgraph -->
+</sect2> <!-- opreport-callgraph -->
 
-<sect3 id="opreport-diff">
+<sect2 id="opreport-diff">
 <title>Differential profiles with <command>opreport</command></title>
 
 <para>
@@ -1577,9 +1574,9 @@ applications will not work as you might expect: each symbol will be
 considered different.
 </para>
 
-</sect3> <!-- opreport-diff -->
+</sect2> <!-- opreport-diff -->
 
-<sect3 id="opreport-anon">
+<sect2 id="opreport-anon">
 <title>Anonymous executable mappings</title>
 <para>
 Many applications, typically ones involving dynamic compilation into
@@ -1609,9 +1606,9 @@ a dependent image, even when not using <option>--separate=none</option>.
 Equally, the results are not affected by the <option>--merge</option>
 option.
 </para>
-</sect3> <!-- opreport-anon -->
+</sect2> <!-- opreport-anon -->
 
-<sect3 id="opreport-options">
+<sect2 id="opreport-options">
 <title>Options for <command>opreport</command></title>
 
 <variablelist>
@@ -1692,9 +1689,7 @@ Show version.
 </para></listitem></varlistentry>
 </variablelist>
 
-</sect3>
-
-</sect2> <!-- opreport-details -->
+</sect2>
 
 </sect1> <!-- opreport -->
 
