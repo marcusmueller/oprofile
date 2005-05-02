@@ -162,6 +162,20 @@ op_bfd::~op_bfd()
 }
 
 
+unsigned long const op_bfd::get_start_offset(bfd_vma vma) const
+{
+	if (!vma || !ibfd.valid())
+		return text_offset;
+
+	for (asection * sect = ibfd.abfd->sections; sect; sect = sect->next) {
+		if (sect->vma == vma)
+			return sect->filepos;
+	}
+
+	return 0;
+}
+
+
 void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 {
 	ibfd.get_symbols();
@@ -357,6 +371,8 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 			      << hex << sym.symbol()->section->filepos << endl;
 		}
 	}
+
+	// FIXME: these checks are bogus for new stuff...
 
 	if (start >= file_size + text_offset) {
 		ostringstream os;

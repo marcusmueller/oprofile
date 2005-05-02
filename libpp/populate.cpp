@@ -18,14 +18,16 @@
 
 #include "image_errors.h"
 
+#include <iostream>
+
 using namespace std;
 
 namespace {
 
 /// load merged files for one set of sample files
 bool
-populate_from_files(profile_t & profile,
-   list<profile_sample_files> const & files, u32 offset)
+populate_from_files(profile_t & profile, op_bfd const & abfd,
+                    list<profile_sample_files> const & files)
 {
 	list<profile_sample_files>::const_iterator it = files.begin();
 	list<profile_sample_files>::const_iterator const end = files.end();
@@ -37,7 +39,8 @@ populate_from_files(profile_t & profile,
 		// since we can create a profile_sample_files for cg file only
 		// (i.e no sample to the binary)
 		if (!it->sample_filename.empty()) {
-			profile.add_sample_file(it->sample_filename, offset);
+			profile.add_sample_file(it->sample_filename);
+			profile.set_offset(abfd);
 			found = true;
 		}
 	}
@@ -62,8 +65,6 @@ populate_for_image(string const & archive_path, profile_container & samples,
 	if (ip.error == image_format_failure)
 		report_image_error(ip, false);
 
-	u32 offset = abfd.get_start_offset();
-
 	opd_header header;
 
 	bool found = false;
@@ -79,7 +80,7 @@ populate_for_image(string const & archive_path, profile_container & samples,
 		// to the wrong app_image otherwise
 		for (; it != end; ++it) {
 			profile_t profile;
-			if (populate_from_files(profile, it->files, offset)) {
+			if (populate_from_files(profile, abfd, it->files)) {
 				header = profile.get_header();
 				samples.add(profile, abfd, it->app_image, i);
 				found = true;

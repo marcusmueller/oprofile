@@ -1,3 +1,38 @@
+2005-05-02  John Levon  <levon@movementarian.org>
+
+	* daemon/Makefile.am:
+	* daemon/opd_anon.h:
+	* daemon/opd_anon.c:
+	* daemon/init.c:
+	* daemon/opd_cookie.c:
+	* daemon/opd_events.h:
+	* daemon/opd_events.c:
+	* daemon/opd_mangling.c:
+	* daemon/opd_sfile.h:
+	* daemon/opd_sfile.c:
+	* daemon/opd_trans.h:
+	* daemon/opd_trans.c:
+	* daemon/liblegacy/opd_sample_files.c:
+	* doc/oprofile.xml:
+	* libabi/abi.cpp:
+	* libabi/opimport.cpp:
+	* libabi/tests/abi_test.cpp:
+	* libop/op_mangle.h:
+	* libop/op_mangle.c:
+	* libop/op_sample_file.h:
+	* libpp/callgraph_container.cpp:
+	* libpp/image_errors.cpp:
+	* libpp/op_header.cpp:
+	* libpp/parse_filename.cpp:
+	* libpp/populate.cpp:
+	* libpp/profile.h:
+	* libpp/profile.cpp:
+	* libpp/profile_spec.cpp:
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp:
+	* pp/opannotate.cpp:
+	* pp/opgprof.cpp: add basic anon mapping support
+
 2005-04-28  John Levon  <levon@movementarian.org>
 
 	* utils/opcontrol:

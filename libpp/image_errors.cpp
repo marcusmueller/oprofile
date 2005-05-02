@@ -11,6 +11,7 @@
 #include "image_errors.h"
 
 #include "arrange_profiles.h"
+#include "string_manip.h"
 
 #include <iostream>
 #include <set>
@@ -30,6 +31,10 @@ void report_image_error(string const & image, image_error error, bool fatal)
 
 	if (reported_images_error.find(image) == reported_images_error.end()) {
 		reported_images_error.insert(image);
+
+		// FIXME: hacky
+		if (error == image_not_found && is_prefix(image, "anon "))
+			return;
 
 		cerr << (fatal ? "error: " : "warning: ");
 		cerr << image << ' ';

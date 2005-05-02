@@ -22,6 +22,7 @@
 #include "utility.h"
 
 class opd_header;
+class op_bfd;
 
 /**
  * Class containing a single sample file contents.
@@ -56,13 +57,15 @@ public:
 	/**
 	 * cumulate sample file to our container of samples
 	 * @param filename  sample file name
-	 * @param offset the offset for kernel files, \sa start_offset
 	 *
 	 * store samples for one sample file, sample file header is sanitized.
 	 *
 	 * all error are fatal
 	 */
-	void add_sample_file(std::string const & filename, u32 offset);
+	void add_sample_file(std::string const & filename);
+
+	/// Set an appropriate start offset, see comments below.
+	void set_offset(op_bfd const & abfd);
 
 	class const_iterator;
 	typedef std::pair<const_iterator, const_iterator> iterator_pair;
@@ -100,14 +103,29 @@ private:
 	ordered_samples_t ordered_samples;
 
 	/**
-	 * For the kernel and kernel modules, this value is non-zero and
-	 * equal to the offset of the .text section. This is done because
-	 * we use the information provided in /proc/ksyms, which only gives
-	 * the mapped position of .text, and the symbol _text from
-	 * vmlinux. This value is used to fix up the sample offsets
-	 * for kernel code as a result of this difference (in user-space
-	 * samples, the sample offset is from the start of the mapped
-	 * file, as seen in /proc/pid/maps).
+	 * For certain profiles, such as kernel/modules, and anon
+	 * regions with a matching binary, this value is non-zero,
+	 * and represents the file offset of the relevant section.
+	 *
+	 * For kernel profiles, this is done because we use the information
+	 * provided in /proc/ksyms, which only gives the mapped position of
+	 * .text, and the symbol _text from vmlinux. This value is used to fix
+	 * up the sample offsets for kernel code as a result of this difference
+	 *
+	 * In user-space samples, the sample offset is from the start of the
+	 * mapped file, as seen in /proc/pid/maps. This is fine for
+	 * mappings of permanent files, but with anon mappings, we need
+	 * to adjust the key values to be a file offset against the
+	 * *binary* (if there is one). This can obviously be different.
+	 * So we pass our anon mapping start VMA to op_bfd, which looks
+	 * for a section with that VMA, then returns the section's
+	 * filepos. So all is good.
+	 *
+	 * Finally, note that for cg we can't use this inside the
+	 * profile_t, as we're storing two offsets in the key value. So
+	 * we do it later in that case.
+	 *
+	 * Phew.
 	 */
 	u32 start_offset;
 };
@@ -122,8 +140,8 @@ namespace std {
 		struct iterator_traits<profile_t::const_iterator> {
 			typedef ptrdiff_t difference_type;
 			typedef unsigned int value_type;
-			typedef unsigned int* pointer;
-			typedef unsigned int& reference;
+			typedef unsigned int * pointer;
+			typedef unsigned int & reference;
 			typedef input_iterator_tag iterator_category;
 		};
 }

@@ -123,6 +123,10 @@ void import_from_abi(abi const & abi, void const * srcv,
 	ext.extract(head->mtime, src, "sizeof_time_t", "offsetof_header_mtime");
 	ext.extract(head->cg_to_is_kernel, src, "sizeof_u32",
 		"offsetof_header_cg_to_is_kernel");
+	ext.extract(head->anon_start, src, "sizeof_u32",
+		"offsetof_header_anon_start");
+	ext.extract(head->cg_to_anon_start, src, "sizeof_u32",
+		"offsetof_header_cg_to_anon_start");
 	src += abi.need("sizeof_struct_opd_header");
 	// done extracting opd header
 

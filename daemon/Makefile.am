@@ -21,7 +21,9 @@ oprofiled_SOURCES = \
 	opd_mangling.c \
 	opd_mangling.h \
 	opd_perfmon.h \
-	opd_perfmon.c
+	opd_perfmon.c \
+	opd_anon.h \
+	opd_anon.c
 
 LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
 

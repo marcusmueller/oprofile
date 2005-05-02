@@ -14,6 +14,7 @@
 #include "opd_trans.h"
 #include "opd_kernel.h"
 #include "opd_mangling.h"
+#include "opd_anon.h"
 #include "opd_printf.h"
 #include "opd_stats.h"
 #include "oprofiled.h"
@@ -46,7 +47,7 @@ sfile_hash(struct transient const * trans, struct kernel_image * ki)
 		val ^= trans->tgid << 2;
 	}
 
-	if (separate_kernel || (separate_lib && !ki))
+	if (separate_kernel || ((trans->anon || separate_lib) && !ki))
 		val ^= trans->app_cookie >> (DCOOKIE_SHIFT + 3);
 
 	if (separate_cpu)
@@ -67,14 +68,19 @@ sfile_hash(struct transient const * trans, struct kernel_image * ki)
 	if (!separate_thread)
 		val ^= trans->tgid << 2;
 
+	if (trans->anon) {
+		val ^= trans->anon->start >> VMA_SHIFT;
+		val ^= trans->anon->end >> (VMA_SHIFT + 1);
+	}
+
 	return val & HASH_BITS;
 }
 
 
 static int
 do_match(struct sfile const * sf, cookie_t cookie, cookie_t app_cookie,
-         struct kernel_image const * ki, pid_t tgid, pid_t tid,
-         unsigned int cpu)
+         struct kernel_image const * ki, struct anon_mapping const * anon,
+         pid_t tgid, pid_t tid, unsigned int cpu)
 {
 	/* this is a simplified check for "is a kernel image" AND
 	 * "is the right kernel image". Also handles no-vmlinux
@@ -93,7 +99,7 @@ do_match(struct sfile const * sf, cookie_t cookie, cookie_t app_cookie,
 			return 0;
 	}
 
-	if (separate_kernel || (separate_lib && !ki)) {
+	if (separate_kernel || ((anon || separate_lib) && !ki)) {
 		if (sf->app_cookie != app_cookie)
 			return 0;
 	}
@@ -104,6 +110,9 @@ do_match(struct sfile const * sf, cookie_t cookie, cookie_t app_cookie,
 	if (ki)
 		return 1;
 
+	if (sf->anon != anon)
+		return 0;
+
 	return sf->cookie == cookie;
 }
 
@@ -113,7 +122,7 @@ trans_match(struct transient const * trans, struct sfile const * sfile,
             struct kernel_image const * ki)
 {
 	return do_match(sfile, trans->cookie, trans->app_cookie, ki,
-	                trans->tgid, trans->tid, trans->cpu);
+	                trans->anon, trans->tgid, trans->tid, trans->cpu);
 }
 
 
@@ -121,7 +130,7 @@ static int
 sfile_equal(struct sfile const * sf, struct sfile const * sf2)
 {
 	return do_match(sf, sf2->cookie, sf2->app_cookie, sf2->kernel,
-	                sf2->tgid, sf2->tid, sf2->cpu);
+	                sf2->anon, sf2->tgid, sf2->tid, sf2->cpu);
 }
 
 
@@ -146,6 +155,7 @@ create_sfile(unsigned long hash, struct transient const * trans,
 	sf->tgid = (pid_t)-1;
 	sf->cpu = 0;
 	sf->kernel = ki;
+	sf->anon = trans->anon;
 
 	for (i = 0 ; i < op_nr_counters ; ++i)
 		odb_init(&sf->files[i]);
@@ -161,7 +171,7 @@ create_sfile(unsigned long hash, struct transient const * trans,
 	if (separate_cpu)
 		sf->cpu = trans->cpu;
 
-	if (separate_kernel || (separate_lib && !ki))
+	if (separate_kernel || ((trans->anon || separate_lib) && !ki))
 		sf->app_cookie = trans->app_cookie;
 
 	if (!ki)
@@ -207,10 +217,10 @@ struct sfile * sfile_find(struct transient const * trans)
 			opd_stats[OPD_LOST_KERNEL]++;
 			return NULL;
 		}
-	} else if (trans->cookie == NO_COOKIE) {
+	} else if (trans->cookie == NO_COOKIE && !trans->anon) {
 		if (vsamples) {
 			char const * app = verbose_cookie(trans->app_cookie);
-			printf("No permanent mapping for pc %llx, app %s.\n",
+			printf("No anon map for pc %llx, app %s.\n",
 			       trans->pc, app);
 		}
 		opd_stats[OPD_LOST_NO_MAPPING]++;
@@ -306,7 +316,11 @@ static void verbose_print_sample(struct sfile * sf, vma_t pc, uint counter)
 {
 	char const * app = verbose_cookie(sf->app_cookie);
 	printf("0x%llx(%u): ", pc, counter);
-	if (sf->kernel) {
+	if (sf->anon) {
+		printf("anon (tgid %u, 0x%llx-0x%llx), ",
+		       (unsigned int)sf->anon->tgid,
+		       sf->anon->start, sf->anon->end);
+	} else if (sf->kernel) {
 		printf("kern (name %s, 0x%llx-0x%llx), ", sf->kernel->name,
 		       sf->kernel->start, sf->kernel->end);
 	} else {
@@ -351,6 +365,12 @@ static void sfile_log_arc(struct transient const * trans)
 	if (trans->last->kernel)
 		to -= trans->last->kernel->start;
 
+	if (trans->current->anon)
+		from -= trans->current->anon->start;
+
+	if (trans->last->anon)
+		to -= trans->last->anon->start;
+
 	if (varcs)
 		verbose_arc(trans, from, to);
 
@@ -391,6 +411,9 @@ void sfile_log_sample(struct transient const * trans)
 	if (trans->current->kernel)
 		pc -= trans->current->kernel->start;
 
+	if (trans->current->anon)
+		pc -= trans->current->anon->start;
+ 
 	if (vsamples)
 		verbose_sample(trans, pc);
 
@@ -444,6 +467,12 @@ static int is_sfile_kernel(struct sfile * sf)
 }
 
 
+static int is_sfile_anon(struct sfile * sf)
+{
+	return !!sf->anon;
+}
+
+
 static void for_one_sfile(struct sfile * sf, int (*func)(struct sfile *))
 {
 	size_t i;
@@ -485,6 +514,12 @@ static void for_each_sfile(int (*func)(struct sfile *))
 void sfile_clear_kernel(void)
 {
 	for_each_sfile(is_sfile_kernel);
+}
+
+
+void sfile_clear_anon(void)
+{
+	for_each_sfile(is_sfile_anon);
 }
 
 

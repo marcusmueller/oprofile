@@ -105,10 +105,11 @@ bool aligned_samples(profile_container const & samples, int gap)
 
 void output_cg(FILE * fp, op_bfd const & abfd, profile_t const & cg_db)
 {
-	bfd_vma offset = abfd.get_start_offset();
-	if (!cg_db.get_header().is_kernel)
-		offset = 0;
-
+	opd_header const & header = cg_db.get_header();
+	bfd_vma offset = 0;
+	if (header.is_kernel || header.anon_start)
+		offset = abfd.get_start_offset(header.anon_start);
+ 
 	profile_t::iterator_pair p_it = cg_db.samples_range();
 	for (; p_it.first != p_it.second; ++p_it.first) {
 		bfd_vma from = p_it.first.vma() >> 32;
@@ -232,8 +233,8 @@ load_samples(op_bfd const & abfd, list<profile_sample_files> const & files,
 
 		profile_t profile;
 
-		profile.add_sample_file(it->sample_filename,
-		   abfd.get_start_offset());
+		profile.add_sample_file(it->sample_filename);
+		profile.set_offset(abfd);
 
 		check_mtime(abfd.get_filename(), profile.get_header());
 
@@ -261,7 +262,7 @@ void load_cg(profile_t & cg_db, list<profile_sample_files> const & files)
 			 * data in from/to eip. */
 			cverb << vsfile << "loading cg samples file : " 
 			      << *cit << endl;
-			cg_db.add_sample_file(*cit, 0);
+			cg_db.add_sample_file(*cit);
 		}
 	}
 }

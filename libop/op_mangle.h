@@ -24,7 +24,9 @@ enum mangle_flags {
 	MANGLE_TGID      = (1 << 1),
 	MANGLE_TID       = (1 << 2),
 	MANGLE_KERNEL    = (1 << 3),
-	MANGLE_CALLGRAPH = (1 << 4)
+	MANGLE_CALLGRAPH = (1 << 4),
+	MANGLE_ANON      = (1 << 5),
+	MANGLE_CG_ANON   = (1 << 6),
 };
 
 /**
@@ -32,7 +34,6 @@ enum mangle_flags {
  * op_mangle_filename.
  */
 struct mangle_values {
-
 	int flags;
 
 	char const * image_name;

@@ -12,6 +12,7 @@
 #include "opd_trans.h"
 #include "opd_kernel.h"
 #include "opd_sfile.h"
+#include "opd_anon.h"
 #include "opd_stats.h"
 #include "opd_printf.h"
 #include "opd_interface.h"
@@ -24,6 +25,29 @@
 #include <errno.h>
 
 extern size_t kernel_pointer_size;
+
+
+void clear_trans_last(struct transient * trans)
+{
+	trans->last = NULL;
+	trans->last_anon = NULL;
+}
+
+
+void clear_trans_current(struct transient * trans)
+{
+	trans->current = NULL;
+	trans->anon = NULL;
+}
+
+
+void update_trans_last(struct transient * trans)
+{
+	trans->last = trans->current;
+	trans->last_anon = trans->anon;
+	trans->last_pc = trans->pc;
+}
+
 
 static inline int is_escape_code(uint64_t code)
 {
@@ -83,7 +107,10 @@ static void opd_put_sample(struct transient * trans, unsigned long long pc)
 
 	/* sfile can change at each sample for kernel */
 	if (trans->in_kernel != 0)
-		trans->current = NULL;
+		clear_trans_current(trans);
+
+	if (!trans->in_kernel && trans->cookie == NO_COOKIE)
+		trans->anon = find_anon_mapping(trans);
 
 	/* get the current sfile if needed */
 	if (!trans->current)
@@ -91,7 +118,7 @@ static void opd_put_sample(struct transient * trans, unsigned long long pc)
 
 	/*
 	 * can happen if kernel sample falls through the cracks, or if
-	 * it's a sample from an anon region
+	 * it's a sample from an anon region we couldn't find
 	 */
 	if (!trans->current)
 		goto out;
@@ -107,9 +134,7 @@ out:
 	if (trans->tracing == TRACING_START)
 		trans->tracing = TRACING_ON;
 
-	/* used for callgraph only */
-	trans->last = trans->current;
-	trans->last_pc = trans->pc;
+	update_trans_last(trans);
 }
 
 
@@ -122,7 +147,7 @@ static void code_unknown(struct transient * trans __attribute__((unused)))
 
 static void code_ctx_switch(struct transient * trans)
 {
-	trans->current = NULL;
+	clear_trans_current(trans);
 
 	if (!enough_remaining(trans, 5)) {
 		trans->remaining = 0;
@@ -149,7 +174,7 @@ static void code_ctx_switch(struct transient * trans)
 
 static void code_cpu_switch(struct transient * trans)
 {
-	trans->current = NULL;
+	clear_trans_current(trans);
 
 	if (!enough_remaining(trans, 1)) {
 		trans->remaining = 0;
@@ -163,7 +188,7 @@ static void code_cpu_switch(struct transient * trans)
 
 static void code_cookie_switch(struct transient * trans)
 {
-	trans->current = NULL;
+	clear_trans_current(trans);
 
 	if (!enough_remaining(trans, 1)) {
 		trans->remaining = 0;
@@ -184,7 +209,7 @@ static void code_kernel_enter(struct transient * trans)
 {
 	verbprintf(vmisc, "KERNEL_ENTER_SWITCH to kernel\n");
 	trans->in_kernel = 1;
-	trans->current = NULL;
+	clear_trans_current(trans);
 	/* subtlety: we must keep trans->cookie cached,
 	 * even though it's meaningless for the kernel -
 	 * we won't necessarily get a cookie switch on
@@ -197,7 +222,8 @@ static void code_kernel_exit(struct transient * trans)
 {
 	verbprintf(vmisc, "KERNEL_EXIT_SWITCH to user-space\n");
 	trans->in_kernel = 0;
-	trans->current = NULL;
+	clear_trans_current(trans);
+	clear_trans_last(trans);
 }
 
 
@@ -205,7 +231,8 @@ static void code_module_loaded(struct transient * trans __attribute__((unused)))
 {
 	verbprintf(vmodule, "MODULE_LOADED_CODE\n");
 	opd_reread_module_info();
-	trans->current = NULL;
+	clear_trans_current(trans);
+	clear_trans_last(trans);
 }
 
 
@@ -245,8 +272,10 @@ void opd_process_samples(char const * buffer, size_t count)
 		.tracing = TRACING_OFF,
 		.current = NULL,
 		.last = NULL,
-		.cookie = 0,
-		.app_cookie = 0,
+		.cookie = INVALID_COOKIE,
+		.app_cookie = INVALID_COOKIE,
+		.anon = NULL,
+		.last_anon = NULL,
 		.pc = 0,
 		.last_pc = 0,
 		.event = 0,

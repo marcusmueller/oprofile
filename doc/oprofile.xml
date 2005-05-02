@@ -1579,6 +1579,38 @@ considered different.
 
 </sect3> <!-- opreport-diff -->
 
+<sect3 id="opreport-anon">
+<title>Anonymous executable mappings</title>
+<para>
+Many applications, typically ones involving dynamic compilation into
+machine code, have executable mappings that are not backed by an ELF
+file. <command>opreport</command> has basic support for showing the
+samples taken in these regions; for example:
+</para>
+<screen>
+$ opreport /usr/jre1.5.0/bin/java
+CPU: PIII, speed 863.195 MHz (estimated)
+Counted CPU_CLK_UNHALTED events (clocks processor is not halted) with a unit mask of 0x00 (No unit mask) count 100000
+CPU_CLK_UNHALT...|
+  samples|      %|
+------------------
+    27344 100.000 java
+        CPU_CLK_UNHALT...|
+          samples|      %|
+        ------------------
+            27236  99.605 anon (tgid:12135 range:0xb2cb8000-0xb2e80000)
+              108  0.3949 java
+</screen>
+<para>
+Currently, there is no support for getting symbol-based summaries for
+such regions. Note that, since such mappings are dependent upon
+individual invocations of a binary, these mappings are always listed as
+a dependent image, even when not using <option>--separate=none</option>.
+Equally, the results are not affected by the <option>--merge</option>
+option.
+</para>
+</sect3> <!-- opreport-anon -->
+
 <sect3 id="opreport-options">
 <title>Options for <command>opreport</command></title>
 

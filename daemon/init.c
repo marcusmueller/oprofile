@@ -16,6 +16,7 @@
 #include "opd_sfile.h"
 #include "opd_kernel.h"
 #include "opd_trans.h"
+#include "opd_anon.h"
 #include "opd_perfmon.h"
 #include "opd_printf.h"
 
@@ -238,6 +239,7 @@ static void opd_26_init(void)
 
 	cookie_init();
 	sfile_init();
+	anon_init();
 
 	/* must be /after/ perfmon_init() at least */
 	if (atexit(clean_exit)) {

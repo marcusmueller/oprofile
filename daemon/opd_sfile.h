@@ -48,6 +48,8 @@ struct sfile {
 	unsigned int cpu;
 	/** kernel image if applicable */
 	struct kernel_image * kernel;
+	/** anonymous mapping */
+	struct anon_mapping * anon;
 
 	/** hash table link */
 	struct list_head hash;
@@ -71,6 +73,9 @@ struct cg_entry {
 
 /** clear any sfiles that are for the kernel */
 void sfile_clear_kernel(void);
+
+/** clear any sfiles that are for anon mappings */
+void sfile_clear_anon(void);
 
 /** sync sample files */
 void sfile_sync_files(void);

@@ -22,8 +22,9 @@
 #include "op_header.h"
 #include "op_config.h"
 #include "op_sample_file.h"
-
 #include "profile.h"
+#include "op_bfd.h"
+#include "cverb.h"
 
 using namespace std;
 
@@ -75,7 +76,7 @@ void profile_t::open_sample_file(string const & filename, odb_t & db)
 	}
 }
 
-void profile_t::add_sample_file(string const & filename, u32 offset)
+void profile_t::add_sample_file(string const & filename)
 {
 	odb_t samples_db;
 
@@ -85,9 +86,8 @@ void profile_t::add_sample_file(string const & filename, u32 offset)
 		*static_cast<opd_header *>(odb_get_data(&samples_db));
 
 	// if we already read a sample file header pointer is non null
-	if (file_header.get()) {
+	if (file_header.get())
 		op_check_header(head, *file_header, filename);
-	}
 
 	file_header.reset(new opd_header(head));
 
@@ -109,11 +109,15 @@ void profile_t::add_sample_file(string const & filename, u32 offset)
 	}
 
 	odb_close(&samples_db);
+}
 
-	if (!get_header().is_kernel)
-		return;
 
-	start_offset = offset;
+void profile_t::set_offset(op_bfd const & abfd)
+{
+	opd_header const & header = get_header();
+	if (header.anon_start || header.is_kernel)
+		start_offset = abfd.get_start_offset(header.anon_start);
+	cverb << (vdebug) << "start_offset is now " << start_offset << endl;
 }
 
 

@@ -43,6 +43,13 @@ void op_check_header(opd_header const & h1, opd_header const & h2,
 		throw op_fatal_error(os.str());
 	}
 
+	if  (h1.anon_start != h2.anon_start) {
+		ostringstream os;
+		os << "header anon_start flags are different for "
+		   << filename << "\n";
+		throw op_fatal_error(os.str());
+	}
+	
 	// Note that we don't check CPU speed since that can vary
 	// freely on the same machine
 }

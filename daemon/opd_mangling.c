@@ -15,6 +15,7 @@
 #include "opd_kernel.h"
 #include "opd_cookie.h"
 #include "opd_sfile.h"
+#include "opd_anon.h"
 #include "opd_printf.h"
 #include "opd_events.h"
 #include "oprofiled.h"
@@ -24,7 +25,9 @@
 #include "op_config.h"
 #include "op_mangle.h"
 #include "op_events.h"
+#include "op_libiberty.h"
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,6 +36,9 @@
 
 static char const * get_dep_name(struct sfile const * sf)
 {
+	if (sf->anon)
+		return find_cookie(sf->app_cookie);
+
 	/* avoid to call find_cookie(), caller can recover using image_name */
 	if (sf->cookie == sf->app_cookie)
 		return NULL;
@@ -48,6 +54,15 @@ static char const * get_dep_name(struct sfile const * sf)
 }
 
 
+static char * mangle_anon(struct anon_mapping const * anon)
+{
+	char * name = xmalloc(PATH_MAX);
+	snprintf(name, 1024, "%u.0x%llx.0x%llx", (unsigned int)anon->tgid,
+	         anon->start, anon->end);
+	return name;
+}
+
+
 static char *
 mangle_filename(struct sfile * last, struct sfile const * sf, int counter, int cg)
 {
@@ -56,20 +71,24 @@ mangle_filename(struct sfile * last, struct sfile const * sf, int counter, int c
 	struct opd_event * event = find_counter_event(counter);
 
 	values.flags = 0;
+
 	if (sf->kernel) {
 		values.image_name = sf->kernel->name;
 		values.flags |= MANGLE_KERNEL;
+	} else if (sf->anon) {
+		values.flags |= MANGLE_ANON;
+		values.image_name = mangle_anon(sf->anon);
 	} else {
 		values.image_name = find_cookie(sf->cookie);
 	}
 
-	/* FIXME: log */
-	if (!values.image_name)
-		return NULL;
-
 	values.dep_name = get_dep_name(sf);
 	if (!values.dep_name)
 		values.dep_name = values.image_name;
+ 
+	/* FIXME: log */
+	if (!values.image_name || !values.dep_name)
+		return NULL;
 
 	if (separate_thread) {
 		values.flags |= MANGLE_TGID | MANGLE_TID;
@@ -84,12 +103,21 @@ mangle_filename(struct sfile * last, struct sfile const * sf, int counter, int c
 
 	if (cg) {
 		values.flags |= MANGLE_CALLGRAPH;
-		if (last->kernel)
+		if (last->kernel) {
 			values.cg_image_name = last->kernel->name;
-		else
+		} else if (last->anon) {
+			values.flags |= MANGLE_CG_ANON;
+			values.cg_image_name = mangle_anon(last->anon);
+		} else {
 			values.cg_image_name = find_cookie(last->cookie);
-		if (!values.cg_image_name)
+		}
+
+		/* FIXME: log */
+		if (!values.cg_image_name) {
+			if (values.flags & MANGLE_ANON)
+				free((char *)values.image_name);
 			return NULL;
+		}
 	}
 
 	values.event_name = event->name;
@@ -98,6 +126,10 @@ mangle_filename(struct sfile * last, struct sfile const * sf, int counter, int c
 
 	mangled = op_mangle_filename(&values);
 
+	if (values.flags & MANGLE_ANON)
+		free((char *)values.image_name);
+	if (values.flags & MANGLE_CG_ANON)
+		free((char *)values.cg_image_name);
 	return mangled;
 }
 
@@ -107,6 +139,7 @@ int opd_open_sample_file(odb_t * file, struct sfile * last,
 {
 	char * mangled;
 	char const * binary;
+	vma_t last_start = 0;
 	int err;
 
 	mangled = mangle_filename(last, sf, counter, cg);
@@ -146,8 +179,12 @@ retry:
 	else
 		binary = sf->kernel->name;
 
-	fill_header(odb_get_data(file), counter, !!sf->kernel,
-		    last ? !!last->kernel : 0,
+	if (last && last->anon)
+		last_start = last->anon->start;
+
+	fill_header(odb_get_data(file), counter,
+		    sf->anon ? sf->anon->start : 0, last_start,
+		    !!sf->kernel, last ? !!last->kernel : 0,
 	            binary ? op_get_mtime(binary) : 0);
 
 out:

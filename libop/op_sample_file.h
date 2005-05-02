@@ -29,8 +29,10 @@ struct opd_header {
 	double cpu_speed;
 	time_t mtime;
 	u32 cg_to_is_kernel;
+	u64 anon_start;
+	u64 cg_to_anon_start;
 	/* binary compatibility reserve */
-	u32 reserved1[5];
+	u32 reserved1[1];
 };
 
 #endif /* OP_SAMPLE_FILE_H */

@@ -19,55 +19,56 @@
 #include "op_sample_file.h"
 #include "op_config.h"
 
-static void append_separator(char * dest, int flags, char const * image_name)
+static void append_image(char * dest, int flags, int anon, char const * name)
 {
-	if ((flags & MANGLE_KERNEL) && !strchr(image_name, '/')) {
-		strcat(dest, "{kern}" "/");
+	if ((flags & MANGLE_KERNEL) && !strchr(name, '/')) {
+		strcat(dest, "{kern}/");
+	} else if (anon) {
+		strcat(dest, "{anon}/");
 	} else {
-		strcat(dest, "{root}" "/");
+		strcat(dest, "{root}/");
 	}
+
+	strcat(dest, name);
+	strcat(dest, "/");
 }
 
 char * op_mangle_filename(struct mangle_values const * values)
 {
 	char * mangled;
 	size_t len;
-	/* if dep_name != image_name we need to revert them (and so revert them
-	 * unconditionnaly because if they are equal it doesn't hurt to invert
+	int anon = values->flags & MANGLE_ANON;
+	int cg_anon = values->flags & MANGLE_CG_ANON;
+	/* if dep_name != image_name we need to invert them (and so revert them
+	 * unconditionally because if they are equal it doesn't hurt to invert
 	 * them), see P:3, FIXME: this is a bit weirds, we prolly need to
 	 * reword pp_interface */
 	char const * image_name = values->dep_name;
 	char const * dep_name = values->image_name;
+	char const * cg_image_name = values->cg_image_name;
 
-	len = strlen(OP_SAMPLES_CURRENT_DIR) + strlen(values->image_name)
-		+ 1 + strlen(values->event_name) 
-		+ 1 + strlen(values->dep_name) + 1;
+	len = strlen(OP_SAMPLES_CURRENT_DIR) + strlen(dep_name) + 1
+	             + strlen(values->event_name) + 1 + strlen(image_name) + 1;
 
 	if (values->flags & MANGLE_CALLGRAPH)
-		len += strlen(values->cg_image_name) + 1;
+		len += strlen(cg_image_name) + 1;
 
 	/* provision for tgid, tid, unit_mask, cpu and some {root}, {dep},
-	 * {kern} and {cg} marker */
+	 * {kern}, {anon} and {cg} marker */
 	/* FIXME: too ugly */
 	len += 256;
 
 	mangled = xmalloc(len);
 
 	strcpy(mangled, OP_SAMPLES_CURRENT_DIR);
-	append_separator(mangled, values->flags, image_name);
-	strcat(mangled, image_name);
-	strcat(mangled, "/");
+	append_image(mangled, values->flags, 0, image_name);
 
 	strcat(mangled, "{dep}" "/");
-	append_separator(mangled, values->flags, dep_name);
-	strcat(mangled, dep_name);
-	strcat(mangled, "/");
+	append_image(mangled, values->flags, anon, dep_name);
 
 	if (values->flags & MANGLE_CALLGRAPH) {
 		strcat(mangled, "{cg}" "/");
-		append_separator(mangled, values->flags, values->cg_image_name);
-		strcat(mangled, values->cg_image_name);
-		strcat(mangled, "/");
+		append_image(mangled, values->flags, cg_anon, cg_image_name);
 	}
 
 	strcat(mangled, values->event_name);

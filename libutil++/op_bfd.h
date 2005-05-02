@@ -151,8 +151,12 @@ public:
 	/** return the relocated PC value for the given file offset */
 	bfd_vma offset_to_pc(bfd_vma offset) const;
 
-	/** return the text section filepos. */
-	unsigned long const get_start_offset() const { return text_offset; }
+	/**
+	 * If passed 0, return the file position of the .text section.
+	 * Otherwise, return the filepos of a section with a matching
+	 * vma.
+	 */
+	unsigned long const get_start_offset(bfd_vma vma = 0) const;
  
 	/**
 	 * Return the image name of the underlying binary image. For an

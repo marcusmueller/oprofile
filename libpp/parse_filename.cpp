@@ -14,6 +14,7 @@
 #include <iostream>
 
 #include "parse_filename.h"
+#include "file_manip.h"
 #include "string_manip.h"
 
 using namespace std;
@@ -57,29 +58,45 @@ parsed_filename parse_event_spec(string const & event_spec)
 /**
  * @param component  path component
  *
- * remove from path_component all directory left to {root} or {kern}
+ * remove from path_component all directory left to {root}, {kern} or {anon}
  */
 void remove_base_dir(vector<string> & path)
 {
 	vector<string>::iterator it;
 	for (it = path.begin(); it != path.end(); ++it) {
-		if (*it == "{root}" || *it == "{kern}")
+		if (*it == "{root}" || *it == "{kern}"  || *it == "{anon}")
 			break;
 	}
 
 	path.erase(path.begin(), it);
 }
 
+
+/// Handle an anon region. Pretty print the details.
+string const parse_anon(string const & str)
+{
+	vector<string> parts = separate_token(str, '.');
+	if (parts.size() != 3)
+		throw invalid_argument("parse_anon() invalid name: " + str);
+
+	string ret = "anon (tgid:";
+	ret += parts[0] + " range:" + parts[1] + "-" + parts[2] + ")";
+	return ret;
+}
+
+
 }  // anonymous namespace
 
 
 /*
- *  valid filename are:
+ *  valid filename are variations on:
  *
  * {kern}/name/event_spec
- * {root}/path/to/bin/event_spec
  * {root}/path/to/bin/{dep}/{root}/path/to/bin/event_spec
+ * {root}/path/to/bin/{dep}/{anon}/pid.start.end/event_spec
  * {root}/path/to/bin/{dep}/{kern}/name/event_spec
+ * {root}/path/to/bin/{dep}/{root}/path/to/bin/{cg}/{root}/path/to/bin/event_spec
+
  *
  * where /name/ denote a unique path component
  */
@@ -125,35 +142,48 @@ parsed_filename parse_filename(string const & filename)
 	// skip "{dep}"
 	++i;
 
-	// PP:3.19 {dep}/ must be followed by {kern}/ or {root}/
-	if (path[i] != "{kern}" && path[i] != "{root}") {
+	// PP:3.19 {dep}/ must be followed by {kern}/, {root}/ or {anon}/
+	if (path[i] != "{kern}" && path[i] != "{root}" && path[i] != "{anon}") {
 		throw invalid_argument("parse_filename() invalid filename: " +
 				       filename);
 	}
 
-	// skip "{root}" or "{kern}"
+	bool anon = path[i] == "{anon}";
+
+	// skip "{root}", "{kern}" or "{anon}"
 	++i;
 
 	for (; i < path.size(); ++i) {
 		if (path[i] == "{cg}")
 			break;
+
+		if (anon) {
+			result.lib_image = parse_anon(path[i++]);
+			break;
+		}
 		result.lib_image += "/" + path[i];
 	}
 
-	if (i != path.size()) {
-		// skip "{cg}"
-		++i;
-		if (i == path.size() ||
-		    (path[i] != "{kern}" && path[i] != "{root}")) {
-			throw invalid_argument(
-				"parse_filename() invalid filename: " +
-				filename);
-		}
-		// skip "{root}" or "{kern}"
-		++i;
+	if (i == path.size())
+		return result;
+
+	// skip "{cg}"
+	++i;
+	if (i == path.size() ||
+	    (path[i] != "{kern}" && path[i] != "{root}" && path[i] != "{anon}")) {
+		throw invalid_argument("parse_filename() invalid filename: "
+		                       + filename);
 	}
-	for (; i < path.size(); ++i) {
-		result.cg_image += "/" + path[i];
+
+	// skip "{root}", "{kern}" or "{anon}"
+	anon = path[i] == "{anon}";
+	++i;
+
+	if (anon) {
+		result.cg_image = parse_anon(path[i++]);
+	} else {
+		for (; i < path.size(); ++i)
+			result.cg_image += "/" + path[i];
 	}
 
 	return result;

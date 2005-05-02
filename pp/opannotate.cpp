@@ -498,7 +498,7 @@ void output_one_file(istream & in, debug_name_id filename,
 	 */
 	if (out_file.find("/../") != string::npos) {
 		if (in) {
-		 	cerr << "refusing to create non-canonical filename "
+			cerr << "refusing to create non-canonical filename "
 			     << out_file  << endl;
 		}
 		return;

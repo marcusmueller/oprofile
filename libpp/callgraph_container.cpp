@@ -41,11 +41,25 @@ bool operator==(cg_symbol const & lhs, cg_symbol const & rhs)
 }
 
 
+// we store {caller,callee} inside a single u64
+odb_key_t caller_to_key(u32 value)
+{
+	return odb_key_t(value) << 32;
+}
+
+
+u32 key_to_callee(odb_key_t key)
+{
+	return key & 0xffffffff;
+}
+
+
 bool compare_by_callee_vma(pair<odb_key_t, odb_value_t> const & lhs,
                            pair<odb_key_t, odb_value_t> const & rhs)
 {
-	return (lhs.first & 0xffffffff) < (rhs.first & 0xffffffff);
+	return (key_to_callee(lhs.first)) < (key_to_callee(rhs.first));
 }
+
 
 /*
  * We need 2 comparators for callgraph to get the desired output:
@@ -68,6 +82,196 @@ bool
 compare_arc_count_reverse(symbol_entry const & lhs, symbol_entry const & rhs)
 {
 	return rhs.sample.counts[0] < lhs.sample.counts[0];
+}
+
+
+// find the nearest bfd symbol for the given file offset and check it's
+// in range
+op_bfd_symbol const *
+get_symbol_by_filepos(op_bfd const & bfd, u32 bfd_offset,
+                      vma_t offset, symbol_index_t & i)
+{
+	offset += bfd_offset;
+	op_bfd_symbol tmpsym(offset, 0, string());
+
+	// sorted by filepos so this will find the nearest
+	vector<op_bfd_symbol>::const_iterator it =
+		upper_bound(bfd.syms.begin(), bfd.syms.end(), tmpsym);
+
+	if (it != bfd.syms.begin())
+		--it;
+
+	if (it == bfd.syms.end()) {
+		cerr << "get_symbol_by_filepos: no symbols at all?" << endl;
+		abort();
+	}
+
+	// if the offset is past the end of the symbol, we didn't find one
+	u32 const end_offset = it->size() + it->filepos();
+
+	if (offset >= end_offset) {
+		// let's be verbose for now
+		cerr << "warning: dropping hyperspace sample at offset "
+		     << hex << offset << " >= " << end_offset
+		     << " for binary " << bfd.get_filename() << dec << endl;
+		return NULL;
+	}
+
+	i = distance(bfd.syms.begin(), it);
+	return &(*it);
+}
+
+
+/// temporary caller and callee data held during processing
+class call_data {
+public:
+	call_data(profile_container const & p, profile_t const & pr,
+	          op_bfd const & bfd, u32 boff, image_name_id iid,
+	          image_name_id aid, bool debug_info)
+		: pc(p), profile(pr), b(bfd), boffset(boff), image(iid),
+		  app(aid), debug(debug_info) {}
+
+	/// point to a caller symbol
+	void caller_sym(symbol_index_t i) {
+		sym = symbol_entry();
+
+		unsigned long start;
+		unsigned long end;
+		b.get_symbol_range(i, start, end);
+
+		profile_t::iterator_pair p_it = profile.samples_range(
+			caller_to_key(start - boffset),
+			caller_to_key(end - boffset));
+
+		// Our odb_key_t contain (from_eip << 32 | to_eip), the range
+		// of key we selected above contain one caller but different
+		// callee and due to the ordering callee offsets are not
+		// consecutive so we must sort them first.
+
+		samples.clear();
+
+		for (; p_it.first != p_it.second; ++p_it.first) {
+			samples.push_back(make_pair(p_it.first.vma(),
+				p_it.first.count()));
+		}
+
+		sort(samples.begin(), samples.end(), compare_by_callee_vma);
+		
+		sym.size = end - start;
+		sym.name = symbol_names.create(b.syms[i].name());
+		sym.sample.vma = b.sym_offset(i, start) + b.syms[i].vma();
+
+		finish_sym(i, start);
+
+		if (cverb << vdebug) {
+			cverb << vdebug << hex << "Caller sym: "
+			      << b.syms[i].name() << " filepos " << start
+			      << "-" << end << dec << endl;
+		}
+	}
+
+	/// point to a callee symbol
+	bool callee_sym(u32 off) {
+		sym = symbol_entry();
+
+		symbol_index_t i;
+		op_bfd_symbol const * bfdsym =
+			get_symbol_by_filepos(b, boffset, off, i);
+
+		if (!bfdsym)
+			return false;
+
+		callee_end = bfdsym->size() + bfdsym->filepos() - boffset;
+
+		sym.size = bfdsym->size();
+		sym.name = symbol_names.create(bfdsym->name());
+		sym.sample.vma = bfdsym->vma();
+
+		finish_sym(i, bfdsym->filepos());
+
+		if (cverb << vdebug) {
+			cverb << vdebug << hex << "Callee sym: "
+			      << bfdsym->name() << " filepos "
+			      << bfdsym->filepos() << "-"
+			      << (bfdsym->filepos() + bfdsym->size())
+			      << dec << endl;
+		}
+		return true;
+	}
+
+	void verbose_bfd(string const & prefix) const {
+		cverb << vdebug << prefix << " " << b.get_filename()
+		      << " offset " << boffset << " app "
+		      << image_names.name(app) << endl;
+	}
+
+	typedef vector<pair<odb_key_t, odb_value_t> > samples_t;
+
+	typedef samples_t::const_iterator const_iterator;
+
+	samples_t samples;
+	symbol_entry sym;
+	u32 callee_end;
+
+private:
+	/// fill in the rest of the sym
+	void finish_sym(symbol_index_t i, unsigned long start) {
+		sym.image_name = image;
+		sym.app_name = app;
+		symbol_entry const * self = pc.find(sym);
+		if (self)
+			sym.sample.counts = self->sample.counts;
+
+		if (debug) {
+			string filename;
+			file_location & loc = sym.sample.file_loc;
+			if (b.get_linenr(i, start, filename, loc.linenr))
+				loc.filename = debug_names.create(filename);
+		}
+	}
+
+	profile_container const & pc;
+	profile_t const & profile;
+	op_bfd const & b;
+	u32 boffset;
+	image_name_id image;
+	image_name_id app;
+	bool debug;
+};
+
+
+/// accumulate all samples for a given caller/callee pair
+u32
+accumulate_callee(call_data::const_iterator & it, call_data::const_iterator end,
+                  u32 callee_end)
+{
+	u32 count = 0;
+	call_data::const_iterator const start = it;
+
+	while (it != end) {
+		u32 offset = key_to_callee(it->first);
+
+		if (cverb << (vdebug & vlevel1)) {
+			cverb << (vdebug & vlevel1) << hex << "offset: "
+			      << offset << dec << endl;
+		}
+
+		// stop if we pass the end of the callee
+		if (offset >= callee_end)
+			break;
+
+		count += it->second;
+		++it;
+	}
+
+	// If we haven't advanced at all, then we'll get
+	// an infinite loop, so we must abort.
+	if (it == start) {
+		cerr << "failure to advance iterator\n";
+		abort();
+	}
+
+	return count;
 }
 
 
@@ -253,9 +457,6 @@ void callgraph_container::populate(string const & archive_path,
 			report_image_error(archive_path + caller_file.lib_image,
 					   error, false);
 
-		cverb << vdebug << "caller binary name: "
-		      << caller_binary  << "\n";
-
 		bool caller_bfd_ok = true;
 		op_bfd caller_bfd(archive_path, caller_binary,
 				  string_filter(), caller_bfd_ok);
@@ -271,9 +472,6 @@ void callgraph_container::populate(string const & archive_path,
 		if (error != image_ok)
 			report_image_error(callee_file.cg_image, error, false);
 
-		cverb << vdebug << "cg binary callee name: "
-		      << callee_binary << endl;
-
 		bool callee_bfd_ok = true;
 		op_bfd callee_bfd(archive_path, callee_binary,
 				  string_filter(), callee_bfd_ok);
@@ -284,7 +482,7 @@ void callgraph_container::populate(string const & archive_path,
 		profile_t profile;
 		// We can't use start_offset support in profile_t, give
 		// it a zero offset and we will fix that in add()
-		profile.add_sample_file(*it, 0);
+		profile.add_sample_file(*it);
 		add(profile, caller_bfd, caller_bfd_ok, callee_bfd,
 		    merge_lib ? app_image : app_name, pc,
 		    debug_info, pclass);
@@ -299,176 +497,65 @@ add(profile_t const & profile, op_bfd const & caller_bfd, bool caller_bfd_ok,
 {
 	string const image_name = caller_bfd.get_filename();
 
+	opd_header const & header = profile.get_header();
+
+	// We can't use kernel sample file w/o the binary else we will
+	// use it with a zero offset, the code below will abort because
+	// we will get incorrect callee sub-range and out of range
+	// callee vma. FIXME
+	if (header.is_kernel && !caller_bfd_ok)
+		return;
+
 	// We must handle start_offset, this offset can be different for the
 	// caller and the callee: kernel sample traversing the syscall barrier.
-	u32 caller_start_offset = 0;
-	if (profile.get_header().is_kernel) {
-		// We can't use kernel sample file w/o the binary else we will
-		// use it with a zero offset, the code below will abort because
-		// we will get incorrect callee sub-range and out of range
-		// callee vma. FIXME
-		if (!caller_bfd_ok) {
-			// We already warned.
-			return;
-		}
-		caller_start_offset = caller_bfd.get_start_offset();
+	u32 caller_offset = 0;
+
+	if (header.is_kernel || header.anon_start) {
+		caller_offset = caller_bfd.get_start_offset(header.anon_start);
 	}
 
 	u32 callee_offset = 0;
-	if (profile.get_header().cg_to_is_kernel)
-		callee_offset = callee_bfd.get_start_offset();
 
-	cverb << vdebug << hex
-	      << "caller_bfd_start_offset: " << caller_start_offset << endl
-	      << "callee_bfd_start_offset: " << callee_offset << dec << endl;
+	if (header.cg_to_is_kernel || header.cg_to_anon_start) {
+		callee_offset =
+			callee_bfd.get_start_offset(header.cg_to_anon_start);
+	}
 
 	image_name_id image_id = image_names.create(image_name);
 	image_name_id callee_image_id = image_names.create(callee_bfd.get_filename());
 	image_name_id app_id = image_names.create(app_name);
 
+	call_data caller(pc, profile, caller_bfd, caller_offset, image_id,
+	                   app_id, debug_info);
+	call_data callee(pc, profile, callee_bfd, callee_offset,
+	                   callee_image_id, app_id, debug_info);
+
+	if (cverb << vdebug) {
+		caller.verbose_bfd("Caller:");
+		callee.verbose_bfd("Callee:");
+	}
+
+	// For each symbol in the caller bfd, process all arcs to
+	// callee bfd symbols
+
 	for (symbol_index_t i = 0; i < caller_bfd.syms.size(); ++i) {
-		unsigned long start, end;
-		caller_bfd.get_symbol_range(i, start, end);
 
-		profile_t::iterator_pair p_it = profile.samples_range(
-			odb_key_t(start - caller_start_offset) << 32,
-			odb_key_t(end - caller_start_offset) << 32);
+		caller.caller_sym(i);
 
-		symbol_entry caller;
-
-		caller.size = end - start;
-		caller.name = symbol_names.create(caller_bfd.syms[i].name());
-		caller.image_name = image_id;
-		caller.app_name = app_id;
-		caller.sample.vma = caller_bfd.sym_offset(i, start) +
-			caller_bfd.syms[i].vma();
-
-		symbol_entry const * self = pc.find(caller);
-		if (self)
-			caller.sample.counts = self->sample.counts;
-
-		if (debug_info) {
-			string filename;
-			if (caller_bfd.get_linenr(i, start, filename,
-			    caller.sample.file_loc.linenr)) {
-				caller.sample.file_loc.filename =
-					debug_names.create(filename);
+		call_data::const_iterator dit = caller.samples.begin();
+		call_data::const_iterator dend = caller.samples.end();
+		while (dit != dend) {
+			// if we can't find the callee, skip an arc
+			if (!callee.callee_sym(key_to_callee(dit->first))) {
+				++dit;
+				continue;
 			}
-		}
-
-		// Our odb_key_t contain (from_eip << 32 | to_eip), the range
-		// of key we selected above contain one caller but different
-		// callee and due to the ordering callee offsets are not
-		// consecutive so we must sort them first.
-
-		typedef vector<pair<odb_key_t, odb_value_t> > data_t;
-		data_t data;
-
-		for (; p_it.first != p_it.second; ++p_it.first) {
-			data.push_back(make_pair(p_it.first.vma(),
-				p_it.first.count()));
-		}
-
-		sort(data.begin(), data.end(), compare_by_callee_vma);
-		
-		data_t::const_iterator dit;
-		data_t::const_iterator dend = data.end();
-		for (dit = data.begin(); dit != dend; ) {
-			// find the callee.
-			data_t::const_iterator it = dit;
-			bfd_vma callee_vma = (it->first & 0xffffffff) +
-				callee_offset;
-
-			cverb << vdebug
-			      << "offset caller: " << hex
-			      << (it->first >> 32) << " callee: "
-			      << callee_vma << dec << endl;
-
-			op_bfd_symbol symb(callee_vma, 0, string());
-
-			vector<op_bfd_symbol>::const_iterator bfd_symb_callee =
-				upper_bound(callee_bfd.syms.begin(),
-					callee_bfd.syms.end(), symb);
-
-			if (bfd_symb_callee == callee_bfd.syms.end())
-				cverb << vdebug << "reaching end of symbol\n";
-			// ugly but upper_bound() work in this way.
-			if (bfd_symb_callee != callee_bfd.syms.begin())
-				--bfd_symb_callee;
-			if (bfd_symb_callee == callee_bfd.syms.end()) {
-				// FIXME: not clear if we need to abort,
-				// recover or an exception, for now I need a
-				// a core dump
-				cerr << "Unable to retrieve callee symbol\n";
-				abort();
-			}
-
-			symbol_entry callee;
-
-			callee.size = bfd_symb_callee->size();
-			callee.name =
-				symbol_names.create(bfd_symb_callee->name());
-			callee.image_name = callee_image_id;
-			callee.app_name = app_id;
-			callee.sample.vma = bfd_symb_callee->vma();
-
-			self = pc.find(callee);
-			if (self)
-				callee.sample.counts = self->sample.counts;
-
-			u32 upper_bound = bfd_symb_callee->size() +
-				bfd_symb_callee->filepos() - callee_offset;
-			cverb << vdebug
-			      << "upper bound: " << hex << upper_bound
-			      << dec << endl;
-
-			data_t::const_iterator dcur = it;
-
-			// Process all arc from this caller to this callee
 
 			count_array_t arc_count;
+			arc_count[pclass] =
+				accumulate_callee(dit, dend, callee.callee_end);
 
-			for (; it != dend &&
-			     (it->first & 0xffffffff) < upper_bound;
-			     ++it) {
-				cverb << (vdebug & vlevel1) << hex
-				      << "offset: " << (it->first & 0xffffffff)
-				      << dec << endl;
-				arc_count[pclass] += it->second;
-			}
-			// FIXME: very fragile, any inaccuracy in caller offset
-			// can lead to an abort!
-			if (it == dcur) {
-				// This is impossible, we need a core dump else
-				// we enter in an infinite loop
-				cerr << "failure to advance iterator\n";
-				abort();
-			}
-
-			cverb << vdebug
-			      << caller_bfd.syms[i].name() << " "
-			      << bfd_symb_callee->name() << " "
-			      << arc_count[pclass] << endl;
-
-			if (debug_info) {
-				symbol_index_t index =
-					distance(callee_bfd.syms.begin(),
-						 bfd_symb_callee);
-				unsigned long start, end;
-				callee_bfd.get_symbol_range(index, start, end);
-
-				string filename;
-				if (callee_bfd.get_linenr(index, start, filename,
-					callee.sample.file_loc.linenr)) {
-					callee.sample.file_loc.filename =
-						debug_names.create(filename);
-				}
-			}
-
-			recorder.add(caller, &callee, arc_count);
-
-			// next callee symbol
-			dit = it;
+			recorder.add(caller.sym, &callee.sym, arc_count);
 		}
 	}
 }

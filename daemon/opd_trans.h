@@ -16,6 +16,7 @@
 #include "op_types.h"
 
 struct sfile;
+struct anon_mapping;
 
 enum tracing_type {
 	TRACING_OFF,
@@ -35,6 +36,8 @@ struct transient {
 	enum tracing_type tracing;
 	struct sfile * current;
 	struct sfile * last;
+	struct anon_mapping * anon;
+	struct anon_mapping * last_anon;
 	cookie_t cookie;
 	cookie_t app_cookie;
 	vma_t pc;
@@ -47,5 +50,11 @@ struct transient {
 };
 
 void opd_process_samples(char const * buffer, size_t count);
+
+/** used when we need to clear data that's been freed */
+void clear_trans_last(struct transient * trans);
+
+/** used when we need to clear data that's been freed */
+void clear_trans_current(struct transient * trans);
 
 #endif /* OPD_TRANS_H */

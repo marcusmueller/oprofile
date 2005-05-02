@@ -356,11 +356,18 @@ vector<string> filter_session(vector<string> const & session,
 }
 
 
-bool valid_candidate(string const & filename, profile_spec const & spec,
-		     bool exclude_dependent, bool exclude_cg)
+bool valid_candidate(string const & base_dir, string const & filename,
+                     profile_spec const & spec, bool exclude_dependent,
+                     bool exclude_cg)
 {
 	if (exclude_cg && filename.find("{cg}") != string::npos)
 		return false;
+
+	// strip out non sample files
+	string const & sub = filename.substr(base_dir.size(), string::npos);
+	if (!is_prefix(sub, "/{root}/") && !is_prefix(sub, "/{kern}/"))
+		return false;
+
 	filename_spec file_spec(filename);
 	if (spec.match(file_spec)) {
 		if (exclude_dependent && file_spec.is_dependent())
@@ -419,8 +426,8 @@ list<string> profile_spec::generate_file_list(bool exclude_dependent,
 		list<string>::const_iterator it = files.begin();
 		list<string>::const_iterator fend = files.end();
 		for (; it != fend; ++it) {
-			if (valid_candidate(*it, *this, exclude_dependent,
-			    exclude_cg)) {
+			if (valid_candidate(base_dir, *it, *this,
+			    exclude_dependent, exclude_cg)) {
 				unique_files.insert(*it);
 			}
 		}
