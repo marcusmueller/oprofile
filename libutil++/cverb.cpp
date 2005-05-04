@@ -113,15 +113,6 @@ bool verbose::setup(vector<string> const & names)
 }
 
 
-/**
- * We don't use the out object, all output are directed to the null stream
- * or to cout. This is a real limitation we must be aware. That come from
- * the fact I want chained output to work ala:
- * cverb << stats << "foo" << debug << "blah";
- * This mean a real misuse of verbose output will be:
- * ofstream fout("logfile");
- * fout << debug << "foo";
- */
 ostream& operator<<(cverb_object &, verbose const & v)
 {
 	return v.set ? cout : null_stream;

@@ -49,7 +49,7 @@ extern cverb_object cverb;
  * build a sentry object for each << (more efficient even with one level of <<)
  */
 class verbose {
-	friend class verbose_recorder;
+	/// The returned stream is either a null stream or cout.
 	friend std::ostream & operator<<(cverb_object &, verbose const &);
 public:
 	/**
@@ -77,6 +77,6 @@ extern verbose vlevel1; /**< named "level1" */
 extern verbose vdebug;  /**< named "debug"  */
 extern verbose vstats;  /**< named "stats"  */
 // all sample filename manipulation.
-extern verbose vsfile;  /**< named "vfsfile" */
+extern verbose vsfile;  /**< named "sfile" */
 
 #endif /* !CVERB_H */
