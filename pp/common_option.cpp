@@ -67,13 +67,32 @@ double handle_threshold(string threshold)
 }
 
 
-options::spec const parse_spec(vector<string> const & non_options)
+vector<string> pre_parse_spec(vector<string> const & non_options)
+{
+	vector<string> result;
+
+	for (size_t i = 0; i < non_options.size(); ++i) {
+		if (non_options[i] == "{}") {
+			result.push_back("{");
+			result.push_back("}");
+		} else {
+			result.push_back(non_options[i]);
+		}
+	}
+
+	return result;
+}
+
+
+options::spec const parse_spec(vector<string> non_options)
 {
 	bool in_first = false;
 	bool in_second = false;
 	bool first = false;
 	bool second = false;
 	options::spec pspec;
+
+	non_options = pre_parse_spec(non_options);
 
 	vector<string>::const_iterator it = non_options.begin();
 	vector<string>::const_iterator end = non_options.end();

@@ -24,9 +24,6 @@ finish testing especially of anon region stuff
 Later
 -----
 
-<phe> invalid profile specification { archive:op_dir1 } {}
-<phe> a bit boring "{}" is returned as a single token
-
  o remove 2.95/2.2 support so we can use boost multi index container in
    symbol/sample container
  o consider if we can improve anon mapping growing support
