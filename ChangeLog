@@ -1,3 +1,10 @@
+2005-05-04  John Levon  <levon@movementarian.org>
+
+	* libutil++/op_bfd.h:
+	* libutil++/op_bfd.cpp: don't assume .text is the first SEC_CODE
+	  section. Keep a map of section file offsets to fix up dbfd
+	  symbols. Remove broken sanity checks.
+
 2005-05-02  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: small change

@@ -17,6 +17,7 @@
 #include <vector>
 #include <string>
 #include <list>
+#include <map>
 
 #include "bfd_support.h"
 #include "utility.h"
@@ -243,9 +244,9 @@ private:
 	// corresponding debug bfd object, if one is found
 	mutable bfd_info dbfd;
 
-	// image file such the linux kernel need than all vma are offset
-	// by this value.
-	unsigned long text_offset;
+	typedef std::map<std::string, u32> filepos_map_t;
+	// mapping of section names to filepos in the original binary
+	filepos_map_t filepos_map;
 };
 
 

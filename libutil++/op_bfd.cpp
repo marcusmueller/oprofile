@@ -90,8 +90,7 @@ op_bfd::op_bfd(string const & archive, string const & fname,
 	:
 	filename(fname),
 	archive_path(archive),
-	file_size(-1),
-	text_offset(0)
+	file_size(-1)
 {
 	int fd;
 	struct stat st;
@@ -132,14 +131,17 @@ op_bfd::op_bfd(string const & archive, string const & fname,
 		goto out_fail;
 	}
 
-	// find the first text section and use that as text_offset
+	// find .text and use it
 	for (sect = ibfd.abfd->sections; sect; sect = sect->next) {
 		if (sect->flags & SEC_CODE) {
-			text_offset = sect->filepos;
-			io_state state(cverb << vbfd);
-			cverb << vbfd << sect->name << " filepos "
-				<< hex << text_offset << endl;
-			break;
+			if (filepos_map[sect->name] != 0) {
+				cerr << "Found section \"" << sect->name
+				     << "\" twice for " << get_filename()
+				     << endl;
+				abort();
+			}
+
+			filepos_map[sect->name] = sect->filepos;
 		}
 	}
 
@@ -164,8 +166,12 @@ op_bfd::~op_bfd()
 
 unsigned long const op_bfd::get_start_offset(bfd_vma vma) const
 {
-	if (!vma || !ibfd.valid())
-		return text_offset;
+	if (!vma || !ibfd.valid()) {
+		filepos_map_t::const_iterator it = filepos_map.find(".text");
+		if (it != filepos_map.end())
+			return it->second;
+		return 0;
+	}
 
 	for (asection * sect = ibfd.abfd->sections; sect; sect = sect->next) {
 		if (sect->vma == vma)
@@ -198,12 +204,13 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 		if (!interesting_symbol(dbfd.syms[i]))
 			continue;
 
-		// need to use filepos of original file for debug file
-		// symbols. FIXME: this is not enough, we must get the
-		// offset where this symbol live in the original file.
-		// Also, we probably need to be more careful for special
-		// symbols which have ->section from .rodata like *ABS*
-		dbfd.syms[i]->section->filepos = text_offset;
+		// need to use filepos of original file's section for
+		// debug file symbols. We probably need to be more
+		// careful for special symbols which have ->section from
+		// .rodata like *ABS*
+		u32 filepos = filepos_map[dbfd.syms[i]->section->name];
+		if (filepos != 0)
+			dbfd.syms[i]->section->filepos = filepos;
 		symbols.push_back(op_bfd_symbol(dbfd.syms[i]));
 	}
 
@@ -357,42 +364,20 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
 	start = sym.filepos();
 	end = start + sym.size();
 
-	if (verbose) {
-		io_state state(cverb << (vbfd & vlevel1));
+	if (!verbose)
+		return;
 
-		cverb << (vbfd & vlevel1) << "symbol " << sym.name()
-		      << ", value " << hex << sym.value() << endl;
-		cverb << (vbfd & vlevel1)
-		      << "start " << hex << start << ", end " << end << endl;
+	io_state state(cverb << (vbfd & vlevel1));
 
-		if (sym.symbol()) {
-			cverb << (vbfd & vlevel1) << "in section "
-			      << sym.symbol()->section->name << ", filepos "
-			      << hex << sym.symbol()->section->filepos << endl;
-		}
-	}
+	cverb << (vbfd & vlevel1) << "symbol " << sym.name()
+	      << ", value " << hex << sym.value() << endl;
+	cverb << (vbfd & vlevel1)
+	      << "start " << hex << start << ", end " << end << endl;
 
-	// FIXME: these checks are bogus for new stuff...
-
-	if (start >= file_size + text_offset) {
-		ostringstream os;
-		os << "start " << hex << start
-		   << " out of range (max " << file_size << ")\n";
-		throw op_runtime_error(os.str());
-	}
-
-	if (end > file_size + text_offset) {
-		ostringstream os;
-		os << "end " << hex << end
-		   << " out of range (max " << file_size << ")\n";
-		throw op_runtime_error(os.str());
-	}
-
-	if (start > end) {
-		ostringstream os;
-		os << "start " << hex << start
-		   << " is more than end" << end << endl;
-		throw op_runtime_error(os.str());
+	if (sym.symbol()) {
+		cverb << (vbfd & vlevel1) << "in section "
+		      << sym.symbol()->section->name << ", filepos "
+		      << hex << sym.symbol()->section->filepos << endl;
 	}
 }
 
