@@ -1199,7 +1199,7 @@ Differential profile of an archived binary with the current session :
 		<term><option>count:</option><emphasis>eventcountlist</emphasis></term>
 		<listitem><para>
 		The event count to match on, e.g. <option>event:DATA_MEM_REFS count:30000</option>.
-		Note that this value refers the setting used for <command>opcontrol</command>
+		Note that this value refers to the setting used for <command>opcontrol</command>
 		only, and has nothing to do with the sample counts in the profile data
 		itself.
 		You can pass a list of events for side-by-side comparison with <command>opreport</command>.
@@ -1256,7 +1256,7 @@ Each session's sample files can be found in the <filename>/var/lib/oprofile/samp
 These are used, along with the binary image files, to produce human-readable data.
 In some circumstances (kernel modules in an initrd, or modules on 2.6 kernels), OProfile
 will not be able to find the binary images. All the tools have an <option>--image-path</option>
-to which you can pass a comma-separated list of alternate paths to search. For example,
+option to which you can pass a comma-separated list of alternate paths to search. For example,
 I can let OProfile find my 2.6 modules by using <command>--image-path /lib/modules/2.6.0/kernel/</command>.
 It is your responsibility to ensure that the correct images are found when using this
 option.
@@ -1468,8 +1468,8 @@ output.
 </para>
 <para>
 Above the non-indented line we find the functions that called this
-function (for example, <function>repeat()</function>) calls
-<function>strfry()</function>. The samples and percentage values here
+function (for example, <function>repeat()</function> calls
+<function>strfry()</function>). The samples and percentage values here
 refer to the number of times we took a sample where this call was found
 in the stack; the percentage is relative to all other callers of the
 function we're focussing on. Note that these values are
@@ -1602,7 +1602,7 @@ CPU_CLK_UNHALT...|
 Currently, there is no support for getting symbol-based summaries for
 such regions. Note that, since such mappings are dependent upon
 individual invocations of a binary, these mappings are always listed as
-a dependent image, even when not using <option>--separate=none</option>.
+a dependent image, even when using <option>--separate=none</option>.
 Equally, the results are not affected by the <option>--merge</option>
 option.
 </para>
@@ -1913,7 +1913,7 @@ Show version.
 </sect1> <!-- opgprof -->
 
 <sect1 id="oparchive">
-<title>Archiving measurements</title>
+<title>Archiving measurements (<command>oparchive</command>)</title>
 <para>
 	The <command>oparchive</command> utility generates a directory populated
 	with executable, debug, and oprofile sample files. This directory can be
@@ -2305,7 +2305,7 @@ you manually define the neccessary debug information; read your assembler docume
 do that. The only
 debugging info needed currently by OProfile is the line-number/filename-VMA association. When profiling assembly
 without debugging info you can always get report for symbols, and optionally for VMA, through <command>opreport -l</command>
-or <command>opreport -d</command>, but this works only for symbol with the right attributes.
+or <command>opreport -d</command>, but this works only for symbols with the right attributes.
 For <command>gas</command> you can get this by
 </para>
 <screen>
