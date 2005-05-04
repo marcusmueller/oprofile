@@ -391,10 +391,10 @@ void opd_handle_kernel_sample(unsigned long eip, u32 counter)
 }
  
 
-#define KERNEL_OFFSET 0xC0000000
-
 int opd_eip_is_kernel(unsigned long eip)
 {
+#ifdef __i386
+#define KERNEL_OFFSET 0xC0000000
 	/*
 	 * kernel_start == 0 when using --no-vmlinux.
 	 * This is wrong, wrong, wrong, wrong, but we don't have much
@@ -402,6 +402,7 @@ int opd_eip_is_kernel(unsigned long eip)
 	 */
 	if (!kernel_start)
 		return eip >= KERNEL_OFFSET;
+#endif
 
 	return eip >= kernel_start;
 }
