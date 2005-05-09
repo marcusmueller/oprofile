@@ -558,9 +558,10 @@ int sfile_lru_clear(void)
 		return 1;
 
 	list_for_each_safe(pos, pos2, &lru_list) {
+		struct sfile * sf;
 		if (!--amount)
 			break;
-		struct sfile * sf = list_entry(pos, struct sfile, lru);
+		sf = list_entry(pos, struct sfile, lru);
 		for_one_sfile(sf, (int (*)(struct sfile *))always_true);
 	}
 
