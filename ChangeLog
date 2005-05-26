@@ -99,7 +99,7 @@
 2005-04-27  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil/op_file.h: op_file_readable() accept only regular file
-	* libutil/op_file.c: 
+	* libutil/op_file.c:
 	* libutil++/tests/file_manip_tests.cpp:
 
 2005-04-27  John Levon  <levon@movementarian.org>
