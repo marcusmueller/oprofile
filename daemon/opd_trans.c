@@ -123,7 +123,8 @@ static void opd_put_sample(struct transient * trans, unsigned long long pc)
 	if (!trans->current)
 		goto out;
 
-	if (trans->current->ignored)
+	/* FIXME: this logic is perhaps too harsh? */
+	if (trans->current->ignored || (trans->last && trans->last->ignored))
 		goto out;
 
 	/* log the sample or arc */

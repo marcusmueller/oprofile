@@ -134,6 +134,29 @@ sfile_equal(struct sfile const * sf, struct sfile const * sf2)
 }
 
 
+static int
+is_sf_ignored(struct sfile const * sf)
+{
+	if (sf->kernel) {
+		if (!is_image_ignored(sf->kernel->name))
+			return 0;
+
+		/* Let a dependent kernel image redeem the sf if we're
+		 * executing on behalf of an application.
+		 */
+		return is_cookie_ignored(sf->app_cookie);
+	}
+
+	/* Anon regions are always dependent on the application.
+ 	 * Otherwise, let a dependent image redeem the sf.
+	 */
+	if (sf->anon || is_cookie_ignored(sf->cookie))
+		return is_cookie_ignored(sf->app_cookie);
+
+	return 0;
+}
+
+
 /** create a new sfile matching the current transient parameters */
 static struct sfile *
 create_sfile(unsigned long hash, struct transient const * trans,
@@ -174,14 +197,7 @@ create_sfile(unsigned long hash, struct transient const * trans,
 	if (separate_kernel || ((trans->anon || separate_lib) && !ki))
 		sf->app_cookie = trans->app_cookie;
 
-	if (!ki)
-		sf->ignored = is_cookie_ignored(sf->cookie);
-	else
-		sf->ignored = is_image_ignored(ki->name);
-
-	/* give a dependent sfile a chance to redeem itself */
-	if (sf->ignored && sf->app_cookie != INVALID_COOKIE)
-		sf->ignored = is_cookie_ignored(sf->app_cookie);
+	sf->ignored = is_sf_ignored(sf);
 
 	return sf;
 }

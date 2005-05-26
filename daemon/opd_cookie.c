@@ -148,7 +148,7 @@ int is_cookie_ignored(cookie_t cookie)
 	struct cookie_entry * entry;
 
 	if (cookie == INVALID_COOKIE || cookie == NO_COOKIE)
-		return 0;
+		return 1;
 
 	list_for_each(pos, &hashes[hash]) {
 		entry = list_entry(pos, struct cookie_entry, list);

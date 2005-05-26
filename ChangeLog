@@ -1,3 +1,9 @@
+2005-05-26  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_cookie.c:
+	* daemon/opd_sfile.c:
+	* daemon/opd_trans.c: fixes for image filtering
+
 2005-05-09  Will Cohen  <wcohen@redhat.com>
 
 	* daemon/opd_sfile.c: Fix variable declaration to compile on gcc 3.4.
