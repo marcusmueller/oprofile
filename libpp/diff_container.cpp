@@ -89,6 +89,7 @@ void symbol_diff(diff_collection & syms,
 		percent1 = op_ratio(sym1.sample.counts[i], total1[i]);
 		percent2 = op_ratio(sym2.sample.counts[i], total2[i]);
 		symbol.diffs[i] = op_ratio(percent2 - percent1, percent1);
+		symbol.diffs[i] *= 100.0;
 	}
 
 	add_sym(syms, symbol, choice);
