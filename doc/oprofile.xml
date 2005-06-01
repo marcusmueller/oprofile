@@ -1831,7 +1831,7 @@ Pass the given parameters as extra values when calling objdump.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--output-dir / -o [dir]</option></term><listitem><para>
 Output directory. This makes opannotate output one annotated file for each
-source file.
+source file. This option can't be used in conjunction with --assembly.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--search-dirs / -d [paths]</option></term><listitem><para>
 Comma-separated list of paths to search for source files. This is useful to find

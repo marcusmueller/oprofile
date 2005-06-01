@@ -110,6 +110,11 @@ void handle_options(options::spec const & spec)
 		exit(EXIT_FAILURE);
 	}
 
+	if (assembly && !output_dir.empty()) {
+		cerr << "--output-dir is meaningless with --assembly" << endl;
+		exit(EXIT_FAILURE);
+	}
+
 	options::symbol_filter = string_filter(include_symbols, exclude_symbols);
 
 	options::file_filter = path_filter(include_file, exclude_file);
