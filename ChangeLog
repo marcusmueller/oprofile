@@ -1,3 +1,11 @@
+2005-06-02  Jason Lunz  <lunz@falooley.org>
+
+	* libpp/diff_container.cpp:
+	* libpp/format_output.cpp:
+	* libutil++/bfd_support.cpp:
+	* libutil++/op_bfd.cpp: fix compilation on GCC 2.95.x,
+	  older glibc
+
 2005-06-01  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* pp/opannotate_options.cpp: error out if --assembly and --output-dir

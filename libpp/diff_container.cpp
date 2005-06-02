@@ -9,6 +9,11 @@
  * @author John Levon
  */
 
+/* older glibc has C99 INFINITY in _GNU_SOURCE */
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include "diff_container.h"
 
 #include <cmath>

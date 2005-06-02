@@ -14,9 +14,11 @@
 #include "config.h"
 
 #include <fcntl.h>
+#include <sys/stat.h>
 
 #include <cstdlib>
 
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <sstream>

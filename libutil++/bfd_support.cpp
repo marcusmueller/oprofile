@@ -18,6 +18,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
 
 using namespace std;
 
@@ -548,7 +549,8 @@ find_nearest_line(bfd_info const & b, op_bfd_symbol const & sym,
 
 fail:
 	info.found = false;
-	info.filename.clear();
+	// some stl lacks string::clear()
+	info.filename.erase(info.filename.begin(), info.filename.end());
 	info.line = 0;
 	return info;
 }
