@@ -124,12 +124,17 @@ void profile_t::set_offset(op_bfd const & abfd)
 profile_t::iterator_pair
 profile_t::samples_range(odb_key_t start, odb_key_t end) const
 {
-	// if the image contains no symbol the vma range is [0 - filesize]
-	// in this case we can't substract start_offset else we will underflow
-	// and the iterator range will be empty.
-	if (start)
-		start -= start_offset;
-
+	// Check the start position isn't before start_offset:
+	// this avoids wrapping/underflowing start/end.
+	// This can happen on e.g. ARM kernels, where .init is
+	// mapped before .text - we just have to skip any such
+	// .init symbols.
+	if (start < start_offset) {
+		return make_pair(const_iterator(ordered_samples.end(), 0), 
+			const_iterator(ordered_samples.end(), 0));
+	}
+	
+	start -= start_offset;
 	end -= start_offset;
 
 	// sanity check if start > end caller will enter into an infinite loop

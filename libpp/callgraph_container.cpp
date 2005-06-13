@@ -139,24 +139,29 @@ public:
 		unsigned long end;
 		b.get_symbol_range(i, start, end);
 
-		profile_t::iterator_pair p_it = profile.samples_range(
-			caller_to_key(start - boffset),
-			caller_to_key(end - boffset));
-
-		// Our odb_key_t contain (from_eip << 32 | to_eip), the range
-		// of key we selected above contain one caller but different
-		// callee and due to the ordering callee offsets are not
-		// consecutive so we must sort them first.
-
 		samples.clear();
 
-		for (; p_it.first != p_it.second; ++p_it.first) {
-			samples.push_back(make_pair(p_it.first.vma(),
-				p_it.first.count()));
+		// see profile_t::samples_range() for why we need this check
+		if (start > boffset) {
+			profile_t::iterator_pair p_it = profile.samples_range(
+				caller_to_key(start - boffset),
+				caller_to_key(end - boffset));
+
+			// Our odb_key_t contain (from_eip << 32 | to_eip),
+			// the range of keys we selected above contains one
+			// caller but different callees, and due to the
+			// ordering callee offsets are not consecutive: so
+			// we must sort them first.
+
+			for (; p_it.first != p_it.second; ++p_it.first) {
+				samples.push_back(make_pair(p_it.first.vma(),
+					p_it.first.count()));
+			}
+
+			sort(samples.begin(), samples.end(),
+			     compare_by_callee_vma);
 		}
 
-		sort(samples.begin(), samples.end(), compare_by_callee_vma);
-		
 		sym.size = end - start;
 		sym.name = symbol_names.create(b.syms[i].name());
 		sym.sample.vma = b.sym_offset(i, start) + b.syms[i].vma();

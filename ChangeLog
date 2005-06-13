@@ -1,3 +1,9 @@
+2005-06-13  Richard Purdie  <rpurdie@o-hand.com>
+
+	* libpp/callgraph_container.cpp:
+	* libpp/profile.cpp: ignore any symbols before .text
+	  for start_offset profiles
+
 2005-06-02  Jason Lunz  <lunz@falooley.org>
 
 	* libpp/diff_container.cpp:
