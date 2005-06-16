@@ -1,3 +1,9 @@
+2005-06-16  Richard Purdie  <rpurdie@o-hand.com>
+
+	* utils/opcontrol: fix ARM kernels again after 2005-05-04
+	  change to op_bfd.cpp broke it again. Only look for .text
+	  section for our kernel range.
+
 2005-06-13  Richard Purdie  <rpurdie@o-hand.com>
 
 	* libpp/callgraph_container.cpp:
