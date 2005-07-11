@@ -114,7 +114,7 @@ fill_op_entry(struct op_sample * ops, long eip, pid_t pid, pid_t tgid, int ctr)
 	ops->counter = ctr;
 }
 
-void op_do_profile(uint cpu, long eip, long irq_enabled, int ctr)
+void fastcall op_do_profile(uint cpu, long eip, long irq_enabled, int ctr)
 {
 	struct _oprof_data * data = &oprof_data[cpu];
 	pid_t const pid = current->pid;
