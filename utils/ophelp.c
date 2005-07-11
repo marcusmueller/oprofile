@@ -418,6 +418,10 @@ int main(int argc, char const * argv[])
 			"http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC\n");
 		break;
 
+	case CPU_MIPS_24K:
+		printf("See Programming the MIPS32 24K Core "
+		       "available from www.mips.com\n");
+		break;
 	case CPU_MIPS_R10000:
 	case CPU_MIPS_R12000:
 		printf("See NEC R10000 / R12000 User's Manual\n"

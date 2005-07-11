@@ -1,3 +1,13 @@
+2005-01-06  Ralf Baechle  <ralf@linux-mips.org>
+
+	* events/Makefile.am:
+	* events/mips/24K/events:
+	* events/mips/24K/unit_masks:
+	* libop/op_events.c:
+	* libop/op_cpu_type.h:
+	* libop/op_cpu_type.c:
+	* utils/ophelp.c: Add MIPS 24K support
+
 2005-06-16  Richard Purdie  <rpurdie@o-hand.com>
 
 	* utils/opcontrol: fix ARM kernels again after 2005-05-04

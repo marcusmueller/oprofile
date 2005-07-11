@@ -21,6 +21,7 @@ event_files = \
 	x86-64/hammer/events x86-64/hammer/unit_masks \
 	arm/xscale1/events arm/xscale1/unit_masks \
 	arm/xscale2/events arm/xscale2/unit_masks \
+	mips/24K/events mips/24K/unit_masks \
 	mips/rm7000/events mips/rm7000/unit_masks \
 	mips/rm9000/events mips/rm9000/unit_masks \
 	mips/sb1/events mips/sb1/unit_masks \

@@ -790,6 +790,10 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 			descr->name = "CYCLES";
 			break;
 
+		case CPU_MIPS_24K:
+			descr->name = "INSTRUCTIONS";
+			break;
+
 		case CPU_MIPS_R10000:
 		case CPU_MIPS_R12000:
 			descr->name = "INSTRUCTIONS_GRADUATED";

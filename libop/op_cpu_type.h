@@ -42,6 +42,7 @@ typedef enum {
 	CPU_PPC64_POWER4, /**< ppc64 POWER4 family */
 	CPU_PPC64_POWER5, /**< ppc64 POWER5 family */
 	CPU_PPC64_970, /**< ppc64 970 family */
+	CPU_MIPS_24K, /**< MIPS 24K */
 	CPU_MIPS_R10000, /**< MIPS R10000 */
 	CPU_MIPS_R12000, /**< MIPS R12000 */
 	CPU_MIPS_RM7000, /**< QED  RM7000 */
