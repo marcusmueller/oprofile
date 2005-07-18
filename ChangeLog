@@ -1,5 +1,10 @@
 2005-07-18  John Levon  <levon@movementarian.org>
 
+	* libutil++/tests/Makefile.am: canonicalize
+	  SRCDIR to fix make check
+
+2005-07-18  John Levon  <levon@movementarian.org>
+
 	* configure.in: bump to 0.9.1
 
 2005-07-11  John Levon  <levon@movementarian.org>
