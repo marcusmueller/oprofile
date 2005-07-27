@@ -3,11 +3,6 @@ This is an (incomplete) list of some of the stuff we want to look at doing.
 If you're interested in hacking on any of these, please contact the list first
 for some pointers and/or read HACKING and doc/CodingStyle.
 
-0.9 release
------------
-
-finish testing especially of anon region stuff
-
 1.0 release
 -----------
 
@@ -85,10 +80,6 @@ Later
   you can use session: to get the right path to samples files but oprofiled.log
   and abi files path are hardcoded to /var/lib/oprofile.
  o callgraph patch: better way to skip ignored backtrace ?
- o zwane problem with wrong text offset showed an interesting problem: if
-  op_bfd.cpp get any symbol below text offset for vmlinux or a module then
-  profile_t::sample_range() return a pair of iterator with first > second
-  and we throw
  o lib-image: and image: behavior depend on --separate=, if --separate=library
   opreport "lib-image:*libc*" --merge=lib works but not
   opreport "image:*libc*" --merge=lib whilst the behavior is reversed if
@@ -109,7 +100,6 @@ Later
    auto-restart the daemon if necessary (Run)
  o we can add lots more unit tests yet
  o Itanium event constraints are not implemented
- o side-by-side opreport output (--compare - needs UI spec) ???
  o GUI still has a physical-counter interface, should have a general one
    like opcontrol --event
  o I think we should have the ability to have *fixed* width headers, e.g. :
