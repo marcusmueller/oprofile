@@ -128,13 +128,6 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
-		<term>Bash version 2</term>
-		<listitem><para>
-			The <command>opcontrol</command> script requires bash version 2 at least to be installed
-			as <filename>/bin/bash</filename> or <filename>/bin/bash2</filename>
-		</para></listitem>
-	</varlistentry>
-	<varlistentry>
 		<term>OProfile GUI</term>
 		<listitem><para>
 			The use of the GUI to start the profiler requires the <filename>Qt 2</filename> library. <filename>Qt 3</filename> should

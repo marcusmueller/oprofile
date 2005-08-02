@@ -84,6 +84,13 @@ autogen.sh first.
 
 We still currently support gcc 2.91.66. Please bear this in mind.
 
+Shell Scripts
+-------------
+
+Any shell scripts should aim to be as compatible as possible with different
+shells and "bashisms" etc. should not be used. Busybox is often used instead 
+of bash on embedded devices for example.
+
 Making patches, commit rights
 -----------------------------
 

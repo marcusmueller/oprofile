@@ -1,4 +1,10 @@
-2005-08-02  Richard Purdie <richard@openedhand.com>
+2005-08-02  Richard Purdie  <rpurdie@openedhand.com>
+
+	* HACKING: Add note about bashisms being bad
+	* doc/oprofile.xml: Remove bash dependency
+	* utils/opcontrol: remove bashisms from the script
+
+2005-08-02  Richard Purdie  <rpurdie@openedhand.com>
 
 	* utils/opcontrol: remove some bashism, not yet enough to remove
 	  bash dependency
