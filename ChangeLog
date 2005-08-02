@@ -1,3 +1,8 @@
+2005-08-02  Richard Purdie <richard@openedhand.com>
+
+	* utils/opcontrol: remove some bashism, not yet enough to remove
+	  bash dependency
+
 2005-07-21  John Levon  <levon@movementarian.org>
 
 	* configure.in: bump to 0.9.2cvs

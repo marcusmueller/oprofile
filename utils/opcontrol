@@ -53,7 +53,7 @@ error_if_empty()
 
 
 # rm_device arguments $1=file_name
-function rm_device
+rm_device()
 {
 	if test -c "$1"; then
 		vecho "Removing $1"
@@ -63,7 +63,8 @@ function rm_device
 
 
 # create_device arguments $1=file_name $2=MAJOR_NR $3=MINOR_NR
-function create_device {
+create_device()
+{
 	vecho "Doing mknod $1"
 	mknod "$1" c $2 $3
 	if test "$?" != "0"; then
@@ -336,7 +337,7 @@ do_load_setup()
 		# load the actual information from file
 		# FIXME this is insecure, arbitrary commands could be added to
 		# $SETUP_FILE and be executed as root
-		source $SETUP_FILE
+		. $SETUP_FILE
 	fi
 
 	vecho "Parameters used:"
@@ -551,7 +552,9 @@ do_options()
 			printf %s $1 "$possibleval" | grep ^- >/dev/null 2>&1
 			if test "$?" != "0"; then
 				val=$possibleval
-				shift
+				if [ "$#" -ge 1 ]; then 
+					shift
+				fi
 			fi
 		fi
  
@@ -1204,7 +1207,7 @@ do_dump_data()
 		# find current time
 		TMPFILE=`mktemp /tmp/oprofile.XXXXXX` || exit 1
 		if ! test -w $MOUNT/dump; then
-			if test "$UID" != "0"; then
+			if test `id -u` != "0"; then
 				echo "You must be root to dump with this kernel version"
 				exit 1
 			fi
@@ -1422,13 +1425,13 @@ if test -z "$1"; then
 	exit 0
 fi
 
-if test "$UID" = "0"; then
+if test `id -u` = "0"; then
 	load_module
 fi
 check_version
 do_init_daemon_vars
 decide_oprofile_device
-if test "$UID" != "0"; then
+if test `id -u` != "0"; then
     if test "$1" = "--dump" -a -z "$2"; then
 	ONLY_DUMP=yes
 	do_dump
