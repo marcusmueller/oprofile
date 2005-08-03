@@ -14,7 +14,6 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o decide on -m tgid semantics for anon regions
  o if ev67 is not fixed, back it out
  o opimport needs a man page
- o add call graph option to oprof_start, add a reset samples file button (need user confirmation and profiler must be stopepd to be able to use it)
 
 Later
 -----

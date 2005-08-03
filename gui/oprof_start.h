@@ -65,6 +65,8 @@ protected slots:
 	void event_over(QListViewItem *);
 	/// state of separate_kernel_cb changed
 	void on_separate_kernel_cb_changed(int);
+	/// reset sample files
+	void on_reset_sample_files();
 
 	/// close the dialog
 	void accept();

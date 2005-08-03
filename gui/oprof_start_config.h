@@ -46,6 +46,7 @@ struct config_setting {
 	bool separate_kernel;
 	bool separate_cpu;
 	bool separate_thread;
+	uint callgraph_depth;
 };
 
 std::istream & operator>>(std::istream & in, config_setting & object);

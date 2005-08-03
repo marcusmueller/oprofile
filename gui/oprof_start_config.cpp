@@ -42,7 +42,8 @@ config_setting::config_setting()
 	separate_lib(false),
 	separate_kernel(false),
 	separate_cpu(false),
-	separate_thread(false)
+	separate_thread(false),
+	callgraph_depth(0)
 {
 	struct utsname info;
 
@@ -91,6 +92,8 @@ void config_setting::load(istream & in)
 			separate_cpu = op_lexical_cast<bool>(val);
 		} else if (str == "SEPARATE_THREAD") {
 			separate_thread = op_lexical_cast<bool>(val);
+		} else if (str == "CALLGRAPH") {
+			callgraph_depth = op_lexical_cast<unsigned int>(val);
 		}
 	}
 }

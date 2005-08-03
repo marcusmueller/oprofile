@@ -11,7 +11,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>569</width>
+            <width>625</width>
             <height>735</height>
         </rect>
     </property>
@@ -705,9 +705,9 @@
                         <class>QLayoutWidget</class>
                         <property stdset="1">
                             <name>name</name>
-                            <cstring>Layout11</cstring>
+                            <cstring>Layout36</cstring>
                         </property>
-                        <hbox>
+                        <grid>
                             <property stdset="1">
                                 <name>margin</name>
                                 <number>0</number>
@@ -716,11 +716,11 @@
                                 <name>spacing</name>
                                 <number>6</number>
                             </property>
-                            <widget>
+                            <widget row="0"  column="0" >
                                 <class>QLayoutWidget</class>
                                 <property stdset="1">
                                     <name>name</name>
-                                    <cstring>Layout10</cstring>
+                                    <cstring>Layout34</cstring>
                                 </property>
                                 <vbox>
                                     <property stdset="1">
@@ -806,9 +806,48 @@
                                             <string>Separate samples for each shared library and kernel samples. This increases the time and space overhead of OProfile.</string>
                                         </property>
                                     </widget>
+                                    <widget>
+                                        <class>QLayoutWidget</class>
+                                        <property stdset="1">
+                                            <name>name</name>
+                                            <cstring>Layout33</cstring>
+                                        </property>
+                                        <hbox>
+                                            <property stdset="1">
+                                                <name>margin</name>
+                                                <number>0</number>
+                                            </property>
+                                            <property stdset="1">
+                                                <name>spacing</name>
+                                                <number>6</number>
+                                            </property>
+                                            <widget>
+                                                <class>QLabel</class>
+                                                <property stdset="1">
+                                                    <name>name</name>
+                                                    <cstring>callgraph_depth_label</cstring>
+                                                </property>
+                                                <property stdset="1">
+                                                    <name>text</name>
+                                                    <string>callgraph depth, zero to disable</string>
+                                                </property>
+                                                <property>
+                                                    <name>buddy</name>
+                                                    <cstring>callgraph_depth_edit</cstring>
+                                                </property>
+                                            </widget>
+                                            <widget>
+                                                <class>QLineEdit</class>
+                                                <property stdset="1">
+                                                    <name>name</name>
+                                                    <cstring>callgraph_depth_edit</cstring>
+                                                </property>
+                                            </widget>
+                                        </hbox>
+                                    </widget>
                                 </vbox>
                             </widget>
-                            <spacer>
+                            <spacer row="0"  column="1" >
                                 <property>
                                     <name>name</name>
                                     <cstring>Spacer12</cstring>
@@ -829,7 +868,7 @@
                                     </size>
                                 </property>
                             </spacer>
-                        </hbox>
+                        </grid>
                     </widget>
                     <spacer>
                         <property>
@@ -882,7 +921,7 @@
             <class>QLayoutWidget</class>
             <property stdset="1">
                 <name>name</name>
-                <cstring>Layout11</cstring>
+                <cstring>Layout37</cstring>
             </property>
             <hbox>
                 <property stdset="1">
@@ -901,7 +940,7 @@
                     </property>
                     <property stdset="1">
                         <name>text</name>
-                        <string>Start &amp;profiler</string>
+                        <string>St&amp;art</string>
                     </property>
                 </widget>
                 <widget>
@@ -912,7 +951,7 @@
                     </property>
                     <property stdset="1">
                         <name>text</name>
-                        <string>&amp;Flush profiler data</string>
+                        <string>&amp;Flush</string>
                     </property>
                 </widget>
                 <widget>
@@ -923,7 +962,7 @@
                     </property>
                     <property stdset="1">
                         <name>text</name>
-                        <string>Stop profiler</string>
+                        <string>Stop</string>
                     </property>
                 </widget>
                 <spacer>
@@ -947,6 +986,17 @@
                         </size>
                     </property>
                 </spacer>
+                <widget>
+                    <class>QPushButton</class>
+                    <property stdset="1">
+                        <name>name</name>
+                        <cstring>reset_sample_files_btn</cstring>
+                    </property>
+                    <property stdset="1">
+                        <name>text</name>
+                        <string>Reset sample files</string>
+                    </property>
+                </widget>
                 <widget>
                     <class>QPushButton</class>
                     <property stdset="1">
@@ -1033,9 +1083,16 @@
         <receiver>oprof_start_base</receiver>
         <slot>on_separate_kernel_cb_changed(int)</slot>
     </connection>
+    <connection>
+        <sender>reset_sample_files_btn</sender>
+        <signal>clicked()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>on_reset_sample_files()</slot>
+    </connection>
     <slot access="protected">choose_kernel_filename()</slot>
     <slot access="protected">event_over(QListViewItem *)</slot>
     <slot access="protected">event_selected()</slot>
+    <slot access="protected">on_reset_sample_files()</slot>
     <slot access="protected">on_flush_profiler_data()</slot>
     <slot access="protected">on_separate_kernel_cb_changed(int)</slot>
     <slot access="protected">on_start_profiler()</slot>

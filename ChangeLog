@@ -1,5 +1,14 @@
 2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* gui/oprof_start.cpp:
+	* gui/oprof_start.h:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_config.h:
+	* gui/ui/oprof_start.base.ui: add a button to reset the profiling
+	  session and an edit field to setup the callgraph depth
+
+2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* gui/oprof_start_util.h:
 	* gui/oprof_start_util.cpp:
 	* gui/oprof_start.cpp: hardcode config directory to /root,

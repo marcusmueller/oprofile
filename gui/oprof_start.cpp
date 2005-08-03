@@ -42,6 +42,7 @@
 #include "op_cpufreq.h"
 #include "op_alloc_counter.h"
 #include "oprof_start_util.h"
+#include "file_manip.h"
 
 #include "op_hw_config.h"
 
@@ -142,6 +143,13 @@ oprof_start::oprof_start()
 		// FIXME: can adapt to 2.6 ...
 		buffer_size_edit->hide();
 		buffer_size_label->hide();
+		if (!op_file_readable("/dev/oprofile/backtrace_depth")) {
+			callgraph_depth_label->hide();
+			callgraph_depth_edit->hide();
+		}
+	} else {
+		callgraph_depth_label->hide();
+		callgraph_depth_edit->hide();
 	}
 
 	// setup the configuration page.
@@ -151,6 +159,7 @@ oprof_start::oprof_start()
 
 	buffer_size_edit->setText(QString().setNum(config.buffer_size));
 	note_table_size_edit->setText(QString().setNum(config.note_table_size));
+	callgraph_depth_edit->setText(QString().setNum(config.callgraph_depth));
 	verbose->setChecked(config.verbose);
 	separate_lib_cb->setChecked(config.separate_lib);
 	separate_kernel_cb->setChecked(config.separate_kernel);
@@ -166,6 +175,8 @@ oprof_start::oprof_start()
 	buffer_size_edit->setValidator(iv);
 	iv = new QIntValidator(OP_MIN_NOTE_TABLE_SIZE, OP_MAX_NOTE_TABLE_SIZE, note_table_size_edit);
 	note_table_size_edit->setValidator(iv);
+	iv = new QIntValidator(0, INT_MAX, callgraph_depth_edit);
+	callgraph_depth_edit->setValidator(iv);
 
 	// daemon status timer
 	startTimer(5000);
@@ -391,6 +402,7 @@ void oprof_start::timerEvent(QTimerEvent *)
 	flush_profiler_data_btn->setEnabled(dstat.running);
 	stop_profiler_btn->setEnabled(dstat.running);
 	start_profiler_btn->setEnabled(!dstat.running);
+	reset_sample_files_btn->setEnabled(!dstat.running);
 
 	if (!dstat.running) {
 		daemon_label->setText("Profiler is not running.");
@@ -605,8 +617,7 @@ bool oprof_start::record_config()
 	config.kernel_filename = kernel_filename_edit->text().latin1();
 	config.no_kernel = no_vmlinux->isChecked();
 
-	QString const t = buffer_size_edit->text();
-	uint temp = t.toUInt();
+	uint temp = buffer_size_edit->text().toUInt();
 	if (temp < OP_MIN_BUF_SIZE || temp > OP_MAX_BUF_SIZE) {
 		ostringstream error;
 
@@ -633,6 +644,20 @@ bool oprof_start::record_config()
 		return false;
 	}
 	config.note_table_size = temp;
+
+	temp = callgraph_depth_edit->text().toUInt();
+	if (temp > INT_MAX) {
+		ostringstream error;
+
+		error << "callgraph depth  out of range: " << temp
+		      << " valid range is [" << 0 << ", "
+		      << INT_MAX << "]";
+
+		QMessageBox::warning(this, 0, error.str().c_str());
+
+		return false;
+	}
+	config.callgraph_depth = temp;
 
 	config.verbose = verbose->isChecked();
 	config.separate_lib = separate_lib_cb->isChecked();
@@ -931,6 +956,11 @@ bool oprof_start::save_config()
 		       op_lexical_cast<string>(config.buffer_size));
 		args.push_back("--note-table-size=" +
 		       op_lexical_cast<string>(config.note_table_size));
+	} else {
+		if (op_file_readable("/dev/oprofile/backtrace_depth")) {
+			args.push_back("--callgraph=" +
+		              op_lexical_cast<string>(config.callgraph_depth));
+		}
 	}
 
 	string sep = "--separate=";
@@ -973,6 +1003,22 @@ void oprof_start::on_separate_kernel_cb_changed(int state)
 {
 	if (state == 2)
 		separate_lib_cb->setChecked(true);
+}
+
+void oprof_start::on_reset_sample_files()
+{
+	int ret = QMessageBox::warning(this, 0, "Are you sure you want to "
+	       "reset your last profile session ?", "Yes", "No", 0, 0, 1);
+	if (!ret) {
+		vector<string> args;
+		args.push_back("--reset");
+		if (!do_exec_command(OP_BINDIR "/opcontrol", args))
+			// the next timer event will overwrite the message
+			daemon_label->setText("Last profile session reseted.");
+		else
+			QMessageBox::warning(this, 0,
+			     "Can't reset profiling session.");
+	}
 }
 
 
