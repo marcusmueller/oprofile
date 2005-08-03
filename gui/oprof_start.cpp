@@ -300,12 +300,12 @@ void oprof_start::read_set_events()
 		string const val = split(str, '=');
 		string const name = str;
 
-		if (!is_prefix(name, "CHOSEN_EVENTS["))
+		if (!is_prefix(name, "CHOSEN_EVENTS_"))
 			continue;
 
 		one_enabled = true;
 
-		// CHOSEN_EVENTS[0]=CPU_CLK_UNHALTED:10000:0:1:1
+		// CHOSEN_EVENTS_#nr=CPU_CLK_UNHALTED:10000:0:1:1
 		vector<string> parts = separate_token(val, ':');
 
 		if (parts.size() != 5 && parts.size() != 2) {

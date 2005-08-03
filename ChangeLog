@@ -1,3 +1,8 @@
+2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* gui/oprof_start.cpp: fix events parsing according to the way
+	  we store them in setupfile changed by the last patch.
+
 2005-08-02  Richard Purdie  <rpurdie@openedhand.com>
 
 	* HACKING: Add note about bashisms being bad
