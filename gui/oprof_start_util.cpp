@@ -61,13 +61,14 @@ string daemon_pid;
 } // namespace anon
 
 daemon_status::daemon_status()
-	: running(false)
+	: running(false),
+	  nr_interrupts(0)
 {
 	int HZ;
 	if (!daemon_pid.empty()) {
-		string const exec =
-			op_realpath(string("/proc/") + daemon_pid + "/exe");
-		if (exec.empty())
+		string proc_filename = string("/proc/") + daemon_pid + "/exe";
+		string const exec = op_realpath(proc_filename);
+		if (exec == proc_filename)
 			daemon_pid.erase();
 		else
 			running = true;
@@ -134,6 +135,9 @@ daemon_status::daemon_status()
 					sum_interrupts += file_interrupts;
 				}
 			}
+			if (old_sum_interrupts > sum_interrupts)
+				// occur if we stop/restart daemon.
+				old_sum_interrupts = 0;
 			nr_interrupts = sum_interrupts - old_sum_interrupts;
 			old_sum_interrupts = sum_interrupts;
 			globfree(&file_names);

@@ -1,6 +1,11 @@
 2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
 
-	* doc/oprofile.xml: improve documentatino about RTC mode.
+	* gui/oprof_start_util.cpp: fix detection of stopped daemon. Fix a
+	  miscounted interrupt nr after a start/stop/start
+
+2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/oprofile.xml: improve documentation about RTC mode.
 
 2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
 
