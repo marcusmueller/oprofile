@@ -1,5 +1,9 @@
 2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* doc/oprofile.xml: improve documentatino about RTC mode.
+
+2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* gui/oprof_start.cpp: fix events parsing according to the way
 	  we store them in setupfile changed by the last patch.
 

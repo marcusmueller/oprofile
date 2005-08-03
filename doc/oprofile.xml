@@ -920,6 +920,9 @@ sampling rates from 2 to 4096 per second.  Other values within this range are ro
 two.
 </para>
 <para>
+You can force use of the RTC interrupt with the <option>force_rtc=1</option> module parameter.
+</para>
+<para>
 Setting the value from the GUI should be straightforward. On the command line, you need to specify the
 event to <command>opcontrol</command>, e.g. :
 </para>
