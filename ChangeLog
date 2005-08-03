@@ -1,5 +1,16 @@
 2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* gui/oprof_start_util.h:
+	* gui/oprof_start_util.cpp:
+	* gui/oprof_start.cpp: hardcode config directory to /root,
+	  rename get_user_filename() to get_config_filename()
+
+2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* gui/oprof_start_util.cpp:
+
+2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* gui/oprof_start_util.cpp: fix detection of stopped daemon. Fix a
 	  miscounted interrupt nr after a start/stop/start
 

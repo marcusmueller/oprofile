@@ -36,24 +36,9 @@ using namespace std;
 namespace {
 
 // return the ~ expansion suffixed with a '/'
-string const get_user_dir()
+string const get_config_dir()
 {
-	static string user_dir;
-
-	if (user_dir.empty()) {
-		char * dir = getenv("HOME");
-		if (!dir) {
-			cerr << "Can't determine home directory !\n" << endl;
-			exit(EXIT_FAILURE);
-		}
-
-		user_dir = dir;
-
-		if (user_dir.length() && user_dir[user_dir.length() -1] != '/')
-			user_dir += '/';
-	}
-
-	return user_dir;
+	return "/root";
 }
 
 string daemon_pid;
@@ -150,14 +135,14 @@ daemon_status::daemon_status()
 
 
 /**
- * get_user_filename - get absolute filename of file in user $HOME
+ * get_config_filename - get absolute filename of file in user $HOME
  * @param filename  the relative filename
  *
  * Get the absolute path of a file in a user's home directory.
  */
-string const get_user_filename(string const & filename)
+string const get_config_filename(string const & filename)
 {
-	return get_user_dir() + "/" + filename;
+	return get_config_dir() + "/" + filename;
 }
 
 
@@ -168,7 +153,7 @@ string const get_user_filename(string const & filename)
  */
 bool check_and_create_config_dir()
 {
-	string dir = get_user_filename(".oprofile");
+	string dir = get_config_filename(".oprofile");
 
 	char * name = xstrdup(dir.c_str());
 

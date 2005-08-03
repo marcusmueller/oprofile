@@ -283,7 +283,7 @@ void oprof_start::setup_default_event()
 
 void oprof_start::read_set_events()
 {
-	string name = get_user_filename(".oprofile/daemonrc");
+	string name = get_config_filename(".oprofile/daemonrc");
 
 	ifstream in(name.c_str());
 
@@ -345,7 +345,7 @@ void oprof_start::read_set_events()
 
 void oprof_start::load_config_file()
 {
-	string name = get_user_filename(".oprofile/daemonrc");
+	string name = get_config_filename(".oprofile/daemonrc");
 
 	ifstream in(name.c_str());
 	if (!in) {

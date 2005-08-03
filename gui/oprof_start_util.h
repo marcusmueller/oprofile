@@ -29,7 +29,7 @@ inline double ratio(double x1, double x2)
 	return fabs(((x1 - x2) / x2)) * 100;
 }
 
-std::string const get_user_filename(std::string const & filename);
+std::string const get_config_filename(std::string const & filename);
 bool check_and_create_config_dir();
 std::string const format(std::string const & orig, uint const maxlen);
 int do_exec_command(std::string const & cmd, std::vector<std::string> const & args = std::vector<std::string>());
