@@ -388,14 +388,13 @@ This section gives a brief description of the available OProfile utilities and t
 	</para></listitem>
 </varlistentry>
 
-<varlistentry id="opimport">
+<varlistentry>
 	<term><filename>opimport</filename></term>
 	<listitem><para>
 		This utility converts sample database files from a foreign binary format (abi) to
 		the native format. This is useful only when moving sample files between hosts,
-		for analysis on platforms other than the one used for collection. The abi format
-		of the file to be imported is described in a text file located in
-		<filename>/var/lib/oprofile/abi</filename>.
+		for analysis on platforms other than the one used for collection.
+		See <xref linkend="opimport" />.
 	</para></listitem>
 </varlistentry>
 
@@ -1941,6 +1940,58 @@ Show version.
 </sect2> <!-- oparchive-details -->
 
 </sect1> <!-- oparchive -->
+
+<sect1 id="opimport">
+<title>Converting sample database files (<command>opimport</command>)</title>
+<para>
+	This utility converts sample database files from a foreign binary format (abi) to
+	the native format. This is useful only when moving sample files between hosts,
+	for analysis on platforms other than the one used for collection. The abi format
+	of the file to be imported is described in a text file located in <filename>/var/lib/oprofile/abi</filename>.
+</para>
+
+<para>
+	The following command would convert the input samples files to the
+	output samples files using the given abi file as a binary description
+	of the input file and the curent platform abi as a binary description
+	of the output file.
+</para>
+
+<screen>
+# opimport -a /var/lib/oprofile/abi -o /tmp/current/.../GLOBAL_POWER_EVENTS.200000.1.all.all.all /var/lib/.../mprime/GLOBAL_POWER_EVENTS.200000.1.all.all.all
+</screen>
+
+<sect2 id="opimport-details">
+<title>Usage of <command>opimport</command></title>
+
+<variablelist>
+<varlistentry><term><option>--help / -? / --usage</option></term><listitem><para>
+Show help message.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--abi / -a [filename]</option></term><listitem><para>
+Input abi file description location.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--force / -f</option></term><listitem><para>
+Force conversion even if the input and output abi are identical.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--output / -o [filename]</option></term><listitem><para>
+Specify the output filename. If the output file already exists, the file is
+not overwritten but data are accumulated in. Sample filename are informative
+for post profile tools and must be kept identical, in other word the pathname
+from the first path component containing a '{' must be kept as it in the
+output filename.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--verbose / -V</option></term><listitem><para>
+Give verbose debugging output.
+</para></listitem></varlistentry>
+<varlistentry><term><option>--version / -v</option></term><listitem><para>
+Show version.
+</para></listitem></varlistentry>
+</variablelist>
+
+</sect2> <!-- opimport-details -->
+
+</sect1> <!-- opimport -->
 
 </chapter>
 

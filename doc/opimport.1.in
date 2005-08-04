@@ -8,7 +8,7 @@ opimport \- converts sample database files
 [
 .I options
 ]
-[profile specification]
+input_file
 .SH DESCRIPTION
 
 .B opimport
@@ -17,7 +17,7 @@ converts sample database files from a foreign binary format (abi) to the native 
 .SH OPTIONS
 .TP
 .BI "--abi / -a"
-Abi file description location.
+Input abi file description location.
 .br
 .TP
 .BI "--force / -f"
@@ -25,14 +25,17 @@ Force conversion even if the input and output abi are identical.
 .br
 .TP
 .BI "--output / -o filename"
-Specify the output filename.
+Specify the output filename. If the output file already exists it is not overwritten but data are accumulated in. Sample filename are informative
+for post profile tools and must be kept identical, in other word the pathname
+from the first path component containing a '{' must be kept as it in the
+output filename.
 .br
 .TP
 .BI "--help / -? / --usage"
 Show help message.
 .br
 .TP
-.BI "--verbose / -V [options]"
+.BI "--verbose / -V"
 Give verbose debugging output.
 .br
 .TP
