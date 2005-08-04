@@ -1066,18 +1066,6 @@
         <slot>setDisabled(bool)</slot>
     </connection>
     <connection>
-        <sender>events_list</sender>
-        <signal>selectionChanged()</signal>
-        <receiver>oprof_start_base</receiver>
-        <slot>event_selected()</slot>
-    </connection>
-    <connection>
-        <sender>events_list</sender>
-        <signal>onItem(QListViewItem*)</signal>
-        <receiver>oprof_start_base</receiver>
-        <slot>event_over(QListViewItem *)</slot>
-    </connection>
-    <connection>
         <sender>separate_kernel_cb</sender>
         <signal>stateChanged(int)</signal>
         <receiver>oprof_start_base</receiver>
@@ -1088,6 +1076,24 @@
         <signal>clicked()</signal>
         <receiver>oprof_start_base</receiver>
         <slot>on_reset_sample_files()</slot>
+    </connection>
+    <connection>
+        <sender>events_list</sender>
+        <signal>selectionChanged()</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>event_selected()</slot>
+    </connection>
+    <connection>
+        <sender>events_list</sender>
+        <signal>currentChanged(QListViewItem*)</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>event_over(QListViewItem *)</slot>
+    </connection>
+    <connection>
+        <sender>events_list</sender>
+        <signal>onItem(QListViewItem*)</signal>
+        <receiver>oprof_start_base</receiver>
+        <slot>event_over(QListViewItem *)</slot>
     </connection>
     <slot access="protected">choose_kernel_filename()</slot>
     <slot access="protected">event_over(QListViewItem *)</slot>
