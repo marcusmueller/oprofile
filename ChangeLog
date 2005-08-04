@@ -1,3 +1,23 @@
+2005-08-04  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libabi/Makefile.am:
+	* libabi/abi.cpp:
+	* libabi/abi.h:
+	* libabi/op_abi.h:
+	* libabi/tests/Makefile.am:
+	* libabi/op_abi.cpp: removed
+	* libabi/op_abi.c: new file, abi file writing in plain C
+
+	* configure.in:
+	* daemon/Makefile.am:
+	* daemon/oprofiled.c:
+	* daemon/liblegacy/Makefile.am:
+	* doc/Makefile.am:
+	* doc/oprofile.xml: build unconditionnaly libabi
+
+	* doc/opimport.1.in: new file, man page for opimport, need some
+	  tweaking probably
+
 2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* gui/oprof_start.cpp:

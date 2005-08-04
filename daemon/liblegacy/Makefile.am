@@ -1,6 +1,6 @@
 noinst_LIBRARIES = liblegacy.a
 
-# -fno-omit-frame-pointer needed for daemon build: see ChangeLog 2004-02-23
+# -fno-omit-frame-pointer needed for daemon build: see ChangeLog-2004 02-23
 AM_CFLAGS = @OP_CFLAGS@ -fno-omit-frame-pointer
 
 AM_CPPFLAGS = \

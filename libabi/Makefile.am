@@ -1,17 +1,6 @@
 SUBDIRS=. tests
 
-dist_sources = \
-	abi.cpp \
-	op_abi.cpp \
-	abi.h \
-	op_abi.h \
-	opimport.cpp
-
-EXTRA_DIST = $(dist_sources)
-
 LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
-
-if enable_abi
 
 AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop \
@@ -22,7 +11,7 @@ AM_CPPFLAGS = \
 AM_CXXFLAGS = @OP_CXXFLAGS@
 
 noinst_LIBRARIES = libabi.a
-libabi_a_SOURCES = abi.cpp op_abi.cpp
+libabi_a_SOURCES = abi.cpp abi.h op_abi.c op_abi.h
 
 bin_PROGRAMS = opimport
 
@@ -33,5 +22,3 @@ opimport_LDADD = \
 	../libopt++/libopt++.a \
 	../libutil++/libutil++.a \
 	../libutil/libutil.a
-
-endif

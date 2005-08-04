@@ -28,7 +28,6 @@ struct abi_exception : std::exception {
 class abi {
 public:
 	abi();
-	abi(abi const & other);
 
 	int need(std::string const key) const throw (abi_exception);
 

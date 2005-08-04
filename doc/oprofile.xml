@@ -226,20 +226,6 @@ is often all you need, but note these arguments to <command>./configure</command
 			<constant>$QTDIR</constant> if these are not specified.
 		</para></listitem>
 	</varlistentry>
-	<varlistentry id="enable-abi">
-		<term><option>--enable-abi</option></term>
-		<listitem><para>
-			Activate code within the OProfile sample collection daemon
-			<command>oprofiled</command> which records information about the binary
-			format of sample files in <filename>/var/lib/oprofile/abi</filename>, to
-			permit their transport between hosts using the
-			<command>opimport</command> utility. See <xref
-			linkend="opimport" />. This option is primarily intended for embedded
-			systems or remote analysis of production machines; if you will be
-			performing all sample analysis on the same machine as you are profiling,
-			it is safe to omit this option.
-		</para></listitem>
-	</varlistentry>
 	<varlistentry id="disable-werror">
 		<term><option>--disable-werror</option></term>
 		<listitem><para>
@@ -409,10 +395,7 @@ This section gives a brief description of the available OProfile utilities and t
 		the native format. This is useful only when moving sample files between hosts,
 		for analysis on platforms other than the one used for collection. The abi format
 		of the file to be imported is described in a text file located in
-		<filename>/var/lib/oprofile/abi</filename>, if the <option>--enable-abi</option>
-		configure-time option was enabled. Furthermore, the <command>opimport</command>
-		tool is not built unless <option>--enable-abi</option> is given. See <xref
-		linkend="enable-abi" />.
+		<filename>/var/lib/oprofile/abi</filename>.
 	</para></listitem>
 </varlistentry>
 

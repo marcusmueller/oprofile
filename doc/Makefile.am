@@ -15,7 +15,8 @@ man_MANS = \
 	opannotate.1 \
 	opgprof.1 \
 	ophelp.1 \
-	oparchive.1
+	oparchive.1 \
+	opimport.1
 
 htmldir = $(prefix)/share/doc/oprofile
 dist_html_DATA = oprofile.html internals.html

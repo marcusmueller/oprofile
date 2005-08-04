@@ -146,7 +146,6 @@ static void opd_go_daemon(void)
 
 static void opd_write_abi(void)
 {
-#ifdef OPROF_ABI
 	char * cbuf;
  
 	cbuf = xmalloc(strlen(OP_BASE_DIR) + 5);
@@ -154,7 +153,6 @@ static void opd_write_abi(void)
 	strcat(cbuf, "/abi");
 	op_write_abi_to_file(cbuf);
 	free(cbuf);
-#endif
 }
 
 

@@ -114,15 +114,6 @@ AC_SUBST(X_LIBS)
 QT_DO_IT_ALL
 LIBS="$ORIG_X_SAVE_LIBS"
 
-dnl enable code to describe the binary layout of libdb files, for platform portability
-AC_ARG_ENABLE(abi,
-	[  --enable-abi                 enable abi portability code (default is disabled)],
-	enable_abi=$enableval, enable_abi=no)
-if test "$enable_abi" = yes; then
-	AC_DEFINE(OPROF_ABI, 1, [whether to build ABI tools])
-fi
-AM_CONDITIONAL(enable_abi, test "$enable_abi" = yes)
-
 dnl enable pch for c++
 AC_ARG_ENABLE(pch,
 	[  --enable-pch                 enable precompiled header (default is disabled)],
@@ -240,6 +231,7 @@ AC_OUTPUT(Makefile \
 	doc/opannotate.1 \
 	doc/opgprof.1 \
 	doc/oparchive.1 \
+	doc/opimport.1 \
 	doc/srcdoc/Doxyfile \
 	libpp/Makefile \
 	pp/Makefile \

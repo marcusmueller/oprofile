@@ -1,11 +1,4 @@
-
-dist_sources = abi_test.cpp
-
-EXTRA_DIST = $(dist_sources)
-
 LIBS=@POPT_LIBS@ @LIBERTY_LIBS@
-
-if enable_abi
 
 AM_CPPFLAGS = \
 	-I ${top_srcdir}/libabi \
@@ -26,5 +19,3 @@ abi_test_LDADD = \
 	../../libopt++/libopt++.a \
 	../../libutil++/libutil++.a \
 	../../libutil/libutil.a
-
-endif

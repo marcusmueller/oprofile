@@ -33,26 +33,16 @@ AM_CPPFLAGS = \
 	-I ${top_srcdir}/libop \
 	-I ${top_srcdir}/libdb
 
-# -fno-omit-frame-pointer needed for daemon build: see ChangeLog 2004-02-23
+# -fno-omit-frame-pointer needed for daemon build: see ChangeLog-2004 02-23
 AM_CFLAGS = @OP_CFLAGS@ -fno-omit-frame-pointer
 
 bin_PROGRAMS = oprofiled
 
-if enable_abi
 oprofiled_LDADD = \
 	liblegacy/liblegacy.a \
 	../libabi/libabi.a \
 	../libdb/libodb.a \
 	../libop/libop.a \
 	../libutil/libutil.a
-LINKER=$(CXX)
-else
-oprofiled_LDADD = \
-	liblegacy/liblegacy.a \
-	../libdb/libodb.a \
-	../libop/libop.a \
-	../libutil/libutil.a
-LINKER=$(CC)
-endif
 
-oprofiled_LINK = $(LINKER) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+oprofiled_LINK = $(CC) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
