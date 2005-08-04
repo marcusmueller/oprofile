@@ -14,6 +14,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o decide on -m tgid semantics for anon regions
  o if ev67 is not fixed, back it out
  o opimport needs a man page
+ o lapic : module should says "didn't find apic" if needed, FAQ and doc should
+  speak a bit about lapic kernel option on x86 and recent kernel
 
 Later
 -----
