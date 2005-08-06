@@ -37,7 +37,7 @@ symbol_entry const * symbol_container::insert(symbol_entry const & symb)
 }
 
 
-symbol_entry const *
+symbol_collection
 symbol_container::find(debug_name_id filename, size_t linenr) const
 {
 	build_by_loc();
@@ -46,12 +46,14 @@ symbol_container::find(debug_name_id filename, size_t linenr) const
 	symbol.sample.file_loc.filename = filename;
 	symbol.sample.file_loc.linenr = linenr;
 
-	symbols_by_loc_t::const_iterator it = symbols_by_loc.find(&symbol);
+	symbol_collection result;
 
-	if (it != symbols_by_loc.end())
-		return *it;
+	typedef symbols_by_loc_t::const_iterator it;
+	pair<it, it> p_it = symbols_by_loc.equal_range(&symbol);
+	for ( ; p_it.first != p_it.second; ++p_it.first)
+		result.push_back(*p_it.first);
 
-	return 0;
+	return result;
 }
 
 

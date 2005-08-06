@@ -184,8 +184,6 @@ string symbol_annotation(symbol_entry const * symbol)
 
 	string annot = count_str(symbol->sample.counts,
 	                         samples->samples_count());
-	if (annot.empty())
-		return string();
 
 	string const & symname = symbol_names.demangle(symbol->name);
 
@@ -406,9 +404,33 @@ string const source_line_annotation(debug_name_id filename, size_t linenr)
 
 string source_symbol_annotation(debug_name_id filename, size_t linenr)
 {
-	symbol_entry const * symbol = samples->find_symbol(filename, linenr);
+	symbol_collection symbols = samples->find_symbol(filename, linenr);
 
-	return symbol_annotation(symbol);
+	if (symbols.empty())
+		return string();
+
+	string str = " " + begin_comment;
+
+	count_array_t counts;
+	for (size_t i = 0; i < symbols.size(); ++i) {
+		str += symbol_names.demangle(symbols[i]->name);
+		if (symbols.size() == 1)
+			str += " total: ";
+		else
+			str += " ";
+		str += count_str(symbols[i]->sample.counts,
+		          samples->samples_count());
+		if (symbols.size() != 1)
+			str += ", ";
+
+		counts += symbols[i]->sample.counts;
+	}
+
+	if (symbols.size() > 1)
+		str += "total: " + count_str(counts, samples->samples_count());
+	str += end_comment;
+
+	return str;
 }
 
 

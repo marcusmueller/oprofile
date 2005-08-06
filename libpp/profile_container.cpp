@@ -250,7 +250,7 @@ profile_container::find_symbol(string const & image_name, bfd_vma vma) const
 }
 
 
-symbol_entry const *
+symbol_collection
 profile_container::find_symbol(debug_name_id filename, size_t linenr) const
 {
 	return symbols->find(filename, linenr);

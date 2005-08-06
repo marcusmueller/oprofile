@@ -68,9 +68,9 @@ public:
 	symbol_entry const * find_symbol(std::string const & image_name,
 					 bfd_vma vma) const;
 
-	/// Find a symbol from its filename, linenr, return zero if no symbol
-	/// at this location
-	symbol_entry const * find_symbol(debug_name_id filename,
+	/// Find the symbols from its filename, linenr, return an empty
+	/// symbol_collection if no symbol at this location
+	symbol_collection find_symbol(debug_name_id filename,
 					size_t linenr) const;
 
 	/// Find a sample by its symbol, vma, return zero if there is no sample
