@@ -70,7 +70,7 @@ public:
 
 	/// Find the symbols from its filename, linenr, return an empty
 	/// symbol_collection if no symbol at this location
-	symbol_collection find_symbol(debug_name_id filename,
+	symbol_collection const find_symbol(debug_name_id filename,
 					size_t linenr) const;
 
 	/// Find a sample by its symbol, vma, return zero if there is no sample
@@ -101,6 +101,12 @@ public:
 	 * @param choice  parameters to use/fill in when selecting
 	 */
 	symbol_collection const select_symbols(symbol_choice & choice) const;
+
+	/**
+	 * select_symbols - create a set of symbols belonging to a given source
+	 * @param filename  source file where are defined the returned symbols
+	 */
+	symbol_collection const select_symbols(debug_name_id filename) const;
 
 	/// Like select_symbols for filename without allowing sort by vma.
 	std::vector<debug_name_id> const select_filename(double threshold) const;

@@ -126,6 +126,24 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
  o randomizing of reset value
  o XML output
  o profile the NMI handler code
+ o opannotate : I added this to the doc about difference between nr samples
+  credited to a source function and total number of samples for this function:
+   "The missing samples are not lost, they will be credited to another source
+    location where the inlined function is defined. The inlined function will
+    be credited from multiple call site and merged in one place in the
+   annotated source file so there is no way to see from what call site are
+   coming the samples for an inlined function."
+  I think we can work around this: output multiple instances of inlined
+  function like :
+  inline foo() { foo: total 1500 30.00 ...
+  ... annotated source from all call site 
+  inline foo() { foo (call site bar()): total 500 10.00
+  .. annotated source from call site bar() etc.
+  what about template..., can we do/must we do something like that
+  template <class T> eat_cpu() and do a similar things, merging and annotating
+  all instantation then annotating for each distinct instantation, this will
+  break our "keep the source line number in annotated source file identical to
+  the original source"
 
 Documentation
 -------------

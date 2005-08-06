@@ -1,5 +1,17 @@
 2005-08-06  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* doc/oprofile.xml: more documentation about annotated source and
+	  inlined functions.
+	* libpp/profile_container.cpp:
+	* libpp/profile_container.h:
+	* libpp/symbol_container.cpp:
+	* libpp/symbol_container.h: new public interface to select all symbols
+	  defined in a given source file.
+	* pp/opannotate.cpp: when no source file is available we can at least
+	  output all symbols name/samples count belonging to this source.
+
+2005-08-06  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libpp/profile_container.cpp:
 	* libpp/profile_container.h:
 	* libpp/symbol_container.cpp:

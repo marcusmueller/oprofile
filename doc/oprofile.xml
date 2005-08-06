@@ -2238,6 +2238,32 @@ likely candidate for this problem. Examining the mixed source/assembly
 output can help identify such results.
 </para>
 <para>
+This problem is more visible when there is no source file available, in the
+following example it's trivially visible the sums of symbols samples is less
+than the number of the samples for this file. The difference must be accounted
+to inline functions.
+</para>
+<screen>
+/*
+ * Total samples for file : "arch/i386/kernel/process.c"
+ *
+ *    109  2.4616
+ */
+
+ /* default_idle total:     84  1.8970 */
+ /* cpu_idle total:         21  0.4743 */
+ /* flush_thread total:      1  0.0226 */
+ /* prepare_to_copy total:   1  0.0226 */
+ /* __switch_to total:      18  0.4065 */
+</screen>
+<para>
+The missing samples are not lost, they will be credited to another source
+location where the inlined function is defined. The inlined function will be
+credited from multiple call site and merged in one place in the annotated
+source file so there is no way to see from what call site are coming the
+samples for an inlined function.
+</para>
+<para>
 When running <command>opannotate</command>, you may get a warning
 "some functions compiled without debug information may have incorrect source line attributions".
 In some rare cases, OProfile is not able to verify that the derived source line

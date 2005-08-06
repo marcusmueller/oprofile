@@ -404,7 +404,7 @@ string const source_line_annotation(debug_name_id filename, size_t linenr)
 
 string source_symbol_annotation(debug_name_id filename, size_t linenr)
 {
-	symbol_collection symbols = samples->find_symbol(filename, linenr);
+	symbol_collection const symbols = samples->find_symbol(filename, linenr);
 
 	if (symbols.empty())
 		return string();
@@ -481,14 +481,13 @@ void do_output_one_file(ostream & out, istream & in, debug_name_id filename,
 		}
 
 	} else {
-		// FIXME : we have no input file : we just outputfooter
-		// so on user can known total nr of samples for this source
-		// later we must add code that iterate through symbol in this
-		// file to output one annotation for each symbol. To do this we
-		// need a select_symbol(filename); in profile_container which
-		// fall back to the implementation in symbol_container
-		// using a lazilly build symbol_map sorted by filename
-		// (necessary functors already exist in symbol_functors.h)
+		// source is not available but we can at least output all the
+		// symbols belonging to this file. This make more visible the
+		// problem of having less samples for a given file than the
+		// sum of all symbols samples for this file due to inlining
+		symbol_collection const symbols = samples->select_symbols(filename);
+		for (size_t i = 0; i < symbols.size(); ++i)
+			out << symbol_annotation(symbols[i]) << endl;
 	}
 
 	if (!header) {
@@ -620,7 +619,7 @@ void output_source(path_filter const & filter)
 		// of debug info (eg _init function) so warn only
 		// if the filename is non empty. The case: no debug
 		// info at all has already been checked.
-		if ((!in) && source.length()) {
+		if (!in && source.length()) {
 			cerr << "opannotate (warning): unable to open for "
 			     "reading: " << source << endl;
 		}

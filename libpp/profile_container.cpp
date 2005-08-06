@@ -250,12 +250,18 @@ profile_container::find_symbol(string const & image_name, bfd_vma vma) const
 }
 
 
-symbol_collection
+symbol_collection const
 profile_container::find_symbol(debug_name_id filename, size_t linenr) const
 {
 	return symbols->find(filename, linenr);
 }
 
+
+symbol_collection const
+profile_container::select_symbols(debug_name_id filename) const
+{
+	return symbols->find(filename);
+}
 
 sample_entry const *
 profile_container::find_sample(symbol_entry const * symbol, bfd_vma vma) const
