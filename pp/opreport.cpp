@@ -67,10 +67,9 @@ add_files(list<profile_sample_files> const & files, size_t pclass)
 		counts[pclass] += count;
 		subtotal += count;
 
-		// FIXME: is it worth (for now yes I expect bugs ...)
 		if (!it->cg_files.empty()) {
-			throw "opreport.cpp::add_files(): unxpected non empty "
-				"cg file set\n";
+			throw op_runtime_error("opreport.cpp::add_files(): "
+			       "unxpected non empty cg file set");
 		}
 	}
 
