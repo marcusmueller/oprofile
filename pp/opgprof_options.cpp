@@ -120,7 +120,6 @@ void handle_options(options::spec const & spec)
 	// we do a first try with exclude-dependent if it fails we include
 	// dependent. First try should catch "opgrof /usr/bin/make" whilst
 	// the second catch "opgprof /lib/libc-2.2.5.so"
-	if (!try_merge_profiles(pspec, true)) {
+	if (!try_merge_profiles(pspec, true))
 		try_merge_profiles(pspec, false);
-	}
 }

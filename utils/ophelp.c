@@ -173,9 +173,8 @@ static void resolve_events(void)
 		exit(EXIT_FAILURE);
 	}
 
-	for (i = 0; i < count; ++i) {
+	for (i = 0; i < count; ++i)
 		printf("%d ", (unsigned int) counter_map[i]);
-	}
 	printf("\n");
 
 	free(counter_map);
@@ -254,9 +253,8 @@ static void get_options(int argc, char const * argv[])
 {
 	optcon = op_poptGetContext(NULL, argc, argv, options, 0);
 
-	if (show_vers) {
+	if (show_vers)
 		show_version(argv[0]);
-	}
 
 	/* non-option, must be a valid event name or event specs */
 	chosen_events = poptGetArgs(optcon);

@@ -446,9 +446,8 @@ int main(int argc, char const * argv[])
 	opd_setup_signals();
 
 	err = setrlimit(RLIMIT_NOFILE, &rlim);
-	if (err) {
+	if (err)
 		perror("warning: could not set RLIMIT_NOFILE to 2048: ");
-	}
 
 	opd_write_abi();
 

@@ -27,9 +27,9 @@ int odb_insert(odb_t * odb, odb_key_t key, odb_value_t value)
 	data = odb->data;
 	index = data->hash_base[odb_do_hash(data, key)];
 	while (index) {
-		if (index <= 0 || index >= data->descr->current_size) {
+		if (index <= 0 || index >= data->descr->current_size)
 			return EINVAL;
-		}
+
 		node = &data->node_base[index];
 		if (node->key == key) {
 			if (node->value + value >= node->value) {
@@ -49,9 +49,8 @@ int odb_insert(odb_t * odb, odb_key_t key, odb_value_t value)
 	 * odb_travel just ignore node with a zero key so on setting the key
 	 * atomically update the node */
 	new_node = odb_hash_add_node(odb);
-	if (new_node == ODB_NODE_NR_INVALID) {
+	if (new_node == ODB_NODE_NR_INVALID)
 		return EINVAL;
-	}
 
 	node = &data->node_base[new_node];
 	node->value = value;

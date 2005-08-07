@@ -65,9 +65,8 @@ string get_annotation_fill()
 		str += string(percent_width, ' ');
 	}
 
-	for (size_t i = 1; i < nr_events; ++i) {
+	for (size_t i = 1; i < nr_events; ++i)
 		str += "  ";
-	}
 
 	str += " :";
 	return str;
@@ -584,9 +583,8 @@ string const locate_source_file(debug_name_id filename_id)
 	for (; cit != end; ++cit) {
 		string const absfile = op_realpath(*cit + "/" + file);
 
-		if (op_file_readable(absfile)) {
+		if (op_file_readable(absfile))
 			return absfile;
-		}
 	}
 
 	/* We didn't find a relocated absolute file, or a relative file,
@@ -624,9 +622,8 @@ void output_source(path_filter const & filter)
 			     "reading: " << source << endl;
 		}
 
-		if (source.length()) {
+		if (source.length())
 			output_one_file(in, filenames[i], source);
-		}
 	}
 }
 
@@ -664,9 +661,8 @@ bool annotate_source(list<string> const & images)
 		list<string>::const_iterator const end = images.end();
 
 		for (; it != end; ++it) {
-			if (output_asm(*it)) {
+			if (output_asm(*it))
 				some_output = true;
-			}
 		}
 
 		if (!some_output) {

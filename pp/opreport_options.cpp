@@ -116,9 +116,8 @@ void handle_sort_option()
 	vector<string>::const_iterator cit = sort.begin();
 	vector<string>::const_iterator end = sort.end();
 
-	for (; cit != end; ++cit) {
+	for (; cit != end; ++cit)
 		options::sort_by.add_sort_option(*cit);
-	}
 }
 
 

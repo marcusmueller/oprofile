@@ -105,9 +105,8 @@ odb_index_t odb_hash_add_node(odb_t * odb)
 		 * useful.
 		 */
 #if 0
-		for (pos = 0 ; pos < data->descr->size*BUCKET_FACTOR ; ++pos) {
+		for (pos = 0 ; pos < data->descr->size*BUCKET_FACTOR ; ++pos)
 			data->hash_base[pos] = 0;
-		}
 #endif
 
 		for (pos = 1; pos < data->descr->current_size; ++pos) {

@@ -83,18 +83,15 @@ static poptContext do_parse_options(int argc, char const ** argv,
 
 	poptContext con = op_poptGetContext(NULL, argc, argv, &options[0], 0);
 
-	if (showvers) {
+	if (showvers)
 		show_version(argv[0]);
-	}
 
 	char const * file;
-	while ((file = poptGetArg(con)) != 0) {
+	while ((file = poptGetArg(con)) != 0)
 		additional_params.push_back(file);
-	}
 
-	for (size_t i = 0 ; i < options_list.size() ; ++i) {
+	for (size_t i = 0 ; i < options_list.size() ; ++i)
 		options_list[i]->post_process();
-	}
 
 	return con;
 }

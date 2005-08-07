@@ -114,9 +114,8 @@ void profile_container::add(profile_t const & profile,
 
 		symbol_entry const * symbol = symbols->insert(symb_entry);
 
-		if (need_details) {
+		if (need_details)
 			add_samples(abfd, i, p_it, symbol, pclass);
-		}
 	}
 }
 
@@ -196,9 +195,8 @@ profile_container::select_filename(double threshold) const
 
 	for (; sit != send; ++sit) {
 		debug_name_id name_id = sit->second.file_loc.filename;
-		if (name_id.set()) {
+		if (name_id.set())
 			filename_set.insert(name_id);
-		}
 	}
 
 	// Give a sort order on filename for the selected pclass.

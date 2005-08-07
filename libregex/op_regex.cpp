@@ -152,11 +152,10 @@ string regular_expression_replace::substitute_definition(string const & pattern)
 			result += defs[def_name];
 			i = end;
 		} else {
-			if (pattern[i] == '\\' && !previous_is_escape) {
+			if (pattern[i] == '\\' && !previous_is_escape)
 				previous_is_escape = true;
-			} else {
+			else
 				previous_is_escape = false;
-			}
 			result += pattern[i];
 		}
 	}
@@ -173,9 +172,8 @@ bool regular_expression_replace::execute(string & str) const
 	for (size_t nr_iter = 0; changed && nr_iter < limit ; ++nr_iter) {
 		changed = false;
 		for (size_t i = 0 ; i < regex_replace.size() ; ++i) {
-			if (do_execute(str, regex_replace[i])) {
+			if (do_execute(str, regex_replace[i]))
 				changed = true;
-			}
 		}
 	}
 

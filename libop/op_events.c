@@ -39,9 +39,8 @@ static void parse_error(char const * context)
 static int parse_int(char const * str)
 {
 	int value;
-	if (sscanf(str, "%d", &value) != 1) {
+	if (sscanf(str, "%d", &value) != 1)
 		parse_error("expected decimal value");
-	}
 
 	return value;
 }
@@ -50,9 +49,8 @@ static int parse_int(char const * str)
 static int parse_hex(char const * str)
 {
 	int value;
-	if (sscanf(str, "%x", &value) != 1) {
+	if (sscanf(str, "%x", &value) != 1)
 		parse_error("expected hexadecimal value");
-	}
 
 	return value;
 }
@@ -61,9 +59,9 @@ static int parse_hex(char const * str)
 static u64 parse_long_hex(char const * str)
 {
 	u64 value;
-	if (sscanf(str, "%Lx", &value) != 1) {
+	if (sscanf(str, "%Lx", &value) != 1)
 		parse_error("expected long hexadecimal value");
-	}
+
 	fflush(stderr);
 	return value;
 }
@@ -187,12 +185,11 @@ static void read_unit_masks(char const * file)
 			um = new_unit_mask();
 			parse_um(um, line);
 		} else {
-			if (!um) {
+			if (!um)
 				parse_error("no unit mask name line");
-			}
-			if (um->num >= MAX_UNIT_MASK) {
+			if (um->num >= MAX_UNIT_MASK)
 				parse_error("oprofile: maximum unit mask entries exceeded");
-			}
+
 			parse_um_entry(&um->um[um->num], line);
 			++(um->num);
 		}
@@ -259,9 +256,8 @@ static int next_token(char const ** cp, char ** name, char ** value)
 	colon = strchr(colon, ':');
 
 	if (!colon) {
-		if (*c) {
+		if (*c)
 			parse_error("next_token(): garbage at end of line");
-		}
 		return 0;
 	}
 
@@ -398,9 +394,9 @@ static void check_unit_mask(struct op_unit_mask const * um,
 		exit(EXIT_FAILURE);
 	} else if (um->unit_type_mask == utm_bitmask) {
 		u16 default_mask = um->default_mask;
-		for (i = 0; i < um->num; ++i) {
+		for (i = 0; i < um->num; ++i)
 			default_mask &= ~um->um[i].value;
-		}
+
 		if (default_mask) {
 			fprintf(stderr, "um %s default mask is not valid "
 				"(%s)\n", um->name, cpu_name);
@@ -592,9 +588,8 @@ static char const * get_mapping(u8 nr, FILE * fp)
 					parse_error("duplicate event tag");
 				seen_event = 1;
 				evt = parse_hex(value);
-				if (evt == nr) {
+				if (evt == nr)
 					event_found = 1;
-				}
 				free(value);
 			} else if (strcmp(name, "mmcr0") == 0) {
 				if (seen_mmcr0)

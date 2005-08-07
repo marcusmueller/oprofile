@@ -26,9 +26,8 @@ symbol_name_storage symbol_names;
 string const & image_name_storage::basename(image_name_id id) const
 {
 	stored_name const & n = get(id);
-	if (n.name_processed.empty()) {
+	if (n.name_processed.empty())
 		n.name_processed = op_basename(n.name);
-	}
 	return n.name_processed;
 }
 
@@ -36,9 +35,8 @@ string const & image_name_storage::basename(image_name_id id) const
 string const & debug_name_storage::basename(debug_name_id id) const
 {
 	stored_name const & n = get(id);
-	if (n.name_processed.empty()) {
+	if (n.name_processed.empty())
 		n.name_processed = op_basename(n.name);
-	}
 	return n.name_processed;
 }
 

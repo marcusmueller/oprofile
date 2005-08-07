@@ -78,9 +78,8 @@ static void do_speed_test(void)
 	int i, j;
 
 	for (i = 1000 ; i <= 100000 ; i *= 10) {
-		for (j = 100 ; j <= i / 10 ; j *= 10) {
+		for (j = 100 ; j <= i / 10 ; j *= 10)
 			speed_test(i, j);
-		}
 	}
 }
 

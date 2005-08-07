@@ -267,7 +267,7 @@ int do_exec_command(string const & cmd, vector<string> const & args)
 		error += "Failed: \n" + err.str() + "\n";
 		string cmdline = cmd;
 		for (vector<string>::const_iterator cit = args.begin();
-			cit != args.end(); ++cit) {
+		     cit != args.end(); ++cit) {
 			cmdline += " " + *cit + " ";
 		}
 		error += "\n\nCommand was :\n\n" + cmdline + "\n";

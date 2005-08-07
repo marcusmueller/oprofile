@@ -515,9 +515,8 @@ add(profile_t const & profile, op_bfd const & caller_bfd, bool caller_bfd_ok,
 	// caller and the callee: kernel sample traversing the syscall barrier.
 	u32 caller_offset = 0;
 
-	if (header.is_kernel || header.anon_start) {
+	if (header.is_kernel || header.anon_start)
 		caller_offset = caller_bfd.get_start_offset(header.anon_start);
-	}
 
 	u32 callee_offset = 0;
 

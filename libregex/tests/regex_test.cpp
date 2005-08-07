@@ -56,9 +56,8 @@ static void do_test(istream& fin)
 		}
 	}
 
-	if (!first) {
+	if (!first)
 		cerr << "input file ill formed\n";
-	}
 }
 
 int main(int argc, char * argv[])

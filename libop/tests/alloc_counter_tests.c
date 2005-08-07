@@ -200,8 +200,8 @@ int main(void)
 
 	setenv("OPROFILE_EVENTS_DIR", OPROFILE_SRCDIR "/events", 1);
 
-	for (it = tests; it->cpu_type != CPU_NO_GOOD; ++it) {
+	for (it = tests; it->cpu_type != CPU_NO_GOOD; ++it)
 		do_test(it);
-	}
+
 	return 0;
 }

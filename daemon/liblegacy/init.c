@@ -130,13 +130,11 @@ static void opd_shutdown(struct op_buffer_head * buf, size_t size, struct op_not
 	}
 
 	/* it's always OK to read the note device */
-	while (ncount < 0) {
+	while (ncount < 0)
 		ncount = op_read_device(notedevfd, nbuf, nsize);
-	}
 
-	if (ncount > 0) {
+	if (ncount > 0)
 		opd_do_notes(nbuf, ncount);
-	}
 
 	/* read as much as we can until we have exhausted the data
 	 * (EAGAIN is returned).
@@ -171,14 +169,11 @@ static void opd_do_read(struct op_buffer_head * buf, size_t size, struct op_note
 		ssize_t ncount = -1;
 
 		/* loop to handle EINTR */
-		while (count < 0) {
+		while (count < 0)
 			count = op_read_device(devfd, buf, size);
 
-		}
-
-		while (ncount < 0) {
+		while (ncount < 0)
 			ncount = op_read_device(notedevfd, nbuf, nsize);
-		}
 
 		opd_do_notes(nbuf, ncount);
 		opd_do_samples(buf);

@@ -142,8 +142,7 @@ unsigned int op_lexical_cast<unsigned int, string>(string const & str)
 	// 2.91.66 fix
 	unsigned long ret = 0;
 	ret = strtoul(str.c_str(), &endptr, 0);
-	if (*endptr) {
+	if (*endptr)
 		throw invalid_argument("op_lexical_cast(\""+ str +"\")");
-	}
 	return ret;
 }

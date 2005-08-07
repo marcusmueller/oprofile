@@ -187,17 +187,15 @@ summary_container(vector<profile_class> const & pclasses)
 	app_map_t::const_iterator it = app_map.begin();
 	app_map_t::const_iterator const end = app_map.end();
 
-	for (; it != end; ++it) {
+	for (; it != end; ++it)
 		apps.push_back(it->second);
-	}
 
 	// sort by count
 	stable_sort(apps.begin(), apps.end());
 	vector<app_summary>::iterator ait = apps.begin();
 	vector<app_summary>::iterator const aend = apps.end();
-	for (; ait != aend; ++ait) {
+	for (; ait != aend; ++ait)
 		stable_sort(ait->deps.begin(), ait->deps.end());
-	}
 }
 
 
@@ -331,10 +329,8 @@ void output_summaries(summary_container const & summaries)
 			continue;
 		}
 
-		for (size_t j = 0; j < nr_classes; ++j) {
-			output_count(summaries.total_counts[j],
-			             app.counts[j]);
-		}
+		for (size_t j = 0; j < nr_classes; ++j)
+			output_count(summaries.total_counts[j], app.counts[j]);
 
 		cout << get_filename(app.image) << '\n';
 

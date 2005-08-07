@@ -52,9 +52,8 @@ static void do_test(struct events_test const * ev)
 int main(void)
 {
 	struct events_test const * ev;
-	for (ev = events; ev->tests[0]; ++ev) {
+	for (ev = events; ev->tests[0]; ++ev)
 		do_test(ev);
-	}
 
 	return 0;
 }

@@ -253,18 +253,16 @@ opd_header const get_header(profile_class const & pclass,
 
 	citerator it = profile.files.begin();
 	citerator const end = profile.files.end();
-	for ( ; it != end; ++it) {
+	for ( ; it != end; ++it)
 		merge_header(*it, header);
-	}
 
 	list<profile_dep_set>::const_iterator dep_it = profile.deps.begin();
 	list<profile_dep_set>::const_iterator dep_end = profile.deps.end();
 	for ( ; dep_it != dep_end; ++dep_it) {
 		citerator it = dep_it->files.begin();
 		citerator const end = dep_it->files.end();
-		for ( ; it != end; ++it) {
+		for ( ; it != end; ++it)
 			merge_header(*it, header);
-		}
 	}
 
 	return header;
@@ -330,9 +328,8 @@ void identify_classes(profile_classes & classes,
 	vector<profile_class>::iterator end = classes.v.end();
 
 	// only one class, name it after the event
-	if (it == end) {
+	if (it == end)
 		changed[AXIS_EVENT] = true;
-	}
 
 	for (; it != end; ++it) {
 		if (it->ptemplate.event != ptemplate.event

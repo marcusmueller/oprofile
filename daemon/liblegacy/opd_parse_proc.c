@@ -151,9 +151,8 @@ static void opd_get_ascii_maps(struct opd_proc * proc)
 		 * for now we use /proc/%pid/exe as name */
 		struct opd_image * image = opd_get_image(image_name,
                                        image_name, 0, proc->tid, proc->tgid);
-		if (image) {
+		if (image)
 			opd_add_mapping(proc, image, 0, 0, 0);
-		}
 	}
 
 	if (image_name)

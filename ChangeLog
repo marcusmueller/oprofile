@@ -1,3 +1,35 @@
+2005-08-07  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* daemon/oprofiled.c:
+	* daemon/liblegacy/init.c:
+	* daemon/liblegacy/opd_image.c:
+	* daemon/liblegacy/opd_parse_proc.c:
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_util.cpp:
+	* libdb/db_debug.c:
+	* libdb/db_insert.c:
+	* libdb/db_manage.c:
+	* libdb/tests/db_test.c:
+	* libop/op_events.c:
+	* libop/tests/alloc_counter_tests.c:
+	* libop/tests/parse_event_tests.c:
+	* libopt++/popt_options.cpp:
+	* libpp/arrange_profiles.cpp:
+	* libpp/callgraph_container.cpp:
+	* libpp/filename_spec.cpp:
+	* libpp/image_errors.cpp:
+	* libpp/name_storage.cpp:
+	* libpp/profile_container.cpp:
+	* libpp/profile_spec.cpp:
+	* libregex/op_regex.cpp:
+	* libregex/tests/regex_test.cpp:
+	* libutil++/string_manip.cpp:
+	* pp/opannotate.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp:
+	* utils/ophelp.c: coding style
+
 2005-08-06  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/oprofile.xml: more documentation about annotated source and

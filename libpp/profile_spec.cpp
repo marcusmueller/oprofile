@@ -42,9 +42,8 @@ void fixup_image_spec(vector<string> & images, extra_images const & extra)
 	vector<string>::iterator it = images.begin();
 	vector<string>::iterator const end = images.end();
 
-	for (; it != end; ++it) {
+	for (; it != end; ++it)
 		*it = fixup_image_spec(*it, extra);
-	}
 }
 
 }  // anon namespace
@@ -181,17 +180,15 @@ profile_spec::action_t
 profile_spec::get_handler(string const & tag_value, string & value)
 {
 	string::size_type pos = tag_value.find_first_of(':');
-	if (pos == string::npos) {
+	if (pos == string::npos)
 		return 0;
-	}
 
 	string tag(tag_value.substr(0, pos));
 	value = tag_value.substr(pos + 1);
 
 	parse_table_t::const_iterator it = parse_table.find(tag);
-	if (it == parse_table.end()) {
+	if (it == parse_table.end())
 		return 0;
-	}
 
 	return it->second;
 }
@@ -231,18 +228,16 @@ bool profile_spec::match(filename_spec const & spec) const
 		string simage = fixup_image_spec(spec.image, extra);
 		string slib_image = fixup_image_spec(spec.lib_image, extra);
 		glob_filter filter(image_or_lib_image, image_exclude);
-		if (filter.match(simage) || filter.match(slib_image)) {
+		if (filter.match(simage) || filter.match(slib_image))
 			matched_by_image_or_lib_image = true;
-		}
 	}
 
 	if (!matched_by_image_or_lib_image) {
 		// PP:3.7 3.8
 		if (!image.empty()) {
 			glob_filter filter(image, image_exclude);
-			if (!filter.match(spec.image)) {
+			if (!filter.match(spec.image))
 				return false;
-			}
 		} else if (!image_or_lib_image.empty()) {
 			// image.empty() means match all except if user
 			// specified image_or_lib_image
@@ -252,9 +247,8 @@ bool profile_spec::match(filename_spec const & spec) const
 		// PP:3.9 3.10
 		if (!lib_image.empty()) {
 			glob_filter filter(lib_image, image_exclude);
-			if (!filter.match(spec.lib_image)) {
+			if (!filter.match(spec.lib_image))
 				return false;
-			}
 		} else if (image.empty() && !image_or_lib_image.empty()) {
 			// lib_image empty means match all except if user
 			// specified image_or_lib_image *or* we already
@@ -269,12 +263,10 @@ bool profile_spec::match(filename_spec const & spec) const
 		// been handled above
 		vector<string> empty;
 		glob_filter filter(empty, image_exclude);
-		if (!filter.match(spec.image)) {
+		if (!filter.match(spec.image))
 			return false;
-		}
-		if (!spec.lib_image.empty() && !filter.match(spec.lib_image)) {
+		if (!spec.lib_image.empty() && !filter.match(spec.lib_image))
 			return false;
-		}
 	}
 
 	if (!event.match(spec.event))
@@ -323,9 +315,8 @@ profile_spec profile_spec::create(list<string> const & args,
 	}
 
 	// PP:3.5 no session given means use the current session.
-	if (spec.session.empty()) {
+	if (spec.session.empty())
 		spec.session.push_back("current");
-	}
 
 	return spec;
 }
@@ -337,9 +328,8 @@ vector<string> filter_session(vector<string> const & session,
 {
 	vector<string> result(session);
 
-	if (result.empty()) {
+	if (result.empty())
 		result.push_back("current");
-	}
 
 	for (size_t i = 0 ; i < session_exclude.size() ; ++i) {
 		// FIXME: would we use fnmatch on each item, are we allowed
@@ -347,9 +337,8 @@ vector<string> filter_session(vector<string> const & session,
 		vector<string>::iterator it =
 			find(result.begin(), result.end(), session_exclude[i]);
 
-		if (it != result.end()) {
+		if (it != result.end())
 			result.erase(it);
-		}
 	}
 
 	return result;

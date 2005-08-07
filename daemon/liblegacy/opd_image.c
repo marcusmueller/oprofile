@@ -35,9 +35,8 @@ static struct list_head opd_images[OPD_IMAGE_HASH_SIZE];
 void opd_init_images(void)
 {
 	int i;
-	for (i = 0; i < OPD_IMAGE_HASH_SIZE; ++i) {
+	for (i = 0; i < OPD_IMAGE_HASH_SIZE; ++i)
 		list_init(&opd_images[i]);
-	}
 }
 
 

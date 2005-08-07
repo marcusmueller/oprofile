@@ -266,9 +266,8 @@ QListViewItem * findItem(QListView * view, char const * name)
 	// Qt 2.3.1 does not have QListView::findItem()
 	QListViewItem * item = view->firstChild();
 
-	while (item && strcmp(item->text(0).latin1(), name)) {
+	while (item && strcmp(item->text(0).latin1(), name))
 		item = item->nextSibling();
-	}
 
 	return item;
 }
@@ -429,7 +428,7 @@ void oprof_start::fill_events_listbox()
 	setUpdatesEnabled(false);
 
 	for (vector<op_event_descr>::reverse_iterator cit = v_events.rbegin();
-		cit != v_events.rend(); ++cit) {
+	     cit != v_events.rend(); ++cit) {
 		new QListViewItem(events_list, cit->name.c_str());
 	}
 
@@ -495,9 +494,8 @@ bool oprof_start::alloc_selected_events() const
 	vector<op_event const *> events;
 
 	set<QListViewItem *>::const_iterator it;
-	for (it = selected_events.begin(); it != selected_events.end(); ++it) {
+	for (it = selected_events.begin(); it != selected_events.end(); ++it)
 		events.push_back(find_event_by_name((*it)->text(0).latin1()));
-	}
 
 	size_t * map =
 		map_event_to_counter(&events[0], events.size(), cpu_type);
@@ -518,9 +516,8 @@ void oprof_start::event_selected()
 	set<QListViewItem *> current_selection;
 	QListViewItem * cur;
 	for (cur = events_list->firstChild(); cur; cur = cur->nextSibling()) {
-		if (cur->isSelected()) {
+		if (cur->isSelected())
 			current_selection.insert(cur);
-		}
 	}
 
 	// First remove the deselected item.
@@ -529,9 +526,8 @@ void oprof_start::event_selected()
 		       current_selection.begin(), current_selection.end(),
 		       back_inserter(new_deselected));
 	vector<QListViewItem *>::const_iterator it;
-	for (it = new_deselected.begin(); it != new_deselected.end(); ++it) {
+	for (it = new_deselected.begin(); it != new_deselected.end(); ++it)
 		selected_events.erase(*it);
-	}
 
 	// Now try to add the newly selected item if enough HW resource exists
 	vector<QListViewItem *> new_selected;
