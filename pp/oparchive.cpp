@@ -94,10 +94,6 @@ int oparchive(options::spec const & spec)
 
 	cverb << vdebug << "(sample_names)" << endl << endl;
 
-	/* Copy over each of the sample files.  The sample files are
-	 * copied after the executables to avoid the situation where
-	 * executable is newer than the sample file.
-	 */
 	for (; sit != send; ++sit) {
 		string sample_name = *sit;
 		string sample_base = sample_name;

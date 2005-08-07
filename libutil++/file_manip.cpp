@@ -13,10 +13,12 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <fnmatch.h>
+#include <utime.h>
 
 #include <cstdio>
 #include <cerrno>
 #include <iostream>
+#include <fstream>
 #include <vector>
 
 #include "op_file.h"
@@ -30,14 +32,26 @@ using namespace std;
 bool copy_file(string const & source, string const & destination)
 {
 	struct stat buf;
-	int status = stat(source.c_str(), &buf);
+	if (stat(source.c_str(), &buf))
+		return false;
 
-	if (status == 0) {
-		/* FIXME: This code should avoid using system() if possible. */
-		string copy_command("cp -a -f " + source + " " + destination);
-		status = system(copy_command.c_str());
+	ifstream in(source.c_str());
+	if (!in)
+		return false;
+	{
+	ofstream out(destination.c_str());
+	if (!out)
+		return false;
+	out << in.rdbuf();
 	}
-	return !status;
+
+	struct utimbuf utim;
+	utim.actime = buf.st_atime;
+	utim.modtime = buf.st_mtime;
+	if (utime(destination.c_str(), &utim))
+		return false;
+
+	return true;
 }
 
 

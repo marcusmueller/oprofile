@@ -21,7 +21,8 @@
  * @param source        filename to copy from
  * @param destination   filename to copy into
  *
- * return true if copying successful
+ * the last modification time of the source file is preserved, return true if
+ * copying successful
  */
 bool copy_file(std::string const & source, std::string const & destination);
 

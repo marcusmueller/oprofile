@@ -1,5 +1,12 @@
 2005-08-07  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/file_manip.h:
+	* libutil++/file_manip.cpp: use iostream to copy file
+	* libpp/populate.cpp: check_mtime() even when using archive: spec
+	* pp/oparchive.cpp: fix comment
+
+2005-08-07  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* pp/opreport.cpp: don't throw a std::string but an op_runtime_error
 
 2005-08-07  Philippe Elie  <phil.el@wanadoo.fr>
