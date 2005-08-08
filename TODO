@@ -71,7 +71,6 @@ Later
  o output column shortname headers for opreport -l
  o is relative_to_absolute_path guaranteeing a trailing '/' documented ?
  o move oprofiled.log to OP_SAMPLE_DIR/current ?
- o --buffer-size is useless on 2.5 without tuning of watershed
  o pp tools must handle samples count overflow (marked as (unsigned)-1)
  o the way we show kernel modules in 2.5 is not very obvious - "/oprofile"
  o oparchive will be more usefull with a --root= options to allow profiling

@@ -139,6 +139,7 @@ do_help()
    --no-vmlinux                  no kernel image (vmlinux) available
    --kernel-range=start,end      kernel range vma address in hexadecimal
    --buffer-size=num             kernel buffer size in sample units
+   --buffer-watershed            kernel buffer watershed in sample units (2.6 only=
    --cpu-buffer-size=num         per-cpu buffer size in units (2.6 only)
    --note-table-size             kernel notes buffer size in notes units (2.4 only)
 " >&2
@@ -240,6 +241,7 @@ do_init()
 	# for these three buffer size == 0 means use the default value
 	# hard-coded in op_user.h
 	BUF_SIZE=0
+	BUF_WATERSHED=0
 	CPU_BUF_SIZE=0
 	NOTE_SIZE=0
 	VMLINUX=
@@ -326,7 +328,10 @@ do_save_setup()
 	# write the actual information to file
 	if test "$BUF_SIZE" != "0"; then
 		echo "BUF_SIZE=$BUF_SIZE" >> $SETUP_FILE
-	fi;
+	fi
+	if test "$BUF_WATERSHED" != "0"; then
+		echo "BUF_WATERSHED=$BUF_WATERSHED" >> $SETUP_FILE
+	fi
 	if test "$KERNEL_SUPPORT" = "yes"; then
 		echo "CPU_BUF_SIZE=$CPU_BUF_SIZE" >> $SETUP_FILE
 	fi
@@ -353,13 +358,18 @@ do_load_setup()
 		vecho "BUF_SIZE $BUF_SIZE"
 	else
 		vecho "BUF_SIZE default value"
-	fi;
+	fi
+	if test "$BUF_WATERSHED" != "0"; then
+		vecho "BUF_WATERSHED $BUF_WATERSHED"
+	else
+		vecho "BUF_WATERSHED default value"
+	fi
 	if test "$KERNEL_SUPPORT" = "yes"; then
 		if test "$CPU_BUF_SIZE" != "0"; then
 			vecho "CPU_BUF_SIZE $CPU_BUF_SIZE"
 		else
 		    vecho "CPU_BUF_SIZE default value"
-		fi;
+		fi
 	fi
 
 	vecho "SEPARATE_LIB $SEPARATE_LIB"
@@ -658,6 +668,15 @@ do_options()
 			--buffer-size)
 				error_if_empty $arg $val
 				BUF_SIZE=$val
+				DO_SETUP=yes
+				;;
+			--buffer-watershed)
+				if test "$KERNEL_SUPPORT" != "yes"; then
+					echo "$arg unsupported for this kernel version"
+					exit 1
+				fi
+				error_if_empty $arg $val
+				BUF_WATERSHED=$val
 				DO_SETUP=yes
 				;;
 			--cpu-buffer-size)
@@ -978,6 +997,14 @@ do_param_setup()
 		fi
 	fi
 
+	if test $BUF_WATERSHED != 0; then
+		if test "$KERNEL_SUPPORT" = "yes"; then
+			echo $BUF_WATERSHED >$MOUNT/buffer_watershed
+		else
+			echo "buffer-watershed not supported - ignored" >&2
+		fi
+	fi
+
 	if test $CPU_BUF_SIZE != 0; then
 		if test "$KERNEL_SUPPORT" = "yes"; then
 			echo $CPU_BUF_SIZE >$MOUNT/cpu_buffer_size
@@ -1182,12 +1209,15 @@ do_status()
 	echo "Call-graph depth: $CALLGRAPH"
 	if test "$BUF_SIZE" != "0"; then
 		echo "Buffer size: $BUF_SIZE"
-	fi;
+	fi
 	if test "$KERNEL_SUPPORT" != "yes"; then
 		if test "$NOTE_SIZE" != "0"; then
 			echo "Note buffer size: $NOTE_SIZE"
 		fi
 	else
+		if test "$BUF_WATERSHED" != "0"; then
+			echo "CPU buffer watershed: $BUF_WATERSHED"
+		fi
 		if test "$CPU_BUF_SIZE" != "0"; then
 			echo "CPU buffer size: $CPU_BUF_SIZE"
 		fi

@@ -140,9 +140,6 @@ oprof_start::oprof_start()
 	if (is_26) {
 		note_table_size_edit->hide();
 		note_table_size_label->hide();
-		// FIXME: can adapt to 2.6 ...
-		buffer_size_edit->hide();
-		buffer_size_label->hide();
 		if (!op_file_readable("/dev/oprofile/backtrace_depth")) {
 			callgraph_depth_label->hide();
 			callgraph_depth_edit->hide();
@@ -150,6 +147,8 @@ oprof_start::oprof_start()
 	} else {
 		callgraph_depth_label->hide();
 		callgraph_depth_edit->hide();
+		buffer_watershed_label->hide();
+		buffer_watershed_edit->hide();
 	}
 
 	// setup the configuration page.
@@ -158,6 +157,7 @@ oprof_start::oprof_start()
 	no_vmlinux->setChecked(config.no_kernel);
 
 	buffer_size_edit->setText(QString().setNum(config.buffer_size));
+	buffer_watershed_edit->setText(QString().setNum(config.buffer_watershed));
 	note_table_size_edit->setText(QString().setNum(config.note_table_size));
 	callgraph_depth_edit->setText(QString().setNum(config.callgraph_depth));
 	verbose->setChecked(config.verbose);
@@ -177,6 +177,8 @@ oprof_start::oprof_start()
 	note_table_size_edit->setValidator(iv);
 	iv = new QIntValidator(0, INT_MAX, callgraph_depth_edit);
 	callgraph_depth_edit->setValidator(iv);
+	iv = new QIntValidator(0, INT_MAX, buffer_watershed_edit);
+	buffer_watershed_edit->setValidator(iv);
 
 	// daemon status timer
 	startTimer(5000);
@@ -627,6 +629,21 @@ bool oprof_start::record_config()
 	}
 	config.buffer_size = temp;
 
+	temp = buffer_watershed_edit->text().toUInt();
+	// watershed above half of buffer size make little sense.
+	if (temp > config.buffer_size / 2) {
+		ostringstream error;
+
+		error << "buffer watershed out of range: " << temp
+		      << " valid range is [0 (use default), buffer size/2] "
+		      << "generally 0.25 * buffer size is fine";
+
+		QMessageBox::warning(this, 0, error.str().c_str());
+
+		return false;
+	}
+	config.buffer_watershed = temp;
+
 	temp = note_table_size_edit->text().toUInt();
 	if (temp < OP_MIN_NOTE_TABLE_SIZE || temp > OP_MAX_NOTE_TABLE_SIZE) {
 		ostringstream error;
@@ -947,12 +964,15 @@ bool oprof_start::save_config()
 		args.push_back("--vmlinux=" + config.kernel_filename);
 	}
 
+	args.push_back("--buffer-size=" +
+	       op_lexical_cast<string>(config.buffer_size));
+
 	if (op_get_interface() == OP_INTERFACE_24) {
-		args.push_back("--buffer-size=" +
-		       op_lexical_cast<string>(config.buffer_size));
 		args.push_back("--note-table-size=" +
 		       op_lexical_cast<string>(config.note_table_size));
 	} else {
+		args.push_back("--buffer-watershed=" +
+		       op_lexical_cast<string>(config.buffer_watershed));
 		if (op_file_readable("/dev/oprofile/backtrace_depth")) {
 			args.push_back("--callgraph=" +
 		              op_lexical_cast<string>(config.callgraph_depth));

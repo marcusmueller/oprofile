@@ -76,7 +76,14 @@ Shut down daemon. Unload the oprofile module and oprofilefs.
 .br
 .TP
 .BI "--buffer-size="num
-Set kernel buffer to num samples.
+Set kernel buffer to num samples. When using a 2.6 kernel buffer watershed need
+to be tweaked when changing this value.
+.br
+.TP
+.BI "--buffer-watershed="num
+Set kernel buffer watershed to num samples (2.6 only). When it'll remain only
+buffer-size - buffer-watershed free entry in the kernel buffer data will be
+flushed to daemon, most usefull value are in the range [0.25 - 0.5] * buffer-size.
 .br
 .TP
 .BI "--cpu-buffer-size="num

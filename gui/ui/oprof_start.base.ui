@@ -602,7 +602,7 @@
                         <class>QLayoutWidget</class>
                         <property stdset="1">
                             <name>name</name>
-                            <cstring>Layout16</cstring>
+                            <cstring>Layout13</cstring>
                         </property>
                         <grid>
                             <property stdset="1">
@@ -638,7 +638,7 @@
                                 <class>QLayoutWidget</class>
                                 <property stdset="1">
                                     <name>name</name>
-                                    <cstring>Layout15</cstring>
+                                    <cstring>Layout11</cstring>
                                 </property>
                                 <grid>
                                     <property stdset="1">
@@ -649,7 +649,7 @@
                                         <name>spacing</name>
                                         <number>6</number>
                                     </property>
-                                    <widget row="1"  column="1" >
+                                    <widget row="0"  column="1" >
                                         <class>QLineEdit</class>
                                         <property stdset="1">
                                             <name>name</name>
@@ -660,14 +660,7 @@
                                             <string>The size of the profiler's buffers</string>
                                         </property>
                                     </widget>
-                                    <widget row="4"  column="1" >
-                                        <class>QLineEdit</class>
-                                        <property stdset="1">
-                                            <name>name</name>
-                                            <cstring>note_table_size_edit</cstring>
-                                        </property>
-                                    </widget>
-                                    <widget row="4"  column="0" >
+                                    <widget row="1"  column="0" >
                                         <class>QLabel</class>
                                         <property stdset="1">
                                             <name>name</name>
@@ -682,7 +675,29 @@
                                             <cstring>note_table_size_edit</cstring>
                                         </property>
                                     </widget>
-                                    <widget row="1"  column="0" >
+                                    <widget row="2"  column="0" >
+                                        <class>QLabel</class>
+                                        <property stdset="1">
+                                            <name>name</name>
+                                            <cstring>buffer_watershed_label</cstring>
+                                        </property>
+                                        <property stdset="1">
+                                            <name>text</name>
+                                            <string>Buffer watershed</string>
+                                        </property>
+                                        <property>
+                                            <name>buddy</name>
+                                            <cstring>buffer_watershed_edit</cstring>
+                                        </property>
+                                    </widget>
+                                    <widget row="2"  column="1" >
+                                        <class>QLineEdit</class>
+                                        <property stdset="1">
+                                            <name>name</name>
+                                            <cstring>buffer_watershed_edit</cstring>
+                                        </property>
+                                    </widget>
+                                    <widget row="0"  column="0" >
                                         <class>QLabel</class>
                                         <property stdset="1">
                                             <name>name</name>
@@ -695,6 +710,13 @@
                                         <property>
                                             <name>buddy</name>
                                             <cstring>buffer_size_edit</cstring>
+                                        </property>
+                                    </widget>
+                                    <widget row="1"  column="1" >
+                                        <class>QLineEdit</class>
+                                        <property stdset="1">
+                                            <name>name</name>
+                                            <cstring>note_table_size_edit</cstring>
                                         </property>
                                     </widget>
                                 </grid>
@@ -1129,13 +1151,18 @@
     <tabstop>start_profiler_btn</tabstop>
     <tabstop>flush_profiler_data_btn</tabstop>
     <tabstop>stop_profiler_btn</tabstop>
+    <tabstop>reset_sample_files_btn</tabstop>
     <tabstop>quit_and_save_btn</tabstop>
     <tabstop>kernel_filename_edit</tabstop>
     <tabstop>no_vmlinux</tabstop>
     <tabstop>buffer_size_edit</tabstop>
     <tabstop>note_table_size_edit</tabstop>
+    <tabstop>buffer_watershed_edit</tabstop>
     <tabstop>verbose</tabstop>
-    <tabstop>separate_kernel_cb</tabstop>
     <tabstop>separate_lib_cb</tabstop>
+    <tabstop>separate_kernel_cb</tabstop>
+    <tabstop>separate_cpu_cb</tabstop>
+    <tabstop>separate_thread_cb</tabstop>
+    <tabstop>callgraph_depth_edit</tabstop>
 </tabstops>
 </UI>

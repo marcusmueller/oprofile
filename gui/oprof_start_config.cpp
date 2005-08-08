@@ -43,7 +43,8 @@ config_setting::config_setting()
 	separate_kernel(false),
 	separate_cpu(false),
 	separate_thread(false),
-	callgraph_depth(0)
+	callgraph_depth(0),
+	buffer_watershed(0)
 {
 	struct utsname info;
 
@@ -94,6 +95,8 @@ void config_setting::load(istream & in)
 			separate_thread = op_lexical_cast<bool>(val);
 		} else if (str == "CALLGRAPH") {
 			callgraph_depth = op_lexical_cast<unsigned int>(val);
+		} else if (str == "BUF_WATERSHED") {
+			buffer_watershed = op_lexical_cast<unsigned int>(val);
 		}
 	}
 }

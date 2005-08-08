@@ -1,3 +1,14 @@
+2005-08-08  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/opcontrol.1.in:
+	* doc/oprofile.xml: document opcontrol --buffer-watershed
+
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_config.h:
+	* gui/ui/oprof_start.base.ui:
+	* utils/opcontrol: implement 2.6 buffer_watershed
+
 2005-08-07  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/file_manip.h:

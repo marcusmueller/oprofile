@@ -533,7 +533,16 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 	<varlistentry>
 		<term><option>--buffer-size=</option>num</term>
 		<listitem><para>
-		Number of samples in kernel buffer.
+		Number of samples in kernel buffer. When using a 2.6 kernel
+		buffer watershed need to be tweaked when changing this value.
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term><option>--buffer-watershed=</option>num</term>
+		<listitem><para>
+		Set kernel buffer watershed to num samples (2.6 only). When it'll remain only
+		buffer-size - buffer-watershed free entry in the kernel buffer data will be
+		flushed to daemon, most usefull value are in the range [0.25 - 0.5] * buffer-size.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
