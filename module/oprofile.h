@@ -141,7 +141,7 @@ void oprof_free_hashmap(void);
  * performance counter */
 extern struct op_int_operations op_rtc_ops;
 
-void FASTCALL(op_do_profile(uint cpu, long eip, long irq_enabled, int ctr));
+void op_do_profile(uint cpu, long eip, long irq_enabled, int ctr);
 extern struct _oprof_data oprof_data[NR_CPUS];
 extern struct oprof_sysctl sysctl_parms;
 extern int lproc_dointvec(ctl_table *table, int write, struct file *filp, void *buffer, size_t *lenp);

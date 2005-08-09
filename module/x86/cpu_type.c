@@ -114,7 +114,7 @@ static int p4_ht_enabled(void)
 op_cpu p4_cpu_type(void)
 {
 	__u8 model = current_cpu_data.x86_model;
-	if (model <= 3) {
+	if (model <= 4) {
 #ifdef HT_SUPPORT
 		if (smp_num_siblings == 1) {
 			return CPU_P4;
