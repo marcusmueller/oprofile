@@ -1,5 +1,10 @@
 2005-08-09  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* daemon/opd_anon.c:
+	* daemon/opd_kernel.c: fix two scanf potential buffer overflow
+
+2005-08-09  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* module/x86/cpu_type.c: fix #1254390, problem and solution
 	  by Thomas Kho <tkho@users.sourceforge.net>
 

@@ -155,7 +155,7 @@ void output_gprof(op_bfd const & abfd, profile_container const & samples,
 
 	// FIXME: must we skip the flat profile write if histsize == 0 ?
 	// (this can occur with callgraph w/o samples to the binary) but in
-	// this case user must gprof --no-flat-profile whiwh is a bit boring
+	// this case user must gprof --no-flat-profile which is a bit boring
 	// and result *seems* weirds.
 
 	FILE * fp = op_open_file(gmon_filename.c_str(), "w");

@@ -112,11 +112,11 @@ void opd_reread_module_info(void)
 	char * line;
 	struct kernel_image * image;
 	int module_size;
-	char ref_count[32];
+	char ref_count[32+1];
 	int ret;
 	char module_name[256+1];
-	char live_info[32];
-	char dependencies[4096];
+	char live_info[32+1];
+	char dependencies[4096+1];
 	unsigned long long start_address;
 
 	if (no_vmlinux)

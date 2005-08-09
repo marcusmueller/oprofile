@@ -138,7 +138,7 @@ static void get_anon_maps(struct transient * trans)
 		return;
 
 	while (fgets(buf, PATH_MAX, fp) != NULL) {
-		char tmp[20];
+		char tmp[20+1];
 		/* Note that this actually includes all mappings,
 		 * since we want stuff like [heap]
 		 */
