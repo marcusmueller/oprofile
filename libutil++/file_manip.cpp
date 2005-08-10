@@ -51,6 +51,13 @@ bool copy_file(string const & source, string const & destination)
 	if (utime(destination.c_str(), &utim))
 		return false;
 
+	if (chmod(destination.c_str(), buf.st_mode & ~S_IFMT))
+		return false;
+
+	// ignore error here: a simple user can copy a root.root 744 file
+	// but can't chown the copied file to root.
+	chown(destination.c_str(), buf.st_uid, buf.st_gid);
+
 	return true;
 }
 
