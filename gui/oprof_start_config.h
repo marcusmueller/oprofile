@@ -48,6 +48,7 @@ struct config_setting {
 	bool separate_thread;
 	uint callgraph_depth;
 	uint buffer_watershed;
+	uint cpu_buffer_size;
 };
 
 std::istream & operator>>(std::istream & in, config_setting & object);

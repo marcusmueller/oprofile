@@ -602,9 +602,9 @@
                         <class>QLayoutWidget</class>
                         <property stdset="1">
                             <name>name</name>
-                            <cstring>Layout13</cstring>
+                            <cstring>Layout12</cstring>
                         </property>
-                        <grid>
+                        <hbox>
                             <property stdset="1">
                                 <name>margin</name>
                                 <number>0</number>
@@ -613,28 +613,7 @@
                                 <name>spacing</name>
                                 <number>6</number>
                             </property>
-                            <spacer row="0"  column="1" >
-                                <property>
-                                    <name>name</name>
-                                    <cstring>Spacer11</cstring>
-                                </property>
-                                <property stdset="1">
-                                    <name>orientation</name>
-                                    <enum>Horizontal</enum>
-                                </property>
-                                <property stdset="1">
-                                    <name>sizeType</name>
-                                    <enum>Expanding</enum>
-                                </property>
-                                <property>
-                                    <name>sizeHint</name>
-                                    <size>
-                                        <width>20</width>
-                                        <height>20</height>
-                                    </size>
-                                </property>
-                            </spacer>
-                            <widget row="0"  column="0" >
+                            <widget>
                                 <class>QLayoutWidget</class>
                                 <property stdset="1">
                                     <name>name</name>
@@ -660,41 +639,33 @@
                                             <string>The size of the profiler's buffers</string>
                                         </property>
                                     </widget>
-                                    <widget row="1"  column="0" >
-                                        <class>QLabel</class>
-                                        <property stdset="1">
-                                            <name>name</name>
-                                            <cstring>note_table_size_label</cstring>
-                                        </property>
-                                        <property stdset="1">
-                                            <name>text</name>
-                                            <string>Note Size</string>
-                                        </property>
-                                        <property>
-                                            <name>buddy</name>
-                                            <cstring>note_table_size_edit</cstring>
-                                        </property>
-                                    </widget>
-                                    <widget row="2"  column="0" >
-                                        <class>QLabel</class>
-                                        <property stdset="1">
-                                            <name>name</name>
-                                            <cstring>buffer_watershed_label</cstring>
-                                        </property>
-                                        <property stdset="1">
-                                            <name>text</name>
-                                            <string>Buffer watershed</string>
-                                        </property>
-                                        <property>
-                                            <name>buddy</name>
-                                            <cstring>buffer_watershed_edit</cstring>
-                                        </property>
-                                    </widget>
-                                    <widget row="2"  column="1" >
+                                    <widget row="1"  column="1" >
                                         <class>QLineEdit</class>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>buffer_watershed_edit</cstring>
+                                            <cstring>note_table_size_edit</cstring>
+                                        </property>
+                                    </widget>
+                                    <widget row="3"  column="0" >
+                                        <class>QLabel</class>
+                                        <property stdset="1">
+                                            <name>name</name>
+                                            <cstring>cpu_buffer_size_label</cstring>
+                                        </property>
+                                        <property stdset="1">
+                                            <name>text</name>
+                                            <string>Cpu buffer size</string>
+                                        </property>
+                                        <property>
+                                            <name>buddy</name>
+                                            <cstring>cpu_buffer_size_edit</cstring>
+                                        </property>
+                                    </widget>
+                                    <widget row="3"  column="1" >
+                                        <class>QLineEdit</class>
+                                        <property stdset="1">
+                                            <name>name</name>
+                                            <cstring>cpu_buffer_size_edit</cstring>
                                         </property>
                                     </widget>
                                     <widget row="0"  column="0" >
@@ -712,16 +683,67 @@
                                             <cstring>buffer_size_edit</cstring>
                                         </property>
                                     </widget>
-                                    <widget row="1"  column="1" >
+                                    <widget row="1"  column="0" >
+                                        <class>QLabel</class>
+                                        <property stdset="1">
+                                            <name>name</name>
+                                            <cstring>note_table_size_label</cstring>
+                                        </property>
+                                        <property stdset="1">
+                                            <name>text</name>
+                                            <string>Note Size</string>
+                                        </property>
+                                        <property>
+                                            <name>buddy</name>
+                                            <cstring>note_table_size_edit</cstring>
+                                        </property>
+                                    </widget>
+                                    <widget row="2"  column="1" >
                                         <class>QLineEdit</class>
                                         <property stdset="1">
                                             <name>name</name>
-                                            <cstring>note_table_size_edit</cstring>
+                                            <cstring>buffer_watershed_edit</cstring>
+                                        </property>
+                                    </widget>
+                                    <widget row="2"  column="0" >
+                                        <class>QLabel</class>
+                                        <property stdset="1">
+                                            <name>name</name>
+                                            <cstring>buffer_watershed_label</cstring>
+                                        </property>
+                                        <property stdset="1">
+                                            <name>text</name>
+                                            <string>Buffer watershed</string>
+                                        </property>
+                                        <property>
+                                            <name>buddy</name>
+                                            <cstring>buffer_watershed_edit</cstring>
                                         </property>
                                     </widget>
                                 </grid>
                             </widget>
-                        </grid>
+                            <spacer>
+                                <property>
+                                    <name>name</name>
+                                    <cstring>Spacer11</cstring>
+                                </property>
+                                <property stdset="1">
+                                    <name>orientation</name>
+                                    <enum>Horizontal</enum>
+                                </property>
+                                <property stdset="1">
+                                    <name>sizeType</name>
+                                    <enum>Expanding</enum>
+                                </property>
+                                <property>
+                                    <name>sizeHint</name>
+                                    <size>
+                                        <width>20</width>
+                                        <height>20</height>
+                                    </size>
+                                </property>
+                            </spacer>
+                        </hbox>
                     </widget>
                     <widget>
                         <class>QLayoutWidget</class>

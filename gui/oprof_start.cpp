@@ -149,6 +149,8 @@ oprof_start::oprof_start()
 		callgraph_depth_edit->hide();
 		buffer_watershed_label->hide();
 		buffer_watershed_edit->hide();
+		cpu_buffer_size_label->hide();
+		cpu_buffer_size_edit->hide();
 	}
 
 	// setup the configuration page.
@@ -158,6 +160,7 @@ oprof_start::oprof_start()
 
 	buffer_size_edit->setText(QString().setNum(config.buffer_size));
 	buffer_watershed_edit->setText(QString().setNum(config.buffer_watershed));
+	cpu_buffer_size_edit->setText(QString().setNum(config.cpu_buffer_size));
 	note_table_size_edit->setText(QString().setNum(config.note_table_size));
 	callgraph_depth_edit->setText(QString().setNum(config.callgraph_depth));
 	verbose->setChecked(config.verbose);
@@ -179,6 +182,8 @@ oprof_start::oprof_start()
 	callgraph_depth_edit->setValidator(iv);
 	iv = new QIntValidator(0, INT_MAX, buffer_watershed_edit);
 	buffer_watershed_edit->setValidator(iv);
+	iv = new QIntValidator(0, OP_MAX_CPU_BUF_SIZE, cpu_buffer_size_edit);
+	cpu_buffer_size_edit->setValidator(iv);
 
 	// daemon status timer
 	startTimer(5000);
@@ -644,6 +649,21 @@ bool oprof_start::record_config()
 	}
 	config.buffer_watershed = temp;
 
+	temp = cpu_buffer_size_edit->text().toUInt();
+	if ((temp != 0 && temp < OP_MIN_CPU_BUF_SIZE) ||
+	    temp > OP_MAX_CPU_BUF_SIZE) {
+		ostringstream error;
+
+		error << "cpu buffer size out of range: " << temp
+		      << " valid range is [" << OP_MIN_CPU_BUF_SIZE << ", "
+		      << OP_MAX_CPU_BUF_SIZE << "] (size = 0: use default)";
+
+		QMessageBox::warning(this, 0, error.str().c_str());
+
+		return false;
+	}
+	config.cpu_buffer_size = temp;
+
 	temp = note_table_size_edit->text().toUInt();
 	if (temp < OP_MIN_NOTE_TABLE_SIZE || temp > OP_MAX_NOTE_TABLE_SIZE) {
 		ostringstream error;
@@ -973,6 +993,8 @@ bool oprof_start::save_config()
 	} else {
 		args.push_back("--buffer-watershed=" +
 		       op_lexical_cast<string>(config.buffer_watershed));
+		args.push_back("--cpu-buffer-size=" +
+		       op_lexical_cast<string>(config.cpu_buffer_size));
 		if (op_file_readable("/dev/oprofile/backtrace_depth")) {
 			args.push_back("--callgraph=" +
 		              op_lexical_cast<string>(config.callgraph_depth));

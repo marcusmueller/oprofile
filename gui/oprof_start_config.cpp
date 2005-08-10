@@ -44,7 +44,8 @@ config_setting::config_setting()
 	separate_cpu(false),
 	separate_thread(false),
 	callgraph_depth(0),
-	buffer_watershed(0)
+	buffer_watershed(0),
+	cpu_buffer_size(0)
 {
 	struct utsname info;
 
@@ -97,6 +98,8 @@ void config_setting::load(istream & in)
 			callgraph_depth = op_lexical_cast<unsigned int>(val);
 		} else if (str == "BUF_WATERSHED") {
 			buffer_watershed = op_lexical_cast<unsigned int>(val);
+		} else if (str == "CPU_BUF_SIZE") {
+			cpu_buffer_size = op_lexical_cast<unsigned int>(val);
 		}
 	}
 }

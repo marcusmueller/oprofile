@@ -1,3 +1,11 @@
+2005-08-11  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* gui/oprof_start.cpp:
+	* gui/oprof_start_config.cpp:
+	* gui/oprof_start_config.h:
+	* gui/ui/oprof_start.base.ui:
+	* libop/op_config.h: add --cpu-buffer-size for 2.6
+
 2005-08-10  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/file_manip.h:

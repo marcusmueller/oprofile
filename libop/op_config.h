@@ -30,4 +30,7 @@
 #define OPD_MAGIC "DAE\n"
 #define OPD_VERSION 0x10
 
+#define OP_MIN_CPU_BUF_SIZE 2048
+#define OP_MAX_CPU_BUF_SIZE 131072
+
 #endif /* OP_CONFIG_H */
