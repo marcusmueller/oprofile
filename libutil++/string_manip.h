@@ -87,9 +87,8 @@ template <typename To, typename From>
 To op_lexical_cast(From const & src)
 {
 	std::ostringstream in;
-	if (!(in << src)) {
+	if (!(in << src))
 		throw std::invalid_argument("op_lexical_cast<T>()");
-	}
 	std::istringstream out(in.str());
 	To value;
 	if (!(out >> value)) {

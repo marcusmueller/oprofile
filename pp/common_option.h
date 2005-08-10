@@ -30,7 +30,7 @@ namespace options {
 		std::list<std::string> first;
 		std::list<std::string> second;
 	};
-};
+}
 
 /**
  * prototype of a pp tool entry point. This entry point is called

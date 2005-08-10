@@ -81,9 +81,8 @@ public:
 		typename id_map::value_type val(value, id_value(values.size()));
 		std::pair<typename id_map::iterator, bool>
 			inserted = ids.insert(val);
-		if (inserted.second) {
+		if (inserted.second)
 			values.push_back(value);
-		}
 
 		return inserted.first->second;
 	}

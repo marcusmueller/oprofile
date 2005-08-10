@@ -37,7 +37,7 @@ template <typename I> struct name_storage : unique_storage<I, stored_name> {
 
 	std::string const & name(id_value const & id) const {
 		return unique_storage<I, stored_name>::get(id).name;
-	};
+	}
 };
 
 
