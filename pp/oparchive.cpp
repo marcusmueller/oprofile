@@ -13,6 +13,9 @@
 #include <iostream>
 #include <fstream>
 
+#include <errno.h>
+#include <string.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -23,10 +26,20 @@
 #include "file_manip.h"
 #include "cverb.h"
 #include "image_errors.h"
+#include "string_manip.h"
 
 using namespace std;
 
 namespace {
+
+
+void copy_one_file(image_error err, string const & source, string const & dest)
+{
+	if (!copy_file(source, dest) && err == image_ok) {
+		cerr << "can't copy from " << source << " to " << dest
+		     << " cause: " << strerror(errno) << endl;
+	}
+}
 
 int oparchive(options::spec const & spec)
 {
@@ -54,6 +67,10 @@ int oparchive(options::spec const & spec)
 		string exe_name = it->image;
 		string exe_archive_file = options::outdirectory + exe_name;
 
+		// FIXME: hacky
+		if (it->error == image_not_found && is_prefix(exe_name, "anon "))
+			continue;
+
 		cverb << vdebug << exe_name << endl;
 		/* Create directory for executable file. */
 		if (create_path(exe_archive_file.c_str())) {
@@ -63,7 +80,8 @@ int oparchive(options::spec const & spec)
 		}
 
 		/* Copy actual executable files */
-		copy_file(options::archive_path + exe_name, exe_archive_file);
+		copy_one_file(it->error, options::archive_path + exe_name,
+		              exe_archive_file);
 
 		/* If there are any debuginfo files, copy them over.
 		 * Need to copy the debug info file in the same
@@ -82,7 +100,7 @@ int oparchive(options::spec const & spec)
 				string dest_debug = options::outdirectory +
 					dirname + "/" +
 					op_basename(debug_filename);
-				copy_file(debug_filename, dest_debug);
+				copy_one_file(image_ok, debug_filename, dest_debug);
 			}
 			bfd_close(ibfd);
 		}
@@ -111,18 +129,18 @@ int oparchive(options::spec const & spec)
 		}
 
 		/* Copy over actual sample file. */
-		copy_file(sample_name, sample_archive_file);
+		copy_one_file(image_ok, sample_name, sample_archive_file);
 	}
 
 	/* copy over the /var/lib/oprofile/abi file if it exists */
 	string abi_name = "/var/lib/oprofile/abi";
-	copy_file(options::archive_path + abi_name,
-		  options::outdirectory + abi_name);
+	copy_one_file(image_ok, options::archive_path + abi_name,
+	              options::outdirectory + abi_name);
 
 	/* copy over the /var/lib/oprofile/oprofiled.log file */
 	string log_name = "/var/lib/oprofile/oprofiled.log";
-	copy_file(options::archive_path + log_name,
-		  options::outdirectory + log_name);
+	copy_one_file(image_ok, options::archive_path + log_name,
+	              options::outdirectory + log_name);
 
 	return 0;
 }

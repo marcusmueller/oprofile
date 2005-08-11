@@ -1,5 +1,12 @@
 2005-08-11  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/file_manip.cpp: fix a race when changing the mode and owner
+	  of copied file.
+	* pp/oparchive.cpp: warn if a file can't be copied, avoid to copy 
+	  inexisting image for anon mammping
+
+2005-08-11  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* gui/oprof_start.cpp:
 	* gui/oprof_start_config.cpp:
 	* gui/oprof_start_config.h:

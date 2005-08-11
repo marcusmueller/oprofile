@@ -11,6 +11,7 @@
 
 #include <unistd.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <dirent.h>
 #include <fnmatch.h>
 #include <utime.h>
@@ -35,15 +36,10 @@ bool copy_file(string const & source, string const & destination)
 	if (stat(source.c_str(), &buf))
 		return false;
 
-	ifstream in(source.c_str());
-	if (!in)
+	int fd = open(destination.c_str(), O_RDWR|O_CREAT);
+	if (fd < 0)
 		return false;
-	{
-	ofstream out(destination.c_str());
-	if (!out)
-		return false;
-	out << in.rdbuf();
-	}
+	close(fd);
 
 	struct utimbuf utim;
 	utim.actime = buf.st_atime;
@@ -51,12 +47,23 @@ bool copy_file(string const & source, string const & destination)
 	if (utime(destination.c_str(), &utim))
 		return false;
 
-	if (chmod(destination.c_str(), buf.st_mode & ~S_IFMT))
+	mode_t mode = buf.st_mode & ~S_IFMT;
+	if (!(mode & S_IWUSR))
+		mode |= S_IWUSR;
+	if (chmod(destination.c_str(), mode))
 		return false;
 
 	// ignore error here: a simple user can copy a root.root 744 file
 	// but can't chown the copied file to root.
 	chown(destination.c_str(), buf.st_uid, buf.st_gid);
+
+	ifstream in(source.c_str());
+	if (!in)
+		return false;
+	ofstream out(destination.c_str(), ios_base::trunc);
+	if (!out)
+		return false;
+	out << in.rdbuf();
 
 	return true;
 }
