@@ -1,9 +1,16 @@
 2005-08-13  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libdb/odb.h: 
+	* libdb/db_insert.c:
+	* libdb/db_manage.c: use a two step node allocation to ensure adding
+	  a node will be sort of atomically visible in another process
+
+2005-08-13  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libdb/odb.h: clarify the way odb_get_iterator work
 	* libpp/profile.cpp: use odb_get_iterator properly to ensure we account
 	  zero relative offset. This fix a corner case when kernel module get
-	  a sample a the first byte of their .text section.
+	  a sample at the first byte of their .text section.
 
 2005-08-11  Philippe Elie  <phil.el@wanadoo.fr>
 

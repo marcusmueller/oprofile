@@ -135,14 +135,28 @@ void * odb_get_data(odb_t * odb);
 /** issue a msync on the used size of the mmaped file */
 void odb_sync(odb_t const * odb);
 
-/** add a page returning its index. Take care all page pointer can be
- * invalidated by this call !
+/**
+ * reserve a node returning its index. Take care all node pointer can be
+ * invalidated by this call. N
+ *
+ * Node allocation is done in a two step way 1st) reserve a node, caller can
+ * setup it, 2nd) commit the node allocation with odb_commit_reservation().
+ * This is done in this way to ensure node setup is visible from another
+ * process like pp tools in an atomic way.
+ *
  * returns the index of the created node on success or
  * ODB_NODE_NR_INVALID on failure, in this case this function do nothing
  * and errno is set by the first libc call failure allowing to retry after
  * cleanup some program resource.
  */
-odb_node_nr_t odb_hash_add_node(odb_t * odb);
+odb_node_nr_t odb_reserve_node(odb_data_t * data);
+/**
+ * commit a previously successfull node reservation. This can't fail.
+ */
+static __inline void odb_commit_reservation(odb_data_t * data)
+{
+	++data->descr->current_size;
+}
 
 /** "immpossible" node number to indicate an error from odb_hash_add_node() */
 #define ODB_NODE_NR_INVALID ((odb_node_nr_t)-1)

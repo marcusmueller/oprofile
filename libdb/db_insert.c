@@ -45,10 +45,11 @@ int odb_insert(odb_t * odb, odb_key_t key, odb_value_t value)
 	}
 
 	/* no locking is necessary: iteration interface retrieve data through
-	 * the node_base array, odb_hash_add_node() increase current_size but
-	 * odb_travel just ignore node with a zero key so on setting the key
-	 * atomically update the node */
-	new_node = odb_hash_add_node(odb);
+	 * the node_base array, odb_reserve_node() dosn't increase
+	 * current_size but it's done by odb_commit_reservation() so the new
+	 * slot is visible only after the increment
+	 */
+	new_node = odb_reserve_node(data);
 	if (new_node == ODB_NODE_NR_INVALID)
 		return EINVAL;
 
@@ -60,6 +61,9 @@ int odb_insert(odb_t * odb, odb_key_t key, odb_value_t value)
 	index = odb_do_hash(data, key);
 	node->next = data->hash_base[index];
 	data->hash_base[index] = new_node;
+
+	/* FIXME: we need wrmb() here */
+	odb_commit_reservation(data);
 	
 	return 0;
 }

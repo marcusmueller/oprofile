@@ -60,10 +60,8 @@ static unsigned int tables_size(odb_data_t const * data, odb_node_nr_t node_nr)
 }
 
 
-odb_index_t odb_hash_add_node(odb_t * odb)
+odb_index_t odb_reserve_node(odb_data_t * data)
 {
-	odb_data_t * data = odb->data;
-
 	if (data->descr->current_size >= data->descr->size) {
 		unsigned int old_file_size;
 		unsigned int new_file_size;
@@ -117,7 +115,7 @@ odb_index_t odb_hash_add_node(odb_t * odb)
 		}
 	}
 
-	return (odb_index_t)data->descr->current_size++;
+	return (odb_index_t)data->descr->current_size;
 }
 
 
