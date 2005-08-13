@@ -171,13 +171,11 @@ int odb_insert(odb_t * odb, odb_key_t key, odb_value_t value);
  *
  * odb_node_nr_t node_nr, pos;
  * odb_node_t * node = odb_get_iterator(odb, &node_nr);
- *	for ( pos = 0 ; pos < node_nr ; ++pos) {
- *		if (node[pos].key) {
- *			// do something
- *		}
- *	}
+ *	for ( pos = 0 ; pos < node_nr ; ++pos)
+ *		// do something
  *
- *  note than caller *must* filter nil key.
+ *  note than caller does not need to filter nil key as it's a valid key,
+ * The returned range is all valid (i.e. should never contain zero value).
  */
 odb_node_t * odb_get_iterator(odb_t const * odb, odb_node_nr_t * nr);
 

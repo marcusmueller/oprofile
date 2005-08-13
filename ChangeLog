@@ -1,3 +1,10 @@
+2005-08-13  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libdb/odb.h: clarify the way odb_get_iterator work
+	* libpp/profile.cpp: use odb_get_iterator properly to ensure we account
+	  zero relative offset. This fix a corner case when kernel module get
+	  a sample a the first byte of their .text section.
+
 2005-08-11  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/file_manip.cpp: fix a race when changing the mode and owner

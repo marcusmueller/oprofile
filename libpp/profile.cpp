@@ -45,10 +45,8 @@ unsigned int profile_t::sample_count(string const & filename)
 
 	odb_node_nr_t node_nr, pos;
 	odb_node_t * node = odb_get_iterator(&samples_db, &node_nr);
-	for (pos = 0; pos < node_nr; ++pos) {
-		if (node[pos].key)
-			count += node[pos].value;
-	}
+	for (pos = 0; pos < node_nr; ++pos)
+		count += node[pos].value;
 
 	odb_close(&samples_db);
 
@@ -88,23 +86,21 @@ void profile_t::add_sample_file(string const & filename)
 	// if we already read a sample file header pointer is non null
 	if (file_header.get())
 		op_check_header(head, *file_header, filename);
-
-	file_header.reset(new opd_header(head));
+	else
+		file_header.reset(new opd_header(head));
 
 	odb_node_nr_t node_nr, pos;
 	odb_node_t * node = odb_get_iterator(&samples_db, &node_nr);
 
 	for (pos = 0; pos < node_nr; ++pos) {
-		if (node[pos].key) {
-			ordered_samples_t::iterator it = 
-				ordered_samples.find(node[pos].key);
-			if (it != ordered_samples.end()) {
-				it->second += node[pos].value;
-			} else {
-				ordered_samples_t::value_type
-					val(node[pos].key, node[pos].value);
-				ordered_samples.insert(val);
-			}
+		ordered_samples_t::iterator it = 
+		    ordered_samples.find(node[pos].key);
+		if (it != ordered_samples.end()) {
+			it->second += node[pos].value;
+		} else {
+			ordered_samples_t::value_type
+				val(node[pos].key, node[pos].value);
+			ordered_samples.insert(val);
 		}
 	}
 
