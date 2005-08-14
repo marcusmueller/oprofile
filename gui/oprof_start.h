@@ -32,7 +32,7 @@ struct op_event_descr {
 	/// bit mask of allowed counters
 	uint counter_mask;
 	/// hardware event number
-	u8 val;
+	u32 val;
 	/// unit mask values if applicable
 	op_unit_mask const * unit;
 	/// name of event

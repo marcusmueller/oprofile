@@ -515,7 +515,7 @@ void op_free_events(void)
 }
 
 
-static struct op_event * find_event(u8 nr)
+static struct op_event * find_event(u32 nr)
 {
 	struct list_head * pos;
 
@@ -553,7 +553,7 @@ static FILE * open_event_mapping_file(char const * cpu_name)
 /**
  *  This function is PPC64-specific.
  */
-static char const * get_mapping(u8 nr, FILE * fp) 
+static char const * get_mapping(u32 nr, FILE * fp) 
 {
 	char * line;
 	char * name;
@@ -583,7 +583,7 @@ static char const * get_mapping(u8 nr, FILE * fp)
 		c = line;
 		while (next_token(&c, &name, &value)) {
 			if (strcmp(name, "event") == 0) {
-				u8 evt;
+				u32 evt;
 				if (seen_event)
 					parse_error("duplicate event tag");
 				seen_event = 1;
@@ -634,7 +634,7 @@ next:
 }
 
 
-char const * find_mapping_for_event(u8 nr, op_cpu cpu_type)
+char const * find_mapping_for_event(u32 nr, op_cpu cpu_type)
 {
 	char const * cpu_name = op_get_cpu_name(cpu_type);
 	FILE * fp = open_event_mapping_file(cpu_name);
@@ -675,7 +675,7 @@ struct op_event * find_event_by_name(char const * name)
 }
 
 
-struct op_event * op_find_event(op_cpu cpu_type, u8 nr)
+struct op_event * op_find_event(op_cpu cpu_type, u32 nr)
 {
 	struct op_event * event;
 
@@ -687,7 +687,7 @@ struct op_event * op_find_event(op_cpu cpu_type, u8 nr)
 }
 
 
-int op_check_events(int ctr, u8 nr, u16 um, op_cpu cpu_type)
+int op_check_events(int ctr, u32 nr, u16 um, op_cpu cpu_type)
 {
 	int ret = OP_OK_EVENT;
 	struct op_event * event;
