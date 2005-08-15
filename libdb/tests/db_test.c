@@ -37,13 +37,13 @@ static double used_time(void)
 
 	getrusage(RUSAGE_SELF, &usage);
 
-	return usage.ru_utime.tv_sec + usage.ru_stime.tv_sec + 
-		((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1000000.0);
+	return (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec) * 1E9 + 
+		((usage.ru_utime.tv_usec + usage.ru_stime.tv_usec)) * 1000;
 }
 
 
-/* create nr item randomly created with nr_unique_item distinct items */
-static void speed_test(int nr_item, int nr_unique_item)
+/* update nr item */
+static void speed_test(int nr_item, char const * test_name)
 {
 	int i;
 	double begin, end;
@@ -57,29 +57,30 @@ static void speed_test(int nr_item, int nr_unique_item)
 	}
 	begin = used_time();
 	for (i = 0 ; i < nr_item ; ++i) {
-		rc = odb_insert(&hash, (random() % nr_unique_item) + 1, 1);
+		rc = odb_insert(&hash, i, 1);
 		if (rc != EXIT_SUCCESS) {
 			fprintf(stderr, "%s", strerror(rc));
 			exit(EXIT_FAILURE);
 		}
 	}
+
 	end = used_time();
 	odb_close(&hash);
 
-	remove(TEST_FILENAME);
-
-	verbprintf("nr item: %d, unique item: %d, elapsed: %f\n",
-	           nr_item, nr_unique_item, end - begin);
+	verbprintf("%s: nr item: %d, elapsed: %f ns\n",
+		   test_name, nr_item, (end - begin) / nr_item);
 }
 
 
 static void do_speed_test(void)
 {
-	int i, j;
+	int i;
 
-	for (i = 1000 ; i <= 100000 ; i *= 10) {
-		for (j = 100 ; j <= i / 10 ; j *= 10)
-			speed_test(i, j);
+	for (i = 100000; i <= 10000000; i *= 10) {
+		// first test count insertion, second fetch and incr count
+		speed_test(i, "insert");
+		speed_test(i, "update");
+		remove(TEST_FILENAME);
 	}
 }
 
@@ -99,7 +100,7 @@ static int test(int nr_item, int nr_unique_item)
 
 
 	for (i = 0 ; i < nr_item ; ++i) {
-		odb_key_t key = (random() % nr_unique_item) + 1;
+	  odb_key_t key = (random() % nr_unique_item) + 1;
 		rc = odb_insert(&hash, key, 1);
 		if (rc != EXIT_SUCCESS) {
 			fprintf(stderr, "%s", strerror(rc));
@@ -165,11 +166,14 @@ int main(int argc, char * argv[1])
 	if (argc > 1) {
 		int i;
 		verbose = 1;
+		if (!strcmp(argv[1], "--speed"))
+			goto speed_test;
 		for (i = 1 ; i < argc ; ++i)
 			sanity_check(argv[i]);
 		return 0;
 	}
 
+speed_test:
 	remove(TEST_FILENAME);
 
 	do_test();

@@ -1,3 +1,7 @@
+2005-08-15  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libdb/tests/db_test.c: add a better speed test
+
 2005-08-13  Maynard Johnson <maynardj@us.ibm.com>
 	 
 	* gui/oprof_start.h:
