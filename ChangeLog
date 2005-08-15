@@ -1,5 +1,23 @@
 2005-08-15  Philippe Elie  <phil.el@wanadoo.fr>
 
+	  Fix #1256978: sum of samples count overflow
+
+	* libutil/op_types.h: typedef a unsigned 64 bits count_type
+	* libpp/callgraph_container.cpp:
+	* libpp/format_output.cpp:
+	* libpp/profile.cpp:
+	* libpp/profile.h:
+	* libpp/profile_container.cpp:
+	* libpp/symbol.h:
+	* libutil/op_types.h:
+	* libutil++/growable_vector.h:
+	* pp/opreport.cpp: use it all over place where we need to sum up
+	  samples count
+	* pp/opgprof.cpp: check for samples count capping for callgraph
+	  output
+
+2005-08-15  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libdb/tests/db_test.c: add a better speed test
 
 2005-08-13  Maynard Johnson <maynardj@us.ibm.com>

@@ -49,21 +49,21 @@ struct summary {
 	}
 
 	/// add a set of files to a summary
-	size_t add_files(list<profile_sample_files> const & files,
-			 size_t pclass);
+	count_type add_files(list<profile_sample_files> const & files,
+	                     size_t pclass);
 };
 
 
-size_t summary::
+count_type summary::
 add_files(list<profile_sample_files> const & files, size_t pclass)
 {
-	size_t subtotal = 0;
+	count_type subtotal = 0;
 
 	list<profile_sample_files>::const_iterator it = files.begin();
 	list<profile_sample_files>::const_iterator const end = files.end();
 
 	for (; it != end; ++it) {
-		size_t count = profile_t::sample_count(it->sample_filename);
+		count_type count = profile_t::sample_count(it->sample_filename);
 		counts[pclass] += count;
 		subtotal += count;
 
@@ -91,7 +91,7 @@ struct app_summary {
 	vector<summary> deps;
 
 	/// construct and fill in the data
-	size_t add_profile(profile_set const & profile, size_t pclass);
+	count_type add_profile(profile_set const & profile, size_t pclass);
 
 	bool operator<(app_summary const & rhs) const {
 		return options::reverse_sort 
@@ -120,14 +120,14 @@ summary & app_summary::find_summary(string const & image)
 }
 
 
-size_t app_summary::add_profile(profile_set const & profile,
+count_type app_summary::add_profile(profile_set const & profile,
                                 size_t pclass)
 {
-	size_t group_total = 0;
+	count_type group_total = 0;
 
 	// first the main image
 	summary & summ = find_summary(profile.image);
-	size_t app_count = summ.add_files(profile.files, pclass);
+	count_type app_count = summ.add_files(profile.files, pclass);
 	counts[pclass] += app_count;
 	group_total += app_count;
 
@@ -137,7 +137,7 @@ size_t app_summary::add_profile(profile_set const & profile,
 
 	for (; it != end; ++it) {
 		summary & summ = find_summary(it->lib_image);
-		size_t lib_count = summ.add_files(it->files, pclass);
+		count_type lib_count = summ.add_files(it->files, pclass);
 		counts[pclass] += lib_count;
 		group_total += lib_count;
 	}
@@ -221,7 +221,7 @@ string get_filename(string const & filename)
 
 
 /// Output a count and a percentage
-void output_count(double total_count, size_t count)
+void output_count(count_type total_count, count_type count)
 {
 	cout << setw(9) << count << ' ';
 	double ratio = op_ratio(count, total_count);
@@ -301,7 +301,7 @@ output_deps(summary_container const & summaries,
 		cout << '\t';
 
 		for (size_t i = 0; i < nr_classes; ++i) {
-			double tot_count = options::global_percent
+			count_type tot_count = options::global_percent
 				? summaries.total_counts[i] : app.counts[i];
 
 			output_count(tot_count, summ.counts[i]);

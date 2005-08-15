@@ -52,7 +52,7 @@ public:
 	 * them. It's placed here so all access to samples files go through
 	 * profile_t static or non static member.
 	 */
-	static unsigned int sample_count(std::string const & filename);
+	static count_type sample_count(std::string const & filename);
 
 	/**
 	 * cumulate sample file to our container of samples
@@ -92,7 +92,7 @@ private:
 	scoped_ptr<opd_header> file_header;
 
 	/// storage type for samples sorted by eip
-	typedef std::map<odb_key_t, odb_value_t> ordered_samples_t;
+	typedef std::map<odb_key_t, count_type> ordered_samples_t;
 
 	/**
 	 * Samples are stored in hash table, iterating over hash table don't
@@ -139,9 +139,9 @@ namespace std {
 	template <>
 		struct iterator_traits<profile_t::const_iterator> {
 			typedef ptrdiff_t difference_type;
-			typedef unsigned int value_type;
-			typedef unsigned int * pointer;
-			typedef unsigned int & reference;
+			typedef count_type value_type;
+			typedef count_type * pointer;
+			typedef count_type & reference;
 			typedef input_iterator_tag iterator_category;
 		};
 }
@@ -155,11 +155,11 @@ public:
 	const_iterator(iterator_t it_, u32 start_offset_)
 		: it(it_), start_offset(start_offset_) {}
 
-	unsigned int operator*() const { return it->second; }
+	count_type operator*() const { return it->second; }
 	const_iterator & operator++() { ++it; return *this; }
 
 	odb_key_t vma() const { return it->first + start_offset; }
-	unsigned int count() const { return **this; }
+	count_type count() const { return **this; }
 
 	bool operator!=(const_iterator const & rhs) const {
 		return it != rhs.it;

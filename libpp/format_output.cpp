@@ -63,7 +63,7 @@ string get_vma(bfd_vma vma, bool vma_64)
 	return out.str();
 }
 
-string get_percent(size_t dividend, size_t divisor)
+string get_percent(count_type dividend, count_type divisor)
 {
 	double ratio = op_ratio(dividend, divisor);
 

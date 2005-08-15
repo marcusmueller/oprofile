@@ -54,8 +54,8 @@ u32 key_to_callee(odb_key_t key)
 }
 
 
-bool compare_by_callee_vma(pair<odb_key_t, odb_value_t> const & lhs,
-                           pair<odb_key_t, odb_value_t> const & rhs)
+bool compare_by_callee_vma(pair<odb_key_t, count_type> const & lhs,
+                           pair<odb_key_t, count_type> const & rhs)
 {
 	return (key_to_callee(lhs.first)) < (key_to_callee(rhs.first));
 }
@@ -210,7 +210,7 @@ public:
 		      << image_names.name(app) << endl;
 	}
 
-	typedef vector<pair<odb_key_t, odb_value_t> > samples_t;
+	typedef vector<pair<odb_key_t, count_type> > samples_t;
 
 	typedef samples_t::const_iterator const_iterator;
 
@@ -246,11 +246,11 @@ private:
 
 
 /// accumulate all samples for a given caller/callee pair
-u32
+count_type
 accumulate_callee(call_data::const_iterator & it, call_data::const_iterator end,
                   u32 callee_end)
 {
-	u32 count = 0;
+	count_type count = 0;
 	call_data::const_iterator const start = it;
 
 	while (it != end) {

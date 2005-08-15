@@ -82,7 +82,7 @@ void profile_container::add(profile_t const & profile,
 		profile_t::iterator_pair p_it =
 			profile.samples_range(start, end);
 
-		u32 count = accumulate(p_it.first, p_it.second, 0);
+		count_type count = accumulate(p_it.first, p_it.second, 0ull);
 
 		// skip entries with no samples
 		if (count == 0)

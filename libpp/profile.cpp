@@ -35,13 +35,13 @@ profile_t::profile_t()
 
 
 // static member
-unsigned int profile_t::sample_count(string const & filename)
+count_type profile_t::sample_count(string const & filename)
 {
 	odb_t samples_db;
 
 	open_sample_file(filename, samples_db);
 
-	unsigned int count = 0;
+	count_type count = 0;
 
 	odb_node_nr_t node_nr, pos;
 	odb_node_t * node = odb_get_iterator(&samples_db, &node_nr);

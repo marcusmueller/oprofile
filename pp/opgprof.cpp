@@ -118,6 +118,12 @@ void output_cg(FILE * fp, op_bfd const & abfd, profile_t const & cg_db)
 		op_write_u8(fp, GMON_TAG_CG_ARC);
 		op_write_vma(fp, abfd, abfd.offset_to_pc(from + offset));
 		op_write_vma(fp, abfd, abfd.offset_to_pc(to + offset));
+		count_type count = p_it.first.count();
+		if (count != p_it.first.count()) {
+			cerr << "Warning: capping sample count by "
+			     << count - ((u32)-1) << endl;
+			count = (u32)-1;
+		}
 		op_write_u32(fp, p_it.first.count());
 	}
 }
@@ -187,7 +193,7 @@ void output_gprof(op_bfd const & abfd, profile_container const & samples,
 		sample_container::samples_iterator end = samples.end(*sit);
 		for (; it != end ; ++it) {
 			u32 pos = (it->second.vma - low_pc) / multiplier;
-			u32 count = it->second.counts[0];
+			count_type count = it->second.counts[0];
 
 			if (pos >= histsize) {
 				cerr << "Bogus histogram bin " << pos

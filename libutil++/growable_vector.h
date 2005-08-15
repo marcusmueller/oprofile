@@ -31,7 +31,7 @@ public:
 	 */
 	T operator[](size_type index) const {
 		if (index >= container.size())
-			return 0;
+			return T();
 		return container[index];
 	}
 

@@ -23,7 +23,7 @@
 
 
 /// for storing sample counts
-typedef growable_vector<u32> count_array_t;
+typedef growable_vector<count_type> count_array_t;
 
 
 /// A simple container for a fileno:linenr location.
