@@ -118,11 +118,11 @@ void output_cg(FILE * fp, op_bfd const & abfd, profile_t const & cg_db)
 		op_write_u8(fp, GMON_TAG_CG_ARC);
 		op_write_vma(fp, abfd, abfd.offset_to_pc(from + offset));
 		op_write_vma(fp, abfd, abfd.offset_to_pc(to + offset));
-		count_type count = p_it.first.count();
+		u32 count = p_it.first.count();
 		if (count != p_it.first.count()) {
-			cerr << "Warning: capping sample count by "
-			     << count - ((u32)-1) << endl;
 			count = (u32)-1;
+			cerr << "Warning: capping sample count by "
+			     << p_it.first.count() - count << endl;
 		}
 		op_write_u32(fp, p_it.first.count());
 	}
