@@ -60,7 +60,7 @@ bool copy_file(string const & source, string const & destination)
 	ifstream in(source.c_str());
 	if (!in)
 		return false;
-	ofstream out(destination.c_str(), ios_base::trunc);
+	ofstream out(destination.c_str(), ios::trunc);
 	if (!out)
 		return false;
 	out << in.rdbuf();
