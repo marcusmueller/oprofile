@@ -1,5 +1,21 @@
 2005-08-17  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libdb/odb.h:
+	* libdb/db_manage.c:
+	* libdb/db_insert.c: split the api in two part, one to update a node
+	  (or create it) by incrementing by one its associated value and
+	  one to create a new node with a given value. This optimize the
+	  fast path used by the daemon. Sanity check inside the fast path has
+	  been removed too.
+
+	* daemon/opd_sfile.c:
+	* daemon/liblegacy/opd_proc.c:
+	* libabi/opimport.cpp:
+	* libabi/tests/abi_test.cpp:
+	* libdb/tests/db_test.c: update according 
+
+2005-08-17  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libutil++/bfd_support.h:
 	* libutil++/op_bfd.cpp: comment how and why we can use the debuginfo
 	  bfd object.

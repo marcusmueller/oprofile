@@ -82,8 +82,7 @@ int main(int argc, char const ** argv)
 		header->cg_to_anon_start = 0;
     
 		for (int i = 0; i < 3793; ++i) {
-			int rc = odb_insert(&dest, ((i * i) ^ (i + i)),
-				((i * i) ^ i));
+			int rc = odb_add_node(&dest, i, i);
 			if (rc != EXIT_SUCCESS) {
 				cerr << strerror(rc) << endl;
 				exit(EXIT_FAILURE);

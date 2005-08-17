@@ -399,7 +399,7 @@ static void sfile_log_arc(struct transient const * trans)
 	key = to & (0xffffffff);
 	key |= ((uint64_t)from) << 32;
 
-	err = odb_insert(file, key, 1);
+	err = odb_update_node(file, key);
 	if (err) {
 		fprintf(stderr, "%s: %s\n", __FUNCTION__, strerror(err));
 		abort();
@@ -438,7 +438,7 @@ void sfile_log_sample(struct transient const * trans)
 		return;
 	}
 
-	err = odb_insert(file, (uint64_t)pc, 1);
+	err = odb_update_node(file, (uint64_t)pc);
 	if (err) {
 		fprintf(stderr, "%s: %s\n", __FUNCTION__, strerror(err));
 		abort();

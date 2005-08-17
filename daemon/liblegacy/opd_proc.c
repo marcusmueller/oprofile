@@ -143,7 +143,7 @@ void opd_put_image_sample(struct opd_image * image, unsigned long offset,
 		sfile = image->sfiles[cpu_number][counter];
 	}
 
-	err = odb_insert(&sfile->sample_file, offset, 1);
+	err = odb_update_node(&sfile->sample_file, offset);
 	if (err) {
 		fprintf(stderr, "%s\n", strerror(err));
 		abort();

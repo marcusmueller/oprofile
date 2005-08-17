@@ -151,7 +151,7 @@ void import_from_abi(abi const & abi, void const * srcv,
 		odb_value_t val;
 		ext.extract(key, src, "sizeof_odb_key_t", "offsetof_node_key");
 		ext.extract(val, src, "sizeof_odb_value_t", "offsetof_node_value");
-		int rc = odb_insert(dest, key, val);
+		int rc = odb_add_node(dest, key, val);
 		if (rc != EXIT_SUCCESS) {
 			cerr << strerror(rc) << endl;
 			exit(EXIT_FAILURE);

@@ -14,6 +14,8 @@ for some pointers and/or read HACKING and doc/CodingStyle.
  o if ev67 is not fixed, back it out
  o lapic : module should says "didn't find apic" if needed, FAQ and doc should
   speak a bit about lapic kernel option on x86 and recent kernel
+ o see the big comment in db_insert.c, it's possible to allow unlimited
+   amount of samples with a very minor change in libdb.
 
 Later
 -----

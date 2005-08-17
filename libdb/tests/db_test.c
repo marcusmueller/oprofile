@@ -57,7 +57,7 @@ static void speed_test(int nr_item, char const * test_name)
 	}
 	begin = used_time();
 	for (i = 0 ; i < nr_item ; ++i) {
-		rc = odb_insert(&hash, i, 1);
+		rc = odb_update_node(&hash, i);
 		if (rc != EXIT_SUCCESS) {
 			fprintf(stderr, "%s", strerror(rc));
 			exit(EXIT_FAILURE);
@@ -101,7 +101,7 @@ static int test(int nr_item, int nr_unique_item)
 
 	for (i = 0 ; i < nr_item ; ++i) {
 	  odb_key_t key = (random() % nr_unique_item) + 1;
-		rc = odb_insert(&hash, key, 1);
+		rc = odb_update_node(&hash, key);
 		if (rc != EXIT_SUCCESS) {
 			fprintf(stderr, "%s", strerror(rc));
 			exit(EXIT_FAILURE);
