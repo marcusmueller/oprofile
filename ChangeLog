@@ -1,3 +1,10 @@
+2005-08-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/bfd_support.h:
+	* libutil++/op_bfd.cpp: comment how and why we can use the debuginfo
+	  bfd object.
+	  
+
 2005-08-16  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/file_manip.cpp: fix compilation on GCC 2.95.x

@@ -330,9 +330,6 @@ bool op_bfd::get_linenr(symbol_index_t sym_idx, unsigned int offset,
 	if (!has_debug_info())
 		return false;
 
-	// FIXME: to test, I'm unsure if from this point we must use abfd
-	// or the check if (pc >= bfd_section_size(abfd, section)) must be done
-	// with ibfd.
 	bfd_info const & b = dbfd.valid() ? dbfd : ibfd;
 
 	linenr_info const info = find_nearest_line(b, syms[sym_idx], offset);

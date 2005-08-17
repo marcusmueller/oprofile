@@ -115,6 +115,12 @@ struct linenr_info {
 /**
  * Attempt to locate a filename + line number for the given symbol and
  * offset.
+ *
+ * The bfd object is either the object associated with the binary or the
+ * once associated with the separated debug info file so find_nearest_line()
+ * can't lookup the section contents of code section etc. The filepos of
+ * debuginfo symbols are different from the original file but we fixed symbol
+ * filepos earlier.
  */
 linenr_info const
 find_nearest_line(bfd_info const & ibfd, op_bfd_symbol const & sym,
