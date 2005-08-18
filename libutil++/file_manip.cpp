@@ -41,12 +41,6 @@ bool copy_file(string const & source, string const & destination)
 		return false;
 	close(fd);
 
-	struct utimbuf utim;
-	utim.actime = buf.st_atime;
-	utim.modtime = buf.st_mtime;
-	if (utime(destination.c_str(), &utim))
-		return false;
-
 	mode_t mode = buf.st_mode & ~S_IFMT;
 	if (!(mode & S_IWUSR))
 		mode |= S_IWUSR;
@@ -60,10 +54,18 @@ bool copy_file(string const & source, string const & destination)
 	ifstream in(source.c_str());
 	if (!in)
 		return false;
+	{
 	ofstream out(destination.c_str(), ios::trunc);
 	if (!out)
 		return false;
 	out << in.rdbuf();
+	}
+
+	struct utimbuf utim;
+	utim.actime = buf.st_atime;
+	utim.modtime = buf.st_mtime;
+	if (utime(destination.c_str(), &utim))
+		return false;
 
 	return true;
 }
