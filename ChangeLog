@@ -1,3 +1,13 @@
+2005-08-24  Maynard Johnson <maynardj@us.ibm.com>
+
+	* events/ppc64/power4/events:
+	* events/ppc64/power4/event_mappings:
+	* events/ppc64/power5/events:
+	* events/ppc64/power5/event_mappings:
+	* events/ppc64/970/events:
+	* events/ppc64/970/event_mappings: Add all supported events and groups.
+	  This change some events name.
+
 2005-08-24  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/op_bfd.cpp: minor tidy
