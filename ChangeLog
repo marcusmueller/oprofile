@@ -2,6 +2,7 @@
 
 	* libutil++/op_bfd.cpp: minor tidy
 	* daemon/opd_trans.c: more static function
+	* events/ppc/e500/events: typo
 
 2005-08-19  Philippe Elie  <phil.el@wanadoo.fr>
 

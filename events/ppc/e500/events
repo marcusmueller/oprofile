@@ -26,7 +26,7 @@ event:0x19 counters:0,1,2,3 um:zero minimum:500 name:BRS_SCHEDULE_STALLED : Cycl
 event:0x1a counters:0,1,2,3 um:zero minimum:500 name:TOTAL_TRANSLATED : Total Ldst microops translated. 
 event:0x1b counters:0,1,2,3 um:zero minimum:500 name:LOADS_TRANSLATED : Number of cacheable L* or EVL* microops translated. (This includes microops from load-multiple, load-update, and load-context instructions.) 
 event:0x1c counters:0,1,2,3 um:zero minimum:500 name:STORES_TRANSLATED : Number of cacheable ST* or EVST* microops translated. (This includes microops from store-multiple, store-update, and save-context instructions.) 
-event:0x1d counters:0,1,2,3 um:zero minimum:500 name:TOUCHES_TRANSLATED : Number of cacheable DCBT and DCBTST instructions translated (L1 only) (Doesn’t count touches that are converted to nops i.e. exceptions, noncacheable, hid0[nopti] bit is set.) 
+event:0x1d counters:0,1,2,3 um:zero minimum:500 name:TOUCHES_TRANSLATED : Number of cacheable DCBT and DCBTST instructions translated (L1 only) (Does not count touches that are converted to nops i.e. exceptions, noncacheable, hid0[nopti] bit is set.) 
 event:0x1e counters:0,1,2,3 um:zero minimum:500 name:CACHEOPS_TRANSLATED : Number of dcba, dcbf, dcbst, and dcbz instructions translated (e500 traps on dcbi) 
 event:0x1f counters:0,1,2,3 um:zero minimum:500 name:CACHEINHIBITED_ACCESSES_TRANSLATED : Number of cache inhibited accesses translated 
 event:0x20 counters:0,1,2,3 um:zero minimum:500 name:GUARDED_LOADS_TRANSLATED : Number of guarded loads translated 
