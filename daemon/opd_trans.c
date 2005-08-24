@@ -41,7 +41,7 @@ void clear_trans_current(struct transient * trans)
 }
 
 
-void update_trans_last(struct transient * trans)
+static inline void update_trans_last(struct transient * trans)
 {
 	trans->last = trans->current;
 	trans->last_anon = trans->anon;

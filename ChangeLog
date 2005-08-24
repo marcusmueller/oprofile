@@ -1,3 +1,8 @@
+2005-08-24  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/op_bfd.cpp: minor tidy
+	* daemon/opd_trans.c: more static function
+
 2005-08-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libdb/db_stat.c: use 64 bits to cumulate samples count.
@@ -57,7 +62,7 @@
 	* libdb/tests/db_test.c: add a better speed test
 
 2005-08-13  Maynard Johnson <maynardj@us.ibm.com>
-	 
+
 	* gui/oprof_start.h:
 	* libop/op_events.c:
 	* libop/op_events.h:
@@ -238,10 +243,6 @@
 	* gui/oprof_start_util.cpp:
 	* gui/oprof_start.cpp: hardcode config directory to /root,
 	  rename get_user_filename() to get_config_filename()
-
-2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
-
-	* gui/oprof_start_util.cpp:
 
 2005-08-03  Philippe Elie  <phil.el@wanadoo.fr>
 

@@ -222,7 +222,7 @@ void op_bfd::get_symbols(op_bfd::symbols_found_t & symbols)
 
 	// we need to ensure than for a given vma only one symbol exist else
 	// we read more than one time some samples. Fix #526098
-	for (; it != symbols.end();) {
+	while (it != symbols.end()) {
 		symbols_found_t::iterator temp = it;
 		++temp;
 		if (temp != symbols.end() && (it->vma() == temp->vma())) {
