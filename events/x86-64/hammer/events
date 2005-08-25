@@ -17,7 +17,7 @@ event:0xc5 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_TAKEN_BRANCHES_MISP
 event:0x45 counters:0,1,2,3 um:zero minimum:500 name:L1_DTLB_MISSES_L2_DTLB_HITS : L1 DTLB misses and L2 DTLB hits
 event:0x46 counters:0,1,2,3 um:zero minimum:500 name:L1_AND_L2_DTLB_MISSES : L1 and L2 DTLB misses
 event:0x47 counters:0,1,2,3 um:zero minimum:500 name:MISALIGNED_DATA_REFS : Misaligned data references
-event:0x4c counters:0,1,2,3 um:dcache_lock minimum:500 name:DATA_CACHE_ACCESS_LOCKS : The number of data cache misses incurred by locked instructions
+event:0x4c counters:0,1,2,3 um:dcache_lock minimum:500 name:DATA_CACHE_ACCESS_LOCKS : The number of data cache accesses/misses incurred by locked instructions
 event:0x84 counters:0,1,2,3 um:zero minimum:500 name:L1_ITLB_MISSES_L2_ITLB_HITS : L1 ITLB misses (and L2 ITLB hits)
 event:0x85 counters:0,1,2,3 um:zero minimum:500 name:L1_AND_L2_ITLB_MISSES : L1 and L2 ITLB misses
 event:0xc6 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_FAR_CONTROL_TRANSFERS : Retired far control transfers
