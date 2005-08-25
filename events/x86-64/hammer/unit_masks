@@ -95,3 +95,6 @@ name:l2_req_miss type:bitmask default:0x07
 name:l2_fill type:bitmask default:0x03
 	0x01 Dirty L2 victim
 	0x02 Victim from L1
+name:dcache_lock type:bitmask default:0x03
+	0x01 Number of dcache accesses by lock instructions 
+	0x02 Number of dcache misses by lock instructions 

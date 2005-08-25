@@ -1,3 +1,9 @@
+2005-08-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* events/x86-64/hammer/unit_masks:
+	* events/x86-64/hammer/events: new events to count data cache
+	  access/miss by lock'ed insn.
+
 2005-08-24  Maynard Johnson <maynardj@us.ibm.com>
 
 	* events/ppc64/power4/events:
