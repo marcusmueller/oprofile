@@ -77,7 +77,13 @@ void handle_options(options::spec const & spec)
 		exit(EXIT_FAILURE);
 	}
 
-	merge_by = handle_merge_option(mergespec, true, exclude_dependent);
+	// merging doesn't occur in oparchive but we must allow it to avoid
+	// triggering sanity checking in arrange_profiles()
+	merge_by.cpu = true;
+	merge_by.lib = true;
+	merge_by.tid = true;
+	merge_by.tgid = true;
+	merge_by.unitmask = true;
 	check_options();
 
 	profile_spec const pspec =

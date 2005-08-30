@@ -1,3 +1,9 @@
+2005-08-30  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* pp/oparchive_options.cpp: fix #1276058, oparchive must force merging
+	  to avoid trigerring some sanity check in arrange_profiles(). Allowing
+	  merging is not a problem as merging doesn't occur in oparchive.
+
 2005-08-25  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* events/x86-64/hammer/unit_masks:
