@@ -178,7 +178,7 @@ This man page is current for @PACKAGE@-@VERSION@.
 .BR opgprof(1),
 .BR gprof(1),
 .BR readprofile(1),
-.BR CPU vendor architecture manuals
+.BR "CPU vendor architecture manuals"
 
 .SH COPYRIGHT
 oprofile is Copyright (C) 1998-2004 University of Manchester, UK, John Levon,
