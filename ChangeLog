@@ -1,3 +1,9 @@
+2005-09-01  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* gui/oprof_start.cpp: the last unit mask checkbox is no longer a
+	  "validate all unit mask" so don't treat it specially. It avoid to
+	  lost the last bit in the unit mask each time oprof_start is used.
+
 2005-08-31  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/oprofile.1.in: quote .BR strings

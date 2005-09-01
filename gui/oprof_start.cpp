@@ -806,18 +806,11 @@ void oprof_start::setup_unit_masks(op_event_descr const & descr)
 			case 15: check = check15; break;
 		}
 		check->setText(um->um[i].desc);
-		if (um->unit_type_mask == utm_exclusive) {
+		if (um->unit_type_mask == utm_exclusive)
 			check->setChecked(cfg.umask == um->um[i].value);
-		} else {
-			// The last descriptor contains a mask that enable all
-			// value so we must enable the last check box only if
-			// all bits are on.
-			if (i == um->num - 1) {
-				check->setChecked(cfg.umask == um->um[i].value);
-			} else {
-				check->setChecked(cfg.umask & um->um[i].value);
-			}
-		}
+		else
+			check->setChecked(cfg.umask & um->um[i].value);
+
 		check->show();
 	}
 	unit_mask_group->setMinimumSize(unit_mask_group->sizeHint());
