@@ -115,7 +115,7 @@ opd_header const read_header(string const & sample_filename)
 
 namespace {
 
-string const op_print_event(op_cpu cpu_type, u32 type, u16 um, u32 count)
+string const op_print_event(op_cpu cpu_type, u32 type, u32 um, u32 count)
 {
 	string str;
 

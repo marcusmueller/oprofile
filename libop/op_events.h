@@ -37,9 +37,9 @@ struct op_unit_mask {
 	char * name;		/**< name of unit mask type */
 	u32 num;		/**< number of possible unit masks */
 	enum unit_mask_type unit_type_mask;
-	u16 default_mask;	/**< only the gui use it */
+	u32 default_mask;	/**< only the gui use it */
 	struct op_described_um {
-		u16 value;
+		u32 value;
 		char * desc;
 	} um[MAX_UNIT_MASK];
 	struct list_head um_next; /**< next um in list */
@@ -96,7 +96,7 @@ enum op_event_check {
  *
  * \sa op_cpu, OP_EVENTS_OK
  */
-int op_check_events(int ctr, u32 event, u16 um, op_cpu cpu_type);
+int op_check_events(int ctr, u32 event, u32 um, op_cpu cpu_type);
 
 /**
  * free memory used by any call to above function. Need to be called only once

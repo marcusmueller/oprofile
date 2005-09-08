@@ -381,7 +381,7 @@ next:
 static void check_unit_mask(struct op_unit_mask const * um,
 	char const * cpu_name)
 {
-	u16 i;
+	u32 i;
 
 	if (!um->used) {
 		fprintf(stderr, "um %s is not used\n", um->name);
@@ -393,7 +393,7 @@ static void check_unit_mask(struct op_unit_mask const * um,
 			"entry (%s)\n", um->name, cpu_name);
 		exit(EXIT_FAILURE);
 	} else if (um->unit_type_mask == utm_bitmask) {
-		u16 default_mask = um->default_mask;
+		u32 default_mask = um->default_mask;
 		for (i = 0; i < um->num; ++i)
 			default_mask &= ~um->um[i].value;
 
@@ -687,7 +687,7 @@ struct op_event * op_find_event(op_cpu cpu_type, u32 nr)
 }
 
 
-int op_check_events(int ctr, u32 nr, u16 um, op_cpu cpu_type)
+int op_check_events(int ctr, u32 nr, u32 um, op_cpu cpu_type)
 {
 	int ret = OP_OK_EVENT;
 	struct op_event * event;
