@@ -444,6 +444,7 @@ int main(int argc, char const * argv[])
 		break;
 
 	case CPU_PPC_E500:
+	case CPU_PPC_E500_2:
 		printf("See PowerPC e500 Core Complex Reference Manual\n"
 			"Chapter 7: Performance Monitor\n"
 			"Downloadable from http://www.freescale.com\n");

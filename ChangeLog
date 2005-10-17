@@ -1,3 +1,17 @@
+2005-10-18  David Daney  <ddaney@avtrex.com>
+
+	* daemon/opd_cookie.c: Handle MIPS o32 for both big and little endian.
+
+2005-10-18  Andy Fleming  <afleming@freescale.com>
+
+	* events/Makefile.am:
+	* events/ppc/e500v2/events:
+	* events/ppc/e500v2/unit_masks:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/ophelp.c: add support for latest e500 processor
+
 2005-09-08  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_events.c:
