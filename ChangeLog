@@ -1,3 +1,7 @@
+2005-10-19  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_cookie.c: use __MIPSEB__ not _MIPSEB
+
 2005-10-18  Maynard Johnson <maynardj@us.ibm.com>
 
 	* events/ppc64/power4/event_mappings:
