@@ -1,3 +1,13 @@
+2005-10-18  Maynard Johnson <maynardj@us.ibm.com>
+
+	* events/ppc64/power4/event_mappings:
+	* events/ppc64/970/event_mappings:
+	* events/ppc64/power5/events:
+	* events/ppc64/power5/event_mappings: Ensure SAMPLE_ENABLE bit
+	  is set correctly, in preparation for coming change in
+	  PPC64 driver.  Also, based on user input, add new event
+	  CYCLES_RND_SMPL for Power5.
+
 2005-10-18  David Daney  <ddaney@avtrex.com>
 
 	* daemon/opd_cookie.c: Handle MIPS o32 for both big and little endian.

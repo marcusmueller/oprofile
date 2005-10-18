@@ -1,7 +1,11 @@
 #Mapping of event groups to MMCR values
 
 #Group Default
-event:0X001 mmcr0:0X0400C000 mmcr1:0X4000000002341E36 mmcra:0X00000001
+event:0X001 mmcr0:0X00000000 mmcr1:0X000000000A02121E mmcra:0X00000000
+
+#Group 0 with random sampling
+event:0X002 mmcr0:0X00000000 mmcr1:0X4000000002341E36 mmcra:0X00000001
+
 
 #Group 1 pm_utilization, CPI and utilization data
 event:0X010 mmcr0:0X00000000 mmcr1:0X000000000A02121E mmcra:0X00000000
