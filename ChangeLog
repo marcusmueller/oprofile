@@ -1,3 +1,7 @@
+2005-11-17  Sean Lee  <joy.lists@gmail.com>
+
+	* utils/opcontrol: Fix a typo. Cleanup load_module_26()
+
 2005-10-19  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_cookie.c: use __MIPSEB__ not _MIPSEB

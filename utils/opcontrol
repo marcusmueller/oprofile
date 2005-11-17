@@ -153,7 +153,7 @@ load_module_26()
 	if test "$?" -ne 0; then
 		modprobe oprofile
 		if test "$?" != "0"; then
-			# couldn't load a module
+			# couldn't load the module
 			return
 		fi
 		grep oprofile /proc/modules >/dev/null
@@ -161,11 +161,11 @@ load_module_26()
 			# didn't find module
 			return
 		fi
-	fi
-	grep oprofilefs /proc/filesystems >/dev/null
-	if test "$?" -ne 0; then
-		# filesystem still not around
-		return
+		grep oprofilefs /proc/filesystems >/dev/null
+		if test "$?" -ne 0; then
+			# filesystem still not around
+			return
+		fi
 	fi
 	mkdir /dev/oprofile >/dev/null 2>&1
 	grep oprofilefs /etc/mtab >/dev/null
@@ -736,7 +736,7 @@ do_options()
 				;;
 			--note-table-size)
 				error_if_empty $arg $val
-				if test $"KERNEL_SUPPORT" = "yes"; then
+				if test "$KERNEL_SUPPORT" = "yes"; then
 					echo "\"$arg\" meaningless on this kernel" >&2
 					exit 1
 				else
