@@ -1,3 +1,8 @@
+2005-11-30  Junichi Uekawa  <dancer@netfort.gr.jp>
+
+	* doc/oprofile.1.in: $prefix is unprocessed, use
+	  @prefix@ instead.
+
 2005-11-17  Sean Lee  <joy.lists@gmail.com>
 
 	* utils/opcontrol: Fix a typo. Cleanup load_module_26()

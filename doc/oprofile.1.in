@@ -150,7 +150,7 @@ Configuration files
 .I /root/.oprofile/daemonrc
 Configuration file for opcontrol
 .TP
-.I $prefix/share/oprofile/
+.I @prefix@/share/oprofile/
 Event description files used by OProfile.
 .TP
 .I /var/lib/oprofile/oprofiled.log
