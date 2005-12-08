@@ -11,7 +11,7 @@
 #  numbers are formatted as follows: <group_num>concat(<counter for the event>).
 
 #Group Default
-event:0X001 counters:0 um:zero minimum:10000 name:CYCLES : Processor Cycles using continuous sampling
+event:0X001 counters:3 um:zero minimum:10000 name:CYCLES : Processor Cycles using continuous sampling
 
 #Group 0 with random sampling
 event:0X002 counters:2 um:zero minimum:10000 name:CYCLES_RND_SMPL : Processor Cycles with random sampling
