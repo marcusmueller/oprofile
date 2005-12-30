@@ -531,7 +531,7 @@ find_nearest_line(bfd_info const & b, op_bfd_symbol const & sym,
 	ret = bfd_find_nearest_line(abfd, section, syms, pc, &cfilename,
 	                                 &function, &linenr);
 
-	if (!ret || !cfilename)
+	if (!ret || !cfilename || !function)
 		goto fail;
 
 	if (!is_correct_function(function, sym.name()))

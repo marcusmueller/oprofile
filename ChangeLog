@@ -1,3 +1,9 @@
+2005-12-30  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libutil++/bfd_support.cpp: bfd_find_nearest_line() can return NULL
+	  in the sixth parameters, check the returned value. Problem reported
+	  by Nicolas Savoire <nicos@maunakeatech.com>
+
 2005-12-07  Maynard Johnson  <maynardj@us.ibm.com>
 
  	* events/ppc64/power5/events: Change counter for CYCLES 
