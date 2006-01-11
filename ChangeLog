@@ -217,8 +217,9 @@
 	  by Thomas Kho <tkho@users.sourceforge.net>
 
 	* module/oprofile.c:
-	* module/oprofile.h: fix a compilation problem with gcc <= 3.3. It's
-	  not worth to try to continue to use fastcall for op_do_profile.
+	* module/oprofile.h: #1266604 fix a compilation problem with
+	  gcc <= 3.3. It's not worth to try to continue to use fastcall
+	  for op_do_profile.
 
 	* module/x86/op_model_p4.c: backport some change from the 2.6 driver:
 	  on some P4 model 3 IQ_ESCR0/1 doesn't exist and acessing them fault.
