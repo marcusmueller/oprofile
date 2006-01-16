@@ -1,3 +1,7 @@
+2006-01-16  Mike Carlson  <corfe83dev@gmail.com>
+
+	* doc/opcontrol.1.in: fix typo
+
 2006-01-16  Jose Renato Santos  <jsantos@hpl.hp.com>
 
 	* daemon/init.c:

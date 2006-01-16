@@ -48,7 +48,7 @@ in 2.2/2.4 kernels.
 .TP
 .BI "--start"
 Start data collection with either arguments provided by --setup
-of information saved in ~root/.oprofile/daemonrc.
+or with information saved in ~root/.oprofile/daemonrc.
 .br
 .TP
 .BI "--dump"
