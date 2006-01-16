@@ -6,11 +6,11 @@
 
 2005-12-07  Maynard Johnson  <maynardj@us.ibm.com>
 
- 	* events/ppc64/power5/events: Change counter for CYCLES 
- 	  in order to use PM_CYC vs PM_RUN_CYC.  This makes a
- 	  difference now with kernels > 2.6.14 since the PowerPC
- 	  runlatch is now honored and PM_RUN_CYC counts CYCLES
- 	  only when not in idle loop.
+	* events/ppc64/power5/events: Change counter for CYCLES 
+	  in order to use PM_CYC vs PM_RUN_CYC.  This makes a
+	  difference now with kernels > 2.6.14 since the PowerPC
+	  runlatch is now honored and PM_RUN_CYC counts CYCLES
+	  only when not in idle loop.
 
 2005-12-05  Will Cohen  <wcohen@redhat.com>
 

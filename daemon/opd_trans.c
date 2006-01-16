@@ -7,6 +7,9 @@
  *
  * @author John Levon
  * @author Philippe Elie
+ * Modified by Aravind Menon for Xen
+ * These modifications are:
+ * Copyright (C) 2005 Hewlett-Packard Co.
  */
 
 #include "opd_trans.h"
@@ -219,9 +222,9 @@ static void code_kernel_enter(struct transient * trans)
 }
 
 
-static void code_kernel_exit(struct transient * trans)
+static void code_user_enter(struct transient * trans)
 {
-	verbprintf(vmisc, "KERNEL_EXIT_SWITCH to user-space\n");
+	verbprintf(vmisc, "USER_ENTER_SWITCH to user-space\n");
 	trans->in_kernel = 0;
 	clear_trans_current(trans);
 	clear_trans_last(trans);
@@ -248,6 +251,19 @@ static void code_trace_begin(struct transient * trans)
 	trans->tracing = TRACING_START;
 }
 
+static void code_xen_enter(struct transient *trans)
+{
+	verbprintf(vmisc, "XEN_ENTER_SWITCH to xen\n");
+	trans->in_kernel = 1;
+	trans->current = NULL;
+	/* subtlety: we must keep trans->cookie cached, even though it's 
+	 * meaningless for Xen - we won't necessarily get a cookie switch 
+	 * on Xen exit. See comments in opd_sfile.c. It seems that we can 
+	 * get away with in_kernel = 1 as long as we supply the correct 
+	 * Xen image, and its address range in startup find_kernel_image 
+	 * is modified to look in the Xen image also
+	 */
+}
 
 typedef void (*handler_t)(struct transient *);
 
@@ -257,11 +273,13 @@ static handler_t handlers[LAST_CODE + 1] = {
 	&code_cpu_switch,
 	&code_cookie_switch,
 	&code_kernel_enter,
-	&code_kernel_exit,
+ 	&code_user_enter,
 	&code_module_loaded,
 	/* tgid handled differently */
 	&code_unknown,
 	&code_trace_begin,
+	&code_unknown,
+ 	&code_xen_enter,
 };
 
 

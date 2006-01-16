@@ -7,6 +7,9 @@
  *
  * @author John Levon
  * @author Philippe Elie
+ * Modified by Aravind Menon for Xen
+ * These modifications are:
+ * Copyright (C) 2005 Hewlett-Packard Co.
  */
 
 #ifndef OPROFILED_H
@@ -58,5 +61,8 @@ extern int separate_cpu;
 extern int no_vmlinux;
 extern char * vmlinux;
 extern char * kernel_range;
+extern int no_xen;
+extern char * xenimage;
+extern char * xen_range;
 
 #endif /* OPROFILED_H */

@@ -7,6 +7,9 @@
  *
  * @author John Levon
  * @author Philippe Elie
+ * Modified by Aravind Menon for Xen
+ * These modifications are:
+ * Copyright (C) 2005 Hewlett-Packard Co.
  */
 
 #include "opd_kernel.h"
@@ -29,6 +32,8 @@ static LIST_HEAD(modules);
 
 static struct kernel_image vmlinux_image;
 
+static struct kernel_image xen_image;
+
 void opd_create_vmlinux(char const * name, char const * arg)
 {
 	/* vmlinux is *not* on the list of modules */
@@ -50,6 +55,31 @@ void opd_create_vmlinux(char const * name, char const * arg)
 	if (!vmlinux_image.start && !vmlinux_image.end) {
 		fprintf(stderr, "error: mis-parsed kernel range: %llx-%llx\n",
 		        vmlinux_image.start, vmlinux_image.end);
+		exit(EXIT_FAILURE);
+	}
+}
+
+void opd_create_xen(char const * name, char const * arg)
+{
+	/* xen is *not* on the list of modules */
+	list_init(&xen_image.list);
+
+	/* for no xen */
+	if (no_xen) {
+		xen_image.name = "no-xen";
+		return;
+	}
+
+	xen_image.name = xstrdup(name);
+
+	sscanf(arg, "%llx,%llx", &xen_image.start, &xen_image.end);
+
+	verbprintf(vmisc, "xen_start = %llx, xen_end = %llx\n",
+	           xen_image.start, xen_image.end);
+
+	if (!xen_image.start && !xen_image.end) {
+		fprintf(stderr, "error: mis-parsed xen range: %llx-%llx\n",
+		        xen_image.start, xen_image.end);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -191,6 +221,9 @@ struct kernel_image * find_kernel_image(struct transient const * trans)
 		if (image->start <= trans->pc && image->end > trans->pc)
 			return image;
 	}
+
+	if (xen_image.start <= trans->pc && xen_image.end > trans->pc)
+		return &xen_image;
 
 	return NULL;
 }

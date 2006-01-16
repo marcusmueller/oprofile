@@ -7,6 +7,9 @@
  *
  * @author John Levon
  * @author Philippe Elie
+ * Modified by Aravind Menon for Xen
+ * These modifications are:
+ * Copyright (C) 2005 Hewlett-Packard Co.
  */
 
 #include "config.h"
@@ -60,6 +63,9 @@ int separate_cpu;
 int no_vmlinux;
 char * vmlinux;
 char * kernel_range;
+int no_xen;
+char * xenimage;
+char * xen_range;
 static char * verbose;
 static char * binary_name_filter;
 static char * events;
@@ -75,6 +81,8 @@ static struct poptOption options[] = {
 	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "no-vmlinux", 0, POPT_ARG_NONE, &no_vmlinux, 0, "vmlinux kernel image file not available", NULL, },
+	{ "xen-range", 0, POPT_ARG_STRING, &xen_range, 0, "Xen VMA range", "start-end", },
+	{ "xen-image", 0, POPT_ARG_STRING, &xenimage, 0, "Xen image", "file", },
 	{ "image", 0, POPT_ARG_STRING, &binary_name_filter, 0, "image name filter", "profile these comma separated image" },
 	{ "separate-lib", 0, POPT_ARG_INT, &separate_lib, 0, "separate library samples for each distinct application", "[0|1]", },
 	{ "separate-kernel", 0, POPT_ARG_INT, &separate_kernel, 0, "separate kernel samples for each distinct application", "[0|1]", },
@@ -405,7 +413,26 @@ static void opd_options(int argc, char const * argv[])
 		poptPrintHelp(optcon, stderr, 0);
 		exit(EXIT_FAILURE);
 	}
-	
+
+	if (!xenimage || !strcmp("", xenimage)) {
+		no_xen = 1;
+	} else {
+ 		no_xen = 0;
+
+		/* canonicalise xen image filename. */
+		tmp = xmalloc(PATH_MAX);
+		if (realpath(xenimage, tmp))
+			xenimage = tmp;
+		else
+			free(tmp);
+
+		if (!xen_range || !strcmp("", xen_range)) {
+			fprintf(stderr, "oprofiled: no Xen VMA range specified.\n");
+			poptPrintHelp(optcon, stderr, 0);
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	opd_parse_events(events);
 
 	opd_parse_image_filter();

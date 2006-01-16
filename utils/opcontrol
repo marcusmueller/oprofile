@@ -142,6 +142,10 @@ do_help()
    --buffer-watershed            kernel buffer watershed in sample units (2.6 only=
    --cpu-buffer-size=num         per-cpu buffer size in units (2.6 only)
    --note-table-size             kernel notes buffer size in notes units (2.4 only)
+
+   --xen                         Xen image (for Xen only)
+   --active-domains=<list>       List of domains in profiling session (for Xen only)
+                                 (list contains domain ids separated by commas)
 " >&2
 }
 
@@ -245,6 +249,7 @@ do_init()
 	CPU_BUF_SIZE=0
 	NOTE_SIZE=0
 	VMLINUX=
+	XENIMAGE="none"
 	VERBOSE=""
 	SEPARATE_LIB=0
 	SEPARATE_KERNEL=0
@@ -339,6 +344,7 @@ do_save_setup()
 		echo "NOTE_SIZE=$NOTE_SIZE" >> $SETUP_FILE
 	fi
 	echo "CALLGRAPH=$CALLGRAPH" >> $SETUP_FILE
+	echo "XENIMAGE=$XENIMAGE" >> $SETUP_FILE
 }
 
 
@@ -402,35 +408,61 @@ check_valid_args()
 
 	echo "The specified vmlinux file \"$VMLINUX\" doesn't exist." >&2
 	exit 1
+
+# similar check for Xen image
+	if test -f "$XENIMAGE"; then
+		return
+	fi
+
+	if test "$XENIMAGE" = "none"; then
+		return
+	fi
+
+	echo "The specified XenImage file \"$XENIMAGE\" does not exist." >&2
+	exit 1
 }
 
 
-# get start and end points of the kernel
-get_kernel_range()
+# get start and end points of a file image (linux kernel or xen)
+# get_image_range parameter: $1=type_of_image (linux or xen)
+get_image_range()
 {
-	if test ! -z "$KERNEL_RANGE"; then
-		return;
+	if test "$1" = "xen"; then
+		if test ! -z "$XEN_RANGE"; then
+			return;
+		fi
+		FILE_IMAGE="$XENIMAGE"
+	else
+		if test ! -z "$KERNEL_RANGE"; then
+			return;
+		fi
+		FILE_IMAGE="$VMLINUX"
 	fi
 
-	if test "$VMLINUX" = "none"; then
+	if test "$FILE_IMAGE" = "none"; then
 		return;
 	fi
 
 	# start at the start of .text and then continue to the end 
-	range_info=`objdump -h $VMLINUX 2>/dev/null | grep " .text "`
+	range_info=`objdump -h $FILE_IMAGE 2>/dev/null | grep " .text "`
 	tmp1=`echo $range_info | awk '{print $4}'`	
 	tmp_length=`echo $range_info | awk  '{print $3}'`
-	tmp2=`objdump -h $VMLINUX --adjust-vma=0x$tmp_length 2>/dev/null | grep " .text " | awk  '{print $4}'`
+	tmp2=`objdump -h $FILE_IMAGE --adjust-vma=0x$tmp_length 2>/dev/null | grep " .text " | awk  '{print $4}'`
 
 	if test -z "$tmp1" -o -z "$tmp2"; then
-		echo "The specified file $VMLINUX does not seem to be valid" >&2
-		echo "Make sure you are using vmlinux not vmlinuz" >&2
+		echo "The specified file $FILE_IMAGE does not seem to be valid" >&2
+		echo "Make sure you are using the non-compressed image file (e.g. vmlinux not vmlinuz)" >&2
 		vecho "found start as \"$tmp1\", end as \"$tmp2\"" >&2
 		exit 1
 	fi
 
-	KERNEL_RANGE="`echo $tmp1`,`echo $tmp2`"
-	vecho "KERNEL_RANGE $KERNEL_RANGE"
+	if test "$1" = "xen"; then
+		XEN_RANGE="`echo $tmp1`,`echo $tmp2`"
+		vecho "XEN_RANGE $XEN_RANGE"
+	else
+		KERNEL_RANGE="`echo $tmp1`,`echo $tmp2`"
+		vecho "KERNEL_RANGE $KERNEL_RANGE"
+	fi
 }
  
  
@@ -723,7 +755,7 @@ do_options()
 				VMLINUX=$val
 				DO_SETUP=yes
 				# check validity
-				get_kernel_range
+				get_image_range "linux"
 				;;
 			--no-vmlinux)
 				VMLINUX=none
@@ -732,6 +764,17 @@ do_options()
 			--kernel-range)
 				error_if_empty $arg $val
 				KERNEL_RANGE=$val
+				DO_SETUP=yes
+				;;
+			--xen)
+				error_if_empty $arg $val
+				XENIMAGE=$val
+				DO_SETUP=yes
+				get_image_range "xen"
+				;;
+			--active-domains)
+				error_if_empty $arg $val
+				ACTIVE_DOMAINS=$val
 				DO_SETUP=yes
 				;;
 			--note-table-size)
@@ -1013,6 +1056,14 @@ do_param_setup()
 		fi
 	fi
 
+	if test -n "$ACTIVE_DOMAINS"; then
+		if test "$KERNEL_SUPPORT" = "yes"; then
+			echo $ACTIVE_DOMAINS >$MOUNT/active_domains
+		else
+			echo "active-domains not supported - ignored" >&2
+		fi
+	fi
+
 	if test $NOTE_SIZE != 0; then
 		set_param notesize $NOTE_SIZE
 	fi
@@ -1107,7 +1158,8 @@ do_start_daemon()
 	do_setup
 	do_load_setup
 	check_valid_args
-	get_kernel_range
+	get_image_range "linux"
+	get_image_range "xen"
 	do_param_setup
 
 	OPD_ARGS=" \
@@ -1124,6 +1176,10 @@ do_start_daemon()
 		OPD_ARGS="$OPD_ARGS --vmlinux=$VMLINUX --kernel-range=$KERNEL_RANGE"
 	fi
 
+	if ! test "$XENIMAGE" = "none"; then
+		OPD_ARGS="$OPD_ARGS --xen-image=$XENIMAGE --xen-range=$XEN_RANGE"
+	fi
+ 
 	if ! test -z "$IMAGE_FILTER"; then
 		OPD_ARGS="$OPD_ARGS --image=$IMAGE_FILTER"
 	fi

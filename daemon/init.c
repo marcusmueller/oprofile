@@ -7,6 +7,9 @@
  *
  * @author John Levon
  * @author Philippe Elie
+ * Modified by Aravind Menon for Xen
+ * These modifications are:
+ * Copyright (C) 2005 Hewlett-Packard Co.
  */
 
 #include "config.h"
@@ -222,6 +225,7 @@ static void opd_26_init(void)
 	size_t opd_buf_size;
 
 	opd_create_vmlinux(vmlinux, kernel_range);
+	opd_create_xen(xenimage, xen_range);
 
 	opd_buf_size = opd_read_fs_int("/dev/oprofile/", "buffer_size", 1);
 	kernel_pointer_size = opd_read_fs_int("/dev/oprofile/", "pointer_size", 1);

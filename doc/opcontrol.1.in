@@ -136,8 +136,23 @@ Be verbose in the daemon log. This has a high overhead.
 .BI "--kernel-range="start,end
 Set kernel range vma address in hexadecimal.
 
+.SH OPTIONS (specific to Xen)
+.TP
+.BI "--xen="file
+Xen image
+.br
+.TP
+.BI "--active-domains="<list>
+List of domain ids participating in a multi-domain profiling session. If 
+more than one domain is specified in <list> they should be separated using 
+commas. This option can only be used in domain 0 which is the only domain 
+that can coordinate a multi-domain profiling session. Including domain 0 in 
+the list of active domains is optional. (e.g. --active-domains=2,5,6 and 
+--active-domains=0,2,5,6 are equivalent)
+.br
+
 .SH ENVIRONMENT
-No special environment variables are recognised by opreport.
+No special environment variables are recognised by opcontrol.
 
 .SH FILES
 .TP
