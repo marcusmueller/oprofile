@@ -79,11 +79,16 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 		<term>Linux kernel 2.2/2.4/2.6</term>
 		<listitem><para>
 			OProfile uses a kernel module that can be compiled for
-			2.2.11 or later and 2.4. Versions 2.4.10 or above are recommended, and required if you use the
+			2.2.11 or later and 2.4. 2.4.10 or above is required if you use the 
 			boot-time kernel option <option>nosmp</option>.  2.6 kernels are supported with the in-kernel
 			OProfile driver. Note that only 32-bit x86 and IA64 are supported on 2.2/2.4 kernels.
-
 			</para>
+
+			<para>
+			2.6 kernels are strongly recommended. Under 2.4, OProfile may cause system crashes if power
+			management is used, or the BIOS does not correctly deal with local APICs.
+			</para>
+
 			<para>
 			PPC64 processors (Power4/Power5/PPC970) require a recent (&gt; 2.6.5) kernel with the line 
 			<constant>#define PV_970</constant> present in <filename>include/asm-ppc64/processor.h</filename>.

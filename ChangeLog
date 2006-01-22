@@ -1,3 +1,7 @@
+2006-01-22  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml: mention 2.4 + power management
+
 2006-01-16  Mike Carlson  <corfe83dev@gmail.com>
 
 	* doc/opcontrol.1.in: fix typo
