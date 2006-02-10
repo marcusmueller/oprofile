@@ -1510,9 +1510,10 @@ check_version()
 # main
 
 # determine the location of opcontrol and related programs
-OPCONTROL=`which $0`
-OPDIR=`dirname $OPCONTROL`
-
+BINDIR="/usr/bin"
+OPCONTROL=`$BINDIR/which $0`
+OPDIR=`$BINDIR/dirname $OPCONTROL`
+n
 PATH=/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin
 
 check_version_help $@
