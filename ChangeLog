@@ -1,3 +1,16 @@
+2006-02-17  Maynard Johnson <maynardj@us.ibm.com>
+
+	* doc/oprofile.xml:
+	* events/ppc64/power5+/events:
+	* events/ppc64/power5+/event_mappings:
+	* events/ppc64/unit_masks:
+	* events/Makefile.am:
+	* libop/op_events.c:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* utils/opcontrol:
+	* utils/ophelp.c:  Add support for Power5+
+
 2005-02-10  Will Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol: Use full paths for which and dirname.

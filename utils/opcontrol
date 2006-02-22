@@ -998,7 +998,7 @@ set_ctr_param()
 check_event_mapping_data()
 {
 
-	if [ "$CPUTYPE" = "ppc64/power4" -o "$CPUTYPE" = "ppc64/power5" -o "$CPUTYPE" = "ppc64/970" ]; then
+	if [ "$CPUTYPE" = "ppc64/power4" -o "$CPUTYPE" = "ppc64/power5" -o "$CPUTYPE" = "ppc64/power5+" -o "$CPUTYPE" = "ppc64/970" ]; then
 		MMCR0=`echo $EVENT_STR | awk '{print $2}'`
 		MMCR1=`echo $EVENT_STR | awk '{print $3}'`
 		MMCRA=`echo $EVENT_STR | awk '{print $4}'`
@@ -1513,7 +1513,7 @@ check_version()
 BINDIR="/usr/bin"
 OPCONTROL=`$BINDIR/which $0`
 OPDIR=`$BINDIR/dirname $OPCONTROL`
-n
+
 PATH=/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin
 
 check_version_help $@

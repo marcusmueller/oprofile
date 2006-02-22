@@ -45,6 +45,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ARM/XScale PMU2", "arm/xscale2", CPU_ARM_XSCALE2, 5 },
 	{ "ppc64 POWER4", "ppc64/power4", CPU_PPC64_POWER4, 8 },
 	{ "ppc64 POWER5", "ppc64/power5", CPU_PPC64_POWER5, 6 },
+	{ "ppc64 POWER5+", "ppc64/power5+", CPU_PPC64_POWER5p, 6 },
 	{ "ppc64 970", "ppc64/970", CPU_PPC64_970, 8 },
 	{ "MIPS 24K", "mips/24K", CPU_MIPS_24K, 2},
 	{ "MIPS R10000", "mips/r10000", CPU_MIPS_R10000, 2 },
