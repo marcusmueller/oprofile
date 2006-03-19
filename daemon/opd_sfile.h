@@ -74,8 +74,10 @@ struct cg_entry {
 /** clear any sfiles that are for the kernel */
 void sfile_clear_kernel(void);
 
-/** clear any sfiles that are for anon mappings */
-void sfile_clear_anon(void);
+struct anon_mapping;
+
+/** clear any sfiles for the given anon mapping */
+void sfile_clear_anon(struct anon_mapping *);
 
 /** sync sample files */
 void sfile_sync_files(void);

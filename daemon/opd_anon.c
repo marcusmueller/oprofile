@@ -36,10 +36,6 @@ static struct list_head hashes[HASH_SIZE];
 static struct list_head lru;
 static size_t nr_lru;
 
-/* never called in buffer-processing context, so we don't need
- * to update struct transient. Note the 'U' of LRU is based on
- * parsing time, not actual use.
- */
 static void do_lru(struct transient * trans)
 {
 	size_t nr_to_kill = LRU_AMOUNT;
@@ -55,13 +51,12 @@ static void do_lru(struct transient * trans)
 			clear_trans_last(trans);
 		list_del(&entry->list);
 		list_del(&entry->lru_list);
+		sfile_clear_anon(entry);
 		--nr_lru;
 		free(entry);
 		if (nr_to_kill-- == 0)
 			break;
 	}
-
-	sfile_clear_anon();
 }
 
 
@@ -87,6 +82,7 @@ static void clear_anon_maps(struct transient * trans)
 		if (entry->tgid == tgid && entry->app_cookie == app) {
 			if (trans->last_anon == entry)
 				clear_trans_last(trans);
+			sfile_clear_anon(entry);
 			list_del(&entry->list);
 			list_del(&entry->lru_list);
 			--nr_lru;
@@ -94,7 +90,6 @@ static void clear_anon_maps(struct transient * trans)
 		}
 	}
 
-	sfile_clear_anon();
 	if (vmisc) {
 		char const * name = verbose_cookie(app);
 		printf("Cleared anon maps for tgid %u (%s).\n", tgid, name);

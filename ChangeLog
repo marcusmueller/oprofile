@@ -1,3 +1,11 @@
+2006-03-19  John Levon  <levon@movementarian.org>
+
+	* daemon/opd_anon.c:
+	* daemon/opd_sfile.h:
+	* daemon/opd_sfile.c: make sure we protect trans->last
+	  if it's an anon sf, and we need to do cleanup. Speed
+	  cleanup somewhat.
+
 2006-02-17  Maynard Johnson <maynardj@us.ibm.com>
 
 	* doc/oprofile.xml:
