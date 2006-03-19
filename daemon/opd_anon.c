@@ -49,7 +49,6 @@ static void do_lru(struct transient * trans)
 	struct list_head * pos2;
 	struct anon_mapping * entry;
 
-	fprintf(stderr, "Doing lru.\n");
 	list_for_each_safe(pos, pos2, &lru) {
 		entry = list_entry(pos, struct anon_mapping, lru_list);
 		if (trans->anon == entry)
@@ -188,8 +187,6 @@ retry:
 	}
 
 	if (!tried) {
-		fprintf(stderr, "clr tgid %d app_cookie %s pc %llx\n",
-trans->tgid, verbose_cookie(trans->app_cookie), trans->pc);
 		clear_anon_maps(trans);
 		get_anon_maps(trans);
 		tried = 1;
