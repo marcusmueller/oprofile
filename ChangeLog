@@ -1,5 +1,10 @@
 2006-03-19  John Levon  <levon@movementarian.org>
 
+	* daemon/opd_anon.c: bump LRU size to avoid significant maps
+	  parsing overhead.
+
+2006-03-19  John Levon  <levon@movementarian.org>
+
 	* daemon/opd_anon.c:
 	* daemon/opd_sfile.h:
 	* daemon/opd_sfile.c: make sure we protect trans->last
@@ -19,7 +24,7 @@
 	* utils/opcontrol:
 	* utils/ophelp.c:  Add support for Power5+
 
-2005-02-10  Will Cohen  <wcohen@redhat.com>
+2006-02-10  Will Cohen  <wcohen@redhat.com>
 
 	* utils/opcontrol: Use full paths for which and dirname.
 

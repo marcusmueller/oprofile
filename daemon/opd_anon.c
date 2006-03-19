@@ -29,8 +29,14 @@
 #define HASH_SIZE 1024
 #define HASH_BITS (HASH_SIZE - 1)
 
-#define LRU_SIZE 1000
-#define LRU_AMOUNT (LRU_SIZE/5)
+/*
+ * Note that this value is tempered by the fact that when we miss in the
+ * anon cache, we'll tear down all the mappings for that tgid. Thus, LRU
+ * of a mapping can potentially clear out a much larger number of
+ * mappings.
+ */
+#define LRU_SIZE 8192
+#define LRU_AMOUNT (LRU_SIZE/8)
 
 static struct list_head hashes[HASH_SIZE];
 static struct list_head lru;
@@ -43,6 +49,7 @@ static void do_lru(struct transient * trans)
 	struct list_head * pos2;
 	struct anon_mapping * entry;
 
+	fprintf(stderr, "Doing lru.\n");
 	list_for_each_safe(pos, pos2, &lru) {
 		entry = list_entry(pos, struct anon_mapping, lru_list);
 		if (trans->anon == entry)
@@ -52,7 +59,6 @@ static void do_lru(struct transient * trans)
 		list_del(&entry->list);
 		list_del(&entry->lru_list);
 		sfile_clear_anon(entry);
-		--nr_lru;
 		free(entry);
 		if (nr_to_kill-- == 0)
 			break;
@@ -182,6 +188,8 @@ retry:
 	}
 
 	if (!tried) {
+		fprintf(stderr, "clr tgid %d app_cookie %s pc %llx\n",
+trans->tgid, verbose_cookie(trans->app_cookie), trans->pc);
 		clear_anon_maps(trans);
 		get_anon_maps(trans);
 		tried = 1;
