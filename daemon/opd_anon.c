@@ -55,9 +55,10 @@ static void do_lru(struct transient * trans)
 			clear_trans_current(trans);
 		if (trans->last_anon == entry)
 			clear_trans_last(trans);
+		sfile_clear_anon(entry);
 		list_del(&entry->list);
 		list_del(&entry->lru_list);
-		sfile_clear_anon(entry);
+		--nr_lru;
 		free(entry);
 		if (nr_to_kill-- == 0)
 			break;
