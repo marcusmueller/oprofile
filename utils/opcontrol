@@ -344,7 +344,13 @@ do_save_setup()
 		echo "NOTE_SIZE=$NOTE_SIZE" >> $SETUP_FILE
 	fi
 	echo "CALLGRAPH=$CALLGRAPH" >> $SETUP_FILE
+ 	if test "$KERNEL_RANGE"; then
+ 	        echo "KERNEL_RANGE=$KERNEL_RANGE" >> $SETUP_FILE
+ 	fi
 	echo "XENIMAGE=$XENIMAGE" >> $SETUP_FILE
+ 	if test "$XEN_RANGE"; then
+ 	        echo "XEN_RANGE=$XEN_RANGE" >> $SETUP_FILE
+ 	fi
 }
 
 
@@ -384,6 +390,9 @@ do_load_setup()
 	vecho "SEPARATE_CPU $SEPARATE_CPU"
 	vecho "CALLGRAPH $CALLGRAPH"
 	vecho "VMLINUX $VMLINUX"
+	vecho "KERNEL_RANGE $KERNEL_RANGE"
+	vecho "XENIMAGE $XENIMAGE"
+	vecho "XEN_RANGE $XEN_RANGE"
 }
 
 

@@ -1,3 +1,10 @@
+2006-03-01  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* utils/opcontrol: (do_save_setup): Save KERNEL_RANGE and XEN_RANGE 
+	values into setup file.
+	(do_load_setup): Print KERNEL_RANGE, XENIMAGE and XEN_RANGE values in
+	verbose mode.
+
 2006-03-19  John Levon  <levon@movementarian.org>
 
 	* daemon/opd_anon.c: bump LRU size to avoid significant maps
