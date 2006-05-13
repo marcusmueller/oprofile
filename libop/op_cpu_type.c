@@ -57,6 +57,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "NEC VR5500", "mips/vr5500", CPU_MIPS_VR5500, 2 },
 	{ "e500", "ppc/e500", CPU_PPC_E500, 4 },
 	{ "e500v2", "ppc/e500v2", CPU_PPC_E500_2, 4 },
+	{ "Core Solo / Duo", "i386/core", CPU_CORE, 2 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

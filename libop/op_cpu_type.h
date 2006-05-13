@@ -53,6 +53,7 @@ typedef enum {
 	CPU_MIPS_VR5500, /**< MIPS VR5500, VR5532 and VR7701 */
 	CPU_PPC_E500,	/**< e500 */
 	CPU_PPC_E500_2,	/**< e500v2 */
+	CPU_CORE, /**< Core Solo / Duo series */
 	MAX_CPU_TYPE
 } op_cpu;
 

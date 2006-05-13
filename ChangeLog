@@ -1,3 +1,14 @@
+2006-05-13  Benjamin LaHaise  <bcrl@kvack.org>
+
+	* events/Makefile.am:
+	* events/i386/core/events:
+	* events/i386/core/unit_masks:
+	* libop/op_cpu_type.h:
+	* libop/op_cpu_type.c:
+	* libop/op_events.c:
+	* module/x86/cpu_type.c:
+	* utils/ophelp.c: support Intel Core Duo events
+
 2006-03-01  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* utils/opcontrol: (do_save_setup): Save KERNEL_RANGE and XEN_RANGE 

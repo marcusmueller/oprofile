@@ -173,6 +173,10 @@ __init op_cpu get_cpu_type(void)
 				return CPU_RTC;
 			case 6:
 				/* A P6-class processor */
+				if (model == 14)
+					return CPU_CORE;
+				if (model > 0xd)
+					return CPU_RTC;
 				if (model > 5)
 					return CPU_PIII;
 				else if (model > 2)

@@ -11,6 +11,7 @@ event_files = \
 	i386/piii/events i386/piii/unit_masks \
 	i386/ppro/events i386/ppro/unit_masks \
 	i386/p6_mobile/events i386/p6_mobile/unit_masks \
+	i386/core/events i386/core/unit_masks \
 	ia64/ia64/events ia64/ia64/unit_masks \
 	ia64/itanium2/events ia64/itanium2/unit_masks \
 	ia64/itanium/events ia64/itanium/unit_masks \

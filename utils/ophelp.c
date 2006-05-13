@@ -381,6 +381,7 @@ int main(int argc, char const * argv[])
 	case CPU_P6_MOBILE:
 	case CPU_P4:
 	case CPU_P4_HT2:
+	case CPU_CORE:
 		printf("See Intel Architecture Developer's Manual Volume 3, Appendix A and\n"
 		"Intel Architecture Optimization Reference Manual (730795-001)\n\n");
 		break;
