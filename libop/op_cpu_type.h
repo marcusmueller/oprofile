@@ -43,7 +43,11 @@ typedef enum {
 	CPU_PPC64_POWER5, /**< ppc64 POWER5 family */
 	CPU_PPC64_POWER5p, /**< ppc64 Power5+ family */
 	CPU_PPC64_970, /**< ppc64 970 family */
+	CPU_MIPS_20K, /**< MIPS 20K */
 	CPU_MIPS_24K, /**< MIPS 24K */
+	CPU_MIPS_25K, /**< MIPS 25K */
+	CPU_MIPS_34K, /**< MIPS 34K */
+	CPU_MIPS_5K, /**< MIPS 5K */
 	CPU_MIPS_R10000, /**< MIPS R10000 */
 	CPU_MIPS_R12000, /**< MIPS R12000 */
 	CPU_MIPS_RM7000, /**< QED  RM7000 */
@@ -54,6 +58,7 @@ typedef enum {
 	CPU_PPC_E500,	/**< e500 */
 	CPU_PPC_E500_2,	/**< e500v2 */
 	CPU_CORE, /**< Core Solo / Duo series */
+	CPU_PPC_7450, /**< PowerPC G4 */
 	MAX_CPU_TYPE
 } op_cpu;
 

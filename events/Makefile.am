@@ -23,7 +23,11 @@ event_files = \
 	x86-64/hammer/events x86-64/hammer/unit_masks \
 	arm/xscale1/events arm/xscale1/unit_masks \
 	arm/xscale2/events arm/xscale2/unit_masks \
+	mips/20K/events mips/20K/unit_masks \
 	mips/24K/events mips/24K/unit_masks \
+	mips/25K/events mips/25K/unit_masks \
+	mips/34K/events mips/34K/unit_masks \
+	mips/5K/events mips/5K/unit_masks \
 	mips/rm7000/events mips/rm7000/unit_masks \
 	mips/rm9000/events mips/rm9000/unit_masks \
 	mips/sb1/events mips/sb1/unit_masks \
@@ -31,6 +35,7 @@ event_files = \
 	mips/r12000/events mips/r12000/unit_masks \
 	mips/vr5432/events mips/vr5432/unit_masks \
 	mips/vr5500/events mips/vr5500/unit_masks \
+	ppc/7450/events ppc/7450/unit_masks \
 	ppc/e500/events ppc/e500/unit_masks \
 	ppc/e500v2/events ppc/e500v2/unit_masks
 

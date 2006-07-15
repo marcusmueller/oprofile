@@ -782,14 +782,28 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 			break;
 
 		case CPU_PPC64_970:
+ 		case CPU_PPC_7450:
 		case CPU_PPC64_POWER4:
 		case CPU_PPC64_POWER5:
 		case CPU_PPC64_POWER5p:
 			descr->name = "CYCLES";
 			break;
 
+		case CPU_MIPS_20K:
+			descr->name = "CYCLES";
+			break;
+
 		case CPU_MIPS_24K:
 			descr->name = "INSTRUCTIONS";
+			break;
+
+		case CPU_MIPS_34K:
+			descr->name = "INSTRUCTIONS";
+			break;
+
+		case CPU_MIPS_5K:
+		case CPU_MIPS_25K:
+			descr->name = "CYCLES";
 			break;
 
 		case CPU_MIPS_R10000:

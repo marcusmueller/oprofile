@@ -418,9 +418,25 @@ int main(int argc, char const * argv[])
 			"http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC\n");
 		break;
 
+	case CPU_MIPS_20K:
+		printf("See Programming the MIPS64 20Kc Processor Core User's "
+		       "manual available from www.mips.com\n");
+		break;
 	case CPU_MIPS_24K:
 		printf("See Programming the MIPS32 24K Core "
 		       "available from www.mips.com\n");
+		break;
+	case CPU_MIPS_25K:
+		printf("See Programming the MIPS64 25Kf Processor Core User's "
+		       "manual available from www.mips.com\n");
+		break;
+	case CPU_MIPS_34K:
+		printf("See Programming the MIPS32 34K Core Family "
+		       "available from www.mips.com\n");
+		break;
+	case CPU_MIPS_5K:
+		printf("See Programming the MIPS64 5K Processor Core Family "
+		       "Software User's manual available from www.mips.com\n");
 		break;
 	case CPU_MIPS_R10000:
 	case CPU_MIPS_R12000:
@@ -450,6 +466,11 @@ int main(int argc, char const * argv[])
 		printf("See PowerPC e500 Core Complex Reference Manual\n"
 			"Chapter 7: Performance Monitor\n"
 			"Downloadable from http://www.freescale.com\n");
+		break;
+
+	case CPU_PPC_7450:
+		printf("See MPC7450 RISC Microprocessor Family User's Manual\n"
+		       "Downloadable from http://www.freescale.com\n");
 		break;
 
 	case CPU_RTC:
