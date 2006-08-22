@@ -1,5 +1,15 @@
+2006-08-22  Benjamin LaHaise  <bcrl@kvack.org>
+
+	* events/Makefile.am:
+	* events/i386/core_2/events:
+	* events/i386/core_2/unit_masks:
+	* libop/op_cpu_type.h:
+	* libop/op_cpu_type.c:
+	* libop/op_events.c:
+	* utils/ophelp.c: support Intel Core 2 events
+
 2006-07-15  Luca Barbato  <lu_zero@gentoo.org>
- 
+
  	* events/Makefile.am:
  	* events/ppc/7450/events:
  	* events/ppc/7450/unit_masks:

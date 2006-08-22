@@ -5,6 +5,7 @@ event_files = \
 	alpha/ev6/events alpha/ev6/unit_masks \
 	alpha/pca56/events alpha/pca56/unit_masks \
 	i386/athlon/events i386/athlon/unit_masks \
+	i386/core_2/events i386/core_2/unit_masks \
 	i386/p4/events i386/p4-ht/events \
 	i386/p4-ht/unit_masks i386/p4/unit_masks \
 	i386/pii/events i386/pii/unit_masks \

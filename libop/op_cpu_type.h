@@ -59,6 +59,7 @@ typedef enum {
 	CPU_PPC_E500_2,	/**< e500v2 */
 	CPU_CORE, /**< Core Solo / Duo series */
 	CPU_PPC_7450, /**< PowerPC G4 */
+	CPU_CORE_2, /**< Intel Core 2 */
 	MAX_CPU_TYPE
 } op_cpu;
 
