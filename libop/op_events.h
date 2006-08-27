@@ -28,8 +28,8 @@ enum unit_mask_type {
 	utm_bitmask		/**< bitmask */
 };
 
-/** up to sixteen allowed unit masks */
-#define MAX_UNIT_MASK 16
+/** up to thirty two allowed unit masks */
+#define MAX_UNIT_MASK 32
 
 
 /** Describe an unit mask. */

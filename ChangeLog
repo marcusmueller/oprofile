@@ -1,3 +1,9 @@
+2006-08-27  Ray Bryant  <raybry@amd.com>
+
+	* events/x86-64/hammer/events:
+	* events/x86-64/hammer/unit_masks:
+	* libop/op_events.h: make names match the BKDG names from AMD
+
 2006-08-22  Benjamin LaHaise  <bcrl@kvack.org>
 
 	* events/Makefile.am:
