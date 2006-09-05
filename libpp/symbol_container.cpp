@@ -68,7 +68,7 @@ symbol_container::find(debug_name_id filename) const
 
 	typedef symbols_by_loc_t::const_iterator it;
 	it first = symbols_by_loc.lower_bound(&symbol);
-	symbol.sample.file_loc.linenr = size_t(-1);
+	symbol.sample.file_loc.linenr = (unsigned int)size_t(-1);
 	it last  = symbols_by_loc.upper_bound(&symbol);
 
 	symbol_collection result;
