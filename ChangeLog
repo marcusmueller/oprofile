@@ -1,6 +1,6 @@
 2006-09-05  Will Cohen  <wcohen@redhat.com>
 
-	
+	libpp/symbol_container.cpp: Explicit casting.
 
 2006-08-27  Ray Bryant  <raybry@amd.com>
 
