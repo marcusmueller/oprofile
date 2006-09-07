@@ -1,10 +1,14 @@
-2006-09-05  Will Cohen  <wcohen@redhat.com>
+2006-09-07  Benjamin LaHaise  <bcrl@kvack.org>
+	
+	* events/i386/core_2/events: Correct some event names.
+
+2006-09-05  Will Cohen  <wcohen@redhat.com>	
 
 	* configure.in: bump to 0.9.2
 
 2006-09-05  Will Cohen  <wcohen@redhat.com>
 
-	libpp/symbol_container.cpp: Explicit casting.
+	* libpp/symbol_container.cpp: Explicit casting.
 
 2006-08-27  Ray Bryant  <raybry@amd.com>
 
