@@ -24,11 +24,11 @@ name:nonhlt type:exclusive default:0x0
 	0x0 Unhalted core cycles
 	0x1 Unhalted bus cycles
 	0x2 Unhalted bus cycles of this core while the other core is halted
-name:mesi type:bitmask default:0x0f00
-	0x0800	(M)ESI: Modified
-	0x0400	M(E)SI: Exclusive
-	0x0200	ME(S)I: Shared
-	0x0100	MES(I): Invalid
+name:mesi type:bitmask default:0x0f
+	0x08	(M)ESI: Modified
+	0x04	M(E)SI: Exclusive
+	0x02	ME(S)I: Shared
+	0x01	MES(I): Invalid
 name:sse_prefetch type:exclusive default:0x0
 	0x00 prefetch NTA instructions executed.
 	0x01 prefetch T1 instructions executed.
@@ -77,53 +77,53 @@ name:delayed_bypass type:exclusive default:0x00
 	0x00 FP		Delayed bypass to FP operation.
 	0x01 SIMD	Delayed bypass to SIMD operation.
 	0x02 LOAD	Delayed bypass to load operation.
-name:core type:exclusive default:0x4000
-	0xc000	All cores
-	0x4000	This core
-name:core_prefetch type:bitmask default:0xf000
-	0xc000	core: all cores
-	0x4000	core: this core
-	0x3000	prefetch: all inclusive
-	0x1000	prefetch: Hardware prefetch only
-	0x0000	prefetch: exclude hardware prefetch
-name:core_mesi type:bitmask default:0xcf00
-	0xc000	core: all cores
-	0x4000	core: this core
-	0x0800	(M)ESI: Modified
-	0x0400	M(E)SI: Exclusive
-	0x0200	ME(S)I: Shared
-	0x0100	MES(I): Invalid
-name:core_prefetch_mesi type:bitmask default:0xff00
-	0xc000	core: all cores
-	0x4000	core: this core
-	0x3000	prefetch: all inclusive
-	0x1000	prefetch: Hardware prefetch only
-	0x0000	prefetch: exclude hardware prefetch
-	0x0800	(M)ESI: Modified
-	0x0400	M(E)SI: Exclusive
-	0x0200	ME(S)I: Shared
-	0x0100	MES(I): Invalid
+name:core type:exclusive default:0x40
+	0xc0	All cores
+	0x40	This core
+name:core_prefetch type:bitmask default:0xf0
+	0xc0	core: all cores
+	0x40	core: this core
+	0x30	prefetch: all inclusive
+	0x10	prefetch: Hardware prefetch only
+	0x00	prefetch: exclude hardware prefetch
+name:core_mesi type:bitmask default:0xcf
+	0xc0	core: all cores
+	0x40	core: this core
+	0x08	(M)ESI: Modified
+	0x04	M(E)SI: Exclusive
+	0x02	ME(S)I: Shared
+	0x01	MES(I): Invalid
+name:core_prefetch_mesi type:bitmask default:0xff
+	0xc0	core: all cores
+	0x40	core: this core
+	0x30	prefetch: all inclusive
+	0x10	prefetch: Hardware prefetch only
+	0x00	prefetch: exclude hardware prefetch
+	0x08	(M)ESI: Modified
+	0x04	M(E)SI: Exclusive
+	0x02	ME(S)I: Shared
+	0x01	MES(I): Invalid
 name:l1d_split type:exclusive default:0x1
 	0x1	split loads
 	0x2	split stores
-name:bus_agents type:exclusive default:0x0000
-	0x0000	this agent
-	0x1000	include all agents
-name:core_and_bus_agents type:bitmask default:0xc000
-	0xc000	core: all cores
-	0x4000	core: this core
-	0x0000	bus: this agent
-	0x1000	bus: include all agents
-name:bus_agents_and_snoop type:bitmask default:0x1300
-	0x0000	bus: this agent
-	0x1000	bus: include all agents
-	0x0100	snoop: CMP2I snoops
-	0x0200	snoop: CMP2S snoops
-name:core_and_snoop type:bitmask default:0xc000
-	0xc000	core: all cores
-	0x4000	core: this core
-	0x0100	snoop: CMP2I snoops
-	0x0200	snoop: CMP2S snoops
+name:bus_agents type:exclusive default:0x00
+	0x00	this agent
+	0x10	include all agents
+name:core_and_bus_agents type:bitmask default:0xc0
+	0xc0	core: all cores
+	0x40	core: this core
+	0x00	bus: this agent
+	0x10	bus: include all agents
+name:bus_agents_and_snoop type:bitmask default:0x13
+	0x00	bus: this agent
+	0x10	bus: include all agents
+	0x01	snoop: CMP2I snoops
+	0x02	snoop: CMP2S snoops
+name:core_and_snoop type:bitmask default:0xc0
+	0xc0	core: all cores
+	0x40	core: this core
+	0x01	snoop: CMP2I snoops
+	0x02	snoop: CMP2S snoops
 name:itlb_miss type:bitmask default:0x12
 	0x02	ITLB small page misses
 	0x10	ITLB large page misses

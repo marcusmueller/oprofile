@@ -1,3 +1,8 @@
+2006-09-11  Will Cohen  <wcohen@redhat.com>	
+
+	* events/i386/core_2/unit_masks:
+	* events/i386/core_2/events: Correct names and masks.
+	
 2006-09-07  Benjamin LaHaise  <bcrl@kvack.org>
 	
 	* events/i386/core_2/events: Correct some event names.
@@ -28,13 +33,13 @@
 
 2006-07-15  Luca Barbato  <lu_zero@gentoo.org>
 
- 	* events/Makefile.am:
- 	* events/ppc/7450/events:
- 	* events/ppc/7450/unit_masks:
- 	* libop/op_cpu_type.h:
- 	* libop/op_cpu_type.c:
- 	* libop/op_events.c:
- 	* utils/ophelp.c: support PowerPC G4 events
+	* events/Makefile.am:
+	* events/ppc/7450/events:
+	* events/ppc/7450/unit_masks:
+	* libop/op_cpu_type.h:
+	* libop/op_cpu_type.c:
+	* libop/op_events.c:
+	* utils/ophelp.c: support PowerPC G4 events
  
 2006-06-21  Ralf Baechle  <ralf@linux-mips.org>
 
