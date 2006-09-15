@@ -50,6 +50,8 @@ EXTRA_DIST = \
 	ChangeLog-2001 \
 	ChangeLog-2002 \
 	ChangeLog-2003 \
+	ChangeLog-2004 \
+	ChangeLog-2005 \
 	autogen.sh \
 	include/sstream \
 	module/Makefile.in \
