@@ -470,7 +470,9 @@ int main(int argc, char const * argv[])
 		break;
 
 	case CPU_PPC_7450:
-		printf("See MPC7450 RISC Microprocessor Family User's Manual\n"
+		printf("See MPC7450 RISC Microprocessor Family Reference "
+		       "Manual\n"
+		       "Chapter 11: Performance Monitor\n"
 		       "Downloadable from http://www.freescale.com\n");
 		break;
 

@@ -1,3 +1,9 @@
+2006-09-21  Mark A. Greer  <mgreer@mvista.com>
+
+	* events/ppc/7450/events:
+	* events/ppc/7450/unit_masks:
+	* utils/ophelp.c: ppc 745x event improvements.
+
 2006-09-15  Will Cohen  <wcohen@redhat.com>
 
 	* Makefile.am: Add ChangeLog-2004 and ChangeLog-2005 to distro.
