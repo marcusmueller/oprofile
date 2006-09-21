@@ -4,9 +4,9 @@
 #
 event:0x3c counters:0,1 um:nonhlt minimum:6000 name:CPU_CLK_UNHALTED : Clock cycles when not halted
 event:0xc0 counters:0,1 um:zero minimum:6000 name:INST_RETIRED.ANY_P : number of instructions retired
-event:0x2e counters:0,1 um:core_mesi minimum:6000 name:L2_RQSTS : number of L2 requests
-event:0x2e counters:0,1 um:x41 minimum:6000 name:L2_RQSTS.SELF.DEMAND.I_STATE_L2 : L2 cache demand requests from this core that missed the L2
-event:0x2e counters:0,1 um:x4f minimum:6000 name:L2_RQSTS.SELF.DEMAND.I_STATE : L2 cache demand requests from this core
+event:0x2e counters:0,1 um:core_prefetch_mesi minimum:500 name:L2_RQSTS : number of L2 cache requests
+event:0x2e counters:0,1 um:x41 minimum:6000 name:LLC_MISSES : L2 cache demand requests from this core that missed the L2
+event:0x2e counters:0,1 um:x4f minimum:6000 name:LLC_REFS : L2 cache demand requests from this core
 #
 # Model specific events
 #
@@ -35,7 +35,6 @@ event:0x28 counters:0,1 um:core_mesi minimum:500 name:L2_IFETCH : number of L2 c
 event:0x29 counters:0,1 um:core_prefetch_mesi minimum:500 name:L2_LD : number of L2 data loads
 event:0x2a counters:0,1 um:core_mesi minimum:500 name:L2_ST : number of L2 data stores
 event:0x2b counters:0,1 um:core_mesi minimum:500 name:L2_LOCK : number of locked L2 data accesses
-event:0x2e counters:0,1 um:core_prefetch_mesi minimum:500 name:L2_RQSTS : number of L2 cache requests
 event:0x30 counters:0,1 um:core_prefetch_mesi minimum:500 name:L2_REJECT_BUSQ : Rejected L2 cache requests
 event:0x32 counters:0,1 um:core minimum:500 name:L2_NO_REQ : Cycles no L2 cache requests are pending
 event:0x3a counters:0,1 um:zero minimum:500 name:EIST_TRANS_ALL : Intel(tm) Enhanced SpeedStep(r) Technology transitions

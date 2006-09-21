@@ -80,20 +80,20 @@ name:delayed_bypass type:exclusive default:0x00
 name:core type:exclusive default:0x40
 	0xc0	All cores
 	0x40	This core
-name:core_prefetch type:bitmask default:0xf0
+name:core_prefetch type:bitmask default:0x70
 	0xc0	core: all cores
 	0x40	core: this core
 	0x30	prefetch: all inclusive
 	0x10	prefetch: Hardware prefetch only
 	0x00	prefetch: exclude hardware prefetch
-name:core_mesi type:bitmask default:0xcf
+name:core_mesi type:bitmask default:0x4f
 	0xc0	core: all cores
 	0x40	core: this core
 	0x08	(M)ESI: Modified
 	0x04	M(E)SI: Exclusive
 	0x02	ME(S)I: Shared
 	0x01	MES(I): Invalid
-name:core_prefetch_mesi type:bitmask default:0xff
+name:core_prefetch_mesi type:bitmask default:0x7f
 	0xc0	core: all cores
 	0x40	core: this core
 	0x30	prefetch: all inclusive
@@ -109,17 +109,17 @@ name:l1d_split type:exclusive default:0x1
 name:bus_agents type:exclusive default:0x00
 	0x00	this agent
 	0x10	include all agents
-name:core_and_bus_agents type:bitmask default:0xc0
+name:core_and_bus_agents type:bitmask default:0x40
 	0xc0	core: all cores
 	0x40	core: this core
 	0x00	bus: this agent
 	0x10	bus: include all agents
-name:bus_agents_and_snoop type:bitmask default:0x13
+name:bus_agents_and_snoop type:bitmask default:0x03
 	0x00	bus: this agent
 	0x10	bus: include all agents
 	0x01	snoop: CMP2I snoops
 	0x02	snoop: CMP2S snoops
-name:core_and_snoop type:bitmask default:0xc0
+name:core_and_snoop type:bitmask default:0x40
 	0xc0	core: all cores
 	0x40	core: this core
 	0x01	snoop: CMP2I snoops

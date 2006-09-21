@@ -1,3 +1,9 @@
+2006-09-21  Dean Gaudet  <dgaudet@users.sourceforge.net>
+
+	* events/i386/core_2/events: rename some events
+	* events/i386/core_2/unit_masks: various fixes for
+	  double-counting events
+
 2006-09-21  Mark A. Greer  <mgreer@mvista.com>
 
 	* events/ppc/7450/events:
