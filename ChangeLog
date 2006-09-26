@@ -1,3 +1,8 @@
+2006-09-25  Jon Callan  <Jon.Callan@arm.com>
+
+	* libopt++/popt_options.cpp: fix static init order problem, seen
+	  on ARM.
+
 2006-09-21  Dean Gaudet  <dgaudet@users.sourceforge.net>
 
 	* events/i386/core_2/events: rename some events

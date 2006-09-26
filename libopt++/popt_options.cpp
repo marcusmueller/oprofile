@@ -55,9 +55,13 @@ protected:
 
 
 /** the popt array singleton options */
-static vector<poptOption> popt_options;
-static vector<option_base *> options_list;
+static vector<poptOption> & popt_options(void)
+{
+	static vector<poptOption> *x = new(vector<poptOption>);
+	return *x;
+}
 
+static vector<option_base *> options_list;
 static int showvers;
 
 static struct poptOption appended_options[] = {
@@ -73,7 +77,7 @@ static poptContext do_parse_options(int argc, char const ** argv,
                                     vector<poptOption> & options,
                                     vector<string> & additional_params)
 {
-	options = popt_options;
+	options = popt_options();
 
 	int const nr_appended_options =
 		sizeof(appended_options) / sizeof(appended_options[0]);
@@ -245,7 +249,7 @@ option_base::option_base(char const * name, char short_name,
 	poptOption const opt = { name, short_name, popt_flags,
 	                         data, 0, help, arg_help };
 
-	popt_options.push_back(opt);
+	popt_options().push_back(opt);
 
 	options_list.push_back(this);
 }
