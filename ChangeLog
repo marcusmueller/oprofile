@@ -1,3 +1,6 @@
+2006-10-13  Maynard Johnson <maynardj@us.ibm.com>
+        * doc/opcontrol.1.in: Document callgraph support for PowerPC
+
 2006-09-25  Jon Callan  <Jon.Callan@arm.com>
 
 	* libopt++/popt_options.cpp: fix static init order problem, seen
