@@ -331,6 +331,11 @@ bool interesting_symbol(asymbol * sym)
 	// returning true for fix up in op_bfd_symbol()
 	if (!sym->name || sym->name[0] == '\0')
 		return true;
+	/* ARM assembler internal mapping symbols aren't interesting */
+	if ((strcmp("$a", sym->name) == 0) ||
+	    (strcmp("$t", sym->name) == 0) ||
+	    (strcmp("$d", sym->name) == 0))
+		return false;
 
 	// C++ exception stuff
 	if (sym->name[0] == '.' && sym->name[1] == 'L')

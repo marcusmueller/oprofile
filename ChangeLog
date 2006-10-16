@@ -1,3 +1,11 @@
+2006-10-16  Richard Purdie <rpurdie@openedhand.com>
+
+	* libutil++/bfd_support.cpp: Ignore uninteresting arm mapping symbols
+
+2006-10-16  Richard Purdie <rpurdie@openedhand.com>
+
+	* utils/opcontrol: Remove a bashism in validate_separate_args()
+
 2006-10-13  Maynard Johnson <maynardj@us.ibm.com>
         * doc/opcontrol.1.in: Document callgraph support for PowerPC
 

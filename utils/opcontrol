@@ -485,7 +485,7 @@ validate_separate_args()
 	SEPARATE_KERNEL=0
 	SEPARATE_THREAD=0
 	SEPARATE_CPU=0
-	while (($i < $#)); do
+	while [ "$i" -lt "$#" ]; do
 		shift
 		case "$1" in
 			lib|library)
