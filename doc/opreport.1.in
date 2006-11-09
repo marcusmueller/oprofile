@@ -65,7 +65,7 @@ This is needed to find modules in kernels 2.6 and upwards.
 Only include symbols in the given comma-separated list.
 .br
 .TP
-.BI "--long-filenames / -l"
+.BI "--long-filenames / -f"
 Output full paths instead of basenames.
 .br
 .TP

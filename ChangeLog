@@ -1,3 +1,8 @@
+2006-11-09  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/opreport.1.in: 
+	* doc/oprofile.xml: --long-filenames : -f is the short opt, not -l
+
 2006-10-16  Richard Purdie <rpurdie@openedhand.com>
 
 	* libutil++/bfd_support.cpp: Ignore uninteresting arm mapping symbols

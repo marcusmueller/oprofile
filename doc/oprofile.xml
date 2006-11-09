@@ -1643,7 +1643,7 @@ This is needed to find modules in kernels 2.6 and upwards.
 <varlistentry><term><option>--include-symbols / -i [symbols]</option></term><listitem><para>
 Only include symbols in the given comma-separated list.
 </para></listitem></varlistentry>
-<varlistentry><term><option>--long-filenames / -l</option></term><listitem><para>
+<varlistentry><term><option>--long-filenames / -f</option></term><listitem><para>
 Output full paths instead of basenames.
 </para></listitem></varlistentry>
 <varlistentry><term><option>--merge / -m [lib,cpu,tid,tgid,unitmask,all]</option></term><listitem><para>
