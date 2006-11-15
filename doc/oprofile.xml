@@ -315,15 +315,20 @@ is necessary.
 </para>
 <para>
 Periodically (or on <command>opcontrol --shutdown</command> or <command>opcontrol --dump</command>)
-the profile data is written out into the <filename>/var/lib/oprofile/samples</filename> directory.
+the profile data is written out into the $SESSION_DIR/samples directory (by default at <filename>/var/lib/oprofile/samples</filename>).
 These profile files cover shared libraries, applications, the kernel (vmlinux), and kernel modules.
 You can clear the profile data (at any time) with <command>opcontrol --reset</command>.
 </para>
 <para>
+To place these sample database files in a specific directory instead of the default location (<filename>/var/lib/oprofile</filename>) use the <option>--session-dir=dir</option> option. You must also specify the <option>--session-dir</option> to tell the tools to continue using this directory. (In the future, we should allow this to be specified in an environment variable.) :
+</para>
+<screen>opcontrol --no-vmlinux --session-dir=/home/me/tmpsession</screen>
+<screen>opcontrol --start --session-dir=/home/me/tmpsession</screen>
+<para>
 You can get summaries of this data in a number of ways at any time. To get a summary of
 data across the entire system for all of these profiles, you can do :
 </para>
-<screen>opreport</screen>
+<screen>opreport [--session-dir=dir]</screen>
 <para>
 Or to get a more detailed summary, for a particular image, you can do something like :
 </para>
@@ -566,6 +571,13 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
+		<term><option>--session-dir=</option>dir_path</term>
+		<listitem><para>
+		    Create/use sample database out of directory <filename>dir_path</filename> instead of
+		the default location (/var/lib/oprofile).
+		</para></listitem>
+	</varlistentry>
+	<varlistentry>
 		<term><option>--separate=</option>[none,lib,kernel,thread,cpu,all]</term>
 		<listitem><para>
 		By default, every profile is stored in a single file. Thus, for example,
@@ -712,12 +724,12 @@ command <command>opcontrol --save</command> to do this. For example :
 # opcontrol --save=blah
 </screen>
 <para>
-will create a sub-directory in <filename>/var/lib/oprofile/samples</filename> containing the samples
+will create a sub-directory in <filename>$SESSION_DIR/samples</filename> containing the samples
 up to that point (the current session's sample files are moved into this
 directory). You can then pass this session name as a parameter to the post-profiling
 analysis tools, to only get data up to the point you named the
 session. If you do not want to save a session, you can do
-<command>rm -rf /var/lib/oprofile/samples/sessionname</command> or, for the
+<command>rm -rf $SESSION_DIR/samples/sessionname</command> or, for the
 current session, <command>opcontrol --reset</command>.
 </para>
 </sect3>
@@ -1244,7 +1256,7 @@ Differential profile of an archived binary with the current session :
 <sect2>
 <title>Locating and managing binary images</title>
 <para>
-Each session's sample files can be found in the <filename>/var/lib/oprofile/samples/</filename> directory.
+Each session's sample files can be found in the $SESSION_DIR/samples/ directory (default: <filename>/var/lib/oprofile/samples/</filename>).
 These are used, along with the binary image files, to produce human-readable data.
 In some circumstances (kernel modules in an initrd, or modules on 2.6 kernels), OProfile
 will not be able to find the binary images. All the tools have an <option>--image-path</option>
@@ -1658,6 +1670,10 @@ Output to the given file instead of stdout.
 <varlistentry><term><option>--reverse-sort / -r</option></term><listitem><para>
 Reverse the sort from the default.
 </para></listitem></varlistentry>
+<varlistentry><term><option>--session-dir=</option>dir_path</term><listitem><para>
+Use sample database out of directory <filename>dir_path</filename> 
+instead of the default location (/var/lib/oprofile).
+</para></listitem></varlistentry>
 <varlistentry><term><option>--show-address / -w</option></term><listitem><para>
 Show the VMA address of each symbol (off by default).
 </para></listitem></varlistentry>
@@ -1961,7 +1977,7 @@ Show version.
 	This utility converts sample database files from a foreign binary format (abi) to
 	the native format. This is useful only when moving sample files between hosts,
 	for analysis on platforms other than the one used for collection. The abi format
-	of the file to be imported is described in a text file located in <filename>/var/lib/oprofile/abi</filename>.
+	of the file to be imported is described in a text file located in <filename>$SESSION_DIR/abi</filename>.
 </para>
 
 <para>

@@ -63,6 +63,7 @@ int separate_cpu;
 int no_vmlinux;
 char * vmlinux;
 char * kernel_range;
+char * session_dir;
 int no_xen;
 char * xenimage;
 char * xen_range;
@@ -78,6 +79,7 @@ extern struct oprofiled_ops opd_26_ops;
 static struct list_head images_filter[OPD_IMAGE_FILTER_HASH_SIZE];
 
 static struct poptOption options[] = {
+	{ "session-dir", 0, POPT_ARG_STRING, &session_dir, 0, "place sample database in dir instead of default location", "/var/lib/oprofile", },
 	{ "kernel-range", 'r', POPT_ARG_STRING, &kernel_range, 0, "Kernel VMA range", "start-end", },
 	{ "vmlinux", 'k', POPT_ARG_STRING, &vmlinux, 0, "vmlinux kernel image", "file", },
 	{ "no-vmlinux", 0, POPT_ARG_NONE, &no_vmlinux, 0, "vmlinux kernel image file not available", NULL, },
@@ -98,7 +100,7 @@ static struct poptOption options[] = {
 
 void opd_open_logfile(void)
 {
-	if (open(OP_LOG_FILE, O_WRONLY|O_CREAT|O_NOCTTY|O_APPEND, 0755) == -1) {
+	if (open(op_log_file, O_WRONLY|O_CREAT|O_NOCTTY|O_APPEND, 0755) == -1) {
 		perror("oprofiled: couldn't re-open stdout: ");
 		exit(EXIT_FAILURE);
 	}
@@ -137,9 +139,9 @@ static void opd_go_daemon(void)
 {
 	opd_fork();
 
-	if (chdir(OP_BASE_DIR)) {
-		fprintf(stderr, "oprofiled: opd_go_daemon: couldn't chdir to "
-			OP_BASE_DIR ": %s", strerror(errno));
+	if (chdir(op_session_dir)) {
+		fprintf(stderr, "oprofiled: opd_go_daemon: couldn't chdir to %s: %s",
+			op_session_dir, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -156,8 +158,8 @@ static void opd_write_abi(void)
 {
 	char * cbuf;
  
-	cbuf = xmalloc(strlen(OP_BASE_DIR) + 5);
-	strcpy(cbuf, OP_BASE_DIR);
+	cbuf = xmalloc(strlen(op_session_dir) + 5);
+	strcpy(cbuf, op_session_dir);
 	strcat(cbuf, "/abi");
 	op_write_abi_to_file(cbuf);
 	free(cbuf);
@@ -469,6 +471,7 @@ int main(int argc, char const * argv[])
 	struct rlimit rlim = { 2048, 2048 };
 
 	opd_options(argc, argv);
+	init_op_config_dirs(session_dir);
 
 	opd_setup_signals();
 
@@ -487,9 +490,9 @@ int main(int argc, char const * argv[])
 	/* clean up every 10 minutes */
 	alarm(60 * 10);
 
-	if (op_write_lock_file(OP_LOCK_FILE)) {
-		fprintf(stderr, "oprofiled: could not create lock file "
-			OP_LOCK_FILE "\n");
+	if (op_write_lock_file(op_lock_file)) {
+		fprintf(stderr, "oprofiled: could not create lock file %s\n",
+			op_lock_file);
 		exit(EXIT_FAILURE);
 	}
 

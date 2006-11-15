@@ -162,6 +162,7 @@ character device.
 The OProfile userspace daemon's job is to take the raw data provided by the
 kernel and write it to the disk. It takes the single data stream from the
 kernel and logs sample data against a number of sample files (found in
+<filename>$SESSION_DIR/samples/current/</filename>, by default located at 
 <filename>/var/lib/oprofile/samples/current/</filename>. For the benefit
 of the "separate" functionality, the names/paths of these sample files
 are mangled to reflect where the samples were from: this can include
@@ -551,7 +552,7 @@ structure is used to hold changes in context. Its members are modified
 as we process each entry; it is passed into the routines in
 <filename>daemon/opd_sfile.c</filename> for actually logging the sample
 to a particular sample file (which will be held in
-<filename>/var/lib/oprofile/samples/current</filename>).
+<filename>$SESSION_DIR/samples/current</filename>).
 </para>
 <para>
 The buffer format is designed for conciseness, as high sampling rates
@@ -705,9 +706,10 @@ might look like these:
 </screen>
 <para>
 This looks unnecessarily complex, but it's actually fairly simple. First
-we have the session of the sample, here
-<filename>/var/lib/oprofile/samples/current</filename>. This could
-equally well be inside an archive from <command>oparchive</command>.
+we have the session of the sample, by default located here
+<filename>/var/lib/oprofile/samples/current</filename>. This location
+can be changed by specifying the --session-dir option at command-line.
+This session could equally well be inside an archive from <command>oparchive</command>.
 Next we have one of the tokens <filename>{root}</filename> or
 <filename>{kern}</filename>. <filename>{root}</filename> indicates
 that the binary is found on a file system, and we will encode its path

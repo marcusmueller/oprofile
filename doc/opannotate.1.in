@@ -77,6 +77,10 @@ Comma-separated list of paths to strip from debug source files, prior to
 looking for them in --search-dirs.
 .br
 .TP
+.BI "--session-dir="dir_path
+Use sample database out of directory dir_path instead of the default location (/var/lib/oprofile).
+.br
+.TP
 .BI "--source / -s"
 Output annotated source. This requires debugging information to be available
 for the binaries.

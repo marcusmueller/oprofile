@@ -85,6 +85,10 @@ Output to the given file instead of stdout.
 Reverse the sort from the default.
 .br
 .TP
+.BI "--session-dir="dir_path
+Use sample database out of directory dir_path instead of the default location (/var/lib/oprofile).
+.br
+.TP
 .BI "--show-address / -w"
 Show each symbol's VMA address.
 .br

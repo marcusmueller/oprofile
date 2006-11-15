@@ -47,7 +47,7 @@ char * op_mangle_filename(struct mangle_values const * values)
 	char const * dep_name = values->image_name;
 	char const * cg_image_name = values->cg_image_name;
 
-	len = strlen(OP_SAMPLES_CURRENT_DIR) + strlen(dep_name) + 1
+	len = strlen(op_samples_current_dir) + strlen(dep_name) + 1
 	             + strlen(values->event_name) + 1 + strlen(image_name) + 1;
 
 	if (values->flags & MANGLE_CALLGRAPH)
@@ -60,7 +60,7 @@ char * op_mangle_filename(struct mangle_values const * values)
 
 	mangled = xmalloc(len);
 
-	strcpy(mangled, OP_SAMPLES_CURRENT_DIR);
+	strcpy(mangled, op_samples_current_dir);
 	append_image(mangled, values->flags, 0, image_name);
 
 	strcat(mangled, "{dep}" "/");

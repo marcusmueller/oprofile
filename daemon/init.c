@@ -64,7 +64,7 @@ static void opd_open_files(void)
 	}
 
 	/* give output before re-opening stdout as the logfile */
-	printf("Using log file " OP_LOG_FILE "\n");
+	printf("Using log file %s\n", op_log_file);
 
 	/* set up logfile */
 	close(0);
@@ -90,12 +90,12 @@ static void complete_dump(void)
 	FILE * status_file;
 
 retry:
-	status_file = fopen(OP_DUMP_STATUS, "w");
+	status_file = fopen(op_dump_status, "w");
 
 	if (!status_file && errno == EMFILE) {
 		if (sfile_lru_clear()) {
 			printf("LRU cleared but file open fails for %s.\n",
-			       OP_DUMP_STATUS);
+			       op_dump_status);
 			abort();
 		}
 		goto retry;
@@ -207,7 +207,7 @@ static void opd_sighup(void)
 static void clean_exit(void)
 {
 	perfmon_exit();
-	unlink(OP_LOCK_FILE);
+	unlink(op_lock_file);
 }
 
 

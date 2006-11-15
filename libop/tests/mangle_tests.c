@@ -51,8 +51,8 @@ int main(void)
 	for (test = tests; test->result; ++test) {
 		char * result = op_mangle_filename(&test->values);
 		char * expect = xmalloc(strlen(test->result) +
-					strlen(OP_SAMPLES_CURRENT_DIR) + 1);
-		strcpy(expect, OP_SAMPLES_CURRENT_DIR);
+					strlen(op_samples_current_dir) + 1);
+		strcpy(expect, op_samples_current_dir);
 		strcat(expect, test->result);
 		if (strcmp(result, expect)) {
 			fprintf(stderr, "test %d:\nfound: %s\nexpect: %s\n",

@@ -133,7 +133,8 @@ do_help()
 
    -c/--callgraph=#depth         enable callgraph sample collection with a maximum depth.
                                  Use 0 to disable callgraph profiling.
-
+   --session-dir=dir             place sample database in dir instead of
+                                 default location (/var/lib/oprofile)
    -i/--image=name[,names]       list of binaries to profile (default is "all")
    --vmlinux=file                vmlinux kernel image
    --no-vmlinux                  no kernel image (vmlinux) available
@@ -214,28 +215,53 @@ load_module()
 	fi
 }
 
-# setup variables related to daemon
+# setup variables related to daemon  Set vars according to following
+# relationship: command-line-option > config-file-settings > defaults.
+# Note that upon entry SESSION_DIR may be set by command-line option.
 do_init_daemon_vars()
 {
-	# as in op_user.h
-	DIR="/var/lib/oprofile"
-	LOCK_FILE="/var/lib/oprofile/lock"
-	LOG_FILE="$DIR/oprofiled.log"
-	SAMPLES_DIR="$DIR/samples"
-	CURRENT_SAMPLES_DIR=${SAMPLES_DIR}/current
+	# load settings from config file, keeping command-line value
+	# of SESSION_DIR if necessary.
+	if test -n "$SESSION_DIR"; then
+	       SAVED=$SESSION_DIR
+	fi
+	do_load_setup
+	if test -n "$SAVED"; then
+	       SESSION_DIR=$SAVED
+	fi
+
+	# daemon parameters (as in op_config.h).  Note that we preserve
+	# any previous value of SESSION_DIR
+	if test -z "$SESSION_DIR"; then
+	       SESSION_DIR="/var/lib/oprofile"
+	fi
+	LOCK_FILE="$SESSION_DIR/lock"
+	LOG_FILE="$SESSION_DIR/oprofiled.log"
+	SAMPLES_DIR="$SESSION_DIR/samples"
+	CURRENT_SAMPLES_DIR="$SAMPLES_DIR/current"
 }
+
+
+# pick the appropriate device mount based on kernel
+decide_oprofile_device_mount()
+{
+	if test "$KERNEL_SUPPORT" = "yes"; then
+		MOUNT="/dev/oprofile"
+	else
+		MOUNT="/proc/sys/dev/oprofile"
+	fi
+}
+
 
 # pick the appropriate locations device for oprofile based on kernel
 decide_oprofile_device()
 {
 	if test "$KERNEL_SUPPORT" = "yes"; then
-		MOUNT="/dev/oprofile"
 		DEVICE_FILE="$MOUNT/buffer"
 	else
-		MOUNT="/proc/sys/dev/oprofile"
-		DEVICE_FILE="$DIR/opdev"
-		NOTE_DEVICE_FILE="$DIR/opnotedev"
-		HASH_MAP_DEVICE_FILE="$DIR/ophashmapdev"
+		DEVICE_FILE="$SESSION_DIR/opdev"
+		NOTE_DEVICE_FILE="$SESSION_DIR/opnotedev"
+		HASH_MAP_DEVICE_FILE="$SESSION_DIR/ophashmapdev"
 	fi
 }
 
@@ -263,9 +289,14 @@ do_init()
 	SETUP_DIR="/root/.oprofile"
 	SETUP_FILE="$SETUP_DIR/daemonrc"
 
+	# initialize daemon vars
+	decide_oprofile_device_mount
 	CPUTYPE=`cat $MOUNT/cpu_type`
 	OP_COUNTERS=`ls $MOUNT/ | grep "^[0-9]\+\$" | tr "\n" " "`
 	NR_CHOSEN=0
+
+	do_init_daemon_vars
+	decide_oprofile_device
 
 	DEFAULT_EVENT=`$OPHELP --get-default-event`
  
@@ -280,6 +311,40 @@ do_init()
 				;;
 		esac
 	fi
+
+	vecho "Parameters used:"
+	vecho "SESSION_DIR $SESSION_DIR"
+	vecho "LOCK_FILE   $LOCK_FILE"
+	vecho "SAMPLES_DIR $SAMPLES_DIR"
+	vecho "CURRENT_SAMPLES_DIR $CURRENT_SAMPLES_DIR"
+	vecho "CPUTYPE $CPUTYPE"
+	if test "$BUF_SIZE" != "0"; then
+		vecho "BUF_SIZE $BUF_SIZE"
+	else
+		vecho "BUF_SIZE default value"
+	fi
+	if test "$BUF_WATERSHED" != "0"; then
+		vecho "BUF_WATERSHED $BUF_WATERSHED"
+	else
+		vecho "BUF_WATERSHED default value"
+	fi
+	if test "$KERNEL_SUPPORT" = "yes"; then
+		if test "$CPU_BUF_SIZE" != "0"; then
+			vecho "CPU_BUF_SIZE $CPU_BUF_SIZE"
+		else
+		    vecho "CPU_BUF_SIZE default value"
+		fi
+	fi
+
+	vecho "SEPARATE_LIB $SEPARATE_LIB"
+	vecho "SEPARATE_KERNEL $SEPARATE_KERNEL"
+	vecho "SEPARATE_THREAD $SEPARATE_THREAD"
+	vecho "SEPARATE_CPU $SEPARATE_CPU"
+	vecho "CALLGRAPH $CALLGRAPH"
+	vecho "VMLINUX $VMLINUX"
+	vecho "KERNEL_RANGE $KERNEL_RANGE"
+	vecho "XENIMAGE $XENIMAGE"
+	vecho "XEN_RANGE $XEN_RANGE"
 }
 
 
@@ -314,6 +379,8 @@ do_save_setup()
 	touch $SETUP_FILE
 	chmod 644 $SETUP_FILE
 	>$SETUP_FILE
+
+	echo "SESSION_DIR=$SESSION_DIR" >>$SETUP_FILE
 
 	if test "$NR_CHOSEN" != "0"; then
 		for f in `seq 0 $((NR_CHOSEN - 1))`; do
@@ -363,36 +430,6 @@ do_load_setup()
 		# $SETUP_FILE and be executed as root
 		. $SETUP_FILE
 	fi
-
-	vecho "Parameters used:"
-	vecho "CPUTYPE $CPUTYPE"
-	if test "$BUF_SIZE" != "0"; then
-		vecho "BUF_SIZE $BUF_SIZE"
-	else
-		vecho "BUF_SIZE default value"
-	fi
-	if test "$BUF_WATERSHED" != "0"; then
-		vecho "BUF_WATERSHED $BUF_WATERSHED"
-	else
-		vecho "BUF_WATERSHED default value"
-	fi
-	if test "$KERNEL_SUPPORT" = "yes"; then
-		if test "$CPU_BUF_SIZE" != "0"; then
-			vecho "CPU_BUF_SIZE $CPU_BUF_SIZE"
-		else
-		    vecho "CPU_BUF_SIZE default value"
-		fi
-	fi
-
-	vecho "SEPARATE_LIB $SEPARATE_LIB"
-	vecho "SEPARATE_KERNEL $SEPARATE_KERNEL"
-	vecho "SEPARATE_THREAD $SEPARATE_THREAD"
-	vecho "SEPARATE_CPU $SEPARATE_CPU"
-	vecho "CALLGRAPH $CALLGRAPH"
-	vecho "VMLINUX $VMLINUX"
-	vecho "KERNEL_RANGE $KERNEL_RANGE"
-	vecho "XENIMAGE $XENIMAGE"
-	vecho "XEN_RANGE $XEN_RANGE"
 }
 
 
@@ -599,8 +636,7 @@ do_options()
 	NEED_SETUP=no
 	SEEN_EVENT=0
 
-	# load any default settings
-	do_load_setup
+	# note: default settings have already been loaded
 
 	while [ "$#" -ne 0 ]
 	do
@@ -706,6 +742,9 @@ do_options()
 
 			# --setup options
 
+			--session-dir)
+				# already processed
+				;;
 			--buffer-size)
 				error_if_empty $arg $val
 				BUF_SIZE=$val
@@ -933,7 +972,7 @@ do_kill_daemon()
 	done
 
 	# already removed unless we forced the kill
-	rm -f /var/lib/oprofile/lock
+	rm -f "$SESSION_DIR/lock"
 }
 
 
@@ -958,7 +997,7 @@ create_devices_24()
 # setup and start module
 do_setup()
 {
-	create_dir "$DIR"
+	create_dir "$SESSION_DIR"
 
 	>$LOG_FILE
 
@@ -1165,13 +1204,13 @@ do_start_daemon()
 	fi
  
 	do_setup
-	do_load_setup
 	check_valid_args
 	get_image_range "linux"
 	get_image_range "xen"
 	do_param_setup
 
 	OPD_ARGS=" \
+		--session-dir=$SESSION_DIR \
 		--separate-lib=$SEPARATE_LIB \
 		--separate-kernel=$SEPARATE_KERNEL \
 		--separate-thread=$SEPARATE_THREAD \
@@ -1202,7 +1241,7 @@ do_start_daemon()
 	$OPROFILED $OPD_ARGS
  
 	COUNT=0
-	while ! test -f "$DIR/lock"
+	while ! test -f "$SESSION_DIR/lock"
 	do
 		sleep 1
 		COUNT=`expr $COUNT + 1`
@@ -1230,7 +1269,7 @@ do_start()
 # print status
 do_status()
 {
-	OPROFILED_PID=`cat $DIR/lock 2>/dev/null`
+	OPROFILED_PID=`cat $SESSION_DIR/lock 2>/dev/null`
 	if test -n "$OPROFILED_PID" -a -d "/proc/$OPROFILED_PID"; then
 		echo "Daemon running: pid $OPROFILED_PID"
 	else
@@ -1299,8 +1338,8 @@ do_status()
 do_dump_data()
 {
 	# make sure that the daemon is not dead and gone
-	if test -e "$DIR/lock"; then
-		OPROFILED_PID=`cat $DIR/lock`
+	if test -e "$SESSION_DIR/lock"; then
+		OPROFILED_PID=`cat $SESSION_DIR/lock`
 		if test ! -d "/proc/$OPROFILED_PID"; then
 			echo "dump fail: daemon died during last run ?" >&2
 			return 1;
@@ -1321,7 +1360,7 @@ do_dump_data()
 		echo 1 > $MOUNT/dump
 		# loop until there is a file to check and 
 		# the modification data of $MOUNT/dump after TMPFILE
-		while [ \( ! -e "$DIR/complete_dump" \) -o \( "$TMPFILE" -nt "$DIR/complete_dump" \) ]
+		while [ \( ! -e "$SESSION_DIR/complete_dump" \) -o \( "$TMPFILE" -nt "$SESSION_DIR/complete_dump" \) ]
 		do
 			if test ! -d "/proc/$OPROFILED_PID"; then
 				rm $TMPFILE
@@ -1471,14 +1510,17 @@ do_operations()
 	fi
 }
  
-# early check for --version, --help
-check_version_help()
+# early check for --version, --help and --session-dir
+check_options_early()
 {
 
 	OPHELP="$OPDIR/ophelp"
 
 	for i in $@; do
-		case "$i" in
+		# added to handle arg=val parameters
+		arg=`printf %s $i | awk -F= '{print $1}'`
+		val=`printf %s $i | awk -F= '{print $2}'`
+		case "$arg" in
 			-\?|--help)
 				do_help
 				exit 0
@@ -1488,6 +1530,11 @@ check_version_help()
 				echo -n "`basename $0`: "
 				$OPHELP --version | cut -d' ' -f2-
 				exit 0
+				;;
+			--session-dir)
+				error_if_empty $arg $val
+				SESSION_DIR="$val"
+				# do not exit early
 				;;
  
 		esac
@@ -1519,13 +1566,15 @@ check_version()
 # main
 
 # determine the location of opcontrol and related programs
-BINDIR="/usr/bin"
-OPCONTROL=`$BINDIR/which $0`
-OPDIR=`$BINDIR/dirname $OPCONTROL`
+if test -z "$OPDIR"; then
+	BINDIR="/usr/bin"
+	OPCONTROL=`$BINDIR/which $0`
+	OPDIR=`$BINDIR/dirname $OPCONTROL`
+fi
 
 PATH=/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin
 
-check_version_help $@
+check_options_early $@
 
 if test -z "$1"; then
 	do_help
@@ -1536,8 +1585,8 @@ if test `id -u` = "0"; then
 	load_module
 fi
 check_version
-do_init_daemon_vars
-decide_oprofile_device
+
+do_init
 if test `id -u` != "0"; then
     if test "$1" = "--dump" -a -z "$2"; then
 	ONLY_DUMP=yes
@@ -1551,6 +1600,5 @@ if test `id -u` != "0"; then
     fi
 fi
 
-do_init
 do_options $@
 do_operations

@@ -401,7 +401,7 @@ list<string> profile_spec::generate_file_list(bool exclude_dependent,
 
 		string base_dir;
 		if ((*cit)[0] != '.' && (*cit)[0] != '/')
-			base_dir = archive_path + OP_SAMPLES_DIR;
+			base_dir = archive_path + op_samples_dir;
 		base_dir += *cit;
 
 		base_dir = op_realpath(base_dir);

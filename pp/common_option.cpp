@@ -13,6 +13,7 @@
 #include <sstream>
 #include <iterator>
 
+#include "op_config.h"
 #include "locate_images.h"
 #include "op_exception.h"
 #include "popt_options.h"
@@ -26,6 +27,7 @@ namespace options {
 	extra_images extra_found_images;
 	double threshold = 0.0;
 	string threshold_opt;
+	string session_dir = OP_SESSION_DIR_DEFAULT;
 }
 
 namespace {
@@ -37,6 +39,8 @@ popt::option common_options_array[] = {
 	popt::option(verbose_strings, "verbose", 'V',
 		     // FIXME help string for verbose level
 		     "verbose output", "all,debug,bfd,level1,sfile,stats"),
+	popt::option(options::session_dir, "session-dir", '\0',
+		     "specify session path to hold samples database and session data (" OP_SESSION_DIR_DEFAULT ")", "path"),
 	popt::option(image_path, "image-path", 'p',
 		     "comma-separated path to search missing binaries", "path"),
 };
@@ -158,6 +162,9 @@ options::spec get_options(int argc, char const * argv[])
 {
 	vector<string> non_options;
 	popt::parse_options(argc, argv, non_options);
+
+	// initialize paths in op_config.h
+	init_op_config_dirs(options::session_dir.c_str());
 
 	if (!options::threshold_opt.empty())
 		options::threshold = handle_threshold(options::threshold_opt);

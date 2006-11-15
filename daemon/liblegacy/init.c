@@ -60,13 +60,13 @@ static void opd_sigterm(void);
  */
 static void op_open_files(void)
 {
-	hashmapdevfd = op_open_device(OP_HASH_DEVICE);
+	hashmapdevfd = op_open_device(op_hash_device);
 	if (hashmapdevfd == -1) {
 		perror("Failed to open hash map device");
 		exit(EXIT_FAILURE);
 	}
 
-	notedevfd = op_open_device(OP_NOTE_DEVICE);
+	notedevfd = op_open_device(op_note_device);
 	if (notedevfd == -1) {
 		if (errno == EINVAL)
 			fprintf(stderr, "Failed to open note device. Possibly you have passed incorrect\n"
@@ -76,7 +76,7 @@ static void op_open_files(void)
 		exit(EXIT_FAILURE);
 	}
 
-	devfd = op_open_device(OP_DEVICE);
+	devfd = op_open_device(op_device);
 	if (devfd == -1) {
 		if (errno == EINVAL)
 			fprintf(stderr, "Failed to open device. Possibly you have passed incorrect\n"
@@ -89,7 +89,7 @@ static void op_open_files(void)
 	opd_init_hash_map();
 
 	/* give output before re-opening stdout as the logfile */
-	printf("Using log file " OP_LOG_FILE "\n");
+	printf("Using log file %s\n", op_log_file);
 
 	/* set up logfile */
 	close(0);
@@ -310,7 +310,7 @@ static void clean_exit(void)
 {
 	opd_cleanup_hash_name();
 	op_free_events();
-	unlink(OP_LOCK_FILE);
+	unlink(op_lock_file);
 }
 
 

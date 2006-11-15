@@ -14,13 +14,32 @@
 #ifndef OP_CONFIG_H
 #define OP_CONFIG_H
 
-/* various paths, duplicated in opcontrol */
-#define OP_BASE_DIR "/var/lib/oprofile/"
-#define OP_SAMPLES_DIR OP_BASE_DIR "samples/"
-#define OP_SAMPLES_CURRENT_DIR OP_SAMPLES_DIR "current/"
-#define OP_LOCK_FILE OP_BASE_DIR "lock"
-#define OP_LOG_FILE OP_BASE_DIR "oprofiled.log"
-#define OP_DUMP_STATUS OP_BASE_DIR "complete_dump"
+#if defined(__cplusplus)
+extern "C" {
+#endif
+  
+/** 
+ * must be called to initialize the paths below.
+ * @param session_dir  the non-NULL value of the base session directory
+ */
+void init_op_config_dirs(char const * session_dir);
+
+#if defined(__cplusplus)
+} /* extern "C" */
+#endif
+
+#define OP_SESSION_DIR_DEFAULT "/var/lib/oprofile/"
+
+/* 
+ * various paths, corresponding to opcontrol, that should be
+ * initialized by init_op_config_dirs() above. 
+ */
+extern char op_session_dir[];
+extern char op_samples_dir[];
+extern char op_samples_current_dir[];
+extern char op_lock_file[];
+extern char op_log_file[];
+extern char op_dump_status[];
 
 /* Global directory that stores debug files */
 #ifndef DEBUGDIR
