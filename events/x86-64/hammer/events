@@ -66,7 +66,7 @@ event:0x89 counters:0,1,2,3 um:zero minimum:500 name:RETURN_STACK_OVERFLOWS : Re
 event:0xc8 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_NEAR_RETURNS : Retired near returns
 event:0xc9 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_NEAR_RETURNS_MISPREDICTED : Retired near returns mispredicted
 event:0xca counters:0,1,2,3 um:zero minimum:500 name:RETIRED_INDIRECT_BRANCHES_MISPREDICTED : Retired Indirect Branches Mispredicted
-event:0xcb counters:0,1,2,3 um:fpu_instr minimum:500 name:RETIRED_MMX/FP_INSTRUCTIONS : Retired MMX/FP instructions
+event:0xcb counters:0,1,2,3 um:fpu_instr minimum:500 name:RETIRED_MMX_FP_INSTRUCTIONS : Retired MMX/FP instructions
 event:0xcc counters:0,1,2,3 um:fpu_fastpath minimum:500 name:RETIRED_FASTPATH_DOUBLE_OP_INSTRUCTIONS : Retired FastPath double-op instructions
 event:0xd0 counters:0,1,2,3 um:zero minimum:500 name:DECODER_EMPTY : Nothing to dispatch (decoder empty)
 event:0xd1 counters:0,1,2,3 um:zero minimum:500 name:DISPATCH_STALLS : Dispatch stalls
@@ -91,7 +91,7 @@ event:0xe4 counters:0,1,2,3 um:saturation minimum:500 name:MEMORY_CONTROLLER_BYP
 event:0xe8 counters:0,1,2,3 um:zero minimum:500 name:DRAM_ECC_ERRORS : ECC Errors
 event:0xee counters:0,1,2,3 um:gart minimum:500 name:GART_EVENTS : GART Events
 event:0xe5 counters:0,1,2,3 um:sizedblocks minimum:500 name:SIZED_BLOCKS : Sized Blocks
-event:0xe9 counters:0,1,2,3 um:cpiorequests minimum:500 name:CPU/IO_REQUESTS_TO_MEMORY/IO : CPU/IO Requests to Memory/IO (RevE)
+event:0xe9 counters:0,1,2,3 um:cpiorequests minimum:500 name:CPU_IO_REQUESTS_TO_MEMORY_IO : CPU/IO Requests to Memory/IO (RevE)
 event:0xea counters:0,1,2,3 um:cacheblock minimum:500 name:CACHE_BLOCK_COMMANDS : Cache Block Commands (RevE)
 event:0xeb counters:0,1,2,3 um:sizecmds minimum:500 name:SIZED_COMMANDS : Sized Commands
 event:0xec counters:0,1,2,3 um:probe minimum:500 name:PROBE_RESPONSES_AND_UPSTREAM_REQUESTS : Probe Responses and Upstream Requests
