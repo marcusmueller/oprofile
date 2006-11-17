@@ -74,9 +74,12 @@ bool get_debug_link_info(bfd * ibfd, string & filename, unsigned long & crc32)
 	cverb << vbfd
 	      << ".gnu_debuglink section has size " << debuglink_size << endl;
 	
-	bfd_get_section_contents(ibfd, sect, 
+	if (!bfd_get_section_contents(ibfd, sect, 
 				 reinterpret_cast<unsigned char *>(contents), 
-				 static_cast<file_ptr>(0), debuglink_size);
+				 static_cast<file_ptr>(0), debuglink_size)) {
+		bfd_perror("bfd_get_section_contents:get_debug:");
+		exit(2);
+	}
 	
 	/* CRC value is stored after the filename, aligned up to 4 bytes. */
 	size_t filename_len = strlen(contents);

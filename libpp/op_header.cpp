@@ -22,6 +22,8 @@
 #include "op_header.h"
 #include "op_events.h"
 #include "string_manip.h"
+#include "format_output.h"
+#include "xml_utils.h"
 
 using namespace std;
 
@@ -157,14 +159,40 @@ string const op_print_event(op_cpu cpu_type, u32 type, u32 um, u32 count)
 	return str;
 }
 
+string const op_xml_print_event(op_cpu cpu_type, u32 type, u32 um, u32 count)
+{
+	string unit_mask;
+
+	if (cpu_type == CPU_TIMER_INT || cpu_type == CPU_RTC)
+		return xml_utils::get_timer_setup((size_t)count);
+
+	struct op_event * event = op_find_event(cpu_type, type);
+	if (!event) {
+		cerr << "Could not locate event " << int(type) << endl;
+		return "";
+	}
+
+	if (cpu_type != CPU_RTC) {
+		ostringstream str_out;
+		str_out << um;
+		unit_mask = str_out.str();
+	}
+
+	return xml_utils::get_event_setup(string(event->name),
+		(size_t)count, unit_mask);
 }
 
+}
 
 string const describe_header(opd_header const & header)
 {
 	op_cpu cpu = static_cast<op_cpu>(header.cpu_type);
 
-	return op_print_event(cpu, header.ctr_event,
+	if (want_xml)
+		return op_xml_print_event(cpu, header.ctr_event,
+	                      header.ctr_um, header.ctr_count);
+	else
+		return op_print_event(cpu, header.ctr_event,
 	                      header.ctr_um, header.ctr_count);
 }
 
@@ -174,11 +202,17 @@ string const describe_cpu(opd_header const & header)
 	op_cpu cpu = static_cast<op_cpu>(header.cpu_type);
 
 	string str;
-	str += string("CPU: ") + op_get_cpu_type_str(cpu);
-	str += ", speed ";
+	if (want_xml) {
+		string cpu_name = op_get_cpu_name(cpu);
 
-	ostringstream ss;
-	ss << header.cpu_speed;
-	str += ss.str() + " MHz (estimated)";
+		str = xml_utils::get_profile_header(cpu_name, header.cpu_speed);
+	} else {
+		str += string("CPU: ") + op_get_cpu_type_str(cpu);
+		str += ", speed ";
+
+		ostringstream ss;
+		ss << header.cpu_speed;
+		str += ss.str() + " MHz (estimated)";
+	}
 	return str;
 }

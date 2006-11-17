@@ -22,6 +22,8 @@
 #include "popt_options.h"
 #include "string_filter.h"
 #include "file_manip.h"
+#include "xml_output.h"
+#include "xml_utils.h"
 #include "cverb.h"
 
 using namespace std;
@@ -47,6 +49,8 @@ namespace options {
 	bool accumulated;
 	bool reverse_sort;
 	bool global_percent;
+	bool xml;
+	string xml_options;
 }
 
 
@@ -103,6 +107,10 @@ popt::option options_array[] = {
 	popt::option(options::global_percent, "global-percent", '%',
 		     "percentage are not relative to symbol count or image "
 		     "count but total sample count"),
+
+	popt::option(options::xml, "xml", 'X',
+		     "XML output"),
+
 };
 
 
@@ -110,7 +118,18 @@ void handle_sort_option()
 {
 	if (sort.empty()) {
 		// PP:5.14 sort default to sample
-		sort.push_back("sample");
+		if (options::xml) {
+			// implicitly sort by app-name,image so that in the
+			// symbol traversal all library module symbols are grouped
+			// together with their application
+			sort.push_back("app-name");
+			sort.push_back("image");
+		} else
+			sort.push_back("sample");
+	} else if (options::xml) {
+		// don't allow any other sorting to mess up symbol traversal for XML
+		cerr << "warning: sort options ignored because they are incompatible ";
+		cerr << "with --xml";
 	}
 
 	vector<string>::const_iterator cit = sort.begin();
@@ -156,6 +175,24 @@ void check_options(bool diff)
 			do_exit = true;
 		}
 	}
+
+	if (xml) {
+		if (callgraph) {
+			cerr << "--callgraph is incompatible with --xml" << endl;
+			do_exit = true;
+		}
+
+		if (accumulated) {
+			cerr << "--accumulated is incompatible with --xml" << endl;
+			do_exit = true;
+		}
+
+		if (global_percent) {
+			cerr << "--global_percent is incompatible with --xml" << endl;
+			do_exit = true;
+		}
+	}
+
 
 	if (details && diff) {
 		cerr << "differential profiles are incompatible with --details" << endl;
@@ -252,6 +289,25 @@ void handle_options(options::spec const & spec)
 	if (details) {
 		symbols = true;
 		show_address = true;
+	}
+
+	if (options::xml) {
+		if (spec.common.size() != 0)
+			xml_utils::add_option(SESSION, spec.common);
+		if (debug_info)
+			xml_utils::add_option(DEBUG_INFO, true);
+		if (details)
+			xml_utils::add_option(DETAILS, true);
+		if (!image_path.empty())
+			xml_utils::add_option(IMAGE_PATH, image_path);
+		if (!mergespec.empty())
+			xml_utils::add_option(MERGE, mergespec);
+		if (exclude_dependent)
+			xml_utils::add_option(EXCLUDE_DEPENDENT, true);
+		if (!exclude_symbols.empty())
+			xml_utils::add_option(EXCLUDE_SYMBOLS, exclude_symbols);
+		if (!include_symbols.empty())
+			xml_utils::add_option(INCLUDE_SYMBOLS, include_symbols);
 	}
 
 	handle_sort_option();

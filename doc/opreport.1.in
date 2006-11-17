@@ -114,6 +114,10 @@ Give verbose debugging output.
 .TP
 .BI "--version / -v"
 Show version.
+.br
+.TP
+.BI "--xml / -X"
+Generate XML output.
 
 .SH ENVIRONMENT
 No special environment variables are recognised by opreport.

@@ -20,12 +20,16 @@
 
 #include "format_flags.h"
 #include "symbol.h"
+#include "string_filter.h"
+#include "xml_output.h"
 
 class symbol_entry;
 class sample_entry;
 class callgraph_container;
 class profile_container;
 class diff_container;
+struct profile_classes;
+extern profile_classes classes;
 
 namespace format_output {
 
@@ -110,7 +114,8 @@ protected:
 	/// decribe one field of the colummned output.
 	struct field_description {
 		field_description() {}
-		field_description(std::size_t w, std::string h, fct_format f)
+		field_description(std::size_t w, std::string h,
+				  fct_format f)
 			: width(w), header_name(h), formatter(f) {}
  
 		std::size_t width;
@@ -217,6 +222,56 @@ private:
 
 };
 
+
+/// class to output in XML format
+class xml_formatter : public formatter {
+public:
+	/// build a ready to use formatter
+	xml_formatter(profile_container const & profile,
+		symbol_collection & symbols);
+
+	// output body of XML output
+	void output(std::ostream & out);
+
+	/** output one symbol symb to out according to the output format
+	 * specifier previously set by call(s) to add_format() */
+	void output_symbol(std::ostream & out,
+		symbol_collection::const_iterator const it,
+		size_t lo, size_t hi);
+
+	/// output details for the symbol
+	std::string output_symbol_details(symbol_entry const * symb,
+		size_t & detail_index, size_t const lo, size_t const hi);
+
+	/// set the output_details boolean
+	void show_details(bool);
+
+private:
+	/// container we work from
+	profile_container const & profile;
+ 
+	// ordered collection of symbols associated with this profile
+	symbol_collection & symbols;
+
+	/// true if we need to show details for each symbols
+	bool need_details;
+
+	// output SymbolData XML elements
+	void output_symbol_data(std::ostream & out);
+
+	// count of DetailData items output so far
+	size_t detail_count;
+
+	void output_sample_data(std::ostream & out, symbol_entry const & symb,
+			   sample_entry const & sample, size_t count);
+
+	/// output attribute in XML
+	void output_attribute(std::ostream & out, field_datum const & datum,
+			      format_flags fl, tag_t tag);
+};
+
+
 } // namespace format_output 
+
 
 #endif /* !FORMAT_OUTPUT_H */

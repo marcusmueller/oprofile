@@ -292,6 +292,22 @@ bfd_vma op_bfd::offset_to_pc(bfd_vma offset) const
 	return 0;
 }
 
+bool op_bfd::
+get_symbol_contents(symbol_index_t sym_index, unsigned char * contents) const
+{
+	op_bfd_symbol const & bfd_sym = syms[sym_index];
+	size_t size = bfd_sym.size();
+	string const name = bfd_sym.name();
+	if (name.size() == 0 || name[0] == '?' || !ibfd.valid())
+		return false;
+
+	if (!bfd_get_section_contents(ibfd.abfd, bfd_sym.symbol()->section, 
+				 contents, 
+				 static_cast<file_ptr>(bfd_sym.value()), size)) {
+		return false;
+	}
+	return true;
+}
 
 bool op_bfd::has_debug_info() const
 {

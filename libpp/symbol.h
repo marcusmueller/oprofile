@@ -63,6 +63,8 @@ struct symbol_entry {
 	/// session did not separate samples for shared libs or if image_name
 	/// is not a shared lib
 	image_name_id app_name;
+	// index into the op_bfd symbol table
+	size_t sym_index;
 	/// file location, vma and cumulated samples count for this symbol
 	sample_entry sample;
 	/// name of symbol
@@ -128,6 +130,9 @@ struct diff_symbol : public symbol_entry  {
 
 /// a collection of diffed symbols
 typedef std::vector<diff_symbol> diff_collection;
+
+bool has_sample_counts(count_array_t const & counts, size_t lo, size_t hi);
+std::string const & get_image_name(image_name_id id, bool lf);
 
 
 #endif /* !SYMBOL_H */

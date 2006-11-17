@@ -21,6 +21,8 @@
 #include "op_exception.h"
 
 #include "arrange_profiles.h"
+#include "format_output.h"
+#include "xml_utils.h"
 #include "parse_filename.h"
 #include "locate_images.h"
 
@@ -46,6 +48,7 @@ int numeric_compare(string const & lhs, string const & rhs)
 	return 1;
 }
 
+
 } // anonymous namespace
 
 
@@ -55,10 +58,19 @@ bool operator<(profile_class const & lhs,
 {
 	profile_template const & lt = lhs.ptemplate;
 	profile_template const & rt = rhs.ptemplate;
+	int comp;
 
-	int comp = numeric_compare(lt.cpu, rt.cpu);
-	if (comp)
-		return comp < 0;
+	// The profile classes are used to traverse the sample data
+	// arrays.  We create XML elements for <process> and <thread>
+	// that contain the sample data that can then be divided amongst
+	// CPU, event, mask axes so it is more convenient to have the
+	// process and thread classes be the outermost nesting level of
+	// the sample data arrays
+	if (!want_xml) {
+		comp = numeric_compare(lt.cpu, rt.cpu);
+		if (comp)
+			return comp < 0;
+	}
 
 	comp = numeric_compare(lt.tgid, rt.tgid);
 	if (comp)
@@ -72,9 +84,18 @@ bool operator<(profile_class const & lhs,
 	if (comp)
 		return comp < 0;
 
-	if (lt.event == rt.event)
-		return lt.count < rt.count;
-	return lt.event < rt.event;
+	if (want_xml) {
+		if (lt.event != rt.event)
+			return lt.event < rt.event;
+		if (lt.count != rt.count)
+			return lt.count < rt.count;
+
+		return numeric_compare(lt.cpu, rt.cpu) < 0;
+	} else {
+		if (lt.event == rt.event)
+			return lt.count < rt.count;
+		return lt.event < rt.event;
+	}
 }
 
 namespace {
@@ -130,8 +151,26 @@ bool profile_classes::matches(profile_classes const & classes)
 	return true;
 }
 
-
 namespace {
+
+typedef growable_vector<string> event_array_t;
+typedef growable_vector<string>::size_type event_index_t;
+
+bool new_event_index(string event, event_array_t & events, event_index_t & index)
+{
+	event_index_t sz = events.size();
+	for (event_index_t i = 0; i != sz; ++i) {
+		if (events[i] == event) {
+			index = i;
+			return false;
+		}
+	}
+
+	index = sz;
+	events[sz] = event;
+	return true;
+}
+
 
 /// We have more than one axis of classification, tell the user.
 void report_error(profile_classes const & classes, axis_types newaxis)
@@ -376,6 +415,49 @@ void identify_classes(profile_classes & classes,
 	}
 }
 
+void identify_xml_classes(profile_classes & classes, merge_option const & merge_by)
+{
+	opd_header header = get_header(classes.v[0], merge_by);
+
+	vector<profile_class>::iterator it = classes.v.begin();
+	vector<profile_class>::iterator end = classes.v.end();
+
+	event_index_t event_num;
+	event_index_t event_max = 0;
+	event_array_t event_array;
+	size_t nr_cpus = 0;
+	bool has_nonzero_mask = false;
+
+	ostringstream event_setup;
+
+	// fill in XML identifying each event, and replace event name by event_num
+	for (; it != end; ++it) {
+		string mask = it->ptemplate.unitmask;
+		if (mask.find_first_of("x123456789abcdefABCDEF") != string::npos)
+			has_nonzero_mask = true;
+		if (new_event_index(it->ptemplate.event, event_array, event_num)) {
+			// replace it->ptemplate.event with the event_num string
+			// this is the first time we've seen this event
+			header = get_header(*it, merge_by);
+			event_setup << describe_header(header);
+			event_max = event_num;
+		}
+		if (it->ptemplate.cpu != "all") {
+			size_t cpu = atoi(it->ptemplate.cpu.c_str());
+			if (cpu > nr_cpus) nr_cpus = cpu;
+		}
+
+		ostringstream str;
+		str << event_num;
+		it->ptemplate.event = str.str();
+	}
+	xml_utils::set_nr_cpus(++nr_cpus);
+	xml_utils::set_nr_events(event_max+1);
+	if (has_nonzero_mask)
+		xml_utils::set_has_nonzero_masks();
+	classes.event = event_setup.str();
+	classes.cpuinfo = describe_cpu(header);
+}
 
 /// construct a class template from a profile
 profile_template const
@@ -593,8 +675,10 @@ arrange_profiles(list<string> const & files, merge_option const & merge_by)
 	// sort by template for nicely ordered columns
 	stable_sort(classes.v.begin(), classes.v.end());
 
-	// name and check
-	identify_classes(classes, merge_by);
+	if (want_xml)
+		identify_xml_classes(classes, merge_by);
+	else
+		identify_classes(classes, merge_by);
 
 	return classes;
 }

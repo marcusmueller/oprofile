@@ -32,6 +32,7 @@ list<string> sample_files;
 
 namespace options {
 	string archive_path;
+	demangle_type demangle = dmt_normal;
 	bool exclude_dependent;
 	merge_option merge_by;
 	string outdirectory;

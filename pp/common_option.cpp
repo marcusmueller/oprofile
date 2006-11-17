@@ -28,20 +28,21 @@ namespace options {
 	double threshold = 0.0;
 	string threshold_opt;
 	string session_dir = OP_SESSION_DIR_DEFAULT;
+	string command_options;
+	vector<string> image_path;
 }
 
 namespace {
 
-vector<string> image_path;
 vector<string> verbose_strings;
 
 popt::option common_options_array[] = {
 	popt::option(verbose_strings, "verbose", 'V',
 		     // FIXME help string for verbose level
-		     "verbose output", "all,debug,bfd,level1,sfile,stats"),
+		     "verbose output", "all,debug,bfd,level1,sfile,stats,xml"),
 	popt::option(options::session_dir, "session-dir", '\0',
 		     "specify session path to hold samples database and session data (" OP_SESSION_DIR_DEFAULT ")", "path"),
-	popt::option(image_path, "image-path", 'p',
+	popt::option(options::image_path, "image-path", 'p',
 		     "comma-separated path to search missing binaries", "path"),
 };
 
@@ -175,8 +176,8 @@ options::spec get_options(int argc, char const * argv[])
 	}
 
 	bool ok = true;
-	vector<string>::const_iterator it;
-	for (it = image_path.begin(); it != image_path.end(); ++it) {
+	vector<string>::const_iterator it = options::image_path.begin();
+	for ( ; it != options::image_path.end(); ++it) {
 		if (!is_directory(*it)) {
 			cerr << *it << " isn't a valid directory\n";
 			ok = false;
@@ -186,7 +187,13 @@ options::spec get_options(int argc, char const * argv[])
 	if (!ok)
 		throw op_runtime_error("invalid --image-path= options");
 
-	options::extra_found_images.populate(image_path);
+	options::extra_found_images.populate(options::image_path);
+
+	// XML generator needs command line options for its header
+	ostringstream str;
+	for (int i = 1; i < argc; ++i)
+		str << argv[i] << " ";
+	options::command_options = str.str();
 
 	return parse_spec(non_options);
 }

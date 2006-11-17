@@ -76,6 +76,8 @@ private:
 	bool symb_hidden;
 	/// whether other symbols can override it
 	bool symb_weak;
+	/// code bytes corresponding to symbol -- used for XML generation
+	std::string symb_bytes;
 };
 
 /**
@@ -176,6 +178,9 @@ public:
 
 	/// return true if binary contain some debug information
 	bool has_debug_info() const;
+
+	bool get_symbol_contents(symbol_index_t sym_index,
+		unsigned char * contents) const;
 
 private:
 	/// temporary container type for getting symbols

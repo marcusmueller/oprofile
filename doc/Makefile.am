@@ -19,7 +19,7 @@ man_MANS = \
 	opimport.1
 
 htmldir = $(prefix)/share/doc/oprofile
-dist_html_DATA = oprofile.html internals.html
+dist_html_DATA = oprofile.html internals.html opreport.xsd
 
 if have_xsltproc
 

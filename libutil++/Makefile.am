@@ -34,4 +34,6 @@ libutil___a_SOURCES = \
 	unique_storage.h \
 	utility.h \
 	cached_value.h \
-	comma_list.h
+	comma_list.h \
+	xml_output.h \
+	xml_output.cpp

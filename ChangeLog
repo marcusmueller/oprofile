@@ -1,3 +1,36 @@
+2006-11-17  Dave Nomura  <dcnltc@us.ibm.com>
+
+	* doc/Makefile.am:
+	* doc/opreport.1.in:
+	* doc/opreport.xsd:
+	* doc/oprofile.xml:
+	* libop/op_alloc_counter.c:
+	* libpp/Makefile.am:
+	* libpp/arrange_profiles.cpp:
+	* libpp/format_output.cpp:
+	* libpp/format_output.h:
+	* libpp/op_header.cpp:
+	* libpp/profile_container.cpp:
+	* libpp/symbol.cpp:
+	* libpp/symbol.h:
+	* libpp/xml_utils.cpp:
+	* libpp/xml_utils.h:
+	* libutil++/Makefile.am:
+	* libutil++/bfd_support.cpp:
+	* libutil++/cverb.cpp:
+	* libutil++/cverb.h:
+	* libutil++/op_bfd.cpp:
+	* libutil++/op_bfd.h:
+	* libutil++/xml_output.cpp:
+	* libutil++/xml_output.h:
+	* pp/common_option.cpp:
+	* pp/common_option.h:
+	* pp/oparchive_options.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp:
+	* pp/opreport_options.h: XML output support.
+
 2006-8-03  Jeremiah Lott  <jeremiah.lott@timesys.com>
 
 	* libop/op_alloc_counter.c: allocate_counter(...) was returning

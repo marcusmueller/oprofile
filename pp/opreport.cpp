@@ -30,6 +30,7 @@
 #include "diff_container.h"
 #include "symbol_sort.h"
 #include "format_output.h"
+#include "xml_utils.h"
 #include "image_errors.h"
 
 using namespace std;
@@ -372,22 +373,41 @@ void output_symbols(profile_container const & pc, bool multiple_apps)
 	symbol_collection symbols = pc.select_symbols(choice);
 	options::sort_by.sort(symbols, options::reverse_sort,
 	                      options::long_filenames);
+	format_output::formatter * out;
+	format_output::xml_formatter * xml_out = 0;
+	format_output::opreport_formatter * text_out = 0;
 
-	format_output::opreport_formatter out(pc);
+	if (options::xml) {
+		xml_out = new format_output::xml_formatter(pc, symbols);
+		xml_out->show_details(options::details);
+		out = xml_out;
+		// for XML always output long filenames
+		out->show_long_filenames(true);
+	} else {
+		text_out = new format_output::opreport_formatter(pc);
+		text_out->show_details(options::details);
+		out = text_out;
+		out->show_long_filenames(options::long_filenames);
+	}
 
-	out.set_nr_classes(nr_classes);
-	out.show_details(options::details);
-	out.show_long_filenames(options::long_filenames);
-	out.show_header(options::show_header);
-	out.vma_format_64bit(choice.hints & cf_64bit_vma);
-	out.show_global_percent(options::global_percent);
+	out->set_nr_classes(nr_classes);
+	out->show_header(options::show_header);
+	out->vma_format_64bit(choice.hints & cf_64bit_vma);
+	out->show_global_percent(options::global_percent);
 
 	format_flags flags = get_format_flags(choice.hints);
 	if (multiple_apps)
 		flags = format_flags(flags | ff_app_name);
 
-	out.add_format(flags);
-	out.output(cout, symbols);
+	out->add_format(flags);
+
+	if (options::xml) {
+		xml_support = new xml_utils(xml_out, symbols, nr_classes,
+			&options::symbol_filter, options::archive_path);
+		xml_out->output(cout);
+	} else {
+		text_out->output(cout, symbols);
+	}
 }
 
 
@@ -449,11 +469,13 @@ void output_cg_symbols(callgraph_container const & cg, bool multiple_apps)
 
 int opreport(options::spec const & spec)
 {
+	want_xml = options::xml;
+
 	handle_options(spec);
 
 	nr_classes = classes.v.size();
 
-	if (!options::symbols) {
+	if (!options::symbols && !options::xml) {
 		summary_container summaries(classes.v);
 		output_header();
 		output_summaries(summaries);
@@ -473,7 +495,12 @@ int opreport(options::spec const & spec)
 
 	report_image_errors(iprofiles);
 
-	output_header();
+	if (options::xml) {
+		xml_utils::output_xml_header(options::command_options,
+		                             classes.cpuinfo, classes.event);
+	} else {
+		output_header();
+	}
 
 	if (classes2.v.size()) {
 		for (size_t i = 0; i < classes2.v.size(); ++i) {

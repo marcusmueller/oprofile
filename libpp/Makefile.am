@@ -49,4 +49,6 @@ libpp_a_SOURCES = \
 	symbol_functors.cpp \
 	symbol_functors.h \
 	symbol_sort.cpp \
-	symbol_sort.h
+	symbol_sort.h \
+	xml_utils.h \
+	xml_utils.cpp

@@ -78,5 +78,6 @@ extern verbose vdebug;  /**< named "debug"  */
 extern verbose vstats;  /**< named "stats"  */
 // all sample filename manipulation.
 extern verbose vsfile;  /**< named "sfile" */
+extern verbose vxml;  /**< named "xml" */
 
 #endif /* !CVERB_H */

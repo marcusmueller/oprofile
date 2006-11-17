@@ -22,6 +22,7 @@
 
 using namespace std;
 
+profile_classes classes;
 inverted_profile image_profile;
 
 namespace options {

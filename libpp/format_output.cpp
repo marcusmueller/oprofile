@@ -14,27 +14,28 @@
 #define _GNU_SOURCE
 #endif
 
+#include <cassert>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
 #include <cmath>
 
 #include "string_manip.h"
+#include "string_filter.h"
 
 #include "format_output.h"
 #include "profile_container.h"
 #include "callgraph_container.h"
 #include "diff_container.h"
+#include "arrange_profiles.h"
+#include "xml_output.h"
+#include "xml_utils.h"
+#include "cverb.h"
 
 using namespace std;
 
-
 namespace {
 
-string const & get_image_name(image_name_id id, bool lf)
-{
-	return lf ? image_names.name(id) : image_names.basename(id);
-}
 
 string const get_linenr_info(file_location const floc, bool lf)
 {
@@ -44,11 +45,10 @@ string const get_linenr_info(file_location const floc, bool lf)
 		? debug_names.name(floc.filename)
 		: debug_names.basename(floc.filename);
 
-	if (!filename.empty()) {
+	if (!filename.empty())
 		out << filename << ":" << floc.linenr;
-	} else {
+	else 
 		out << "(no location information)";
-	}
 
 	return out.str();
 }
@@ -71,11 +71,25 @@ string get_percent(count_type dividend, count_type divisor)
 	                     percent_fract_width);
 }
 
+bool extract_linenr_info(string const & info, string & file, size_t & line)
+{
+	line = 0;
+	file = "";
+	string::size_type colon_pos = info.find(":");
+
+	if (colon_pos == string::npos)
+		return false;
+
+	file = info.substr(0, colon_pos);
+	istringstream is_info(info.substr(colon_pos+1));
+	is_info >> line;
+	return true;
+}
+
+
 } // anonymous namespace
 
-
 namespace format_output {
-
 
 formatter::formatter()
 	:
@@ -410,7 +424,7 @@ do_output(ostream & out, symbol_entry const & symb, sample_entry const & sample,
 
 	out << "\n";
 }
- 
+
 
 opreport_formatter::opreport_formatter(profile_container const & p)
 	:
@@ -538,6 +552,278 @@ void diff_formatter::output(ostream & out, diff_collection const & syms)
 	diff_collection::const_iterator end = syms.end();
 	for (; it != end; ++it)
 		do_output(out, *it, it->sample, counts, it->diffs);
+}
+
+// local variables used in generation of XML
+// buffer details for output later
+ostringstream bytes_out;
+
+// module+symbol table for detecting duplicate symbols
+map<string, size_t> symbol_data_table;
+size_t symbol_data_index = 0;
+
+
+class symbol_details_t {
+public:
+	symbol_details_t() { size = index = 0; id = -1; }
+	int id;
+	size_t size;
+	size_t index;
+	string details;
+};
+
+typedef growable_vector<symbol_details_t> symbol_details_array_t;
+symbol_details_array_t symbol_details;
+size_t detail_table_index = 0;
+
+xml_formatter::
+xml_formatter(profile_container const & p,
+		symbol_collection & s)
+	:
+	profile(p),
+	symbols(s),
+	need_details(false)
+{
+	counts.total = profile.samples_count();
+}
+
+
+void xml_formatter::
+show_details(bool on_off)
+{
+	need_details = on_off;
+}
+
+
+void xml_formatter::output(ostream & out)
+{
+	xml_support->build_subclasses(out);
+
+	xml_support->output_program_structure(out);
+	output_symbol_data(out);
+	if (need_details) {
+		out << open_element(DETAIL_TABLE);
+		for (size_t i = 0; i < symbol_details.size(); ++i) {
+			int id = symbol_details[i].id;
+
+			if (id >= 0) {
+				out << open_element(SYMBOL_DETAILS, true);
+				out << init_attr(TABLE_ID, (size_t)id);
+				out << close_element(NONE, true);
+				out << symbol_details[i].details;
+				out << close_element(SYMBOL_DETAILS);
+			}
+		}
+		out << close_element(DETAIL_TABLE);
+
+		// output bytesTable
+		out << open_element(BYTES_TABLE);
+		out << bytes_out.str();
+		out << close_element(BYTES_TABLE);
+	}
+
+	out << close_element(PROFILE);
+}
+
+
+void xml_formatter::output_symbol_data(ostream & out)
+{
+	sym_iterator it = symbols.begin();
+	sym_iterator end = symbols.end();
+
+	out << open_element(SYMBOL_TABLE);
+	for ( ; it != end; ++it) {
+		symbol_entry const * symb = *it;
+		string const name = symbol_names.name(symb->name);
+		assert(name.size() > 0);
+
+		string const image = get_image_name(symb->image_name, true);
+		string const qname = image + ":" + name;
+		map<string, size_t>::iterator sd_it = symbol_data_table.find(qname);
+		size_t si = xml_support->get_symbol_index(it);
+
+		if (sd_it->second == si) {
+			// first time we've seen this symbol
+			out << open_element(SYMBOL_DATA, true);
+			out << init_attr(TABLE_ID, si);
+
+			field_datum datum(*symb, symb->sample, 0, counts);
+
+			output_attribute(out, datum, ff_symb_name, NAME);
+
+			if (flags & ff_linenr_info) {
+				output_attribute(out, datum, ff_linenr_info, SOURCE_FILE);
+				output_attribute(out, datum, ff_linenr_info, SOURCE_LINE);
+			}
+
+			if (name.size() > 0 && name[0] != '?') {
+				output_attribute(out, datum, ff_vma, STARTING_ADDR);
+
+				if (need_details)
+					xml_support->output_symbol_bytes(bytes_out, symb, si);
+			}
+			out << close_element();
+		}
+	}
+	out << close_element(SYMBOL_TABLE);
+}
+
+string  xml_formatter::
+output_symbol_details(symbol_entry const * symb,
+    size_t & detail_index, size_t const lo, size_t const hi)
+{
+	if (!has_sample_counts(symb->sample.counts, lo, hi))
+		return "";
+
+	sample_container::samples_iterator it = profile.begin(symb);
+	sample_container::samples_iterator end = profile.end(symb);
+
+	ostringstream str;
+	for (; it != end; ++it) {
+		counts_t c;
+
+		for (size_t p = lo; p <= hi; ++p)  {
+			size_t count = it->second.counts[p];
+
+			if (count == 0) continue;
+
+			str << open_element(DETAIL_DATA, true);
+			str << init_attr(TABLE_ID, detail_index++);
+
+			// first output the vma field
+			field_datum datum(*symb, it->second, 0, c, 0.0);
+			output_attribute(str, datum, ff_vma, VMA);
+			if (ff_linenr_info) {
+				string sym_file;
+				size_t sym_line;
+				string samp_file;
+				size_t samp_line;
+				string sym_info = get_linenr_info(symb->sample.file_loc, true);
+				string samp_info = get_linenr_info(it->second.file_loc, true);
+
+				if (extract_linenr_info(samp_info, samp_file, samp_line)) {
+					if (extract_linenr_info(sym_info, sym_file, sym_line)) {
+						// only output source_file if it is different than the symbol's 
+						// source file.  this can happen with inlined functions in
+						// #included header files
+						if (sym_file != samp_file)
+							str << init_attr(SOURCE_FILE, samp_file);
+					}
+					str << init_attr(SOURCE_LINE, samp_line);
+				}
+			}
+			str << close_element(NONE, true);
+
+			// output buffered sample data
+			output_sample_data(str, *symb, it->second, p);
+
+			str << close_element(DETAIL_DATA);
+		}
+	}
+	return str.str();
+}
+
+void xml_formatter::
+output_symbol(ostream & out,
+	symbol_collection::const_iterator const it, size_t lo, size_t hi)
+{
+	symbol_entry const * symb = *it;
+	ostringstream str;
+
+	// output symbol's summary data for each profile class
+	bool got_samples = false;
+
+	for (size_t p = lo; p <= hi; ++p) {
+		got_samples |= xml_support->output_summary_data(str,
+		    symb->sample.counts, p);
+	}
+
+	if (!got_samples)
+		return;
+
+	cverb << vxml << " <!-- symbol_ref=" << symbol_names.name(symb->name) << " -->" << endl;
+
+	out << open_element(SYMBOL, true);
+
+	string const name = symbol_names.name(symb->name);
+	assert(name.size() > 0);
+	
+	string const image = get_image_name(symb->image_name, true);
+	string const qname = image + ":" + name;
+	map<string, size_t>::iterator sd_it = symbol_data_table.find(qname);
+	size_t si = xml_support->get_symbol_index(it);
+
+	// if this is the first time we've seen this symbol, save it's index
+	if (sd_it == symbol_data_table.end())
+		symbol_data_table[qname] = si;
+	else
+		si = sd_it->second;
+
+	out << init_attr(ID_REF, si);
+
+	if (need_details) {
+		ostringstream details;
+		symbol_details_t & sd = symbol_details[si];
+		size_t const detail_lo = sd.index;
+
+		string detail_str = output_symbol_details(symb, sd.index, lo, hi);
+
+		if (detail_str.size() > 0) {
+			if (sd.id < 0)
+				sd.id = si;
+			details << detail_str;
+		}
+
+		if (sd.index > detail_lo) {
+			sd.details = sd.details + details.str();
+			out << init_attr(DETAIL_LO, detail_lo);
+			out << init_attr(DETAIL_HI, sd.index-1);
+		}
+	}
+	out << close_element(NONE, true);
+	// output summary
+	out << str.str();
+	out << close_element(SYMBOL);
+}
+
+
+void xml_formatter::
+output_sample_data(ostream & out, symbol_entry const & symb,
+                   sample_entry const & sample, size_t pclass)
+{
+	counts_t c;
+	field_datum datum(symb, sample, 0, c, 0.0);
+
+	out << open_element(COUNT, true);
+	out << init_attr(CLASS, classes.v[pclass].name);
+	out << close_element(NONE, true);
+	out << sample.counts[pclass];
+	out << close_element(COUNT);
+}
+
+
+void xml_formatter::
+output_attribute(ostream & out, field_datum const & datum,
+                 format_flags fl, tag_t tag)
+{
+	field_description const & field(format_map[fl]);
+
+	string str = (this->*field.formatter)(datum);
+
+	if (!str.empty()) {
+		if (fl == ff_linenr_info && (tag == SOURCE_LINE || tag == SOURCE_FILE)) {
+			string file;
+			size_t line;
+
+			if (extract_linenr_info(str, file, line)) {
+				if (tag == SOURCE_LINE)
+					out << init_attr(tag, line);
+				else
+					out << init_attr(tag, file);
+			}
+		} else
+			out << " " << init_attr(tag, str);
+	}
 }
 
 

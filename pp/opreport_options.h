@@ -41,6 +41,8 @@ namespace options {
 	extern string_filter symbol_filter;
 	extern bool show_header;
 	extern bool accumulated;
+	extern bool xml;
+	extern std::string xml_options;
 }
 
 /// All the chosen sample files.

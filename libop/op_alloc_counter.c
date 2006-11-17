@@ -130,7 +130,7 @@ allocate_counter(counter_arc_head const * ctr_arc, int max_depth, int depth,
 		counter_arc const * arc = list_entry(pos, counter_arc, next);
 
 		if (allocated_mask & (1 << arc->counter))
-			continue;
+			return 0;
 
 		counter_map[depth] = arc->counter;
 

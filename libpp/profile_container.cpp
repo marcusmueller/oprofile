@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 #include <numeric>
 
@@ -94,6 +95,7 @@ void profile_container::add(profile_t const & profile,
 		symb_entry.size = end - start;
 
 		symb_entry.name = symbol_names.create(abfd.syms[i].name());
+		symb_entry.sym_index = i;
 
 		symb_entry.sample.file_loc.linenr = 0;
 		if (debug_info) {
