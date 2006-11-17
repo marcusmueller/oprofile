@@ -1,6 +1,7 @@
-2006-11-17  Will Cohen  <wcohen@redhat.com>
+2006-8-03  Jeremiah Lott  <jeremiah.lott@timesys.com>
 
-	* libop/op_alloc_counter.c: allocate_counter() continue search.
+	* libop/op_alloc_counter.c: allocate_counter(...) was returning
+	  prior to considering all possible allocation strategies.
 
 2006-11-15  Adam Bordelon  <me@cs.rice.edu>
 
