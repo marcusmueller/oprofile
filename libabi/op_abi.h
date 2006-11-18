@@ -16,7 +16,8 @@
 
 struct op_abi_entry {
 	char const * name;
-	int offset;		/// offset or size of the named entry
+	/// offset or size of the named entry
+	int offset;
 };
 
 #ifdef __cplusplus

@@ -24,10 +24,6 @@ extern "C" {
  */
 void init_op_config_dirs(char const * session_dir);
 
-#if defined(__cplusplus)
-} /* extern "C" */
-#endif
-
 #define OP_SESSION_DIR_DEFAULT "/var/lib/oprofile/"
 
 /* 
@@ -51,5 +47,9 @@ extern char op_dump_status[];
 
 #define OP_MIN_CPU_BUF_SIZE 2048
 #define OP_MAX_CPU_BUF_SIZE 131072
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* OP_CONFIG_H */

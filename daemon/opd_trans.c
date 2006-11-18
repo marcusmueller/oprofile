@@ -251,7 +251,7 @@ static void code_trace_begin(struct transient * trans)
 	trans->tracing = TRACING_START;
 }
 
-static void code_xen_enter(struct transient *trans)
+static void code_xen_enter(struct transient * trans)
 {
 	verbprintf(vmisc, "XEN_ENTER_SWITCH to xen\n");
 	trans->in_kernel = 1;

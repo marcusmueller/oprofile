@@ -48,7 +48,7 @@ char * op_mangle_filename(struct mangle_values const * values)
 	char const * cg_image_name = values->cg_image_name;
 
 	len = strlen(op_samples_current_dir) + strlen(dep_name) + 1
-	             + strlen(values->event_name) + 1 + strlen(image_name) + 1;
+		+ strlen(values->event_name) + 1 + strlen(image_name) + 1;
 
 	if (values->flags & MANGLE_CALLGRAPH)
 		len += strlen(cg_image_name) + 1;

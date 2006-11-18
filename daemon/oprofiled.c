@@ -419,7 +419,7 @@ static void opd_options(int argc, char const * argv[])
 	if (!xenimage || !strcmp("", xenimage)) {
 		no_xen = 1;
 	} else {
- 		no_xen = 0;
+		no_xen = 0;
 
 		/* canonicalise xen image filename. */
 		tmp = xmalloc(PATH_MAX);

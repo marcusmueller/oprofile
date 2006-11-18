@@ -536,7 +536,7 @@ void sfile_clear_kernel(void)
 }
 
 
-void sfile_clear_anon(struct anon_mapping *anon)
+void sfile_clear_anon(struct anon_mapping * anon)
 {
 	for_each_sfile(is_sfile_anon, anon);
 }
