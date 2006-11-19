@@ -1,3 +1,7 @@
+2006-11-19  Maynard Johnson <maynardj@us.ibm.com>
+
+	* doc/oprofile.xml:  Document platforms where callgraph is supported
+
 2006-11-17  Dave Nomura  <dcnltc@us.ibm.com>
 
 	* doc/Makefile.am:

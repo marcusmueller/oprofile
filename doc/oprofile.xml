@@ -620,8 +620,15 @@ is required. These settings are stored in <filename>~/.oprofile/daemonrc</filena
 		<term><option>--callgraph=</option>#depth</term>
 		<listitem><para>
 		Enable call-graph sample collection with a maximum depth. Use 0 to disable
-		callgraph profiling. Currently this requires a recent
-		2.6 kernel, and x86.
+		callgraph profiling.  NOTE: Callgraph support is available on a limited
+		number of platforms at this time; for example:
+		<para>
+		<itemizedlist>
+		<listitem><para>x86 with recent 2.6 kernel</para></listitem>
+		<listitem><para>ARM with recent 2.6 kernel</para></listitem>
+		<listitem><para>PowerPC with 2.6.17 kernel</para></listitem>
+		</itemizedlist>
+		</para>
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
