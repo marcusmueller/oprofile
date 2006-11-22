@@ -1,3 +1,12 @@
+2006-11-22  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_alloc_counter.c: reapply 2006-8-03  Jeremiah Lott patch
+	  which was accidentally reverted, as a sideeffect this patch change
+	  counter allocation order. It can't hurt since our storage don't
+	  take care about counter number.
+	* libop/tests/alloc_counter_tests.c: add a test case for this patch.
+	  Take care about counter allocation order change.
+
 2006-11-19  Maynard Johnson <maynardj@us.ibm.com>
 
 	* doc/oprofile.xml:  Document platforms where callgraph is supported

@@ -105,16 +105,27 @@ static char const * const events_p4_2[] = {
 	NULL
 };
 
+static char const * const events_mips_34k[] = {
+	/* fail_to_alloc_counter: w/o 2006-8-03  Jeremiah Lott patch, see
+	 * ChangeLog */
+	"INSTRUCTIONS:500:0:1:1",
+	"BRANCH_MISPREDICTS:500:0:1:1",
+	"BRANCH_INSNS_LAUNCHED:500:0:1:1",
+	"L2_MISSES:500:0:1:1",
+	NULL
+};
+
 static struct allocated_counter const tests[] = {
 	{ CPU_AXP_EV4, events_alpha_ev4_1, { 0 }, no_failure },
 	{ CPU_AXP_EV4, events_alpha_ev4_2, { -1 }, fail_to_find_event },
 	{ CPU_PPRO, events_ppro_1, { 0 }, no_failure },
-	{ CPU_PPRO, events_ppro_2, { 1, 0 }, no_failure },
-	{ CPU_PPRO, events_ppro_3, { 1, 0 }, fail_to_alloc_counter },
+	{ CPU_PPRO, events_ppro_2, { 0, 1 }, no_failure },
+	{ CPU_PPRO, events_ppro_3, { -1 }, fail_to_alloc_counter },
 	{ CPU_PPRO, events_ppro_4, { 0, 1 }, no_failure },
 	{ CPU_PPRO, events_ppro_5, { 1, 0 }, no_failure },
-	{ CPU_P4, events_p4_1, { 7, 3, 4, 0, 6, 2, 5, 1 }, no_failure },
+	{ CPU_P4, events_p4_1, { 3, 7, 0, 4, 2, 6, 1, 5 }, no_failure },
 	{ CPU_P4, events_p4_2, { -1 }, fail_to_alloc_counter },
+	{ CPU_MIPS_34K, events_mips_34k, { 1, 0, 2, 3 }, no_failure },
 	{ CPU_NO_GOOD, 0, { 0 }, 0 }
 };
 
