@@ -1,3 +1,17 @@
+2006-11-24  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml:
+	* doc/oprofile.1.in: warn about braces parsing in differential
+	  mode.
+
+	* doc/opreport.1.in:
+	* doc/oparchive.1.in:
+	* doc/opannotate.1.in:
+	* doc/opgprof.1.in: point explicitly to oprofile(1)
+
+	* pp/opreport_options.cpp: --xml is incompatible with
+	  differential profiles.
+
 2006-11-22  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_alloc_counter.c: reapply 2006-8-03  Jeremiah Lott patch

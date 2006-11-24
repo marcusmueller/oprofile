@@ -13,7 +13,7 @@ opgprof \- produce gprof-format profile data
 
 .B opgprof
 outputs gprof-format profile data for a given binary image,
-from an OProfile session.
+from an OProfile session. See oprofile(1) for how to write profile specifications.
 
 .SH OPTIONS
 .TP

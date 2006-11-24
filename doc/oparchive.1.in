@@ -16,7 +16,8 @@ oparchive \- produce archive of oprofile data for offline analysis
 .B oparchive
 generates a directory populated with executable, debug, and oprofile sample
 files. This directory can be move to another machine via tar and analyzed
-without further use of the data collection machine.
+without further use of the data collection machine. See oprofile(1) for how
+to write profile specifications.
 
 .SH OPTIONS
 .TP

@@ -13,7 +13,7 @@ opreport \- produce symbol or binary image summaries
 
 .B opreport
 outputs binary image summaries, or per-symbol data, from OProfile profiling
-sessions.
+sessions. See oprofile(1) for how to write profile specifications.
 
 .SH OPTIONS
 .TP

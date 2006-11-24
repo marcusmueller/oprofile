@@ -13,7 +13,7 @@ opannotate \- produce source or assembly annotated with profile data
 
 .B opannotate
 outputs annotated source and/or assembly from profile data of an OProfile
-session.
+session. See oprofile(1) for how to write profile specifications.
 
 .SH OPTIONS
 .TP

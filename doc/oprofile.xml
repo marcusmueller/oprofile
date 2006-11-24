@@ -757,11 +757,11 @@ hardware counters as necessary. Note that some combinations are not
 allowed by the CPU; running <command>opcontrol --list-events</command> gives the details
 of each event. The event specification is a colon-separated string
 of the form <option><emphasis>name</emphasis>:<emphasis>count</emphasis>:<emphasis>unitmask</emphasis>:<emphasis>kernel</emphasis>:<emphasis>user</emphasis></option> as described in this table:
+</para>
 <note><para>
 For the PowerPC platforms, all events specified must be in the same group; i.e., the group number
 appended to the event name (e.g. <constant>&lt;<emphasis>some-event-name</emphasis>&gt;_GRP9</constant>) must be the same.
 </para></note>
-</para>
 <informaltable frame="all">
 <tgroup cols='2'> 
 <tbody>
@@ -1522,6 +1522,11 @@ identifies two different profiles. The general form is of:
 <screen>
 $ opreport &lt;shared-spec&gt; { &lt;first-profile&gt; } { &lt;second-profile&gt; }
 </screen>
+<note><para>
+We lost our Dragon book down the back of the sofa, so you have to be
+careful to have spaces around those braces, or things will get
+hopelessly confused. We can only apologise.
+</para></note>
 <para>
 For each of the profiles, the shared section is prefixed, and then the
 specification is analysed. The usual parameters work both within the

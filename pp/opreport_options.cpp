@@ -321,6 +321,10 @@ void handle_options(options::spec const & spec)
 	if (!spec.first.size()) {
 		archive_path = process_spec(classes, spec.common);
 	} else {
+		if (options::xml) {
+			cerr << "differential profiles are incompatible with --xml" << endl;
+			exit(EXIT_FAILURE);
+		}
 		cverb << vsfile << "profile spec 1:" << endl;
 		archive_path = process_spec(classes, spec.first);
 		cverb << vsfile << "profile spec 2:" << endl;
