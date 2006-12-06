@@ -61,7 +61,12 @@ static vector<poptOption> & popt_options(void)
 	return *x;
 }
 
-static vector<option_base *> options_list;
+static vector<option_base *> & options_list(void)
+{
+	static vector<option_base *> *x = new(vector<option_base *>);
+	return *x;
+}
+
 static int showvers;
 
 static struct poptOption appended_options[] = {
@@ -94,8 +99,8 @@ static poptContext do_parse_options(int argc, char const ** argv,
 	while ((file = poptGetArg(con)) != 0)
 		additional_params.push_back(file);
 
-	for (size_t i = 0 ; i < options_list.size() ; ++i)
-		options_list[i]->post_process();
+	for (size_t i = 0 ; i < options_list().size() ; ++i)
+		options_list()[i]->post_process();
 
 	return con;
 }
@@ -251,7 +256,7 @@ option_base::option_base(char const * name, char short_name,
 
 	popt_options().push_back(opt);
 
-	options_list.push_back(this);
+	options_list().push_back(this);
 }
 
 
