@@ -1,3 +1,10 @@
+2006-12-11  Maynard Johnson <maynardj@us.ibm.com>
+
+	* m4/kerneloption.m4:
+	* m4/kernelversion.m4: eliminate/replace usage of obsolete kernel
+	  header linux/config.h
+
+
 2006-12-06  Daniel Jacobowitz  <dan@debian.org>
 
 	* libopt++/popt_options.cpp: complete fix for static

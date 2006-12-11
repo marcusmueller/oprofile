@@ -5,7 +5,6 @@ CFLAGS="-I$KINC -D__KERNEL__ -Werror"
 AC_TRY_COMPILE( 
   [
   #include <linux/version.h>
-  #include <linux/config.h>
   ],
   [
   #if LINUX_VERSION_CODE $4 KERNEL_VERSION($1, $2, $3)
