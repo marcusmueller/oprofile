@@ -93,6 +93,10 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 			PPC64 processors (Power4/Power5/PPC970) require a recent (&gt; 2.6.5) kernel with the line 
 			<constant>#define PV_970</constant> present in <filename>include/asm-ppc64/processor.h</filename>.
 <!-- FIXME: do we require always gte 2.4.10 for nosmp ? -->
++                       </para>
++                       <para>
++                       PPC64 processors (Cell) require a recent (&gt; 2.6.18) kernel with the line
++                       <constant>#define PV_BE</constant> present in <filename>include/asm-powerpc/reg.h</filename>.
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -811,7 +815,7 @@ The table below lists the events selected by default
 <row><entry>Itanium 2</entry><entry>ia64/itanium2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>TIMER_INT</entry><entry>timer</entry><entry>None selectable</entry></row>
 <row><entry>IBM iseries</entry><entry>PowerPC 4/5/970</entry><entry>CYCLES:10000:0:1:1</entry></row>
-<row><entry>IBM pseries</entry><entry>PowerPC 4/5/970</entry><entry>CYCLES:10000:0:1:1</entry></row>
+<row><entry>IBM pseries</entry><entry>PowerPC 4/5/970/Cell</entry><entry>CYCLES:10000:0:1:1</entry></row>
 <row><entry>IBM s390</entry><entry>timer</entry><entry>None selectable</entry></row>
 <row><entry>IBM s390x</entry><entry>timer</entry><entry>None selectable</entry></row>
 </tbody>
