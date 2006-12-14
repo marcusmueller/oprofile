@@ -1,3 +1,15 @@
+2006-12-14  Maynard Johnson <maynardj@us.ibm.com>
+
+	* doc/oprofile.xml:
+	* events/Makefile.am:
+	* events/ppc64/cell-be/events:
+	* events/ppc64/cell-be/unit_masks:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/opcontrol:
+	* utils/ophelp.c Add support for Cell Broadband Engine
+
 2006-12-14  Dave Nomura <dcnltc@us.ibm.com>
 
 	* daemon/init.c: move open_opd_files call to initialization phase
