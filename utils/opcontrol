@@ -1037,16 +1037,17 @@ set_ctr_param()
 }
 
 
-# If EVENT_STR has more than one token in it (i.e., the event ID), 
-# this implies some additional information is present that is associated 
-# with the event.  For example, for PPC64 architectures, the values
-# required to program the MMCRs for the given event are returned along 
-# with the event.  This function will perform any needed validation
-# of such event mapping data.
+# The check_event_mapping_data procedure gives the
+# opportunity to validate events and enforce any
+# arch-specific restritions, etc.
 check_event_mapping_data()
 {
 
 	if [ "$CPUTYPE" = "ppc64/power4" -o "$CPUTYPE" = "ppc64/power5" -o "$CPUTYPE" = "ppc64/power5+" -o "$CPUTYPE" = "ppc64/970" ]; then
+		# For PPC64 architectures, the values required to program
+		# MMCRs for the given event are returned along with the event.
+		# Here we use those values to ensure that all chosen events
+		# are from the same group.
 		MMCR0=`echo $EVENT_STR | awk '{print $2}'`
 		MMCR1=`echo $EVENT_STR | awk '{print $3}'`
 		MMCRA=`echo $EVENT_STR | awk '{print $4}'`
@@ -1074,6 +1075,25 @@ check_event_mapping_data()
 			fi
 		fi
 	fi
+	if [ "$CPUTYPE" = "ppc64/cell-be" ]; then
+		event_num=`echo $EVENT_STR | awk '{print $1}'`
+                if test $event_num -eq 1; then
+                        # CYCLES is compatible with any event
+                        return
+                fi
+		len=`echo -n $event_num | wc -m`
+		num_chars_in_grpid=`expr $len - 2`
+		GRP_NUM_VAL=`echo | awk '{print substr("'"${event_num}"'",1,"'"${num_chars_in_grpid}"'")}'`
+		if [ "$GRP_NUM_CK_VAL" = "" ] ; then
+			GRP_NUM_CK_VAL=$GRP_NUM_VAL
+		else
+			if test $GRP_NUM_CK_VAL != $GRP_NUM_VAL ; then
+				echo "ERROR: The specified events are not from the same group."
+                                echo "       Use 'opcontrol --list-events' to see event groupings."
+                                exit 1
+                        fi
+                fi
+	fi 
 }
 
 
@@ -1150,8 +1170,6 @@ do_param_setup()
 		if test "$GOTEVENT" != ""; then
 			EVENT=`echo $GOTEVENT | awk -F: '{print $1}'`
 			EVENT_STR=`$OPHELP $EVENT`
-			# For some architectures, additional information associated with given
-			# event is returned in EVENT_STR, so we validate this information if necessary
 			check_event_mapping_data
 			EVENT_VAL=`echo $EVENT_STR | awk '{print $1}'`
 			COUNT=`echo $GOTEVENT | awk -F: '{print $2}'`

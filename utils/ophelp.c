@@ -47,6 +47,16 @@ static size_t hweight(size_t mask)
 	return count;
 }
 
+static void do_arch_specific_event_help(struct op_event * event)
+{
+	switch (cpu_type) {
+	case CPU_PPC64_CELL:
+		printf("Group %u :", event->val / 100);
+		break;
+	default:
+		break;
+	}
+}
 
 /**
  * help_for_event - output event name and description
@@ -58,8 +68,10 @@ static void help_for_event(struct op_event * event)
 {
 	uint i, j;
 	uint mask;
+	size_t nr_counters;
 
-	size_t nr_counters = op_get_nr_counters(cpu_type);
+	do_arch_specific_event_help(event);
+	nr_counters = op_get_nr_counters(cpu_type);
 
 	printf("%s", event->name);
 
@@ -417,6 +429,11 @@ int main(int argc, char const * argv[])
 	case CPU_PPC64_970:
 		printf("Obtain PowerPC64 processor documentation at:\n"
 			"http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC\n");
+		break;
+
+	case CPU_PPC64_CELL:
+		printf("Obtain Cell Broadband Engine documentation at:\n"
+			"http://www-306.ibm.com/chips/techlib/techlib.nsf/products/Cell_Broadband_Engine\n");
 		break;
 
 	case CPU_MIPS_20K:
