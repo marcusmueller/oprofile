@@ -251,13 +251,14 @@ static void opd_26_init(void)
 		perror("oprofiled: couldn't set exit cleanup: ");
 		exit(EXIT_FAILURE);
 	}
+
+	/* trigger kernel module setup before returning control to opcontrol */
+	opd_open_files();
 }
 
 
 static void opd_26_start(void)
 {
-	opd_open_files();
-
 	/* simple sleep-then-process loop */
 	opd_do_read(sbuf, s_buf_bytesize);
 }
