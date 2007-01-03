@@ -1043,7 +1043,7 @@ set_ctr_param()
 check_event_mapping_data()
 {
 
-	if [ "$CPUTYPE" = "ppc64/power4" -o "$CPUTYPE" = "ppc64/power5" -o "$CPUTYPE" = "ppc64/power5+" -o "$CPUTYPE" = "ppc64/970" ]; then
+	if [ "$CPUTYPE" = "ppc64/power4" -o "$CPUTYPE" = "ppc64/power5" -o "$CPUTYPE" = "ppc64/power5+" -o "$CPUTYPE" = "ppc64/970"  -o "$CPUTYPE" = "ppc64/power6" ]; then
 		# For PPC64 architectures, the values required to program
 		# MMCRs for the given event are returned along with the event.
 		# Here we use those values to ensure that all chosen events

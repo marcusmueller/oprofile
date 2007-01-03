@@ -46,6 +46,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ppc64 POWER4", "ppc64/power4", CPU_PPC64_POWER4, 8 },
 	{ "ppc64 POWER5", "ppc64/power5", CPU_PPC64_POWER5, 6 },
 	{ "ppc64 POWER5+", "ppc64/power5+", CPU_PPC64_POWER5p, 6 },
+	{ "ppc64 POWER6", "ppc64/power6", CPU_PPC64_POWER6, 4 },
 	{ "ppc64 970", "ppc64/970", CPU_PPC64_970, 8 },
 	{ "ppc64 Cell Broadband Engine", "ppc64/cell-be", CPU_PPC64_CELL, 8 },
 	{ "MIPS 20K", "mips/20K", CPU_MIPS_20K, 1},
