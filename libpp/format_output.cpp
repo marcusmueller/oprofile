@@ -741,7 +741,9 @@ output_symbol(ostream & out,
 	if (!got_samples)
 		return;
 
-	cverb << vxml << " <!-- symbol_ref=" << symbol_names.name(symb->name) << " -->" << endl;
+	if (cverb << vxml)
+		out << "<!-- symbol_ref=" << symbol_names.name(symb->name) <<
+			" -->" << endl;
 
 	out << open_element(SYMBOL, true);
 

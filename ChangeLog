@@ -1,3 +1,10 @@
+2007-01-26  Dave Nomura <dcnltc@us.ibm.com>
+
+	* libpp/format_output.cpp:
+	* libpp/xml_utils.cpp: opreport -X was mixing the symbols associated with
+	  an application with those of a library when processing a --separate=lib
+	  profile.
+
 2007-01-02  Dave Nomura <dcnltc@us.ibm.com>
 
 	* events/Makefile.am:
