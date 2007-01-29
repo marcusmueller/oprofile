@@ -236,8 +236,8 @@ do_init_daemon_vars()
 	       SESSION_DIR="/var/lib/oprofile"
 	fi
 	LOCK_FILE="$SESSION_DIR/lock"
-	LOG_FILE="$SESSION_DIR/oprofiled.log"
 	SAMPLES_DIR="$SESSION_DIR/samples"
+	LOG_FILE="$SAMPLES_DIR/oprofiled.log"
 	CURRENT_SAMPLES_DIR="$SAMPLES_DIR/current"
 }
 

@@ -100,7 +100,7 @@ static struct poptOption options[] = {
 
 void opd_open_logfile(void)
 {
-	if (open(op_log_file, O_WRONLY|O_CREAT|O_NOCTTY|O_APPEND, 0755) == -1) {
+	if (open(op_log_file, O_WRONLY|O_CREAT|O_NOCTTY|O_APPEND, 0644) == -1) {
 		perror("oprofiled: couldn't re-open stdout: ");
 		exit(EXIT_FAILURE);
 	}
