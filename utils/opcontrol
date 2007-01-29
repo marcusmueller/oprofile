@@ -999,8 +999,6 @@ do_setup()
 {
 	create_dir "$SESSION_DIR"
 
-	>$LOG_FILE
-
 	if test "$KERNEL_SUPPORT" != "yes"; then
 		rm_devices_24
 		create_devices_24

@@ -1,7 +1,7 @@
 2007-01-29  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/oprofiled.c: no need for 0755 for the log file mode, use 0644
-	* utils/opcontrol: create the log in the right directory
+	* utils/opcontrol: don't create the log in opcontrol
 
 2007-01-26  Dave Nomura <dcnltc@us.ibm.com>
 
