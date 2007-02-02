@@ -1,3 +1,16 @@
+2007-02-02  Dave Nomura <dcnltc@us.ibm.com>
+
+	* events/Makefile.am
+	* events/ppc64/970MP/event_mappings
+	* events/ppc64/970MP/events
+	* events/ppc64/970MP/unit_masks
+	* libop/op_cpu_type.c
+	* libop/op_cpu_type.h
+	* libop/op_events.c
+	* utils/ophelp.c: PPC970MP has different hardware counters than the rest
+	  of the PPC family and must be treated as a different architecture
+	  by oprofile.
+
 2007-01-31  Dave Nomura <dcnltc@us.ibm.com>
 
 	* libpp/xml_utils.cpp: opreport -X was still getting some incorrect 

@@ -1035,13 +1035,29 @@ set_ctr_param()
 }
 
 
+# returns 1 if $CPUTYPE is a PPC64 variant
+is_non_cell_ppc64_variant()
+{
+	case "$1" in
+		ppc64/power4 | ppc64/power5 | ppc64/power5+ | \
+		ppc64/power6 | ppc64/970 | ppc64/970MP )
+			return 1;
+			;;
+		*)
+	        	return 0;
+	        	;;
+	esac
+}
+
+
 # The check_event_mapping_data procedure gives the
 # opportunity to validate events and enforce any
 # arch-specific restritions, etc.
 check_event_mapping_data()
 {
 
-	if [ "$CPUTYPE" = "ppc64/power4" -o "$CPUTYPE" = "ppc64/power5" -o "$CPUTYPE" = "ppc64/power5+" -o "$CPUTYPE" = "ppc64/970"  -o "$CPUTYPE" = "ppc64/power6" ]; then
+	is_non_cell_ppc64_variant $CPUTYPE
+	if test $? -ne 0 ; then
 		# For PPC64 architectures, the values required to program
 		# MMCRs for the given event are returned along with the event.
 		# Here we use those values to ensure that all chosen events

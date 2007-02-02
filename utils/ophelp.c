@@ -428,6 +428,7 @@ int main(int argc, char const * argv[])
 	case CPU_PPC64_POWER6:
 	case CPU_PPC64_POWER5p:
 	case CPU_PPC64_970:
+	case CPU_PPC64_970MP:
 		printf("Obtain PowerPC64 processor documentation at:\n"
 			"http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC\n");
 		break;
