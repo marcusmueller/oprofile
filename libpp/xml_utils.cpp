@@ -666,18 +666,18 @@ add_module_symbol(string const & module, string const & app,
 	if (module != current_module_name) {
 		// we have a module distinct from it's binary: --separate=lib
 		// and this is the first symbol for this module
-		if (m == 0) {
-			// mark end of enclosing binary symbols if there have been any
-			// NOTE: it is possible for the binary's symbols to follow its
-			// module symbols
-			if (begin != (sym_iterator)0)
-				set_end(it);
-		} else {
+		if (m != 0) {
 			// close out current module
 			module_info & mod = my_modules[m-1];
 			mod.set_end(it);
 			add_to_summary(mod.get_summary());
 		}
+
+		// mark end of enclosing binary symbols if there have been any
+		// NOTE: it is possible for the binary's symbols to follow its
+		// module symbols
+		if (begin != (sym_iterator)0 && end == (sym_iterator)0)
+			set_end(it);
 
 		// build the new module
 		nr_modules++;

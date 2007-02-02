@@ -1,3 +1,9 @@
+2007-01-31  Dave Nomura <dcnltc@us.ibm.com>
+
+	* libpp/xml_utils.cpp: opreport -X was still getting some incorrect 
+	  symbols attributed to the <binary> when processing a --separate=lib
+	  profile.
+	  
 2007-01-29  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/oprofiled.c: no need for 0755 for the log file mode, use 0644
