@@ -22,26 +22,26 @@ struct test_input {
 };
 
 static struct test_input const tests[] = {
-	{ { MANGLE_NONE, "foo", "bar", NULL, "EVENT", 0, 0, 0, 0, 0 },
+	{ { MANGLE_NONE, "foo", "", "bar", NULL, "EVENT", 0, 0, 0, 0, 0 },
 	  "{root}/bar/{dep}/{root}/foo/EVENT.0.0.all.all.all" },
-	{ { MANGLE_CPU, "foo", "bar", NULL, "EVENT", 0, 0, 0, 0, 2 },
+	{ { MANGLE_CPU, "foo", "", "bar", NULL, "EVENT", 0, 0, 0, 0, 2 },
 	  "{root}/bar/{dep}/{root}/foo/EVENT.0.0.all.all.2" },
-	{ { MANGLE_TID, "foo", "bar", NULL, "EVENT", 0, 0, 0, 33, 0 },
+	{ { MANGLE_TID, "foo", "", "bar", NULL, "EVENT", 0, 0, 0, 33, 0 },
 	  "{root}/bar/{dep}/{root}/foo/EVENT.0.0.all.33.all" },
-	{ { MANGLE_TGID, "foo", "bar", NULL, "EVENT", 0, 0, 34, 0, 0 },
+	{ { MANGLE_TGID, "foo", "", "bar", NULL, "EVENT", 0, 0, 34, 0, 0 },
 	  "{root}/bar/{dep}/{root}/foo/EVENT.0.0.34.all.all" },
-	{ { MANGLE_KERNEL, "foo", "bar", NULL, "EVENT", 0, 0, 0, 0, 0 },
+	{ { MANGLE_KERNEL, "foo", "", "bar", NULL, "EVENT", 0, 0, 0, 0, 0 },
 	  "{kern}/bar/{dep}/{kern}/foo/EVENT.0.0.all.all.all" },
-	{ { MANGLE_CALLGRAPH, "foo-from", "bar-from", "foo-to", "EVENT", 0, 0, 0, 0, 0 },
+	{ { MANGLE_CALLGRAPH, "foo-from", "", "bar-from", "foo-to", "EVENT", 0, 0, 0, 0, 0 },
 	  "{root}/bar-from/{dep}/{root}/foo-from/{cg}/{root}/foo-to/EVENT.0.0.all.all.all" },
-	{ { MANGLE_CPU|MANGLE_TID|MANGLE_TID|MANGLE_TGID|MANGLE_KERNEL, "foo", "bar", NULL, "EVENT", 1234, 8192, 34, 35, 2 },
+	{ { MANGLE_CPU|MANGLE_TID|MANGLE_TID|MANGLE_TGID|MANGLE_KERNEL, "foo", "", "bar", NULL, "EVENT", 1234, 8192, 34, 35, 2 },
 	  "{kern}/bar/{dep}/{kern}/foo/EVENT.1234.8192.34.35.2" },
-	{ { MANGLE_CPU|MANGLE_TID|MANGLE_TID|MANGLE_TGID|MANGLE_KERNEL, "foo1/foo2", "bar1/bar2", NULL, "EVENT", 1234, 8192, 34, 35, 2 },
+	{ { MANGLE_CPU|MANGLE_TID|MANGLE_TID|MANGLE_TGID|MANGLE_KERNEL, "foo1/foo2", "", "bar1/bar2", NULL, "EVENT", 1234, 8192, 34, 35, 2 },
 	  "{root}/bar1/bar2/{dep}/{root}/foo1/foo2/EVENT.1234.8192.34.35.2" },
-	{ { MANGLE_CALLGRAPH|MANGLE_CPU|MANGLE_TID|MANGLE_TID|MANGLE_TGID|MANGLE_KERNEL, "bar1/bar2", "bar1/bar2", "bar1/bar2-to", "EVENT", 1234, 8192, 34, 35, 2 },
+	{ { MANGLE_CALLGRAPH|MANGLE_CPU|MANGLE_TID|MANGLE_TID|MANGLE_TGID|MANGLE_KERNEL, "bar1/bar2", "", "bar1/bar2", "bar1/bar2-to", "EVENT", 1234, 8192, 34, 35, 2 },
 	  "{root}/bar1/bar2/{dep}/{root}/bar1/bar2/{cg}/{root}/bar1/bar2-to/EVENT.1234.8192.34.35.2" },
 
-	{ { 0, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0 }, NULL }
+	{ { 0, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0 }, NULL }
 };
 
 

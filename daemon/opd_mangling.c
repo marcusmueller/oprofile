@@ -57,8 +57,10 @@ static char const * get_dep_name(struct sfile const * sf)
 static char * mangle_anon(struct anon_mapping const * anon)
 {
 	char * name = xmalloc(PATH_MAX);
+
 	snprintf(name, 1024, "%u.0x%llx.0x%llx", (unsigned int)anon->tgid,
-	         anon->start, anon->end);
+	       anon->start, anon->end);
+
 	return name;
 }
 
@@ -78,6 +80,7 @@ mangle_filename(struct sfile * last, struct sfile const * sf, int counter, int c
 	} else if (sf->anon) {
 		values.flags |= MANGLE_ANON;
 		values.image_name = mangle_anon(sf->anon);
+		values.anon_name = sf->anon->name;
 	} else {
 		values.image_name = find_cookie(sf->cookie);
 	}

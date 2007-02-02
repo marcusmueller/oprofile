@@ -25,6 +25,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #define HASH_SIZE 1024
 #define HASH_BITS (HASH_SIZE - 1)
@@ -104,7 +105,7 @@ static void clear_anon_maps(struct transient * trans)
 
 
 static void
-add_anon_mapping(struct transient * trans, vma_t start, vma_t end)
+add_anon_mapping(struct transient * trans, vma_t start, vma_t end, char * name)
 {
 	unsigned long hash = hash_anon(trans->tgid, trans->app_cookie);
 	struct anon_mapping * m = xmalloc(sizeof(struct anon_mapping));
@@ -112,6 +113,7 @@ add_anon_mapping(struct transient * trans, vma_t start, vma_t end)
 	m->app_cookie = trans->app_cookie;
 	m->start = start;
 	m->end = end;
+	strncpy(m->name, name, MAX_IMAGE_NAME_SIZE + 1);
 	list_add_tail(&m->list, &hashes[hash]);
 	list_add_tail(&m->lru_list, &lru);
 	if (++nr_lru == LRU_SIZE)
@@ -139,16 +141,18 @@ static void get_anon_maps(struct transient * trans)
 		return;
 
 	while (fgets(buf, PATH_MAX, fp) != NULL) {
-		char tmp[20+1];
+		char tmp[MAX_IMAGE_NAME_SIZE + 1];
+		char name[MAX_IMAGE_NAME_SIZE + 1];
 		/* Note that this actually includes all mappings,
 		 * since we want stuff like [heap]
 		 */
+		strcpy(name, "anon");
 		ret = sscanf(buf, "%lx-%lx %20s %20s %20s %20s %20s",
-		             &start, &end, tmp, tmp, tmp, tmp, tmp);
+		             &start, &end, tmp, tmp, tmp, tmp, name);
 		if (ret < 6)
 			continue;
 
-		add_anon_mapping(trans, start, end);
+		add_anon_mapping(trans, start, end, name);
 	}
 
 	fclose(fp);
