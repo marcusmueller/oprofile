@@ -20,6 +20,7 @@ libutil___a_SOURCES = \
 	path_filter.h \
 	file_manip.cpp \
 	file_manip.h \
+	sparse_array.h \
 	stream_util.cpp \
 	stream_util.h \
 	string_manip.cpp \

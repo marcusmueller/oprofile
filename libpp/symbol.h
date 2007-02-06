@@ -14,6 +14,7 @@
 
 #include "name_storage.h"
 #include "growable_vector.h"
+#include "sparse_array.h"
 #include "format_flags.h"
 #include "op_types.h"
 
@@ -23,7 +24,7 @@
 
 
 /// for storing sample counts
-typedef growable_vector<count_type> count_array_t;
+typedef sparse_array<u32, count_type> count_array_t;
 
 
 /// A simple container for a fileno:linenr location.
