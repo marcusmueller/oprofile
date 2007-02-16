@@ -111,6 +111,7 @@ mangle_filename(struct sfile * last, struct sfile const * sf, int counter, int c
 		} else if (last->anon) {
 			values.flags |= MANGLE_CG_ANON;
 			values.cg_image_name = mangle_anon(last->anon);
+			values.anon_name = last->anon->name;
 		} else {
 			values.cg_image_name = find_cookie(last->cookie);
 		}
