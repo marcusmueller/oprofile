@@ -35,6 +35,11 @@ namespace {
 
 void copy_one_file(image_error err, string const & source, string const & dest)
 {
+	if (options::list_files) {
+		cout << source << endl;
+		return;
+	}
+
 	if (!copy_file(source, dest) && err == image_ok) {
 		cerr << "can't copy from " << source << " to " << dest
 		     << " cause: " << strerror(errno) << endl;
@@ -97,8 +102,17 @@ int oparchive(options::spec const & spec)
 			if (find_separate_debug_file(ibfd, dirname, global,
 				debug_filename)) {
 				/* found something copy it over */
-				string dest_debug = options::outdirectory +
-					dirname + "/" +
+				string dest_debug_dir = options::outdirectory +
+					dirname + "/.debug/";
+				if (mkdir(dest_debug_dir.c_str(), 0755) < 0) {
+					if (errno != EEXIST) {
+						cerr << "Unable to create directory: " 
+						<< dest_debug_dir << "." << endl;
+						exit (EXIT_FAILURE);
+					}
+				}
+
+				string dest_debug = dest_debug_dir +
 					op_basename(debug_filename);
 				copy_one_file(image_ok, debug_filename, dest_debug);
 			}

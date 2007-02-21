@@ -1,3 +1,11 @@
+2007-02-21  Rob Bradford <rob@o-hand.com>
+
+	* pp/oparchive.cpp: Save debuginfo files in .debug sub directory.
+
+	* pp/oparchive.cpp:
+	* pp/oparchive_options.h:
+	* pp/oparchive_options.cpp: List files option.
+
 2007-02-16  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* daemon/opd_mangling.c: missing initialisation when mangling an 
