@@ -36,7 +36,6 @@ namespace options {
 	bool exclude_dependent;
 	merge_option merge_by;
 	string outdirectory;
-	bool list_files;
 }
 
 
@@ -48,9 +47,7 @@ popt::option options_array[] = {
 	popt::option(options::outdirectory, "output-directory", 'o',
 	             "output to the given directory", "directory"),
 	popt::option(options::exclude_dependent, "exclude-dependent", 'x',
-		     "exclude libs, kernel, and module samples for applications"),
-	popt::option(options::list_files, "list-files", 'l',
-		     "just list the files necessary, don't produce the archive")
+		     "exclude libs, kernel, and module samples for applications")
 };
 
 
@@ -63,7 +60,7 @@ void check_options()
 	using namespace options;
 
 	/* output directory is required */
-	if (outdirectory.size() == 0 && !list_files) {
+	if (outdirectory.size() == 0) {
 		cerr << "Requires --output-directory option." << endl;
 		exit(EXIT_FAILURE);
 	}

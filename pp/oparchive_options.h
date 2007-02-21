@@ -22,7 +22,6 @@ namespace options {
 	extern bool exclude_dependent;
 	extern merge_option merge_by;
 	extern std::string outdirectory;
-	extern bool list_files;
 }
 
 /// All the chosen sample files.
