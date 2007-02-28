@@ -150,5 +150,5 @@ int oparchive(options::spec const & spec)
 
 int main(int argc, char const * argv[])
 {
-	run_pp_tool(argc, argv, oparchive);
+	return run_pp_tool(argc, argv, oparchive);
 }
