@@ -34,6 +34,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "Itanium", "ia64/itanium", CPU_IA64_1, 4 },
 	{ "Itanium 2", "ia64/itanium2", CPU_IA64_2, 4 },
 	{ "AMD64 processors", "x86-64/hammer", CPU_HAMMER, 4 },
+	{ "AMD64 family10", "x86-64/family10", CPU_FAMILY10, 4 },
 	{ "P4 / Xeon with 2 hyper-threads", "i386/p4-ht", CPU_P4_HT2, 4 },
 	{ "Alpha EV4", "alpha/ev4", CPU_AXP_EV4, 2 },
 	{ "Alpha EV5", "alpha/ev5", CPU_AXP_EV5, 3 },

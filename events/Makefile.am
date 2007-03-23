@@ -25,6 +25,7 @@ event_files = \
 	ppc64/cell-be/events ppc64/cell-be/unit_masks \
 	rtc/events rtc/unit_masks \
 	x86-64/hammer/events x86-64/hammer/unit_masks \
+	x86-64/family10/events x86-64/family10/unit_masks \
 	arm/xscale1/events arm/xscale1/unit_masks \
 	arm/xscale2/events arm/xscale2/unit_masks \
 	mips/20K/events mips/20K/unit_masks \

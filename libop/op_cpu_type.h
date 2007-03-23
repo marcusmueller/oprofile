@@ -30,6 +30,7 @@ typedef enum {
 	CPU_IA64_1, /**< IA64 Merced */
 	CPU_IA64_2, /**< IA64 McKinley */
 	CPU_HAMMER, /**< AMD Hammer family */
+	CPU_FAMILY10, /**< AMD family 10 */
 	CPU_P4_HT2, /**< Pentium 4 / Xeon series with 2 hyper-threads */
 	CPU_AXP_EV4, /**< Alpha EV4 family */
 	CPU_AXP_EV5, /**< Alpha EV5 family */
