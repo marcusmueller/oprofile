@@ -1,4 +1,10 @@
+2007-04-10  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/ophelp.c: if userspace doesn't recognize the cpu type
+	  warn the user it can use timer mode or upgrade oprofile.
+
 2007-04-04  Maynard johnson <maynardj@us.ibm.com>
+
 	* libutil++/file_manip.cpp: catch result from chown() to avoid
 	  compilation warning (treated as error)
 

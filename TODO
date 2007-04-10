@@ -16,6 +16,10 @@ for some pointers and/or read HACKING and doc/CodingStyle.
   speak a bit about lapic kernel option on x86 and recent kernel
  o see the big comment in db_insert.c, it's possible to allow unlimited
    amount of samples with a very minor change in libdb.
+ o if oprofilee doesn't recognize the processor selected by the kernel
+   opcontrol could setup the module in timer mode (remove/reload prolly), and
+   warn the user it must upgrade oprofile to get all the feature from its
+   hardware.
 
 Later
 -----
