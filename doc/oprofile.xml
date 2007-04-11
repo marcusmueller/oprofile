@@ -196,7 +196,7 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 		<term>IRC channel</term>
 		<listitem><para>
 			Several OProfile developers and users sometimes hang out on channel <command>#oprofile</command>
-			on the <ulink url="http://freenode.info">freenode</ulink> network. 
+			on the <ulink url="http://oftc.net">OFTC</ulink> network. 
 		</para></listitem>
 	</varlistentry>
 </variablelist>
