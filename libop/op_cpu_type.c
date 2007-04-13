@@ -34,7 +34,6 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "Itanium", "ia64/itanium", CPU_IA64_1, 4 },
 	{ "Itanium 2", "ia64/itanium2", CPU_IA64_2, 4 },
 	{ "AMD64 processors", "x86-64/hammer", CPU_HAMMER, 4 },
-	{ "AMD64 family10", "x86-64/family10", CPU_FAMILY10, 4 },
 	{ "P4 / Xeon with 2 hyper-threads", "i386/p4-ht", CPU_P4_HT2, 4 },
 	{ "Alpha EV4", "alpha/ev4", CPU_AXP_EV4, 2 },
 	{ "Alpha EV5", "alpha/ev5", CPU_AXP_EV5, 3 },
@@ -47,10 +46,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ppc64 POWER4", "ppc64/power4", CPU_PPC64_POWER4, 8 },
 	{ "ppc64 POWER5", "ppc64/power5", CPU_PPC64_POWER5, 6 },
 	{ "ppc64 POWER5+", "ppc64/power5+", CPU_PPC64_POWER5p, 6 },
-	{ "ppc64 POWER6", "ppc64/power6", CPU_PPC64_POWER6, 4 },
 	{ "ppc64 970", "ppc64/970", CPU_PPC64_970, 8 },
-	{ "ppc64 970MP", "ppc64/970MP", CPU_PPC64_970MP, 8 },
-	{ "ppc64 Cell Broadband Engine", "ppc64/cell-be", CPU_PPC64_CELL, 8 },
 	{ "MIPS 20K", "mips/20K", CPU_MIPS_20K, 1},
 	{ "MIPS 24K", "mips/24K", CPU_MIPS_24K, 2},
 	{ "MIPS 25K", "mips/25K", CPU_MIPS_25K, 2},
@@ -68,6 +64,10 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "Core Solo / Duo", "i386/core", CPU_CORE, 2 },
 	{ "PowerPC G4", "ppc/7450",  CPU_PPC_7450, 6 },
  	{ "Core 2", "i386/core_2", CPU_CORE_2, 2 },
+	{ "ppc64 POWER6", "ppc64/power6", CPU_PPC64_POWER6, 4 },
+	{ "ppc64 970MP", "ppc64/970MP", CPU_PPC64_970MP, 8 },
+	{ "ppc64 Cell Broadband Engine", "ppc64/cell-be", CPU_PPC64_CELL, 8 },
+	{ "AMD64 family10", "x86-64/family10", CPU_FAMILY10, 4 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

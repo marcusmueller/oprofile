@@ -30,7 +30,6 @@ typedef enum {
 	CPU_IA64_1, /**< IA64 Merced */
 	CPU_IA64_2, /**< IA64 McKinley */
 	CPU_HAMMER, /**< AMD Hammer family */
-	CPU_FAMILY10, /**< AMD family 10 */
 	CPU_P4_HT2, /**< Pentium 4 / Xeon series with 2 hyper-threads */
 	CPU_AXP_EV4, /**< Alpha EV4 family */
 	CPU_AXP_EV5, /**< Alpha EV5 family */
@@ -43,10 +42,7 @@ typedef enum {
 	CPU_PPC64_POWER4, /**< ppc64 POWER4 family */
 	CPU_PPC64_POWER5, /**< ppc64 POWER5 family */
 	CPU_PPC64_POWER5p, /**< ppc64 Power5+ family */
-	CPU_PPC64_POWER6, /**< ppc64 POWER6 family */
 	CPU_PPC64_970, /**< ppc64 970 family */
-	CPU_PPC64_970MP, /**< ppc64 970MP */
-	CPU_PPC64_CELL, /**< ppc64 Cell Broadband Engine*/
 	CPU_MIPS_20K, /**< MIPS 20K */
 	CPU_MIPS_24K, /**< MIPS 24K */
 	CPU_MIPS_25K, /**< MIPS 25K */
@@ -64,6 +60,10 @@ typedef enum {
 	CPU_CORE, /**< Core Solo / Duo series */
 	CPU_PPC_7450, /**< PowerPC G4 */
 	CPU_CORE_2, /**< Intel Core 2 */
+	CPU_PPC64_POWER6, /**< ppc64 POWER6 family */
+	CPU_PPC64_970MP, /**< ppc64 970MP */
+	CPU_PPC64_CELL, /**< ppc64 Cell Broadband Engine*/
+	CPU_FAMILY10, /**< AMD family 10 */
 	MAX_CPU_TYPE
 } op_cpu;
 

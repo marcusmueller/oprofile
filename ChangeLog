@@ -1,3 +1,9 @@
+2007-04-13  Will Cohen  <wcohen@redhat.com>
+
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h: Move new entries to end of list
+	to improve backward compatibility with enum values.
+	
 2007-04-11  John Levon  <levon@movementarian.org>
 
 	* doc/oprofile.xml: IRC channel is on OFTC
