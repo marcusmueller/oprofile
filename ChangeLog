@@ -1,3 +1,8 @@
+2007-04-19  Dave Nomura  <dcnltc@us.ibm.com>
+
+	* events/ppc64/power6/events: counter 3 should have been used 
+	  in the specification of the default CYCLES event, not counter 1
+
 2007-04-13  Will Cohen  <wcohen@redhat.com>
 
 	* libop/op_cpu_type.c:
