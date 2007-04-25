@@ -1,3 +1,7 @@
+2007-04-25  Manoj Ekbote  <manoj.ekbote@broadcom.com>
+
+	* events/mips/sb1/events: fix SB1 events
+
 2007-04-19  Dave Nomura  <dcnltc@us.ibm.com>
 
 	* events/ppc64/power6/events: counter 3 should have been used 

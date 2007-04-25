@@ -12,11 +12,11 @@ event:43 counters:1,2,3 um:zero minimum:500 name:ISSUE_E1 :Issue to E1
 
 # Explaining Sub-Peak Performance: Pipeline Traps
 event:47 counters:1,2,3 um:zero minimum:500 name:BRANCH_MISSPREDICTS :Branch mispredicts
-event:29 counters:0,1,2,3 um:zero minimum:500 name:MBOX_REPLAY :MBOX replay
-event:28 counters:0,1,2,3 um:zero minimum:500 name:DCFIFO :DCFIFO
-event:30 counters:0,1,2,3 um:zero minimum:500 name:DATA_DEPENDENCY_REPLAY :Data dependency replay
-event:27 counters:0,1,2,3 um:zero minimum:500 name:DCACHE_FILL_REPLAY :Dcache fill replay
-event:31 counters:0,1,2,3 um:zero minimum:500 name:ANY_REPLAY :Any replay except mispredict
+event:29 counters:1,2,3 um:zero minimum:500 name:MBOX_REPLAY :MBOX replay
+event:28 counters:1,2,3 um:zero minimum:500 name:DCFIFO :DCFIFO
+event:30 counters:1,2,3 um:zero minimum:500 name:DATA_DEPENDENCY_REPLAY :Data dependency replay
+event:27 counters:1,2,3 um:zero minimum:500 name:DCACHE_FILL_REPLAY :Dcache fill replay
+event:31 counters:1,2,3 um:zero minimum:500 name:ANY_REPLAY :Any replay except mispredict
 
 
 # Explaining Sub-Peak Performance: static and dynamic stalls
