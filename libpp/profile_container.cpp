@@ -24,6 +24,7 @@
 #include "profile_container.h"
 #include "sample_container.h"
 #include "symbol_container.h"
+#include "populate_for_spu.h"
 
 using namespace std;
 
@@ -72,6 +73,7 @@ void profile_container::add(profile_t const & profile,
                             size_t pclass)
 {
 	string const image_name = abfd.get_filename();
+	opd_header header = profile.get_header();
 
 	for (symbol_index_t i = 0; i < abfd.syms.size(); ++i) {
 
@@ -113,7 +115,14 @@ void profile_container::add(profile_t const & profile,
 		bfd_vma base_vma = abfd.syms[i].vma();
 
 		symb_entry.sample.vma = abfd.sym_offset(i, start) + base_vma;
-
+		if ((header.spu_profile == cell_spu_profile) &&
+		    header.embedded_offset) {
+			symb_entry.spu_offset = header.embedded_offset;
+			symb_entry.embedding_filename =
+				image_names.create(abfd.get_embedding_filename());
+		} else {
+			symb_entry.spu_offset = 0;
+		}
 		symbol_entry const * symbol = symbols->insert(symb_entry);
 
 		if (need_details)

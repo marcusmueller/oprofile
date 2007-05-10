@@ -382,16 +382,22 @@ xml_utils::output_symbol_bytes(ostream & out, symbol_entry const * symb,
 	bool ok = true;
 
 	string const & image_name = get_image_name(symb->image_name, true);
-	op_bfd abfd(archive_path, image_name, *symbol_filter, ok);
-
+	op_bfd * abfd = NULL;
+	if (symb->spu_offset)
+		abfd = new op_bfd(archive_path, symb->spu_offset,
+				  get_image_name(symb->embedding_filename, true),
+				  *symbol_filter, ok);
+	else
+		abfd = new op_bfd(archive_path, image_name, *symbol_filter, ok);
 	if (!ok) {
 		report_image_error(image_name, image_format_failure, false);
+		delete abfd;
 		return;
 	}
 
 	size_t size = symb->size;
 	unsigned char contents[size];
-	if (abfd.get_symbol_contents(symb->sym_index, contents)) {
+	if (abfd->get_symbol_contents(symb->sym_index, contents)) {
 		string const name = symbol_names.name(symb->name);
 		out << open_element(BYTES, true) << init_attr(TABLE_ID, sym_id);
 		out << close_element(NONE, true);
@@ -404,6 +410,7 @@ xml_utils::output_symbol_bytes(ostream & out, symbol_entry const * symb,
 		}
 		out << close_element(BYTES);
 	}
+	delete abfd;
 }
 
 

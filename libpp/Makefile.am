@@ -51,4 +51,7 @@ libpp_a_SOURCES = \
 	symbol_sort.cpp \
 	symbol_sort.h \
 	xml_utils.h \
-	xml_utils.cpp
+	xml_utils.cpp \
+	populate_for_spu.cpp \
+	populate_for_spu.h
+

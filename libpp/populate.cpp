@@ -7,6 +7,9 @@
  *
  * @author John Levon
  * @author Philippe Elie
+ *
+ * Modified by Maynard Johnson <maynardj@us.ibm.com>
+ * (C) Copyright IBM Corporation 2007
  */
 
 #include "profile.h"
@@ -15,6 +18,7 @@
 #include "op_bfd.h"
 #include "op_header.h"
 #include "populate.h"
+#include "populate_for_spu.h"
 
 #include "image_errors.h"
 
@@ -56,8 +60,11 @@ populate_for_image(string const & archive_path, profile_container & samples,
    inverted_profile const & ip, string_filter const & symbol_filter,
    bool * has_debug_info)
 {
-	bool ok = ip.error == image_ok;
+	if (is_spu_profile(ip))
+		return populate_for_spu_image(archive_path, samples, ip,
+					      symbol_filter, has_debug_info);
 
+	bool ok = ip.error == image_ok;
 	op_bfd abfd(archive_path, ip.image, symbol_filter, ok);
 	if (!ok && ip.error == image_ok)
 		ip.error = image_format_failure;

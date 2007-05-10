@@ -1,5 +1,23 @@
 2007-05-10  Maynard Johnson <maynardj@us.ibm.com>
 
+	* libpp/Makefile.am:
+	* libpp/populate.cpp:
+	* libpp/populate_for_spu.cpp:
+	* libpp/populate_for_spu.h:
+	* libpp/profile.h:
+	* libpp/profile.cpp:
+	* libutil++/Makefile.am:
+	* libutil++/bfd_spu_support.cpp:
+	* libutil++/bfd_support.h:
+	* libutil++/op_bfd.h:
+	* libutil++/op_spu_bfd.cpp:
+	* libpp/xml_utils.cpp:
+	* libpp/profile_container.cpp:
+	* libpp/symbol.h: Patch 3 of 3 for adding support for profiling
+	  Cell Broadband Engine SPU
+
+2007-05-10  Maynard Johnson <maynardj@us.ibm.com>
+
 	* daemon/liblegacy/opd_sample_files.c:
 	* daemon/opd_events.c:
 	* daemon/opd_events.h:

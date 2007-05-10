@@ -25,6 +25,7 @@
 #include "profile.h"
 #include "op_bfd.h"
 #include "cverb.h"
+#include "populate_for_spu.h"
 
 using namespace std;
 
@@ -51,6 +52,19 @@ count_type profile_t::sample_count(string const & filename)
 	odb_close(&samples_db);
 
 	return count;
+}
+
+//static member
+enum profile_type profile_t::is_spu_sample_file(string const & filename)
+{
+	profile_type retval;
+	odb_t samples_db;
+	open_sample_file(filename, samples_db);
+	opd_header const & hdr =
+		*static_cast<opd_header *>(odb_get_data(&samples_db));
+	retval = hdr.spu_profile ? cell_spu_profile: normal_profile;
+	odb_close(&samples_db);
+	return retval;
 }
 
 //static member

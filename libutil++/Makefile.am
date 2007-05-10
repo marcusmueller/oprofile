@@ -37,4 +37,6 @@ libutil___a_SOURCES = \
 	cached_value.h \
 	comma_list.h \
 	xml_output.h \
-	xml_output.cpp
+	xml_output.cpp \
+	bfd_spu_support.cpp \
+	op_spu_bfd.cpp

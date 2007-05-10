@@ -81,6 +81,8 @@ struct symbol_entry {
 	 * the start is below it, but the the hint is only used for formatting
 	 */
 	column_flags output_hint(column_flags fl) const;
+	uint64_t spu_offset;
+	image_name_id embedding_filename;
 };
 
 

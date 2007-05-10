@@ -101,6 +101,18 @@ public:
 	       string_filter const & symbol_filter,
 	       bool & ok);
 
+	/**
+	 * This constructor is used when processing an SPU profile
+	 * where the SPU ELF is embedded within the PPE binary.
+	 */
+	op_bfd(std::string const & archive_path,
+	       uint64_t spu_offset,
+	       std::string const & filename,
+	       string_filter const & symbol_filter,
+	       bool & ok);
+
+	std::string get_embedding_filename() const { return embedding_filename; }
+
 	/// close an opened bfd image and free all related resources
 	~op_bfd();
 
@@ -252,6 +264,12 @@ private:
 	typedef std::map<std::string, u32> filepos_map_t;
 	// mapping of section names to filepos in the original binary
 	filepos_map_t filepos_map;
+
+	/**
+	 * If spu_offset is non-zero, embedding_filename is the file containing
+	 * the embedded SPU image.
+	 */
+	std::string embedding_filename;
 };
 
 

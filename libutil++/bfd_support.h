@@ -93,6 +93,9 @@ bfd * open_bfd(std::string const & file);
 /// open the given BFD from the fd
 bfd * fdopen_bfd(std::string const & file, int fd);
 
+/// Return a BFD for an SPU ELF embedded in PPE binary file
+bfd * spu_open_bfd(std::string const name, int fd, uint64_t offset_to_spu_elf);
+
 /// Return true if the symbol is worth looking at
 bool interesting_symbol(asymbol * sym);
 
