@@ -93,10 +93,16 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 			PPC64 processors (Power4/Power5/PPC970) require a recent (&gt; 2.6.5) kernel with the line 
 			<constant>#define PV_970</constant> present in <filename>include/asm-ppc64/processor.h</filename>.
 <!-- FIXME: do we require always gte 2.4.10 for nosmp ? -->
-+                       </para>
-+                       <para>
-+                       PPC64 processors (Cell) require a recent (&gt; 2.6.18) kernel with the line
-+                       <constant>#define PV_BE</constant> present in <filename>include/asm-powerpc/reg.h</filename>.
+                       </para>
+                       <para>
+                       Profiling the Cell Broadband Engine PowerPC Processing Element (PPE) requires a kernel version
+                       of 2.6.18 or more recent.
+                       Profiling the Cell Broadband Engine Synergistic Processing Element (SPE) requires a kernel version
+                       of 2.6.22 or more recent.  Additionally, full support of SPE profiling requires a BFD library
+                       from binutils code dated January 2007 or later.  To ensure the proper BFD support exists, run
+                       the <code>configure</code> utility with <code>--with-target=cell-be</code>.
+                       <note>Attempting to profile SPEs with kernel versions older than 2.6.22 may cause the
+                       system to crash.</note>
 		</para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -761,11 +767,11 @@ hardware counters as necessary. Note that some combinations are not
 allowed by the CPU; running <command>opcontrol --list-events</command> gives the details
 of each event. The event specification is a colon-separated string
 of the form <option><emphasis>name</emphasis>:<emphasis>count</emphasis>:<emphasis>unitmask</emphasis>:<emphasis>kernel</emphasis>:<emphasis>user</emphasis></option> as described in this table:
-</para>
 <note><para>
 For the PowerPC platforms, all events specified must be in the same group; i.e., the group number
 appended to the event name (e.g. <constant>&lt;<emphasis>some-event-name</emphasis>&gt;_GRP9</constant>) must be the same.
 </para></note>
+</para>
 <informaltable frame="all">
 <tgroup cols='2'> 
 <tbody>
@@ -871,7 +877,7 @@ from <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink
 implementation is detailed in <ulink
 url="http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf">
 http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf</ulink>.
-For PowerPC64 processors in IBM iSeries and pSeries systems, processor documentation
+For PowerPC64 processors in IBM iSeries, pSeries, and blade server systems, processor documentation
 is available at <ulink url="http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC/">
 http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC</ulink>.  (For example, the
 specific publication containing information on the performance monitor unit for the PowerPC970 is 
@@ -1014,6 +1020,57 @@ special purpose registers used for programming the counters -- MMCR0, MMCR1,
 and MMCRA.  Advanced features such as instruction matching and thresholding are
 not supported by this version of OProfile.
 </para>
+</sect2>
+
+<sect2 id="cell-be">
+<title>Cell Broadband Engine support</title>
+<para>
+The Cell Broadband Engine (CBE) processor core consists of a PowerPC Processing
+Element (PPE) and 8 Synergistic Processing Elements (SPE).  PPEs and SPEs each
+consist of a processing unit (PPU and SPU, respectively) and other hardware
+components, such as memory controllers.
+</para>
+<para>
+A PPU has two hardware threads (aka "virtual CPUs").  The performance monitor
+unit of the CBE collects event information on one hardware thread at a time.
+Therefore, when profiling PPE events,
+OProfile collects the profile based on the selected events by time slicing the
+performance counter hardware between the two threads.   The user must ensure the
+collection interval is long enough so that the time spent collecting data for
+each PPU is sufficient to obtain a good profile.
+</para>
+<para>
+To profile an SPU application, the user should specify the SPU_CYCLES event.
+When starting OProfile with SPU_CYCLES, the opcontrol script enforces certain
+separation parameters (separate=cpu,lib) to ensure that sufficient information
+is collected in the sample data in order to generate a complete report.  The
+--merge=cpu option can be used to obtain a more readable report if analyzing
+the performance of each separate SPU is not necessary.
+</para>
+<para>
+SPU profile reports have some unique characteristics compared to reports for
+standard architectures:
+</para>
+<itemizedlist>
+<listitem>Typically no "app name" column.  This is really standard OProfile behavior
+when the report contains samples for just a single application, which is
+commonly the case when profiling SPUs.</listitem>
+<listitem>"CPU" equates to "SPU"</listitem>
+<listitem>Specifying '--long-filenames' on the opreport command does not always result
+in long filenames.  This happens when the SPU application code is embedded in
+the PPE executable or shared library.  The embedded SPU ELF data contains only the
+short filename (i.e., no path information) for the SPU binary file that was used as
+the source for embedding.   The reason that just the short filename is used is because
+the original SPU binary file may not exist or be accessible at runtime.  The performance
+analyst must have sufficient knowledge of the application to be able to correlate the
+SPU binary image names found in the  report to the application's source files.
+<note>
+Compile the application with -g and generate the OProfile report
+with -g to facilitate finding the right source file(s) on which to focus.
+</note>
+</listitem>
+</itemizedlist>
+
 </sect2>
 
 <sect2 id="misuse">

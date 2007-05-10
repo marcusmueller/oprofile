@@ -22,6 +22,7 @@
 
 # Signal Default
 event:0x1 counters:0,1,2,3 um:zero minimum:100000 name:CYCLES : Processor Cycles
+event:0x2 counters:0,1,2,3 um:zero minimum:60000 name:SPU_CYCLES : SPU Processor Cycles
 
 
 # Cell BE Island 2 - PowerPC Processing Unit (PPU)

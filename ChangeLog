@@ -1,3 +1,13 @@
+2007-05-10  Maynard Johnson <maynardj@us.ibm.com>
+
+	* configure.in:
+	* doc/oprofile.xml:
+	* events/ppc64/cell-be/events:
+	* m4/Makefile.am:
+	* m4/cellspubfdsupport.m4:
+	* utils/opcontrol: Patch 1 of 3 for adding support for profiling
+	  Cell Broadband Engine SPU
+
 2007-04-25  Manoj Ekbote  <manoj.ekbote@broadcom.com>
 
 	* events/mips/sb1/events: fix SB1 events

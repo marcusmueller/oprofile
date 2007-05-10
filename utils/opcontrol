@@ -1091,10 +1091,31 @@ check_event_mapping_data()
 	fi
 	if [ "$CPUTYPE" = "ppc64/cell-be" ]; then
 		event_num=`echo $EVENT_STR | awk '{print $1}'`
-                if test $event_num -eq 1; then
-                        # CYCLES is compatible with any event
-                        return
-                fi
+		if [ "$event_num" = "2" ] ; then
+			if [ "$CYCLES" = "1" \
+				-o "$GRP_NUM_CK_VAL" != "" ] ; then
+				echo "ERROR: SPU CYCLES cannot be counted with any other events." >&2
+				exit 1
+			else
+				SPU_CYCLES=2
+				return
+			fi
+		fi
+		if [ "$event_num" = "1" ] ; then
+                        # CYCLES is compatible with any event except SPU_CYCLES
+			if [ "$SPU_CYCLES" = "2" ] ; then
+				echo "ERROR: PPU CYCLES and SPU CYCLES cannot be counted simultaneously." >&2
+				exit 1
+			else
+				CYCLES=1
+				return
+			fi
+		else
+		    if [ "$SPU_CYCLES" = "2" ] ; then
+			echo "ERROR: SPU CYCLES cannot be counted with any other events." >&2
+			exit 1
+			fi
+		fi
 		len=`echo -n $event_num | wc -m`
 		num_chars_in_grpid=`expr $len - 2`
 		GRP_NUM_VAL=`echo | awk '{print substr("'"${event_num}"'",1,"'"${num_chars_in_grpid}"'")}'`
@@ -1102,8 +1123,8 @@ check_event_mapping_data()
 			GRP_NUM_CK_VAL=$GRP_NUM_VAL
 		else
 			if test $GRP_NUM_CK_VAL != $GRP_NUM_VAL ; then
-				echo "ERROR: The specified events are not from the same group."
-                                echo "       Use 'opcontrol --list-events' to see event groupings."
+				echo "ERROR: The specified events are not from the same group." >&2
+				echo "       Use 'opcontrol --list-events' to see event groupings." >&2
                                 exit 1
                         fi
                 fi
@@ -1192,6 +1213,33 @@ do_param_setup()
 			USER=`echo $GOTEVENT | awk -F: '{print $5}'`
 			CTR=`echo $HW_CTRS | awk "{print \\$$((f + 1))}"`
 
+			if test "$EVENT" = "SPU_CYCLES"; then
+			        if test "$SEPARATE_KERNEL" = "1"; then
+			                SEPARATE_KERNEL=0
+					echo "Ignoring --separate=kernel option with SPU_CYCLES"
+				fi
+				if test "$SEPARATE_LIB" = "0"; then
+					SEPARATE_LIB=1
+					echo "Forcing required option --separate=lib with SPU_CYCLES"
+				fi
+
+				# It is possible for a single application to be
+				# running on all SPUs simultaneously.  Without
+				# SEPARATE_CPU, the resulting sample data would
+				# consist of a single sample file.  If all SPUs
+				# were truly running the same code, the merging
+				# of sample data would be fine.  However, an
+				# application file may have multiple SPU images
+				# embedded within it, resulting in different
+				# code running on different SPUs.  Therefore,
+				# we force SEPARATE_CPU in order to properly
+				# handle this case.
+				if test "$SEPARATE_CPU" = "0"; then
+					SEPARATE_CPU=1
+					echo "Forcing required option --separate=cpu with SPU_CYCLES"
+
+				fi
+			fi
 			if test "$EVENT" = "RTC_INTERRUPTS"; then
 				set_param rtc_value $COUNT
 				$SYSCTL -w dev.oprofile.rtc_value=$COUNT
