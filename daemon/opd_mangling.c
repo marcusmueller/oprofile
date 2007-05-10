@@ -143,6 +143,7 @@ int opd_open_sample_file(odb_t * file, struct sfile * last,
 {
 	char * mangled;
 	char const * binary;
+	int spu_profile = 0;
 	vma_t last_start = 0;
 	int err;
 
@@ -186,10 +187,14 @@ retry:
 	if (last && last->anon)
 		last_start = last->anon->start;
 
+	if (sf->embedded_offset != UNUSED_EMBEDDED_OFFSET)
+		spu_profile = 1;
+
 	fill_header(odb_get_data(file), counter,
 		    sf->anon ? sf->anon->start : 0, last_start,
 		    !!sf->kernel, last ? !!last->kernel : 0,
-	            binary ? op_get_mtime(binary) : 0);
+		    spu_profile, sf->embedded_offset,
+		    binary ? op_get_mtime(binary) : 0);
 
 out:
 	sfile_put(sf);

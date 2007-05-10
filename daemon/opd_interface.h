@@ -27,6 +27,8 @@
 /* Code 9 used to be TRACE_END_CODE which is not used anymore  */
 /* Code 9 is now considered an unknown escape code             */
 #define XEN_ENTER_SWITCH_CODE		10
-#define LAST_CODE			11
+#define SPU_PROFILING_CODE		11
+#define SPU_CTX_SWITCH_CODE		12
+#define LAST_CODE			13
  
 #endif /* OPD_INTERFACE_H */

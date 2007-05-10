@@ -199,6 +199,14 @@ create_sfile(unsigned long hash, struct transient const * trans,
 
 	sf->ignored = is_sf_ignored(sf);
 
+	sf->embedded_offset = trans->embedded_offset;
+
+	/* If embedded_offset is a valid value, it means we're
+	 * processing a Cell BE SPU profile; in which case, we
+	 * want sf->app_cookie to hold trans->app_cookie.
+	 */
+	if (trans->embedded_offset != UNUSED_EMBEDDED_OFFSET)
+		sf->app_cookie = trans->app_cookie;
 	return sf;
 }
 

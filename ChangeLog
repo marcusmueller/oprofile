@@ -1,5 +1,21 @@
 2007-05-10  Maynard Johnson <maynardj@us.ibm.com>
 
+	* daemon/liblegacy/opd_sample_files.c:
+	* daemon/opd_events.c:
+	* daemon/opd_events.h:
+	* daemon/opd_interface.h:
+	* daemon/Makefile.am:
+	* daemon/opd_mangling.c:
+	* daemon/opd_sfile.c:
+	* daemon/opd_sfile.h:
+	* daemon/opd_spu.c:
+	* daemon/opd_trans.c:
+	* daemon/opd_trans.h:
+	* libop/op_sample_file.h: Patch 2 of 3 for adding support for profiling
+	  Cell Broadband Engine SPU
+
+2007-05-10  Maynard Johnson <maynardj@us.ibm.com>
+
 	* configure.in:
 	* doc/oprofile.xml:
 	* events/ppc64/cell-be/events:

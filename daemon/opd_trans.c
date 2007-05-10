@@ -10,6 +10,10 @@
  * Modified by Aravind Menon for Xen
  * These modifications are:
  * Copyright (C) 2005 Hewlett-Packard Co.
+ *
+ * Modified by Maynard Johnson <maynardj@us.ibm.com>
+ * These modifications are:
+ * (C) Copyright IBM Corporation 2007
  */
 
 #include "opd_trans.h"
@@ -44,21 +48,7 @@ void clear_trans_current(struct transient * trans)
 }
 
 
-static inline void update_trans_last(struct transient * trans)
-{
-	trans->last = trans->current;
-	trans->last_anon = trans->anon;
-	trans->last_pc = trans->pc;
-}
-
-
-static inline int is_escape_code(uint64_t code)
-{
-	return kernel_pointer_size == 4 ? code == ~0LU : code == ~0LLU;
-}
-
-
-static uint64_t pop_buffer_value(struct transient * trans)
+uint64_t pop_buffer_value(struct transient * trans)
 {
 	uint64_t val;
 
@@ -81,7 +71,7 @@ static uint64_t pop_buffer_value(struct transient * trans)
 }
 
 
-static int enough_remaining(struct transient * trans, size_t size)
+int enough_remaining(struct transient * trans, size_t size)
 {
 	if (trans->remaining >= size)
 		return 1;
@@ -265,9 +255,10 @@ static void code_xen_enter(struct transient * trans)
 	 */
 }
 
-typedef void (*handler_t)(struct transient *);
+extern void code_spu_profiling(struct transient * trans);
+extern void code_spu_ctx_switch(struct transient * trans);
 
-static handler_t handlers[LAST_CODE + 1] = {
+handler_t handlers[LAST_CODE + 1] = {
 	&code_unknown,
 	&code_ctx_switch,
 	&code_cpu_switch,
@@ -280,8 +271,11 @@ static handler_t handlers[LAST_CODE + 1] = {
 	&code_trace_begin,
 	&code_unknown,
  	&code_xen_enter,
+	&code_spu_profiling,
+	&code_spu_ctx_switch,
 };
 
+extern void (*special_processor)(struct transient *);
 
 void opd_process_samples(char const * buffer, size_t count)
 {
@@ -301,6 +295,7 @@ void opd_process_samples(char const * buffer, size_t count)
 		.in_kernel = -1,
 		.cpu = -1,
 		.tid = -1,
+		.embedded_offset = UNUSED_EMBEDDED_OFFSET,
 		.tgid = -1
 	};
 
@@ -309,6 +304,11 @@ void opd_process_samples(char const * buffer, size_t count)
 	 * generate a warning, this look like a stopper to use c98 types :/
 	 */
 	unsigned long long code;
+
+	if (special_processor) {
+		special_processor(&trans);
+		return;
+	}
 
 	while (trans.remaining) {
 		code = pop_buffer_value(&trans);
