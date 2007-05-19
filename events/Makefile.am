@@ -22,6 +22,7 @@ event_files = \
 	ppc64/power6/events ppc64/power6/event_mappings ppc64/power6/unit_masks \
 	ppc64/970/events ppc64/970/event_mappings ppc64/970/unit_masks \
 	ppc64/970MP/events ppc64/970MP/event_mappings ppc64/970MP/unit_masks \
+	ppc64/pa6t/events ppc64/pa6t/event_mappings ppc64/pa6t/unit_masks \
 	ppc64/cell-be/events ppc64/cell-be/unit_masks \
 	rtc/events rtc/unit_masks \
 	x86-64/hammer/events x86-64/hammer/unit_masks \

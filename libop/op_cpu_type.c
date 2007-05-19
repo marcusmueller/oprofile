@@ -68,6 +68,7 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "ppc64 970MP", "ppc64/970MP", CPU_PPC64_970MP, 8 },
 	{ "ppc64 Cell Broadband Engine", "ppc64/cell-be", CPU_PPC64_CELL, 8 },
 	{ "AMD64 family10", "x86-64/family10", CPU_FAMILY10, 4 },
+ 	{ "ppc64 PA6T", "ppc64/pa6t", CPU_PPC64_PA6T, 6 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

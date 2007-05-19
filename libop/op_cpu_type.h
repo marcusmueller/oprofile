@@ -16,7 +16,9 @@
 extern "C" {
 #endif
 
-/** supported cpu type */
+/**
+ * Supported cpu type.  Always add new CPU types at the very end.
+ */
 typedef enum {
 	CPU_NO_GOOD = -1, /**< unsupported CPU type */
 	CPU_PPRO, /**< Pentium Pro */
@@ -64,6 +66,7 @@ typedef enum {
 	CPU_PPC64_970MP, /**< ppc64 970MP */
 	CPU_PPC64_CELL, /**< ppc64 Cell Broadband Engine*/
 	CPU_FAMILY10, /**< AMD family 10 */
+ 	CPU_PPC64_PA6T, /**< ppc64 PA6T */
 	MAX_CPU_TYPE
 } op_cpu;
 

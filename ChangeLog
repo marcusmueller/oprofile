@@ -1,3 +1,19 @@
+2007-05-19  Olof Johansson  <olof@lixom.net>
+
+	* events/Makefile.in:
+	* events/ppc64/pa6t/event_mappings:
+	* events/ppc64/pa6t/events:
+	* events/ppc64/pa6t/unit_masks:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/opcontrol:
+	* utils/ophelp.c: PA Semi 6T support
+
+2007-05-09  Richard Purdie  <rpurdie@openedhand.com>
+
+	* oprofile/daemon/opd_cookie.c: Fix syscall for ARM EABI
+
 2007-05-10  Maynard Johnson <maynardj@us.ibm.com>
 
 	* libpp/Makefile.am:
@@ -42,6 +58,7 @@
 	* utils/opcontrol: Patch 1 of 3 for adding support for profiling
 	  Cell Broadband Engine SPU
 
+>>>>>>> 1.1726
 2007-04-25  Manoj Ekbote  <manoj.ekbote@broadcom.com>
 
 	* events/mips/sb1/events: fix SB1 events

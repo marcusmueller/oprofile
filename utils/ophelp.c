@@ -426,6 +426,11 @@ int main(int argc, char const * argv[])
 		break;
 		break;
 
+	case CPU_PPC64_PA6T:
+		printf("See PA6T Power Implementation Features Book IV\n"
+			   "Chapter 7 Performance Counters\n");
+        break;
+
 	case CPU_PPC64_POWER4:
 	case CPU_PPC64_POWER5:
 	case CPU_PPC64_POWER6:

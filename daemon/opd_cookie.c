@@ -68,7 +68,8 @@ static inline int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
 	return syscall(__NR_lookup_dcookie, (unsigned long)(cookie >> 32),
 		       (unsigned long)(cookie & 0xffffffff), buf, size);
 }
-#elif (defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_ABI32)) /*_MIPSEL */
+#elif (defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_ABI32)) \
+	|| (defined(__arm__) && defined(__ARM_EABI__))
 static inline int lookup_dcookie(cookie_t cookie, char * buf, size_t size)
 {
 	return syscall(__NR_lookup_dcookie,
