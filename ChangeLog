@@ -1,3 +1,8 @@
+2007-05-20  Dean Gaudet  <dgaudet@users.sourceforge.net>
+
+	* events/i386/core_2/events: ITLB_MISS_RETIRED,MEM_LOAD_RETIRED
+	  only work with counter 0
+
 2007-05-20  Richard Purdie  <rpurdie@openedhand.com>
 
 	* libpp/callgraph_container.cpp:
@@ -79,7 +84,6 @@
 	* utils/opcontrol: Patch 1 of 3 for adding support for profiling
 	  Cell Broadband Engine SPU
 
->>>>>>> 1.1726
 2007-04-25  Manoj Ekbote  <manoj.ekbote@broadcom.com>
 
 	* events/mips/sb1/events: fix SB1 events

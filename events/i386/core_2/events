@@ -114,9 +114,9 @@ event:0xc5 counters:0,1 um:zero minimum:500 name:BR_MISS_PRED_RETIRED : number o
 event:0xc6 counters:0,1 um:cycles_int_masked minimum:500 name:CYCLES_INT_MASKED : cycles interrupts are disabled
 event:0xc7 counters:0,1 um:simd_inst_retired minimum:500 name:SIMD_INST_RETIRED : SSE/SSE2 instructions retired
 event:0xc8 counters:0,1 um:zero minimum:500 name:HW_INT_RCV : number of hardware interrupts received
-event:0xc9 counters:0,1 um:zero minimum:500 name:ITLB_MISS_RETIRED : Retired instructions that missed the ITLB
+event:0xc9 counters:0 um:zero minimum:500 name:ITLB_MISS_RETIRED : Retired instructions that missed the ITLB
 event:0xca counters:0,1 um:simd_comp_inst_retired minimum:500 name:SIMD_COMP_INST_RETIRED : Retired computational SSE/SSE2 instructions
-event:0xcb counters:0,1 um:mem_load_retired minimum:500 name:MEM_LOAD_RETIRED : Retired loads
+event:0xcb counters:0 um:mem_load_retired minimum:500 name:MEM_LOAD_RETIRED : Retired loads
 event:0xcc counters:0,1 um:mmx_trans minimum:3000 name:FP_MMX_TRANS : MMX-floating point transitions
 event:0xcd counters:0,1 um:zero minimum:500 name:MMX_ASSIST : number of EMMS instructions executed
 event:0xce counters:0,1 um:zero minimum:500 name:SIMD_INSTR_RET : number of SIMD instructions retired
