@@ -1,3 +1,24 @@
+2007-05-20  Richard Purdie  <rpurdie@openedhand.com>
+
+	* libpp/callgraph_container.cpp:
+	* libpp/callgraph_container.h:
+	* libpp/format_output.cpp:
+	* libpp/format_output.h:
+	* libpp/symbol.h:
+	* libpp/symbol_sort.cpp:
+	* libpp/symbol_sort.h:
+	* pp/opreport.cpp: Convert cg_collection to symbol_collection and use
+	dynamic casting allowing more code reuse for callgraphs
+
+2007-05-19  Richard Purdie  <rpurdie@openedhand.com>
+
+	* doc/oparchive.1.in:
+	* doc/oprofile.xml:
+	* pp/oparchive.cpp:
+	* pp/oparchive_options.cpp:
+	* pp/oparchive_options.h: Add --list-files option to list all files
+	  that would be handled by oparchive.
+
 2007-05-19  Olof Johansson  <olof@lixom.net>
 
 	* events/Makefile.in:

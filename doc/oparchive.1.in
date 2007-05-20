@@ -50,6 +50,10 @@ Output to the given directory. There is no default. This must be specified.
 Do not include application-specific images for libraries, kernel modules
 and the kernel. This option only makes sense if the profile session
 used --separate.
+.br
+.TP
+.BI "--list-files / -l"
+Only list the files that would be archived, don't copy them.
 
 .SH ENVIRONMENT
 No special environment variables are recognised by oparchive.

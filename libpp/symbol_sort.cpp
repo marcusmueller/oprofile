@@ -146,23 +146,6 @@ sort(symbol_collection & syms, bool reverse_sort, bool lf) const
 
 
 void sort_options::
-sort(cg_collection & syms, bool reverse_sort, bool lf) const
-{
-	long_filenames = lf;
-
-	vector<sort_order> sort_option(options);
-	for (sort_order cur = first; cur != last; cur = sort_order(cur + 1)) {
-		if (find(sort_option.begin(), sort_option.end(), cur) ==
-		    sort_option.end())
-			sort_option.push_back(cur);
-	}
-
-	stable_sort(syms.begin(), syms.end(),
-	            symbol_compare(sort_option, reverse_sort));
-}
-
-
-void sort_options::
 sort(diff_collection & syms, bool reverse_sort, bool lf) const
 {
 	long_filenames = lf;

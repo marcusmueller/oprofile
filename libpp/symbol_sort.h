@@ -44,12 +44,6 @@ struct sort_options {
 	/**
 	 * Sort the given container by the given criteria.
 	 */
-	void sort(cg_collection & syms, bool reverse_sort,
-	          bool long_filenames) const;
-
-	/**
-	 * Sort the given container by the given criteria.
-	 */
 	void sort(diff_collection & syms, bool reverse_sort,
 	          bool long_filenames) const;
 

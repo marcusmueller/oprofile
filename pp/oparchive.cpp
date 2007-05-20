@@ -35,6 +35,11 @@ namespace {
 
 void copy_one_file(image_error err, string const & source, string const & dest)
 {
+	if (options::list_files) {
+		cout << source << endl;
+		return;
+	}
+
 	if (!copy_file(source, dest) && err == image_ok) {
 		cerr << "can't copy from " << source << " to " << dest
 		     << " cause: " << strerror(errno) << endl;
@@ -46,7 +51,7 @@ int oparchive(options::spec const & spec)
 	handle_options(spec);
 
 	/* Check to see if directory can be created */
-	if (create_path(options::outdirectory.c_str())) {
+	if (!options::list_files && create_path(options::outdirectory.c_str())) {
 		cerr << "Unable to create directory for " 
 		     <<	options::outdirectory << "." << endl;
 		exit (EXIT_FAILURE);
@@ -73,7 +78,8 @@ int oparchive(options::spec const & spec)
 
 		cverb << vdebug << exe_name << endl;
 		/* Create directory for executable file. */
-		if (create_path(exe_archive_file.c_str())) {
+		if (!options::list_files &&
+			create_path(exe_archive_file.c_str())) {
 			cerr << "Unable to create directory for "
 			     << exe_archive_file << "." << endl;
 			exit (EXIT_FAILURE);
@@ -122,7 +128,8 @@ int oparchive(options::spec const & spec)
 		
 		cverb << vdebug << (sample_name) << endl;
 		cverb << vdebug << " destp " << sample_archive_file << endl;
-		if (create_path(sample_archive_file.c_str())) {
+		if (!options::list_files &&
+			create_path(sample_archive_file.c_str())) {
 			cerr << "Unable to create directory for "
 			     <<	sample_archive_file << "." << endl;
 			exit (EXIT_FAILURE);

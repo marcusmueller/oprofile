@@ -379,12 +379,14 @@ process(count_array_t total, double threshold,
 
 		process_children(sym, threshold);
 
-		cg_syms.push_back(sym);
+		// insert sym into cg_syms_objs
+		// then store pointer to sym in cg_syms
+		cg_syms.push_back(&(*cg_syms_objs.insert(cg_syms_objs.end(), sym)));
 	}
 }
 
 
-cg_collection arc_recorder::get_symbols() const
+const symbol_collection & arc_recorder::get_symbols() const
 {
 	return cg_syms;
 }
@@ -580,12 +582,12 @@ column_flags callgraph_container::output_hint() const
 	column_flags output_hints = cf_none;
 
 	// FIXME: costly: must we access directly recorder map ?
-	cg_collection syms = recorder.get_symbols();
+	symbol_collection syms = recorder.get_symbols();
 
-	cg_collection::const_iterator it;
-	cg_collection::const_iterator const end = syms.end();
+	symbol_collection::iterator it;
+	symbol_collection::iterator const end = syms.end();
 	for (it = syms.begin(); it != end; ++it)
-		output_hints = it->output_hint(output_hints);
+		output_hints = (*it)->output_hint(output_hints);
 
 	return output_hints;
 }
@@ -597,7 +599,7 @@ count_array_t callgraph_container::samples_count() const
 }
 
 
-cg_collection callgraph_container::get_symbols() const
+const symbol_collection & callgraph_container::get_symbols() const
 {
 	return recorder.get_symbols();
 }

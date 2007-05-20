@@ -489,7 +489,7 @@ cg_formatter::cg_formatter(callgraph_container const & profile)
 }
 
 
-void cg_formatter::output(ostream & out, cg_collection const & syms)
+void cg_formatter::output(ostream & out, symbol_collection const & syms)
 {
 	// amount of spacing prefixing child and parent lines
 	string const child_parent_prefix("  ");
@@ -498,37 +498,37 @@ void cg_formatter::output(ostream & out, cg_collection const & syms)
 
 	out << string(79, '-') << endl;
 
-	cg_collection::const_iterator it;
-	cg_collection::const_iterator end = syms.end();
+	symbol_collection::const_iterator it;
+	symbol_collection::const_iterator end = syms.end();
 
 	for (it = syms.begin(); it < end; ++it) {
-		cg_symbol const & sym = *it;
+		cg_symbol const *sym = dynamic_cast<const cg_symbol *>(*it);
 
 		cg_symbol::children::const_iterator cit;
-		cg_symbol::children::const_iterator cend = sym.callers.end();
+		cg_symbol::children::const_iterator cend = sym->callers.end();
 
 		counts_t c;
 		if (global_percent)
 			c.total = counts.total;
 		else
-			c.total = sym.total_caller_count;
+			c.total = sym->total_caller_count;
 
-		for (cit = sym.callers.begin(); cit != cend; ++cit) {
+		for (cit = sym->callers.begin(); cit != cend; ++cit) {
 			out << child_parent_prefix;
 			do_output(out, *cit, cit->sample, c);
 		}
 
-		do_output(out, sym, sym.sample, counts);
+		do_output(out, *sym, sym->sample, counts);
 
 		c = counts_t();
 		if (global_percent)
 			c.total = counts.total;
 		else
-			c.total = sym.total_callee_count;
+			c.total = sym->total_callee_count;
 
-		cend = sym.callees.end();
+		cend = sym->callees.end();
 
-		for (cit = sym.callees.begin(); cit != cend; ++cit) {
+		for (cit = sym->callees.begin(); cit != cend; ++cit) {
 			out << child_parent_prefix;
 			do_output(out, *cit, cit->sample, c);
 		}

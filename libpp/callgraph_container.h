@@ -53,7 +53,7 @@ public:
 	         count_array_t const & arc_count);
 
 	/// return all the cg symbols
-	cg_collection get_symbols() const;
+	const symbol_collection & get_symbols() const;
 
 	/**
 	 * After population, build the final output, and do
@@ -90,8 +90,11 @@ private:
 	/// all the symbols (used during processing)
 	map_t sym_map;
 
+	/// symbol objects pointed to by pointers in vector cg_syms
+	cg_collection_objs cg_syms_objs;
+
 	/// final output data
-	cg_collection cg_syms;
+	symbol_collection cg_syms;
 };
 
 
@@ -126,7 +129,7 @@ public:
 	count_array_t samples_count() const;
 
 	// return all the cg symbols
-	cg_collection get_symbols() const;
+	const symbol_collection & get_symbols() const;
 
 private:
 	/**

@@ -2057,6 +2057,9 @@ This is needed to find modules in kernels 2.6 and upwards.
 <varlistentry><term><option>--output-directory / -o [directory]</option></term><listitem><para>
 Output to the given directory. There is no default. This must be specified.
 </para></listitem></varlistentry>
+<varlistentry><term><option>--list-files / -l</option></term><listitem><para>
+Only list the files that would be archived, don't copy them.
+</para></listitem></varlistentry>
 <varlistentry><term><option>--verbose / -V [options]</option></term><listitem><para>
 Give verbose debugging output.
 </para></listitem></varlistentry>

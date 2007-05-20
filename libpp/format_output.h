@@ -201,7 +201,7 @@ public:
 
 	/** output callgraph information according to the previously format
 	 * specifier set by call(s) to add_format() */
-	void output(std::ostream & out, cg_collection const & syms);
+	void output(std::ostream & out, symbol_collection const & syms);
 };
 
 /// class to output a columned format symbols plus diff values

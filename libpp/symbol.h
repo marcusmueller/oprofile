@@ -56,8 +56,11 @@ struct sample_entry {
 
 
 /// associate a symbol with a file location, samples count and vma address
-struct symbol_entry {
+class symbol_entry {
+public:
 	symbol_entry() : size(0) {}
+	virtual ~symbol_entry() {}
+
 	/// which image this symbol belongs to
 	image_name_id image_name;
 	/// owning application name: identical to image name if profiling
@@ -95,7 +98,8 @@ typedef std::vector<symbol_entry const *> symbol_collection;
  * the sample counts replaced with the relevant arc counts, whilst
  * the cg_symbol retains its self count.
  */
-struct cg_symbol : public symbol_entry {
+class cg_symbol : public symbol_entry {
+public:
 	cg_symbol(symbol_entry const & sym) : symbol_entry(sym) {}
 
 	typedef std::vector<symbol_entry> children;
@@ -111,10 +115,8 @@ struct cg_symbol : public symbol_entry {
 	count_array_t total_callee_count;
 };
 
-
-/// a collection of sorted callgraph symbols
-typedef std::vector<cg_symbol> cg_collection;
-
+/// a collection of sorted callgraph symbol objects
+typedef std::list<cg_symbol> cg_collection_objs;
 
 /// for storing diff %ages
 typedef growable_vector<double> diff_array_t;

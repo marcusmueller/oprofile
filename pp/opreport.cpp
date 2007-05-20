@@ -445,7 +445,8 @@ void output_cg_symbols(callgraph_container const & cg, bool multiple_apps)
 {
 	column_flags output_hints = cg.output_hint();
 
-	cg_collection symbols = cg.get_symbols();
+	symbol_collection symbols = cg.get_symbols();
+
 	options::sort_by.sort(symbols, options::reverse_sort,
 	                      options::long_filenames);
 
