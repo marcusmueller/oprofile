@@ -151,6 +151,23 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="callees">
+    <xs:complexType>
+      <xs:sequence>
+		<xs:element minOccurs="0" maxOccurs="unbounded" ref="module"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="callers">
+    <xs:complexType>
+      <xs:sequence>
+		<xs:element minOccurs="0" maxOccurs="unbounded" ref="module"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+
   <xs:element name="symboltable">
     <xs:complexType>
       <xs:sequence>
@@ -183,9 +200,13 @@
     <xs:complexType>
       <xs:sequence>
   	    <xs:element minOccurs="1" maxOccurs="unbounded" ref="count"/>
+        <xs:element minOccurs="0" maxOccurs="1" ref="callers"/>
+        <xs:element minOccurs="0" maxOccurs="1" ref="callees"/>
       </xs:sequence>
 	  <!-- idref is an index into symboltable table-->
       <xs:attribute name="idref" type="xs:nonNegativeInteger" use="required"/>
+	  <!-- self is a boolean to mark self referencing callee symbols -->
+      <xs:attribute name="self" type="xs:boolean" use="optional"/>
 	  <!-- detaillo,detailhi lookup ids into corresponding symboldetails -->
       <xs:attribute name="detaillo" type="xs:nonNegativeInteger" use="optional"/>
       <xs:attribute name="detailhi" type="xs:nonNegativeInteger" use="optional"/>

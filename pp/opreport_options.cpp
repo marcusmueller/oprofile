@@ -177,11 +177,6 @@ void check_options(bool diff)
 	}
 
 	if (xml) {
-		if (callgraph) {
-			cerr << "--callgraph is incompatible with --xml" << endl;
-			do_exit = true;
-		}
-
 		if (accumulated) {
 			cerr << "--accumulated is incompatible with --xml" << endl;
 			do_exit = true;

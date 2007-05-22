@@ -268,13 +268,6 @@ void xml_utils::output_xml_header(string const & command_options,
 	cout << close_element(SETUP) << endl;
 }
 
-size_t xml_utils::get_symbol_index(sym_iterator const it)
-{
-	return it - symbols_begin;
-}
-
-
-
 class subclass_info_t {
 public:
 	string unitmask;
@@ -450,7 +443,7 @@ public:
 	bool is_closed(string const & n);
 protected:
 	void output_summary(ostream & out);
-	void output_symbols(ostream & out);
+	void output_symbols(ostream & out, bool is_module);
 
 	string name;
 	sym_iterator begin;
@@ -600,7 +593,7 @@ void module_info::output(ostream & out)
 	out << open_element(MODULE, true);
 	out << init_attr(NAME, name) << close_element(NONE, true);
 	output_summary(out);
-	output_symbols(out);
+	output_symbols(out, true);
 	out << close_element(MODULE);
 }
 
@@ -612,13 +605,13 @@ void module_info::output_summary(ostream & out)
 }
 
 
-void module_info::output_symbols(ostream & out)
+void module_info::output_symbols(ostream & out, bool is_module)
 {
 	if (begin == (sym_iterator)0)
 		return;
 
 	for (sym_iterator it = begin; it != end; ++it)
-		xml_out->output_symbol(out, it, lo, hi);
+		xml_out->output_symbol(out, *it, lo, hi, is_module);
 }
 
 
@@ -798,7 +791,7 @@ void binary_info::output(ostream & out)
 	out << init_attr(NAME, name) << close_element(NONE, true);
 
 	output_summary(out);
-	output_symbols(out);
+	output_symbols(out, false);
 	for (size_t a = 0; a < nr_modules; ++a)
 		my_modules[a].output(out);
 

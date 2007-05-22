@@ -227,7 +227,7 @@ private:
 class xml_formatter : public formatter {
 public:
 	/// build a ready to use formatter
-	xml_formatter(profile_container const & profile,
+	xml_formatter(profile_container const * profile,
 		symbol_collection & symbols);
 
 	// output body of XML output
@@ -235,9 +235,9 @@ public:
 
 	/** output one symbol symb to out according to the output format
 	 * specifier previously set by call(s) to add_format() */
-	void output_symbol(std::ostream & out,
-		symbol_collection::const_iterator const it,
-		size_t lo, size_t hi);
+	virtual void output_symbol(std::ostream & out,
+		symbol_entry const * symb, size_t lo, size_t hi,
+		bool is_module);
 
 	/// output details for the symbol
 	std::string output_symbol_details(symbol_entry const * symb,
@@ -246,18 +246,18 @@ public:
 	/// set the output_details boolean
 	void show_details(bool);
 
+	// output SymbolData XML elements
+	void output_symbol_data(std::ostream & out);
+
 private:
 	/// container we work from
-	profile_container const & profile;
+	profile_container const * profile;
  
 	// ordered collection of symbols associated with this profile
 	symbol_collection & symbols;
 
 	/// true if we need to show details for each symbols
 	bool need_details;
-
-	// output SymbolData XML elements
-	void output_symbol_data(std::ostream & out);
 
 	// count of DetailData items output so far
 	size_t detail_count;
@@ -270,6 +270,27 @@ private:
 			      format_flags fl, tag_t tag);
 };
 
+// callgraph XML output version
+class xml_cg_formatter : public xml_formatter {
+public:
+	/// build a ready to use formatter
+	xml_cg_formatter(callgraph_container const * callgraph,
+		symbol_collection & symbols);
+
+	/** output one symbol symb to out according to the output format
+	 * specifier previously set by call(s) to add_format() */
+	virtual void output_symbol(std::ostream & out,
+		symbol_entry const * symb, size_t lo, size_t hi, bool is_module);
+
+private:
+	/// container we work from
+	callgraph_container const * callgraph;
+
+	void output_symbol_core(std::ostream & out,
+		cg_symbol::children const cg_symb,
+		std::string const selfname, std::string const qname,
+		size_t lo, size_t hi, bool is_module, tag_t tag);
+};
 
 } // namespace format_output 
 

@@ -378,7 +378,7 @@ void output_symbols(profile_container const & pc, bool multiple_apps)
 	format_output::opreport_formatter * text_out = 0;
 
 	if (options::xml) {
-		xml_out = new format_output::xml_formatter(pc, symbols);
+		xml_out = new format_output::xml_formatter(&pc, symbols);
 		xml_out->show_details(options::details);
 		out = xml_out;
 		// for XML always output long filenames
@@ -450,21 +450,41 @@ void output_cg_symbols(callgraph_container const & cg, bool multiple_apps)
 	options::sort_by.sort(symbols, options::reverse_sort,
 	                      options::long_filenames);
 
-	format_output::cg_formatter out(cg);
+	format_output::formatter * out;
+	format_output::xml_cg_formatter * xml_out = 0;
+	format_output::cg_formatter * text_out = 0;
 
-	out.set_nr_classes(nr_classes);
-	out.show_long_filenames(options::long_filenames);
-	out.show_header(options::show_header);
-	out.vma_format_64bit(output_hints & cf_64bit_vma);
-	out.show_global_percent(options::global_percent);
+	if (options::xml) {
+		xml_out = new format_output::xml_cg_formatter(&cg, symbols);
+		xml_out->show_details(options::details);
+		out = xml_out;
+		// for XML always output long filenames
+		out->show_long_filenames(true);
+	} else {
+		text_out = new format_output::cg_formatter(cg);
+		out = text_out;
+		out->show_long_filenames(options::long_filenames);
+	}
+
+	out->set_nr_classes(nr_classes);
+	out->show_header(options::show_header);
+	out->vma_format_64bit(output_hints & cf_64bit_vma);
+	out->show_global_percent(options::global_percent);
 
 	format_flags flags = get_format_flags(output_hints);
 	if (multiple_apps)
 		flags = format_flags(flags | ff_app_name);
 
-	out.add_format(flags);
+	out->add_format(flags);
 
-	out.output(cout, symbols);
+	if (options::xml) {
+		xml_support = new xml_utils(xml_out, symbols, nr_classes,
+			&options::symbol_filter, options::archive_path);
+		xml_out->output(cout);
+	} else {
+		text_out->output(cout, symbols);
+	}
+
 }
 
 

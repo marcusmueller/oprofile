@@ -562,6 +562,20 @@ ostringstream bytes_out;
 map<string, size_t> symbol_data_table;
 size_t symbol_data_index = 0;
 
+/* Return any existing index or add to the table */
+size_t xml_get_symbol_index(string const & name)
+{
+	size_t index = symbol_data_index;
+	map<string, size_t>::iterator it = symbol_data_table.find(name);
+
+	if (it == symbol_data_table.end()) {
+		symbol_data_table[name] = symbol_data_index++;
+		return index;
+	}
+
+	return it->second;
+}
+
 
 class symbol_details_t {
 public:
@@ -577,14 +591,15 @@ symbol_details_array_t symbol_details;
 size_t detail_table_index = 0;
 
 xml_formatter::
-xml_formatter(profile_container const & p,
+xml_formatter(profile_container const * p,
 		symbol_collection & s)
 	:
 	profile(p),
 	symbols(s),
 	need_details(false)
 {
-	counts.total = profile.samples_count();
+	if (profile)
+		counts.total = profile->samples_count();
 }
 
 
@@ -640,12 +655,11 @@ void xml_formatter::output_symbol_data(ostream & out)
 		string const image = get_image_name(symb->image_name, true);
 		string const qname = image + ":" + name;
 		map<string, size_t>::iterator sd_it = symbol_data_table.find(qname);
-		size_t si = xml_support->get_symbol_index(it);
 
-		if (sd_it->second == si) {
+		if (sd_it != symbol_data_table.end()) {
 			// first time we've seen this symbol
 			out << open_element(SYMBOL_DATA, true);
-			out << init_attr(TABLE_ID, si);
+			out << init_attr(TABLE_ID, sd_it->second);
 
 			field_datum datum(*symb, symb->sample, 0, counts);
 
@@ -660,9 +674,12 @@ void xml_formatter::output_symbol_data(ostream & out)
 				output_attribute(out, datum, ff_vma, STARTING_ADDR);
 
 				if (need_details)
-					xml_support->output_symbol_bytes(bytes_out, symb, si);
+					xml_support->output_symbol_bytes(bytes_out, symb, sd_it->second);
 			}
 			out << close_element();
+
+			// seen so remove (otherwise get several "no symbols")
+			symbol_data_table.erase(qname);
 		}
 	}
 	out << close_element(SYMBOL_TABLE);
@@ -675,8 +692,8 @@ output_symbol_details(symbol_entry const * symb,
 	if (!has_sample_counts(symb->sample.counts, lo, hi))
 		return "";
 
-	sample_container::samples_iterator it = profile.begin(symb);
-	sample_container::samples_iterator end = profile.end(symb);
+	sample_container::samples_iterator it = profile->begin(symb);
+	sample_container::samples_iterator end = profile->end(symb);
 
 	ostringstream str;
 	for (; it != end; ++it) {
@@ -725,10 +742,11 @@ output_symbol_details(symbol_entry const * symb,
 
 void xml_formatter::
 output_symbol(ostream & out,
-	symbol_collection::const_iterator const it, size_t lo, size_t hi)
+	symbol_entry const * symb, size_t lo, size_t hi, bool is_module)
 {
-	symbol_entry const * symb = *it;
 	ostringstream str;
+	// pointless reference to is_module, remove insane compiler warning
+	size_t indx = is_module ? 0 : 1;
 
 	// output symbol's summary data for each profile class
 	bool got_samples = false;
@@ -752,27 +770,21 @@ output_symbol(ostream & out,
 	
 	string const image = get_image_name(symb->image_name, true);
 	string const qname = image + ":" + name;
-	map<string, size_t>::iterator sd_it = symbol_data_table.find(qname);
-	size_t si = xml_support->get_symbol_index(it);
 
-	// if this is the first time we've seen this symbol, save it's index
-	if (sd_it == symbol_data_table.end())
-		symbol_data_table[qname] = si;
-	else
-		si = sd_it->second;
+	indx = xml_get_symbol_index(qname);
 
-	out << init_attr(ID_REF, si);
+	out << init_attr(ID_REF, indx);
 
 	if (need_details) {
 		ostringstream details;
-		symbol_details_t & sd = symbol_details[si];
+		symbol_details_t & sd = symbol_details[indx];
 		size_t const detail_lo = sd.index;
 
 		string detail_str = output_symbol_details(symb, sd.index, lo, hi);
 
 		if (detail_str.size() > 0) {
 			if (sd.id < 0)
-				sd.id = si;
+				sd.id = indx;
 			details << detail_str;
 		}
 
@@ -828,5 +840,128 @@ output_attribute(ostream & out, field_datum const & datum,
 	}
 }
 
+xml_cg_formatter::
+xml_cg_formatter(callgraph_container const * cg, symbol_collection & s)
+	:
+	xml_formatter(0, s),
+	callgraph(cg)
+{
+	counts.total = callgraph->samples_count();
+}
+
+void xml_cg_formatter::
+output_symbol_core(ostream & out, cg_symbol::children const cg_symb,
+	string const selfname, string const qname,
+	size_t lo, size_t hi, bool is_module, tag_t tag)
+{
+	cg_symbol::children::const_iterator cit;
+	cg_symbol::children::const_iterator cend = cg_symb.end();
+
+	for (cit = cg_symb.begin(); cit != cend; ++cit) {
+		string const & module = get_image_name((cit)->image_name, true);
+		bool got_samples = false;
+		bool self = false;
+		ostringstream str;
+		size_t indx;
+
+		for (size_t p = lo; p <= hi; ++p)
+			got_samples |= xml_support->output_summary_data(str, cit->sample.counts, p);
+
+		if (!got_samples)
+			continue;
+
+		if (cverb << vxml)
+			out << "<!-- symbol_ref=" << symbol_names.name(cit->name) <<
+				" -->" << endl;
+
+		if (is_module) {
+			out << open_element(MODULE, true);
+			out << init_attr(NAME, module) << close_element(NONE, true);
+		}
+
+		out << open_element(SYMBOL, true);
+
+		string const symname = symbol_names.name(cit->name);
+		assert(symname.size() > 0);
+
+		string const symqname = module + ":" + symname;
+
+		// Find any self references and handle
+	        if ((symname == selfname) && (tag == CALLEES)) {
+			self = true;
+			indx = xml_get_symbol_index(qname);
+		} else {
+			indx = xml_get_symbol_index(symqname);
+		}
+
+		out << init_attr(ID_REF, indx);
+
+		if (self)
+			out << init_attr(SELFREF, "true");
+
+		out << close_element(NONE, true);
+		out << str.str();
+		out << close_element(SYMBOL);
+
+		if (is_module)
+			out << close_element(MODULE);
+	}
+}
+
+
+void xml_cg_formatter::
+output_symbol(ostream & out,
+	symbol_entry const * symb, size_t lo, size_t hi, bool is_module)
+{
+	cg_symbol const * cg_symb = dynamic_cast<cg_symbol const *>(symb);
+	ostringstream str;
+	size_t indx;
+
+	// output symbol's summary data for each profile class
+	bool got_samples = false;
+
+	for (size_t p = lo; p <= hi; ++p) {
+		got_samples |= xml_support->output_summary_data(str,
+		    symb->sample.counts, p);
+	}
+
+	if (!got_samples)
+		return;
+
+	if (cverb << vxml)
+		out << "<!-- symbol_ref=" << symbol_names.name(symb->name) <<
+			" -->" << endl;
+
+	out << open_element(SYMBOL, true);
+
+	string const name = symbol_names.name(symb->name);
+	assert(name.size() > 0);
+
+	string const image = get_image_name(symb->image_name, true);
+	string const qname = image + ":" + name;
+
+	string const selfname = symbol_names.demangle(symb->name) + " [self]";
+
+	indx = xml_get_symbol_index(qname);
+
+	out << init_attr(ID_REF, indx);
+
+	out << close_element(NONE, true);
+
+	out << open_element(CALLERS);
+	if (cg_symb)
+		output_symbol_core(out, cg_symb->callers, selfname, qname, lo, hi, is_module, CALLERS);
+	out << close_element(CALLERS);
+
+	out << open_element(CALLEES);
+	if (cg_symb)
+		output_symbol_core(out, cg_symb->callees, selfname, qname, lo, hi, is_module, CALLEES);
+
+	out << close_element(CALLEES);
+
+	// output summary
+	out << str.str();
+	out << close_element(SYMBOL);
+}
 
 } // namespace format_output

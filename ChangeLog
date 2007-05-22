@@ -1,3 +1,14 @@
+2007-05-21  Richard Purdie  <rpurdie@openedhand.com>
+  
+	* doc/opreport.xsd:
+ 	* libpp/format_output.cpp:
+	* libpp/format_output.h:
+	* libpp/xml_utils.cpp:
+	* libutil++/xml_output.cpp:
+	* libutil++/xml_output.h:
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp: Add callgraph XML output
+ 
 2007-05-20  Dean Gaudet  <dgaudet@users.sourceforge.net>
 
 	* events/i386/core_2/events: ITLB_MISS_RETIRED,MEM_LOAD_RETIRED
