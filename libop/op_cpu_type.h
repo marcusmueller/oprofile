@@ -67,6 +67,8 @@ typedef enum {
 	CPU_PPC64_CELL, /**< ppc64 Cell Broadband Engine*/
 	CPU_FAMILY10, /**< AMD family 10 */
  	CPU_PPC64_PA6T, /**< ppc64 PA6T */
+	CPU_ARM_MPCORE, /**< ARM MPCore */
+	CPU_ARM_ARM11, /**< ARM11 */
 	MAX_CPU_TYPE
 } op_cpu;
 

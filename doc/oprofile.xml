@@ -809,6 +809,7 @@ The table below lists the events selected by default
 <row><entry>Alpha EV67</entry><entry>alpha/ev67</entry><entry>CYCLES:100000:0:1:1</entry></row>
 <row><entry>ARM/XScale PMU1</entry><entry>arm/xscale1</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>ARM/XScale PMU2</entry><entry>arm/xscale2</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
+<row><entry>ARM/MPCore</entry><entry>arm/mpcore</entry><entry>CPU_CYCLES:100000:0:1:1</entry></row>
 <row><entry>Athlon</entry><entry>i386/athlon</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
 <row><entry>Pentium Pro</entry><entry>i386/ppro</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>
 <row><entry>Pentium II</entry><entry>i386/pii</entry><entry>CPU_CLK_UNHALTED:100000:0:1:1</entry></row>

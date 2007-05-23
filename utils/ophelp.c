@@ -424,12 +424,19 @@ int main(int argc, char const * argv[])
 		printf("See Intel XScale Core Developer's Manual\n"
 		       "Chapter 8 Performance Monitoring\n");
 		break;
+	case CPU_ARM_MPCORE:
+		printf("See ARM11 MPCore Processor Technical Reference Manual r1p0\n"
+		       "Page 3-70, performance counters\n");
 		break;
+
+	case CPU_ARM_ARM11:
+		printf("See ARM11 Technical Reference Manual\n");
+  		break;
 
 	case CPU_PPC64_PA6T:
 		printf("See PA6T Power Implementation Features Book IV\n"
 			   "Chapter 7 Performance Counters\n");
-        break;
+		break;
 
 	case CPU_PPC64_POWER4:
 	case CPU_PPC64_POWER5:

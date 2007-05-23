@@ -63,12 +63,14 @@ static struct cpu_descr const cpu_descrs[MAX_CPU_TYPE] = {
 	{ "e500v2", "ppc/e500v2", CPU_PPC_E500_2, 4 },
 	{ "Core Solo / Duo", "i386/core", CPU_CORE, 2 },
 	{ "PowerPC G4", "ppc/7450",  CPU_PPC_7450, 6 },
- 	{ "Core 2", "i386/core_2", CPU_CORE_2, 2 },
+	{ "Core 2", "i386/core_2", CPU_CORE_2, 2 },
 	{ "ppc64 POWER6", "ppc64/power6", CPU_PPC64_POWER6, 4 },
 	{ "ppc64 970MP", "ppc64/970MP", CPU_PPC64_970MP, 8 },
 	{ "ppc64 Cell Broadband Engine", "ppc64/cell-be", CPU_PPC64_CELL, 8 },
 	{ "AMD64 family10", "x86-64/family10", CPU_FAMILY10, 4 },
- 	{ "ppc64 PA6T", "ppc64/pa6t", CPU_PPC64_PA6T, 6 },
+	{ "ppc64 PA6T", "ppc64/pa6t", CPU_PPC64_PA6T, 6 },
+	{ "ARM MPCore", "arm/mpcore", CPU_ARM_MPCORE, 2 },
+	{ "ARM11 PMU", "arm/armv6", CPU_ARM_ARM11, 3 },
 };
  
 static size_t const nr_cpu_descrs = sizeof(cpu_descrs) / sizeof(struct cpu_descr);

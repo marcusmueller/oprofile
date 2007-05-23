@@ -1,3 +1,23 @@
+2007-05-23  Joerg Wagner  <wagner@ccrl-nece.de>
+
+	* events/Makefile.am:
+	* events/arm/mpcore/events:
+	* events/arm/mpcore/unit_masks:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/ophelp.c: ARM MPCore support
+
+2007-05-23  Riku Voipio  <riku.voipio@iki.fi>
+
+	* events/Makefile.am:
+	* events/arm/armv6/events:
+	* events/arm/armv6/unit_masks:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/ophelp.c: ARM11 support
+
 2007-05-21  Richard Purdie  <rpurdie@openedhand.com>
   
 	* doc/opreport.xsd:

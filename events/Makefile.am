@@ -29,6 +29,8 @@ event_files = \
 	x86-64/family10/events x86-64/family10/unit_masks \
 	arm/xscale1/events arm/xscale1/unit_masks \
 	arm/xscale2/events arm/xscale2/unit_masks \
+	arm/armv6/events arm/armv6/unit_masks \
+	arm/mpcore/events arm/mpcore/unit_masks \
 	mips/20K/events mips/20K/unit_masks \
 	mips/24K/events mips/24K/unit_masks \
 	mips/25K/events mips/25K/unit_masks \

@@ -785,6 +785,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		// we could possibly use the CCNT
 		case CPU_ARM_XSCALE1:
 		case CPU_ARM_XSCALE2:
+		case CPU_ARM_MPCORE:
 			descr->name = "CPU_CYCLES";
 			break;
 
@@ -839,6 +840,10 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_PPC_E500:
 		case CPU_PPC_E500_2:
 			descr->name = "CPU_CLK";
+			break;
+
+		case CPU_ARM_ARM11:
+			descr->name = "CPU_CYCLES";
 			break;
              
 		// don't use default, if someone add a cpu he wants a compiler
