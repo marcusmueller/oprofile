@@ -90,9 +90,10 @@ int oparchive(options::spec const & spec)
 		              exe_archive_file);
 
 		/* If there are any debuginfo files, copy them over.
-		 * Need to copy the debug info file in the same
-		 * directory as the executable. The /usr/lib/debug
-		 *  search path is not going to work.
+		 * Need to copy the debug info file to somewhere we'll
+		 * find it - executable location + "/.debug"
+		 * to avoid overwriting files with the same name. The
+		 * /usr/lib/debug search path is not going to work.
 		 */
 		bfd * ibfd = open_bfd(exe_name);
 		if (ibfd) {
@@ -103,8 +104,15 @@ int oparchive(options::spec const & spec)
 			if (find_separate_debug_file(ibfd, dirname, global,
 				debug_filename)) {
 				/* found something copy it over */
-				string dest_debug = options::outdirectory +
-					dirname + "/" +
+				string dest_debug_dir = options::outdirectory +
+					dirname + "/.debug/";
+				if (create_dir(dest_debug_dir.c_str())) {
+					cerr << "Unable to create directory: "
+					<< dest_debug_dir << "." << endl;
+					exit (EXIT_FAILURE);
+				}
+
+				string dest_debug = dest_debug_dir +
 					op_basename(debug_filename);
 				copy_one_file(image_ok, debug_filename, dest_debug);
 			}

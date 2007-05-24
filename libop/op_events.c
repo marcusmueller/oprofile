@@ -786,6 +786,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_ARM_XSCALE1:
 		case CPU_ARM_XSCALE2:
 		case CPU_ARM_MPCORE:
+		case CPU_ARM_V6:
 			descr->name = "CPU_CYCLES";
 			break;
 
@@ -842,10 +843,6 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 			descr->name = "CPU_CLK";
 			break;
 
-		case CPU_ARM_ARM11:
-			descr->name = "CPU_CYCLES";
-			break;
-             
 		// don't use default, if someone add a cpu he wants a compiler
 		// warning if he forgets to handle it here.
 		case CPU_TIMER_INT:

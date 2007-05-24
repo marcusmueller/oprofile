@@ -1,4 +1,4 @@
-# Arm11 possible unit masks
+# ARM V6 PMU possible unit masks
 #
 name:zero type:mandatory default:0x00
 	0x00 No unit mask

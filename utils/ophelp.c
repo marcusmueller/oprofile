@@ -429,7 +429,7 @@ int main(int argc, char const * argv[])
 		       "Page 3-70, performance counters\n");
 		break;
 
-	case CPU_ARM_ARM11:
+	case CPU_ARM_V6:
 		printf("See ARM11 Technical Reference Manual\n");
   		break;
 

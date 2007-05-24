@@ -1,3 +1,24 @@
+2007-05-24  Richard Purdie  <rpurdie@openedhand.com>
+
+	* events/arm/xscale1/events:
+	* events/arm/xscale2/events: Add extra Xscale PMU event definitions
+
+2007-05-24  Richard Purdie  <rpurdie@openedhand.com>
+
+	* events/arm/armv6/events:
+	* events/arm/armv6/unit_masks:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/ophelp.c: Name ARM11 support to be consistent with the kernel,
+	  remove some duplicate code and add some extra events
+
+2007-05-24  Richard Purdie  <rpurdie@openedhand.com>
+
+	* oprofile/pp/oparchive.cpp: If the debug files have the same name
+	  as the original binary, the binary gets overwritten. Add in a .debug
+	  directory to avoid this.
+
 2007-05-23  Joerg Wagner  <wagner@ccrl-nece.de>
 
 	* events/Makefile.am:
