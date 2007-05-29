@@ -35,9 +35,11 @@ string const demangle_symbol(string const & name)
 	if (options::demangle == dmt_none)
 		return name;
 
-	// Do not try to strip leading underscore, this leads to many
-	// C++ demangling failures.
-	char * unmangled = cplus_demangle(name.c_str(), DMGL_PARAMS | DMGL_ANSI);
+	// Do not try to strip leading underscore, as this leads to many
+	// C++ demangling failures. However we strip off a leading '.'
+        // as generated on PPC64
+	string const & tmp = (name[0] == '.' ? name.substr(1) : name);
+	char * unmangled = cplus_demangle(tmp.c_str(), DMGL_PARAMS | DMGL_ANSI);
 
 	if (!unmangled)
 		return name;

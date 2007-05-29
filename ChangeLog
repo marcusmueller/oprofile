@@ -1,3 +1,7 @@
+2007-05-29  Dave Nomura  <dcnltc@us.ibm.com>
+
+	* libregex/demangle_symbol.cpp: Strip off leading '.' generated for elf6r-powerpc targets in mangled symbol names.
+
 2007-05-24  Richard Purdie  <rpurdie@openedhand.com>
 
 	* events/arm/xscale1/events:
