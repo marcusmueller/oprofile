@@ -1,3 +1,10 @@
+2007-05-31  Maynard Johnson <maynardj@us.ibm.com>
+
+	* libpp/symbol.h:
+	* libutil++/bfd_support.h:
+	* m4/cellspubfdsupport.m4: Fixups for compile failures on older Linux
+	  distributions
+
 2007-05-29  Dave Nomura  <dcnltc@us.ibm.com>
 
 	* libregex/demangle_symbol.cpp: Strip off leading '.' generated for elf6r-powerpc targets in mangled symbol names.

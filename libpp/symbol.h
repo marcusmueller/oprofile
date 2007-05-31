@@ -19,6 +19,7 @@
 #include "op_types.h"
 
 #include <bfd.h>
+#include <stdint.h>
 
 #include <list>
 
