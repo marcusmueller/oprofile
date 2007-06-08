@@ -64,7 +64,7 @@ name:page_access type:bitmask default:0x07
 	0x02 Page miss
 	0x04 Page conflict
 name:turnaround type:bitmask default:0x07
-	0x01 DIMM turnaround
+	0x01 DIMM (chip select) turnaround
 	0x02 Read to write turnaround
 	0x04 Write to read turnaround
 name:saturation type:bitmask default:0x0f
@@ -82,9 +82,12 @@ name:sizecmds type:bitmask default:0x7f
 	0x40 read-modify-write
 name:probe type:bitmask default:0x0f
 	0x01 Probe miss
-	0x02 Probe hit
+	0x02 Probe hit clean
 	0x04 Probe hit dirty without memory cancel
 	0x08 Probe hit dirty with memory cancel
+	0x10 Upstream display refresh reads
+	0x20 Upstream non-display refresh reads
+	0x40 Upstream writes
 name:ht type:bitmask default:0x7
 	0x01 Command sent
 	0x02 Data sent
@@ -101,8 +104,8 @@ name:l2_req_miss type:bitmask default:0x07
 	0x02 DC fill
 	0x04 TLB reload
 name:l2_fill type:bitmask default:0x03
-	0x01 Dirty L2 victim
-	0x02 Victim from L1
+	0x01 L2 fills (victims from L1 caches, TLB page table walks and data prefetches)
+	0x02 L2 Writebacks to system
 name:gart type:bitmask default:0x07
 	0x01 GART aperture hit on access from CPU
 	0x02 GART aperture hit on access from I/O
@@ -160,3 +163,13 @@ name:systemreadresponse type:bitmask default:0x7
 # BKDG 3.28 does not include unit_mask of 0x01 for "accesses by Locked instructions"
 name:dcachemisslocked type:bitmask default:0x02
 	0x02 Data Cache Misses by Locked Instructions
+name:locked_ops type:bitmask default:0x04
+	0x01 The number of locked instructions executed
+	0x02 The number of cycles spent in speculative phase
+	0x04 The number of cycles spent in non-speculative phase (including cache miss penalty)
+name:thermalecc type:bitmask default:0x80
+	0x01 Number of clocks CPU is active when HTC is active
+	0x02 Number of clocks CPU clock is inactive when HTC is active
+	0x04 Number of clocks when die temperature is higher than the software high temperature threshold
+	0x08 Number of clocks when high temperature threshold was exceeded
+	0x80 Number of correctable and uncorrectable DRAM ECC errors

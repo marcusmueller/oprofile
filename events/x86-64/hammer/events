@@ -6,7 +6,8 @@
 # Copyright (c) Advanced Micro Devices, 2006.
 # Contributed by Ray Bryant <raybry@amd.com>, and others.
 #
-# Updated to match 3.85 (October 2005) version of the BIOS and Kernel Developer's Guide
+# Updated to match revision 3.04 (December 2006) version of the BIOS and Kernel Developer's Guide
+# AMD publication # 32559
 #
 event:0x76 counters:0,1,2,3 um:zero minimum:3000 name:CPU_CLK_UNHALTED : Cycles outside of halt state
 event:0xc0 counters:0,1,2,3 um:zero minimum:3000 name:RETIRED_INSTRUCTIONS : Retired instructions (includes exceptions, interrupts, re-syncs)
@@ -40,7 +41,7 @@ event:0x20 counters:0,1,2,3 um:segregload minimum:500 name:SEGMENT_REGISTER_LOAD
 event:0x21 counters:0,1,2,3 um:zero minimum:500 name:PIPELINE_RESTART_DUE_TO_SELF_MODIFYING_CODE : Micro-architectural re-sync caused by self modifying code
 event:0x22 counters:0,1,2,3 um:zero minimum:500 name:PIPELINE_RESTART_DUE_TO_PROBE_HIT : Micro-architectural re-sync caused by snoop
 event:0x23 counters:0,1,2,3 um:zero minimum:500 name:LS_BUFFER_2_FULL_CYCLES : Cycles LS Buffer 2 Full
-event:0x24 counters:0,1,2,3 um:zero minimum:500 name:LOCKED_OPS : Locked operations
+event:0x24 counters:0,1,2,3 um:locked_ops minimum:500 name:LOCKED_OPS : Locked operations
 # not in the 3.28 BKDG, was in BKDG 3.24
 event:0x25 counters:0,1,2,3 um:zero minimum:500 name:OP_LATE_CANCEL : Micro-architectural late cancel of an operation
 event:0x26 counters:0,1,2,3 um:zero minimum:500 name:RETIRED_CLFLUSH_INSTRUCTIONS : Retired CLFLUSH instructions
@@ -88,7 +89,7 @@ event:0xe0 counters:0,1,2,3 um:page_access minimum:500 name:DRAM_ACCESSES : DRAM
 event:0xe1 counters:0,1,2,3 um:zero minimum:500 name:MEMORY_CONTROLLER_PAGE_TABLE_OVERFLOWS : Memory controller page table overflows
 event:0xe3 counters:0,1,2,3 um:turnaround minimum:500 name:MEMORY_CONTROLLER_TURNAROUNDS : Memory controller turnarounds
 event:0xe4 counters:0,1,2,3 um:saturation minimum:500 name:MEMORY_CONTROLLER_BYPASS_COUNTER_SATURATION : Memory controller bypass saturation
-event:0xe8 counters:0,1,2,3 um:zero minimum:500 name:DRAM_ECC_ERRORS : ECC Errors
+event:0xe8 counters:0,1,2,3 um:thermalecc minimum:500 name:THERMAL_STATUS_AND_DRAM_ECC_ERRORS : Thermal status and ECC errors
 event:0xee counters:0,1,2,3 um:gart minimum:500 name:GART_EVENTS : GART Events
 event:0xe5 counters:0,1,2,3 um:sizedblocks minimum:500 name:SIZED_BLOCKS : Sized Blocks
 event:0xe9 counters:0,1,2,3 um:cpiorequests minimum:500 name:CPU_IO_REQUESTS_TO_MEMORY_IO : CPU/IO Requests to Memory/IO (RevE)

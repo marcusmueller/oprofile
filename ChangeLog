@@ -1,3 +1,9 @@
+2007-06-08  Dean Gaudet  <dgaudet@users.sourceforge.net>
+
+	* events/x86-64/hammer/events:
+	* events/x86-64/hammer/unit_masks: updates from December 2006
+	  AMD update
+
 2007-05-31  Maynard Johnson <maynardj@us.ibm.com>
 
 	* libpp/symbol.h:
