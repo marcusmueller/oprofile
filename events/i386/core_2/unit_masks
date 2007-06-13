@@ -42,12 +42,9 @@ name:simd_instr_type_exec type:bitmask default:0x3f
 	0x10 SIMD packed logical
 	0x20 SIMD packed arithmetic
 	0x3f all of the above
-name:mmx_trans type:exclusive default:0x0
-	0x00 MMX->float operations
-	0x01 float->MMX operations
-name:dc_pend_miss type:exclusive default:0x0
-	0x00 Weighted cycles
-	0x01 Duration of cycles
+name:mmx_trans type:bitmask default:0x3
+	0x01 float->MMX transitions
+	0x02 MMX->float transitions
 name:sse_miss type:exclusive default:0x0
 	0x00 PREFETCHNTA
 	0x01 PREFETCHT0
@@ -108,17 +105,18 @@ name:l1d_split type:exclusive default:0x1
 	0x2	split stores
 name:bus_agents type:exclusive default:0x00
 	0x00	this agent
-	0x10	include all agents
+	0x20	include all agents
 name:core_and_bus_agents type:bitmask default:0x40
 	0xc0	core: all cores
 	0x40	core: this core
 	0x00	bus: this agent
-	0x10	bus: include all agents
-name:bus_agents_and_snoop type:bitmask default:0x03
+	0x20	bus: include all agents
+name:bus_agents_and_snoop type:bitmask default:0x0b
 	0x00	bus: this agent
-	0x10	bus: include all agents
-	0x01	snoop: CMP2I snoops
-	0x02	snoop: CMP2S snoops
+	0x20	bus: include all agents
+	0x08	snoop: HITM snoops
+	0x02	snoop: HIT snoops
+	0x01	snoop: CLEAN snoops
 name:core_and_snoop type:bitmask default:0x40
 	0xc0	core: all cores
 	0x40	core: this core

@@ -1,4 +1,11 @@
-2007-06-08  Dean Gaudet  <dgaudet@users.sourceforge.net>
+2007-06-12  dean gaudet  <dean@arctic.org>
+
+	* events/i386/core_2/events:
+	* events/i386/core_2/unit_masks:  updates to match
+	  253669-022US ISA vol 3B from Intel.  (Including fix
+	  for #1580064 from Arun Sharma.)
+
+2007-06-08  dean gaudet  <dean@arctic.org>
 
 	* events/x86-64/hammer/events:
 	* events/x86-64/hammer/unit_masks: updates from December 2006

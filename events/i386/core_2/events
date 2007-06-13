@@ -28,7 +28,7 @@ event:0x19 counters:0,1 um:delayed_bypass minimum:1000 name:DELAYED_BYPASS : Del
 event:0x21 counters:0,1 um:core minimum:500 name:L2_ADS : Cycles the L2 address bus is in use.
 event:0x23 counters:0,1 um:core minimum:500 name:L2_DBUS_BUSY_RD : Cycles the L2 transfers data to the core.
 event:0x24 counters:0,1 um:core_prefetch minimum:500 name:L2_LINES_IN : number of allocated lines in L2
-event:0x25 counters:0,1 um:core_prefetch minimum:500 name:L2_M_LINES_IN : number of modified lines allocated in L2
+event:0x25 counters:0,1 um:core minimum:500 name:L2_M_LINES_IN : number of modified lines allocated in L2
 event:0x26 counters:0,1 um:core_prefetch minimum:500 name:L2_LINES_OUT : number of recovered lines from L2
 event:0x27 counters:0,1 um:core_prefetch minimum:500 name:L2_M_LINES_OUT : number of modified lines removed from L2
 event:0x28 counters:0,1 um:core_mesi minimum:500 name:L2_IFETCH : number of L2 cacheable instruction fetches
@@ -48,7 +48,7 @@ event:0x43 counters:0,1 um:two minimum:500 name:L1D_ALL_CACHE_REF : L1 data cach
 event:0x45 counters:0,1 um:x0f minimum:500 name:L1D_REPL : Cache lines allocated in the L1 data cache
 event:0x46 counters:0,1 um:zero minimum:500 name:L1D_M_REPL : Modified cache lines allocated in the L1 data cache
 event:0x47 counters:0,1 um:zero minimum:500 name:L1D_M_EVICT : Modified cache lines evicted from the L1 data cache
-event:0x48 counters:0,1 um:dc_pend_miss minimum:500 name:L1D_PEND_MISS : Weighted cycles of L1 miss outstanding
+event:0x48 counters:0,1 um:zero minimum:500 name:L1D_PEND_MISS : Total number of outstanding L1 data cache misses at any cycle
 event:0x49 counters:0,1 um:l1d_split minimum:500 name:L1D_SPLIT : Cache line split load/stores
 event:0x4b counters:0,1 um:sse_miss minimum:500 name:SSE_PREF_MISS : SSE instructions that missed all caches
 event:0x4c counters:0,1 um:zero minimum:500 name:LOAD_HIT_PRE : Load operations conflicting with a software prefetch to the same address
@@ -100,6 +100,11 @@ event:0x94 counters:0,1 um:zero minimum:3000 name:BR_IND_CALL_EXEC : Indirect CA
 event:0x97 counters:0,1 um:zero minimum:3000 name:BR_TKN_BUBBLE_1 : Branch predicted taken with bubble 1
 event:0x98 counters:0,1 um:zero minimum:3000 name:BR_TKN_BUBBLE_2 : Branch predicted taken with bubble 2
 event:0xa0 counters:0,1 um:zero minimum:1000 name:RS_UOPS_DISPATCHED : Micro-ops dispatched for execution
+# Set both the CMASK and INV fields to 1 -- which causes the counter to
+# increment on cycles in which fewer than 1 uop dispatches.  i.e. stall cycles.
+# It's a bit of a hack, but passes through the oprofile infrastructure just
+# fine.
+event:0x18000a0 counters:0,1 um:zero minimum:1000 name:RS_UOPS_DISPATCHED_NONE : No Micro-ops dispatched for execution
 event:0xaa counters:0,1 um:macro_insts minimum:500 name:MACRO_INSTS : instructions decoded
 event:0xab counters:0,1 um:esp minimum:500 name:ESP : ESP register events
 event:0xb0 counters:0,1 um:zero minimum:500 name:SIMD_UOPS_EXEC : SIMD micro-ops executed (excluding stores)
