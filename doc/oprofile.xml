@@ -90,7 +90,7 @@ OProfile is not a panacea. OProfile might not be a complete solution when you :
 			</para>
 
 			<para>
-			PPC64 processors (Power4/Power5/PPC970) require a recent (&gt; 2.6.5) kernel with the line 
+			PPC64 processors (Power4/Power5/PPC970, etc.) require a recent (&gt; 2.6.5) kernel with the line 
 			<constant>#define PV_970</constant> present in <filename>include/asm-ppc64/processor.h</filename>.
 <!-- FIXME: do we require always gte 2.4.10 for nosmp ? -->
                        </para>
@@ -1015,12 +1015,25 @@ existing interrupt-based model to the PMU hardware.
 <sect2 id="ppc64">
 <title>PowerPC64 support</title>
 <para>
-The performance monitoring unit (PMU) for the PowerPC 64-bit processors 
-consists of between 6 and 8 counters (depending on the model), plus three
+The performance monitoring unit (PMU) for the IBM PowerPC 64-bit processors 
+consists of between 4 and 8 counters (depending on the model), plus three
 special purpose registers used for programming the counters -- MMCR0, MMCR1,
 and MMCRA.  Advanced features such as instruction matching and thresholding are
 not supported by this version of OProfile.
+<note>Later versions of the IBM POWER5+ processor (beginning with revision 3.0)
+run the performance monitor unit in POWER6 mode, effectively removing OProfile's
+access to counters 5 and 6.  These two counters are dedicated to counting
+instructions completed and cycles, respectively.  In POWER6 mode, however, the
+counters do not generate an interrupt on overflow and so are unusable by
+OProfile.  Kernel versions 2.6.23 and higher will recognize this mode
+and export "ppc64/power5++" as the cpu_type to the oprofilefs pseudo filesystem.
+OProfile userspace responds to this cpu_type by removing these counters from
+the list of potential events to count.  Without this kernel support, attempts
+to profile using an event from one of these counters will yield incorrect
+results -- typically, zero (or near zero) samples in the generated report.
+</note>
 </para>
+
 </sect2>
 
 <sect2 id="cell-be">

@@ -19,6 +19,7 @@ event_files = \
 	ppc64/power4/events ppc64/power4/event_mappings ppc64/power4/unit_masks \
 	ppc64/power5/events ppc64/power5/event_mappings ppc64/power5/unit_masks \
 	ppc64/power5+/events ppc64/power5+/event_mappings ppc64/power5+/unit_masks \
+	ppc64/power5++/events ppc64/power5++/event_mappings ppc64/power5++/unit_masks \
 	ppc64/power6/events ppc64/power6/event_mappings ppc64/power6/unit_masks \
 	ppc64/970/events ppc64/970/event_mappings ppc64/970/unit_masks \
 	ppc64/970MP/events ppc64/970MP/event_mappings ppc64/970MP/unit_masks \

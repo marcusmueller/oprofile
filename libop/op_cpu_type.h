@@ -69,6 +69,7 @@ typedef enum {
  	CPU_PPC64_PA6T, /**< ppc64 PA6T */
 	CPU_ARM_MPCORE, /**< ARM MPCore */
 	CPU_ARM_V6, /**< ARM V6 */
+	CPU_PPC64_POWER5pp,  /**< ppc64 Power5++ family */
 	MAX_CPU_TYPE
 } op_cpu;
 

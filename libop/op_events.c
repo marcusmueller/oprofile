@@ -648,6 +648,7 @@ char const * find_mapping_for_event(u32 nr, op_cpu cpu_type)
 		case CPU_PPC64_POWER4:
 		case CPU_PPC64_POWER5:
 		case CPU_PPC64_POWER5p:
+		case CPU_PPC64_POWER5pp:
 		case CPU_PPC64_POWER6:
 			if (!fp) {
 				fprintf(stderr, "oprofile: could not open event mapping file %s\n", filename);
@@ -798,6 +799,7 @@ void op_default_event(op_cpu cpu_type, struct op_default_event_descr * descr)
 		case CPU_PPC64_POWER5:
 		case CPU_PPC64_POWER6:
 		case CPU_PPC64_POWER5p:
+		case CPU_PPC64_POWER5pp:
 		case CPU_PPC64_CELL:
 			descr->name = "CYCLES";
 			break;

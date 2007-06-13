@@ -1,3 +1,17 @@
+2007-06-13  Maynard Johnson <maynardj@us.ibm.com>
+
+	* doc/oprofile.xml:
+	* events/Makefile.am:
+	* events/ppc64/power5++/event_mappings:
+	* events/ppc64/power5++/events:
+	* events/ppc64/power5++/unit_masks:
+	* libop/op_cpu_type.c:
+	* libop/op_cpu_type.h:
+	* libop/op_events.c:
+	* utils/opcontrol:
+	* utils/ophelp.c: Add support for POWER5++ (i.e., POWER5+ with PMU
+	  set to POWER6 mode)
+
 2007-06-12  dean gaudet  <dean@arctic.org>
 
 	* events/i386/core_2/events:
