@@ -1,3 +1,9 @@
+2007-06-15  Maynard Johnson <maynardj@us.ibm.com>
+
+	* doc/opreport.xsd:
+	* libpp/xml_utils.cpp: Bump schema version to 2.0 to coincide with
+	  callgraph elements added recently to the schema
+
 2007-06-13  Maynard Johnson <maynardj@us.ibm.com>
 
 	* doc/oprofile.xml:

@@ -250,8 +250,8 @@ void xml_utils::output_xml_header(string const & command_options,
 	// both here and in the schema file when major changes are made to
 	// the schema.  changes to opreport, or minor changes to the schema
 	// can be indicated by changes to the fraction part.
-	string const schema_version = "1.0";
-	string const xml_header = "<?xml version=\"1.0\" ?>";
+	string const schema_version = "2.0";
+	string const xml_header = "<?xml version=\"2.0\" ?>";
 
 	cout << xml_header << endl;
 	cout << open_element(PROFILE, true);
