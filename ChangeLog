@@ -1,3 +1,7 @@
+2007-06-27  Maynard Johnson <maynardj@us.ibm.com>
+
+	* ChangeLog: ChangeLog cleanup
+
 2007-06-15  Maynard Johnson <maynardj@us.ibm.com>
 
 	* doc/opreport.xsd:
@@ -308,15 +312,5 @@
 	* utils/opcontrol:
 	* utils/ophelp.c:  Add support for Power6
 
-
-	* doc/oprofile.xml:
-	* events/Makefile.am:
-	* events/ppc64/cell-be/events:
-	* events/ppc64/cell-be/unit_masks:
-	* libop/op_cpu_type.c:
-	* libop/op_cpu_type.h:
-	* libop/op_events.c:
-	* utils/opcontrol:
-	* utils/ophelp.c Add support for Cell Broadband Engine
 
 See ChangeLog-2006 for earlier changelogs.
