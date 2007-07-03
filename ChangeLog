@@ -1,3 +1,8 @@
+2007-07-02  Maynard Johnson <maynardj@us.ibm.com>
+
+	* libpp/populate_for_spu.cpp: Fix logic in is_spu_profile()
+	  to handle '--separate=thread' option.
+
 2007-06-27  Maynard Johnson <maynardj@us.ibm.com>
 
 	* ChangeLog: ChangeLog cleanup

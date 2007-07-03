@@ -121,23 +121,42 @@ populate_for_spu_image(string const & archive_path,
 bool is_spu_profile(inverted_profile const & ip)
 {
 	bool retval = false;
+	string sfname = "";
 	if (spu_profile != unknown_profile)
 		return spu_profile;
 
 	if (!ip.groups.size())
 		return false;
 
-	list<image_set>::const_iterator it
-		= ip.groups[0].begin();
+        for (size_t i = 0; i < ip.groups.size(); ++i) {
+                list<image_set>::const_iterator grp_it
+                        = ip.groups[i].begin();
+                list<image_set>::const_iterator const grp_end
+                        = ip.groups[i].end();
 
-	list<profile_sample_files>::const_iterator sfiles_it = it->files.begin();
-	list<profile_sample_files>::const_iterator end = it->files.end();
-	if (sfiles_it == end || sfiles_it->sample_filename.empty())
-		return false;
 
-	spu_profile = profile_t::is_spu_sample_file(sfiles_it->sample_filename);
+                for (; grp_it != grp_end; ++grp_it) {
+        		list<profile_sample_files>::const_iterator sfiles_it =
+				grp_it->files.begin();
+		        list<profile_sample_files>::const_iterator sfiles_end =
+				grp_it->files.end();
+			for (; sfiles_it != sfiles_end; ++sfiles_it) {
+				if (!sfiles_it->sample_filename.empty()) {
+					sfname = sfiles_it->sample_filename;
+					goto do_check;
+				}
+			}
+		}
+	}
+	goto out;
+
+do_check:
+        spu_profile = profile_t::is_spu_sample_file(sfname);
+
 	if (spu_profile == cell_spu_profile)
 		retval = true;
+
+out:
 	return retval;
 }
 
