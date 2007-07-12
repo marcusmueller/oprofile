@@ -1,3 +1,8 @@
+2007-07-09  Maynard Johnson <maynardj@us.ibm.com>
+
+        * doc/opreport.xsd:
+        * libpp/xml_utils.cpp: Correct schema version bump
+
 2007-07-02  Maynard Johnson <maynardj@us.ibm.com>
 
 	* libpp/populate_for_spu.cpp: Fix logic in is_spu_profile()

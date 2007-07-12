@@ -1,4 +1,4 @@
-<?xml version="2.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema
  xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:element name="profile">
@@ -23,7 +23,7 @@
       <xs:attribute name="schemaversion" use="required">
         <xs:simpleType>
           <xs:restriction base = "xs:string">
-            <xs:pattern value = "1\.[0-9]+"/>
+            <xs:pattern value = "2\.[0-9]+"/>
           </xs:restriction>
         </xs:simpleType>       </xs:attribute>
 
