@@ -1,5 +1,11 @@
 2007-07-09  Maynard Johnson <maynardj@us.ibm.com>
 
+	* configure.in:
+	* Makefile.am:  Bump release to 0.9.3 and add a line to
+	  EXTRA_DIST to distribute ChangeLog-2006.
+
+2007-07-09  Maynard Johnson <maynardj@us.ibm.com>
+
         * doc/opreport.xsd:
         * libpp/xml_utils.cpp: Correct schema version bump
 
