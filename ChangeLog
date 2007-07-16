@@ -1,4 +1,8 @@
-2007-07-09  Maynard Johnson <maynardj@us.ibm.com>
+2007-07-16  Maynard Johnson <maynardj@us.ibm.com>
+
+        * configure.in: Bump to 0.9.4cvs.
+
+2007-07-16  Maynard Johnson <maynardj@us.ibm.com>
 
 	* configure.in:
 	* Makefile.am:  Bump release to 0.9.3 and add a line to
