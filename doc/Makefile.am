@@ -72,6 +72,7 @@ EXTRA_DIST = \
 	oprofile.1.in \
 	oprofile.xml \
 	internals.xml \
+	buffers.png \
 	xsl/catalog-1.xml.in \
 	xsl/xhtml.xsl \
 	xsl/xhtml-common.xsl \

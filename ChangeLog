@@ -1,3 +1,9 @@
+2007-07-18  Maynard Johnson <maynardj@us.ibm.com>
+
+	* doc/Makefile.am: Include buffers diagram in dist
+
+	* doc/oprofile.xml: Correct filename reference to opreport.xsd
+
 2007-07-16  Maynard Johnson <maynardj@us.ibm.com>
 
         * configure.in: Bump to 0.9.4cvs.
