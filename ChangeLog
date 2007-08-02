@@ -1,3 +1,8 @@
+2007-07-30  Jens Wilke <jens.wilke@de.ibm.com>
+
+	* libpp/profile_container.cpp: Remove unnecessary offset
+	  calculation.
+
 2007-07-18  Maynard Johnson <maynardj@us.ibm.com>
 
 	* doc/Makefile.am: Include buffers diagram in dist

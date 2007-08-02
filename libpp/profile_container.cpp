@@ -112,9 +112,7 @@ void profile_container::add(profile_t const & profile,
 		symb_entry.image_name = image_names.create(image_name);
 		symb_entry.app_name = image_names.create(app_name);
 
-		bfd_vma base_vma = abfd.syms[i].vma();
-
-		symb_entry.sample.vma = abfd.sym_offset(i, start) + base_vma;
+		symb_entry.sample.vma = abfd.syms[i].vma();
 		if ((header.spu_profile == cell_spu_profile) &&
 		    header.embedded_offset) {
 			symb_entry.spu_offset = header.embedded_offset;
