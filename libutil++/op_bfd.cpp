@@ -271,10 +271,10 @@ void op_bfd::add_symbols(op_bfd::symbols_found_t & symbols,
 }
 
 
-unsigned long op_bfd::sym_offset(symbol_index_t sym_index, u32 num) const
+bfd_vma op_bfd::sym_offset(symbol_index_t sym_index, bfd_vma vma) const
 {
 	/* take off section offset and symb value */
-	return num - syms[sym_index].filepos();
+	return vma - syms[sym_index].filepos();
 }
 
 

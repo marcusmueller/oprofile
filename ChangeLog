@@ -1,4 +1,12 @@
-2007-07-30  Jens Wilke <jens.wilke@de.ibm.com>
+2007-08-02  Jens Wilke <jens.wilke@de.ibm.com>
+
+	* ChangeLog:  Correct the date from previous patch (maynardj)
+
+	* libutil++/op_bfd.cpp: Fix sym_offset calculation.
+	  Bug triggers on 64 bit systems with code mapped
+	  with an address >4G.
+
+2007-08-02  Jens Wilke <jens.wilke@de.ibm.com>
 
 	* libpp/profile_container.cpp: Remove unnecessary offset
 	  calculation.

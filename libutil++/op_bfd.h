@@ -153,7 +153,7 @@ public:
 	 * Returns the offset of a sample at position num
 	 * in the samples file from the start of symbol sym_idx.
 	 */
-	unsigned long sym_offset(symbol_index_t num_symbols, u32 num) const;
+	bfd_vma sym_offset(symbol_index_t num_symbols, bfd_vma vma) const;
 
 	/**
 	 * @param start reference to the start vma
