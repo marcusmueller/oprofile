@@ -1,3 +1,8 @@
+2007-08-14  John Levon  <levon@movementarian.org>
+
+	* doc/oprofile.xml:
+	* doc/opcontrol.1.in: clarify behaviour of opcontrol -e
+
 2007-08-02  Jens Wilke <jens.wilke@de.ibm.com>
 
 	* ChangeLog:  Correct the date from previous patch (maynardj)

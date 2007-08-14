@@ -759,7 +759,8 @@ The <option>--event</option> option to <command>opcontrol</command>
 takes a specification that indicates how the details of each
 hardware performance counter should be setup. If you want to
 revert to OProfile's default setting (<option>--event</option>
-is strictly optional), use <option>--event=default</option>.
+is strictly optional), use <option>--event=default</option>. Use of this
+option over-rides all previous event selections.
 </para>
 <para>
 You can pass multiple event specifications. OProfile will allocate
@@ -767,10 +768,6 @@ hardware counters as necessary. Note that some combinations are not
 allowed by the CPU; running <command>opcontrol --list-events</command> gives the details
 of each event. The event specification is a colon-separated string
 of the form <option><emphasis>name</emphasis>:<emphasis>count</emphasis>:<emphasis>unitmask</emphasis>:<emphasis>kernel</emphasis>:<emphasis>user</emphasis></option> as described in this table:
-<note><para>
-For the PowerPC platforms, all events specified must be in the same group; i.e., the group number
-appended to the event name (e.g. <constant>&lt;<emphasis>some-event-name</emphasis>&gt;_GRP9</constant>) must be the same.
-</para></note>
 </para>
 <informaltable frame="all">
 <tgroup cols='2'> 
@@ -788,6 +785,10 @@ The last three values are optional, if you omit them (e.g. <option>--event=DATA_
 they will be set to the default values (a unit mask of 0, and profiling both kernel and
 userspace code). Note that some events require a unit mask.
 </para>
+<note><para>
+For the PowerPC platforms, all events specified must be in the same group; i.e., the group number
+appended to the event name (e.g. <constant>&lt;<emphasis>some-event-name</emphasis>&gt;_GRP9</constant>) must be the same.
+</para></note>
 <para>
 If OProfile is using RTC mode, and you want to alter the default counter value,
 you can use something like <option>--event=RTC_INTERRUPTS:2048</option>. Note the last
@@ -1335,7 +1336,7 @@ Differential profile of an archived binary with the current session :
 
 </sect2>
 
-<sect2>
+<sect2 id="locating-and-managing-binary-images">
 <title>Locating and managing binary images</title>
 <para>
 Each session's sample files can be found in the $SESSION_DIR/samples/ directory (default: <filename>/var/lib/oprofile/samples/</filename>).

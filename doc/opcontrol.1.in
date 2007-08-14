@@ -97,11 +97,13 @@ sample lost cpu buffer overflow.
 .br
 .TP
 .BI "--event="[event|"default"]
-Add an event to measure for the hardware performance counters,
+Specify an event to measure for the hardware performance counters,
 or "default" for the default event. The event is of the form
 "CPU_CLK_UNHALTED:30000:0:1:1" where the numeric values are
 count, unit mask, kernel-space counting, user-space counting,
-respectively.
+respectively.  Note that this over-rides all previous events selected;
+if you want two or more counters used simultaneously, you must specify
+them on the same opcontrol invocation.
 .br
 .TP
 .BI "--separate="[none,lib,kernel,thread,cpu,all]
