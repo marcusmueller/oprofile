@@ -131,8 +131,7 @@ static void get_anon_maps(struct transient * trans)
 {
 	FILE * fp = NULL;
 	char buf[PATH_MAX];
-	unsigned long start;
-	unsigned long end;
+	vma_t start, end;
 	int ret;
 
 	snprintf(buf, PATH_MAX, "/proc/%d/maps", trans->tgid);
@@ -147,7 +146,7 @@ static void get_anon_maps(struct transient * trans)
 		 * since we want stuff like [heap]
 		 */
 		strcpy(name, "anon");
-		ret = sscanf(buf, "%lx-%lx %20s %20s %20s %20s %20s",
+		ret = sscanf(buf, "%llx-%llx %20s %20s %20s %20s %20s",
 		             &start, &end, tmp, tmp, tmp, tmp, name);
 		if (ret < 6)
 			continue;
