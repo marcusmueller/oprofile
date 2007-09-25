@@ -489,11 +489,10 @@ get_image_range()
 		return;
 	fi
 
-	# start at the start of .text and then continue to the end 
+	# start at the start of .text, and end at _etext
 	range_info=`objdump -h $FILE_IMAGE 2>/dev/null | grep " .text "`
-	tmp1=`echo $range_info | awk '{print $4}'`	
-	tmp_length=`echo $range_info | awk  '{print $3}'`
-	tmp2=`objdump -h $FILE_IMAGE --adjust-vma=0x$tmp_length 2>/dev/null | grep " .text " | awk  '{print $4}'`
+	tmp1=`echo $range_info | awk '{print $4}'`
+	tmp2=`objdump -t $FILE_IMAGE 2>/dev/null | grep "_etext$" | awk '{ print $1 }'`
 
 	if test -z "$tmp1" -o -z "$tmp2"; then
 		echo "The specified file $FILE_IMAGE does not seem to be valid" >&2
