@@ -1667,15 +1667,25 @@ check_version
 
 do_init
 if test `id -u` != "0"; then
-    if test "$1" = "--dump" -a -z "$2"; then
-	ONLY_DUMP=yes
-	do_dump
-	exit 0;
-    elif test "$1" = "--list-events" -a -z "$2"; then
-	exec $OPHELP
+    if -z "$2"; then
+	case "$1" in 
+	--dump|-d)
+	    ONLY_DUMP=yes
+	    do_dump
+	    exit 0;
+	    ;;
+	--list-events|-l)
+	    exec $OPHELP
+	    exit 0;
+	    ;;
+	*)
+	    echo "Normal users are limited to either '--dump' or '--list-events'." >&2
+	    exit 1
+	    ;;
+	esac
     else
-	echo "Normal users are limited to either '--dump' or '--list-events'." >&2
-	exit 1
+	    echo "Normal users are limited to either '--dump' or '--list-events'." >&2
+	    exit 1
     fi
 fi
 
