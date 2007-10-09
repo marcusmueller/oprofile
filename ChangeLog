@@ -1,8 +1,14 @@
+2007-10-09  Melchior Franz  <mfranz@aon.at>
+
+	* libregex/op_regex.cpp: Fix broken string concatenation
+
 2007-10-05  Will Cohen  <wcohen@redhat.com>
+
 	* utils/opcontrol: Modify opcontrol to allow  short form -l and -d for
 	  normal users.
 
 2007-09-25  Brian Twichell <tbrian@us.ibm.com>
+
 	* utils/opcontrol: Modify opcontrol to use a more inclusive
 	  kernel range
 

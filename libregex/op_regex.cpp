@@ -147,7 +147,8 @@ string regular_expression_replace::substitute_definition(string const & pattern)
 			}
 			string def_name = pattern.substr(pos+1, (end-pos) - 1);
 			if (defs.find(def_name) == defs.end()) {
-				throw bad_regex("definition not found and used in pattern: (" + def_name + ") " + pattern);
+				throw bad_regex("definition not found and used in pattern: ("
+						+ def_name + ") " + pattern);
 			}
 			result += defs[def_name];
 			i = end;
@@ -282,15 +283,13 @@ void setup_regex(regular_expression_replace & regex,
 			string left = line;
 			left_rule.execute(left);
 			if (left == line) {
-				throw bad_regex("invalid input file: " +
-						'"' + line + '"');
+				throw bad_regex("invalid input file: \"" + line + '"');
 			}
 
 			string right = line;
 			right_rule.execute(right);
 			if (right == line) {
-				throw bad_regex("invalid input file: "
-						+ '"' + line + '"');
+				throw bad_regex("invalid input file: \"" + line + '"');
 			}
 
 			regex.add_pattern(left, right);
@@ -301,8 +300,7 @@ void setup_regex(regular_expression_replace & regex,
 			string var_value = line;
 			var_value_rule.execute(var_value);
 			if (var_value == line) {
-				throw bad_regex("invalid input file: " +
-						'"' + line + '"');
+				throw bad_regex("invalid input file: \"" + line + '"');
 			}
 
 			regex.add_definition(var_name, var_value);
