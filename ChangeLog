@@ -1,3 +1,9 @@
+2007-10-10  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* events/ppc64/970MP/events:
+	* events/ppc64/970MP/event_mappings: Fix MMCR values
+	  and counter-to-event mappings on a few 970MP groups
+
 2007-10-09  Melchior Franz  <mfranz@aon.at>
 
 	* libregex/op_regex.cpp: Fix broken string concatenation

@@ -1,7 +1,7 @@
-#PPC64 PowerPC970 events
+#PPC64 PowerPC970MP events
 #
 # Copyright OProfile authors
-# Copyright (c) International Business Machines, 2006.
+# Copyright (c) International Business Machines, 2007.
 # Contributed by Dave Nomura <dcnltc@us.ibm.com>.
 #
 #
@@ -291,8 +291,8 @@ event:0X01B7 counters:7 um:zero minimum:1000 name:PM_BR_MPRED_TA_GRP27 : (Group 
 
 #Group 28 pm_data, data source and LMQ
 event:0X01C0 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L2_GRP28 : (Group 28 pm_data) Data loaded from L2
-event:0X01C1 counters:1 um:zero minimum:10000 name:PM_INST_CMPL_GRP28 : (Group 28 pm_data) Instructions completed
-event:0X01C2 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_MEM_GRP28 : (Group 28 pm_data) Data loaded from memory
+event:0X01C1 counters:1 um:zero minimum:1000 name:PM_DATA_FROM_MEM_GRP28 : (Group 28 pm_data) Data loaded from memory
+event:0X01C2 counters:2 um:zero minimum:10000 name:PM_INST_CMPL_GRP28 : (Group 28 pm_data) Instructions completed
 event:0X01C3 counters:3 um:zero minimum:10000 name:PM_CYC_GRP28 : (Group 28 pm_data) Processor cycles
 event:0X01C4 counters:4 um:zero minimum:10000 name:PM_INST_CMPL_GRP28 : (Group 28 pm_data) Instructions completed
 event:0X01C5 counters:5 um:zero minimum:10000 name:PM_CYC_GRP28 : (Group 28 pm_data) Processor cycles
@@ -480,12 +480,12 @@ event:0X02E6 counters:6 um:zero minimum:1000 name:PM_GCT_EMPTY_BR_MPRED_GRP46 : 
 event:0X02E7 counters:7 um:zero minimum:1000 name:PM_L1_WRITE_CYC_GRP46 : (Group 46 pm_cpi_stack5) Cycles writing to instruction L1
 
 #Group 47 pm_data2, data source and LMQ
-event:0X02F0 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L25_SHR_GRP47 : (Group 47 pm_data2) Data loaded from L2.5 shared
+event:0X02F0 counters:0 um:zero minimum:10000 name:PM_INST_CMPL_GRP47 : (Group 47 pm_data2) Instructions completed
 event:0X02F1 counters:1 um:zero minimum:10000 name:PM_INST_CMPL_GRP47 : (Group 47 pm_data2) Instructions completed
-event:0X02F2 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_L25_MOD_GRP47 : (Group 47 pm_data2) Data loaded from L2.5 modified
+event:0X02F2 counters:2 um:zero minimum:10000 name:PM_CYC_GRP47 : (Group 47 pm_data2) Processor cycles
 event:0X02F3 counters:3 um:zero minimum:10000 name:PM_CYC_GRP47 : (Group 47 pm_data2) Processor cycles
-event:0X02F4 counters:4 um:zero minimum:10000 name:PM_INST_CMPL_GRP47 : (Group 47 pm_data2) Instructions completed
-event:0X02F5 counters:5 um:zero minimum:10000 name:PM_CYC_GRP47 : (Group 47 pm_data2) Processor cycles
+event:0X02F4 counters:4 um:zero minimum:1000 name:PM_DATA_FROM_L25_SHR_GRP47 : (Group 47 pm_data2) Data loaded from L2.5 shared
+event:0X02F5 counters:5 um:zero minimum:1000 name:PM_DATA_FROM_L25_MOD_GRP47 : (Group 47 pm_data2) Data loaded from L2.5 modified
 event:0X02F6 counters:6 um:zero minimum:1000 name:PM_LSU_LMQ_S0_ALLOC_GRP47 : (Group 47 pm_data2) LMQ slot 0 allocated
 event:0X02F7 counters:7 um:zero minimum:1000 name:PM_LSU_LMQ_S0_VALID_GRP47 : (Group 47 pm_data2) LMQ slot 0 valid
 
@@ -501,50 +501,30 @@ event:0X0307 counters:7 um:zero minimum:1000 name:PM_BR_MPRED_TA_GRP48 : (Group 
 
 #Group 49 pm_l1l2_miss, L1 and L2 miss events
 event:0X0310 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L2_GRP49 : (Group 49 pm_l1l2_miss) Data loaded from L2
-event:0X0311 counters:1 um:zero minimum:10000 name:PM_INST_CMPL_GRP49 : (Group 49 pm_l1l2_miss) Instructions completed
-event:0X0312 counters:2 um:zero minimum:1000 name:PM_DATA_FROM_MEM_GRP49 : (Group 49 pm_l1l2_miss) Data loaded from memory
+event:0X0311 counters:1 um:zero minimum:1000 name:PM_DATA_FROM_MEM_GRP49 : (Group 49 pm_l1l2_miss) Data loaded from memory
+event:0X0312 counters:2 um:zero minimum:10000 name:PM_INST_CMPL_GRP49 : (Group 49 pm_l1l2_miss) Instructions completed
 event:0X0313 counters:3 um:zero minimum:1000 name:PM_LD_MISS_L1_LSU0_GRP49 : (Group 49 pm_l1l2_miss) LSU0 L1 D cache load misses
 event:0X0314 counters:4 um:zero minimum:1000 name:PM_1PLUS_PPC_CMPL_GRP49 : (Group 49 pm_l1l2_miss) One or more PPC instruction completed
 event:0X0315 counters:5 um:zero minimum:10000 name:PM_CYC_GRP49 : (Group 49 pm_l1l2_miss) Processor cycles
 event:0X0316 counters:6 um:zero minimum:1000 name:PM_LD_MISS_L1_LSU1_GRP49 : (Group 49 pm_l1l2_miss) LSU1 L1 D cache load misses
 event:0X0317 counters:7 um:zero minimum:1000 name:PM_LD_REF_L1_GRP49 : (Group 49 pm_l1l2_miss) L1 D cache load references
 
-#Group 50 pm_mp_data, data source and LMQ for 970mp
-event:0X0320 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L2_GRP50 : (Group 50 pm_mp_data) Data loaded from L2
-event:0X0321 counters:1 um:zero minimum:10000 name:PM_INST_CMPL_GRP50 : (Group 50 pm_mp_data) Instructions completed
-event:0X0322 counters:2 um:zero minimum:10000 name:PM_CYC_GRP50 : (Group 50 pm_mp_data) Processor cycles
-event:0X0323 counters:3 um:zero minimum:10000 name:PM_CYC_GRP50 : (Group 50 pm_mp_data) Processor cycles
-event:0X0324 counters:4 um:zero minimum:10000 name:PM_INST_CMPL_GRP50 : (Group 50 pm_mp_data) Instructions completed
-event:0X0325 counters:5 um:zero minimum:1000 name:PM_DATA_FROM_MEM_GRP50 : (Group 50 pm_mp_data) Data loaded from memory
-event:0X0326 counters:6 um:zero minimum:1000 name:PM_LSU_LMQ_S0_ALLOC_GRP50 : (Group 50 pm_mp_data) LMQ slot 0 allocated
-event:0X0327 counters:7 um:zero minimum:1000 name:PM_LSU_LMQ_S0_VALID_GRP50 : (Group 50 pm_mp_data) LMQ slot 0 valid
+#Group 50 pm_data_from, Data From L2 instructions
+event:0X0320 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L2_GRP50 : (Group 50 pm_data_from) Data loaded from L2
+event:0X0321 counters:1 um:zero minimum:1000 name:PM_DATA_FROM_MEM_GRP50 : (Group 50 pm_data_from) Data loaded from memory
+event:0X0322 counters:2 um:zero minimum:10000 name:PM_INST_CMPL_GRP50 : (Group 50 pm_data_from) Instructions completed
+event:0X0323 counters:3 um:zero minimum:10000 name:PM_CYC_GRP50 : (Group 50 pm_data_from) Processor cycles
+event:0X0324 counters:4 um:zero minimum:1000 name:PM_DATA_FROM_L25_SHR_GRP50 : (Group 50 pm_data_from) Data loaded from L2.5 shared
+event:0X0325 counters:5 um:zero minimum:1000 name:PM_DATA_FROM_L25_MOD_GRP50 : (Group 50 pm_data_from) Data loaded from L2.5 modified
+event:0X0326 counters:6 um:zero minimum:1000 name:PM_LD_MISS_L1_LSU1_GRP50 : (Group 50 pm_data_from) LSU1 L1 D cache load misses
+event:0X0327 counters:7 um:zero minimum:1000 name:PM_LD_REF_L1_GRP50 : (Group 50 pm_data_from) L1 D cache load references
 
-#Group 51 pm_mp_data2, data source and LMQ for 970mp
-event:0X0330 counters:0 um:zero minimum:10000 name:PM_INST_CMPL_GRP51 : (Group 51 pm_mp_data2) Instructions completed
-event:0X0331 counters:1 um:zero minimum:1000 name:PM_DATA_FROM_L25_SHR_GRP51 : (Group 51 pm_mp_data2) Data loaded from L2.5 shared
-event:0X0332 counters:2 um:zero minimum:10000 name:PM_INST_CMPL_GRP51 : (Group 51 pm_mp_data2) Instructions completed
-event:0X0333 counters:3 um:zero minimum:10000 name:PM_CYC_GRP51 : (Group 51 pm_mp_data2) Processor cycles
-event:0X0334 counters:4 um:zero minimum:1000 name:PM_DATA_FROM_L25_MOD_GRP51 : (Group 51 pm_mp_data2) Data loaded from L2.5 modified
-event:0X0335 counters:5 um:zero minimum:10000 name:PM_CYC_GRP51 : (Group 51 pm_mp_data2) Processor cycles
-event:0X0336 counters:6 um:zero minimum:1000 name:PM_LSU_LMQ_S0_ALLOC_GRP51 : (Group 51 pm_mp_data2) LMQ slot 0 allocated
-event:0X0337 counters:7 um:zero minimum:1000 name:PM_LSU_LMQ_S0_VALID_GRP51 : (Group 51 pm_mp_data2) LMQ slot 0 valid
-
-#Group 52 pm_mp_data_from, Data From L2 instruction for 970mp
-event:0X0340 counters:0 um:zero minimum:1000 name:PM_DATA_FROM_L2_GRP52 : (Group 52 pm_mp_data_from) Data loaded from L2
-event:0X0341 counters:1 um:zero minimum:1000 name:PM_DATA_FROM_L25_SHR_GRP52 : (Group 52 pm_mp_data_from) Data loaded from L2.5 shared
-event:0X0342 counters:2 um:zero minimum:10000 name:PM_INST_CMPL_GRP52 : (Group 52 pm_mp_data_from) Instructions completed
-event:0X0343 counters:3 um:zero minimum:10000 name:PM_CYC_GRP52 : (Group 52 pm_mp_data_from) Processor cycles
-event:0X0344 counters:4 um:zero minimum:1000 name:PM_DATA_FROM_L25_MOD_GRP52 : (Group 52 pm_mp_data_from) Data loaded from L2.5 modified
-event:0X0345 counters:5 um:zero minimum:1000 name:PM_DATA_FROM_MEM_GRP52 : (Group 52 pm_mp_data_from) Data loaded from memory
-event:0X0346 counters:6 um:zero minimum:1000 name:PM_LD_MISS_L1_LSU1_GRP52 : (Group 52 pm_mp_data_from) LSU1 L1 D cache load misses
-event:0X0347 counters:7 um:zero minimum:1000 name:PM_LD_REF_L1_GRP52 : (Group 52 pm_mp_data_from) L1 D cache load references
-
-#Group 53 pm_mp_mark_data_from, Marked Data From L2 instruction for 970mp
-event:0X0350 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_GRP53 : (Group 53 pm_mp_mark_data_from) Marked data loaded from L2
-event:0X0351 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L25_SHR_GRP53 : (Group 53 pm_mp_mark_data_from) Marked data loaded from L2.5 shared
-event:0X0352 counters:2 um:zero minimum:10000 name:PM_INST_CMPL_GRP53 : (Group 53 pm_mp_mark_data_from) Instructions completed
-event:0X0353 counters:3 um:zero minimum:10000 name:PM_CYC_GRP53 : (Group 53 pm_mp_mark_data_from) Processor cycles
-event:0X0354 counters:4 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L25_MOD_GRP53 : (Group 53 pm_mp_mark_data_from) Marked data loaded from L2.5 modified
-event:0X0355 counters:5 um:zero minimum:1000 name:PM_MRK_DATA_FROM_MEM_GRP53 : (Group 53 pm_mp_mark_data_from) Marked data loaded from memory
-event:0X0356 counters:6 um:zero minimum:1000 name:PM_MRK_INST_FIN_GRP53 : (Group 53 pm_mp_mark_data_from) Marked instruction finished
-event:0X0357 counters:7 um:zero minimum:1000 name:PM_MRK_L1_RELOAD_VALID_GRP53 : (Group 53 pm_mp_mark_data_from) Marked L1 reload data source valid
+#Group 51 pm_mark_data_from, Marked Data From L2 instructions
+event:0X0330 counters:0 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L2_GRP51 : (Group 51 pm_mark_data_from) Marked data loaded from L2
+event:0X0331 counters:1 um:zero minimum:1000 name:PM_MRK_DATA_FROM_MEM_GRP51 : (Group 51 pm_mark_data_from) Marked data loaded from memory
+event:0X0332 counters:2 um:zero minimum:10000 name:PM_INST_CMPL_GRP51 : (Group 51 pm_mark_data_from) Instructions completed
+event:0X0333 counters:3 um:zero minimum:10000 name:PM_CYC_GRP51 : (Group 51 pm_mark_data_from) Processor cycles
+event:0X0334 counters:4 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L25_SHR_GRP51 : (Group 51 pm_mark_data_from) Marked data loaded from L2.5 shared
+event:0X0335 counters:5 um:zero minimum:1000 name:PM_MRK_DATA_FROM_L25_MOD_GRP51 : (Group 51 pm_mark_data_from) Marked data loaded from L2.5 modified
+event:0X0336 counters:6 um:zero minimum:1000 name:PM_MRK_INST_FIN_GRP51 : (Group 51 pm_mark_data_from) Marked instruction finished
+event:0X0337 counters:7 um:zero minimum:1000 name:PM_MRK_L1_RELOAD_VALID_GRP51 : (Group 51 pm_mark_data_from) Marked L1 reload data source valid
