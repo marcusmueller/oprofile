@@ -1,3 +1,8 @@
+2007-10-11  Maynard Johnson  <maynardj@us.ibm.com>
+
+	* events/ppc64/970MP/event_mappings: Turn off profiling in
+	  hypervisor on 970MP to prevent lost interrupts
+
 2007-10-10  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* events/ppc64/970MP/events:
