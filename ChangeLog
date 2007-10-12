@@ -1,3 +1,9 @@
+2007-10-12  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_events.c: check for '.' inside event name, they can't work
+	* events/i386/core_2/events: change '.' by '_' in events name
+	* events/ppc64/cell-be/events:
+
 2007-10-11  Maynard Johnson  <maynardj@us.ibm.com>
 
 	* events/ppc64/970MP/event_mappings: Turn off profiling in

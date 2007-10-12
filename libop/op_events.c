@@ -335,6 +335,8 @@ static void read_events(char const * file)
 				seen_name = 1;
 				if (strchr(value, '/') != NULL)
 					parse_error("invalid event name");
+				if (strchr(value, '.') != NULL)
+					parse_error("invalid event name");
 				event->name = value;
 			} else if (strcmp(name, "event") == 0) {
 				if (seen_event)

@@ -3,7 +3,7 @@
 # Architectural events
 #
 event:0x3c counters:0,1 um:nonhlt minimum:6000 name:CPU_CLK_UNHALTED : Clock cycles when not halted
-event:0xc0 counters:0,1 um:zero minimum:6000 name:INST_RETIRED.ANY_P : number of instructions retired
+event:0xc0 counters:0,1 um:zero minimum:6000 name:INST_RETIRED_ANY_P : number of instructions retired
 event:0x2e counters:0,1 um:core_prefetch_mesi minimum:500 name:L2_RQSTS : number of L2 cache requests
 event:0x2e counters:0,1 um:x41 minimum:6000 name:LLC_MISSES : L2 cache demand requests from this core that missed the L2
 event:0x2e counters:0,1 um:x4f minimum:6000 name:LLC_REFS : L2 cache demand requests from this core
@@ -81,7 +81,7 @@ event:0x7f counters:0,1 um:core minimum:500 name:BUS_IO_WAIT : IO requests waiti
 event:0x80 counters:0,1 um:zero minimum:500 name:L1I_READS : number of instruction fetches
 event:0x81 counters:0,1 um:zero minimum:500 name:L1I_MISSES : number of instruction fetch misses
 event:0x82 counters:0,1 um:itlb_miss minimum:500 name:ITLB : number of ITLB misses
-event:0x83 counters:0,1 um:two minimum:500 name:INST_QUEUE.FULL : cycles during which the instruction queue is full
+event:0x83 counters:0,1 um:two minimum:500 name:INST_QUEUE_FULL : cycles during which the instruction queue is full
 event:0x86 counters:0,1 um:zero minimum:500 name:IFU_MEM_STALL : cycles instruction fetch pipe is stalled
 event:0x87 counters:0,1 um:zero minimum:500 name:ILD_STALL : cycles instruction length decoder is stalled
 event:0x88 counters:0,1 um:zero minimum:3000 name:BR_INST_EXEC : Branch instructions executed (not necessarily retired)
@@ -113,7 +113,7 @@ event:0xb3 counters:0,1 um:simd_instr_type_exec minimum:3000 name:SIMD_UOP_TYPE_
 event:0xc0 counters:0,1 um:inst_retired minimum:6000 name:INST_RETIRED : number of instructions retired
 event:0xc1 counters:0,1 um:x87_ops_retired minimum:500 name:X87_OPS_RETIRED : number of computational FP operations retired
 event:0xc2 counters:0,1 um:uops_retired minimum:6000 name:UOPS_RETIRED : number of UOPs retired
-event:0xc3 counters:0,1 um:machine_nukes minimum:500 name:MACHINE_NUKES.SMC : number of pipeline flushing events
+event:0xc3 counters:0,1 um:machine_nukes minimum:500 name:MACHINE_NUKES_SMC : number of pipeline flushing events
 event:0xc4 counters:0,1 um:br_inst_retired minimum:500 name:BR_INST_RETIRED : number of branch instructions retired
 event:0xc5 counters:0,1 um:zero minimum:500 name:BR_MISS_PRED_RETIRED : number of mispredicted branches retired (precise)
 event:0xc6 counters:0,1 um:cycles_int_masked minimum:500 name:CYCLES_INT_MASKED : cycles interrupts are disabled

@@ -118,113 +118,113 @@ event:0xdbf counters:0,1,2,3 um:PPU_0_cycles          minimum:10000	name:stb_not
 # Cell BE Island 6 - Element Interconnect Bus (EIB)
 
 # CBE Signal Group 61 - EIB Address Concentrator 0 (NClk/2)
-event:0x17d4 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_ICMD_PERF(0)	: Number of read and rwitm commands (including atomic) AC1 to AC0. (Group 1)
-event:0x17d5 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_ICMD_PERF(1)	: Number of dclaim commands (including atomic) AC1 to AC0. (Group 1)
-event:0x17d6 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_ICMD_PERF(2)	: Number of wwk, wwc, and wwf commands from AC1 to AC0. (Group 1)
-event:0x17d7 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_ICMD_PERF(3)	: Number of sync, tlbsync, and eieio commands from AC1 to AC0. (Group 1)
-event:0x17d8 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_ICMD_PERF(4)	: Number of tlbie commands from AC1 to AC0. (Group 1)
-event:0x17df counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_CAM_PERF(1)	: Previous adjacent address match (PAAM) Content Addressable Memory (CAM) hit. (Group 1)
-event:0x17e0 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_CAM_PERF(2)	: PAAM CAM miss. (Group 1)
-event:0x17e2 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_CAM_CMD_REFLECTED	: Command reflected. (Group 1)
-event:0x17e4 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_ICMD_PERF(0)	: Number of read and rwitm commands (including atomic) AC1 to AC0. (Group 2)
-event:0x17e5 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_ICMD_PERF(1)	: Number of dclaim commands (including atomic) AC1 to AC0. (Group 2)
-event:0x17e6 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_ICMD_PERF(2)	: Number of wwk, wwc, and wwf commands from AC1 to AC0. (Group 2)
-event:0x17e7 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_ICMD_PERF(3)	: Number of sync, tlbsync, and eieio commands from AC1 to AC0. (Group 2)
-event:0x17e8 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_ICMD_PERF(4)	: Number of tlbie commands from AC1 to AC0. (Group 2)
-event:0x17ef counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_CAM_PERF(1)	: PAAM CAM hit. (Group 2)
-event:0x17f0 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_CAM_PERF(2)	: PAAM CAM miss. (Group 2)
-event:0x17f2 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0.W_CAM_CMD_REFLECTED	: Command reflected. (Group 2)
+event:0x17d4 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_ICMD_PERF(0)	: Number of read and rwitm commands (including atomic) AC1 to AC0. (Group 1)
+event:0x17d5 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_ICMD_PERF(1)	: Number of dclaim commands (including atomic) AC1 to AC0. (Group 1)
+event:0x17d6 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_ICMD_PERF(2)	: Number of wwk, wwc, and wwf commands from AC1 to AC0. (Group 1)
+event:0x17d7 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_ICMD_PERF(3)	: Number of sync, tlbsync, and eieio commands from AC1 to AC0. (Group 1)
+event:0x17d8 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_ICMD_PERF(4)	: Number of tlbie commands from AC1 to AC0. (Group 1)
+event:0x17df counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_CAM_PERF(1)	: Previous adjacent address match (PAAM) Content Addressable Memory (CAM) hit. (Group 1)
+event:0x17e0 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_CAM_PERF(2)	: PAAM CAM miss. (Group 1)
+event:0x17e2 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_CAM_CMD_REFLECTED	: Command reflected. (Group 1)
+event:0x17e4 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_ICMD_PERF(0)	: Number of read and rwitm commands (including atomic) AC1 to AC0. (Group 2)
+event:0x17e5 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_ICMD_PERF(1)	: Number of dclaim commands (including atomic) AC1 to AC0. (Group 2)
+event:0x17e6 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_ICMD_PERF(2)	: Number of wwk, wwc, and wwf commands from AC1 to AC0. (Group 2)
+event:0x17e7 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_ICMD_PERF(3)	: Number of sync, tlbsync, and eieio commands from AC1 to AC0. (Group 2)
+event:0x17e8 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_ICMD_PERF(4)	: Number of tlbie commands from AC1 to AC0. (Group 2)
+event:0x17ef counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_CAM_PERF(1)	: PAAM CAM hit. (Group 2)
+event:0x17f0 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_CAM_PERF(2)	: PAAM CAM miss. (Group 2)
+event:0x17f2 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC0_W_CAM_CMD_REFLECTED	: Command reflected. (Group 2)
 
 # CBE Signal Group 62 - EIB Address Concentrator 1 (NClk/2)
-event:0x1839 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(1) : Local command from SPE 6.
-event:0x183a counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(2) : Local command from SPE 4.
-event:0x183b counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(3) : Local command from SPE 2.
-event:0x183c counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(4) : Local command from SPE 0.
-event:0x183d counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(5) : Local command from PPE.
-event:0x183e counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(6) : Local command from SPE 1.
-event:0x183f counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(7) : Local command from SPE 3.
-event:0x1840 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(8) : Local command from SPE 5.
-event:0x1841 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(9) : Local command from SPE 7.
-event:0x1844 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(12) : AC1-to-AC0 global command from SPE 6.
-event:0x1845 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(13) : AC1-to-AC0 global command from SPE 4.
-event:0x1846 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(14) : AC1-to-AC0 global command from SPE 2.
-event:0x1847 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(15) : AC1-to-AC0 global command from SPE 0.
-event:0x1848 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(16) : AC1-to-AC0 global command from PPE.
-event:0x1849 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(17) : AC1-to-AC0 global command from SPE 1.
-event:0x184a counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(18) : AC1-to-AC0 global command from SPE 3.
-event:0x184b counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(19) : AC1-to-AC0 global command from SPE 5.
-event:0x184c counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(20) : AC1-to-AC0 global command from SPE 7.
-event:0x184f counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(23) : AC1 sends a global command to AC0.
-event:0x1850 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(24) : AC0 reflects a global command back to AC1.
-event:0x1851 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1.WAC1_TRCMUX.W_TRCGRP_ACPERF(25) : AC1 reflects a command back to the bus masters.
+event:0x1839 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(1) : Local command from SPE 6.
+event:0x183a counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(2) : Local command from SPE 4.
+event:0x183b counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(3) : Local command from SPE 2.
+event:0x183c counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(4) : Local command from SPE 0.
+event:0x183d counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(5) : Local command from PPE.
+event:0x183e counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(6) : Local command from SPE 1.
+event:0x183f counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(7) : Local command from SPE 3.
+event:0x1840 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(8) : Local command from SPE 5.
+event:0x1841 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(9) : Local command from SPE 7.
+event:0x1844 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(12) : AC1-to-AC0 global command from SPE 6.
+event:0x1845 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(13) : AC1-to-AC0 global command from SPE 4.
+event:0x1846 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(14) : AC1-to-AC0 global command from SPE 2.
+event:0x1847 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(15) : AC1-to-AC0 global command from SPE 0.
+event:0x1848 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(16) : AC1-to-AC0 global command from PPE.
+event:0x1849 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(17) : AC1-to-AC0 global command from SPE 1.
+event:0x184a counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(18) : AC1-to-AC0 global command from SPE 3.
+event:0x184b counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(19) : AC1-to-AC0 global command from SPE 5.
+event:0x184c counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(20) : AC1-to-AC0 global command from SPE 7.
+event:0x184f counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(23) : AC1 sends a global command to AC0.
+event:0x1850 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(24) : AC0 reflects a global command back to AC1.
+event:0x1851 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WAC1_WAC1_TRCMUX_W_TRCGRP_ACPERF(25) : AC1 reflects a command back to the bus masters.
 
 # CBE Signal Group 63 - EIB Data Ring Arbitrator - Group 1 (NClk/2)
-event:0x189c counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPE(0)	: Grant on data ring 0.
-event:0x189d counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPE(1)	: Grant on data ring 1.
-event:0x189e counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPE(2)	: Grant on data ring 2.
-event:0x189f counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPE(3)	: Grant on data ring 3.
-event:0x18a0 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA.DTRC.TRCGRPE(4)	: Data ring 0 is in use.
-event:0x18a1 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA.DTRC.TRCGRPE(5)	: Data ring 1 is in use.
-event:0x18a2 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA.DTRC.TRCGRPE(6)	: Data ring 2 is in use.
-event:0x18a3 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA.DTRC.TRCGRPE(7)	: Data ring 3 is in use.
-event:0x18a4 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA.DTRC.TRCGRPE(8)	: All data rings are idle.
-event:0x18a5 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA.DTRC.TRCGRPE(9)	: One data ring is busy.
-event:0x18a6 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA.DTRC.TRCGRPE(10)	: Two or three data rings are busy.
-event:0x18a7 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA.DTRC.TRCGRPE(11)	: All data rings are busy.
-event:0x18a8 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPE(12)	: BIC data request pending.
-event:0x18a9 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPE(13)	: SPE 6 data request pending.
-event:0x18aa counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPE(14)	: SPE 4 data request pending.
-event:0x18ab counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPE(15)	: SPE 2 data request pending.
-event:0x18ac counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPE(16)	: SPE 0 data request pending.
-event:0x18ad counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPE(17)	: MIC data request pending.
-event:0x18ae counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPE(18)	: PPE data request pending.
-event:0x18af counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPE(19)	: SPE 1 data request pending.
-event:0x18b0 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPE(20)	: SPE 3 data request pending.
-event:0x18b1 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPE(21)	: SPE 5 data request pending.
-event:0x18b2 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPE(22)	: SPE 7 data request pending.
-event:0x18b3 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPE(23)	: IOC data request pending.
-event:0x18b4 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPE(24)	: BIC is data destination.
-event:0x18b5 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPE(25)	: SPE 6 is data destination.
-event:0x18b6 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPE(26)	: SPE 4 is data destination.
-event:0x18b7 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPE(27)	: SPE 2 is data destination.
-event:0x18b8 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPE(28)	: SPE 0 is data destination.
-event:0x18b9 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPE(29)	: MIC is data destination.
-event:0x18ba counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPE(30)	: PPE is data destination.
-event:0x18bb counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPE(31)	: SPE 1 is data destination.
+event:0x189c counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPE(0)	: Grant on data ring 0.
+event:0x189d counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPE(1)	: Grant on data ring 1.
+event:0x189e counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPE(2)	: Grant on data ring 2.
+event:0x189f counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPE(3)	: Grant on data ring 3.
+event:0x18a0 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA_DTRC_TRCGRPE(4)	: Data ring 0 is in use.
+event:0x18a1 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA_DTRC_TRCGRPE(5)	: Data ring 1 is in use.
+event:0x18a2 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA_DTRC_TRCGRPE(6)	: Data ring 2 is in use.
+event:0x18a3 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA_DTRC_TRCGRPE(7)	: Data ring 3 is in use.
+event:0x18a4 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA_DTRC_TRCGRPE(8)	: All data rings are idle.
+event:0x18a5 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA_DTRC_TRCGRPE(9)	: One data ring is busy.
+event:0x18a6 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA_DTRC_TRCGRPE(10)	: Two or three data rings are busy.
+event:0x18a7 counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA_DTRC_TRCGRPE(11)	: All data rings are busy.
+event:0x18a8 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPE(12)	: BIC data request pending.
+event:0x18a9 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPE(13)	: SPE 6 data request pending.
+event:0x18aa counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPE(14)	: SPE 4 data request pending.
+event:0x18ab counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPE(15)	: SPE 2 data request pending.
+event:0x18ac counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPE(16)	: SPE 0 data request pending.
+event:0x18ad counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPE(17)	: MIC data request pending.
+event:0x18ae counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPE(18)	: PPE data request pending.
+event:0x18af counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPE(19)	: SPE 1 data request pending.
+event:0x18b0 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPE(20)	: SPE 3 data request pending.
+event:0x18b1 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPE(21)	: SPE 5 data request pending.
+event:0x18b2 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPE(22)	: SPE 7 data request pending.
+event:0x18b3 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPE(23)	: IOC data request pending.
+event:0x18b4 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPE(24)	: BIC is data destination.
+event:0x18b5 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPE(25)	: SPE 6 is data destination.
+event:0x18b6 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPE(26)	: SPE 4 is data destination.
+event:0x18b7 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPE(27)	: SPE 2 is data destination.
+event:0x18b8 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPE(28)	: SPE 0 is data destination.
+event:0x18b9 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPE(29)	: MIC is data destination.
+event:0x18ba counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPE(30)	: PPE is data destination.
+event:0x18bb counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPE(31)	: SPE 1 is data destination.
 
 # CBE Signal Group 64 - EIB Data Ring Arbitrator - Group 2 (NClk/2)
-event:0x1900 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPF(0)	: BIC data request pending.
-event:0x1901 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPF(1)	: SPE 6 data request pending.
-event:0x1902 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPF(2)	: SPE 4 data request pending.
-event:0x1903 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPF(3)	: SPE 2 data request pending.
-event:0x1904 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPF(4)	: SPE 0 data request pending.
-event:0x1905 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPF(5)	: MIC data request pending.
-event:0x1906 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPF(6)	: PPE data request pending.
-event:0x1907 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPF(7)	: SPE 1 data request pending.
-event:0x1908 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPF(8)	: SPE 3 data request pending.
-event:0x1909 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPF(9)	: SPE 5 data request pending.
-event:0x190a counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPF(10)	: SPE 7 data request pending.
-event:0x190b counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA.DTRC.TRCGRPF(11)	: IOC data request pending.
-event:0x190c counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(12)	: BIC is data destination.
-event:0x190d counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(13)	: SPE 6 is data destination.
-event:0x190e counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(14)	: SPE 4 is data destination.
-event:0x190f counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(15)	: SPE 2 is data destination.
-event:0x1910 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(16)	: SPE 0 is data destination.
-event:0x1911 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(17)	: MIC is data destination.
-event:0x1912 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(18)	: PPE is data destination.
-event:0x1913 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(19)	: SPE 1 is data destination.
-event:0x1914 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(20)	: SPE 3 is data destination.
-event:0x1915 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(21)	: SPE 5 is data destination.
-event:0x1916 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(22)	: SPE 7 is data destination.
-event:0x1917 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(23)	: IOC is data destination.
-event:0x1918 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(24)	: Grant on data ring 0.
-event:0x1919 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(25)	: Grant on data ring 1.
-event:0x191a counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(26)	: Grant on data ring 2.
-event:0x191b counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA.DTRC.TRCGRPF(27)	: Grant on data ring 3.
-event:0x191c counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA.DTRC.TRCGRPF(28)	: All data rings are idle.
-event:0x191d counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA.DTRC.TRCGRPF(29)	: One data ring is busy.
-event:0x191e counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA.DTRC.TRCGRPF(30)	: Two or three data rings are busy.
-event:0x191f counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA.DTRC.TRCGRPF(31)	: All four data rings are busy.
+event:0x1900 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPF(0)	: BIC data request pending.
+event:0x1901 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPF(1)	: SPE 6 data request pending.
+event:0x1902 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPF(2)	: SPE 4 data request pending.
+event:0x1903 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPF(3)	: SPE 2 data request pending.
+event:0x1904 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPF(4)	: SPE 0 data request pending.
+event:0x1905 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPF(5)	: MIC data request pending.
+event:0x1906 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPF(6)	: PPE data request pending.
+event:0x1907 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPF(7)	: SPE 1 data request pending.
+event:0x1908 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPF(8)	: SPE 3 data request pending.
+event:0x1909 counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPF(9)	: SPE 5 data request pending.
+event:0x190a counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPF(10)	: SPE 7 data request pending.
+event:0x190b counters:0,1,2,3 um:PPU_02_cycles_or_edges minimum:10000	name:WDA_DTRC_TRCGRPF(11)	: IOC data request pending.
+event:0x190c counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(12)	: BIC is data destination.
+event:0x190d counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(13)	: SPE 6 is data destination.
+event:0x190e counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(14)	: SPE 4 is data destination.
+event:0x190f counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(15)	: SPE 2 is data destination.
+event:0x1910 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(16)	: SPE 0 is data destination.
+event:0x1911 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(17)	: MIC is data destination.
+event:0x1912 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(18)	: PPE is data destination.
+event:0x1913 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(19)	: SPE 1 is data destination.
+event:0x1914 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(20)	: SPE 3 is data destination.
+event:0x1915 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(21)	: SPE 5 is data destination.
+event:0x1916 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(22)	: SPE 7 is data destination.
+event:0x1917 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(23)	: IOC is data destination.
+event:0x1918 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(24)	: Grant on data ring 0.
+event:0x1919 counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(25)	: Grant on data ring 1.
+event:0x191a counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(26)	: Grant on data ring 2.
+event:0x191b counters:0,1,2,3 um:PPU_02_edges           minimum:10000	name:WDA_DTRC_TRCGRPF(27)	: Grant on data ring 3.
+event:0x191c counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA_DTRC_TRCGRPF(28)	: All data rings are idle.
+event:0x191d counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA_DTRC_TRCGRPF(29)	: One data ring is busy.
+event:0x191e counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA_DTRC_TRCGRPF(30)	: Two or three data rings are busy.
+event:0x191f counters:0,1,2,3 um:PPU_02_cycles          minimum:10000	name:WDA_DTRC_TRCGRPF(31)	: All four data rings are busy.
 
 # CBE Signal Group 651 - EIB Token Manager - Group A0/B0 (NClk/2)
 event:0xfe4c counters:0,1,2,3 um:PPU_0_cycles          minimum:10000	name:rag0_xio_e_unused	: Even XIO token unused by RAG 0.
@@ -360,40 +360,40 @@ event:0x9f07f counters:0,1,2,3 um:PPU_2_cycles          minimum:10000	name:rag3_
 # Cell BE Island 7 - Memory Interface Controller (MIC)
 
 # CBE Signal Group 71 - MIC Group 1 (NClk/2)
-event:0x1bc5 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON.YMB_CSR.PERFORM1(1)	: XIO1 - Read command queue is empty.
-event:0x1bc6 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON.YMB_CSR.PERFORM1(2)	: XIO1 - Write command queue is empty.
-event:0x1bc8 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON.YMB_CSR.PERFORM1(4)	: XIO1 - Read command queue is full.
-event:0x1bc9 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON.YMB_CSR.PERFORM1(5)	: XIO1 - MIC responds with a Retry for a read command because the read command queue is full.
-event:0x1bca counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON.YMB_CSR.PERFORM1(6)	: XIO1 - Write command queue is full.
-event:0x1bcb counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON.YMB_CSR.PERFORM1(7)	: XIO1 - MIC responds with a Retry for a write command because the write command queue is full.
-event:0x1bde counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1.YMM_CCS.PERFORM(2)	: XIO1 - Read command dispatched; includes high-priority and fast-path reads (see Note 1).
-event:0x1bdf counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1.YMM_CCS.PERFORM(3)	: XIO1 - Write command dispatched (see Note 1).
-event:0x1be0 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1.YMM_CCS.PERFORM(4)	: XIO1 - Read-Modify-Write command (data size < 16 bytes) dispatched (see Note 1).
-event:0x1be1 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1.YMM_CCS.PERFORM(5)	: XIO1 - Refresh dispatched (see Note 1).
-event:0x1be3 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1.YMM_CCS.PERFORM(7)	: XIO1 - Byte-masking write command (data size >= 16 bytes) dispatched (see Note 1).
-event:0x1be5 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1.YMM_CRW.PERFORM(1)	: XIO1 - Write command dispatched after a read command was previously dispatched (see Note 1).
-event:0x1be6 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1.YMM_CRW.PERFORM(2)	: XIO1 - Read command dispatched after a write command was previously dispatched (see Note 1).
+event:0x1bc5 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON_YMB_CSR_PERFORM1(1)	: XIO1 - Read command queue is empty.
+event:0x1bc6 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON_YMB_CSR_PERFORM1(2)	: XIO1 - Write command queue is empty.
+event:0x1bc8 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON_YMB_CSR_PERFORM1(4)	: XIO1 - Read command queue is full.
+event:0x1bc9 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON_YMB_CSR_PERFORM1(5)	: XIO1 - MIC responds with a Retry for a read command because the read command queue is full.
+event:0x1bca counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON_YMB_CSR_PERFORM1(6)	: XIO1 - Write command queue is full.
+event:0x1bcb counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON_YMB_CSR_PERFORM1(7)	: XIO1 - MIC responds with a Retry for a write command because the write command queue is full.
+event:0x1bde counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1_YMM_CCS_PERFORM(2)	: XIO1 - Read command dispatched; includes high-priority and fast-path reads (see Note 1).
+event:0x1bdf counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1_YMM_CCS_PERFORM(3)	: XIO1 - Write command dispatched (see Note 1).
+event:0x1be0 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1_YMM_CCS_PERFORM(4)	: XIO1 - Read-Modify-Write command (data size < 16 bytes) dispatched (see Note 1).
+event:0x1be1 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1_YMM_CCS_PERFORM(5)	: XIO1 - Refresh dispatched (see Note 1).
+event:0x1be3 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1_YMM_CCS_PERFORM(7)	: XIO1 - Byte-masking write command (data size >= 16 bytes) dispatched (see Note 1).
+event:0x1be5 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1_YMM_CRW_PERFORM(1)	: XIO1 - Write command dispatched after a read command was previously dispatched (see Note 1).
+event:0x1be6 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL1_YMM_CRW_PERFORM(2)	: XIO1 - Read command dispatched after a write command was previously dispatched (see Note 1).
 
 
 # CBE Signal Group 72 - MIC Group 2 (NClk/2)
-event:0x1c29 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON.YMB_CSR.PERFORM2(1)	: XIO0 - Read command queue is empty.
-event:0x1c2a counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON.YMB_CSR.PERFORM2(2)	: XIO0 - Write command queue is empty.
-event:0x1c2c counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON.YMB_CSR.PERFORM2(4)	: XIO0 - Read command queue is full.
-event:0x1c2d counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON.YMB_CSR.PERFORM2(5)	: XIO0 - MIC responds with a Retry for a read command because the read command queue is full.
-event:0x1c2e counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON.YMB_CSR.PERFORM2(6)	: XIO0 - Write command queue is full.
-event:0x1c2f counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON.YMB_CSR.PERFORM2(7)	: XIO0 - MIC responds with a Retry for a write command because the write command queue is full.
-event:0x1c42 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0.YMM_CCS.PERFORM(2)	: XIO0 - Read command dispatched; includes high-priority and fast-path reads (see Note 1).
-event:0x1c43 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0.YMM_CCS.PERFORM(3)	: XIO0 - Write command dispatched (see Note 1).
-event:0x1c44 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0.YMM_CCS.PERFORM(4)	: XIO0 - Read-Modify-Write command (data size < 16 bytes) dispatched (see Note 1).
-event:0x1c45 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0.YMM_CCS.PERFORM(5)	: XIO0 - Refresh dispatched (see Note 1).
-event:0x1c49 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0.YMM_CRW.PERFORM(1)	: XIO0 - Write command dispatched after a read command was previously dispatched (see Note 1).
-event:0x1c4a counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0.YMM_CRW.PERFORM(2)	: XIO0 - Read command dispatched after a write command was previously dispatched (see Note 1).
+event:0x1c29 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON_YMB_CSR_PERFORM2(1)	: XIO0 - Read command queue is empty.
+event:0x1c2a counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON_YMB_CSR_PERFORM2(2)	: XIO0 - Write command queue is empty.
+event:0x1c2c counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON_YMB_CSR_PERFORM2(4)	: XIO0 - Read command queue is full.
+event:0x1c2d counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON_YMB_CSR_PERFORM2(5)	: XIO0 - MIC responds with a Retry for a read command because the read command queue is full.
+event:0x1c2e counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON_YMB_CSR_PERFORM2(6)	: XIO0 - Write command queue is full.
+event:0x1c2f counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_COMMON_YMB_CSR_PERFORM2(7)	: XIO0 - MIC responds with a Retry for a write command because the write command queue is full.
+event:0x1c42 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0_YMM_CCS_PERFORM(2)	: XIO0 - Read command dispatched; includes high-priority and fast-path reads (see Note 1).
+event:0x1c43 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0_YMM_CCS_PERFORM(3)	: XIO0 - Write command dispatched (see Note 1).
+event:0x1c44 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0_YMM_CCS_PERFORM(4)	: XIO0 - Read-Modify-Write command (data size < 16 bytes) dispatched (see Note 1).
+event:0x1c45 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0_YMM_CCS_PERFORM(5)	: XIO0 - Refresh dispatched (see Note 1).
+event:0x1c49 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0_YMM_CRW_PERFORM(1)	: XIO0 - Write command dispatched after a read command was previously dispatched (see Note 1).
+event:0x1c4a counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0_YMM_CRW_PERFORM(2)	: XIO0 - Read command dispatched after a write command was previously dispatched (see Note 1).
 
 # CBE Signal Group 73 - MIC Group 3 (NClk/2)
-event:0x1ca7 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0.YMM_CCS.PERFORM(3)	: XIO0 - Write command dispatched (see Note 1).
-event:0x1ca8 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0.YMM_CCS.PERFORM(4)	: XIO0 - Read-Modify-Write command (data size < 16 bytes) dispatched (see Note 1).
-event:0x1ca9 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0.YMM_CCS.PERFORM(5)	: XIO0 - Refresh dispatched (see Note 1).
-event:0x1cab counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0.YMM_CCS.PERFORM(7)	: XIO0 - Byte-masking write command (data size >= 16 bytes) dispatched (see Note 1).
+event:0x1ca7 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0_YMM_CCS_PERFORM(3)	: XIO0 - Write command dispatched (see Note 1).
+event:0x1ca8 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0_YMM_CCS_PERFORM(4)	: XIO0 - Read-Modify-Write command (data size < 16 bytes) dispatched (see Note 1).
+event:0x1ca9 counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0_YMM_CCS_PERFORM(5)	: XIO0 - Refresh dispatched (see Note 1).
+event:0x1cab counters:0,1,2,3 um:PPU_0123_cycles          minimum:10000	name:YM_CTL0_YMM_CCS_PERFORM(7)	: XIO0 - Byte-masking write command (data size >= 16 bytes) dispatched (see Note 1).
 
 
 # Cell BE Island 8 - Broadband Engine Interface (BEI)
