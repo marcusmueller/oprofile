@@ -880,8 +880,8 @@ implementation is detailed in <ulink
 url="http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf">
 http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/22007.pdf</ulink>.
 For PowerPC64 processors in IBM iSeries, pSeries, and blade server systems, processor documentation
-is available at <ulink url="http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC/">
-http://www-306.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC</ulink>.  (For example, the
+is available at <ulink url="http://www-01.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC/">
+http://www-01.ibm.com/chips/techlib/techlib.nsf/productfamilies/PowerPC</ulink>.  (For example, the
 specific publication containing information on the performance monitor unit for the PowerPC970 is 
 "IBM PowerPC 970FX RISC Microprocessor User's Manual.")
 These processors are capable of delivering an interrupt when a counter overflows.
@@ -2549,7 +2549,7 @@ list: mis-predicted branch, TLB cache miss, partial register stall,
 partial register dependencies, memory mismatch stall, re-executed µops. If you want to write
 programs at the assembly level, be sure to take a look at the Intel and
 AMD documentation at <ulink url="http://developer.intel.com/">http://developer.intel.com/</ulink>
-and <ulink url="http://www.amd.com/products/cpg/athlon/techdocs/">http://www.amd.com/products/cpg/athlon/techdocs/</ulink>.
+and <ulink url="http://developer.amd.com/devguides.jsp/">http://developer.amd.com/devguides.jsp</ulink>.
 </para>
 </sect1>
 </chapter>

@@ -1,3 +1,8 @@
+2007-10-17  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* doc/oprofile.xml: fix dead url
+	* utils/ophelp.c:
+
 2007-10-17  Jason Yeh  <jason.yeh@amd.com>
 
 	* events/x86-64/family10/events: This patch updates the events and

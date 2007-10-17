@@ -417,7 +417,7 @@ int main(int argc, char const * argv[])
 	case CPU_AXP_EV6:
 	case CPU_AXP_EV67:
 		printf("See Alpha Architecture Reference Manual\n"
-		       "ftp://ftp.compaq.com/pub/products/alphaCPUdocs/alpha_arch_ref.pdf\n");
+		       "http://download.majix.org/dec/alpha_arch_ref.pdf\n");
 		break;
 	case CPU_ARM_XSCALE1:
 	case CPU_ARM_XSCALE2:
