@@ -1,3 +1,12 @@
+2007-10-17  Jason Yeh  <jason.yeh@amd.com>
+
+	* events/x86-64/family10/events: This patch updates the events and
+	  unit_masks files to match the BIOS and Kernel Developer's Guide
+	  For AMD Family 10h Processors Rev 3.00 released on September 07,
+	  2007. The notable changes are L3 cache events and updates to
+	  corresponding unit masks.
+	* events/x86-64/family10/unit_masks:
+
 2007-10-17  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* utils/opcontrol: newer shell accept if -z ... but older need 
