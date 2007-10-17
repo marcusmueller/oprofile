@@ -1667,7 +1667,7 @@ check_version
 
 do_init
 if test `id -u` != "0"; then
-    if -z "$2"; then
+    if test -z "$2"; then
 	case "$1" in 
 	--dump|-d)
 	    ONLY_DUMP=yes
