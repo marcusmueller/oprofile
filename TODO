@@ -148,6 +148,8 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
   all instantation then annotating for each distinct instantation, this will
   break our "keep the source line number in annotated source file identical to
   the original source"
+ o events/mips/34k/events, some events does not make sense, they get identical
+  event number, um and counter nr so they overlap, currently commented
 
 Documentation
 -------------

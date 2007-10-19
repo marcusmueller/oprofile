@@ -1,3 +1,25 @@
+2007-10-19  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_events.c: force the use of hexa notation in event file for
+	  the field intended to be in hexacidemal so make check will catch
+	  attempt to use decimal notation for them.
+
+	* events/mips/20K/events: all event number were in decimal but parsed
+	  as hexadecimal, this fix bug #1717298
+	* events/mips/24K/events:
+	* events/mips/25K/events:
+	* events/mips/5K/events:
+	* events/mips/r12000/events:
+	* events/mips/sb1/events:
+	* events/mips/vr5432/events:
+	* events/mips/vr5500/events:
+	* events/mips/34K/events: comment a bunch of overlapping event.
+	* events/ppc64/cell-be/unit_masks: well, 0 == 0x0 but it's easier
+	  to catch real error by forcing hexa notation for default unit mask.
+
+	* libop/tests/alloc_counter_tests.c: fix mips/34K test, the used event
+	  has been remoded
+
 2007-10-17  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* doc/oprofile.xml: fix dead url

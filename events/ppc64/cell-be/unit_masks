@@ -6,7 +6,7 @@
 # Contributed by Maynard Johnson <maynardj@us.ibm.com>
 #
 #
-name:zero type:mandatory default:0
+name:zero type:mandatory default:0x0
 	0x000 Count cycles				[mandatory]
 name:PPU_0_cycles type:bitmask default:0x013
 	0x001 Count cycles				[mandatory]

@@ -49,7 +49,10 @@ static int parse_int(char const * str)
 static int parse_hex(char const * str)
 {
 	int value;
-	if (sscanf(str, "%x", &value) != 1)
+	/* 0x/0X to force the use of hexa notation for field intended to
+	   be in hexadecimal */
+	if (sscanf(str, "0x%x", &value) != 1 &&
+	    sscanf(str, "0X%x", &value) != 1)
 		parse_error("expected hexadecimal value");
 
 	return value;

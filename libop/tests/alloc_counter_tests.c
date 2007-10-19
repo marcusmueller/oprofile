@@ -109,7 +109,7 @@ static char const * const events_mips_34k[] = {
 	/* fail_to_alloc_counter: w/o 2006-8-03  Jeremiah Lott patch, see
 	 * ChangeLog */
 	"INSTRUCTIONS:500:0:1:1",
-	"BRANCH_MISPREDICTS:500:0:1:1",
+	"JR_31_INSN_EXECED:500:0:1:1",
 	"BRANCH_INSNS_LAUNCHED:500:0:1:1",
 	"L2_MISSES:500:0:1:1",
 	NULL
