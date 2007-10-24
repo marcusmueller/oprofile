@@ -15,6 +15,11 @@
 #include <set>
 #include <sstream>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include "op_config.h"
 #include "op_exception.h"
 #include "odb.h"
 #include "op_cpu_type.h"
@@ -99,19 +104,28 @@ void check_mtime(string const & file, opd_header const & header)
 
 opd_header const read_header(string const & sample_filename)
 {
-	odb_t samples_db;
+	int fd = open(sample_filename.c_str(), O_RDONLY);
+	if (fd < 0)
+		throw op_fatal_error("Can't open sample file:" +
+				     sample_filename);
 
-	int rc = odb_open(&samples_db, sample_filename.c_str(), ODB_RDONLY,
-		sizeof(struct opd_header));
+	opd_header header;
+	if (read(fd, &header, sizeof(header)) != sizeof(header)) {
+		close(fd);
+		throw op_fatal_error("Can't read sample file header:" +
+				     sample_filename);
+	}
 
-	if (rc)
-		throw op_fatal_error(sample_filename + ": " + strerror(rc));
+	if (memcmp(header.magic, OPD_MAGIC, sizeof(header.magic))) {
+		throw op_fatal_error("Invalid sample file, "
+				     "bad magic number: " +
+				     sample_filename);
+		close(fd);
+	}
 
-	opd_header head = *static_cast<opd_header *>(samples_db.data->base_memory);
+	close(fd);
 
-	odb_close(&samples_db);
-
-	return head;
+	return header;
 }
 
 

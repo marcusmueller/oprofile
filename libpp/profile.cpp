@@ -70,14 +70,9 @@ enum profile_type profile_t::is_spu_sample_file(string const & filename)
 //static member
 void profile_t::open_sample_file(string const & filename, odb_t & db)
 {
-	int rc = odb_open(&db, filename.c_str(), ODB_RDONLY,
-		sizeof(struct opd_header));
-
-	if (rc)
-		throw op_fatal_error(filename + ": " + strerror(rc));
-
-	opd_header const & head =
-		*static_cast<opd_header *>(odb_get_data(&db));
+	// Check first if the sample file version is ok else odb_open() can
+	// fail and the error message will be obscure.
+	opd_header head = read_header(filename);
 
 	if (head.version != OPD_VERSION) {
 		ostringstream os;
@@ -86,6 +81,12 @@ void profile_t::open_sample_file(string const & filename, odb_t & db)
 		   <<  "mismatch ?\n";
 		throw op_fatal_error(os.str());
 	}
+
+	int rc = odb_open(&db, filename.c_str(), ODB_RDONLY,
+		sizeof(struct opd_header));
+
+	if (rc)
+		throw op_fatal_error(filename + ": " + strerror(rc));
 }
 
 void profile_t::add_sample_file(string const & filename)

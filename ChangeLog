@@ -1,3 +1,16 @@
+2007-10-24  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libop/op_config.h: bump sample filename format, should have been
+	  done before 0.9.3
+	* libpp/op_header.cpp: do not use odb_open() to read the sample file
+	  header, if it fails it can return EINVAL if sanity checking fails
+	  so we can't know if the failure came from a sample file format
+	  change or some other failure. This explain some "sample_filename:
+	  Invalid argument" we got in bug report when user didn't cleanup
+	  the sample file directory.
+	* libpp/profile.cpp: use read_header() first to check the sample file
+	  format to get better error message.
+
 2007-10-19  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_events.c: force the use of hexa notation in event file for
