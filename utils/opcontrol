@@ -88,6 +88,18 @@ vecho()
 	fi
 }
 
+
+is_tool_available()
+{
+	if which $1 &>/dev/null; then
+		if test -x `which $1`; then
+			return 1
+		fi
+	fi
+
+	return 0
+}
+
  
 # print help message
 do_help()
@@ -487,6 +499,11 @@ get_image_range()
 
 	if test "$FILE_IMAGE" = "none"; then
 		return;
+	fi
+
+	if is_tool_available objdump; then
+		echo "objdump is not installed on this system, use opcontrol --kernel-range=start,end or opcontrol --xen-range= or install objdump"
+		exit 1
 	fi
 
 	# start at the start of .text, and end at _etext

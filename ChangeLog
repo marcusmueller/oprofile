@@ -1,5 +1,11 @@
 2007-10-25  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* utils/opcontrol: if objdump is missing the error message is
+	  obscure, this fix bug #1564920 by checking if objdump exists
+	  and is an executable before using it
+
+2007-10-25  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* utils/opcontrol: --reset doesn't need to load the module, it was
 	  counter-intuitive than the sequence opcontrol --deinit;
 	  opcontrol --reset must be followed by another opcontrol --deinit
