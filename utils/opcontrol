@@ -215,7 +215,7 @@ load_module()
 	fi
 }
 
-# setup variables related to daemon  Set vars according to following
+# setup variables related to path or daemon. Set vars according to following
 # relationship: command-line-option > config-file-settings > defaults.
 # Note that upon entry SESSION_DIR may be set by command-line option.
 do_init_daemon_vars()
@@ -1580,10 +1580,6 @@ do_operations()
 		do_kill_daemon
 	fi
 
-	if test "$RESET" = "yes"; then
-		do_reset
-	fi
-
 	if test "$DEINIT" = "yes"; then
 		do_deinit
 	fi
@@ -1670,12 +1666,18 @@ if test -z "$1"; then
 fi
 
 if test `id -u` = "0"; then
+	# special case to avoid loading the module
+	if test -z "$2" -a "$1" = "--reset"; then
+	    do_init_daemon_vars
+	    do_reset
+	    exit 0
+	fi
 	load_module
 fi
 check_version
 
-# Even the few operations allowed as non root needs the kernel support,
-# if we don't error out now the error message will be obscure
+# Except --reset, even the few operations allowed as non root needs the
+# kernel support, if we don't error out now the error message will be obscure
 check_oprofile_available
 
 do_init

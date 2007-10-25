@@ -1,5 +1,11 @@
 2007-10-25  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* utils/opcontrol: --reset doesn't need to load the module, it was
+	  counter-intuitive than the sequence opcontrol --deinit;
+	  opcontrol --reset must be followed by another opcontrol --deinit
+
+2007-10-25  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* utils/opcontrol: error out earlier if the module is not loaded
 	  even for --list-events or --dump to avoid obscure error message
 
