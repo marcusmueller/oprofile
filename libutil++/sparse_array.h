@@ -70,11 +70,16 @@ public:
 	}
 
 
-	/// return current size of array
+	/**
+	 * return the maximum index of the array + 1 or 0 if the array
+	 * is empty.
+	 */
 	size_type size() const {
+		if (container.size() == 0)
+			return 0;
 		typename container_type::const_iterator last = container.end();
 		--last;
-		return last->first;
+		return last->first + 1;
 	}
 
 

@@ -149,6 +149,7 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
   the original source"
  o events/mips/34k/events, some events does not make sense, they get identical
   event number, um and counter nr so they overlap, currently commented
+ o can we find a more efficient implementation for sparse_array ?
 
 Documentation
 -------------

@@ -1,5 +1,11 @@
 2007-10-25  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libutil++/sparse_array.h: size() return the max index while we
+	  want the max index + 1, the only user is diff_container,
+	  differential container is broken in 0.9.3
+
+2007-10-25  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* utils/opcontrol: fix the previous opcontrol --reset patch, it was
 	  broken if the daemon is running because --reset imply --dump so
 	  we can use this --reset shortcut only if the daemon is not running.
