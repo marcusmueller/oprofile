@@ -1,3 +1,8 @@
+2007-10-25  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* utils/opcontrol: error out earlier if the module is not loaded
+	  even for --list-events or --dump to avoid obscure error message
+
 2007-10-24  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libop/op_config.h: bump sample filename format, should have been

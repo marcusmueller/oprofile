@@ -1621,7 +1621,7 @@ check_options_early()
 }
 
 
-#determine which module is loaded
+# determine which module is loaded
 check_version()
 {
 	OPROFILE_AVAILABLE=no
@@ -1638,6 +1638,15 @@ check_version()
 		KERNEL_SUPPORT=no
 		OPROFILE_AVAILABLE=yes
 		return
+	fi
+}
+
+# error out if the module is not loaded
+check_oprofile_available()
+{
+	if test "$OPROFILE_AVAILABLE" != "yes"; then
+		echo "Kernel support not available, missing opcontrol --init as root ?"
+		exit 1
 	fi
 }
 
@@ -1664,6 +1673,10 @@ if test `id -u` = "0"; then
 	load_module
 fi
 check_version
+
+# Even the few operations allowed as non root needs the kernel support,
+# if we don't error out now the error message will be obscure
+check_oprofile_available
 
 do_init
 if test `id -u` != "0"; then
