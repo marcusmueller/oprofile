@@ -1597,6 +1597,10 @@ do_operations()
 		do_kill_daemon
 	fi
 
+	if test "$RESET" = "yes"; then
+		do_reset
+	fi
+
 	if test "$DEINIT" = "yes"; then
 		do_deinit
 	fi
@@ -1664,6 +1668,23 @@ check_oprofile_available()
 }
 
 
+try_reset_sample_file()
+{
+	# special case to avoid loading the module, it works only if the
+	# daemon is not running because --reset imply --dump. Rather to check
+	# if the daemon is running we check if the module is loaded because
+	# we are only trying to avoid its load, if the check fails we fallback
+	# to the normal dump / reset sequence.
+	if test -z "$2" -a "$1" = "--reset"; then
+		check_version
+		if test "$OPROFILE_AVAILABLE" != "yes"; then
+			do_init_daemon_vars
+			do_reset
+			exit 0
+		fi
+	fi
+}
+
 # main
 
 # determine the location of opcontrol and related programs
@@ -1683,12 +1704,8 @@ if test -z "$1"; then
 fi
 
 if test `id -u` = "0"; then
-	# special case to avoid loading the module
-	if test -z "$2" -a "$1" = "--reset"; then
-	    do_init_daemon_vars
-	    do_reset
-	    exit 0
-	fi
+	try_reset_sample_file $@
+
 	load_module
 fi
 check_version

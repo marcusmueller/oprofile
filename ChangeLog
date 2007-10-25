@@ -1,5 +1,11 @@
 2007-10-25  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* utils/opcontrol: fix the previous opcontrol --reset patch, it was
+	  broken if the daemon is running because --reset imply --dump so
+	  we can use this --reset shortcut only if the daemon is not running.
+
+2007-10-25  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* utils/opcontrol: if objdump is missing the error message is
 	  obscure, this fix bug #1564920 by checking if objdump exists
 	  and is an executable before using it
