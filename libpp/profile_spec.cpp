@@ -136,7 +136,7 @@ void profile_spec::parse_image_exclude(string const & str)
 void profile_spec::parse_lib_image(string const & str)
 {
 	lib_image = separate_token(str, ',');
-	fixup_image_spec(image, extra);
+	fixup_image_spec(lib_image, extra);
 }
 
 

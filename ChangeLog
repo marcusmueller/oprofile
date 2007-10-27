@@ -1,3 +1,8 @@
+2007-10-27  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/profile_spec.cpp: look like an obvious typo, we must fixup
+	  the string we are parsing not a previously seen or empty string
+
 2007-10-25  Philippe Elie  <phil.el@wanadoo.fr>
 
 	* libutil++/sparse_array.h: size() return the max index while we
