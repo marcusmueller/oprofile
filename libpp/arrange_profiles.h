@@ -18,6 +18,7 @@
 #include <iosfwd>
 
 #include "image_errors.h"
+#include "locate_images.h"
 
 /**
  * store merging options options used to classify profiles
@@ -149,6 +150,9 @@ struct profile_classes {
 	/// the axis of the classes
 	axis_types axis;
 
+	/// the extra images to consider for this profile_classes
+	extra_images extra_found_images;
+
 	/// is this class set comparable with another?
 	bool matches(profile_classes const & classes);
 };
@@ -172,7 +176,7 @@ std::ostream & operator<<(std::ostream &, profile_classes const &);
  */
 profile_classes const
 arrange_profiles(std::list<std::string> const & files,
-                 merge_option const & merge_by);
+		 merge_option const & merge_by, extra_images const & extra);
 
 
 /**
@@ -220,8 +224,6 @@ struct inverted_profile {
 };
 
 
-class extra_images;
-
 /**
  * Invert the profile set. For opreport -l, opannotate etc.,
  * processing the profile_classes directly is slow, because
@@ -239,7 +241,6 @@ class extra_images;
  * applicable (hence image_set).
  */
 std::list<inverted_profile> const
-invert_profiles(std::string archive_path, profile_classes const & classes,
-		extra_images const & extra);
+invert_profiles(std::string archive_path, profile_classes const & classes);
 
 #endif /* !ARRANGE_PROFILES_H */

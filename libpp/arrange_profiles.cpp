@@ -640,7 +640,8 @@ void add_profile(profile_class & pclass, parsed_filename const & parsed, bool me
 
 
 profile_classes const
-arrange_profiles(list<string> const & files, merge_option const & merge_by)
+arrange_profiles(list<string> const & files, merge_option const & merge_by,
+		 extra_images const & extra)
 {
 	set<profile_class> temp_classes;
 
@@ -679,6 +680,8 @@ arrange_profiles(list<string> const & files, merge_option const & merge_by)
 		identify_xml_classes(classes, merge_by);
 	else
 		identify_classes(classes, merge_by);
+
+	classes.extra_found_images = extra;
 
 	return classes;
 }
@@ -807,8 +810,8 @@ verify_and_fill(string archive_path, app_map_t & app_map,
 	for (; it != end; ++it) {
 		plist.push_back(it->second);
 		inverted_profile & ip = plist.back();
-		ip.image = find_image_path(archive_path, ip.image, extra,
-					   ip.error);
+		find_image_path(archive_path, ip.image, extra,
+					   ip.error, false);
 	}
 }
 
@@ -816,8 +819,7 @@ verify_and_fill(string archive_path, app_map_t & app_map,
 
 
 list<inverted_profile> const
-invert_profiles(string archive_path, profile_classes const & classes,
-		extra_images const & extra)
+invert_profiles(string archive_path, profile_classes const & classes)
 {
 	app_map_t app_map;
 
@@ -855,7 +857,8 @@ invert_profiles(string archive_path, profile_classes const & classes,
 
 	list<inverted_profile> inverted_list;
 
-	verify_and_fill(archive_path, app_map, inverted_list, extra);
+	verify_and_fill(archive_path, app_map, inverted_list,
+			classes.extra_found_images);
 
 	return inverted_list;
 }

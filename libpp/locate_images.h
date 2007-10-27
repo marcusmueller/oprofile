@@ -28,8 +28,10 @@
  */
 class extra_images {
 public:
-	/// add all filenames found in the given paths, recursively
-	void populate(std::vector<std::string> const & paths);	
+	/// add all filenames found in the given paths prefixed by the
+	/// archive path, recursively
+	void populate(std::vector<std::string> const & paths,
+		      std::string const & archive_path);
 
 	/// base class for matcher functors object
 	struct matcher {
@@ -65,6 +67,8 @@ private:
  * @param extra_images container where all extra candidate filenames are stored
  * @param image_name binary image name
  * @param error errors are flagged in this passed enum ref
+ * @param fixup if true return the fixed image name else always return
+ *  image_name
  *
  * Locate a (number of) matching absolute paths to the given image name.
  * If we fail to find the file we fill in error and return the original string.
@@ -73,6 +77,6 @@ std::string const
 find_image_path(std::string const & archive_path,
 		std::string const & image_name,
                 extra_images const & extra_images,
-                image_error & error);
+                image_error & error, bool fixup);
 
 #endif /* LOCATE_IMAGES_H */

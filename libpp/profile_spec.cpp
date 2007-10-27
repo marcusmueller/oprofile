@@ -28,29 +28,31 @@ namespace {
 
 // PP:3.7, full path, or relative path. If we can't find it,
 // we should maintain the original to maintain the wordexp etc.
-string const fixup_image_spec(string const & str, extra_images const & extra)
+string const fixup_image_spec(string const & archive_path,
+			      string const & str, extra_images const & extra)
 {
-	string dummy_archive_path;
-	// FIXME: what todo if an error in find_image_path() ?
+	// On error find_image_path() return str, so if an occur we will
+	// use the provided image_name not the fixed one.
 	image_error error;
-	return find_image_path(dummy_archive_path, str, extra, error);
+	return find_image_path(archive_path, str, extra, error, true);
 }
 
-
-void fixup_image_spec(vector<string> & images, extra_images const & extra)
+void fixup_image_spec(string const & archive_path,
+		      vector<string> & images, extra_images const & extra)
 {
 	vector<string>::iterator it = images.begin();
 	vector<string>::iterator const end = images.end();
 
 	for (; it != end; ++it)
-		*it = fixup_image_spec(*it, extra);
+		*it = fixup_image_spec(archive_path, *it, extra);
 }
 
 }  // anon namespace
 
 
-profile_spec::profile_spec(extra_images const & extra)
-	: extra(extra)
+profile_spec::profile_spec()
+	:
+	extra_found_images()
 {
 	parse_table["archive"] = &profile_spec::parse_archive_path;
 	parse_table["session"] = &profile_spec::parse_session;
@@ -92,7 +94,8 @@ void profile_spec::set_image_or_lib_name(string const & str)
 {
 	/* FIXME: what does spec say about this being allowed to be
 	 * a comma list or not ? */
-	image_or_lib_image.push_back(fixup_image_spec(str, extra));
+	image_or_lib_image.push_back(fixup_image_spec(archive_path,
+		str, extra_found_images));
 }
 
 
@@ -123,20 +126,21 @@ void profile_spec::parse_session_exclude(string const & str)
 void profile_spec::parse_image(string const & str)
 {
 	image = separate_token(str, ',');
-	fixup_image_spec(image, extra);
+	fixup_image_spec(archive_path, image, extra_found_images);
 }
 
 
 void profile_spec::parse_image_exclude(string const & str)
 {
 	image_exclude = separate_token(str, ',');
+	fixup_image_spec(archive_path, image_exclude, extra_found_images);
 }
 
 
 void profile_spec::parse_lib_image(string const & str)
 {
 	lib_image = separate_token(str, ',');
-	fixup_image_spec(lib_image, extra);
+	fixup_image_spec(archive_path, lib_image, extra_found_images);
 }
 
 
@@ -221,12 +225,17 @@ bool profile_spec::match(filename_spec const & spec) const
 {
 	bool matched_by_image_or_lib_image = false;
 
+	// We need the true image name not the one based on the sample
+	// filename for the benefit of module which have /oprofile in their
+	// sample filename. This allow to specify profile spec based on the
+	// real name of the image, e.g. 'binary:*oprofile.ko'
+	string simage = fixup_image_spec(archive_path, spec.image,
+					 extra_found_images);
+	string slib_image = fixup_image_spec(archive_path, spec.lib_image,
+					     extra_found_images);
+
 	// PP:3.19
 	if (!image_or_lib_image.empty()) {
-		// Need the path search for the benefit of modules
-		// which have "/oprofile" or similar
-		string simage = fixup_image_spec(spec.image, extra);
-		string slib_image = fixup_image_spec(spec.lib_image, extra);
 		glob_filter filter(image_or_lib_image, image_exclude);
 		if (filter.match(simage) || filter.match(slib_image))
 			matched_by_image_or_lib_image = true;
@@ -236,7 +245,7 @@ bool profile_spec::match(filename_spec const & spec) const
 		// PP:3.7 3.8
 		if (!image.empty()) {
 			glob_filter filter(image, image_exclude);
-			if (!filter.match(spec.image))
+			if (!filter.match(simage))
 				return false;
 		} else if (!image_or_lib_image.empty()) {
 			// image.empty() means match all except if user
@@ -247,7 +256,7 @@ bool profile_spec::match(filename_spec const & spec) const
 		// PP:3.9 3.10
 		if (!lib_image.empty()) {
 			glob_filter filter(lib_image, image_exclude);
-			if (!filter.match(spec.lib_image))
+			if (!filter.match(slib_image))
 				return false;
 		} else if (image.empty() && !image_or_lib_image.empty()) {
 			// lib_image empty means match all except if user
@@ -263,9 +272,9 @@ bool profile_spec::match(filename_spec const & spec) const
 		// been handled above
 		vector<string> empty;
 		glob_filter filter(empty, image_exclude);
-		if (!filter.match(spec.image))
+		if (!filter.match(simage))
 			return false;
-		if (!spec.lib_image.empty() && !filter.match(spec.lib_image))
+		if (!spec.lib_image.empty() && !filter.match(slib_image))
 			return false;
 	}
 
@@ -292,9 +301,9 @@ bool profile_spec::match(filename_spec const & spec) const
 
 
 profile_spec profile_spec::create(list<string> const & args,
-                                  extra_images const & extra)
+                                  vector<string> const & image_path)
 {
-	profile_spec spec(extra);
+	profile_spec spec;
 	set<string> tag_seen;
 
 	list<string>::const_iterator it = args.begin();
@@ -317,6 +326,8 @@ profile_spec profile_spec::create(list<string> const & args,
 	// PP:3.5 no session given means use the current session.
 	if (spec.session.empty())
 		spec.session.push_back("current");
+
+	spec.extra_found_images.populate(image_path, spec.get_archive_path());
 
 	return spec;
 }

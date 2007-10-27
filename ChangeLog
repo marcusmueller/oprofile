@@ -1,5 +1,54 @@
 2007-10-27  Philippe Elie  <phil.el@wanadoo.fr>
 
+	Fix #1819350, it turned out this implied another fix for differential
+	profile, extra_images must be built per profile specification not
+	globally so most of this patch pass an extra_images down to op_bfd.
+	The way image name resolution has changed. We fixup an image name
+	only when really needed, when opening a bfd file, when checking a
+	binary exists and when we try matching an image name with a profile
+	specification, this robustify differential profile. This patch also
+	allow a profile_spec ala image:*oprofile.ko which was broken too.
+	It's now mandatory to use the same -p option used with oparchive when
+	using an archive with other pp tools, it was already the case but was
+	broken, this patch does not clarify the documentation about this
+	point because I suspect oparchive should be modified to save at the
+	top level directory the contents of -p option, pp tools will use that
+	automatically and --image_path will be obsoleted when used with an
+	archive.
+
+	This patch except clarifying than --image-apth with archive: is a bit
+	special does not add any user level visible change.
+	* libpp/arrange_profiles.cpp:
+	* libpp/arrange_profiles.h:
+	* libpp/callgraph_container.cpp:
+	* libpp/callgraph_container.h:
+	* libpp/locate_images.cpp:
+	* libpp/locate_images.h:
+	* libpp/populate.cpp:
+	* libpp/populate_for_spu.cpp:
+	* libpp/profile_container.cpp:
+	* libpp/profile_container.h:
+	* libpp/profile_spec.cpp:
+	* libpp/profile_spec.h:
+	* libpp/xml_utils.cpp:
+	* libpp/xml_utils.h:
+	* libutil++/Makefile.am:
+	* libutil++/op_bfd.cpp:
+	* libutil++/op_bfd.h:
+	* libutil++/op_spu_bfd.cpp:
+	* pp/common_option.cpp:
+	* pp/common_option.h:
+	* pp/opannotate.cpp:
+	* pp/opannotate_options.cpp:
+	* pp/oparchive.cpp:
+	* pp/oparchive_options.cpp:
+	* pp/opgprof.cpp:
+	* pp/opgprof_options.cpp:
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp:
+
+2007-10-27  Philippe Elie  <phil.el@wanadoo.fr>
+
 	* libpp/profile_spec.cpp: look like an obvious typo, we must fixup
 	  the string we are parsing not a previously seen or empty string
 
@@ -7,7 +56,7 @@
 
 	* libutil++/sparse_array.h: size() return the max index while we
 	  want the max index + 1, the only user is diff_container,
-	  differential container is broken in 0.9.3
+	  differential container is broken in 0.9.3. This fix bug #1820202
 
 2007-10-25  Philippe Elie  <phil.el@wanadoo.fr>
 

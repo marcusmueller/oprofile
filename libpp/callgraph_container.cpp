@@ -397,9 +397,10 @@ void callgraph_container::populate(string const & archive_path,
    extra_images const & extra, bool debug_info, double threshold,
    bool merge_lib, string_filter const & sym_filter)
 {
+	this->extra_found_images = extra;
 	// non callgraph samples container, we record sample at symbol level
 	// not at vma level.
-	profile_container pc(debug_info, false);
+	profile_container pc(debug_info, false, extra_found_images);
 
 	list<inverted_profile>::const_iterator it;
 	list<inverted_profile>::const_iterator const end = iprofiles.end();
@@ -414,7 +415,7 @@ void callgraph_container::populate(string const & archive_path,
 
 	for (it = iprofiles.begin(); it != end; ++it) {
 		for (size_t i = 0; i < it->groups.size(); ++i) {
-			populate(archive_path, it->groups[i], it->image, extra,
+			populate(archive_path, it->groups[i], it->image,
 				i, pc, debug_info, merge_lib);
 		}
 	}
@@ -425,7 +426,7 @@ void callgraph_container::populate(string const & archive_path,
 
 void callgraph_container::populate(string const & archive_path,
 	list<image_set> const & lset,
-	string const & app_image, extra_images const & extra, size_t pclass,
+	string const & app_image, size_t pclass,
 	profile_container const & pc, bool debug_info, bool merge_lib)
 {
 	list<image_set>::const_iterator lit;
@@ -436,7 +437,7 @@ void callgraph_container::populate(string const & archive_path,
 			= lit->files.end();
 		for (pit = lit->files.begin(); pit != pend; ++pit) {
 			populate(archive_path, pit->cg_files, app_image,
-				 extra, pclass, pc, debug_info, merge_lib);
+				 pclass, pc, debug_info, merge_lib);
 		}
 	}
 }
@@ -444,7 +445,7 @@ void callgraph_container::populate(string const & archive_path,
 
 void callgraph_container::populate(string const & archive_path,
 	list<string> const & cg_files,
-	string const & app_image, extra_images const & extra, size_t pclass,
+	string const & app_image, size_t pclass,
 	profile_container const & pc, bool debug_info, bool merge_lib)
 {
 	list<string>::const_iterator it;
@@ -456,34 +457,32 @@ void callgraph_container::populate(string const & archive_path,
 		string const app_name = caller_file.image;
 
 		image_error error;
-		string caller_binary =
-			find_image_path(archive_path, caller_file.lib_image,
-					extra, error);
+		find_image_path(archive_path, caller_file.lib_image,
+				extra_found_images, error, false);
 
 		if (error != image_ok)
-			report_image_error(archive_path + caller_file.lib_image,
+			report_image_error(caller_file.lib_image,
 					   error, false);
 
 		bool caller_bfd_ok = true;
-		op_bfd caller_bfd(archive_path, caller_binary,
-				  string_filter(), caller_bfd_ok);
+		op_bfd caller_bfd(archive_path, caller_file.lib_image,
+			string_filter(), extra_found_images, caller_bfd_ok);
 		if (!caller_bfd_ok)
-			report_image_error(caller_binary,
+			report_image_error(archive_path + caller_file.lib_image,
 			                   image_format_failure, false);
 
 		parsed_filename callee_file = parse_filename(*it);
 
-		string callee_binary =
-			find_image_path(archive_path, callee_file.cg_image,
-			                extra, error);
+		find_image_path(archive_path, callee_file.cg_image,
+				extra_found_images, error, false);
 		if (error != image_ok)
 			report_image_error(callee_file.cg_image, error, false);
 
 		bool callee_bfd_ok = true;
-		op_bfd callee_bfd(archive_path, callee_binary,
-				  string_filter(), callee_bfd_ok);
+		op_bfd callee_bfd(archive_path, callee_file.cg_image,
+			string_filter(), extra_found_images, callee_bfd_ok);
 		if (!callee_bfd_ok)
-			report_image_error(callee_binary,
+			report_image_error(archive_path + callee_file.cg_image,
 		                           image_format_failure, false);
 
 		profile_t profile;

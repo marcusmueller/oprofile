@@ -49,12 +49,14 @@ struct filename_by_samples {
 }  // anon namespace
 
 
-profile_container::profile_container(bool debug_info_, bool need_details_)
+profile_container::profile_container(bool debug_info_, bool need_details_,
+				     extra_images const & extra_)
 	:
 	symbols(new symbol_container),
 	samples(new sample_container),
 	debug_info(debug_info_),
-	need_details(need_details_)
+	need_details(need_details_),
+	extra_found_images(extra_)
 {
 }
 

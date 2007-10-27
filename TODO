@@ -150,6 +150,22 @@ vma      samples  cum. samples  %           cum. %     symbol name             i
  o events/mips/34k/events, some events does not make sense, they get identical
   event number, um and counter nr so they overlap, currently commented
  o can we find a more efficient implementation for sparse_array ?
+ o libpp/profile.cpp:is_spu_sample_file() can be simplified by using
+  read_header()
+ o while fixing #1819350 I needed to make extra_images per profile session
+   rather than a global var so I think we need to revisit find_image_path(),
+   extra_found_images, --image-path (-p).
+   Actually we can't do something ala:
+   opreport { archive:tmp1 search_path=/lib/modules/2.6.20 } { archive:tmp2 search_path=/.../2.6.20.9 }
+   because search_path is specified through -p which is not a part of the
+   profile spec. Fixing #1819350 covered all case except this one but w/o any
+   user visible change. Another way will be to save the -p option used with
+   oparchive in a file at the toplevel of the archive, use it with all tools
+   when an archive: is specified on the command line and deprecate the use of
+   -p in such case.
+ o consider to make extra_images a ref counted object, it's copied by a value
+  a few time but can be contain a lot of string. There is also some ugly public
+  member extra_images to fix.
 
 Documentation
 -------------

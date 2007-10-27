@@ -20,12 +20,13 @@
 using namespace std;
 
 
-void extra_images::populate(vector<string> const & paths)
+void extra_images::populate(vector<string> const & paths,
+			    string const & archive_path)
 {
 	vector<string>::const_iterator cit = paths.begin();
 	vector<string>::const_iterator end = paths.end();
 	for (; cit != end; ++cit) {
-		string const path = op_realpath(*cit);
+		string const path = op_realpath(archive_path + *cit);
 		list<string> file_list;
 		create_file_list(file_list, path, "*", true);
 		list<string>::const_iterator lit = file_list.begin();
@@ -96,7 +97,7 @@ public:
 string const find_image_path(string const & archive_path,
 			     string const & image_name,
                              extra_images const & extra_images,
-                             image_error & error)
+                             image_error & error, bool fixup)
 {
 	error = image_ok;
 
@@ -105,7 +106,7 @@ string const find_image_path(string const & archive_path,
 	// simplest case
 	if (op_file_readable(image)) {
 		error = image_ok;
-		return image_name;
+		return fixup ? image : image_name;
 	}
 
 	if (errno == EACCES) {
@@ -131,5 +132,6 @@ string const find_image_path(string const & archive_path,
 		return image_name;
 	}
 
-	return result[0];
+	// extra_images already contains the archive path as prefix
+	return fixup ? result[0] : image_name;
 }

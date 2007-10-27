@@ -91,7 +91,7 @@ void handle_options(options::spec const & spec)
 	check_options();
 
 	profile_spec const pspec =
-		profile_spec::create(spec.common, extra_found_images);
+		profile_spec::create(spec.common, image_path);
 
 	sample_files = pspec.generate_file_list(exclude_dependent, false);
 
@@ -103,7 +103,8 @@ void handle_options(options::spec const & spec)
 	copy(sample_files.begin(), sample_files.end(),
 	     ostream_iterator<string>(cverb << vsfile, "\n"));
 
-	classes = arrange_profiles(sample_files, merge_by);
+	classes = arrange_profiles(sample_files, merge_by,
+				   pspec.extra_found_images);
 
 	cverb << vsfile << "profile_classes:\n" << classes << endl;
 

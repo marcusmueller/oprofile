@@ -26,6 +26,7 @@
 
 class op_bfd;
 class string_filter;
+class extra_images;
 
 /// all symbol vector indexing uses this type
 typedef size_t symbol_index_t;
@@ -92,6 +93,8 @@ public:
 	 * @param archive_path oparchive prefix path
 	 * @param filename  the name of the image file
 	 * @param symbol_filter  filter to apply to symbols
+	 * @param extra_images container where all extra candidate filenames
+	 *    are stored
 	 * @param ok in-out parameter: on in, if not set, don't
 	 * open the bfd (because it's not there or whatever). On out,
 	 * it's set to false if the bfd couldn't be loaded.
@@ -99,6 +102,7 @@ public:
 	op_bfd(std::string const & archive_path,
 	       std::string const & filename,
 	       string_filter const & symbol_filter,
+	       extra_images const & extra_images,
 	       bool & ok);
 
 	/**
@@ -109,6 +113,7 @@ public:
 	       uint64_t spu_offset,
 	       std::string const & filename,
 	       string_filter const & symbol_filter,
+	       extra_images const & extra_images,
 	       bool & ok);
 
 	std::string get_embedding_filename() const { return embedding_filename; }

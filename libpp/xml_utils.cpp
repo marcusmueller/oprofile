@@ -111,12 +111,14 @@ string get_cpu_num(size_t pclass)
 
 xml_utils::xml_utils(format_output::xml_formatter * xo,
                     symbol_collection const & s, size_t nc,
-                    string_filter * sf, string const & ap)
+		     string_filter * sf, string const & ap,
+		     extra_images const & extra_)
 	:
 	symbol_filter(sf),
 	archive_path(ap),
 	has_subclasses(false),
-	bytes_index(0)
+	bytes_index(0),
+	extra_image(extra_)
 {
 	xml_out = xo;
 	nr_classes = nc;
@@ -378,12 +380,15 @@ xml_utils::output_symbol_bytes(ostream & out, symbol_entry const * symb,
 
 	string const & image_name = get_image_name(symb->image_name, true);
 	op_bfd * abfd = NULL;
-	if (symb->spu_offset)
+	if (symb->spu_offset) {
+		string tmp = get_image_name(symb->embedding_filename, true);
 		abfd = new op_bfd(archive_path, symb->spu_offset,
-				  get_image_name(symb->embedding_filename, true),
-				  *symbol_filter, ok);
-	else
-		abfd = new op_bfd(archive_path, image_name, *symbol_filter, ok);
+				  tmp, *symbol_filter, extra_image, ok);
+	} else {
+		abfd = new op_bfd(archive_path, image_name, *symbol_filter,
+				  extra_image, ok);
+	}
+
 	if (!ok) {
 		report_image_error(image_name, image_format_failure, false);
 		delete abfd;

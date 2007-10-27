@@ -21,6 +21,7 @@
 #include "sample_container.h"
 #include "symbol_container.h"
 #include "format_flags.h"
+#include "locate_images.h"
 
 class string_filter;
 class symbol_entry;
@@ -38,12 +39,14 @@ public:
 	 * acts as hint for what you will request after recording samples and
 	 * so allow optimizations during recording the information.
 	 *
-	 * @param debug_info If true line numbers and source files are recorded.
-	 *
+	 * @param debug_info If true line numbers and source files are
+	 * recorded.
 	 * @param need_details If true if we need to record all samples or to
 	 * to record them at symbol level.
+	 * @param extra extra images location
 	 */
-	profile_container(bool debug_info, bool need_details);
+	profile_container(bool debug_info, bool need_details,
+			  extra_images const & extra);
 
 	~profile_container();
  
@@ -176,6 +179,9 @@ private:
 	bool debug_info;
 	bool need_details;
 	//@}
+
+public: // FIXME
+	extra_images extra_found_images;
 };
 
 #endif /* !PROFILE_CONTAINER_H */

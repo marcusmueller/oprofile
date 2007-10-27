@@ -24,6 +24,7 @@
 #include <sstream>
 
 #include "op_bfd.h"
+#include "locate_images.h"
 #include "string_filter.h"
 #include "stream_util.h"
 #include "cverb.h"
@@ -88,7 +89,8 @@ bool op_bfd_symbol::operator<(op_bfd_symbol const & rhs) const
 
 
 op_bfd::op_bfd(string const & archive, string const & fname,
-	       string_filter const & symbol_filter, bool & ok)
+	       string_filter const & symbol_filter,
+	       extra_images const & extra_images, bool & ok)
 	:
 	filename(fname),
 	archive_path(archive),
@@ -102,7 +104,10 @@ op_bfd::op_bfd(string const & archive, string const & fname,
 	symbols_found_t symbols;
 	asection const * sect;
 
-	string const image_path = archive_path + filename;
+	image_error image_ok;
+	string const image_path = find_image_path(archive_path, filename,
+						  extra_images, image_ok,
+						  true);
 
 	cverb << vbfd << "op_bfd ctor for " << image_path << endl;
 

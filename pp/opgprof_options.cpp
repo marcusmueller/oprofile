@@ -63,16 +63,15 @@ bool try_merge_profiles(profile_spec const & spec, bool exclude_dependent)
 	merge_by.tgid = true;
 	merge_by.unitmask = true;
 
-	profile_classes classes
-		= arrange_profiles(sample_files, merge_by);
+	classes	= arrange_profiles(sample_files, merge_by,
+				   spec.extra_found_images);
 
 	cverb << vsfile << "profile_classes:\n" << classes << endl;
 
 	size_t nr_classes = classes.v.size();
 
 	list<inverted_profile> iprofiles
-		= invert_profiles(options::archive_path, classes,
-				  options::extra_found_images);
+		= invert_profiles(options::archive_path, classes);
 
 	if (nr_classes == 1 && iprofiles.size() == 1) {
 		image_profile = *(iprofiles.begin());
@@ -110,7 +109,7 @@ void handle_options(options::spec const & spec)
 	}
 
 	profile_spec const pspec =
-		profile_spec::create(spec.common, options::extra_found_images);
+		profile_spec::create(spec.common, options::image_path);
 
 	options::archive_path = pspec.get_archive_path();
 	cverb << vsfile << "Archive: " << options::archive_path << endl;

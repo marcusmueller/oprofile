@@ -19,11 +19,11 @@
 #include "symbol.h"
 #include "symbol_functors.h"
 #include "string_filter.h"
+#include "locate_images.h"
 
 class profile_container;
 class inverted_profile;
 class profile_t;
-class extra_images;
 class image_set;
 class op_bfd;
 
@@ -145,22 +145,19 @@ private:
 	 */
 	void add(profile_t const & profile, op_bfd const & caller_bfd,
 	         bool bfd_caller_ok, op_bfd const & callee_bfd,
-		 std::string const & app_name, 
-		 profile_container const & pc, bool debug_info,
-		 size_t pclass);
+		 std::string const & app_name, profile_container const & pc,
+		 bool debug_info, size_t pclass);
 
 	void populate(std::string const & archive_path,
 		      std::list<image_set> const & lset,
 		      std::string const & app_image,
-		      extra_images const & extra, size_t pclass,
-		      profile_container const & pc, bool debug_info,
-		      bool merge_lib);
+		      size_t pclass, profile_container const & pc,
+		      bool debug_info, bool merge_lib);
 	void populate(std::string const & archive_path,
 		      std::list<std::string> const & cg_files,
 		      std::string const & app_image,
-		      extra_images const & extra, size_t pclass,
-		      profile_container const & pc, bool debug_info,
-		      bool merge_lib);
+		      size_t pclass, profile_container const & pc,
+		      bool debug_info, bool merge_lib);
 
 	/// record all main symbols
 	void add_symbols(profile_container const & pc);
@@ -170,6 +167,9 @@ private:
 
 	/// A structured representation of the callgraph.
 	arc_recorder recorder;
+
+public:  // FIXME
+	extra_images extra_found_images;
 };
 
 #endif /* !CALLGRAPH_CONTAINER_H */

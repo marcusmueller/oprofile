@@ -120,7 +120,7 @@ void handle_options(options::spec const & spec)
 	options::file_filter = path_filter(include_file, exclude_file);
 
 	profile_spec const pspec =
-		profile_spec::create(spec.common, options::extra_found_images);
+		profile_spec::create(spec.common, options::image_path);
 
 	list<string> sample_files = pspec.generate_file_list(exclude_dependent, true);
 
@@ -138,7 +138,8 @@ void handle_options(options::spec const & spec)
 	// or assembly point of view the result will be merged anyway
 	merge_by = handle_merge_option(mergespec, false, exclude_dependent);
 
-	classes = arrange_profiles(sample_files, merge_by);
+	classes = arrange_profiles(sample_files, merge_by,
+				   pspec.extra_found_images);
 
 	cverb << vsfile << "profile_classes:\n" << classes << endl;
 

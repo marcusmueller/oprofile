@@ -685,13 +685,13 @@ int opannotate(options::spec const & spec)
 
 	nr_events = classes.v.size();
 
-	samples.reset(new profile_container(true, true));
+	samples.reset(new profile_container(true, true,
+					    classes.extra_found_images));
 
 	list<string> images;
 
 	list<inverted_profile> iprofiles
-		= invert_profiles(options::archive_path, classes,
-				  options::extra_found_images);
+		= invert_profiles(options::archive_path, classes);
 
 	report_image_errors(iprofiles);
 

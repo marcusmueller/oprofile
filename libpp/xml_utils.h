@@ -18,11 +18,14 @@
 typedef symbol_collection::const_iterator sym_iterator;
 extern bool want_xml;
 
+class extra_images;
+
 class xml_utils {
 public:
 	xml_utils(format_output::xml_formatter * xo,
 		symbol_collection const & s, size_t nc,
-		string_filter * sf, std::string const & ap);
+		string_filter * sf, std::string const & ap,
+		extra_images const & extra);
 	// these members are static because they are invoked before
 	// the xml_utils object has been created
 	static std::string get_timer_setup(size_t count);
@@ -54,6 +57,7 @@ private:
 	std::string archive_path;
 	bool has_subclasses;
 	size_t bytes_index;
+	extra_images const & extra_image;
 	static bool has_nonzero_masks;
 	static size_t events_index;
 };

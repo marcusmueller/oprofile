@@ -69,12 +69,14 @@ populate_spu_profile_from_files(list<profile_sample_files> const & files,
 					  header.embedded_offset,
 					  ip.image,
 					  symbol_filter,
+					  samples.extra_found_images,
 					  ok);
 			fname_to_check = ip.image;
 		} else {
 			abfd = new op_bfd(archive_path,
 					  ip.image,
 					  symbol_filter,
+					  samples.extra_found_images,
 					  ok);
 			fname_to_check = abfd->get_filename();
 		}

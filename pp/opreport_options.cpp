@@ -248,7 +248,7 @@ string process_spec(profile_classes & classes, list<string> const & spec)
 	cverb << vsfile << "\n\n";
 
 	profile_spec const pspec =
-		profile_spec::create(spec, extra_found_images);
+		profile_spec::create(spec, image_path);
 
 	list<string> sample_files = pspec.generate_file_list(exclude_dependent,
 	                                                     !options::callgraph);
@@ -260,7 +260,8 @@ string process_spec(profile_classes & classes, list<string> const & spec)
 	copy(sample_files.begin(), sample_files.end(),
 	     ostream_iterator<string>(cverb << vsfile, "\n"));
 
-	classes = arrange_profiles(sample_files, merge_by);
+	classes = arrange_profiles(sample_files, merge_by,
+				   pspec.extra_found_images);
 
 	cverb << vsfile << "profile_classes:\n" << classes << endl;
 

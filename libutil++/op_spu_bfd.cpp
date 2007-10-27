@@ -16,6 +16,7 @@
 #include <iostream>
 
 #include "op_bfd.h"
+#include "locate_images.h"
 #include "op_libiberty.h"
 #include "string_filter.h"
 #include "cverb.h"
@@ -31,7 +32,8 @@ extern verbose vbfd;
  */
 op_bfd::op_bfd(string const & archive, uint64_t spu_offset,
 	       string const & fname,
-	       string_filter const & symbol_filter, bool & ok)
+	       string_filter const & symbol_filter, 
+	       extra_images const & extra_images, bool & ok)
 	:
 	archive_path(archive),
 	file_size(-1),
@@ -48,7 +50,10 @@ op_bfd::op_bfd(string const & archive, uint64_t spu_offset,
 	symbols_found_t symbols;
 	asection const * sect;
 
-	string const image_path = archive_path + fname;
+	image_error image_ok;
+	string const image_path = find_image_path(archive_path, fname,
+						  extra_images, image_ok,
+						  true);
 
 	cverb << vbfd << "op_bfd ctor for " << image_path << endl;
 	if (!ok)

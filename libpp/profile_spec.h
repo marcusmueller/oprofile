@@ -17,8 +17,7 @@
 
 #include "filename_spec.h"
 #include "comma_list.h"
-
-class extra_images;
+#include "locate_images.h"
 
 /**
  * Holds a parsed profile spec composed of tag:value pairs, as given in
@@ -40,7 +39,7 @@ public:
 	 * as image:value
 	 */
 	static profile_spec create(std::list<std::string> const & args,
-	                           extra_images const & extra);
+	                           std::vector<std::string> const & image_path);
 
 	/**
 	 * @param exclude_dependent  whether to exclude dependent sub-images
@@ -65,7 +64,7 @@ public:
 	std::string get_archive_path() const;
 
 private:
-	profile_spec(extra_images const & extra);
+	profile_spec();
 
 	/**
 	 * @param tag_value  a "tag:value" to interpret, all error throw an
@@ -135,8 +134,9 @@ private:
 	// specified by user on command like opreport image1 image2 ...
 	std::vector<std::string> image_or_lib_image;
 
+public: // FIXME
 	/// extra search path for images
-	extra_images const & extra;
+	extra_images extra_found_images;
 };
 
 #endif /* !PROFILE_SPEC_H */

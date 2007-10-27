@@ -27,6 +27,7 @@
 #include "cverb.h"
 #include "image_errors.h"
 #include "string_manip.h"
+#include "locate_images.h"
 
 using namespace std;
 
@@ -59,8 +60,7 @@ int oparchive(options::spec const & spec)
 
 	/* copy over each of the executables and the debuginfo files */
 	list<inverted_profile> iprofiles
-		= invert_profiles(options::archive_path, classes,
-				  options::extra_found_images);
+		= invert_profiles(options::archive_path, classes);
 
 	report_image_errors(iprofiles);
 
@@ -69,7 +69,16 @@ int oparchive(options::spec const & spec)
 
 	cverb << vdebug << "(exe_names)" << endl << endl;
 	for (; it != end; ++it) {
-		string exe_name = it->image;
+
+		image_error error;
+		string exe_name = find_image_path("", it->image,
+						  classes.extra_found_images,
+						  error, true);
+
+		// output name must be identical to the original name, when
+		// using this archive the used fixup will be identical e.g.:
+		// oparchive -p /lib/modules/2.6.42/kernel -o tmp;
+		// opreport  -p /lib/modules/2.6.42/kernel { archive:tmp }
 		string exe_archive_file = options::outdirectory + exe_name;
 
 		// FIXME: hacky

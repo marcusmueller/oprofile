@@ -26,6 +26,8 @@
 
 using namespace std;
 
+extern profile_classes classes;
+
 namespace {
 
 #define GMON_VERSION 1
@@ -278,12 +280,12 @@ int opgprof(options::spec const & spec)
 {
 	handle_options(spec);
 
-	profile_container samples(false, true);
+	profile_container samples(false, true, classes.extra_found_images);
 
 	bool ok = image_profile.error == image_ok;
 	// FIXME: symbol_filter would be allowed through option
 	op_bfd abfd(options::archive_path, image_profile.image,
-		    string_filter(), ok);
+		    string_filter(), classes.extra_found_images, ok);
 	if (!ok && image_profile.error == image_ok)
 		image_profile.error = image_format_failure;
 

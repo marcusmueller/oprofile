@@ -24,7 +24,6 @@
 using namespace std;
 
 namespace options {
-	extra_images extra_found_images;
 	double threshold = 0.0;
 	string threshold_opt;
 	string session_dir = OP_SESSION_DIR_DEFAULT;
@@ -186,8 +185,6 @@ options::spec get_options(int argc, char const * argv[])
 
 	if (!ok)
 		throw op_runtime_error("invalid --image-path= options");
-
-	options::extra_found_images.populate(options::image_path);
 
 	// XML generator needs command line options for its header
 	ostringstream str;
