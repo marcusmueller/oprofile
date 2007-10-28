@@ -1,3 +1,7 @@
+2007-10-28  Philippe Elie  <phil.el@wanadoo.fr>
+
+	* libpp/format_output.cpp: minor overkill
+
 2007-10-27  Philippe Elie  <phil.el@wanadoo.fr>
 
 	Fix #1819350, it turned out this implied another fix for differential

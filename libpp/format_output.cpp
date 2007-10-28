@@ -346,15 +346,10 @@ string formatter::format_cumulated_percent_details(field_datum const & f)
 
 string formatter::format_diff(field_datum const & f)
 {
-	if (f.diff == INFINITY) {
-		ostringstream out;
-		out << "+++";
-		return out.str();
-	} else if (f.diff == -INFINITY) {
-		ostringstream out;
-		out << "---";
-		return out.str();
-	}
+	if (f.diff == INFINITY)
+		return "+++";
+	else if (f.diff == -INFINITY)
+		return "---";
 
 	return ::format_percent(f.diff, percent_int_width,
                                 percent_fract_width, true);
