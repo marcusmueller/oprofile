@@ -692,7 +692,7 @@ int opannotate(options::spec const & spec)
 
 	list<inverted_profile> iprofiles = invert_profiles(classes);
 
-	report_image_errors(iprofiles);
+	report_image_errors(iprofiles, classes.extra_found_images);
 
 	list<inverted_profile>::iterator it = iprofiles.begin();
 	list<inverted_profile>::iterator const end = iprofiles.end();

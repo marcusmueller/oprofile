@@ -290,7 +290,7 @@ int opgprof(options::spec const & spec)
 		image_profile.error = image_format_failure;
 
 	if (image_profile.error != image_ok) {
-		report_image_error(image_profile, true);
+	  report_image_error(image_profile, true, classes.extra_found_images);
 		exit(EXIT_FAILURE);
 	}
 

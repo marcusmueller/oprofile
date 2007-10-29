@@ -26,7 +26,6 @@ using namespace std;
 profile_classes classes;
 
 namespace options {
-	string archive_path;
 	demangle_type demangle = dmt_normal;
 	string output_dir;
 	vector<string> search_dirs;
@@ -124,8 +123,7 @@ void handle_options(options::spec const & spec)
 
 	list<string> sample_files = pspec.generate_file_list(exclude_dependent, true);
 
-	archive_path = pspec.get_archive_path();
-	cverb << vsfile << "Archive: " << archive_path << endl;
+	cverb << vsfile << "Archive: " << pspec.get_archive_path() << endl;
 
 	cverb << vsfile << "Matched sample files: " << sample_files.size()
 	      << endl;

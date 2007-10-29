@@ -512,7 +512,7 @@ int opreport(options::spec const & spec)
 
 	list<inverted_profile> iprofiles = invert_profiles(classes);
 
-	report_image_errors(iprofiles);
+	report_image_errors(iprofiles, classes.extra_found_images);
 
 	if (options::xml) {
 		xml_utils::output_xml_header(options::command_options,
@@ -539,7 +539,7 @@ int opreport(options::spec const & spec)
 
 		list<inverted_profile> iprofiles2 = invert_profiles(classes2);
 
-		report_image_errors(iprofiles2);
+		report_image_errors(iprofiles2, classes2.extra_found_images);
 
 		profile_container pc2(options::debug_info, options::details,
 				      classes2.extra_found_images);

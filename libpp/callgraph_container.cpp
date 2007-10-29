@@ -445,7 +445,6 @@ void callgraph_container::populate(list<string> const & cg_files,
 	string const & app_image, size_t pclass,
 	profile_container const & pc, bool debug_info, bool merge_lib)
 {
-	string archive_path = extra_found_images.get_archive_path();
 	list<string>::const_iterator it;
 	list<string>::const_iterator const end = cg_files.end();
 	for (it = cg_files.begin(); it != end; ++it) {
@@ -460,28 +459,31 @@ void callgraph_container::populate(list<string> const & cg_files,
 
 		if (error != image_ok)
 			report_image_error(caller_file.lib_image,
-					   error, false);
+					   error, false, extra_found_images);
 
 		bool caller_bfd_ok = true;
 		op_bfd caller_bfd(caller_file.lib_image,
 			string_filter(), extra_found_images, caller_bfd_ok);
 		if (!caller_bfd_ok)
-			report_image_error(archive_path + caller_file.lib_image,
-			                   image_format_failure, false);
+			report_image_error(caller_file.lib_image,
+			                   image_format_failure, false,
+					   extra_found_images);
 
 		parsed_filename callee_file = parse_filename(*it);
 
 		extra_found_images.find_image_path(callee_file.cg_image,
 				error, false);
 		if (error != image_ok)
-			report_image_error(callee_file.cg_image, error, false);
+			report_image_error(callee_file.cg_image,
+					   error, false, extra_found_images);
 
 		bool callee_bfd_ok = true;
 		op_bfd callee_bfd(callee_file.cg_image,
 			string_filter(), extra_found_images, callee_bfd_ok);
 		if (!callee_bfd_ok)
-			report_image_error(archive_path + callee_file.cg_image,
-		                           image_format_failure, false);
+			report_image_error(callee_file.cg_image,
+		                           image_format_failure, false,
+					   extra_found_images);
 
 		profile_t profile;
 		// We can't use start_offset support in profile_t, give

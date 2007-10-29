@@ -72,7 +72,7 @@ populate_for_image(profile_container & samples, inverted_profile const & ip,
 		ip.error = image_format_failure;
 
 	if (ip.error == image_format_failure)
-		report_image_error(ip, false);
+	  report_image_error(ip, false, samples.extra_found_images);
 
 	opd_header header;
 

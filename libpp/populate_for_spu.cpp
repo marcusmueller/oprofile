@@ -83,7 +83,7 @@ populate_spu_profile_from_files(list<profile_sample_files> const & files,
 			ip.error = image_format_failure;
 
 		if (ip.error == image_format_failure)
-			report_image_error(ip, false);
+		  report_image_error(ip, false, samples.extra_found_images);
 
 		samples.add(profile, *abfd, app_image, ip_grp_num);
 		if (ip.error == image_ok)

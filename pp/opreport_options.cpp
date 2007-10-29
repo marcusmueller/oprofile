@@ -32,8 +32,6 @@ profile_classes classes;
 profile_classes classes2;
 
 namespace options {
-	string archive_path;
-	string archive_path2;
 	demangle_type demangle = dmt_normal;
 	bool symbols;
 	bool callgraph;
@@ -239,7 +237,7 @@ void check_options(bool diff)
 
 
 /// process a spec into classes
-string process_spec(profile_classes & classes, list<string> const & spec)
+void process_spec(profile_classes & classes, list<string> const & spec)
 {
 	using namespace options;
 
@@ -270,8 +268,6 @@ string process_spec(profile_classes & classes, list<string> const & spec)
 		     "too strict ?" << endl;
 		exit(EXIT_FAILURE);
 	}
-
-	return pspec.get_archive_path();
 }
 
 
@@ -315,16 +311,16 @@ void handle_options(options::spec const & spec)
 	symbol_filter = string_filter(include_symbols, exclude_symbols);
 
 	if (!spec.first.size()) {
-		archive_path = process_spec(classes, spec.common);
+		process_spec(classes, spec.common);
 	} else {
 		if (options::xml) {
 			cerr << "differential profiles are incompatible with --xml" << endl;
 			exit(EXIT_FAILURE);
 		}
 		cverb << vsfile << "profile spec 1:" << endl;
-		archive_path = process_spec(classes, spec.first);
+		process_spec(classes, spec.first);
 		cverb << vsfile << "profile spec 2:" << endl;
-		archive_path2 = process_spec(classes2, spec.second);
+		process_spec(classes2, spec.second);
 
 		if (!classes.matches(classes2)) {
 			cerr << "profile classes are incompatible" << endl;

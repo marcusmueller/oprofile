@@ -15,6 +15,7 @@
 #include <string>
 
 class inverted_profile;
+class extra_images;
 
 /// possible reasons why we can't read a binary image
 enum image_error {
@@ -28,12 +29,15 @@ enum image_error {
 /// output why the image passed can't be read to stderr, we warranty only one
 /// error report by image name.
 void
-report_image_error(std::string const & image, image_error error, bool fatal);
+report_image_error(std::string const & image, image_error error, bool fatal,
+		   extra_images const & extra);
 
 /// output why the image passed can't be read to stderr
-void report_image_error(inverted_profile const & profile, bool fatal);
+void report_image_error(inverted_profile const & profile, bool fatal,
+			extra_images const & extra);
 
 /// output why any bad images can't be read to stderr
-void report_image_errors(std::list<inverted_profile> const & plist);
+void report_image_errors(std::list<inverted_profile> const & plist,
+			 extra_images const & extra);
 
 #endif /* IMAGE_ERRORS_H */

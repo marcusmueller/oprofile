@@ -24,8 +24,6 @@ class profile_classes;
 class merge_option;
 
 namespace options {
-	extern std::string archive_path;
-	extern std::string archive_path2;
 	extern demangle_type demangle;
 	extern bool symbols;
 	extern bool callgraph;

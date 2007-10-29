@@ -387,7 +387,8 @@ xml_utils::output_symbol_bytes(ostream & out, symbol_entry const * symb,
 	}
 
 	if (!ok) {
-		report_image_error(image_name, image_format_failure, false);
+		report_image_error(image_name, image_format_failure,
+				   false, extra_image);
 		delete abfd;
 		return;
 	}

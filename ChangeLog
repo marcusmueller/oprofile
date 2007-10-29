@@ -1,5 +1,31 @@
 2007-10-29  Philippe Elie  <phil.el@wanadoo.fr>
 
+	* libpp/image_errors.cpp: Pass to image_errors the archive_path through
+	  an extra_images to ensure no duplicate error message occur nor we
+	  miss error, this fix two bugs, one with differential profile
+	  an error message was missing when two binary are missing, another
+	  with opreport where the same error message was duplicate because in
+	  on case we passed the real binary name (prefixed with archive_path)
+	  while latter we passed the short form of the binary name.
+	* libpp/image_errors.h:
+	* libpp/callgraph_container.cpp:
+	* libpp/populate.cpp:
+	* libpp/populate_for_spu.cpp:
+	* libpp/xml_utils.cpp:
+	* libutil++/op_bfd.h:
+
+	* pp/opannotate.cpp: global var archive_path is no longer used
+	* pp/opannotate_options.cpp:
+	* pp/opannotate_options.h:
+	* pp/oparchive.cpp:
+	* pp/opgprof.cpp:
+	* pp/opgprof_options.h:
+	* pp/opreport.cpp:
+	* pp/opreport_options.cpp:
+	* pp/opreport_options.h:
+
+2007-10-29  Philippe Elie  <phil.el@wanadoo.fr>
+
 	Cleanup the way per spec archive_path is handled, as extra_images
 	is built using an archive_path it make no sense to pass archive_path
 	as parameter all over the place, rather make it a member of

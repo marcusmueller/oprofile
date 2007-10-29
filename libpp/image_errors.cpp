@@ -12,6 +12,7 @@
 
 #include "arrange_profiles.h"
 #include "string_manip.h"
+#include "locate_images.h"
 
 #include <iostream>
 #include <set>
@@ -24,20 +25,24 @@ set<string> reported_images_error;
 
 }
 
-void report_image_error(string const & image, image_error error, bool fatal)
+void report_image_error(string const & image, image_error error, bool fatal,
+			extra_images const & extra)
 {
 	if (error == image_ok)
 		return;
 
-	if (reported_images_error.find(image) == reported_images_error.end()) {
-		reported_images_error.insert(image);
+	string image_name = extra.get_archive_path() + image;
+
+	if (reported_images_error.find(image_name) ==
+	    reported_images_error.end()) {
+		reported_images_error.insert(image_name);
 
 		// FIXME: hacky
 		if (error == image_not_found && is_prefix(image, "anon "))
 			return;
 
 		cerr << (fatal ? "error: " : "warning: ");
-		cerr << image << ' ';
+		cerr << image_name << ' ';
 
 		switch (error) {
 			case image_not_found:
@@ -64,17 +69,19 @@ void report_image_error(string const & image, image_error error, bool fatal)
 }
 
 
-void report_image_error(inverted_profile const & profile, bool fatal)
+void report_image_error(inverted_profile const & profile, bool fatal,
+			extra_images const & extra)
 {
-	report_image_error(profile.image, profile.error, fatal);
+	report_image_error(profile.image, profile.error, fatal, extra);
 }
 
 
-void report_image_errors(list<inverted_profile> const & plist)
+void report_image_errors(list<inverted_profile> const & plist,
+			 extra_images const & extra)
 {
 	list<inverted_profile>::const_iterator it = plist.begin();
 	list<inverted_profile>::const_iterator const end = plist.end();
 
 	for (; it != end; ++it)
-		report_image_error(*it, false);
+	  report_image_error(*it, false, extra);
 }

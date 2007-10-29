@@ -63,7 +63,7 @@ int oparchive(options::spec const & spec)
 	/* copy over each of the executables and the debuginfo files */
 	list<inverted_profile> iprofiles = invert_profiles(classes);
 
-	report_image_errors(iprofiles);
+	report_image_errors(iprofiles, classes.extra_found_images);
 
 	list<inverted_profile>::iterator it = iprofiles.begin();
 	list<inverted_profile>::iterator const end = iprofiles.end();

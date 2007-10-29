@@ -90,7 +90,6 @@ private:
 class op_bfd {
 public:
 	/**
-	 * @param archive_path oparchive prefix path
 	 * @param filename  the name of the image file
 	 * @param symbol_filter  filter to apply to symbols
 	 * @param extra_images container where all extra candidate filenames
