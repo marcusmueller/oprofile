@@ -37,6 +37,10 @@ bool copy_file(string const & source, string const & destination)
 	if (stat(source.c_str(), &buf))
 		return false;
 
+	ifstream in(source.c_str());
+	if (!in)
+		return false;
+
 	int fd = open(destination.c_str(), O_RDWR|O_CREAT);
 	if (fd < 0)
 		return false;
@@ -52,9 +56,7 @@ bool copy_file(string const & source, string const & destination)
 	// but can't chown the copied file to root.
 	retval = chown(destination.c_str(), buf.st_uid, buf.st_gid);
 
-	ifstream in(source.c_str());
-	if (!in)
-		return false;
+	// a scope to ensure out is closed before changing is mtime/atime
 	{
 	ofstream out(destination.c_str(), ios::trunc);
 	if (!out)
